@@ -10,22 +10,19 @@ and are used to initialize 2 Turbo C specific variables which control
 the memory usage of the resulting code.  The first, _stklen, controls the
 stack size.  I've set it to 12k; anything over 6k is probably not being
 used, but stack overflows are hard to find -- reduce it at your own risk.
-Them makefile, as written, tells TC++ to include inline stack checking
-code, which costs a little in memory requirements and slows the game
-marginally, but it provides protection from stack overflows, which are bad.
 The second, _ovrbuffer, is nested inside it's own #ifdef TC_OVERLAY block,
 and tells TC++'s overlay manager how much space it should reserve for the
 overlaid code.
 
-For PCs that can free up as much as 580k (or more), I set _ovrbuffer to
+For PCs that can free up as much as 600k (or more), I set _ovrbuffer to
 0x3000u, which indicates 192k (apparently this value is shifted left 4 bits
 before it's used).  With an overlay buffer this size, Angband runs quickly,
 with only an occasional slowdown during play.  For PCs that can't free up
 that much, I set _ovrbuffer to 0x2000u, for 128k of buffer space.  This
 causes more frequent slowdowns, especially for monsters casting spells
 (Blink dogs and Phase spiders become annoying when this happens), but it's
-still playable.  I've tested this version with only 510k of free memory
-inside a Win31 dos window, and it works fine.  For anyone below 510k of
+still playable.  I've tested this version with only 530k of free memory
+inside a Win31 dos window, and it works fine.  For anyone below 530k of
 free memory, you've got a couple of choices:  Either look over your 
 autoexec.bat and config.sys files and try to slim down a bit (switching to
 Dos 5.0 will help a LOT for those using an older version...), or you can
@@ -33,9 +30,6 @@ try to use a smaller size for _ovrbuffer.  But, to warn you, Angband gets
 much slower for buffer sizes below 128k.  Running through corridor and rooms
 takes much longer than it should.  If you try this, be sure to set the
 option to "print self during run".
-
-For some ideas on freeing up memory, see the file 'free-mem.doc' in the
-"other" subdir...
 
 Of course, changing these values will only help if you then recompile
 Angband. -CFT

@@ -143,18 +143,14 @@ void read_scroll()
 	      ident = TRUE;
 	      used_up = ident_spell();
 
-	      /* the identify may merge objects, causing the identify scroll
-		 to move to a different place.	Check for that here. */
-	      if (i_ptr->tval != TV_SCROLL1 || i_ptr->flags != 0x00000008)
+	      /* The identify may merge objects, causing the identify scroll
+		 to move to a different place.	Check for that here.  It can
+		 move arbitrarily far if an identify scroll was used on
+		 another identify scroll, but it always moves down. */
+	      while (i_ptr->tval != TV_SCROLL1 || i_ptr->flags != 0x00000008)
 		{
 		  item_val--;
 		  i_ptr = &inventory[item_val];
-		  if (i_ptr->tval != TV_SCROLL1 || i_ptr->flags != 0x00000008)
-		    {
-		      msg_print("internal error with identify spell.");
-		      msg_print("Please tell the wizard!");
-		      return;
-		    }
 		}
 	      break;
 	    case 5:
@@ -293,16 +289,26 @@ void read_scroll()
 	      if (i_ptr->tval != TV_NOTHING)
 		{
 		  objdes(tmp_str, i_ptr, FALSE);
-		  (void)sprintf(out_val,"Your %s glows black, fades.",tmp_str);
-		  msg_print(out_val);
-		  py_bonuses(i_ptr, -1); /* take off current bonuses -CFT */
-		  unmagic_name(i_ptr);
-		  i_ptr->tohit = -randint(5) - randint(5);
-		  i_ptr->todam = -randint(5) - randint(5);
-		  i_ptr->flags = TR_CURSED;
-		  py_bonuses(i_ptr, 1); /* now apply new "bonuses" -CFT */
-		  calc_bonuses ();
-		  ident = TRUE;
+		  if ((i_ptr->flags2 & TR_ARTIFACT) && (randint(7) < 4)){
+		    msg_print("A terrible black aura tries to surround your weapon,");
+		    (void)sprintf(out_val,"but your %s resists the effects!", tmp_str);
+		    msg_print(out_val);
+		  } else { /* not artifact or failed save... */
+		    (void)sprintf(out_val, "A terrible black aura blasts your %s!", tmp_str);
+		    msg_print(out_val);
+		    py_bonuses(i_ptr, -1); /* take off current bonuses -CFT */
+		    i_ptr->name2 = SN_SHATTERED;
+		    i_ptr->tohit = -randint(5) - randint(5);
+		    i_ptr->todam = -randint(5) - randint(5);
+		    i_ptr->flags = TR_CURSED; 
+		    i_ptr->flags2 = 0;
+		    i_ptr->damage[0] = i_ptr->damage[1] = 1;
+		    i_ptr->toac = 0; /* in case defender... */
+		    i_ptr->cost = -1;
+		    py_bonuses(i_ptr, 1); /* now apply new "bonuses" -CFT */
+		    calc_bonuses ();
+		  }
+		  ident = TRUE; /* even if artifact makes save... */
 		}
 	      break;
 	    case 35:
@@ -394,15 +400,26 @@ void read_scroll()
 		{
 		  i_ptr = &inventory[k];
 		  objdes(tmp_str, i_ptr, FALSE);
-		  (void)sprintf(out_val,"Your %s glows black, fades.",tmp_str);
-		  msg_print(out_val);
-		  py_bonuses(i_ptr, -1); /* take off current bonuses -CFT */
-		  unmagic_name(i_ptr);
-		  i_ptr->flags = TR_CURSED;
-		  i_ptr->toac = -randint(5) - randint(5);
-		  py_bonuses(i_ptr, 1); /* now apply new "bonuses" -CFT */
-		  calc_bonuses ();
-		  ident = TRUE;
+		  if ((i_ptr->flags2 & TR_ARTIFACT) && (randint(7) < 4)){
+		    msg_print("A terrible black aura tries to surround your");
+		    (void)sprintf(out_val,"%s, but it resists the effects!", tmp_str);
+		    msg_print(out_val);
+		  } else { /* not artifact or failed save... */
+		    (void)sprintf(out_val, "A terrible black aura blasts your %s!", tmp_str);
+		    msg_print(out_val);
+		    py_bonuses(i_ptr, -1); /* take off current bonuses -CFT */
+		    i_ptr->name2 = SN_BLASTED;
+		    i_ptr->flags = TR_CURSED;
+		    i_ptr->flags2 = 0;
+		    i_ptr->toac = -randint(5) - randint(5);
+		    i_ptr->tohit = i_ptr->todam = 0; /* in case gaunlets of
+		    					slaying... */
+		    i_ptr->ac = (i_ptr->ac > 9) ? 1 : 0;
+		    i_ptr->cost = -1;
+		    py_bonuses(i_ptr, 1); /* now apply new "bonuses" -CFT */
+		    calc_bonuses ();
+		    }
+		  ident = TRUE; /* even if artifact makes save... */
 		}
 	      break;
 	    case 37:
@@ -428,9 +445,17 @@ void read_scroll()
 	      break;
 	    case 41:
 	      ident = TRUE;
-	      if (py.flags.word_recall == 0)
-		py.flags.word_recall = 25 + randint(30);
-	      msg_print("The air about you becomes charged.");
+	      { char c; int f = TRUE;
+	      do { /* loop, so RET or other key doesn't accidently exit */
+	      	f = get_com("Do you really want to return?", &c);
+	        } while (f && (c != 'y') && (c != 'Y') && (c != 'n') &&
+	        		(c != 'N'));
+	      if (f && (c != 'n') && (c != 'N')) {
+	        if (py.flags.word_recall == 0)
+		  py.flags.word_recall = 25 + randint(30);
+	        msg_print("The air about you becomes charged.");
+	        }
+	        }
 	      break;
 	    case 42:
 	      destroy_area(char_row, char_col);

@@ -43,12 +43,6 @@ int kbhit(ARG_VOID);
 extern int8u peek;
 extern int rating;
 
-/* ANGBAND game module					-RAK-	*/
-/* The code in this section has gone through many revisions, and */
-/* some of it could stand some more hard work.	-RAK-	       */
-
-/* It has had a bit more hard work.			-CJS- */
-
 #ifdef MSDOS
 int8u good_item_flag=FALSE;
 int8u create_up_stair=FALSE;
@@ -58,6 +52,286 @@ int good_item_flag=FALSE;
 int create_up_stair=FALSE;
 int create_down_stair=FALSE;
 #endif
+
+
+/* Lights up given location				-RAK-	*/
+void lite_spot(y, x)
+register int y, x;
+{
+  if (panel_contains(y, x))
+    print(loc_symbol(y, x), y, x);
+#ifdef TC_COLOR
+  if (!no_color_flag) textcolor(LIGHTGRAY);
+#endif
+}
+
+/* Returns symbol for given row, column			-RAK-	*/
+unsigned char loc_symbol(y, x)
+int y, x;
+{
+  register cave_type *cave_ptr;
+  register struct flags *f_ptr;
+
+#ifdef TC_COLOR
+  if (!no_color_flag) textcolor(LIGHTGRAY);
+#endif
+
+  cave_ptr = &cave[y][x];
+  f_ptr = &py.flags;
+
+  if ((cave_ptr->cptr == 1) && (!find_flag || find_prself))
+    return '@';
+  else if (f_ptr->status & PY_BLIND)
+    return ' ';
+  else if ((f_ptr->image > 0) && (randint (12) == 1))
+#ifdef TC_COLOR
+    { if (!no_color_flag) textcolor( randint(15) );
+      return randint (95) + 31; }
+#else
+    return randint (95) + 31;
+#endif
+  else if ((cave_ptr->cptr > 1) && (m_list[cave_ptr->cptr].ml))
+#ifdef TC_COLOR
+    {
+      if (!no_color_flag){
+	if (strstr(c_list[m_list[cave_ptr->cptr].mptr].name, "ulti-") != NULL)
+	  switch( randint(10) ){
+	  case 1: case 2: textcolor(DARKGRAY); break; /* black d's all DARKGRAY */
+	  case 3: case 4: textcolor(LIGHTBLUE); break; /* BLUE doesn't show up good on my screen */
+	  case 5: textcolor(LIGHTGREEN); break;
+	  case 6: textcolor(GREEN); break;
+	  case 7: textcolor(LIGHTRED); break;
+	  case 8: textcolor(RED); break;
+	  case 9: case 10: textcolor(WHITE); break; /* white d's all WHITE */
+	  default: textcolor( randint(15) ); /* should never happen, but... */
+      	  }
+      else
+	textcolor(c_list[m_list[cave_ptr->cptr].mptr].color);
+      }
+    return c_list[m_list[cave_ptr->cptr].mptr].cchar;
+    }
+#else
+    return c_list[m_list[cave_ptr->cptr].mptr].cchar;
+#endif
+  else if (!cave_ptr->pl && !cave_ptr->tl && !cave_ptr->fm)
+    return ' ';
+  else if ((cave_ptr->tptr != 0)
+	   && (t_list[cave_ptr->tptr].tval != TV_INVIS_TRAP))
+#ifdef TC_COLOR
+    {  if (t_list[cave_ptr->tptr].color != 0) {
+         if (!no_color_flag) textcolor(t_list[cave_ptr->tptr].color);
+       }
+       else switch(t_list[cave_ptr->tptr].tval){
+       	 case TV_POTION1:
+       	 case TV_POTION2:
+	   if (!no_color_flag) textcolor(tccolors[t_list[cave_ptr->tptr].subval
+					- ITEM_SINGLE_STACK_MIN]);
+	   break;
+	 case TV_WAND:
+	 case TV_ROD:
+	   if (!no_color_flag) textcolor(tcmetals[t_list[cave_ptr->tptr].subval]);
+	   break;
+	 case TV_STAFF:
+	   if (!no_color_flag) textcolor(tcwoods[t_list[cave_ptr->tptr].subval]);
+	   break;
+	 case TV_RING:
+	   if (!no_color_flag) textcolor(tcrocks[t_list[cave_ptr->tptr].subval]);
+	   break;
+	 case TV_AMULET:
+	   if (!no_color_flag) textcolor(tcamulets[t_list[cave_ptr->tptr].subval]);
+	   break;
+	 case TV_FOOD:
+	   if (!no_color_flag) textcolor(tcmushrooms[t_list[cave_ptr->tptr].subval
+	   				- ITEM_SINGLE_STACK_MIN]);
+	   break;
+	 default: if (!no_color_flag) textcolor( randint(15) ); /* should never happen. -CFT */
+       } /* switch */
+    return t_list[cave_ptr->tptr].tchar;
+    } /* else-if clause */	 
+#else
+    return t_list[cave_ptr->tptr].tchar;
+#endif
+  else if (cave_ptr->fval <= MAX_CAVE_FLOOR)
+#ifdef MSDOS
+      return floorsym;
+#else
+    {
+      return '.';
+    }
+#endif
+  else if (cave_ptr->fval == GRANITE_WALL || cave_ptr->fval == BOUNDARY_WALL
+	   || highlight_seams == FALSE)
+    {
+#ifdef MSDOS
+      return wallsym;
+#else
+#ifndef ATARIST_MWC
+      return '#';
+#else
+      return (unsigned char)240;
+#endif
+#endif
+    }
+  else	/* Originally set highlight bit, but that is not portable, now use
+	   the percent sign instead. */
+    {
+#ifdef TC_COLOR
+      if (cave_ptr->fval == MAGMA_WALL)
+        if (!no_color_flag) textcolor(DARKGRAY);
+        else return '%';
+      else
+        if (!no_color_flag) textcolor(WHITE);
+        else return '%';
+      return wallsym;
+#else
+      return '%';
+#endif
+    }
+}
+
+
+/* Tests a spot for light or field mark status		-RAK-	*/
+int test_light(y, x)
+int y, x;
+{
+  register cave_type *cave_ptr;
+
+  cave_ptr = &cave[y][x];
+  if (cave_ptr->pl || cave_ptr->tl || cave_ptr->fm)
+    return(TRUE);
+  else
+    return(FALSE);
+}
+
+
+/* Tests a given point to see if it is within the screen -RAK-	*/
+/* boundaries.							  */
+int panel_contains(y, x)
+register int y, x;
+{
+  if ((y >= panel_row_min) && (y <= panel_row_max) &&
+      (x >= panel_col_min) && (x <= panel_col_max))
+    return (TRUE);
+  else
+    return (FALSE);
+}
+
+
+/* Generates a random integer x where 1<=X<=MAXVAL	-RAK-	*/
+int randint(maxval)
+int maxval;
+{
+  register int32u randval;
+
+  if (maxval<1) return 1;
+  randval = rnd ();
+  return ((int)((randval % maxval) + 1));
+}
+
+/* Generates a random integer number of NORMAL distribution -RAK-*/
+int randnor(mean, stand)
+int mean, stand;
+{
+  register int tmp, offset, low, iindex, high;
+
+#if 0
+  /* alternate randnor code, slower but much smaller since no table */
+  /* 2 per 1,000,000 will be > 4*SD, max is 5*SD */
+  tmp = damroll(8, 99);	 /* mean 400, SD 81 */
+  tmp = (tmp - 400) * stand / 81;
+  return tmp + mean;
+#endif
+
+  tmp = randint(MAX_SHORT);
+
+  /* off scale, assign random value between 4 and 5 times SD */
+  if (tmp == MAX_SHORT)
+    {
+      offset = 4 * stand + randint(stand);
+
+      /* one half are negative */
+      if (randint(2) == 1)
+	offset = -offset;
+
+      return mean + offset;
+    }
+
+  /* binary search normal normal_table to get index that matches tmp */
+  /* this takes up to 8 iterations */
+  low = 0;
+  iindex = NORMAL_TABLE_SIZE >> 1;
+  high = NORMAL_TABLE_SIZE;
+  while (TRUE)
+    {
+      if ((normal_table[iindex] == tmp) || (high == (low+1)))
+	break;
+      if (normal_table[iindex] > tmp)
+	{
+	  high = iindex;
+	  iindex = low + ((iindex - low) >> 1);
+	}
+      else
+	{
+	  low = iindex;
+	  iindex = iindex + ((high - iindex) >> 1);
+	}
+    }
+
+  /* might end up one below target, check that here */
+  if (normal_table[iindex] < tmp)
+    iindex = iindex + 1;
+
+  /* normal_table is based on SD of 64, so adjust the index value here,
+     round the half way case up */
+  offset = ((stand * iindex) + (NORMAL_TABLE_SD >> 1)) / NORMAL_TABLE_SD;
+
+  /* one half should be negative */
+  if (randint(2) == 1)
+    offset = -offset;
+
+  return mean + offset;
+}
+
+/* generates damage for 2d6 style dice rolls */
+int damroll(num, sides)
+int num, sides;
+{
+  register int i, sum = 0;
+
+  for (i = 0; i < num; i++)
+    sum += randint(sides);
+  return(sum);
+}
+
+int pdamroll(array)
+int8u *array;
+{
+  return damroll((int)array[0], (int)array[1]);
+}
+
+/* Gives Max hit points					-RAK-	*/
+int max_hp(array)
+int8u *array;
+{
+  return((int)(array[0]) * (int)(array[1]));
+}
+
+/* Checks a co-ordinate for in bounds status		-RAK-	*/
+int in_bounds(y, x)
+int y, x;
+{
+  if ((y > 0) && (y < cur_height-1) && (x > 0) && (x < cur_width-1))
+    return(TRUE);
+  else
+    return(FALSE);
+}
+
+
+/* ANGBAND game module					-RAK-	*/
+/* The code in this section has gone through many revisions, and */
+/* some of it could stand some more hard work.	-RAK-	       */
+
+/* It has had a bit more hard work.			-CJS- */
 
 void dungeon()
 {
@@ -94,6 +368,7 @@ void dungeon()
   find_flag	= FALSE;
   teleport_flag = FALSE;
   mon_tot_mult	= 0;
+  target_mode = FALSE;	/* target code taken from Morgul -CFT */
   cave[char_row][char_col].cptr = 1;
 
   if (create_up_stair && (dun_level == 0)) /* just in case... */
@@ -286,7 +561,7 @@ void dungeon()
 	}
       /* Regenerate	       */
       if (f_ptr->regenerate)  regen_amount = regen_amount * 3 / 2;
-      if (search_flag || f_ptr->rest > 0 || f_ptr->rest==-1)
+      if (search_flag || f_ptr->rest > 0 || f_ptr->rest==-1 || f_ptr->rest==-2)
 	regen_amount = regen_amount * 2;
       if ((py.flags.poisoned < 1) && (py.flags.cut < 1) &&
 	  (p_ptr->chp < p_ptr->mhp))
@@ -496,21 +771,32 @@ void dungeon()
 	    }
 	}
       /* Resting is over?      */
-      if (f_ptr->rest>0 || f_ptr->rest==-1) {
+      if (f_ptr->rest>0 || f_ptr->rest==-1 || f_ptr->rest==-2) {
 	if (f_ptr->rest>0) {
 	  f_ptr->rest--;
 	  if (f_ptr->rest == 0)  /* Resting over */
 	    rest_off();
-	} else {
+	} else if (f_ptr->rest == -1) {
 	  if (py.misc.chp==py.misc.mhp && py.misc.cmana==py.misc.mana) {
 	    f_ptr->rest=0;
 	    rest_off();
 	  }
-	}
+	} else if (f_ptr->rest == -2) { /* rest until blind/conf/stun/
+					HP/mana/fear/halluc over */
+	  if ((py.flags.blind < 1) && (py.flags.confused < 1) &&
+	      (py.flags.afraid < 1) && (py.flags.stun < 1) &&
+	      (py.flags.image < 1) && (py.flags.word_recall < 1) &&
+	      (py.flags.slow < 1) && (py.misc.chp == py.misc.mhp) &&
+	      (py.misc.cmana == py.misc.mana)) {
+	    f_ptr->rest=0;
+	    rest_off();
+	    }
+	}		
       }
 
       /* Check for interrupts to find or rest. */
-      if ((command_count > 0 || find_flag || f_ptr->rest>0 || f_ptr->rest==-1)
+      if ((command_count > 0 || find_flag || f_ptr->rest>0 || f_ptr->rest==-1
+		|| f_ptr->rest == -2)
 #if defined(MSDOS) || defined(VMS)  /* stolen from Um55 src -CFT */
 	  && kbhit()
 #else
@@ -728,8 +1014,8 @@ void dungeon()
 	  if (i_ptr->timeout>0)
 	    i_ptr->timeout--;
 	  if ((i_ptr->tval==TV_RING) &&
-	      (!strcmp(object_list[i_ptr->index].name,"Power")) &&
-	      (randint(20)==1))
+	      (!stricmp(object_list[i_ptr->index].name,"Power")) &&
+	      (randint(20)==1) && (py.misc.exp > 0))
 	    py.misc.exp--, py.misc.max_exp--, prt_experience();
 	}
       }
@@ -837,7 +1123,7 @@ void dungeon()
 	  prt_state();
 	  py.flags.status |= PY_PARALYSED;
 	}
-      else if (py.flags.rest > 0 || py.flags.rest==-1)
+      else if (py.flags.rest > 0 || py.flags.rest==-1 || py.flags.rest==-2)
 	prt_state();
 
       if ((py.flags.status & PY_ARMOR) != 0)
@@ -979,8 +1265,9 @@ void dungeon()
 		}
 
 		(void) sprintf(tmp_str,
-			       "You feel the %s you are %s %s %s...",
+			       "You feel the %s (%c) you are %s %s %s...",
 			       out_val,
+			       ((i<INVEN_WIELD)?i+'a':(i+'a'-INVEN_WIELD)),
 			       describe_use(i),
 			       ((i_ptr->tval==TV_BOLT) ||
 				(i_ptr->tval==TV_ARROW) ||
@@ -990,15 +1277,23 @@ void dungeon()
 			       value_check(i_ptr));
 		disturb(0, 0);
 		msg_print(tmp_str);
-		if (!strcmp(value_check(i_ptr), "terrible"))
+		if (!stricmp(value_check(i_ptr), "terrible"))
 		  add_inscribe(i_ptr, ID_DAMD);
-		else if (!strcmp(value_check(i_ptr), "worthless"))
+		else if (!stricmp(value_check(i_ptr), "worthless"))
 		  add_inscribe(i_ptr, ID_DAMD);
 		else
 		  inscribe(i_ptr, value_check(i_ptr));
 	      }
 	  }
 	}
+
+      /* Check the state of the monster list, and delete some monsters if
+	 the monster list is nearly full.  This helps to avoid problems in
+	 creature.c when monsters try to multiply.  Compact_monsters() is
+	 much more likely to succeed if called from here, than if called
+	 from within creatures().  */
+      if (MAX_MALLOC - mfptr < 10)
+	(void) compact_monsters ();
 
       if ((py.flags.paralysis < 1) &&	     /* Accept a command?     */
 	  (py.flags.rest == 0) &&
@@ -1035,6 +1330,15 @@ void dungeon()
 		    }
 		  else
 		    {
+/* This bit of targetting code taken from Morgul -CFT */
+/* If we are in targetting mode, with a creature target, make the targetted */
+/* row and column match the creature's.  This optimizes a lot of code.  CDW */
+		      if ((target_mode)&&(target_mon<mfptr))
+			{
+			  target_row = m_list[target_mon].fy;
+			  target_col = m_list[target_mon].fx;
+			}
+
 		      msg_flag = FALSE;
 		      command = inkey();
 		      i = 0;
@@ -1177,13 +1481,20 @@ char com_val;
     case CTRL('M'):
       com_val = '+';
       break;
+    case CTRL('R'):
     case CTRL('P'):	/*^P = repeat  */
     case CTRL('W'):	/*^W = password*/
     case CTRL('X'):	/*^X = save    */
     case ' ':
     case '!':
+    case '*':
       break;
     case '.':
+      { int temp = target_mode;  /* If in target_mode, player will not be
+					given a chance to pick a direction.
+					So we save it, force it off, and then
+					ask for the direction -CFT */
+        target_mode = FALSE;
       if (get_dir(NULL, &dir_val))
 	switch (dir_val)
 	  {
@@ -1199,6 +1510,8 @@ char com_val;
 	  }
       else
 	com_val = ' ';
+      target_mode = temp; /* restore old target mode ... -CFT */
+      }
       break;
     case '/':
     case '<':
@@ -1257,6 +1570,11 @@ char com_val;
       com_val = '#';
       break;
     case 'T':
+      { int temp = target_mode;  /* If in target_mode, player will not be
+					given a chance to pick a direction.
+					So we save it, force it off, and then
+					ask for the direction -CFT */
+        target_mode = FALSE;
       if (get_dir(NULL, &dir_val))
 	switch (dir_val)
 	  {
@@ -1272,6 +1590,8 @@ char com_val;
 	  }
       else
 	com_val = ' ';
+      target_mode = temp;
+      }
       break;
     case 'a':
       com_val = 'z';
@@ -1336,7 +1656,7 @@ char com_val;
     case CTRL('^'):	/*^^ = identify all up to a level */
       break;
     case CTRL('L'):	/*^L = wizlight*/
-      com_val = '*';
+      com_val = '$';
       break;
     case ':':
     case CTRL('T'):	/*^T = teleport*/
@@ -1347,12 +1667,13 @@ char com_val;
     case '@':
     case '+':
     case '%':  /* '%' == self knowledge */
+    case '~': /* artifact list to file */
       break;
     case CTRL('U'):	/*^U = summon  */
       com_val = '&';
       break;
     default:
-      com_val = '~';  /* Anything illegal. */
+      com_val = '(';  /* Anything illegal. */
       break;
     }
   return com_val;
@@ -1452,6 +1773,11 @@ char com_val;
     {
       do_pickup = FALSE;
       i = command_count;
+      { int temp = target_mode;  /* If in target_mode, player will not be
+					given a chance to pick a direction.
+					So we save it, force it off, and then
+					ask for the direction -CFT */
+        target_mode = FALSE;
       if (get_dir(NULL, &dir_val))
 	{
 	  command_count = i;
@@ -1465,21 +1791,23 @@ char com_val;
 	    case 7:    com_val = 'y';	 break;
 	    case 8:    com_val = 'k';	 break;
 	    case 9:    com_val = 'u';	 break;
-	    default:   com_val = '~';	 break;
+	    default:   com_val = '(';	 break;
 	    }
 	}
       else
 	com_val = ' ';
+      target_mode = temp;
+      }
     }
   else
     do_pickup = TRUE;
-
+  
   switch(com_val)
     {
     case 'Q':	/* (Q)uit		(^K)ill */
       flush();
-      if ((!total_winner)?get_check("Do you really want to quit?")
-	                 :get_check("Do you want to retire?"))
+      if ((!total_winner)?get_Yn("Do you really want to quit?")
+	                 :get_Yn("Do you want to retire?"))
 	{
 	  new_level_flag = TRUE;
 	  death = TRUE;
@@ -1553,6 +1881,25 @@ char com_val;
 	}
       free_turn_flag = TRUE;
       break;
+    case CTRL('R'):
+      if (py.flags.image > 0)
+        msg_print("You cannot be sure what is real and what is not!");
+      else {
+	clear_screen();
+	prt_stat_block(); /* put the stuff on the side */
+	prt_map(); /* draw cave */
+	creatures(FALSE);  /* draw monsters */
+        }
+      free_turn_flag = TRUE;
+      break;
+    case '*':	/* select a target (sorry, no intuitive letter keys were
+    			left: a/A for aim, t/T for target, f/F for focus,
+    			s/S for select, c/C for choose and p/P for pick
+    			were all already taken.  Wiz light command moved
+    			to '$', which was unused. -CFT */
+      target();	/* target code taken from Morgul -CFT */
+      free_turn_flag = TRUE;
+      break;    			
     case '=':		/* (=) set options */
       save_screen();
       set_options();
@@ -1689,6 +2036,11 @@ char com_val;
       else
 	{
 	  int cy, cx, p_y, p_x;
+        int temp = target_mode;  /* If in target_mode, player will not be
+					given a chance to pick a direction.
+					So we save it, force it off, and then
+					ask for the direction -CFT */
+        target_mode = FALSE;
 
 	  y = char_row;
 	  x = char_col;
@@ -1736,6 +2088,7 @@ char com_val;
 	  /* Move to a new panel - but only if really necessary. */
 	  if (get_panel(char_row, char_col, FALSE))
 	    prt_map();
+          target_mode = temp; /* restore target mode... */
 	}
       free_turn_flag = TRUE;
       break;
@@ -1876,6 +2229,7 @@ char com_val;
 	      break;
 	    case CTRL('E'):	/*^E = wizchar */
 	      change_character();
+	      erase_line(MSG_LINE, 0); /* from um55 -CFT */
 	      break;
 	    case CTRL('F'):	/*^F = genocide*/
 	      (void) mass_genocide(FALSE);
@@ -1960,7 +2314,7 @@ char com_val;
 	      }
 	      erase_line(MSG_LINE, 0);
 	      break;
-	    case '*':
+	    case '$':	/* $ = wiz light */
 	      wizard_light(TRUE);
 	      break;
 	    case ':':
@@ -2055,6 +2409,7 @@ char c;
     case '\\':
     case CTRL('I'):
     case CTRL('^'):
+    case '$':
     case '*':
     case ':':
     case CTRL('T'):
@@ -2062,8 +2417,8 @@ char c;
     case CTRL('F'):
     case CTRL('S'):
     case CTRL('Q'):
+    case CTRL('R'):
       return FALSE;
-    case CTRL('P'):
     case ESCAPE:
     case ' ':
     case '-':
@@ -2090,11 +2445,11 @@ char c;
     case CTRL('Y'):
     case CTRL('K'):
     case CTRL('U'):
-    case CTRL('L'):
     case CTRL('N'):
     case CTRL('J'):
     case CTRL('B'):
     case CTRL('H'):
+    case CTRL('L'):
     case 'S':
     case 'o':
     case 's':
@@ -2203,7 +2558,7 @@ register inven_type *t_ptr;
 int ruin_stat(stat)
 register int stat;
 {
-  register int tmp_stat, loss;
+  register int tmp_stat;
 
   tmp_stat = py.stats.cur_stat[stat];
   if (tmp_stat > 3) {
@@ -2227,9 +2582,8 @@ register int stat;
 
 static void activate() {
   int i, a, flag, first, num, j, redraw, dir;
-  char out_str[200], tmp[200], tmp2[200], tmp3[200], choice;
+  char out_str[200], tmp[200], tmp2[200], choice;
   inven_type *i_ptr;
-  treasure_type *t_ptr;
   struct misc *m_ptr;
 
   flag=FALSE;
@@ -2245,21 +2599,34 @@ static void activate() {
   }
   if (!flag) {
     msg_print("You are not wearing/wielding anything that can be activated.");
+    free_turn_flag = TRUE;
     return;
   }
   sprintf(out_str, "Activate which item? (%c-%c, * to list, ESC to exit) ?",
 	  'a', 'a'+(num-1));
   flag=FALSE;
   while (!flag && get_com(out_str, &choice)) {
-    if (choice=='*') {
+    if ((choice=='*') && !redraw) { /* don't save screen again if it's already
+    					listed, OW it doesn't clear -CFT */
       save_screen();
       j=0;
       if (!redraw) {
 	for (i=first; i<(INVEN_ARRAY_SIZE-1); i++) {
 	  if ((inventory[i].flags2 & TR_ACTIVATE) && known2_p(&(inventory[i]))) {
 	    objdes(tmp2, &inventory[i], TRUE);
-	    sprintf(tmp, "%c) %-40s", 'a'+j, tmp2);
-	    prt(tmp, 1+j, 36);
+	    sprintf(tmp, "%c) %-61s", 'a'+j, tmp2);
+	    erase_line(1+j, 13); /* we display at 15, but erase from 13 to
+	    				give a couple of spaces, so it looks
+	    				tidy.  -CFT */
+#ifdef TC_COLOR
+	    if (!no_color_flag) textcolor( inven_color( inventory[i].tval ) );
+#endif	    
+	    prt(tmp, 1+j, 15);	/* No need to check for bottom of screen,
+	    			   since only have 11 items in equip, so
+	    			   will never reach bottom... -CFT */
+#ifdef TC_COLOR
+	    if (!no_color_flag) textcolor( LIGHTGRAY );
+#endif	    
 	    j++;
 	  }
 	}
@@ -2272,14 +2639,23 @@ static void activate() {
       else if (choice>='a' && choice<=('a'+(num-1)))
 	choice-='a';
       else if (choice=='\033') {
-	if (redraw)
+        if (redraw) {
 	  restore_screen();
+	  redraw = FALSE;
+          }
 	free_turn_flag = TRUE;
 	break;
-      }
-      if (redraw)
-	restore_screen();
+        }
+      else {
+	bell();
+	continue; /* try another letter */
+        }
 
+      if (redraw) {
+	restore_screen();
+	redraw = FALSE;
+        }
+        
       if (choice>num) continue;
       flag=TRUE;
       j=0;
@@ -2454,9 +2830,16 @@ static void activate() {
 	break;
       case (71):
 	if (inventory[i].name2 == SN_AVAVIR) {
-	  if (py.flags.word_recall == 0)
-	    py.flags.word_recall = 15 + randint(20);
-	  msg_print("The air about you becomes charged...");
+	      char c; int f = TRUE;
+	      do { /* loop, so RET or other key doesn't accidently exit */
+	      	f = get_com("Do you really want to return?", &c);
+	        } while (f && (c != 'y') && (c != 'Y') && (c != 'n') &&
+	        		(c != 'N'));
+	      if (f && (c != 'n') && (c != 'N')) {
+	    if (py.flags.word_recall == 0)
+	      py.flags.word_recall = 15 + randint(20);
+	    msg_print("The air about you becomes charged...");
+	    }
 	  inventory[i].timeout=200;
 	}
 	break;
@@ -2502,12 +2885,17 @@ static void activate() {
 	    if (inventory[a].tval == TV_BOLT)
 	      break;
 	  if (a<INVEN_WIELD && (inventory[a].name2 == SN_NULL)) {
+	    int i,j;
 	    i_ptr = &inventory[a];
 	    msg_print("Your bolts are covered in a fiery shield!");
 	    i_ptr->name2 = SN_FIRE;
 	    i_ptr->flags |= TR_FLAME_TONGUE;
-	    i_ptr->tohit+=3+randint(3);
-	    i_ptr->todam+=3+randint(3);
+	    i = 3 + randint(3);
+	    for (j=0; j<i; j++)
+	      enchant(&i_ptr->tohit);
+	    i = 3 + randint(3);
+	    for (j=0; j<i; j++)
+	      enchant(&i_ptr->todam);
 	    i_ptr->cost+=25;
 	    i_ptr->flags &= ~TR_CURSED;
 	    calc_bonuses ();
@@ -2704,11 +3092,7 @@ static void activate() {
 	      msg_print("You are confused.");
 	      do {dir = randint(9);} while (dir == 5);
 	    }
-#ifdef TC_COLOR
 	    fire_bolt(GF_ARROW, dir, char_row, char_col, 150,
-#else
-	    fire_bolt(GF_MAGIC_MISSILE, dir, char_row, char_col, 150,
-#endif
 		      "set of spikes");
 	    inventory[i].timeout=88+randint(88);
 	  }
@@ -2806,11 +3190,7 @@ static void activate() {
 	      msg_print("You are confused.");
 	      do {dir = randint(9);} while (dir == 5);
 	    }
-#ifdef TC_COLOR
 	    fire_ball(GF_MANA, dir, char_row, char_col, 300,
-#else
-	    fire_ball(GF_MAGIC_MISSILE, dir, char_row, char_col, 300,
-#endif
 		      "huge ball of Raw Mana");
 	  }
 	  break;
@@ -2820,11 +3200,7 @@ static void activate() {
 	      msg_print("You are confused.");
 	      do {dir = randint(9);} while (dir == 5);
 	    }
-#ifdef TC_COLOR
 	    fire_bolt(GF_MANA, dir, char_row, char_col, 250,
-#else
-	    fire_bolt(GF_MAGIC_MISSILE, dir, char_row, char_col, 250,
-#endif
 		      "bolt of Raw Mana");
 	  }
 	}
@@ -2931,11 +3307,7 @@ static void activate() {
 	    msg_print("You are confused.");
 	    do {dir = randint(9);} while (dir == 5);
 	  }
-#ifdef TC_COLOR
 	  fire_ball(GF_CONFUSION, dir, char_row, char_col, 120,
-#else
-	  fire_ball(GF_MAGIC_MISSILE, dir, char_row, char_col, 120,
-#endif
 		    "huge blast of Confusion");
 	  inventory[i].timeout=444+randint(444);
 	}
@@ -2947,11 +3319,7 @@ static void activate() {
 	    msg_print("You are confused.");
 	    do {dir = randint(9);} while (dir == 5);
 	  }
-#ifdef TC_COLOR
 	  fire_ball(GF_SOUND, dir, char_row, char_col, 130,
-#else
-	  fire_ball(GF_MAGIC_MISSILE, dir, char_row, char_col, 130,
-#endif
 		    "huge blast of Sound");
 	  inventory[i].timeout=444+randint(444);
 	}
@@ -2968,12 +3336,8 @@ static void activate() {
 	  msg_print(tmp2);
 	  sprintf(tmp2, "huge ball of %s",
 		  ((choice==1?"Chaos":"Disenchantment")));
-#ifdef TC_COLOR
 	  fire_ball((choice==1 ? GF_CHAOS : GF_DISENCHANT), dir,
 		char_row, char_col, 220, tmp2);
-#else
-	  fire_ball(GF_MAGIC_MISSILE, dir, char_row, char_col, 220, tmp2);
-#endif
 	  inventory[i].timeout=300+randint(300);
 	}
         break;
@@ -2989,12 +3353,8 @@ static void activate() {
           msg_print(tmp2);
           sprintf(tmp2, "huge %s of %s", ((choice==1)?"blast":"ball"),
                   ((choice==1?"Sound":"Shards")));
-#ifdef TC_COLOR
           fire_ball((choice==1 ? GF_SOUND : GF_SHARDS), dir,
 		char_row, char_col, 230, tmp2);
-#else
-          fire_ball(GF_MAGIC_MISSILE, dir, char_row, char_col, 230, tmp2);
-#endif
           inventory[i].timeout=300+randint(300);
         }
         break;
@@ -3014,13 +3374,9 @@ static void activate() {
                   ((choice==1)?"Chaos":
                    ((choice==2)?"Disenchantment":
                     ((choice==3)?"Sound":"Shards"))));
-#ifdef TC_COLOR
           fire_ball(((choice==1) ? GF_CHAOS : ((choice==2) ? GF_DISENCHANT :
 		((choice==3) ? GF_SOUND : GF_SHARDS))), dir,
 		char_row, char_col, 250, tmp2);
-#else
-          fire_ball(GF_MAGIC_MISSILE, dir, char_row, char_col, 250, tmp2);
-#endif
           inventory[i].timeout=300+randint(300);
         }
         break;
@@ -3036,12 +3392,8 @@ static void activate() {
           msg_print(tmp2);
           sprintf(tmp2, "huge %s of %s", ((choice==1)?"flash":"sphere"),
                   ((choice==1?"Light":"Darkness")));
-#ifdef TC_COLOR
           fire_ball((choice==1 ? GF_LIGHT : GF_DARK), dir,
 		char_row, char_col, 200, tmp2);
-#else
-          fire_ball(GF_MAGIC_MISSILE, dir, char_row, char_col, 200, tmp2);
-#endif
           inventory[i].timeout=300+randint(300);
         }
         break;
@@ -3110,8 +3462,15 @@ static void activate() {
       }
     }
   }
-  if (redraw && !flag)
+
+  if (redraw) {
     restore_screen();
+    redraw = FALSE;
+    }
+
+  if (!flag) /* if flag still false, then user aborted.  So we don't charge
+  		him a turn. -CFT */
+    free_turn_flag = TRUE; 
 }
 
 /* Examine a Book					-RAK-	*/
@@ -3123,8 +3482,8 @@ static void examine_book()
   int spell_index[63];
   register inven_type *i_ptr;
   register spell_type *s_ptr;
-  char tmp[100];
-
+  int first_spell;
+  
   if (!find_range(TV_MAGIC_BOOK, TV_PRAYER_BOOK, &i, &k))
     msg_print("You are not carrying any books.");
   else if (py.flags.blind > 0)
@@ -3156,6 +3515,8 @@ static void examine_book()
 	{
 	  i = 0;
 	  j1 = (int32u) inventory[item_val].flags;
+	  first_spell = bit_pos(&j1); /* check which spell was first */
+	  j1 = (int32u) inventory[item_val].flags; /* restore j1 value */
 	  while (j1)
 	    {
 	      k = bit_pos(&j1);
@@ -3167,6 +3528,10 @@ static void examine_book()
 		}
 	    }
 	  j2 = (int32u) inventory[item_val].flags2;
+	  if (first_spell == -1) { /* if none from other set of flags */
+	    first_spell = 32 + bit_pos (&j2); /* get 1st spell # */
+	    j2 = (int32u) inventory[item_val].flags2; /* and restore j2 */
+	    }
 	  while (j2)
 	    {
 	      k = bit_pos(&j2);
@@ -3178,7 +3543,7 @@ static void examine_book()
 		}
 	    }
 	  save_screen();
-	  print_spells(spell_index, i, TRUE, -1);
+	  print_spells(spell_index, i, TRUE, first_spell);
 	  pause_line(0);
 	  restore_screen();
 	}
@@ -3260,10 +3625,12 @@ static void jamdoor()
   register cave_type *c_ptr;
   register inven_type *t_ptr, *i_ptr;
   char tmp_str[80];
-
+  int temp = target_mode; /* targetting will screw up get_dir.. -CFT */
+  
   free_turn_flag = TRUE;
   y = char_row;
   x = char_col;
+  target_mode = FALSE; /* turn off target mode, restore later */
   if (get_dir(NULL, &dir))
     {
       (void) mmove(dir, &y, &x);
@@ -3285,7 +3652,10 @@ static void jamdoor()
 		    t_ptr->p1 -= 1 + 190 / (10 - t_ptr->p1);
 		    i_ptr = &inventory[i];
 		    if (i_ptr->number > 1)
-		      i_ptr->number--;
+		      {
+		        i_ptr->number--;
+			inven_weight -= i_ptr->weight;
+		      }
 		    else
 		      inven_destroy(i);
 		  }
@@ -3307,6 +3677,7 @@ static void jamdoor()
       else
 	msg_print("That isn't a door!");
     }
+  target_mode = temp;
 }
 
 

@@ -12,34 +12,8 @@
 
 You asked:
 
-	ARGH!  The game is *so* slow.  What can I do?
-
-A sales representative replies:
-
-Buy a faster machine.  Get a faster hard disk!  Technology,
-technology and Yankee know-how, technology and, let's be honest,
-we're both people of the world, Japanese production techniques, are
-the answers to all our needs!
-	What's that you say? You want to use THIS machine?  And your
-recommendation to the free computers for employees programme depends
-on my proving it can be done?  Ah.  That puts a different complexion
-on matters.  May I use your phone...?
-				* * *
-Yeah, yeah, ok.  Uh-huh.  Right.  Catch programmes?  Cache.  Right.
-And TSRs.  Yeah, ok.  Right.  Thanks, Lesley.
-				* * *
-Great tech support, there.  Yeah, so the word is, you've got to get
-everything out of RAM that you can.  It's as simple as that.  All the
-TSRs, everything.  Even RAMdisks.
-
-Some reports of a faster game with a cache program, but we cannot
-recommend one brand other another.  Read your cache manual.
-
-
-You asked:
-
 	Zounds, my man!  How in the name of all that's pompous can one
-	get 500-510K of user RAM free on one's machine?  Surely one can't
+	get 505K of user RAM free on one's machine?  Surely one can't
 	be expected to use a computer without one's Pop-Up-Ducky
 	programme, one's resident Latin Grammar Checker, one's TSR
 	edition Who's Who?  We are talking, you understand, of the
@@ -105,20 +79,90 @@ echo Set up complete.  Please reboot for it to take effect.
 *
 * That's it.  To make it work, make a copy of your \config.sys as \angconf,
 * and a copy of your \autoexec.bat as \angauto.  Then edit \angconf and
-* \angauto to take out everything you can spare (except maybe a disk
-* cache... It depends if you've got extended (>1M) memory or not).  When
-* you want to play angband, run this "swap" batch file, and hit control-alt-
-* delete.  When you're done playing angband, run it again (it will detect
-* which setup is in use by the existance of either \angconf or \normconf, so
-* these files shouldn't be messed with), and hit control-alt-delete.
+* \angauto to take out everything you can spare, except for mabye himem.sys
+* and emm386 which would provide EMS memory if you have more than 640k of
+* memory in your computer, or a disk cache. (See below for details about
+* these...)  When you want to use Angband, run the above "swap" program,
+* and then reboot.  When your done with Angband, run "swap" again (it
+* will detect which setup is in use by the existance of either \angconf
+* or \normconf, so these files should be left alone), and then reboot again.
 *
 * With a bit more headaches, this "swap" batch file is expandable to more
 * configurations (I've run as many as 5), but you have to be very careful
 * about how things are copied and deleted, so you don't erase something
 * important.
+
+You asked:
+
+	ARGH!  The game is *so* slow.  What can I do?
+
+A sales representative replies:
+
+Buy a faster machine.  Get a faster hard disk!  Technology,
+technology and Yankee know-how, technology and, let's be honest,
+we're both people of the world, Japanese production techniques, are
+the answers to all our needs!
+	What's that you say? You want to use THIS machine?  And your
+recommendation to the free computers for employees programme depends
+on my proving it can be done?  Ah.  That puts a different complexion
+on matters.  May I use your phone...?
+				* * *
+Yeah, yeah, ok.  Uh-huh.  Right.  Catch programmes?  Cache.  Right.
+And TSRs.  Yeah, ok.  Right.  Thanks, Lesley.
+				* * *
+Great tech support, there.  Yeah, so the word is, you've got to get
+everything out of RAM that you can.  It's as simple as that.  All the
+TSRs, everything.  Even RAMdisks.
+
 *
-* That's about it.  For more info, try your DOS manual, or friends, or your
-* local BBS, or (try these last) the Usenet (comp.os.msdos.misc maybe), or
-* email me (as a last resort). -CFT
+* To speed up PC Angband 1.31, you have 2 basic options.  You can either use
+* a disk cache like "smartdrv", or you can make EMS memory available for
+* Angband to use for its overlay buffer.  Of the two, I believe that EMS
+* memory gives slightly better performance than smartdrv, but it's hard
+* to be sure.
+*
+* If you have more than 640k in your computer, and you have a fairly new
+* system, you should be able to use HIMEM and EMM386 to make EMS memory
+* available to Angband (Is there such a thing as EMM286?  I thought I
+* had seen such a thing, but I didn't take much note of it because I
+* have a 386).  If you are using Dos 6, you can insure that EMS memory
+* is available by putting these 2 lines at the start of your config.sys
+* file:
+*
+DEVICE=C:\DOS\himem.sys
+DEVICE=C:\DOS\emm386.exe RAM
+*
+* If you already have a line for himem.sys, you can keep it.  If you
+* already have a line for emm386, just be sure that there is no word
+* "NOEMS" after it, and add the word "RAM".
+* For slightly older versions of Dos, you should still insure that there
+* is a line for himem.sys at the beginning of your config.sys, and a
+* line for EMM386.  It may be called EMM386.SYS instead of .EXE,
+* depending on your version of Dos.  I'd start without the word "RAM",
+* and see if Angband runs better.  If it still swaps to disk, then add
+* "RAM".  I'm just not sure when they added that option.
+*
+* Also, if there is such a thing as emm286, most of what I said about
+* should apply, but you'll have to read your documentation if it doesn't
+* work.
+*
+* If you don't want to use EMS memory, or it doesn't work, or you cannot
+* use EMS memory, your alternative is to use a disk cache, like
+* smartdrv.  If you have memory over 640k, then you should set up your
+* cache to use that.  If you have only 640k, you will probably have to
+* make your disk cache quite small, in order to leave enough free memory
+* for Angband to run.  When it first starts, there will still be a few
+* pauses, but once the cache is filled with Angband, it should run w/o
+* going to the disk (assuming you've got a large enough cache to hold
+* all of the pieces of Angband that don't fit in memory).  If you had
+* to make the disk cache tiny so that it would fit into memory, it
+* may not provide any noticable improvement in performance -- you'll
+* have to be the judge.  I'd guess that a cache of less than 64k is
+* unlikely to be much help.
+*
+* That's about it.  For more info on freeing up memory, EMS memory, or
+* disk cache programs, try your DOS manual, or friends, or your local
+* BBS, or (try these last) the Usenet (comp.os.msdos.misc maybe?), or
+* email me (as a last resort).
 * 			cteague@cs.umb.edu
 

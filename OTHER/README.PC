@@ -3,26 +3,33 @@ no 286, 386, or 486 code, so it should run on all PC systems.  Before
 playing this game, you should create a directory named "bones" as a subdir
 of where-ever you intend to play (for example, if you play angband from the
 directory \games\angband, then you should cd to \games\angband and then
-type "md bones").
+type "md bones").  This should already have been done for your when
+Angband extracted itself from the archive.
 
   PC Angband has ALL of the features of Angband, and it runs in color.
 The color code was adapted directly from Justin Anderson's color code for
 Umoria 5.4, to whom I am greatful for permission to use it.
+Also included are many features/bug fixes that have not been incorporated
+into the Unix Angband (the Unix version has fallen somewhat behind since
+Sean Marsh graduated).  One of these new features is Chris Wilde's
+targetting code from Morgul.  I have as yet been able to reach him to
+formally ask his permission to use his code, so if you know him, will
+you please ask him to contact me?  I am uneasy about violating his
+copyright, even if I do believe that he will grant me permission to use
+the code once I do get in touch with him.
 
   Angband is a memory hog, and it uses TurboC's overlay system to fit into
-memory.  You will need at least 500-510K of free memory to run this
-executable.  It will swap back and forth to disk, but it's still playable.
-If you have extended memory, you can drastically improve performance by
-running smartdrv, or some other disk cache.  (If memory is tight, use
-"devicehigh" to load smartdrv, to keep as much memory as possible free.)
-
-  The executable packaged here was compiled with a "mid-sized" overlay
-buffer of 128k.  People with lots of free memory (>590k) could get better
-performance using an overlay buffer size of 192k, especially if they also
-ran a disk cache.  If enough people request it, and the kind folks at KSU
-don't begrudge us the disk space, I'll make available an executable with
-the larger overlay buffer.  But, for now, if you want to try that, you'll
-have to compile it yourself...
+memory.  For the 1.31 release, I've gone back to just 1 executable, with
+the same 128k overlay buffer used by 'angexe13.exe'.  However, I've
+made some optimizations to the overalying of commonly used functions,
+and provided EMS memory support (see the file free-mem.doc for details), so
+it should run quite well with the smaller buffer size.  PC Angband 1.31
+requires only about 505k (517120 bytes, not 505000 bytes) to run.  If you
+have more than 640k of memory on your system, you will probably want to
+provide EMS memory for Angband to use, which will provide a terrific
+increase in performance (see your Dos manuals and the file free-mem.doc
+for more info).  Or you can improve performance using a disk cache, as
+I had suggested for previous Angband releases.
 
   A quick note about compiling (to save some people some trouble):
 The current PC sources will probably only compile under Turbo C++, version

@@ -96,7 +96,8 @@ extern int8u find_cut;			/* Cut corners on a run */
 extern int8u find_examine;		/* Check corners on a run */
 extern int8u find_prself;			/* Print yourself on a run (slower) */
 extern int8u find_bound;			/* Stop run when the map shifts */
-extern int8u prompt_carry_flag;		/* Prompt to pick something up */
+extern int8u prompt_carry_flag;	/* use 'g' to pickup, or try pickup all? */
+extern int8u carry_query_flag; 	/* Prompt to pick something up? */
 extern int8u show_weight_flag;		/* Display weights in inventory */
 extern int8u highlight_seams;		/* Highlight magma and quartz */
 extern int8u find_ignore_doors;		/* Run through open doors */
@@ -104,6 +105,7 @@ extern int8u sound_beep_flag;	/* shut up bell() ! -CFT */
 extern int8u no_haggle_flag; /* for those who find it tedious -CFT */
 #ifdef TC_COLOR
 extern int8u no_color_flag; /* for monochrome monitors -CFT */
+extern int8u inven_bw_flag; /* should inventories be B&W or colorized? -CFT */
 #endif
 #else
 extern int rogue_like_commands;
@@ -239,6 +241,13 @@ extern int panel_row_min, panel_row_max;
 extern int panel_col_min, panel_col_max;
 extern int panel_col_prt, panel_row_prt;
 
+/* Targetting code, stolen from Morgul -CFT */
+extern int target_mode;
+extern int16u target_col;
+extern int16u target_row;
+extern int16u target_mon;
+
+
 /*  Following are all floor definitions				*/
 #ifdef MAC
 extern cave_type (*cave)[MAX_WIDTH];
@@ -282,6 +291,8 @@ extern int32u spell_worked2;	/* Bit field for spells tried -CJS- */
 extern int32u spell_forgotten;	/* Bit field for spells forgotten -JEW- */
 extern int32u spell_forgotten2;	/* Bit field for spells forgotten -JEW- */
 extern int8u spell_order[64];	/* remember order that spells are learned in */
+extern int32u spellmasks[MAX_CLASS][2]; /* used to check if player knows all
+					   spells knowable to him -CFT */
 extern int16u player_init[MAX_CLASS][5];
 extern int16 total_winner;
 
@@ -432,6 +443,16 @@ void desc_remain(int);
 
 /* dungeon.c */
 void dungeon(void);
+int in_bounds(int, int);/* these fns moved from misc1.c, because they */
+int randint(int);	/* are used often.  dungeon.c is not overlayed, so */
+int randnor(int, int);	/* this move insures they are always in memory, which */
+int damroll(int, int);	/* reduces overlay swapping -CFT */
+int pdamroll(char *);
+int max_hp(char *);
+void lite_spot(int, int); /* moved to optimize overlays -CFT */
+int panel_contains(int, int);
+unsigned char loc_symbol(int, int);
+int test_light(int, int);
 
 /* eat.c */
 void eat(void);
@@ -475,6 +496,7 @@ void prt(char *, int, int);
 void move_cursor(int, int);
 void msg_print(char *);
 int get_check(char *);
+int get_Yn(char *);
 int get_com(char *, char *);
 int get_string(char *, int, int, int);
 void pause_line(int);
@@ -491,37 +513,29 @@ void cast(void);
 int main(int, char **);
 
 /* misc1.c */
+int compact_monsters(void);
 void init_seeds(int32u);
 void set_seed(int32u);
 void reset_seed(void);
 int check_time(void);
-int randint(int);
-int randnor(int, int);
 int bit_pos(int32u *);
-int in_bounds(int, int);
 void panel_bounds(void);
 int get_panel(int, int, int);
-int panel_contains(int, int);
 int distance(int, int, int, int);
 int next_to_wall(int, int);
 int next_to_corr(int, int);
-int damroll(int, int);
-int pdamroll(char *);
 int los(int, int, int, int);
-unsigned char loc_symbol(int, int);
-int test_light(int, int);
 void prt_map(void);
 void add_food(int);
 int popm(void);
-int max_hp(char *);
-void place_monster(int, int, int, int);
-void place_win_monster(void);
+int place_monster(int, int, int, int);
+int place_win_monster(void);
 int get_mons_num(int);
 void alloc_monster(int, int, int);
 int summon_monster(int * ,int *, int);
 int summon_undead(int *, int *);
 int popt(void);
-void pusht(int8u);
+void pusht(int16);
 int magik(int);
 int m_bonus(int, int, int);
 void magic_treasure(int, int);
@@ -603,7 +617,6 @@ int enter_wiz_mode(void);
 int attack_blows(int, int *);
 int tot_dam(struct inven_type *, int, int);
 int critical_blow(int, int, int, int);
-int mmove(int, int *, int *);
 int player_saves(void);
 int find_range(int, int, int *, int *);
 void teleport(int);
@@ -627,7 +640,6 @@ int get_dir(char *, int *);
 int get_alldir(char *, int *);
 void move_rec(int, int, int, int);
 void light_room(int, int);
-void lite_spot(int, int);
 void move_light(int, int, int, int);
 void disturb(int, int);
 void search_on(void);
@@ -649,6 +661,7 @@ void fire_dam(int, char *);
 void cold_dam(int, char *);
 void light_dam(int, char *);
 void acid_dam(int, char *);
+int inven_color(int);
 
 /* moria2.c */
 int cast_spell(char * ,int, int *, int *);
@@ -667,7 +680,11 @@ void disarm_trap(void);
 void look(void);
 void throw_object(void);
 void bash(void);
-
+void target(void); /* target fns stolen from Morgul -CFT */
+int at_target(int, int); /* target fns stolen from Morgul -CFT */
+void mmove2(int *, int *, int, int, int, int); /* target fns stolen from Morgul -CFT */
+int mmove(int, int *, int *); /* moved to optimize overlays -CFT */
+ 
 #ifdef MSDOS
 /* ms_misc.c */
 char *getlogin(void);
@@ -908,6 +925,19 @@ int special_check(ARG_INV_PTR);
 char *value_check(ARG_INV_PTR);
 int ruin_stat(ARG_INT);
 int special_check(ARG_INV_PTR);
+ /* these fns moved from misc1.c, so that they will no longer be overlayed.
+    Because they are used often, they caused a lot of swapping, which
+    should be avoided by this move -CFT */
+int in_bounds(ARG_INT ARG_COMMA ARG_INT);
+int randint(ARG_INT);
+int randnor(ARG_INT ARG_COMMA ARG_INT);
+int max_hp(ARG_INT8U_PTR);
+int damroll(ARG_INT ARG_COMMA ARG_INT);
+int pdamroll(ARG_INT8U_PTR);
+void lite_spot(ARG_INT ARG_COMMA ARG_INT); /* moved to optimize overlays -CFT */
+int panel_contains(ARG_INT ARG_COMMA ARG_INT);
+unsigned char loc_symbol(ARG_INT ARG_COMMA ARG_INT);
+int test_light(ARG_INT ARG_COMMA ARG_INT);
 
 /* eat.c */
 void eat(ARG_VOID);
@@ -965,41 +995,32 @@ void cast(ARG_VOID);
 int main();
 
 /* misc1.c */
+int compact_monsters(ARG_VOID);
 void set_options(ARG_VOID); /* apperently moved from moria1.c -CFT */
 void panel_bounds(ARG_VOID); /* apperently moved from moria1.c -CFT */
 int get_panel(ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT);
-	 /* apperently moved from moria1.c -CFT */
-int panel_contains(ARG_INT ARG_COMMA ARG_INT);
 	 /* apperently moved from moria1.c -CFT */
 void init_seeds(ARG_INT32U);
 void set_seed(ARG_INT32U);
 void reset_seed(ARG_VOID);
 int check_time(ARG_VOID);
-int randint(ARG_INT);
-int randnor(ARG_INT ARG_COMMA ARG_INT);
 int bit_pos(ARG_INT32U_PTR);
-int in_bounds(ARG_INT ARG_COMMA ARG_INT);
 int distance(ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT);
 int next_to_walls(ARG_INT ARG_COMMA ARG_INT);
 int next_to_corr(ARG_INT ARG_COMMA ARG_INT);
-int damroll(ARG_INT ARG_COMMA ARG_INT);
-int pdamroll(ARG_INT8U_PTR);
 int los(ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT);
-unsigned char loc_symbol(ARG_INT ARG_COMMA ARG_INT);
-int test_light(ARG_INT ARG_COMMA ARG_INT);
 void prt_map(ARG_VOID);
 void add_food(ARG_INT);
 int popm(ARG_VOID);
-int max_hp(ARG_INT8U_PTR);
-void place_monster(ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT
+int place_monster(ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT
 		ARG_COMMA ARG_INT);
-void place_win_monster(ARG_VOID);
+int place_win_monster(ARG_VOID);
 int get_mons_num(ARG_INT);
 void alloc_monster(ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT);
 int summon_monster(ARG_INT_PTR ARG_COMMA ARG_INT_PTR ARG_COMMA ARG_INT);
 int summon_undead(ARG_INT_PTR ARG_COMMA ARG_INT_PTR);
 int popt(ARG_VOID);
-void pusht(ARG_INT8U);
+void pusht(ARG_INT16);
 int magik(ARG_INT);
 int m_bonus(ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT);
 void magic_treasure(ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT
@@ -1113,7 +1134,6 @@ int attack_blows(ARG_INT ARG_COMMA ARG_INT_PTR);
 int tot_dam(ARG_INV_PTR ARG_COMMA ARG_INT ARG_COMMA ARG_INT);
 int critical_blow(ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT ARG_COMMA
 		ARG_INT);
-int mmove(ARG_INT ARG_COMMA ARG_INT_PTR ARG_COMMA ARG_INT_PTR);
 int player_saves(ARG_VOID);
 int find_range(ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT_PTR ARG_COMMA
 		ARG_INT_PTR);
@@ -1152,7 +1172,6 @@ int get_dir(ARG_CHAR_PTR ARG_COMMA ARG_INT_PTR);
 int get_alldir(ARG_CHAR_PTR ARG_COMMA ARG_INT_PTR);
 void move_rec(ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT);
 void light_room(ARG_INT ARG_COMMA ARG_INT);
-void lite_spot(ARG_INT ARG_COMMA ARG_INT);
 void move_light(ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT);
 void disturb(ARG_INT ARG_COMMA ARG_INT);
 void search_on(ARG_VOID);
@@ -1177,6 +1196,7 @@ void cold_dam(ARG_INT ARG_COMMA ARG_CHAR_PTR);
 void light_dam(ARG_INT ARG_COMMA ARG_CHAR_PTR);
 void acid_dam(ARG_INT ARG_COMMA ARG_CHAR_PTR);
 void darken_room(ARG_INT ARG_COMMA ARG_INT);
+int inven_color(ARG_INT);
 
 /* moria2.c */
 int cast_spell(ARG_CHAR_PTR ARG_COMMA ARG_INT ARG_COMMA ARG_INT_PTR
@@ -1200,6 +1220,13 @@ void delete_unique(ARG_VOID);
 void carry(ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT);
 void special_random_object(ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT);
 void check_unique(ARG_MON_PTR);
+void target(ARG_VOID); /* target fns stolen from Morgul -CFT */
+int at_target(ARG_INT ARG_COMMA ARG_INT); /* target fns stolen from Morgul -CFT */
+void mmove2(ARG_INT_PTR ARG_COMMA ARG_INT_PTR ARG_COMMA ARG_INT
+		ARG_COMMA ARG_INT ARG_COMMA ARG_INT ARG_COMMA
+		ARG_INT); /* target fns stolen from Morgul -CFT */
+int mmove(ARG_INT ARG_COMMA ARG_INT_PTR ARG_COMMA ARG_INT_PTR);  /* moved to
+						optimize overlays -CFT */
 
 
 #ifdef MSDOS
@@ -1305,7 +1332,6 @@ int detect_monsters(ARG_VOID);
 void light_line(ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT);
 void starlite(ARG_INT ARG_COMMA ARG_INT);
 int disarm_all(ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT);
-void get_flags(ARG_INT ARG_COMMA ARG_INT32U_PTR ARG_COMMA ARG_INT32U_PTR ARG_COMMA ARG_INT_FN_PTR);
 void fire_bolt(ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_CHAR_PTR);
 void fire_ball(ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_CHAR_PTR);
 void breath(ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_CHAR_PTR ARG_COMMA ARG_INT);
@@ -1357,8 +1383,7 @@ int restore_level(ARG_VOID);
 int probing(ARG_VOID);
 int detection(ARG_VOID);
 void starball(ARG_INT ARG_COMMA ARG_INT);
-int bolt(ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_CHAR_PTR ARG_COMMA ARG_MON_PTR ARG_COMMA ARG_INT);
-int chaos(ARG_MON_PTR);
+void bolt(ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_CHAR_PTR ARG_COMMA ARG_MON_PTR ARG_COMMA ARG_INT);
 int stair_creation(ARG_VOID);
 void tele_level(ARG_VOID);
 int detect_enchantment(ARG_VOID);
@@ -1408,6 +1433,7 @@ void prt(ARG_CHAR_PTR ARG_COMMA ARG_INT ARG_COMMA ARG_INT);
 void move_cursor(ARG_INT ARG_COMMA ARG_INT);
 void msg_print(ARG_CHAR_PTR);
 int get_check(ARG_CHAR_PTR);
+int get_Yn(ARG_CHAR_PTR);
 int get_com(ARG_CHAR_PTR ARG_COMMA ARG_CHAR_PTR);
 int get_string(ARG_CHAR_PTR ARG_COMMA ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT);
 void pause_line(ARG_INT);

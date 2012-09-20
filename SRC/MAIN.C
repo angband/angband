@@ -98,7 +98,7 @@ void textcolor(int newc);
 void textbackground(int newc);
 #endif
 extern unsigned _stklen = STK_LEN_SZ; /* defined by makefile -CFT */
-#ifdef TC_OVERLAY /* Am I trying to make an overlayed executable? -CFT */
+#ifdef TC_OVERLAY /* overlayed executable? -CFT */
 extern unsigned _ovrbuffer = OVLY_BUF_SZ; /* defined by makefile -CFT */
 #endif /* TC_OVERLAY */
 #endif
@@ -172,7 +172,7 @@ char *argv[];
 {
   int32u seed;
   int generate, i;
-  int result, FIDDLE=FALSE;
+  int result=FALSE, FIDDLE=FALSE;
   FILE *fp;
   int new_game = FALSE;
   int force_rogue_like = FALSE;
@@ -181,6 +181,13 @@ char *argv[];
   char string[80];
 #ifndef MSDOS
   struct rlimit rlp;
+#endif
+
+#ifdef TC_OVERLAY
+  { extern int far _OvrInitEms(unsigned, unsigned, unsigned);
+  _OvrInitEms(0,0,0);  /* This is supposed to detect expanded (EMS) memory
+  			  and allocate it for use in overlay swapping -CFT */
+  }
 #endif
 
 #ifndef MSDOS
@@ -318,8 +325,10 @@ char *argv[];
 	to_be_wizard = TRUE;
       else
 	goto usage;
+#ifndef MSDOS
       if (isdigit((int)argv[0][2]))
 	player_uid = atoi(&argv[0][2]);
+#endif
       break;
     case 'u':
     case 'U':
@@ -333,10 +342,45 @@ char *argv[];
       break;
     default:
     usage:
-      if (is_wizard(player_uid))
+      if (is_wizard(player_uid)) {
+#ifdef MSDOS
+	puts("Usage: angband [-afnorw] [-s<num>] [-d<num>] <file>");
+#else
 	puts("Usage: angband [-afnor] [-s<num>] [-u<name>] [-w<uid>] [-d<num>]");
-      else
+#endif
+	puts("  a       Activate \"peek\" mode");
+	puts("  d<num>  Delete high score number <num>");
+	puts("  f       Enter \"fiddle\" mode");
+	puts("  n       Start a new character");
+	puts("  o       Use original command set");
+	puts("  r       Use the \"rogue-like\" command set");
+	puts("  s<num>  Show high scores.  Show <num> scores, or first 10");
+#ifdef MSDOS
+	puts("  w       Start in wizard mode");
+	puts(" <file>   Play with savefile named <file>");
+#else
+	puts("  w<num>  Start in wizard mode, as uid number <num>");
+	puts("  u<name> Play with character named <name>");
+#endif
+	puts("Each option must be listed separately (ie '-r -n', not '-rn')");
+      }
+      else {
+#ifdef MSDOS
+	puts("Usage: angband [-nor] [-s<num>] <file>");
+#else
 	puts("Usage: angband [-nor] [-s<num>] [-u<name>]");
+#endif
+	puts("  n       Start a new character");
+	puts("  o       Use original command set");
+	puts("  r       Use the \"rogue-like\" command set");
+	puts("  s<num>  Show high scores.  Show <num> scores, or first 10");
+#ifdef MSDOS
+	puts(" <file>   Play with savefile named <file>");
+#else
+	puts("  u<name> Play with character named <name>");
+#endif
+	puts("Each option must be listed separately (ie '-r -n', not '-rn')");
+      }
       exit(1);
     }
 
@@ -347,11 +391,18 @@ char *argv[];
   /* must come after init_curses as some of the signal handlers use curses */
   init_signals();
 
+#ifdef MSDOS
+#ifdef TC_COLOR
+  textbackground(0); /* clear bkgnd color to avoid ansi prompts */
+  textcolor(0); /* clear color to avoid ansi prompts */
+  textcolor(7); /* set color to gray */
+#endif
+#endif
+
   /* Check operating hours			*/
   /* If not wizard  No_Control_Y	       */
-#ifndef MSDOS /* we don't care about times on a PC -CFT */
-  read_times();
-#endif
+  read_times();  /* this also shows news file */
+
   /* Some necessary initializations		*/
   /* all made into constants or initialized in variables.c */
 
@@ -568,14 +619,6 @@ char *argv[];
     rogue_like_commands = force_keys_to;
 
   magic_init();
-
-#ifdef MSDOS
-#ifdef TC_COLOR
-  textbackground(0); /* clear bkgnd color to avoid ansi prompts */
-  textcolor(0); /* clear color to avoid ansi prompts */
-  textcolor(7); /* set color to gray */
-#endif
-#endif
 
   /* Begin the game				*/
   clear_screen();

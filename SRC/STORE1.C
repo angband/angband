@@ -64,7 +64,8 @@ register inven_type *i_ptr;
 	    value = i_ptr->cost+i_ptr->toac*100;
 	}
     }
-  else if ((i_ptr->tval >= TV_SLING_AMMO) && (i_ptr->tval <= TV_SPIKE))
+  else if (((i_ptr->tval >= TV_SLING_AMMO) && (i_ptr->tval <= TV_ARROW))
+  		|| (i_ptr->tval == TV_SPIKE))
     {	/* Ammo			*/
       if (!known2_p(i_ptr))
 	value = object_list[i_ptr->index].cost;
@@ -163,7 +164,7 @@ inven_type *item;
       *max_sell = i * owners[s_ptr->owner].max_inflate / 100;
       *min_sell = i * owners[s_ptr->owner].min_inflate / 100;
       if (snum==6) *max_sell*=2, *min_sell*=2;
-      if (min_sell > max_sell)	min_sell = max_sell;
+      if (*min_sell > *max_sell) *min_sell = *max_sell;
       return(i);
     }
   else
@@ -196,6 +197,20 @@ int store_num;
 	    && (t_ptr->subval < ITEM_GROUP_MIN
 		|| (i_ptr->p1 == t_ptr->p1)))
 	  store_check = TRUE;
+      }
+  /* But, wait.  If at home, don't let player drop 25th item, or he will
+     lose it. -CFT */
+  if (is_home && (t_ptr->subval >= ITEM_SINGLE_STACK_MIN))
+    for (i = 0; i < s_ptr->store_ctr; i++)
+      {
+	i_ptr = &s_ptr->store_inven[i].sitem;
+	/* note: items with subval of gte ITEM_SINGLE_STACK_MAX only stack
+	   if their subvals match */
+	if (i_ptr->tval == t_ptr->tval && i_ptr->subval == t_ptr->subval
+	    && ((int)i_ptr->number + (int)t_ptr->number > 24)
+	    && (t_ptr->subval < ITEM_GROUP_MIN
+		|| (i_ptr->p1 == t_ptr->p1)))
+	  store_check = FALSE;
       }
   return(store_check);
 }
@@ -267,7 +282,9 @@ inven_type *t_ptr;
 		  flag = TRUE;
 		}
 	    }
-	  else if (typ > i_ptr->tval)
+	  else if (((typ == i_ptr->tval) && (subt < i_ptr->tval)
+			 && (object_offset(t_ptr) == -1))
+			|| (typ > i_ptr->tval))
 	    {		/* Insert into list		*/
 	      insert_store(store_num, item_val, icost, t_ptr);
 	      flag = TRUE;
@@ -403,7 +420,7 @@ int store_num;
       }	
     }
   while (tries <= 3);
-  pusht((int8u)cur_pos);
+  pusht(cur_pos);
 }
 
 static int special_offer(i_ptr) 

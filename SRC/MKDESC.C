@@ -37,7 +37,7 @@ int main(int ac, char *av[]){
   mnum = 0;
   while (mnum < MAX_CREATURES){
     for(i=0; i<MAX_CREATURES;i++){
-      if (!strcmp(desc_list[i].name,
+      if (!stricmp(desc_list[i].name,
 	   (mnum != (MAX_CREATURES-1) ? c_list[mnum].name : "Player ghost"))){
 	oldseek = newseek; /* remember current place */
         strcpy(buf, desc_list[i].desc);
@@ -54,6 +54,7 @@ int main(int ac, char *av[]){
     	/* unfound, put some "BOOGA BOOGA" message... */
 	oldseek = newseek; /* remember current place */
         fprintf(descfile, "%s\n", not_found);
+        fprintf(stderr, "%s\n", not_found);
 	newseek = ftell(descfile); /* remember new place */
 	fseek(descfile, (long)(mnum * sizeof(long)), SEEK_SET);
 	fwrite(&oldseek, sizeof(long), 1, descfile); /* overwrite dummy

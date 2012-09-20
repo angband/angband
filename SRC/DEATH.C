@@ -139,7 +139,7 @@ void display_scores(from, to, hl_rank)
 		/* currently only used if TC_COLOR being used -CFT */
 #ifdef MSDOS /* fix this gluttonous stack usage to avoid stack overflow -CFT */
 {
-  register int i = 0, j, k, l, tt;
+  register int i = 0, tt;
   int fd;
   int rank, not_eof = 1, input;
   high_scores score;
@@ -208,8 +208,12 @@ void display_scores(from, to, hl_rank)
 	  textcolor(YELLOW); /* make score easy to see */
 #endif	  
         prt(string, ++i, 0);
-        (void) sprintf(string, "    Killed by %s on Dungeon Level %d.",
-		   score.died_from, score.dun_level);
+	if (score.dun_level)
+          (void) sprintf(string, "    Killed by %s at %ld'.",
+		   score.died_from, 50L * (long)score.dun_level);
+	else
+	  (void) sprintf(string, "    Killed by %s in Town.",
+	  	score.died_from);
         prt(string, ++i, 0);
 #ifdef TC_COLOR
 	if (((hl_rank+1) == rank) && !no_color_flag)
@@ -331,7 +335,7 @@ static void print_tomb()
   register char *p;
   FILE *fp = NULL;
 
-  if (strcmp(died_from, "Interrupting") && !wizard) {
+  if (stricmp(died_from, "Interrupting") && !wizard) {
     sprintf(str, "%s%d", ANGBAND_BONES, dun_level);
     if ((fp = fopen(str, "r")) == NULL && (dun_level>1)) {
       if ((fp = fopen(str, "w")) != NULL) {
@@ -445,9 +449,8 @@ long total_points()
 static int top_twenty()
 {
 #ifdef MSDOS /* fix this gluttonous stack usage to avoid stack overflow -CFT */
-  register int i, j, k, not_eof;
-  high_scores myscore, new_entry, old_entry, cur_entry;
-  char *tmp;
+  register int i, j, not_eof;
+  high_scores myscore, new_entry, cur_entry;
 #if defined(MSDOS) || defined(VMS) || defined(AMIGA) || defined(MAC)
   FILE *highscore_fp; /* used in opening file instead of locking it */
   vtype string; /* used in error msgs -CFT */
@@ -462,7 +465,7 @@ static int top_twenty()
     exit(0);
   }
 
-  if (!total_winner && !strcmp(died_from, "Interrupting")) {
+  if (!total_winner && !stricmp(died_from, "Interrupting")) {
     msg_print("Score not registered due to interruption.");
     display_scores (0, 10, -1);
     (void) save_char();
@@ -470,7 +473,7 @@ static int top_twenty()
     exit(0);
   }
 
-  if (!total_winner && !strcmp(died_from, "Quitting")) {
+  if (!total_winner && !stricmp(died_from, "Quitting")) {
     msg_print("Score not registered due to quitting.");
     display_scores (0, 10, -1);
     (void) save_char();
@@ -540,6 +543,9 @@ static int top_twenty()
     }
   if (i == MAX_SAVE_HISCORES) {
     close(highscore_fd);
+    sprintf(string, "You didn't make the top %d.", MAX_SAVE_HISCORES);
+    msg_print(string);
+    msg_print(NULL);
     return 0; /* no room for it */
     }
   if (!not_eof) {
@@ -595,7 +601,7 @@ static int top_twenty()
     exit(0);
   }
 
-  if (!total_winner && !strcmp(died_from, "Interrupting")) {
+  if (!total_winner && !stricmp(died_from, "Interrupting")) {
     msg_print("Score not registered due to interruption.");
     display_scores (0, 10, -1);
     (void) save_char();
@@ -603,7 +609,7 @@ static int top_twenty()
     exit(0);
   }
 
-  if (!total_winner && !strcmp(died_from, "Quitting")) {
+  if (!total_winner && !stricmp(died_from, "Quitting")) {
     msg_print("Score not registered due to quitting.");
     display_scores (0, 10, -1);
     (void) save_char();
@@ -712,9 +718,8 @@ delete_entry(which)
   int which;
 {
 #ifdef MSDOS /* DOS version of this fn rewritten to avoid stack overflows -CFT */
-  register int i, j, k;
+  register int i;
   high_scores tscore;
-  char *tmp;
   FILE *highscore_fp; /* used in opening file instead of locking it */
   FILE *tfile_fp; /* temp file: when done, it will be renamed to hiscore file */
   int tfile_fd;

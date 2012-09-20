@@ -50,6 +50,7 @@ static void vault_troll(ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT);
 static void vault_undead(ARG_INT ARG_COMMA ARG_INT);
 static void vault_dragon(ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT);
 static void vault_demon(ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT);
+static void vault_giant(ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT);
 static void vault_nasty(ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT);
 static void correct_dir(ARG_INT_PTR ARG_COMMA ARG_INT_PTR ARG_COMMA ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT);
 static void rand_dir(ARG_INT_PTR ARG_COMMA ARG_INT_PTR);
@@ -80,7 +81,7 @@ static void place_door(ARG_INT ARG_COMMA ARG_INT);
 /* misc. prototypes */
 void *malloc(ARG_INT16U);
 void free(ARG_VOID_PTR);
-int strcmp(ARG_CHAR_PTR ARG_COMMA ARG_CHAR_PTR);
+int stricmp(ARG_CHAR_PTR ARG_COMMA ARG_CHAR_PTR);
 
 
 /* Always picks a correct direction		*/
@@ -249,14 +250,25 @@ static void place_open_door(y, x)
 int y, x;
 {
   register int cur_pos;
-  register cave_type *cave_ptr;
+  register cave_type *c_ptr;
 
+  if (!in_bounds(y,x))
+    return; /* abort! -CFT */
+  c_ptr = &cave[y][x];
+  if (c_ptr->tptr != 0) 
+    if (((t_list[c_ptr->tptr].tval <= TV_MAX_WEAR) &&
+         (t_list[c_ptr->tptr].tval >= TV_MIN_WEAR) &&
+         (t_list[c_ptr->tptr].flags2 & TR_ARTIFACT)) ||
+        (t_list[c_ptr->tptr].tval == TV_UP_STAIR) ||
+        (t_list[c_ptr->tptr].tval == TV_DOWN_STAIR) ||
+        (t_list[c_ptr->tptr].tval == TV_STORE_DOOR))
+      return; /* abort! */
+    else
+      delete_object(y,x);
   cur_pos = popt();
-  cave_ptr = &cave[y][x];
-  cave_ptr->tptr = cur_pos;
+  c_ptr->tptr = cur_pos;
   invcopy(&t_list[cur_pos], OBJ_OPEN_DOOR);
-  cave_ptr->fval  = CORR_FLOOR;
-  cave_ptr->lr  = TRUE;
+  c_ptr->fval  = CORR_FLOOR;
 }
 
 
@@ -264,15 +276,26 @@ static void place_broken_door(y, x)
 int y, x;
 {
   register int cur_pos;
-  register cave_type *cave_ptr;
+  register cave_type *c_ptr;
 
+  if (!in_bounds(y,x))
+    return; /* abort! -CFT */
+  c_ptr = &cave[y][x];
+  if (c_ptr->tptr != 0) 
+    if (((t_list[c_ptr->tptr].tval <= TV_MAX_WEAR) &&
+         (t_list[c_ptr->tptr].tval >= TV_MIN_WEAR) &&
+         (t_list[c_ptr->tptr].flags2 & TR_ARTIFACT)) ||
+        (t_list[c_ptr->tptr].tval == TV_UP_STAIR) ||
+        (t_list[c_ptr->tptr].tval == TV_DOWN_STAIR) ||
+        (t_list[c_ptr->tptr].tval == TV_STORE_DOOR))
+      return; /* abort! */
+    else
+      delete_object(y,x);
   cur_pos = popt();
-  cave_ptr = &cave[y][x];
-  cave_ptr->tptr = cur_pos;
+  c_ptr->tptr = cur_pos;
   invcopy(&t_list[cur_pos], OBJ_OPEN_DOOR);
-  cave_ptr->fval  = CORR_FLOOR;
+  c_ptr->fval  = CORR_FLOOR;
   t_list[cur_pos].p1 = 1;
-  cave_ptr->lr  = TRUE;
 }
 
 
@@ -280,14 +303,25 @@ static void place_closed_door(y, x)
 int y, x;
 {
   register int cur_pos;
-  register cave_type *cave_ptr;
+  register cave_type *c_ptr;
 
+  if (!in_bounds(y,x))
+    return; /* abort! -CFT */
+  c_ptr = &cave[y][x];
+  if (c_ptr->tptr != 0) 
+    if (((t_list[c_ptr->tptr].tval <= TV_MAX_WEAR) &&
+         (t_list[c_ptr->tptr].tval >= TV_MIN_WEAR) &&
+         (t_list[c_ptr->tptr].flags2 & TR_ARTIFACT)) ||
+        (t_list[c_ptr->tptr].tval == TV_UP_STAIR) ||
+        (t_list[c_ptr->tptr].tval == TV_DOWN_STAIR) ||
+        (t_list[c_ptr->tptr].tval == TV_STORE_DOOR))
+      return; /* abort! */
+    else
+      delete_object(y,x);
   cur_pos = popt();
-  cave_ptr = &cave[y][x];
-  cave_ptr->tptr = cur_pos;
+  c_ptr->tptr = cur_pos;
   invcopy(&t_list[cur_pos], OBJ_CLOSED_DOOR);
-  cave_ptr->fval  = BLOCKED_FLOOR;
-  cave_ptr->lr  = TRUE;
+  c_ptr->fval  = BLOCKED_FLOOR;
 }
 
 
@@ -295,15 +329,26 @@ static void place_locked_door(y, x)
 int y, x;
 {
   register int cur_pos;
-  register cave_type *cave_ptr;
+  register cave_type *c_ptr;
 
+  if (!in_bounds(y,x))
+    return; /* abort! -CFT */
+  c_ptr = &cave[y][x];
+  if (c_ptr->tptr != 0) 
+    if (((t_list[c_ptr->tptr].tval <= TV_MAX_WEAR) &&
+         (t_list[c_ptr->tptr].tval >= TV_MIN_WEAR) &&
+         (t_list[c_ptr->tptr].flags2 & TR_ARTIFACT)) ||
+        (t_list[c_ptr->tptr].tval == TV_UP_STAIR) ||
+        (t_list[c_ptr->tptr].tval == TV_DOWN_STAIR) ||
+        (t_list[c_ptr->tptr].tval == TV_STORE_DOOR))
+      return; /* abort! */
+    else
+      delete_object(y,x);
   cur_pos = popt();
-  cave_ptr = &cave[y][x];
-  cave_ptr->tptr = cur_pos;
+  c_ptr->tptr = cur_pos;
   invcopy(&t_list[cur_pos], OBJ_CLOSED_DOOR);
-  cave_ptr->fval  = BLOCKED_FLOOR;
+  c_ptr->fval  = BLOCKED_FLOOR;
   t_list[cur_pos].p1 = randint(10) + 10;
-  cave_ptr->lr  = TRUE;
 }
 
 
@@ -311,15 +356,26 @@ static void place_stuck_door(y, x)
 int y, x;
 {
   register int cur_pos;
-  register cave_type *cave_ptr;
+  register cave_type *c_ptr;
 
+  if (!in_bounds(y,x))
+    return; /* abort! -CFT */
+  c_ptr = &cave[y][x];
+  if (c_ptr->tptr != 0) 
+    if (((t_list[c_ptr->tptr].tval <= TV_MAX_WEAR) &&
+         (t_list[c_ptr->tptr].tval >= TV_MIN_WEAR) &&
+         (t_list[c_ptr->tptr].flags2 & TR_ARTIFACT)) ||
+        (t_list[c_ptr->tptr].tval == TV_UP_STAIR) ||
+        (t_list[c_ptr->tptr].tval == TV_DOWN_STAIR) ||
+        (t_list[c_ptr->tptr].tval == TV_STORE_DOOR))
+      return; /* abort! */
+    else
+      delete_object(y,x);
   cur_pos = popt();
-  cave_ptr = &cave[y][x];
-  cave_ptr->tptr = cur_pos;
+  c_ptr->tptr = cur_pos;
   invcopy(&t_list[cur_pos], OBJ_CLOSED_DOOR);
-  cave_ptr->fval  = BLOCKED_FLOOR;
+  c_ptr->fval  = BLOCKED_FLOOR;
   t_list[cur_pos].p1 = -randint(10) - 10;
-  cave_ptr->lr  = TRUE;
 }
 
 
@@ -327,14 +383,25 @@ static void place_secret_door(y, x)
 int y, x;
 {
   register int cur_pos;
-  register cave_type *cave_ptr;
+  register cave_type *c_ptr;
 
+  if (!in_bounds(y,x))
+    return; /* abort! -CFT */
+  c_ptr = &cave[y][x];
+  if (c_ptr->tptr != 0) 
+    if (((t_list[c_ptr->tptr].tval <= TV_MAX_WEAR) &&
+         (t_list[c_ptr->tptr].tval >= TV_MIN_WEAR) &&
+         (t_list[c_ptr->tptr].flags2 & TR_ARTIFACT)) ||
+        (t_list[c_ptr->tptr].tval == TV_UP_STAIR) ||
+        (t_list[c_ptr->tptr].tval == TV_DOWN_STAIR) ||
+        (t_list[c_ptr->tptr].tval == TV_STORE_DOOR))
+      return; /* abort! */
+    else
+      delete_object(y,x);
   cur_pos = popt();
-  cave_ptr = &cave[y][x];
-  cave_ptr->tptr = cur_pos;
+  c_ptr->tptr = cur_pos;
   invcopy(&t_list[cur_pos], OBJ_SECRET_DOOR);
-  cave_ptr->fval  = BLOCKED_FLOOR;
-  cave_ptr->lr  = TRUE;
+  c_ptr->fval  = BLOCKED_FLOOR;
 }
 
 
@@ -371,13 +438,23 @@ static void place_up_stairs(y, x)
 int y, x;
 {
   register int cur_pos;
-  register cave_type *cave_ptr;
+  register cave_type *c_ptr;
 
-  cave_ptr = &cave[y][x];
-  if (cave_ptr->tptr != 0)
-    (void) delete_object(y, x);
+  if (!in_bounds(y,x))
+    return; /* abort! -CFT */
+  c_ptr = &cave[y][x];
+  if (c_ptr->tptr != 0) 
+    if (((t_list[c_ptr->tptr].tval <= TV_MAX_WEAR) &&
+         (t_list[c_ptr->tptr].tval >= TV_MIN_WEAR) &&
+         (t_list[c_ptr->tptr].flags2 & TR_ARTIFACT)) ||
+        (t_list[c_ptr->tptr].tval == TV_UP_STAIR) ||
+        (t_list[c_ptr->tptr].tval == TV_DOWN_STAIR) ||
+        (t_list[c_ptr->tptr].tval == TV_STORE_DOOR))
+      return; /* abort! */
+    else
+      delete_object(y,x);
   cur_pos = popt();
-  cave_ptr->tptr = cur_pos;
+  c_ptr->tptr = cur_pos;
   invcopy(&t_list[cur_pos], OBJ_UP_STAIR);
 }
 
@@ -387,17 +464,27 @@ static void place_down_stairs(y, x)
 int y, x;
 {
   register int cur_pos;
-  register cave_type *cave_ptr;
+  register cave_type *c_ptr;
 
   if (is_quest(dun_level)) {
     place_up_stairs(y, x);
     return;
   }
-  cave_ptr = &cave[y][x];
-  if (cave_ptr->tptr != 0)
-    (void) delete_object(y, x);
+  if (!in_bounds(y,x))
+    return; /* abort! -CFT */
+  c_ptr = &cave[y][x];
+  if (c_ptr->tptr != 0) 
+    if (((t_list[c_ptr->tptr].tval <= TV_MAX_WEAR) &&
+         (t_list[c_ptr->tptr].tval >= TV_MIN_WEAR) &&
+         (t_list[c_ptr->tptr].flags2 & TR_ARTIFACT)) ||
+        (t_list[c_ptr->tptr].tval == TV_UP_STAIR) ||
+        (t_list[c_ptr->tptr].tval == TV_DOWN_STAIR) ||
+        (t_list[c_ptr->tptr].tval == TV_STORE_DOOR))
+      return; /* abort! */
+    else
+      delete_object(y,x);
   cur_pos = popt();
-  cave_ptr->tptr = cur_pos;
+  c_ptr->tptr = cur_pos;
   invcopy(&t_list[cur_pos], OBJ_DOWN_STAIR);
 }
 
@@ -406,7 +493,7 @@ int y, x;
 static void place_stairs(typ, num, walls)
 int typ, num, walls;
 {
-  register cave_type *cave_ptr;
+  register cave_type *c_ptr;
   int i, j, flag;
   register int y1, x1, y2, x2;
 
@@ -429,9 +516,9 @@ int typ, num, walls;
 		{
 		  do
 		    {
-		      cave_ptr = &cave[y1][x1];
-		      if (cave_ptr->fval <= MAX_OPEN_SPACE
-			  && (cave_ptr->tptr == 0)
+		      c_ptr = &cave[y1][x1];
+		      if (c_ptr->fval <= MAX_OPEN_SPACE
+			  && (c_ptr->tptr == 0)
 			  && (next_to_walls(y1, x1) >= walls))
 			{
 			  flag = TRUE;
@@ -471,8 +558,10 @@ int y, x, yd, xd, num;
       count = 0;
       do
 	{
-	  y1 = y - yd - 1 + randint(2*yd+1);
-	  x1 = x - xd - 1 + randint(2*xd+1);
+	  do { /* add another bounds check -CFT */
+	    y1 = y - yd - 1 + randint(2*yd+1);
+	    x1 = x - xd - 1 + randint(2*xd+1);
+	    } while (!in_bounds(y1, x1));
 	  c_ptr = &cave[y1][x1];
 	  if ((c_ptr->fval != NULL_WALL) && (c_ptr->fval <= MAX_CAVE_FLOOR)
 	      && (c_ptr->tptr == 0))
@@ -529,30 +618,30 @@ int y, x, rank;
   switch (rank) {
   case 1:
     while (i<MAX_CREATURES) {
-      if (!strcmp(c_list[i].name, "Snaga")) break;
+      if (!stricmp(c_list[i].name, "Snaga")) break;
       i++;
     }
     break;
   case 2: case 3:
     while (i<MAX_CREATURES) {
-      if (!strcmp(c_list[i].name, "Black orc")) break;
+      if (!stricmp(c_list[i].name, "Black orc")) break;
       i++;
     }
     break;
   case 4: case 5:
     while (i<MAX_CREATURES) {
-      if (!strcmp(c_list[i].name, "Uruk-Hai")) break;
+      if (!stricmp(c_list[i].name, "Uruk")) break;
       i++;
     }
     break;
   case 6:
     while (i<MAX_CREATURES) {
-      if (!strcmp(c_list[i].name, "Orc captain")) break;
+      if (!stricmp(c_list[i].name, "Orc captain")) break;
       i++;
     }
     break;
   }
-  place_monster(y,x,i,FALSE);
+  if (i != MAX_CREATURES) place_monster(y,x,i,FALSE);
 }
 
 static void vault_troll(y, x, rank)
@@ -564,42 +653,42 @@ int y, x, rank;
   switch (rank) {
   case 1:
     while (i<MAX_CREATURES) {
-      if (!strcmp(c_list[i].name, "Forest troll")) break;
+      if (!stricmp(c_list[i].name, "Forest troll")) break;
       i++;
     }
     break;
   case 2:
     while (i<MAX_CREATURES) {
-      if (!strcmp(c_list[i].name, "Stone troll")) break;
+      if (!stricmp(c_list[i].name, "Stone troll")) break;
       i++;
     }
     break;
   case 3:
     while (i<MAX_CREATURES) {
-      if (!strcmp(c_list[i].name, "Ice troll")) break;
+      if (!stricmp(c_list[i].name, "Ice troll")) break;
       i++;
     }
     break;
   case 4:
     while (i<MAX_CREATURES) {
-      if (!strcmp(c_list[i].name, "Cave troll")) break;
+      if (!stricmp(c_list[i].name, "Cave troll")) break;
       i++;
     }
     break;
   case 5:
     while (i<MAX_CREATURES) {
-      if (!strcmp(c_list[i].name, "Water troll")) break;
+      if (!stricmp(c_list[i].name, "Water troll")) break;
       i++;
     }
     break;
   case 6:
     while (i<MAX_CREATURES) {
-      if (!strcmp(c_list[i].name, "Olog-Hai")) break;
+      if (!stricmp(c_list[i].name, "Olog")) break;
       i++;
     }
     break;
   }
-  place_monster(y,x,i,FALSE);
+  if (i != MAX_CREATURES) place_monster(y,x,i,FALSE);
 }
 
 static void vault_undead(y, x)
@@ -630,37 +719,37 @@ int y, x, rank, type;
     switch (type) {
     case 1:
       while (i<MAX_CREATURES) {
-	if (!strcmp(c_list[i].name, "Young blue dragon")) break;
+	if (!stricmp(c_list[i].name, "Young blue dragon")) break;
 	i++;
       }
       break;
     case 2:
       while (i<MAX_CREATURES) {
-	if (!strcmp(c_list[i].name, "Young white dragon")) break;
+	if (!stricmp(c_list[i].name, "Young white dragon")) break;
 	i++;
       }
       break;
     case 3:
       while (i<MAX_CREATURES) {
-	if (!strcmp(c_list[i].name, "Young green dragon")) break;
+	if (!stricmp(c_list[i].name, "Young green dragon")) break;
 	i++;
       }
       break;
     case 4:
       while (i<MAX_CREATURES) {
-	if (!strcmp(c_list[i].name, "Young black dragon")) break;
+	if (!stricmp(c_list[i].name, "Young black dragon")) break;
 	i++;
       }
       break;
     case 5:
       while (i<MAX_CREATURES) {
-	if (!strcmp(c_list[i].name, "Young red dragon")) break;
+	if (!stricmp(c_list[i].name, "Young red dragon")) break;
 	i++;
       }
       break;
     case 6:
       while (i<MAX_CREATURES) {
-	if (!strcmp(c_list[i].name, "Young Multi-Hued Dragon")) break;
+	if (!stricmp(c_list[i].name, "Young multi-hued dragon")) break;
 	i++;
       }
       break;
@@ -670,37 +759,37 @@ int y, x, rank, type;
     switch (type) {
     case 1:
       while (i<MAX_CREATURES) {
-	if (!strcmp(c_list[i].name, "Mature blue Dragon")) break;
+	if (!stricmp(c_list[i].name, "Mature blue dragon")) break;
 	i++;
       }
       break;
     case 2:
       while (i<MAX_CREATURES) {
-	if (!strcmp(c_list[i].name, "Mature white Dragon")) break;
+	if (!stricmp(c_list[i].name, "Mature white dragon")) break;
 	i++;
       }
       break;
     case 3:
       while (i<MAX_CREATURES) {
-	if (!strcmp(c_list[i].name, "Mature green Dragon")) break;
+	if (!stricmp(c_list[i].name, "Mature green dragon")) break;
 	i++;
       }
       break;
     case 4:
       while (i<MAX_CREATURES) {
-	if (!strcmp(c_list[i].name, "Mature black Dragon")) break;
+	if (!stricmp(c_list[i].name, "Mature black dragon")) break;
 	i++;
       }
       break;
     case 5:
       while (i<MAX_CREATURES) {
-	if (!strcmp(c_list[i].name, "Mature red Dragon")) break;
+	if (!stricmp(c_list[i].name, "Mature red dragon")) break;
 	i++;
       }
       break;
     case 6:
       while (i<MAX_CREATURES) {
-	if (!strcmp(c_list[i].name, "Mature Multi-Hued Dragon")) break;
+	if (!stricmp(c_list[i].name, "Mature multi-hued dragon")) break;
 	i++;
       }
       break;
@@ -710,44 +799,44 @@ int y, x, rank, type;
     switch (type) {
     case 1:
       while (i<MAX_CREATURES) {
-	if (!strcmp(c_list[i].name, "Ancient blue Dragon")) break;
+	if (!stricmp(c_list[i].name, "Ancient blue dragon")) break;
 	i++;
       }
       break;
     case 2:
       while (i<MAX_CREATURES) {
-	if (!strcmp(c_list[i].name, "Ancient white Dragon")) break;
+	if (!stricmp(c_list[i].name, "Ancient white dragon")) break;
 	i++;
       }
       break;
     case 3:
       while (i<MAX_CREATURES) {
-	if (!strcmp(c_list[i].name, "Ancient green Dragon")) break;
+	if (!stricmp(c_list[i].name, "Ancient green dragon")) break;
 	i++;
       }
       break;
     case 4:
       while (i<MAX_CREATURES) {
-	if (!strcmp(c_list[i].name, "Ancient black Dragon")) break;
+	if (!stricmp(c_list[i].name, "Ancient black dragon")) break;
 	i++;
       }
       break;
     case 5:
       while (i<MAX_CREATURES) {
-	if (!strcmp(c_list[i].name, "Ancient red Dragon")) break;
+	if (!stricmp(c_list[i].name, "Ancient red dragon")) break;
 	i++;
       }
       break;
     case 6:
       while (i<MAX_CREATURES) {
-	if (!strcmp(c_list[i].name, "Ancient Multi-Hued Dragon")) break;
+	if (!stricmp(c_list[i].name, "Ancient multi-hued dragon")) break;
 	i++;
       }
       break;
     }
     break;
   }
-  place_monster(y,x,i,FALSE);
+  if (i != MAX_CREATURES) place_monster(y,x,i,FALSE);
 }
 
 static void vault_demon(y, x, rank)
@@ -759,42 +848,90 @@ int y, x, rank;
   switch (rank) {
   case 1:
     while (i<MAX_CREATURES) {
-      if (!strcmp(c_list[i].name, "Vrock")) break;
+      if (!stricmp(c_list[i].name, "Vrock")) break;
       i++;
     }
     break;
   case 2:
     while (i<MAX_CREATURES) {
-      if (!strcmp(c_list[i].name, "Hezrou")) break;
+      if (!stricmp(c_list[i].name, "Hezrou")) break;
       i++;
     }
     break;
   case 3:
     while (i<MAX_CREATURES) {
-      if (!strcmp(c_list[i].name, "Glabrezu")) break;
+      if (!stricmp(c_list[i].name, "Glabrezu")) break;
       i++;
     }
     break;
   case 4:
     while (i<MAX_CREATURES) {
-      if (!strcmp(c_list[i].name, "Nalfeshnee")) break;
+      if (!stricmp(c_list[i].name, "Nalfeshnee")) break;
       i++;
     }
     break;
   case 5:
     while (i<MAX_CREATURES) {
-      if (!strcmp(c_list[i].name, "Marilith")) break;
+      if (!stricmp(c_list[i].name, "Marilith")) break;
       i++;
     }
     break;
   case 6:
     while (i<MAX_CREATURES) {
-      if (!strcmp(c_list[i].name, "Balor")) break;
+      if (!stricmp(c_list[i].name, "Lesser balrog")) break;
       i++;
     }
     break;
   }
-  place_monster(y,x,i,FALSE);
+  if (i != MAX_CREATURES) place_monster(y,x,i,FALSE);
+}
+
+
+static void vault_giant(y, x, rank)
+int y, x, rank;
+{
+  register int i;
+
+  i=0;
+  switch (rank) {
+  case 1:
+    while (i<MAX_CREATURES) {
+      if (!stricmp(c_list[i].name, "Hill giant")) break;
+      i++;
+    }
+    break;
+  case 2:
+    while (i<MAX_CREATURES) {
+      if (!stricmp(c_list[i].name, "Frost giant")) break;
+      i++;
+    }
+    break;
+  case 3:
+    while (i<MAX_CREATURES) {
+      if (!stricmp(c_list[i].name, "Fire giant")) break;
+      i++;
+    }
+    break;
+  case 4:
+    while (i<MAX_CREATURES) {
+      if (!stricmp(c_list[i].name, "Stone giant")) break;
+      i++;
+    }
+    break;
+  case 5:
+    while (i<MAX_CREATURES) {
+      if (!stricmp(c_list[i].name, "Cloud giant")) break;
+      i++;
+    }
+    break;
+  case 6:
+    while (i<MAX_CREATURES) {
+      if (!stricmp(c_list[i].name, "Storm giant")) break;
+      i++;
+    }
+    break;
+  }
+  if (i != MAX_CREATURES) place_monster(y,x,i,FALSE);
 }
 
 
@@ -802,8 +939,8 @@ int y, x, rank;
 static void build_room(yval, xval)
 int yval, xval;
 {
-  register int i, j, y_depth, x_right, x, y;
-  int y_height, x_left, width,height,area;
+  register int i, j, y_depth, x_right;
+  int y_height, x_left;
   int8u floor;
   register cave_type *c_ptr, *d_ptr;
 
@@ -816,6 +953,14 @@ int yval, xval;
   y_depth  = yval + randint(3);
   x_left   = xval - randint(11);
   x_right  = xval + randint(11);
+
+  /* for paranoia's sake: bounds-check!  Memory errors caused by
+         accessing cave[][] out-of-bounds are nearly impossible to
+         spot!  -CFT */
+  if (y_height < 1) y_height = 1;
+  if (y_depth >= (cur_height-1)) y_depth = cur_height-2;
+  if (x_left < 1) x_left = 1;
+  if (x_right >= (cur_width-1)) x_right = cur_width-2;
 
 /* the x dim of rooms tends to be much larger than the y dim, so don't bother
      rewriting the y loop */
@@ -890,6 +1035,14 @@ int yval, xval;
       x_left   = xval - randint(11);
       x_right  = xval + randint(11);
 
+      /* for paranoia's sake: bounds-check!  Memory errors caused by
+         accessing cave[][] out-of-bounds are nearly impossible to
+         spot!  -CFT */
+      if (y_height < 1) y_height = 1;
+      if (y_depth >= (cur_height-1)) y_depth = cur_height-2;
+      if (x_left < 1) x_left = 1;
+      if (x_right >= (cur_width-1)) x_right = cur_width-2;
+
       /* the x dim of rooms tends to be much larger than the y dim, so don't
 	 bother rewriting the y loop */
 
@@ -943,13 +1096,18 @@ int yval, xval;
 static void build_type5(yval,xval)
 int yval,xval;
 {
-  register int i,j,k,type,x,y,x1,y1,vault;
+  register int x,y,x1,y1,vault;
   int width,height;
   char *template;
+  char *t; /* use t to avoid changing template in loop.  This
+      			     should fix some memory troubles, because now
+      			     we aren't free()ing with a bad pointer.  Thanks
+      			     much to gehring@pib1.physik.uni-bonn.edu for
+      			     pointing this bug out... -CFT */
   char buf[50];
   int8u floor;
   int8u wall;
-  register cave_type *c_ptr, *d_ptr;
+  register cave_type *c_ptr;
 
   if (dun_level <= randint(25))
     floor = LIGHT_FLOOR;	/* Floor with light	*/
@@ -1220,12 +1378,13 @@ int yval,xval;
 	  return;
   }
 
+  t = template; /* this avoids memory troubles... see above -CFT */
   for (y=0; y<height; y++) {
     for (x=0; x<width; x++) {
       x1=xval-(width/2)+x;
       y1=yval-(height/2)+y;
       c_ptr = &cave[y1][x1];
-      switch (*template++) {
+      switch (*t++) {
       case '#': /* lit up wall */
 	c_ptr->fval = wall;
 	c_ptr->lr = TRUE;
@@ -1298,7 +1457,7 @@ int yval,xval;
       case ' ':
 	break;
       default:
-	sprintf(buf, "Cockup='%c'", *template);
+	sprintf(buf, "Cockup='%c'", *t);
 	msg_print(buf);
 	break;
       }
@@ -1331,6 +1490,14 @@ int yval, xval;
   x_left   = xval - 11;
   x_right  = xval + 11;
 
+  /* paranoia bounds-check...   if the room can't fit in the cave, punt
+     out and build a simpler room type (type1 is already bounds-checked)
+     This should help solve MORE memory troubles! -CFT */
+  if (!in_bounds(y_height, x_left) || !in_bounds(y_depth, x_right)) {
+    build_type1(yval, xval);
+    return;
+    }
+    
   /* the x dim of rooms tends to be much larger than the y dim, so don't bother
      rewriting the y loop */
 
@@ -1577,6 +1744,13 @@ int yval, xval;
   int8u floor;
   register cave_type *c_ptr;
 
+  /* quick, basic bounds-check... If too close, then this is better suited
+     to a simpler room type. -CFT */
+  if (!in_bounds(yval-3, xval-3) || !in_bounds(yval+3, xval+3)){
+    build_type1(yval, xval);
+    return;
+    }
+  	
   if (dun_level <= randint(25))
     floor = LIGHT_FLOOR;	/* Floor with light	*/
   else
@@ -1586,6 +1760,11 @@ int yval, xval;
   y_depth  = yval + tmp;
   x_left   = xval - 1;
   x_right  = xval + 1;
+ /* for paranoia's sake: bounds-check!  Memory errors caused by
+         accessing cave[][] out-of-bounds are nearly impossible to
+         spot!  -CFT */
+  if (y_height < 1) y_height = 1;
+  if (y_depth >= (cur_height-1)) y_depth = cur_height-2;
   for (i = y_height; i <= y_depth; i++)
     for (j = x_left; j <= x_right; j++)
       {
@@ -1616,6 +1795,11 @@ int yval, xval;
   y_depth  = yval + 1;
   x_left   = xval - tmp;
   x_right  = xval + tmp;
+ /* for paranoia's sake: bounds-check!  Memory errors caused by
+         accessing cave[][] out-of-bounds are nearly impossible to
+         spot!  -CFT */
+  if (x_left < 1) x_left = 1;
+  if (x_right >= (cur_width-1)) x_right = cur_width-2;
   for (i = y_height; i <= y_depth; i++)
     for (j = x_left; j <= x_right; j++)
       {
@@ -1749,6 +1933,9 @@ int j,i,type,rank,colour;
   case 6:
     vault_demon(j,i,rank);
     break;
+  case 7:
+    vault_giant(j,i,rank);
+    break;
   }
 }
 
@@ -1756,7 +1943,7 @@ static void special_pit(yval, xval, type)
 int yval, xval, type;
 {
   register int i, j, y_height, x_left;
-  int y_depth, x_right, tmp, colour;
+  int y_depth, x_right, colour;
   int8u floor;
   register cave_type *c_ptr, *d_ptr;
 
@@ -1765,6 +1952,14 @@ int yval, xval, type;
   y_depth  = yval + 4;
   x_left   = xval - 11;
   x_right  = xval + 11;
+
+  /* for paranoia's sake: bounds-check!  Memory errors caused by
+         accessing cave[][] out-of-bounds are nearly impossible to
+         spot!  -CFT */
+  if (y_height < 1) y_height = 1;
+  if (y_depth >= (cur_height-1)) y_depth = cur_height-2;
+  if (x_left < 1) x_left = 1;
+  if (x_right >= (cur_width-1)) x_right = cur_width-2;
 
   /* the x dim of rooms tends to be much larger than the y dim, so don't bother
      rewriting the y loop */
@@ -1871,6 +2066,9 @@ int yval, xval, type;
       break;
     case 6:
       msg_print("A Demon Pit");
+      break;
+    case 7:
+      msg_print("A Giant Pit");
       break;
     }
   }
@@ -2006,6 +2204,12 @@ int row1, col1, row2, col2;
 	;
       else if (c_ptr->fval == GRANITE_WALL)
 	{
+          d_ptr = &cave[tmp_row+row_dir][tmp_col+col_dir];
+          if ((d_ptr->fval == GRANITE_WALL) || (d_ptr->fval == TMP2_WALL))
+            c_ptr->fval = TMP2_WALL;
+     /* if can not pass completely through wall
+                 don't try... And mark as impassible for future -KOC */
+          else {
 	  row1 = tmp_row;
 	  col1 = tmp_col;
 	  if (wallindex < 1000)
@@ -2024,6 +2228,7 @@ int row1, col1, row2, col2;
 		  if (d_ptr->fval == GRANITE_WALL)
 		    d_ptr->fval = TMP2_WALL;
 		}
+	  }
 	}
       else if (c_ptr->fval == CORR_FLOOR || c_ptr->fval == BLOCKED_FLOOR)
 	{
@@ -2088,6 +2293,7 @@ register int y, x;
 {
   register int next;
 
+  if (!in_bounds(y,x)) return 0; /* abort! -CFT */
   if (next_to_corr(y, x) > 2)
     if ((cave[y-1][x].fval >= MIN_CAVE_WALL)
 	&& (cave[y+1][x].fval >= MIN_CAVE_WALL))
@@ -2106,6 +2312,7 @@ register int y, x;
 static void try_door(y, x)
 register int y, x;
 {
+  if (!in_bounds(y,x)) return; /* abort! -CFT */
   if ((cave[y][x].fval == CORR_FLOOR) && (randint(100) > DUN_TUN_JCT)
       && next_to(y, x))
     place_door(y, x);
@@ -2144,12 +2351,14 @@ static void build_pit(yval, xval)
 #endif
   tmp = randint(dun_level>80?80:dun_level);
   rating += 10;
-  if (tmp < 10)      special_pit(yval, xval,1);
-  else if (tmp < 20) special_pit(yval, xval,2);
-  else if (tmp < 40) special_pit(yval, xval,3);
-  else if (tmp < 55) special_pit(yval, xval,4);
-  else if (tmp < 72) special_pit(yval, xval,5);
-  else               special_pit(yval, xval,6);
+  if (tmp < 10)      special_pit(yval, xval,1); /* jelly */
+  else if (tmp < 20) special_pit(yval, xval,2); /* orc */
+  else if (tmp < 43)
+    if (randint(3)==1) special_pit(yval, xval,7); /* giant -CFT */
+    else special_pit(yval, xval, 3); /* troll */
+  else if (tmp < 57) special_pit(yval, xval,4); /* undead */
+  else if (tmp < 73) special_pit(yval, xval,5); /* dragon */
+  else               special_pit(yval, xval,6); /* demon */
 }
 
 /* Cave logic flow for generation of new dungeon		*/

@@ -50,8 +50,8 @@ void ident_char()
       case '3': prt("3 - Entrance to Weaponsmith.", 0, 0); break;
       case '4': prt("4 - Entrance to Temple.", 0, 0); break;
       case '5': prt("5 - Entrance to Alchemy shop.", 0, 0); break;
-      case '6': prt("6 - Entrance to Magic-Users store.", 0, 0); break;
-      case '7': prt("7 - Entrance to the Healers.", 0, 0); break;
+      case '6': prt("6 - Entrance to Magic store.", 0, 0); break;
+      case '7': prt("7 - Entrance to Black Market.", 0, 0); break;
       case '8': prt("8 - Entrance to your home.", 0, 0); break;
 	/* case '9': prt("9 - Not used.", 0, 0);  break;*/
       case ':': prt(": - Rubble.", 0, 0); break;

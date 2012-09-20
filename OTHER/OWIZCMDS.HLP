@@ -17,3 +17,5 @@
 ^U - Summon monster.
 ^W - Wizard password on/off.
 @  - Create any object *CAN CAUSE FATAL ERROR*
+~  - Save 'found' artifact names to a file
+

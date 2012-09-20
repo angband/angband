@@ -54,6 +54,8 @@ void aim()
 	    + (class_level_adj[m_ptr->pclass][CLA_DEVICE] * m_ptr->lev / 3);
 	  if (py.flags.confused > 0)
 	    chance = chance / 2;
+	  if ((chance < USE_DEVICE) && (randint(USE_DEVICE - chance + 1) == 1))
+	    chance = USE_DEVICE; /* Give everyone a slight chance */
 	  if (chance <= 0)  chance = 1;
 	  if (randint(chance) < USE_DEVICE)
 	    msg_print("You failed to use the wand properly.");

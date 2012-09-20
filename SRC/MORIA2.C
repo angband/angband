@@ -110,6 +110,7 @@ int y, x;
 	  objdes(tmp, t_ptr, TRUE);
 	  take_hit(dam, tmp);
           }
+	msg_print(NULL); /* make sure can see the message before new level */
         } /* end normal */
       else { /* it's a quest level, can't let them fall through */
         msg_print("You fall into a spiked pit!");
@@ -164,6 +165,8 @@ int y, x;
     case 8: /* Teleport*/
       teleport_flag = TRUE;
       msg_print("You hit a teleport trap!");
+      /* Light up the teleport trap, before we teleport away.  */
+      move_light (y, x, y, x);
       break;
     case 9: /* Rockfall*/
       take_hit(dam, "a falling rock");
@@ -172,8 +175,8 @@ int y, x;
       msg_print("You are hit by falling rock.");
       break;
     case 10: /* Corrode gas*/
-      corrode_gas("corrosion gas");
       msg_print("A strange red gas surrounds you.");
+      corrode_gas("corrosion gas");
       break;
     case 11: /* Summon mon*/
       (void) delete_object(y, x);	/* Rune disappears.    */
@@ -186,12 +189,12 @@ int y, x;
 	}
       break;
     case 12: /* Fire trap*/
-      fire_dam(dam, "a fire trap");
       msg_print("You are enveloped in flames!");
+      fire_dam(dam, "a fire trap");
       break;
     case 13: /* Acid trap*/
-      acid_dam(dam, "an acid trap");
       msg_print("You are splashed with acid!");
+      acid_dam(dam, "an acid trap");
       break;
     case 14: /* Poison gas*/
       if (!(py.flags.poison_im || py.flags.poison_resist ||
@@ -291,6 +294,7 @@ int *sn, *sc;
   int spell[63], result, first_spell;
   register spell_type *s_ptr;
 
+  if (!py.misc.pclass) return 0; /* if a warrior, abort as if by ESC -CFT */
   result = -1;
   i = 0;
   j1 = inventory[item_val].flags;
@@ -325,7 +329,7 @@ int *sn, *sc;
       result = get_spell(spell, i, sn, sc, prompt, first_spell);
       if (result && magic_spell[py.misc.pclass-1][*sn].smana > py.misc.cmana)
 	{
-	  if (py.misc.pclass)
+	  if (class[py.misc.pclass].spell == MAGE)
 	    result = get_check("You summon your limited strength to cast this one! Confirm?");
 	  else
 	    result = get_check("The gods may think you presumptuous for this! Confirm?");
@@ -368,9 +372,9 @@ int pickup;
 	}
       else
 	{
-	  if (inven_check_num(i_ptr))	   /* Too many objects?	    */
+	  if (pickup && inven_check_num(i_ptr))	   /* Too many objects?	    */
 	    {			    /* Okay,  pick it up      */
-	      if (pickup)
+	      if (carry_query_flag)
 		{
 		  objdes(tmp_str, i_ptr, TRUE);
 		  /* change the period to a question mark */
@@ -390,16 +394,15 @@ int pickup;
 		  pickup = get_check(out_val);
 		}
 	      /* Attempt to pick up an object.	       */
-	      if (pickup)
-		{
+	        if (pickup) {
 		  locn = inven_carry(i_ptr);
 		  objdes(tmp_str, &inventory[locn], TRUE);
 		  (void) sprintf(out_val, "You have %s (%c)",tmp_str,locn+'a');
 		  msg_print(out_val);
 		  (void) delete_object(y, x);
-		}
+		  } 
 	    }
-	  else
+	  else if (pickup) /* only if was trying to pick it up... -CFT */
 	    {
 	      objdes(tmp_str, i_ptr, TRUE);
 	      (void) sprintf(out_val, "You can't carry %s", tmp_str);
@@ -435,6 +438,7 @@ void delete_monster(j)
 {
   register monster_type *m_ptr;
 
+  if (j < 2) return; /* trouble? abort! -CFT */
   m_ptr = &m_list[j];
   if (c_list[m_ptr->mptr].cdefense & UNIQUE)
     check_unique(m_ptr);
@@ -443,6 +447,12 @@ void delete_monster(j)
     lite_spot((int)m_ptr->fy, (int)m_ptr->fx);
   if (j != mfptr - 1)
     {
+/* This targetting code stolen from Morgul -CFT */
+      if (j==target_mon) target_mode = FALSE;   /* Targetted monster dead or */
+						/* compacted.      CDW */
+      if (target_mon==mfptr-1) target_mon = j;	/* Targetted monster moved */
+						/* to replace dead or */
+						/* compacted monster   CDW */
       m_ptr = &m_list[mfptr - 1];
       cave[m_ptr->fy][m_ptr->fx].cptr = j;
       m_list[j] = m_list[mfptr - 1];
@@ -466,6 +476,7 @@ void fix1_delete_monster(j)
 {
   register monster_type *m_ptr;
 
+  if (j < 2) return; /* trouble? abort! -CFT */
   m_ptr = &m_list[j];
   if (c_list[m_ptr->mptr].cdefense & UNIQUE)
     check_unique(m_ptr);
@@ -487,6 +498,14 @@ int j;
 {
   register monster_type *m_ptr;
 
+  if (j < 2) return; /* trouble? abort! -CFT */
+
+/* This targetting code stolen from Morgul -CFT */
+  if (j==target_mon) target_mode = FALSE;   /* Targetted monster dead or */
+						/* compacted.      CDW */
+  if (target_mon==mfptr-1) target_mon = j;	/* Targetted monster moved */
+						/* to replace dead or */
+						/* compacted monster   CDW */
   m_ptr = &m_list[j];  /* Fixed from a c_list ptr to a m_list ptr. -CFT */
   if (c_list[m_ptr->mptr].cdefense & UNIQUE)
     check_unique(m_ptr);
@@ -808,7 +827,7 @@ int monptr, dam;
 
 	    c_ptr = &cave[m_ptr->fy][m_ptr->fx];
 	    if (c_ptr->tptr != 0) { /* don't overwrite artifact -CFT */
-	      int8u ty = m_ptr->fy, tx = m_ptr->fx, ny, nx;
+	      int ty = m_ptr->fy, tx = m_ptr->fx, ny, nx;
 
 	      while ((cave[ty][tx].tptr != 0) &&
 	    	   (t_list[cave[ty][tx].tptr].tval >= TV_MIN_WEAR) &&
@@ -817,7 +836,8 @@ int monptr, dam;
 	        do {
 		  ny = ty + (int8u)randint(3) -2; /* pick new possible spot */
 		  nx = tx + (int8u)randint(3) -2;
-	          } while (cave[ny][nx].fval > MAX_OPEN_SPACE);
+	          } while (!in_bounds(ny, nx) ||
+			(cave[ny][nx].fval > MAX_OPEN_SPACE));
 	        ty = ny; /* this is a new spot, not in a wall/door/etc */
 	        tx = nx;
 	        } /* ok, to exit this, [ty][tx] must not be artifact -CFT */
@@ -967,12 +987,16 @@ int y, x;
 		  (void) sprintf(out_val, "%s appears confused.", m_name);
 		  m_list[crptr].confused = TRUE;
 		}
+	      if ((out_val[0] >= 'a') && (out_val[0] <= 'z'))
+	        out_val[0] -= 32; /* upcase, because starts sentence -CFT */
 	      msg_print(out_val);
 	      if (m_list[crptr].ml && randint(4) == 1)
 		c_recall[monptr].r_cdefense |=
 		  c_list[monptr].cdefense & CHARM_SLEEP;
 	    }
 
+	  if (k<0) k = 0; /* no neg damage! */
+	  
 	  /* See if we done it in.				 */
 	  if (mon_take_hit(crptr, k) >= 0)
 	    {
@@ -1063,20 +1087,29 @@ int dir, do_pickup;
 		  (search_flag))
 		search(char_row, char_col, py.misc.srh);
 	      /* A room of light should be lit.	     */
-	      if (c_ptr->fval == LIGHT_FLOOR)
+	      if ((c_ptr->fval == LIGHT_FLOOR) ||
+		  (c_ptr->fval == NT_LIGHT_FLOOR))
 		{
 		  if (!c_ptr->pl && !py.flags.blind)
 		    light_room(char_row, char_col);
 		}
 	      /* In doorway of light-room?	       */
-	      else if (c_ptr->lr && (py.flags.blind < 1))
-		for (i = (char_row - 1); i <= (char_row + 1); i++)
-		  for (j = (char_col - 1); j <= (char_col + 1); j++)
-		    {
-		      d_ptr = &cave[i][j];
-		      if ((d_ptr->fval == LIGHT_FLOOR) && (!d_ptr->pl))
-			light_room(i, j);
-		    }
+	      else if (c_ptr->lr && (py.flags.blind < 1)) 
+		{ int8u lit = FALSE; /* only call light_room once... -CFT */
+		  for (i = (char_row - 1); !lit && i <= (char_row + 1); i++)
+		    for (j = (char_col - 1); !lit && j <= (char_col + 1); j++)
+		      {
+		        d_ptr = &cave[i][j];
+		        if (((d_ptr->fval == LIGHT_FLOOR) ||
+			     (d_ptr->fval == NT_LIGHT_FLOOR)) &&
+			    (!d_ptr->pl)) {
+			/* move light 1st, or corridor may be perm lit */
+			  move_light(old_row, old_col, char_row, char_col);
+			  light_room(char_row, char_col);
+			  lit = TRUE; /* okay, we can stop now... -CFT */
+			  }
+		      }
+		}
 	      /* Move the light source		       */
 	      move_light(old_row, old_col, char_row, char_col);
 	      /* An object is beneath him.	     */
@@ -1212,9 +1245,12 @@ void openobject()
   register struct misc *p_ptr;
   register monster_type *m_ptr;
   vtype m_name, out_val;
-
+  int temp = target_mode; /* targetting will screw up get_dir, so we save
+  				target_mode, then turn it off -CFT */
+  				
   y = char_row;
   x = char_col;
+  target_mode = FALSE;
   if (get_dir(NULL, &dir)) {
     (void) mmove(dir, &y, &x);
     c_ptr = &cave[y][x];
@@ -1317,6 +1353,7 @@ void openobject()
       free_turn_flag = TRUE;
     }
   }
+  target_mode = temp;
 }
 
 
@@ -1327,9 +1364,12 @@ void closeobject()
   vtype out_val, m_name;
   register cave_type *c_ptr;
   register monster_type *m_ptr;
+  int temp = target_mode; /* targetting will screw up get_dir, so we save
+  				target_mode, then turn it off -CFT */
 
   y = char_row;
   x = char_col;
+  target_mode = FALSE;
   if (get_dir(NULL, &dir))
     {
       (void) mmove(dir, &y, &x);
@@ -1371,6 +1411,7 @@ void closeobject()
 	  free_turn_flag = TRUE;
 	}
     }
+  target_mode = temp;
 }
 
 
@@ -1448,6 +1489,27 @@ int dir;
   /* strength, and type of tool used			   */
   tabil = py.stats.use_stat[A_STR];
   i_ptr = &inventory[INVEN_WIELD];
+
+  /* Don't let the player tunnel somewhere illegal, this is necessary to
+     prevent the player from getting a free attack by trying to tunnel
+     somewhere where it has no effect.  */
+  if (c_ptr->fval < MIN_CAVE_WALL
+      && (c_ptr->tptr == 0 || (t_list[c_ptr->tptr].tval != TV_RUBBLE
+			       && t_list[c_ptr->tptr].tval != TV_SECRET_DOOR)))
+    {
+      if (c_ptr->tptr == 0)
+	{
+	  msg_print ("Tunnel through what?  Empty air?!?");
+	  free_turn_flag = TRUE;
+	}
+      else
+	{
+	  msg_print("You can't tunnel through that.");
+	  free_turn_flag = TRUE;
+	}
+      return;
+    }
+
   if (c_ptr->cptr > 1)
     {
       m_ptr = &m_list[c_ptr->cptr];
@@ -1478,6 +1540,13 @@ int dir;
 	    + i_ptr->todam;
 	  /* divide by two so that digging without shovel isn't too easy */
 	  tabil >>= 1;
+	}
+
+      if (weapon_heavy)
+	{
+	  tabil += (py.stats.use_stat[A_STR] * 15) - i_ptr->weight;
+	  if (tabil < 0)
+	    tabil = 0;
 	}
 
       /* Regular walls; Granite, magma intrusion, quartz vein  */
@@ -1564,9 +1633,12 @@ void disarm_trap()
   register inven_type *i_ptr;
   monster_type *m_ptr;
   vtype m_name, out_val;
+  int temp = target_mode; /* targetting will screw up get_dir, so we save
+  				target_mode, then turn it off -CFT */
 
   y = char_row;
   x = char_col;
+  target_mode = FALSE;
   if (get_dir(NULL, &dir))
     {
       (void) mmove(dir, &y, &x);
@@ -1673,6 +1745,7 @@ confused */
 	  free_turn_flag = TRUE;
 	}
     }
+  target_mode = temp;
 }
 
 
@@ -2093,9 +2166,9 @@ int *tbth, *tpth, *tdam, *tdis;
 
   /* Using Bows,  slings,  or crossbows	*/
   if (inventory[INVEN_WIELD].tval == TV_BOW)
-    switch(inventory[INVEN_WIELD].p1)
+    switch(inventory[INVEN_WIELD].subval)
       {
-      case 1:
+      case 20:
 	if (i_ptr->tval == TV_SLING_AMMO) /* Sling and ammo */
 	  {
 	    *tbth = py.misc.bthb;
@@ -2105,7 +2178,7 @@ int *tbth, *tpth, *tdam, *tdis;
 	    *tdis = 20;
 	  }
 	break;
-      case 2:
+      case 1:
 	if (i_ptr->tval == TV_ARROW)      /* Short Bow and Arrow	*/
 	  {
 	    *tbth = py.misc.bthb;
@@ -2115,7 +2188,7 @@ int *tbth, *tpth, *tdam, *tdis;
 	    *tdis = 25;
 	  }
 	break;
-      case 3:
+      case 2:
 	if (i_ptr->tval == TV_ARROW)      /* Long Bow and Arrow	*/
 	  {
 	    *tbth = py.misc.bthb;
@@ -2125,7 +2198,7 @@ int *tbth, *tpth, *tdam, *tdis;
 	    *tdis = 30;
 	  }
 	break;
-      case 4:
+      case 3:
 	if (i_ptr->tval == TV_ARROW)      /* Composite Bow and Arrow*/
 	  {
 	    *tbth = py.misc.bthb;
@@ -2135,7 +2208,7 @@ int *tbth, *tpth, *tdam, *tdis;
 	    *tdis = 35;
 	  }
 	break;
-      case 5:
+      case 10:
 	if (i_ptr->tval == TV_BOLT)      /* Light Crossbow and Bolt*/
 	  {
 	    *tbth = py.misc.bthb;
@@ -2145,7 +2218,7 @@ int *tbth, *tpth, *tdam, *tdis;
 	    *tdis = 25;
 	  }
 	break;
-      case 6:
+      case 11:
 	if (i_ptr->tval == TV_BOLT)      /* Heavy Crossbow and Bolt*/
 	  {
 	    *tbth = py.misc.bthb;
@@ -2298,6 +2371,7 @@ void throw_object()
 			  tdam = tot_dam(&throw_obj, tdam, i);
 			  tdam = critical_blow((int)throw_obj.weight,
 					       tpth, tdam, CLA_BTHB);
+			  if (tdam < 0) tdam = 0;
 			  i = mon_take_hit((int)c_ptr->cptr, tdam);
                           if (i<0) {
                             char buf[100];
@@ -2396,6 +2470,8 @@ int y, x;
 			      + py.stats.use_stat[A_STR]), 0, k, CLA_BTH);
       k += py.misc.wt/60 + 3;
 
+      if (k<0) k = 0; /* no neg damage! */
+      
       /* See if we done it in.				     */
       if (mon_take_hit(monster, k) >= 0)
 	{
@@ -2464,15 +2540,27 @@ int y, x;
    non-secret door. */
 void bash()
 {
-  int y, x, dir, tmp, no_bash;
+  int y, x, dir, tmp;
   register cave_type *c_ptr;
   register inven_type *t_ptr;
+  int temp = target_mode; /* targetting will screw up get_dir, so we save
+  				target_mode, then turn it off -CFT */
 
   y = char_row;
   x = char_col;
+  target_mode = FALSE; /* player _may_ want to bash monster, or he might want
+  			  to bash a door to run away.  Let him decide -CFT */
   if (get_dir(NULL, &dir))
     {
-      no_bash = FALSE;
+      if (py.flags.confused > 0)
+	{
+	  msg_print("You are confused.");
+	  do
+	    {
+	      dir = randint(9);
+	    }
+	  while (dir == 5);
+	}
       (void) mmove(dir, &y, &x);
       c_ptr = &cave[y][x];
       if (c_ptr->cptr > 1)
@@ -2494,7 +2582,7 @@ void bash()
 		{
 		  msg_print("The door crashes open!");
 		  invcopy(&t_list[c_ptr->tptr], OBJ_OPEN_DOOR);
-		  t_ptr->p1 = randint(2) - 1; /* 50% chance of breaking door */
+		  t_ptr->p1 = 1 - randint(2); /* 50% chance of breaking door */
 		  c_ptr->fval = CORR_FLOOR;
 		  if (py.flags.confused == 0)
 		    move_char(dir, FALSE);
@@ -2527,17 +2615,20 @@ void bash()
 		count_msg_print("The chest holds firm.");
 	    }
 	  else
-	    no_bash = TRUE;
+	    /* Can't give free turn, or else player could try directions
+	       until he found invisible creature */
+	    msg_print("You bash it, but nothing interesting happens.");
 	}
       else
-	no_bash = TRUE;
-
-      if (no_bash)
 	{
-	  msg_print("I do not see anything you can bash there.");
-	  free_turn_flag = TRUE;
+	  if (c_ptr->fval < MIN_CAVE_WALL)
+	    msg_print("You bash at empty space.");
+	  else
+	    /* same message for wall as for secret door */
+	    msg_print("You bash it, but nothing interesting happens.");
 	}
     }
+  target_mode = temp;
 }
 
 static char *look_mon_desc(int mnum){
@@ -2566,6 +2657,306 @@ static char *look_mon_desc(int mnum){
  if (perc > 10)
    return (living ? "badly wounded" : "badly damaged");
  return (living ? "almost dead" : "almost destroyed");
+}
+
+/* This targetting code stolen from Morgul -CFT */
+/* Targetting routine 					CDW */
+void target(void)
+{
+int monptr,exit,exit2;
+char query;
+vtype desc;
+
+exit = FALSE;
+exit2 = FALSE;
+if (py.flags.blind > 0)
+  msg_print("You can't see anything to target!");
+/* Check monsters first */
+else
+  {
+  target_mode = FALSE;
+  for (monptr = 0; (monptr<mfptr) && (!exit); monptr++)
+    {
+    if (m_list[monptr].cdis<MAX_SIGHT)
+      {
+      if ((m_list[monptr].ml)&&
+	  (los(char_row,char_col,m_list[monptr].fy,m_list[monptr].fx)))
+	{
+	move_cursor_relative(m_list[monptr].fy,m_list[monptr].fx);
+	(void) sprintf(desc, "%s [(r)ecall] [(t)arget] [(l)ocation] [ESC quits]",
+		      c_list[m_list[monptr].mptr].name);
+	prt(desc,0,0);
+	move_cursor_relative(m_list[monptr].fy,m_list[monptr].fx);
+	query = inkey();
+	while ((query == 'r')||(query == 'R'))
+	  {
+	    save_screen();
+	    query = roff_recall(m_list[monptr].mptr);
+	    restore_screen();
+	    move_cursor_relative(m_list[monptr].fy,m_list[monptr].fx);
+	    query = inkey();
+	  }
+	switch (query)
+	  {
+	  case ESCAPE:
+	    exit = TRUE;
+	    exit2 = TRUE;
+	    break;
+	  case '.':	/* for NetHack players, '.' is used to select a target,
+				so I'm changing this... -CFT */
+	  case 't': case 'T':
+	    target_mode = TRUE;
+	    target_mon  = monptr;
+	    target_row  = m_list[monptr].fy;
+	    target_col  = m_list[monptr].fx;
+	    exit2 = TRUE;
+	  case 'l': case'L':
+	    exit = TRUE;
+	  default:
+	    break;
+	  }
+	}
+      }
+    }
+  if (exit2 == FALSE)
+    {
+    prt("Use cursor to designate target. [(t)arget]",0,0);
+    target_row = char_row;
+    target_col = char_col;
+    for (exit = FALSE; exit==FALSE ;)
+      {
+      move_cursor_relative(target_row, target_col);
+      query=inkey();
+      if (rogue_like_commands==FALSE)
+	{
+	switch (query)
+	  {
+	  case '1':
+	    query = 'b';
+	    break;
+	  case '2':
+	    query = 'j';
+	    break;
+	  case '3':
+	    query = 'n';
+	    break;
+	  case '4':
+	    query = 'h';
+	    break;
+	  case '5':
+	    query = '.';
+	  case '6':
+	    query = 'l';
+	    break;
+	  case '7':
+	    query = 'y';
+	    break;
+	  case '8':
+	    query = 'k';
+	    break;
+	  case '9':
+	    query = 'u';
+	    break;
+	  default:
+	    break;
+	  }
+	}
+      switch (query)
+	{
+	case ESCAPE:
+	case'q':
+	case 'Q':
+	  exit = TRUE;
+	  break;
+	case '.':	/* for NetHack players, '.' is used to select a target,
+				so I'm changing this... -CFT */
+	case 't':
+	case 'T':
+	  if (distance(char_row,char_col,target_row,target_col)>MAX_SIGHT)
+	     prt(
+	  "Target beyond range. Use cursor to designate target. [(t)arget].",
+		 0,0);
+	  else if (cave[target_row][target_col].fval>CORR_FLOOR)
+	     prt(
+	  "Invalid target. Use cursor to designate target. [(t)arget].",
+		 0,0);
+	  else
+	    {
+	    target_mode = TRUE;
+	    target_mon  = MAX_MALLOC;
+	    exit = TRUE;
+	    }
+	  break;
+	case 'b':
+	  target_col--;
+	case 'j':
+	  target_row++;
+	  break;
+	case 'n':
+	  target_row++;
+	case 'l':
+	  target_col++;
+	  break;
+	case 'y':
+	  target_row--;
+	case 'h':
+	  target_col--;
+	  break;
+	case 'u':
+	  target_col++;
+	case 'k':
+	  target_row--;
+	  break;
+	default:
+	  break;
+	}
+      if ((target_col>MAX_WIDTH-2)||(target_col>panel_col_max))
+	target_col--;
+      else if ((target_col<1)||(target_col<panel_col_min))
+	target_col++;
+      if ((target_row>MAX_HEIGHT-2)||(target_row>panel_row_max))
+	target_row--;
+      else if ((target_row<1)||(target_row<panel_row_min))
+	target_row++;
+
+      }
+    }
+  if (target_mode==TRUE)
+    msg_print("Target selected.");
+  else
+    msg_print("Aborting Target.");
+  }
+}
+
+/* This targetting code stolen from Morgul -CFT */
+/* Assuming target_mode == TRUE, returns if the position is the target.
+						CDW */
+int at_target(row,col)
+int row,col;
+{
+if (target_mode == FALSE) return FALSE; /* don't ever assume a condition
+				holds, especially when it's so easy to test
+				for. -CFT */
+if ((row==target_row)&&(col==target_col))
+  return(TRUE);
+else
+  return(FALSE);
+}
+
+/* Given direction "dir", returns new row, column location -RAK- */
+/* targeting code stolen from Morgul -CFT */
+/* 'dir=0' moves toward target				    CDW  */
+int mmove(dir, y, x)
+int dir;
+register int *y, *x;
+{
+  register int new_row, new_col;
+  int bool;
+
+  switch(dir)
+    {
+    case 0:  /* targetting code stolen from Morgul -CFT */
+      new_row = *y;
+      new_col = *x;
+      mmove2(&new_row, &new_col,
+	     char_row, char_col,
+	     target_row, target_col);
+      break;
+    case 1:
+      new_row = *y + 1;
+      new_col = *x - 1;
+      break;
+    case 2:
+      new_row = *y + 1;
+      new_col = *x;
+      break;
+    case 3:
+      new_row = *y + 1;
+      new_col = *x + 1;
+      break;
+    case 4:
+      new_row = *y;
+      new_col = *x - 1;
+      break;
+    case 5:
+      new_row = *y;
+      new_col = *x;
+      break;
+    case 6:
+      new_row = *y;
+      new_col = *x + 1;
+      break;
+    case 7:
+      new_row = *y - 1;
+      new_col = *x - 1;
+      break;
+    case 8:
+      new_row = *y - 1;
+      new_col = *x;
+      break;
+    case 9:
+      new_row = *y - 1;
+      new_col = *x + 1;
+      break;
+    }
+  bool = FALSE;
+  if ((new_row >= 0) && (new_row < cur_height)
+      && (new_col >= 0) && (new_col < cur_width))
+    {
+      *y = new_row;
+      *x = new_col;
+      bool = TRUE;
+    }
+  return(bool);
+}
+
+/* This targetting code stolen from Morgul -CFT */
+/* Non-straight mmove using a current position, a source, and a destination */
+/* Called by mmove and mons_fire_bolt.				CDW */
+void mmove2( y, x, sourcey, sourcex, desty, destx)
+register int *y, *x;
+int sourcey, sourcex, desty, destx;
+{
+  int d_y,d_x,k,dist,max_dist,min_dist,shift;
+
+  d_y =(*y<sourcey) ? sourcey-*y : *y-sourcey;
+  d_x =(*x<sourcex) ? sourcex-*x : *x-sourcex;
+  dist    =(d_y>d_x) ? d_y : d_x;
+  dist++;
+  d_y =(desty<sourcey) ? sourcey-desty:desty-sourcey;
+  d_x =(destx<sourcex) ? sourcex-destx:destx-sourcex;
+  if (d_y>d_x)
+    {
+    max_dist=d_y;
+    min_dist=d_x;
+    }
+  else
+    {
+    max_dist=d_x;
+    min_dist=d_y;
+    }
+  for(k=0,shift=max_dist>>1;k<dist;k++,shift-=min_dist)
+    shift = (shift>0) ? shift : shift+max_dist;
+  if (shift<0) shift = 0;
+
+  if (d_y>d_x)
+    {
+    d_y = (desty<sourcey) ? *y-1:*y+1;
+    if (shift)
+      d_x = *x;
+    else
+      d_x = (destx<sourcex) ? *x-1:*x+1;
+    }
+  else
+    {
+    d_x = (destx<sourcex) ? *x-1:*x+1;
+    if (shift)
+      d_y = *y;
+    else
+      d_y = (desty<sourcey) ? *y-1:*y+1;
+    }
+  *y=d_y;
+  *x=d_x;
 }
 
 

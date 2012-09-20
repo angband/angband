@@ -67,18 +67,37 @@ Umoria Version 5.2, patch level 1
 
 
 
+   Angband was based on Umoria 5.2.1, and heavily modifed by several
+students at the University of Warwick, England, who wanted to expand the
+game, but who also wanted to keep, or even strengthen, Moria's firm
+grounding in Tolkien lore.  The resulting heavily customized Moria was
+not intended for outside release, but merely as a local version of Moria,
+to run only on Warwick's Unix system.
 
+  Sometime in its development, before it was released and ported, the
+existing Unix code got the unlikely version number 'Angband 2.4.Frog-knows'.
+
+The prime delevopers of Angband were:
 
         Angband Version 2.4 Alex Cutler, Andy Astrand.
         Angband Version 2.5 Sean Marsh. Contributions from Geoff Hill and 
                                          lots of players at the U of W.
-        PC port: Charles F. Teague II with color code by Justin Anderson.
 
+
+Eventually, the Unix Angband source was released and ported:
+
+        PC port: Charles F. Teague II
+              with color code by Justin Anderson,
+              with targetting code by Chris Wilde,
+              and with many other helpful patches by people across the net.
         PC Angband version history:
+        ===========================
+
 Apr 11 1993        Original Release
           This version contains many bugs, including the dreaded stack
         overflow trouble.  I have one confirmed report of Angband
         erasing CMOS settings due to this bug.  Don't use this version!
+
 Apr 20 1993        Updated Executable
           As the seriousness of the stack overflow problem became
         apparent, I rushed the updated executable.  Uploaded to
@@ -86,6 +105,7 @@ Apr 20 1993        Updated Executable
         problems, and has a few minor changes.  Also, it contains
         compiler-generated stack checking code to prevent any stack
         overflow that I missed from harming your system.
+
 May 20 1993        Second Update
           The first update was a rush job.  This meant that I did not
         get a chance to playtest it very thoroughly, and some problems
@@ -97,3 +117,39 @@ May 20 1993        Second Update
         checking code as a precaution.
           Source code and a new executable uploaded to ftp.cis.ksu.edu
         as 'ang12src.exe' and 'ang12exe.exe'.
+
+Aug 17 1993       Third Update
+          This update corrects many more bugs, including the "mush bug",
+        and many others.  This update also includes several new features,
+        including the ability to target spells/arrows/etc without being "in-
+        line", colorized inventories, etc.  For a listing of the non-trivial
+        bugs and fixes, see the file 'version.pc'.
+          Again, the stack-checking code was left in as a precaution.
+          Source code has been uploaded to ftp.cis.ksu.edu as 'angsrc13.exe',
+        and two versions of the executable have been uploaded.  The first,
+        'angexe13.exe', is the update, with the normal 128k buffer used for
+        overlays.  The second, 'angmem13.exe' is the same update, with a 192k
+        buffer used for overlays.  As a result, this version will require
+        more memory to run, but, if you have the memory required, it should
+        run faster.
+
+Aug 28 1993       Fourth Update (minor update to third update)
+          There were a few problems with the 1.3 version of PC Angband,
+        notably the trouble with Nexus breaths, and the trouble with the
+        inventory sort losing your weapon if it got confused.  Also, the
+        code to cast a bolt or ball spell and the display code were
+        intoreably slow in the 'angexe13.exe' version, especially if you
+        weren't able to run a disk cache.  This update fixes those bugs,
+        and should run better than 'angexe13.exe'.  Source code has been
+        uploaded to ftp.cis.ksu.edu as 'angsr131.exe', and the executable
+        as 'angex131.exe'.  The executable uses a 128k overlay buffer (the
+        same as 'angexe13.exe' did) and it requires only about 505k of
+        free memory to run.  However, Angband 1.31 will now detect the
+        presence of available EMS memory, and make use of up to 155k of
+        it to improve the performance of the overalys.  If you have memory
+        over 640k, you will probably want to read your manuals about how
+        to make EMS memory available.  If you cannot make EMS memory
+        available, you can still get nearly the same performance by using
+        a disk cache.  For ideas on freeing up memory, or for an example
+        of how to set up EMS memory, see the file 'free-mem.doc' packaged
+        with this update.

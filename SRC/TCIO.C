@@ -206,12 +206,17 @@ char inkey(void){
       }
     return ESCAPE;
   }
+#if 0 /* this is bizarre.  Why would I want ^R to enter raw mode? -CFT */
   if(i!=CTRL('R'))
     return (char) i;
   msdos_raw();
     break;
-  }
+  } /* while loop */
   return (CTRL('R'));
+#else /* new code -CFT */
+  return (char)i;
+  } /* while loop */
+#endif
 }
 
 void print(char ch, int row, int col){
@@ -253,30 +258,68 @@ void move_cursor(int row,int col){
 }
 
 void msg_print(char* str_buff){
-  register int old_len;
+  register int old_len, new_len;
+  int8u combine_messages = FALSE;
   char in_char;
+  
   if(msg_flag){
     old_len=strlen(old_msg[last_msg])+1;
-    if (old_len>MSG_LEN)
-      old_len=MSG_LEN;
-    put_buffer("-more-",MSG_LINE, old_len);
-    wait_for_more=1;
-    do{
-      in_char=inkey();
-    }while((in_char!=' ')&&(in_char!=ESCAPE)&&(in_char!='\n')&&
+
+/* Multiple messages on one msg line... from Purple X's Moria.  Thanks
+   to brianm@soda.berkeley.edu (Brian Markenson) for this.
+   Moria 5.5 may already have this, but my version of tcio.c doesn't,
+   so PC Angband doesn't. -CFT */
+
+    /* If the new message and the old message are short enough, we want
+       display them together on the same line.  So we don't flush the old
+       message in this case.  */
+
+    if (str_buff)
+      new_len = strlen (str_buff);
+    else
+      new_len = 0;
+    if (!str_buff || (new_len + old_len + 2 >= MSG_LEN)) {
+      /* ensure that the complete -more- message is visible. */
+
+      if (old_len>MSG_LEN)
+        old_len=MSG_LEN;
+      put_buffer("-more-",MSG_LINE, old_len);
+      wait_for_more=1;
+      do{
+        in_char=inkey();
+        }while((in_char!=' ')&&(in_char!=ESCAPE)&&(in_char!='\n')&&
 	   (in_char!='\r'));
-    wait_for_more=0;
+      wait_for_more=0;
+      }
+    else
+      combine_messages = TRUE;
   }
-  gotoxy(1,MSG_LINE+1);
-  clreol();
+  if (!combine_messages){
+    gotoxy(1,MSG_LINE+1);
+    clreol();
+    }
   if(str_buff){
-    put_buffer(str_buff,MSG_LINE,0);
-    command_count=0;
-    if(++last_msg>=MAX_SAVE_MSG) last_msg=0;
-    strncpy(old_msg[last_msg],str_buff,VTYPESIZ);
-    old_msg[last_msg][VTYPESIZ-1]='\0';
-    msg_flag=TRUE;
-  }else
+    msg_flag = TRUE;
+    command_count = 0;
+
+    /* If the new message and the old message are short enough, display
+       them on the same line.  */
+      
+    if (combine_messages) {
+      put_buffer("  ", MSG_LINE, old_len); /* added just in case -CFT */
+      put_buffer (str_buff, MSG_LINE, old_len + 2);
+      strcat (old_msg[last_msg], "  ");
+      strcat (old_msg[last_msg], str_buff);
+    }
+    else {
+      put_buffer(str_buff,MSG_LINE,0);
+      if(++last_msg>=MAX_SAVE_MSG)
+      	last_msg=0;
+      strncpy(old_msg[last_msg],str_buff,VTYPESIZ);
+      old_msg[last_msg][VTYPESIZ-1]='\0';
+      }
+    } /* if str_buff */
+  else
     msg_flag=FALSE;
 }
 
@@ -290,6 +333,24 @@ int get_check(char*prompt){
   }while(res==' ');
   erase_line(0,0);
   if(res=='Y'||res=='y')
+    return(TRUE);
+  else
+    return(FALSE);
+}
+
+/* just like get check, but only a 'Y' means yes.  Used in places where
+   player doesn't want the up-and-left key mapped to 'y' to screw things
+   up, like "enter wiz mode?" -CFT */
+int get_Yn(char*prompt){
+  int res;
+  prt(prompt,0,0);
+  if(wherex()>MSG_LEN +1) gotoxy(74,1);
+  cputs(" [Y/n]");
+  do{
+    res=inkey();
+  }while(res==' ');
+  erase_line(0,0);
+  if(res=='Y')
     return(TRUE);
   else
     return(FALSE);

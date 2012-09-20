@@ -62,10 +62,20 @@ int monptr;
       (panel_contains((int)m_ptr->fy, (int)m_ptr->fx)))
     {
       /* Wizard sight.	     */
-      if (wizard || py.flags.telepathy)
+      if (wizard)
 	flag = TRUE;
+      if (py.flags.telepathy) {
+	if (c_list[m_ptr->mptr].cdefense & UNDEAD) {
+	  if (c_list[m_ptr->mptr].spells ||	/* if undead, then check to */
+      		c_list[m_ptr->mptr].spells2 ||	/* see if it's "mindless" */
+      		c_list[m_ptr->mptr].spells3)	/* if no spells, then mindless */
+	    flag = TRUE; /* found a spell, so not mindless undead */
+	  } /* if undead */
+	else
+	  flag = TRUE; /* not undead, then telepathy always sees... */
+        }
       /* Normal sight.	     */
-      else if (los(char_row, char_col, (int)m_ptr->fy, (int)m_ptr->fx))
+      if (los(char_row, char_col, (int)m_ptr->fy, (int)m_ptr->fx))
 	{
 	  c_ptr = &cave[m_ptr->fy][m_ptr->fx];
 	  r_ptr = &c_list[m_ptr->mptr];
@@ -102,6 +112,11 @@ int monptr;
   /* Light it up.	 */
   if (flag)
     {
+#ifdef TC_COLOR
+      if (!no_color_flag) /* don't waste time if no color -CFT */
+        lite_spot((int)m_ptr->fy, (int)m_ptr->fx); /* redraw, even if lit,
+        					so MHD's change color -CFT*/
+#endif
       if (!m_ptr->ml)
 	{
 	  disturb (1, 0);
@@ -685,8 +700,7 @@ int monptr;
 	    case 4:    /*Fear attack	*/
 	      f_ptr = &py.flags;
 	      take_hit(damage, ddesc);
-	      if (player_saves() || (py.misc.pclass==1 && randint(3)==1))
-		msg_print("You stand your ground!");
+	      if (player_saves() || (py.misc.pclass==1 && randint(3)==1))		msg_print("You stand your ground!");
 	      else if (f_ptr->afraid < 1)
 		{
 		  msg_print("You are suddenly afraid!");
@@ -760,12 +774,16 @@ int monptr;
 		msg_print("You quickly protect your money pouch!");
 	      else
 		{
+		  vtype t1;
+		  
 		  gold = (p_ptr->au/10) + randint(25);
 		  if (gold > p_ptr->au)
-		    p_ptr->au = 0;
-		  else
-		    p_ptr->au -= gold;
+		    gold = p_ptr->au;
+		  p_ptr->au -= gold;
 		  msg_print("Your purse feels lighter.");
+		  sprintf(t1, "%ld coin%s stolen!", gold,
+			(gold > 1L) ? "s were" : " was");
+		  msg_print(t1);
 		  prt_gold();
 		}
 	      if (randint(2) == 1)
@@ -782,13 +800,24 @@ int monptr;
 		msg_print("You grab hold of your backpack!");
 	      else
 		{
+		vtype t1, t2;
+		
 		  i = randint(inven_ctr) - 1;
 		    if ((inventory[i].tval >= TV_MIN_WEAR) &&
 		        (inventory[i].tval <= TV_MAX_WEAR) &&
 		        (inventory[i].flags2 & TR_ARTIFACT))
 		      break; /* don't destroy artifacts -CFT */
+		  objdes(t1, &inventory[i], FALSE);
+		  sprintf(t2, "%sour %s (%c) %s stolen!",
+		  	((inventory[i].subval <= ITEM_SINGLE_STACK_MAX) &&
+		  	 (inventory[i].number > 1)) /* stacked single items */
+			  ? "One of y" : "Y",
+			t1, i+'a',
+			((inventory[i].subval > ITEM_SINGLE_STACK_MAX) &&
+			 (inventory[i].number > 1)) /* stacked group items */
+			 ? "were":"was");
+		  msg_print (t2);
 		  inven_destroy(i);
-		  msg_print("Your backpack feels lighter.");
 		}
 	      if (randint(3) == 1)
 		{
@@ -906,7 +935,12 @@ int monptr;
 		  }
 	        if (flag)
 		  {
-		    msg_print("There is a static feeling in the air.");
+		    vtype t1, t2;
+		    objdes(t1, &inventory[i], FALSE);
+		    sprintf(t2, "Your %s (%c) %s disenchanted!", t1,
+			i+'a'-INVEN_WIELD,
+			(inventory[i].number != 1) ? "were":"was");
+		    msg_print (t2);
 		    calc_bonuses ();
 		  }
 	        else
@@ -1190,7 +1224,7 @@ int32u *rcmove;
 		    {
 		      invcopy(t_ptr, OBJ_OPEN_DOOR);
 		      if (stuck_door) /* 50% chance of breaking door */
-			t_ptr->p1 = randint(2) - 1;
+			t_ptr->p1 = 1 - randint(2);
 		      c_ptr->fval = CORR_FLOOR;
 		      lite_spot(newy, newx);
 		      *rcmove |= CM_OPEN_DOOR;
@@ -1207,7 +1241,7 @@ int32u *rcmove;
 			{
 			  invcopy(t_ptr, OBJ_OPEN_DOOR);
 			  /* 50% chance of breaking door */
-			  t_ptr->p1 = randint(2) - 1;
+			  t_ptr->p1 = 1 - randint(2);
 			  c_ptr->fval = CORR_FLOOR;
 			  lite_spot(newy, newx);
 			  msg_print ("You hear a door burst open!");
@@ -1285,29 +1319,6 @@ int32u *rcmove;
 	  /* Creature has been allowed move.	 */
 	  if (do_move)
 	    {
-	      /* Pick up or eat an object	       */
-#ifdef ATARIST_MWC
-	      if (movebits & (holder = CM_PICKS_UP))
-#else
-	      if (movebits & CM_PICKS_UP)
-#endif
-		{
-		  c_ptr = &cave[newy][newx];
-
-		  if ((c_ptr->tptr != 0)
-		      && (t_list[c_ptr->tptr].tval <= TV_MAX_OBJECT)
-		      && ((t_list[c_ptr->tptr].tval < TV_MIN_WEAR)
-		        || (t_list[c_ptr->tptr].tval > TV_MAX_WEAR)
-		        || !(t_list[c_ptr->tptr].flags2 & TR_ARTIFACT)))
-		    {
-#ifdef ATARIST_MWC
-		      *rcmove |= holder;
-#else
-		      *rcmove |= CM_PICKS_UP;
-#endif
-		      (void) delete_object(newy, newx);
-		    }
-		}
 	      /* Move creature record		       */
 	      move_rec((int)m_ptr->fy, (int)m_ptr->fx, newy, newx);
 	      if (m_ptr->ml)
@@ -1319,6 +1330,77 @@ int32u *rcmove;
 	      m_ptr->fx = newx;
 	      m_ptr->cdis = distance (char_row, char_col, newy, newx);
 	      do_turn = TRUE;
+
+	      /* Pick up or eat an object	       */
+#ifdef ATARIST_MWC
+	      if (movebits & (holder = CM_PICKS_UP))
+#else
+	      if (movebits & CM_PICKS_UP)
+#endif
+		{
+		int32u t;  /* used in code to prevent orcs from picking up
+				Slay Orc weapons, etc -CFT */
+
+		  c_ptr = &cave[newy][newx];
+
+		  if ((c_ptr->tptr != 0)
+			&& (t_list[c_ptr->tptr].tval <= TV_MAX_OBJECT)) {
+#ifdef ATARIST_MWC
+		    *rcmove |= holder;
+#else
+		    *rcmove |= CM_PICKS_UP;
+#endif
+		    t = 0L;
+		    if ((t_list[c_ptr->tptr].flags & TR_SLAY_DRAGON) ||
+		        (t_list[c_ptr->tptr].flags & TR_SLAY_X_DRAGON))
+		      t |= DRAGON;
+		    if (t_list[c_ptr->tptr].flags & TR_SLAY_UNDEAD)
+		      t |= UNDEAD;
+		    if (t_list[c_ptr->tptr].flags2 & TR_SLAY_DEMON)
+		      t |= DEMON;
+		    if (t_list[c_ptr->tptr].flags2 & TR_SLAY_TROLL)
+		      t |= TROLL;
+		    if (t_list[c_ptr->tptr].flags2 & TR_SLAY_GIANT)
+		      t |= GIANT;
+		    if (t_list[c_ptr->tptr].flags2 & TR_SLAY_ORC)
+		      t |= ORC;
+	/* if artifact, or hurts this monster */
+		    if (((t_list[c_ptr->tptr].tval >= TV_MIN_WEAR) &&
+			 (t_list[c_ptr->tptr].tval <= TV_MAX_WEAR) &&
+		         (t_list[c_ptr->tptr].flags2 & TR_ARTIFACT)) ||
+			(c_list[m_ptr->mptr].cdefense & t)) {
+
+			vtype m_name, out_val, i_name;
+			int i, split = -1;
+
+		      update_mon(monptr); /* make sure ml see right -CFT */
+		      if ((m_ptr->ml) && los(char_row, char_col, m_ptr->fy,
+		      	m_ptr->fx)) { /* if we can see it, tell us
+					what happened -CFT */
+			monster_name(m_name, m_ptr, &(c_list[m_ptr->mptr]));
+			objdes(i_name, &(t_list[c_ptr->tptr]), TRUE);
+			i_name[strlen(i_name)-1] = 0; /* erase '.' at end -CFT */
+			sprintf(out_val,
+				"%s tries to pick up %s, but stops suddenly!",
+				m_name, i_name);
+			for (i=0;i<72 && out_val[i];i++)
+			  if (out_val[i] == ' ')
+			    split = i;
+			if ((i > 71) && (split != -1)) { /* then we should
+						probably split it -CFT */
+			  out_val[split] = 0;
+			  msg_print(out_val);
+			  msg_print(&out_val[split+1]);
+			  }
+			else /* if i <= 71, then it'll fit nicely in 1 line.
+				Or, we found no space to split at... -CFT */
+			  msg_print(out_val);
+		        } /* if can see */
+		      }  /* if shouldn't pick up */
+		    else
+		      (void) delete_object(newy, newx);
+		    }
+		}
 	    }
 	}
       i++;
@@ -1344,6 +1426,8 @@ static void mon_cast_spell(monptr, took_turn)
   register monster_type *m_ptr;
   register creature_type *r_ptr;
   register inven_type *i_ptr;
+
+  int blind = (py.flags.blind > 0); /* alter msgs if player can't see -CFT */
 
   if (death)
     return;
@@ -1445,7 +1529,10 @@ static void mon_cast_spell(monptr, took_turn)
 	  teleport_to((int)m_ptr->fy, (int)m_ptr->fx);
 	  break;
 	case 8:	 /*Light Wound	 */
-	  (void) strcat(cdesc, "points at you and curses.");
+	  if (!blind)
+	    (void) strcat(cdesc, "points at you and curses.");
+	  else
+	    (void) strcat(cdesc, "mumbles.");
 	  msg_print(cdesc);
 	  if (player_saves())
 	    msg_print("You resist the effects of the spell.");
@@ -1453,7 +1540,10 @@ static void mon_cast_spell(monptr, took_turn)
 	    take_hit(damroll(3, 8), ddesc);
 	  break;
 	case 9:	 /*Serious Wound */
-	  (void) strcat(cdesc, "points at you and curses horribly.");
+	  if (!blind)
+	    (void) strcat(cdesc, "points at you and curses horribly.");
+	  else
+	    (void) strcat(cdesc, "mumbles.");
 	  msg_print(cdesc);
 	  if (player_saves())
 	    msg_print("You resist the effects of the spell.");
@@ -1461,29 +1551,44 @@ static void mon_cast_spell(monptr, took_turn)
 	    take_hit(damroll(8, 8), ddesc);
 	  break;
 	case 10:  /*Hold Person	  */
-	  (void) strcat(cdesc, "gazes deep into your eyes!");
+	  if (!blind)
+	    (void) strcat(cdesc, "gazes deep into your eyes!");
+	  else
+	    (void) strcat(cdesc, "mumbles, and you feel something holding you!");
 	  msg_print(cdesc);
 	  if (py.flags.free_act)
 	    msg_print("You are unaffected.");
 	  else if (player_saves())
-	    msg_print("You stare back unafraid!");
+	    if (!blind)
+	      msg_print("You stare back unafraid!");
+	    else
+	      msg_print("You resist!");
 	  else if (py.flags.paralysis > 0)
 	    py.flags.paralysis += 2;
 	  else
 	    py.flags.paralysis = randint(5)+4;
 	  break;
 	case 11:  /*Cause Blindness*/
-	  (void) strcat(cdesc, "casts a spell, burning your eyes!");
+	  if (!blind)
+	    (void) strcat(cdesc, "casts a spell, burning your eyes!");
+	  else
+	    (void) strcat(cdesc, "mumbles, and your eyes burn even more.");
 	  msg_print(cdesc);
 	  if ((player_saves()) || (py.flags.blindness_resist))
-	    msg_print("You blink and your vision clears.");
+	    if (!blind)
+	      msg_print("You blink and your vision clears.");
+	    else
+	      msg_print("But the extra burning quickly fades away.");
 	  else if (py.flags.blind > 0)
 	    py.flags.blind += 6;
 	  else
 	    py.flags.blind += 12 + randint(3);
 	  break;
 	case 12:  /*Cause Confuse */
-	  (void) strcat(cdesc, "creates a mesmerising illusion.");
+	  if (!blind)
+	    (void) strcat(cdesc, "creates a mesmerising illusion.");
+	  else
+	    (void) strcat(cdesc, "mumbles, and you hear puzzling noises.");
 	  msg_print(cdesc);
 	  if ((player_saves()) || (py.flags.confusion_resist)
 				|| (py.flags.chaos_resist))
@@ -1494,7 +1599,10 @@ static void mon_cast_spell(monptr, took_turn)
 	    py.flags.confused = randint(5) + 3;
 	  break;
 	case 13:  /*Cause Fear	  */
-	  (void) strcat(cdesc, "casts a fearful illusion.");
+	  if (!blind)
+	    (void) strcat(cdesc, "casts a fearful illusion.");
+	  else
+	    (void) strcat(cdesc, "mumbles, and you hear scary noises.");
 	  msg_print(cdesc);
 	  if (player_saves())
 	    msg_print("You refuse to be frightened.");
@@ -1504,7 +1612,10 @@ static void mon_cast_spell(monptr, took_turn)
 	    py.flags.afraid = randint(5) + 3;
 	  break;
 	case 14:  /*Summon Monster*/
-	  (void) strcat(cdesc, "magically summons help!");
+	  if (!blind)
+	    (void) strcat(cdesc, "magically summons help!");
+	  else
+	    (void) strcat(cdesc, "mumbles, and you hear something appear nearby.");
 	  msg_print(cdesc);
 	  y = char_row;
 	  x = char_col;
@@ -1515,7 +1626,10 @@ static void mon_cast_spell(monptr, took_turn)
 	  update_mon ((int)cave[y][x].cptr);
 	  break;
 	case 15:  /*Summon Undead*/
-	(void) strcat(cdesc, "magically summons help from beyond the grave!");
+	  if (!blind)
+	    (void) strcat(cdesc, "magically summons help from beyond the grave!");
+	  else
+	    (void) strcat(cdesc, "mumbles, and you hear something creepy appear nearby.");
 	  msg_print(cdesc);
 	  y = char_row;
 	  x = char_col;
@@ -1548,7 +1662,6 @@ static void mon_cast_spell(monptr, took_turn)
 		  (void) sprintf(outval, "%sappears healthier.", cdesc);
 		  msg_print(outval);
 		}
-	      if ((r_ptr->level>>1)==0) msg_print("case 17");
 	      r1 = (randint((int)r_ptr->level) >> 1) + 1;
 	      if (r1 > py.misc.cmana)
 		{
@@ -1563,7 +1676,10 @@ static void mon_cast_spell(monptr, took_turn)
 	    }
 	  break;
 	case 18:  /*Summon Demon */
-	  (void) strcat(cdesc, "summons a hellish adversary!");
+	  if (!blind)
+	    (void) strcat(cdesc, "summons a hellish adversary!");
+	  else
+	    (void) strcat(cdesc, "mumbles, and you smell fire and brimstone nearby.");
 	  msg_print(cdesc);
 	  y = char_row;
 	  x = char_col;
@@ -1574,7 +1690,10 @@ static void mon_cast_spell(monptr, took_turn)
 	  update_mon ((int)cave[y][x].cptr);
 	  break;
 	case 19:  /*Summon Dragon */
-	  (void) strcat(cdesc, "magically summons a Dragon!");
+	  if (!blind)
+	    (void) strcat(cdesc, "magically summons a Dragon!");
+	  else
+	    (void) strcat(cdesc, "mumbles, and you hear something large appear nearby.");
 	  msg_print(cdesc);
 	  y = char_row;
 	  x = char_col;
@@ -1585,65 +1704,95 @@ static void mon_cast_spell(monptr, took_turn)
 	  update_mon ((int)cave[y][x].cptr);
 	  break;
 	case 20:  /*Breath Light */
-	  (void) strcat(cdesc, "breathes lightning.");
+	  if (!blind)
+	    (void) strcat(cdesc, "breathes lightning.");
+	  else
+	    (void) strcat(cdesc, "breathes, and you get zapped.");
 	  msg_print(cdesc);
 	  breath(GF_LIGHTNING, char_row, char_col,
 		 ((m_ptr->hp / 3)>1600?1600:(m_ptr->hp / 3)), ddesc, monptr);
 	  break;
 	case 21:  /*Breath Gas	 */
-	  (void) strcat(cdesc, "breathes gas.");
+	  if (!blind)
+	    (void) strcat(cdesc, "breathes gas.");
+	  else
+	    (void) strcat(cdesc, "breathes, and you inhale noxious gases.");
 	  msg_print(cdesc);
 	  breath(GF_POISON_GAS, char_row, char_col,
 		 ((m_ptr->hp / 3)>800?800:(m_ptr->hp / 3)), ddesc, monptr);
 	  break;
 	case 22:  /*Breath Acid	 */
-	  (void) strcat(cdesc, "breathes acid.");
+	  if (!blind)
+	    (void) strcat(cdesc, "breathes acid.");
+	  else
+	    (void) strcat(cdesc, "breathes, and your skin is burning.");
 	  msg_print(cdesc);
 	  breath(GF_ACID, char_row, char_col,
 		 ((m_ptr->hp / 3)>1600?1600:(m_ptr->hp / 3)), ddesc, monptr);
 	  break;
 	case 23:  /*Breath Frost */
-	  (void) strcat(cdesc, "breathes frost.");
+	  if (!blind)
+	    (void) strcat(cdesc, "breathes frost.");
+	  else
+	    (void) strcat(cdesc, "breathes, and feel a frigid blast.");
 	  msg_print(cdesc);
 	  breath(GF_FROST, char_row, char_col,
 		 ((m_ptr->hp / 3)>1600?1600:(m_ptr->hp / 3)), ddesc, monptr);
 	  break;
 	case 24:  /*Breath Fire	 */
-	  (void) strcat(cdesc, "breathes fire.");
+	  if (!blind)
+	    (void) strcat(cdesc, "breathes fire.");
+	  else
+	    (void) strcat(cdesc, "breathes, and you're on fire.");
 	  msg_print(cdesc);
 	  breath(GF_FIRE, char_row, char_col,
 		 ((m_ptr->hp / 3)>1600?1600:(m_ptr->hp / 3)), ddesc, monptr);
 	  break;
 	case 25:  /* Fire Bolt */
-	  (void) strcat(cdesc, "casts a Fire bolt.");
+	  if (!blind)
+	    (void) strcat(cdesc, "casts a Fire bolt.");
+	  else
+	    (void) strcat(cdesc, "mumbles.");
 	  msg_print(cdesc);
 	  bolt(GF_FIRE, char_row, char_col,
 		 damroll(9,8)+(c_list[m_ptr->mptr].level/3)
 		 , ddesc, m_ptr, monptr);
 	  break;
 	case 26:  /* Frost Bolt */
-	  (void) strcat(cdesc, "casts a Frost bolt.");
+	  if (!blind)
+	    (void) strcat(cdesc, "casts a Frost bolt.");
+	  else
+	    (void) strcat(cdesc, "mumbles.");
 	  msg_print(cdesc);
 	  bolt(GF_FROST, char_row, char_col,
 		 damroll(6,8)+(c_list[m_ptr->mptr].level/3)
 		 , ddesc, m_ptr, monptr);
 	  break;
 	case 27:  /* Acid Bolt */
-	  (void) strcat(cdesc, "casts a Acid bolt.");
+	  if (!blind)
+	    (void) strcat(cdesc, "casts a Acid bolt.");
+	  else
+	    (void) strcat(cdesc, "mumbles.");
 	  msg_print(cdesc);
 	  bolt(GF_ACID, char_row, char_col,
 		 damroll(7,8)+(c_list[m_ptr->mptr].level/3)
 		 , ddesc, m_ptr, monptr);
 	  break;
 	case 28:  /* Magic Missiles */
-	  (void) strcat(cdesc, "casts a Magic missile.");
+	  if (!blind)
+	    (void) strcat(cdesc, "casts a Magic missile.");
+	  else
+	    (void) strcat(cdesc, "mumbles.");
 	  msg_print(cdesc);
 	  bolt(GF_MAGIC_MISSILE, char_row, char_col,
 		 damroll(2,6)+(c_list[m_ptr->mptr].level/3)
 		 , ddesc, m_ptr, monptr);
 	  break;
 	case 29:	 /*Critical Wound	 */
-	  (void) strcat(cdesc, "points at you, incanting terribly!");
+	  if (!blind)
+	    (void) strcat(cdesc, "points at you, incanting terribly!");
+	  else
+	    (void) strcat(cdesc, "mumbles loudly.");
 	  msg_print(cdesc);
 	  if (player_saves())
 	    msg_print("You resist the effects of the spell.");
@@ -1651,242 +1800,128 @@ static void mon_cast_spell(monptr, took_turn)
 	    take_hit(damroll(10, 15), ddesc);
 	  break;
 	case 30:  /* Fire Ball */
-	  (void) strcat(cdesc, "casts a Fire ball.");
+	  if (!blind)
+	    (void) strcat(cdesc, "casts a Fire ball.");
+	  else
+	    (void) strcat(cdesc, "mumbles, and you're on fire.");
 	  msg_print(cdesc);
 	  breath(GF_FIRE, char_row, char_col,
 		 randint((c_list[m_ptr->mptr].level*7)/2)+10, ddesc, monptr);
 	  break;
 	case 31:  /* Frost Ball */
-	  (void) strcat(cdesc, "casts a Frost ball.");
+	  if (!blind)
+	    (void) strcat(cdesc, "casts a Frost ball.");
+	  else
+	    (void) strcat(cdesc, "mumbles, and you feel a frigid blast.");
 	  msg_print(cdesc);
 	  breath(GF_FROST, char_row, char_col,
 		 randint((c_list[m_ptr->mptr].level*3)/2)+10, ddesc, monptr);
 	  break;
 	case 32:  /* Mana Bolt */
-	  (void) strcat(cdesc, "casts a Mana bolt.");
+	  if (!blind)
+	    (void) strcat(cdesc, "casts a Mana bolt.");
+	  else
+	    (void) strcat(cdesc, "mumbles.");
 	  msg_print(cdesc);
-#ifdef TC_COLOR
 	  bolt(GF_MANA, char_row, char_col,
-#else
-	  bolt(GF_MAGIC_MISSILE, char_row, char_col,
-#endif
 	       randint((c_list[m_ptr->mptr].level*7)/2)+50, ddesc, m_ptr,
 	       monptr);
 	  break;
 	case 33:
-	  (void) strcat(cdesc, "breathes Chaos.");
+	  if (!blind)
+	    (void) strcat(cdesc, "breathes Chaos.");
+	  else
+	    (void) strcat(cdesc, "breathes, and you feel a strange flux.");
 	  msg_print(cdesc);
-	  if (py.flags.chaos_resist)
-#ifdef TC_COLOR
-	    breath(GF_CHAOS, char_row, char_col,
-#else
-	    breath(GF_MAGIC_MISSILE, char_row, char_col,
-#endif
-	 	  ((m_ptr->hp/6)>400?400:(m_ptr->hp/6)), ddesc, monptr);
-	  else if (py.flags.nether_resist)
-#ifdef TC_COLOR
-	    breath(GF_CHAOS, char_row, char_col,
-#else
-	    breath(GF_MAGIC_MISSILE, char_row, char_col,
-#endif
-		  ((m_ptr->hp/6)>450?450:(m_ptr->hp/6)), ddesc, monptr);
-          else {
-#ifdef TC_COLOR
-	    breath(GF_CHAOS, char_row, char_col,
-#else
-	    breath(GF_MAGIC_MISSILE, char_row, char_col,
-#endif
+	  breath(GF_CHAOS, char_row, char_col,
 	           ((m_ptr->hp/6)>600?600:(m_ptr->hp/6)), ddesc, monptr);
-	    f_ptr = &py.flags;
-	    if (f_ptr->hold_life && randint(3)>1)
-	      msg_print("You keep hold of your life force!");
-	    else {
-	      msg_print("You feel your life draining away!");
-	      lose_exp(5000+(py.misc.exp / 100)*MON_DRAIN_LIFE);
-	    }
-	    if ((!py.flags.confusion_resist) && (!py.flags.chaos_resist))
-	      {
-                if (py.flags.confused > 0)
-	          py.flags.confused += 12;
-	        else
-	          py.flags.confused = randint(20) + 10;
-	     }
-	    py.flags.image += randint(10);
-	    (void) chaos(m_ptr);
-	  }
           break;
 	case 34:
-	  (void) strcat(cdesc, "breathes shards.");
+	  if (!blind)
+	    (void) strcat(cdesc, "breathes shards.");
+	  else
+	    (void) strcat(cdesc, "breathes, and sharp fragments cut you.");
 	  msg_print(cdesc);
-	  if (py.flags.shards_resist)
-#ifdef TC_COLOR
-	    breath(GF_SHARDS, char_row, char_col,
-#else
-	    breath(GF_MAGIC_MISSILE, char_row, char_col,
-#endif
-	          ((m_ptr->hp/6)>267?267:(m_ptr->hp/6)), ddesc, monptr);
-	  else {
-#ifdef TC_COLOR
-	    breath(GF_SHARDS, char_row, char_col,
-#else
-	    breath(GF_MAGIC_MISSILE, char_row, char_col,
-#endif
+	  breath(GF_SHARDS, char_row, char_col,
                   ((m_ptr->hp/6)>400?400:(m_ptr->hp/6)), ddesc, monptr);
-            cut_player(m_ptr->hp/3);
-	  }
 	  break;
 	case 35:
-	  (void) strcat(cdesc, "breathes sound.");
+	  if (!blind)
+	    (void) strcat(cdesc, "breathes sound.");
+	  else
+	    (void) strcat(cdesc, "breathes, and you are deafened.");
 	  msg_print(cdesc);
-	  if (py.flags.sound_resist)
-#ifdef TC_COLOR
-	    breath(GF_SOUND, char_row, char_col,
-#else
-	    breath(GF_MAGIC_MISSILE, char_row, char_col,
-#endif
-	   	 ((m_ptr->hp / 6)>200?200:(m_ptr->hp / 6)), ddesc, monptr);
-	  else {
-#ifdef TC_COLOR
-	    breath(GF_SOUND, char_row, char_col,
-#else
-	    breath(GF_MAGIC_MISSILE, char_row, char_col,
-#endif
+	  breath(GF_SOUND, char_row, char_col,
 		 ((m_ptr->hp / 6)>400?400:(m_ptr->hp / 6)), ddesc, monptr);
-           stun_player(randint((((m_ptr->hp/20)>30)? 35 : (m_ptr->hp/20))+5));
-          }
           break;
 	case 36:
-	  (void) strcat(cdesc, "breathes confusion.");
+	  if (!blind)
+	    (void) strcat(cdesc, "breathes confusion.");
+	  else
+	    (void) strcat(cdesc, "breathes, and you feel dizzy.");
 	  msg_print(cdesc);
-	  if ((py.flags.confusion_resist) || (py.flags.chaos_resist))
-#ifdef TC_COLOR
-	    breath(GF_CONFUSION, char_row, char_col,
-#else
-	    breath(GF_MAGIC_MISSILE, char_row, char_col,
-#endif
-		 ((m_ptr->hp / 6)>200?200:(m_ptr->hp / 6)), ddesc, monptr);
-	  else {
-#ifdef TC_COLOR
-	    breath(GF_CONFUSION, char_row, char_col,
-#else
-	    breath(GF_MAGIC_MISSILE, char_row, char_col,
-#endif
+	  breath(GF_CONFUSION, char_row, char_col,
 		 ((m_ptr->hp / 6)>400?400:(m_ptr->hp / 6)), ddesc, monptr);
-            if (py.flags.confused > 0)
-	      py.flags.confused += 12;
-	    else
-	      py.flags.confused = randint(20) + 10;
-          }
           break;
 	case 37:
-	  (void) strcat(cdesc, "breathes disenchantment.");
+	  if (!blind)
+	    (void) strcat(cdesc, "breathes disenchantment.");
+	  else
+	    (void) strcat(cdesc, "breathes, and your equipment seems less powerful.");
 	  msg_print(cdesc);
-	  if (py.flags.disenchant_resist)
-#ifdef TC_COLOR
-	    breath(GF_DISENCHANT, char_row, char_col,
-#else
-	    breath(GF_MAGIC_MISSILE, char_row, char_col,
-#endif
-                   ((m_ptr->hp / 6)>334?334:(m_ptr->hp / 6)), ddesc, monptr);
-	  else {
-            disenchant = FALSE;
-	    switch(randint(7))
-	      {
-	      case 1: i = INVEN_BODY; break;
-              case 2: i = INVEN_BODY;  break;
-              case 3: i = INVEN_ARM;   break;
-	      case 4: i = INVEN_OUTER; break;
-	      case 5: i = INVEN_HANDS; break;
-	      case 6: i = INVEN_HEAD;  break;
-	      case 7: i = INVEN_FEET;  break;
-	      }
-	    i_ptr = &inventory[i];
-	      if (i_ptr->tohit > 0) {
-	        i_ptr->tohit -= randint(2);
-	        /* don't send it below zero */
-	        if (i_ptr->tohit < 0)
-	          i_ptr->tohit = 0;
-	        disenchant = TRUE;
-	      }
-              if (i_ptr->todam > 0) {
-	        i_ptr->todam -= randint(2);
-	        /* don't send it below zero */
-	        if (i_ptr->todam < 0)
-	          i_ptr->todam = 0;
-	        disenchant = TRUE;
-	      }
-	      if (i_ptr->toac > 0) {
-	        i_ptr->toac  -= randint(2);
-	        /* don't send it below zero */
-	        if (i_ptr->toac < 0)
-		  i_ptr->toac = 0;
-	        disenchant = TRUE;
-	      }
-#ifdef TC_COLOR
-	    breath(GF_DISENCHANT, char_row, char_col,
-#else
-	    breath(GF_MAGIC_MISSILE, char_row, char_col,
-#endif
+	  breath(GF_DISENCHANT, char_row, char_col,
 	           ((m_ptr->hp / 6)>500?500:(m_ptr->hp / 6)), ddesc, monptr);
-	    if (disenchant)
-	    {
-	      msg_print("There is a static feeling in the air.");
-	      calc_bonuses ();
-	    }
-	  }
          break;
 	case 38:
-	  (void) strcat(cdesc, "breathes nether.");
+	  if (!blind)
+	    (void) strcat(cdesc, "breathes nether.");
+	  else
+	    (void) strcat(cdesc, "breathes, and you feel an unholy aura.");
 	  msg_print(cdesc);
-	  if (py.flags.nether_resist)
-#ifdef TC_COLOR
-	    breath(GF_NETHER, char_row, char_col,
-#else
-	    breath(GF_MAGIC_MISSILE, char_row, char_col,
-#endif
-		  ((m_ptr->hp/6)>300?300:(m_ptr->hp/6)), ddesc, monptr);
-	  else {
-#ifdef TC_COLOR
-	    breath(GF_NETHER, char_row, char_col,
-#else
-	    breath(GF_MAGIC_MISSILE, char_row, char_col,
-#endif
+	  breath(GF_NETHER, char_row, char_col,
 		   ((m_ptr->hp/6)>400?400:(m_ptr->hp/6)), ddesc, monptr);
-	    f_ptr = &py.flags;
-	    if (f_ptr->hold_life && randint(4)>1)
-	      msg_print("You keep hold of your life force!");
-	    else {
-	      msg_print("You feel your life draining away!");
-	      lose_exp((m_ptr->hp/3)+(py.misc.exp / 100)*MON_DRAIN_LIFE);
-	    }
-	  }
 	  break;
 	case 39:
-	  (void) strcat(cdesc, "casts a Lightning bolt.");
+	  if (!blind)
+	    (void) strcat(cdesc, "casts a Lightning bolt.");
+	  else
+	    (void) strcat(cdesc, "mumbles.");
 	  msg_print(cdesc);
 	  bolt(GF_LIGHTNING, char_row, char_col,
 		 damroll(4,8)+(c_list[m_ptr->mptr].level/3)
 		 , ddesc, m_ptr, monptr);
 	  break;
 	case 40:
-	  (void) strcat(cdesc, "casts a Lightning ball.");
+	  if (!blind)
+	    (void) strcat(cdesc, "casts a Lightning ball.");
+	  else
+	    (void) strcat(cdesc, "mumbles, and you get zapped.");
 	  msg_print(cdesc);
 	  breath(GF_LIGHTNING, char_row, char_col,
 		 randint((c_list[m_ptr->mptr].level*3)/2)+8, ddesc, monptr);
 	  break;
 	case 41:
-	  (void) strcat(cdesc, "casts an Acid ball.");
+	  if (!blind)
+	    (void) strcat(cdesc, "casts an Acid ball.");
+	  else
+	    (void) strcat(cdesc, "mumbles, and your skin is burning.");
 	  msg_print(cdesc);
 	  breath(GF_ACID, char_row, char_col,
 		 randint(c_list[m_ptr->mptr].level*3)+15, ddesc, monptr);
 	  break;
 	case 42:
-	  (void) strcat(cdesc, "casts a spell.");
+	  if (!blind)
+	    (void) strcat(cdesc, "casts a spell and cackles evilly.");
+	  else
+	    (void) strcat(cdesc, "mumbles, and then cackles evilly.");
 	  msg_print(cdesc);
 	  (void) trap_creation();
 	  break;
 	case 43:
-	  (void) strcat(cdesc, "points at you, screaming the word DIE!");
+	  if (!blind)
+	    (void) strcat(cdesc, "points at you, screaming the word DIE!");
+	  else
+	    (void) strcat(cdesc, "mumbles, and then screams 'DIE!'.");
 	  msg_print(cdesc);
 	  if (player_saves())
 	    msg_print("You laugh at the feeble spell.");
@@ -1897,8 +1932,13 @@ static void mon_cast_spell(monptr, took_turn)
 	  }
 	  break;
 	case 44:
-	  (void) strcat(cdesc, "stares at you.");
-	  msg_print(cdesc);
+	  if (!blind) {
+	    (void) strcat(cdesc, "stares at you.");
+	    msg_print(cdesc);
+	    }
+	  else
+	    msg_print("You feel something focusing on your mind.");
+
 	  if (player_saves())
 	    msg_print("You resist the effects.");
 	  else {
@@ -1919,7 +1959,10 @@ static void mon_cast_spell(monptr, took_turn)
 	  (void) teleport(100);
 	  break;
 	case 46:
-	  (void) sprintf(outval,"%sconcentrates on its wounds.",cdesc);
+	  if (!blind)
+	    (void) sprintf(outval,"%sconcentrates on its wounds.",cdesc);
+	  else
+	    (void) sprintf(outval, "%smumbles to itself.",cdesc);
 	  msg_print(outval);
           if (m_ptr->maxhp == 0){ /* then we're just going to fix it! -CFT */
 	    if ((c_list[m_ptr->mptr].cdefense & MAX_HP) || be_nasty)
@@ -1944,9 +1987,12 @@ static void mon_cast_spell(monptr, took_turn)
 	  }
           break;
 	case 47:
-	  (void) sprintf(outval,"%scasts a spell.",cdesc);
+	  if (!blind)
+	    (void) sprintf(outval,"%scasts a spell.",cdesc);
+	  else
+	    (void) sprintf(outval, "%smumbles to itself.",cdesc);
 	  msg_print(outval);
-	  if ((m_ptr->cspeed)<=(c_list[m_ptr->mptr].speed-10+py.flags.speed))
+	  if ((m_ptr->cspeed)<=((int)(c_list[m_ptr->mptr].speed)-10+py.flags.speed))
           {
 	    if ((c_list[m_ptr->mptr].speed) <= 15)
 	    {
@@ -1957,28 +2003,29 @@ static void mon_cast_spell(monptr, took_turn)
 	  }
 	  break;
 	case 48:
-	  (void) strcat(cdesc, "fires missiles at you.");
+	  if (!blind)
+	    (void) strcat(cdesc, "fires missiles at you.");
+	  else
+	    (void) strcat(cdesc, "sounds like it threw something.");
 	  msg_print(cdesc);
-#ifdef TC_COLOR
 	  bolt(GF_ARROW, char_row, char_col,
-#else
-	  bolt(GF_MAGIC_MISSILE, char_row, char_col,
-#endif
 		 damroll(6,7), ddesc, m_ptr, monptr);
 	  break;
 	case 49:
-	  (void) strcat(cdesc,"casts a Plasma bolt.");
+	  if (!blind)
+	    (void) strcat(cdesc,"casts a Plasma bolt.");
+	  else
+	    (void) strcat(cdesc, "mumbles.");
 	  msg_print(cdesc);
-#ifdef TC_COLOR
 	  bolt(GF_PLASMA, char_row, char_col,
-#else
-	  bolt(GF_MAGIC_MISSILE, char_row, char_col,
-#endif
 		 10+damroll(8,7)+(c_list[m_ptr->mptr].level)
 		 , ddesc, m_ptr, monptr);
 	  break;
 	case 50:
-	  (void) strcat(cdesc, "magically summons monsters!");
+	  if (!blind)
+	    (void) strcat(cdesc, "magically summons monsters!");
+	  else
+	    (void) strcat(cdesc, "mumbles, and you hear many things appear nearby.");
 	  msg_print(cdesc);
 	  y = char_row;
 	  x = char_col;
@@ -1991,60 +2038,30 @@ static void mon_cast_spell(monptr, took_turn)
 	  }
 	  break;
         case 51:
-	  (void) strcat(cdesc, "casts a Nether bolt.");
+	  if (!blind)
+	    (void) strcat(cdesc, "casts a Nether bolt.");
+	  else
+	    (void) strcat(cdesc, "mumbles.");
 	  msg_print(cdesc);
-	  if (py.flags.nether_resist)
-#ifdef TC_COLOR
 	  bolt(GF_NETHER, char_row, char_col,
-#else
-	  bolt(GF_MAGIC_MISSILE, char_row, char_col,
-#endif
-	        20+damroll(5,3)+((c_list[m_ptr->mptr].level*8)/3),
-	        ddesc, m_ptr, monptr);
-	  else {
-	    int player_hit; /* used to decide if should drain exps.  Not
-	    			needed above, because don't drain if
-	    			nether resist. -CFT */
-#ifdef TC_COLOR
-	    player_hit = bolt(GF_NETHER, char_row, char_col,
-#else
-	    player_hit = bolt(GF_MAGIC_MISSILE, char_row, char_col,
-#endif
 		  30+damroll(5,5)+(c_list[m_ptr->mptr].level/4),
 		  ddesc, m_ptr, monptr);
-	    if (player_hit) { /* only do 2ndary effects if hit player, not
-	    			 if hit other monster... -CFT */
-	      f_ptr = &py.flags;
-	      if (f_ptr->hold_life && randint(5)>1)
-	        msg_print("You keep hold of your life force!");
-	      else if (f_ptr->hold_life) {
-	        msg_print("You feel your life slipping away!");
-	        lose_exp(200+(py.misc.exp / 1000)*MON_DRAIN_LIFE);
-	      } else {
-	        msg_print("You feel your life draining away!");
-	        lose_exp(200+(py.misc.exp / 100)*MON_DRAIN_LIFE);
-	      }
-	    }
-	  }
 	  break;
 	case 52:
-	  f_ptr=&py.flags;
-	  (void) strcat(cdesc, "casts an Ice bolt.");
+	  if (!blind)
+	    (void) strcat(cdesc, "casts an Ice bolt.");
+	  else
+	    (void) strcat(cdesc, "mumbles.");
 	  msg_print(cdesc);
-	  { int player_hit; /* control 2ndary effects -CFT */
-	    player_hit = bolt(GF_FROST, char_row, char_col,
+	  bolt(GF_FROST, char_row, char_col,
 		 damroll(6,6)+(c_list[m_ptr->mptr].level)
 		 , ddesc, m_ptr, monptr);
-	    if (player_hit) {
-	      take_hit(damroll(8,10), ddesc);
-	      if (!py.flags.sound_resist)
-                stun_player(randint(25));
-	      cut_player(randint(10));
-	    }
-	  }
 	  break;
 	case 53:
-          (void) strcat(cdesc, "gestures in shadow.");
+	  if (!blind)
+            (void) strcat(cdesc, "gestures in shadow.");
+          else
+	    (void) strcat(cdesc, "mumbles.");
 	  msg_print(cdesc);
 	  (void) unlight_area(char_row,char_col);
 	  break;
@@ -2057,10 +2074,17 @@ static void mon_cast_spell(monptr, took_turn)
 	    msg_print("Your memories fade away.");
 	  break;
 	case 55:
-	  (void) strcat(cdesc, "concentrates and its eyes glow red.");
-	  msg_print(cdesc);
+	  if (!blind) {
+	    (void) strcat(cdesc, "concentrates and its eyes glow red.");
+	    msg_print(cdesc);
+	    }
+	  else
+	    msg_print("You feel something focusing on your mind.");
 	  if (player_saves())
-	    msg_print("You avert your gaze!");
+	    if (!blind)
+	      msg_print("You avert your gaze!");
+	    else
+	      msg_print("You resist the effects.");
 	  else {
 	    msg_print("Your mind is blasted by psionic energy.");
 	    take_hit(damroll(12, 15), ddesc);
@@ -2090,13 +2114,19 @@ static void mon_cast_spell(monptr, took_turn)
 	  }
 	  break;
 	case 56:
-	  (void) strcat(cdesc, "casts a Stinking cloud.");
+	  if (!blind)
+	    (void) strcat(cdesc, "casts a Stinking cloud.");
+	  else
+	    (void) strcat(cdesc, "mumbles, and you smell a foul odor.");
 	  msg_print(cdesc);
 	  breath(GF_POISON_GAS, char_row, char_col,
 		 damroll(12,2), ddesc, monptr);
 	  break;
 	case 57:
-	  (void) strcat(cdesc, "gestures at you.");
+	  if (!blind)
+	    (void) strcat(cdesc, "gestures at you.");
+	  else
+	    (void) strcat(cdesc, "mumbles.");
 	  msg_print(cdesc);
 	  if ((player_saves()) || (randint(3)!=1) || (py.flags.nexus_resist))
 	    msg_print("You keep your feet firmly on the ground.");
@@ -2120,71 +2150,40 @@ static void mon_cast_spell(monptr, took_turn)
 	  break;
 	case 58:
 	  f_ptr=&py.flags;
-	  (void) strcat(cdesc, "casts a Water bolt.");
+	  if (!blind)
+	    (void) strcat(cdesc, "casts a Water bolt.");
+	  else
+	    (void) strcat(cdesc, "mumbles.");
 	  msg_print(cdesc);
-	  { int player_hit; /* control 2ndary eff. -CFT */
-#ifdef TC_COLOR
-	    player_hit = bolt(GF_WATER, char_row, char_col,
-#else
-	    player_hit = bolt(GF_MAGIC_MISSILE, char_row, char_col,
-#endif
+	  bolt(GF_WATER, char_row, char_col,
 		 damroll(10,10)+(c_list[m_ptr->mptr].level)
 		 , ddesc, m_ptr, monptr);
-	    if (player_hit){
-	      if (!py.flags.sound_resist)
-                stun_player(randint(15));
-	    }
-	  }
 	  break;
 	case 59:
 	  f_ptr = &py.flags;
-	  (void) strcat(cdesc, "gestures fluidly.");
+	  if (!blind)
+	    (void) strcat(cdesc, "gestures fluidly.");
+	  else
+	    (void) strcat(cdesc, "mumbles.");
 	  msg_print(cdesc);
 	  msg_print("You are engulfed in a whirlpool.");
-#ifdef TC_COLOR
 	  breath(GF_WATER, char_row, char_col,
-#else
-	  breath(GF_MAGIC_MISSILE, char_row, char_col,
-#endif
 		 randint((c_list[m_ptr->mptr].level*5)/2)+50, ddesc, monptr);
-	  if (!py.flags.sound_resist)
-	    stun_player(randint(55));
-	  if ((!player_saves()) && (!py.flags.confusion_resist)
-				&& (!py.flags.chaos_resist)) {
-	    if (py.flags.confused > 0)
-	      py.flags.confused += 6;
-	    else
-	      py.flags.confused = randint(8) + 6;
-	  }
 	  break;
 	case 60:
-	  (void) strcat(cdesc, "casts a Nether Ball.");
+	  if (!blind)
+	    (void) strcat(cdesc, "casts a Nether Ball.");
+	  else
+	    (void) strcat(cdesc, "mumbles, and you feel an unholy aura.");
 	  msg_print(cdesc);
-	  if (py.flags.nether_resist)
-#ifdef TC_COLOR
-	    breath(GF_NETHER, char_row, char_col,
-#else
-	    breath(GF_MAGIC_MISSILE, char_row, char_col,
-#endif
-	(34+damroll(10,7)+(c_list[m_ptr->mptr].level*2)/3), ddesc, monptr);
-	  else {
-#ifdef TC_COLOR
-	    breath(GF_NETHER, char_row, char_col,
-#else
-	    breath(GF_MAGIC_MISSILE, char_row, char_col,
-#endif
+	  breath(GF_NETHER, char_row, char_col,
 	       (50+damroll(10,10)+(c_list[m_ptr->mptr].level)), ddesc, monptr);
-	    f_ptr = &py.flags;
-	    if (f_ptr->hold_life && randint(2)==1)
-	      msg_print("You keep hold of your life force!");
-	    else {
-	      msg_print("You feel your life draining away!");
-	      lose_exp(5000+(py.misc.exp / 100)*MON_DRAIN_LIFE);
-	    }
-	  }
 	  break;
 	case 61:
-	  (void) strcat(cdesc, "summons an Angel.");
+	  if (!blind)
+	    (void) strcat(cdesc, "summons an Angel.");
+	  else
+	    (void) strcat(cdesc, "mumbles, and you hear something appear nearby.");
 	  msg_print(cdesc);
 	  y = char_row;
 	  x = char_col;
@@ -2195,7 +2194,10 @@ static void mon_cast_spell(monptr, took_turn)
 	  update_mon ((int)cave[y][x].cptr);
 	  break;
 	case 62:
-	  (void) strcat(cdesc, "magically summons Spiders.");
+	  if (!blind)
+	    (void) strcat(cdesc, "magically summons Spiders.");
+	  else
+	    (void) strcat(cdesc, "mumbles, and you hear many things appear nearby.");
 	  msg_print(cdesc);
 	  y = char_row;
 	  x = char_col;
@@ -2208,7 +2210,10 @@ static void mon_cast_spell(monptr, took_turn)
 	  }
 	  break;
 	case 63:
-	  (void) strcat(cdesc, "magically summons Hounds.");
+	  if (!blind)
+	    (void) strcat(cdesc, "magically summons Hounds.");
+	  else
+	    (void) strcat(cdesc, "mumbles, and you hear many things appear nearby.");
 	  msg_print(cdesc);
 	  y = char_row;
 	  x = char_col;
@@ -2221,315 +2226,95 @@ static void mon_cast_spell(monptr, took_turn)
 	  }
 	  break;
 	case 64:
-	  (void) strcat(cdesc, "breathes Nexus.");
+	  if (!blind)
+	    (void) strcat(cdesc, "breathes Nexus.");
+	  else
+	    (void) strcat(cdesc, "breathes, and you feel strange.");
 	  msg_print(cdesc);
-	  if (py.flags.nexus_resist) {
-#ifdef TC_COLOR
-	    breath(GF_NEXUS, char_row, char_col,
-#else
-	    breath(GF_MAGIC_MISSILE, char_row, char_col,
-#endif
-		  ((m_ptr->hp/3)>167?167:(m_ptr->hp/3)), ddesc, monptr);
-	  }
-          else {
-#ifdef TC_COLOR
-	    breath(GF_NEXUS, char_row, char_col,
-#else
-	    breath(GF_MAGIC_MISSILE, char_row, char_col,
-#endif
+	  breath(GF_NEXUS, char_row, char_col,
 	           ((m_ptr->hp/3)>250?250:(m_ptr->hp/3)), ddesc, monptr);
-	    switch (randint(7)) {
-	    case 1:
-	    case 2:
-	    case 3:
-	      teleport(200);
-	      break;
-	    case 4:
-	    case 5:
-	      teleport_to((int)m_ptr->fy, (int)m_ptr->fx);
-	      break;
-	    case 6:
-	      if (player_saves())
-	        msg_print("You resist the effects.");
-	      else {
-	        k=dun_level;
-	        if (dun_level==Q_PLANE)
-		  dun_level=0;
-	        else if (is_quest(dun_level))
-		  dun_level-=1;
-	        else
-		  dun_level+=(-3)+2*randint(2);
-	        if (dun_level<0) dun_level=0;
-	        if (k==Q_PLANE)
-		  msg_print("You warp through a cross-dimension gate.");
-	        else if (k<dun_level)
-		  msg_print("You sink through the floor.");
-	        else
-		  msg_print("You rise up through the ceiling.");
-	        new_level_flag=TRUE;
-	      }
-	      break;
-	    case 7:
-	      if (player_saves() && randint(2)==1)
-	        msg_print("You resist the effects.");
-	      else {
-	        int max1, cur1, use1, max2, cur2, use2, i, j;
-	        msg_print("Your body starts to scramble...");
-	        i=randint(6)-1;
-	        do {
-		  j=randint(6)-1;
-	        } while (i==j);
-	        max1 = py.stats.max_stat[i];
-	        cur1 = py.stats.cur_stat[i];
-	        max2 = py.stats.max_stat[j];
-	        cur2 = py.stats.cur_stat[j];
-	        py.stats.max_stat[i] = max2;
-	        py.stats.cur_stat[i] = cur2;
-	        py.stats.max_stat[j] = max1;
-	        py.stats.cur_stat[j] = cur1;
-		set_use_stat(i);
-		set_use_stat(j);
-	        prt_stat(i);
-	        prt_stat(j);
-	      }
-	    }
-	  }
 	  break;
 	case 65:
-	  f_ptr=&py.flags;
-	  (void) strcat(cdesc, "breathes elemental force.");
+	  if (!blind)
+	    (void) strcat(cdesc, "breathes elemental force.");
+	  else
+	    (void) strcat(cdesc, "breathes, and you are hit hard.");
 	  msg_print(cdesc);
 	  if (randint(10)==1)
 	    br_wall(m_ptr->fy, m_ptr->fx);
-	  else {
-#ifdef TC_COLOR
+	  else
 	    breath(GF_FORCE, char_row, char_col,
-#else
-	    breath(GF_MAGIC_MISSILE, char_row, char_col,
-#endif
 		   ((m_ptr->hp/6)>200?200:(m_ptr->hp/6)), ddesc, monptr);
-	    if (!py.flags.sound_resist)
-		stun_player(randint(20));
-	  }
 	  break;
 	case 66:
-	  (void) strcat(cdesc, "breathes inertia.");
+	  if (!blind)
+	    (void) strcat(cdesc, "breathes inertia.");
+	  else
+	    (void) strcat(cdesc, "breathes.");
 	  msg_print(cdesc);
-#ifdef TC_COLOR
 	  breath(GF_INERTIA, char_row, char_col,
-#else
-	  breath(GF_MAGIC_MISSILE, char_row, char_col,
-#endif
 		 ((m_ptr->hp/6)>200?200:(m_ptr->hp/6)), ddesc, monptr);
-	  msg_print("You feel less able to move.");
-	  py.flags.slow = randint(5) + 3;
 	  break;
 	case 67:
-	  (void) strcat(cdesc, "breathes light.");
+	  if (!blind)
+	    (void) strcat(cdesc, "breathes light.");
+	  else
+	    (void) strcat(cdesc, "breathes.");
 	  msg_print(cdesc);
- 	  if (py.flags.light_resist) {
-#ifdef TC_COLOR
-	    breath(GF_LIGHT, char_row, char_col,
-#else
-	    breath(GF_MAGIC_MISSILE, char_row, char_col,
-#endif
-	           ((m_ptr->hp/6)>200?200:(m_ptr->hp/6)), ddesc, monptr);
-	    light_area(char_row, char_col);
-	  }
-          else {
-#ifdef TC_COLOR
-	    breath(GF_LIGHT, char_row, char_col,
-#else
-	    breath(GF_MAGIC_MISSILE, char_row, char_col,
-#endif
+	  breath(GF_LIGHT, char_row, char_col,
 	           ((m_ptr->hp/6)>400?400:(m_ptr->hp/6)), ddesc, monptr);
-	    light_area(char_row, char_col);
-	    if (!py.flags.blindness_resist) {
-	      if (py.flags.blind<=0) {
-	        msg_print("You are blinded by the flash!");
-	        py.flags.blind+=randint(6)+3;
-	      }
-	    }
-	  }
 	  break;
 	case 68:
-	  (void) strcat(cdesc, "breathes time.");
+	  if (!blind)
+	    (void) strcat(cdesc, "breathes time.");
+	  else
+	    (void) strcat(cdesc, "breathes.");
 	  msg_print(cdesc);
-#ifdef TC_COLOR
 	  breath(GF_TIME, char_row, char_col,
-#else
-	  breath(GF_MAGIC_MISSILE, char_row, char_col,
-#endif
 		 ((m_ptr->hp/3)>150?150:(m_ptr->hp/3)), ddesc, monptr);
-	  switch (randint(10)) {
-	  case 1:
-	  case 2:
-	  case 3:
-	  case 4:
-	  case 5:
-	    msg_print("You feel life has clocked back.");
-	    lose_exp(m_ptr->hp+(py.misc.exp / 300)*MON_DRAIN_LIFE);
-	    break;
-	  case 6:
-	  case 7:
-	  case 8:
-	  case 9:
-	    switch (randint(6)) {
-	    case 1:
-	      msg_print("You're not as strong as you used to be...");
-	      py.stats.cur_stat[A_STR]=(py.stats.cur_stat[A_STR]*3)/4;
-	      if (py.stats.cur_stat[A_STR]<3) py.stats.cur_stat[A_STR]=3;
-	      py.stats.use_stat[A_STR]=(py.stats.use_stat[A_STR]*3)/4;
-	      if (py.stats.use_stat[A_STR]<3) py.stats.use_stat[A_STR]=3;
-	      prt_stat(A_STR);
-	      break;
-	    case 2:
-	      msg_print("You're not as bright as you used to be...");
-	      py.stats.cur_stat[A_INT]=(py.stats.cur_stat[A_INT]*3)/4;
-	      if (py.stats.cur_stat[A_INT]<3) py.stats.cur_stat[A_INT]=3;
-	      py.stats.use_stat[A_INT]=(py.stats.use_stat[A_INT]*3)/4;
-	      if (py.stats.use_stat[A_INT]<3) py.stats.use_stat[A_INT]=3;
-	      prt_stat(A_INT);
-	      break;
-	    case 3:
-	      msg_print("You're not as wise as you used to be...");
-	      py.stats.cur_stat[A_WIS]=(py.stats.cur_stat[A_WIS]*3)/4;
-	      if (py.stats.cur_stat[A_WIS]<3) py.stats.cur_stat[A_WIS]=3;
-	      py.stats.use_stat[A_WIS]=(py.stats.use_stat[A_WIS]*3)/4;
-	      if (py.stats.use_stat[A_WIS]<3) py.stats.use_stat[A_WIS]=3;
-	      prt_stat(A_WIS);
-	      break;
-	    case 4:
-	      msg_print("You're not as agile as you used to be...");
-	      py.stats.cur_stat[A_DEX]=(py.stats.cur_stat[A_DEX]*3)/4;
-	      if (py.stats.cur_stat[A_DEX]<3) py.stats.cur_stat[A_DEX]=3;
-	      py.stats.use_stat[A_DEX]=(py.stats.use_stat[A_DEX]*3)/4;
-	      if (py.stats.use_stat[A_DEX]<3) py.stats.use_stat[A_DEX]=3;
-	      prt_stat(A_DEX);
-	      break;
-	    case 5:
-	      msg_print("You're not as hale as you used to be...");
-	      py.stats.cur_stat[A_CON]=(py.stats.cur_stat[A_CON]*3)/4;
-	      if (py.stats.cur_stat[A_CON]<3) py.stats.cur_stat[A_CON]=3;
-	      py.stats.use_stat[A_CON]=(py.stats.use_stat[A_CON]*3)/4;
-	      if (py.stats.use_stat[A_CON]<3) py.stats.use_stat[A_CON]=3;
-	      prt_stat(A_CON);
-	      break;
-	    case 6:
-	      msg_print("You're not as beautiful as you used to be...");
-	      py.stats.cur_stat[A_CHR]=(py.stats.cur_stat[A_CHR]*3)/4;
-	      if (py.stats.cur_stat[A_CHR]<3) py.stats.cur_stat[A_CHR]=3;
-	      py.stats.use_stat[A_CHR]=(py.stats.use_stat[A_CHR]*3)/4;
-	      if (py.stats.use_stat[A_CHR]<3) py.stats.use_stat[A_CHR]=3;
-	      prt_stat(A_CHR);
-	      break;
-	    }
-	    break;
-	  case 10:
-	    msg_print("You're not as strong as you used to be...");
-	    py.stats.cur_stat[A_STR]=(py.stats.cur_stat[A_STR]*3)/4;
-	    if (py.stats.cur_stat[A_STR]<3) py.stats.cur_stat[A_STR]=3;
-	    py.stats.use_stat[A_STR]=(py.stats.use_stat[A_STR]*3)/4;
-	    if (py.stats.use_stat[A_STR]<3) py.stats.use_stat[A_STR]=3;
-	    prt_stat(A_STR);
-	    msg_print("You're not as bright as you used to be...");
-	    py.stats.cur_stat[A_INT]=(py.stats.cur_stat[A_INT]*3)/4;
-	    if (py.stats.cur_stat[A_INT]<3) py.stats.cur_stat[A_INT]=3;
-	    py.stats.use_stat[A_INT]=(py.stats.use_stat[A_INT]*3)/4;
-	    if (py.stats.use_stat[A_INT]<3) py.stats.use_stat[A_INT]=3;
-	    prt_stat(A_INT);
-	    msg_print("You're not as wise as you used to be...");
-	    py.stats.cur_stat[A_WIS]=(py.stats.cur_stat[A_WIS]*3)/4;
-	    if (py.stats.cur_stat[A_WIS]<3) py.stats.cur_stat[A_WIS]=3;
-	    py.stats.use_stat[A_WIS]=(py.stats.use_stat[A_WIS]*3)/4;
-	    if (py.stats.use_stat[A_WIS]<3) py.stats.use_stat[A_WIS]=3;
-	    prt_stat(A_WIS);
-	    msg_print("You're not as agile as you used to be...");
-	    py.stats.cur_stat[A_DEX]=(py.stats.cur_stat[A_DEX]*3)/4;
-	    if (py.stats.cur_stat[A_DEX]<3) py.stats.cur_stat[A_DEX]=3;
-	    py.stats.use_stat[A_DEX]=(py.stats.use_stat[A_DEX]*3)/4;
-	    if (py.stats.use_stat[A_DEX]<3) py.stats.use_stat[A_DEX]=3;
-	    prt_stat(A_DEX);
-	    msg_print("You're not as hale as you used to be...");
-	    py.stats.cur_stat[A_CON]=(py.stats.cur_stat[A_CON]*3)/4;
-	    if (py.stats.cur_stat[A_CON]<3) py.stats.cur_stat[A_CON]=3;
-	    py.stats.use_stat[A_CON]=(py.stats.use_stat[A_CON]*3)/4;
-	    if (py.stats.use_stat[A_CON]<3) py.stats.use_stat[A_CON]=3;
-	    prt_stat(A_CON);
-	    msg_print("You're not as beautiful as you used to be...");
-	    py.stats.cur_stat[A_CHR]=(py.stats.cur_stat[A_CHR]*3)/4;
-	    if (py.stats.cur_stat[A_CHR]<3) py.stats.cur_stat[A_CHR]=3;
-	    py.stats.use_stat[A_CHR]=(py.stats.use_stat[A_CHR]*3)/4;
-	    if (py.stats.use_stat[A_CHR]<3) py.stats.use_stat[A_CHR]=3;
-	    prt_stat(A_CHR);
-	    break;
-	  }
 	  break;
 	case 69: /* gravity */
-	  f_ptr=&py.flags;
-	  (void) strcat(cdesc, "breathes gravity.");
+	  if (!blind)
+	    (void) strcat(cdesc, "breathes gravity.");
+	  else
+	    (void) strcat(cdesc, "breathes, and you feel heavy.");
 	  msg_print(cdesc);
-	  if (!py.flags.sound_resist)
-	      stun_player(randint((m_ptr->hp/8)>35? 35 : ((m_ptr->hp/8)<=0)?
-			      1 : (m_ptr->hp/8)));
-#ifdef TC_COLOR
 	  breath(GF_GRAVITY, char_row, char_col,
-#else
-	  breath(GF_MAGIC_MISSILE, char_row, char_col,
-#endif
 		 ((m_ptr->hp/3)>200?200:(m_ptr->hp/3)), ddesc, monptr);
-	  py.flags.slow = randint(5) + 3;
-	  msg_print("Gravity warps around you.");
-	  teleport(5);
 	  break;
 	case 70: /* darkness */
-	  (void) strcat(cdesc, "breathes darkness.");
+	  if (!blind)
+	    (void) strcat(cdesc, "breathes darkness.");
+	  else
+	    (void) strcat(cdesc, "breathes.");
 	  msg_print(cdesc);
-	  if (py.flags.dark_resist) {
-#ifdef TC_COLOR
-	    breath(GF_DARK, char_row, char_col,
-#else
-	    breath(GF_MAGIC_MISSILE, char_row, char_col,
-#endif
-		  ((m_ptr->hp/6)>200?200:(m_ptr->hp/6)), ddesc, monptr);
-	    unlight_area(char_row, char_col);
-	  }
-	  else {
-#ifdef TC_COLOR
-	    breath(GF_DARK, char_row, char_col,
-#else
-	    breath(GF_MAGIC_MISSILE, char_row, char_col,
-#endif
+	  breath(GF_DARK, char_row, char_col,
 		  ((m_ptr->hp/6)>400?400:(m_ptr->hp/6)), ddesc, monptr);
-	    unlight_area(char_row, char_col);
-	  }
           break;
 	case 71: /* plasma */
-	  f_ptr=&py.flags;
-	  (void) strcat(cdesc, "breathes plasma.");
+	  if (!blind)
+	    (void) strcat(cdesc, "breathes plasma.");
+	  else
+	    (void) strcat(cdesc, "breathes.");
 	  msg_print(cdesc);
-#ifdef TC_COLOR
 	  breath(GF_PLASMA, char_row, char_col,
-#else
-	  breath(GF_MAGIC_MISSILE, char_row, char_col,
-#endif
 		 ((m_ptr->hp/6)>150?150:(m_ptr->hp/6)), ddesc, monptr);
-	  if (!py.flags.sound_resist)
-	      stun_player(randint((m_ptr->hp/8)>35? 35 : ((m_ptr->hp/8)<=0)?
-			      1 : (m_ptr->hp/8)));
 	  break;
 	case 72:
-	  (void) strcat(cdesc, "fires an arrow at you.");
-	  msg_print(cdesc);
-#ifdef TC_COLOR
+	  if (!blind) {
+	    (void) strcat(cdesc, "fires an arrow at you.");
+	    msg_print(cdesc);
+	    }
+	  else
+	    msg_print("You hear the 'twang' of a bowstring.");
 	  bolt(GF_ARROW, char_row, char_col,
-#else
-	  bolt(GF_MAGIC_MISSILE, char_row, char_col,
-#endif
 		 damroll(1,6), ddesc, m_ptr, monptr);
 	  break;
 	case 73:
-  	  (void) strcat(cdesc, "magically summons mighty undead opponents.");
+	  if (!blind)
+  	    (void) strcat(cdesc, "magically summons mighty undead opponents.");
+  	  else
+	    (void) strcat(cdesc, "mumbles, and you hear many creepy things appear.");
 	  msg_print(cdesc);
 	  y = char_row;
 	  x = char_col;
@@ -2548,40 +2333,29 @@ static void mon_cast_spell(monptr, took_turn)
 	  }
 	  break;
 	case 74: /* Big darkness storm */
-	  (void) strcat(cdesc, "casts a darkness storm.");
+	  if (!blind)
+	    (void) strcat(cdesc, "casts a darkness storm.");
+	  else
+	    (void) strcat(cdesc, "mumbles powerfully.");
 	  msg_print(cdesc);
-	  if (py.flags.dark_resist) {
-#ifdef TC_COLOR
-	    breath(GF_DARK, char_row, char_col,
-#else
-	    breath(GF_MAGIC_MISSILE, char_row, char_col,
-#endif
-	          ((m_ptr->hp/6)>250?250:(m_ptr->hp/6)), ddesc, monptr);
-	    unlight_area(char_row, char_col);
-	  }
-	  else {
-#ifdef TC_COLOR
-	    breath(GF_DARK, char_row, char_col,
-#else
-	    breath(GF_MAGIC_MISSILE, char_row, char_col,
-#endif
+	  breath(GF_DARK, char_row, char_col,
                   ((m_ptr->hp/6)>500?500:(m_ptr->hp/6)), ddesc, monptr);
-            unlight_area(char_row, char_col);
-          }
           break;
 	case 75: /* Mana storm */
-	  (void) strcat(cdesc, "invokes a Mana storm.");
+	  if (!blind)
+	    (void) strcat(cdesc, "invokes a Mana storm.");
+	  else
+	    (void) strcat(cdesc, "mumbles, and you are hit by a storm of power.");
 	  msg_print(cdesc);
-#ifdef TC_COLOR
 	  breath(GF_MANA, char_row, char_col,
-#else
-	  breath(GF_MAGIC_MISSILE, char_row, char_col,
-#endif
 	    	(c_list[m_ptr->mptr].level*5)+damroll(10,10),
 		ddesc, monptr);
 	  break;
 	case 76: /* Summon reptiles */
-	  (void) strcat(cdesc, "magically summons reptiles.");
+	  if (!blind)
+	    (void) strcat(cdesc, "magically summons reptiles.");
+	  else
+	    (void) strcat(cdesc, "mumbles, and you hear many things appear nearby.");
 	  msg_print(cdesc);
 	  y = char_row;
 	  x = char_col;
@@ -2594,7 +2368,10 @@ static void mon_cast_spell(monptr, took_turn)
 	  }
 	  break;
 	case 77: /* Summon ants */
-	  (void) strcat(cdesc, "magically summons ants.");
+	  if (!blind)
+	    (void) strcat(cdesc, "magically summons ants.");
+	  else
+	    (void) strcat(cdesc, "mumbles, and you hear many things appear nearby.");
 	  msg_print(cdesc);
 	  y = char_row;
 	  x = char_col;
@@ -2607,7 +2384,10 @@ static void mon_cast_spell(monptr, took_turn)
 	  }
 	  break;
 	case 78: /* Summon unique monsters */
-	  (void) strcat(cdesc, "summons special opponents!");
+	  if (!blind)
+	    (void) strcat(cdesc, "summons special opponents!");
+	  else
+	    (void) strcat(cdesc, "mumbles, and you're worried by the things you hear nearby.");
 	  msg_print(cdesc);
 	  y = char_row;
 	  x = char_col;
@@ -2626,7 +2406,10 @@ static void mon_cast_spell(monptr, took_turn)
 	  }
 	  break;
 	case 79: /* Summon greater undead */
-	  (void) strcat(cdesc, "summons the DEAD!");
+	  if (!blind)
+	    (void) strcat(cdesc, "summons the DEAD!");
+	  else
+	    (void) strcat(cdesc, "mumbles, and a chill runs down your spine.");
 	  msg_print(cdesc);
 	  y = char_row;
 	  x = char_col;
@@ -2639,7 +2422,10 @@ static void mon_cast_spell(monptr, took_turn)
 	  }
 	  break;
 	case 80: /* Summon ancient dragons */
-	  (void) strcat(cdesc, "summons Ancient Dragons.");
+	  if (!blind)
+	    (void) strcat(cdesc, "summons Ancient Dragons.");
+	  else
+	    (void) strcat(cdesc, "mumbles, and you hear many huge things appear nearby.");
 	  msg_print(cdesc);
 	  y = char_row;
 	  x = char_col;
@@ -2686,6 +2472,7 @@ int monptr;
 {
   register int i, j, k;
   register cave_type *c_ptr;
+  int result;
 #ifdef ATARIST_MWC
   int32u holder;
 #endif
@@ -2722,8 +2509,10 @@ int monptr;
 
 		      /* in case compact_monster() is called,it needs monptr */
 		      hack_monptr = monptr;
-		      place_monster(j, k, cr_index, FALSE);
+		      result = place_monster(j, k, cr_index, FALSE);
 		      hack_monptr = -1;
+		      if (!result)
+		        return FALSE;
 		      mon_tot_mult++;
 		      return check_mon_lite(j, k);
 		    }
@@ -2733,8 +2522,10 @@ int monptr;
 		{
 		  /* in case compact_monster() is called,it needs monptr */
 		  hack_monptr = monptr;
-		  place_monster(j, k, cr_index, FALSE);
+		  result = place_monster(j, k, cr_index, FALSE);
 		  hack_monptr = -1;
+		  if (!result)
+		    return FALSE;
 		  mon_tot_mult++;
 		  return check_mon_lite(j, k);
 		}
@@ -2766,8 +2557,8 @@ int32u *rcmove;
 	((py.flags.rest==-1) && (randint(MON_MULT_ADJ)==1))))
     {
       k = 0;
-      for (i = m_ptr->fy-1; i <= m_ptr->fy+1; i++)
-	for (j = m_ptr->fx-1; j <= m_ptr->fx+1; j++)
+      for (i = (int)m_ptr->fy-1; i <= (int)m_ptr->fy+1; i++)
+	for (j = (int)m_ptr->fx-1; j <= (int)m_ptr->fx+1; j++)
 	  if (in_bounds(i, j) && (cave[i][j].cptr > 1))
 	    k++;
       /* can't call randint with a value of zero, increment counter
@@ -2785,11 +2576,18 @@ int32u *rcmove;
   if (!(r_ptr->cmove & CM_PHASE) &&
       (cave[m_ptr->fy][m_ptr->fx].fval >= MIN_CAVE_WALL))
     {
+      /* If the monster is already dead, don't kill it again!
+	 This can happen for monsters moving faster than the player.  They
+	 will get multiple moves, but should not if they die on the first
+	 move.  This is only a problem for monsters stuck in rock.  */
+      if (m_ptr->hp < 0)
+	return;
+
       k = 0;
       dir = 1;
       /* note direction of for loops matches direction of keypad from 1 to 9 */
       /* do not allow attack against the player */
-      for (i = m_ptr->fy+1; i >= m_ptr->fy-1; i--)
+      for (i = m_ptr->fy+1; i >= (int)(m_ptr->fy-1); i--)
 	for (j = m_ptr->fx-1; j <= m_ptr->fx+1; j++)
 	  {
 	    if ((dir != 5) && (cave[i][j].fval <= MAX_OPEN_SPACE)
@@ -2811,6 +2609,10 @@ int32u *rcmove;
 	 more damage */
       if (cave[m_ptr->fy][m_ptr->fx].fval >= MIN_CAVE_WALL)
 	{
+char buf[60];
+sprintf(buf, "HEY! #%d (of %d) %s at [%d,%d] in %d.", monptr, mfptr-1, r_ptr->name, m_ptr->fy,
+		m_ptr->fx, cave[m_ptr->fy][m_ptr->fx].fval);
+msg_print(buf);		
 	  /* in case the monster dies, may need to call fix1_delete_monster()
 	     instead of delete_monsters() */
 	  hack_monptr = monptr;
@@ -2839,9 +2641,16 @@ int32u *rcmove;
       mm[4] = randint(9);
       /* don't move him if he is not supposed to move! */
       if (!(r_ptr->cmove & CM_ATTACK_ONLY))
-	make_move(monptr, mm, rcmove);
-      if (randint(8) == 1)
-	m_ptr->confused = FALSE;
+	{
+	  *rcmove |= CM_ATTACK_ONLY;
+	  make_move(monptr, mm, rcmove);
+	}
+      /* reduce conf, tough monsters can unconf faster -CFT */
+      { int t = (int)m_ptr->confused; /* use int so avoid unsigned wraparound -CFT */
+        t -= randint(c_list[m_ptr->mptr].level / 10);
+	if (t < 0) t = 0;
+        m_ptr->confused = (int8u)t;
+        }
       move_test = TRUE;
     }
   /* Creature may cast a spell */
@@ -2903,7 +2712,6 @@ int32u *rcmove;
       else if ((r_ptr->cmove & CM_ATTACK_ONLY) && (m_ptr->cdis < 2))
 	{
 	  get_moves(monptr, mm);
-	  *rcmove |= CM_ATTACK_ONLY;
 	  make_move(monptr, mm, rcmove);
 	}
       else if ((r_ptr->cmove & CM_ALL_MV_FLAGS) == 0 && (m_ptr->cdis < 2))
@@ -2952,11 +2760,25 @@ int attack;
 	  else
 	    while (k > 0)
 	      {
+#ifdef TC_COLOR
+	/* if it's a MHD, then we want to update it's color all the time... -CFT */
+		if (!no_color_flag && 
+			(strstr(c_list[m_ptr->mptr].name, "multi-hued") != NULL))
+		  update_mon(i);
+#endif
 		k--;
 		wake = FALSE;
 		ignore = FALSE;
 		rcmove = 0;
-		if (m_ptr->ml || (m_ptr->cdis <= c_list[m_ptr->mptr].aaf))
+		if (m_ptr->ml || (m_ptr->cdis <= c_list[m_ptr->mptr].aaf)
+		    /* Monsters trapped in rock must be given a turn also,
+		       so that they will die/dig out immediately.  */
+#ifdef ATARIST_MWC
+		    || ((! (c_list[m_ptr->mptr].cmove & (holder = CM_PHASE)))
+#else
+		    || ((! (c_list[m_ptr->mptr].cmove & CM_PHASE))
+#endif
+			&& cave[m_ptr->fy][m_ptr->fx].fval >= MIN_CAVE_WALL))
 		  {
 		    if (m_ptr->csleep > 0)
 		      if (py.flags.aggravate)
@@ -3072,10 +2894,16 @@ static shatter_quake(mon_y, mon_x)
 		/* only kill if there is nowhere for the monster to
 		   escape to */
 		kill = TRUE;
-		for (y = i-1; y <= i+1; y++)
-		  for (x = j-1; x <= j+1; x++)
-		    if (cave[y][x].fval >= MIN_CLOSED_SPACE)
+		for (y = i-1; y <= i+1; y++) {
+		  for (x = j-1; x <= j+1; x++) {
+		    if ((cave[y][x].fval<=MAX_OPEN_SPACE) &&
+			   !(y==i && x==j)) {
 		      kill = FALSE;
+		      break;
+		    }
+	    	  }
+	        if (!kill) break;
+		}
 	      }
 	      if (kill)
 		damage = 0x7fff;  /* this will kill everything */
@@ -3120,17 +2948,17 @@ static shatter_quake(mon_y, mon_x)
 
 	    }
 	  } else if (c_ptr->cptr == 1) { /* Kill the dumb player! */
-	    kill = TRUE;
-	    for (y = i-1; y <= i+1; y++) {
-	      for (x = j-1; x <= j+1; x++) {
-		if ((cave[y][x].fval>=MIN_CLOSED_SPACE) &&
-		    (cave[y][x].cptr==0)) {
-		  kill = FALSE;
-		  break;
-		}
-	      }
+	      kill = TRUE;
+	      for (y = i-1; y <= i+1; y++) {
+	        for (x = j-1; x <= j+1; x++) {
+	          if ((cave[y][x].fval<=MAX_OPEN_SPACE) &&
+			(cave[y][x].cptr==0) && !(y==i && x==j)) {
+		    kill = FALSE;
+		    break;
+		  }
+	    	}
 	      if (!kill) break;
-	    }
+	      }
 
 	    switch (randint(3)) {
 	    case 1:
@@ -3181,9 +3009,12 @@ static shatter_quake(mon_y, mon_x)
 	  }
 
 	  if (c_ptr->tptr != 0)
-	    if ((t_list[c_ptr->tptr].tval >= TV_MIN_WEAR) &&
+	    if (((t_list[c_ptr->tptr].tval >= TV_MIN_WEAR) &&
 	        (t_list[c_ptr->tptr].tval <= TV_MAX_WEAR) &&
-	        (t_list[c_ptr->tptr].flags2 & TR_ARTIFACT))
+	        (t_list[c_ptr->tptr].flags2 & TR_ARTIFACT)) ||
+	       (t_list[c_ptr->tptr].tval == TV_UP_STAIR) ||
+	       (t_list[c_ptr->tptr].tval == TV_DOWN_STAIR) ||
+	       (t_list[c_ptr->tptr].tval == TV_STORE_DOOR))
 	      continue; /* don't kill artifacts... */
 	    else
 	      (void) delete_object(i, j);
@@ -3193,7 +3024,9 @@ static shatter_quake(mon_y, mon_x)
 	    c_ptr->pl = FALSE;
 	    c_ptr->fm = FALSE;
 	  }
-	  else if (c_ptr->fval <= MAX_CAVE_FLOOR) {
+	  else if ((c_ptr->fval <= MAX_CAVE_FLOOR) && (c_ptr->tptr == 0)
+		&& (c_ptr->cptr != 1)) {  /* don't bury player, it made him
+						unattackable -CFT */
 	    tmp = randint(10);
 	    if (tmp < 6)
 	      c_ptr->fval  = QUARTZ_WALL;
@@ -3215,10 +3048,9 @@ static br_wall(mon_y, mon_x)
   int mon_y;
   int mon_x;
 {
-  register int i, j, k, l;
+  register int k, l;
   register cave_type *c_ptr;
   int kill, damage, tmp, y, x;
-  vtype out_val;
 
   kill = TRUE;
   for (y = char_row-1; y <= char_row+1; y++) {
@@ -3265,7 +3097,17 @@ static br_wall(mon_y, mon_x)
     }
     c_ptr = &cave[char_row][char_col];
     move_rec(char_row, char_col, y, x);
-    if (c_ptr->fval <= MAX_CAVE_FLOOR) {
+  /* don't destroy floor if stairs, shop, or artifact... */
+    if ((c_ptr->fval <= MAX_CAVE_FLOOR) &&
+	((c_ptr->tptr == 0) || ((t_list[c_ptr->tptr].tval != TV_UP_STAIR) &&
+	 (t_list[c_ptr->tptr].tval != TV_DOWN_STAIR) &&
+	 (t_list[c_ptr->tptr].tval != TV_STORE_DOOR) &&
+	 !((t_list[c_ptr->tptr].tval >= TV_MIN_WEAR) && /* is artifact? */
+	   (t_list[c_ptr->tptr].tval <= TV_MAX_WEAR) &&
+	   (t_list[c_ptr->tptr].flags2 & TR_ARTIFACT)) ))) {
+
+      if (c_ptr->tptr)
+        delete_object(char_row, char_col);
       tmp = randint(10);
       if (tmp < 6)
         c_ptr->fval  = QUARTZ_WALL;

@@ -1,20 +1,21 @@
-                    ******************************
-                    **  Angband 2.4.Frog-knows  **
-                    ******************************
-        Based on Umoria: Copyright (c) 1985 Robert Alan Koeneke
-                  Copyright (c) 1989 James E. Wilson
+                         ******************************
+                         **  Angband 2.4.Frog-knows  **
+                         ******************************
+            Based on Umoria: Copyright (c) 1985 Robert Alan Koeneke
+                       Copyright (c) 1989 James E. Wilson
+                                 PC release 1.31
 
                   Hacked By: Alex Cutler, Andy Astrand
                   Further Hacks By: Sean Marsh, Geoff Hill
-                  PC port by: Charles Teague
-                     With TC color code by: Justin Anderson
+                  PC Port and Yet More Hacks By: Charles Teague
+                  With TC++ Color Code By: Justin Anderson
+                  And Miscellaneous Patches By: Lots of Helpful People
 News:
-        Take note:  Priests (and Paladins) now need spellbooks to learn spells.
+    *   Priests (and Paladins) need spellbooks to learn spells.
+    *   Angband now has the targetting code from Morgul!  Use '*' to target.
 Bugs:
-        "probing" sometimes completely ignores a monster...  This may be
-          related to the "monster heal bug" (which has been patched over,
-          not truly fixed), but I don't know.
-        Sometimes "special offers" in the stores seem to be ignored -- the
-          shopkeeper asks for full price.  This seems to happen only with
-          "stackable" items like arrows, etc.
-
+    *  As always, I've tried to insure that Angband is free of problems
+       before I release it.  But, to be safe, you should periodically
+       make backups of your character, to protect him/her from bugs. -CFT
+    *  Probing sometimes completely ignores a monster.
+    *  Sometimes "special offers" in the stores seem to be ignored.

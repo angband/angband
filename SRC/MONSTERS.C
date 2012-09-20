@@ -114,7 +114,7 @@ creature_type c_list[MAX_CREATURES] = {
 
 {"Farmer Maggot"            ,(MV_ATT_NORM|CARRY_OBJ|HAS_90),(NONE8)
                             ,(UNIQUE|MAX_HP|CHARM_SLEEP|GOOD),(NONE8),(NONE8)
-			    ,0,3,40,10,11,'p',{25,15},{283,283,0,0},0,4
+			    ,0,3,40,10,11,'h',{25,15},{283,283,0,0},0,4
 #ifdef TC_COLOR
   , WHITE
 #endif
@@ -369,7 +369,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Novice rogue"		    ,(CARRY_OBJ|CARRY_GOLD|HAS_60|THRO_DR|
+{"Novice rogue"		    ,(CARRY_OBJ|CARRY_GOLD|HAS_60|THRO_DR|PICK_UP|
 			      MV_ATT_NORM),(NONE8),(EVIL),(NONE8),(NONE8)
 			    ,6,5,20,12,11,'p',{8,4},{5,148,0,0},2,1
 #ifdef TC_COLOR
@@ -495,7 +495,7 @@ creature_type c_list[MAX_CREATURES] = {
 {"Smeagol"		    ,(HAS_1D2|CARRY_GOLD|HAS_60|THRO_DR|MV_75|
 			      MV_ATT_NORM|MV_INVIS),(NONE8),(EVIL|UNIQUE)
 			    ,(NONE8),(NONE8)
-			    ,16,5,20,12,13,'p',{11,4},{3,148,0,0},3,2
+			    ,16,5,20,12,13,'h',{11,4},{3,148,0,0},3,2
 #ifdef TC_COLOR
   , LIGHTCYAN
 #endif
@@ -512,7 +512,7 @@ creature_type c_list[MAX_CREATURES] = {
 {"Poltergeist"		    ,(CARRY_OBJ|CARRY_GOLD|HAS_60|HAS_90|PICK_UP|
 			     MV_INVIS|THRO_WALL|MV_40|MV_75|
 			     MV_ATT_NORM),(BLINK|0xFL)
-			    ,(CHARM_SLEEP|HURT_LIGHT|EVIL|NO_INFRA|UNDEAD)
+			    ,(CHARM_SLEEP|HURT_LIGHT|EVIL|NO_INFRA|UNDEAD|IM_FROST)
 			    ,(NONE8),(NONE8)
 			    ,8,10,8,15,13,'G',{2,5},{93,0,0,0},3,1
 #ifdef TC_COLOR
@@ -567,7 +567,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Scruffy looking hobbit"   ,(CARRY_GOLD|CARRY_OBJ|HAS_60|THRO_DR|
+{"Scruffy looking hobbit"   ,(CARRY_GOLD|CARRY_OBJ|HAS_60|THRO_DR|PICK_UP|
 			      MV_ATT_NORM),(NONE8),(EVIL),(NONE8),(NONE8)
 			    ,4,10,16,8,11,'h',{3,5},{3,148,0,0},3,1
 #ifdef TC_COLOR
@@ -627,7 +627,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Novice Ranger"	    ,(CARRY_OBJ|CARRY_GOLD|HAS_60|THRO_DR|
+{"Novice ranger"	    ,(CARRY_OBJ|CARRY_GOLD|HAS_60|THRO_DR|
 			      MV_ATT_NORM),(0x9L|MAG_MISS)
 			    ,(NONE8),(NONE8),(NONE8)
 			    ,18,5,20,6,11,'p',{6,8},{4,4,0,0},4,1
@@ -704,7 +704,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Green naga"		    ,(CARRY_OBJ|CARRY_GOLD|HAS_60|PICK_UP|
+{"Green naga"		    ,(CARRY_OBJ|CARRY_GOLD|HAS_60|
 			     MV_ATT_NORM|MV_20),(NONE8),(EVIL|IM_ACID),(NONE8)
 			 ,(NONE8),30,120,18,40,11,'n',{9,8},{75,118,0,0},5,1
 #ifdef TC_COLOR
@@ -713,16 +713,16 @@ creature_type c_list[MAX_CREATURES] = {
 },
 
 {"Blue ooze"		    ,(HAS_60|CARRY_GOLD|CARRY_OBJ|MV_75|
-			      MV_ATT_NORM),(NONE8),(ANIMAL|GROUP),(NONE8)
+			      MV_ATT_NORM),(NONE8),(ANIMAL|GROUP|IM_FROST|NO_INFRA),(NONE8)
 			    ,(NONE8),7,80,8,16,11,'j',{3,4},{129,0,0,0},3,1
 #ifdef TC_COLOR
   , LIGHTBLUE
 #endif
 },
 
-{"Green glutton ghost"	    ,(CARRY_GOLD|CARRY_OBJ|HAS_60|HAS_90|
+{"Green glutton ghost"	    ,(CARRY_GOLD|CARRY_OBJ|HAS_60|HAS_90|PICK_UP|
 			      THRO_WALL|MV_INVIS|MV_ATT_NORM|MV_40|MV_75)
-			   ,(NONE8),(CHARM_SLEEP|EVIL|NO_INFRA|UNDEAD),(NONE8)
+			   ,(NONE8),(CHARM_SLEEP|EVIL|NO_INFRA|UNDEAD|IM_FROST),(NONE8)
 			   ,(NONE8),15,10,10,20,13,'G',{3,4},{211,0,0,0},5,1
 #ifdef TC_COLOR
   , GREEN
@@ -811,7 +811,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Novice rogue"		    ,(CARRY_OBJ|CARRY_GOLD|HAS_60|THRO_DR|
+{"Novice rogue"		    ,(CARRY_OBJ|CARRY_GOLD|HAS_60|THRO_DR|PICK_UP|
 			     MV_ATT_NORM),(NONE8),(EVIL|GROUP),(NONE8)
 			    ,(NONE8)
 			    ,6,5,20,12,11,'p',{8,4},{5,148,0,0},6,2
@@ -869,7 +869,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Cave Orc"		    ,(CARRY_OBJ|CARRY_GOLD|HAS_60|THRO_DR|MV_ATT_NORM)
+{"Cave orc"		    ,(CARRY_OBJ|CARRY_GOLD|HAS_60|THRO_DR|MV_ATT_NORM)
 			    ,(NONE8),(ORC|EVIL|GROUP|HURT_LIGHT),(NONE8)
 			    ,(NONE8),20,30,20,32,11,'o',{11,9},{7,0,0,0},7,1
 #ifdef TC_COLOR
@@ -902,7 +902,7 @@ creature_type c_list[MAX_CREATURES] = {
 },
 
 {"Red naga"		    ,(CARRY_GOLD|CARRY_OBJ|HAS_60|MV_ATT_NORM|
-			      MV_20|PICK_UP),(NONE8),(EVIL),(NONE8),(NONE8)
+			      MV_20),(NONE8),(EVIL),(NONE8),(NONE8)
 			    ,40,120,20,40,11,'n',{11,8},{76,82,0,0},7,2
 #ifdef TC_COLOR
   , RED
@@ -1004,7 +1004,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Novice Ranger"	    ,(CARRY_OBJ|CARRY_GOLD|HAS_60|THRO_DR|
+{"Novice ranger"	    ,(CARRY_OBJ|CARRY_GOLD|HAS_60|THRO_DR|
 			     MV_ATT_NORM),(0x9L|MAG_MISS),(GROUP)
 			    ,(NONE8),(NONE8)
 			    ,18,5,20,6,11,'p',{6,8},{4,4,0,0},8,1
@@ -1038,7 +1038,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Seedy looking human"	    ,(HAS_1D2|CARRY_OBJ|CARRY_GOLD|THRO_DR|
+{"Seedy looking human"	    ,(HAS_1D2|CARRY_OBJ|CARRY_GOLD|THRO_DR|PICK_UP|
 			      MV_ATT_NORM),(NONE8),(EVIL),(NONE8),(NONE8)
 			    ,22,20,20,26,11,'p',{8,9},{17,0,0,0},8,1
 #ifdef TC_COLOR
@@ -1055,7 +1055,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Hill Orc"		    ,(CARRY_OBJ|CARRY_GOLD|HAS_60|THRO_DR|MV_ATT_NORM)
+{"Hill orc"		    ,(CARRY_OBJ|CARRY_GOLD|HAS_60|THRO_DR|MV_ATT_NORM)
 			    ,(NONE8),(ORC|EVIL|GROUP),(NONE8),(NONE8)
 			    ,25,30,20,32,11,'o',{13,9},{9,0,0,0},8,1
 #ifdef TC_COLOR
@@ -1063,7 +1063,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Bandit"		    ,(HAS_1D2|CARRY_OBJ|CARRY_GOLD|THRO_DR|
+{"Bandit"		    ,(HAS_1D2|CARRY_OBJ|CARRY_GOLD|THRO_DR|PICK_UP|
 			      MV_ATT_NORM),(NONE8),(EVIL),(NONE8),(NONE8)
 			    ,26,10,20,24,11,'p',{8,8},{13,148,0,0},8,2
 #ifdef TC_COLOR
@@ -1071,8 +1071,8 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Yeti"			    ,(THRO_DR|MV_ATT_NORM),(NONE8),(ANIMAL|IM_FROST)
-			    ,(NONE8),(NONE8)
+{"Yeti"			    ,(THRO_DR|MV_ATT_NORM),(NONE8),(ANIMAL|IM_FROST|
+				NO_INFRA),(NONE8),(NONE8)
 			    ,30,10,20,24,11,'Y',{11,9},{51,51,27,0},9,3
 #ifdef TC_COLOR
   , WHITE
@@ -1123,8 +1123,8 @@ creature_type c_list[MAX_CREATURES] = {
 },
 
 {"Baby white dragon"	    ,(MV_ATT_NORM|HAS_1D2|CARRY_GOLD|HAS_60|THRO_DR)
-			    ,(0xBL|BREATH_FR),(IM_FROST|EVIL|DRAGON|MAX_HP)
-			    ,(NONE8),(NONE8)
+			    ,(0xBL|BREATH_FR),(IM_FROST|EVIL|DRAGON|MAX_HP|
+			    	NO_INFRA),(NONE8),(NONE8)
 			    ,35,70,20,30,11,'d',{10,10},{51,51,28,0},9,2
 #ifdef TC_COLOR
   , WHITE
@@ -1166,7 +1166,7 @@ creature_type c_list[MAX_CREATURES] = {
 },
 
 {"Brodda, the Easterling"   ,(MV_ATT_NORM|THRO_DR|CARRY_OBJ|HAS_1D2)
-			    ,(NONE8),(MAX_HP|UNIQUE|GOOD),(NONE8),(NONE8)
+			    ,(NONE8),(MAX_HP|UNIQUE|GOOD|EVIL),(NONE8),(NONE8)
 			    ,100,20,20,25,11,'p',{30,7},{10,10,10,10},9,2
 #ifdef TC_COLOR
   , LIGHTMAGENTA
@@ -1226,7 +1226,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Grishnakh, the Hill orc"  ,(MV_ATT_NORM|THRO_DR|CARRY_OBJ|HAS_1D2)
+{"Grishnakh, the Hill Orc"  ,(MV_ATT_NORM|THRO_DR|CARRY_OBJ|HAS_1D2)
 			    ,(NONE8),(ORC|EVIL|IM_POISON|MAX_HP|UNIQUE|GOOD)
 			    ,(NONE8),(NONE8)
 			    ,160,20,20,20,11,'o',{15,15},{10,9,10,9},10,3
@@ -1305,7 +1305,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Brigand"		    ,(HAS_1D2|CARRY_OBJ|CARRY_GOLD|THRO_DR|
+{"Brigand"		    ,(HAS_1D2|CARRY_OBJ|CARRY_GOLD|THRO_DR|PICK_UP|
 			      MV_ATT_NORM),(NONE8),(EVIL),(NONE8),(NONE8)
 			    ,35,10,20,32,11,'p',{9,8},{13,149,0,0},10,2
 #ifdef TC_COLOR
@@ -1589,7 +1589,7 @@ creature_type c_list[MAX_CREATURES] = {
 },
 
 {"Giant white dragon fly"   ,(MV_ATT_NORM|MV_40),(BREATH_FR|0xAL)
-			    ,(ANIMAL|IM_FROST),(NONE8),(NONE8)
+			    ,(ANIMAL|IM_FROST|NO_INFRA),(NONE8),(NONE8)
 			    ,60,50,20,20,11,'F',{5,8},{122,0,0,0},14,3
 #ifdef TC_COLOR
   , WHITE
@@ -1673,7 +1673,7 @@ creature_type c_list[MAX_CREATURES] = {
 },
 
 {"Guardian naga"	    ,(HAS_1D2|CARRY_GOLD|CARRY_OBJ|HAS_60|
-			     THRO_DR|MV_ATT_NORM|MV_20),(NONE8),(EVIL),(NONE8)
+			     MV_ATT_NORM|MV_20),(NONE8),(EVIL),(NONE8)
 			     ,(NONE8)
 			    ,80,120,20,65,11,'n',{24,11},{77,31,31,0},15,2
 #ifdef TC_COLOR
@@ -1721,8 +1721,8 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Mirkwood spider"	    ,(MV_ATT_NORM),(NONE8),(ANIMAL|GROUP|IM_POISON)
-			    ,(NONE8),(NONE8)
+{"Mirkwood spider"	    ,(MV_ATT_NORM),(NONE8),(ANIMAL|GROUP|IM_POISON|
+			    EVIL),(NONE8),(NONE8)
 			    ,25,80,15,25,12,'S',{9,8},{31,156,156,0},15,2
 #ifdef TC_COLOR
   , DARKGRAY
@@ -1730,8 +1730,8 @@ creature_type c_list[MAX_CREATURES] = {
 },
 
 {"Frost giant"		    ,(MV_ATT_NORM|HAS_60|CARRY_GOLD|CARRY_OBJ|
-			     THRO_DR|MV_ATT_NORM)
-			    ,(NONE8),(EVIL|IM_FROST|GIANT),(NONE8),(NONE8)
+			     THRO_DR|MV_ATT_NORM),(NONE8)
+			    ,(EVIL|IM_FROST|NO_INFRA|GIANT),(NONE8),(NONE8)
 			    ,75,50,20,50,11,'P',{17,10},{120,16,0,0},15,1
 #ifdef TC_COLOR
   , WHITE
@@ -1935,7 +1935,7 @@ creature_type c_list[MAX_CREATURES] = {
 },
 
 {"Cold hound"		  ,(MV_ATT_NORM),(0xAL|BREATH_FR)
-			    ,(ANIMAL|GROUP|IM_FROST),(NONE8)
+			    ,(ANIMAL|GROUP|IM_FROST|NO_INFRA),(NONE8)
 			    ,(NONE8)
 			    ,70,0,30,30,11,'Z',{10,6},{122,54,29,0},18,1
 #ifdef TC_COLOR
@@ -1969,7 +1969,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Uruk-Hai"		    ,(MV_ATT_NORM|THRO_DR|CARRY_GOLD|CARRY_OBJ|HAS_60)
+{"Uruk"		    ,(MV_ATT_NORM|THRO_DR|CARRY_GOLD|CARRY_OBJ|HAS_60)
 			    ,(NONE8),(ORC|EVIL|IM_POISON|MAX_HP|GROUP)
 			    ,(NONE8),(NONE8)
 			    ,68,20,20,50,11,'o',{10,8},{18,18,0,0},18,1
@@ -1978,7 +1978,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Shagrat, the orc captain", (MV_ATT_NORM|THRO_DR|CARRY_OBJ|HAS_1D2)
+{"Shagrat, the Orc Captain", (MV_ATT_NORM|THRO_DR|CARRY_OBJ|HAS_1D2)
 			     ,(NONE8),(ORC|EVIL|IM_POISON|MAX_HP|UNIQUE|GOOD)
 			     ,(NONE8),(NONE8)
 			     ,400,20,20,60,11,'o',{40,10},{20,20,18,18},18,2
@@ -1987,7 +1987,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Gorbag, the orc captain", (MV_ATT_NORM|THRO_DR|CARRY_OBJ|HAS_1D2)
+{"Gorbag, the Orc Captain", (MV_ATT_NORM|THRO_DR|CARRY_OBJ|HAS_1D2)
 			     ,(NONE8),(ORC|EVIL|IM_POISON|MAX_HP|UNIQUE|GOOD)
 			     ,(NONE8),(NONE8)
 			     ,400,20,20,60,11,'o',{40,10},{20,20,18,18},18,3
@@ -2004,7 +2004,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Stone giant"		    ,(MV_ATT_NORM|PICK_UP|THRO_DR|CARRY_GOLD|
+{"Stone giant"		    ,(MV_ATT_NORM|THRO_DR|CARRY_GOLD|
 			     CARRY_OBJ|HAS_60),(NONE8),(EVIL|GIANT)
 			    ,(NONE8),(NONE8)
 			    ,90,50,20,75,11,'P',{24,8},{20,20,0,0},18,1
@@ -2121,8 +2121,8 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Sasquatch"		    ,(MV_ATT_NORM|THRO_DR),(NONE8),(ANIMAL|IM_FROST)
-			    ,(NONE8),(NONE8)
+{"Sasquatch"		    ,(MV_ATT_NORM|THRO_DR),(NONE8),(ANIMAL|IM_FROST|
+			    NO_INFRA),(NONE8),(NONE8)
 			    ,180,10,15,40,12,'Y',{20,19},{56,56,37,0},20,3
 #ifdef TC_COLOR
   , WHITE
@@ -2146,7 +2146,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Cloud giant"		    ,(MV_ATT_NORM|THRO_DR|PICK_UP|CARRY_OBJ|
+{"Cloud giant"		    ,(MV_ATT_NORM|THRO_DR|CARRY_OBJ|
 			      CARRY_GOLD|HAS_90)
 			    ,(NONE8),(EVIL|GIANT|IM_LIGHTNING),(NONE8),(NONE8)
 			    ,125,50,20,60,11,'P',{24,10},{130,130,0,0},20,1
@@ -2155,7 +2155,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Ugluk, the Uruk-Hai"	    ,(MV_ATT_NORM|THRO_DR|CARRY_OBJ|HAS_1D2)
+{"Ugluk, the Uruk"	    ,(MV_ATT_NORM|THRO_DR|CARRY_OBJ|HAS_1D2)
 			     ,(NONE8),(ORC|EVIL|IM_POISON|MAX_HP|UNIQUE|GOOD)
 			     ,(NONE8),(NONE8)
 			    ,550,20,20,90,11,'o',{40,16},{18,18,18,18},20,4
@@ -2164,7 +2164,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Lugdush, the Uruk-Hai"    ,(MV_ATT_NORM|THRO_DR|CARRY_OBJ|HAS_1D2)
+{"Lugdush, the Uruk"    ,(MV_ATT_NORM|THRO_DR|CARRY_OBJ|HAS_1D2)
 			    ,(NONE8),(ORC|EVIL|IM_POISON|IM_FROST|IM_FIRE|
 			     MAX_HP|GOOD|UNIQUE|CHARM_SLEEP)
 			    ,(NONE8),(NONE8)
@@ -2208,7 +2208,7 @@ creature_type c_list[MAX_CREATURES] = {
 },
 
 {"Cold vortex"		    ,(MV_ATT_NORM|MV_40),(BREATH_FR|0x6L)
-			    ,(IM_FROST|CHARM_SLEEP),(NONE8),(NONE8)
+			    ,(IM_FROST|CHARM_SLEEP|NO_INFRA),(NONE8),(NONE8)
 			    ,100,0,100,30,11,'v',{9,9},{241,0,0,0},21,1
 #ifdef TC_COLOR
   , WHITE
@@ -2284,7 +2284,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Master Rogue"		    ,(HAS_2D2|CARRY_GOLD|CARRY_OBJ
+{"Master rogue"		    ,(HAS_2D2|CARRY_GOLD|CARRY_OBJ
 			     |THRO_DR|PICK_UP|MV_ATT_NORM),(NONE8)
 			    ,(EVIL),(NONE8),(NONE8)
 			   ,110,40,20,30,12,'p',{15,9},{16,16,231,0},23,2
@@ -2329,7 +2329,7 @@ creature_type c_list[MAX_CREATURES] = {
 
 {"Ibun, Son of Mim"	    ,(MV_ATT_NORM|THRO_DR|CARRY_OBJ|HAS_1D2)
 			    ,(0x8L|SLOW|FIRE_BOLT),(UNIQUE|IM_FROST|IM_FIRE|
-			     GOOD|CHARM_SLEEP|MAX_HP),(HEAL),(NONE8)
+			     EVIL|GOOD|CHARM_SLEEP|MAX_HP),(HEAL),(NONE8)
 			    ,300,10,20,80,11,'h',{55,15},{19,19,19,204},24,2
 #ifdef TC_COLOR
   , RED
@@ -2338,7 +2338,7 @@ creature_type c_list[MAX_CREATURES] = {
 
 {"Khim, Son of Mim"	    ,(MV_ATT_NORM|THRO_DR|CARRY_OBJ|HAS_1D2)
 			    ,(0x8L|SLOW|FIRE_BOLT),(UNIQUE|IM_FROST|IM_FIRE|
-			     GOOD|CHARM_SLEEP|MAX_HP),(HEAL),(NONE8)
+			     EVIL|GOOD|CHARM_SLEEP|MAX_HP),(HEAL),(NONE8)
 			    ,300,10,20,80,11,'h',{55,15},{19,19,19,204},24,2
 #ifdef TC_COLOR
   , RED
@@ -2372,7 +2372,7 @@ creature_type c_list[MAX_CREATURES] = {
 },
 
 {"Sangahyando of Umbar"	    ,(MV_ATT_NORM|CARRY_OBJ|HAS_1D2|HAS_90|THRO_DR)
-			    ,(0x4L|SLOW),(CHARM_SLEEP|IM_FIRE|UNIQUE|
+			    ,(0x4L|SLOW),(CHARM_SLEEP|IM_FIRE|UNIQUE|EVIL|
 			     IM_LIGHTNING|GOOD|MAX_HP),(FORGET),(NONE8)
 			,400,25,25,80,11,'p',{80,10},{22,22,22,22},24,2
 #ifdef TC_COLOR
@@ -2382,7 +2382,7 @@ creature_type c_list[MAX_CREATURES] = {
 
 {"Angamaite of Umbar"	    ,(MV_ATT_NORM|CARRY_OBJ|HAS_1D2|HAS_90|THRO_DR)
 			    ,(0x4L|SLOW),(CHARM_SLEEP|IM_FIRE|IM_LIGHTNING|
-			     GOOD|MAX_HP|UNIQUE),(FORGET),(NONE8)
+			     GOOD|EVIL|MAX_HP|UNIQUE),(FORGET),(NONE8)
 			,400,25,25,80,11,'p',{80,10},{22,22,22,22},24,2
 #ifdef TC_COLOR
   , CYAN
@@ -2516,7 +2516,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Monadic Deva"		    ,(MV_ATT_NORM|THRO_DR|PICK_UP|CARRY_OBJ|
+{"Monadic deva"		    ,(MV_ATT_NORM|THRO_DR|PICK_UP|CARRY_OBJ|
 			      HAS_2D2)
 			    ,(0x3L|FEAR|BLINDNESS|CONFUSION)
 			    ,(IM_POISON|IM_ACID|CHARM_SLEEP|MAX_HP)
@@ -2528,7 +2528,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Mim, betrayer of Turin"   ,(MV_ATT_NORM|THRO_DR|CARRY_OBJ|HAS_2D2)
+{"Mim, Betrayer of Turin"   ,(MV_ATT_NORM|THRO_DR|CARRY_OBJ|HAS_2D2)
 			    ,(0x6L|FEAR|ACID_BOLT),(EVIL|MAX_HP|IM_FROST|
 			     IM_FIRE|IM_POISON|IM_ACID|IM_LIGHTNING|UNIQUE|
 			     GOOD|CHARM_SLEEP),(ACID_BALL|HEAL),(NONE8)
@@ -2582,7 +2582,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Ogre magi"		,(CARRY_GOLD|CARRY_OBJ|HAS_1D2|THRO_DR|MV_ATT_NORM)
+{"Ogre mage"		,(CARRY_GOLD|CARRY_OBJ|HAS_1D2|THRO_DR|MV_ATT_NORM)
 			    ,(0x4L|HOLD_PERSON|FROST_BALL|MONSTER)
 			    ,(EVIL|GIANT),(HEAL|TRAP_CREATE),(NONE8)
 			  ,300,30,20,40,11,'O',{30,12},{20,20,20,20},27,2
@@ -2630,7 +2630,7 @@ creature_type c_list[MAX_CREATURES] = {
 },
 
 {"Spirit naga"		    ,(HAS_2D2|CARRY_OBJ|HAS_90|
-			     THRO_DR|MV_ATT_NORM|MV_INVIS)
+			     MV_ATT_NORM|MV_INVIS)
 			    ,(0x4L|BLINDNESS)
 			    ,(EVIL|CHARM_SLEEP)
 			    ,(MIND_BLAST|DARKNESS|HEAL),(NONE8)
@@ -2710,7 +2710,7 @@ creature_type c_list[MAX_CREATURES] = {
 
 {"Ice troll"		    ,(MV_ATT_NORM|THRO_DR|CARRY_OBJ|CARRY_GOLD|
 			     HAS_60),(NONE8),
-			    (EVIL|TROLL|IM_FROST|HURT_LIGHT|GROUP)
+			    (EVIL|TROLL|IM_FROST|HURT_LIGHT|GROUP|NO_INFRA)
 			    ,(NONE8),(NONE8)
 			    ,160,50,20,56,11,'T',{24,10},{4,4,123,4},28,1
 #ifdef TC_COLOR
@@ -2726,7 +2726,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Movanic Deva"		    ,(MV_ATT_NORM|THRO_DR|PICK_UP|CARRY_OBJ|
+{"Movanic deva"		    ,(MV_ATT_NORM|THRO_DR|PICK_UP|CARRY_OBJ|
 			      HAS_2D2)
 			    ,(0x3L|FEAR|BLINDNESS|CONFUSION)
 			    ,(IM_POISON|IM_FIRE|IM_FROST|CHARM_SLEEP|MAX_HP|
@@ -2771,8 +2771,8 @@ creature_type c_list[MAX_CREATURES] = {
 
 {"Young white dragon"	    ,(MV_ATT_NORM|HAS_1D2|HAS_60|HAS_90|THRO_DR|
 			      CARRY_GOLD|CARRY_OBJ),(0xBL|FEAR|BREATH_FR)
-			    ,(IM_FROST|EVIL|DRAGON|MAX_HP),(NONE8),(NONE8)
-			    ,275,70,20,50,11,'d',{32,8},{52,52,29,0},29,1
+			    ,(IM_FROST|EVIL|DRAGON|MAX_HP|NO_INFRA),(NONE8)
+			    ,(NONE8),275,70,20,50,11,'d',{32,8},{52,52,29,0},29,1
 #ifdef TC_COLOR
   , WHITE
 #endif
@@ -2896,7 +2896,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Nexus Quylthulg"	    ,(MV_INVIS),(0x1L|BLINK),(CHARM_SLEEP)
+{"Nexus quylthulg"	    ,(MV_INVIS),(0x1L|BLINK),(CHARM_SLEEP)
 			    ,(TELE_AWAY),(NONE8)
 			    ,300,0,10,1,11,'Q',{10,12},{0,0,0,0},32,1
 #ifdef TC_COLOR
@@ -2931,7 +2931,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Storm giant"		    ,(MV_ATT_NORM|THRO_DR|PICK_UP|CARRY_OBJ|
+{"Storm giant"		    ,(MV_ATT_NORM|THRO_DR|CARRY_OBJ|
 			      CARRY_GOLD|HAS_1D2)
 			    ,(0x8L|FEAR|CONFUSION|BLINK|TELE_TO)
 			    ,(EVIL|GIANT|IM_LIGHTNING|IM_FROST|MAX_HP)
@@ -3001,7 +3001,7 @@ creature_type c_list[MAX_CREATURES] = {
 },
 
 {"Law drake"		    ,(MV_ATT_NORM|THRO_DR|HAS_2D2|CARRY_OBJ)
-			    ,(0x6L|FEAR|CONFUSION|SLOW),(EVIL|IM_FROST|
+			    ,(0x6L|FEAR|CONFUSION|SLOW),(IM_FROST|
 			     CHARM_SLEEP|MAX_HP|DRAGON),(BREATH_SH|
 			     BREATH_SD),(NONE8)
 			  ,700,30,25,100,11,'d',{50,11},{54,54,36,0},33,3
@@ -3011,7 +3011,7 @@ creature_type c_list[MAX_CREATURES] = {
 },
 
 {"Balance drake"	    ,(MV_ATT_NORM|THRO_DR|HAS_2D2|CARRY_OBJ)
-			    ,(0x6L|FEAR|CONFUSION|SLOW),(EVIL|IM_FIRE|
+			    ,(0x6L|FEAR|CONFUSION|SLOW),(IM_FIRE|
 			     IM_FROST|CHARM_SLEEP|MAX_HP|DRAGON)
 			    ,(BREATH_DI|BREATH_SD|BREATH_SH),(NONE8)
 			  ,700,30,25,100,11,'d',{50,12},{54,54,36,0},33,3
@@ -3073,7 +3073,7 @@ creature_type c_list[MAX_CREATURES] = {
 },
 
 {"Spectre"		    ,(MV_ATT_NORM|MV_20|CARRY_OBJ|HAS_2D2|
-			     HAS_90|THRO_WALL|PICK_UP|MV_INVIS)
+			     HAS_90|THRO_WALL|PICK_UP)
 			    ,(0xFL|HOLD_PERSON|MANA_DRAIN|BLINDNESS)
 			    ,(UNDEAD|EVIL|IM_FROST|NO_INFRA|CHARM_SLEEP|
 			     IM_POISON),(FORGET),(NONE8)
@@ -3103,7 +3103,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Astral Deva"		    ,(MV_ATT_NORM|THRO_DR|PICK_UP|CARRY_OBJ|
+{"Astral deva"		    ,(MV_ATT_NORM|THRO_DR|PICK_UP|CARRY_OBJ|
 			      HAS_2D2|HAS_1D2)
 			    ,(0x3L|FEAR|BLINDNESS|FIRE_BOLT)
 			    ,(IM_POISON|IM_FIRE|IM_FROST|INTELLIGENT|
@@ -3143,7 +3143,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Master Thief"		    ,(HAS_2D2|HAS_90|CARRY_GOLD|CARRY_OBJ
+{"Master thief"		    ,(HAS_2D2|HAS_90|CARRY_GOLD|CARRY_OBJ
 			     |THRO_DR|PICK_UP|MV_ATT_NORM),(NONE8)
 			    ,(EVIL),(NONE8),(NONE8)
 			  ,350,40,20,30,13,'p',{18,10},{16,17,231,232},34,2
@@ -3175,7 +3175,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Master Vampire"	   ,(MV_ATT_NORM|THRO_DR|HAS_4D2|CARRY_OBJ|CARRY_GOLD)
+{"Master vampire"	   ,(MV_ATT_NORM|THRO_DR|HAS_4D2|CARRY_OBJ|CARRY_GOLD)
 			    ,(0x6L|TELE_TO|CAUSE_CRIT|HOLD_PERSON|
 			      FEAR|CONFUSION)
 			    ,(CHARM_SLEEP|HURT_LIGHT|EVIL|UNDEAD|IM_FROST|
@@ -3215,7 +3215,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Hell Hound"		    ,(MV_ATT_NORM|MV_20),(0x5L|BREATH_FI),
+{"Hell hound"		    ,(MV_ATT_NORM|MV_20),(0x5L|BREATH_FI),
 			     (ANIMAL|EVIL|MAX_HP|IM_FIRE),(NONE8),(NONE8)
 			  ,600,0,25,80,12,'C',{25,16},{107,107,107,0},35,3
 #ifdef TC_COLOR
@@ -3232,7 +3232,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Olog-Hai"		    ,(MV_ATT_NORM|THRO_DR|HAS_60|
+{"Olog"		    ,(MV_ATT_NORM|THRO_DR|HAS_60|
 			      CARRY_OBJ|CARRY_GOLD),(NONE8)
 			    ,(TROLL|EVIL|IM_POISON|MAX_HP|GROUP)
 			    ,(NONE8),(NONE8)
@@ -3329,7 +3329,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Mumakil"		    ,(MV_ATT_NORM),(NONE8),(ANIMAL),(NONE8),(NONE8)
+{"Mumak"		    ,(MV_ATT_NORM),(NONE8),(ANIMAL),(NONE8),(NONE8)
 			 ,2100,100,20,55,11,'q',{90,10},{227,227,233,0},35,3
 #ifdef TC_COLOR
   , LIGHTGRAY
@@ -3344,9 +3344,9 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Mature white Dragon"	    ,(MV_ATT_NORM|THRO_DR|CARRY_GOLD|CARRY_OBJ|
+{"Mature white dragon"	    ,(MV_ATT_NORM|THRO_DR|CARRY_GOLD|CARRY_OBJ|
 			      HAS_2D2),(0xAL|BREATH_FR|FEAR)
-			    ,(CHARM_SLEEP|IM_FROST|EVIL|DRAGON|MAX_HP)
+			    ,(CHARM_SLEEP|IM_FROST|EVIL|DRAGON|MAX_HP|NO_INFRA)
 			    ,(NONE8),(NONE8)
 			    ,1000,70,20,65,11,'d',{50,8},{54,54,37,0},35,1
 #ifdef TC_COLOR
@@ -3385,7 +3385,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Grey Wraith"		    ,(MV_ATT_NORM|THRO_DR|HAS_60|HAS_90|
+{"Grey wraith"		    ,(MV_ATT_NORM|THRO_DR|HAS_60|HAS_90|
 			      CARRY_GOLD|CARRY_OBJ)
 			    ,(0x7L|CAUSE_CRIT|HOLD_PERSON|FEAR)
 			   ,(UNDEAD|EVIL|NO_INFRA|CHARM_SLEEP|IM_FROST|MAX_HP|
@@ -3396,7 +3396,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Young Multi-Hued Dragon"  ,(MV_ATT_NORM|HAS_4D2|CARRY_GOLD|CARRY_OBJ|
+{"Young multi-hued dragon"  ,(MV_ATT_NORM|HAS_4D2|CARRY_GOLD|CARRY_OBJ|
 			      THRO_DR|HAS_60|HAS_90)
 			    ,(0x5L|BREATH_G|BREATH_L|BREATH_A|BREATH_FR|
 			      BREATH_FI|FEAR)
@@ -3439,7 +3439,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Mature blue Dragon"	    ,(HAS_2D2|CARRY_GOLD|CARRY_OBJ|HAS_90|HAS_60|
+{"Mature blue dragon"	    ,(HAS_2D2|CARRY_GOLD|CARRY_OBJ|HAS_90|HAS_60|
 			      MV_ATT_NORM),(0x9L|BREATH_L|FEAR)
 			    ,(EVIL|DRAGON|IM_LIGHTNING|CHARM_SLEEP|MAX_HP)
 			    ,(NONE8),(NONE8)
@@ -3449,7 +3449,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Mature green Dragon"	    ,(HAS_2D2|CARRY_GOLD|CARRY_OBJ|HAS_90|HAS_60|
+{"Mature green dragon"	    ,(HAS_2D2|CARRY_GOLD|CARRY_OBJ|HAS_90|HAS_60|
 			      MV_ATT_NORM),(0x9L|BREATH_G|FEAR)
 			    ,(EVIL|DRAGON|IM_POISON|CHARM_SLEEP|MAX_HP)
 			    ,(NONE8),(NONE8)
@@ -3459,7 +3459,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Mature bronze Dragon"	    ,(HAS_4D2|CARRY_GOLD|CARRY_OBJ|HAS_90|HAS_60|
+{"Mature bronze dragon"	    ,(HAS_4D2|CARRY_GOLD|CARRY_OBJ|HAS_90|HAS_60|
 			      MV_ATT_NORM),(0x9L|FEAR|CONFUSION)
 			    ,(DRAGON|CHARM_SLEEP|MAX_HP)
 			    ,(BREATH_CO),(NONE8)
@@ -3508,7 +3508,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Necromancer"		    ,(MV_ATT_NORM|THRO_DR|CARRY_OBJ|HAS_1D2)
+{"Warlock"		    ,(MV_ATT_NORM|THRO_DR|CARRY_OBJ|HAS_1D2)
 			    ,(0x3L|TELE|TELE_TO|CAUSE_CRIT|HOLD_PERSON|
 			   S_UNDEAD|FEAR|BLINDNESS),(EVIL|MAX_HP|INTELLIGENT)
 			    ,(NETHER_BOLT|HASTE),(NONE8)
@@ -3558,7 +3558,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Will o' the Wisp"	    ,(MV_ATT_NORM|MV_40|MV_INVIS|THRO_DR|THRO_WALL)
+{"Will o' the wisp"	    ,(MV_ATT_NORM|MV_40|MV_INVIS|THRO_DR|THRO_WALL)
 			    ,(0x2L|BLINK|CAUSE_SERIOUS|CONFUSION|TELE)
 			    ,(CHARM_SLEEP|IM_FIRE|IM_FROST|IM_POISON|
 			     IM_ACID|IM_LIGHTNING|MAX_HP|INTELLIGENT)
@@ -3614,7 +3614,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Mature red Dragon"	    ,(HAS_4D2|CARRY_GOLD|CARRY_OBJ|HAS_90|HAS_60|
+{"Mature red dragon"	    ,(HAS_4D2|CARRY_GOLD|CARRY_OBJ|HAS_90|HAS_60|
 			      MV_ATT_NORM),(0x9L|BREATH_FI|FEAR|CONFUSION)
 			    ,(EVIL|DRAGON|IM_FIRE|CHARM_SLEEP|MAX_HP)
 			    ,(NONE8),(NONE8)
@@ -3624,7 +3624,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Mature gold Dragon"	    ,(HAS_4D2|CARRY_GOLD|CARRY_OBJ|HAS_90|HAS_60|
+{"Mature gold dragon"	    ,(HAS_4D2|CARRY_GOLD|CARRY_OBJ|HAS_90|HAS_60|
 			      MV_ATT_NORM),(0x9L|FEAR|CONFUSION)
 			    ,(DRAGON|CHARM_SLEEP|MAX_HP)
 			    ,(BREATH_SD),(NONE8)
@@ -3645,7 +3645,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Mature black Dragon"	    ,(HAS_2D2|CARRY_GOLD|CARRY_OBJ|HAS_90|HAS_60|
+{"Mature black dragon"	    ,(HAS_2D2|CARRY_GOLD|CARRY_OBJ|HAS_90|HAS_60|
 			      MV_ATT_NORM),(0x9L|BREATH_A|FEAR)
 			    ,(EVIL|DRAGON|IM_ACID|CHARM_SLEEP|MAX_HP),(NONE8)
 			    ,(NONE8)
@@ -3655,7 +3655,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Mature Multi-Hued Dragon" ,(MV_ATT_NORM|HAS_4D2|CARRY_GOLD|CARRY_OBJ|
+{"Mature multi-hued dragon" ,(MV_ATT_NORM|HAS_4D2|CARRY_GOLD|CARRY_OBJ|
 			      THRO_DR|HAS_60|HAS_90|HAS_2D2)
 			    ,(0x5L|BREATH_G|BREATH_L|BREATH_A|BREATH_FR|
 			      BREATH_FI|FEAR|CONFUSION|BLINDNESS)
@@ -3704,7 +3704,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Ancient blue Dragon"	    ,(HAS_4D2|CARRY_GOLD|CARRY_OBJ|HAS_90|HAS_60|
+{"Ancient blue dragon"	    ,(HAS_4D2|CARRY_GOLD|CARRY_OBJ|HAS_90|HAS_60|
 			      MV_ATT_NORM),(0x9L|BREATH_L|FEAR|BLINDNESS
 			      |CONFUSION)
 			    ,(EVIL|DRAGON|IM_LIGHTNING|CHARM_SLEEP|MAX_HP)
@@ -3715,7 +3715,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Ancient bronze Dragon"    ,(HAS_4D2|CARRY_GOLD|CARRY_OBJ|HAS_90|HAS_2D2|
+{"Ancient bronze dragon"    ,(HAS_4D2|CARRY_GOLD|CARRY_OBJ|HAS_90|HAS_2D2|
 			      HAS_60|MV_ATT_NORM)
 			    ,(0x6L|FEAR|BLINDNESS|CONFUSION)
 			    ,(DRAGON|CHARM_SLEEP|MAX_HP),(BREATH_CO),(NONE8)
@@ -3728,7 +3728,7 @@ creature_type c_list[MAX_CREATURES] = {
 {"Beholder"		    ,(MV_ATT_NORM)
 			    ,(0x2L|FIRE_BOLT|FROST_BOLT|ACID_BOLT|
 			      MANA_DRAIN|BLINDNESS|CONFUSION|FEAR|SLOW)
-			    ,(ANIMAL|EVIL|CHARM_SLEEP|MAX_HP|IM_POISON)
+			    ,(EVIL|CHARM_SLEEP|MAX_HP|IM_POISON)
 			    ,(FORGET|MIND_BLAST|DARKNESS),(NONE8)
 			,6000,10,30,80,12,'e',{80,20},{223,224,225,226},38,4
 #ifdef TC_COLOR
@@ -3736,7 +3736,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Emperor Wight"	    ,(HAS_4D2|CARRY_OBJ|HAS_90|THRO_DR|MV_ATT_NORM)
+{"Emperor wight"	    ,(HAS_4D2|CARRY_OBJ|HAS_90|THRO_DR|MV_ATT_NORM)
 			    ,(0x6L|CAUSE_CRIT|HOLD_PERSON|FEAR)
 			    ,(EVIL|UNDEAD|CHARM_SLEEP|IM_FROST|MAX_HP|
 			      IM_POISON|NO_INFRA|HURT_LIGHT)
@@ -3771,7 +3771,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Black Wraith"		    ,(HAS_2D2|CARRY_OBJ|HAS_1D2|THRO_DR|MV_ATT_NORM)
+{"Black wraith"		    ,(HAS_2D2|CARRY_OBJ|HAS_1D2|THRO_DR|MV_ATT_NORM)
 			    ,(0x7L|CAUSE_CRIT|HOLD_PERSON|FEAR|BLINDNESS)
 			    ,(EVIL|UNDEAD|CHARM_SLEEP|IM_FROST|MAX_HP|
 			      IM_POISON|HURT_LIGHT|NO_INFRA)
@@ -3792,7 +3792,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Nether Wraith"	    ,(HAS_4D2|CARRY_OBJ|HAS_90|THRO_DR|MV_ATT_NORM|
+{"Nether wraith"	    ,(HAS_4D2|CARRY_OBJ|HAS_90|THRO_DR|MV_ATT_NORM|
 			      MV_INVIS|THRO_WALL)
 			    ,(0x6L|CAUSE_CRIT|FEAR|BLINDNESS)
 			    ,(EVIL|UNDEAD|CHARM_SLEEP|IM_FROST|MAX_HP|
@@ -3834,7 +3834,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Kavlax the Many-headed"   ,(MV_ATT_NORM|HAS_4D2|CARRY_OBJ|THRO_DR)
+{"Kavlax the Many-Headed"   ,(MV_ATT_NORM|HAS_4D2|CARRY_OBJ|THRO_DR)
 			    ,(0x4L|BREATH_FI|BREATH_FR|BREATH_L|BREATH_A)
 			    ,(EVIL|DRAGON|CHARM_SLEEP|MAX_HP|UNIQUE|GOOD|
 			     IM_ACID|IM_FROST|IM_FIRE|IM_LIGHTNING)
@@ -3846,10 +3846,10 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Ancient white Dragon"	    ,(HAS_4D2|CARRY_GOLD|CARRY_OBJ|HAS_90|HAS_2D2|
+{"Ancient white dragon"	    ,(HAS_4D2|CARRY_GOLD|CARRY_OBJ|HAS_90|HAS_2D2|
 			      HAS_60|MV_ATT_NORM)
 			    ,(0x9L|BREATH_FR|FEAR|BLINDNESS|CONFUSION)
-			    ,(EVIL|DRAGON|IM_FROST|CHARM_SLEEP|MAX_HP)
+			    ,(EVIL|DRAGON|IM_FROST|CHARM_SLEEP|MAX_HP|NO_INFRA)
 			    ,(NONE8),(NONE8)
 			    ,2500,80,20,90,12,'D',{88,8},{55,55,39,0},39,1
 #ifdef TC_COLOR
@@ -3857,7 +3857,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Ancient green Dragon"	    ,(HAS_4D2|CARRY_GOLD|CARRY_OBJ|HAS_90|HAS_2D2|
+{"Ancient green dragon"	    ,(HAS_4D2|CARRY_GOLD|CARRY_OBJ|HAS_90|HAS_2D2|
 			      HAS_60|MV_ATT_NORM)
 			    ,(0x9L|BREATH_G|FEAR|BLINDNESS|CONFUSION)
 			    ,(EVIL|DRAGON|IM_POISON|CHARM_SLEEP|MAX_HP)
@@ -3877,7 +3877,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Night Mare"		    ,(MV_ATT_NORM|THRO_DR|HAS_2D2|CARRY_GOLD)
+{"Night mare"		    ,(MV_ATT_NORM|THRO_DR|HAS_2D2|CARRY_GOLD)
 			    ,(NONE8),(UNDEAD|IM_POISON|IM_FROST|EVIL|
 			     CHARM_SLEEP|NO_INFRA|MAX_HP)
 			    ,(NONE8),(NONE8)
@@ -3887,7 +3887,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Vampire Lord"		    ,(MV_ATT_NORM|THRO_DR|HAS_4D2|CARRY_GOLD|
+{"Vampire lord"		    ,(MV_ATT_NORM|THRO_DR|HAS_4D2|CARRY_GOLD|
 			     CARRY_OBJ|HAS_60)
 			    ,(0x7L|CAUSE_CRIT|MANA_DRAIN|FEAR|HOLD_PERSON|
 			      BLINDNESS)
@@ -3900,7 +3900,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Ancient black Dragon"	    ,(HAS_4D2|CARRY_GOLD|CARRY_OBJ|HAS_90|HAS_2D2|
+{"Ancient black dragon"	    ,(HAS_4D2|CARRY_GOLD|CARRY_OBJ|HAS_90|HAS_2D2|
 			      HAS_60|MV_ATT_NORM)
 			    ,(0x9L|BREATH_A|FEAR|BLINDNESS|CONFUSION)
 			    ,(EVIL|DRAGON|IM_ACID|CHARM_SLEEP|MAX_HP)
@@ -3919,8 +3919,8 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Rotting Quylthulg"	    ,(MV_INVIS)
-			    ,(0x2L|S_UNDEAD|BLINK|TELE), (ANIMAL|EVIL|MAX_HP|
+{"Rotting quylthulg"	    ,(MV_INVIS),(0x2L|S_UNDEAD|BLINK|TELE)
+			    ,(ANIMAL|EVIL|MAX_HP|UNDEAD|IM_FROST|NO_INFRA|
 			     CHARM_SLEEP),(NONE8),(NONE8)
 			    ,1500,0,20,1,12,'Q',{20,8},{0,0,0,0},40,1
 #ifdef TC_COLOR
@@ -3929,9 +3929,9 @@ creature_type c_list[MAX_CREATURES] = {
 },
 
 {"Spirit troll"		    ,(MV_INVIS|MV_ATT_NORM|THRO_WALL|THRO_DR|
-			     CARRY_OBJ|CARRY_GOLD|HAS_90)
-			    ,(NONE8),(EVIL|TROLL|IM_POISON|IM_FROST|MAX_HP|
-			     CHARM_SLEEP|IM_LIGHTNING),(NONE8),(NONE8)
+			     CARRY_OBJ|CARRY_GOLD|HAS_90),(NONE8)
+			    ,(EVIL|TROLL|IM_POISON|IM_FROST|MAX_HP|UNDEAD|
+			     CHARM_SLEEP|IM_LIGHTNING|NO_INFRA),(NONE8),(NONE8)
 			,900,5,20,90,11,'T',{40,25},{19,18,18,0},40,3
 #ifdef TC_COLOR
   , GREEN
@@ -4048,7 +4048,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Ancient red Dragon"	    ,(HAS_4D2|CARRY_GOLD|CARRY_OBJ|HAS_90|HAS_2D2|
+{"Ancient red dragon"	    ,(HAS_4D2|CARRY_GOLD|CARRY_OBJ|HAS_90|HAS_2D2|
 			      HAS_60|MV_ATT_NORM)
 			    ,(0x6L|BREATH_FI|FEAR|BLINDNESS|CONFUSION)
 			    ,(EVIL|DRAGON|IM_FIRE|CHARM_SLEEP|MAX_HP)
@@ -4059,7 +4059,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Ancient gold Dragon"	    ,(HAS_4D2|CARRY_GOLD|CARRY_OBJ|HAS_90|HAS_2D2|
+{"Ancient gold dragon"	    ,(HAS_4D2|CARRY_GOLD|CARRY_OBJ|HAS_90|HAS_2D2|
 			      HAS_60|MV_ATT_NORM)
 			    ,(0x6L|FEAR|BLINDNESS|CONFUSION)
 			    ,(DRAGON|CHARM_SLEEP|MAX_HP),(BREATH_SD),(NONE8)
@@ -4069,7 +4069,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Great Crystal Drake"	    ,(MV_ATT_NORM|MV_INVIS|THRO_DR|HAS_4D2|HAS_2D2|
+{"Great crystal drake"	    ,(MV_ATT_NORM|MV_INVIS|THRO_DR|HAS_4D2|HAS_2D2|
 			     CARRY_OBJ)
 			    ,(0x6L|FEAR|CONFUSION|SLOW)
 			    ,(EVIL|IM_FROST|CHARM_SLEEP|MAX_HP|DRAGON)
@@ -4090,7 +4090,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Death Quasit"		    ,(HAS_4D2|HAS_2D2|HAS_90|CARRY_OBJ|MV_INVIS|
+{"Death quasit"		    ,(HAS_4D2|HAS_2D2|HAS_90|CARRY_OBJ|MV_INVIS|
 			      THRO_WALL|MV_ATT_NORM)
 			  ,(0xAL|FEAR|CONFUSION|BLINDNESS|CAUSE_CRIT|S_DEMON)
 			    ,(EVIL|IM_POISON|CHARM_SLEEP|MAX_HP|DEMON|IM_FIRE
@@ -4126,7 +4126,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Master Lich"		    ,(MV_ATT_NORM|THRO_DR|CARRY_OBJ|HAS_4D2|HAS_2D2)
+{"Master lich"		    ,(MV_ATT_NORM|THRO_DR|CARRY_OBJ|HAS_4D2|HAS_2D2)
 			    ,(0x3L|FEAR|CONFUSION|BLINDNESS|HOLD_PERSON|
 			      CAUSE_CRIT|MANA_DRAIN|TELE_TO|BLINK|S_UNDEAD)
 			    ,(UNDEAD|IM_POISON|IM_FROST|EVIL|MAX_HP|
@@ -4162,8 +4162,8 @@ creature_type c_list[MAX_CREATURES] = {
 
 {"Gorlim, Betrayer of Barahir",(MV_ATT_NORM|HAS_2D2|CARRY_OBJ|THRO_DR)
 			    ,(0x2L|CAUSE_CRIT|MANA_BOLT)
-			    ,(GOOD|UNIQUE|MAX_HP|INTELLIGENT|CHARM_SLEEP|
-			     IM_POISON|IM_FROST|IM_ACID|IM_FROST|IM_LIGHTNING)
+			    ,(GOOD|UNIQUE|MAX_HP|INTELLIGENT|CHARM_SLEEP|EVIL|
+			     IM_POISON|IM_FROST|IM_ACID|IM_LIGHTNING)
 			    ,(WATER_BOLT),(NONE8)
 		       ,7000,40,20,120,12,'p',{80,20},{218,218,230,230},41,3
 #ifdef TC_COLOR
@@ -4219,7 +4219,7 @@ creature_type c_list[MAX_CREATURES] = {
 
 {"Undead beholder"	    ,(MV_ATT_NORM)
 			    ,(0x2L|S_UNDEAD|SLOW|MANA_DRAIN|MANA_BOLT)
-			    ,(ANIMAL|UNDEAD|EVIL|CHARM_SLEEP|MAX_HP|IM_POISON
+			    ,(UNDEAD|EVIL|CHARM_SLEEP|MAX_HP|IM_POISON
 			     |IM_FIRE|IM_LIGHTNING|IM_ACID|IM_FROST|NO_INFRA)
 			    ,(FORGET|MIND_BLAST|RAZOR|BRAIN_SMASH),(NONE8)
 		     ,4000,10,30,100,12,'e',{90,30},{223,224,225,226},42,4
@@ -4239,7 +4239,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Mumakil"		    ,(MV_ATT_NORM),(NONE8),(ANIMAL|GROUP)
+{"Mumak"		    ,(MV_ATT_NORM),(NONE8),(ANIMAL|GROUP)
 			    ,(NONE8),(NONE8)
 			 ,2100,100,20,55,11,'q',{90,10},{227,227,233,0},43,2
 #ifdef TC_COLOR
@@ -4247,7 +4247,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Ancient Multi-Hued Dragon",(MV_ATT_NORM|HAS_4D2|CARRY_OBJ|
+{"Ancient multi-hued dragon",(MV_ATT_NORM|HAS_4D2|CARRY_OBJ|
 			      THRO_DR|HAS_60|HAS_90|HAS_2D2|HAS_1D2)
 			    ,(0x5L|BREATH_G|BREATH_L|BREATH_A|BREATH_FR|
 			      BREATH_FI|FEAR|CONFUSION|BLINDNESS)
@@ -4260,7 +4260,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Ethereal Dragon"	   ,(MV_ATT_NORM|THRO_DR|HAS_60|HAS_90|HAS_4D2|
+{"Ethereal dragon"	   ,(MV_ATT_NORM|THRO_DR|HAS_60|HAS_90|HAS_4D2|
 			    HAS_2D2|HAS_1D2|CARRY_OBJ|MV_INVIS|THRO_WALL)
 			   ,(0x5L|CONFUSION|BLINDNESS)
 			   ,(DRAGON|CHARM_SLEEP|MAX_HP)
@@ -4304,7 +4304,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Balor"		    ,(MV_ATT_NORM|HAS_2D2|HAS_1D2|
+{"Lesser balrog"		    ,(MV_ATT_NORM|HAS_2D2|HAS_1D2|
 			      CARRY_OBJ|THRO_DR)
 			   ,(0x4L|CONFUSION|BLINDNESS|S_DEMON|BREATH_FI)
 			    ,(EVIL|DEMON|CHARM_SLEEP|IM_FIRE|MAX_HP)
@@ -4389,7 +4389,7 @@ creature_type c_list[MAX_CREATURES] = {
 {"Scatha the Worm"	    ,(HAS_4D2|CARRY_OBJ|HAS_90|HAS_2D2|
 			      HAS_60|MV_ATT_NORM)
 			    ,(0x3L|BREATH_FR|CAUSE_CRIT|CONFUSION)
-			    ,(EVIL|DRAGON|IM_FROST|CHARM_SLEEP|MAX_HP|
+			    ,(EVIL|DRAGON|IM_FROST|CHARM_SLEEP|MAX_HP|NO_INFRA|
 			      UNIQUE|GOOD),(NONE8),(NONE8)
 			,17000,70,20,130,12,'D',{150,12},{56,56,56,276},44,2
 #ifdef TC_COLOR
@@ -4534,7 +4534,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Demonic Quylthulg"	    ,(MV_INVIS),(0x2L|S_DEMON|BLINK|TELE)
+{"Demonic quylthulg"	    ,(MV_INVIS),(0x2L|S_DEMON|BLINK|TELE)
 			    ,(MAX_HP|CHARM_SLEEP|ANIMAL|EVIL),(NONE8),(NONE8)
 			    ,3000,0,20,1,12,'Q',{60,8},{0,0,0,0},51,1
 #ifdef TC_COLOR
@@ -4542,7 +4542,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Great Storm Wyrm"	    ,(HAS_4D2|HAS_2D2|CARRY_OBJ|HAS_90|HAS_60|
+{"Great storm wyrm"	    ,(HAS_4D2|HAS_2D2|CARRY_OBJ|HAS_90|HAS_60|
 			      MV_ATT_NORM),(0x6L|BREATH_L|FEAR|BLINDNESS
 			      |CONFUSION)
 			    ,(EVIL|DRAGON|IM_LIGHTNING|CHARM_SLEEP
@@ -4563,7 +4563,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Harowen the Black Hand"   ,(HAS_4D2|HAS_1D2|CARRY_OBJ|MV_ATT_NORM)
+{"Harowen the Black Hand"   ,(HAS_4D2|HAS_1D2|CARRY_OBJ|MV_ATT_NORM|PICK_UP)
 			    ,(0x6L),(CHARM_SLEEP|MAX_HP|UNIQUE|
 			     GOOD|IM_POISON),(TRAP_CREATE),(NONE8)
 			,20000,0,40,90,14,'p',{50,50},{258,259,260,261},52,3
@@ -4608,7 +4608,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Ethereal hound"	   ,(MV_ATT_NORM|THRO_DR|MV_INVIS|THRO_WALL)
+{"Astral hound"	   ,(MV_ATT_NORM|THRO_DR|MV_INVIS|THRO_WALL)
 			   ,(0x5L),(ANIMAL|GROUP|CHARM_SLEEP)
 			   ,(BREATH_LD),(NONE8)
 		       ,5000,0,30,100,12,'Z',{60,15},{39,39,39,58},54,3
@@ -4617,10 +4617,10 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Great Ice Wyrm"	   ,(HAS_4D2|HAS_2D2|CARRY_OBJ|HAS_90|HAS_60|
+{"Great ice wyrm"	   ,(HAS_4D2|HAS_2D2|CARRY_OBJ|HAS_90|HAS_60|
 			      MV_ATT_NORM),(0x6L|BREATH_FR|FEAR|BLINDNESS
 			      |CONFUSION)
-			    ,(EVIL|DRAGON|IM_FROST|CHARM_SLEEP
+			    ,(EVIL|DRAGON|IM_FROST|CHARM_SLEEP|NO_INFRA
 			     |MAX_HP|GOOD),(NONE8),(NONE8)
 			,20000,80,30,170,12,'D',{50,60},{57,57,271,277},54,2
 #ifdef TC_COLOR
@@ -4733,7 +4733,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Great Hell Wyrm"	    ,(HAS_1D2|HAS_4D2|HAS_2D2|CARRY_OBJ|HAS_90|HAS_60|
+{"Great hell wyrm"	    ,(HAS_1D2|HAS_4D2|HAS_2D2|CARRY_OBJ|HAS_90|HAS_60|
 			      MV_ATT_NORM),(0x6L|BREATH_FI|FEAR|BLINDNESS
 			      |CONFUSION)
 			    ,(EVIL|DRAGON|IM_FIRE|CHARM_SLEEP|MAX_HP|GOOD)
@@ -4744,7 +4744,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Dragonic Quylthulg"	     ,(MV_INVIS)
+{"Dragonic quylthulg"	     ,(MV_INVIS)
 			    ,(0x2L|S_DRAGON|BLINK|TELE),(MAX_HP|ANIMAL|EVIL|
 			     CHARM_SLEEP),(NONE8),(NONE8)
 			    ,5500,0,20,1,12,'Q',{90,8},{0,0,0,0},55,3
@@ -4886,7 +4886,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Great Wyrm of Chaos"	    ,(HAS_1D2|HAS_4D2|HAS_2D2|CARRY_OBJ|HAS_90|HAS_60|
+{"Great wyrm of chaos"	    ,(HAS_1D2|HAS_4D2|HAS_2D2|CARRY_OBJ|HAS_90|HAS_60|
 			      MV_ATT_NORM),(0x3L|FEAR|BLINDNESS|CONFUSION|
 			     S_DRAGON),(EVIL|DRAGON|CHARM_SLEEP|MAX_HP|GOOD)
 			    ,(BREATH_CH|BREATH_DI),(NONE8)
@@ -4896,7 +4896,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Great Wyrm of Law"	    ,(HAS_1D2|HAS_4D2|HAS_2D2|CARRY_OBJ|HAS_90|HAS_60|
+{"Great wyrm of law"	    ,(HAS_1D2|HAS_4D2|HAS_2D2|CARRY_OBJ|HAS_90|HAS_60|
 			      MV_ATT_NORM),(0x3L|FEAR|BLINDNESS|CONFUSION|
 			     S_DRAGON),(DRAGON|CHARM_SLEEP|MAX_HP|GOOD)
 			    ,(BREATH_SH|BREATH_SD),(NONE8)
@@ -4906,7 +4906,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Great Wyrm of Balance"    ,(HAS_1D2|HAS_4D2|HAS_2D2|CARRY_OBJ|HAS_90|HAS_60|
+{"Great wyrm of balance"    ,(HAS_1D2|HAS_4D2|HAS_2D2|CARRY_OBJ|HAS_90|HAS_60|
 			      MV_ATT_NORM),(0x3L|FEAR|BLINDNESS|S_DRAGON
 			      |CONFUSION)
 			    ,(DRAGON|CHARM_SLEEP|MAX_HP|GOOD)
@@ -4943,7 +4943,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Black Reaver"		    ,(MV_ATT_NORM|THRO_DR|CARRY_OBJ|HAS_1D2|HAS_2D2)
+{"Black reaver"		    ,(MV_ATT_NORM|THRO_DR|CARRY_OBJ|HAS_1D2|HAS_2D2)
 			    ,(0x3L|CONFUSION|BLINDNESS|HOLD_PERSON|
 			      CAUSE_CRIT|MANA_DRAIN|TELE_TO|S_UNDEAD)
 			    ,(UNDEAD|IM_POISON|IM_FROST|EVIL|MAX_HP|GOOD|
@@ -4955,7 +4955,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Master Quylthulg"	    ,(MV_INVIS)
+{"Master quylthulg"	    ,(MV_INVIS)
 			,(0x2L|MONSTER|S_UNDEAD|S_DRAGON),(CHARM_SLEEP|
 			  ANIMAL|MAX_HP|EVIL),(SUMMON),(S_GUNDEAD|S_ANCIENTD)
 		       ,12000,0,20,1,12,'Q',{100,20},{0,0,0,0},71,3
@@ -4964,7 +4964,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Greater Dragonic Quylthulg" ,(MV_INVIS)
+{"Greater dragonic quylthulg" ,(MV_INVIS)
 			    ,(0x2L|BLINK|TELE_TO),(ANIMAL|EVIL|MAX_HP|
 			     CHARM_SLEEP) ,(NONE8),(S_ANCIENTD)
 			,10500,0,20,1,12,'Q',{100,14},{0,0,0,0},71,3
@@ -4973,9 +4973,9 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Greater Rotting Quylthulg",(MV_INVIS)
-			    ,(0x2L|BLINK|TELE_TO),(ANIMAL|EVIL|
-			     CHARM_SLEEP|MAX_HP),(NONE8),(S_GUNDEAD)
+{"Greater rotting quylthulg",(MV_INVIS)
+			    ,(0x2L|BLINK|TELE_TO),(ANIMAL|EVIL|UNDEAD|NO_INFRA|
+			     CHARM_SLEEP|MAX_HP|IM_FROST),(NONE8),(S_GUNDEAD)
 			,10500,0,20,1,12,'Q',{100,14},{0,0,0,0},71,3
 #ifdef TC_COLOR
   , LIGHTRED
@@ -4995,7 +4995,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Omarax the Eye tyrant"    ,(MV_ATT_NORM)
+{"Omarax the Eye Tyrant"    ,(MV_ATT_NORM)
 			    ,(0x2L|FIRE_BOLT|FROST_BOLT|ACID_BOLT|
 			      MANA_DRAIN|BLINDNESS|CONFUSION|FEAR|SLOW)
 			    ,(ANIMAL|EVIL|CHARM_SLEEP|MAX_HP|
@@ -5093,7 +5093,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Hell Hound"		    ,(MV_ATT_NORM|MV_20),(0x5L|BREATH_FI),
+{"Hell hound"		    ,(MV_ATT_NORM|MV_20),(0x5L|BREATH_FI),
  			(ANIMAL|EVIL|MAX_HP|IM_FIRE|GROUP),(NONE8),(NONE8)
                        ,600,30,25,80,12,'C',{30,16},{107,107,107,0},83,4
 #ifdef TC_COLOR
@@ -5139,7 +5139,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Draugluin, Sire of All Werewolves",(MV_ATT_NORM|MV_20|PICK_UP|THRO_DR)
+{"Draugluin, Sire of all Werewolves",(MV_ATT_NORM|MV_20|PICK_UP|THRO_DR)
 			    ,(0x3L|FEAR)
 			    ,(ANIMAL|EVIL|UNIQUE|IM_POISON|MAX_HP|GOOD)
 			    ,(SUMMON|S_HOUND),(NONE8)

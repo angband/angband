@@ -144,7 +144,7 @@ race_type race[MAX_RACES] = {
       20, 10, 96, 10,255, 50, 84,  8,225, 40,
       -5, -1, -2,  5, 20,-10, -8, 12,  3, 120, 0x05,
     },
-   {"Dunedain",  1,  2,  1,  2,  3,  2,
+   {"Dunadan",  1,  2,  1,  2,  3,  2,
       50, 20, 82, 5, 190, 20, 78,  6, 180, 15,
       4,   3,  2, -3, 15, 10,  5, 10,  0, 180, 0x3F,
     },
@@ -154,20 +154,6 @@ race_type race[MAX_RACES] = {
     }
  };
 #endif
-
-/* 5 char race for printing scores. */
-char *dsp_race[MAX_RACES] = {
-  "Human",
-  "H-Elf",
-  "Elf  ",
-  "Hobbt",
-  "Gnome",
-  "Dwarf",
-  "H-Orc",
-  "H-Tro",
-  "Duned",
-  "HiElf"
-};
 
 /* Background information					*/
 #ifdef MACGAME
@@ -451,7 +437,7 @@ spell_type magic_spell[MAX_CLASS-1][63] = {
      { 21, 16, 60,  38},
      { 25, 20, 70,  75},
      { 33, 55, 90, 125},
-     { 39, 32, 99, 200},
+     { 39, 32, 95, 200},
 
      { 3,  3,  50,   2},
      { 10, 10, 80,   50},
@@ -513,7 +499,7 @@ spell_type magic_spell[MAX_CLASS-1][63] = {
      { 24, 11, 70,  10},
 
      { 25, 12, 95,  11},
-     { 27, 15, 99,  12},
+     { 27, 15, 99,  12}, /* recharge 1 */
      { 99, 99,	0,   0},
      { 99, 99,	0,   0},
      { 28, 18, 50,  19},
@@ -522,7 +508,7 @@ spell_type magic_spell[MAX_CLASS-1][63] = {
      { 99, 99,	0,   0},
 
      { 99, 99,	0,   0},
-     { 99, 99,	0,   0},
+     { 33, 22, 99,  20}, /* recharge 2 */
      { 99, 99,	0,   0},
      { 32, 25, 70,  50},
      { 99, 99,	0,   0},
@@ -667,7 +653,7 @@ spell_type magic_spell[MAX_CLASS-1][63] = {
      { 33, 28, 60,  31},
      { 35, 32, 70,  38},
      { 37, 70, 90,  50},
-     { 39, 38, 95, 100},
+     { 39, 38, 99, 100},
 
      { 5,  5,  50,   2},
      { 15, 15, 80,   50},
@@ -830,4 +816,16 @@ int16u player_init[MAX_CLASS][5] = {
 		{ MDO, MDO+21,  34, 330,  74},	/* Ranger	 */
 		{ MDO, MDO+21,  34, 334, 209}	/* Paladin	 */
         /* Last array object added for one extra useful object per class */
+};
+
+/* spellmasks[][] is used to control the "you seem to be missing a book"
+	messages, because they cause a little confusion, and a bit of
+	irritation.  -CFT */
+int32u spellmasks[MAX_CLASS][2] = {
+	{ 0x0L, 0x0L },			/* warrior */
+	{ 0x7fffffafL, 0x07ffffffL },	/* mage */
+	{ 0xffffffffL, 0x03ffffffL },	/* priest */
+	{ 0x288afafeL, 0x03fe70eeL },	/* rogue */
+	{ 0x7fffffafL, 0x03fe77feL },	/* ranger */
+	{ 0xffffffffL, 0x03ffffffL }	/* paladin (same as priest!?!?) */
 };

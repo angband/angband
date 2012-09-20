@@ -193,8 +193,10 @@ inven_type *i_ptr;
   int16 offset;
   int8u indexx;
 
+  /* Items which don't have a 'color' are always known1, so that they can
+     be carried in order in the inventory.  */
   if ((offset = object_offset(i_ptr)) < 0)
-    return FALSE;
+    return OD_KNOWN1;
   if (store_bought_p(i_ptr))
     return OD_KNOWN1;
   offset <<= 6;
@@ -351,7 +353,7 @@ int pref;
   register char *basenm, *modstr;
   bigvtype tmp_val;
   vtype tmp_str, damstr;
-  int indexx, p1_use, modify;
+  int indexx, p1_use, modify, append_name;
 
   indexx = i_ptr->subval & (ITEM_SINGLE_STACK_MIN - 1);
   basenm = object_list[i_ptr->index].name;
@@ -359,6 +361,7 @@ int pref;
   damstr[0] = '\0';
   p1_use = IGNORED;
   modify = (known1_p(i_ptr) ? FALSE : TRUE);
+  append_name = FALSE;
   switch(i_ptr->tval)
     {
     case  TV_MISC:
@@ -371,19 +374,25 @@ int pref;
       break;
     case  TV_LIGHT:
       p1_use = LIGHT;
+      if (!stricmp("The Phial of Galadriel", basenm) && !known2_p(i_ptr))
+        basenm = "a Shining Phial";
+      if (!stricmp("The Star of Elendil", basenm) && !known2_p(i_ptr))
+        basenm = "a Shining Gem";
+      if (!stricmp("The Arkenstone of Thrain", basenm) && !known2_p(i_ptr))
+        basenm = "a Shining Gem";
       break;
     case  TV_SPIKE:
       break;
     case  TV_BOW:
-      if (!strcmp("& Light Crossbow", object_list[i_ptr->index].name))	
+      if (!stricmp("& Light Crossbow", object_list[i_ptr->index].name))	
 	(void) strcpy(damstr, " (x3)");
-      else if (!strcmp("& Heavy Crossbow", object_list[i_ptr->index].name))
+      else if (!stricmp("& Heavy Crossbow", object_list[i_ptr->index].name))
 	(void) strcpy(damstr, " (x4)");
-      else if (!strcmp("& Sling", object_list[i_ptr->index].name))
+      else if (!stricmp("& Sling", object_list[i_ptr->index].name))
 	(void) strcpy(damstr, " (x2)");
-      else if (!strcmp("& Short Bow", object_list[i_ptr->index].name))
+      else if (!stricmp("& Short Bow", object_list[i_ptr->index].name))
 	(void) strcpy(damstr, " (x2)");
-      else if (!strcmp("& Long Bow", object_list[i_ptr->index].name))
+      else if (!stricmp("& Long Bow", object_list[i_ptr->index].name))
 	(void) strcpy(damstr, " (x3)");
       break;
     case  TV_HAFTED:
@@ -411,7 +420,10 @@ int pref;
 	  modstr = amulets[indexx];
 	}
       else
-	basenm = "& Amulet";
+	{
+	  basenm = "& Amulet";
+	  append_name = TRUE;
+	}
       p1_use = PLUSSES;
       break;
     case  TV_RING:
@@ -421,7 +433,10 @@ int pref;
 	  modstr = rocks[indexx];
 	}
       else
-	basenm = "& Ring";
+	{
+	  basenm = "& Ring";
+	  append_name = TRUE;
+	}
       p1_use = PLUSSES;
       break;
     case  TV_STAFF:
@@ -431,7 +446,10 @@ int pref;
 	  modstr = woods[indexx];
 	}
       else
-	basenm = "& Staff";
+	{
+	  basenm = "& Staff";
+	  append_name = TRUE;
+	}
       p1_use = CHARGES;
       break;
     case  TV_WAND:
@@ -441,7 +459,10 @@ int pref;
 	  modstr = metals[indexx];
 	}
       else
-	basenm = "& Wand";
+	{
+	  basenm = "& Wand";
+	  append_name = TRUE;
+	}
       p1_use = CHARGES;
       break;
     case  TV_ROD:
@@ -451,7 +472,10 @@ int pref;
 	  modstr = metals[indexx];
 	}
       else
-	basenm = "& Rod";
+	{
+	  basenm = "& Rod";
+	  append_name = TRUE;
+	}
       break;
     case  TV_SCROLL1:
     case  TV_SCROLL2:
@@ -461,7 +485,10 @@ int pref;
 	  modstr = titles[indexx];
 	}
       else
-	basenm = "& Scroll~";
+	{
+	  basenm = "& Scroll~";
+	  append_name = TRUE;
+	}
       break;
     case  TV_POTION1:
     case  TV_POTION2:
@@ -471,7 +498,10 @@ int pref;
 	  modstr = colors[indexx];
 	}
       else
-	basenm = "& Potion~";
+	{
+	  basenm = "& Potion~";
+	  append_name = TRUE;
+	}
       break;
     case  TV_FLASK:
       break;
@@ -486,10 +516,16 @@ int pref;
 	    modstr = mushrooms[indexx];
 	}
       else
-	if (indexx <= 15)
-	  basenm = "& Mushroom~";
-	else if (indexx <= 20)
-	  basenm = "& Hairy Mold~";
+	{
+	  append_name = TRUE;
+	  if (indexx <= 15)
+	    basenm = "& Mushroom~";
+	  else if (indexx <= 20)
+	    basenm = "& Hairy Mold~";
+	  else
+	    /* Ordinary food does not have a name appended.  */
+	    append_name = FALSE;
+	}
       break;
     case  TV_MAGIC_BOOK:
       modstr = basenm;
@@ -524,7 +560,7 @@ int pref;
     (void) sprintf(tmp_val, basenm, modstr);
   else
     (void) strcpy(tmp_val, basenm);
-  if (known1_p(i_ptr))
+  if (append_name)
     {
       (void) strcat(tmp_val, " of ");
       (void) strcat(tmp_val, object_list[i_ptr->index].name);
@@ -611,7 +647,8 @@ int pref;
 	    (void) sprintf(tmp_str, " (%c%d)",
 			   (i_ptr->p1 < 0) ? '-' : '+', abs(i_ptr->p1));
 	  else if (p1_use == CHARGES)
-	    (void) sprintf(tmp_str, " (%d charges)", i_ptr->p1);
+	    (void) sprintf(tmp_str, " (%d charge%s", i_ptr->p1,
+		(i_ptr->p1 == 1 ? ")" : "s)") );
 	  else if (i_ptr->p1 != 0)
 	    {
 	      if (p1_use == PLUSSES)
@@ -635,6 +672,10 @@ int pref;
 	    (void) sprintf(out_val, "%d%s", (int)i_ptr->number, &tmp_val[1]);
 	  else if (i_ptr->number < 1)
 	    (void) sprintf(out_val, "%s%s", "no more", &tmp_val[1]);
+          else if (known2_p(i_ptr) && (i_ptr->tval >= TV_MIN_WEAR)
+          	   && (i_ptr->tval <= TV_MAX_WEAR) &&
+			(i_ptr->flags2 & TR_ARTIFACT))
+            (void) sprintf(out_val, "The%s", &tmp_val[1]);
 	  else if (is_a_vowel(tmp_val[2]))
 	    (void) sprintf(out_val, "an%s", &tmp_val[1]);
 	  else

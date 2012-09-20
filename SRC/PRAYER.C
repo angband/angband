@@ -63,7 +63,7 @@ void pray()
 		  if (py.flags.cut>0) {
 		    py.flags.cut-=10;
 		    if (py.flags.cut<0) py.flags.cut=0;
-		    msg_print("You wounds heal.");
+		    msg_print("Your wounds heal.");
 		  }
 		  break;
 		case 3:
@@ -96,7 +96,7 @@ void pray()
 		  if (py.flags.cut>0) {
 		    py.flags.cut=(py.flags.cut/2)-20;
 		    if (py.flags.cut<0) py.flags.cut=0;
-		    msg_print("You wounds heal.");
+		    msg_print("Your wounds heal.");
 		  }
 		  break;
 		case 12:
@@ -109,21 +109,6 @@ void pray()
 		  create_food();
 		  break;
 		case 15:
-#if 0 /* this old code allows priests to uncurse the One Ring.  It looks
-	 wrong to me.  Why not just call remove_curse()??  In case this really
-	 was what was meant, I've left it here in the #if block... -CFT */
-		  for (i = 0; i < INVEN_ARRAY_SIZE; i++)
-		    {
-		      i_ptr = &inventory[i];
-		      /* only clear flag for items that are wielded or worn */
-		      if (i_ptr->tval >= TV_MIN_WEAR
-			  && i_ptr->tval <= TV_MAX_WEAR)
-			if (!(i_ptr->name2 & SN_MORGUL) &&
-			    !(i_ptr->name2 & SN_MORMEGIL) &&
-			    !(i_ptr->name2 & SN_CALRIS))
-			  i_ptr->flags &= ~TR_CURSED;
-		    }
-#endif
 		  remove_curse(); /* -CFT */
 		  break;
 		case 16:
@@ -144,7 +129,7 @@ void pray()
 		  (void) hp_player(damroll(8, 4));
 		  if (py.flags.cut>0) {
 		    py.flags.cut=0;
-		    msg_print("You wounds heal.");
+		    msg_print("Your wounds heal.");
 		  }
 		  break;
 		case 20:
@@ -163,7 +148,7 @@ void pray()
 		  (void) hp_player(damroll(16, 4));
 		  if (py.flags.cut>0) {
 		    py.flags.cut=0;
-		    msg_print("You wounds heal.");
+		    msg_print("Your wounds heal.");
 		  }
 		  break;
 		case 25:
@@ -239,14 +224,14 @@ void pray()
 		  (void) hp_player(damroll(8, 4));
 		  if (py.flags.cut>0) {
 		    py.flags.cut=0;
-		    msg_print("You wounds heal.");
+		    msg_print("Your wounds heal.");
 		  }
 		  break;
 		case 38:
 		  (void) hp_player(damroll(16, 4));
 		  if (py.flags.cut>0) {
 		    py.flags.cut=0;
-		    msg_print("You wounds heal.");
+		    msg_print("Your wounds heal.");
 		  }
 		  break;
 		case 39:
@@ -393,9 +378,9 @@ void pray()
 		  if (i_ptr->tval != TV_NOTHING &&
 		      i_ptr->name2 == SN_NULL)
 		    {
-		      int hot = randint(2)-1;
+		      int k, l, hot = randint(2)-1;
 		      char tmp_str[100], out_val[100];
-
+		      
 		      objdes(tmp_str, i_ptr, FALSE);
 		      if (hot) {
 			sprintf(out_val,
@@ -410,8 +395,14 @@ void pray()
 			i_ptr->flags |= (TR_FROST_BRAND|TR_RES_COLD);
 		      }
 		      msg_print(out_val);
-		      i_ptr->tohit+=3+randint(3);
-		      i_ptr->todam+=3+randint(3);
+
+		      k = 3 + randint(3);
+		      for(l=0;l<k;l++)
+			enchant(&i_ptr->tohit);
+		      k = 3 + randint(3);
+		      for(l=0;l<k;l++)
+			enchant(&i_ptr->todam); 
+
 		      i_ptr->flags &= ~TR_CURSED;
 		      calc_bonuses ();
 		    } else {
@@ -432,9 +423,17 @@ void pray()
 		  (void) tele_level();
 		  break;
 		case 57: /* word of recall */
-		  if (py.flags.word_recall == 0)
-		    py.flags.word_recall = 25 + randint(30);
-		  msg_print("The air about you becomes charged.");
+	      { char c; int f = TRUE;
+	      do { /* loop, so RET or other key doesn't accidently exit */
+	      	f = get_com("Do you really want to return?", &c);
+	        } while (f && (c != 'y') && (c != 'Y') && (c != 'n') &&
+	        		(c != 'N'));
+	      if (f && (c != 'n') && (c != 'N')) {
+		    if (py.flags.word_recall == 0)
+		      py.flags.word_recall = 25 + randint(30);
+		    msg_print("The air about you becomes charged.");
+		    }
+	      }
 		  break;
 		case 58: /* alter reality */
 		  new_level_flag = TRUE;

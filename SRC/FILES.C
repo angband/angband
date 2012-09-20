@@ -77,6 +77,7 @@ void read_times()
   vtype in_line;
   FILE *file1;
 
+#ifndef MSDOS /* on a PC, nobody cares when you play Angband... -CFT */
 #ifdef ANGBAND_HOU
   /* Attempt to read hours.dat.	 If it does not exist,	   */
   /* inform the user so he can tell the wizard about it	 */
@@ -122,6 +123,8 @@ void read_times()
 	}
       exit_game();
     }
+#endif /* if hours file */
+#endif /* if not MSDOS */
 
   /* Print the introduction message, news, etc.		 */
   if ((file1 = fopen(ANGBAND_MOR, "r")) != NULL)
@@ -132,7 +135,6 @@ void read_times()
       pause_line(23);
       (void) fclose(file1);
     }
-#endif
 }
 
 /* File perusal.	    -CJS-
@@ -305,7 +307,7 @@ void print_objects()
 		  } else {
 		    invcopy(&t_list[j],
 			    sorted_objects[get_obj_num(level, FALSE)]);
-		    magic_treasure(j, level, FALSE, TRUE);
+		    magic_treasure(j, level, 0, FALSE);
 		    i_ptr = &t_list[j];
 		    store_bought(i_ptr);
 		    if (i_ptr->flags & TR_CURSED)
@@ -314,7 +316,7 @@ void print_objects()
 		  }
 		  (void) fprintf(file1, "%d %s\n", i_ptr->level, tmp_str);
 		}
-	      pusht((int8u)j);
+	      pusht(j);
 	      (void) fclose(file1);
 	      prt("Completed.", 0, 0);
 	    }
@@ -346,7 +348,7 @@ char *filename1;
   if (fd < 0 && errno == EEXIST)
     {
       (void) sprintf(out_val, "Replace existing file %s?", filename1);
-      if (get_check(out_val))
+      if (get_Yn(out_val))
 	fd = open(filename1, O_WRONLY, 0644);
     }
   if (fd >= 0)
@@ -394,17 +396,23 @@ char *filename1;
       (void) fprintf(file1, "   CHR : %s\n\n", prt1);
 
       (void) fprintf(file1, " + To Hit    : %6d", py.misc.dis_th);
-      (void) fprintf(file1, "%8sLevel      : %6d", blank, (int)py.misc.lev);
-      (void) fprintf(file1, "    Max Hit Points : %6d\n", py.misc.mhp);
+      (void) fprintf(file1, "%8sLevel      :%9d", blank, (int)py.misc.lev);
+      (void) fprintf(file1, "  Max Hit Points : %6d\n", py.misc.mhp);
       (void) fprintf(file1, " + To Damage : %6d", py.misc.dis_td);
-      (void) fprintf(file1, "%8sExperience : %6ld", blank, py.misc.exp);
-      (void) fprintf(file1, "    Cur Hit Points : %6d\n", py.misc.chp);
+      (void) fprintf(file1, "%8sExperience :%9ld", blank, py.misc.exp);
+      (void) fprintf(file1, "  Cur Hit Points : %6d\n", py.misc.chp);
       (void) fprintf(file1, " + To AC     : %6d", py.misc.dis_tac);
-      (void) fprintf(file1, "%8sGold%8s %6ld", blank, colon, py.misc.au);
-      (void) fprintf(file1, "    Max Mana%8s %6d\n", colon, py.misc.mana);
+      (void) fprintf(file1, "%8sMax Exp    :%9ld", blank, py.misc.max_exp);
+      (void) fprintf(file1, "  Max Mana%8s %6d\n", colon, py.misc.mana);
       (void) fprintf(file1, "   Total AC  : %6d", py.misc.dis_ac);
-      (void) fprintf(file1, "%27s", blank);
-      (void) fprintf(file1, "    Cur Mana%8s %6d\n\n", colon, py.misc.cmana);
+      if (py.misc.lev>=MAX_PLAYER_LEVEL)
+	(void) fprintf(file1, "%8sExp to Adv.:%9s", blank, "****");
+      else
+	(void) fprintf(file1, "%8sExp to Adv.:%9ld", blank,
+	                  (int32)(player_exp[py.misc.lev-1] *
+				   py.misc.expfact/100));
+      (void) fprintf(file1, "  Cur Mana%8s %6d\n", colon, py.misc.cmana);
+      (void) fprintf(file1, "%29sGold%8s%9ld\n", blank, colon, py.misc.au);
 
       p_ptr = &py.misc;
       xbth = p_ptr->bth + p_ptr->ptohit * BTH_PLUS_ADJ

@@ -138,12 +138,12 @@ static char *desc_spell[] = {
   "haste itself",
   "fire missiles",
   "cast plasma bolts",
-  "mass summoning",
+  "summon many creatures",
   "cast nether bolts",
   "cast ice bolts",
   "cast darkness",
   "cause amnesia",
-  "mind searing",
+  "sear your mind",
   "cast stinking clouds",
   "teleport its preys level",
   "cast water bolts",
@@ -160,7 +160,7 @@ static char *desc_spell[] = {
   "gravity",
   "darkness",
   "plasma",           /* end */
-  "fires arrows",
+  "fire arrows",
   "summon Ringwraiths",
   "cast darkness storms",
   "cast mana storms",
@@ -321,7 +321,7 @@ int mon_num;
     (void) sprintf(temp, "At least %d of these creatures %s",
 		     mp->r_kills, plural(mp->r_kills, "has", "have") );
     roff(temp);
-    roff(" been killed by your ancestors. ");
+    roff(" been killed by you and your ancestors. ");
     }
    else roff("No battles to the death are recalled. ");
   /* Immediately obvious. */
@@ -354,7 +354,7 @@ int mon_num;
    search of data in memory is probably orders of magnitude faster than my
    (above) direct indexed file read, so it's not THAT bad... -CFT */
   for (k=0; k<MAX_CREATURES; k++) {
-    if (!strcmp(desc_list[k].name, cp->name)) {
+    if (!stricmp(desc_list[k].name, cp->name)) {
       if (strlen(desc_list[k].desc) != 0) {
 	roff(" ");
 	roff(desc_list[k].desc);

@@ -45,6 +45,8 @@ static void choose_race(ARG_VOID);
 static void get_sex(ARG_VOID);
 static void get_class_choice(ARG_VOID);
 static void get_all_stats(ARG_VOID);
+static void get_auto_stats(ARG_VOID);
+static void put_auto_stats(ARG_VOID);
 static void get_history(ARG_VOID);
 static void get_ahw(ARG_VOID);
 static void print_history(ARG_VOID);
@@ -183,6 +185,75 @@ static void get_all_stats ()
   p_ptr->flags.see_infra = r_ptr->infra;
 }
 
+/* slightly modified version of get_all_stats(), for use in auto-roller.
+   This version never calls calc_mana(), so it will not pause the rolling
+   with a "more" message.  -CFT
+   generate all stats and modify for race. needed in a separate module so
+   looping of character selection would be allowed     -RGM- */
+static void get_auto_stats ()
+{
+  register player_type *p_ptr;
+  register race_type *r_ptr;
+  register int j;
+
+  prev.str = (int16u)py.stats.max_stat[0];
+  prev.itl = (int16u)py.stats.max_stat[1];
+  prev.wis = (int16u)py.stats.max_stat[2];
+  prev.dex = (int16u)py.stats.max_stat[3];
+  prev.con = (int16u)py.stats.max_stat[4];
+  prev.chr = (int16u)py.stats.max_stat[5];
+  p_ptr = &py;
+  r_ptr = &race[p_ptr->misc.prace];
+  get_stats ();
+  change_stat (A_STR, r_ptr->str_adj);
+  change_stat (A_INT, r_ptr->int_adj);
+  change_stat (A_WIS, r_ptr->wis_adj);
+  change_stat (A_DEX, r_ptr->dex_adj);
+  change_stat (A_CON, r_ptr->con_adj);
+  change_stat (A_CHR, r_ptr->chr_adj);
+  for (j = 0; j < 6; j++)
+    {
+      py.stats.cur_stat[j] = py.stats.max_stat[j];
+      py.stats.use_stat[j] = modify_stat (j, py.stats.mod_stat[j]);
+    }
+
+  p_ptr->misc.srh    = r_ptr->srh;
+  p_ptr->misc.bth    = r_ptr->bth;
+  p_ptr->misc.bthb   = r_ptr->bthb;
+  p_ptr->misc.fos    = r_ptr->fos;
+  p_ptr->misc.stl    = r_ptr->stl;
+  p_ptr->misc.save   = r_ptr->bsav;
+  p_ptr->misc.hitdie = r_ptr->bhitdie;
+  p_ptr->misc.lev    = 1;
+  p_ptr->misc.ptodam = todam_adj();
+  p_ptr->misc.ptohit = tohit_adj();
+  p_ptr->misc.ptoac  = 0;
+  p_ptr->misc.pac    = toac_adj();
+  p_ptr->misc.expfact = r_ptr->b_exp;
+  p_ptr->flags.see_infra = r_ptr->infra;
+}
+
+/* copied from misc2.c, so the display loop would work nicely -cft */
+static char *stat_names[] = { "STR: ", "INT: ", "WIS: ",
+				 "DEX: ", "CON: ", "CHR: " };
+
+static void put_auto_stats(){ /* used for auto-roller.  Just put_stats(),
+				w/o the extra info -CFT */
+  register int i;
+  vtype buf;
+
+  for (i = 0; i < 6; i++)
+    {
+      cnv_stat (py.stats.use_stat[i], buf);
+      put_buffer (stat_names[i], 2+i, 61);
+      put_buffer (buf, 2+i, 66);
+      if (py.stats.max_stat[i] > py.stats.cur_stat[i])
+	{
+	  cnv_stat (py.stats.max_stat[i], buf);
+	  put_buffer (buf, 2+i, 73);
+	}
+    }
+}
 
 /* Allows player to select a race			-JWT-	*/
 static void choose_race()
@@ -421,7 +492,7 @@ static void get_ahw()
       py.misc.ht = randnor((int)race[i].f_b_ht, (int)race[i].f_m_ht);
       py.misc.wt = randnor((int)race[i].f_b_wt, (int)race[i].f_m_wt);
     }
-  py.misc.disarm = race[i].b_dis + todis_adj();
+  py.misc.disarm = race[i].b_dis;
 }
 
 static void get_prev_ahw()
@@ -437,16 +508,13 @@ static void get_prev_ahw()
 /* Gets a character class				-JWT-	*/
 static void get_class()
 {
-  register int i, j;
-  int k, l, m, min_value, max_value;
-  int cl[MAX_CLASS], exit_flag;
+  register int i;
+  int min_value, max_value;
   int percent;
   char buf[50];
   register struct misc *m_ptr;
   register player_type *p_ptr;
   class_type *c_ptr;
-  char tmp_str[80], s;
-  int32u mask;
 
   c_ptr = &class[py.misc.pclass];
   p_ptr = &py;	
@@ -514,7 +582,7 @@ static void get_class()
   m_ptr->bth += c_ptr->mbth;
   m_ptr->bthb += c_ptr->mbthb;	/*RAK*/
   m_ptr->srh += c_ptr->msrh;
-  m_ptr->disarm += c_ptr->mdis;
+  m_ptr->disarm += c_ptr->mdis + todis_adj();
   m_ptr->fos += c_ptr->mfos;
   m_ptr->stl += c_ptr->mstl;
   m_ptr->save += c_ptr->msav;
@@ -561,10 +629,8 @@ void rerate() {
 static void get_class_choice()
 {
   register int i, j;
-  int k, l, m, min_value, max_value;
+  int k, l, m;
   int cl[MAX_CLASS], exit_flag;
-  register struct misc *m_ptr;
-  register player_type *p_ptr;
   class_type *c_ptr;
   char tmp_str[80], s;
   int32u mask;
@@ -611,8 +677,11 @@ static void get_class_choice()
 	  exit_flag = TRUE;
 	  clear_from (20);
 	  put_buffer(c_ptr->title, 5, 15);
-
 	}
+      else if (s == '?')
+        helpfile(ANGBAND_WELCOME);
+      else
+        bell();
     } while (!exit_flag);
 }
 
@@ -659,7 +728,6 @@ void create_character()
   int stat[6];
   char inp[60];
 #endif
-  class_type *c_ptr;
   int previous_exists = 0; /* flag to prevent prev from garbage values */
   
   put_character();
@@ -671,9 +739,15 @@ void create_character()
 /* This auto-roller stolen from a post on rec.games.moria, which I belive
    was taken from druid moria 5.something.  If this intrudes on someone's
    copyright, take it out, and someone let me know -CFT */
-  put_buffer("Do you want to use automatic rolling? ", 20,2);
-  move_cursor(20,40);
-  c=inkey();
+  put_buffer("Do you want to use automatic rolling? (? for Help) ", 20,2);
+  do {	/* allow multiple key entry, so they can ask for help and still
+  		get back to this menu... -CFT */
+    move_cursor(20,52);
+    c=inkey();
+    if (c == '?')
+      helpfile(ANGBAND_WELCOME);
+  } while ((c != 'y') && (c != 'Y') && (c != 'n') && (c != 'N'));
+  
   if ((c == 'Y') || (c == 'y')){
     clear_from(15);
     put_buffer("Enter minimum attribute for: ",15,2);
@@ -720,9 +794,11 @@ void create_character()
       sprintf(hlp, "auto-rolling round #%d.", auto_round);
       put_buffer(hlp, 20 ,2);
       put_qio();
-      get_all_stats();
+      get_auto_stats();
+      get_history();
+      get_ahw();
       get_class();
-      put_stats();
+      put_auto_stats();
       auto_round++;
       } while(((stat[A_STR] > py.stats.cur_stat[A_STR]) ||
             (stat[A_INT] > py.stats.cur_stat[A_INT]) ||
@@ -738,8 +814,7 @@ void create_character()
 	    );	    
 #endif
      if (kbhit()) flush(); /* -CFT */
-     get_history();
-     get_ahw();
+     calc_bonuses(); /* need this because it was taken out of the loop -CFT */
      print_history();
      put_misc1();
    } /* if 'y' */    /* end of Sam */
@@ -755,18 +830,20 @@ void create_character()
   put_stats();
 
   clear_from (20);
-  if (previous_exists)
-    put_buffer("Hit space: Reroll, ^P: Previous or ESC: Accept: ", 20, 2);
-  else
-    put_buffer("Hit space: Reroll, or ESC: Accept: ", 20, 2);
   do
     {
+      if (previous_exists == 1) {
+        put_buffer("Hit space: Reroll, ^P: Previous or ESC: Accept: ", 20, 2);
+	previous_exists = 2; /* don't bother displaying this hundreds of times -CFT */
+        }
+      else if (previous_exists == 0)
+        put_buffer("Hit space: Reroll, or ESC: Accept: ", 20, 2);
       move_cursor (20, 50);
       c = inkey();
       if (c == ESCAPE) {
 	exit_flag = 0;
       } else if (c == ' ') {
-        previous_exists = 1; /* once rolled again, we have a previous */
+        if (!previous_exists) previous_exists = 1; /* once rolled again, we have a previous */
 	get_all_stats();
 	get_history();
 	get_ahw();

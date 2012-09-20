@@ -898,6 +898,9 @@ void wizard_create()
 
   save_screen();
 
+  if ((i_ptr->tval <= TV_MAX_WEAR) && (i_ptr->tval >= TV_MIN_WEAR)) {
+    /* only then bother with TR_* flags, since otherwise they are
+	meaningless... -CFT */
   if ((i_ptr->tval==TV_SWORD) ||
       (i_ptr->tval==TV_HAFTED) ||
       (i_ptr->tval==TV_POLEARM) ||
@@ -1069,7 +1072,7 @@ void wizard_create()
   if (get_com("Give off Light? [yn]: ", &ch)) {
     if (ch=='y'||ch=='Y') i_ptr->flags2 |= TR_LIGHT;
   } else if (ch=='\033') goto end;
-  if (get_com("Active Artifact? [yn]: ", &ch)) {
+  if (get_com("Activatable Item? [yn]: ", &ch)) {
     if (ch=='y'||ch=='Y') i_ptr->flags2 |= TR_ACTIVATE;
   } else if (ch=='\033') goto end;
   if (get_com("Is it an Artifact? [yn]: ", &ch)) {
@@ -1078,6 +1081,7 @@ void wizard_create()
   if (get_com("Cursed? [yn]: ", &ch)) {
     if (ch=='y'||ch=='Y') i_ptr->flags |= TR_CURSED;
   } else if (ch=='\033') goto end;
+  } /* end if TV_MAX_WEAR >= i_ptr->tval >= TV_MIN_WEAR -CFT */
 
   prt("Cost : ", 0, 0);
   if (!get_string(tmp_str, 0, 9, 8)) {restore_screen();return;}

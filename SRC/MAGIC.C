@@ -22,7 +22,6 @@ void cast()
   int choice, chance, result;
   register struct flags *f_ptr;
   register struct misc *p_ptr;
-  register inven_type *i_ptr;
   register spell_type *m_ptr;
 
   free_turn_flag = TRUE;
@@ -206,9 +205,17 @@ void cast()
 		  earthquake();
 		  break;
 		case 38: /* Word of Recall */
-		  if (py.flags.word_recall == 0)
-		    py.flags.word_recall = 25 + randint(30);
-		  msg_print("The air about you becomes charged.");
+	      { char c; int f = TRUE;
+	      do { /* loop, so RET or other key doesn't accidently exit */
+	      	f = get_com("Do you really want to return?", &c);
+	        } while (f && (c != 'y') && (c != 'Y') && (c != 'n') &&
+	        		(c != 'N'));
+	      if (f && (c != 'n') && (c != 'N')) {
+		    if (py.flags.word_recall == 0)
+		      py.flags.word_recall = 25 + randint(30);
+		    msg_print("The air about you becomes charged.");
+	            }
+	      }
 		  break;
 		case 39: /* Acid Bolt */
 		  if (get_dir(NULL, &dir))

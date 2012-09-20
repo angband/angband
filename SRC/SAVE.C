@@ -167,9 +167,17 @@ static int sv_write()
     l |= 0x200L;
   if (no_haggle_flag)
     l |= 0x400L;
+#ifdef TC_COLOR
   if (no_color_flag)
     l |= 0x800L;
+#endif
 #endif    
+  if (!carry_query_flag)
+    l |= 0x1000L;
+#ifdef TC_COLOR
+  if (inven_bw_flag)
+    l |= 0x2000L;
+#endif
   if (death)
     l |= 0x80000000L;	/* Sign bit */
 
@@ -600,7 +608,21 @@ static int sv_write()
   wr_long((int32u)c_list[MAX_CREATURES - 1].cmove);
   wr_long((int32u)c_list[MAX_CREATURES - 1].spells);
   wr_long((int32u)c_list[MAX_CREATURES - 1].cdefense);
-  wr_short((int16u)c_list[MAX_CREATURES - 1].mexp);
+  {  int16u temp;  /* fix player ghost's exp bug.  The mexp field is
+      			  really an int32u, but the savefile was writing/
+      			  reading an int16u.  Since I don't want to change
+      			  the savefile format, this insures that the low
+      			  bits of mexp are written (No ghost should be
+      			  worth more than 64K (Melkor is only worth 60k!),
+			  but we check anyway).  Using temp insures that
+			  the low bits are all written, and works perfectly
+			  with a similar fix when loading a character. -CFT */
+    if (c_list[MAX_CREATURES-1].mexp > (int32u)0xff00)
+      temp = (int16u)0xff00;
+    else
+      temp = (int16u)c_list[MAX_CREATURES-1].mexp;
+    wr_short((int16u)temp);
+  }
   wr_byte((int8u)c_list[MAX_CREATURES - 1].sleep);
   wr_byte((int8u)c_list[MAX_CREATURES - 1].aaf);
   wr_byte((int8u)c_list[MAX_CREATURES - 1].ac);
@@ -789,14 +811,22 @@ int *generate;
   else
     {
 #ifndef SET_UID
+#ifndef MSDOS /* accuses people of having a fiddled savefile if write took
+		too long, like if DOS6's undelete decided to take control
+		of the disk for a while... */
       struct stat statbuf;
+#endif
 #endif
       turn = -1;
       log_index = -1;
       ok = TRUE;
 
 #ifndef SET_UID
+#ifndef MSDOS /* accuses people of having a fiddled savefile if write took
+		too long, like if DOS6's undelete decided to take control
+		of the disk for a while... */
       (void) fstat(fd, &statbuf);
+#endif
 #endif
       (void) close(fd);
       /* GCC for atari st defines atarist */
@@ -1040,11 +1070,23 @@ int *generate;
       	no_haggle_flag = TRUE;
       else
         no_haggle_flag = FALSE;
+#ifdef TC_COLOR
       if (l & 0x800L)
       	no_color_flag = TRUE;
       else
         no_color_flag = FALSE;
+#endif
 #endif        
+      if (l & 0x1000L)
+      	carry_query_flag = FALSE;
+      else
+        carry_query_flag = TRUE;
+#ifdef TC_COLOR
+      if (l & 0x2000L)
+      	inven_bw_flag = TRUE;
+      else
+        inven_bw_flag = FALSE;
+#endif
       if (to_be_wizard && (l & 0x80000000L)
 	  && get_check("Resurrect a dead character?"))
 	l &= ~0x80000000L;
@@ -1226,6 +1268,9 @@ int *generate;
 	      || (version_min == 1 && patch_level >= 3)) {
 	    rd_long(&time_saved);
 #ifndef SET_UID
+#ifndef MSDOS /* accuses people of having a fiddled savefile if write took
+		too long, like if DOS6's undelete decided to take control
+		of the disk for a while... */
 	    if (!to_be_wizard) {
 	      if (time_saved > (statbuf.st_ctime+100) ||
 		  time_saved < (statbuf.st_ctime-100)) {
@@ -1233,6 +1278,7 @@ int *generate;
 		    goto error;
 		  }
 	    }
+#endif
 #endif
 	  }
 
@@ -1259,6 +1305,13 @@ int *generate;
 	      /* don't let him die of poison again immediately */
 	      if (py.flags.poisoned > 1)
 		py.flags.poisoned = 1;
+	      /* or from wounds -CFT */
+	      if (py.flags.cut > 1)
+		py.flags.cut = 1;
+	      /* don't recall immediately if we died before recall could
+	      	 save us -CFT */
+	      if (py.flags.word_recall > 0)
+	        py.flags.word_recall = 0;
 	      dun_level = 0; /* Resurrect on the town level. */
 	      character_generated = 1;
 	      /* set noscore to indicate a resurrection, and don't enter
@@ -1304,7 +1357,11 @@ int *generate;
 	  rd_byte(&xchar);
 	  rd_byte(&char_tmp);
 	  if (xchar > MAX_WIDTH || ychar > MAX_HEIGHT) {
-            prt("Error in creature pointer info", 11, 0);
+	    vtype temp;
+	    sprintf(temp,
+		"Error in creature ptr info: x=%x, y=%x, char_tmp=%x",
+		xchar, ychar, char_tmp);
+            prt(temp, 11, 0);
 	    goto error;
 	  }
 	  cave[ychar][xchar].cptr = char_tmp;
@@ -1385,11 +1442,21 @@ int *generate;
 
       /* Restore ghost names & stats etc... */
       c_list[MAX_CREATURES - 1].name[0]='A';
-      rd_bytes((char *)(c_list[MAX_CREATURES - 1].name), 100);
+      rd_bytes((int8u *)(c_list[MAX_CREATURES - 1].name), 100);
       rd_long((int32u *)&(c_list[MAX_CREATURES - 1].cmove));
       rd_long((int32u *)&(c_list[MAX_CREATURES - 1].spells));
       rd_long((int32u *)&(c_list[MAX_CREATURES - 1].cdefense));
-      rd_short((int16u *)&(c_list[MAX_CREATURES - 1].mexp));
+      {  int16u temp;  /* fix player ghost's exp bug.  The mexp field is
+      			  really an int32u, but the savefile was writing/
+      			  reading an int16u.  Since I don't want to change
+      			  the savefile format, this insures that the mexp
+      			  field is loaded, and that the "high bits" of
+      			  mexp do not contain garbage values which could
+      			  mean that player ghost are worth millions of
+			  exp. -CFT */
+        rd_short((int16u *)&temp);
+        c_list[MAX_CREATURES-1].mexp = (int32u)temp;
+      }
       rd_byte((int8u *)&(c_list[MAX_CREATURES - 1].sleep));
       rd_byte((int8u *)&(c_list[MAX_CREATURES - 1].aaf));
       rd_byte((int8u *)&(c_list[MAX_CREATURES - 1].ac));

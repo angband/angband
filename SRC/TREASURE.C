@@ -2380,7 +2380,7 @@ treasure_type object_list[MAX_OBJECTS] = {
   ,CYAN
 #endif
 },
-{"[Godly Insights]"           	,0x00000000L,	TV_PRAYER_BOOK, '?',/*385*/
+{"[Godly Insights]"           	,0x80000000L,	TV_PRAYER_BOOK, '?',/*385*/
     0,	 9000,	69,   1,  30,   0,   0,	 0,   0, {1,1}	, 50, 0, 0x000000FL
 #ifdef TC_COLOR
   ,LIGHTCYAN
@@ -2480,7 +2480,7 @@ treasure_type object_list[MAX_OBJECTS] = {
 #endif
 },
 {"Death"                	,0x00020000L,	TV_POTION2, '!',/*401*/
-    0,	    0,  109,   1,   4,	0,   0,	 0,   0, {1,1}	, 55, 2, 0L
+    0,	12000,  109,   1,   4,	0,   0,	 0,   0, {30,30}, 55, 2, 0L
 #ifdef TC_COLOR
   ,0
 #endif
@@ -2779,7 +2779,7 @@ treasure_type object_list[MAX_OBJECTS] = {
 },
 /* end doors */
 /* stairs */
-{"an up staircase "		,0x00000000L, TV_UP_STAIR, '<',
+{"an up staircase"		,0x00000000L, TV_UP_STAIR, '<',
     0,	   0,	1,   1,   0,	0,   0,	 0,   0, {1,1}	,  0, 0, 0L
 #ifdef TC_COLOR
   ,LIGHTGRAY
@@ -3150,13 +3150,13 @@ treasure_type object_list[MAX_OBJECTS] = {
 #endif
 },
 {"The Star of Elendil"		 ,0x00000000L,  TV_LIGHT,   '~',   /*473*/
-    0,  25000,  5,    1,   5,   0,   0,  0,   0, {1,1}  ,  25, 0,0x02000C00L
+    0,  25000,  6,    1,   5,   0,   0,  0,   0, {1,1}  ,  25, 0,0x02000C00L
 #ifdef TC_COLOR
   ,WHITE
 #endif
 },
 {"The Arkenstone of Thrain"	 ,0x0100000CL,  TV_LIGHT,   '~',   /*474*/
-    2,  60000L,  6,    1,   5,   0,   0,  0,   0, {1,1}  ,  60, 0,0x02000C08L
+    2,  60000L,  8,    1,   5,   0,   0,  0,   0, {1,1}  ,  60, 0,0x02000C08L
 #ifdef TC_COLOR
   ,WHITE
 #endif
@@ -3201,47 +3201,48 @@ char *special_names[SN_ARRAY_SIZE] = {
 	"of Dragon Slaying",	"(Empty)",		"(Locked)",
 	"(Poison Needle)",	"(Gas Trap)",		"(Explosion Device)",
 	"(Summoning Runes)",	"(Multiple Traps)",	"(Disarmed)",
-	"(Unlocked)",		"of Slay Animal",       "named Grond",
-	"named Ringil",         "named Aeglos",         "named Arunruth",
-        "named Mormegil",       "of Morgul",            "named Angrist",
-	"named Gurthang",       "named Calris",         "of Accuracy",
-	"named Anduril",        "of Orc Slaying",       "of Power",
+	"(Unlocked)",		"of Slay Animal",       "'Grond'",
+	"'Ringil'",             "'Aeglos'",             "'Arunruth'",
+        "'Mormegil'",       "of Morgul",            "'Angrist'",
+	"'Gurthang'",       "'Calris'",         "of Accuracy",
+	"'Anduril'",        "of Orc Slaying",       "of Power",
 	"of Durin",             "of Aule",              "of Westernesse",
-	"named Dor-Lomin",      "of Demon Slaying",     "of Troll Slaying",
-	"named Bloodspike",     "named Thunderfist",    "of Wounding",
-	"named Orcrist",        "named Glamdring",      "named Sting",
+	"'Dor-Lomin'",      "of Demon Slaying",     "of Troll Slaying",
+	"'Bloodspike'",     "'Thunderfist'",    "of Wounding",
+	"'Orcrist'",        "'Glamdring'",      "'Sting'",
 	"of Light",             "of Agility",           "of Backbiting",
-	"named Doomcaller",     "of Giant Slaying", 	"of Telepathy",
-	"of Dragonkind",        "named Nenya",		"named Narya",
-	"named Vilya",		"of Aman",		"named Belegennon",
+	"'Doomcaller'",     "of Giant Slaying", 	"of Telepathy",
+	"of Dragonkind",        "'Nenya'",		"'Narya'",
+	"'Vilya'",		"of Aman",		"'Belegennon'",
 	"of Feanor",		"of Anarion",		"of Isildur",
-	"of Fingolfin",		"of Elvenkind",		"named Soulkeeper",
+	"of Fingolfin",		"of Elvenkind",		"'Soulkeeper'",
 	"of Dor-Lomin",         "of Morgoth",           "of Beleg Cuthalion",
-	"named Dal-i-thalion",  "named Paurhach",       "named Paurnimmen",
-	"named Pauraegen",      "named Cammithrim",     "named Cambeleg",
-        "named Holhenneth",     "named Paurnen",        "named Aeglin",
-	"named Camlost",        "named Nimloth",        "named Nar-i-vagil",
-	"of Beruthiel",         "of Gorlim",            "named Narthanc",
-	"named Nimthanc",       "named Dethanc",        "named Gilettar",
-	"of Rilia",             "named Belangil",       "of Balli Stonehand",
-	"named Lotharang",      "named Firestar",       "named Eriril",
-	"named Cubragol",       "of Bard",              "named Colluin",
-	"named Holcolleth",     "named Totila",         "of Pain",
-	"named Elvagil",        "named Aglarang",	"of Rohan",
-	"of the Eorlingas",     "named Barukkheled",    "of Wrath",
-	"named Haradekket",     "named Mundwine",       "named Gondricam",
-        "named Zarcuthra",      "named Careth Asdriag",	"named Forasgil",
-	"named Crisdurian",     "named Colannon",       "named Hithlomir",
-	"named Thalkettoth",    "of Arvedui",     	"of Thranduil",
-   	"of Thengel",           "named Hammerhand",     "of Celefarn",
+	"'Dal-i-thalion'",  "'Paurhach'",       "'Paurnimmen'",
+	"'Pauraegen'",      "'Cammithrim'",     "'Cambeleg'",
+        "'Holhenneth'",     "'Paurnen'",        "'Aeglin'",
+	"'Camlost'",        "'Nimloth'",        "'Nar-i-vagil'",
+	"of Beruthiel",         "of Gorlim",            "'Narthanc'",
+	"'Nimthanc'",       "'Dethanc'",        "'Gilettar'",
+	"of Rilia",             "'Belangil'",       "of Balli Stonehand",
+	"'Lotharang'",      "'Firestar'",       "'Eriril'",
+	"'Cubragol'",       "of Bard",              "'Colluin'",
+	"'Holcolleth'",     "'Totila'",         "of Pain",
+	"'Elvagil'",        "'Aglarang'",	"of Rohan",
+	"of the Eorlingas",     "'Barukkheled'",    "of Wrath",
+	"'Haradekket'",     "'Mundwine'",       "'Gondricam'",
+        "'Zarcuthra'",      "'Careth Asdriag'",	"'Forasgil'",
+	"'Crisdurian'",     "'Colannon'",       "'Hithlomir'",
+	"'Thalkettoth'",    "of Arvedui",     	"of Thranduil",
+   	"of Thengel",           "'Hammerhand'",     "of Celefarn",
   	"of Thror",             "of Maedhros",          "of Olorin",
- 	"named Anguirel",       "of Thorin",		"of Celeborn",
+ 	"'Anguirel'",       "of Thorin",		"of Celeborn",
 	"of Orome",		"of Eonwe",		"of Gondor",
         "of Theoden",		"of Thingol",		"of Thorongil",
         "of Luthien",           "of Tuor",              "of Ulmo",
-	"named Osondir",	"named Turmil",		"of Caspanion",
-	"named Til-i-arc",	"named Deathwreaker",	"named Avavir",
-	"named Taratol",        "named Razorback",      "named Bladeturner",
+	"'Osondir'",	"'Turmil'",		"of Caspanion",
+	"'Til-i-arc'",	"'Deathwreaker'",	"'Avavir'",
+	"'Taratol'",        "'Razorback'",      "'Bladeturner'",
+	"(Shattered)",		"(Blasted)",
 };
 
 int16 sorted_objects[MAX_DUNGEON_OBJ];

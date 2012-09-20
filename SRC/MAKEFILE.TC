@@ -10,10 +10,15 @@
 OV1 = -Y -DTC_OVERLAY
 OV2 = -Yo
 # This CFLAGS1 is my debugging one.
-#CFLAGS1 = -mh -c -O -G- -DUSG -DMSDOS -DTC_COLOR -g0 -w+ -N
+CFLAGS1 = -mh -c -O -G- -DUSG -DMSDOS -DTC_COLOR -g0 -w+ -N -P-c
 # This CFLAGS1 is the "production" version
-CFLAGS1 = -mh -c -O -G- -DUSG -DMSDOS -DTC_COLOR -N -w-
+#CFLAGS1 = -mh -c -O -G- -DUSG -DMSDOS -DTC_COLOR -N -w- -P-c
 CFLAGS2 = $(OV1)
+# set OVLY_BUF_SZ to control the size of the overlay buffer.  This value
+# is shifted left 4 places before use, so 0x2000 is 128k, and 0x3000 is
+# 192k, etc.  Here, I have left it an 128k, since this size fits into
+# memory easier than a larger buffer does, even if smaller buffer size do
+# run slower. -CFT
 MAINFLAGS = -DSTK_LEN_SZ=0x3000 -DOVLY_BUF_SZ=0x2000
 CC = tcc
 

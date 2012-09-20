@@ -70,6 +70,13 @@ int set_flammable(inven_type *e) /* changed -CFT */
       return(TRUE);
     case TV_STAFF: case TV_SCROLL1: case TV_SCROLL2:
       return(TRUE);
+    case TV_FLASK:
+      return(TRUE); /* oil burns... -CFT */
+    case TV_LIGHT:
+      if (e->subval >= 192) /* only torches... -CFT */
+        return(TRUE);
+      else
+        return(FALSE);
     }
   return(FALSE);
 }
@@ -119,7 +126,7 @@ int set_lightning_destroy(inven_type *e) /* changed -CFT */
 	|| (e->flags2 & TR_IM_LIGHT)) /* used differently in potions/etc */
         return(FALSE);
       return(TRUE);
-   case TV_WAND: case TV_ROD:
+   case TV_WAND: 
       return(TRUE);
     }
     return(FALSE);
@@ -172,6 +179,11 @@ int set_fire_destroy(inven_type *e) /* changed -CFT */
     case TV_POTION2: case TV_FLASK: case TV_FOOD: case TV_OPEN_DOOR:
     case TV_CLOSED_DOOR:
       return(TRUE);
+    case TV_LIGHT:
+      if (e->subval >= 192) /* only torches... -CFT */
+        return(TRUE);
+      else
+        return(FALSE);
     }
   return(FALSE);
 }

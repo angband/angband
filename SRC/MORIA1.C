@@ -87,15 +87,15 @@ register int factor;
     py.misc.stl += amount;
   if (TR_SPEED & t_ptr->flags) {
     if ((t_ptr->tval == TV_RING) &&
-	!strcmp("Speed",
+	!stricmp("Speed",
 		object_list[t_ptr->index].name) &&
 	(t_ptr->p1 == 1))
       if ((inventory[INVEN_RIGHT].tval == TV_RING) &&
-	  !strcmp("Speed",
+	  !stricmp("Speed",
 		  object_list[inventory[INVEN_RIGHT].index].name) &&
 	  (inventory[INVEN_RIGHT].p1 == 1) &&
 	  (inventory[INVEN_LEFT].tval == TV_RING) &&
-	  !strcmp("Speed",
+	  !stricmp("Speed",
 		  object_list[inventory[INVEN_LEFT].index].name) &&
 	  (inventory[INVEN_RIGHT].p1 == 1))
 	return;
@@ -111,7 +111,6 @@ void calc_bonuses()
 {
   register int32u item_flags;
   register int32u item_flags2;
-  int old_dis_ac;
   register struct flags *p_ptr;
   register struct misc *m_ptr;
   register inven_type *i_ptr;
@@ -187,7 +186,6 @@ void calc_bonuses()
     p_ptr->blindness_resist=FALSE;
   p_ptr->nether_resist=FALSE;
 
-  old_dis_ac = m_ptr->dis_ac;
   m_ptr->ptohit	 = tohit_adj();	      /* Real To Hit   */
   m_ptr->ptodam	 = todam_adj();	      /* Real To Dam   */
   m_ptr->ptoac	 = toac_adj();	      /* Real To AC    */
@@ -199,10 +197,8 @@ void calc_bonuses()
   for (i = INVEN_WIELD; i <= INVEN_LIGHT; i++) {
     i_ptr = &inventory[i];
     if (i_ptr->tval != TV_NOTHING) {
-      if ((TR_CURSED & i_ptr->flags) == 0) {
-	m_ptr->pac += i_ptr->ac;
-	m_ptr->dis_ac += i_ptr->ac;
-      }
+      m_ptr->pac += i_ptr->ac;
+      m_ptr->dis_ac += i_ptr->ac;
       m_ptr->ptohit += i_ptr->tohit;
       if (i_ptr->tval != TV_BOW)		/* Bows can't damage. -CJS- */
 	m_ptr->ptodam += i_ptr->todam;
@@ -273,7 +269,7 @@ void calc_bonuses()
   if (p_ptr->status & PY_SHERO) { /* now agrees w/ code in dungeon() -CFT */
     m_ptr->ptohit += 24;
     m_ptr->dis_th += 24;
-    m_ptr->ptoac -= 10; /* beserk, so not being careful... -CFT */
+    m_ptr->ptoac -= 10; /* berserk, so not being careful... -CFT */
     m_ptr->dis_tac -=10;
   }
 
@@ -457,11 +453,17 @@ int (*test)();
     {
       if (out_val[i][0]) {
 	k--;
+#ifdef TC_COLOR
+	if (!no_color_flag) textcolor( inven_color( inventory[i].tval ) );
+#endif
 	/* don't need first two spaces if in first column */
 	if (col == 0)
 	  prt(&out_val[i][2], 1+j, col);
 	else
 	  prt(out_val[i], 1+j, col);
+#ifdef TC_COLOR
+	if (!no_color_flag) textcolor( LIGHTGRAY );
+#endif
 	if (weight) {
 	  total_weight = inventory[i].weight*inventory[i].number;
 	  (void) sprintf (tmp_val, "%3d.%d lb",
@@ -587,11 +589,17 @@ int show_equip(weight, col)
   for (i = INVEN_WIELD; i < INVEN_ARRAY_SIZE; i++) {
     i_ptr = &inventory[i];
     if (i_ptr->tval != TV_NOTHING) {
+#ifdef TC_COLOR
+	if (!no_color_flag) textcolor( inven_color( inventory[i].tval ) );
+#endif
       /* don't need first two spaces when using whole screen */
       if (col == 0)
 	prt(&out_val[line][2], line+1, col);
       else
 	prt(out_val[line], line+1, col);
+#ifdef TC_COLOR
+	if (!no_color_flag) textcolor( LIGHTGRAY );
+#endif
       if (weight) {
 	total_weight = i_ptr->weight*i_ptr->number;
 	(void) sprintf(prt2, "%3d.%d lb",
@@ -876,7 +884,6 @@ char command;
 		scr_left = show_equip(show_weight_flag, scr_left);
 	      py_bonuses(&inventory[INVEN_AUX], -1);	 /* Subtract bonuses */
 	      py_bonuses(&inventory[INVEN_WIELD], 1);	   /* Add bonuses    */
-	      check_strength();
 	      if (inventory[INVEN_WIELD].tval != TV_NOTHING)
 		{
 		  (void) strcpy(prt1, "Primary weapon   : ");
@@ -885,6 +892,9 @@ char command;
 		}
 	      else
 		msg_print("No primary weapon.");
+	      /* this is a new weapon, so clear the heavy flag */
+	      weapon_heavy = FALSE;
+	      check_strength();
 	    }
 	  break;
 	case ' ':	/* Dummy command to return again to main prompt. */
@@ -1022,7 +1032,13 @@ char command;
 		      if (item >= 0)
 			{
 			  if (command == 'r')
-			    inven_drop(item, TRUE);
+			    {
+			      inven_drop(item, TRUE);
+			      /* As a safety measure, set the player's inven
+				 weight to 0, when the last object is dropped*/
+			      if (inven_ctr == 0 && equip_ctr == 0)
+				inven_weight = 0;
+			    }
 			  else
 			    {
 			      slot = inven_carry(&inventory[item]);
@@ -1174,6 +1190,9 @@ char command;
 			  (void) sprintf(prt1, "%s %s (%c)", string, prt2,
 					 'a'+item);
 			  msg_print(prt1);
+			  /* this is a new weapon, so clear the heavy flag */
+			  if (slot == INVEN_WIELD)
+			    weapon_heavy = FALSE;
 			  check_strength();
 			  if (i_ptr->flags & TR_CURSED)
 			    {
@@ -1213,6 +1232,10 @@ char command;
 			  check_strength();
 			}
 		      selecting = FALSE;
+		      /* As a safety measure, set the player's inven weight
+			 to 0, when the last object is dropped.  */
+		      if (inven_ctr == 0 && equip_ctr == 0)
+			inven_weight = 0;
 		    }
 		  if (free_turn_flag == FALSE && scr_state == BLANK_SCR)
 		    selecting = FALSE;
@@ -1238,10 +1261,17 @@ char command;
 	  /* Put an appropriate header. */
 	  if (scr_state == INVEN_SCR)
 	    {
-	      (void) sprintf(prt1,
-		  "You are carrying %d.%d pounds. In your pack there is %s",
-		  inven_weight / 10, inven_weight % 10,
-		  (inven_ctr == 0 ? "nothing." : "-"));
+	      if (! show_weight_flag || inven_ctr == 0)
+		(void) sprintf(prt1,
+		    "You are carrying %d.%d pounds. In your pack there is %s",
+			       inven_weight / 10, inven_weight % 10,
+			       (inven_ctr == 0 ? "nothing." : "-"));
+	      else
+		(void) sprintf (prt1,
+	"You are carrying %d.%d pounds. Your capacity is %d.%d pounds. %s",
+				inven_weight / 10, inven_weight % 10,
+				weight_limit () / 10, weight_limit () % 10,
+				"In your pack is -");
 	      prt(prt1, 0, 0);
 	    }
 	  else if (scr_state == WEAR_SCR)
@@ -1512,30 +1542,50 @@ int *dir;
       *dir = prev_dir;
       return TRUE;
     }
-  if (prompt == NULL)
-    prompt = "Which direction?";
-  for (;;)
+/* This targetting code stolen from Morgul -CFT */
+/* Aggle.  Gotta be target mode and either (valid monster and line of sight*/
+/* to monster) or (not valid monster and line of sight to position).  CDW */
+/* Also, for monster targetting, monster must be lit!  Otherwise player can
+	"lock phasers" on an invis monster while a potion of see inv lasts,
+	and then continue to hit it when the see inv goes away.  Also,
+	targetting mode shouldn't help the player shoot a monster in a
+	dark room.  If he can't see it, he shouldn't be able to aim... -CFT */
+  if ((target_mode)&&
+      (((target_mon<MAX_MALLOC)&& m_list[target_mon].ml &&
+	(los(char_row,char_col,m_list[target_mon].fy,m_list[target_mon].fx))||
+       ((target_mon>=MAX_MALLOC) &&
+	(los(char_row,char_col,target_row,target_col))))))
+				      /* It don't get no better than this */
     {
-      save = command_count;	/* Don't end a counted command. -CJS- */
+    *dir=0;
+    return TRUE;
+    }
+  else {
+    if (prompt == NULL)
+      prompt = "Which direction?";
+    for (;;)
+      {
+        save = command_count;	/* Don't end a counted command. -CJS- */
 #ifdef MAC
-      if (!get_comdir(prompt, &command))
+        if (!get_comdir(prompt, &command))
 #else
-      if (!get_com(prompt, &command))
+        if (!get_com(prompt, &command))
 #endif
-	{
-	  free_turn_flag = TRUE;
-	  return FALSE;
-	}
-      command_count = save;
-      if (rogue_like_commands)
-	command = map_roguedir(command);
-      if (command >= '1' && command <= '9' && command != '5')
-	{
-	  prev_dir = command - '0';
-	  *dir = prev_dir;
-	  return TRUE;
-	}
-      bell();
+	  {
+	    free_turn_flag = TRUE;
+	    return FALSE;
+	  }
+        command_count = save;
+        if (rogue_like_commands)
+	  command = map_roguedir(command);
+        if (command >= '1' && command <= '9' && command != '5')
+	  {
+	    prev_dir = command - '0';
+	    *dir = prev_dir;
+	    return TRUE;
+	  }
+        bell();
+      }
     }
 }
 
@@ -1687,7 +1737,6 @@ int y,x;
 void light_room(y, x)
 int y, x;
 {
-  register cave_type *c_ptr;
   register int tmp;
   tmp=cave[y][x].tl;
   cave[y][x].tl=FALSE;
@@ -1715,7 +1764,6 @@ int y, x;
 void darken_room(y, x)
 int y, x;
 {
-  register cave_type *c_ptr;
   register int tmp;
   tmp=cave[y][x].tl;
   cave[y][x].tl=FALSE;
@@ -1738,17 +1786,6 @@ int y, x;
   cave[y-1][x].tl=tmp;
   cave[y-1][x+1].tl=tmp;
   cave[y-1][x-1].tl=tmp;
-}
-
-/* Lights up given location				-RAK-	*/
-void lite_spot(y, x)
-register int y, x;
-{
-  if (panel_contains(y, x))
-    print(loc_symbol(y, x), y, x);
-#ifdef TC_COLOR
-  if (!no_color_flag) textcolor(LIGHTGRAY);
-#endif
 }
 
 
@@ -1843,13 +1880,16 @@ int y2, x2;
 	  }
       light_flag = FALSE;
     }
-  else
+  else if (!find_flag || find_prself) /* um55 change -CFT */
 #ifdef MSDOS
     lite_spot(y1, x1);
 #else
     print(loc_symbol(y1, x1), y1, x1);
 #endif
 
+#ifdef TC_COLOR
+  if (!no_color_flag) textcolor(LIGHTGRAY);
+#endif
   if (!find_flag || find_prself)
     print('@', y2, x2);
 }
@@ -1876,7 +1916,7 @@ int s, l;
   command_count = 0;
   if (s && search_flag)
     search_off();
-  if (py.flags.rest > 0 || py.flags.rest == -1)
+  if (py.flags.rest > 0 || py.flags.rest == -1 || py.flags.rest == -2)
     rest_off();
   if (l || find_flag)
     {
@@ -1921,20 +1961,23 @@ void rest() {
   } else {
     char ch;
 
-    prt("Rest for how long? ('*' for as long as needed) : ", 0, 0);
+    prt("Rest for how long? ('*' for HP/mana; '&' as needed) : ", 0, 0);
     rest_num = 0;
-    if (get_string(rest_str, 0, 50, 5)) {
-      if ((sscanf(rest_str, "%c", &ch)==1) && (ch=='*'))
-	rest_num = -1;
-      else {
-	if (atoi(rest_str) > 30000)
-	  rest_num = 30000;
-	else
-	  rest_num = atoi(rest_str);
-      }
+    if (get_string(rest_str, 0, 54, 5)) {
+      if (sscanf(rest_str, "%c", &ch)==1)
+	if (ch=='*')
+	  rest_num = -1;
+        else if (ch == '&')
+	  rest_num = -2;
+        else {
+	  if (atoi(rest_str) > 30000)
+	    rest_num = 30000;
+	  else
+	    rest_num = atoi(rest_str);
+          }
     }
   }
-  if (rest_num>0 || rest_num==-1) {
+  if (rest_num>0 || rest_num==-1 || rest_num == -2) {
     if (search_flag)
       search_off();
     py.flags.rest = rest_num;
@@ -2272,6 +2315,19 @@ int dir;
 	    find_openarea = TRUE;
 	}
     }
+  /* We must erase the player symbol '@' here, because sub3_move_light()
+     does not erase the previous location of the player when in find mode
+     and when find_prself is FALSE.  The player symbol is not draw at all
+     in this case while moving, so the only problem is on the first turn
+     of find mode, when the initial position of the character must be erased.
+     Hence we must do the erasure here.  */
+  if (! light_flag && ! find_prself)
+#ifdef TC_COLOR
+    lite_spot(char_row, char_col);
+#else
+    print(loc_symbol(char_row, char_col), char_row, char_col);
+#endif
+
   move_char(dir, TRUE);
   if (find_flag == FALSE)
     command_count = 0;
@@ -2544,7 +2600,7 @@ int minus_ac(typ_dam)
 int32u typ_dam;
 {
   register int i, j;
-  int tmp[6], minus;
+  int tmp[6], minus, do_damage;
   register inven_type *i_ptr;
   bigvtype out_val, tmp_str;
 
@@ -2585,12 +2641,21 @@ int32u typ_dam;
     {
       j = tmp[randint(i) - 1];
       i_ptr = &inventory[j];
-      if (i_ptr->flags & typ_dam)
+      switch (typ_dam){
+      	case TR_RES_ACID:
+      	  if ((i_ptr->flags & TR_RES_ACID) || (i_ptr->flags2 & TR_IM_ACID))
+      	    do_damage = FALSE;
+      	  else do_damage = TRUE;
+	  break; 
+      	default: /* unknown damage type... */
+      	  do_damage = FALSE;
+        }
+      if (do_damage == FALSE)
 	{
 	  objdes(tmp_str, &inventory[j], FALSE);
 	  (void) sprintf(out_val, "Your %s resists damage!", tmp_str);
 	  msg_print(out_val);
-	  minus = TRUE;
+	  minus = FALSE;
 	}
       else if ((i_ptr->ac+i_ptr->toac) > 0)
 	{
@@ -2613,8 +2678,7 @@ char *kb_str;
   if (!py.flags.acid_im)
     if (!minus_ac((int32u) TR_RES_ACID))
       take_hit(randint(8), kb_str);
-  if (inven_damage(set_corrodes, 5) > 0)
-    msg_print("There is an acrid smell coming from your pack.");
+  inven_damage(set_corrodes, 5);
 }
 
 
@@ -2646,8 +2710,7 @@ char *kb_str;
   if (py.flags.fire_im)
     dam = 1;
   take_hit(dam, kb_str);
-  if (inven_damage(set_flammable, 3) > 0)
-    msg_print("There is smoke coming from your pack!");
+  inven_damage(set_flammable, 3);
 }
 
 
@@ -2663,8 +2726,7 @@ char *kb_str;
   if (py.flags.cold_im)
     dam = 1;
   take_hit(dam, kb_str);
-  if (inven_damage(set_frost_destroy, 5) > 0)
-    msg_print("Something shatters inside your pack!");
+  inven_damage(set_frost_destroy, 5);
 }
 
 
@@ -2680,6 +2742,7 @@ char *kb_str;
   if (py.flags.light_im)
     dam = 1;
   take_hit(dam, kb_str);
+  inven_damage(set_lightning_destroy, 3);
 }
 
 
@@ -2702,6 +2765,43 @@ char *kb_str;
   if (py.flags.acid_resist)
     flag += 2;
   take_hit (dam / (flag + 1), kb_str);
-  if (inven_damage(set_acid_affect, 3) > 0)
-    msg_print("There is an acrid smell coming from your pack!");
+  inven_damage(set_acid_affect, 3);
 }
+
+/* This fn controls the colorizing of inventory and equipment lists,
+   to make it simple to change the colors.  The idea of colorizing
+   inventory came from Druid Moria.  I'm not 100% sure that color inventory
+   won't be more obnoxius than helpful, be there's 1 way to find out. -CFT */
+int inven_color(int tval){
+  if (!inven_bw_flag) { /* should inventories be B&W or colorized? */
+    switch(tval) {
+      case TV_MISC: case TV_CHEST: case TV_SPIKE: case TV_DIGGING:
+        return( LIGHTGRAY );
+      case TV_SLING_AMMO: case TV_BOLT: case TV_ARROW:
+        return( CYAN );
+      case TV_LIGHT: case TV_FLASK:
+        return( YELLOW );
+      case TV_BOW: case TV_HAFTED: case TV_POLEARM: case TV_SWORD:
+        return( RED );
+      case TV_BOOTS: case TV_GLOVES: case TV_CLOAK: case TV_HELM:
+      case TV_SHIELD: case TV_HARD_ARMOR: case TV_SOFT_ARMOR:
+        return( GREEN );
+      case TV_AMULET: case TV_RING:
+        return( MAGENTA );
+      case TV_STAFF: case TV_WAND: case TV_ROD:
+        return( LIGHTMAGENTA );
+      case TV_SCROLL1: case TV_SCROLL2:
+        return( WHITE );
+      case TV_POTION1: case TV_POTION2:
+        return( LIGHTBLUE );
+      case TV_FOOD:
+        return( BROWN );
+      case TV_MAGIC_BOOK:
+        return( LIGHTRED );
+      case TV_PRAYER_BOOK:
+        return( LIGHTCYAN );
+      }
+    }
+  return( LIGHTGRAY );
+}
+

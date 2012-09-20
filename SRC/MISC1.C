@@ -59,11 +59,7 @@ typedef struct statstime {
 #endif
 
 #if defined(LINT_ARGS)
-static void compact_monsters(void);
-static void compact_objects(void);
 #else
-static int compact_monsters(ARG_VOID);
-static void compact_objects(ARG_VOID);
 static char *cap(ARG_CHAR_PTR);
 #endif
 
@@ -145,82 +141,6 @@ int check_time()
 }
 
 
-/* Generates a random integer x where 1<=X<=MAXVAL	-RAK-	*/
-int randint(maxval)
-int maxval;
-{
-  register int32u randval;
-
-  if (maxval<1) return 1;
-  randval = rnd ();
-  return ((int)((randval % maxval) + 1));
-}
-
-/* Generates a random integer number of NORMAL distribution -RAK-*/
-int randnor(mean, stand)
-int mean, stand;
-{
-  register int tmp, offset, low, iindex, high;
-
-#if 0
-  /* alternate randnor code, slower but much smaller since no table */
-  /* 2 per 1,000,000 will be > 4*SD, max is 5*SD */
-  tmp = damroll(8, 99);	 /* mean 400, SD 81 */
-  tmp = (tmp - 400) * stand / 81;
-  return tmp + mean;
-#endif
-
-  tmp = randint(MAX_SHORT);
-
-  /* off scale, assign random value between 4 and 5 times SD */
-  if (tmp == MAX_SHORT)
-    {
-      offset = 4 * stand + randint(stand);
-
-      /* one half are negative */
-      if (randint(2) == 1)
-	offset = -offset;
-
-      return mean + offset;
-    }
-
-  /* binary search normal normal_table to get index that matches tmp */
-  /* this takes up to 8 iterations */
-  low = 0;
-  iindex = NORMAL_TABLE_SIZE >> 1;
-  high = NORMAL_TABLE_SIZE;
-  while (TRUE)
-    {
-      if ((normal_table[iindex] == tmp) || (high == (low+1)))
-	break;
-      if (normal_table[iindex] > tmp)
-	{
-	  high = iindex;
-	  iindex = low + ((iindex - low) >> 1);
-	}
-      else
-	{
-	  low = iindex;
-	  iindex = iindex + ((high - iindex) >> 1);
-	}
-    }
-
-  /* might end up one below target, check that here */
-  if (normal_table[iindex] < tmp)
-    iindex = iindex + 1;
-
-  /* normal_table is based on SD of 64, so adjust the index value here,
-     round the half way case up */
-  offset = ((stand * iindex) + (NORMAL_TABLE_SD >> 1)) / NORMAL_TABLE_SD;
-
-  /* one half should be negative */
-  if (randint(2) == 1)
-    offset = -offset;
-
-  return mean + offset;
-}
-
-
 /* Returns position of first set bit			-RAK-	*/
 /*     and clears that bit */
 int bit_pos(test)
@@ -240,17 +160,6 @@ int32u *test;
   /* no one bits found */
   return(-1);
 }
-
-/* Checks a co-ordinate for in bounds status		-RAK-	*/
-int in_bounds(y, x)
-int y, x;
-{
-  if ((y > 0) && (y < cur_height-1) && (x > 0) && (x < cur_width-1))
-    return(TRUE);
-  else
-    return(FALSE);
-}
-
 
 /* Calculates current boundaries				-RAK-	*/
 void panel_bounds()
@@ -304,19 +213,6 @@ int y, x, force;
   else
     panel = FALSE;
   return(panel);
-}
-
-
-/* Tests a given point to see if it is within the screen -RAK-	*/
-/* boundaries.							  */
-int panel_contains(y, x)
-register int y, x;
-{
-  if ((y >= panel_row_min) && (y <= panel_row_max) &&
-      (x >= panel_col_min) && (x <= panel_col_max))
-    return (TRUE);
-  else
-    return (FALSE);
 }
 
 
@@ -385,23 +281,6 @@ register int y, x;
   return(i);
 }
 
-
-/* generates damage for 2d6 style dice rolls */
-int damroll(num, sides)
-int num, sides;
-{
-  register int i, sum = 0;
-
-  for (i = 0; i < num; i++)
-    sum += randint(sides);
-  return(sum);
-}
-
-int pdamroll(array)
-int8u *array;
-{
-  return damroll((int)array[0], (int)array[1]);
-}
 
 
 /* A simple, fast, integer-based line-of-sight algorithm.  By Joseph Hall,
@@ -579,129 +458,6 @@ int fromY, fromX, toY, toX;
 }
 
 
-/* Returns symbol for given row, column			-RAK-	*/
-unsigned char loc_symbol(y, x)
-int y, x;
-{
-  register cave_type *cave_ptr;
-  register struct flags *f_ptr;
-
-#ifdef TC_COLOR
-  if (!no_color_flag) textcolor(LIGHTGRAY);
-#endif
-
-  cave_ptr = &cave[y][x];
-  f_ptr = &py.flags;
-
-  if ((cave_ptr->cptr == 1) && (!find_flag || find_prself))
-    return '@';
-  else if (f_ptr->status & PY_BLIND)
-    return ' ';
-  else if ((f_ptr->image > 0) && (randint (12) == 1))
-#ifdef TC_COLOR
-    { if (!no_color_flag) textcolor( randint(15) );
-      return randint (95) + 31; }
-#else
-    return randint (95) + 31;
-#endif
-  else if ((cave_ptr->cptr > 1) && (m_list[cave_ptr->cptr].ml))
-#ifdef TC_COLOR
-  { if (!no_color_flag) textcolor(c_list[m_list[cave_ptr->cptr].mptr].color);
-    return c_list[m_list[cave_ptr->cptr].mptr].cchar; }
-#else
-    return c_list[m_list[cave_ptr->cptr].mptr].cchar;
-#endif
-  else if (!cave_ptr->pl && !cave_ptr->tl && !cave_ptr->fm)
-    return ' ';
-  else if ((cave_ptr->tptr != 0)
-	   && (t_list[cave_ptr->tptr].tval != TV_INVIS_TRAP))
-#ifdef TC_COLOR
-    {  if (t_list[cave_ptr->tptr].color != 0) {
-         if (!no_color_flag) textcolor(t_list[cave_ptr->tptr].color);
-       }
-       else switch(t_list[cave_ptr->tptr].tval){
-       	 case TV_POTION1:
-       	 case TV_POTION2:
-	   if (!no_color_flag) textcolor(tccolors[t_list[cave_ptr->tptr].subval
-					- ITEM_SINGLE_STACK_MIN]);
-	   break;
-	 case TV_WAND:
-	 case TV_ROD:
-	   if (!no_color_flag) textcolor(tcmetals[t_list[cave_ptr->tptr].subval]);
-	   break;
-	 case TV_STAFF:
-	   if (!no_color_flag) textcolor(tcwoods[t_list[cave_ptr->tptr].subval]);
-	   break;
-	 case TV_RING:
-	   if (!no_color_flag) textcolor(tcrocks[t_list[cave_ptr->tptr].subval]);
-	   break;
-	 case TV_AMULET:
-	   if (!no_color_flag) textcolor(tcamulets[t_list[cave_ptr->tptr].subval]);
-	   break;
-	 case TV_FOOD:
-	   if (!no_color_flag) textcolor(tcmushrooms[t_list[cave_ptr->tptr].subval
-	   				- ITEM_SINGLE_STACK_MIN]);
-	   break;
-	 default: if (!no_color_flag) textcolor( randint(15) ); /* should never happen. -CFT */
-       } /* switch */
-    return t_list[cave_ptr->tptr].tchar;
-    } /* else-if clause */	 
-#else
-    return t_list[cave_ptr->tptr].tchar;
-#endif
-  else if (cave_ptr->fval <= MAX_CAVE_FLOOR)
-#ifdef MSDOS
-      return floorsym;
-#else
-    {
-      return '.';
-    }
-#endif
-  else if (cave_ptr->fval == GRANITE_WALL || cave_ptr->fval == BOUNDARY_WALL
-	   || highlight_seams == FALSE)
-    {
-#ifdef MSDOS
-      return wallsym;
-#else
-#ifndef ATARIST_MWC
-      return '#';
-#else
-      return (unsigned char)240;
-#endif
-#endif
-    }
-  else	/* Originally set highlight bit, but that is not portable, now use
-	   the percent sign instead. */
-    {
-#ifdef TC_COLOR
-      if (cave_ptr->fval == MAGMA_WALL)
-        if (!no_color_flag) textcolor(DARKGRAY);
-        else return '%';
-      else
-        if (!no_color_flag) textcolor(WHITE);
-        else return '%';
-      return wallsym;
-#else
-      return '%';
-#endif
-    }
-}
-
-
-/* Tests a spot for light or field mark status		-RAK-	*/
-int test_light(y, x)
-int y, x;
-{
-  register cave_type *cave_ptr;
-
-  cave_ptr = &cave[y][x];
-  if (cave_ptr->pl || cave_ptr->tl || cave_ptr->fm)
-    return(TRUE);
-  else
-    return(FALSE);
-}
-
-
 /* Prints the map of the dungeon			-RAK-	*/
 void prt_map()
 {
@@ -730,7 +486,7 @@ void prt_map()
 /* Compact monsters					-RAK-	*/
 /* Return TRUE if any monsters were deleted, FALSE if could not delete any
    monsters. */
-static int compact_monsters()
+int compact_monsters()
 {
   register int i;
   int cur_dis, delete_any;
@@ -747,10 +503,14 @@ static int compact_monsters()
 	  mon_ptr = &m_list[i];
 	  if ((cur_dis < mon_ptr->cdis) && (randint(3) == 1))
 	    {
+	      /* Don't compact Melkor! */
+	      if (c_list[mon_ptr->mptr].cmove & CM_WIN)
+	        /* do nothing */
+	        ;
 	      /* in case this is called from within creatures(), this is a
 		 horrible hack, the m_list/creatures() code needs to be
 		 rewritten */
-	      if (hack_monptr < i)
+	      else if (hack_monptr < i)
 		{
 		  delete_monster(i);
 		  delete_any = TRUE;
@@ -779,16 +539,29 @@ void add_food(num)
 int num;
 {
   register struct flags *p_ptr;
+  register int extra, penalty;
 
   p_ptr = &py.flags;
   if (p_ptr->food < 0)	p_ptr->food = 0;
   p_ptr->food += num;
-  if (num>0 && p_ptr->food<=0) p_ptr->food = 32000;
+  if (num>0 && p_ptr->food<=0) p_ptr->food = 32000; /* overflow check */
   if (p_ptr->food > PLAYER_FOOD_MAX)
     {
       msg_print("You are bloated from overeating.");
-      p_ptr->slow += (p_ptr->food - PLAYER_FOOD_MAX) / 50;
-      p_ptr->food = PLAYER_FOOD_MAX + p_ptr->slow;
+
+      /* Calculate how much of num is responsible for the bloating.
+	 Give the player food credit for 1/50, and slow him for that many
+	 turns also.  */
+      extra = p_ptr->food - PLAYER_FOOD_MAX;
+      if (extra > num)
+	extra = num;
+      penalty = extra / 50;
+
+      p_ptr->slow += penalty;
+      if (extra == num)
+	p_ptr->food = p_ptr->food - num + penalty;
+      else
+	p_ptr->food = PLAYER_FOOD_MAX + penalty;
     }
   else if (p_ptr->food > PLAYER_FOOD_FULL)
     msg_print("You are full.");
@@ -799,21 +572,15 @@ int num;
 int popm()
 {
   if (mfptr == MAX_MALLOC)
-    compact_monsters();
+    if (!compact_monsters())
+      return -1;
   return (mfptr++);
 }
 
 
-/* Gives Max hit points					-RAK-	*/
-int max_hp(array)
-int8u *array;
-{
-  return((int)(array[0]) * (int)(array[1]));
-}
-
 
 /* Places a monster at given location			-RAK-	*/
-void place_monster(y, x, z, slp)
+int place_monster(y, x, z, slp)
 register int y, x, z;
 int slp;
 {
@@ -821,24 +588,34 @@ int slp;
   register monster_type *mon_ptr;
   char buf[100];
 
+  if ( (z<0) || (z >= MAX_CREATURES) )
+    return FALSE; /* another paranoia check -CFT */
+
+  if (!in_bounds(y,x))
+    return FALSE; /* YA paranoia check -CFT */
+    
   if (c_list[z].cdefense & UNIQUE) {
     if (u_list[z].exist) {
       if (wizard) {
 	(void) sprintf(buf, "Tried to create %s but exists.", c_list[z].name);
 	msg_print(buf);
       }
-      return;
+      return FALSE;
     }
     if (u_list[z].dead) {
       if (wizard) {
 	(void) sprintf(buf, "Tried to create %s but dead.", c_list[z].name);
 	msg_print(buf);
       }
-      return;
+      return FALSE;
     }
     u_list[z].exist = 1;
   }
 
+  cur_pos = popm(); /* from um55, paranoia error check... */
+  if (cur_pos == -1)
+    return FALSE;
+    
   if ((wizard || peek) && (c_list[z].cdefense & UNIQUE))
     msg_print(c_list[z].name);
   if (c_list[z].level > dun_level) {
@@ -848,21 +625,10 @@ int slp;
     if (c_list[z].cdefense & UNIQUE)
       rating += (c_list[z].level-dun_level)/2;
   }
-  cur_pos = popm();
   mon_ptr = &m_list[cur_pos];
   mon_ptr->fy = y;
   mon_ptr->fx = x;
   mon_ptr->mptr = z;
-  if ((z<0)||(z>=MAX_CREATURES)) {
-#ifndef MSDOS 
-      char *wibble; /* Why? -CFT */
-      wibble=NULL;
-      msg_print("FOUL UP IN PLACE_MONSTER");
-      *wibble=3; /* Are you intentionally causing a Seg. Fault to exit? -CFT */
-#else
-      msg_print("FOUL UP IN PLACE_MONSTER");
-#endif
-  }
   if ((c_list[z].cdefense & MAX_HP) || be_nasty)
     mon_ptr->hp = max_hp(c_list[z].hd);
   else
@@ -884,17 +650,23 @@ int slp;
   else
     mon_ptr->csleep = 0;
   update_mon(cur_pos); /* light up the monster if we can see it... -CFT */
+  return TRUE;
 }
 
 /* Places a monster at given location			-RAK-	*/
-void place_win_monster()
+int place_win_monster()
 {
   register int y, x, cur_pos;
   register monster_type *mon_ptr;
 
-  if (wizard || peek) msg_print("Placing win monster");
   if (!total_winner) {
     cur_pos = popm();
+    /* paranoia error check, from um55 -CFT */
+    if (cur_pos == -1)
+      return FALSE;
+      
+    if (wizard || peek) msg_print("Placing win monster");
+
     mon_ptr = &m_list[cur_pos];
     do {
       y = randint(cur_height-2);
@@ -917,6 +689,7 @@ void place_win_monster()
     cave[y][x].cptr = cur_pos;
     mon_ptr->csleep = 0;
   }
+  return TRUE;
 }
 
 static char *cap(str)
@@ -1052,7 +825,6 @@ void set_ghost(g, name, r, c, l)
     else
       g->speed = 11;
     g->cchar = 'p';
-    g->hd[1] = 1;
     g->damage[0] = 5+((l>18)? 18 : l);
     g->damage[1] = g->damage[0];
     switch (c) {
@@ -1090,7 +862,6 @@ void set_ghost(g, name, r, c, l)
     g->ac = 26;
     g->speed = 11;
     g->cchar = 's';
-    g->hd[1] = 1;
     g->damage[0] = 5;
     g->damage[1] = 5;
     g->damage[2] = 0;
@@ -1109,7 +880,7 @@ void set_ghost(g, name, r, c, l)
     g->ac = 30;
     g->speed = 11;
     g->cchar = 'z';
-    g->hd[1] = 2;
+    g->hd[1] *= 2;
     g->damage[0] = 8;
     g->damage[1] = 0;
     g->damage[2] = 0;
@@ -1123,7 +894,6 @@ void set_ghost(g, name, r, c, l)
     g->ac = 20;
     g->speed = 13;
     g->cchar = 'G';
-    g->hd[1] = 1;
     g->damage[0] = 5;
     g->damage[1] = 5;
     g->damage[2] = 93;
@@ -1143,7 +913,7 @@ void set_ghost(g, name, r, c, l)
     g->ac = 35;
     g->speed = 11;
     g->cchar = 'M';
-    g->hd[1] = 2;
+    g->hd[1] *= 2;
     g->damage[0] = 16;
     g->damage[1] = 16;
     g->damage[2] = 16;
@@ -1160,7 +930,7 @@ void set_ghost(g, name, r, c, l)
     g->ac = 20;
     g->speed = 11;
     g->cchar = 'G';
-    g->hd[1] = 2;
+    g->hd[1] *= 2;
     g->damage[0] = 19;
     g->damage[1] = 185;
     g->damage[2] = 99;
@@ -1176,7 +946,7 @@ void set_ghost(g, name, r, c, l)
     g->ac = 40;
     g->speed = 12;
     g->cchar = 'G';
-    g->hd[1] = 2;
+    g->hd[1] *= 2;
     g->damage[0] = 99;
     g->damage[1] = 99;
     g->damage[2] = 192;
@@ -1191,7 +961,7 @@ void set_ghost(g, name, r, c, l)
     g->ac = 40;
     g->speed = 11;
     g->cchar = 'V';
-    g->hd[1] = 3;
+    g->hd[1] *= 3;
     g->damage[0] = 20;
     g->damage[1] = 20;
     g->damage[2] = 190;
@@ -1208,7 +978,7 @@ void set_ghost(g, name, r, c, l)
     g->ac = 60;
     g->speed = 12;
     g->cchar = 'W';
-    g->hd[1] = 3;
+    g->hd[1] *= 3;
     g->damage[0] = 20;
     g->damage[1] = 20;
     g->damage[2] = 190;
@@ -1224,7 +994,8 @@ void set_ghost(g, name, r, c, l)
     g->ac = 80;
     g->speed = 11;
     g->cchar = 'V';
-    g->hd[1] = 5;
+    g->hd[1] *= 2;
+    g->hd[0] = (g->hd[0] * 5)/2;
     g->damage[0] = 20;
     g->damage[1] = 20;
     g->damage[2] = 20;
@@ -1240,7 +1011,7 @@ void set_ghost(g, name, r, c, l)
     g->ac = 90;
     g->speed = 13;
     g->cchar = 'G';
-    g->hd[1] = 3;
+    g->hd[1] *= 3;
     g->damage[0] = 99;
     g->damage[1] = 99;
     g->damage[2] = 192;
@@ -1258,7 +1029,8 @@ void set_ghost(g, name, r, c, l)
     g->ac = 120;
     g->speed = 12;
     g->cchar = 'L';
-    g->hd[1] = 6;
+    g->hd[1] *= 3;
+    g->hd[0] *= 2;
     g->damage[0] = 181;
     g->damage[1] = 201;
     g->damage[2] = 214;
@@ -1276,7 +1048,8 @@ void set_ghost(g, name, r, c, l)
     g->ac = 130;
     g->speed = 13;
     g->cchar = 'G';
-    g->hd[1] = 5;
+    g->hd[1] *= 2;
+    g->hd[0] = (g->hd[0] * 5)/2;
     g->damage[0] = 99;
     g->damage[1] = 99;
     g->damage[2] = 192;
@@ -1295,7 +1068,7 @@ int place_ghost()
   creature_type *ghost = &c_list[MAX_CREATURES-1];
   char tmp[100];
   char name[100];
-  int i, level;
+  int i,j, level;
   int race;
   int cl;
 
@@ -1311,9 +1084,14 @@ int place_ghost()
 	  msg_print("Town:Failed to scan in info properly!");
 	return 0;
       }
-      ghost->hd[0] = i;
-      ghost->hd[1] = 1;
       fclose(fp);
+      j = 1;
+      if (i > 255){ /* avoid wrap-around of int8u hitdice, by factoring */
+      	j = i / 32;
+        i = 32;
+        }
+      ghost->hd[0] = i; /* set_ghost may adj for race/class/lv */
+      ghost->hd[1] = j;
       level = py.misc.lev;
     } else {
       return 0;
@@ -1332,8 +1110,13 @@ int place_ghost()
 	  return 0;
 	}
 	fclose(fp);
-	ghost->hd[0] = i;
-	ghost->hd[1] = 1;
+        j = 1;
+        if (i > 255){ /* avoid wrap-around of int8u hitdice, by factoring */
+       	  j = i / 32;
+          i = 32;
+          }
+        ghost->hd[0] = i; /* set_ghost may adj for race/class/lv */
+        ghost->hd[1] = j;
 	level = dun_level;
       } else {
 	return 0;
@@ -1356,7 +1139,7 @@ int place_ghost()
   mon_ptr->fy = y;
   mon_ptr->fx = x;
   mon_ptr->mptr = (MAX_CREATURES-1);
-  mon_ptr->hp = i*ghost->hd[1];
+  mon_ptr->hp = (int16)ghost->hd[0] * (int16)ghost->hd[1];
   /* the c_list speed value is 10 greater, so that it can be a int8u */
   mon_ptr->cspeed = c_list[mon_ptr->mptr].speed - 10 + py.flags.speed;
   mon_ptr->stunned = 0;
@@ -1451,7 +1234,7 @@ int test_place(y,x)
 int y,x;
 {
   if (cave[y][x].fval >= MIN_CLOSED_SPACE || (cave[y][x].cptr != 0) ||
-      y<0 || x<0 || y>(cur_height-2) || x>(cur_width-2) ||
+      !in_bounds(y,x) ||
       (y==char_row && x==char_col))
     return 0;
   return 1;
@@ -1460,11 +1243,55 @@ int y,x;
 void place_group(y,x,mon,slp)
   int y,x,mon,slp;
 {
-  int old;
+  int old = rating; /* prevent level rating from skyrocketing if they are
+  			out of depth... */
+  int extra;
 
-  old = rating;
+  if (c_list[mon].level > dun_level)
+    extra = -randint(c_list[mon].level - dun_level ); /* reduce size of group
+    							if out-of-depth */
+  else if (c_list[mon].level < dun_level) /* if monster is deeper than normal,
+  					then travel in bigger packs -CFT */
+    extra = randint(dun_level-c_list[mon].level);
 
-  switch (randint(13)) {
+  if (extra > 12) extra = 12; /* put an upper bounds on it... -CFT */
+  switch (randint(13)+extra) {
+  case 25:
+    if (test_place(y,x-3)) place_monster(y,x-3,mon,0);
+    rating = old;
+  case 24:
+    if (test_place(y,x+3)) place_monster(y,x+3,mon,0);
+    rating = old;
+  case 23:
+    if (test_place(y-3,x)) place_monster(y-3,x,mon,0);
+    rating = old;
+  case 22:
+    if (test_place(y+3,x)) place_monster(y+3,x,mon,0);
+    rating = old;
+  case 21:
+    if (test_place(y-2,x+1)) place_monster(y-2,x+1,mon,0);
+    rating = old;
+  case 20:
+    if (test_place(y+2,x-1)) place_monster(y+2,x-1,mon,0);
+    rating = old;
+  case 19:
+    if (test_place(y+2,x+1)) place_monster(y+2,x+1,mon,0);
+    rating = old;
+  case 18:
+    if (test_place(y-2,x-1)) place_monster(y-2,x-1,mon,0);
+    rating = old;
+  case 17:
+    if (test_place(y+1,x+2)) place_monster(y+1,x+2,mon,0);
+    rating = old;
+  case 16:
+    if (test_place(y-1,x-2)) place_monster(y-1,x-2,mon,0);
+    rating = old;
+  case 15:
+    if (test_place(y+1,x-2)) place_monster(y+1,x-2,mon,0);
+    rating = old;
+  case 14:
+    if (test_place(y-1,x+2)) place_monster(y-1,x+2,mon,0);
+    rating = old;
   case 13:
     if (test_place(y,x-2)) place_monster(y,x-2,mon,0);
     rating = old;
@@ -1502,6 +1329,7 @@ void place_group(y,x,mon,slp)
     if (test_place(y-1,x)) place_monster(y-1,x,mon,0);
     rating = old;
   case 1:
+  default:  /* just in case I screwed up -CFT */
     if (test_place(y,x)) place_monster(y,x,mon,0);
   }
 }
@@ -1513,7 +1341,7 @@ int num, dis;
 int slp;
 {
   register int y, x, i;
-  int k, mon;
+  int mon;
 
   for (i = 0; i < num; i++)
     {
@@ -1528,6 +1356,26 @@ int slp;
 	mon = get_mons_num(dun_level);
       } while (randint(c_list[mon].rarity)>1);
 
+      /* to give the player a sporting chance, any monster that appears in
+      	 line-of-sight and can cast spells or breathe, should be asleep.
+	  This is an extension of Um55's sleeping dragon code... */
+      if (((c_list[mon].spells & (CAUSE_LIGHT|CAUSE_SERIOUS|HOLD_PERSON|
+      				  BLINDNESS|CONFUSION|FEAR|SLOW|BREATH_L|
+      				  BREATH_G|BREATH_A|BREATH_FR|BREATH_FI|
+      				  FIRE_BOLT|FROST_BOLT|ACID_BOLT|MAG_MISS|
+      				  CAUSE_CRIT|FIRE_BALL|FROST_BALL|MANA_BOLT))
+      	  || (c_list[mon].spells2 & (BREATH_CH|BREATH_SH|BREATH_SD|BREATH_CO|
+      	  			  BREATH_DI|BREATH_LD|LIGHT_BOLT|LIGHT_BALL|
+      	  			  ACID_BALL|TRAP_CREATE|RAZOR|MIND_BLAST|
+      	  			  MISSILE|PLASMA_BOLT|NETHER_BOLT|ICE_BOLT|
+      	  			  FORGET|BRAIN_SMASH|ST_CLOUD|TELE_LEV|
+      	  			  WATER_BOLT|WATER_BALL|NETHER_BALL|BREATH_NE))
+      	  || (c_list[mon].spells3 & (BREATH_WA|BREATH_SL|BREATH_LT|BREATH_TI|
+      	  			  BREATH_GR|BREATH_DA|BREATH_PL|ARROW|
+      	  			  DARK_STORM|MANA_STORM)))
+      	 && (los(y,x, char_row, char_col)))
+      	 slp = TRUE;
+      	 
       if (!(c_list[mon].cdefense & GROUP))
 	place_monster(y, x, mon, slp);
       else place_group(y,x,mon,slp);
@@ -1746,7 +1594,7 @@ int *y, *x;
          else
 	   {
 	      m++;
-              if (m > 1)
+              if (m > l)
 		ctr = 20;
               else
                 ctr++;
@@ -1802,7 +1650,7 @@ int *y, *x;
 	 else
 	   {
 	     m++;
-	     if (m > 1)
+	     if (m > l)
 	       ctr = 20;
 	     else
 	       ctr++;
@@ -1841,7 +1689,6 @@ int *y, *x;
   register int i, j, k;
   int l, m, ctr, summon;
   register cave_type *cave_ptr;
-  char buf[20];
 
   i = 0;
   summon = FALSE;
@@ -1853,9 +1700,6 @@ int *y, *x;
       do
 	{
           if (c_list[m].cchar == 'S' && !(c_list[m].cdefense & UNIQUE))
-	     /*   &&
-	    (sscanf(c_list[m].name,"%*s %*s %s",buf)?
-	     strcasecmp(buf,"scorpion"):TRUE)) */
 	    {
 	      ctr = 20;
 	      l	 = 0;
@@ -1965,7 +1809,7 @@ int *y, *x;
 	 else
 	   {
 	      m++;
-	      if (m > 1)
+	      if (m > l)
 		ctr = 20;
 	      else
 		ctr++;
@@ -2021,7 +1865,7 @@ int *y, *x;
 	  else
 	    {
 	      m++;
-	      if (m > 1)
+	      if (m > l)
 	        ctr = 20;
 	      else
 	        ctr++;
@@ -2077,7 +1921,7 @@ int *y, *x;
 	  else
 	    {
 	      m++;
-	      if (m > 1)
+	      if (m > l)
 	        ctr = 20;
 	      else
 	        ctr++;
@@ -2134,7 +1978,7 @@ int *y, *x;
 	   else
 	     {
 	       m++;
-	       if (m > 1)
+	       if (m > l)
 		 ctr = 20;
 	       else
 		 ctr++;
@@ -2190,7 +2034,7 @@ int *y, *x;
 	  else
 	    {
 	      m++;
-	      if (m > 1)
+	      if (m > l)
 		ctr = 20;
 	      else
 		ctr++;
@@ -2368,7 +2212,7 @@ int popt()
 /* Delete_object() should always be called instead, unless the object in
    question is not in the dungeon, e.g. in store1.c and files.c */
 void pusht(x)
-register int8u x;
+register int16 x;
 {
   register int i, j;
 
@@ -2405,7 +2249,8 @@ int base, max_std, level;
   register int x, stand_dev, tmp;
 
   stand_dev = (OBJ_STD_ADJ * level / 100) + OBJ_STD_MIN;
-  if (stand_dev > max_std)
+  /* check for level > max_std to check for overflow... */
+  if (stand_dev > max_std || level > max_std)
     stand_dev = max_std;
   /* abs may be a macro, don't call it with randnor as a parameter */
   tmp = randnor(0, stand_dev);
@@ -2423,7 +2268,7 @@ inven_type *t_ptr;
 
   if (be_nasty) return 0;
   name = object_list[t_ptr->index].name;
-  if (!strcmp("& Longsword", name)) {
+  if (!stricmp("& Longsword", name)) {
     switch (randint(15)) {
     case 1:
       if (RINGIL) return 0;
@@ -2492,7 +2337,7 @@ inven_type *t_ptr;
       return 1;
     }
   }
-  else if (!strcmp("& Two-Handed Sword", name)) {
+  else if (!stricmp("& Two-Handed Sword", name)) {
     switch (randint(8)) {
     case 1:
     case 2:
@@ -2544,7 +2389,7 @@ inven_type *t_ptr;
       return 1;
     }
   }
-  else if (!strcmp("& Broadsword", name)) {
+  else if (!stricmp("& Broadsword", name)) {
     switch (randint(12)) {
     case 1:
     case 2:
@@ -2575,6 +2420,7 @@ inven_type *t_ptr;
       t_ptr->flags = (TR_SLAY_EVIL|TR_SLOW_DIGEST|TR_SEARCH|TR_FLAME_TONGUE|
 		      TR_RES_FIRE);
       t_ptr->flags2 |= (TR_ARTIFACT|TR_SLAY_ORC|TR_LIGHT|TR_RES_LT);
+      t_ptr->p1    = 3;
       t_ptr->cost  = 40000L;
       GLAMDRING = 1;
       return 1;
@@ -2587,6 +2433,7 @@ inven_type *t_ptr;
       t_ptr->todam = 16;
       t_ptr->flags = (TR_SLOW_DIGEST|TR_SEARCH|TR_RES_LIGHT);
       t_ptr->flags2 |= (TR_ARTIFACT|TR_SLAY_ORC|TR_LIGHT|TR_LIGHTNING);
+      t_ptr->p1    = 4;
       t_ptr->cost  = 45000L;
       AEGLIN = 1;
       return 1;
@@ -2606,7 +2453,7 @@ inven_type *t_ptr;
       return 1;
     }
   }
-  else if (!strcmp("& Bastard Sword", name)) {
+  else if (!stricmp("& Bastard Sword", name)) {
     if (CALRIS) return 0;
     if (wizard || peek) msg_print("Calris");
     else good_item_flag = TRUE;
@@ -2623,7 +2470,7 @@ inven_type *t_ptr;
     CALRIS = 1;
     return 1;
   }
-  else if (!strcmp("& Main Gauche", name)) {
+  else if (!stricmp("& Main Gauche", name)) {
     if (randint(4)>1) return 0;
     if (MAEDHROS) return 0;
     if (wizard || peek) msg_print("Maedhros");
@@ -2640,7 +2487,7 @@ inven_type *t_ptr;
     MAEDHROS = 1;
     return 1;
   }
-  else if (!strcmp("& Glaive", name)) {
+  else if (!stricmp("& Glaive", name)) {
     if (randint(3)>1) return 0;
     if (PAIN) return 0;
     if (wizard || peek) msg_print("Pain!");
@@ -2655,7 +2502,7 @@ inven_type *t_ptr;
     PAIN = 1;
     return 1;
   }
-  else if (!strcmp("& Halberd", name)) {
+  else if (!stricmp("& Halberd", name)) {
     if (OSONDIR) return 0;
     if (wizard || peek) msg_print("Osondir");
     else good_item_flag = TRUE;
@@ -2670,7 +2517,7 @@ inven_type *t_ptr;
     OSONDIR = 1;
     return 1;
   }
-  else if (!strcmp("& Lucerne Hammer", name)) {
+  else if (!stricmp("& Lucerne Hammer", name)) {
     if (randint(2)>1) return 0;
     if (TURMIL) return 0;
     if (wizard || peek) msg_print("Turmil");
@@ -2686,7 +2533,7 @@ inven_type *t_ptr;
     TURMIL = 1;
     return 1;
   }
-  else if (!strcmp("& Pike", name)) {
+  else if (!stricmp("& Pike", name)) {
     if (randint(2)>1) return 0;
     if (TIL) return 0;
     if (wizard || peek) msg_print("Til-i-arc");
@@ -2703,7 +2550,7 @@ inven_type *t_ptr;
     TIL = 1;
     return 1;
   }
-  else if (!strcmp("& Mace of Disruption", name)) {
+  else if (!stricmp("& Mace of Disruption", name)) {
     if (randint(5)>1) return 0;
     if (DEATHWREAKER) return 0;
     if (wizard || peek) msg_print("Deathwreaker");
@@ -2721,7 +2568,7 @@ inven_type *t_ptr;
     DEATHWREAKER = 1;
     return 1;
   }
-  else if (!strcmp("& Scythe", name)) {
+  else if (!stricmp("& Scythe", name)) {
     if (AVAVIR) return 0;
     if (wizard || peek) msg_print("Avavir");
     else good_item_flag = TRUE;
@@ -2737,7 +2584,7 @@ inven_type *t_ptr;
     AVAVIR = 1;
     return 1;
   }
-  else if (!strcmp("& Mace", name)) {
+  else if (!stricmp("& Mace", name)) {
     if (randint(2)>1) return 0;
     if (TARATOL) return 0;
     if (wizard || peek) msg_print("Taratol");
@@ -2753,7 +2600,7 @@ inven_type *t_ptr;
     TARATOL = 1;
     return 1;
   }
-  else if (!strcmp("& Lance", name)) {
+  else if (!stricmp("& Lance", name)) {
     if (randint(3)>1) return 0;
     if (EORLINGAS) return 0;
     if (wizard || peek) msg_print("Eorlingas");
@@ -2770,7 +2617,7 @@ inven_type *t_ptr;
     EORLINGAS = 1;
     return 1;
   }
-  else if (!strcmp("& Broad Axe", name)) {
+  else if (!stricmp("& Broad Axe", name)) {
     if (BARUKKHELED) return 0;
     if (wizard || peek) msg_print("Barukkheled");
     else good_item_flag = TRUE;
@@ -2784,7 +2631,7 @@ inven_type *t_ptr;
     BARUKKHELED = 1;
     return 1;
   }
-  else if (!strcmp("& Trident", name)) {
+  else if (!stricmp("& Trident", name)) {
     switch (randint(3)) {
     case 1:
     case 2:
@@ -2825,7 +2672,7 @@ inven_type *t_ptr;
       return 1;
     }
   }
-  else if (!strcmp("& Scimitar", name)) {
+  else if (!stricmp("& Scimitar", name)) {
     if (HARADEKKET) return 0;
     if (wizard || peek) msg_print("Haradekket");
     else good_item_flag = TRUE;
@@ -2840,7 +2687,7 @@ inven_type *t_ptr;
     HARADEKKET = 1;
     return 1;
   }
-  else if (!strcmp("& Lochaber Axe", name)) {
+  else if (!stricmp("& Lochaber Axe", name)) {
     if (MUNDWINE) return 0;
     if (wizard || peek) msg_print("Mundwine");
     else good_item_flag = TRUE;
@@ -2854,7 +2701,7 @@ inven_type *t_ptr;
     MUNDWINE= 1;
     return 1;
   }
-  else if (!strcmp("& Cutlass", name)) {
+  else if (!stricmp("& Cutlass", name)) {
     if (GONDRICAM) return 0;
     if (wizard || peek) msg_print("Gondricam");
     else good_item_flag = TRUE;
@@ -2870,7 +2717,7 @@ inven_type *t_ptr;
     GONDRICAM = 1;
     return 1;
   }
-  else if (!strcmp("& Sabre", name)) {
+  else if (!stricmp("& Sabre", name)) {
     if (CARETH) return 0;
     if (wizard || peek) msg_print("Careth Asdriag");
     else good_item_flag = TRUE;
@@ -2883,7 +2730,7 @@ inven_type *t_ptr;
     CARETH = 1;
     return 1;
   }
-  else if (!strcmp("& Rapier", name)) {
+  else if (!stricmp("& Rapier", name)) {
     if (FORASGIL) return 0;
     if (wizard || peek) msg_print("Forasgil");
     else good_item_flag = TRUE;
@@ -2896,7 +2743,7 @@ inven_type *t_ptr;
     FORASGIL = 1;
     return 1;
   }
-  else if (!strcmp("& Executioner's Sword", name)) {
+  else if (!stricmp("& Executioner's Sword", name)) {
     if (randint(2)>1) return 0;
     if (CRISDURIAN) return 0;
     if (wizard || peek) msg_print("Crisdurian");
@@ -2910,7 +2757,7 @@ inven_type *t_ptr;
     CRISDURIAN = 1;
     return 1;
   }
-  else if (!strcmp("& Flail", name)) {
+  else if (!stricmp("& Flail", name)) {
     if (TOTILA) return 0;
     if (wizard || peek) msg_print("Totila");
     else good_item_flag = TRUE;
@@ -2926,7 +2773,7 @@ inven_type *t_ptr;
     TOTILA = 1;
     return 1;
   }
-  else if (!strcmp("& Short sword", name)) {
+  else if (!stricmp("& Short sword", name)) {
     if (GILETTAR) return 0;
     if (wizard || peek) msg_print("Gilettar");
     else good_item_flag = TRUE;
@@ -2934,12 +2781,12 @@ inven_type *t_ptr;
     t_ptr->tohit = 3;
     t_ptr->todam = 7;
     t_ptr->flags = (TR_REGEN|TR_SLOW_DIGEST|TR_SLAY_ANIMAL);
-    t_ptr->flags = (TR_ARTIFACT);
+    t_ptr->flags2 = (TR_ARTIFACT);
     t_ptr->cost  = 10000L;
     GILETTAR = 1;
     return 1;
   }
-  else if (!strcmp("& Katana", name)) {
+  else if (!stricmp("& Katana", name)) {
     if (randint(3)>1) return 0;
     if (AGLARANG) return 0;
     if (wizard || peek) msg_print("Aglarang");
@@ -2957,7 +2804,7 @@ inven_type *t_ptr;
     AGLARANG = 1;
     return 1;
   }
-  else if (!strcmp("& Spear", name)) {
+  else if (!stricmp("& Spear", name)) {
     switch (randint(6)) {
     case 1:
       if (AEGLOS) return 0;
@@ -3009,7 +2856,7 @@ inven_type *t_ptr;
       return 1;
     }
   }
-  else if (!strcmp("& Dagger", name)) {
+  else if (!stricmp("& Dagger", name)) {
     switch (randint(11)) {
     case 1:
       if (ANGRIST) return 0;
@@ -3099,7 +2946,7 @@ inven_type *t_ptr;
       BELANGIL = 1;
       return 1;
     }
-  } else if (!strcmp("& Small sword", name)) {
+  } else if (!stricmp("& Small sword", name)) {
     if (STING) return 0;
     if (wizard || peek) msg_print("Sting");
     else good_item_flag = TRUE;
@@ -3112,7 +2959,7 @@ inven_type *t_ptr;
     t_ptr->cost  = 12000L;
     STING = 1;
     return 1;
-  } else if (!strcmp("& Great Axe", name)) {
+  } else if (!stricmp("& Great Axe", name)) {
       switch (randint(2)) {
       case 1:
         if (randint(6)>1) return 0;
@@ -3148,7 +2995,7 @@ inven_type *t_ptr;
 	EONWE = 1;
         return 1;
       }
-  } else if (!strcmp("& Battle Axe", name)) {
+  } else if (!stricmp("& Battle Axe", name)) {
     switch (randint(2)) {
     case 1:
       if (BALLI) return 0;
@@ -3183,7 +3030,7 @@ inven_type *t_ptr;
       LOTHARANG = 1;
       return 1;
     }
-  } else if (!strcmp("& War Hammer", name)) {
+  } else if (!stricmp("& War Hammer", name)) {
     if (randint(10)>1) return 0;
     if (AULE) return 0;
     if (wizard || peek) msg_print("Aule");
@@ -3202,7 +3049,7 @@ inven_type *t_ptr;
     t_ptr->cost = 250000L;
     AULE = 1;
     return 1;
-  } else if (!strcmp("& Beaked Axe", name)) {
+  } else if (!stricmp("& Beaked Axe", name)) {
     if (randint(2)>1) return 0;
     if (THEODEN) return 0;
     if (wizard || peek) msg_print("Theoden");
@@ -3216,7 +3063,7 @@ inven_type *t_ptr;
     t_ptr->cost = 40000L;
     THEODEN = 1;
     return 1;
-  } else if (!strcmp("& Two-Handed Great Flail", name)) {
+  } else if (!stricmp("& Two-Handed Great Flail", name)) {
     if (randint(5)>1) return 0;
     if (THUNDERFIST) return 0;
     if (wizard || peek) msg_print("Thunderfist");
@@ -3232,7 +3079,7 @@ inven_type *t_ptr;
     t_ptr->cost = 160000L;
     THUNDERFIST = 1;
     return 1;
-  } else if (!strcmp("& Morningstar", name)) {
+  } else if (!stricmp("& Morningstar", name)) {
     switch (randint(2)) {
     case 1:
       if (randint(2)>1) return 0;
@@ -3262,7 +3109,7 @@ inven_type *t_ptr;
       FIRESTAR = 1;
       return 1;
     }
-  } else if (!strcmp("& Blade of Chaos", name)) {
+  } else if (!stricmp("& Blade of Chaos", name)) {
     if (DOOMCALLER) return 0;
     if (randint(3)>1) return 0;
     if (wizard || peek) msg_print("Doomcaller");
@@ -3279,7 +3126,7 @@ inven_type *t_ptr;
     t_ptr->cost = 200000L;
     DOOMCALLER = 1;
     return 1;
-  } else if (!strcmp("& Quarterstaff", name)) {
+  } else if (!stricmp("& Quarterstaff", name)) {
     switch (randint(7)) {
     case 1:
     case 2:
@@ -3350,7 +3197,7 @@ inven_type *t_ptr;
     t_ptr->flags |= (TR_RES_ACID|TR_RES_COLD);
     t_ptr->flags2 |= (TR_HOLD_LIFE|TR_ACTIVATE|TR_RES_CHAOS|TR_RES_DARK|
 		      TR_RES_NEXUS|TR_RES_NETHER|TR_ARTIFACT);
-    t_ptr->name2 |= SN_SOULKEEPER;
+    t_ptr->name2 = SN_SOULKEEPER;
     t_ptr->toac += 20;
     t_ptr->cost = 300000L;
     SOULKEEPER = 1;
@@ -3358,24 +3205,26 @@ inven_type *t_ptr;
   }/* etc.....*/
   else if (!strncmp("Multi-Hued", name, 10)) {
     if (RAZORBACK) return 0;
+    if (randint(3)>1) return 0;
     if (wizard || peek) msg_print("Razorback");
     else good_item_flag = TRUE;
     t_ptr->flags |= (TR_RES_FIRE|TR_RES_COLD|TR_RES_ACID|TR_POISON|TR_RES_LIGHT
 		     |TR_FREE_ACT|TR_SEE_INVIS|TR_INT|TR_WIS|TR_STEALTH
 		     |TR_AGGRAVATE);
     t_ptr->flags2 |= (TR_ACTIVATE|TR_LIGHT|TR_IM_LIGHT|TR_RES_LT|TR_ARTIFACT);
-    t_ptr->toac += 25;
+    t_ptr->toac += 15;
     t_ptr->p1 = -2;
     t_ptr->weight = 400;
     t_ptr->ac = 40;
     t_ptr->tohit = -3;
     t_ptr->cost = 400000L;
-    t_ptr->name2 |= RAZORBACK;
+    t_ptr->name2 = SN_RAZORBACK;
     RAZORBACK = 1;
     return 1;
   }
   else if (!strncmp("Power Drag", name, 10)) {
     if (BLADETURNER) return 0;
+    if (randint(3)>1) return 0;
     if (wizard || peek) msg_print("Bladeturner");
     else good_item_flag =  TRUE;
     t_ptr->flags |= (TR_RES_FIRE|TR_RES_COLD|TR_RES_ACID|TR_POISON|TR_RES_LIGHT
@@ -3383,38 +3232,38 @@ inven_type *t_ptr;
     t_ptr->flags2 |= (TR_HOLD_LIFE|TR_RES_CONF|TR_RES_SOUND|TR_RES_LT
 		     |TR_RES_DARK|TR_RES_CHAOS|TR_RES_DISENCHANT
 		     |TR_RES_SHARDS|TR_RES_BLIND|TR_RES_NEXUS|TR_RES_NETHER
-		     |TR_ARTIFACT);
-    t_ptr->toac += 35;
+		     |TR_ARTIFACT|TR_ACTIVATE);
+    t_ptr->toac += 17;
     t_ptr->p1 = -3;
     t_ptr->ac = 50;
     t_ptr->tohit = -4;
     t_ptr->weight = 500;
     t_ptr->cost = 500000L;
-    t_ptr->name2 |= BLADETURNER;
+    t_ptr->name2 = SN_BLADETURNER;
     BLADETURNER = 1;
     return 1;
   }
-  else if (!strcmp("& Pair of Hard Leather Boots", name)) {
+  else if (!stricmp("& Pair of Hard Leather Boots", name)) {
     if (FEANOR) return 0;
     if (randint(5)>1) return 0;
     if (wizard || peek) msg_print("Feanor");
     else good_item_flag = TRUE;
     t_ptr->flags |= (TR_RES_ACID|TR_SPEED|TR_STEALTH);
     t_ptr->flags2 |= (TR_ACTIVATE|TR_RES_NEXUS|TR_ARTIFACT);
-    t_ptr->name2 |= SN_FEANOR;
+    t_ptr->name2 = SN_FEANOR;
     t_ptr->p1 = 1;
     t_ptr->toac += 20;
     t_ptr->cost = 130000L;
     FEANOR = 1;
     return 1;
   }
-  else if (!strcmp("& Pair of Soft Leather Boots", name)) {
+  else if (!stricmp("& Pair of Soft Leather Boots", name)) {
     if (DAL) return 0;
     if (wizard || peek) msg_print("Dal-i-thalion");
     else good_item_flag = TRUE;
     t_ptr->flags |= (TR_FREE_ACT|TR_DEX|TR_SUST_STAT|TR_RES_ACID);
     t_ptr->flags2 |= (TR_ACTIVATE|TR_ARTIFACT);
-    t_ptr->name2 |= SN_DAL;
+    t_ptr->name2 = SN_DAL;
     t_ptr->p1 = 5;
     t_ptr->ident |= ID_SHOW_P1;
     t_ptr->toac += 15;
@@ -3422,7 +3271,7 @@ inven_type *t_ptr;
     DAL = 1;
     return 1;
   }
-  else if (!strcmp("& Small Metal Shield", name)) {
+  else if (!stricmp("& Small Metal Shield", name)) {
     if (THORIN) return 0;
     if (randint(2)>1) return 0;
     if (wizard || peek) msg_print("Thorin");
@@ -3430,7 +3279,7 @@ inven_type *t_ptr;
     t_ptr->flags |= (TR_CON|TR_FREE_ACT|TR_STR|
 				TR_RES_ACID|TR_SEARCH);
     t_ptr->flags2 |= (TR_IM_ACID|TR_RES_SOUND|TR_RES_CHAOS|TR_ARTIFACT);
-    t_ptr->name2 |= SN_THORIN;
+    t_ptr->name2 = SN_THORIN;
     t_ptr->tohit = 0;
     t_ptr->p1 = 4;
     t_ptr->toac += 25;
@@ -3438,27 +3287,27 @@ inven_type *t_ptr;
     THORIN = 1;
     return 1;
   }
-  else if (!strcmp("Full Plate Armour", name)) {
+  else if (!stricmp("Full Plate Armour", name)) {
     if (ISILDUR) return 0;
     if (wizard || peek) msg_print("Isildur");
     else good_item_flag = TRUE;
     t_ptr->flags |= (TR_RES_ACID|TR_RES_FIRE|TR_RES_COLD|TR_RES_LIGHT);
     t_ptr->flags2 |= (TR_RES_SOUND|TR_ARTIFACT);
-    t_ptr->name2 |= SN_ISILDUR;
+    t_ptr->name2 = SN_ISILDUR;
     t_ptr->tohit = 0;
     t_ptr->toac += 25;
     t_ptr->cost = 40000L;
     ISILDUR = 1;
     return 1;
   }
-  else if (!strcmp("Metal Brigandine Armour", name)) {
+  else if (!stricmp("Metal Brigandine Armour", name)) {
     if (ROHAN) return 0;
     if (wizard || peek) msg_print("Rohan");
     else good_item_flag = TRUE;
     t_ptr->flags |= (TR_RES_ACID|TR_RES_FIRE|TR_RES_COLD|TR_RES_LIGHT|
 			TR_STR|TR_DEX);
     t_ptr->flags2 |= (TR_RES_SOUND|TR_RES_CONF|TR_ARTIFACT);
-    t_ptr->name2 |= SN_ROHAN;
+    t_ptr->name2 = SN_ROHAN;
     t_ptr->tohit = 0;
     t_ptr->p1 = 2;
     t_ptr->toac += 15;
@@ -3466,7 +3315,7 @@ inven_type *t_ptr;
     ROHAN = 1;
     return 1;
   }
-  else if (!strcmp("& Large Metal Shield", name)) {
+  else if (!stricmp("& Large Metal Shield", name)) {
     if (ANARION) return 0;
     if (randint(3)>1) return 0;
     else good_item_flag = TRUE;
@@ -3474,7 +3323,7 @@ inven_type *t_ptr;
     t_ptr->flags |= (TR_RES_ACID|TR_RES_FIRE|TR_RES_COLD|TR_RES_LIGHT|
 		     TR_SUST_STAT);
     t_ptr->flags2 |= (TR_ARTIFACT);
-    t_ptr->name2 |= SN_ANARION;
+    t_ptr->name2 = SN_ANARION;
     t_ptr->p1 = 10;
     t_ptr->tohit = 0;
     t_ptr->toac += 20;
@@ -3482,14 +3331,14 @@ inven_type *t_ptr;
     ANARION = 1;
     return 1;
   }
-  else if (!strcmp("& Set of Cestus", name)) {
+  else if (!stricmp("& Set of Cestus", name)) {
     if (FINGOLFIN) return 0;
     if (randint(3)>1) return 0;
     if (wizard || peek) msg_print("Fingolfin");
     else good_item_flag = TRUE;
     t_ptr->flags |= (TR_RES_ACID|TR_DEX|TR_FREE_ACT);
     t_ptr->flags2 |= (TR_ACTIVATE|TR_ARTIFACT);
-    t_ptr->name2 |= SN_FINGOLFIN;
+    t_ptr->name2 = SN_FINGOLFIN;
     t_ptr->ident |= ID_SHOW_HITDAM;
     t_ptr->p1 = 4;
     t_ptr->tohit = 10;
@@ -3499,14 +3348,14 @@ inven_type *t_ptr;
     FINGOLFIN = 1;
     return 1;
   }
-  else if (!strcmp("& Set of Leather Gloves", name)) {
+  else if (!stricmp("& Set of Leather Gloves", name)) {
     if (randint(3)==1) {
       if (CAMBELEG) return 0;
       if (wizard || peek) msg_print("Cambeleg");
       else good_item_flag = TRUE;
       t_ptr->flags |= (TR_STR|TR_CON|TR_FREE_ACT);
       t_ptr->flags2 |= (TR_ARTIFACT);
-      t_ptr->name2 |= SN_CAMBELEG;
+      t_ptr->name2 = SN_CAMBELEG;
       t_ptr->ident |= ID_SHOW_HITDAM;
       t_ptr->p1 = 2;
       t_ptr->tohit = 8;
@@ -3521,7 +3370,7 @@ inven_type *t_ptr;
       else good_item_flag = TRUE;
       t_ptr->flags |= (TR_SUST_STAT);
       t_ptr->flags2 |= (TR_ACTIVATE|TR_LIGHT|TR_RES_LT|TR_ARTIFACT);
-      t_ptr->name2 |= SN_CAMMITHRIM;
+      t_ptr->name2 = SN_CAMMITHRIM;
       t_ptr->p1 = 5;
       t_ptr->toac += 10;
       t_ptr->cost = 30000L;
@@ -3529,7 +3378,7 @@ inven_type *t_ptr;
       return 1;
     }
   }
-  else if (!strcmp("& Set of Gauntlets", name)) {
+  else if (!stricmp("& Set of Gauntlets", name)) {
     switch (randint(6)) {
     case 1:
       if (PAURHACH) return 0;
@@ -3537,7 +3386,7 @@ inven_type *t_ptr;
       else good_item_flag = TRUE;
       t_ptr->flags |= TR_RES_FIRE;
       t_ptr->flags2 |= (TR_ACTIVATE|TR_ARTIFACT);
-      t_ptr->name2 |= SN_PAURHACH;
+      t_ptr->name2 = SN_PAURHACH;
       t_ptr->toac += 15;
       t_ptr->cost = 15000L;
       PAURHACH = 1;
@@ -3548,7 +3397,7 @@ inven_type *t_ptr;
       else good_item_flag = TRUE;
       t_ptr->flags |= TR_RES_COLD;
       t_ptr->flags2 |= (TR_ACTIVATE|TR_ARTIFACT);
-      t_ptr->name2 |= SN_PAURNIMMEN;
+      t_ptr->name2 = SN_PAURNIMMEN;
       t_ptr->toac += 15;
       t_ptr->cost = 13000L;
       PAURNIMMEN = 1;
@@ -3559,7 +3408,7 @@ inven_type *t_ptr;
       else good_item_flag = TRUE;
       t_ptr->flags |= TR_RES_LIGHT;
       t_ptr->flags2 |= (TR_ACTIVATE|TR_ARTIFACT);
-      t_ptr->name2 |= SN_PAURAEGEN;
+      t_ptr->name2 = SN_PAURAEGEN;
       t_ptr->toac += 15;
       t_ptr->cost = 11000L;
       PAURAEGEN = 1;
@@ -3570,7 +3419,7 @@ inven_type *t_ptr;
       else good_item_flag = TRUE;
       t_ptr->flags |= TR_RES_ACID;
       t_ptr->flags2 |= (TR_ACTIVATE|TR_ARTIFACT);
-      t_ptr->name2 |= SN_PAURNEN;
+      t_ptr->name2 = SN_PAURNEN;
       t_ptr->toac += 15;
       t_ptr->cost = 12000L;
       PAURNEN = 1;
@@ -3581,7 +3430,7 @@ inven_type *t_ptr;
       else good_item_flag = TRUE;
       t_ptr->flags |= (TR_STR|TR_DEX|TR_AGGRAVATE|TR_CURSED);
       t_ptr->flags2 |= (TR_ARTIFACT);
-      t_ptr->name2 |= SN_CAMLOST;
+      t_ptr->name2 = SN_CAMLOST;
       t_ptr->p1 = -5;
       t_ptr->tohit = -11;
       t_ptr->todam = -12;
@@ -3591,14 +3440,14 @@ inven_type *t_ptr;
       return 1;
     }
   }
-  else if (!strcmp("Mithril Chain Mail", name)) {
+  else if (!stricmp("Mithril Chain Mail", name)) {
     if (BELEGENNON) return 0;
     if (wizard || peek) msg_print("Belegennon");
     else good_item_flag = TRUE;
     t_ptr->flags |= (TR_RES_ACID|TR_RES_FIRE|TR_RES_COLD|TR_RES_LIGHT|
 		     TR_STEALTH);
     t_ptr->flags2 |= (TR_ACTIVATE|TR_ARTIFACT);
-    t_ptr->name2 |= SN_BELEGENNON;
+    t_ptr->name2 = SN_BELEGENNON;
     t_ptr->p1 = 4;
     t_ptr->ident |= ID_SHOW_P1;
     t_ptr->toac += 20;
@@ -3606,42 +3455,42 @@ inven_type *t_ptr;
     BELEGENNON = 1;
     return 1;
   }
-  else if (!strcmp("Mithril Plate Mail", name)) {
+  else if (!stricmp("Mithril Plate Mail", name)) {
     if (CELEBORN) return 0;
     if (wizard || peek) msg_print("Celeborn");
     else good_item_flag = TRUE;
     t_ptr->flags |= (TR_RES_ACID|TR_RES_FIRE|TR_RES_COLD|TR_RES_LIGHT|
 		     TR_STR|TR_CHR);
     t_ptr->flags2 |= (TR_ACTIVATE|TR_RES_DISENCHANT|TR_RES_DARK|TR_ARTIFACT);
-    t_ptr->name2 |= SN_CELEBORN;
+    t_ptr->name2 = SN_CELEBORN;
     t_ptr->p1 = 4;
     t_ptr->toac += 25;
     t_ptr->cost = 150000L;
     CELEBORN = 1;
     return 1;
   }
-  else if (!strcmp("Augmented Chain Mail", name)) {
+  else if (!stricmp("Augmented Chain Mail", name)) {
     if (randint(3)>1) return 0;
     if (CASPANION) return 0;
     if (wizard || peek) msg_print("Caspanion");
     else good_item_flag = TRUE;
     t_ptr->flags |= (TR_RES_ACID|TR_POISON|TR_CON|TR_WIS|TR_INT);
     t_ptr->flags2 |= (TR_RES_CONF|TR_ACTIVATE|TR_ARTIFACT);
-    t_ptr->name2 |= SN_CASPANION;
+    t_ptr->name2 = SN_CASPANION;
     t_ptr->p1 = 3;
     t_ptr->toac += 20;
     t_ptr->cost = 40000L;
     CASPANION = 1;
     return 1;
   }
-  else if (!strcmp("Soft Leather Armour", name)) {
+  else if (!stricmp("Soft Leather Armour", name)) {
     if (HITHLOMIR) return 0;
     if (wizard || peek) msg_print("Hithlomir");
     else good_item_flag = TRUE;
     t_ptr->flags |= (TR_RES_ACID|TR_RES_FIRE|TR_RES_COLD|TR_RES_LIGHT|
 		     TR_STEALTH);
     t_ptr->flags2 |= (TR_ARTIFACT);
-    t_ptr->name2 |= SN_HITHLOMIR;
+    t_ptr->name2 = SN_HITHLOMIR;
     t_ptr->p1 = 4;
     t_ptr->toac += 20;
     t_ptr->ident |= ID_SHOW_P1;
@@ -3649,98 +3498,98 @@ inven_type *t_ptr;
     HITHLOMIR = 1;
     return 1;
   }
-  else if (!strcmp("Leather Scale Mail", name)) {
+  else if (!stricmp("Leather Scale Mail", name)) {
     if (THALKETTOTH) return 0;
     if (wizard || peek) msg_print("Thalkettoth");
     else good_item_flag = TRUE;
     t_ptr->flags |= (TR_RES_ACID|TR_DEX);
     t_ptr->flags2 |= (TR_ARTIFACT);
-    t_ptr->name2 |= SN_THALKETTOTH;
+    t_ptr->name2 = SN_THALKETTOTH;
     t_ptr->toac += 25;
     t_ptr->p1 = 3;
     t_ptr->cost = 25000L;
     THALKETTOTH = 1;
     return 1;
   }
-  else if (!strcmp("Chain Mail", name)) {
+  else if (!stricmp("Chain Mail", name)) {
     if (ARVEDUI) return 0;
     if (wizard || peek) msg_print("Arvedui");
     else good_item_flag = TRUE;
     t_ptr->flags |= (TR_RES_ACID|TR_RES_FIRE|TR_RES_COLD|TR_RES_LIGHT|
 		     TR_STR|TR_CHR);
     t_ptr->flags2 |= (TR_ARTIFACT);
-    t_ptr->name2 |= SN_ARVEDUI;
+    t_ptr->name2 = SN_ARVEDUI;
     t_ptr->p1 = 2;
     t_ptr->toac += 15;
     t_ptr->cost = 32000L;
     ARVEDUI = 1;
     return 1;
   }
-  else if (!strcmp("& Hard Leather Cap", name)) {
+  else if (!stricmp("& Hard Leather Cap", name)) {
     if (THRANDUIL) return 0;
     if (wizard || peek) msg_print("Thranduil");
     else good_item_flag = TRUE;
     t_ptr->flags |= (TR_RES_ACID|TR_INT|TR_WIS);
     t_ptr->flags2 |= (TR_TELEPATHY|TR_RES_BLIND|TR_ARTIFACT);
-    t_ptr->name2 |= SN_THRANDUIL;
+    t_ptr->name2 = SN_THRANDUIL;
     t_ptr->p1 = 2;
     t_ptr->toac += 10;
     t_ptr->cost = 50000L;
     THRANDUIL = 1;
     return 1;
   }
-  else if (!strcmp("& Metal Cap", name)) {
+  else if (!stricmp("& Metal Cap", name)) {
     if (THENGEL) return 0;
     if (wizard || peek) msg_print("Thengel");
     else good_item_flag = TRUE;
     t_ptr->flags |= (TR_RES_ACID|TR_WIS|TR_CHR);
     t_ptr->flags2 |= (TR_ARTIFACT);
-    t_ptr->name2 |= SN_THENGEL;
+    t_ptr->name2 = SN_THENGEL;
     t_ptr->p1 = 3;
     t_ptr->toac += 12;
     t_ptr->cost = 22000L;
     THENGEL = 1;
     return 1;
   }
-  else if (!strcmp("& Steel Helm", name)) {
+  else if (!stricmp("& Steel Helm", name)) {
     if (HAMMERHAND) return 0;
     if (wizard || peek) msg_print("Hammerhand");
     else good_item_flag = TRUE;
     t_ptr->flags |= (TR_STR|TR_CON|TR_DEX|TR_RES_ACID);
     t_ptr->flags2 |= (TR_ARTIFACT);
-    t_ptr->name2 |= SN_HAMMERHAND;
+    t_ptr->name2 = SN_HAMMERHAND;
     t_ptr->p1 = 3;
     t_ptr->toac += 20;
     t_ptr->cost = 45000L;
     HAMMERHAND = 1;
     return 1;
   }
-  else if (!strcmp("& Large Leather Shield", name)) {
+  else if (!stricmp("& Large Leather Shield", name)) {
     if (CELEFARN) return 0;
     if (wizard || peek) msg_print("Celefarn");
     else good_item_flag = TRUE;
     t_ptr->flags |= (TR_RES_ACID|TR_RES_FIRE|TR_RES_COLD|TR_RES_LIGHT);
     t_ptr->flags2 |= (TR_ARTIFACT);
-    t_ptr->name2 |= SN_CELEFARN;
+    t_ptr->name2 = SN_CELEFARN;
     t_ptr->toac += 20;
     t_ptr->cost = 12000L;
     CELEFARN = 1;
     return 1;
   }
-  else if (!strcmp("& Pair of Metal Shod Boots", name)) {
+  else if (!stricmp("& Pair of Metal Shod Boots", name)) {
     if (THROR) return 0;
     if (wizard || peek) msg_print("Thror");
     else good_item_flag = TRUE;
     t_ptr->flags |= (TR_CON|TR_STR|TR_RES_ACID);
     t_ptr->flags2 |= (TR_ARTIFACT);
-    t_ptr->name2 |= SN_THROR;
+    t_ptr->name2 = SN_THROR;
     t_ptr->p1 = 3;
     t_ptr->toac += 20;
     t_ptr->cost = 12000L;
     THROR = 1;
     return 1;
   }
-  else if (!strcmp("& Iron Helm", name)) {
+  else if (!stricmp("& Iron Helm", name)) {
     if (randint(6)==1) {
       if (DOR_LOMIN) return 0;
       if (wizard || peek) msg_print("Dor-Lomin");
@@ -3749,7 +3598,7 @@ inven_type *t_ptr;
 		       TR_CON|TR_DEX|TR_STR|TR_SEE_INVIS);
       t_ptr->flags2 |= (TR_TELEPATHY|TR_LIGHT|TR_RES_LT|TR_RES_BLIND
 		|TR_ARTIFACT);
-      t_ptr->name2 |= SN_DOR_LOMIN;
+      t_ptr->name2 = SN_DOR_LOMIN;
       t_ptr->p1 = 4;
       t_ptr->toac += 20;
       t_ptr->cost = 300000L;
@@ -3761,7 +3610,7 @@ inven_type *t_ptr;
       else good_item_flag = TRUE;
       t_ptr->flags |= (TR_INT|TR_WIS|TR_SEE_INVIS|TR_SEARCH|TR_RES_ACID);
       t_ptr->flags2 |= (TR_ACTIVATE|TR_RES_BLIND|TR_ARTIFACT);
-      t_ptr->name2 |= SN_HOLHENNETH;
+      t_ptr->name2 = SN_HOLHENNETH;
       t_ptr->ident |= ID_SHOW_P1;
       t_ptr->p1 = 2;
       t_ptr->toac += 10;
@@ -3775,7 +3624,7 @@ inven_type *t_ptr;
       t_ptr->flags |= (TR_INT|TR_WIS|TR_SEE_INVIS|TR_SEARCH|TR_CURSED
 		       |TR_AGGRAVATE);
       t_ptr->flags2 |= (TR_ARTIFACT);
-      t_ptr->name2 |= SN_GORLIM;
+      t_ptr->name2 = SN_GORLIM;
       t_ptr->ident |= ID_SHOW_P1;
       t_ptr->p1 = -125;
       t_ptr->toac += 10;
@@ -3784,7 +3633,7 @@ inven_type *t_ptr;
       return 1;
     }
   }
-  else if (!strcmp("& Golden Crown", name)) {
+  else if (!stricmp("& Golden Crown", name)) {
     if (randint(3)>1) return 0;
     if (GONDOR) return 0;
     if (wizard || peek) msg_print("Gondor");
@@ -3800,14 +3649,14 @@ inven_type *t_ptr;
     GONDOR = 1;
     return 1;
   }
-  else if (!strcmp("& Iron Crown", name)) {
+  else if (!stricmp("& Iron Crown", name)) {
     if (BERUTHIEL) return 0;
     if (wizard || peek) msg_print("Beruthiel");
     else good_item_flag = TRUE;
     t_ptr->flags |= (TR_STR|TR_DEX|TR_CON|
 		TR_RES_ACID|TR_SEE_INVIS|TR_FREE_ACT|TR_CURSED);
     t_ptr->flags2 |= (TR_TELEPATHY|TR_ARTIFACT);
-    t_ptr->name2 |= SN_BERUTHIEL;
+    t_ptr->name2 = SN_BERUTHIEL;
     t_ptr->p1 = -125;
     t_ptr->ident |= ID_SHOW_P1;
     t_ptr->toac += 20;
@@ -3851,12 +3700,27 @@ int x, level, good, not_unique;
       if ((t_ptr->index>=389 && t_ptr->index<=394)
       || (t_ptr->index>=408 && t_ptr->index<=409)
       || (t_ptr->index>=415 && t_ptr->index<=419)) {
-	  t_ptr->toac += m_bonus(1, 30, level);
-	}
+
+	int8u artifact = FALSE;
+	
+	t_ptr->toac += m_bonus(1, 30, level);  /* all DSM are enchanted, I
+	  					    guess -CFT */
+	rating += 30;
+	if ( (magik(chance) && magik(special)) || (good==666) ) {
+	  t_ptr->toac += randint(10); /* even better... */
+	  if ((randint(3)==1 || good==666) && !not_unique
+		 && unique_armour(t_ptr))  /* ...but is it an artifact? */
+	    artifact = TRUE;
+	  }
+	if (!artifact) { /* assume cost&mesg done if it was an artifact */
+	  if (wizard || peek) msg_print("Dragon Scale Mail");
+	  t_ptr->cost += ((int32)t_ptr->toac * 500L);
+	  }
+	} /* end if is a DSM */
       else if (magik(chance)||good)
 	{
 	  t_ptr->toac += m_bonus(1, 30, level);
-	  if (!strcmp(object_list[t_ptr->index].name, "& Robe") &&
+	  if (!stricmp(object_list[t_ptr->index].name, "& Robe") &&
 	      ((magik(special) && randint(30)==1)
 	       ||(good==666 && magik(special))))
 	    {
@@ -3869,13 +3733,6 @@ int x, level, good, not_unique;
 	    t_ptr->toac += 10+randint(5);
 	    t_ptr->name2 = SN_MAGI;
 	    t_ptr->cost = 10000L + (t_ptr->toac * 100);
-	  } else if ((t_ptr->index>=389 && t_ptr->index<=394)
-		 || (t_ptr->index>=408 && t_ptr->index<=409)
-   		 || (t_ptr->index>=415 && t_ptr->index<=419)) {
-	      if (wizard || peek) msg_print("Dragon Scale Mail");
-	      rating += 30;
-	      t_ptr->toac += randint(10);
-	      t_ptr->cost += (t_ptr->toac * 500);
 	    }
 	  else if (magik(special)||good==666)
 	    switch(randint(9))
@@ -3963,7 +3820,7 @@ int x, level, good, not_unique;
 	     before change to treasure distribution, this helps keep same
 	     number of ego weapons same as before, see also missiles */
 	  if (magik(3*special/2)||good==666) { /* was 2 */
-	    if (!strcmp("& Whip", object_list[t_ptr->index].name)) {
+	    if (!stricmp("& Whip", object_list[t_ptr->index].name)) {
 		if (peek) msg_print("Whip of Fire");
 		rating += 20;
 		t_ptr->name2 = SN_FIRE;
@@ -3981,9 +3838,10 @@ int x, level, good, not_unique;
 		      unique_weapon(t_ptr)) break;
 		  if (peek) msg_print("Westernesse");
 		  rating += 30;
-		  t_ptr->flags |= (TR_SEE_INVIS|TR_SLAY_EVIL|TR_SLAY_ORC|
+		  t_ptr->flags |= (TR_SEE_INVIS|TR_SLAY_EVIL|
 				   TR_SLAY_UNDEAD|TR_DEX|TR_CON|TR_STR|
 				   TR_FREE_ACT);
+		  t_ptr->flags2 |= TR_SLAY_ORC;
 		  t_ptr->tohit += randint(5)+3;
 		  t_ptr->todam += randint(5)+3;
 		  t_ptr->p1 = 1;
@@ -4151,7 +4009,7 @@ int x, level, good, not_unique;
 	    switch (randint(15)) {
 	    case 1:
 	      if (((randint(3)==1)||(good==666)) && !not_unique &&
-		  !strcmp(object_list[t_ptr->index].name, "& Long Bow")) {
+		  !stricmp(object_list[t_ptr->index].name, "& Long Bow")) {
 		    switch (randint(2)) {
 		    case 1:
 		      if (BELEG) break;
@@ -4184,7 +4042,7 @@ int x, level, good, not_unique;
 		    break;
 	      }
 	      if (((randint(5)==1)||(good==666)) && !not_unique &&
-		  !strcmp(object_list[t_ptr->index].name, "& Light Crossbow"))
+		  !stricmp(object_list[t_ptr->index].name, "& Light Crossbow"))
 		{
 		  if (CUBRAGOL) break;
 		  if (wizard || peek) msg_print("Cubragol");
@@ -4253,13 +4111,17 @@ int x, level, good, not_unique;
 	  if (magik(chance)||good) {
 	    t_ptr->toac += m_bonus(1, 20, level);
 	    if ((((randint(2) == 1) && magik(5*special/2)) || (good == 666)) &&
-		!strcmp(object_list[t_ptr->index].name,
+		!stricmp(object_list[t_ptr->index].name,
 			"& Set of Leather of Gloves") &&
 		!not_unique && unique_armour(t_ptr)) ;
 	    else if ((((randint(4) == 1) && magik(special)) || (good == 666))
-		     && !strcmp(object_list[t_ptr->index].name,
+		     && !stricmp(object_list[t_ptr->index].name,
 				"& Set of Gauntlets") &&
 		     !not_unique && unique_armour(t_ptr)) ;
+	    else if ((((randint(5) == 1) && magik(special)) || (good == 666))
+		     && !stricmp(object_list[t_ptr->index].name,
+				"& Set of Cestus") &&
+		     !not_unique && unique_armour(t_ptr)) ; /* don't forget cestus -CFT */
 	    else if (magik(special)||(good==666)) {
               switch(randint(10)) {
 	      case 1: case 2: case 3:
@@ -4334,14 +4196,7 @@ int x, level, good, not_unique;
 	      if (magik(special)||(good==666))
 		{
 		  tmp = randint(12);
-		  if (tmp > 5)
-		    {
-		      t_ptr->flags |= TR_FFALL;
-		      rating += 7;
-		      t_ptr->name2 = SN_SLOW_DESCENT;
-		      t_ptr->cost += 250;
-		    }
-		  else if (tmp == 1)
+		  if (tmp == 1)
 		    {
 		      if (!((randint(2) == 1) && !not_unique
 			    && unique_armour(t_ptr))) {
@@ -4354,19 +4209,48 @@ int x, level, good, not_unique;
 			t_ptr->cost += 1000000L;
 		      }
 		    }
-		  else /* 2 - 5 */
-		    {
-		      if (strcmp("& Pair of Metal Shod Boots",
-				 object_list[t_ptr->index].name))
-			{
-			  t_ptr->flags |= TR_STEALTH;
-			  rating += 16;
-			  t_ptr->ident |= ID_SHOW_P1;
-			  t_ptr->p1 = randint(3);
-			  t_ptr->name2 = SN_STEALTH;
-			  t_ptr->cost += 500;
-			}
-		    }
+		  else if (stricmp("& Pair of Metal Shod Boots",
+				 object_list[t_ptr->index].name)) /* not metal */
+		    if (tmp > 6)
+		      {
+		        t_ptr->flags |= TR_FFALL;
+		        rating += 7;
+		        t_ptr->name2 = SN_SLOW_DESCENT;
+		        t_ptr->cost += 250;
+		      }
+		    else if (tmp < 5)
+		      {
+			t_ptr->flags |= TR_STEALTH;
+			rating += 16;
+			t_ptr->ident |= ID_SHOW_P1;
+			t_ptr->p1 = randint(3);
+			t_ptr->name2 = SN_STEALTH;
+			t_ptr->cost += 500;
+		      }
+		    else /* 5,6 */
+		      {
+		      	t_ptr->flags |= TR_FREE_ACT;
+		      	rating += 15;
+			t_ptr->name2 = SN_FREE_ACTION;
+			t_ptr->cost += 500;
+			t_ptr->cost *= 2;
+		      }
+		  else /* is metal boots, different odds since no stealth */
+		    if (tmp < 5)
+		      {
+		      	t_ptr->flags |= TR_FREE_ACT;
+		      	rating += 15;
+			t_ptr->name2 = SN_FREE_ACTION;
+			t_ptr->cost += 500;
+			t_ptr->cost *= 2;
+		      }
+		    else /* tmp > 4 */
+		      {
+		        t_ptr->flags |= TR_FFALL;
+		        rating += 7;
+		        t_ptr->name2 = SN_SLOW_DESCENT;
+		        t_ptr->cost += 250;
+		      }
 		}
 	    }
 	  else if (magik(cursed))
@@ -4812,7 +4696,7 @@ int x, level, good, not_unique;
 	  if (magik(special)||(good==666))
 	      {
 		  if (!not_unique &&
-		      !strcmp(object_list[t_ptr->index].name, "& Cloak")
+		      !stricmp(object_list[t_ptr->index].name, "& Cloak")
 		      && randint(10)==1) {
 		      switch (randint(9)) {
 		      case 1:
@@ -4891,7 +4775,7 @@ int x, level, good, not_unique;
 		      }
 
 		} else if (!not_unique &&
-			   !strcmp(object_list[t_ptr->index].name,
+			   !stricmp(object_list[t_ptr->index].name,
 			    "& Shadow Cloak")
 			   && randint(20)==1) {
 			   switch (randint(2)) {
@@ -4915,9 +4799,9 @@ int x, level, good, not_unique;
 			     else good_item_flag = TRUE;
 			     t_ptr->name2 = SN_TUOR;
 			     t_ptr->toac += 12;
-			     t_ptr->flags = (TR_STEALTH|TR_IM_ACID|
+			     t_ptr->flags = (TR_STEALTH|
 					TR_FREE_ACT|TR_SEE_INVIS|TR_RES_ACID);
-			     t_ptr->flags2 |= (TR_ARTIFACT);
+			     t_ptr->flags2 |= (TR_IM_ACID|TR_ARTIFACT);
 			     t_ptr->p1 = 4;
 			     t_ptr->ident = ID_SHOW_P1;
 			     t_ptr->cost = 35000L;
@@ -5105,7 +4989,7 @@ int x, level, good, not_unique;
 	      t_ptr->flags |= TR_CURSED;
 	      t_ptr->cost = 0;
 	      if (randint(5)==1) {
-		t_ptr->name2 |= SN_BACKBITING;
+		t_ptr->name2 = SN_BACKBITING;
 		t_ptr->tohit -= 20;
 		t_ptr->todam -= 20;
 	      }
@@ -5164,6 +5048,7 @@ static struct opt_desc { char *o_prompt; int8u *o_var; } options[] = {
   { "Running: stop when map sector changes",	&find_bound },
   { "Running: run through open doors",		&find_ignore_doors },
   { "(g)et-key to pickup objects",		&prompt_carry_flag },
+  { "Ask before pickup?",			&carry_query_flag },
   { "Rogue like commands",			&rogue_like_commands },
   { "Show weights in inventory",		&show_weight_flag },
   { "Highlight and notice mineral seams",	&highlight_seams },
@@ -5172,6 +5057,7 @@ static struct opt_desc { char *o_prompt; int8u *o_var; } options[] = {
   { "Turn off haggling",			&no_haggle_flag },
 #ifdef TC_COLOR
   { "Turn off color (for monochrome)",		&no_color_flag },
+  { "Inventory in black & white",		&inven_bw_flag },
 #endif
 #endif
   { 0, 0 } };

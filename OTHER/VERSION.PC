@@ -60,3 +60,106 @@ May 20 1993	Second Update
 		the earlier versions, and it should not cause any
 		problems.
 
+Aug 18 1993	Third Update
+	   After a considerable wait, the next update is here at last.  As
+	a precaution, I've kept the stack checking code in.  Source code and
+	two precompiled executable have been uploaded to ftp.cis.ksu.edu as
+	'angsrc13.exe' and 'angexe13.exe'/'angmem13.exe'.  'angexe13.exe' is
+	the precompiled executable, with the normal 128k overlay buffer, and
+	it requires about 505k of free memory to run.  'angmem13.exe' is a
+	precompiled executable, with a larger 192k overlay buffer, and it
+	will run faster (with less swaps to disk), but it requires about
+	569k of free memory to run.
+
+	   This update includes: multiple messages/line; fixed ressurection
+	code; fixed player ghost code; Dragon Scale Mail artifacts can now
+	be created; Cestus artifacts can now be created; autoroller fixed to
+	avoid multiple "you can learn some new [spells|prayers]" msgs.;
+	artifacts are now "The ..." once IDed, instead of "a ..."; Phial,
+	Star and Arkenstone now have different name before IDed; uniques
+	that should have been evil are now evil; armor that is immune to acid
+	(instead of just resistant to it) won't lose AC; auto-roller fixed to
+	calculate disarm skill properly; elemental brand cannot be used to
+	enchant an item beyond normal enchantment levels; curse [weapon|armor]
+	scroll even more BAD!; object corruption bug (aka "the mush bug")
+	fixed; monster lightning attacks can now destroy things; Potion of
+	Berserk Strength bug (could lose 10 hp permanantly) fixed; lots of
+	bounds checks added; inventory sort from Um55, plus patches from
+	others to make inventory sort nicely; everyone now has a (very)
+	slight chance of using rods/wands/staffs; the # of group monsters
+	is now adjusted by how out-of-depth it is; bashing now takes a move,
+	even if it doesn't work, to prevent bashing to locate invis. monsters;
+	new option added to enable old-Moria-style "always pickup items";
+	"Balor" renamed to "Lesser balrog", "Necromancer" renamed to "Warlock"
+	to be more Tolkien-ish, and avoid conf. w/ Sauron; gauntlets of
+	agility don't interfere with the casting of mage spells; light room
+	code should no longer leave a corner unlit; "money bug" fixed; Potion
+	of Death can be thrown for lots of damage; "mindless" undead are NOT
+	seen by telepathy; "you seem to be missing a book" will eventually
+	shut up, once you have learned all your spells from all books; major
+	change to bolt(), fire_bolt(), breath(), fire_ball() and
+	mon_cast_spell() to alter how code handles monster spell resists;
+	Bronze + Gold DSM breath will now confuse non-resistant monsters;
+	priests should now get to learn "detect monsters" in "Godly Insights";
+	when items are stolen/destroyed/disenchanted, it tells you which item;
+	rogues get recharge item II (they already had 1&3); mass_poly() will
+	not change things into uniques, just like poly(); Word of Recall will
+	ask if you mean it; only 'Y' will put you into wiz mode, so 'y' key
+	from movement commands won't accidently enter wiz mode; new rest
+	option to rest until blindness/hallucination/etc go away; fixed
+	weight limit calculation; added new option to allow inventory displays
+	to be colorized by item type, which often makes it easier to find an
+	item; HP display code will show HP in yellow if you're hurt, in red
+	if you're badly hurt; redraw-screen command implemented; MHDs will
+	now change color every move; object creation code changed so that
+	the "extra" spellbooks can be generated when the code is looking to
+	drop a "GOOD" item. Also, Raal's/Wrath of God can be generated when
+	it wants to drop a "SPECIAL" item.  And broken swords/daggers, rusty
+	chainmail, filthy rags are no longer considered "GOOD" or "SPECIAL";
+	boots of free action added; better monster spell messages when blind;
+	fixed makefile should work for any version TC++ v1.0 or above; and
+	Morgul's targetting code added.
+
+	NOTE: If you use this update with a savefile from a previous
+		version, any spikes you may have had, or a shop may have had,
+		or that were on the current level will be called "error in
+		objdes()".  This is because I changed the "tval" of spikes.
+		Just drop any spikes you have, and ignore the others.  They
+		will eventaully cycle out of the stores, and any news ones
+		will work fine.  This is the ONLY savefile trouble you should
+		have to worry about...
+
+Aug 28 1993	Fourth Update (minor update to third update)
+	   There were a few problems with the 1.3 version of PC Angband,
+	notably the trouble with Nexus breaths, and the trouble with the
+	inventory sort losing your weapon if it got confused.  Also, the
+	code to cast a bolt or ball spell and the display code were
+	intoreably slow in the 'angexe13.exe' version, especially if you
+	weren't able to run a disk cache.  This update fixes those bugs,
+	and should run better than 'angexe13.exe'.  Source code has been
+	uploaded to ftp.cis.ksu.edu as 'angsr131.exe', and the executable
+	as 'angex131.exe'.  The executable uses a 128k overlay buffer (the
+	same as 'angexe13.exe' did) and it requires only about 505k of
+	free memory to run.  However, Angband 1.31 will now detect the
+	presence of available EMS memory, and make use of up to 155k of
+	it to improve the performance of the overalys.  If you have memory
+	over 640k, you will probably want to read your manuals about how
+	to make EMS memory available.  If you cannot make EMS memory
+	available, you can still get nearly the same performance by using
+	a disk cache.  For ideas on freeing up memory, or for an example
+	of how to set up EMS memory, see the file 'free-mem.doc' packaged
+	with this update.
+
+	   This update includes:  Optimzed overaly performance; EMS memory
+	support; fixed and improved inventory sorting -- no more vanishing
+	weapons; "Nexus bug" fixed; many bugs relating to targetting code
+	working with ball spells and bash/disarm/open/close/etc commands
+	fixed; improved messages when items are stolen, disenchanted, or
+	destroyed; improved messages for warrior/rogue/paladin pseudo-ID;
+	Giant pits; experience point display fixed; door lighting fixed so
+	that lighting a room won't flood into a different room; MH Dragons
+	will show up as one of the dragon colors on detect spells; rods can
+	now have their time-out reduced by using a recharge scroll/spell;
+	ball/breath code changed so that items dropped by monsters killed
+	in the blast are unaffected; mirkwood spiders are evil, and a
+	couple of other minor fixes.

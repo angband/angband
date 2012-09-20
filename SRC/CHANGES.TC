@@ -1,44 +1,34 @@
-constant.h:
-	MAX_TALLOC changed from 2000 to 500 to better fit msdos mem limits -CFT
+constant.h:	  MAX_TALLOC changed from 2000 to 500 to better fit msdos mem limits -CFT
 	MAX_MALLOC changed from 1500 to 400 ditto -CFT
 	MAX_SAVE_HISCORES from 500 to 50 ditto -CFT
 	MAX_QUESTS from 255 to 4 (only 1 defined anyway...) -CFT
-main.c:
-	struct rlimit rlp + references ifndef-ed;  Seems like Unix code to
+main.c:	  struct rlimit rlp + references ifndef-ed;  Seems like Unix code to
 		limit the size of core dumps; uneeded + undefined on PCs -CFT
-config.h:
-	File pathnames changed to direct code.  TC isn't expanding LIBDIR
+config.h:	  File pathnames changed to direct code.  TC isn't expanding LIBDIR
 		and concatenating the rest properly... CFT
 	Also / to \ conversion in paths... (both these changes inside #ifdefs)
-misc1.c:
-	statstime struct ifndef-ed.  It seemed to keep tabs on CPU use/mem use/
+misc1.c:	  statstime struct ifndef-ed.  It seemed to keep tabs on CPU use/mem use/
 		page faults/etc.  Not Applic for PCs -CFT
 	check_time() fn which used statstime ifndef-ed to not use it.  -CFT
-files.c:
-	include of <sys/param.h> now #ifndef-ed so that TC will not try. -CFT
-death.c:
-	cast to off_t inside call to lseek() changed to #ifndef BSD4_3, copied
+files.c:	  include of <sys/param.h> now #ifndef-ed so that TC will not try. -CFT
+death.c:	  cast to off_t inside call to lseek() changed to #ifndef BSD4_3, copied
 		 from above in the file.  Looks like a minor change that got
 		only 1/2 done...	-CFT
 	signal(SIGTSTP, SIG_IGN) ifndef-ed out at line 165  -CFT
 	calls to flock() during hi-score saving ifndef-ed out; no flock()
 		(and no reason for it) on msdos... -CFT
-save.c:
-	Added conditional definition of t_ptr back into sv_write().  It's
+save.c:	  Added conditional definition of t_ptr back into sv_write().  It's
 		used in the PC code.  You folks probably took it out, and
 		never noticed; only needed for PC or atari ST... -CFT
 	Also in get_char, ditto -CFT
-types.h:
-	#ifdef MSDOSed types of exist + dead inside of unique_mon struct from
+types.h:	  #ifdef MSDOSed types of exist + dead inside of unique_mon struct from
 		int to int8u.  They're just booleans...  No need to
 		use an int.  I only noticed because variable.c gave me
 		"Too much global data" error message...  *sigh*  64k
 		segment sizes are annoying...  -CFT
-save.c:
-	#ifdef MSDSOed save/load routines changed so that wr_unique and
+save.c:	  #ifdef MSDSOed save/load routines changed so that wr_unique and
 		rd_unique now write/read bytes, not 32bits... CFT
-dungeon.c:
-	I'm going thru the source files looking for booleans that I can
+dungeon.c:	  I'm going thru the source files looking for booleans that I can
 		change from int's to int8u's.  This'll save some memory.
 		I'm only bothering with globals, types, or stuff in good-
 		sized arrays.  Once I'm done, I'll have to go back + change
@@ -46,11 +36,9 @@ dungeon.c:
 		any extern refs to the variables I change...
 	Anyway, changes from dungeon.c:  (inside #ifdef MSDOS)
 		good_item_flag, create_up_stair, create_down_stair ==> int8u
-main.c:
-	peek, be_nasty, all the unique artifact armor + weap flags ==> int8u
+main.c:	  peek, be_nasty, all the unique artifact armor + weap flags ==> int8u
 	and quests[] ==> int16 (also in #ifdefs)
-store2.c:
-	is_home ==> int8u (also in #ifdefs)
+store2.c:	  is_home ==> int8u (also in #ifdefs)
 variable.c
 	weapon_heavy, pack_heavy, NO_SAVE, character_generated,
 		character_saved, death, default_dir, find_flag,
@@ -61,70 +49,55 @@ variable.c
 		teleport_flag, player_light, eof_flag, light_flag,
 		wait_for_more, closing_flag, new_level_flag  ALL ===> int8u
 		(also in #ifdefs) -CFT
-externs.h:
-	variables mentioned above that were changed to int8u changed
+externs.h:	  variables mentioned above that were changed to int8u changed
 		to extern int8u...
 	ifndef-ed out prototype of sprintf()...  It doesn't match TurboC's,
 		so it didn't work... -CFT
-undef.c:
-	Added ifdef-else-endif to not need sys/file.h, since it doesn't
+undef.c:	  Added ifdef-else-endif to not need sys/file.h, since it doesn't
 		seem to come w/ TC.  Also <string.h> included instead of
 		<strings.h>	CFT
 	
-main.c:
-	ifndef-ed out gethostname() call and check for load avg.  Unneeded
+main.c:	  ifndef-ed out gethostname() call and check for load avg.  Unneeded
 		on the PC...  -CFT
 	ifndef-else-endif clause to avoid getuid() call for msdos -CFT
-wizard.c:
-	add ifdef MSDOS so that is_wizard always returns true for PC players,
+wizard.c:	  add ifdef MSDOS so that is_wizard always returns true for PC players,
 		so they can enter Wiz mode if they want to... -CFT
-create.c:
-	#if-ed out code to give wizards bonus hp's.  I didn't like it.
+create.c:	  #if-ed out code to give wizards bonus hp's.  I didn't like it.
 		Besides, all PC players are wiz's by is_wizard... -CFT
-dungeon.c:
-	grabbed code from Um55 dungeon.c to #ifdef call to check_input()
+dungeon.c:	  grabbed code from Um55 dungeon.c to #ifdef call to check_input()
 		with call to kbhit()...  -CFT
-death.c:
-	#ifndef-ed call to fchmod inside print_tomb.  The bones files on
+death.c:	  #ifndef-ed call to fchmod inside print_tomb.  The bones files on
 		a PC will be w/r able; since only 1 user...  -CFT
 	Earlier #ifndef to avoid call to flock() replaced by #ifdef-#else-
 		#endif clause stolen (again) from Um55 src.  It now calls
 		fopen where before it did nothing (Hopefully this will
 		avoid problems later...) -CFT
-dungeon.c:
-	Call to random() inside staffs code replaced w/ randint().  I
+dungeon.c:	  Call to random() inside staffs code replaced w/ randint().  I
 		wonder why you folks didn't notice?  Perhaps random() is
 		a std fn on Unix systems?  -CFT
-save.c:
-	Call to link(), and some surrounding code #ifndef-ed out.  The
+save.c:	  Call to link(), and some surrounding code #ifndef-ed out.  The
 		code seemed to link a new file name to the savefile +
 		then unlink the old name.  I doubt this would work well
 		on a PC..  -CFT */
-spells.c:
-	Calls to usleep() replaced by calls to delay() by ifdef-else-endif
+spells.c:	  Calls to usleep() replaced by calls to delay() by ifdef-else-endif
 		clause.  arg is div by 1000, sice delay works in millisecs,
 		not u-secs...  -CFT
-externs.h:
-	Added #ifdef-ed prototype of dealy().  I didn't see any reason to
+externs.h:	  Added #ifdef-ed prototype of dealy().  I didn't see any reason to
 		#include the entire <dos.h> file jsut for this.  Maybe I'll
 		change my mind later... -CFT
-death.c:
-	More changes to the file locking code.  The code I stole from Um55
+death.c:	  More changes to the file locking code.  The code I stole from Um55
 		uses FILE * vars for everything; the Angband code uses file
 		desc.'s for everything.  Klugded together by adding local
 		FILE * vars (#ifdef-ed), and using fileno macro to get
 		file desc. from FILE *.  Wish it luck... -CFT 
-config.h:
-	Added definition of USING_TCIO, so ms_misc.c will not #include
+config.h:	  Added definition of USING_TCIO, so ms_misc.c will not #include
 		curses.  I'll get back to making Angband work with
 		curses later.  Right now I just want it to compile.  -CFT
-create.c:
-	#if 0 out only section of code that uses doubles...  replacement
+create.c:	  #if 0 out only section of code that uses doubles...  replacement
 		code was taken from above; seems to do the same thing, with
 		integer math.  I'm trying to avoid flt pt math because
 		Angband is too big to run right now... -CFT
-spells.c:
-	#if 0 out only section of code that uses doubles...  bolt() code
+spells.c:	  #if 0 out only section of code that uses doubles...  bolt() code
 		rewritten (by me, not stolen this time.. :-) to use integer
 		math in calculating new positions for angled bolts.  It's
 		based on the idea that you can only draw the bolt as
@@ -134,17 +107,14 @@ spells.c:
 		only 1 changed, it moves in the x or y axis.  When both,
 		it moves diagonal.  It should approximate the double code
 		quite well...  -CFT
-constant.c:
-	Bug detected!  cave_type.cptr is an int8u, with range 0-255,
+constant.c:	  Bug detected!  cave_type.cptr is an int8u, with range 0-255,
 		but it's used in indexing m_list, which had been given
 		a big size.  I've trimmed MAX_MALLOC back to 255... -CFT
 	Also MAX_TALLOC down to 255, and MAX_SAVE_HIGHSCORES down to 35. -CFT
-variable.c:
-	Split into two files for MSDOS memory reasons -- cave[][] is most
+variable.c:	  Split into two files for MSDOS memory reasons -- cave[][] is most
 		of a 64k segment, so I moved it off to it's own file,
 		vars2.c.
-types.h:
-	Changeing MAX_TALLOC to <= 8bits now allows me to change type of
+types.h:	  Changeing MAX_TALLOC to <= 8bits now allows me to change type of
 		cave_type.tptr to int8u.  This will save me 12-15 K on the
 		size of Angband.  Since it's too big to run just now, I'll
 		take the smaller mons/lv limit if it'll help Angband run.
@@ -157,34 +127,26 @@ types.h:
 		in vars2.c  Unfortunately, all these type changes mean that
 		I have to do a massive search+replace to add casts in the
 		code. (both type changes inside #ifdef MSDOS)
-config.h:
-	Added #define of ANGBAND_DESC to hold file name of external
+config.h:	  Added #define of ANGBAND_DESC to hold file name of external
 		descriptions file.  I'll detail the format in a bit...
-		OK... details:
-		The file has MAX_CREATURES seek pointers,
+		OK... details:	  	The file has MAX_CREATURES seek pointers,
 		followed by the strings.  Just seek to i*sizeof(long), read
 		the seek ptr, then seek to it, and read your descript.
-EVERYWHERE:
-	A lot of constants had L appended to them so TC will treat them as
+EVERYWHERE:	  A lot of constants had L appended to them so TC will treat them as
 		32 bit values.  Also a few misc casts added to avoid
 		warnings. -CFT
-misc2.c:
-	Another potential bug.  In teleport(), the test of the while loop
+misc2.c:	  Another potential bug.  In teleport(), the test of the while loop
 		checks cave[y][x].tptr == OBJ_OPEN_DOOR.  This is wrong.
 		What is meant is "t_list[cave[y][x].tptr].index ==
 		OBJ_OPEN_DOOR". It has been fixed... -CFT
-dungeon.c:
-	YA poss bug, in activate, it was passing inventory[i] to known2_p().
+dungeon.c:	  YA poss bug, in activate, it was passing inventory[i] to known2_p().
 	What was needed was &(inventory[i]).  Fixed in 3 places... -CFT
-monsters.c:
-	Lots of monster exp values had U appended to them, to denote them
+monsters.c:	  Lots of monster exp values had U appended to them, to denote them
 		as unsigned values (even Morgoth only had 60,000.. Is that
 		per level I wonder?) I didn't append L because declared in
 		types.h to be int16u... -CFT
-creature.c:
-	Bug in Nether ball code... Wierd placement of parathesis was
-		confusing my compiler-->  was:
-	  if (py.flags.nether_resist)
+creature.c:	  Bug in Nether ball code... Wierd placement of parathesis was
+		confusing my compiler-->  was:	    if (py.flags.nether_resist)
 	    breath(GF_MAGIC_MISSILE, char_row, char_col,
 	((34+damroll(10,7)+((c_list[m_ptr->mptr].level)*2)/3), ddesc, monptr));
 		Now is:					Notice extra paren ^^^
@@ -194,27 +156,22 @@ creature.c:
 
 	Also, extra parens inserted in creatures(), during the calculation
 		for being noticed...  My compiler bitched -CFT
-potions.c:
-	In quaff(), parens added around flag expression test.  It was
+potions.c:	  In quaff(), parens added around flag expression test.  It was
 		something like " blahblah | py.flags.someflag>0 | blahblah".
 		Now it is " blahblah | (py.flags.someflag>0) | blahblah".
-spells.c:
-	In detect_enchantment(), call to special_check() now uses & of
+spells.c:	  In detect_enchantment(), call to special_check() now uses & of
 		t_list[...], instead of just t_list[...].
-main.c:
-	Added if __TURBOC__ -ed external definition of the variable _stklen,
+main.c:	  Added if __TURBOC__ -ed external definition of the variable _stklen,
 		to increase the default stacksize...
 	Added #ifdef MSDOS -ed call to msdos_init, which initializes some of
 		the tcio screen procedures, and checks for a angband.cnf file
 		to read in some setting.
 	Added #ifndef MSDOS around call to umask()
-externs.h:
-	Added (inside #ifdef MSDOS) prototypes for:  msdos_init().
+externs.h:	  Added (inside #ifdef MSDOS) prototypes for:  msdos_init().
 	Added prototype for init_scorefile()
 	Added prototype for init_file()
 	"	"	"   user_name()
-externs.h:
-	Ugly change:  I'm adding #defined constants to allow me to specify
+externs.h:	  Ugly change:  I'm adding #defined constants to allow me to specify
 		arg types, to give TC the full prototypes.  If __TURBOC__
 		is not defined, these should collapse to nothing. -CFT
 	It's not pretty, but it allows me to add all my full prototypes to
@@ -223,37 +180,25 @@ externs.h:
 		could just cut+paste, and have 2 separate sets of prototypes,
 		1 with and 1 w/o argument defs, but I have a feeling that
 		they'd get out of sync...
-moria1.c:
-	added parens around potentially ambigious or expression in
+moria1.c:	  added parens around potentially ambigious or expression in
 		inven_command, where it tests which to see if is a letter
-files.c:
-	call to magic_treasure() inside print_objects() was missing a couple
-		of new arguments.  Right now, I'm passing FALSE,TRUE for
-		good,not_special, so print_objects won't ever have any really
-		nice objects; probably not what's wanted, but it'll work
-		for now... -CFT
-dungeon.c:
-	Bug in code for ring of power; call to take hit didn't pass descript.
+files.c:	  call to magic_treasure() inside print_objects() was missing a couple
+		of new arguments.  Right now, I'm passing 0,FALSE for
+		good,not_special
+dungeon.c:	  Bug in code for ring of power; call to take hit didn't pass descript.
 		string...  fixed -CFT
-death.c:
-	YA bug; clear_screen() takes no args, but in 3 diff places it was
+death.c:	  YA bug; clear_screen() takes no args, but in 3 diff places it was
 		called as clear_screen(0,0)...  fixed -CFT
-staffs.c:
-	genocide (from the staff) called w/o the "spell" parameter.
+staffs.c:	  genocide (from the staff) called w/o the "spell" parameter.
 		fixed... -CFT
-save.c:
-	YA bug.  rd_unique was casting &item->dead to int8u, instead of
+save.c:	  YA bug.  rd_unique was casting &item->dead to int8u, instead of
 		int8u *.  I probably did this one myself.  Fixed -CFT
-main.c:
-	move call to init_signals to AFTER init_curses, like the comment
+main.c:	  move call to init_signals to AFTER init_curses, like the comment
 		says to do.. -CFT 
-main.c:
-	added #ifdef MSDOS code to use a savefile name that dos would like -CFT
-save.c:
-	changed save/restore code (inside #ifdefs) to compesate for the types
+main.c:	  added #ifdef MSDOS code to use a savefile name that dos would like -CFT
+save.c:	  changed save/restore code (inside #ifdefs) to compesate for the types
 		I've changed... -CFT
-ALL:
-	I'm adding janderso@vtssi.vt.edu 's color code.  He wrote it for
+ALL:	  I'm adding janderso@vtssi.vt.edu 's color code.  He wrote it for
 		Umoria 5.5, but I'm confident I can get the basics working.
 		Unfortunately, it depends on TurboC's textcolor function,
 		and assumes the tcio.c io package, so I'm not sure how
@@ -264,15 +209,13 @@ ALL:
 		code for your system.  With this setup, it might even work
 		under ANSI.SYS color codes.  The hitch might be tcio --
 		I've no idea how restrictive it is... -CFT
-treasure.c:
-	janderso's TC_COLOR code detected a problem here (this was a bitch
+treasure.c:	  janderso's TC_COLOR code detected a problem here (this was a bitch
 		to find...)  Most of the entries don't have a value for
 		field 'flags2', an int32u.  No problem?  Well, not until I
 		add my color data onto the end (inside an #ifdef).  It was
 		using my color data as the flag, and then the color got
 		(by default) init-ed to 0. -CFT
-recall.c:
-	preliminary playtesting of my now (apparently) working executable
+recall.c:	  preliminary playtesting of my now (apparently) working executable
 		showed that unique monsters always reported "No known
 		battles to the death are recalled."  This was probably
 		done, so that past characters wouldn't affect the message.
@@ -280,18 +223,15 @@ recall.c:
 		dealing with unique monsters.  Now, after killing Farmer
 		Maggot, the mon. memory will report him dead...  (But not
 		for a new character using an old memory). -CFT
-spells.c:
-	YA bug.  In pain_message(), the %age of hp is calculated by
+spells.c:	  YA bug.  In pain_message(), the %age of hp is calculated by
 		(100*newhp)/oldhp.  However, it is (very) possible for
 		100*newhp to be > 32,767 (max signed 16 bit value).  For
 		TurboC, ints are 16 bits, so this causes problems.  (Unhurt
 		Iron golum "cries feebly" from 1st magic missle?  Then
 		"shrugs off the attack" after many, many magic missiles?)
-help.c:
-	Added case 'h' to ident_char(), so it won't say "not used" about
+help.c:	  Added case 'h' to ident_char(), so it won't say "not used" about
 		dwarves, elves, hobbits, etc... -CFT
-misc2.c:
-	BUG!  Somehow, losing int makes me lose ALL spells, instead of
+misc2.c:	  BUG!  Somehow, losing int makes me lose ALL spells, instead of
 		just the extra ones I earned for int > 18/50.  I should
 		lose about 6 or 7, not all 36 that I've learned...
 	Okay, what's happened is that whoever added the 2nd int32u spell
@@ -311,16 +251,14 @@ misc2.c:
 		when using j as the bit index for the 2nd spell fields;
 		Also, I'm having to re-write most of calc_spells().
 		Hopefully, that'll be all... -CFT
-creatures.c:
-	YA BUG!  I was wondering why the monster memory didn't remember a
+creatures.c:	  YA BUG!  I was wondering why the monster memory didn't remember a
 		lot of things, including that the monster healed itself.
 		So I looked around in the recall code and it looked ok.
 		Then I tried the mon_cast_spell() code -- it's almost
 		right; for spells above 32, you use the proper variables,
 		but you still shift by (throw_spell -1), instead of
 		(thrown_spell -33) and (thrown_spell -65).
-recall.c:
-	I put back in the code to use an external description file, instead
+recall.c:	  I put back in the code to use an external description file, instead
 		of describe_mon.c, since this is used rarely and eats up
 		a lot of space that MSDOS doesn't have to spare.  Even
 		my overlay setup doesn't help; the descriptions are all data,
@@ -329,8 +267,7 @@ recall.c:
 		describe_mon.obj, should automagically produce the external
 		description file used -- no need to do it by hand, even
 		if describe_mon.c is changed... -CFT
-creature.c:
-	Not quite a bug.  One of the possible result of a Nexus breath was
+creature.c:	  Not quite a bug.  One of the possible result of a Nexus breath was
 		"stat-scambling".  However the code was swaping current, max,
 		AND used stat values.  This causes wierd things to happen if
 		your dex + chr (for example) got swapped when you where
@@ -343,30 +280,25 @@ creature.c:
 		an incentive to maximize all your stats?  I'd sure hate to
 		be playing a 1/2-Troll priest, and get my Charisma swapped
 		with my Wisdom!  -CFT
-spells.c:
-	Changed bolt() from void to int.  Return value of 1 means the
+spells.c:	  Changed bolt() from void to int.  Return value of 1 means the
 		bolt hit the player.  Return of 0 means it didn't (probably
 		hit another monster).  Used in creature.c to avoid doing
 		extra effects if the bolt doesn't even hit the player.
-creature.c:
-	Changed some code in mon_cast_spell() to check return value from
+creature.c:	  Changed some code in mon_cast_spell() to check return value from
 		bolt() before doing extra effects (ie, don't drain exps
 		if nether bolt hits another monster).
-creature.c:
-	Umber hulks (and probably anyone else who can break walls) did
+creature.c:	  Umber hulks (and probably anyone else who can break walls) did
 		wierd things when they walked through a door.  The floor
 		value was changed, so the game allowed you to walk through
 		the door, but the door was left unchanged.  I've fixed it
 		so that the door is now broken, so that walking though it
 		is normal. -CFT
-prayer.c:
-	changed the remove curse spell from in place code which allowed
+prayer.c:	  changed the remove curse spell from in place code which allowed
 		the One Ring to be uncursed to a call to remove_curse(),
 		which doesn't allow that.  In case you really wanted
 		priests to be able to escape the One Ring, the old code
 		is still there, inside a #if 0. -CFT
-treasure.c and desc.c:
-	Weird identify bug found!  Some items (Amulet of DOOM, potion of
+treasure.c and desc.c:	  Weird identify bug found!  Some items (Amulet of DOOM, potion of
 		death, etc) that I KNEW I hadn't yet seen were identified
 		when I first saw them (ie, not "blue potion" or "titanium
 		amulet")  The subvals for some of the scrolls and potions
@@ -380,28 +312,24 @@ treasure.c and desc.c:
 		it was identified.  What's confusing is that the comment
 		on OBJECT_IDENT_SIZE in constant.h says that object_offset()
 		was rewritten to handle rods...
-constant.h:
-	The value of OBJECT_IDENT_SIZE was 1024, but the comment said it
+constant.h:	  The value of OBJECT_IDENT_SIZE was 1024, but the comment said it
 		was 8*64.  By my math, that's only 512...  Unfortunately,
 		this is used in the savefile, so changing it makes the
 		save files uncompatible.  I'm going to leave it as it is
 		for now, but I thought I should make a note of it. -CFT
-misc1.c:
-	Added casts to values in max_hp(), in hope of curing a weird bug.
+misc1.c:	  Added casts to values in max_hp(), in hope of curing a weird bug.
 		Monsters who heal themselves, even if unhurt, seem to
 		then have 0 hps... To be honest, I'm not sure this is
 		where the problem is... I haven't been able to repeat the
 		problem while playing around in Wiz mode on the old code.
 		But an extra cast can't hurt... -CFT
-recall.c:
-	YA dos trouble.  Again it the 16bit int problem...  When showing
+recall.c:	  YA dos trouble.  Again it the 16bit int problem...  When showing
 		the experience for Morgoroth (from Wiz mode), he's only
 		worth about 16k for a 39th character -- obviously it's
 		wrapping around 0.  I'm going to take a look and make sure
 		that the experience given also doesn't wrap around 0... -CFT
 	(Exp given was fine -CFT)
-recall.c:
-	YA wierd problem found.  In recall code, when printing the "for a
+recall.c:	  YA wierd problem found.  In recall code, when printing the "for a
 		15th level character" message, some fancy code was used to
 		choose proper suffix for number and "a" or "an".  Anyway,
 		it wasn't printing properly.  I tracked it down to a
@@ -409,8 +337,7 @@ recall.c:
 		through the rest of the source, and I didn't see any other
 		suspicious "%d"s.  Of course, this problem wouldn't happen
 		on machines w/ 32bit ints. -CFT
-death.c:
-	I finally figured out why the highscore table was (somethimes) being
+death.c:	  I finally figured out why the highscore table was (somethimes) being
 		printed with garbage.  The "hugebuffer" variable really was
 		huge -- 10,000 bytes.  It was overflowing my poor 12k stack.
 		I've trimmed hugebuffer down to 1k, and slightly modified
@@ -418,19 +345,16 @@ death.c:
 		no longer neccessary.  In fact, I probably could junk
 		hugebuffer altogether, merely sprintf()ing into the lines[]
 		array, but I wanted to minimize my changes.
-dungeon.c:
-	Wizard mode '*' command was unlighting map, not lighting it.  I
+dungeon.c:	  Wizard mode '*' command was unlighting map, not lighting it.  I
 		changed call from wizard_light(FALSE) to wizard_light(TRUE).
 		Seems to have fixed it... -CFT
 	Also, I changed the sub-shell message (in a #ifdef) to let DOS users
 		know that the reason they can't shell out of Angband is not
 		because I don't want to let them, but because there's no
 		free memory for a subshell.
-moria2.c:
-	Bug found in fix2_delete_mon().  It was passing a c_list pointer to
+moria2.c:	  Bug found in fix2_delete_mon().  It was passing a c_list pointer to
 		check_unique(), instead of a m_list ptr. -CFT
-recall.c:
-	Minor change to code that checks CM_SPECIAL for various special
+recall.c:	  Minor change to code that checks CM_SPECIAL for various special
 		movements, so put in a check for BREAK_WALL in rcdefense.
 		I wanted to remember that Umber Hulks, Black Reavers, etc
 		are unstoppable... -CFT
@@ -438,21 +362,18 @@ recall.c:
 		used int32u.  I didn't notice until it didn't show any
 		mention of BREAK_WALL (which is in the high end of the
 		longword...) -CFT
-creature.c:
-	To make it remember that a monster (Nexus Q's, for example) can
+creature.c:	  To make it remember that a monster (Nexus Q's, for example) can
 		teleport you away, I changed a tiny bit of code at the
 		end of mon_cast_spell().  It used to only update c_recall
 		if the monster was lit (basically, if we could see it).  But
 		when we get teleported away, or lv teleported, the monster
 		might no longer be lit.  To avoid this, it will update 
 		c_recall if monster lit, or either of these spells cast.
-moria1.c:
-	minor change to inven_command, line 1075 (when I chaged it, it might
+moria1.c:	  minor change to inven_command, line 1075 (when I chaged it, it might
 		get pushed up/down...) to change if statement controling
 		"wearing" vs. "wielding" mesg.  It was comparing slot ==
 		INVEN_HEAD.  That didn't seem right, so I made it INVEN_WIELD.
-sets.c:
-	set code changed to accept inven_type pointer instead of tval for
+sets.c:	  set code changed to accept inven_type pointer instead of tval for
 		various "should we destroy this type of object?" set fns.
 		Affected were:  set_corrodes(), set_flammable(),
 		set_frost_destroy(), set_acid_affect(),
@@ -463,13 +384,10 @@ sets.c:
 		lost by an acid attack), or if it's an artifact.  Now I'm
 		going to go through misc2.c and spells.c to fix up calls
 		to these fns...  -CFT
-misc2.c:
-	changed inven_damage() to use new item set fn format.
-spells.c:
-	changed get_flags (inside #ifdef MSDOS) to add arg in definition
+misc2.c:	  changed inven_damage() to use new item set fn format.
+spells.c:	  changed get_flags (inside #ifdef MSDOS) to add arg in definition
 		of parameter destroy.
-constant.h:
-	TR_ARTIFACT is used to indicate that an object is ACTIVATE-able???
+constant.h:	  TR_ARTIFACT is used to indicate that an object is ACTIVATE-able???
 		This is so blatently counter-intuitive that I'm changing
 		it (well, renaming it, 0x800L in flags2 will still mean
 		activateable) to TR_ACTIVATE.  I'm grabbing 0x2000000L (the
@@ -479,42 +397,30 @@ constant.h:
 		up/burned/corroded/frozed/zapped/otherwise eliminated.
 	To make this change work, I'm also changing dungeon.c & misc1.c,
 		where they used TR_ARTIFACT.  -CFT
-dungeon.c:
-	search + replace of TR_ARTIFACT with TR_ACTIVATE -CFT
-misc1.c:
-	search + replace of TR_ARTIFACT with TR_ACTIVATE -CFT
+dungeon.c:	  search + replace of TR_ARTIFACT with TR_ACTIVATE -CFT
+misc1.c:	  search + replace of TR_ARTIFACT with TR_ACTIVATE -CFT
 	afterwards, TR_ARTIFACT or-ed into all artifacts created in file...
-treasure.c:
-	artifacts in treasure list have had 0x02000000 (my new TR_ARTIFACT)
+treasure.c:	  artifacts in treasure list have had 0x02000000 (my new TR_ARTIFACT)
 		put into their flags2 value.
-moria2.c:
-	For completeness, grond + crown of morgoth both have TR_ARTIFACT
+moria2.c:	  For completeness, grond + crown of morgoth both have TR_ARTIFACT
 		or-ed into their flags2 field...
-dungeon.c:
-	if statement added into dungeon() code when create_up_stair or
+dungeon.c:	  if statement added into dungeon() code when create_up_stair or
 		create_down_stair processed.  Now it shouldn't overwrite
 		artifacts. -CFT
-spells.c:
-	create_doors(), create_traps(), create_stair() changed to check to
+spells.c:	  create_doors(), create_traps(), create_stair() changed to check to
 		see if obj on floor is an artifact.  If it is, they don't
 		call delete_object to get rid of it. -CFT
 	minor change: cflag parameter of banish_creature() changed from
 		int to int32u
-externs.h:
-	1st parameter of banish_creature now has int32u in prototype..
+externs.h:	  1st parameter of banish_creature now has int32u in prototype..
 	Earlier change of various set functions now reflected in prototypes
-spells.c:
-	get_flags() parameter harm_type changed from int * to int32u *.
+spells.c:	  get_flags() parameter harm_type changed from int * to int32u *.
 		Also calling fns changed to pass &int32u instead of &int.
-externs.h:
-	This change also reflected in prototypes..
-store2.h:
-	types of a couple haggle variables changed from int to int32, to
+externs.h:	  This change also reflected in prototypes..
+store2.h:	  types of a couple haggle variables changed from int to int32, to
 		avoid "conversion may lose sig. digits" warning. -CFT
-misc1.c:
-	compact_objects changed so that it will not compact artifacts.
-moria2.c:
-	quest stairway placement modified so not to clobber any artifact the
+misc1.c:	  compact_objects changed so that it will not compact artifacts.
+moria2.c:	  quest stairway placement modified so not to clobber any artifact the
 		monster might have been standing on...  It performs a random
 		walk from monster's location until it finds a spot that
 		is open floor AND doesn't contain an artifact.  If it
@@ -523,8 +429,7 @@ moria2.c:
 		it checked for object at monster location, and then, if there
 		was, it would delete from under player's feet before putting
 		the stairway where the monster was...
-spells.c:
-	build_wall code changed a bit to avoid burying artifacts.  I
+spells.c:	  build_wall code changed a bit to avoid burying artifacts.  I
 		rearranged the code so it check to see if there's a monster,
 		handles damage/etc and then looks for possible object to
 		delete.  This allows me to use a continue if the object
@@ -532,13 +437,11 @@ spells.c:
 		magma block.
 	also earthquake code changed to avoid erasing artifacts; almost
 		the same trick used.
-creature.c:
-	creature pick-up code in make_move() changed to not pick up artifacts
+creature.c:	  creature pick-up code in make_move() changed to not pick up artifacts
 	also shatterquake() altered to not erase artifacts.
 	also steal object code modified to check for artifact before
 		stealing...
-store2.c:
-	Ah-HA!  I think I found the last int32/int problem in haggle code
+store2.c:	  Ah-HA!  I think I found the last int32/int problem in haggle code
 		that was preventing you from simply hitting return to
 		accept a final offer if > 32k  (note my flag to turn off
 		haggling, otherwise this would never happen).  get_haggle()
@@ -546,13 +449,10 @@ store2.c:
 	That'll teach me not to speak too soon.  In store_sell(), local
 		vars cost, real were ints.  They're now int32's.  Hopefully
 		this time it's really the last ones... -CFT
-desc.c:
-	Ok, I'm going after the ID bug.  Firstly, object_offset() now
+desc.c:	  Ok, I'm going after the ID bug.  Firstly, object_offset() now
 		returns a different value for rods than it does for amulets.
 		(amulets still 1, rods now 7). -CFT
-treasure.c:
-	Part 2, now fix up colliding subvals in treasure list:
-		scroll of *remove curse* changed from subval 68 (same subval
+treasure.c:	  Part 2, now fix up colliding subvals in treasure list:	  	scroll of *remove curse* changed from subval 68 (same subval
 			as normal remove curse) to 76, which was unused.
 		potion of *elightenment* from subval 80 -> 94
 		potion of detonations from sv 81 -> 97
@@ -566,13 +466,11 @@ treasure.c:
 	This, together with the previous change, will probably give me a
 		wierd set of id'ed + un-id'ed objects in my current savefile,
 		but it should put this problem to rest... -CFT
-creature.c:
-	mon_cast_spell changed (again) so that monsters w/ 0 for max hp
+creature.c:	  mon_cast_spell changed (again) so that monsters w/ 0 for max hp
 		have their max hp re-calculated + reset.  If this causes
 		pointer problems, maybe it'll help us figure WHAT is causing
 		maxhp to get zeroed in the 1st place...
-recall.c:
-	recall code cleaned up a bit -- minor change in code for natural/
+recall.c:	  recall code cleaned up a bit -- minor change in code for natural/
 		undead/evil monsters; was if {} else if {} else if...
 		Now it is just a bunch of ifs, since these qualities are
 		not mutually exclusive...
@@ -581,8 +479,7 @@ recall.c:
 		kill 200 of them...  (still need to kill more than once,
 		so unless you reuse monster memories, you'll never get this
 		info)
-creature.c:
-	The infravision code in update_mon() was screwy... It showed the
+creature.c:	  The infravision code in update_mon() was screwy... It showed the
 		proper monsters, but it only OR-ed NO_INFRA into mon.
 		memory if the monster didn't have NO_INFRA!  I think this
 		may have been an oversight caused by changing infravision
@@ -592,16 +489,14 @@ creature.c:
 		didn't cause monsters to be listed as "cold blooded" before
 		is the memory cdefenese is ANDed with the real cdefense, so
 		the mistaken values were eliminated...)
-spells.c:
-	BUG! in teleport_to code...  It did no bounds checking on y,x before
+spells.c:	  BUG! in teleport_to code...  It did no bounds checking on y,x before
 		using cave[y][x].  I had a sudden crash when a blink dog
 		commanded me to return.  The surrounding area was a narrow
 		corridor, all full of blink dogs, and near the top of the
 		screen.  I assume what happened is that dis increased until
 		it tried to use cave[][] with a negative index.  I put in
 		a couple of bounds checks... -CFT
-create.c:
-	A couple of minor changes... when calculating player_hp[], it
+create.c:	  A couple of minor changes... when calculating player_hp[], it
 		was using MAX_PLAYER_LV*3/8 and MAX_PLAYER_LV*5/8, which
 		don't give very good values.  I've put off the division
 		until the final step, which gives better results (no lost
@@ -611,14 +506,12 @@ create.c:
 		get the percentage.  For PCs with 16bit ints, this rolls
 		over, so I casted to long in mid calc, then back to int
 		afterwards.
-magic/dungeon.c/moria1.c:
-	Fixed mystic shield by changing how it works.  It used to add to
+magic/dungeon.c/moria1.c:	  Fixed mystic shield by changing how it works.  It used to add to
 		player's base ac.  This caused mana troubles because mana
 		is penalized for high base ac (to simulate encumberence).
 		Now it adds to the players magical ac (which seems more
 		reasonable for "mystic shield" anyways...)
-dungeon.c/moria1.c:
-	dungeon() code and calc_bonuses() code were inconsistant.  Heroism
+dungeon.c/moria1.c:	  dungeon() code and calc_bonuses() code were inconsistant.  Heroism
 		and S. heroism had apperently been changed in dungeon(),
 		but not in calc_bonuses().  This is fixed.  Also,
 		calc_bonuses() didn't adjust for stun, so a call to it
@@ -637,20 +530,17 @@ dungeon.c/moria1.c:
 		which were possible with the old stun code -- if you had
 		a really low (like 3 or 4) constitution.  Now stun is
 		reduced by at least 1 per round.  If this seems to fast
-		to you for people with bad stats, change the 1 in the ?:
-		expression into a ((turn % x) == 0) expression, for some
+		to you for people with bad stats, change the 1 in the ?:	  	expression into a ((turn % x) == 0) expression, for some
 		value x.  But I think a character with a 3 con has enough
 		problems, with his minimal hps...
-dungeon.c:
-	minor change to transient effects that alter ac (invul, bless, etc).
+dungeon.c:	  minor change to transient effects that alter ac (invul, bless, etc).
 		now set PY_ARMOR in py.flags.status to have display updated
 		AFTER all adjustments handled.  Cannot just call prt_pac()
 		because dis_ac isn't adjusted until the end of the trans.
 		effects (mostly because I didn't want to add a whole bunch
 		of py.misc.dis_ac += something; lines....)  Should display
 		correctly now...
-creature.c:
-	quick change into attack code in make_attack(), adding flag "blinked"
+creature.c:	  quick change into attack code in make_attack(), adding flag "blinked"
 		to prevent continued attacks if a monster has blinked away
 		(which may happen after a steal attack).  This wasn't a
 		problem for UMoria, because all monsters that stole had the
@@ -665,44 +555,36 @@ creature.c:
 		shouldn't interfere with infravision.  So we let infravis
 		work even with a torch, so that it will work with the Phial
 		and other light sources...
-dungeon.c:
-	light code changed to test for perm light.  If true, then
+dungeon.c:	  light code changed to test for perm light.  If true, then
 		it doesn't decrement p1.  This should cure the Arkenstone
 		bugs.  (Note: torches will still be used up, even if wielding
 		Ringil or other light-producing equipment... which is what
 		should happen)
-magic.c / prayer.c:
-	cast spell code was using if (randint(100) < chance) to test for
+magic.c / prayer.c:	  cast spell code was using if (randint(100) < chance) to test for
 		failure.  But randint returns 1-100, so if chance was 1,
 		this was if (1-100 < 1), which was never true!  I've changed
 		this from < to <= to make chance of 1 give a 1% failure
 		rate, instead of 0%....
-misc2.c:
-	spell_chance() changed to calculate minfail chance based upon your
+misc2.c:	  spell_chance() changed to calculate minfail chance based upon your
 		spell stat.  Only mages/priests are allowed to go below
 		5% failure, since they are "pure" spellcasters.  The numbers
 		in the switch are subject to change if I don't like them...
-tables.c:
-	store onwers should not have min_inflate over 200, unless they
+tables.c:	  store onwers should not have min_inflate over 200, unless they
 		never pay more that 1 gp for items when player sells.  For
 		now, I've changed all black markets from min_inflate of
 		220 to 190.  This means that they will pay about 10% of
 		what the item's worth.
-store2.c:
-	cast added into calulation of min_buy in sell_haggle().  Also,
+store2.c:	  cast added into calulation of min_buy in sell_haggle().  Also,
 		I took out the line that divided the price the balck market
 		would pay by 4.  See above chance to learn why...
-monsters.c:
-	gave all non-warrior dark elves the power to cast darkness, and all
+monsters.c:	  gave all non-warrior dark elves the power to cast darkness, and all
 		dark elves are now hurt by light (ala Drow).
-spells.c:
-	"colorized" the code for detection(), so that monster will show up
+spells.c:	  "colorized" the code for detection(), so that monster will show up
 		in color.  I must have missed this before. -CFT
 ===========================================================================
 The following changes are after I sent sources to Sean Marsh... (orignally)
 ===========================================================================
-death.c:
-	Found the frigging hiscore bug!  It wrote the highscore tables in
+death.c:	  Found the frigging hiscore bug!  It wrote the highscore tables in
 		binary mode, but in display_scores(), it read them in
 		the default mode, which is text mode.  So, when it read
 		a CRLF pair, it removed the CR.  This caused the data
@@ -715,34 +597,28 @@ death.c:
 		(to a debugging file) of the data as read, and comparing it
 		to the hex dump of the highscore file...  0a 0d became just
 		0a.  Then I realized what was happening)
-death.c:
-	Took out hugebuffer[] from display_scores()...  It now sprintf()s
+death.c:	  Took out hugebuffer[] from display_scores()...  It now sprintf()s
 		the strings directly into list[][].  The sprintf()s all
 		have field lengths, so they shouldn't overflow the 128 char
 		size of each list[i]. -CFT
 
-spells.c:
-	Added TR_CURSED and TR_TUNNEL to self-knowledge code in weapon
+spells.c:	  Added TR_CURSED and TR_TUNNEL to self-knowledge code in weapon
 		description.
-misc1.c:
-	fixed Shield of Thorin; moved TR_IM_ACID to flags2...  In flags it
+misc1.c:	  fixed Shield of Thorin; moved TR_IM_ACID to flags2...  In flags it
 		was granting stealth -- an unusual thing for a dwarven item
 		to do.
-dungeon.c:
-	increased the required rating to get "you feel lucky" type message,
+dungeon.c:	  increased the required rating to get "you feel lucky" type message,
 		so that the lesser messages are worthwhile, and the best
 		ones are not to be missed...
 ===========================================================================
 Changes above here made it into the initial release of Angband
 ===========================================================================
-spells.c:
-	changed globe of invul from randint(10)+10 to randint(8)+8 on
+spells.c:	  changed globe of invul from randint(10)+10 to randint(8)+8 on
 		advice of Sean Marsh.
 	changed "eye" to "eyes" in self knowledge code in blindness resist
 		message...
 	fixed self-knowledge SLAY EVIL.  it was looking at wrong flag
-death.c:
-	I've tried to manually apply a diff smarsh sent me that's supposed
+death.c:	  I've tried to manually apply a diff smarsh sent me that's supposed
 		to stop a bug when quitting and/or (I'm not quite clear which)
 		dying on town level.  This is hard because the diff is
 		apparently based on the Unix sources, which have different
@@ -750,18 +626,15 @@ death.c:
 		#ifdef MSDOS lines...  I believe I've placed it right.
 		Anyway, the basic effect was to init a FILE * to NULL, and
 		then only call fclose() on it if it was no longer NULL.
-spells.c:
-	unlight_area changed to return true if darkening a room, to fix
+spells.c:	  unlight_area changed to return true if darkening a room, to fix
 		ID problem for scrolls of darkness.  Thanks to someone
 		on the net (sorry, I don't remember who) for mentioning this
 		one to me...
-death.c:
-	minor change to tombstone code...  added msg_print(NULL); after
+death.c:	  minor change to tombstone code...  added msg_print(NULL); after
 		showing equip list.  This flushs the msg_print buffer to
 		screen.  I think it's unneed for tcio.c implementation,
 		but it's better safe than sorry...
-misc1, main, moria1, vars1, spells, tcio, externs.h:
-	Change made to color code:  New option flag "no_color_flag", default
+misc1, main, moria1, vars1, spells, tcio, externs.h:	  Change made to color code:  New option flag "no_color_flag", default
 		to false.  If true, then no calls will be made to TC's
 		textcolor() function.  This should allow people with
 		monochrome monitors to play Angband, with worrying about
@@ -773,8 +646,7 @@ misc1, main, moria1, vars1, spells, tcio, externs.h:
 	Sorry about any troubles you monochrome people have had.  I hope
 		this will put me back in your good graces. -CFT
 
-generate.c:
-	in build_pit(), the code assumed a 32bit rand num gen when deciding
+generate.c:	  in build_pit(), the code assumed a 32bit rand num gen when deciding
 		if a pit should be considered "special".  Since the PC had
 		only a 16 bit r.n.g, I had to modify the code a bit (inside
 		an #ifdef).  It now uses the square of the dun_level, in
@@ -786,12 +658,10 @@ generate.c:
 		32k, and start considering all pits special again.  Hopefully
 		people going deeper than 100 is rare enough (except wizard
 		mode) that this can be ignored.
-types.h:
-	On advice from S. Marsh, I changed the type of sexp in spell_type
+types.h:	  On advice from S. Marsh, I changed the type of sexp in spell_type
 		from int8u to int16u.  int8u just wasn't large enough to
 		hold the exp values for some of the more powerfull spells.
-monsters.c:
-	To avoid changing types of hd[] and sleep fields, I modifed HP
+monsters.c:	  To avoid changing types of hd[] and sleep fields, I modifed HP
 		values for Mouth of Sauron, Emperor Q, and Q, Lord of
 		Flesh.  The old values were {700,10} for MoS, and {500,10}
 		for the other 2.  The new values are {70,100} and {50,100}.
@@ -801,15 +671,12 @@ monsters.c:
 		Since it was only a couple of monsters, and changing the
 		type of sleep would have meant invalidating people's
 		savefiles, I set all 3 monsters' sleep to 255.
-misc1.c:
-	csleep calcuation for monster sleep count changed to include a cast
+misc1.c:	  csleep calcuation for monster sleep count changed to include a cast
 		of sleep to int (sleep is an int8u in c_list[]).
-ms_misc.c:
-	moved #include <dos.h> and some #defines from the middle of
+ms_misc.c:	  moved #include <dos.h> and some #defines from the middle of
 		the file to the top.  This seesm to have avoided a
 		redeclaration error.  (don't ask me why)
-death.c:
-	Okay, in an effort to reduce the wasteful memory usage of the
+death.c:	  Okay, in an effort to reduce the wasteful memory usage of the
 		display_scores() and top_twenty() functions, I've
 		kludged together a new version of each.  I've stolen
 		liberally from the Um5.5 code.  The result is UGLY, and
@@ -825,8 +692,7 @@ death.c:
 		prize either...  If anyone wants to do some good for
 		angband, they'll try to adapt some fairly up-to-date and
 		portable Umoria 5.* highscore code.
-potions.c:
-	code for several potion effects rearranged from "ident = some_fn();"
+potions.c:	  code for several potion effects rearranged from "ident = some_fn();"
 		to "if (some_fn()) ident = TRUE;".  This setup prevents it
 		from clearing ident for potions that cause more than 1
 		effect.  (ie, if cure_poison has set ident, we don't want
@@ -834,15 +700,13 @@ potions.c:
 ===========================================================================
 Changes above here made it into the updated executable, angexe11.exe.
 ===========================================================================
-mkdesc.c:
-	This file isn't really part of the sources, but it automates the
+mkdesc.c:	  This file isn't really part of the sources, but it automates the
 		creation of the mon_desc.dat file.  It had a couple of
 		minor oversights (the 1st monster -- a filthy street urchin
 		-- has it's description clobbered by the final seek pointer.
 		And the description message for the player ghost wasn't being
 		used.
-describe.c:
-	Spellings corrected! Lots of "it's" --> "its".  Some better
+describe.c:	  Spellings corrected! Lots of "it's" --> "its".  Some better
 		punctuation, to make some of the longer descriptions easier
 		to follow, and a couple of miscelleous corrections.  I'm
 		not claiming it to be perfect yet, but it's much better.
@@ -850,31 +714,25 @@ describe.c:
 		scruffy little hobbits and smeagol all had their decriptions
 		redone.  Also couplet from L.Carrol's _Jabberwocky_ added
 		in Jabberwock description.
-recall.c:
-	Very minor changes in the recall code to fix spacing for unique
+recall.c:	  Very minor changes in the recall code to fix spacing for unique
 		monsters. (Before, if you had no battles to the death, then
 		the monster description would start with a space...)
-spells.c:
-	Pain_message() changed to include test for dam == 0.  If so, it
+spells.c:	  Pain_message() changed to include test for dam == 0.  If so, it
 		returns "%s is unharmed." without performing any division.
 		If the monsters hp were 0, and the damage was 0, then we
 		could get a div by zero error.  I think this is what
 		happened to the guy who got the "guardian angel" mesg
 		after throwing a food ration at a magic mushroom.
-creatures.c:
-	in make_attack(), the code for the "eat light" attack (case 23),
+creatures.c:	  in make_attack(), the code for the "eat light" attack (case 23),
 		has been changed to check for TR_ARTIFACT before reducing
 		p1 of your light source.  This should avoid any troubles
 		with the Arkenstone
-dungeon.c:
-	Added check to insure that store doors won't get erased.
+dungeon.c:	  Added check to insure that store doors won't get erased.
 		And a check to prevent up stairs in town.
-spells.c:
-	Added check to insure that store doors don't get clobbered, and
+spells.c:	  Added check to insure that store doors don't get clobbered, and
 		a check to prevent up stairs from town.  I know these 2
 		are redundant, but who cares?
-dungeon.c:
-	Fixed regen_monsters() to check for maxhp of 0 before regenerating.
+dungeon.c:	  Fixed regen_monsters() to check for maxhp of 0 before regenerating.
 		If a monster has maxhp of 0, it is recalculated.  Then
 		monster hit points are regenerated, and then a test is
 		made to see if hp > maxhp.
@@ -883,19 +741,16 @@ moria2.c
 		fall through a trap door on a quest level.  On a quest
 		level, 'trap door' traps are 'spiked pits', possibly
 		poisoned.
-death.c:
-	Added test for !noscore before calling top_twenty().  This prevents
+death.c:	  Added test for !noscore before calling top_twenty().  This prevents
 		players who have been resurected or have been wizards from
 		showing up on the scoreboards.
-moria2.c:
-	Added a "poor man's" probing ability to the look command.  It
+moria2.c:	  Added a "poor man's" probing ability to the look command.  It
 		will allow players to get a general indication of how
 		hurt a monster is.  Note that Morgoth has more HPs left
 		at "almost dead" than a filthy street urchin does at
 		"unhurt"... It tells you based on a percentage of maxhps
 		for the creature.
-misc1.c:
-	Added a horrible hack to place_monster().  place_monster() will
+misc1.c:	  Added a horrible hack to place_monster().  place_monster() will
 		no longer place Sauron, execpt on level 99 (his "quest"
 		level).  This makes the existing quest code work.  The
 		advantage of this is that I can stay compatible with
@@ -933,13 +788,11 @@ misc1.c:
 		which quest to give you credit for is to check the
 		current level vs the quest lv.  That's why my above
 		change would be best...
-create.c:
-	Added an "auto-roller" to character creation code.  If you
+create.c:	  Added an "auto-roller" to character creation code.  If you
 		want it in define AUTOROLLER.  If not, don't define it...
 		The autoroller code was taken from rec.games.moria, and
 		I think the post took it from Druid Moria... -CFT
-death.c:
-	Minor change to display_scores().  display_scores() now takes
+death.c:	  Minor change to display_scores().  display_scores() now takes
 		a third argument, hl_rank.  hl_rank tells display_scores()
 		which high-score to "highlight".  If hl_rank is negative,
 		of not between from and to, then it will not be used.  Also,
@@ -950,55 +803,43 @@ death.c:
 	Also, if TC_COLOR and !no_color_flag, then the "Angband Hall of
 		Fame" line will be displayed in bright white to hightlight
 		it.
-death.c/main.c/externs.h:
-	Calls to display_scores() have had 3rd argument added.  In places
+death.c/main.c/externs.h:	  Calls to display_scores() have had 3rd argument added.  In places
 		where the character was added to the highscore list, the
 		character's rank was passed, so his score would be 
 		highlighted.  Otherwise, -1 is passed, so nothing will be
 		highlighted.  Added third parameter in prototype in externs.h
 
-main.c:
-	I just #ifndef-ed the call to check_time(), which means that the
+main.c:	  I just #ifndef-ed the call to check_time(), which means that the
 		PC version will no longer check for the "hours" file.
 
-scrolls.c:
-	Acquirement and *Aquirement* were not IDed when used.  This is
+scrolls.c:	  Acquirement and *Aquirement* were not IDed when used.  This is
 		fixed now.  Thanks to brifre1@ac.dal.ca for pointing this
 		out... -CFT
-misc1.c:
-	Opps...  When I took out the hour file code, I forgot to fix
+misc1.c:	  Opps...  When I took out the hour file code, I forgot to fix
 		check_time().  check_time() now always returns TRUE
 		on PC's.
-recall.c:
-	minor change to use him/them and remains/remain in recall code,
+recall.c:	  minor change to use him/them and remains/remain in recall code,
 		depending on how many dead ancestors... -CFT
 
-misc1.c:
-	ARG!  I've died for the last time because a monster (Olfax, son
+misc1.c:	  ARG!  I've died for the last time because a monster (Olfax, son
 		of Bolder) summoned a group of monsters, but only 1
 		was lit up for the 1st round.  So instead of running, I
 		stayed and fought.  This problem fixed by adding a call
 		to update_mon() to the end of place_monster(). update_mon()
 		will properly light up the summoned monsters if we can see
 		them.
-main.c:
-	added code to clear any ansi text and background colors that may
+main.c:	  added code to clear any ansi text and background colors that may
 		be leftover from ansi prompts.
-dungeon.c:
-	fixed 'g' command to prevent error msgs when picking up
+dungeon.c:	  fixed 'g' command to prevent error msgs when picking up
 		nothing.
-moria2.c:
-	fixed movement code in move_char() slightly...  It now will call
+moria2.c:	  fixed movement code in move_char() slightly...  It now will call
 		carry() if there is an object, provided at least one
-		of the following are true:
-		* you don't use the 'g' key to get objects
+		of the following are true:	  	* you don't use the 'g' key to get objects
 		* it's a trap (vis/invis)
 		* it's a store
 		This fixes trouble people have had trying to enter a store,
 		and prevents the 'g' key from making you immune to traps.
--S.Marsh knows up to here
-death.c:
-	minor fix into top_twenty()... It was passing the wrong hl_rank to
+death.c:	  minor fix into top_twenty()... It was passing the wrong hl_rank to
 		display_scores() if the new highscore was the last score.
 		(off-by-one error, but it was telling display_scores() to
 		highlight the (x+1)th score of x scores.
@@ -1007,44 +848,34 @@ death.c:
 		doesn't require the entire highscore file to fit onto
 		the stack (more stack overflow problems, but at least the
 		stack chacking code is in place).  It should work now.
-death.c:
-	print_tomb() will now write final character stats out if you give
+death.c:	  print_tomb() will now write final character stats out if you give
 		a filename after the tombstone.  I wonder why this wasn't
 		in Angband already?  Maybe Umor5.2 didn't have it?
-describe.c:
-	fixed spelling of Khazad-dum in one of the unique orc's description.
+describe.c:	  fixed spelling of Khazad-dum in one of the unique orc's description.
 	also slight change to blue icky thing description
-store2.c:
-	"You here sobs from back of store" changes to 'hear' in a couple
+store2.c:	  "You here sobs from back of store" changes to 'hear' in a couple
 		of places
-spells.c:
-	bolt() code fixed so that Unique monster never killed by a spell
+spells.c:	  bolt() code fixed so that Unique monster never killed by a spell
 		from another monster (can be hurt, but not below 0 hps)
 	breath() code ditto...
-moria2.c:
-	quest code fixed sensibly!  Just look for monster's level in
+moria2.c:	  quest code fixed sensibly!  Just look for monster's level in
 		quests[] instead of looking for current lv.  Now, even
 		if Sauron is killed at 50', his quest will be marked
 		as done.  The code will just give a mesg if a quest monster
 		is killed out of depth, or a mesg and stairs if its
 		killed at depth.
-misc1.c:
-	Horrible klugde to force Sauron at lv 99 removed.  It's no
+misc1.c:	  Horrible klugde to force Sauron at lv 99 removed.  It's no
 		longer needed.  (see above)
-potions.c:
-	self_knowledge() added to *enlighenment* potion
-moria2.c:
-	throw_object() code changed to prevent "hits the Smeagol" and
+potions.c:	  self_knowledge() added to *enlighenment* potion
+moria2.c:	  throw_object() code changed to prevent "hits the Smeagol" and
 		"You have killed the Smeagol" msgs.  It now checks for
 		UNIQUE and skips the "the".
-create.c:
-	change to create_character():  flag previous_exists added to
+create.c:	  change to create_character():  flag previous_exists added to
 		prevent the use of ^P to get a previous roll before
 		there was any such roll.  People have gotten garbage
 		characters, and used this to grab an existing players
 		stats with the '-n' flag.
-creatures.c:
-	br_wall() looked like it could have moved the player into a wall
+creatures.c:	  br_wall() looked like it could have moved the player into a wall
 		or monster, if the player was completely boxed in...  So
 		I extended the scope of the else{} block to only move the
 		player when kill is false.
@@ -1057,8 +888,7 @@ creatures.c:
 		the unique list and quest list are not handled properly
 		if a unique/quest monster is killed by someone other than
 		the player.
-treasure.c:
-	rod of detect traps added.  It appears very early (250 feet), and
+treasure.c:	  rod of detect traps added.  It appears very early (250 feet), and
 		is fairly easy to use, so warriors should be able to
 		get hold of and make use of one w/o too much trouble.
 		Because it is common at such a shallow depth, it is
@@ -1070,16 +900,1017 @@ treasure.c:
 		might have some "scrolls of trap location" when transferred,
 		until they settle out of the savefile.
 	Also, relevant changes made to rods.c and constant.h. -CFT
-
-scrolls.c:
-	scrolls of curse weapon/armor fixed so that the player doesn't
+scrolls.c:	  scrolls of curse weapon/armor fixed so that the player doesn't
 		keep the pluses of the item.
-misc1.c:
-	magic_treasure() code changed to insure that special (of Might
+misc1.c:	  magic_treasure() code changed to insure that special (of Might
 		or of Accuracy) bows from monsters with the special
 		flag, with the possibility of an Artifact.  I think
 		this may have reduced the chances of getting one of
 		these bows, but I really don't know...
 	Also, Bow artifacts didn't set good_item_flag, so no special
 		message ever appeared.
+===========================================================================
+Changes above here made it into the second update, angexe12.exe.
+===========================================================================
+-S.Marsh knows up to here
+tcio.c:	  added multiple messages/line code posted by brianm@soda.berkeley.edu
+		(Brian Markenson), which he adapted from Purple X's Moria.
+		The only function affected is msg_print().
+store2.c:	  On advice by David Grabiner, added msg_print(NULL); after insult
+		in haggle_insults().
+describe.c:	  changes 'dwarfs' to 'dwarves' in Mim + sons descriptions...
+moria2.c:	  facts() changed to switch on weapon.subval if it's a TV_BOW item.
+		The subvals from treasure.c are 1,2,3... for bows, 10, 11,
+		for Xbows, and 20 for slings.  This will fix the
+		trouble with Cubragol acting like a sling.
+save.c:	  resurrection code now heals cuts, so we don't just die again.
+		Also, word of recall counter zeroed so we don't get
+		yanked away from town if we had read a scroll before
+		we died.  This may be redundant (I didn't check to see
+		if word_recall is zeroed when we die), but it can't
+		hurt.
+misc1.c:	  ghost code in function place_ghost() and set_ghost() changed to
+		insure that HPs don't wrap around int8u hit dice...
+		Now, instead of trying to use 350d1, it will do 32d11.
+		This factoring avoids the overflow, but it required a
+		couple of casts before multiplying, and also required
+		the set_ghost use *= 2 instead of = 2 when adjusting
+		hit dice for race/class/lv of ghost.  Now I won't
+		run into ghosts of tough characters that die in 1 swing.
+misc1.c:	  bladeturner/razorback trouble found...  name2 was not being
+		set to SN_BLADETURNER or SN_RAZORBACK, it was being set
+		just to BLADETURNER or RAZORBACK.  So they never existed...
+		This is now fixed.
+	Also, I added 'if (randint(3)>1) return 0;'  I assume that something
+		like this was there and taken out when people were trying
+		to "force" BLADETURNER/RAZORBACK to appear.
+	Should BLADETURNER and RAZORBACK have a negative p1 field?  Do
+		they hurt your dex/int/wis/searching/stealth?
+	Also, Glamdring and Aeglen have TR_SEARCH/TR_STEALTH, but p1
+		is never set.  Glamdring I made 3, like Orcrist, and
+		Aeglen I made 4 (because it's supposed to be the strongest
+		of the 3...)
+create.c:	  Autoroller "you can learn some new spells -more-" message avoided
+		by writing new versions of get_all_stats() and put_stats(),
+		to avoid any possible calls to calc_mana().  The new
+		functions, get_auto_stats() and put_auto_stats(), are only
+		used in the autoroller.  A call to calc_bonuses() (which
+		will also call calc_mana(), has been added after the
+		auto-rolling is finished.
+
+monsters.c:	  Smeagol and F.Maggot now 'h' instead of 'p' (since they're hobbits)
+desc.c:	  in object description code ( objdes() ), an additional else if ( )
+		was added so that artifacts will be described as "the
+		longsword named Ringil" not "a longsword..."
+	objdes() code will now say "(1 charge)" instead of "(1 charges)"
+tables.c:	  chartruse potions should be lightgreen, not magenta (according to
+		my dictionary, anyways).  So I changed the color.
+describe.c:	  smaug's description "Uriloki" --> "Uruloki"
+monsters.c:	  Ibun, Khim, Brodda, S. of Umbar, A. of Umbar, and Gorlim all
+		were made evil.  These changes were judgement calls based
+		on the monster's description.  In the case of Mim's kids,
+		they were made evil because he was evil.  Nar was not
+		made evil, even though he is a "betrayer", as the
+		description says Melkor tricked him into betraying his
+		friends...  He may have been greedy, but I didn't think
+		it warrented "evil".
+moria1.c:	  minus_ac() changed to check for both TR_RES_ACID and TR_IM_ACID
+		before harming armor.  Note that if you want to call
+		minus_ac for some other kind of damage (at the moment it
+		is only used for acid damage), then you will have to add
+		cases to minus_ac().
+misc1.c:	  TR_ACTIVATE added into flags2 of BLADETURNER.  This is redundant,
+		since DSMs already have it.  Also, other activatible
+		artifacts checked.  All items that have TR_ACTIVATE appear
+		in activate code in dungeon.c and all that appear in
+		dungeon.c have TR_ACTIVATE.  So this should be the last
+		of this fix.
+	TUOR's TR_IM_ACID moved from flags to flags2.  In flags, it was
+		adding stealth, which TUOR already had, so it didn't
+		get noticed.
+prayer.c:	  "You wounds heal." --> "Your wounds heal."
+create.c:	  autoroller code was screwing up disarm (and maybe other) skills.
+		The problem was that it was resetting the values after
+		adding in the class skill mods.  So the class skill mods
+		didn't happen.  This has been fixed by moving get_history
+		and get_ahw back inside the autoroll loop.
+	Aditionally, I moved the DEX-based disarm adjustment from
+		get_ahw() (I wonder why it was there...) into get_class.
+		This means that the bonuses will be based on your stats
+		after all the race + class adjustments have been
+		figured in.  This may mean a slight disadvantage for
+		classes which have dex penalties, but it will benefit
+		classes which get extra dex.  I decided this was more
+		reasonable.
+prayer.c:	  elemental brand changed to call enchant() to adjust the pluses
+		of the branded weapon.  This will prevent branding of
+		a weapon already at +10+10 from going above... (unless
+		you get REAL lucky)
+dungeon.c:	  Cubragol's elemental brand for bolts has likewise been changed to
+		call enchant()
+treasure.c:	  added 2 new special names: "(Shattered)" and "(Blasted)" for
+		extra effect of curse weapon, armor.
+constant.h:	  added SN_SHATTERED and SN_BLASTED and increased SN_ARRAY_SIZE 
+scrolls.c:	  curse weapon and curse armor scrolls are now even nastier, doing
+		a more thorough destruction of the item, but artifacts get
+		a saving throw (they resist 3 times in 7)
+player.c:	  priests had a slightly worse chance of casting holy word than
+		paladins...  99 compared to 95 (base chance).  Since this
+		seemed silly, I swapped them.
+---------------------------------------------------------------------------
+Unnecessary variables cleaned up from several files:	  spellls.c, misc1.c, create.c, dungeon.c, creature.c, magic.c,
+	generate.c, death.c and moria1.c
+---------------------------------------------------------------------------
+spells.c:	  create_food() was calling get_obj_num() for some unknown reason,
+		and then doing nothing with the result.  Since it was
+		unneeded, I del'd it.
+misc2.c:	  random_object() could have placed an object out-of-bounds.
+		in_bounds() test added.
+moria1.c:	  light_dam() now can destroy objects, like the other damage types.
+death.c:	  minor change to high-score display... "on Dungeon Level X" is now
+		"at X'", which leaves more room for the "killed by" str.
+	Also, a quick test for dungeon level added.  If level is 0, then,
+		"at X'" replaced by "in Town".
+player.c:	  eliminated the dsp_race array of 5-char abbrievated race names,
+		since it was unused...
+moria1.c:	  calc_bonuses() -- old code did not give you AC from armor if it
+		was cursed.  This doesn't make sense... Even if plate
+		mail was cursed, the base ac of the armor should still
+		block just as much damage.  (Cursed armors protect less
+		by having a large negative toac value...)  This was
+		a Um5.3 change that I'm incorporating...
+creature.c:	  monsters bashing open doors weren't breaking them.  changing
+		randint(2)-1 to 1-randint(2) fixed this.
+moria2.c:	  ditto for the player bashing doors (in bash()).
+generate.c:	  build_type5() was changing the value of template, and then free()ing
+		it.  This would DEFINITELY cause memory troubles.  It's
+		been fixed by adding another pointer, t, and using it
+		inside the loop.  Thanks to gehring@pib1.physik.uni-bonn.edu
+		for telling me this one.
+	build_type1() wasn't bounds-checking the room coordinates, and so
+		it could put a room "off the edge" of the cave[][] array.
+		That would be bad, both because the room may be
+		unaccessable, and because it will merrily trash whatever
+		memory is at the out-of-bounds address.
+	build_type2() also wasn't bounds-checking.  Fixed.
+	build_type3() ditto.  Also fixed.
+	vault_trap() didn't have a paranoia bound-check before referencing
+		the random potential location.  Fixed
+	build_room() had no bounds check.  Also fixed.
+	special_pit() ditto.  fixed.
+  (Well, that looks like all the bounds checks needed for generate.c...-CFT)
+moria1.c:	  from um55, clear heavy_weapon flag before calling check_strength(),
+		in 'x' and 'w' commands, to insure the proper message is
+		displayed...
+scrolls.c:	  from um55, id scrolls can move if merged.  The loop from Um55
+		replaced the current code, which doesn't always search
+		far enough.
+dungeon.c:	  from um55, now erases the message line after change_character().
+moria1.c:	  from um55; now sets weight to 0 if carrying nothing, as a safety
+		measure.
+dungeon.c:	  from um55, take off weight of spike when jamming a door.
+desc.c:	  from um55, known1_p() true for objs w/o a "color".  also, objdes()
+		changed to work w/ new known1_p().
+misc2.c:	  from um55, inven_carry() will now sort objects like moria does!
+		This means that the 1st spell book will be placed in 'a',
+		even if you drop it by accident and pick it back up!.
+misc1.c:	  compact_monster() now cannot compact away Melkor.
+	popm() now check compact_monster() return value.  If nothing can
+		be compacted, (should never happen), returns -1. (um55)
+	place_monster() and place_win_monster() now of type int, and
+		douple check popm() value before using it.
+externs.h:	  prototypes of place_monster, place_win_monster changed to int.
+	prototype of compact_monsters() added
+misc1.c:	  compact_monsters() no longer static
+creature.c:	  calls to place_monster, place_win_monster doublecheck return val
+dungeon.c:	  dungeon() now will call compact_monsters() if the monster list
+		is nearly full.  another um55 change
+misc1.c:	  from um55: overflow check added to m_bonus()
+creature.c:	  mon_move() - m_ptr->fy, m_ptr->fx cast to int to make loop run
+		properly
+	mon_move - recall of non-moving monsters changed from when they attack
+		to when they should have moved, but don't.
+moria2.c:	  from um55, tunnel(): check that player is tunneling into something
+		tunnel-able before checking for monsters, OW player can
+		tunnel into air nearby to detect inv monsters.
+	from um55, bash() now checks to see if you're confused...
+wands.c, staffs.c, rods.c:	  from um55, give everyone (even a 1st lv 1/2troll warrior w/ a 3 INT)
+		a slight chance to use items.  Just how slight depends on
+		how close (or how far) you are from being able to use it.
+		This will sure help warriors!
+misc2.c:	  from um55: put_misc3(), change clear_from(13) to 14.  Now it won't
+		erase gold...
+spells.c:	  from um55, speed_monster() when slowing monster, wake it even if it
+		fails...
+	ditto for confuse_monster()
+	no trap under player in trap_creation()
+	wall_to_mud(), give message even if can't see, since it's audible
+	sleep_monsters2(), dispel_creature(), banish_creature(), probing(),
+		and turn_undead() all now only work w/in MAX_SIGHT
+	mass_poly(), chaos() now <= MAX_SIGHT, not <
+	destroy_area() now unlights player's location.
+misc1.c:
+	OBJECT BUG (maybe) FOUND!!!  pusht()'s definition was using an int8u
+		for the index of the object to be deleted!  But Angband
+		uses a MAX_TALLOC of 400, which rolls over!  This could
+		easily cause some of the wierd errors where objects
+		turn into other objects when the level is full!  And,
+		it could do so w/o ever seeing the "compacting objects"
+		message, which fits the bug reports!!!!
+	I've changed it to an int16, to agree with the definition of
+		tcptr in treasure.c
+externs.h:
+	prototype of pusht() changed to int16.
+files.c:
+	print_objects(): cast of j to int8u in call to pusht() removed
+store1.c:
+	store_create(): cast of cur_pos to int8u in call to pusht() del'd
+misc1.c:
+	summon_* functions - several are comparing the randomly chosen
+		m value to 1, instead of l.  It looks like a simple typo
+		that has been repeated by cut&pasting.  All fixed.
+	place_monster() is now thoroughly error-checked.
+save.c:
+	when reading player ghost's name, changed cast from (char *) to
+		(int8u *) in call to rd_bytes().
+files.c:
+	added Max Exp and Exp to Adv. fields to file_character()'s description,
+		to match the on-screen display. (um55 change)
+misc2.c:
+	changed field width of prt_lnum from 8 to 9.  Hopefully this will
+		fix display probs when have > 99,999,999 gold.  Now, hopefully
+		noone get more than 999,999,999 gold.
+moria2.c:
+	fixed "summon your strength"/"gods may think" message so it tests
+		if cast mage spells or not.
+	hit_trap(), from um55 add msg_print(NULL) for trap door, and light
+		up teleport trap.
+	py_attack(), throw_object(), py_bash(): check for neg damage added
+	hit_trap(), from um55, fire/acid/corrode gas traps... message 1st,
+		then effects
+spells.c:
+	"envelopes" --> "envelops"
+store2.c:
+	store_purchase(), from um55, move store_prt_gold outside of if
+		so that gold is updated if store had 13 items + you buy 13th.
+misc1.c:
+	alloc_monster() -- any monster that can cast hostile spells or
+		breathe will be asleep if it's placed in a line-of-sight
+		with the character.  That way, he has a sporting chance...
+moria1.c:
+	um55 changes: sub3_move_light() and find_init() changed to move
+		light more efficiently.  See comment in find_init for
+		details (um55 code pasted into code...)
+	inven_command(), um55 change, carry capacity now shown if show_
+		wieght_flag is set.
+moria2.c:
+	carry() code changed slightly to allow pickup w/o asking, like
+		Moria does, to satisfy people who have been asking for it.
+misc1.c:
+	added new line to options table... "Ask before pickup?"
+vars1.c, externs.h, save.c:
+	added new int8u flag 'carry_query_flag', used like moria used
+		prompt_carry_flag, to control if you want to be asked
+		to pick up an item (unless it weighs too much, then you
+		always get the "exceed wt limit?" question.
+creature.c:
+	creatures(), um55 change, give move to any creature trapped in rock,
+		so it will move or die.
+	mon_move(), um55 change, double check creature is not dead before
+		trying to kill it for being in a wall
+moria2.c:
+	um55 change: bash() - failed bash now costs a move, so player cannot
+		repeatedly bash when looking for inv monster, or when
+		confused.
+monsters.c, describe.c, generate.c:
+	Changed name of "Balor" to "Lesser Balrog".  Also, in descriptions,
+		one of the balrogs was listed as a "huge balor"... now
+		he's a "huge balrog".
+dungeon.c:
+	activate() had a couple of problems...  If you aborted by hitting
+		ESC, it took a turn.  And, if you hit '*' to show the
+		list of artifacts, and then hit a nonsense key, it would
+		clear the screen and do something unpredictable.  The
+		first was fixed by testing for flag == FALSE after the
+		while (!flag && get_com(...)) loop.  If flag is still
+		false, then we never selected an item, so it's a free
+		turn.  The 2nd trouble was fixed by adding an else
+		after the "else if (choice=='\033') code.  Anything that
+		falls into here rings the bell, and then continue-s to the
+		top of the while loop, without screwing things up.
+misc1.c:
+	magic_treasure() didn't make much sense with DSMs.  After playing
+		with it for a bit, I've re-written the code for the DSM
+		case.  I believe that it is consistant with what was intended
+		by the original code (note that I don't say "with what the
+		original code did").  DSMs now have the normal chances of
+		being artifacts, and some DSMs will get an extra bonus
+		to the toac field.  This, combined with my earlier fix
+		about BLADETURNER/SN_BLADETURNER etc should mean that
+		the artifact DSMs will exist!
+	Note: About what my code does...  All DSMs are given a random + to
+		ac, unlike other armor, for which only items that are
+		good or pass the magik(chance) test.  I did this because
+		it was what the original DSM code did.  Additionally, all
+		the DSMs have a base +to AC, from the treasure list in
+		treasure.c (all but PDSM have base of +10, PDSM has +15).
+		Then, for any DSM which is special, an additional + to AC
+		from 1 to 10 is added, and unique_armour() may be called
+		to try to create an artifact.  For more detail, read the
+		source...
+misc2.c:
+	calc_mana(): allow mage-type spellcasters to wear hand armor IF
+		it gives a bonus to dex.
+desc.c:
+	objdes() code changed to add special cases for Phial, Star and
+		Arkenstone...  Now, until they are identified, they will
+		not be obviously the artifacts (although, there is no
+		other "Phial" or "Gem"s, so it's not too hard to figure
+		out.  Now, it will be more obvious to people when they
+		have to ID them, before activating them.
+spells.c:
+	starball() was not doing anything if your were blind.  I suspect
+		that the if used to control a message, which was moved/
+		removed.  Since I thought it would be kind of lousy for
+		Razorback to do nothing if you activated it while blind,
+		I took out the if... -CFT
+moria2.c:
+	move_char() - changes to the code to light rooms.  Check char's
+		location for either LIGHT_FLOOR or NT_LIGHT_FLOOR.  If
+		on a door, search the surrounding area.  If one of the
+		nearby squares is an unlit room which should be lit, it
+		will call light_room from the character's location and
+		then stop looking.
+misc2.c:
+	calc_mana() - added check for negative 'new_mana'.  This could
+		happen if you had a real low int/wis, and was wearing
+		lots of heavy armor.  Most likely, the player had a
+		so-so int/wis, which was drained too much to compensate
+		for the armor.
+misc2.c:
+	"money bug" fixed.  Before, if you had a bunch of stackable items
+		bought at normal price, then you could buy and sell
+		bargin items, and make $ on the deal.  It would only
+		work if you never sold your last one, and never bought
+		the store's last one, but it was a gaping loophole in the
+		economy, even if it was boring to exploit.  Now,
+		inven_carry() checks to see if the 'cost' of the new
+		stackable item.  If it's less than the cost of items in
+		the player inventory, then the cost of the player's
+		inventory is set to match the cheap item.  This prevents
+		player from "milking" the stores for cash when there's a
+		special offer, but it is unfair, as it cheats the player out
+		of the value of his items.  (But players shouldn't be buying
+		items unless they want to use them.  Buing items just to
+		sell them again is silly unless you were trying to exploit
+		this bug.)
+save.c:
+	The player ghost's exp bug was due to garbage values in the
+		high bits of the mexp field.  For some reason, the
+		save/restore code only wrote an int16u value instead
+		of an int32u.  Since I dodn't want to change the savefile,
+		I've kludged it by using temp int16u vars for the i/o.
+treasure.c:
+	special names table changed so named artifacts are "The Longsword
+		'Ringil' (4d5) (+x, +y)" instead of "The Longsword named
+		Ringil (4d5) (+x, +y)".  Only "named so-n-so" type names
+		were changed, the "of so-n-so" were left alone.
+misc1.c:
+	magic_treasue() TV_GLOVES only called unique_armour() if was
+		gloves or gauntlets, not for cestus.  Fixed -CFT
+	TV_BOOTS could slip thru magic_treasure w/o getting a special
+		set of boots.  This can happen because metal boots
+		cannot be boots of stealth (sensibly).  I'm making a
+		bit of drastic, "judgement call" change here.  I'm
+		adding a new type of boot -- Free Action.  To me, this
+		makes at least as much sense as gloves of FA.  Metal
+		boots will have a better chance of being FA, since they
+		can't be Stealth.
+treasure.c:
+	subval of Star and Arkenstone changed from 5,6 to 6,8.  This is
+		because the TV_LIGHT code in magic_treasure sets p1 to
+		a random value if subval is odd.  This is preventive
+		medicine, since the Star didn't actually use the p1 field.
+spells.c:
+	earthquake won't destroy shop doors or stair, in addition to not
+		killing artifacts...
+	ditto for create doors, wall building, destruction
+misc2.c:
+	special_place_object() the mesg buffer str[] was uninitialized, and
+		could result in a garbage message if a wizard or in "peek"
+		mode. Fixed
+monsters.c:
+	My theory on cap.: non-uniques should have only 1st word cap.  Uniques
+		should be cap. as in book titles (ie everything but 'the', etc)
+	monster name capitialization: Novice Ranger; Cave Orc; Hill Orc;
+	Grishnakh; Shagrat; Gorbag; Master Rogue; all "Deva"s; Mim; most 'Q's;
+	Master Thief; Master Vampire; Hell Hound; mature dragons; many wraiths;
+	YMHD; Will o' the Wisp; Ancient dragons; Emp Wight; Night Mare; Vampire
+	Lord; Great Cry Drake; Death Quasit; Master Lich; Lesser Balrog; Wyrms;
+	Black Reaver; Draugluin; 
+	Plural names made singular: Uruk-Hai -> Uruk (x3); Olog-Hai -> Olog;
+		Mumakil -> Mumak (x2); Ogre magi->mage
+	Spectre made visible (think about the name for a second...)
+	"Necromancer" --> "Warlock" to avoid confusion with Sauron
+	Beholders are NOT natural!! 'ANIMAL' removed also from Undead b.
+	The tough Ethereal hounds are now Astral hounds, to avoid fatal confusion
+	Balance and Law drakes/wyrms are no longer evil.
+describe.c:
+	fixed spelling/capitalization/etc of: Necromancer->Warlock; Cave Orc;
+	Hill Orc; Uruk-Hai; most Qs; Hell Hound; Olog-Hai; Master Vampire;
+	mature dragons; some wraiths; vampire lord; master lich; Ancient
+	dragons; Emp Wight; death quasit; Shagrat; Lesser balrog; Draugluin;
+	Master thief; master rogue; mumakil; all "deva"s; novice ranger; 
+	wyrms; great cry drake; Gorbag; black reaver; Mim; wisp; gorlim;
+	ogre magi; night mare; 
+---
+Here a freak bug in emacs (maybe it ran out of memory) destroyed my
+monsters.c that I'd just spent all that trouble changing monster names.
+I've gotten a copy from the 1.2 release, and I had to regenerate all the
+changes above.  (hopefully I didn't miss anything...) *sigh*	-CFT
+---
+treasure.c:
+	potions of Death now do 30d30 when thrown, making them potent
+		weapons.  Also, I've given them a slightly higher value
+		then Detonations, to reflect their new usefullness.
+files.c, misc2.c:
+	if/else added so that exp to adv will be "****" instead of 0 at max lv.
+creature.c:
+	mon_cast_spell(): 2 flags added, player_hit and blind.  These flags
+		used to control messages and additional effects.  The
+		player_hit code was mostly already there from an earlier change.
+		The blind code changes spell messages so you don't see "you
+		blink your eyes and your vision clears" while already blind.
+player.c, externs.h, misc2.c:
+	spellmasks[][] array added so code can check when player knows all
+		spells available to his class.  calc_spells() changed to use
+		spellmasks[][] when counting learnable spells.  This means that
+		py.flags.new_spells will reflect accurately how many spells he
+		could learn really learn, so the "you seems to be missing a
+		book" message will only appear if the player is really missing
+		a book.  When he's learned all spells available to him at his
+		level, he will be told that he can't learn new spell now.
+constant.h:
+	clean-up monster spell,movement and defense constats which were
+		superceded by definitions in monster.h have been #if 0-ed out.
+spells.c:
+	bolt() code heavily modified.  All of the "exotic" bolt/ball/breath
+		types have been incorporated.  This will allow me to take
+		out all the code in mon_cast_spell() which tries to handle
+		the "extra" effects of the exotic types.
+	static fn spell_hit_mon() used to allow reuse of code... it takes
+		care of checking resists, reducing damage, does "special
+		effects" like polymorph mons for GF_CHAOS, and adjusts
+		damage for range from "ground 0".
+	With spell_hit_mon(), adding exotic bolts to fire_bolt() was a
+		snap.  Also, fire_ball() was easy to add exotic types.
+		And to breath().  All of them should be done.
+	I've included in my switch all of the GF_* types, even though there
+		is no spell casts a bolt of some of them.  I did this so
+		it would be complete and easier to work with.  But this means
+		that I've had to make some judgement calls, like "Should a
+		bolt of nexus cause extra effects like stat-shuffling, or
+		just damage?".  Mostly, I've made the bolts act like less-
+		powerful versions of the ball/breath spell.
+constant.c:
+	creature movement constants defined in constant.h DID NOT ALL MATCH
+		those defined in monster.h.  The *_20, *_40, *_75 constants
+		for random movement didn't match.  I made the constant.h ones
+		match the monster.h ones, since monsters are defined with
+		those.
+spells.c:
+	change to teleport_to code... if it can't find a space around you in
+		9 random tries, it increased the distance.  Worked okay, but
+		if monster was very surrounded, the distance could grow
+		too quickly.  Now checks (9* dis^2) tries, since possible
+		locations is proportional to dis^2. -CFT
+files.c:
+	read_times(). I added a #ifndef MSDOS around the code which deals
+		with the hours file.  I moved the old #endif for the
+		#ifndef ANGBAND_HOU to just above the newsfile code, and
+		then added the #endif to go with the #ifndef MSDOS.  All
+		this means is that, on a PC, you never worry about the
+		hours file, but the news file will be displayed.
+main.c:
+	#ifndef MSDOS around read_times() removed.  That is the fn which
+		displays the news file, in addition to doing what it sounds
+		like.  Now I should start seeing the news file again.
+creature.c:
+	mon_cast_spell() gutted!  All of the kludges to produce the "special
+		effects" for the exotic bolt/breath types is gone.  (Now that
+		bolt/breath are smart enough to handle all the exotic types)
+	br_wall() and shatter_quake now check to insure they don't hurt
+		stairs and shops, in addition to artifacts
+spells.c, externs.h:
+	obsolete fn get_flags() removed. Also, old (previously #if 0-ed out)
+		bolt() code junked.  In it's place is ball_destroy(), which
+		sets destroy to the proper set fn.
+death.c:
+	if you don't make the hiscore list, it now says so.
+treasure.c:
+	priest book "Godly Insights" had 0x80000000 added to flags, allowing
+		the spell "Detect Monsters" to be learned.
+generate.c:
+	change monster names inside strcmp()s so they match the new spelling,
+		capitalization, etc.
+creature.c:
+	creature confused/unconfused code changed, to use a counter instead
+		of a simple T/F flag.  Higher level monsters become unconf
+		faster.
+misc2.c:
+	added patch to inven_damage from hirai@cc.swarthmore.edu (Eiji Hirai)
+		to show what is destroyed.  Also, "sparks fly from your pack",
+		"smoke from your pack" etc msgs removed because redundant
+store2.c:
+	added a slightly modified version of kevin.o'connor%acc1bbs@ssr.com
+		(Kevin O'Connor)'s patch to double check to see if you have
+		anything the shopkeeper wants before proceeding to ask which one.
+misc2.c:
+	added a modified version of brianm@soda.Berkeley.EDU (Brian Markenson)'s
+		inven_carry code, which makes magic books come before prayer
+		books for mage-type spellcasters.  Thanks much, Brian! -CFT
+player.c:
+	Since rogues already get recharge I & III, I gave them II.
+generate.c:
+	place_*() fns now have paranois checks.  Also, the vault_*() fns
+		that use strcmp have paranoia checks.
+	build_tunnel() had kevin.o'connor%acc1bbs@ssr.com (Kevin O'Connor)'s
+		patch to insure that "inward facing" corners are not
+		destroyed by the tunnel code.  This code means that all
+		tunnel will meet rooms at a side, which I consider a bonus -CFT
+spells.c:
+	dispel [evil|undead] will now say "it shudders/dissovles" if you
+		can't see it.
+	mass_poly() will not poly uniques, or poly into uniques.
+	obsolete fn chaos() removed.
+	turn undead confuses monsters according to counter scheme
+scrolls.c, magic.c, prayer.c, rods.c, dungeon.c:
+	word of recall spell will ask you if you mean it.  If you don't
+		say 'y' or 'Y', you lose the scroll/mana/charge.
+misc2.c:
+	place_*, special_place_* function all have paranoia checks
+moria1.c, dungeon.c, misc2.c:
+	added another rest option: '&' to rest until all non-fatal (not
+		poison or cuts) troubles are gone.  It will wait out blind/
+		fear/stun/conf/slow/HP/mana.  '*' still works as before.
+constant.h:
+	TV_SPIKE changed from 13 (inside TV_MIN_WEAR, TV_MAX_WEAR) to
+		3 (outside), so spikes will no longer show up in the list
+		of possible wieldables (they aren't wieldable... I didn't
+		bother with that moria 5.5 change)
+creature.c:
+	shatter_quake could bury player, making it impossible for monsters
+		to attack him.  It should be fixed now...
+spells.c:
+	fire_bolt() code fixed.  I forgot to set m_name before using it, so
+		I was getting garbage.
+	fire_ball(), breath() code changed.  first draw ball, then pause
+		briefly for it to be seen, then erase it, and then do
+		the effects.  Now that the effects generate msg_print()s,
+		if we erase as we do effects, so of ball can be seen far
+		too long.  This change was only done to the #ifdef TC_COLOR
+		code, so the non-TC_COLOR code will need fixing.
+	breath() code revamped, unifying the TC_COLOR and non-TC_COLOR code.
+		It is now based on the TC_COLOR structure, with #ifdefs to
+		around calls to color or MSDOS specific code.  I'm not
+		100% sure that the non-msdos code is bug-free, as I have
+		no way to test it, but I think it is okay.
+misc1.c:
+	place_monster() paranoia checks rearranged, so that popm() is only
+		called if we are going to USE the index we get back.  Before,
+		we could call popm() and then find out that the monster we
+		tried to place was a dead unique, and then exit w/o using it.
+	This may help fix troubles in the monster list -CFT
+creature.c:
+	It will now tell you what was stolen -CFT
+moria2.c:
+	if you hit a monster with "glowing hands", it would confuse it,
+		but the message would be "the mon-name appears confused.".
+		I upcased the 1st letter, so it will look better.
+misc2.c:
+	fixed weight_limit to do math in long, then cast.  Otherwise, it can
+		overflow for huge strengths, and give a negative limit.
+moria1.c, dungeon.c, store2.c:
+	inventory and equipment displays have been colorized.  We'll see if
+		it's nice or obnoxious.  Also artifact activation list, and
+		store inventories.  So far, it seems nice, although I'm not
+		sure if I like armor LIGHTGREEN.  Maybe try RED?  That's
+		be less bright.
+store1.c:
+	changed store_carry() to use the same inven sort as inven_carry().
+misc2.c:
+	changed prt_chp() code so that HPs shown in yellow if hurt, or
+		red if very hurt. (only for TC_COLOR, with !no_color_flag)
+prayer.c:
+	old remove curse code that was #if 0-ed out, deleted.
+tcio.c:
+	new fn get_Yn(), just like get_check(), except only 'Y' means yes.
+-----
+A few calls to get_check() replaced with new function get_Yn(), which only
+takes 'Y' as yes.  This should help people who hit ^W instead of shift-W,
+and then try to move the map up-and-left.
+-----
+dungeon.c:
+	redraw command implemented.
+misc2.c, moria1.c, vars1.c, externs.h, save.c:
+	The idea of colorizing inventory by type of item, to make it easier
+		to find what you want, seems to me to be a big win.  But,
+		since not everyone may have the same tastes as I, I've
+		added YA flag, 'inven_bw_flag', to control whether it
+		should be colorized.  Of course, if the no_color_flag is
+		set, the inventory colorization will not be used anyways.
+sets.c:
+	TV_ROD taken out of set_lightning_destroy.  rods are supposed to
+		be long-term items.  What good is a rod of return, if
+		you have to worry about something destroying it?  You
+		might as well carry scrolls.
+tcio.c:
+	^r was having inkey() call raw_mode().  Don't ask me why.  I #if 0-ed
+		it out.
+dungeon.c:
+	wizard light command moved from '*' to '$', so I could use '*' as
+		the command for the targeting code I'm about to steal from
+		Morgul.  ('*' seemed like a better key to choose a target
+		with than '$', and I don't really care what key does
+		wiz-light. -CFT)
+externs.h, vars1.c, moria1.c, moria2.c, misc2.c, dungeon.c, spells.c:
+	Morgul's targetting code stolen and incorporated.  The '*' key
+		selects a target.  Now, not only can the player harm a
+		monster that's not in line with him, he can casts his
+		ball spells over other monsters, if he's using target
+		mode.  I don't know if this will majorly unbalance the
+		game, but I've got a couple days of playtesting time to
+		check it out...  At the worst, I can disable it by #if-ing
+		out the "case '*':" from do_command() in dungeon.c... -CFT
+	I haven't yet been able to get hold of Chris Wilde to ask him for
+		permission to use his targetting code (all my emails have
+		bounced, either with "no such host" or "no such user").
+		So, at the moment, I am violating his copyright by using
+		his code.  Hopefully I will be able to reach him.  If not,
+		I plan on leaving the code in, until he objects.  This
+		means violating his copyright further, if he wanted to
+		object, but I believe he would be willing to let the code
+		be used if I was able to ask him... -CFT
+misc2.c:
+	gain_level() code that reduced the amount of exp you got, if you
+		got more than enough for the new level.  My viewpoint on
+		it is this: If a player gets lucky enough to kill a tough
+		monster when he's low level, then he deserves every last
+		one of those experience points... -CFT
+creature.c:
+	monster move code changed so that monsters who try to pick up
+		items won't pick up an item which "slays" them.  Exceptions
+		are SE and SA, which are just too comprehensive.  If a
+		monster tries to pick up an artifact or one of these items,
+		then the player will get a mesg, if he can see the monster.
+recall.c:
+	spell names changed for recall code "mass summoning", "mind searing",
+		"fires arrows" --> "summon many creatures", "sear your mind",
+		"fire arrows".  This make the mon.memory sound less awkward.
+main.c:
+	usage code changed to give a more thorough description of options.
+		Also, it gives different output for MSDOS and non-MSDOS,
+		because the PC is a bit different (no uid, cannot get
+		player name from username, etc).
+misc2.c:
+	inventory patch needed tweaking - if picked up a 2nd prayer book of
+		same kind, the "adjusted" typ wasn't matching the tval of
+		the book in inventory, so they didn't stack.  SOLN: reset
+		typ to i_ptr->tval each pass through the loop.  Then it
+		has the correct value when we want to match, and is adjusted
+		before we check for position...
+dungeon.c:
+	redraw command tweaked to not redraw if player is hallucinating.
+misc2.c:
+	gain_spells() now prints better msg for warriors.
+creature.c:
+	update_mon() code tweaked -- wizard sight still sees all. telepathy
+		now won't show up "mindless" undead (non-spell using).
+		If the player has line-of-sight, he will see (or not see)
+		them normally.
+creature.c, spells.c:
+	disenchant will now tell you what was affected
+misc1.c:
+	place_group changed to take into account (randomly) how far out-of
+		depth a group monster is when deciding the size of the pack.
+		Monsters that are too wimpy for a lv will generally be
+		found in bigger groups, and if too tough for a lv, they'll
+		be in smaller groups.
+creature.c, misc1.c:
+	creature display code changed slightly so that MHDs (and other
+		monsters, which isn't so good for efficiency) will be
+		redisplayed whenever it moves or the player moves, allowing
+		MHD's to change to a random dragon's color every turn.
+misc2.c:
+	change made to place_special(): broken swords/daggers are not good
+		items, neither is rusty chainmail, nor are rags.  But
+		the new magic/prayer books are good, and Raal's/WoG is
+		"special"
+	character screen display colorized
+moria2.c:
+	minor change to Morgul's targetting code... '.' would select the
+		player's position when in location mode.  Since I play
+		NetHack a lot, I'm used to using '.' to select a target,
+		so I've changed '.' to work the same as 't' for both
+		monster and location targetting.  I really didn't see the
+		need for a command to bring the target cursor back to you,
+		so I didn't replace it. -CFT
+------------------------------------------------------------
+Matt's advance copy of 1.3 has up to here ... -CFT
+------------------------------------------------------------
+store1.c:
+	changed store_check_num() so that home will not allow you to add >24
+	of an item.  This prevents a player from losing any items...
+misc2.c:
+	The code to count the # of possible spells learnable in calc_spells()
+		was checking the spell levels for spells 0-31, even when
+		it should have been checking 32-63.  Fixed by changing [j]
+		to [j+32] in the 2nd loop.
+misc2.c:
+	calc_hitpoints was adding in the wrong (presumedly an outdated) value
+		for superheroism, 20 instead of 30.  If your hit points were
+		recalc-ed while you were berserk, (like when you gain a level)
+		you would lose 10 hit points permanantly when it ended.
+store2.c:
+	minor display changed, now uses %ld instead of %d to display the
+		(long) variable last_inc.
+dungeon.c:
+	minor change: if you hit 'A' to activate artifacts/DSM, and had
+		nothing to activate it would cost you a move.  Added
+		free_turn_flag = TRUE; on advice of Mr. Winer
+moria1.c:
+	minor change to sub3_move_light(), to ensure color of player is
+		normal.  In rare cases, the player could have been printed
+		in whatever color the last monster/item displayed was.
+dungeon.c:
+	minor change to examine_book() to make letters shown in book match
+		those used when casting the spell.  Again, thanks to Mr. Winer
+store1.c:
+	sell_price() was comparing the pointers min_sell and max_sell, and
+		not the associated values.  Could this fix the bizarre
+		rusty-chainmail-for-hundreds-of-millions-of-gold-in-the-
+		black-market-bug?  Thanks to Andrew Solovay for this one.
+recall.c:
+	"been killed by your ancestors" -> "...you and your..."
+mkdesc.c: (not really part of sourse, but it makes the mon_desc.dat file):
+	changed strcmp() call to stricmp(), so I can be less paranoid about
+		monster name capitalization...
+sets.c:
+	torches and oil can now be destroyed by fire damage...
+wizard.c:
+	wizard create will now skip all of the TR_* flags questions if
+		the item is not wearable/wieldable, since those flags only
+		apply to wearable/wieldable items.  This saves a LOT of
+		wasted keystrokes if you wanted to create Raal's to test
+		something... -CFT
+dungeon.c:
+	if in wiz mode, using non-rogue command set, then any wrong key
+		would do the artifact-list-to-file command.  This is because
+		any bad key was mapped to '~', which was then interpreted
+		normally.  To fix, I just made bad keys map to '(', which is
+		completely unused to my knowledge...
+create.c:
+	when using manual character generation, the test to change the
+		display message was outside of the loop, so the user wasn't
+		being told he could hit ^P to get back the previous character.
+treasure.c:
+	up stairs had an extra space at the end of the name; removed.
+misc2.c:
+	more colorization added to char screen (lost exp and lost stats)
+moria1.c:
+	get_dir(): targetting code will not be used if the monster isn't
+	lit... if player cannot see the monster, then he cannot aim, so
+	target mode should not be used. -CFT
+death.c, desc.c, dungeon.c, generate.c, misc1.c, misc2.c, moria1.c,
+  recall.c, spells.c:
+	Uses of strcmp() replaced with stricmp().  The cost in time is
+		trivial, and this insures better matching if the monster/
+		item lists are changed (at least case won't be as much of
+		a problem).  I did not replace strncmp() with strnicmp(),
+		since strnicmp() is "unique to dos", according to my TC++
+		manual.
+monsters.c:
+	I'd noticed that a few monster who definately shouldn't have shown
+		up on infravision did.  So I've updated many monsters for
+		consistancy: 1) all cold monsters don't show up on infravred;
+		and 2) all undead are res. cold, and don't show up on infrared.
+		Affected monsters were:  Yeti, sasquatch, cold vortex, cold
+	hound, ice troll, giant white dr. fly, b/y/m/a white dragons, great
+	ice wyrm, frost giant, spirit troll, Scatha, blue ooze, poltergeist,
+	rotting Q, gr. rotting Q.  Also guardian and spirit nagas cannot
+	open doors (since they have no hands...)
+creature.c, spells.c, misc2.c:
+	changes in the messages for items destroyed/disenchanted/stolen.  I'd
+		assumed that the comment in objdes (desc.c) was telling the
+		truth when it said the 3rd parameter, pref, controlled whether
+		it would add a prefix (like 'a') to the description.  Well, it
+		does, but it also controls suffixes like the (2d5) for weapons,
+		[4,+2] for armour, etc.  Now, after seeing how funny my meesages
+		looked, I've tweaked them to sound better.
+
+creature.c:
+	now, when gold stolen, it tells how much, so the player can agonize
+		over how much he lost...  :-)  Actually, I've always been
+		curious how much I do lose to thieves... Now I'll know.
+
+dungeon.c:
+	target code causes problems!  If you try to move w/o pickup, or try
+		to use the 'W' command to view the map, while in target mode,
+		get_dir will return 0 before asking you for a direction, which
+		is bad.  In case of the 'W' command, it will quickly become
+		caught in an infinite loop.  The soln: save the value of
+		target_mode to a temp var, force it false, read the dir, and
+		then reset target_mode.
+	Also, I somehow forgot to change the artivate artifact code to
+		reflect the changes in fire_ball(), bolt().  It's been
+		updated, but this will push back my U/l time by a couple
+		of hours...
+create.c:
+	very minor change to char creation code, to allow help screen
+		viewing from class and autoroller menus
+===========================================================================
+Tues 18 Aug 1993  PC Angband update 1.3 packaged for U/L to ksu.
+===========================================================================
+spells.c:
+	fire_ball() code was screwy, if, while targetted to someone/something
+		that wasn't aimable at the moment, you fired a ball spell,
+		then it would leap over everything until it eventually hit
+		a wall.  Obviously, this is not what you want.  If you can't
+		aim at your target, just explode at the 1st thing you hit.
+		I've fixed this, but I REALLY hate finding these problems
+		within 24 hours of uploading a new update!!!!
+creature.c, misc2.c:
+	another silly mistake... "your whatever was destroyed/stolen"
+		messages were incorrect if a stackable single item (like
+		a potion/scroll/etc) was destroyed.  It described the loss
+		of the whole bunch, even though only 1 was really lost. Fixed.
+moria2.c, dungeon.c:
+	YA oversight.  get_dir needed fixing (as above) for openobject(),
+		closeobject(), disarm_trap(), bash(), and jamdoor().
+spells.c:
+	Okay, I didn't fix the fire_ball() problem last time.  Now, after
+		careful consideration of the possible cases, with the
+		help of my marker board as scratch space, I believe I've
+		got the targetting test to work so that ball spells will
+		skip over monsters every time they're supposed to, and
+		only when they're supposed to.  It's really hairy to look
+		at, so I've commented it in prose. -CFT 
+monsters.c:
+	another flag consistency check: all thief-types now pick up objects.
+	also green glutton ghosts.  And all giants now don't (less than 1/2
+	did, so I removed the pickup flag from them all).
+generate.c:
+	new fn vault_giant() added and changes to vault_nasty() and special_
+		pit(), to add "Giant pits".  Basically they happen at the
+		same depth as troll pits (1 in 3 troll pits will be a giant
+		pit instead).  This is about right, because the giants tend
+		to have less HP than the trolls, but the giants aren't hurt
+		by light wands/rods, and more of them can harm your inventory.
+misc2.c:
+	when I colorized the exp display, I used %d to print the exp value,
+		instead of %ld.  This is fixed.
+externs.h, moria1.c, misc1.c, misc2.c, moria2.c:
+	To improve overlay performance, I moved group functions that always
+		call each other to the same file.  This was a very limited
+		optimization (only 2 fns moved), specializing in the
+		fire_ball(), fire_bolt(), bolt(), breath() functions. Basically,
+		spells should show a drastic speed up.
+	moved were: mmove() from misc2 -> moria2 to be with the rest of the
+		targetting code; and lite_spot() from moria1 -> misc1 to
+		be with the functions it calls.
+main.c:
+	After some time spent with my manuals (Yes, I did finally RTFM!),
+		I've figured out how to make TC's overlays run with
+		EMS memory.  You'll need to have some program that provides
+		EMS memory to use it, of course. (The "generic" program to
+		do this is emm386 (is there an emm286?))  Also, if you
+		have a recent version of DOS, and you're using emm386, be
+		sure that it is not given the 'noems' option.
+player.c:
+	dunedain -> dunadan  Apparently dunedain is plural, and since all
+		other race rames use singular, this makes it consistant.
+scrolls, rods, magic, prayer, dungeon:
+	WoR spells still ask, but now only ESC,y,Y,n,N will be accepted.
+	if player types y,Y then he will be recalled.  OW, no.  But either
+		way he still loses the scroll/charge/spell.  (But at least
+		he won't lose his last scroll by hitting RET...)
+tables.c:
+	indigo potions are now blue...
+misc1.c, dungeon.c:
+	In another optimization attempt, I've moved in_bounds(), randint(),
+		randnor(), damroll(), pdamroll(), and max_hp() out of
+		misc1.c and into dungeon.c.  Since dungeon.c is not overlayed,
+		all of these fns will always be in memory.  This will mean
+		that just slightly more memory is needed to play angband,
+		but I hope these fns are used often enough that this
+		change will prevent a lot of swapping... -CFT
+monsters.c:
+	mirkwood spiders are now evil.
+spells.c:
+	spell_hit_monster() could have divided by zero when setting monster
+		confusion flags.  Fixed.
+generate.c:
+	In an effort to prevent light_room from flooding into different
+		rooms, and from lighting door (esp secret doors) that
+		it shouldn't, I've taken off the "c_ptr->lr = TRUE;" line
+		from the end of all the place_*_door functions.
+moria2.c:
+	carry() code changed to check the pickup flag more carefully.  If
+		you were moving w/o pickup, and your inventory was full,
+		you would have been told "you can't carry", and the code
+		would never have noticed that you didn't WANT to carry it.
+		It should work better now.
+spells.c:
+	recharge() code changed so that rods can now be recharged.  recharging
+		a rod will reduce the amount of time required until it can
+		be used again.  If the rod recharge fails, it will be drained
+		further, not destroyed.  staff/wand recharge still should
+		work normally.
+	spell_hit_monster() changed to skip special effects if the monster's
+		going to die.  Why bother mention that a monster polymorph
+		from a blast of chaos, if it was killed by the blast?
+help.c:
+	'7' from "...The Healer's" to "...the Black Market"
+misc1.c:
+	to help reduce troubles, the test for MHDs in the color code of
+		loc_symbol has been changed to look for "ulti-" instead of
+		"multi-hued" as the substring to match.  This should help
+		people who don't agree with my capitialization preferences.
+spells.c:
+	detection(), detect_monsters(), detect_invis(), detect_evil() all
+		had multi-hued dragon colorizing code from loc_symbol
+		incorporated into the display, so that the color would
+		be what I want for detect spells.
+describe.c:
+	"an drow" -> "a drow"
+dungeon.c:
+	warrior psuedo ID now will tell letter of item learned about.
+misc2.c:
+	Because someone lost their main weapon to the inventory sort code,
+		I've realized how bad the change of assumed sorted order
+		can be.  Since inven_carry() assumed that everything is in
+		order before trying to insert, it could have inserted an
+		obj into a new slot when it should have stacked it with
+		others.  So, I've modified inven_carry (AGAIN!) to use a
+		2-stage process.  First, it looks through the player's
+		entire inventory, looking for a place to stack the object.
+		This prevents the stacking troubles, and agrees with what
+		the inven_check_num() test does.  Then, if it cannot stack
+		the object (either it doesn't stack, or no match was found),
+		it loops again, looking for the place to insert it in the
+		assumed sorted order.  Because a complete test for match is
+		done first, then even if the player's inventory is not in
+		the order it is assumed to be in, nothing bad will happen.
+	Another change:  Because I want Tenser's to sort before only Raals,
+		I've decided to change the sort criteria...  As before, if
+		an item is not always known1_p(), then we sort only by desc
+		tvals.  If it is always known, then it now sorts by incr
+		item level, and then by incr subval.  This may alter people's
+		inventories a little bit, but it will cause no more lost
+		objects, because of the above change.
+creature.c misc2.c:
+	I've (YA) changed the messages given when an item is stolen or
+		destroyed by acid/fire/etc.  Now the messages make it quite
+		clear if one item was lost, or many.  (stackable single
+		items, like potions/scrolls are lost 1 at a time, while
+		group items like arrows are lost a group at a time..)  I sure
+		hope this is the last time I have to change these messages.
+creature.c:
+	dragons will no longer pick up XD weapons (I forgot this one when I
+		did the "monsters don't pick up slay them weapons" bit).
+spells.c:
+	when monsters "stunned" (actually confused, but when done by a stun
+		cloud), the message is "dazed" instead of "confused"
+	teleport_to() was locking up the game!  The test for inbounds()
+		was checking the wrong variables (ny,nx) instead of (y,x)
+	BUT, that wasn't the only cause of "hangups" from Nexus breathes...
+		Because the variable 'm_ptr' was uninitialized if the
+		player was hit before any monster, teleport_to could be
+		call with garbage values to teleport_to.  I've fixed the
+		problem by forcing m_ptr to point to the monster that
+		breathed when processing the player-hit section of code (like
+		the codes assumes it does).  Boy, did this ever S*CK to
+		find... (and it's all my fault, caused during my remaking
+		of bolt/ball spells and mon_cast_spell().... -CFT
+dungeon.c, misc1.c:
+	In hopes of further optimizing the overlay code, I've moved the
+		functions lite_spot, loc_symbol, test_light, and
+		panel_contains from misc1.c to dungeon.c.  Since the code
+		in dungeon.c is not overlayed (by makefile), these functions
+		will now be always available.  I hope this will speed up
+		display time.  The down side of this is that the amount of
+		memory required to run will go up by the size of the object
+		code of these functions... since they are short functions
+		that don't use a lot of string data, I expect this increase
+		in memory requirements to be extremely minor, noticable only
+		in the most borderline cases.
+spells.c:
+	ball spells no longer affect newly dropped items.
+dungeon.c:
+	The One ring will no longer drain a character below 0 exp pts.  This
+		isn't a problem for a character whose likely to find it,
+		but if someone gets ridiculously lucky, and finds it at low
+		level, then it could happen (and then the exp either causes
+		trouble by being negative, or wraps around 4billion... either
+		way it's better to be fixed).
 

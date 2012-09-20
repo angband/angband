@@ -1,0 +1,72 @@
+  Targetting code allows you to "lock phasers" onto a monster or a location.
+It allows you to fire spells/aim wands/shoot arrows/etc at something without
+being "lined up" with it.  It also is convenient if you are going to fire
+many arrows/magic missiles/etc at one target.  I added in Chris Wilde's
+targetting code from Morgul for convenience, and to make the code slightly
+more fair to players -- monsters can cast spells when not "in line"
+with you, now the player can cast them back.
+
+  To use it, start by using the '*' command.  This is a "free turn" command,
+and so you don't have to worry about making a mistake, and costing your
+character an important round.  If there are any monsters visible, and in
+range, then the targetting code will start by going through them.  At
+this point, you can hit 'r' to see more info about the monster, or
+either 't' or '.' to select that monster as the target.  Or you can
+type 'l' to tell the targetting code that you wish to aim at a location,
+rather than at a monster.  Hitting ESC will abort targetting, turning
+off any pre-existing target.  Any other key will move through the monsters
+available.
+
+  If there are no monsters in sight, or you've cycled through them all,
+it will then move the cursor to your character, from where you can use the
+cursor keys to move it to the desired location, and then hit 't' or '.'
+to select the current cursor location as the target.  Hitting ESC will
+abort targetting and turn off any pre-existing target.
+
+  Once you have selected a target, you can cast spells, throw things,
+shoot arrows, zap wands, etc.  All of these will automatically be fired
+at the current target, without bothering you to ask what direction.  This
+is why I say that targetting can be convenient if you are going to fire
+a lot of arrows/magic missiles/etc at something.
+
+  Another benefit of targetting is that "ball spells" will now bypass
+intervening monsters to reach the target, like monster's breath weapons
+and ball spells do to reach you.  This is another way in which targetting
+makes Angband fairer to the player.
+
+  If you target on a monster, then the target will move with that monster.
+If you've targetted a location, even if there was a monster at that
+location, the target stays at that location.
+
+  If you were targetting a monster, and the monster dies, then targetting is
+automatically turned-off.  If you were targetting a location, and no longer
+wish to target there anymore, you must turn off targetting manually, by
+using the '*' command and hitting ESC.
+
+  One further point:  If you are targetting, and cannot see your target,
+then you will have to aim manually, in one of the 8 directions.  This
+could happen if the target is out of range, or if you've phase door-ed
+away, and there is now a wall between you and your target, or, if you
+were targetting a monster, if you cannot see that monster at the moment.
+This does not turn off targetting, merely suspends it.  So, when you
+can see your target again, targetting will work as before.
+
+  A final note:  I have still been unable to reach Chris Wilde to formally
+ask his permission to use his targetting code.  (All of the email addresses
+that I've tried seem to be outdated).  So I am technically violating his
+copyright to use his code.  I have tried to give him full credit for the
+targetting code, and I do not think he will refuse permission to use the
+code once I do ask him, but it _IS_ within his rights.  If that happens,
+I will have to remove the targetting code altogether from Angband, since
+the code is all based directly on his code.
+
+	Chuck
+--
+Charles F. Teague II  Net:cteague@cs.umb.edu  Real:33 Sidney Ave, Lynn MA 01902
++------------------------------------+-----------------------+----------------+
+| Computers are so powerful because  | "Don't do what I SAY, | 'lush' CS 1993 |
+| they do whatever you tell them to. |  do what I mean!!!!"  | TKE-zm sn 603  |
++------------------------------------+-----------------------+----------------+
+Hi!  I'm a replicating .sig virus!  Join in the fun and copy me into yours!
+
+

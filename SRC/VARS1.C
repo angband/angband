@@ -1,4 +1,4 @@
-/* vars2.c: Global variables, except for cave array...
+/* vars1.c: Global variables, except for cave array...
   cave array is barely small enough to fit into a 64k segment by
   itself.  Put any new variables here...  Leave vars2.c alone, unless
   the 64k segment barrier is overcome, or unless cave[][] gets
@@ -93,6 +93,7 @@ int8u find_examine = TRUE;
 int8u find_bound = FALSE;
 int8u find_prself = FALSE;
 int8u prompt_carry_flag = FALSE;
+int8u carry_query_flag = TRUE;
 int8u show_weight_flag = FALSE;
 int8u highlight_seams = FALSE;
 int8u find_ignore_doors = FALSE;
@@ -100,6 +101,7 @@ int8u sound_beep_flag = FALSE; /* I hate beeps! -CFT */
 int8u no_haggle_flag = FALSE; /* for those who find it tedious... -CFT */
 #ifdef TC_COLOR
 int8u no_color_flag = FALSE; /* for mono monitors -CFT */
+int8u inven_bw_flag = FALSE; /* should inventories be B&W or colorized? -CFT */
 #endif
 #else
 int find_cut = TRUE;
@@ -151,6 +153,12 @@ int panel_row,panel_col;
 int panel_row_min,panel_row_max;
 int panel_col_min,panel_col_max;
 int panel_col_prt,panel_row_prt;
+
+/* Targetting information, this code stolen from Morgul -CFT */
+int target_mode = FALSE;
+int16u target_col;
+int16u target_row;
+int16u target_mon;
 
 #ifdef MAC
 recall_type *c_recall;

@@ -403,14 +403,14 @@
 #define CH_SUMMON	0x00000100L
 
 /* definitions for creatures, cmove field */
-#define CM_ALL_MV_FLAGS	0x0000003BL
+#define CM_ALL_MV_FLAGS	0x0000001FL
 #define CM_ATTACK_ONLY	0x00000001L
 #define CM_MOVE_NORMAL	0x00000002L
 
-#define CM_RANDOM_MOVE	0x00000038L
-#define CM_20_RANDOM	0x00000008L
-#define CM_40_RANDOM	0x00000010L
-#define CM_75_RANDOM	0x00000020L
+#define CM_RANDOM_MOVE	0x0000001CL
+#define CM_20_RANDOM	0x00000004L
+#define CM_40_RANDOM	0x00000008L
+#define CM_75_RANDOM	0x00000010L
 
 #define CM_SPECIAL	0x003F0000L
 #define CM_INVISIBLE	0x00010000L
@@ -434,6 +434,8 @@
 /* creature spell definitions */
 #define CS_FREQ		0x0000000FL
 #define CS_SPELLS	0xFF07FFF0L
+
+#if 0 /* these were superceded by the definitions in monster.h -CFT */
 #define CS_TEL_SHORT	0x00000010L
 #define CS_TEL_LONG	0x00000020L
 #define CS_TEL_TO	0x00000040L
@@ -447,6 +449,7 @@
 #define CS_SUMMON_UND	0x00004000L
 #define CS_SLOW_PER	0x00008000L
 #define CS_DRAIN_MANA	0x00010000L
+#endif
 
 #define CS_INT1         0x80060020L /* mask of good spells */
 #define CS_INT2         0x51023400L /* to escape with :-)  */
@@ -454,13 +457,17 @@
 #define CS_BREATHE	0x00F80000L
 #define CS_BREATHE2	0x8000003FL
 #define CS_BREATHE3	0x0000007FL
+
+#if 0 /* these were superceded by the definitions in monster.h -CFT */
 #define CS_BR_LIGHT	0x00080000L
 #define CS_BR_GAS	0x00100000L
 #define CS_BR_ACID	0x00200000L
 #define CS_BR_FROST	0x00400000L
 #define CS_BR_FIRE	0x00800000L
+#endif
 
 /* creature defense flags */
+#if 0 /* these were superceded by the definitions in monster.h -CFT */
 #define CD_DRAGON	0x0001
 #define CD_ANIMAL	0x0002
 #define CD_EVIL		0x0004
@@ -477,6 +484,7 @@
 #define CD_INFRA	0x2000
 #define CD_MAX_HP	0x4000
 #define CD_ORC          0x8000
+#endif
 
 /* inventory stacking subvals */
 /* these never stack */
@@ -686,13 +694,16 @@
 #define SN_TARATOL	       174
 #define SN_RAZORBACK	       175
 #define SN_BLADETURNER	       176
-#define SN_ARRAY_SIZE	       177 /* must be at end of this list */
+#define SN_SHATTERED	       177
+#define SN_BLASTED	       178
+#define SN_ARRAY_SIZE	       179 /* must be at end of this list */
 
 /* defines for treasure type values (tval) */
 #define TV_NEVER	-1 /* used by find_range() for non-search */
 #define TV_NOTHING	0
 #define TV_MISC		1
 #define TV_CHEST	2
+#define TV_SPIKE	3
 /* min tval for wearable items, all items between TV_MIN_WEAR and TV_MAX_WEAR
    use the same flag bits, see the TR_* defines */
 #define TV_MIN_WEAR	10
@@ -702,7 +713,6 @@
 #define TV_SLING_AMMO	10
 #define TV_BOLT		11
 #define TV_ARROW	12
-#define TV_SPIKE	13
 #define TV_LIGHT	15
 #define TV_BOW		20
 #define TV_HAFTED	21
@@ -763,7 +773,6 @@
 #define GF_FROST	4
 #define GF_FIRE		5
 #define GF_HOLY_ORB	6
-#ifdef TC_COLOR /* used is colorizing bolts/balls/breath -CFT */
 #define GF_ARROW	7
 #define GF_PLASMA	8
 #define GF_NETHER	9
@@ -782,7 +791,7 @@
 #define GF_GRAVITY	22
 #define GF_MANA		23
 #define GF_METEOR	24
-#endif
+#define GF_ICE		25
 
 #define WD_LT	        1L
 #define WD_LT_BLTS	2L

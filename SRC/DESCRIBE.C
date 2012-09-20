@@ -76,8 +76,8 @@ describe_mon_type desc_list[MAX_CREATURES] = {
   " thousands of tiny legs"},
 {"Snaga" , "It is one of the many weaker 'slave' orcs, often"
   " mistakenly known as a goblin"},
-{"Cave Orc" , "It is often found in huge numbers in deep caves"},
-{"Hill Orc" , "It is a hardy well-weathered survivor"},
+{"Cave orc" , "It is often found in huge numbers in deep caves"},
+{"Hill orc" , "It is a hardy well-weathered survivor"},
 {"Rattlesnake" , "It is recognized by the hard-scaled end of it's body"
   " that is often 'rattled' to frighten it's prey"},
 {"Manes" , "It is minor but aggressive demon"},
@@ -169,14 +169,14 @@ describe_mon_type desc_list[MAX_CREATURES] = {
 {"Giant brown scorpion" , "It is fast and poisonous"},
 {"Earth spirit" , "It is humanoid in shape and made out of solid rock"},
 {"Fire spirit" , "It is composed of pure flame"},
-{"Uruk-Hai" , "It is a cunning orc of power, as tall as a man,"
+{"Uruk" , "It is a cunning orc of power, as tall as a man,"
   " and stronger. It fears little"},
 {"Stone giant" , "It is eighteen foot tall and looking at you"},
 {"Stone golem" , "It is an animated statue"},
 {"Red mold" , "It is a strange red growth on the dungeon floor; it seems"
   " to burn with flame"},
 {"Quylthulg" , "It is a strange pulsing mound of flesh"},
-{"Nexus Quylthulg" , "It is a very unstable, strange pulsing mound of flesh"},
+{"Nexus quylthulg" , "It is a very unstable, strange pulsing mound of flesh"},
 {"Chimera" , "It is a strange concoction of lion, dragon and goat. It"
   " looks very odd but very avoidable"},
 {"Cloud giant" , "It is a twenty foot tall giant wreathed in clouds"},
@@ -236,18 +236,18 @@ describe_mon_type desc_list[MAX_CREATURES] = {
 {"Wolf" , "It howls and snaps at you"},
 {"Warg" , "It is a large wolf with eyes full of cunning"},
 {"Werewolf" , "It is a huge wolf with eyes that glow with manly intelligence"},
-{"Hell Hound" , "It is a giant dog that glows with heat, flames pour"
+{"Hell hound" , "It is a giant dog that glows with heat, flames pour"
   " from its nostrils"},
-{"Hell Hound" , "It is a giant dog that glows with heat, flames pour"
+{"Hell hound" , "It is a giant dog that glows with heat, flames pour"
   " from its nostrils"},
 {"Water troll" , "It is a troll that reeks of brine"},
-{"Olog-Hai" , "It is a massive intelligent troll with needle sharp fangs"},
+{"Olog" , "It is a massive intelligent troll with needle sharp fangs"},
 {"Water elemental" , "It is a giant tempest of water"},
 {"Fire elemental" , "It is a giant inferno of flames"},
 {"Air elemental" , "It is a giant tornado of winds"},
 {"Lich" , "It is a skeletal form dressed in robes. It radiates vastly"
   " evil power"},
-{"Master Vampire" , "It is a humanoid form dressed in robes; power"
+{"Master vampire" , "It is a humanoid form dressed in robes; power"
   " eminates from it's chilling frame"},
 {"Giant red scorpion" , "It is a giant red scorpion. It looks poisonous"},
 {"Earth elemental" , "It is a giant form composed of rock, with fists"
@@ -262,48 +262,48 @@ describe_mon_type desc_list[MAX_CREATURES] = {
 {"Young red dragon" , "It has a form that legends are made of. Its"
   " still tender scales are a deepest red hue; heat radiates from its"
   " form"},
-{"Necromancer" , "A gaunt figure, clothed in black robes"},
+{"Warlock" , "A gaunt figure, clothed in black robes"},
 {"Mummified troll" , "It is a massive figure clothed in wrappings. You"
   " are wary of its massive fists"},
 {"Giant red ant lion" , "A giant ant covered in shaggy fur, its"
   " powerful jaws glow with heat"},
-{"Mature white Dragon" , "A large dragon, scales gleaming bright white"},
+{"Mature white dragon" , "A large dragon, scales gleaming bright white"},
 {"Xorn" , "A huge creature of the element Earth. Able to merge with its"
   " element, it has four huge arms protruding from its enormous torso"},
-{"Grey Wraith" , "A tangible but ghostly form, made of grey fog, the"
+{"Grey wraith" , "A tangible but ghostly form, made of grey fog, the"
   " air around it feels deathly cold"},
-{"Young Multi-Hued Dragon" , "It has a form that legends are made"
-  " of, beautiful scales of shimmering and magical colours cover it"},
-{"Mature blue Dragon" , "A large dragon, scales tinted deep blue"},
-{"Mature green Dragon" , "A large dragon, scales tinted deep green"},
+{"Young multi-hued dragon" , "It has a form that legends are made"
+  " of; beautiful scales of shimmering and magical colours cover it"},
+{"Mature blue dragon" , "A large dragon, scales tinted deep blue"},
+{"Mature green dragon" , "A large dragon, scales tinted deep green"},
 {"Iridescent beetle" , "It is a giant beetle, whose carapace shimmers"
   " with vibrant energies"},
-{"Vampire Lord" , "A foul wind chills your bones as this ghastly"
+{"Vampire lord" , "A foul wind chills your bones as this ghastly"
   " figure approaches"},
-{"Master Lich" , "A skeletal form wrapped in robes, powerful magic"
+{"Master lich" , "A skeletal form wrapped in robes, powerful magic"
   " crackles along its bony fingers"},
-{"Mature red Dragon" , "A large dragon, scales tinted deep red"},
-{"Mature black Dragon" , "A large dragon, with scales of deepest black"},
-{"Mature Multi-Hued Dragon" , "A large dragon, scales shimmering many colours"},
-{"Ancient blue Dragon" , "A huge dragonic form, lightning crackles"
+{"Mature red dragon" , "A large dragon, scales tinted deep red"},
+{"Mature black dragon" , "A large dragon, with scales of deepest black"},
+{"Mature multi-hued dragon" , "A large dragon, scales shimmering many colours"},
+{"Ancient blue dragon" , "A huge dragonic form, lightning crackles"
   " along its length"},
-{"Emperor Wight" , "Your life force is torn from your body as this"
+{"Emperor wight" , "Your life force is torn from your body as this"
   " powerful unearthly being approaches"},
-{"Black Wraith" , "A figure that seems made of void, a strangely"
+{"Black wraith" , "A figure that seems made of void, a strangely"
   " human shape cloaked in shadow, it reaches out at you"},
-{"Nether Wraith" , "A form that hurts the eye, death permeates the"
+{"Nether wraith" , "A form that hurts the eye, death permeates the"
   " air around it. As it nears you, a coldness saps your soul"},
 {"Sorceror" , "A human figure in robes, he moves with magically"
   " improved speed, and his hands are ablur with spell casting"},
-{"Ancient white Dragon" , "A huge dragonic form, frost covers it from"
+{"Ancient white dragon" , "A huge dragonic form, frost covers it from"
   " head to tail"},
-{"Ancient green Dragon" , "A huge dragonic form enveloped in clouds"
+{"Ancient green dragon" , "A huge dragonic form enveloped in clouds"
   " of poisonous vapour"},
-{"Ancient black Dragon" , "A huge dragonic form, pools of acid melt"
+{"Ancient black dragon" , "A huge dragonic form, pools of acid melt"
   " the floor around it"},
 {"Disenchanter worm" , "A strange mass of squirming worms, magical"
   " energy crackles around this disgusting form"},
-{"Rotting Quylthulg" , "It is a pulsing flesh mound that reeks of death"
+{"Rotting quylthulg" , "It is a pulsing flesh mound that reeks of death"
   " and putrefaction"},
 {"Lesser titan" , "It is a humanoid figure thirty feet tall that gives"
   " off an aura of power and hate"},
@@ -311,13 +311,13 @@ describe_mon_type desc_list[MAX_CREATURES] = {
   " of its presence makes you deeply respect it. Few creatures can"
   " match the powers of a Solar, fewer still live to tell the tale"
   " after attacking one"},
-{"Ancient red Dragon" , "A huge dragonic form, wisps of smoke steam"
+{"Ancient red dragon" , "A huge dragonic form, wisps of smoke steam"
   " from its nostrils and the extreme heat surrounding it makes you"
   " gasp for breath"},
-{"Death Quasit" , "It is a demon of small stature, but its armoured"
+{"Death quasit" , "It is a demon of small stature, but its armoured"
   " frame moves with lightning speed and its powers make it a tornado"
   " of death and destruction"},
-{"Ancient Multi-Hued Dragon", "A huge dragonic form, many colours"
+{"Ancient multi-hued dragon", "A huge dragonic form, many colours"
   " ripple down its massive frame. Few live to see another"},
 {"Erinyes" , "It is a lesser demon of female form, however it takes"
   " little time to show its true colours"},
@@ -327,11 +327,11 @@ describe_mon_type desc_list[MAX_CREATURES] = {
 {"Marilith" , "It is a demon of female form with many arms, each"
   " bearing deadly weapons"},
 {"Hezrou" , "It is a demon of lizard form with cruel looking jaws"},
-{"Grishnakh, the Hill orc" , "He is a cunning and devious orc with"
+{"Grishnakh, the Hill Orc" , "He is a cunning and devious orc with"
   " a chaotic nature"},
 {"Beholder" ,"It is a ball-like creature, with one main eye and"
   " twelve smaller eyes on stalks. It has thousands of fangs, beware!"},
-{"Shagrat, the orc captain","He is an Uruk-Hai of power and great cunning"},
+{"Shagrat, the Orc Captain","He is an Uruk of power and great cunning"},
 {"Azog, King of the Uruk-Hai","He is also known as King of Khazad-dum."
   " His ego is renowned to be bigger than his head"},
 {"Draebor, the Imp" ,"An intensely irritating git of a monster"},
@@ -343,7 +343,7 @@ describe_mon_type desc_list[MAX_CREATURES] = {
 {"Minotaur" ,"It is a cross between a human and a bull"},
 {"Glabrezu" ,"It is demon with arms and pincers, its form a true"
   " mockery of life"},
-{"Balor" ,"It is a massive humanoid demon wreathed in flames"},
+{"Lesser balrog" ,"It is a massive humanoid demon wreathed in flames"},
 {"Vecna, the Emperor Lich" ,"He is a highly cunning, extremely"
   " magical being, spoken of in legends. This ancient shadow of death"
   " wilts any living thing it passes"},
@@ -353,7 +353,7 @@ describe_mon_type desc_list[MAX_CREATURES] = {
   " Carcharoth, also known as 'The Red Maw', is the largest wolf to"
   " ever walk the earth. He is highly intelligent and a deadly opponent"
   " in combat"},
-{"Draugluin, Sire of All Werewolves","Draugluin provides Sauron with"
+{"Draugluin, Sire of all Werewolves","Draugluin provides Sauron with"
   " a fearsome personal guard. He is an enormous wolf inhabited with"
   " a human spirit, he is chief of all his kind"},
 {"Shelob, Spider of Darkness","Shelob is an enormous bloated"
@@ -370,7 +370,7 @@ describe_mon_type desc_list[MAX_CREATURES] = {
   " bloated body. She is always ravenously hungry and would even"
   " eat herself to avoid starvation. She is rumoured to have a foul"
   " and deadly breath"},
-{"Smaug the Golden","Smaug is one of the Uriloki that still survive, a"
+{"Smaug the Golden","Smaug is one of the Uruloki that still survive, a"
   " fire-drake of immense cunning and intelligence. His speed through"
   " air is matched by few other dragons and his dragon's fire is"
   " what legends are made of"},
@@ -384,7 +384,7 @@ describe_mon_type desc_list[MAX_CREATURES] = {
 {"Tiamat, Celestial Dragon of Evil","Usually found guarding the first"
   " plane of Hell, Tiamat is a formidable opponent, her five"
   " heads breathing death to all who stand against her"},
-{"Muar, the Balrog","A huge balor, surrounded by raging pillars of"
+{"Muar, the Balrog","A huge balrog, surrounded by raging pillars of"
   " fire, Muar is indeed a terrible opponent. Wielding a great whip of"
   " fire and blazing sword, his fury blisters your skin, melts your flesh"},
 {"Lungorthin, the Balrog of White Fire","A massive form, cloaked in"
@@ -453,7 +453,7 @@ describe_mon_type desc_list[MAX_CREATURES] = {
 {"Ji Indur Dawndeath","This Ringwraith was a weakminded sorcerer King"
   " who fell easily under Sauron's power"},
 {"Scatha the Worm","Scatha is an ancient and wise Dragon. Scatha has"
-  " grown clever over the long years, his scales covered with frost,"
+  " grown clever over the long years. His scales are covered with frost,"
   " and his breath sends a shower of ice into the air"},
 {"Dwar, Dog Lord of Waw","Dwar had a special affinity for dogs in life,"
   " and can still command them at will. He howls manically as he"
@@ -466,7 +466,7 @@ describe_mon_type desc_list[MAX_CREATURES] = {
 {"Khamul the Easterling","A warrior King of the East. Khamul is a"
   " powerful opponent, his skill in combat awesome and his form twisted"
   " by evil cunning"},
-{"Saruman of Many Colours","Originally known as the White, Saruman"
+{"Saruman of Many Colours","Originally known as the white, Saruman"
   " fell prey to Sauron's wiles. He seeks to emulate him and breeds"
   " orcs and trolls to fight for him. He searches forever for the One"
   " Ring, to become a mighty Sorcerer-King of the world"},
@@ -478,9 +478,9 @@ describe_mon_type desc_list[MAX_CREATURES] = {
 {"Feagwath the Undead Sorceror","A stench of corruption and decay"
   " surrounds this sorceror, who has clearly risen from the grave"
   " to continue his foul plots and schemes "},
-{"Master Thief","Cool and confident, fast and lithe; protect"
+{"Master thief","Cool and confident, fast and lithe; protect"
   " your possessions quickly!"},
-{"Master Rogue","A thief of great power and shifty speed"},
+{"Master rogue","A thief of great power and shifty speed"},
 {"Mithril golem","This is a statue of true-silver! Imagine how much"
   " that would be worth if you could take it home! "},
 {"Eog golem","A deep grey statue, which is striding towards you with an"
@@ -497,8 +497,8 @@ describe_mon_type desc_list[MAX_CREATURES] = {
   " recognizable face of a kobold"},
 {"Black ogre","A massive orc like figure, with black skin and powerful arms"},
 {"Cave ogre","A giant orc like figure, with an awesomely muscled frame"},
-{"Mumakil","A massive elephant form with eyes twisted by madness"},
-{"Mumakil","A massive elephant form with eyes twisted by madness"},
+{"Mumak","A massive elephant form with eyes twisted by madness"},
+{"Mumak","A massive elephant form with eyes twisted by madness"},
 {"Catoblepas","A strange oxen-like form with a huge head but a thin"
   " weak neck, it looks likes the creation of some deranged alchemist"},
 {"Bodak","It is a humanoid form composed of flames and hatred"},
@@ -506,11 +506,11 @@ describe_mon_type desc_list[MAX_CREATURES] = {
 {"Spirit naga","A wraithly snakelike form with the torso of a"
   " beautiful woman, it is the most powerful of its kind"},
 {"Hummerhorn","A giant buzzing wasp, it's stinger drips venom"},
-{"Monadic Deva","A lesser angel wearing little more than a loin cloth;"
+{"Monadic deva","A lesser angel wearing little more than a loin cloth;"
   " its steely skin providing all the protection it needs"},
-{"Movanic Deva","A lesser angel protected by an aura of holiness."
+{"Movanic deva","A lesser angel protected by an aura of holiness."
   " Its muscular form looks extremely powerful next to your own frail body"},
-{"Astral Deva","It is an angel moving very quickly, wielding a holy"
+{"Astral deva","It is an angel moving very quickly, wielding a holy"
   " war hammer and casting a volley of powerful spells in your direction"},
 {"Planetar","It is an angel, fast and strong. You are stunned by"
   " its extreme holiness and try to resist all desires to obey it"},
@@ -535,15 +535,15 @@ describe_mon_type desc_list[MAX_CREATURES] = {
 {"Death knight","It is a humanoid form dressed in armour of an"
   " ancient form, from beneath it's helmet, eyes glow a baleful red"
   " and seem to pierce you like lances of fire"},
-{"Great Storm Wyrm","A vast dragon of power, storms and lightning"
+{"Great storm wyrm","A vast dragon of power, storms and lightning"
   " crash around it's titanic form. Deep blue scales reflect the"
   " flashes and highlight the creature's great muscles. It regards you"
   " with contempt"},
-{"Great Hell Wyrm","A vast dragon of immense power. Fire leaps"
+{"Great hell wyrm","A vast dragon of immense power. Fire leaps"
   " continuously from its huge form, the air around it scalds you."
   " Its slightest glance burns you, and you truly realize how"
   " insignificant you are"},
-{"Great Ice Wyrm","An immense dragon capable of awesome destruction."
+{"Great ice wyrm","An immense dragon capable of awesome destruction."
   " You have never felt such extreme cold, or witnessed such an icy"
   " stare. Begone quickly or feel its wrath"},
 {"Shade","A shadowy form clutches at you from the darkness, a"
@@ -565,21 +565,21 @@ describe_mon_type desc_list[MAX_CREATURES] = {
   " knows nothing but the stealing of souls and the stench of death."
   " Flee it's hunger"},
 {"Demonist","A figure twisted by evil standing in robes of deepest crimson"},
-{"Dark elf","An elven figure with jet black hair and pale skin, its"
+{"Dark elf","An elven figure with jet black skin and white hair, its"
   " eyes are large and twisted with evil"},
-{"Dark elven mage","An elven figure dressed all in black, hurling spells"
+{"Dark elven mage","A drow elven figure dressed all in black, hurling spells"
   " at you"},
-{"Dark elven priest","An elven figure dressed all in black, chanting"
+{"Dark elven priest","A drow elven figure dressed all in black, chanting"
   " curses and waiting to deliver your soul to hell"},
-{"Dark elven lord","An elven figure in armour and radiating evil power"},
-{"Dark elven warrior","An elven figure in armour and ready with his sword"},
-{"Dark elven sorceror","An elven figure dressed in deepest black,"
+{"Dark elven lord","A drow elven figure in armour and radiating evil power"},
+{"Dark elven warrior","An drow elven figure in armour and ready with his sword"},
+{"Dark elven sorceror","A drow elven figure dressed in deepest black,"
   " power seems to crackle from its slender frame"},
 {"Drider","A dark elf twisted by the goddess Lolth, a dark elven torso"
   " sits upon the bloated form of a giant spider"},
-{"Demonic Quylthulg", "A pile of pulsing flesh that glows with an"
+{"Demonic quylthulg", "A pile of pulsing flesh that glows with an"
   " inner hellish fire, the world seems to cry out against it"},
-{"Dragonic Quylthulg", "It looks like it was once a dragon corpse,"
+{"Dragonic quylthulg", "It looks like it was once a dragon corpse,"
   " now deeply infected with magical bacteria that make it pulse in a"
   " foul and degrading way"},
 {"Player ghost", "You don't believe what you are seeing"},
@@ -608,15 +608,15 @@ describe_mon_type desc_list[MAX_CREATURES] = {
 {"Young bronze dragon", "It has a form that legends are made of. Its"
   " still tender scales are a rich bronze hue, and its shape masks"
   " its true form"},
-{"Mature gold Dragon","A large Dragon, with scales of gleaming"
+{"Mature gold dragon","A large Dragon, with scales of gleaming"
   " gold"},
-{"Mature bronze Dragon","A large Dragon, with scales of rich bronze"},
-{"Ancient gold Dragon","A huge Dragonic form, wreathed in a nimbus of light"},
-{"Ancient bronze Dragon","A huge Dragonic form, enveloped in a cascade"
+{"Mature bronze dragon","A large Dragon, with scales of rich bronze"},
+{"Ancient gold dragon","A huge Dragonic form, wreathed in a nimbus of light"},
+{"Ancient bronze dragon","A huge Dragonic form, enveloped in a cascade"
   " of colour"},
 {"Crystal drake","A dragon of strange crystalline form, light"
   " shines through it, dazzling your eyes with spectrums of colour"},
-{"Great Crystal Drake","A huge crystalline Dragon. Its claws could cut"
+{"Great crystal drake","A huge crystalline Dragon. Its claws could cut"
   " you to shreds and its teeth are razor sharp. Strange colours"
   " ripple through it as it moves in the light"},
 {"Patriarch","A dark priest of the highest order. Powerful and evil,"
@@ -624,11 +624,11 @@ describe_mon_type desc_list[MAX_CREATURES] = {
 {"Salamander","A black and yellow lizard.. WATCH OUT"},
 {"Giant salamander","A large black and yellow lizard. You'd better run away"},
 {"Clear worm mass","A disgusting mass of poisonous worms"},
-{"Great Wyrm of Chaos","A massive Dragon of changing form. As you watch,"
+{"Great wyrm of chaos","A massive Dragon of changing form. As you watch,"
   " it appears first fair and then foul. Its body is twisted by"
   " chaotic forces as it strives to stay real. Its very existence"
   " distorts the universe around it"},
-{"Great Wyrm of Law","A massive Dragon of powerful intellect. It seeks"
+{"Great wyrm of law","A massive Dragon of powerful intellect. It seeks"
   " to dominate the universe and despises all other life. It sees all"
   " who do not obey it as merely insects to be crushed underfoot"},
 {"Giant tarantula","A giant spider with hairy black and red legs."},
@@ -641,7 +641,7 @@ describe_mon_type desc_list[MAX_CREATURES] = {
 {"Fruit bat","A fast-moving pest"},
 {"Giant army ant","An armoured form moving with purpose, powerful on"
   " its own; flee when hordes of them march"},
-{"Gorbag, the orc captain","A gruesomely ugly but cunning orc, his"
+{"Gorbag, the Orc Captain","A gruesomely ugly but cunning orc, his"
   " eyes regard you with hatred and powerful arms flex menacingly as"
   " he advances"},
 {"Light hound","A brilliant canine form whose light hurts your eyes,"
@@ -709,15 +709,15 @@ describe_mon_type desc_list[MAX_CREATURES] = {
 {"Time vortex","You haven't seen it yet"},
 {"Acidic cytoplasm","A disgusting animated blob of destruction, flee its"
   " gruesome hunger!"},
-{"Black Reaver","A humanoid form. Black as night. Advancing steadily"
+{"Black reaver","A humanoid form. Black as night. Advancing steadily"
   " and unstoppably. Flee"},
-{"Great Wyrm of Balance","This massive Dragon is the mightiest"
+{"Great wyrm of balance","This massive Dragon is the mightiest"
   " of Dragonkind. It is thousands of years old and seeks to maintain"
   " the Balance. It sees you as an upstart troublemaker without the"
   " wisdom to control your actions. It will destroy you"},
-{"Ugluk, the Uruk-Hai","Another of Morgoth's servants, this Orc is"
+{"Ugluk, the Uruk","Another of Morgoth's servants, this Orc is"
   " strong and cunning. He is ugly and scarred from many power struggles"},
-{"Omarax the Eye tyrant","A vast baleful eye floating in the air. His"
+{"Omarax the Eye Tyrant","A vast baleful eye floating in the air. His"
   " gaze seems to shred your soul and his spells crush your will. He"
   " is ancient, his history steeped in forgotten evils, his"
   " atrocities numerous and sickening"},
@@ -758,8 +758,8 @@ describe_mon_type desc_list[MAX_CREATURES] = {
   " Ungol. He is mortally afraid of spiders"},
 {"Golfimbul, the Hill Orc Chief","A leader of a band of raiding orcs,"
   " he picks on hobbits"},
-{"Mim, betrayer of Turin","The last of his race, Mim is a petty"
-  " dwarf. Petty dwarfs are strange creatures, powerful in sorcery"
+{"Mim, Betrayer of Turin","The last of his race, Mim is a petty"
+  " dwarf. Petty dwarves are strange creatures, powerful in sorcery"
   " and originating in the East. They were hunted to extinction by high elves"},
 {"Novice mage","He is leaving behind a trail of dropped spell components"},
 {"Gnome mage","A mage of short stature"},
@@ -787,7 +787,7 @@ describe_mon_type desc_list[MAX_CREATURES] = {
   " nether storms rage around its bloodshot pupil and light seems to"
   " bend as it sucks its power from the very air around it. Your"
   " soul chills as it drains your vitality for its evil enchantments"},
-{"Will o' the Wisp","A strange ball of glowing light. It disappears"
+{"Will o' the wisp","A strange ball of glowing light. It disappears"
   " and reappears and seems to draw you to it. You seem somehow"
   " compelled to stand still and watch its strange dancing motion"},
 {"Nightwing","Everywhere colours seem paler and the air chiller. At"
@@ -828,7 +828,7 @@ describe_mon_type desc_list[MAX_CREATURES] = {
 {"Novice priest","He is tripping over his priestly robes"},
 {"Novice warrior","He looks inexperienced but tough"},
 {"Novice rogue","A rather shifty individual"},
-{"Novice Ranger","An agile hunter, ready and relaxed"},
+{"Novice ranger","An agile hunter, ready and relaxed"},
 {"Medusa, the Gorgon","One of the original three ugly sisters. Her"
   " face could sink a thousand ships. Her scales rattle as she"
   " slithers towards you, venom dripping from her ghastly mouth"},
@@ -836,9 +836,9 @@ describe_mon_type desc_list[MAX_CREATURES] = {
   " Farmer Maggot. It thinks you are stealing mushrooms"},
 {"Fang, Farmer Maggot's dog","A rather vicious dog belonging to"
   " Farmer Maggot. It thinks you are stealing mushrooms"},
-{"Ibun, Son of Mim","One of the last of the petty dwarfs. Ibun is a"
+{"Ibun, Son of Mim","One of the last of the petty dwarves. Ibun is a"
   " tricky sorcerous little being, full of mischief"},
-{"Khim, Son of Mim","One of the last of the petty dwarfs. Khim is a"
+{"Khim, Son of Mim","One of the last of the petty dwarves. Khim is a"
   " tricky sorcerous little being, full of mischief"},
 {"Nether worm mass","A disgusting pile of dark worms, eating each"
   " other, the floor, the air, you..."},
@@ -848,14 +848,14 @@ describe_mon_type desc_list[MAX_CREATURES] = {
   " keeps his troop in order with displays of excessive violence"},
 {"Lorgan, Chief of the Easterlings","A mighty warrior from the east,"
   " Lorgan hates everything that he cannot control"},
-{"Lugdush, the Uruk-Hai","A strong and cunning orc warrior, Lugdush"
+{"Lugdush, the Uruk","A strong and cunning orc warrior, Lugdush"
   " sneers as he insults your mother"},
-{"Ethereal hound","A pale white hound. You can see straight through"
+{"Astral hound","A pale white hound. You can see straight through"
   " it. Pulsing red lines and strange fluorescent light hints at"
   " internal organs best left to the imagination"},
 {"Enchantress","This elusive female spellcaster has a special affinity"
   " for dragons, whom she rarely fights without"},
-{"Dark elven druid","An evil twisted elf, with mighty nature"
+{"Dark elven druid","A powerful drow, with mighty nature"
   " controlling enchantments"},
 {"Sasquatch","A tall shaggy, furry humanoid, he could call the"
   " Yeti brother"},
@@ -883,7 +883,7 @@ describe_mon_type desc_list[MAX_CREATURES] = {
 {"Gorgimera","The result of evil"
   " experiments, this travesty of nature should never be alive. It has"
   " 3 heads - gorgon, goat and dragon - all attached to a lion's body"},
-{"Kavlax the Many-headed","A Large dragon with a selection of heads,"
+{"Kavlax the Many-Headed","A Large dragon with a selection of heads,"
   " all shouting and arguing as they look for prey, but each with its"
   " own deadly breath weapon"},
 {"Baphomet the Minotaur Lord","A fearsome bull-headed demon,"
@@ -944,7 +944,7 @@ describe_mon_type desc_list[MAX_CREATURES] = {
   " pitiful insignificant being he sees you to be. Your very soul"
   " will be taken into judgement by his supreme authority, as he cleanses the"
   " world of evil"},
-{"Ethereal Dragon","A huge Dragon emanating from the elemental plains,"
+{"Ethereal dragon","A huge Dragon emanating from the elemental plains,"
   " the Ethereal dragon is a master of light and dark. Its form"
   " disappears from sight as it cloaks itself in unearthly shadows"},
 {"Ethereal drake","A dragon of elemental power, with control over light"
@@ -957,11 +957,11 @@ describe_mon_type desc_list[MAX_CREATURES] = {
   " and destruction. Tselakus is a being of sneering"
   " contempt, laughing at your pitiful efforts to defy him. Mighty"
   " claws rend reality as he annihilates all in his path to your soul"},
-{"Ogre magi","A hideous ogre wrapped in black sorcerous robes"},
+{"Ogre mage","A hideous ogre wrapped in black sorcerous robes"},
 {"Greater titan","A forty foot tall humanoid that shakes the ground as"
   " it walks. The power radiating from its frame shakes your courage,"
   " its hatred inspired by your defiance"},
-{"Night Mare","A fearsome skeletal horse with glowing eyes, that watch"
+{"Night mare","A fearsome skeletal horse with glowing eyes, that watch"
   " you with little more than a hatred of all that lives"},
 {"Lokkak, the Ogre Chieftan","An Ogre reknowned for acts of"
   " surpassing cruelty, Lokkak quickly became the leader of a large band"
@@ -971,11 +971,11 @@ describe_mon_type desc_list[MAX_CREATURES] = {
   " its devastation is unmatched"},
 {"Brodda, the Easterling","A nasty piece of work, Brodda picks"
   " on defenseless women and children"},
-{"Master Quylthulg","A pulsating mound of flesh, shining with silver"
+{"Master quylthulg","A pulsating mound of flesh, shining with silver"
   " pulses of throbbing light"},
-{"Greater Dragonic Quylthulg","A massive mound of scaled flesh,"
+{"Greater dragonic quylthulg","A massive mound of scaled flesh,"
   " throbbing and pulsating with multi-hued light"},
-{"Greater Rotting Quylthulg","A massive pile of rotting flesh. A"
+{"Greater rotting quylthulg","A massive pile of rotting flesh. A"
   " disgusting stench fills the air as it throbs and writhes"},
 {"The Emperor Quylthulg","A huge seething mass of flesh with a"
   " rudimentary intelligence, the Emperor Quylthulg changes colours"

@@ -1,10 +1,25 @@
-                       Welcome to Moria!
+                      Welcome to Angband! (PC release 1.31)
+(If this is your first time playing, you may want to read the manual first.)
 
-Your first task is to generate a character. You must specify a sex,
-a race and a class. Anytime before you have made these specifications,
-you can interrupt with control-C. You can also specify the race as
-often as you like by entering '%' to the class request. This will also
-regenerate your attributes.
+   Your first task is to generate a character.  You must specify a race,
+a sex and a class.  Then you will be asked if you wish to use the autoroller.
 
-If this is your first time playing, you may want to read the manual first.
-
+   If you say yes, Angband will then ask you for the minimally acceptable
+value for each of your six vital statistics.  If you don't care what you
+have for a given stat., you should use 3.  If you want a value over 18, you
+should add the percentile part to 18.  For example, 18/01 is 19, 18/32 is
+50, 18/99 is 117.  Then Angband will generate random characters, until it
+finds one that meets your specifications.  Be warned: If you are too picky,
+you could be in for a long wait until Angband finds a suitable character.
+
+   If you chose not to use the autoroller, Angband will generate characters
+one at a time, letting you view each and decide if you want to keep that one.
+If you happen to hit space an extra time, and realize it just as your perfect
+character is erased, don't despair.  You can type control-p to go back to
+the previous character.  When you are satisfied with the current character,
+hit ESC.
+
+   Then Angband will ask you to name your character.  If you make a mistake,
+don't worry, it is simple to rename your character during play.  At this
+point, you can now press any key but 'Q' to begin play, or 'Q' to abort and
+exit immediately.

@@ -60,6 +60,8 @@ void activate_rod()
       + (class_level_adj[m_ptr->pclass][CLA_DEVICE] * m_ptr->lev / 3);
     if (py.flags.confused > 0)
       chance = chance / 2;
+    if ((chance < USE_DEVICE) && (randint(USE_DEVICE - chance + 1) == 1))
+      chance = USE_DEVICE; /* Give everyone a slight chance */
     if (chance <= 0)  chance = 1;
     if (randint(chance) < USE_DEVICE)
       msg_print("You failed to use the rod properly.");
@@ -215,11 +217,19 @@ void activate_rod()
 	i_ptr->timeout=888;
 	break;
       case RD_RECALL:
-	if (py.flags.word_recall == 0)
-          py.flags.word_recall = 25 + randint(30);
-        msg_print("The air about you becomes charged.");
+      { char c; int f = TRUE;
+      do { /* loop, so RET or other key doesn't accidently exit */
+      	f = get_com("Do you really want to return?", &c);
+        } while (f && (c != 'y') && (c != 'Y') && (c != 'n') &&
+        		(c != 'N'));
+      if (f && (c != 'n') && (c != 'N')) {
+	  if (py.flags.word_recall == 0)
+            py.flags.word_recall = 25 + randint(30);
+          msg_print("The air about you becomes charged.");
+	  }
 	ident = TRUE;
 	i_ptr->timeout=60;
+      }
         break;
       case RD_PROBE:
 	probing();
