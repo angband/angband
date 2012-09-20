@@ -1,0 +1,41 @@
+# File: user.prf
+
+#
+# This file defines "override" actions of various kinds
+#
+# This file includes, if appropriate, various "sub-files"
+#
+# See "lib/help/command.txt" and "src/files.c" for more information.
+#
+
+
+## Option -- Force the use of original commands
+#X:rogue_like_commands
+
+## Option -- Force the use of roguelike commands
+#Y:rogue_like_commands
+
+
+##### System Specific Subfiles #####
+
+## ?:[IOR [EQU $SYS x11] [EQU $SYS xaw]]
+## %:user-x11.prf
+
+## ?:[EQU $SYS gcu]
+## %:user-gcu.prf
+
+## ?:[EQU $SYS ami]
+## %:user-ami.prf
+
+?:[EQU $SYS mac]
+%:user-mac.prf
+
+## ?:[IOR [EQU $SYS win] [EQU $SYS ibm]]
+## %:user-win.prf
+
+## ?:[EQU $SYS emx]
+## %:user-emx.prf
+
+## ?:[EQU $SYS acn]
+## %:user-acn.prf
+

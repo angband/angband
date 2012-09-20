@@ -1,4 +1,4 @@
-=== Options and Effects (Angband 2.7.9v6) ===
+=== Option Descriptions ===
 
 Most of the "options" are accessible through the '=' command, which provides
 an interface to the various "sets" of options available to the player.
@@ -13,47 +13,47 @@ to force the option to a given setting, see "command.txt" for more info.
 Various concepts are mentioned in the descriptions below, including "disturb",
 (cancel any running, resting, or repeated commands, which are in progress),
 "flush" (forget any keypresses waiting in the keypress queue, including any
-macros in progress), "fresh" (dump any pending output to the screen).
+macros in progress), "fresh" (dump any pending output to the screen), and
+"sub-windows" (see below).
 
 
 === Option Set 1 -- User Interface ===
 
 Rogue-like commands    [rogue_like_commands]
     Selects the "roguelike" command set (see "command.txt" for info).
-  
+
 Activate quick messages    [quick_messages]
     Allows the use of any keypress as a response to the "-more-" prompt
     (useful for monster farming).  Allows most keys to mean "no" to any
     "[y/n]" prompt.
-    
-Prompt for various information    [other_query_flag]
-    Forces the game to ask you before taking various actions, such as using
-    things which might cause your pack to overflow.  Forces the game to ask
-    you which hand to place rings on.
-    
+
+Prompt for floor item selection    [other_query_flag]
+    Allows the user to select objects from the center of stacks.  Without
+    this option, the uppermost appropriate object will always be selected.
+
 Prompt before picking things up    [carry_query_flag]
-    Forces the game to ask you if you want to pick something up when you
-    do something that would normally cause the item to be picked up.
-    
+    Forces the game to ask your permission before allowing you to pick up
+    any object.
+
 Use old target by default    [use_old_target]
     Forces all commands which normally ask for a "direction" to use the
     current "target" if there is one.  Use of this option can be dangerous
     if you target locations on the ground, unless you clear them when done.
-    
+
 Pick things up by default    [always_pickup]
     Tells the game that walking onto an item should attempt to pick it up.
-    Otherwise, you must use the "g" command, or the "-" command while walking.
-    Combined with "carry_query_flag", allows you to selectively pick up all
-    items which you step on.
+    Picking up objects in the manner takes no additional energy.  Note the
+    "g" and "-" commands, which can be used to "reverse" this option for a
+    single turn.
 
 Repeat obvious commands    [always_repeat]
     Tells the game that when you attempt to "open" a door or chest, "bash"
-    a door, "tunnel" through walls, or "disarm" traps or chests, that you
-    wish to "repeat" the command 99 times (see "command.txt").
+    a door, "tunnel" through walls, "disarm" traps or chests, or "alter"
+    any grid, that you wish to automatically "repeat" the command 99 times
+    (see "command.txt"), unless an explicit repeat count was given.
 
 Show dungeon level in feet    [depth_in_feet]
-    Display the dungeon depth in "feet" instead of as an actual level.
-    This also affects the monster memory display.
+    Display dungeon depths in "feet" instead of "levels".
 
 Merge inscriptions when stacking    [stack_force_notes]
     Force otherwise identical objects to merge, even if one has an empty
@@ -74,41 +74,43 @@ Show labels in object lists    [show_labels]
 
 Show weights in object lists    [show_weights]
     Display the weights of objects in the "inventory" and "equipment" lists,
-    and in "stores", and in any "special" window which is displaying any of
-    these lists.
+    and in "stores", and in any "special" window which is displaying objects.
 
 Show choices in certain sub-windows    [show_choices]
-    Indicate legal choices in "special" windows which display lists.
-    
+    Display "choices" in any sub-windows which are being used to display
+    your inventory or equipment.  Also, if exactly one sub-window is being
+    used to display your inventory or equipment, then it will (temporarily)
+    be toggled as needed to always show the "appropriate" set of objects.
+
 Show details in certain sub-windows    [show_details]
-    Indicate extra details in "special" windows, currently used to activate
-    the display of "death counts" and "monster descriptions" when recalling
-    details about a monster.
+    Display extra details in any sub-windows (and the main screen) which
+    are being used to display monster recall.  These details include the
+    number of monsters killed and the textual descriptions.
 
 Audible bell (on errors, etc)    [ring_bell]
     Attempt to make a "bell" noise when various "errors" occur.
-    
-Use color if possible (slow)    [use_color]
-    This option enables the software support for "color".  Since this makes
-    the game slower, you should always disable this option if you are using
-    a machine which is not capable of using color.
+
+Use color for inventory listings    [inventory_colors]
+    Use color for object descriptions whenever the inventory, equipment,
+    or store contents are being displayed.  The colors are based on object
+    types, not on actual object colors.
 
 
 === Option Set 2 -- Disturbance ===
 
 Run past stairs    [find_ignore_stairs]
     Ignore stairs when running.
-    
+
 Run through open doors    [find_ignore_doors]
     Ignore open doors when running.
-    
+
 Run past known corners    [find_cut]
     Cut sharply around "known" corners when running.  This will result in
     "faster" running, but may cause you to run into a "lurking" monster.
 
 Run into potential corners    [find_examine]
     Fully explore "potential corners" in hallways.
-    
+
 Disturb whenever any monster moves    [disturb_move]
     Disturb the player when any monster moves, appears, or disappears.
     This includes monsters which are only visible due to telepathy, so
@@ -125,7 +127,7 @@ Disturb whenever viewable monster moves    [disturb_near]
 Disturb whenever map panel changes    [disturb_panel]
     This option causes you to be disturbed by the screen "scrolling",
     as it does when you get close to the "edge" of the screen.
-    
+
 Disturb whenever player state changes    [disturb_state]
     This option causes you to be disturbed whenever the player state
     changes, including changes in hunger, resistance, confusion, etc.
@@ -162,19 +164,17 @@ Auto-scum for good levels    [auto_scum]
     especially deep in the dungeon.  The minimum "goodness" of the level
     is based on the dungeon level, so the deeper you go, the better the
     level will be.  A lot of people consider this option to be cheating.
-    
-Allow weapons and armor to stack    [stack_allow_items]
-    Allow identical weapons and armor to be combined into a stack.  This
-    also allows unidentified, but identical, ammo to be combined, which
-    may result in the auto-identification of some of the ammo, but which
-    makes it a lot easier to actually use unidentified ammo.
-    
-Allow wands/staffs/rods to stack    [stack_allow_wands]
-    Allow identical wands/staffs/rods to be combined into a stack.  This
-    may force the items to be "unstacked" to use them, which may result
-    in "overflow" of the stack.  Also, the entire stack can be recharged
-    (and possibly destroyed) at the same time.
-    
+
+Allow objects to stack on floor (beta)    [testing_stack]
+    Allow multiple objects to occupy the same floor grid.  Any commands
+    which can affect objects on the floor will affect the object on the
+    top of the stack, unless the "other_query_flag" option is being used.
+
+Allow monsters to carry objects (beta)    [testing_carry]
+    Allow monsters which pick up (or steal) objects to carry them around,
+    dropping them when they are killed (but taking them with them when
+    they are "destroyed" or "teleported away").
+
 Expand the power of the look command    [expand_look]
     Expand the "look" command to allow the user to "look" at grids which
     are not actually in view of the player, allowing the examination of
@@ -197,7 +197,7 @@ Map remembers all perma-lit grids    [view_perma_grids]
     option.  Note that any non-floor grids which is seen by the player
     are always memorized, and "object" which is seen by the player is
     memorized independantly from the memorization of the grid itself.
-    
+
 Map remembers all torch-lit grids    [view_torch_grids]
     Memorize all (torch-lit) floor grids which are seen by the player.
     This option not only allows you to keep track of which floor grids
@@ -218,25 +218,25 @@ Generate dungeons with connected stairs    [dungeon_stair]
     Always generate a staircase back to the level you came from, if you used
     a staircase to get to the level.  This is more "realistic", and "safer",
     but less of a "challenge" for some people.
-    
+
 Monsters chase current location (v.slow)    [flow_by_sound]
     Allow monsters to make paths to the player when they are nearby.  This
     option is extremely slow, but can produce viciously smart monsters.
-    
+
 Monsters chase recent locations (v.slow)    [flow_by_smell]
     As above, but also allow monsters to take advantage of "old" trails
     that you may have left in the dungeon.
 
 Monsters follow the player (beta)    [track_follow]
     This option is currently non-functional.
-    
+
 Monsters target the player (beta)    [track_target]
     This option is currently non-functional.
 
 Monsters learn from their mistakes    [smart_learn]
     Allow monsters to learn what spell attacks you are resistant to,
     and to use this information to choose the best attacks.
-    
+
 Monsters exploit players weaknesses    [smart_cheat]
     Allow monsters to know what spell attacks you are resistant to,
     and to use this information to choose the best attacks.
@@ -249,7 +249,7 @@ Reduce lite-radius when running    [view_reduce_lite]
     when the player is "running", which makes running more "efficient",
     but is extremely annoying.  Certain older versions of Angband used
     this behavior always, so "purists" should turn it on.
-    
+
 Reduce view-radius in town    [view_reduce_view]
     Reduce the "radius" of the player's "view" by half when the player
     is in town.  This makes running faster in town, and also allows the
@@ -292,25 +292,25 @@ Flush input whenever disturbed    [flush_disturb]
     character is "disturbed".  This is useful if you use macros which take
     time, since it will prevent you from continuing your macro while being
     attacked by a monster.
-    
+
 Flush input before every command    [flush_command]
     This option forces the game to flush all pending input before every
     command.  This option is silly, unless you are very paranoid.
-    
+
 Flush output before every command    [fresh_before]
     This option forces the game to flush all output before every command.
     This will give you maximal information, but may slow down the game
     somewhat.  Note that this option is only useful when using macros,
     resting, running, or repeating commands, since the outout is always
     flushed when the game is waiting for a keypress from the user.
-    
+
 Flush output after every command    [fresh_after]
     This option forces the game to flush all output after not only every
     player command, but also after every round of processing monsters and
     objects, which will give you maximal information, but may slow down
     the game a lot, especially on slower machines, and on faster machines
     you normally do not have a chance to see the results anyway.
-    
+
 Flush output after every message    [fresh_message]
     This option forces the game to flush all output after every message
     displayed by the game.  This will give you maximal information, but
@@ -326,7 +326,7 @@ Hilite the player with the cursor    [hilite_player]
     machines, but horrible on most graphics machines.  Note that only some
     machines are able to *not* show the cursor, but on those machines, hiding
     the cursor often speeds up the game and looks better.
-    
+
 Use special colors for torch-lit grids    [view_yellow_lite]
     This option causes special colors to be used for "torch-lit" grids in
     certain situations (see "view_granite_lite" and "view_special_lite").
@@ -350,7 +350,9 @@ Use special colors for wall grids (slow)    [view_granite_lite]
     else if the "view_bright_lite" option is set, and the grid is not in line
     of sight, or the grid is dark, or the grid is only "partially" lit, then
     we use "gray", otherwise we use the normal "white".  Turning this option
-    off will probably increase the speed of the game.
+    off will probably increase the speed of the game.  This option may not
+    work well if the attr/char codes for walls/veins have been changed, or
+    if "graphics" are being used.
 
 Use special colors for floor grids (slow)    [view_special_lite]
     This option activates a special color scheme for all "floor" grids which
@@ -360,7 +362,8 @@ Use special colors for floor grids (slow)    [view_special_lite]
     is "dark", we use "dark gray", else if the "view_bright_lite" option is
     set, and the grid is not in line of sight, we use "gray", otherwise we
     use the normal "white".  Turning this option off will probably increase
-    the speed of the game.
+    the speed of the game.  This option may not work well if the attr/char
+    codes for walls/veins have been changed, or if "graphics" are being used.
 
 
 === Cheating Options ===
@@ -386,7 +389,51 @@ Allow player to avoid death    [cheat_live]
 
 === Window flags ===
 
-This section needs some more details...
+Some platforms support "sub-windows", which are windows which can be used to
+display useful information generally available through other means.  The best
+thing about these windows is that they are updated automatically (usually) to
+reflect the current state of the world.  The "window options" can be used to
+specify what should be displayed in each window.  The possible choices should
+be pretty obvious.
+
+Display inven/equip
+    Display the player inventory (and sometimes the equipment).
+
+Display equip/inven
+    Display the player equipment (and sometimes the inventory).
+
+Display player flags
+    Display a special description of the character, including some of the
+    "flags" which pertain to a character, broken down by equipment item.
+
+Display player screen
+    Display a brief description of the character, including a breakdown
+    of the current player "skills" (including attacks/shots per round).
+
+Display messages
+    Display the most recently generated "messages".
+
+Display overhead view
+    Display an overhead view of the entire dungeon.  This is very slow
+    and does not even look very good.
+
+Display monster recall
+    Display a description of the most monster which has been most recently
+    attacked, targetted, or examined in some way.
+
+Display object recall
+    Display a description of the most recently selected object.  Currently
+    this only affects spellbooks and prayerbooks.  This window flag may be
+    usefully combined with others, such as "monster recall".
+
+Display snap-shot
+    This window flag is currently unused.
+
+Display borg messages
+    This window flag is currently used only by the Borg.
+
+Display borg status
+    This window flag is currently used only by the Borg.
 
 
 === Left Over Information ===
@@ -410,4 +457,3 @@ makes the character harder at the beginning of the game, but easier later on,
 since the stats are no longer limited to a "natural" value of "18/100".
 
 
-+++ Ben +++

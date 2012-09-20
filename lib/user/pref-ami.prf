@@ -1,0 +1,7 @@
+# File: pref-ami.prf
+
+#
+# This file contains various default macros for use with
+# the executable built from "main-ami.c".
+#
+

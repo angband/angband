@@ -6,7 +6,6 @@
 
 # Do not modify this file unless you know exactly what you are doing,
 # unless you wish to risk possible system crashes and broken savefiles.
-
 # After modifying this file, delete the "lib/raw/r_info.raw" file.
 
 # Currently, "unique" monsters are just "special" monster races, with
@@ -109,7 +108,7 @@
 
 # Version stamp (required)
 
-V:2.8.1
+V:2.8.2
 
 
 ##### The Player #####

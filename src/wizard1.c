@@ -1,6 +1,12 @@
 /* File: wizard1.c */
 
-/* Purpose: Spoiler generation -BEN- */
+/*
+ * Copyright (c) 1997 Ben Harrison, and others
+ *
+ * This software may be copied and distributed for educational, research,
+ * and not for profit purposes provided that this copyright and statement
+ * are included in all such copies.  Other copyrights may also apply.
+ */
 
 #include "angband.h"
 
@@ -124,36 +130,36 @@ static grouper group_item[] =
  */
 static void kind_info(char *buf, char *dam, char *wgt, int *lev, s32b *val, int k)
 {
-	object_type forge;
-	object_type *q_ptr;
-	
 	object_kind *k_ptr;
+
+	object_type *i_ptr;
+	object_type object_type_body;
 
 
 	/* Get local object */
-	q_ptr = &forge;
+	i_ptr = &object_type_body;
 
 	/* Prepare a fake item */
-	object_prep(q_ptr, k);
+	object_prep(i_ptr, k);
 
 	/* Obtain the "kind" info */
-	k_ptr = &k_info[q_ptr->k_idx];
+	k_ptr = &k_info[i_ptr->k_idx];
 
 	/* It is known */
-	q_ptr->ident |= (IDENT_KNOWN);
+	i_ptr->ident |= (IDENT_KNOWN);
 
 	/* Cancel bonuses */
-	q_ptr->pval = 0;
-	q_ptr->to_a = 0;
-	q_ptr->to_h = 0;
-	q_ptr->to_d = 0;
+	i_ptr->pval = 0;
+	i_ptr->to_a = 0;
+	i_ptr->to_h = 0;
+	i_ptr->to_d = 0;
 
 
 	/* Level */
 	(*lev) = k_ptr->level;
 
 	/* Value */
-	(*val) = object_value(q_ptr);
+	(*val) = object_value(i_ptr);
 
 
 	/* Hack */
@@ -161,14 +167,14 @@ static void kind_info(char *buf, char *dam, char *wgt, int *lev, s32b *val, int 
 
 
 	/* Description (too brief) */
-	object_desc_store(buf, q_ptr, FALSE, 0);
+	object_desc_store(buf, i_ptr, FALSE, 0);
 
 
 	/* Misc info */
 	strcpy(dam, "");
 
 	/* Damage */
-	switch (q_ptr->tval)
+	switch (i_ptr->tval)
 	{
 		/* Bows */
 		case TV_BOW:
@@ -181,7 +187,7 @@ static void kind_info(char *buf, char *dam, char *wgt, int *lev, s32b *val, int 
 		case TV_BOLT:
 		case TV_ARROW:
 		{
-			sprintf(dam, "%dd%d", q_ptr->dd, q_ptr->ds);
+			sprintf(dam, "%dd%d", i_ptr->dd, i_ptr->ds);
 			break;
 		}
 
@@ -191,7 +197,7 @@ static void kind_info(char *buf, char *dam, char *wgt, int *lev, s32b *val, int 
 		case TV_SWORD:
 		case TV_DIGGING:
 		{
-			sprintf(dam, "%dd%d", q_ptr->dd, q_ptr->ds);
+			sprintf(dam, "%dd%d", i_ptr->dd, i_ptr->ds);
 			break;
 		}
 
@@ -206,14 +212,14 @@ static void kind_info(char *buf, char *dam, char *wgt, int *lev, s32b *val, int 
 		case TV_HARD_ARMOR:
 		case TV_DRAG_ARMOR:
 		{
-			sprintf(dam, "%d", q_ptr->ac);
+			sprintf(dam, "%d", i_ptr->ac);
 			break;
 		}
 	}
 
 
 	/* Weight */
-	sprintf(wgt, "%3d.%d", q_ptr->weight / 10, q_ptr->weight % 10);
+	sprintf(wgt, "%3d.%d", i_ptr->weight / 10, i_ptr->weight % 10);
 }
 
 
@@ -452,8 +458,10 @@ static flag_desc pval_flags1_desc[] =
 	{ TR1_SEARCH,     "Searching" },
 	{ TR1_INFRA,      "Infravision" },
 	{ TR1_TUNNEL,     "Tunneling" },
+	{ TR1_SPEED,      "Speed" },
 	{ TR1_BLOWS,      "Attacks" },
-	{ TR1_SPEED,      "Speed" }
+	{ TR1_SHOTS,      "Shots" },
+	{ TR1_MIGHT,      "Might" }
 };
 
 /*
@@ -475,11 +483,6 @@ static flag_desc slay_flags_desc[] =
 
 /*
  * Elemental brands for weapons
- *
- * Clearly, TR1_IMPACT is a bit out of place here. To simplify
- * coding, it has been included here along with the elemental
- * brands. It does seem to fit in with the brands and slaying
- * more than the miscellaneous section.
  */
 static flag_desc brand_flags_desc[] =
 {
@@ -487,12 +490,10 @@ static flag_desc brand_flags_desc[] =
 	{ TR1_BRAND_ELEC,         "Lightning Brand" },
 	{ TR1_BRAND_FIRE,         "Flame Tongue" },
 	{ TR1_BRAND_COLD,         "Frost Brand" },
-
-	{ TR1_IMPACT,             "Earthquake impact on hit" },
 };
 
 /*
- * The 15 resistables
+ * The basic resistances
  */
 
 static const flag_desc resist_flags_desc[] =
@@ -502,14 +503,15 @@ static const flag_desc resist_flags_desc[] =
 	{ TR2_RES_FIRE,   "Fire" },
 	{ TR2_RES_COLD,   "Cold" },
 	{ TR2_RES_POIS,   "Poison" },
+	{ TR2_RES_FEAR,   "Fear" },
 	{ TR2_RES_LITE,   "Light" },
 	{ TR2_RES_DARK,   "Dark" },
 	{ TR2_RES_BLIND,  "Blindness" },
-	{ TR2_RES_CONF,   "Confusion" },
+	{ TR2_RES_CONFU,  "Confusion" },
 	{ TR2_RES_SOUND,  "Sound" },
-	{ TR2_RES_SHARDS, "Shards" },
-	{ TR2_RES_NETHER, "Nether" },
+	{ TR2_RES_SHARD,  "Shards" },
 	{ TR2_RES_NEXUS,  "Nexus" },
+	{ TR2_RES_NETHR,  "Nether" },
 	{ TR2_RES_CHAOS,  "Chaos" },
 	{ TR2_RES_DISEN,  "Disenchantment" },
 };
@@ -541,16 +543,6 @@ static const flag_desc sustain_flags_desc[] =
 };
 
 /*
- * Miscellaneous magic given by an object's "flags2" field
- */
-
-static const flag_desc misc_flags2_desc[] =
-{
-	{ TR2_FREE_ACT,   "Free Action" },
-	{ TR2_HOLD_LIFE,  "Hold Life" },
-};
-
-/*
  * Miscellaneous magic given by an object's "flags3" field
  *
  * Note that cursed artifacts and objects with permanent light
@@ -559,15 +551,18 @@ static const flag_desc misc_flags2_desc[] =
 
 static const flag_desc misc_flags3_desc[] =
 {
-	{ TR3_FEATHER,            "Feather Falling" },
-	{ TR3_SEE_INVIS,          "See Invisible" },
-	{ TR3_TELEPATHY,          "ESP" },
 	{ TR3_SLOW_DIGEST,        "Slow Digestion" },
+	{ TR3_FEATHER,            "Feather Falling" },
+	{ TR3_LITE,               "Permanent Light" },
 	{ TR3_REGEN,              "Regeneration" },
-	{ TR3_XTRA_SHOTS,         "+1 Extra Shot" },        /* always +1? */
-	{ TR3_DRAIN_EXP,          "Drains Experience" },
-	{ TR3_AGGRAVATE,          "Aggravates" },
+	{ TR3_TELEPATHY,          "ESP" },
+	{ TR3_SEE_INVIS,          "See Invisible" },
+	{ TR3_FREE_ACT,           "Free Action" },
+	{ TR3_HOLD_LIFE,          "Hold Life" },
 	{ TR3_BLESSED,            "Blessed Blade" },
+	{ TR3_IMPACT,             "Earthquake impact on hit" },
+	{ TR3_AGGRAVATE,          "Aggravates" },
+	{ TR3_DRAIN_EXP,          "Drains Experience" }
 };
 
 /*
@@ -633,7 +628,7 @@ typedef struct
 	cptr sustains[N_ELEMENTS(sustain_flags_desc)  - 1 + 1];
 
 	/* A list of various magical qualities an object may have */
-	cptr misc_magic[N_ELEMENTS(misc_flags2_desc) + N_ELEMENTS(misc_flags3_desc)
+	cptr misc_magic[N_ELEMENTS(misc_flags3_desc)
 	                + 1       /* Permanent Light */
 	                + 1       /* type of curse */
 	                + 1];     /* sentinel NULL */
@@ -687,30 +682,30 @@ static void spoiler_underline(cptr str)
  * The possibly updated description pointer is returned.
  */
 
-static cptr *spoiler_flag_aux(const u32b art_flags, const flag_desc *flag_ptr,
-                              cptr *desc_ptr, const int n_elmnts)
+static cptr *spoiler_flag_aux(const u32b art_flags, const flag_desc *flag_x_ptr,
+                              cptr *desc_x_ptr, const int n_elmnts)
 {
 	int i;
 
 	for (i = 0; i < n_elmnts; ++i)
 	{
-		if (art_flags & flag_ptr[i].flag)
+		if (art_flags & flag_x_ptr[i].flag)
 		{
-			*desc_ptr++ = flag_ptr[i].desc;
+			*desc_x_ptr++ = flag_x_ptr[i].desc;
 		}
 	}
 
-	return desc_ptr;
+	return desc_x_ptr;
 }
 
 
 /*
  * Acquire a "basic" description "The Cloak of Death [1,+10]"
  */
-static void analyze_general (object_type *o_ptr, char *desc_ptr)
+static void analyze_general (object_type *o_ptr, char *desc_x_ptr)
 {
 	/* Get a "useful" description of the object */
-	object_desc_store(desc_ptr, o_ptr, TRUE, 1);
+	object_desc_store(desc_x_ptr, o_ptr, TRUE, 1);
 }
 
 /*
@@ -718,7 +713,7 @@ static void analyze_general (object_type *o_ptr, char *desc_ptr)
  * speed, infravision, tunneling, stealth, searching, and extra attacks.
  */
 
-static void analyze_pval (object_type *o_ptr, pval_info_type *p_ptr)
+static void analyze_pval (object_type *o_ptr, pval_info_type *pval_x_ptr)
 {
 	const u32b all_stats = (TR1_STR | TR1_INT | TR1_WIS |
 	                        TR1_DEX | TR1_CON | TR1_CHR);
@@ -731,17 +726,17 @@ static void analyze_pval (object_type *o_ptr, pval_info_type *p_ptr)
 	if (!o_ptr->pval)
 	{
 		/* An "empty" pval description indicates that pval == 0 */
-		p_ptr->pval_desc[0] = '\0';
+		pval_x_ptr->pval_desc[0] = '\0';
 		return;
 	}
 
 	/* Extract the flags */
 	object_flags(o_ptr, &f1, &f2, &f3);
 
-	affects_list = p_ptr->pval_affects;
+	affects_list = pval_x_ptr->pval_affects;
 
 	/* Create the "+N" string */
-	sprintf(p_ptr->pval_desc, "%s%d", POSITIZE(o_ptr->pval), o_ptr->pval);
+	sprintf(pval_x_ptr->pval_desc, "%s%d", POSITIZE(o_ptr->pval), o_ptr->pval);
 
 	/* First, check to see if the pval affects all stats */
 	if ((f1 & all_stats) == all_stats)
@@ -869,9 +864,9 @@ static void analyze_misc_magic (object_type *o_ptr, cptr *misc_list)
 
 	object_flags(o_ptr, &f1, &f2, &f3);
 
-	misc_list = spoiler_flag_aux(f2, misc_flags2_desc, misc_list,
-	                             N_ELEMENTS(misc_flags2_desc));
-
+	/*
+	 * Special flags
+	 */
 	misc_list = spoiler_flag_aux(f3, misc_flags3_desc, misc_list,
 	                             N_ELEMENTS(misc_flags3_desc));
 
@@ -881,14 +876,6 @@ static void analyze_misc_magic (object_type *o_ptr, cptr *misc_list)
 	if ((o_ptr->tval == TV_LITE) && artifact_p(o_ptr))
 	{
 		*misc_list++ = "Permanent Light(3)";
-	}
-
-	/*
-	 * Glowing artifacts -- small radius light.
-	 */
-	if (f3 & (TR3_LITE))
-	{
-		*misc_list++ = "Permanent Light(1)";
 	}
 
 	/*
@@ -938,27 +925,27 @@ static void analyze_misc (object_type *o_ptr, char *misc_desc)
  * Fill in an object description structure for a given object
  */
 
-static void object_analyze(object_type *o_ptr, obj_desc_list *desc_ptr)
+static void object_analyze(object_type *o_ptr, obj_desc_list *desc_x_ptr)
 {
-	analyze_general(o_ptr, desc_ptr->description);
+	analyze_general(o_ptr, desc_x_ptr->description);
 
-	analyze_pval(o_ptr, &desc_ptr->pval_info);
+	analyze_pval(o_ptr, &desc_x_ptr->pval_info);
 
-	analyze_brand(o_ptr, desc_ptr->brands);
+	analyze_brand(o_ptr, desc_x_ptr->brands);
 
-	analyze_slay(o_ptr, desc_ptr->slays);
+	analyze_slay(o_ptr, desc_x_ptr->slays);
 
-	analyze_immune(o_ptr, desc_ptr->immunities);
+	analyze_immune(o_ptr, desc_x_ptr->immunities);
 
-	analyze_resist(o_ptr, desc_ptr->resistances);
+	analyze_resist(o_ptr, desc_x_ptr->resistances);
 
-	analyze_sustains(o_ptr, desc_ptr->sustains);
+	analyze_sustains(o_ptr, desc_x_ptr->sustains);
 
-	analyze_misc_magic(o_ptr, desc_ptr->misc_magic);
+	analyze_misc_magic(o_ptr, desc_x_ptr->misc_magic);
 
-	analyze_misc(o_ptr, desc_ptr->misc_desc);
+	analyze_misc(o_ptr, desc_x_ptr->misc_desc);
 
-	desc_ptr->activation = item_activation(o_ptr);
+	desc_x_ptr->activation = item_activation(o_ptr);
 }
 
 
@@ -1194,8 +1181,8 @@ static void spoil_artifact(cptr fname)
 {
 	int i, j;
 
-	object_type forge;
-	object_type *q_ptr;
+	object_type *i_ptr;
+	object_type object_type_body;
 
 	obj_desc_list artifact;
 
@@ -1241,16 +1228,16 @@ static void spoil_artifact(cptr fname)
 			if (a_ptr->tval != group_artifact[i].tval) continue;
 
 			/* Get local object */
-			q_ptr = &forge;
+			i_ptr = &object_type_body;
 
 			/* Wipe the object */
-			object_wipe(q_ptr);
+			object_wipe(i_ptr);
 
 			/* Attempt to "forge" the artifact */
-			if (!make_fake_artifact(q_ptr, j)) continue;
+			if (!make_fake_artifact(i_ptr, j)) continue;
 
 			/* Analyze the artifact */
-			object_analyze(q_ptr, &artifact);
+			object_analyze(i_ptr, &artifact);
 
 			/* Write out the artifact description to the spoiler file */
 			spoiler_print_art(&artifact);
@@ -1273,7 +1260,7 @@ static void spoil_artifact(cptr fname)
 
 
 /*
- * Create a spoiler file for monsters	-BEN-
+ * Create a spoiler file for monsters
  */
 static void spoil_mon_desc(cptr fname)
 {
@@ -1414,7 +1401,7 @@ static void spoil_mon_desc(cptr fname)
 /*
  * Monster spoilers by: smchorse@ringer.cs.utsa.edu (Shawn McHorse)
  *
- * Primarily based on code already in mon-desc.c, mostly by -BEN-
+ * Adapted from the "monster_desc()" code in "monster1.c"
  */
 
 /*
@@ -2034,12 +2021,12 @@ static void spoil_mon_info(cptr fname)
 
 			if (i == 1)
 			{
-				spoil_out(" a"); sin = TRUE;
+				spoil_out(" a");
+				sin = TRUE;
 			}
 			else if (i == 2)
 			{
 				spoil_out(" one or two");
-				sin = TRUE;
 			}
 			else
 			{
@@ -2062,6 +2049,7 @@ static void spoil_mon_info(cptr fname)
 			}
 			else if (flags1 & (RF1_ONLY_ITEM))
 			{
+				if (sin) spoil_out("n");
 				spoil_out(" object");
 			}
 			else if (flags1 & (RF1_ONLY_GOLD))
@@ -2237,7 +2225,7 @@ static void spoil_mon_info(cptr fname)
 extern void do_cmd_spoilers(void);
 
 /*
- * Create Spoiler files		-BEN-
+ * Create Spoiler files
  */
 void do_cmd_spoilers(void)
 {

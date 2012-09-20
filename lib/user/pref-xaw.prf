@@ -1,8 +1,0 @@
-# File: pref-xaw.prf
-
-#
-# Simply include "pref-x11.prf"
-#
-
-%:pref-x11.prf
-

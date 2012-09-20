@@ -1,13 +1,20 @@
 === Version Information ===
 
-This file was last updated for Angband 2.7.9.
+This file was last updated for Angband 2.8.2.
 
-Make sure to read the newsgroup "rec.games.roguelike.angband" if possible.
+Make sure to read the newsgroup "rec.games.roguelike.angband", and to
+visit the website "http://www.voicenet.com/~benh/Angband/" for the most
+up to date information about Angband.
 
-Angband 2.7.9 is the result of a lot of work by a lot of people, and as such
-has a rather complicated version history.  Worse yet, this version history
-spans more than ten years (!) time, and multiple platforms.  But some history
-is better than none, so here we go...
+Angband 2.8.2 has an incredibly complex history, and is the result of a
+lot of work by a lot of people, all of whom have contributed their time
+and energy for free, being rewarded only by the pleasure of keeping alive
+one of the best freeware games available anywhere.
+
+The version control files, if they existed, would span more than ten years
+time, and more than five different primary developers.  Without such files,
+we must rely on simpler methods, such as change logs, source file diffs, and
+word of mouth.  Some of this information is summarized in this file.
 
 
 === Brief Version History ===
@@ -15,6 +22,11 @@ is better than none, so here we go...
 First came "VMS Moria", by Robert Alan Koeneke (1985).
 
 Then came "Umoria" (Unix Moria), by James E. Wilson (1989).
+
+Details about the history of the various flavors of "moria", the direct
+ancestor to Angband, can be found elsewhere, and a note from Robert Alan
+Koeneke is included in this file.  Note that "moria" has been ported to
+a variety of platforms, and has its own newsgroup, and its own fans.
 
 In 1990, Alex Cutler and Andy Astrand, with the help of other students
 at the University of Warwick, created Angband 1.0, based on the existing
@@ -26,23 +38,44 @@ pseudo-sensing, level feelings, and special dungeon rooms.
 Over time, Sean Marsh, Geoff Hill, Charles Teague, and others, worked on
 the source, releasing a copy known as "Angband 2.4.frog_knows" at some
 point, which ran only on Unix systems, but which was ported by various
-people to various other systems.
+people to various other systems.  One of the most significant ports was
+the "PC Angband 1.4" port, for old DOS machines, which added color and
+various other significant changes, only some of which ever made it back
+into the official source.
 
-Then Charles Swiger (cs4w+@andrew.cmu.edu) attempted to clean up the mess,
-resulting in several versions, starting sometime around November, 1993, with
-Angband 2.5.1 (more or less) and leading up to Angband 2.6.2 in late 1994.
-Several people ported (the primarily Unix/NeXT centered) Angband 2.6.1 to
-other platforms, including Keith Randall, who made a Macintosh port that
-added support for color usage.  Some of the changes during this period were
-based on suggestions from the "net", PC Angband 1.40, UMoria 5.5, and some
-of the Angband "variations", such as FAngband.
+Then Charles Swiger (cs4w+@andrew.cmu.edu) took over, sometime in late
+1993, cleaning up the code, fixing a lot of bugs, and bringing together
+various patches from various people, resulting in several versions of
+Angband, starting with Angband 2.5.1 (?), and leading up to the release
+of Angband 2.6.1 (and Angband 2.6.2) in late 1994.  Some of the changes
+during this period were based on suggestions from the "net", and from
+various related games, including "UMoria 5.5", "PC Angband 1.4", and
+"FAngband".
 
-Finally, I (Ben Harrison) took over in late 1994 when Charles Swiger left.
-Initially my intention was simply to clean up what had become, after ten
-years, a rather unholy mess, but the deeper I delved into the code, the
-more it became apparent that drastic changes were needed, so, starting
-with MacAngband 2.6.1, I began a more or less total rewrite, resulting,
-eventually, in Angband 2.7.0, released around January first, 1995.
+Angband 2.6.1 was primarily targetted towards Unix/NeXT machines, and
+it required the use of the low level "curses" commands for all screen
+manipulation and keypress interaction.  Each release had to be ported
+from scratch to any new platforms, normally by creating visual display
+code that acted as a "curses" emulator.  One such port was "Macintosh
+Angband 2.6.1", by Keith Randall, which added support for color, and
+which formed the basis for the first release of Angband 2.7.0.
+
+During the last half of 1994, I (Ben Harrison) had been playing with
+the Angband source, primarily to investigate the possibility of making
+some kind of automatic player for Angband, like the old "rogue-o-matic"
+program for the game "rogue".  The difficulty of compiling a version
+for the Macintosh, and the complexity of the code, prevented this, and
+so I began cleaning up the code in various ways for my own personal use.
+
+In late 1994, Charles Swiger announced that he was starting a real job
+and would no longer be able to be the Angband maintainer.  This induced
+some amount of uproar in the Angband community (as represented by the
+Angband newsgroup), with various people attempting to form "committees"
+to take over the maintenance of Angband.  Since committees have never
+given us anything but trouble (think "COBOL"), there was very little
+resistance when, on the first day of 1995, I made my code available,
+calling it "Angband 2.7.0", and by default, taking over as the new
+maintainer of Angband.  Or, at least, that is how I remember it...
 
 Angband 2.7.0 was a very clean (but very buggy) rewrite that, among other
 things, allowed extremely simple porting to multiple platforms, starting
@@ -51,46 +84,56 @@ in Angband 2.7.2, including X11, and various IBM machines.  Angband 2.7.4
 was released to the "ftp.cis.ksu.edu" site, and quickly gained acceptance,
 perhaps helped by the OS2 and Windows and Amiga and Linux ports.  Angband
 2.7.5 and 2.7.6 added important capabilities such as macros and user pref
-files, and continued to clean up the source.  Angband 2.7.8 was designed
-to supply another "stable" version that we can all give to our friends,
+files, and continued to clean up the source.  Angband 2.7.8 was released
+to the major ftp archives as the first "stable" version in a year or so,
 with new "help files" and "spoiler files" for the "online help", plus a
-variety of minor tweaks and some new features.  Angband 2.7.9 optimized
-a few things, and tweaked a few other things, and cleaned up a few other
-things, and introduced a few minor semantic changes.
+variety of minor tweaks and some new features.
 
-It is very hard to pin down, along the way from 2.6.2 to 2.7.0, and thence
-to 2.7.8, exactly what was added exactly when.  Most of these steps involved
-so many changes as to make "diff files" not very useful, since often the diff
-files were as long as the code itself.  Most of the changes, with the notable
-exception of the creation of the new "main-xxx.c" files for the various new
-platforms, and a few other exceptions generally noted in the source, were
-written by myself, either spontaneously, or, more commonly, as the result of
-a suggestion or comment by an Angband player.  So if you have any problems
-with anything that you do not recognize from older versions, you can blame
-them on me.  And if you like the new features and such, you can send me a
-brief little "thank you" email (to benh@voicenet.com) or something...
+After Angband 2.7.8 was released, I created a web site to keep track of
+all the changes made in each version (though a few may have been missed),
+and acquired the use of a new develoepement ftp server to supplement the
+official "mirror" server.  The next few releases, from Angband 2.7.9v1
+through Angband 2.7.9v6, really should have been given their own separate
+version numbers, but I kept thinking that I wanted to save Angband 2.8.0
+for a really special release.  Angband 2.8.0 and Angband 2.8.1 were then
+released using a more normal version scheme.  Angband 2.8.2 will hopefully
+be an official stable release cleanup, and includes mostly just bug fixes
+and general cleanup of Angband 2.8.1, plus a few minor new features.  Note
+that almost all changes made in each version released after Angband 2.7.8
+can be found at the Official Angband Home Page, and I just wish that I had
+thought of keeping a change log for the earlier versions as well.
 
 The Official Angband Home Page ("http://www.voicenet.com/~benh/Angband/")
-was created along with Angband 2.7.9 to serve as an up to date description
-of any bugs found in various versions, and to list all of the people whose
-email addresses I kept having to look up.
+was created to serve as the most up to date description of Angband, listing
+changes made between versions, and changes planned for upcoming versions,
+and to list various email addresses and web sites related to Angband.
 
 
 === Some of the changes from Angband 2.6.1 to Angband 2.7.9 ===
+
+It is very hard to pin down, along the way from 2.6.2 to 2.7.8, exactly
+what changes were made, and exactly when they were made.  Most releases
+involved so many changes from the previous release as to make "diff files"
+not very useful, since often the diff files are as long as the code itself.
+Most of the changes, with the notable exception of the creation of some of
+the new "main-xxx.c" files for the various new platforms, and a few other
+minor exceptions generally noted directly in comments in the source, were
+written by myself, either spontaneously, or, more commonly, as the result of
+a suggestion or comment by an Angband player.
 
 The most important modification was a massive "code level cleanup" that made
 all of my other modifications much simpler and safer.  This cleanup was so
 massive that in many places the code is no longer recognizable, for example,
 via "diff -r", often because it was rewritten from scratch.
 
-The second most important modification was the design of a generic "term.c"
+The second most important modification was the design of a generic "z-term.c"
 package, which allows Angband to be ported to a new machine with as few as 50
-lines of code.  Angband 2.7.9 thus runs without modification on many machines,
+lines of code.  Angband 2.7.8 thus runs without modification on many machines,
 including Macintosh, PowerMac, Unix/X11, Unix/Curses, Amiga, Windows, OS2-386,
 DOS-386, and even DOS-286.
 
 It would be difficult to list all of the changes between Angband 2.6.1 and
-Angband 2.7.9, because many of them were made in passing during the massive
+Angband 2.7.8, because many of them were made in passing during the massive
 code level cleanup.  Many of the changes are invisible to the user, but still
 provide increased simplicity and efficiency, and decreased code size, or make
 other more visable changes possible.  For example, the new "project()" code
@@ -98,7 +141,7 @@ that handles all bolts, beams, and balls, the new "update_view()" code that
 simplifies line of sight computation, or the new "generate()" code that builds
 new levels in the dungeon.  Many changes have been made to increase efficiency,
 including the new "process_monsters()" and "update_monsters()" functions, and
-the new "objdes()" and "lite_spot()" routines.  The generic "Term" package
+the new "objdes()" and "lite_spot()" routines.  The generic "z-term.c" package
 yielded efficient screen updates, and enabled the efficient use of "color".
 
 But anyway, here are a few things that come to mind, in no particular order,
@@ -379,12 +422,14 @@ Umoria Version 5.2, patch level 1
 Angband Version 2.0   Alex Cutler, Andy Astrand, Sean Marsh, Geoff Hill, 
                       Charles Teague.
 
-Angband Version 2.4   :  5/09/93
+Angband Version 2.4   : 05/09/93
 
-Angband Version 2.5   : 12/05/93 Charles Swiger.
+Angband Version 2.5   : 12/05/93 Charles Swiger
 
-Angband Version 2.6   :  9/04/94
+Angband Version 2.6   : 09/04/94 Charles Swiger
 
-Angband Version 2.7   :  1/1/95  Ben Harrison
+Angband Version 2.7   : 01/01/95  Ben Harrison
+
+Angband Version 2.8   : 01/01/97  Ben Harrison
 
 

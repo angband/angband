@@ -6,7 +6,6 @@
 
 # Do not modify this file unless you know exactly what you are doing,
 # unless you wish to risk possible system crashes and broken savefiles.
-
 # After modifying this file, delete the "lib/raw/e_info.raw" file.
 
 # The ego-item indexes are defined in "defines.h", and must not be changed.
@@ -15,14 +14,15 @@
 
 # Note that every "ego-item" type has a different "index", and can only be
 # created from items that belong to a certain "slot" in the equipment, if
-# one assumes that "ammo" belongs to an imaginary slot (23).  However, it
-# is possible for several "ego-item" types to have the same "textual name",
+# one assumes that "ammo" belongs to an imaginary slot (23).
+#
+# Note that several "ego-item" types may share the same "textual name",
 # such as with "Armor of Resistance" and "Shield of Resistance".
 
 
 # Version stamp (required)
 
-V:2.8.1
+V:2.8.2
 
 
 ### Body Armor ###
@@ -193,31 +193,31 @@ F:REGEN
 N:35:of Teleportation
 X:33:0
 W:0:0:0:0
-F:TELEPORT
+F:TELEPORT | LIGHT_CURSE
 
 N:36:of Stupidity
 X:33:0
 C:0:0:0:5
 W:0:0:0:0
-F:INT
+F:INT | LIGHT_CURSE
 
 N:37:of Naivety
 X:33:0
 C:0:0:0:5
 W:0:0:0:0
-F:WIS
+F:WIS | LIGHT_CURSE
 
 N:38:of Ugliness
 X:33:0
 C:0:0:0:5
 W:0:0:0:0
-F:CHR
+F:CHR | LIGHT_CURSE
 
 N:39:of Sickliness
 X:33:0
 C:0:0:0:5
 W:0:0:0:0
-F:STR | DEX | CON
+F:STR | DEX | CON | LIGHT_CURSE
 
 
 ### Cloaks ###
@@ -249,19 +249,19 @@ N:44:of Enveloping
 X:31:0
 W:0:0:0:0
 C:10:10:0:0
-F:SHOW_MODS
+F:SHOW_MODS | LIGHT_CURSE
 
 N:45:of Vulnerability
 X:31:0
 W:0:0:0:0
 C:0:0:50:0
-F:AGGRAVATE
+F:AGGRAVATE | LIGHT_CURSE
 
 N:46:of Irritation
 X:31:0
 W:0:0:0:0
 C:15:15:0:0
-F:AGGRAVATE | SHOW_MODS
+F:AGGRAVATE | SHOW_MODS | LIGHT_CURSE
 
 # 47 (unused)
 
@@ -299,13 +299,13 @@ N:54:of Weakness
 X:34:0
 W:0:0:0:0
 C:0:0:0:10
-F:STR
+F:STR | LIGHT_CURSE
 
 N:55:of Clumsiness
 X:34:0
 W:0:0:0:0
 C:0:0:0:10
-F:DEX
+F:DEX | LIGHT_CURSE
 
 
 ### Boots ###
@@ -337,19 +337,19 @@ F:SPEED | HIDE_TYPE
 N:61:of Noise
 X:35:0
 W:0:0:0:0
-F:AGGRAVATE
+F:AGGRAVATE | LIGHT_CURSE
 
 N:62:of Slowness
 X:35:0
 W:0:0:0:0
 C:0:0:0:5
-F:SPEED
+F:SPEED | LIGHT_CURSE
 
 N:63:of Annoyance
 X:35:0
 W:0:0:0:0
 C:0:0:0:10
-F:SPEED | AGGRAVATE
+F:SPEED | AGGRAVATE | LIGHT_CURSE
 
 
 ### Weapons ###
@@ -523,7 +523,7 @@ F:STR | SLAY_GIANT
 N:95:of *Slay* Dragon
 X:24:24
 W:0:0:0:6000
-C:0:0:0:1
+C:0:0:0:2
 F:CON | SLAY_DRAGON | KILL_DRAGON
 
 # 96 (unused)
@@ -547,7 +547,7 @@ N:102:of Morgul
 X:24:0
 W:0:0:0:0
 C:20:20:10:0
-F:SEE_INVIS | AGGRAVATE | HEAVY_CURSE | CURSED
+F:SEE_INVIS | AGGRAVATE | HEAVY_CURSE | LIGHT_CURSE
 
 # 103 (unused)
 
@@ -571,14 +571,14 @@ C:5:15:0:0
 N:108:of Extra Might
 X:25:20
 W:0:0:0:10000
-C:5:10:0:0
-F:XTRA_MIGHT
+C:5:10:0:2
+F:MIGHT
 
 N:109:of Extra Shots
 X:25:20
-C:10:5:0:0
+C:10:5:0:1
 W:0:0:0:10000
-F:XTRA_SHOTS
+F:SHOTS
 
 # 110 (unused)
 
@@ -597,20 +597,35 @@ X:23:10
 W:0:0:0:25
 F:SLAY_EVIL
 
-# 114 (unused)
+N:114:of Hurt Undead
+X:23:10
+W:0:0:0:25
+F:SLAY_UNDEAD
 
-# 115 (unused)
+N:115:of Hurt Demon
+X:23:10
+W:0:0:0:15
+F:SLAY_DEMON
 
-# 116 (unused)
+N:116:of Hurt Orc
+X:23:10
+W:0:0:0:15
+F:SLAY_ORC
 
-# 117 (unused)
+N:117:of Hurt Troll
+X:23:10
+W:0:0:0:15
+F:SLAY_TROLL
 
-# 118 (unused)
+N:118:of Hurt Giant
+X:23:10
+W:0:0:0:15
+F:SLAY_GIANT
 
 N:119:of Hurt Dragon
 X:23:10
-F:SLAY_DRAGON
 W:0:0:0:35
+F:SLAY_DRAGON
 
 # 120 (unused)
 
@@ -635,7 +650,7 @@ N:125:of Backbiting
 X:23:0
 W:0:0:0:0
 C:50:50:0:0
-
+F:LIGHT_CURSE
 
 ### Special Broken Items ###
 

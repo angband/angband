@@ -1,5 +1,13 @@
 /* File: z-form.c */
 
+/*
+ * Copyright (c) 1997 Ben Harrison
+ *
+ * This software may be copied and distributed for educational, research,
+ * and not for profit purposes provided that this copyright and statement
+ * are included in all such copies.
+ */
+
 /* Purpose: Low level text formatting -BEN- */
 
 #include "z-form.h"

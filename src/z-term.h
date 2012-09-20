@@ -1,5 +1,13 @@
 /* File: z-term.h */
 
+/*
+ * Copyright (c) 1997 Ben Harrison
+ *
+ * This software may be copied and distributed for educational, research,
+ * and not for profit purposes provided that this copyright and statement
+ * are included in all such copies.
+ */
+
 #ifndef INCLUDED_Z_TERM_H
 #define INCLUDED_Z_TERM_H
 
@@ -236,6 +244,9 @@ extern term *Term;
 extern errr Term_user(int n);
 extern errr Term_xtra(int n, int v);
 
+extern void Term_queue_char(int x, int y, byte a, char c);
+extern void Term_queue_chars(int x, int y, int n, byte a, cptr s);
+
 extern errr Term_fresh(void);
 extern errr Term_set_cursor(int v);
 extern errr Term_gotoxy(int x, int y);
@@ -260,6 +271,8 @@ extern errr Term_inkey(char *ch, bool wait, bool take);
 
 extern errr Term_save(void);
 extern errr Term_load(void);
+
+extern errr Term_exchange(void);
 
 extern errr Term_resize(int w, int h);
 

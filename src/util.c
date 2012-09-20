@@ -1,7 +1,12 @@
 /* File: util.c */
 
-/* Purpose: Angband utilities -BEN- */
-
+/*
+ * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
+ *
+ * This software may be copied and distributed for educational, research,
+ * and not for profit purposes provided that this copyright and statement
+ * are included in all such copies.  Other copyrights may also apply.
+ */
 
 #include "angband.h"
 
@@ -66,12 +71,12 @@ int usleep(huge usecs)
 {
 	struct timeval      Timer;
 
-	int                 nfds = 0;
+	int nfds = 0;
 
 #ifdef FD_SET
-	fd_set		*no_fds = NULL;
+	fd_set *no_fds = NULL;
 #else
-	int			*no_fds = NULL;
+	int *no_fds = NULL;
 #endif
 
 
@@ -113,13 +118,12 @@ extern struct passwd *getpwnam();
  */
 void user_name(char *buf, int id)
 {
-#if 0
 	struct passwd *pw;
 
 	/* Look up the user name */
 	if ((pw = getpwuid(id)))
 	{
-		(void)strcpy(buf, pw->pw_name);
+		strcpy(buf, pw->pw_name);
 		buf[16] = '\0';
 
 #ifdef CAPITALIZE_USER_NAME
@@ -129,7 +133,6 @@ void user_name(char *buf, int id)
 
 		return;
 	}
-#endif
 
 	/* Oops.  Hack -- default to "PLAYER" */
 	strcpy(buf, "PLAYER");
@@ -192,9 +195,9 @@ void user_name(char *buf, int id)
  */
 errr path_parse(char *buf, int max, cptr file)
 {
-	cptr		u, s;
+	cptr u, s;
 	struct passwd	*pw;
-	char		user[128];
+	char user[128];
 
 
 	/* Assume no result */
@@ -239,10 +242,10 @@ errr path_parse(char *buf, int max, cptr file)
 	if (!pw) return (1);
 
 	/* Make use of the info */
-	(void)strcpy(buf, pw->pw_dir);
+	strcpy(buf, pw->pw_dir);
 
 	/* Append the rest of the filename, if any */
-	if (s) (void)strcat(buf, s);
+	if (s) strcat(buf, s);
 
 	/* Success */
 	return (0);
@@ -315,14 +318,14 @@ errr path_build(char *buf, int max, cptr path, cptr file)
 		/* Use the file itself */
 		strnfmt(buf, max, "%s", file);
 	}
-	
+
 	/* Absolute file, on "normal" systems */
 	else if (prefix(file, PATH_SEP) && !streq(PATH_SEP, ""))
 	{
 		/* Use the file itself */
 		strnfmt(buf, max, "%s", file);
 	}
-	
+
 	/* No path given */
 	else if (!path[0])
 	{
@@ -347,7 +350,7 @@ errr path_build(char *buf, int max, cptr path, cptr file)
  */
 FILE *my_fopen(cptr file, cptr mode)
 {
-	char                buf[1024];
+	char buf[1024];
 
 	/* Hack -- Try to parse the path */
 	if (path_parse(buf, 1024, file)) return (NULL);
@@ -475,29 +478,6 @@ errr my_fputs(FILE *fff, cptr buf, huge n)
 
 
 /*
- * Code Warrior is a little weird about some functions
- */
-#ifdef BEN_HACK
-extern int open(const char *, int, ...);
-extern int close(int);
-extern int read(int, void *, unsigned int);
-extern int write(int, const void *, unsigned int);
-extern long lseek(int, long, int);
-#endif /* BEN_HACK */
-
-
-/*
- * The Macintosh is a little bit brain-dead sometimes
- */
-#ifdef MACINTOSH
-# define open(N,F,M) \
-	((M), open((char*)(N),F))
-# define write(F,B,S) \
-	write(F,(char*)(B),S)
-#endif /* MACINTOSH */
-
-
-/*
  * Several systems have no "O_BINARY" flag
  */
 #ifndef O_BINARY
@@ -510,7 +490,7 @@ extern long lseek(int, long, int);
  */
 errr fd_kill(cptr file)
 {
-	char                buf[1024];
+	char buf[1024];
 
 	/* Hack -- Try to parse the path */
 	if (path_parse(buf, 1024, file)) return (-1);
@@ -528,8 +508,8 @@ errr fd_kill(cptr file)
  */
 errr fd_move(cptr file, cptr what)
 {
-	char                buf[1024];
-	char                aux[1024];
+	char buf[1024];
+	char aux[1024];
 
 	/* Hack -- Try to parse the path */
 	if (path_parse(buf, 1024, file)) return (-1);
@@ -550,8 +530,8 @@ errr fd_move(cptr file, cptr what)
  */
 errr fd_copy(cptr file, cptr what)
 {
-	char                buf[1024];
-	char                aux[1024];
+	char buf[1024];
+	char aux[1024];
 
 	/* Hack -- Try to parse the path */
 	if (path_parse(buf, 1024, file)) return (-1);
@@ -573,37 +553,25 @@ errr fd_copy(cptr file, cptr what)
  * This function should fail if the file already exists
  *
  * Note that we assume that the file should be "binary"
- *
- * XXX XXX XXX The horrible "BEN_HACK" code is for compiling under
- * the CodeWarrior compiler, in which case, for some reason, none
- * of the "O_*" flags are defined, and we must fake the definition
- * of "O_RDONLY", "O_WRONLY", and "O_RDWR" in "A-win-h", and then
- * we must simulate the effect of the proper "open()" call below.
  */
 int fd_make(cptr file, int mode)
 {
-	char                buf[1024];
+	char buf[1024];
 
 	/* Hack -- Try to parse the path */
 	if (path_parse(buf, 1024, file)) return (-1);
 
-#ifdef BEN_HACK
+#if defined(MACINTOSH) || defined(WINDOWS)
 
-	/* Check for existance */
-	/* if (fd_close(fd_open(file, O_RDONLY | O_BINARY))) return (1); */
+	/* Create the file, fail if exists, write-only, binary */
+	return (open(buf, O_CREAT | O_EXCL | O_WRONLY | O_BINARY));
 
-	/* Mega-Hack -- Create the file */
-	(void)my_fclose(my_fopen(file, "wb"));
-
-	/* Re-open the file for writing */
-	return (open(buf, O_WRONLY | O_BINARY, mode));
-
-#else /* BEN_HACK */
+#else
 
 	/* Create the file, fail if exists, write-only, binary */
 	return (open(buf, O_CREAT | O_EXCL | O_WRONLY | O_BINARY, mode));
 
-#endif /* BEN_HACK */
+#endif
 
 }
 
@@ -615,13 +583,23 @@ int fd_make(cptr file, int mode)
  */
 int fd_open(cptr file, int flags)
 {
-	char                buf[1024];
+	char buf[1024];
 
 	/* Hack -- Try to parse the path */
 	if (path_parse(buf, 1024, file)) return (-1);
 
+#if defined(MACINTOSH) || defined(WINDOWS)
+
+	/* Attempt to open the file */
+	return (open(buf, flags | O_BINARY));
+
+#else
+
 	/* Attempt to open the file */
 	return (open(buf, flags | O_BINARY, 0));
+
+#endif
+
 }
 
 
@@ -1296,7 +1274,7 @@ static char original_commands(char command)
  * To reset the keymap, simply set "rogue_like_commands" to -1,
  * call this function, restore its value, call this function.
  *
- * The keymap arrays map keys to "command_cmd" and "command_dir".
+ * The keymap arrays map keys to "p_ptr->command_cmd" and "p_ptr->command_dir".
  *
  * It is illegal for keymap_cmds[N] to be zero, except for
  * keymaps_cmds[0], which is unused.
@@ -1575,13 +1553,13 @@ void sound(int val)
  */
 static char inkey_aux(void)
 {
-	int		k = 0, n, p = 0, w = 0;
+	int k = 0, n, p = 0, w = 0;
 
-	char	ch;
+	char ch;
 
-	cptr	pat, act;
+	cptr pat, act;
 
-	char	buf[1024];
+	char buf[1024];
 
 
 	/* Wait for keypress */
@@ -2341,9 +2319,6 @@ static void msg_flush(int x)
 {
 	byte a = TERM_L_BLUE;
 
-	/* Hack -- fake monochrome */
-	if (!use_color) a = TERM_WHITE;
-
 	/* Pause for response */
 	Term_putstr(x, 0, -1, a, "-more-");
 
@@ -2530,12 +2505,10 @@ void msg_format(cptr fmt, ...)
  */
 void c_put_str(byte attr, cptr str, int row, int col)
 {
-	/* Hack -- fake monochrome */
-	if (!use_color) attr = TERM_WHITE;
-
 	/* Position cursor, Dump the attr/text */
 	Term_putstr(col, row, -1, attr, str);
 }
+
 
 /*
  * As above, but in "white"
@@ -2554,15 +2527,13 @@ void put_str(cptr str, int row, int col)
  */
 void c_prt(byte attr, cptr str, int row, int col)
 {
-	/* Hack -- fake monochrome */
-	if (!use_color) attr = TERM_WHITE;
-
 	/* Clear line, position cursor */
 	Term_erase(col, row, 255);
 
 	/* Dump the attr/text */
 	Term_addstr(-1, attr, str);
 }
+
 
 /*
  * As above, but in "white"
@@ -2597,10 +2568,6 @@ void c_roff(byte a, cptr str)
 	int w, h;
 
 	cptr s;
-
-
-	/* Hack -- fake monochrome */
-	if (!use_color) a = TERM_WHITE;
 
 
 	/* Obtain the size */
@@ -2920,74 +2887,6 @@ bool get_com(cptr prompt, char *command)
 
 
 /*
- * Request a "quantity" from the user
- *
- * Hack -- allow "command_arg" to specify a quantity
- */
-s16b get_quantity(cptr prompt, int max)
-{
-	int amt;
-
-	char tmp[80];
-
-	char buf[80];
-
-
-	/* Use "command_arg" */
-	if (command_arg)
-	{
-		/* Extract a number */
-		amt = command_arg;
-
-		/* Clear "command_arg" */
-		command_arg = 0;
-
-		/* Enforce the maximum */
-		if (amt > max) amt = max;
-
-		/* Use it */
-		return (amt);
-	}
-
-
-	/* Build a prompt if needed */
-	if (!prompt)
-	{
-		/* Build a prompt */
-		sprintf(tmp, "Quantity (1-%d): ", max);
-
-		/* Use that prompt */
-		prompt = tmp;
-	}
-
-
-	/* Default to one */
-	amt = 1;
-
-	/* Build the default */
-	sprintf(buf, "%d", amt);
-
-	/* Ask for a quantity */
-	if (!get_string(prompt, buf, 6)) return (0);
-
-	/* Extract a number */
-	amt = atoi(buf);
-
-	/* A letter means "all" */
-	if (isalpha(buf[0])) amt = max;
-
-	/* Enforce the maximum */
-	if (amt > max) amt = max;
-
-	/* Enforce the minimum */
-	if (amt < 0) amt = 0;
-
-	/* Return the result */
-	return (amt);
-}
-
-
-/*
  * Pause for user response XXX XXX XXX
  */
 void pause_line(int row)
@@ -3006,7 +2905,7 @@ void pause_line(int row)
 /*
  * Request a command from the user.
  *
- * Sets command_cmd, command_dir, command_rep, command_arg.
+ * Sets p_ptr->command_cmd, p_ptr->command_dir, p_ptr->command_rep, p_ptr->command_arg.
  *
  * Note that "caret" ("^") is treated special, and is used to
  * allow manual input of control characters.  This can be used
@@ -3024,13 +2923,13 @@ void request_command(bool shopping)
 
 
 	/* No command yet */
-	command_cmd = 0;
+	p_ptr->command_cmd = 0;
 
 	/* No "argument" yet */
-	command_arg = 0;
+	p_ptr->command_arg = 0;
 
 	/* No "direction" yet */
-	command_dir = 0;
+	p_ptr->command_dir = 0;
 
 
 	/* Hack -- Optional flush */
@@ -3038,16 +2937,16 @@ void request_command(bool shopping)
 
 
 	/* Hack -- auto-commands */
-	if (command_new)
+	if (p_ptr->command_new)
 	{
 		/* Flush messages */
 		msg_print(NULL);
 
 		/* Use auto-command */
-		cmd = command_new;
+		cmd = p_ptr->command_new;
 
 		/* Forget it */
-		command_new = 0;
+		p_ptr->command_new = 0;
 	}
 
 	/* Get a keypress in "command" mode */
@@ -3083,34 +2982,34 @@ void request_command(bool shopping)
 			if ((cmd == 0x7F) || (cmd == KTRL('H')))
 			{
 				/* Delete a digit */
-				command_arg = command_arg / 10;
+				p_ptr->command_arg = p_ptr->command_arg / 10;
 
 				/* Show current count */
-				prt(format("Count: %d", command_arg), 0, 0);
+				prt(format("Count: %d", p_ptr->command_arg), 0, 0);
 			}
 
 			/* Actual numeric data */
 			else if (cmd >= '0' && cmd <= '9')
 			{
 				/* Stop count at 9999 */
-				if (command_arg >= 1000)
+				if (p_ptr->command_arg >= 1000)
 				{
 					/* Warn */
 					bell();
 
 					/* Limit */
-					command_arg = 9999;
+					p_ptr->command_arg = 9999;
 				}
 
 				/* Increase count */
 				else
 				{
 					/* Incorporate that digit */
-					command_arg = command_arg * 10 + D2I(cmd);
+					p_ptr->command_arg = p_ptr->command_arg * 10 + D2I(cmd);
 				}
 
 				/* Show current count */
-				prt(format("Count: %d", command_arg), 0, 0);
+				prt(format("Count: %d", p_ptr->command_arg), 0, 0);
 			}
 
 			/* Exit on "unusable" input */
@@ -3121,13 +3020,13 @@ void request_command(bool shopping)
 		}
 
 		/* Handle "zero" */
-		if (command_arg == 0)
+		if (p_ptr->command_arg == 0)
 		{
 			/* Default to 99 */
-			command_arg = 99;
+			p_ptr->command_arg = 99;
 
 			/* Show current count */
-			prt(format("Count: %d", command_arg), 0, 0);
+			prt(format("Count: %d", p_ptr->command_arg), 0, 0);
 		}
 
 		/* Hack -- white-space means "enter command now" */
@@ -3156,7 +3055,7 @@ void request_command(bool shopping)
 		}
 
 		/* Use the key directly */
-		command_cmd = cmd;
+		p_ptr->command_cmd = cmd;
 	}
 
 	/* Utilize "keymap" */
@@ -3173,19 +3072,19 @@ void request_command(bool shopping)
 		}
 
 		/* Access the array info */
-		command_cmd = keymap_cmds[cmd & 0x7F];
-		command_dir = keymap_dirs[cmd & 0x7F];
+		p_ptr->command_cmd = keymap_cmds[cmd & 0x7F];
+		p_ptr->command_dir = keymap_dirs[cmd & 0x7F];
 	}
 
 	/* Paranoia */
-	if (!command_cmd) command_cmd = ESCAPE;
+	if (!p_ptr->command_cmd) p_ptr->command_cmd = ESCAPE;
 
 
 	/* Hack -- Auto-repeat certain commands */
-	if (always_repeat && (command_arg <= 0))
+	if (always_repeat && (p_ptr->command_arg <= 0))
 	{
 		/* Hack -- Tunnel, Bash, Disarm, Open, Close, Alter */
-		if (strchr("TBDoc+", command_cmd)) command_arg = 99;
+		if (strchr("TBDoc+", p_ptr->command_cmd)) p_ptr->command_arg = 99;
 	}
 
 
@@ -3193,16 +3092,16 @@ void request_command(bool shopping)
 	if (shopping)
 	{
 		/* Convert */
-		switch (command_cmd)
+		switch (p_ptr->command_cmd)
 		{
 			/* Command "p" -> "purchase" (get) */
-			case 'p': command_cmd = 'g'; break;
+			case 'p': p_ptr->command_cmd = 'g'; break;
 
 			/* Command "m" -> "purchase" (get) */
-			case 'm': command_cmd = 'g'; break;
+			case 'm': p_ptr->command_cmd = 'g'; break;
 
 			/* Command "s" -> "sell" (drop) */
-			case 's': command_cmd = 'd'; break;
+			case 's': p_ptr->command_cmd = 'd'; break;
 		}
 	}
 
@@ -3227,10 +3126,10 @@ void request_command(bool shopping)
 		while (s)
 		{
 			/* Check the "restriction" */
-			if ((s[1] == command_cmd) || (s[1] == '*'))
+			if ((s[1] == p_ptr->command_cmd) || (s[1] == '*'))
 			{
 				/* Verify command (or convert to "return") */
-				if (!get_check("Are you sure? ")) command_cmd = '\r';
+				if (!get_check("Are you sure? ")) p_ptr->command_cmd = '\r';
 			}
 
 			/* Find another '^' */
@@ -3283,8 +3182,8 @@ bool is_a_vowel(int ch)
  */
 static bool insert_str(char *buf, cptr target, cptr insert)
 {
-	int   i, len;
-	int		   b_len, t_len, i_len;
+	int i, len;
+	int b_len, t_len, i_len;
 
 	/* Attempt to find the target (modify "buf") */
 	buf = strstr(buf, target);

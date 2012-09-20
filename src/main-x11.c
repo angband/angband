@@ -1,8 +1,16 @@
 /* File: main-x11.c */
 
 /*
- * Purpose: One (awful) way to run Angband under X11	-BEN-
+ * Copyright (c) 1997 Ben Harrison, and others
  *
+ * This software may be copied and distributed for educational, research,
+ * and not for profit purposes provided that this copyright and statement
+ * are included in all such copies.
+ */
+
+/* Purpose: One (awful) way to run Angband under X11 -BEN- */
+
+/*
  * Most of this file provides a user interface package composed of
  * several pseudo-objects, including "metadpy" (a display), "infowin"
  * (a window), "infoclr" (a color), and "infofnt" (a font).  Actually,
@@ -100,32 +108,31 @@ typedef struct infofnt infofnt;
  *	- Bit Flag: Allow the use of color (default: depth > 1)
  *	- Bit Flag: We created 'dpy', and so should nuke it when done.
  */
-
 struct metadpy
 {
-	Display	*dpy;
-	Screen	*screen;
-	Window	root;
-	Colormap	cmap;
+	Display *dpy;
+	Screen *screen;
+	Window root;
+	Colormap cmap;
 
-	char		*name;
+	char *name;
 
-	int		fd;
+	int fd;
 
-	uint		width;
-	uint		height;
-	uint		depth;
+	uint width;
+	uint height;
+	uint depth;
 
-	Pixell	black;
-	Pixell	white;
+	Pixell black;
+	Pixell white;
 
-	Pixell	bg;
-	Pixell	fg;
-	Pixell	zg;
+	Pixell bg;
+	Pixell fg;
+	Pixell zg;
 
-	uint		mono:1;
-	uint		color:1;
-	uint		nuke:1;
+	uint mono:1;
+	uint color:1;
+	uint nuke:1;
 };
 
 
@@ -156,28 +163,27 @@ struct metadpy
  *	- Bit Flag: 3rd extra flag
  *	- Bit Flag: 4th extra flag
  */
-
 struct infowin
 {
-	Window		win;
-	long			mask;
+	Window win;
+	long mask;
 
-	s16b			x, y;
-	s16b			w, h;
-	u16b			b;
+	s16b x, y;
+	s16b w, h;
+	u16b b;
 
-	byte			byte1;
+	byte byte1;
 
-	uint			mapped:1;
-	uint			redraw:1;
-	uint			resize:1;
+	uint mapped:1;
+	uint redraw:1;
+	uint resize:1;
 
-	uint			nuke:1;
+	uint nuke:1;
 
-	uint			flag1:1;
-	uint			flag2:1;
-	uint			flag3:1;
-	uint			flag4:1;
+	uint flag1:1;
+	uint flag2:1;
+	uint flag3:1;
+	uint flag4:1;
 };
 
 
@@ -197,17 +203,16 @@ struct infowin
  *	- Bit Flag: The GC is in stipple mode
  *	- Bit Flag: Destroy 'gc' at Nuke time.
  */
-
 struct infoclr
 {
-	GC			gc;
+	GC gc;
 
-	Pixell		fg;
-	Pixell		bg;
+	Pixell fg;
+	Pixell bg;
 
-	uint			code:4;
-	uint			stip:1;
-	uint			nuke:1;
+	uint code:4;
+	uint stip:1;
+	uint nuke:1;
 };
 
 
@@ -228,26 +233,62 @@ struct infoclr
  *	- Flag: Force monospacing via 'wid'
  *	- Flag: Nuke info when done
  */
-
 struct infofnt
 {
-	XFontStruct	*info;
+	XFontStruct *info;
 
-	cptr			name;
+	cptr name;
 
-	s16b			wid;
-	s16b			hgt;
-	s16b			asc;
+	s16b wid;
+	s16b hgt;
+	s16b asc;
 
-	byte			off;
+	byte off;
 
-	uint			mono:1;
-	uint			nuke:1;
+	uint mono:1;
+	uint nuke:1;
 };
 
 
 
 /**** Available Macros ****/
+
+
+#ifndef IsModifierKey
+
+/*
+ * Keysym macros, used on Keysyms to test for classes of symbols
+ * These were stolen from one of the X11 header files
+ */
+
+#define IsKeypadKey(keysym) \
+    (((unsigned)(keysym) >= XK_KP_Space) && ((unsigned)(keysym) <= XK_KP_Equal))
+
+#define IsCursorKey(keysym) \
+    (((unsigned)(keysym) >= XK_Home) && ((unsigned)(keysym) <  XK_Select))
+
+#define IsPFKey(keysym) \
+    (((unsigned)(keysym) >= XK_KP_F1) && ((unsigned)(keysym) <= XK_KP_F4))
+
+#define IsFunctionKey(keysym) \
+    (((unsigned)(keysym) >= XK_F1) && ((unsigned)(keysym) <= XK_F35))
+
+#define IsMiscFunctionKey(keysym) \
+    (((unsigned)(keysym) >= XK_Select) && ((unsigned)(keysym) <  XK_KP_Space))
+
+#define IsModifierKey(keysym) \
+    (((unsigned)(keysym) >= XK_Shift_L) && ((unsigned)(keysym) <= XK_Hyper_R))
+
+#endif
+
+
+/*
+ * Checks if the keysym is a special key or a normal key
+ * Assume that XK_MISCELLANY keysyms are special
+ */
+#define IsSpecialKey(keysym) \
+    ((unsigned)(keysym) >= 0xFF00)
+
 
 
 /* Set current metadpy (Metadpy) to 'M' */
@@ -372,11 +413,19 @@ static errr Metadpy_init_2(Display *dpy, cptr name)
 		/* Failure */
 		if (!dpy)
 		{
+
+#if 0
+
 			/* No name given, extract DISPLAY */
 			if (!name) name = getenv("DISPLAY");
 
 			/* No DISPLAY extracted, use default */
 			if (!name) name = "(default)";
+
+			/* Oops */
+			plog_fmt("Cannot open display '%s'", name);
+
+#endif
 
 			/* Error */
 			return (-1);
@@ -644,7 +693,7 @@ static errr Infowin_init_data(Window dad, int x, int y, int w, int h,
 	Infowin->nuke = 1;
 
 	/* Attempt to Initialize the infowin */
-	return (Infowin_prepare (xid));
+	return (Infowin_prepare(xid));
 }
 
 
@@ -652,7 +701,7 @@ static errr Infowin_init_data(Window dad, int x, int y, int w, int h,
 /*
  * Modify the event mask of an Infowin
  */
-static errr Infowin_set_mask (long mask)
+static errr Infowin_set_mask(long mask)
 {
 	/* Save the new setting */
 	Infowin->mask = mask;
@@ -668,7 +717,7 @@ static errr Infowin_set_mask (long mask)
 /*
  * Request that Infowin be mapped
  */
-static errr Infowin_map (void)
+static errr Infowin_map(void)
 {
 	/* Execute the Mapping */
 	XMapWindow(Metadpy->dpy, Infowin->win);
@@ -681,7 +730,7 @@ static errr Infowin_map (void)
 /*
  * Request that Infowin be unmapped
  */
-static errr Infowin_unmap (void)
+static errr Infowin_unmap(void)
 {
 	/* Execute the Un-Mapping */
 	XUnmapWindow(Metadpy->dpy, Infowin->win);
@@ -781,6 +830,81 @@ static errr Infowin_fill(void)
 	/* Success */
 	return (0);
 }
+
+
+/*
+ * Set the size hints of Infowin
+ */
+static errr Infowin_set_size(int w, int h, int r_w, int r_h, bool fixed)
+{
+	XSizeHints *sh;
+
+	/* Make Size Hints */
+	sh = XAllocSizeHints();
+
+	/* Oops */
+	if (!sh) return (1);
+
+	/* Fixed window size */
+	if (fixed)
+	{
+		sh->flags = PMinSize | PMaxSize;
+		sh->min_width = sh->max_width = w;
+		sh->min_height = sh->max_height = h;
+	}
+
+	/* Variable window size */
+	else
+	{
+		sh->flags = PMinSize;
+		sh->min_width = r_w + 2;
+		sh->min_height = r_h + 2;
+	}
+
+	/* Standard fields */
+	sh->width = w;
+	sh->height = h;
+	sh->width_inc = r_w;
+	sh->height_inc = r_h;
+	sh->base_width = 2;
+	sh->base_height = 2;
+
+	/* Useful settings */
+	sh->flags |= PSize | PResizeInc | PBaseSize;
+
+	/* Use the size hints */
+	XSetWMNormalHints(Metadpy->dpy, Infowin->win, sh);
+
+	/* Success */
+	return 0;
+}
+
+
+/*
+ * Set the name (in the title bar) of Infowin
+ */
+static errr Infowin_set_class_hint(cptr name)
+{
+	XClassHint *ch;
+
+	char res_name[20];
+	char res_class[20];
+
+	ch = XAllocClassHint();
+	if (ch == NULL) return (1);
+
+	strcpy(res_name, name);
+	res_name[0] = FORCELOWER(res_name[0]);
+	ch->res_name = res_name;
+
+	strcpy(res_class, "Angband");
+	ch->res_class = res_class;
+
+	XSetClassHint(Metadpy->dpy, Infowin->win, ch);
+
+	return (0);
+}
+
 
 
 
@@ -889,7 +1013,7 @@ static Pixell Infoclr_Pixell(cptr name)
 		}
 
 		/* Attempt to Allocate the Parsed color */
-		if (!(XAllocColor (Metadpy->dpy, Metadpy->cmap, &scrn)))
+		if (!(XAllocColor(Metadpy->dpy, Metadpy->cmap, &scrn)))
 		{
 			plog_fmt("Warning: Couldn't allocate color '%s'\n", name);
 		}
@@ -1028,9 +1152,37 @@ static errr Infoclr_init_data(Pixell fg, Pixell bg, int op, int stip)
 
 
 /*
+ * Change the 'fg' for an infoclr
+ *
+ * Inputs:
+ *	fg:   The Pixell for the requested Foreground (see above)
+ */
+static errr Infoclr_change_fg(Pixell fg)
+{
+	infoclr *iclr = Infoclr;
+
+
+	/*** Simple error checking of opr and clr ***/
+
+	/* Check the 'Pixells' for realism */
+	if (fg > Metadpy->zg) return (-1);
+
+
+	/*** Change ***/
+
+	/* Change */
+	XSetForeground(Metadpy->dpy, iclr->gc, fg);
+
+	/* Success */
+	return (0);
+}
+
+
+
+/*
  * Nuke an old 'infofnt'.
  */
-static errr Infofnt_nuke (void)
+static errr Infofnt_nuke(void)
 {
 	infofnt *ifnt = Infofnt;
 
@@ -1097,7 +1249,7 @@ static errr Infofnt_init_real(XFontStruct *info)
 	Infofnt->nuke = 0;
 
 	/* Attempt to prepare it */
-	return (Infofnt_prepare (info));
+	return (Infofnt_prepare(info));
 }
 
 
@@ -1164,7 +1316,7 @@ static errr Infofnt_text_std(int x, int y, cptr str, int len)
 	if (!str || !*str) return (-1);
 
 	/* Get the length of the string */
-	if (len < 0) len = strlen (str);
+	if (len < 0) len = strlen(str);
 
 
 	/*** Decide where to place the string, vertically ***/
@@ -1264,42 +1416,6 @@ static errr Infofnt_text_non(int x, int y, cptr str, int len)
  */
 
 
-#ifndef IsModifierKey
-
-/*
- * Keysym macros, used on Keysyms to test for classes of symbols
- * These were stolen from one of the X11 header files
- */
-
-#define IsKeypadKey(keysym) \
-    (((unsigned)(keysym) >= XK_KP_Space) && ((unsigned)(keysym) <= XK_KP_Equal))
-
-#define IsCursorKey(keysym) \
-    (((unsigned)(keysym) >= XK_Home) && ((unsigned)(keysym) <  XK_Select))
-
-#define IsPFKey(keysym) \
-    (((unsigned)(keysym) >= XK_KP_F1) && ((unsigned)(keysym) <= XK_KP_F4))
-
-#define IsFunctionKey(keysym) \
-    (((unsigned)(keysym) >= XK_F1) && ((unsigned)(keysym) <= XK_F35))
-
-#define IsMiscFunctionKey(keysym) \
-    (((unsigned)(keysym) >= XK_Select) && ((unsigned)(keysym) <  XK_KP_Space))
-
-#define IsModifierKey(keysym) \
-    (((unsigned)(keysym) >= XK_Shift_L) && ((unsigned)(keysym) <= XK_Hyper_R))
-
-#endif
-
-
-/*
- * Checks if the keysym is a special key or a normal key
- * Assume that XK_MISCELLANY keysyms are special
- */
-#define IsSpecialKey(keysym) \
-    ((unsigned)(keysym) >= 0xFF00)
-
-
 /*
  * Hack -- cursor color
  */
@@ -1308,7 +1424,12 @@ static infoclr *xor;
 /*
  * Color table
  */
-static infoclr *clr[16];
+static infoclr *clr[256];
+
+/*
+ * Color info
+ */
+static char color_info[256][8];
 
 
 /*
@@ -1339,81 +1460,6 @@ struct term_data
  * The array of term data structures
  */
 static term_data data[MAX_TERM_DATA];
-
-
-/*
- * Set the size hints of Infowin
- */
-static errr Infowin_set_size(int w, int h, int r_w, int r_h, bool fixed)
-{
-	XSizeHints *sh;
-
-	/* Make Size Hints */
-	sh = XAllocSizeHints();
-
-	/* Oops */
-	if (!sh) return (1);
-
-	/* Fixed window size */
-	if (fixed)
-	{
-		sh->flags = PMinSize | PMaxSize;
-		sh->min_width = sh->max_width = w;
-		sh->min_height = sh->max_height = h;
-	}
-
-	/* Variable window size */
-	else
-	{
-		sh->flags = PMinSize;
-		sh->min_width = r_w + 2;
-		sh->min_height = r_h + 2;
-	}
-
-	/* Standard fields */
-	sh->width = w;
-	sh->height = h;
-	sh->width_inc = r_w;
-	sh->height_inc = r_h;
-	sh->base_width = 2;
-	sh->base_height = 2;
-
-	/* Useful settings */
-	sh->flags |= PSize | PResizeInc | PBaseSize;
-
-	/* Use the size hints */
-	XSetWMNormalHints(Metadpy->dpy, Infowin->win, sh);
-
-	/* Success */
-	return 0;
-}
-
-
-/*
- * Set the name (in the title bar) of Infowin
- */
-static errr Infowin_set_class_hint(cptr name)
-{
-	XClassHint *ch;
-
-	char res_name[20];
-	char res_class[20];
-
-	ch = XAllocClassHint();
-	if (ch == NULL) return (1);
-
-	strcpy(res_name, name);
-	res_name[0] = FORCELOWER(res_name[0]);
-	ch->res_name = res_name;
-
-	strcpy(res_class, "Angband");
-	ch->res_class = res_class;
-
-	XSetClassHint(Metadpy->dpy, Infowin->win, ch);
-
-	return (0);
-}
-
 
 
 /*
@@ -1617,7 +1663,7 @@ static errr CheckEvent(bool wait)
 		case ButtonRelease:
 		{
 			/* Which button is involved */
-			if      (xev->xbutton.button == Button1) z = 1;
+			if (xev->xbutton.button == Button1) z = 1;
 			else if (xev->xbutton.button == Button2) z = 2;
 			else if (xev->xbutton.button == Button3) z = 3;
 			else if (xev->xbutton.button == Button4) z = 4;
@@ -1806,9 +1852,32 @@ static errr Term_xtra_x11_level(int v)
  */
 static errr Term_xtra_x11_react(void)
 {
-	term_data *td = (term_data*)(Term->data);
+	int i;
 
-	/* XXX XXX XXX */
+	/* Check the colors */
+	for (i = 0; i < 256; i++)
+	{
+		if (Metadpy->color)
+		{
+			char cname[8];
+
+			sprintf(cname, "#%02x%02x%02x",
+			        angband_color_table[i][1],
+			        angband_color_table[i][2],
+			        angband_color_table[i][3]);
+
+			if (!streq(color_info[i], cname))
+			{
+				Infoclr_set(clr[i]);
+
+				/* Change the color */
+				Infoclr_change_fg(Infoclr_Pixell(cname));
+
+				/* Save the color info */
+				strcpy(color_info[i], cname);
+			}
+		}
+	}
 
 	/* Success */
 	return (0);
@@ -1894,7 +1963,7 @@ static errr Term_wipe_x11(int x, int y, int n)
 static errr Term_text_x11(int x, int y, int n, byte a, cptr s)
 {
 	/* Draw the text in Xor */
-	Infoclr_set(clr[a & 0x0F]);
+	Infoclr_set(clr[a]);
 
 	/* Draw the text */
 	Infofnt_text_std(x, y, s, n);
@@ -1970,79 +2039,111 @@ static errr term_data_init(term_data *td, bool fixed, cptr name, cptr font)
 
 
 /*
- * Names of the 16 colors
- *   Black, White, Slate, Orange,    Red, Green, Blue, Umber
- *   D-Gray, L-Gray, Violet, Yellow, L-Red, L-Green, L-Blue, L-Umber
- *
- * Colors courtesy of: Torbj|rn Lindgren <tl@ae.chalmers.se>
- *
- * These colors may no longer be valid...
- */
-static cptr color_name[16] =
-{
-	"black",        /* BLACK */
-	"white",        /* WHITE */
-	"#d7d7d7",      /* GRAY */
-	"#ff9200",      /* ORANGE */
-	"#ff0000",      /* RED */
-	"#00cd00",      /* GREEN */
-	"#0000fe",      /* BLUE */
-	"#c86400",      /* BROWN */
-	"#a3a3a3",      /* DARKGRAY */
-	"#ebebeb",      /* LIGHTGRAY */
-	"#a500ff",      /* PURPLE */
-	"#fffd00",      /* YELLOW */
-	"#ff00bc",      /* PINK */
-	"#00ff00",      /* LIGHTGREEN */
-	"#00c8ff",      /* LIGHTBLUE */
-	"#ffcc80",      /* LIGHTBROWN */
-};
-
-
-/*
  * Initialization function for an "X11" module to Angband
  */
-errr init_x11(void)
+errr init_x11(int argc, char *argv[])
 {
 	int i;
 
-	cptr fnt_name;
-
 	cptr dpy_name = "";
+
+	int num_term = MAX_TERM_DATA;
+
+	char buf[80];
+
+
+	/* Parse args */
+	for (i = 1; i < argc; i++)
+	{
+		if (prefix(argv[i], "-d"))
+		{
+			dpy_name = &argv[i][2];
+			continue;
+		}
+
+		if (prefix(argv[i], "-n"))
+		{
+			num_term = atoi(&argv[i][2]);
+			if (num_term < 1)
+			{
+				num_term = 1;
+			}
+			if (num_term > MAX_TERM_DATA)
+			{
+				num_term = MAX_TERM_DATA;
+			}
+			continue;
+		}
+
+		plog_fmt("Ignoring option: %s", argv[i]);
+	}
 
 
 	/* Init the Metadpy if possible */
 	if (Metadpy_init_name(dpy_name)) return (-1);
 
 
-	/* Prepare color "xor" (for cursor) */
+	/* Prepare cursor color */
 	MAKE(xor, infoclr);
-	Infoclr_set (xor);
-	Infoclr_init_ccn ("fg", "bg", "xor", 0);
+	Infoclr_set(xor);
+	Infoclr_init_ccn("fg", "bg", "xor", 0);
 
-	/* Prepare the colors (including "black") */
-	for (i = 0; i < 16; ++i)
+	/* Prepare normal colors */
+	for (i = 0; i < 256; ++i)
 	{
-		cptr cname = color_name[0];
+		char cname[8];
+
 		MAKE(clr[i], infoclr);
-		Infoclr_set (clr[i]);
-		if (Metadpy->color) cname = color_name[i];
-		else if (i) cname = color_name[1];
-		Infoclr_init_ccn (cname, "bg", "cpy", 0);
+
+		Infoclr_set(clr[i]);
+
+		strcpy(buf, (i ? "bg" : "fg"));
+
+		if (Metadpy->color)
+		{
+			sprintf(cname, "#%02x%02x%02x",
+			        angband_color_table[i][1],
+			        angband_color_table[i][2],
+			        angband_color_table[i][3]);
+		}
+
+		/* Initialize the color */
+		Infoclr_init_ccn(cname, "bg", "cpy", 0);
+
+		/* Save the color info */
+		strcpy(color_info[i], cname);
 	}
 
 
-	/* Check environment for "base" font */
-	fnt_name = getenv("ANGBAND_X11_FONT");
-
-	/* No environment variables, use the default */
-	if (!fnt_name) fnt_name = DEFAULT_X11_FONT_SCREEN;
-
 	/* Initialize the windows */
-	for (i = 0; i < MAX_TERM_DATA; i++)
+	for (i = 0; i < num_term; i++)
 	{
+		cptr fnt_name = NULL;
+
 		cptr name = angband_term_name[i];
+
+		/* Window specific font name */
+		sprintf(buf, "ANGBAND_X11_FONT_%s", name);
+
+		/* Check environment for that font */
+		if (!fnt_name) fnt_name = getenv(buf);
+
+		/* Window specific font name */
+		sprintf(buf, "ANGBAND_X11_FONT_%d", i);
+
+		/* Check environment for that font */
+		if (!fnt_name) fnt_name = getenv(buf);
+
+		/* Check environment for "base" font */
+		if (!fnt_name) fnt_name = getenv("ANGBAND_X11_FONT");
+
+		/* No environment variables, use default font */
+		if (!fnt_name) fnt_name = DEFAULT_X11_FONT_SCREEN;
+
+		/* Initialize the term_data */
 		term_data_init(&data[i], TRUE, name, fnt_name);
+
+		/* Save global entry */
 		angband_term[i] = Term;
 	}
 

@@ -1,5 +1,13 @@
 /* File: z-term.c */
 
+/*
+ * Copyright (c) 1997 Ben Harrison
+ *
+ * This software may be copied and distributed for educational, research,
+ * and not for profit purposes provided that this copyright and statement
+ * are included in all such copies.
+ */
+
 /* Purpose: a generic, efficient, terminal window package -BEN- */
 
 #include "z-term.h"
@@ -206,7 +214,7 @@
  * The "Term->text_hook" hook provides this package with a simple way
  * to "draw", starting at "x,y", the "n" chars contained in "cp", using
  * the attr "a".  This hook assumes that the input is valid, and that
- * "n" is between 1 and 256 inclusive, but it should NOT assume that 
+ * "n" is between 1 and 256 inclusive, but it should NOT assume that
  * the contents of "cp" are null-terminated.  This hook is required,
  * unless the setting of the "always_pict" flag makes it optional.
  *
@@ -350,92 +358,6 @@ static errr term_win_copy(term_win *s, term_win *f, int w, int h)
 
 
 
-/*** Local routines ***/
-
-
-/*
- * Mentally draw an attr/char at a given location
- *
- * Called only from "Term_draw()" and "Term_putch()"
- *
- * Assumes given location and values are valid.
- */
-static void QueueAttrChar(int x, int y, byte a, char c)
-{
-	byte *scr_aa = Term->scr->a[y];
-	char *scr_cc = Term->scr->c[y];
-
-	int oa = scr_aa[x];
-	int oc = scr_cc[x];
-
-	/* Hack -- Ignore non-changes */
-	if ((oa == a) && (oc == c)) return;
-
-	/* Save the "literal" information */
-	scr_aa[x] = a;
-	scr_cc[x] = c;
-
-	/* Check for new min/max row info */
-	if (y < Term->y1) Term->y1 = y;
-	if (y > Term->y2) Term->y2 = y;
-
-	/* Check for new min/max col info for this row */
-	if (x < Term->x1[y]) Term->x1[y] = x;
-	if (x > Term->x2[y]) Term->x2[y] = x;
-}
-
-
-/*
- * Mentally draw some attr/chars at a given location
- *
- * Called only from "Term_addstr()"
- *
- * Assumes that (x,y) is a valid location, that the first "n" characters
- * of the string "s" are all valid (non-zero), and that (x+n-1,y) is also
- * a valid location, so the first "n" characters of "s" can all be added
- * starting at (x,y) without causing any illegal operations.
- */
-static void QueueAttrChars(int x, int y, int n, byte a, cptr s)
-{
-	int x1 = -1, x2 = -1;
-
-	byte *scr_aa = Term->scr->a[y];
-	char *scr_cc = Term->scr->c[y];
-
-	/* Queue the attr/chars */
-	for ( ; n; x++, s++, n--)
-	{
-		int oa = scr_aa[x];
-		int oc = scr_cc[x];
-
-		/* Hack -- Ignore non-changes */
-		if ((oa == a) && (oc == *s)) continue;
-
-		/* Save the "literal" information */
-		scr_aa[x] = a;
-		scr_cc[x] = *s;
-
-		/* Note the "range" of window updates */
-		if (x1 < 0) x1 = x;
-		x2 = x;
-	}
-
-	/* Expand the "change area" as needed */
-	if (x1 >= 0)
-	{
-		/* Check for new min/max row info */
-		if (y < Term->y1) Term->y1 = y;
-		if (y > Term->y2) Term->y2 = y;
-
-		/* Check for new min/max col info in this row */
-		if (x1 < Term->x1[y]) Term->x1[y] = x1;
-		if (x2 > Term->x2[y]) Term->x2[y] = x2;
-	}
-}
-
-
-
-
 /*** External hooks ***/
 
 
@@ -446,7 +368,7 @@ errr Term_user(int n)
 {
 	/* Verify the hook */
 	if (!Term->user_hook) return (-1);
-	
+
 	/* Call the hook */
 	return ((*Term->user_hook)(n));
 }
@@ -514,6 +436,87 @@ static errr Term_pict_hack(int x, int y, int n, const byte *ap, const char *cp)
 
 	/* Oops */
 	return (-1);
+}
+
+
+
+/*** Efficient routines ***/
+
+
+/*
+ * Mentally draw an attr/char at a given location
+ *
+ * Assumes given location and values are valid.
+ */
+void Term_queue_char(int x, int y, byte a, char c)
+{
+	byte *scr_aa = Term->scr->a[y];
+	char *scr_cc = Term->scr->c[y];
+
+	int oa = scr_aa[x];
+	int oc = scr_cc[x];
+
+	/* Hack -- Ignore non-changes */
+	if ((oa == a) && (oc == c)) return;
+
+	/* Save the "literal" information */
+	scr_aa[x] = a;
+	scr_cc[x] = c;
+
+	/* Check for new min/max row info */
+	if (y < Term->y1) Term->y1 = y;
+	if (y > Term->y2) Term->y2 = y;
+
+	/* Check for new min/max col info for this row */
+	if (x < Term->x1[y]) Term->x1[y] = x;
+	if (x > Term->x2[y]) Term->x2[y] = x;
+}
+
+
+/*
+ * Mentally draw some attr/chars at a given location
+ *
+ * Assumes that (x,y) is a valid location, that the first "n" characters
+ * of the string "s" are all valid (non-zero), and that (x+n-1,y) is also
+ * a valid location, so the first "n" characters of "s" can all be added
+ * starting at (x,y) without causing any illegal operations.
+ */
+void Term_queue_chars(int x, int y, int n, byte a, cptr s)
+{
+	int x1 = -1, x2 = -1;
+
+	byte *scr_aa = Term->scr->a[y];
+	char *scr_cc = Term->scr->c[y];
+
+	/* Queue the attr/chars */
+	for ( ; n; x++, s++, n--)
+	{
+		int oa = scr_aa[x];
+		int oc = scr_cc[x];
+
+		/* Hack -- Ignore non-changes */
+		if ((oa == a) && (oc == *s)) continue;
+
+		/* Save the "literal" information */
+		scr_aa[x] = a;
+		scr_cc[x] = *s;
+
+		/* Note the "range" of window updates */
+		if (x1 < 0) x1 = x;
+		x2 = x;
+	}
+
+	/* Expand the "change area" as needed */
+	if (x1 >= 0)
+	{
+		/* Check for new min/max row info */
+		if (y < Term->y1) Term->y1 = y;
+		if (y > Term->y2) Term->y2 = y;
+
+		/* Check for new min/max col info in this row */
+		if (x1 < Term->x1[y]) Term->x1[y] = x1;
+		if (x2 > Term->x2[y]) Term->x2[y] = x2;
+	}
 }
 
 
@@ -696,7 +699,7 @@ static void Term_fresh_row_both(int y)
 			}
 
 			/* Hack -- Draw the special attr/char pair */
-			(void)((*Term->pict_hook)(fx, y, 1, &na, &nc));
+			(void)((*Term->pict_hook)(x, y, 1, &na, &nc));
 
 			/* Skip */
 			continue;
@@ -727,7 +730,7 @@ static void Term_fresh_row_both(int y)
 			/* Save the new color */
 			fa = na;
 		}
-		
+
 		/* Restart and Advance */
 		if (fn++ == 0) fx = x;
 	}
@@ -850,7 +853,7 @@ static void Term_fresh_row_text(int y)
 			/* Save the new color */
 			fa = na;
 		}
-		
+
 		/* Restart and Advance */
 		if (fn++ == 0) fx = x;
 	}
@@ -928,7 +931,7 @@ static void Term_fresh_row_text(int y)
  * to "print a char + move a char + print a char" to "print three chars",
  * and for applications that do a lot of "detailed" color printing.
  *
- * Note that, in QueueAttrChar(s), total "non-changes" are "pre-skipped".
+ * In the two "queue" functions, total "non-changes" are "pre-skipped".
  * The helper functions must also handle situations in which the contents
  * of a grid are changed, but then changed back to the original value,
  * and situations in which two grids in the same row are changed, but
@@ -1306,7 +1309,7 @@ errr Term_draw(int x, int y, byte a, char c)
 	if (!c) return (-2);
 
 	/* Queue it for later */
-	QueueAttrChar(x, y, a, c);
+	Term_queue_char(x, y, a, c);
 
 	/* Success */
 	return (0);
@@ -1340,7 +1343,7 @@ errr Term_addch(byte a, char c)
 	if (!c) return (-2);
 
 	/* Queue the given character for display */
-	QueueAttrChar(Term->scr->cx, Term->scr->cy, a, c);
+	Term_queue_char(Term->scr->cx, Term->scr->cy, a, c);
 
 	/* Advance the cursor */
 	Term->scr->cx++;
@@ -1396,7 +1399,7 @@ errr Term_addstr(int n, byte a, cptr s)
 	if (Term->scr->cx + n >= w) res = n = w - Term->scr->cx;
 
 	/* Queue the first "n" characters for display */
-	QueueAttrChars(Term->scr->cx, Term->scr->cy, n, a, s);
+	Term_queue_chars(Term->scr->cx, Term->scr->cy, n, a, s);
 
 	/* Advance the cursor */
 	Term->scr->cx += n;
@@ -1679,7 +1682,7 @@ errr Term_what(int x, int y, byte *a, char *c)
  * hook, and doing special things for "TERM_XTRA_EVENT", "TERM_XTRA_FLUSH",
  * and "TERM_XTRA_BORED", but this method is a lot "cleaner", and gives
  * much better results when "profiling" the code.
- * 
+ *
  * See the "Borg" documentation for more details.
  */
 errr (*Term_inkey_hook)(char *ch, bool wait, bool take) = NULL;
@@ -1845,6 +1848,16 @@ errr Term_save(void)
 	int w = Term->wid;
 	int h = Term->hgt;
 
+	/* Create */
+	if (!Term->mem)
+	{
+		/* Allocate window */
+		MAKE(Term->mem, term_win);
+
+		/* Initialize window */
+		term_win_init(Term->mem, w, h);
+	}
+
 	/* Grab */
 	term_win_copy(Term->mem, Term->scr, w, h);
 
@@ -1864,6 +1877,16 @@ errr Term_load(void)
 
 	int w = Term->wid;
 	int h = Term->hgt;
+
+	/* Create */
+	if (!Term->mem)
+	{
+		/* Allocate window */
+		MAKE(Term->mem, term_win);
+
+		/* Initialize window */
+		term_win_init(Term->mem, w, h);
+	}
 
 	/* Load */
 	term_win_copy(Term->scr, Term->mem, w, h);
@@ -1885,6 +1908,50 @@ errr Term_load(void)
 }
 
 
+/*
+ * Exchange the "requested" screen with the "tmp" screen
+ */
+errr Term_exchange(void)
+{
+	int y;
+
+	int w = Term->wid;
+	int h = Term->hgt;
+
+	term_win *exchanger;
+
+
+	/* Create */
+	if (!Term->tmp)
+	{
+		/* Allocate window */
+		MAKE(Term->tmp, term_win);
+
+		/* Initialize window */
+		term_win_init(Term->tmp, w, h);
+	}
+
+	/* Swap */
+	exchanger = Term->scr;
+	Term->scr = Term->tmp;
+	Term->tmp = exchanger;
+
+	/* Assume change */
+	for (y = 0; y < h; y++)
+	{
+		/* Assume change */
+		Term->x1[y] = 0;
+		Term->x2[y] = w - 1;
+	}
+
+	/* Assume change */
+	Term->y1 = 0;
+	Term->y2 = h - 1;
+
+	/* Success */
+	return (0);
+}
+
 
 
 /*
@@ -1902,12 +1969,7 @@ errr Term_resize(int w, int h)
 	term_win *hold_old;
 	term_win *hold_scr;
 	term_win *hold_mem;
-
-#if 0
-
 	term_win *hold_tmp;
-
-#endif
 
 
 	/* Ignore illegal changes */
@@ -1916,12 +1978,10 @@ errr Term_resize(int w, int h)
 	/* Ignore non-changes */
 	if ((Term->wid == w) && (Term->hgt == h)) return (1);
 
+
 	/* Minimum dimensions */
 	wid = MIN(Term->wid, w);
 	hgt = MIN(Term->hgt, h);
-
-
-	/*** Save ***/
 
 	/* Save scanners */
 	hold_x1 = Term->x1;
@@ -1936,20 +1996,12 @@ errr Term_resize(int w, int h)
 	/* Save old window */
 	hold_mem = Term->mem;
 
-#if 0
-
 	/* Save old window */
 	hold_tmp = Term->tmp;
-
-#endif
-
-
-	/*** Make new ***/
 
 	/* Create new scanners */
 	C_MAKE(Term->x1, h, byte);
 	C_MAKE(Term->x2, h, byte);
-
 
 	/* Create new window */
 	MAKE(Term->old, term_win);
@@ -1960,7 +2012,6 @@ errr Term_resize(int w, int h)
 	/* Save the contents */
 	term_win_copy(Term->old, hold_old, wid, hgt);
 
-
 	/* Create new window */
 	MAKE(Term->scr, term_win);
 
@@ -1970,37 +2021,35 @@ errr Term_resize(int w, int h)
 	/* Save the contents */
 	term_win_copy(Term->scr, hold_scr, wid, hgt);
 
+	/* If needed */
+	if (hold_mem)
+	{
+		/* Create new window */
+		MAKE(Term->mem, term_win);
 
-	/* Create new window */
-	MAKE(Term->mem, term_win);
+		/* Initialize new window */
+		term_win_init(Term->mem, w, h);
 
-	/* Initialize new window */
-	term_win_init(Term->mem, w, h);
+		/* Save the contents */
+		term_win_copy(Term->mem, hold_mem, wid, hgt);
+	}
 
-	/* Save the contents */
-	term_win_copy(Term->mem, hold_mem, wid, hgt);
+	/* If needed */
+	if (hold_tmp)
+	{
+		/* Create new window */
+		MAKE(Term->tmp, term_win);
 
+		/* Initialize new window */
+		term_win_init(Term->tmp, w, h);
 
-#if 0
-
-	/* Create new window */
-	MAKE(Term->tmp, term_win);
-
-	/* Initialize new window */
-	term_win_init(Term->tmp, w, h);
-
-	/* Save the contents */
-	term_win_copy(Term->tmp, hold_tmp, wid, hgt);
-
-#endif
-
-
-	/*** Kill old ***/
+		/* Save the contents */
+		term_win_copy(Term->tmp, hold_tmp, wid, hgt);
+	}
 
 	/* Free some arrays */
 	C_KILL(hold_x1, Term->hgt, byte);
 	C_KILL(hold_x2, Term->hgt, byte);
-
 
 	/* Nuke */
 	term_win_nuke(hold_old, Term->wid, Term->hgt);
@@ -2008,6 +2057,9 @@ errr Term_resize(int w, int h)
 	/* Kill */
 	KILL(hold_old, term_win);
 
+	/* Illegal cursor */
+	if (Term->old->cx >= w) Term->old->cu = 1;
+	if (Term->old->cy >= h) Term->old->cu = 1;
 
 	/* Nuke */
 	term_win_nuke(hold_scr, Term->wid, Term->hgt);
@@ -2015,52 +2067,41 @@ errr Term_resize(int w, int h)
 	/* Kill */
 	KILL(hold_scr, term_win);
 
-
-	/* Nuke */
-	term_win_nuke(hold_mem, Term->wid, Term->hgt);
-
-	/* Kill */
-	KILL(hold_mem, term_win);
-
-
-#if 0
-
-	/* Nuke */
-	term_win_nuke(hold_tmp, Term->wid, Term->hgt);
-
-	/* Kill */
-	KILL(hold_tmp, term_win);
-
-#endif
-
-
-	/*** Verify cursor ***/
-
-	/* Illegal cursor */
-	if (Term->old->cx >= w) Term->old->cu = 1;
-	if (Term->old->cy >= h) Term->old->cu = 1;
-
 	/* Illegal cursor */
 	if (Term->scr->cx >= w) Term->scr->cu = 1;
 	if (Term->scr->cy >= h) Term->scr->cu = 1;
 
-	/* Illegal cursor */
-	if (Term->mem->cx >= w) Term->mem->cu = 1;
-	if (Term->mem->cy >= h) Term->mem->cu = 1;
+	/* If needed */
+	if (hold_mem)
+	{
+		/* Nuke */
+		term_win_nuke(hold_mem, Term->wid, Term->hgt);
 
-#if 0
+		/* Kill */
+		KILL(hold_mem, term_win);
 
-	/* Illegal cursor */
-	if (Term->tmp->cx >= w) Term->tmp->cu = 1;
-	if (Term->tmp->cy >= h) Term->tmp->cu = 1;
+		/* Illegal cursor */
+		if (Term->mem->cx >= w) Term->mem->cu = 1;
+		if (Term->mem->cy >= h) Term->mem->cu = 1;
+	}
 
-#endif
+	/* If needed */
+	if (hold_tmp)
+	{
+		/* Nuke */
+		term_win_nuke(hold_tmp, Term->wid, Term->hgt);
 
+		/* Kill */
+		KILL(hold_tmp, term_win);
+
+		/* Illegal cursor */
+		if (Term->tmp->cx >= w) Term->tmp->cu = 1;
+		if (Term->tmp->cy >= h) Term->tmp->cu = 1;
+	}
 
 	/* Save new size */
 	Term->wid = w;
 	Term->hgt = h;
-
 
 	/* Force "total erase" */
 	Term->total_erase = TRUE;
@@ -2161,22 +2202,25 @@ errr term_nuke(term *t)
 	/* Kill "requested" */
 	KILL(t->scr, term_win);
 
-	/* Nuke "memorized" */
-	term_win_nuke(t->mem, w, h);
+	/* If needed */
+	if (t->mem)
+	{
+		/* Nuke "memorized" */
+		term_win_nuke(t->mem, w, h);
 
-	/* Kill "memorized" */
-	KILL(t->mem, term_win);
+		/* Kill "memorized" */
+		KILL(t->mem, term_win);
+	}
 
-#if 0
+	/* If needed */
+	if (t->tmp)
+	{
+		/* Nuke "temporary" */
+		term_win_nuke(t->tmp, w, h);
 
-	/* Nuke "temporary" */
-	term_win_nuke(t->tmp, w, h);
-
-	/* Kill "temporary" */
-	KILL(t->tmp, term_win);
-
-#endif
-
+		/* Kill "temporary" */
+		KILL(t->tmp, term_win);
+	}
 
 	/* Free some arrays */
 	C_KILL(t->x1, h, byte);
@@ -2237,23 +2281,6 @@ errr term_init(term *t, int w, int h, int k)
 	/* Initialize "requested" */
 	term_win_init(t->scr, w, h);
 
-
-	/* Allocate "memorized" */
-	MAKE(t->mem, term_win);
-
-	/* Initialize "memorized" */
-	term_win_init(t->mem, w, h);
-
-
-#if 0
-
-	/* Allocate "temporary" */
-	MAKE(t->tmp, term_win);
-
-	/* Initialize "temporary" */
-	term_win_init(t->tmp, w, h);
-
-#endif
 
 	/* Assume change */
 	for (y = 0; y < h; y++)

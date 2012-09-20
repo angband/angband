@@ -6,7 +6,6 @@
 
 # Do not modify this file unless you know exactly what you are doing,
 # unless you wish to risk possible system crashes and broken savefiles.
-
 # After modifying this file, delete the "lib/raw/k_info.raw" file.
 
 # Available slots (?):
@@ -24,7 +23,7 @@
 
 # Version stamp (required)
 
-V:2.8.1
+V:2.8.2
 
 
 ##### Something special #####
@@ -1053,7 +1052,7 @@ G:=:d
 I:45:4:0
 W:5:0:2:0
 A:5/1
-F:CURSED | TELEPORT | EASY_KNOW
+F:LIGHT_CURSE | TELEPORT | EASY_KNOW
 
 N:139:Slow Digestion
 G:=:d
@@ -1102,7 +1101,7 @@ G:=:d
 I:45:2:-5
 W:5:0:2:0
 A:5/1
-F:CURSED | STR | HIDE_TYPE
+F:LIGHT_CURSE | STR | HIDE_TYPE
 
 N:146:Flames
 G:=:d
@@ -1133,14 +1132,14 @@ G:=:d
 I:45:0:-5
 W:50:0:2:0
 A:50/1
-F:CURSED | TELEPORT | WIS | CHR | HIDE_TYPE
+F:LIGHT_CURSE | TELEPORT | WIS | CHR | HIDE_TYPE
 
 N:150:Stupidity
 G:=:d
 I:45:3:-5
 W:5:0:2:0
 A:5/1
-F:CURSED | INT | HIDE_TYPE
+F:LIGHT_CURSE | INT | HIDE_TYPE
 
 N:151:Damage
 G:=:d
@@ -1165,7 +1164,7 @@ G:=:d
 I:45:1:0
 W:5:0:2:0
 A:5/1
-F:CURSED | AGGRAVATE | EASY_KNOW
+F:LIGHT_CURSE | AGGRAVATE | EASY_KNOW
 
 N:155:See Invisible
 G:=:d
@@ -1251,7 +1250,7 @@ G:":d
 I:40:1:0
 W:15:0:3:0
 A:15/1
-F:CURSED | TELEPORT | EASY_KNOW
+F:LIGHT_CURSE | TELEPORT | EASY_KNOW
 
 N:167:Slow Digestion
 G:":d
@@ -1290,7 +1289,7 @@ G:":d
 I:40:0:-5
 W:50:0:3:0
 A:50/1
-F:CURSED | STR | INT | WIS | DEX | CON | CHR | HIDE_TYPE
+F:LIGHT_CURSE | STR | INT | WIS | DEX | CON | CHR | HIDE_TYPE
 
 
 ##### Scrolls #####
@@ -2879,7 +2878,7 @@ I:38:6:0
 W:100:0:200:150000
 A:100/16
 P:30:2d4:-2:0:10
-F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD | RES_POIS
+F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD | RES_POIS |
 F:ACTIVATE | IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 
 N:406:Shining Dragon Scale Mail~
@@ -2897,7 +2896,7 @@ I:38:12:0
 W:80:0:200:80000
 A:80/16
 P:30:2d4:-2:0:10
-F:RES_SOUND | RES_SHARDS |
+F:RES_SOUND | RES_SHARD |
 F:ACTIVATE | IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 
 N:408:Bronze Dragon Scale Mail~
@@ -2906,7 +2905,7 @@ I:38:14:0
 W:55:0:200:30000
 A:55/8
 P:30:2d4:-2:0:10
-F:RES_CONF |
+F:RES_CONFU |
 F:ACTIVATE | IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 
 N:409:Gold Dragon Scale Mail~
@@ -2933,7 +2932,7 @@ I:38:20:0
 W:90:0:200:100000
 A:90/16
 P:30:2d4:-2:0:10
-F:RES_CHAOS | RES_DISEN | RES_SOUND | RES_SHARDS |
+F:RES_SOUND | RES_SHARD | RES_CHAOS | RES_DISEN |
 F:ACTIVATE | IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 
 N:412:Power Dragon Scale Mail~
@@ -2943,7 +2942,7 @@ W:110:0:200:300000
 A:110/64
 P:40:2d4:-3:0:15
 F:RES_ACID | RES_FIRE | RES_COLD | RES_ELEC | RES_POIS | 
-F:RES_NETHER | RES_NEXUS | RES_CHAOS | RES_LITE | RES_DARK
+F:RES_LITE | RES_DARK | RES_NEXUS | RES_NETHR | RES_CHAOS | 
 F:ACTIVATE | IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 
 ## XXX 413 XXX ##
@@ -3019,18 +3018,6 @@ P:0:1d1:0:0:0
 ##### Items 440 to 444 reserved (old "fake" objects) #####
 
 ##### Items 445 to 479 reserved (old "terrain" objects) #####
-
-
-# The old "notice_seams" option is currently unused, but much of its
-# old functionality can be obtained by clever use of 'F' commands in
-# a pref file which define "quartz" and "magma" to look like "granite".
-
-# Note that the "player" picture does not really fit in anywhere, and I
-# have no idea how to go about allowing "redefinition" of that picture.
-# Perhaps by using "monster 0" or "object 0" or "feature 0" or even a
-# special "player picture" which might yield a simple way to show the
-# player in different colors or whatever for different "states", or even
-# a different picture for various "class" or "race" choices.
 
 
 ##### And here starts the gold/gems #####

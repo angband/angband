@@ -1,0 +1,18 @@
+# File: font.prf
+
+#
+# This file defines special attr/char mappings for use in "text" mode
+#
+# See "lib/help/command.txt" and "src/files.c" for more information.
+#
+
+
+## OPTION: Display "veins" (white "%") as "normal walls" (white "#") 
+## This replaces the old method of setting "notice_seams" to false,
+## which no longer works as of Angband 2.7.9, for various reasons.
+#
+#F:50:1/35
+#F:51:1/35
+#F:52:1/35
+#F:53:1/35
+

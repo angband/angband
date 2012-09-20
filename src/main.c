@@ -1,17 +1,11 @@
 /* File: main.c */
 
-int dlopen() {}
-int dlsym() {}
-int dlclose() {}
-
-/* Purpose: initialization, main() function and main loop */
-
 /*
- * Copyright (c) 1989 James E. Wilson, Robert A. Koeneke
+ * Copyright (c) 1997 Ben Harrison, and others
  *
- * This software may be copied and distributed for educational, research, and
- * not for profit purposes provided that this copyright and statement are
- * included in all such copies.
+ * This software may be copied and distributed for educational, research,
+ * and not for profit purposes provided that this copyright and statement
+ * are included in all such copies.
  */
 
 #include "angband.h"
@@ -115,24 +109,142 @@ static void init_stuff(void)
 
 
 /*
- * Some machines can actually parse command line args
+ * Handle a "-d<what>=<path>" option
  *
- * XXX XXX XXX The "-c", "-d", and "-i" options should probably require
- * that their "arguments" do NOT end in any path separator.
+ * The "<what>" can be any string starting with the same letter as the
+ * name of a subdirectory of the "lib" folder (i.e. "i" or "info").
  *
- * The "path" options should probably be simplified into some form of
- * "-dWHAT=PATH" syntax for simplicity.
+ * The "<path>" can be any legal path for the given system, and should
+ * not end in any special path separator (i.e. "/tmp" or "~/.ang-info").
+ */
+static void change_path(cptr info)
+{
+	cptr s;
+
+	/* Find equal sign */
+	s = strchr(info, '=');
+
+	/* Verify equal sign */
+	if (!s) quit_fmt("Try '-d<what>=<path>' not '-d%s'", info);
+
+	/* Analyze */
+	switch (tolower(info[0]))
+	{
+		case 'a':
+		{
+			string_free(ANGBAND_DIR_APEX);
+			ANGBAND_DIR_APEX = string_make(s+1);
+			break;
+		}
+
+		case 'f':
+		{
+			string_free(ANGBAND_DIR_FILE);
+			ANGBAND_DIR_FILE = string_make(s+1);
+			break;
+		}
+
+		case 'h':
+		{
+			string_free(ANGBAND_DIR_HELP);
+			ANGBAND_DIR_HELP = string_make(s+1);
+			break;
+		}
+
+		case 'i':
+		{
+			string_free(ANGBAND_DIR_INFO);
+			ANGBAND_DIR_INFO = string_make(s+1);
+			break;
+		}
+
+		case 'u':
+		{
+			string_free(ANGBAND_DIR_USER);
+			ANGBAND_DIR_USER = string_make(s+1);
+			break;
+		}
+
+		case 'x':
+		{
+			string_free(ANGBAND_DIR_XTRA);
+			ANGBAND_DIR_XTRA = string_make(s+1);
+			break;
+		}
+
+#ifdef VERIFY_SAVEFILE
+
+		case 'b':
+		case 'd':
+		case 'e':
+		case 's':
+		{
+			quit_fmt("Restricted option '-d%s'", info);
+		}
+
+#else /* VERIFY_SAVEFILE */
+
+		case 'b':
+		{
+			string_free(ANGBAND_DIR_BONE);
+			ANGBAND_DIR_BONE = string_make(s+1);
+			break;
+		}
+
+		case 'd':
+		{
+			string_free(ANGBAND_DIR_DATA);
+			ANGBAND_DIR_DATA = string_make(s+1);
+			break;
+		}
+
+		case 'e':
+		{
+			string_free(ANGBAND_DIR_EDIT);
+			ANGBAND_DIR_EDIT = string_make(s+1);
+			break;
+		}
+
+		case 's':
+		{
+			string_free(ANGBAND_DIR_SAVE);
+			ANGBAND_DIR_SAVE = string_make(s+1);
+			break;
+		}
+
+#endif /* VERIFY_SAVEFILE */
+
+		default:
+		{
+			quit_fmt("Bad semantics in '-d%s'", info);
+		}
+	}
+}
+
+
+/*
+ * Simple "main" function for multiple platforms.
+ *
+ * Note the special "--" option which terminates the processing of
+ * standard options.  All non-standard options (if any) are passed
+ * directly to the "init_xxx()" function.
  */
 int main(int argc, char *argv[])
 {
+	int i;
+
 	bool done = FALSE;
 
 	bool new_game = FALSE;
 
 	int show_score = 0;
 
+	cptr mstr = NULL;
 
-	/* Save the "program name" */
+	bool args = TRUE;
+
+
+	/* Save the "program name" XXX XXX XXX */
 	argv0 = argv[0];
 
 
@@ -219,43 +331,20 @@ int main(int argc, char *argv[])
 	}
 
 	/* Acquire the "user name" as a default player name */
-	user_name(player_name, player_uid);
+	user_name(op_ptr->full_name, player_uid);
 
 #endif
 
 
 	/* Process the command line arguments */
-	for (--argc, ++argv; argc > 0; --argc, ++argv)
+	for (i = 1; args && (i < argc); i++)
 	{
 		/* Require proper options */
-		if (argv[0][0] != '-') goto usage;
+		if (argv[i][0] != '-') goto usage;
 
 		/* Analyze option */
-		switch (argv[0][1])
+		switch (argv[i][1])
 		{
-			case 'c':
-			case 'C':
-			{
-				ANGBAND_DIR_USER = &argv[0][2];
-				break;
-			}
-
-#ifndef VERIFY_SAVEFILE
-			case 'd':
-			case 'D':
-			{
-				ANGBAND_DIR_SAVE = &argv[0][2];
-				break;
-			}
-#endif
-
-			case 'i':
-			case 'I':
-			{
-				ANGBAND_DIR_INFO = &argv[0][2];
-				break;
-			}
-
 			case 'N':
 			case 'n':
 			{
@@ -305,19 +394,43 @@ int main(int argc, char *argv[])
 				break;
 			}
 
-			case 'u':
-			case 'U':
-			{
-				if (!argv[0][2]) goto usage;
-				strcpy(player_name, &argv[0][2]);
-				break;
-			}
-
 			case 'S':
 			case 's':
 			{
-				show_score = atoi(&argv[0][2]);
+				show_score = atoi(&argv[i][2]);
 				if (show_score <= 0) show_score = 10;
+				break;
+			}
+
+			case 'u':
+			case 'U':
+			{
+				if (!argv[i][2]) goto usage;
+				strcpy(op_ptr->full_name, &argv[i][2]);
+				break;
+			}
+
+			case 'm':
+			case 'M':
+			{
+				if (!argv[i][2]) goto usage;
+				mstr = &argv[i][2];
+				break;
+			}
+
+			case 'd':
+			case 'D':
+			{
+				change_path(&argv[i][2]);
+				break;
+			}
+
+			case '-':
+			{
+				argv[i] = argv[0];
+				argc = argc - i;
+				argv = argv + i;
+				args = FALSE;
 				break;
 			}
 
@@ -325,7 +438,7 @@ int main(int argc, char *argv[])
 			usage:
 			{
 				/* Dump usage information */
-				puts("Usage: angband [options]");
+				puts("Usage: angband [options] [-- subopts]");
 				puts("  -n       Start a new character");
 				puts("  -f       Request fiddle mode");
 				puts("  -w       Request wizard mode");
@@ -333,16 +446,22 @@ int main(int argc, char *argv[])
 				puts("  -g       Request graphics mode");
 				puts("  -o       Request original keyset");
 				puts("  -r       Request rogue-like keyset");
-				puts("  -u<name> Play with your <name> savefile");
-				puts("  -s<num>  Show <num> high scores (or top 10).");
-				puts("  -c<path> Look for pref files in the directory <path>");
-				puts("  -d<path> Look for save files in the directory <path>");
-				puts("  -i<path> Look for info files in the directory <path>");
+				puts("  -s<num>  Show <num> high scores");
+				puts("  -u<who>  Use your <who> savefile");
+				puts("  -m<sys>  Force 'main-<sys>.c' usage");
+				puts("  -d<def>  Define a 'lib' dir sub-path");
 
 				/* Actually abort the process */
 				quit(NULL);
 			}
 		}
+	}
+
+	/* Hack -- Forget standard args */
+	if (args)
+	{
+		argc = 1;
+		argv[1] = NULL;
 	}
 
 
@@ -357,42 +476,54 @@ int main(int argc, char *argv[])
 
 #ifdef USE_XAW
 	/* Attempt to use the "main-xaw.c" support */
-	if (!done)
+	if (!done && (!mstr || (streq(mstr, "xaw"))))
 	{
-		extern errr init_xaw(void);
-		if (0 == init_xaw()) done = TRUE;
-		if (done) ANGBAND_SYS = "xaw";
+		extern errr init_xaw(int, char**);
+		if (0 == init_xaw(argc, argv))
+		{
+			ANGBAND_SYS = "xaw";
+			done = TRUE;
+		}
 	}
 #endif
 
 #ifdef USE_X11
 	/* Attempt to use the "main-x11.c" support */
-	if (!done)
+	if (!done && (!mstr || (streq(mstr, "x11"))))
 	{
-		extern errr init_x11(void);
-		if (0 == init_x11()) done = TRUE;
-		if (done) ANGBAND_SYS = "x11";
+		extern errr init_x11(int, char**);
+		if (0 == init_x11(argc, argv))
+		{
+			ANGBAND_SYS = "x11";
+			done = TRUE;
+		}
 	}
 #endif
 
 
 #ifdef USE_GCU
 	/* Attempt to use the "main-gcu.c" support */
-	if (!done)
+	if (!done && (!mstr || (streq(mstr, "gcu"))))
 	{
-		extern errr init_gcu(void);
-		if (0 == init_gcu()) done = TRUE;
-		if (done) ANGBAND_SYS = "gcu";
+		extern errr init_gcu(int, char**);
+		if (0 == init_gcu(argc, argv))
+		{
+			ANGBAND_SYS = "gcu";
+			done = TRUE;
+		}
 	}
 #endif
 
 #ifdef USE_CAP
 	/* Attempt to use the "main-cap.c" support */
-	if (!done)
+	if (!done && (!mstr || (streq(mstr, "cap"))))
 	{
-		extern errr init_cap(void);
-		if (0 == init_cap()) done = TRUE;
-		if (done) ANGBAND_SYS = "cap";
+		extern errr init_cap(int, char**);
+		if (0 == init_cap(argc, argv))
+		{
+			ANGBAND_SYS = "cap";
+			done = TRUE;
+		}
 	}
 #endif
 

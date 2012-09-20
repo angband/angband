@@ -1,7 +1,18 @@
 /* File: main-xaw.c */
 
+/*
+ * Copyright (c) 1997 Ben Harrison, Torbjörn Lindgren, and others
+ *
+ * This software may be copied and distributed for educational, research,
+ * and not for profit purposes provided that this copyright and statement
+ * are included in all such copies.
+ */
+
 /* Purpose: Support for X Athena Widget based Angband */
-/* Most code written by Torbjörn Lindgren (tl@cd.chalmers.se) */
+
+/*
+ * Most code written by Torbjörn Lindgren (tl@cd.chalmers.se)
+ */
 
 #ifdef USE_XAW
 
@@ -164,23 +175,25 @@ typedef struct AngbandClassRec *AngbandWidgetClass;
 typedef struct
 {
 	/* Settable resources */
-	int               start_rows;
-	int               start_columns;
-	int               min_rows;
-	int               min_columns;
-	int               max_rows;
-	int               max_columns;
-	int               internal_border;
-	String            font;
-	Pixel             color[NUM_COLORS];
-	XtCallbackList    redraw_callbacks;
+	int start_rows;
+	int start_columns;
+	int min_rows;
+	int min_columns;
+	int max_rows;
+	int max_columns;
+	int internal_border;
+	String font;
+	Pixel color[NUM_COLORS];
+	XtCallbackList redraw_callbacks;
 
 	/* Private state */
-	XFontStruct       *fnt;
-	Dimension         fontheight;
-	Dimension         fontwidth;
-	Dimension         fontascent;
-	GC                gc[NUM_COLORS+1];  /* Includes a special 'xor' color */
+	XFontStruct *fnt;
+	Dimension fontheight;
+	Dimension fontwidth;
+	Dimension fontascent;
+
+	/* Includes a special 'xor' color */
+	GC gc[NUM_COLORS+1];
 
 } AngbandPart;
 
@@ -193,9 +206,9 @@ typedef struct AngbandRec AngbandRec;
 
 struct AngbandRec
 {
-	CorePart          core;
-	SimplePart        simple;
-	AngbandPart       angband;
+	CorePart core;
+	SimplePart simple;
+	AngbandPart angband;
 };
 
 
@@ -207,7 +220,7 @@ typedef struct AngbandClassPart AngbandClassPart;
 
 struct AngbandClassPart
 {
-	int               dummy;
+	int dummy;
 };
 
 
@@ -219,9 +232,9 @@ typedef struct AngbandClassRec AngbandClassRec;
 
 struct AngbandClassRec
 {
-	CoreClassPart     core_class;
-	SimpleClassPart   simple_class;
-	AngbandClassPart  angband_class;
+	CoreClassPart core_class;
+	SimpleClassPart simple_class;
+	AngbandClassPart angband_class;
 };
 
 
@@ -417,7 +430,7 @@ static void AngbandOutputText(AngbandWidget widget, int x, int y,
 	if (!txt || !*txt)
 		return;
 
-	/* Check the lenght, and fix it if it's below zero */
+	/* Check the length, and fix it if it's below zero */
 	if (len < 0)
 		len = strlen(txt);
 
@@ -522,7 +535,9 @@ static void Destroy(AngbandWidget widget)
 
 	/* Free all GC's */
 	for (n = 0; n < NUM_COLORS+1; n++)
+	{
 		XtReleaseGC((Widget)widget, widget->angband.gc[n]);
+	}
 
 	/* Free the font */
 	XFreeFont(XtDisplay((Widget)widget), widget->angband.fnt);
@@ -535,7 +550,9 @@ static void Destroy(AngbandWidget widget)
 static void Redisplay(AngbandWidget widget, XEvent *event, Region region)
 {
 	if (XtHasCallbacks((Widget)widget, XtNredrawCallback) == XtCallbackHasSome)
+	{
 		XtCallCallbacks((Widget)widget, XtNredrawCallback, NULL);
+	}
 }
 
 /*
@@ -583,8 +600,12 @@ static Boolean SetValues(AngbandWidget current, AngbandWidget request,
 
 	/* Check all colors, if one or more has changed the redo all GC's */
 	for (n = 0; n < NUM_COLORS; n++)
+	{
 		if (current->angband.color[n] != new->angband.color[n])
+		{
 			color_changed = TRUE;
+		}
+	}
 
 	/* Change all GC's if color or font has changed */
 	if (color_changed || font_changed)
@@ -609,8 +630,8 @@ static Boolean SetValues(AngbandWidget current, AngbandWidget request,
 		}
 
 		/* Replace the old XOR/highlighting GC */
-		gcv.foreground = BlackPixelOfScreen(XtScreen((Widget)new)) ^
-		WhitePixelOfScreen(XtScreen((Widget)new));
+		gcv.foreground = (BlackPixelOfScreen(XtScreen((Widget)new)) ^
+				  WhitePixelOfScreen(XtScreen((Widget)new)));
 		gcv.function = GXxor;
 		XtReleaseGC((Widget)current, current->angband.gc[NUM_COLORS]);
 		new->angband.gc[NUM_COLORS] = XtGetGC((Widget)new, GCFunction |
@@ -707,7 +728,9 @@ static XFontStruct *getFont(AngbandWidget widget,
 		sprintf(buf, "Can't find the font \"%s\", trying fixed\n", font);
 		XtWarning(buf);
 		if (!(fnt = XLoadQueryFont(dpy, "fixed")))
+		{
 			XtError("Can't fint the font \"fixed\"!, bailing out\n");
+		}
 	}
 
 	return fnt;
@@ -716,6 +739,8 @@ static XFontStruct *getFont(AngbandWidget widget,
 
 
 /*** The non-widget code ****/
+
+
 
 #ifndef IsModifierKey
 
@@ -755,7 +780,7 @@ static XFontStruct *getFont(AngbandWidget widget,
 
 
 /*
- * Maximum number of windows XXX XXX XXX XXX
+ * Maximum number of windows
  */
 #define MAX_TERM_DATA 8
 
@@ -763,11 +788,6 @@ static XFontStruct *getFont(AngbandWidget widget,
  * Number of fallback resources per window
  */
 #define TERM_FALLBACKS 6
-
-/*
- * Number of windows with special fallback resources
- */
-#define SPECIAL_FALLBACKS 3
 
 /*
  * Forward declare
@@ -791,47 +811,24 @@ static term_data data[MAX_TERM_DATA];
 
 char *termNames[MAX_TERM_DATA] =
 {
-    "angband",
-    "mirror",
-    "recall",
-    "choice",
-    "term-4",
-    "term-5",
-    "term-6",
-    "term-7"
+	"angband",
+	"term-1",
+	"term-2",
+	"term-3",
+	"term-4",
+	"term-5",
+	"term-6",
+	"term-7"
 };
 
-Arg specialArgs[TERM_FALLBACKS][SPECIAL_FALLBACKS] =
+Arg specialArgs[TERM_FALLBACKS] =
 {
-    /* The main screen */
-    {
 	{ XtNstartRows,    24},
 	{ XtNstartColumns, 80},
 	{ XtNminRows,      24},
 	{ XtNminColumns,   80},
 	{ XtNmaxRows,      24},
 	{ XtNmaxColumns,   80}
-    },
-
-    /* The "mirror" window */
-    {
-	{ XtNstartRows,    24},
-	{ XtNstartColumns, 80},
-	{ XtNminRows,      1},
-	{ XtNminColumns,   1},
-	{ XtNmaxRows,      24},
-	{ XtNmaxColumns,   80}
-    },
-
-    /* The "recall" window */
-    {
-	{ XtNstartRows,    8},
-	{ XtNstartColumns, 80},
-	{ XtNminRows,      1},
-	{ XtNminColumns,   1},
-	{ XtNmaxRows,      24},
-	{ XtNmaxColumns,   80}
-    }
 };
 
 Arg defaultArgs[TERM_FALLBACKS] =
@@ -855,22 +852,22 @@ XtAppContext appcon;
  */
 static String fallback[] =
 {
-	"Angband.angband.iconName:            Angband",
-	"Angband.angband.title:               Angband",
-	"Angband.mirror.iconName:             Mirror",
-	"Angband.mirror.title:                Mirror",
-	"Angband.recall.iconName:             Recall",
-	"Angband.recall.title:                Recall",
-	"Angband.choice.iconName:             Choice",
-	"Angband.choice.title:                Choice",
-	"Angband.term-4.iconName:	      Term 4",
-	"Angband.term-4.title:		      Term 4",
-	"Angband.term-5.iconName:	      Term 5",
-	"Angband.term-5.title:		      Term 5",
-	"Angband.term-6.iconName:	      Term 6",
-	"Angband.term-6.title:		      Term 6",
-	"Angband.term-7.iconName:	      Term 7",
-	"Angband.term-7.title:		      Term 7",
+	"Angband.angband.iconName:   Angband",
+	"Angband.angband.title:      Angband",
+	"Angband.term-1.iconName:    Term 1",
+	"Angband.term-1.title:       Term 1",
+	"Angband.term-2.iconName:    Term 2",
+	"Angband.term-2.title:       Term 2",
+	"Angband.term-3.iconName:    Term 3",
+	"Angband.term-3.title:       Term 3",
+	"Angband.term-4.iconName:    Term 4",
+	"Angband.term-4.title:       Term 4",
+	"Angband.term-5.iconName:    Term 5",
+	"Angband.term-5.title:       Term 5",
+	"Angband.term-6.iconName:    Term 6",
+	"Angband.term-6.title:       Term 6",
+	"Angband.term-7.iconName:    Term 7",
+	"Angband.term-7.title:       Term 7",
 	NULL
 };
 
@@ -1082,7 +1079,8 @@ static errr Term_xtra_xaw(int n, int v)
 
 		/* Clear the window */
 		case TERM_XTRA_CLEAR:
-		for (i=0; i<MAX_TERM_DATA; i++) {
+		for (i=0; i<MAX_TERM_DATA; i++)
+		{
 		    if (Term == &data[i].t)
 			XClearWindow(XtDisplay((Widget)data[i].widget),
 			             XtWindow((Widget)data[i].widget));
@@ -1145,9 +1143,9 @@ static errr Term_text_xaw(int x, int y, int n, byte a, cptr s)
 /*
  * Raise a term
  */
-static void term_raise(term_data win)
+static void term_raise(term_data *td)
 {
-	Widget widget = (Widget)win.widget;
+	Widget widget = (Widget)(td->widget);
 
 	XRaiseWindow(XtDisplay(XtParent(widget)), XtWindow(XtParent(widget)));
 }
@@ -1215,27 +1213,13 @@ static errr term_data_init(term_data *td, Widget topLevel,
 /*
  * Initialization function for an X Athena Widget module to Angband
  *
- * Mega-Hack -- we are not given the actual "argc" and "argv" from
- * the main program, so we fake one.  Thus, we are unable to parse
- * any "display" requests for external devices.  This is okay, since
- * we need to verify the display anyway, to work with "main.c".
+ * We should accept "-d<dpy>" requests in the "argv" array.  XXX XXX XXX
  */
-errr init_xaw(void)
+errr init_xaw(int argc, char *argv[])
 {
-	int argc, i;
-	char *argv[2];
+	int i;
 	Widget topLevel;
 	Display *dpy;
-
-
-	/* One fake argument */
-	argc = 1;
-
-	/* Save the program name */
-	argv[0] = argv0;
-
-	/* Terminate */
-	argv[1] = NULL;
 
 
 	/* Attempt to open the local display */
@@ -1258,9 +1242,10 @@ errr init_xaw(void)
 	                            fallback, NULL, 0);
 
 	/* Initialize the windows */
-	for (i=0; i<MAX_TERM_DATA; i++) {
+	for (i=0; i<MAX_TERM_DATA; i++)
+	{
 	    term_data_init (&data[i], topLevel, 1024, termNames[i],
-			    i<SPECIAL_FALLBACKS ? specialArgs[i] : defaultArgs,
+			    (i == 0) ? specialArgs : defaultArgs,
 			    TERM_FALLBACKS);
 	    angband_term[i] = Term;
 	}
@@ -1269,7 +1254,7 @@ errr init_xaw(void)
 	Term_activate(&data[0].t);
 
 	/* Raise the "Angband" window */
-	term_raise(data[0]);
+	term_raise(&data[0]);
 
 	/* Success */
 	return (0);

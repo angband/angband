@@ -1,6 +1,12 @@
 /* File: init2.c */
 
-/* Purpose: Initialization (part 2) -BEN- */
+/*
+ * Copyright (c) 1997 Ben Harrison
+ *
+ * This software may be copied and distributed for educational, research,
+ * and not for profit purposes provided that this copyright and statement
+ * are included in all such copies.  Other copyrights may also apply.
+ */
 
 #include "angband.h"
 
@@ -359,7 +365,7 @@ static errr init_f_info(void)
 		err = init_f_info_raw(fd);
 
 		/* Close it */
-		(void)fd_close(fd);
+		fd_close(fd);
 
 		/* Success */
 		if (!err) return (0);
@@ -429,7 +435,7 @@ static errr init_f_info(void)
 	path_build(buf, 1024, ANGBAND_DIR_DATA, "f_info.raw");
 
 	/* Kill the old file */
-	(void)fd_kill(buf);
+	fd_kill(buf);
 
 	/* Attempt to create the raw file */
 	fd = fd_make(buf, mode);
@@ -450,7 +456,7 @@ static errr init_f_info(void)
 		fd_write(fd, (char*)(f_text), f_head->text_size);
 
 		/* Close */
-		(void)fd_close(fd);
+		fd_close(fd);
 	}
 
 
@@ -485,7 +491,7 @@ static errr init_f_info(void)
 	err = init_f_info_raw(fd);
 
 	/* Close it */
-	(void)fd_close(fd);
+	fd_close(fd);
 
 	/* Error */
 	if (err) quit("Cannot parse 'f_info.raw' file.");
@@ -612,7 +618,7 @@ static errr init_k_info(void)
 		err = init_k_info_raw(fd);
 
 		/* Close it */
-		(void)fd_close(fd);
+		fd_close(fd);
 
 		/* Success */
 		if (!err) return (0);
@@ -682,7 +688,7 @@ static errr init_k_info(void)
 	path_build(buf, 1024, ANGBAND_DIR_DATA, "k_info.raw");
 
 	/* Kill the old file */
-	(void)fd_kill(buf);
+	fd_kill(buf);
 
 	/* Attempt to create the raw file */
 	fd = fd_make(buf, mode);
@@ -703,7 +709,7 @@ static errr init_k_info(void)
 		fd_write(fd, (char*)(k_text), k_head->text_size);
 
 		/* Close */
-		(void)fd_close(fd);
+		fd_close(fd);
 	}
 
 
@@ -738,7 +744,7 @@ static errr init_k_info(void)
 	err = init_k_info_raw(fd);
 
 	/* Close it */
-	(void)fd_close(fd);
+	fd_close(fd);
 
 	/* Error */
 	if (err) quit("Cannot parse 'k_info.raw' file.");
@@ -865,7 +871,7 @@ static errr init_a_info(void)
 		err = init_a_info_raw(fd);
 
 		/* Close it */
-		(void)fd_close(fd);
+		fd_close(fd);
 
 		/* Success */
 		if (!err) return (0);
@@ -935,7 +941,7 @@ static errr init_a_info(void)
 	path_build(buf, 1024, ANGBAND_DIR_DATA, "a_info.raw");
 
 	/* Kill the old file */
-	(void)fd_kill(buf);
+	fd_kill(buf);
 
 	/* Attempt to create the raw file */
 	fd = fd_make(buf, mode);
@@ -956,7 +962,7 @@ static errr init_a_info(void)
 		fd_write(fd, (char*)(a_text), a_head->text_size);
 
 		/* Close */
-		(void)fd_close(fd);
+		fd_close(fd);
 	}
 
 
@@ -991,7 +997,7 @@ static errr init_a_info(void)
 	err = init_a_info_raw(fd);
 
 	/* Close it */
-	(void)fd_close(fd);
+	fd_close(fd);
 
 	/* Error */
 	if (err) quit("Cannot parse 'a_info.raw' file.");
@@ -1118,7 +1124,7 @@ static errr init_e_info(void)
 		err = init_e_info_raw(fd);
 
 		/* Close it */
-		(void)fd_close(fd);
+		fd_close(fd);
 
 		/* Success */
 		if (!err) return (0);
@@ -1188,7 +1194,7 @@ static errr init_e_info(void)
 	path_build(buf, 1024, ANGBAND_DIR_DATA, "e_info.raw");
 
 	/* Kill the old file */
-	(void)fd_kill(buf);
+	fd_kill(buf);
 
 	/* Attempt to create the raw file */
 	fd = fd_make(buf, mode);
@@ -1209,7 +1215,7 @@ static errr init_e_info(void)
 		fd_write(fd, (char*)(e_text), e_head->text_size);
 
 		/* Close */
-		(void)fd_close(fd);
+		fd_close(fd);
 	}
 
 
@@ -1244,7 +1250,7 @@ static errr init_e_info(void)
 	err = init_e_info_raw(fd);
 
 	/* Close it */
-	(void)fd_close(fd);
+	fd_close(fd);
 
 	/* Error */
 	if (err) quit("Cannot parse 'e_info.raw' file.");
@@ -1371,7 +1377,7 @@ static errr init_r_info(void)
 		err = init_r_info_raw(fd);
 
 		/* Close it */
-		(void)fd_close(fd);
+		fd_close(fd);
 
 		/* Success */
 		if (!err) return (0);
@@ -1441,7 +1447,7 @@ static errr init_r_info(void)
 	path_build(buf, 1024, ANGBAND_DIR_DATA, "r_info.raw");
 
 	/* Kill the old file */
-	(void)fd_kill(buf);
+	fd_kill(buf);
 
 	/* Attempt to create the raw file */
 	fd = fd_make(buf, mode);
@@ -1462,7 +1468,7 @@ static errr init_r_info(void)
 		fd_write(fd, (char*)(r_text), r_head->text_size);
 
 		/* Close */
-		(void)fd_close(fd);
+		fd_close(fd);
 	}
 
 
@@ -1497,7 +1503,7 @@ static errr init_r_info(void)
 	err = init_r_info_raw(fd);
 
 	/* Close it */
-	(void)fd_close(fd);
+	fd_close(fd);
 
 	/* Error */
 	if (err) quit("Cannot parse 'r_info.raw' file.");
@@ -1623,7 +1629,7 @@ static errr init_v_info(void)
 		err = init_v_info_raw(fd);
 
 		/* Close it */
-		(void)fd_close(fd);
+		fd_close(fd);
 
 		/* Success */
 		if (!err) return (0);
@@ -1693,7 +1699,7 @@ static errr init_v_info(void)
 	path_build(buf, 1024, ANGBAND_DIR_DATA, "v_info.raw");
 
 	/* Kill the old file */
-	(void)fd_kill(buf);
+	fd_kill(buf);
 
 	/* Attempt to create the raw file */
 	fd = fd_make(buf, mode);
@@ -1714,7 +1720,7 @@ static errr init_v_info(void)
 		fd_write(fd, (char*)(v_text), v_head->text_size);
 
 		/* Close */
-		(void)fd_close(fd);
+		fd_close(fd);
 	}
 
 
@@ -1749,7 +1755,7 @@ static errr init_v_info(void)
 	err = init_v_info_raw(fd);
 
 	/* Close it */
-	(void)fd_close(fd);
+	fd_close(fd);
 
 	/* Error */
 	if (err) quit("Cannot parse 'v_info.raw' file.");
@@ -2022,23 +2028,6 @@ static errr init_other(void)
 	int i, k, n;
 
 
-	/*** Prepare the "dungeon" information ***/
-
-	/* Allocate and Wipe the object list */
-	C_MAKE(o_list, MAX_O_IDX, object_type);
-
-	/* Allocate and Wipe the monster list */
-	C_MAKE(m_list, MAX_M_IDX, monster_type);
-
-
-	/* Allocate and wipe each line of the cave */
-	for (i = 0; i < MAX_HGT; i++)
-	{
-		/* Allocate one row of the cave */
-		C_MAKE(cave[i], MAX_WID, cave_type);
-	}
-
-
 	/*** Prepare the various "bizarre" arrays ***/
 
 	/* Macro variables */
@@ -2140,47 +2129,18 @@ static errr init_other(void)
 
 	/*** Prepare the options ***/
 
-	/* Scan the options */
-	for (i = 0; option_info[i].o_desc; i++)
+	/* Initialize the options */
+	for (i = 0; i < OPT_MAX; i++)
 	{
-		int os = option_info[i].o_set;
-		int ob = option_info[i].o_bit;
-
-		/* Set the "default" options */
-		if (option_info[i].o_var)
-		{
-			/* Accept */
-			option_mask[os] |= (1L << ob);
-			
-			/* Set */
-			if (option_info[i].o_norm)
-			{
-				/* Set */
-				option_flag[os] |= (1L << ob);
-			}
-			
-			/* Clear */
-			else
-			{
-				/* Clear */
-				option_flag[os] &= ~(1L << ob);
-			}
-		}
+		/* Default value */
+		op_ptr->opt[i] = option_norm[i];
 	}
 
-	/* Analyze the windows */
+	/* Initialize the window flags */
 	for (n = 0; n < 8; n++)
 	{
-		/* Analyze the options */
-		for (i = 0; i < 32; i++)
-		{
-			/* Accept */
-			if (window_flag_desc[i])
-			{
-				/* Accept */
-				window_mask[n] |= (1L << i);
-			}
-		}
+		/* Assume no flags */
+		op_ptr->window_flag[n] = 0L;
 	}
 
 
@@ -2509,7 +2469,7 @@ void init_angband(void)
 	}
 
 	/* Close it */
-	(void)fd_close(fd);
+	fd_close(fd);
 
 
 	/*** Display the "news" file ***/
@@ -2574,7 +2534,7 @@ void init_angband(void)
 	}
 
 	/* Close it */
-	(void)fd_close(fd);
+	fd_close(fd);
 
 
 	/*** Initialize some arrays ***/
@@ -2615,31 +2575,10 @@ void init_angband(void)
 	/*** Load default user pref files ***/
 
 	/* Initialize feature info */
-	note("[Initializing user pref files...]");
-
-	/* Access the "basic" pref file */
-	strcpy(buf, "pref.prf");
+	note("[Loading basic user pref file...]");
 
 	/* Process that file */
-	process_pref_file(buf);
-
-	/* Access the "user" pref file */
-	sprintf(buf, "user.prf");
-
-	/* Process that file */
-	process_pref_file(buf);
-
-	/* Access the "basic" system pref file */
-	sprintf(buf, "pref-%s.prf", ANGBAND_SYS);
-
-	/* Process that file */
-	process_pref_file(buf);
-
-	/* Access the "user" system pref file */
-	sprintf(buf, "user-%s.prf", ANGBAND_SYS);
-
-	/* Process that file */
-	process_pref_file(buf);
+	(void)process_pref_file("pref.prf");
 
 	/* Done */
 	note("[Initialization complete]");

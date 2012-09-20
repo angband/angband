@@ -1,5 +1,13 @@
 /* File: main-acn.c */
 
+/*
+ * Copyright (c) 1997 Ben Harrison, Kevin Bracey, and others
+ *
+ * This software may be copied and distributed for educational, research,
+ * and not for profit purposes provided that this copyright and statement
+ * are included in all such copies.
+ */
+
 /* Purpose: Support for Acorn RISC OS Angband */
 
 /*
@@ -355,8 +363,8 @@ static void window_to_front(wimp_w w)
 {
 	union
 	{
-		wimp_open           open;
-		wimp_window_state   state;
+		wimp_open open;
+		wimp_window_state state;
 	} a;
 
 	a.state.w=w;
@@ -369,8 +377,8 @@ static void window_hide(wimp_w w)
 {
 	union
 	{
-		wimp_open           open;
-		wimp_window_state   state;
+		wimp_open open;
+		wimp_window_state state;
 	} a;
 
 	a.state.w=w;
@@ -1803,9 +1811,6 @@ int main(int argc, char *argv[])
 
 	/* Catch nasty signals */
 	signals_init();
-
-	/* No name (yet) */
-	strcpy(player_name, "");
 
 	/* Hack -- Use the "pref-acn.prf" file */
 	ANGBAND_SYS = "acn";

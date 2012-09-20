@@ -1,13 +1,11 @@
 /* File: cmd5.c */
 
-/* Purpose: Spell/Prayer commands */
-
 /*
- * Copyright (c) 1989 James E. Wilson, Robert A. Koeneke
+ * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  *
- * This software may be copied and distributed for educational, research, and
- * not for profit purposes provided that this copyright and statement are
- * included in all such copies.
+ * This software may be copied and distributed for educational, research,
+ * and not for profit purposes provided that this copyright and statement
+ * are included in all such copies.  Other copyrights may also apply.
  */
 
 #include "angband.h"
@@ -26,19 +24,19 @@
  */
 static int get_spell(int *sn, cptr prompt, int sval, bool known)
 {
-	int			i;
+	int i;
 
-	int			spell = -1;
-	int			num = 0;
+	int spell = -1;
+	int num = 0;
 
-	byte		spells[64];
+	byte spells[64];
 
-	bool		flag, redraw, okay, ask;
-	char		choice;
+	bool flag, redraw, okay, ask;
+	char choice;
 
-	magic_type	*s_ptr;
+	magic_type *s_ptr;
 
-	char		out_val[160];
+	char out_val[160];
 
 	cptr p = ((mp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
 
@@ -82,17 +80,6 @@ static int get_spell(int *sn, cptr prompt, int sval, bool known)
 
 	/* No redraw yet */
 	redraw = FALSE;
-
-
-	/* Show choices */
-	if (show_choices)
-	{
-		/* Update */
-		p_ptr->window |= (PW_SPELL);
-
-		/* Window stuff */
-		window_stuff();
-	}
 
 
 	/* Build a prompt (accept all spells) */
@@ -186,17 +173,6 @@ static int get_spell(int *sn, cptr prompt, int sval, bool known)
 	if (redraw) Term_load();
 
 
-	/* Show choices */
-	if (show_choices)
-	{
-		/* Update */
-		p_ptr->window |= (PW_SPELL);
-
-		/* Window stuff */
-		window_stuff();
-	}
-
-
 	/* Abort if needed */
 	if (!flag) return (FALSE);
 
@@ -220,14 +196,16 @@ static int get_spell(int *sn, cptr prompt, int sval, bool known)
  */
 void do_cmd_browse(void)
 {
-	int			item, sval;
+	int item, sval;
 
-	int			spell = -1;
-	int			num = 0;
+	int spell = -1;
+	int num = 0;
 
-	byte		spells[64];
+	byte spells[64];
 
-	object_type		*o_ptr;
+	object_type *o_ptr;
+
+	cptr q, s;
 
 
 	/* Warriors are illiterate */
@@ -258,12 +236,10 @@ void do_cmd_browse(void)
 	/* Restrict choices to "useful" books */
 	item_tester_tval = mp_ptr->spell_book;
 
-	/* Get an item (from inven or floor) */
-	if (!get_item(&item, "Browse which book? ", FALSE, TRUE, TRUE))
-	{
-		if (item == -2) msg_print("You have no books that you can read.");
-		return;
-	}
+	/* Get an item */
+	q = "Browse which book? ";
+	s = "You have no books that you can read.";
+	if (!get_item(&item, q, s, (USE_INVEN | USE_FLOOR))) return;
 
 	/* Get the item (in the pack) */
 	if (item >= 0)
@@ -329,13 +305,15 @@ void do_cmd_browse(void)
  */
 void do_cmd_study(void)
 {
-	int			i, item, sval;
+	int i, item, sval;
 
-	int			spell = -1;
+	int spell = -1;
 
 	cptr p = ((mp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
 
-	object_type		*o_ptr;
+	cptr q, s;
+
+	object_type *o_ptr;
 
 
 	if (!mp_ptr->spell_book)
@@ -366,12 +344,10 @@ void do_cmd_study(void)
 	/* Restrict choices to "useful" books */
 	item_tester_tval = mp_ptr->spell_book;
 
-	/* Get an item (from inven or floor) */
-	if (!get_item(&item, "Study which book? ", FALSE, TRUE, TRUE))
-	{
-		if (item == -2) msg_print("You have no books that you can read.");
-		return;
-	}
+	/* Get an item */
+	q = "Study which book? ";
+	s = "You have no books that you can read.";
+	if (!get_item(&item, q, s, (USE_INVEN | USE_FLOOR))) return;
 
 	/* Get the item (in the pack) */
 	if (item >= 0)
@@ -445,27 +421,27 @@ void do_cmd_study(void)
 
 
 	/* Take a turn */
-	energy_use = 100;
+	p_ptr->energy_use = 100;
 
 	/* Learn the spell */
 	if (spell < 32)
 	{
-		spell_learned1 |= (1L << spell);
+		p_ptr->spell_learned1 |= (1L << spell);
 	}
 	else
 	{
-		spell_learned2 |= (1L << (spell - 32));
+		p_ptr->spell_learned2 |= (1L << (spell - 32));
 	}
 
 	/* Find the next open entry in "spell_order[]" */
 	for (i = 0; i < 64; i++)
 	{
 		/* Stop at the first empty space */
-		if (spell_order[i] == 99) break;
+		if (p_ptr->spell_order[i] == 99) break;
 	}
 
 	/* Add the spell to the known list */
-	spell_order[i++] = spell;
+	p_ptr->spell_order[i++] = spell;
 
 	/* Mention the result */
 	msg_format("You have learned the %s of %s.",
@@ -500,13 +476,19 @@ void do_cmd_study(void)
  */
 void do_cmd_cast(void)
 {
-	int			item, sval, spell, dir;
-	int			chance, beam;
-	int			plev = p_ptr->lev;
+	int py = p_ptr->py;
+	int px = p_ptr->px;
 
-	object_type		*o_ptr;
+	int item, sval, spell, dir;
+	int chance, beam;
 
-	magic_type		*s_ptr;
+	int plev = p_ptr->lev;
+
+	object_type *o_ptr;
+
+	magic_type *s_ptr;
+
+	cptr q, s;
 
 
 	/* Require spell ability */
@@ -534,12 +516,10 @@ void do_cmd_cast(void)
 	/* Restrict choices to spell books */
 	item_tester_tval = mp_ptr->spell_book;
 
-	/* Get an item (from inven or floor) */
-	if (!get_item(&item, "Use which book? ", FALSE, TRUE, TRUE))
-	{
-		if (item == -2) msg_print("You have no spell books!");
-		return;
-	}
+	/* Get an item */
+	q = "Use which book? ";
+	s = "You have no spell books!";
+	if (!get_item(&item, q, s, (USE_INVEN | USE_FLOOR))) return;
 
 	/* Get the item (in the pack) */
 	if (item >= 0)
@@ -1032,19 +1012,19 @@ void do_cmd_cast(void)
 
 		/* A spell was cast */
 		if (!((spell < 32) ?
-		      (spell_worked1 & (1L << spell)) :
-		      (spell_worked2 & (1L << (spell - 32)))))
+		      (p_ptr->spell_worked1 & (1L << spell)) :
+		      (p_ptr->spell_worked2 & (1L << (spell - 32)))))
 		{
 			int e = s_ptr->sexp;
 
 			/* The spell worked */
 			if (spell < 32)
 			{
-				spell_worked1 |= (1L << spell);
+				p_ptr->spell_worked1 |= (1L << spell);
 			}
 			else
 			{
-				spell_worked2 |= (1L << (spell - 32));
+				p_ptr->spell_worked2 |= (1L << (spell - 32));
 			}
 
 			/* Gain experience */
@@ -1053,7 +1033,7 @@ void do_cmd_cast(void)
 	}
 
 	/* Take a turn */
-	energy_use = 100;
+	p_ptr->energy_use = 100;
 
 	/* Sufficient mana */
 	if (s_ptr->smana <= p_ptr->csp)
@@ -1094,7 +1074,7 @@ void do_cmd_cast(void)
 	p_ptr->redraw |= (PR_MANA);
 
 	/* Window stuff */
-	p_ptr->window |= (PW_PLAYER);
+	p_ptr->window |= (PW_SPELL | PW_PLAYER);
 }
 
 
@@ -1149,12 +1129,18 @@ static void brand_weapon(void)
  */
 void do_cmd_pray(void)
 {
+	int py = p_ptr->py;
+	int px = p_ptr->px;
+
 	int item, sval, spell, dir, chance;
+
 	int plev = p_ptr->lev;
 
-	object_type	*o_ptr;
+	object_type *o_ptr;
 
-	magic_type  *s_ptr;
+	magic_type *s_ptr;
+
+	cptr q, s;
 
 
 	/* Must use prayer books */
@@ -1182,12 +1168,10 @@ void do_cmd_pray(void)
 	/* Restrict choices */
 	item_tester_tval = mp_ptr->spell_book;
 
-	/* Get an item (from inven or floor) */
-	if (!get_item(&item, "Use which book? ", FALSE, TRUE, TRUE))
-	{
-		if (item == -2) msg_print("You have no prayer books!");
-		return;
-	}
+	/* Get an item */
+	q = "Use which book? ";
+	s = "You have no prayer books!";
+	if (!get_item(&item, q, s, (USE_INVEN | USE_FLOOR))) return;
 
 	/* Get the item (in the pack) */
 	if (item >= 0)
@@ -1638,26 +1622,29 @@ void do_cmd_pray(void)
 			case 57:
 			{
 				msg_print("The world changes!");
-				new_level_flag = TRUE;
+
+				/* Leaving */
+				p_ptr->leaving = TRUE;
+
 				break;
 			}
 		}
 
 		/* A prayer was prayed */
 		if (!((spell < 32) ?
-		      (spell_worked1 & (1L << spell)) :
-		      (spell_worked2 & (1L << (spell - 32)))))
+		      (p_ptr->spell_worked1 & (1L << spell)) :
+		      (p_ptr->spell_worked2 & (1L << (spell - 32)))))
 		{
 			int e = s_ptr->sexp;
 
 			/* The spell worked */
 			if (spell < 32)
 			{
-				spell_worked1 |= (1L << spell);
+				p_ptr->spell_worked1 |= (1L << spell);
 			}
 			else
 			{
-				spell_worked2 |= (1L << (spell - 32));
+				p_ptr->spell_worked2 |= (1L << (spell - 32));
 			}
 
 			/* Gain experience */
@@ -1666,7 +1653,7 @@ void do_cmd_pray(void)
 	}
 
 	/* Take a turn */
-	energy_use = 100;
+	p_ptr->energy_use = 100;
 
 	/* Sufficient mana */
 	if (s_ptr->smana <= p_ptr->csp)
@@ -1707,6 +1694,6 @@ void do_cmd_pray(void)
 	p_ptr->redraw |= (PR_MANA);
 
 	/* Window stuff */
-	p_ptr->window |= (PW_PLAYER);
+	p_ptr->window |= (PW_SPELL | PW_PLAYER);
 }
 

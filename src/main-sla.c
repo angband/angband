@@ -1,5 +1,13 @@
 /* File: main-sla.c */
 
+/*
+ * Copyright (c) 1997 Ben Harrison, and others
+ *
+ * This software may be copied and distributed for educational, research,
+ * and not for profit purposes provided that this copyright and statement
+ * are included in all such copies.
+ */
+
 /* Purpose: Actual Unix "slang" support for Angband */
 
 /*
@@ -105,7 +113,7 @@ static char *color_terminals [] =
  */
 int has_colors(void)
 {
-	int  i;
+	int i;
 
 	char *terminal;
 

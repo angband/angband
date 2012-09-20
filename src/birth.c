@@ -1,13 +1,11 @@
 /* File: birth.c */
 
-/* Purpose: create a player character */
-
 /*
- * Copyright (c) 1989 James E. Wilson, Robert A. Koeneke
+ * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  *
- * This software may be copied and distributed for educational, research, and
- * not for profit purposes provided that this copyright and statement are
- * included in all such copies.
+ * This software may be copied and distributed for educational, research,
+ * and not for profit purposes provided that this copyright and statement
+ * are included in all such copies.  Other copyrights may also apply.
  */
 
 #include "angband.h"
@@ -80,168 +78,168 @@ struct hist_type
  */
 static hist_type bg[] =
 {
-	{"You are the illegitimate and unacknowledged child ",	 10, 1, 2, 25},
-	{"You are the illegitimate but acknowledged child ",	 20, 1, 2, 35},
-	{"You are one of several children ",			 95, 1, 2, 45},
-	{"You are the first child ",				100, 1, 2, 50},
+	{"You are the illegitimate and unacknowledged child ", 10, 1, 2, 25},
+	{"You are the illegitimate but acknowledged child ", 20, 1, 2, 35},
+	{"You are one of several children ", 95, 1, 2, 45},
+	{"You are the first child ", 100, 1, 2, 50},
 
-	{"of a Serf.  ",						 40, 2, 3, 65},
-	{"of a Yeoman.  ",						 65, 2, 3, 80},
-	{"of a Townsman.  ",					 80, 2, 3, 90},
-	{"of a Guildsman.  ",					 90, 2, 3, 105},
-	{"of a Landed Knight.  ",					 96, 2, 3, 120},
-	{"of a Titled Noble.  ",					 99, 2, 3, 130},
-	{"of a Royal Blood Line.  ",				100, 2, 3, 140},
+	{"of a Serf.  ", 40, 2, 3, 65},
+	{"of a Yeoman.  ", 65, 2, 3, 80},
+	{"of a Townsman.  ", 80, 2, 3, 90},
+	{"of a Guildsman.  ", 90, 2, 3, 105},
+	{"of a Landed Knight.  ", 96, 2, 3, 120},
+	{"of a Titled Noble.  ", 99, 2, 3, 130},
+	{"of a Royal Blood Line.  ", 100, 2, 3, 140},
 
-	{"You are the black sheep of the family.  ",		 20, 3, 50, 20},
-	{"You are a credit to the family.  ",			 80, 3, 50, 55},
-	{"You are a well liked child.  ",				100, 3, 50, 60},
+	{"You are the black sheep of the family.  ", 20, 3, 50, 20},
+	{"You are a credit to the family.  ", 80, 3, 50, 55},
+	{"You are a well liked child.  ", 100, 3, 50, 60},
 
-	{"Your mother was of the Teleri.  ",			 40, 4, 1, 50},
-	{"Your father was of the Teleri.  ",			 75, 4, 1, 55},
-	{"Your mother was of the Noldor.  ",		 	 90, 4, 1, 55},
-	{"Your father was of the Noldor.  ",		 	 95, 4, 1, 60},
-	{"Your mother was of the Vanyar.  ",			 98, 4, 1, 65},
-	{"Your father was of the Vanyar.  ",			100, 4, 1, 70},
+	{"Your mother was of the Teleri.  ", 40, 4, 1, 50},
+	{"Your father was of the Teleri.  ", 75, 4, 1, 55},
+	{"Your mother was of the Noldor.  ", 90, 4, 1, 55},
+	{"Your father was of the Noldor.  ", 95, 4, 1, 60},
+	{"Your mother was of the Vanyar.  ", 98, 4, 1, 65},
+	{"Your father was of the Vanyar.  ", 100, 4, 1, 70},
 
-	{"You are one of several children ",			 60, 7, 8, 50},
-	{"You are the only child ",					100, 7, 8, 55},
+	{"You are one of several children ", 60, 7, 8, 50},
+	{"You are the only child ", 100, 7, 8, 55},
 
-	{"of a Teleri ",						 75, 8, 9, 50},
-	{"of a Noldor ",						 95, 8, 9, 55},
-	{"of a Vanyar ",						100, 8, 9, 60},
+	{"of a Teleri ", 75, 8, 9, 50},
+	{"of a Noldor ", 95, 8, 9, 55},
+	{"of a Vanyar ", 100, 8, 9, 60},
 
-	{"Ranger.  ",						 40, 9, 54, 80},
-	{"Archer.  ",						 70, 9, 54, 90},
-	{"Warrior.  ",						 87, 9, 54, 110},
-	{"Mage.  ",							 95, 9, 54, 125},
-	{"Prince.  ",						 99, 9, 54, 140},
-	{"King.  ",							100, 9, 54, 145},
+	{"Ranger.  ", 40, 9, 54, 80},
+	{"Archer.  ", 70, 9, 54, 90},
+	{"Warrior.  ", 87, 9, 54, 110},
+	{"Mage.  ", 95, 9, 54, 125},
+	{"Prince.  ", 99, 9, 54, 140},
+	{"King.  ", 100, 9, 54, 145},
 
-	{"You are one of several children of a Hobbit ",		 85, 10, 11, 45},
-	{"You are the only child of a Hobbit ",		        100, 10, 11, 55},
+	{"You are one of several children of a Hobbit ", 85, 10, 11, 45},
+	{"You are the only child of a Hobbit ", 100, 10, 11, 55},
 
-	{"Bum.  ",							 20, 11, 3, 55},
-	{"Tavern Owner.  ",						 30, 11, 3, 80},
-	{"Miller.  ",						 40, 11, 3, 90},
-	{"Home Owner.  ",						 50, 11, 3, 100},
-	{"Burglar.  ",						 80, 11, 3, 110},
-	{"Warrior.  ",						 95, 11, 3, 115},
-	{"Mage.  ",							 99, 11, 3, 125},
-	{"Clan Elder.  ",						100, 11, 3, 140},
+	{"Bum.  ", 20, 11, 3, 55},
+	{"Tavern Owner.  ", 30, 11, 3, 80},
+	{"Miller.  ", 40, 11, 3, 90},
+	{"Home Owner.  ", 50, 11, 3, 100},
+	{"Burglar.  ", 80, 11, 3, 110},
+	{"Warrior.  ", 95, 11, 3, 115},
+	{"Mage.  ", 99, 11, 3, 125},
+	{"Clan Elder.  ", 100, 11, 3, 140},
 
-	{"You are one of several children of a Gnome ",		 85, 13, 14, 45},
-	{"You are the only child of a Gnome ",			100, 13, 14, 55},
+	{"You are one of several children of a Gnome ", 85, 13, 14, 45},
+	{"You are the only child of a Gnome ", 100, 13, 14, 55},
 
-	{"Beggar.  ",						 20, 14, 3, 55},
-	{"Braggart.  ",						 50, 14, 3, 70},
-	{"Prankster.  ",						 75, 14, 3, 85},
-	{"Warrior.  ",						 95, 14, 3, 100},
-	{"Mage.  ",							100, 14, 3, 125},
+	{"Beggar.  ", 20, 14, 3, 55},
+	{"Braggart.  ", 50, 14, 3, 70},
+	{"Prankster.  ", 75, 14, 3, 85},
+	{"Warrior.  ", 95, 14, 3, 100},
+	{"Mage.  ", 100, 14, 3, 125},
 
-	{"You are one of two children of a Dwarven ",		 25, 16, 17, 40},
-	{"You are the only child of a Dwarven ",			100, 16, 17, 50},
+	{"You are one of two children of a Dwarven ", 25, 16, 17, 40},
+	{"You are the only child of a Dwarven ", 100, 16, 17, 50},
 
-	{"Thief.  ",						 10, 17, 18, 60},
-	{"Prison Guard.  ",						 25, 17, 18, 75},
-	{"Miner.  ",						 75, 17, 18, 90},
-	{"Warrior.  ",						 90, 17, 18, 110},
-	{"Priest.  ",						 99, 17, 18, 130},
-	{"King.  ",							100, 17, 18, 150},
+	{"Thief.  ", 10, 17, 18, 60},
+	{"Prison Guard.  ", 25, 17, 18, 75},
+	{"Miner.  ", 75, 17, 18, 90},
+	{"Warrior.  ", 90, 17, 18, 110},
+	{"Priest.  ", 99, 17, 18, 130},
+	{"King.  ", 100, 17, 18, 150},
 
-	{"You are the black sheep of the family.  ",		 15, 18, 57, 10},
-	{"You are a credit to the family.  ",			 85, 18, 57, 50},
-	{"You are a well liked child.  ",				100, 18, 57, 55},
+	{"You are the black sheep of the family.  ", 15, 18, 57, 10},
+	{"You are a credit to the family.  ", 85, 18, 57, 50},
+	{"You are a well liked child.  ", 100, 18, 57, 55},
 
-	{"Your mother was an Orc, but it is unacknowledged.  ",	 25, 19, 20, 25},
+	{"Your mother was an Orc, but it is unacknowledged.  ", 25, 19, 20, 25},
 	{"Your father was an Orc, but it is unacknowledged.  ",	100, 19, 20, 25},
 
-	{"You are the adopted child ",				100, 20, 2, 50},
+	{"You are the adopted child ", 100, 20, 2, 50},
 
-	{"Your mother was a Cave-Troll ",				 30, 22, 23, 20},
-	{"Your father was a Cave-Troll ",				 60, 22, 23, 25},
-	{"Your mother was a Hill-Troll ",				 75, 22, 23, 30},
-	{"Your father was a Hill-Troll ",				 90, 22, 23, 35},
-	{"Your mother was a Water-Troll ",				 95, 22, 23, 40},
-	{"Your father was a Water-Troll ",				100, 22, 23, 45},
+	{"Your mother was a Cave-Troll ", 30, 22, 23, 20},
+	{"Your father was a Cave-Troll ", 60, 22, 23, 25},
+	{"Your mother was a Hill-Troll ", 75, 22, 23, 30},
+	{"Your father was a Hill-Troll ", 90, 22, 23, 35},
+	{"Your mother was a Water-Troll ", 95, 22, 23, 40},
+	{"Your father was a Water-Troll ", 100, 22, 23, 45},
 
-	{"Cook.  ",							  5, 23, 62, 60},
-	{"Warrior.  ",						 95, 23, 62, 55},
-	{"Shaman.  ",						 99, 23, 62, 65},
-	{"Clan Chief.  ",						100, 23, 62, 80},
+	{"Cook.  ", 5, 23, 62, 60},
+	{"Warrior.  ", 95, 23, 62, 55},
+	{"Shaman.  ", 99, 23, 62, 65},
+	{"Clan Chief.  ", 100, 23, 62, 80},
 
-	{"You have dark brown eyes, ",				 20, 50, 51, 50},
-	{"You have brown eyes, ",					 60, 50, 51, 50},
-	{"You have hazel eyes, ",					 70, 50, 51, 50},
-	{"You have green eyes, ",					 80, 50, 51, 50},
-	{"You have blue eyes, ",					 90, 50, 51, 50},
-	{"You have blue-gray eyes, ",				100, 50, 51, 50},
+	{"You have dark brown eyes, ", 20, 50, 51, 50},
+	{"You have brown eyes, ", 60, 50, 51, 50},
+	{"You have hazel eyes, ", 70, 50, 51, 50},
+	{"You have green eyes, ", 80, 50, 51, 50},
+	{"You have blue eyes, ", 90, 50, 51, 50},
+	{"You have blue-gray eyes, ", 100, 50, 51, 50},
 
-	{"straight ",						 70, 51, 52, 50},
-	{"wavy ",							 90, 51, 52, 50},
-	{"curly ",							100, 51, 52, 50},
+	{"straight ", 70, 51, 52, 50},
+	{"wavy ", 90, 51, 52, 50},
+	{"curly ", 100, 51, 52, 50},
 
-	{"black hair, ",						 30, 52, 53, 50},
-	{"brown hair, ",						 70, 52, 53, 50},
-	{"auburn hair, ",						 80, 52, 53, 50},
-	{"red hair, ",						 90, 52, 53, 50},
-	{"blond hair, ",						100, 52, 53, 50},
+	{"black hair, ", 30, 52, 53, 50},
+	{"brown hair, ", 70, 52, 53, 50},
+	{"auburn hair, ", 80, 52, 53, 50},
+	{"red hair, ", 90, 52, 53, 50},
+	{"blond hair, ", 100, 52, 53, 50},
 
-	{"and a very dark complexion.",				 10, 53, 0, 50},
-	{"and a dark complexion.",					 30, 53, 0, 50},
-	{"and an average complexion.",				 80, 53, 0, 50},
-	{"and a fair complexion.",					 90, 53, 0, 50},
-	{"and a very fair complexion.",				100, 53, 0, 50},
+	{"and a very dark complexion.", 10, 53, 0, 50},
+	{"and a dark complexion.", 30, 53, 0, 50},
+	{"and an average complexion.", 80, 53, 0, 50},
+	{"and a fair complexion.", 90, 53, 0, 50},
+	{"and a very fair complexion.", 100, 53, 0, 50},
 
-	{"You have light grey eyes, ",				 85, 54, 55, 50},
-	{"You have light blue eyes, ",				 95, 54, 55, 50},
-	{"You have light green eyes, ",				100, 54, 55, 50},
+	{"You have light grey eyes, ", 85, 54, 55, 50},
+	{"You have light blue eyes, ", 95, 54, 55, 50},
+	{"You have light green eyes, ", 100, 54, 55, 50},
 
-	{"straight ",						 75, 55, 56, 50},
-	{"wavy ",							100, 55, 56, 50},
+	{"straight ", 75, 55, 56, 50},
+	{"wavy ", 100, 55, 56, 50},
 
-	{"black hair, and a fair complexion.",			 75, 56, 0, 50},
-	{"brown hair, and a fair complexion.",			 85, 56, 0, 50},
-	{"blond hair, and a fair complexion.",			 95, 56, 0, 50},
-	{"silver hair, and a fair complexion.",			100, 56, 0, 50},
+	{"black hair, and a fair complexion.", 75, 56, 0, 50},
+	{"brown hair, and a fair complexion.", 85, 56, 0, 50},
+	{"blond hair, and a fair complexion.", 95, 56, 0, 50},
+	{"silver hair, and a fair complexion.", 100, 56, 0, 50},
 
-	{"You have dark brown eyes, ",				 99, 57, 58, 50},
-	{"You have glowing red eyes, ",				100, 57, 58, 60},
+	{"You have dark brown eyes, ", 99, 57, 58, 50},
+	{"You have glowing red eyes, ", 100, 57, 58, 60},
 
-	{"straight ",						 90, 58, 59, 50},
-	{"wavy ",							100, 58, 59, 50},
+	{"straight ", 90, 58, 59, 50},
+	{"wavy ", 100, 58, 59, 50},
 
-	{"black hair, ",						 75, 59, 60, 50},
-	{"brown hair, ",						100, 59, 60, 50},
+	{"black hair, ", 75, 59, 60, 50},
+	{"brown hair, ", 100, 59, 60, 50},
 
-	{"a one foot beard, ",					 25, 60, 61, 50},
-	{"a two foot beard, ",					 60, 60, 61, 51},
-	{"a three foot beard, ",					 90, 60, 61, 53},
-	{"a four foot beard, ",					100, 60, 61, 55},
+	{"a one foot beard, ", 25, 60, 61, 50},
+	{"a two foot beard, ", 60, 60, 61, 51},
+	{"a three foot beard, ", 90, 60, 61, 53},
+	{"a four foot beard, ", 100, 60, 61, 55},
 
-	{"and a dark complexion.",					100, 61, 0, 50},
+	{"and a dark complexion.", 100, 61, 0, 50},
 
-	{"You have slime green eyes, ",				 60, 62, 63, 50},
-	{"You have puke yellow eyes, ",				 85, 62, 63, 50},
-	{"You have blue-bloodshot eyes, ",				 99, 62, 63, 50},
-	{"You have glowing red eyes, ",				100, 62, 63, 55},
+	{"You have slime green eyes, ", 60, 62, 63, 50},
+	{"You have puke yellow eyes, ", 85, 62, 63, 50},
+	{"You have blue-bloodshot eyes, ", 99, 62, 63, 50},
+	{"You have glowing red eyes, ", 100, 62, 63, 55},
 
-	{"dirty ",							 33, 63, 64, 50},
-	{"mangy ",							 66, 63, 64, 50},
-	{"oily ",							100, 63, 64, 50},
+	{"dirty ", 33, 63, 64, 50},
+	{"mangy ", 66, 63, 64, 50},
+	{"oily ", 100, 63, 64, 50},
 
-	{"sea-weed green hair, ",					 33, 64, 65, 50},
-	{"bright red hair, ",					 66, 64, 65, 50},
-	{"dark purple hair, ",					100, 64, 65, 50},
+	{"sea-weed green hair, ", 33, 64, 65, 50},
+	{"bright red hair, ", 66, 64, 65, 50},
+	{"dark purple hair, ", 100, 64, 65, 50},
 
-	{"and green ",						 25, 65, 66, 50},
-	{"and blue ",						 50, 65, 66, 50},
-	{"and white ",						 75, 65, 66, 50},
-	{"and black ",						100, 65, 66, 50},
+	{"and green ", 25, 65, 66, 50},
+	{"and blue ", 50, 65, 66, 50},
+	{"and white ", 75, 65, 66, 50},
+	{"and black ", 100, 65, 66, 50},
 
-	{"ulcerous skin.",						 33, 66, 0, 50},
-	{"scabby skin.",						 66, 66, 0, 50},
-	{"leprous skin.",						100, 66, 0, 50}
+	{"ulcerous skin.", 33, 66, 0, 50},
+	{"scabby skin.", 66, 66, 0, 50},
+	{"leprous skin.", 100, 66, 0, 50}
 };
 
 
@@ -299,7 +297,7 @@ static void save_prev_data(void)
 	/* Save the history */
 	for (i = 0; i < 4; i++)
 	{
-		strcpy(prev.history[i], history[i]);
+		strcpy(prev.history[i], p_ptr->history[i]);
 	}
 }
 
@@ -309,9 +307,9 @@ static void save_prev_data(void)
  */
 static void load_prev_data(void)
 {
-	int        i;
+	int i;
 
-	birther	temp;
+	birther temp;
 
 
 	/*** Save the current data ***/
@@ -332,7 +330,7 @@ static void load_prev_data(void)
 	/* Save the history */
 	for (i = 0; i < 4; i++)
 	{
-		strcpy(temp.history[i], history[i]);
+		strcpy(temp.history[i], p_ptr->history[i]);
 	}
 
 
@@ -355,7 +353,7 @@ static void load_prev_data(void)
 	/* Load the history */
 	for (i = 0; i < 4; i++)
 	{
-		strcpy(history[i], prev.history[i]);
+		strcpy(p_ptr->history[i], prev.history[i]);
 	}
 
 
@@ -385,12 +383,12 @@ static void load_prev_data(void)
 
 
 /*
- * Returns adjusted stat -JK-  Algorithm by -JWT-
+ * Adjust a stat by an amount
  *
- * auto_roll is boolean and states maximum changes should be used rather
- * than random ones to allow specification of higher values to wait for
- *
- * The "p_ptr->maximize" code is important	-BEN-
+ * The "auto_roll" flag selects "maximal" changes for use with the
+ * auto-roller initialization code.  Otherwise, if "maximize" mode
+ * is being used, the changes are fixed.  Otherwise, semi-random
+ * changes will occur, with larger changes at lower values.
  */
 static int adjust_stat(int value, s16b amount, int auto_roll)
 {
@@ -460,11 +458,11 @@ static int adjust_stat(int value, s16b amount, int auto_roll)
  */
 static void get_stats(void)
 {
-	int		i, j;
+	int i, j;
 
-	int		bonus;
+	int bonus;
 
-	int		dice[18];
+	int dice[18];
 
 
 	/* Roll and verify some stats */
@@ -524,11 +522,11 @@ static void get_stats(void)
  */
 static void get_extra(void)
 {
-	int		i, j, min_value, max_value;
+	int i, j, min_value, max_value;
 
 
 	/* Level one */
-	p_ptr->max_plv = p_ptr->lev = 1;
+	p_ptr->max_lev = p_ptr->lev = 1;
 
 	/* Experience factor */
 	p_ptr->expfact = rp_ptr->r_exp + cp_ptr->c_exp;
@@ -548,7 +546,7 @@ static void get_extra(void)
 	max_value += PY_MAX_LEVEL;
 
 	/* Pre-calculate level 1 hitdice */
-	player_hp[0] = p_ptr->hitdie;
+	p_ptr->player_hp[0] = p_ptr->hitdie;
 
 	/* Roll out the hitpoints */
 	while (TRUE)
@@ -557,14 +555,14 @@ static void get_extra(void)
 		for (i = 1; i < PY_MAX_LEVEL; i++)
 		{
 			j = randint(p_ptr->hitdie);
-			player_hp[i] = player_hp[i-1] + j;
+			p_ptr->player_hp[i] = p_ptr->player_hp[i-1] + j;
 		}
 
 		/* XXX Could also require acceptable "mid-level" hitpoints */
 
 		/* Require "valid" hitpoints at highest level */
-		if (player_hp[PY_MAX_LEVEL-1] < min_value) continue;
-		if (player_hp[PY_MAX_LEVEL-1] > max_value) continue;
+		if (p_ptr->player_hp[PY_MAX_LEVEL-1] < min_value) continue;
+		if (p_ptr->player_hp[PY_MAX_LEVEL-1] > max_value) continue;
 
 		/* Acceptable */
 		break;
@@ -577,16 +575,16 @@ static void get_extra(void)
  */
 static void get_history(void)
 {
-	int		i, n, chart, roll, social_class;
+	int i, n, chart, roll, social_class;
 
-	char	*s, *t;
+	char *s, *t;
 
-	char	buf[240];
+	char buf[240];
 
 
 
 	/* Clear the previous history strings */
-	for (i = 0; i < 4; i++) history[i][0] = '\0';
+	for (i = 0; i < 4; i++) p_ptr->history[i][0] = '\0';
 
 
 	/* Clear the history text */
@@ -669,7 +667,7 @@ static void get_history(void)
 		while ((chart != bg[i].chart) || (roll > bg[i].roll)) i++;
 
 		/* Acquire the textual history */
-		(void)strcat(buf, bg[i].info);
+		strcat(buf, bg[i].info);
 
 		/* Add in the social class */
 		social_class += (int)(bg[i].bonus) - 50;
@@ -711,7 +709,7 @@ static void get_history(void)
 		if (n < 60)
 		{
 			/* Save one line of history */
-			strcpy(history[i++], s);
+			strcpy(p_ptr->history[i++], s);
 
 			/* All done */
 			break;
@@ -727,7 +725,7 @@ static void get_history(void)
 		while ((n > 0) && (s[n-1] == ' ')) s[--n] = '\0';
 
 		/* Save one line of history */
-		strcpy(history[i++], s);
+		strcpy(p_ptr->history[i++], s);
 
 		/* Start next line */
 		for (s = t; *s == ' '; s++) /* loop */;
@@ -766,7 +764,7 @@ static void get_ahw(void)
  */
 static void get_money(void)
 {
-	int        i, gold;
+	int i, gold;
 
 	/* Social Class determines starting gold */
 	gold = (p_ptr->sc * 6) + randint(100) + 300;
@@ -801,10 +799,10 @@ static void get_money(void)
  */
 static void birth_put_stats(void)
 {
-	int		i, p;
-	byte	attr;
+	int i, p;
+	byte attr;
 
-	char	buf[80];
+	char buf[80];
 
 
 	/* Put the stats (and percents) */
@@ -840,22 +838,9 @@ static void player_wipe(void)
 	int i;
 
 
-	/* Hack -- zero the struct */
+	/* Wipe the player */
 	WIPE(p_ptr, player_type);
 
-	/* Wipe the history */
-	for (i = 0; i < 4; i++)
-	{
-		strcpy(history[i], "");
-	}
-
-
-	/* No weight */
-	total_weight = 0;
-
-	/* No items */
-	inven_cnt = 0;
-	equip_cnt = 0;
 
 	/* Clear the inventory */
 	for (i = 0; i < INVEN_TOTAL; i++)
@@ -925,29 +910,8 @@ static void player_wipe(void)
 	p_ptr->food = PY_FOOD_FULL - 1;
 
 
-	/* Wipe the spells */
-	spell_learned1 = spell_learned2 = 0L;
-	spell_worked1 = spell_worked2 = 0L;
-	spell_forgotten1 = spell_forgotten2 = 0L;
-	for (i = 0; i < 64; i++) spell_order[i] = 99;
-
-
-	/* Clear "cheat" options */
-	cheat_peek = FALSE;
-	cheat_hear = FALSE;
-	cheat_room = FALSE;
-	cheat_xtra = FALSE;
-	cheat_know = FALSE;
-	cheat_live = FALSE;
-
-	/* Assume no winning game */
-	total_winner = FALSE;
-
-	/* Assume no panic save */
-	panic_save = 0;
-
-	/* Assume no cheating */
-	noscore = 0;
+	/* None of the spells have been learned yet */
+	for (i = 0; i < 64; i++) p_ptr->spell_order[i] = 99;
 }
 
 
@@ -1014,31 +978,31 @@ static void player_outfit(void)
 {
 	int i, tv, sv;
 
-	object_type	forge;
-	object_type	*q_ptr;
-	
+	object_type *i_ptr;
+	object_type object_type_body;
+
 
 	/* Get local object */
-	q_ptr = &forge;
+	i_ptr = &object_type_body;
 
 	/* Hack -- Give the player some food */
-	object_prep(q_ptr, lookup_kind(TV_FOOD, SV_FOOD_RATION));
-	q_ptr->number = rand_range(3, 7);
-	object_aware(q_ptr);
-	object_known(q_ptr);
-	(void)inven_carry(q_ptr, FALSE);
+	object_prep(i_ptr, lookup_kind(TV_FOOD, SV_FOOD_RATION));
+	i_ptr->number = rand_range(3, 7);
+	object_aware(i_ptr);
+	object_known(i_ptr);
+	(void)inven_carry(i_ptr);
 
 
 	/* Get local object */
-	q_ptr = &forge;
+	i_ptr = &object_type_body;
 
 	/* Hack -- Give the player some torches */
-	object_prep(q_ptr, lookup_kind(TV_LITE, SV_LITE_TORCH));
-	q_ptr->number = rand_range(3, 7);
-	q_ptr->pval = rand_range(3, 7) * 500;
-	object_aware(q_ptr);
-	object_known(q_ptr);
-	(void)inven_carry(q_ptr, FALSE);
+	object_prep(i_ptr, lookup_kind(TV_LITE, SV_LITE_TORCH));
+	i_ptr->number = rand_range(3, 7);
+	i_ptr->pval = rand_range(3, 7) * 500;
+	object_aware(i_ptr);
+	object_known(i_ptr);
+	(void)inven_carry(i_ptr);
 
 	/* Hack -- Give the player three useful objects */
 	for (i = 0; i < 3; i++)
@@ -1048,13 +1012,13 @@ static void player_outfit(void)
 		sv = player_init[p_ptr->pclass][i][1];
 
 		/* Get local object */
-		q_ptr = &forge;
+		i_ptr = &object_type_body;
 
 		/* Hack -- Give the player an object */
-		object_prep(q_ptr, lookup_kind(tv, sv));
-		object_aware(q_ptr);
-		object_known(q_ptr);
-		(void)inven_carry(q_ptr, FALSE);
+		object_prep(i_ptr, lookup_kind(tv, sv));
+		object_aware(i_ptr);
+		object_known(i_ptr);
+		(void)inven_carry(i_ptr);
 	}
 }
 
@@ -1079,7 +1043,9 @@ static bool player_birth_aux()
 
 	char c;
 
+#if 0
 	char p1 = '(';
+#endif
 	char p2 = ')';
 	char b1 = '[';
 	char b2 = ']';
@@ -1101,7 +1067,7 @@ static bool player_birth_aux()
 	put_str("Class       :", 5, 1);
 
 	/* Dump the default name */
-	c_put_str(TERM_L_BLUE, player_name, 2, 15);
+	c_put_str(TERM_L_BLUE, op_ptr->full_name, 2, 15);
 
 
 	/*** Instructions ***/
@@ -1146,7 +1112,7 @@ static bool player_birth_aux()
 		if (c == 'S') return (FALSE);
 		k = (islower(c) ? A2I(c) : -1);
 		if ((k >= 0) && (k < n)) break;
-		if (c == '?') do_cmd_help("help.hlp");
+		if (c == '?') do_cmd_help();
 		else bell();
 	}
 
@@ -1175,7 +1141,7 @@ static bool player_birth_aux()
 		p_ptr->prace = n;
 		rp_ptr = &race_info[p_ptr->prace];
 		str = rp_ptr->title;
-		
+
 		/* Display */
 		sprintf(buf, "%c%c %s", I2A(n), p2, str);
 		put_str(buf, 21 + (n/5), 2 + 15 * (n%5));
@@ -1191,7 +1157,7 @@ static bool player_birth_aux()
 		if (c == 'S') return (FALSE);
 		k = (islower(c) ? A2I(c) : -1);
 		if ((k >= 0) && (k < n)) break;
-		if (c == '?') do_cmd_help("help.hlp");
+		if (c == '?') do_cmd_help();
 		else bell();
 	}
 
@@ -1244,7 +1210,7 @@ static bool player_birth_aux()
 		if (c == 'S') return (FALSE);
 		k = (islower(c) ? A2I(c) : -1);
 		if ((k >= 0) && (k < n)) break;
-		if (c == '?') do_cmd_help("help.hlp");
+		if (c == '?') do_cmd_help();
 		else bell();
 	}
 
@@ -1278,7 +1244,7 @@ static bool player_birth_aux()
 		if (c == 'S') return (FALSE);
 		if (c == ESCAPE) break;
 		if ((c == 'y') || (c == 'n')) break;
-		if (c == '?') do_cmd_help("help.hlp");
+		if (c == '?') do_cmd_help();
 		else bell();
 	}
 
@@ -1306,7 +1272,7 @@ static bool player_birth_aux()
 		if (c == 'S') return (FALSE);
 		if (c == ESCAPE) break;
 		if ((c == 'y') || (c == 'n')) break;
-		if (c == '?') do_cmd_help("help.hlp");
+		if (c == '?') do_cmd_help();
 		else bell();
 	}
 
@@ -1336,7 +1302,7 @@ static bool player_birth_aux()
 		if (c == 'S') return (FALSE);
 		if (c == ESCAPE) break;
 		if ((c == 'y') || (c == 'n')) break;
-		if (c == '?') do_cmd_help("help.hlp");
+		if (c == '?') do_cmd_help();
 		else bell();
 	}
 
@@ -1461,7 +1427,7 @@ static bool player_birth_aux()
 			put_str("Race        :", 4, 1);
 			put_str("Class       :", 5, 1);
 
-			c_put_str(TERM_L_BLUE, player_name, 2, 15);
+			c_put_str(TERM_L_BLUE, op_ptr->full_name, 2, 15);
 			c_put_str(TERM_L_BLUE, sp_ptr->title, 3, 15);
 			c_put_str(TERM_L_BLUE, rp_ptr->title, 4, 15);
 			c_put_str(TERM_L_BLUE, cp_ptr->title, 5, 15);
@@ -1631,7 +1597,7 @@ static bool player_birth_aux()
 			/* Help */
 			if (c == '?')
 			{
-				do_cmd_help("help.hlp");
+				do_cmd_help();
 				continue;
 			}
 

@@ -1,13 +1,11 @@
-/* File: mon-desc.c */
-
-/* Purpose: describe monsters (using monster memory) */
+/* File: monster1.c */
 
 /*
- * Copyright (c) 1989 James E. Wilson, Christopher J. Stuart
+ * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  *
- * This software may be copied and distributed for educational, research, and
- * not for profit purposes provided that this copyright and statement are
- * included in all such copies.
+ * This software may be copied and distributed for educational, research,
+ * and not for profit purposes provided that this copyright and statement
+ * are included in all such copies.  Other copyrights may also apply.
  */
 
 #include "angband.h"
@@ -105,31 +103,31 @@ static bool know_damage(int r_idx, int i)
  */
 static void roff_aux(int r_idx)
 {
-	monster_race	*r_ptr;
+	monster_race *r_ptr;
 
-	bool		old = FALSE;
-	bool		sin = FALSE;
+	bool old = FALSE;
+	bool sin = FALSE;
 
-	int			m, n, r;
+	int m, n, r;
 
-	cptr		p, q;
+	cptr p, q;
 
-	int			msex = 0;
+	int msex = 0;
 
-	bool		breath = FALSE;
-	bool		magic = FALSE;
+	bool breath = FALSE;
+	bool magic = FALSE;
 
-	u32b		flags1;
-	u32b		flags2;
-	u32b		flags3;
-	u32b		flags4;
-	u32b		flags5;
-	u32b		flags6;
+	u32b flags1;
+	u32b flags2;
+	u32b flags3;
+	u32b flags4;
+	u32b flags5;
+	u32b flags6;
 
-	int			vn = 0;
-	cptr		vp[64];
+	int vn = 0;
+	cptr vp[64];
 
-	monster_race        save_mem;
+	monster_race save_mem;
 
 
 
@@ -154,13 +152,13 @@ static void roff_aux(int r_idx)
 	r_ptr = &r_info[r_idx];
 
 
-	/* Cheat -- Know everything */
+	/* Cheat -- know everything */
 	if (cheat_know)
 	{
 		/* XXX XXX XXX */
 
-		/* Save the "old" memory */
-		save_mem = *r_ptr;
+		/* Hack -- save memory */
+		COPY(&save_mem, r_ptr, monster_type);
 
 		/* Hack -- Maximal kills */
 		r_ptr->r_tkills = MAX_SHORT;
@@ -399,13 +397,13 @@ static void roff_aux(int r_idx)
 #endif
 
 			/* Seek */
-			(void)fd_seek(fd, pos);
+			fd_seek(fd, pos);
 
 			/* Read a chunk of data */
-			(void)fd_read(fd, buf, 2048);
+			fd_read(fd, buf, 2048);
 
 			/* Close it */
-			(void)fd_close(fd);
+			fd_close(fd);
 		}
 
 #else
@@ -1348,11 +1346,11 @@ static void roff_aux(int r_idx)
 	roff("\n");
 
 
-	/* Hack -- Restore monster memory */
+	/* Cheat -- know everything */
 	if (cheat_know)
 	{
-		/* Restore memory */
-		*r_ptr = save_mem;
+		/* Hack -- restore memory */
+		COPY(r_ptr, &save_mem, monster_type);
 	}
 }
 
@@ -1365,10 +1363,10 @@ static void roff_aux(int r_idx)
  */
 static void roff_top(int r_idx)
 {
-	monster_race	*r_ptr = &r_info[r_idx];
+	monster_race *r_ptr = &r_info[r_idx];
 
-	byte		a1, a2;
-	char		c1, c2;
+	byte a1, a2;
+	char c1, c2;
 
 
 	/* Access the chars */
@@ -1378,10 +1376,6 @@ static void roff_top(int r_idx)
 	/* Access the attrs */
 	a1 = r_ptr->d_attr;
 	a2 = r_ptr->x_attr;
-
-	/* Hack -- fake monochrome */
-	if (!use_color) a1 = TERM_WHITE;
-	if (!use_color) a2 = TERM_WHITE;
 
 
 	/* Clear the top line */

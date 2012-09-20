@@ -1,5 +1,13 @@
 /* File: main-gcu.c */
 
+/*
+ * Copyright (c) 1997 Ben Harrison, and others
+ *
+ * This software may be copied and distributed for educational, research,
+ * and not for profit purposes provided that this copyright and statement
+ * are included in all such copies.
+ */
+
 /* Purpose: Allow use of Unix "curses" with Angband -BEN- */
 
 
@@ -30,7 +38,7 @@
  * to allow the system to handle the "locations" of the various windows.
  *
  * But in theory, it should be possible to allow a 50 line screen to be
- * split into two sub-screens (i.e. "term_screen" and "term_mirror").
+ * split into two (or more) sub-screens.
  *
  * XXX XXX XXX Consider the use of "savetty()" and "resetty()".
  */
@@ -784,7 +792,7 @@ static errr Term_text_gcu(int x, int y, int n, byte a, cptr s)
  *
  * Someone should really check the semantics of "initscr()"
  */
-errr init_gcu(void)
+errr init_gcu(int argc, char *argv[])
 {
 	int i;
 

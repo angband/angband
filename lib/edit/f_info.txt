@@ -6,7 +6,6 @@
 
 # Do not modify this file unless you know exactly what you are doing,
 # unless you wish to risk possible system crashes and broken savefiles.
-
 # After modifying this file, delete the "lib/raw/f_info.raw" file.
 
 # Note that the terrain feature are grouped into very regular groups,
@@ -17,7 +16,7 @@
 
 # Version stamp (required)
 
-V:2.8.1
+V:2.8.2
 
 
 # 0x00 --> nothing
@@ -284,9 +283,9 @@ N:48:secret door
 G:#:w
 M:56
 
-# 0x31 --> rubble
+# 0x31 --> pile of rubble
 
-N:49:rubble
+N:49:pile of rubble
 G:::w
 
 # 0x32 --> magma vein

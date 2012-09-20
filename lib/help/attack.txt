@@ -1,17 +1,14 @@
 === Attacking and Being Attacked ===
  
 Attacking is simple in Angband.  If you move into a creature, you attack him.
-You can attack from a distance by firing a missile or by magical means such
-as aiming a wand.  Creatures attack in the same way.  If they move into you,
+You can attack from a distance by firing a missile or by magical means (such
+as aiming a wand).  Creatures attack in the same way.  If they move into you,
 they attack you.  Some creatures can also cast spells from a distance, and
-others can use various breath weapons such as fire on you from a distance.
+others can use various breath weapons (such as fire) on you from a distance.
 
-Creatures in walls can not be attacked by wands and other magic attacks
-normally stopped by walls.  You can attack a creature in a wall normally
-by trying to move into the wall space containing the creature.  However, if
-the creature is invisible (such as a ghost), you must tunnel into the wall
-containing the creature.  If you just try to move into the wall, you will
-bump your head and look quite silly.
+Creatures in walls can not be attacked by wands or other magic attacks
+normally stopped by walls.  Tunneling into the wall (using the "tunnel"
+or "alter" command) will allow you to attack any creature in the wall.
 
 If you are wielding a weapon, the damage for the weapon is used when you hit
 a creature.  Otherwise you get a single punch which does minimal damage.
@@ -22,10 +19,10 @@ light, an amulet, two rings, a helmet, boots, gloves, a shield, a cloak, and
 body armor).  Be sure not to try and kill a dragon with a shovel, it makes
 you look silly and probably won't work...
  
-Firing a missile while wielding the appropriate launcher is the only way to
-get the "full" power out of the missile.  You may of course throw an arrow
-at a monster without shooting it, but you will find the effects may not be
-what you had hoped.
+Firing a missile (while wielding the appropriate launcher) is the only way to
+get the "full" power out of the missile.  You may of course throw an arrow at
+a monster without shooting it, but you will find the effects may not be what
+you had hoped.
 
 Hits and misses are determined by ability to hit versus armor class.  A hit
 is a strike that does some damage; a miss may in fact reach a target, but
@@ -95,9 +92,7 @@ Finally, some rare weapons have special abilities.  These are called ego
 weapons, and are feared by great and meek.  An ego weapon must be wielded
 to receive the benefit of its abilities.
 
-Ego weapons are denoted by the following "names": (note - these descriptions
-are very out of date)
- 
+Ego weapons are denoted by the following "names":  
 
 (Defender)
      A magical weapon that actually helps the wielder defend himself, thus
@@ -107,7 +102,8 @@ are very out of date)
      from paralyzation and some slowing attacks, and help you regenerate hit
      points and mana faster.  As a result of the regeneration ability, you
      will use up food somewhat faster than normal while wielding such a
-     weapon.
+     weapon.  These powerful weapons also will sustain one stat, though this
+     stat will vary from weapon to weapon.
 
 (Holy Avenger)
      A Holy Avenger is one of the more powerful of weapons.  A Holy Avenger
@@ -115,83 +111,126 @@ are very out of date)
      extra damage when used against evil, demonic and undead creatures, and
      will also give you the ability to see invisible creatures.  These
      weapons are basically extremely powerful versions of Blessed Blades
-     and can be wielded by priests with no penalty.
+     and can be wielded by priests with no penalty. These weapons, like 
+     (Defender) weapons, also will sustain one random stat.
 
 (Blessed Blade)
      A blessed blade will increase your wisdom.  If you are a priest,
      wielding a non-blessed sword or polearm causes a small penalty while
      attacking and may infuriate your god, decreasing the chances that he
-     will accept your prayers.
-
-Weapon of Frost
-     A magical weapon of ice that delivers a cold critical to creatures not
-     resistant to cold.  It will inflict thrice the normal damage when used
-     against such a creature. It also defends you against cold and frost
-     attacks.
-
-Weapon of Flame
-     A magical weapon of fire that delivers a heat critical to creatures not
-     resistant to fire.  It will inflict thrice the normal damage when used
-     against such a creature. It also defends you against fire and heat
-     attacks.
+     will accept your prayers.  It is rumored that these blades may also
+     possess other properties.
 
 Weapon of Westernesse
      A Weapon of Westernesse is one of the more powerful weapons.  It slays
-     orcs while increasing your strength, dexterity, and constitution.  It
-     also lets you see invisible creatures and protects from paralyzation and
-     some slowing attacks.  These blades were made by the Dunedain.
+     orcs, trolls, and giants, while increasing your strength, dexterity, 
+     and constitution.  It also lets you see invisible creatures and protects 
+     from paralyzation and some slowing attacks.  These blades were made by 
+     the Dunedain.
 
-Weapon of Slay Dragon
+Weapon of Extra Attacks.
+     A weapon of extra attacks will allow the wielder to deliver extra
+     attacks during each round.
+
+Elemental Branded Weapons.
+     Each of the four elemental attacks has a corresponding weapon which 
+     will do treble damage against creatures not resistant to that element.
+     These weapons are labelled "of Melting", "of Shocking", "of Burning",
+     and "of Freezing", corresponding to acid, lightning, fire, and cold.
+
+Weapon of Slay Dragon.
      A Slay Dragon weapon is a special purpose weapon whose sole intent is
      to destroy dragon-kind.  Therefore, when used against a dragon, the
-     amount of damage done is three times the normal amount.
+     amount of damage done is three times the normal amount.  Some powerful
+     weapons of this type will do _five_ times the normal damage as well as
+     boosting the wielder's constitution.
 
-Weapon of Slay Evil
+Weapon of Slay Evil.
      A Slay Evil weapon is a special purpose weapon whose sole intent is to
      destroy all forms of evil.  When used against an evil creature, either
      alive or undead, the damage done is twice the normal amount.  Some of
-     these weapons are also Blessed Blades.
+     these weapons are also Blessed Blades and will boost your wisdom.
 
-Weapon of Slay Animal
+Weapon of Slay Animal.
      A Slay Animal weapon is a special purpose weapon whose sole intent is
      to destroy all the dangerous animals in the world.  An animal is any
      creature natural to the world.  Therefore an orc would not be an
      animal, but a giant snake would be.  This will inflict twice the
-     normal amount of damage when used against an animal.
+     normal amount of damage when used against an animal.  Some very 
+     powerful weapons of this type will also provide regeneration and 
+     an intelligence boost.
 
-Weapon of Slay Undead
+Weapon of Slay Undead.
      A Slay Undead weapon is a special purpose weapon whose sole intent is
      to destroy all forms of undead.  These weapons are hated and feared by
      the intelligent undead, for a single blow from this weapon will inflict
-     three times the normal amount of damage.  This weapon also gives you the
-     ability to see invisible creatures, which is especially useful against
-     undead, since many of them are normally invisible.  Some of these
-     weapons have the additional ability to protect against the life-draining 
-     attacks that many undead creatures possess.
+     three times the normal amount of damage.  Some extra powerful weapons 
+     of this type will boost the wielder's wisdom and allow the wielder to
+     see invisible creatures, all the better to track down the undead!
 
-Weapon of Slay Orc
+Weapon of Slay Orc.
      A Slay Orc weapon does treble damage against anything of orcish-kind.
-     Often these are elvish blades.
+     Often these are elvish blades.  Some powerful weapons of this type will
+     boost the wielder's dexterity.
 
-Weapon of Slay Troll
+Weapon of Slay Troll.
      A Slay Troll weapon does treble damage against anything of troll-kind.
-     Often these are elvish blades.
+     Often these are elvish blades.  Some powerful weapons of this type will
+     boost the wielder's strength.
 
-Weapon of Slay Giant
+Weapon of Slay Giant.
      A Slay Giant weapon does treble damage against anything of
-     giant-humanoidal form.
+     giant-humanoidal form.  Some powerful weapons of this type will
+     boost the wielder's strength.
 
-Weapon of Slay Demon
+Weapon of Slay Demon.
      A Slay Demon weapon does treble damage against anything of Hellish
-     nature such as the Minor and Major Demons.
-
-Whips of Fire
-     These are one of the balrogs' favorite weapons, delivering heat
-     criticals just like a weapon of Flame.
+     nature such as the Minor and Major Demons.  Some powerful weapons of 
+     this type will boost the wielder's intelligence.
 
 Weapon of Morgul.
      These blades are so foully cursed with evil, it is rumored that it is
      impossible to remove them.  BEWARE!
+
+Shovels of Digging.
+     These powerful diggers are branded with acid, all the better for 
+     digging through the walls of the dungeon.
+
+Ego Missile Launchers and Ammo:
+-------------------------------
+Launchers of Accuracy.
+    These launchers have an unnaturally high to-hit number, making them 
+    extremely accurate.
+
+Launchers of Velocity.
+    These launchers do an unnaturally high amount of damage due to their 
+    high to-hit number.
+
+Launchers of Extra Shots.
+    These launchers allow the wielder to shoot more times per round than 
+    normal.
+
+Launchers of Extra Might.
+    These launchers have a higher base damage than normally made launchers 
+    of their type.
+
+Ammo of Hurt Animal.
+    This ammo does double damage against natural denizens of the dungeon.
+
+Ammo of Hurt Evil.
+    This ammo does double damage against evil creatures in the dungeon.
+
+Ammo of Hurt Dragon.
+    This ammo does treble damage against dragons.
+
+Ammo of Flame.
+    This ammo does treble damage against creature not resistant to fire.
+
+Ammo of Frost.
+    This ammo does treble damage against creature not resistant to cold.
+
+Ammo of Wounding.
+    This ammo boosts the to-hit and to-dam numbers of the shooter.
 
 Apart from these there are some very rare and well made blades in the
 dungeon with not necessarily any special abilities. These include Blades
@@ -199,24 +238,8 @@ of Chaos, Maces of Disruption, and Scythes of Slicing.  They can also be
 ego weapons like the ones above.  For example, a Blade of Chaos (Holy
 Avenger) is much more powerful than many artifact weapons!
 
-For artifact weapons, see "rumors.hlp".
-
-
-=== Body and Shield Bashes ===
-
-Weight is the primary factor in being able to bash something, but strength
-plays a role too.  After bashing, a character may be off balance for several
-rounds depending upon his dexterity.
-
-Doors can be broken down by bashing them.  Once a door is bashed open, it is
-forever useless and cannot be closed.
-
-Finally, a creature may be bashed.  If a shield is currently being worn,
-the bash is a shield bash and will do more damage.  In either case, a bash
-may throw an opponent off balance for a number of rounds, allowing a player
-to get in a free hit or more.  If the player is thrown off balance, his
-opponent may get free hits on him.  This is a risky attack.  It is also a
-hack.  :-)
+There are rumors of incredibly rare "artifact" weapons which are even
+more powerful than ego weapons.
 
 
 === Your Armor Class ===
@@ -250,8 +273,10 @@ decreases your chances of hitting monsters.  This can range from nonexistent
 for very light armor to (-8) for the very heaviest armor!
 
 Some pieces of armor will possess special abilities denoted by the following
-names: (these are very out of date!)
+names:
 
+Ego Armors and Shields:
+-----------------------
 of Resist Acid.
      A character using such an object will take only one third normal damage
      from any acid thrown upon him.  In addition, armor so enchanted will
@@ -278,7 +303,7 @@ of Elvenkind.
      It will make you more stealthy.  This armor can also possess extra 
      resistances beyond the four basic elemental ones.
  
-Robes of the Magi.
+Robes of Permanence.
      These robes are designed especially for wizards.  Just like Elvenkind
      armor, they provide resistance to fire, cold, acid, and electricity and
      cannot be damaged by acid.  They sustain all of your stats and protect
@@ -286,41 +311,110 @@ Robes of the Magi.
      armor, they can have additional special resistances.  These robes are
      so good that their owners are rarely killed, perhaps explaining the
      incredible rarity.
- 
-Crown of Might
-     This is the great crown of the warriors.  The wearer will have an
-     increased strength, dexterity, and constituion, and will also be immune
-     to any foe's attempt to slow or paralyze him or her.
 
-Crown of the Magi
-     This is the great crown of the wizards.  The wearer will have an
-     increased intelligence, and will also be given resistance against fire,
-     frost, acid, and lightning.
-
-Crown of Lordliness
-     This is the great crown of the priests.  The wearer will have an
-     increased wisdom and charisma.
-
-Crown of Seeing
-     This is the great crown of the rogues.  The wearer will be able to see
-     even invisible creatures, and will have an increased ability to locate
-     traps and secret doors.
-
-Crown of Regeneration
-     This crown will help you regenerate hit points and mana more quickly
-     than normal, allowing you to fight longer before needing to rest.  You
-     will use food faster than normal while wearing this crown because of
-     the regenerative effects.
- 
-Crown of Beauty
-     This crown looks impressive and will increase your charisma, but is
-     otherwise not useful.
- 
 Dragon Scale Mails.
      These extremely rare pieces of armour come in many different colors,
      each protecting you against the relevent dragons.  Naturally they are
      all resistant to acid damage.  They also occasionally allow you to
      breathe as a dragon would!
+
+Ego Helms:
+----------
+Stat Boosting Helms.
+     There are magical helms found in the dungeon that have the ability
+     to boost the wearer's intelligence, wisdom, or charisma.  Helms of 
+     Beauty are the ones that boost charisma.  In addition to boosting 
+     the relevant stat these helms will also prevent that stat from being 
+     drained.
+
+Helm of the Magi.
+     This is the great helm of the wizards.  The wearer will have an
+     increased (and sustained) intelligence, and will also be given 
+     resistance against fire, frost, acid, and lightning.  These valuable
+     helms may also have additional properties.
+
+Helm of Might.
+     This is the great helm of the warriors.  The wearer will have an
+     increased and sustained strength, dexterity, and constitution, 
+     and will also be immune to any foe's attempt to slow or paralyze 
+     him or her.
+
+Helm of Lordliness.
+     This is the great helm of the priests.  The wearer will have an
+     increased and sustained wisdom and charisma.
+
+Helm of Seeing.
+     This is the great helm of the rogues.  The wearer will be able to see
+     even invisible creatures, and will have an increased ability to locate
+     traps and secret doors.  It is also rumored that the wearer of such a
+     helm will not be able to be blinded.
+
+Helm of Infravision.
+     This helm grants the wearer increased infravision, as the name implies.
+
+Helm of Light.
+     In addition to providing a permanent light source for the wearer, this 
+     helm also provides resistance against light-based attacks.
+
+Helm of Telepathy.
+     This helm grants the wearer the power of telepathy.
+
+Helm of Regeneration.
+     This helm will help you regenerate hit points and mana more quickly
+     than normal, allowing you to fight longer before needing to rest.  You
+     will use food faster than normal while wearing this helm because of
+     the regenerative effects.
+ 
+Ego Cloaks:
+-----------
+Cloak of Protection.
+     This finely made cloak will come with an unnaturally high enchantment
+     and is not affected by elemental based attacks.
+
+Cloak of Stealth.
+     This cloak will increase the wearer's stealth, making the wearer less
+     likely to wake up sleeping monsters.
+
+Cloak of Aman.
+     These exceptionally rare cloaks combine the properties of Cloaks of
+     Protection and Cloaks of Stealth, and are rumored to have properties
+     beyond even those!
+
+Ego Gloves:
+-----------
+Gloves of Free Action.
+     The wearer of these gloves will find himself resistant to paralyzing
+     attacks as well as some slowing attacks.  Because of the special 
+     nature of these gloves, magic users may wear these gloves without
+     incurring a mana penalty.   
+
+Gloves of Slaying.
+     These gloves will increase the wearer's fighting ability by boosting
+     the wearer's to-hit and to-dam values.
+
+Gloves of Agility.
+     These gloves will increase the wearer's dexterity.  Because of the 
+     special nature of these gloves, magic users may wear these gloves 
+     without incurring a mana penalty.   
+
+Gloves of Power.
+     These gloves will boost the wearer's strength as well as the wearer's
+     to-hit and to-dam numbers.
+
+Ego Boots:
+----------
+Boots of Slow Descent.
+     These boots protect the wearer from the effects of small falls.
+
+Boots of Stealth.
+     These boots increase the wearer's stealth, like a Cloak of Stealth.
+
+Boots of Free Action.
+     The wearer of these boots will find himself resistant to paralyzing
+     attacks as well as some slowing attacks.
+
+Boots of Speed.
+     The wearer of these boots will become unnaturally quick!
 
 Apart from these there are some very rare, and well made armours in the
 dungeon with not necessarily any special abilities. These include Shields of
@@ -328,6 +422,7 @@ Deflection, Adamantite Plate Mail, Mithril Plate Mail, Mithril Chain Mail,
 and Shadow Cloaks.  The first four cannot be damaged by acid because of the
 quality metals they contain.
 
+There are rumors of incredibly rare "artifact" armor which are even
+more powerful than ego armor.
 
-Artifact Armours -- see "rumors.hlp"
 

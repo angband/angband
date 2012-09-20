@@ -1,40 +1,12 @@
 # File: pref.prf
 
 #
-# This is the basic "user pref file"
+# This file defines "default" actions of various kinds
 #
-# Basically, this file, and the other "user pref files", contain a set
-# of "user pref commands" that are executed after a character is loaded
-# or created.  Various commands allow you to create macros, define keymaps,
-# modify the attr/chars of various things, change the color information,
-# turn options off or on, etc.
+# This file includes, if appropriate, various "sub-files"
 #
-# This file should contain only "user pref commands" which will work on
-# any system, since it is loaded no matter what system is being used.
+# See "lib/help/command.txt" and "src/files.c" for more information.
 #
-# You can often use a command line argument to specify a replacement
-# directory for the "lib/user/" directory, which allows you to keep
-# your own local "user pref files" independant of the system files.
-#
-# Angband will automatically load, if possible, the files "pref.prf",
-# "font-xxx.prf" or "graf-xxx.prf", "pref-xxx.prf", "user-xxx.prf",
-# "Race.prf", "Class.prf", and "Name.prf", where "xxx" is replaced
-# by the "system suffix", and "Race", "Class", and "Name", are
-# replaced by the race, class, and name of the current character.
-#
-# See "lib/help/command.txt" and "src/files.c" for more info.
-#
-
-
-
-## OPTION: Display "veins" (white "%") as "normal walls" (white "#") 
-## This replaces the old method of setting "notice_seams" to false,
-## which no longer works as of Angband 2.7.9, for various reasons.
-#
-#F:50:1/35
-#F:51:1/35
-#F:52:1/35
-#F:53:1/35
 
 
 # Command macro -- "X" will now "swap weapons" as long as both weapons
@@ -43,4 +15,35 @@
 
 A:w0
 C:X
+
+
+## # Option -- Default to original commands
+## X:rogue_like_commands
+
+## # Option -- Default to roguelike commands
+## Y:rogue_like_commands
+
+
+##### System Specific Subfiles #####
+
+?:[IOR [EQU $SYS x11] [EQU $SYS xaw]]
+%:pref-x11.prf
+
+## ?:[EQU $SYS gcu]
+## %:pref-gcu.prf
+
+?:[EQU $SYS ami]
+%:pref-ami.prf
+
+?:[EQU $SYS mac]
+%:pref-mac.prf
+
+?:[IOR [EQU $SYS win] [EQU $SYS ibm]]
+%:pref-win.prf
+
+?:[EQU $SYS emx]
+%:pref-emx.prf
+
+?:[EQU $SYS acn]
+%:pref-acn.prf
 

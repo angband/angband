@@ -1,13 +1,11 @@
 /* File: cmd4.c */
 
-/* Purpose: Interface commands */
-
 /*
- * Copyright (c) 1989 James E. Wilson, Robert A. Koeneke
+ * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  *
- * This software may be copied and distributed for educational, research, and
- * not for profit purposes provided that this copyright and statement are
- * included in all such copies.
+ * This software may be copied and distributed for educational, research,
+ * and not for profit purposes provided that this copyright and statement
+ * are included in all such copies.  Other copyrights may also apply.
  */
 
 #include "angband.h"
@@ -98,11 +96,11 @@ void do_cmd_redraw(void)
  */
 void do_cmd_change_name(void)
 {
-	char	c;
+	char c;
 
-	int		mode = 0;
+	int mode = 0;
 
-	char	tmp[160];
+	char tmp[160];
 
 
 	/* Enter "icky" mode */
@@ -136,7 +134,7 @@ void do_cmd_change_name(void)
 		/* File dump */
 		else if (c == 'f')
 		{
-			sprintf(tmp, "%s.txt", player_base);
+			sprintf(tmp, "%s.txt", op_ptr->base_name);
 			if (get_string("File name: ", tmp, 80))
 			{
 				if (tmp[0] && (tmp[0] != ' '))
@@ -181,7 +179,7 @@ void do_cmd_message_one(void)
 
 
 /*
- * Show previous messages to the user	-BEN-
+ * Show previous messages to the user
  *
  * The screen format uses line 0 and 23 for headers and prompts,
  * skips line 1 and 22, and uses line 2 thru 21 for old messages.
@@ -287,7 +285,7 @@ void do_cmd_messages(void)
 			/* Success */
 			continue;
 		}
-		
+
 		/* Horizontal scroll */
 		if (k == '6')
 		{
@@ -297,7 +295,7 @@ void do_cmd_messages(void)
 			/* Success */
 			continue;
 		}
-		
+
 		/* Hack -- handle show */
 		if (k == '=')
 		{
@@ -396,47 +394,43 @@ void do_cmd_messages(void)
 }
 
 
-
 /*
- * Number of cheating options
+ * Cheating options -- textual names
  */
-#define CHEAT_MAX 6
-
-/*
- * Cheating options
- */
-static option_type cheat_info[CHEAT_MAX] =
+cptr cheating_text[CHEAT_MAX] =
 {
-	{ &cheat_peek,		FALSE,	255,	0x01, 0x00,
-	"cheat_peek",		"Peek into object creation" },
+	"cheat_peek",
+	"cheat_hear",
+	"cheat_room",
+	"cheat_xtra",
+	"cheat_know",
+	"cheat_live"
+};
 
-	{ &cheat_hear,		FALSE,	255,	0x02, 0x00,
-	"cheat_hear",		"Peek into monster creation" },
-
-	{ &cheat_room,		FALSE,	255,	0x04, 0x00,
-	"cheat_room",		"Peek into dungeon creation" },
-
-	{ &cheat_xtra,		FALSE,	255,	0x08, 0x00,
-	"cheat_xtra",		"Peek into something else" },
-
-	{ &cheat_know,		FALSE,	255,	0x10, 0x00,
-	"cheat_know",		"Know complete monster info" },
-
-	{ &cheat_live,		FALSE,	255,	0x20, 0x00,
-	"cheat_live",		"Allow player to avoid death" }
+/*
+ * Cheating options -- descriptions
+ */
+cptr cheating_desc[CHEAT_MAX] =
+{
+	"Peek into object creation",
+	"Peek into monster creation",
+	"Peek into dungeon creation",
+	"Peek into something else",
+	"Know complete monster info",
+	"Allow player to avoid death"
 };
 
 
 /*
- * Interact with some options for cheating
+ * Interact with some options
  */
 static void do_cmd_options_cheat(cptr info)
 {
-	char	ch;
+	char ch;
 
-	int		i, k = 0, n = CHEAT_MAX;
+	int i, k = 0, n = CHEAT_MAX;
 
-	char	buf[80];
+	char buf[80];
 
 
 	/* Clear screen */
@@ -448,7 +442,7 @@ static void do_cmd_options_cheat(cptr info)
 		/* Prompt XXX XXX XXX */
 		sprintf(buf, "%s (RET to advance, y/n to set, ESC to accept) ", info);
 		prt(buf, 0, 0);
-	
+
 		/* Display the options */
 		for (i = 0; i < n; i++)
 		{
@@ -459,9 +453,9 @@ static void do_cmd_options_cheat(cptr info)
 
 			/* Display the option text */
 			sprintf(buf, "%-48s: %s  (%s)",
-			        cheat_info[i].o_desc,
-			        (*cheat_info[i].o_var ? "yes" : "no "),
-			        cheat_info[i].o_text);
+			        cheating_desc[i],
+			        p_ptr->cheat[i] ? "yes" : "no ",
+			        cheating_text[i]);
 			c_prt(a, buf, i + 2, 0);
 		}
 
@@ -495,21 +489,40 @@ static void do_cmd_options_cheat(cptr info)
 				break;
 			}
 
+			case 't':
+			case '5':
+			{
+				if (p_ptr->cheat[k])
+				{
+					p_ptr->cheat[k] = FALSE;
+				}
+
+				else
+				{
+					/* Mark player as a cheater */
+					p_ptr->noscore |= (0x0100 << k);
+
+					p_ptr->cheat[k] = TRUE;
+				}
+
+				break;
+			}
+
 			case 'y':
-			case 'Y':
 			case '6':
 			{
-				noscore |= (cheat_info[k].o_set * 256 + cheat_info[k].o_bit);
-				(*cheat_info[k].o_var) = TRUE;
+				/* Mark player as a cheater */
+				p_ptr->noscore |= (0x0100 << k);
+
+				p_ptr->cheat[k] = TRUE;
 				k = (k + 1) % n;
 				break;
 			}
 
 			case 'n':
-			case 'N':
 			case '4':
 			{
-				(*cheat_info[k].o_var) = FALSE;
+				p_ptr->cheat[k] = FALSE;
 				k = (k + 1) % n;
 				break;
 			}
@@ -529,23 +542,23 @@ static void do_cmd_options_cheat(cptr info)
  */
 static void do_cmd_options_aux(int page, cptr info)
 {
-	char	ch;
+	char ch;
 
-	int		i, k = 0, n = 0;
+	int i, k = 0, n = 0;
 
-	int		opt[24];
+	int opt[16];
 
-	char	buf[80];
+	char buf[80];
 
-
-	/* Lookup the options */
-	for (i = 0; i < 24; i++) opt[i] = 0;
 
 	/* Scan the options */
-	for (i = 0; option_info[i].o_desc; i++)
+	for (i = 0; i < 16; i++)
 	{
-		/* Notice options on this "page" */
-		if (option_info[i].o_page == page) opt[n++] = i;
+		/* Collect options on this "page" */
+		if (option_page[page][i] != 255)
+		{
+			opt[n++] = option_page[page][i];
+		}
 	}
 
 
@@ -558,7 +571,7 @@ static void do_cmd_options_aux(int page, cptr info)
 		/* Prompt XXX XXX XXX */
 		sprintf(buf, "%s (RET to advance, y/n to set, ESC to accept) ", info);
 		prt(buf, 0, 0);
-	
+
 		/* Display the options */
 		for (i = 0; i < n; i++)
 		{
@@ -569,9 +582,9 @@ static void do_cmd_options_aux(int page, cptr info)
 
 			/* Display the option text */
 			sprintf(buf, "%-48s: %s  (%s)",
-			        option_info[opt[i]].o_desc,
-			        (*option_info[opt[i]].o_var ? "yes" : "no "),
-			        option_info[opt[i]].o_text);
+			        option_desc[opt[i]],
+			        op_ptr->opt[opt[i]] ? "yes" : "no ",
+			        option_text[opt[i]]);
 			c_prt(a, buf, i + 2, 0);
 		}
 
@@ -605,20 +618,25 @@ static void do_cmd_options_aux(int page, cptr info)
 				break;
 			}
 
+			case 't':
+			case '5':
+			{
+				op_ptr->opt[opt[k]] = !op_ptr->opt[opt[k]];
+				break;
+			}
+
 			case 'y':
-			case 'Y':
 			case '6':
 			{
-				(*option_info[opt[k]].o_var) = TRUE;
+				op_ptr->opt[opt[k]] = TRUE;
 				k = (k + 1) % n;
 				break;
 			}
 
 			case 'n':
-			case 'N':
 			case '4':
 			{
-				(*option_info[opt[k]].o_var) = FALSE;
+				op_ptr->opt[opt[k]] = FALSE;
 				k = (k + 1) % n;
 				break;
 			}
@@ -638,7 +656,7 @@ static void do_cmd_options_aux(int page, cptr info)
  */
 static void do_cmd_options_win(void)
 {
-	int i, j, d;
+	int i, j;
 
 	int y = 0;
 	int x = 0;
@@ -654,7 +672,7 @@ static void do_cmd_options_win(void)
 	for (j = 0; j < 8; j++)
 	{
 		/* Acquire current flags */
-		old_flag[j] = window_flag[j];
+		old_flag[j] = op_ptr->window_flag[j];
 	}
 
 
@@ -664,8 +682,8 @@ static void do_cmd_options_win(void)
 	/* Interact */
 	while (go)
 	{
-		/* Prompt XXX XXX XXX */
-		prt("Window flags (<dir>, t, y, n, ESC) ", 0, 0);
+		/* Prompt */
+		prt("Window flags (<dir> to move, 't' to toggle, or ESC)", 0, 0);
 
 		/* Display the windows */
 		for (j = 0; j < 8; j++)
@@ -675,7 +693,7 @@ static void do_cmd_options_win(void)
 			cptr s = angband_term_name[j];
 
 			/* Use color */
-			if (use_color && (j == x)) a = TERM_L_BLUE;
+			if (j == x) a = TERM_L_BLUE;
 
 			/* Window name, staggered, centered */
 			Term_putstr(35 + j * 5 - strlen(s) / 2, 2 + j % 2, -1, a, s);
@@ -689,7 +707,7 @@ static void do_cmd_options_win(void)
 			cptr str = window_flag_desc[i];
 
 			/* Use color */
-			if (use_color && (i == y)) a = TERM_L_BLUE;
+			if (i == y) a = TERM_L_BLUE;
 
 			/* Unused option */
 			if (!str) str = "(Unused option)";
@@ -705,10 +723,10 @@ static void do_cmd_options_win(void)
 				char c = '.';
 
 				/* Use color */
-				if (use_color && (i == y) && (j == x)) a = TERM_L_BLUE;
+				if ((i == y) && (j == x)) a = TERM_L_BLUE;
 
 				/* Active flag */
-				if (window_flag[j] & (1L << i)) c = 'X';
+				if (op_ptr->window_flag[j] & (1L << i)) c = 'X';
 
 				/* Flag value */
 				Term_putch(35 + j * 5, i + 5, a, c);
@@ -725,56 +743,47 @@ static void do_cmd_options_win(void)
 		switch (ch)
 		{
 			case ESCAPE:
+			case 'q':
 			{
 				go = FALSE;
 				break;
 			}
 
-			case 'T':
 			case 't':
+			case '.':
+			case '5':
+			case '0':
 			{
-				/* Clear windows */
-				for (j = 0; j < 8; j++)
+				/* Hack -- ignore the main window */
+				if (x == 0)
 				{
-					window_flag[j] &= ~(1L << y);
+					bell();
+					break;
 				}
 
-				/* Clear flags */
-				for (i = 0; i < 16; i++)
+				/* Toggle flag */
+				if (op_ptr->window_flag[x] & (1L << y))
 				{
-					window_flag[x] &= ~(1L << i);
+					op_ptr->window_flag[x] &= ~(1L << y);
+				}
+				else
+				{
+					op_ptr->window_flag[x] |= (1L << y);
 				}
 
-				/* Fall through */
-			}
-
-			case 'y':
-			case 'Y':
-			{
-				/* Ignore screen */
-				if (x == 0) break;
-
-				/* Set flag */
-				window_flag[x] |= (1L << y);
-				break;
-			}
-
-			case 'n':
-			case 'N':
-			{
-				/* Clear flag */
-				window_flag[x] &= ~(1L << y);
 				break;
 			}
 
 			default:
 			{
-				d = keymap_dirs[ch & 0x7F];
+				int d = keymap_dirs[ch & 0x7F];
 
 				x = (x + ddx[d] + 8) % 8;
 				y = (y + ddy[d] + 16) % 16;
 
 				if (!d) bell();
+				
+				break;
 			}
 		}
 	}
@@ -788,7 +797,7 @@ static void do_cmd_options_win(void)
 		if (!angband_term[j]) continue;
 
 		/* Ignore non-changes */
-		if (window_flag[j] == old_flag[j]) continue;
+		if (op_ptr->window_flag[j] == old_flag[j]) continue;
 
 		/* Activate */
 		Term_activate(angband_term[j]);
@@ -810,8 +819,8 @@ static void do_cmd_options_win(void)
 /*
  * Set or unset various options.
  *
- * The user must use the "Ctrl-R" command to "adapt" to changes
- * in any options which control "visual" aspects of the game.
+ * After using this command, a complete redraw is performed,
+ * whether or not it is technically required.
  */
 void do_cmd_options(void)
 {
@@ -840,18 +849,15 @@ void do_cmd_options(void)
 		prt("(3) Game-Play Options", 6, 5);
 		prt("(4) Efficiency Options", 7, 5);
 
-		/* Testing */
-		prt("(T) Testing options", 9, 5);
-
 		/* Cheating */
-		prt("(C) Cheating Options", 10, 5);
+		prt("(C) Cheating Options", 9, 5);
 
 		/* Window flags */
-		prt("(W) Window flags", 12, 5);
+		prt("(W) Window flags", 11, 5);
 
 		/* Special choices */
-		prt("(D) Base Delay Factor", 14, 5);
-		prt("(H) Hitpoint Warning", 15, 5);
+		prt("(D) Base Delay Factor", 13, 5);
+		prt("(H) Hitpoint Warning", 14, 5);
 
 		/* Prompt */
 		prt("Command: ", 18, 0);
@@ -869,7 +875,7 @@ void do_cmd_options(void)
 			case '1':
 			{
 				/* Process the general options */
-				do_cmd_options_aux(1, "User Interface Options");
+				do_cmd_options_aux(0, "User Interface Options");
 				break;
 			}
 
@@ -877,7 +883,7 @@ void do_cmd_options(void)
 			case '2':
 			{
 				/* Spawn */
-				do_cmd_options_aux(2, "Disturbance Options");
+				do_cmd_options_aux(1, "Disturbance Options");
 				break;
 			}
 
@@ -885,7 +891,7 @@ void do_cmd_options(void)
 			case '3':
 			{
 				/* Spawn */
-				do_cmd_options_aux(3, "Game-Play Options");
+				do_cmd_options_aux(2, "Game-Play Options");
 				break;
 			}
 
@@ -893,15 +899,7 @@ void do_cmd_options(void)
 			case '4':
 			{
 				/* Spawn */
-				do_cmd_options_aux(4, "Efficiency Options");
-				break;
-			}
-
-			/* Testing Options */
-			case 'T':
-			{
-				/* Spawn */
-				do_cmd_options_aux(255, "Testing Options");
+				do_cmd_options_aux(3, "Efficiency Options");
 				break;
 			}
 
@@ -909,7 +907,7 @@ void do_cmd_options(void)
 			case 'C':
 			{
 				/* Spawn */
-				do_cmd_options_cheat("Cheaters never win");
+				do_cmd_options_cheat("Cheaters never win (seriously!)");
 				break;
 			}
 
@@ -932,13 +930,13 @@ void do_cmd_options(void)
 				/* Get a new value */
 				while (1)
 				{
-					int msec = delay_factor * delay_factor * delay_factor;
+					int msec = op_ptr->delay_factor * op_ptr->delay_factor;
 					prt(format("Current base delay factor: %d (%d msec)",
-					           delay_factor, msec), 22, 0);
+					           op_ptr->delay_factor, msec), 22, 0);
 					prt("Delay Factor (0-9 or ESC to accept): ", 20, 0);
 					k = inkey();
 					if (k == ESCAPE) break;
-					if (isdigit(k)) delay_factor = D2I(k);
+					if (isdigit(k)) op_ptr->delay_factor = D2I(k);
 					else bell();
 				}
 
@@ -955,12 +953,12 @@ void do_cmd_options(void)
 				/* Get a new value */
 				while (1)
 				{
-					prt(format("Current hitpoint warning: %d0%%",
-					           hitpoint_warn), 22, 0);
+					prt(format("Current hitpoint warning: %2d%%",
+					           op_ptr->hitpoint_warn * 10), 22, 0);
 					prt("Hitpoint Warning (0-9 or ESC to accept): ", 20, 0);
 					k = inkey();
 					if (k == ESCAPE) break;
-					if (isdigit(k)) hitpoint_warn = D2I(k);
+					if (isdigit(k)) op_ptr->hitpoint_warn = D2I(k);
 					else bell();
 				}
 
@@ -986,10 +984,6 @@ void do_cmd_options(void)
 
 	/* Leave "icky" mode */
 	character_icky = FALSE;
-
-
-	/* Verify the keymap */
-	keymap_init();
 }
 
 
@@ -1173,34 +1167,34 @@ void do_cmd_macros(void)
 		Term_clear();
 
 		/* Describe */
-		Term_putstr(0, 2, -1, TERM_WHITE, "Interact with Macros");
+		prt("Interact with Macros", 2, 0);
 
 
 		/* Describe that action */
-		Term_putstr(0, 18, -1, TERM_WHITE, "Current action (if any) shown below:");
+		prt("Current action (if any) shown below:", 18, 0);
 
 		/* Analyze the current action */
 		ascii_to_text(buf, macro__buf);
 
 		/* Display the current action */
-		Term_putstr(0, 20, -1, TERM_WHITE, buf);
+		prt(buf, 20, 0);
 
 
 		/* Selections */
-		Term_putstr(5,  4, -1, TERM_WHITE, "(1) Load a user pref file");
+		prt("(1) Load a user pref file", 4, 5);
 #ifdef ALLOW_MACROS
-		Term_putstr(5,  5, -1, TERM_WHITE, "(2) Dump macros");
-		Term_putstr(5,  6, -1, TERM_WHITE, "(3) Enter a new action");
-		Term_putstr(5,  7, -1, TERM_WHITE, "(4) Query a macro action");
-		Term_putstr(5,  8, -1, TERM_WHITE, "(5) Create a command macro");
-		Term_putstr(5,  9, -1, TERM_WHITE, "(6) Create a normal macro");
-		Term_putstr(5, 10, -1, TERM_WHITE, "(7) Create an identity macro");
-		Term_putstr(5, 11, -1, TERM_WHITE, "(8) Create an empty macro");
-		Term_putstr(5, 12, -1, TERM_WHITE, "(9) Define a special keymap");
+		prt("(2) Dump macros", 5, 5);
+		prt("(3) Enter a new action", 6, 5);
+		prt("(4) Query a macro action", 7, 5);
+		prt("(5) Create a command macro", 8, 5);
+		prt("(6) Create a normal macro", 9, 5);
+		prt("(7) Create an identity macro", 10, 5);
+		prt("(8) Create an empty macro", 11, 5);
+		prt("(9) Define a special keymap", 12, 5);
 #endif /* ALLOW_MACROS */
 
 		/* Prompt */
-		Term_putstr(0, 14, -1, TERM_WHITE, "Command: ");
+		prt("Command: ", 14, 0);
 
 		/* Get a command */
 		i = inkey();
@@ -1212,13 +1206,13 @@ void do_cmd_macros(void)
 		else if (i == '1')
 		{
 			/* Prompt */
-			Term_putstr(0, 14, -1, TERM_WHITE, "Command: Load a user pref file");
+			prt("Command: Load a user pref file", 14, 0);
 
-			/* Get a filename, handle ESCAPE */
-			Term_putstr(0, 16, -1, TERM_WHITE, "File: ");
+			/* Prompt */
+			prt("File: ", 16, 0);
 
 			/* Default filename */
-			sprintf(tmp, "user-%s.prf", ANGBAND_SYS);
+			sprintf(tmp, "user.prf");
 
 			/* Ask for a file */
 			if (!askfor_aux(tmp, 70)) continue;
@@ -1233,13 +1227,13 @@ void do_cmd_macros(void)
 		else if (i == '2')
 		{
 			/* Prompt */
-			Term_putstr(0, 14, -1, TERM_WHITE, "Command: Save a macro file");
+			prt("Command: Save a macro file", 14, 0);
 
-			/* Get a filename, handle ESCAPE */
-			Term_putstr(0, 16, -1, TERM_WHITE, "File: ");
+			/* Prompt */
+			prt("File: ", 16, 0);
 
 			/* Default filename */
-			sprintf(tmp, "user-%s.prf", ANGBAND_SYS);
+			sprintf(tmp, "user.prf");
 
 			/* Ask for a file */
 			if (!askfor_aux(tmp, 70)) continue;
@@ -1258,7 +1252,7 @@ void do_cmd_macros(void)
 		else if (i == '3')
 		{
 			/* Prompt */
-			Term_putstr(0, 14, -1, TERM_WHITE, "Command: Enter a new action");
+			prt("Command: Enter a new action", 14, 0);
 
 			/* Go to the correct location */
 			Term_gotoxy(0, 20);
@@ -1279,10 +1273,10 @@ void do_cmd_macros(void)
 
 #if 0
 			/* Prompt */
-			Term_putstr(0, 14, -1, TERM_WHITE, "Command: Query a macro action");
+			prt("Command: Query a macro action", 14, 0);
 
 			/* Prompt */
-			Term_putstr(0, 16, -1, TERM_WHITE, "Enter a macro trigger: ");
+			prt("Enter a macro trigger: ", 16, 0);
 
 			/* Get a macro trigger */
 			do_cmd_macro_aux(buf);
@@ -1296,10 +1290,10 @@ void do_cmd_macros(void)
 		else if (i == '5')
 		{
 			/* Prompt */
-			Term_putstr(0, 14, -1, TERM_WHITE, "Command: Create a command macro");
+			prt("Command: Create a command macro", 14, 0);
 
 			/* Prompt */
-			Term_putstr(0, 16, -1, TERM_WHITE, "Trigger: ");
+			prt("Trigger: ", 16, 0);
 
 			/* Get a macro trigger */
 			do_cmd_macro_aux(buf);
@@ -1315,10 +1309,10 @@ void do_cmd_macros(void)
 		else if (i == '6')
 		{
 			/* Prompt */
-			Term_putstr(0, 14, -1, TERM_WHITE, "Command: Create a normal macro");
+			prt("Command: Create a normal macro", 14, 0);
 
 			/* Prompt */
-			Term_putstr(0, 16, -1, TERM_WHITE, "Trigger: ");
+			prt("Trigger: ", 16, 0);
 
 			/* Get a macro trigger */
 			do_cmd_macro_aux(buf);
@@ -1334,10 +1328,10 @@ void do_cmd_macros(void)
 		else if (i == '7')
 		{
 			/* Prompt */
-			Term_putstr(0, 14, -1, TERM_WHITE, "Command: Create an identity macro");
+			prt("Command: Create an identity macro", 14, 0);
 
 			/* Prompt */
-			Term_putstr(0, 16, -1, TERM_WHITE, "Trigger: ");
+			prt("Trigger: ", 16, 0);
 
 			/* Get a macro trigger */
 			do_cmd_macro_aux(buf);
@@ -1353,10 +1347,10 @@ void do_cmd_macros(void)
 		else if (i == '8')
 		{
 			/* Prompt */
-			Term_putstr(0, 14, -1, TERM_WHITE, "Command: Create an empty macro");
+			prt("Command: Create an empty macro", 14, 0);
 
 			/* Prompt */
-			Term_putstr(0, 16, -1, TERM_WHITE, "Trigger: ");
+			prt("Trigger: ", 16, 0);
 
 			/* Get a macro trigger */
 			do_cmd_macro_aux(buf);
@@ -1488,7 +1482,7 @@ void do_cmd_visuals(void)
 			prt("File: ", 17, 0);
 
 			/* Default filename */
-			sprintf(tmp, "user-%s.prf", ANGBAND_SYS);
+			sprintf(tmp, "user.prf");
 
 			/* Query */
 			if (!askfor_aux(tmp, 70)) continue;
@@ -1509,7 +1503,7 @@ void do_cmd_visuals(void)
 			prt("File: ", 17, 0);
 
 			/* Default filename */
-			sprintf(tmp, "user-%s.prf", ANGBAND_SYS);
+			sprintf(tmp, "user.prf");
 
 			/* Get a filename */
 			if (!askfor_aux(tmp, 70)) continue;
@@ -1569,7 +1563,7 @@ void do_cmd_visuals(void)
 			prt("File: ", 17, 0);
 
 			/* Default filename */
-			sprintf(tmp, "user-%s.prf", ANGBAND_SYS);
+			sprintf(tmp, "user.prf");
 
 			/* Get a filename */
 			if (!askfor_aux(tmp, 70)) continue;
@@ -1629,7 +1623,7 @@ void do_cmd_visuals(void)
 			prt("File: ", 17, 0);
 
 			/* Default filename */
-			sprintf(tmp, "user-%s.prf", ANGBAND_SYS);
+			sprintf(tmp, "user.prf");
 
 			/* Get a filename */
 			if (!askfor_aux(tmp, 70)) continue;
@@ -1850,7 +1844,7 @@ void do_cmd_visuals(void)
 		else if (i == '0')
 		{
 			/* Reset */
-			reset_visuals();
+			reset_visuals(TRUE);
 
 			/* Message */
 			msg_print("Visual attr/char tables reset.");
@@ -1935,7 +1929,7 @@ void do_cmd_colors(void)
 			prt("File: ", 10, 0);
 
 			/* Default file */
-			sprintf(tmp, "user-%s.prf", ANGBAND_SYS);
+			sprintf(tmp, "user.prf");
 
 			/* Query */
 			if (!askfor_aux(tmp, 70)) continue;
@@ -1962,7 +1956,7 @@ void do_cmd_colors(void)
 			prt("File: ", 10, 0);
 
 			/* Default filename */
-			sprintf(tmp, "user-%s.prf", ANGBAND_SYS);
+			sprintf(tmp, "user.prf");
 
 			/* Get a filename */
 			if (!askfor_aux(tmp, 70)) continue;
@@ -2175,7 +2169,7 @@ void do_cmd_feeling(void)
 	if (feeling > 10) feeling = 10;
 
 	/* No useful feeling in town */
-	if (!dun_level)
+	if (!p_ptr->depth)
 	{
 		msg_print("Looks like a typical town.");
 		return;
@@ -2268,9 +2262,6 @@ void do_cmd_load_screen(void)
 				/* Use attr matches */
 				if (hack[i] == buf[x]) a = i;
 			}
-
-			/* Hack -- fake monochrome */
-			if (!use_color) a = TERM_WHITE;
 
 			/* Put the attr/char */
 			Term_draw(x, y, a, c);
@@ -2411,9 +2402,9 @@ void do_cmd_save_screen(void)
 
 
 /*
- * Check the status of "artifacts"
+ * Display known artifacts
  */
-void do_cmd_check_artifacts(void)
+static void do_cmd_knowledge_artifacts(void)
 {
 	int i, k, z, x, y;
 
@@ -2451,19 +2442,17 @@ void do_cmd_check_artifacts(void)
 	}
 
 	/* Check the dungeon */
-	for (y = 0; y < cur_hgt; y++)
+	for (y = 0; y < DUNGEON_HGT; y++)
 	{
-		for (x = 0; x < cur_wid; x++)
+		for (x = 0; x < DUNGEON_WID; x++)
 		{
-			cave_type *c_ptr = &cave[y][x];
-
 			s16b this_o_idx, next_o_idx = 0;
 
 			/* Scan all objects in the grid */
-			for (this_o_idx = c_ptr->o_idx; this_o_idx; this_o_idx = next_o_idx)
+			for (this_o_idx = cave_o_idx[y][x]; this_o_idx; this_o_idx = next_o_idx)
 			{
 				object_type *o_ptr;
-			
+
 				/* Acquire object */
 				o_ptr = &o_list[this_o_idx];
 
@@ -2517,20 +2506,20 @@ void do_cmd_check_artifacts(void)
 		/* Real object */
 		if (z)
 		{
-			object_type forge;
-			object_type *q_ptr;
+			object_type *i_ptr;
+			object_type object_type_body;
 
 			/* Get local object */
-			q_ptr = &forge;
+			i_ptr = &object_type_body;
 
 			/* Create fake object */
-			object_prep(q_ptr, z);
+			object_prep(i_ptr, z);
 
 			/* Make it an artifact */
-			q_ptr->name1 = k;
+			i_ptr->name1 = k;
 
 			/* Describe the artifact */
-			object_desc_store(base_name, q_ptr, FALSE, 0);
+			object_desc_store(base_name, i_ptr, FALSE, 0);
 		}
 
 		/* Hack -- Build the artifact name */
@@ -2541,7 +2530,7 @@ void do_cmd_check_artifacts(void)
 	my_fclose(fff);
 
 	/* Display the file contents */
-	show_file(file_name, "Artifacts Seen");
+	show_file(file_name, "Known artifacts", 0, 0);
 
 	/* Remove the file */
 	fd_kill(file_name);
@@ -2549,11 +2538,11 @@ void do_cmd_check_artifacts(void)
 
 
 /*
- * Check the status of "uniques"
+ * Display known uniques
  *
  * Note that the player ghosts are ignored.  XXX XXX XXX
  */
-void do_cmd_check_uniques(void)
+static void do_cmd_knowledge_uniques(void)
 {
 	int k;
 
@@ -2593,11 +2582,151 @@ void do_cmd_check_uniques(void)
 	my_fclose(fff);
 
 	/* Display the file contents */
-	show_file(file_name, "Known Uniques");
+	show_file(file_name, "Known Uniques", 0, 0);
 
 	/* Remove the file */
 	fd_kill(file_name);
 }
 
+
+/*
+ * Display known objects
+ */
+static void do_cmd_knowledge_objects(void)
+{
+	int k;
+
+	FILE *fff;
+
+	char o_name[80];
+
+	char file_name[1024];
+
+
+	/* Temporary file */
+	if (path_temp(file_name, 1024)) return;
+
+	/* Open a new file */
+	fff = my_fopen(file_name, "w");
+
+	/* Scan the object kinds */
+	for (k = 1; k < MAX_K_IDX; k++)
+	{
+		object_kind *k_ptr = &k_info[k];
+
+		/* Hack -- skip artifacts */
+		if (k_ptr->flags3 & (TR3_INSTA_ART)) continue;
+
+		/* List known flavored objects */
+		if (k_ptr->has_flavor && k_ptr->aware)
+		{
+			object_type *i_ptr;
+			object_type object_type_body;
+
+			/* Get local object */
+			i_ptr = &object_type_body;
+
+			/* Create fake object */
+			object_prep(i_ptr, k);
+
+			/* Describe the object */
+			object_desc_store(o_name, i_ptr, FALSE, 0);
+
+			/* Print a message */
+			fprintf(fff, "     %s\n", o_name);
+		}
+	}
+
+	/* Close the file */
+	my_fclose(fff);
+
+	/* Display the file contents */
+	show_file(file_name, "Known Objects", 0, 0);
+
+	/* Remove the file */
+	fd_kill(file_name);
+}
+
+
+/*
+ * Interact with "knowledge"
+ */
+void do_cmd_knowledge(void)
+{
+	int i;
+
+
+	/* File type is "TEXT" */
+	FILE_TYPE(FILE_TYPE_TEXT);
+
+
+	/* Enter "icky" mode */
+	character_icky = TRUE;
+
+	/* Save the screen */
+	Term_save();
+
+
+	/* Interact until done */
+	while (1)
+	{
+		/* Clear screen */
+		Term_clear();
+
+		/* Ask for a choice */
+		prt("Display current knowledge", 2, 0);
+
+		/* Give some choices */
+		prt("(1) Display known artifacts", 4, 5);
+		prt("(2) Display known uniques", 5, 5);
+		prt("(3) Display known objects", 6, 5);
+
+		/* Prompt */
+		prt("Command: ", 8, 0);
+
+		/* Prompt */
+		i = inkey();
+
+		/* Done */
+		if (i == ESCAPE) break;
+
+		/* Artifacts */
+		if (i == '1')
+		{
+			/* Spawn */
+			do_cmd_knowledge_artifacts();
+		}
+
+		/* Uniques */
+		else if (i == '2')
+		{
+			/* Spawn */
+			do_cmd_knowledge_uniques();
+		}
+
+		/* Objects */
+		else if (i == '3')
+		{
+			/* Spawn */
+			do_cmd_knowledge_objects();
+		}
+
+		/* Unknown option */
+		else
+		{
+			bell();
+		}
+
+		/* Flush messages */
+		msg_print(NULL);
+	}
+
+
+	/* Restore the screen */
+	Term_load();
+
+	/* Leave "icky" mode */
+	character_icky = FALSE;
+}
 
 

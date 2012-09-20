@@ -1,5 +1,14 @@
-/*
+/* File: main-ami.c */
 
+/*
+ * Copyright (c) 1997 Ben Harrison, Lars Haugseth, and others
+ *
+ * This software may be copied and distributed for educational, research,
+ * and not for profit purposes provided that this copyright and statement
+ * are included in all such copies.
+ */
+
+/*
    File:     main-ami.c
 
    Version:  2.7.9v6 (09.May.96)
@@ -1688,10 +1697,10 @@ static errr amiga_xtra( int n, int v )
          return( 0 );
 
       case TERM_XTRA_DELAY:
-      
+
          if (v >= 20) Delay(v / 20);
          return (0);
-      
+
       /* Unknown request type */
       default:
 
@@ -1940,7 +1949,7 @@ int amiga_tomb( void )
    free_bitmap( scalbm );
 
    /* King or Queen */
-   if (total_winner || (p_ptr->lev > PY_MAX_LEVEL))
+   if (p_ptr->total_winner || (p_ptr->lev > PY_MAX_LEVEL))
    {
       p = "Magnificent";
    }
@@ -1953,7 +1962,7 @@ int amiga_tomb( void )
 
    tomb_str( 3, " R.I.P." );
 
-   tomb_str( 5, player_name );
+   tomb_str( 5, p_ptr->full_name );
 
    tomb_str( 6, "the" );
 
@@ -1970,10 +1979,10 @@ int amiga_tomb( void )
    sprintf( tmp, "AU: %ld", (long)p_ptr->au );
    tomb_str( 12, tmp );
 
-   sprintf( tmp, "Killed on Level %d", dun_level );
+   sprintf( tmp, "Killed on Level %d", p_ptr->depth );
    tomb_str( 13, tmp );
 
-   sprintf( tmp, "by %s", died_from );
+   sprintf( tmp, "by %s", p_ptr->died_from );
    tomb_str( 14, tmp );
 
    sprintf( tmp, "%-.24s", ctime(&ct));
@@ -2230,7 +2239,12 @@ static void cursor_off( term_data *td )
 static void cursor_anim( void )
 {
    term_data *td = term_curs;
-   int x0, y0, x1, y1, i = px, j = py;
+   int x0, y0, x1, y1;
+
+   /* XXX XXX XXX */
+   int i = p_ptr->px;
+   int j = p_ptr->py;
+
    byte tc,ta;
 
    if ( !term_curs ) return;
@@ -2465,8 +2479,8 @@ int size_gfx( term_data *td )
    td->gfx_h = 32 * td->fh;
 
    /* Calculate map bitmap dimensions */
-   td->mpt_w = td->ww / MAX_WID;
-   td->mpt_h = td->wh / MAX_HGT;
+   td->mpt_w = td->ww / DUNGEON_WID;
+   td->mpt_h = td->wh / DUNGEON_HGT;
    td->map_w = td->mpt_w * 32;
    td->map_h = td->mpt_h * 32;
 
@@ -2654,16 +2668,16 @@ static void amiga_map( void )
    Term_fresh();
 
    /* Calculate offset values */
-   td->map_x = (( td->fw * 80 ) - ( td->mpt_w * cur_wid )) / 2;
-   td->map_y = (( td->fh * 24 ) - ( td->mpt_h * cur_hgt )) / 2;
+   td->map_x = (( td->fw * 80 ) - ( td->mpt_w * DUNGEON_WID )) / 2;
+   td->map_y = (( td->fh * 24 ) - ( td->mpt_h * DUNGEON_HGT )) / 2;
 
    /* Draw all "interesting" features */
-   for ( i = 0; i < cur_wid; i++ )
+   for ( i = 0; i < DUNGEON_WID; i++ )
    {
-      for ( j = 0; j < cur_hgt; j++ )
+      for ( j = 0; j < DUNGEON_HGT; j++ )
       {
          /* Get frame tile */
-         if ( i==0 || i == cur_wid - 1 || j == 0 || j == cur_hgt - 1 )
+         if ( i==0 || i == DUNGEON_WID - 1 || j == 0 || j == DUNGEON_HGT - 1 )
          {
             ta = f_info[ 63 ].z_attr;
             tc = f_info[ 63 ].z_char;

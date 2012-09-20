@@ -1,11 +1,13 @@
 # File: pref-mac.prf
 
 #
-# This file contains various default macros for use with the executable
-# build from "main-mac.c".
+# This file is included by "pref.prf" when "main-mac.c" is used.
 #
-# The format for Macintosh macro triggers will probably change in 2.8.0
+# See "lib/help/command.txt" and "src/files.c" for more information.
 #
+
+
+##### Simple Macros #####
 
 
 #
@@ -130,42 +132,4 @@ P:^_61\r
 A:8
 P:^_62\r
 
-
-
-#
-# F15 -- rest until done
-#
-
-A:\e\eR&\n
-P:^_49\r
-
-#
-# Shift F15 -- rest until healed
-#
-
-A:\e\eR*\n
-P:^_S49\r
-
-
-#
-# F14 -- rest some
-#
-
-A:\e\eR99\n
-P:^_43\r
-
-#
-# Shift F14 -- rest a lot
-#
-
-A:\e\eR9999\n
-P:^_S43\r
-
-
-#
-# F13 -- activate the light
-#
-
-A:\e\eAf\e\e
-P:^_41\r
 

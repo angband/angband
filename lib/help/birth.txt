@@ -31,8 +31,7 @@ special "pref" files.  And the character name is used on the high score list.
 Each character has three primary attributes, sex, race, and class, that
 are chosen before the character is generated, and which will stay fixed
 for the entire life of that character.  These attributes have many effects,
-which will be mentioned as they come up.  Keep in mind that in the current
-version of Angband, your choice of race may restrict your choice of class.
+which will be mentioned as they come up.
 
 Each character has a few secondary attributes, height, weight, social class,
 and background history, which are randomly determined, but which are affected
@@ -40,7 +39,7 @@ by the sex and race of the character.  In general, these attributes are only
 used to provide "flavor" to the character, to assist in the roll playing, but
 they do have a few minor effects on the game.  For example, background history
 affects social class, which affects the amount of money the character will
-start with.  And weight affects carrying capacity and bashing ability.
+start with.
 
 Each character also has six primary "stats", strength, intelligence, wisdom,
 dexterity, constitution, and charisma, which modify the abilities of the
@@ -95,14 +94,16 @@ Each character has an armor class, representing how well the character can
 avoid damage.  The armor class is affected by dexterity and the equipment.
 
 Each character has hit points, representing how much damage the character can
-sustain before he dies.  Your hit points are derived from your race, class,
-level, and constitution, and can be temporarily boosted by magical means.
-Hit points may be regained by resting, or by a variety of magical means.
+sustain before he dies.  The maximum number of hit points is derived from your
+race, class, level, and constitution, and you can never have more hit points
+than the maximum.  Hit points may be regained by resting, or by a variety of
+magical means.
 
 Each character has spell points, or mana, which represents how many spells
-(or prayers) a character can cast (or pray).  Your spell points are derived
-from your class, level, and intelligence (for spells) or wisdom (for prayers).
-Spell points may be regained by resting, or by a few magical means.
+(or prayers) a character can cast (or pray).  The maximum number of spell
+points is derived from your class, level, and intelligence (for spells) or
+wisdom (for prayers), and you can never have more spell points than the
+maximum.  Spell points may be regained by resting, or by magical means.
 
 
 === Races ===
@@ -414,7 +415,7 @@ have intrinsic abilities.
  
  
  
-=== Combinations of Race and Class ===
+=== Combinations of Race and Class (not enforced) ===
  
                       Warrior   Mage    Priest    Rogue   Ranger   Paladin
  
@@ -501,3 +502,4 @@ are listed in the following table.
           Ranger    6    10    8     7      6      7      6      6      +30%
           Paladin   9     5    4     2      2      4      2      2      +35%
  
+

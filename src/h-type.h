@@ -10,32 +10,35 @@
  * This improves readibility and standardizes the code.
  *
  * Likewise, all complex types are at least 4 letters.
- * Thus, almost every three letter word is a legal variable.
- * But beware of certain reserved words ('for' and 'if' and 'do').
+ * Thus, almost every 1 to 3 letter word is a legal variable,
+ * except for certain reserved words ('for' and 'if' and 'do').
  *
  * Note that the type used in structures for bit flags should be uint.
  * As long as these bit flags are sequential, they will be space smart.
  *
  * Note that on some machines, apparently "signed char" is illegal.
  *
- * It must be true that char/byte takes exactly 1 byte
- * It must be true that sind/uind takes exactly 2 bytes
- * It must be true that sbig/ubig takes exactly 4 bytes
+ * A char/byte takes exactly 1 byte
+ * A s16b/u16b takes exactly 2 bytes
+ * A s32b/u32b takes exactly 4 bytes
  *
- * On Sparc's, a sint takes 4 bytes (2 is legal)
- * On Sparc's, a uint takes 4 bytes (2 is legal)
- * On Sparc's, a long takes 4 bytes (8 is legal)
- * On Sparc's, a huge takes 4 bytes (8 is legal)
- * On Sparc's, a vptr takes 4 bytes (8 is legal)
- * On Sparc's, a real takes 8 bytes (4 is legal)
+ * A sint/uint takes at least 2 bytes
+ * A long/huge takes at least 4 bytes
+ *
+ * A real normally takes from 4 to 10 bytes
+ * A vptr normally takes 4 (rarely 8) bytes
  *
  * Note that some files have already been included by "h-include.h"
  * These include <stdio.h> and <sys/types>, which define some types
- * In particular, uint is defined so we do not have to define it
+ * In particular, "bool", "byte", "uint", and "huge" may be defined
+ * already, possibly using "typedefs" of various kinds, and possibly
+ * being defined to something other than required by my code.  So we
+ * simply redefine them all using a stupid "_hack" suffix.
  *
- * Also, see <limits.h> for min/max values for sind, uind, long, huge
- * (SHRT_MIN, SHRT_MAX, USHRT_MAX, LONG_MIN, LONG_MAX, ULONG_MAX)
- * These limits should be verified and coded into "h-constant.h".
+ * Also, see <limits.h> for min/max values for sint, uint, long, huge
+ * (INT_MIN, INT_MAX, 0, UINT_MAX, LONG_MIN, LONG_MAX, 0, ULONG_MAX).
+ * These limits should be verified and coded into "h-constant.h", or
+ * perhaps not, since those types have "unknown" length by definition.
  */
 
 
@@ -43,19 +46,19 @@
 /*** Special 4 letter names for some standard types ***/
 
 
-/* A standard pointer (to "void" because ANSI C says so) */
+/* A generic pointer */
 typedef void *vptr;
 
-/* A simple pointer (to unmodifiable strings) */
+
+/* A string pointer */
 typedef const char *cptr;
 
 
-/* Since float's are silly, hard code real numbers as doubles */
+/* A real number */
 typedef double real;
 
 
-/* Error codes for function return values */
-/* Success = 0, Failure = -N, Problem = +N */
+/* An error code */
 typedef int errr;
 
 
@@ -125,41 +128,6 @@ typedef signed long s32b;
 typedef unsigned long u32b;
 #endif
 
-
-
-
-/*** Pointers to all the basic types defined above ***/
-
-typedef real *real_ptr;
-typedef errr *errr_ptr;
-typedef char *char_ptr;
-typedef byte *byte_ptr;
-typedef bool *bool_ptr;
-typedef sint *sint_ptr;
-typedef uint *uint_ptr;
-typedef long *long_ptr;
-typedef huge *huge_ptr;
-typedef s16b *s16b_ptr;
-typedef u16b *u16b_ptr;
-typedef s32b *s32b_ptr;
-typedef u32b *u32b_ptr;
-typedef vptr *vptr_ptr;
-typedef cptr *cptr_ptr;
-
-
-
-/*** Pointers to Functions with simple return types and any args ***/
-
-typedef void	(*func_void)();
-typedef errr	(*func_errr)();
-typedef char	(*func_char)();
-typedef byte	(*func_byte)();
-typedef bool	(*func_bool)();
-typedef sint	(*func_sint)();
-typedef uint	(*func_uint)();
-typedef real	(*func_real)();
-typedef vptr	(*func_vptr)();
-typedef cptr	(*func_cptr)();
 
 
 

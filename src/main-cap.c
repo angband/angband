@@ -1,6 +1,14 @@
 /* File: main-cap.c */
 
-/* Purpose: Support for "term.c" using "termcap" calls */
+/*
+ * Copyright (c) 1997 Ben Harrison, and others
+ *
+ * This software may be copied and distributed for educational, research,
+ * and not for profit purposes provided that this copyright and statement
+ * are included in all such copies.
+ */
+
+/* Purpose: Support for "z-term.c" using "termcap" calls */
 
 #include "angband.h"
 
@@ -104,10 +112,17 @@
  * Termcap string information
  */
 
-static char blob[1024];		/* The "termcap" entry */
-static char area[1024];		/* The string extraction buffer */
-static char *next = area;	/* The current "index" into "area" */
-static char *desc;		/* The terminal name */
+/* The "termcap" entry */
+static char blob[1024];
+
+/* The string extraction buffer */
+static char area[1024];
+
+/* The current "index" into "area" */
+static char *next = area;
+
+/* The terminal name */
+static char *desc;
 
 #endif
 
@@ -1002,7 +1017,7 @@ static void Term_nuke_cap(term *t)
 /*
  * Prepare this file for Angband usage
  */
-errr init_cap(void)
+errr init_cap(int argc, char *argv[])
 {
 	term *t = &term_screen_body;
 

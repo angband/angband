@@ -1,13 +1,11 @@
-/* File: effects.c */
-
-/* Purpose: effects of various "objects" */
+/* File: xtra2.c */
 
 /*
- * Copyright (c) 1989 James E. Wilson, Robert A. Koeneke
+ * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  *
- * This software may be copied and distributed for educational, research, and
- * not for profit purposes provided that this copyright and statement are
- * included in all such copies.
+ * This software may be copied and distributed for educational, research,
+ * and not for profit purposes provided that this copyright and statement
+ * are included in all such copies.  Other copyrights may also apply.
  */
 
 #include "angband.h"
@@ -585,9 +583,6 @@ bool set_hero(int v)
 	/* Recalculate bonuses */
 	p_ptr->update |= (PU_BONUS);
 
-	/* Recalculate hitpoints */
-	p_ptr->update |= (PU_HP);
-
 	/* Handle stuff */
 	handle_stuff();
 
@@ -637,9 +632,6 @@ bool set_shero(int v)
 
 	/* Recalculate bonuses */
 	p_ptr->update |= (PU_BONUS);
-
-	/* Recalculate hitpoints */
-	p_ptr->update |= (PU_HP);
 
 	/* Handle stuff */
 	handle_stuff();
@@ -1157,18 +1149,24 @@ bool set_stun(int v)
 		{
 			/* Stun */
 			case 1:
-			msg_print("You have been stunned.");
-			break;
+			{
+				msg_print("You have been stunned.");
+				break;
+			}
 
 			/* Heavy stun */
 			case 2:
-			msg_print("You have been heavily stunned.");
-			break;
+			{
+				msg_print("You have been heavily stunned.");
+				break;
+			}
 
 			/* Knocked out */
 			case 3:
-			msg_print("You have been knocked out.");
-			break;
+			{
+				msg_print("You have been knocked out.");
+				break;
+			}
 		}
 
 		/* Notice */
@@ -1183,9 +1181,11 @@ bool set_stun(int v)
 		{
 			/* None */
 			case 0:
-			msg_print("You are no longer stunned.");
-			if (disturb_state) disturb(0, 0);
-			break;
+			{
+				msg_print("You are no longer stunned.");
+				if (disturb_state) disturb(0, 0);
+				break;
+			}
 		}
 
 		/* Notice */
@@ -1333,38 +1333,52 @@ bool set_cut(int v)
 		{
 			/* Graze */
 			case 1:
-			msg_print("You have been given a graze.");
-			break;
+			{
+				msg_print("You have been given a graze.");
+				break;
+			}
 
 			/* Light cut */
 			case 2:
-			msg_print("You have been given a light cut.");
-			break;
+			{
+				msg_print("You have been given a light cut.");
+				break;
+			}
 
 			/* Bad cut */
 			case 3:
-			msg_print("You have been given a bad cut.");
-			break;
+			{
+				msg_print("You have been given a bad cut.");
+				break;
+			}
 
 			/* Nasty cut */
 			case 4:
-			msg_print("You have been given a nasty cut.");
-			break;
+			{
+				msg_print("You have been given a nasty cut.");
+				break;
+			}
 
 			/* Severe cut */
 			case 5:
-			msg_print("You have been given a severe cut.");
-			break;
+			{
+				msg_print("You have been given a severe cut.");
+				break;
+			}
 
 			/* Deep gash */
 			case 6:
-			msg_print("You have been given a deep gash.");
-			break;
+			{
+				msg_print("You have been given a deep gash.");
+				break;
+			}
 
 			/* Mortal wound */
 			case 7:
-			msg_print("You have been given a mortal wound.");
-			break;
+			{
+				msg_print("You have been given a mortal wound.");
+				break;
+			}
 		}
 
 		/* Notice */
@@ -1379,9 +1393,11 @@ bool set_cut(int v)
 		{
 			/* None */
 			case 0:
-			msg_print("You are no longer bleeding.");
-			if (disturb_state) disturb(0, 0);
-			break;
+			{
+				msg_print("You are no longer bleeding.");
+				if (disturb_state) disturb(0, 0);
+				break;
+			}
 		}
 
 		/* Notice */
@@ -1522,28 +1538,38 @@ bool set_food(int v)
 		{
 			/* Weak */
 			case 1:
-			msg_print("You are still weak.");
-			break;
+			{
+				msg_print("You are still weak.");
+				break;
+			}
 
 			/* Hungry */
 			case 2:
-			msg_print("You are still hungry.");
-			break;
+			{
+				msg_print("You are still hungry.");
+				break;
+			}
 
 			/* Normal */
 			case 3:
-			msg_print("You are no longer hungry.");
-			break;
+			{
+				msg_print("You are no longer hungry.");
+				break;
+			}
 
 			/* Full */
 			case 4:
-			msg_print("You are full!");
-			break;
+			{
+				msg_print("You are full!");
+				break;
+			}
 
 			/* Bloated */
 			case 5:
-			msg_print("You have gorged yourself!");
-			break;
+			{
+				msg_print("You have gorged yourself!");
+				break;
+			}
 		}
 
 		/* Change */
@@ -1558,28 +1584,38 @@ bool set_food(int v)
 		{
 			/* Fainting / Starving */
 			case 0:
-			msg_print("You are getting faint from hunger!");
-			break;
+			{
+				msg_print("You are getting faint from hunger!");
+				break;
+			}
 
 			/* Weak */
 			case 1:
-			msg_print("You are getting weak from hunger!");
-			break;
+			{
+				msg_print("You are getting weak from hunger!");
+				break;
+			}
 
 			/* Hungry */
 			case 2:
-			msg_print("You are getting hungry.");
-			break;
+			{
+				msg_print("You are getting hungry.");
+				break;
+			}
 
 			/* Normal */
 			case 3:
-			msg_print("You are no longer full.");
-			break;
+			{
+				msg_print("You are no longer full.");
+				break;
+			}
 
 			/* Full */
 			case 4:
-			msg_print("You are no longer gorged.");
-			break;
+			{
+				msg_print("You are no longer gorged.");
+				break;
+			}
 		}
 
 		/* Change */
@@ -1617,7 +1653,7 @@ bool set_food(int v)
  */
 void check_experience(void)
 {
-	int		i;
+	int i;
 
 
 	/* Note current level */
@@ -1662,7 +1698,7 @@ void check_experience(void)
 		p_ptr->redraw |= (PR_LEV | PR_TITLE);
 
 		/* Window stuff */
-		p_ptr->window |= (PW_PLAYER);
+		p_ptr->window |= (PW_SPELL | PW_PLAYER);
 
 		/* Handle stuff */
 		handle_stuff();
@@ -1678,7 +1714,7 @@ void check_experience(void)
 		p_ptr->lev++;
 
 		/* Save the highest level */
-		if (p_ptr->lev > p_ptr->max_plv) p_ptr->max_plv = p_ptr->lev;
+		if (p_ptr->lev > p_ptr->max_lev) p_ptr->max_lev = p_ptr->lev;
 
 		/* Sound */
 		sound(SOUND_LEVEL);
@@ -1693,7 +1729,7 @@ void check_experience(void)
 		p_ptr->redraw |= (PR_LEV | PR_TITLE);
 
 		/* Window stuff */
-		p_ptr->window |= (PW_PLAYER);
+		p_ptr->window |= (PW_SPELL | PW_PLAYER);
 
 		/* Handle stuff */
 		handle_stuff();
@@ -1812,8 +1848,8 @@ void monster_death(int m_idx)
 
 	int force_coin = get_coin_type(r_ptr);
 
-	object_type forge;
-	object_type *q_ptr;
+	object_type *i_ptr;
+	object_type object_type_body;
 
 
 	/* Get the location */
@@ -1825,7 +1861,7 @@ void monster_death(int m_idx)
 	for (this_o_idx = m_ptr->hold_o_idx; this_o_idx; this_o_idx = next_o_idx)
 	{
 		object_type *o_ptr;
-		
+
 		/* Acquire object */
 		o_ptr = &o_list[this_o_idx];
 
@@ -1836,16 +1872,16 @@ void monster_death(int m_idx)
 		o_ptr->held_m_idx = 0;
 
 		/* Get local object */
-		q_ptr = &forge;
+		i_ptr = &object_type_body;
 
 		/* Copy the object */
-		object_copy(q_ptr, o_ptr);
+		object_copy(i_ptr, o_ptr);
 
 		/* Delete the object */
 		delete_object_idx(this_o_idx);
 
 		/* Drop it */
-		drop_near(q_ptr, -1, y, x);
+		drop_near(i_ptr, -1, y, x);
 	}
 
 	/* Forget objects */
@@ -1856,35 +1892,35 @@ void monster_death(int m_idx)
 	if (r_ptr->flags1 & (RF1_DROP_CHOSEN))
 	{
 		/* Get local object */
-		q_ptr = &forge;
+		i_ptr = &object_type_body;
 
 		/* Mega-Hack -- Prepare to make "Grond" */
-		object_prep(q_ptr, lookup_kind(TV_HAFTED, SV_GROND));
+		object_prep(i_ptr, lookup_kind(TV_HAFTED, SV_GROND));
 
 		/* Mega-Hack -- Mark this item as "Grond" */
-		q_ptr->name1 = ART_GROND;
+		i_ptr->name1 = ART_GROND;
 
 		/* Mega-Hack -- Actually create "Grond" */
-		apply_magic(q_ptr, -1, TRUE, TRUE, TRUE);
+		apply_magic(i_ptr, -1, TRUE, TRUE, TRUE);
 
 		/* Drop it in the dungeon */
-		drop_near(q_ptr, -1, y, x);
+		drop_near(i_ptr, -1, y, x);
 
 
 		/* Get local object */
-		q_ptr = &forge;
+		i_ptr = &object_type_body;
 
 		/* Mega-Hack -- Prepare to make "Morgoth" */
-		object_prep(q_ptr, lookup_kind(TV_CROWN, SV_MORGOTH));
+		object_prep(i_ptr, lookup_kind(TV_CROWN, SV_MORGOTH));
 
 		/* Mega-Hack -- Mark this item as "Morgoth" */
-		q_ptr->name1 = ART_MORGOTH;
+		i_ptr->name1 = ART_MORGOTH;
 
 		/* Mega-Hack -- Actually create "Morgoth" */
-		apply_magic(q_ptr, -1, TRUE, TRUE, TRUE);
+		apply_magic(i_ptr, -1, TRUE, TRUE, TRUE);
 
 		/* Drop it in the dungeon */
-		drop_near(q_ptr, -1, y, x);
+		drop_near(i_ptr, -1, y, x);
 	}
 
 
@@ -1900,22 +1936,22 @@ void monster_death(int m_idx)
 	coin_type = force_coin;
 
 	/* Average dungeon and monster levels */
-	object_level = (dun_level + r_ptr->level) / 2;
+	object_level = (p_ptr->depth + r_ptr->level) / 2;
 
 	/* Drop some objects */
 	for (j = 0; j < number; j++)
 	{
 		/* Get local object */
-		q_ptr = &forge;
+		i_ptr = &object_type_body;
 
 		/* Wipe the object */
-		object_wipe(q_ptr);
+		object_wipe(i_ptr);
 
 		/* Make Gold */
 		if (do_gold && (!do_item || (rand_int(100) < 50)))
 		{
 			/* Make some gold */
-			if (!make_gold(q_ptr)) continue;
+			if (!make_gold(i_ptr)) continue;
 
 			/* XXX XXX XXX */
 			dump_gold++;
@@ -1925,18 +1961,18 @@ void monster_death(int m_idx)
 		else
 		{
 			/* Make an object */
-			if (!make_object(q_ptr, good, great)) continue;
+			if (!make_object(i_ptr, good, great)) continue;
 
 			/* XXX XXX XXX */
 			dump_item++;
 		}
 
 		/* Drop it in the dungeon */
-		drop_near(q_ptr, -1, y, x);
+		drop_near(i_ptr, -1, y, x);
 	}
 
 	/* Reset the object level */
-	object_level = dun_level;
+	object_level = p_ptr->depth;
 
 	/* Reset "coin" type */
 	coin_type = 0;
@@ -1983,8 +2019,8 @@ void monster_death(int m_idx)
 		/* XXX XXX XXX */
 		delete_object(y, x);
 
-		/* Explain the stairway */
-		msg_print("A magical stairway appears...");
+		/* Explain the staircase */
+		msg_print("A magical staircase appears...");
 
 		/* Create stairs down */
 		cave_set_feat(y, x, FEAT_MORE);
@@ -1998,7 +2034,7 @@ void monster_death(int m_idx)
 	else
 	{
 		/* Total winner */
-		total_winner = TRUE;
+		p_ptr->total_winner = TRUE;
 
 		/* Redraw the "title" */
 		p_ptr->redraw |= (PR_TITLE);
@@ -2014,7 +2050,7 @@ void monster_death(int m_idx)
 
 
 /*
- * Decreases monsters hit points, handling monster death.
+ * Decrease a monster's hit points, handle monster death.
  *
  * We return TRUE if the monster has been killed (and deleted).
  *
@@ -2026,33 +2062,27 @@ void monster_death(int m_idx)
  * various "specialized" messages.  Note that "You have destroyed"
  * and "is destroyed" are synonyms for "You have slain" and "dies".
  *
- * Hack -- unseen monsters yield "You have killed it." message.
- *
- * Added fear (DGK) and check whether to print fear messages -CWS
- *
- * Genericized name, sex, and capitilization -BEN-
- *
- * As always, the "ghost" processing is a total hack.
+ * Invisible monsters induce a special "You have killed it." message.
  *
  * Hack -- we "delay" fear messages by passing around a "fear" flag.
  *
- * XXX XXX XXX Consider decreasing monster experience over time, say,
- * by using "(m_exp * m_lev * (m_lev)) / (p_lev * (m_lev + n_killed))"
- * instead of simply "(m_exp * m_lev) / (p_lev)", to make the first
- * monster worth more than subsequent monsters.  This would also need
- * to induce changes in the monster recall code.
+ * Consider decreasing monster experience over time, say, by using
+ * "(m_exp * m_lev * (m_lev)) / (p_lev * (m_lev + n_killed))" instead
+ * of simply "(m_exp * m_lev) / (p_lev)", to make the first monster
+ * worth more than subsequent monsters.  This would also need to
+ * induce changes in the monster recall code.  XXX XXX XXX
  */
 bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note)
 {
-	monster_type	*m_ptr = &m_list[m_idx];
+	monster_type *m_ptr = &m_list[m_idx];
 
-	monster_race	*r_ptr = &r_info[m_ptr->r_idx];
+	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
-	s32b		div, new_exp, new_exp_frac;
+	s32b div, new_exp, new_exp_frac;
 
 
 	/* Redraw (later) if needed */
-	if (health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
+	if (p_ptr->health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
 
 
 	/* Wake it up */
@@ -2100,7 +2130,7 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note)
 		}
 
 		/* Maximum player level */
-		div = p_ptr->max_plv;
+		div = p_ptr->max_lev;
 
 		/* Give some experience for the kill */
 		new_exp = ((long)r_ptr->mexp * r_ptr->level) / div;
@@ -2181,7 +2211,7 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note)
 	/* Sometimes a monster gets scared by damage */
 	if (!m_ptr->monfear && !(r_ptr->flags3 & (RF3_NO_FEAR)))
 	{
-		int		percentage;
+		int percentage;
 
 		/* Percentage of fully healthy */
 		percentage = (100L * m_ptr->hp) / m_ptr->maxhp;
@@ -2212,75 +2242,89 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note)
 
 
 
-/*
- * Calculates current boundaries
- * Called below and from "do_cmd_locate()".
- */
-void panel_bounds(void)
-{
-	panel_row_min = panel_row * (SCREEN_HGT / 2);
-	panel_row_max = panel_row_min + SCREEN_HGT - 1;
-	panel_row_prt = panel_row_min - 1;
-	panel_col_min = panel_col * (SCREEN_WID / 2);
-	panel_col_max = panel_col_min + SCREEN_WID - 1;
-	panel_col_prt = panel_col_min - 13;
-}
-
-
 
 /*
- * Given an row (y) and col (x), this routine detects when a move
- * off the screen has occurred and figures new borders. -RAK-
+ * Check for, and react to, the player leaving the panel
  *
- * "Update" forces a "full update" to take place.
- *
- * The map is reprinted if necessary, and "TRUE" is returned.
+ * When the player gets too close to the edge of a panel, the
+ * map scrolls one panel in that direction so that the player
+ * is no longer so close to the edge.
  */
 void verify_panel(void)
 {
-	int y = py;
-	int x = px;
+	int py = p_ptr->py;
+	int px = p_ptr->px;
 
-	int prow = panel_row;
-	int pcol = panel_col;
+	int i;
+
+	bool scroll = FALSE;
+
+
+	/* Initial row */
+	i = p_ptr->wy;
 
 	/* Scroll screen when 2 grids from top/bottom edge */
-	if ((y < panel_row_min + 2) || (y > panel_row_max - 2))
+	if ((py < p_ptr->wy + 2) || (py >= p_ptr->wy+SCREEN_HGT - 2))
 	{
-		prow = ((y - SCREEN_HGT / 4) / (SCREEN_HGT / 2));
-		if (prow > max_panel_rows) prow = max_panel_rows;
-		else if (prow < 0) prow = 0;
+		i = ((py - PANEL_HGT / 2) / PANEL_HGT) * PANEL_HGT;
+		if (i < 0) i = 0;
+		if (i > DUNGEON_HGT - SCREEN_HGT) i = DUNGEON_HGT - SCREEN_HGT;
 	}
+
+	/* Hack -- handle town */
+	if (!p_ptr->depth) i = SCREEN_HGT;
+
+	/* New panel row */
+	if (p_ptr->wy != i)
+	{
+		/* Update panel */
+		p_ptr->wy = i;
+
+		/* Scroll */
+		scroll = TRUE;
+	}
+
+
+	/* Initial col */
+	i = p_ptr->wx;
 
 	/* Scroll screen when 4 grids from left/right edge */
-	if ((x < panel_col_min + 4) || (x > panel_col_max - 4))
+	if ((px < p_ptr->wx + 4) || (px >= p_ptr->wx+SCREEN_WID - 4))
 	{
-		pcol = ((x - SCREEN_WID / 4) / (SCREEN_WID / 2));
-		if (pcol > max_panel_cols) pcol = max_panel_cols;
-		else if (pcol < 0) pcol = 0;
+		i = ((px - PANEL_WID / 2) / PANEL_WID) * PANEL_WID;
+		if (i < 0) i = 0;
+		if (i > DUNGEON_WID - SCREEN_WID) i = DUNGEON_WID - SCREEN_WID;
 	}
 
-	/* Check for "no change" */
-	if ((prow == panel_row) && (pcol == panel_col)) return;
+	/* Hack -- handle town */
+	if (!p_ptr->depth) i = SCREEN_WID;
 
-	/* Hack -- optional disturb on "panel change" */
-	if (disturb_panel) disturb(0, 0);
+	/* New panel col */
+	if (p_ptr->wx != i)
+	{
+		/* Update panel */
+		p_ptr->wx = i;
 
-	/* Save the new panel info */
-	panel_row = prow;
-	panel_col = pcol;
+		/* Scroll */
+		scroll = TRUE;
+	}
 
-	/* Recalculate the boundaries */
-	panel_bounds();
 
-	/* Update stuff */
-	p_ptr->update |= (PU_MONSTERS);
+	/* Scroll */
+	if (scroll)
+	{
+		/* Optional disturb on "panel change" */
+		if (disturb_panel) disturb(0, 0);
 
-	/* Redraw map */
-	p_ptr->redraw |= (PR_MAP);
+		/* Update stuff */
+		p_ptr->update |= (PU_MONSTERS);
 
-	/* Window stuff */
-	p_ptr->window |= (PW_OVERHEAD);
+		/* Redraw map */
+		p_ptr->redraw |= (PR_MAP);
+
+		/* Window stuff */
+		p_ptr->window |= (PW_OVERHEAD);
+	}
 }
 
 
@@ -2293,8 +2337,8 @@ cptr look_mon_desc(int m_idx)
 	monster_type *m_ptr = &m_list[m_idx];
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
-	bool          living = TRUE;
-	int           perc;
+	bool living = TRUE;
+	int perc;
 
 
 	/* Determine if the monster is "living" (vs "undead") */
@@ -2420,7 +2464,16 @@ void ang_sort(vptr u, vptr v, int n)
  */
 bool target_able(int m_idx)
 {
-	monster_type *m_ptr = &m_list[m_idx];
+	int py = p_ptr->py;
+	int px = p_ptr->px;
+
+	monster_type *m_ptr;
+
+	/* No monster */
+	if (m_idx <= 0) return (FALSE);
+
+	/* Get monster */
+	m_ptr = &m_list[m_idx];
 
 	/* Monster must be alive */
 	if (!m_ptr->r_idx) return (FALSE);
@@ -2452,19 +2505,19 @@ bool target_able(int m_idx)
 bool target_okay(void)
 {
 	/* Accept stationary targets */
-	if (target_who < 0) return (TRUE);
+	if (p_ptr->target_who < 0) return (TRUE);
 
 	/* Check moving targets */
-	if (target_who > 0)
+	if (p_ptr->target_who > 0)
 	{
 		/* Accept reasonable targets */
-		if (target_able(target_who))
+		if (target_able(p_ptr->target_who))
 		{
-			monster_type *m_ptr = &m_list[target_who];
+			monster_type *m_ptr = &m_list[p_ptr->target_who];
 
 			/* Acquire monster location */
-			target_row = m_ptr->fy;
-			target_col = m_ptr->fx;
+			p_ptr->target_row = m_ptr->fy;
+			p_ptr->target_col = m_ptr->fx;
 
 			/* Good target */
 			return (TRUE);
@@ -2485,6 +2538,9 @@ bool target_okay(void)
  */
 static bool ang_sort_comp_distance(vptr u, vptr v, int a, int b)
 {
+	int py = p_ptr->py;
+	int px = p_ptr->px;
+
 	byte *x = (byte*)(u);
 	byte *y = (byte*)(v);
 
@@ -2592,36 +2648,31 @@ static s16b target_pick(int y1, int x1, int dy, int dx)
  */
 static bool target_set_accept(int y, int x)
 {
-	cave_type *c_ptr;
-
 	s16b this_o_idx, next_o_idx = 0;
 
 
-	/* Player grid is always interesting */
-	if ((y == py) && (x == px)) return (TRUE);
+	/* Player grids are always interesting */
+	if (cave_m_idx[y][x] < 0) return (TRUE);
 
 
 	/* Handle hallucination */
 	if (p_ptr->image) return (FALSE);
 
 
-	/* Examine the grid */
-	c_ptr = &cave[y][x];
-
 	/* Visible monsters */
-	if (c_ptr->m_idx)
+	if (cave_m_idx[y][x] > 0)
 	{
-		monster_type *m_ptr = &m_list[c_ptr->m_idx];
+		monster_type *m_ptr = &m_list[cave_m_idx[y][x]];
 
 		/* Visible monsters */
 		if (m_ptr->ml) return (TRUE);
 	}
 
 	/* Scan all objects in the grid */
-	for (this_o_idx = c_ptr->o_idx; this_o_idx; this_o_idx = next_o_idx)
+	for (this_o_idx = cave_o_idx[y][x]; this_o_idx; this_o_idx = next_o_idx)
 	{
 		object_type *o_ptr;
-		
+
 		/* Acquire object */
 		o_ptr = &o_list[this_o_idx];
 
@@ -2633,37 +2684,37 @@ static bool target_set_accept(int y, int x)
 	}
 
 	/* Interesting memorized features */
-	if (c_ptr->info & (CAVE_MARK))
+	if (cave_info[y][x] & (CAVE_MARK))
 	{
 		/* Notice glyphs */
-		if (c_ptr->feat == FEAT_GLYPH) return (TRUE);
+		if (cave_feat[y][x] == FEAT_GLYPH) return (TRUE);
 
 		/* Notice doors */
-		if (c_ptr->feat == FEAT_OPEN) return (TRUE);
-		if (c_ptr->feat == FEAT_BROKEN) return (TRUE);
+		if (cave_feat[y][x] == FEAT_OPEN) return (TRUE);
+		if (cave_feat[y][x] == FEAT_BROKEN) return (TRUE);
 
 		/* Notice stairs */
-		if (c_ptr->feat == FEAT_LESS) return (TRUE);
-		if (c_ptr->feat == FEAT_MORE) return (TRUE);
+		if (cave_feat[y][x] == FEAT_LESS) return (TRUE);
+		if (cave_feat[y][x] == FEAT_MORE) return (TRUE);
 
 		/* Notice shops */
-		if ((c_ptr->feat >= FEAT_SHOP_HEAD) &&
-		    (c_ptr->feat <= FEAT_SHOP_TAIL)) return (TRUE);
+		if ((cave_feat[y][x] >= FEAT_SHOP_HEAD) &&
+		    (cave_feat[y][x] <= FEAT_SHOP_TAIL)) return (TRUE);
 
 		/* Notice traps */
-		if ((c_ptr->feat >= FEAT_TRAP_HEAD) &&
-		    (c_ptr->feat <= FEAT_TRAP_TAIL)) return (TRUE);
+		if ((cave_feat[y][x] >= FEAT_TRAP_HEAD) &&
+		    (cave_feat[y][x] <= FEAT_TRAP_TAIL)) return (TRUE);
 
 		/* Notice doors */
-		if ((c_ptr->feat >= FEAT_DOOR_HEAD) &&
-		    (c_ptr->feat <= FEAT_DOOR_TAIL)) return (TRUE);
+		if ((cave_feat[y][x] >= FEAT_DOOR_HEAD) &&
+		    (cave_feat[y][x] <= FEAT_DOOR_TAIL)) return (TRUE);
 
 		/* Notice rubble */
-		if (c_ptr->feat == FEAT_RUBBLE) return (TRUE);
+		if (cave_feat[y][x] == FEAT_RUBBLE) return (TRUE);
 
 		/* Notice veins with treasure */
-		if (c_ptr->feat == FEAT_MAGMA_K) return (TRUE);
-		if (c_ptr->feat == FEAT_QUARTZ_K) return (TRUE);
+		if (cave_feat[y][x] == FEAT_MAGMA_K) return (TRUE);
+		if (cave_feat[y][x] == FEAT_QUARTZ_K) return (TRUE);
 	}
 
 	/* Nope */
@@ -2684,20 +2735,25 @@ static void target_set_prepare(int mode)
 	temp_n = 0;
 
 	/* Scan the current panel */
-	for (y = panel_row_min; y <= panel_row_max; y++)
+	for (y = p_ptr->wy; y < p_ptr->wy+SCREEN_HGT; y++)
 	{
-		for (x = panel_col_min; x <= panel_col_max; x++)
+		for (x = p_ptr->wx; x < p_ptr->wx+SCREEN_WID; x++)
 		{
-			cave_type *c_ptr = &cave[y][x];
-
 			/* Require line of sight, unless "look" is "expanded" */
 			if (!expand_look && !player_has_los_bold(y, x)) continue;
 
 			/* Require "interesting" contents */
 			if (!target_set_accept(y, x)) continue;
 
-			/* Require target_able monsters for "TARGET_KILL" */
-			if ((mode & (TARGET_KILL)) && !target_able(c_ptr->m_idx)) continue;
+			/* Special mode */
+			if (mode & (TARGET_KILL))
+			{
+				/* Must contain a monster */
+				if (!(cave_m_idx[y][x] > 0)) continue;
+
+				/* Must be a targettable monster */
+			 	if (!target_able(cave_m_idx[y][x])) continue;
+			}
 
 			/* Save the location */
 			temp_x[temp_n] = x;
@@ -2738,8 +2794,6 @@ static void target_set_prepare(int mode)
  */
 static int target_set_aux(int y, int x, int mode, cptr info)
 {
-	cave_type *c_ptr = &cave[y][x];
-
 	s16b this_o_idx, next_o_idx = 0;
 
 	cptr s1, s2, s3;
@@ -2767,12 +2821,13 @@ static int target_set_aux(int y, int x, int mode, cptr info)
 		s2 = "";
 		s3 = "";
 
-		/* Hack -- under the player */
-		if ((y == py) && (x == px))
+
+		/* The player */
+		if (cave_m_idx[y][x] < 0)
 		{
 			/* Description */
 			s1 = "You are ";
-			
+
 			/* Preposition */
 			s2 = "on ";
 		}
@@ -2791,16 +2846,16 @@ static int target_set_aux(int y, int x, int mode, cptr info)
 
 			/* Stop on everything but "return" */
 			if ((query != '\r') && (query != '\n')) break;
-			
+
 			/* Repeat forever */
 			continue;
 		}
 
 
 		/* Actual monsters */
-		if (c_ptr->m_idx)
+		if (cave_m_idx[y][x] > 0)
 		{
-			monster_type *m_ptr = &m_list[c_ptr->m_idx];
+			monster_type *m_ptr = &m_list[cave_m_idx[y][x]];
 			monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 			/* Visible */
@@ -2820,7 +2875,7 @@ static int target_set_aux(int y, int x, int mode, cptr info)
 				monster_race_track(m_ptr->r_idx);
 
 				/* Hack -- health bar for this monster */
-				health_track(c_ptr->m_idx);
+				health_track(cave_m_idx[y][x]);
 
 				/* Hack -- handle stuff */
 				handle_stuff();
@@ -2839,7 +2894,7 @@ static int target_set_aux(int y, int x, int mode, cptr info)
 
 						/* Hack -- Complete the prompt (again) */
 						Term_addstr(-1, TERM_WHITE, format("  [r,%s]", info));
-					
+
 						/* Command */
 						query = inkey();
 
@@ -2852,12 +2907,12 @@ static int target_set_aux(int y, int x, int mode, cptr info)
 					{
 						/* Describe, and prompt for recall */
 						sprintf(out_val, "%s%s%s%s (%s) [r,%s]",
-						        s1, s2, s3, m_name, look_mon_desc(c_ptr->m_idx), info);
+						        s1, s2, s3, m_name, look_mon_desc(cave_m_idx[y][x]), info);
 						prt(out_val, 0, 0);
 
 						/* Place cursor */
 						move_cursor_relative(y, x);
-					
+
 						/* Command */
 						query = inkey();
 					}
@@ -2891,7 +2946,7 @@ static int target_set_aux(int y, int x, int mode, cptr info)
 					char o_name[80];
 
 					object_type *o_ptr;
-				
+
 					/* Acquire object */
 					o_ptr = &o_list[this_o_idx];
 
@@ -2927,10 +2982,10 @@ static int target_set_aux(int y, int x, int mode, cptr info)
 
 
 		/* Scan all objects in the grid */
-		for (this_o_idx = c_ptr->o_idx; this_o_idx; this_o_idx = next_o_idx)
+		for (this_o_idx = cave_o_idx[y][x]; this_o_idx; this_o_idx = next_o_idx)
 		{
 			object_type *o_ptr;
-		
+
 			/* Acquire object */
 			o_ptr = &o_list[this_o_idx];
 
@@ -2976,10 +3031,10 @@ static int target_set_aux(int y, int x, int mode, cptr info)
 
 
 		/* Feature (apply "mimic") */
-		feat = f_info[c_ptr->feat].mimic;
+		feat = f_info[cave_feat[y][x]].mimic;
 
 		/* Require knowledge about grid, or ability to see grid */
-		if (!(c_ptr->info & (CAVE_MARK)) && !player_can_see_bold(y,x))
+		if (!(cave_info[y][x] & (CAVE_MARK)) && !player_can_see_bold(y,x))
 		{
 			/* Forget feature */
 			feat = FEAT_NONE;
@@ -3010,11 +3065,11 @@ static int target_set_aux(int y, int x, int mode, cptr info)
 			prt(out_val, 0, 0);
 			move_cursor_relative(y, x);
 			query = inkey();
-			
+
 			/* Always stop at "normal" keys */
 			if ((query != '\r') && (query != '\n') && (query != ' ')) break;
 		}
-			
+
 		/* Stop on everything but "return" */
 		if ((query != '\r') && (query != '\n')) break;
 	}
@@ -3031,13 +3086,11 @@ static int target_set_aux(int y, int x, int mode, cptr info)
  *
  * Note that this code can be called from "get_aim_dir()".
  *
- * All locations must be on the current panel.  Consider the use of
- * "panel_bounds()" to allow "off-panel" targets, perhaps by using
- * some form of "scrolling" the map around the cursor.  XXX XXX XXX
- * That is, consider the possibility of "auto-scrolling" the screen
- * while the cursor moves around.  This may require changes in the
- * "update_mon()" code to allow "visibility" even if off panel, and
- * may require dynamic recalculation of the "temp" grid set.
+ * All locations must be on the current panel.  XXX XXX XXX
+ *
+ * Perhaps consider the possibility of "auto-scrolling" the screen
+ * while the cursor moves around.  This may require dynamic updating
+ * of the "temp" grid set.  XXX XXX XXX
  *
  * Hack -- targetting/observing an "outer border grid" may induce
  * problems, so this is not currently allowed.
@@ -3069,24 +3122,25 @@ static int target_set_aux(int y, int x, int mode, cptr info)
  */
 bool target_set(int mode)
 {
-	int		i, d, m;
+	int py = p_ptr->py;
+	int px = p_ptr->px;
 
-	int		y = py;
-	int		x = px;
+	int i, d, m;
 
-	bool	done = FALSE;
+	int y = py;
+	int x = px;
 
-	bool	flag = TRUE;
+	bool done = FALSE;
 
-	char	query;
+	bool flag = TRUE;
 
-	char	info[80];
-	
-	cave_type		*c_ptr;
+	char query;
+
+	char info[80];
 
 
 	/* Cancel target */
-	target_who = 0;
+	p_ptr->target_who = 0;
 
 
 	/* Cancel tracking */
@@ -3108,11 +3162,8 @@ bool target_set(int mode)
 			y = temp_y[m];
 			x = temp_x[m];
 
-			/* Access */
-			c_ptr = &cave[y][x];
-
 			/* Allow target */
-			if (target_able(c_ptr->m_idx))
+			if ((cave_m_idx[y][x] > 0) && target_able(cave_m_idx[y][x]))
 			{
 				strcpy(info, "q,t,p,o,+,-,<dir>");
 			}
@@ -3147,12 +3198,12 @@ bool target_set(int mode)
 				case '5':
 				case '0':
 				{
-					if (target_able(c_ptr->m_idx))
+					if ((cave_m_idx[y][x] > 0) && target_able(cave_m_idx[y][x]))
 					{
-						health_track(c_ptr->m_idx);
-						target_who = c_ptr->m_idx;
-						target_row = y;
-						target_col = x;
+						health_track(cave_m_idx[y][x]);
+						p_ptr->target_who = cave_m_idx[y][x];
+						p_ptr->target_row = y;
+						p_ptr->target_col = x;
 						done = TRUE;
 					}
 					else
@@ -3223,9 +3274,6 @@ bool target_set(int mode)
 		/* Arbitrary grids */
 		else
 		{
-			/* Access */
-			c_ptr = &cave[y][x];
-
 			/* Default prompt */
 			strcpy(info, "q,t,p,m,+,-,<dir>");
 
@@ -3253,9 +3301,9 @@ bool target_set(int mode)
 				case '5':
 				case '0':
 				{
-					target_who = -1;
-					target_row = y;
-					target_col = x;
+					p_ptr->target_who = -1;
+					p_ptr->target_row = y;
+					p_ptr->target_col = x;
 					done = TRUE;
 					break;
 				}
@@ -3296,16 +3344,17 @@ bool target_set(int mode)
 			/* Handle "direction" */
 			if (d)
 			{
+				/* Move */
 				x += ddx[d];
 				y += ddy[d];
 
-				/* Hack -- Verify x */
-				if ((x>=cur_wid-1) || (x>panel_col_max)) x--;
-				else if ((x<=0) || (x<panel_col_min)) x++;
+				/* Slide into legality */
+				if ((x >= DUNGEON_WID-1) || (x >= p_ptr->wx+SCREEN_WID)) x--;
+				else if ((x <= 0) || (x < p_ptr->wx)) x++;
 
-				/* Hack -- Verify y */
-				if ((y>=cur_hgt-1) || (y>panel_row_max)) y--;
-				else if ((y<=0) || (y<panel_row_min)) y++;
+				/* Slide into legality */
+				if ((y >= DUNGEON_HGT-1) || (y >= p_ptr->wy+SCREEN_HGT)) y--;
+				else if ((y <= 0) || (y < p_ptr->wy)) y++;
 			}
 		}
 	}
@@ -3317,7 +3366,7 @@ bool target_set(int mode)
 	prt("", 0, 0);
 
 	/* Failure to set target */
-	if (!target_who) return (FALSE);
+	if (!p_ptr->target_who) return (FALSE);
 
 	/* Success */
 	return (TRUE);
@@ -3326,30 +3375,34 @@ bool target_set(int mode)
 
 
 /*
- * Get an "aiming direction" from the user.
+ * Get an "aiming direction" (1,2,3,4,6,7,8,9 or 5) from the user.
  *
- * The "dir" is loaded with 1,2,3,4,6,7,8,9 for "actual direction", and
- * "0" for "current target", and "-1" for "entry aborted".
+ * Return TRUE if a direction was chosen, otherwise return FALSE.
+ *
+ * The direction "5" is special, and means "use current target".
+ *
+ * This function tracks and uses the "global direction", and uses
+ * that as the "desired direction", if it is set.
  *
  * Note that "Force Target", if set, will pre-empt user interaction,
  * if there is a usable target already set.
  *
- * Note that confusion over-rides any (explicit?) user choice.
+ * Currently this function applies confusion directly.
  */
 bool get_aim_dir(int *dp)
 {
-	int		dir;
+	int dir;
 
-	char	command;
+	char command;
 
-	cptr	p;
+	cptr p;
 
 
 	/* Initialize */
 	(*dp) = 0;
 
 	/* Global direction */
-	dir = command_dir;
+	dir = p_ptr->command_dir;
 
 	/* Hack -- auto-target if requested */
 	if (use_old_target && target_okay()) dir = 5;
@@ -3409,7 +3462,7 @@ bool get_aim_dir(int *dp)
 	if (!dir) return (FALSE);
 
 	/* Save the direction */
-	command_dir = dir;
+	p_ptr->command_dir = dir;
 
 	/* Check for confusion */
 	if (p_ptr->confused)
@@ -3420,7 +3473,7 @@ bool get_aim_dir(int *dp)
 	}
 
 	/* Notice confusion */
-	if (command_dir != dir)
+	if (p_ptr->command_dir != dir)
 	{
 		/* Warn the user */
 		msg_print("You are confused.");
@@ -3436,20 +3489,19 @@ bool get_aim_dir(int *dp)
 
 
 /*
- * Request a "movement" direction (1,2,3,4,6,7,8,9) from the user,
- * and place it into "command_dir", unless we already have one.
+ * Request a "movement" direction (1,2,3,4,6,7,8,9) from the user.
+ *
+ * Return TRUE if a direction was chosen, otherwise return FALSE.
  *
  * This function should be used for all "repeatable" commands, such as
  * run, walk, open, close, bash, disarm, spike, tunnel, etc, as well
  * as all commands which must reference a grid adjacent to the player,
- * and which may not reference the grid under the player.  Note that,
- * for example, it is no longer possible to "disarm" or "open" chests
- * in the same grid as the player.
+ * and which may not reference the grid under the player.
  *
- * Direction "5" is illegal and will (cleanly) abort the command.
+ * Direction "5" (and "0") are illegal and will not be accepted.
  *
  * This function tracks and uses the "global direction", and uses
- * that as the "desired direction", to which "confusion" is applied.
+ * that as the "desired direction", if it is set.
  */
 bool get_rep_dir(int *dp)
 {
@@ -3460,7 +3512,7 @@ bool get_rep_dir(int *dp)
 	(*dp) = 0;
 
 	/* Global direction */
-	dir = command_dir;
+	dir = p_ptr->command_dir;
 
 	/* Get a direction */
 	while (!dir)
@@ -3473,36 +3525,18 @@ bool get_rep_dir(int *dp)
 		/* Look up the direction */
 		dir = keymap_dirs[ch & 0x7F];
 
+		/* Prevent weirdness */
+		if (dir == 5) dir = 0;
+
 		/* Oops */
 		if (!dir) bell();
 	}
-
-	/* Prevent weirdness */
-	if (dir == 5) dir = 0;
 
 	/* Aborted */
 	if (!dir) return (FALSE);
 
 	/* Save desired direction */
-	command_dir = dir;
-
-	/* Apply "confusion" */
-	if (p_ptr->confused)
-	{
-		/* Standard confusion */
-		if (rand_int(100) < 75)
-		{
-			/* Random direction */
-			dir = ddd[rand_int(8)];
-		}
-	}
-	
-	/* Notice confusion */
-	if (command_dir != dir)
-	{
-		/* Warn the user */
-		msg_print("You are confused.");
-	}
+	p_ptr->command_dir = dir;
 
 	/* Save direction */
 	(*dp) = dir;
@@ -3512,5 +3546,43 @@ bool get_rep_dir(int *dp)
 }
 
 
+/*
+ * Apply confusion, if needed, to a direction
+ *
+ * Display a message and return TRUE if direction changes.
+ */
+bool confuse_dir(int *dp)
+{
+	int dir;
 
+	/* Default */
+	dir = (*dp);
+
+	/* Apply "confusion" */
+	if (p_ptr->confused)
+	{
+		/* Apply confusion */
+		if ((dir == 5) || (rand_int(100) < 75))
+		{
+			/* Random direction */
+			dir = ddd[rand_int(8)];
+		}
+	}
+
+	/* Notice confusion */
+	if ((*dp) != dir)
+	{
+		/* Warn the user */
+		msg_print("You are confused.");
+
+		/* Save direction */
+		(*dp) = dir;
+
+		/* Confused */
+		return (TRUE);
+	}
+
+	/* Not confused */
+	return (FALSE);
+}
 

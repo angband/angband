@@ -1,13 +1,11 @@
 /* File: cmd6.c */
 
-/* Purpose: Object commands */
-
 /*
- * Copyright (c) 1989 James E. Wilson, Robert A. Koeneke
+ * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  *
- * This software may be copied and distributed for educational, research, and
- * not for profit purposes provided that this copyright and statement are
- * included in all such copies.
+ * This software may be copied and distributed for educational, research,
+ * and not for profit purposes provided that this copyright and statement
+ * are included in all such copies.  Other copyrights may also apply.
  */
 
 #include "angband.h"
@@ -64,20 +62,20 @@
  */
 void do_cmd_eat_food(void)
 {
-	int			item, ident, lev;
+	int item, ident, lev;
 
-	object_type		*o_ptr;
+	object_type *o_ptr;
+
+	cptr q, s;
 
 
 	/* Restrict choices to food */
 	item_tester_tval = TV_FOOD;
 
-	/* Get an item (from inven or floor) */
-	if (!get_item(&item, "Eat which item? ", FALSE, TRUE, TRUE))
-	{
-		if (item == -2) msg_print("You have nothing to eat.");
-		return;
-	}
+	/* Get an item */
+	q = "Eat which item? ";
+	s = "You have nothing to eat.";
+	if (!get_item(&item, q, s, (USE_INVEN | USE_FLOOR))) return;
 
 	/* Get the item (in the pack) */
 	if (item >= 0)
@@ -97,7 +95,7 @@ void do_cmd_eat_food(void)
 
 
 	/* Take a turn */
-	energy_use = 100;
+	p_ptr->energy_use = 100;
 
 	/* Identity not known yet */
 	ident = FALSE;
@@ -146,7 +144,7 @@ void do_cmd_eat_food(void)
 
 		case SV_FOOD_CONFUSION:
 		{
-			if (!p_ptr->resist_conf)
+			if (!p_ptr->resist_confu)
 			{
 				if (set_confused(p_ptr->confused + rand_int(10) + 10))
 				{
@@ -325,7 +323,7 @@ void do_cmd_eat_food(void)
 	}
 
 	/* Window stuff */
-	p_ptr->window |= (PW_INVEN | PW_EQUIP | PW_PLAYER);
+	p_ptr->window |= (PW_INVEN | PW_EQUIP);
 
 
 	/* Food can feed the player */
@@ -357,20 +355,20 @@ void do_cmd_eat_food(void)
  */
 void do_cmd_quaff_potion(void)
 {
-	int		item, ident, lev;
+	int item, ident, lev;
 
-	object_type	*o_ptr;
+	object_type *o_ptr;
+
+	cptr q, s;
 
 
 	/* Restrict choices to potions */
 	item_tester_tval = TV_POTION;
 
-	/* Get an item (from inven or floor) */
-	if (!get_item(&item, "Quaff which potion? ", FALSE, TRUE, TRUE))
-	{
-		if (item == -2) msg_print("You have no potions to quaff.");
-		return;
-	}
+	/* Get an item */
+	q = "Quaff which potion? ";
+	s = "You have no potions to quaff.";
+	if (!get_item(&item, q, s, (USE_INVEN | USE_FLOOR))) return;
 
 	/* Get the item (in the pack) */
 	if (item >= 0)
@@ -390,7 +388,7 @@ void do_cmd_quaff_potion(void)
 
 
 	/* Take a turn */
-	energy_use = 100;
+	p_ptr->energy_use = 100;
 
 	/* Not identified yet */
 	ident = FALSE;
@@ -452,7 +450,7 @@ void do_cmd_quaff_potion(void)
 
 		case SV_POTION_CONFUSION:
 		{
-			if (!p_ptr->resist_conf)
+			if (!p_ptr->resist_confu)
 			{
 				if (set_confused(p_ptr->confused + rand_int(20) + 15))
 				{
@@ -715,7 +713,7 @@ void do_cmd_quaff_potion(void)
 				p_ptr->csp_frac = 0;
 				msg_print("Your feel your head clear.");
 				p_ptr->redraw |= (PR_MANA);
-				p_ptr->window |= (PW_PLAYER);
+				p_ptr->window |= (PW_SPELL | PW_PLAYER);
 				ident = TRUE;
 			}
 			break;
@@ -875,7 +873,7 @@ void do_cmd_quaff_potion(void)
 	}
 
 	/* Window stuff */
-	p_ptr->window |= (PW_INVEN | PW_EQUIP | PW_PLAYER);
+	p_ptr->window |= (PW_INVEN | PW_EQUIP);
 
 
 	/* Potions can feed the player */
@@ -957,7 +955,7 @@ static bool curse_armor(void)
 		p_ptr->update |= (PU_MANA);
 
 		/* Window stuff */
-		p_ptr->window |= (PW_INVEN | PW_EQUIP | PW_PLAYER);
+		p_ptr->window |= (PW_INVEN | PW_EQUIP | PW_SPELL | PW_PLAYER);
 	}
 
 	return (TRUE);
@@ -1021,7 +1019,7 @@ static bool curse_weapon(void)
 		p_ptr->update |= (PU_MANA);
 
 		/* Window stuff */
-		p_ptr->window |= (PW_INVEN | PW_EQUIP | PW_PLAYER);
+		p_ptr->window |= (PW_INVEN | PW_EQUIP | PW_SPELL | PW_PLAYER);
 	}
 
 	/* Notice */
@@ -1038,9 +1036,14 @@ static bool curse_weapon(void)
  */
 void do_cmd_read_scroll(void)
 {
-	int			item, k, used_up, ident, lev;
+	int py = p_ptr->py;
+	int px = p_ptr->px;
 
-	object_type		*o_ptr;
+	int item, k, used_up, ident, lev;
+
+	object_type *o_ptr;
+
+	cptr q, s;
 
 
 	/* Check some conditions */
@@ -1064,12 +1067,10 @@ void do_cmd_read_scroll(void)
 	/* Restrict choices to scrolls */
 	item_tester_tval = TV_SCROLL;
 
-	/* Get an item (from inven or floor) */
-	if (!get_item(&item, "Read which scroll? ", FALSE, TRUE, TRUE))
-	{
-		if (item == -2) msg_print("You have no scrolls to read.");
-		return;
-	}
+	/* Get an item */
+	q = "Read which scroll? ";
+	s = "You have no scrolls to read.";
+	if (!get_item(&item, q, s, (USE_INVEN | USE_FLOOR))) return;
 
 	/* Get the item (in the pack) */
 	if (item >= 0)
@@ -1085,7 +1086,7 @@ void do_cmd_read_scroll(void)
 
 
 	/* Take a turn */
-	energy_use = 100;
+	p_ptr->energy_use = 100;
 
 	/* Not identified yet */
 	ident = FALSE;
@@ -1133,7 +1134,7 @@ void do_cmd_read_scroll(void)
 		{
 			for (k = 0; k < randint(3); k++)
 			{
-				if (summon_specific(py, px, dun_level, 0))
+				if (summon_specific(py, px, p_ptr->depth, 0))
 				{
 					ident = TRUE;
 				}
@@ -1145,7 +1146,7 @@ void do_cmd_read_scroll(void)
 		{
 			for (k = 0; k < randint(3); k++)
 			{
-				if (summon_specific(py, px, dun_level, SUMMON_UNDEAD))
+				if (summon_specific(py, px, p_ptr->depth, SUMMON_UNDEAD))
 				{
 					ident = TRUE;
 				}
@@ -1426,7 +1427,7 @@ void do_cmd_read_scroll(void)
 	}
 
 	/* Window stuff */
-	p_ptr->window |= (PW_INVEN | PW_EQUIP | PW_PLAYER);
+	p_ptr->window |= (PW_INVEN | PW_EQUIP);
 
 
 	/* Hack -- allow certain scrolls to be "preserved" */
@@ -1457,7 +1458,7 @@ void do_cmd_read_scroll(void)
 
 
 /*
- * Use a staff.			-RAK-
+ * Use a staff
  *
  * One charge of one staff disappears.
  *
@@ -1465,23 +1466,26 @@ void do_cmd_read_scroll(void)
  */
 void do_cmd_use_staff(void)
 {
-	int			item, ident, chance, k, lev;
+	int py = p_ptr->py;
+	int px = p_ptr->px;
 
-	object_type		*o_ptr;
+	int item, ident, chance, k, lev;
+
+	object_type *o_ptr;
 
 	/* Hack -- let staffs of identify get aborted */
 	bool use_charge = TRUE;
+
+	cptr q, s;
 
 
 	/* Restrict choices to wands */
 	item_tester_tval = TV_STAFF;
 
-	/* Get an item (from inven or floor) */
-	if (!get_item(&item, "Use which staff? ", FALSE, TRUE, TRUE))
-	{
-		if (item == -2) msg_print("You have no staff to use.");
-		return;
-	}
+	/* Get an item */
+	q = "Use which staff? ";
+	s = "You have no staff to use.";
+	if (!get_item(&item, q, s, (USE_INVEN | USE_FLOOR))) return;
 
 	/* Get the item (in the pack) */
 	if (item >= 0)
@@ -1505,7 +1509,7 @@ void do_cmd_use_staff(void)
 
 
 	/* Take a turn */
-	energy_use = 100;
+	p_ptr->energy_use = 100;
 
 	/* Not identified yet */
 	ident = FALSE;
@@ -1579,7 +1583,7 @@ void do_cmd_use_staff(void)
 		{
 			for (k = 0; k < randint(4); k++)
 			{
-				if (summon_specific(py, px, dun_level, 0))
+				if (summon_specific(py, px, p_ptr->depth, 0))
 				{
 					ident = TRUE;
 				}
@@ -1710,7 +1714,7 @@ void do_cmd_use_staff(void)
 				ident = TRUE;
 				msg_print("Your feel your head clear.");
 				p_ptr->redraw |= (PR_MANA);
-				p_ptr->window |= (PW_PLAYER);
+				p_ptr->window |= (PW_SPELL | PW_PLAYER);
 			}
 			break;
 		}
@@ -1809,7 +1813,7 @@ void do_cmd_use_staff(void)
 	}
 
 	/* Window stuff */
-	p_ptr->window |= (PW_INVEN | PW_EQUIP | PW_PLAYER);
+	p_ptr->window |= (PW_INVEN | PW_EQUIP);
 
 
 	/* Hack -- some uses are "free" */
@@ -1822,25 +1826,25 @@ void do_cmd_use_staff(void)
 	/* XXX Hack -- unstack if necessary */
 	if ((item >= 0) && (o_ptr->number > 1))
 	{
-		object_type forge;
-		object_type *q_ptr;
+		object_type *i_ptr;
+		object_type object_type_body;
 
 		/* Get local object */
-		q_ptr = &forge;
+		i_ptr = &object_type_body;
 
 		/* Obtain a local object */
-		object_copy(q_ptr, o_ptr);
+		object_copy(i_ptr, o_ptr);
 
 		/* Modify quantity */
-		q_ptr->number = 1;
+		i_ptr->number = 1;
 
 		/* Restore the charges */
 		o_ptr->pval++;
 
 		/* Unstack the used item */
 		o_ptr->number--;
-		total_weight -= q_ptr->weight;
-		item = inven_carry(q_ptr, FALSE);
+		p_ptr->total_weight -= i_ptr->weight;
+		item = inven_carry(i_ptr);
 
 		/* Message */
 		msg_print("You unstack your staff.");
@@ -1882,20 +1886,20 @@ void do_cmd_use_staff(void)
  */
 void do_cmd_aim_wand(void)
 {
-	int			item, lev, ident, chance, dir, sval;
+	int item, lev, ident, chance, dir, sval;
 
-	object_type		*o_ptr;
+	object_type *o_ptr;
+
+	cptr q, s;
 
 
 	/* Restrict choices to wands */
 	item_tester_tval = TV_WAND;
 
-	/* Get an item (from inven or floor) */
-	if (!get_item(&item, "Aim which wand? ", FALSE, TRUE, TRUE))
-	{
-		if (item == -2) msg_print("You have no wand to aim.");
-		return;
-	}
+	/* Get an item */
+	q = "Aim which wand? ";
+	s = "You have no wand to aim.";
+	if (!get_item(&item, q, s, (USE_INVEN | USE_FLOOR))) return;
 
 	/* Get the item (in the pack) */
 	if (item >= 0)
@@ -1923,7 +1927,7 @@ void do_cmd_aim_wand(void)
 
 
 	/* Take a turn */
-	energy_use = 100;
+	p_ptr->energy_use = 100;
 
 	/* Not identified yet */
 	ident = FALSE;
@@ -2214,7 +2218,7 @@ void do_cmd_aim_wand(void)
 	}
 
 	/* Window stuff */
-	p_ptr->window |= (PW_INVEN | PW_EQUIP | PW_PLAYER);
+	p_ptr->window |= (PW_INVEN | PW_EQUIP);
 
 
 	/* Use a single charge */
@@ -2223,25 +2227,25 @@ void do_cmd_aim_wand(void)
 	/* Hack -- unstack if necessary */
 	if ((item >= 0) && (o_ptr->number > 1))
 	{
-		object_type forge;
-		object_type *q_ptr;
+		object_type *i_ptr;
+		object_type object_type_body;
 
 		/* Get local object */
-		q_ptr = &forge;
+		i_ptr = &object_type_body;
 
 		/* Obtain a local object */
-		object_copy(q_ptr, o_ptr);
+		object_copy(i_ptr, o_ptr);
 
 		/* Modify quantity */
-		q_ptr->number = 1;
+		i_ptr->number = 1;
 
 		/* Restore the charges */
 		o_ptr->pval++;
 
 		/* Unstack the used item */
 		o_ptr->number--;
-		total_weight -= q_ptr->weight;
-		item = inven_carry(q_ptr, FALSE);
+		p_ptr->total_weight -= i_ptr->weight;
+		item = inven_carry(i_ptr);
 
 		/* Message */
 		msg_print("You unstack your wand.");
@@ -2274,23 +2278,23 @@ void do_cmd_aim_wand(void)
  */
 void do_cmd_zap_rod(void)
 {
-	int                 item, ident, chance, dir, lev;
+	int item, ident, chance, dir, lev;
 
-	object_type		*o_ptr;
+	object_type *o_ptr;
 
 	/* Hack -- let perception get aborted */
 	bool use_charge = TRUE;
+
+	cptr q, s;
 
 
 	/* Restrict choices to rods */
 	item_tester_tval = TV_ROD;
 
-	/* Get an item (from inven or floor) */
-	if (!get_item(&item, "Zap which rod? ", FALSE, TRUE, TRUE))
-	{
-		if (item == -2) msg_print("You have no rod to zap.");
-		return;
-	}
+	/* Get an item */
+	q = "Zap which rod? ";
+	s = "You have no rod to zap.";
+	if (!get_item(&item, q, s, (USE_INVEN | USE_FLOOR))) return;
 
 	/* Get the item (in the pack) */
 	if (item >= 0)
@@ -2322,7 +2326,7 @@ void do_cmd_zap_rod(void)
 
 
 	/* Take a turn */
-	energy_use = 100;
+	p_ptr->energy_use = 100;
 
 	/* Not identified yet */
 	ident = FALSE;
@@ -2618,7 +2622,7 @@ void do_cmd_zap_rod(void)
 	}
 
 	/* Window stuff */
-	p_ptr->window |= (PW_INVEN | PW_EQUIP | PW_PLAYER);
+	p_ptr->window |= (PW_INVEN | PW_EQUIP);
 
 	/* Hack -- deal with cancelled zap */
 	if (!use_charge)
@@ -2631,25 +2635,25 @@ void do_cmd_zap_rod(void)
 	/* XXX Hack -- unstack if necessary */
 	if ((item >= 0) && (o_ptr->number > 1))
 	{
-		object_type forge;
-		object_type *q_ptr;
+		object_type *i_ptr;
+		object_type object_type_body;
 
 		/* Get local object */
-		q_ptr = &forge;
+		i_ptr = &object_type_body;
 
 		/* Obtain a local object */
-		object_copy(q_ptr, o_ptr);
+		object_copy(i_ptr, o_ptr);
 
 		/* Modify quantity */
-		q_ptr->number = 1;
+		i_ptr->number = 1;
 
 		/* Restore "charge" */
 		o_ptr->pval = 0;
 
 		/* Unstack the used item */
 		o_ptr->number--;
-		total_weight -= q_ptr->weight;
-		item = inven_carry(q_ptr, FALSE);
+		p_ptr->total_weight -= i_ptr->weight;
+		item = inven_carry(i_ptr);
 
 		/* Message */
 		msg_print("You unstack your rod.");
@@ -2808,20 +2812,20 @@ static bool brand_bolts(void)
  */
 void do_cmd_activate(void)
 {
-	int         item, i, k, dir, lev, chance;
+	int item, i, k, dir, lev, chance;
 
 	object_type *o_ptr;
+
+	cptr q, s;
 
 
 	/* Prepare the hook */
 	item_tester_hook = item_tester_hook_activate;
 
-	/* Get an item (from equip) */
-	if (!get_item(&item, "Activate which item? ", TRUE, FALSE, FALSE))
-	{
-		if (item == -2) msg_print("You have nothing to activate.");
-		return;
-	}
+	/* Get an item */
+	q = "Activate which item? ";
+	s = "You have nothing to activate.";
+	if (!get_item(&item, q, s, (USE_EQUIP))) return;
 
 	/* Get the item (in the pack) */
 	if (item >= 0)
@@ -2837,7 +2841,7 @@ void do_cmd_activate(void)
 
 
 	/* Take a turn */
-	energy_use = 100;
+	p_ptr->energy_use = 100;
 
 	/* Extract the item level */
 	lev = k_info[o_ptr->k_idx].level;
@@ -3510,7 +3514,7 @@ void do_cmd_activate(void)
 				chance = rand_int(2);
 				msg_format("You breathe %s.",
 				           ((chance == 1 ? "sound" : "shards")));
-				fire_ball((chance == 1 ? GF_SOUND : GF_SHARDS),
+				fire_ball((chance == 1 ? GF_SOUND : GF_SHARD),
 				          dir, 230, 2);
 				o_ptr->timeout = rand_int(300) + 300;
 				break;
@@ -3525,7 +3529,7 @@ void do_cmd_activate(void)
 				             ((chance == 3) ? "sound" : "shards"))));
 				fire_ball(((chance == 1) ? GF_CHAOS :
 				           ((chance == 2) ? GF_DISENCHANT :
-				            ((chance == 3) ? GF_SOUND : GF_SHARDS))),
+				            ((chance == 3) ? GF_SOUND : GF_SHARD))),
 				          dir, 250, 2);
 				o_ptr->timeout = rand_int(300) + 300;
 				break;

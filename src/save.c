@@ -1,6 +1,12 @@
 /* File: save.c */
 
-/* Purpose: interact with savefiles */
+/*
+ * Copyright (c) 1997 Ben Harrison, and others
+ *
+ * This software may be copied and distributed for educational, research,
+ * and not for profit purposes provided that this copyright and statement
+ * are included in all such copies.  Other copyrights may also apply.
+ */
 
 #include "angband.h"
 
@@ -207,16 +213,16 @@ static void put_string(char *str)
  */
 static errr wr_savefile(void)
 {
-	int		i;
+	int i;
 
-	u32b	now;
+	u32b now;
 
-	byte	tmp8u;
-	u16b	tmp16u;
+	byte tmp8u;
+	u16b tmp16u;
 
-	errr	err;
+	errr err;
 
-	byte	fake[4];
+	byte fake[4];
 
 
 	/*** Hack -- extract some data ***/
@@ -405,7 +411,7 @@ static errr wr_savefile(void)
 
 
 	/* Player is not dead, write the dungeon */
-	if (!death)
+	if (!p_ptr->is_dead)
 	{
 		/* Dump the dungeon */
 		wr_dungeon();
@@ -535,9 +541,9 @@ static void get_s32b(s32b *ip)
  */
 static errr rd_savefile(void)
 {
-	bool	done = FALSE;
+	bool done = FALSE;
 
-	byte	fake[4];
+	byte fake[4];
 
 
 	/* Open the savefile */
@@ -865,16 +871,16 @@ static errr wr_randomizer(void)
 
 	/* Zero */
 	wr_u16b(0);
-	
+
 	/* Place */
 	wr_u16b(Rand_place);
-	
+
 	/* State */
 	for (i = 0; i < RAND_DEG; i++)
 	{
 		wr_u32b(Rand_state[i]);
 	}
-	
+
 	/* Success */
 	return (0);
 }
@@ -885,9 +891,12 @@ static errr wr_randomizer(void)
  */
 static void wr_options(void)
 {
-	int i;
+	int i, k;
 
 	u16b c;
+
+	u32b flag[8];
+	u32b mask[8];
 
 
 	/*** Oops ***/
@@ -899,72 +908,91 @@ static void wr_options(void)
 	/*** Special Options ***/
 
 	/* Write "delay_factor" */
-	wr_byte(delay_factor);
+	wr_byte(op_ptr->delay_factor);
 
 	/* Write "hitpoint_warn" */
-	wr_byte(hitpoint_warn);
+	wr_byte(op_ptr->hitpoint_warn);
 
 
 	/*** Cheating options ***/
 
 	c = 0;
 
-	if (wizard) c |= 0x0002;
+	if (p_ptr->wizard) c |= 0x0002;
 
-	if (cheat_peek) c |= 0x0100;
-	if (cheat_hear) c |= 0x0200;
-	if (cheat_room) c |= 0x0400;
-	if (cheat_xtra) c |= 0x0800;
-	if (cheat_know) c |= 0x1000;
-	if (cheat_live) c |= 0x2000;
+	/* Save the cheating flags */
+	for (i = 0; i < CHEAT_MAX; i++)
+	{
+		if (p_ptr->cheat[i]) c |= (0x0100 << i);
+	}
 
 	wr_u16b(c);
 
 
-	/*** Extract options ***/
+	/*** Normal options ***/
+
+	/* Reset */
+	for (i = 0; i < 8; i++)
+	{
+		flag[i] = 0L;
+		mask[i] = 0L;
+	}
 
 	/* Analyze the options */
-	for (i = 0; option_info[i].o_desc; i++)
+	for (i = 0; i < OPT_MAX; i++)
 	{
-		int os = option_info[i].o_set;
-		int ob = option_info[i].o_bit;
+		int os = i / 32;
+		int ob = i % 32;
 
 		/* Process real entries */
-		if (option_info[i].o_var)
+		if (option_text[i])
 		{
-			/* Set */
-			if (*option_info[i].o_var)
+			/* Set flag */
+			if (op_ptr->opt[i])
 			{
 				/* Set */
-				option_flag[os] |= (1L << ob);
+				flag[os] |= (1L << ob);
 			}
-			
-			/* Clear */
-			else
-			{
-				/* Clear */
-				option_flag[os] &= ~(1L << ob);
-			}
+
+			/* Set mask */
+			mask[os] |= (1L << ob);
 		}
 	}
 
-
-	/*** Normal options ***/
-
 	/* Dump the flags */
-	for (i = 0; i < 8; i++) wr_u32b(option_flag[i]);
+	for (i = 0; i < 8; i++) wr_u32b(flag[i]);
 
 	/* Dump the masks */
-	for (i = 0; i < 8; i++) wr_u32b(option_mask[i]);
+	for (i = 0; i < 8; i++) wr_u32b(mask[i]);
 
 
 	/*** Window options ***/
 
+	/* Reset */
+	for (i = 0; i < 8; i++)
+	{
+		/* Flags */
+		flag[i] = op_ptr->window_flag[i];
+
+		/* Mask */
+		mask[i] = 0L;
+
+		/* Build the mask */
+		for (k = 0; k < 32; k++)
+		{
+			/* Set mask */
+			if (window_flag_desc[k])
+			{
+				mask[i] |= (1L << k);
+			}
+		}
+	}
+
 	/* Dump the flags */
-	for (i = 0; i < 8; i++) wr_u32b(window_flag[i]);
+	for (i = 0; i < 8; i++) wr_u32b(flag[i]);
 
 	/* Dump the masks */
-	for (i = 0; i < 8; i++) wr_u32b(window_mask[i]);
+	for (i = 0; i < 8; i++) wr_u32b(mask[i]);
 }
 
 
@@ -990,13 +1018,13 @@ static void wr_extra(void)
 {
 	int i;
 
-	wr_string(player_name);
+	wr_string(op_ptr->full_name);
 
-	wr_string(died_from);
+	wr_string(p_ptr->died_from);
 
 	for (i = 0; i < 4; i++)
 	{
-		wr_string(history[i]);
+		wr_string(p_ptr->history[i]);
 	}
 
 	/* Race/Class/Gender/Spells */
@@ -1035,8 +1063,8 @@ static void wr_extra(void)
 	wr_u16b(p_ptr->csp_frac);
 
 	/* Max Player and Dungeon Levels */
-	wr_s16b(p_ptr->max_plv);
-	wr_s16b(p_ptr->max_dlv);
+	wr_s16b(p_ptr->max_lev);
+	wr_s16b(p_ptr->max_depth);
 
 	/* More info */
 	wr_s16b(0);	/* oops */
@@ -1101,13 +1129,13 @@ static void wr_extra(void)
 
 
 	/* Special stuff */
-	wr_u16b(panic_save);
-	wr_u16b(total_winner);
-	wr_u16b(noscore);
+	wr_u16b(p_ptr->panic_save);
+	wr_u16b(p_ptr->total_winner);
+	wr_u16b(p_ptr->noscore);
 
 
 	/* Write death */
-	wr_byte(death);
+	wr_byte(p_ptr->is_dead);
 
 	/* Write feeling */
 	wr_byte(feeling);
@@ -1133,20 +1161,18 @@ static void wr_dungeon(void)
 	byte count;
 	byte prev_char;
 
-	cave_type *c_ptr;
-
 
 	/*** Basic info ***/
 
 	/* Dungeon specific info follows */
-	wr_u16b(dun_level);
-	wr_u16b(num_repro);
-	wr_u16b(py);
-	wr_u16b(px);
-	wr_u16b(cur_hgt);
-	wr_u16b(cur_wid);
-	wr_u16b(max_panel_rows);
-	wr_u16b(max_panel_cols);
+	wr_u16b(p_ptr->depth);
+	wr_u16b(0);
+	wr_u16b(p_ptr->py);
+	wr_u16b(p_ptr->px);
+	wr_u16b(DUNGEON_HGT);
+	wr_u16b(DUNGEON_WID);
+	wr_u16b(0);
+	wr_u16b(0);
 
 
 	/*** Simple "Run-Length-Encoding" of cave ***/
@@ -1156,16 +1182,13 @@ static void wr_dungeon(void)
 	prev_char = 0;
 
 	/* Dump the cave */
-	for (y = 0; y < cur_hgt; y++)
+	for (y = 0; y < DUNGEON_HGT; y++)
 	{
-		for (x = 0; x < cur_wid; x++)
+		for (x = 0; x < DUNGEON_WID; x++)
 		{
-			/* Get the cave */
-			c_ptr = &cave[y][x];
-
 			/* Extract a byte */
-			tmp8u = c_ptr->info;
-			
+			tmp8u = cave_info[y][x];
+
 			/* If the run is broken, or too full, flush it */
 			if ((tmp8u != prev_char) || (count == MAX_UCHAR))
 			{
@@ -1198,16 +1221,13 @@ static void wr_dungeon(void)
 	prev_char = 0;
 
 	/* Dump the cave */
-	for (y = 0; y < cur_hgt; y++)
+	for (y = 0; y < DUNGEON_HGT; y++)
 	{
-		for (x = 0; x < cur_wid; x++)
+		for (x = 0; x < DUNGEON_WID; x++)
 		{
-			/* Get the cave */
-			c_ptr = &cave[y][x];
-
 			/* Extract a byte */
-			tmp8u = c_ptr->feat;
-			
+			tmp8u = cave_feat[y][x];
+
 			/* If the run is broken, or too full, flush it */
 			if ((tmp8u != prev_char) || (count == MAX_UCHAR))
 			{
@@ -1233,10 +1253,16 @@ static void wr_dungeon(void)
 	}
 
 
-	/*** Dump objects ***/
+	/*** Compact ***/
 
 	/* Compact the objects */
 	compact_objects(0);
+
+	/* Compact the monsters */
+	compact_monsters(0);
+
+
+	/*** Dump objects ***/
 
 	/* Total objects */
 	wr_u16b(o_max);
@@ -1253,9 +1279,6 @@ static void wr_dungeon(void)
 
 	/*** Dump the monsters ***/
 
-	/* Compact the monsters */
-	compact_monsters(0);
-
 	/* Total monsters */
 	wr_u16b(m_max);
 
@@ -1263,7 +1286,7 @@ static void wr_dungeon(void)
 	for (i = 1; i < m_max; i++)
 	{
 		monster_type *m_ptr = &m_list[i];
-		
+
 		/* Dump it */
 		wr_monster(m_ptr);
 	}
@@ -1276,12 +1299,12 @@ static void wr_dungeon(void)
  */
 static bool wr_savefile_new(void)
 {
-	int        i;
+	int i;
 
-	u32b              now;
+	u32b now;
 
-	byte		tmp8u;
-	u16b		tmp16u;
+	byte tmp8u;
+	u16b tmp16u;
 
 
 	/* Guess at the current time */
@@ -1402,22 +1425,22 @@ static bool wr_savefile_new(void)
 	wr_u16b(tmp16u);
 	for (i = 0; i < tmp16u; i++)
 	{
-		wr_s16b(player_hp[i]);
+		wr_s16b(p_ptr->player_hp[i]);
 	}
 
 
 	/* Write spell data */
-	wr_u32b(spell_learned1);
-	wr_u32b(spell_learned2);
-	wr_u32b(spell_worked1);
-	wr_u32b(spell_worked2);
-	wr_u32b(spell_forgotten1);
-	wr_u32b(spell_forgotten2);
+	wr_u32b(p_ptr->spell_learned1);
+	wr_u32b(p_ptr->spell_learned2);
+	wr_u32b(p_ptr->spell_worked1);
+	wr_u32b(p_ptr->spell_worked2);
+	wr_u32b(p_ptr->spell_forgotten1);
+	wr_u32b(p_ptr->spell_forgotten2);
 
 	/* Dump the ordered spells */
 	for (i = 0; i < 64; i++)
 	{
-		wr_byte(spell_order[i]);
+		wr_byte(p_ptr->spell_order[i]);
 	}
 
 
@@ -1449,7 +1472,7 @@ static bool wr_savefile_new(void)
 
 
 	/* Player is not dead, write the dungeon */
-	if (!death)
+	if (!p_ptr->is_dead)
 	{
 		/* Dump the dungeon */
 		wr_dungeon();
@@ -1481,11 +1504,11 @@ static bool wr_savefile_new(void)
  */
 static bool save_player_aux(char *name)
 {
-	bool	ok = FALSE;
+	bool ok = FALSE;
 
-	int		fd = -1;
+	int fd = -1;
 
-	int		mode = 0644;
+	int mode = 0644;
 
 
 	/* No file yet */
@@ -1503,7 +1526,7 @@ static bool save_player_aux(char *name)
 	if (fd >= 0)
 	{
 		/* Close the "fd" */
-		(void)fd_close(fd);
+		fd_close(fd);
 
 		/* Open the savefile */
 		fff = my_fopen(name, "wb");
@@ -1519,7 +1542,7 @@ static bool save_player_aux(char *name)
 		}
 
 		/* Remove "broken" files */
-		if (!ok) (void)fd_kill(name);
+		if (!ok) fd_kill(name);
 	}
 
 
@@ -1540,9 +1563,9 @@ static bool save_player_aux(char *name)
  */
 bool save_player(void)
 {
-	int		result = FALSE;
+	int result = FALSE;
 
-	char	safe[1024];
+	char safe[1024];
 
 
 #ifdef SET_UID
@@ -1659,24 +1682,24 @@ bool save_player(void)
  */
 bool load_player(void)
 {
-	int		fd = -1;
+	int fd = -1;
 
-	errr	err = 0;
+	errr err = 0;
 
-	byte	vvv[4];
+	byte vvv[4];
 
 #ifdef VERIFY_TIMESTAMP
 	struct stat	statbuf;
 #endif
 
-	cptr	what = "generic";
+	cptr what = "generic";
 
 
 	/* Paranoia */
 	turn = 0;
 
 	/* Paranoia */
-	death = FALSE;
+	p_ptr->is_dead = FALSE;
 
 
 	/* Allow empty savefile name */
@@ -1773,7 +1796,7 @@ bool load_player(void)
 		if (err) what = "Cannot read savefile";
 
 		/* Close the file */
-		(void)fd_close(fd);
+		fd_close(fd);
 	}
 
 	/* Process file */
@@ -1876,10 +1899,10 @@ bool load_player(void)
 		}
 
 		/* Player is dead */
-		if (death)
+		if (p_ptr->is_dead)
 		{
-			/* Player is no longer "dead" */
-			death = FALSE;
+			/* Forget death */
+			p_ptr->is_dead = FALSE;
 
 			/* Cheat death */
 			if (arg_wizard)
@@ -1908,7 +1931,7 @@ bool load_player(void)
 		if (p_ptr->chp >= 0)
 		{
 			/* Reset cause of death */
-			(void)strcpy(died_from, "(alive and well)");
+			strcpy(p_ptr->died_from, "(alive and well)");
 		}
 
 		/* Success */

@@ -1,5 +1,13 @@
 /* File: main-ibm.c */
 
+/*
+ * Copyright (c) 1997 Ben Harrison, and others
+ *
+ * This software may be copied and distributed for educational, research,
+ * and not for profit purposes provided that this copyright and statement
+ * are included in all such copies.
+ */
+
 /* Purpose: Visual Display Support for "term.c", for the IBM */
 
 
@@ -222,39 +230,8 @@ static byte use_color_complex = FALSE;
 
 /*
  * The "complex" color set
- *
- * This table is used by the "palette" code to instantiate the proper
- * Angband colors when using hardware capable of displaying "complex"
- * colors, see "activate_complex_color" below.
- *
- * The values used below are taken from the values in "main-mac.c",
- * gamma corrected based on the tables in "io.c", and then "tweaked"
- * until they "looked good" on the monitor of "Mike Marcelais".
- *
- * The entries are given as "0xBBGGRR" where each of the "blue", "green",
- * and "red" components range from "0x00" to "0x3F".  Note that this is
- * the opposite of many systems which give the values as "0xRRGGBB", and
- * is the opposite of the "R,G,B" codes in the comments.
  */
-static long ibm_color_complex[16] =
-{
-	0x000000L,          /* 0 0 0  Dark       */
-	0x3f3f3fL,          /* 4 4 4  White      */
-	0x232323L,          /* 2 2 2  Slate      */
-	0x00233fL,          /* 4 2 0  Orange     */
-	0x000035L,          /* 3 0 0  Red        */
-	0x112300L,          /* 0 2 1  Green      */
-	0x3f0000L,          /* 0 0 4  Blue       */
-	0x001123L,          /* 2 1 0  Umber      */
-	0x111111L,          /* 1 1 1  Lt. Dark   */
-	0x353535L,          /* 3 3 3  Lt. Slate  */
-	0x3f003fL,          /* 4 0 4  Purple     */
-	0x003f3fL,          /* 4 4 0  Yellow     */
-	0x00003fL,          /* 4 0 0  Lt. Red    */
-	0x003f00L,          /* 0 4 0  Lt. Green  */
-	0x3f3f00L,          /* 0 4 4  Lt. Blue   */
-	0x112335L           /* 3 2 1  Lt. Umber  */
-};
+static long ibm_color_complex[16];
 
 
 /*
@@ -1297,16 +1274,18 @@ errr init_ibm(void)
 	/* Initialize "color_table" */
 	for (i = 0; i < 16; i++)
 	{
-		/* Extract the "complex" codes */
-		rv = ((ibm_color_complex[i]) & 0xFF);
-		gv = ((ibm_color_complex[i] >> 8) & 0xFF);
-		bv = ((ibm_color_complex[i] >> 16) & 0xFF);
+		long rv, gv, bv;
 
-		/* Save the "complex" codes */
+		/* Extract desired values */
+		rv = angband_color_table[i][1] >> 2;
+		gv = angband_color_table[i][2] >> 2;
+		bv = angband_color_table[i][3] >> 2;
+
+		/* Extract the "complex" codes */
+		ibm_color_complex[i] = ((rv) | (gv << 8) | (bv << 16));
+
+		/* Save the "simple" codes */
 		angband_color_table[i][0] = ibm_color_simple[i];
-		angband_color_table[i][1] = ((rv << 2) | (rv >> 4));
-		angband_color_table[i][2] = ((gv << 2) | (gv >> 4));
-		angband_color_table[i][3] = ((bv << 2) | (bv >> 4));
 	}
 
 

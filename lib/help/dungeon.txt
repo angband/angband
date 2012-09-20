@@ -258,7 +258,8 @@ sorcerers, who enjoy a good joke when it gets you killed.
 Only one object may occupy a given floor location, which may or may not also
 contain one creature.  Doors, rubble, traps, and staircases are considered
 "objects" for this purpose.  As below, any item may actually be a "pile" of
-up to 99 identical items.
+up to 99 identical items.  With the right choice of "options", you may be
+able to "stack" several items in the same grid.
 
 You pick up objects by moving on top of them.  You can carry up to 23
 different items in your backpack while wearing and wielding up to 12 others.
@@ -266,13 +267,12 @@ Although you are limited to 23 different items, each item may actually be a
 "pile" of up to 99 similar items.  If you somehow manage to stuff 24 items
 into your pack, for example, by removing an item from your head while your
 pack is full, then your pack will "overflow" and the most recently added
-item will fall out and onto the ground.  You will be warned about any command
-that seems likely to induce this behavior.
+item will fall out and onto the ground.
 
 You are, however, limited in the total amount of weight that you can carry.
 As you approach this value, you become slower, making it easier for monsters
 to chase you.  Note that there is no upper bound on how much you can carry,
-if you do not mind being slow.  Your weight limit is determined by your
+if you do not mind being slow.  Your weight "limit" is determined by your
 strength.
 
 Many objects found within the dungeon have special commands for their use.
@@ -338,14 +338,14 @@ potion will reach out and bite you...
 Some objects, mainly armor and weapons, have had curses laid upon them.
 These horrible objects will look like any other normal item, but will
 detract from your character's stats or abilities if worn.  They will also
-be impossible to remove until a remove curse is done.  In fact some are
-so badly cursed that even this will not work, and more potent methods are
-needed.
+be impossible to remove until a remove curse is performed.  In fact some
+are so badly cursed that even this will not work, and more potent methods
+are needed.
 
-If you wear or wield a cursed item, you will immediately feel something
-wrong.  The item will also be inscribed "cursed".
+If you wear or wield a cursed item, you will immediately feel deathly cold,
+and the item will be marked with the fake inscription "cursed".
 
-Skopkeepers will refuse to buy any known cursed item.
+Skopkeepers will refuse to buy any item which is known to be cursed.
 
 
 === Mining ===
@@ -365,11 +365,10 @@ When a vein of quartz or magma is located, the character may wield his pick
 or shovel and begin digging out a section.  When that section is removed, he
 can locate another section of the vein and begin the process again.  Since
 granite rock is much harder to dig through, it is much faster to follow the
-vein exactly and dig around the granite.  There is an option for highlighting
-magma and quartz.  At a certain point, it becomes more cumbersome to dig out
-treasure than to simply kill monsters and discover items in the dungeon to
-sell.  However, early on mineral veins can be a wonderful source of easy
-treasure.
+vein exactly and dig around the granite.  Eventually, it becomes easier to
+simply kill monsters and discover items in the dungeon to sell, than to walk
+around digging for treasure.  But, early on, mineral veins can be a wonderful
+source of easy treasure.
 
 If the character has a scroll, staff, or spell of treasure location, he can
 immediately locate all strikes of treasure within a vein shown on the
@@ -402,8 +401,7 @@ Each level has at least one up staircase and at least two down staircases.
 There are no exceptions to this rule.  You may have trouble finding some well
 hidden secret doors, or you may have to dig through obstructions to get to
 them, but you can always find the stairs if you look hard enough.  Stairs,
-like titanium walls, and the doors into shops, cannot be destroyed by any
-means.
+like titanium walls, and shop entrances, cannot be destroyed by any means.
 
 Many secret doors are used within the dungeon to confuse and demoralize
 adventurers foolish enough to enter.  But with some luck, and lots of
@@ -423,7 +421,7 @@ For historical reasons, secret doors are never locked.
 === Winning The Game ===
 
 Once your character has killed Sauron, who lives on level 99 (4950') in the 
-dungeon, a magical staircase will appear that will finally allow you to reach
+dungeon, a magical staircase will appear that will allow you to finally reach
 level 100.  Morgoth lurks on this level of his dungeon, and you will not be
 able to go below his level until you have killed him.  Try to avoid wandering
 around on level 100 unless you are ready for him, since he has a habit of
@@ -445,10 +443,10 @@ save the game and play more later, but since you have defeated the toughest
 creature alive, there is really not much point.  Unless you wish to listen
 to the rumors of a powerful ring buried somewhere in the dungeon...
 
-When you are ready to retire, simply "commit suicide" ("^K") to have your
-character entered into the high score list as a winner.  Note that until you
-retire, you can still be killed, so you may want to retire before wandering
-into a hoard of death molds...
+When you are ready to retire, simply "commit suicide" (using the "Q" key)
+to have your character entered into the high score list as a winner.  Note
+that until you retire, you can still be killed, so you may want to retire
+before wandering into a hoard of death molds...
 
 
 === Upon Death and Dying ===
@@ -460,14 +458,15 @@ all your equipment (identified) either on the screen or in a file.
 
 Your character will leave behind a reduced save file, which contains only
 the monster memory and your option choices.  It may be restored, in which
-case the new character is generated exactly as if the file was not there,
-but the new player will find his monster memory containing all the experience
+case a new character is generated exactly as if the file was not there, but
+the new player will find his monster memory containing all the experience
 of past incarnations.
 
+There are a variety of ways to "cheat" death (including using a special
+"cheating option") when it would otherwise occur.  This will fully heal
+your character, returning him to the town, and marking him in various
+ways as a character which has cheated death.  Cheating death, like using
+any of the "cheating options", will prevent your character from appearing
+on the high score list.
 
-=== Help ===
 
-The newsgroup "rec.games.roguelike.angband" is a good place to ask various
-questions about both game play and game design, and you can email bug
-reports and such to me (benh@voicenet.com).  Be sure to include the version
-number you are playing in any bug reports.

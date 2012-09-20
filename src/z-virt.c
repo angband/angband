@@ -1,5 +1,13 @@
 /* File: z-virt.c */
 
+/*
+ * Copyright (c) 1997 Ben Harrison
+ *
+ * This software may be copied and distributed for educational, research,
+ * and not for profit purposes provided that this copyright and statement
+ * are included in all such copies.
+ */
+
 /* Purpose: Memory management routines -BEN- */
 
 #include "z-virt.h"
@@ -20,15 +28,15 @@ static long virt_size = 0;
 /*
  * Optional auxiliary "rnfree" function
  */
-errr (*rnfree_aux)(vptr, huge) = NULL;
+vptr (*rnfree_aux)(vptr, huge) = NULL;
 
 /*
- * Free some memory (that was allocated by ralloc).
+ * Free some memory (allocated by ralloc), return NULL
  */
-errr rnfree(vptr p, huge len)
+vptr rnfree(vptr p, huge len)
 {
 	/* Easy to free zero bytes */
-	if (len == 0) return (0);
+	if (len == 0) return (NULL);
 
 #ifdef VERBOSE_RALLOC
 
@@ -49,11 +57,11 @@ errr rnfree(vptr p, huge len)
 	/* Use the "aux" function */
 	if (rnfree_aux) return ((*rnfree_aux)(p, len));
 
-	/* Or just use "free" */
-	else free ((char*)(p));
+	/* Use "free" */
+	free ((char*)(p));
 
-	/* Success */
-	return (0);
+	/* Done */
+	return (NULL);
 }
 
 
