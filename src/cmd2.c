@@ -34,7 +34,7 @@ void do_cmd_go_up(void)
 	p_ptr->energy_use = 100;
 
 	/* Success */
-	message(MSG_STAIRS, 0, "You enter a maze of up staircases.");
+	message(MSG_STAIRS_UP, 0, "You enter a maze of up staircases.");
 
 	/* Create a way back */
 	p_ptr->create_down_stair = TRUE;
@@ -63,7 +63,7 @@ void do_cmd_go_down(void)
 	p_ptr->energy_use = 100;
 
 	/* Success */
-	message(MSG_STAIRS, 0, "You enter a maze of down staircases.");
+	message(MSG_STAIRS_DOWN, 0, "You enter a maze of down staircases.");
 
 	/* Create a way back */
 	p_ptr->create_up_stair = TRUE;
@@ -310,6 +310,7 @@ static void chest_trap(int y, int x, s16b o_idx)
 	{
 		int num = 2 + randint(3);
 		msg_print("You are enveloped in a cloud of smoke!");
+		sound(MSG_SUM_MONSTER);
 		for (i = 0; i < num; i++)
 		{
 			(void)summon_specific(y, x, p_ptr->depth, 0);
@@ -367,7 +368,7 @@ static bool do_cmd_open_chest(int y, int x, s16b o_idx)
 		/* Success -- May still have traps */
 		if (rand_int(100) < j)
 		{
-			msg_print("You have picked the lock.");
+			message(MSG_LOCKPICK, 0, "You have picked the lock.");
 			gain_exp(1);
 			flag = TRUE;
 		}
@@ -447,7 +448,7 @@ static bool do_cmd_disarm_chest(int y, int x, s16b o_idx)
 	/* Success (get a lot of experience) */
 	else if (rand_int(100) < j)
 	{
-		msg_print("You have disarmed the chest.");
+		message(MSG_DISARM, 0, "You have disarmed the chest.");
 		gain_exp(o_ptr->pval);
 		o_ptr->pval = (0 - o_ptr->pval);
 	}
@@ -683,7 +684,7 @@ static bool do_cmd_open_aux(int y, int x)
 		if (rand_int(100) < j)
 		{
 			/* Message */
-			message(MSG_OPENDOOR, 0, "You have picked the lock.");
+			message(MSG_LOCKPICK, 0, "You have picked the lock.");
 
 			/* Open the door */
 			cave_set_feat(y, x, FEAT_OPEN);
@@ -1386,7 +1387,7 @@ static bool do_cmd_disarm_aux(int y, int x)
 	if (rand_int(100) < j)
 	{
 		/* Message */
-		msg_format("You have disarmed the %s.", name);
+		message_format(MSG_DISARM, 0, "You have disarmed the %s.", name);
 
 		/* Reward */
 		gain_exp(power);
@@ -2010,7 +2011,7 @@ static bool do_cmd_walk_test(int y, int x)
 		if (cave_feat[y][x] == FEAT_RUBBLE)
 		{
 			/* Message */
-			msg_print("There is a pile of rubble in the way!");
+			message(MSG_HITWALL, 0, "There is a pile of rubble in the way!");
 		}
 
 		/* Door */
@@ -2020,14 +2021,14 @@ static bool do_cmd_walk_test(int y, int x)
 			if (easy_alter) return (TRUE);
 
 			/* Message */
-			msg_print("There is a door in the way!");
+			message(MSG_HITWALL, 0, "There is a door in the way!");
 		}
 
 		/* Wall */
 		else
 		{
 			/* Message */
-			msg_print("There is a wall in the way!");
+			message(MSG_HITWALL, 0, "There is a wall in the way!");
 		}
 
 		/* Nope */
@@ -2531,15 +2532,24 @@ void do_cmd_fire(void)
 		y = ny;
 
 		/* Only do visuals if the player can "see" the missile */
-		if (panel_contains(y, x) && player_can_see_bold(y, x))
+		if (player_can_see_bold(y, x))
 		{
 			/* Visual effects */
 			print_rel(missile_char, missile_attr, y, x);
 			move_cursor_relative(y, x);
-			if (fresh_before) Term_fresh();
+			if (fresh_before)
+			{
+				Term_fresh();
+				if (p_ptr->window) window_stuff();
+			}
+
 			Term_xtra(TERM_XTRA_DELAY, msec);
 			lite_spot(y, x);
-			if (fresh_before) Term_fresh();
+			if (fresh_before)
+			{
+				Term_fresh();
+				if (p_ptr->window) window_stuff();
+			}
 		}
 
 		/* Delay anyway for consistency */
@@ -2585,7 +2595,7 @@ void do_cmd_fire(void)
 				if (!visible)
 				{
 					/* Invisible monster */
-					msg_format("The %s finds a mark.", o_name);
+					message_format(MSG_SHOOT_HIT, 0, "The %s finds a mark.", o_name);
 				}
 
 				/* Handle visible monster */
@@ -2597,7 +2607,7 @@ void do_cmd_fire(void)
 					monster_desc(m_name, sizeof(m_name), m_ptr, 0);
 
 					/* Message */
-					msg_format("The %s hits %s.", o_name, m_name);
+					message_format(MSG_SHOOT_HIT, 0, "The %s hits %s.", o_name, m_name);
 
 					/* Hack -- Track this monster race */
 					if (m_ptr->ml) monster_race_track(m_ptr->r_idx);
@@ -2812,15 +2822,23 @@ void do_cmd_throw(void)
 		y = ny;
 
 		/* Only do visuals if the player can "see" the missile */
-		if (panel_contains(y, x) && player_can_see_bold(y, x))
+		if (player_can_see_bold(y, x))
 		{
 			/* Visual effects */
 			print_rel(missile_char, missile_attr, y, x);
 			move_cursor_relative(y, x);
-			if (fresh_before) Term_fresh();
+			if (fresh_before)
+			{
+				Term_fresh();
+				if (p_ptr->window) window_stuff();
+			}
 			Term_xtra(TERM_XTRA_DELAY, msec);
 			lite_spot(y, x);
-			if (fresh_before) Term_fresh();
+			if (fresh_before)
+			{
+				Term_fresh();
+				if (p_ptr->window) window_stuff();
+			}
 		}
 
 		/* Delay anyway for consistency */

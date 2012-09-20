@@ -32,7 +32,7 @@ bool set_blind(int v)
 	{
 		if (!p_ptr->blind)
 		{
-			msg_print("You are blind!");
+			message(MSG_BLIND, 0, "You are blind!");
 			notice = TRUE;
 		}
 	}
@@ -42,7 +42,7 @@ bool set_blind(int v)
 	{
 		if (p_ptr->blind)
 		{
-			msg_print("You can see again.");
+			message(MSG_RECOVER, 0, "You can see again.");
 			notice = TRUE;
 		}
 	}
@@ -66,7 +66,7 @@ bool set_blind(int v)
 	p_ptr->redraw |= (PR_BLIND);
 
 	/* Window stuff */
-	p_ptr->window |= (PW_OVERHEAD);
+	p_ptr->window |= (PW_OVERHEAD | PW_MAP);
 
 	/* Handle stuff */
 	handle_stuff();
@@ -91,7 +91,7 @@ bool set_confused(int v)
 	{
 		if (!p_ptr->confused)
 		{
-			msg_print("You are confused!");
+			message(MSG_CONFUSED, 0, "You are confused!");
 			notice = TRUE;
 		}
 	}
@@ -101,7 +101,7 @@ bool set_confused(int v)
 	{
 		if (p_ptr->confused)
 		{
-			msg_print("You feel less confused now.");
+			message(MSG_RECOVER, 0, "You feel less confused now.");
 			notice = TRUE;
 		}
 	}
@@ -141,7 +141,7 @@ bool set_poisoned(int v)
 	{
 		if (!p_ptr->poisoned)
 		{
-			msg_print("You are poisoned!");
+			message(MSG_POISONED, 0, "You are poisoned!");
 			notice = TRUE;
 		}
 	}
@@ -151,7 +151,7 @@ bool set_poisoned(int v)
 	{
 		if (p_ptr->poisoned)
 		{
-			msg_print("You are no longer poisoned.");
+			message(MSG_RECOVER, 0, "You are no longer poisoned.");
 			notice = TRUE;
 		}
 	}
@@ -191,7 +191,7 @@ bool set_afraid(int v)
 	{
 		if (!p_ptr->afraid)
 		{
-			msg_print("You are terrified!");
+			message(MSG_AFRAID, 0, "You are terrified!");
 			notice = TRUE;
 		}
 	}
@@ -201,7 +201,7 @@ bool set_afraid(int v)
 	{
 		if (p_ptr->afraid)
 		{
-			msg_print("You feel bolder now.");
+			message(MSG_RECOVER, 0, "You feel bolder now.");
 			notice = TRUE;
 		}
 	}
@@ -241,7 +241,7 @@ bool set_paralyzed(int v)
 	{
 		if (!p_ptr->paralyzed)
 		{
-			msg_print("You are paralyzed!");
+			message(MSG_PARALYZED, 0, "You are paralyzed!");
 			notice = TRUE;
 		}
 	}
@@ -251,7 +251,7 @@ bool set_paralyzed(int v)
 	{
 		if (p_ptr->paralyzed)
 		{
-			msg_print("You can move again.");
+			message(MSG_RECOVER, 0, "You can move again.");
 			notice = TRUE;
 		}
 	}
@@ -294,7 +294,7 @@ bool set_image(int v)
 	{
 		if (!p_ptr->image)
 		{
-			msg_print("You feel drugged!");
+			message(MSG_DRUGGED, 0, "You feel drugged!");
 			notice = TRUE;
 		}
 	}
@@ -304,7 +304,7 @@ bool set_image(int v)
 	{
 		if (p_ptr->image)
 		{
-			msg_print("You can see clearly again.");
+			message(MSG_RECOVER, 0, "You can see clearly again.");
 			notice = TRUE;
 		}
 	}
@@ -322,7 +322,7 @@ bool set_image(int v)
 	p_ptr->redraw |= (PR_MAP);
 
 	/* Window stuff */
-	p_ptr->window |= (PW_OVERHEAD);
+	p_ptr->window |= (PW_OVERHEAD | PW_MAP);
 
 	/* Handle stuff */
 	handle_stuff();
@@ -347,7 +347,7 @@ bool set_fast(int v)
 	{
 		if (!p_ptr->fast)
 		{
-			msg_print("You feel yourself moving faster!");
+			message(MSG_SPEED, 0, "You feel yourself moving faster!");
 			notice = TRUE;
 		}
 	}
@@ -357,7 +357,7 @@ bool set_fast(int v)
 	{
 		if (p_ptr->fast)
 		{
-			msg_print("You feel yourself slow down.");
+			message(MSG_RECOVER, 0, "You feel yourself slow down.");
 			notice = TRUE;
 		}
 	}
@@ -397,7 +397,7 @@ bool set_slow(int v)
 	{
 		if (!p_ptr->slow)
 		{
-			msg_print("You feel yourself moving slower!");
+			message(MSG_SLOW, 0, "You feel yourself moving slower!");
 			notice = TRUE;
 		}
 	}
@@ -407,7 +407,7 @@ bool set_slow(int v)
 	{
 		if (p_ptr->slow)
 		{
-			msg_print("You feel yourself speed up.");
+			message(MSG_RECOVER, 0, "You feel yourself speed up.");
 			notice = TRUE;
 		}
 	}
@@ -447,7 +447,7 @@ bool set_shield(int v)
 	{
 		if (!p_ptr->shield)
 		{
-			msg_print("A mystic shield forms around your body!");
+			message(MSG_SHIELD, 0, "A mystic shield forms around your body!");
 			notice = TRUE;
 		}
 	}
@@ -457,7 +457,7 @@ bool set_shield(int v)
 	{
 		if (p_ptr->shield)
 		{
-			msg_print("Your mystic shield crumbles away.");
+			message(MSG_RECOVER, 0, "Your mystic shield crumbles away.");
 			notice = TRUE;
 		}
 	}
@@ -498,7 +498,7 @@ bool set_blessed(int v)
 	{
 		if (!p_ptr->blessed)
 		{
-			msg_print("You feel righteous!");
+			message(MSG_BLESSED, 0, "You feel righteous!");
 			notice = TRUE;
 		}
 	}
@@ -508,7 +508,7 @@ bool set_blessed(int v)
 	{
 		if (p_ptr->blessed)
 		{
-			msg_print("The prayer has expired.");
+			message(MSG_RECOVER, 0, "The prayer has expired.");
 			notice = TRUE;
 		}
 	}
@@ -548,7 +548,7 @@ bool set_hero(int v)
 	{
 		if (!p_ptr->hero)
 		{
-			msg_print("You feel like a hero!");
+			message(MSG_HERO, 0, "You feel like a hero!");
 			notice = TRUE;
 		}
 	}
@@ -558,7 +558,7 @@ bool set_hero(int v)
 	{
 		if (p_ptr->hero)
 		{
-			msg_print("The heroism wears off.");
+			message(MSG_RECOVER, 0, "The heroism wears off.");
 			notice = TRUE;
 		}
 	}
@@ -598,7 +598,7 @@ bool set_shero(int v)
 	{
 		if (!p_ptr->shero)
 		{
-			msg_print("You feel like a killing machine!");
+			message(MSG_BERSERK, 0, "You feel like a killing machine!");
 			notice = TRUE;
 		}
 	}
@@ -608,7 +608,7 @@ bool set_shero(int v)
 	{
 		if (p_ptr->shero)
 		{
-			msg_print("You feel less Berserk.");
+			message(MSG_RECOVER, 0, "You feel less Berserk.");
 			notice = TRUE;
 		}
 	}
@@ -648,7 +648,7 @@ bool set_protevil(int v)
 	{
 		if (!p_ptr->protevil)
 		{
-			msg_print("You feel safe from evil!");
+			message(MSG_PROT_EVIL, 0, "You feel safe from evil!");
 			notice = TRUE;
 		}
 	}
@@ -658,7 +658,7 @@ bool set_protevil(int v)
 	{
 		if (p_ptr->protevil)
 		{
-			msg_print("You no longer feel safe from evil.");
+			message(MSG_RECOVER, 0, "You no longer feel safe from evil.");
 			notice = TRUE;
 		}
 	}
@@ -695,7 +695,7 @@ bool set_invuln(int v)
 	{
 		if (!p_ptr->invuln)
 		{
-			msg_print("You feel invulnerable!");
+			message(MSG_INVULN, 0, "You feel invulnerable!");
 			notice = TRUE;
 		}
 	}
@@ -705,7 +705,7 @@ bool set_invuln(int v)
 	{
 		if (p_ptr->invuln)
 		{
-			msg_print("You feel vulnerable once more.");
+			message(MSG_RECOVER, 0, "You feel vulnerable once more.");
 			notice = TRUE;
 		}
 	}
@@ -748,7 +748,7 @@ bool set_tim_invis(int v)
 	{
 		if (!p_ptr->tim_invis)
 		{
-			msg_print("Your eyes feel very sensitive!");
+			message(MSG_SEE_INVIS, 0, "Your eyes feel very sensitive!");
 			notice = TRUE;
 		}
 	}
@@ -758,7 +758,7 @@ bool set_tim_invis(int v)
 	{
 		if (p_ptr->tim_invis)
 		{
-			msg_print("Your eyes feel less sensitive.");
+			message(MSG_RECOVER, 0, "Your eyes feel less sensitive.");
 			notice = TRUE;
 		}
 	}
@@ -804,7 +804,7 @@ bool set_tim_infra(int v)
 	{
 		if (!p_ptr->tim_infra)
 		{
-			msg_print("Your eyes begin to tingle!");
+			message(MSG_INFRARED, 0, "Your eyes begin to tingle!");
 			notice = TRUE;
 		}
 	}
@@ -814,7 +814,7 @@ bool set_tim_infra(int v)
 	{
 		if (p_ptr->tim_infra)
 		{
-			msg_print("Your eyes stop tingling.");
+			message(MSG_RECOVER, 0, "Your eyes stop tingling.");
 			notice = TRUE;
 		}
 	}
@@ -857,7 +857,7 @@ bool set_oppose_acid(int v)
 	{
 		if (!p_ptr->oppose_acid && !p_ptr->immune_acid)
 		{
-			msg_print("You feel resistant to acid!");
+			message(MSG_RES_ACID, 0, "You feel resistant to acid!");
 			notice = TRUE;
 		}
 	}
@@ -867,7 +867,7 @@ bool set_oppose_acid(int v)
 	{
 		if (p_ptr->oppose_acid && !p_ptr->immune_acid)
 		{
-			msg_print("You feel less resistant to acid.");
+			message(MSG_RECOVER, 0, "You feel less resistant to acid.");
 			notice = TRUE;
 		}
 	}
@@ -880,6 +880,9 @@ bool set_oppose_acid(int v)
 
 	/* Disturb */
 	if (disturb_state) disturb(0, 0);
+
+	/* Redraw */
+	p_ptr->redraw |= PR_OPPOSE_ELEMENTS;
 
 	/* Handle stuff */
 	handle_stuff();
@@ -904,7 +907,7 @@ bool set_oppose_elec(int v)
 	{
 		if (!p_ptr->oppose_elec && !p_ptr->immune_elec)
 		{
-			msg_print("You feel resistant to electricity!");
+			message(MSG_RES_ELEC, 0, "You feel resistant to electricity!");
 			notice = TRUE;
 		}
 	}
@@ -914,7 +917,7 @@ bool set_oppose_elec(int v)
 	{
 		if (p_ptr->oppose_elec && !p_ptr->immune_elec)
 		{
-			msg_print("You feel less resistant to electricity.");
+			message(MSG_RECOVER, 0, "You feel less resistant to electricity.");
 			notice = TRUE;
 		}
 	}
@@ -927,6 +930,9 @@ bool set_oppose_elec(int v)
 
 	/* Disturb */
 	if (disturb_state) disturb(0, 0);
+
+	/* Redraw */
+	p_ptr->redraw |= PR_OPPOSE_ELEMENTS;
 
 	/* Handle stuff */
 	handle_stuff();
@@ -951,7 +957,7 @@ bool set_oppose_fire(int v)
 	{
 		if (!p_ptr->oppose_fire && !p_ptr->immune_fire)
 		{
-			msg_print("You feel resistant to fire!");
+			message(MSG_RES_FIRE, 0, "You feel resistant to fire!");
 			notice = TRUE;
 		}
 	}
@@ -961,7 +967,7 @@ bool set_oppose_fire(int v)
 	{
 		if (p_ptr->oppose_fire && !p_ptr->immune_fire)
 		{
-			msg_print("You feel less resistant to fire.");
+			message(MSG_RECOVER, 0, "You feel less resistant to fire.");
 			notice = TRUE;
 		}
 	}
@@ -974,6 +980,9 @@ bool set_oppose_fire(int v)
 
 	/* Disturb */
 	if (disturb_state) disturb(0, 0);
+
+	/* Redraw */
+	p_ptr->redraw |= PR_OPPOSE_ELEMENTS;
 
 	/* Handle stuff */
 	handle_stuff();
@@ -998,7 +1007,7 @@ bool set_oppose_cold(int v)
 	{
 		if (!p_ptr->oppose_cold && !p_ptr->immune_cold)
 		{
-			msg_print("You feel resistant to cold!");
+			message(MSG_RES_COLD, 0, "You feel resistant to cold!");
 			notice = TRUE;
 		}
 	}
@@ -1008,7 +1017,7 @@ bool set_oppose_cold(int v)
 	{
 		if (p_ptr->oppose_cold && !p_ptr->immune_cold)
 		{
-			msg_print("You feel less resistant to cold.");
+			message(MSG_RECOVER, 0, "You feel less resistant to cold.");
 			notice = TRUE;
 		}
 	}
@@ -1021,6 +1030,9 @@ bool set_oppose_cold(int v)
 
 	/* Disturb */
 	if (disturb_state) disturb(0, 0);
+
+	/* Redraw */
+	p_ptr->redraw |= PR_OPPOSE_ELEMENTS;
 
 	/* Handle stuff */
 	handle_stuff();
@@ -1045,7 +1057,7 @@ bool set_oppose_pois(int v)
 	{
 		if (!p_ptr->oppose_pois)
 		{
-			msg_print("You feel resistant to poison!");
+			message(MSG_RES_POIS, 0, "You feel resistant to poison!");
 			notice = TRUE;
 		}
 	}
@@ -1055,7 +1067,7 @@ bool set_oppose_pois(int v)
 	{
 		if (p_ptr->oppose_pois)
 		{
-			msg_print("You feel less resistant to poison.");
+			message(MSG_RECOVER, 0, "You feel less resistant to poison.");
 			notice = TRUE;
 		}
 	}
@@ -1068,6 +1080,9 @@ bool set_oppose_pois(int v)
 
 	/* Disturb */
 	if (disturb_state) disturb(0, 0);
+
+	/* Redraw */
+	p_ptr->redraw |= PR_OPPOSE_ELEMENTS;
 
 	/* Handle stuff */
 	handle_stuff();
@@ -1148,21 +1163,21 @@ bool set_stun(int v)
 			/* Stun */
 			case 1:
 			{
-				msg_print("You have been stunned.");
+				message(MSG_STUN, 0, "You have been stunned.");
 				break;
 			}
 
 			/* Heavy stun */
 			case 2:
 			{
-				msg_print("You have been heavily stunned.");
+				message(MSG_STUN, 0, "You have been heavily stunned.");
 				break;
 			}
 
 			/* Knocked out */
 			case 3:
 			{
-				msg_print("You have been knocked out.");
+				message(MSG_STUN, 0, "You have been knocked out.");
 				break;
 			}
 		}
@@ -1180,7 +1195,7 @@ bool set_stun(int v)
 			/* None */
 			case 0:
 			{
-				msg_print("You are no longer stunned.");
+				message(MSG_RECOVER, 0, "You are no longer stunned.");
 				if (disturb_state) disturb(0, 0);
 				break;
 			}
@@ -1332,49 +1347,49 @@ bool set_cut(int v)
 			/* Graze */
 			case 1:
 			{
-				msg_print("You have been given a graze.");
+				message(MSG_CUT, 0, "You have been given a graze.");
 				break;
 			}
 
 			/* Light cut */
 			case 2:
 			{
-				msg_print("You have been given a light cut.");
+				message(MSG_CUT, 0, "You have been given a light cut.");
 				break;
 			}
 
 			/* Bad cut */
 			case 3:
 			{
-				msg_print("You have been given a bad cut.");
+				message(MSG_CUT, 0, "You have been given a bad cut.");
 				break;
 			}
 
 			/* Nasty cut */
 			case 4:
 			{
-				msg_print("You have been given a nasty cut.");
+				message(MSG_CUT, 0, "You have been given a nasty cut.");
 				break;
 			}
 
 			/* Severe cut */
 			case 5:
 			{
-				msg_print("You have been given a severe cut.");
+				message(MSG_CUT, 0, "You have been given a severe cut.");
 				break;
 			}
 
 			/* Deep gash */
 			case 6:
 			{
-				msg_print("You have been given a deep gash.");
+				message(MSG_CUT, 0, "You have been given a deep gash.");
 				break;
 			}
 
 			/* Mortal wound */
 			case 7:
 			{
-				msg_print("You have been given a mortal wound.");
+				message(MSG_CUT, 0, "You have been given a mortal wound.");
 				break;
 			}
 		}
@@ -1392,7 +1407,7 @@ bool set_cut(int v)
 			/* None */
 			case 0:
 			{
-				msg_print("You are no longer bleeding.");
+				message(MSG_RECOVER, 0, "You are no longer bleeding.");
 				if (disturb_state) disturb(0, 0);
 				break;
 			}
@@ -1583,6 +1598,7 @@ bool set_food(int v)
 			/* Fainting / Starving */
 			case 0:
 			{
+				sound(MSG_NOTICE);
 				msg_print("You are getting faint from hunger!");
 				break;
 			}
@@ -1590,6 +1606,7 @@ bool set_food(int v)
 			/* Weak */
 			case 1:
 			{
+				sound(MSG_NOTICE);
 				msg_print("You are getting weak from hunger!");
 				break;
 			}
@@ -1597,6 +1614,7 @@ bool set_food(int v)
 			/* Hungry */
 			case 2:
 			{
+				sound(MSG_HUNGRY);
 				msg_print("You are getting hungry.");
 				break;
 			}
@@ -1604,6 +1622,7 @@ bool set_food(int v)
 			/* Normal */
 			case 3:
 			{
+				sound(MSG_NOTICE);
 				msg_print("You are no longer full.");
 				break;
 			}
@@ -1611,6 +1630,7 @@ bool set_food(int v)
 			/* Full */
 			case 4:
 			{
+				sound(MSG_NOTICE);
 				msg_print("You are no longer gorged.");
 				break;
 			}
@@ -2120,19 +2140,32 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note)
 	{
 		char m_name[80];
 
+		/* Assume normal death sound */
+		int soundfx = MSG_KILL;
+
+		/* Play a special sound if the monster was unique */
+		if (r_ptr->flags1 & RF1_UNIQUE) 
+		{
+			/* Mega-Hack -- Morgoth -- see monster_death() */
+			if (r_ptr->flags1 & RF1_DROP_CHOSEN)
+				soundfx = MSG_KILL_KING;
+			else
+				soundfx = MSG_KILL_UNIQUE;
+		}
+
 		/* Extract monster name */
 		monster_desc(m_name, sizeof(m_name), m_ptr, 0);
 
 		/* Death by Missile/Spell attack */
 		if (note)
 		{
-			message_format(MSG_KILL, m_ptr->r_idx, "%^s%s", m_name, note);
+			message_format(soundfx, m_ptr->r_idx, "%^s%s", m_name, note);
 		}
 
 		/* Death by physical attack -- invisible monster */
 		else if (!m_ptr->ml)
 		{
-			message_format(MSG_KILL, m_ptr->r_idx, "You have killed %s.", m_name);
+			message_format(soundfx, m_ptr->r_idx, "You have killed %s.", m_name);
 		}
 
 		/* Death by Physical attack -- non-living monster */
@@ -2141,13 +2174,13 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note)
 		         (r_ptr->flags2 & (RF2_STUPID)) ||
 		         (strchr("Evg", r_ptr->d_char)))
 		{
-			message_format(MSG_KILL, m_ptr->r_idx, "You have destroyed %s.", m_name);
+			message_format(soundfx, m_ptr->r_idx, "You have destroyed %s.", m_name);
 		}
 
 		/* Death by Physical attack -- living monster */
 		else
 		{
-			message_format(MSG_KILL, m_ptr->r_idx, "You have slain %s.", m_name);
+			message_format(soundfx, m_ptr->r_idx, "You have slain %s.", m_name);
 		}
 
 		/* Player level */
@@ -2266,47 +2299,42 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note)
  * Modify the current panel to the given coordinates, adjusting only to
  * ensure the coordinates are legal, and return TRUE if anything done.
  *
- * Hack -- The town should never be scrolled around.
+ * The town should never be scrolled around.
  *
  * Note that monsters are no longer affected in any way by panel changes.
  *
  * As a total hack, whenever the current panel changes, we assume that
  * the "overhead view" window should be updated.
  */
-bool modify_panel(int wy, int wx)
+bool modify_panel(term *t, int wy, int wx)
 {
-	/* Verify wy, adjust if needed */
-	if (p_ptr->depth == 0)
-	{
-		if (wy > TOWN_HGT - SCREEN_HGT) wy = TOWN_HGT - SCREEN_HGT;
-		else if (wy < 0) wy = 0;
-	}
-	else if (wy > DUNGEON_HGT - SCREEN_HGT) wy = DUNGEON_HGT - SCREEN_HGT;
+	int dungeon_hgt = (p_ptr->depth == 0) ? TOWN_HGT : DUNGEON_HGT;
+	int dungeon_wid = (p_ptr->depth == 0) ? TOWN_WID : DUNGEON_WID;
 
+	int screen_hgt = (t == Term) ? (t->hgt - ROW_MAP - 1) : t->hgt;
+	int screen_wid = (t == Term) ? (t->wid - COL_MAP - 1) : t->wid;
+
+	/* Bigtile panels only have half the width */
+	if (use_bigtile) screen_wid = screen_wid / 2;
+
+	/* Verify wy, adjust if needed */
+	if (wy > dungeon_hgt - screen_hgt) wy = dungeon_hgt - screen_hgt;
 	if (wy < 0) wy = 0;
 
 	/* Verify wx, adjust if needed */
-	if (p_ptr->depth == 0)
-	{
-		if (wx > TOWN_WID - SCREEN_WID) wx = TOWN_WID - SCREEN_WID;
-		else if (wx < 0) wx = 0;
-	}
-	else if (wx > DUNGEON_WID - SCREEN_WID) wx = DUNGEON_WID - SCREEN_WID;
-
+	if (wx > dungeon_wid - screen_wid) wx = dungeon_wid - screen_wid;
 	if (wx < 0) wx = 0;
 
 	/* React to changes */
-	if ((p_ptr->wy != wy) || (p_ptr->wx != wx))
+	if ((t->offset_y != wy) || (t->offset_x != wx))
 	{
 		/* Save wy, wx */
-		p_ptr->wy = wy;
-		p_ptr->wx = wx;
+		t->offset_y = wy;
+		t->offset_x = wx;
 
 		/* Redraw map */
 		p_ptr->redraw |= (PR_MAP);
-
-		/* Hack -- Window stuff */
-		p_ptr->window |= (PW_OVERHEAD);
+		p_ptr->window |= (PW_OVERHEAD | PW_MAP);
 
 		/* Changed */
 		return (TRUE);
@@ -2324,19 +2352,46 @@ bool modify_panel(int wy, int wx)
  */
 bool adjust_panel(int y, int x)
 {
-	int wy = p_ptr->wy;
-	int wx = p_ptr->wx;
+	bool changed = FALSE;
 
-	/* Adjust as needed */
-	while (y >= wy + SCREEN_HGT) wy += SCREEN_HGT;
-	while (y < wy) wy -= SCREEN_HGT;
+	int j;
 
-	/* Adjust as needed */
-	while (x >= wx + SCREEN_WID) wx += SCREEN_WID;
-	while (x < wx) wx -= SCREEN_WID;
+	/* Scan windows */
+	for (j = 0; j < ANGBAND_TERM_MAX; j++)
+	{
+		int wx, wy;
+		int screen_hgt, screen_wid;
 
-	/* Use "modify_panel" */
-	return (modify_panel(wy, wx));
+		term *t = angband_term[j];
+
+		/* No window */
+		if (!t) continue;
+
+		/* No relevant flags */
+		if ((j > 0) && !(op_ptr->window_flag[j] & PW_MAP)) continue;
+
+		wy = t->offset_y;
+		wx = t->offset_x;
+
+		screen_hgt = (j == 0) ? (Term->hgt - ROW_MAP - 1) : t->hgt;
+		screen_wid = (j == 0) ? (Term->wid - COL_MAP - 1) : t->wid;
+
+		/* Bigtile panels only have half the width */
+		if (use_bigtile) screen_wid = screen_wid / 2;
+
+		/* Adjust as needed */
+		while (y >= wy + screen_hgt) wy += screen_hgt / 2;
+		while (y < wy) wy -= screen_hgt / 2;
+
+		/* Adjust as needed */
+		while (x >= wx + screen_wid) wx += screen_wid / 2;
+		while (x < wx) wx -= screen_wid / 2;
+
+		/* Use "modify_panel" */
+		if (modify_panel(t, wy, wx)) changed = TRUE;
+	}
+
+	return (changed);
 }
 
 
@@ -2347,11 +2402,38 @@ bool adjust_panel(int y, int x)
  */
 bool change_panel(int dir)
 {
-	int wy = p_ptr->wy + ddy[dir] * PANEL_HGT;
-	int wx = p_ptr->wx + ddx[dir] * PANEL_WID;
+	bool changed = FALSE;
+	int j;
 
-	/* Use "modify_panel" */
-	return (modify_panel(wy, wx));
+	/* Scan windows */
+	for (j = 0; j < ANGBAND_TERM_MAX; j++)
+	{
+		int screen_hgt, screen_wid;
+		int wx, wy;
+
+		term *t = angband_term[j];
+
+		/* No window */
+		if (!t) continue;
+
+		/* No relevant flags */
+		if ((j > 0) && !(op_ptr->window_flag[j] & PW_MAP)) continue;
+
+		screen_hgt = (j == 0) ? (Term->hgt - ROW_MAP - 1) : t->hgt;
+		screen_wid = (j == 0) ? (Term->wid - COL_MAP - 1) : t->wid;
+
+		/* Bigtile panels only have half the width */
+		if (use_bigtile) screen_wid = screen_wid / 2;
+
+		/* Shift by half a panel */
+		wy = t->offset_y + ddy[dir] * screen_hgt / 2;
+		wx = t->offset_x + ddx[dir] * screen_wid / 2;
+
+		/* Use "modify_panel" */
+		if (modify_panel(t, wy, wx)) changed = TRUE;
+	}
+
+	return (changed);
 }
 
 
@@ -2368,46 +2450,68 @@ bool change_panel(int dir)
  */
 void verify_panel(void)
 {
+	int wy, wx;
+	int screen_hgt, screen_wid;
+
+	int panel_wid, panel_hgt;
+
 	int py = p_ptr->py;
 	int px = p_ptr->px;
 
-	int wy = p_ptr->wy;
-	int wx = p_ptr->wx;
+	int j;
 
-
-	/* Scroll screen vertically when off-center */
-	if (center_player && (!p_ptr->running || !run_avoid_center) &&
-	    (py != wy + SCREEN_HGT / 2))
+	/* Scan windows */
+	for (j = 0; j < ANGBAND_TERM_MAX; j++)
 	{
-		wy = py - SCREEN_HGT / 2;
-	}
+		term *t = angband_term[j];
 
-	/* Scroll screen vertically when 2 grids from top/bottom edge */
-	else if ((py < wy + 2) || (py >= wy + SCREEN_HGT - 2))
-	{
-		wy = ((py - PANEL_HGT / 2) / PANEL_HGT) * PANEL_HGT;
-	}
+		/* No window */
+		if (!t) continue;
+
+		/* No relevant flags */
+		if ((j > 0) && !(op_ptr->window_flag[j] & (PW_MAP))) continue;
+
+		wy = t->offset_y;
+		wx = t->offset_x;
+
+		screen_hgt = (j == 0) ? (Term->hgt - ROW_MAP - 1) : t->hgt;
+		screen_wid = (j == 0) ? (Term->wid - COL_MAP - 1) : t->wid;
+
+		/* Bigtile panels only have half the width */
+		if (use_bigtile) screen_wid = screen_wid / 2;
+
+		panel_wid = screen_wid / 2;
+		panel_hgt = screen_hgt / 2;
+
+		/* Scroll screen vertically when off-center */
+		if (center_player && (!p_ptr->running || !run_avoid_center) &&
+		    (py != wy + panel_hgt))
+		{
+			wy = py - panel_hgt;
+		}
+
+		/* Scroll screen vertically when 1/4 screen_hgt grids from top/bottom edge */
+		else if ((py < wy + screen_hgt / 4) || (py >= wy + (3 * screen_hgt) / 4))
+		{
+			wy = py - panel_hgt;
+		}
 
 
-	/* Scroll screen horizontally when off-center */
-	if (center_player && (!p_ptr->running || !run_avoid_center) &&
-	    (px != wx + SCREEN_WID / 2))
-	{
-		wx = px - SCREEN_WID / 2;
-	}
+		/* Scroll screen horizontally when off-center */
+		if (center_player && (!p_ptr->running || !run_avoid_center) &&
+		    (px != wx + panel_wid))
+		{
+			wx = px - panel_wid;
+		}
 
-	/* Scroll screen horizontally when 4 grids from left/right edge */
-	else if ((px < wx + 4) || (px >= wx + SCREEN_WID - 4))
-	{
-		wx = ((px - PANEL_WID / 2) / PANEL_WID) * PANEL_WID;
-	}
+		/* Scroll screen horizontally when 1/4 screen_wid grids from left/right edge */
+		else if ((px < wx + screen_wid / 4) || (px >= wx + (3 * screen_wid) / 4))
+		{
+			wx = px - panel_wid;
+		}
 
-
-	/* Scroll if needed */
-	if (modify_panel(wy, wx))
-	{
-		/* Optional disturb on "panel change" */
-		if (disturb_panel && !center_player) disturb(0, 0);
+		/* Scroll if needed */
+		modify_panel(t, wy, wx);
 	}
 }
 
@@ -2954,9 +3058,9 @@ static void target_set_interactive_prepare(int mode)
 	temp_n = 0;
 
 	/* Scan the current panel */
-	for (y = p_ptr->wy; y < p_ptr->wy + SCREEN_HGT; y++)
+	for (y = Term->offset_y; y < Term->offset_y + SCREEN_HGT; y++)
 	{
-		for (x = p_ptr->wx; x < p_ptr->wx + SCREEN_WID; x++)
+		for (x = Term->offset_x; x < Term->offset_x + SCREEN_WID; x++)
 		{
 			/* Check bounds */
 			if (!in_bounds_fully(y, x)) continue;
@@ -3451,9 +3555,7 @@ static int target_set_interactive_aux(int y, int x, int mode, cptr info)
  *
  * Note that this code can be called from "get_aim_dir()".
  *
- * All locations must be on the current panel, unless the "scroll_target"
- * option is used, which allows changing the current panel during "look"
- * and "target" commands.  Currently, when "flag" is true, that is, when
+ * Currently, when "flag" is true, that is, when
  * "interesting" grids are being used, and a directional key is used, we
  * only scroll by a single panel, in the direction requested, and check
  * for any interesting grids on that panel.  The "correct" solution would
@@ -3543,6 +3645,13 @@ bool target_set_interactive(int mode)
 				strcpy(info, "q,p,o,+,-,<dir>");
 			}
 
+			/* Adjust panel if needed */
+			if (adjust_panel(y, x))
+			{
+				/* Handle stuff */
+				handle_stuff();
+			}
+
 			/* Describe and Prompt */
 			query = target_set_interactive_aux(y, x, mode, info);
 
@@ -3586,14 +3695,11 @@ bool target_set_interactive(int mode)
 
 				case 'p':
 				{
-					if (scroll_target)
-					{
-						/* Recenter around player */
-						verify_panel();
+					/* Recenter around player */
+					verify_panel();
 
-						/* Handle stuff */
-						handle_stuff();
-					}
+					/* Handle stuff */
+					handle_stuff();
 
 					y = py;
 					x = px;
@@ -3652,10 +3758,10 @@ bool target_set_interactive(int mode)
 				i = target_pick(old_y, old_x, ddy[d], ddx[d]);
 
 				/* Scroll to find interesting grid */
-				if (scroll_target && (i < 0))
+				if (i < 0)
 				{
-					int old_wy = p_ptr->wy;
-					int old_wx = p_ptr->wx;
+					int old_wy = Term->offset_y;
+					int old_wx = Term->offset_x;
 
 					/* Change if legal */
 					if (change_panel(d))
@@ -3667,7 +3773,7 @@ bool target_set_interactive(int mode)
 						i = target_pick(old_y, old_x, ddy[d], ddx[d]);
 
 						/* Restore panel if needed */
-						if ((i < 0) && modify_panel(old_wy, old_wx))
+						if ((i < 0) && modify_panel(Term, old_wy, old_wx))
 						{
 							/* Recalculate interesting grids */
 							target_set_interactive_prepare(mode);
@@ -3718,14 +3824,11 @@ bool target_set_interactive(int mode)
 
 				case 'p':
 				{
-					if (scroll_target)
-					{
-						/* Recenter around player */
-						verify_panel();
+					/* Recenter around player */
+					verify_panel();
 
-						/* Handle stuff */
-						handle_stuff();
-					}
+					/* Handle stuff */
+					handle_stuff();
 
 					y = py;
 					x = px;
@@ -3787,40 +3890,29 @@ bool target_set_interactive(int mode)
 			/* Handle "direction" */
 			if (d)
 			{
+				int dungeon_hgt = (p_ptr->depth == 0) ? TOWN_HGT : DUNGEON_HGT;
+				int dungeon_wid = (p_ptr->depth == 0) ? TOWN_WID : DUNGEON_WID;
+
 				/* Move */
 				x += ddx[d];
 				y += ddy[d];
 
-				if (scroll_target)
+				/* Slide into legality */
+				if (x >= dungeon_wid - 1) x--;
+				else if (x <= 0) x++;
+
+				/* Slide into legality */
+				if (y >= dungeon_hgt - 1) y--;
+				else if (y <= 0) y++;
+
+				/* Adjust panel if needed */
+				if (adjust_panel(y, x))
 				{
-					/* Slide into legality */
-					if (x >= DUNGEON_WID - 1) x--;
-					else if (x <= 0) x++;
+					/* Handle stuff */
+					handle_stuff();
 
-					/* Slide into legality */
-					if (y >= DUNGEON_HGT - 1) y--;
-					else if (y <= 0) y++;
-
-					/* Adjust panel if needed */
-					if (adjust_panel(y, x))
-					{
-						/* Handle stuff */
-						handle_stuff();
-
-						/* Recalculate interesting grids */
-						target_set_interactive_prepare(mode);
-					}
-				}
-
-				else
-				{
-					/* Slide into legality */
-					if (x >= p_ptr->wx + SCREEN_WID) x--;
-					else if (x < p_ptr->wx) x++;
-
-					/* Slide into legality */
-					if (y >= p_ptr->wy + SCREEN_HGT) y--;
-					else if (y < p_ptr->wy) y++;
+					/* Recalculate interesting grids */
+					target_set_interactive_prepare(mode);
 				}
 			}
 		}
@@ -3832,14 +3924,11 @@ bool target_set_interactive(int mode)
 	/* Clear the top line */
 	prt("", 0, 0);
 
-	if (scroll_target)
-	{
-		/* Recenter around player */
-		verify_panel();
+	/* Recenter around player */
+	verify_panel();
 
-		/* Handle stuff */
-		handle_stuff();
-	}
+	/* Handle stuff */
+	handle_stuff();
 
 	/* Failure to set target */
 	if (!p_ptr->target_set) return (FALSE);

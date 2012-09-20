@@ -645,7 +645,7 @@ static void term_data_link(int i)
  *   1st line = max 68 chars.
  *   Start next lines with 11 spaces, as in main-xaw.c.
  */
-cptr help_xxx = "Describe XXX, subopts -describe suboptions here";
+const char help_xxx[] = "Describe XXX, subopts -describe suboptions here";
 
 
 /*

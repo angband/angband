@@ -129,6 +129,13 @@ static errr Term_xtra_vcs(int n, int v)
 	/* Analyze */
 	switch (n)
 	{
+		case TERM_XTRA_SHAPE:
+		{
+			printf("\033[?25%c", v ? 'h' : 'l');
+			fflush(stdout);
+			return(0);
+		}
+
 		case TERM_XTRA_EVENT:
 		{
 			int lch;
@@ -437,9 +444,16 @@ errr init_vcs(int argc, char** argv)
 		char buf[256];
 		c = ttyname(0);
 
-		if (c == NULL || sscanf(c, "/dev/tty%i", &i) != 1)
+		if (c == NULL)
 		{
-			fprintf(stderr,"can't find my tty\n");
+			fprintf(stderr, "can't find my tty\n");
+			return 1;
+		}
+
+		if ((sscanf(c, "/dev/tty%i", &i) != 1) &&
+		    (sscanf(c, "/dev/vc/%i", &i) != 1))
+		{
+			fprintf(stderr, "can't find tty number for '%s'\n", c);
 			return 1;
 		}
 
@@ -485,7 +499,7 @@ errr init_vcs(int argc, char** argv)
 	 */
 	game_termios.c_lflag &= ~(ICANON | ECHO | TOSTOP);
 
-	term_data_link(0, 0, 0, 80, 24);
+	term_data_link(0, 0, 0, s_width, s_height);
 
 	/* Success */
 	return 0;

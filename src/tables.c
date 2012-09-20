@@ -1360,14 +1360,14 @@ cptr window_flag_desc[32] =
 	"Display equip/inven",
 	"Display player (basic)",
 	"Display player (extra)",
-	NULL,
-	NULL,
+	"Display player (compact)",
+	"Display map view",
 	"Display messages",
 	"Display overhead view",
 	"Display monster recall",
 	"Display object recall",
 	"Display monster list",
-	"Display snap-shot",
+	"Display status",
 	"Display script variables",
 	"Display script source",
 	"Display borg messages",
@@ -1466,7 +1466,7 @@ cptr option_text[OPT_MAX] =
 	"show_piles",				/* OPT_show_piles */
 	"center_player",			/* OPT_center_player */
 	"run_avoid_center",			/* OPT_run_avoid_center */
-	"scroll_target",			/* OPT_scroll_target */
+	NULL,						/* xxx scroll_target */
 	"auto_more",				/* OPT_auto_more */
 	"smart_monsters",			/* OPT_smart_monsters */
 	"smart_packs",				/* OPT_smart_packs */
@@ -1730,7 +1730,7 @@ cptr option_desc[OPT_MAX] =
 	"Show stacks using special attr/char",		/* OPT_show_piles */
 	"Center map continuously (very slow)",		/* OPT_center_player */
 	"Avoid centering while running",			/* OPT_run_avoid_center */
-	"Scroll map while targetting",				/* OPT_scroll_target */
+	NULL,										/* xxx scroll_target */
 	"Automatically clear '-more-' prompts",		/* OPT_auto_more */
 	"Monsters behave more intelligently",		/* OPT_smart_monsters */
 	"Monsters act smarter in groups (v.slow)",	/* OPT_smart_packs */
@@ -1994,7 +1994,7 @@ const bool option_norm[OPT_MAX] =
 	FALSE,		/* OPT_show_piles */
 	FALSE,		/* OPT_center_player */
 	FALSE,		/* OPT_run_avoid_center */
-	FALSE,		/* OPT_scroll_target */
+	FALSE,		/* xxx */
 	FALSE,		/* OPT_auto_more */
 	FALSE,		/* OPT_smart_monsters */
 	FALSE,		/* OPT_smart_packs */
@@ -2204,7 +2204,7 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_easy_open,
 		OPT_easy_alter,
 		OPT_easy_floor,
-		OPT_scroll_target,
+		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,

@@ -8,7 +8,7 @@ AC_CONFIG_SRCDIR([src/main.c])
 dnl write the resulting #defines into a header file
 AM_CONFIG_HEADER(src/autoconf.h)
 
-AM_INIT_AUTOMAKE(angband, 3.0.5)
+AM_INIT_AUTOMAKE(angband, 3.0.6)
 
 AC_ARG_WITH(setgid,
 [  --with-setgid=NAME      install angband as group NAME],
@@ -24,7 +24,7 @@ AC_LANG([C])
 
 dnl generate the installation path for the ./lib/ folder
 if test "$GAMEGROUP" != ""; then
-  MY_EXPAND_DIR(game_datadir, "$datadir/games/$PACKAGE/lib/")
+  MY_EXPAND_DIR(game_datadir, "$datadir/$PACKAGE/lib/")
 else
   MY_EXPAND_DIR(game_datadir, "./lib/")
   bindir=".."

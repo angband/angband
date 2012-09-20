@@ -329,54 +329,62 @@ bool cave_valid_bold(int y, int x)
 }
 
 
-
-/*
- * Hack -- Legal monster codes
- */
-static const char image_monster_hack[] = \
-"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
 /*
  * Hack -- Hallucinatory monster
  */
 static u16b image_monster(void)
 {
+	monster_race *r_ptr;
+
 	byte a;
 	char c;
 
-	/* Random symbol from set above (not including final nul) */
-	c = image_monster_hack[rand_int(sizeof(image_monster_hack) - 1)];
+	while (1)
+	{
+		/* Select a random monster */
+		r_ptr = &r_info[rand_int(z_info->r_max)];
 
-	/* Random color */
-	a = randint(15);
+		/* Skip non-entries */
+		if (!r_ptr->name) continue;
 
-	/* Encode */
-	return (PICT(a,c));
+		/* Retrieve attr/char */
+		a = r_ptr->x_attr;
+		c = r_ptr->x_char;
+
+		/* Encode */
+		return (PICT(a,c));
+	}
 }
 
-
-/*
- * Hack -- Legal object codes
- */
-static const char image_object_hack[] = \
-"?/|\\\"!$()_-=[]{},~"; /* " */
 
 /*
  * Hack -- Hallucinatory object
  */
 static u16b image_object(void)
 {
+	object_kind *k_ptr;
+
 	byte a;
 	char c;
 
-	/* Random symbol from set above (not including final nul) */
-	c = image_object_hack[rand_int(sizeof(image_object_hack) - 1)];
+	while (1)
+	{
+		/* Select a random object */
+		k_ptr = &k_info[rand_int(z_info->k_max - 1) + 1];
 
-	/* Random color */
-	a = randint(15);
+		/* Skip non-entries */
+		if (!k_ptr->name) continue;
 
-	/* Encode */
-	return (PICT(a,c));
+		/* Retrieve attr/char (HACK - without flavors) */
+		a = k_ptr->x_attr;
+		c = k_ptr->x_char;
+
+		/* HACK - Skip empty entries */
+		if ((a == 0) || (c == 0)) continue;
+
+		/* Encode */
+		return (PICT(a,c));
+	}
 }
 
 
@@ -1366,6 +1374,51 @@ void map_info_default(int y, int x, byte *ap, char *cp)
 
 /*
  * Move the cursor to a given map location.
+ */
+static void move_cursor_relative_map(int y, int x)
+{
+	int ky, kx;
+
+	term *old;
+
+	int j;
+
+	/* Scan windows */
+	for (j = 0; j < ANGBAND_TERM_MAX; j++)
+	{
+		term *t = angband_term[j];
+
+		/* No window */
+		if (!t) continue;
+
+		/* No relevant flags */
+		if (!(op_ptr->window_flag[j] & (PW_MAP))) continue;
+
+		/* Location relative to panel */
+		ky = y - t->offset_y;
+
+		/* Verify location */
+		if ((ky < 0) || (ky >= t->hgt)) continue;
+
+		/* Location relative to panel */
+		kx = x - t->offset_x;
+
+		if (use_bigtile) kx += kx;
+
+		/* Verify location */
+		if ((kx < 0) || (kx >= t->wid)) continue;
+
+		/* Go there */
+		old = Term;
+		Term_activate(t);
+		(void)Term_gotoxy(kx, ky);
+		Term_activate(old);
+	}
+}
+
+
+/*
+ * Move the cursor to a given map location.
  *
  * The main screen will always be at least 24x80 in size.
  */
@@ -1374,14 +1427,17 @@ void move_cursor_relative(int y, int x)
 	int ky, kx;
 	int vy, vx;
 
+	/* Move the cursor on map sub-windows */
+	move_cursor_relative_map(y, x);
+
 	/* Location relative to panel */
-	ky = y - p_ptr->wy;
+	ky = y - Term->offset_y;
 
 	/* Verify location */
 	if ((ky < 0) || (ky >= SCREEN_HGT)) return;
 
 	/* Location relative to panel */
-	kx = x - p_ptr->wx;
+	kx = x - Term->offset_x;
 
 	/* Verify location */
 	if ((kx < 0) || (kx >= SCREEN_WID)) return;
@@ -1406,6 +1462,67 @@ void move_cursor_relative(int y, int x)
  * Note the inline use of "panel_contains()" for efficiency.
  *
  * Note the use of "Term_queue_char()" for efficiency.
+ */
+static void print_rel_map(char c, byte a, int y, int x)
+{
+	int ky, kx;
+
+	int j;
+
+	/* Scan windows */
+	for (j = 0; j < ANGBAND_TERM_MAX; j++)
+	{
+		term *t = angband_term[j];
+
+		/* No window */
+		if (!t) continue;
+
+		/* No relevant flags */
+		if (!(op_ptr->window_flag[j] & (PW_MAP))) continue;
+
+		/* Location relative to panel */
+		ky = y - t->offset_y;
+
+		/* Verify location */
+		if ((ky < 0) || (ky >= t->hgt)) continue;
+
+		/* Location relative to panel */
+		kx = x - t->offset_x;
+
+		if (use_bigtile)
+		{
+			kx += kx;
+			if (kx + 1 >= t->wid) continue;
+		}
+
+		/* Verify location */
+		if ((kx < 0) || (kx >= t->wid)) continue;
+
+		/* Hack -- Queue it */
+		Term_queue_char(t, kx, ky, a, c, 0, 0);
+
+		if (use_bigtile)
+		{
+			/* Mega-Hack : Queue dummy char */
+			if (a & 0x80)
+				Term_queue_char(t, kx+1, ky, 255, -1, 0, 0);
+			else
+				Term_queue_char(t, kx+1, ky, TERM_WHITE, ' ', 0, 0);
+		}
+
+		/* Redraw map */
+		p_ptr->window |= (PW_MAP);
+	}
+}
+
+
+
+/*
+ * Display an attr/char pair at the given map location
+ *
+ * Note the inline use of "panel_contains()" for efficiency.
+ *
+ * Note the use of "Term_queue_char()" for efficiency.
  *
  * The main screen will always be at least 24x80 in size.
  */
@@ -1414,14 +1531,17 @@ void print_rel(char c, byte a, int y, int x)
 	int ky, kx;
 	int vy, vx;
 
+	/* Print on map sub-windows */
+	print_rel_map(c, a, y, x);
+
 	/* Location relative to panel */
-	ky = y - p_ptr->wy;
+	ky = y - Term->offset_y;
 
 	/* Verify location */
 	if ((ky < 0) || (ky >= SCREEN_HGT)) return;
 
 	/* Location relative to panel */
-	kx = x - p_ptr->wx;
+	kx = x - Term->offset_x;
 
 	/* Verify location */
 	if ((kx < 0) || (kx >= SCREEN_WID)) return;
@@ -1435,15 +1555,15 @@ void print_rel(char c, byte a, int y, int x)
 	if (use_bigtile) vx += kx;
 
 	/* Hack -- Queue it */
-	Term_queue_char(vx, vy, a, c, 0, 0);
+	Term_queue_char(Term, vx, vy, a, c, 0, 0);
 
 	if (use_bigtile)
 	{
 		/* Mega-Hack : Queue dummy char */
 		if (a & 0x80)
-			Term_queue_char(vx+1, vy, 255, -1, 0, 0);
+			Term_queue_char(Term, vx+1, vy, 255, -1, 0, 0);
 		else
-			Term_queue_char(vx+1, vy, TERM_WHITE, ' ', 0, 0);
+			Term_queue_char(Term, vx+1, vy, TERM_WHITE, ' ', 0, 0);
 	}
 }
 
@@ -1525,6 +1645,64 @@ void note_spot(int y, int x)
 }
 
 
+static void lite_spot_map(int y, int x)
+{
+	byte a, ta;
+	char c, tc;
+
+	int ky, kx;
+
+	int j;
+
+	/* Scan windows */
+	for (j = 0; j < ANGBAND_TERM_MAX; j++)
+	{
+		term *t = angband_term[j];
+
+		/* No window */
+		if (!t) continue;
+
+		/* No relevant flags */
+		if (!(op_ptr->window_flag[j] & (PW_MAP))) continue;
+
+		/* Location relative to panel */
+		ky = y - t->offset_y;
+		kx = x - t->offset_x;
+
+		if (use_bigtile)
+		{
+			kx += kx;
+			if (kx + 1 >= t->wid) continue;
+		}
+
+		/* Verify location */
+		if ((ky < 0) || (ky >= t->hgt)) continue;
+		if ((kx < 0) || (kx >= t->wid)) continue;
+
+		/* Hack -- redraw the grid */
+		map_info(y, x, &a, &c, &ta, &tc);
+
+		/* Hack -- Queue it */
+		Term_queue_char(t, kx, ky, a, c, ta, tc);
+
+		if (use_bigtile)
+		{
+			kx++;
+
+			/* Mega-Hack : Queue dummy char */
+			if (a & 0x80)
+				Term_queue_char(t, kx, ky, 255, -1, 0, 0);
+			else
+				Term_queue_char(t, kx, ky, TERM_WHITE, ' ', TERM_WHITE, ' ');
+		}
+
+		/* Redraw map */
+		p_ptr->window |= (PW_MAP);
+	}
+}
+
+
+
 /*
  * Redraw (on the screen) a given map location
  *
@@ -1544,14 +1722,17 @@ void lite_spot(int y, int x)
 	int ky, kx;
 	int vy, vx;
 
+	/* Update map sub-windows */
+	lite_spot_map(y, x);
+
 	/* Location relative to panel */
-	ky = y - p_ptr->wy;
+	ky = y - Term->offset_y;
 
 	/* Verify location */
 	if ((ky < 0) || (ky >= SCREEN_HGT)) return;
 
 	/* Location relative to panel */
-	kx = x - p_ptr->wx;
+	kx = x - Term->offset_x;
 
 	/* Verify location */
 	if ((kx < 0) || (kx >= SCREEN_WID)) return;
@@ -1568,7 +1749,7 @@ void lite_spot(int y, int x)
 	map_info(y, x, &a, &c, &ta, &tc);
 
 	/* Hack -- Queue it */
-	Term_queue_char(vx, vy, a, c, ta, tc);
+	Term_queue_char(Term, vx, vy, a, c, ta, tc);
 
 	if (use_bigtile)
 	{
@@ -1576,9 +1757,74 @@ void lite_spot(int y, int x)
 
 		/* Mega-Hack : Queue dummy char */
 		if (a & 0x80)
-			Term_queue_char(vx, vy, 255, -1, 0, 0);
+			Term_queue_char(Term, vx, vy, 255, -1, 0, 0);
 		else
-			Term_queue_char(vx, vy, TERM_WHITE, ' ', TERM_WHITE, ' ');
+			Term_queue_char(Term, vx, vy, TERM_WHITE, ' ', TERM_WHITE, ' ');
+	}
+}
+
+
+static void prt_map_aux(void)
+{
+	byte a;
+	char c;
+	byte ta;
+	char tc;
+
+	int y, x;
+	int vy, vx;
+	int ty, tx;
+
+	int j;
+
+	/* Scan windows */
+	for (j = 0; j < ANGBAND_TERM_MAX; j++)
+	{
+		term *t = angband_term[j];
+
+		/* No window */
+		if (!t) continue;
+
+		/* No relevant flags */
+		if (!(op_ptr->window_flag[j] & (PW_MAP))) continue;
+
+		/* Assume screen */
+		ty = t->offset_y + t->hgt;
+		tx = t->offset_x + t->wid;
+
+		if (use_bigtile) tx = t->offset_x + (t->wid / 2);
+
+		/* Dump the map */
+		for (y = t->offset_y, vy = 0; y < ty; vy++, y++)
+		{
+			for (x = t->offset_x, vx = 0; x < tx; vx++, x++)
+			{
+				/* Check bounds */
+				if (!in_bounds(y, x)) continue;
+
+				if (use_bigtile && (vx + 1 >= t->wid)) continue;
+
+				/* Determine what is there */
+				map_info(y, x, &a, &c, &ta, &tc);
+
+				/* Hack -- Queue it */
+				Term_queue_char(t, vx, vy, a, c, ta, tc);
+
+				if (use_bigtile)
+				{
+					vx++;
+
+					/* Mega-Hack : Queue dummy char */
+					if (a & 0x80)
+						Term_queue_char(t, vx, vy, 255, -1, 0, 0);
+					else
+						Term_queue_char(t, vx, vy, TERM_WHITE, ' ', TERM_WHITE, ' ');
+				}
+			}
+		}
+	
+		/* Redraw map */
+		p_ptr->window |= (PW_MAP);
 	}
 }
 
@@ -1602,14 +1848,17 @@ void prt_map(void)
 	int vy, vx;
 	int ty, tx;
 
+	/* Redraw map sub-windows */
+	prt_map_aux();
+
 	/* Assume screen */
-	ty = p_ptr->wy + SCREEN_HGT;
-	tx = p_ptr->wx + SCREEN_WID;
+	ty = Term->offset_y + SCREEN_HGT;
+	tx = Term->offset_x + SCREEN_WID;
 
 	/* Dump the map */
-	for (y = p_ptr->wy, vy = ROW_MAP; y < ty; vy++, y++)
+	for (y = Term->offset_y, vy = ROW_MAP; y < ty; vy++, y++)
 	{
-		for (x = p_ptr->wx, vx = COL_MAP; x < tx; vx++, x++)
+		for (x = Term->offset_x, vx = COL_MAP; x < tx; vx++, x++)
 		{
 			/* Check bounds */
 			if (!in_bounds(y, x)) continue;
@@ -1618,7 +1867,7 @@ void prt_map(void)
 			map_info(y, x, &a, &c, &ta, &tc);
 
 			/* Hack -- Queue it */
-			Term_queue_char(vx, vy, a, c, ta, tc);
+			Term_queue_char(Term, vx, vy, a, c, ta, tc);
 
 			if (use_bigtile)
 			{
@@ -1626,9 +1875,9 @@ void prt_map(void)
 
 				/* Mega-Hack : Queue dummy char */
 				if (a & 0x80)
-					Term_queue_char(vx, vy, 255, -1, 0, 0);
+					Term_queue_char(Term, vx, vy, 255, -1, 0, 0);
 				else
-					Term_queue_char(vx, vy, TERM_WHITE, ' ', TERM_WHITE, ' ');
+					Term_queue_char(Term, vx, vy, TERM_WHITE, ' ', TERM_WHITE, ' ');
 			}
 		}
 	}
@@ -3484,10 +3733,10 @@ void map_area(void)
 
 
 	/* Pick an area to map */
-	y1 = p_ptr->wy - randint(10);
-	y2 = p_ptr->wy+SCREEN_HGT + randint(10);
-	x1 = p_ptr->wx - randint(20);
-	x2 = p_ptr->wx+SCREEN_WID + randint(20);
+	y1 = Term->offset_y - randint(10);
+	y2 = Term->offset_y + SCREEN_HGT + randint(10);
+	x1 = Term->offset_x - randint(20);
+	x2 = Term->offset_x + SCREEN_WID + randint(20);
 
 	/* Efficiency -- shrink to fit legal bounds */
 	if (y1 < 1) y1 = 1;
@@ -3531,7 +3780,7 @@ void map_area(void)
 	p_ptr->redraw |= (PR_MAP);
 
 	/* Window stuff */
-	p_ptr->window |= (PW_OVERHEAD);
+	p_ptr->window |= (PW_OVERHEAD | PW_MAP);
 }
 
 
@@ -3615,7 +3864,7 @@ void wiz_lite(void)
 	p_ptr->redraw |= (PR_MAP);
 
 	/* Window stuff */
-	p_ptr->window |= (PW_OVERHEAD | PW_MONLIST);
+	p_ptr->window |= (PW_OVERHEAD | PW_MONLIST | PW_MAP);
 }
 
 
@@ -3659,7 +3908,7 @@ void wiz_dark(void)
 	p_ptr->redraw |= (PR_MAP);
 
 	/* Window stuff */
-	p_ptr->window |= (PW_OVERHEAD | PW_MONLIST);
+	p_ptr->window |= (PW_OVERHEAD | PW_MONLIST | PW_MAP);
 }
 
 
@@ -3751,7 +4000,7 @@ void town_illuminate(bool daytime)
 	p_ptr->redraw |= (PR_MAP);
 
 	/* Window stuff */
-	p_ptr->window |= (PW_OVERHEAD | PW_MONLIST);
+	p_ptr->window |= (PW_OVERHEAD | PW_MONLIST | PW_MAP);
 }
 
 
@@ -4123,7 +4372,7 @@ void scatter(int *yp, int *xp, int y, int x, int d, int m)
 		nx = rand_spread(x, d);
 
 		/* Ignore annoying locations */
-		if (!in_bounds_fully(y, x)) continue;
+		if (!in_bounds_fully(ny, nx)) continue;
 
 		/* Ignore "excessively distant" locations */
 		if ((d > 1) && (distance(y, x, ny, nx) > d)) continue;

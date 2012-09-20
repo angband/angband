@@ -1357,12 +1357,12 @@ static Boolean channel_initialised = FALSE;
 /*
  * Data handles containing sound samples
  */
-static SndListHandle samples[SOUND_MAX];
+static SndListHandle samples[MSG_MAX];
 
 /*
  * Reference counts of sound samples
  */
-static SInt16 sample_refs[SOUND_MAX];
+static SInt16 sample_refs[MSG_MAX];
 
 
 /*
@@ -1404,7 +1404,7 @@ static void cleanup_sound(void)
 	}
 
 	/* Free sound data */
-	for (i = 1; i < SOUND_MAX; i++)
+	for (i = 1; i < MSG_MAX; i++)
 	{
 		/* Still locked */
 		if ((sample_refs[i] > 0) && (samples[i] != NULL))
@@ -1500,7 +1500,7 @@ static void play_sound(int num, SInt16 vol)
 	}
 
 	/* Paranoia */
-	if ((num <= 0) || (num >= SOUND_MAX)) return;
+	if ((num <= 0) || (num >= MSG_MAX)) return;
 
 	/* Prepare volume command */
 	volume_cmd.param2 = ((SInt32)vol << 16) | vol;

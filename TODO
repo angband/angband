@@ -48,3 +48,9 @@
 - Allow monsters to recover from stunning/confusion/fear even if the player
   is not in detection range or LOS.
 - Slowing and hasting monsters should only have a temporary effect.
+- Allow each Angband term to have its own tileset.  This would allow cool
+  features such as an overhead view that displays each dungeon grid in a
+  small scale (down to a single pixel - red for monsters, orange for uniques,
+  blue for treasure).
+- The distance to the screen border at which the panel changes should be
+  configurable for the main view and each map window.

@@ -237,17 +237,17 @@ static char music_files[MAX_SONGS][16];
 /*
  * The maximum number of samples per sound-event
  */
-#define SAMPLE_MAX 10
+#define SAMPLE_MAX 16
 
 /*
  * An array of sound files
  */
-static SAMPLE* samples[SOUND_MAX][SAMPLE_MAX];
+static SAMPLE* samples[MSG_MAX][SAMPLE_MAX];
 
 /*
  * The number of available samples for every event
  */
-static int sample_count[SOUND_MAX];
+static int sample_count[MSG_MAX];
 
 #endif /* USE_SOUND */
 
@@ -1370,7 +1370,7 @@ static void dos_quit_hook(cptr str)
 	if (sound_initialized)
 	{
 		/* Destroy samples */
-		for (i = 1; i < SOUND_MAX; i++)
+		for (i = 1; i < MSG_MAX; i++)
 		{
 			int j;
 
@@ -1727,7 +1727,7 @@ static bool init_sound(void)
 		strcpy(section, "Sound");
 
 		/* Prepare the sounds */
-		for (i = 1; i < SOUND_MAX; i++)
+		for (i = 1; i < MSG_MAX; i++)
 		{
 			/* Get the sample names */
 			argv = get_config_argv(section, (char *)angband_sound_name[i], &sample_count[i]);
@@ -1800,7 +1800,7 @@ static errr Term_xtra_dos_sound(int v)
 	if (!use_sound) return (1);
 
 	/* Illegal sound */
-	if ((v < 0) || (v >= SOUND_MAX)) return (1);
+	if ((v < 0) || (v >= MSG_MAX)) return (1);
 
 	/* Get a random sample from the available ones */
 	n = Rand_simple(sample_count[v]);

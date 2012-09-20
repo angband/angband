@@ -31,7 +31,8 @@ static void output_list(cptr list[], int n)
 {
 	int i;
 
-	char *conjunction = "and ";
+	cptr conjunction = "and ";
+
 	if (n < 0)
 	{
 		n = -n;
@@ -43,8 +44,8 @@ static void output_list(cptr list[], int n)
 		if (i != 0)
 		{
 			p_text_out((i == 1 && i == n - 1) ? " " : ", ");
-			if (i == n - 1)
-				p_text_out(conjunction);
+
+			if (i == n - 1) p_text_out(conjunction);
 		}
 
 		p_text_out(list[i]);

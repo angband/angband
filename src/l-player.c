@@ -1,6 +1,6 @@
 /*
 ** Lua binding: player
-** Generated automatically by tolua 5.0a on Sun May 23 19:11:30 2004.
+** Generated automatically by tolua 5.0a on Sat Jun 18 20:19:13 2005.
 */
 
 #ifndef __cplusplus
@@ -1852,56 +1852,6 @@ static int tolua_set_player_type_create_down_stair(lua_State* tolua_S)
  tolua_error(tolua_S,"#vinvalid type in variable assignment.",&tolua_err);
 #endif
   self->create_down_stair = ((bool)  tolua_toboolean(tolua_S,2,0));
- return 0;
-}
-
-/* get function: wy of class  player_type */
-static int tolua_get_player_type_wy(lua_State* tolua_S)
-{
-  player_type* self = (player_type*)  tolua_tousertype(tolua_S,1,0);
-#ifndef TOLUA_RELEASE
- if (!self) tolua_error(tolua_S,"invalid 'self' in accessing variable 'wy'",NULL);
-#endif
- tolua_pushnumber(tolua_S,(long)self->wy);
- return 1;
-}
-
-/* set function: wy of class  player_type */
-static int tolua_set_player_type_wy(lua_State* tolua_S)
-{
-  player_type* self = (player_type*)  tolua_tousertype(tolua_S,1,0);
-#ifndef TOLUA_RELEASE
- tolua_Error tolua_err;
- if (!self) tolua_error(tolua_S,"invalid 'self' in accessing variable 'wy'",NULL);
- if (!tolua_isnumber(tolua_S,2,0,&tolua_err))
- tolua_error(tolua_S,"#vinvalid type in variable assignment.",&tolua_err);
-#endif
-  self->wy = ((s16b)  tolua_tonumber(tolua_S,2,0));
- return 0;
-}
-
-/* get function: wx of class  player_type */
-static int tolua_get_player_type_wx(lua_State* tolua_S)
-{
-  player_type* self = (player_type*)  tolua_tousertype(tolua_S,1,0);
-#ifndef TOLUA_RELEASE
- if (!self) tolua_error(tolua_S,"invalid 'self' in accessing variable 'wx'",NULL);
-#endif
- tolua_pushnumber(tolua_S,(long)self->wx);
- return 1;
-}
-
-/* set function: wx of class  player_type */
-static int tolua_set_player_type_wx(lua_State* tolua_S)
-{
-  player_type* self = (player_type*)  tolua_tousertype(tolua_S,1,0);
-#ifndef TOLUA_RELEASE
- tolua_Error tolua_err;
- if (!self) tolua_error(tolua_S,"invalid 'self' in accessing variable 'wx'",NULL);
- if (!tolua_isnumber(tolua_S,2,0,&tolua_err))
- tolua_error(tolua_S,"#vinvalid type in variable assignment.",&tolua_err);
-#endif
-  self->wx = ((s16b)  tolua_tonumber(tolua_S,2,0));
  return 0;
 }
 
@@ -7884,8 +7834,6 @@ TOLUA_API int tolua_player_open (lua_State* tolua_S)
  tolua_variable(tolua_S,"leaving",tolua_get_player_type_leaving,tolua_set_player_type_leaving);
  tolua_variable(tolua_S,"create_up_stair",tolua_get_player_type_create_up_stair,tolua_set_player_type_create_up_stair);
  tolua_variable(tolua_S,"create_down_stair",tolua_get_player_type_create_down_stair,tolua_set_player_type_create_down_stair);
- tolua_variable(tolua_S,"wy",tolua_get_player_type_wy,tolua_set_player_type_wy);
- tolua_variable(tolua_S,"wx",tolua_get_player_type_wx,tolua_set_player_type_wx);
  tolua_variable(tolua_S,"total_weight",tolua_get_player_type_total_weight,tolua_set_player_type_total_weight);
  tolua_variable(tolua_S,"inven_cnt",tolua_get_player_type_inven_cnt,tolua_set_player_type_inven_cnt);
  tolua_variable(tolua_S,"equip_cnt",tolua_get_player_type_equip_cnt,tolua_set_player_type_equip_cnt);

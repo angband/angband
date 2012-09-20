@@ -135,14 +135,6 @@ void init_file_paths(char *path)
 	/*** Build the sub-directory names ***/
 
 	/* Build a path name */
-	strcpy(tail, "bone");
-	ANGBAND_DIR_BONE = string_make(path);
-
-	/* Build a path name */
-	strcpy(tail, "data");
-	ANGBAND_DIR_DATA = string_make(path);
-
-	/* Build a path name */
 	strcpy(tail, "edit");
 	ANGBAND_DIR_EDIT = string_make(path);
 
@@ -178,7 +170,7 @@ void init_file_paths(char *path)
 
 #endif /* PRIVATE_USER_PATH */
 
-#ifdef USE_PRIVATE_SAVE_PATH
+#ifdef USE_PRIVATE_PATHS
 
 	/* Build the path to the user specific sub-directory */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "scores");
@@ -187,22 +179,42 @@ void init_file_paths(char *path)
 	ANGBAND_DIR_APEX = string_make(buf);
 
 	/* Build the path to the user specific sub-directory */
+	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "bone");
+
+	/* Build a relative path name */
+	ANGBAND_DIR_BONE = string_make(buf);
+
+	/* Build the path to the user specific sub-directory */
+	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "data");
+
+	/* Build a relative path name */
+	ANGBAND_DIR_DATA = string_make(buf);
+
+	/* Build the path to the user specific sub-directory */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "save");
 
 	/* Build a relative path name */
 	ANGBAND_DIR_SAVE = string_make(buf);
 
-#else /* USE_PRIVATE_SAVE_PATH */
+#else /* USE_PRIVATE_PATHS */
 
 	/* Build a path name */
 	strcpy(tail, "apex");
 	ANGBAND_DIR_APEX = string_make(path);
 
 	/* Build a path name */
+	strcpy(tail, "bone");
+	ANGBAND_DIR_BONE = string_make(path);
+
+	/* Build a path name */
+	strcpy(tail, "data");
+	ANGBAND_DIR_DATA = string_make(path);
+
+	/* Build a path name */
 	strcpy(tail, "save");
 	ANGBAND_DIR_SAVE = string_make(path);
 
-#endif /* USE_PRIVATE_SAVE_PATH */
+#endif /* USE_PRIVATE_PATHS */
 
 	/* Build a path name */
 	strcpy(tail, "xtra");
@@ -253,6 +265,62 @@ void init_file_paths(char *path)
 #endif /* NeXT */
 
 }
+
+
+#ifdef PRIVATE_USER_PATH
+
+/*
+ * Create an ".angband/" directory in the users home directory.
+ *
+ * ToDo: Add error handling.
+ * ToDo: Only create the directories when actually writing files.
+ */
+void create_user_dirs(void)
+{
+	char dirpath[1024];
+	char subdirpath[1024];
+
+
+	/* Get an absolute path from the filename */
+	path_parse(dirpath, sizeof(dirpath), PRIVATE_USER_PATH);
+
+	/* Create the ~/.angband/ directory */
+	mkdir(dirpath, 0700);
+
+	/* Build the path to the variant-specific sub-directory */
+	path_build(subdirpath, sizeof(subdirpath), dirpath, VERSION_NAME);
+
+	/* Create the directory */
+	mkdir(subdirpath, 0700);
+
+#ifdef USE_PRIVATE_PATHS
+	/* Build the path to the scores sub-directory */
+	path_build(dirpath, sizeof(dirpath), subdirpath, "scores");
+
+	/* Create the directory */
+	mkdir(dirpath, 0700);
+
+	/* Build the path to the savefile sub-directory */
+	path_build(dirpath, sizeof(dirpath), subdirpath, "bone");
+
+	/* Create the directory */
+	mkdir(dirpath, 0700);
+
+	/* Build the path to the savefile sub-directory */
+	path_build(dirpath, sizeof(dirpath), subdirpath, "data");
+
+	/* Create the directory */
+	mkdir(dirpath, 0700);
+
+	/* Build the path to the savefile sub-directory */
+	path_build(dirpath, sizeof(dirpath), subdirpath, "save");
+
+	/* Create the directory */
+	mkdir(dirpath, 0700);
+#endif /* USE_PRIVATE_PATHS */
+}
+
+#endif /* PRIVATE_USER_PATH */
 
 
 
@@ -566,13 +634,16 @@ static errr init_info(cptr filename, header *head)
 			fd_write(fd, (cptr)head, head->head_size);
 
 			/* Dump the "*_info" array */
-			fd_write(fd, head->info_ptr, head->info_size);
+			if (head->info_size > 0)
+				fd_write(fd, head->info_ptr, head->info_size);
 
 			/* Dump the "*_name" array */
-			fd_write(fd, head->name_ptr, head->name_size);
+			if (head->name_size > 0)
+				fd_write(fd, head->name_ptr, head->name_size);
 
 			/* Dump the "*_text" array */
-			fd_write(fd, head->text_ptr, head->text_size);
+			if (head->text_size > 0)
+				fd_write(fd, head->text_ptr, head->text_size);
 
 			/* Close */
 			fd_close(fd);

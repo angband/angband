@@ -1409,6 +1409,8 @@ static bool player_birth_aux_3(void)
 	{
 		int col = 42;
 
+#ifdef ALLOW_AUTOROLLER
+
 		/* Feedback */
 		if (adult_auto_roller)
 		{
@@ -1522,6 +1524,9 @@ static bool player_birth_aux_3(void)
 
 		/* Otherwise just get a character */
 		else
+
+#endif /* ALLOW_AUTOROLLER */
+
 		{
 			/* Get a new character */
 			get_stats();

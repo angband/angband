@@ -10,6 +10,7 @@
 
 
 #include "angband.h"
+#include "script.h"
 
 #ifndef USE_SCRIPT
 
@@ -802,10 +803,10 @@ cptr get_spell_info(int tval, int spell)
 }
 
 
-static int beam_chance()
+static int beam_chance(void)
 {
 	int plev = p_ptr->lev;
-	return((cp_ptr->flags & CF_BEAM) ? plev : (plev / 2));
+	return ((cp_ptr->flags & CF_BEAM) ? plev : (plev / 2));
 }
 
 

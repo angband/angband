@@ -155,7 +155,7 @@ bool do_dec_stat(int stat)
 	if (dec_stat(stat, 10, FALSE))
 	{
 		/* Message */
-		msg_format("You feel very %s.", desc_stat_neg[stat]);
+		message_format(MSG_DRAIN_STAT, stat, "You feel very %s.", desc_stat_neg[stat]);
 
 		/* Notice effect */
 		return (TRUE);
@@ -976,9 +976,9 @@ bool detect_traps(void)
 
 
 	/* Scan the current panel */
-	for (y = p_ptr->wy; y < p_ptr->wy+SCREEN_HGT; y++)
+	for (y = Term->offset_y; y < Term->offset_y + SCREEN_HGT; y++)
 	{
-		for (x = p_ptr->wx; x < p_ptr->wx+SCREEN_WID; x++)
+		for (x = Term->offset_x; x < Term->offset_x + SCREEN_WID; x++)
 		{
 			if (!in_bounds_fully(y, x)) continue;
 
@@ -1028,9 +1028,9 @@ bool detect_doors(void)
 
 
 	/* Scan the panel */
-	for (y = p_ptr->wy; y < p_ptr->wy+SCREEN_HGT; y++)
+	for (y = Term->offset_y; y < Term->offset_y + SCREEN_HGT; y++)
 	{
-		for (x = p_ptr->wx; x < p_ptr->wx+SCREEN_WID; x++)
+		for (x = Term->offset_x; x < Term->offset_x + SCREEN_WID; x++)
 		{
 			if (!in_bounds_fully(y, x)) continue;
 
@@ -1081,9 +1081,9 @@ bool detect_stairs(void)
 
 
 	/* Scan the panel */
-	for (y = p_ptr->wy; y < p_ptr->wy+SCREEN_HGT; y++)
+	for (y = Term->offset_y; y < Term->offset_y + SCREEN_HGT; y++)
 	{
-		for (x = p_ptr->wx; x < p_ptr->wx+SCREEN_WID; x++)
+		for (x = Term->offset_x; x < Term->offset_x + SCREEN_WID; x++)
 		{
 			if (!in_bounds_fully(y, x)) continue;
 
@@ -1125,9 +1125,9 @@ bool detect_treasure(void)
 
 
 	/* Scan the current panel */
-	for (y = p_ptr->wy; y < p_ptr->wy+SCREEN_HGT; y++)
+	for (y = Term->offset_y; y < Term->offset_y + SCREEN_HGT; y++)
 	{
-		for (x = p_ptr->wx; x < p_ptr->wx+SCREEN_WID; x++)
+		for (x = Term->offset_x; x < Term->offset_x + SCREEN_WID; x++)
 		{
 			if (!in_bounds_fully(y, x)) continue;
 
@@ -1892,7 +1892,6 @@ bool ident_spell(void)
 
 	cptr q, s;
 
-
 	/* Only un-id'ed items */
 	item_tester_hook = item_tester_unknown;
 
@@ -1929,6 +1928,23 @@ bool ident_spell(void)
 
 	/* Description */
 	object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
+
+	/* Possibly play a sound depending on object quality. */
+	if (o_ptr->pval < 0) 
+	{
+		/* This is a bad item. */
+		sound(MSG_IDENT_BAD);
+	} 
+	else if (o_ptr->name1 != 0)
+	{
+		/* We have a good artifact. */
+		sound(MSG_IDENT_ART);
+	}
+	else if (o_ptr->name2 != 0)
+	{
+		/* We have a good ego item. */
+		sound(MSG_IDENT_EGO);
+	}
 
 	/* Describe */
 	if (item >= INVEN_WIELD)
@@ -2012,6 +2028,23 @@ bool identify_fully(void)
 	/* Description */
 	object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
 
+	/* Possibly play a sound depending on object quality. */
+	if (o_ptr->pval < 0) 
+	{
+		/* This is a bad item. */
+		sound(MSG_IDENT_BAD);
+	} 
+	else if (o_ptr->name1 != 0)
+	{
+		/* We have a good artifact. */
+		sound(MSG_IDENT_ART);
+	}
+	else if (o_ptr->name2 != 0)
+	{
+		/* We have a good ego item. */
+		sound(MSG_IDENT_EGO);
+	}
+
 	/* Describe */
 	if (item >= INVEN_WIELD)
 	{
@@ -2058,29 +2091,7 @@ static bool item_tester_hook_recharge(const object_type *o_ptr)
 /*
  * Recharge a wand or staff from the pack or on the floor.
  *
- * Mage -- Recharge I --> recharge(5)
- * Mage -- Recharge II --> recharge(40)
- * Mage -- Recharge III --> recharge(100)
- *
- * Priest -- Recharge --> recharge(15)
- *
- * Scroll of recharging --> recharge(60)
- *
- * recharge(20) = 1/6 failure for empty 10th level wand
- * recharge(60) = 1/10 failure for empty 10th level wand
- *
  * It is harder to recharge high level, and highly charged wands.
- *
- * XXX XXX XXX Beware of "sliding index errors".
- *
- * Should probably not "destroy" over-charged items, unless we
- * "replace" them by, say, a broken stick or some such.  The only
- * reason this is okay is because "scrolls of recharging" appear
- * BEFORE all staves/wands in the inventory.  Note that the
- * new "auto_sort_pack" option would correctly handle replacing
- * the "broken" wand with any other item (i.e. a broken stick).
- *
- * XXX XXX XXX Perhaps we should auto-unstack recharging stacks.
  */
 bool recharge(int num)
 {
@@ -2118,27 +2129,23 @@ bool recharge(int num)
 	/* Recharge power */
 	i = (num + 100 - lev - (10 * o_ptr->pval)) / 15;
 
-	/* Back-fire XXX XXX XXX */
+	/* Back-fire */
 	if ((i <= 1) || (rand_int(i) == 0))
 	{
-		/* Dangerous Hack -- Destroy the item */
 		msg_print("There is a bright flash of light.");
 
-		/* Reduce and describe inventory */
-		if (item >= 0)
+		/* Drain the power */
+		o_ptr->pval = 0;
+
+		/* *Identified* items keep the knowledge about the charges */
+		if (!(o_ptr->ident & IDENT_MENTAL))
 		{
-			inven_item_increase(item, -999);
-			inven_item_describe(item);
-			inven_item_optimize(item);
+			/* We no longer "know" the item */
+			o_ptr->ident &= ~(IDENT_KNOWN);
 		}
 
-		/* Reduce and describe floor item */
-		else
-		{
-			floor_item_increase(0 - item, -999);
-			floor_item_describe(0 - item);
-			floor_item_optimize(0 - item);
-		}
+		/* We know that the item is empty */
+		o_ptr->ident |= IDENT_EMPTY;
 	}
 
 	/* Recharge */
@@ -2377,6 +2384,9 @@ bool banishment(void)
 		take_hit(randint(4), "the strain of casting Banishment");
 	}
 
+	/* Update monster list window */
+	p_ptr->window |= PW_MONLIST;
+
 	/* Success */
 	return TRUE;
 }
@@ -2416,6 +2426,9 @@ bool mass_banishment(void)
 		/* Note effect */
 		result = TRUE;
 	}
+
+	/* Update monster list window */
+	if (result) p_ptr->window |= PW_MONLIST;
 
 	return (result);
 }
@@ -2602,7 +2615,7 @@ void destroy_area(int y1, int x1, int r, bool full)
 	p_ptr->redraw |= (PR_MAP);
 
 	/* Window stuff */
-	p_ptr->window |= (PW_OVERHEAD);
+	p_ptr->window |= (PW_OVERHEAD | PW_MAP | PW_MONLIST);
 }
 
 
@@ -2953,7 +2966,7 @@ void earthquake(int cy, int cx, int r)
 	p_ptr->redraw |= (PR_HEALTH);
 
 	/* Window stuff */
-	p_ptr->window |= (PW_OVERHEAD);
+	p_ptr->window |= (PW_OVERHEAD | PW_MAP | PW_MONLIST);
 }
 
 
@@ -3870,7 +3883,7 @@ void ring_of_power(int dir)
 
 			/* Lose some experience (permanently) */
 			p_ptr->exp -= (p_ptr->exp / 4);
-			p_ptr->max_exp -= (p_ptr->exp / 4);
+			p_ptr->max_exp -= (p_ptr->max_exp / 4);
 			check_experience();
 
 			break;

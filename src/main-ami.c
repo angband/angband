@@ -399,7 +399,7 @@ static struct AmiSound *sound_data = NULL;
 static int sounds_needed = 0;
 
 // Ouch - hack
-static struct AmiSound *sound_ref[SOUND_MAX][8];
+static struct AmiSound *sound_ref[MSG_MAX][8];
 
 static int channel_last[ 4 ] = { -1, -1, -1, -1 };
 static int channel_num[ 4 ] = { 1, 1, 1, 1 };
@@ -4320,7 +4320,7 @@ int init_sound( void )
 			}
 		}
 		slev = -1;
-		for (j = 1 ; j < SOUND_MAX ; j++)
+		for (j = 1 ; j < MSG_MAX ; j++)
 		{
 			if (strreq(angband_sound_name[j] , line + k))
 			{
@@ -4370,7 +4370,7 @@ int init_sound( void )
 	if (!sound_data)
 		return( has_sound = use_sound = FALSE );
 
-	for (i = 0 ; i < SOUND_MAX ; i++)
+	for (i = 0 ; i < MSG_MAX ; i++)
 		sound_ref[i][0] = (struct AmiSound *)0;
 
 	s = sound_name_desc;
@@ -4472,7 +4472,7 @@ static void play_sound( int v )
 		/* If no sounds are available for chosen event, skip */
 		if ((int)sound_ref[v][0] == 0)
 			return;
-		if (v > SOUND_MAX)
+		if (v > MSG_MAX)
 			return;
 
 		/* Just pick 1st sound available at the moment */

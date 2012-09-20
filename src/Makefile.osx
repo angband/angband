@@ -71,7 +71,8 @@ OBJS = \
   $(LUAOBJS)
 
 CFLAGS = \
-	-Wall -O2 -fpascal-strings -DMACH_O_CARBON
+	-Wall -O2 -fpascal-strings -DMACH_O_CARBON \
+	-DPRIVATE_USER_PATH=\"~/Library/Preferences\" -DUSE_PRIVATE_PATHS
 LIBS = -framework CoreFoundation -framework QuickTime -framework Carbon
 
 #
@@ -112,22 +113,49 @@ ICONFILES = Angband.icns Save.icns Edit.icns Data.icns
 TILES = 8x8.png 16x16.png 32x32.png
 PLIST = Angband.xml
 RESSRCS = Angband.r
-# RESSRCS = Angband.r Sound.r
+SOUNDSRCS = Sound.r
 RFLAGS = -i /Developer/Headers/FlatCarbon -d MACH_O_CARBON
 
-install: angband $(RESSRCS) $(ICONFILES) $(PLIST)
+LIBFILES = \
+  ../lib/edit/*.txt \
+  ../lib/file/*.txt \
+  ../lib/help/*.txt \
+  ../lib/help/*.hlp \
+  ../lib/pref/*.prf \
+  ../lib/script/*.lua
+
+install: angband $(RESSRCS) $(ICONFILES) $(PLIST) $(LIBFILES)
 	[ -d $(APPBNDL) ] || mkdir $(APPBNDL)
 	[ -d $(APPCONT) ] || mkdir $(APPCONT)
 	[ -d $(APPBIN) ] || mkdir $(APPBIN)
 	[ -d $(APPRES) ] || mkdir $(APPRES)
+
+	[ -d $(APPRES)/lib ] || mkdir $(APPRES)/lib
+	[ -d $(APPRES)/lib/edit ] || mkdir $(APPRES)/lib/edit
+	[ -d $(APPRES)/lib/file ] || mkdir $(APPRES)/lib/file
+	[ -d $(APPRES)/lib/help ] || mkdir $(APPRES)/lib/help
+	[ -d $(APPRES)/lib/pref ] || mkdir $(APPRES)/lib/pref
+	[ -d $(APPRES)/lib/script ] || mkdir $(APPRES)/lib/script
+
+	cp ../lib/edit/*.txt $(APPRES)/lib/edit
+	cp ../lib/file/*.txt $(APPRES)/lib/file
+	cp ../lib/help/*.txt $(APPRES)/lib/help
+	cp ../lib/help/*.hlp $(APPRES)/lib/help
+	cp ../lib/pref/*.prf $(APPRES)/lib/pref
+	cp ../lib/script/*.lua $(APPRES)/lib/script
+
 	install -m 755 angband $(APPBIN)
 	install -m 644 $(ICONFILES) $(APPRES)
+	
 	$(REZ) $(RFLAGS) -o $(APPRES)/angband.rsrc $(RESSRCS)
 	install -m 644 $(PLIST) $(APPCONT)/Info.plist
 	$(SETFILE) -a B $(APPBNDL)
 
 install-tiles: $(TILES)
 	install -m 644 $(TILES) $(APPRES)
+
+install-sound: $(SOUNDSRCS)
+	$(REZ) $(RFLAGS) -append -o $(APPRES)/angband.rsrc $(SOUNDSRCS)
 
 
 #
@@ -264,24 +292,11 @@ l-spell.c: lua/tolua l-spell.pkg
 	lua/tolua -n spell -o l-spell.c l-spell.pkg
 
 
-PACKAGE_NAME = Angband-305
+PACKAGE_NAME = Angband-306
 
-dist: install install-tiles
+dist: install install-tiles $(SOUNDSRCS)
 	mkdir disttemp
 	mkdir disttemp/Docs
-	mkdir disttemp/lib
-	mkdir disttemp/lib/apex
-	mkdir disttemp/lib/bone
-	mkdir disttemp/lib/data
-	mkdir disttemp/lib/edit
-	mkdir disttemp/lib/file
-	mkdir disttemp/lib/help
-	mkdir disttemp/lib/info
-	mkdir disttemp/lib/pref
-	mkdir disttemp/lib/save
-	mkdir disttemp/lib/script
-	mkdir disttemp/lib/user
-	mkdir disttemp/lib/xtra
 
 	cp ../readme.txt disttemp/Docs
 	cp ../changes.txt disttemp/Docs
@@ -289,19 +304,8 @@ dist: install install-tiles
 	cp ../Copying disttemp/Docs/Copying.txt
 	cp ../Thanks disttemp/Docs/Thanks.txt
 
-	cp ../lib/edit/*.txt disttemp/lib/edit
-
-	cp ../lib/file/*.txt disttemp/lib/file
-
-	cp ../lib/help/*.txt disttemp/lib/help
-	cp ../lib/help/*.hlp disttemp/lib/help
-
-	cp ../lib/pref/*.prf disttemp/lib/pref
-
-	cp ../lib/script/*.lua disttemp/lib/script
-
 	cp -R -p "$(APPBNDL)" disttemp
-	$(REZ) $(RFLAGS) -o disttemp/$(APPNAME)/Contents/Resources/angband.rsrc $(RESSRCS)
+	$(REZ) $(RFLAGS) -o disttemp/$(APPNAME)/Contents/Resources/angband.rsrc $(RESSRCS) $(SOUNDSRCS)
 	$(SETFILE) -a B disttemp/$(APPNAME)
 
 	hdiutil create -fs HFS+ -volname $(PACKAGE_NAME) -srcfolder disttemp "$(PACKAGE_NAME)-osx.dmg"

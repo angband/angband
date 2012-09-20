@@ -1308,9 +1308,9 @@ D:A damascened scimitar that hefts with wondrous ease.  Famed in song
 D:as the "Sickle of Harad", and a deadly foe to the undead.
 
 
-# The Short Sword 'Gilettar'
+# The Short Sword 'Dagmor'
 
-N:90:'Gilettar'
+N:90:'Dagmor'
 I:23:10:2
 W:20:8:80:15000
 P:0:1d7:3:7:0

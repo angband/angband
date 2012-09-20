@@ -245,12 +245,14 @@ void do_cmd_wield(void)
 	object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
 
 	/* Message */
+	sound(MSG_WIELD);
 	msg_format("%s %s (%c).", act, o_name, index_to_label(slot));
 
 	/* Cursed! */
 	if (cursed_p(o_ptr))
 	{
 		/* Warn the player */
+		sound(MSG_CURSED);
 		msg_print("Oops! It feels deathly cold!");
 
 		/* Remove special inscription, if any */
@@ -492,7 +494,7 @@ void do_cmd_destroy(void)
 	}
 
 	/* Message */
-	msg_format("You destroy %s.", o_name);
+	message_format(MSG_DESTROY, 0, "You destroy %s.", o_name);
 
 	/* Reduce the charges of rods/wands/staves */
 	reduce_charges(o_ptr, amt);
@@ -1002,15 +1004,15 @@ void do_cmd_locate(void)
 
 
 	/* Start at current panel */
-	y1 = p_ptr->wy;
-	x1 = p_ptr->wx;
+	y1 = Term->offset_y;
+	x1 = Term->offset_x;
 
 	/* Show panels until done */
 	while (1)
 	{
 		/* Get the current panel */
-		y2 = p_ptr->wy;
-		x2 = p_ptr->wx;
+		y2 = Term->offset_y;
+		x2 = Term->offset_x;
 		
 		/* Describe the location */
 		if ((y2 == y1) && (x2 == x1))

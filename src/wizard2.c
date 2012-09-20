@@ -33,9 +33,9 @@ static void do_cmd_wiz_hack_ben(void)
 	for (i = 0; i < MONSTER_FLOW_DEPTH; ++i)
 	{
 		/* Update map */
-		for (y = p_ptr->wy; y < p_ptr->wy + SCREEN_HGT; y++)
+		for (y = Term->offset_y; y < Term->offset_y + SCREEN_HGT; y++)
 		{
-			for (x = p_ptr->wx; x < p_ptr->wx + SCREEN_WID; x++)
+			for (x = Term->offset_x; x < Term->offset_x + SCREEN_WID; x++)
 			{
 				byte a = TERM_RED;
 
@@ -1348,6 +1348,9 @@ static void do_cmd_wiz_zap(int d)
 		/* Delete the monster */
 		delete_monster_idx(i);
 	}
+
+	/* Update monster list window */
+	p_ptr->window |= PW_MONLIST;
 }
 
 
@@ -1422,9 +1425,9 @@ static void do_cmd_wiz_query(void)
 	}
 
 	/* Scan map */
-	for (y = p_ptr->wy; y < p_ptr->wy + SCREEN_HGT; y++)
+	for (y = Term->offset_y; y < Term->offset_y + SCREEN_HGT; y++)
 	{
-		for (x = p_ptr->wx; x < p_ptr->wx + SCREEN_WID; x++)
+		for (x = Term->offset_x; x < Term->offset_x + SCREEN_WID; x++)
 		{
 			byte a = TERM_RED;
 

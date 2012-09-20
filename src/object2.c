@@ -317,7 +317,7 @@ void compact_objects(int size)
 		p_ptr->redraw |= (PR_MAP);
 
 		/* Window stuff */
-		p_ptr->window |= (PW_OVERHEAD);
+		p_ptr->window |= (PW_OVERHEAD | PW_MAP);
 	}
 
 
@@ -782,6 +782,16 @@ void object_aware(object_type *o_ptr)
 {
 	/* Fully aware of the effects */
 	k_info[o_ptr->k_idx].aware = TRUE;
+
+	/* MEGA-HACK - scrolls can change the graphics when becoming aware */
+	if (o_ptr->tval == TV_SCROLL)
+	{
+		/* Redraw map */
+		p_ptr->redraw |= (PR_MAP);
+
+		/* Window stuff */
+		p_ptr->window |= (PW_OVERHEAD | PW_MAP);
+	}
 }
 
 
@@ -2187,9 +2197,11 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 
 						break;
 					}
-
-					/* Rating boost */
-					rating += 25;
+					else
+					{
+						/* Rating boost */
+						rating += 25;
+					}
 
 					/* Mention the item */
 					if (cheat_peek) object_mention(o_ptr);
@@ -4129,6 +4141,7 @@ s16b inven_takeoff(int item, int amt)
 	slot = inven_carry(i_ptr);
 
 	/* Message */
+	sound(MSG_WIELD);
 	msg_format("%s %s (%c).", act, o_name, index_to_label(slot));
 
 	/* Return slot */

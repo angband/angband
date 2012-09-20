@@ -424,7 +424,7 @@ void do_cmd_use_staff(void)
 
 
 	/* Sound */
-	sound(MSG_ZAP);
+	sound(MSG_USE_STAFF);
 
 
 	/* Use the staff */

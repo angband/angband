@@ -662,14 +662,16 @@ static void Destroy(AngbandWidget widget)
 
 static void Resize_term(AngbandWidget wnew)
 {
-	int cols, rows, wid, hgt;
+	int cols, rows;
 
 	int ox = wnew->angband.internal_border;
 	int oy = wnew->angband.internal_border;
 
 	int i;
-	term_data *old_td = (term_data*)(Term->data);
 	term_data *td = &data[0];
+
+	/* Remember the old term */
+	term *old_term = Term;
 
 	/* Hack - Find the term to activate */
 	for (i = 0; i < num_term; i++)
@@ -701,15 +703,11 @@ static void Resize_term(AngbandWidget wnew)
 		if (rows < 24) rows = 24;
 	}
 
-	/* Desired size of window */
-	wid = cols * wnew->angband.fontwidth + (ox + ox);
-	hgt = rows * wnew->angband.fontheight + (oy + oy);
-
 	/* Resize the Term (if needed) */
-	(void) Term_resize(cols, rows);
+	(void)Term_resize(cols, rows);
 
 	/* Activate the old term */
-	Term_activate(&old_td->t);
+	if (old_term) Term_activate(old_term);
 }
 
 /*

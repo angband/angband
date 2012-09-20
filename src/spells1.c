@@ -790,7 +790,7 @@ static int inven_damage(inven_func typ, int perc)
 				object_desc(o_name, sizeof(o_name), o_ptr, FALSE, 3);
 
 				/* Message */
-				msg_format("%sour %s (%c) %s destroyed!",
+				message_format(MSG_DESTROY, 0, "%sour %s (%c) %s destroyed!",
 				           ((o_ptr->number > 1) ?
 				            ((amt == o_ptr->number) ? "All of y" :
 				             (amt > 1 ? "Some of y" : "One of y")) : "Y"),
@@ -1962,7 +1962,7 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ)
 				/* Describe if needed */
 				if (o_ptr->marked && note_kill)
 				{
-					msg_format("The %s%s", o_name, note_kill);
+					message_format(MSG_DESTROY, 0, "The %s%s", o_name, note_kill);
 				}
 
 				/* Delete the object */
@@ -3402,15 +3402,20 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 				{
 					msg_print("You keep hold of your life force!");
 				}
-				else if (p_ptr->hold_life)
-				{
-					msg_print("You feel your life slipping away!");
-					lose_exp(200 + (p_ptr->exp/1000) * MON_DRAIN_LIFE);
-				}
 				else
 				{
-					msg_print("You feel your life draining away!");
-					lose_exp(200 + (p_ptr->exp/100) * MON_DRAIN_LIFE);
+					s32b d = 200 + (p_ptr->exp / 100) * MON_DRAIN_LIFE;
+
+					if (p_ptr->hold_life)
+					{
+						msg_print("You feel your life slipping away!");
+						lose_exp(d / 10);
+					}
+					else
+					{
+						msg_print("You feel your life draining away!");
+						lose_exp(d);
+					}
 				}
 			}
 			take_hit(dam, killer);
@@ -3455,15 +3460,20 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 				{
 					msg_print("You keep hold of your life force!");
 				}
-				else if (p_ptr->hold_life)
-				{
-					msg_print("You feel your life slipping away!");
-					lose_exp(500 + (p_ptr->exp/1000) * MON_DRAIN_LIFE);
-				}
 				else
 				{
-					msg_print("You feel your life draining away!");
-					lose_exp(5000 + (p_ptr->exp/100) * MON_DRAIN_LIFE);
+					s32b d = 5000 + (p_ptr->exp / 100) * MON_DRAIN_LIFE;
+
+					if (p_ptr->hold_life)
+					{
+						msg_print("You feel your life slipping away!");
+						lose_exp(d / 10);
+					}
+					else
+					{
+						msg_print("You feel your life draining away!");
+						lose_exp(d);
+					}
 				}
 			}
 			take_hit(dam, killer);
@@ -4012,7 +4022,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg)
 		if (!blind && !(flg & (PROJECT_HIDE)))
 		{
 			/* Only do visuals if the player can "see" the bolt */
-			if (panel_contains(y, x) && player_has_los_bold(y, x))
+			if (player_has_los_bold(y, x))
 			{
 				u16b p;
 
@@ -4029,10 +4039,21 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg)
 				/* Visual effects */
 				print_rel(c, a, y, x);
 				move_cursor_relative(y, x);
-				if (fresh_before) Term_fresh();
+				if (fresh_before)
+				{
+					Term_fresh();
+					if (p_ptr->window) window_stuff();
+				}
+
 				Term_xtra(TERM_XTRA_DELAY, msec);
+
 				lite_spot(y, x);
-				if (fresh_before) Term_fresh();
+
+				if (fresh_before)
+				{
+					Term_fresh();
+					if (p_ptr->window) window_stuff();
+				}
 
 				/* Display "beam" grids */
 				if (flg & (PROJECT_BEAM))
@@ -4126,7 +4147,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg)
 				x = gx[i];
 
 				/* Only do visuals if the player can "see" the blast */
-				if (panel_contains(y, x) && player_has_los_bold(y, x))
+				if (player_has_los_bold(y, x))
 				{
 					u16b p;
 
@@ -4153,6 +4174,9 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg)
 			/* Flush each "radius" separately */
 			if (fresh_before) Term_fresh();
 
+			/* Flush */
+			if (p_ptr->window) window_stuff();
+
 			/* Delay (efficiently) */
 			if (visual || drawn)
 			{
@@ -4171,7 +4195,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg)
 				x = gx[i];
 
 				/* Hack -- Erase if needed */
-				if (panel_contains(y, x) && player_has_los_bold(y, x))
+				if (player_has_los_bold(y, x))
 				{
 					lite_spot(y, x);
 				}
@@ -4182,6 +4206,9 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg)
 
 			/* Flush the explosion */
 			if (fresh_before) Term_fresh();
+
+			/* Flush */
+			if (p_ptr->window) window_stuff();
 		}
 	}
 

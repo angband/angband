@@ -95,12 +95,6 @@ Display floor stacks in a list    [easy_floor]
      stack is gone or the inventory is full. This option allows the player
      to interact with other items than the one at the top of the stack.
 
-***** <scroll_target>
-Scroll map while targetting    [scroll_target]
-     This allows the player to target monsters which are off-screen from the
-     player's point of view, as the view will scroll to show the whereabouts
-     of all monsters in line of sight so the player can target them.
-
 
 === Disturbance options ===
 
@@ -586,6 +580,11 @@ Display player flags
     of the contributions of each equipment item to various resistances
     and stats.
 
+Display map view
+    Display the area around the player or around the target while
+    targetting.  This allows using graphical tiles in their original
+    size.
+
 Display messages
     Display the most recently generated "messages".
 
@@ -601,9 +600,6 @@ Display object recall
     Display a description of the most recently selected object.  Currently
     this only affects spellbooks and prayerbooks.  This window flag may be
     usefully combined with others, such as "monster recall".
-
-Display snap-shot
-    This window flag is currently unused.
 
 Display borg messages
     This window flag is currently used only by the Borg.

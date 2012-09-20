@@ -747,6 +747,7 @@ static bool read_scroll(object_type *o_ptr, bool *ident)
 
 		case SV_SCROLL_SUMMON_MONSTER:
 		{
+			sound(MSG_SUM_MONSTER);
 			for (k = 0; k < randint(3); k++)
 			{
 				if (summon_specific(py, px, p_ptr->depth, 0))
@@ -759,6 +760,7 @@ static bool read_scroll(object_type *o_ptr, bool *ident)
 
 		case SV_SCROLL_SUMMON_UNDEAD:
 		{
+			sound(MSG_SUM_UNDEAD);
 			for (k = 0; k < randint(3); k++)
 			{
 				if (summon_specific(py, px, p_ptr->depth, SUMMON_UNDEAD))
@@ -1058,6 +1060,7 @@ static bool use_staff(object_type *o_ptr, bool *ident)
 
 		case SV_STAFF_SUMMONING:
 		{
+			sound(MSG_SUM_MONSTER);
 			for (k = 0; k < randint(4); k++)
 			{
 				if (summon_specific(py, px, p_ptr->depth, 0))
@@ -1332,7 +1335,8 @@ static bool aim_wand(object_type *o_ptr, bool *ident)
 
 
 	/* Sound */
-	sound(MSG_ZAP);
+	/* TODO: Create wand sound?  Do the individual effects have sounds? */
+	/* sound(MSG_ZAP_ROD); */
 
 
 	/* XXX Hack -- Extract the "sval" effect */
@@ -1631,7 +1635,7 @@ static bool zap_rod(object_type *o_ptr, bool *ident)
 	}
 
 	/* Sound */
-	sound(MSG_ZAP);
+	sound(MSG_ZAP_ROD);
 
 	/* Analyze the rod */
 	switch (o_ptr->sval)
@@ -1652,7 +1656,7 @@ static bool zap_rod(object_type *o_ptr, bool *ident)
 		case SV_ROD_IDENTIFY:
 		{
 			*ident = TRUE;
-			if (ident_spell()) used_charge = FALSE;
+			if (!ident_spell()) used_charge = FALSE;
 			break;
 		}
 
@@ -1864,7 +1868,7 @@ static bool activate_object(object_type *o_ptr, bool *ident)
 	}
 
 	/* Activate the artifact */
-	message(MSG_ZAP, 0, "You activate it...");
+	message(MSG_ACT_ARTIFACT, 0, "You activate it...");
 
 	/* Artifacts */
 	if (o_ptr->name1)
@@ -2053,7 +2057,7 @@ static bool activate_object(object_type *o_ptr, bool *ident)
 			case ACT_RECHARGE1:
 			{
 				msg_format("Your %s glows bright yellow...", o_name);
-				recharge(60);
+				if (!recharge(60)) return FALSE;
 				break;
 			}
 
@@ -2260,7 +2264,7 @@ static bool activate_object(object_type *o_ptr, bool *ident)
 			case ACT_FIREBRAND:
 			{
 				msg_format("Your %s glows deep red...", o_name);
-				(void)brand_bolts();
+				if (!brand_bolts()) return FALSE;
 				break;
 			}
 
@@ -2312,6 +2316,7 @@ static bool activate_object(object_type *o_ptr, bool *ident)
 		{
 			case SV_DRAGON_BLUE:
 			{
+				sound(MSG_BR_ELEC);
 				msg_print("You breathe lightning.");
 				fire_ball(GF_ELEC, dir, 100, 2);
 				o_ptr->timeout = rand_int(450) + 450;
@@ -2320,6 +2325,7 @@ static bool activate_object(object_type *o_ptr, bool *ident)
 
 			case SV_DRAGON_WHITE:
 			{
+				sound(MSG_BR_FROST);
 				msg_print("You breathe frost.");
 				fire_ball(GF_COLD, dir, 110, 2);
 				o_ptr->timeout = rand_int(450) + 450;
@@ -2328,6 +2334,7 @@ static bool activate_object(object_type *o_ptr, bool *ident)
 
 			case SV_DRAGON_BLACK:
 			{
+				sound(MSG_BR_ACID);
 				msg_print("You breathe acid.");
 				fire_ball(GF_ACID, dir, 130, 2);
 				o_ptr->timeout = rand_int(450) + 450;
@@ -2336,6 +2343,7 @@ static bool activate_object(object_type *o_ptr, bool *ident)
 
 			case SV_DRAGON_GREEN:
 			{
+				sound(MSG_BR_GAS);
 				msg_print("You breathe poison gas.");
 				fire_ball(GF_POIS, dir, 150, 2);
 				o_ptr->timeout = rand_int(450) + 450;
@@ -2344,6 +2352,7 @@ static bool activate_object(object_type *o_ptr, bool *ident)
 
 			case SV_DRAGON_RED:
 			{
+				sound(MSG_BR_FIRE);
 				msg_print("You breathe fire.");
 				fire_ball(GF_FIRE, dir, 200, 2);
 				o_ptr->timeout = rand_int(450) + 450;
@@ -2353,6 +2362,10 @@ static bool activate_object(object_type *o_ptr, bool *ident)
 			case SV_DRAGON_MULTIHUED:
 			{
 				chance = rand_int(5);
+				sound(     ((chance == 1) ? MSG_BR_ELEC :
+				            ((chance == 2) ? MSG_BR_FROST :
+				             ((chance == 3) ? MSG_BR_ACID :
+				              ((chance == 4) ? MSG_BR_GAS : MSG_BR_FIRE)))));
 				msg_format("You breathe %s.",
 				           ((chance == 1) ? "lightning" :
 				            ((chance == 2) ? "frost" :
@@ -2369,6 +2382,7 @@ static bool activate_object(object_type *o_ptr, bool *ident)
 
 			case SV_DRAGON_BRONZE:
 			{
+				sound(MSG_BR_CONF);
 				msg_print("You breathe confusion.");
 				fire_ball(GF_CONFUSION, dir, 120, 2);
 				o_ptr->timeout = rand_int(450) + 450;
@@ -2377,6 +2391,7 @@ static bool activate_object(object_type *o_ptr, bool *ident)
 
 			case SV_DRAGON_GOLD:
 			{
+				sound(MSG_BR_SOUND);
 				msg_print("You breathe sound.");
 				fire_ball(GF_SOUND, dir, 130, 2);
 				o_ptr->timeout = rand_int(450) + 450;
@@ -2386,6 +2401,7 @@ static bool activate_object(object_type *o_ptr, bool *ident)
 			case SV_DRAGON_CHAOS:
 			{
 				chance = rand_int(2);
+				sound(((chance == 1 ? MSG_BR_CHAOS : MSG_BR_DISENCHANT)));
 				msg_format("You breathe %s.",
 				           ((chance == 1 ? "chaos" : "disenchantment")));
 				fire_ball((chance == 1 ? GF_CHAOS : GF_DISENCHANT),
@@ -2397,6 +2413,7 @@ static bool activate_object(object_type *o_ptr, bool *ident)
 			case SV_DRAGON_LAW:
 			{
 				chance = rand_int(2);
+				sound(((chance == 1 ? MSG_BR_SOUND : MSG_BR_SHARDS)));
 				msg_format("You breathe %s.",
 				           ((chance == 1 ? "sound" : "shards")));
 				fire_ball((chance == 1 ? GF_SOUND : GF_SHARD),
@@ -2423,6 +2440,7 @@ static bool activate_object(object_type *o_ptr, bool *ident)
 			case SV_DRAGON_SHINING:
 			{
 				chance = rand_int(2);
+				sound(((chance == 0 ? MSG_BR_LIGHT : MSG_BR_DARK)));
 				msg_format("You breathe %s.",
 				           ((chance == 0 ? "light" : "darkness")));
 				fire_ball((chance == 0 ? GF_LITE : GF_DARK), dir, 200, 2);
@@ -2432,6 +2450,7 @@ static bool activate_object(object_type *o_ptr, bool *ident)
 
 			case SV_DRAGON_POWER:
 			{
+				sound(MSG_BR_ELEMENTS);
 				msg_print("You breathe the elements.");
 				fire_ball(GF_MISSILE, dir, 300, 2);
 				o_ptr->timeout = rand_int(300) + 300;
@@ -2566,7 +2585,7 @@ static cptr act_description[ACT_MAX] =
 	"dispel evil (x5)",
 	"heal (500)",
 	"heal (1000)",
-	"cure wounds (4d7)",
+	"cure wounds (4d8)",
 	"haste self (20+d20 turns)",
 	"haste self (75+d75 turns)",
 	"fire bolt (9d8)",

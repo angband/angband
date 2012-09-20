@@ -207,10 +207,9 @@ void do_cmd_redraw(void)
 	p_ptr->redraw |= (PR_BASIC | PR_EXTRA | PR_MAP | PR_EQUIPPY);
 
 	/* Window stuff */
-	p_ptr->window |= (PW_INVEN | PW_EQUIP | PW_PLAYER_0 | PW_PLAYER_1);
-
-	/* Window stuff */
-	p_ptr->window |= (PW_MESSAGE | PW_OVERHEAD | PW_MONSTER | PW_OBJECT);
+	p_ptr->window |= (PW_INVEN | PW_EQUIP | PW_PLAYER_0 | PW_PLAYER_1 |
+	                  PW_MESSAGE | PW_OVERHEAD | PW_MONSTER | PW_OBJECT |
+	                  PW_MAP | PW_MONLIST);
 
 	/* Clear screen */
 	Term_clear();

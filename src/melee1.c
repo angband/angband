@@ -129,6 +129,8 @@ bool make_attack_normal(int m_idx)
 	char ddesc[80];
 
 	bool blinked;
+	
+	int sound_msg;
 
 
 	/* Not allowed to attack */
@@ -249,6 +251,9 @@ bool make_attack_normal(int m_idx)
 			/* Assume no cut or stun */
 			do_cut = do_stun = 0;
 
+			/* Assume no sound */
+			sound_msg = MSG_GENERIC;
+
 			/* Describe the attack method */
 			switch (method)
 			{
@@ -256,12 +261,14 @@ bool make_attack_normal(int m_idx)
 				{
 					act = "hits you.";
 					do_cut = do_stun = 1;
+					sound_msg = MSG_MON_HIT;
 					break;
 				}
 
 				case RBM_TOUCH:
 				{
 					act = "touches you.";
+					sound_msg = MSG_MON_TOUCH;
 					break;
 				}
 
@@ -269,6 +276,7 @@ bool make_attack_normal(int m_idx)
 				{
 					act = "punches you.";
 					do_stun = 1;
+					sound_msg = MSG_MON_PUNCH;
 					break;
 				}
 
@@ -276,6 +284,7 @@ bool make_attack_normal(int m_idx)
 				{
 					act = "kicks you.";
 					do_stun = 1;
+					sound_msg = MSG_MON_KICK;
 					break;
 				}
 
@@ -283,6 +292,7 @@ bool make_attack_normal(int m_idx)
 				{
 					act = "claws you.";
 					do_cut = 1;
+					sound_msg = MSG_MON_CLAW;
 					break;
 				}
 
@@ -290,12 +300,14 @@ bool make_attack_normal(int m_idx)
 				{
 					act = "bites you.";
 					do_cut = 1;
+					sound_msg = MSG_MON_BITE;
 					break;
 				}
 
 				case RBM_STING:
 				{
 					act = "stings you.";
+					sound_msg = MSG_MON_STING;
 					break;
 				}
 
@@ -309,6 +321,7 @@ bool make_attack_normal(int m_idx)
 				{
 					act = "butts you.";
 					do_stun = 1;
+					sound_msg = MSG_MON_BUTT;
 					break;
 				}
 
@@ -316,12 +329,14 @@ bool make_attack_normal(int m_idx)
 				{
 					act = "crushes you.";
 					do_stun = 1;
+					sound_msg = MSG_MON_CRUSH;
 					break;
 				}
 
 				case RBM_ENGULF:
 				{
 					act = "engulfs you.";
+					sound_msg = MSG_MON_ENGULF;
 					break;
 				}
 
@@ -334,18 +349,21 @@ bool make_attack_normal(int m_idx)
 				case RBM_CRAWL:
 				{
 					act = "crawls on you.";
+					sound_msg = MSG_MON_CRAWL;
 					break;
 				}
 
 				case RBM_DROOL:
 				{
 					act = "drools on you.";
+					sound_msg = MSG_MON_DROOL;
 					break;
 				}
 
 				case RBM_SPIT:
 				{
 					act = "spits on you.";
+					sound_msg = MSG_MON_SPIT; 
 					break;
 				}
 
@@ -358,18 +376,21 @@ bool make_attack_normal(int m_idx)
 				case RBM_GAZE:
 				{
 					act = "gazes at you.";
+					sound_msg = MSG_MON_GAZE; 
 					break;
 				}
 
 				case RBM_WAIL:
 				{
 					act = "wails at you.";
+					sound_msg = MSG_MON_WAIL; 
 					break;
 				}
 
 				case RBM_SPORE:
 				{
 					act = "releases spores at you.";
+					sound_msg = MSG_MON_SPORE; 
 					break;
 				}
 
@@ -382,18 +403,21 @@ bool make_attack_normal(int m_idx)
 				case RBM_BEG:
 				{
 					act = "begs you for money.";
+					sound_msg = MSG_MON_BEG;
 					break;
 				}
 
 				case RBM_INSULT:
 				{
 					act = desc_insult[rand_int(MAX_DESC_INSULT)];
+					sound_msg = MSG_MON_INSULT; 
 					break;
 				}
 
 				case RBM_MOAN:
 				{
 					act = desc_moan[rand_int(MAX_DESC_MOAN)];
+					sound_msg = MSG_MON_MOAN; 
 					break;
 				}
 
@@ -405,7 +429,7 @@ bool make_attack_normal(int m_idx)
 			}
 
 			/* Message */
-			if (act) msg_format("%^s %s", m_name, act);
+			if (act) message_format(sound_msg, 0, "%^s %s", m_name, act);
 
 
 			/* Hack -- assume all attacks are obvious */
@@ -1033,7 +1057,6 @@ bool make_attack_normal(int m_idx)
 						    (py_old != p_ptr->py))
 						    do_break = TRUE;
 					}
-
 					break;
 				}
 

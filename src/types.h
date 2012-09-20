@@ -907,9 +907,6 @@ struct player_type
 	bool create_up_stair;	/* Create up stair on next level */
 	bool create_down_stair;	/* Create down stair on next level */
 
-	s16b wy;				/* Dungeon panel */
-	s16b wx;				/* Dungeon panel */
-
 	s32b total_weight;		/* Total weight being carried */
 
 	s16b inven_cnt;			/* Number of items in inventory */

@@ -1035,16 +1035,6 @@ void player_turn_hook(void)
 	/* Do nothing */
 }
 
-void game_turn_hook(void)
-{
-	/* Do nothing */
-}
-
-void process_world_hook(void)
-{
-	/* Do nothing */
-}
-
 bool process_command_hook(int command)
 {
 	return FALSE;

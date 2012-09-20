@@ -1,7 +1,7 @@
 
 
               **************************************************
-              **   Angband 3.0.5   **   The Pits of Angband   **
+              **   Angband 3.0.6   **   The Pits of Angband   **
               **************************************************
 
            Based on Moria:   Copyright (c) 1985 Robert Alan Koeneke
@@ -24,7 +24,7 @@
 
 === General Info ===
 
-This is the README file for Angband 3.0.5.
+This is the README file for Angband 3.0.6.
 
 Angband is a "graphical" dungeon adventure game using textual characters
 to represent the walls and floors of a dungeon and the inhabitants therein,
@@ -35,8 +35,8 @@ There are some ascii "on line help" files in the "lib/help" directory.
 See the Official Angband Home Page "http://www.thangorodrim.net/" for
 a list (mostly complete) of what has changed in each recent version.
 
-See the various Angband ftp sites (including "clockwork.dementia.org" and
-"ftp.cis.ksu.edu") for the latest files, patches, and executables.
+See the Angband ftp site ftp.thangorodrim.net for the latest files, patches,
+and executables.
 
 Contact Robert Ruehlmann < rr9@thangorodrim.net > to report bugs. Use the
 newsgroup "rec.games.roguelike.angband" to ask general questions about the
@@ -57,7 +57,7 @@ archive is available, which contains everything you need to install and
 play Angband.  For other platforms, including most UNIX systems, you must
 compile the source code yourself.  Try the following non-trivial steps:
 
-Step 1: Acquire.  Ftp to "clockwork.dementia.org:/angband/Source"
+Step 1: Acquire.  Ftp to "ftp.thangorodrim.net:/pub/angband/Source"
                   Try "bin" and "mget angband*.tar.gz" and "y"
 Step 2: Extract.  Try "gunzip *.gz" then "tar -xvf *.tar"
 Step 3: Prepare.  Try "cd angband*/src", then edit "Makefile"

@@ -1,6 +1,6 @@
 /*
 ** Lua binding: spell
-** Generated automatically by tolua 5.0a on Sun May 23 19:11:36 2004.
+** Generated automatically by tolua 5.0a on Sat Jun 18 20:19:19 2005.
 */
 
 #ifndef __cplusplus

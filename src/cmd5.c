@@ -839,6 +839,7 @@ void do_cmd_cast(void)
 		if (!cast_spell(cp_ptr->spell_book, spell)) return;
 
 		/* A spell was cast */
+		sound(MSG_SPELL);
 		if (!(p_ptr->spell_flags[spell] & PY_SPELL_WORKED))
 		{
 			int e = s_ptr->sexp;
@@ -1008,6 +1009,7 @@ void do_cmd_pray(void)
 		if (!cast_spell(cp_ptr->spell_book, spell)) return;
 
 		/* A prayer was prayed */
+		sound(MSG_PRAYER);
 		if (!(p_ptr->spell_flags[spell] & PY_SPELL_WORKED))
 		{
 			int e = s_ptr->sexp;

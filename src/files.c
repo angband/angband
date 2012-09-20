@@ -1350,14 +1350,29 @@ static void display_player_xtra_info(void)
 	Term_putstr(col+8, 15, -1, TERM_L_GREEN,
 	            format("%10ld", p_ptr->au));
 
-
 	/* Burden */
 	strnfmt(buf, sizeof(buf), "%ld.%ld lbs",
 	        p_ptr->total_weight / 10L,
 	        p_ptr->total_weight % 10L);
-	Term_putstr(col, 17, -1, TERM_WHITE, "Burden");
-	Term_putstr(col+8, 17, -1, TERM_L_GREEN,
+	Term_putstr(col, 16, -1, TERM_WHITE, "Burden");
+	Term_putstr(col+8, 16, -1, TERM_L_GREEN,
 	            format("%10s", buf));
+
+	/* Speed (without temporary effects) */
+	Term_putstr(col, 17, -1, TERM_WHITE, "Speed");
+	tmp = p_ptr->pspeed;
+	if (p_ptr->fast) tmp -= 10;
+	if (p_ptr->slow) tmp += 10;
+	if (p_ptr->searching) tmp += 10;
+	if (tmp != 110)
+	{
+		Term_putstr(col+8, 17, -1, TERM_L_GREEN,
+		            format("%+10d", tmp - 110));
+	}
+	else
+	{
+		Term_putstr(col+12, 17, -1, TERM_L_GREEN, "Normal");
+	}
 
 
 	/* Middle */
@@ -4781,7 +4796,7 @@ static void get_default_tile(int row, int col, byte *a_def, char *c_def)
 	int screen_wid, screen_hgt;
 
 	int x;
-	int y = row - ROW_MAP + p_ptr->wy;
+	int y = row - ROW_MAP + Term->offset_y;
 
 	/* Retrieve current screen size */
 	Term_get_size(&wid, &hgt);
@@ -4808,9 +4823,9 @@ static void get_default_tile(int row, int col, byte *a_def, char *c_def)
 	{
 		/* Bigtile uses double-width tiles */
 		if (use_bigtile)
-			x = (col - COL_MAP) / 2 + p_ptr->wx;
+			x = (col - COL_MAP) / 2 + Term->offset_x;
 		else
-			x = col - COL_MAP + p_ptr->wx;
+			x = col - COL_MAP + Term->offset_x;
 
 		/* Convert dungeon map into default attr/chars */
 		if (in_bounds(y, x))

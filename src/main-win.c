@@ -510,12 +510,12 @@ static DIBINIT infMask;
  */
 static bool can_use_sound = FALSE;
 
-#define SAMPLE_MAX 8
+#define SAMPLE_MAX 16
 
 /*
  * An array of sound file names
  */
-static cptr sound_file[SOUND_MAX][SAMPLE_MAX];
+static cptr sound_file[MSG_MAX][SAMPLE_MAX];
 
 #endif /* USE_SOUND */
 
@@ -1186,7 +1186,7 @@ static void load_sound_prefs(void)
 	/* Access the sound.cfg */
 	path_build(ini_path, sizeof(ini_path), ANGBAND_DIR_XTRA_SOUND, "sound.cfg");
 
-	for (i = 0; i < SOUND_MAX; i++)
+	for (i = 0; i < MSG_MAX; i++)
 	{
 		/* Ignore empty sound strings */
 		if (!angband_sound_name[i][0]) continue;
@@ -2000,7 +2000,7 @@ static errr Term_xtra_win_sound(int v)
 	if (!use_sound) return (1);
 
 	/* Illegal sound */
-	if ((v < 0) || (v >= SOUND_MAX)) return (1);
+	if ((v < 0) || (v >= MSG_MAX)) return (1);
 
 #ifdef USE_SOUND
 
@@ -2370,12 +2370,8 @@ static errr Term_pict_win(int x, int y, int n, const byte *ap, const char *cp, c
 	HDC hdcSrc;
 	HBITMAP hbmSrcOld;
 
-	/* Paranoia */
-	if (!use_graphics)
-	{
-		/* Erase the grids */
-		return (Term_wipe_win(x, y, n));
-	}
+	/* Erase the grids */
+	Term_wipe_win(x, y, n);
 
 	/* Size of bitmap cell */
 	w1 = infGraph.CellWidth;
@@ -4718,7 +4714,7 @@ static void hook_quit(cptr str)
 
 #ifdef USE_SOUND
 	/* Free the sound names */
-	for (i = 0; i < SOUND_MAX; i++)
+	for (i = 0; i < MSG_MAX; i++)
 	{
 		for (j = 0; j < SAMPLE_MAX; j++)
 		{

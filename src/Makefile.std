@@ -65,7 +65,7 @@ SRCS = \
   wizard1.c wizard2.c obj-info.c \
   generate.c dungeon.c init1.c init2.c randart.c \
   main-cap.c main-gcu.c main-x11.c main-xaw.c main.c \
-  main-gtk.c main-lsl.c main-sla.c main-vcs.c main-xpj.c \
+  main-gtk.c main-lsl.c main-sla.c main-vcs.c main-xpj.c main-lfb.c \
   maid-x11.c \
   script.c use-obj.c x-spell.c \
   l-monst.c l-object.c l-player.c l-random.c l-ui.c \
@@ -82,7 +82,7 @@ OBJS = \
   wizard1.o wizard2.o obj-info.o \
   generate.o dungeon.o init1.o init2.o randart.o \
   main-cap.o main-gcu.o main-x11.o main-xaw.o main.o \
-  main-gtk.o main-lsl.o main-sla.o main-vcs.o main-xpj.o \
+  main-gtk.o main-lsl.o main-sla.o main-vcs.o main-xpj.o main-lfb.o \
   maid-x11.o \
   script.o use-obj.o x-spell.o \
   l-monst.o l-object.o l-player.o l-random.o l-ui.o \
@@ -193,7 +193,7 @@ CC = gcc
 ##
 CFLAGS = -I/usr/X11R6/include -I/usr/include/ncurses -Wall \
          -O2 -fno-strength-reduce \
-         -D"USE_X11" -D"USE_GCU" -D"USE_NCURSES"
+         -D"USE_LFB" -D"USE_X11" -D"USE_GCU" -D"USE_NCURSES" -g
 LIBS = -L/usr/X11R6/lib -lXaw -lXext -lSM -lICE -lXmu -lXt -lX11 -lncurses
 
 
@@ -376,6 +376,7 @@ main-vcs.o: main-vcs.c $(INCS) main.h
 main-x11.o: main-x11.c $(INCS) main.h maid-x11.h
 main-xaw.o: main-xaw.c $(INCS) main.h maid-x11.h
 main-xpj.o: main-xpj.c $(INCS) main.h maid-x11.h
+main-lfb.o: main-lfb.c $(INCS) main.h
 main.o: main.c $(INCS) main.h
 melee1.o: melee1.c $(INCS)
 melee2.o: melee2.c $(INCS)

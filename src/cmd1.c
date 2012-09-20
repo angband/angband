@@ -96,29 +96,38 @@ int critical_norm(int weight, int plus, int dam)
 
 		if (k < 400)
 		{
+			sound(MSG_HIT_GOOD);
 			msg_print("It was a good hit!");
 			dam = 2 * dam + 5;
 		}
 		else if (k < 700)
 		{
+			sound(MSG_HIT_GREAT);
 			msg_print("It was a great hit!");
 			dam = 2 * dam + 10;
 		}
 		else if (k < 900)
 		{
+			sound(MSG_HIT_SUPERB);
 			msg_print("It was a superb hit!");
 			dam = 3 * dam + 15;
 		}
 		else if (k < 1300)
 		{
+			sound(MSG_HIT_HI_GREAT);
 			msg_print("It was a *GREAT* hit!");
 			dam = 3 * dam + 20;
 		}
 		else
 		{
+			sound(MSG_HIT_HI_SUPERB);
 			msg_print("It was a *SUPERB* hit!");
 			dam = ((7 * dam) / 2) + 25;
 		}
+	}
+	else 
+	{
+		sound(MSG_HIT);
 	}
 
 	return (dam);
@@ -560,6 +569,7 @@ void py_pickup(int pickup)
 
 	char o_name[80];
 
+	int sound_msg;
 	int last_o_idx = 0;
 
 	int can_pickup = 0;
@@ -584,9 +594,14 @@ void py_pickup(int pickup)
 		/* Pick up gold */
 		if (o_ptr->tval == TV_GOLD)
 		{
+			/* Determine which sound to play */
+			if ((long)o_ptr->pval < 200) sound_msg = MSG_MONEY1;
+			else if ((long)o_ptr->pval < 600) sound_msg = MSG_MONEY2;
+			else sound_msg = MSG_MONEY3;
+
 			/* Message */
-			msg_format("You have found %ld gold pieces worth of %s.",
-			           (long)o_ptr->pval, o_name);
+			message_format(sound_msg, 0, "You have found %ld gold pieces worth of %s.",
+			               (long)o_ptr->pval, o_name);
 
 			/* Collect the gold */
 			p_ptr->au += o_ptr->pval;
@@ -898,6 +913,7 @@ void hit_trap(int y, int x)
 
 		case FEAT_TRAP_HEAD + 0x04:
 		{
+			sound(MSG_SUM_MONSTER);
 			msg_print("You are enveloped in a cloud of smoke!");
 			cave_info[y][x] &= ~(CAVE_MARK);
 			cave_set_feat(y, x, FEAT_FLOOR);
@@ -1113,7 +1129,7 @@ void py_attack(int y, int x)
 		if (test_hit(chance, r_ptr->ac, m_ptr->ml))
 		{
 			/* Message */
-			message_format(MSG_HIT, m_ptr->r_idx, "You hit %s.", m_name);
+			message_format(MSG_GENERIC, m_ptr->r_idx, "You hit %s.", m_name);
 
 			/* Hack -- bare hands do one damage */
 			k = 1;

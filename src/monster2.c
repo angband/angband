@@ -1339,7 +1339,7 @@ void monster_swap(int y1, int x1, int y2, int x2)
 		p_ptr->update |= (PU_UPDATE_FLOW);
 
 		/* Window stuff */
-		p_ptr->window |= (PW_OVERHEAD);
+		p_ptr->window |= (PW_OVERHEAD | PW_MAP);
 	}
 
 	/* Monster 2 */
@@ -1372,7 +1372,7 @@ void monster_swap(int y1, int x1, int y2, int x2)
 		p_ptr->update |= (PU_UPDATE_FLOW);
 
 		/* Window stuff */
-		p_ptr->window |= (PW_OVERHEAD);
+		p_ptr->window |= (PW_OVERHEAD | PW_MAP);
 	}
 
 

@@ -1,6 +1,6 @@
 /*
 ** Lua binding: object
-** Generated automatically by tolua 5.0a on Sun May 23 19:11:26 2004.
+** Generated automatically by tolua 5.0a on Sat Jun 18 20:19:09 2005.
 */
 
 #ifndef __cplusplus

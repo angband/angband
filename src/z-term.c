@@ -481,16 +481,16 @@ static errr Term_pict_hack(int x, int y, int n, const byte *ap, const char *cp, 
  *
  * Assumes given location and values are valid.
  */
-void Term_queue_char(int x, int y, byte a, char c, byte ta, char tc)
+void Term_queue_char(term *t, int x, int y, byte a, char c, byte ta, char tc)
 {
-	byte *scr_aa = Term->scr->a[y];
-	char *scr_cc = Term->scr->c[y];
+	byte *scr_aa = t->scr->a[y];
+	char *scr_cc = t->scr->c[y];
 
 	byte oa = scr_aa[x];
 	char oc = scr_cc[x];
 
-	byte *scr_taa = Term->scr->ta[y];
-	char *scr_tcc = Term->scr->tc[y];
+	byte *scr_taa = t->scr->ta[y];
+	char *scr_tcc = t->scr->tc[y];
 
 	byte ota = scr_taa[x];
 	char otc = scr_tcc[x];
@@ -510,12 +510,12 @@ void Term_queue_char(int x, int y, byte a, char c, byte ta, char tc)
 	scr_tcc[x] = tc;
 
 	/* Check for new min/max row info */
-	if (y < Term->y1) Term->y1 = y;
-	if (y > Term->y2) Term->y2 = y;
+	if (y < t->y1) t->y1 = y;
+	if (y > t->y2) t->y2 = y;
 
 	/* Check for new min/max col info for this row */
-	if (x < Term->x1[y]) Term->x1[y] = x;
-	if (x > Term->x2[y]) Term->x2[y] = x;
+	if (x < t->x1[y]) t->x1[y] = x;
+	if (x > t->x2[y]) t->x2[y] = x;
 }
 
 
@@ -1430,7 +1430,7 @@ errr Term_draw(int x, int y, byte a, char c)
 	if (!c) return (-2);
 
 	/* Queue it for later */
-	Term_queue_char(x, y, a, c, 0, 0);
+	Term_queue_char(Term, x, y, a, c, 0, 0);
 
 	/* Success */
 	return (0);
@@ -1464,7 +1464,7 @@ errr Term_addch(byte a, char c)
 	if (!c) return (-2);
 
 	/* Queue the given character for display */
-	Term_queue_char(Term->scr->cx, Term->scr->cy, a, c, 0, 0);
+	Term_queue_char(Term, Term->scr->cx, Term->scr->cy, a, c, 0, 0);
 
 	/* Advance the cursor */
 	Term->scr->cx++;

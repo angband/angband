@@ -3408,8 +3408,8 @@ void generate_cave(void)
 
 
 		/* Hack -- illegal panel */
-		p_ptr->wy = DUNGEON_HGT;
-		p_ptr->wx = DUNGEON_WID;
+		Term->offset_y = DUNGEON_HGT;
+		Term->offset_x = DUNGEON_WID;
 
 
 		/* Reset the monster generation level */

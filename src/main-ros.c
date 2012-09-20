@@ -6382,7 +6382,7 @@ SampInfo;
 /*
  | Just need an array of SampInfos
  */
-static SampInfo sample[SOUND_MAX];
+static SampInfo sample[MSG_MAX];
 
 /*
  | This flag will only be set non-zero if the SampInfo array is
@@ -6412,7 +6412,7 @@ static void read_sound_config(void)
 	if (!sound_initd)
 	{
 		/* Initialise the sample array */
-		for (i = 0; i < SOUND_MAX; i++)
+		for (i = 0; i < MSG_MAX; i++)
 		{
 			sample[i].samples = 0;
 			sample[i].samplist = NULL;
@@ -6422,7 +6422,7 @@ static void read_sound_config(void)
 	else
 	{
 		/* Deallocate the sample lists */
-		for (i = 0; i < SOUND_MAX; i++)
+		for (i = 0; i < MSG_MAX; i++)
 		{
 			SampNode *si = sample[i].samplist;
 			sample[i].samples = 0;
@@ -6485,7 +6485,7 @@ static void read_sound_config(void)
 		*sample_name++ = 0;
 
 		/* Look up the event name to get the event number */
-		for (event_number = SOUND_MAX - 1; event_number >= 0; event_number--)
+		for (event_number = MSG_MAX - 1; event_number >= 0; event_number--)
 			if (!strcmp(buffer, angband_sound_name[event_number]))
 				break;
 
@@ -6584,7 +6584,7 @@ static void read_sound_config(void)
 		int i;
 		SampNode *l;
 
-		for (i = 0; i < SOUND_MAX; i++)
+		for (i = 0; i < MSG_MAX; i++)
 		{
 			fprintf(dbo, "\n\nEvent '%s'", angband_sound_name[i]);
 			fprintf(dbo, " (%d sounds)\n", sample[i].samples);
@@ -6655,7 +6655,7 @@ static void play_sound(int event)
 	}
 
 	/* Paranoia */
-	if (event < 0 || event >= SOUND_MAX)
+	if (event < 0 || event >= MSG_MAX)
 		return;
 
 	/* msg_format("Sound '%s'",angband_sound_name[event]); */

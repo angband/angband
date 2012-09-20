@@ -380,12 +380,14 @@ function read_scroll(object)
 	elseif object.sval == SV_SCROLL_CURSE_WEAPON then
 		if curse_weapon() then ident = true end
 	elseif object.sval == SV_SCROLL_SUMMON_MONSTER then
+		sound(MSG_SUM_MONSTER)
 		for k = 0, randint(3) do
 			if summon_specific(player.py, player.px, player.depth, 0) then
 				ident = true
 			end
 		end
 	elseif object.sval == SV_SCROLL_SUMMON_UNDEAD then
+		sound(MSG_SUM_UNDEAD)
 		for k = 0, randint(3) do
 			if summon_specific(player.py, player.px, player.depth, SUMMON_UNDEAD) then
 				ident = true
@@ -513,6 +515,7 @@ function use_staff(object)
 	elseif object.sval == SV_STAFF_HASTE_MONSTERS then
 		if speed_monsters() then ident = true end
 	elseif object.sval == SV_STAFF_SUMMONING then
+		sound(MSG_SUM_MONSTER)
 		for k = 0, randint(4) do
 			if summon_specific(player.py, player.px, player.depth, 0) then
 				ident = true
@@ -677,7 +680,8 @@ function aim_wand(object)
 	end
 
 	-- Sound
-	sound(MSG_ZAP)
+	-- TODO: Wand sound?
+	-- sound(MSG_ZAP)
 
 	local sval = object.sval
 
@@ -841,7 +845,7 @@ function zap_rod(object)
 	end
 
 	-- Sound
-	sound(MSG_ZAP)
+	sound(MSG_ZAP_ROD)
 
 	local sval = object.sval
 
@@ -953,7 +957,7 @@ function activate_object(object)
 		return false, false
 	end
 
-	message(MSG_ZAP, 0, "You activate it...")
+	message(MSG_ACT_ARTIFACT, 0, "You activate it...")
 
 	-- Artifacts
 	if object.name1 > 0 then
@@ -1009,7 +1013,7 @@ function activate_object(object)
 			ring_of_power(dir)
 		elseif artifact.activation == ACT_STAR_BALL then
 			msg_print(string.format("Your %s is surrounded by lightning...", o_name))
-			for i = 1, 9 do fire_ball(GF_ELEC, ddd[i], 150, 3) end
+			for i = 1, 8 do fire_ball(GF_ELEC, ddd[i], 150, 3) end
 		elseif artifact.activation == ACT_RAGE_BLESS_RESIST then
 			msg_print(string.format("Your %s glows many colours...", o_name))
 			hp_player(30)
@@ -1056,7 +1060,7 @@ function activate_object(object)
 			sleep_monsters_touch()
 		elseif artifact.activation == ACT_RECHARGE1 then
 			msg_print(string.format("Your %s glows bright yellow...", o_name))
-			recharge(60)
+			if not recharge(60) then return false, false end
 		elseif artifact.activation == ACT_TELEPORT then
 			msg_print(string.format("Your %s twists space around you...", o_name))
 			teleport_player(100)
@@ -1172,7 +1176,7 @@ function activate_object(object)
 			drain_life(dir, 90)
 		elseif artifact.activation == ACT_FIREBRAND then
 			msg_print(string.format("Your %s glows deep red...", o_name))
-			brand_bolts()
+			if not brand_bolts() then return false, false end
 		elseif artifact.activation == ACT_STARLIGHT then
 			msg_print(string.format("Your %s glows with the light of a thousand stars...", o_name))
 			for i = 1, 9 do strong_lite_line(ddd[i]) end
@@ -1208,22 +1212,27 @@ function activate_object(object)
 
 		-- Branch on the sub-type
 		if object.sval == SV_DRAGON_BLUE then
+			sound(MSG_BR_ELEC)
 			msg_print("You breathe lightning.")
 			fire_ball(GF_ELEC, dir, 100, 2)
 			object.timeout = rand_int(450) + 450
 		elseif object.sval == SV_DRAGON_WHITE then
+			sound(MSG_BR_FROST)
 			msg_print("You breathe frost.")
 			fire_ball(GF_COLD, dir, 110, 2)
 			object.timeout = rand_int(450) + 450
 		elseif object.sval == SV_DRAGON_BLACK then
+			sound(MSG_BR_ACID)
 			msg_print("You breathe acid.")
 			fire_ball(GF_ACID, dir, 130, 2)
 			object.timeout = rand_int(450) + 450
 		elseif object.sval == SV_DRAGON_GREEN then
+			sound(MSG_BR_GAS)
 			msg_print("You breathe poison gas.")
 			fire_ball(GF_POIS, dir, 150, 2)
 			object.timeout = rand_int(450) + 450
 		elseif object.sval == SV_DRAGON_RED then
+			sound(MSG_BR_FIRE)
 			msg_print("You breathe fire.")
 			fire_ball(GF_FIRE, dir, 200, 2)
 			object.timeout = rand_int(450) + 450
@@ -1231,14 +1240,18 @@ function activate_object(object)
 			local chance = randint(5)
 			local name = {"fire", "lightning", "frost", "acid", "poison gas"}
 			local effect = {GF_FIRE, GF_ELEC, GF_COLD, GF_ACID, GF_POIS}
+			local soundfx = {MSG_BR_FIRE,MSG_BR_ELEC,MSG_BR_FROST,MSG_BR_ACID,MSG_BR_GAS}
+			sound(soundfx[chance])
 			msg_print(string.format("You breathe %s.", name[chance]))
 			fire_ball(effect[chance], dir, 250, 2)
 			object.timeout = rand_int(225) + 225
 		elseif object.sval == SV_DRAGON_BRONZE then
+			sound(MSG_BR_CONF);
 			msg_print("You breathe confusion.")
 			fire_ball(GF_CONFUSION, dir, 120, 2)
 			object.timeout = rand_int(450) + 450
 		elseif object.sval == SV_DRAGON_GOLD then
+			sound(MSG_BR_SOUND)
 			msg_print("You breathe sound.")
 			fire_ball(GF_SOUND, dir, 130, 2)
 			object.timeout = rand_int(450) + 450
@@ -1246,6 +1259,8 @@ function activate_object(object)
 			local chance = randint(2)
 			local name = {"disenchantment", "chaos"}
 			local effect = {GF_DISENCHANT, GF_CHAOS}
+			local soundfx = {MSG_BR_DISENCHANT, MSG_BR_CHAOS}
+			sound(soundfx[chance])
 			msg_print(string.format("You breathe %s.", name[chance]))
 			fire_ball(effect[chance], dir, 220, 2)
 			object.timeout = rand_int(300) + 300
@@ -1253,6 +1268,8 @@ function activate_object(object)
 			local chance = randint(2)
 			local name = {"shards", "sound"}
 			local effect = {GF_SHARD, GF_SOUND}
+			local soundfx = {MSG_BR_SHARDS, MSG_BR_SOUND}
+			sound(soundfx[chance])
 			msg_print(string.format("You breathe %s.", name[chance]))
 			fire_ball(effect[chance], dir, 230, 2)
 			object.timeout = rand_int(300) + 300
@@ -1260,6 +1277,8 @@ function activate_object(object)
 			local chance = randint(4)
 			local name = {"shards", "sound", "chaos", "disenchantment"}
 			local effect = {GF_SHARD, GF_SOUND, GF_CHAOS, GF_DISENCHANT}
+			local soundfx = {MSG_BR_SHARDS, MSG_BR_SOUND, MSG_BR_CHAOS, MSG_BR_DISENCHANT}
+			sound(soundfx[chance])
 			msg_print(string.format("You breathe %s.", name[chance]))
 			fire_ball(effect[chance], dir, 250, 2)
 			object.timeout = rand_int(300) + 300
@@ -1267,10 +1286,13 @@ function activate_object(object)
 			local chance = randint(2)
 			local name = {"light", "darkness"}
 			local effect = {GF_LITE, GF_DARK}
+			local soundfx = {MSG_BR_LIGHT, MSG_BR_DARK}
+			sound(soundfx[chance])
 			msg_print(string.format("You breathe %s.", name[chance]))
 			fire_ball(effect[chance], dir, 200, 2)
 			object.timeout = rand_int(300) + 300
 		elseif object.sval == SV_DRAGON_POWER then
+			sound(MSG_BR_ELEMENTS)
 			msg_print("You breathe the elements.")
 			fire_ball(GF_MISSILE, dir, 300, 2)
 			object.timeout = rand_int(300) + 300
@@ -1353,7 +1375,7 @@ function describe_item_activation_hook(object)
 			"dispel evil (x5)",
 			"heal (500)",
 			"heal (1000)",
-			"cure wounds (4d7)",
+			"cure wounds (4d8)",
 			"haste self (20+d20 turns)",
 			"haste self (75+d75 turns)",
 			"fire bolt (9d8)",

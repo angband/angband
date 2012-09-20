@@ -388,6 +388,7 @@ extern void process_player_name(bool sf);
 extern void get_name(void);
 extern void do_cmd_suicide(void);
 extern void do_cmd_save_game(void);
+extern long total_points(void);
 extern void show_scores(void);
 extern void display_scores(int from, int to);
 extern void close_game(void);
@@ -404,6 +405,7 @@ extern void generate_cave(void);
 
 /* init2.c */
 extern void init_file_paths(char *path);
+extern void create_user_dirs(void);
 extern void init_angband(void);
 extern void cleanup_angband(void);
 
@@ -759,7 +761,7 @@ extern void gain_exp(s32b amount);
 extern void lose_exp(s32b amount);
 extern void monster_death(int m_idx);
 extern bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note);
-extern bool modify_panel(int wy, int wx);
+extern bool modify_panel(term *t, int wy, int wx);
 extern bool adjust_panel(int y, int x);
 extern bool change_panel(int dir);
 extern void verify_panel(void);

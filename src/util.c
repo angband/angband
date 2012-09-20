@@ -1916,7 +1916,9 @@ char (*inkey_hack)(int flush_first) = NULL;
  */
 char inkey(void)
 {
-	bool cursor_state;
+	bool cursor_state[ANGBAND_TERM_MAX];
+
+	int j;
 
 	char kk;
 
@@ -1973,14 +1975,33 @@ char inkey(void)
 	}
 
 
-	/* Get the cursor state */
-	(void)Term_get_cursor(&cursor_state);
-
 	/* Show the cursor if waiting, except sometimes in "command" mode */
 	if (!inkey_scan && (!inkey_flag || hilite_player || character_icky))
 	{
-		/* Show the cursor */
-		(void)Term_set_cursor(TRUE);
+		/* Scan windows */
+		for (j = 0; j < ANGBAND_TERM_MAX; j++)
+		{
+			term *t = angband_term[j];
+
+			/* No window */
+			if (!t) continue;
+
+			/* No relevant flags */
+			if ((j > 0) && !(op_ptr->window_flag[j] & (PW_MAP)))
+				continue;
+
+			/* Activate the map term */
+			Term_activate(t);
+
+			/* Get the cursor state */
+			(void)Term_get_cursor(&cursor_state[j]);
+
+			/* Show the cursor */
+			(void)Term_set_cursor(TRUE);
+
+			/* Refresh the term to draw the cursor */
+			if (!cursor_state[j]) Term_fresh();
+		}
 	}
 
 
@@ -2125,13 +2146,37 @@ char inkey(void)
 		}
 	}
 
+	/* Hide the cursor again */
+	if (!inkey_scan && (!inkey_flag || hilite_player || character_icky))
+	{
+		/* Scan windows */
+		for (j = 0; j < ANGBAND_TERM_MAX; j++)
+		{
+			term *t = angband_term[j];
+
+			/* No window */
+			if (!t) continue;
+
+			/* No relevant flags */
+			if ((j > 0) && !(op_ptr->window_flag[j] & PW_MAP)) continue;
+
+			/* Activate the term */
+			Term_activate(t);
+
+			/* Restore the cursor */
+			(void)Term_set_cursor(cursor_state[j]);
+
+			/* Refresh to erase the cursor */
+			if (!cursor_state[j])
+			{
+				Term_fresh();
+			}
+		}
+	}
+
 
 	/* Hack -- restore the term */
 	Term_activate(old);
-
-
-	/* Restore the cursor */
-	Term_set_cursor(cursor_state);
 
 
 	/* Cancel the various "global parameters" */

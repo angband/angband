@@ -58,7 +58,7 @@ static cptr comment_nonsense[MAX_COMMENT_NONSENSE] =
  */
 static void say_comment_accept(void)
 {
-	msg_print(comment_accept[rand_int(MAX_COMMENT_ACCEPT)]);
+	message(MSG_STORE5, 0, comment_accept[rand_int(MAX_COMMENT_ACCEPT)]);
 }
 
 
@@ -2554,6 +2554,16 @@ void do_cmd_store(void)
 	/* Do not leave */
 	leave_store = FALSE;
 
+	/*
+	 * Play a special sound if entering the 
+	 * home, otherwise play a generic store sound.
+	 */
+	if (store_num == STORE_HOME)
+		sound(MSG_STORE_HOME);
+	else
+		sound(MSG_STORE_ENTER);
+
+
 	/* Interact with player */
 	while (!leave_store)
 	{
@@ -2681,6 +2691,9 @@ void do_cmd_store(void)
 		}
 	}
 
+	/* Leave the store sound */
+	sound(MSG_STORE_LEAVE);
+
 
 	/* Take a turn */
 	p_ptr->energy_use = 100;
@@ -2715,7 +2728,7 @@ void do_cmd_store(void)
 	p_ptr->redraw |= (PR_MAP);
 
 	/* Window stuff */
-	p_ptr->window |= (PW_OVERHEAD);
+	p_ptr->window |= (PW_OVERHEAD | PW_MAP);
 }
 
 

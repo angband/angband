@@ -68,7 +68,7 @@
  * (List of changes made by "pelpel" follow)
  * Some API calls are updated to OS 8.x-- ones.
  *
- * Pixmap locking code in Term_pict_map() follows Carbon Porting Guide
+ * Pixmap locking code in Term_pict_mac() follows Carbon Porting Guide
  * by Apple.
  *
  * The idle loop in TERM_XTRA_DELAY is rewritten to sleep on WaitNextEvent
@@ -1330,7 +1330,7 @@ static void term_data_check_size(term_data *td)
 		/* Get current screen */
 		(void)GetQDGlobalsScreenBits(&tScreen);
 
-		/* Verify the top */
+		/* Verify the bottom */
 		if (td->r.top > tScreen.bounds.bottom - td->size_hgt)
 		{
 			td->r.top = tScreen.bounds.bottom - td->size_hgt;
@@ -1342,7 +1342,7 @@ static void term_data_check_size(term_data *td)
 			td->r.top = tScreen.bounds.top + GetMBarHeight();
 		}
 
-		/* Verify the left */
+		/* Verify the right */
 		if (td->r.left > tScreen.bounds.right - td->size_wid)
 		{
 			td->r.left = tScreen.bounds.right - td->size_wid;
@@ -1587,7 +1587,7 @@ static Boolean get_resource_spec(
 
 /*
  * (QuickTime)
- * Create a off-screen GWorld from contents of a file specified by a FSSpec.
+ * Create an off-screen GWorld from contents of a file specified by a FSSpec.
  * Based on BenSWCreateGWorldFromPict.
  *
  * Globals referenced: data[0], graf_height, graf_width
@@ -1852,12 +1852,12 @@ static Boolean channel_initialised = FALSE;
 /*
  * Data handles containing sound samples
  */
-static SndListHandle samples[SOUND_MAX];
+static SndListHandle samples[MSG_MAX];
 
 /*
  * Reference counts of sound samples
  */
-static SInt16 sample_refs[SOUND_MAX];
+static SInt16 sample_refs[MSG_MAX];
 
 #define SOUND_VOLUME_MIN	0	/* Default minimum sound volume */
 #define SOUND_VOLUME_MAX	255	/* Default maximum sound volume */
@@ -1906,7 +1906,7 @@ static void load_sounds(void)
 	 *
 	 * We should use a progress dialog for this.
 	 */
-	for (i = 1; i < SOUND_MAX; i++)
+	for (i = 1; i < MSG_MAX; i++)
 	{
 		/* Apple APIs always give me headacke :( */
 		CFStringRef name;
@@ -2036,7 +2036,7 @@ static void cleanup_sound(void)
 	}
 
 	/* Free sound data */
-	for (i = 1; i < SOUND_MAX; i++)
+	for (i = 1; i < MSG_MAX; i++)
 	{
 		/* Still locked */
 		if ((sample_refs[i] > 0) && (samples[i] != NULL))
@@ -2141,7 +2141,7 @@ static void play_sound(int num, SInt16 vol)
 	}
 
 	/* Paranoia */
-	if ((num <= 0) || (num >= SOUND_MAX)) return;
+	if ((num <= 0) || (num >= MSG_MAX)) return;
 
 	/* Prepare volume command */
 	volume_cmd.param2 = ((SInt32)vol << 16) | vol;
@@ -2472,6 +2472,8 @@ static errr Term_xtra_mac_react(void)
 		use_sound = arg_sound;
 	}
 
+	/* Don't actually switch graphics until the game is running */
+	if (!initialized || !game_in_progress) return (-1);
 
 	/* Handle graphics */
 	if (graf_mode_req != graf_mode)
@@ -2577,11 +2579,14 @@ static errr Term_xtra_mac_react(void)
 		term_data_resize(td);
 
 		/* Reset visuals */
+		if (initialized && game_in_progress)
+		{
 #ifndef ANG281_RESET_VISUALS
-		reset_visuals(TRUE);
+			reset_visuals(TRUE);
 #else
-		reset_visuals();
+			reset_visuals();
 #endif /* !ANG281_RESET_VISUALS */
+		}
 	}
 
 	/* Success */
@@ -3272,62 +3277,38 @@ static void term_data_link(int i)
  * Return a POSIX pathname of the lib directory, or NULL if it can't be
  * located.  Caller must supply a buffer along with its size in bytes,
  * where returned pathname will be stored.
- * I prefer use of goto's to several nested if's, if they involve error
- * handling.  Sorry if you are offended by their presence.  Modern
- * languages have neater constructs for this kind of jobs -- pelpel
  */
 static char *locate_lib(char *buf, size_t size)
 {
-	CFURLRef main_url = NULL;
-	CFStringRef main_str = NULL;
-	char *p;
-	char *res = NULL;
+	CFBundleRef main_bundle;
+	CFURLRef main_url;
+	bool success;
+
+	/* Get the application bundle (Angband.app) */
+	main_bundle = CFBundleGetMainBundle();
+
+	/* Oops */
+	if (!main_bundle) return (NULL);
 
 	/* Obtain the URL of the main bundle */
-	main_url = CFBundleCopyBundleURL(CFBundleGetMainBundle());
+	main_url = CFBundleCopyBundleURL(main_bundle);
 
 	/* Oops */
-	if (main_url == NULL) goto ret;
+	if (!main_url) return (NULL);
 
-	/* Convert it to POSIX pathname */
-	main_str = CFURLCopyFileSystemPath(main_url, kCFURLPOSIXPathStyle);
+	/* Get the URL in the file system's native string representation */
+	success = CFURLGetFileSystemRepresentation(main_url, TRUE, buf, size);
+
+	/* Free the url */
+	CFRelease(main_url);
 
 	/* Oops */
-	if (main_str == NULL) goto ret;
+	if (!success) return (NULL);	
 
-	/* Convert it again from darn unisomething encoding to ASCII */
-	if (CFStringGetCString(main_str, buf, size, kTextEncodingUS_ASCII) == FALSE)
-		goto ret;
+	/* Append "/Contents/Resources/lib/" */
+	my_strcat(buf, "/Contents/Resources/lib/", size);
 
-	/* Find the last '/' in the pathname */
-	p = strrchr(buf, '/');
-
-	/* Paranoia - cannot happen */
-	if (p == NULL) goto ret;
-
-	/* Remove the trailing path */
-	*p = '\0';
-
-	/*
-	 * Paranoia - bounds check, with 5 being the length of "/lib/"
-	 * and 1 for terminating '\0'.
-	 */
-	if (strlen(buf) + 5 + 1 > size) goto ret;
-
-	/* Append "/lib/" */
-	strcat(buf, "/lib/");
-
-	/* Set result */
-	res = buf;
-
-ret:
-
-	/* Release objects allocated and implicitly retained by the program */
-	if (main_str) CFRelease(main_str);
-	if (main_url) CFRelease(main_url);
-
-	/* pathname of the lib folder or NULL */
-	return (res);
+	return (buf);
 }
 
 
@@ -3340,7 +3321,7 @@ ret:
  * Original code by: Maarten Hazewinkel (mmhazewi@cs.ruu.nl)
  *
  * Completely rewritten to use Carbon Process Manager.  It retrieves the
- * volume and direcotry of the current application and simply stores it
+ * volume and directory of the current application and simply stores it
  * in the (static) global variables app_vol and app_dir, but doesn't
  * mess with the "current working directory", because it has long been
  * an obsolete (and arcane!) feature.
@@ -3482,7 +3463,6 @@ static void load_pref_short(const char *key, short *vptr)
 	short tmp;
 
 	if (query_load_pref_short(key, &tmp)) *vptr = tmp;
-	return;
 }
 
 
@@ -3530,8 +3510,7 @@ static void cf_save_prefs()
 	/*
 	 * Make sure preferences are persistent
 	 */
-	CFPreferencesAppSynchronize(
-		kCFPreferencesCurrentApplication);
+	CFPreferencesAppSynchronize(kCFPreferencesCurrentApplication);
 }
 
 
@@ -3543,6 +3522,7 @@ static void cf_load_prefs()
 {
 	bool ok;
 	short pref_major, pref_minor, pref_patch, pref_extra;
+	short valid;
 	int i;
 
 	/* Assume nothing is wrong, yet */
@@ -3584,6 +3564,18 @@ static void cf_load_prefs()
 	}
 
 #endif
+
+	/* HACK - Check for broken preferences */
+	load_pref_short("term0.mapped", &valid);
+
+	/* Ignore broken preferences */
+	if (!valid)
+	{
+		mac_warning("Ignoring broken preferences.");
+
+		/* Ignore */
+		return;
+	}
 
 	/* Gfx settings */
 	{
@@ -3792,18 +3784,31 @@ static bool select_savefile(bool all)
 
 #ifdef MACH_O_CARBON
 
-	/* Find the save folder */
-	err = path_to_spec(ANGBAND_DIR_SAVE, &theFolderSpec);
+	short foundVRefNum;
+	long foundDirID;
+
+	/* Find the preferences folder */
+	err = FindFolder(kOnSystemDisk, kPreferencesFolderType, kDontCreateFolder,
+	                 &foundVRefNum, &foundDirID);
+
+	if (err != noErr) quit("Couldn't find the preferences folder!");
+
+	/* Look for the "Angband/save/" sub-folder */
+	err = FSMakeFSSpec(foundVRefNum, foundDirID, "\p:Angband:save:", &theFolderSpec);
+
+	/* Oops */
+	if (err != noErr) quit_fmt("Unable to find the savefile folder! (Error %d)", err);
 
 #else
 
 	/* Find :lib:save: folder */
 	err = FSMakeFSSpec(app_vol, app_dir, "\p:lib:save:", &theFolderSpec);
 
-#endif
 
 	/* Oops */
 	if (err != noErr) quit("Unable to find the folder :lib:save:");
+
+#endif
 
 	/* Get default Navigator dialog options */
 	err = NavGetDefaultDialogOptions(&dialogOptions);
@@ -4645,19 +4650,19 @@ static void setup_menus(void)
 
 		/* Item "None" */
 		EnableMenuItem(submenu, ITEM_NONE);
-		CheckMenuItem(submenu, ITEM_NONE, (graf_mode == GRAF_MODE_NONE));
+		CheckMenuItem(submenu, ITEM_NONE, (graf_mode_req == GRAF_MODE_NONE));
 
 		/* Item "8x8" */
 		EnableMenuItem(submenu, ITEM_8X8);
-		CheckMenuItem(submenu, ITEM_8X8, (graf_mode == GRAF_MODE_8X8));
+		CheckMenuItem(submenu, ITEM_8X8, (graf_mode_req == GRAF_MODE_8X8));
 
 		/* Item "16x16" */
 		EnableMenuItem(submenu, ITEM_16X16);
-		CheckMenuItem(submenu, ITEM_16X16, (graf_mode == GRAF_MODE_16X16));
+		CheckMenuItem(submenu, ITEM_16X16, (graf_mode_req == GRAF_MODE_16X16));
 
 		/* Item "32x32" */
 		EnableMenuItem(submenu, ITEM_32X32);
-		CheckMenuItem(submenu, ITEM_32X32, (graf_mode == GRAF_MODE_32X32));
+		CheckMenuItem(submenu, ITEM_32X32, (graf_mode_req == GRAF_MODE_32X32));
 
 #ifdef USE_DOUBLE_TILES
 
@@ -5472,7 +5477,7 @@ static pascal OSErr AEH_Open(const AppleEvent *theAppleEvent, AppleEvent* reply,
 	err = FSpGetFInfo(&myFSS, &myFileInfo);
 	if (err)
 	{
-		strnfmt(msg, 128, "Argh!  FSpGetFInfo failed with code %d", err);
+		strnfmt(msg, sizeof(msg), "Argh!  FSpGetFInfo failed with code %d", err);
 		mac_warning(msg);
 		return err;
 	}
@@ -6170,7 +6175,7 @@ static void hook_quit(cptr str)
 	}
 
 	/* Write a preference file */
-	save_pref_file();
+	if (initialized) save_pref_file();
 
 	/* All done */
 	ExitToShell();
@@ -6265,6 +6270,9 @@ static void init_stuff(void)
 	/* Check until done */
 	while (1)
 	{
+		/* Create directories for the users files */
+		create_user_dirs();
+
 		/* Prepare the paths */
 		init_file_paths(path);
 

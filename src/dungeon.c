@@ -190,6 +190,8 @@ static void sense_inventory(void)
 		object_desc(o_name, sizeof(o_name), o_ptr, FALSE, 0);
 
 		/* Message (equipment) */
+		sound(MSG_PSEUDOID);
+
 		if (i >= INVEN_WIELD)
 		{
 			msg_format("You feel the %s (%c) you are %s %s %s...",
@@ -530,6 +532,57 @@ static void recharge_objects(void)
 }
 
 
+static void play_ambient_sound(void)
+{
+	/* Town sound */
+	if (p_ptr->depth == 0) 
+	{
+		/* Hack - is it daytime or nighttime? */
+		if (turn % (10L * TOWN_DAWN) < TOWN_DAWN / 2)
+		{
+			/* It's day. */
+			sound(MSG_AMBIENT_DAY);
+		} 
+		else 
+		{
+			/* It's night. */
+			sound(MSG_AMBIENT_NITE);
+		}
+		
+	}
+
+	/* Dungeon level 1-20 */
+	else if (p_ptr->depth <= 20) 
+	{
+		sound(MSG_AMBIENT_DNG1);
+	}
+
+	/* Dungeon level 21-40 */
+	else if (p_ptr->depth <= 40) 
+	{
+		sound(MSG_AMBIENT_DNG2);
+	}
+
+	/* Dungeon level 41-60 */
+	else if (p_ptr->depth <= 60) 
+	{
+		sound(MSG_AMBIENT_DNG3);
+	}
+
+	/* Dungeon level 61-80 */
+	else if (p_ptr->depth <= 80) 
+	{
+		sound(MSG_AMBIENT_DNG4);
+	}
+
+	/* Dungeon level 80- */
+	else  
+	{
+		sound(MSG_AMBIENT_DNG5);
+	}
+}
+
+
 /*
  * Handle certain things once every 10 game turns
  */
@@ -540,7 +593,6 @@ static void process_world(void)
 	int regen_amount;
 
 	object_type *o_ptr;
-
 
 	/* Every 10 game turns */
 	if (turn % 10) return;
@@ -582,6 +634,11 @@ static void process_world(void)
 		}
 	}
 
+	/* Play an ambient sound at regular intervals. */
+	if (!(turn % ((10L * TOWN_DAWN) / 4)))
+	{
+		play_ambient_sound();
+	}
 
 	/*** Handle the "town" (stores and sunshine) ***/
 
@@ -2131,8 +2188,11 @@ static void process_player(void)
 
 
 			/* Hack -- constant hallucination */
-			if (p_ptr->image) p_ptr->redraw |= (PR_MAP);
-
+			if (p_ptr->image)
+			{
+				p_ptr->redraw |= (PR_MAP);
+				p_ptr->window |= (PW_MAP);
+			}
 
 			/* Shimmer monsters if needed */
 			if (!avoid_other && shimmer_monsters)
@@ -2271,8 +2331,8 @@ static void dungeon(void)
 
 
 	/* Hack -- enforce illegal panel */
-	p_ptr->wy = DUNGEON_HGT;
-	p_ptr->wx = DUNGEON_WID;
+	Term->offset_y = DUNGEON_HGT;
+	Term->offset_x = DUNGEON_WID;
 
 
 	/* Not leaving */
@@ -2404,7 +2464,7 @@ static void dungeon(void)
 	p_ptr->window |= (PW_MONSTER | PW_MONLIST);
 
 	/* Window stuff */
-	p_ptr->window |= (PW_OVERHEAD);
+	p_ptr->window |= (PW_OVERHEAD | PW_MAP);
 
 	/* Update stuff */
 	update_stuff();
@@ -2830,6 +2890,9 @@ void play_game(bool new_game)
 	/* Process */
 	while (TRUE)
 	{
+		/* Play ambient sound on change of level. */
+		play_ambient_sound();
+
 		/* Process the level */
 		dungeon();
 

@@ -1,6 +1,6 @@
 /*
 ** Lua binding: monster
-** Generated automatically by tolua 5.0a on Sun May 23 19:11:24 2004.
+** Generated automatically by tolua 5.0a on Sat Jun 18 20:19:05 2005.
 */
 
 #ifndef __cplusplus

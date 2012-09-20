@@ -197,6 +197,10 @@ struct term
 	byte *x1;
 	byte *x2;
 
+	/* Offsets used by the map subwindows */
+	byte offset_x;
+	byte offset_y;
+
 	term_win *old;
 	term_win *scr;
 
@@ -272,7 +276,7 @@ extern term *Term;
 extern errr Term_user(int n);
 extern errr Term_xtra(int n, int v);
 
-extern void Term_queue_char(int x, int y, byte a, char c, byte ta, char tc);
+extern void Term_queue_char(term *t, int x, int y, byte a, char c, byte ta, char tc);
 extern void Term_queue_chars(int x, int y, int n, byte a, cptr s);
 
 extern errr Term_fresh(void);
