@@ -96,9 +96,9 @@ unsigned _cdecl _dos_getfileattr(const char *, unsigned *);
 #define WTY_RECALL    2
 #define WTY_CHOICE    3
 
-typedef struct _term_data term_data;
+typedef struct term_data term_data;
 
-struct _term_data {
+struct term_data {
   term     t;
   cptr     s;
   HWND     w;
@@ -160,6 +160,9 @@ bool colors16          = FALSE;  /* 16 colors screen, don't use RGB() */
  */
 static HINSTANCE hInstance = 0;
 
+/*
+ * XXX XXX XXX Consider using "ANGBAND_DIR_XTRA" if desired
+ */
 static char_ptr ANGBAND_DIR_RSRC = 0;
 
 static HBRUSH   hbrYellow = 0;
@@ -1331,14 +1334,16 @@ static void check_for_save_file(LPSTR cmd_line)
 
   if (strlen(cmd_line) == 0) return;
 
-  sprintf(savefile, "%s\\%s", ANGBAND_DIR_SAVE, cmd_line);
+  /* XXX XXX XXX Note the change */
+  sprintf(savefile, "%s%s", ANGBAND_DIR_SAVE, cmd_line);
   validate_file(savefile);
 
   game_in_progress = TRUE;
   disable_start();
 
-  /* Hook into "play_game()" */
-  play_game_mac(FALSE);
+  play_game(FALSE);
+
+  quit(NULL);
 }
 
 
@@ -1365,7 +1370,7 @@ static void process_menus(WPARAM wParam)
         game_in_progress = TRUE;
         disable_start();
         Term_flush();
-        play_game_mac(TRUE);
+        play_game(TRUE);
         quit(NULL);
       }
       break;
@@ -1391,6 +1396,9 @@ static void process_menus(WPARAM wParam)
         ofn.nFilterIndex = 1;
         ofn.lpstrFile = savefile;
         ofn.nMaxFile = 1024;
+
+        /* XXX XXX XXX Note that "ANGBAND_DIR_SAVE" now ends in a "\\" */
+        
         ofn.lpstrInitialDir = ANGBAND_DIR_SAVE;
         ofn.Flags = OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
 
@@ -1401,7 +1409,7 @@ static void process_menus(WPARAM wParam)
           game_in_progress = TRUE;
           disable_start();
           Term_flush();
-          play_game_mac(FALSE);
+          play_game(FALSE);
           quit(NULL);
         }
       }
@@ -1502,24 +1510,39 @@ static void process_menus(WPARAM wParam)
     {
       char buf[120];
 
+      /* Toggle the "graphics" switch */
       use_graphics = !use_graphics;
+
+      /* Clear the "visual" data */
       clear_char_remaps();
+
+      /* Handle "graphics" */
       if (use_graphics)
       {
           term_force_font(&screen, "8x13b.fon");
+
 	  ANGBAND_SYS = "gfw";
-	  //notice_seams = TRUE;
+
+          /* Disable "dangerous" options XXX XXX XXX */
 	  view_yellow_lite = FALSE;
           view_bright_lite = FALSE;
       }
+
+      /* Handle "text" */
       else
+      {
 	  ANGBAND_SYS = "txw";
-      sprintf(buf, "%s%spref-%s.prf", ANGBAND_DIR_PREF, PATH_SEP, ANGBAND_SYS);
+      }
+
+      /* Process the "pref" file */
+      sprintf(buf, "pref-%s.prf", ANGBAND_SYS);
       process_pref_file(buf);
 
+      /* Hack -- redraw everything */
       do_cmd_redraw();
       move_cursor_relative(py, px);
       Term_fresh();
+
       break;
     }
 #endif
@@ -1945,12 +1968,14 @@ LRESULT FAR PASCAL _export AngbandListProc(HWND hWnd, UINT uMsg,
 
 /*
  * Reads ANGBAND.INI, gets lib_path, checks for existence,
- * called by get_file_paths @INIT.C
+ * initializes the various file paths
  */
-void get_lib_path(char *path)
+static void init_stuff(void)
 {
   int   i;
 
+  char path[1024];
+  
   GetPrivateProfileString("Angband", "LibPath", "c:\\angband\\lib", path, 128, ini_file);
 
   /* subtract \\ from the end if present */
@@ -1964,6 +1989,19 @@ void get_lib_path(char *path)
   /* add \ back */
   path[i-1] = '\\';
   path[i] = '\0';
+
+  /* Init the file paths */
+  init_file_paths(path);
+
+  /* Validate important directories */
+#if 0
+  validate_dir((char *)ANGBAND_DIR_FILE);
+  validate_dir((char *)ANGBAND_DIR_HELP);
+  validate_dir((char *)ANGBAND_DIR_BONE);
+  validate_dir((char *)ANGBAND_DIR_DATA);
+  validate_dir((char *)ANGBAND_DIR_SAVE);
+#endif
+
 }
 
 
@@ -2000,9 +2038,6 @@ static void hook_quit(cptr str)
 {
     if (str)
 	MessageBox(screen.w, str, "Error", MB_OK | MB_ICONSTOP);
-
-    /* Oh yeah, close the high score list */
-    nuke_scorefile();
 
     save_prefs();
 
@@ -2119,17 +2154,19 @@ int FAR PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrevInst,
   rnfree(tmp, 512);
   validate_file((char *)ini_file);
 
-  /* Prepare the filepaths */
-  get_file_paths();
+  /* Initialize some stuff */
+  init_stuff();
 
-  /* validate everything */
-  validate_dir((char *)ANGBAND_DIR_FILE);
-  validate_dir((char *)ANGBAND_DIR_HELP);
-  validate_dir((char *)ANGBAND_DIR_BONE);
-  validate_dir((char *)ANGBAND_DIR_DATA);
-  validate_dir((char *)ANGBAND_DIR_SAVE);
-  validate_dir((char *)ANGBAND_DIR_PREF);
-  validate_file((char *)ANGBAND_NEWS);
+  /* XXX XXX XXX */
+  
+  /* No name (yet) */
+  strcpy(player_name, "");
+
+  /* Hack -- assume wizard permissions */
+  can_be_wizard = TRUE;
+
+  /* Hack -- Choose a "pref-xxx.prf" file */
+  ANGBAND_SYS = (use_graphics ? "gfw" : "txw");
 
   /* Prepare the windows */
   init_windows();
@@ -2207,9 +2244,6 @@ int FAR PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrevInst,
   inkey();
 #endif
 
-  /* Get a pointer to the high score file */
-  init_scorefile();
-
   /* Display the "news" message */
   Term_activate(term_screen);
   show_news();
@@ -2228,7 +2262,7 @@ int FAR PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrevInst,
   prt("[Choose 'New' or 'Open' from the 'File' menu]", 23, 17);
   Term_fresh();
 
-  /* Process messages (until "play_game_mac()" is called) */
+  /* Process messages (until "play_game()" is called) */
   while (GetMessage(&msg, NULL, 0, 0))
   {
     TranslateMessage(&msg);

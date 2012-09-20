@@ -25,6 +25,14 @@
 # is the player class, and "Name" is the player name.
 
 
+# OPTION: Display "veins" (white "%") as "normal walls" (white "#") 
+
+# F:50:1/35
+# F:51:1/35
+# F:52:1/35
+# F:53:1/35
+
+
 # Command macro -- "X" will now "swap weapons" as long as both weapons are
 # inscribed with {@0}.  For example, inscribe your main weapon as {@1@0}
 # and your digger/secondary weapon as {@2@0} or just {@0}.

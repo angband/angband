@@ -1,0 +1,212 @@
+=== List of options ===
+
+
+Option name               Option description
+
+
+          /*** User-Interface ***/
+
+"rogue_like_commands",    "Rogue-like commands"
+
+"quick_messages",         "Quick messages"
+
+"other_query_flag",       "Prompt for various information"
+
+"carry_query_flag",       "Prompt before picking things up"
+
+"use_old_target",         "Use old target by default"
+
+"always_pickup",          "Pick things up by default"
+
+"always_throw",           "Accept all throw commands"
+
+"always_repeat",          "Repeat obvious commands"
+
+"plain_descriptions",     "Plain object descriptions"
+
+"equippy_chars",          "Display Equippy Characters"
+
+"show_health_bar",        "Display Monster Health Bar"
+
+"show_spell_info",        "Show extra spell info"
+
+"depth_in_feet",          "Show dungeon level in feet"
+
+"notice_seams",           "Notice mineral seams"
+
+"compress_savefile",      "Compress savefiles"
+
+"ring_bell",              "Audible bell (on errors, etc)"
+
+"hilite_player",          "Hilite the player with the cursor"
+
+"use_color",              "Use color if possible (slow)"
+
+"view_yellow_lite",       "Draw Torch-Lite in yellow (slow)"
+
+"view_bright_lite",       "Draw Viewable Lite brightly (v.slow)"
+
+
+          /*** Disturbance ***/
+
+"find_ignore_stairs",     "Run past stairs"
+
+"find_ignore_doors",      "Run through open doors"
+
+"find_cut",               "Run past known corners"
+
+"find_examine",           "Run into potential corners"
+
+"disturb_near",           "Disturb whenever monster moves (nearby)"
+
+"disturb_move",           "Disturb whenever monster moves (anywhere)"
+
+"disturb_enter",          "Disturb whenever monster appears"
+
+"disturb_leave",          "Disturb whenever monster disappears"
+
+"disturb_panel",          "Disturb whenever map panel changes"
+
+"disturb_other",          "Disturb whenever various things happen"
+
+"flush_command",          "Flush input before normal commands"
+
+"flush_disturb",          "Flush input whenever disturbed"
+
+"flush_failure",          "Flush input on various failures"
+
+"fresh_before",           "Flush output before all commands"
+
+"fresh_after",            "Flush output after all commands"
+
+"fresh_find",             "Flush output while running (slow)"
+
+"filch_message",          "Flush messages before every new message"
+
+"filch_disturb",          "Flush messages before every disturbance"
+
+"alert_hitpoint",         "Alert user to critical hitpoints"
+
+"alert_failure",          "Alert user to various failures"
+
+
+          /*** Inventory ***/
+
+"show_inven_weight",      "Show weights in inventory list"
+
+"show_equip_weight",      "Show weights in equipment list"
+
+"show_store_weight",      "Show weights in stores"
+
+"show_equip_label",       "Show labels in equipment list"
+
+"stack_allow_items",      "Allow weapons and armor to stack"
+
+"stack_allow_wands",      "Allow wands/staffs/rods to stack"
+
+"stack_force_notes",      "Over-ride inscriptions when stacking"
+
+"stack_force_costs",      "Over-ride discounts when stacking"
+
+"auto_combine_pack",      "Automatically combine items in the pack"
+
+"auto_reorder_pack",      "Automatically reorder items in the pack"
+
+"no_haggle_flag",         "Disable haggling in stores"
+
+"shuffle_owners",         "Shuffle store owners"
+
+
+          /*** Game-Play ***/
+
+"view_perma_grids",       "Map remembers all perma-lit grids"
+
+"view_torch_grids",       "Map remembers all torch-lit grids"
+
+"scum_always",            "Auto-scum for good levels (always)"
+
+"scum_sometimes",         "Auto-scum for good levels (sometimes)"
+
+"dungeon_align",          "Generate dungeons with aligned rooms"
+
+"dungeon_stair",          "Generate dungeons with connected stairs"
+
+"flow_by_sound",          "Monsters chase current location (v.slow)"
+
+"flow_by_smell",          "Monsters chase recent locations (v.slow)"
+
+"track_follow",           "Monsters follow the player (beta)"
+
+"track_target",           "Monsters target the player (beta)"
+
+"smart_learn",            "Monsters learn from their mistakes"
+
+"smart_cheat",            "Monsters exploit players weaknesses"
+
+
+          /*** Efficiency ***/
+
+"view_reduce_lite",       "Reduce lite-radius when running"
+
+"view_reduce_lite_town",  "Reduce lite-radius when running (in town)"
+
+"view_reduce_view",       "Reduce view-radius when running"
+
+"view_reduce_view_town",  "Reduce view-radius when running (in town)"
+
+"optimize_running",       "Optimize various things when running"
+
+"optimize_resting",       "Optimize various things when resting"
+
+"optimize_display",       "Optimize various things (visual display)"
+
+"optimize_various",       "Optimize various things (message recall)"
+
+
+          /*** Special ***/
+
+"use_mirror_recent",      "Recall monster races in mirror window"
+
+"use_mirror_normal",      "Show equip/inven in mirror window"
+
+"use_mirror_choose",      "Show item choices in mirror window"
+
+"use_mirror_spells",      "Show spell choices in mirror window"
+
+"use_recall_recent",      "Recall monster races in recall window"
+
+"use_choice_normal",      "Show inven/equip in choice window"
+
+"use_choice_choose",      "Show item choices in choice window"
+
+"use_choice_spells",      "Show spell choices in choice window"
+
+"show_choose_prompt",     "Show prompt in choice window"
+
+"show_choose_info",       "Show info in choice window"
+
+"show_choose_label",      "Show labels in choice window"
+
+"show_choose_weight",     "Show weights in choice window"
+
+"recall_show_desc",       "Recall monster descriptions"
+
+"recall_show_kill",       "Recall monster kill counts"
+
+
+          /*** Cheating ***/
+
+"cheat_peek",             "Peek into object creation"
+
+"cheat_hear",             "Peek into monster creation"
+
+"cheat_room",             "Peek into dungeon creation"
+
+"cheat_xtra",             "Peek into something else"
+
+"cheat_know",             "Know complete monster info"
+
+"cheat_live",             "Allow player to avoid death"
+
+
+

@@ -58,11 +58,11 @@
  * Flags for the "info" field of grids
  */
 #define BORG_WALL	0x01	/* Grid is a wall */
-#define BORG_PERM	0x02	/* Grid is permanent */
-#define BORG_HERE	0x04	/* Grid is on this panel */
-#define BORG_OKAY	0x08	/* Grid is lit on this panel */
-#define BORG_SEEN	0x10	/* Grid is in a special array */
-#define BORG_LITE	0x20	/* Grid is lit by torches */
+#define BORG_OKAY	0x02	/* Grid is lit on this panel */
+#define BORG_KNOW	0x04	/* Grid is of known danger */
+#define BORG_ICKY	0x08	/* Grid is dangerous (avoid it) */
+#define BORG_SEEN	0x10	/* Grid is in a special array (unused) */
+#define BORG_LITE	0x20	/* Grid is lit by torches (unused) */
 #define BORG_VIEW	0x40	/* Grid is in view of the player */
 #define BORG_XTRA	0x80	/* Grid is easily in view of the player */
 
@@ -70,19 +70,19 @@
 /*
  * Maximum size of the "view" array
  */
-#define VIEW_MAX 2000
+#define AUTO_VIEW_MAX 1536
 
 
 /*
  * Number of grids in the "seen" array
  */
-#define SEEN_MAX 2000
+#define AUTO_SEEN_MAX 1536
 
 
 /*
  * Number of grids in the "flow" array
  */
-#define FLOW_MAX 2000
+#define AUTO_FLOW_MAX 1536
 
 
 
@@ -119,7 +119,7 @@
 /*
  * Forward declare
  */
-typedef struct _auto_room auto_room;
+typedef struct auto_room auto_room;
 
 
 /*
@@ -155,46 +155,23 @@ typedef struct _auto_room auto_room;
  * room always points to the next free room, and the last room always
  * points to itself (indicating we have run out of rooms).
  *
- * The "prev"/"next" fields are used to facilitate a priority queue of
- * rooms during the preparation of a "flow".  See various code below.
- *
  * The "when" field allows us to make decisions based on the actual
  * "time" at which a room was visited.  Currently this field is used
  * only by the "revisit" function to choose "interesting" rooms.  We
  * can probably delete this field and still function.
  *
  * The "location" of the corners of the room are encoded in x1/y1/x2/y2.
- *
- * For navigation, we use a single "location" (x/y) which is usually not
- * inside the room, but is always inside or touching the room.  Whenever
- * the Borg is inside the room, it attempts to approach that location,
- * which it can always do because the rooms are rectangular and the Borg
- * attempts axis motion before diagonals, and thus never leaves the room
- * until it actually steps onto that location.  During navigation, the
- * cost of reaching the final goal is "cost" plus the distance to "x,y".
- * If "cost" is zero than "x,y" is the final destination.  The drawback
- * to this method is that the Borg can only have a single destination in
- * each room.  This is handled when the navigation ("flow") is prepared
- * by arbitrarily choosing the location in each room which is physically
- * closest to the player.  This may be invalid if the only available path
- * to the room enters the room from the far side, but it seems to work.
  */
-struct _auto_room {
+struct auto_room {
 
-  u16b self;		/* Self index */
+  s16b self;		/* Self index */
 
-  u16b free;		/* Index of next room in free room list */
+  s16b free;		/* Index of next room in free room list */
 
-  u16b prev;		/* Index of prev room in priority queue */
-  u16b next;		/* Index of next room in priority queue */
-
-  s32b when;		/* When last visited */
+  s16b when;		/* When last visited */
 
   byte x1, y1;		/* Upper left corner */
   byte x2, y2;		/* Bottom right corner */
-
-  byte x, y;		/* Flow location */
-  u16b cost;		/* Flow cost */
 };
 
 
@@ -204,41 +181,61 @@ struct _auto_room {
 /*
  * Forward declare
  */
-typedef struct _auto_grid auto_grid;
-
-
+typedef struct auto_grid auto_grid;
 
 /*
- * A grid in the dungeon.  10 (or 6) bytes.
+ * A grid in the dungeon.  4 bytes.
  *
  * The attr/char (o_a/o_c) is the attr/char that the grid appeared to
  * possess the last time the "okay" flag was true.
  *
- * Hack -- note that the "character" zero will crash the system!
+ * Hack -- note that the "char" zero will often crash the system!
  *
  * There is a set of eight bit flags (see below) called "info".
  *
  * There is a byte "xtra" for various user strategies, like searching.
+ *
+ * To perform "navigation" from one place to another, the "flow" routines
+ * are used, which place "cost" information into the "cost" fields.  Then,
+ * if the path is clear, the "cost" information is copied into the "flow"
+ * fields, which are used for the actual navigation.  This allows multiple
+ * routines to check for "possible" flowing, without hurting the current
+ * flow, which may have taken a long time to construct.  We also assume
+ * that the Borg never needs to follow a path longer than 250 grids long.
  */
-struct _auto_grid {
+struct auto_grid {
 
-  byte o_a;		/* Recent attribute */
-  char o_c;		/* Recent character */
-
-  byte info;		/* Some bit flags (see BORG_NNNN) */
-
-  byte xtra;		/* Extra field (search count) */
+    byte o_a;		/* Recent attribute */
+    char o_c;		/* Recent character */
 
 #ifdef BORG_ROOMS
+    s16b room;		/* Room index */
+#endif
 
-  s16b room;		/* Room index */
+    byte info;		/* Some bit flags (see BORG_NNNN) */
 
-#else	/* BORG_ROOMS */
+    byte xtra;		/* Extra field (search count) */
+};
 
-  s16b cost;		/* Cost (see flow code) */
 
-#endif	/* BORG_ROOMS */
 
+
+/*
+ * Forward declare
+ */
+typedef struct auto_data auto_data;
+
+/*
+ * Hack -- one byte of info per grid
+ *
+ * We use a structure to encapsulate the data into a "typed" form.
+ *
+ * Allows optimized processing of "flow" info via structure copy
+ * commands, see "borg-ext.c" for details.
+ */
+struct auto_data {
+
+    byte data[AUTO_MAX_Y][AUTO_MAX_X];
 };
 
 
@@ -248,6 +245,12 @@ struct _auto_grid {
  */
 
 extern auto_grid **auto_grids;		/* Current "grid list" */
+
+extern auto_data *auto_data_hard;	/* Constant "hard" data */
+
+extern auto_data *auto_data_flow;	/* Current "flow" data */
+
+extern auto_data *auto_data_cost;	/* Current "cost" data */
 
 
 #ifdef BORG_ROOMS
@@ -272,27 +275,44 @@ extern auto_room *auto_room_tail;	/* &auto_rooms[AUTO_MAX_ROOMS-1] */
  * Maintain a set of grids (viewable grids)
  */
 
-extern s16b view_n;
-extern byte *view_y;
-extern byte *view_x;
+extern s16b auto_view_n;
+extern byte *auto_view_y;
+extern byte *auto_view_x;
 
 
 /*
  * Maintain a set of grids (scanning arrays)
  */
 
-extern s16b seen_n;
-extern byte *seen_y;
-extern byte *seen_x;
+extern s16b auto_temp_n;
+extern byte *auto_temp_y;
+extern byte *auto_temp_x;
 
 
 /*
  * Maintain a set of grids (flow calculations)
  */
 
-extern s16b flow_n;
-extern byte *flow_y;
-extern byte *flow_x;
+extern s16b auto_flow_n;
+extern byte *auto_flow_y;
+extern byte *auto_flow_x;
+
+
+
+/*
+ * External flag -- clear danger information
+ */
+extern bool auto_danger_wipe;
+
+/*
+ * External value -- current danger thresh-hold
+ */
+extern s32b auto_danger_xtra;
+
+/*
+ * External hook -- check danger of a grid
+ */
+extern bool (*auto_danger_hook)(int x, int y);
 
 
 
@@ -329,11 +349,6 @@ extern bool borg_clear_room(int x, int y);
 
 
 /*
- * Check a path for missile clearance
- */
-extern bool borg_projectable(int x1, int y1, int x2, int y2);
-
-/*
  * Check a path for line of sight
  */
 extern bool borg_los(int x1, int y1, int x2, int y2);
@@ -353,15 +368,6 @@ extern void borg_update_map(void);
  */
 extern int borg_goto_dir(int x1, int y1, int x2, int y2);
 
-/*
- * Determine the "cost" of the given grid
- */
-extern int borg_flow_cost(int x1, int y1);
-
-/*
- * Determine the "best" destination of the given grid
- */
-extern bool borg_flow_best(int *xp, int *yp, int x1, int y1);
 
 /*
  * Clear the flow

@@ -1,10 +1,10 @@
 === Version Information ===
 
-This file was last updated for Angband 2.7.8.
+This file was last updated for Angband 2.7.9.
 
 Make sure to read the newsgroup "rec.games.roguelike.angband" if possible.
 
-Angband 2.7.8 is the result of a lot of work by a lot of people, and as such
+Angband 2.7.9 is the result of a lot of work by a lot of people, and as such
 has a rather complicated version history.  Worse yet, this version history
 spans more than ten years (!) time, and multiple platforms.  But some history
 is better than none, so here we go...
@@ -16,11 +16,16 @@ First came "VMS Moria", by Robert Alan Koeneke (1985).
 
 Then came "Umoria" (Unix Moria), by James E. Wilson (1989).
 
+In 1990, Alex Cutler and Andy Astrand decided to write a Tolkien-based
+game based on Moria and Angband 1.0 was born. The original changes included
+greatly expanded monsters and items (including uniques and artifacts),
+level feelings, pseudo-ID, activation, monster pits and vaults.
+
 Then came Angband 2.0, and over time, other versions up to Angband 2.4.
 This period was characterized by confusion of various forms, including
 the fact that one of the most common versions was titled "2.4.frog_knows".
 Many people were responsible for these versions, including Alex Cutler,
-Andy Astrand, Sean Marsh, Geoff Hill, Charles Teague, and David Kahane.
+Andy Astrand, Sean Marsh, Geoff Hill, Charles Teague.
 
 Then Charles Swiger (cs4w+@andrew.cmu.edu) attempted to clean up the mess,
 resulting in several versions, starting sometime around November, 1993, with
@@ -41,13 +46,14 @@ in Angband 2.7.2, including X11, and various IBM machines.  Angband 2.7.4
 was released to the "ftp.cis.ksu.edu" site, and quickly gained acceptance,
 perhaps helped by the OS2 and Windows and Amiga and Linux ports.  Angband
 2.7.5 and 2.7.6 added important capabilities such as macros and "pref"
-files, and continued to clean up the source.  Finally, Angband 2.7.8 was
-designed to supply another "stable" version that we can all give to our
-friends, with new "help files" and "spoiler files" for the "online help",
-plus a variety of minor tweaks and some new features.
+files, and continued to clean up the source.  Angband 2.7.8 was designed
+to supply another "stable" version that we can all give to our friends,
+with new "help files" and "spoiler files" for the "online help", plus a
+variety of minor tweaks and some new features.  Angband 2.7.9 optimized
+a few things, and tweaked a few other things.
 
 It is very hard to pin down, along the way from 2.6.2 to 2.7.0, and thence
-to 2.7.8, exactly what was added exactly when.  Most of these steps involved
+to 2.7.9, exactly what was added exactly when.  Most of these steps involved
 so many changes as to make "diff files" not very useful, since often the diff
 files were as long as the code itself.  Most of the changes, with the notable
 exception of the creation of the new "main-xxx.c" files for the various new
@@ -59,7 +65,7 @@ them on me.  And if you like the new features and such, you can send me a
 brief little "thank you" email (to benh@linc.cis.upenn.edu) or something...
 
 
-=== Some of the changes from Angband 2.6.1 to Angband 2.7.8 ===
+=== Some of the changes from Angband 2.6.1 to Angband 2.7.9 ===
 
 The most important modification was a massive "code level cleanup" that made
 all of my other modifications much simpler and safer.  This cleanup was so
@@ -68,13 +74,13 @@ via "diff -r", often because it was rewritten from scratch.
 
 The second most important modification was the construction of a generic "Term"
 package, which allows Angband to be ported to a new machine with as few as 50
-lines of code.  Angband 2.7.8 thus runs without modification on many machines,
+lines of code.  Angband 2.7.9 thus runs without modification on many machines,
 including Macintosh, PowerMac, Unix/X11, Unix/Curses, DOS-386, OS2-386,
 Windows, and Amiga.  The only important missing port seems to be DOS-286,
 but that is almost ready, or so I hear from an anonymous source...
 
 It would be difficult to list all of the changes between Angband 2.6.1 and
-Angband 2.7.8, because many of them were made in passing during the massive
+Angband 2.7.9, because many of them were made in passing during the massive
 code level cleanup.  Many of the changes are invisible to the user, but still
 provide increased simplicity and efficiency, and decreased code size, or make
 other more visable changes possible.  For example, the new "project()" code

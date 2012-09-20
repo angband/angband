@@ -1,26 +1,32 @@
-# File: k_list
+# File: k_info.txt
+
+
+# This file is used to initialize the "lib/raw/k_info.raw" file, which is
+# used to initialize the "object kind" information for the Angband game.
+
+# Do not modify this file unless you know exactly what you are doing,
+# unless you wish to risk possible system crashes and broken savefiles.
+
+# After modifying this file, delete the "lib/raw/k_info.raw" file.
+
+
+# Note that major changes are planned for Angband 2.8.0
 
 # Available slots:
-#   29, 29, 90, 177, 178, 179, 182, 183, 195, 196, 205, 237,
-#   238, 268, 270, 293, 299, 350, 351, 399, 413, 414,
+#   29, 29, 90, 177, 178, 179, 182, 183, 195, 196, 205,
+#   268, 270, 293, 299, 350, 351, 399, 413, 414,
 #   423-444, 478, 479, 512+
 
 # XXX Should probably add some "IGNORE_XXX" flags to Rings and Amulets, too.
 
 # The old "MULTI_HUED" objects are now "violet", and no other object
-# is violet, so all six violet objects can be made "multi-hued".
+# is violet, so all six violet objects can be made "multi-hued".  XXX XXX
 
 
 # Version stamp
 
-V:2.7.8
+V:2.7.9
 
-
-##### The "empty" item #####
-
-N:0:(nothing)
-I: :d:0:0:0
-W:0:0:0:0
 
 
 ##### Mushrooms #####
@@ -84,7 +90,7 @@ A:20/1
 N:12:Restoring
 I:,:d:80:19:500
 W:20:0:1:1000
-A:20/16,30/8,40/4
+A:20/8:30/4:40/1
 
 N:13:Stupidity
 I:,:d:80:8:500
@@ -555,22 +561,22 @@ F:SHOW_MODS
 ##### Shovels and Picks #####
 
 N:84:& Shovel~
-I:\:s:20:1:0
-W:1:0:60:15
-A:1/64,5/2
+I:\:s:20:1:1
+W:1:0:60:10
+A:5/16
 P:0:1d2:0:0:0
 F:SHOW_MODS | TUNNEL
 
 N:85:& Gnomish Shovel~
-I:\:G:20:2:1
-W:20:0:50:10
+I:\:G:20:2:2
+W:20:0:60:100
 A:20/4
 P:0:1d2:0:0:0
 F:SHOW_MODS | TUNNEL
 
 N:86:& Dwarven Shovel~
-I:\:B:20:3:2
-W:40:0:120:50
+I:\:B:20:3:3
+W:40:0:120:200
 A:40/1
 P:0:1d3:0:0:0
 F:SHOW_MODS | TUNNEL
@@ -578,20 +584,20 @@ F:SHOW_MODS | TUNNEL
 N:87:& Pick~
 I:\:s:20:4:1
 W:5:0:150:50
-A:5/16,10/2
+A:10/16
 P:0:1d3:0:0:0
 F:SHOW_MODS | TUNNEL
 
 N:88:& Orcish Pick~
 I:\:g:20:5:2
-W:20:0:180:300
-A:20/4
+W:30:0:150:300
+A:30/4
 P:0:1d3:0:0:0
 F:SHOW_MODS | TUNNEL
 
 N:89:& Dwarven Pick~
 I:\:b:20:6:3
-W:50:0:200:900
+W:50:0:200:600
 A:50/1
 P:0:1d4:0:0:0
 F:SHOW_MODS | TUNNEL
@@ -1439,9 +1445,17 @@ W:0:0:4:15
 A:0/1:1/1:2/1
 P:0:1d1:0:0:0
 
-## XXX 238 ##
+N:238:Clumsiness
+I:!:d:75:19:0
+W:5:0:4:0
+A:5/1
+P:0:1d1:0:0:0
 
-## XXX 239 ##
+N:239:Sickliness
+I:!:d:75:20:0
+W:10:0:4:0
+A:10/1
+P:0:1d1:0:0:0
 
 N:240:Cure Serious Wounds
 I:!:d:75:35:100
@@ -1729,18 +1743,21 @@ I:-:d:65:21:0
 W:35:0:10:1200
 A:35/1
 P:0:1d1:0:0:0
+F:IGNORE_ELEC
 
 N:288:Cold Balls
 I:-:d:65:23:0
 W:40:0:10:1500
 A:40/1
 P:0:1d1:0:0:0
+F:IGNORE_COLD
 
 N:289:Fire Balls
 I:-:d:65:22:0
 W:50:0:10:1800
 A:50/1
 P:0:1d1:0:0:0
+F:IGNORE_FIRE
 
 N:290:Stinking Cloud
 I:-:d:65:14:0
@@ -1753,6 +1770,7 @@ I:-:d:65:20:0
 W:50:0:10:1650
 A:50/1
 P:0:1d1:0:0:0
+F:IGNORE_ACID
 
 N:292:Wonder
 I:-:d:65:24:0
@@ -1773,24 +1791,28 @@ I:-:d:65:26:0
 W:50:0:10:2400
 A:50/4
 P:0:1d1:0:0:0
+F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 
 N:296:Dragon's Frost
 I:-:d:65:27:0
 W:50:0:10:2400
 A:50/4
 P:0:1d1:0:0:0
+F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 
 N:297:Dragon's Breath
 I:-:d:65:28:0
 W:60:0:10:2400
 A:60/4
 P:0:1d1:0:0:0
+F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 
 N:298:Annihilation
 I:-:d:65:25:0
 W:60:0:10:3000
 A:60/4
 P:0:1d1:0:0:0
+F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 
 ## XXX 299 XXX ##
 
@@ -2000,8 +2022,8 @@ P:0:1d1:0:0:0
 
 N:333:[Sorcery and Evocations]
 I:?:R:90:3:0
-W:25:0:30:800
-A:25/1
+W:30:0:30:800
+A:30/1
 P:0:1d1:0:0:0
 
 N:334:[Beginners Handbook]
@@ -2024,8 +2046,8 @@ P:0:1d1:0:0:0
 
 N:337:[Exorcism and Dispelling]
 I:?:G:91:3:0
-W:25:0:30:900
-A:25/1
+W:30:0:30:900
+A:30/1
 P:0:1d1:0:0:0
 
 ##### Chests #####
@@ -2081,7 +2103,7 @@ A:1/1
 P:0:1d1:0:0:0
 
 N:346:& Wooden Torch~
-I:~:U:39:0:4000
+I:~:u:39:0:4000
 W:1:0:30:2
 A:1/1
 P:0:1d1:0:0:0
@@ -2276,67 +2298,77 @@ A:95/16
 P:0:1d1:0:0:0
 
 
-##### Special Books #####
+##### Special Books (note resistances) #####
 
 N:379:[Resistance of Scarabtarices]
 I:?:r:90:4:0
-W:30:0:30:8000
-A:30/1
+W:40:0:30:5000
+A:40/1
 P:0:1d1:0:0:0
+F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 
 N:380:[Mordenkainen's Escapes]
 I:?:r:90:5:0
 W:50:0:30:10000
 A:50/1
 P:0:1d1:0:0:0
+F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 
 N:381:[Kelek's Grimoire of Power]
 I:?:r:90:6:0
 W:60:0:30:30000
 A:60/1
 P:0:1d1:0:0:0
+F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 
 N:382:[Tenser's Transformations]
 I:?:r:90:7:0
 W:80:0:30:50000
 A:80/2
 P:0:1d1:0:0:0
+F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 
 N:383:[Raal's Tome of Destruction]
 I:?:r:90:8:0
 W:100:0:30:100000
 A:100/4
 P:0:1d1:0:0:0
+F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 
 N:384:[Ethereal Openings]
 I:?:g:91:4:0
-W:30:0:30:7000
-A:30/1
+W:40:0:30:5000
+A:40/1
 P:0:1d1:0:0:0
+F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 
 N:385:[Godly Insights]
 I:?:g:91:5:0
-W:50:0:30:9000
+W:50:0:30:10000
 A:50/1
 P:0:1d1:0:0:0
+F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 
 N:386:[Purifications and Healing]
 I:?:g:91:6:0
-W:60:0:30:25000
+W:60:0:30:30000
 A:60/1
 P:0:1d1:0:0:0
+F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 
 N:387:[Holy Infusions]
 I:?:g:91:7:0
 W:80:0:30:50000
 A:80/2
 P:0:1d1:0:0:0
+F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 
 N:388:[Wrath of God]
 I:?:g:91:8:0
 W:100:0:30:100000
 A:100/4
 P:0:1d1:0:0:0
+F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 
 
 ##### Junk #####
@@ -2580,257 +2612,55 @@ P:0:1d1:0:0:0
 
 ##### Items 425 to 439 unused #####
 
+##### Items 440 to 444 reserved (old "fake" objects) #####
 
-##### Special "fake" objects (for visual effects) #####
+##### Items 445 to 479 reserved (old "terrain" objects) #####
 
-# Player -- always white
 
-N:440:& player~
-I:@:w:109:1:0
-W:0:0:0:0
+# The old "notice_seams" option is currently unused, but much of its
+# old functionality can be obtained by clever use of 'F' commands in
+# a pref file which define "quartz" and "magma" to look like "granite".
 
-# Floor -- white, but gray when unseen
-
-N:441:& floor~
-I:.:w:101:1:0
-W:0:0:0:0
-
-# Granite wall (and perma-wall) -- white, but gray when unseen
-
-N:442:& granite wall~
-I:#:w:112:1:0
-W:0:0:0:0
-
-# Quartz vein -- white, but gray when unseen
-
-N:443:& quartz vein~
-I:%:w:113:1:0
-W:0:0:0:0
-
-# Magma vein -- light gray, but dark gray when unseen
-
-N:444:& magma vein~
-I:%:W:114:1:0
-W:0:0:0:0
-
-
-##### Dungeon features #####
-
-N:445:& pile~ of rubble
-I:::W:119:1:0
-W:0:0:0:0
-
-N:446:& open door~
-I:':U:104:1:0
-W:0:0:0:0
-
-N:447:& closed door~
-I:+:U:118:1:0
-W:0:0:0:0
-
-N:448:& secret door~
-I:#:W:117:1:0
-W:0:0:0:0
-
-N:449:& up staircase~
-I:<:w:107:1:0
-W:0:0:0:0
-
-N:450:& down staircase~
-I:>:w:108:1:0
-W:0:0:0:0
-
-
-##### Store Doors #####
-
-N:451:General Store
-I:1:U:110:1:0
-W:0:0:0:0
-
-N:452:Armoury
-I:2:s:110:2:0
-W:0:0:0:0
-
-N:453:Weapon Smiths
-I:3:w:110:3:0
-W:0:0:0:0
-
-N:454:Temple
-I:4:g:110:4:0
-W:0:0:0:0
-
-N:455:Alchemy Shop
-I:5:b:110:5:0
-W:0:0:0:0
-
-N:456:Magic Shop
-I:6:r:110:6:0
-W:0:0:0:0
-
-N:457:Black Market
-I:7:D:110:7:0
-W:0:0:0:0
-
-N:458:Home
-I:8:y:110:8:0
-W:0:0:0:0
-
-
-##### Glyph of Warding #####
-
-N:459:& strange rune~
-I:^:y:102:63:0
-W:10:0:0:0
-
-
-
-##### Traps -- Normal, Visible, Traps #####
-
-# Normal pit
-
-N:460:& pit~
-I:^:s:102:0:1
-W:0:0:0:0
-
-# Spiked pit
-
-N:461:& spiked pit~
-I:^:s:102:1:10
-W:10:0:0:0
-
-# Trap door
-
-N:462:& trap door~
-I:^:s:102:2:20
-W:25:0:0:0
-
-# Gas (sleep)
-
-N:463:& gas trap~
-I:^:g:102:11:10
-W:50:0:0:0
-
-# Loose rock
-
-N:464:& loose rock~
-I:;:W:102:17:0
-W:0:0:0:0
-
-# Dart (lose str)
-
-N:465:& dart trap~
-I:^:r:102:6:5
-W:60:0:0:0
-
-# Rune (teleport)
-
-N:466:& strange rune~
-I:^:o:102:14:5
-W:40:0:0:0
-
-# Falling rock
-
-N:467:& patch~ of loose rocks
-I:^:W:102:16:5
-W:40:0:0:0
-
-# Dart (lose dex)
-
-N:468:& dart trap~
-I:^:r:102:5:5
-W:60:0:0:0
-
-# Rune (summoning)
-
-N:469:& strange rune~
-I:^:B:102:15:5
-W:40:0:0:0
-
-# Fire Trap
-
-N:470:& blackened spot~
-I:^:u:102:12:10
-W:60:0:0:0
-
-# Acid Trap
-
-N:471:& corroded spot~
-I:^:u:102:13:10
-W:60:0:0:0
-
-# Gas (poison)
-
-N:472:& gas trap~
-I:^:g:102:8:10
-W:60:0:0:0
-
-# Gas (blind)
-
-N:473:& gas trap~
-I:^:g:102:9:10
-W:60:0:0:0
-
-# Gas (confuse)
-
-N:474:& gas trap~
-I:^:g:102:10:10
-W:50:0:0:0
-
-# Dart (slow)
-
-N:475:& dart trap~
-I:^:r:102:4:5
-W:60:0:0:0
-
-# Dart (lose con)
-
-N:476:& dart trap~
-I:^:r:102:7:5
-W:60:0:0:0
-
-# Arrow
-
-N:477:& arrow trap~
-I:^:U:102:3:3
-W:40:0:0:0
-
-## XXX 478 XXX ##
-
-## XXX 479 XXX ##
+# Note that the "player" picture does not really fit in anywhere, and I
+# have no idea how to go about allowing "redefinition" of that picture.
+# Perhaps by using "monster 0" or "object 0" or "feature 0" or even a
+# special "player picture" which might yield a simple way to show the
+# player in different colors or whatever for different "states", or even
+# a different picture for various "class" or "race" choices.
 
 
 ##### And here starts the gold/gems #####
 
 N:480:copper
-I:$:U:100:1:0
+I:$:u:100:1:0
 W:1:0:0:3
 
 N:481:copper
-I:$:U:100:2:0
+I:$:u:100:2:0
 W:1:0:0:4
 
 N:482:copper
-I:$:U:100:3:0
+I:$:u:100:3:0
 W:1:0:0:5
 
 N:483:silver
-I:$:W:100:4:0
+I:$:s:100:4:0
 W:1:0:0:6
 
 N:484:silver
-I:$:W:100:5:0
+I:$:s:100:5:0
 W:1:0:0:7
 
 N:485:silver
-I:$:W:100:6:0
+I:$:s:100:6:0
 W:1:0:0:8
 
 N:486:garnets
-I:*:r:100:7:0
+I:$:r:100:7:0
 W:1:0:0:9
 
 N:487:garnets
-I:*:r:100:8:0
+I:$:r:100:8:0
 W:1:0:0:10
 
 N:488:gold
@@ -2846,23 +2676,23 @@ I:$:y:100:11:0
 W:1:0:0:16
 
 N:491:opals
-I:*:W:100:12:0
+I:$:W:100:12:0
 W:1:0:0:18
 
 N:492:sapphires
-I:*:b:100:13:0
+I:$:b:100:13:0
 W:1:0:0:20
 
 N:493:rubies
-I:*:r:100:14:0
+I:$:r:100:14:0
 W:1:0:0:24
 
 N:494:diamonds
-I:*:w:100:15:0
+I:$:w:100:15:0
 W:1:0:0:28
 
 N:495:emeralds
-I:*:g:100:16:0
+I:$:g:100:16:0
 W:1:0:0:32
 
 N:496:mithril

@@ -43,7 +43,7 @@ int int86(int ivec, union REGS *in, union REGS *out);
  *
  * Support for DPMI added by ctate@world.std.com (Chris Tate)
  *
- * Angband 2.7.5 modifications by benh@linc.cis.upenn.edu
+ * Angband 2.7.5 modifications by benh@voicenet.com
  *
  * Use "Makefile.ibm" to compile Angband using this file.
  *

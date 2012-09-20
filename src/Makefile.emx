@@ -2,32 +2,49 @@
 
 # Purpose: Makefile support for "main-emx.c"
 
-# Note: Rename this file "Makefile" before using
-
 # Note: Use "dmake" to compile (see "main-emx.c" for details).
 #       Since "dmake" does not demand "hard" tab stops as delimiters,
 #       don't bother to add them.
+#
+# Note: use 'dmake clean' to remove temporary files.
 
 OBJS = \
-  main.o main-emx.o \
+  main.o main-emx.o wizard.o wiz-spo.o \
+  borg.o borg-ben.o borg-ext.o borg-map.o borg-obj.o borg-aux.o \
   signals.o util.o io.o init.o save.o save-old.o files.o \
   generate.o birth.o melee.o dungeon.o store.o \
   effects.o cmd1.o cmd2.o cmd3.o cmd4.o cmd5.o cmd6.o \
   misc.o monster.o mon-desc.o object.o obj-desc.o \
   spells1.o spells2.o cave.o tables.o variable.o \
-  term.o random.o z-util.o z-virt.o z-form.o
+  term.o z-util.o z-virt.o z-form.o 
 
 CC = gcc
-CFLAGS = -O2 -DUSE_EMX
+CFLAGS = -MMD -O2 -DUSE_EMX -g -Wall
 LIBS = -lvideo
 
 .c.o:
     $(CC) $(CFLAGS) -c $*.c
 
+default: ..\angband.exe ..\aclient.exe dependencies
+
+clean:
+    + del *.d
+    + del dependencies
+
+dependencies .IGNORE: $(OBJS)
+    + echo. > temp.bak
+    + for %a in (*.d) type %a >> dependencies
+
+..\angband.exe: angband.exe
+    + copy angband.exe ..
+
+..\aclient.exe: aclient.exe
+    + copy aclient.exe ..
+
 angband.exe: $(OBJS)
     $(CC) $(CFLAGS)  -o angband.exe $(OBJS) $(LIBS)
-    + move angband.exe ..
 
-# At least *my* part of the source should compile without any warnings. -EK-
-main-emx.o:     main-emx.c
-    $(CC) $(CFLAGS) -Wall -c $*.c
+aclient.exe: main-emx.c
+    $(CC) $(CFLAGS) -D__EMX__ -D__EMX__CLIENT__ -o aclient.exe main-emx.c $(LIBS)
+
+.INCLUDE .IGNORE: dependencies

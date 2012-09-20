@@ -1,6 +1,5 @@
-
                         ***********************
-                        **   Angband 2.7.8   **
+                        **   Angband 2.7.9   **
                         ***********************
 
          Based on Moria:    Copyright (c) 1985 Robert Alan Koeneke
@@ -10,13 +9,12 @@
                             Geoff Hill, Charles Teague, David Kahane
        Angband 2.5 - 2.6.2: Charles Swiger (cs4w+@andrew.cmu.edu)
 
-       Angband 2.7 - 2.7.8: Ben Harrison (benh@linc.cis.upenn.edu)
+       Angband 2.7 - 2.7.9: Ben Harrison (benh@voicenet.com)
 
        Curses/X11 Versions: Ben Harrison, Torbj|rn Lindgren
 
-
  Be sure to read the online help, especially "general.txt" and "version.txt".
 
- Angband 2.7.8 has been compiled for Unix, X11, Macintosh, Windows, IBM, etc.
+ Angband 2.7.9 has been compiled for Unix, X11, Macintosh, Windows, IBM, etc.
 
- Send all comments, bug reports, and patches, to "benh@linc.cis.upenn.edu".
+ Send all comments, bug reports, and patches, to me ("benh@voicenet.com").

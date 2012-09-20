@@ -10,18 +10,24 @@
  * file "A-mac-h" is included by the project "prefix" section.
  */
 
-
 /*
  * Activate the Macintosh-specific code
  */
 #define MACINTOSH
 
-
 /*
- * Debugging
+ * OPTION: Allow the Borg
  */
 /* #define ALLOW_BORG */
+
+/*
+ * OPTION: Allow wizard commands
+ */
 /* #define ALLOW_WIZARD */
+
+/*
+ * OPTION: Generate spoilers
+ */
 /* #define ALLOW_SPOILERS */
 
 /*

@@ -1,45 +1,26 @@
 /* File: signals.c */
 
-/* Purpose: signal handlers */
-
-/*
- * Copyright (c) 1989 James E. Wilson
- *
- * This software may be copied and distributed for educational, research, and
- * not for profit purposes provided that this copyright and statement are
- * included in all such copies.
- */
-
-/*
- * This signal package was brought to you by		-JEW-
- * Completely rewritten by				-CJS-
- * Rewritten again by					-BEN-
- * One more time by Jeff Collins (Jan. 1995).
- */
-
-#include <signal.h>
+/* Purpose: signal handlers (multiple revisions) */
 
 #include "angband.h"
 
-/*
- * We need a simple method to correctly refer to the signal handler
- */
-#ifdef __MINT__
-# define signal_handler ((__Sigfunc)(signal_handler_proc))
-# define suspend_handler ((__Sigfunc)(suspend_handler_proc))
-#else
-# define signal_handler (signal_handler_proc)
-# define suspend_handler (suspend_handler_proc)
-#endif
+
+
+#ifdef HANDLE_SIGNALS
+
+
+#include <signal.h>
 
 
 /*
- * suspend_handler_proc
+ * Handle signals -- suspend
  *
- * Note that the "raise()" function is not always available
+ * Actually suspend the game, and then resume cleanly
  */
-static void suspend_handler_proc(int sig)
+static void handle_signal_suspend(int sig)
 {
+    /* Disable handler */
+    (void)signal(sig, SIG_IGN);
 
 #ifdef SIGSTOP
 
@@ -47,13 +28,13 @@ static void suspend_handler_proc(int sig)
     Term_fresh();
 
     /* Suspend the "Term" */
-    Term_xtra(TERM_XTRA_LEVEL, TERM_LEVEL_HARD_SHUT);
+    Term_xtra(TERM_XTRA_ALIVE, 0);
 
     /* Suspend ourself */
     (void)kill(0, SIGSTOP);
 
     /* Resume the "Term" */
-    Term_xtra(TERM_XTRA_LEVEL, TERM_LEVEL_HARD_OPEN);
+    Term_xtra(TERM_XTRA_ALIVE, 1);
 
     /* Redraw the term */
     Term_redraw();
@@ -63,171 +44,158 @@ static void suspend_handler_proc(int sig)
 
 #endif
 
-    /* Have to restore handler. */
-    (void)signal(sig, suspend_handler);
+    /* Restore handler */
+    (void)signal(sig, handle_signal_suspend);
 }
 
 
-
 /*
- * signal_handler_proc - Handle signals
+ * Handle signals -- simple (interrupt and quit)
  *
- * The most important aspect of this is to catch SIGINT and SIGQUIT and
- * allow the user to rethink.  We don't want to kill a character because
- * of a stupid typo.
+ * This function was causing a *huge* number of problems, so it has
+ * been simplified greatly.  We keep a global variable which counts
+ * the number of times the user attempts to kill the process, and
+ * we commit suicide if the user does this a certain number of times.
+ *
+ * We attempt to give "feedback" to the user as he approaches the
+ * suicide thresh-hold, but without penalizing accidental keypresses.
+ *
+ * To prevent messy accidents, we should reset this global variable
+ * whenever the user enters a keypress, or something like that.
  */
-
-static void signal_handler_proc(int sig)
+static void handle_signal_simple(int sig)
 {
-    int simple = FALSE;
-
-#if !defined(MACINTOSH) && !defined(WINDOWS)
-
-    /* Ignore all second signals */
+    /* Disable handler */
     (void)signal(sig, SIG_IGN);
 
-#ifdef SIGINT
-    /* Simple "Ctrl-C" interupt */
-    if (sig == SIGINT) simple = TRUE;
-#endif
 
-#ifdef SIGQUIT
-    /* Simple "Quit" key */
-    if (sig == SIGQUIT) simple = TRUE;
-#endif
+    /* Nothing to save, just quit */
+    if (!character_generated || character_saved) quit(NULL);
 
-    /* Handle simple interrupt */
-    if (simple) {
 
-        /* Only treat real characters specially */
-        if (!death && !character_saved && character_generated) {
+    /* Count the signals */
+    signal_count++;
 
-            /* Save the screen */
-            save_screen();
+    
+    /* Terminate dead characters */
+    if (death) {
 
-            /* Hack -- Allow player to think twice. */
-            if (!get_check(total_winner ?
-                           "Do you want to retire?" :
-                           "Really commit *Suicide*?")) {
+        /* Mark the savefile */
+        (void)strcpy(died_from, "Abortion");
 
-                /* Restore the screen */
-                restore_screen();
+        /* Close stuff */
+        close_game();
 
-                /* Flush pending output */
-                Term_fresh();
+        /* Quit */
+        quit("interrupt");
+    }
 
-                /* Disturb */
-                disturb(1, 0);
-
-                /* Restore handler for later. */
-                (void)signal(sig, signal_handler);
-
-                /* OK. We don't quit. */
-                return;
-            }
-
-            /* Restore the screen */
-            restore_screen();
-
-            /* Death */
-            (void)strcpy(died_from, "Interrupting");
-        }
-        
-        /* Terminate */
-        else {
-
-            /* Mark the savefile */
-            (void)strcpy(died_from, "Abortion");
-        }
-
-        /* Interrupted */
-        prt("Interrupt!", 0, 0);
+    /* Allow suicide (after 5) */
+    else if (signal_count >= 5) {
+    
+        /* Cause of "death" */
+        (void)strcpy(died_from, "Interrupting");
 
         /* Suicide */
         death = TRUE;
 
-        /* Save and exit */
-        exit_game();
+        /* Close stuff */
+        close_game();
 
-        /* Just in case */
-        quit("interrupted");
+        /* Quit */
+        quit("interrupt");
     }
 
-#endif /* !defined(MACINTOSH) && !defined(WINDOWS) */
+    /* Give warning (after 4) */
+    else if (signal_count >= 4) {
+    
+        /* Make a noise */
+        Term_xtra(TERM_XTRA_NOISE, 0);
+    
+        /* Clear the top line */
+        Term_erase(0, 0, 80, 1);
+        
+        /* Display the cause */
+        Term_putstr(0, 0, -1, TERM_WHITE, "Contemplating suicide!");
 
-    /* Die. */
-    prt("OH NO!!!!!!  A gruesome software bug LEAPS out at you!", 21, 0);
+        /* Flush */
+        Term_fresh();
+    }
+
+    /* Give warning (after 2) */
+    else if (signal_count >= 2) {
+    
+        /* Make a noise */
+        Term_xtra(TERM_XTRA_NOISE, 0);
+    }
+
+    /* Restore handler */
+    (void)signal(sig, handle_signal_simple);
+}
+
+
+/*
+ * Handle signal -- abort, kill, etc
+ */
+static void handle_signal_abort(int sig)
+{
+    /* Disable handler */
+    (void)signal(sig, SIG_IGN);
+
+
+    /* Nothing to save, just quit */
+    if (!character_generated || character_saved) quit(NULL);
+
+    
+    /* Clear the bottom line */
+    Term_erase(0, 23, 80, 1);
+    
+    /* Give a warning */
+    Term_putstr(0, 23, -1, TERM_RED,
+                "A gruesome software bug LEAPS out at you!");
+
+    /* Message */
+    Term_putstr(45, 23, -1, TERM_RED, "Panic save...");
+
+    /* Flush output */
+    Term_fresh();
+
+    /* Panic Save */
+    panic_save = 1;
 
     /* Panic save */
-    if (!death && !character_saved && character_generated) {
+    (void)strcpy(died_from, "(panic save)");
 
-        /* Panic Save */
-        panic_save = 1;
-
-        /* Message */
-        prt("Your guardian angel is trying to save you.", 22, 0);
-        prt("", 23, 0);
-
-        /* Panic save */
-        (void)sprintf(died_from, "(panic save %d)", sig);
-
-        /* Attempt to save */
-        if (save_player()) quit("panic save succeeded");
-
-        /* Hack -- Just in case */
-        (void)sprintf(died_from, "(panic save %d failed)", sig);
-
-        /* Hack -- Assume dead */
-        death = TRUE;
-
-        /* Hack -- reset turn */
-        turn = 0;
+    /* Attempt to save */
+    if (save_player()) {
+        Term_putstr(45, 23, -1, TERM_RED, "Panic save succeeded!");
     }
-
-    /* Death save */
+    
+    /* Save failed */
     else {
-
-        /* Dead Player */
-        death = TRUE;
-
-        /* Message */
-        prt("There is NO defense!", 22, 0);
-        prt("", 23, 0);
-
-        /* Software Bug */
-        (void)strcpy(died_from, "Software Bug");
-
-        /* Hack -- Save the game anyway */
-        (void)save_player();
+        Term_putstr(45, 23, -1, TERM_RED, "Panic save failed!");
     }
-
-#ifdef SET_UID
-
-    /* Hack -- Shut down the term windows */
-    if (term_choice) term_nuke(term_choice);
-    if (term_recall) term_nuke(term_recall);
-    if (term_screen) term_nuke(term_screen);
-
-    /* Hack -- dump core (very messy!) */
-    (void)signal(sig, SIG_DFL);
-    (void)kill(getpid(), sig);
-    (void)sleep(5);
-
-#endif
-
-    /* Quit anyway */
-    quit(NULL);
+    
+    /* Flush output */
+    Term_fresh();
+    
+    /* Quit */
+    quit("software bug");
 }
+
+
+
 
 /*
  * Ignore SIGTSTP signals (keyboard suspend)
  */
 void signals_ignore_tstp(void)
 {
+
 #ifdef SIGTSTP
-    /* Tell "suspend" to be ignored */
     (void)signal(SIGTSTP, SIG_IGN);
 #endif
+
 }
 
 /*
@@ -235,11 +203,13 @@ void signals_ignore_tstp(void)
  */
 void signals_handle_tstp(void)
 {
+
 #ifdef SIGTSTP
-    /* Tell "suspend" to suspend */
-    (void)signal(SIGTSTP, suspend_handler);
+    (void)signal(SIGTSTP, handle_signal_suspend);
 #endif
+
 }
+
 
 /*
  * Prepare to handle the relevant signals
@@ -248,78 +218,107 @@ void signals_init()
 {
 
 #ifdef SIGHUP
-    /* Ignore HANGUP */
     (void)signal(SIGHUP, SIG_IGN);
 #endif
 
+
 #ifdef SIGTSTP
-    /* Hack -- suspend gracefully */
-    (void)signal(SIGTSTP, suspend_handler);
+    (void)signal(SIGTSTP, handle_signal_suspend);
 #endif
 
+
 #ifdef SIGINT
-    /* Catch the basic "Ctrl-C" interupt */
-    (void)signal(SIGINT, signal_handler);
+    (void)signal(SIGINT, handle_signal_simple);
 #endif
 
 #ifdef SIGQUIT
-    (void)signal(SIGQUIT, signal_handler);
+    (void)signal(SIGQUIT, handle_signal_simple);
 #endif
 
+
 #ifdef SIGFPE
-    (void)signal(SIGFPE, signal_handler);
+    (void)signal(SIGFPE, handle_signal_abort);
 #endif
 
 #ifdef SIGILL
-    (void)signal(SIGILL, signal_handler);
+    (void)signal(SIGILL, handle_signal_abort);
 #endif
 
 #ifdef SIGTRAP
-    (void)signal(SIGTRAP, signal_handler);
+    (void)signal(SIGTRAP, handle_signal_abort);
 #endif
 
 #ifdef SIGIOT
-    (void)signal(SIGIOT, signal_handler);
+    (void)signal(SIGIOT, handle_signal_abort);
 #endif
 
 #ifdef SIGKILL
-    (void)signal(SIGKILL, signal_handler);
+    (void)signal(SIGKILL, handle_signal_abort);
 #endif
 
 #ifdef SIGBUS
-    (void)signal(SIGBUS, signal_handler);
+    (void)signal(SIGBUS, handle_signal_abort);
 #endif
 
 #ifdef SIGSEGV
-    (void)signal(SIGSEGV, signal_handler);
+    (void)signal(SIGSEGV, handle_signal_abort);
 #endif
 
 #ifdef SIGTERM
-    (void)signal(SIGTERM, signal_handler);
+    (void)signal(SIGTERM, handle_signal_abort);
 #endif
 
 #ifdef SIGPIPE
-    (void)signal(SIGPIPE, signal_handler);
+    (void)signal(SIGPIPE, handle_signal_abort);
 #endif
 
-#ifdef SIGEMT			   /* in BSD systems */
-    (void)signal(SIGEMT, signal_handler);
+#ifdef SIGEMT
+    (void)signal(SIGEMT, handle_signal_abort);
 #endif
 
-#ifdef SIGDANGER		   /* in SYSV systems */
-    (void)signal(SIGDANGER, signal_handler);
+#ifdef SIGDANGER
+    (void)signal(SIGDANGER, handle_signal_abort);
 #endif
 
 #ifdef SIGSYS
-    (void)signal(SIGSYS, signal_handler);
+    (void)signal(SIGSYS, handle_signal_abort);
 #endif
 
-#ifdef SIGXCPU   /* BSD */
-    (void)signal(SIGXCPU, signal_handler);
+#ifdef SIGXCPU
+    (void)signal(SIGXCPU, handle_signal_abort);
 #endif
 
-#ifdef SIGPWR   /* SYSV */
-    (void)signal(SIGPWR, signal_handler);
+#ifdef SIGPWR
+    (void)signal(SIGPWR, handle_signal_abort);
 #endif
+
 }
+
+
+#else	/* HANDLE_SIGNALS */
+
+
+/*
+ * Do nothing
+ */
+void signals_ignore_tstp(void)
+{
+}
+
+/*
+ * Do nothing
+ */
+void signals_handle_tstp(void)
+{
+}
+
+/*
+ * Do nothing
+ */
+void signals_init(void)
+{
+}
+
+
+#endif	/* HANDLE_SIGNALS */
 

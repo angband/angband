@@ -13,42 +13,69 @@
  */
 #ifndef NULL
 # ifdef __STDC__
-#  define NULL ((void *)0)
+#  define NULL ((void*)0)
 # else
-#  define NULL ((char *)0)
+#  define NULL ((char*)0)
 # endif /* __STDC__ */
 #endif /* NULL */
+
+
+/*
+ * Hack -- fake definitions for Acorn (see "main-acn.c")
+ */
+#ifdef ACORN
+
+# define     O_RDONLY        0
+# define     O_WRONLY        1
+# define     O_RDWR          2
+
+# define     O_CREAT         0x10
+# define     O_TRUNC         0x20
+# define     O_EXCL          0x40
+# define     O_BINARY        0x80
+
+# define     EEXIST          17
+
+#endif
 
 
 /*
  * Hack -- force definition
  */
 #ifndef O_BINARY
-# define O_BINARY 0x00
+# define O_BINARY 0
 #endif
 
 /*
- * Hack -- force definition
+ * Hack -- force definitions -- see fd_seek()
  */
-#ifndef L_SET
-# define L_SET 0
+#ifndef SEEK_SET
+# define SEEK_SET	0
+#endif
+#ifndef SEEK_CUR
+# define SEEK_CUR	1
+#endif
+#ifndef SEEK_END
+# define SEEK_END	2
+#endif
+
+/*
+ * Hack -- force definitions -- see fd_lock()  XXX XXX XXX
+ */
+#ifndef F_UNLCK
+# define F_UNLCK	0
+#endif
+#ifndef F_RDLCK
+# define F_RDLCK	1
+#endif
+#ifndef F_WRLCK
+# define F_WRLCK	2
 #endif
 
 
-
 /*
- * Some standard typed NULL pointers
+ * Some simple real numbers
  */
-
-#define C_NULL	((cptr)NULL)
-#define V_NULL	((vptr)NULL)
-
-
-/* Some simple real numbers */
-
-#define ZERO	0.0
-#define ONE 	1.0
-#define TWO 	2.0
 
 #define RAD2	1.41421356237
 #define RAD3	1.73205080757
@@ -57,7 +84,9 @@
 #define TWOPI	6.28318530717958648
 
 
-/* The constants "TRUE" and "FALSE" */
+/*
+ * The constants "TRUE" and "FALSE"
+ */
 
 #undef TRUE
 #define TRUE	1
@@ -66,7 +95,9 @@
 #define FALSE	0
 
 
-/* Simple Emacs-like Control-cursor keys */
+/*
+ * Hack -- Simple Emacs-like Control-cursor keys
+ */
 
 #define CURSOR_UP	('P' - '@')
 #define CURSOR_DN	('N' - '@')
@@ -82,7 +113,9 @@
 #define CURSOR_KILL	('K' - '@')
 
 
-/* Ascii equivelents to standard keys */
+/*
+ * Ascii equivelents to standard keys
+ */
 
 #define CURSOR_SPC	' '
 #define CURSOR_TAB	'\t'

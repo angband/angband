@@ -236,7 +236,7 @@ uint vstrnfmt(char *buf, uint max, cptr fmt, va_list vp)
   uint q;
 
   /* Format sequence */
-  char aux[128];  
+  char aux[128];
 
   /* Resulting string */
   char tmp[1024];
@@ -251,16 +251,16 @@ uint vstrnfmt(char *buf, uint max, cptr fmt, va_list vp)
 
   /* Begin the buffer */
   n = 0;
-  
+
   /* Begin the format string */
   s = fmt;
-  
+
   /* Scan the format string */
   while (TRUE)
   {
     /* All done */
     if (!*s) break;
-    
+
     /* Normal character */
     if (*s != '%')
     {
@@ -285,7 +285,7 @@ uint vstrnfmt(char *buf, uint max, cptr fmt, va_list vp)
 
       /* Save the percent */
       buf[n++] = '%';
-      
+
       /* Skip the "%" */
       s++;
 
@@ -297,7 +297,7 @@ uint vstrnfmt(char *buf, uint max, cptr fmt, va_list vp)
     if (*s == 'n')
     {
       int *arg;
-      
+
       /* Access the next argument */
       arg = va_arg(vp, int *);
 
@@ -336,7 +336,7 @@ uint vstrnfmt(char *buf, uint max, cptr fmt, va_list vp)
 
     /* Assume no "xtra" processing */
     do_xtra = FALSE;
-    
+
     /* Build the "aux" string */
     while (TRUE)
     {
@@ -393,7 +393,7 @@ uint vstrnfmt(char *buf, uint max, cptr fmt, va_list vp)
           break;
         }
       }
-      
+
       /* Handle "non-alphabetic" chars */
       else
       {
@@ -401,7 +401,7 @@ uint vstrnfmt(char *buf, uint max, cptr fmt, va_list vp)
         if (*s == '*')
         {
           int arg;
-        
+
           /* Access the next argument */
           arg = va_arg(vp, int);
 
@@ -414,7 +414,7 @@ uint vstrnfmt(char *buf, uint max, cptr fmt, va_list vp)
           /* Skip the "*" */
           s++;
         }
-      
+
         /* Mega-Hack -- Handle 'caret' (for "uppercase" request) */
         else if (*s == '^')
         {
@@ -437,7 +437,7 @@ uint vstrnfmt(char *buf, uint max, cptr fmt, va_list vp)
 
     /* Terminate "aux" */
     aux[q] = '\0';
-    
+
     /* Clear "tmp" */
     tmp[0] = '\0';
 
@@ -448,7 +448,7 @@ uint vstrnfmt(char *buf, uint max, cptr fmt, va_list vp)
       case 'c':
       {
         int arg;
-        
+
         /* Access next argument */
         arg = va_arg(vp, int);
 
@@ -465,7 +465,7 @@ uint vstrnfmt(char *buf, uint max, cptr fmt, va_list vp)
         if (do_long)
         {
           long arg;
-          
+
           /* Access next argument */
           arg = va_arg(vp, long);
 
@@ -475,7 +475,7 @@ uint vstrnfmt(char *buf, uint max, cptr fmt, va_list vp)
         else
         {
           int arg;
-          
+
           /* Access next argument */
           arg = va_arg(vp, int);
 
@@ -570,7 +570,7 @@ uint vstrnfmt(char *buf, uint max, cptr fmt, va_list vp)
       case 'v':
       {
         vptr arg;
-      
+
         /* Access next argument */
         arg = va_arg(vp, vptr);
 
@@ -605,7 +605,7 @@ uint vstrnfmt(char *buf, uint max, cptr fmt, va_list vp)
         {
           /* Capitalize if possible */
           if (islower(tmp[q])) tmp[q] = toupper(tmp[q]);
-          
+
           /* Done */
           break;
         }

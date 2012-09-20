@@ -121,26 +121,6 @@ bool func_false(void)
 
 
 
-/*
- * Attempt to parse a simple integer from a string
- * Return the number of characters that were used.
- * Skip leading white-space, allow leading plus.
- * If unable to parse, return zero and parse "0".
- */
-sint long_parse(long *lp, cptr str)
-{
-  int i, s = 0, n = 0;
-  *lp = 0;
-  for (i = 0; str[i] == ' '; ++i);
-  if (str[i] == '-') s = -1, i++;
-  else if (str[i] == '+') s = 1, i++;
-  while (isdigit(str[i])) n = n * 10 + str[i++] - '0';
-  if (s && !n) return (0);
-  if (s < 0) *lp = -n; else *lp = n;
-  return (i);
-}
-
-
 
 /*
  * Are string 'a' and 'b' equal?

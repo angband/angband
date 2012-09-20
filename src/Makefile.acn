@@ -1,0 +1,55 @@
+# File: Makefile.acn
+# For Acorn machines with RISC OS 3.10 or later
+
+##
+## This makefile is designed for use with Acorn C/C++.
+## It may be possible to modify it for use with
+## GCC or Easy C, or whatever.
+##
+## If you want to alter the behaviour of the game,
+## then fiddle with config.h
+##
+
+#
+# Here are the basic object files.  You may remove the "borg*"
+# and "wiz*" files unless you are compiling with the
+# "ALLOW_BORG" or "ALLOW_WIZARD" or "ALLOW_SPOILERS" options.
+#
+# The blank line after this block is mandatory to allow every
+# line to end with a backslash (for convenient modifications)
+#
+
+OBJS = \
+  main.o main-acn.o \
+  signals.o util.o io.o init.o save.o save-old.o files.o \
+  generate.o birth.o melee.o dungeon.o store.o \
+  effects.o cmd1.o cmd2.o cmd3.o cmd4.o cmd5.o cmd6.o \
+  misc.o monster.o mon-desc.o object.o obj-desc.o \
+  spells1.o spells2.o cave.o tables.o variable.o \
+  term.o z-util.o z-virt.o z-form.o \
+  wizard.o wiz-spo.o \
+  borg-ben.o borg-aux.o borg-ext.o borg-obj.o borg-map.o borg.o \
+  C:o.Stubs OSLib:o.OSLib C:o.eventlib \
+
+
+CC = cc
+LD = link
+
+#
+# Remove the #s from the following two lines of flags to generate
+# a debug version
+#
+
+CFLAGS = -IOS:,C: -throwback -depend !Depend -Wan -ff #-g
+LDFLAGS = -s symbols #-d
+
+.SUFFIXES: .o .c
+
+.c.o:;	$(CC) $(CFLAGS) -c -o $@ $<
+
+angband: $(OBJS)
+	$(LD) $(LDFLAGS) -o angband $(OBJS)
+	Squeeze angband ^.!RunImage
+
+
+# Dynamic dependencies:

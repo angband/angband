@@ -144,7 +144,7 @@ INCS = \
   h-basic.h h-define.h h-type.h h-system.h h-config.h \
   
 SRCS = \
-  main.c main-gcu.c main-ncu.c main-cur.c main-x11.c main-xaw.c \
+  main.c main-gcu.c main-ncu.c main-cap.c main-x11.c main-xaw.c \
   signals.c util.c io.c init.c save.c save-old.c files.c \
   generate.c birth.c melee.c dungeon.c store.c \
   effects.c cmd1.c cmd2.c cmd3.c cmd4.c cmd5.c cmd6.c \
@@ -153,7 +153,7 @@ SRCS = \
   term.c random.c z-util.c z-virt.c z-form.c
 
 OBJS = \
-  main.o main-gcu.o main-ncu.o main-cur.o main-x11.o main-xaw.o \
+  main.o main-gcu.o main-ncu.o main-cap.o main-x11.o main-xaw.o \
   signals.o util.o io.o init.o save.o save-old.o files.o \
   generate.o birth.o melee.o dungeon.o store.o \
   effects.o cmd1.o cmd2.o cmd3.o cmd4.o cmd5.o cmd6.o \

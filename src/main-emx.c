@@ -1,7 +1,7 @@
 /* File: main-emx.c */
 
 /* Purpose: Support for OS/2 EMX Angband */
-/* Author: ekraemer@pluto.nasim.cube.net (Ekkehard Kraemer) */
+/* Author: ekraemer@pluto.camelot.de (Ekkehard Kraemer) */
 
 #ifdef __EMX__
 
@@ -9,16 +9,28 @@
  * === Instructions for using Angband 2.7.X with OS/2 ===
  *
  * The patches (file "main-emx.c") to compile Angband 2.7.X under OS/2
- * were written by ekraemer@pluto.nasim.cube.net (Ekkehard Kraemer).
+ * were written by ekraemer@pluto.camelot.de (Ekkehard Kraemer).
  *
  * TO COMPILE:
  *
  * - untar the archive into /angband (or /games/angband or whatever)
  * - change directory to /angband/src
- * - remove makefile, and rename makefile.emx to makefile
- * - run dmake (not gmake or make)
+ * - run "dmake -B -r -f makefile.emx" (not gmake or make)
  * - change directory to /angband
  * - start angband.exe
+ *
+ * TO REMOVE TEMPORARY FILES:
+ *
+ * - type "dmake clean"
+ *
+ * TO USE ADDITIONAL WINDOWS USE THE FOLLOWING BATCH FILE:
+ *
+ * start /win /n aclient recall 10
+ * start /win /n aclient choice 
+ * rem start /win /n aclient mirror 
+ * delay 
+ * angband %1 %2 %3 %4 %5 %6 %7 %8 %9
+ *
  *
  * I used EMX 0.9a, but every EMX compiler since 0.8g or so should work
  * fine. EMX is available at ftp-os2.cdrom.com ("Hobbes"), as is dmake.
@@ -30,13 +42,65 @@
  * conventions.  Either rename the savefile to "PLAYER", or start the
  * program with the "-uName" flag.  See "main.c" for details.  The
  * savefiles are stores in "./lib/save" if you forgot the old names...
+ *
+ *  Changes
+ *  =======
+ *
+ *  When       By     Version   What
+ *  -------------------------------------------------------------------
+ *  
+ *  18.11.95   EK      2.7.8    Added window/pipe code
+ *                              Introduced __EMX__CLIENT__ hack 
+ *
+ *  15.12.95   EK      2.7.9    Updated for 2.7.9
+ *                              Added mirror view
+ *                              Added number of line support in aclient
  */
 
-#include <stdlib.h>
+#include <stdio.h>
+#include <stdlib.h> 
 #include <sys/kbdscan.h>
 #include <sys/video.h>
+#include <io.h>
+#define INCL_DOS                /* A bit of overkill for the pipe code... */
+#include <os2.h>
 
 #include "angband.h"
+
+/*
+ * termPipe* is sometimes cast to term* and vice versa, 
+ * so "term t;" must be the first line 
+ */
+
+typedef struct
+{
+    term t;
+    FILE *out;                  /* used by the ..._pipe_emx stuff */
+} termPipe;
+
+/*
+ * Communication between server and client
+ */
+
+enum
+{
+    PIP_INIT,
+    PIP_CURSOR,
+    PIP_WIPE,
+    PIP_TEXT,
+    PIP_EXIT,
+};
+
+
+/*
+ * Prototypes!
+ */
+
+static errr Term_curs_emx(int x, int y, int z);
+static errr Term_wipe_emx(int x, int y, int w, int h);
+static errr Term_text_emx(int x, int y, int n, unsigned char a, cptr s);
+static void Term_init_emx(term *t);
+static void Term_nuke_emx(term *t);
 
 
 /*
@@ -44,7 +108,6 @@
  */
 static int curs_start=0;
 static int curs_end=0;
-
 
 /*
  * Angband color conversion table
@@ -82,11 +145,106 @@ static int colors[16]=
 
 
 /*
- * The main screen
+ * Display a cursor, on top of a given attr/char
  */
-static term term_screen_body;
+static errr Term_curs_emx(int x, int y, int z)
+{
+    v_gotoxy(x,y);
+    v_ctype(curs_start,curs_end);
+    return (0);
+}
+
+/*
+ * Erase a grid of space (as if spaces were printed)
+ */
+static errr Term_wipe_emx(int x, int y, int w, int h)
+{
+    int t;
+
+    /* Put spaces one row at a time */
+    for (t=y; t<y+h; t++)
+    {
+        v_gotoxy(x,t);
+        v_putn(' ',w);
+    }
+
+    return (0);
+}
+
+/*
+ * Draw some text, wiping behind it first
+ *
+ * XXX Place the following lines in "a_list.txt":
+ *
+ *  # Normal Floor (white, tiny centered dot)
+ *  K:441:1/250
+ *
+ *  # Granite Wall (white, solid gray block)
+ *  K:442:1/177
+ */
+static errr Term_text_emx(int x, int y, int n, unsigned char a, cptr s)
+{
+    /* Convert the color and put the text */
+    v_attrib(colors[a]);
+    v_gotoxy(x,y);
+    v_putm(s,n);
+    return (0);
+}
+
+/*
+ * EMX initialization
+ */
+static void Term_init_emx(term *t) 
+{
+    v_init();
+    v_getctype(&curs_start,&curs_end);
+    v_clear();
+}
+
+/*
+ * EMX shutdown
+ */
+static void Term_nuke_emx(term *t)
+{
+    /* Move the cursor to bottom of screen */
+    v_gotoxy(0,23);
+        
+    /* Restore the cursor (not necessary) */
+    v_ctype(curs_start,curs_end);
+
+    /* Set attribute to gray on black */
+    v_attrib(F_WHITE);
+
+    /* Clear the screen */
+    v_clear();
+}
 
 
+#ifndef __EMX__CLIENT__           
+
+/*
+ * Oh no, more prototypes!
+ */
+
+static errr Term_xtra_emx(int n, int v);
+static errr CheckEvents(int returnImmediately);
+static errr Term_xtra_pipe_emx(int n, int v);
+static errr Term_curs_pipe_emx(int x, int y, int z);
+static errr Term_wipe_pipe_emx(int x, int y, int w, int h);
+static errr Term_text_pipe_emx(int x, int y, int n, unsigned char a, cptr s);
+static void Term_init_pipe_emx(term *t);
+static void Term_nuke_pipe_emx(term *t);
+static FILE *initPipe(char *name);
+static void initPipeTerm(termPipe *pipe,char *name,term **term);
+errr init_emx(void);
+
+/*
+ * The screens 
+ */
+static termPipe term_screen_body,
+                term_screen_recall,
+                term_screen_choice,
+                term_screen_mirror;
 
 /*
  * Check for events -- called by "Term_scan_emx()"
@@ -200,11 +358,51 @@ static errr Term_xtra_emx(int n, int v)
 {
     switch (n)
     {
-        case TERM_XTRA_NOISE: putchar(7); return (0);
-        case TERM_XTRA_INVIS: v_hidecursor(); return (0);
-        case TERM_XTRA_BEVIS: v_ctype(curs_start,curs_end); return (0);
-        case TERM_XTRA_CHECK: return (CheckEvents(TRUE));
-        case TERM_XTRA_EVENT: return (CheckEvents(FALSE));
+        case TERM_XTRA_NOISE: 
+            putchar(7); 
+            return (0);
+
+        case TERM_XTRA_INVIS: 
+            v_hidecursor(); 
+            return (0);
+
+        case TERM_XTRA_BEVIS: 
+            v_ctype(curs_start,curs_end); 
+            return (0);
+
+        case TERM_XTRA_FLUSH:
+            return 0;
+
+        case TERM_XTRA_EVENT: 
+            /* Wait for, and process, an event */
+            if (v) return CheckEvents(0);
+
+            /* Do not wait for, but process pending events */
+            while (!CheckEvents(1)) ;
+
+            /* Success */
+            return (0);
+    }
+
+    return (1);
+}
+
+static errr Term_xtra_pipe_emx(int n, int v)
+{
+    switch (n)
+    {
+        case TERM_XTRA_NOISE: 
+            putchar(7); 
+            return (0);
+
+        case TERM_XTRA_INVIS: 
+            return (0);
+
+        case TERM_XTRA_BEVIS: 
+            return (0);
+
+        case TERM_XTRA_EVENT: 
+            return (CheckEvents(FALSE));
     }
 
     return (1);
@@ -212,97 +410,127 @@ static errr Term_xtra_emx(int n, int v)
 
 
 
-/*
- * Display a cursor, on top of a given attr/char
- */
-static errr Term_curs_emx(int x, int y, int z)
+static errr Term_curs_pipe_emx(int x, int y, int z)
 {
-    v_gotoxy(x,y);
-    v_ctype(curs_start,curs_end);
+    termPipe *tp=(termPipe*)Term;
+
+    if (!tp->out) return -1;
+    
+    fputc(PIP_CURSOR,tp->out);
+    fwrite(&x,sizeof(x),1,tp->out);
+    fwrite(&y,sizeof(y),1,tp->out);
+    fwrite(&z,sizeof(z),1,tp->out);
+    fflush(tp->out);
+
     return (0);
 }
 
 
-/*
- * Erase a grid of space (as if spaces were printed)
- */
-static errr Term_wipe_emx(int x, int y, int w, int h)
+static errr Term_wipe_pipe_emx(int x, int y, int w, int h)
 {
-    int t;
+    termPipe *tp=(termPipe*)Term;
 
-    /* Put spaces one row at a time */
-    for (t=y; t<y+h; t++)
+    if (!tp->out) return -1;
+    
+    fputc(PIP_WIPE,tp->out);
+    fwrite(&x,sizeof(x),1,tp->out);
+    fwrite(&y,sizeof(y),1,tp->out);
+    fwrite(&w,sizeof(w),1,tp->out);
+    fwrite(&h,sizeof(h),1,tp->out);
+    fflush(tp->out);
+
+    return (0);
+}
+
+
+static errr Term_text_pipe_emx(int x, int y, int n, unsigned char a, cptr s)
+{
+    termPipe *tp=(termPipe*)Term;
+
+    if (!tp->out) return -1;
+    
+    fputc(PIP_TEXT,tp->out);
+    fwrite(&x,sizeof(x),1,tp->out);
+    fwrite(&y,sizeof(y),1,tp->out);
+    fwrite(&n,sizeof(n),1,tp->out);
+    fwrite(&a,sizeof(a),1,tp->out);
+    fwrite(s,n,1,tp->out);
+    fflush(tp->out);
+
+    return (0);
+}
+
+
+static void Term_init_pipe_emx(term *t)
+{
+    termPipe *tp=(termPipe*)t;
+
+    if (tp->out)
     {
-        v_gotoxy(x,t);
-        v_putn(' ',w);
+        fputc(PIP_INIT,tp->out);
+        fflush(tp->out);
     }
-
-    return (0);
 }
 
 
-/*
- * Draw some text, wiping behind it first
- *
- * XXX Place the following lines in "a_list.txt":
- *
- *  # Normal Floor (white, tiny centered dot)
- *  K:441:1/250
- *
- *  # Granite Wall (white, solid gray block)
- *  K:442:1/177
- */
-static errr Term_text_emx(int x, int y, int n, unsigned char a, cptr s)
+static void Term_nuke_pipe_emx(term *t)
 {
-    /* Convert the color and put the text */
-    v_attrib(colors[a]);
-    v_gotoxy(x,y);
-    v_putm(s,n);
-    return (0);
+    termPipe *tp=(termPipe*)t;
+
+    if (tp->out)
+    {
+        fputc(PIP_EXIT,tp->out); /* Terminate client */
+        fflush(tp->out);
+        fclose(tp->out);         /* Close Pipe */
+        tp->out=NULL;            /* Paranoia */
+    }
 }
 
-
-/*
- * EMX initialization
- */
-static void Term_init_emx(term *t)
+static void initPipeTerm(termPipe *pipe,char *name,term **termTarget)
 {
-    v_init();
-    v_getctype(&curs_start,&curs_end);
-    v_clear();
+    term *t;
+
+    t=(term*)pipe;
+
+    if ((pipe->out=initPipe(name))!=NULL)
+    {
+        /* Initialize the term -- almost no key buffer */
+        term_init(t, 80, 24, 1);  
+
+        /* Special hooks */
+        t->init_hook = Term_init_pipe_emx;
+        t->nuke_hook = Term_nuke_pipe_emx;
+
+        /* Add the hooks */
+        t->text_hook = Term_text_pipe_emx;
+        t->wipe_hook = Term_wipe_pipe_emx;
+        t->curs_hook = Term_curs_pipe_emx;
+        t->xtra_hook = Term_xtra_pipe_emx;
+        
+        /* Save it */
+        *termTarget = t;
+
+        /* Activate it */
+        Term_activate(t); 
+    }
 }
-
-
-/*
- * EMX shutdown
- */
-static void Term_nuke_emx(term *t)
-{
-    /* Move the cursor to bottom of screen */
-    v_gotoxy(0,23);
-
-    /* Restore the cursor (not necessary) */
-    v_ctype(curs_start,curs_end);
-
-    /* Set attribute to gray on black */
-    v_attrib(F_WHITE);
-
-    /* Clear the screen */
-    v_clear();
-}
-
-
 
 /*
  * Prepare "term.c" to use "__EMX__" built-in video library
  */
 errr init_emx(void)
 {
-    term *t = &term_screen_body;
+    term *t;
 
+    initPipeTerm(&term_screen_recall,"recall",&term_recall);
+    initPipeTerm(&term_screen_choice,"choice",&term_choice);
+    initPipeTerm(&term_screen_mirror,"mirror",&term_mirror);
 
+    /* Initialize main window */
+    t = (term*)(&term_screen_body);
+    
     /* Initialize the term -- big key buffer */
-    term_init(t, 80, 24, 1024);
+    term_init(t, 80, 24, 1024);    
 
     /* Special hooks */
     t->init_hook = Term_init_emx;
@@ -313,7 +541,7 @@ errr init_emx(void)
     t->wipe_hook = Term_wipe_emx;
     t->curs_hook = Term_curs_emx;
     t->xtra_hook = Term_xtra_emx;
-
+    
     /* Save it */
     term_screen = t;
 
@@ -324,6 +552,133 @@ errr init_emx(void)
     return (0);
 }
 
+static FILE *initPipe(char *name)
+{
+    char buf[256];
+    FILE *fi;
 
-#endif   /* __EMX__ */
+    sprintf(buf,"\\pipe\\angband\\%s",name);   /* Name of pipe */
+    fi=fopen(buf,"wb");                        /* Look for server */
+    return fi;
+}
+
+#else /* __EMX__CLIENT__ */
+
+int main(int argc,char **argv)
+{
+    int c,end=0,x,y,w,h,z,n;
+    FILE *in;
+    char a,buf[16000];       /* Should be sufficient enough for text messages
+<g> */
+    HPIPE pipe;
+    APIRET rc;
+    int lines=25;
+
+    if (argc!=2 && argc!=3)                       /* Check command line */
+    {
+        printf("Usage: %s choice|recall|mirror [number of lines]\n"
+               "Start this before angband.exe\n",argv[0]);
+        exit(1);
+    }
+
+    if (argc==3) lines=atoi(argv[2]);
+    if (!lines) lines=25;
+
+    printf("Looking for Angband... press ^C to abort\n");
+
+    sprintf(buf,"\\pipe\\angband\\%s",argv[1]);
+
+    rc=DosCreateNPipe((PSZ)buf,                /* Create pipe */
+                   &pipe,
+                   NP_ACCESS_INBOUND,
+                   NP_WAIT|NP_TYPE_BYTE|NP_READMODE_BYTE|1,
+                   1,                          /* Output buffer (no output,
+anyway) */
+                   1,                          /* Input buffer */
+                   -1);
+    if (rc)                                    /* Pipe not created */
+    {
+        printf("DosCreateNPipe: rc=%ld, pipe=%ld\n",(long)rc,(long)pipe);
+        abort();
+    }
+
+    do                                         
+    {
+        rc=DosConnectNPipe(pipe);              /* Wait for angband to connect */
+        if (!rc) break;
+        _sleep2(100);                          /* Sleep for 0.1s  */
+    } while (_read_kbd(0,0,0)==-1);            /* Until key pressed */
+
+    if (rc) exit(1);
+
+    h=_imphandle(pipe);                        /* Register handle with EMX
+library */
+    setmode(h,O_BINARY);                       /* Make it binary */
+
+    in=fdopen(h,"rb");                         /* Register handle with stdio */
+    if (!in) exit(1);                          
+
+    printf("Conntected.\n");
+
+    sprintf(buf,"mode co80,%d",lines);
+    system(buf);
+
+    do                                         /* Infinite loop */
+    {
+        c=fgetc(in);                           /* Get command */
+
+        switch (c)
+        {
+            case PIP_INIT:                     /* Clear screen */
+                Term_init_emx(NULL);
+                break;
+            
+            case PIP_CURSOR:                   /* Set cursor */
+                if (!fread(&x,sizeof(x),1,in) ||
+                    !fread(&y,sizeof(y),1,in) ||
+                    !fread(&z,sizeof(z),1,in))
+                    abort();
+                Term_curs_emx(x,y,z);
+                break;                
+                
+            case PIP_WIPE:                     /* Wipe screen */
+                if (!fread(&x,sizeof(x),1,in) ||
+                    !fread(&y,sizeof(y),1,in) ||
+                    !fread(&w,sizeof(w),1,in) ||
+                    !fread(&h,sizeof(h),1,in))
+                    abort();
+                Term_wipe_emx(x,y,w,h);
+                break;                
+                
+            case PIP_TEXT:                     /* Print text */
+                if (!fread(&x,sizeof(x),1,in) ||
+                    !fread(&y,sizeof(y),1,in) ||
+                    !fread(&n,sizeof(n),1,in) ||
+                    !fread(&a,sizeof(a),1,in) ||
+                    n>16000 ||
+                    !fread(buf,n,1,in))
+                    abort();
+                Term_text_emx(x,y,n,a,buf);
+                break;
+
+            case EOF:
+            case PIP_EXIT:                     /* Connection closed */
+                Term_nuke_emx(NULL);
+                end=1;
+                break;
+
+            default:                           /* Other code... not supported */
+                Term_nuke_emx(NULL);
+                printf("Incompatible version of Angband\n");
+                end=1;
+                break;                
+        }                
+    } while (!end);
+
+    return 0;
+}
+
+#endif /* __EMX__CLIENT__ */
+
+#endif /* __EMX__ */
 

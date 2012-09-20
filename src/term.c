@@ -81,7 +81,6 @@
  * be done by the "Term_text()" procedures themselves...  One easy
  * addition would be to have the "term_win" maintain, in addition
  * to the range of changed columns, a range of "erased" columns.
- * Then the EraseScreen() function could be slightly more selective.
  *
  * Be VERY careful about printing in the bottom right hand corner
  * of the screen, as it may induce "scrolling" on older machines.
@@ -139,30 +138,24 @@ term *Term = NULL;
  */
 errr term_win_wipe(term_win *t)
 {
-    int i, y, m;
-
-    byte *aa;
-    char *cc;
-
-    /* XXX Note the "wipe" */
-    t->erase = TRUE;
+    int y, x;
 
     /* Cursor to the top left, and invisible */
     t->cv = t->cu = t->cx = t->cy = 0;
 
-    /* Note the max size */
-    m = t->h * t->w;
-
-    /* Wipe every entry */
-    for (aa = t->va, cc = t->vc, i = 0; i < m; i++)
-    {
-        *aa++ = 0;
-        *cc++ = ' ';
-    }
-
-    /* Mark every row as changed */
+    /* Wipe each row */
     for (y = 0; y < t->h; y++)
     {
+        byte *aa = t->a[y];
+        char *cc = t->c[y];
+
+        /* Wipe each column */
+        for (x = 0; x < t->w; x++)
+        {
+            *aa++ = 0;
+            *cc++ = ' ';
+        }
+
         /* This row has changed */
         t->x1[y] = 0;
         t->x2[y] = t->w - 1;
@@ -171,9 +164,6 @@ errr term_win_wipe(term_win *t)
     /* Every row has changed */
     t->y1 = 0;
     t->y2 = t->h - 1;
-
-    /* Allow full wipe */
-    t->erase = TRUE;
 
     /* Success */
     return (0);
@@ -465,7 +455,7 @@ static void FlushOutputRow(int y)
             /* Optimize the new contents */
             if (nc == ' ') na = fa;
         }
-        
+
         /* Notice unchanged areas */
         if ((na == oa) && (nc == oc)) {
 
@@ -474,7 +464,7 @@ static void FlushOutputRow(int y)
             {
                 /* Terminate the thread */
                 text[n] = '\0';
-            
+
                 /* Draw the pending chars */
                 if (fa) Term_text(fx, y, n, fa, text);
 
@@ -484,11 +474,11 @@ static void FlushOutputRow(int y)
                 /* Forget the pending thread */
                 n = 0;
             }
-            
+
             /* Skip */
             continue;
         }
-        
+
         /* Notice new color */
         if (fa != na)
         {
@@ -497,7 +487,7 @@ static void FlushOutputRow(int y)
             {
                 /* Terminate the thread */
                 text[n] = '\0';
-            
+
                 /* Draw the pending chars */
                 if (fa) Term_text(fx, y, n, fa, text);
 
@@ -507,11 +497,11 @@ static void FlushOutputRow(int y)
                 /* Forget the pending thread */
                 n = 0;
             }
-            
+
             /* Save the new color */
             fa = na;
         }
-         
+
         /* Start a new thread, if needed */
         if (!n) fx = x;
 
@@ -524,7 +514,7 @@ static void FlushOutputRow(int y)
     {
         /* Terminate the thread */
         text[n] = '\0';
-            
+
         /* Draw the pending chars */
         if (fa) Term_text(fx, y, n, fa, text);
 
@@ -553,10 +543,21 @@ static void FlushOutput()
     term_win *scr = Term->scr;
 
 
+    /* Mega-Hack -- allow full erase */
+    if (old->erase)
+    {
+        /* Physically erase the entire window */
+        Term_wipe(0, 0, scr->w, scr->h);
+
+        /* Forget the erase */
+        old->erase = FALSE;
+    }
+
+
     /* Cursor update -- Erase old Cursor */
     if (Term->soft_cursor)
     {
-        bool okay = FALSE;        
+        bool okay = FALSE;
 
         /* Cursor has moved */
         if (old->cy != scr->cy) okay = TRUE;
@@ -564,7 +565,7 @@ static void FlushOutput()
 
         /* Cursor is now offscreen/invisible */
         if (scr->cu || !scr->cv) okay = TRUE;
-    
+
         /* Cursor was already offscreen/invisible */
         if (old->cu || !old->cv) okay = FALSE;
 
@@ -603,7 +604,7 @@ static void FlushOutput()
             Term_xtra(TERM_XTRA_INVIS, 0);
         }
     }
-    
+
 
     /* Update the "modified rows" */
     for (y = scr->y1; y <= scr->y2; ++y) FlushOutputRow(y);
@@ -763,13 +764,12 @@ static void QueueAttrChars(int x, int y, int n, byte a, cptr s)
 
 
 /*
- * Erase part of the screen (given top left, and size)
- * Note that these changes are NOT flushed immediately.
- * Assume valid input.  Used only internally.
+ * Clear a block of chars, starting at (x,y), of size (w,h)
+ * Move the cursor to (x,y), the top left corner of the block
  */
-static void EraseScreen(int ex, int ey, int ew, int eh)
+errr Term_erase(int x, int y, int w, int h)
 {
-    int x, y;
+    int xx, yy;
 
     term_win *scr = Term->scr;
 
@@ -778,84 +778,71 @@ static void EraseScreen(int ex, int ey, int ew, int eh)
     int nc = ' ';
 
     /* Paranoia -- nothing selected */
-    if (ew <= 0) return;
-    if (eh <= 0) return;
+    if (w <= 0) return (0);
+    if (h <= 0) return (0);
 
     /* Paranoia -- nothing visible */
-    if (ex >= scr->w) return;
-    if (ey >= scr->h) return;
+    if (x >= scr->w) return (0);
+    if (y >= scr->h) return (0);
 
     /* Force legal location */
-    if (ex < 0) ex = 0;
-    if (ey < 0) ey = 0;
+    if (x < 0) x = 0;
+    if (y < 0) y = 0;
 
     /* Force legal size */
-    if (ex + ew > scr->w) ew = scr->w - ex;
-    if (ey + eh > scr->h) eh = scr->h - ey;
+    if (x + w > scr->w) w = scr->w - x;
+    if (y + h > scr->h) h = scr->h - y;
 
     /* Scan every row */
-    for (y = ey; y < ey + eh; y++)
+    for (yy = y; yy < y + h; yy++)
     {
         int x1 = -1, x2 = -1;
 
-        byte *scr_aa = scr->a[y];
-        char *scr_cc = scr->c[y];
+        byte *scr_aa = scr->a[yy];
+        char *scr_cc = scr->c[yy];
 
         /* Scan every column */
-        for (x = ex; x < ex + ew; x++)
+        for (xx = x; xx < x + w; xx++)
         {
-            int oa = scr_aa[x];
-            int oc = scr_cc[x];
+            int oa = scr_aa[xx];
+            int oc = scr_cc[xx];
 
             /* Hack -- Ignore "non-changes" */
             if ((oa == na) && (oc == nc)) continue;
 
             /* Save the "literal" information */
-            scr_aa[x] = na;
-            scr_cc[x] = nc;
+            scr_aa[xx] = na;
+            scr_cc[xx] = nc;
 
             /* Hack -- ignore "double blanks" */
             if (Term->dark_blanks) {
-            
+
                 /* Optimize spaces */
                 if ((nc == ' ') && (oc == ' ')) continue;
             }
 
             /* Track minumum changed column */
-            if (x1 < 0) x1 = x;
+            if (x1 < 0) x1 = xx;
 
             /* Track maximum changed column */
-            x2 = x;
+            x2 = xx;
         }
 
         /* Expand the "change area" as needed */
         if (x1 >= 0)
         {
             /* Check for new min/max row info */
-            if (y < scr->y1) scr->y1 = y;
-            if (y > scr->y2) scr->y2 = y;
+            if (yy < scr->y1) scr->y1 = yy;
+            if (yy > scr->y2) scr->y2 = yy;
 
             /* Check for new min/max col info in this row */
-            if (x1 < scr->x1[y]) scr->x1[y] = x1;
-            if (x2 > scr->x2[y]) scr->x2[y] = x2;
+            if (x1 < scr->x1[yy]) scr->x1[yy] = x1;
+            if (x2 > scr->x2[yy]) scr->x2[yy] = x2;
         }
     }
-}
 
-
-/*
- * Clear from (x1,y1) to (x2,y2), inclusive, and move to (x1,y1)
- *
- * I do not know how efficient this is expected to be...
- * Nor do I know how efficient the OutputFlush() will be.
- */
-errr Term_erase(int x1, int y1, int x2, int y2)
-{
-    /* We always leave the cursor at the top-left edge */
-    Term_gotoxy(x1,y1);
-
-    /* Queue the "erase" for later */
-    EraseScreen(x1,y1,1+x2-x1,1+y2-y1);
+    /* Place the cursor in the erased rectangle */
+    Term_gotoxy(x,y);
 
     /* Success */
     return (0);
@@ -871,6 +858,7 @@ errr Term_erase(int x1, int y1, int x2, int y2)
  */
 errr Term_clear()
 {
+    term_win *old = Term->old;
     term_win *scr = Term->scr;
 
     /* Hack -- Save the cursor visibility */
@@ -881,6 +869,12 @@ errr Term_clear()
 
     /* Hack -- Restore the cursor visibility */
     scr->cv = cv;
+
+    /* Wipe the old screen mentally */
+    term_win_wipe(old);
+
+    /* Hack -- Allow full screen wipe */
+    old->erase = TRUE;
 
     /* Success */
     return (0);
@@ -893,8 +887,6 @@ errr Term_clear()
 /*
  * High level graphics.
  * Redraw the whole screen.
- *
- * Hack -- this is probably not the cleanest method.
  */
 errr Term_redraw()
 {
@@ -906,6 +898,12 @@ errr Term_redraw()
     /* Mark the old screen as empty */
     term_win_wipe(old);
 
+    /* Wipe the old screen mentally */
+    term_win_wipe(old);
+
+    /* Remember to erase it physically */
+    old->erase = TRUE;
+
     /* Hack -- mark every row as invalid */
     scr->y1 = 0;
     scr->y2 = scr->h - 1;
@@ -916,9 +914,6 @@ errr Term_redraw()
         scr->x1[y] = 0;
         scr->x2[y] = scr->w - 1;
     }
-
-    /* Physically erase the whole screen */
-    Term_wipe(0, 0, old->w, old->h);
 
     /* Hack -- refresh */
     Term_fresh();
@@ -1013,7 +1008,7 @@ errr Term_fresh()
     /* Send the output */
     FlushOutput();
 
-    /* And flush the output (no parameter) */
+    /* Actually flush the output */
     Term_xtra(TERM_XTRA_FRESH, 0);
 
     /* Success */
@@ -1196,7 +1191,7 @@ errr Term_addch(byte a, char c)
 
     /* Paranoia -- no illegal chars */
     if (!c) return (-2);
-    
+
     /* Add the attr/char to the queue */
     QueueAttrChar(scr->cx, scr->cy, a, c);
 
@@ -1265,10 +1260,10 @@ errr Term_putch(int x, int y, byte a, char c)
     errr res;
 
     /* Move first */
-    if ((res = Term_gotoxy(x, y))) return (res);
+    if ((res = Term_gotoxy(x, y)) != 0) return (res);
 
     /* Then add the char */
-    if ((res = Term_addch(a, c))) return (res);
+    if ((res = Term_addch(a, c)) != 0) return (res);
 
     /* Success */
     return (0);
@@ -1283,10 +1278,10 @@ errr Term_putstr(int x, int y, int n, byte a, cptr s)
     errr res;
 
     /* Move first */
-    if ((res = Term_gotoxy(x, y))) return (res);
+    if ((res = Term_gotoxy(x, y)) != 0) return (res);
 
     /* Then add the string */
-    if ((res = Term_addstr(n, a, s))) return (res);
+    if ((res = Term_addstr(n, a, s)) != 0) return (res);
 
     /* Success */
     return (0);
@@ -1302,11 +1297,8 @@ errr Term_putstr(int x, int y, int n, byte a, cptr s)
  */
 errr Term_flush()
 {
-    /* Flush the input (no parameter) */
+    /* Hack -- Flush all events */
     Term_xtra(TERM_XTRA_FLUSH, 0);
-    
-    /* Flush all pending events to be sure */
-    while (0 == Term_xtra(TERM_XTRA_CHECK, -999));
 
     /* Forget all keypresses */
     Term->key_head = Term->key_tail = 0;
@@ -1374,54 +1366,60 @@ errr Term_key_push(int k)
 
 
 /*
- * Return the pending keypress, if any, or zero.
- * This routine does NOT remove the key from the queue.
+ * Check for a pending keypress on the key queue.
+ *
+ * Store the keypress, if any, in "ch", and return "0".
+ * Otherwise store "zero" in "ch", and return "1".
+ *
+ * Wait for a keypress if "wait" is true.
+ *
+ * Remove the keypress if "take" is true.
  */
-int Term_kbhit()
+errr Term_inkey(char *ch, bool wait, bool take)
 {
-    int i;
+    /* Assume no key */
+    (*ch) = '\0';
 
-    /* Hack -- check for events (once) */
-    if (Term->scan_events) Term_xtra(TERM_XTRA_CHECK, -999);
+    /* Mega-Hack -- scan for events */
+    if (Term->scan_events) {
 
-    /* Flush the event queue if necessary */
-    if (Term->key_head == Term->key_tail) {
-        while (0 == Term_xtra(TERM_XTRA_CHECK, -999));
+        /* Process events (do not wait) */
+        Term_xtra(TERM_XTRA_EVENT, FALSE);
     }
 
-    /* If no key is ready, none was hit, return "nothing" */
-    if (Term->key_head == Term->key_tail) return (0);
+    /* Wait */
+    if (wait) {
+    
+        /* Process pending events while necessary */
+        while (Term->key_head == Term->key_tail) {
 
-    /* Extract the keypress, do NOT advance the queue */
-    i = Term->key_queue[Term->key_tail];
+            /* Process events (wait for one) */
+            Term_xtra(TERM_XTRA_EVENT, TRUE);
+        }
+    }
 
-    /* A key is ready */
-    return (i);
-}
+    /* Do not Wait */
+    else {
+    
+        /* Process pending events if necessary */
+        if (Term->key_head == Term->key_tail) {
 
+            /* Process events (do not wait) */
+            Term_xtra(TERM_XTRA_EVENT, FALSE);
+        }
+    }
 
+    /* No keys are ready */
+    if (Term->key_head == Term->key_tail) return (1);
 
-/*
- * Get a keypress from the user.  Parse macros.
- */
-int Term_inkey()
-{
-    int i;
+    /* Extract the next keypress */
+    (*ch) = Term->key_queue[Term->key_tail];
 
-    /* Hack -- check for events (once) */
-    if (Term->scan_events) Term_xtra(TERM_XTRA_CHECK, -999);
+    /* If requested, advance the queue, wrap around if necessary */
+    if (take && (++Term->key_tail == Term->key_size)) Term->key_tail = 0;
 
-    /* Wait for a keypress */
-    while (Term->key_head == Term->key_tail) Term_xtra(TERM_XTRA_EVENT, -999);
-
-    /* Extract the next real keypress, advance the queue */
-    i = Term->key_queue[Term->key_tail++];
-
-    /* Circular queue requires wrap-around */
-    if (Term->key_tail == Term->key_size) Term->key_tail = 0;
-
-    /* Return the key */
-    return (i);
+    /* Success */
+    return (0);
 }
 
 
@@ -1433,16 +1431,16 @@ int Term_inkey()
  * This function is extremely important, and also somewhat bizarre.
  * It is the only function that should "modify" the value of "Term".
  *
- * To "create" a valid "term", one should do a "term_init()", then set
- * the various flags and hooks, and then do a "Term_activate()".
+ * To "create" a valid "term", one should do "term_init(t)", then
+ * set the various flags and hooks, and then do "Term_activate(t)".
  */
 errr Term_activate(term *t)
 {
-    /* Already done */
+    /* Hack -- already done */
     if (Term == t) return (1);
 
     /* Deactivate the old Term */
-    if (Term) Term_xtra(TERM_XTRA_LEVEL, TERM_LEVEL_SOFT_SHUT);
+    if (Term) Term_xtra(TERM_XTRA_LEVEL, 0);
 
     /* Hack -- Call the special "init" hook */
     if (!t->initialized) {
@@ -1454,7 +1452,7 @@ errr Term_activate(term *t)
     Term = t;
 
     /* Activate the new Term */
-    if (Term) Term_xtra(TERM_XTRA_LEVEL, TERM_LEVEL_SOFT_OPEN);
+    if (Term) Term_xtra(TERM_XTRA_LEVEL, 1);
 
     /* Success */
     return (0);

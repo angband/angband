@@ -43,9 +43,9 @@ extern cptr argv0;
 
 
 /* Aux functions */
-extern func_void plog_aux;
-extern func_void quit_aux;
-extern func_void core_aux;
+extern void (*plog_aux)(cptr);
+extern void (*quit_aux)(cptr);
+extern void (*core_aux)(cptr);
 
 
 /**** Available Functions ****/
@@ -61,9 +61,6 @@ extern errr func_failure(void);
 /* Functions that return bools */
 extern bool func_true(void);
 extern bool func_false(void);
-
-/* Parse a long from a string, return chars used */
-extern sint long_parse(long *lp, cptr str);
 
 
 /* Test equality, prefix, suffix */

@@ -21,18 +21,35 @@
  * This entire file is only needed for generating levels.
  * This may allow smart compilers to only load it when needed.
  *
- * It may be possible to add a "room" directory, or to use the
- * existing "file" directory, to "out-load" the room templates.
- * Perhaps use a "g_list.txt" file (for "generation_type").
+ * Consider the "v_info.txt" file for vault generation.
  *
- * In this file, we use some of the "temporary" cave grid flags.
- * They are all cleared before the "cave_gen()" function ends.
- * Well, actually, they are not, but they can be if anyone cares.
+ * In this file, we use the "special" granite and perma-wall sub-types,
+ * where "basic" is normal, "inner" is inside a room, "outer" is the
+ * outer wall of a room, and "solid" is the outer wall of the dungeon
+ * or any walls that may not be pierced by corridors.  Thus the only
+ * wall type that may be pierced by a corridor is the "outer granite"
+ * type.  The "basic granite" type yields the "actual" corridors.
  *
- *   GRID_EXT1 -- the grid is in an outer wall of a room
- *   GRID_EXT2 -- the grid may not be pierced by corridors
- *   GRID_EXT3 -- the grid is used by overlapping corridors
- *   GRID_EXT4 -- the grid is already inside a streamer
+ * Note that we use the special "solid" granite wall type to prevent
+ * multiple corridors from piercing a wall in two adjacent locations,
+ * which would be messy, and we use the special "outer" granite wall
+ * to indicate which walls "surround" rooms, and may thus be "pierced"
+ * by corridors entering or leaving the room.
+ *
+ * Note that a tunnel which attempts to leave a room near the "edge"
+ * of the dungeon in a direction toward that edge will cause "silly"
+ * wall piercings, but will have no permanently incorrect effects,
+ * as long as the tunnel can *eventually* exit from another side.
+ * And note that the wall may not come back into the room by the
+ * hole it left through, so it must bend to the left or right and
+ * then optionally re-enter the room (at least 2 grids away).  This
+ * is not a problem since every room that is large enough to block
+ * the passage of tunnels is also large enough to allow the tunnel
+ * to pierce the room itself several times.
+ *
+ * Note that no two corridors may enter a room through adjacent grids,
+ * they must either share an entryway or else use entryways at least
+ * two grids apart.  This prevents "large" (or "silly") doorways.
  *
  * To create rooms in the dungeon, we first divide the dungeon up
  * into "blocks" of 11x11 grids each, and require that all rooms
@@ -49,23 +66,6 @@
  * is off the screen.  It may be annoying enough to go back to 33x11
  * blocks to prevent this visual situation.
  *
- * Note that we use "GRID_EXT2" for the "outer dungeon walls" to
- * prevent attempts by corridors to leave the dungeon, and we also
- * use "GRID_EXT1" to prevent corridors from piercing walls adjacent
- * to the "outer dungeon walls".
- *
- * Note that a tunnel which attempts to leave a room near the "edge"
- * of the dungeon in a direction toward that edge will cause "silly"
- * wall piercings, but will have no permanently incorrect effects,
- * as long as the tunnel can *eventually* exit from another side.
- * And note that the wall may not come back into the room by the
- * hole it left through, so it must bend to the left or right and
- * then optionally re-enter the room (at least 2 grids away).
- *
- * Note that no two corridors may enter a room through adjacent grids,
- * they must either share an entryway or else use entryways at least
- * two grids apart.  This prevents "large" (or "silly") doorways.
- *
  * Note that the dungeon generation routines are much different (2.7.5)
  * and perhaps "DUN_ROOMS" should be less than 50.
  *
@@ -73,15 +73,43 @@
  * connected to itself, because the "tunnel generation" code allows a
  * tunnel to leave a room, wander around, and then re-enter the room.
  *
- * XXX XXX XXX Note that it may be possible to create a set of rooms which
+ * XXX XXX XXX Note that it is possible to create a set of rooms which
  * are only connected to other rooms in that set, since there is nothing
  * explicit in the code to prevent this from happening.  But this is less
  * likely than the "isolated room" problem, because each room attempts to
  * connect to another room, in a giant cycle, thus requiring at least two
  * bizarre occurances to create an isolated section of the dungeon.
+ *
+ * Note that (2.7.9) monster pits have been split into monster "nests"
+ * and monster "pits".  The "nests" have a collection of monsters of a
+ * given type strewn randomly around the room (jelly, animal, or undead),
+ * while the "pits" have a collection of monsters of a given type placed
+ * around the room in an organized manner (orc, troll, giant, dragon, or
+ * demon).  Note that both "nests" and "pits" are now "level dependant",
+ * and both make 16 "expensive" calls to the "get_mon_num()" function.
+ *
+ * Note that the cave grid flags changed in a rather drastic manner
+ * for Angband 2.8.0 (and 2.7.9+), in particular, dungeon terrain
+ * features, such as doors and stairs and traps and rubble and walls,
+ * are all handled as a set of 64 possible "terrain features", and
+ * not as "fake" objects like they used to be.
+ *
+ * The 64 new "dungeon features" will also be used for "visual display"
+ * but we must be careful not to allow, for example, the user to display
+ * hidden traps in a different way from floors, or secret doors in a way
+ * different from granite walls, or even permanent granite in a different
+ * way from granite.  I suppose it would be okay to display the outer wall
+ * of the dungeon in a special way if necessary.  The "notice_seams" flag
+ * will probably disappear, replaced by a specialized "pref" file.  Note
+ * that a new action in "pref" files will be needed to define "terrain",
+ * and a new "f_info.txt" file will be needed to describe the terrain.
+ * XXX XXX XXX
+ *
+ * Actually the "notice_seams" option is still used to decide if the
+ * player wants to "notice" seams when he is "looking" at things.
  */
- 
- 
+
+
 /*
  * Dungeon generation values
  */
@@ -115,6 +143,20 @@
 #define DUN_AMT_ITEM	3	/* Amount of objects for rooms/corridors */
 #define DUN_AMT_GOLD	3	/* Amount of treasure for rooms/corridors */
 
+/*
+ * Hack -- Dungeon allocation "places"
+ */
+#define ALLOC_SET_CORR		1	/* Hallway */
+#define ALLOC_SET_ROOM		2	/* Room */
+#define ALLOC_SET_BOTH		3	/* Anywhere */
+
+/*
+ * Hack -- Dungeon allocation "types"
+ */
+#define ALLOC_TYP_RUBBLE	1	/* Rubble */
+#define ALLOC_TYP_TRAP		3	/* Trap */
+#define ALLOC_TYP_GOLD		4	/* Gold */
+#define ALLOC_TYP_OBJECT	5	/* Object */
 
 
 
@@ -140,17 +182,18 @@
 #define WALL_MAX	500
 #define TUNN_MAX	900
 
+
 /*
  * Maximal number of room types
  */
-#define ROOM_MAX	8
+#define ROOM_MAX	9
 
 
 
 /*
  * Simple structure to hold a map location
  */
-typedef struct _coord {
+typedef struct coord {
     byte y;
     byte x;
 } coord;
@@ -159,21 +202,21 @@ typedef struct _coord {
 /*
  * Room type information
  */
-typedef struct _room_data {
+typedef struct room_data {
 
     /* Required size in blocks */
     int dy1, dy2, dx1, dx2;
 
-    /* Max number of this kind per level */
-    int max;
-
+    /* Hack -- minimum level */
+    int level;
+    
 } room_data;
 
 
 /*
  * Structure to hold all "dungeon generation" data
  */
-typedef struct _dun_data {
+typedef struct dun_data {
 
     /* Array of centers of rooms */
     int cent_n;
@@ -198,20 +241,16 @@ typedef struct _dun_data {
     /* Array of which blocks are used */
     bool room_map[MAX_ROOMS_ROW][MAX_ROOMS_COL];
 
-    /* Number of rooms of each type */
-    int count[ROOM_MAX];
-
-    /* Template for lesser/greater vaults */
-    char template[3500];
+    /* Hack -- there is a pit/nest on this level */
+    bool crowded;
 
 } dun_data;
 
 
 /*
- * All the dungeon generation data
+ * Dungeon generation data -- see "cave_gen()"
  */
-static dun_data dun_body;
-static dun_data *dun = &dun_body;
+static dun_data *dun;
 
 
 /*
@@ -220,13 +259,14 @@ static dun_data *dun = &dun_body;
 static room_data room[ROOM_MAX] = {
 
     { 0, 0, 0, 0, 0 },		/* 0 = Nothing */
-    { 0, 0, -1, 1, 100 },	/* 1 = Simple (33x11) */
-    { 0, 0, -1, 1, 100 },	/* 2 = Overlapping (33x11) */
-    { 0, 0, -1, 1, 100 },	/* 3 = Crossed (33x11) */
-    { 0, 0, -1, 1, 100 },	/* 4 = Large (33x11) */
-    { 0, 0, -1, 1, 1 },		/* 5 = Monster pit (33x11) */
-    { 0, 1, -1, 1, 10 },	/* 6 = Lesser vault (33x22) */
-    { -1, 2, -2, 3, 1 }		/* 7 = Greater vault (66x44) */
+    { 0, 0, -1, 1, 1 },		/* 1 = Simple (33x11) */
+    { 0, 0, -1, 1, 1 },		/* 2 = Overlapping (33x11) */
+    { 0, 0, -1, 1, 3 },		/* 3 = Crossed (33x11) */
+    { 0, 0, -1, 1, 3 },		/* 4 = Large (33x11) */
+    { 0, 0, -1, 1, 5 },		/* 5 = Monster nest (33x11) */
+    { 0, 0, -1, 1, 5 },		/* 6 = Monster pit (33x11) */
+    { 0, 1, -1, 1, 5 },		/* 7 = Lesser vault (33x22) */
+    { -1, 2, -2, 3, 10 }	/* 8 = Greater vault (66x44) */
 };
 
 
@@ -242,7 +282,7 @@ static void correct_dir(int *rdir, int *cdir, int y1, int x1, int y2, int x2)
 
     /* Never move diagonally */
     if (*rdir && *cdir) {
-        if (rand_int(2)) {
+        if (rand_int(100) < 50) {
             *rdir = 0;
         }
         else {
@@ -261,8 +301,8 @@ static void rand_dir(int *rdir, int *cdir)
     int i = rand_int(4);
 
     /* Extract the dy/dx components */
-    *rdir = ddy[ddd[i]];
-    *cdir = ddx[ddd[i]];
+    *rdir = ddy_ddd[i];
+    *cdir = ddx_ddd[i];
 }
 
 
@@ -284,7 +324,7 @@ static void new_player_spot(void)
         if (!naked_grid_bold(y, x)) continue;
 
         /* Refuse to start on anti-teleport grids */
-        if (cave[y][x].info & GRID_ICKY) continue;
+        if (cave[y][x].feat & CAVE_ICKY) continue;
 
         /* Done */
         break;
@@ -293,9 +333,6 @@ static void new_player_spot(void)
     /* Save the new player grid */
     py = y;
     px = x;
-
-    /* Mark the dungeon grid */
-    cave[py][px].m_idx = 1;
 }
 
 
@@ -304,15 +341,17 @@ static void new_player_spot(void)
  * Count the number of walls adjacent to the given grid.
  *
  * Note -- Assumes "in_bounds(y, x)"
+ *
+ * We count only granite walls and permanent walls.
  */
 static int next_to_walls(int y, int x)
 {
     int        k = 0;
 
-    if (cave[y+1][x].info & GRID_WALL_MASK) k++;
-    if (cave[y-1][x].info & GRID_WALL_MASK) k++;
-    if (cave[y][x+1].info & GRID_WALL_MASK) k++;
-    if (cave[y][x-1].info & GRID_WALL_MASK) k++;
+    if ((cave[y+1][x].feat & 0x3F) >= 0x38) k++;
+    if ((cave[y-1][x].feat & 0x3F) >= 0x38) k++;
+    if ((cave[y][x+1].feat & 0x3F) >= 0x38) k++;
+    if ((cave[y][x-1].feat & 0x3F) >= 0x38) k++;
 
     return (k);
 }
@@ -320,72 +359,39 @@ static int next_to_walls(int y, int x)
 
 
 /*
- * Place some rubble at the given (clean) location
+ * Convert existing terrain type to rubble
  */
 static void place_rubble(int y, int x)
 {
-    cave_type *c_ptr;
-    inven_type *i_ptr;
+    cave_type *c_ptr = &cave[y][x];
 
-    /* Paranoia */
-    if (!clean_grid_bold(y, x)) return;
-
-    /* Make a new "rubble" object */
-    c_ptr = &cave[y][x];
-    c_ptr->i_idx = i_pop();
-    i_ptr = &i_list[c_ptr->i_idx];
-    invcopy(i_ptr, OBJ_RUBBLE);
-    i_ptr->iy = y;
-    i_ptr->ix = x;
+    /* Clear previous contents, add rubble */
+    c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x31);
 }
 
 
 
 /*
- * Place an up staircase at given location
+ * Convert existing terrain type to "up stairs"
  */
 static void place_up_stairs(int y, int x)
 {
-    cave_type *c_ptr;
-    inven_type *i_ptr;
+    cave_type *c_ptr = &cave[y][x];
 
-    /* Paranoia */
-    if (!clean_grid_bold(y, x)) return;
-
-    /* Make a new "stair" object */
-    c_ptr = &cave[y][x];
-    c_ptr->i_idx = i_pop();
-    i_ptr = &i_list[c_ptr->i_idx];
-    invcopy(i_ptr, OBJ_UP_STAIR);
-    i_ptr->iy = y;
-    i_ptr->ix = x;
-
-    /* Stairs are permanent */
-    c_ptr->info |= GRID_PERM;
+    /* Clear previous contents, add up stairs */
+    c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x06);
 }
 
 
 /*
- * Place a down staircase at given location
+ * Convert existing terrain type to "down stairs"
  */
 static void place_down_stairs(int y, int x)
 {
-    cave_type *c_ptr;
-    inven_type *i_ptr;
+    cave_type *c_ptr = &cave[y][x];
 
-    /* Paranoia */
-    if (!clean_grid_bold(y, x)) return;
-
-    /* Make a new "stair down" object */
-    c_ptr = &cave[y][x];
-    c_ptr->i_idx = i_pop();
-    i_ptr = &i_list[c_ptr->i_idx];
-    invcopy(i_ptr, OBJ_DOWN_STAIR);
-    i_ptr->iy = y;
-    i_ptr->ix = x;
-
-    /* Stairs are permanent */
-    c_ptr->info |= GRID_PERM;
+    /* Clear previous contents, add down stairs */
+    c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x07);
 }
 
 
@@ -404,7 +410,7 @@ static void place_random_stairs(int y, int x)
     if (!dun_level) {
         place_down_stairs(y, x);
     }
-    else if (is_quest(dun_level)) {
+    else if (is_quest(dun_level) || (dun_level >= MAX_DEPTH-1)) {
         place_up_stairs(y, x);
     }
     else if (rand_int(100) < 50) {
@@ -421,25 +427,10 @@ static void place_random_stairs(int y, int x)
  */
 static void place_locked_door(int y, int x)
 {
-    cave_type *c_ptr;
-    inven_type *i_ptr;
+    cave_type *c_ptr = &cave[y][x];
 
-    /* Mega-Hack -- nuke any walls */
-    cave[y][x].info &= ~GRID_WALL_MASK;
-
-    /* Paranoia */
-    if (!clean_grid_bold(y, x)) return;
-
-    /* Make a new "closed door" object */
-    c_ptr = &cave[y][x];
-    c_ptr->i_idx = i_pop();
-    i_ptr = &i_list[c_ptr->i_idx];
-    invcopy(i_ptr, OBJ_CLOSED_DOOR);
-    i_ptr->iy = y;
-    i_ptr->ix = x;
-
-    /* Lock the door */
-    i_ptr->pval = rand_int(10) + 10;
+    /* Clear previous contents, add locked door */
+    c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x20) + randint(7);
 }
 
 
@@ -448,22 +439,10 @@ static void place_locked_door(int y, int x)
  */
 static void place_secret_door(int y, int x)
 {
-    cave_type *c_ptr;
-    inven_type *i_ptr;
+    cave_type *c_ptr = &cave[y][x];
 
-    /* Mega-Hack -- nuke any walls */
-    cave[y][x].info &= ~GRID_WALL_MASK;
-
-    /* Paranoia */
-    if (!clean_grid_bold(y, x)) return;
-
-    /* Make a new "secret door" object */
-    c_ptr = &cave[y][x];
-    c_ptr->i_idx = i_pop();
-    i_ptr = &i_list[c_ptr->i_idx];
-    invcopy(i_ptr, OBJ_SECRET_DOOR);
-    i_ptr->iy = y;
-    i_ptr->ix = x;
+    /* Clear previous contents, add up stairs */
+    c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x30);
 }
 
 
@@ -474,23 +453,7 @@ static void place_random_door(int y, int x)
 {
     int tmp;
 
-    cave_type *c_ptr;
-    inven_type *i_ptr;
-
-
-    /* Mega-Hack -- nuke any walls */
-    cave[y][x].info &= ~GRID_WALL_MASK;
-
-
-    /* Paranoia */
-    if (!clean_grid_bold(y, x)) return;
-
-
-    /* Allocate an object */
-    c_ptr = &cave[y][x];
-    c_ptr->i_idx = i_pop();
-    i_ptr = &i_list[c_ptr->i_idx];
-
+    cave_type *c_ptr = &cave[y][x];
 
     /* Choose an object */
     tmp = rand_int(1000);
@@ -498,57 +461,44 @@ static void place_random_door(int y, int x)
     /* Open doors (300/1000) */
     if (tmp < 300) {
 
-        /* Make a new "open door" object */
-        invcopy(i_ptr, OBJ_OPEN_DOOR);
+        /* Clear previous contents, add open door */
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x04);
     }
 
     /* Broken doors (100/1000) */
     else if (tmp < 400) {
 
-        /* Make a new "open door" object */
-        invcopy(i_ptr, OBJ_OPEN_DOOR);
-
-        /* Break the door */
-        i_ptr->pval = 1;
+        /* Clear previous contents, add broken door */
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x05);
     }
 
     /* Secret doors (200/1000) */
     else if (tmp < 600) {
 
-        /* Make a new "secret door" object */
-        invcopy(i_ptr, OBJ_SECRET_DOOR);
+        /* Clear previous contents, add secret door */
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x30);
     }
 
     /* Closed doors (300/1000) */
     else if (tmp < 900) {
 
-        /* Make a new "closed door" object */
-        invcopy(i_ptr, OBJ_CLOSED_DOOR);
+        /* Clear previous contents, add closed door */
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x20);
     }
 
     /* Locked doors (99/1000) */
     else if (tmp < 999) {
 
-        /* Make a new "closed door" object */
-        invcopy(i_ptr, OBJ_CLOSED_DOOR);
-
-        /* Lock the door */
-        i_ptr->pval = rand_int(10) + 10;
+        /* Clear previous contents, add locked door */
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x20) + randint(7);
     }
 
     /* Stuck doors (1/1000) */
     else {
 
-        /* Make a new "closed door" object */
-        invcopy(i_ptr, OBJ_CLOSED_DOOR);
-
-        /* Stick the door */
-        i_ptr->pval = 0 - rand_int(10) - 10;
+        /* Clear previous contents, add jammed door */
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x28) + rand_int(8);
     }
-
-    /* Drop the object in the dungeon */
-    i_ptr->iy = y;
-    i_ptr->ix = x;
 }
 
 
@@ -556,11 +506,13 @@ static void place_random_door(int y, int x)
 /*
  * Places some staircases near walls
  */
-static void alloc_stairs(int k_idx, int num, int walls)
+static void alloc_stairs(int typ, int num, int walls)
 {
     int                 y, x, i, j, flag;
 
+    cave_type		*c_ptr;
     
+
     /* Place "num" stairs */
     for (i = 0; i < num; i++) {
 
@@ -580,18 +532,25 @@ static void alloc_stairs(int k_idx, int num, int walls)
                 /* Require a certain number of adjacent walls */
                 if (next_to_walls(y, x) < walls) continue;
 
-                /* Place some stairs */
+                /* Access the grid */
+                c_ptr = &cave[y][x];
+                
+                /* Town -- must go down */
                 if (!dun_level) {
-                    place_down_stairs(y, x);
+                    /* Clear previous contents, add down stairs */
+                    c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x07);
                 }
-                else if (is_quest(dun_level)) {
-                    place_up_stairs(y, x);
+
+                /* Quest -- must go up */
+                else if (is_quest(dun_level) || (dun_level >= MAX_DEPTH-1)) {
+                    /* Clear previous contents, add up stairs */
+                    c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x06);
                 }
-                else if (k_idx == OBJ_DOWN_STAIR) {
-                    place_down_stairs(y, x);
-                }
-                else if (k_idx == OBJ_UP_STAIR) {
-                    place_up_stairs(y, x);
+
+                /* Requested type */
+                else {
+                    /* Clear previous contents, add stairs */
+                    c_ptr->feat = ((c_ptr->feat & ~0x3F) | typ);
                 }
 
                 /* All done */
@@ -608,21 +567,7 @@ static void alloc_stairs(int k_idx, int num, int walls)
 
 
 /*
- * Semi-Hack -- types of "places" we can allocate (below)
- */
-#define ALLOC_SET_CORR	1
-#define ALLOC_SET_ROOM	2
-#define ALLOC_SET_BOTH	3
-
-
-/*
- * Allocates an object for tunnels and rooms
- *
- * Type 1 is rubble
- * Type 2 is unused (was visible traps)
- * Type 3 is trap
- * Type 4 is gold
- * Type 5 is object
+ * Allocates some objects (using "place" and "type")
  */
 static void alloc_object(int set, int typ, int num)
 {
@@ -644,7 +589,7 @@ static void alloc_object(int set, int typ, int num)
             if (!naked_grid_bold(y, x)) continue;
 
             /* Check for "room" */
-            room = (cave[y][x].info & GRID_ROOM) ? TRUE : FALSE;
+            room = (cave[y][x].feat & CAVE_ROOM) ? TRUE : FALSE;
 
             /* Require corridor? */
             if ((set == ALLOC_SET_CORR) && room) continue;
@@ -656,22 +601,24 @@ static void alloc_object(int set, int typ, int num)
             break;
         }
 
-        /* Place an object */
-        if (typ < 4) {
-            if (typ == 1) {
+        /* Place something */
+        switch (typ) {
+        
+            case ALLOC_TYP_RUBBLE:
                 place_rubble(y, x);
-            }
-            else /* (typ == 3) */ {
-                place_trap(y, x, FALSE);
-            }
-        }
-        else {
-            if (typ == 4) {
+                break;
+
+            case ALLOC_TYP_TRAP:
+                place_trap(y, x);
+                break;
+
+            case ALLOC_TYP_GOLD:
                 place_gold(y, x);
-            }
-            else /* (typ == 5) */ {
+                break;
+
+            case ALLOC_TYP_OBJECT:
                 place_object(y, x, FALSE, FALSE);
-            }
+                break;
         }
     }
 }
@@ -679,14 +626,21 @@ static void alloc_object(int set, int typ, int num)
 
 
 /*
- * Places "streamers" of rock through dungeon		-RAK-	
+ * Places "streamers" of rock through dungeon
+ *
+ * Note that their are actually six different terrain features used
+ * to represent streamers.  Three each of magma and quartz, one for
+ * basic vein, one with hidden gold, and one with known gold.  The
+ * hidden gold types are currently unused.
  */
 static void build_streamer(int type, int chance)
 {
     int		i, tx, ty;
     int		y, x, dir;
 
-    /* Hack -- Choose starting point near the center of the dungeon */
+    cave_type *c_ptr;
+
+    /* Hack -- Choose starting point */
     y = rand_spread(cur_hgt / 2, 10);
     x = rand_spread(cur_wid / 2, 15);
 
@@ -694,7 +648,7 @@ static void build_streamer(int type, int chance)
     dir = ddd[rand_int(8)];
 
     /* Place streamer into dungeon */
-    while (1) {
+    while (TRUE) {
 
         /* One grid per density */
         for (i = 0; i < DUN_STR_DEN; i++) {
@@ -709,32 +663,18 @@ static void build_streamer(int type, int chance)
                 break;
             }
 
-            /* Turn granite into streamers */
-            if (TRUE) {
+            /* Access the grid */
+            c_ptr = &cave[ty][tx];
 
-                cave_type *c_ptr = &cave[ty][tx];
+            /* Only convert "granite" walls */
+            if ((c_ptr->feat & 0x3F) < 0x38) continue;
+            if ((c_ptr->feat & 0x3F) > 0x3B) continue;
 
-                /* Skip non-walls */
-                if (!(c_ptr->info & GRID_WALL_MASK)) continue;
+            /* Clear previous contents, add proper vein type */
+            c_ptr->feat = ((c_ptr->feat & ~0x3F) | type);
 
-                /* Skip permanent walls */
-                if (c_ptr->info & GRID_PERM) continue;
-
-                /* Skip existing streamers */
-                if (c_ptr->info & GRID_EXT4) continue;
-
-                /* Destroy the granite */
-                c_ptr->info &= ~GRID_WALL_MASK;
-
-                /* Add some treasure */
-                if (rand_int(chance) == 0) place_gold(ty, tx);
-
-                /* Create a streamer (on top of the treasure) */
-                c_ptr->info |= type;
-
-                /* Note that we are a streamer */
-                c_ptr->info |= GRID_EXT4;
-            }
+            /* Hack -- Add some treasure sometimes */
+            if (rand_int(chance) == 0) c_ptr->feat |= 0x04;
         }
 
         /* Advance the streamer */
@@ -753,6 +693,8 @@ static void build_streamer(int type, int chance)
 static void destroy_level()
 {
     int y1, x1, y, x, k, t, n;
+
+    cave_type *c_ptr;
 
     /* Note destroyed levels */
     if (cheat_room) msg_print("Destroyed Level");
@@ -782,31 +724,49 @@ static void destroy_level()
 
                 /* Destroy valid grids */
                 if (valid_grid(y, x)) {
-                
-                    cave_type *c_ptr = &cave[y][x];
 
                     /* Delete the object (if any) */
                     delete_object(y, x);
 
-                    /* Clear the walls */
-                    c_ptr->info &= ~GRID_WALL_MASK;
+                    /* Access the grid */
+                    c_ptr = &cave[y][x];
 
-                    /* Make walls (occasionally) */
-                    if (rand_int(100) < 50) {
+                    /* Wall (or floor) type */
+                    t = rand_int(200);
 
-                        /* Wall type */
-                        t = rand_int(100);
+                    /* Granite */
+                    if (t < 20) {
 
-                        /* Make walls */
-                        if (t < 30) c_ptr->info |= GRID_WALL_MAGMA;
-                        else if (t < 80) c_ptr->info |= GRID_WALL_QUARTZ;
-                        else c_ptr->info |= GRID_WALL_GRANITE;
+                        /* Clear previous contents, add granite wall */
+                        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x38);
+                    }
+                    
+                    /* Quartz */
+                    else if (t < 70) {
+
+                        /* Clear previous contents, add quartz vein */
+                        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x33);
+                    }
+                    
+                    /* Magma */
+                    else if (t < 100) {
+
+                        /* Clear previous contents, add magma vein */
+                        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x32);
                     }
 
-                    /* No longer part of a room */
-                    c_ptr->info &= ~GRID_ROOM;
-                    c_ptr->info &= ~GRID_MARK;
-                    c_ptr->info &= ~GRID_GLOW;
+                    /* Floor */
+                    else {
+
+                        /* Clear previous contents, add floor */
+                        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x01);
+                    }                    
+
+                    /* No longer part of a room or vault */
+                    c_ptr->feat &= ~(CAVE_ROOM | CAVE_ICKY);
+
+                    /* No longer illuminated or known */
+                    c_ptr->feat &= ~(CAVE_MARK | CAVE_GLOW);
                 }
             }
         }
@@ -879,7 +839,7 @@ static void vault_trap_aux(int y, int x, int yd, int xd)
         if (!naked_grid_bold(y1, x1)) continue;
 
         /* Place the trap */
-        place_trap(y1, x1, TRUE);
+        place_trap(y1, x1);
 
         /* Done */
         break;
@@ -905,10 +865,7 @@ static void vault_traps(int y, int x, int yd, int xd, int num)
  */
 static void vault_monsters(int y1, int x1, int num)
 {
-    int          k, i, y, x, r_idx;
-
-    monster_race	*r_ptr;
-
+    int          k, i, y, x;
 
     /* Try to summon "num" monsters "near" the given location */
     for (k = 0; k < num; k++) {
@@ -924,261 +881,10 @@ static void vault_monsters(int y1, int x1, int num)
             /* Require "empty" floor grids */
             if (!empty_grid_bold(y, x)) continue;
 
-            /* Pick a monster race (slightly out of depth) */
-            r_idx = get_mon_num(dun_level + 2);
-
-            /* Get the race */
-            r_ptr = &r_list[r_idx];
-
-            /* Place the monster */
-            if (r_ptr->rflags1 & RF1_FRIENDS) {
-                place_group(y, x, r_idx, TRUE);
-            }
-            else {
-                place_monster(y, x, r_idx, TRUE);
-            }
-        }
-    }
-}
-
-
-/*
- * Place a sleeping jelly at the given location
- * Note the total hack we use to choose a jelly
- */
-static void vault_jelly(int y, int x)
-{
-    int i, r_idx;
-
-    monster_race *r_ptr;
-
-    /* Hack -- allocate a simple sleeping jelly */
-    for (i = 0; i < 10000; i++) {
-
-        monster_level = dun_level + 10;
-        r_idx = get_mon_num(monster_level);
-        monster_level = dun_level;
-
-        r_ptr = &r_list[r_idx];
-
-        if (!strchr("jmi,", r_ptr->r_char)) continue;
-        if (r_ptr->rflags1 & RF1_UNIQUE) continue;
-        if (r_ptr->rflags3 & RF3_EVIL) continue;
-
-        place_monster(y, x, r_idx, TRUE);
-
-        break;
-    }
-}
-
-
-/*
- * Place a sleeping undead creature at the given location
- * XXX XXX XXX Hack -- we choose random monster races until happy
- */
-static void vault_undead(int y, int x)
-{
-    int i, r_idx;
-
-    monster_race *r_ptr;
-
-    /* Hack -- allocate a simple sleeping undead monster */
-    for (i = 0; i < 10000; i++) {
-
-        monster_level = dun_level + 20;
-        r_idx = get_mon_num(monster_level);
-        monster_level = dun_level;
-
-        r_ptr = &r_list[r_idx];
-
-        if (!(r_ptr->rflags3 & RF3_UNDEAD)) continue;
-
-        if (r_ptr->rflags1 & RF1_UNIQUE) continue;
-
-        place_monster(y, x, r_idx, TRUE);
-
-        break;
-    }
-}
-
-
-
-/*
- * XXX XXX XXX Hack -- This whole section is a hack
- *
- * This is the only (?) place where the actual monster names matter.
- * This is a bad thing.  Perhaps we could use something such as
- * "the third non-unique monster whose symbol is 'o'" (for example).
- * Below are the order in which the desired monsters appear, ignoring
- * unique monsters.
- *
- * Orcs ('o'): 1, 5, 5, 8, 8, 7
- * Giants ('P'): 1, 2, 3, 4, 5, 6
- * Trolls ('T'): 1, 2, 5, 6, 8, 9
- * Demons ('&'): 2, 3, 4, 5, 6, 7
- */
-
-
-/*
- * Dragons: want Young,Young,Young,Mature,Mature,Ancient
- * Must restrict selection to proper "color".  Must avoid
- * pseudo-dragons, and weird-colored dragons, plus wyrms.
- * Note that the ancient dragons use the 'D' symbol
- * May be able to chack actual "BR_*" flags, and require
- * exactly one of the useful flags (?).
- *
- * XXX Perhaps we can ignore "multi-hued dragon pits", or possibly
- * use the "ATTR_MULTI" flag to notice multi-hued dragons, or just
- * require all 5 of the useful flags (see above)
- *
- * Currently, we use the color and rank to construct the name.
- */
-
-
-/*
- * Place the lowest level monster with matching name
- *
- * XXX XXX Note that these monsters are NOT sleeping,
- * unlike the monsters allocated by all other generations.
- *
- * XXX XXX XXX XXX Note direct use of "r_list[]".
- * And, in fact, requirement about monster names.
- */
-static void vault_aux(int y, int x, cptr what)
-{
-    int i;
-
-    /* Find and place the first matching monster */
-    for (i = 1; i < MAX_R_IDX-1; i++) {
-        monster_race *r_ptr = &r_list[i];
-        if (streq(r_ptr->name, what)) {
-            place_monster(y, x, i, FALSE);
-            break;
-        }
-    }
-}
-
-
-static cptr vault_orc_names[] = {
-    "Snaga", "Black orc", "Black orc",
-    "Uruk", "Uruk", "Orc captain"
-};
-
-static void vault_orc(int y, int x, int rank)
-{
-    vault_aux(y, x, vault_orc_names[rank-1]);
-}
-
-
-static cptr vault_troll_names[] = {
-    "Forest troll", "Stone troll", "Ice troll",
-    "Cave troll", "Water troll", "Olog"
-};
-
-static void vault_troll(int y, int x, int rank)
-{
-    vault_aux(y, x, vault_troll_names[rank-1]);
-}
-
-
-static cptr vault_giant_names[] = {
-    "Hill giant", "Frost giant", "Fire giant",
-    "Stone giant", "Cloud giant", "Storm giant"
-};
-
-static void vault_giant(int y, int x, int rank)
-{
-    vault_aux(y, x, vault_giant_names[rank-1]);
-}
-
-
-static cptr vault_dragon_names_1[] = {
-    "Young", "Young", "Young",
-    "Mature", "Mature", "Ancient"
-};
-
-static cptr vault_dragon_names_2[] = {
-    "blue dragon", "white dragon", "green dragon"
-    "black dragon", "red dragon", "Multi-Hued Dragon"
-};
-
-static void vault_dragon(int y, int x, int rank, int type)
-{
-    char what[128];
-
-    /* Construct a dragon name */
-    sprintf(what, "%s %s",
-            vault_dragon_names_1[rank-1],
-            vault_dragon_names_2[type-1]);
-
-    /* Allocate one */
-    vault_aux(y, x, what);
-}
-
-
-static cptr vault_demon_names[] = {
-    "Vrock", "Hezrou", "Glabrezu",
-    "Nalfeshnee", "Marilith", "Lesser Balrog"
-};
-
-static void vault_demon(int y, int x, int rank)
-{
-    vault_aux(y, x, vault_demon_names[rank-1]);
-}
-
-
-static void vault_nasty(int y, int x, int type, int rank, int colour)
-{
-    switch (type) {
-      case 1:
-        vault_jelly(y, x);
-        break;
-      case 2:
-        vault_orc(y, x, rank);
-        break;
-      case 3:
-        vault_troll(y, x, rank);
-        break;
-      case 4:
-        vault_giant(y, x, rank);
-        break;
-      case 5:
-        vault_undead(y, x);
-        break;
-      case 6:
-        vault_dragon(y, x, rank, colour);
-        break;
-      case 7:
-        vault_demon(y, x, rank);
-        break;
-    }
-}
-
-
-
-/*
- * Place an "appropriate" monster at the given location
- * Note that in general this function does NOT place groups.
- */
-static void vault_guard(int y, int x, int slp)
-{
-    int i;
-
-    /* Try really hard */    
-    for (i = 0; i < 10000; i++) {
-
-        /* Pick a monster */
-        int r = get_mon_num(monster_level);
-        
-        /* Access that monster */
-        monster_race *r_ptr = &r_list[r];
-        
-        /* Attempt to place a monster */
-        if (r_ptr->rflags1 & RF1_FRIENDS) {
-            if (place_group(y, x, r, slp)) break;
-        }
-        else {
-            if (place_monster(y, x, r, slp)) break;
+            /* Place the monster (allow groups) */
+            monster_level = dun_level + 2;
+            (void)place_monster(y, x, TRUE, TRUE);
+            monster_level = dun_level + 2;
         }
     }
 }
@@ -1194,9 +900,10 @@ static void vault_guard(int y, int x, int slp)
  *   2 -- overlapping
  *   3 -- cross shaped
  *   4 -- large room with features
- *   5 -- monster pits
- *   6 -- simple vaults
- *   7 -- greater vaults
+ *   5 -- monster nests
+ *   6 -- monster pits
+ *   7 -- simple vaults
+ *   8 -- greater vaults
  */
 
 
@@ -1207,7 +914,10 @@ static void build_type1(int yval, int xval)
 {
     int			y, x, y2, x2;
     int                 y1, x1;
+
     bool		light;
+
+    cave_type *c_ptr;
 
 
     /* Choose lite or dark */
@@ -1224,20 +934,25 @@ static void build_type1(int yval, int xval)
     /* Place a full floor under the room */
     for (y = y1 - 1; y <= y2 + 1; y++) {
         for (x = x1 - 1; x <= x2 + 1; x++) {
-            cave[y][x].info &= ~GRID_WALL_MASK;
-            cave[y][x].info |= GRID_ROOM;
-            if (light) cave[y][x].info |= GRID_GLOW;
+            c_ptr = &cave[y][x];
+            c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x01);
+            c_ptr->feat |= CAVE_ROOM;
+            if (light) c_ptr->feat |= CAVE_GLOW;
         }
     }
 
     /* Walls around the room */
     for (y = y1 - 1; y <= y2 + 1; y++) {
-        cave[y][x1-1].info |= (GRID_WALL_GRANITE | GRID_EXT1);
-        cave[y][x2+1].info |= (GRID_WALL_GRANITE | GRID_EXT1);
+        c_ptr = &cave[y][x1-1];
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x3A);
+        c_ptr = &cave[y][x2+1];
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x3A);
     }
     for (x = x1 - 1; x <= x2 + 1; x++) {
-        cave[y1-1][x].info |= (GRID_WALL_GRANITE | GRID_EXT1);
-        cave[y2+1][x].info |= (GRID_WALL_GRANITE | GRID_EXT1);
+        c_ptr = &cave[y1-1][x];
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x3A);
+        c_ptr = &cave[y2+1][x];
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x3A);
     }
 
 
@@ -1245,7 +960,8 @@ static void build_type1(int yval, int xval)
     if (rand_int(20) == 0) {
         for (y = y1; y <= y2; y += 2) {
             for (x = x1; x <= x2; x += 2) {
-                cave[y][x].info |= GRID_WALL_GRANITE;
+                c_ptr = &cave[y][x];
+                c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x39);
             }
         }
     }
@@ -1253,12 +969,16 @@ static void build_type1(int yval, int xval)
     /* Hack -- Occasional ragged-edge room */
     else if (rand_int(50) == 0) {
         for (y = y1 + 2; y <= y2 - 2; y += 2) {
-            cave[y][x1].info |= GRID_WALL_GRANITE;
-            cave[y][x2].info |= GRID_WALL_GRANITE;
+            c_ptr = &cave[y][x1];
+            c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x39);
+            c_ptr = &cave[y][x2];
+            c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x39);
         }
         for (x = x1 + 2; x <= x2 - 2; x += 2) {
-            cave[y1][x].info |= GRID_WALL_GRANITE;
-            cave[y2][x].info |= GRID_WALL_GRANITE;
+            c_ptr = &cave[y1][x];
+            c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x39);
+            c_ptr = &cave[y2][x];
+            c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x39);
         }
     }
 }
@@ -1272,7 +992,11 @@ static void build_type2(int yval, int xval)
     int			y, x;
     int			y1a, x1a, y2a, x2a;
     int			y1b, x1b, y2b, x2b;
+
     bool		light;
+
+    cave_type *c_ptr;
+
 
 
     /* Choose lite or dark */
@@ -1295,137 +1019,71 @@ static void build_type2(int yval, int xval)
     /* Place a full floor for room "a" */
     for (y = y1a - 1; y <= y2a + 1; y++) {
         for (x = x1a - 1; x <= x2a + 1; x++) {
-            cave[y][x].info &= ~GRID_WALL_MASK;
-            cave[y][x].info |= GRID_ROOM;
-            if (light) cave[y][x].info |= GRID_GLOW;
+            c_ptr = &cave[y][x];
+            c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x01);
+            c_ptr->feat |= CAVE_ROOM;
+            if (light) c_ptr->feat |= CAVE_GLOW;
         }
     }
 
     /* Place a full floor for room "b" */
     for (y = y1b - 1; y <= y2b + 1; y++) {
         for (x = x1b - 1; x <= x2b + 1; x++) {
-            cave[y][x].info &= ~GRID_WALL_MASK;
-            cave[y][x].info |= GRID_ROOM;
-            if (light) cave[y][x].info |= GRID_GLOW;
+            c_ptr = &cave[y][x];
+            c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x01);
+            c_ptr->feat |= CAVE_ROOM;
+            if (light) c_ptr->feat |= CAVE_GLOW;
         }
     }
 
 
     /* Place the walls around room "a" */
     for (y = y1a - 1; y <= y2a + 1; y++) {
-        cave[y][x1a-1].info |= (GRID_WALL_GRANITE | GRID_EXT1);
-        cave[y][x2a+1].info |= (GRID_WALL_GRANITE | GRID_EXT1);
+        c_ptr = &cave[y][x1a-1];
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x3A);
+        c_ptr = &cave[y][x2a+1];
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x3A);
     }
     for (x = x1a - 1; x <= x2a + 1; x++) {
-        cave[y1a-1][x].info |= (GRID_WALL_GRANITE | GRID_EXT1);
-        cave[y2a+1][x].info |= (GRID_WALL_GRANITE | GRID_EXT1);
+        c_ptr = &cave[y1a-1][x];
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x3A);
+        c_ptr = &cave[y2a+1][x];
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x3A);
     }
 
     /* Place the walls around room "b" */
     for (y = y1b - 1; y <= y2b + 1; y++) {
-        cave[y][x1b-1].info |= (GRID_WALL_GRANITE | GRID_EXT1);
-        cave[y][x2b+1].info |= (GRID_WALL_GRANITE | GRID_EXT1);
+        c_ptr = &cave[y][x1b-1];
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x3A);
+        c_ptr = &cave[y][x2b+1];
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x3A);
     }
     for (x = x1b - 1; x <= x2b + 1; x++) {
-        cave[y1b-1][x].info |= (GRID_WALL_GRANITE | GRID_EXT1);
-        cave[y2b+1][x].info |= (GRID_WALL_GRANITE | GRID_EXT1);
+        c_ptr = &cave[y1b-1][x];
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x3A);
+        c_ptr = &cave[y2b+1][x];
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x3A);
     }
+
 
 
     /* Replace the floor for room "a" */
     for (y = y1a; y <= y2a; y++) {
         for (x = x1a; x <= x2a; x++) {
-            cave[y][x].info &= ~(GRID_WALL_MASK | GRID_EXT1);
+            c_ptr = &cave[y][x];
+            c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x01);
         }
     }
 
     /* Replace the floor for room "b" */
     for (y = y1b; y <= y2b; y++) {
         for (x = x1b; x <= x2b; x++) {
-            cave[y][x].info &= ~(GRID_WALL_MASK | GRID_EXT1);
+            c_ptr = &cave[y][x];
+            c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x01);
         }
     }
 }
 
-#if 0
-
-/*
- * Type 2 -- Overlapping rectangular rooms
- *
- * XXX XXX XXX This version of the function for some unknown reason
- * does not set the "GRID_ROOM" flag correctly.  There is something
- * extremely wrong going on here.  I have absolutely no fucking idea
- * what is wrong with this function, but it might be important.
- */
-static void build_type2(int yval, int xval)
-{
-    bool		light;
-    int                 y, x, y1, y2, x1, x2, i, limit;
-    int			y1a[4], y2a[4], x1a[4], x2a[4];
-
-
-    /* Choose lite or dark */
-    light = (dun_level <= randint(25));
-
-    /* Pick room dimensions */
-    for (i = 0; i < 2; i++) {
-
-        /* Pick (and save) a room size */
-        y1a[i] = yval - randint(4);
-        y2a[i] = yval + randint(3);
-        x1a[i] = xval - randint(11);
-        x2a[i] = xval + randint(11);
-    }
-
-    /* Lay down the rooms */
-    for (i = 0; i < 2; i++) {
-
-        /* Extract the room saved above */
-        y1 = y1a[i];
-        y2 = y2a[i];
-        x1 = x1a[i];
-        x2 = x2a[i];
-
-        /* Place a full floor under the room */
-        for (y = y1 - 1; y <= y2 + 1; y++) {
-            for (x = x1 - 1; x <= x2 + 1; x++) {
-                cave[y][x].info &= ~GRID_WALL_MASK;
-                cave[y][x].info |= GRID_ROOM;
-                if (light) cave[y][x].info |= GRID_GLOW;
-            }
-        }
-
-        /* Walls */
-        for (y = y1 - 1; y <= y2 + 1; y++) {
-            cave[y][x1-1].info |= (GRID_WALL_GRANITE | GRID_EXT1);
-            cave[y][x2+1].info |= (GRID_WALL_GRANITE | GRID_EXT1);
-        }
-        for (x = x1 - 1; x <= x2 + 1; x++) {
-            cave[y1-1][x].info |= (GRID_WALL_GRANITE | GRID_EXT1);
-            cave[y2+1][x].info |= (GRID_WALL_GRANITE | GRID_EXT1);
-        }
-    }
-
-    /* Now erase all walls "inside" the rooms */
-    for (i = 0; i < 2; i++) {
-
-        /* Extract the room saved above */
-        y1 = y1a[i];
-        y2 = y2a[i];
-        x1 = x1a[i];
-        x2 = x2a[i];
-
-        /* Lay down the interior floor */
-        for (y = y1; y <= y2; y++) {
-            for (x = x1; x <= x2; x++) {
-                cave[y][x].info &= ~GRID_WALL_MASK;
-                cave[y][x].info &= ~GRID_EXT1;
-            }
-        }
-    }
-}
-
-#endif
 
 
 /*
@@ -1445,7 +1103,11 @@ static void build_type3(int yval, int xval)
     int			y, x, dy, dx, wy, wx;
     int			y1a, x1a, y2a, x2a;
     int			y1b, x1b, y2b, x2b;
+
     bool		light;
+
+    cave_type *c_ptr;
+
 
 
     /* Choose lite or dark */
@@ -1478,54 +1140,66 @@ static void build_type3(int yval, int xval)
     /* Place a full floor for room "a" */
     for (y = y1a - 1; y <= y2a + 1; y++) {
         for (x = x1a - 1; x <= x2a + 1; x++) {
-            cave[y][x].info &= ~GRID_WALL_MASK;
-            cave[y][x].info |= GRID_ROOM;
-            if (light) cave[y][x].info |= GRID_GLOW;
+            c_ptr = &cave[y][x];
+            c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x01);
+            c_ptr->feat |= CAVE_ROOM;
+            if (light) c_ptr->feat |= CAVE_GLOW;
         }
     }
 
     /* Place a full floor for room "b" */
     for (y = y1b - 1; y <= y2b + 1; y++) {
         for (x = x1b - 1; x <= x2b + 1; x++) {
-            cave[y][x].info &= ~GRID_WALL_MASK;
-            cave[y][x].info |= GRID_ROOM;
-            if (light) cave[y][x].info |= GRID_GLOW;
+            c_ptr = &cave[y][x];
+            c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x01);
+            c_ptr->feat |= CAVE_ROOM;
+            if (light) c_ptr->feat |= CAVE_GLOW;
         }
     }
 
 
     /* Place the walls around room "a" */
     for (y = y1a - 1; y <= y2a + 1; y++) {
-        cave[y][x1a-1].info |= (GRID_WALL_GRANITE | GRID_EXT1);
-        cave[y][x2a+1].info |= (GRID_WALL_GRANITE | GRID_EXT1);
+        c_ptr = &cave[y][x1a-1];
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x3A);
+        c_ptr = &cave[y][x2a+1];
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x3A);
     }
     for (x = x1a - 1; x <= x2a + 1; x++) {
-        cave[y1a-1][x].info |= (GRID_WALL_GRANITE | GRID_EXT1);
-        cave[y2a+1][x].info |= (GRID_WALL_GRANITE | GRID_EXT1);
+        c_ptr = &cave[y1a-1][x];
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x3A);
+        c_ptr = &cave[y2a+1][x];
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x3A);
     }
 
     /* Place the walls around room "b" */
     for (y = y1b - 1; y <= y2b + 1; y++) {
-        cave[y][x1b-1].info |= (GRID_WALL_GRANITE | GRID_EXT1);
-        cave[y][x2b+1].info |= (GRID_WALL_GRANITE | GRID_EXT1);
+        c_ptr = &cave[y][x1b-1];
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x3A);
+        c_ptr = &cave[y][x2b+1];
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x3A);
     }
     for (x = x1b - 1; x <= x2b + 1; x++) {
-        cave[y1b-1][x].info |= (GRID_WALL_GRANITE | GRID_EXT1);
-        cave[y2b+1][x].info |= (GRID_WALL_GRANITE | GRID_EXT1);
+        c_ptr = &cave[y1b-1][x];
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x3A);
+        c_ptr = &cave[y2b+1][x];
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x3A);
     }
 
 
     /* Replace the floor for room "a" */
     for (y = y1a; y <= y2a; y++) {
         for (x = x1a; x <= x2a; x++) {
-            cave[y][x].info &= ~(GRID_WALL_MASK | GRID_EXT1);
+            c_ptr = &cave[y][x];
+            c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x01);
         }
     }
 
     /* Replace the floor for room "b" */
     for (y = y1b; y <= y2b; y++) {
         for (x = x1b; x <= x2b; x++) {
-            cave[y][x].info &= ~(GRID_WALL_MASK | GRID_EXT1);
+            c_ptr = &cave[y][x];
+            c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x01);
         }
     }
 
@@ -1538,7 +1212,8 @@ static void build_type3(int yval, int xval)
       case 1:
         for (y = y1b; y <= y2b; y++) {
             for (x = x1a; x <= x2a; x++) {
-                cave[y][x].info |= GRID_WALL_GRANITE;
+                c_ptr = &cave[y][x];
+                c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x39);
             }
         }
         break;
@@ -1548,12 +1223,16 @@ static void build_type3(int yval, int xval)
 
         /* Build the vault */
         for (y = y1b; y <= y2b; y++) {
-            cave[y][x1a].info |= GRID_WALL_GRANITE;
-            cave[y][x2a].info |= GRID_WALL_GRANITE;
+            c_ptr = &cave[y][x1a];
+            c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x39);
+            c_ptr = &cave[y][x2a];
+            c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x39);
         }
         for (x = x1a; x <= x2a; x++) {
-            cave[y1b][x].info |= GRID_WALL_GRANITE;
-            cave[y2b][x].info |= GRID_WALL_GRANITE;
+            c_ptr = &cave[y1b][x];
+            c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x39);
+            c_ptr = &cave[y2b][x];
+            c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x39);
         }
 
         /* Place a secret door on the inner room */
@@ -1585,15 +1264,19 @@ static void build_type3(int yval, int xval)
             /* Pinch the east/west sides */
             for (y = y1b; y <= y2b; y++) {
                 if (y == yval) continue;
-                cave[y][x1a - 1].info |= GRID_WALL_GRANITE;
-                cave[y][x2a + 1].info |= GRID_WALL_GRANITE;
+                c_ptr = &cave[y][x1a - 1];
+                c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x39);
+                c_ptr = &cave[y][x2a + 1];
+                c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x39);
             }
 
             /* Pinch the north/south sides */
             for (x = x1a; x <= x2a; x++) {
                 if (x == xval) continue;
-                cave[y1b - 1][x].info |= GRID_WALL_GRANITE;
-                cave[y2b + 1][x].info |= GRID_WALL_GRANITE;
+                c_ptr = &cave[y1b - 1][x];
+                c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x39);
+                c_ptr = &cave[y2b + 1][x];
+                c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x39);
             }
 
             /* Sometimes shut using secret doors */
@@ -1607,16 +1290,22 @@ static void build_type3(int yval, int xval)
 
         /* Occasionally put a "plus" in the center */
         else if (rand_int(3) == 0) {
-            cave[yval][xval].info |= GRID_WALL_GRANITE;
-            cave[y1b][xval].info |= GRID_WALL_GRANITE;
-            cave[y2b][xval].info |= GRID_WALL_GRANITE;
-            cave[yval][x1a].info |= GRID_WALL_GRANITE;
-            cave[yval][x2a].info |= GRID_WALL_GRANITE;
+            c_ptr = &cave[yval][xval];
+            c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x39);
+            c_ptr = &cave[y1b][xval];
+            c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x39);
+            c_ptr = &cave[y2b][xval];
+            c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x39);
+            c_ptr = &cave[yval][x1a];
+            c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x39);
+            c_ptr = &cave[yval][x2a];
+            c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x39);
         }
 
         /* Occasionally put a pillar in the center */
         else if (rand_int(3) == 0) {
-            cave[yval][xval].info |= GRID_WALL_GRANITE;
+            c_ptr = &cave[yval][xval];
+            c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x39);
         }
 
         break;
@@ -1638,7 +1327,11 @@ static void build_type4(int yval, int xval)
 {
     int        y, x, y1, x1;
     int                 y2, x2, tmp;
+
     bool		light;
+
+    cave_type *c_ptr;
+
 
 
     /* Choose lite or dark */
@@ -1655,20 +1348,25 @@ static void build_type4(int yval, int xval)
     /* Place a full floor under the room */
     for (y = y1 - 1; y <= y2 + 1; y++) {
         for (x = x1 - 1; x <= x2 + 1; x++) {
-            cave[y][x].info &= ~GRID_WALL_MASK;
-            cave[y][x].info |= GRID_ROOM;
-            if (light) cave[y][x].info |= GRID_GLOW;
+            c_ptr = &cave[y][x];
+            c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x01);
+            c_ptr->feat |= CAVE_ROOM;
+            if (light) c_ptr->feat |= CAVE_GLOW;
         }
     }
 
     /* Outer Walls */
     for (y = y1 - 1; y <= y2 + 1; y++) {
-        cave[y][x1-1].info |= (GRID_WALL_GRANITE | GRID_EXT1);
-        cave[y][x2+1].info |= (GRID_WALL_GRANITE | GRID_EXT1);
+        c_ptr = &cave[y][x1-1];
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x3A);
+        c_ptr = &cave[y][x2+1];
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x3A);
     }
     for (x = x1 - 1; x <= x2 + 1; x++) {
-        cave[y1-1][x].info |= (GRID_WALL_GRANITE | GRID_EXT1);
-        cave[y2+1][x].info |= (GRID_WALL_GRANITE | GRID_EXT1);
+        c_ptr = &cave[y1-1][x];
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x3A);
+        c_ptr = &cave[y2+1][x];
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x3A);
     }
 
 
@@ -1678,14 +1376,18 @@ static void build_type4(int yval, int xval)
     x1 = x1 + 2;
     x2 = x2 - 2;
 
-    /* Inner Walls */
+    /* The inner walls */
     for (y = y1 - 1; y <= y2 + 1; y++) {
-        cave[y][x1 - 1].info |= GRID_WALL_GRANITE;
-        cave[y][x2 + 1].info |= GRID_WALL_GRANITE;
+        c_ptr = &cave[y][x1-1];
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x39);
+        c_ptr = &cave[y][x2+1];
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x39);
     }
     for (x = x1 - 1; x <= x2 + 1; x++) {
-        cave[y1 - 1][x].info |= GRID_WALL_GRANITE;
-        cave[y2 + 1][x].info |= GRID_WALL_GRANITE;
+        c_ptr = &cave[y1-1][x];
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x39);
+        c_ptr = &cave[y2+1][x];
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x39);
     }
 
 
@@ -1724,7 +1426,8 @@ static void build_type4(int yval, int xval)
         for (y = yval - 1; y <= yval + 1; y++) {
             for (x = xval -  1; x <= xval + 1; x++) {
                 if ((x == xval) && (y == yval)) continue;
-                cave[y][x].info |= GRID_WALL_GRANITE;
+                c_ptr = &cave[y][x];
+                c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x39);
             }
         }
 
@@ -1769,7 +1472,8 @@ static void build_type4(int yval, int xval)
         /* Large Inner Pillar */
         for (y = yval - 1; y <= yval + 1; y++) {
             for (x = xval - 1; x <= xval + 1; x++) {
-                cave[y][x].info |= GRID_WALL_GRANITE;
+                c_ptr = &cave[y][x];
+                c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x39);
             }
         }
 
@@ -1778,10 +1482,12 @@ static void build_type4(int yval, int xval)
             tmp = randint(2);
             for (y = yval - 1; y <= yval + 1; y++) {
                 for (x = xval - 5 - tmp; x <= xval - 3 - tmp; x++) {
-                    cave[y][x].info |= GRID_WALL_GRANITE;
+                    c_ptr = &cave[y][x];
+                    c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x39);
                 }
                 for (x = xval + 3 + tmp; x <= xval + 5 + tmp; x++) {
-                    cave[y][x].info |= GRID_WALL_GRANITE;
+                    c_ptr = &cave[y][x];
+                    c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x39);
                 }
             }
         }
@@ -1791,13 +1497,17 @@ static void build_type4(int yval, int xval)
 
             /* Long horizontal walls */
             for (x = xval - 5; x <= xval + 5; x++) {
-                cave[yval-1][x].info |= GRID_WALL_GRANITE;
-                cave[yval+1][x].info |= GRID_WALL_GRANITE;
+                c_ptr = &cave[yval-1][x];
+                c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x39);
+                c_ptr = &cave[yval+1][x];
+                c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x39);
             }
 
             /* Close off the left/right edges */
-            cave[yval][xval - 5].info |= GRID_WALL_GRANITE;
-            cave[yval][xval + 5].info |= GRID_WALL_GRANITE;
+            c_ptr = &cave[yval][xval-5];
+            c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x39);
+            c_ptr = &cave[yval][xval+5];
+            c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x39);
 
             /* Secret doors (random top/bottom) */
             place_secret_door(yval - 3 + (randint(2) * 2), xval - 3);
@@ -1830,7 +1540,8 @@ static void build_type4(int yval, int xval)
         for (y = y1; y <= y2; y++) {
             for (x = x1; x <= x2; x++) {
                 if (0x1 & (x + y)) {
-                    cave[y][x].info |= GRID_WALL_GRANITE;
+                    c_ptr = &cave[y][x];
+                    c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x39);
                 }
             }
         }
@@ -1854,14 +1565,16 @@ static void build_type4(int yval, int xval)
 
         /* Inner "cross" */
         for (y = y1; y <= y2; y++) {
-            cave[y][xval].info |= GRID_WALL_GRANITE;
+            c_ptr = &cave[y][xval];
+            c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x39);
         }
         for (x = x1; x <= x2; x++) {
-            cave[yval][x].info |= GRID_WALL_GRANITE;
+            c_ptr = &cave[yval][x];
+            c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x39);
         }
 
         /* Doors into the rooms */
-        if (rand_int(2) == 0) {
+        if (rand_int(100) < 50) {
             int i = randint(10);
             place_secret_door(y1 - 1, xval - i);
             place_secret_door(y1 - 1, xval + i);
@@ -1880,10 +1593,10 @@ static void build_type4(int yval, int xval)
         vault_objects(yval, xval, 2 + randint(2));
 
         /* Gotta have some monsters. */
-        vault_monsters(yval + 2, xval - 4, randint(2));
-        vault_monsters(yval + 2, xval + 4, randint(2));
-        vault_monsters(yval - 2, xval - 4, randint(2));
-        vault_monsters(yval - 2, xval + 4, randint(2));
+        vault_monsters(yval + 1, xval - 4, randint(4));
+        vault_monsters(yval + 1, xval + 4, randint(4));
+        vault_monsters(yval - 1, xval - 4, randint(4));
+        vault_monsters(yval - 1, xval + 4, randint(4));
 
         break;
     }
@@ -1891,22 +1604,255 @@ static void build_type4(int yval, int xval)
 
 
 /*
- * Type 5 -- Monster pits
+ * The following functions are used to determine if the given monster
+ * is appropriate for inclusion in a monster nest or monster pit or
+ * the given type.
  *
- * Monster types in the pit
- *   1 = jelly pit
- *   2 = orc pit	(Dungeon Level 10 and deeper)
- *   3 = troll pit	(Dungeon Level 20 and deeper)
- *   4 = giant pit	(Dungeon Level 30 and deeper)
- *   5 = undead pit	(Dungeon Level 45 and deeper)
- *   6 = dragon pit	(Dungeon Level 60 and deeper)
- *   7 = demon pit	(Dungeon Level 75 and deeper)
+ * None of the pits/nests are allowed to include "unique" monsters,
+ * or monsters which can "multiply".
+ *
+ * Some of the pits/nests are asked to avoid monsters which can blink
+ * away or which are invisible.  This is probably a hack.
+ *
+ * The old method made direct use of monster "names", which is bad.
+ *
+ * Note the use of Angband 2.7.9 monster race pictures in various places.
+ */
+ 
+ 
+/*
+ * Helper function for "monster nest (jelly)"
+ */
+static bool vault_aux_jelly(int r_idx)
+{
+    monster_race *r_ptr = &r_info[r_idx];
+
+    /* Require jelly, mold, icky thing, or mushroom */
+    if (!strchr("jmi,", r_ptr->r_char)) return (FALSE);
+
+    /* Ignore Evil monsters XXX XXX XXX */
+    if (r_ptr->flags3 & RF3_EVIL) return (FALSE);
+    
+    /* Hack -- Skip unique monsters */
+    if (r_ptr->flags1 & RF1_UNIQUE) return (FALSE);
+
+    /* Hack -- Skip multiplying monsters */
+    if (r_ptr->flags2 & RF2_MULTIPLY) return (FALSE);
+
+    /* Okay */
+    return (TRUE);
+}
+
+
+/*
+ * Helper function for "monster nest (animal)"
+ */
+static bool vault_aux_animal(int r_idx)
+{
+    monster_race *r_ptr = &r_info[r_idx];
+
+    /* Require animal (basic) */
+    if (!strchr("BCFIRSYZabceflqr", r_ptr->r_char)) return (FALSE);
+
+    /* Hack -- Skip unique monsters */
+    if (r_ptr->flags1 & RF1_UNIQUE) return (FALSE);
+
+    /* Hack -- Skip multiplying monsters */
+    if (r_ptr->flags2 & RF2_MULTIPLY) return (FALSE);
+
+    /* Okay */
+    return (TRUE);
+}
+
+
+/*
+ * Helper function for "monster nest (undead)"
+ */
+static bool vault_aux_undead(int r_idx)
+{
+    monster_race *r_ptr = &r_info[r_idx];
+
+    /* Require Undead */
+    if (!(r_ptr->flags3 & RF3_UNDEAD)) return (FALSE);
+
+    /* Hack -- Skip unique monsters */
+    if (r_ptr->flags1 & RF1_UNIQUE) return (FALSE);
+
+    /* Hack -- Skip multiplying monsters */
+    if (r_ptr->flags2 & RF2_MULTIPLY) return (FALSE);
+
+    /* Okay */
+    return (TRUE);
+}
+
+
+/*
+ * Helper function for "monster pit (orc)"
+ */
+static bool vault_aux_orc(int r_idx)
+{
+    monster_race *r_ptr = &r_info[r_idx];
+
+    /* Hack -- Require "o" monsters */
+    if (!strchr("o", r_ptr->r_char)) return (FALSE);
+
+    /* Hack -- do not allow "BLINK" monsters */
+    if (r_ptr->flags6 & RF6_BLINK) return (FALSE);
+    
+    /* Hack -- do not allow "INVISIBLE" monsters */
+    /* if (r_ptr->flags2 & RF2_INVISIBLE) return (FALSE); */
+
+    /* Hack -- Skip unique monsters */
+    if (r_ptr->flags1 & RF1_UNIQUE) return (FALSE);
+
+    /* Hack -- Skip multiplying monsters */
+    if (r_ptr->flags2 & RF2_MULTIPLY) return (FALSE);
+
+    /* Okay */
+    return (TRUE);
+}
+
+
+/*
+ * Helper function for "monster pit (troll)"
+ */
+static bool vault_aux_troll(int r_idx)
+{
+    monster_race *r_ptr = &r_info[r_idx];
+
+    /* Hack -- Require "T" monsters */
+    if (!strchr("T", r_ptr->r_char)) return (FALSE);
+
+    /* Hack -- do not allow "BLINK" monsters */
+    if (r_ptr->flags6 & RF6_BLINK) return (FALSE);
+
+    /* Hack -- do not allow "INVISIBLE" monsters */
+    if (r_ptr->flags2 & RF2_INVISIBLE) return (FALSE);
+    
+    /* Hack -- Skip unique monsters */
+    if (r_ptr->flags1 & RF1_UNIQUE) return (FALSE);
+
+    /* Hack -- Skip multiplying monsters */
+    if (r_ptr->flags2 & RF2_MULTIPLY) return (FALSE);
+
+    /* Okay */
+    return (TRUE);
+}
+
+
+/*
+ * Helper function for "monster pit (giant)"
+ */
+static bool vault_aux_giant(int r_idx)
+{
+    monster_race *r_ptr = &r_info[r_idx];
+
+    /* Hack -- Require "P" monsters */
+    if (!strchr("P", r_ptr->r_char)) return (FALSE);
+
+    /* Hack -- do not allow "BLINK" monsters */
+    /* if (r_ptr->flags6 & RF6_BLINK) return (FALSE); */
+
+    /* Hack -- do not allow "INVISIBLE" monsters */
+    /* if (r_ptr->flags2 & RF2_INVISIBLE) return (FALSE); */
+    
+    /* Hack -- Skip unique monsters */
+    if (r_ptr->flags1 & RF1_UNIQUE) return (FALSE);
+
+    /* Hack -- Skip multiplying monsters */
+    if (r_ptr->flags2 & RF2_MULTIPLY) return (FALSE);
+
+    /* Okay */
+    return (TRUE);
+}
+
+
+/*
+ * Hack -- breath type for "vault_aux_dragon()"
+ */
+static u32b vault_aux_dragon_mask4;
+
+
+/*
+ * Helper function for "monster pit (dragon)"
+ */
+static bool vault_aux_dragon(int r_idx)
+{
+    monster_race *r_ptr = &r_info[r_idx];
+
+    /* Hack -- Require "d" or "D" monsters */
+    if (!strchr("Dd", r_ptr->r_char)) return (FALSE);
+
+    /* Hack -- Require correct "breath attack" */
+    if (r_ptr->flags4 != vault_aux_dragon_mask4) return (FALSE);
+
+    /* Hack -- Skip unique monsters */
+    if (r_ptr->flags1 & RF1_UNIQUE) return (FALSE);
+
+    /* Hack -- Skip multiplying monsters */
+    if (r_ptr->flags2 & RF2_MULTIPLY) return (FALSE);
+
+    /* Okay */
+    return (TRUE);
+}
+
+
+/*
+ * Helper function for "monster pit (demon)"
+ */
+static bool vault_aux_demon(int r_idx)
+{
+    monster_race *r_ptr = &r_info[r_idx];
+
+    /* Hack -- Require "U" monsters */
+    if (!strchr("U", r_ptr->r_char)) return (FALSE);
+
+    /* Hack -- do not allow "BLINK" monsters */
+    /* if (r_ptr->flags5 & RF5_BLINK) return (FALSE); */
+
+    /* Hack -- do not allow "INVISIBLE" monsters */
+    /* if (r_ptr->flags2 & RF2_INVISIBLE) return (FALSE); */
+    
+    /* Hack -- Skip unique monsters */
+    if (r_ptr->flags1 & RF1_UNIQUE) return (FALSE);
+
+    /* Hack -- Skip multiplying monsters */
+    if (r_ptr->flags2 & RF2_MULTIPLY) return (FALSE);
+
+    /* Okay */
+    return (TRUE);
+}
+
+
+
+/*
+ * Type 5 -- Monster nests
+ *
+ * A monster nest is a "big" room, with an "inner" room, containing
+ * a "collection" of monsters of a given type strewn about the room.
+ *
+ * Hack -- we only pick 16 base monster types for efficiency, since
+ * the "get_mon_num()" function is still (very) slow.  XXX XXX XXX
+ *
+ * A "better" method would be to create a "secondary" monster/object
+ * allocation array, into which specialized "allocator" information
+ * could be placed before calling the allocator.
+ *
+ * Actually, splitting the "unique" monsters out of the "normal"
+ * monsters would probably also speed the function a lot.
+ *
+ * Currently, a monster nest is one of
+ *   a nest of "jelly" monsters   (Dungeon level 5 and deeper)
+ *   a nest of "animal" monsters  (Dungeon level 30 and deeper)
+ *   a nest of "undead" monsters  (Dungeon level 50 and deeper)
  */
 static void build_type5(int yval, int xval)
 {
     int			y, x, y1, x1, y2, x2;
-    int			tmp, type, colour;
-    bool		light = FALSE;
+    
+    int			tmp, i, what[16];
+
+    cave_type *c_ptr;
 
 
     /* Large room */
@@ -1919,20 +1865,24 @@ static void build_type5(int yval, int xval)
     /* Place the floor area */
     for (y = y1 - 1; y <= y2 + 1; y++) {
         for (x = x1 - 1; x <= x2 + 1; x++) {
-            cave[y][x].info &= ~GRID_WALL_MASK;
-            cave[y][x].info |= GRID_ROOM;
-            if (light) cave[y][x].info |= GRID_GLOW;
+            c_ptr = &cave[y][x];
+            c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x01);
+            c_ptr->feat |= CAVE_ROOM;
         }
     }
 
     /* Place the outer walls */
     for (y = y1 - 1; y <= y2 + 1; y++) {
-        cave[y][x1 - 1].info |= (GRID_WALL_GRANITE | GRID_EXT1);
-        cave[y][x2 + 1].info |= (GRID_WALL_GRANITE | GRID_EXT1);
+        c_ptr = &cave[y][x1-1];
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x3A);
+        c_ptr = &cave[y][x2+1];
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x3A);
     }
     for (x = x1 - 1; x <= x2 + 1; x++) {
-        cave[y1 - 1][x].info |= (GRID_WALL_GRANITE | GRID_EXT1);
-        cave[y2 + 1][x].info |= (GRID_WALL_GRANITE | GRID_EXT1);
+        c_ptr = &cave[y1-1][x];
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x3A);
+        c_ptr = &cave[y2+1][x];
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x3A);
     }
 
 
@@ -1944,12 +1894,16 @@ static void build_type5(int yval, int xval)
 
     /* The inner walls */
     for (y = y1 - 1; y <= y2 + 1; y++) {
-        cave[y][x1 - 1].info |= GRID_WALL_GRANITE;
-        cave[y][x2 + 1].info |= GRID_WALL_GRANITE;
+        c_ptr = &cave[y][x1-1];
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x39);
+        c_ptr = &cave[y][x2+1];
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x39);
     }
     for (x = x1 - 1; x <= x2 + 1; x++) {
-        cave[y1 - 1][x].info |= GRID_WALL_GRANITE;
-        cave[y2 + 1][x].info |= GRID_WALL_GRANITE;
+        c_ptr = &cave[y1-1][x];
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x39);
+        c_ptr = &cave[y2+1][x];
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x39);
     }
 
 
@@ -1962,42 +1916,474 @@ static void build_type5(int yval, int xval)
     }
 
 
-    /* Assume no type, no colour */
-    type = 0;
-    colour = 0;
+
+    /* Hack -- Choose a nest type */
+    tmp = randint(dun_level);
+
+
+    /* Monster nest (jelly) */
+    if (tmp < 30) {
+
+        /* Describe */
+        if (cheat_room) msg_print("Monster nest (jelly)");
+
+        /* Restrict to jelly */
+        get_mon_num_hook = vault_aux_jelly;
+    }
+
+    /* Monster nest (animal) */
+    else if (tmp < 50) {
+
+        /* Describe */
+        if (cheat_room) msg_print("Monster nest (animal)");
+
+        /* Restrict to animal */
+        get_mon_num_hook = vault_aux_animal;
+    }
+
+    /* Monster nest (undead) */
+    else {
+
+        /* Describe */
+        if (cheat_room) msg_print("Monster nest (undead)");
+
+        /* Restrict to undead */
+        get_mon_num_hook = vault_aux_undead;
+    }
+
+
+    /* Increase depth allowance */
+    monster_level = dun_level + 10;
+
+    /* Pick some monster types */
+    for (i = 0; i < 16; i++) {
+
+        /* Get (and save) a monster type */
+        what[i] = get_mon_num(monster_level);
+    }
+        
+    /* Restore depth allowance */
+    monster_level = dun_level;
+
+
+    /* Remove restriction */
+    get_mon_num_hook = NULL;
+
+
+    /* Increase the level rating */
+    rating += 10;
+
+    /* (Sometimes) Cause a "special feeling" (for "Monster Nests") */
+    if ((dun_level <= 40) && (randint(dun_level*dun_level + 1) < 300)) {
+        good_item_flag = TRUE;
+    }
+
+    /* Place some monsters */
+    for (y = yval - 2; y <= yval + 2; y++) {
+        for (x = xval - 9; x <= xval + 9; x++) {
+
+            int r_idx = what[rand_int(16)];
+
+            /* Place that "random" monster (no groups) */
+            (void)place_monster_aux(y, x, r_idx, FALSE, FALSE);
+        }
+    }
+}
+
+
+
+/*
+ * Type 6 -- Monster pits
+ *
+ * A monster pit is a "big" room, with an "inner" room, containing
+ * a "collection" of monsters of a given type organized in the room.
+ *
+ * Monster types in the pit
+ *   orc pit	(Dungeon Level 5 and deeper)
+ *   troll pit	(Dungeon Level 20 and deeper)
+ *   giant pit	(Dungeon Level 40 and deeper)
+ *   dragon pit	(Dungeon Level 60 and deeper)
+ *   demon pit	(Dungeon Level 80 and deeper)
+ *
+ * The inside room in a monster pit appears as shown below, where the
+ * actual monsters in each location depend on the type of the pit
+ *
+ *   #####################
+ *   #0000000000000000000#
+ *   #0112233455543322110#
+ *   #0112233467643322110#
+ *   #0112233455543322110#
+ *   #0000000000000000000#
+ *   #####################
+ *
+ * Note that it is now possible to "genericize" the monster pit creation
+ * function, by requesting 16 "appropriate" monsters, bubble sorting them
+ * by level, and then using a subset of those 16 monsters for the 8 types
+ * of monster in the room, say, the middle entries, or the even entries.
+ *
+ * Hack -- all of the "dragons" in a "dragon" pit must be the same "color",
+ * which is handled by requiring a specific "breath" attack for all of the
+ * dragons.  This may include "multi-hued" breath.
+ *
+ * Currently, we are using every other entry.  Note that "wyrms" may be
+ * present in many of the dragon pits, if they have the proper breath.
+ *
+ * Note that the "minimum depth" information is needed only to ensure
+ * that there is at least one acceptable monster at that depth.
+ */
+static void build_type6(int yval, int xval)
+{
+    int			tmp, what[16];
+    
+    int			i, j, y, x, y1, x1, y2, x2;
+
+    cave_type *c_ptr;
+
+
+    /* Large room */
+    y1 = yval - 4;
+    y2 = yval + 4;
+    x1 = xval - 11;
+    x2 = xval + 11;
+
+
+    /* Place the floor area */
+    for (y = y1 - 1; y <= y2 + 1; y++) {
+        for (x = x1 - 1; x <= x2 + 1; x++) {
+            c_ptr = &cave[y][x];
+            c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x01);
+            c_ptr->feat |= CAVE_ROOM;
+        }
+    }
+
+    /* Place the outer walls */
+    for (y = y1 - 1; y <= y2 + 1; y++) {
+        c_ptr = &cave[y][x1-1];
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x3A);
+        c_ptr = &cave[y][x2+1];
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x3A);
+    }
+    for (x = x1 - 1; x <= x2 + 1; x++) {
+        c_ptr = &cave[y1-1][x];
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x3A);
+        c_ptr = &cave[y2+1][x];
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x3A);
+    }
+
+
+    /* Advance to the center room */
+    y1 = y1 + 2;
+    y2 = y2 - 2;
+    x1 = x1 + 2;
+    x2 = x2 - 2;
+
+    /* The inner walls */
+    for (y = y1 - 1; y <= y2 + 1; y++) {
+        c_ptr = &cave[y][x1-1];
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x39);
+        c_ptr = &cave[y][x2+1];
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x39);
+    }
+    for (x = x1 - 1; x <= x2 + 1; x++) {
+        c_ptr = &cave[y1-1][x];
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x39);
+        c_ptr = &cave[y2+1][x];
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x39);
+    }
+
+
+    /* Place a secret door */
+    switch (randint(4)) {
+        case 1: place_secret_door(y1 - 1, xval); break;
+        case 2: place_secret_door(y2 + 1, xval); break;
+        case 3: place_secret_door(yval, x1 - 1); break;
+        case 4: place_secret_door(yval, x2 + 1); break;
+    }
+
 
     /* Choose a pit type */
-    tmp = randint(dun_level > 80 ? 80 : dun_level);
+    tmp = randint(dun_level);
 
-    /* Determine monster type from pit type */
-    if (tmp < 10) {
-        type = 1;
-        if (cheat_room) msg_print("Jelly Pit");
-    }
-    else if (tmp < 20) {
-        type = 2;
+
+    /* Orc pit */
+    if (tmp < 20) {
+
+        /* Message */
         if (cheat_room) msg_print("Orc Pit");
+
+#if 0
+        what[0] = vault_aux("Snaga");
+        what[1] = vault_aux("Cave orc");
+        what[2] = vault_aux("Hill orc");
+        what[3] = vault_aux("Black orc");
+        what[4] = vault_aux("Uruk");
+        what[5] = what[4];
+        what[6] = what[4];
+        what[7] = vault_aux("Orc captain");
+#endif
+
+        /* Restrict monster selection */
+        get_mon_num_hook = vault_aux_orc;        
     }
-    else if (tmp < 30) {
-        type = 3;
+
+    /* Troll pit */
+    else if (tmp < 40) {
+    
+        /* Message */
         if (cheat_room) msg_print("Troll Pit");
+        
+#if 0
+        what[0] = vault_aux("Forest troll");
+        what[1] = vault_aux("Stone troll");
+        what[2] = vault_aux("Ice troll");
+        what[3] = vault_aux("Cave troll");
+        what[4] = vault_aux("Water troll");
+        what[5] = vault_aux("Olog");
+        what[6] = what[5];
+        what[7] = vault_aux("Ettin");
+#endif
+
+        /* Restrict monster selection */
+        get_mon_num_hook = vault_aux_troll;        
     }
-    else if (tmp < 45) {
-        type = 4;
-        if (cheat_room) msg_print("Giant Pit");
-    }
+
+    /* Giant pit */
     else if (tmp < 60) {
-        type = 5;
-        if (cheat_room) msg_print("Undead Pit");
+    
+        /* Message */
+        if (cheat_room) msg_print("Giant Pit");
+        
+#if 0
+        what[0] = vault_aux("Hill giant");
+        what[1] = vault_aux("Frost giant");
+        what[2] = vault_aux("Fire giant");
+        what[3] = vault_aux("Stone giant");
+        what[4] = vault_aux("Cloud giant");
+        what[5] = vault_aux("Storm giant");
+        what[6] = vault_aux("Lesser titan");
+        what[7] = what[6];
+#endif
+
+        /* Restrict monster selection */
+        get_mon_num_hook = vault_aux_giant;        
     }
+
+    /* Dragon pit (blue/elec) */
+    else if (tmp < 63) {
+
+        /* Message */
+        if (cheat_room) msg_print("Dragon Pit (blue/elec)");
+
+#if 0
+        what[0] = vault_aux("Young blue dragon");
+        what[1] = what[0];
+        what[2] = what[0];
+        what[3] = vault_aux("Mature blue dragon");
+        what[4] = what[3];
+        what[5] = what[3];
+        what[6] = vault_aux("Ancient blue dragon");
+        what[7] = what[6];
+#endif
+
+        /* Restrict dragon breath type */
+        vault_aux_dragon_mask4 = RF4_BR_ELEC;
+
+        /* Restrict monster selection */
+        get_mon_num_hook = vault_aux_dragon;
+    }
+
+    /* Dragon pit (white/cold) */
+    else if (tmp < 66) {
+
+        /* Message */
+        if (cheat_room) msg_print("Dragon Pit (white/cold)");
+
+#if 0
+        what[0] = vault_aux("Young white dragon");
+        what[1] = what[0];
+        what[2] = what[0];
+        what[3] = vault_aux("Mature white dragon");
+        what[4] = what[3];
+        what[5] = what[3];
+        what[6] = vault_aux("Ancient white dragon");
+        what[7] = what[6];
+#endif
+
+        /* Restrict dragon breath type */
+        vault_aux_dragon_mask4 = RF4_BR_COLD;
+
+        /* Restrict monster selection */
+        get_mon_num_hook = vault_aux_dragon;
+    }
+
+    /* Dragon pit (green/poison) */
+    else if (tmp < 69) {
+
+        /* Message */
+        if (cheat_room) msg_print("Dragon Pit (green/poison)");
+
+#if 0
+        what[0] = vault_aux("Young green dragon");
+        what[1] = what[0];
+        what[2] = what[0];
+        what[3] = vault_aux("Mature green dragon");
+        what[4] = what[3];
+        what[5] = what[3];
+        what[6] = vault_aux("Ancient green dragon");
+        what[7] = what[6];
+#endif
+
+        /* Restrict dragon breath type */
+        vault_aux_dragon_mask4 = RF4_BR_POIS;
+
+        /* Restrict monster selection */
+        get_mon_num_hook = vault_aux_dragon;
+    }
+
+    /* Dragon pit (black/acid) */
+    else if (tmp < 72) {
+
+        /* Message */
+        if (cheat_room) msg_print("Dragon Pit (black/acid)");
+
+#if 0
+        what[0] = vault_aux("Young black dragon");
+        what[1] = what[0];
+        what[2] = what[0];
+        what[3] = vault_aux("Mature black dragon");
+        what[4] = what[3];
+        what[5] = what[3];
+        what[6] = vault_aux("Ancient black dragon");
+        what[7] = what[6];
+#endif
+
+        /* Restrict dragon breath type */
+        vault_aux_dragon_mask4 = RF4_BR_ACID;
+
+        /* Restrict monster selection */
+        get_mon_num_hook = vault_aux_dragon;
+    }
+
+    /* Dragon pit (red/fire) */
     else if (tmp < 75) {
-        type = 6;
-        colour = randint(6);
-        if (cheat_room) msg_print("Dragon Pit");
+
+        /* Message */
+        if (cheat_room) msg_print("Dragon Pit (red/fire)");
+
+#if 0
+        what[0] = vault_aux("Young red dragon");
+        what[1] = what[0];
+        what[2] = what[0];
+        what[3] = vault_aux("Mature red dragon");
+        what[4] = what[3];
+        what[5] = what[3];
+        what[6] = vault_aux("Ancient red dragon");
+        what[7] = what[6];
+#endif
+
+        /* Restrict dragon breath type */
+        vault_aux_dragon_mask4 = RF4_BR_FIRE;
+
+        /* Restrict monster selection */
+        get_mon_num_hook = vault_aux_dragon;
     }
+
+    /* Dragon pit (multi-hued/multi) */
+    else if (tmp < 80) {
+
+        /* Message */
+        if (cheat_room) msg_print("Dragon Pit (multi-hued/multi)");
+
+#if 0
+        what[0] = vault_aux("Young multi-hued dragon");
+        what[1] = what[0];
+        what[2] = what[0];
+        what[3] = vault_aux("Mature multi-hued dragon");
+        what[4] = what[3];
+        what[5] = what[3];
+        what[6] = vault_aux("Ancient multi-hued dragon");
+        what[7] = what[6];
+#endif
+
+        /* Restrict dragon breath type */
+        vault_aux_dragon_mask4 = (RF4_BR_ACID | RF4_BR_ELEC |
+                                  RF4_BR_FIRE | RF4_BR_COLD | RF4_BR_POIS);
+
+        /* Restrict monster selection */
+        get_mon_num_hook = vault_aux_dragon;
+    }
+
+    /* Demon pit */
     else {
-        type = 7;
+
+        /* Message */
         if (cheat_room) msg_print("Demon Pit");
+
+#if 0
+        what[0] = vault_aux("Vrock");
+        what[1] = vault_aux("Hezrou");
+        what[2] = vault_aux("Glabrezu");
+        what[3] = vault_aux("Nalfeshnee");
+        what[4] = vault_aux("Marilith");
+        what[5] = what[4];
+        what[6] = vault_aux("Lesser Balrog");
+        what[7] = what[6];
+#endif
+
+        /* Restrict monster selection */
+        get_mon_num_hook = vault_aux_demon;        
+    }
+
+
+    /* Increase monster depth */
+    monster_level = dun_level + 10;
+
+    /* Pick some monster types */
+    for (i = 0; i < 16; i++) {
+
+        /* Get (and save) a monster type */
+        what[i] = get_mon_num(monster_level);
+    }
+
+    /* Restore depth allowance */
+    monster_level = dun_level;
+
+
+    /* Remove restriction */
+    get_mon_num_hook = NULL;
+
+
+    /* Sort the entries */
+    for (i = 0; i < 16 - 1; i++) {
+
+        /* Sort the entries */
+        for (j = 0; j < 16 - 1; j++) {
+
+            int i1 = j;
+            int i2 = j + 1;
+
+            int p1 = r_info[what[i1]].level;
+            int p2 = r_info[what[i2]].level;
+
+            /* Bubble */
+            if (p1 > p2) {
+
+                int tmp = what[i1];
+                what[i1] = what[i2];
+                what[i2] = tmp;
+            }
+        }
+    }
+
+
+    /* Select the entries */
+    for (i = 0; i < 8; i++) {
+
+        /* Every other entry */
+        what[i] = what[i * 2];
+        
+        /* Message */
+        if (cheat_room) msg_print(r_name + r_info[what[i]].name);
     }
 
 
@@ -2005,325 +2391,192 @@ static void build_type5(int yval, int xval)
     rating += 10;
 
     /* (Sometimes) Cause a "special feeling" (for "Monster Pits") */
-    if ((randint(dun_level*dun_level + 1) < 300) && (dun_level <= 40)) {
+    if ((dun_level <= 40) && (randint(dun_level*dun_level + 1) < 300)) {
         good_item_flag = TRUE;
     }
 
+    /* Top and bottom rows */
+    for (x = xval - 9; x <= xval + 9; x++) {
+    
+        place_monster_aux(yval - 2, x, what[0], FALSE, FALSE);
+        place_monster_aux(yval + 2, x, what[0], FALSE, FALSE);
+    }
 
-    /* Fill the pit with monsters */
-    y = y1;
-    for (x = x1; x <= x2; x++) vault_nasty(y, x, type, 1, colour);
-    y = y2;
-    for (x = x1; x <= x2; x++) vault_nasty(y, x, type, 1, colour);
-    x = x1;
-    for (y = (y1 + 1); y <= (y2 - 1); y++) vault_nasty(y, x, type, 1, colour);
-    x = x2;
-    for (y = (y1 + 1); y <= (y2 - 1); y++) vault_nasty(y, x, type, 1, colour);
-    x = x1 + 1;
-    for (y = (y1 + 1); y <= (y2 - 1); y++) vault_nasty(y, x, type, 2, colour);
-    x = x1 + 2;
-    for (y = (y1 + 1); y <= (y2 - 1); y++) vault_nasty(y, x, type, 2, colour);
-    x = x2 - 1;
-    for (y = (y1 + 1); y <= (y2 - 1); y++) vault_nasty(y, x, type, 2, colour);
-    x = x2 - 2;
-    for (y = (y1 + 1); y <= (y2 - 1); y++) vault_nasty(y, x, type, 2, colour);
-    x = x1 + 3;
-    for (y = (y1 + 1); y <= (y2 - 1); y++) vault_nasty(y, x, type, 3, colour);
-    x = x1 + 4;
-    for (y = (y1 + 1); y <= (y2 - 1); y++) vault_nasty(y, x, type, 3, colour);
-    x = x2 - 3;
-    for (y = (y1 + 1); y <= (y2 - 1); y++) vault_nasty(y, x, type, 3, colour);
-    x = x2 - 4;
-    for (y = (y1 + 1); y <= (y2 - 1); y++) vault_nasty(y, x, type, 3, colour);
-    x = x1 + 5;
-    for (y = (y1 + 1); y <= (y2 - 1); y++) vault_nasty(y, x, type, 4, colour);
-    x = x1 + 6;
-    for (y = (y1 + 1); y <= (y2 - 1); y++) vault_nasty(y, x, type, 4, colour);
-    x = x2 - 5;
-    for (y = (y1 + 1); y <= (y2 - 1); y++) vault_nasty(y, x, type, 4, colour);
-    x = x2 - 6;
-    for (y = (y1 + 1); y <= (y2 - 1); y++) vault_nasty(y, x, type, 4, colour);
-    x = x1 + 7;
-    for (y = (y1 + 1); y <= (y2 - 1); y++) vault_nasty(y, x, type, 5, colour);
-    x = x1 + 8;
-    for (y = (y1 + 1); y <= (y2 - 1); y++) vault_nasty(y, x, type, 5, colour);
-    x = x2 - 7;
-    for (y = (y1 + 1); y <= (y2 - 1); y++) vault_nasty(y, x, type, 5, colour);
-    x = x2 - 8;
-    for (y = (y1 + 1); y <= (y2 - 1); y++) vault_nasty(y, x, type, 5, colour);
-    x = x2 - 9;
-    for (y = (y1 + 1); y <= (y2 - 1); y++) vault_nasty(y, x, type, 6, colour);
+    /* Middle columns */
+    for (y = yval - 1; y <= yval + 1; y++) {
+    
+        place_monster_aux(y, xval - 9, what[0], FALSE, FALSE);
+        place_monster_aux(y, xval + 9, what[0], FALSE, FALSE);
+
+        place_monster_aux(y, xval - 8, what[1], FALSE, FALSE);
+        place_monster_aux(y, xval + 8, what[1], FALSE, FALSE);
+
+        place_monster_aux(y, xval - 7, what[1], FALSE, FALSE);
+        place_monster_aux(y, xval + 7, what[1], FALSE, FALSE);
+
+        place_monster_aux(y, xval - 6, what[2], FALSE, FALSE);
+        place_monster_aux(y, xval + 6, what[2], FALSE, FALSE);
+
+        place_monster_aux(y, xval - 5, what[2], FALSE, FALSE);
+        place_monster_aux(y, xval + 5, what[2], FALSE, FALSE);
+
+        place_monster_aux(y, xval - 4, what[3], FALSE, FALSE);
+        place_monster_aux(y, xval + 4, what[3], FALSE, FALSE);
+
+        place_monster_aux(y, xval - 3, what[3], FALSE, FALSE);
+        place_monster_aux(y, xval + 3, what[3], FALSE, FALSE);
+
+        place_monster_aux(y, xval - 2, what[4], FALSE, FALSE);
+        place_monster_aux(y, xval + 2, what[4], FALSE, FALSE);
+    }
+
+    /* Above/Below the center monster */
+    for (x = xval - 1; x <= xval + 1; x++) {
+
+        place_monster_aux(yval + 1, x, what[5], FALSE, FALSE);
+        place_monster_aux(yval - 1, x, what[5], FALSE, FALSE);
+    }
+
+    /* Next to the center monster */
+    place_monster_aux(yval, xval + 1, what[6], FALSE, FALSE);
+    place_monster_aux(yval, xval - 1, what[6], FALSE, FALSE);
+
+    /* Center monster */
+    place_monster_aux(yval, xval, what[7], FALSE, FALSE);
 }
 
 
 
 /*
- * Type 6 -- simple vaults
- *
- * This might be a good function to use external files.
- *
- * We can use the entire 33x33 region centered at (yval,xval).
+ * Hack -- fill in "vault" rooms
  */
-static void build_type6(int yval, int xval)
+static void build_vault(int yval, int xval, int ymax, int xmax, cptr data)
 {
-    int			x, y, x1, y1;
-    int                 width = 0, height = 0;
-    bool		light;
-    cave_type		*c_ptr;
-    char		*t;
+    int dx, dy, x, y;
+
+    cptr t;
+
+    cave_type *c_ptr;
 
 
-    /* Choose lite or dark */
-    light = (dun_level <= randint(25));
-
-
-    /* Pick a large room */
-    switch (randint(7)) {
-
-      case 1:
-        width = 20;
-        height = 12;
-        sprintf(dun->template, "%s%s%s%s%s%s%s%s%s%s%s%s",
-                "       %%%%%%       ",
-                "    %%%..##..%%%    ",
-                "  %%....####....%%  ",
-                " %......#**#......% ",
-                "%...,.##+##+##.,...%",
-                "%.,.,.#*#*&#*#.,.,.%",
-                "%.,.,.#*#&*#*#.,.,.%",
-                "%...,.##+##+##.,...%",
-                " %......#**#......% ",
-                "  %%....####....%%  ",
-                "    %%%..##..%%%    ",
-                "       %%%%%%       ");
-        break;
-
-      case 2:
-        width = 20;
-        height = 14;
-        sprintf(dun->template, "%s%s%s%s%s%s%s%s%s%s%s%s%s%s",
-                "   %%%%%%%%%%%%%%   ",
-                "  %%.##########.%%  ",
-                " %%..#..,,,,..#..%% ",
-                "%%,..#.,####,.#..,%%",
-                "%....#.,#**#,.#....%",
-                "%.###+,##&&##,+###.%",
-                "%.#..,,#*&**#,,..#.%",
-                "%.#..,,#**&*#,,..#.%",
-                "%.###+,##&&##,+###.%",
-                "%....#.,#**#,.#....%",
-                "%%,..#.,####,.#..,%%",
-                " %%..#..,,,,..#..%% ",
-                "  %%.##########.%%  ",
-                "   %%%%%%%%%%%%%%   ");
-        break;
-
-      case 3:
-        width = 20;
-        height = 12;
-        sprintf(dun->template, "%s%s%s%s%s%s%s%s%s%s%s%s",
-                "    %%%%%%%%%%%%    ",
-                " %%%%..........%%%% ",
-                " %...###+##+###...% ",
-                "%%...#,,#,,#,,#...%%",
-                "%.###+##+##+##+###.%",
-                "%.#,,#&&#**#&&#,,#.%",
-                "%.#,,#&&#**#&&#,,#.%",
-                "%.###+##+##+##+###.%",
-                "%%...#,,#,,#,,#...%%",
-                " %...###+##+###...% ",
-                " %%%%..........%%%% ",
-                "    %%%%%%%%%%%%    ");
-        break;
-
-      case 4:
-        width = 20;
-        height = 12;
-        sprintf(dun->template, "%s%s%s%s%s%s%s%s%s%s%s%s",
-                "%%%%%%%%%%%%%%%%%%%%",
-                "%*.......&........*%",
-                "%.################.%",
-                "%.#,.,.,.,.,.,.,.#.%",
-                "%.#.############,#.%",
-                "%.#,+,&&+**#&*,#.#&%",
-                "%&#.#,*&#**+&&,+,#.%",
-                "%.#,############.#.%",
-                "%.#.,.,.,.,.,.,.,#.%",
-                "%.################.%",
-                "%*........&.......*%",
-                "%%%%%%%%%%%%%%%%%%%%");
-        break;
-
-      case 5:
-        width = 20;
-        height = 12;
-        sprintf(dun->template, "%s%s%s%s%s%s%s%s%s%s%s%s",
-                "%%%%%%%%%%%%%%%%%   ",
-                "%,,,##,,,,##....%%  ",
-                "%,,,,##,,,,##....%% ",
-                "%#,,,,##,,,,##....%%",
-                "%##,,,,##,,,,##....%",
-                "%.##,,,,,,,,,,#+...%",
-                "%..#+,,,,,,,,,,##..%",
-                "%...##,,,,##,,,,##.%",
-                "%%...##,,,,##,,,,##%",
-                " %%...##,,,,##,,,,#%",
-                "  %%...##,,,,##,,,,%",
-                "   %%%%%%%%%%%%%%%%%");
-        break;
-
-      case 6:
-        width = 20;
-        height = 12;
-        sprintf(dun->template, "%s%s%s%s%s%s%s%s%s%s%s%s",
-                "   %%%%%%%%%%%%%%%%%",
-                "  %%....##,,,,##,,,%",
-                " %%....##,,,,##,,,,%",
-                "%%....##,,,,##,,,,#%",
-                "%....##,,,,##,,,,##%",
-                "%...+#,,,,,,,,,,##.%",
-                "%..##,,,,,,,,,,+#..%",
-                "%.##,,,,##,,,,##...%",
-                "%##,,,,##,,,,##...%%",
-                "%#,,,,##,,,,##...%% ",
-                "%,,,,##,,,,##...%%  ",
-                "%%%%%%%%%%%%%%%%%   ");
-        break;
-
-      case 7:
-        width = 20;
-        height = 12;
-        sprintf(dun->template, "%s%s%s%s%s%s%s%s%s%s%s%s",
-                "%%%%%%%%%%%%%%%%%%%%",
-                "%,################,%",
-                "%^#.*...&..,....,#^%",
-                "%^#...,......&...#^%",
-                "%^#######++#######^%",
-                "%^+.,..&+,*+*....+^%",
-                "%^+..*.,+.&+.,.&.+^%",
-                "%^#######++#######^%",
-                "%^#....,.,.....,.#^%",
-                "%^#..&......*....#^%",
-                "%,################,%",
-                "%%%%%%%%%%%%%%%%%%%%");
-        break;
-    }
-
-
-    /* Small rating boost */
-    rating += 5;
-
-    /* Message */
-    if (cheat_room) msg_print("Lesser Vault");
-
-
-    /* (Sometimes) Cause a special feeling */
-    if ((dun_level <= 40) ||
-        (randint((dun_level-30) * (dun_level-30) + 1) < 400)) {
-        good_item_flag = TRUE;
-    }
-
-
-    /* Scan the vault, grid by grid, symbol by symbol */
-    for (t = dun->template, y1 = 0; y1 < height; y1++) {
-        for (x1 = 0; x1 < width; x1++, t++) {
+    /* Place dungeon features and objects */
+    for (t = data, dy = 0; dy < ymax; dy++) {
+        for (dx = 0; dx < xmax; dx++, t++) {
 
             /* Extract the location */
-            x = xval - (width / 2) + x1;
-            y = yval - (height / 2) + y1;
+            x = xval - (xmax / 2) + dx;
+            y = yval - (ymax / 2) + dy;
 
-            /* Skip grids not "inside" the room */
+            /* Hack -- skip "non-grids" */
             if (*t == ' ') continue;
 
-            /* Start with every grid being a floor in the room */
-            cave[y][x].info &= ~GRID_WALL_MASK;
-            cave[y][x].info |= GRID_ROOM;
-            if (light) cave[y][x].info |= GRID_GLOW;
+            /* Access the grid */
+            c_ptr = &cave[y][x];
+
+            /* Lay down a floor */
+            c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x01);
+
+            /* Part of a vault */
+            c_ptr->feat |= (CAVE_ROOM | CAVE_ICKY);
 
             /* Analyze the grid */
             switch (*t) {
 
-                /* Outer wall */
+              /* Granite wall (outer) */
               case '%':
-                cave[y][x].info |= (GRID_WALL_GRANITE | GRID_EXT1);
+                c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x3A);
                 break;
 
-                /* Perma wall */	
-              case 'H':
-                cave[y][x].info |= (GRID_WALL_GRANITE | GRID_PERM);
-                break;
-
-                /* Inner wall */	
+              /* Granite wall (inner) */
               case '#':
-                cave[y][x].info |= GRID_WALL_GRANITE;
+                c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x39);
                 break;
 
-              case '*':	   /* treasure/trap */
-                if (rand_int(100) < 70) {
+              /* Permanent wall (inner) */
+              case 'X':
+                c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x3D);
+                break;
+
+              /* Treasure/trap */
+              case '*':
+                if (rand_int(100) < 75) {
                     place_object(y, x, FALSE, FALSE);
                 }
-                else if (rand_int(100) < 80) {
-                    place_trap(y, x, FALSE);
-                }
                 else {
-                    place_random_stairs(y, x);
+                    place_trap(y, x);
                 }
                 break;
 
-              case '+':	   /* secret doors */
+              /* Secret doors */
+              case '+':
                 place_secret_door(y, x);
                 break;
 
               /* Trap */
               case '^':
-                place_trap(y, x, TRUE);
-                break;
-
-              case '.':	   /* floor */
-                break;
-
-              /* Monsters (see below) */
-              case '&':
-              case ',':
-                break;
-
-              default:
-                quit_fmt("Illegal vault creation char '%c'", *t);
+                place_trap(y, x);
                 break;
             }
         }
     }
 
 
-    /* Scan the vault, grid by grid, symbol by symbol -- place monsters */
-    for (t = dun->template, y1 = 0; y1 < height; y1++) {
-        for (x1 = 0; x1 < width; x1++, t++) {
+    /* Place dungeon monsters and objects */
+    for (t = data, dy = 0; dy < ymax; dy++) {
+        for (dx = 0; dx < xmax; dx++, t++) {
 
             /* Extract the grid */
-            x = xval - (width/2) + x1;
-            y = yval - (height/2) + y1;
+            x = xval - (xmax/2) + dx;
+            y = yval - (ymax/2) + dy;
 
-            /* Access the grid */
-            c_ptr = &cave[y][x];
+            /* Hack -- skip "non-grids" */
+            if (*t == ' ') continue;
 
             /* Analyze the symbol */
             switch (*t) {
 
-                /* Monster */
+              /* Monster */
               case '&':
-                monster_level = dun_level + 4;
-                vault_guard(y, x, TRUE);
+                monster_level = dun_level + 5;
+                place_monster(y, x, TRUE, TRUE);
                 monster_level = dun_level;
                 break;
 
-                /* Monster and/or object */
+              /* Meaner monster */
+              case '@':
+                monster_level = dun_level + 11;
+                place_monster(y, x, TRUE, TRUE);
+                monster_level = dun_level;
+                break;
+
+              /* Meaner monster, plus treasure */
+              case '9':
+                monster_level = dun_level + 9;
+                place_monster(y, x, TRUE, TRUE);
+                monster_level = dun_level;
+                object_level = dun_level + 7;
+                place_object(y, x, TRUE, FALSE);
+                object_level = dun_level;
+                break;
+
+              /* Nasty monster and treasure */
+              case '8':
+                monster_level = dun_level + 40;
+                place_monster(y, x, TRUE, TRUE);
+                monster_level = dun_level;
+                object_level = dun_level + 20;
+                place_object(y, x, TRUE, TRUE);
+                object_level = dun_level;
+                break;
+
+              /* Monster and/or object */
               case ',':
-                if (rand_int(2) == 0) {
-                    monster_level = dun_level + 2;
-                    vault_guard(y, x, TRUE);
+                if (rand_int(100) < 50) {
+                    monster_level = dun_level + 3;
+                    place_monster(y, x, TRUE, TRUE);
                     monster_level = dun_level;
                 }
-                if (rand_int(2) == 0) {
+                if (rand_int(100) < 50) {
                     object_level = dun_level + 7;
                     place_object(y, x, FALSE, FALSE);
                     object_level = dun_level;
@@ -2337,129 +2590,27 @@ static void build_type6(int yval, int xval)
 
 
 /*
- * Type 7 -- greater vaults
- *
- * This might be a good function to use external files.
- *
- * We can use the entire 99x33 region centered at (yval,xval).
+ * Type 7 -- simple vaults (see "v_info.txt")
  */
 static void build_type7(int yval, int xval)
 {
-    int			x, y, x1, y1;
-    int                 width = 0, height = 0;
-    bool		light;
-    cave_type		*c_ptr;
-    char		*t;
+    vault_type	*v_ptr;
+    
+    /* Pick a lesser vault */
+    while (TRUE) {
+    
+        /* Access a random vault record */
+        v_ptr = &v_info[rand_int(MAX_V_IDX)];
 
-
-    /* Choose lite or dark, and extract wall/floor codes */
-    light = (dun_level <= randint(25));
-
-
-    /* Pick a greater vault */
-    switch (randint(4)) {
-
-        case 1:
-            width = 39;
-            height = 17;
-            rating += 20;
-            sprintf(dun->template, "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",
-                    "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%",
-                    "%HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH%",
-                    "%+&#O#&#O#&#O#&#O#&#O#&#O#&#O#&#O#&#OH%",
-                    "%HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#H%",
-                    "%HO#&#O#&#O#&#O#&#O#&#O#&#O#&#O#&#O#&H%",
-                    "%H#HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH%",
-                    "%H&#O#&#O#&#O#&#O#&#O#&#O#&#O#&#O#&#OH%",
-                    "%HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#H%",
-                    "%HO#&#O#&#O#&#OOOOOOOOOOO#O#&#O#&#O#&H%",
-                    "%H#HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH%",
-                    "%H&#O#&#O#&#O#&#O#&#O#&#O#&#O#&#O#&#OH%",
-                    "%HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#H%",
-                    "%HO#&#O#&#O#&#O#&#O#&#O#&#O#&#O#&#O#&H%",
-                    "%H#HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH%",
-                    "%H&#O#&#O#&#O#&#O#&#O#&#O#&#O#&#O#&#&+%",
-                    "%HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH%",
-                    "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
-            break;
-
-        case 2:
-            width = 40;
-            height = 18;
-            rating += 10;
-            sprintf(dun->template, "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",
-                    "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%",
-                    "%HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH%",
-                    "%H,#,#,#,#,#,#,#,#*@@*#,#,#,#,#,#,#,#,H%",
-                    "%H+HHHHHHHHHHHHHHHH##HHHHHHHHHHHHHHHH+H%",
-                    "%H.,..,.H&.&.,*HH******HH*,.&.&H.,...,#%",
-                    "%H..,.^^H....,HH***@@***HH,....H^^..,.#%",
-                    "%HHHHHH+H^&.&HH***@##@***HH&.&^H+HHHHHH%",
-                    "%H,.&.^^H+HHHH***@#HH#@***HHHH+H^^.,..H%",
-                    "%H..,&,.H^^^@H**@#HOOH#@**#@^^^H.,..&,H%",
-                    "%H.,....H^^^@#**@#HOOH#@**H@^^^H.&.,..H%",
-                    "%H...,^^H+HHHH***@#HH#@***HHHH+H^^..,.H%",
-                    "%HHHHHH+H^&.&HH***@##@***HH&.&^H+HHHHHH%",
-                    "%#.,..^^H.....HH***@@***HH,....H^^.,..H%",
-                    "%#...,..H&.&.,*HH******HH*,.&.&H..,..,H%",
-                    "%H+HHHHHHHHHHHHHHHH##HHHHHHHHHHHHHHHH+H%",
-                    "%H,#,#,#,#,#,#,#,#*@@*#,#,#,#,#,#,#,#,H%",
-                    "%HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH%",
-                    "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
-            break;
-
-        case 3:
-            width = 40;
-            height = 18;
-            sprintf(dun->template, "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",
-                    "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%",
-                    "%HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH%",
-                    "%H*8..&HH***++^^^^^^^^^^^^++***HH&..*8H%",
-                    "%H8..&HH,,,,,HH^^^^^^^^^^HH,,,,,#H&..*H%",
-                    "%H..&#H.....,.HH^^^^^^^^HH..&....HH&..H%",
-                    "%H.&HH..,.&....HH^^^^^^HH..,...&..HH&.H%",
-                    "%H&HH..*...&.^..HH^^^^HH..*....,..,HH&H%",
-                    "%HHHH+HHHHHHHHHHHHH++HHHHHHHHHHHHH+HHHH%",
-                    "%+....,.,.H&&&&***+88+***&&&&H,.,.,...+%",
-                    "%+...,.,.,H&&&&***+88+***&&&&H.,.,....+%",
-                    "%HHHH+HHHHHHHHHHHHH++HHHHHHHHHHHHH+HHHH%",
-                    "%H&HH..*....&...HH^^^^HH...*...&,..#H&H%",
-                    "%H.&HH..&.^....HH^^^^^^HH....&....HH&.H%",
-                    "%H..&HH....&..HH^^^^^^^^HH..,..*.HH&..H%",
-                    "%H*..&#H,,,,,HH^^^^^^^^^^HH,,,,,HH&..8H%",
-                    "%H8*..&HH***++^^^^^^^^^^^^++***HH&..*8H%",
-                    "%HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH%",
-                    "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
-            break;
-
-        case 4:
-            width = 40;
-            height = 15;
-            sprintf(dun->template, "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",
-                    "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%",
-                    "%&+.^..^..^..^..^..^..^..^..^..^..^..+&%",
-                    "%+HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH+%",
-                    "%.H.&.^,H&^&^H****+^*^@^H.*.&..H..*.,H.%",
-                    "%^H.,.&^+^&^@H^^^^H@^*^*H....*^+.^...H^%",
-                    "%.H*..,.HHH+HHHH+HHHH+HHH.&.^..H..&,.H.%",
-                    "%^H..^.*H*..^&&@@*H,,,,,HHHH+HHH,....H^%",
-                    "%.HH+HHHHHHHHHHHHHH,*O*,H,,,,,,HHH+HHH.%",
-                    "%^H*&H.&,*.H,*&^*^H,,,,,H,,,,,,H....,H^%",
-                    "%.H&,+....*+,*&^*^HHHHHHHHHH+HHH.,...+.%",
-                    "%^H.,H.*.&.H,*&^*^+.,.&.^*.&^&^H.....H^%",
-                    "%.H^*H.,..,H,*&^*^H*.^*.,..&&&^H,..,.H.%",
-                    "%+HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH+%",
-                    "%&+..^..^..^..^..^..^..^..^..^..^..^.+&%",
-                    "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
-            break;
+        /* Accept the first lesser vault */
+        if (v_ptr->typ == 7) break;
     }
 
-
-    /* Standard rating boost */
-    rating += 25;
-
     /* Message */
-    if (cheat_room) msg_print("Greater Vault");
+    if (cheat_room) msg_print("Lesser Vault");
+
+    /* Boost the rating */
+    rating += v_ptr->rat;
 
     /* (Sometimes) Cause a special feeling */
     if ((dun_level <= 50) ||
@@ -2467,157 +2618,53 @@ static void build_type7(int yval, int xval)
         good_item_flag = TRUE;
     }
 
-
-    /* Scan the vault, grid by grid, symbol by symbol */
-    for (t = dun->template, y1 = 0; y1 < height; y1++) {
-        for (x1 = 0; x1 < width; x1++, t++) {
-
-            /* Extract the location */
-            x = xval - (width / 2) + x1;
-            y = yval - (height / 2) + y1;
-
-            /* Access the grid */
-            c_ptr = &cave[y][x];
-
-            /* Hack -- skip "non-grids" */
-            if (*t == ' ') continue;
-
-            /* Start with every grid being a floor in the room */
-            cave[y][x].info &= ~GRID_WALL_MASK;
-            cave[y][x].info |= GRID_ROOM;
-            if (light) cave[y][x].info |= GRID_GLOW;
-
-            /* Analyze the grid */
-            switch (*t) {
-
-                /* Outer wall */
-              case '%':
-                cave[y][x].info |= (GRID_WALL_GRANITE | GRID_EXT1);
-                break;
-
-                /* Perma wall */	
-              case 'H':
-                cave[y][x].info |= (GRID_WALL_GRANITE | GRID_PERM);
-                break;
-
-                /* Inner wall */
-              case '#':
-                cave[y][x].info |= GRID_WALL_GRANITE;
-                break;
-
-              case '*':	   /* treasure/trap */
-                if (rand_int(100) < 75) {
-                    place_object(y, x, FALSE, FALSE);
-                }
-                else {
-                    place_trap(y, x, FALSE);
-                }
-                break;
-
-              case '+':	   /* secret doors */
-                place_secret_door(y, x);
-                break;
-
-              /* Trap */
-              case '^':
-                place_trap(y, x, TRUE);
-                break;
-
-              case '.':	   /* floor */
-                break;
-
-              /* Monsters (see below) */
-              case '&':
-              case '@':
-              case '8':
-              case 'O':
-              case ',':
-                break;
-
-              default:
-                quit_fmt("Illegal vault creation char '%c'", *t);
-                break;
-            }
-        }
-    }
-
-
-    /* Scan the vault, grid by grid, symbol by symbol -- place monsters */
-    for (t = dun->template, y1 = 0; y1 < height; y1++) {
-        for (x1 = 0; x1 < width; x1++, t++) {
-
-            /* Extract the grid */
-            x = xval - (width/2) + x1;
-            y = yval - (height/2) + y1;
-
-            /* Access the grid */
-            c_ptr = &cave[y][x];
-
-            /* Analyze the symbol */
-            switch (*t) {
-
-                /* Monster */
-              case '&':
-                monster_level = dun_level + 5;
-                vault_guard(y, x, TRUE);
-                monster_level = dun_level;
-                break;
-
-                /* Meaner monster */
-              case '@':
-                monster_level = dun_level + 11;
-                vault_guard(y, x, TRUE);
-                monster_level = dun_level;
-                break;
-
-                /* Meaner monster, plus treasure */
-              case '8':
-                monster_level = dun_level + 9;
-                vault_guard(y, x, TRUE);
-                monster_level = dun_level;
-                object_level = dun_level + 7;
-                place_object(y, x, TRUE, FALSE);
-                object_level = dun_level;
-                break;
-
-                /* Nasty monster and treasure */
-              case 'O':
-                monster_level = dun_level + 40;
-                vault_guard(y, x, TRUE);
-                monster_level = dun_level;
-                object_level = dun_level + 20;
-                place_object(y, x, TRUE, TRUE);
-                object_level = dun_level;
-                break;
-
-                /* Monster and/or object */
-              case ',':
-                if (rand_int(2) == 0) {
-                    monster_level = dun_level + 3;
-                    vault_guard(y, x, TRUE);
-                    monster_level = dun_level;
-                }
-                if (rand_int(2) == 0) {
-                    object_level = dun_level + 7;
-                    place_object(y, x, FALSE, FALSE);
-                    object_level = dun_level;
-                }
-                break;
-            }
-        }
-    }
+    /* Hack -- Build the vault */
+    build_vault(yval, xval, v_ptr->hgt, v_ptr->wid, v_text + v_ptr->text);
 }
+
+
+
+/*
+ * Type 8 -- greater vaults (see "v_info.txt")
+ */
+static void build_type8(int yval, int xval)
+{
+    vault_type	*v_ptr;
+    
+    /* Pick a lesser vault */
+    while (TRUE) {
+    
+        /* Access a random vault record */
+        v_ptr = &v_info[rand_int(MAX_V_IDX)];
+
+        /* Accept the first greater vault */
+        if (v_ptr->typ == 8) break;
+    }
+
+    /* Message */
+    if (cheat_room) msg_print("Greater Vault");
+
+    /* Boost the rating */
+    rating += v_ptr->rat;
+
+    /* (Sometimes) Cause a special feeling */
+    if ((dun_level <= 50) ||
+        (randint((dun_level-40) * (dun_level-40) + 1) < 400)) {
+        good_item_flag = TRUE;
+    }
+
+    /* Hack -- Build the vault */
+    build_vault(yval, xval, v_ptr->hgt, v_ptr->wid, v_text + v_ptr->text);
+}
+
 
 
 /*
  * Constructs a tunnel between two points
  *
- * Note that this function is called BEFORE any streamers are made.
- *
- * We use the special flag "GRID_EXT1" to mark outer walls of rooms
- * We use the special flag "GRID_EXT2" to prevent corridor piercing
- *
- * We use the special flag "GRID_EXT3" for debugging
+ * This function must be called BEFORE any streamers are created,
+ * since we use the special "granite wall" sub-types to keep track
+ * of legal places for corridors to pierce rooms.
  *
  * We use "door_flag" to prevent excessive construction of doors
  * along overlapping corridors.
@@ -2628,22 +2675,24 @@ static void build_type7(int yval, int xval)
  * We queue the wall piercing grids to prevent a corridor from leaving
  * a room and then coming back in through the same entrance.
  *
- * We permanently mark grids next to wall piercings to prevent two
- * different corridors from entering a room through adjacent grids,
- * which could result in "huge" entrances into rooms, and "silly"
- * placement of doors.
+ * We "pierce" grids which are "outer" walls of rooms, and when we
+ * do so, we change all adjacent "outer" walls of rooms into "solid"
+ * walls so that no two corridors may use adjacent grids for exits.
  *
- * Note that the GRID_EXT1 and GRID_EXT2 flags are used ONLY to control
- * the generation of tunnels by this function.
+ * The "solid" wall check prevents corridors from "chopping" the
+ * corners of rooms off, as well as "silly" door placement, and
+ * "excessively wide" room entrances.
  */
 static void build_tunnel(int row1, int col1, int row2, int col2)
 {
-    int        i, y, x;
+    int			i, y, x;
     int			tmp_row, tmp_col;
     int                 row_dir, col_dir;
     int                 start_row, start_col;
     int			main_loop_count = 0;
+
     bool		door_flag = FALSE;
+
     cave_type		*c_ptr;
 
 
@@ -2702,29 +2751,29 @@ static void build_tunnel(int row1, int col1, int row2, int col2)
         c_ptr = &cave[tmp_row][tmp_col];
 
 
-        /* Mega-Hack -- avoid dangerous piercings */
-        if (c_ptr->info & GRID_EXT2) {
+        /* Avoid the edge of the dungeon */
+        if ((c_ptr->feat & 0x3F) == 0x3F) continue;
+        
+        /* Avoid the edge of vaults */
+        if ((c_ptr->feat & 0x3F) == 0x3E) continue;
+        
+        /* Avoid "solid" granite walls */
+        if ((c_ptr->feat & 0x3F) == 0x3B) continue;
 
-            /* Do NOT use this location */
-            continue;
-        }
-
-        /* Pierce the outer wall of a room */
-        else if (c_ptr->info & GRID_EXT1) {
+        /* Pierce "outer" walls of rooms */
+        if ((c_ptr->feat & 0x3F) == 0x3A) {
 
             /* Acquire the "next" location */
             y = tmp_row + row_dir;
             x = tmp_col + col_dir;
 
-            /* Hack -- Avoid "dangerous" piercing paths */
-            if (cave[y][x].info & GRID_EXT1) {
+            /* Hack -- Avoid outer/solid permanent walls */
+            if ((cave[y][x].feat & 0x3F) == 0x3F) continue;
+            if ((cave[y][x].feat & 0x3F) == 0x3E) continue;
 
-                /* Forbid entry */
-                c_ptr->info |= GRID_EXT2;
-
-                /* Do NOT use this location */
-                continue;
-            }
+            /* Hack -- Avoid outer/solid granite walls */
+            if ((cave[y][x].feat & 0x3F) == 0x3A) continue;
+            if ((cave[y][x].feat & 0x3F) == 0x3B) continue;
 
             /* Accept this location */
             row1 = tmp_row;
@@ -2741,26 +2790,26 @@ static void build_tunnel(int row1, int col1, int row2, int col2)
             for (y = row1 - 1; y <= row1 + 1; y++) {
                 for (x = col1 - 1; x <= col1 + 1; x++) {
 
-                    /* Forbid piercing of adjacent outer walls */
-                    if (cave[y][x].info & GRID_EXT1) {
+                    /* Convert adjacent "outer" walls as "solid" walls */
+                    if ((cave[y][x].feat & 0x3F) == 0x3A) {
 
-                        /* Do not pierce this wall */
-                        cave[y][x].info |= GRID_EXT2;
+                        /* Change the wall to a "solid" wall */
+                        cave[y][x].feat = ((cave[y][x].feat & ~0x3F) | 0x3B);
                     }
                 }
             }
         }
 
         /* Travel quickly through rooms */
-        else if (c_ptr->info & GRID_ROOM) {
+        else if (c_ptr->feat & CAVE_ROOM) {
 
             /* Accept the location */
             row1 = tmp_row;
             col1 = tmp_col;
         }
 
-        /* Tunnel through unused walls */
-        else if (c_ptr->info & GRID_WALL_MASK) {
+        /* Tunnel through all other walls */
+        else if ((c_ptr->feat & 0x3F) >= 0x38) {
 
             /* Accept this location */
             row1 = tmp_row;
@@ -2784,9 +2833,6 @@ static void build_tunnel(int row1, int col1, int row2, int col2)
             row1 = tmp_row;
             col1 = tmp_col;
 
-            /* Hack -- remember the location */
-            c_ptr->info |= GRID_EXT3;
-
             /* Collect legal door locations */
             if (!door_flag) {
 
@@ -2802,7 +2848,7 @@ static void build_tunnel(int row1, int col1, int row2, int col2)
             }
 
             /* Hack -- allow pre-emptive tunnel termination */
-            if (randint(100) > DUN_TUN_CON) {
+            if (rand_int(100) >= DUN_TUN_CON) {
 
                 /* Distance between row1 and start_row */
                 tmp_row = row1 - start_row;
@@ -2826,8 +2872,11 @@ static void build_tunnel(int row1, int col1, int row2, int col2)
         y = dun->tunn[i].y;
         x = dun->tunn[i].x;
 
-        /* Remove the wall */
-        cave[y][x].info &= ~GRID_WALL_MASK;
+        /* Access the grid */
+        c_ptr = &cave[y][x];
+
+        /* Clear previous contents, add a floor */
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x01);
     }
 
 
@@ -2838,8 +2887,11 @@ static void build_tunnel(int row1, int col1, int row2, int col2)
         y = dun->wall[i].y;
         x = dun->wall[i].x;
 
-        /* Open a hole in the wall */
-        cave[y][x].info &= ~GRID_WALL_MASK;
+        /* Access the grid */
+        c_ptr = &cave[y][x];
+        
+        /* Clear previous contents, add up floor */
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x01);
 
         /* Occasional doorway */
         if (rand_int(100) < DUN_TUN_PEN) {
@@ -2847,10 +2899,6 @@ static void build_tunnel(int row1, int col1, int row2, int col2)
             /* Place a random door */
             place_random_door(y, x);
         }
-
-        /* Hack -- No longer an outer wall */
-        cave[y][x].info &= ~GRID_EXT2;
-        cave[y][x].info &= ~GRID_EXT1;
     }
 }
 
@@ -2858,31 +2906,38 @@ static void build_tunnel(int row1, int col1, int row2, int col2)
 
 
 /*
- * Count the number of "corridor grids" adjacent to the given grid.
+ * Count the number of "corridor" grids adjacent to the given grid.
  *
  * Note -- Assumes "in_bounds(y1, x1)"
  *
- * XXX XXX Perhaps this routine should accept "closed doors"
+ * XXX XXX This routine currently only counts actual "empty floor"
+ * grids which are not in rooms.  We might want to also count stairs,
+ * open doors, closed doors, etc.
  */
 static int next_to_corr(int y1, int x1)
 {
     int i, y, x, k = 0;
 
+    cave_type *c_ptr;
+
     /* Scan adjacent grids */
     for (i = 0; i < 4; i++) {
 
-        /* Extract the grid location */
-        y = y1 + ddy[ddd[i]];
-        x = x1 + ddx[ddd[i]];
+        /* Extract the location */
+        y = y1 + ddy_ddd[i];
+        x = x1 + ddx_ddd[i];
 
         /* Skip non floors */		
         if (!floor_grid_bold(y, x)) continue;
 
-        /* Skip room floors (and doors) */
-        if (cave[y][x].info & GRID_ROOM) continue;
+        /* Access the grid */
+        c_ptr = &cave[y][x];
 
-        /* Skip "permanent" grids (stairs) */
-        if (cave[y][x].info & GRID_PERM) continue;
+        /* Skip non "empty floor" grids */
+        if ((c_ptr->feat & 0x3F) != 0x01) continue;
+        
+        /* Skip grids inside rooms */
+        if (c_ptr->feat & CAVE_ROOM) continue;
 
         /* Count these grids */
         k++;
@@ -2904,15 +2959,15 @@ static bool possible_doorway(int y, int x)
     /* Count the adjacent corridors */
     if (next_to_corr(y, x) >= 2) {
 
-        /* Vertical */
-        if ((cave[y-1][x].info & GRID_WALL_MASK) &&
-            (cave[y+1][x].info & GRID_WALL_MASK)) {
+        /* Check Vertical */
+        if (((cave[y-1][x].feat & 0x3F) >= 0x32) &&
+            ((cave[y+1][x].feat & 0x3F) >= 0x32)) {
             return (TRUE);
         }
 
-        /* Horizontal */
-        if ((cave[y][x-1].info & GRID_WALL_MASK) &&
-            (cave[y][x+1].info & GRID_WALL_MASK)) {
+        /* Check Horizontal */
+        if (((cave[y][x-1].feat & 0x3F) >= 0x32) &&
+            ((cave[y][x+1].feat & 0x3F) >= 0x32)) {
             return (TRUE);
         }
     }
@@ -2931,10 +2986,10 @@ static void try_door(int y, int x)
     if (!in_bounds(y, x)) return;
 
     /* Ignore walls */
-    if (cave[y][x].info & GRID_WALL_MASK) return;
+    if ((cave[y][x].feat & 0x3F) >= 0x32) return;
 
-    /* Ignore rooms */
-    if (cave[y][x].info & GRID_ROOM) return;
+    /* Ignore room grids */
+    if (cave[y][x].feat & CAVE_ROOM) return;
 
     /* Occasional door (if allowed) */
     if ((rand_int(100) < DUN_TUN_JCT) && possible_doorway(y, x)) {
@@ -2949,18 +3004,26 @@ static void try_door(int y, int x)
 
 /*
  * Attempt to build a room of the given type at the given block
+ *
+ * Note that we restrict the number of "crowded" rooms to reduce
+ * the chance of overflowing the monster list during level creation.
  */
 static bool room_build(int y0, int x0, int typ)
 {
-    int y, x;
+    int y, x, y1, x1, y2, x2;
 
-    int y1 = y0 + room[typ].dy1;
-    int y2 = y0 + room[typ].dy2;
-    int x1 = x0 + room[typ].dx1;
-    int x2 = x0 + room[typ].dx2;
 
-    /* Enforce maximums */
-    if (dun->count[typ] >= room[typ].max) return (FALSE);
+    /* Restrict level */
+    if (dun_level < room[typ].level) return (FALSE);
+
+    /* Restrict "crowded" rooms */
+    if (dun->crowded && ((typ == 5) || (typ == 6))) return (FALSE);
+
+    /* Extract blocks */
+    y1 = y0 + room[typ].dy1;
+    y2 = y0 + room[typ].dy2;
+    x1 = x0 + room[typ].dx1;
+    x2 = x0 + room[typ].dx2;
 
     /* Never run off the screen */
     if ((y1 < 0) || (y2 >= dun->row_rooms)) return (FALSE);
@@ -2973,7 +3036,7 @@ static bool room_build(int y0, int x0, int typ)
         }
     }
 
-    /* XXX XXX XXX It is *extremely important that the following */
+    /* XXX XXX XXX It is *extremely* important that the following */
     /* calculation is *exactly* correct to prevent memory errors */
 
     /* Acquire the location of the room */
@@ -2984,6 +3047,7 @@ static bool room_build(int y0, int x0, int typ)
     switch (typ) {
 
         /* Build an appropriate room */
+        case 8: build_type8(y, x); break;
         case 7: build_type7(y, x); break;
         case 6: build_type6(y, x); break;
         case 5: build_type5(y, x); break;
@@ -3010,8 +3074,8 @@ static bool room_build(int y0, int x0, int typ)
         }
     }
 
-    /* Count the rooms of this type */
-    dun->count[typ]++;
+    /* Count "crowded" rooms */
+    if ((typ == 5) || (typ == 6)) dun->crowded = TRUE;
 
     /* Success */
     return (TRUE);
@@ -3019,43 +3083,37 @@ static bool room_build(int y0, int x0, int typ)
 
 
 /*
- * Cave logic flow for generation of new dungeon
+ * Generate a new dungeon level
  */
 static void cave_gen(void)
 {
     int		i, k, y, x, y1, x1;
-    int		alloc_level;
 
     /* Assume not destroyed */
     bool destroyed = FALSE;
 
 
-    /* Hack -- Start with granite */
+    /* Hack -- Start with basic granite */
     for (y = 0; y < cur_hgt; y++) {
         for (x = 0; x < cur_wid; x++) {
-            cave[y][x].info |= GRID_WALL_GRANITE;
+
+            cave_type *c_ptr = &cave[y][x];
+
+            /* Clear all features, set to granite */
+            c_ptr->feat = 0x38;
         }
-    }
-
-
-    /* Special boundary walls -- Top and Bottom */
-    for (x = 0; x < cur_wid; x++) {
-        cave[0][x].info |= (GRID_PERM | GRID_EXT1 | GRID_EXT2);
-        cave[cur_hgt-1][x].info |= (GRID_PERM | GRID_EXT1 | GRID_EXT2);
-    }
-
-    /* Special boundary walls -- Left and Right */
-    for (y = 0; y < cur_hgt; y++) {
-        cave[y][0].info |= (GRID_PERM | GRID_EXT1 | GRID_EXT2);
-        cave[y][cur_wid-1].info |= (GRID_PERM | GRID_EXT1 | GRID_EXT2);
     }
 
 
     /* Possible "destroyed" level */
     if ((dun_level > 10) && (rand_int(DUN_DEST) == 0)) destroyed = TRUE;
 
-    /* No destroyed "quest" levels */
+    /* Hack -- No destroyed "quest" levels */
     if (is_quest(dun_level)) destroyed = FALSE;
+
+
+    /* Allocate the "dungeon" data */
+    MAKE(dun, dun_data);
 
 
     /* Actual maximum number of rooms on this level */
@@ -3069,8 +3127,9 @@ static void cave_gen(void)
         }
     }
 
-    /* Initialize the room count */
-    for (i = 0; i < ROOM_MAX; i++) dun->count[i] = 0;
+
+    /* No "crowded" rooms yet */
+    dun->crowded = FALSE;
 
 
     /* No rooms yet */
@@ -3103,31 +3162,77 @@ static void cave_gen(void)
             continue;
         }
 
-        /* Attempt an unusual room */
-        if (dun_level > randint(DUN_UNUSUAL)) {
+        /* Attempt an "unusual" room */
+        if (rand_int(DUN_UNUSUAL) < dun_level) {
+
+            /* Roll for room type */
+            k = rand_int(100);
 
             /* Attempt a very unusual room */
-            if (dun_level > randint(DUN_UNUSUAL)) {
+            if (rand_int(DUN_UNUSUAL) < dun_level) {
 
-                /* Attempt a greater vault */
-                if ((rand_int(15) == 0) && room_build(y,x,7)) continue;
+                /* Type 8 -- Greater vault (10%) */
+                if ((k < 10) && room_build(y,x,8)) continue;
 
-                /* Attempt a lesser vault */
-                if ((rand_int(10) == 0) && room_build(y,x,6)) continue;
+                /* Type 7 -- Lesser vault (15%) */
+                if ((k < 25) && room_build(y,x,7)) continue;
 
-                /* Attempt a monster pit */
-                if ((rand_int(5) == 0) && room_build(y,x,5)) continue;
+                /* Type 6 -- Monster pit (15%) */
+                if ((k < 40) && room_build(y,x,6)) continue;
+
+                /* Type 5 -- Monster nest (10%) */
+                if ((k < 50) && room_build(y,x,5)) continue;
             }
 
-            /* Try an interesting room */
-            k = rand_range(2, 4);
+            /* Type 4 -- Large room (25%) */
+            if ((k < 25) && room_build(y,x,4)) continue;
 
-            /* Attempt to build it */
-            if (room_build(y,x,k)) continue;
+            /* Type 3 -- Cross room (25%) */
+            if ((k < 50) && room_build(y,x,3)) continue;
+            
+            /* Type 2 -- Overlapping (50%) */
+            if ((k < 100) && room_build(y,x,2)) continue;
         }
 
         /* Attempt a trivial room */
         if (room_build(y,x,1)) continue;
+    }
+
+
+    /* Special boundary walls -- Top */
+    for (x = 0; x < cur_wid; x++) {
+
+        cave_type *c_ptr = &cave[0][x];
+
+        /* Clear previous contents, add "solid" perma-wall */
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x3F);
+    }
+
+    /* Special boundary walls -- Bottom */
+    for (x = 0; x < cur_wid; x++) {
+    
+        cave_type *c_ptr = &cave[cur_hgt-1][x];
+
+        /* Clear previous contents, add "solid" perma-wall */
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x3F);
+    }
+
+    /* Special boundary walls -- Left */
+    for (y = 0; y < cur_hgt; y++) {
+
+        cave_type *c_ptr = &cave[y][0];
+
+        /* Clear previous contents, add "solid" perma-wall */
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x3F);
+    }
+
+    /* Special boundary walls -- Right */
+    for (y = 0; y < cur_hgt; y++) {
+
+        cave_type *c_ptr = &cave[y][cur_wid-1];
+
+        /* Clear previous contents, add "solid" perma-wall */
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x3F);
     }
 
 
@@ -3161,7 +3266,6 @@ static void cave_gen(void)
         x = dun->cent[i].x;
     }
 
-
     /* Place intersection doors	 */
     for (i = 0; i < dun->door_n; i++) {
 
@@ -3175,16 +3279,20 @@ static void cave_gen(void)
         try_door(y - 1, x);
         try_door(y + 1, x);
     }
+    
+
+    /* Release the "dungeon" data */
+    KILL(dun, dun_data);
 
 
-    /* Add some magma streamers */
+    /* Hack -- Add some magma streamers */
     for (i = 0; i < DUN_STR_MAG; i++) {
-        build_streamer(GRID_WALL_MAGMA, DUN_STR_MC);
+        build_streamer(0x32, DUN_STR_MC);
     }
 
-    /* Add some quartz streamers */
+    /* Hack -- Add some quartz streamers */
     for (i = 0; i < DUN_STR_QUA; i++) {
-        build_streamer(GRID_WALL_QUARTZ, DUN_STR_QC);
+        build_streamer(0x33, DUN_STR_QC);
     }
 
 
@@ -3193,62 +3301,46 @@ static void cave_gen(void)
 
 
     /* Place 3 or 4 down stairs near some walls */
-    alloc_stairs(OBJ_DOWN_STAIR, rand_range(3,4), 3);
+    alloc_stairs(0x07, rand_range(3,4), 3);
 
     /* Place 1 or 2 up stairs near some walls */
-    alloc_stairs(OBJ_UP_STAIR, rand_range(1,2), 3);
+    alloc_stairs(0x06, rand_range(1,2), 3);
 
 
     /* Determine the character location */
     new_player_spot();
 
 
-    /* Number of monsters/objects */
-    alloc_level = (dun_level / 3);
-    if (alloc_level < 2) alloc_level = 2;
-    else if (alloc_level > 10) alloc_level = 10;
+    /* Basic "amount" */
+    k = (dun_level / 3);
+    if (k > 10) k = 10;
+    if (k < 2) k = 2;
 
 
     /* Pick a base number of monsters */
-    i = MIN_M_ALLOC_LEVEL + alloc_level;
-    
+    i = MIN_M_ALLOC_LEVEL + randint(8);
+
     /* Put some monsters in the dungeon */
-    for (i = i + randint(8); i > 0; i--) {
+    for (i = i + k; i > 0; i--) {
         (void)alloc_monster(0, TRUE);
     }
-    
-    
-    /* Put some rubble in corridors */
-    alloc_object(ALLOC_SET_CORR, 1, randint(alloc_level));
 
-    /* Put some objects in rooms */
-    alloc_object(ALLOC_SET_ROOM, 5, randnor(DUN_AMT_ROOM, 3));
-
-    /* Put some objects/gold in the dungeon */
-    alloc_object(ALLOC_SET_BOTH, 5, randnor(DUN_AMT_ITEM, 3));
-    alloc_object(ALLOC_SET_BOTH, 4, randnor(DUN_AMT_GOLD, 3));
 
     /* Place some traps in the dungeon */
-    alloc_object(ALLOC_SET_BOTH, 3, randint(alloc_level));
+    alloc_object(ALLOC_SET_BOTH, ALLOC_TYP_TRAP, randint(k));
+
+    /* Put some rubble in corridors */
+    alloc_object(ALLOC_SET_CORR, ALLOC_TYP_RUBBLE, randint(k));
+
+    /* Put some objects in rooms */
+    alloc_object(ALLOC_SET_ROOM, ALLOC_TYP_OBJECT, randnor(DUN_AMT_ROOM, 3));
+
+    /* Put some objects/gold in the dungeon */
+    alloc_object(ALLOC_SET_BOTH, ALLOC_TYP_OBJECT, randnor(DUN_AMT_ITEM, 3));
+    alloc_object(ALLOC_SET_BOTH, ALLOC_TYP_GOLD, randnor(DUN_AMT_GOLD, 3));
 
 
-#if 0
     /* XXX XXX XXX */
-    /* Make sure to uncomment this block if anyone else wants */
-    /* to use any of the "temporary flags".  I have left the */
-    /* flags set for debugging purposes.  They are not needed. */
-
-    /* Clear all the "temp" flags */
-    for (y = 0; y < cur_hgt; y++) {
-        for (x = 0; x < cur_wid; x++) {
-            cave[y][x].info &= ~GRID_EXT1;
-            cave[y][x].info &= ~GRID_EXT2;
-            cave[y][x].info &= ~GRID_EXT3;
-            cave[y][x].info &= ~GRID_EXT4;
-        }
-    }
-#endif
-
 
     /* Ghosts love to inhabit destroyed levels, but will live elsewhere */
     i = (destroyed) ? 11 : 1;
@@ -3266,37 +3358,30 @@ static void cave_gen(void)
 /*
  * Builds a store at a given (row, column)
  *
- * Note that we never put a door in the "perma-wall" side.
- * This will allow us to "extend" the perma-walls by one grid.
+ * Note that the solid perma-walls are at x=0/65 and y=0/21
  *
- * Note that the perma-walls are at x=0/65 and y=0/21
- * Thus the two "rows" of stores run from 2-9 and 12-19
- * And the four "columns" run 8-16, 22-30, 36-44, 50-58
- *
- * I am changing things to be a little more "interesting".
+ * As of 2.7.4 (?) the stores are placed in a more "user friendly"
+ * configuration, such that the four "center" buildings always
+ * have at least four grids between them, to allow easy running,
+ * and the store doors tend to face the middle of town.
  *
  * The stores now lie inside boxes from 3-9 and 12-18 vertically,
  * and from 7-17, 21-31, 35-45, 49-59.  Note that there are thus
  * always at least 2 open grids between any disconnected walls.
- * And the stores can be a little bit "larger" in the horizontal.
- *
- * Note as well that the four "center" buildings will ALWAYS have
- * at least FOUR grids between them (to allow easy "running").
  */
 static void build_store(int store_num, int yy, int xx)
 {
-    int                 y0, x0, y1, x1, y2, x2;
-    int                 y = 0, x = 0, tmp;
+    int                 y, x, y0, x0, y1, x1, y2, x2, tmp;
+
     cave_type		*c_ptr;
-    inven_type		*i_ptr;
 
     /* Find the "center" of the store */
     y0 = yy * 9 + 6;
     x0 = xx * 14 + 12;
 
     /* Determine the store boundaries */
-    y1 = y0 - randint(2 + (yy == 0));
-    y2 = y0 + randint(2 + (yy == 1));
+    y1 = y0 - randint((yy == 0) ? 3 : 2);
+    y2 = y0 + randint((yy == 1) ? 3 : 2);
     x1 = x0 - randint(5);
     x2 = x0 + randint(5);
 
@@ -3307,24 +3392,18 @@ static void build_store(int store_num, int yy, int xx)
             /* Get the grid */
             c_ptr = &cave[y][x];
 
-            /* The buildings are granite */
-            c_ptr->info |= GRID_WALL_GRANITE;
+            /* Clear previous contents, add "basic" perma-wall */
+            c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x3C);
 
-            /* The buildings are invincible */
-            c_ptr->info |= GRID_PERM;
-
-            /* Hack -- The buildings are illuminated */
-            c_ptr->info |= GRID_GLOW;
-
-            /* Hack -- The buildings are always known */
-            c_ptr->info |= GRID_MARK;
+            /* Hack -- The buildings are illuminated and known */
+            c_ptr->feat |= (CAVE_GLOW | CAVE_MARK);
         }
     }
 
     /* Pick a door direction (S,N,E,W) */
     tmp = rand_int(4);
 
-    /* Pick again if the door is near the walls */
+    /* Re-roll "annoying" doors */
     if (((tmp == 0) && (yy == 1)) ||
         ((tmp == 1) && (yy == 0)) ||
         ((tmp == 2) && (xx == 3)) ||
@@ -3356,22 +3435,17 @@ static void build_store(int store_num, int yy, int xx)
             break;
 
         /* Left side */
-        case 3:
+        default:
             y = rand_range(y1,y2);
             x = x1;
             break;
     }
 
-    /* Create a new "store door" object */
+    /* Access the grid */
     c_ptr = &cave[y][x];
-    c_ptr->i_idx = i_pop();
-    i_ptr = &i_list[c_ptr->i_idx];
-    invcopy(i_ptr, OBJ_STORE_LIST + store_num);
-    i_ptr->iy = y;
-    i_ptr->ix = x;
 
-    /* Remove the granite wall */
-    c_ptr->info &= ~GRID_WALL_MASK;
+    /* Clear previous contents, add a store door */
+    c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x08) + store_num;
 }
 
 
@@ -3386,16 +3460,19 @@ static void build_store(int store_num, int yy, int xx)
  */
 static void town_gen_hack(void)
 {
-    int        y, x, k, n;
+    int			y, x, k, n;
 
     cave_type		*c_ptr;
-    inven_type		*i_ptr;
 
     int                 rooms[MAX_STORES];
 
 
-    /* Hack -- make the same town every time */
-    set_seed(town_seed);
+    /* Hack -- Use the "simple" RNG */
+    Rand_quick = TRUE;
+    
+    /* Hack -- Induce consistant town layout */
+    Rand_value = seed_town;
+
 
     /* Prepare an Array of "remaining stores", and count them */
     for (n = 0; n < MAX_STORES; n++) rooms[n] = n;
@@ -3429,31 +3506,22 @@ static void town_gen_hack(void)
         if (naked_grid_bold(y, x)) break;
     }
 
-    /* Create a new "stair" object */
+    /* Access the stair grid */
     c_ptr = &cave[y][x];
-    c_ptr->i_idx = i_pop();
-    i_ptr = &i_list[c_ptr->i_idx];
-    invcopy(i_ptr, OBJ_DOWN_STAIR);
-    i_ptr->iy = y;
-    i_ptr->ix = x;
 
-    /* Stairs are permanent */
-    c_ptr->info |= GRID_PERM;
+    /* Clear previous contents, add down stairs */
+    c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x07);
 
     /* Memorize the stairs */
-    c_ptr->info |= GRID_MARK;
-
+    c_ptr->feat |= CAVE_MARK;
 
     /* Hack -- the player starts on the stairs */
     py = y;
     px = x;
 
-    /* Mark the dungeon grid */
-    cave[py][px].m_idx = 1;
 
-
-    /* Hack -- undo the hack above */
-    reset_seed();
+    /* Hack -- use the "complex" RNG */
+    Rand_quick = FALSE;
 }
 
 
@@ -3481,18 +3549,38 @@ static void town_gen(void)
     cave_type *c_ptr;
 
 
+    /* Hack -- Start with basic floors */
+    for (y = 0; y < cur_hgt; y++) {
+        for (x = 0; x < cur_wid; x++) {
+
+            cave_type *c_ptr = &cave[y][x];
+
+            /* Clear all features, set to "empty floor" */
+            c_ptr->feat = 0x01;
+        }
+    }
+
+
     /* Perma-walls -- North/South */
     for (x = 0; x < cur_wid; x++) {
 
         /* North wall */
         c_ptr = &cave[0][x];
-        c_ptr->info |= (GRID_WALL_GRANITE | GRID_PERM);
-        c_ptr->info |= (GRID_GLOW | GRID_MARK);
+
+        /* Clear previous contents, add "solid" perma-wall */
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x3F);
+
+        /* Illuminate and memorize the walls */
+        c_ptr->feat |= (CAVE_GLOW | CAVE_MARK);
 
         /* South wall */
         c_ptr = &cave[cur_hgt-1][x];
-        c_ptr->info |= (GRID_WALL_GRANITE | GRID_PERM);
-        c_ptr->info |= (GRID_GLOW | GRID_MARK);
+
+        /* Clear previous contents, add "solid" perma-wall */
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x3F);
+
+        /* Illuminate and memorize the walls */
+        c_ptr->feat |= (CAVE_GLOW | CAVE_MARK);
     }
 
     /* Perma-walls -- West/East */
@@ -3500,13 +3588,21 @@ static void town_gen(void)
 
         /* West wall */
         c_ptr = &cave[y][0];
-        c_ptr->info |= (GRID_WALL_GRANITE | GRID_PERM);
-        c_ptr->info |= (GRID_GLOW | GRID_MARK);
+
+        /* Clear previous contents, add "solid" perma-wall */
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x3F);
+
+        /* Illuminate and memorize the walls */
+        c_ptr->feat |= (CAVE_GLOW | CAVE_MARK);
 
         /* East wall */
         c_ptr = &cave[y][cur_wid-1];
-        c_ptr->info |= (GRID_WALL_GRANITE | GRID_PERM);
-        c_ptr->info |= (GRID_GLOW | GRID_MARK);
+
+        /* Clear previous contents, add "solid" perma-wall */
+        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x3F);
+
+        /* Illuminate and memorize the walls */
+        c_ptr->feat |= (CAVE_GLOW | CAVE_MARK);
     }
 
 
@@ -3521,11 +3617,13 @@ static void town_gen(void)
         for (y = 0; y < cur_hgt; y++) {
             for (x = 0; x < cur_wid; x++) {
 
+                c_ptr = &cave[y][x];
+                
                 /* Perma-Lite */
-                cave[y][x].info |= GRID_GLOW;
+                c_ptr->feat |= CAVE_GLOW;
 
                 /* Memorize */
-                if (view_perma_grids) cave[y][x].info |= GRID_MARK;
+                if (view_perma_grids) c_ptr->feat |= CAVE_MARK;
             }
         }
 
@@ -3539,113 +3637,192 @@ static void town_gen(void)
         /* Make some night-time residents */
         for (i = 0; i < MIN_M_ALLOC_TN; i++) (void)alloc_monster(3, TRUE);
     }
-
-
-    /* Hack -- ghost in town */
-    /* (void)place_ghost(); */
 }
 
 
 /*
  * Generates a random dungeon level			-RAK-	
+ *
+ * Hack -- regenerate any "overflow" levels
+ *
+ * Hack -- allow auto-scumming via a gameplay option.
  */
 void generate_cave()
 {
-    int i;
+    int i, num;
+    
+
+    /* No dungeon yet */
+    character_dungeon = FALSE;
+
+    /* Generate */
+    for (num = 0; TRUE; num++) {
+
+        bool okay = TRUE;
+        
+        cptr why = NULL;
 
 
-    /* Hack -- Reset heaps */
-    i_max = MIN_I_IDX;
-    m_max = MIN_M_IDX;
+        /* Hack -- Reset heaps */
+        i_max = 1;
+        m_max = 1;
+
+        /* Start with a blank cave */
+        for (i = 0; i < MAX_HGT; i++) {
+
+            /* Wipe a whole row at a time */
+            C_WIPE(cave[i], MAX_WID, cave_type);
+        }
 
 
-    /* Start with a blank cave */
-    for (i = 0; i < MAX_HGT; i++) {
+        /* Mega-Hack -- no player yet */
+        px = py = 0;
 
-        /* Wipe a whole row at a time */
-        C_WIPE(cave[i], MAX_WID, cave_type);
+
+        /* Mega-Hack -- no panel yet */
+        panel_row_min = 0;
+        panel_row_max = 0;
+        panel_col_min = 0;
+        panel_col_max = 0;
+
+
+        /* Reset the monster generation level */
+        monster_level = dun_level;
+
+        /* Reset the object generation level */
+        object_level = dun_level;
+
+        /* Nothing special here yet */
+        good_item_flag = FALSE;
+
+        /* Nothing good here yet */
+        rating = 0;
+
+
+        /* Build the town */
+        if (!dun_level) {
+
+            /* Small town */
+            cur_hgt = SCREEN_HGT;
+            cur_wid = SCREEN_WID;
+
+            /* Determine number of panels */
+            max_panel_rows = (cur_hgt / SCREEN_HGT) * 2 - 2;
+            max_panel_cols = (cur_wid / SCREEN_WID) * 2 - 2;
+
+            /* Assume illegal panel */
+            panel_row = max_panel_rows;
+            panel_col = max_panel_cols;
+
+            /* Make a town */
+            town_gen();
+        }
+
+        /* Build a real level */
+        else {
+
+            /* Big dungeon */
+            cur_hgt = MAX_HGT;
+            cur_wid = MAX_WID;
+
+            /* Determine number of panels */
+            max_panel_rows = (cur_hgt / SCREEN_HGT) * 2 - 2;
+            max_panel_cols = (cur_wid / SCREEN_WID) * 2 - 2;
+
+            /* Assume illegal panel */
+            panel_row = max_panel_rows;
+            panel_col = max_panel_cols;
+
+            /* Make a dungeon */
+            cave_gen();
+        }
+        
+
+        /* Extract the feeling */
+        if (rating > 100) feeling = 2;
+        else if (rating > 80) feeling = 3;
+        else if (rating > 60) feeling = 4;
+        else if (rating > 40) feeling = 5;
+        else if (rating > 30) feeling = 6;
+        else if (rating > 20) feeling = 7;
+        else if (rating > 10) feeling = 8;
+        else if (rating > 0) feeling = 9;
+        else feeling = 10;
+
+        /* Hack -- Have a special feeling sometimes */
+        if (good_item_flag && !p_ptr->preserve) feeling = 1;
+
+        /* It takes 1000 game turns for "feelings" to recharge */
+        if ((turn - old_turn) < 1000) feeling = 0;
+
+        /* Hack -- no feeling in the town */
+        if (!dun_level) feeling = 0;
+
+
+        /* Prevent object over-flow */
+        if (i_max >= MAX_I_IDX) {
+
+            /* Message */
+            why = "too many objects";
+
+            /* Message */
+            okay = FALSE;
+        }
+
+        /* Prevent monster over-flow */
+        if (m_max >= MAX_M_IDX) {
+        
+            /* Message */
+            why = "too many monsters";
+
+            /* Message */
+            okay = FALSE;
+        }
+        
+        /* Mega-Hack -- allow "auto-scum" */
+        if (scum_always || (scum_sometimes && (num < 100))) {
+
+            /* Require "goodness" */
+            if ((feeling > 8) ||
+                ((dun_level > 10) && (feeling > 7)) ||
+                ((dun_level > 20) && (feeling > 6)) ||
+                ((dun_level > 40) && (feeling > 5))) {
+
+                /* Give message to cheaters */
+                if (cheat_room || cheat_hear || 
+                    cheat_peek || cheat_xtra) {
+
+                    /* Message */
+                    why = "boring level";
+                }
+        
+                /* Try again */
+                okay = FALSE;
+            }
+        }
+
+        /* Accept */
+        if (okay) break;
+
+
+        /* Message */
+        if (why) msg_format("Generation restarted (%s)", why);
+
+        /* Wipe the objects */
+        wipe_i_list();
+                
+        /* Wipe the monsters */
+        wipe_m_list();
     }
 
 
-    /* Mega-Hack -- no panel yet */
-    panel_row_min = 0;
-    panel_row_max = 0;
-    panel_col_min = 0;
-    panel_col_max = 0;
-
-
-    /* Reset the monster generation level */
-    monster_level = dun_level;
-
-    /* Reset the object generation level */
-    object_level = dun_level;
-
-    /* Nothing special here yet */
-    good_item_flag = FALSE;
-
-    /* Nothing good here yet */
-    rating = 0;
-
-
-    /* Build the town */
-    if (!dun_level) {
-
-        /* Small town */
-        cur_hgt = SCREEN_HGT;
-        cur_wid = SCREEN_WID;
-
-        /* Determine number of panels */
-        max_panel_rows = (cur_hgt / SCREEN_HGT) * 2 - 2;
-        max_panel_cols = (cur_wid / SCREEN_WID) * 2 - 2;
-
-        /* Assume illegal panel */
-        panel_row = max_panel_rows;
-        panel_col = max_panel_cols;
-
-        /* Make a town */
-        town_gen();
-    }
-
-    /* Build a real level */
-    else {
-
-        /* Big dungeon */
-        cur_hgt = MAX_HGT;
-        cur_wid = MAX_WID;
-
-        /* Determine number of panels */
-        max_panel_rows = (cur_hgt / SCREEN_HGT) * 2 - 2;
-        max_panel_cols = (cur_wid / SCREEN_WID) * 2 - 2;
-
-        /* Assume illegal panel */
-        panel_row = max_panel_rows;
-        panel_col = max_panel_cols;
-
-        /* Make a dungeon */
-        cave_gen();
-    }
-
-    /* Extract the feeling */
-    if (rating > 100) feeling = 2;
-    else if (rating > 80) feeling = 3;
-    else if (rating > 60) feeling = 4;
-    else if (rating > 40) feeling = 5;
-    else if (rating > 30) feeling = 6;
-    else if (rating > 20) feeling = 7;
-    else if (rating > 10) feeling = 8;
-    else if (rating > 0) feeling = 9;
-    else feeling = 10;
-
-    /* Have a special feeling, explicitly */
-    if (good_item_flag && !p_ptr->preserve) feeling = 1;
-
-    /* It takes 1000 game turns for "feelings" to recharge */
-    if ((turn - old_turn) < 1000) feeling = 0;
-
-    /* Hack -- no feeling in the town */
-    if (!dun_level) feeling = 0;
+    /* Dungeon level ready */
+    character_dungeon = TRUE;
 
     /* Remember when this level was "created" */
     old_turn = turn;
 }
+
+
+
 

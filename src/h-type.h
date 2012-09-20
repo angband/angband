@@ -60,17 +60,19 @@ typedef int errr;
 
 
 /*
- * Some annoying machines define "uint" in some "include" file
- * Note that this "redefinition" should work on any machine.
+ * Many annoying machines define "uint" in some "include" file
+ * Note that this "redefinition" should work on any machine,
+ * but Macintosh is known not to define "uint" anywhere.
  */
-#if !defined(MACINTOSH) && !defined(__EMX__)
+#if !defined(MACINTOSH)
+# undef uint
 # define uint uint_hack
 #endif
 
 /*
  * Hack -- allow compilation on some annoying (IBM-ish) machines.
  */
-#if defined(WINDOWS) || defined(__WATCOMC__) || defined(__TURBOC__)
+#if defined(WINDOWS) || defined(MSDOS)
 # undef huge
 # define huge huge_hack
 #endif

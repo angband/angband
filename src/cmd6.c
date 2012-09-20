@@ -20,6 +20,14 @@
 #define CTRL(C) ((C)&037)
 
 
+#ifdef ALLOW_WIZARD
+
+/*
+ * Hack -- Declare the Wizard Routines
+ */
+extern int do_wiz_command(void);
+
+#endif
 
 
 #ifdef ALLOW_BORG
@@ -37,17 +45,19 @@ extern void borg_ben(void);
  * Verify desire to be a wizard, and do so if verified
  * This routine should only be called if "can_be_wizard"
  */
-int enter_wiz_mode(void)
+bool enter_wiz_mode(void)
 {
     int answer = FALSE;
 
     /* Already been asked */
     if (noscore & 0x0002) return (TRUE);
 
-    /* Verify request */
+    /* Mention effects */
     msg_print("Wizard mode is for debugging and experimenting.");
     msg_print("The game will not be scored if you enter wizard mode.");
-    answer = get_check("Are you sure you want to enter wizard mode?");
+
+    /* Verify request */
+    answer = get_check("Are you sure you want to enter wizard mode? ");
 
     /* Never Mind */
     if (!answer) return (FALSE);
@@ -72,11 +82,11 @@ void process_command(void)
 
         /* (ESC) do nothing. */
         case ESCAPE:
-            energy_use = 0; break;
+            break;
 
         /* (SPACE) do nothing */
         case ' ':
-            energy_use = 0; break;
+            break;
 
 
 
@@ -84,7 +94,6 @@ void process_command(void)
 
         /* Toggle Wizard Mode */
         case CTRL('W'):
-            energy_use = 0;
             if (wizard) {
                 wizard = FALSE;
                 msg_print("Wizard mode off.");
@@ -96,7 +105,7 @@ void process_command(void)
                 wizard = TRUE;
                 msg_print("Wizard mode on.");
             }
-            
+
             /* Update monsters */
             p_ptr->update |= (PU_MONSTERS);
 
@@ -114,7 +123,6 @@ void process_command(void)
                 do_wiz_command();
             }
             else {
-                energy_use = 0;
                 msg_print("You are not allowed to do that.");
             }
             break;
@@ -130,9 +138,6 @@ void process_command(void)
             /* Interact with the borg */
             borg_ben();
 
-            /* Free command */
-            energy_use = 0;
-
             break;
 
 #endif
@@ -141,51 +146,45 @@ void process_command(void)
 
         /*** Inventory Commands ***/
 
-        /* Wear or wield something */
+        /* Wear/wield equipment */
         case '[':
             do_cmd_wield(); break;
 
-        /* Take something off */
+        /* Take off equipment */
         case ']':
             do_cmd_takeoff(); break;
 
-        /* Drop something */
+        /* Drop an item */
         case 'd':
             do_cmd_drop(); break;
+
+        /* Destory an item */
+        case 'k':
+            do_cmd_destroy(); break;
 
         /* Equipment list */
         case 'e':
             do_cmd_equip(); break;
 
-        /* Inventory */
+        /* Inventory list */
         case 'i':
             do_cmd_inven(); break;
 
 
-        /*** Some temporary commands ***/
-        
-        /* Destory an inventory slot */
-        case 'k':
-            do_cmd_destroy(); break;
-            
+        /*** Various commands ***/
+
         /* Identify an object */
         case 'I':
             do_cmd_observe(); break;
-            
-
-        /*** Handle "choice window" ***/
 
         /* Hack -- toggle choice window */
         case CTRL('E'):
 
-            /* Free command */
-            energy_use = 0;
-
             /* Hack -- flip the current status */
-            choice_default = !choice_default;
+            choose_default = !choose_default;
 
             /* Redraw choice window */
-            p_ptr->redraw |= (PR_CHOICE);
+            p_ptr->redraw |= (PR_CHOOSE);
 
             break;
 
@@ -219,61 +218,61 @@ void process_command(void)
         case 'g':
             do_cmd_stay(!always_pickup); break;
 
-        /* Begin Resting -- Arg is time */
+        /* Rest -- Arg is time */
         case 'R':
             do_cmd_rest(); break;
 
-        /* Search the adjoining grids */
+        /* Search for traps/doors */
         case 's':
             do_cmd_search(); break;
 
-        /* Toggle search status */
+        /* Toggle search mode */
         case 'S':
             do_cmd_toggle_search(); break;
 
 
         /*** Stairs and Doors and Chests and Traps ***/
 
-        /* Go up staircases */
+        /* Go up staircase */
         case '<':
             do_cmd_go_up(); break;
 
-        /* Go down staircases */
+        /* Go down staircase */
         case '>':
             do_cmd_go_down(); break;
 
-        /* Open something */
+        /* Open a door or chest */
         case 'o':
             do_cmd_open(); break;
 
-        /* Close something */
+        /* Close a door */
         case 'c':
             do_cmd_close(); break;
 
-        /* Spike a door */
+        /* Jam a door with spikes */
         case 'j':
             do_cmd_spike(); break;
 
-        /* Force a door or Bash a monster. */
+        /* Bash a door */
         case 'B':
             do_cmd_bash(); break;
 
-        /* Disarm a trap */
+        /* Disarm a trap or chest */
         case 'D':
             do_cmd_disarm(); break;
 
 
         /*** Magic and Prayers ***/
 
-        /* Gain some spells */
+        /* Gain new spells/prayers */
         case 'G':
             do_cmd_study(); break;
 
-        /* Peruse a Book */
+        /* Browse a book */
         case 'b':
             do_cmd_browse(); break;
 
-        /* Cast a magic spell */
+        /* Cast a spell */
         case 'm':
             do_cmd_cast(); break;
 
@@ -288,7 +287,7 @@ void process_command(void)
         case '{':
             do_cmd_inscribe(); break;
 
-        /* Inscribe an object (in a different way) */
+        /* Uninscribe an object */
         case '}':
             do_cmd_uninscribe(); break;
 
@@ -300,19 +299,23 @@ void process_command(void)
         case 'E':
             do_cmd_eat_food(); break;
 
-        /* Fill the lamp */
+        /* Fuel your lantern/torch */
         case 'F':
             do_cmd_refill(); break;
 
-        /* Throw something */
+        /* Fire an item */
         case 'f':
             do_cmd_fire(); break;
 
-        /* Zap a wand */
+        /* Throw an item */
+        case 'v':
+            do_cmd_throw(); break;
+
+        /* Aim a wand */
         case 'a':
             do_cmd_aim_wand(); break;
 
-        /* Activate a rod */
+        /* Zap a rod */
         case 'z':
             do_cmd_zap_rod(); break;
 
@@ -324,30 +327,26 @@ void process_command(void)
         case 'r':
             do_cmd_read_scroll(); break;
 
-        /* Zap a staff */
+        /* Use a staff */
         case 'u':
             do_cmd_use_staff(); break;
 
 
         /*** Looking at Things (nearby or on map) ***/
 
-        /* Full screen Map */
+        /* Full dungeon map */
         case 'M':
             do_cmd_view_map(); break;
 
-        /* Locate player on the map */	
+        /* Locate player on map */	
         case 'L':
             do_cmd_locate(); break;
 
-        /* Examine surroundings */
+        /* Look around */
         case 'l':
             do_cmd_look(); break;
 
-        /* Examine current target location */
-        case 'x':
-            do_cmd_examine(); break;
-
-        /* Attempt to select a new target, if compiled */
+        /* Target monster or location */
         case '*':
             do_cmd_target(); break;
 
@@ -359,23 +358,26 @@ void process_command(void)
         case '?':
             do_cmd_help("help.hlp"); break;
 
-        /* Identify Symbol */
+        /* Identify symbol */
         case '/':
             do_cmd_query_symbol(); break;
 
-        /* Character Description */
+        /* Character description */
         case 'C':
             do_cmd_change_name(); break;
 
 
         /*** System Commands ***/
 
+        /* Define macro */
         case '@':
             do_cmd_macro(FALSE); break;
 
+        /* Define command macro */
         case '!':
             do_cmd_macro(TRUE); break;
 
+        /* Define keymap */
         case '&':
             do_cmd_keymap(); break;
 
@@ -383,45 +385,46 @@ void process_command(void)
         case '=':
             do_cmd_options(); break;
 
-        /* Interact with preference files */
+        /* Manage preference files */
         case '%':
             do_cmd_prefs(); break;
 
 
         /*** Misc Commands ***/
-        
+
+        /* Take notes */
         case ':':
             do_cmd_note(); break;	
 
-        /* Hack -- Game Version */
+        /* Version info */
         case 'V':
             do_cmd_version(); break;
 
-        /* Repeat Feeling */
+        /* Repeat level feeling */
         case CTRL('F'):
             do_cmd_feeling(); break;
 
-        /* Previous message(s). */
+        /* Show previous messages */
         case CTRL('P'):
             do_cmd_messages(); break;
-
-        /* Commit Suicide and Quit */
-        case CTRL('K'):
-            do_cmd_suicide(); break;
-
-        /* Save and Quit */
-        case CTRL('X'):
-            exit_game(); break;
-
-#ifndef VERIFY_SAVEFILE
-        /* Hack -- Save (no quit) */
-        case CTRL('S'):
-            do_cmd_save_game(); break;
-#endif
 
         /* Redraw the screen */
         case CTRL('R'):
             do_cmd_redraw(); break;
+
+#ifndef VERIFY_SAVEFILE
+        /* Hack -- Save and don't quit */
+        case CTRL('S'):
+            do_cmd_save_game(); break;
+#endif
+
+        /* Save and quit */
+        case CTRL('X'):
+            alive = FALSE; break;
+
+        /* Quit (commit suicide) */
+        case 'Q':
+            do_cmd_suicide(); break;
 
         /* Check artifacts */
         case '~':
@@ -431,25 +434,23 @@ void process_command(void)
         case '|':
             do_cmd_check_uniques(); break;
 
-        /* Dump the screen (monochrome) */
+#ifndef ANGBAND_LITE
+
+        /* Dump screen */
         case '(':
             do_cmd_dump(FALSE); break;
-            
-        /* Dump the screen (with colors) */
+
+        /* Dump screen (with colors) */
         case ')':
             do_cmd_dump(TRUE); break;
 
+#endif
 
         /* Hack -- Unknown command */
         default:
-            energy_use = 0;
             prt("Type '?' for help.", 0, 0);
             return;
     }
-
-
-    /* Save the command */
-    command_old = command_cmd;
 
 
     /* Optional fresh */
@@ -461,59 +462,13 @@ void process_command(void)
         /* Hack -- Hilite the player */
         move_cursor_relative(py, px);
 
-        /* Refresh */            
+        /* Refresh */
         Term_fresh();
     }
 }
 
 
 
-
-
-/*
- * XXX An explanation of the "Angband Keypress" concept. XXX
- *
- * Inherently, many Angband commands consist not only of a basic action
- * (such as "tunnel"), but also a direction (such as "north-east"), plus
- * other information such as a "repeat" count or "extra argument".
- *
- * These components are thus explicitly represented, with globals.
- *
- * The "base command" (see below) is stored in "command_cmd"
- * The "desired direction" is stored in "command_dir".
- * The "repeat count" is stored in "command_rep"
- * The "numerical argument" is stored in "command_arg"
- *
- * When "command_dir" is set, it overrides all calls to "get*dir()"
- * So we always reset command_dir to -1 before getting a new command.
- * Hack -- a "command_dir" of "zero" means "the current target".
- *
- * Note that "command_arg" is sometimes used to select an argument
- * to a command (whereas "command_rep" actually "repeats" it).
- * Commands using this include "rest", "run", and "wizard" commands.
- *
- * Note that nothing cancels "command_rep", so it must be explicitly
- * canceled by the repeatable functions on "termination" conditions.
- * The simple way to do this is to force the respective do_cmd routines
- * to actually check explicitly for permission to NOT cancel it.
- * The only way to cancel "command_rep" is via the "disturb()" function.
- *
- * Note that, to correctly handle repeating commands, all commands that
- * wish to be repeatable AND to do so with a specific "direction" had
- * better set "command_dir" on their first call to the user's DESIRED
- * direction.  A local copy can then be used to check confusion, etc.
- * The easiest way to do this is to actually USE "command_dir" as the
- * argument holding the direction (see "do_cmd_walk").
- *
- * Note that, however, to correctly handle confusion + repeated commands,
- * it may be necessary to call "get_a_dir" as above, and then use a temp
- * dir to apply confusion, via "dir = command_dir; confuse_dir(&dir,mode);"
- * where mode is, for example, 0x02 for "partial" confusion.
- *
- * The last command successfully executed is stored in "command_old".
- *
- * Eventually, "command_esc" will allow one to track low level "Escapes".
- */
 
 
 
@@ -531,19 +486,21 @@ static int command_takes_rep(char c)
     /* Examine the command */
     switch (c) {
 
-        /* Take a direction */
-        case '-': /* Jump */
-        case ';': /* Walk */
+        /* Take a direction, Normally repeated */
         case '+': /* Tunnel */
         case 'D': /* Disarm */
-        case 'B': /* Bash/Force */
+        case 'B': /* Bash */
         case 'o': /* Open */
-            return TRUE;
 
-        /* Take no direction */
+        /* Take a direction, Normally not repeated */
+        case '-': /* Jump */
+        case ';': /* Walk */
+
+        /* Take no direction, Normally not repeated */
         case ',': /* Stay still */
         case 'g': /* Stay still */
         case 's': /* Search */
+
             return TRUE;
     }
 
@@ -555,8 +512,9 @@ static int command_takes_rep(char c)
 
 /*
  * Check whether this command will accept an argument.
- * An "argument" command is one which allows the use of
- * the "repeat" formalism, but does not actually repeat.
+ *
+ * Such commands allow the use of the "repeat" formalism, but they
+ * do not "repeat", and instead apply special parsing to the "count".
  *
  * These commands are supplied an "extra" argument in the global variable
  * "command_arg".  It is (currently) always an integer from 0 to 9999.
@@ -568,12 +526,16 @@ static int command_takes_arg(char c)
     /* Examine the command */
     switch (c) {
 
-        /* Normal commands */
-        case '.': /* Run */
+        /* Hack -- Resting */
         case 'R': /* Rest */
+            return TRUE;
 
-        /* Hack -- All Wizard Commands */
-        case CTRL('A'): /* Special Wizard Command */
+        /* Hack -- Borg Commands */
+        case CTRL('Z'):
+            return TRUE;
+
+        /* Hack -- Wizard Commands */
+        case CTRL('A'):
             return TRUE;
     }
 
@@ -600,17 +562,13 @@ void request_command(void)
     char cmd;
 
 
-    /* Hack -- Assume no abortion yet */
-    command_esc = 0;
-
-
     /* Hack -- process "repeated" commands */
     if (command_rep) {
 
         /* Count this execution */
         command_rep--;
 
-        /* Hack -- Dump repeat count */
+        /* Redraw the state */
         p_ptr->redraw |= (PR_STATE);
 
         /* Handle stuff */
@@ -621,7 +579,7 @@ void request_command(void)
 
         /* Refresh */
         Term_fresh();
-        
+
         /* Hack -- Assume messages were seen */
         msg_flag = FALSE;
 
@@ -636,8 +594,8 @@ void request_command(void)
     /* No "argument" yet */
     command_arg = 0;
 
-    /* Hack -- no direction yet */
-    command_dir = -1;
+    /* No "direction" yet */
+    command_dir = 0;
 
 
     /* Hack -- Optional flush */
@@ -708,7 +666,7 @@ void request_command(void)
 
         /* Hack -- white-space means "enter command now" */
         if ((cmd == ' ') || (cmd == '\n') || (cmd == '\r')) {
-            if (!get_com("Command:", &cmd)) cmd = ESCAPE;
+            (void)(get_com("Command: ", &cmd));
         }
     }
 
@@ -717,16 +675,16 @@ void request_command(void)
     if (cmd == '\\') {
 
         /* Get a char to use without casting */
-        if (!get_com("Command: ", &cmd)) cmd = ESCAPE;
+        (void)(get_com("Command: ", &cmd));
 
         /* Hack -- allow "control chars" to be entered */
         if (cmd == '^') {
 
             /* Get a char to "cast" into a control char */
-            if (!get_com("Command: Control-", &cmd)) cmd = ESCAPE;
+            (void)(get_com("Command: Control-", &cmd));
 
             /* Hack -- create a control char if legal */
-            else if (CTRL(cmd)) cmd = CTRL(cmd);
+            if (CTRL(cmd)) cmd = CTRL(cmd);
         }
 
         /* Use the key directly */
@@ -740,10 +698,10 @@ void request_command(void)
         if (cmd == '^') {
 
             /* Get a char to "cast" into a control char */
-            if (!get_com("Control-", &cmd)) cmd = ESCAPE;
+            (void)(get_com("Control-", &cmd));
 
             /* Hack -- create a control char if legal */
-            else if (CTRL(cmd)) cmd = CTRL(cmd);
+            if (CTRL(cmd)) cmd = CTRL(cmd);
         }
 
         /* Access the array info */
@@ -752,9 +710,6 @@ void request_command(void)
 
         /* Hack -- notice "undefined" commands */
         if (!command_cmd) command_cmd = ESCAPE;
-
-        /* Hack -- extract "non-directions" if needed */
-        if ((command_dir < 1) || (command_dir > 9)) command_dir = -1;
     }
 
 
@@ -774,7 +729,7 @@ void request_command(void)
             /* Save the count (this time counts) */
             command_rep = i - 1;
 
-            /* Hack -- dump the count */
+            /* Redraw the state */
             p_ptr->redraw |= (PR_STATE);
 
             /* Handle stuff */

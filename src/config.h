@@ -29,15 +29,15 @@
 /*
  * OPTION: See the Makefile(s), where several options may be declared.
  *
- * These options control the choice of which graphic systems to
- * compile support for, and include "USE_X11", "USE_NCU", "USE_GCU",
- * and the more or less obsolete "USE_CUR".  Note that "USE_NCU"
- * is geared more towards linux/sys-v machines, and "USE_GCU" is
- * geared more towards general case machines.  Note that "USE_CAP"
- * is not usable at this time.
+ * Some popular options include "USE_GCU" (allow use with Unix "curses"),
+ * "USE_X11" (allow basic use with Unix X11), "USE_XAW" (allow use with
+ * Unix X11 plus the Athena Widget set), and "USE_CAP" (allow use with
+ * the "termcap" library, or with hard-coded vt100 terminals).
+ *
+ * The old "USE_NCU" option has been replaced with "USE_GCU".
  *
  * Several other such options are available for non-unix machines,
- * in particular, "MACINTOSH", and "USE_IBM", "USE_EMX", "USE_WIN".
+ * such as "MACINTOSH", "WINDOWS", "USE_IBM", "USE_EMX".
  *
  * You may also need to specify the "system", using defines such as
  * "SOLARIS" (for Solaris), etc, see "h-config.h" for more info.
@@ -86,6 +86,11 @@
 # define USE_CURS_SET
 #endif
 
+
+/*
+ * OPTION: Include "ncurses.h" instead of "curses.h" in "main-gcu.c"
+ */
+/* #define USE_NCURSES */
 
 
 /*
@@ -182,44 +187,21 @@
 
 
 /*
- * OPTION: Allow checking of artifacts (in town)
- */
-#define ALLOW_CHECK_ARTIFACTS
-
-/*
- * OPTION: Allow checking of dead uniques
- */
-#define ALLOW_CHECK_UNIQUES
-
-/*
- * OPTION: Allow "inventory tagging" via inscriptions ("@1@0" or "@r4")
- */
-#define ALLOW_TAGS
-
-/*
- * OPTION: Allow "inventory lockout" via inscriptions ("!f!d" or "!r")
- */
-#define ALLOW_NOTS
-
-/*
- * OPTION: Compile support for simple macro expansion
+ * OPTION: Allow "macro definition" at run-time
  */
 #define ALLOW_MACROS
 
 /*
- * OPTION: Compile support for keymap modification
+ * OPTION: Allow "keymap modification" at run-time
  */
 #define ALLOW_KEYMAP
+
 
 /*
  * OPTION: Allow characteres to be "auto-rolled"
  */
 #define ALLOW_AUTOROLLER
 
-/*
- * OPTION: Allow locations and monsters to be "targetted"
- */
-#define ALLOW_TARGET
 
 /*
  * OPTION: Allow monsters to "flee" when hit hard
@@ -231,16 +213,48 @@
  */
 #define ALLOW_TERROR
 
-
+/*
+ * OPTION: Allow "titles" for the player (based on level and class)
+ * Using this option adds a huge table of strings in "tables.c" and
+ * prints pretty "titles" such as "Ranger Lord" after the race and
+ * class, and on the tombstone, and in the "description" files.
+ */
+/* #define ALLOW_TITLES */
 
 
 /*
- * Allow "Wizards" to yield "high scores" (see "wizard")
+ * OPTION: Allow parsing of the ascii template files in "init.c".
+ * This must be defined if you do not have valid binary image files.
+ * It should be usually be defined anyway to allow easy "updating".
+ */
+#define ALLOW_TEMPLATES
+
+/*
+ * OPTION: Allow loading of pre-2.7.0 savefiles.  Note that it takes
+ * about 15K of code in "save-old.c" to parse the old savefile format.
+ * Angband 2.8.0 will ignore a lot of info from pre-2.7.0 savefiles.
+ */
+#define ALLOW_OLD_SAVEFILES
+
+
+/*
+ * OPTION: Handle signals
+ */
+#define HANDLE_SIGNALS
+
+
+/*
+ * Allow "Wizards" to yield "high scores"
  */
 /* #define SCORE_WIZARDS */
 
 /*
- * Allow "Cheaters" to yield "high scores" (see "cheat_xxxx")
+ * Allow "Borgs" to yield "high scores"
+ */
+/* #define SCORE_BORGS */
+
+/*
+ * Allow "Cheaters" to yield "high scores"
  */
 /* #define SCORE_CHEATERS */
 
@@ -313,34 +327,47 @@
 
 
 /*
- * OPTION: Hack -- something for Windows
+ * OPTION: Hack -- Macintosh stuff
  */
-#if defined(WINDOWS)
-# define USE_ITSYBITSY
+#ifdef MACINTOSH
+
+/* Do not handle signals */
+# undef HANDLE_SIGNALS
+
 #endif
 
 
 /*
- * OPTION: Hack -- "Raybould's Amiga curses" has broken colors (?)
+ * OPTION: Hack -- Windows stuff
  */
-#if defined(AMIGA)
-# undef USE_COLOR
+#ifdef WINDOWS
+
+/* Do not handle signals */
+# undef HANDLE_SIGNALS
+
+/* Use something */
+# define USE_ITSYBITSY
+
 #endif
+
 
 
 /*
  * OPTION: Set the "default" path to the angband "lib" directory.
  *
- * Note: this value is ignored by Macintosh, Windows, and Amiga, see
- * the file "init.c" for details.
+ * See "main.c" for usage, and note that this value is only used on
+ * certain machines, primarily Unix machines.  If this value is used,
+ * it will be over-ridden by the "ANGBAND_PATH" environment variable,
+ * if that variable is defined and accessable.  The final slash is
+ * optional, but it may eventually be required.
  *
- * Note that the "ANGBAND_PATH" environment variable over-rides this.
- * Angband will use this value if it cannot getenv("ANGBAND_PATH").
- * Note that the final slash is optional in any case.
+ * Using the value "./lib/" below tells Angband that, by default,
+ * the user will run "angband" from the same directory that contains
+ * the "lib" directory.  This is a reasonable (but imperfect) default.
  *
- * By default, the system expects the "angband" program to be located
- * in the same directory as the "lib" directory.  This should be changed,
- * for example, to "/usr/games/lib/angband/" or "/tmp/angband/lib/".
+ * If at all possible, you should change this value to refer to the
+ * actual location of the "lib" folder, for example, "/tmp/angband/lib/"
+ * or "/usr/games/lib/angband/", or "/pkg/angband/lib".
  */
 #define DEFAULT_PATH "./lib/"
 
@@ -351,14 +378,6 @@
 #ifdef SET_UID
 # define SAVEFILE_USE_UID
 #endif
-
-
-/*
- * OPTION: Attempt to do "quick" array initialization from "binary"
- * files (in the "data" directory).  These files are not portable
- * between platforms, and are regenerated if missing or out of date.
- */
-#define BINARY_ARRAY_IMAGES
 
 
 /*
@@ -401,11 +420,15 @@
  */
 #define GRAPHIC_RECALL
 
-
 /*
  * OPTION: Allow the use of a "Choice Window", if supported
  */
 #define GRAPHIC_CHOICE
+
+/*
+ * OPTION: Allow the use of a "Mirror Window", if supported
+ */
+#define GRAPHIC_MIRROR
 
 
 
@@ -419,7 +442,7 @@
 /*
  * OPTION: Person to bother if something goes wrong.
  */
-#define MAINTAINER	"benh@linc.cis.upenn.edu"
+#define MAINTAINER	"benh@voicenet.com"
 
 
 /*
@@ -450,4 +473,28 @@
 # define VERIFY_CHECKSUMS
 # define VERIFY_TIMESTAMPS
 #endif
+
+
+/*
+ * OPTION: Attempt to minimize the size of the game
+ */
+/* #define ANGBAND_LITE */
+
+/*
+ * Hack -- React to the "ANGBAND_LITE" flag
+ */
+#ifdef ANGBAND_LITE
+# undef MONSTER_FLOW
+# undef WDT_TRACK_OPTIONS
+# undef DRS_SMART_OPTIONS
+# undef ALLOW_OLD_SAVEFILES
+# undef ALLOW_BORG
+# undef ALLOW_WIZARD
+# undef ALLOW_SPOILERS
+# undef ALLOW_TITLES
+# undef GRAPHIC_RECALL
+# undef GRAPHIC_CHOICE
+# undef GRAPHIC_MIRROR
+#endif
+
 

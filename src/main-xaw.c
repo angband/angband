@@ -130,11 +130,11 @@ angband*color1: #000000
 
 /* C Widget type definition */
 
-typedef struct _AngbandRec *AngbandWidget;
+typedef struct AngbandRec *AngbandWidget;
 
 /* C Widget class type definition */
 
-typedef struct _AngbandClassRec *AngbandWidgetClass;
+typedef struct AngbandClassRec *AngbandWidgetClass;
 
 
 /*
@@ -169,7 +169,7 @@ typedef struct {
  * Full instance record declaration
  */
 
-typedef struct _AngbandRec {
+typedef struct AngbandRec {
 
     CorePart          core;
     SimplePart        simple;
@@ -192,7 +192,7 @@ typedef struct {
  * Full class record declaration
  */
 
-typedef struct _AngbandClassRec {
+typedef struct AngbandClassRec {
 
     CoreClassPart     core_class;
     SimpleClassPart   simple_class;
@@ -678,12 +678,12 @@ static XFontStruct *getFont(AngbandWidget widget,
 /*
  * Forward declare
  */
-typedef struct _term_data term_data;
+typedef struct term_data term_data;
 
 /*
  * A structure for each "term"
  */
-struct _term_data {
+struct term_data {
 
     term t;
 
@@ -890,12 +890,12 @@ static void handle_event (Widget widget, XtPointer client_data, XEvent *event,
 /*
  * Process an event (or just check for one)
  */
-errr CheckEvent(bool check)
+errr CheckEvent(bool wait)
 {
     XEvent event;
 
     /* No events ready, and told to just check */
-    if (check && !XtAppPending(appcon))
+    if (!wait && !XtAppPending(appcon))
 	return 1;
 
     do {
@@ -903,16 +903,6 @@ errr CheckEvent(bool check)
     XtDispatchEvent(&event);
     } while (XtAppPending(appcon));
 
-    return (0);
-}
-
-
-/*
- * Handle "activation" of a term
- */
-static errr Term_xtra_xaw_level(int v)
-{
-    /* Success */
     return (0);
 }
 
@@ -934,20 +924,12 @@ static errr Term_xtra_xaw(int n, int v)
 	case TERM_XTRA_FRESH:
 	    XFlush(XtDisplay((Widget)screen.widget));
 	    /* Nonblock event-check so the flushed events can be showed */
-	    CheckEvent(TRUE);
+	    CheckEvent(FALSE);
 	    return (0);
 
-	/* Check for a single event */
-	case TERM_XTRA_CHECK:
-	    return (CheckEvent(TRUE));
-
-	/* Wait for a single event */
+	/* Process events */
 	case TERM_XTRA_EVENT:
-	    return (CheckEvent(FALSE));
-
-	/* Handle change in the "level" */
-	case TERM_XTRA_LEVEL:
-	    return (Term_xtra_xaw_level(v));
+	    return (CheckEvent(v));
     }
 
     /* Unknown */
@@ -995,7 +977,7 @@ static errr Term_text_xaw(int x, int y, int n, byte a, cptr s)
     term_data *td = (term_data*)(Term->data);
 
     /* Draw the text */
-    AngbandOutputText(td->widget, x, y, (String)s, n, a);
+    AngbandOutputText(td->widget, x, y, (String)s, n, (a & 0x0F));
   
     /* Success */
     return (0);
@@ -1071,12 +1053,39 @@ static errr term_data_init(term_data *td, Widget topLevel,
 
 /*
  * Initialization function for an X Athena Widget module to Angband
+ *
+ * Mega-Hack -- we are not given the actual "argc" and "argv" from
+ * the main program, so we fake one.  Thus, we are unable to parse
+ * any "display" requests for external devices.  This is okay, since
+ * we need to verify the display anyway, to work with "main.c".
  */
 errr init_xaw(void)
 {
-    char *argv[] = { "angband", NULL };
-    int argc = 1;
+    int argc;
+    char *argv[2];
     Widget topLevel;
+    Display *dpy;
+
+
+    /* One fake argument */
+    argc = 1;
+    
+    /* Save the program name */
+    argv[0] = argv0;
+    
+    /* Terminate */
+    argv[1] = NULL;
+
+
+    /* Attempt to open the local display */
+    dpy = XOpenDisplay("");
+
+    /* Failure -- assume no X11 available */
+    if (!dpy) return (-1);
+
+    /* Close the local display */
+    XCloseDisplay(dpy);
+
 
 #ifdef USE_XAW_LANG
     /* Support locale processing */
@@ -1108,10 +1117,7 @@ errr init_xaw(void)
     /* Raise the "Angband" window */
     term_raise(screen);
 
-    /* Process outstanding events */
-    /*while (CheckEvent(TRUE) == 0)
-	;*/
-
+    /* Success */
     return (0);
 }
 

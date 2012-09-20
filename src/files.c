@@ -13,49 +13,6 @@
 #include "angband.h"
 
 
-/*
- * Semi-Portable High Score List Entry (128 bytes) -- BEN
- *
- * All fields listed below are null terminated ascii strings.
- *
- * In addition, the "number" fields are right justified, and
- * space padded, to the full available length (minus the "null").
- *
- * Note that "string comparisons" are thus valid on "pts".
- */
-
-typedef struct _high_score high_score;
-
-struct _high_score {
-
-  char what[8];		/* Version info (string) */
-
-  char pts[10];		/* Total Score (number) */
-
-  char gold[10];	/* Total Gold (number) */
-
-  char turns[10];	/* Turns Taken (number) */
-
-  char day[10];		/* Time stamp (string) */
-
-  char who[16];		/* Player Name (string) */
-
-  char uid[8];		/* Player UID (number) */
-
-  char sex[2];		/* Player Sex (string) */
-  char p_r[3];		/* Player Race (number) */
-  char p_c[3];		/* Player Class (number) */
-
-  char cur_lev[4];	/* Current Player Level (number) */
-  char cur_dun[4];	/* Current Dungeon Level (number) */
-  char max_lev[4];	/* Max Player Level (number) */
-  char max_dun[4];	/* Max Dungeon Level (number) */
-
-  char how[32];		/* Method of death (string) */
-};
-
-
-
 
 /*
  * You may or may not want to use the following "#undef".
@@ -69,9 +26,11 @@ struct _high_score {
 void safe_setuid_drop(void)
 {
 
-#if defined(SET_UID) && defined(SAFE_SETUID)
+#ifdef SET_UID
 
-# ifdef SAFE_SETUID_POSIX
+# ifdef SAFE_SETUID
+
+#  ifdef SAFE_SETUID_POSIX
 
     if (setuid(getuid()) != 0) {
         quit("setuid(): cannot set permissions correctly!");
@@ -80,7 +39,7 @@ void safe_setuid_drop(void)
         quit("setgid(): cannot set permissions correctly!");
     }
 
-# else
+#  else
 
     if (setreuid(geteuid(), getuid()) != 0) {
         quit("setreuid(): cannot set permissions correctly!");
@@ -88,6 +47,8 @@ void safe_setuid_drop(void)
     if (setregid(getegid(), getgid()) != 0) {
         quit("setregid(): cannot set permissions correctly!");
     }
+
+#  endif
 
 # endif
 
@@ -102,9 +63,11 @@ void safe_setuid_drop(void)
 void safe_setuid_grab(void)
 {
 
-#if defined(SET_UID) && defined(SAFE_SETUID)
+#ifdef SET_UID
 
-# ifdef SAFE_SETUID_POSIX
+# ifdef SAFE_SETUID
+
+#  ifdef SAFE_SETUID_POSIX
 
     if (setuid(player_euid) != 0) {
         quit("setuid(): cannot set permissions correctly!");
@@ -113,7 +76,7 @@ void safe_setuid_grab(void)
         quit("setgid(): cannot set permissions correctly!");
     }
 
-#else
+#  else
 
     if (setreuid(geteuid(), getuid()) != 0) {
         quit("setreuid(): cannot set permissions correctly!");
@@ -121,6 +84,8 @@ void safe_setuid_grab(void)
     if (setregid(getegid(), getgid()) != 0) {
         quit("setregid(): cannot set permissions correctly!");
     }
+
+#  endif
 
 # endif
 
@@ -132,12 +97,12 @@ void safe_setuid_grab(void)
 /*
  * Parse a sub-file of the "extra info" (format shown below)
  *
- * Each "command" has a "command symbol" in the first column,
+ * Each "action" line has an "action symbol" in the first column,
  * followed by a colon, followed by some command specific info,
  * usually with "fields" separated by colons.  Blank lines and
- * lines starting with pound signs ("#") are ignores as comments.
+ * lines starting with pound signs ("#") are ignored (as comments).
  *
- * Note that <a>, <c>, <num>, <tv>, <sv> must be (for now) integers.
+ * Note that <a>, <c>, <num>, <tv>, <sv>, <f> must be integers.
  * Note that <str> must be an "encoded" string (see elsewhere).
  * Note that <key> must be a keypress (a number from 1 to 255) or zero.
  * Note that <dir> must be a direction (a number from 1 to 9) or zero.
@@ -160,6 +125,9 @@ void safe_setuid_grab(void)
  * Specify the attr/char values for inventory "objects":
  *   E:<tv>:<a>/<c>		<-- attr/char by kind tval
  *
+ * Specify the attr/char values for terrain features:
+ *   F:<f>:<a>/<c>		<-- attr/char by feature index
+ *
  * Specify macros and command-macros:
  *   A:<str>			<-- macro action (encoded)
  *   P:<str>			<-- macro pattern (encoded)
@@ -167,10 +135,14 @@ void safe_setuid_grab(void)
  *
  * Specify keyset mappings:
  *   S:<key>:<key>:<dir>	<-- keyset mapping
+ *
+ * Specify option settings:
+ *   X:<str>			<-- Set an option to NO/OFF/FALSE
+ *   Y:<str>			<-- Set an option to YES/ON/TRUE
  */
 static errr process_pref_file_aux(cptr name)
 {
-    int i, i1, i2, n1, n2;
+    int i, n, i1, i2, n1, n2;
 
     FILE *fp;
 
@@ -183,7 +155,7 @@ static errr process_pref_file_aux(cptr name)
 
 
     /* Open the file */
-    fp = my_tfopen(name, "r");
+    fp = my_fopen(name, "r");
 
     /* Catch errors */
     if (!fp) return (-1);
@@ -207,7 +179,10 @@ static errr process_pref_file_aux(cptr name)
         if (!buf[0]) continue;
 
         /* The line better have a colon and such */
-        if (buf[1] != ':') return (1);
+        if (buf[1] != ':') {
+            msg_format("Bad command <%s> in file <%s>.", buf, name);
+            continue;
+        }
 
         /* Process "%:<fname>" */
         if (buf[0] == '%') {
@@ -218,74 +193,104 @@ static errr process_pref_file_aux(cptr name)
 
         /* Process "R:<num>:<a>/<c>" */
         else if (buf[0] == 'R') {
-            monster_lore *l_ptr;
-            if (sscanf(buf, "R:%d:%d/%d", &i, &n1, &n2) != 3) continue;
-            l_ptr = &l_list[i];
-            if (n1) l_ptr->l_attr = n1;
-            if (n2) l_ptr->l_char = n2;
+            monster_race *r_ptr;
+            if (sscanf(buf, "R:%d:%d/%d", &i, &n1, &n2) != 3) {
+                msg_format("Bad command <%s> in file <%s>.", buf, name);
+                continue;
+            }
+            r_ptr = &r_info[i];
+            if (n1) r_ptr->l_attr = n1;
+            if (n2) r_ptr->l_char = n2;
         }
 
         /* Process "M:<a>/<c>:<a>/<c>" */
         else if (buf[0] == 'M') {
-            if (sscanf(buf, "M:%d/%d:%d/%d", &i1, &i2, &n1, &n2) != 4) continue;
+            if (sscanf(buf, "M:%d/%d:%d/%d", &i1, &i2, &n1, &n2) != 4) {
+                msg_format("Bad command <%s> in file <%s>.", buf, name);
+                continue;
+            }
             for (i = 1; i < MAX_R_IDX; i++) {
-                monster_race *r_ptr = &r_list[i];
-                monster_lore *l_ptr = &l_list[i];
+                monster_race *r_ptr = &r_info[i];
                 if ((!i1 || r_ptr->r_attr == i1) &&
                     (!i2 || r_ptr->r_char == i2)) {
-                    if (n1) l_ptr->l_attr = n1;
-                    if (n2) l_ptr->l_char = n2;
+                    if (n1) r_ptr->l_attr = n1;
+                    if (n2) r_ptr->l_char = n2;
                 }
             }
         }
 
         /* Process "K:<num>:<a>/<c>" */
         else if (buf[0] == 'K') {
-            if (sscanf(buf, "K:%d:%d/%d", &i, &n1, &n2) != 3) continue;
-            if (n1) x_list[i].x_attr = n1;
-            if (n2) x_list[i].x_char = n2;
+            if (sscanf(buf, "K:%d:%d/%d", &i, &n1, &n2) != 3) {
+                msg_format("Bad command <%s> in file <%s>.", buf, name);
+                continue;
+            }
+            if (n1) k_info[i].x_attr = n1;
+            if (n2) k_info[i].x_char = n2;
         }
 
         /* Process "I:<a>/<c>:<a>/<c>" */
         else if (buf[0] == 'I') {
-            if (sscanf(buf, "I:%d/%d:%d/%d", &i1, &i2, &n1, &n2) != 4) continue;
+            if (sscanf(buf, "I:%d/%d:%d/%d", &i1, &i2, &n1, &n2) != 4) {
+                msg_format("Bad command <%s> in file <%s>.", buf, name);
+                continue;
+            }
             for (i = 0; i < MAX_K_IDX; i++) {
-                if ((!i1 || k_list[i].k_attr == i1) &&
-                    (!i2 || k_list[i].k_char == i2)) {
-                    if (n1) x_list[i].x_attr = n1;
-                    if (n2) x_list[i].x_char = n2;
+                if ((!i1 || k_info[i].k_attr == i1) &&
+                    (!i2 || k_info[i].k_char == i2)) {
+                    if (n1) k_info[i].x_attr = n1;
+                    if (n2) k_info[i].x_char = n2;
                 }
             }
         }
 
         /* Process "T:<tv>,<sv>:<a>/<c>" */
         else if (buf[0] == 'T') {
-            if (sscanf(buf, "T:%d,%d:%d/%d", &i1, &i2, &n1, &n2) != 4) continue;
+            if (sscanf(buf, "T:%d,%d:%d/%d", &i1, &i2, &n1, &n2) != 4) {
+                msg_format("Bad command <%s> in file <%s>.", buf, name);
+                continue;
+            }
             for (i = 0; i < MAX_K_IDX; i++) {
-                if ((!i1 || k_list[i].tval == i1) &&
-                    (!i2 || k_list[i].sval == i2)) {
-                    if (n1) x_list[i].x_attr = n1;
-                    if (n2) x_list[i].x_char = n2;
+                if ((!i1 || k_info[i].tval == i1) &&
+                    (!i2 || k_info[i].sval == i2)) {
+                    if (n1) k_info[i].x_attr = n1;
+                    if (n2) k_info[i].x_char = n2;
                 }
             }
         }
 
         /* Process "U:<tv>:<a>/<c>" -- attr/char for unaware items */
         else if (buf[0] == 'U') {
-            if (sscanf(buf, "U:%d:%d/%d", &i1, &n1, &n2) != 3) continue;
+            if (sscanf(buf, "U:%d:%d/%d", &i1, &n1, &n2) != 3) {
+                msg_format("Bad command <%s> in file <%s>.", buf, name);
+                continue;
+            }
             for (i = 0; i < MAX_K_IDX; i++) {
-                if (!i1 || k_list[i].tval == i1) {
-                    if (n1) x_list[i].k_attr = n1;
-                    if (n2) x_list[i].k_char = n2;
+                if (!i1 || (k_info[i].tval == i1)) {
+                    if (n1) k_info[i].i_attr = n1;
+                    if (n2) k_info[i].i_char = n2;
                 }
             }
         }
 
         /* Process "E:<tv>:<a>/<c>" -- attr/char for equippy chars */
         else if (buf[0] == 'E') {
-            if (sscanf(buf, "E:%d:%d/%d", &i1, &n1, &n2) != 3) continue;
+            if (sscanf(buf, "E:%d:%d/%d", &i1, &n1, &n2) != 3) {
+                msg_format("Bad command <%s> in file <%s>.", buf, name);
+                continue;
+            }
             if (n1) tval_to_attr[i1] = n1;
             if (n2) tval_to_char[i1] = n2;
+        }
+
+        /* Process "F:<f>:<a>/<c>" -- attr/char for terrain features */
+        else if (buf[0] == 'F') {
+            if (sscanf(buf, "F:%d:%d/%d", &i1, &n1, &n2) != 3) {
+                msg_format("Bad command <%s> in file <%s>.", buf, name);
+                continue;
+            }
+            if (n1) f_info[i1].z_attr = n1;
+            if (n2) f_info[i1].z_char = n2;
         }
 
         /* Process "A:<str>" -- save an "action" for later */
@@ -307,17 +312,70 @@ static errr process_pref_file_aux(cptr name)
 
         /* Process "S:<key>:<key>:<dir>" -- keymap */
         else if (buf[0] == 'S') {
-            if (sscanf(buf, "S:%d:%d:%d", &i1, &n1, &n2) != 3) continue;
+            if (sscanf(buf, "S:%d:%d:%d", &i1, &n1, &n2) != 3) {
+                msg_format("Bad command <%s> in file <%s>.", buf, name);
+                continue;
+            }
             if ((i1 < 0) || (i1 > 255)) continue;
             if ((n1 < 0) || (n1 > 255)) n1 = 0;
-            if ((n2 < 1) || (n2 > 9)) n2 = 0;
+            if ((n2 < 1) || (n2 > 9) || (n2 == 5)) n2 = 0;
             keymap_cmds[i1] = n1;
             keymap_dirs[i1] = n2;
+        }
+
+        /* Process "X:<str>" -- turn option off */
+        else if (buf[0] == 'X') {
+            for (n = 0, i = 0; options[i].o_desc; i++) {
+                if (options[i].o_var &&
+                    options[i].o_text &&
+                    streq(options[i].o_text, buf + 2)) {
+                    (*options[i].o_var) = FALSE;
+                    n = i;
+                    break;
+                }
+            }
+            if (!n) {
+                msg_format("Unknown option <%s> in file <%s>.", buf, name);
+                continue;
+            }
+        }
+
+        /* Process "Y:<str>" -- turn option on */
+        else if (buf[0] == 'Y') {
+            for (n = 0, i = 0; options[i].o_desc; i++) {
+                if (options[i].o_var &&
+                    options[i].o_text &&
+                    streq(options[i].o_text, buf + 2)) {
+                    (*options[i].o_var) = TRUE;
+                    n = i;
+                    break;
+                }
+            }
+            if (!n) {
+                msg_format("Unknown option <%s> in file <%s>.", buf, name);
+                continue;
+            }
+        }
+
+        /* Illegal command */
+        else {
+            msg_format("Unknown command <%s> in file <%s>.", buf, name);
+            continue;
         }
     }
 
     /* Close the file */
-    fclose(fp);
+    my_fclose(fp);
+
+
+    /* Hack -- note use of "cheat" options */
+    if (cheat_peek) noscore |= 0x0100;
+    if (cheat_hear) noscore |= 0x0200;
+    if (cheat_room) noscore |= 0x0400;
+    if (cheat_xtra) noscore |= 0x0800;
+    if (cheat_know) noscore |= 0x1000;
+    if (cheat_live) noscore |= 0x2000;
+
 
     /* Success */
     return (0);
@@ -326,23 +384,17 @@ static errr process_pref_file_aux(cptr name)
 
 /*
  * Find a pref file with the given name and process it
- * Looks in the current directory, and both "PREF" directories
+ * Looks in the current directory, and the "USER" directories
  */
 errr process_pref_file(cptr name)
 {
     char tmp[1024];
-    
-    /* Try the given file */
+
+    /* XXX XXX XXX Hack -- Try the given file */
     if (0 == process_pref_file_aux(name)) return (0);
 
-    /* Look in the "special" directory */
-    sprintf(tmp, "%s-%s%s%s", ANGBAND_DIR_PREF, ANGBAND_SYS, PATH_SEP, name);
-
-    /* Attempt to process that file */
-    if (0 == process_pref_file_aux(tmp)) return (0);
-
-    /* Look in the "standard" directory */
-    sprintf(tmp, "%s%s%s", ANGBAND_DIR_PREF, PATH_SEP, name);
+    /* Look in the "user" directory */
+    sprintf(tmp, "%s%s", ANGBAND_DIR_USER, name);
 
     /* Attempt to process that file */
     if (0 == process_pref_file_aux(tmp)) return (0);
@@ -354,328 +406,13 @@ errr process_pref_file(cptr name)
 
 
 
-/*
- * The "highscore" file descriptor
- */
-static int highscore_fd = -1;
-
-
-/*
- * Open the highscore file (for reading/writing).  Create if needed.
- * Set "highscore_fd" which is used by the "highscore_*" functions.
- */
-static errr highscore_open(void)
-{
-    int fd;
-    char buf[1024];
-
-    /* Permissions for file */
-    int mode = 0644;
-
-    /* Extract the name of the High Score File (not really a "raw" file) */
-    sprintf(buf, "%s%s%s", ANGBAND_DIR_DATA, PATH_SEP, "scores.raw");
-
-#ifdef MACINTOSH
-    /* Global -- "Data file" */
-    _ftype = 'DATA';
-#endif
-
-    /* Open (or create) a BINARY file, for reading/writing */
-    fd = my_topen(buf, O_RDWR | O_CREAT | O_BINARY, mode);
-
-    /* Save the fd */
-    highscore_fd = fd;
-
-    /* Check for success */
-    if (fd >= 0) return (0);
-
-
-    /* Warning message */
-    plog_fmt("cannot create the '%s' score file", buf);
-
-    /* No "scores", but yes "news" */
-    if (!my_tfopen(ANGBAND_NEWS, "r")) {
-
-        /* Warning message */
-        plog_fmt("cannot access the '%s' news file", ANGBAND_NEWS);
-    }
-
-    /* Abort */
-    quit("fatal error attempting to access the Angband 'lib' directory");
-
-    /* Failure */
-    return (1);
-}
-
-
-/*
- * Close the highscore file
- */
-static errr highscore_close()
-{
-    /* Already closed */
-    if (highscore_fd < 0) return (1);
-
-    /* All done */
-    (void)close(highscore_fd);
-
-    /* No fd */
-    highscore_fd = -1;
-
-    /* Success */
-    return (0);
-}
-
-
-/*
- * Lock the highscore file
- */
-static errr highscore_lock(void)
-{
-    int oops;
-
-    /* Paranoia -- it may not have opened */
-    if (highscore_fd < 0) return (1);
-
-#if !defined(MACINTOSH) && !defined(MSDOS) && !defined(AMIGA) && \
-    !defined(WINDOWS) && !defined(__EMX__)
-
-/* First, get a lock on the high score file so no-one else tries */
-/* to write to it while we are using it */
-/* added sys_v call to lockf - cba */
-
-#ifdef USG
-    oops = (lockf(highscore_fd, F_LOCK, 0) != 0);
-#else
-    oops = (0 != flock(highscore_fd, LOCK_EX));
-#endif
-
-    /* Trouble */
-    if (oops) return (1);
-
-#endif
-
-    /* Success */
-    return (0);
-}
-
-
-/*
- * Unlock the highscore file
- */
-static errr highscore_unlock()
-{
-    /* Paranoia -- it may not have opened */
-    if (highscore_fd < 0) return (1);
-
-#if !defined(MACINTOSH) && !defined(MSDOS) && !defined(AMIGA) && \
-    !defined(WINDOWS) && !defined(__EMX__)
-
-/* added usg lockf call - cba */
-#ifdef USG
-    lockf(highscore_fd, F_ULOCK, 0);
-#else
-    (void)flock(highscore_fd, LOCK_UN);
-#endif
-
-#endif
-
-    /* Success */
-    return (0);
-}
-
-
-/*
- * Seek score 'i' in the highscore file
- */
-static int highscore_seek(int i)
-{
-    long p = (long)(i) * sizeof(high_score);
-
-    /* Paranoia -- it may not have opened */
-    if (highscore_fd < 0) return (1);
-
-    /* Seek for the requested record */
-    if (lseek(highscore_fd, p, L_SET) < 0) return (2);
-
-    /* Success */
-    return (0);
-}
-
-
-#if 0
-
-/*
- * Chop all scores from 'i' on from the highscore file
- */
-static errr highscore_chop(int i)
-{
-    /* Paranoia -- it may not have opened */
-    if (highscore_fd < 0) return (1);
-
-#if defined(sun) || defined(ultrix) || defined(NeXT)
-    ftruncate(highscore_fd, i * sizeof(high_score));
-#endif
-
-    /* Success */
-    return (0);
-}
-
-#endif
-
-
-/*
- * Read one score from the highscore file
- */
-static errr highscore_read(high_score *score)
-{
-    int num;
-
-    /* Paranoia -- it may not have opened */
-    if (highscore_fd < 0) return (1);
-
-    /* Read a record, note failure */
-    num = read(highscore_fd, (char*)(score), sizeof(high_score));
-
-    /* Nothing read, means end of file */
-    if (!num) return (1);
-
-    /* Partial read, means major error */
-    if (num != sizeof(high_score)) return (-1);
-
-    /* Success */
-    return (0);
-}
-
-
-/*
- * Write one score to the highscore file
- */
-static int highscore_write(high_score *score)
-{
-    int num;
-
-    /* Paranoia -- it may not have been opened */
-    if (highscore_fd < 0) return (1);
-
-    /* Write the record */
-    num = write(highscore_fd, (char*)(score), sizeof(high_score));
-
-    /* Fail */
-    if (num != sizeof(high_score)) return (-1);
-
-    /* Success */
-    return (0);
-}
-
-
-
-/*
- * Just determine where a new score *would* be placed
- * Return the location (0 is best) or -1 on failure
- */
-static int highscore_where(high_score *score)
-{
-    int			i;
-    high_score		the_score;
-
-    /* Go to the start of the highscore file */
-    if (highscore_seek(0)) return (-1);
-
-    /* Read until we get to a higher score */
-    for (i = 0; i < MAX_HISCORES; i++) {
-        if (highscore_read(&the_score)) return (i);
-        if (strcmp(the_score.pts, score->pts) < 0) return (i);
-    }
-
-    /* The "last" entry is always usable */
-    return (MAX_HISCORES - 1);
-}
-
-
-/*
- * Actually place an entry into the high score file
- * Return the location (0 is best) or -1 on "failure"
- */
-static int highscore_add(high_score *score)
-{
-    int			i, slot;
-    bool		done = FALSE;
-
-    high_score		the_score, tmpscore;
-
-
-    /* Determine where the score should go */
-    slot = highscore_where(score);
-
-    /* Hack -- Not on the list */
-    if (slot < 0) return (-1);
-
-    /* Hack -- prepare to dump the new score */
-    the_score = (*score);
-
-    /* Slide all the scores down one */
-    for (i = slot; !done && (i < MAX_HISCORES); i++) {
-
-        /* Read the old guy, note errors */
-        if (highscore_seek(i)) return (-1);
-        if (highscore_read(&tmpscore)) done = TRUE;
-
-        /* Back up and dump the score we were holding */
-        if (highscore_seek(i)) return (-1);
-        if (highscore_write(&the_score)) return (-1);
-
-        /* Hack -- Save the old score, for the next pass */
-        the_score = tmpscore;
-    }
-
-    /* Return location used */
-    return (slot);
-}
-
-
-
-
-
-/*
- * Note that this function is called BEFORE "Term_init()"
- *
- * Open the score file while we still have the setuid privileges.
- * Later when the score is being written out, you must be sure
- * to flock the file so we don't have multiple people trying to
- * write to it at the same time.
- *
- * Notice that a failure to open the high score file often indicates
- * incorrect directory structure or starting directory or permissions.
- *
- * Note that a LOT of functions in this file assume that this
- * function call will succeed, so if not, we quit.
- */
-void init_scorefile()
-{
-    /* Open the scorefile */
-    (void)highscore_open();
-}
-
-
-/*
- * Shut down the scorefile
- */
-void nuke_scorefile()
-{
-    /* Close the high score file */
-    (void)(highscore_close());
-}
-
-
 
 
 
 #ifdef CHECK_TIME
 
 /*
- * Operating hours for ANGBAND	-RAK-
- *	 X = Open; . = Closed
+ * Operating hours for ANGBAND (defaults to non-work hours)
  */
 static char days[7][29] = {
     "SUN:XXXXXXXXXXXXXXXXXXXXXXXX",
@@ -686,6 +423,11 @@ static char days[7][29] = {
     "FRI:XXXXXXXX.........XXXXXXX",
     "SAT:XXXXXXXXXXXXXXXXXXXXXXXX"
 };
+
+/*
+ * Restict usage (defaults to no restrictions)
+ */
+static bool check_time_flag = FALSE;
 
 #endif
 
@@ -700,6 +442,9 @@ errr check_time(void)
 
     time_t              c;
     struct tm		*tp;
+
+    /* No restrictions */
+    if (!check_time_flag) return (0);
 
     /* Check for time violation */
     c = time((time_t *)0);
@@ -730,20 +475,30 @@ errr check_time_init(void)
 
 
     /* Access the "hours" file */
-    sprintf(buf, "%s%s%s", ANGBAND_DIR_FILE, PATH_SEP, "hours.txt");
+    sprintf(buf, "%s%s", ANGBAND_DIR_FILE, "time.txt");
 
     /* Open the file */
-    fp = my_tfopen(buf, "r");
+    fp = my_fopen(buf, "r");
 
-    /* Oops.  No such file */
-    if (!fp) {
-        msg_print("There is no 'lib/file/hours.txt' file!");
-        msg_print(NULL);
-        exit_game();
-    }
+    /* No file, no restrictions */
+    if (!fp) return (0);
+
+    /* Assume restrictions */
+    check_time_flag = TRUE;
 
     /* Parse the file */
     while (fgets(buf, 80, fp)) {
+
+        /* Skip comments */
+        if (buf[0] == '#') continue;
+
+        /* Skip "blank" lines */
+        if (!buf[0] || !isprint(buf[0]) || isspace(buf[0])) continue;
+
+        /* Chop the buffer */
+        buf[29] = '\0';
+
+        /* Extract the info */
         if (prefix(buf, "SUN:")) strcpy(days[0], buf);
         if (prefix(buf, "MON:")) strcpy(days[1], buf);
         if (prefix(buf, "TUE:")) strcpy(days[2], buf);
@@ -754,20 +509,12 @@ errr check_time_init(void)
     }
 
     /* Close it */
-    fclose(fp);
-
-    /* Make sure the game is "open" */
-    if (0 != check_time()) {
-        msg_print("The gates to Angband are closed.");
-        msg_print("Please try again at a different time.");
-        msg_print(NULL);
-        exit_game();
-    }
+    my_fclose(fp);
 
 #endif
 
     /* Success */
-    return (0);    
+    return (0);
 }
 
 
@@ -800,9 +547,9 @@ typedef struct statstime {
 } statstime;
 
 /*
- * Hack -- used for CHECK_LOAD
+ * Maximal load (if any).
  */
-static int LOAD = 0;
+static int check_load_value = 0;
 
 #endif
 
@@ -817,11 +564,17 @@ errr check_load(void)
 
     struct statstime    st;
 
-    /* Check for load violation */
-    if (!rstat("localhost", &st)) {
-        if (((int)((double)st.avenrun[2] / (double)FSCALE)) >= LOAD) {
-            return (1);
-        }
+    /* Success if not checking */
+    if (!check_load_value) return (0);
+
+    /* Check the load */
+    if (0 == rstat("localhost", &st)) {
+
+        long val1 = (long)(st.avenrun[2]);
+        long val2 = (long)(check_load_value) * FSCALE;
+
+        /* Check for violation */
+        if (val1 >= val2) return (1);
     }
 
 #endif
@@ -845,96 +598,104 @@ errr check_load_init(void)
 
     char	temphost[MAXHOSTNAMELEN+1];
     char	thishost[MAXHOSTNAMELEN+1];
-    char	discard[120];
 
 
     /* Access the "load" file */
-    sprintf(buf, "%s%s%s", ANGBAND_DIR_FILE, PATH_SEP, "load.txt");
+    sprintf(buf, "%s%s", ANGBAND_DIR_FILE, "load.txt");
 
     /* Open the "load" file */
-    fp = my_tfopen(buf, "r");
+    fp = my_fopen(buf, "r");
 
-    /* Oops.  No such file */
-    if (!fp) {
-        msg_print("There is no 'lib/file/load.txt' file!");
-        msg_print(NULL);
-        exit_game();
-    }
+    /* No file, no restrictions */
+    if (!fp) return (0);
+
+    /* Default load */
+    check_load_value = 100;
 
     /* Get the host name */
     (void)gethostname(thishost, (sizeof thishost) - 1);
 
-    /* Find ourself */
-    while (1) {
+    /* Parse it */
+    while (fgets(buf, sizeof(buf), fp)) {
 
-        /* Oops */
-        if (fscanf(fp, "%s%d", temphost, &LOAD) == EOF) {
-            LOAD = 100;
-            break;
-        }
+        int value;
 
-        /* Hack -- Discard comments */
-        if (temphost[0] == '#') {
-            (void)fgets(discard, (sizeof discard)-1, fp);
-            continue;
-        }
+        /* Skip comments */
+        if (buf[0] == '#') continue;
 
-        /* Did we find the entry? */
-        if (streq(temphost,thishost) || streq(temphost,"localhost")) break;
+        /* Skip "blank" lines */
+        if (!buf[0] || !isprint(buf[0]) || isspace(buf[0])) continue;
+
+        /* Parse, or ignore */
+        if (sscanf(buf, "%s%d", temphost, &value) != 2) continue;
+
+        /* Skip other hosts */
+        if (!streq(temphost,thishost) && !streq(temphost,"localhost")) continue;
+
+        /* Use that value */
+        check_load_value = value;
+        break;
     }
 
     /* Close the file */
-    fclose(fp);
-
-    /* Make sure the game is "open" */
-    if (0 != check_load()) {
-        msg_print("The gates to Angband are closed.");
-        msg_print("Please try again at a less busy time.");
-        msg_print(NULL);
-        exit_game();
-    }
+    my_fclose(fp);
 
 #endif
- 
+
     /* Success */
     return (0);
 }
 
 
 /*
- * Attempt to open, and display, the intro "news" file		-RAK-
+ * Attempt to open, and display, the "lib/file/news.txt" file.
+ *
+ * This function is called before "init_some_arrays()".
  */
 void show_news(void)
 {
     int i;
-    char	buf[1024];
+
     FILE        *fp;
 
+    char	*s;
 
-    /* Try to open the News file */
-    fp = my_tfopen(ANGBAND_NEWS, "r");
+    char	buf[1024];
 
-    /* Error? */
-    if (!fp) {
-        msg_print("Cannot read 'lib/file/news.txt' file!");
-        msg_print(NULL);
-        quit("cannot open 'news' file");
-    }
+
+    /* Construct the name of the "news" file */
+    sprintf(buf, "%s%s", ANGBAND_DIR_FILE, "news.txt");
+
+    /* Open the News file */
+    fp = my_fopen(buf, "r");
+
+    /* No 'news.txt' file? */
+    if (!fp) quit_fmt("Cannot open the '%s' file!", buf);
 
     /* Clear the screen */
     clear_screen();
 
-    /* Dump the file (nuking newlines) */
-    for (i = 0; (i < 24) && fgets(buf, 80, fp); i++) {
-        buf[strlen(buf)-1]=0;
-        put_str(buf, i, 0);
-    }
+    /* Dump the file to the screen */
+    for (i = 0; (i < 20) && fgets(buf, 80, fp); i++) {
 
-    /* Close */
-    fclose(fp);
+        /* Advance to "weirdness" (including the final newline) */
+        for (s = buf; isprint(*s); ++s) ;
+        
+        /* Nuke "weirdness" */
+        *s = '\0';
+
+        /* Display the line */
+        put_str(buf, i+2, 0);
+
+        /* Flush it */
+        Term_fresh();
+    }
 
     /* Flush it */
     Term_fresh();
+
+    /* Close */
+    my_fclose(fp);
 }
 
 
@@ -954,7 +715,7 @@ static bool do_cmd_help_aux(cptr name, int line)
 
     /* Backup value for "line" */
     int		back = 0;
-    
+
     /* This screen has sub-screens */
     bool	menu = FALSE;
 
@@ -964,9 +725,9 @@ static bool do_cmd_help_aux(cptr name, int line)
     /* Find this string (if any) */
     cptr	find = NULL;
 
-    /* Hold a string to find */    
+    /* Hold a string to find */
     char	finder[128] = "";
-    
+
     /* Path buffer */
     char	path[1024];
 
@@ -982,27 +743,27 @@ static bool do_cmd_help_aux(cptr name, int line)
 
 
     /* Build the standard file name */
-    sprintf(path, "%s%s%s", ANGBAND_DIR_HELP, PATH_SEP, name);
+    sprintf(path, "%s%s", ANGBAND_DIR_HELP, name);
 
     /* Open the file */
-    fff = my_tfopen(path, "r");
+    fff = my_fopen(path, "r");
 
-    /* Oops */
+    /* Hack -- try the alternative directory */
     if (!fff) {
 
         /* Build the alternate file name */
-        sprintf(path, "%s%s%s", ANGBAND_DIR_INFO, PATH_SEP, name);
+        sprintf(path, "%s%s", ANGBAND_DIR_INFO, name);
 
         /* Open the file */
-        fff = my_tfopen(path, "r");
+        fff = my_fopen(path, "r");
     }
-    
+
     /* Oops */
     if (!fff) {
 
         /* Message */
         msg_format("Cannot open help file '%s'.", name);
-        msg_print("See 'help.hlp' for how to get new help files.");
+        msg_print(NULL);
 
         /* Oops */
         return (TRUE);
@@ -1021,9 +782,9 @@ static bool do_cmd_help_aux(cptr name, int line)
             /* Invalid character (stop reading) */
             if (!isprint(buf[n])) break;
         }
-        
+
         /* Strip trailing spaces and stuff */
-        for (n = strlen(buf) - 1; (n > 0) && (isspace(buf[n-1])); n--);
+        for (n = strlen(buf) - 1; (n > 0) && (isspace(buf[n-1])); n--) ;
 
         /* Truncate the text */
         buf[n] = '\0';
@@ -1032,11 +793,11 @@ static bool do_cmd_help_aux(cptr name, int line)
         if (prefix(buf, "***** ")) {
 
             char b1 = '[', b2 = ']';
-            
+
             /* Notice "menu" requests */
             if ((buf[6] == b1) && isdigit(buf[7]) &&
                 (buf[8] == b2) && (buf[9] == ' ')) {
-            
+
                 /* This is a menu file */
                 menu = TRUE;
 
@@ -1076,10 +837,10 @@ static bool do_cmd_help_aux(cptr name, int line)
         if (next > line) {
 
             /* Close it */
-            fclose(fff);
+            my_fclose(fff);
 
             /* Hack -- Re-Open the file */
-            fff = my_tfopen(path, "r");
+            fff = my_fopen(path, "r");
 
             /* Oops */
             if (!fff) return (FALSE);
@@ -1122,10 +883,10 @@ static bool do_cmd_help_aux(cptr name, int line)
 
             /* Hack -- keep searching */
             if (find && !i && !strstr(buf, find)) continue;
-            
+
             /* Hack -- stop searching */
             find = NULL;
-            
+
             /* Dump the lines */
             put_str(buf, i+2, 0);
 
@@ -1140,11 +901,11 @@ static bool do_cmd_help_aux(cptr name, int line)
             find = NULL;
             continue;
         }
-        
+
 
         /* Show a general "title" */
         prt(format("[Angband %d.%d.%d, Helpfile '%s', Line %d/%d]",
-                   CUR_VERSION_MAJ, CUR_VERSION_MIN, CUR_PATCH_LEVEL,
+                   VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH,
                    name, line, size), 0, 0);
 
 
@@ -1194,7 +955,7 @@ static bool do_cmd_help_aux(cptr name, int line)
                 line = atoi(tmp);
             }
         }
-        
+
         /* Hack -- go to a specific file */
         if (k == '%') {
             char tmp[80];
@@ -1204,7 +965,7 @@ static bool do_cmd_help_aux(cptr name, int line)
                 if (!do_cmd_help_aux(tmp, 0)) k = ESCAPE;
             }
         }
-        
+
         /* Hack -- Allow backing up */
         if (k == '-') {
             line = line - 10;
@@ -1220,7 +981,7 @@ static bool do_cmd_help_aux(cptr name, int line)
         if (k == ' ') {
             line = line + 20;
         }
-        
+
         /* Recurse on numbers */
         if (menu && isdigit(k) && hook[k-'0'][0]) {
 
@@ -1233,7 +994,7 @@ static bool do_cmd_help_aux(cptr name, int line)
     }
 
     /* Close the file */
-    fclose(fff);
+    my_fclose(fff);
 
     /* Escape */
     if (k == ESCAPE) return (FALSE);
@@ -1248,26 +1009,23 @@ static bool do_cmd_help_aux(cptr name, int line)
  */
 void do_cmd_help(cptr name)
 {
-    /* Help is always free */
-    energy_use = 0;
-
     /* Hack -- default file */
     if (!name) name = "help.hlp";
 
-    /* Save the screen */
-    save_screen();
-
     /* Enter "icky" mode */
     character_icky = TRUE;
-    
+
+    /* Save the screen */
+    Term_save();
+
     /* Peruse the main help file */
     (void)do_cmd_help_aux(name, 0);
 
+    /* Restore the screen */
+    Term_load();
+
     /* Leave "icky" mode */
     character_icky = FALSE;
-    
-    /* Restore the screen */
-    restore_screen();
 }
 
 
@@ -1283,12 +1041,22 @@ static cptr title_string()
     if (total_winner || (plev > PY_MAX_LEVEL)) {
         return (p_ptr->male ? "**KING**" : "**QUEEN**");
     }
-    
+
+#ifdef ALLOW_TITLES
+
     /* Hack -- Novice */
     if (plev < 1) return ("Novice");
-    
+
     /* Use the actual title */
     return (player_title[p_ptr->pclass][plev - 1]);
+
+#else
+
+    /* No title */
+    return ("Player");
+
+#endif
+
 }
 
 
@@ -1296,29 +1064,37 @@ static cptr title_string()
 /*
  * Print the character to a file or device.
  */
-int file_character(cptr filename1)
+errr file_character(cptr name)
 {
-    int		i;
-    int				fd = -1;
-    inven_type			*i_ptr;
-    cptr			p;
-    cptr			colon = ":";
-    cptr			blank = " ";
+    int			i;
 
-    FILE		*fp;
+    cptr		p;
+
+    cptr		colon = ":";
+    cptr		blank = " ";
+
+#if 0
+    cptr		other = "(";
+#endif
+
+    cptr		paren = ")";
+
+    int			fd = -1;
+
+    FILE		*fp = NULL;
 
     int			tmp;
     int                 xthn, xthb, xfos, xsrh;
     int			xdis, xdev, xsav, xstl;
     char                xinfra[32];
 
-    int			show_tohit, show_todam;
+    int			show_to_h, show_to_d;
+
+    inven_type		*i_ptr;
 
     store_type		*st_ptr = &store[7];
 
     char		i_name[80];
-
-    char		out_val[160];
 
     char		buf[160];
 
@@ -1326,55 +1102,56 @@ int file_character(cptr filename1)
     /* Drop priv's */
     safe_setuid_drop();
 
-#ifdef MACINTOSH
-
-    /* Global file type */
+#if defined(MACINTOSH) && !defined(applec)
+    /* Global -- "text file" */
     _ftype = 'TEXT';
-
-    /* Open the file (already verified by mac_file_character) */
-    fp = fopen(filename1, "w");
-
-#else
-
-    fd = my_topen(filename1, O_WRONLY | O_CREAT | O_EXCL, 0644);
-    if (fd < 0 && errno == EEXIST) {
-        (void)sprintf(out_val, "Replace existing file %s?", filename1);
-        if (get_check(out_val)) {
-            fd = my_topen(filename1, O_WRONLY, 0644);
-        }
-    }
-    if (fd >= 0) {
-        /* on some non-unix machines, fdopen() is not reliable, */
-        /* hence must call close() and then fopen()  */
-        (void)close(fd);
-        fp = my_tfopen(filename1, "w");
-    }
-    else {
-        fp = NULL;
-    }
-
 #endif
+
+    /* Check for existing file */
+    fd = fd_open(name, O_RDONLY, 0);
+    
+    /* Existing file */
+    if (fd >= 0) {
+
+        char out_val[160];
+
+        /* Close the file */
+        (void)fd_close(fd);
+
+        /* Build query */
+        (void)sprintf(out_val, "Replace existing file %s? ", name);
+
+        /* Ask */
+        if (get_check(out_val)) fd = -1;
+    }
+
+    /* Open the non-existing file */
+    if (fd < 0) fp = my_fopen(name, "w");
+
+    /* Grab priv's */
+    safe_setuid_grab();
 
 
     /* Invalid file */
     if (!fp) {
 
-        msg_format("Cannot open '%s'.", filename1);
+        /* Message */
+        msg_format("Cannot open file '%s'.", name);
         msg_print(NULL);
 
-        /* Grab priv's */
-        safe_setuid_grab();
-
-        return FALSE;
+        /* Error */
+        return (-1);
     }
 
 
     /* Fighting Skill (with current weapon) */
-    tmp = p_ptr->ptohit + inventory[INVEN_WIELD].tohit;
+    i_ptr = &inventory[INVEN_WIELD];
+    tmp = p_ptr->to_h + i_ptr->to_h;
     xthn = p_ptr->skill_thn + (tmp * BTH_PLUS_ADJ);
 
-    /* Shooting Skill (with current bow) */
-    tmp = p_ptr->ptohit + inventory[INVEN_BOW].tohit;
+    /* Shooting Skill (with current bow and normal missile) */
+    i_ptr = &inventory[INVEN_BOW];
+    tmp = p_ptr->to_h + i_ptr->to_h;
     xthb = p_ptr->skill_thb + (tmp * BTH_PLUS_ADJ);
 
     /* Basic abilities */
@@ -1389,19 +1166,21 @@ int file_character(cptr filename1)
     (void)sprintf(xinfra, "%d feet", p_ptr->see_infra * 10);
 
     /* Basic to hit/dam bonuses */
-    show_tohit = p_ptr->dis_th;
-    show_todam = p_ptr->dis_td;
+    show_to_h = p_ptr->dis_to_h;
+    show_to_d = p_ptr->dis_to_d;
 
     /* Check the weapon */
     i_ptr = &inventory[INVEN_WIELD];
 
     /* Hack -- add in weapon info if known */
-    if (inven_known_p(i_ptr)) show_tohit += i_ptr->tohit;
-    if (inven_known_p(i_ptr)) show_todam += i_ptr->todam;
+    if (inven_known_p(i_ptr)) show_to_h += i_ptr->to_h;
+    if (inven_known_p(i_ptr)) show_to_d += i_ptr->to_d;
 
 
     /* Notify user */
-    msg_format("Dumping character to '%s'...", filename1);
+    prt(format("Dumping character to '%s'...", name), 0, 0);
+
+    /* Flush */
     Term_fresh();
 
     colon = ":";
@@ -1409,41 +1188,41 @@ int file_character(cptr filename1)
 
     fprintf(fp, " Name%9s %-23s", colon, player_name);
     fprintf(fp, "Age%11s %6d ", colon, (int)p_ptr->age);
-    cnv_stat(p_ptr->use_stat[A_STR], buf);
+    cnv_stat(p_ptr->stat_use[A_STR], buf);
     fprintf(fp, "   STR : %s\n", buf);
-    fprintf(fp, " Race%9s %-23s", colon, rp_ptr->trace);
+    fprintf(fp, " Race%9s %-23s", colon, rp_ptr->title);
     fprintf(fp, "Height%8s %6d ", colon, (int)p_ptr->ht);
-    cnv_stat(p_ptr->use_stat[A_INT], buf);
+    cnv_stat(p_ptr->stat_use[A_INT], buf);
     fprintf(fp, "   INT : %s\n", buf);
     fprintf(fp, " Sex%10s %-23s", colon,
                   (p_ptr->male ? "Male" : "Female"));
     fprintf(fp, "Weight%8s %6d ", colon, (int)p_ptr->wt);
-    cnv_stat(p_ptr->use_stat[A_WIS], buf);
+    cnv_stat(p_ptr->stat_use[A_WIS], buf);
     fprintf(fp, "   WIS : %s\n", buf);
     fprintf(fp, " Class%8s %-23s", colon,
                   cp_ptr->title);
     fprintf(fp, "Social Class : %6d ", p_ptr->sc);
-    cnv_stat(p_ptr->use_stat[A_DEX], buf);
+    cnv_stat(p_ptr->stat_use[A_DEX], buf);
     fprintf(fp, "   DEX : %s\n", buf);
     fprintf(fp, " Title%8s %-23s", colon, title_string());
     fprintf(fp, "%22s", blank);
-    cnv_stat(p_ptr->use_stat[A_CON], buf);
+    cnv_stat(p_ptr->stat_use[A_CON], buf);
     fprintf(fp, "   CON : %s\n", buf);
     fprintf(fp, "%34s", blank);
     fprintf(fp, "%26s", blank);
-    cnv_stat(p_ptr->use_stat[A_CHR], buf);
+    cnv_stat(p_ptr->stat_use[A_CHR], buf);
     fprintf(fp, "   CHR : %s\n\n", buf);
 
-    fprintf(fp, " + To Hit    : %6d", show_tohit);
+    fprintf(fp, " + To Hit    : %6d", show_to_h);
     fprintf(fp, "%7sLevel      :%9d", blank, (int)p_ptr->lev);
     fprintf(fp, "   Max Hit Points : %6d\n", p_ptr->mhp);
-    fprintf(fp, " + To Damage : %6d", show_todam);
+    fprintf(fp, " + To Damage : %6d", show_to_d);
     fprintf(fp, "%7sExperience :%9ld", blank, (long)p_ptr->exp);
     fprintf(fp, "   Cur Hit Points : %6d\n", p_ptr->chp);
-    fprintf(fp, " + To AC     : %6d", p_ptr->dis_ta);
+    fprintf(fp, " + To AC     : %6d", p_ptr->dis_to_a);
     fprintf(fp, "%7sMax Exp    :%9ld", blank, (long)p_ptr->max_exp);
     fprintf(fp, "   Max Mana%8s %6d\n", colon, p_ptr->msp);
-    fprintf(fp, "   Total AC  : %6d", p_ptr->dis_ac);
+    fprintf(fp, "   Base AC   : %6d", p_ptr->dis_ac);
 
     if (p_ptr->lev >= PY_MAX_LEVEL) {
         fprintf(fp, "%7sExp to Adv.:%9s", blank, "****");
@@ -1479,58 +1258,57 @@ int file_character(cptr filename1)
     fprintf(fp, "\n\n");
 
     /* Dump the equipment */
-    fprintf(fp, "  [Character's Equipment List]\n\n");
-    if (!equip_ctr) {
-        fprintf(fp, "  Character has no equipment in use.\n");
-    }
-    else {
+    if (equip_cnt) {
+        fprintf(fp, "  [Character's Equipment List]\n\n");
         for (i = INVEN_WIELD; i < INVEN_TOTAL; i++) {
             p = mention_use(i);
             objdes(i_name, &inventory[i], TRUE, 3);
-            fprintf(fp, "  %c) %-19s: %s\n", index_to_label(i), p, i_name);
+            fprintf(fp, "  %c%s %-19s: %s\n",
+                    index_to_label(i), paren, p, i_name);
         }
+        fprintf(fp, "\n\n");
     }
 
-    fprintf(fp, "\n\n");
 
     /* Dump the inventory */
-    fprintf(fp, "  [General Inventory List]\n\n");
-    if (!inven_ctr) {
-        fprintf(fp, "  Character has no objects in inventory.\n");
-    }
-    else {
-        for (i = 0; i < inven_ctr; i++) {
+    if (inven_cnt) {
+        fprintf(fp, "  [General Inventory List]\n\n");
+        for (i = 0; i < INVEN_PACK; i++) {
             objdes(i_name, &inventory[i], TRUE, 3);
-            fprintf(fp, "%c) %s\n", index_to_label(i), i_name);
+            fprintf(fp, "%c%s %s\n",
+                    index_to_label(i), paren, i_name);
         }
+        fprintf(fp, "\n\n");
     }
 
-    fprintf(fp, "\n\n");
 
     /* Dump the Home */
     fprintf(fp, "  [Home Inventory]\n\n");	
-    if (st_ptr->store_ctr == 0) {
+    if (!st_ptr->stock_num) {
         fprintf(fp, "  Character has no objects at home.\n");
     }
     else {
-        for (i = 0; i < st_ptr->store_ctr; i++) {
+        for (i = 0; i < st_ptr->stock_num; i++) {
             if (i == 12) fprintf(fp, "\n");
-            objdes(i_name, &st_ptr->store_item[i], TRUE, 3);
-            fprintf(fp, "%c) %s\n", (i%12)+'a', i_name);
+            objdes(i_name, &st_ptr->stock[i], TRUE, 3);
+            fprintf(fp, "%c%s %s\n", (i%12)+'a', paren, i_name);
         }
     }
 
+    /* Terminate it */
     fprintf(fp, "\n");
 
-    fclose(fp);
+    /* Close it */
+    my_fclose(fp);
 
-    msg_print("Done.");
+    /* Message */
+    prt(format("Dumping character to '%s'... done.", name), 0, 0);
+
+    /* Dump */
     Term_fresh();
-    
-    /* Grab priv's */
-    safe_setuid_grab();
 
-    return TRUE;
+    /* Success */
+    return (0);
 }
 
 
@@ -1574,11 +1352,11 @@ void process_player_name(bool sf)
 
         /* Convert "dot" to "underscore" */
         if (c == '.') c = '_';
-        
+
         /* Accept all the letters */
         player_base[k++] = c;
     }
-    
+
 #else
 
     /* Extract "useful" letters */
@@ -1612,22 +1390,22 @@ void process_player_name(bool sf)
 
 #ifdef SAVEFILE_MUTABLE
 
-    /* Always update */
+    /* Accept */
     sf = TRUE;
     
 #endif
 
     /* Change the savefile name */
     if (sf) {
-    
+
 #ifdef SAVEFILE_USE_UID
         /* Rename the savefile, using the player_uid and player_base */
-        (void)sprintf(savefile, "%s%s%d.%s",
-                        ANGBAND_DIR_SAVE, PATH_SEP, player_uid, player_base);
+        (void)sprintf(savefile, "%s%d.%s",
+                        ANGBAND_DIR_SAVE, player_uid, player_base);
 #else
         /* Rename the savefile, using the player_base */
-        (void)sprintf(savefile, "%s%s%s",
-                        ANGBAND_DIR_SAVE, PATH_SEP, player_base);
+        (void)sprintf(savefile, "%s%s",
+                        ANGBAND_DIR_SAVE, player_base);
 #endif
 
     }
@@ -1652,13 +1430,13 @@ void get_name()
 
         /* Go to the "name" field */
         move_cursor(2, 15);
-        
+
         /* Save the player name */
         strcpy(tmp, player_name);
-        
+
         /* Get an input, ignore "Escape" */
         if (askfor_aux(tmp, 15)) strcpy(player_name, tmp);
-        
+
         /* Process the player name */
         process_player_name(FALSE);
 
@@ -1676,69 +1454,6 @@ void get_name()
     clear_from(20);
 }
 
-
-/*
- * Display character, allow name change or character dump.
- */
-void change_name()
-{
-    char	c;
-
-    int		flag;
-
-    char	temp[160];
-
-
-    /* Enter "icky" mode */
-    character_icky = TRUE;
-    
-    /* Display the player */
-    display_player();
-
-    /* Get command */
-    for (flag = FALSE; !flag; ) {
-
-        prt("[Escape to continue, 'C' to change name, 'F' to dump file]", 21, 2);
-
-        c = inkey();
-        
-        switch (c) {
-
-          case 'C':
-          case 'c':
-            get_name();
-            flag = TRUE;
-            break;
-
-          case 'F':
-          case 'f':
-#ifdef MACINTOSH
-            if (mac_file_character()) flag = TRUE;
-#else
-            prt("File name:", 0, 0);
-            sprintf(temp, "%s.txt", player_base);
-            if (askfor_aux(temp, 60) && temp[0]) {
-                if (file_character(temp)) flag = TRUE;
-            }
-#endif
-            break;
-
-          case ESCAPE:
-          case ' ':
-          case '\n':
-          case '\r':
-            flag = TRUE;
-            break;
-
-          default:
-            bell();
-            break;
-        }
-    }
-
-    /* Leave "icky" mode */
-    character_icky = FALSE;
-}
 
 
 
@@ -1772,6 +1487,7 @@ static void center_string(char *buf, cptr str)
 
 /*
  * Save a "bones" file for a dead character
+ *
  * Should probably attempt some form of locking...
  */
 static void make_bones(void)
@@ -1781,32 +1497,33 @@ static void make_bones(void)
     char                str[1024];
 
 
-    /* Dead non-wizards create a bones file */
-    if (death && !(noscore & 0x0002)) {
+    /* Ignore wizards and borgs */
+    if (!(noscore & 0x00FF)) {
 
         /* Ignore people who die in town */
         if (dun_level) {
 
-            /* XXX Perhaps the player's level should be taken into account */
+            /* XXX XXX Perhaps the player's level should be taken into account */
 
             /* Get the proper "Bones File" name */
-            sprintf(str, "%s%sbone.%03d", ANGBAND_DIR_BONE, PATH_SEP, dun_level);
+            sprintf(str, "%sbone.%03d", ANGBAND_DIR_BONE, dun_level);
 
             /* Attempt to open the bones file */
-            fp = my_tfopen(str, "r");
+            fp = my_fopen(str, "r");
 
             /* Close it right away */
-            if (fp) fclose(fp);
+            if (fp) my_fclose(fp);
 
             /* Do not over-write a previous ghost */
             if (fp) return;
 
-#ifdef MACINTOSH
+#if defined(MACINTOSH) && !defined(applec)
+            /* Global -- "text file" */
             _ftype = 'TEXT';
 #endif
 
             /* Try to write a new "Bones File" */
-            fp = my_tfopen(str, "w");
+            fp = my_fopen(str, "w");
 
             /* Not allowed to write it?  Weird. */
             if (!fp) return;
@@ -1818,7 +1535,7 @@ static void make_bones(void)
             fprintf(fp, "%d\n", p_ptr->pclass);
 
             /* Close and save the Bones file */
-            fclose(fp);
+            my_fclose(fp);
         }
     }
 }
@@ -1872,7 +1589,7 @@ static void print_tomb()
 
     put_str("|", 9, 9);
     put_str("|  :   :", 9, 43);
-    
+
     if (!total_winner) {
         p = cp_ptr->title;
     }
@@ -1937,11 +1654,9 @@ static void show_info(void)
     int			i, j, k;
 
     inven_type		*i_ptr;
-    store_type		*st_ptr;
 
+    store_type		*st_ptr = &store[7];;
 
-    /* Access the home */
-    st_ptr = &store[7];
 
     /* Hack -- Know everything in the inven/equip */
     for (i = 0; i < INVEN_TOTAL; i++) {
@@ -1953,8 +1668,8 @@ static void show_info(void)
     }
 
     /* Hack -- Know everything in the home */
-    for (i = 0; i < st_ptr->store_ctr; i++) {
-        i_ptr = &st_ptr->store_item[i];
+    for (i = 0; i < st_ptr->stock_num; i++) {
+        i_ptr = &st_ptr->stock[i];
         if (i_ptr->k_idx) {
             inven_aware(i_ptr);
             inven_known(i_ptr);
@@ -1963,26 +1678,25 @@ static void show_info(void)
 
     /* Hack -- Recalculate bonuses */
     p_ptr->update |= (PU_BONUS);
-    
+
     /* Handle stuff */
     handle_stuff();
-
 
     /* Flush all input keys */
     flush();
 
+    /* Flush messages */
+    msg_print(NULL);
+
 
     /* Describe options */
     prt("You may now dump a character record to one or more files.", 21, 0);
-    prt("Then, hit RETURN to see the character, or ESCAPE to abort.", 22, 0);
+    prt("Then, hit RETURN to see the character, or ESC to abort.", 22, 0);
 
     /* Dump character records as requested */
     while (TRUE) {
 
         char out_val[160];
-        
-        /* Flush old messages */
-        msg_flag = FALSE;
 
         /* Get a filename (or escape) */
         put_str("Filename: ", 23, 0);
@@ -1992,15 +1706,15 @@ static void show_info(void)
         if (!out_val[0]) break;
 
         /* Dump a character file */
-        file_character(out_val);
+        (void)file_character(out_val);
     }
 
 
     /* Show player on screen */
-    display_player();
+    display_player(FALSE);
 
     /* Prompt for inventory */
-    prt("Hit any key to see more information (ESCAPE to abort): ", 23, 0);
+    prt("Hit any key to see more information (ESC to abort): ", 23, 0);
 
     /* Allow abort at this point */
     if (inkey() == ESCAPE) return;
@@ -2009,39 +1723,41 @@ static void show_info(void)
     /* Show equipment and inventory */
 
     /* Equipment -- if any */
-    if (equip_ctr) {
+    if (equip_cnt) {
         clear_screen();
+        item_tester_full = TRUE;
+        show_equip();
         msg_print("You are using:");
-        show_equip(INVEN_WIELD, INVEN_TOTAL-1);
         msg_print(NULL);
     }
 
     /* Inventory -- if any */
-    if (inven_ctr) {
+    if (inven_cnt) {
         clear_screen();
+        item_tester_full = TRUE;
+        show_inven();
         msg_print("You are carrying:");
-        show_inven(0, inven_ctr - 1);
         msg_print(NULL);
     }
 
 
 
     /* Home -- if anything there */
-    if (st_ptr->store_ctr) {
+    if (st_ptr->stock_num) {
 
         /* show home's inventory... */
-        for (k = 0, i = 0; i < st_ptr->store_ctr; k++) {
+        for (k = 0, i = 0; i < st_ptr->stock_num; k++) {
 
-            /* What did they hoard? */
+            /* Clear the screen */
             clear_screen();
 
-            /* Show 12 (XXX) items (why bother with indexes?) */
-            for (j = 0; j < 12 && i < st_ptr->store_ctr; j++, i++) {
+            /* Show 12 items */
+            for (j = 0; (j < 12) && (i < st_ptr->stock_num); j++, i++) {
 
                 char i_name[80];
                 char tmp_val[80];
-                
-                i_ptr = &st_ptr->store_item[i];
+
+                i_ptr = &st_ptr->stock[i];
 
                 sprintf(tmp_val, "%c) ", 'a'+j);
                 prt(tmp_val, j+2, 4);
@@ -2052,12 +1768,166 @@ static void show_info(void)
 
             /* Caption */
             msg_format("You have stored at your house (page %d):", k+1);
-
-            /* Flush it */
             msg_print(NULL);
         }
     }
 }
+
+
+
+
+
+/*
+ * Semi-Portable High Score List Entry (128 bytes) -- BEN
+ *
+ * All fields listed below are null terminated ascii strings.
+ *
+ * In addition, the "number" fields are right justified, and
+ * space padded, to the full available length (minus the "null").
+ *
+ * Note that "string comparisons" are thus valid on "pts".
+ */
+
+typedef struct high_score high_score;
+
+struct high_score {
+
+  char what[8];		/* Version info (string) */
+
+  char pts[10];		/* Total Score (number) */
+
+  char gold[10];	/* Total Gold (number) */
+
+  char turns[10];	/* Turns Taken (number) */
+
+  char day[10];		/* Time stamp (string) */
+
+  char who[16];		/* Player Name (string) */
+
+  char uid[8];		/* Player UID (number) */
+
+  char sex[2];		/* Player Sex (string) */
+  char p_r[3];		/* Player Race (number) */
+  char p_c[3];		/* Player Class (number) */
+
+  char cur_lev[4];	/* Current Player Level (number) */
+  char cur_dun[4];	/* Current Dungeon Level (number) */
+  char max_lev[4];	/* Max Player Level (number) */
+  char max_dun[4];	/* Max Dungeon Level (number) */
+
+  char how[32];		/* Method of death (string) */
+};
+
+
+
+/*
+ * The "highscore" file descriptor, if available.
+ */
+static int highscore_fd = -1;
+
+
+/*
+ * Seek score 'i' in the highscore file
+ */
+static int highscore_seek(int i)
+{
+    /* Seek for the requested record */
+    return (fd_seek(highscore_fd, (huge)(i) * sizeof(high_score)));
+}
+
+
+/*
+ * Read one score from the highscore file
+ */
+static errr highscore_read(high_score *score)
+{
+    /* Read the record, note failure */
+    return (fd_read(highscore_fd, (char*)(score), sizeof(high_score)));
+}
+
+
+/*
+ * Write one score to the highscore file
+ */
+static int highscore_write(high_score *score)
+{
+    /* Write the record, note failure */
+    return (fd_write(highscore_fd, (char*)(score), sizeof(high_score)));
+}
+
+
+
+
+/*
+ * Just determine where a new score *would* be placed
+ * Return the location (0 is best) or -1 on failure
+ */
+static int highscore_where(high_score *score)
+{
+    int			i;
+
+    high_score		the_score;
+
+    /* Paranoia -- it may not have opened */
+    if (highscore_fd < 0) return (-1);
+
+    /* Go to the start of the highscore file */
+    if (highscore_seek(0)) return (-1);
+
+    /* Read until we get to a higher score */
+    for (i = 0; i < MAX_HISCORES; i++) {
+        if (highscore_read(&the_score)) return (i);
+        if (strcmp(the_score.pts, score->pts) < 0) return (i);
+    }
+
+    /* The "last" entry is always usable */
+    return (MAX_HISCORES - 1);
+}
+
+
+/*
+ * Actually place an entry into the high score file
+ * Return the location (0 is best) or -1 on "failure"
+ */
+static int highscore_add(high_score *score)
+{
+    int			i, slot;
+    bool		done = FALSE;
+
+    high_score		the_score, tmpscore;
+
+
+    /* Paranoia -- it may not have opened */
+    if (highscore_fd < 0) return (-1);
+
+    /* Determine where the score should go */
+    slot = highscore_where(score);
+
+    /* Hack -- Not on the list */
+    if (slot < 0) return (-1);
+
+    /* Hack -- prepare to dump the new score */
+    the_score = (*score);
+
+    /* Slide all the scores down one */
+    for (i = slot; !done && (i < MAX_HISCORES); i++) {
+
+        /* Read the old guy, note errors */
+        if (highscore_seek(i)) return (-1);
+        if (highscore_read(&tmpscore)) done = TRUE;
+
+        /* Back up and dump the score we were holding */
+        if (highscore_seek(i)) return (-1);
+        if (highscore_write(&the_score)) return (-1);
+
+        /* Hack -- Save the old score, for the next pass */
+        the_score = tmpscore;
+    }
+
+    /* Return location used */
+    return (slot);
+}
+
 
 
 /*
@@ -2075,6 +1945,10 @@ static void display_scores_aux(int from, int to, int note, high_score *score)
 
     char	out_val[256];
     char	tmp_val[160];
+
+
+    /* Paranoia -- it may not have opened */
+    if (highscore_fd < 0) return;
 
 
     /* Assume we will show the first 10 */
@@ -2151,15 +2025,15 @@ static void display_scores_aux(int from, int to, int note, high_score *score)
             mdun = atoi(the_score.max_dun);
 
             /* Hack -- extract the gold and such */
-            for (user = the_score.uid; isspace(*user); user++);
-            for (when = the_score.day; isspace(*when); when++);
-            for (gold = the_score.gold; isspace(*gold); gold++);
-            for (aged = the_score.turns; isspace(*aged); aged++);
+            for (user = the_score.uid; isspace(*user); user++) ;
+            for (when = the_score.day; isspace(*when); when++) ;
+            for (gold = the_score.gold; isspace(*gold); gold++) ;
+            for (aged = the_score.turns; isspace(*aged); aged++) ;
 
             /* Dump some info */
             sprintf(out_val, "%3d.%9s  %s the %s %s, Level %d",
                     place, the_score.pts, the_score.who,
-                    race_info[pr].trace, class_info[pc].title,
+                    race_info[pr].title, class_info[pc].title,
                     clev);
 
             /* Append a "maximum level" */
@@ -2203,30 +2077,45 @@ static void display_scores_aux(int from, int to, int note, high_score *score)
 
 
 /*
- * Display the scores in a given range.
- * Assumes the high score list is already open.
+ * Hack -- Display the scores in a given range and quit.
  *
- * We may want to be slightly more "clean" on empty score lists.
+ * This function is only called from "main.c" when the user asks
+ * to see the "high scores".
  */
 void display_scores(int from, int to)
 {
-    /* Enter "icky" mode */
-    character_icky = TRUE;
-    
+    char buf[1024];
+
+    /* Extract the name of the High Score File */
+    sprintf(buf, "%s%s", ANGBAND_DIR_APEX, "scores.raw");
+
+    /* Open the binary high score file, for reading */
+    highscore_fd = fd_open(buf, O_RDONLY | O_BINARY, 0);
+
+    /* Paranoia -- No score file */
+    if (highscore_fd < 0) quit("Score file unavailable.");
+
     /* Clear screen */
     clear_screen();
 
     /* Display the scores */
     display_scores_aux(from, to, -1, NULL);
 
-    /* Leave "icky" mode */
-    character_icky = FALSE;
+    /* Shut the high score file */
+    (void)fd_close(highscore_fd);
+
+    /* Forget the high score fd */
+    highscore_fd = -1;
+
+    /* Quit */
+    quit(NULL);
 }
 
 
 
 /*
- * Enters a players name on a hi-score table, if "legal".
+ * Enters a players name on a hi-score table, if "legal", and in any
+ * case, displays some relevant portion of the high score list.
  *
  * Assumes "signals_ignore_tstp()" has been called.
  */
@@ -2242,11 +2131,27 @@ static errr top_twenty(void)
     /* Wipe screen */
     clear_screen();
 
+    /* No score file */
+    if (highscore_fd < 0) {
+        msg_print("Score file unavailable.");
+        msg_print(NULL);
+        return (0);
+    }
+
 #ifndef SCORE_WIZARDS
     /* Wizard-mode pre-empts scoring */
     if (noscore & 0x000F) {
         msg_print("Score not registered for wizards.");
-        display_scores(0, 10);
+        display_scores_aux(0, 10, -1, NULL);
+        return (0);
+    }
+#endif
+
+#ifndef SCORE_BORGS
+    /* Borg-mode pre-empts scoring */
+    if (noscore & 0x00F0) {
+        msg_print("Score not registered for borgs.");
+        display_scores_aux(0, 10, -1, NULL);
         return (0);
     }
 #endif
@@ -2255,7 +2160,7 @@ static errr top_twenty(void)
     /* Cheaters are not scored */
     if (noscore & 0xFF00) {
         msg_print("Score not registered for cheaters.");
-        display_scores(0, 10);
+        display_scores_aux(0, 10, -1, NULL);
         return (0);
     }
 #endif
@@ -2263,14 +2168,14 @@ static errr top_twenty(void)
     /* Interupted */
     if (!total_winner && streq(died_from, "Interrupting")) {
         msg_print("Score not registered due to interruption.");
-        display_scores(0, 10);
+        display_scores_aux(0, 10, -1, NULL);
         return (0);
     }
 
     /* Quitter */
     if (!total_winner && streq(died_from, "Quitting")) {
         msg_print("Score not registered due to quitting.");
-        display_scores(0, 10);
+        display_scores_aux(0, 10, -1, NULL);
         return (0);
     }
 
@@ -2280,12 +2185,12 @@ static errr top_twenty(void)
 
     /* Save the version */
     sprintf(the_score.what, "%u.%u.%u",
-            CUR_VERSION_MAJ, CUR_VERSION_MIN, CUR_PATCH_LEVEL);
+            VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
 
     /* Calculate and save the points */
     sprintf(the_score.pts, "%9lu", (long)total_points());
     the_score.pts[9] = '\0';
-    
+
     /* Save the current gold */
     sprintf(the_score.gold, "%9lu", (long)p_ptr->au);
     the_score.gold[9] = '\0';
@@ -2321,14 +2226,14 @@ static errr top_twenty(void)
     sprintf(the_score.how, "%-.31s", died_from);
 
 
-    /* Lock the highscore file, or fail */
-    if (highscore_lock()) return (1);
+    /* Lock (for writing) the highscore file, or fail */
+    if (fd_lock(highscore_fd, F_WRLCK)) return (1);
 
     /* Add a new entry to the score list, see where it went */
     j = highscore_add(&the_score);
 
-    /* Unlock the highscore file */
-    highscore_unlock();
+    /* Unlock the highscore file, or fail */
+    if (fd_lock(highscore_fd, F_UNLCK)) return (1);
 
 
     /* Hack -- Display the top fifteen scores */
@@ -2358,9 +2263,17 @@ static errr predict_score(void)
     high_score   the_score;
 
 
+    /* No score file */
+    if (highscore_fd < 0) {
+        msg_print("Score file unavailable.");
+        msg_print(NULL);
+        return (0);
+    }
+
+
     /* Save the version */
     sprintf(the_score.what, "%u.%u.%u",
-            CUR_VERSION_MAJ, CUR_VERSION_MIN, CUR_PATCH_LEVEL);
+            VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
 
     /* Calculate and save the points */
     sprintf(the_score.pts, "%9lu", (long)total_points());
@@ -2466,7 +2379,7 @@ static void kingly()
         put_str("All Hail the Mighty Queen!", 17, 22);
     }
 
-    /* FLush input */
+    /* Flush input */
     flush();
 
     /* Wait for response */
@@ -2475,18 +2388,18 @@ static void kingly()
 
 
 /*
- * Exit the game
- *   Save the player to a save file
- *   Display a gravestone / death info
- *   Display the top twenty scores
+ * Close up the current game (player may or may not be dead)
  *
- * Note -- the player does not have to be dead.
+ * This function is called only from "main.c" and "signals.c".
  */
-void exit_game(void)
+void close_game(void)
 {
+    char buf[1024];
+
+
     /* Handle stuff */
     handle_stuff();
-    
+
     /* Flush the messages */
     msg_print(NULL);
 
@@ -2494,36 +2407,30 @@ void exit_game(void)
     flush();
 
 
-    /* XXX This probably never happens (?) */
-    if (!turn) {
-        display_scores(0, 10);
-        prt("", 23, 0);
-        quit(NULL);
-    }
-
-
     /* No suspending now */
     signals_ignore_tstp();
 
-    /* Character is now "icky" */
+
+    /* Hack -- Character is now "icky" */
     character_icky = TRUE;
+
+
+    /* Extract the name of the High Score File */
+    sprintf(buf, "%s%s", ANGBAND_DIR_APEX, "scores.raw");
+
+    /* Open the binary high score file, for reading/writing */
+    highscore_fd = fd_open(buf, O_RDWR | O_BINARY, 0);
+
 
     /* Handle death */
     if (death) {
 
-        /* Sound */
-        sound(SOUND_DEATH);
-        
-        /* Add a message to the message recall */
-        message_new(" ", -1);
-        message_new("================", -1);
-        message_new("=== You died ===", -1);
-        message_new("================", -1);
-        message_new(" ", -1);
-
         /* Handle retirement */
         if (total_winner) kingly();
 
+        /* Save memories */
+        if (!save_player()) msg_print("death save failed!");
+        
         /* Dump bones file */
         make_bones();
 
@@ -2535,46 +2442,39 @@ void exit_game(void)
 
         /* Handle score, show Top scores */
         top_twenty();
-
-        /* Save the player or his memories */
-        (void)save_player();
     }
 
     /* Still alive */
     else {
 
-        /* Clear messages */
-        msg_print(NULL);
-        
-        /* Message */
-        prt("Saving game...", 0, 0);
+        /* Save the game */
+        do_cmd_save_game();
 
-        /* Not dead yet */
-        (void)strcpy(died_from, "(saved)");
+        /* Prompt for score prediction */
+        prt("Press Return (or Escape).", 0, 40);
 
-        /* Save the player. */
-        (void)save_player();
-
-        /* Predict the player's score (allow "escape") */
-        prt("Saving game... done.  Press Return (or Escape).", 0, 0);
-
-        /* Predict score (unless ESCAPE) */
+        /* Predict score (or ESCAPE) */
         if (inkey() != ESCAPE) predict_score();	
     }
 
 
+    /* Shut the high score file */
+    (void)fd_close(highscore_fd);
+
+    /* Forget the high score fd */
+    highscore_fd = -1;
+
+
     /* Allow suspending now */
-    /* signals_handle_tstp(); */
-
-
-    /* Actually stop the process */
-    quit(NULL);
+    signals_handle_tstp();
 }
 
 
 /*
  * Handle abrupt death of the visual system
- * This routine is called only in very rare situations
+ *
+ * This routine is called only in very rare situations, and only
+ * by certain visual systems, when they experience fatal errors.
  *
  * XXX XXX Hack -- clear the death flag when creating a HANGUP
  * save file so that player can see tombstone when restart.
@@ -2582,26 +2482,28 @@ void exit_game(void)
 void exit_game_panic(void)
 {
     /* If nothing important has happened, just quit */
-    if (!character_generated || character_saved) quit("end of input");
+    if (!character_generated || character_saved) quit("panic");
 
-    /* Hack -- kill "msg_print()" */
+    /* Mega-Hack -- see "msg_print()" */
     msg_flag = FALSE;
 
     /* Hack -- turn off some things */
     disturb(1, 0);
 
-    /* Panic save */
+    /* Mega-Hack -- Delay death */
+    if (p_ptr->chp < 0) death = FALSE;
+
+    /* Hardcode panic save */
     panic_save = 1;
 
-    /* Hack -- Not dead yet */
-    death = FALSE;
+    /* Indicate panic save */
+    (void)strcpy(died_from, "(panic save)");
 
-    /* Panic save */
-    (void)strcpy(died_from, "(end of input: panic saved)");
-    if (save_player()) quit("end of input: panic save succeeded");
+    /* Panic save, or get worried */
+    if (!save_player()) quit("panic save failed!");
 
-    /* Unsuccessful panic save.  Oh well. */
-    quit("end of input: panic save failed!");
+    /* Successful panic save */
+    quit("panic save succeeded!");
 }
 
 

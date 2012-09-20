@@ -77,7 +77,7 @@ vptr rpanic(huge len)
   core("Out of Memory!");
 
   /* Paranoia */
-  return (V_NULL);
+  return ((vptr)(NULL));
 }
 
 
@@ -95,7 +95,7 @@ vptr ralloc(huge len)
   vptr mem;
 
   /* Allow allocation of "zero bytes" */
-  if (len == 0) return (V_NULL);
+  if (len == 0) return ((vptr)(NULL));
 
 #ifdef VERBOSE_RALLOC
 
@@ -142,13 +142,13 @@ cptr string_make(cptr str)
   if (!str) return (str);
 
   /* Get the number of chars in the string, including terminator */
-  while (str[len++]);
+  while (str[len++]) ;
 
   /* Allocate space for the string */
   s = res = (char*)(ralloc(len));
 
   /* Copy the string (with terminator) */
-  while ((*s++ = *t++));
+  while ((*s++ = *t++) != 0) ;
 
   /* Return the allocated, initialized, string */
   return (res);
@@ -167,7 +167,7 @@ errr string_free(cptr str)
   if (!str) return (0);
 
   /* Count the number of chars in 'str' plus the terminator */
-  while (str[len++]);
+  while (str[len++]) ;
 
   /* Kill the buffer of chars we must have allocated above */
   rnfree((vptr)(str), len);

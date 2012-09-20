@@ -1,0 +1,24 @@
+# File: pref-acn.prf
+
+# This is a minimal "pref" file for RISC OS
+
+
+# Map cursor keys onto keypad
+
+A:4
+P:^_18C\r
+
+A:6
+P:^_18D\r
+
+A:2
+P:^_18E\r
+
+A:8
+P:^_18F\r
+
+
+# Map F3 to ^S (to be a bit RISC OS-ey)
+
+A:^S
+P:^_183\r

@@ -1,6 +1,6 @@
 /* File: borg-map.c */
 
-/* Purpose: Mapping for the Borg -BEN- */
+/* Purpose: Helper file for "borg-ben.c" -BEN- */
 
 #include "angband.h"
 
@@ -13,9 +13,9 @@
 
 
 /*
- * See "borg.h" for general information.
+ * See "borg-ben.c" for general information.
  *
- * This file provides general support for "map" related things.
+ * This file helps the Borg understand mapping the dungeon.
  *
  * Currently, this includes general routines involving dungeon grids,
  * such as analyzing the "map" part of the screen, calculating the "flow"
@@ -38,50 +38,67 @@
 
 
 /*
- * The grids
+ * Some variables
  */
 
-auto_grid **auto_grids;
+auto_grid **auto_grids;		/* The grids */
+
+auto_data *auto_data_hard;	/* Constant "hard" data */
+
+auto_data *auto_data_flow;	/* Current "flow" data */
+
+auto_data *auto_data_cost;	/* Current "cost" data */
 
 
 /*
  * Maintain a set of grids marked as "BORG_VIEW"
  */
 
-s16b view_n = 0;
+s16b auto_view_n = 0;
 
-byte *view_x;
-byte *view_y;
+byte *auto_view_x;
+byte *auto_view_y;
 
 
 /*
  * Maintain a set of grids marked as "BORG_SEEN"
  */
 
-s16b seen_n = 0;
+s16b auto_temp_n = 0;
 
-byte *seen_x;
-byte *seen_y;
+byte *auto_temp_x;
+byte *auto_temp_y;
 
 
 /*
  * Maintain a circular queue of grids
  */
 
-s16b flow_n = 0;
+s16b auto_flow_n = 0;
 
-byte *flow_x;
-byte *flow_y;
+byte *auto_flow_x;
+byte *auto_flow_y;
 
 
 
 /*
  * Hack -- use "flow" array as a queue
  */
- 
+
 static int flow_head = 0;
 static int flow_tail = 0;
 
+
+
+/*
+ * External flag -- clear danger information
+ */
+bool auto_danger_wipe = FALSE;
+
+/*
+ * External Hook -- Check danger
+ */
+bool (*auto_danger_hook)(int x, int y) = NULL;
 
 
 
@@ -211,10 +228,8 @@ bool borg_free_room_update(void)
 
             /* That room is now "gone" */
             ar->when = 0L;
-            ar->cost = 0;
-            ar->x1 = ar->x2 = ar->x = 0;
-            ar->y1 = ar->y2 = ar->y = 0;
-            ar->prev = ar->next = 0;
+            ar->x1 = ar->x2 = 0;
+            ar->y1 = ar->y2 = 0;
 
             /* Add it to the "free list" */
             auto_rooms[ag->room].free = auto_rooms[0].free;
@@ -235,7 +250,7 @@ bool borg_free_room_update(void)
 
 
     /* Message */
-    borg_note(format("Destroyed %d fake rooms.", n));
+    borg_note(format("# Destroyed %d fake rooms.", n));
 
     /* Rooms destroyed */
     return (TRUE);
@@ -260,10 +275,8 @@ static bool borg_free_room_purge(void)
 
         /* That room is now "gone" */
         ar->when = 0L;
-        ar->cost = 0;
-        ar->x1 = ar->x2 = ar->x = 0;
-        ar->y1 = ar->y2 = ar->y = 0;
-        ar->prev = ar->next = 0;
+        ar->x1 = ar->x2 = 0;
+        ar->y1 = ar->y2 = 0;
 
         /* Reset the "free list" */
         ar->free = n + 1;
@@ -290,7 +303,7 @@ static bool borg_free_room_purge(void)
 
 
     /* Message */
-    borg_note(format("Purged all %d rooms.", n));
+    borg_note(format("# Purged all %d rooms.", n));
 
     /* Rooms destroyed */
     return (TRUE);
@@ -312,19 +325,19 @@ auto_room *borg_free_room(void)
     if (auto_room_head->free == auto_room_tail->self) {
 
         /* Message */
-        borg_note("Updating room list!");
+        borg_note("# Updating room list!");
 
         /* Try to free some rooms */
         if (!borg_free_room_update()) {
 
             /* Oops */
-            borg_note("Purging room list!");
+            borg_note("# Purging room list!");
 
             /* Try to free some rooms */
             if (!borg_free_room_purge()) {
 
                 /* Oops */
-                borg_oops("Broken room list!");
+                borg_oops("broken rooms");
 
                 /* Hack -- Attempt to prevent core dumps */
                 return (&auto_rooms[1]);
@@ -350,10 +363,8 @@ auto_room *borg_free_room(void)
 
     /* Paranoia */
     ar->when = 0L;
-    ar->cost = 0;
-    ar->x1 = ar->x1 = ar->x = 0;
-    ar->y1 = ar->y2 = ar->y = 0;
-    ar->prev = ar->next = 0;
+    ar->x1 = ar->x1 = 0;
+    ar->y1 = ar->y2 = 0;
 
     /* Return the room */
     return (ar);
@@ -627,7 +638,7 @@ bool borg_build_room(int x, int y)
     }
 
     /* Expand a rectangle -- try south/north first */
-    else if (rand_int(2) == 0) {
+    else if (rand_int(100) < 50) {
 
         /* Grow south/north */
         while (borg_build_room_floor(x1, y2+1, x2, y2+1)) y2++;
@@ -672,10 +683,7 @@ bool borg_build_room(int x, int y)
 
 
     /* Message */
-    borg_note(format("Room (%d,%d to %d,%d)", x1, y1, x2, y2));
-
-    /* XXX XXX XXX Hack -- clean up the "free room" list first */
-    /* borg_free_room_update(); */
+    borg_note(format("# Room (%d,%d to %d,%d)", x1, y1, x2, y2));
 
     /* Access a free room */
     ar = borg_free_room();
@@ -720,10 +728,8 @@ bool borg_build_room(int x, int y)
 
         /* That room is now "gone" */
         ar->when = 0L;
-        ar->cost = 0;
         ar->x1 = ar->x2 = ar->x = 0;
         ar->y1 = ar->y2 = ar->y = 0;
-        ar->prev = ar->next = 0;
 
         /* Add it to the "free list" */
         auto_rooms[j].free = auto_rooms[0].free;
@@ -783,9 +789,6 @@ bool borg_clear_room(int x, int y)
     /* Absorb old rooms */
     for (ar = room(1,x,y); ar; ar = room(0,0,0)) {
 
-        /* Note significant changes */
-        if (ar->cost < 9999) res = TRUE;
-
         /* Scan the "contained" room */
         for (yy = ar->y1; yy <= ar->y2; yy++) {
             for (xx = ar->x1; xx <= ar->x2; xx++) {
@@ -803,10 +806,8 @@ bool borg_clear_room(int x, int y)
 
         /* That room is now "gone" */
         ar->when = 0L;
-        ar->cost = 0;
-        ar->x1 = ar->x2 = ar->x = 0;
-        ar->y1 = ar->y2 = ar->y = 0;
-        ar->prev = ar->next = 0;
+        ar->x1 = ar->x2 = 0;
+        ar->y1 = ar->y2 = 0;
 
         /* Add the room to the "free list" */
         auto_rooms[ar->self].free = auto_rooms[0].free;
@@ -843,15 +844,6 @@ static void borg_wipe_rooms(void)
         /* Place the room in the free room list */
         ar->free = i + 1;
 
-        /* Remove the room from the priority queue */
-        ar->next = ar->prev = 0;
-
-        /* No flow cost */
-        ar->cost = 0;
-
-        /* No flow location */
-        ar->x = ar->y = 0;
-
         /* No location */
         ar->x1 = ar->x2 = ar->y1 = ar->y2 = 0;
 
@@ -868,44 +860,6 @@ static void borg_wipe_rooms(void)
 
 #endif
 
-
-
-/*
- * Determine if a missile shot from (x1,y1) to (x2,y2) will arrive
- * at the final destination, assuming no monster gets in the way.
- * Hack -- we refuse to assume that unknown grids are floors
- * Adapted from "projectable()" in "spells1.c".
- */
-bool borg_projectable(int x1, int y1, int x2, int y2)
-{
-    int dist, y, x;
-    auto_grid *ag;
-
-    /* Start at the initial location */
-    y = y1; x = x1;
-
-    /* Simulate the spell/missile path */
-    for (dist = 0; dist < MAX_RANGE; dist++) {
-
-        /* Get the grid */
-        ag = grid(x,y);
-
-        /* Never pass through walls */
-        if (dist && (ag->info & BORG_WALL)) break;
-
-        /* Hack -- assume unknown grids are walls */
-        if (ag->o_c == ' ') break;
-
-        /* Check for arrival at "final target" */
-        if ((x == x2) && (y == y2)) return (TRUE);
-
-        /* Calculate the new location */
-        mmove2(&y, &x, y1, x1, y2, x2);
-    }
-
-    /* Assume obstruction */
-    return (FALSE);
-}
 
 
 /*
@@ -1122,13 +1076,13 @@ static void borg_forget_view(void)
     int i;
 
     /* None to forget */
-    if (!view_n) return;
+    if (!auto_view_n) return;
 
     /* Clear them all */
-    for (i = 0; i < view_n; i++) {
+    for (i = 0; i < auto_view_n; i++) {
 
-        int y = view_y[i];
-        int x = view_x[i];
+        int y = auto_view_y[i];
+        int x = auto_view_x[i];
 
         /* Forget that the grid is viewable */
         grid(x,y)->info &= ~BORG_VIEW;
@@ -1136,7 +1090,7 @@ static void borg_forget_view(void)
     }
 
     /* None left */
-    view_n = 0;
+    auto_view_n = 0;
 }
 
 
@@ -1145,6 +1099,7 @@ static void borg_forget_view(void)
  * Set the "view" flag of the given cave grid
  * Never call this function when the "view" array is full.
  * Never call this function with an "illegal" location.
+ * This function assumes that "AUTO_VIEW_N" is large enough.
  */
 static void borg_cave_view(int x, int y)
 {
@@ -1157,9 +1112,9 @@ static void borg_cave_view(int x, int y)
     ag->info |= BORG_VIEW;
 
     /* Add to queue */
-    view_y[view_n] = y;
-    view_x[view_n] = x;
-    view_n++;
+    auto_view_y[auto_view_n] = y;
+    auto_view_x[auto_view_n] = x;
+    auto_view_n++;
 }
 
 
@@ -1257,7 +1212,7 @@ static void borg_update_view(void)
 
     int se, sw, ne, nw, es, en, ws, wn;
 
-    int over, full;
+    int limit, over, full;
 
 
     /* Start with full vision */
@@ -1269,11 +1224,11 @@ static void borg_update_view(void)
 
     /*** Step 0 -- Begin ***/
 
-    /* Save the old "view" grids for later */
-    for (n = 0; n < view_n; n++) {
+    /* Forget the old "view" grids */
+    for (n = 0; n < auto_view_n; n++) {
 
-        int y = view_y[n];
-        int x = view_x[n];
+        int y = auto_view_y[n];
+        int x = auto_view_x[n];
 
         auto_grid *ag = grid(x,y);
 
@@ -1281,8 +1236,8 @@ static void borg_update_view(void)
         ag->info &= ~(BORG_VIEW | BORG_XTRA);
     }
 
-    /* Start over with the "view" array */
-    view_n = 0;
+    /* Wipe the "view" array */
+    auto_view_n = 0;
 
 
     /*** Step 1 -- adjacent grids ***/
@@ -1300,29 +1255,32 @@ static void borg_update_view(void)
 
     /*** Step 2 -- Major Diagonals ***/
 
+    /* Hack -- Limit */
+    limit = full * 2 / 3;
+
     /* Scan south-east */
-    for (d = 1; d <= full; d++) {
+    for (d = 1; d <= limit; d++) {
         grid(x+d,y+d)->info |= BORG_XTRA;
         borg_cave_view(x+d,y+d);
         if (grid(x+d,y+d)->info & BORG_WALL) break;
     }
 
     /* Scan south-west */
-    for (d = 1; d <= full; d++) {
+    for (d = 1; d <= limit; d++) {
         grid(x-d,y+d)->info |= BORG_XTRA;
         borg_cave_view(x-d,y+d);
         if (grid(x-d,y+d)->info & BORG_WALL) break;
     }
 
     /* Scan north-east */
-    for (d = 1; d <= full; d++) {
+    for (d = 1; d <= limit; d++) {
         grid(x+d,y-d)->info |= BORG_XTRA;
         borg_cave_view(x+d,y-d);
         if (grid(x+d,y-d)->info & BORG_WALL) break;
     }
 
     /* Scan north-west */
-    for (d = 1; d <= full; d++) {
+    for (d = 1; d <= limit; d++) {
         grid(x-d,y-d)->info |= BORG_XTRA;
         borg_cave_view(x-d,y-d);
         if (grid(x-d,y-d)->info & BORG_WALL) break;
@@ -1377,7 +1335,7 @@ static void borg_update_view(void)
     /* Now check each "diagonal" (in parallel) */
     for (n = 1; n <= over / 2; n++) {
 
-        int limit, ypn, ymn, xpn, xmn;
+        int ypn, ymn, xpn, xmn;
 
 
         /* Acquire the "bounds" of the maximal circle */
@@ -1659,8 +1617,8 @@ void borg_forget_map(void)
     borg_wipe_rooms();
 
 #endif
-    
-    
+
+
     /* Clean up the grids */
     for (y = 0; y < AUTO_MAX_Y; y++) {
         for (x = 0; x < AUTO_MAX_X; x++) {
@@ -1681,37 +1639,40 @@ void borg_forget_map(void)
 #ifdef BORG_ROOMS
 
             /* Hack -- no room */
-            ag->room = 0L;
-
-#else	/* BORG_ROOMS */
-
-            /* Expensive */
-            ag->cost = 9999;
+            ag->room = 0;
 
 #endif	/* BORG_ROOMS */
 
         }
     }
+
     
     /* Hack -- mark the edge of the map as walls */
     for (y = 0; y < AUTO_MAX_Y; y++) {
 
-        /* West edge */
-        grid(0,y)->info |= (BORG_WALL | BORG_PERM);
+        /* West edge (walls, and icky) */
+        grid(0,y)->info |= (BORG_WALL);
 
-        /* East edge */
-        grid(AUTO_MAX_X-1,y)->info |= (BORG_WALL | BORG_PERM);
+        /* East edge (walls, and icky) */
+        grid(AUTO_MAX_X-1,y)->info |= (BORG_WALL);
     }	
 
     /* Hack -- mark the edge of the map as walls */
     for (x = 0; x < AUTO_MAX_X; x++) {
 
-        /* West edge */
-        grid(x,0)->info |= (BORG_WALL | BORG_PERM);
+        /* West edge (walls, and icky) */
+        grid(x,0)->info |= (BORG_WALL);
 
-        /* East edge */
-        grid(x,AUTO_MAX_Y-1)->info |= (BORG_WALL | BORG_PERM);
+        /* East edge (walls, and icky) */
+        grid(x,AUTO_MAX_Y-1)->info |= (BORG_WALL);
     }	
+
+
+    /* Prepare "auto_data_cost" */
+    COPY(auto_data_cost, auto_data_hard, auto_data);
+
+    /* Prepare "auto_data_flow" */
+    COPY(auto_data_flow, auto_data_hard, auto_data);
 
 
     /* Forget the view */
@@ -1739,14 +1700,14 @@ void borg_forget_map(void)
 void borg_update_map(void)
 {
     int x, y, dx, dy;
-    
+
     int num_players = 0;
-    
+
     auto_grid *ag;
 
     byte a;
     char c;
-    
+
     static int o_w_x, o_w_y;
     static int o_c_x, o_c_y;
 
@@ -1761,9 +1722,6 @@ void borg_update_map(void)
 
             /* Get the auto_grid */
             ag = grid(x, y);
-
-            /* Clear the "here" field */
-            ag->info &= ~BORG_HERE;
 
             /* Clear the "okay" field */
             ag->info &= ~BORG_OKAY;
@@ -1782,7 +1740,7 @@ void borg_update_map(void)
 
             /* Mega-Hack */
             if (!c) c = ' ';
-            
+
             /* Obtain the map location */
             x = w_x + dx;
             y = w_y + dy;
@@ -1791,16 +1749,12 @@ void borg_update_map(void)
             ag = grid(x, y);
 
 
-            /* Notice "on panel" */
-            ag->info |= BORG_HERE;
-
-
             /* Notice the player */
             if (c == '@') {
 
                 /* Count the players */
                 num_players++;
-                
+
                 /* Save the player grid */
                 c_x = x;
                 c_y = y;
@@ -1819,10 +1773,6 @@ void borg_update_map(void)
             if (!a || (c == ' ')) continue;
 
 
-            /* Mega-Hack -- undo special "lighting" */
-            if ((c == '.') || (c == '%') || (c == '#')) a = TERM_WHITE;
-
-
             /* Notice "information" */
             ag->info |= BORG_OKAY;
 
@@ -1830,8 +1780,8 @@ void borg_update_map(void)
             ag->o_a = a; ag->o_c = c;
 
 
-            /* Hack -- Walls, Seams, Doors, Rubble */
-            if ((c == '#') || (c == '%') || (c == '+') || (c == ':')) {
+            /* Hack -- Walls, Seams, Doors, Rubble, Hidden */
+            if ((c == '#') || (c == '%') || (c == '+') || (c == ':') || (c == '*')) {
 
                 /* We are a wall */
                 ag->info |= BORG_WALL;
@@ -1839,7 +1789,7 @@ void borg_update_map(void)
 
             /* Hack -- Floors, Doors, Stairs */
             else if ((c == '.') || (c == '\'') || (c == '<') || (c == '>')) {
-            
+
                 /* We are not a wall */
                 ag->info &= ~BORG_WALL;
             }
@@ -1847,10 +1797,10 @@ void borg_update_map(void)
     }
 
 
-    /* Mega-Oops -- Hallucination or Death */
+    /* Mega-Oops */
     if (num_players != 1) {
-    
-        /* Hallucinating */
+
+        /* Assume Hallucinating */
         do_image = TRUE;
 
         /* Mega-Hack -- prevent crashes */
@@ -2035,467 +1985,37 @@ int borg_goto_dir(int x1, int y1, int x2, int y2)
 
 
 
-
-#ifdef BORG_ROOMS
-
-
-/*
- * Hack -- compute the "cost" of the given grid
- */
-int borg_flow_cost(int x, int y)
-{
-    auto_room *ar;
-
-    int cost, best = 9999;
-
-    /* Scan all the rooms holding this room */
-    for (ar = room(1,x,y); ar; ar = room(0,0,0)) {
-
-        int dx = ar->x - x;
-        int dy = ar->y - y;
-
-        int ax = ABS(dx);
-        int ay = ABS(dy);
-
-        /* Calculate the cost */
-        cost = ar->cost + MAX(ax, ay);
-
-        /* Calculate the cost */
-        if (cost >= best) continue;
-
-        /* Save the best cost */
-        best = cost;
-    }
-
-    /* Return the cost */
-    return (best);
-}
-
-
-/*
- * Determine the "best direction" in the flow
- */
-bool borg_flow_best(int *xp, int *yp, int x1, int y1)
-{
-    int i, d;
-    
-    int b_x = x1;
-    int b_y = y1;
-        
-    int best = borg_flow_cost(x1,y1);
-
-    auto_room *ar;
-
-    /* See "borg_flow_cost(0)" */
-    for (ar = room(1,x1,y1); ar; ar = room(0,0,0)) {
-
-        int dx = ar->x - c_x;
-        int dy = ar->y - c_y;
-
-        int ax = ABS(dx);
-        int ay = ABS(dy);
-
-        /* Calculate the cost */
-        int cost = ar->cost + MAX(ax, ay);
-
-        /* Skip icky costs */	
-        if (cost >= best) continue;
-
-        /* Note the best so far */
-        b_x = ar->x;
-        b_y = ar->y;
-        best = cost;
-    }
-
-    /* Save the best move */
-    (*xp) = b_x;
-    (*yp) = b_y;
-    
-    /* Success */
-    return (TRUE);
-}
-
-
-
-
-/*
- * Reset the "flow codes" of all "real" rooms to a large number
- */
-void borg_flow_clear(void)
-{
-    int i;
-
-    /* Reset the cost of all the (real) rooms */
-    for (i = 1; i < auto_room_max; i++) {
-
-        /* Get the room */
-        auto_room *ar = &auto_rooms[i];
-
-        /* Skip "dead" rooms */	
-        if (ar->free) continue;
-
-        /* Initialize the "flow" */
-        ar->cost = 9999;
-
-        /* Clear the pointers */
-        ar->next = ar->prev = 0;
-    }
-}
-
-
-
-
-
-/*
- * Determine if the queue is empty
- */
-static bool borg_flow_empty(void)
-{
-    /* Test for Empty Queue. */
-    if (auto_room_head->next == auto_room_tail->self) return (TRUE);
-
-    /* Must not be empty */
-    return (FALSE);
-}
-
-
-
-/*
- * Hack -- maximum flow cost
- */
-static int auto_flow_max = 9999;
-
-
-/*
- * Dequeue from the "priority queue" of "auto_flow" records
- */
-static auto_room *borg_flow_dequeue(void)
-{
-    auto_room *prev = auto_room_head;
-    auto_room *this = &auto_rooms[prev->next];
-    auto_room *next = &auto_rooms[this->next];
-
-    /* Oops -- The queue is empty */
-    if (this == next) return (NULL);
-
-    /* Dequeue the entry */
-    prev->next = next->self;
-    next->prev = prev->self;
-
-    /* No longer in the queue */
-    this->next = this->prev = 0;
-
-    /* Return the room */
-    return (this);
-}
-
-
-/*
- * Enqueue into the "priority queue" of "auto_flow" records
- */
-static void borg_flow_enqueue(auto_room *ar)
-{
-    auto_room *prev = auto_room_head;
-    auto_room *next = &auto_rooms[prev->next];
-
-    /* Find a "good" location in the queue */
-    while (ar->cost >= next->cost) {
-        prev = next;
-        next = &auto_rooms[prev->next];
-    }
-
-    /* Tell the node */
-    ar->prev = prev->self;
-    ar->next = next->self;
-
-    /* Tell the queue */
-    prev->next = ar->self;
-    next->prev = ar->self;
-}
-
-
-/*
- * Enqueue a fresh starting grid
- */
-void borg_flow_enqueue_grid(int x, int y)
-{
-    auto_room *ar;
-
-    /* Scan all the rooms that hold it */
-    for (ar = room(1,x,y); ar; ar = room(0,0,0)) {
-
-        /* New room */
-        if (ar->cost) {
-
-            /* Mark rooms as "cheap" */
-            ar->cost = 0;
-
-            /* Save the location */
-            ar->x = x; ar->y = y;
-
-            /* Enqueue the room */
-            borg_flow_enqueue(ar);
-        }
-
-        /* Old room, better location */
-        else {
-
-            int new = double_distance(c_y, c_x, y, x);
-            int old = double_distance(c_y, c_x, ar->y, ar->x);
-
-            /* Use the "closest" grid */
-            if (new < old) {
-                ar->x = x; ar->y = y;
-            }
-        }
-    }
-}
-
-
-
-/*
- * Aux function -- Given a room "ar1" and a location (x,y) along the
- * edge of that room, and a "direction" of motion, find all rooms that
- * include the resulting grid, and attempt to enqueue them.
- *
- * Looks like we have to make sure that crossing rooms do not attempt
- * to recurse back on themselves or anything weird.
- */
-static void borg_flow_spread_aux(auto_room *ar1, int x, int y, int d)
-{
-    int cost;
-
-    int dx = ar1->x - x;
-    int dy = ar1->y - y;
-
-    int ax = ABS(dx);
-    int ay = ABS(dy);
-
-    int x2 = x + ddx[d];
-    int y2 = y + ddy[d];
-
-    auto_grid *ag;
-    auto_room *ar;
-
-
-    /* Look to the given direction */
-    ag = grid(x2, y2);
-
-    /* Ignore walls */
-    if (ag->info & BORG_WALL) return;
-
-    /* Ignore unroomed grids */
-    if (!ag->room) return;
-
-    /* Extract the "approximate" travel cost XXX XXX */
-    /* Could use "ABS(ddx[d]) + ABS(ddy[d])" instead of "1" */
-    cost = ar1->cost + MAX(ax, ay) + 1;
-
-    /* Efficiency -- do not enqueue "deep" flows */
-    if (cost > auto_flow_max) return;
-
-    /* Now find every room containing that grid */
-    for (ar = room(1,x2,y2); ar; ar = room(0,0,0)) {
-
-#if 0
-        /* Paranoia -- Skip rooms that contain the destination */
-        if ((ar->x1 <= x) && (x <= ar->x2) &&
-            (ar->y1 <= y) && (y <= ar->y2)) {
-
-            borg_note("Overlap");
-            continue;
-        }
-#endif
-
-        /* Do not "lose" previous gains */
-        if (cost >= ar->cost) continue;
-
-        /* Save the "destination" location */
-        ar->x = x; ar->y = y;
-
-        /* Save the new "cheaper" cost */
-        ar->cost = cost;
-
-        /* Mega-Hack -- Handle "upgrades" */
-        if (ar->next) {
-
-            auto_room *prev = &auto_rooms[ar->prev];
-            auto_room *next = &auto_rooms[ar->next];
-
-            /* Efficiency -- no change needed */
-            if (prev->cost <= ar->cost) continue;
-
-            /* Dequeue the entry */
-            prev->next = next->self;
-            next->prev = prev->self;
-
-            /* No longer in the queue */
-            ar->next = ar->prev = 0;
-        }
-
-        /* Enqueue the room */
-        borg_flow_enqueue(ar);
-    }
-}
-
-
-/*
- * Spread the "flow", assuming some rooms have been enqueued.
- *
- * We assume that the "flow" fields of all the rooms have been
- * initialized via "borg_flow_clear()", and that then the "flow"
- * fields of the rooms in the queue were set to "zero" before
- * being enqueued (see below).
- *
- * We assume that none of the icky grids have the "prev" or "next"
- * pointers set to anything, which is a pretty safe assumption.
- */
-void borg_flow_spread(bool optimize)
-{
-    int x, y;
-
-    auto_room *ar;
-
-
-    /* Hack -- Reset the max depth */
-    auto_flow_max = 9999;
-
-    /* Keep going until the queue is empty */
-    while (!borg_flow_empty()) {
-
-        /* Dequeue the next room */	
-        ar = borg_flow_dequeue();
-
-        /* Scan the south/north edges */
-        for (x = ar->x1; x <= ar->x2; x++) {
-
-            /* South edge */
-            y = ar->y2;
-
-            /* Look to the south */
-            borg_flow_spread_aux(ar, x, y, 2);
-
-            /* North edge */
-            y = ar->y1;
-
-            /* Look to the north */
-            borg_flow_spread_aux(ar, x, y, 8);
-        }
-
-        /* Scan the east/west edges */
-        for (y = ar->y1; y <= ar->y2; y++) {
-
-            /* East edge */
-            x = ar->x2;
-
-            /* Look to the east */
-            borg_flow_spread_aux(ar, x, y, 6);
-
-            /* West edge */
-            x = ar->x1;
-
-            /* Look to the west */
-            borg_flow_spread_aux(ar, x, y, 4);
-        }
-
-
-        /* Look along the South-East corner */
-        borg_flow_spread_aux(ar, ar->x2, ar->y2, 3);
-
-        /* Look along the South-West corner */
-        borg_flow_spread_aux(ar, ar->x1, ar->y2, 1);
-
-        /* Look along the North-East corner */
-        borg_flow_spread_aux(ar, ar->x2, ar->y1, 9);
-
-        /* Look along the North-West corner */
-        borg_flow_spread_aux(ar, ar->x1, ar->y1, 7);
-
-
-        /* Optimize if requested */
-        if (optimize) {
-
-            /* Efficiency -- maintain maximum necessary depth */
-            for (ar = room(1,c_x,c_y); ar; ar = room(0,0,0)) {
-
-                /* Maintain maximum depth */
-                if (ar->cost < auto_flow_max) auto_flow_max = ar->cost;
-            }
-        }
-    }
-}
-
-
-
-
-#else	/* BORG_ROOMS */
-
-
-
-
-
-
-/*
- * Hack -- the cost of a grid
- */
-int borg_flow_cost(int x1, int y1)
-{
-    return (grid(x1,y1)->cost);
-}
-
-
-/*
- * Determine the "best direction" in the flow
- */
-bool borg_flow_best(int *xp, int *yp, int x1, int y1)
-{
-    int i;
-    
-    int b_x = x1;
-    int b_y = y1;
-        
-    int best = grid(x1,y1)->cost;
-
-    /* Look around */
-    for (i = 0; i < 8; i++) {
-
-        int x = x1 + ddx[ddd[i]];
-        int y = y1 + ddy[ddd[i]];
-            
-        auto_grid *ag = grid(x,y);
-            
-        if (ag->cost >= best) continue;
-            
-        b_x = x;
-        b_y = y;
-
-        best = ag->cost;
-    }
-
-    /* Save the best move */
-    (*xp) = b_x;
-    (*yp) = b_y;
-    
-    /* Success */
-    return (TRUE);
-}
-
-
-
 /*
  * Hack -- forget the "flow" information
+ *
+ * This function is called a lot, and it would probably benefit
+ * from any optimization at all, for example, moving the "cost"
+ * and "flow" fields into separate arrays, and using the WIPE()
+ * and COPY() macros, or using pointer math, not dereferencing.
  */
 void borg_flow_clear(void)
 {
     int x, y;
 
-    /* Check the entire dungeon */
-    for (y = 0; y < AUTO_MAX_Y; y++) {
-        for (x = 0; x < AUTO_MAX_X; x++) {
+    /* Reset the "cost" fields */
+    COPY(auto_data_cost, auto_data_hard, auto_data);
 
-            /* Make the grid expensive */
-            grid(x,y)->cost = 9999;
+    /* Wipe costs and danger */
+    if (auto_danger_wipe) {
+    
+        /* Check the entire dungeon */
+        for (y = 1; y < AUTO_MAX_Y - 1; y++) {
+            for (x = 1; x < AUTO_MAX_X - 1; x++) {
+
+                auto_grid *ag = grid(x,y);
+
+                /* Clear danger flags */
+                ag->info &= ~(BORG_KNOW | BORG_ICKY);
+            }
         }
+
+        /* Wipe complete */
+        auto_danger_wipe = FALSE;
     }
 
     /* Start over */
@@ -2505,39 +2025,59 @@ void borg_flow_clear(void)
 
 
 
+
 /*
  * Hack -- fill in the "cost" field of every grid that the player
  * can "reach" with the number of steps needed to reach that grid.
  * This also yields the "distance" of the player from every grid.
  *
+ * Note that the "cost" is stored as a byte, so any grid more
+ * than 255 grids away will be considered unreachable.
+ *
  * Hack -- use the "flow" array as a "circular queue".
  *
  * We do not need a priority queue because the cost from grid
  * to grid is always "one" and we process them in order.
+ *
+ * Hack -- Handle "danger" by allowing a grid to be marked as "ICKY",
+ * in which case we will "avoid" it.  Also, allow this function to
+ * calculate the danger of a grid, by assuming that any grid not
+ * marked as "KNOW" is of unknown danger, and should be checked by
+ * the "auto_danger_hook(x,y)" function, which should return "TRUE"
+ * if the Borg should avoid that grid.  In either case, that grid
+ * will then be marked as "KNOW" to prevent multiple danger checks.
+ *
+ * Hopefully, this complex method, at the cost of only 2 bits per grid,
+ * will allow us to minimize the number of expensive "danger" checks.
+ *
+ * This function is extremely expensive, due to the number of calls
+ * to the "borg_danger()" function, even though those calls are kept
+ * to a minimum by only asking about grids we may need to pass through.
  */
 void borg_flow_spread(bool optimize)
 {
     int i, n;
 
-    auto_grid *pg = grid(c_x, c_y);
-
-    int auto_flow_max = 9999;
+    int auto_flow_max = 255;
 
 
     /* Now process the queue */
     while (flow_head != flow_tail) {
 
         /* Extract the next entry */
-        int x1 = flow_x[flow_tail];
-        int y1 = flow_y[flow_tail];
+        int x1 = auto_flow_x[flow_tail];
+        int y1 = auto_flow_y[flow_tail];
 
-        auto_grid *ag1 = grid(x1,y1);
 
         /* Forget that entry */
-        if (++flow_tail == FLOW_MAX) flow_tail = 0;
+        if (++flow_tail == AUTO_FLOW_MAX) flow_tail = 0;
 
-        /* Cost */
-        n = ag1->cost + 1;
+
+        /* Cost (one per movement grid) */
+        n = auto_data_cost->data[y1][x1] + 1;
+
+        /* Paranoia */
+        if (n >= 250) continue;
 
 
         /* Add the "children" */
@@ -2546,8 +2086,8 @@ void borg_flow_spread(bool optimize)
             int old_head = flow_head;
 
             /* Direction */
-            int x = x1 + ddx[ddd[i]];
-            int y = y1 + ddy[ddd[i]];
+            int x = x1 + ddx_ddd[i];
+            int y = y1 + ddy_ddd[i];
 
             auto_grid *ag = grid(x,y);
 
@@ -2555,26 +2095,46 @@ void borg_flow_spread(bool optimize)
             if (n > auto_flow_max) continue;
 
             /* Skip "reached" grids */
-            if (ag->cost <= n) continue;
+            if (auto_data_cost->data[y][x] <= n) continue;
 
             /* Ignore "wall" grids */
             if (ag->info & BORG_WALL) continue;
 
+            /* Ignore "icky" grids */
+            if (ag->info & BORG_ICKY) continue;
+
+            /* Check danger if needed */
+            if (!(ag->info & BORG_KNOW)) {
+
+                /* Assume Known */
+                ag->info |= BORG_KNOW;
+
+                /* Check the danger */
+                if (auto_danger_hook && ((*auto_danger_hook)(x,y))) {
+
+                    /* Mark as icky */
+                    ag->info |= BORG_ICKY;
+
+                    /* Ignore this grid */
+                    continue;
+                }
+            }
+
             /* Save the flow cost */
-            ag->cost = n;
+            auto_data_cost->data[y][x] = n;
 
             /* Enqueue that entry */
-            flow_x[flow_head] = x;
-            flow_y[flow_head] = y;
+            auto_flow_x[flow_head] = x;
+            auto_flow_y[flow_head] = y;
 
             /* Advance the queue */
-            if (++flow_head == FLOW_MAX) flow_head = 0;
+            if (++flow_head == AUTO_FLOW_MAX) flow_head = 0;
 
             /* Hack -- notice overflow by forgetting new entry */
             if (flow_head == flow_tail) flow_head = old_head;
 
             /* Optimize (if requested) */
-            if (optimize) auto_flow_max = pg->cost;
+            if (optimize) auto_flow_max = auto_data_cost->data[c_y][c_x];
         }
     }
 
@@ -2584,34 +2144,30 @@ void borg_flow_spread(bool optimize)
 
 
 /*
- * Enqueue a fresh starting grid
+ * Enqueue a fresh (legal) starting grid
  */
 void borg_flow_enqueue_grid(int x, int y)
 {
-    auto_grid *ag = grid(x, y);
-
     /* New grid */
-    if (ag->cost) {
-        
+    if (auto_data_cost->data[y][x]) {
+
         int old_head = flow_head;
 
         /* Cheap */
-        ag->cost = 0;
+        auto_data_cost->data[y][x] = 0;
 
         /* Enqueue that entry */
-        flow_y[flow_head] = y;
-        flow_x[flow_head] = x;
+        auto_flow_y[flow_head] = y;
+        auto_flow_x[flow_head] = x;
 
         /* Advance the queue */
-        if (++flow_head == FLOW_MAX) flow_head = 0;
+        if (++flow_head == AUTO_FLOW_MAX) flow_head = 0;
 
-        /* Hack -- notice overflow by forgetting new entry */
+        /* Mega-Hack -- notice overflow by forgetting new entry */
         if (flow_head == flow_tail) flow_head = old_head;
     }
 }
 
-
-#endif	/* BORG_ROOMS */
 
 
 
@@ -2638,24 +2194,20 @@ void borg_flow_reverse(void)
 
 /*
  * Target a location.  Can be used alone or at "Direction?" prompt.
+ *
+ * Warning -- This will only work for locations on the current panel
  */
 bool borg_target(int x, int y)
 {
     int x1, y1, x2, y2;
 
-#if 0
-    /* Get the grid */
-    auto_grid *ag = grid(x,y);
-    
-    /* Paranoia -- Cannot target off-screen location */
-    if (!(ag->info & BORG_HERE)) return (FALSE);
-#endif
-
     /* Log */
-    borg_note("Targetting a location.");
+    borg_note("# Targetting a location.");
 
-    /* Target the location */
+    /* Target mode */
     borg_keypress('*');
+
+    /* Target a location */
     borg_keypress('p');
 
     /* Determine "path" */
@@ -2692,23 +2244,7 @@ bool borg_target(int x, int y)
  */
 void borg_map_init(void)
 {
-    int y;
-
-
-
-    /*** Locations ***/
-
-    /* Hack -- array of "seen" grids */
-    C_MAKE(seen_x, SEEN_MAX, byte);
-    C_MAKE(seen_y, SEEN_MAX, byte);
-
-    /* Hack -- array of "view" grids */
-    C_MAKE(view_x, VIEW_MAX, byte);
-    C_MAKE(view_y, VIEW_MAX, byte);
-
-    /* Hack -- array of "flow" grids */
-    C_MAKE(flow_x, FLOW_MAX, byte);
-    C_MAKE(flow_y, FLOW_MAX, byte);
+    int x, y;
 
 
 #ifdef BORG_ROOMS
@@ -2735,16 +2271,6 @@ void borg_map_init(void)
     /* Prepare the "tail" of the free list */
     auto_room_tail->free = auto_room_tail->self;
 
-    /* Prepare the priority queue head */
-    auto_room_head->cost = 0;
-    auto_room_head->prev = auto_room_head->self;
-    auto_room_head->next = auto_room_tail->self;
-
-    /* Prepare the priority queue tail */
-    auto_room_tail->cost = 30000;
-    auto_room_tail->prev = auto_room_head->self;
-    auto_room_tail->next = auto_room_tail->self;
-
     /* Reset the free list */
     auto_room_head->free = 1;
 
@@ -2754,8 +2280,30 @@ void borg_map_init(void)
 #endif
 
 
-    /*** Grids ***/
+    /*** Grid data ***/
     
+    /* Make the "hard" data */
+    MAKE(auto_data_hard, auto_data);
+    
+    /* Make the "flow" data */
+    MAKE(auto_data_flow, auto_data);
+    
+    /* Make the "cost" data */
+    MAKE(auto_data_cost, auto_data);
+
+
+    /* Prepare "auto_data_hard" */
+    for (y = 0; y < AUTO_MAX_Y; y++) {
+        for (x = 0; x < AUTO_MAX_X; x++) {
+
+            /* Prepare "auto_data_hard" */
+            auto_data_hard->data[y][x] = 255;
+        }
+    }
+    
+
+    /*** Grids ***/
+
     /* Make the array of grids */
     C_MAKE(auto_grids, AUTO_MAX_Y, auto_grid*);
 
@@ -2768,8 +2316,29 @@ void borg_map_init(void)
 
     /* Forget the map */
     borg_forget_map();
+
+
+    /*** Locations ***/
+
+    /* Hack -- array of "seen" grids */
+    C_MAKE(auto_temp_x, AUTO_SEEN_MAX, byte);
+    C_MAKE(auto_temp_y, AUTO_SEEN_MAX, byte);
+
+    /* Hack -- array of "view" grids */
+    C_MAKE(auto_view_x, AUTO_VIEW_MAX, byte);
+    C_MAKE(auto_view_y, AUTO_VIEW_MAX, byte);
+
+    /* Hack -- array of "flow" grids */
+    C_MAKE(auto_flow_x, AUTO_FLOW_MAX, byte);
+    C_MAKE(auto_flow_y, AUTO_FLOW_MAX, byte);
 }
 
+
+#else
+
+#ifdef MACINTOSH
+static int i = 0;
+#endif
 
 #endif
 

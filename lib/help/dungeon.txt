@@ -33,21 +33,27 @@
   to something you are more comfortable with.
    
  
-                              Features
+                Features that do not block line of sight
  
-  .   A floor space, or hidden trap   1   Entrance to General Store
-  #   A wall                          2   Entrance to Armoury
-  '   An open door                    3   Entrance to Weapon Smith
-  +   A closed door                   4   Entrance to Temple
-  ^   A trap                          5   Entrance to Alchemy Shop
-  <   A staircase up                  6   Entrance to Magic Shop
-  >   A staircase down                7   Entrance to the Black Market
-  ;   A loose floor stone             8   Entrance to your Home
-  %   A mineral vein                  @   The character
-  :   Obstructing rubble                  A dark/unknown grid (Blank)
+  .   A floor space                   1   Entrance to General Store
+  .   A trap (hidden)                 2   Entrance to Armoury
+  ^   A trap (known)                  3   Entrance to Weapon Smith
+  ;   A loose floor stone             4   Entrance to Temple
+  '   An open door                    5   Entrance to Alchemy Shop
+  '   A broken door                   6   Entrance to Magic Shop
+  <   A staircase up                  7   Entrance to the Black Market
+  >   A staircase down                8   Entrance to your Home
 
 
-                               Objects
+                   Features that block line of sight
+
+  #   A secret door                   #   A wall
+  +   A closed door                   %   A mineral vein
+  +   A locked door                   *   A mineral vein with treasure
+  +   A jammed door                   :   A pile of rubble
+
+
+                             Objects
  
   !   A potion (or flask)             /   A pole-arm
   ?   A scroll (or book)              |   An edged weapon
@@ -62,20 +68,20 @@
  
  
  
-                             Creatures
+                             Monsters
  
             $   Creeping Coins      ,   Mushroom Patch
     
             a   Giant Ant           A   Angelic being
-            b   Giant Bat           B   Birds (Roc etc.)
-            c   Giant Centipede     C   Canine (Wolf etc...)
+            b   Giant Bat           B   Bird
+            c   Giant Centipede     C   Canine
             d   Dragon              D   Ancient Dragon
             e   Floating Eye        E   Elemental
-            f   Feline              F   Fly
+            f   Feline              F   Dragon Fly
             g   Golem               G   Ghost
-            h   Demi-humans         H   Hybrid (Minotaur etc...)
-            i   Icky-Thing          I   Minor Demon (Manes etc...)
-            j   Jelly               J   Jabberwock
+            h   Humanoids           H   Hybrid
+            i   Icky-Thing          I   Insect
+            j   Jelly               J   (unused)
             k   Kobold              K   Killer Beetle
             l   Giant Louse         L   Lich
             m   Mold                M   Mummy
@@ -84,16 +90,15 @@
             p   Human               P   Giant Human(oid)
             q   Quadroped           Q   Quylthulg
             r   Rodent              R   Reptile/Amphibian
-            s   Skeleton            S   Scorpion/Spider
-            t   Giant Tick          T   Troll
-            u   (unused)            U   Umber Hulk
+            s   Skeleton            S   Spider/Scorpion/Tick
+            t   Townsperson         T   Troll
+            u   Minor demon         U   Major demon
             v   Vortex              V   Vampire
-            w   Worm or Worm Mass   W   Wight or Wraith.
+            w   Worm or Worm Mass   W   Wight/Wraith.
             x   (unused)            X   Xorn/Xaren
             y   Yeek                Y   Yeti
             z   Zombie              Z   Zephyr Hound
-            &   Major Demon
- 
+
 
 
   6.  The Town Level
@@ -400,7 +405,7 @@
   shown on the screen.  This makes mining much easier and more pro-
   fitable.
  
-  Note that a character with high strength, and/or a strong weapon,
+  Note that a character with high strength, and/or a heavy weapon,
   does not need a shovel/pick to dig through magma or quartz, but
   even the strongest character will benefit from a pick if trying
   to dig through a granite wall.
@@ -495,14 +500,8 @@
   ster memory containing all the experience of past incarnations.
  
  
-  12.  Wizards
+  12.  Help
  
-  There are rumors  of Angband Wizards which, if  asked  nicely,  can
-  explain  details  of  the  Angband  game  that  seem complicated to
-  beginners.
-  
   The newsgroup "rec.games.roguelike.angband" is a good place to ask
   various questions about both game play and game design, and you can
-  email bug reports to me (Ben Harrison (benh@linc.cis.upenn.edu)),
-  since I am responsible for most of the past years worth of code...
-
+  email bug reports and such to me (benh@voicenet.com).

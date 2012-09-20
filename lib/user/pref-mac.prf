@@ -97,7 +97,7 @@ P:^_CO28\r
 
 # Option-Control-Keypad-Zero -- wield {@0}
 
-A:\e\ew0
+A:\e\ew0\s
 P:^_CO18\r
 
 

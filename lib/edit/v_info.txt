@@ -1,0 +1,227 @@
+# File: v_info.txt
+
+
+# This file is used to initialize the "lib/raw/v_info.raw" file, which is
+# used to initialize the "vault template" information for the Angband game.
+
+# Do not modify this file unless you know exactly what you are doing,
+# unless you wish to risk possible system crashes and broken savefiles.
+
+# After modifying this file, delete the "lib/raw/v_info.raw" file.
+
+
+# Note that the "spacing" in the "description" lines is very important!
+
+
+# Note that this file is not currently used
+
+
+# Version stamp
+
+V:2.7.9
+
+
+### Simple Vaults (type 7) -- maximum size 44x22 ###
+
+
+N:1:Lesser vault (round)
+X:7:5:12:20
+D:       %%%%%%       
+D:    %%%..##..%%%    
+D:  %%....####....%%  
+D: %......#**#......% 
+D:%...,.##+##+##.,...%
+D:%.,.,.#*#*&#*#.,.,.%
+D:%.,.,.#*#&*#*#.,.,.%
+D:%...,.##+##+##.,...%
+D: %......#**#......% 
+D:  %%....####....%%  
+D:    %%%..##..%%%    
+D:       %%%%%%       
+
+
+N:2:Lesser vault (octagon)
+X:7:5:14:20
+D:   %%%%%%%%%%%%%%   
+D:  %%.##########.%%  
+D: %%..#..,,,,..#..%% 
+D:%%,..#.,####,.#..,%%
+D:%....#.,#**#,.#....%
+D:%.###+,##&&##,+###.%
+D:%.#..,,#*&**#,,..#.%
+D:%.#..,,#**&*#,,..#.%
+D:%.###+,##&&##,+###.%
+D:%....#.,#**#,.#....%
+D:%%,..#.,####,.#..,%%
+D: %%..#..,,,,..#..%% 
+D:  %%.##########.%%  
+D:   %%%%%%%%%%%%%%   
+
+
+N:3:Lesser vault (octagon)
+X:7:5:12:20
+D:    %%%%%%%%%%%%    
+D: %%%%..........%%%% 
+D: %...###+##+###...% 
+D:%%...#,,#,,#,,#...%%
+D:%.###+##+##+##+###.%
+D:%.#,,#&&#**#&&#,,#.%
+D:%.#,,#&&#**#&&#,,#.%
+D:%.###+##+##+##+###.%
+D:%%...#,,#,,#,,#...%%
+D: %...###+##+###...% 
+D: %%%%..........%%%% 
+D:    %%%%%%%%%%%%    
+
+
+N:4:Lesser vault (square)
+X:7:5:12:20
+D:%%%%%%%%%%%%%%%%%%%%
+D:%*.......&........*%
+D:%.################.%
+D:%.#,.,.,.,.,.,.,.#.%
+D:%.#.############,#.%
+D:%.#,+,&&+**#&*,#.#&%
+D:%&#.#,*&#**+&&,+,#.%
+D:%.#,############.#.%
+D:%.#.,.,.,.,.,.,.,#.%
+D:%.################.%
+D:%*........&.......*%
+D:%%%%%%%%%%%%%%%%%%%%
+
+
+N:5:Lesser vault (diagonal)
+X:7:5:12:20
+D:%%%%%%%%%%%%%%%%%   
+D:%,,,##,,,,##....%%  
+D:%,,,,##,,,,##....%% 
+D:%#,,,,##,,,,##....%%
+D:%##,,,,##,,,,##....%
+D:%.##,,,,,,,,,,#+...%
+D:%..#+,,,,,,,,,,##..%
+D:%...##,,,,##,,,,##.%
+D:%%...##,,,,##,,,,##%
+D: %%...##,,,,##,,,,#%
+D:  %%...##,,,,##,,,,%
+D:   %%%%%%%%%%%%%%%%%
+
+
+N:6:Lesser vault (diagonal)
+X:7:5:12:20
+D:   %%%%%%%%%%%%%%%%%
+D:  %%....##,,,,##,,,%
+D: %%....##,,,,##,,,,%
+D:%%....##,,,,##,,,,#%
+D:%....##,,,,##,,,,##%
+D:%...+#,,,,,,,,,,##.%
+D:%..##,,,,,,,,,,+#..%
+D:%.##,,,,##,,,,##...%
+D:%##,,,,##,,,,##...%%
+D:%#,,,,##,,,,##...%% 
+D:%,,,,##,,,,##...%%  
+D:%%%%%%%%%%%%%%%%%   
+
+
+N:7:Lesser vault (square)
+X:7:5:12:20
+D:%%%%%%%%%%%%%%%%%%%%
+D:%,################,%
+D:%^#.*...&..,....,#^%
+D:%^#...,......&...#^%
+D:%^#######++#######^%
+D:%^+.,..&+,*+*....+^%
+D:%^+..*.,+.&+.,.&.+^%
+D:%^#######++#######^%
+D:%^#....,.,.....,.#^%
+D:%^#..&......*....#^%
+D:%,################,%
+D:%%%%%%%%%%%%%%%%%%%%
+
+
+
+### Greater vaults (type 8) -- maximum size 66x44 ###
+
+
+N:10:Greater vault (huge)
+X:8:45:17:39
+D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+D:%XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX%
+D:%+&#8#&#8#&#8#&#8#&#8#&#8#&#8#&#8#&#8X%
+D:%XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX#X%
+D:%X8#&#8#&#8#&#8#&#8#&#8#&#8#&#8#&#8#&X%
+D:%X#XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX%
+D:%X&#8#&#8#&#8#&#8#&#8#&#8#&#8#&#8#&#8X%
+D:%XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX#X%
+D:%X8#&#8#&#8#&#88888888888#8#&#8#&#8#&X%
+D:%X#XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX%
+D:%X&#8#&#8#&#8#&#8#&#8#&#8#&#8#&#8#&#8X%
+D:%XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX#X%
+D:%X8#&#8#&#8#&#8#&#8#&#8#&#8#&#8#&#8#&X%
+D:%X#XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX%
+D:%X&#8#&#8#&#8#&#8#&#8#&#8#&#8#&#8#&#&+%
+D:%XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX%
+D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+N:11:Greater vault (large)
+X:8:35:18:40
+D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+D:%XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX%
+D:%X,#,#,#,#,#,#,#,#*@@*#,#,#,#,#,#,#,#,X%
+D:%X+XXXXXXXXXXXXXXXX##XXXXXXXXXXXXXXXX+X%
+D:%X.,..,.X&.&.,*XX******XX*,.&.&X.,...,#%
+D:%X..,.^^X....,XX***@@***XX,....X^^..,.#%
+D:%XXXXXX+X^&.&XX***@##@***XX&.&^X+XXXXXX%
+D:%X,.&.^^X+XXXX***@#XX#@***XXXX+X^^.,..X%
+D:%X..,&,.X^^^@X**@#X88X#@**#@^^^X.,..&,X%
+D:%X.,....X^^^@#**@#X88X#@**X@^^^X.&.,..X%
+D:%X...,^^X+XXXX***@#XX#@***XXXX+X^^..,.X%
+D:%XXXXXX+X^&.&XX***@##@***XX&.&^X+XXXXXX%
+D:%#.,..^^X.....XX***@@***XX,....X^^.,..X%
+D:%#...,..X&.&.,*XX******XX*,.&.&X..,..,X%
+D:%X+XXXXXXXXXXXXXXXX##XXXXXXXXXXXXXXXX+X%
+D:%X,#,#,#,#,#,#,#,#*@@*#,#,#,#,#,#,#,#,X%
+D:%XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX%
+D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+N:12:Greater vault (butterfly)
+X:8:25:18:40
+D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+D:%XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX%
+D:%X*9..&XX***++^^^^^^^^^^^^++***XX&..*9X%
+D:%X9..&XX,,,,,XX^^^^^^^^^^XX,,,,,#X&..*X%
+D:%X..&#X.....,.XX^^^^^^^^XX..&....XX&..X%
+D:%X.&XX..,.&....XX^^^^^^XX..,...&..XX&.X%
+D:%X&XX..*...&.^..XX^^^^XX..*....,..,XX&X%
+D:%XXXX+XXXXXXXXXXXXX++XXXXXXXXXXXXX+XXXX%
+D:%+....,.,.X&&&&***+99+***&&&&X,.,.,...+%
+D:%+...,.,.,X&&&&***+99+***&&&&X.,.,....+%
+D:%XXXX+XXXXXXXXXXXXX++XXXXXXXXXXXXX+XXXX%
+D:%X&XX..*....&...XX^^^^XX...*...&,..#X&X%
+D:%X.&XX..&.^....XX^^^^^^XX....&....XX&.X%
+D:%X..&XX....&..XX^^^^^^^^XX..,..*.XX&..X%
+D:%X*..&#X,,,,,XX^^^^^^^^^^XX,,,,,XX&..9X%
+D:%X9*..&XX***++^^^^^^^^^^^^++***XX&..*9X%
+D:%XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX%
+D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+N:13:Greater vault (chambers)
+X:8:25:15:40
+D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+D:%&+.^..^..^..^..^..^..^..^..^..^..^..+&%
+D:%+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX+%
+D:%.X.&.^,X&^&^X****+^*^@^X.*.&..X..*.,X.%
+D:%^X.,.&^+^&^@X^^^^X@^*^*X....*^+.^...X^%
+D:%.X*..,.XXX+XXXX+XXXX+XXX.&.^..X..&,.X.%
+D:%^X..^.*X*..^&&@@*X,,,,,XXXX+XXX,....X^%
+D:%.XX+XXXXXXXXXXXXXX,*8*,X,,,,,,XXX+XXX.%
+D:%^X*&X.&,*.X,*&^*^X,,,,,X,,,,,,X....,X^%
+D:%.X&,+....*+,*&^*^XXXXXXXXXX+XXX.,...+.%
+D:%^X.,X.*.&.X,*&^*^+.,.&.^*.&^&^X.....X^%
+D:%.X^*X.,..,X,*&^*^X*.^*.,..&&&^X,..,.X.%
+D:%+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX+%
+D:%&+..^..^..^..^..^..^..^..^..^..^..^.+&%
+D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+

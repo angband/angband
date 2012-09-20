@@ -1,18 +1,27 @@
-# File: v_list.txt
+# File: a_info.txt
 
-# A parsable list of all the artifacts.
 
-# Artifacts 1-15 are "weird", see "misc3.c".
-# Artifacts 16-63 are "armor", and 64-127 are "weapons".
-# Note that "Grond" and "Morgoth" MUST have a rarity of one.
+# This file is used to initialize the "lib/raw/a_info.raw" file, which is
+# used to initialize the "artifact" information for the Angband game.
 
-# Note that the "INSTA_ART" flag does not really make sense here,
-# but it is carried over from the item templates themselves
+# Do not modify this file unless you know exactly what you are doing,
+# unless you wish to risk possible system crashes and broken savefiles.
+
+# After modifying this file, delete the "lib/raw/a_info.raw" file.
+
+
+# The artifact indexes are defined in "defines.h", and must not be changed.
+
+# Artifacts 1-15 are "special", 16-63 are "armor", and 64-127 are "weapons".
+
+# Hack -- "Grond" and "Morgoth" MUST have a rarity of one, or they might
+# not be dropped when Morgoth is killed.  Note that they, like the "special"
+# artifacts, are never created "accidentally".
 
 
 # Version stamp
 
-V:2.7.8
+V:2.7.9
 
 
 
@@ -105,7 +114,7 @@ F:INSTA_ART
 
 N:10:of Power (Narya)
 I:45:34:1
-W:80:30:2:100000
+W:70:30:2:100000
 F:STR | INT | WIS | DEX | CON | CHR | SPEED | HIDE_TYPE | 
 F:ACTIVATE | FREE_ACT | SEE_INVIS | 
 F:SLOW_DIGEST | REGEN | 
@@ -117,7 +126,7 @@ F:INSTA_ART
 
 N:11:of Power (Nenya)
 I:45:35:2
-W:90:40:2:200000
+W:80:40:2:200000
 F:STR | INT | WIS | DEX | CON | CHR | SPEED | HIDE_TYPE | 
 F:ACTIVATE | HOLD_LIFE | FREE_ACT | SEE_INVIS | 
 F:FEATHER | REGEN | 
@@ -129,7 +138,7 @@ F:INSTA_ART
 
 N:12:of Power (Vilya)
 I:45:36:3
-W:95:50:2:300000
+W:90:50:2:300000
 F:STR | INT | WIS | DEX | CON | CHR | SPEED | HIDE_TYPE | 
 F:ACTIVATE | HOLD_LIFE | FREE_ACT | SEE_INVIS | 
 F:FEATHER | SLOW_DIGEST | REGEN | 
@@ -194,7 +203,7 @@ I:37:30:2
 W:75:9:420:300000
 P:40:2d4:-4:0:20
 F:CON | 
-F:HOLD_LIFE | 
+F:HOLD_LIFE | SUST_CON | 
 F:RES_ACID | RES_COLD | RES_DARK | RES_NETHER | RES_NEXUS | RES_CHAOS | 
 F:ACTIVATE
 
@@ -451,7 +460,7 @@ F:FREE_ACT | RES_ACID | RES_FIRE | RES_COLD | ACTIVATE
 
 N:47:of Thorongil
 I:35:1:0
-W:5:30:10:8000
+W:5:20:10:8000
 P:1:0d0:0:0:10
 F:FREE_ACT | RES_ACID | SEE_INVIS
 
@@ -460,7 +469,7 @@ F:FREE_ACT | RES_ACID | SEE_INVIS
 
 N:48:'Colannon'
 I:35:1:3
-W:5:30:10:11000
+W:3:10:10:11000
 P:1:0d0:0:0:15
 F:STEALTH | 
 F:RES_ACID | ACTIVATE
@@ -512,7 +521,7 @@ F:FREE_ACT | RES_LITE | SUST_CON | LITE | ACTIVATE
 
 N:54:'Paurhach'
 I:31:2:0
-W:20:24:25:15000
+W:10:24:25:15000
 P:2:1d1:0:0:15
 F:RES_FIRE | ACTIVATE
 
@@ -521,7 +530,7 @@ F:RES_FIRE | ACTIVATE
 
 N:55:'Paurnimmen'
 I:31:2:0
-W:20:24:25:13000
+W:10:24:25:13000
 P:2:1d1:0:0:15
 F:RES_COLD | ACTIVATE
 
@@ -530,7 +539,7 @@ F:RES_COLD | ACTIVATE
 
 N:56:'Pauraegen'
 I:31:2:0
-W:20:24:25:11000
+W:10:24:25:11000
 P:2:1d1:0:0:15
 F:RES_ELEC | ACTIVATE
 
@@ -539,7 +548,7 @@ F:RES_ELEC | ACTIVATE
 
 N:57:'Paurnen'
 I:31:2:0
-W:20:24:25:12000
+W:10:24:25:12000
 P:2:1d1:0:0:15
 F:RES_ACID | ACTIVATE
 
@@ -622,7 +631,7 @@ F:SHOW_MODS
 
 N:66:'Narthanc'
 I:23:4:0
-W:5:20:12:12000
+W:4:10:12:12000
 P:0:1d4:4:6:0
 F:BRAND_FIRE | RES_FIRE | ACTIVATE | SHOW_MODS
 
@@ -631,7 +640,7 @@ F:BRAND_FIRE | RES_FIRE | ACTIVATE | SHOW_MODS
 
 N:67:'Nimthanc'
 I:23:4:0
-W:5:20:12:11000
+W:3:10:12:11000
 P:0:1d4:4:6:0
 F:BRAND_COLD | RES_COLD | ACTIVATE | SHOW_MODS
 
@@ -640,7 +649,7 @@ F:BRAND_COLD | RES_COLD | ACTIVATE | SHOW_MODS
 
 N:68:'Dethanc'
 I:23:4:0
-W:5:20:12:13000
+W:5:10:12:13000
 P:0:1d4:4:6:0
 F:BRAND_ELEC | RES_ELEC | ACTIVATE | SHOW_MODS
 
@@ -1139,8 +1148,8 @@ F:BRAND_FIRE | RES_FIRE | ACTIVATE | SHOW_MODS
 N:116:'Taratol'
 I:21:5:0
 W:20:15:200:50000
-P:0:2d7:12:12:0
-F:KILL_DRAGON | BRAND_ELEC | IM_ELEC | RES_DARK | ACTIVATE | SHOW_MODS
+P:0:3d4:12:12:0
+F:KILL_DRAGON | BRAND_ELEC | IM_ELEC | ACTIVATE | SHOW_MODS
 
 
 # The War Hammer of Aule

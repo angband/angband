@@ -1,22 +1,47 @@
 /* File: util.c */
 
-/* Purpose: miscellanous utilities */
+/* Purpose: annoying system dependant utilities */
 
-/*
- * Copyright (c) 1989 James E. Wilson
- *
- * This software may be copied and distributed for educational, research, and
- * not for profit purposes provided that this copyright and statement are
- * included in all such copies.
- */
 
 #include "angband.h"
+
+
+
+#ifdef AMIGA
+
+/*
+ * Version of "delay()" for AMIGA
+ */
+void delay(int t)
+{
+    if (t >= 20) Delay(t / 20);
+}
+
+#endif	/* AMIGA */
+
+
+
+#ifdef __EMX__
+
+/*
+ * Version of "delay()" for __EMX__
+ */
+void delay(int t)
+{
+    _sleep2(t);
+}
+
+#endif	/* __EMX__ */
+
+
 
 
 
 #ifndef HAS_MEMSET
 
 /*
+ * For those systems that don't have "memset()"
+ *
  * Set the value of each of 'n' bytes starting at 's' to 'c', return 's'
  * If 'n' is negative, you will erase a whole lot of memory.
  */
@@ -34,7 +59,9 @@ char *memset(char *s, int c, huge n)
 #ifndef HAS_STRICMP
 
 /*
- * For those systems that don't have stricmp
+ * For those systems that don't have "stricmp()"
+ *
+ * Compare the two strings "a" and "b" ala "strcmp()" ignoring case.
  */
 int stricmp(cptr a, cptr b)
 {
@@ -55,14 +82,16 @@ int stricmp(cptr a, cptr b)
 #endif
 
 
-#ifndef HAS_USLEEP
+#ifdef SET_UID
+
+# ifndef HAS_USLEEP
 
 /*
- * for those systems that don't have usleep
- * grabbed from the inl netrek server -cba
- * I think we include too many files above!
+ * For those systems that don't have "usleep()" but need it.
+ *
+ * Fake "usleep()" function grabbed from the inl netrek server -cba
  */
-int usleep(huge microSeconds)
+static int usleep(huge microSeconds)
 {
     struct timeval      Timer;
 
@@ -98,37 +127,11 @@ int usleep(huge microSeconds)
     return 0;
 }
 
-#endif
+# endif
 
-
-#ifdef MACINTOSH
-
-/* See "main-mac.c" */
-
-#else
-
-#ifdef AMIGA
-
-void delay(int t)
-{
-    if (t >= 20) Delay(t / 20);
-}
-
-#else
-
-#ifdef __EMX__
-
-void delay(int t)
-{
-    _sleep2(t);
-}
-
-#else
-
-#ifndef MSDOS
 
 /*
- * Unix port for "delay"
+ * Version of "delay()" for Unix machines
  */
 void delay(int t)
 {
@@ -136,41 +139,12 @@ void delay(int t)
     usleep(1000 * t);
 }
 
-#endif	/* MSDOS */
-
-#endif	/* __EMX__ */
-
-#endif	/* AMIGA */
-
-#endif	/* MACINTOSH */
-
-
-#ifdef AMIGA
 
 /*
- * Is this actually used?
+ * Hack -- External functions
  */
-int getuid()
-{
-  return 0;
-}
-
-/*
- * Is this actually used?
- */
-void umask(int x)
-{
-}
-
-#endif /* AMIGA */
-
-
-
-
-#if defined(SET_UID)
-
-struct passwd      *getpwuid();
-struct passwd      *getpwnam();
+extern struct passwd *getpwuid();
+extern struct passwd *getpwnam();
 
 
 /*
@@ -197,6 +171,18 @@ void user_name(char *buf, int id)
     strcpy(buf, "PLAYER");
 }
 
+#endif
+
+
+#ifdef ACORN
+
+/*
+ * All the "file" routines for "ACORN" are in "main-acn.c"
+ */
+
+#else /* ACORN */
+
+#ifdef SET_UID
 
 /*
  * Attempt to expand leading tilde's at the beginning of file names
@@ -207,7 +193,7 @@ void user_name(char *buf, int id)
  * If successful, load the result into "exp" and return "TRUE"
  * When FALSE is returned, the original file may be fine by itself.
  */
-static int parse_path(cptr file, char *exp)
+static bool parse_path(cptr file, char *exp)
 {
     cptr	u, s;
     struct passwd	*pw;
@@ -218,10 +204,10 @@ static int parse_path(cptr file, char *exp)
     exp[0] = '\0';
 
     /* No file? */
-    if (!file) return (0);
+    if (!file) return (FALSE);
 
     /* No tilde? */
-    if (file[0] != '~') return (0);
+    if (file[0] != '~') return (FALSE);
 
     /* Point at the user */
     u = file+1;
@@ -230,7 +216,7 @@ static int parse_path(cptr file, char *exp)
     s = strstr(u, PATH_SEP);
 
     /* Hack -- no long user names */
-    if (s && (s >= u + sizeof(user))) return (0);
+    if (s && (s >= u + sizeof(user))) return (FALSE);
 
     /* Extract a user name */
     if (s) {
@@ -248,7 +234,7 @@ static int parse_path(cptr file, char *exp)
     else pw = getpwuid(getuid());
 
     /* Nothing found? */
-    if (!pw) return (0);
+    if (!pw) return (FALSE);
 
     /* Make use of the info */
     (void)strcpy(exp, pw->pw_dir);
@@ -257,28 +243,19 @@ static int parse_path(cptr file, char *exp)
     if (s) (void)strcat(exp, s);
 
     /* Success */
-    return 1;
+    return (TRUE);
 }
 
 
 #else
 
 /*
- * No default user name
+ * There is no "expansion" on single-user machines
  */
-void user_name(char *buf, int id)
-{
-    /* No name */
-    buf[0] = '\0';
-}
-
-/*
- * There is no expansion on single-user machines
- */
-static int parse_path(cptr file, char *exp)
+static bool parse_path(cptr file, char *exp)
 {
     /* Always fails */
-    return (0);
+    return (FALSE);
 }
 
 #endif
@@ -286,13 +263,28 @@ static int parse_path(cptr file, char *exp)
 
 
 /*
- * Replacement for "fopen" which parses leading tilde's
+ * The Macintosh is a little bit brain-dead sometimes
  */
-FILE *my_tfopen(cptr file, cptr mode)
+
+#ifdef MACINTOSH
+
+# undef open
+# define open(N,F,M) open((char*)(N),F)
+
+# undef write
+# define write(F,B,S) write(F,(char*)(B),S)
+
+#endif /* MACINTOSH */
+
+
+/*
+ * XXX XXX XXX Hack -- replacement for "fopen()"
+ */
+FILE *my_fopen(cptr file, cptr mode)
 {
     char                buf[1024];
 
-    /* Try to parse the path */
+    /* Hack -- Try to parse the path */
     if (parse_path(file, buf)) file = buf;
 
     /* Attempt to fopen the file anyway */
@@ -301,24 +293,213 @@ FILE *my_tfopen(cptr file, cptr mode)
 
 
 /*
- * Replacement for "open" which parses leading tilde's
+ * XXX XXX XXX Hack -- replacement for "fclose()"
  */
-int my_topen(cptr file, int flags, int mode)
+errr my_fclose(FILE *fff)
 {
-    char                buf[1024];
-
-    /* Try to parse the path */
-    if (parse_path(file, buf)) file = buf;
-
-#ifdef MACINTOSH
-    /* Attempt to open the file anyway */
-    /* Macintosh "open()" is brain-dead */
-    return (open((char*)(file), flags));
-#else
-    /* Attempt to open the file anyway */
-    return (open(file, flags, mode));
-#endif
-
+    /* Close, check for error */
+    if (fclose(fff) == EOF) return (1);
+    
+    /* Success */
+    return (0);
 }
 
 
+
+
+/*
+ * Hack -- attempt to open a file descriptor
+ */
+int fd_open(cptr file, int flags, int mode)
+{
+    char                buf[1024];
+
+    /* Hack -- Try to parse the path */
+    if (parse_path(file, buf)) file = buf;
+
+    /* Attempt to open the file */
+    return (open(file, flags, mode));
+}
+
+
+/*
+ * Hack -- attempt to lock a file descriptor
+ *
+ * Legal lock types -- F_UNLCK, F_RDLCK, F_WRLCK
+ */
+errr fd_lock(int fd, int what)
+{
+    /* Verify the fd */
+    if (fd < 0) return (-1);
+
+#ifdef SET_UID
+
+# ifdef USG
+
+    /* Un-Lock */
+    if (what == F_UNLCK) {
+
+        /* Unlock it, Ignore errors */
+        lockf(fd, F_ULOCK, 0);
+    }
+    
+    /* Lock */
+    else {
+
+        /* Lock the score file */
+        if (lockf(fd, F_LOCK, 0) != 0) return (1);
+    }
+
+#else
+
+    /* Un-Lock */
+    if (what == F_UNLCK) {
+
+        /* Unlock it, Ignore errors */
+        (void)flock(fd, LOCK_UN);
+    }
+    
+    /* Lock */
+    else {
+
+        /* Lock the score file */
+        if (flock(fd, LOCK_EX) != 0) return (1);
+    }
+
+# endif
+
+#endif
+
+    /* Success */
+    return (0);
+}
+
+
+/*
+ * Hack -- attempt to seek on a file descriptor
+ */
+errr fd_seek(int fd, huge n)
+{
+    long p;
+
+    /* Verify fd */
+    if (fd < 0) return (-1);
+        
+    /* Seek to the given position */
+    p = lseek(fd, n, SEEK_SET);
+    
+    /* Failure */
+    if (p < 0) return (1);
+    
+    /* Failure */
+    if (p != n) return (1);
+    
+    /* Success */
+    return (0);
+}
+
+
+#if 0
+
+/*
+ * Hack -- attempt to truncate a file descriptor
+ */
+errr fd_chop(int fd, huge n)
+{
+    /* Verify the fd */
+    if (fd < 0) return (-1);
+
+#if defined(sun) || defined(ultrix) || defined(NeXT)
+    /* Truncate */
+    ftruncate(fd, n);
+#endif
+
+    /* Success */
+    return (0);
+}
+
+#endif
+
+
+/*
+ * Hack -- attempt to read data from a file descriptor
+ */
+errr fd_read(int fd, char *buf, huge n)
+{
+    /* Verify the fd */
+    if (fd < 0) return (-1);
+
+#ifndef SET_UID
+
+    /* Read pieces */
+    while (n >= 16384) {
+
+        /* Read a piece */
+        if (read(fd, buf, 16384) != 16384) return (1);
+        
+        /* Shorten the task */
+        buf += 16384;
+
+        /* Shorten the task */
+        n -= 16384;
+    }
+
+#endif
+
+    /* Read the final piece */
+    if (read(fd, buf, n) != n) return (1);
+
+    /* Success */
+    return (0);
+}
+
+
+/*
+ * Hack -- Attempt to write data to a file descriptor
+ */
+errr fd_write(int fd, cptr buf, huge n)
+{
+    /* Verify the fd */
+    if (fd < 0) return (-1);
+
+#ifndef SET_UID
+
+    /* Write pieces */
+    while (n >= 16384) {
+
+        /* Write a piece */
+        if (write(fd, buf, 16384) != 16384) return (1);
+        
+        /* Shorten the task */
+        buf += 16384;
+
+        /* Shorten the task */
+        n -= 16384;
+    }
+
+#endif
+
+    /* Write the final piece */
+    if (write(fd, buf, n) != n) return (1);
+
+    /* Success */
+    return (0);
+}
+
+
+/*
+ * Hack -- attempt to close a file descriptor
+ */
+errr fd_close(int fd)
+{
+    /* Verify the fd */
+    if (fd < 0) return (-1);
+
+    /* Close XXX XXX XXX check error */
+    close(fd);
+    
+    /* Success */
+    return (0);
+}
+
+#endif /* ACORN */

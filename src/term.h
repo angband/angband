@@ -38,9 +38,9 @@
  * That is, they would be if we were actually using this array
  */
 
-typedef struct _term_win term_win;
+typedef struct term_win term_win;
 
-struct _term_win {
+struct term_win {
 
     u16b w, h;
 
@@ -67,6 +67,10 @@ struct _term_win {
 /*
  * An actual "term" structure
  *
+ *	- Extra info (used by application)
+ *
+ *	- Extra data (used by implementation)
+ *
  *	- Have we been activated for the first time?
  *	- Do our support routines use a "software cursor"?
  *	- Should we call the "Event Loop" when "bored"?
@@ -80,11 +84,6 @@ struct _term_win {
  *
  *	- Desired screen image
  *
- *
- *	- Extra info (used by application)
- *
- *	- Extra data (used by implementation)
- *
  *	- Hook for init-ing the term
  *	- Hook for nuke-ing the term
  *
@@ -94,9 +93,9 @@ struct _term_win {
  *	- Hook for drawing a string of characters
  */
 
-typedef struct _term term;
+typedef struct term term;
 
-struct _term {
+struct term {
 
     vptr info;
 
@@ -134,49 +133,35 @@ struct _term {
 
 /**** Available Constants ****/
 
-/* Common keys */
+/*
+ * Max recursion depth of "screen memory"
+ *
+ * Note that "unused" screens waste only 32 bytes each
+ */
+#define MEM_SIZE 8
+
+/*
+ * Hack -- Common keys
+ */
 #define DELETE          0x7f
 #define ESCAPE          '\033'
 
-/* Standard attributes */
-#define TERM_BLACK             0
-#define TERM_WHITE             1
-#define TERM_GRAY              2
-#define TERM_ORANGE            3
-#define TERM_RED               4
-#define TERM_GREEN             5
-#define TERM_BLUE              6
-#define TERM_UMBER             7
-#define TERM_D_GRAY            8
-#define TERM_L_GRAY            9
-#define TERM_VIOLET            10
-#define TERM_YELLOW            11
-#define TERM_L_RED             12
-#define TERM_L_GREEN           13
-#define TERM_L_BLUE            14
-#define TERM_L_UMBER           15
-
-/* Available levels */
-#define TERM_LEVEL_HARD_SHUT	1	/* Hardware Suspend */
-#define TERM_LEVEL_SOFT_SHUT	2	/* Software Suspend */
-#define TERM_LEVEL_SOFT_OPEN	3	/* Software Resume */
-#define TERM_LEVEL_HARD_OPEN	4	/* Hardware Resume */
-
-/* Definitions for "Term_xtra" */
-#define TERM_XTRA_CHECK	11	/* Check for event */
-#define TERM_XTRA_EVENT	12	/* Block until event */
-#define TERM_XTRA_FLUSH 13	/* Flush input (optional) */
-#define TERM_XTRA_FRESH 21	/* Flush output (optional) */
-#define TERM_XTRA_INVIS 31	/* Cursor invisible (optional) */
-#define TERM_XTRA_BEVIS 32	/* Cursor visible (optional) */
-#define TERM_XTRA_REACT 41	/* React to stuff (optional) */
-#define TERM_XTRA_NOISE 51	/* Make a noise (optional) */
-#define TERM_XTRA_SOUND 52	/* Make a sound (optional) */
-#define TERM_XTRA_LEVEL 91	/* Change the "level" (optional) */
-
-/* Max recursion depth of "screen memory" */
-/* Note that unused screens waste only 32 bytes each */
-#define MEM_SIZE 8
+/*
+ * Definitions for the "actions" of "Term_xtra()"
+ *
+ * These values may be used as the first parameter of "Term_xtra()",
+ * with the second parameter depending on the "action" itself.  Many
+ * of the actions shown below are optional on at least one platform.
+ */
+#define TERM_XTRA_EVENT	1	/* Process some pending events */
+#define TERM_XTRA_FLUSH 2	/* Flush all pending events */
+#define TERM_XTRA_FRESH 3	/* Flush output (optional) */
+#define TERM_XTRA_INVIS 5	/* Make cursor invisible (optional) */
+#define TERM_XTRA_BEVIS 6	/* Make cursor visible (optional) */
+#define TERM_XTRA_NOISE 8	/* Make a noise (optional) */
+#define TERM_XTRA_SOUND 9	/* Make a sound (optional) */
+#define TERM_XTRA_ALIVE 10	/* Change the "hard" level (optional) */
+#define TERM_XTRA_LEVEL 11	/* Change the "soft" level (optional) */
 
 
 
@@ -192,7 +177,7 @@ extern errr term_win_load(term_win *t, term_win *s);
 extern errr term_win_nuke(term_win *t);
 extern errr term_win_init(term_win *t, int w, int h);
 extern errr Term_xtra(int n, int v);
-extern errr Term_erase(int x1, int y1, int x2, int y2);
+extern errr Term_erase(int x, int y, int w, int h);
 extern errr Term_clear(void);
 extern errr Term_redraw(void);
 extern errr Term_save(void);
@@ -213,8 +198,7 @@ extern errr Term_putstr(int x, int y, int n, byte a, cptr s);
 extern errr Term_flush(void);
 extern errr Term_keypress(int k);
 extern errr Term_key_push(int k);
-extern int Term_kbhit(void);
-extern int Term_inkey(void);
+extern errr Term_inkey(char *ch, bool wait, bool take);
 extern errr Term_activate(term *t);
 extern errr term_nuke(term *t);
 extern errr term_init(term *t, int w, int h, int k);

@@ -27,18 +27,17 @@
 #endif
 
 
-#if defined(SET_UID)
+#ifdef SET_UID
 
 # include <sys/types.h>
 
 # if defined(Pyramid) || defined(NeXT) || defined(sun) || \
-    defined(NCR3K) || defined(linux) || defined(ibm032) || \
-    defined(__osf__) || defined(ISC) || defined(SGI)
+     defined(NCR3K) || defined(linux) || defined(ibm032) || \
+     defined(__osf__) || defined(ISC) || defined(SGI)
 #  include <sys/time.h>
 # endif
 
-# if !defined(MACINTOSH) && !defined(AMIGA) && \
-    !defined(sgi) && !defined(ultrix)
+# if !defined(sgi) && !defined(ultrix)
 #  include <sys/timeb.h>
 # endif
 
@@ -53,15 +52,11 @@
 # include <unix.h>
 #endif
 
-#ifdef MSDOS
+#if defined(WINDOWS) || defined(MSDOS)
 # include <io.h>
 #endif
 
-#if defined(__MINT__)
-# include <support.h>
-#endif
-
-#if !defined(MACINTOSH) && !defined(AMIGA)
+#if !defined(MACINTOSH) && !defined(AMIGA) && !defined(ACORN)
 # if defined(__TURBOC__) || defined(__WATCOMC__)
 #  include <mem.h>
 # else
@@ -70,18 +65,15 @@
 #endif
 
 
-#if !defined(NeXT) && !defined(__MWERKS__) && !defined(ATARIST_MWC)
+#if !defined(NeXT) && !defined(__MWERKS__) && !defined(ACORN)
 # include <fcntl.h>
 #endif
 
 
-#if defined(SET_UID)
+#ifdef SET_UID
 
 # ifndef USG
 #  include <sys/param.h>
-# endif
-
-# ifndef USG
 #  include <sys/file.h>
 # endif
 
@@ -102,27 +94,55 @@
 #endif
 
 
+#ifdef SET_UID
 
-#ifdef USG
-# ifdef ATARIST_MWC
-   extern char *strcat();
-   extern char *strcpy();
-# else
+# ifdef USG
 #  include <string.h>
+# else
+#  include <strings.h>
+   extern char *strchr();
+   extern char *strstr();
 # endif
+
 #else
-# include <strings.h>
-  extern char *strchr();
-  extern char *strstr();
+
+# include <string.h>
+
 #endif
 
 
-#if !defined(linux) && !defined(__MWERKS__)
+
+#if !defined(linux) && !defined(__MWERKS__) && !defined(ACORN)
   extern long atol();
 #endif
 
 
 #include <stdarg.h>
+
+
+#ifdef ACORN
+
+/*
+ * Hack -- ACORN replacement for the "rename" function
+ */
+
+#define rename(a,b) rename_acn(a,b)
+
+extern int rename_acn(const char *old, const char *new);
+
+/*
+ * Hack -- ACORN replacement for the "remove" function
+ */
+
+#define remove(a)   remove_acn(a)
+
+extern int remove_acn(const char *filename);
+
+/*
+ * XXX XXX XXX What about the "unlink" function?
+ */
+
+#endif /* ACORN */
 
 
 #endif

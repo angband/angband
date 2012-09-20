@@ -38,9 +38,14 @@
 
 /**** Available variables ****/
 
-extern func_errr rnfree_aux;
-extern func_vptr rpanic_aux;
-extern func_vptr ralloc_aux;
+/* Replacement hook for "rnfree()" */
+extern errr (*rnfree_aux)(vptr, huge);
+
+/* Replacement hook for "rpanic()" */
+extern vptr (*rpanic_aux)(huge);
+
+/* Replacement hook for "ralloc()" */
+extern vptr (*ralloc_aux)(huge);
 
 
 /**** Available Routines ****/

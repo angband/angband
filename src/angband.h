@@ -37,16 +37,6 @@
 
 
 /*
- * Include the header file for the random number generator
- * Note that ALL machines can safely include this file now,
- * it simply "redefines" the standard name space to prevent
- * conflicts.  If you include the header (random.h) you must
- * compile the source (random.c).
- */
-#include "random.h"
-
-
-/*
  * Include the "Angband" configuration header
  */
 #include "config.h"
@@ -63,6 +53,12 @@
 
 /***** Some copyright messages follow below *****/
 
+/*
+ * Note that these copyright messages apply to an ancient version
+ * of Angband, as in, from pre-2.4.frog-knows days, and thus the
+ * reference to "5.0" is rather misleading...
+ */
+ 
 /*
  * UNIX ANGBAND Version 5.0
  */

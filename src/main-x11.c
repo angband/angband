@@ -54,10 +54,10 @@ typedef unsigned long Pixell;
 /*
  * The structures defined below
  */
-typedef struct _metadpy metadpy;
-typedef struct _infowin infowin;
-typedef struct _infoclr infoclr;
-typedef struct _infofnt infofnt;
+typedef struct metadpy metadpy;
+typedef struct infowin infowin;
+typedef struct infoclr infoclr;
+typedef struct infofnt infofnt;
 
 
 /*
@@ -88,7 +88,7 @@ typedef struct _infofnt infofnt;
  *	- Bit Flag: We created 'dpy', and so should nuke it when done.
  */
 
-struct _metadpy {
+struct metadpy {
 
   Display	*dpy;
   Screen	*screen;
@@ -144,7 +144,7 @@ struct _metadpy {
  *	- Bit Flag: 4th extra flag
  */
 
-struct _infowin {
+struct infowin {
 
   Window		win;
   long			mask;
@@ -185,7 +185,7 @@ struct _infowin {
  *	- Bit Flag: Destroy 'gc' at Nuke time.
  */
 
-struct _infoclr {
+struct infoclr {
 
   GC			gc;
 
@@ -216,7 +216,7 @@ struct _infoclr {
  *	- Flag: Nuke info when done
  */
 
-struct _infofnt {
+struct infofnt {
 
   XFontStruct	*info;
 
@@ -1049,9 +1049,16 @@ static errr Infofnt_prepare(XFontStruct *info)
   cs = &(info->max_bounds);
 
   /* Extract default sizing info */
+  ifnt->asc = info->ascent;
+  ifnt->hgt = info->ascent + info->descent;
+  ifnt->wid = cs->width;
+
+#ifdef OBSOLETE_SIZING_METHOD
+  /* Extract default sizing info */
   ifnt->asc = cs->ascent;
   ifnt->hgt = (cs->ascent + cs->descent);
   ifnt->wid = cs->width;
+#endif
 
   /* Success */
   return (0);
@@ -1474,12 +1481,12 @@ static infoclr *clr[16];
 /*
  * Forward declare
  */
-typedef struct _term_data term_data;
+typedef struct term_data term_data;
 
 /*
  * A structure for each "term"
  */
-struct _term_data {
+struct term_data {
 
   term t;
 
@@ -1700,9 +1707,9 @@ static void react_keypress(XEvent *xev)
 
 
 /*
- * Process an event (or just check for one)
+ * Process events
  */
-static errr CheckEvent(bool check)
+static errr CheckEvent(bool wait)
 {
   term_data *old_td = (term_data*)(Term->data);
 
@@ -1716,8 +1723,8 @@ static errr CheckEvent(bool check)
   int x, y, data;
 
 
-  /* No events ready, and told to just check */
-  if (check && !XPending(Metadpy->dpy)) return (1);
+  /* Do not wait unless requested */
+  if (!wait && !XPending(Metadpy->dpy)) return (1);
 
   /* Load the Event */
   XNextEvent(Metadpy->dpy, xev);
@@ -1975,14 +1982,15 @@ static errr Term_xtra_x11_level(int v)
 {
   term_data *td = (term_data*)(Term->data);
 
-  /* Only handle "activate" */
-  if (v != TERM_LEVEL_SOFT_OPEN) return (1);
+  /* Handle "activate" */
+  if (v)
+  {
+    /* Activate the "inner" window */
+    Infowin_set(td->inner);
 
-  /* Activate the "inner" window */
-  Infowin_set(td->inner);
-
-  /* Activate the "inner" font */
-  Infofnt_set(td->fnt);
+    /* Activate the "inner" font */
+    Infofnt_set(td->fnt);
+  }
 
   /* Success */
   return (0);
@@ -2003,11 +2011,8 @@ static errr Term_xtra_x11(int n, int v)
         /* Flush the output */
         case TERM_XTRA_FRESH: Metadpy_update(1,0,0); return (0);
 
-        /* Check for a single event */
-        case TERM_XTRA_CHECK: return (CheckEvent(TRUE));
-
-        /* Wait for a single event */
-        case TERM_XTRA_EVENT: return (CheckEvent(FALSE));
+        /* Process Events */
+        case TERM_XTRA_EVENT: return (CheckEvent(v));
 
         /* Handle change in the "level" */
         case TERM_XTRA_LEVEL: return (Term_xtra_x11_level(v));
@@ -2064,7 +2069,7 @@ static errr Term_curs_x11(int x, int y, int z)
 static errr Term_text_x11(int x, int y, int n, byte a, cptr s)
 {
   /* Draw the text in Xor */
-  Infoclr_set(clr[a]);
+  Infoclr_set(clr[a & 0x0F]);
 
   /* Draw the text */
   Infofnt_text_std(x, y, s, n);
@@ -2078,21 +2083,23 @@ static errr Term_text_x11(int x, int y, int n, byte a, cptr s)
 /*
  * Initialize a term_data
  */
-static errr term_data_init(term_data *td, int w, int h, int k, bool fixed, \
-                           cptr name, cptr font)
+static errr term_data_init(term_data *td, bool fixed, cptr name, cptr font)
 {
   term *t = &td->t;
 
-  int wid, hgt;
+  int wid, hgt, num;
 
   /* Prepare the standard font */
   MAKE(td->fnt, infofnt);
   Infofnt_set(td->fnt);
   Infofnt_init_data(font);
 
-  /* Extract the font sizes, add a border */
-  wid = w * td->fnt->wid;
-  hgt = h * td->fnt->hgt;
+  /* Hack -- extract key buffer size */
+  num = (fixed ? 1024 : 16);
+  
+  /* Hack -- Assume full size windows */
+  wid = 80 * td->fnt->wid;
+  hgt = 24 * td->fnt->hgt;
 
   /* Create a top-window (border 5) */
   MAKE(td->outer, infowin);
@@ -2112,7 +2119,7 @@ static errr term_data_init(term_data *td, int w, int h, int k, bool fixed, \
   Infowin_map();
 
   /* Initialize the term (full size) */
-  term_init(t, 80, 24, k);
+  term_init(t, 80, 24, num);
 
   /* Hooks */
   t->xtra_hook = Term_xtra_x11;
@@ -2207,7 +2214,7 @@ errr init_x11(void)
   if (!fnt_name) fnt_name = DEFAULT_X11_FONT_SCREEN;
 
   /* Initialize the screen */
-  term_data_init(&screen, 80, 24, 1024, TRUE, "Angband", fnt_name);
+  term_data_init(&screen, TRUE, "Angband", fnt_name);
   term_screen = Term;
 
 
@@ -2221,7 +2228,7 @@ errr init_x11(void)
   if (!fnt_name) fnt_name = DEFAULT_X11_FONT_RECALL;
 
   /* Initialize the recall window */
-  term_data_init(&recall, 80, 8, 16, FALSE, "Recall", fnt_name);
+  term_data_init(&recall, FALSE, "Recall", fnt_name);
   term_recall = Term;
 
 
@@ -2235,7 +2242,7 @@ errr init_x11(void)
   if (!fnt_name) fnt_name = DEFAULT_X11_FONT_CHOICE;
 
   /* Initialize the choice window */
-  term_data_init(&choice, 80, 24, 16, FALSE, "Choice", fnt_name);
+  term_data_init(&choice, FALSE, "Choice", fnt_name);
   term_choice = Term;
 
 
