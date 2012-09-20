@@ -801,7 +801,7 @@ P:16:1d4:-2:0:0
 
 # This shield does not belong here
 
-N:122:Shield~ of Deflection
+N:122:& Shield~ of Deflection
 I:[:B:34:10:0
 W:70:0:100:10000
 A:70/8

@@ -77,6 +77,13 @@
  *
  * Note that this function is called BEFORE we initialize "term.c",
  * and so none of the basic "message" routines will work here!
+ *
+ * Mega-Hack -- support fat raw files under NEXTSTEP, using
+ * a special "system prefix" for all the "lib/data" files.
+ *
+ * This will cause the "lib/data" directory to hold one set
+ * of "raw" files for each relevant platform, when necessary,
+ * and still hold the "normal" files if no platform is known.
  */
 void init_file_paths(char *path)
 {
@@ -137,6 +144,40 @@ void init_file_paths(char *path)
     /* Build a path name */
     sprintf(tail, "xtra%s", PATH_SEP);
     ANGBAND_DIR_XTRA = string_make(path);
+
+
+#ifdef NeXT
+
+    /* Block */
+    if (TRUE) {
+
+        cptr next = "";
+
+# if defined(m68k)
+        next = "m68k."
+# endif
+
+# if defined(i386)
+        next = "i386."
+# endif
+
+# if defined(sparc)
+        next = "sparc."
+# endif
+
+# if defined(hppa)
+        next = "hppa."
+# endif
+
+        /* Forget the old path name */
+        string_free(ANGBAND_DIR_DATA);
+
+        /* Build a new path name */
+        sprintf(tail, "data%s%s", PATH_SEP, next);
+        ANGBAND_DIR_DATA = string_make(path);
+    }
+
+#endif
 
 
     /*** Verify the "news" file ***/

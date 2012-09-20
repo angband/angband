@@ -2865,29 +2865,29 @@ static void calc_bonuses(void)
 
 
     /* Elf */
-    if (p_ptr->prace == 2) p_ptr->resist_lite = TRUE;
+    if (p_ptr->prace == RACE_ELF) p_ptr->resist_lite = TRUE;
 
     /* Hobbit */
-    if (p_ptr->prace == 3) p_ptr->sustain_dex = TRUE;
+    if (p_ptr->prace == RACE_HOBBIT) p_ptr->sustain_dex = TRUE;
 
     /* Gnome */
-    if (p_ptr->prace == 4) p_ptr->free_act = TRUE;
+    if (p_ptr->prace == RACE_GNOME) p_ptr->free_act = TRUE;
 
     /* Dwarf */
-    if (p_ptr->prace == 5) p_ptr->resist_blind = TRUE;
+    if (p_ptr->prace == RACE_DWARF) p_ptr->resist_blind = TRUE;
 
     /* Half-Orc */
-    if (p_ptr->prace == 6) p_ptr->resist_dark = TRUE;
+    if (p_ptr->prace == RACE_HALF_ORC) p_ptr->resist_dark = TRUE;
 
     /* Half-Troll */
-    if (p_ptr->prace == 7) p_ptr->sustain_str = TRUE;
+    if (p_ptr->prace == RACE_HALF_TROLL) p_ptr->sustain_str = TRUE;
 
     /* Dunadan */
-    if (p_ptr->prace == 8) p_ptr->sustain_con = TRUE;
+    if (p_ptr->prace == RACE_DUNADAN) p_ptr->sustain_con = TRUE;
 
     /* High Elf */
-    if (p_ptr->prace == 9) p_ptr->resist_lite = TRUE;
-    if (p_ptr->prace == 9) p_ptr->see_inv = TRUE;
+    if (p_ptr->prace == RACE_HIGH_ELF) p_ptr->resist_lite = TRUE;
+    if (p_ptr->prace == RACE_HIGH_ELF) p_ptr->see_inv = TRUE;
 
 
     /* Start with "normal" digestion */
@@ -3615,6 +3615,10 @@ static void reorder_pack(void)
 
 /*
  * Handle "p_ptr->update" and "p_ptr->redraw".
+ *
+ * XXX XXX XXX Something related to this function is not working
+ * correctly, for example, when the player is blinded by a flash
+ * from light hound breath, sometimes, some monsters stay visible.
  */
 void handle_stuff(void)
 {
@@ -3680,12 +3684,6 @@ void handle_stuff(void)
 
     /* Redraw (second pass) */
     if (p_ptr->redraw) {
-
-        if (p_ptr->redraw & PR_CAVE) {
-            p_ptr->redraw &= ~(PR_CAVE);
-            p_ptr->redraw |= (PR_MAP | PR_BASIC | PR_EXTRA);
-        }
-
 
         if (p_ptr->redraw & PR_MAP) {
             p_ptr->redraw &= ~(PR_MAP);
@@ -3847,6 +3845,13 @@ void handle_stuff(void)
         }
         
 
+        if (p_ptr->update & PU_NOTE) {
+            p_ptr->update &= ~(PU_NOTE);
+            forget_lite();
+            forget_view();
+        }
+
+
         if (p_ptr->update & PU_VIEW) {
             p_ptr->update &= ~(PU_VIEW);
             update_view();
@@ -3880,36 +3885,6 @@ void handle_stuff(void)
 
 
 
-
-
-/*
- * Bit flags for the special "p_ptr->notice" variable
- */
-#define PN_HUNGRY	0x00000001L
-#define PN_WEAK		0x00000002L
-#define PN_BLIND	0x00000004L
-#define PN_CONFUSED	0x00000008L
-#define PN_FEAR		0x00000010L
-#define PN_POISONED	0x00000020L
-#define PN_FAST		0x00000040L
-#define PN_SLOW		0x00000080L
-#define PN_PARALYSED	0x00000100L
-#define PN_IMAGE	0x00000200L
-#define PN_TIM_INVIS	0x00000400L
-#define PN_TIM_INFRA	0x00000800L
-#define PN_HERO		0x00001000L
-#define PN_SHERO	0x00002000L
-#define PN_BLESSED	0x00004000L
-#define PN_INVULN	0x00008000L
-#define PN_SHIELD	0x00010000L
-#define PN_PROTECT	0x00020000L
-#define PN_TELEPATH	0x00040000L
-/* xxx */
-#define PN_OPP_ACID	0x01000000L
-#define PN_OPP_ELEC	0x02000000L
-#define PN_OPP_FIRE	0x04000000L
-#define PN_OPP_COLD	0x08000000L
-#define PN_OPP_POIS	0x10000000L
 
 
 

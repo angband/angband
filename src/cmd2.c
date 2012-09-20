@@ -2468,11 +2468,6 @@ void move_player(int dir, int do_pickup)
         /* Check for new panel (redraw map) */
         verify_panel();
 
-#ifdef WDT_TRACK_OPTIONS
-        /* Update "tracking" code */
-        if (c_ptr->track < 10) c_ptr->track += 3;
-#endif
-
         /* Update some things */
         p_ptr->update |= (PU_VIEW | PU_LITE | PU_FLOW);
         p_ptr->update |= (PU_DISTANCE);
@@ -3328,7 +3323,6 @@ void do_cmd_fire(void)
     /* Use the missile object */
     i_ptr = &throw_obj;
 
-
     /* Describe the object */
     objdes(i_name, i_ptr, FALSE, 3);
 
@@ -3673,13 +3667,19 @@ void do_cmd_throw(void)
     }
 
 
-    /* Description */
-    objdes(i_name, &throw_obj, TRUE, 3);
-
-    /* If the object looks "not okay", verify it */
+    /* Verify if needed */
     if (!ok_throw) {
 
         char out_val[160];
+
+        inven_type temp_obj;
+        
+        /* Create a "local missile object" */
+        temp_obj = *i_ptr;
+        temp_obj.number = 1;
+
+        /* Description */
+        objdes(i_name, &temp_obj, TRUE, 3);
 
         /* Verify */
         sprintf(out_val, "Really throw %s? ", i_name);
@@ -3710,7 +3710,6 @@ void do_cmd_throw(void)
 
     /* Use the local object */
     i_ptr = &throw_obj;
-
 
     /* Description */
     objdes(i_name, i_ptr, FALSE, 3);

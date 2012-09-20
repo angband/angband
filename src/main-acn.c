@@ -1,8 +1,11 @@
 /* File: main-acn.c */
 
+/* Purpose: Support for Acorn RISC OS Angband */
+
 /*
- * Purpose: Support for Acorn RISC OS Angband
  * Author: Kevin Bracey (kevin@iota.co.uk)
+ *
+ * Warning -- this file may not be up to date for Angband 2.7.9v2
  */
 
 /* Check compiler flag */
@@ -531,6 +534,8 @@ static void cursor(int on)
 
 errr Term_xtra_acn(int n, int v)
 {
+    int i;
+    
     switch (n)
     {
       #ifdef V278
@@ -540,6 +545,11 @@ errr Term_xtra_acn(int n, int v)
       case TERM_XTRA_EVENT:
         return Term_xtra_acn_event(v);
       #else
+      case TERM_XTRA_CLEAR:
+        for (i = 0; i < 24; i++) memset(t->display[i], ' ', 80);
+        update_window(t, x, y, x+n, y+1);
+        return (0);
+        
       case TERM_XTRA_EVENT:
         if (v)
             return Term_xtra_acn_event(v);
@@ -573,39 +583,37 @@ errr Term_xtra_acn(int n, int v)
     }
 }
 
-static errr Term_curs_acn(int x, int y, int z, term_data *t)
+static errr Term_curs_acn(int x, int y, term_data *t)
 {
-    int oldx=t->curs_x, oldy=t->curs_y, oldz=t->curs_vis;
+    int oldx = t->curs_x;
+    int oldy = t->curs_y;
 
-    t->curs_vis=z;
-    t->curs_x=x;
-    t->curs_y=y;
+    t->curs_x = x;
+    t->curs_y = y;
 
-    if (oldz && (x != oldx || y != oldy))
+    if ((x != oldx || y != oldy))
     {
         update_window(t, oldx, oldy, oldx+1, oldy+1);
-        if (t->ocx==-1)
+
+        if (t->ocx == -1)
         {
             t->ocx = oldx;
             t->ocy = oldy;
         }
-
     }
 
-    if (z)
-        update_window(t, t->curs_x, t->curs_y, t->curs_x+1, t->curs_y+1);
+    update_window(t, t->curs_x, t->curs_y, t->curs_x+1, t->curs_y+1);
 
     return 0;
 }
 
-errr Term_wipe_acn(int x, int y, int w, int h, term_data *t)
+errr Term_wipe_acn(int x, int y, int n, term_data *t)
 {
     int i;
 
-    for (i=0; i<h; i++)
-        memset(t->display[y+i]+x, ' ', w);
+    memset(t->display[y]+x, ' ', n);
 
-    update_window(t, x, y, x+w, y+h);
+    update_window(t, x, y, x+n, y+1);
 
     return 0;
 }
@@ -643,9 +651,9 @@ void Term_init_acn(term *t)
     memset(term->oldcol, TERM_WHITE, sizeof(term->oldcol));
 }
 
-errr Term_curs_acn_screen(int x, int y, int z)
+errr Term_curs_acn_screen(int x, int y)
 {
-    return Term_curs_acn(x, y, z, &screen);
+    return Term_curs_acn(x, y, &screen);
 }
 
 static errr Term_text_acn_screen(int x, int y, int n, byte a, cptr s)
@@ -653,9 +661,9 @@ static errr Term_text_acn_screen(int x, int y, int n, byte a, cptr s)
     return Term_text_acn(x, y, n, a, s, &screen);
 }
 
-static errr Term_wipe_acn_screen(int x, int y, int w, int h)
+static errr Term_wipe_acn_screen(int x, int y, int n)
 {
-    return Term_wipe_acn(x, y, w, h, &screen);
+    return Term_wipe_acn(x, y, n &screen);
 }
 
 static errr Term_text_acn_recall(int x, int y, int n, byte a, cptr s)
@@ -663,9 +671,9 @@ static errr Term_text_acn_recall(int x, int y, int n, byte a, cptr s)
     return Term_text_acn(x, y, n, a, s, &recall);
 }
 
-static errr Term_wipe_acn_recall(int x, int y, int w, int h)
+static errr Term_wipe_acn_recall(int x, int y, int n)
 {
-    return Term_wipe_acn(x, y, w, h, &recall);
+    return Term_wipe_acn(x, y, n, &recall);
 }
 
 static errr Term_text_acn_choice(int x, int y, int n, byte a, cptr s)
@@ -673,9 +681,9 @@ static errr Term_text_acn_choice(int x, int y, int n, byte a, cptr s)
     return Term_text_acn(x, y, n, a, s, &choice);
 }
 
-static errr Term_wipe_acn_choice(int x, int y, int w, int h)
+static errr Term_wipe_acn_choice(int x, int y, int n)
 {
-    return Term_wipe_acn(x, y, w, h, &choice);
+    return Term_wipe_acn(x, y, n, &choice);
 }
 
 #ifndef V278
@@ -684,9 +692,9 @@ static errr Term_text_acn_mirror(int x, int y, int n, byte a, cptr s)
     return Term_text_acn(x, y, n, a, s, &mirror);
 }
 
-static errr Term_wipe_acn_mirror(int x, int y, int w, int h)
+static errr Term_wipe_acn_mirror(int x, int y, int n)
 {
-    return Term_wipe_acn(x, y, w, h, &mirror);
+    return Term_wipe_acn(x, y, n, &mirror);
 }
 #endif
 

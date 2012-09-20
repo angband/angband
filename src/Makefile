@@ -5,7 +5,10 @@
 #
 # Note that you may have to make modifications below according
 # to your machine, available libraries, compilation options,
-# and your "visual module" of choice.  See below...
+# and your "visual module" of choice.  This Makefile is intended
+# for use with Unix machines running X11, Curses, Ncurses, or Vt100,
+# or possibly for "Atari" or "Amiga" computers with "Curses" ports,
+# see below for more information.
 #
 # Note that "main-mac.c", the visual module for the Macintosh,
 # must be compiled in a special way, see elsewhere.
@@ -13,17 +16,26 @@
 # Note that "main-win.c", the visual module for Windows,
 # must be compiled in a special way, see elsewhere.
 #
-# Note that "main-286.c", "main-ibm.c", "main-emx.c", etc,
-# are all visual module files for IBM-ish computers, and
+# Note that "main-ibm.c", "main-emx.c", and "main-286.c",
+# the visual modules for various types of IBM-PC computers,
 # must be compiled with special Makefiles, see elsewhere.
 #
-# Note that the "Amiga" and "Atari" versions might compile with
-# the existing "main-gcu.c" file and "USE_GCU" flags, I have not
-# been able to test them for obvious reasons.
+# Note that "main-lsl.c", the visual module for ???,
+# must be compiled with "Makefile.lsl", see elsewhere.
 #
-# If you are able to construct "main-xxx.c" and "Makefile.xxx"
-# files for a currently unsupported system, please send them
-# to me (benh@voicenet.com) for inclusion in future versions.
+# Note that "main-acn.c", the visual module for Risc Acorn,
+# must be compiled with "Makefile.acn", see elsewhere.
+#
+# Note that "Makefile.w31" and "Makefile.wat" are slight variations
+# on "Makefile.win" and "Makefile.ibm", respectively, which allow
+# the use of the "main-win.c" and "main-ibm.c" files, respectively,
+# with special compilers.
+#
+# If you are able to construct "main-xxx.c" and/or "Makefile.xxx"
+# files for a currently unsupported system, please send them to me
+# (benh@voicenet.com) for inclusion in future versions.
+#
+# This Makefile comes with "default" dependancies that may be obsolete.
 #
 
 
@@ -31,9 +43,6 @@
 # Here are the basic "source" and "object" files.  You may remove
 # the "borg*" and "wiz*" files unless you are compiling with the
 # "ALLOW_BORG" or "ALLOW_WIZARD" or "ALLOW_SPOILERS" options.
-#
-# The blank lines after each block are mandatory to allow every
-# line to end with a backslash (for convenient modifications)
 #
 
 SRCS = \
@@ -193,15 +202,29 @@ LIBS = -lX11 -lcurses -ltermcap
 #LIBS = -lX11 -lcurses -lnsl_s -linet -lcposix
 
 
+##
+## Variation -- Support fat binaries under NEXTSTEP
+##
+#CFLAGS = -Wall -O1 -pipe -g -D"USE_GCU" -arch m68k -arch i386
+#LIBS = -lcurses -ltermcap
+
 
 
 #
-# Build the "Angband" program and move it up one directory
+# Hack -- "install" as the base target
+#
+
+install: angband
+	cp angband ..
+
+
+#
+# Build the "Angband" program
 #
 
 angband: $(OBJS)
 	$(CC) $(CFLAGS) -o angband $(OBJS) $(LDFLAGS) $(LIBS)
-	mv angband ..
+
 
 #
 # Clean up old junk
@@ -210,14 +233,74 @@ angband: $(OBJS)
 clean:
 	\rm *.bak *.o
 
+
 #
-# Generate dependancies automatically (not required)
+# Generate dependancies automatically
 #
 
 depend:
 	makedepend -D__MAKEDEPEND__ $(SRCS)
 
 
+#
+# Basic header files
+#
+
+#h-basic.h: h-define.h h-type.h h-system.h h-config.h
+
+#angband.h: config.h defines.h types.h externs.h \
+#angband.h: term.h z-util.h z-virt.h z-form.h h-basic.h
+
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
+
+birth.o: birth.c angband.h
+borg-aux.o: borg-aux.c angband.h borg-aux.h borg-ext.h
+borg-aux.o: borg-obj.h borg-map.h borg.h
+borg-ben.o: borg-ben.c angband.h borg-ben.h borg-aux.h borg-ext.h
+borg-ben.o: borg-obj.h borg-map.h borg.h
+borg-ext.o: borg-ext.c angband.h borg-ext.h
+borg-ext.o: borg-obj.h borg-map.h borg.h
+borg-obj.o: borg-obj.c angband.h borg-obj.h borg.h
+borg-map.o: borg-map.c angband.h borg-map.h borg.h
+borg.o: borg.c angband.h borg.h
+cave.o: cave.c angband.h
+cmd1.o: cmd1.c angband.h
+cmd2.o: cmd2.c angband.h
+cmd3.o: cmd3.c angband.h
+cmd4.o: cmd4.c angband.h
+cmd5.o: cmd5.c angband.h
+cmd6.o: cmd6.c angband.h
+dungeon.o: dungeon.c angband.h
+effects.o: effects.c angband.h
+files.o: files.c angband.h
+generate.o: generate.c angband.h
+init.o: init.c angband.h
+io.o: io.c angband.h
+main-cap.o: main-cap.c angband.h
+main-gcu.o: main-gcu.c angband.h
+main-x11.o: main-x11.c angband.h
+main-xaw.o: main-xaw.c angband.h
+main.o: main.c angband.h
+melee.o: melee.c angband.h
+misc.o: misc.c angband.h
+mon-desc.o: mon-desc.c angband.h
+monster.o: monster.c angband.h
+obj-desc.o: obj-desc.c angband.h
+object.o: object.c angband.h
+save-old.o: save-old.c angband.h
+save.o: save.c angband.h
+signals.o: signals.c angband.h
+spells1.o: spells1.c angband.h
+spells2.o: spells2.c angband.h
+store.o: store.c angband.h
+tables.o: tables.c angband.h
+term.o: term.c h-basic.h term.h z-virt.h
+util.o: util.c angband.h
+variable.o: variable.c angband.h
+wiz-spo.o: wiz-spo.c angband.h
+wizard.o: wizard.c angband.h
+z-form.o: z-form.c h-basic.h z-form.h z-util.h z-virt.h
+z-util.o: z-util.c h-basic.h z-util.h
+z-virt.o: z-virt.c h-basic.h z-virt.h z-util.h
 

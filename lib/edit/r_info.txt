@@ -61,13 +61,14 @@
 # "fire" monsters became simply "red" monsters.  The net result was that
 # the "&" and "J" symbols were released, and the "u" symbol was taken.
 
-# Kavlax the many headed ("d") was changed into an ancient dragon ("D")
+# Kavlax the many headed ("d"), and the nasty "drolem" monsters, might be
+# (later) changed into ancient dragons ("D"), since they are so nasty.
 
 # The "F" race is now just dragon fly's, the "t" race is now just townspeople,
 # the "l" and "I" race are now very similar (in fact, they could be combined),
 # the "S" race now includes many different eight legged monsters, all the "a"
 # monsters are now "ants", the major/minor demons now have similar symbols,
-# and the "Jabberwock" and "Umber Hulk" now have friends.  The "B" and "X"
+# and the "Jabberwock" and "Umber Hulk" are now beetles.  The "B" and "X"
 # and "Y" races are still very small.  Note that the only non-letter monsters
 # are now the mushrooms (,) and the creeping coins ($) and the mimics (!,?,=),
 # all of which attempt to "pretend" to be something they are not.  The "&"

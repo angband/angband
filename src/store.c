@@ -49,7 +49,7 @@ static cptr comment_2b[MAX_COMMENT_2B] = {
     "May the fleas of 1000 orcs molest you!  Try %s gold pieces.",
     "May your most favourite parts go moldy!  Try %s gold pieces.",
     "May Morgoth find you tasty!  Perhaps %s gold pieces?",
-    "Your mother was an Orge!  Perhaps %s gold pieces?"
+    "Your mother was an Ogre!  Perhaps %s gold pieces?"
 };
 
 #define MAX_COMMENT_3A	2
@@ -2923,11 +2923,11 @@ void store_enter(int which)
 
 
     /* Update stuff */
-    p_ptr->update |= (PU_VIEW | PU_LITE | PU_FLOW);
-    p_ptr->update |= (PU_DISTANCE);
+    p_ptr->update |= (PU_VIEW | PU_LITE);
+    p_ptr->update |= (PU_MONSTERS);
 
     /* Redraw stuff */
-    p_ptr->redraw |= (PR_WIPE | PR_CAVE);
+    p_ptr->redraw |= (PR_WIPE | PR_MAP | PR_BASIC | PR_EXTRA);
 }
 
 

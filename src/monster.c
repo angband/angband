@@ -844,6 +844,9 @@ void update_mon(int m_idx, bool dist)
         if (do_weird_mind) r_ptr->r_flags2 |= RF2_WEIRD_MIND;
         if (do_cold_blood) r_ptr->r_flags2 |= RF2_COLD_BLOOD;
         if (do_invisible) r_ptr->r_flags2 |= RF2_INVISIBLE;
+
+        /* Efficiency -- Notice multi-hued monsters */
+        if (r_ptr->flags1 & RF1_ATTR_MULTI) scan_monsters = TRUE;
     }
 
     /* The monster has disappeared */
@@ -928,6 +931,9 @@ static bool place_monster_one(int y, int x, int r_idx, bool slp)
     /* Require empty space */
     if (!empty_grid_bold(y, x)) return (FALSE);
 
+    /* Hack -- no creation on glyph of warding */
+    if ((cave[y][x].feat & 0x3F) == 0x03) return (FALSE);
+        
 
     /* Paranoia */
     if (!r_ptr->name) return (FALSE);
@@ -1982,6 +1988,9 @@ bool summon_specific(int y1, int x1, int lev, int type)
         /* Require "empty" floor grid */
         if (!empty_grid_bold(y, x)) continue;
 
+        /* Hack -- no summon on glyph of warding */
+        if ((cave[y][x].feat & 0x3F) == 0x03) continue;
+        
         /* Save the "summon" type */
         summon_specific_type = type;
 
@@ -2093,163 +2102,6 @@ static int mon_will_run(int m_idx)
 }
 
 
-#ifdef WDT_TRACK_OPTIONS
-
-/*
- * Set the "track" field for a monster
- */
-static void set_t_bit(int m_idx, bool player, bool direct)
-{
-    monster_type *m_ptr = &m_list[m_idx];
-
-    m_ptr->t_bit = 0;
-
-    if (player) m_ptr->t_bit |= MTB_PLAYER;
-    if (direct) m_ptr->t_bit |= MTB_DIRECT;
-}
-
-
-/*
- * Update the target.  This is a slightly silly function.
- */
-static void get_target(int m_idx)
-{
-    monster_type *m_ptr = &m_list[m_idx];
-    monster_race *r_ptr = &r_info[m_ptr->r_idx];
-
-
-    /* Hack -- Certain monsters can "see" the player */
-    if (player_has_los_bold(m_ptr->fy, m_ptr->fx)) {
-
-        /* Target the player */
-        m_ptr->ty = py;
-        m_ptr->tx = px;
-
-        /* Remember for a few turns */
-        m_ptr->t_dur = 10;
-
-        /* Direct knowledge of the player */
-        set_t_bit(m_idx, TRUE, TRUE);
-
-        /* Done */
-        return;
-    }
-
-
-    /* Hack -- Certain monsters "know" where the player is */
-    if (((r_ptr->flags2 & RF2_PASS_WALL) ||
-         (r_ptr->flags2 & RF2_KILL_WALL)) &&
-        (m_ptr->cdis < r_ptr->aaf)) {
-
-        /* Target the player */
-        m_ptr->ty = py;
-        m_ptr->tx = px;
-
-        /* But only for one turn */
-        m_ptr->t_dur = 1;
-
-        /* Indirect knowledge of the player */
-        set_t_bit(m_idx, TRUE, FALSE);
-
-        /* Done */
-        return;
-    }
-
-
-    /* Check to see if we used to know where the player was... */
-    if (m_ptr->t_bit & MTB_PLAYER) {
-
-        /* We used to have direct knowledge, remember it */
-        if (m_ptr->t_bit & MTB_DIRECT) {
-            m_ptr->t_dur = 2 + r_ptr->aaf / 3;
-            set_t_bit(m_idx, TRUE, FALSE);
-        }
-
-        /* We have been relying on old information, age it */
-        else {
-            if (m_ptr->t_dur) m_ptr->t_dur--;
-            set_t_bit(m_idx, TRUE, FALSE);
-        }
-
-        /* Done (unless arrived) */
-        if (m_ptr->fy != m_ptr->ty) return;
-        if (m_ptr->fx != m_ptr->tx) return;
-    }
-
-
-    /* Follow footsteps */
-    if (TRUE) {
-
-        int i, y, x, n, best, here;
-
-        int y1 = m_ptr->fy;
-        int x1 = m_ptr->fx;
-
-        cave_type *c_ptr;
-
-        /* Monster grid */
-        c_ptr = &cave[y1][x1];
-
-        /* No "good" choices so far */
-        n = 0;
-
-        /* Best so far */
-        here = best = c_ptr->track;
-
-        /* Target ourself */
-        m_ptr->ty = y1;
-        m_ptr->tx = x1;
-
-        /* Only for one turn */
-        m_ptr->t_dur = 1;
-
-        /* Not targeting player */
-        set_t_bit(m_idx, FALSE, FALSE);
-
-
-        /* Check adjacent grids, diagonals last */
-        for (i = 0; i < 8; i++) {
-
-            /* Get the location */
-            y = y1 + ddy_ddd[i];
-            x = x1 + ddx_ddd[i];
-
-            /* Get the grid */
-            c_ptr = &cave[y][x];
-
-            /* Don't even look at walls */
-            if (c_ptr->info & GRID_WALL_MASK) continue;
-
-            /* Ignore less trampled locations */
-            if (c_ptr->track < best) continue;
-
-            /* Count valid locations */
-            n++;
-
-            /* Hack -- Choose between "equally valid" locations */
-            if ((c_ptr->track == best) && (rand_int(n) > 0)) continue;
-
-            /* Save the new best location */
-            best = c_ptr->track;
-
-            /* Target that location */
-            m_ptr->ty = y;
-            m_ptr->tx = x;
-
-            /* But only for one turn */
-            m_ptr->t_dur = 1;
-
-            /* No direct knowledge */
-            set_t_bit(m_idx, FALSE, FALSE);
-        }
-
-        /* Hack -- do not wander aimlessly */
-        if (best == here) m_ptr->t_dur = 0;
-    }
-}
-
-#endif
-
 
 
 #ifdef MONSTER_FLOW
@@ -2351,11 +2203,7 @@ static bool get_moves_aux(int m_idx, int *yp, int *xp)
 
 
 /*
- * Choose correct directions for monster movement	-RAK-	
- *
- * Perhaps monster fear should only work when player can be seen?
- *
- * This function does not have to worry about monster mobility
+ * Choose "logical" directions for monster movement
  */
 static void get_moves(int m_idx, int *mm)
 {
@@ -2368,19 +2216,6 @@ static void get_moves(int m_idx, int *mm)
     int y2 = py;
     int x2 = px;
 
-
-#ifdef WDT_TRACK_OPTIONS
-    /* Follow the player */
-    if (track_follow) {
-
-        /* Invalid target */
-        if (m_ptr->t_dur <= 0) return;
-
-        /* Approach the target */
-        y2 = m_ptr->ty;
-        x2 = m_ptr->tx;
-    }
-#endif
 
 #ifdef MONSTER_FLOW
     /* Flow towards the player */
@@ -2906,6 +2741,7 @@ static void process_monster(int m_idx)
     /* Normal movement */
     else {
 
+        /* Logical moves */
         get_moves(m_idx, mm);
     }
 
@@ -3230,12 +3066,6 @@ static void process_monster(int m_idx)
             /* Redraw the new grid */
             lite_spot(ny, nx);
 
-#ifdef WDT_TRACK_OPTIONS
-            /* Erase the player footprints */
-            if (c_ptr->track > 4) c_ptr->track -= 2;
-            if (c_ptr->track > -7) c_ptr->track -= 1;
-#endif
-
             /* Hack -- Moving monsters can disturb the player */
             if (m_ptr->ml &&
                 (disturb_move ||
@@ -3510,25 +3340,16 @@ void process_monsters(void)
         }
 #endif
 
-#ifdef WDT_TRACK_OPTIONS
-        /* Hack -- Monsters can "follow" the player */
-        else if (track_follow || track_target) {
 
-            /* Re-acquire the target */
-            get_target(i);
-
-            /* We can "track" the player */
-            test = TRUE;
-        }
-#endif
+        /* Do nothing */
+        if (!test) continue;
 
 
         /* Process the monster */
-        if (test) process_monster(i);
+        process_monster(i);
 
-
-        /* Hack -- notice player death or departure */
-        if (!alive || death || new_level_flag) break;
+        /* Hack -- notice death or departure */
+        if (!alive || new_level_flag) break;
     }
 
 

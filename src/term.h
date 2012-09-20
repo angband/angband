@@ -87,9 +87,11 @@ struct term_win {
  *	- Hook for init-ing the term
  *	- Hook for nuke-ing the term
  *
- *	- Hook for various actions
- *	- Hook for placing a cursor
- *	- Hook for erasing a block of characters
+ *	- Hook for user actions
+ *	- Hook for extra actions
+ *	- Hook for placing the cursor
+ *	- Hook for drawing a special picture
+ *	- Hook for drawing some blank spaces
  *	- Hook for drawing a string of characters
  */
 
@@ -97,7 +99,7 @@ typedef struct term term;
 
 struct term {
 
-    vptr info;
+    vptr user;
 
     vptr data;
 
@@ -119,9 +121,13 @@ struct term {
     void (*init_hook)(term *t);
     void (*nuke_hook)(term *t);
 
+    errr (*user_hook)(int n);
     errr (*xtra_hook)(int n, int v);
-    errr (*curs_hook)(int x, int y, int z);
-    errr (*wipe_hook)(int x, int y, int w, int h);
+
+    errr (*wipe_hook)(int x, int y, int n);
+
+    errr (*curs_hook)(int x, int y);
+    errr (*pict_hook)(int x, int y, int p);
     errr (*text_hook)(int x, int y, int n, byte a, cptr s);
 };
 
@@ -133,6 +139,7 @@ struct term {
 
 /**** Available Constants ****/
 
+
 /*
  * Max recursion depth of "screen memory"
  *
@@ -140,11 +147,6 @@ struct term {
  */
 #define MEM_SIZE 8
 
-/*
- * Hack -- Common keys
- */
-#define DELETE          0x7f
-#define ESCAPE          '\033'
 
 /*
  * Definitions for the "actions" of "Term_xtra()"
@@ -153,11 +155,13 @@ struct term {
  * with the second parameter depending on the "action" itself.  Many
  * of the actions shown below are optional on at least one platform.
  */
-#define TERM_XTRA_EVENT	1	/* Process some pending events */
-#define TERM_XTRA_FLUSH 2	/* Flush all pending events */
-#define TERM_XTRA_FRESH 3	/* Flush output (optional) */
-#define TERM_XTRA_INVIS 5	/* Make cursor invisible (optional) */
-#define TERM_XTRA_BEVIS 6	/* Make cursor visible (optional) */
+#define TERM_XTRA_CLEAR 1	/* Clear the screen */
+#define TERM_XTRA_EVENT	2	/* Process some pending events */
+#define TERM_XTRA_FLUSH 3	/* Flush all pending events */
+#define TERM_XTRA_FROSH 4	/* Flush one row (optional) */
+#define TERM_XTRA_FRESH 5	/* Flush all rows (optional) */
+#define TERM_XTRA_INVIS 6	/* Make cursor invisible (optional) */
+#define TERM_XTRA_BEVIS 7	/* Make cursor visible (optional) */
 #define TERM_XTRA_NOISE 8	/* Make a noise (optional) */
 #define TERM_XTRA_SOUND 9	/* Make a sound (optional) */
 #define TERM_XTRA_ALIVE 10	/* Change the "hard" level (optional) */
@@ -176,6 +180,7 @@ extern errr term_win_wipe(term_win *t);
 extern errr term_win_load(term_win *t, term_win *s);
 extern errr term_win_nuke(term_win *t);
 extern errr term_win_init(term_win *t, int w, int h);
+extern errr Term_user(int n);
 extern errr Term_xtra(int n, int v);
 extern errr Term_erase(int x, int y, int w, int h);
 extern errr Term_clear(void);

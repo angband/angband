@@ -70,16 +70,15 @@ void delete_object_idx(int i_idx)
 
 
     /* XXX XXX XXX XXX */
+
     /* Hack -- Forget the grid */
     if (c_ptr->feat & CAVE_MARK) {
 
         /* Forget the grid */
         c_ptr->feat &= ~CAVE_MARK;
 
-        /* Mega-Hack -- see "update_map()" in "cave.c" */
-        if (view_perma_grids && (c_ptr->feat & CAVE_GLOW)) {
-            c_ptr->feat |= CAVE_MARK;
-        }
+        /* Hack -- Notice spot */
+        note_spot(y, x);
     }
 
 
@@ -125,6 +124,8 @@ void delete_object(int y, int x)
  *
  * XXX Base the saving throw on a combination of monster level,
  * distance from player, and current "desperation".
+ *
+ * Note that this function no longer affects terrain features.
  */
 void compact_objects(int size)
 {
@@ -181,11 +182,6 @@ void compact_objects(int size)
         }
     }
 
-
-    /* Update stuff */
-    p_ptr->update |= (PU_VIEW | PU_LITE | PU_FLOW);
-    p_ptr->update |= (PU_MONSTERS);
-
     /* Redraw */
     p_ptr->redraw |= (PR_MAP);
 }
@@ -212,8 +208,8 @@ void wipe_i_list()
         /* Mega-Hack -- preserve artifacts */
         if (p_ptr->preserve) {
 
-            /* Hack -- Preserve artifacts */
-            if (artifact_p(i_ptr)) {
+            /* Hack -- Preserve unknown artifacts */
+            if (artifact_p(i_ptr) && !inven_known_p(i_ptr)) {
 
                 /* Mega-Hack -- Preserve the artifact */
                 a_info[i_ptr->name1].cur_num = 0;
@@ -2563,65 +2559,70 @@ static void a_m_aux_4(inven_type *i_ptr, int level, int power)
  * In particular, note that "Instant Artifacts", if "created" by an external
  * routine, must pass through this function to complete the actual creation.
  *
- * The base "chance" of being "good" increases with the "level" parameter,
- * which is usually derived from the dungeon level.  Note that the "good"
- * and "great" flags over-ride this parameter somewhat.
- *			
- * If "okay" is true, this routine will have a small chance of turning
- * the object into an artifact.  If "good" is true, the object is guaranteed
- * to be good.  If "great" is true, it is guaranteed to be "great".  Note
- * that even if "good" or "great" are false, there is still a chance for
- * good stuff to be created, even artifacts (if "okay" is TRUE).  Note that
- * an item gets 3 extra "rolls" to become an artifact if "great" is TRUE.
+ * The base "chance" of the item being "good" increases with the "level"
+ * parameter, which is usually derived from the dungeon level, being equal
+ * to the level plus 10, up to a maximum of 75.  If "good" is true, then
+ * the object is guaranteed to be "good".  If an object is "good", then
+ * the chance that the object will be "great" (ego-item or artifact), also
+ * increases with the "level", being equal to half the level, plus 5, up to
+ * a maximum of 20.  If "great" is true, then the object is guaranteed to be
+ * "great".  At dungeon level 65 and below, 15/100 objects are "great".
  *
- * Note that the basic chance calculations have changed.  Every object has
- * a base chance to be "good" between 10 and 90 percent, though even when
- * trolling for Morgoth, this chance is usually only 78 percent or so.  If
- * an object fails its "goodness" roll, then it has the same chance of being
- * cursed.  A good item has a chance of being great, and a cursed item has
- * chance of being broken.  For rings and amulets, an otherwise "normal"
- * item is "good" half the time and "cursed" half the time.
+ * If the object is not "good", there is a chance it will be "cursed", and
+ * if it is "cursed", there is a chance it will be "broken".  These chances
+ * are related to the "good" / "great" chances above.
+ *
+ * Otherwise "normal" rings and amulets will be "good" half the time and
+ * "cursed" half the time, unless the ring/amulet is always good or cursed.
+ *
+ * If "okay" is true, and the object is going to be "great", then there is
+ * a chance that an artifact will be created.  This is true even if both the
+ * "good" and "great" arguments are false.  As a total hack, if "great" is
+ * true, then the item gets 3 extra "attempts" to become an artifact.
  */
-void apply_magic(inven_type *i_ptr, int level, bool okay, bool good, bool great)
+void apply_magic(inven_type *i_ptr, int lev, bool okay, bool good, bool great)
 {
-    int i, rolls, chance, power;
+    int i, rolls, f1, f2, power;
 
 
-    /* Maximum level */
-    if (level > MAX_DEPTH - 1) level = MAX_DEPTH - 1;
+    /* Maximum "level" for various things */
+    if (lev > MAX_DEPTH - 1) lev = MAX_DEPTH - 1;
 
 
     /* Base chance of being "good" */
-    chance = 100 * level / MAX_DEPTH;
-
-    /* Minimal chance of being "good" */
-    if (chance < 10) chance = 10;
+    f1 = lev + 10;
     
     /* Maximal chance of being "good" */
-    if (chance > 90) chance = 90;
+    if (f1 > 75) f1 = 75;
+
+    /* Base chance of being "great" */
+    f2 = f1 / 2;
+    
+    /* Maximal chance of being "great" */
+    if (f2 > 20) f2 = 20;
 
 
     /* Assume normal */
     power = 0;
     
     /* Roll for "good" */
-    if (good || magik(chance)) {
+    if (good || magik(f1)) {
 
-        /* Assume good */
+        /* Assume "good" */
         power = 1;
         
         /* Roll for "great" */
-        if (great || magik(chance / 4)) power = 2;
+        if (great || magik(f2)) power = 2;
     }
     
-    /* Roll for cursed */
-    else if (magik(chance)) {
+    /* Roll for "cursed" */
+    else if (magik(f1)) {
 
-        /* Assume cursed */
+        /* Assume "cursed" */
         power = -1;
 
         /* Roll for "broken" */
-        if (magik(chance / 4)) power = -2;
+        if (magik(f2)) power = -2;
     }
 
 
@@ -2697,7 +2698,7 @@ void apply_magic(inven_type *i_ptr, int level, bool okay, bool good, bool great)
         case TV_SHOT:
         case TV_ARROW:
         case TV_BOLT:
-            if (power) a_m_aux_1(i_ptr, level, power);
+            if (power) a_m_aux_1(i_ptr, lev, power);
             break;
             
         case TV_DRAG_ARMOR:
@@ -2709,17 +2710,17 @@ void apply_magic(inven_type *i_ptr, int level, bool okay, bool good, bool great)
         case TV_CLOAK:
         case TV_GLOVES:
         case TV_BOOTS:
-            if (power) a_m_aux_2(i_ptr, level, power);
+            if (power) a_m_aux_2(i_ptr, lev, power);
             break;
 
         case TV_RING:
         case TV_AMULET:
             if (!power && (rand_int(100) < 50)) power = -1;
-            a_m_aux_3(i_ptr, level, power);
+            a_m_aux_3(i_ptr, lev, power);
             break;
 
         default:
-            a_m_aux_4(i_ptr, level, power);
+            a_m_aux_4(i_ptr, lev, power);
             break;
     }
     

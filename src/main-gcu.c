@@ -207,6 +207,14 @@ static term term_screen_body;
 #ifdef A_COLOR
 
 /*
+ * Hack -- define "A_BRIGHT" to be "A_BOLD", because on many
+ * machines, "A_BRIGHT" produces ugly "inverse" video.
+ */
+#ifndef A_BRIGHT
+# define A_BRIGHT A_BOLD
+#endif
+
+/*
  * Software flag -- we are allowed to use color
  */
 static bool can_use_color = FALSE;
@@ -651,7 +659,6 @@ static errr Term_xtra_gcu_event(int v)
 #endif	/* USE_GETCH */
 
 
-
 /*
  * Handle a "special request"
  */
@@ -660,29 +667,51 @@ static errr Term_xtra_gcu(int n, int v)
     /* Analyze the request */
     switch (n)
     {
+        /* Clear screen */
+        case TERM_XTRA_CLEAR:
+            touchwin(stdscr);
+            (void)clear();
+            return (0);
+
         /* Make a noise */
-        case TERM_XTRA_NOISE: (void)write(1, "\007", 1); return (0);
+        case TERM_XTRA_NOISE:
+            (void)write(1, "\007", 1);
+            return (0);
 
         /* Flush the Curses buffer */
-        case TERM_XTRA_FRESH: (void)refresh(); return (0);
+        case TERM_XTRA_FRESH:
+            (void)refresh();
+            return (0);
 
 #ifdef USE_CURS_SET
 
         /* Make the cursor invisible */
-        case TERM_XTRA_INVIS: curs_set(0); return (0);
+        case TERM_XTRA_INVIS:
+            curs_set(0);
+            return (0);
 
         /* Make the cursor visible */
-        case TERM_XTRA_BEVIS: curs_set(1); return (0);
+        case TERM_XTRA_BEVIS:
+            curs_set(1);
+            return (0);
 
 #endif
 
         /* Suspend/Resume curses */
-        case TERM_XTRA_ALIVE: return (Term_xtra_gcu_alive(v));
+        case TERM_XTRA_ALIVE:
+            return (Term_xtra_gcu_alive(v));
 
         /* Process events */
-        case TERM_XTRA_EVENT: return (Term_xtra_gcu_event(v));
+        case TERM_XTRA_EVENT:
+            return (Term_xtra_gcu_event(v));
+        
+        /* Flush events */
+        case TERM_XTRA_FLUSH:
+            while (!Term_xtra_gcu_event(FALSE));
+            return (0);
     }
 
+    /* Unknown */
     return (1);
 }
 
@@ -690,7 +719,7 @@ static errr Term_xtra_gcu(int n, int v)
 /*
  * Actually MOVE the hardware cursor
  */
-static errr Term_curs_gcu(int x, int y, int z)
+static errr Term_curs_gcu(int x, int y)
 {
     /* Literally move the cursor */
     move(y,x);
@@ -704,38 +733,21 @@ static errr Term_curs_gcu(int x, int y, int z)
  * Erase a grid of space
  * Hack -- try to be "semi-efficient".
  */
-static errr Term_wipe_gcu(int x, int y, int w, int h)
+static errr Term_wipe_gcu(int x, int y, int n)
 {
-    int dx, dy;
+    /* Place cursor */
+    move(y,x);
 
-    if (!x && !y && (w >= 80) && (h >= 24))
+    /* Clear to end of line */
+    if (x + n >= 80)
     {
-        touchwin(stdscr);
-        (void)clear();
+        clrtoeol();
     }
 
-    else if (!x && (h >= 24) && (w >= 80))
-    {
-        move(y,x);
-        clrtobot();
-    }
-
-    else if (w >= 80)
-    {
-        for (dy = 0; dy < h; ++dy)
-        {
-            move(y+dy,x);
-            clrtoeol();
-        }
-    }
-
+    /* Clear some characters */
     else
     {
-        for (dy = 0; dy < h; ++dy)
-        {
-            move(y+dy,x);
-            for (dx = 0; dx < w; ++dx) addch(' ');
-        }
+        while (n-- > 0) addch(' ');
     }
 
     /* Hack -- Fix the cursor */
@@ -833,11 +845,7 @@ errr init_gcu(void)
                      (COLOR_PAIRS >= 16));
 #endif
 
-    /* Init the Color-pairs and set up a translation table */
-    /* If the terminal has enough colors */
-    /* Color-pair 0 is *always* WHITE on BLACK */
-
-    /* Only do this if we can use it */
+    /* Initialize the color table if needed */
     if (can_use_color && !can_fix_color) {
 
         /* Color-pair 0 is *always* WHITE on BLACK */
@@ -852,22 +860,22 @@ errr init_gcu(void)
         init_pair (7, COLOR_BLACK,   COLOR_BLACK);
 
         /* Prepare the "Angband Colors" -- Bright white is too bright */
-        colortable[ 0] = (COLOR_PAIR(7) | A_NORMAL);      /* Black */
-        colortable[ 1] = (COLOR_PAIR(0) | A_NORMAL);      /* White */
-        colortable[ 2] = (COLOR_PAIR(6) | A_NORMAL);      /* Grey XXX */
-        colortable[ 3] = (COLOR_PAIR(3) | A_STANDOUT);    /* Orange XXX */
-        colortable[ 4] = (COLOR_PAIR(1) | A_NORMAL);      /* Red */
-        colortable[ 5] = (COLOR_PAIR(2) | A_NORMAL);      /* Green */
-        colortable[ 6] = (COLOR_PAIR(4) | A_NORMAL);      /* Blue */
-        colortable[ 7] = (COLOR_PAIR(3) | A_NORMAL);      /* Brown */
-        colortable[ 8] = (COLOR_PAIR(7) | A_STANDOUT);    /* Dark-grey XXX */
-        colortable[ 9] = (COLOR_PAIR(6) | A_STANDOUT);    /* Light-grey XXX */
-        colortable[10] = (COLOR_PAIR(5) | A_NORMAL);      /* Purple */
-        colortable[11] = (COLOR_PAIR(3) | A_STANDOUT);    /* Yellow */
-        colortable[12] = (COLOR_PAIR(1) | A_STANDOUT);    /* Light Red */
-        colortable[13] = (COLOR_PAIR(2) | A_STANDOUT);    /* Light Green */
-        colortable[14] = (COLOR_PAIR(4) | A_STANDOUT);    /* Light Blue */
-        colortable[15] = (COLOR_PAIR(3) | A_NORMAL);      /* Light Brown XXX */
+        colortable[ 0] = (COLOR_PAIR(7) | A_NORMAL);	/* Black */
+        colortable[ 1] = (COLOR_PAIR(0) | A_NORMAL);	/* White */
+        colortable[ 2] = (COLOR_PAIR(6) | A_NORMAL);	/* Grey XXX */
+        colortable[ 3] = (COLOR_PAIR(3) | A_BRIGHT);	/* Orange XXX */
+        colortable[ 4] = (COLOR_PAIR(1) | A_NORMAL);	/* Red */
+        colortable[ 5] = (COLOR_PAIR(2) | A_NORMAL);	/* Green */
+        colortable[ 6] = (COLOR_PAIR(4) | A_NORMAL);	/* Blue */
+        colortable[ 7] = (COLOR_PAIR(3) | A_NORMAL);	/* Brown */
+        colortable[ 8] = (COLOR_PAIR(7) | A_BRIGHT);	/* Dark-grey XXX */
+        colortable[ 9] = (COLOR_PAIR(6) | A_BRIGHT);	/* Light-grey XXX */
+        colortable[10] = (COLOR_PAIR(5) | A_NORMAL);	/* Purple */
+        colortable[11] = (COLOR_PAIR(3) | A_BRIGHT);	/* Yellow */
+        colortable[12] = (COLOR_PAIR(1) | A_BRIGHT);	/* Light Red */
+        colortable[13] = (COLOR_PAIR(2) | A_BRIGHT);	/* Light Green */
+        colortable[14] = (COLOR_PAIR(4) | A_BRIGHT);	/* Light Blue */
+        colortable[15] = (COLOR_PAIR(3) | A_NORMAL);	/* Light Brown XXX */
     }
 
     /* Attempt to change the colors if allowed */
@@ -884,22 +892,22 @@ errr init_gcu(void)
         /* XXX XXX XXX Take account of "gamma correction" */
 
         /* Prepare the "Angband Colors" */
-        init_color (0,     0,    0,    0);      /* Black */
-        init_color (1,  1000, 1000, 1000);      /* White */
-        init_color (2,   500,  500,  500);      /* Grey */
-        init_color (3,  1000,  400,   20);      /* Orange */
-        init_color (4,   900,   50,   50);      /* Red */
-        init_color (5,     0,  400,   50);      /* Green */
-        init_color (6,     0,    0,  900);      /* Blue */
-        init_color (7,   400,  200,   20);      /* Brown */
-        init_color (8,   250,  250,  250);      /* Dark-grey */
-        init_color (9,   750,  750,  750);      /* Light-grey XXX */
-        init_color (10,  250,    0,  750);      /* Purple */
-        init_color (11,  900,  900,   50);      /* Yellow */
-        init_color (12,  900,   50,   50);      /* Light Red */
-        init_color (13,   50,  900,   50);      /* Light Green */
-        init_color (14,   50,  600,  950);      /* Light Blue */
-        init_color (15,  600,  400,  250);      /* Light Brown XXX */
+        init_color(0,     0,    0,    0);	/* Black */
+        init_color(1,  1000, 1000, 1000);	/* White */
+        init_color(2,   500,  500,  500);	/* Grey */
+        init_color(3,  1000,  400,   20);	/* Orange */
+        init_color(4,   900,   50,   50);	/* Red */
+        init_color(5,     0,  400,   50);	/* Green */
+        init_color(6,     0,    0,  900);	/* Blue */
+        init_color(7,   400,  200,   20);	/* Brown */
+        init_color(8,   250,  250,  250);	/* Dark-grey */
+        init_color(9,   750,  750,  750);	/* Light-grey */
+        init_color(10,  250,    0,  750);	/* Purple */
+        init_color(11,  900,  900,   50);	/* Yellow */
+        init_color(12,  900,   50,   50);	/* Light Red */
+        init_color(13,   50,  900,   50);	/* Light Green */
+        init_color(14,   50,  600,  950);	/* Light Blue */
+        init_color(15,  600,  400,  250);	/* Light Brown */
     }
 
 #endif
@@ -907,8 +915,12 @@ errr init_gcu(void)
 
     /*** Low level preparation ***/
 
+#ifdef USE_GETCH
+
     /* Paranoia -- Assume no waiting */
     nodelay(stdscr, FALSE);
+
+#endif
 
     /* Prepare */
     cbreak();

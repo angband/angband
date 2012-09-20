@@ -1,6 +1,11 @@
 # File: Makefile.w31
-# For Win16 with Borland C v3.1
+
+# Compile "main-win.c" for Win16 with Borland C v3.1
+
 # Obsolete, use Makefile.win with Borland C v4.5
+#
+# Tell "Ben Harrison (benh@voicenet.com)" if you use this file,
+# since it may otherwise disappear in the near future.
 
 #.autodepend
 
@@ -23,7 +28,7 @@ SRCS = \
   effects.o cmd1.c cmd2.c cmd3.c cmd4.c cmd5.c cmd6.c \
   misc.c monster.c mon-desc.c object.c obj-desc.c \
   spells1.c spells2.c cave.c tables.c variable.c \
-  term.c random.c z-util.c z-virt.c z-form.c
+  term.c z-util.c z-virt.c z-form.c
 
 OBJS = \
   main.obj main-win.obj itsybits.obj \
@@ -32,7 +37,7 @@ OBJS = \
   cmd1.obj cmd2.obj cmd3.obj cmd4.obj cmd5.obj cmd6.obj \
   misc.obj monster.obj mon-desc.obj object.obj obj-desc.obj \
   spells1.obj spells2.obj cave.obj tables.obj variable.obj \
-  term.obj random.obj z-util.obj z-virt.obj z-form.obj
+  term.obj z-util.obj z-virt.obj z-form.obj
 
 FSS = \
   init.fs cmd3.fs cmd6.fs effects.fs generate.fs misc.fs \
@@ -125,7 +130,7 @@ generate birth effects dungeon store+
 cmd1 cmd2 cmd3 cmd4 cmd5 cmd6+
 misc monster mon-desc object obj-desc+
 spells1 spells2 cave tables variable+
-term random z-util z-virt z-form,+
+term z-util z-virt z-form,+
 ..\angband.exe,..\angband.map,import cwl,angband.def
 |
 	$(RC) -t -v -31 angband.res ..\angband.exe

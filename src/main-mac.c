@@ -269,6 +269,13 @@ static bool CheckEvents(bool wait);
 
 
 /*
+ * Hack -- location of the main directory
+ */
+static short app_vol;
+static long  app_dir;
+
+
+/*
  * Hack -- game in progress
  */
 static int game_in_progress = 0;
@@ -487,7 +494,11 @@ static void center_rect(Rect *r, Rect *s)
 
 
 /*
- * XXX XXX XXX Hack -- convert a pascal string in place
+ * Convert a pascal string in place
+ *
+ * This function may be defined elsewhere, but since it is so
+ * small, it is not worth finding the proper function name for
+ * all the different platforms.
  */
 static void ptocstr(StringPtr src)
 {
@@ -780,6 +791,8 @@ static errr Term_xtra_mac(int n, int v)
 {
     term_data *td = (term_data*)(Term->data);
 
+    Rect r;
+    
     /* Analyze */
     switch (n)
     {
@@ -795,19 +808,8 @@ static errr Term_xtra_mac(int n, int v)
         /* Process pending events */
         case TERM_XTRA_EVENT:
 
-            /* Wait for an event */
-            if (v)
-            {
-                /* Process at least one event */
-                while (!CheckEvents(TRUE)) ;
-            }
-            
-            /* Check for an event */
-            else
-            {
-                /* Process an event if possible */
-                CheckEvents(FALSE);
-            }
+            /* Process an event */
+            (void)CheckEvents(v);
             
             /* Success */
             return (0);
@@ -829,6 +831,34 @@ static errr Term_xtra_mac(int n, int v)
 
             /* Success */
             return (0);
+
+        /* Clear the screen */
+        case TERM_XTRA_CLEAR:
+
+            /* No clipping */
+            ClipRect(&td->w->portRect);
+
+            /* Erase the window */
+            EraseRect(&td->w->portRect);
+
+            /* Activate the color if needed */
+            if (has_color) RGBForeColor(&mac_clr[TERM_WHITE]);
+
+            /* Frame the window in white */
+            MoveTo(0, 0);
+            LineTo(0, td->size_hgt-1);
+            LineTo(td->size_wid-1, td->size_hgt-1);
+            LineTo(td->size_wid-1, 0);
+
+            /* Clip to the new size */
+            r.left = td->w->portRect.left + td->size_ow1;
+            r.top = td->w->portRect.top + td->size_oh1;
+            r.right = td->w->portRect.right - td->size_ow2;
+            r.bottom = td->w->portRect.bottom - td->size_oh2;
+            ClipRect(&r);
+
+            /* Success */
+            return (0);
     }
 
     /* Oops */
@@ -843,10 +873,8 @@ static errr Term_xtra_mac(int n, int v)
  * We are allowed to use "Term_grab()" to determine
  * the current screen contents (for inverting, etc).
  */
-static errr Term_curs_mac(int x, int y, int z)
+static errr Term_curs_mac(int x, int y)
 {
-    #pragma unused (z)
-    
     Rect r;
 
     term_data *td = (term_data*)(Term->data);
@@ -869,9 +897,9 @@ static errr Term_curs_mac(int x, int y, int z)
 /*
  * Low level graphics (Assumes valid input)
  *
- * Erase a "block" of characters starting at (x,y), with size (w,h)
+ * Erase "n" characters starting at (x,y)
  */
-static errr Term_wipe_mac(int x, int y, int w, int h)
+static errr Term_wipe_mac(int x, int y, int n)
 {
     Rect r;
 
@@ -879,9 +907,9 @@ static errr Term_wipe_mac(int x, int y, int w, int h)
 
     /* Erase the block of characters */
     r.left = x * td->font_wid + td->size_ow1;
-    r.right = r.left + w * td->font_wid;
+    r.right = r.left + n * td->font_wid;
     r.top = y * td->font_hgt + td->size_oh1;
-    r.bottom = r.top + h * td->font_hgt;
+    r.bottom = r.top + td->font_hgt;
     EraseRect(&r);
 
     /* Success */
@@ -977,9 +1005,6 @@ static void SetupAppDir(void)
     FCBPBRec fcbBlock;
     OSErr err = noErr;
     char errString[100];
-
-    short app_vol;
-    long  app_dir;
 
     /* Get the location of the Angband executable */
     fcbBlock.ioCompletion = NULL;
@@ -1526,7 +1551,7 @@ static void init_windows()
         /* Find it */
 	PathNameFromDirID(dirID, vref, (StringPtr)foo);
 
-        /* XXX XXX XXX Convert the string */
+        /* Convert the string */
 	ptocstr((StringPtr)foo);
 
         /* Append the preference file name */
@@ -1634,7 +1659,7 @@ static void save_pref_file(void)
     {
 	PathNameFromDirID(dirID, vref, (StringPtr)foo);
 
-        /* XXX XXX XXX Convert the string */
+        /* Convert the string */
 	ptocstr((StringPtr)foo);
 
         /* Append the preference file name */
@@ -2661,11 +2686,11 @@ static pascal OSErr AEH_Open(AppleEvent *theAppleEvent,
     /* Ignore non 'SAVE' files */
     if (myFileInfo.fdType != 'SAVE') return noErr;
 
-    /* Extract a file name */
+    /* XXX XXX XXX Extract a file name */
     PathNameFromDirID(myFSS.parID, myFSS.vRefNum, (StringPtr)savefile);
     pstrcat((StringPtr)savefile, (StringPtr)&myFSS.name);
 
-    /* XXX XXX XXX Convert the string */
+    /* Convert the string */
     ptocstr((StringPtr)savefile);
 
     /* Delay actual open */
@@ -3445,9 +3470,12 @@ static void init_stuff(void)
 {
     char path[1024];
 
+    /* XXX XXX XXX Hack -- prevent the "Macintosh Save Bug" */
+    refnum_to_name(path, app_dir, app_vol, (char*)("\plib:"));
+
     /* Prepare the path */
-    strcpy(path, ":lib:");
-    
+    /* strcpy(path, ":lib:"); */
+
     /* Prepare the filepaths */
     init_file_paths(path);
 }

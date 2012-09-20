@@ -2,11 +2,14 @@
 
 # Purpose: Makefile support for "main-emx.c"
 
-# Note: Use "dmake" to compile (see "main-emx.c" for details).
+# Note: Use 'dmake -B -r -f makefile.emx' to compile (see "main-emx.c" for details).
 #       Since "dmake" does not demand "hard" tab stops as delimiters,
 #       don't bother to add them.
 #
-# Note: use 'dmake clean' to remove temporary files.
+# Note: Use 'dmake -B -r -f makefile.emx install' to install the executables
+#       plus the batch file used for multiple windows in the parent directory.
+#
+# Note: use 'dmake -B -r -f makefile.emx clean' to remove temporary files.
 
 OBJS = \
   main.o main-emx.o wizard.o wiz-spo.o \
@@ -25,14 +28,18 @@ LIBS = -lvideo
 .c.o:
     $(CC) $(CFLAGS) -c $*.c
 
-default: ..\angband.exe ..\aclient.exe dependencies
+default: angband.exe aclient.exe dependencies
+
+install: ..\angband.exe ..\aclient.exe ..\startwnd.cmd
+    emxbind -s ..\angband.exe
+    emxbind -s ..\aclient.exe
 
 clean:
     + del *.d
     + del dependencies
 
 dependencies .IGNORE: $(OBJS)
-    + echo. > temp.bak
+    + echo. > dependencies
     + for %a in (*.d) type %a >> dependencies
 
 ..\angband.exe: angband.exe
@@ -40,6 +47,30 @@ dependencies .IGNORE: $(OBJS)
 
 ..\aclient.exe: aclient.exe
     + copy aclient.exe ..
+
+EC=+@ echo 
+ECF=>> ..\startwnd.cmd
+
+..\startwnd.cmd: makefile.emx
+ $(EC) @echo off                                             > ..\startwnd.cmd
+ $(EC) REM This file starts up Angband and up to three other views. The $(ECF)
+ $(EC) REM optional number behind the name sets the number of lines for $(ECF)
+ $(EC) REM that screen.                                                 $(ECF)
+ $(EC) REM                                                              $(ECF)
+ $(EC) REM Note the function of the three views:                        $(ECF)
+ $(EC) REM                                                              $(ECF)
+ $(EC) REM   recall window - display monster recall info                $(ECF)
+ $(EC) REM   choice window - display equipment and inventory            $(ECF)
+ $(EC) REM   mirror window - display both of them as new information    $(ECF)
+ $(EC) REM                   pops up - use this if you've got a small   $(ECF)
+ $(EC) REM                   screen that doesn't comfortably allow for  $(ECF)
+ $(EC) REM                   three windows.                             $(ECF)
+ $(EC).                                                                 $(ECF)
+ $(EC) start /win /n aclient recall 10                                  $(ECF)
+ $(EC) start /win /n aclient choice                                     $(ECF)
+ $(EC) rem start /win /n aclient mirror                                 $(ECF)
+ $(EC) delay                                                            $(ECF)
+ $(EC) angband %1 %2 %3 %4 %5 %6 %7 %8 %9                               $(ECF)
 
 angband.exe: $(OBJS)
     $(CC) $(CFLAGS)  -o angband.exe $(OBJS) $(LIBS)

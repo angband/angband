@@ -138,28 +138,28 @@ SUFFIXES = .o .c .h
 ####
 # define some global macros
 
-INCS = \
+HDRS = \
   angband.h externs.h defines.h types.h config.h \
-  random.h term.h z-form.h z-virt.h z-util.h \
-  h-basic.h h-define.h h-type.h h-system.h h-config.h \
+  term.h z-form.h z-virt.h z-util.h \
+  h-basic.h h-define.h h-type.h h-system.h h-config.h
   
 SRCS = \
-  main.c main-gcu.c main-ncu.c main-cap.c main-x11.c main-xaw.c \
+  main.c main-gcu.c main-cap.c main-x11.c main-xaw.c \
   signals.c util.c io.c init.c save.c save-old.c files.c \
   generate.c birth.c melee.c dungeon.c store.c \
   effects.c cmd1.c cmd2.c cmd3.c cmd4.c cmd5.c cmd6.c \
   misc.c monster.c mon-desc.c object.c obj-desc.c \
   spells1.c spells2.c cave.c tables.c variable.c \
-  term.c random.c z-util.c z-virt.c z-form.c
+  term.c z-util.c z-virt.c z-form.c
 
 OBJS = \
-  main.o main-gcu.o main-ncu.o main-cap.o main-x11.o main-xaw.o \
+  main.o main-gcu.o main-cap.o main-x11.o main-xaw.o \
   signals.o util.o io.o init.o save.o save-old.o files.o \
   generate.o birth.o melee.o dungeon.o store.o \
   effects.o cmd1.o cmd2.o cmd3.o cmd4.o cmd5.o cmd6.o \
   misc.o monster.o mon-desc.o object.o obj-desc.o \
   spells1.o spells2.o cave.o tables.o variable.o \
-  term.o random.o z-util.o z-virt.o z-form.o
+  term.o z-util.o z-virt.o z-form.o
 
 
 ####
@@ -186,5 +186,5 @@ realclean: clean
 	$(RM) $(PROGRAM)
 
 depend:
-	makedepend $(INCS) $(SRCS)
+	makedepend $(HDRS) $(SRCS)
 

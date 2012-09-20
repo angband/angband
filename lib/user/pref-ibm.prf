@@ -4,6 +4,49 @@
 
 
 
+### Terrain features ###
+
+
+# Floors (centered dot)
+
+F:1:1/-7
+
+# Invis traps (centered dot)
+
+F:2:1/-7
+
+
+# Magma (special solid block, special "red" color)
+
+F:50:4/-80
+F:52:4/-80
+
+
+# Quartz (special solid block)
+
+F:51:1/-80
+F:53:1/-80
+
+
+# Secret door (solid block)
+
+F:48:1/-79
+
+# Granite walls & permanent rock (solid block)
+
+F:56:1/-79
+F:57:1/-79
+F:58:1/-79
+F:59:1/-79
+F:60:1/-79
+F:61:1/-79
+F:62:1/-79
+F:63:1/-79
+
+
+
+### Some macros ###
+
 # Keypad -- Tunnel (???)
 
 A:\\+1
@@ -95,28 +138,5 @@ P:^_399^M
 
 A:\\.
 P:^_286^M
-
-
-
-
-# Floor (centered dot?)
-
-K:441:1/-7
-
-
-# Wall (solid block?)
-
-K:442:1/-79
-
-
-# Quartz (different block?)
-
-K:443:9/-80
-
-
-# Magma (different block?)
-
-K:444:1/-80
-
 
 

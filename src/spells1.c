@@ -1126,9 +1126,9 @@ bool project_i(int who, int rad, int y, int x, int dam, int typ, int flg)
 
                     /* Redraw */
                     lite_spot(y, x);
-                
+
                     /* Update some things */
-                    p_ptr->update |= (PU_VIEW | PU_LITE | PU_FLOW | PU_MONSTERS);
+                    p_ptr->update |= (PU_VIEW | PU_LITE | PU_MONSTERS);
                 }
 
                 break;
@@ -1258,7 +1258,7 @@ bool project_i(int who, int rad, int y, int x, int dam, int typ, int flg)
                 lite_spot(y, x);
                 
                 /* Update some things */
-                p_ptr->update |= (PU_VIEW | PU_LITE | PU_FLOW | PU_MONSTERS);
+                p_ptr->update |= (PU_VIEW | PU_LITE | PU_MONSTERS);
 
                 break;
 
@@ -1314,13 +1314,16 @@ bool project_i(int who, int rad, int y, int x, int dam, int typ, int flg)
                 /* Turn off the light. */
                 c_ptr->feat &= ~CAVE_GLOW;
 
-                /* Hack -- Forget floor (and invis trap) grids XXX XXX XXX */
-                if ((c_ptr->feat & 0x3F) == 0x01) c_ptr->feat &= ~CAVE_MARK;
-                if ((c_ptr->feat & 0x3F) == 0x02) c_ptr->feat &= ~CAVE_MARK;
+                /* XXX XXX XXX Hack -- Forget "boring" grids */
+                if (((c_ptr->feat & 0x3F) <= 0x02) && !c_ptr->i_idx) {
+                
+                    /* Forget */
+                    c_ptr->feat &= ~CAVE_MARK;
 
-                /* Notice */
-                note_spot(y, x);
-
+                    /* Notice */
+                    note_spot(y, x);
+                }
+                
                 /* Redraw */
                 lite_spot(y, x);
 

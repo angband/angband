@@ -9,7 +9,7 @@
 
 
 /*
- * This file is a total hack.  :-)
+ * This file is a total hack, but is often very helpful.  :-)
  *
  * This file allows use of the terminal without requiring the
  * "curses" routines.  In fact, if "USE_HARDCODE" is defined,
@@ -17,15 +17,14 @@
  * escape sequences to also avoid the use of the "termcap"
  * routines.  I do not know if this will work on System V.
  *
- * This file is intended for use only on those machines which are unable
- * for whatever reason to compile the "main-gcu.c" file, but which seem
- * to be able to support the "termcap" library, or which at least seem
- * able to support "vt100" terminals.
+ * This file is intended for use only on those machines which are
+ * unable, for whatever reason, to compile the "main-gcu.c" file,
+ * but which seem to be able to support the "termcap" library, or
+ * which at least seem able to support "vt100" terminals.
  *
  * Large portions of this file were stolen from "main-gcu.c"
  *
  * This file incorrectly handles output to column 80, I think.
- * The "term.c" file never calls "Term_wipe()" for the screen.
  */
 
 
@@ -88,7 +87,9 @@
 
 /*
  * XXX XXX Hack -- POSIX uses "O_NONBLOCK" instead of "O_NDELAY"
- * They should both work due to the "(i != 1)" test.
+ *
+ * They should both work due to the "(i != 1)" test in the code
+ * which checks for the result of the "read()" command.
  */
 #ifndef O_NDELAY
 # define O_NDELAY O_NONBLOCK
@@ -158,27 +159,27 @@ extern char *tgetstr();
  */
 static void ewrite(char *str)
 {
-  int numtowrite, numwritten;
+    int numtowrite, numwritten;
 
-  /* See how much work we have */
-  numtowrite = strlen(str);
+    /* See how much work we have */
+    numtowrite = strlen(str);
 
-  /* Write until done */
-  while (numtowrite > 0)
-  {
-    /* Try to write the chars */
-    numwritten = write(1, str, numtowrite);
+    /* Write until done */
+    while (numtowrite > 0)
+    {
+        /* Try to write the chars */
+        numwritten = write(1, str, numtowrite);
 
-    /* Handle FIFOs and EINTR */
-    if (numwritten < 0) numwritten = 0;
+        /* Handle FIFOs and EINTR */
+        if (numwritten < 0) numwritten = 0;
 
-    /* See what we completed */
-    numtowrite -= numwritten;
-    str += numwritten;
+        /* See what we completed */
+        numtowrite -= numwritten;
+        str += numwritten;
 
-    /* Hack -- sleep if not done */
-    if (numtowrite > 0) sleep(1);
-  }
+        /* Hack -- sleep if not done */
+        if (numtowrite > 0) sleep(1);
+    }
 }
 
 
@@ -190,22 +191,22 @@ static char *write_buffer_ptr;
 
 static void output_one(char c)
 {
-  *write_buffer_ptr++ = c;
+    *write_buffer_ptr++ = c;
 }
 
 static void tp(char *s)
 {
-  /* Dump the string into us */
-  write_buffer_ptr = write_buffer;
+    /* Dump the string into us */
+    write_buffer_ptr = write_buffer;
 
-  /* Write the string with padding */
-  tputs (s, 1, output_one);
+    /* Write the string with padding */
+    tputs (s, 1, output_one);
 
-  /* Finish the string */
-  *write_buffer_ptr = '\0';
+    /* Finish the string */
+    *write_buffer_ptr = '\0';
 
-  /* Dump the recorded buffer */
-  ewrite (write_buffer);
+    /* Dump the recorded buffer */
+    ewrite (write_buffer);
 }
 
 #endif
@@ -214,7 +215,7 @@ static void tp(char *s)
 
 static void tp(char *s)
 {
-  ewrite(s);
+    ewrite(s);
 }
 
 #endif
@@ -230,7 +231,7 @@ static void tp(char *s)
  */
 static void do_cl(void)
 {
-  if (cl) tp (cl);
+    if (cl) tp (cl);
 }
 
 /*
@@ -238,7 +239,7 @@ static void do_cl(void)
  */
 static void do_ce(void)
 {
-  if (ce) tp(ce);
+    if (ce) tp(ce);
 }
 
 
@@ -247,13 +248,22 @@ static void do_ce(void)
  */
 static void curs_set(int vis)
 {
-  char *v = NULL;
+    char *v = NULL;
 
-  if (!vis) v = vi;
-  else if (vis > 1) v = vs ? vs : ve;
-  else v = ve ? ve : vs;
+    if (!vis)
+    {
+        v = vi;
+    }
+    else if (vis > 1)
+    {
+        v = vs ? vs : ve;
+    }
+    else
+    {
+        v = ve ? ve : vs;
+    }
 
-  if (v) tp(v);
+    if (v) tp(v);
 }
 
 
@@ -265,13 +275,13 @@ static void do_cs(int y1, int y2)
 {
 
 #ifdef USE_TERMCAP
-  if (cs) tp(tgoto(cs, y2, y1));
+    if (cs) tp(tgoto(cs, y2, y1));
 #endif
 
 #ifdef USE_HARDCODE
-  char temp[64];
-  sprintf(temp, cs, y1, y2);
-  tp (temp);
+    char temp[64];
+    sprintf(temp, cs, y1, y2);
+    tp (temp);
 #endif
 
 }
@@ -285,13 +295,13 @@ static void do_cm(int x, int y)
 {
 
 #ifdef USE_TERMCAP
-  if (cm) tp(tgoto(cm, x, y));
+    if (cm) tp(tgoto(cm, x, y));
 #endif
 
 #ifdef USE_HARDCODE
-  char temp[64];
-  sprintf(temp, cm, y+1, x+1);
-  tp(temp);
+    char temp[64];
+    sprintf(temp, cm, y+1, x+1);
+    tp(temp);
 #endif
 
 }
@@ -299,34 +309,35 @@ static void do_cm(int x, int y)
 
 /*
  * Go to the given screen location in a "clever" manner
- * Note that this routine should be made more efficient!
+ *
+ * XXX XXX XXX This function could use some work!
  */
 static void do_move(int x1, int y1, int x2, int y2)
 {
-  /* Hack -- unknown start location */
-  if ((x1 == x2) && (y1 == y2)) do_cm(x2,y2);
+    /* Hack -- unknown start location */
+    if ((x1 == x2) && (y1 == y2)) do_cm(x2,y2);
 
-  /* Left edge */
-  else if (x2 == 0)
-  {
-    if ((y2 <= 0) && ho) tp(ho);
-    else if ((y2 >= rows-1) && ll) tp(ll);
-    else if ((y2 == y1) && cr) tp(cr);
+    /* Left edge */
+    else if (x2 == 0)
+    {
+        if ((y2 <= 0) && ho) tp(ho);
+        else if ((y2 >= rows-1) && ll) tp(ll);
+        else if ((y2 == y1) && cr) tp(cr);
 #if 0
-    else if ((y2 == y1+1) && cr && dn) { tp(cr); tp(dn); }
-    else if ((y2 == y1-1) && cr && up) { tp(cr); tp(up); }
+        else if ((y2 == y1+1) && cr && dn) { tp(cr); tp(dn); }
+        else if ((y2 == y1-1) && cr && up) { tp(cr); tp(up); }
 #endif
+        else do_cm(x2,y2);
+    }
+
+#if 0
+    /* Up/Down one line */
+    else if ((x2 == x1) && (y2 == y1+1) && dn) tp(dn);
+    else if ((x2 == x1) && (y2 == y1-1) && up) tp(up);
+#endif
+
+    /* Default -- go directly there */
     else do_cm(x2,y2);
-  }
-
-#if 0
-  /* Up/Down one line */
-  else if ((x2 == x1) && (y2 == y1+1) && dn) tp(dn);
-  else if ((x2 == x1) && (y2 == y1-1) && up) tp(up);
-#endif
-
-  /* Default -- go directly there */
-  else do_cm(x2,y2);
 }
 
 
@@ -340,91 +351,91 @@ errr init_cap_aux(void)
 
 #ifdef USE_TERMCAP
 
-  /* Get the terminal name (if possible) */
-  desc = getenv("TERM");
-  if (!desc) return (1);
+    /* Get the terminal name (if possible) */
+    desc = getenv("TERM");
+    if (!desc) return (1);
 
-  /* Get the terminal info */
-  if (tgetent(blob, desc) != 1) return (2);
+    /* Get the terminal info */
+    if (tgetent(blob, desc) != 1) return (2);
 
-  /* Get the (initial) columns and rows, or default */
-  if ((cols = tgetnum("co")) == -1) cols = 80;
-  if ((rows = tgetnum("li")) == -1) rows = 24;
+    /* Get the (initial) columns and rows, or default */
+    if ((cols = tgetnum("co")) == -1) cols = 80;
+    if ((rows = tgetnum("li")) == -1) rows = 24;
 
-  /* Find out how to move the cursor to a given location */
-  cm = tgetstr("cm", &next);
-  if (!cm) return (10);
+    /* Find out how to move the cursor to a given location */
+    cm = tgetstr("cm", &next);
+    if (!cm) return (10);
 
-  /* Find out how to move the cursor to a given position */
-  ch = tgetstr("ch", &next);
-  cv = tgetstr("cv", &next);
+    /* Find out how to move the cursor to a given position */
+    ch = tgetstr("ch", &next);
+    cv = tgetstr("cv", &next);
 
-  /* Find out how to "home" the screen */
-  ho = tgetstr("ho", &next);
+    /* Find out how to "home" the screen */
+    ho = tgetstr("ho", &next);
 
-  /* Find out how to "last-line" the screen */
-  ll = tgetstr("ll", &next);
+    /* Find out how to "last-line" the screen */
+    ll = tgetstr("ll", &next);
 
-  /* Find out how to do a "carriage return" */
-  cr = tgetstr("cr", &next);
-  if (!cr) cr = "\r";
+    /* Find out how to do a "carriage return" */
+    cr = tgetstr("cr", &next);
+    if (!cr) cr = "\r";
 
-  /* Find out how to clear the screen */
-  cl = tgetstr("cl", &next);
-  if (!cl) return (11);
+    /* Find out how to clear the screen */
+    cl = tgetstr("cl", &next);
+    if (!cl) return (11);
 
-  /* Find out how to clear to the end of display */
-  cd = tgetstr("cd", &next);
+    /* Find out how to clear to the end of display */
+    cd = tgetstr("cd", &next);
 
-  /* Find out how to clear to the end of the line */
-  ce = tgetstr("ce", &next);
+    /* Find out how to clear to the end of the line */
+    ce = tgetstr("ce", &next);
 
-  /* Find out how to scroll (set the scroll region) */
-  cs = tgetstr("cs", &next);
+    /* Find out how to scroll (set the scroll region) */
+    cs = tgetstr("cs", &next);
 
-  /* Find out how to hilite */
-  so = tgetstr("so", &next);
-  se = tgetstr("se", &next);
-  if (!so || !se) so = se = NULL;
+    /* Find out how to hilite */
+    so = tgetstr("so", &next);
+    se = tgetstr("se", &next);
+    if (!so || !se) so = se = NULL;
 
-  /* Find out how to bold */
-  md = tgetstr("md", &next);
-  me = tgetstr("me", &next);
-  if (!md || !me) md = me = NULL;
+    /* Find out how to bold */
+    md = tgetstr("md", &next);
+    me = tgetstr("me", &next);
+    if (!md || !me) md = me = NULL;
 
-  /* Check the cursor visibility stuff */
-  vi = tgetstr("vi", &next);
-  vs = tgetstr("vs", &next);
-  ve = tgetstr("ve", &next);
+    /* Check the cursor visibility stuff */
+    vi = tgetstr("vi", &next);
+    vs = tgetstr("vs", &next);
+    ve = tgetstr("ve", &next);
 
 #endif
 
 #ifdef USE_HARDCODE
 
-  /* Assume some defualt information */
-  rows = 24;
-  cols = 80;
+    /* Assume some defualt information */
+    rows = 24;
+    cols = 80;
 
-  /* Clear screen */
-  cl = "\033[2J\033[H";	/* --]--]-- */
+    /* Clear screen */
+    cl = "\033[2J\033[H";	/* --]--]-- */
 
-  /* Clear to end of line */
-  ce = "\033[K";	/* --]-- */
+    /* Clear to end of line */
+    ce = "\033[K";	/* --]-- */
 
-  /* Hilite on/off */
-  so = "\033[7m";	/* --]-- */
-  se = "\033[m";	/* --]-- */
+    /* Hilite on/off */
+    so = "\033[7m";	/* --]-- */
+    se = "\033[m";	/* --]-- */
 
-  /* Scroll region */
-  cs = "\033[%d;%dr";	/* --]-- */
+    /* Scroll region */
+    cs = "\033[%d;%dr";	/* --]-- */
 
-  /* Move cursor */
-  cm = "\033[%d;%dH";	/* --]-- */
+    /* Move cursor */
+    cm = "\033[%d;%dH";	/* --]-- */
 
 #endif
 
-  /* Success */
-  return (0);
+    /* Success */
+    return (0);
 }
 
 
@@ -706,10 +717,10 @@ static void keymap_game_prepare(void)
 /*
  * Suspend/Resume
  */
-static errr Term_xtra_cap_level(int v)
+static errr Term_xtra_cap_alive(int v)
 {
     /* Suspend */
-    if (v == TERM_LEVEL_HARD_SHUT)
+    if (!v)
     {
         if (!active) return (1);
 
@@ -727,7 +738,7 @@ static errr Term_xtra_cap_level(int v)
     }
 
     /* Resume */
-    else if (v == TERM_LEVEL_HARD_OPEN)
+    else
     {
         if (active) return (1);
 
@@ -751,28 +762,39 @@ static errr Term_xtra_cap_level(int v)
 
 
 /*
- * Check for events
+ * Process an event
  */
-static errr Term_xtra_cap_check(int v)
+static errr Term_xtra_cap_event(int v)
 {
     int i, arg;
     char buf[2];
 
-    /* Get the current flags for stdin */
-    arg = fcntl(0, F_GETFL, 0);
+    /* Wait */
+    if (v)
+    {
+        /* Wait for one byte */
+        i = read(0, buf, 1);
 
-    /* Oops */
-    if (arg < 0) return (1);
+        /* Hack -- Handle "errors" */
+        if ((i <= 0) && (errno != EINTR)) exit_game_panic();
+    }
+    
+    /* Do not wait */
+    else
+    {
+        /* Get the current flags for stdin */
+        if ((arg = fcntl(0, F_GETFL, 0)) < 1) return (1);
 
-    /* Tell stdin not to block */
-    if (fcntl(0, F_SETFL, arg | O_NDELAY) < 0) return (1);
+        /* Tell stdin not to block */
+        if (fcntl(0, F_SETFL, arg | O_NDELAY) < 0) return (1);
 
-    /* Read one byte, if possible */
-    i = read(0, buf, 1);
+        /* Read one byte, if possible */
+        i = read(0, buf, 1);
 
-    /* Replace the flags for stdin */
-    if (fcntl(0, F_SETFL, arg)) return (1);
-
+        /* Replace the flags for stdin */
+        if (fcntl(0, F_SETFL, arg)) return (1);
+    }
+    
     /* No keys ready */
     if ((i != 1) || (!buf[0])) return (1);
 
@@ -784,34 +806,12 @@ static errr Term_xtra_cap_check(int v)
 }
 
 
-/*
- * Wait for an event (not necessarily a keypress).
- */
-static errr Term_xtra_cap_event(int v)
-{
-    int i;
-    char buf[2];
-
-    /* Wait for one byte */
-    i = read(0, buf, 1);
-
-    /* Hack -- Handle "errors" */
-    if ((i <= 0) && (errno != EINTR)) exit_game_panic();
-
-    /* Enqueue valid keypresses */
-    if ((i == 1) && (buf[0])) Term_keypress(buf[0]);
-
-    /* Success */
-    return (0);
-}
-
-
 
 
 /*
  * Actually move the hardware cursor
  */
-static errr Term_curs_cap(int x, int y, int z)
+static errr Term_curs_cap(int x, int y)
 {
     /* Literally move the cursor */
     do_move(curx, cury, x, y);
@@ -828,41 +828,31 @@ static errr Term_curs_cap(int x, int y, int z)
 /*
  * Erase a grid of space
  */
-static errr Term_wipe_cap(int x, int y, int w, int h)
+static errr Term_wipe_cap(int x, int y, int n)
 {
-    int dx, dy;
+    int dx;
 
-    if (!x && !y && (w >= 80) && (h >= 24))
+    /* Wipe to end of line */
+    if (w >= 80)
     {
-        do_cl();
-        do_move(0, 0, 0, 0);
+        Term_curs_cap(x, y);
+        do_ce();
     }
 
-    else if (w >= 80)
-    {
-        for (dy = 0; dy < h; ++dy)
-        {
-            Term_curs_cap(x, y+dy, 0);
-            do_ce();
-        }
-    }
-
+    /* Wipe region */
     else
     {
-        for (dy = 0; dy < h; ++dy)
-        {
-            Term_curs_cap(x, y+dy, 0);
+        Term_curs_cap(x, y);
 
-            for (dx = 0; dx < w; ++dx)
-            {
-                putc(' ', stdout);
-                curx++;
-            }
+        for (dx = 0; dx < n; ++dx)
+        {
+            putc(' ', stdout);
+            curx++;
         }
     }
 
     /* Hack -- Fix the cursor */
-    Term_curs_cap(x, y, curv);
+    Term_curs_cap(x, y);
 
     /* Success */
     return (0);
@@ -877,17 +867,17 @@ static errr Term_text_cap(int x, int y, int n, byte a, cptr s)
     int i;
 
     /* Move the cursor */
-    Term_curs_cap(x, y, curv);
+    Term_curs_cap(x, y);
 
     /* Dump the text, advance the cursor */
-    for (i = 0; s[i]; i++) {
-
+    for (i = 0; s[i]; i++)
+    {
         /* Dump the char */
         putc(s[i], stdout);
 
         /* Advance cursor 'X', and wrap */
-        if (++curx >= cols) {
-
+        if (++curx >= cols)
+        {
             /* Reset cursor 'X' */
             curx = 0;
 
@@ -909,23 +899,41 @@ static errr Term_xtra_cap(int n, int v)
     /* Analyze the request */
     switch (n)
     {
+        /* Clear the screen */
+        case TERM_XTRA_CLEAR:
+            do_cl();
+            do_move(0, 0, 0, 0);
+            return (0);
+        
         /* Make a noise */
-        case TERM_XTRA_NOISE: (void)write(1, "\007", 1); return (0);
+        case TERM_XTRA_NOISE:
+            (void)write(1, "\007", 1);
+            return (0);
 
         /* Make the cursor invisible */
-        case TERM_XTRA_INVIS: curv = 0; curs_set(0); return (0);
+        case TERM_XTRA_INVIS:
+            curv = 0;
+            curs_set(0);
+            return (0);
 
         /* Make the cursor visible */
-        case TERM_XTRA_BEVIS: curv = 1; curs_set(1); return (0);
+        case TERM_XTRA_BEVIS:
+            curv = 1;
+            curs_set(1);
+            return (0);
 
-        /* Suspend/Resume curses */
-        case TERM_XTRA_LEVEL: return (Term_xtra_cap_level(v));
+        /* Suspend/Resume */
+        case TERM_XTRA_ALIVE:
+            return (Term_xtra_cap_alive(v));
 
-        /* Check for event */
-        case TERM_XTRA_CHECK: return (Term_xtra_cap_check(v));
+        /* Process events */
+        case TERM_XTRA_EVENT:
+            return (Term_xtra_cap_event(v));
 
-        /* Wait for event */
-        case TERM_XTRA_EVENT: return (Term_xtra_cap_event(v));
+        /* Flush events */
+        case TERM_XTRA_FLUSH:
+            while (!Term_xtra_cap_event(FALSE));
+            return (0);
     }
 
     /* Not parsed */

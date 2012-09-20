@@ -206,7 +206,7 @@ static void do_cmd_wiz_change()
     p_ptr->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
 
     /* Redraw everything */
-    p_ptr->redraw |= (PR_WIPE | PR_CAVE);
+    p_ptr->redraw |= (PR_WIPE | PR_MAP | PR_BASIC | PR_EXTRA);
 }
 
 
@@ -1035,7 +1035,7 @@ static void do_cmd_wiz_cure_all()
     p_ptr->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
 
     /* Redraw everything */
-    p_ptr->redraw |= (PR_WIPE | PR_CAVE);
+    p_ptr->redraw |= (PR_WIPE | PR_MAP | PR_BASIC | PR_EXTRA);
 }
 
 

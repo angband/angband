@@ -116,24 +116,24 @@ static void spell_info(char *p, int j)
 
         /* Analyze the spell */
         switch (j) {
-            case 1: strcpy(p, " heal 2d8"); break;
+            case 1: strcpy(p, " heal 2d10"); break;
             case 2: strcpy(p, " dur 12+d12"); break;
             case 9: sprintf(p, " range %d", 3*plev); break;
-            case 10: strcpy(p, " heal 4d8"); break;
+            case 10: strcpy(p, " heal 4d10"); break;
             case 11: strcpy(p, " dur 24+d24"); break;
             case 15: strcpy(p, " dur 10+d10"); break;
             case 17: sprintf(p, " %d+3d6", plev + orb); break;
-            case 18: strcpy(p, " heal 6d8"); break;
+            case 18: strcpy(p, " heal 6d10"); break;
             case 19: strcpy(p, " dur 24+d24"); break;
             case 20: sprintf(p, " dur %d+d25", 3*plev); break;
-            case 23: strcpy(p, " heal 8d8"); break;
+            case 23: strcpy(p, " heal 8d10"); break;
             case 25: strcpy(p, " dur 48+d48"); break;
             case 26: sprintf(p, " dam d%d", 3*plev); break;
             case 27: strcpy(p, " heal 300"); break;
             case 28: sprintf(p, " dam d%d", 3*plev); break;
             case 30: strcpy(p, " heal 1000"); break;
-            case 36: strcpy(p, " heal 4d8"); break;
-            case 37: strcpy(p, " heal 8d8"); break;
+            case 36: strcpy(p, " heal 4d10"); break;
+            case 37: strcpy(p, " heal 8d10"); break;
             case 38: strcpy(p, " heal 2000"); break;
             case 41: sprintf(p, " dam d%d", 4*plev); break;
             case 42: sprintf(p, " dam d%d", 4*plev); break;
@@ -1341,7 +1341,7 @@ void do_cmd_pray(void)
             break;
 
           case 1:
-            (void)hp_player(damroll(2, 8));
+            (void)hp_player(damroll(2, 10));
             if (p_ptr->cut > 10) {
                 p_ptr->cut -= 10;
             }
@@ -1388,7 +1388,7 @@ void do_cmd_pray(void)
             break;
 
           case 10:
-            (void)hp_player(damroll(4, 8));
+            (void)hp_player(damroll(4, 10));
             if (p_ptr->cut > 40) {
                 p_ptr->cut = (p_ptr->cut / 2) - 20;
             }
@@ -1431,7 +1431,7 @@ void do_cmd_pray(void)
             break;
 
           case 18:
-            (void)hp_player(damroll(6, 8));
+            (void)hp_player(damroll(6, 10));
             p_ptr->cut = 0;
             break;
 
@@ -1452,7 +1452,7 @@ void do_cmd_pray(void)
             break;
 
           case 23:
-            (void)hp_player(damroll(8, 8));
+            (void)hp_player(damroll(8, 10));
             p_ptr->cut = 0;
             p_ptr->stun = 0;
             break;
@@ -1513,12 +1513,12 @@ void do_cmd_pray(void)
             break;
 
           case 36:
-            (void)hp_player(damroll(4, 8));
+            (void)hp_player(damroll(4, 10));
             p_ptr->cut = 0;
             break;
 
           case 37:
-            (void)hp_player(damroll(8, 8));
+            (void)hp_player(damroll(8, 10));
             p_ptr->cut = 0;
             p_ptr->stun = 0;
             break;

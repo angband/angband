@@ -26,6 +26,9 @@
 
 
 # OPTION: Display "veins" (white "%") as "normal walls" (white "#") 
+# This replaces the old method of setting "notice_seams" to false,
+# which no longer works as of Angband 2.7.9, for various reasons.
+# This is not compatible with the default "pref-ibm.prf" file.
 
 # F:50:1/35
 # F:51:1/35

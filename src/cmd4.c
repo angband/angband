@@ -170,10 +170,10 @@ void do_cmd_redraw(void)
     p_ptr->update |= (PU_COMBINE | PU_REORDER);
 
     /* Update stuff */
-    p_ptr->update |= (PU_VIEW | PU_LITE | PU_FLOW | PU_MONSTERS);
+    p_ptr->update |= (PU_VIEW | PU_LITE | PU_MONSTERS);
 
     /* Redraw everything */
-    p_ptr->redraw |= (PR_WIPE | PR_CAVE);
+    p_ptr->redraw |= (PR_WIPE | PR_MAP | PR_BASIC | PR_EXTRA);
 
     /* Redraw the "recent" monster */
     p_ptr->redraw |= (PR_RECENT);

@@ -532,8 +532,6 @@ static void map_info(int y, int x, byte *ap, char *cp)
     byte tmp_a;
     char tmp_c;
 
-    bool allow = TRUE;
-
 
     /* Default to "white" */
     (*ap) = TERM_WHITE;
@@ -686,9 +684,6 @@ static void map_info(int y, int x, byte *ap, char *cp)
             return;
         }
 
-        /* No shadows */
-        allow = FALSE;
-
         /* Extract an attr/char */
         (*cp) = inven_char(i_ptr);
         (*ap) = inven_attr(i_ptr);
@@ -699,32 +694,35 @@ static void map_info(int y, int x, byte *ap, char *cp)
 
         int f = (c_ptr->feat & 0x3F);
 
-        /* Forbid shadows on most terrain */
-        if ((f > 0x02) && (f < 0x30)) allow = FALSE;
-                
         /* Extract an attr/char */
         (*cp) = f_info[f].z_char;
         (*ap) = f_info[f].z_attr;
-    }
 
-    /* Shadows */
-    if (allow) {
-    
-        /* Yellow torch lite */
-        if (view_yellow_lite &&
-            !p_ptr->blind && (c_ptr->feat & CAVE_LITE)) {
+#ifdef USE_COLOR
 
-            /* Yellow from the torch */
-            (*ap) = TERM_YELLOW;
+        /* Allow "shadows" on some kinds of terrain (if allowed) */
+        if (use_color && !use_graphics &&
+            ((f <= 0x02) || (f >= 0x30))) {
+
+            /* Option -- Draw "torch lite" in "yellow" */
+            if (view_yellow_lite &&
+                (c_ptr->feat & CAVE_LITE) && !p_ptr->blind) {
+
+                /* Yellow from the torch */
+                (*ap) = TERM_YELLOW;
+            }
+
+            /* Option -- Darken "non-viewable" grids */
+            else if (view_bright_lite &&
+                     (!player_can_see_bold(y, x))) {
+
+                /* Gray (dim) from lack of light */
+                (*ap) = TERM_SLATE;
+            }
         }
 
-        /* Option -- Darken the non-illuminated grids */
-        else if (view_bright_lite &&
-                 (!player_can_see_bold(y, x))) {
+#endif
 
-            /* Gray (dim) from lack of light */
-            (*ap) = TERM_SLATE;
-        }
     }
 }
 
@@ -799,6 +797,12 @@ void note_spot(int y, int x)
     /* Hack -- Only memorize grids that can be seen */
     if (!player_can_see_bold(y, x)) return;
 
+    /* Hack -- memorize all "objects" */
+    if (c_ptr->i_idx) {
+        c_ptr->feat |= CAVE_MARK;
+        return;
+    }
+    
     /* Hack -- memorize all interesting "terrain features" */
     if ((c_ptr->feat & 0x3F) > 0x02) {
         c_ptr->feat |= CAVE_MARK;
@@ -871,9 +875,6 @@ void prt_map(void)
 
     /* Dump the map */
     for (y = panel_row_min; y <= panel_row_max; y++) {
-
-        /* Erase the map line (needed?) */
-        prt("", 1+y-panel_row_min, 13);
 
         /* Scan the columns of row "y" */
         for (x = panel_col_min; x <= panel_col_max; x++) {
@@ -962,22 +963,16 @@ void prt_map(void)
  * for optimizing "update_view()" and "update_lite()", for spreading lite/dark
  * during "lite_room()" / "unlite_room()", and for calculating monster flow.
  *
- * Several flags are available to control which grids are "memorized", in
- * addition to those detected by various spells.  The "note_spot()" function
- * allows the user to memorize all walls and landmarks, and all perma-lit grids,
- * and/or all torch-lit grids.  Note that turning off all four options is only
- * possible now that "update_view()" is required, and provides an "interesting"
- * way to only see the "currently known" grids.
+ * The "view_perma_grids" allows the player to "memorize" every perma-lit grid
+ * which is observed, and the "view_torch_grids" allows the player to "memorize"
+ * every torch-lit grid.  The player will automatically memorize important walls,
+ * doors, stairs, and other terrain features, as well as any "detected" grids.
  *
  * Note that the new "update_view()" method allows, among other things, a room
  * to be "partially" seen as the player approaches it, with a growing cone of
  * floor appearing as the player gets closer to the door.  Also, by not turning
- * on the "memorize perma-lit grids" option, the player will no longer have to
- * deal with "magic treasure".  An even better approach might be to add fields
- * to the "cave_type" structure to associate a "memory" (attr/char) with every
- * grid, and to use that "memory" whenever the "CAVE_MARK" flag is set.  This
- * would also avoid the "magic object" problem.  However, adding two bytes to
- * every cave grid would take 28K of memory, which is rather substantial.
+ * on the "memorize perma-lit grids" option, the player will only "see" those
+ * floor grids which are actually in line of sight.
  *
  * And my favorite "plus" is that you can now use a special option to draw the
  * walls/floors in the "viewable region" brightly (actually, to draw the *other*
@@ -1095,15 +1090,18 @@ static void cave_temp_room_unlite(void)
         /* No longer in the array */
         c_ptr->feat &= ~CAVE_TEMP;
 
-        /* Only update grids which are "changing" */
-        /* if (!(c_ptr->feat & (CAVE_GLOW | CAVE_MARK))) continue; */
-
         /* Darken the grid */
         c_ptr->feat &= ~CAVE_GLOW;
 
-        /* Hack -- Forget floor (and invis trap) grids XXX XXX XXX */
-        if ((c_ptr->feat & 0x3F) == 0x01) c_ptr->feat &= ~CAVE_MARK;
-        if ((c_ptr->feat & 0x3F) == 0x02) c_ptr->feat &= ~CAVE_MARK;
+        /* XXX XXX XXX Hack -- Forget "boring" grids */
+        if (((c_ptr->feat & 0x3F) <= 0x02) && !c_ptr->i_idx) {
+
+            /* Forget the grid */
+            c_ptr->feat &= ~CAVE_MARK;
+
+            /* Notice */
+            note_spot(y, x);
+        }
 
         /* Process affected monsters */
         if (c_ptr->m_idx) {
@@ -1111,9 +1109,6 @@ static void cave_temp_room_unlite(void)
             /* Update the monster */
             update_mon(c_ptr->m_idx, FALSE);
         }
-
-        /* Notice */
-        note_spot(y, x);
 
         /* Redraw */
         lite_spot(y, x);
@@ -1535,10 +1530,11 @@ void forget_view(void)
 
 /*
  * XXX XXX XXX
+ *
  * Hack -- Optimized version of "floor_grid_bold(Y,X)"
  */
 #define floor_grid_hack(C) \
-    (((C)->feat & 0x3F) < 0x20)
+    (!((C)->feat & 0x20))
 
 /*
  * XXX XXX XXX
@@ -2572,10 +2568,15 @@ void wiz_dark(void)
     /* Forget every grid */
     for (y = 0; y < cur_hgt; y++) {
         for (x = 0; x < cur_wid; x++) {
+
+            /* Forget the grid */
             cave[y][x].feat &= ~CAVE_MARK;
         }
     }
 
+    /* Mega-Hack -- Forget the view and lite */
+    p_ptr->update |= (PU_NOTE);
+    
     /* Update the view and lite */
     p_ptr->update |= (PU_VIEW | PU_LITE);
 

@@ -613,37 +613,55 @@ static void process_world(void)
             /* Check for dawn */
             dawn = (!(turn % (10L * TOWN_DAWN)));
 
-            /* Night falls */
-            if (dawn) {
-                msg_print("The sun has risen.");
-            }
-
             /* Day breaks */
-            else {
-                msg_print("The sun has fallen.");
+            if (dawn) {
+
+                /* Message */
+                msg_print("The sun has risen.");
+
+                /* Hack -- Scan the town */
+                for (y = 0; y < cur_hgt; y++) {
+                    for (x = 0; x < cur_wid; x++) {
+
+                        /* Get the cave grid */
+                        c_ptr = &cave[y][x];
+
+                        /* Assume lit */
+                        c_ptr->feat |= CAVE_GLOW;
+
+                        /* Hack -- Memorize lit grids if allowed */
+                        if (view_perma_grids) c_ptr->feat |= CAVE_MARK;
+
+                        /* Hack -- Notice spot */
+                        note_spot(y, x);
+                    }
+                }
             }
 
-            /* Hack -- Scan the town, switch the visibility */
-            for (y = 0; y < cur_hgt; y++) {
-                for (x = 0; x < cur_wid; x++) {
+            /* Night falls */
+            else {
 
-                    /* Get the cave grid */
-                    c_ptr = &cave[y][x];
+                /* Message */
+                msg_print("The sun has fallen.");
 
-                    /* Assume lit */
-                    c_ptr->feat |= CAVE_GLOW;
+                /* Hack -- Scan the town */
+                for (y = 0; y < cur_hgt; y++) {
+                    for (x = 0; x < cur_wid; x++) {
 
-                    /* Assume marked if allowed */
-                    if (view_perma_grids) c_ptr->feat |= CAVE_MARK;
+                        /* Get the cave grid */
+                        c_ptr = &cave[y][x];
 
-                    /* All done if dawn */
-                    if (dawn) continue;
+                        /* Hack -- Skip most "features" */
+                        if (((c_ptr->feat & 0x3F) <= 0x02) &&
+                            !(c_ptr->i_idx)) {
 
-                    /* Hack -- skip "landmarks" */
-                    if ((c_ptr->feat & 0x3F) > 0x02) continue;
+                            /* Forget the grid */
+                            c_ptr->feat &= ~(CAVE_GLOW | CAVE_MARK);
 
-                    /* Hack -- make it dark and unknown */
-                    c_ptr->feat &= ~(CAVE_GLOW | CAVE_MARK);
+                            /* Hack -- Notice spot */
+                            note_spot(y, x);
+                        }
+                    }
                 }
             }
 
@@ -696,27 +714,34 @@ static void process_world(void)
 
 #ifdef SHIMMER_MONSTERS
 
-    /* Shimmer multi-hued monsters */
-    for (i = 1; i < m_max; i++) {
+    /* Optimize */
+    if (scan_monsters) {
 
-        monster_race *r_ptr;
+        /* Shimmer multi-hued monsters */
+        for (i = 1; i < m_max; i++) {
 
-        m_ptr = &m_list[i];
+            monster_race *r_ptr;
 
-        /* Skip dead monsters */
-        if (!m_ptr->r_idx) continue;
+            m_ptr = &m_list[i];
 
-        /* Skip unseen monsters */
-        if (!m_ptr->ml) continue;
+            /* Skip dead monsters */
+            if (!m_ptr->r_idx) continue;
 
-        /* Access the monster race */
-        r_ptr = &r_info[m_ptr->r_idx];
+            /* Skip unseen monsters */
+            if (!m_ptr->ml) continue;
+
+            /* Access the monster race */
+            r_ptr = &r_info[m_ptr->r_idx];
         
-        /* Skip non-multi-hued monsters */
-        if (!(r_ptr->flags1 & RF1_ATTR_MULTI)) continue;
+            /* Skip non-multi-hued monsters */
+            if (!(r_ptr->flags1 & RF1_ATTR_MULTI)) continue;
         
-        /* Shimmer Multi-Hued Monsters */
-        lite_spot(m_ptr->fy, m_ptr->fx);
+            /* Shimmer Multi-Hued Monsters */
+            lite_spot(m_ptr->fy, m_ptr->fx);
+        }
+
+        /* Clear the flag */
+        scan_monsters = FALSE;
     }
 
 #endif
@@ -739,18 +764,25 @@ static void process_world(void)
 #ifdef SHIMMER_OBJECTS
 
 #if 0
-    /* Process the objects */
-    for (i = 1; i < i_max; i++) {
+    /* Optimize */
+    if (scan_objects) {
 
-        i_ptr = &i_list[i];
+        /* Process the objects */
+        for (i = 1; i < i_max; i++) {
 
-        /* Skip dead objects */
-        if (!i_ptr->k_idx) continue;
+            i_ptr = &i_list[i];
+ 
+            /* Skip dead objects */
+            if (!i_ptr->k_idx) continue;
 
-        /* XXX XXX XXX Skip unseen objects */
+            /* XXX XXX XXX Skip unseen objects */
         
-        /* Shimmer Multi-Hued Objects XXX XXX XXX */
-        lite_spot(i_ptr->iy, i_ptr->ix);
+            /* Shimmer Multi-Hued Objects XXX XXX XXX */
+            lite_spot(i_ptr->iy, i_ptr->ix);
+        }
+
+        /* Clear the flag */
+        scan_objects = FALSE;
     }
 #endif
 
@@ -1252,8 +1284,9 @@ static void process_player()
     while (p_ptr->energy >= 100) {
 
 
-        /* Notice death, and new levels */
-        if (!alive || death || new_level_flag) break;
+        /* Hack -- Notice death or departure */
+        if (!alive || new_level_flag) break;
+
 
         /* Hack -- Process Teleportation */
         if (teleport_flag) handle_teleport();
@@ -1359,8 +1392,9 @@ static void process_player()
     }
 
 
-    /* Hack -- notice death and new levels */
-    if (!alive || death || new_level_flag) return;
+    /* Hack -- notice death or departure */
+    if (!alive || new_level_flag) return;
+
 
     /* Hack -- Process Teleportation */
     if (teleport_flag) handle_teleport();
@@ -1475,7 +1509,7 @@ static void dungeon(void)
     extract_cur_view();
 
     /* Redraw everything */
-    p_ptr->redraw |= (PR_WIPE | PR_CAVE);
+    p_ptr->redraw |= (PR_WIPE | PR_MAP | PR_BASIC | PR_EXTRA);
     p_ptr->redraw |= (PR_CHOOSE | PR_RECENT);
 
     /* Update stuff */
@@ -1522,20 +1556,20 @@ static void dungeon(void)
         /* Process the player */
         process_player();
 
-        /* Notice death, and new levels */
-        if (!alive || death || new_level_flag) break;
+        /* Hack -- Notice death or departure */
+        if (!alive || new_level_flag) break;
 
         /* Process all of the monsters */
         process_monsters();
 
-        /* Notice death, and new levels */
-        if (!alive || death || new_level_flag) break;
+        /* Hack -- Notice death or departure */
+        if (!alive || new_level_flag) break;
 
         /* Process the world */
         process_world();
 
-        /* Notice death, and new levels */
-        if (!alive || death || new_level_flag) break;
+        /* Hack -- Notice death or departure */
+        if (!alive || new_level_flag) break;
 
         /* Count game turns */
         turn++;
@@ -1759,18 +1793,18 @@ void play_game(bool new_game)
         /* Process the level */
         dungeon();
 
-        /* Handle non-death quit */
+        /* Handle "quit" without "death" */
         if (!alive && !death) break;
 
         /* Erase the old cave */
         wipe_i_list();
         wipe_m_list();
 
-        /* Handle death */
-        if (death) break;
+        /* Handle "quit" from "death" */
+        if (!alive) break;
 
-        /* Make the New level */
-        if (alive) generate_cave();
+        /* Make a new level */
+        generate_cave();
     }
 
     /* Close stuff */

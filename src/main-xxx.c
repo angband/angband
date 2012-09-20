@@ -185,6 +185,28 @@ static void Term_nuke_xxx(term *t)
 
 
 /*
+ * XXX XXX XXX Do a "user action" on the current "term"
+ *
+ * This function allows the visual module to do things.
+ *
+ * This function is currently unused, but has access to the "info"
+ * field of the "term" to hold an extra argument.
+ *
+ * In general, this function should return zero if the action is successfully
+ * handled, and non-zero if the action is unknown or incorrectly handled.
+ */
+static errr Term_user_xxx(int n)
+{
+    term_data *td = (term_data*)(Term->data);
+
+    /* XXX XXX XXX Handle the request */
+    
+    /* Unknown */
+    return (1);
+}
+
+
+/*
  * XXX XXX XXX Do a "special thing" to the current "term"
  *
  * This function must react to a large number of possible arguments, each
@@ -209,6 +231,12 @@ static errr Term_xtra_xxx(int n, int v)
     /* Analyze */
     switch (n)
     {
+        case TERM_XTRA_CLEAR:
+        
+            /* XXX XXX XXX Clear the "screen" */
+            
+            return (0);
+
         case TERM_XTRA_EVENT:
         
             /* XXX XXX XXX Process some pending events */
@@ -238,6 +266,15 @@ static errr Term_xtra_xxx(int n, int v)
             
             return (0);
 
+        case TERM_XTRA_FROSH:
+        
+            /* XXX XXX XXX Flush a row of output (optional) */
+            /* This action should make sure that row "v" of the "output" */
+            /* to the window will actually appear on the window.  This */
+            /* action is optional, but useful for some machines. */
+            
+            return (0);
+            
         case TERM_XTRA_FRESH:
         
             /* XXX XXX XXX Flush output (optional) */
@@ -316,6 +353,23 @@ static errr Term_xtra_xxx(int n, int v)
 }
 
 
+/*
+ * XXX XXX XXX Erase some characters
+ *
+ * This function should erase "n" characters starting at (x,y).
+ *
+ * You may assume "valid" input if the window is properly sized.
+ */
+static errr Term_wipe_xxx(int x, int y, int n)
+{
+    term_data *td = (term_data*)(Term->data);
+
+    /* XXX XXX XXX Erase the block of characters */
+
+    /* Success */
+    return (0);
+}
+
 
 /*
  * XXX XXX XXX Display the cursor
@@ -323,10 +377,9 @@ static errr Term_xtra_xxx(int n, int v)
  * This routine should display the cursor at the given location
  * (x,y) in some manner.  On some machines this involves actually
  * moving the physical cursor, on others it involves drawing a fake
- * cursor in some form of graphics mode.  In either case, the "z"
- * parameter is TRUE if the cursor should be visible, and FALSE if
- * it should be invisible.  This information is available elsewhere,
- * but it may be simpler to handle it here.
+ * cursor in some form of graphics mode.  Note the "software_cursor"
+ * flag which tells "term.c" to treat the "cursor" as a "visual" thing
+ * and not as a "hardware" cursor.
  *
  * You may assume "valid" input if the window is properly sized.
  *
@@ -334,7 +387,7 @@ static errr Term_xtra_xxx(int n, int v)
  * to determine what attr/char should be "under" the new cursor,
  * for "inverting" purposes or whatever.
  */
-static errr Term_curs_xxx(int x, int y, int z)
+static errr Term_curs_xxx(int x, int y)
 {
     term_data *td = (term_data*)(Term->data);
 
@@ -346,19 +399,17 @@ static errr Term_curs_xxx(int x, int y, int z)
 
 
 /*
- * XXX XXX XXX Erase a block of characters
+ * XXX XXX XXX Draw a "picture" on the screen
  *
- * This function should actually erase a block of characters on
- * the screen, starting at the given (x,y) location and extending
- * "w" characters wide and "h" characters high.
- *
- * You may assume "valid" input if the window is properly sized.
+ * This routine should display a "picture" (with index "p") at the
+ * given location (x,y).  This function is currently unused, but in
+ * the future will be used to support special "graphic" characters.
  */
-static errr Term_wipe_xxx(int x, int y, int w, int h)
+static errr Term_pict_xxx(int x, int y, int p)
 {
     term_data *td = (term_data*)(Term->data);
 
-    /* XXX XXX XXX Erase the block of characters */
+    /* XXX XXX XXX Draw a "picture" */
 
     /* Success */
     return (0);
@@ -436,9 +487,11 @@ static void term_data_link(term_data *td)
     t->nuke_hook = Term_nuke_xxx;
 
     /* Prepare the template hooks */
+    t->user_hook = Term_user_xxx;
     t->xtra_hook = Term_xtra_xxx;
-    t->curs_hook = Term_curs_xxx;
     t->wipe_hook = Term_wipe_xxx;
+    t->curs_hook = Term_curs_xxx;
+    t->pict_hook = Term_pict_xxx;
     t->text_hook = Term_text_xxx;
 
     /* Remember where we came from */

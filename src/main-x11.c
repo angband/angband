@@ -2008,14 +2008,20 @@ static errr Term_xtra_x11(int n, int v)
         /* Make a noise */
         case TERM_XTRA_NOISE: Metadpy_do_beep(); return (0);
 
-        /* Flush the output */
+        /* Flush the output XXX XXX XXX */
         case TERM_XTRA_FRESH: Metadpy_update(1,0,0); return (0);
 
-        /* Process Events */
+        /* Process Events XXX XXX XXX */
         case TERM_XTRA_EVENT: return (CheckEvent(v));
+
+        /* Flush the events XXX XXX XXX */
+        case TERM_XTRA_FLUSH: while (!CheckEvent(FALSE)); return (0);
 
         /* Handle change in the "level" */
         case TERM_XTRA_LEVEL: return (Term_xtra_x11_level(v));
+        
+        /* Clear the screen */
+        case TERM_XTRA_CLEAR: Infowin_wipe(); return (0);
     }
 
     /* Unknown */
@@ -2027,19 +2033,13 @@ static errr Term_xtra_x11(int n, int v)
 /*
  * Erase a number of characters
  */
-static errr Term_wipe_x11(int x, int y, int w, int h)
+static errr Term_wipe_x11(int x, int y, int n)
 {
-  int k;
-
   /* Erase (use black) */
   Infoclr_set(clr[0]);
 
-  /* Hack -- Erase each row */
-  for (k = 0; k < h; ++k)
-  {
-    /* Mega-Hack -- Erase some space */
-    Infofnt_text_non(x, y+k, "", w);
-  }
+  /* Mega-Hack -- Erase some space */
+  Infofnt_text_non(x, y, "", n);
 
   /* Success */
   return (0);
@@ -2050,7 +2050,7 @@ static errr Term_wipe_x11(int x, int y, int w, int h)
 /*
  * Draw the cursor (XXX by hiliting)
  */
-static errr Term_curs_x11(int x, int y, int z)
+static errr Term_curs_x11(int x, int y)
 {
   /* Draw the cursor */
   Infoclr_set(xor);

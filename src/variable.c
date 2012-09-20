@@ -113,6 +113,9 @@ bool use_graphics;		/* Hack -- Assume no graphics mapping */
 
 bool use_sound;			/* Hack -- Assume no special sounds */
 
+bool scan_monsters;		/* Hack -- optimize multi-hued code, etc */
+bool scan_objects;		/* Hack -- optimize multi-hued code, etc */
+
 s16b total_weight;		/* Total weight being carried */
 
 s16b inven_nxt;			/* Hack -- unused */

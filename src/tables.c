@@ -1174,6 +1174,13 @@ byte blows_table[12][12] = {
 
 #if 0
 
+/*
+ * Note that this table used a different indexing scheme to determine "P"
+ *
+ * XXX XXX XXX There is a rumor that the new table makes it *much* harder
+ * to get multiple blows with a weapon, this is accidental, if true...
+ */
+
 byte old_blows_table[11][12] = {
 
 /* P/D		   3,  10, /01, /50, /90,/100,/101,/110,/120,/130,/140,/150 */
@@ -1197,65 +1204,64 @@ byte old_blows_table[11][12] = {
 
 
 /*
- * Store owners (several possible owners per store)
- * { name, purse, max greed, min greed, haggle_per, race, tolerance }
+ * Store owners (exactly four "possible" owners per store, chosen randomly)
+ * { name, purse, max greed, min greed, haggle_per, tolerance, race, unused }
  */
 owner_type owners[MAX_STORES][MAX_OWNERS] = {
-
   {
     /* General store */
-    { "Bilbo the Friendly",	200,	170,  108,    5,  3, 15},
-    { "Rincewind the Chicken",	200,	175,  108,    4,  0, 12},
-    { "Sultan the Midget",	300,	170,  107,    5,  4, 15},
-    { "Lyar-el the Comely",	300,	165,  107,    6,  2, 18},
+    { "Bilbo the Friendly",	200,	170,  108,   5,  15,  RACE_HOBBIT},
+    { "Rincewind the Chicken",	200,	175,  108,   4,  12,  RACE_HUMAN},
+    { "Sultan the Midget",	300,	170,  107,   5,  15,  RACE_GNOME},
+    { "Lyar-el the Comely",	300,	165,  107,   6,  18,  RACE_ELF},
   },
   {
     /* Armoury */
-    { "Kon-Dar the Ugly",	5000,	210,  115,    5,  6,  7},
-    { "Darg-Low the Grim",	10000,	190,  111,    4,  0,  9},
-    { "Decado the Handsome",	25000,  200,  112,    4,  8, 10},
-    { "Mauglin the Grumpy",	30000,	200,  112,    4,  5,  5},
+    { "Kon-Dar the Ugly",	5000,	210,  115,   5,   7,  RACE_HALF_ORC},
+    { "Darg-Low the Grim",	10000,	190,  111,   4,   9,  RACE_HUMAN},
+    { "Decado the Handsome",	25000,  200,  112,   4,   0,  RACE_DUNADAN},
+    { "Mauglin the Grumpy",	30000,	200,  112,   4,   5,  RACE_DWARF},
   },
   {
     /* Weapon Smith */
-    { "Ithyl-Mak the Beastly",	5000,	210,  115,    6,  7,  8},
-    { "Arndal Beast-Slayer",	10000,	185,  110,    5,  1,  8},
-    { "Tarl Beast-Master",	25000,	190,  115,    5,  3,  8},
-    { "Oglign Dragon-Slayer",	30000,	195,  112,    4,  5,  8},
+    { "Ithyl-Mak the Beastly",	5000,	210,  115,   6,   8,  RACE_HALF_TROLL},
+    { "Arndal Beast-Slayer",	10000,	185,  110,   5,   8,  RACE_HALF_ELF},
+    { "Tarl Beast-Master",	25000,	190,  115,   5,   8,  RACE_HOBBIT},
+    { "Oglign Dragon-Slayer",	30000,	195,  112,   4,   8,  RACE_DWARF},
   },
   {
     /* Temple */
-    { "Ludwig the Humble",	5000,	175,  109,    6,  0, 15},
-    { "Gunnar the Paladin",	10000,	185,  110,    5,  0, 23},
-    { "Delilah the Pure",	25000,	180,  107,    6,  2, 20},
-    { "Bosk the Wise",		30000,	185,  109,    5,  5, 15},
+    { "Ludwig the Humble",	5000,	175,  109,   6,  15,  RACE_HUMAN},
+    { "Gunnar the Paladin",	10000,	185,  110,   5,  23,  RACE_HUMAN},
+    { "Delilah the Pure",	25000,	180,  107,   6,  20,  RACE_ELF},
+    { "Bosk the Wise",		30000,	185,  109,   5,  15,  RACE_DWARF},
   },
   {
-    { "Mauser the Chemist",	10000,	190,  111,    5,  1,  8},
-    { "Wizzle the Chaotic",	10000,	190,  110,    6,  3,  8},
-    { "Ga-nat the Greedy",	15000,	200,  116,    6,  4,  9},
-    { "Sasha the Slender",	15000,	220,  111,    4,  2,  9},
+    { "Mauser the Chemist",	10000,	190,  111,   5,   8,  RACE_HALF_ELF},
+    { "Wizzle the Chaotic",	10000,	190,  110,   6,   8,  RACE_HOBBIT},
+    { "Ga-nat the Greedy",	15000,	200,  116,   6,   9,  RACE_GNOME},
+    { "Sasha the Slender",	15000,	220,  111,   4,   9,  RACE_ELF},
   },
   {
     /* Magic Shop */
-    { "Ariel the Sorceress",	20000,	200,  110,    7,  1, 8},
-    { "Buggerby the Great",	20000,	215,  113,    6,  4, 10},
-    { "Inglorian the Mage",	30000,	200,  110,    7,  0, 10},
-    { "Luthien Starshine",	30000,	175,  110,    5,  9, 11},
+    { "Ariel the Sorceress",	20000,	200,  110,   7,   8,  RACE_HALF_ELF},
+    { "Buggerby the Great",	20000,	215,  113,   6,  10,  RACE_GNOME},
+    { "Inglorian the Mage",	30000,	200,  110,   7,  10,  RACE_HUMAN},
+    { "Luthien Starshine",	30000,	175,  110,   5,  11,  RACE_HIGH_ELF},
   },
   {
     /* Black Market */
-    { "Lo-Hak the Awful",	20000,	250,  150,   10,  7,  5},
-    { "Histor the Goblin",	20000,	250,  150,   10,  6,  5},
-    { "Durwin the Shifty",	30000,	250,  150,   10,  0,  5},
-    { "Drago the Fair",		30000,	250,  150,   10,  2,  5},
+    { "Lo-Hak the Awful",	20000,	250,  150,  10,   5,  RACE_HALF_TROLL},
+    { "Histor the Goblin",	20000,	250,  150,  10,   5,  RACE_HALF_ORC},
+    { "Durwin the Shifty",	30000,	250,  150,  10,   5,  RACE_HUMAN},
+    { "Drago the Fair",		30000,	250,  150,  10,   5,  RACE_ELF},
   },
   {
     /* Home */
-    { "Your home",		0,  100,  100,    0, 99, 99},
-    { "Your home",		0,  100,  100,    0, 99, 99},
-    { "Your home",		0,  100,  100,    0, 99, 99},
-    { "Your home",		0,  100,  100,    0, 99, 99}
+    { "Your home",		0,      100,  100,   0,  99,  99},
+    { "Your home",		0,      100,  100,   0,  99,  99},
+    { "Your home",		0,      100,  100,   0,  99,  99},
+    { "Your home",		0,      100,  100,   0,  99,  99}
   }
 };
 
@@ -1711,11 +1717,11 @@ player_magic magic_info[MAX_CLASS] = {
             { 30, 50, 70,  40},
             { 40, 75, 80, 100},
 
-            {  4,  5, 50, 100},
-            {  4,  5, 50, 100},
-            {  4,  5, 50, 100},
-            {  8, 10, 75, 100},
-            { 15, 20, 85, 250},
+            {  4,  5, 50,  20},
+            {  4,  5, 50,  20},
+            {  4,  5, 50,  20},
+            {  8, 10, 75,  40},
+            { 15, 20, 85,  60},
 
             {  5,  5, 50,  80},
             { 10, 12, 75, 120},
@@ -1892,8 +1898,8 @@ player_magic magic_info[MAX_CLASS] = {
             { 10, 12, 50,  40},
             { 10, 12, 50,  40},
             { 10, 12, 50,  40},
-            { 15, 20, 75,  50},
-            { 25, 30, 85, 150},
+            { 15, 20, 75,  60},
+            { 25, 30, 85,  80},
 
             { 10, 11, 50,  40},
             { 15, 20, 75,  80},
@@ -1978,11 +1984,11 @@ player_magic magic_info[MAX_CLASS] = {
             { 99,  0, 0,    0},
             { 99,  0, 0,    0},
 
-            { 8, 15,  50,  50},
-            { 8, 15,  50,  50},
-            { 8, 15,  50,  50},
+            { 8, 15,  50,  30},
+            { 8, 15,  50,  30},
+            { 8, 15,  50,  30},
             { 16, 25, 75,  50},
-            { 25, 40, 85, 150},
+            { 25, 40, 85,  70},
 
             { 10, 15, 50,  40},
             { 15, 20, 75,  80},
@@ -2139,7 +2145,7 @@ cptr spell_names[2][64] = {
     "Stinking Cloud",
 
       /* Conjurings and Tricks (sval 1) */
-    "Confusion",
+    "Confuse Monster",
     "Lightning Bolt",
     "Trap/Door Destruction",
     "Sleep I",
@@ -2226,7 +2232,7 @@ cptr spell_names[2][64] = {
     "Slow Poison",
 
       /* Words of Wisdom (sval 1) */
-    "Confuse Creature",
+    "Scare Monster",
     "Portal",
     "Cure Serious Wounds",
     "Chant",

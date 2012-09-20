@@ -161,6 +161,7 @@ this file to the very end, and it will just have to do for now:
     new object flags
     new chest trap code
     cleaner searching bonuses
+    regularized the artifact code
     regularized the ego-item code
     new monster abilities
     new monster spell attacks
@@ -172,6 +173,9 @@ this file to the very end, and it will just have to do for now:
     table access through pointers
     more redefinable constants
     new screen layout
+    separate terrain features
+    fire vs throw vs destroy
+    efficiency optimizations
 
 
 === Here is some old information about previous versions ===

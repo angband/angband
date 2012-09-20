@@ -837,7 +837,7 @@ void do_cmd_open()
                 lite_spot(y, x);
 
                 /* Update some things */
-                p_ptr->update |= (PU_VIEW | PU_LITE | PU_FLOW | PU_MONSTERS);
+                p_ptr->update |= (PU_VIEW | PU_LITE | PU_MONSTERS);
             }
 
             /* Failure */
@@ -867,7 +867,7 @@ void do_cmd_open()
             lite_spot(y, x);
 
             /* Update some things */
-            p_ptr->update |= (PU_VIEW | PU_LITE | PU_FLOW | PU_MONSTERS);
+            p_ptr->update |= (PU_VIEW | PU_LITE | PU_MONSTERS);
         }
     }
 
@@ -940,7 +940,7 @@ void do_cmd_close()
             lite_spot(y, x);
 
             /* Update some things */
-            p_ptr->update |= (PU_VIEW | PU_LITE | PU_FLOW | PU_MONSTERS);
+            p_ptr->update |= (PU_VIEW | PU_LITE | PU_MONSTERS);
         }
     }
 
@@ -1370,7 +1370,7 @@ void do_cmd_bash()
         c_ptr = &cave[y][x];
 
         /* Nothing useful */
-        if (((c_ptr->feat & 0x3F) < 0x20) &&
+        if (((c_ptr->feat & 0x3F) < 0x20) ||
             ((c_ptr->feat & 0x3F) > 0x2F)) {
 
             /* Message */
@@ -1435,7 +1435,7 @@ void do_cmd_bash()
                 move_player(dir, FALSE);
 
                 /* Update some things */
-                p_ptr->update |= (PU_VIEW | PU_LITE | PU_FLOW);
+                p_ptr->update |= (PU_VIEW | PU_LITE);
                 p_ptr->update |= (PU_DISTANCE);
             }
 

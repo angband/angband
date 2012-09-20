@@ -549,9 +549,6 @@ bool make_attack_normal(int m_idx)
 
 
 
-    /* No need to attack */
-    if (!alive || death) return (FALSE);
-
     /* Not allowed to attack */
     if (r_ptr->flags1 & RF1_NEVER_BLOW) return (FALSE);
 
@@ -1475,8 +1472,8 @@ bool make_attack_normal(int m_idx)
         }
 
 
-        /* Player is dead */
-        if (!alive || death) break;
+        /* Hack -- Player is dead */
+        if (death) break;
     }
 
 
@@ -1505,23 +1502,6 @@ static void bolt(int m_idx, int typ, int dam_hp)
 
     int flg = PROJECT_STOP;
 
-#ifdef WDT_TRACK_OPTIONS
-
-    /* Tracking a target */
-    if (track_target) {
-
-        monster_type *m_ptr = &m_list[m_idx];
-
-        /* Use the target */
-        y = m_ptr->ty;
-        x = m_ptr->tx;
-
-        /* Verify target */
-        if (!(m_ptr->t_bit & MTB_DIRECT)) return;
-    }
-
-#endif
-
     /* Go towards player, hit people in the way */
     (void)project(m_idx, 0, y, x, dam_hp, typ, flg);
 }
@@ -1542,21 +1522,6 @@ static void breath(int m_idx, int typ, int dam_hp)
     /* Determine the radius of the blast */
     max_dis = (r_ptr->flags2 & RF2_POWERFUL) ? 3 : 2;
 
-#ifdef WDT_TRACK_OPTIONS
-
-    /* Tracking a target */
-    if (track_target) {
-
-        /* Use the target */
-        y = m_ptr->ty;
-        x = m_ptr->tx;
-
-        /* Verify target */
-        if (!(m_ptr->t_bit & MTB_DIRECT)) return;
-    }
-
-#endif
-
     /* Go towards player, do not hit anyone else, hurt items on ground. */
     (void)project(m_idx, max_dis, y, x, dam_hp, typ, flg);
 }
@@ -1564,57 +1529,56 @@ static void breath(int m_idx, int typ, int dam_hp)
 
 
 /*
- * Creatures can cast spells (and breathe) too.
- * Returns "TRUE" if a spell was (successfully) cast
+ * Creatures can cast spells, shoot missiles, and breathe.
  *
- * Blindness check is iffy.  What if the monster is out of sight?
- * XXX We should probably use "if (!seen)" instead of "if (blind)"
+ * Returns "TRUE" if a spell (or whatever) was (successfully) cast.
  *
- * We should teach the monsters to cast ball spells at locations near
- * the player, since this will allow them inflict "partial" damage.
+ * XXX XXX XXX This function could use some work, but remember to
+ * keep it as optimized as possible, while retaining generic code.
  *
- * Some monsters should probably decline to use "line of sight" spells
- * if there is a monster in the way.
+ * Verify the various "blind-ness" checks in the code.
+ *
+ * Perhaps monsters should breathe at locations *near* the player,
+ * since this would allow them to inflict "partial" damage.
+ *
+ * Perhaps smart monsters should decline to use "bolt" spells if
+ * there is a monster in the way, unless they wish to kill it.
+ *
+ * Note that, to allow the use of the "track_target" option at some
+ * later time, certain non-optimal things are done in the code below,
+ * including explicit checks against the "direct" variable, which is
+ * currently always true by the time it is checked, but which should
+ * really be set according to an explicit "projectable()" test, and
+ * the use of generic "x,y" locations instead of the player location,
+ * with those values being initialized with the player location.
+ *
+ * It will not be possible to "correctly" handle the case in which a
+ * monster attempts to attack a location which is thought to contain
+ * the player, but which in fact is nowhere near the player, since this
+ * might induce all sorts of messages about the attack itself, and about
+ * the effects of the attack, which the player might or might not be in
+ * a position to observe.  Thus, for simplicity, it is probably best to
+ * only allow "faulty" attacks by a monster if one of the important grids
+ * (probably the initial or final grid) is in fact in view of the player.
+ * It may be necessary to actually prevent spell attacks except when the
+ * monster actually has line of sight to the player.  Note that a monster
+ * could be left in a bizarre situation after the player ducked behind a
+ * pillar and then teleported away, for example.
  *
  * Note that certain spell attacks do not use the "project()" function
  * but "simulate" it via the "direct" variable, which is always at least
- * as restrictive as the "project()" function.
- *
- * When the "track_target" option is set, the "direct" variable is only
- * true if the "project()" function would succeed, and the monster knows
- * that the project function would succeed, and the monster knows where
- * the player actually is.
- *
- * Note that if the "monster tracking the player" code is disabled,
- * we assume that every monster knows where the player is, and if the
- * monster cannot "reach" the player, we refuse to attempt any spells.
- * This is less "accurate" but more "efficient" than many other methods.
- *
- * Note the use of the "direct" parameter to allow certain attacks to
- * only succeed if the monster actually knows where the player is, and
- * in fact knows that he knows this information.  Of course, currently,
- * the "track_target" code is disabled, so "direct" is always true.
- *
- * Note that the "track_target" code will (probably) induce a large number
- * of messages that should probably not be generated, since monsters are
- * allowed to cast spells at what they think represents the player location
- * even if, in fact, the player is far away.  One simple way to prevent this
- * behavior would be to simply require that the player have line of sight
- * to some grid that the spell passes through in order to observe the spell.
- *
- * In fact, in general, we should consider verifying that an attack can
- * be observed, since it is possible for a monster in a dark room to cast
- * a bolt spell which is intercepted by another monster before the player
- * has a chance to see the spell, or rather, it would be possible if it
- * were not for the fact that "bolts" are "self-illuminating".  XXX XXX XXX
+ * as restrictive as the "project()" function.  This is necessary to
+ * prevent "blindness" attacks and such from bending around walls, etc,
+ * and to allow the use of the "track_target" option in the future.
  *
  * Note that this function attempts to optimize the use of spells for the
  * cases in which the monster has no spells, or has spells but cannot use
- * them, or has spells but they will have no "useful" effect.
+ * them, or has spells but they will have no "useful" effect.  Note that
+ * this function has been an efficiency bottleneck in the past.
  */
 bool make_attack_spell(int m_idx)
 {
-    int			k, chance, thrown_spell;
+    int			k, chance, thrown_spell, rlev;
 
     byte		spell[96], num = 0;
 
@@ -1629,20 +1593,6 @@ bool make_attack_spell(int m_idx)
     char		ddesc[80];
 
 
-    /* Extract the blind-ness */
-    bool blind = (p_ptr->blind ? TRUE : FALSE);
-
-    /* Extract the "see-able-ness" */
-    bool seen = (!blind && m_ptr->ml);
-
-
-    /* Assume normal */
-    bool normal = TRUE;
-
-    /* Assume "projectable" */
-    bool direct = TRUE;
-
-
     /* Target location */
     int x = px;
     int y = py;
@@ -1651,21 +1601,19 @@ bool make_attack_spell(int m_idx)
     int count = 0;
 
 
-    /* Extract the monster level */
-    int rlev = ((r_ptr->level >= 1) ? r_ptr->level : 1);
+    /* Extract the blind-ness */
+    bool blind = (p_ptr->blind ? TRUE : FALSE);
+
+    /* Extract the "see-able-ness" */
+    bool seen = (!blind && m_ptr->ml);
 
 
-    /* Extract the racial spell flags */
-    f4 = r_ptr->flags4;
-    f5 = r_ptr->flags5;
-    f6 = r_ptr->flags6;
+    /* Assume "normal" target */
+    bool normal = TRUE;
 
-    /* Nothing to cast */
-    if (!f4 && !f5 && !f6) return (FALSE);
+    /* Assume "projectable" */
+    bool direct = TRUE;
 
-
-    /* Cannot cast spells when confused */
-    if (m_ptr->confused) return (FALSE);
 
     /* Hack -- Extract the spell probability */
     chance = (r_ptr->freq_inate + r_ptr->freq_spell) / 2;
@@ -1673,39 +1621,17 @@ bool make_attack_spell(int m_idx)
     /* Not allowed to cast spells */
     if (!chance) return (FALSE);
 
+    /* Cannot cast spells when confused */
+    if (m_ptr->confused) return (FALSE);
+
     /* Only do spells occasionally */
     if (rand_int(100) >= chance) return (FALSE);
 
 
-#ifdef WDT_TRACK_OPTIONS
+    /* XXX XXX XXX Handle "track_target" option (?) */
 
-    /* Target a different location */
-    if (track_target) {
 
-        /* See below */
-        normal = FALSE;
-
-        /* Hack -- Use the target instead */
-        y = m_ptr->ty;
-        x = m_ptr->tx;
-
-        /* Verify "recency" of target */
-        if (m_ptr->t_dur <= 0) return (FALSE);
-
-        /* Hack -- check for "direct" path to player */
-        if ((y != py) || (x != px) ||
-            !(m_ptr->t_bit & MTB_PLAYER) ||
-            !(m_ptr->t_bit & MTB_DIRECT) ||
-            !projectable(m_ptr->fy, m_ptr->fx, py, px)) {
-
-            /* Note lack of direct path */
-            direct = FALSE;
-        }
-    }
-
-#endif
-
-    /* Hack -- unless using "track_target", require projectable player */
+    /* Hack -- require projectable player */
     if (normal) {
 
         /* Check range */    
@@ -1714,6 +1640,16 @@ bool make_attack_spell(int m_idx)
         /* Check path */
         if (!projectable(m_ptr->fy, m_ptr->fx, py, px)) return (FALSE);
     }
+
+
+    /* Extract the monster level */
+    rlev = ((r_ptr->level >= 1) ? r_ptr->level : 1);
+
+
+    /* Extract the racial spell flags */
+    f4 = r_ptr->flags4;
+    f5 = r_ptr->flags5;
+    f6 = r_ptr->flags6;
 
 
     /* Hack -- allow "desperate" spells */
@@ -1725,17 +1661,21 @@ bool make_attack_spell(int m_idx)
         f4 &= RF4_INT_MASK;
         f5 &= RF5_INT_MASK;
         f6 &= RF6_INT_MASK;
+
+        /* No spells left */
+        if (!f4 && !f5 && !f6) return (FALSE);
     }
+
 
 #ifdef DRS_SMART_OPTIONS
 
     /* Remove the "ineffective" spells */
     remove_bad_spells(m_idx, &f4, &f5, &f6);
 
-#endif
-
-    /* Nothing left to cast */
+    /* No spells left */
     if (!f4 && !f5 && !f6) return (FALSE);
+
+#endif
 
 
     /* Extract the "inate" spells */
@@ -1753,12 +1693,12 @@ bool make_attack_spell(int m_idx)
         if (f6 & (1L << k)) spell[num++] = k + 32 * 5;
     }
 
-    /* Nothing to cast */
+    /* No spells left */
     if (!num) return (FALSE);
 
 
-    /* Hack -- Ignore dead player */
-    if (!alive || death) return (FALSE);
+    /* Hack -- No need to attack */
+    if (!alive) return (FALSE);
 
 
     /* Get the monster name (or "it") */

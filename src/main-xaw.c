@@ -930,6 +930,14 @@ static errr Term_xtra_xaw(int n, int v)
 	/* Process events */
 	case TERM_XTRA_EVENT:
 	    return (CheckEvent(v));
+
+        /* Flush events */
+        case TERM_XTRA_FLUSH:
+            while (!CheckEvent(FALSE)); return (0);
+        
+        /* Clear the screen XXX XXX XXX */    
+        case TERM_XTRA_CLEAR:
+            XClearWindow(XtDisplay((Widget)screen.widget), XtWindow(widget));
     }
 
     /* Unknown */
@@ -941,12 +949,12 @@ static errr Term_xtra_xaw(int n, int v)
 /*
  * Erase a number of characters
  */
-static errr Term_wipe_xaw(int x, int y, int w, int h)
+static errr Term_wipe_xaw(int x, int y, int n)
 {
     term_data *td = (term_data*)(Term->data);
 
     /* Erase using color 0 */
-    AngbandClearArea(td->widget, x, y, w, h, 0);
+    AngbandClearArea(td->widget, x, y, n, 1, 0);
 
     /* Success */
     return (0);
@@ -957,7 +965,7 @@ static errr Term_wipe_xaw(int x, int y, int w, int h)
 /*
  * Draw the cursor (XXX by hiliting)
  */
-static errr Term_curs_xaw(int x, int y, int z)
+static errr Term_curs_xaw(int x, int y)
 {
     term_data *td = (term_data*)(Term->data);
 

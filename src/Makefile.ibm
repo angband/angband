@@ -12,16 +12,61 @@ OBJS = \
   effects.o cmd1.o cmd2.o cmd3.o cmd4.o cmd5.o cmd6.o \
   misc.o monster.o mon-desc.o object.o obj-desc.o \
   spells1.o spells2.o cave.o tables.o variable.o \
-  term.o random.o z-util.o z-virt.o z-form.o
+  term.o z-util.o z-virt.o z-form.o \
+  borg-ben.o borg-aux.o borg-ext.o borg-obj.o borg-map.o borg.o \
+  wizard.o wiz-spo.o
 
+
+# Compiler
 
 CC = gcc
+
+# Compiler flags
+
 CFLAGS = -Wall -O2 -DUSE_IBM
+
+# Libraries
+
 LIBS = -lpc
-BINARY = ../angband.bin
+
+# Name of Binary
+
+BINARY = angband.bin
+
+# Name of Program
+
+PROGRAM = angband.exe
+
+
+## Install full executable
+#
+#install: $(BINARY)
+#	strip $(BINARY)
+#	coff2exe -s c:/djgcc/bin/go32.exe $(BINARY)
+#	copy $(PROGRAM) ..
+#
+
+
+# Install simple binary
+
+install: $(BINARY)
+	copy $(BINARY) ..
+
+
+# Generate binary file
+
+$(BINARY): $(OBJS)
+	$(CC) $(CFLAGS) -o $(BINARY) $(OBJS) $(LIBS)
+
+
+# Compile source files
 
 .c.o:
 	$(CC) $(CFLAGS) -c $*.c
 
-$(BINARY): $(OBJS)
-	$(CC) $(CFLAGS)  -o $(BINARY) $(OBJS) $(LIBS)
+
+# Clean up
+
+clean:
+	del *.o $(BINARY) $(PROGRAM)
+

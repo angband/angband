@@ -305,12 +305,9 @@
 /*
  * OPTION: Enable the "track_follow" and "track_target" options.
  * They let monsters follow the player's foot-prints, or remember
- * the player's recent locations.
- *
- * This adds about 33K to the memory and 1K to the executable.
- *
- * This option has caused some trouble in several versions, usually
- * related to off-screen monster spell casting or frozen monsters.
+ * the player's recent locations.  This code has been removed from
+ * the current version because it is being rewritten by Billy, and
+ * until it is ready, it will not work.  Do not define this option.
  */
 /* #define WDT_TRACK_OPTIONS */
 

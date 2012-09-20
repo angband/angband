@@ -23,7 +23,7 @@ SRCS = \
   cmd1.c cmd2.c cmd3.c cmd4.c cmd5.c cmd6.c \
   misc.c monster.c mon-desc.c object.c obj-desc.c \
   spells1.c spells2.c cave.c tables.c variable.c \
-  term.c random.c z-util.c z-virt.c z-form.c\
+  term.c z-util.c z-virt.c z-form.c\
   generate.c save.c save-old.c birth.c init.c
 
 OBJS = \
@@ -33,7 +33,7 @@ OBJS = \
   cmd1.obj cmd2.obj cmd3.obj cmd4.obj cmd5.obj cmd6.obj \
   misc.obj monster.obj mon-desc.obj object.obj obj-desc.obj \
   spells1.obj spells2.obj cave.obj tables.obj variable.obj \
-  term.obj random.obj z-util.obj z-virt.obj z-form.obj\
+  term.obj z-util.obj z-virt.obj z-form.obj\
   generate.obj save.obj save-old.obj birth.obj init.obj
 
 OBJS32 = \
@@ -43,7 +43,7 @@ OBJS32 = \
   cmd1.o32 cmd2.o32 cmd3.o32 cmd4.o32 cmd5.o32 cmd6.o32 \
   misc.o32 monster.o32 mon-desc.o32 object.o32 obj-desc.o32 \
   spells1.o32 spells2.o32 cave.o32 tables.o32 variable.o32 \
-  term.o32 random.o32 z-util.o32 z-virt.o32 z-form.o32\
+  term.o32 z-util.o32 z-virt.o32 z-form.o32\
   generate.o32 save.o32 save-old.o32 birth.o32 init.o32
 
 default: bccw16.cfg angband cleanobj bccw32.cfg angband32 cleanobj32
@@ -186,7 +186,7 @@ cmd1.o32 cmd2.o32 cmd3.o32 cmd4.o32 cmd5.o32 cmd6.o32+
 misc.o32 monster.o32 mon-desc.o32 object.o32 obj-desc.o32+
 spells1.o32 spells2.o32 cave.o32 tables.o32 variable.o32+
 generate.o32 save.o32 save-old.o32 birth.o32 init.o32 +
-term.o32 random.o32 z-util.o32 z-virt.o32 z-form.o32,+
+term.o32 z-util.o32 z-virt.o32 z-form.o32,+
 ..\angband32.exe,..\angband.map,import32 cw32,..\src-win\angband.def
 |
 	$(RC32) -w32 ..\src-win\angband.rc ..\angband32.exe

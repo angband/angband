@@ -279,9 +279,12 @@ void teleport_away(int m_idx, int dis)
             /* Ignore illegal locations */
             if (!in_bounds(ny, nx)) continue;
 
-            /* Require "naked" floor space */
-            if (!naked_grid_bold(ny, nx)) continue;
+            /* Require "empty" floor space */
+            if (!empty_grid_bold(ny, nx)) continue;
 
+            /* Hack -- no teleport onto glyph of warding */
+            if ((cave[ny][nx].feat & 0x3F) == 0x03) continue;
+        
             /* No teleporting into vaults and such */
             /* if (cave[ny][nx].info & CAVE_ICKY) continue; */
 
@@ -1650,7 +1653,7 @@ void self_knowledge()
             info[i++] = "Your weapon strikes at animals with extra force.";
         }
         if (f1 & TR1_SLAY_EVIL) {
-            info[i++] = "Your weapon strokes at evil with extra force.";
+            info[i++] = "Your weapon strikes at evil with extra force.";
         }
         if (f1 & TR1_SLAY_UNDEAD) {
             info[i++] = "Your weapon strikes at undead with holy wrath.";
@@ -3369,13 +3372,13 @@ bool wall_to_mud(int dir)
 
 bool destroy_door(int dir)
 {
-    int flg = PROJECT_BEAM | PROJECT_ITEM;
+    int flg = PROJECT_BEAM | PROJECT_GRID | PROJECT_ITEM;
     return (project_hook(GF_KILL_DOOR, dir, 0, flg));
 }
 
 bool disarm_trap(int dir)
 {
-    int flg = PROJECT_BEAM | PROJECT_ITEM;
+    int flg = PROJECT_BEAM | PROJECT_GRID | PROJECT_ITEM;
     return (project_hook(GF_KILL_TRAP, dir, 0, flg));
 }
 
@@ -3441,19 +3444,19 @@ bool teleport_monster(int dir)
 
 bool door_creation()
 {
-    int flg = PROJECT_ITEM | PROJECT_GRID | PROJECT_HIDE;
+    int flg = PROJECT_GRID | PROJECT_ITEM | PROJECT_HIDE;
     return (project(0, 1, py, px, 0, GF_MAKE_DOOR, flg));
 }
 
 bool trap_creation()
 {
-    int flg = PROJECT_ITEM | PROJECT_GRID | PROJECT_HIDE;
+    int flg = PROJECT_GRID | PROJECT_ITEM | PROJECT_HIDE;
     return (project(0, 1, py, px, 0, GF_MAKE_TRAP, flg));
 }
 
 bool destroy_doors_touch()
 {
-    int flg = PROJECT_ITEM | PROJECT_HIDE;
+    int flg = PROJECT_GRID | PROJECT_ITEM | PROJECT_HIDE;
     return (project(0, 1, py, px, 0, GF_KILL_DOOR, flg));
 }
 
@@ -3647,6 +3650,9 @@ void destroy_area(int y1, int x1, int r, bool full)
         }
     }
     
+
+    /* Mega-Hack -- Forget the view and lite */
+    p_ptr->update |= (PU_NOTE);
 
     /* Update stuff */
     p_ptr->update |= (PU_VIEW | PU_LITE | PU_FLOW | PU_MONSTERS);
@@ -3869,6 +3875,9 @@ void earthquake(int cy, int cx, int r)
                             /* Skip non-empty grids */
                             if (!empty_grid_bold(y, x)) continue;
 
+                            /* Hack -- no safety on glyph of warding */
+                            if ((cave[y][x].feat & 0x3F) == 0x03) continue;
+        
                             /* Important -- Skip "quake" grids */
                             if (map[16+y-cy][16+x-cx]) continue;
 
@@ -4003,6 +4012,9 @@ void earthquake(int cy, int cx, int r)
         }
     }
 
+
+    /* Mega-Hack -- Forget the view and lite */
+    p_ptr->update |= (PU_NOTE);
 
     /* Update stuff */
     p_ptr->update |= (PU_VIEW | PU_LITE | PU_FLOW);

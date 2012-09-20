@@ -440,12 +440,6 @@ struct cave_type {
 
 #endif
 
-#ifdef WDT_TRACK_OPTIONS
-
-  s16b track;		/* Hack -- footprint counter		*/
-
-#endif
-
   u16b feat;		/* Flags -- use the "CAVE_*" constants	*/
 };
 
@@ -545,9 +539,9 @@ struct monster_type {
   byte ty;			/* Y location of target		*/
   byte tx;			/* X location of target		*/
 
-  s16b t_who;			/* Who are we tracking		*/
   byte t_dur;			/* How long are we tracking	*/
-  byte t_bit;			/* Four bit flags		*/
+
+  byte t_bit;			/* Up to eight bit flags	*/
 
 #endif
 
@@ -671,9 +665,9 @@ struct owner_type {
 
   byte haggle_per;	/* Haggle unit */
 
-  byte owner_race;	/* Owner race */
-
   byte insult_max;	/* Insult limit */
+
+  byte owner_race;	/* Owner race */
 
   byte unused;		/* Unused */
 };

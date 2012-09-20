@@ -91,12 +91,14 @@
  * a file such as "main-mac.c" or "main-x11.c" or "main-cur.c".  This
  * support takes the form of four function hooks:
  *
- *   Term_xtra() = Perform various actions
+ *   Term_user() = Perform user actions
+ *   Term_xtra() = Perform extra actions
+ *   Term_wipe() = Draw some blank spaces
  *   Term_curs() = Draw (or Move) the cursor
- *   Term_wipe() = Erase (part of) the screen
- *   Term_text() = Place some text on the screen
+ *   Term_pict() = Draw a picture on the screen
+ *   Term_text() = Draw some text on the screen
  *
- * Only "Term_xtra()" is available for external usage.
+ * Only "Term_user()" and "Term_xtra()" are available externally.
  *
  * We provide, among other things, the functions "Term_keypress()"
  * to "react" to keypress events, and "Term_redraw()" to redraw the
@@ -314,6 +316,15 @@ errr term_win_init(term_win *t, int w, int h)
 
 
 /*
+ * Perform the "user action" of type "n".
+ */
+errr Term_user(int n)
+{
+    if (!Term->user_hook) return (-1);
+    return ((*Term->user_hook)(n));
+}
+
+/*
  * Perform the "extra action" of type "n" with value "v".
  * Valid actions are defined as the "TERM_XTRA_*" constants.
  * Invalid and non-handled actions should return an error code.
@@ -327,23 +338,33 @@ errr Term_xtra(int n, int v)
 }
 
 /*
- * Place a "cursor" at "(x,y)", with "visibility" of "z".
+ * Erase "n" grids starting at "(x,y)".
  * The input is assumed to be "valid".
  */
-static errr Term_curs(int x, int y, int z)
+static errr Term_wipe(int x, int y, int n)
 {
-    if (!Term->curs_hook) return (-1);
-    return ((*Term->curs_hook)(x, y, z));
+    if (!Term->wipe_hook) return (-1);
+    return ((*Term->wipe_hook)(x, y, n));
 }
 
 /*
- * Erase a "block" of chars starting at "(x,y)", with size "(w,h)"
+ * Place a "cursor" at "(x,y)".
  * The input is assumed to be "valid".
  */
-static errr Term_wipe(int x, int y, int w, int h)
+static errr Term_curs(int x, int y)
 {
-    if (!Term->wipe_hook) return (-1);
-    return ((*Term->wipe_hook)(x, y, w, h));
+    if (!Term->curs_hook) return (-1);
+    return ((*Term->curs_hook)(x, y));
+}
+
+/*
+ * Draw a "picture" at "(x,y)".
+ * The input is assumed to be "valid".
+ */
+static errr Term_pict(int x, int y, int p)
+{
+    if (!Term->pict_hook) return (-1);
+    return ((*Term->pict_hook)(x, y, p));
 }
 
 /*
@@ -435,6 +456,10 @@ static void FlushOutputRow(int y)
     char text[256];
 
 
+    /* Hack -- nothing to do here */
+    if (scr->x1[y] > scr->x2[y]) return;
+
+
     /* Scan the columns marked as "modified" */
     for (x = scr->x1[y]; x <= scr->x2[y]; x++)
     {
@@ -469,7 +494,7 @@ static void FlushOutputRow(int y)
                 if (fa) Term_text(fx, y, n, fa, text);
 
                 /* Hack -- Erase "leading" spaces */
-                else Term_wipe(fx, y, n, 1);
+                else Term_wipe(fx, y, n);
 
                 /* Forget the pending thread */
                 n = 0;
@@ -492,7 +517,7 @@ static void FlushOutputRow(int y)
                 if (fa) Term_text(fx, y, n, fa, text);
 
                 /* Hack -- Erase "leading" spaces */
-                else Term_wipe(fx, y, n, 1);
+                else Term_wipe(fx, y, n);
 
                 /* Forget the pending thread */
                 n = 0;
@@ -519,12 +544,15 @@ static void FlushOutputRow(int y)
         if (fa) Term_text(fx, y, n, fa, text);
 
         /* Hack -- Erase fully blank lines */
-        else Term_wipe(fx, y, n, 1);
+        else Term_wipe(fx, y, n);
     }
 
     /* This row is all done */
     scr->x1[y] = scr->w;
     scr->x2[y] = 0;
+    
+    /* Hack -- Flush that row */
+    Term_xtra(TERM_XTRA_FROSH, y);
 }
 
 
@@ -547,7 +575,7 @@ static void FlushOutput()
     if (old->erase)
     {
         /* Physically erase the entire window */
-        Term_wipe(0, 0, scr->w, scr->h);
+        Term_xtra(TERM_XTRA_CLEAR, 0);
 
         /* Forget the erase */
         old->erase = FALSE;
@@ -590,7 +618,7 @@ static void FlushOutput()
             if (a) Term_text(x, y, 1, a, buf);
 
             /* Simply Erase the grid */
-            else Term_wipe(x, y, 1, 1);
+            else Term_wipe(x, y, 1);
         }
     }
 
@@ -621,7 +649,7 @@ static void FlushOutput()
         if (!scr->cu && scr->cv)
         {
             /* Call the cursor display routine */
-            Term_curs(scr->cx, scr->cy, 1);
+            Term_curs(scr->cx, scr->cy);
         }
     }
 
@@ -632,21 +660,21 @@ static void FlushOutput()
         if (scr->cu)
         {
             /* Paranoia -- Put the cursor NEAR where it belongs */
-            Term_curs(scr->w - 1, scr->cy, 0);
+            Term_curs(scr->w - 1, scr->cy);
         }
 
         /* The cursor is "invisible", attempt to hide it */
         else if (!scr->cv)
         {
             /* Paranoia -- Put the cursor where it belongs */
-            Term_curs(scr->cx, scr->cy, 0);
+            Term_curs(scr->cx, scr->cy);
         }
 
         /* The cursor must be "visible", put it where it belongs */
         else
         {
             /* Put the cursor where it belongs */
-            Term_curs(scr->cx, scr->cy, 1);
+            Term_curs(scr->cx, scr->cy);
 
             /* Make sure we are visible */
             Term_xtra(TERM_XTRA_BEVIS, 1);
@@ -659,6 +687,10 @@ static void FlushOutput()
     old->cv = scr->cv;
     old->cx = scr->cx;
     old->cy = scr->cy;
+
+
+    /* Actually flush the output */
+    Term_xtra(TERM_XTRA_FRESH, 0);
 }
 
 
@@ -1007,9 +1039,6 @@ errr Term_fresh()
 {
     /* Send the output */
     FlushOutput();
-
-    /* Actually flush the output */
-    Term_xtra(TERM_XTRA_FRESH, 0);
 
     /* Success */
     return (0);

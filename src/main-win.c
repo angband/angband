@@ -6,9 +6,9 @@
  * Written by Skirmantas Kligys (kligys@scf.usc.edu)
  * looking at main-mac.c by Ben Harrison
  *
- * See "term.c" for info on the "generic terminal" that we support.
+ * Note that this file needs MAJOR updating for Angband 2.7.9!!!
  *
- * See "recall.c"/"moria1.c" for info on the "recall"/"choice" windows.
+ * See "term.c" for info on the "generic terminal" that we support.
  */
 
 #ifdef _Windows
@@ -874,6 +874,7 @@ static errr Term_xtra_win(int n, int v)
 	case TERM_XTRA_CHECK: return Term_xtra_win_check(v);
 	case TERM_XTRA_EVENT: return Term_xtra_win_event(v);
 	case TERM_XTRA_REACT: return Term_xtra_win_react();
+	case TERM_XTRA_CLEAR: xxx;
     }
     /* Oops */
     return 1;
@@ -884,8 +885,7 @@ static errr Term_xtra_win(int n, int v)
  * Low level graphics (Assumes valid input).
  * Draw a "cursor" at (x,y), using a "yellow box".
  */
-#pragma argsused
-static errr Term_curs_win(int x, int y, int z)
+static errr Term_curs_win(int x, int y)
 {
     term_data *td = (term_data*)(Term->data);
     RECT   rc;
@@ -918,28 +918,25 @@ static errr Term_curs_win(int x, int y, int z)
 /*
  * Low level graphics (Assumes valid input).
  *
- * Erase a "block" of characters starting at (x,y), with size (w,h)
+ * Erase a "n" characters starting at (x,y)
  */
-static errr Term_wipe_win(int x, int y, int w, int h)
+static errr Term_wipe_win(int x, int y, int n)
 {
     term_data *td = (term_data*)(Term->data);
     HDC  hdc;
     RECT rc;
 
+#if 0
     /* clip to visible part of window */
     x -= td->scroll_hpos;
     y -= td->scroll_vpos;
-    if ((x > td->vis_cols) || (y > td->vis_rows)) return 0;
-    if (x < 0) { w += x; x = 0; }
-    if (y < 0) { h += y; y = 0; }
-    w = min(w, td->vis_cols - x);
-    h = min(h, td->vis_rows - y);
+#endif
 
     /* Rectangle to erase in client coords */
     rc.left   = x * td->font_wid + td->size_ow1;
-    rc.right  = rc.left + w * td->font_wid;
+    rc.right  = rc.left + n * td->font_wid;
     rc.top    = y * td->font_hgt + td->size_oh1;
-    rc.bottom = rc.top + h * td->font_hgt;
+    rc.bottom = rc.top + td->font_hgt;
 
     hdc = GetDC(td->w);
     SetBkColor(hdc, RGB(0,0,0));
@@ -981,9 +978,11 @@ static errr Term_text_win(int x, int y, int n, byte a, const char *s)
     u16b g;
 #endif
 
+#if 0
     /* clip to visible part of window */
     x -= td->scroll_hpos;
     y -= td->scroll_vpos;
+
     if ((x >= (int)td->vis_cols) || (y < 0) || (y >= (int)td->vis_rows))
       return 0;
 
@@ -996,6 +995,7 @@ static errr Term_text_win(int x, int y, int n, byte a, const char *s)
     }
     n = min(n, td->vis_cols - x);
     if (n <= 0) return 0;
+#endif
 
 #ifdef USE_GRAPHICS
     if ((a <= 127) || !use_graphics)   /* text output */

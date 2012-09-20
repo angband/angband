@@ -115,6 +115,8 @@ extern s16b coin_type;
 extern bool opening_chest;
 extern bool use_graphics;
 extern bool use_sound;
+extern bool scan_monsters;
+extern bool scan_objects;
 extern s16b total_weight;
 extern s16b inven_nxt;
 extern s16b inven_cnt;

@@ -96,6 +96,9 @@ static void handle_signal_simple(int sig)
         /* Cause of "death" */
         (void)strcpy(died_from, "Interrupting");
 
+        /* Stop playing */
+        alive = FALSE;
+
         /* Suicide */
         death = TRUE;
 

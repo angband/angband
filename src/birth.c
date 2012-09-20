@@ -55,6 +55,7 @@ typedef struct hist_type {
 } hist_type;
 
 
+
 /*
  * Background information (see below)
  *
@@ -68,9 +69,9 @@ typedef struct hist_type {
  *   Half-Orc      --> 19 --> 20 -->  2 -->  3 --> 50 --> 51 --> 52 --> 53
  *   Half-Troll    --> 22 --> 23 --> 62 --> 63 --> 64 --> 65 --> 66
  *
- * XXX XXX Note that female dwarfs apparently have long beards (!)
+ * XXX XXX XXX This table *must* be correct or drastic errors may occur!
  */
-static hist_type bg[MAX_BACKGROUND] = {
+static hist_type bg[] = {
 
 {"You are the illegitimate and unacknowledged child ",		 10, 1, 2, 25},
 {"You are the illegitimate but acknowledged child ",		 20, 1, 2, 35},
@@ -376,15 +377,14 @@ static void choose_sex(void)
 
     while (1) {
         put_str("Choose a sex (? for Help, Q to Quit): ", 20, 2);
-        move_cursor(20, 29);
         c = inkey();
         if (c == 'Q') quit(NULL);
-        if (c == 'm' || c == 'M') {
+        if ((c == 'm') || (c == 'M')) {
             p_ptr->male = TRUE;
             c_put_str(TERM_L_BLUE, "Male", 3, 15);
             break;
         }
-        else if (c == 'f' || c == 'F') {
+        else if ((c == 'f') || (c == 'F')) {
             p_ptr->male = FALSE;
             c_put_str(TERM_L_BLUE, "Female", 3, 15);
             break;
@@ -722,19 +722,42 @@ static void get_history(void)
     /* Initial social class */
     social_class = randint(4);
 
-    /* Dunadan -- Same as Human */
-    if (p_ptr->prace == 8) {
-        chart = 0 * 3 + 1;
-    }
+    /* Starting place */
+    switch (p_ptr->prace) {
+    
+        case RACE_HUMAN:
+        case RACE_DUNADAN:
+            chart = 1;
+            break;
 
-    /* High Elf -- Same as Elf */
-    else if (p_ptr->prace == 9) {
-        chart = 2 * 3 + 1;
-    }
-
-    /* Normal races -- Start at given chart */
-    else {
-        chart = p_ptr->prace * 3 + 1;
+        case RACE_HALF_ELF:
+            chart = 4;
+            break;
+            
+        case RACE_ELF:
+        case RACE_HIGH_ELF:
+            chart = 7;
+            break;
+            
+        case RACE_HOBBIT:
+            chart = 10;
+            break;
+            
+        case RACE_GNOME:
+            chart = 13;
+            break;
+            
+        case RACE_DWARF:
+            chart = 16;
+            break;
+            
+        case RACE_HALF_ORC:
+            chart = 19;
+            break;
+            
+        case RACE_HALF_TROLL:
+            chart = 22;
+            break;
     }
 
 
@@ -1555,9 +1578,9 @@ start_over:
 
     /* Note player birth in the message recall */
     message_add(" ");
-    message_add(" ");
+    message_add("  ");
     message_add("====================");
-    message_add(" ");
+    message_add("  ");
     message_add(" ");
 
 

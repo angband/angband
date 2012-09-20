@@ -406,15 +406,6 @@ int main(int argc, char *argv[])
 #endif
 
 
-#ifdef USE_286
-    /* Attempt to use the "main-286.c" support */
-    if (!done) {
-        extern errr init_286(void);
-        if (0 == init_286()) done = TRUE;
-        if (done) ANGBAND_SYS = "286";
-    }
-#endif
-
 #ifdef USE_IBM
     /* Attempt to use the "main-ibm.c" support */
     if (!done) {
@@ -424,21 +415,32 @@ int main(int argc, char *argv[])
     }
 #endif
 
-#ifdef USE_WAT
-    /* Attempt to use the "main-wat.c" support */
-    if (!done) {
-        extern errr init_wat(void);
-        if (0 == init_wat()) done = TRUE;
-        if (done) ANGBAND_SYS = "wat";
-    }
-#endif
-
 #ifdef __EMX__
     /* Attempt to use the "main-emx.c" support */
     if (!done) {
         extern errr init_emx(void);
         if (0 == init_emx()) done = TRUE;
         if (done) ANGBAND_SYS = "emx";
+    }
+#endif
+
+
+#ifdef USE_AMY
+    /* Attempt to use the "main-amy.c" support */
+    if (!done) {
+        extern errr init_amy(void);
+        if (0 == init_amy()) done = TRUE;
+        if (done) ANGBAND_SYS = "amy";
+    }
+#endif
+
+
+#ifdef USE_LSL
+    /* Attempt to use the "main-lsl.c" support */
+    if (!done) {
+        extern errr init_lsl(void);
+        if (0 == init_lsl()) done = TRUE;
+        if (done) ANGBAND_SYS="lsl";
     }
 #endif
 

@@ -13,9 +13,6 @@
 # Note that the "spacing" in the "description" lines is very important!
 
 
-# Note that this file is not currently used
-
-
 # Version stamp
 
 V:2.7.9
