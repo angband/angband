@@ -4,13 +4,6 @@
 
 /* Author: ekraemer@pluto.camelot.de (Ekkehard Kraemer) */
 
-/* XXX XXX XXX */
-/* Warning: This file is NOT ready for Angband 2.7.9v2 */
-/* Verify the new "Pipe" code and FIX THE KEYPRESS CODE */
-/* Note especially the use of proper "Term_xtra" calls */
-/* XXX XXX XXX */
-
-
 #ifdef __EMX__
 
 /*
@@ -38,7 +31,7 @@
  * - run 'dmake -B -r -f makefile.emx clean'
  *
  *
- * I used EMX 0.9a, but every EMX compiler since 0.8g or so should work
+ * I use EMX 0.9b, but every EMX compiler since 0.8g or so should work
  * fine. EMX is available at ftp-os2.cdrom.com ("Hobbes"), as is dmake.
  *
  *  dmake:    ftp://ftp-os2.cdrom.com/all/program/dmake38X.zip
@@ -65,14 +58,21 @@
  *  25.12.95   EK      2.7.9    Added 'install' target
  *                    non-beta  Updated installation hints
  *                              Uploaded binary to export.andrew.cmu.edu
+ *
+ *  25.01.96   EK      2.7.9    Updated for 2.7.9v3
+ *                      v3      Removed (improved) keyboard hack
+ *                              Introduced pref-emx.prf
+ *                              Phew... Makefile.emx grows! (patches, export)
+ *
+ *  26.01.96   EK               Added files.uue target
  */
 
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h> 
 #include <sys/kbdscan.h>
 #include <sys/video.h>
 #include <io.h>
-#define INCL_DOS                /* A bit of overkill for the pipe code... */
 #include <os2.h>
 
 #include "angband.h"
@@ -106,17 +106,11 @@ enum
 /*
  * Prototypes!
  */
-static errr Term_xtra_emx(int n, int v);
 static errr Term_curs_emx(int x, int y);
 static errr Term_wipe_emx(int x, int y, int n);
 static errr Term_text_emx(int x, int y, int n, unsigned char a, cptr s);
 static void Term_init_emx(term *t);
 static void Term_nuke_emx(term *t);
-
-/*
- * Hack
- */
-static errr CheckEvents(int returnImmediately)
 
 /*
  * Current cursor "size"
@@ -158,55 +152,6 @@ static int colors[16]=
     F_BROWN|INTENSITY           /* Light brown */
 };
 
-
-/*
- * Do a special thing (beep, flush, etc)
- */
-static errr Term_xtra_emx(int n, int v)
-{
-    int i;
-    
-    switch (n)
-    {
-
-#ifndef __EMX__CLIENT__           
-
-        case TERM_XTRA_INVIS: 
-            v_hidecursor(); 
-            return (0);
-
-        case TERM_XTRA_BEVIS: 
-            v_ctype(curs_start,curs_end); 
-            return (0);
-
-        case TERM_XTRA_NOISE: 
-            putchar(7); 
-            return (0);
-
-        case TERM_XTRA_FLUSH:
-            while (!CheckEvents(TRUE));
-            return 0;
-
-        case TERM_XTRA_EVENT:
-
-            /* Process an event */
-            return (CheckEvents(!v));
-
-            /* Success */
-            return (0);
-
-#endif
-
-        case TERM_XTRA_CLEAR:
-            for (i = 0; i < 24; i++) {
-                v_gotoxy(0,i);
-                v_putn(' ',80);
-            }
-            return (0);
-    }
-
-    return (1);
-}
 
 /*
  * Display a cursor, on top of a given attr/char
@@ -251,6 +196,25 @@ static void Term_init_emx(term *t)
     v_init();
     v_getctype(&curs_start,&curs_end);
     v_clear();
+
+    signal(SIGHUP,SIG_IGN);
+    signal(SIGINT,SIG_IGN);
+    signal(SIGQUIT,SIG_IGN);
+/*  signal(SIGILL,SIG_IGN);  */
+/*  signal(SIGTRAP,SIG_IGN); */
+/*  signal(SIGABRT,SIG_IGN); */
+/*  signal(SIGEMT,SIG_IGN);  */
+/*  signal(SIGFPE,SIG_IGN);  */
+/*  signal(SIGBUS,SIG_IGN);  */
+/*  signal(SIGSEGV,SIG_IGN); */
+/*  signal(SIGSYS,SIG_IGN);  */
+    signal(SIGPIPE,SIG_IGN);
+    signal(SIGALRM,SIG_IGN);
+/*  signal(SIGTERM,SIG_IGN); */
+    signal(SIGUSR1,SIG_IGN);
+    signal(SIGUSR2,SIG_IGN);
+    signal(SIGCHLD,SIG_IGN);
+    signal(SIGBREAK,SIG_IGN);
 }
 
 /*
@@ -328,59 +292,18 @@ static termPipe term_screen_body,
  */
 static errr CheckEvents(int returnImmediately)
 {
-    int k = 0, ke = 0, ka = 0;
+    int k = 0, ke = 0;
 
-    /* Keyboard polling is BAD for multitasking systems */
-    if (returnImmediately)
-    {
-        /* Check for a keypress (no waiting) */
-        k = _read_kbd(0,0,0);
+    /* Get key */
+    k=_read_kbd(0,returnImmediately?0:1,0);
 
-        /* Nothing ready */
-        if (k < 0) return (1);
-    }
-
-    /* Wait for a keypress */
-    else
-    {
-        /* Wait for a keypress */
-        k = _read_kbd(0,1,0);
-    }
+    /* Nothing ready */
+    if (k < 0) return (1);
 
     /* Get an extended scan code */
     if (!k) ke = _read_kbd(0,1,0);
 
-
-    /* Mega-Hack -- Convert Arrow keys into directions */
-    switch (ke)
-    {
-        case K_LEFT:     ka = '4'; break;
-        case K_RIGHT:    ka = '6'; break;
-        case K_UP:       ka = '8'; break;
-        case K_DOWN:     ka = '2'; break;
-        case K_HOME:     ka = '7'; break;
-        case K_PAGEUP:   ka = '9'; break;
-        case K_PAGEDOWN: ka = '3'; break;
-        case K_END:      ka = '1'; break;
-        case K_CENTER:   ka = '5'; break;
-    }
-
-
-    /* Special arrow keys */
-    if (ka)
-    {
-        /* Hack -- Keypad key introducer */
-        Term_keypress(30);
-
-        /* Send the "numerical direction" */
-        Term_keypress(ka);
-
-        /* Success */
-        return (0);
-    }
-
-
-    /* Hack -- normal keypresses */
+    /* Normal keypresses */
     if (k)
     {
         /* Enqueue the key */
@@ -390,9 +313,10 @@ static errr CheckEvents(int returnImmediately)
         return (0);
     }
 
-
     /* Hack -- introduce a macro sequence */
     Term_keypress(31);
+
+    /* XXX We're not able to extract shift/ctrl/alt key information here. */
 
     /* Hack -- send the key sequence */
     Term_keypress('0' + (ke % 1000) / 100);
@@ -402,11 +326,49 @@ static errr CheckEvents(int returnImmediately)
     /* Hack --  end the macro sequence */
     Term_keypress(13);
 
-
     /* Success */
     return (0);
 }
 
+/*
+ * Do a special thing (beep, flush, etc)
+ */
+static errr Term_xtra_emx(int n, int v)
+{
+    switch (n)
+    {
+
+        case TERM_XTRA_INVIS: 
+            v_hidecursor(); 
+            return (0);
+
+        case TERM_XTRA_BEVIS: 
+            v_ctype(curs_start,curs_end); 
+            return (0);
+
+        case TERM_XTRA_NOISE: 
+            putchar(7); 
+            return (0);
+
+        case TERM_XTRA_FLUSH:
+            while (!CheckEvents(TRUE));
+            return 0;
+
+        case TERM_XTRA_EVENT:
+
+            /* Process an event */
+            return (CheckEvents(!v));
+
+            /* Success */
+            return (0);
+
+        case TERM_XTRA_CLEAR:
+            v_clear();
+            return (0);
+    }
+
+    return (1);
+}
 
 static errr Term_xtra_pipe_emx(int n, int v)
 {
@@ -432,8 +394,8 @@ static errr Term_xtra_pipe_emx(int n, int v)
             if (!tp->out) return -1;
     
             fputc(PIP_XTRA,tp->out);
-            fwrite(&x,sizeof(n),1,tp->out);
-            fwrite(&y,sizeof(v),1,tp->out);
+            fwrite(&n,sizeof(n),1,tp->out);
+            fwrite(&v,sizeof(v),1,tp->out);
             fflush(tp->out);
 
             return (0);
@@ -600,9 +562,9 @@ static FILE *initPipe(char *name)
 int main(int argc, char **argv)
 {
     int c, end = 0, lines = 25;
-    int x, y, w, h, z, n, v;
+    int x, y, h, n, v;
 
-    FILE *in;
+    FILE *in=NULL;
     char a;
     char buf[160];
     HPIPE pipe;
@@ -623,36 +585,42 @@ int main(int argc, char **argv)
 
     sprintf(buf,"\\pipe\\angband\\%s",argv[1]);
 
-    rc=DosCreateNPipe((PSZ)buf,                /* Create pipe */
-                   &pipe,
-                   NP_ACCESS_INBOUND,
-                   NP_WAIT|NP_TYPE_BYTE|NP_READMODE_BYTE|1,
-                   1,                          /* Output buffer (no output,
-anyway) */
-                   1,                          /* Input buffer */
-                   -1);
-
-    if (rc)                                    /* Pipe not created */
+    do
     {
-        printf("DosCreateNPipe: rc=%ld, pipe=%ld\n",(long)rc,(long)pipe);
-        abort();
+        rc=DosCreateNPipe((PSZ)buf,          /* Create pipe */
+                          &pipe,
+                          NP_ACCESS_INBOUND,
+                          NP_WAIT|NP_TYPE_BYTE|NP_READMODE_BYTE|1,
+                          1,                 /* No output buffer */
+                          1,                 /* No input buffer */
+                          -1);
+
+        if (rc)                              /* Pipe not created */
+        {
+            printf("DosCreateNPipe: rc=%ld, pipe=%ld\n",(long)rc,(long)pipe);
+            break;
+        }
+
+        do                                         
+        {
+            rc=DosConnectNPipe(pipe);        /* Wait for angband to connect */
+            if (!rc) break;
+            _sleep2(500);                    /* Sleep for 0.5s  */
+        } while (_read_kbd(0,0,0)==-1);      /* Until key pressed */
+
+        if (rc) break;
+
+        h=_imphandle(pipe);                  /* Register handle with io */
+        setmode(h,O_BINARY);                 /* Make it binary */
+        in=fdopen(h,"rb");                   /* Register handle with stdio */
+
+    } while (0);           /* We don't need no stinking exception handling <g> */
+
+    if (!in)
+    {
+        printf("Sorry, the pipe connection to Angband could not be established.\n");
+        exit(1);
     }
-
-    do                                         
-    {
-        rc=DosConnectNPipe(pipe);              /* Wait for angband to connect */
-        if (!rc) break;
-        _sleep2(100);                          /* Sleep for 0.1s  */
-    } while (_read_kbd(0,0,0)==-1);            /* Until key pressed */
-
-    if (rc) exit(1);
-
-    h=_imphandle(pipe);                        /* Register handle with EMX
-library */
-    setmode(h,O_BINARY);                       /* Make it binary */
-
-    in=fdopen(h,"rb");                         /* Register handle with stdio */
-    if (!in) exit(1);                          
 
     printf("Connected.\n");
 
@@ -671,7 +639,19 @@ library */
                 if (!fread(&n,sizeof(x),1,in) ||
                     !fread(&v,sizeof(y),1,in))
                     abort();
-                Term_xtra_emx(n,v);
+
+                /* This hack prevents another hack */
+                switch (n)
+                {
+                    case TERM_XTRA_CLEAR: 
+                        v_clear(); 
+                        break;
+
+                    default:
+                        printf("Sorry, angband.exe and aclient.exe don't fit together.\n");
+                        exit(1);
+                }
+                
                 break;
 
             case PIP_CURS:
@@ -719,3 +699,9 @@ library */
 
 #endif /* __EMX__ */
 
+/*
+ * Local Variables:
+ * comment-column: 45
+ * End:
+ *
+ */

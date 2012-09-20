@@ -47,18 +47,21 @@ static bool is_wizard(int uid)
     if (!fp) return (TRUE);
 
     /* Scan the wizard file */
-    while (!allow && fgets(buf, sizeof(buf), fp)) {
+    while (0 == my_fgets(fp, buf, 1024)) {
 
         int test;
 
-        /* Skip comments */
-        if (buf[0] == '#') continue;
+        /* Skip comments and blank lines */
+        if (!buf[0] || (buf[0] == '#')) continue;
 
         /* Look for valid entries */
         if (sscanf(buf, "%d", &test) != 1) continue;
 
         /* Look for matching entries */
         if (test == uid) allow = TRUE;
+
+        /* Done */
+        if (allow) break;
     }
 
     /* Close the file */
@@ -99,7 +102,7 @@ __near long __stack = 32768L;
 /*
  * Set the stack size and overlay buffer (see main-286.c")
  *
- * XXX XXX XXX Note that "<dos.h>" redefines "delay()".
+ * XXX XXX XXX Note that "<dos.h>" defines the "delay()" function.
  */
 #ifdef USE_286
 # include <dos.h>
@@ -158,7 +161,10 @@ static void init_stuff(void)
  * Studly machines can actually parse command line args
  *
  * XXX XXX XXX The "-c", "-d", and "-i" options should probably require
- * that their "arguments" end in the appropriate path separator.
+ * that their "arguments" end in the appropriate path separator.  But it
+ * is possible to use them without a path separator, which provides a
+ * special "prefix" for all of the file names.  Those options should
+ * probably be simplified into some form of "-dWHAT=PATH" syntax.
  */
 int main(int argc, char *argv[])
 {
@@ -299,6 +305,16 @@ int main(int argc, char *argv[])
             arg_force_original = TRUE;
             break;
 
+          case 'V':
+          case 'v':
+            use_sound = TRUE;
+            break;
+
+          case 'G':
+          case 'g':
+            use_graphics = TRUE;
+            break;
+
           case 'S':
           case 's':
             show_score = atoi(&argv[0][2]);
@@ -307,27 +323,22 @@ int main(int argc, char *argv[])
 
           case 'F':
           case 'f':
-            if (!can_be_wizard) goto usage;
-            arg_fiddle = arg_wizard = TRUE;
+            arg_fiddle = TRUE;
             break;
 
 #ifdef SET_UID
-# ifdef SAVEFILE_USE_UID
           case 'P':
           case 'p':
-            if (!can_be_wizard) goto usage;
-            if (isdigit((int)argv[0][2])) {
+            if (can_be_wizard) {
                 player_uid = atoi(&argv[0][2]);
                 user_name(player_name, player_uid);
             }
             break;
-# endif
 #endif
 
           case 'W':
           case 'w':
-            if (!can_be_wizard) goto usage;
-            arg_wizard = TRUE;
+            if (can_be_wizard) arg_wizard = TRUE;
             break;
 
           case 'u':
@@ -340,31 +351,20 @@ int main(int argc, char *argv[])
           usage:
 
             /* Note -- the Term is NOT initialized */
-            puts("Usage: angband [-n] [-o] [-r] [-u<name>] [-s<num>]");
-            puts("  n       Start a new character");
-            puts("  o       Use the original command set");
-            puts("  r       Use the rogue-like command set");
-            puts("  u<name> Play with your <name> savefile");
-            puts("  s<num>  Show <num> high scores (or top 10).");
-            puts("");
-
-            /* XXX XXX XXX Command line option setters? */
-
-            /* Less common options */
-            puts("Extra options: [-c<path>] [-d<path>] [-i<path>]");
-            puts("  c<path> Look for pref files in the directory <path>");
-            puts("  d<path> Look for save files in the directory <path>");
-            puts("  i<path> Look for info files in the directory <path>");
-            puts("");
-
-            /* Extra wizard options */
-            if (can_be_wizard) {
-                puts("Extra wizard options: [-f] [-w] [-p<uid>]");
-                puts("  f       Activate 'fiddle' mode");
-                puts("  w       Activate 'wizard' mode");
-                puts("  p<uid>  Pretend to have the player uid number <uid>");
-                puts("");
-            }
+            puts("Usage: angband [options]");
+            puts("  -n       Start a new character");
+            puts("  -o       Use the original keyset");
+            puts("  -r       Use the rogue-like keyset");
+            puts("  -v       Activate the use_sound flag");
+            puts("  -g       Activate the use_graphics flag");
+            puts("  -f       Activate 'fiddle' mode");
+            puts("  -w       Activate 'wizard' mode");
+            puts("  -p<uid>  Play with the <uid> userid");
+            puts("  -u<name> Play with your <name> savefile");
+            puts("  -s<num>  Show <num> high scores (or top 10).");
+            puts("  -c<path> Look for pref files in the directory <path>");
+            puts("  -d<path> Look for save files in the directory <path>");
+            puts("  -i<path> Look for info files in the directory <path>");
 
             /* Actually abort the process */
             quit(NULL);
@@ -438,12 +438,12 @@ int main(int argc, char *argv[])
 #endif
 
 
-#ifdef USE_AMY
-    /* Attempt to use the "main-amy.c" support */
+#ifdef USE_AMI
+    /* Attempt to use the "main-ami.c" support */
     if (!done) {
-        extern errr init_amy(void);
-        if (0 == init_amy()) done = TRUE;
-        if (done) ANGBAND_SYS = "amy";
+        extern errr init_ami(void);
+        if (0 == init_ami()) done = TRUE;
+        if (done) ANGBAND_SYS = "ami";
     }
 #endif
 
@@ -453,7 +453,7 @@ int main(int argc, char *argv[])
     if (!done) {
         extern errr init_lsl(void);
         if (0 == init_lsl()) done = TRUE;
-        if (done) ANGBAND_SYS="lsl";
+        if (done) ANGBAND_SYS = "lsl";
     }
 #endif
 

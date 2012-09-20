@@ -120,7 +120,6 @@ byte my_immune_acid;	/* Immunity to acid		*/
 byte my_immune_elec;	/* Immunity to lightning	*/
 byte my_immune_fire;	/* Immunity to fire		*/
 byte my_immune_cold;	/* Immunity to cold		*/
-byte my_immune_pois;	/* Immunity to poison		*/
 
 byte my_resist_acid;	/* Resist acid		*/
 byte my_resist_elec;	/* Resist lightning	*/
@@ -1173,8 +1172,8 @@ static int borg_guess_race(int x, int y)
  *
  * First we check for all possible "unique" monsters, including
  * ones we have killed, and even if the monster name is "prefixed"
- * (as in "The Tarrasque" and "The Lernean Hydra").  This is overly
- * paranoid.  Use a binary search.  XXX XXX XXX
+ * (as in "The Tarrasque" and "The Lernean Hydra").  Since we use
+ * a fast binary search, this is acceptable paranoia.
  *
  * Otherwise, we attempt to match monsters named "The xxx" to the
  * most "likely" non-unique monster, taking into account various
@@ -2068,7 +2067,7 @@ static bool borg_verify_kill(cptr who, bool dead)
  * Also note that "c_t" is not incremented until the Borg is about to
  * do something, so nothing ever has a time-stamp of the current time.
  *
- * XXX XXX XXX XXX The basic problem with timestamping the monsters
+ * XXX XXX XXX The basic problem with timestamping the monsters
  * and objects is that we often get a message about a monster, and so
  * we want to timestamp it, but then we cannot use the timestamp to
  * indicate that the monster has not been "checked" yet.  Perhaps
@@ -2857,7 +2856,7 @@ void borg_update(void)
         if (!(ag->info & BORG_VIEW)) continue;
 
         /* XXX XXX XXX Many monsters "step" out of view */
-        /* Currently we just assume they are dead */
+        /* Currently we just assume they are dead (ick!) */
 
         /* Kill the monster */
         borg_delete_kill(i);
@@ -3882,6 +3881,17 @@ static int borg_freedom(int x, int y)
  * situation which might include "hidden" danger, including invisible
  * monsters, and monsters not visible to the player, and monsters that
  * cannot be parsed, such as the player ghost, or mimics, or trappers.
+ *
+ * XXX XXX XXX Note that it should be possible to do some kind of nasty
+ * "flow" algorithm which would use a priority queue, or some reasonably
+ * efficient normal queue stuff, to determine the path which incurs the
+ * smallest "cumulative danger", and minimizes the total path length.
+ * It may even be sufficient to treat each step as having a cost equal
+ * to the danger of the destination grid, plus one for the actual step.
+ * This would allow the Borg to prefer a ten step path passing through
+ * one grid with danger 10, to a five step path, where each step has
+ * danger 9.  Currently, he often chooses paths of constant danger over
+ * paths with small amounts of high danger.
  */
 bool borg_caution(void)
 {

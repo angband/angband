@@ -13,12 +13,6 @@
 #include "angband.h"
 
 
-/*
- * Hack -- make sure we have a good "ANSI" definition for "CTRL()"
- */
-#undef CTRL
-#define CTRL(C) ((C)&037)
-
 
 #ifdef ALLOW_WIZARD
 
@@ -38,61 +32,6 @@ extern int do_wiz_command(void);
 extern void borg_ben(void);
 
 #endif
-
-
-
-/*
- * Verify desire to be a wizard, and do so if verified
- * This routine should only be called if "can_be_wizard"
- */
-bool enter_wiz_mode(void)
-{
-    int answer = FALSE;
-
-    /* Already been asked */
-    if (noscore & 0x0002) return (TRUE);
-
-    /* Mention effects */
-    msg_print("Wizard mode is for debugging and experimenting.");
-    msg_print("The game will not be scored if you enter wizard mode.");
-
-    /* Verify request */
-    answer = get_check("Are you sure you want to enter wizard mode? ");
-
-    /* Never Mind */
-    if (!answer) return (FALSE);
-
-    /* Remember old setting */
-    noscore |= 0x0002;
-
-    /* Make me a wizard */
-    return (TRUE);
-}
-
-
-/*
- * XXX XXX XXX Move this function
- */
-static void do_cmd_pref_one(void)
-{
-    char buf[80];
-
-    /* Wipe it */
-    strcpy(buf, "");
-
-    /* Prompt */
-    prt("Pref: ", 0, 0);
-
-    /* Ask */
-    if (askfor_aux(buf, 80)) {
-
-        /* Process XXX XXX XXX */
-        (void)process_pref_file_aux(buf);
-    }
-
-    /* Clear */
-    prt("", 0, 0);
-}
 
 
 
@@ -118,7 +57,7 @@ void process_command(void)
         /*** Wizard Commands ***/
 
         /* Toggle Wizard Mode */
-        case CTRL('W'):
+        case KTRL('W'):
             if (wizard) {
                 wizard = FALSE;
                 msg_print("Wizard mode off.");
@@ -143,7 +82,7 @@ void process_command(void)
 #ifdef ALLOW_WIZARD
 
         /* Special Wizard Command */
-        case CTRL('A'):
+        case KTRL('A'):
             if (wizard) {
                 do_wiz_command();
             }
@@ -158,7 +97,7 @@ void process_command(void)
 #ifdef ALLOW_BORG
 
         /* Interact with the Borg */
-        case CTRL('Z'):
+        case KTRL('Z'):
 
             /* Interact with the borg */
             borg_ben();
@@ -183,7 +122,7 @@ void process_command(void)
         case 'd':
             do_cmd_drop(); break;
 
-        /* Destory an item */
+        /* Destroy an item */
         case 'k':
             do_cmd_destroy(); break;
 
@@ -203,15 +142,8 @@ void process_command(void)
             do_cmd_observe(); break;
 
         /* Hack -- toggle choice window */
-        case CTRL('E'):
-
-            /* Hack -- flip the current status */
-            choose_default = !choose_default;
-
-            /* Redraw choice window */
-            p_ptr->redraw |= (PR_CHOOSE);
-
-            break;
+        case KTRL('E'):
+            do_cmd_toggle_choose(); break;
 
 
         /*** Standard "Movement" Commands ***/
@@ -394,29 +326,29 @@ void process_command(void)
 
         /*** System Commands ***/
 
-        /* User interface */
-        case '@':
-            (void)Term_user(0); break;
-
-        /* Define command macro */
+        /* Hack -- User interface */
         case '!':
-            do_cmd_macro(); break;
-
-        /* Define keymap */
-        case '&':
-            do_cmd_keymap(); break;
-
-        /* Set options */
-        case '=':
-            do_cmd_options(); break;
-
-        /* Manage preference files */
-        case '%':
-            do_cmd_prefs(); break;
+            (void)Term_user(0); break;
 
         /* Single line from a pref file */
         case '"':
-            do_cmd_pref_one(); break;
+            do_cmd_pref(); break;
+
+        /* Interact with macros */
+        case '@':
+            do_cmd_macros(); break;
+
+        /* Interact with visuals */
+        case '%':
+            do_cmd_visuals(); break;
+
+        /* Interact with colors */
+        case '&':
+            do_cmd_colors(); break;
+
+        /* Interact with options */
+        case '=':
+            do_cmd_options(); break;
 
 
         /*** Misc Commands ***/
@@ -430,29 +362,29 @@ void process_command(void)
             do_cmd_version(); break;
 
         /* Repeat level feeling */
-        case CTRL('F'):
+        case KTRL('F'):
             do_cmd_feeling(); break;
 
         /* Show previous message */
-        case CTRL('O'):
-            prt(format("> %s", message_str(0)), 0, 0); break;
+        case KTRL('O'):
+            do_cmd_message_one(); break;
 
         /* Show previous messages */
-        case CTRL('P'):
+        case KTRL('P'):
             do_cmd_messages(); break;
 
         /* Redraw the screen */
-        case CTRL('R'):
+        case KTRL('R'):
             do_cmd_redraw(); break;
 
 #ifndef VERIFY_SAVEFILE
         /* Hack -- Save and don't quit */
-        case CTRL('S'):
+        case KTRL('S'):
             do_cmd_save_game(); break;
 #endif
 
         /* Save and quit */
-        case CTRL('X'):
+        case KTRL('X'):
             alive = FALSE; break;
 
         /* Quit (commit suicide) */
@@ -505,44 +437,6 @@ void process_command(void)
 
 
 
-/*
- * Check whether this command can be "repeated".
- *
- * Note -- this routine applies ONLY to "Angband Commands".
- *
- * Repeated commands must be VERY careful to correctly turn off the
- * "repeat" (by calling "disturb()") if they induce an action of any
- * kind that should cancel the "repeat".
- */
-static int command_takes_rep(char c)
-{
-    /* Examine the command */
-    switch (c) {
-
-        /* Take a direction, Normally repeated */
-        case '+': /* Tunnel */
-        case 'D': /* Disarm */
-        case 'B': /* Bash */
-        case 'o': /* Open */
-
-        /* Take a direction, Normally not repeated */
-        case '-': /* Jump */
-        case ';': /* Walk */
-
-        /* Take no direction, Normally not repeated */
-        case ',': /* Stay still */
-        case 'g': /* Stay still */
-        case 's': /* Search */
-
-            return TRUE;
-    }
-
-    /* Assume no count allowed */
-    return (FALSE);
-}
-
-
-
 
 /*
  * Request a command from the user.
@@ -556,7 +450,6 @@ static int command_takes_rep(char c)
  */
 void request_command(void)
 {
-    int i = 0;
     char cmd;
 
 
@@ -630,38 +523,38 @@ void request_command(void)
             /* Get a new keypress */
             cmd = inkey();
 
-            /* Simple editing */
-            if ((cmd == DELETE) || (cmd == CTRL('H'))) {
+            /* Simple editing (delete or backspace) */
+            if ((cmd == 0x7F) || (cmd == KTRL('H'))) {
 
                 /* Delete a digit */
-                i = i / 10;
+                command_arg = command_arg / 10;
 
                 /* Show current count */
-                prt(format("Repeat count: %d", i), 0, 0);
+                prt(format("Repeat count: %d", command_arg), 0, 0);
             }
 
             /* Actual numeric data */
             else if (cmd >= '0' && cmd <= '9') {
 
                 /* Stop count at 9999 */
-                if (i >= 1000) {
+                if (command_arg >= 1000) {
 
                     /* Warn */
                     bell();
 
                     /* Limit */
-                    i = 9999;
+                    command_arg = 9999;
                 }
 
                 /* Increase count */
                 else {
 
                     /* Incorporate that digit */
-                    i = i * 10 + cmd - '0';
+                    command_arg = command_arg * 10 + D2I(cmd);
                 }
 
                 /* Show current count */
-                prt(format("Repeat count: %d", i), 0, 0);
+                prt(format("Repeat count: %d", command_arg), 0, 0);
             }
 
             /* Exit on "unusable" input */
@@ -671,13 +564,13 @@ void request_command(void)
         }
 
         /* Handle "zero" */
-        if (i == 0) {
+        if (command_arg == 0) {
 
             /* Default to 99 */
-            i = 99;
+            command_arg = 99;
 
             /* Show current count */
-            prt(format("Repeat count: %d", i), 0, 0);
+            prt(format("Repeat count: %d", command_arg), 0, 0);
         }
 
         /* Hack -- white-space means "enter command now" */
@@ -702,7 +595,7 @@ void request_command(void)
             (void)(get_com("Command: Control-", &cmd));
 
             /* Hack -- create a control char if legal */
-            if (CTRL(cmd)) cmd = CTRL(cmd);
+            if (KTRL(cmd)) cmd = KTRL(cmd);
         }
 
         /* Use the key directly */
@@ -719,7 +612,7 @@ void request_command(void)
             (void)(get_com("Control-", &cmd));
 
             /* Hack -- create a control char if legal */
-            if (CTRL(cmd)) cmd = CTRL(cmd);
+            if (KTRL(cmd)) cmd = KTRL(cmd);
         }
 
         /* Access the array info */
@@ -731,36 +624,13 @@ void request_command(void)
     }
 
 
-    /* Some commands can be "auto-repeated" by default */
-    if (always_repeat && (i <= 0)) {
+    /* Hack -- Auto-repeat certain commands */
+    if (always_repeat && (command_arg <= 0)) {
 
-        /* Bash, Disarm, Open, Tunnel get 99 tries */
-        if (strchr("BDo+", command_cmd)) i = 99;
+        /* Bash, Disarm, Open, Tunnel get 99 attempts */
+        if (strchr("BDo+", command_cmd)) command_arg = 99;
     }
 
-    /* Make sure a "Count" is legal for this command */
-    if ((i > 0) && (command_cmd != ESCAPE)) {
-
-        /* Some commands can be "repeated" */
-        if (command_takes_rep(command_cmd)) {
-
-            /* Save the count (this time counts) */
-            command_rep = i - 1;
-
-            /* Redraw the state */
-            p_ptr->redraw |= (PR_STATE);
-
-            /* Handle stuff */
-            handle_stuff();
-        }
-
-        /* The rest may take an "argument" */
-        else {
-
-            /* Save the argument */
-            command_arg = i;
-        }
-    }
 
     /* Hack -- erase the message line. */
     prt("", 0, 0);

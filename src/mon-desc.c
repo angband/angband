@@ -13,10 +13,6 @@
 #include "angband.h"
 
 
-#undef CTRL
-#define CTRL(C) ((C)&037)
-
-
 
 /*
  * Pronoun arrays, by gender.
@@ -213,6 +209,10 @@ static bool know_damage(int r_idx, int i)
  * XXX XXX XXX We should seriously consider some method which would
  * allow the "monster description" fields to be read in only when
  * they were actually needed, which might save up to 60K of memory.
+ *
+ * We already have a "compile-time" option for this, but it simply
+ * causes the monster descriptions to be ignored.  Currently, this
+ * is used to save 60K in the "DOS-286" version.
  */
 static void roff_aux(int r_idx)
 {
@@ -1471,7 +1471,7 @@ static cptr ident_info[] = {
     "8:Entrance to your home",
         /* "9:unused", */
     "::Rubble",
-    ";:A loose rock",
+    ";:A glyph of warding",
     "<:An up staircase",
     "=:A ring",
     ">:A down staircase",
@@ -1486,7 +1486,7 @@ static cptr ident_info[] = {
     "G:Ghost",
     "H:Hybrid",
     "I:Insect",
-        /* "J:unused", */
+    "J:Snake",
     "K:Killer Beetle",
     "L:Lich",
     "M:Multi-Headed Reptile",
@@ -1673,15 +1673,15 @@ void do_cmd_query_symbol(void)
     }
 
     /* Describe */
-    if (sym == CTRL('A')) {
+    if (sym == KTRL('A')) {
         all = TRUE;
         strcpy(buf, "Full monster list.");
     }
-    else if (sym == CTRL('U')) {
+    else if (sym == KTRL('U')) {
         all = uniq = TRUE;
         strcpy(buf, "Unique monster list.");
     }
-    else if (sym == CTRL('N')) {
+    else if (sym == KTRL('N')) {
         all = norm = TRUE;
         strcpy(buf, "Non-unique monster list.");
     }

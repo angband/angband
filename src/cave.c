@@ -497,6 +497,12 @@ static void image_random(byte *ap, char *cp)
 /*
  * Extract the attr/char to display at the given (legal) map location
  *
+ * Note the use of "monster zero" for the player attr/char, "object zero"
+ * for the "stack" attr/char, and "feature zero" for the "nothing" attr/char.
+ *
+ * Note that the player can redefine the "hidden treasure" attr/char, and
+ * the "secret door" attr/char, in ways that should be considered cheating.
+ *
  * Note that monsters can have some "special" flags, including "ATTR_MULTI",
  * which means their color changes, and "ATTR_CLEAR", which means they take
  * the color of whatever is under them, and "CHAR_CLEAR", which means that
@@ -528,7 +534,9 @@ static void image_random(byte *ap, char *cp)
  *
  * Note that eventually we may use the "&" symbol for embedded treasure,
  * and use the "*" symbol to indicate multiple objects, though this will
- * have to wait for Angband 2.8.0 or later.
+ * have to wait for Angband 2.8.0 or later.  Note that currently, this
+ * is not important, since only one object or terrain feature is allowed
+ * in each grid.  When it is done, "k_info[0]" will hold the attr/char.
  *
  * Note the efficient code used to determine if a "floor" grid is
  * "memorized" or "viewable" by the player, where the test for the
@@ -536,6 +544,20 @@ static void image_random(byte *ap, char *cp)
  * must be "lit" (torch-lit or perma-lit), (2) the grid must be in
  * line of sight, and (3) the player must not be blind, and uses the
  * assumption that all torch-lit grids are in line of sight.
+ *
+ * Note that the special "lighting" effects only affect "floor" grids
+ * (and invisible traps).  This induces some *serious* efficiency.  As
+ * a side effect, the code also uses the attr/char codes of "f_info[1]"
+ * for both "floors" and "invisible traps", preventing the user from
+ * requesting a special visual code for invisible traps.
+ *
+ * Note that the special "lighting" effects, the "multi-hued" monsters,
+ * and the "clear" monsters, are not handled when "use_graphics" is set,
+ * since they might cause potential visual glitches.
+ *
+ * Note the assumption that doing "x_ptr = &x_info[f]" plus a few of
+ * "x_ptr->f", is quicker than "x_info[x].f", if this is incorrect
+ * then a whole lot of code should be changed...  XXX XXX
  */
 static void map_info(int y, int x, byte *ap, char *cp)
 {
@@ -545,46 +567,41 @@ static void map_info(int y, int x, byte *ap, char *cp)
     char tmp_c;
 
 
-    /* Default to "white" */
-    (*ap) = TERM_WHITE;
-
-    /* Default to "space" */
-    (*cp) = ' ';
-
-
-#ifdef USE_COLOR
-
-    /* Mega-Hack -- Fake mono-chrome ignores the attr */
-    if (!use_color) ap = &tmp_a;
+    /* Default to "nothing" */
+    if (TRUE) {
     
-#else
+        feature_type *f_ptr = &f_info[0];
 
-    /* Mega-Hack -- Fake mono-chrome ignores the attr */
-    ap = &tmp_a;
-
-#endif
-
-
-    /* Get the cave */
-    c_ptr = &cave[y][x];
+        /* Get the "nothing" char */
+        (*cp) = f_ptr->z_char;
+        
+        /* Get the "nothing" attr */
+        (*ap) = f_ptr->z_attr;
+    }
 
 
-    /* Handle player XXX XXX XXX */
+    /* Handle "player" */
     if ((y == py) && (x == px)) {
     
         /* Unless "optimizing" and "running" */
         if (!running || !optimize_running) {
 
-            /* Get the player char */
-            (*cp) = '@';
+            monster_race *r_ptr = &r_info[0];
 
-            /* Get the player attr */
-            (*ap) = TERM_WHITE;
+            /* Get the "player" char */
+            (*cp) = r_ptr->l_char;
+
+            /* Get the "player" attr */
+            (*ap) = r_ptr->l_attr;
 
             /* Done */
             return;
         }
     }
+
+
+    /* Get the cave */
+    c_ptr = &cave[y][x];
 
 
     /* Handle monsters */
@@ -612,33 +629,47 @@ static void map_info(int y, int x, byte *ap, char *cp)
         /* Hack -- use_graphics */
         else if (use_graphics) {
 
-            /* Normal symbol */
+            /* Normal char */
             (*cp) = r_ptr->l_char;
 
-            /* Extract an attribute */
+            /* Normal attr */
             (*ap) = r_ptr->l_attr;
             
             /* Done */
             return;
         }
         
-        /* Hack -- Clear monster */
+        /* Hack -- Clear "char" monster */
+        else if (r_ptr->flags1 & RF1_CHAR_CLEAR) {
+
+            /* Hack -- See below */
+            if (!(r_ptr->flags1 & RF1_ATTR_CLEAR)) {
+
+                /* Normal attr */
+                (*ap) = r_ptr->l_attr;
+
+                /* Mega-Hack -- bypass the "floor" attr */
+                ap = &tmp_a;
+            }
+        }
+
+        /* Hack -- Clear "attr" monster */
         else if (r_ptr->flags1 & RF1_ATTR_CLEAR) {
 
-            /* Normal symbol */
+            /* Normal char */
             (*cp) = r_ptr->l_char;
 
-            /* Mega-Hack -- bypass the floor char */
+            /* Mega-Hack -- bypass the "floor" char */
             cp = &tmp_c;
         }
 
         /* Hack -- Multi-hued monster */
         else if (r_ptr->flags1 & RF1_ATTR_MULTI) {
         
-            /* Normal symbol */
+            /* Normal char */
             (*cp) = r_ptr->l_char;
 
-            /* Multi-hued */
+            /* Multi-hued attr */
             (*ap) = mh_attr();
             
             /* Done */
@@ -648,8 +679,10 @@ static void map_info(int y, int x, byte *ap, char *cp)
         /* Normal */
         else {
 
-            /* Normal attr/char */
+            /* Normal char */
             (*cp) = r_ptr->l_char;
+
+            /* Normal attr */
             (*ap) = r_ptr->l_attr;
 
             /* Done */
@@ -677,8 +710,10 @@ static void map_info(int y, int x, byte *ap, char *cp)
                 return;
             }
 
-            /* Extract an attr/char */
+            /* Normal char */
             (*cp) = inven_char(i_ptr);
+
+            /* Normal attr */
             (*ap) = inven_attr(i_ptr);
 
             /* Done */
@@ -709,9 +744,13 @@ static void map_info(int y, int x, byte *ap, char *cp)
             /* Memorized terrain */
             if (c_ptr->feat & CAVE_MARK) {
 
-                /* Extract an attr/char */
-                (*cp) = f_info[f].z_char;
-                (*ap) = f_info[f].z_attr;
+                feature_type *f_ptr = &f_info[f];
+                
+                /* Normal char */
+                (*cp) = f_ptr->z_char;
+
+                /* Normal attr */
+                (*ap) = f_ptr->z_attr;
             }
         }
     
@@ -725,22 +764,24 @@ static void map_info(int y, int x, byte *ap, char *cp)
                    (c_ptr->feat & CAVE_VIEW))) &&
                  (!p_ptr->blind))) {
 
-                /* Extract an attr/char */
-                (*cp) = f_info[f].z_char;
-                (*ap) = f_info[f].z_attr;
+                feature_type *f_ptr = &f_info[1];
 
-#ifdef USE_COLOR
+                /* Normal "floor" char */
+                (*cp) = f_ptr->z_char;
 
-                /* Mega-Hack -- handle "shadows" */
-                if (use_color && !use_graphics) {
+                /* Normal "floor" attr */
+                (*ap) = f_ptr->z_attr;
+
+                /* Handle "shadows" */
+                if (!use_graphics) {
 
                     /* Hack -- handle "blindness" */
                     if (p_ptr->blind) {
 
-                        /* Option -- Darken "blind" grids */
+                        /* Option -- Darken "unseen" grids */
                         if (view_bright_lite) {
 
-                            /* Use "gray" */
+                            /* Use "gray" attr */
                             (*ap) = TERM_SLATE;
                         }
                     }
@@ -751,7 +792,7 @@ static void map_info(int y, int x, byte *ap, char *cp)
                         /* Option -- Yellow "torch lite" */
                         if (view_yellow_lite) {
 
-                            /* Use "yellow" */
+                            /* Use "yellow" attr */
                             (*ap) = TERM_YELLOW;
                         }
                     }
@@ -768,9 +809,6 @@ static void map_info(int y, int x, byte *ap, char *cp)
                         }
                     }
                 }
-
-#endif
-
             }
         }
     }
@@ -831,10 +869,18 @@ void print_rel(char c, byte a, int y, int x)
  * This function should be called every time the "memorization" of
  * a grid (or the object in a grid) is called into question.
  *
- * XXX XXX XXX Note that two of the "options" have been removed,
- * view_wall_grids and view_xtra_grids, and now you are forced
- * to memorize all "terrain features" except floors and invisible
- * traps, which you may optionally memorize in various situations.
+ * Note that the player always memorized all "objects" which are seen,
+ * using a different method than the one used for terrain features,
+ * which not only allows a lot of optimization, but also prevents the
+ * player from "knowing" when objects are dropped out of sight but in
+ * memorized grids.
+ *
+ * Note that the player always memorizes "interesting" terrain features
+ * (everything but floors and invisible traps).  This allows incredible
+ * amounts of optimization in various places.
+ *
+ * Note that the player is allowed to memorize floors and invisible
+ * traps under various circumstances, and with various options set.
  *
  * This function is slightly non-optimal, since it memorizes objects
  * and terrain features separately, though both are dependant on the
@@ -909,20 +955,15 @@ void lite_spot(int y, int x)
         map_info(y, x, &a, &c);
 
 #ifdef USE_COLOR
-
-        /* Force mono-chrome */
+        /* Fake mono-chrome */
         if (!use_color) a = TERM_WHITE;
+#else
+        /* Always mono-chrome */
+        a = TERM_WHITE;
+#endif
 
         /* Efficiency -- immitate "print_rel()" */
         Term_draw(x-panel_col_prt, y-panel_row_prt, a, c);
-
-#else
-
-        /* Efficiency -- immitate "print_rel()" */
-        Term_draw(x-panel_col_prt, y-panel_row_prt, TERM_WHITE, c);
-
-#endif
-
     }
 }
 
@@ -957,20 +998,15 @@ void prt_map(void)
             map_info(y, x, &a, &c);
 
 #ifdef USE_COLOR
-
-            /* Force mono-chrome */
+            /* Fake mono-chrome */
             if (!use_color) a = TERM_WHITE;
-
-            /* Efficiency -- Redraw that grid of the map */
-            Term_draw(x-panel_col_prt, y-panel_row_prt, a, c);
-
 #else
-
-            /* Efficiency -- Redraw that grid of the map */
-            Term_draw(x-panel_col_prt, y-panel_row_prt, a, c);
-
+            /* Always mono-chrome */
+            a = TERM_WHITE;
 #endif
 
+            /* Efficiency -- Redraw that grid of the map */
+            Term_draw(x-panel_col_prt, y-panel_row_prt, a, c);
         }
     }
 
@@ -2758,9 +2794,22 @@ static byte priority_table[][2] = {
 static byte priority(byte a, char c)
 {
     byte i;
-    
-    /* Nothing */
+
+    feature_type *f_ptr;
+
+    monster_race *r_ptr;
+        
+
+    /* Hack -- Nothing */
     if (c == ' ') return (1);
+
+
+    /* Access nothing */
+    f_ptr = &f_info[0];
+
+    /* Compare to nothing */
+    if ((c == f_ptr->z_char) && (a == f_ptr->z_attr)) return (1);
+
 
     /* Scan the table */
     for (i = 0; priority_table[i][0]; i++) {
@@ -2768,12 +2817,20 @@ static byte priority(byte a, char c)
         int p1 = priority_table[i][0];
         int p2 = priority_table[i][1];
 
+        /* Access the feature */
+        f_ptr = &f_info[p1];
+        
         /* Found a match */
-        if ((c == f_info[p1].z_char) && (a == f_info[p1].z_attr)) return (p2);
+        if ((c == f_ptr->z_char) && (a == f_ptr->z_attr)) return (p2);
     }
+
+
+    /* Access player */
+    r_ptr = &r_info[0];
     
-    /* Player XXX XXX XXX */
-    if (c == '@') return (30);
+    /* Compare to player */
+    if ((c == r_ptr->l_char) && (a == r_ptr->l_attr)) return (30);
+
     
     /* Default */
     return (20);
@@ -2785,6 +2842,9 @@ static byte priority(byte a, char c)
  *
  * Note that we must cancel the "lighting" options during this
  * function or the "priority()" code will not work correctly.
+ *
+ * Note that the "map_info()" function must return fully colorized
+ * data or this function will not work correctly.
  *
  * Note the use of a specialized "priority" function to allow this
  * function to work with any graphic attr/char mappings, and the
@@ -2860,9 +2920,11 @@ void do_cmd_view_map(void)
             /* Save "best" */
             if (mp[y][x] < tp) {
 
-                /* Save data */
-                ma[y][x] = ta;
+                /* Save the char */
                 mc[y][x] = tc;
+
+                /* Save the attr */
+                ma[y][x] = ta;
 
                 /* Save priority */
                 mp[y][x] = tp;
@@ -2901,18 +2963,15 @@ void do_cmd_view_map(void)
             tc = mc[y][x];
 
 #ifdef USE_COLOR
-
-            /* Force mono-chrome */
+            /* Fake Monochrome */
             if (!use_color) ta = TERM_WHITE;
+#else
+            /* Monochrome */
+            ta = TERM_WHITE;
+#endif
 
             /* Add the character */
             Term_addch(ta, tc);
-#else
-
-            /* Add the character (in white) */
-            Term_addch(TERM_WHITE, tc);
-#endif
-
         }
     }
 

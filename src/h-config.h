@@ -104,7 +104,9 @@
 /*
  * Extract the "WINDOWS" flag from the compiler
  */
-#if defined(_Windows) || defined(__WIN32__)
+#if defined(_Windows) || defined(__WINDOWS__) || \
+    defined(__WIN32__) || defined(WIN32) || \
+    defined(__WINNT__) || defined(__NT__)
 # ifndef WINDOWS
 #  define WINDOWS
 # endif

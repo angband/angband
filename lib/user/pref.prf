@@ -1,44 +1,45 @@
 # File: pref.prf
 
-# This is the default "preference" file
-
-# See "files.c" for more info.  Basically, this file contains a series of
-# "commands" that are executed at startup.  Note that this file may include
-# other files recursively via the "%" command.
-
-# The commands that can go here include mostly attr/char redefinitions,
-# for example, you can put commands here to make the walls be drawn in
-# a special symbol, or to use a special color for your inventory items.
-
-# In addition, you can define macros (in an encoded form).  These macros
-# are pretty much system dependant, since that is what determines which
-# keys are available.  See "files.c" for proper formats.
-
-# Note that Angband 2.7.5 allows the user to choose a different directory
-# for both "save" files and "pref" files, so by making your own "pref"
-# directory, with a "pref.prf" file, you can choose your favorite stuff.
-
-# Note that by default, Angband will process "pref.prf", followed by
-# "pref-xxx.prf" (where "xxx" is the suffix of the "visual system" in
-# use, such as "mac", "win", "ibm", "x11", "gcu", etc), followed by
-# special files with the names "Class.prf" and "Name.prf", where "Class"
-# is the player class, and "Name" is the player name.
-
-
-# OPTION: Display "veins" (white "%") as "normal walls" (white "#") 
-# This replaces the old method of setting "notice_seams" to false,
-# which no longer works as of Angband 2.7.9, for various reasons.
-# This is not compatible with the default "pref-ibm.prf" file.
-
-# F:50:1/35
-# F:51:1/35
-# F:52:1/35
-# F:53:1/35
+#
+# This is the basic "user pref file"
+#
+# Basically, this file, and the other "user pref files", contain a set
+# of "user pref commands" that are executed after a character is loaded
+# or created.  Various commands allow you to create macros, define keymaps,
+# modify the attr/chars of various things, change the color information,
+# turn options off or on, etc.
+#
+# This file should contain only "user pref commands" which will work on
+# any system, since it is loaded no matter what system is being used.
+#
+# You can often use a command line argument to specify a replacement
+# directory for the "lib/user/" directory, which allows you to keep
+# your own local "user pref files" independant of the system files.
+#
+# Angband will automatically load, if possible, the files "pref.prf",
+# "font-xxx.prf" or "graf-xxx.prf", "pref-xxx.prf", "user-xxx.prf",
+# "Race.prf", "Class.prf", and "Name.prf", where "xxx" is replaced
+# by the "system suffix", and "Race", "Class", and "Name", are
+# replaced by the race, class, and name of the current character.
+#
+# See "lib/help/command.txt" and "src/files.c" for more info.
+#
 
 
-# Command macro -- "X" will now "swap weapons" as long as both weapons are
-# inscribed with {@0}.  For example, inscribe your main weapon as {@1@0}
-# and your digger/secondary weapon as {@2@0} or just {@0}.
+
+## OPTION: Display "veins" (white "%") as "normal walls" (white "#") 
+## This replaces the old method of setting "notice_seams" to false,
+## which no longer works as of Angband 2.7.9, for various reasons.
+#
+#F:50:1/35
+#F:51:1/35
+#F:52:1/35
+#F:53:1/35
+
+
+# Command macro -- "X" will now "swap weapons" as long as both weapons
+# contain the inscription "@0".  For example, inscribe your main weapon
+# as "@1@0" and your digger (or secondary weapon) as "@2@0".
 
 A:w0
 C:X

@@ -263,7 +263,7 @@ s16b i_pop(void)
         return (i);
     }
 
-    /* XXX XXX XXX Warning */
+    /* Warn the player */
     if (character_dungeon) msg_print("Too many objects!");
 
     /* Oops */
@@ -959,6 +959,7 @@ void item_absorb(inven_type *i_ptr, inven_type *j_ptr)
     /* Add together the item counts */
     i_ptr->number = ((total < MAX_STACK_SIZE) ? total : (MAX_STACK_SIZE - 1));
 
+    /* Hack -- could average discounts XXX XXX XXX */
     /* Hack -- save largest discount XXX XXX XXX */
     if (i_ptr->discount < j_ptr->discount) i_ptr->discount = j_ptr->discount;
     
@@ -1524,23 +1525,30 @@ static void a_m_aux_1(inven_type *i_ptr, int level, int power)
     /* Analyze type */
     switch (i_ptr->tval) {
 
-      case TV_DIGGING:
+        case TV_DIGGING:
 
-        /* Very good */
-        if (power > 1) {
+            /* Very good */
+            if (power > 1) {
 
-            i_ptr->name2 = EGO_DIGGING;
+                /* Special Ego-item */
+                i_ptr->name2 = EGO_DIGGING;
+            }
+
+            /* Bad */
+            else if (power < 0) {
+
+                /* Hack -- Reverse digging bonus */
+                i_ptr->pval = 0 - (i_ptr->pval);
+            }
+
+            /* Very bad */
+            else if (power < -1) {
+
+                /* Hack -- Horrible digging bonus */
+                i_ptr->pval = 0 - (5 + randint(5));
+            }
+
             break;
-        }
-
-        /* Very bad */
-        else if (power < -1) {
-
-            /* Mega-Hack -- anti digging bonus */
-            i_ptr->pval = 0 - (randint(5));
-        }
-
-        break;
 
 
         case TV_HAFTED:
@@ -1987,50 +1995,30 @@ static void a_m_aux_2(inven_type *i_ptr, int level, int power)
             if (power > 1) {
 
                 /* Roll for ego-item */
-                switch (randint(20)) {
+                switch (randint(8)) {
 
-                  case 1: case 2:
-                    i_ptr->name2 = EGO_INTELLIGENCE;
-                    break;
-
-                  case 3: case 4:
-                    i_ptr->name2 = EGO_WISDOM;
-                    break;
-
-                  case 5: case 6:
-                    i_ptr->name2 = EGO_BEAUTY;
-                    break;
-
-                  case 7:
+                  case 1:
                     i_ptr->name2 = EGO_MAGI;
                     break;
 
-                  case 8:
+                  case 2:
                     i_ptr->name2 = EGO_MIGHT;
                     break;
 
-                  case 9:
-                    i_ptr->name2 = EGO_LORDLINESS;
-                    break;
-
-                  case 10: case 11:
-                    i_ptr->name2 = EGO_SEEING;
-                    break;
-
-                  case 12: case 13:
-                    i_ptr->name2 = EGO_LITE;
-                    break;
-
-                  case 14:
+                  case 3:
                     i_ptr->name2 = EGO_TELEPATHY;
                     break;
                     
-                  case 15:
+                  case 4:
                     i_ptr->name2 = EGO_REGENERATION;
                     break;
 
+                  case 5: case 6:
+                    i_ptr->name2 = EGO_LORDLINESS;
+                    break;
+
                   default:
-                    i_ptr->name2 = EGO_INFRAVISION;
+                    i_ptr->name2 = EGO_SEEING;
                     break;
                 }
             }
@@ -2067,7 +2055,7 @@ static void a_m_aux_2(inven_type *i_ptr, int level, int power)
             if (power > 1) {
 
                 /* Roll for ego-item */
-                switch (randint(16)) {
+                switch (randint(14)) {
 
                   case 1: case 2:
                     i_ptr->name2 = EGO_INTELLIGENCE;
@@ -2082,15 +2070,11 @@ static void a_m_aux_2(inven_type *i_ptr, int level, int power)
                     break;
 
                   case 7: case 8:
-                    i_ptr->name2 = EGO_LITE;
-                    break;
-
-                  case 9:
-                    i_ptr->name2 = EGO_LORDLINESS;
-                    break;
-
-                  case 10: case 11:
                     i_ptr->name2 = EGO_SEEING;
+                    break;
+
+                  case 9: case 10:
+                    i_ptr->name2 = EGO_LITE;
                     break;
 
                   default:
@@ -3034,11 +3018,6 @@ void acquirement(int y1, int x1, int num, bool great)
  * Note that all traps start out as "invisible" and "untyped", and then
  * when they are "discovered" (by detecting them or setting them off),
  * the trap is "instantiated" as a visible, "typed", trap.
- *
- * XXX XXX XXX This routine should be redone to reflect trap "level".
- * That is, it does not make sense to have spiked pits at 50 feet.
- * Actually, it is not this routine, but the "trap instantiation"
- * code, which should also check for "trap doors" on quest levels.
  */
 void place_trap(int y, int x)
 {
@@ -3053,20 +3032,13 @@ void place_trap(int y, int x)
     /* Access the grid */
     c_ptr = &cave[y][x];
 
-#if 0
-    /* XXX XXX XXX Should check for "trap door" creation elsewhere */
-    /* Hack -- no trap doors on quest levels or deepest level */
-    if ((k_ptr->sval == SV_TRAP_TRAP_DOOR) &&
-        ((is_quest(dun_level)) || (dun_level >= MAX_DEPTH-1))) continue;
-#endif
-
     /* Place an invisible trap */
     c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x02);
 }
 
 
 /*
- * XXX XXX XXX XXX Do not use these hard-coded values.
+ * XXX XXX XXX Do not use these hard-coded values.
  */
 #define OBJ_GOLD_LIST	480	/* First "gold" entry */
 #define MAX_GOLD	18	/* Number of "gold" entries */

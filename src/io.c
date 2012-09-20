@@ -60,14 +60,6 @@
 #include "angband.h"
 
 
-/*
- * Hack -- make sure we have a good "ANSI" definition for "CTRL()"
- */
-#undef CTRL
-#define CTRL(C) ((C)&037)
-
-
-
 
 
 /*
@@ -80,14 +72,12 @@ void move_cursor(int row, int col)
 
 
 
-
 /*
  * Convert a decimal to a single digit octal number
  */
 static char octify(uint i)
 {
-    if (i < 8) return (I2D(i));
-    return ('0');
+    return (hexsym[i%8]);
 }
 
 /*
@@ -95,28 +85,27 @@ static char octify(uint i)
  */
 static char hexify(uint i)
 {
-    if (i < 10) return (I2D(i));
-    if (i < 16) return (toupper(I2A(i - 10)));
-    return ('0');
+    return (hexsym[i%16]);
 }
 
 
 /*
- * Convert a hex-digit into a decimal
+ * Convert a octal-digit into a decimal
  */
 static int deoct(char c)
 {
-    return (D2I(c));
+    if (isdigit(c)) return (D2I(c));
+    return (0);
 }
 
 /*
- * Convert a hex-digit into a decimal
+ * Convert a hexidecimal-digit into a decimal
  */
 static int dehex(char c)
 {
     if (isdigit(c)) return (D2I(c));
-    if (islower(c)) return (A2I(c));
-    if (isupper(c)) return (A2I(tolower(c)));
+    if (islower(c)) return (A2I(c) + 10);
+    if (isupper(c)) return (A2I(tolower(c)) + 10);
     return (0);
 }
 
@@ -343,29 +332,26 @@ static char roguelike_commands(char command)
         case 'U': hack_dir = 9; return ('.');
 
         /* Tunnelling (control + rogue keys) */
-        case CTRL('B'): hack_dir = 1; return ('+');
-        case CTRL('J'): hack_dir = 2; return ('+');
-        case CTRL('N'): hack_dir = 3; return ('+');
-        case CTRL('H'): hack_dir = 4; return ('+');
-        case CTRL('L'): hack_dir = 6; return ('+');
-        case CTRL('Y'): hack_dir = 7; return ('+');
-        case CTRL('K'): hack_dir = 8; return ('+');
-        case CTRL('U'): hack_dir = 9; return ('+');
+        case KTRL('B'): hack_dir = 1; return ('+');
+        case KTRL('J'): hack_dir = 2; return ('+');
+        case KTRL('N'): hack_dir = 3; return ('+');
+        case KTRL('H'): hack_dir = 4; return ('+');
+        case KTRL('L'): hack_dir = 6; return ('+');
+        case KTRL('Y'): hack_dir = 7; return ('+');
+        case KTRL('K'): hack_dir = 8; return ('+');
+        case KTRL('U'): hack_dir = 9; return ('+');
 
-        /* Hack -- CTRL('M') == return == linefeed == CTRL('J') */
-        case CTRL('M'): hack_dir = 2; return ('+');
+        /* Hack -- KTRL('M') == return == linefeed == KTRL('J') */
+        case KTRL('M'): hack_dir = 2; return ('+');
 
-        /* Hack -- CTRL('I') == tab == white space == space */
-        case CTRL('I'): return (' ');
+        /* Hack -- KTRL('I') == tab == white space == space */
+        case KTRL('I'): return (' ');
 
         /* Allow use of the "destroy" command */
-        case CTRL('D'): return ('k');
-
-        /* Allow use of the "examine" command */
-        case CTRL('V'): return ('x');
+        case KTRL('D'): return ('k');
 
         /* Hack -- Commit suicide */
-        case CTRL('C'): return ('Q');
+        case KTRL('C'): return ('Q');
 
         /* Locate player on map */
         case 'W': return ('L');
@@ -442,9 +428,9 @@ static char original_commands(char command)
     switch (command) {
 
         /* White space */
-        case CTRL('I'): return (' ');
-        case CTRL('J'): return (' ');
-        case CTRL('M'): return (' ');
+        case KTRL('I'): return (' ');
+        case KTRL('J'): return (' ');
+        case KTRL('M'): return (' ');
 
         /* Wield */
         case 'w': return (b1);
@@ -475,8 +461,8 @@ static char original_commands(char command)
         case '9': hack_dir = 9; return (';');
 
         /* Hack -- Commit suicide */
-        case CTRL('K'): return ('Q');
-        case CTRL('C'): return ('Q');
+        case KTRL('K'): return ('Q');
+        case KTRL('C'): return ('Q');
     }
 
     /* Default */
@@ -560,8 +546,6 @@ static byte macro__use[256];
  *
  * If "cmd_flag" is set then this macro is only active when
  * the user is being asked for a command (see below).
- *
- * To "remove" a macro for "xxx", call "macro_add(xxx, xxx, FALSE)".
  */
 void macro_add(cptr pat, cptr act, bool cmd_flag)
 {
@@ -955,8 +939,9 @@ static char inkey_aux(void)
  * Ascii 30 is "control caret" -- indicates "keypad" key
  * Ascii 31 is "control underscore" -- begin macro-trigger
  *
- * XXX XXX XXX Make sure to allow calls to "inkey()" even if "term_screen"
- * is not the active Term, to allow proper use of "term_mirror".
+ * Hack -- Make sure to allow calls to "inkey()" even if "term_screen"
+ * is not the active Term, this allows the various "main-xxx.c" files
+ * to only handle input when "term_screen" is "active".
  */
 char inkey(void)
 {
@@ -1796,8 +1781,8 @@ bool askfor_aux(char *buf, int len)
             done = TRUE;
             break;
 
+          case 0x7F:
           case '\010':
-          case DELETE:
             if (k > 0) k--;
             break;
 

@@ -2,77 +2,31 @@
 
 #
 # This file is used by Angband (when it was compiled using "main-ibm.c")
-# to specify various "user preferences".  This file specifies some visual
-# attr/char remappings, which allow the use of some of the IBM's built in
-# pseudo-graphic pictures for walls and such.  This file defines some basic
-# macros, which allow the use of the "keypad", alone, and with the shift or
-# control modifier keys.  All "special" keys are translated by "main-ibm.c"
-# into special "macro triggers" of the encoded form "^_MMMxSS\r", where the
-# "modifier" flags are stored in "MMM", and the two digit hexidecimal scan
-# code of the keypress is stored in "SS", see "main-ibm.c" for info.
+# to specify various "user preferences", including "macros".
+#
+# This file defines some basic macros, which allow the use of the "keypad",
+# alone, and with the shift and/or control modifier keys.  All "special"
+# keys are translated by "main-ibm.c" into special "macro triggers" of the
+# encoded form "^_MMMxSS\r", where the "modifier" flags are stored in "MMM",
+# and the two digit hexidecimal scan code of the keypress is stored in "SS",
+# see "main-ibm.c" for info.
 #
 
 
 
-### Terrain Features ###
-
-
+##
+## Hack -- Some foreign keyboards have a special key on the keyboard, which
+## is used to generate the "<", ">", and "|" keys (alone, shifted, alt-ed).
+## If this key does not work, simply uncomment the lines below.
+##
+#A:<
+#P:^_x56\r
 #
-# Floors (white / centered dot)
+#A:>
+#P:^_Sx56\r
 #
-
-F:1:1/-7
-
-#
-# Invis traps (white / centered dot)
-#
-
-F:2:1/-7
-
-
-#
-# Magma (slate / special solid block)
-#
-
-F:50:2/-80
-F:52:2/-80
-
-
-#
-# Quartz (light slate / special solid block)
-#
-
-F:51:9/-80
-F:53:9/-80
-
-
-#
-# Secret door (white / solid block)
-#
-
-F:48:1/-79
-
-#
-# Granite walls (white / solid block)
-#
-
-F:56:1/-79
-F:57:1/-79
-F:58:1/-79
-F:59:1/-79
-
-#
-# Permanent rock (white / solid block)
-#
-
-F:60:1/-79
-F:61:1/-79
-F:62:1/-79
-F:63:1/-79
-
-
-
-### Basic Macros ###
+#A:|
+#P:^_Ax56\r
 
 
 #
@@ -80,7 +34,7 @@ F:63:1/-79
 #
 
 A:7
-P:^_Sx47\r
+P:^_x47\r
 
 A:8
 P:^_x48\r

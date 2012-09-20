@@ -690,8 +690,8 @@ static cptr k_info_flags2[] = {
     "IM_ELEC",
     "IM_FIRE",
     "IM_COLD",
-    "IM_POIS",
     "XXX3",
+    "XXX4",
     "FREE_ACT",
     "HOLD_LIFE",
     "RES_ACID",
@@ -699,7 +699,7 @@ static cptr k_info_flags2[] = {
     "RES_FIRE",
     "RES_COLD",
     "RES_POIS",
-    "XXX4",
+    "XXX5",
     "RES_LITE",
     "RES_DARK",
     "RES_BLIND",
@@ -815,27 +815,13 @@ static errr init_v_info_txt(FILE *fp, char *buf)
     v_head->text_size = 0;
 
     /* Parse */
-    while (TRUE) {
-
+    while (0 == my_fgets(fp, buf, 1024)) {
 
         /* Advance the line number */
         error_line++;
 
-        /* Read a line from the file, stop when done */
-        if (!fgets(buf, 1000, fp)) break;
-
-
-        /* Skip comments */
-        if (buf[0] == '#') continue;
-
-        /* Advance to "weirdness" (including the final newline) */
-        for (s = buf; isprint(*s); ++s) ;
-        
-        /* Nuke "weirdness" */
-        *s = '\0';
-
-        /* Skip blank lines */
-        if (!buf[0] || (buf[0] == ' ')) continue;
+        /* Skip comments and blank lines */
+        if (!buf[0] || (buf[0] == '#')) continue;
 
         /* Verify correct "colon" format */
         if (buf[1] != ':') return (1);
@@ -869,8 +855,11 @@ static errr init_v_info_txt(FILE *fp, char *buf)
         /* Process 'N' for "New/Number/Name" */
         if (buf[0] == 'N') {
 
-            /* Find, verify, and nuke the colon before the name */
-            if (!(s = strchr(buf+2, ':'))) return (1);
+            /* Find the colon before the name */
+            s = strchr(buf+2, ':');
+            
+            /* Verify that colon */
+            if (!s) return (1);
 
             /* Nuke the colon, advance to the name */
             *s++ = '\0';
@@ -1000,27 +989,13 @@ static errr init_f_info_txt(FILE *fp, char *buf)
     f_head->text_size = 0;
 
     /* Parse */
-    while (TRUE) {
-
+    while (0 == my_fgets(fp, buf, 1024)) {
 
         /* Advance the line number */
         error_line++;
 
-        /* Read a line from the file, stop when done */
-        if (!fgets(buf, 1000, fp)) break;
-
-
-        /* Skip comments */
-        if (buf[0] == '#') continue;
-
-        /* Advance to "weirdness" (including the final newline) */
-        for (s = buf; isprint(*s); ++s) ;
-        
-        /* Nuke "weirdness" */
-        *s = '\0';
-
-        /* Skip blank lines */
-        if (!buf[0] || (buf[0] == ' ')) continue;
+        /* Skip comments and blank lines */
+        if (!buf[0] || (buf[0] == '#')) continue;
 
         /* Verify correct "colon" format */
         if (buf[1] != ':') return (1);
@@ -1032,7 +1007,7 @@ static errr init_f_info_txt(FILE *fp, char *buf)
             int v1, v2, v3;
 
             /* Scan for the values */
-            if ((3 != sscanf(buf, "V:%d.%d.%d", &v1, &v2, &v3)) ||
+            if ((3 != sscanf(buf+2, "%d.%d.%d", &v1, &v2, &v3)) ||
                 (v1 != f_head->v_major) ||
                 (v2 != f_head->v_minor) ||
                 (v3 != f_head->v_patch)) {
@@ -1054,8 +1029,11 @@ static errr init_f_info_txt(FILE *fp, char *buf)
         /* Process 'N' for "New/Number/Name" */
         if (buf[0] == 'N') {
 
-            /* Find, verify, and nuke the colon before the name */
-            if (!(s = strchr(buf+2, ':'))) return (1);
+            /* Find the colon before the name */
+            s = strchr(buf+2, ':');
+            
+            /* Verify that colon */
+            if (!s) return (1);
 
             /* Nuke the colon, advance to the name */
             *s++ = '\0';
@@ -1125,22 +1103,22 @@ static errr init_f_info_txt(FILE *fp, char *buf)
 #endif
 
 
-        /* Process 'I' for "Info" (one line only) */
-        if (buf[0] == 'I') {
+        /* Process 'G' for "Graphics" (one line only) */
+        if (buf[0] == 'G') {
 
-            char sym, col;
             int tmp;
 
-            /* Scan for the values */
-            if (2 != sscanf(buf+2, "%c:%c",
-                &sym, &col)) return (1);
+            /* Paranoia */
+            if (!buf[2]) return (1);
+            if (!buf[3]) return (1);
+            if (!buf[4]) return (1);
 
             /* Extract the color */
-            tmp = color_char_to_attr(col);
+            tmp = color_char_to_attr(buf[4]);
             if (tmp < 0) return (1);
 
             /* Save the values */
-            f_ptr->f_char = sym;
+            f_ptr->f_char = buf[2];
             f_ptr->f_attr = tmp;
 
             /* Next... */
@@ -1229,27 +1207,13 @@ static errr init_k_info_txt(FILE *fp, char *buf)
     k_head->text_size = 0;
 
     /* Parse */
-    while (TRUE) {
-
+    while (0 == my_fgets(fp, buf, 1024)) {
 
         /* Advance the line number */
         error_line++;
 
-        /* Read a line from the file, stop when done */
-        if (!fgets(buf, 1000, fp)) break;
-
-
-        /* Skip comments */
-        if (buf[0] == '#') continue;
-
-        /* Advance to "weirdness" (including the final newline) */
-        for (s = buf; isprint(*s); ++s) ;
-        
-        /* Nuke "weirdness" */
-        *s = '\0';
-
-        /* Skip blank lines */
-        if (!buf[0] || (buf[0] == ' ')) continue;
+        /* Skip comments and blank lines */
+        if (!buf[0] || (buf[0] == '#')) continue;
 
         /* Verify correct "colon" format */
         if (buf[1] != ':') return (1);
@@ -1261,7 +1225,7 @@ static errr init_k_info_txt(FILE *fp, char *buf)
             int v1, v2, v3;
 
             /* Scan for the values */
-            if ((3 != sscanf(buf, "V:%d.%d.%d", &v1, &v2, &v3)) ||
+            if ((3 != sscanf(buf+2, "%d.%d.%d", &v1, &v2, &v3)) ||
                 (v1 != k_head->v_major) ||
                 (v2 != k_head->v_minor) ||
                 (v3 != k_head->v_patch)) {
@@ -1283,8 +1247,11 @@ static errr init_k_info_txt(FILE *fp, char *buf)
         /* Process 'N' for "New/Number/Name" */
         if (buf[0] == 'N') {
 
-            /* Find, verify, and nuke the colon before the name */
-            if (!(s = strchr(buf+2, ':'))) return (1);
+            /* Find the colon before the name */
+            s = strchr(buf+2, ':');
+            
+            /* Verify that colon */
+            if (!s) return (1);
 
             /* Nuke the colon, advance to the name */
             *s++ = '\0';
@@ -1354,23 +1321,44 @@ static errr init_k_info_txt(FILE *fp, char *buf)
 #endif
 
 
-        /* Process 'I' for "Info" (one line only) */
-        if (buf[0] == 'I') {
+        /* Process 'G' for "Graphics" (one line only) */
+        if (buf[0] == 'G') {
 
-            char sym, col;
-            int tmp, tval, sval, pval;
+            char sym;
+            int tmp;
 
-            /* Scan for the values */
-            if (5 != sscanf(buf+2, "%c:%c:%d:%d:%d",
-                &sym, &col, &tval, &sval, &pval)) return (1);
+            /* Paranoia */
+            if (!buf[2]) return (1);
+            if (!buf[3]) return (1);
+            if (!buf[4]) return (1);
 
-            /* Extract the color */
-            tmp = color_char_to_attr(col);
+            /* Extract the char */
+            sym = buf[2];
+            
+            /* Extract the attr */
+            tmp = color_char_to_attr(buf[4]);
+            
+            /* Paranoia */
             if (tmp < 0) return (1);
 
             /* Save the values */
             k_ptr->k_char = sym;
             k_ptr->k_attr = tmp;
+
+            /* Next... */
+            continue;
+        }
+
+        /* Process 'I' for "Info" (one line only) */
+        if (buf[0] == 'I') {
+
+            int tval, sval, pval;
+
+            /* Scan for the values */
+            if (3 != sscanf(buf+2, "%d:%d:%d",
+                &tval, &sval, &pval)) return (1);
+
+            /* Save the values */
             k_ptr->tval = tval;
             k_ptr->sval = sval;
             k_ptr->pval = pval;
@@ -1404,7 +1392,7 @@ static errr init_k_info_txt(FILE *fp, char *buf)
 
             int i;
 
-            /* Simply read each number following a colon */
+            /* XXX XXX XXX Simply read each number following a colon */
             for (i = 0, s = buf+1; s && (s[0] == ':') && s[1]; ++i) {
 
                 /* Default chance */
@@ -1554,27 +1542,13 @@ static errr init_a_info_txt(FILE *fp, char *buf)
 
 
     /* Parse */
-    while (TRUE) {
-
+    while (0 == my_fgets(fp, buf, 1024)) {
 
         /* Advance the line number */
         error_line++;
 
-        /* Read a line from the file, stop when done */
-        if (!fgets(buf, 1000, fp)) break;
-
-
-        /* Skip comments */
-        if (buf[0] == '#') continue;
-
-        /* Advance to "weirdness" (including the final newline) */
-        for (s = buf; isprint(*s); ++s) ;
-        
-        /* Nuke "weirdness" */
-        *s = '\0';
-
-        /* Skip blank lines */
-        if (!buf[0] || (buf[0] == ' ')) continue;
+        /* Skip comments and blank lines */
+        if (!buf[0] || (buf[0] == '#')) continue;
 
         /* Verify correct "colon" format */
         if (buf[1] != ':') return (1);
@@ -1586,7 +1560,7 @@ static errr init_a_info_txt(FILE *fp, char *buf)
             int v1, v2, v3;
 
             /* Scan for the values */
-            if ((3 != sscanf(buf, "V:%d.%d.%d", &v1, &v2, &v3)) ||
+            if ((3 != sscanf(buf+2, "%d.%d.%d", &v1, &v2, &v3)) ||
                 (v1 != a_head->v_major) ||
                 (v2 != a_head->v_minor) ||
                 (v3 != a_head->v_patch)) {
@@ -1608,8 +1582,11 @@ static errr init_a_info_txt(FILE *fp, char *buf)
         /* Process 'N' for "New/Number/Name" */
         if (buf[0] == 'N') {
 
-            /* Find, verify, and nuke the colon before the name */
-            if (!(s = strchr(buf+2, ':'))) return (1);
+            /* Find the colon before the name */
+            s = strchr(buf+2, ':');
+            
+            /* Verify that colon */
+            if (!s) return (1);
 
             /* Nuke the colon, advance to the name */
             *s++ = '\0';
@@ -1856,27 +1833,13 @@ static errr init_e_info_txt(FILE *fp, char *buf)
 
 
     /* Parse */
-    while (TRUE) {
-
+    while (0 == my_fgets(fp, buf, 1024)) {
 
         /* Advance the line number */
         error_line++;
 
-        /* Read a line from the file, stop when done */
-        if (!fgets(buf, 1000, fp)) break;
-
-
-        /* Skip comments */
-        if (buf[0] == '#') continue;
-
-        /* Skip to "weirdness" (including the final newline) */
-        for (s = buf; isprint(*s); ++s) ;
-
-        /* Nuke "weirdness" */
-        *s = '\0';
-
-        /* Skip blank lines */
-        if (!buf[0] || (buf[0] == ' ')) continue;
+        /* Skip comments and blank lines */
+        if (!buf[0] || (buf[0] == '#')) continue;
 
         /* Verify correct "colon" format */
         if (buf[1] != ':') return (1);
@@ -1888,7 +1851,7 @@ static errr init_e_info_txt(FILE *fp, char *buf)
             int v1, v2, v3;
 
             /* Scan for the values */
-            if ((3 != sscanf(buf, "V:%d.%d.%d", &v1, &v2, &v3)) ||
+            if ((3 != sscanf(buf+2, "%d.%d.%d", &v1, &v2, &v3)) ||
                 (v1 != e_head->v_major) ||
                 (v2 != e_head->v_minor) ||
                 (v3 != e_head->v_patch)) {
@@ -1910,8 +1873,11 @@ static errr init_e_info_txt(FILE *fp, char *buf)
         /* Process 'N' for "New/Number/Name" */
         if (buf[0] == 'N') {
 
-            /* Find, verify, and nuke the colon before the name */
-            if (!(s = strchr(buf+2, ':'))) return (1);
+            /* Find the colon before the name */
+            s = strchr(buf+2, ':');
+            
+            /* Verify that colon */
+            if (!s) return (1);
 
             /* Nuke the colon, advance to the name */
             *s++ = '\0';
@@ -2204,27 +2170,13 @@ static errr init_r_info_txt(FILE *fp, char *buf)
     r_head->text_size = 0;
 
     /* Parse */
-    while (TRUE) {
-
+    while (0 == my_fgets(fp, buf, 1024)) {
 
         /* Advance the line number */
         error_line++;
 
-        /* Read a line from the file, stop when done */
-        if (!fgets(buf, 1000, fp)) break;
-
-
-        /* Skip comments */
-        if (buf[0] == '#') continue;
-
-        /* Advance to "weirdness" (including the final newline) */
-        for (s = buf; isprint(*s); ++s) ;
-        
-        /* Nuke "weirdness" */
-        *s = '\0';
-
-        /* Skip blank lines */
-        if (!buf[0] || (buf[0] == ' ')) continue;
+        /* Skip comments and blank lines */
+        if (!buf[0] || (buf[0] == '#')) continue;
 
         /* Verify correct "colon" format */
         if (buf[1] != ':') return (1);
@@ -2236,7 +2188,7 @@ static errr init_r_info_txt(FILE *fp, char *buf)
             int v1, v2, v3;
 
             /* Scan for the values */
-            if ((3 != sscanf(buf, "V:%d.%d.%d", &v1, &v2, &v3)) ||
+            if ((3 != sscanf(buf+2, "%d.%d.%d", &v1, &v2, &v3)) ||
                 (v1 != r_head->v_major) ||
                 (v2 != r_head->v_minor) ||
                 (v3 != r_head->v_patch)) {
@@ -2258,8 +2210,11 @@ static errr init_r_info_txt(FILE *fp, char *buf)
         /* Process 'N' for "New/Number/Name" */
         if (buf[0] == 'N') {
 
-            /* Find, verify, and nuke the colon before the name */
-            if (!(s = strchr(buf+2, ':'))) return (1);
+            /* Find the colon before the name */
+            s = strchr(buf+2, ':');
+            
+            /* Verify that colon */
+            if (!s) return (1);
 
             /* Nuke the colon, advance to the name */
             *s++ = '\0';
@@ -2324,23 +2279,44 @@ static errr init_r_info_txt(FILE *fp, char *buf)
             continue;
         }
 
-        /* Process 'I' for "Info" (one line only) */
-        if (buf[0] == 'I') {
+        /* Process 'G' for "Graphics" (one line only) */
+        if (buf[0] == 'G') {
 
-            char chr, att;
-            int tmp, spd, hp1, hp2, aaf, ac, slp;
+            char sym;
+            int tmp;
 
-            /* Scan for the values */
-            if (8 != sscanf(buf, "I:%c:%c:%d:%dd%d:%d:%d:%d",
-                &chr, &att, &spd, &hp1, &hp2, &aaf, &ac, &slp)) return (1);
+            /* Paranoia */
+            if (!buf[2]) return (1);
+            if (!buf[3]) return (1);
+            if (!buf[4]) return (1);
 
-            /* Extract the color */
-            tmp = color_char_to_attr(att);
+            /* Extract the char */
+            sym = buf[2];
+            
+            /* Extract the attr */
+            tmp = color_char_to_attr(buf[4]);
+
+            /* Paranoia */
             if (tmp < 0) return (1);
 
             /* Save the values */
-            r_ptr->r_char = chr;
+            r_ptr->r_char = sym;
             r_ptr->r_attr = tmp;
+
+            /* Next... */
+            continue;
+        }
+
+        /* Process 'I' for "Info" (one line only) */
+        if (buf[0] == 'I') {
+
+            int spd, hp1, hp2, aaf, ac, slp;
+
+            /* Scan for the other values */
+            if (6 != sscanf(buf+2, "%d:%dd%d:%d:%d:%d",
+                &spd, &hp1, &hp2, &aaf, &ac, &slp)) return (1);
+
+            /* Save the values */
             r_ptr->speed = spd;
             r_ptr->hdice = hp1;
             r_ptr->hside = hp2;
@@ -2359,7 +2335,7 @@ static errr init_r_info_txt(FILE *fp, char *buf)
             long exp;
 
             /* Scan for the values */
-            if (4 != sscanf(buf, "W:%d:%d:%d:%ld",
+            if (4 != sscanf(buf+2, "%d:%d:%d:%ld",
                 &lev, &rar, &pad, &exp)) return (1);
 
             /* Save the values */
@@ -4135,6 +4111,8 @@ static byte store_table[MAX_STORES-2][STORE_CHOICES][2] = {
     { TV_LITE, SV_LITE_TORCH },
     { TV_LITE, SV_LITE_TORCH },
     { TV_LITE, SV_LITE_LANTERN },
+    { TV_LITE, SV_LITE_LANTERN },
+    { TV_FLASK, 0 },
     { TV_FLASK, 0 },
     { TV_FLASK, 0 },
     { TV_FLASK, 0 },
@@ -4147,6 +4125,7 @@ static byte store_table[MAX_STORES-2][STORE_CHOICES][2] = {
     { TV_BOOTS, SV_PAIR_OF_SOFT_LEATHER_BOOTS },
     { TV_BOOTS, SV_PAIR_OF_SOFT_LEATHER_BOOTS },
     { TV_BOOTS, SV_PAIR_OF_HARD_LEATHER_BOOTS },
+    { TV_BOOTS, SV_PAIR_OF_HARD_LEATHER_BOOTS },
     { TV_HELM, SV_HARD_LEATHER_CAP },
     { TV_HELM, SV_HARD_LEATHER_CAP },
     { TV_HELM, SV_METAL_CAP },
@@ -4155,6 +4134,7 @@ static byte store_table[MAX_STORES-2][STORE_CHOICES][2] = {
     { TV_SOFT_ARMOR, SV_ROBE },
     { TV_SOFT_ARMOR, SV_SOFT_LEATHER_ARMOR },
     { TV_SOFT_ARMOR, SV_SOFT_LEATHER_ARMOR },
+    { TV_SOFT_ARMOR, SV_HARD_LEATHER_ARMOR },
     { TV_SOFT_ARMOR, SV_HARD_LEATHER_ARMOR },
     { TV_SOFT_ARMOR, SV_HARD_STUDDED_LEATHER },
     { TV_SOFT_ARMOR, SV_LEATHER_SCALE_MAIL },
@@ -4206,6 +4186,8 @@ static byte store_table[MAX_STORES-2][STORE_CHOICES][2] = {
     { TV_SHOT, SV_AMMO_LIGHT },
     { TV_SHOT, SV_AMMO_NORMAL },
     { TV_ARROW, SV_AMMO_NORMAL },
+    { TV_ARROW, SV_AMMO_NORMAL },
+    { TV_BOLT, SV_AMMO_NORMAL },
     { TV_BOLT, SV_AMMO_NORMAL },
   },
 
@@ -4232,10 +4214,12 @@ static byte store_table[MAX_STORES-2][STORE_CHOICES][2] = {
     { TV_POTION, SV_POTION_CURE_CRITICAL },
     { TV_POTION, SV_POTION_RESTORE_EXP },
     { TV_POTION, SV_POTION_RESTORE_EXP },
-    { TV_POTION, SV_POTION_RES_WIS },
+    { TV_POTION, SV_POTION_RESTORE_EXP },
     { TV_PRAYER_BOOK, 0 },
     { TV_PRAYER_BOOK, 0 },
     { TV_PRAYER_BOOK, 0 },
+    { TV_PRAYER_BOOK, 0 },
+    { TV_PRAYER_BOOK, 1 },
     { TV_PRAYER_BOOK, 1 },
     { TV_PRAYER_BOOK, 1 },
     { TV_PRAYER_BOOK, 2 },
@@ -4255,6 +4239,7 @@ static byte store_table[MAX_STORES-2][STORE_CHOICES][2] = {
     { TV_SCROLL, SV_SCROLL_LIGHT },
     { TV_SCROLL, SV_SCROLL_PHASE_DOOR },
     { TV_SCROLL, SV_SCROLL_PHASE_DOOR },
+    { TV_SCROLL, SV_SCROLL_PHASE_DOOR },
     { TV_SCROLL, SV_SCROLL_MONSTER_CONFUSION },
     { TV_SCROLL, SV_SCROLL_MAPPING },
     { TV_SCROLL, SV_SCROLL_DETECT_GOLD },
@@ -4264,6 +4249,7 @@ static byte store_table[MAX_STORES-2][STORE_CHOICES][2] = {
     { TV_SCROLL, SV_SCROLL_DETECT_INVIS },
     { TV_SCROLL, SV_SCROLL_RECHARGING },
     { TV_SCROLL, SV_SCROLL_SATISFY_HUNGER },
+    { TV_SCROLL, SV_SCROLL_WORD_OF_RECALL },
     { TV_SCROLL, SV_SCROLL_WORD_OF_RECALL },
     { TV_SCROLL, SV_SCROLL_WORD_OF_RECALL },
     { TV_SCROLL, SV_SCROLL_WORD_OF_RECALL },
@@ -4304,6 +4290,8 @@ static byte store_table[MAX_STORES-2][STORE_CHOICES][2] = {
     { TV_MAGIC_BOOK, 0 },
     { TV_MAGIC_BOOK, 0 },
     { TV_MAGIC_BOOK, 0 },
+    { TV_MAGIC_BOOK, 0 },
+    { TV_MAGIC_BOOK, 1 },
     { TV_MAGIC_BOOK, 1 },
     { TV_MAGIC_BOOK, 1 },
     { TV_MAGIC_BOOK, 2 },
@@ -4343,21 +4331,6 @@ static errr init_other(void)
         /* Allocate one row of the cave */
         C_MAKE(cave[i], MAX_WID, cave_type);
     }
-
-
-    /*** Prepare the various "grid" arrays ***/
-
-    /* The "lite" array */
-    C_MAKE(lite_x, LITE_MAX, byte);
-    C_MAKE(lite_y, LITE_MAX, byte);
-
-    /* The "view" array */
-    C_MAKE(view_x, VIEW_MAX, byte);
-    C_MAKE(view_y, VIEW_MAX, byte);
-
-    /* The "temp" array */
-    C_MAKE(temp_x, TEMP_MAX, byte);
-    C_MAKE(temp_y, TEMP_MAX, byte);
 
 
     /*** Prepare the various "bizarre" arrays ***/

@@ -59,7 +59,10 @@ int index_to_label(int i)
  */
 int label_to_inven(int c)
 {
-    int i = A2I(c);
+    int i;
+    
+    /* Convert */
+    i = (islower(c) ? A2I(c) : -1);
 
     /* Verify the index */
     if ((i < 0) || (i > INVEN_PACK)) return (-1);
@@ -78,9 +81,12 @@ int label_to_inven(int c)
  */
 int label_to_equip(int c)
 {
-    int i = INVEN_WIELD + A2I(c);
+    int i;
 
-    /* Speed -- Ignore silly labels */
+    /* Convert */
+    i = (islower(c) ? A2I(c) : -1) + INVEN_WIELD;
+
+    /* Verify the index */
     if ((i < INVEN_WIELD) || (i >= INVEN_TOTAL)) return (-1);
 
     /* Empty slots can never be chosen */
@@ -383,11 +389,17 @@ void inven_item_increase(int item, int num)
         /* Add the weight */
         total_weight += (num * i_ptr->weight);
 
+        /* Redraw the choice window */
+        p_ptr->redraw |= (PR_CHOOSE);
+        
         /* Recalculate bonuses */
         p_ptr->update |= (PU_BONUS);
 
-        /* Redraw the choice window */
-        p_ptr->redraw |= (PR_CHOOSE);
+        /* Recalculate mana XXX */
+        p_ptr->update |= (PU_MANA);
+
+        /* Combine the pack */
+        p_ptr->update |= (PU_COMBINE);
     }
 }
 
@@ -395,7 +407,8 @@ void inven_item_increase(int item, int num)
 /*
  * Erase an inventory slot if it has no more items
  *
- * Note that the "slide" code works on the equipment too
+ * We handle the "auto_reorder" option here to prevent
+ * annoying messages every time a slot becomes empty.
  */
 void inven_item_optimize(int item)
 {
@@ -412,6 +425,32 @@ void inven_item_optimize(int item)
 
         /* One less item */
         inven_cnt--;
+
+        /* Reorder the pack */
+        if (auto_reorder_pack) {
+
+            int i;
+
+            /* Slide everything down */
+            for (i = item; i < INVEN_PACK; i++) {
+
+                /* Structure copy */
+                inventory[i] = inventory[i+1];
+            }
+        
+            /* Erase the "final" slot */
+            invwipe(&inventory[i]);
+        }
+    
+        /* Just wipe the slot */
+        else {
+    
+            /* Erase the empty slot */
+            invwipe(&inventory[item]);
+
+            /* Reorder the pack later */
+            p_ptr->update |= (PU_REORDER);
+        }
     }
 
     /* The item is being wielded */
@@ -419,35 +458,21 @@ void inven_item_optimize(int item)
 
         /* One less item */
         equip_cnt--;
-    }
 
-    /* Reorder the pack */
-    if (auto_reorder_pack) {
-
-        int i;
-        
-        /* Slide everything down */
-        for (i = item; i < INVEN_PACK; i++) {
-
-            /* Structure copy */
-            inventory[i] = inventory[i+1];
-        }
-        
-        /* Erase the "final" slot */
-        invwipe(&inventory[i]);
-    }
-    
-    /* Just wipe the slot */
-    else {
-    
         /* Erase the empty slot */
         invwipe(&inventory[item]);
 
-        /* Reorder the pack later */
-        p_ptr->update |= (PU_REORDER);
+        /* Redraw equippy chars */
+        p_ptr->redraw |= (PR_EQUIPPY);
+
+        /* Recalculate bonuses */
+        p_ptr->update |= (PU_BONUS);
+
+        /* Recalculate mana XXX */
+        p_ptr->update |= (PU_MANA);
     }
-    
-    /* Redraw choice window */
+
+    /* Redraw the choice window */
     p_ptr->redraw |= (PR_CHOOSE);
 }
 
@@ -612,13 +637,13 @@ s16b inven_carry(inven_type *i_ptr)
             /* Increase the weight */
             total_weight += (i_ptr->number * i_ptr->weight);
 
-            /* Redraw choice window (later) */
+            /* Redraw the choice window */
             p_ptr->redraw |= (PR_CHOOSE);
 
-            /* Recalculate bonuses (later) */
+            /* Recalculate bonuses */
             p_ptr->update |= (PU_BONUS);
 
-            /* All done, report where we put it */
+            /* Success */
             return (j);
         }
     }
@@ -714,10 +739,10 @@ s16b inven_carry(inven_type *i_ptr)
     /* Count the items */
     inven_cnt++;
 
-    /* Redraw choice window (later) */
+    /* Redraw choice window */
     p_ptr->redraw |= (PR_CHOOSE);
 
-    /* Recalculate bonuses (later) */
+    /* Recalculate bonuses */
     p_ptr->update |= (PU_BONUS);
 
     /* Reorder pack */
@@ -817,7 +842,7 @@ void display_inven(void)
         n = strlen(i_name);
 
         /* Get a color */
-        if (use_color) attr = tval_to_attr[i_ptr->tval];
+        if (use_color) attr = tval_to_attr[i_ptr->tval % 128];
 
         /* Display the entry itself */
         Term_putstr(3, i, n, attr, i_name);
@@ -885,7 +910,7 @@ void display_equip(void)
         n = strlen(i_name);
 
         /* Get the color */
-        if (use_color) attr = tval_to_attr[i_ptr->tval];
+        if (use_color) attr = tval_to_attr[i_ptr->tval % 128];
 
         /* Display the entry itself */
         Term_putstr(3, i - INVEN_WIELD, n, attr, i_name);
@@ -979,7 +1004,7 @@ void show_inven(void)
 
         /* Save the object index, color, and description */
         out_index[k] = i;
-        out_color[k] = tval_to_attr[i_ptr->tval];
+        out_color[k] = tval_to_attr[i_ptr->tval % 128];
         (void)strcpy(out_desc[k], i_name);
 
         /* Find the predicted "line length" */
@@ -1086,7 +1111,7 @@ void show_equip(void)
 
         /* Save the color */
         out_index[k] = i;
-        out_color[k] = tval_to_attr[i_ptr->tval];
+        out_color[k] = tval_to_attr[i_ptr->tval % 128];
         (void)strcpy(out_desc[k], i_name);
 
         /* Extract the maximal length (see below) */
@@ -1797,7 +1822,7 @@ bool get_item(int *cp, cptr pmt, bool equip, bool inven, bool floor)
 #endif
 
 
-    /* Mega-Hack -- Redraw the choice window */
+    /* Redraw the choice window */
     p_ptr->redraw |= (PR_CHOOSE);
 
 

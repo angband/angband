@@ -203,7 +203,7 @@
  * Store constants
  */
 #define STORE_INVEN_MAX	24	/* Max number of discrete objs in inven */
-#define STORE_CHOICES	30	/* Number of items to choose stock from */
+#define STORE_CHOICES	32	/* Number of items to choose stock from */
 #define STORE_OBJ_LEVEL	5	/* Magic Level for normal stores */
 #define STORE_TURNOVER	9	/* Normal shop turnover, per day */
 #define STORE_MIN_KEEP	6	/* Min slots to "always" keep full */
@@ -298,7 +298,8 @@
 #define PY_FOOD_FULL	10000	/* Food value (Normal)		*/
 #define PY_FOOD_ALERT	2000	/* Food value (Hungry)		*/
 #define PY_FOOD_WEAK	1000	/* Food value (Weak)		*/
-#define PY_FOOD_FAINT	300	/* Food value (Fainting)	*/
+#define PY_FOOD_FAINT	500	/* Food value (Fainting)	*/
+#define PY_FOOD_STARVE	100	/* Food value (Starving)	*/
 
 /*
  * Player regeneration constants
@@ -1380,8 +1381,8 @@
 #define SM_IMM_ELEC	0x02000000
 #define SM_IMM_FIRE	0x04000000
 #define SM_IMM_COLD	0x08000000
-#define SM_IMM_POIS	0x10000000
-#define SM_IMM_XXX4	0x20000000
+#define SM_IMM_XXX5	0x10000000
+#define SM_IMM_XXX6	0x20000000
 #define SM_IMM_FREE	0x40000000
 #define SM_IMM_MANA	0x80000000
 
@@ -1658,8 +1659,8 @@
 #define TR2_IM_ELEC		0x00000200L
 #define TR2_IM_FIRE		0x00000400L
 #define TR2_IM_COLD		0x00000800L
-#define TR2_IM_POIS		0x00001000L
-#define TR2_XXX3		0x00002000L	/* Later */
+#define TR2_XXX3		0x00001000L	/* Later */
+#define TR2_XXX4		0x00002000L	/* Later */
 #define TR2_FREE_ACT		0x00004000L	/* Free Action */
 #define TR2_HOLD_LIFE	 	0x00008000L	/* Hold Life */
 #define TR2_RES_ACID		0x00010000L
@@ -1667,7 +1668,7 @@
 #define TR2_RES_FIRE		0x00040000L
 #define TR2_RES_COLD		0x00080000L
 #define TR2_RES_POIS		0x00100000L
-#define TR2_XXX4		0x00200000L	/* Later */
+#define TR2_XXX5		0x00200000L	/* Later */
 #define TR2_RES_LITE		0x00400000L
 #define TR2_RES_DARK		0x00800000L
 #define TR2_RES_BLIND		0x01000000L
@@ -2284,9 +2285,8 @@
 /*** Keypress constants ***/
 
 /*
- * Hack -- Common keys
+ * Hack -- The "escape" keypress value
  */
-#define DELETE          0x7f
 #define ESCAPE          '\033'
 
 

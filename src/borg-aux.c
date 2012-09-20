@@ -27,7 +27,6 @@
  *   But be careful with the "free space" routine, wear stuff first.
  *   Make sure nothing is "destroyed" if we do not do them every turn.
  *   Consider some special routines in stores (and in the home).
- *   XXX XXX XXX Some "uniques" (The Learnean Hydra, etc) use "The".
  *
  * Note that we assume that any item with quantity zero does not exist,
  * thus, when simulating possible worlds, we do not actually have to
@@ -221,16 +220,15 @@ static void borg_notice_aux1(void)
     my_telepathy = FALSE;
     my_lite = FALSE;
     
-    my_immune_fire = FALSE;
     my_immune_acid = FALSE;
-    my_immune_pois = FALSE;
-    my_immune_cold = FALSE;
     my_immune_elec = FALSE;
+    my_immune_fire = FALSE;
+    my_immune_cold = FALSE;
 
-    my_resist_fire = FALSE;
     my_resist_acid = FALSE;
-    my_resist_cold = FALSE;
     my_resist_elec = FALSE;
+    my_resist_fire = FALSE;
+    my_resist_cold = FALSE;
     my_resist_pois = FALSE;
     my_resist_conf = FALSE;
     my_resist_sound = FALSE;
@@ -373,7 +371,6 @@ static void borg_notice_aux1(void)
         if (item->flags2 & TR2_IM_ACID) my_immune_acid = TRUE;
         if (item->flags2 & TR2_IM_COLD) my_immune_cold = TRUE;
         if (item->flags2 & TR2_IM_ELEC) my_immune_elec = TRUE;
-        if (item->flags2 & TR2_IM_POIS) my_immune_pois = TRUE;
 
         /* Resistance flags */
         if (item->flags2 & TR2_RES_ACID) my_resist_acid = TRUE;
@@ -432,20 +429,14 @@ static void borg_notice_aux1(void)
         /* Save the stat */
         my_stat_use[i] = use;
 
-        /* Values: 3, 4, ..., 18 */
-        if (use <= 18) ind = (use - 3);
+        /* Values: 3, ..., 17 */
+        if (use <= 17) ind = (use - 3);
 
-        /* Ranges: 18/01-18/09, 18/10-18/19, ..., 18/90-18/99 */
-        else if (use <= 18+99) ind = (16 + (use - 18) / 10);
-
-        /* Value: 18/100 */
-        else if (use == 18+100) ind = (26);
-
-        /* Ranges: 18/101-18/109, 18/110-18/119, ..., 18/210-18/219 */
-        else if (use <= 18+219) ind = (27 + (use - (18+100)) / 10);
+        /* Ranges: 18/00-18/09, ..., 18/210-18/219 */
+        else if (use <= 18+219) ind = (15 + (use - 18) / 10);
 
         /* Range: 18/220+ */
-        else ind = (39);
+        else ind = (37);
 
         /* Save the index */
         my_stat_ind[i] = ind;
@@ -454,7 +445,7 @@ static void borg_notice_aux1(void)
 
 #if 0
 
-    /* XXX XXX XXX XXX */
+    /* XXX XXX XXX */
     
     /* Extract the current weight (in tenth pounds) */
     j = inven_weight;
@@ -1507,7 +1498,6 @@ static s32b borg_power_aux1(void)
     if (my_immune_elec) value += 40000L;
     if (my_immune_fire) value += 60000L;
     if (my_immune_cold) value += 30000L;
-    if (my_immune_pois) value += 25000L;
 
     /* Resistance flags */
     if (my_resist_acid) value += 8000L;
@@ -2998,7 +2988,7 @@ static bool borg_free_space(void)
  *
  * This determines the choice of stairs.
  *
- * XXX XXX XXX XXX Total hack, by the way...
+ * XXX XXX XXX Total hack, by the way...
  */
 static int borg_count_sell(void)
 {
@@ -3063,7 +3053,7 @@ static int borg_count_sell(void)
  * We play games with items that get "feelings" to try and wait for
  * "sensing" to take place if possible.
  *
- * XXX XXX XXX XXX Make sure not to sell "non-aware" items, unless
+ * XXX XXX XXX Make sure not to sell "non-aware" items, unless
  * we are really sure we want to lose them.  For example, we should
  * wait for feelings on (non-icky) wearable items or else make sure
  * that we identify them before we try and sell them.
@@ -4498,7 +4488,7 @@ static bool borg_leave_level(bool bored)
 /*
  * Determine if an item can be sold in the given store
  *
- * XXX XXX XXX XXX Consider use of "icky" test on items
+ * XXX XXX XXX Consider use of "icky" test on items
  */
 static bool borg_good_sell(auto_item *item, int who)
 {
@@ -4804,7 +4794,7 @@ static bool borg_think_shop_sell_aux(void)
     /* Check each shop */
     for (k = 0; k < 7; k++) {
 
-        /* XXX XXX XXX Hack -- skip "full" shops */
+        /* Hack -- Skip "full" shops */
         if (auto_shops[k].ware[icky].iqty) continue;
 
         /* Save the store hole */

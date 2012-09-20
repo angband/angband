@@ -6,52 +6,148 @@
 #       Since "dmake" does not demand "hard" tab stops as delimiters,
 #       don't bother to add them.
 #
-# Note: Use 'dmake -B -r -f makefile.emx install' to install the executables
-#       plus the batch file used for multiple windows in the parent directory.
+#       Use 'dmake -B -r -f makefile.emx install' to install the executables
+#       and the batch file used for multiple windows in the parent directory.
 #
-# Note: use 'dmake -B -r -f makefile.emx clean' to remove temporary files.
+#       Use 'dmake -B -r -f makefile.emx clean' to remove temporary files.
+#
+# Advanced targets (used only by developers):
+#
+#       'patches': If the original sources are located in "..\old\src",
+#                  then a file "..\patches.txt" will be created which contains
+#                  all changed files (diff -c). "..\exp\patches.uue" will 
+#                  contain the same file gziped and uuencodes. "..\exp\files.uue"
+#		   will contain the three emx-specific files tared, gziped and
+#  		   uuencoded. Needs 4OS2.
+#
+#       'export': The file "..\exp\$(EXPORT)" is created so that it 
+#                 can directly be uploaded as an official distribution archive.
+#		  Needs 4OS2.
+#
+
+VERSION         = 2.7.9v3
+EXPORT          = angband-$(VERSION).os2.zip
 
 OBJS = \
-  main.o main-emx.o wizard.o wiz-spo.o \
-  borg.o borg-ben.o borg-ext.o borg-map.o borg-obj.o borg-aux.o \
-  signals.o util.o io.o init.o save.o save-old.o files.o \
-  generate.o birth.o melee.o dungeon.o store.o \
-  effects.o cmd1.o cmd2.o cmd3.o cmd4.o cmd5.o cmd6.o \
-  misc.o monster.o mon-desc.o object.o obj-desc.o \
-  spells1.o spells2.o cave.o tables.o variable.o \
-  term.o z-util.o z-virt.o z-form.o 
+birth.o borg-aux.o borg-ben.o borg-ext.o borg-map.o borg-obj.o borg.o  \
+cave.o cmd1.o cmd2.o cmd3.o cmd4.o cmd5.o cmd6.o dungeon.o effects.o  \
+files.o generate.o init.o io.o main-emx.o main.o melee.o misc.o mon-desc.o  \
+monster.o obj-desc.o object.o save-old.o save.o signals.o spells1.o  \
+spells2.o store.o tables.o term.o util.o variable.o wiz-spo.o wizard.o  \
+z-form.o z-util.o z-virt.o 
+
+.KEEP_STATE:
 
 CC = gcc
-CFLAGS = -MMD -O2 -DUSE_EMX -g -Wall
+CFLAGS = -MMD -O3 -DUSE_EMX -g -Zcrtdll
 LIBS = -lvideo
+# Comment this out if you don't have nice installed
+#NICE = nice -i -n -30
 
 .c.o:
-    $(CC) $(CFLAGS) -c $*.c
+    $(NICE) $(CC) $(CFLAGS) -c $*.c
 
-default: angband.exe aclient.exe dependencies
+###################################################################################
+
+default: all depends :-)
 
 install: ..\angband.exe ..\aclient.exe ..\startwnd.cmd
-    emxbind -s ..\angband.exe
-    emxbind -s ..\aclient.exe
 
 clean:
     + del *.d
-    + del dependencies
+    + del depends
 
-dependencies .IGNORE: $(OBJS)
-    + echo. > dependencies
-    + for %a in (*.d) type %a >> dependencies
+patches:  ..\patches.txt ..\exp\patches.uue ..\exp\files.uue
+
+export: ..\exp\$(EXPORT) 
+
+####################################################################################
+###   You don't have to change anything below.   ###################################
+####################################################################################
+
+all .PHONY: angband.exe aclient.exe 
+    +@echo. 
+    +@echo Now type 
+    +@echo. 
+    +@echo       '$(MAKECMD) $(MFLAGS) $(MAKEFILE) install'
+    +@echo. 
+    +@echo to install Angband in the parent directory, and/or
+    +@echo. 
+    +@echo       '$(MAKECMD) $(MFLAGS) $(MAKEFILE) clean'
+    +@echo. 
+    +@echo to remove a bunch of temporary files used during compilation!
+    +@echo You may want to remove the src subdirectory, now that you have
+    +@echo working executables.
+    +@echo. 
+
+..\exp\$(EXPORT) .PHONY .IGNORE: install patches
+# Needs 4OS2!
+        +@ md ..\exp >& nul                     ^ \
+           md ..\exp\tmpdir >& nul              ^ \
+           cd ..\exp\tmpdir                     ^ \
+           copy ... > nul                       ^ \
+           md lib                               ^ \
+           copy ...\lib\ lib\ /s > nul          ^ \
+           zip -m -r $(EXPORT) * > nul          ^ \
+           move $(EXPORT) ..                    ^ \
+           cd ..                                ^ \
+           del tmpdir /xsqy > nul
+  
+PATCHFILES  = *.c
+PATCHFILES += *.h
+PATCHFILES += makefile*
+PATCHFILES += ..\lib\user\pref-emx.prf
+
+..\patches.txt .PHONY .IGNORE:
+# Needs 4OS2! 
+    +@ echo These are the changes to the original source  > ..\patches.txt ^ \
+       echo archive ($(VERSION)). You don't need to apply them >> ..\patches.txt ^ \
+       echo if you can get the latest archive, which will >> ..\patches.txt ^ \
+       echo have them applied already. >> ..\patches.txt ^ \
+       echo. >> ..\patches.txt ^ \
+       except (*~) for %a in ($(PATCHFILES)) \
+       do (diff -c ..\old\src\%a %a >> ..\patches.txt)
+
+..\exp\patches.uue: ..\patches.txt
+# Needs 4OS2!
+    +@ md ..\exp >& nul                                         ^ \
+       cd ..\exp                                                ^ \
+       copy ..\patches.txt patches-$(VERSION).os2               ^ \
+       gzip -f patches-$(VERSION).os2                           ^ \
+       uuencode patches-$(VERSION).os2.gz >& nul                ^ \
+       del patches-$(VERSION).os2.gz                            ^ \
+       move patches-$(VERSION).os2.gz.uue patches.uue           
+
+FILES = main-emx.c makefile.emx ..\lib\user\pref-emx.prf
+
+..\exp\files.uue: $(FILES)
+# Needs 4OS2!
+    +@ md ..\exp >& nul                                         ^ \
+       cd ..\exp                                                ^ \
+       for %a in ($(FILES)) copy ..\src\%a > nul                ^ \
+       tar -cvf files.tar $(FILES)                              ^ \
+       for %a in ($(FILES)) del %@name[$(FILES)] >& nul         ^ \
+       gzip files.tar                                           ^ \
+       uuencode files.tar.gz                                    ^ \
+       del files.tar.gz >& nul                                  ^ \
+       move files.tar.gz.uue files.uue                          
+
+depends .IGNORE: $(OBJS)
+    + echo. > depends
+    + for %a in (*.d) type %a >> depends
 
 ..\angband.exe: angband.exe
     + copy angband.exe ..
+    emxbind -s ..\angband.exe
 
 ..\aclient.exe: aclient.exe
     + copy aclient.exe ..
+    emxbind -s ..\aclient.exe
 
 EC=+@ echo 
 ECF=>> ..\startwnd.cmd
 
-..\startwnd.cmd: makefile.emx
+..\startwnd.cmd: 
  $(EC) @echo off                                             > ..\startwnd.cmd
  $(EC) REM This file starts up Angband and up to three other views. The $(ECF)
  $(EC) REM optional number behind the name sets the number of lines for $(ECF)
@@ -78,4 +174,12 @@ angband.exe: $(OBJS)
 aclient.exe: main-emx.c
     $(CC) $(CFLAGS) -D__EMX__ -D__EMX__CLIENT__ -o aclient.exe main-emx.c $(LIBS)
 
-.INCLUDE .IGNORE: dependencies
+# Forgive me :)
+":-)":
+        +@echo.
+
+main-emx.o: 
+    $(NICE) $(CC) $(CFLAGS) -Wall -c $*.c
+
+.INCLUDE .IGNORE: depends
+

@@ -85,6 +85,25 @@ angband*color13:                        #26cf17
 angband*color14:                        #02b2f2
 angband*color15:                        #b28b48
 
+And the newer colors look like:
+
+angband*color0:                         #000000 
+angband*color1:                         #ffffff
+angband*color2:                         #d7d7d7
+angband*color3:                         #ff9200
+angband*color4:                         #ff0000
+angband*color5:                         #00cd00
+angband*color6:                         #0000fe
+angband*color7:                         #c86400
+angband*color8:                         #a3a3a3
+angband*color9:                         #ebebeb
+angband*color10:                        #a500ff
+angband*color11:                        #fffd00
+angband*color12:                        #ff00bc
+angband*color13:                        #00ff00
+angband*color14:                        #00c8ff
+angband*color15:                        #ffcc80
+
 Some older monochrome monitors have problem with white text on black
 background. The new code can handle the reverse situation if the user
 wants/needs this.
@@ -224,8 +243,11 @@ typedef struct AngbandClassRec {
 
 #define offset(field) XtOffsetOf(AngbandRec, angband.field)
 
-/* Fallback resources for Angband widget */
+/*
+ * Fallback resources for Angband widget
+ */
 static XtResource resources[] = {
+
     { XtNstartRows, XtCValue, XtRInt, sizeof(int),
       offset(start_rows), XtRImmediate, (XtPointer) 24 },
     { XtNstartColumns, XtCValue, XtRInt, sizeof(int),
@@ -246,6 +268,37 @@ static XtResource resources[] = {
       offset(color[0]), XtRString, "black" },
     { XtNcolor1, XtCColor, XtRPixel, sizeof(Pixel),
       offset(color[1]), XtRString, "white" },
+    { XtNcolor2, XtCColor, XtRPixel, sizeof(Pixel),
+      offset(color[2]), XtRString, "#d7d7d7" },
+    { XtNcolor3, XtCColor, XtRPixel, sizeof(Pixel),
+      offset(color[3]), XtRString, "#ff9200" },
+    { XtNcolor4, XtCColor, XtRPixel, sizeof(Pixel),
+      offset(color[4]), XtRString, "#ff0000" },
+    { XtNcolor5, XtCColor, XtRPixel, sizeof(Pixel),
+      offset(color[5]), XtRString, "#00cd00" },
+    { XtNcolor6, XtCColor, XtRPixel, sizeof(Pixel),
+      offset(color[6]), XtRString, "#0000fe" },
+    { XtNcolor7, XtCColor, XtRPixel, sizeof(Pixel),
+      offset(color[7]), XtRString, "#c86400" },
+    { XtNcolor8, XtCColor, XtRPixel, sizeof(Pixel),
+      offset(color[8]), XtRString, "#a3a3a3" },
+    { XtNcolor9, XtCColor, XtRPixel, sizeof(Pixel),
+      offset(color[9]), XtRString, "#ebebeb" },
+    { XtNcolor10, XtCColor, XtRPixel, sizeof(Pixel),
+      offset(color[10]), XtRString, "#a500ff" },
+    { XtNcolor11, XtCColor, XtRPixel, sizeof(Pixel),
+      offset(color[11]), XtRString, "#fffd00" },
+    { XtNcolor12, XtCColor, XtRPixel, sizeof(Pixel),
+      offset(color[12]), XtRString, "#ff00bc" },
+    { XtNcolor13, XtCColor, XtRPixel, sizeof(Pixel),
+      offset(color[13]), XtRString, "#00ff00" },
+    { XtNcolor14, XtCColor, XtRPixel, sizeof(Pixel),
+      offset(color[14]), XtRString, "#00c8ff" },
+    { XtNcolor15, XtCColor, XtRPixel, sizeof(Pixel),
+      offset(color[15]), XtRString, "#ffcc80" },
+
+#if 0
+
     { XtNcolor2, XtCColor, XtRPixel, sizeof(Pixel),
       offset(color[2]), XtRString, "#a6a6a6" },
     { XtNcolor3, XtCColor, XtRPixel, sizeof(Pixel),
@@ -274,8 +327,13 @@ static XtResource resources[] = {
       offset(color[14]), XtRString, "#02b2f2" },
     { XtNcolor15, XtCColor, XtRPixel, sizeof(Pixel),
       offset(color[15]), XtRString, "#b28b48" },
+
+#endif
+
     { XtNredrawCallback, XtCCallback, XtRCallback, sizeof(XtPointer),
-      offset(redraw_callbacks), XtRCallback, (XtPointer)NULL} };
+      offset(redraw_callbacks), XtRCallback, (XtPointer)NULL }
+};
+
 #undef offset
 
 /* Forward declarations for Widget functions */
@@ -692,13 +750,81 @@ struct term_data {
 };
 
 
+
 /*
- * The three term_data's
+ * The main screen
  */
+
 static term_data screen;
-static term_data recall;
-static term_data choice;
+
+static Arg angbandArgs[] = {
+    { XtNstartRows,    24},
+    { XtNstartColumns, 80},
+    { XtNminRows,      24},
+    { XtNminColumns,   80},
+    { XtNmaxRows,      24},
+    { XtNmaxColumns,   80}
+};
+
+
+#ifdef GRAPHIC_MIRROR
+
+/*
+ * The mirror window
+ */
+
 static term_data mirror;
+
+Arg mirrorArgs[] = {
+    { XtNstartRows,    24},
+    { XtNstartColumns, 80},
+    { XtNminRows,      1},
+    { XtNminColumns,   1},
+    { XtNmaxRows,      24},
+    { XtNmaxColumns,   80}
+};
+
+#endif /* GRAPHIC_MIRROR */
+
+#ifdef GRAPHIC_RECALL
+
+/*
+ * The "recall" window
+ */
+
+static term_data recall;
+
+Arg recallArgs[] = {
+    { XtNstartRows,    8},
+    { XtNstartColumns, 80},
+    { XtNminRows,      1},
+    { XtNminColumns,   1},
+    { XtNmaxRows,      24},
+    { XtNmaxColumns,   80}
+};
+
+#endif /* GRAPHIC_RECALL */
+
+#ifdef GRAPHIC_CHOICE
+
+/*
+ * The "choice" window
+ */
+
+static term_data choice;
+
+Arg choiceArgs[] = {
+    { XtNstartRows,    24},
+    { XtNstartColumns, 80},
+    { XtNminRows,      1},
+    { XtNminColumns,   1},
+    { XtNmaxRows,      24},
+    { XtNmaxColumns,   80}
+};
+
+#endif /* GRAPHIC_CHOICE */
+
+
 
 /*
  * The application context
@@ -711,50 +837,16 @@ XtAppContext appcon;
 static String fallback[] = {
     "Angband.angband.iconName:            Angband",
     "Angband.angband.title:               Angband",
+    "Angband.mirror.iconName:             Mirror",
+    "Angband.mirror.title:                Mirror",
     "Angband.recall.iconName:             Recall",
     "Angband.recall.title:                Recall",
     "Angband.choice.iconName:             Choice",
     "Angband.choice.title:                Choice",
-    "Angband.mirror.iconName:             Mirror",
-    "Angband.mirror.title:                Mirror",
     NULL
 };
 
-/*
- * Hard coded information about widgets, not user changable
- */
-Arg angbandArgs[] = {
-    { XtNstartRows,    24},
-    { XtNstartColumns, 80},
-    { XtNminRows,      24},
-    { XtNminColumns,   80},
-    { XtNmaxRows,      24},
-    { XtNmaxColumns,   80}
-};
-Arg recallArgs[] = {
-    { XtNstartRows,    8},
-    { XtNstartColumns, 80},
-    { XtNminRows,      1},
-    { XtNminColumns,   1},
-    { XtNmaxRows,      24},
-    { XtNmaxColumns,   80}
-};
-Arg choiceArgs[] = {
-    { XtNstartRows,    24},
-    { XtNstartColumns, 80},
-    { XtNminRows,      1},
-    { XtNminColumns,   1},
-    { XtNmaxRows,      24},
-    { XtNmaxColumns,   80}
-};
-Arg mirrorArgs[] = {
-    { XtNstartRows,    24},
-    { XtNstartColumns, 80},
-    { XtNminRows,      1},
-    { XtNminColumns,   1},
-    { XtNmaxRows,      24},
-    { XtNmaxColumns,   80}
-};
+
 
 /*
  * Do a redraw
@@ -944,23 +1036,47 @@ static errr Term_xtra_xaw(int n, int v)
 
         /* Flush events */
         case TERM_XTRA_FLUSH:
-            while (!CheckEvent(FALSE)); return (0);
+            while (!CheckEvent(FALSE));
+            return (0);
         
-        /* Clear the screen XXX XXX XXX */    
+        /* Clear the window */
         case TERM_XTRA_CLEAR:
-			if ( Term == &screen.t )
-				XClearWindow(XtDisplay((Widget)screen.widget),
-							 XtWindow((Widget)screen.widget));
-			if ( Term == &recall.t )
-				XClearWindow(XtDisplay((Widget)recall.widget),
-							 XtWindow((Widget)recall.widget));
-			if ( Term == &choice.t )
-				XClearWindow(XtDisplay((Widget)choice.widget),
-							 XtWindow((Widget)choice.widget));
-			if ( Term == &mirror.t )
-				XClearWindow(XtDisplay((Widget)mirror.widget),
-							 XtWindow((Widget)mirror.widget));
-			return(0);
+
+            /* Screen */
+            if ( Term == &screen.t )
+            {
+                XClearWindow(XtDisplay((Widget)screen.widget),
+                             XtWindow((Widget)screen.widget));
+            }
+
+#ifdef GRAPHIC_MIRROR
+            /* Mirror */
+            if ( Term == &mirror.t )
+            {
+                XClearWindow(XtDisplay((Widget)mirror.widget),
+                             XtWindow((Widget)mirror.widget));
+            }
+#endif /* GRAPHIC_MIRROR */
+
+#ifdef GRAPHIC_RECALL
+            /* Recall */
+            if ( Term == &recall.t )
+            {
+                XClearWindow(XtDisplay((Widget)recall.widget),
+                             XtWindow((Widget)recall.widget));
+            }
+#endif /* GRAPHIC_RECALL */
+
+#ifdef GRAPHIC_CHOICE
+            /* Choice */
+            if ( Term == &choice.t )
+            {
+                XClearWindow(XtDisplay((Widget)choice.widget),
+                             XtWindow((Widget)choice.widget));
+            }
+#endif /* GRAPHIC_CHOICE */
+
+            return(0);
     }
 
     /* Unknown */
@@ -1132,20 +1248,26 @@ errr init_xaw(void)
 		    angbandArgs, XtNumber(angbandArgs));
     term_screen = Term;
 
-    /* Initialize the recall window */
-    term_data_init (&recall, topLevel, 16, "recall",
-		    recallArgs, XtNumber(recallArgs));
-    term_recall = Term;
-
-    /* Initialize the choice window */
-    term_data_init (&choice, topLevel, 16, "choice",
-		    choiceArgs, XtNumber(choiceArgs));
-    term_choice = Term;
-
+#ifdef GRAPHIC_MIRROR
     /* Initialize the mirror window */
     term_data_init (&mirror, topLevel, 16, "mirror",
 		    mirrorArgs, XtNumber(mirrorArgs));
     term_mirror = Term;
+#endif /* GRAPHIC_MIRROR */
+
+#ifdef GRAPHIC_RECALL
+    /* Initialize the recall window */
+    term_data_init (&recall, topLevel, 16, "recall",
+		    recallArgs, XtNumber(recallArgs));
+    term_recall = Term;
+#endif /* GRAPHIC_RECALL */
+
+#ifdef GRAPHIC_CHOICE
+    /* Initialize the choice window */
+    term_data_init (&choice, topLevel, 16, "choice",
+		    choiceArgs, XtNumber(choiceArgs));
+    term_choice = Term;
+#endif /* GRAPHIC_CHOICE */
 
     /* Activate the "Angband" window screen */
     Term_activate(&screen.t);

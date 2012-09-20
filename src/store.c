@@ -13,9 +13,6 @@
 #include "angband.h"
 
 
-#undef CTRL
-#define CTRL(X) ((X) & 037)
-
 
 #define MAX_COMMENT_1	6
 
@@ -329,54 +326,6 @@ static byte rgold_adj[MAX_RACES][MAX_RACES] = {
 
 
 
-/*
- * Stat Table (CHR) -- payment percentages
- */
-static s16b adj_chr[] = {
-    130	/* 3 */,
-    125	/* 4 */,
-    122	/* 5 */,
-    120	/* 6 */,
-    118	/* 7 */,
-    116	/* 8 */,
-    114	/* 9 */,
-    112	/* 10 */,
-    110	/* 11 */,
-    108	/* 12 */,
-    106	/* 13 */,
-    104	/* 14 */,
-    103	/* 15 */,
-    102	/* 16 */,
-    101	/* 17 */,
-    100	/* 18 */,
-    99	/* 18/01-18/09 */,
-    98	/* 18/10-18/19 */,
-    97	/* 18/20-18/29 */,
-    96	/* 18/30-18/39 */,
-    96	/* 18/40-18/49 */,
-    95	/* 18/50-18/59 */,
-    94	/* 18/60-18/69 */,
-    93	/* 18/70-18/79 */,
-    92	/* 18/80-18/89 */,
-    91	/* 18/90-18/99 */,
-    90	/* 18/100 */,
-    90	/* 18/101-18/109 */,
-    89	/* 18/110-18/119 */,
-    88	/* 18/120-18/129 */,
-    87	/* 18/130-18/139 */,
-    86	/* 18/140-18/149 */,
-    85	/* 18/150-18/159 */,
-    84	/* 18/160-18/169 */,
-    83	/* 18/170-18/179 */,
-    82	/* 18/180-18/189 */,
-    81	/* 18/190-18/199 */,
-    80	/* 18/200-18/209 */,
-    80	/* 18/210-18/219 */,
-    80	/* 18/220+ */
-};
-
-
-
 
 /*
  * Determine the price of an item (qty one) in a store.
@@ -415,7 +364,7 @@ static s32b price_item(inven_type *i_ptr, int greed, bool flip)
     factor = rgold_adj[ot_ptr->owner_race][p_ptr->prace];
 
     /* Add in the charisma factor */
-    factor += adj_chr[p_ptr->stat_ind[A_CHR]];
+    factor += adj_chr_gold[p_ptr->stat_ind[A_CHR]];
 
 
     /* Shop is buying */
@@ -1539,7 +1488,7 @@ static int get_stock(int *com_val, cptr pmt, int i, int j)
         if (!get_com(out_val, &command)) break;
 
         /* Convert */
-        k = A2I(command);
+        k = (islower(command) ? A2I(command) : -1);
         
         /* Legal responses */
         if ((k >= i) && (k <= j)) {
@@ -2252,13 +2201,6 @@ static void store_purchase(void)
                 /* Update the display */
                 store_prt_gold();
 
-                /* Note how many slots the store used to have */
-                i = st_ptr->stock_num;
-
-                /* Remove the bought items from the store */
-                store_item_increase(item, -amt);
-                store_item_optimize(item);
-
                 /* Hack -- buying an item makes you aware of it */
                 inven_aware(&sell_obj);
 
@@ -2281,11 +2223,15 @@ static void store_purchase(void)
                 msg_format("You have %s (%c).",
                            i_name, index_to_label(item_new));
 
-                /* Recalculate bonuses */
-                p_ptr->update |= (PU_BONUS);
-
                 /* Handle stuff */
                 handle_stuff();
+
+                /* Note how many slots the store used to have */
+                i = st_ptr->stock_num;
+
+                /* Remove the bought items from the store */
+                store_item_increase(item, -amt);
+                store_item_optimize(item);
 
                 /* Item is still here */
                 if (i == st_ptr->stock_num) {
@@ -2323,24 +2269,21 @@ static void store_purchase(void)
         /* Carry the item */
         item_new = inven_carry(&sell_obj);
 
-        /* Take note if we take the last one */
-        i = st_ptr->stock_num;
-
-        /* Remove the items from the home */
-        store_item_increase(item, -amt);
-        store_item_optimize(item);
-
         /* Describe just the result */
         objdes(i_name, &inventory[item_new], TRUE, 3);
 
         /* Message */
         msg_format("You have %s (%c).", i_name, index_to_label(item_new));
 
-        /* Recalculate bonuses */
-        p_ptr->update |= (PU_BONUS);
-
         /* Handle stuff */
         handle_stuff();
+
+        /* Take note if we take the last one */
+        i = st_ptr->stock_num;
+
+        /* Remove the items from the home */
+        store_item_increase(item, -amt);
+        store_item_optimize(item);
 
         /* Hack -- Item is still here */
         if (i == st_ptr->stock_num) {
@@ -2393,8 +2336,8 @@ static void store_sell(void)
     /* Only allow items the store will buy */
     item_tester_hook = store_will_buy;
 
-    /* Get an item (from inven) */
-    if (!get_item(&item, pmt, FALSE, TRUE, FALSE)) {
+    /* Get an item (from equip or inven) */
+    if (!get_item(&item, pmt, TRUE, TRUE, FALSE)) {
         if (item == -2) msg_print("You have nothing that I want.");
         return;
     }
@@ -2422,6 +2365,20 @@ static void store_sell(void)
         /* Allow user abort */
         if (amt <= 0) return;
     }
+
+#if 0
+
+    /* Not gonna happen XXX inscribe */
+    if ((item >= INVEN_WIELD) && cursed_p(i_ptr)) {
+
+        /* Oops */
+        msg_print("Hmmm, it seems to be cursed.");
+
+        /* Stop */
+        return;
+    }
+
+#endif
 
     /* Create the object to be sold (structure copy) */
     sold_obj = *i_ptr;
@@ -2502,12 +2459,6 @@ static void store_sell(void)
             inven_item_describe(item);
             inven_item_optimize(item);
 
-            /* Recalculate bonuses */
-            p_ptr->update |= (PU_BONUS);
-
-            /* Combine pack */
-            p_ptr->update |= (PU_COMBINE | PU_REORDER);
-
             /* Handle stuff */
             handle_stuff();
 
@@ -2533,15 +2484,13 @@ static void store_sell(void)
         inven_item_describe(item);
         inven_item_optimize(item);
 
-        /* Let the store (home) carry it */
-        item_pos = home_carry(&sold_obj);
-
-        /* Recalculate bonuses */
-        p_ptr->update |= (PU_BONUS);
-
         /* Handle stuff */
         handle_stuff();
 
+        /* Let the store (home) carry it */
+        item_pos = home_carry(&sold_obj);
+
+        /* Update store display */
         if (item_pos >= 0) {
             store_top = (item_pos / 12) * 12;
             display_inventory();
@@ -2560,12 +2509,9 @@ static bool leave_store = FALSE;
 /*
  * Process a command in a store
  *
- * Mega-Hack -- allow some "normal" commands using one or both of the
- * original/roguelike keys, or even completely unrelated keys.
- *
- * Note that the "keymaps" are not used.
- *
- * Note the two-step process to allow "fake" use of "command_cmd".
+ * Note that the "keymaps" are not used, and we must convert a few
+ * commands by hand to allow simulated usage of the "roguelike" and
+ * "original" keysets, ala the "command_cmd" variable.
  */
 static void store_process_command(void)
 {
@@ -2605,13 +2551,6 @@ static void store_process_command(void)
     /* Translate the command */
     switch (cmd) {
 
-        /* Special commands */
-        case ESCAPE:
-        case ' ':
-        case CTRL('R'):
-            command_cmd = cmd;
-            break;
-
         /* Purchase (Get) */
         case 'p':
             command_cmd = 'g';
@@ -2632,46 +2571,28 @@ static void store_process_command(void)
             command_cmd = ((store_num == 7) ? 'd' : '`');
             break;
 
-        /* Wear an item */
-        case 'W': case 'w': case '[':
+        /* Wear an item (various keysets) */
+        case 'W': case 'w':
             command_cmd = '[';
             break;
 
-        /* Take off an item */
-        case 'T': case 't': case ']':
+        /* Take off an item (various keysets) */
+        case 'T': case 't':
             command_cmd = ']';
             break;
 
-        /* Browse a Book */
-        case 'b': case 'P':
+        /* Browse a Book (roguelike) */
+        case 'P':
             command_cmd = 'b';
             break;
 
-        /* Normal commands */
-        case CTRL('P'):
-        case '?':
-        case 'C':
-        case ':':
-        case '@':
-        case '!':
-        case '&':
-        case '{':
-        case '}':
-        case '(':
-        case ')':
-        case 'e':
-        case 'i':
-        case 'k':
-        case CTRL('E'):
-        case CTRL('I'):
-        case '\n':
-        case '\r':
-            command_cmd = cmd;
-            break;
+        /* Destroy an item (roguelike) */
+        case KTRL('d'):
+            command_cmd = 'k';
 
-        /* Illegal commands */
+        /* Normal commands */
         default:
-            command_cmd = '`';
+            command_cmd = cmd;
             break;
     }
 
@@ -2679,10 +2600,12 @@ static void store_process_command(void)
     /* Parse the command */
     switch (command_cmd) {
 
+        /* Leave */
         case ESCAPE:
             leave_store = TRUE;
             break;
 
+        /* Browse */
         case ' ':
             if (st_ptr->stock_num <= 12) {
                 msg_print("Entire inventory is shown.");
@@ -2694,92 +2617,360 @@ static void store_process_command(void)
             }
             break;
 
-        case CTRL('R'):
+        /* Redraw */
+        case KTRL('R'):
+            do_cmd_redraw();
             display_store();
-            Term_redraw();
             break;
 
+        /* Get/Purchase */
         case 'g':
             store_purchase(); break;
 
+        /* Drop/Sell */
         case 'd':
             store_sell(); break;
 
+        /* White-space */
         case '\n':
         case '\r':
-        case CTRL('I'):
+        case KTRL('I'):
             break;
 
-        case 'e':
-            do_cmd_equip(); break;
 
-        case 'i':
-            do_cmd_inven(); break;
 
+        /*** Inventory Commands ***/
+
+        /* Wear/wield equipment */
         case '[':
             do_cmd_wield(); break;
 
+        /* Take off equipment */
         case ']':
             do_cmd_takeoff(); break;
 
+#if 0
+
+        /* Drop an item */
+        case 'd':
+            do_cmd_drop(); break;
+            
+#endif
+
+        /* Destroy an item */
         case 'k':
             do_cmd_destroy(); break;
 
-        case '?':
-            do_cmd_help("help.hlp"); break;
+        /* Equipment list */
+        case 'e':
+            do_cmd_equip(); break;
 
-        case 'C':
-            do_cmd_change_name(); break;
+        /* Inventory list */
+        case 'i':
+            do_cmd_inven(); break;
 
-        case ':':
-            do_cmd_note(); break;	
 
-        case '@':
-            (void)Term_user(0); break;
+        /*** Various commands ***/
 
-        case '!':
-            do_cmd_macro(); break;
+        /* Identify an object */
+        case 'I':
+            do_cmd_observe(); break;
 
-        case '&':
-            do_cmd_keymap(); break;
+        /* Hack -- toggle choice window */
+        case KTRL('E'):
+            do_cmd_toggle_choose(); break;
 
+
+        /*** Standard "Movement" Commands ***/
+
+#if 0
+
+        /* Dig a tunnel */
+        case '+':
+            do_cmd_tunnel(); break;
+
+        /* Move (usually pick up things) */
+        case ';':
+            do_cmd_walk(always_pickup); break;
+
+        /* Move (usually do not pick up) */
+        case '-':
+            do_cmd_walk(!always_pickup); break;
+
+#endif
+
+
+        /*** Running, Resting, Searching, Staying */
+
+#if 0
+
+        /* Begin Running -- Arg is Max Distance */
+        case '.':
+            do_cmd_run(); break;
+
+        /* Stay still (usually pick things up) */
+        case ',':
+            do_cmd_stay(always_pickup); break;
+
+        /* Stay still (usually do not pick up) */
+        case 'g':
+            do_cmd_stay(!always_pickup); break;
+
+        /* Rest -- Arg is time */
+        case 'R':
+            do_cmd_rest(); break;
+
+        /* Search for traps/doors */
+        case 's':
+            do_cmd_search(); break;
+
+        /* Toggle search mode */
+        case 'S':
+            do_cmd_toggle_search(); break;
+
+#endif
+
+
+        /*** Stairs and Doors and Chests and Traps ***/
+
+#if 0
+
+        /* Go up staircase */
+        case '<':
+            do_cmd_go_up(); break;
+
+        /* Go down staircase */
+        case '>':
+            do_cmd_go_down(); break;
+
+        /* Open a door or chest */
+        case 'o':
+            do_cmd_open(); break;
+
+        /* Close a door */
+        case 'c':
+            do_cmd_close(); break;
+
+        /* Jam a door with spikes */
+        case 'j':
+            do_cmd_spike(); break;
+
+        /* Bash a door */
+        case 'B':
+            do_cmd_bash(); break;
+
+        /* Disarm a trap or chest */
+        case 'D':
+            do_cmd_disarm(); break;
+
+#endif
+
+        /*** Magic and Prayers ***/
+
+#if 0
+
+        /* Gain new spells/prayers */
+        case 'G':
+            do_cmd_study(); break;
+            
+#endif
+
+        /* Browse a book */
         case 'b':
             do_cmd_browse(); break;
 
+#if 0
+
+        /* Cast a spell */
+        case 'm':
+            do_cmd_cast(); break;
+
+        /* Pray a prayer */
+        case 'p':
+            do_cmd_pray(); break;
+            
+#endif
+
+
+        /*** Use various objects ***/
+
+        /* Inscribe an object */
         case '{':
             do_cmd_inscribe(); break;
 
+        /* Uninscribe an object */
         case '}':
             do_cmd_uninscribe(); break;
 
-        case CTRL('O'):
-            prt(format("> %s", message_str(0)), 0, 0); break;
+#if 0
 
-        case CTRL('P'):
+        /* Activate an artifact */
+        case 'A':
+            do_cmd_activate(); break;
+
+        /* Eat some food */
+        case 'E':
+            do_cmd_eat_food(); break;
+
+        /* Fuel your lantern/torch */
+        case 'F':
+            do_cmd_refill(); break;
+
+        /* Fire an item */
+        case 'f':
+            do_cmd_fire(); break;
+
+        /* Throw an item */
+        case 'v':
+            do_cmd_throw(); break;
+
+        /* Aim a wand */
+        case 'a':
+            do_cmd_aim_wand(); break;
+
+        /* Zap a rod */
+        case 'z':
+            do_cmd_zap_rod(); break;
+
+        /* Quaff a potion */
+        case 'q':
+            do_cmd_quaff_potion(); break;
+
+        /* Read a scroll */
+        case 'r':
+            do_cmd_read_scroll(); break;
+
+        /* Use a staff */
+        case 'u':
+            do_cmd_use_staff(); break;
+            
+#endif
+
+
+        /*** Looking at Things (nearby or on map) ***/
+
+#if 0
+
+        /* Full dungeon map */
+        case 'M':
+            do_cmd_view_map(); break;
+
+        /* Locate player on map */	
+        case 'L':
+            do_cmd_locate(); break;
+
+        /* Look around */
+        case 'l':
+            do_cmd_look(); break;
+
+        /* Target monster or location */
+        case '*':
+            do_cmd_target(); break;
+
+#endif
+
+
+        /*** Help and Such ***/
+
+        /* Help */
+        case '?':
+            do_cmd_help("help.hlp"); break;
+
+        /* Identify symbol */
+        case '/':
+            do_cmd_query_symbol(); break;
+
+        /* Character description */
+        case 'C':
+            do_cmd_change_name(); break;
+
+
+        /*** System Commands ***/
+
+        /* Hack -- User interface */
+        case '!':
+            (void)Term_user(0); break;
+
+        /* Single line from a pref file */
+        case '"':
+            do_cmd_pref(); break;
+
+        /* Interact with macros */
+        case '@':
+            do_cmd_macros(); break;
+
+        /* Interact with visuals */
+        case '%':
+            do_cmd_visuals(); break;
+
+        /* Interact with colors */
+        case '&':
+            do_cmd_colors(); break;
+
+        /* Interact with options */
+        case '=':
+            do_cmd_options(); break;
+
+
+        /*** Misc Commands ***/
+
+        /* Take notes */
+        case ':':
+            do_cmd_note(); break;	
+
+        /* Version info */
+        case 'V':
+            do_cmd_version(); break;
+
+        /* Repeat level feeling */
+        case KTRL('F'):
+            do_cmd_feeling(); break;
+
+        /* Show previous message */
+        case KTRL('O'):
+            do_cmd_message_one(); break;
+
+        /* Show previous messages */
+        case KTRL('P'):
             do_cmd_messages(); break;
 
+#if 0
 
-        /*** Handle "choice window" ***/
+        /* Redraw the screen */
+        case KTRL('R'):
+            do_cmd_redraw(); break;
 
-        /* Hack -- toggle choice window */
-        case CTRL('E'):
+#ifndef VERIFY_SAVEFILE
+        /* Hack -- Save and don't quit */
+        case KTRL('S'):
+            do_cmd_save_game(); break;
+#endif
 
-            /* Hack -- flip the current status */
-            choose_default = !choose_default;
+        /* Save and quit */
+        case KTRL('X'):
+            alive = FALSE; break;
 
-            /* Redraw choice window */
-            p_ptr->redraw |= (PR_CHOOSE);
+        /* Quit (commit suicide) */
+        case 'Q':
+            do_cmd_suicide(); break;
 
-            break;
+#endif
 
+        /* Check artifacts */
+        case '~':
+            do_cmd_check_artifacts(); break;
+
+        /* Check uniques */
+        case '|':
+            do_cmd_check_uniques(); break;
 
 #ifndef ANGBAND_LITE
 
-        /* Load a "screen dump" */
+        /* Load "screen dump" */
         case '(':
             do_cmd_load_screen(); break;
 
-        /* Save a "screen dump" */
+        /* Save "screen dump" */
         case ')':
             do_cmd_save_screen(); break;
 
@@ -2789,6 +2980,8 @@ static void store_process_command(void)
         /* Hack -- Unknown command */
         default:
             bell();
+            msg_print("That command does not work in stores.");
+            msg_print(NULL);
             break;
     }
 }
@@ -2796,8 +2989,6 @@ static void store_process_command(void)
 
 /*
  * Enter a store, and interact with it.
- *
- * Note that "s" and "p" now work in the Home.
  */
 void store_enter(int which)
 {
@@ -2814,6 +3005,12 @@ void store_enter(int which)
     /* Hack -- Character is in "icky" mode */
     character_icky = TRUE;
 
+
+    /* No command argument */
+    command_arg = 0;
+
+    /* No repeated command */
+    command_rep = 0;
 
     /* No automatic command */
     command_new = 0;
@@ -2863,17 +3060,25 @@ void store_enter(int which)
         /* Mega-Hack -- handle pack overflow */
         if (inventory[INVEN_PACK].k_idx) {
 
-            /* Flee from the store */
+            /* Hack -- Flee from the store */
             if (store_num != 7) {
+
+                /* Message */
                 msg_print("Your pack is so full that you flee the store...");
                 msg_print(NULL);
+
+                /* Leave */
                 leave_store = TRUE;
             }
 
-            /* The home is too full */
+            /* Hack -- Flee from the home */
             else if (!store_check_num(&inventory[INVEN_PACK])) {
+
+                /* Message */
                 msg_print("Your pack is so full that you flee your home...");
                 msg_print(NULL);
+
+                /* Leave */
                 leave_store = TRUE;
             }
 
@@ -2903,9 +3108,6 @@ void store_enter(int which)
                 inven_item_increase(INVEN_PACK, -999);
                 inven_item_describe(INVEN_PACK);
                 inven_item_optimize(INVEN_PACK);
-
-                /* Recalculate bonuses */
-                p_ptr->update |= (PU_BONUS);
 
                 /* Handle stuff */
                 handle_stuff();

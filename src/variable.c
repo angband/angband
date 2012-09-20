@@ -351,24 +351,20 @@ char history[4][60];
 char savefile[1024];
 
 
-/* Was: cave_type cave[MAX_HGT][MAX_WID]; */
-cave_type *cave[MAX_HGT];
-
-
 /* Array of grids lit by player lite (see "cave.c") [LITE_MAX] */
 s16b lite_n;
-byte *lite_y;
-byte *lite_x;
+byte lite_y[LITE_MAX];
+byte lite_x[LITE_MAX];
 
 /* Array of grids viewable to the player (see "cave.c") [VIEW_MAX] */
 s16b view_n;
-byte *view_y;
-byte *view_x;
+byte view_y[VIEW_MAX];
+byte view_x[VIEW_MAX];
 
 /* Array of grids for use by various functions (see "cave.c") [TEMP_MAX] */
 s16b temp_n;
-byte *temp_y;
-byte *temp_x;
+byte temp_y[TEMP_MAX];
+byte temp_x[TEMP_MAX];
 
 
 /*
@@ -439,69 +435,110 @@ u16b *message__ptr;
 char *message__buf;
 
 
-/* Hack -- Quest array */
+/*
+ * The array of "cave grids" [MAX_WID][MAX_HGT].
+ * Not completely allocated, that would be inefficient
+ * Not completely hardcoded, that would overflow memory
+ */
+cave_type *cave[MAX_HGT];
+
+/*
+ * The array of dungeon items [MAX_I_IDX]
+ */
+inven_type *i_list;
+
+/*
+ * The array of dungeon monsters [MAX_M_IDX]
+ */
+monster_type *m_list;
+
+/*
+ * Hack -- Quest array
+ */
 quest q_list[MAX_Q_IDX];
 
 
-/* The stores [MAX_STORES] */
+/*
+ * The stores [MAX_STORES]
+ */
 store_type *store;
 
-/* The player's inventory [INVEN_TOTAL] */
+/*
+ * The player's inventory [INVEN_TOTAL]
+ */
 inven_type *inventory;
 
 
-/* The array of dungeon monsters [MAX_M_IDX] */
-monster_type *m_list;
-
-/* The array of dungeon items [MAX_I_IDX] */
-inven_type *i_list;
-
-
-/* Size of the alloc_kind_table */
+/*
+ * The size of the "kind allocator table"
+ */
 s16b alloc_kind_size;
 
-/* Index into the alloc_kind_table */
+/*
+ * The indexes into the "kind allocator table" by level [MAX_DEPTH]
+ */
 s16b *alloc_kind_index;
 
-/* Actual alloc_kind_table itself */
+/*
+ * The "kind allocator table" [alloc_kind_size]
+ */
 kind_entry *alloc_kind_table;
 
-/* Size of the alloc_race_table */
+
+/*
+ * The size of the "race allocator table"
+ */
 s16b alloc_race_size;
 
-/* Index into the alloc_race_table */
+/*
+ * The indexes into the "race allocator table" by level [MAX_DEPTH]
+ */
 s16b *alloc_race_index;
 
-/* Actual alloc_race_table itself */
+/*
+ * The "race allocator table" [alloc_race_size]
+ */
 race_entry *alloc_race_table;
 
 
 /*
  * Specify attr/char pairs for inventory items (by tval)
+ * XXX XXX XXX Note the assumed tval maximum of 128
  */
 byte tval_to_attr[128];
 char tval_to_char[128];
 
 /*
- * Hack -- simple keymap method, see "arrays.c" and "commands.c".
+ * Simple keymap method, see "init.c" and "cmd6.c".
  */
 byte keymap_cmds[256];
 byte keymap_dirs[256];
 
 
+/*
+ * Global table of color definitions
+ */
+byte color_table[256][4];
+
+
+/*** Player information ***/
 
 /*
- * Player information
+ * Static player info record
  */
+static player_type p_body;
 
-static player_type p_body;	/* Static player info record */
+/*
+ * Pointer to the player info
+ */
+player_type *p_ptr = &p_body;
 
-player_type *p_ptr = &p_body;	/* Pointer to the player info */
-
-player_race *rp_ptr;	/* Pointer to the player race info */
-player_class *cp_ptr;	/* Pointer to the player class info */
-
-player_magic *mp_ptr;	/* Pointer to the player magic info */
+/*
+ * Pointer to the player tables (race, class, magic)
+ */
+player_race *rp_ptr;
+player_class *cp_ptr;
+player_magic *mp_ptr;
 
 
 /*

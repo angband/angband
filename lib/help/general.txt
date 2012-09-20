@@ -69,20 +69,21 @@ game starts to look funny if too many objects accumulate on the floor.
 The "Q" command (commit suicide) does not work (switch to the original
 keyset and use the "^K" command if necessary, or try "\" + "ctrl-k").
 There have been reports that ball weapons can explode through walls.
-You may not be able to "correctly" load pre-2.7.0 savefiles.  Some dungeon
-levels (containing monster pits, lesser vaults, etc) may take minutes to
-generate.  Good drops can include cursed rings of speed.
+You may not be able to "correctly" load pre-2.7.0 savefiles.  Some
+dungeon levels (containing monster pits, lesser vaults, etc) may take
+minutes to generate.  Good drops can include cursed rings of speed.
 
-Angband 2.7.9 is intended to be a transition version from 2.7.8 to 2.8.0,
-cleaning up some internal code issues, and extending the functionality of
-some existing commands (such as target and look).  It includes minor tweaks
-to various aspects of the program, including the use of slightly different
-symbols and colors and names for a few monsters (townspeople were "p" but
-are now "t", ticks were "t" but are now "S", demons were "I"/"&" but are
-now "u"/"U", Umber hulks were "U" but are now "K", Jabberwoks were "J" but
-are now Chaos Beetle and are now "K", fruit flies and giant fleas are now
-insects ("I") which look like the lice ("l"), leaving "F" for dragon flies,
-and various other simple changes of that general nature).
+Angband 2.7.9+ is intended to be a "stable" endpoint for the 2.7 series,
+in that whenever bugs are detected, they are repaired without changing
+anything else significant, providing a relatively unchanging, but still
+"up to date" version.  Angband 2.7.9v4 should be relatively final.
+
+Angband 2.7.9 cleaning up some internal code issues from Angband 2.7.8,
+and extending the functionality of some existing commands (such as target
+and look, which now handle directional motion).  It includes minor tweaks
+to various aspects of the program, most notably in the introduction of new
+symbols and colors for various monsters, and in the use of a more regular
+set of RGB values for the various color codes.
 
 Angband 2.8.0 will introduce a version independant savefile format, along
 with a new terrain feature concept, and the ability to allow multiple objects
@@ -90,27 +91,29 @@ in the same cave grid.  It may or may not separate the "unique" monsters from
 the "normal" monsters, perhaps introducing some new "normal" monsters, such
 as "skeleton lord" or "giant boar" or "master mage".
 
-You can obtain the latest source and pre-compiled executables from various
-places, try "ftp://ftp.cis.ksu.edu/pub/Games/Angband/Angband-2.7.x" and
-the developer site at "ftp://export.andrew.cmu.edu/angband".  You will need
-to enter the appropriate sub-directory, such as "Source" or "Macintosh".
-
-You may freely distribute the game, and its source, though you are bound
-not only by the existing copyright notice from 1984, but also whatever
-restrictions may be present on various other pieces of the code.
-
 You can email compliments, complaints, bug reports, and presents to
 me ("benh@voicenet.com"), and you can post interesting experiences,
 general questions, compilation questions and code suggestions to the
 newsgroup ("rec.games.roguelike.angband").
 
-There are a variety of new commands, some of which are described in the
-"commands.txt" help file, and some of which may have been forgotten.
+You can obtain the latest source and pre-compiled executables from various
+places, try "ftp://ftp.cis.ksu.edu/pub/Games/Angband/Angband-2.7.x" and
+the developer site at "ftp://export.andrew.cmu.edu/angband".  You will need
+to enter the appropriate sub-directory, such as "Source" or "Macintosh".
+
+You should visit "http://www.voicenet.com/~benh/Angband/" (the Official
+Angband Home Page) and "http://www.paranoia.com/~jth/angband.html" (the
+Unofficial Angband Home Page), for more up to date information.
+
+You may freely distribute the game, and its source, though you are bound
+not only by the existing copyright notice from 1984, but also whatever
+restrictions may be present on various other pieces of the code.
 
 The basic help files supplied with this game are more or less up to date,
 but when in doubt, the source (or the newsgroup) is the place to turn for
 advice.  Or attempt to figure it out by experimentation, this is sometimes
-the most fun.
+the most fun.  In particular, see "commands.txt" for information on the
+available commands, some of which have been recently added or changed.
 
 The documentation is very easy to modify and update, so you may want to
 check in to the ftp site occasionally to see if there are any new help

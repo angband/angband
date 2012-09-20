@@ -1,9 +1,16 @@
 # File: pref-mac.prf
 
-# This is a sample "pref" file for the Macintosh (see pref.prf)
+#
+# This file contains various default macros for use with the executable
+# build from "main-mac.c".
+#
+# The format for Macintosh macro triggers will probably change in 2.8.0
+#
 
 
+#
 # Shift-Keypad -- Directed running
+#
 
 A:\e\e\\.1
 P:^_S19\r
@@ -33,8 +40,9 @@ A:\e\e\\.9
 P:^_S28\r
 
 
-
+#
 # Control-Keypad -- Directed tunneling
+#
 
 A:\e\e\\+1
 P:^_C19\r
@@ -65,7 +73,9 @@ P:^_C28\r
 
 
 
+#
 # Option-Control-Keypad -- wield {@0} and tunnel
+#
 
 A:\e\ew0\s\s\\+1
 P:^_CO19\r
@@ -95,14 +105,18 @@ A:\e\ew0\s\s\\+9
 P:^_CO28\r
 
 
+#
 # Option-Control-Keypad-Zero -- wield {@0}
+#
 
 A:\e\ew0\s
 P:^_CO18\r
 
 
 
+#
 # Hack -- Arrow-Keys
+#
 
 A:4
 P:^_59\r
@@ -118,27 +132,39 @@ P:^_62\r
 
 
 
+#
 # F15 -- rest until done
+#
 
 A:\e\eR&\n
 P:^_49\r
 
+#
 # Shift F15 -- rest until healed
+#
 
 A:\e\eR*\n
 P:^_S49\r
 
+
+#
 # F14 -- rest some
+#
 
 A:\e\eR99\n
 P:^_43\r
 
+#
 # Shift F14 -- rest a lot
+#
 
 A:\e\eR9999\n
 P:^_S43\r
 
+
+#
 # F13 -- activate the light
+#
 
 A:\e\eAf\e\e
 P:^_41\r

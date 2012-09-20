@@ -1,0 +1,92 @@
+# Makefile.ami
+#
+# Angband 2.7.9v4 makefile for Amiga with SAS/C 6.50
+#
+# NOTE: This file must be split into two separate files,
+#       called 'smakefile' and 'angband.lnk' as indicated
+#       by the lines below.
+#
+# 15/2-96, Lars Haugseth <larshau@ifi.uio.no>
+
+---[smakefile]----------------------------------------------------------------
+
+all: angband
+
+angband: birth.o cave.o cmd1.o cmd2.o cmd3.o cmd4.o cmd5.o cmd6.o dungeon.o \
+         effects.o files.o generate.o init.o io.o \
+         main-ami.o main.o melee.o misc.o mon-desc.o monster.o obj-desc.o \
+         object.o save-old.o save.o signals.o spells1.o spells2.o \
+         store.o tables.o term.o util.o variable.o wiz-spo.o wizard.o z-form.o \
+         z-util.o z-virt.o \
+         borg.o borg-obj.o borg-map.o borg-ext.o borg-aux.o borg-ben.o
+    echo Linking
+    slink quiet with angband.lnk
+
+.c.o:
+    echo Compiling $*.c
+    sc DEFINE AMIGA DEFINE USE_AMI $*
+
+angband.h:  h-basic.h z-util.h z-virt.h z-form.h term.h config.h defines.h types.h externs.h
+birth.o:    birth.c angband.h
+cave.o:     cave.c angband.h
+cmd1.o:     cmd1.c angband.h
+cmd2.o:     cmd2.c angband.h
+cmd3.o:     cmd3.c angband.h
+cmd4.o:     cmd4.c angband.h
+cmd5.o:     cmd5.c angband.h
+cmd6.o:     cmd6.c angband.h
+dungeon.o:  dungeon.c angband.h
+effects.o:  effects.c angband.h
+files.o:    files.c angband.h
+generate.o: generate.c angband.h
+init.o:     init.c angband.h
+io.o:       io.c angband.h
+main-ami.o: main-ami.c angband.h
+main.o:     main.c angband.h
+melee.o:    melee.c angband.h
+misc.o:     misc.c angband.h
+mon-desc.o: mon-desc.c angband.h
+monster.o:  monster.c angband.h
+obj-desc.o: obj-desc.c angband.h
+object.o:   object.c angband.h
+save-old.o: save-old.c angband.h
+save.o:     save.c angband.h
+signals.o:  signals.c angband.h
+spells1.o:  spells1.c angband.h
+spells2.o:  spells2.c angband.h
+store.o:    store.c angband.h
+tables.o:   tables.c angband.h
+term.o:     term.c angband.h
+util.o:     util.c angband.h
+variable.o: variable.c angband.h
+wiz-spo.o:  wiz-spo.c angband.h
+wizard.o:   wizard.c angband.h
+z-form.o:   z-form.c angband.h
+z-util.o:   z-util.c angband.h
+z-virt.o:   z-virt.c angband.h
+borg.o:     borg.c borg.h angband.h
+borg-obj.o: borg-obj.c borg.h borg-obj.h angband.h
+borg-map.o: borg-map.c borg.h borg-map.h angband.h
+borg-ext.o: borg-ext.c borg.h borg-map.h borg-obj.h borg-ext.h angband.h
+borg-aux.o: borg-aux.c borg.h borg-map.h borg-obj.h borg-ext.h borg-aux.h angband.h
+borg-ben.o: borg-ben.c borg.h borg-map.h borg-obj.h borg-ext.h borg-aux.h angband.h
+
+---[angband.lnk]--------------------------------------------------------------
+
+FROM
+lib:c.o main.o main-ami.o
+signals.o util.o io.o init.o save.o save-old.o files.o
+generate.o birth.o melee.o dungeon.o store.o
+effects.o cmd1.o cmd2.o cmd3.o cmd4.o cmd5.o cmd6.o
+misc.o monster.o mon-desc.o object.o obj-desc.o
+spells1.o spells2.o cave.o tables.o variable.o
+term.o z-util.o z-virt.o z-form.o
+wiz-spo.o wizard.o
+borg.o borg-obj.o borg-map.o borg-ext.o borg-aux.o borg-ben.o
+
+TO Angband:bin/Angband
+
+LIB LIB:scm.lib LIB:sc.lib
+
+NOICONS NODEBUG
+

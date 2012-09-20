@@ -240,21 +240,38 @@ static hist_type bg[] = {
 
 
 
-static s32b		stat_use[6];
+/*
+ * Current stats
+ */
+static s16b		stat_use[6];
 
 
 #ifdef ALLOW_AUTOROLLER
 
-static int		autoroll;
-static int		stat_limit[6];
-static s32b		stat_match[6];
-static s32b		auto_round;
-static s32b		last_round;
+/*
+ * Use the autoroller
+ */
+static bool		autoroll;
 
-static cptr stat_name[6] = {
-    "Strength", "Intelligence", "Wisdom",
-    "Dexterity", "Constitution", "Charisma"
-};
+/*
+ * Requested minimum stats
+ */
+static s16b		stat_limit[6];
+
+/*
+ * Number of times each stat matched
+ */
+static s32b		stat_match[6];
+
+/*
+ * Current "round" in the auto-roller
+ */
+static s32b		auto_round;
+
+/*
+ * Last time the auto-roller stopped
+ */
+static s32b		last_round;
 
 #endif
 
@@ -433,7 +450,7 @@ static void choose_race(void)
         put_str("Choose a race (? for Help, Q to Quit): ", 20, 2);
         c = inkey();
         if (c == 'Q') quit(NULL);
-        j = A2I(c);
+        j = (islower(c) ? A2I(c) : -1);
         if ((j < MAX_RACES) && (j >= 0)) {
             p_ptr->prace = j;
             rp_ptr = &race_info[p_ptr->prace];
@@ -498,7 +515,7 @@ static void choose_class()
         put_str("Choose a class (? for Help, Q to Quit): ", 20, 2);
         c = inkey();
         if (c == 'Q') quit(NULL);
-        j = A2I(c);
+        j = (islower(c) ? A2I(c) : -1);
         if ((j < k) && (j >= 0)) {
             p_ptr->pclass = cl[j];
             cp_ptr = &class_info[p_ptr->pclass];
@@ -922,7 +939,7 @@ static void birth_put_stats()
 
         /* Put the percent */
         if (stat_match[i]) {
-            p = 1000 * stat_match[i] / auto_round;
+            p = 1000L * stat_match[i] / auto_round;
             attr = (p < 100) ? TERM_YELLOW : TERM_L_GREEN;
             sprintf(buf, "%3d.%d%%", p/10, p%10);
             c_put_str(attr, buf, 2 + i, 73);
@@ -1018,7 +1035,7 @@ static void player_wipe()
     }
 
 
-    /* Well fed player */
+    /* Hack -- Well fed player */
     p_ptr->food = PY_FOOD_FULL - 1;
 
 
@@ -1149,6 +1166,8 @@ void player_birth()
 
     char		c;
 
+    bool		flag;
+    
     bool		prev_ready;
     bool		use_history;
 
@@ -1259,8 +1278,8 @@ start_over:
 
 
         /* Clear fields */
-        auto_round = 0;
-        last_round = 0;
+        auto_round = 0L;
+        last_round = 0L;
 
         /* Prompt for the minimum stats */
         clear_from(15);
@@ -1297,7 +1316,7 @@ start_over:
             }
 
             /* Prepare a prompt */
-            sprintf(buf, "%-15s%-20s", stat_name[i], inp);
+            sprintf(buf, "%-5s%-20s", stat_names[i], inp);
 
             /* Dump the prompt */
             put_str(buf, 16 + i, 5);
@@ -1314,7 +1333,7 @@ start_over:
                 char *s;
 
                 /* Move the cursor */
-                put_str("", 16 + i, 40);
+                put_str("", 16 + i, 30);
 
                 /* Get a response (or escape) */
                 if (!askfor(inp, 8)) inp[0] = '\0';
@@ -1378,11 +1397,10 @@ start_over:
             last_round = auto_round;
 
             /* Indicate the state */
-            put_str("Hit any key to stop.", 21, 2);
-            put_str("Auto-rolling round #", 21, 30);
+            put_str("(Hit ESC to abort)", 11, 61);
 
-            /* Describe the percentages */
-            put_str("The percentages shown above are not independent!", 23, 2);
+            /* Label count */
+            put_str("Round:", 9, 61);
         }
 
         /* Otherwise just get a character */
@@ -1404,6 +1422,9 @@ start_over:
             /* Advance the round */
             auto_round++;
 
+            /* Hack -- Prevent overflow */
+            if (auto_round >= 1000000L) break;
+
             /* Check and count acceptable stats */
             for (i = 0; i < 6; i++) {
 
@@ -1418,57 +1439,37 @@ start_over:
                 }
             }
 
-#ifdef SET_UID
+            /* Break if "happy" */
+            if (accept) break;
 
-            /* See how many rolls have gone by */
-            i = (auto_round - last_round);
+            /* Take note every 10 rolls */
+            flag = (!(auto_round % 10L));
+            
+            /* Update display occasionally */
+            if (flag || (auto_round < last_round + 100)) {
 
-            /* Update the display occasionally */
-            if ((i < 20) ||
-                ((i < 100) && (!(auto_round % 10))) ||
-                (!(auto_round % 100))) {
-
-                /* Dump data every few rounds */
+                /* Dump data */
                 birth_put_stats();
-                sprintf(buf, "%9lu", (long)auto_round);
-                put_str(buf, 21, 50);
-            }
 
-            /* Wait 1/100 second per roll */
-            delay(10);
+                /* Dump round */
+                put_str(format("%6ld", auto_round), 9, 73);
 
-#else
+                /* Make sure they see everything */
+                Term_fresh();
 
-            /* Dump data every round */
-            birth_put_stats();
-            sprintf(buf, "%9lu", (long)auto_round);
-            put_str(buf, 21, 50);
-
-#endif
-
-            /* Make sure they see everything */
-            Term_fresh();
-
-            /* Allow user interuption (occasionally) */
-            if (!(auto_round % 10)) {
+                /* Delay 1/10 second */
+                if (flag) delay(100);
 
                 /* Do not wait for a key */
                 inkey_scan = TRUE;
 
                 /* Check for a keypress */
-                if (inkey()) {
-
-                    /* Flush all keys */
-                    flush();
-
-                    /* Stop rolling */
-                    break;
-                }
+                if (inkey()) break;
             }
-
-            /* Break if "happy" */
-            if (accept) break;
         }
+
+        /* Flush input */
+        flush();
 
 #else
 

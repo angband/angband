@@ -795,16 +795,6 @@ static char *objdes_str(char *t, cptr s)
 }
 
 
-/*
- * XXX XXX XXX Compiler Bug Warning (Macintosh Think C 6.0)
- *
- * For some unknown reason, the statement "*t++ = '0' + n;"
- * (if used below) uses the *original* value of "n" instead
- * of the modified value of "n", if the statement occurs after
- * the "loop" below, unless you insert the line "dummy = n;"!
- * A similar fatal bug was recently removed from "generate.c".
- */
-
 
 /*
  * Print an unsigned number "n" into a string "t", as if by

@@ -191,11 +191,6 @@
  */
 #define ALLOW_MACROS
 
-/*
- * OPTION: Allow "keymap modification" at run-time
- */
-#define ALLOW_KEYMAP
-
 
 /*
  * OPTION: Allow characteres to be "auto-rolled"
@@ -384,6 +379,16 @@
 
 #endif
 
+
+/*
+ * OPTION: Hack -- EMX stuff
+ */
+#ifdef USE_EMX
+
+/* Do not handle signals */
+# undef HANDLE_SIGNALS
+
+#endif
 
 
 /*

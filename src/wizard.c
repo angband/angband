@@ -18,12 +18,15 @@
 
 
 
+
+
 /*
  * Hack -- quick debugging hook
  */
 static void do_cmd_wiz_hack_ben(void)
 {
-    msg_print("Hi.");
+    /* Oops */
+    msg_print("Oops.");
 }
 
 
@@ -201,12 +204,9 @@ static void do_cmd_wiz_change()
 
     /* Clear prompts */
     prt("", 0, 0);
-    
-    /* Update stuff */
-    p_ptr->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
 
     /* Redraw everything */
-    p_ptr->redraw |= (PR_WIPE | PR_MAP | PR_BASIC | PR_EXTRA);
+    do_cmd_redraw();
 }
 
 
@@ -624,9 +624,14 @@ static void wiz_reroll_item(inven_type *i_ptr)
         /* Apply changes */
         *i_ptr = mod_item;
 
-        /* Update stuff */
-        p_ptr->update |= (PU_BONUS);
+        /* Redraw the choice window */
         p_ptr->redraw |= (PR_CHOOSE);
+
+        /* Recalculate bonuses */
+        p_ptr->update |= (PU_BONUS);
+
+        /* Combine / Reorder the pack */
+        p_ptr->update |= (PU_COMBINE | PU_REORDER);
     }
 }
 
@@ -923,9 +928,21 @@ static void do_cmd_wiz_play(void)
     
     /* Accept change */
     if (changed) {
+
+        /* Message */
         msg_print("Changes accepted.");
+
+        /* Change */
         (*i_ptr) = forge;
+
+        /* Redraw the choice window */
         p_ptr->redraw |= (PR_CHOOSE);
+
+        /* Recalculate bonuses */
+        p_ptr->update |= (PU_BONUS);
+        
+        /* Combine / Reorder the pack */
+        p_ptr->update |= (PU_COMBINE | PU_REORDER);
     }
 
     /* Ignore change */
@@ -1018,22 +1035,17 @@ static void do_cmd_wiz_cure_all()
     (void)set_confused(0);
     (void)set_poisoned(0);
     (void)set_afraid(0);
+    (void)set_paralyzed(0);
     (void)set_image(0);
-    (void)set_cut(0);
     (void)set_stun(0);
+    (void)set_cut(0);
     (void)set_slow(0);
 
     /* No longer hungry */
-    p_ptr->food = PY_FOOD_MAX - 1;
-
-    /* Update map */
-    p_ptr->update |= (PU_NOTE | PU_VIEW | PU_LITE);
-
-    /* Update everything */
-    p_ptr->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
+    (void)set_food(PY_FOOD_MAX - 1);
 
     /* Redraw everything */
-    p_ptr->redraw |= (PR_WIPE | PR_MAP | PR_BASIC | PR_EXTRA);
+    do_cmd_redraw();
 }
 
 

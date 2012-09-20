@@ -426,50 +426,42 @@ static void refnum_to_name(char *buf,long refnum,short vrefnum,char *fname)
 #if 0
 
 /*
- * Write a file describing the character
- *
- * XXX XXX XXX This should be replaced by a function which allows
- * a "visual module" to ask for a filename in a "prettier" way.
- *
- * This code is probably broken at this point.
+ * XXX XXX XXX Allow the system to ask us for a filename
  */
-int mac_file_character()
+static bool askfor_file(char *buf, int len)
 {
     SFReply reply;
-    Str255 default_name;
-    char fullname[1024];
+    Str255 dflt;
     Point topleft;
     short vrefnum;
     long drefnum,junk;
 
     /* Default file name */
-    sprintf((char*)default_name + 1, "%s's description", player_name);
-    default_name[0] = strlen((char*)default_name + 1);
+    sprintf((char*)dflt + 1, "%s's description", buf);
+    dflt[0] = strlen((char*)dflt + 1);
 
+    /* Ask for a file name */
     topleft.h=(qd.screenBits.bounds.left+qd.screenBits.bounds.right)/2-344/2;
     topleft.v=(2*qd.screenBits.bounds.top+qd.screenBits.bounds.bottom)/3-188/2;
-    SFPutFile(topleft,"\pSave description as:",default_name,NULL,&reply);
-    /* StandardPutFile("\pSave description as:",default_name,&reply); */
+    SFPutFile(topleft,"\pSelect a filename:", dflt, NULL, &reply);
+    /* StandardPutFile("\pSelect a filename:", dflt, &reply); */
 
+    /* Process */
     if (reply.good)
     {
         int fc;
-        GetWDInfo(reply.vRefNum,&vrefnum,&drefnum,&junk);
-        refnum_to_name(fullname,drefnum,vrefnum,(char*)reply.fName);
+        
+        /* Get info */
+        GetWDInfo(reply.vRefNum, &vrefnum, &drefnum, &junk);
 
-        /* Global flags: TeachText "TEXT" file */
-        _ftype='TEXT';
+        /* Extract the name */
+        refnum_to_name(buf, drefnum, vrefnum, (char*)reply.fName);
 
-        /* File that character */
-        fc = file_character(fullname);
-
-        /* Global flags: Angband "TEXT" file */
-        _ftype='TEXT';
-
-        /* Oops */
-        if (fc == 0) return (TRUE);
+        /* Success */
+        return (TRUE);
     }
 
+    /* Failure */
     return (FALSE);
 }
 
@@ -785,6 +777,38 @@ static void Term_nuke_mac(term *t)
 
 
 /*
+ * React to changes
+ */
+static errr Term_xtra_mac_react(void)
+{
+    int i;
+    
+    /* Check colors */
+    if (has_color)
+    {
+        u16b rv, gv, bv;
+
+        /* Grab "color_table" */
+        for (i = 0; i < 16; i++)
+        {
+            /* Extract the R,G,B data */
+            rv = color_table[i][1];
+            gv = color_table[i][2];
+            bv = color_table[i][3];
+
+            /* Save the new R,G,B values */
+            mac_clr[i].red = (rv | (rv << 8));
+            mac_clr[i].green = (gv | (gv << 8));
+            mac_clr[i].blue = (bv | (bv << 8));
+        }
+    }
+
+    /* Success */
+    return (0);
+}
+
+
+/*
  * Do a "special thing"
  */
 static errr Term_xtra_mac(int n, int v)
@@ -859,6 +883,12 @@ static errr Term_xtra_mac(int n, int v)
 
             /* Success */
             return (0);
+
+        /* React to changes */
+        case TERM_XTRA_REACT:
+
+            /* React to changes */
+            return (Term_xtra_mac_react());
     }
 
     /* Oops */
@@ -999,6 +1029,11 @@ static void term_data_link(term_data *td)
  * volume/directory) to the location of the current application.
  *
  * Code by: Maarten Hazewinkel (mmhazewi@cs.ruu.nl)
+ *
+ * This function, or another related function, probably one that was
+ * added or changed between 2.7.8 and 2.7.9, is causing Angband to fail
+ * when run under System 6, with a "cannot read ... news.txt" message.
+ * XXX XXX XXX
  */
 static void SetupAppDir(void)
 {
@@ -1141,7 +1176,7 @@ static int getshort(void)
 {
     int x = 0;
     char buf[256];
-    if (fgets(buf, 256, fff)) x = atoi(buf);
+    if (0 == my_fgets(fff, buf, 256)) x = atoi(buf);
     return (x);
 }
 
@@ -3473,6 +3508,19 @@ void delay(int x)
 
 /*
  * Init some stuff
+ *
+ * XXX XXX XXX Hack -- This function attempts to "fix" two nasty bugs.
+ *
+ * First, on System 7 machines, the "current working directory" often
+ * "changes" due to background processes, which invalidates all of the
+ * path names we may have built relative to "lib", so we use an absolute
+ * file name, which is a bad thing, since only the first 250 characters
+ * of a pathname on the Macintosh are valid.
+ *
+ * Second, on System 6 machines, something is not working, so for now
+ * we are simply using the old "current working directory" method, in
+ * which we assume that the current working directory includes both the
+ * application and the "lib" folder.  This may or may not work.
  */
 static void init_stuff(void)
 {
@@ -3481,8 +3529,8 @@ static void init_stuff(void)
     /* XXX XXX XXX Hack -- prevent the "Macintosh Save Bug" */
     refnum_to_name(path, app_dir, app_vol, (char*)("\plib:"));
 
-    /* Prepare the path */
-    /* strcpy(path, ":lib:"); */
+    /* XXX XXX XXX Hack -- prevent (?) file errors on System 6 */
+    if (!has_seven) strcpy(path, ":lib:");
 
     /* Prepare the filepaths */
     init_file_paths(path);
@@ -3494,6 +3542,9 @@ static void init_stuff(void)
  */
 void main(void)
 {
+    int i;
+
+
     /* Increase stack space by 64K */
     SetApplLimit(GetApplLimit() - 65536L);
 
@@ -3618,6 +3669,16 @@ void main(void)
     while (CheckEvents(TRUE)) ;
 
 
+    /* Hack -- extract the "color_table" data */
+    for (i = 0; i < 16; i++)
+    {
+        /* Extract the R,G,B values */
+        color_table[i][1] = (mac_clr[i].red >> 8);
+        color_table[i][2] = (mac_clr[i].green >> 8);
+        color_table[i][3] = (mac_clr[i].blue >> 8);
+    }
+
+
     /* Initialize some stuff */
     init_stuff();
 
@@ -3626,9 +3687,6 @@ void main(void)
 
     /* Initialize some arrays */
     init_some_arrays();
-
-    /* No name (yet) */
-    strcpy(player_name, "");
 
     /* Hack -- assume wizard permissions */
     can_be_wizard = TRUE;

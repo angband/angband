@@ -25,7 +25,7 @@
  *
  */
 
-#define VERSION "2.7.9v2 (08-Jan-96)"
+#define VERSION "2.7.9v4 (12-Feb-96)"
 
 /* Hack to prevent types clash from OSLib */
 typedef unsigned int bits;
@@ -52,7 +52,6 @@ typedef unsigned int bits;
 
 #include "menu.h"
 #include "saveas.h"
-#include "colourdbox.h"
 #include "quit.h"
 #include "proginfo.h"
 #include "actionbutton.h"
@@ -118,6 +117,11 @@ static int wimpver;
 /*static int file_dragged;*/
 
 /*
+ * Hack -- correct spelling
+ */
+#define colour_table color_table
+
+/*
  * Hack -- game in progress
  */
 static int initialised;
@@ -133,23 +137,16 @@ static int game_in_progress;
 #define osfile_TYPE_ANGBAND 0x118u
 static bits _ftype;
 
-/*
- * Hack - bug workaround
- */
-static int colour_being_altered;
-
 /* Un-hack remove etc (which have been redirected here for name translation) */
 #undef remove
 #undef rename
 
 /* Colour of cursor (displayed as a box) */
-#define TERM_CURSOR 16
-
-typedef os_PALETTE(17) angband_pal;
+#define TERM_CURSOR 255
 
 /* This is the palette as defined in term.h, with gamma
    correction of 1.3 (it seems to look OK) */
-static const angband_pal default_palette =
+static const os_PALETTE(16) default_palette =
 {
   {
     0x00000000,   /* TERM_DARK */
@@ -168,13 +165,12 @@ static const angband_pal default_palette =
     0x00ff0000,   /* TERM_L_GREEN */
     0xffff0000,   /* TERM_L_BLUE */
     0x5896cc00,   /* TERM_L_UMBER */
-    0x00ffff00    /* TERM_CURSOR */
   }
 };
 
-static angband_pal palette;
+static os_PALETTE(256) palette;
 
-static int coltable[17];
+static int coltable[256];
 static int solid_colours;
 static unsigned ncolours;
 
@@ -488,6 +484,74 @@ static errr Term_xtra_acn_event(int v)
     return 0;
 }
 
+/*
+ * React to changes
+ */
+static errr Term_xtra_acn_react(void)
+{
+    int i;
+    os_colour temp;
+
+    /* Check colours */
+
+    /* Grab "colour_table" */
+    for (i = 0; i < 256; i++)
+    {
+        /* Extract the R,G,B data */
+        temp = (colour_table[i][3] << 24) |
+               (colour_table[i][2] << 16) |
+               (colour_table[i][1] << 8);
+
+        if (temp != palette.entries[i])
+        {
+            /* Need to force refresh of all characters of that colour(!) */
+
+            if (i!=0)
+            {
+            	int x, y;
+                for (y=0; y<24; y++)
+                    for (x=0; x<80; x++)
+                    {
+                        if (screen.t.old->a[y][x] == i)
+                            screen.oldcol[y][x]=0;
+                        if (recall.t.old->a[y][x] == i)
+                            recall.oldcol[y][x]=0;
+                        if (choice.t.old->a[y][x] == i)
+                            choice.oldcol[y][x]=0;
+                        if (mirror.t.old->a[y][x] == i)
+                            mirror.oldcol[y][x]=0;
+                    }
+            }
+            else
+            {
+                memset(screen.olddisp, 0, sizeof screen.olddisp);
+                memset(recall.olddisp, 0, sizeof recall.olddisp);
+                memset(choice.olddisp, 0, sizeof choice.olddisp);
+                memset(mirror.olddisp, 0, sizeof mirror.olddisp);
+            }
+
+            palette.entries[i]=temp;
+        }
+    }
+
+    palette_handler(0, 0);
+
+    update_window(&screen, 0, 0, 80, 24);
+    update_window(&recall, 0, 0, 80, 24);
+    update_window(&choice, 0, 0, 80, 24);
+    update_window(&mirror, 0, 0, 80, 24);
+
+    memset(screen.froshed, 1, sizeof screen.froshed);
+    memset(recall.froshed, 1, sizeof recall.froshed);
+    memset(choice.froshed, 1, sizeof choice.froshed);
+    memset(mirror.froshed, 1, sizeof mirror.froshed);
+
+    refresh_windows();
+
+    /* Success */
+    return 0;
+}
+
 static void cursor(term *t, int on)
 {
     term_data *td=(term_data *) t;
@@ -511,7 +575,7 @@ errr Term_xtra_acn(int n, int v)
     {
       case TERM_XTRA_CLEAR:
         t=(term_data *) Term;
-        update_window(t, 0, 0, t->t.scr->w, t->t.scr->h);
+        update_window(t, 0, 0, t->t.old->w, t->t.old->h);
         return 0;
 
       case TERM_XTRA_EVENT:
@@ -546,6 +610,9 @@ errr Term_xtra_acn(int n, int v)
       case TERM_XTRA_NOISE:
         os_bell();
         return 0;
+
+      case TERM_XTRA_REACT:
+        return Term_xtra_acn_react();
 
       default:
         return 1;
@@ -847,89 +914,11 @@ static errr askforfile_hook(cptr defname, int row, func_errr filer, int mode)
 }
 #endif
 
-/*************************************************************
- *                                                           *
- *            Handling of Colour Dialogue Boxes              *
- *                                                           *
- *************************************************************/
-
-static int showcolbox_handler(bits event_code, toolbox_action *event,
-                              toolbox_block *id, void *handle)
-{
-    colourpicker_colour colour;
-    toolbox_o c;
-    toolbox_position pos;
-    menu_action_sub_menu *submenu=(menu_action_sub_menu *)&event->data;
-
-    colour.colour=palette.entries[id->this_cmp];
-    colour.size=0;
-
-    pos.top_left=submenu->pos;
-
-    /* ColourDbox event handlers don't seem to be getting the correct
-       parent component sometimes. This is a work-around */
-    colour_being_altered=id->this_cmp;
-
-    c=toolbox_create_object(NONE, (toolbox_id) "ColourDbox");
-
-    colourdbox_set_colour(NONE, c, &colour);
-
-    toolbox_show_object(toolbox_SHOW_AS_SUB_MENU, c, toolbox_POSITION_TOP_LEFT, &pos,
-                        id->this_obj, id->this_cmp);
-
-    return 1;
-}
-
-static int delcolbox_handler(bits event_code, toolbox_action *event,
-                             toolbox_block *id, void *handle)
-{
-    toolbox_delete_object(NONE, id->this_obj);
-
-    return 1;
-}
-
-static int colbox_handler(bits event_code, toolbox_action *event,
-                          toolbox_block *id, void *handle)
-{
-    colourdbox_action_colour_selected *colour
-                  =(colourdbox_action_colour_selected *)&event->flags;
-
-    palette.entries[colour_being_altered]=colour->colour;
-
-    palette_handler(0, 0);
-
-    update_window(&screen, 0, 0, 80, 24);
-    update_window(&choice, 0, 0, 80, 24);
-    update_window(&recall, 0, 0, 80, 24);
-    update_window(&mirror, 0, 0, 80, 24);
-
-    /* Force the over-clever refresh routine to actually replot
-       all characters */
-    if (colour_being_altered == TERM_DARK)
-    {
-        /* Must force redraw of background */
-        memset(screen.olddisp, 0, sizeof screen.olddisp);
-        memset(choice.olddisp, 0, sizeof choice.olddisp);
-        memset(recall.olddisp, 0, sizeof recall.olddisp);
-        memset(mirror.olddisp, 0, sizeof mirror.olddisp);
-    }
-    else
-    {
-        memset(screen.oldcol, 0, sizeof screen.oldcol);
-        memset(choice.oldcol, 0, sizeof choice.oldcol);
-        memset(recall.oldcol, 0, sizeof recall.oldcol);
-        memset(mirror.oldcol, 0, sizeof mirror.oldcol);
-    }
-
-    refresh_windows();
-
-    return 1;
-}
-
 static int defaultcols_handler(bits event_code, toolbox_action *event,
                                toolbox_block *id, void *handle)
 {
-    palette=default_palette;
+    memcpy(&palette, &default_palette, sizeof default_palette);
+    palette.entries[TERM_CURSOR]=0x00ffff00;
 
     palette_handler(0, 0);
 
@@ -944,6 +933,10 @@ static int defaultcols_handler(bits event_code, toolbox_action *event,
     memset(choice.olddisp, 0, sizeof choice.olddisp);
     memset(recall.olddisp, 0, sizeof recall.olddisp);
     memset(mirror.olddisp, 0, sizeof mirror.olddisp);
+    memset(screen.froshed, 1, sizeof screen.froshed);
+    memset(choice.froshed, 1, sizeof choice.froshed);
+    memset(recall.froshed, 1, sizeof recall.froshed);
+    memset(mirror.froshed, 1, sizeof mirror.froshed);
 
     refresh_windows();
 
@@ -962,7 +955,7 @@ static int palette_handler(wimp_message *message, void *handle)
     int col;
 
     os_read_mode_variable(os_CURRENT_MODE, os_MODEVAR_NCOLOUR, (int *) &ncolours);
-    for (col=0; col<17; col++)
+    for (col=0; col<256; col++)
         coltable[col]=colourtrans_return_colour_number(palette.entries[col]);
 
     return 1;
@@ -1043,6 +1036,10 @@ static int coloursmenu_handler(bits event_code, toolbox_action *event,
         memset(choice.oldcol, 0, sizeof choice.oldcol);
         memset(recall.oldcol, 0, sizeof recall.oldcol);
         memset(mirror.oldcol, 0, sizeof mirror.oldcol);
+        memset(screen.froshed, 1, sizeof screen.froshed);
+        memset(choice.froshed, 1, sizeof choice.froshed);
+        memset(recall.froshed, 1, sizeof recall.froshed);
+        memset(mirror.froshed, 1, sizeof mirror.froshed);
         refresh_windows();
         return 1;
     }
@@ -1331,8 +1328,6 @@ static int create_handler(bits event_code, toolbox_action *event,
                                         showcoloursmenu_handler, 0);
         event_register_toolbox_handler(id->this_obj, action_MENU_SELECTION,
                                         coloursmenu_handler, 0);
-        event_register_toolbox_handler(id->this_obj, action_MENU_SUB_MENU,
-                                        showcolbox_handler, 0);
         return 1;
     }
 
@@ -1371,8 +1366,8 @@ static void do_redraw(wimp_draw *redraw, int more, term_data *t, int blank)
     int nodither = solid_colours || ncolours > 255;
     static char olddef[10]={23,135};
     const static char blockdef[10]={23,135,255,255,255,255,255,255,255,255};
-    char **ch=t->t.scr->c;
-    byte **a=t->t.scr->a;
+    char **ch=t->t.old->c;
+    byte **a=t->t.old->a;
     char buf[80];
 
     /* Hackery - define character 135 (not normally defined) as a solid block */
@@ -1444,10 +1439,10 @@ static void do_redraw(wimp_draw *redraw, int more, term_data *t, int blank)
                     {
                         c=a[y][x];
                         if (nodither)
-                            os_set_colour(NONE, coltable[c&0x0F]);
+                            os_set_colour(NONE, coltable[c]);
                         else
-                            colourtrans_set_gcol(palette.entries[c&0x0F], colourtrans_USE_ECFS,
-                                                os_ACTION_OVERWRITE, 0);
+                            colourtrans_set_gcol(palette.entries[c], colourtrans_USE_ECFS,
+                                                 os_ACTION_OVERWRITE, 0);
                     }
 
                     /* Find how many characters have only changed colour */
@@ -1500,9 +1495,9 @@ static void do_redraw(wimp_draw *redraw, int more, term_data *t, int blank)
                 {
                     c=a[y][x];
                     if (nodither)
-                        os_set_colour(NONE, coltable[c&0x0F]);
+                        os_set_colour(NONE, coltable[c]);
                     else
-                        colourtrans_set_gcol(palette.entries[c&0x0F], colourtrans_USE_ECFS,
+                        colourtrans_set_gcol(palette.entries[c], colourtrans_USE_ECFS,
                                              os_ACTION_OVERWRITE, 0);
 
                     ox=x;
@@ -1594,8 +1589,8 @@ static void refresh_window(term_data *t)
 
     for (i=0; i<24; i++)
     {
-    	memcpy(t->olddisp[i], t->t.scr->c[i], 80);
-    	memcpy(t->oldcol[i], t->t.scr->a[i], 80);
+    	memcpy(t->olddisp[i], t->t.old->c[i], 80);
+    	memcpy(t->oldcol[i], t->t.old->a[i], 80);
     }
 
     memset(t->froshed, 0, sizeof t->froshed);
@@ -1615,19 +1610,39 @@ static void refresh_windows(void)
  *                                                           *
  *************************************************************/
 
+static void load_window_pos(FILE *f, term_data *t)
+{
+    wimp_open open;
+    int on;
+
+    fscanf(f, "%d %d %d %d %d %d %d", &on, &open.visible.x0, &open.visible.y0,
+                                           &open.visible.x1, &open.visible.y1,
+                                           &open.xscroll, &open.yscroll);
+    open.next=screen.wimp;
+    if (on)
+        toolbox_show_object(NONE, t->window, toolbox_POSITION_FULL,
+                            (toolbox_position *) &open.visible,
+                            toolbox_NULL_OBJECT, toolbox_NULL_COMPONENT);
+    else
+    {
+        open.w=t->wimp;
+        wimp_open_window(&open);
+        wimp_close_window(t->wimp);
+    }
+}
+
 static void show_windows(void)
 {
     FILE *f;
     toolbox_position pos;
-    int on, version, i;
-    wimp_open open;
+    int version, i;
 
     f=my_fopen("<Angband$ChoicesFile>", "r");
 
     if (f)
     {
         fscanf(f, "%d", &version);
-        if (version != 2 && version != 3)
+        if (version < 2 || version > 5)
         {
             my_fclose(f);
             f=0;
@@ -1639,7 +1654,6 @@ static void show_windows(void)
         /* No saved window positions - open only the playing window */
         toolbox_show_object(NONE, screen.window, toolbox_POSITION_DEFAULT, 0,
                             toolbox_NULL_OBJECT, toolbox_NULL_COMPONENT);
-
         return;
     }
 
@@ -1647,50 +1661,40 @@ static void show_windows(void)
     toolbox_show_object(NONE, screen.window, toolbox_POSITION_TOP_LEFT,
                         &pos, toolbox_NULL_OBJECT, toolbox_NULL_COMPONENT);
 
-    fscanf(f, "%d %d %d %d %d %d %d", &on, &open.visible.x0, &open.visible.y0,
-                                           &open.visible.x1, &open.visible.y1,
-                                           &open.xscroll, &open.yscroll);
-    open.next=screen.wimp;
-    if (on)
-        toolbox_show_object(NONE, recall.window, toolbox_POSITION_FULL,
-                            (toolbox_position *) &open.visible,
-                            toolbox_NULL_OBJECT, toolbox_NULL_COMPONENT);
-    else
-    {
-        open.w=recall.wimp;
-        wimp_open_window(&open);
-        wimp_close_window(recall.wimp);
-    }
-
-    fscanf(f, "%d %d %d %d %d %d %d", &on, &open.visible.x0, &open.visible.y0,
-                                           &open.visible.x1, &open.visible.y1,
-                                           &open.xscroll, &open.yscroll);
-    open.next=screen.wimp;
-    if (on)
-        toolbox_show_object(NONE, choice.window, toolbox_POSITION_FULL,
-                            (toolbox_position *) &open.visible,
-                            toolbox_NULL_OBJECT, toolbox_NULL_COMPONENT);
-    else
-    {
-        open.w=choice.wimp;
-        wimp_open_window(&open);
-        wimp_close_window(choice.wimp);
-    }
+    load_window_pos(f, &recall);
+    load_window_pos(f, &choice);
+    if (version >= 4)
+    	load_window_pos(f, &mirror);
 
     fscanf(f, "%d", &solid_colours);
 
-    if (version==3)
-        for (i=0; i<17; i++)
+    if (version>=3 && version<=4)
+    {
+        for (i=0; i<16; i++)
             fscanf(f, "%x", &palette.entries[i]);
 
+        fscanf(f, "%x", &palette.entries[TERM_CURSOR]);
+    }
+
     my_fclose(f);
+}
+
+static void save_window_pos(FILE *f, term_data *t, void *active)
+{
+    wimp_window_state state;
+
+    state.w=t->wimp;
+    wimp_get_window_state(&state);
+    fprintf(f, "%d %d %d %d %d %d %d\n", active ? 1 : 0,
+                                         state.visible.x0, state.visible.y0,
+                                         state.visible.x1, state.visible.y1,
+                                         state.xscroll, state.yscroll);
 }
 
 static void savechoices(void)
 {
     FILE *f;
     wimp_window_state state;
-    int i;
 
     f=my_fopen("<Angband$ChoicesFile>", "w");
 
@@ -1699,30 +1703,20 @@ static void savechoices(void)
         return;
 
     /* File format version */
-    fprintf(f, "3\n");
+    fprintf(f, "5\n");
 
     state.w=screen.wimp;
     wimp_get_window_state(&state);
     fprintf(f, "%d %d\n", state.visible.x0, state.visible.y1);
 
-    state.w=recall.wimp;
-    wimp_get_window_state(&state);
-    fprintf(f, "%d %d %d %d %d %d %d\n", term_recall ? 1 : 0,
-                                         state.visible.x0, state.visible.y0,
-                                         state.visible.x1, state.visible.y1,
-                                         state.xscroll, state.yscroll);
-
-    state.w=choice.wimp;
-    wimp_get_window_state(&state);
-    fprintf(f, "%d %d %d %d %d %d %d\n", term_choice ? 1 : 0,
-                                         state.visible.x0, state.visible.y0,
-                                         state.visible.x1, state.visible.y1,
-                                         state.xscroll, state.yscroll);
+    save_window_pos(f, &recall, term_recall);
+    save_window_pos(f, &choice, term_choice);
+    save_window_pos(f, &mirror, term_mirror);
 
     fprintf(f, "%d\n", solid_colours);
 
-    for (i=0; i<17; i++)
-        fprintf(f, "%08X\n", palette.entries[i]);
+    /*for (i=0; i<17; i++)
+        fprintf(f, "%08X\n", palette.entries[i]);*/
 
     my_fclose(f);
 }
@@ -1753,6 +1747,8 @@ static void init_stuff(void)
 
 int main(int argc, char *argv[])
 {
+    int i;
+
     signal(SIGOSERROR, oserror_handler);
 
     quit_aux = quit_hook;
@@ -1767,6 +1763,14 @@ int main(int argc, char *argv[])
 
     /* Initialise the Toolbox, and load user preferences */
     init_acn();
+
+    /* Set up the colour table */
+    for (i=0; i<256; i++)
+    {
+        colour_table[i][1] = (palette.entries[i] >> 8) & 0xFF;
+        colour_table[i][2] = (palette.entries[i] >> 16) & 0xFF;
+        colour_table[i][3] = palette.entries[i] >> 24;
+    }
 
     /* Catch nasty signals */
     signals_init();
@@ -1851,7 +1855,7 @@ static errr init_acn(void)
                                           0};
 
     const
-    static toolbox_ACTION_LIST(29) action_nos={action_ERROR,
+    static toolbox_ACTION_LIST(27) action_nos={action_ERROR,
                                                action_OBJECT_AUTO_CREATED,
                                                action_MENU_ABOUT_TO_BE_SHOWN,
                                                action_MENU_SELECTION,
@@ -1862,8 +1866,6 @@ static errr init_acn(void)
                                                action_SAVE_AS_SAVE_TO_FILE,
                                                action_SAVE_AS_SAVE_COMPLETED,
                                                action_SAVE_AS_DIALOGUE_COMPLETED,
-                                               action_COLOUR_DBOX_DIALOGUE_COMPLETED,
-                                               action_COLOUR_DBOX_COLOUR_SELECTED,
     	    	    	    	    	       action_PROG_INFO_ABOUT_TO_BE_SHOWN,
                                                action_QUIT_QUIT,
                                                action_QUIT_DIALOGUE_COMPLETED,
@@ -1893,7 +1895,8 @@ static errr init_acn(void)
     mirror.window=toolbox_create_object(NONE, (toolbox_id)"Mirror");
     mirror.wimp=window_get_wimp_handle(NONE, mirror.window);
 
-    palette=default_palette;
+    memcpy(&palette, &default_palette, sizeof default_palette);
+    palette.entries[TERM_CURSOR]=0x00ffff00;
 
     show_windows();
 
@@ -1956,12 +1959,6 @@ static errr init_acn(void)
     if (!r)
         r=event_register_toolbox_handler(event_ANY, action_SAVE_AS_SAVE_COMPLETED,
                                                     savecomplete_handler, 0);
-    if (!r)
-        r=event_register_toolbox_handler(event_ANY, action_COLOUR_DBOX_COLOUR_SELECTED,
-                                                    colbox_handler, 0);
-    if (!r)
-        r=event_register_toolbox_handler(event_ANY, action_COLOUR_DBOX_DIALOGUE_COMPLETED,
-                                                    delcolbox_handler, 0);
     if (!r)
     	r=event_register_toolbox_handler(event_ANY, action_PROG_INFO_ABOUT_TO_BE_SHOWN,
     	                                    	    proginfo_handler, 0);

@@ -361,10 +361,10 @@ static errr Term_wipe(int x, int y, int n)
  * Draw a "picture" at "(x,y)".
  * The input is assumed to be "valid".
  */
-static errr Term_pict(int x, int y, int p)
+static errr Term_pict(int x, int y, byte a, char c)
 {
     if (!Term->pict_hook) return (-1);
-    return ((*Term->pict_hook)(x, y, p));
+    return ((*Term->pict_hook)(x, y, a, c));
 }
 
 /*

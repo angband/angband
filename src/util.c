@@ -22,6 +22,8 @@ void delay(int t)
 
 #ifdef AMIGA
 
+#include <proto/dos.h>
+
 /*
  * Version of "delay()" for AMIGA
  */
@@ -290,7 +292,7 @@ static bool parse_path(cptr file, char *exp)
 
 
 /*
- * XXX XXX XXX Hack -- replacement for "fopen()"
+ * Hack -- replacement for "fopen()"
  */
 FILE *my_fopen(cptr file, cptr mode)
 {
@@ -305,7 +307,88 @@ FILE *my_fopen(cptr file, cptr mode)
 
 
 /*
- * XXX XXX XXX Hack -- replacement for "fclose()"
+ * Hack -- replacement for "fgets()"
+ *
+ * Read a string, without a newline, to a file
+ *
+ * Process tabs, strip internal non-printables
+ */
+errr my_fgets(FILE *fff, char *buf, huge n)
+{
+    int i = 0;
+
+    char *s;
+
+    char tmp[1024];
+
+    /* Read a line */
+    if (fgets(tmp, 1024, fff)) {
+
+        /* Convert weirdness */
+        for (s = tmp; *s; s++) {
+
+            /* Handle newline */
+            if (*s == '\n') {
+
+                /* Terminate */
+                buf[i] = '\0';
+
+                /* Success */
+                return (0);
+            }
+
+            /* Handle tabs */
+            else if (*s == '\t') {
+
+                /* Hack -- require room */
+                if (i + 8 >= n) break;
+                
+                /* Append a space */
+                buf[i++] = ' ';
+
+                /* Append some more spaces */
+                while (!(i % 8)) buf[i++] = ' ';
+            }
+            
+            /* Handle printables */
+            else if (isprint(*s)) {
+
+                /* Copy */
+                buf[i++] = *s;
+
+                /* Check length */
+                if (i >= n) break;
+            }
+        }
+    }
+
+    /* Nothing */
+    buf[0] = '\0';
+
+    /* Failure */
+    return (1);
+}
+
+
+/*
+ * Hack -- replacement for "fputs()"
+ *
+ * Dump a string, plus a newline, to a file
+ *
+ * XXX XXX XXX Process internal weirdness?
+ */
+errr my_fputs(FILE *fff, cptr buf, huge n)
+{
+    /* Dump, ignore errors */
+    (void)fprintf(fff, "%s\n", buf);
+
+    /* Success */
+    return (0);
+}
+
+
+/*
+ * Hack -- replacement for "fclose()"
  */
 errr my_fclose(FILE *fff)
 {

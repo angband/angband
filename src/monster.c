@@ -295,7 +295,7 @@ s16b m_pop(void)
         return (i);
     }
 
-    /* XXX XXX XXX Warning */
+    /* Warn the player */
     if (character_dungeon) msg_print("Too many monsters!");
 
     /* Try not to crash */
@@ -348,7 +348,17 @@ s16b get_mon_num(int level)
     /* Hack -- sometimes "boost" level */
     if (level > 0) {
     
-        /* Occasionally Make a Nasty Monster */
+        /* Occasional "nasty" monster */
+        if (rand_int(NASTY_MON) == 0) {
+
+            /* Pick a level bonus */
+            int d = level / 4 + 2;
+
+            /* Boost the level */
+            level += ((d < 5) ? d : 5);
+        }
+
+        /* Occasional "nasty" monster */
         if (rand_int(NASTY_MON) == 0) {
 
             /* Pick a level bonus */
@@ -707,6 +717,8 @@ void lore_treasure(int m_idx, int num_item, int num_gold)
  * are far away and were invisible last turn.
  *
  * Note the optimized inline use of the "distance()" function.
+ *
+ * Note that only monsters on the current panel can be "visible".
  */
 void update_mon(int m_idx, bool dist)
 {
@@ -957,16 +969,24 @@ static bool place_monster_one(int y, int x, int r_idx, bool slp)
     /* Powerful monster */
     if (r_ptr->level > dun_level) {
 
-        /* Uniques get rating based on "out of depth" amount */
+        /* Unique monsters */
         if (r_ptr->flags1 & RF1_UNIQUE) {
+
+            /* Message for cheaters */
             if (cheat_hear) msg_format("Deep Unique (%s).", name);
-            rating += (r_ptr->level - dun_level);
+
+            /* Boost rating by twice delta-depth */
+            rating += (r_ptr->level - dun_level) * 2;
         }
 
-        /* Normal monsters are worth "half" as much */
+        /* Normal monsters */
         else {
+
+            /* Message for cheaters */
             if (cheat_hear) msg_format("Deep Monster (%s).", name);
-            rating += (r_ptr->level - dun_level) / 2;
+
+            /* Boost rating by delta-depth */
+            rating += (r_ptr->level - dun_level);
         }
     }
 
@@ -1350,7 +1370,7 @@ static void ghost_blow(int i, int m, int e, int d, int s)
  *
  * Possible change: Lose 4 ghosts, lose 1 vampire lord
  */
-static void set_ghost(cptr pn)
+static void alloc_ghost_aux(cptr pn)
 {
     int i;
 
@@ -1670,17 +1690,14 @@ static void set_ghost(cptr pn)
  *
  * Hack -- this routine must also "prepare" the "ghost" info
  *
- * XXX XXX XXX This will change for Angband 2.8.0.
+ * We use only the "name" from the "ghost" file.
  *
- * Although we extract the "name", "hitpoints, "race", "class" of
- * the "dead player" from the "bone" file, only the "name" is used.
+ * XXX XXX XXX This will change for Angband 2.8.0.
  */
 bool alloc_ghost(void)
 {
     int			y, x;
     
-    int			hp, gr, gc;
-
     cave_type		*c_ptr;
     monster_type	*m_ptr;
 
@@ -1690,8 +1707,9 @@ bool alloc_ghost(void)
 
     bool		err = FALSE;
 
-    char		name[100];
-    char		tmp[1024];
+    char		name[128];
+    
+    char		path[1024];
 
 
     /* Hack -- no ghosts in the town */
@@ -1710,22 +1728,22 @@ bool alloc_ghost(void)
 
 
     /* XXX XXX XXX Choose a bones file */
-    sprintf(tmp, "%sbone.%03d", ANGBAND_DIR_BONE, dun_level);
+    sprintf(path, "%sbone.%03d", ANGBAND_DIR_BONE, dun_level);
 
     /* Open the bones file */
-    fp = my_fopen(tmp, "r");
+    fp = my_fopen(path, "r");
 
     /* No bones file to use */
     if (!fp) return (FALSE);
 
-    /* XXX XXX XXX Scan the file */
-    err = (fscanf(fp, "%[^\n]\n%d\n%d\n%d", name, &hp, &gr, &gc) != 4);
+    /* Read the ghost name or fail */
+    if (my_fgets(fp, name, 128)) err = TRUE;
 
     /* Close the file */
     my_fclose(fp);
 
     /* Delete the bones file */
-    remove(tmp);
+    remove(path);
 
     /* Catch errors */
     if (err) {
@@ -1735,7 +1753,7 @@ bool alloc_ghost(void)
 
 
     /* Hack -- Set up the ghost */
-    set_ghost(name);
+    alloc_ghost_aux(name);
 
 
     /* Note for wizard (special ghost name) */
@@ -2891,7 +2909,7 @@ static void process_monster(int m_idx)
                     msg_print("You hear a door burst open!");
                         
                     /* Disturb (sometimes) */
-                    if (disturb_other) disturb(1, 0);
+                    if (disturb_other) disturb(0, 0);
 
                     /* The door was bashed open */
                     did_bash_door = TRUE;

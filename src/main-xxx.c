@@ -643,9 +643,6 @@ void main(void)
     /* Initialize some arrays */
     init_some_arrays();
 
-    /* No name (yet) */
-    strcpy(player_name, "");
-
     /* XXX XXX XXX Hack -- assume wizard permissions */
     can_be_wizard = TRUE;
 

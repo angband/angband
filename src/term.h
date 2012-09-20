@@ -88,13 +88,15 @@ struct term_win {
  *	- Hook for nuke-ing the term
  *
  *	- Hook for user actions
+ *
  *	- Hook for extra actions
  *
  *	- Hook for placing the cursor
  *
  *	- Hook for drawing some blank spaces
  *
- *	- Hook for drawing a special picture
+ *	- Hook for drawing a single character
+ *
  *	- Hook for drawing a string of characters
  */
 
@@ -125,13 +127,15 @@ struct term {
     void (*nuke_hook)(term *t);
 
     errr (*user_hook)(int n);
+
     errr (*xtra_hook)(int n, int v);
 
     errr (*curs_hook)(int x, int y);
     
     errr (*wipe_hook)(int x, int y, int n);
 
-    errr (*pict_hook)(int x, int y, int p);
+    errr (*pict_hook)(int x, int y, byte a, char c);
+
     errr (*text_hook)(int x, int y, int n, byte a, cptr s);
 };
 
@@ -170,7 +174,7 @@ struct term {
 #define TERM_XTRA_SOUND 9	/* Make a sound (optional) */
 #define TERM_XTRA_ALIVE 10	/* Change the "hard" level (optional) */
 #define TERM_XTRA_LEVEL 11	/* Change the "soft" level (optional) */
-
+#define TERM_XTRA_REACT 12	/* React to global changes (optional) */
 
 
 /**** Available Variables ****/

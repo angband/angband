@@ -181,7 +181,6 @@ extern byte my_immune_acid;	/* Immunity to acid		*/
 extern byte my_immune_elec;	/* Immunity to lightning	*/
 extern byte my_immune_fire;	/* Immunity to fire		*/
 extern byte my_immune_cold;	/* Immunity to cold		*/
-extern byte my_immune_pois;	/* Immunity to poison		*/
 
 extern byte my_resist_acid;	/* Resist acid		*/
 extern byte my_resist_elec;	/* Resist lightning	*/

@@ -1,6 +1,6 @@
-This is the README file for Angband 2.7.9 (v3) (1/7/96)
+This is the README file for Angband 2.7.9 (v4) (2/22/96)
 
-Angband 2.7.9v3 is a "bug-fix" version, fixing some bugs in Angband 2.7.9v2,
+Angband 2.7.9v4 is a "bug-fix" version, fixing some bugs in Angband 2.7.9v4,
 and providing a few new useful features, and, as always, optimizing stuff.
 
 See the Official Angband Home Page "http://www.voicenet.com/~benh/Angband/"
@@ -50,8 +50,7 @@ savefiles.  Make sure you keep all your savefiles in the proper place,
 and if you load a savefile from the wrong place, note that the game
 may decide to re-save your savefile in the proper place when you quit.
 
-The Windows version is currently broken, but you may obtain the broken
-pieces from the ftp site in the "/angband/Windows" directory.
+The Windows version is currently broken, but it is almost fixed.
 
 
 === Upgrading from older versions or other platforms ===
@@ -141,28 +140,30 @@ The files in this directory have filenames of the form "bone.NNN" where
 about the dead player, currently, one line each for the player name,
 maximum hitpoints, race, and class.  These files are probably portable,
 and are probably compatible with older bone files, if those files are
-renamed, and a final newline is added for compatibility.
+renamed, and a final newline is added for compatibility.  Actually,
+only the "player name" from these files is actually used.
 
 
 === Directory "lib/data" ===
 
 The "lib/data" directory contains various special binary data files.
 
-The files 'k_info.raw', 'a_info.raw', 'e_info.raw', and 'r_info.raw',
-are binary image files constructed by parsing the ascii template files
-in "lib/edit", described below.  These files are required, but can be
-created by the game if the "lib/edit" directory contains the proper
-files, and if the game was compiled to allow this creation.
+The files 'f_info.raw', 'k_info.raw', 'a_info.raw', 'e_info.raw', 'r_info.raw',
+and 'v_info.raw' are binary image files constructed by parsing the ascii
+template files in "lib/edit", described below.  These files are required,
+but can be created by the game if the "lib/edit" directory contains the
+proper files, and if the game was compiled to allow this creation.
 
 
 === Directory "lib/edit" ===
 
 The "lib/edit" directory contains various special ascii data files.
 
-The files 'k_info.txt', 'a_info.txt', 'e_info.txt', and 'r_info.txt',
-are ascii template files used to construct the binary image files
-in "lib/data", described below.  These files describe the "object kind",
-"artifact", "ego-item", and "monster race" information, respectively.
+The files 'f_info.txt', 'k_info.txt', 'a_info.txt', 'e_info.txt', 'r_info.txt',
+and 'v_info.txt' are ascii template files used to construct the binary image
+files in "lib/data", described above.  These files describe the "terrain
+features", "object kinds", "artifacts", "ego-items", "monster races", and
+"dungeon vaults", respectively.
 
 The ascii template files are easier to edit than hard-coded arrays, and also
 prevent compilation errors on some machines, and also shrink the size of the
@@ -182,7 +183,12 @@ of some of the people who have been responsible for previous versions of
 Angband.  You may edit this file (slightly) to include local "site specific"
 information such as who compiled the local executable.  You should refer the
 user to a special "online help" file, if necessary, that describes any local
-modifications in detail.  Angband only reads the first 20 lines of this file.
+modifications in detail.  The first two lines of this file should be blank,
+and only the next 20 lines should contain information.
+
+The 'dead.txt' file is displayed to the user when the player dies.  It
+contains a picture of a tombstone which is filled in with interesting
+information about the dead player.  You should not edit this file.
 
 The optional file 'wizards.txt' may be used to specify which users may enter
 'wizard' mode.  A missing file provides no restrictions, and an empty file

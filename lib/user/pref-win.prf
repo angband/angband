@@ -1,0 +1,8 @@
+# File: pref-win.prf
+
+#
+# Simply include the "pref-ibm.prf" file
+#
+
+%:pref-ibm.prf
+

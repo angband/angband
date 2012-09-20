@@ -314,6 +314,12 @@ void monster_death(int m_idx)
  * As always, the "ghost" processing is a total hack.
  *
  * Hack -- we "delay" fear messages by passing around a "fear" flag.
+ *
+ * XXX XXX XXX Consider decreasing monster experience over time, say,
+ * by using "(m_exp * m_lev * (m_lev)) / (p_lev * (m_lev + n_killed))"
+ * instead of simply "(m_exp * m_lev) / (p_lev)", to make the first
+ * monster worth more than subsequent monsters.  This would also need
+ * to induce changes in the monster recall code.
  */
 bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note)
 {
@@ -792,6 +798,8 @@ static int test_hit_fire(int chance, int ac, int vis)
 
 /*
  * Decreases players hit points and sets death flag if necessary
+ *
+ * XXX XXX XXX Invulnerability needs to be changed into a "shield"
  */
 void take_hit(int damage, cptr hit_from)
 {
@@ -800,6 +808,9 @@ void take_hit(int damage, cptr hit_from)
     int warning = (p_ptr->mhp * hitpoint_warn / 10);
 
     
+    /* Disturb */
+    disturb(1, 0);
+
     /* Mega-Hack -- Apply "invulnerability" */
     if (p_ptr->invuln && (damage < 9000)) return;
 
@@ -815,7 +826,7 @@ void take_hit(int damage, cptr hit_from)
         /* Cheat -- avoid death */
         if (wizard || cheat_live) {
         
-            /* Allow cheating */
+            /* Hack -- cheat death */
             if (!get_check("Die? ")) {
 
                 /* Mark savefile */
@@ -824,9 +835,35 @@ void take_hit(int damage, cptr hit_from)
                 /* Message */
                 msg_print("You invoke wizard mode and cheat death.");
 
-                /* Restore hitpoints */
+                /* Restore hit points */
                 p_ptr->chp = p_ptr->mhp;
                 p_ptr->chp_frac = 0;
+
+                /* Restore spell points */
+                p_ptr->csp = p_ptr->msp;
+                p_ptr->csp_frac = 0;
+
+                /* Hack -- Healing */
+                (void)set_blind(0);
+                (void)set_confused(0);
+                (void)set_poisoned(0);
+                (void)set_afraid(0);
+                (void)set_paralyzed(0);
+                (void)set_image(0);
+                (void)set_stun(0);
+                (void)set_cut(0);
+
+                /* Hack -- Prevent starvation */
+                (void)set_food(PY_FOOD_MAX - 1);
+
+                /* Hack -- Prevent recall */
+                p_ptr->word_recall = 0;
+                
+                /* Teleport to town */
+                new_level_flag = TRUE;
+
+                /* Go to town */
+                dun_level = 0;
                 
                 /* Done */
                 return;
@@ -882,11 +919,8 @@ void take_hit(int damage, cptr hit_from)
  * Note that "flasks of oil" do NOT do fire damage, although they
  * certainly could be made to do so.  XXX XXX
  *
- * Note that most brands are x3, except Acid (x2) and Elec (x5).
- *
- * Note that most slays are x3, except Animal (x2) and Evil (x2).
- *
- * Note that kill dragon ("execute dragon") is x5.
+ * Note that most brands and slays are x3, except Slay Animal (x2),
+ * Slay Evil (x2), and Kill dragon (x5).
  */
 static int tot_dam_aux(inven_type *i_ptr, int tdam, monster_type *m_ptr)
 {
@@ -914,72 +948,81 @@ static int tot_dam_aux(inven_type *i_ptr, int tdam, monster_type *m_ptr)
         if ((f1 & TR1_SLAY_ANIMAL) &&
             (r_ptr->flags3 & RF3_ANIMAL)) {
 
-            if (mult < 2) mult = 2;
             if (m_ptr->ml) r_ptr->r_flags3 |= RF3_ANIMAL;
+
+            if (mult < 2) mult = 2;
         }
 
         /* Slay Evil */
         if ((f1 & TR1_SLAY_EVIL) &&
             (r_ptr->flags3 & RF3_EVIL)) {
 
-            if (mult < 2) mult = 2;
             if (m_ptr->ml) r_ptr->r_flags3 |= RF3_EVIL;
+            
+            if (mult < 2) mult = 2;
         }
 
         /* Slay Undead */
         if ((f1 & TR1_SLAY_UNDEAD) &&
             (r_ptr->flags3 & RF3_UNDEAD)) {
 
-            if (mult < 3) mult = 3;
             if (m_ptr->ml) r_ptr->r_flags3 |= RF3_UNDEAD;
+            
+            if (mult < 3) mult = 3;
         }
 
         /* Slay Demon */
         if ((f1 & TR1_SLAY_DEMON) &&
             (r_ptr->flags3 & RF3_DEMON)) {
 
-            if (mult < 3) mult = 3;
             if (m_ptr->ml) r_ptr->r_flags3 |= RF3_DEMON;
+            
+            if (mult < 3) mult = 3;
         }
 
         /* Slay Orc */
         if ((f1 & TR1_SLAY_ORC) &&
             (r_ptr->flags3 & RF3_ORC)) {
 
-            if (mult < 3) mult = 3;
             if (m_ptr->ml) r_ptr->r_flags3 |= RF3_ORC;
+            
+            if (mult < 3) mult = 3;
         }
 
         /* Slay Troll */
         if ((f1 & TR1_SLAY_TROLL) &&
             (r_ptr->flags3 & RF3_TROLL)) {
 
-            if (mult < 3) mult = 3;
             if (m_ptr->ml) r_ptr->r_flags3 |= RF3_TROLL;
+            
+            if (mult < 3) mult = 3;
         }
 
         /* Slay Giant */
         if ((f1 & TR1_SLAY_GIANT) &&
             (r_ptr->flags3 & RF3_GIANT)) {
 
-            if (mult < 3) mult = 3;
             if (m_ptr->ml) r_ptr->r_flags3 |= RF3_GIANT;
+            
+            if (mult < 3) mult = 3;
         }
 
         /* Slay Dragon  */
         if ((f1 & TR1_SLAY_DRAGON) &&
             (r_ptr->flags3 & RF3_DRAGON)) {
 
-            if (mult < 3) mult = 3;
             if (m_ptr->ml) r_ptr->r_flags3 |= RF3_DRAGON;
+            
+            if (mult < 3) mult = 3;
         }
 
         /* Execute Dragon */
         if ((f1 & TR1_KILL_DRAGON) &&
             (r_ptr->flags3 & RF3_DRAGON)) {
 
-            if (mult < 5) mult = 5;
             if (m_ptr->ml) r_ptr->r_flags3 |= RF3_DRAGON;
+            
+            if (mult < 5) mult = 5;
         }
 
 
@@ -993,7 +1036,7 @@ static int tot_dam_aux(inven_type *i_ptr, int tdam, monster_type *m_ptr)
 
             /* Otherwise, take the damage */
             else {
-                if (mult < 2) mult = 2;
+                if (mult < 3) mult = 3;
             }
         }
 
@@ -1007,7 +1050,7 @@ static int tot_dam_aux(inven_type *i_ptr, int tdam, monster_type *m_ptr)
 
             /* Otherwise, take the damage */
             else {
-                if (mult < 5) mult = 5;
+                if (mult < 3) mult = 3;
             }
         }
 
@@ -1247,6 +1290,65 @@ bool twall(int y, int x)
 
 
 
+/*
+ * Sorting hook -- comp function -- by "distance to player"
+ *
+ * We use "u" and "v" to point to arrays of "x" and "y" positions,
+ * and sort the arrays by double-distance to the player.
+ */
+bool ang_sort_comp_distance(vptr u, vptr v, int a, int b)
+{
+    byte *x = (byte*)(u);
+    byte *y = (byte*)(v);
+
+    int da, db, kx, ky;
+
+    /* Absolute distance components */
+    kx = x[a]; kx -= px; kx = ABS(kx);
+    ky = y[a]; ky -= py; ky = ABS(ky);
+
+    /* Approximate Double Distance to the first point */
+    da = ((kx > ky) ? (kx + kx + ky) : (ky + ky + kx));
+
+    /* Absolute distance components */
+    kx = x[b]; kx -= px; kx = ABS(kx);
+    ky = y[b]; ky -= py; ky = ABS(ky);
+
+    /* Approximate Double Distance to the first point */
+    db = ((kx > ky) ? (kx + kx + ky) : (ky + ky + kx));
+
+    /* Compare the distances */
+    return (da <= db);
+}
+
+
+/*
+ * Sorting hook -- swap function -- by "distance to player"
+ *
+ * We use "u" and "v" to point to arrays of "x" and "y" positions,
+ * and sort the arrays by distance to the player.
+ */
+void ang_sort_swap_distance(vptr u, vptr v, int a, int b)
+{
+    byte *x = (byte*)(u);
+    byte *y = (byte*)(v);
+
+    byte temp;
+    
+    /* Swap "x" */
+    temp = x[a];
+    x[a] = x[b];
+    x[b] = temp;
+    
+    /* Swap "y" */
+    temp = y[a];
+    y[a] = y[b];
+    y[b] = temp;
+}
+
+
+
+
 /*** Targetting Code ***/
 
 
@@ -1255,8 +1357,9 @@ bool twall(int y, int x)
  *
  * The player can target any location, or any "target-able" monster.
  *
- * Currently, a monster is "target_able" if it is visible, and known
- * not to be a hallucination.  It does NOT have to be "projectable()".
+ * Currently, a monster is "target_able" if it is visible, and if
+ * the player can hit it with a projection, and the player is not
+ * hallucinating.  This allows use of "use closest target" macros.
  *
  * Future versions may restrict the ability to target "trappers"
  * and "mimics", but the semantics is a little bit weird.
@@ -1271,8 +1374,11 @@ bool target_able(int m_idx)
 {
     monster_type *m_ptr = &m_list[m_idx];
 
-    /* Monster MUST be visible */
+    /* Monster must be visible */
     if (!m_ptr->ml) return (FALSE);
+
+    /* Monster must be projectable */
+    if (!projectable(py, px, m_ptr->fy, m_ptr->fx)) return (FALSE);
 
     /* Hack -- no targeting hallucinations */
     if (p_ptr->image) return (FALSE);
@@ -1317,57 +1423,6 @@ bool target_okay()
     /* Assume no target */
     return (FALSE);
 }
-
-
-
-/*
- * Sorting hook -- comp function -- see below
- *
- * We use "u" and "v" to point to arrays of "x" and "y" positions,
- * and sort the arrays by distance to the player.
- */
-static bool ang_sort_comp_hook(vptr u, vptr v, int a, int b)
-{
-    byte *x = (byte*)(u);
-    byte *y = (byte*)(v);
-
-    int da, db;
-
-    /* Distance to first point */
-    da = distance(px, py, x[a], y[a]);
-        
-    /* Distance to second point */
-    db = distance(px, py, x[b], y[b]);
-
-    /* Compare the distances */
-    return (da <= db);
-}
-
-
-/*
- * Sorting hook -- swap function -- see below
- *
- * We use "u" and "v" to point to arrays of "x" and "y" positions,
- * and sort the arrays by distance to the player.
- */
-static void ang_sort_swap_hook(vptr u, vptr v, int a, int b)
-{
-    byte *x = (byte*)(u);
-    byte *y = (byte*)(v);
-
-    byte temp;
-    
-    /* Swap "x" */
-    temp = x[a];
-    x[a] = x[b];
-    x[b] = temp;
-    
-    /* Swap "y" */
-    temp = y[a];
-    y[a] = y[b];
-    y[b] = temp;
-}
-
 
 
 
@@ -1427,7 +1482,8 @@ s16b target_pick(int y1, int x1, int dy, int dx)
  * Set a new target.  This code can be called from "get_aim_dir()"
  *
  * The target must be on the current panel.  Consider the use of
- * "panel_bounds()" to allow "off-panel" targets.  XXX XXX XXX
+ * "panel_bounds()" to allow "off-panel" targets, perhaps by using
+ * some form of "scrolling" the map around the cursor.  XXX XXX XXX
  *
  * That is, consider the possibility of "auto-scrolling" the screen
  * while the cursor moves around.  This may require changes in the
@@ -1489,16 +1545,15 @@ bool target_set()
     }
 
     /* Set the sort hooks */
-    ang_sort_comp = ang_sort_comp_hook;
-    ang_sort_swap = ang_sort_swap_hook;
+    ang_sort_comp = ang_sort_comp_distance;
+    ang_sort_swap = ang_sort_swap_distance;
     
     /* Sort the positions */
     ang_sort(temp_x, temp_y, temp_n);
 
     
-    /* Choose "closest" monster */
-    m = target_pick(py, px, 0, 0);
-
+    /* Start near the player */
+    m = 0;
 
     /* Interact */
     while (!done) {
@@ -1871,6 +1926,49 @@ bool get_rep_dir(int *dp)
 
 
 
+/*
+ * Hack -- instantiate a trap
+ *
+ * XXX XXX XXX This routine should be redone to reflect trap "level".
+ * That is, it does not make sense to have spiked pits at 50 feet.
+ * Actually, it is not this routine, but the "trap instantiation"
+ * code, which should also check for "trap doors" on quest levels.
+ */
+void pick_trap(int y, int x)
+{
+    int f;
+
+    cave_type *c_ptr = &cave[y][x];
+
+    /* Paranoia -- Verify terrain */
+    if ((c_ptr->feat & 0x3F) != 0x02) return;
+    
+    /* Pick a trap */
+    while (1) {
+
+        /* Hack -- pick a trap */
+        f = 0x10 + rand_int(16);
+
+        /* Hack -- no trap doors on quest levels */
+        if ((f == 0x10) && is_quest(dun_level)) continue;
+
+        /* Hack -- no trap doors on the deepest level */
+        if ((f == 0x10) && (dun_level >= MAX_DEPTH-1)) continue;
+
+        /* Done */
+        break;
+    }
+    
+    /* Activate the trap */
+    c_ptr->feat = ((c_ptr->feat & ~0x3F) | f);
+
+    /* Notice */
+    note_spot(y, x);
+
+    /* Redraw */
+    lite_spot(y, x);
+}
+
 
 
 
@@ -1901,11 +1999,11 @@ void search_off(void)
     /* Clear the searching flag */
     p_ptr->searching = FALSE;
 
-    /* Update stuff */
+    /* Recalculate bonuses */
     p_ptr->update |= (PU_BONUS);
 
-    /* Redraw stuff */
-    p_ptr->redraw |= (PR_STATE | PR_SPEED);
+    /* Redraw the state */
+    p_ptr->redraw |= (PR_STATE);
 }
 
 
@@ -1943,17 +2041,11 @@ void search(void)
                 /* Invisible trap */
                 if ((c_ptr->feat & 0x3F) == 0x02) {
 
+                    /* Pick a trap */
+                    pick_trap(y, x);
+
                     /* Message */
                     msg_print("You have found a trap.");
-
-                    /* Pick a trap XXX XXX XXX */
-                    c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x10) + rand_int(16);
-
-                    /* Notice */
-                    note_spot(y, x);
-
-                    /* Redraw */
-                    lite_spot(y, x);
 
                     /* Disturb */
                     disturb(0, 0);
@@ -2199,8 +2291,6 @@ static int check_hit(int power)
 
 /*
  * Handle player hitting a real trap
- *
- * We use the old location to back away from rubble traps
  */
 static void hit_trap(void)
 {
@@ -2216,19 +2306,6 @@ static void hit_trap(void)
 
     /* Get the cave grid */
     c_ptr = &cave[py][px];
-
-    /* Pick a trap if needed */
-    if ((c_ptr->feat & 0x3F) == 0x02) {
-
-        /* Pick a trap XXX XXX XXX */
-        c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x10) + rand_int(16);
-
-        /* Notice */
-        note_spot(py, px);
-
-        /* Redraw */
-        lite_spot(py, px);
-    }
 
     /* Examine the trap sub-val */
     switch (c_ptr->feat & 0x3F) {
@@ -2275,8 +2352,9 @@ static void hit_trap(void)
             if (rand_int(100) < 50) {
 
                 msg_print("You are impaled!");
+
                 dam = dam * 2;
-                cut_player(randint(dam));
+                (void)set_cut(p_ptr->cut + randint(dam));
             }
 
             /* Take the damage */
@@ -2304,11 +2382,9 @@ static void hit_trap(void)
                 msg_print("You are impaled on poisonous spikes!");
 
                 dam = dam * 2;
-                cut_player(randint(dam));
+                (void)set_cut(p_ptr->cut + randint(dam));
 
-                if (p_ptr->immune_pois ||
-                    p_ptr->resist_pois ||
-                    p_ptr->oppose_pois) {
+                if (p_ptr->resist_pois || p_ptr->oppose_pois) {
                     msg_print("The poison does not affect you!");
                 }
 
@@ -2418,9 +2494,7 @@ static void hit_trap(void)
 
       case 0x1E:
         msg_print("A pungent green gas surrounds you!");
-        if (!p_ptr->resist_pois &&
-            !p_ptr->oppose_pois &&
-            !p_ptr->immune_pois) {
+        if (!p_ptr->resist_pois && !p_ptr->oppose_pois) {
             (void)set_poisoned(p_ptr->poisoned + rand_int(20) + 10);
         }
         break;
@@ -2578,16 +2652,22 @@ void move_player(int dir, int do_pickup)
             store_enter(c_ptr->feat & 0x07);
         }
 
-        /* Set off an invisible trap */
+        /* Discover invisible traps */
         else if ((c_ptr->feat & 0x3F) == 0x02) {
-        
+
             /* Disturb */
             disturb(0, 0);
 
-            /* Hit the trap XXX XXX XXX */            
+            /* Message */
+            msg_print("You found a trap!");
+
+            /* Pick a trap */
+            pick_trap(py, px);
+
+            /* Hit the trap */            
             hit_trap();
         }
-        
+
         /* Set off an visible trap */
         else if (((c_ptr->feat & 0x3F) >= 0x10) &&
                  ((c_ptr->feat & 0x3F) <= 0x1F)) {
@@ -2595,31 +2675,15 @@ void move_player(int dir, int do_pickup)
             /* Disturb */
             disturb(0, 0);
 
-            /* Hit the trap XXX XXX XXX */            
+            /* Hit the trap */            
             hit_trap();
         }        
     }
 }
 
 
-
 /*
- * Determine if a player "knows" about a grid
- *
- * Line 1 -- player has memorized the grid
- * Line 2 -- player can see the grid
- *
- * XXX XXX XXX This function may be "incorrect"
- *
- * The "running algorythm" needs to be verified and optimized.
- */
-#define test_lite_bold(Y,X) \
-    ((cave[Y][X].feat & CAVE_MARK) || \
-     (player_can_see_bold(Y,X)))
-
-
-/*
- * Hack -- Do we see a wall?  Used in running.		-CJS-
+ * Hack -- Check for a "motion blocker" (see below)
  */
 static int see_wall(int dir, int y, int x)
 {
@@ -2627,21 +2691,22 @@ static int see_wall(int dir, int y, int x)
     y += ddy[dir];
     x += ddx[dir];
 
-    /* XXX XXX XXX Illegal grids are blank */
+    /* Illegal grids are blank */
     if (!in_bounds2(y, x)) return (FALSE);
 
-    /* Only Secret doors, veins, and walls are "walls" */
-    if ((cave[y][x].feat & 0x3F) < 0x30) return (FALSE);
+    /* Must actually block motion */
+    if ((cave[y][x].feat & 0x3F) < 0x20) return (FALSE);
 
-    /* XXX XXX XXX Only memorized walls count */
+    /* Must be known to the player */
     if (!(cave[y][x].feat & CAVE_MARK)) return (FALSE);
 
     /* Default */
     return (TRUE);
 }
 
+
 /*
- * Aux routine -- Do we see anything "interesting"
+ * Hack -- Check for an "unknown corner" (see below)
  */
 static int see_nothing(int dir, int y, int x)
 {
@@ -2649,14 +2714,20 @@ static int see_nothing(int dir, int y, int x)
     y += ddy[dir];
     x += ddx[dir];
 
-    /* XXX XXX XXX Illegal grid are blank */
-    if (!in_bounds2(y, x)) return (TRUE);
+    /* Illegal grids are unknown */
+    if (!in_bounds2(y,x)) return (TRUE);
 
-    /* XXX XXX XXX Unknown grids are blank */
-    if (!test_lite_bold(y, x)) return (TRUE);
+    /* Memorized grids are known */
+    if (cave[y][x].feat & CAVE_MARK) return (FALSE);
+
+    /* Non-floor grids are unknown */
+    if (!floor_grid_bold(y,x)) return (TRUE);
+    
+    /* Viewable grids are known */
+    if (player_can_see_bold(y,x)) return (FALSE);
 
     /* Default */
-    return (FALSE);
+    return (TRUE);
 }
 
 
@@ -2866,6 +2937,7 @@ static void area_affect(void)
         
             monster_type *m_ptr = &m_list[c_ptr->m_idx];
             
+            /* Visible monster */
             if (m_ptr->ml) {
                 disturb(0,0);
                 return;
@@ -2877,6 +2949,7 @@ static void area_affect(void)
         
             inven_type *i_ptr = &i_list[c_ptr->i_idx];
 
+            /* Visible object */
             if (i_ptr->marked) {
                 disturb(0,0);
                 return;
@@ -2884,31 +2957,76 @@ static void area_affect(void)
         }
 
 
-        /* Assume the new grid cannot be seen */
+        /* Assume unknown */
         inv = TRUE;
 
-        /* Can we "see" (or "remember") the adjacent grid? */
-        if (test_lite_bold(row, col)) {
+        /* Check memorized grids */
+        if (c_ptr->feat & CAVE_MARK) {
 
-            int f = (c_ptr->feat & 0x3F);
+            bool notice = TRUE;
             
-            /* Hack -- ignore floors */
-            if (f == 0x01) f = 0;
-            
-            /* Hack -- ignore invis traps */
-            if (f == 0x02) f = 0;
-            
-            /* Hack -- Option -- Ignore stairs */
-            if (((f == 0x06) || (f == 0x07)) && find_ignore_stairs) f = 0;
+            /* Examine the terrain */
+            switch (c_ptr->feat & 0x3F) {
+
+                /* Floors */
+                case 0x01:
+
+                /* Invis traps */
+                case 0x02:            
+
+                /* Secret doors */
+                case 0x30:
+                
+                /* Rubble */
+                case 0x31:
+
+                /* Normal veins */
+                case 0x32:
+                case 0x33:
+                
+                /* Hidden treasure */
+                case 0x34:
+                case 0x35:
+
+                /* Walls */
+                case 0x38:                                        
+                case 0x39:                                        
+                case 0x3A:                                        
+                case 0x3B:                                        
+                case 0x3C:                                        
+                case 0x3D:                                        
+                case 0x3E:                                        
+                case 0x3F:
+
+                    /* Ignore */
+                    notice = FALSE;
+                    
+                    /* Done */
+                    break;
+
+                /* Stairs */
+                case 0x06:
+                case 0x07:
+                
+                    /* Option -- ignore */
+                    if (find_ignore_stairs) notice = FALSE;
+                    
+                    /* Done */
+                    break;
                         
-            /* Hack -- Option -- ignore doors */
-            if (((f == 0x04) || (f == 0x05)) && find_ignore_doors) f = 0;
-
-            /* Hack -- ignore walls and secret doors and rubble */
-            if (f >= 0x30) f = 0;
-
-            /* Notice remaining features */
-            if (f) {
+                /* Open doors */
+                case 0x04:
+                case 0x05:
+                
+                    /* Option -- ignore */
+                    if (find_ignore_doors) notice = FALSE;
+                    
+                    /* Done */
+                    break;
+            }
+            
+            /* Interesting feature */
+            if (notice) {
 
                 disturb(0,0);
                 return;
@@ -2918,11 +3036,13 @@ static void area_affect(void)
             inv = FALSE;
         }
 
-        /* Analyze floors (and unknowns) */
+        /* Analyze unknown grids and floors */
         if (inv || floor_grid_bold(row, col)) {
 
             /* Looking for open area */
-            if (find_openarea) ;
+            if (find_openarea) {
+                /* Nothing */
+            }
 
             /* The first new direction. */
             else if (!option) {
@@ -2987,10 +3107,8 @@ static void area_affect(void)
             row = py + ddy[new_dir];
             col = px + ddx[new_dir];
 
-            /* XXX XXX XXX */
-            
             /* Unknown grid or floor */
-            if (!test_lite_bold(row, col) || floor_grid_bold(row, col)) {
+            if (!(cave[row][col].feat & CAVE_MARK) || floor_grid_bold(row, col)) {
 
                 /* Looking to break right */
                 if (find_breakright) {
@@ -3000,7 +3118,7 @@ static void area_affect(void)
             }
 
             /* Obstacle */
-            if (test_lite_bold(row, col) && !floor_grid_bold(row, col)) {
+            else {
 
                 /* Looking to break left */
                 if (find_breakleft) {
@@ -3019,7 +3137,7 @@ static void area_affect(void)
             col = px + ddx[new_dir];
 
             /* Unknown grid or floor */
-            if (!test_lite_bold(row, col) || floor_grid_bold(row, col)) {
+            if (!(cave[row][col].feat & CAVE_MARK) || floor_grid_bold(row, col)) {
 
                 /* Looking to break left */
                 if (find_breakleft) {
@@ -3217,21 +3335,33 @@ static void run_init(int dir)
 
 /*
  * Do the first (or next) step of a "run"
+ *
+ * Hack -- do not allow user to request silly directions.
  */
 void do_cmd_run(void)
 {
     int dir;
 
-    int old_dir;
-
-    bool more = FALSE;
-
 
     /* Note old direction */
-    old_dir = (running ? command_dir : 0);
+    int old_dir = (running ? command_dir : 0);
+
 
     /* Get a "repeated" direction */
     if (get_rep_dir(&dir)) {
+
+        /* Hack -- do not start silly run */
+        if (!running && see_wall(dir, py, px)) {
+
+            /* Disturb */
+            disturb(0,0);
+
+            /* Message */
+            msg_print("You cannot run in that direction.");
+
+            /* Done */
+            return;
+        }
 
         /* Take time */
         energy_use = 100;
@@ -3266,13 +3396,7 @@ void do_cmd_run(void)
             /* Refresh */
             Term_fresh();
         }
-
-        /* Run some more */
-        more = TRUE;
     }
-
-    /* Cancel repeat unless we may continue */
-    if (!more) disturb(0, 0);
 }
 
 
@@ -4082,11 +4206,11 @@ void disturb(int stop_search, int unused_flag)
         /* Cancel */
         p_ptr->searching = FALSE;
 
-        /* Update stuff (later) */
+        /* Recalculate bonuses */
         p_ptr->update |= (PU_BONUS);
 
-        /* Redraw stuff (later) */
-        p_ptr->redraw |= (PR_STATE | PR_SPEED);
+        /* Redraw the state */
+        p_ptr->redraw |= (PR_STATE);
     }
     
     /* Flush the input if requested */

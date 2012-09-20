@@ -350,19 +350,6 @@ bool hp_player(int num)
 
 
 /*
- * Make the player no longer hungry
- */
-void satisfy_hunger(void)
-{
-    /* Message */
-    msg_print("You feel full!");
-
-    /* No longer hungry */
-    p_ptr->food = PY_FOOD_MAX - 1;
-}
-
-
-/*
  * Banish evil monsters
  */
 bool banish_evil(int dist)
@@ -822,64 +809,6 @@ void identify_pack(void)
 
 
 
-/*
- * Add to the players food time				-RAK-	
- *
- * Eating a food ration (5000 food) while totally full will
- * gorge you by 5000/50 = 100 food.  While gorged, your speed
- * is lowered by 10 points, and you digest at normal speed even
- * if resting.  A normal speed player (digestion 2) will thus
- * be slow for about 50*10 game turns, in which time he will get
- * about 25 full player moves.  Faster players will spend fewer
- * game turns gorged, but will have more player moves in that
- * same amount of time.
- */
-void add_food(int num)
-{
-    int old, extra;
-
-    /* Cancel starvation */
-    if (p_ptr->food < 0) p_ptr->food = 0;
-
-    /* Save the old value */
-    old = p_ptr->food;
-
-    /* Add the food */
-    p_ptr->food += num;
-
-    /* Paranoia -- Overflow check */
-    if ((num > 0) && (p_ptr->food <= 0)) p_ptr->food = 32000;
-
-    /* Check for bloating */
-    if (p_ptr->food >= PY_FOOD_MAX) {
-
-        /* Message */
-        msg_print("You have gorged yourself into a bloated state!");
-
-        /* Obtain the "bloat value" */
-        extra = p_ptr->food - PY_FOOD_MAX;
-        if (extra > num) extra = num;
-
-        /* Do not get "full" effect from bloat food */
-        p_ptr->food = ((old > PY_FOOD_MAX) ? old : PY_FOOD_MAX);
-
-        /* Get a little bit bloated (slow down player) */
-        p_ptr->food += extra / 50;
-    }
-
-    /* Check for "full" */
-    else if (p_ptr->food >= PY_FOOD_FULL) {
-
-        /* Message */
-        msg_print("You are full.");
-    }
-}
-
-
-
-
-
-
 
 /*
  * Used by the "enchant" function (chance of failure)
@@ -1273,10 +1202,7 @@ void self_knowledge()
         info[i++] = "You are resistant to cold.";
     }
 
-    if (p_ptr->immune_pois) {
-        info[i++] = "You are completely immune to poison.";
-    }
-    else if ((p_ptr->resist_pois) && (p_ptr->oppose_pois)) {
+    if ((p_ptr->resist_pois) && (p_ptr->oppose_pois)) {
         info[i++] = "You resist poison exceptionally well.";
     }
     else if ((p_ptr->resist_pois) || (p_ptr->oppose_pois)) {
@@ -1534,6 +1460,12 @@ bool lose_all_info(void)
 
     /* Redraw the choice window */
     p_ptr->redraw |= (PR_CHOOSE);
+
+    /* Recalculate bonuses */
+    p_ptr->update |= (PU_BONUS);
+    
+    /* Combine / Reorder the pack */
+    p_ptr->update |= (PU_COMBINE | PU_REORDER);
 
     /* Mega-Hack -- Forget the map */
     wiz_dark();
@@ -1951,17 +1883,15 @@ bool detect_object(void)
 
 
 /*
- * Locates and displays traps on current panel		-RAK-	
- *
- * XXX XXX XXX Hack -- this function also detects traps on chests.
+ * Locates and displays traps on current panel
  */
 bool detect_trap(void)
 {
     int		i, j;
+
     bool	detect = FALSE;
 
     cave_type  *c_ptr;
-    inven_type *i_ptr;
 
 
     /* Scan the current panel */
@@ -1971,14 +1901,11 @@ bool detect_trap(void)
             /* Access the grid */
             c_ptr = &cave[i][j];
 
-	    /* Access the object */
-            i_ptr = &i_list[c_ptr->i_idx];
-
             /* Detect invisible traps */
             if ((c_ptr->feat & 0x3F) == 0x02) {
 
-                /* Hack -- Pick a trap XXX XXX XXX */
-                c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x10) + rand_int(16);
+                /* Pick a trap */
+                pick_trap(i, j);
                 
                 /* Hack -- memorize it */
                 c_ptr->feat |= CAVE_MARK;
@@ -1988,13 +1915,6 @@ bool detect_trap(void)
 
                 /* Obvious */
                 detect = TRUE;
-            }
-
-            /* Hack -- Identify chests */
-            else if (i_ptr->tval == TV_CHEST) {
-
-                /* Identify the chest */
-                inven_known(i_ptr);
             }
         }
     }
@@ -2094,6 +2014,12 @@ void stair_creation()
     else {
         c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x07);
     }
+    
+    /* Notice */
+    note_spot(py, px);
+    
+    /* Redraw */
+    lite_spot(py, px);
 }
 
 
@@ -2419,9 +2345,6 @@ bool identify_fully_aux(inven_type *i_ptr)
     }
     if (f2 & TR2_IM_COLD) {
         info[i++] = "It provides immunity to cold.";
-    }
-    if (f2 & TR2_IM_POIS) {
-        info[i++] = "It provides immunity to poison.";
     }
 
     if (f2 & TR2_FREE_ACT) {
@@ -2750,14 +2673,20 @@ bool enchant(inven_type *i_ptr, int n, int eflag)
         }
     }
 
+    /* Failure */
+    if (!res) return (FALSE);
+    
     /* Redraw the choice window */
     p_ptr->redraw |= (PR_CHOOSE);
 
     /* Recalculate bonuses */
     p_ptr->update |= (PU_BONUS);
 
-    /* Return result */
-    return (res);
+    /* Combine / Reorder the pack */
+    p_ptr->update |= (PU_COMBINE | PU_REORDER);
+
+    /* Success */
+    return (TRUE);
 }
 
 
@@ -2813,12 +2742,13 @@ bool enchant_spell(int num_hit, int num_dam, int num_ac)
     if (enchant(i_ptr, num_dam, ENCH_TODAM)) okay = TRUE;
     if (enchant(i_ptr, num_ac, ENCH_TOAC)) okay = TRUE;
 
-    /* Redraw choice window */
-    p_ptr->redraw |= (PR_CHOOSE);
-
-    /* Detect "failure" */
+    /* Failure */
     if (!okay) {
+
+        /* Flush */
         if (flush_failure) flush();
+
+        /* Message */
         msg_print("The enchantment failed.");
     }
 
@@ -2862,13 +2792,13 @@ bool ident_spell()
     inven_aware(i_ptr);
     inven_known(i_ptr);
 
+    /* Redraw the choice window */
+    p_ptr->redraw |= (PR_CHOOSE);
+
     /* Recalculate bonuses */
     p_ptr->update |= (PU_BONUS);	
 
-    /* Redraw choice window */
-    p_ptr->redraw |= (PR_CHOOSE);
-
-    /* Combine pack */
+    /* Combine / Reorder the pack */
     p_ptr->update |= (PU_COMBINE | PU_REORDER);
 
     /* Description */
@@ -2931,11 +2861,14 @@ bool identify_fully()
     /* Mark the item as fully known */
     i_ptr->ident |= (ID_MENTAL);
 
+    /* Redraw choice window */
+    p_ptr->redraw |= (PR_CHOOSE);
+
     /* Recalculate bonuses */
     p_ptr->update |= (PU_BONUS);
 
-    /* Redraw choice window */
-    p_ptr->redraw |= (PR_CHOOSE);
+    /* Combine / Reorder the pack */
+    p_ptr->update |= (PU_COMBINE | PU_REORDER);
 
     /* Handle stuff */
     handle_stuff();
@@ -3010,6 +2943,8 @@ static bool item_tester_hook_recharge(inven_type *i_ptr)
  * BEFORE all staffs/wands/rods in the inventory.  Note that the
  * new "auto_sort_pack" option would correctly handle replacing
  * the "broken" wand with any other item (i.e. a broken stick).
+ *
+ * XXX XXX XXX Perhaps we should auto-unstack recharging stacks.
  */
 bool recharge(int num)
 {
@@ -3128,6 +3063,9 @@ bool recharge(int num)
     /* Redraw choice window */
     p_ptr->redraw |= (PR_CHOOSE);
 
+    /* Combine / Reorder the pack */
+    p_ptr->update |= (PU_COMBINE | PU_REORDER);
+
     /* Something was done */
     return (TRUE);
 }
@@ -3244,7 +3182,7 @@ void destroy_area(int y1, int x1, int r, bool full)
         if (!p_ptr->resist_blind && !p_ptr->resist_lite) {
 
             /* Become blind */
-            set_blind(p_ptr->blind + 10 + randint(10));
+            (void)set_blind(p_ptr->blind + 10 + randint(10));
         }
     }
     
@@ -3399,12 +3337,12 @@ void earthquake(int cy, int cx, int r)
               case 2:
                 msg_print("You are bashed by rubble!");
                 damage = damroll(10, 4);
-                stun_player(randint(50));
+                (void)set_stun(p_ptr->stun + randint(50));
                 break;
               case 3:
                 msg_print("You are crushed between the floor and ceiling!");
                 damage = damroll(10, 4);
-                stun_player(randint(50));
+                (void)set_stun(p_ptr->stun + randint(50));
                 break;
             }
 

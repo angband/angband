@@ -22,21 +22,23 @@
  * Use "Makefile.286" (not ready) to compile this file for DOS-286,
  * and be sure to define "USE_IBM", "USE_WAT", and "USE_286".
  *
- * Note that, for macro triggers, the left and right shift keys
- * are identical, but using both simultaneously can be detected,
- * though I would imagine this information has little application.
+ * True color palette support by "Mike Marcelais (mrmarcel@eos.ncsu.edu)",
+ * with interface to the "color_table" array by Ben Harrison.
  *
- * This file, and "pref-ibm.prf", should work with Angband 2.7.9v3.
+ * Both "shift" keys are treated as "identical", and all the modifier keys
+ * (control, shift, alt) are ignored when used with "normal" keys, unless
+ * they modify the underlying "ascii" value of the key.  You must use the
+ * new "user pref files" to be able to interact with the keypad and such.
  *
- * Note the extensive changes to the "keypress" code, and note that
- * you must use the new "pref-ibm.prf" file to use the keypad, etc.
+ * The "lib/user/pref-ibm.prf" file contains macro definitions and possible
+ * alternative color set definitions.  The "lib/user/font-ibm.prf" contains
+ * attr/char mappings for walls and floors and such.
  *
- * Note the use of the "Term_user_ibm()" function hook, which allows
- * the user to interact with the "main-ibm.c" visual system.  Currently
- * this only allows choosing a "color table", from a set of predefined
- * tables, but other possibilities should be obvious, such as allowing
- * the specification of color table entries directly, or selecting the
- * number of screen rows (with support for the mirror window).
+ * Note the "Term_user_ibm()" function hook, which could allow the user
+ * to interact with the "main-ibm.c" visual system.  Currently this hook
+ * is unused, but, for example, it could allow the user to toggle "sound"
+ * or "graphics" modes, or to select the number of screen rows, with the
+ * extra screen rows being used for the mirror window.
  */
 
 
@@ -59,26 +61,10 @@
 
 
 /*
- * Use the "bioskey(1)" call, not the "kbhit()" call
- * The "kbhit()" call does not work with Watcom.
- */
-/* #define USE_BIOSKEY_1 */
-
-
-/*
- * Use the "bioskey(0)" call, not the "bioskey(0x10)" call
- * The "bioskey(0x10)" call is better but only works on machines
- * made after "6/1/86".
- */
-/* #define USE_BIOSKEY_0 */
-
-
-/*
  * XXX XXX XXX Hack -- Support for DOS-286
  */
 #ifdef USE_286
 # define USE_CONIO
-# define USE_BIOSKEY_0
 # undef USE_CURS_SET
 #endif
 
@@ -91,12 +77,12 @@
 #endif
 
 
-#ifdef USE_WAT
 
-# define USE_BIOSKEY_1
+#ifdef USE_WAT
 
 # include <bios.h>
 # include <dos.h>
+# include <conio.h>
 
 # ifndef USE_CONIO
 #  include <graph.h>
@@ -226,6 +212,7 @@ extern int int86(int ivec, union REGS *in, union REGS *out);
 # include <pc.h>
 # include <osfcn.h>
 # include <bios.h>
+# include <graphics.h>
 
 /*
  * Hack -- use "bcopy()" instead of "memcpy()"
@@ -262,24 +249,38 @@ extern int directvideo = 1;
 
 
 /*
- * Basic color bits (hard-coded by DOS)
+ * Foreground color bits (hard-coded by DOS)
  */
-#define VID_BLACK	0
-#define VID_BLUE	1
-#define VID_GREEN	2
-#define VID_CYAN	3
-#define VID_RED		4
-#define VID_MAGENTA	5
-#define VID_YELLOW	6
-#define VID_WHITE	7
+#define VID_BLACK	0x00
+#define VID_BLUE	0x01
+#define VID_GREEN	0x02
+#define VID_CYAN	0x03
+#define VID_RED		0x04
+#define VID_MAGENTA	0x05
+#define VID_YELLOW	0x06
+#define VID_WHITE	0x07
 
 /*
- * Extended color bits (hard-coded by DOS)
+ * Bright text (hard-coded by DOS)
  */
-#define VID_BLINK	8
-#define VID_BRIGHT	8
+#define VID_BRIGHT	0x08
 
+/*
+ * Background color bits (hard-coded by DOS)
+ */
+#define VUD_BLACK	0x00
+#define VUD_BLUE	0x10
+#define VUD_GREEN	0x20
+#define VUD_CYAN	0x30
+#define VUD_RED		0x40
+#define VUD_MAGENTA	0x50
+#define VUD_YELLOW	0x60
+#define VUD_WHITE	0x70
 
+/*
+ * Blinking text (hard-coded by DOS)
+ */
+#define VUD_BLINK	0x80
 
 
 /*
@@ -340,50 +341,66 @@ static byte wiper[160];
 static term term_screen_body;
 
 
-
 /*
- * The Angband color table (see below)
+ * Choose between the "complex" and "simple" color methods
  */
-static byte ibm_color[16];
-
-
-/*
- * Hack -- maximum color sets defined
- */
-#define COLOR_SETS 4
+static byte use_color_complex = FALSE;
 
 
 /*
- * Hack -- the default color sets	-BEN-
+ * The "complex" color set
  *
- * The IBM does not directly support the Angband color set, which is
- * described in "defines.h", and which includes multiple shades of
- * "gray" and "umber", which are not really available on the IBM.
+ * This table is used by the "palette" code to instantiate the proper
+ * Angband colors when using hardware capable of displaying "complex"
+ * colors, see "activate_complex_color" below.
  *
- * Therefore, there is not an "obvious" color table, and we must try
- * to provide a "good" match.  There are several possibilities, and
- * for simplicity, we simply provide a table full of them, and let
- * the user pick one (if he does not like the default table) using
- * the new "Term_user()" interface.
+ * The values used below are taken from the values in "main-mac.c",
+ * gamma corrected based on the tables in "io.c", and then "tweaked"
+ * until they "looked good" on the monitor of "Mike Marcelais".
  *
- * The default set uses "obvious" colors for the most part, but uses "white"
- * (not "bright white") for "White", "light magenta" for "Light Red" (not
- * "bright red"), and "light red" (not "yellow") for "Orange", and also
- * uses "cyan" and "bright cyan" for the "Slate" and "Light Slate" colors,
- * and "brown/yellow" for both "Umber" and "Light Umber".
- *
- * Some people would argue that "Light Slate" should be "white" and "White"
- * should be "bright white", but others have complained that "bright white"
- * is too bright.  Also, many people feel that both "bright black" and "blue"
- * are too dark on most IBM terminals.
- *
- * Some of these concerns are addressed by some of the "alternative" color
- * sets.  A "XXX" comment indicates a debatable match or an overused color.
+ * The entries are given as "0xBBGGRR" where each of the "blue", "green",
+ * and "red" components range from "0x00" to "0x3F".  Note that this is
+ * the opposite of many systems which give the values as "0xRRGGBB", and
+ * is the opposite of the "R,G,B" codes in the comments.
  */
-static const byte ibm_color_set[COLOR_SETS][16] = {
+static long ibm_color_complex[16] = {
 
-  /* Default Set -- optimal colors (?) */
-  { 
+    0x000000L,		/* 0 0 0  Dark       */
+    0x3f3f3fL,		/* 4 4 4  White      */
+    0x232323L,		/* 2 2 2  Slate      */
+    0x00233fL,		/* 4 2 0  Orange     */
+    0x000023L,		/* 2 0 0  Red        */
+    0x112300L,		/* 0 2 1  Green      */
+    0x3f0000L,		/* 0 0 4  Blue       */
+    0x001123L,		/* 2 1 0  Umber      */
+    0x111111L,		/* 1 1 1  Lt. Dark   */
+    0x353535L,		/* 3 3 3  Lt. Slate  */
+    0x230023L,		/* 2 0 2  Purple     */
+    0x003f3fL,		/* 4 4 0  Yellow     */
+    0x35113fL,		/* 4 1 3  Lt. Red    */
+    0x003f00L,		/* 0 4 0  Lt. Green  */
+    0x3f3f00L,		/* 0 4 4  Lt. Blue   */
+    0x112335L		/* 3 2 1  Lt. Umber  */
+};
+
+
+/*
+ * The "simple" color set
+ *
+ * This table is used by the "color" code to instantiate the "approximate"
+ * Angband colors using the only colors available on crappy monitors.
+ *
+ * The entries below are taken from the "color bits" defined above.
+ *
+ * Note that values from 16 to 255 are extremely ugly.
+ *
+ * The values below came from various sources, if you do not like them,
+ * get a better monitor, or edit "pref-ibm.prf" to use different codes.
+ *
+ * Note that many of the choices below suck, but so do crappy monitors.
+ */
+static byte ibm_color_simple[16] = {
+
     VID_BLACK,			/* Dark */
     VID_WHITE,			/* White */
     VID_CYAN,			/* Slate XXX */
@@ -400,191 +417,185 @@ static const byte ibm_color_set[COLOR_SETS][16] = {
     VID_GREEN | VID_BRIGHT,	/* Light Green */
     VID_BLUE | VID_BRIGHT,	/* Light Blue */
     VID_YELLOW			/* Light Umber XXX */
-  },
-
-  /* Alternative Set -- intuitive colors (?) */
-  { 
-    VID_BLACK,			/* Dark */
-    VID_WHITE,			/* White */
-    VID_CYAN,			/* Slate XXX */
-    VID_YELLOW,			/* Orange XXX */
-    VID_RED,			/* Red */
-    VID_GREEN,			/* Green */
-    VID_BLUE,			/* Blue */
-    VID_YELLOW,			/* Umber XXX */
-    VID_BLACK | VID_BRIGHT,	/* Light Dark */
-    VID_CYAN | VID_BRIGHT,	/* Light Slate XXX */
-    VID_MAGENTA,		/* Violet */
-    VID_YELLOW | VID_BRIGHT,	/* Yellow */
-    VID_RED | VID_BRIGHT,	/* Light Red XXX */
-    VID_GREEN | VID_BRIGHT,	/* Light Green */
-    VID_BLUE | VID_BRIGHT,	/* Light Blue */
-    VID_YELLOW			/* Light Umber XXX */
-  },
-
-  /* Alternative Set -- no dark colors */
-  { 
-    VID_BLACK,			/* Dark */
-    VID_WHITE,			/* White */
-    VID_CYAN | VID_BRIGHT,	/* Slate XXX */
-    VID_RED | VID_BRIGHT,	/* Orange XXX */
-    VID_RED,			/* Red */
-    VID_GREEN,			/* Green */
-    VID_BLUE | VID_BRIGHT,	/* Blue XXX */
-    VID_YELLOW,			/* Umber XXX */
-    VID_CYAN,			/* Light Dark XXX */
-    VID_CYAN | VID_BRIGHT,	/* Light Slate XXX */
-    VID_MAGENTA,		/* Violet */
-    VID_YELLOW | VID_BRIGHT,	/* Yellow */
-    VID_MAGENTA | VID_BRIGHT,	/* Light Red XXX */
-    VID_GREEN | VID_BRIGHT,	/* Light Green */
-    VID_BLUE | VID_BRIGHT,	/* Light Blue */
-    VID_YELLOW			/* Light Umber XXX */
-  },
-
-  /* Alternative Set -- Angband 2.7.8 colors */
-  { 
-    VID_BLACK,			/* Dark */
-    VID_WHITE,			/* White */
-    VID_WHITE,			/* Slate XXX */
-    VID_YELLOW | VID_BRIGHT,	/* Orange XXX */
-    VID_RED,			/* Red */
-    VID_GREEN,			/* Green */
-    VID_BLUE,			/* Blue */
-    VID_YELLOW,			/* Umber XXX */
-    VID_BLACK | VID_BRIGHT,	/* Light Dark XXX */
-    VID_CYAN | VID_BRIGHT,	/* Light Slate */
-    VID_MAGENTA,		/* Violet */
-    VID_YELLOW | VID_BRIGHT,	/* Yellow */
-    VID_RED | VID_BRIGHT,	/* Light Red XXX */
-    VID_GREEN | VID_BRIGHT,	/* Light Green */
-    VID_BLUE | VID_BRIGHT,	/* Light Blue */
-    VID_YELLOW			/* Light Umber XXX */
-  }
 };
 
 
 
 /*
- * Hack -- the color names
+ * Activate the "ibm_color_complex" palette information.
+ *
+ * On Watcom machines, we can simply use the special "_remapallpalette()"
+ * function, which not only sets both palette lists (see below) but also
+ * checks for legality of the monitor mode.
+ *
+ * WARNING:   -- Mike Marcelais
+ *
+ *   On VGA cards, colors go through a double-indirection when looking
+ *   up the `real' color when in 16 color mode.  The color value in the
+ *   attribute is looked up in the EGA color registers.  Then that value
+ *   is looked up in the VGA color registers.  Then the color is displayed.
+ *   This is done for compatability.  However, the EGA registers are
+ *   initialized by default to 0..5, 14, 7, 38..3F and not 0..F which means
+ *   that unless these are reset, the VGA setpalette function will not
+ *   update the correct palette register!
+ *
+ *   DJGPP's GrSetColor() does _not_ set the EGA palette list, only the
+ *      VGA color list.
+ *
+ *   Source: The programmer's guide to the EGA and VGA video cards.  [Farraro]
+ *
+ *   Note that the "traditional" method, using "int86(0x10)", is very slow
+ *   when called in protected mode, so we use a faster method using video
+ *   ports instead.
  */
-static cptr color_names[16] = {
-    "Dark",
-    "White",
-    "Slate",
-    "Orange",
-    "Red",
-    "Green",
-    "Blue",
-    "Umber",
-    "Light Dark",
-    "Light Slate",
-    "Violet",
-    "Yellow",
-    "Light Red",
-    "Light Green",
-    "Light Blue",
-    "Light Umber"
-};
-
-/*
- * Hack -- select a color set
- */
-static errr Term_user_ibm_color(void)
+static bool activate_color_complex(void)
 {
-    int i, k;
 
-    /* Interact */
-    while (1) {
+#ifdef USE_WAT
 
-        /* Clear the screen */
-        Term_clear();
-    
-        /* Title the screen */
-        Term_putstr(0, 0, -1, TERM_WHITE, "Pick a color set");
+    /* Use a special Watcom function */
+    return (_remapallpalette(ibm_color_complex));
 
-        /* Display the color sets */
-        for (i = 0; i < COLOR_SETS; i++) {
+#else /* USE_WAT */
 
-            Term_putstr(5, 5+i, -1, TERM_WHITE, format("(%d)", i));
-            Term_putstr(10, 5+i, -1, TERM_WHITE, "....................");
-            Term_putstr(10, 5+i, -1, TERM_WHITE, color_names[i]);    
-            Term_putstr(30, 5+i, -1, i, "###**XXXOO+|8|+OOXXX**###");
-        }
-    
-        /* Ask the question */
-        Term_putstr(5, 8+COLOR_SETS, -1, TERM_WHITE, "Command: ");
+    int i;
+
+# if 1
+
+    /* Edit the EGA palette */
+    inportb(0x3da);
+
+    /* Edit the colors */
+    for (i = 0; i < 16; i++) {
+
+        /* Set color "i" */
+        outportb(0x3c0, i);
+
+        /* To value "i" */
+        outportb(0x3c0, i);
+    };
+
+    /* Use that EGA palette */
+    outportb(0x3c0, 0x20);
+
+    /* Edit VGA palette, starting at color zero */
+    outportb(0x3c8, 0);
+
+    /* Send the colors */
+    for (i = 0; i < 16; i++) {
+
+        /* Send the red, green, blue components */
+        outportb(0x3c9, ((ibm_color_complex[i]) & 0xFF));
+        outportb(0x3c9, ((ibm_color_complex[i] >> 8) & 0xFF));
+        outportb(0x3c9, ((ibm_color_complex[i] >> 16) & 0xFF));
+    };
+
+# else /* 1 */
+
+    /* Set the colors */
+    for (i = 0; i < 16; i++) {
+
+        union REGS r;
+
+        /* Set EGA color */
+        r.h.ah = 0x10;
+        r.h.al = 0x00;
+
+        /* Set color "i" */
+        r.h.bl = i;
+
+        /* To value "i" */
+        r.h.bh = i;
+
+        /* Do it */
+        int86(0x10, &r, &r);
+
+        /* Set VGA color */
+        r.h.ah = 0x10;
+        r.h.al = 0x10;
+
+        /* Set color "i" */
+        r.h.bh = 0x00;
+        r.h.bl = i;
+
+        /* Use this "green" value */
+        r.h.ch = ((ibm_color_complex[i] >> 8) & 0xFF);
         
-        /* Get a choice */
-        i = inkey();
+        /* Use this "blue" value */
+        r.h.cl = ((ibm_color_complex[i] >> 16) & 0xFF);
         
-        /* Escape */
-        if (i == ESCAPE) break;
+        /* Use this "red" value */
+        r.h.dh = ((ibm_color_complex[i]) & 0xFF);
 
-        /* Convert */
-        k = (i - '0');
+        /* Do it */
+        int86(0x10, &r, &r);
+    };
 
-        /* Error */
-        if ((k < 0) || (k >= COLOR_SETS)) continue;
+# endif /* 1 */
 
-        /* Activate */
-        for (i = 0; i < 16; i++) {
-        
-            /* Use that color set */
-            ibm_color[i] = ibm_color_set[k][i];
-        }
-    }
+#endif /* USE_WAT */
 
     /* Success */
-    return (0);
-}
+    return (TRUE);
+};
 
 
 /*
- * Hack -- interact with the user
+ * React to changes in global variables
+ *
+ * Currently, this includes only changes in the desired color set
+ *
+ * Note the use of "(x >> 2)" to convert an 8 bit value to a 6 bit value
+ * without losing much precision.
  */
-static errr Term_user_ibm(int n)
+static int Term_xtra_ibm_react(void)
 {
     int i;
 
-    /* Save the screen */
-    Term_save();
+    /* Complex method */
+    if (use_color_complex) {
 
-    /* Interact */
-    while (1) {
+        long rv, gv, bv, code;
 
-        /* Clear the screen */
-        Term_clear();
-    
-        /* Title the screen */
-        Term_putstr(0, 0, -1, TERM_WHITE, "Interact with 'main-ibm.c'");
+        bool change = FALSE;
 
-        /* Selections */
-        Term_putstr(5, 5, -1, TERM_WHITE, "(1) Choose a color set");
-    
-        /* Prompt */
-        Term_putstr(5, 10, -1, TERM_WHITE, "Command: ");
-    
-        /* Get a keypress */
-        i = inkey();
+        /* Save the default colors */
+        for (i = 0; i < 16; i++) {
 
-        /* Escape */
-        if (i == ESCAPE) break;
+            /* Extract desired values */
+            rv = color_table[i][1] >> 2;
+            gv = color_table[i][2] >> 2;
+            bv = color_table[i][3] >> 2;
 
-        /* Choose a color set */
-        if (i == '1') {
-            Term_user_ibm_color();
+            /* Extract a full color code */
+            code = ((rv) | (gv << 8) | (bv << 16));
+
+            /* Activate changes */
+            if (ibm_color_complex[i] != code) {
+
+                /* Note the change */
+                change = TRUE;
+
+                /* Apply the desired color */
+                ibm_color_complex[i] = code;
+            }
         }
-    
-        /* Oops */
-        else {
-            bell();
-        }    
+
+        /* Activate the palette if needed */
+        if (change) activate_color_complex();
     }
 
-    /* Restore the screen */
-    Term_load();
+    /* Simple method */
+    else {
 
+        /* Save the default colors */
+        for (i = 0; i < 16; i++) {
+
+            /* Simply accept the desired colors */
+            ibm_color_simple[i] = color_table[i][0];
+        }
+    }
+    
     /* Success */
     return (0);
 }
@@ -632,15 +643,6 @@ static void curs_set(int v)
 
 #endif
 
-
-
-/*
- * Hack -- convert a number (0 to 15) to a uppercase hecidecimal digit
- */
-static char hexsym[16] = {
-    '0', '1', '2', '3', '4', '5', '6', '7',
-    '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
-};
 
 
 #ifdef USE_WAT
@@ -711,6 +713,12 @@ static char hexsym[16] = {
  * Ctrl: (8f00)  7400   7700  (8d00)  8400  (9200) (9300) (e00a)
  *
  * See "pref-ibm.prf" for the "standard" macros for various keys.
+ *
+ * Certain "bizarre" keypad keys (such as "enter") return a "scan code"
+ * of "0xE0", and a "usable" ascii value.  These keys should be treated
+ * like the normal keys, see below.  XXX XXX XXX Note that these "special"
+ * keys could be prefixed with an optional "ctrl-^" which would allow them
+ * to be used in macros without hurting their use in normal situations.
  */
 static errr Term_xtra_ibm_event(int v)
 {
@@ -721,21 +729,11 @@ static errr Term_xtra_ibm_event(int v)
     bool ma = FALSE;
 
 
-#ifdef USE_BIOSKEY_1
     /* Hack -- Check for a keypress */
     if (!v && !bioskey(1)) return (1);
-#else
-    /* Hack -- Check for a keypress */
-    if (!v && !kbhit()) return (1);
-#endif
 
-#ifdef USE_BIOSKEY_0
-    /* Wait for a keypress */
-    k = bioskey(0);
-#else
     /* Wait for a keypress */
     k = bioskey(0x10);
-#endif
 
     /* Access the "modifiers" */
     i = bioskey(2);
@@ -746,15 +744,8 @@ static errr Term_xtra_ibm_event(int v)
     /* Extract the "ascii value" */
     k = (k & 0xFF);
 
-    /* Extract the modifier flags */
-    if (i & (1 << K_CTRL)) mc = TRUE;
-    if (i & (1 << K_LSHIFT)) ms = TRUE;
-    if (i & (1 << K_RSHIFT)) ms = TRUE;
-    if (i & (1 << K_ALT)) ma = TRUE;
-
-
     /* Process "normal" keys */
-    if ((s <= 58) && !ma) {
+    if ((s <= 58) || (s == 0xE0)) {
 
         /* Enqueue it */
         if (k) Term_keypress(k);
@@ -762,6 +753,12 @@ static errr Term_xtra_ibm_event(int v)
         /* Success */
         return (0);
     }
+
+    /* Extract the modifier flags */
+    if (i & (1 << K_CTRL)) mc = TRUE;
+    if (i & (1 << K_LSHIFT)) ms = TRUE;
+    if (i & (1 << K_RSHIFT)) ms = TRUE;
+    if (i & (1 << K_ALT)) ma = TRUE;
 
 
     /* Begin a "macro trigger" */
@@ -904,6 +901,12 @@ static errr Term_xtra_ibm(int n, int v)
 
             /* Success */
             return (0);
+
+        /* React to global changes */
+        case TERM_XTRA_REACT:
+        
+            /* React to "color_table" changes */
+            return (Term_xtra_ibm_react());
     }
 
     /* Unknown request */
@@ -991,8 +994,20 @@ static errr Term_text_ibm(int x, int y, int n, byte a, cptr s)
     register byte attr;
     register byte *dest;
 
-    /* Convert the color */
-    attr = ibm_color[a & 0x0F];
+
+    /* Handle "complex" color */
+    if (use_color_complex) {
+
+        /* Extract a color index */
+        attr = (a & 0x0F);
+    }
+
+    /* Handle "simple" color */
+    else {
+
+        /* Extract a color value */
+        attr = ibm_color_simple[a & 0x0F];
+    }
 
 #ifdef USE_CONIO
 
@@ -1010,7 +1025,7 @@ static errr Term_text_ibm(int x, int y, int n, byte a, cptr s)
     /* Access the virtual (or physical) screen */
     dest = VirtualScreen + (((cols * y) + x) << 1);
 
-    /* Build the buffer */
+    /* Save the data */
     while (*s) {
         *dest++ = *s++;
         *dest++ = attr;
@@ -1037,6 +1052,8 @@ static void Term_init_ibm(term *t)
  */
 static void Term_nuke_ibm(term *t)
 {
+    union REGS r;
+
     /* Move the cursor to the bottom of the screen */
     Term_curs_ibm(0, rows-1);
 
@@ -1044,6 +1061,15 @@ static void Term_nuke_ibm(term *t)
 
     /* Make the cursor visible */
     curs_set(1);
+
+    /* Restore the original video mode */
+#ifdef USE_WAT
+    _setvideomode( _DEFAULTMODE );
+#else
+    r.h.ah = 0x00;
+    r.h.al = 0x03;
+    int86(0x10, &r, &r);
+#endif
 
 #endif
 
@@ -1055,32 +1081,44 @@ static void Term_nuke_ibm(term *t)
  *
  * Hack -- we assume that "blank space" should be "white space"
  * (and not "black space" which might make more sense).
+ *
+ * Note the use of "((x << 2) | (x >> 4))" to "expand" a 6 bit value
+ * into an 8 bit value, without losing much precision, by using the 2
+ * most significant bits as the least significant bits in the new value.
  */
 errr init_ibm(void)
 {
     int i;
+    int mode;
 
     term *t = &term_screen_body;
 
-#ifdef USE_CURS_SET
-
     union REGS r;
-
-#endif
- 
 
 #ifdef USE_WAT
 
-#ifndef USE_CONIO
+# ifndef USE_CONIO
     /* Force 25 line mode */
     _settextrows(25);
-#endif
+# endif
 
     /* Assume the size of the screen */
     rows = 25;
     cols = 80;
 
+    /* Instantiate the color set, check for success */
+    if (activate_color_complex()) use_color_complex = TRUE;
+
 #else /* USE_WAT */
+
+    /* Get video mode */
+    r.h.ah = 0x00;
+    r.h.al = 0x13;
+    int86(0x10, &r, &r);
+    mode = ScreenMode();
+    r.h.ah = 0x00;
+    r.h.al = 0x03;
+    int86(0x10, &r, &r);
 
     /* Acquire the size of the screen */
     rows = ScreenRows();
@@ -1088,28 +1126,47 @@ errr init_ibm(void)
 
     /* Paranoia -- require minimum size */
     if ((rows < 24) || (cols < 80)) quit("Screen too small!");
-    
-#endif
 
+    /* Check video mode */
+    if (mode == 0x13) {
 
-    /* Initialize the colors */
-    for (i = 0; i < 16; i++) {
-    
-        /* Use the "default" color set */
-        ibm_color[i] = ibm_color_set[0][i];
+        /* Instantiate the color set, check for success */
+        if (activate_color_complex()) use_color_complex = TRUE;
     }
 
+#endif /* USE_WAT */
+
+
+    /* Initialize "color_table" */
+    for (i = 0; i < 16; i++) {
+
+        int rv, gv, bv;
+
+        /* Extract the "complex" codes */
+        rv = ((ibm_color_complex[i]) & 0xFF);
+        gv = ((ibm_color_complex[i] >> 8) & 0xFF);
+        bv = ((ibm_color_complex[i] >> 16) & 0xFF);
+
+        /* Save the "complex" codes */
+        color_table[i][1] = ((rv << 2) | (rv >> 4));
+        color_table[i][2] = ((gv << 2) | (gv >> 4));
+        color_table[i][3] = ((bv << 2) | (bv >> 4));
+
+        /* Save the "simple" code */
+        color_table[i][0] = ibm_color_simple[i];
+    }
+    
 
 #ifndef USE_CONIO
 
     /* Build a "wiper line" */
     for (i = 0; i < 80; i++) {
 
-        /* Space */
+        /* Hack -- space */
         wiper[2*i] = ' ';
 
-        /* White */
-        wiper[2*i+1] = ibm_color[TERM_WHITE];
+        /* Hack -- black */
+        wiper[2*i+1] = 0;
     }
 
 #endif
@@ -1152,7 +1209,6 @@ errr init_ibm(void)
     t->nuke_hook = Term_nuke_ibm;
 
     /* Connect the hooks */
-    t->user_hook = Term_user_ibm;
     t->xtra_hook = Term_xtra_ibm;
     t->curs_hook = Term_curs_ibm;
     t->wipe_hook = Term_wipe_ibm;
@@ -1164,12 +1220,10 @@ errr init_ibm(void)
     /* Activate it */
     Term_activate(term_screen);
 
-
     /* Success */
     return 0;
 }
 
 
 #endif /* USE_IBM */
-
 

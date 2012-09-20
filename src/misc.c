@@ -430,6 +430,34 @@ void scatter(int *yp, int *xp, int y, int x, int d, int m)
 }
 
 
+/*
+ * Verify desire to be a wizard, and do so if verified
+ * This routine should only be called if "can_be_wizard"
+ */
+bool enter_wiz_mode(void)
+{
+    int answer = FALSE;
+
+    /* Already been asked */
+    if (noscore & 0x0002) return (TRUE);
+
+    /* Mention effects */
+    msg_print("Wizard mode is for debugging and experimenting.");
+    msg_print("The game will not be scored if you enter wizard mode.");
+
+    /* Verify request */
+    answer = get_check("Are you sure you want to enter wizard mode? ");
+
+    /* Never Mind */
+    if (!answer) return (FALSE);
+
+    /* Remember old setting */
+    noscore |= 0x0002;
+
+    /* Make me a wizard */
+    return (TRUE);
+}
+
 
 /*
  * Extract and set the current "view radius"
@@ -677,7 +705,7 @@ bool inc_stat(int stat)
             p_ptr->stat_max[stat] = value;
         }
 
-        /* Update the stats */
+        /* Recalculate bonuses */
         p_ptr->update |= (PU_BONUS);
 
         /* Success */
@@ -800,7 +828,7 @@ bool dec_stat(int stat, int amount, int permanent)
         p_ptr->stat_cur[stat] = cur;
         p_ptr->stat_max[stat] = max;
 
-        /* Update the stats */
+        /* Recalculate bonuses */
         p_ptr->update |= (PU_BONUS);
     }
 
@@ -814,13 +842,13 @@ bool dec_stat(int stat, int amount, int permanent)
  */
 bool res_stat(int stat)
 {
-    /* Restore */
+    /* Restore if needed */
     if (p_ptr->stat_cur[stat] != p_ptr->stat_max[stat]) {
 
         /* Restore */
         p_ptr->stat_cur[stat] = p_ptr->stat_max[stat];
 
-        /* Update the stats */
+        /* Recalculate bonuses */
         p_ptr->update |= (PU_BONUS);
 
         /* Success */
@@ -829,40 +857,6 @@ bool res_stat(int stat)
 
     /* Nothing to restore */
     return (FALSE);
-}
-
-
-
-
-
-
-/*
- * Abbreviations of healthy stats
- */
-static cptr stat_names[] = {
-    "STR: ", "INT: ", "WIS: ", "DEX: ", "CON: ", "CHR: "
-};
-
-/*
- * Abbreviations of damaged stats
- */
-static cptr stat_names_reduced[] = {
-    "Str: ", "Int: ", "Wis: ", "Dex: ", "Con: ", "Chr: "
-};
-
-
-
-
-/*
- * Print character info at given row, column in a 13 char field
- */
-static void prt_field(cptr info, int row, int col)
-{
-    /* Dump 13 spaces to clear */
-    c_put_str(TERM_WHITE, "             ", row, col);
-
-    /* Dump the info itself */
-    c_put_str(TERM_L_BLUE, info, row, col);
 }
 
 
@@ -896,6 +890,23 @@ void cnv_stat(int val, char *out_val)
 }
 
 
+
+
+/*
+ * Print character info at given row, column in a 13 char field
+ */
+static void prt_field(cptr info, int row, int col)
+{
+    /* Dump 13 spaces to clear */
+    c_put_str(TERM_WHITE, "             ", row, col);
+
+    /* Dump the info itself */
+    c_put_str(TERM_L_BLUE, info, row, col);
+}
+
+
+
+
 /*
  * Print character stat in given row, column
  */
@@ -926,16 +937,25 @@ static void prt_stat(int stat)
  */
 static void prt_title()
 {
+    /* Wizard */
     if (wizard) {
         prt_field("[=-WIZARD-=]", ROW_TITLE, COL_TITLE);
     }
-    else if (total_winner) {
+
+    /* Winner */
+    else if (total_winner || (p_ptr->lev > PY_MAX_LEVEL)) {
         prt_field((p_ptr->male ? "**KING**" : "**QUEEN**"),
                   ROW_TITLE, COL_TITLE);
     }
 
 #ifdef ALLOW_TITLES
 
+    /* Oops */
+    else if (p_ptr->lev < 1) {
+        prt_field("Novice", ROW_TITLE, COL_TITLE);
+    }
+
+    /* Normal */    
     else {
         prt_field(player_title[p_ptr->pclass][p_ptr->lev - 1],
                   ROW_TITLE, COL_TITLE);
@@ -943,6 +963,7 @@ static void prt_title()
 
 #else
 
+    /* Nothing */
     else {
 
         prt_field("", ROW_TITLE, COL_TITLE);
@@ -1123,7 +1144,7 @@ static void prt_depth()
  */
 static void prt_hunger()
 {
-    /* Fainting */
+    /* Fainting / Starving */
     if (p_ptr->food < PY_FOOD_FAINT) {
         c_put_str(TERM_RED, "Weak  ", ROW_HUNGRY, COL_HUNGRY);
     }
@@ -1895,7 +1916,7 @@ static void display_player_various(void)
     put_str("Shots/Round:", 17, 55);
     put_str(format("%d", p_ptr->num_fire), 17, 69);
     
-    put_str("Infra-Vision:", 18, 55);
+    put_str("Infra-Vision:", 19, 55);
     put_str(format("%d feet", p_ptr->see_infra * 10), 19, 69);
 }
 
@@ -1989,7 +2010,7 @@ void display_player(bool do_hist)
     /* Display "history" info */
     if (do_hist) {
 
-        put_str("Character Background", 15, 27);
+        put_str("(Character Background)", 15, 25);
 
         for (i = 0; i < 4; i++) {
             put_str(history[i], i + 16, 10);
@@ -2005,87 +2026,6 @@ void display_player(bool do_hist)
     }
 }
 
-
-
-
-/*
- * Cut the player XXX XXX XXX
- */
-void cut_player(int c)
-{
-    /* Hack -- already dead */
-    if (death) return;
-
-    /* Total cut */
-    c = p_ptr->cut + c;
-
-    /* Verify the cut */
-    c = (c < 0) ? 0 : (c < 5000) ? c : 5000;
-
-    /* Describe the cut */
-    if (c > 1000) {
-        msg_print("You have been given a mortal wound.");
-    }
-    else if (c > 200) {
-        msg_print("You have been given a deep gash.");
-    }
-    else if (c > 100) {
-        msg_print("You have been given a severe cut.");
-    }
-    else if (c > 50) {
-        msg_print("You have been given a nasty cut.");
-    }
-    else if (c > 25) {
-        msg_print("You have been given a bad cut.");
-    }
-    else if (c > 10) {
-        msg_print("You have been given a light cut.");
-    }
-    else if (c > 0) {
-        msg_print("You have been given a graze.");
-    }
-
-    /* Set the cut */
-    (void)set_cut(c);
-
-    /* Hack -- recalculate the bonuses */
-    p_ptr->update |= (PU_BONUS);
-}
-
-/*
- * Stun the player XXX XXX XXX
- */
-void stun_player(int s)
-{
-    /* Hack -- already dead */
-    if (death) return;
-
-    /* Hack -- no stunning */
-    if (p_ptr->resist_sound) return;
-
-    /* Total stun */
-    s = p_ptr->stun + s;
-
-    /* Verify the stun */
-    s = (s < 0) ? 0 : (s < 500) ? s : 500;
-
-    /* Describe the stun */
-    if (s > 100) {
-        msg_print("You have been knocked out.");
-    }
-    else if (s > 50) {
-        msg_print("You have been heavily stunned.");
-    }
-    else if (s) {
-        msg_print("You have been stunned.");
-    }
-
-    /* Set the stun */
-    (void)set_stun(s);
-    
-    /* Hack -- recalculate the bonuses */
-    p_ptr->update |= (PU_BONUS);
-}
 
 
 
@@ -2265,7 +2205,8 @@ void check_experience()
 
     /* Lose levels while possible */
     while ((p_ptr->lev > 1) &&
-           (p_ptr->exp < (player_exp[p_ptr->lev-2] * p_ptr->expfact / 100L))) {
+           (p_ptr->exp < (player_exp[p_ptr->lev-2] *
+                          p_ptr->expfact / 100L))) {
 
         /* Lose a level */
         p_ptr->lev--;
@@ -2413,9 +2354,8 @@ s16b spell_chance(int spell)
  * Calculate number of spells player should have, and forget,
  * or remember, spells until that number is properly reflected.
  *
- * Hack -- this function produces status messages, which should
- * really be postponed somehow until "notice_stuff()", perhaps,
- * for consistency.  Or perhaps not.
+ * Note that this function induces various "status" messages,
+ * which must be bypasses until the character is created.
  */
 static void calc_spells(void)
 {
@@ -2430,6 +2370,9 @@ static void calc_spells(void)
     /* Hack -- must be literate */
     if (!mp_ptr->spell_book) return;
 
+    /* Hack -- wait for creation */
+    if (!character_generated) return;
+    
 
     /* Determine the number of spells allowed */
     levels = p_ptr->lev - mp_ptr->spell_first + 1;
@@ -2633,12 +2576,34 @@ static void calc_spells(void)
 
     /* Cannot learn more spells than exist */
     if (p_ptr->new_spells > k) p_ptr->new_spells = k;
+
+    /* Learn new spells */
+    if (p_ptr->new_spells && !p_ptr->old_spells) {
+
+        /* Message */
+        msg_format("You can learn some new %ss now.", p);
+
+        /* Display "study state" later */
+        p_ptr->redraw |= (PR_STUDY);
+    }
+    
+    /* No more spells */
+    else if (!p_ptr->new_spells && p_ptr->old_spells) {
+
+        /* Display "study state" later */
+        p_ptr->redraw |= (PR_STUDY);
+    }
+    
+    /* Save the new_spells value */
+    p_ptr->old_spells = p_ptr->new_spells;
 }
 
 
 /*
  * Calculate maximum mana.  You do not need to know any spells.
  * Note that mana is lowered by heavy (or inappropriate) armor.
+ *
+ * This function induces status messages.
  */
 static void calc_mana(void)
 {
@@ -2762,6 +2727,38 @@ static void calc_mana(void)
         /* Display mana later */
         p_ptr->redraw |= (PR_MANA);
     }
+
+
+    /* Take note when "glove state" changes */
+    if (p_ptr->old_cumber_glove != p_ptr->cumber_glove) {
+    
+        /* Message */
+        if (p_ptr->cumber_glove) {
+            msg_print("Your covered hands feel unsuitable for spellcasting.");
+        }
+        else {
+            msg_print("Your hands feel more suitable for spellcasting.");
+        }
+
+        /* Save it */
+        p_ptr->old_cumber_glove = p_ptr->cumber_glove;
+    }
+
+
+    /* Take note when "armor state" changes */
+    if (p_ptr->old_cumber_armor != p_ptr->cumber_armor) {
+    
+        /* Message */
+        if (p_ptr->cumber_armor) {
+            msg_print("The weight of your armor encumbers your movement.");
+        }
+        else {
+            msg_print("You feel able to move more freely.");
+        }
+
+        /* Save it */
+        p_ptr->old_cumber_armor = p_ptr->cumber_armor;
+    }        
 }
 
 
@@ -2836,12 +2833,13 @@ static int weight_limit(void)
  * but not until he reaches 450 pounds will he be half as fast as
  * a normal kobold.  This both hurts and helps the player, hurts
  * because in the old days a player could just avoid 300 pounds,
- * and helps because now carrying 300 pounds is not really very
- * painful (4/5 the speed of a normal kobold).
+ * and helps because now carrying 300 pounds is not very painful.
  *
  * The "weapon" and "bow" do *not* add to the bonuses to hit or to
  * damage, since that would affect non-combat things.  These values
  * are actually added in later, at the appropriate place.
+ *
+ * This function induces various "status" messages.
  */
 static void calc_bonuses(void)
 {
@@ -2911,10 +2909,10 @@ static void calc_bonuses(void)
     p_ptr->sustain_con = FALSE;
     p_ptr->sustain_dex = FALSE;
     p_ptr->sustain_chr = FALSE;
-    p_ptr->resist_fire = FALSE;
     p_ptr->resist_acid = FALSE;
-    p_ptr->resist_cold = FALSE;
     p_ptr->resist_elec = FALSE;
+    p_ptr->resist_fire = FALSE;
+    p_ptr->resist_cold = FALSE;
     p_ptr->resist_pois = FALSE;
     p_ptr->resist_conf = FALSE;
     p_ptr->resist_sound = FALSE;
@@ -2927,11 +2925,10 @@ static void calc_bonuses(void)
     p_ptr->resist_blind = FALSE;
     p_ptr->resist_neth = FALSE;
     p_ptr->resist_fear = FALSE;
-    p_ptr->immune_fire = FALSE;
     p_ptr->immune_acid = FALSE;
-    p_ptr->immune_pois = FALSE;
-    p_ptr->immune_cold = FALSE;
     p_ptr->immune_elec = FALSE;
+    p_ptr->immune_fire = FALSE;
+    p_ptr->immune_cold = FALSE;
 
 
 
@@ -2995,9 +2992,6 @@ static void calc_bonuses(void)
     if (p_ptr->prace == RACE_HIGH_ELF) p_ptr->resist_lite = TRUE;
     if (p_ptr->prace == RACE_HIGH_ELF) p_ptr->see_inv = TRUE;
 
-
-    /* Start with "normal" digestion */
-    p_ptr->food_digested = 2;
 
     /* Start with "normal" speed */
     p_ptr->pspeed = 110;
@@ -3090,7 +3084,6 @@ static void calc_bonuses(void)
         if (f2 & TR2_IM_ACID) p_ptr->immune_acid = TRUE;
         if (f2 & TR2_IM_COLD) p_ptr->immune_cold = TRUE;
         if (f2 & TR2_IM_ELEC) p_ptr->immune_elec = TRUE;
-        if (f2 & TR2_IM_POIS) p_ptr->immune_pois = TRUE;
 
         /* Resistance flags */
         if (f2 & TR2_RES_ACID) p_ptr->resist_acid = TRUE;
@@ -3162,20 +3155,14 @@ static void calc_bonuses(void)
         /* Redisplay the stats later */
         p_ptr->redraw |= (PR_STATS);
 
-        /* Values: 3, 4, ..., 18 */
+        /* Values: 3, 4, ..., 17 */
         if (use <= 18) ind = (use - 3);
 
-        /* Ranges: 18/01-18/09, 18/10-18/19, ..., 18/90-18/99 */
-        else if (use <= 18+99) ind = (16 + (use - 18) / 10);
-
-        /* Value: 18/100 */
-        else if (use == 18+100) ind = (26);
-
-        /* Ranges: 18/101-18/109, 18/110-18/119, ..., 18/210-18/219 */
-        else if (use <= 18+219) ind = (27 + (use - (18+100)) / 10);
+        /* Ranges: 18/00-18/09, ..., 18/210-18/219 */
+        else if (use <= 18+219) ind = (15 + (use - 18) / 10);
 
         /* Range: 18/220+ */
-        else ind = (39);
+        else ind = (37);
 
         /* Ignore non-changes */
         if (p_ptr->stat_ind[i] == ind) continue;
@@ -3302,35 +3289,17 @@ static void calc_bonuses(void)
     /* Extract the "weight limit" (in tenth pounds) */
     i = weight_limit();
 
-    /* XXX Hack -- Apply "encumbrance" from weight */
+    /* XXX XXX XXX Apply "encumbrance" from weight */
     if (j > i/2) p_ptr->pspeed -= ((j - (i/2)) / (i / 10));
 
     /* Bloating slows the player down (a little) */
-    if (p_ptr->food > PY_FOOD_MAX) p_ptr->pspeed -= 10;
+    if (p_ptr->food >= PY_FOOD_MAX) p_ptr->pspeed -= 10;
 
     /* Searching slows the player down */
     if (p_ptr->searching) p_ptr->pspeed -= 10;
 
     /* Display the speed (if needed) */
     if (p_ptr->pspeed != old_speed) p_ptr->redraw |= (PR_SPEED);
-
-    /* Mega-Hack -- Fast players eat more food */
-    if (p_ptr->pspeed > 110) p_ptr->food_digested += 1;
-    if (p_ptr->pspeed > 120) p_ptr->food_digested += 2;
-    if (p_ptr->pspeed > 130) p_ptr->food_digested += 3;
-
-    /* Regeneration takes more food */
-    if (p_ptr->regenerate) p_ptr->food_digested += 3;
-
-    /* Slow digestion takes less food */
-    if (p_ptr->slow_digest) p_ptr->food_digested--;
-
-    /* Hack -- Bloating cancels some effects of "rest" */
-    if (p_ptr->food <= PY_FOOD_MAX) {
-
-        /* Hack -- Resting/Searching takes less food */
-        if (resting || p_ptr->searching) p_ptr->food_digested--;
-    }
 
 
     /* Actual Modifier Bonuses (Un-inflate stat bonuses) */
@@ -3566,6 +3535,63 @@ static void calc_bonuses(void)
 
     /* Limit Skill -- digging from 1 up */
     if (p_ptr->skill_dig < 1) p_ptr->skill_dig = 1;
+
+
+    /* Take note when "heavy bow" changes */
+    if (p_ptr->old_heavy_shoot != p_ptr->heavy_shoot) {
+
+        /* Message */
+        if (p_ptr->heavy_shoot) {
+            msg_print("You have trouble wielding such a heavy bow.");
+        }
+        else if (inventory[INVEN_BOW].k_idx) {
+            msg_print("You have no trouble wielding your bow.");
+        }
+        else {
+            msg_print("You feel relieved to put down your heavy bow.");
+        }
+        
+        /* Save it */
+        p_ptr->old_heavy_shoot = p_ptr->heavy_shoot;
+    }
+
+
+    /* Take note when "heavy weapon" changes */
+    if (p_ptr->old_heavy_wield != p_ptr->heavy_wield) {
+
+        /* Message */
+        if (p_ptr->heavy_wield) {
+            msg_print("You have trouble wielding such a heavy weapon.");
+        }
+        else if (inventory[INVEN_WIELD].k_idx) {
+            msg_print("You have no trouble wielding your weapon.");
+        }
+        else {
+            msg_print("You feel relieved to put down your heavy weapon.");
+        }
+        
+        /* Save it */
+        p_ptr->old_heavy_wield = p_ptr->heavy_wield;
+    }
+
+
+    /* Take note when "illegal weapon" changes */
+    if (p_ptr->old_icky_wield != p_ptr->icky_wield) {
+
+        /* Message */
+        if (p_ptr->icky_wield) {
+            msg_print("You do not feel comfortable with your weapon.");
+        }
+        else if (inventory[INVEN_WIELD].k_idx) {
+            msg_print("You feel comfortable with your weapon.");
+        }
+        else {
+            msg_print("You feel more comfortable after removing your weapon.");
+        }
+        
+        /* Save it */
+        p_ptr->old_icky_wield = p_ptr->icky_wield;
+    }
 }
 
 
@@ -3620,6 +3646,9 @@ static void combine_pack(void)
                 /* Redraw the choice window */
                 p_ptr->redraw |= (PR_CHOOSE);
 
+                /* XXX XXX XXX Reorder the pack */
+                p_ptr->update |= (PU_REORDER);
+
 		/* Done */
 		break;
             }
@@ -3628,9 +3657,6 @@ static void combine_pack(void)
 
     /* Message */
     if (flag) msg_print("You combine some items in your pack.");
-    
-    /* XXX XXX XXX Hack -- reorder the pack after combining */
-    if (flag) p_ptr->update |= PU_REORDER;
 }
 
 
@@ -3733,9 +3759,6 @@ static void reorder_pack(void)
 
     /* Message */
     if (flag) msg_print("You reorder some items in your pack.");
-    
-    /* XXX XXX XXX Hack -- combine the pack after reordering */
-    if (flag) p_ptr->update |= PU_COMBINE;
 }
 
 
@@ -3744,29 +3767,11 @@ static void reorder_pack(void)
 /*
  * Handle "p_ptr->update" and "p_ptr->redraw".
  *
- * XXX XXX XXX Something related to this function is not working
- * correctly, for example, when the player is blinded by a flash
- * from light hound breath, sometimes, some monsters stay visible.
+ * Note the use of two passes to avoid accidentally drawing the
+ * dungeon while in a store or other full screen situation.
  */
 void handle_stuff(void)
 {
-    /* Redraw (first pass) */
-    if (p_ptr->redraw) {
-
-        /* Hack -- Redraw "recent" monster race */
-        if (p_ptr->redraw & PR_RECENT) {
-            p_ptr->redraw &= ~(PR_RECENT);
-            recent_fix();
-        }
-
-        /* Hack -- Redraw "choices" or whatever */
-        if (p_ptr->redraw & PR_CHOOSE) {
-            p_ptr->redraw &= ~(PR_CHOOSE);
-            choose_fix();
-        }
-    }
-
-
     /* Update (first pass) */
     if (p_ptr->update) {
 
@@ -3789,6 +3794,33 @@ void handle_stuff(void)
             p_ptr->update &= ~(PU_SPELLS);
             calc_spells();
         }
+
+        if (p_ptr->update & PU_COMBINE) {
+            p_ptr->update &= ~(PU_COMBINE);
+            if (auto_combine_pack) combine_pack();
+        }
+        
+        if (p_ptr->update & PU_REORDER) {
+            p_ptr->update &= ~(PU_REORDER);
+            if (auto_reorder_pack) reorder_pack();
+        }
+    }
+
+
+    /* Redraw (first pass) */
+    if (p_ptr->redraw) {
+
+        /* Hack -- Redraw "recent" monster race */
+        if (p_ptr->redraw & PR_RECENT) {
+            p_ptr->redraw &= ~(PR_RECENT);
+            recent_fix();
+        }
+
+        /* Hack -- Redraw "choices" or whatever */
+        if (p_ptr->redraw & PR_CHOOSE) {
+            p_ptr->redraw &= ~(PR_CHOOSE);
+            choose_fix();
+        }
     }
 
 
@@ -3798,6 +3830,46 @@ void handle_stuff(void)
 
     /* Character is in "icky" mode, no screen updates */
     if (character_icky) return;
+
+
+    /* Update (second pass) */
+    if (p_ptr->update) {
+
+        if (p_ptr->update & PU_NOTE) {
+            p_ptr->update &= ~(PU_NOTE);
+            forget_lite();
+            forget_view();
+        }
+
+
+        if (p_ptr->update & PU_VIEW) {
+            p_ptr->update &= ~(PU_VIEW);
+            update_view();
+        }
+
+        if (p_ptr->update & PU_LITE) {
+            p_ptr->update &= ~(PU_LITE);
+            update_lite();
+        }
+
+
+        if (p_ptr->update & PU_FLOW) {
+            p_ptr->update &= ~(PU_FLOW);
+            update_flow();
+        }
+
+
+        if (p_ptr->update & PU_DISTANCE) {
+            p_ptr->update &= ~(PU_DISTANCE);
+            p_ptr->update &= ~(PU_MONSTERS);
+            update_monsters(TRUE);
+        }
+
+        if (p_ptr->update & PU_MONSTERS) {
+            p_ptr->update &= ~(PU_MONSTERS);
+            update_monsters(FALSE);
+        }
+    }
 
 
     /* Redraw (second pass) */
@@ -3894,8 +3966,6 @@ void handle_stuff(void)
         }
 
 
-
-
         if (p_ptr->redraw & PR_EXTRA) {
             p_ptr->redraw &= ~(PR_EXTRA);
             p_ptr->redraw &= ~(PR_CUT | PR_STUN);
@@ -3956,289 +4026,8 @@ void handle_stuff(void)
             prt_study();
         }
     }
-
-
-    /* Update (second pass) */
-    if (p_ptr->update) {
-
-        if (p_ptr->update & PU_COMBINE) {
-            p_ptr->update &= ~(PU_COMBINE);
-            if (auto_combine_pack) combine_pack();
-        }
-        
-        if (p_ptr->update & PU_REORDER) {
-            p_ptr->update &= ~(PU_REORDER);
-            if (auto_reorder_pack) reorder_pack();
-        }
-        
-
-        if (p_ptr->update & PU_NOTE) {
-            p_ptr->update &= ~(PU_NOTE);
-            forget_lite();
-            forget_view();
-        }
-
-
-        if (p_ptr->update & PU_VIEW) {
-            p_ptr->update &= ~(PU_VIEW);
-            update_view();
-        }
-
-        if (p_ptr->update & PU_LITE) {
-            p_ptr->update &= ~(PU_LITE);
-            update_lite();
-        }
-
-
-        if (p_ptr->update & PU_FLOW) {
-            p_ptr->update &= ~(PU_FLOW);
-            update_flow();
-        }
-
-
-        if (p_ptr->update & PU_DISTANCE) {
-            p_ptr->update &= ~(PU_DISTANCE);
-            p_ptr->update &= ~(PU_MONSTERS);
-            update_monsters(TRUE);
-        }
-
-        if (p_ptr->update & PU_MONSTERS) {
-            p_ptr->update &= ~(PU_MONSTERS);
-            update_monsters(FALSE);
-        }
-    }
 }
 
-
-
-
-
-
-
-/*
- * Bit flags for the "p_ptr->notice" variable
- */
-#define PN_HUNGRY	0x00000001L
-#define PN_WEAK		0x00000002L
-
-
-/*
- * Notice various "changes" in the world.
- *
- * Currently this function handles only "hunger" and "equipment"
- * changes, and even these should probably be done elsewhere.
- */
-void notice_stuff(void)
-{
-    int			food_aux;
-
-    
-    /*** XXX XXX Handle Hunger ***/
-
-    /* Getting Weak */
-    if (p_ptr->food < PY_FOOD_WEAK) {
-
-        /* Notice onset of weakness */
-        if (!(PN_WEAK & p_ptr->notice)) {
-            p_ptr->notice |= (PN_HUNGRY);
-            p_ptr->notice |= (PN_WEAK);
-            msg_print("You are getting weak from hunger.");
-            disturb(0, 0);
-            p_ptr->redraw |= (PR_HUNGER);
-        }
-    }
-
-    /* Getting Hungry */
-    else if (p_ptr->food < PY_FOOD_ALERT) {
-
-        /* No longer weak */
-        if (PN_WEAK & p_ptr->notice) {
-            p_ptr->notice &= ~(PN_WEAK);
-            p_ptr->redraw |= (PR_HUNGER);
-        }
-
-        /* Note onset of hunger */
-        if (!(PN_HUNGRY & p_ptr->notice)) {
-            p_ptr->notice |= (PN_HUNGRY);
-            msg_print("You are getting hungry.");
-            disturb(0, 0);
-            p_ptr->redraw |= (PR_HUNGER);
-        }
-    }
-
-    /* Well fed */
-    else {
-
-        /* No longer weak */
-        if (PN_WEAK & p_ptr->notice) {
-            p_ptr->notice &= ~(PN_WEAK);
-            p_ptr->redraw |= (PR_HUNGER);
-        }
-
-        /* No longer hungry */
-        if (PN_HUNGRY & p_ptr->notice) {
-            p_ptr->notice &= ~(PN_HUNGRY);
-            p_ptr->redraw |= (PR_HUNGER);
-        }
-    }
-
-
-    /* Notice changes in food status */
-
-    /* Fainting */
-    if (p_ptr->food < PY_FOOD_FAINT) {
-        food_aux = 0;
-    }
-
-    /* Weak */
-    else if (p_ptr->food < PY_FOOD_WEAK) {
-        food_aux = 1;
-    }
-
-    /* Hungry */
-    else if (p_ptr->food < PY_FOOD_ALERT) {
-        food_aux = 2;
-    }
-
-    /* Normal */
-    else if (p_ptr->food < PY_FOOD_FULL) {
-        food_aux = 3;
-    }
-
-    /* Full */
-    else if (p_ptr->food < PY_FOOD_MAX) {
-        food_aux = 4;
-    }
-
-    /* Gorged */
-    else {
-        food_aux = 5;
-    }
-
-
-    /* Changed food status */
-    if (food_aux != p_ptr->old_food_aux) {
-
-        /* Save it */
-        p_ptr->old_food_aux = food_aux;
-
-        /* Recalculate bonuses */
-        p_ptr->update |= (PU_BONUS);
-
-        /* Redraw hunger */
-        p_ptr->redraw |= (PR_HUNGER);
-    }
-
-
-    /* Take note when "heavy bow" changes */
-    if (p_ptr->old_heavy_shoot != p_ptr->heavy_shoot) {
-
-        /* Message */
-        if (p_ptr->heavy_shoot) {
-            msg_print("You have trouble wielding such a heavy bow.");
-        }
-        else if (inventory[INVEN_BOW].k_idx) {
-            msg_print("You have no trouble wielding your bow.");
-        }
-        else {
-            msg_print("You feel relieved to put down your heavy bow.");
-        }
-        
-        /* Save it */
-        p_ptr->old_heavy_shoot = p_ptr->heavy_shoot;
-    }
-
-
-    /* Take note when "heavy weapon" changes */
-    if (p_ptr->old_heavy_wield != p_ptr->heavy_wield) {
-
-        /* Message */
-        if (p_ptr->heavy_wield) {
-            msg_print("You have trouble wielding such a heavy weapon.");
-        }
-        else if (inventory[INVEN_WIELD].k_idx) {
-            msg_print("You have no trouble wielding your weapon.");
-        }
-        else {
-            msg_print("You feel relieved to put down your heavy weapon.");
-        }
-        
-        /* Save it */
-        p_ptr->old_heavy_wield = p_ptr->heavy_wield;
-    }
-
-
-    /* Take note when "illegal weapon" changes */
-    if (p_ptr->old_icky_wield != p_ptr->icky_wield) {
-
-        /* Message */
-        if (p_ptr->icky_wield) {
-            msg_print("You do not feel comfortable with your weapon.");
-        }
-        else if (inventory[INVEN_WIELD].k_idx) {
-            msg_print("You feel comfortable with your weapon.");
-        }
-        else {
-            msg_print("You feel more comfortable after removing your weapon.");
-        }
-        
-        /* Save it */
-        p_ptr->old_icky_wield = p_ptr->icky_wield;
-    }
-
-
-    /* Take note when "glove state" changes */
-    if (p_ptr->old_cumber_glove != p_ptr->cumber_glove) {
-    
-        /* Message */
-        if (p_ptr->cumber_glove) {
-            msg_print("Your covered hands feel unsuitable for spellcasting.");
-        }
-        else {
-            msg_print("Your hands feel more suitable for spellcasting.");
-        }
-
-        /* Save it */
-        p_ptr->old_cumber_glove = p_ptr->cumber_glove;
-    }
-
-
-    /* Take note when "armor state" changes */
-    if (p_ptr->old_cumber_armor != p_ptr->cumber_armor) {
-    
-        /* Message */
-        if (p_ptr->cumber_armor) {
-            msg_print("The weight of your armor encumbers your movement.");
-        }
-        else {
-            msg_print("You feel able to move more freely.");
-        }
-
-        /* Save it */
-        p_ptr->old_cumber_armor = p_ptr->cumber_armor;
-    }
-
-        
-    /* Take note when "study" changes */
-    if (p_ptr->old_spells != p_ptr->new_spells) {
-
-        cptr p;
-        
-        /* Textual form */
-        p = ((mp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
-
-        /* Player can learn new spells now */
-        if ((p_ptr->new_spells > 0) && (p_ptr->old_spells == 0)) {
-            msg_format("You can learn some new %ss now.", p);
-        }
-
-        /* Display "study state" later */
-        p_ptr->redraw |= (PR_STUDY);
-
-        /* Save the new_spells value */
-        p_ptr->old_spells = p_ptr->new_spells;
-    }
-}
 
 
 
@@ -4251,7 +4040,7 @@ void notice_stuff(void)
  */
 bool set_blind(int v)
 {
-    bool handle = FALSE;
+    bool notice = FALSE;
 
     /* Hack -- Force good values */
     v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
@@ -4259,31 +4048,45 @@ bool set_blind(int v)
     /* Open */
     if (v) {
         if (!p_ptr->blind) {
-            p_ptr->update |= (PU_MONSTERS);
-            p_ptr->redraw |= (PR_MAP | PR_BLIND);
-            handle = TRUE;
+            msg_print("You are blind!");
+            notice = TRUE;
         }
     }
 
     /* Shut */
     else {
         if (p_ptr->blind) {
-            p_ptr->update |= (PU_MONSTERS);
-            p_ptr->update |= (PU_NOTE | PU_VIEW | PU_LITE);
-            p_ptr->redraw |= (PR_MAP | PR_BLIND);
-            msg_print("You can see again!");
-            handle = TRUE;
+            msg_print("You can see again.");
+            notice = TRUE;
         }
     }
 
     /* Use the value */
     p_ptr->blind = v;
 
-    /* Hack -- Update */
-    if (handle) handle_stuff();
+    /* Nothing to notice */
+    if (!notice) return (FALSE);
+
+    /* Disturb */
+    if (disturb_other) disturb(0,0);
+
+    /* Update stuff */
+    p_ptr->update |= (PU_NOTE | PU_VIEW | PU_LITE);
+
+    /* Update the monsters */
+    p_ptr->update |= (PU_MONSTERS);
+
+    /* Redraw the map */
+    p_ptr->redraw |= (PR_MAP);
+    
+    /* Redraw the "blind" */
+    p_ptr->redraw |= (PR_BLIND);
+
+    /* Handle stuff */
+    handle_stuff();
 
     /* Result */
-    return (handle);
+    return (TRUE);
 }
 
 
@@ -4292,7 +4095,7 @@ bool set_blind(int v)
  */
 bool set_confused(int v)
 {
-    bool handle = FALSE;
+    bool notice = FALSE;
 
     /* Hack -- Force good values */
     v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
@@ -4300,28 +4103,36 @@ bool set_confused(int v)
     /* Open */
     if (v) {
         if (!p_ptr->confused) {
-            p_ptr->redraw |= (PR_CONFUSED);
-            handle = TRUE;
+            msg_print("You are confused!");
+            notice = TRUE;
         }
     }
 
     /* Shut */
     else {
         if (p_ptr->confused) {
-            p_ptr->redraw |= (PR_CONFUSED);
             msg_print("You feel less confused now.");
-            handle = TRUE;
+            notice = TRUE;
         }
     }
 
     /* Use the value */
     p_ptr->confused = v;
 
-    /* Hack -- Update */
-    if (handle) handle_stuff();
+    /* Nothing to notice */
+    if (!notice) return (FALSE);
+
+    /* Disturb */
+    if (disturb_other) disturb(0,0);
+
+    /* Redraw the "confused" */
+    p_ptr->redraw |= (PR_CONFUSED);
+    
+    /* Handle stuff */
+    handle_stuff();
 
     /* Result */
-    return (handle);
+    return (TRUE);
 }
 
 
@@ -4330,7 +4141,7 @@ bool set_confused(int v)
  */
 bool set_poisoned(int v)
 {
-    bool handle = FALSE;
+    bool notice = FALSE;
 
     /* Hack -- Force good values */
     v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
@@ -4338,28 +4149,36 @@ bool set_poisoned(int v)
     /* Open */
     if (v) {
         if (!p_ptr->poisoned) {
-            p_ptr->redraw |= (PR_POISONED);
-            handle = TRUE;
+            msg_print("You are poisoned!");
+            notice = TRUE;
         }
     }
 
     /* Shut */
     else {
         if (p_ptr->poisoned) {
-            p_ptr->redraw |= (PR_POISONED);
             msg_print("You are no longer poisoned.");
-            handle = TRUE;
+            notice = TRUE;
         }
     }
 
     /* Use the value */
     p_ptr->poisoned = v;
 
-    /* Hack -- Update */
-    if (handle) handle_stuff();
+    /* Nothing to notice */
+    if (!notice) return (FALSE);
+
+    /* Disturb */
+    if (disturb_other) disturb(0,0);
+
+    /* Redraw the "poisoned" */
+    p_ptr->redraw |= (PR_POISONED);
+    
+    /* Handle stuff */
+    handle_stuff();
 
     /* Result */
-    return (handle);
+    return (TRUE);
 }
 
 
@@ -4368,7 +4187,7 @@ bool set_poisoned(int v)
  */
 bool set_afraid(int v)
 {
-    bool handle = FALSE;
+    bool notice = FALSE;
 
     /* Hack -- Force good values */
     v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
@@ -4376,28 +4195,36 @@ bool set_afraid(int v)
     /* Open */
     if (v) {
         if (!p_ptr->afraid) {
-            p_ptr->redraw |= (PR_AFRAID);
-            handle = TRUE;
+            msg_print("You are terrified!");
+            notice = TRUE;
         }
     }
 
     /* Shut */
     else {
         if (p_ptr->afraid) {
-            p_ptr->redraw |= (PR_AFRAID);
             msg_print("You feel bolder now.");
-            handle = TRUE;
+            notice = TRUE;
         }
     }
 
     /* Use the value */
     p_ptr->afraid = v;
 
-    /* Hack -- Update */
-    if (handle) handle_stuff();
+    /* Nothing to notice */
+    if (!notice) return (FALSE);
+
+    /* Disturb */
+    if (disturb_other) disturb(0,0);
+
+    /* Redraw the "afraid" */
+    p_ptr->redraw |= (PR_AFRAID);
+    
+    /* Handle stuff */
+    handle_stuff();
 
     /* Result */
-    return (handle);
+    return (TRUE);
 }
 
 
@@ -4406,7 +4233,7 @@ bool set_afraid(int v)
  */
 bool set_paralyzed(int v)
 {
-    bool handle = FALSE;
+    bool notice = FALSE;
 
     /* Hack -- Force good values */
     v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
@@ -4414,27 +4241,36 @@ bool set_paralyzed(int v)
     /* Open */
     if (v) {
         if (!p_ptr->paralyzed) {
-            p_ptr->redraw |= (PR_STATE);
-            handle = TRUE;
+            msg_print("You are paralyzed!");
+            notice = TRUE;
         }
     }
 
     /* Shut */
     else {
         if (p_ptr->paralyzed) {
-            p_ptr->redraw |= (PR_STATE);
-            handle = TRUE;
+            msg_print("You can move again.");
+            notice = TRUE;
         }
     }
 
     /* Use the value */
     p_ptr->paralyzed = v;
 
-    /* Hack -- Update */
-    if (handle) handle_stuff();
+    /* Nothing to notice */
+    if (!notice) return (FALSE);
+
+    /* Disturb */
+    if (disturb_other) disturb(0,0);
+
+    /* Redraw the state */
+    p_ptr->redraw |= (PR_STATE);
+    
+    /* Handle stuff */
+    handle_stuff();
 
     /* Result */
-    return (handle);
+    return (TRUE);
 }
 
 
@@ -4445,7 +4281,7 @@ bool set_paralyzed(int v)
  */
 bool set_image(int v)
 {
-    bool handle = FALSE;
+    bool notice = FALSE;
 
     /* Hack -- Force good values */
     v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
@@ -4453,30 +4289,39 @@ bool set_image(int v)
     /* Open */
     if (v) {
         if (!p_ptr->image) {
-            p_ptr->update |= (PU_MONSTERS);
-            p_ptr->redraw |= (PR_MAP);
-            handle = TRUE;
+            msg_print("You feel drugged!");
+            notice = TRUE;
         }
     }
 
     /* Shut */
     else {
         if (p_ptr->image) {
-            p_ptr->update |= (PU_MONSTERS);
-            p_ptr->redraw |= (PR_MAP);
-            msg_print("You can see clearly!");
-            handle = TRUE;
+            msg_print("You can see clearly again.");
+            notice = TRUE;
         }
     }
 
     /* Use the value */
     p_ptr->image = v;
 
-    /* Hack -- Update */
-    if (handle) handle_stuff();
+    /* Nothing to notice */
+    if (!notice) return (FALSE);
+
+    /* Disturb */
+    if (disturb_other) disturb(0,0);
+
+    /* Redraw the map */
+    p_ptr->redraw |= (PR_MAP);
+    
+    /* Update monsters */
+    p_ptr->update |= (PU_MONSTERS);
+    
+    /* Handle stuff */
+    handle_stuff();
 
     /* Result */
-    return (handle);
+    return (TRUE);
 }
 
 
@@ -4485,7 +4330,7 @@ bool set_image(int v)
  */
 bool set_fast(int v)
 {
-    bool handle = FALSE;
+    bool notice = FALSE;
 
     /* Hack -- Force good values */
     v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
@@ -4493,29 +4338,36 @@ bool set_fast(int v)
     /* Open */
     if (v) {
         if (!p_ptr->fast) {
-            p_ptr->update |= (PU_BONUS);
-            msg_print("You feel yourself moving faster.");
-            handle = TRUE;
+            msg_print("You feel yourself moving faster!");
+            notice = TRUE;
         }
     }
 
     /* Shut */
     else {
         if (p_ptr->fast) {
-            p_ptr->update |= (PU_BONUS);
             msg_print("You feel yourself slow down.");
-            handle = TRUE;
+            notice = TRUE;
         }
     }
 
     /* Use the value */
     p_ptr->fast = v;
 
-    /* Hack -- Update */
-    if (handle) handle_stuff();
+    /* Nothing to notice */
+    if (!notice) return (FALSE);
+
+    /* Disturb */
+    if (disturb_other) disturb(0,0);
+
+    /* Recalculate bonuses */
+    p_ptr->update |= (PU_BONUS);
+    
+    /* Handle stuff */
+    handle_stuff();
 
     /* Result */
-    return (handle);
+    return (TRUE);
 }
 
 
@@ -4524,7 +4376,7 @@ bool set_fast(int v)
  */
 bool set_slow(int v)
 {
-    bool handle = FALSE;
+    bool notice = FALSE;
 
     /* Hack -- Force good values */
     v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
@@ -4532,29 +4384,36 @@ bool set_slow(int v)
     /* Open */
     if (v) {
         if (!p_ptr->slow) {
-            p_ptr->update |= (PU_BONUS);
-            msg_print("You feel yourself moving slower.");
-            handle = TRUE;
+            msg_print("You feel yourself moving slower!");
+            notice = TRUE;
         }
     }
 
     /* Shut */
     else {
         if (p_ptr->slow) {
-            p_ptr->update |= (PU_BONUS);
             msg_print("You feel yourself speed up.");
-            handle = TRUE;
+            notice = TRUE;
         }
     }
 
     /* Use the value */
     p_ptr->slow = v;
 
-    /* Hack -- Update */
-    if (handle) handle_stuff();
+    /* Nothing to notice */
+    if (!notice) return (FALSE);
+
+    /* Disturb */
+    if (disturb_other) disturb(0,0);
+
+    /* Recalculate bonuses */
+    p_ptr->update |= (PU_BONUS);
+    
+    /* Handle stuff */
+    handle_stuff();
 
     /* Result */
-    return (handle);
+    return (TRUE);
 }
 
 
@@ -4563,7 +4422,7 @@ bool set_slow(int v)
  */
 bool set_shield(int v)
 {
-    bool handle = FALSE;
+    bool notice = FALSE;
 
     /* Hack -- Force good values */
     v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
@@ -4571,29 +4430,36 @@ bool set_shield(int v)
     /* Open */
     if (v) {
         if (!p_ptr->shield) {
-            p_ptr->update |= (PU_BONUS);
             msg_print("A mystic shield forms around your body!");
-            handle = TRUE;
+            notice = TRUE;
         }
     }
 
     /* Shut */
     else {
         if (p_ptr->shield) {
-            p_ptr->update |= (PU_BONUS);
             msg_print("Your mystic shield crumbles away.");
-            handle = TRUE;
+            notice = TRUE;
         }
     }
 
     /* Use the value */
     p_ptr->shield = v;
 
-    /* Hack -- Update */
-    if (handle) handle_stuff();
+    /* Nothing to notice */
+    if (!notice) return (FALSE);
+
+    /* Disturb */
+    if (disturb_other) disturb(0,0);
+
+    /* Recalculate bonuses */
+    p_ptr->update |= (PU_BONUS);
+    
+    /* Handle stuff */
+    handle_stuff();
 
     /* Result */
-    return (handle);
+    return (TRUE);
 }
 
 
@@ -4603,7 +4469,7 @@ bool set_shield(int v)
  */
 bool set_blessed(int v)
 {
-    bool handle = FALSE;
+    bool notice = FALSE;
 
     /* Hack -- Force good values */
     v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
@@ -4611,29 +4477,36 @@ bool set_blessed(int v)
     /* Open */
     if (v) {
         if (!p_ptr->blessed) {
-            p_ptr->update |= (PU_BONUS);
             msg_print("You feel righteous!");
-            handle = TRUE;
+            notice = TRUE;
         }
     }
 
     /* Shut */
     else {
         if (p_ptr->blessed) {
-            p_ptr->update |= (PU_BONUS);
             msg_print("The prayer has expired.");
-            handle = TRUE;
+            notice = TRUE;
         }
     }
 
     /* Use the value */
     p_ptr->blessed = v;
 
-    /* Hack -- Update */
-    if (handle) handle_stuff();
+    /* Nothing to notice */
+    if (!notice) return (FALSE);
+
+    /* Disturb */
+    if (disturb_other) disturb(0,0);
+
+    /* Recalculate bonuses */
+    p_ptr->update |= (PU_BONUS);
+    
+    /* Handle stuff */
+    handle_stuff();
 
     /* Result */
-    return (handle);
+    return (TRUE);
 }
 
 
@@ -4642,7 +4515,7 @@ bool set_blessed(int v)
  */
 bool set_hero(int v)
 {
-    bool handle = FALSE;
+    bool notice = FALSE;
 
     /* Hack -- Force good values */
     v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
@@ -4650,31 +4523,39 @@ bool set_hero(int v)
     /* Open */
     if (v) {
         if (!p_ptr->hero) {
-            p_ptr->update |= (PU_BONUS | PU_HP);
-            p_ptr->redraw |= (PR_HP);
-            msg_print("You feel like a HERO!");
-            handle = TRUE;
+            msg_print("You feel like a hero!");
+            notice = TRUE;
         }
     }
 
     /* Shut */
     else {
         if (p_ptr->hero) {
-            p_ptr->update |= (PU_BONUS | PU_HP);
-            p_ptr->redraw |= (PR_HP);
             msg_print("The heroism wears off.");
-            handle = TRUE;
+            notice = TRUE;
         }
     }
 
     /* Use the value */
     p_ptr->hero = v;
 
-    /* Hack -- Update */
-    if (handle) handle_stuff();
+    /* Nothing to notice */
+    if (!notice) return (FALSE);
+
+    /* Disturb */
+    if (disturb_other) disturb(0,0);
+
+    /* Recalculate bonuses */
+    p_ptr->update |= (PU_BONUS);
+    
+    /* Recalculate hitpoints */
+    p_ptr->update |= (PU_HP);
+
+    /* Handle stuff */
+    handle_stuff();
 
     /* Result */
-    return (handle);
+    return (TRUE);
 }
 
 
@@ -4683,7 +4564,7 @@ bool set_hero(int v)
  */
 bool set_shero(int v)
 {
-    bool handle = FALSE;
+    bool notice = FALSE;
 
     /* Hack -- Force good values */
     v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
@@ -4691,31 +4572,39 @@ bool set_shero(int v)
     /* Open */
     if (v) {
         if (!p_ptr->shero) {
-            p_ptr->update |= (PU_BONUS | PU_HP);
-            p_ptr->redraw |= (PR_HP);
             msg_print("You feel like a killing machine!");
-            handle = TRUE;
+            notice = TRUE;
         }
     }
 
     /* Shut */
     else {
         if (p_ptr->shero) {
-            p_ptr->update |= (PU_BONUS | PU_HP);
-            p_ptr->redraw |= (PR_HP);
             msg_print("You feel less Berserk.");
-            handle = TRUE;
+            notice = TRUE;
         }
     }
 
     /* Use the value */
     p_ptr->shero = v;
 
-    /* Hack -- Update */
-    if (handle) handle_stuff();
+    /* Nothing to notice */
+    if (!notice) return (FALSE);
+
+    /* Disturb */
+    if (disturb_other) disturb(0,0);
+
+    /* Recalculate bonuses */
+    p_ptr->update |= (PU_BONUS);
+    
+    /* Recalculate hitpoints */
+    p_ptr->update |= (PU_HP);
+
+    /* Handle stuff */
+    handle_stuff();
 
     /* Result */
-    return (handle);
+    return (TRUE);
 }
 
 
@@ -4724,7 +4613,7 @@ bool set_shero(int v)
  */
 bool set_protevil(int v)
 {
-    bool handle = FALSE;
+    bool notice = FALSE;
 
     /* Hack -- Force good values */
     v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
@@ -4732,7 +4621,8 @@ bool set_protevil(int v)
     /* Open */
     if (v) {
         if (!p_ptr->protevil) {
-            handle = TRUE;
+            msg_print("You feel safe from evil!");
+            notice = TRUE;
         }
     }
 
@@ -4740,18 +4630,24 @@ bool set_protevil(int v)
     else {
         if (p_ptr->protevil) {
             msg_print("You no longer feel safe from evil.");
-            handle = TRUE;
+            notice = TRUE;
         }
     }
 
     /* Use the value */
     p_ptr->protevil = v;
 
-    /* Hack -- Update */
-    if (handle) handle_stuff();
+    /* Nothing to notice */
+    if (!notice) return (FALSE);
+
+    /* Disturb */
+    if (disturb_other) disturb(0,0);
+
+    /* Handle stuff */
+    handle_stuff();
 
     /* Result */
-    return (handle);
+    return (TRUE);
 }
 
 
@@ -4760,7 +4656,7 @@ bool set_protevil(int v)
  */
 bool set_invuln(int v)
 {
-    bool handle = FALSE;
+    bool notice = FALSE;
 
     /* Hack -- Force good values */
     v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
@@ -4768,29 +4664,36 @@ bool set_invuln(int v)
     /* Open */
     if (v) {
         if (!p_ptr->invuln) {
-            p_ptr->update |= (PU_BONUS);
             msg_print("You feel invulnerable!");
-            handle = TRUE;
+            notice = TRUE;
         }
     }
 
     /* Shut */
     else {
         if (p_ptr->invuln) {
-            p_ptr->update |= (PU_BONUS);
             msg_print("You feel vulnerable once more.");
-            handle = TRUE;
+            notice = TRUE;
         }
     }
 
     /* Use the value */
     p_ptr->invuln = v;
 
-    /* Hack -- Update */
-    if (handle) handle_stuff();
+    /* Nothing to notice */
+    if (!notice) return (FALSE);
+
+    /* Disturb */
+    if (disturb_other) disturb(0,0);
+
+    /* Recalculate bonuses */
+    p_ptr->update |= (PU_BONUS);
+    
+    /* Handle stuff */
+    handle_stuff();
 
     /* Result */
-    return (handle);
+    return (TRUE);
 }
 
 
@@ -4799,7 +4702,7 @@ bool set_invuln(int v)
  */
 bool set_tim_invis(int v)
 {
-    bool handle = FALSE;
+    bool notice = FALSE;
 
     /* Hack -- Force good values */
     v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
@@ -4807,27 +4710,39 @@ bool set_tim_invis(int v)
     /* Open */
     if (v) {
         if (!p_ptr->tim_invis) {
-            p_ptr->update |= (PU_BONUS | PU_MONSTERS);
-            handle = TRUE;
+            msg_print("Your eyes feel very sensitive!");
+            notice = TRUE;
         }
     }
 
     /* Shut */
     else {
         if (p_ptr->tim_invis) {
-            p_ptr->update |= (PU_BONUS | PU_MONSTERS);
-            handle = TRUE;
+            msg_print("Your eyes feel less sensitive.");
+            notice = TRUE;
         }
     }
 
     /* Use the value */
     p_ptr->tim_invis = v;
 
-    /* Hack -- Update */
-    if (handle) handle_stuff();
+    /* Nothing to notice */
+    if (!notice) return (FALSE);
+
+    /* Disturb */
+    if (disturb_other) disturb(0,0);
+
+    /* Recalculate bonuses */
+    p_ptr->update |= (PU_BONUS);
+    
+    /* Update the monsters */
+    p_ptr->update |= (PU_MONSTERS);
+
+    /* Handle stuff */
+    handle_stuff();
 
     /* Result */
-    return (handle);
+    return (TRUE);
 }
 
 
@@ -4836,7 +4751,7 @@ bool set_tim_invis(int v)
  */
 bool set_tim_infra(int v)
 {
-    bool handle = FALSE;
+    bool notice = FALSE;
 
     /* Hack -- Force good values */
     v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
@@ -4844,27 +4759,39 @@ bool set_tim_infra(int v)
     /* Open */
     if (v) {
         if (!p_ptr->tim_infra) {
-            p_ptr->update |= (PU_BONUS | PU_MONSTERS);
-            handle = TRUE;
+            msg_print("Your eyes begin to tingle!");
+            notice = TRUE;
         }
     }
 
     /* Shut */
     else {
         if (p_ptr->tim_infra) {
-            p_ptr->update |= (PU_BONUS | PU_MONSTERS);
-            handle = TRUE;
+            msg_print("Your eyes stop tingling.");
+            notice = TRUE;
         }
     }
 
     /* Use the value */
     p_ptr->tim_infra = v;
 
-    /* Hack -- Update */
-    if (handle) handle_stuff();
+    /* Nothing to notice */
+    if (!notice) return (FALSE);
+
+    /* Disturb */
+    if (disturb_other) disturb(0,0);
+
+    /* Recalculate bonuses */
+    p_ptr->update |= (PU_BONUS);
+    
+    /* Update the monsters */
+    p_ptr->update |= (PU_MONSTERS);
+    
+    /* Handle stuff */
+    handle_stuff();
 
     /* Result */
-    return (handle);
+    return (TRUE);
 }
 
 
@@ -4873,7 +4800,7 @@ bool set_tim_infra(int v)
  */
 bool set_oppose_acid(int v)
 {
-    bool handle = FALSE;
+    bool notice = FALSE;
 
     /* Hack -- Force good values */
     v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
@@ -4881,7 +4808,8 @@ bool set_oppose_acid(int v)
     /* Open */
     if (v) {
         if (!p_ptr->oppose_acid) {
-            handle = TRUE;
+            msg_print("You feel resistant to acid!");
+            notice = TRUE;
         }
     }
 
@@ -4889,18 +4817,24 @@ bool set_oppose_acid(int v)
     else {
         if (p_ptr->oppose_acid) {
             msg_print("You feel less resistant to acid.");
-            handle = TRUE;
+            notice = TRUE;
         }
     }
 
     /* Use the value */
     p_ptr->oppose_acid = v;
 
-    /* Hack -- Update */
-    /* if (handle) handle_stuff(); */
+    /* Nothing to notice */
+    if (!notice) return (FALSE);
+
+    /* Disturb */
+    if (disturb_other) disturb(0,0);
+
+    /* Handle stuff */
+    handle_stuff();
 
     /* Result */
-    return (handle);
+    return (TRUE);
 }
 
 
@@ -4909,7 +4843,7 @@ bool set_oppose_acid(int v)
  */
 bool set_oppose_elec(int v)
 {
-    bool handle = FALSE;
+    bool notice = FALSE;
 
     /* Hack -- Force good values */
     v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
@@ -4917,7 +4851,8 @@ bool set_oppose_elec(int v)
     /* Open */
     if (v) {
         if (!p_ptr->oppose_elec) {
-            handle = TRUE;
+            msg_print("You feel resistant to electricity!");
+            notice = TRUE;
         }
     }
 
@@ -4925,18 +4860,24 @@ bool set_oppose_elec(int v)
     else {
         if (p_ptr->oppose_elec) {
             msg_print("You feel less resistant to electricity.");
-            handle = TRUE;
+            notice = TRUE;
         }
     }
 
     /* Use the value */
     p_ptr->oppose_elec = v;
 
-    /* Hack -- Update */
-    /* if (handle) handle_stuff(); */
+    /* Nothing to notice */
+    if (!notice) return (FALSE);
+
+    /* Disturb */
+    if (disturb_other) disturb(0,0);
+
+    /* Handle stuff */
+    handle_stuff();
 
     /* Result */
-    return (handle);
+    return (TRUE);
 }
 
 
@@ -4945,7 +4886,7 @@ bool set_oppose_elec(int v)
  */
 bool set_oppose_fire(int v)
 {
-    bool handle = FALSE;
+    bool notice = FALSE;
 
     /* Hack -- Force good values */
     v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
@@ -4953,7 +4894,8 @@ bool set_oppose_fire(int v)
     /* Open */
     if (v) {
         if (!p_ptr->oppose_fire) {
-            handle = TRUE;
+            msg_print("You feel resistant to fire!");
+            notice = TRUE;
         }
     }
 
@@ -4961,18 +4903,24 @@ bool set_oppose_fire(int v)
     else {
         if (p_ptr->oppose_fire) {
             msg_print("You feel less resistant to fire.");
-            handle = TRUE;
+            notice = TRUE;
         }
     }
 
     /* Use the value */
     p_ptr->oppose_fire = v;
 
-    /* Hack -- Update */
-    /* if (handle) handle_stuff(); */
+    /* Nothing to notice */
+    if (!notice) return (FALSE);
+
+    /* Disturb */
+    if (disturb_other) disturb(0,0);
+
+    /* Handle stuff */
+    handle_stuff();
 
     /* Result */
-    return (handle);
+    return (TRUE);
 }
 
 
@@ -4981,7 +4929,7 @@ bool set_oppose_fire(int v)
  */
 bool set_oppose_cold(int v)
 {
-    bool handle = FALSE;
+    bool notice = FALSE;
 
     /* Hack -- Force good values */
     v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
@@ -4989,7 +4937,8 @@ bool set_oppose_cold(int v)
     /* Open */
     if (v) {
         if (!p_ptr->oppose_cold) {
-            handle = TRUE;
+            msg_print("You feel resistant to cold!");
+            notice = TRUE;
         }
     }
 
@@ -4997,18 +4946,24 @@ bool set_oppose_cold(int v)
     else {
         if (p_ptr->oppose_cold) {
             msg_print("You feel less resistant to cold.");
-            handle = TRUE;
+            notice = TRUE;
         }
     }
 
     /* Use the value */
     p_ptr->oppose_cold = v;
 
-    /* Hack -- Update */
-    /* if (handle) handle_stuff(); */
+    /* Nothing to notice */
+    if (!notice) return (FALSE);
+
+    /* Disturb */
+    if (disturb_other) disturb(0,0);
+
+    /* Handle stuff */
+    handle_stuff();
 
     /* Result */
-    return (handle);
+    return (TRUE);
 }
 
 
@@ -5017,7 +4972,7 @@ bool set_oppose_cold(int v)
  */
 bool set_oppose_pois(int v)
 {
-    bool handle = FALSE;
+    bool notice = FALSE;
 
     /* Hack -- Force good values */
     v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
@@ -5025,7 +4980,8 @@ bool set_oppose_pois(int v)
     /* Open */
     if (v) {
         if (!p_ptr->oppose_pois) {
-            handle = TRUE;
+            msg_print("You feel resistant to poison!");
+            notice = TRUE;
         }
     }
 
@@ -5033,106 +4989,495 @@ bool set_oppose_pois(int v)
     else {
         if (p_ptr->oppose_pois) {
             msg_print("You feel less resistant to poison.");
-            handle = TRUE;
+            notice = TRUE;
         }
     }
 
     /* Use the value */
     p_ptr->oppose_pois = v;
 
-    /* Hack -- Update */
-    /* if (handle) handle_stuff(); */
+    /* Nothing to notice */
+    if (!notice) return (FALSE);
+
+    /* Disturb */
+    if (disturb_other) disturb(0,0);
+
+    /* Handle stuff */
+    handle_stuff();
 
     /* Result */
-    return (handle);
+    return (TRUE);
 }
 
 
 /*
  * Set "p_ptr->stun", notice observable changes
  *
- * Hack -- we update whenever the stun changes to simplify the code,
- * but this is very inefficient.  XXX XXX XXX
+ * Note the special code to only notice "range" changes.
  */
 bool set_stun(int v)
 {
-    bool handle = FALSE;
+    int old_aux, new_aux;
+
+    bool notice = FALSE;
 
     /* Hack -- Force good values */
     v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
 
-    /* Open */
-    if (v) {
-        if (!p_ptr->stun) {
-            handle = TRUE;
-        }
+    /* Knocked out */
+    if (p_ptr->stun > 100) {
+        old_aux = 3;
     }
 
-    /* Shut */
+    /* Heavy stun */
+    else if (p_ptr->stun > 50) {
+        old_aux = 2;
+    }
+
+    /* Stun */
+    else if (p_ptr->stun > 0) {
+        old_aux = 1;
+    }
+
+    /* None */
     else {
-        if (p_ptr->stun) {
-            msg_print("You are no longer stunned.");
-            handle = TRUE;
+        old_aux = 0;
+    }
+    
+    /* Knocked out */
+    if (v > 100) {
+        new_aux = 3;
+    }
+
+    /* Heavy stun */
+    else if (v > 50) {
+        new_aux = 2;
+    }
+
+    /* Stun */
+    else if (v > 0) {
+        new_aux = 1;
+    }
+
+    /* None */
+    else {
+        new_aux = 0;
+    }
+    
+    /* Increase cut */
+    if (new_aux > old_aux) {
+
+        /* Describe the state */
+        switch (new_aux) {
+
+            /* Stun */
+            case 1:
+                msg_print("You have been stunned.");
+                break;
+
+            /* Heavy stun */
+            case 2:
+                msg_print("You have been heavily stunned.");
+                break;
+
+            /* Knocked out */
+            case 3:
+                msg_print("You have been knocked out.");
+                break;
         }
+
+        /* Notice */
+        notice = TRUE;
+    }
+
+    /* Decrease cut */
+    else if (new_aux < old_aux) {
+
+        /* Describe the state */
+        switch (new_aux) {
+
+            /* None */
+            case 0:
+                msg_print("You are no longer stunned.");
+                if (disturb_other) disturb(0, 0);
+                break;
+        }
+
+        /* Notice */
+        notice = TRUE;
     }
 
     /* Use the value */
     p_ptr->stun = v;
 
-    /* Hack -- update/redraw */
+    /* No change */
+    if (!notice) return (FALSE);
+
+    /* Disturb */
+    if (disturb_other) disturb(0,0);
+
+    /* Recalculate bonuses */
     p_ptr->update |= (PU_BONUS);
+
+    /* Redraw the "stun" */
     p_ptr->redraw |= (PR_STUN);
-    handle = TRUE;
-    
-    /* Hack -- Update */
-    if (handle) handle_stuff();
+
+    /* Handle stuff */
+    handle_stuff();
 
     /* Result */
-    return (handle);
+    return (TRUE);
 }
 
 
 /*
  * Set "p_ptr->cut", notice observable changes
  *
- * Hack -- we update whenever the cut changes to simplify the code,
- * but this is very inefficient.  XXX XXX XXX
+ * Note the special code to only notice "range" changes.
  */
 bool set_cut(int v)
 {
-    bool handle = FALSE;
+    int old_aux, new_aux;
+
+    bool notice = FALSE;
 
     /* Hack -- Force good values */
     v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
 
-    /* Open */
-    if (v) {
-        if (!p_ptr->cut) {
-            handle = TRUE;
-        }
+    /* Mortal wound */
+    if (p_ptr->cut > 1000) {
+        old_aux = 7;
     }
 
-    /* Shut */
+    /* Deep gash */
+    else if (p_ptr->cut > 200) {
+        old_aux = 6;
+    }
+    
+    /* Severe cut */
+    else if (p_ptr->cut > 100) {
+        old_aux = 5;
+    }
+
+    /* Nasty cut */
+    else if (p_ptr->cut > 50) {
+        old_aux = 4;
+    }
+
+    /* Bad cut */
+    else if (p_ptr->cut > 25) {
+        old_aux = 3;
+    }
+
+    /* Light cut */
+    else if (p_ptr->cut > 10) {
+        old_aux = 2;
+    }
+
+    /* Graze */
+    else if (p_ptr->cut > 0) {
+        old_aux = 1;
+    }
+
+    /* None */
     else {
-        if (p_ptr->cut) {
-            msg_print("You are no longer bleeding.");
-            handle = TRUE;
+        old_aux = 0;
+    }
+
+    /* Mortal wound */
+    if (v > 1000) {
+        new_aux = 7;
+    }
+
+    /* Deep gash */
+    else if (v > 200) {
+        new_aux = 6;
+    }
+    
+    /* Severe cut */
+    else if (v > 100) {
+        new_aux = 5;
+    }
+
+    /* Nasty cut */
+    else if (v > 50) {
+        new_aux = 4;
+    }
+
+    /* Bad cut */
+    else if (v > 25) {
+        new_aux = 3;
+    }
+
+    /* Light cut */
+    else if (v > 10) {
+        new_aux = 2;
+    }
+
+    /* Graze */
+    else if (v > 0) {
+        new_aux = 1;
+    }
+
+    /* None */
+    else {
+        new_aux = 0;
+    }
+
+    /* Increase cut */
+    if (new_aux > old_aux) {
+
+        /* Describe the state */
+        switch (new_aux) {
+
+            /* Graze */
+            case 1:
+                msg_print("You have been given a graze.");
+                break;
+
+            /* Light cut */
+            case 2:
+                msg_print("You have been given a light cut.");
+                break;
+
+            /* Bad cut */
+            case 3:
+                msg_print("You have been given a bad cut.");
+                break;
+
+            /* Nasty cut */
+            case 4:
+                msg_print("You have been given a nasty cut.");
+                break;
+
+            /* Severe cut */
+            case 5:
+                msg_print("You have been given a severe cut.");
+                break;
+
+            /* Deep gash */
+            case 6:
+                msg_print("You have been given a deep gash.");
+                break;
+
+            /* Mortal wound */
+            case 7:
+                msg_print("You have been given a mortal wound.");
+                break;
         }
+
+        /* Notice */
+        notice = TRUE;
+    }
+
+    /* Decrease cut */
+    else if (new_aux < old_aux) {
+
+        /* Describe the state */
+        switch (new_aux) {
+
+            /* None */
+            case 0:
+                msg_print("You are no longer bleeding.");
+                if (disturb_other) disturb(0, 0);
+                break;
+        }
+
+        /* Notice */
+        notice = TRUE;
     }
 
     /* Use the value */
     p_ptr->cut = v;
 
-    /* Hack -- update/redraw */
-    p_ptr->update |= (PU_BONUS);
-    p_ptr->redraw |= (PR_CUT);
-    handle = TRUE;
+    /* No change */
+    if (!notice) return (FALSE);
 
-    /* Hack -- Update */
-    if (handle) handle_stuff();
+    /* Disturb */
+    if (disturb_other) disturb(0,0);
+
+    /* Recalculate bonuses */
+    p_ptr->update |= (PU_BONUS);
+
+    /* Redraw the "cut" */
+    p_ptr->redraw |= (PR_CUT);
+
+    /* Handle stuff */
+    handle_stuff();
 
     /* Result */
-    return (handle);
+    return (TRUE);
+}
+
+
+/*
+ * Set "p_ptr->food", notice observable changes
+ *
+ * The "p_ptr->food" variable can get as large as 20000, allowing the
+ * addition of the most "filling" item, Elvish Waybread, which adds
+ * 7500 food units, without overflowing the 32767 maximum limit.
+ *
+ * Perhaps we should disturb the player with various messages,
+ * especially messages about hunger status changes.  XXX XXX XXX
+ *
+ * Digestion of food is handled in "dungeon.c", in which, normally,
+ * the player digests about 20 food units per 100 game turns, more
+ * when "fast", more when "regenerating", less with "slow digestion",
+ * but when the player is "gorged", he digests 100 food units per 10
+ * game turns, or a full 1000 food units per 100 game turns.
+ *
+ * Note that the player's speed is reduced by 10 units while gorged,
+ * so if the player eats a single food ration (5000 food units) when
+ * full (15000 food units), he will be gorged for (5000/100)*10 = 500
+ * game turns, or 500/(100/5) = 25 player turns (if nothing else is
+ * affecting the player speed).
+ */
+bool set_food(int v)
+{
+    int old_aux, new_aux;
+
+    bool notice = FALSE;
+
+    /* Hack -- Force good values */
+    v = (v > 20000) ? 20000 : (v < 0) ? 0 : v;
+
+    /* Fainting / Starving */
+    if (p_ptr->food < PY_FOOD_FAINT) {
+        old_aux = 0;
+    }
+
+    /* Weak */
+    else if (p_ptr->food < PY_FOOD_WEAK) {
+        old_aux = 1;
+    }
+
+    /* Hungry */
+    else if (p_ptr->food < PY_FOOD_ALERT) {
+        old_aux = 2;
+    }
+
+    /* Normal */
+    else if (p_ptr->food < PY_FOOD_FULL) {
+        old_aux = 3;
+    }
+
+    /* Full */
+    else if (p_ptr->food < PY_FOOD_MAX) {
+        old_aux = 4;
+    }
+
+    /* Gorged */
+    else {
+        old_aux = 5;
+    }
+
+    /* Fainting / Starving */
+    if (v < PY_FOOD_FAINT) {
+        new_aux = 0;
+    }
+
+    /* Weak */
+    else if (v < PY_FOOD_WEAK) {
+        new_aux = 1;
+    }
+
+    /* Hungry */
+    else if (v < PY_FOOD_ALERT) {
+        new_aux = 2;
+    }
+
+    /* Normal */
+    else if (v < PY_FOOD_FULL) {
+        new_aux = 3;
+    }
+
+    /* Full */
+    else if (v < PY_FOOD_MAX) {
+        new_aux = 4;
+    }
+
+    /* Gorged */
+    else {
+        new_aux = 5;
+    }
+
+    /* Food increase */
+    if (new_aux > old_aux) {
+
+        /* Describe the state */
+        switch (new_aux) {
+        
+            /* Hungry */
+            case 2:
+                msg_print("You are still hungry.");
+                break;
+
+            /* Normal */
+            case 3:
+                msg_print("You are no longer hungry.");
+                break;
+
+            /* Full */
+            case 4:
+                msg_print("You are full.");
+                break;
+
+            /* Bloated */
+            case 5:
+                msg_print("You have gorged yourself into a bloated state!");
+                break;
+        }
+        
+        /* Change */
+        notice = TRUE;
+    }
+    
+    /* Food decrease */
+    else if (new_aux < old_aux) {
+
+        /* Describe the state */
+        switch (new_aux) {
+        
+            /* Fainting / Starving */
+            case 0:
+                msg_print("You are getting faint from hunger.");
+                break;
+
+            /* Weak */
+            case 1:
+                msg_print("You are getting weak from hunger.");
+                break;
+
+            /* Hungry */
+            case 2:
+                msg_print("You are getting hungry.");
+                break;
+        }
+
+        /* Change */
+        notice = TRUE;
+    }
+
+    /* Use the value */
+    p_ptr->food = v;
+
+    /* Nothing to notice */
+    if (!notice) return (FALSE);
+
+    /* Disturb */
+    if (disturb_other) disturb(0,0);
+
+    /* Recalculate bonuses */
+    p_ptr->update |= (PU_BONUS);
+
+    /* Redraw hunger */
+    p_ptr->redraw |= (PR_HUNGER);
+        
+    /* Handle stuff */
+    handle_stuff();
+
+    /* Result */
+    return (TRUE);
 }
 
 

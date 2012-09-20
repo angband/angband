@@ -74,17 +74,6 @@
 
 
 /*
- * Some simple real numbers
- */
-
-#define RAD2	1.41421356237
-#define RAD3	1.73205080757
-
-#define PI  	3.14159265358979324
-#define TWOPI	6.28318530717958648
-
-
-/*
  * The constants "TRUE" and "FALSE"
  */
 
@@ -94,31 +83,6 @@
 #undef FALSE
 #define FALSE	0
 
-
-
-/**** Assertions and Preventions ****/
-
-#ifdef CHECK_ASSERTIONS
-
-/* Note that the following functions require "z-form.h" */
-
-/* Allow Certain Conditions 'C' to be ABSOLUTELY ILLEGAL */
-#define PREVENT(C) \
-        if (C) core_fmt("PREVENT(Line %d in file %s)", __LINE__, __FILE__);
-
-/* Allow Certain Conditions 'C' to be ABSOLUTELY NECESSARY */
-#define ASSERT(C) \
-        if (!(C)) core_fmt("ASSERT(Line %d in file %s)", __LINE__, __FILE__);
-
-#else
-
-/* Ignore Preventions */
-#define PREVENT(C)
-
-/* Ignore Assertions */
-#define ASSERT(C)
-
-#endif
 
 
 
@@ -157,19 +121,25 @@
 
 
 /*
- * Hack -- allow use of "ASCII" and "EBCDIC" for "indexes"
- * The "index" values must be lowercase letters (or digits).
+ * Hack -- allow use of "ASCII" and "EBCDIC" for "indexes", "digits",
+ * and "Control-Characters".
+ *
+ * Note that all "index" values must be "lowercase letters", while
+ * all "digits" must be "digits".  Control characters can be made
+ * from any legal characters.  XXX XXX XXX
  */
 #ifdef VM
-#  define A2I(X)    alphatoindex(X)
-#  define I2A(X)    indextoalpha(X)
-#  define D2I(X)    ((X) - '0')
-#  define I2D(X)    ((X) + '0')
+#  define A2I(X)	alphatoindex(X)
+#  define I2A(X)	indextoalpha(X)
+#  define D2I(X)	((X) - '0')
+#  define I2D(X)	((X) + '0')
+#  define KTRL(X)	((X) & 0x1F)
 #else
-#  define A2I(X)    ((X) - 'a')
-#  define I2A(X)    ((X) + 'a')
-#  define D2I(X)    ((X) - '0')
-#  define I2D(X)    ((X) + '0')
+#  define A2I(X)	((X) - 'a')
+#  define I2A(X)	((X) + 'a')
+#  define D2I(X)	((X) - '0')
+#  define I2D(X)	((X) + '0')
+#  define KTRL(X)	((X) & 0x1F)
 #endif
 
 

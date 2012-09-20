@@ -92,21 +92,13 @@
  * for Angband 2.8.0 (and 2.7.9+), in particular, dungeon terrain
  * features, such as doors and stairs and traps and rubble and walls,
  * are all handled as a set of 64 possible "terrain features", and
- * not as "fake" objects like they used to be.
+ * not as "fake" objects (440-479) as in pre-2.8.0 versions.
  *
  * The 64 new "dungeon features" will also be used for "visual display"
  * but we must be careful not to allow, for example, the user to display
  * hidden traps in a different way from floors, or secret doors in a way
  * different from granite walls, or even permanent granite in a different
- * way from granite.  I suppose it would be okay to display the outer wall
- * of the dungeon in a special way if necessary.  The "notice_seams" flag
- * will probably disappear, replaced by a specialized "pref" file.  Note
- * that a new action in "pref" files will be needed to define "terrain",
- * and a new "f_info.txt" file will be needed to describe the terrain.
- * XXX XXX XXX
- *
- * Actually the "notice_seams" option is still used to decide if the
- * player wants to "notice" seams when he is "looking" at things.
+ * way from granite.  XXX XXX XXX
  */
 
 
@@ -1627,17 +1619,11 @@ static bool vault_aux_jelly(int r_idx)
 {
     monster_race *r_ptr = &r_info[r_idx];
 
-    /* Require jelly, mold, icky thing, or mushroom */
-    if (!strchr("jmi,", r_ptr->r_char)) return (FALSE);
+    /* Require icky thing, jelly, mold, or mushroom */
+    if (!strchr("ijm,", r_ptr->r_char)) return (FALSE);
 
-    /* Ignore Evil monsters XXX XXX XXX */
-    if (r_ptr->flags3 & RF3_EVIL) return (FALSE);
-    
     /* Hack -- Skip unique monsters */
     if (r_ptr->flags1 & RF1_UNIQUE) return (FALSE);
-
-    /* Hack -- Skip multiplying monsters */
-    if (r_ptr->flags2 & RF2_MULTIPLY) return (FALSE);
 
     /* Okay */
     return (TRUE);
@@ -1651,14 +1637,11 @@ static bool vault_aux_animal(int r_idx)
 {
     monster_race *r_ptr = &r_info[r_idx];
 
-    /* Require animal (basic) */
-    if (!strchr("BCFIKMRSYZabceflqrw", r_ptr->r_char)) return (FALSE);
+    /* Require "animal" flag */
+    if (!(r_ptr->flags3 & RF3_ANIMAL)) return (FALSE);
 
     /* Hack -- Skip unique monsters */
     if (r_ptr->flags1 & RF1_UNIQUE) return (FALSE);
-
-    /* Hack -- Skip multiplying monsters */
-    if (r_ptr->flags2 & RF2_MULTIPLY) return (FALSE);
 
     /* Okay */
     return (TRUE);
@@ -1678,9 +1661,6 @@ static bool vault_aux_undead(int r_idx)
     /* Hack -- Skip unique monsters */
     if (r_ptr->flags1 & RF1_UNIQUE) return (FALSE);
 
-    /* Hack -- Skip multiplying monsters */
-    if (r_ptr->flags2 & RF2_MULTIPLY) return (FALSE);
-
     /* Okay */
     return (TRUE);
 }
@@ -1696,17 +1676,8 @@ static bool vault_aux_orc(int r_idx)
     /* Hack -- Require "o" monsters */
     if (!strchr("o", r_ptr->r_char)) return (FALSE);
 
-    /* Hack -- do not allow "BLINK" monsters */
-    if (r_ptr->flags6 & RF6_BLINK) return (FALSE);
-    
-    /* Hack -- do not allow "INVISIBLE" monsters */
-    /* if (r_ptr->flags2 & RF2_INVISIBLE) return (FALSE); */
-
     /* Hack -- Skip unique monsters */
     if (r_ptr->flags1 & RF1_UNIQUE) return (FALSE);
-
-    /* Hack -- Skip multiplying monsters */
-    if (r_ptr->flags2 & RF2_MULTIPLY) return (FALSE);
 
     /* Okay */
     return (TRUE);
@@ -1723,17 +1694,8 @@ static bool vault_aux_troll(int r_idx)
     /* Hack -- Require "T" monsters */
     if (!strchr("T", r_ptr->r_char)) return (FALSE);
 
-    /* Hack -- do not allow "BLINK" monsters */
-    if (r_ptr->flags6 & RF6_BLINK) return (FALSE);
-
-    /* Hack -- do not allow "INVISIBLE" monsters */
-    if (r_ptr->flags2 & RF2_INVISIBLE) return (FALSE);
-    
     /* Hack -- Skip unique monsters */
     if (r_ptr->flags1 & RF1_UNIQUE) return (FALSE);
-
-    /* Hack -- Skip multiplying monsters */
-    if (r_ptr->flags2 & RF2_MULTIPLY) return (FALSE);
 
     /* Okay */
     return (TRUE);
@@ -1750,17 +1712,8 @@ static bool vault_aux_giant(int r_idx)
     /* Hack -- Require "P" monsters */
     if (!strchr("P", r_ptr->r_char)) return (FALSE);
 
-    /* Hack -- do not allow "BLINK" monsters */
-    /* if (r_ptr->flags6 & RF6_BLINK) return (FALSE); */
-
-    /* Hack -- do not allow "INVISIBLE" monsters */
-    /* if (r_ptr->flags2 & RF2_INVISIBLE) return (FALSE); */
-    
     /* Hack -- Skip unique monsters */
     if (r_ptr->flags1 & RF1_UNIQUE) return (FALSE);
-
-    /* Hack -- Skip multiplying monsters */
-    if (r_ptr->flags2 & RF2_MULTIPLY) return (FALSE);
 
     /* Okay */
     return (TRUE);
@@ -1789,9 +1742,6 @@ static bool vault_aux_dragon(int r_idx)
     /* Hack -- Skip unique monsters */
     if (r_ptr->flags1 & RF1_UNIQUE) return (FALSE);
 
-    /* Hack -- Skip multiplying monsters */
-    if (r_ptr->flags2 & RF2_MULTIPLY) return (FALSE);
-
     /* Okay */
     return (TRUE);
 }
@@ -1807,17 +1757,8 @@ static bool vault_aux_demon(int r_idx)
     /* Hack -- Require "U" monsters */
     if (!strchr("U", r_ptr->r_char)) return (FALSE);
 
-    /* Hack -- do not allow "BLINK" monsters */
-    /* if (r_ptr->flags5 & RF5_BLINK) return (FALSE); */
-
-    /* Hack -- do not allow "INVISIBLE" monsters */
-    /* if (r_ptr->flags2 & RF2_INVISIBLE) return (FALSE); */
-    
     /* Hack -- Skip unique monsters */
     if (r_ptr->flags1 & RF1_UNIQUE) return (FALSE);
-
-    /* Hack -- Skip multiplying monsters */
-    if (r_ptr->flags2 & RF2_MULTIPLY) return (FALSE);
 
     /* Okay */
     return (TRUE);
@@ -1836,7 +1777,8 @@ static bool vault_aux_demon(int r_idx)
  *
  * A "better" method would be to create a "secondary" monster/object
  * allocation array, into which specialized "allocator" information
- * could be placed before calling the allocator.
+ * could be placed before calling the allocator.  XXX XXX XXX  This
+ * secondary array could be constructed by the "get_mon_num()" code.
  *
  * Actually, splitting the "unique" monsters out of the "normal"
  * monsters would probably also speed the function a lot.
@@ -2353,6 +2295,7 @@ static void build_type6(int yval, int xval)
     get_mon_num_hook = NULL;
 
 
+    /* XXX XXX XXX */
     /* Sort the entries */
     for (i = 0; i < 16 - 1; i++) {
 
@@ -3783,10 +3726,11 @@ void generate_cave()
         if (scum_always || (scum_sometimes && (num < 100))) {
 
             /* Require "goodness" */
-            if ((feeling > 8) ||
-                ((dun_level > 10) && (feeling > 7)) ||
-                ((dun_level > 20) && (feeling > 6)) ||
-                ((dun_level > 40) && (feeling > 5))) {
+            if ((feeling > 9) ||
+                ((dun_level >= 5) && (feeling > 8)) ||
+                ((dun_level >= 10) && (feeling > 7)) ||
+                ((dun_level >= 20) && (feeling > 6)) ||
+                ((dun_level >= 40) && (feeling > 5))) {
 
                 /* Give message to cheaters */
                 if (cheat_room || cheat_hear || 

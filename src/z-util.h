@@ -64,9 +64,9 @@ extern bool func_false(void);
 
 
 /* Test equality, prefix, suffix */
-extern bool streq(cptr a, cptr b);
-extern bool prefix(cptr big, cptr small);
-extern bool suffix(cptr big, cptr small);
+extern bool streq(cptr s, cptr t);
+extern bool prefix(cptr s, cptr t);
+extern bool suffix(cptr s, cptr t);
 
 
 /* Print an error message */

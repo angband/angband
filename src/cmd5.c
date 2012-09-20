@@ -470,7 +470,7 @@ static int get_spell(int *sn, cptr prompt, int sval, bool known)
         if (ask) choice = tolower(choice);
         
         /* Extract request */
-        i = A2I(choice);
+        i = (islower(choice) ? A2I(choice) : -1);
 
         /* Totally Illegal */
         if ((i < 0) || (i >= num)) {
@@ -980,7 +980,7 @@ void do_cmd_cast(void)
             break;
 
           case 18:
-            satisfy_hunger();
+            (void)set_food(PY_FOOD_MAX - 1);
             break;
 
           case 19:
@@ -1032,10 +1032,10 @@ void do_cmd_cast(void)
 
           case 29:
             if (!p_ptr->fast) {
-                set_fast(randint(20) + plev);
+                (void)set_fast(randint(20) + plev);
             }
             else {
-                set_fast(p_ptr->fast + randint(5));
+                (void)set_fast(p_ptr->fast + randint(5));
             }
             break;
 
@@ -1161,9 +1161,9 @@ void do_cmd_cast(void)
             break;
 
           case 54:
-            (void)hp_player(10);	/* XXX */
-            (void)set_afraid(0);
+            (void)hp_player(10);
             (void)set_hero(p_ptr->hero + randint(25) + 25);
+            (void)set_afraid(0);
             break;
 
           case 55:
@@ -1171,9 +1171,9 @@ void do_cmd_cast(void)
             break;
 
           case 56:
-            (void)hp_player(30);	/* XXX */
-            (void)set_afraid(0);
+            (void)hp_player(30);
             (void)set_shero(p_ptr->shero + randint(25) + 25);
+            (void)set_afraid(0);
             break;
 
           case 57:
@@ -1246,13 +1246,10 @@ void do_cmd_cast(void)
             /* Message */
             msg_print("You have damaged your health!");
 
-            /* Bypass "sustain strength" */
+            /* Reduce constitution */
             (void)dec_stat(A_CON, 15 + randint(10), perm);
         }
     }
-
-    /* Update stuff */
-    p_ptr->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
 
     /* Redraw mana */
     p_ptr->redraw |= (PR_MANA);
@@ -1450,7 +1447,7 @@ void do_cmd_pray(void)
             break;
 
           case 13:
-            satisfy_hunger();
+            (void)set_food(PY_FOOD_MAX - 1);
             break;
 
           case 14:
@@ -1497,8 +1494,8 @@ void do_cmd_pray(void)
 
           case 23:
             (void)hp_player(damroll(8, 10));
-            (void)set_cut(0);
             (void)set_stun(0);
+            (void)set_cut(0);
             break;
 
           case 24:
@@ -1725,13 +1722,10 @@ void do_cmd_pray(void)
             /* Message */
             msg_print("You have damaged your health!");
 
-            /* Bypass "sustain strength" */
+            /* Reduce constitution */
             (void)dec_stat(A_CON, 15 + randint(10), perm);
         }
     }
-
-    /* Update stuff */
-    p_ptr->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
 
     /* Redraw mana */
     p_ptr->redraw |= (PR_MANA);

@@ -1782,14 +1782,14 @@ static errr CheckEvent(bool wait)
   /* Mirror window, inner window */
   else if (xev->xany.window == mirror.inner->win)
   {
-    td = &screen;
+    td = &mirror;
     iwin = td->inner;
   }
 
   /* Mirror window, outer window */
   else if (xev->xany.window == mirror.outer->win)
   {
-    td = &screen;
+    td = &mirror;
     iwin = td->outer;
   }
 
@@ -2280,7 +2280,7 @@ errr init_x11(void)
 
   /* Initialize the recall window */
   term_data_init(&mirror, FALSE, "Mirror", fnt_name);
-  term_recall = Term;
+  term_mirror = Term;
 
 #endif
 

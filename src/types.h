@@ -950,8 +950,6 @@ struct player_type {
   s16b cur_view;		/* Radius of view (if any)	*/
 
 
-  u32b notice;			/* Noticed Things (bit flags)	*/
-
   u32b update;			/* Pending Updates (bit flags)	*/
   u32b redraw;			/* Desired Redraws (bit flags)	*/
 
@@ -964,7 +962,6 @@ struct player_type {
   byte immune_elec;		/* Immunity to lightning	*/
   byte immune_fire;		/* Immunity to fire		*/
   byte immune_cold;		/* Immunity to cold		*/
-  byte immune_pois;		/* Immunity to poison		*/
 
   byte resist_acid;		/* Resist acid		*/
   byte resist_elec;		/* Resist lightning	*/
@@ -1040,8 +1037,6 @@ struct player_type {
   byte tval_ammo;		/* Correct ammo tval	*/
 
   s16b pspeed;			/* Current speed	*/
-
-  s16b food_digested;		/* Food per round	*/
 };
 
 

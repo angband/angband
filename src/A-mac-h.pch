@@ -21,17 +21,17 @@
 /*
  * OPTION: Allow the Borg
  */
-/* #define ALLOW_BORG */
+#define ALLOW_BORG
 
 /*
  * OPTION: Allow wizard commands
  */
-/* #define ALLOW_WIZARD */
+#define ALLOW_WIZARD
 
 /*
  * OPTION: Generate spoilers
  */
-/* #define ALLOW_SPOILERS */
+#define ALLOW_SPOILERS
 
 
 /*

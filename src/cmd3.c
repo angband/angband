@@ -72,7 +72,9 @@ static cptr look_mon_desc(int m_idx)
  *
  * XXX XXX XXX We should allow the use of a "set target" command.
  *
- * XXX XXX XXX Note new terrain features for 2.8.0
+ * XXX XXX XXX Note new terrain features for 2.8.0, and note that
+ * eventually, we may allow objects and terrain features in the
+ * same grid, or multiple objects per grid.
  *
  * We may assume that the grid is supposed to be "interesting".
  */
@@ -296,56 +298,6 @@ static bool do_cmd_look_accept(int y, int x)
 
 
 
-
-/*
- * Sorting hook -- comp function -- see below
- *
- * We use "u" and "v" to point to arrays of "x" and "y" positions,
- * and sort the arrays by distance to the player.
- */
-static bool ang_sort_comp_hook(vptr u, vptr v, int a, int b)
-{
-    byte *x = (byte*)(u);
-    byte *y = (byte*)(v);
-
-    int da, db;
-
-    /* Distance to first point */
-    da = distance(px, py, x[a], y[a]);
-        
-    /* Distance to second point */
-    db = distance(px, py, x[b], y[b]);
-
-    /* Compare the distances */
-    return (da <= db);
-}
-
-
-/*
- * Sorting hook -- swap function -- see below
- *
- * We use "u" and "v" to point to arrays of "x" and "y" positions,
- * and sort the arrays by distance to the player.
- */
-static void ang_sort_swap_hook(vptr u, vptr v, int a, int b)
-{
-    byte *x = (byte*)(u);
-    byte *y = (byte*)(v);
-
-    byte temp;
-    
-    /* Swap "x" */
-    temp = x[a];
-    x[a] = x[b];
-    x[b] = temp;
-    
-    /* Swap "y" */
-    temp = y[a];
-    y[a] = y[b];
-    y[b] = temp;
-}
-
-
 /*
  * A new "look" command, similar to the "target" command.
  */
@@ -401,15 +353,15 @@ void do_cmd_look(void)
 
 
     /* Set the sort hooks */
-    ang_sort_comp = ang_sort_comp_hook;
-    ang_sort_swap = ang_sort_swap_hook;
+    ang_sort_comp = ang_sort_comp_distance;
+    ang_sort_swap = ang_sort_swap_distance;
     
     /* Sort the positions */
     ang_sort(temp_x, temp_y, temp_n);
     
 
-    /* Start on (or near) the player */
-    m = target_pick(py, px, 0, 0);
+    /* Start near the player */
+    m = 0;
 
     /* Interact */
     while (!done) {
@@ -703,12 +655,8 @@ static void chest_trap(int y, int x, inven_type *i_ptr)
     /* Poison */
     if (trap & CHEST_POISON) {
         msg_print("A puff of green gas surrounds you!");
-        if (!(p_ptr->resist_pois ||
-              p_ptr->oppose_pois ||
-              p_ptr->immune_pois)) {
-            if (set_poisoned(p_ptr->poisoned + 10 + randint(20))) {
-                msg_print("You are poisoned!");
-            }
+        if (!(p_ptr->resist_pois || p_ptr->oppose_pois)) {
+            (void)set_poisoned(p_ptr->poisoned + 10 + randint(20));
         }
     }
 
@@ -716,9 +664,7 @@ static void chest_trap(int y, int x, inven_type *i_ptr)
     if (trap & CHEST_PARALYZE) {
         msg_print("A puff of yellow gas surrounds you!");
         if (!p_ptr->free_act) {
-            if (set_paralyzed(p_ptr->paralyzed + 10 + randint(20))) {
-                msg_print("You choke and pass out.");
-            }
+            (void)set_paralyzed(p_ptr->paralyzed + 10 + randint(20));
         }
     }
 
@@ -745,8 +691,8 @@ static void chest_trap(int y, int x, inven_type *i_ptr)
 
 
 /*
- * Opens a closed door or closed chest.		-RAK-
- * Note that failed opens take time, or ghosts could be found
+ * Open a closed door or closed chest.
+ *
  * Note unlocking a locked door/chest is worth one experience point.
  */
 void do_cmd_open()
@@ -759,6 +705,19 @@ void do_cmd_open()
 
     bool more = FALSE;
 
+
+    /* Allow repeated command */
+    if (command_arg) {
+
+        /* Set repeat count */
+        command_rep = command_arg - 1;
+
+        /* Redraw the state */
+        p_ptr->redraw |= (PR_STATE);
+
+        /* Cancel the arg */
+        command_arg = 0;
+    }
 
     /* Get a "repeated" direction */
     if (get_rep_dir(&dir)) {
@@ -948,6 +907,19 @@ void do_cmd_close()
     bool more = FALSE;
 
 
+    /* Allow repeated command */
+    if (command_arg) {
+
+        /* Set repeat count */
+        command_rep = command_arg - 1;
+
+        /* Redraw the state */
+        p_ptr->redraw |= (PR_STATE);
+
+        /* Cancel the arg */
+        command_arg = 0;
+    }
+
     /* Get a "repeated" direction */
     if (get_rep_dir(&dir)) {
 
@@ -1030,6 +1002,19 @@ void do_cmd_tunnel()
 
     bool more = FALSE;
 
+
+    /* Allow repeated command */
+    if (command_arg) {
+
+        /* Set repeat count */
+        command_rep = command_arg - 1;
+
+        /* Redraw the state */
+        p_ptr->redraw |= (PR_STATE);
+
+        /* Cancel the arg */
+        command_arg = 0;
+    }
 
     /* Get a direction to tunnel, or Abort */
     if (get_rep_dir(&dir)) {
@@ -1238,6 +1223,19 @@ void do_cmd_disarm()
     bool		more = FALSE;
 
 
+    /* Allow repeated command */
+    if (command_arg) {
+
+        /* Set repeat count */
+        command_rep = command_arg - 1;
+
+        /* Redraw the state */
+        p_ptr->redraw |= (PR_STATE);
+
+        /* Cancel the arg */
+        command_arg = 0;
+    }
+
     /* Get a direction (or abort) */
     if (get_rep_dir(&dir)) {
 
@@ -1344,7 +1342,7 @@ void do_cmd_disarm()
             if (p_ptr->blind || no_lite()) i = i / 10;
             if (p_ptr->confused || p_ptr->image) i = i / 10;
 
-            /* XXX XXX XXX XXX */
+            /* XXX XXX XXX Variable power? */
 
             /* Extract trap "power" */
             power = 5;
@@ -1438,6 +1436,19 @@ void do_cmd_bash()
     bool		more = FALSE;
 
 
+    /* Allow repeated command */
+    if (command_arg) {
+
+        /* Set repeat count */
+        command_rep = command_arg - 1;
+
+        /* Redraw the state */
+        p_ptr->redraw |= (PR_STATE);
+
+        /* Cancel the arg */
+        command_arg = 0;
+    }
+
     /* Get a "repeated" direction */
     if (get_rep_dir(&dir)) {
 
@@ -1519,7 +1530,8 @@ void do_cmd_bash()
             }
 
             /* Saving throw against stun */
-            else if (rand_int(100) < adj_dex_safe[p_ptr->stat_ind[A_DEX]]) {
+            else if (rand_int(100) < adj_dex_safe[p_ptr->stat_ind[A_DEX]] +
+                                     p_ptr->lev) {
 
                 /* Message */
                 msg_print("The door holds firm.");
@@ -1549,9 +1561,7 @@ void do_cmd_bash()
 /*
  * Find the index of some "spikes", if possible.
  *
- * XXX XXX XXX Choose spikes, perhaps, and maybe no repeating
- *
- * We should probably consider allowing the user to "choose" spikes.
+ * XXX XXX XXX Let user choose a pile of spikes, perhaps?
  */
 static bool get_spike(int *ip)
 {
@@ -1664,6 +1674,19 @@ void do_cmd_walk(int pickup)
     bool more = FALSE;
 
 
+    /* Allow repeated command */
+    if (command_arg) {
+
+        /* Set repeat count */
+        command_rep = command_arg - 1;
+
+        /* Redraw the state */
+        p_ptr->redraw |= (PR_STATE);
+
+        /* Cancel the arg */
+        command_arg = 0;
+    }
+
     /* Get a "repeated" direction */
     if (get_rep_dir(&dir)) {
 
@@ -1689,6 +1712,20 @@ void do_cmd_walk(int pickup)
 void do_cmd_stay(int pickup)
 {
     cave_type *c_ptr = &cave[py][px];
+
+
+    /* Allow repeated command */
+    if (command_arg) {
+
+        /* Set repeat count */
+        command_rep = command_arg - 1;
+
+        /* Redraw the state */
+        p_ptr->redraw |= (PR_STATE);
+
+        /* Cancel the arg */
+        command_arg = 0;
+    }
 
 
     /* Take a turn */
@@ -1728,6 +1765,19 @@ void do_cmd_stay(int pickup)
  */
 void do_cmd_search(void)
 {
+    /* Allow repeated command */
+    if (command_arg) {
+
+        /* Set repeat count */
+        command_rep = command_arg - 1;
+
+        /* Redraw the state */
+        p_ptr->redraw |= (PR_STATE);
+
+        /* Cancel the arg */
+        command_arg = 0;
+    }
+
     /* Take a turn */
     energy_use = 100;
     
@@ -1882,16 +1932,20 @@ void do_cmd_uninscribe(void)
         i_ptr = &i_list[0 - item];
     }
 
-    /* Prompt for an inscription */
-    if (i_ptr->note) {
-        i_ptr->note = 0;
-        msg_print("Inscription removed.");
-        p_ptr->redraw |= (PR_CHOOSE);
-    }
-    else {
+    /* Nothing to remove */
+    if (!i_ptr->note) {
         msg_print("That item had no inscription to remove.");
+        return;
     }
 
+    /* Message */
+    msg_print("Inscription removed.");
+
+    /* Remove the incription */
+    i_ptr->note = 0;
+
+    /* Redraw the choice window */
+    p_ptr->redraw |= (PR_CHOOSE);
 
     /* Combine the pack */
     p_ptr->update |= (PU_COMBINE);
@@ -1938,158 +1992,265 @@ void do_cmd_inscribe(void)
     /* Prompt for an inscription */
     prt("Inscription: ", 0, 0);
 
-    /* Replace an old inscription */
+    /* Start with nothing */
+    strcpy(out_val, "");
+    
+    /* Use old inscription */
     if (i_ptr->note) {
 
-        /* Prepare the default inscription */
+        /* Start with the old inscription */
         strcpy(out_val, quark_str(i_ptr->note));
-
-        /* Get a new inscription and apply it */
-        if (askfor_aux(out_val, 64) && out_val[0]) {
-            i_ptr->note = quark_add(out_val);
-            p_ptr->redraw |= (PR_CHOOSE);
-        }
     }
-
+    
     /* Get a new inscription */
-    else {
+    if (askfor_aux(out_val, 64) && out_val[0]) {
 
-        /* Get a new inscription and apply it */
-        if (askfor(out_val, 64) && out_val[0]) {
-            i_ptr->note = quark_add(out_val);
-            p_ptr->redraw |= (PR_CHOOSE);
-        }
+        /* Save the inscription */
+        i_ptr->note = quark_add(out_val);
+
+        /* Redraw the choice window */
+        p_ptr->redraw |= (PR_CHOOSE);
+
+        /* Combine the pack */
+        p_ptr->update |= (PU_COMBINE);
     }
-
-    /* Combine the pack */
-    p_ptr->update |= (PU_COMBINE);
 }
 
 
+/*
+ * Hack -- display the contents of a file on the screen
+ */
+static errr show_file(cptr what, cptr name)
+{
+    int i = 0;
+
+    int k = 0;
+
+    FILE *fff;
+
+    char buf[1024];
+
+
+    /* Open */
+    fff = fopen(name, "r");
+    
+    /* Failure */
+    if (!fff) return (1);
+
+    /* Enter "icky" mode */
+    character_icky = TRUE;
+    
+    /* Save the screen */
+    Term_save();
+
+    /* Clear the screen */
+    Term_clear();
+
+    /* Title the screen */
+    Term_putstr(0, 2, -1, TERM_WHITE, format("%s", what));
+
+    /* Display the file */
+    while (0 == my_fgets(fff, buf, 1024)) {
+
+        /* Shut screen */
+        if (i >= 20) {
+
+            /* Title the screen */
+            Term_putstr(0, 2, -1, TERM_WHITE, format("%s -more- ", what));
+
+            /* Ask for a key */
+            k = inkey();
+            
+            /* Stop showing the file */
+            if (k == ESCAPE) break;
+
+            /* Clear the screen */
+            Term_clear();
+
+            /* Title the screen */
+            Term_putstr(0, 2, -1, TERM_WHITE, format("%s", what));
+
+            /* Start over */
+            i = 0;
+        }
+
+        /* Dump a line */
+        prt(buf, 4 + i, 0);
+
+        /* Advance */
+        i++;
+    }
+
+    /* Final prompt */
+    if (k != ESCAPE) {
+
+        /* All done */
+        Term_putstr(0, 2, -1, TERM_WHITE, format("%s -done- ", what));
+
+        /* Get a key */
+        k = inkey();
+    }
+
+    /* Close it */
+    fclose(fff);
+
+    /* Restore the screen */
+    Term_load();
+
+    /* Enter "icky" mode */
+    character_icky = FALSE;
+
+    /* Success */
+    return (0);
+}
+
 
 /*
- * Print out the artifacts seen.
- * This can be used to notice "missed" artifacts.
- *
- * XXX Perhaps this routine induces a blank final screen.
+ * Check the status of "artifacts"
  *
  * XXX Consider use of "term_mirror"
  */
 void do_cmd_check_artifacts(void)
 {
-    int i, j, k, t;
+    int i, k, z, x, y;
 
-    char out_val[160];
+    FILE *fff;
+
+    char *file_name;
+
+    char base_name[80];
+
+    bool okay[MAX_A_IDX];
 
 
-    /* Hack -- no checking in the dungeon */
-    if (dun_level && !wizard) {
-        msg_print("You need to be in town to check artifacts!");
-        return;
+    /* Temporary file */
+    file_name = tmpnam(NULL);
+
+    /* Open a new file */
+    fff = fopen(file_name, "w");
+
+    /* Scan the artifacts */
+    for (k = 0; k < MAX_A_IDX; k++) {
+
+        artifact_type *a_ptr = &a_info[k];
+
+        /* Default */
+        okay[k] = FALSE;
+
+        /* Skip "empty" artifacts */
+        if (!a_ptr->name) continue;
+
+        /* Skip "uncreated" artifacts */
+        if (!a_ptr->cur_num) continue;
+
+        /* Assume okay */
+        okay[k] = TRUE;
     }
 
+    /* Check the dungeon */
+    for (y = 0; y < cur_hgt; y++) {
+        for (x = 0; x < cur_wid; x++) {
 
-    /* Save the screen */
-    Term_save();
+            cave_type *c_ptr = &cave[y][x];
 
-    /* Use column 15 */
-    j = 15;
+            /* Process objects */
+            if (c_ptr->i_idx) {
 
-    /* Erase some lines */
-    for (i = 1; i < 23; i++) prt("", i, j - 2);
+                inven_type *i_ptr = &i_list[c_ptr->i_idx];
 
-    /* Start in line 1 */
-    i = 1;
+                /* Ignore non-artifacts */
+                if (!artifact_p(i_ptr)) continue;
 
-    /* Title the screen */
-    prt("Artifacts Seen:", i++, j + 5);
+                /* Ignore known items */
+                if (inven_known_p(i_ptr)) continue;
+                    
+                /* Note the artifact */
+                okay[i_ptr->name1] = FALSE;
+            }
+        }
+    }
+
+    /* Check the inventory */
+    for (i = 0; i < INVEN_PACK; i++) {
+
+        inven_type *i_ptr = &inventory[i];
+
+        /* Ignore non-objects */
+        if (!i_ptr->k_idx) continue;
+
+        /* Ignore non-artifacts */
+        if (!artifact_p(i_ptr)) continue;
+
+        /* Ignore known items */
+        if (inven_known_p(i_ptr)) continue;
+                    
+        /* Note the artifact */
+        okay[i_ptr->name1] = FALSE;
+    }
 
     /* Scan the artifacts */
     for (k = 0; k < MAX_A_IDX; k++) {
 
         artifact_type *a_ptr = &a_info[k];
         
-        /* Skip "empty" artifacts */
-        if (!a_ptr->name) continue;
+        /* List "dead" ones */
+        if (!okay[k]) continue;
+       
+        /* Paranoia */
+        strcpy(base_name, "Unknown Artifact");
 
-        /* Has that artifact been created? */
-        if (a_ptr->cur_num) {
+        /* Obtain the base object type */
+        z = lookup_kind(a_ptr->tval, a_ptr->sval);
 
-            int z;
-            char base_name[80];
+        /* Real object */
+        if (z) {
+        
+            inven_type forge;
 
-            /* Paranoia */
-            strcpy(base_name, "Unknown Artifact");
+            /* Create the object */
+            invcopy(&forge, z);
 
-            /* Obtain the base object type */
-            z = lookup_kind(a_ptr->tval, a_ptr->sval);
+            /* Create the artifact */
+            forge.name1 = k;
 
-            /* Found it */
-            if (z) {
-
-                inven_type forge;
-
-                /* Create the artifact */
-                invcopy(&forge, z);
-                forge.name1 = k;
-
-                /* Describe the artifact */
-                objdes_store(base_name, &forge, FALSE, 0);
-            }
-
-            /* Hack -- Build the artifact name */
-            sprintf(out_val, "The %s", base_name);
-
-            /* Dump a line */
-            prt(out_val, i++, j);
-
-            /* is screen full? */
-            if (i == 22) {
-                prt("-- more --", i, j);
-                if (inkey() == ESCAPE) break;
-                for (t = 2; t < 23; t++) prt("", t, j);
-                prt("Artifacts seen: (continued)", 1, j + 5);
-                i = 2;
-            }
+            /* Describe the artifact */
+            objdes_store(base_name, &forge, FALSE, 0);
         }
+
+        /* Hack -- Build the artifact name */
+        fprintf(fff, "     The %s\n", base_name);
     }
 
-    /* Pause */
-    prt("[Press any key to continue]", i, j);
-    inkey();
+    /* Close the file */
+    fclose(fff);
 
-
-    /* Restore the screen */
-    Term_load();
+    /* Display the file contents */
+    show_file("Artifacts Seen:", file_name);
+    
+    /* Remove the file */
+    remove(file_name);
 }
 
 
 /*
- * Display the "status" of uniques
+ * Check the status of "uniques"
  *
- * XXX XXX This routine may induce a blank final screen.
+ * XXX Consider use of "term_mirror"
  */
 void do_cmd_check_uniques()
 {
-    int		i, j, k, t;
+    int k;
 
-    char	out_val[160];
+    FILE *fff;
+
+    char *file_name;
 
 
-    /* Save the screen */
-    Term_save();
+    /* Temporary file */
+    file_name = tmpnam(NULL);
 
-    /* Column */
-    j = 15;
-
-    /* Clear (part of) the screen */
-    for (i = 1; i < 23; i++) prt("", i, j - 2);
-
-    /* Row */
-    i = 1;
-
-    /* Header */
-    prt("Uniques:", i++, j + 5);
+    /* Open a new file */
+    fff = fopen(file_name, "w");
 
     /* Note -- skip the ghost */
     for (k = 1; k < MAX_R_IDX-1; k++) {
@@ -2105,28 +2266,21 @@ void do_cmd_check_uniques()
             if (dead || cheat_know || r_ptr->r_sights) {
 
                 /* Print a message */
-                sprintf(out_val, "%s is %s.", (r_name + r_ptr->name),
-                        dead ? "dead" : "alive");
-                prt(out_val, i++, j);
-
-                /* is screen full? */
-                if (i == 22) {
-                    prt("-- more --", i, j);
-                    if (inkey() == ESCAPE) break;
-                    for (t = 2; t < 23; t++) prt("", t, j);
-                    prt("Uniques: (continued)", 1, j + 5);
-                    i = 2;
-                }
+                fprintf(fff, "     %s is %s\n",
+                        (r_name + r_ptr->name),
+                        (dead ? "dead" : "alive"));
             }
         }
     }
 
-    /* Pause */
-    prt("[Press any key to continue]", i, j);
-    inkey();
+    /* Close the file */
+    fclose(fff);
 
-    /* Restore the screen */
-    Term_load();
+    /* Display the file contents */
+    show_file("Uniques:", file_name);
+    
+    /* Remove the file */
+    remove(file_name);
 }
 
 

@@ -476,8 +476,8 @@ static void wr_extra()
     wr_s16b(p_ptr->paralyzed);
     wr_s16b(p_ptr->confused);
     wr_s16b(p_ptr->food);
-    wr_s16b(p_ptr->food_digested);
-    wr_s16b(0);		/* old "protection" */
+    wr_s16b(0);	/* old "food_digested" */
+    wr_s16b(0);	/* old "protection" */
     wr_s16b(p_ptr->energy);
     wr_s16b(p_ptr->fast);
     wr_s16b(p_ptr->slow);
@@ -514,10 +514,10 @@ static void wr_extra()
     /* Future use */
     for (i = 0; i < 12; i++) wr_u32b(0L);
 
-    /* Write the new flags */
-    wr_u32b(p_ptr->update);	/* oops */
-    wr_u32b(p_ptr->notice);	/* oops */
-    wr_u32b(p_ptr->redraw);	/* oops */
+    /* Ignore some flags */
+    wr_u32b(0L);	/* oops */
+    wr_u32b(0L);	/* oops */
+    wr_u32b(0L);	/* oops */
 
 
     /* Write the "object seeds" */
@@ -593,7 +593,7 @@ static bool wr_dungeon_aux(inven_type *i_ptr, int y, int x)
         /* Make invisible */
         invis = TRUE;
 
-        /* Pick a random trap (no trap doors) */
+        /* XXX XXX Hack -- assume any trap (except a trap door) */
         c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x10) + randint(15);
     }
     

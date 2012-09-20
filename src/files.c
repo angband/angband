@@ -95,60 +95,149 @@ void safe_setuid_grab(void)
 
 
 /*
+ * Extract the first few "tokens" from a buffer
+ *
+ * This function uses "colon" and "slash" as the delimeter characters.
+ *
+ * We never extract more than "num" tokens.  The "last" token may include
+ * "delimeter" characters, allowing the buffer to include a "string" token.
+ *
+ * We save pointers to the tokens in "tokens", and return the number found.
+ *
+ * Hack -- Attempt to handle the 'c' character formalism
+ *
+ * Hack -- An empty buffer, or a final delimeter, yields an "empty" token.
+ *
+ * Hack -- We will always extract at least one token
+ */
+s16b tokenize(char *buf, s16b num, char **tokens)
+{
+    int i = 0;
+
+    char *s = buf;
+
+
+    /* Process */
+    while (i < num - 1) {
+
+        char *t;
+        
+        /* Scan the string */
+        for (t = s; *t; t++) {
+
+            /* Found a delimiter */
+            if ((*t == ':') || (*t == '/')) break;
+
+            /* Handle single quotes */
+            if (*t == '\'') {
+
+                /* Advance */
+                t++;
+
+                /* Handle backslash */
+                if (*t == '\\') t++;
+
+                /* Require a character */
+                if (!*t) break;
+
+                /* Advance */
+                t++;
+
+                /* Hack -- Require a close quote */
+                if (*t != '\'') *t = '\'';
+            }
+
+            /* Handle back-slash */
+            if (*t == '\\') t++;
+        }
+
+        /* Nothing left */
+        if (!*t) break;
+
+        /* Nuke and advance */
+        *t++ = '\0';
+
+        /* Save the token */
+        tokens[i++] = s;
+
+        /* Advance */
+        s = t;
+    }
+
+    /* Save the token */
+    tokens[i++] = s;
+
+    /* Number found */
+    return (i);
+}
+
+
+
+/*
  * Parse a sub-file of the "extra info" (format shown below)
  *
  * Each "action" line has an "action symbol" in the first column,
  * followed by a colon, followed by some command specific info,
- * usually with "fields" separated by colons.  Blank lines and
- * lines starting with pound signs ("#") are ignored (as comments).
+ * usually in the form of "tokens" separated by colons or slashes.
  *
- * Note that <a>, <c>, <num>, <tv>, <sv>, <f> must be integers.
- * Note that <str> must be an "encoded" string (see elsewhere).
- * Note that <key> must be a keypress (a number from 1 to 255) or zero.
- * Note that <dir> must be a direction (a number from 1 to 9) or zero.
+ * Blank lines, lines starting with white space, and lines starting
+ * with pound signs ("#") are ignored (as comments).
  *
- * Parse another file (recursively):
- *   %:<filename>		<-- see below
+ * Note the use of "tokenize()" to allow the use of both colons and
+ * slashes as delimeters, while still allowing final tokens which
+ * may contain any characters including "delimiters".
  *
- * Specify the attr/char values for "monsters":
- *   R:<num>:<a>/<c>		<-- attr/char by race index
- *   M:<a>/<c>:<a>/<c>		<-- attr/char by race attr/char
+ * Note the use of "strtol()" to allow all "integers" to be encoded
+ * in decimal, hexidecimal, or octal form.
  *
- * Specify the attr/char values for "objects":
- *   K:<num>:<a>/<c>		<-- attr/char by kind index
- *   I:<a>/<c>:<a>/<c>		<-- attr/char by kind attr/char
+ * Note that "monster zero" is used for the "player" attr/char, "object
+ * zero" will be used for the "stack" attr/char, and "feature zero" is
+ * used for the "nothing" attr/char.
  *
- * Specify the attr/char values for terrain features:
- *   F:<f>:<a>/<c>		<-- attr/char by feat index
- *   G:<a>/<c>:<a>/<c>		<-- attr/char by feat attr/char
+ * Parse another file recursively, see below for details
+ *   %:<filename>
  *
- * Specify the attr/char values for unaware "objects":
- *   U:<tv>:<a>/<c>		<-- attr/char by kind tval
+ * Specify the attr/char values for "monsters" by race index
+ *   R:<num>:<a>:<c>
  *
- * Specify the attr/char values for inventory "objects":
- *   E:<tv>:<a>/<c>		<-- attr/char by kind tval
+ * Specify the attr/char values for "objects" by kind index
+ *   K:<num>:<a>:<c>
  *
- * Create a macro action:
- *   A:<str>			<-- macro action (encoded)
+ * Specify the attr/char values for "features" by feat index
+ *   F:<num>:<a>:<c>
  *
- * Create a normal macro:
- *   P:<str>			<-- macro trigger (encoded)
+ * Specify the attr/char values for unaware "objects" by kind tval
+ *   U:<tv>:<a>:<c>
  *
- * Create a command macro:
- *   C:<str>			<-- macro trigger (encoded)
+ * Specify the attr/char values for inventory "objects" by kind tval
+ *   E:<tv>:<a>:<c>
  *
- * Create a keyset mapping:
- *   S:<key>:<key>:<dir>	<-- keyset mapping
+ * Define a macro action, given an encoded macro action
+ *   A:<str>
  *
- * Turn an option off:
- *   X:<str>			<-- option name
+ * Create a normal macro, given an encoded macro trigger
+ *   P:<str>
  *
- * Turn an option on:
- *   Y:<str>			<-- option name
+ * Create a command macro, given an encoded macro trigger
+ *   C:<str>
+ *
+ * Create a keyset mapping
+ *   S:<key>:<key>:<dir>
+ *
+ * Turn an option off, given its name
+ *   X:<str>
+ *
+ * Turn an option on, given its name
+ *   Y:<str>
+ *
+ * Specify visual information, given an index, and some data
+ *   V:<num>:<kv>:<rv>:<gv>:<bv>
  */
-errr process_pref_file_aux(cptr buf)
+errr process_pref_file_aux(char *buf)
 {
-    int i, m1, m2, n1, n2;
+    int i, j, k, n1, n2;
+
+    char *zz[16];
 
 
     /* Skip "empty" lines */
@@ -161,7 +250,7 @@ errr process_pref_file_aux(cptr buf)
     if (buf[0] == '#') return (0);
 
 
-    /* The line better have a colon and such */
+    /* Require "?:*" format */
     if (buf[1] != ':') return (1);
 
 
@@ -173,79 +262,49 @@ errr process_pref_file_aux(cptr buf)
     }
 
 
-    /* Process "R:<num>:<a>/<c>" */
+    /* Process "R:<num>:<a>/<c>" -- attr/char for monster races */
     if (buf[0] == 'R') {
-        if (sscanf(buf, "R:%d:%d/%d", &i, &n1, &n2) == 3) {
-            monster_race *r_ptr = &r_info[i];
+        if (tokenize(buf+2, 3, zz) == 3) {
+            monster_race *r_ptr;
+            i = (huge)strtol(zz[0], NULL, 0);
+            n1 = strtol(zz[1], NULL, 0);
+            n2 = strtol(zz[2], NULL, 0);
+            if (i >= MAX_R_IDX) return (1);
+            r_ptr = &r_info[i];
             if (n1) r_ptr->l_attr = n1;
             if (n2) r_ptr->l_char = n2;
             return (0);
         }
     }
 
-    /* Process "M:<a>/<c>:<a>/<c>" */
-    else if (buf[0] == 'M') {
-        if (sscanf(buf, "M:%d/%d:%d/%d", &m1, &m2, &n1, &n2) == 4) {
-            for (i = 1; i < MAX_R_IDX; i++) {
-                monster_race *r_ptr = &r_info[i];
-                if ((!m1 || r_ptr->r_attr == m1) &&
-                    (!m2 || r_ptr->r_char == m2)) {
-                    if (n1) r_ptr->l_attr = n1;
-                    if (n2) r_ptr->l_char = n2;
-                }
-            }
-            return (0);
-        }
-    }
 
-
-    /* Process "K:<num>:<a>/<c>" */
+    /* Process "K:<num>:<a>/<c>"  -- attr/char for object kinds */
     else if (buf[0] == 'K') {
-        if (sscanf(buf, "K:%d:%d/%d", &i, &n1, &n2) == 3) {
-            inven_kind *k_ptr = &k_info[i];
+        if (tokenize(buf+2, 3, zz) == 3) {
+            inven_kind *k_ptr;
+            i = (huge)strtol(zz[0], NULL, 0);
+            n1 = strtol(zz[1], NULL, 0);
+            n2 = strtol(zz[2], NULL, 0);
+            if (i >= MAX_K_IDX) return (1);
+            k_ptr = &k_info[i];
             if (n1) k_ptr->x_attr = n1;
             if (n2) k_ptr->x_char = n2;
             return (0);
         }
     }
 
-    /* Process "I:<a>/<c>:<a>/<c>" */
-    else if (buf[0] == 'I') {
-        if (sscanf(buf, "I:%d/%d:%d/%d", &m1, &m2, &n1, &n2) == 4) {
-            for (i = 0; i < MAX_K_IDX; i++) {
-                inven_kind *k_ptr = &k_info[i];
-                if ((!m1 || k_ptr->k_attr == m1) &&
-                    (!m2 || k_ptr->k_char == m2)) {
-                    if (n1) k_ptr->x_attr = n1;
-                    if (n2) k_ptr->x_char = n2;
-                }
-            }
-            return (0);
-        }
-    }
 
-
-    /* Process "F:<f>:<a>/<c>" -- attr/char for terrain features */
+    /* Process "F:<num>:<a>/<c>" -- attr/char for terrain features */
     else if (buf[0] == 'F') {
-        if (sscanf(buf, "F:%d:%d/%d", &i, &n1, &n2) == 3) {
-            feature_type *f_ptr = &f_info[i];
+        if (tokenize(buf+2, 3, zz) == 3) {
+            feature_type *f_ptr;
+            i = (huge)strtol(zz[0], NULL, 0);
+            n1 = strtol(zz[1], NULL, 0);
+            n2 = strtol(zz[2], NULL, 0);
+            if (i >= MAX_F_IDX) return (1);
+            f_ptr = &f_info[i];
             if (n1) f_ptr->z_attr = n1;
             if (n2) f_ptr->z_char = n2;
-            return (0);
-        }
-    }
-
-    /* Process "G:<a>/<c>:<a>/<c>" */
-    else if (buf[0] == 'G') {
-        if (sscanf(buf, "G:%d/%d:%d/%d", &m1, &m2, &n1, &n2) == 4) {
-            for (i = 0; i < MAX_F_IDX; i++) {
-                feature_type *f_ptr = &f_info[i];
-                if ((!m1 || f_ptr->f_attr == m1) &&
-                    (!m2 || f_ptr->f_char == m2)) {
-                    if (n1) f_ptr->z_attr = n1;
-                    if (n2) f_ptr->z_char = n2;
-                }
-            }
             return (0);
         }
     }
@@ -253,10 +312,13 @@ errr process_pref_file_aux(cptr buf)
 
     /* Process "U:<tv>:<a>/<c>" -- attr/char for unaware items */
     else if (buf[0] == 'U') {
-        if (sscanf(buf, "U:%d:%d/%d", &m1, &n1, &n2) == 3) {
+        if (tokenize(buf+2, 3, zz) == 3) {
+            j = (huge)strtol(zz[0], NULL, 0);
+            n1 = strtol(zz[1], NULL, 0);
+            n2 = strtol(zz[2], NULL, 0);
             for (i = 0; i < MAX_K_IDX; i++) {
                 inven_kind *k_ptr = &k_info[i];
-                if (k_ptr->tval == m1) {
+                if (k_ptr->tval == j) {
                     if (n1) k_ptr->i_attr = n1;
                     if (n2) k_ptr->i_char = n2;
                 }
@@ -268,9 +330,13 @@ errr process_pref_file_aux(cptr buf)
 
     /* Process "E:<tv>:<a>/<c>" -- attr/char for equippy chars */
     else if (buf[0] == 'E') {
-        if (sscanf(buf, "E:%d:%d/%d", &m1, &n1, &n2) == 3) {
-            if (n1) tval_to_attr[m1] = n1;
-            if (n2) tval_to_char[m1] = n2;
+        if (tokenize(buf+2, 3, zz) == 3) {
+            j = (huge)strtol(zz[0], NULL, 0);
+            n1 = strtol(zz[1], NULL, 0);
+            n2 = strtol(zz[2], NULL, 0);
+            if (j >= 128) return (1);
+            if (n1) tval_to_attr[j] = n1;
+            if (n2) tval_to_char[j] = n2;
             return (0);
         }
     }
@@ -301,12 +367,26 @@ errr process_pref_file_aux(cptr buf)
 
     /* Process "S:<key>:<key>:<dir>" -- keymap */
     else if (buf[0] == 'S') {
-        if (sscanf(buf, "S:%d:%d:%d", &m1, &n1, &n2) == 3) {
-            if ((m1 < 0) || (m1 > 255)) return (1);
-            if ((n1 < 0) || (n1 > 255)) n1 = 0;
-            if ((n2 < 1) || (n2 > 9) || (n2 == 5)) n2 = 0;
-            keymap_cmds[m1] = n1;
-            keymap_dirs[m1] = n2;
+        if (tokenize(buf+2, 3, zz) == 3) {
+            i = (byte)strtol(zz[0], NULL, 0);
+            j = (byte)strtol(zz[0], NULL, 0);
+            k = (byte)strtol(zz[0], NULL, 0);
+            if ((k > 9) || (k == 5)) k = 0;
+            keymap_cmds[i] = j;
+            keymap_dirs[i] = k;
+            return (0);
+        }
+    }
+
+
+    /* Process "V:<num>:<kv>:<rv>:<gv>:<bv>" -- visual info */
+    else if (buf[0] == 'V') {
+        if (tokenize(buf+2, 5, zz) == 5) {
+            i = (byte)strtol(zz[0], NULL, 0);
+            color_table[i][0] = (byte)strtol(zz[1], NULL, 0);
+            color_table[i][1] = (byte)strtol(zz[2], NULL, 0);
+            color_table[i][2] = (byte)strtol(zz[3], NULL, 0);
+            color_table[i][3] = (byte)strtol(zz[4], NULL, 0);
             return (0);
         }
     }
@@ -323,7 +403,6 @@ errr process_pref_file_aux(cptr buf)
                 return (0);
             }
         }
-        return (1);
     }
 
     /* Process "Y:<str>" -- turn option on */
@@ -337,7 +416,6 @@ errr process_pref_file_aux(cptr buf)
                 return (0);
             }
         }
-        return (1);
     }
 
 
@@ -353,15 +431,14 @@ errr process_pref_file_aux(cptr buf)
  */
 errr process_pref_file(cptr name)
 {
-    int i;
-    
     FILE *fp;
 
     char buf[1024];
 
 
-    /* Look in the "user" directory */
-    sprintf(buf, "%s%s", ANGBAND_DIR_USER, name);
+    /* Access the file */
+    strcpy(buf, ANGBAND_DIR_USER);
+    strcat(buf, name);
 
     /* Open the file */
     fp = my_fopen(buf, "r");
@@ -370,16 +447,7 @@ errr process_pref_file(cptr name)
     if (!fp) return (-1);
 
     /* Process the file */
-    while (1) {
-
-        /* Read lines from the file */
-        if (!fgets(buf, 1024, fp)) break;
-
-        /* See how long the input is */
-        i = strlen(buf);
-
-        /* Strip the final newline (and spaces) */
-        while (i && isspace(buf[i-1])) buf[--i] = '\0';
+    while (0 == my_fgets(fp, buf, 1024)) {
 
         /* Process the line */
         if (process_pref_file_aux(buf)) {
@@ -391,16 +459,6 @@ errr process_pref_file(cptr name)
 
     /* Close the file */
     my_fclose(fp);
-
-
-    /* Mega-Hack -- note use of "cheat" options */
-    if (cheat_peek) noscore |= 0x0100;
-    if (cheat_hear) noscore |= 0x0200;
-    if (cheat_room) noscore |= 0x0400;
-    if (cheat_xtra) noscore |= 0x0800;
-    if (cheat_know) noscore |= 0x1000;
-    if (cheat_live) noscore |= 0x2000;
-
 
     /* Success */
     return (0);
@@ -491,13 +549,10 @@ errr check_time_init(void)
     check_time_flag = TRUE;
 
     /* Parse the file */
-    while (fgets(buf, 80, fp)) {
+    while (0 == my_fgets(fp, buf, 80)) {
 
-        /* Skip comments */
-        if (buf[0] == '#') continue;
-
-        /* Skip "blank" lines */
-        if (!buf[0] || !isprint(buf[0]) || isspace(buf[0])) continue;
+        /* Skip comments and blank lines */
+        if (!buf[0] || (buf[0] == '#')) continue;
 
         /* Chop the buffer */
         buf[29] = '\0';
@@ -621,15 +676,12 @@ errr check_load_init(void)
     (void)gethostname(thishost, (sizeof thishost) - 1);
 
     /* Parse it */
-    while (fgets(buf, sizeof(buf), fp)) {
+    while (0 == my_fgets(fp, buf, 1024)) {
 
         int value;
 
-        /* Skip comments */
-        if (buf[0] == '#') continue;
-
-        /* Skip "blank" lines */
-        if (!buf[0] || !isprint(buf[0]) || isspace(buf[0])) continue;
+        /* Skip comments and blank lines */
+        if (!buf[0] || (buf[0] == '#')) continue;
 
         /* Parse, or ignore */
         if (sscanf(buf, "%s%d", temphost, &value) != 2) continue;
@@ -640,6 +692,8 @@ errr check_load_init(void)
 
         /* Use that value */
         check_load_value = value;
+
+        /* Done */
         break;
     }
 
@@ -653,6 +707,199 @@ errr check_load_init(void)
 }
 
 
+
+/*
+ * Hack -- Dump a character description file
+ *
+ * XXX XXX XXX Allow the "full" flag to dump additional info,
+ * and trigger its usage from various places in the code.
+ */
+errr file_character(cptr name, bool full)
+{
+    int			i, x, y;
+
+    byte		a;
+    char		c;
+
+#if 0
+    cptr		other = "(";
+#endif
+
+    cptr		paren = ")";
+
+    int			fd = -1;
+
+    FILE		*fff = NULL;
+
+    store_type		*st_ptr = &store[7];
+
+    char		i_name[80];
+
+    char		buf[1024];
+
+
+    /* Drop priv's */
+    safe_setuid_drop();
+
+    /* Access the help file */
+    strcpy(buf, ANGBAND_DIR_USER);
+    strcat(buf, name);
+
+#if defined(MACINTOSH) && !defined(applec)
+    /* Global -- "text file" */
+    _ftype = 'TEXT';
+#endif
+
+    /* Check for existing file */
+    fd = fd_open(buf, O_RDONLY, 0);
+    
+    /* Existing file */
+    if (fd >= 0) {
+
+        char out_val[160];
+
+        /* Close the file */
+        (void)fd_close(fd);
+
+        /* Build query */
+        (void)sprintf(out_val, "Replace existing file %s? ", buf);
+
+        /* Ask */
+        if (get_check(out_val)) fd = -1;
+    }
+
+    /* Open the non-existing file */
+    if (fd < 0) fff = my_fopen(buf, "w");
+
+    /* Grab priv's */
+    safe_setuid_grab();
+
+
+    /* Invalid file */
+    if (!fff) {
+
+        /* Message */
+        msg_format("Character dump failed!");
+        msg_print(NULL);
+
+        /* Error */
+        return (-1);
+    }
+
+
+    /* Begin dump */
+    fprintf(fff, "  [Angband %d.%d.%d Character Dump]\n\n",
+            VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
+            
+
+    /* Save screen */
+    Term_save();
+
+    /* Display the player (with various) */
+    display_player(FALSE);
+
+    /* Dump part of the screen */
+    for (y = 2; y < 22; y++) {
+
+        /* Dump each row */
+        for (x = 0; x < 79; x++) {
+
+            /* Get the attr/char */
+            (void)(Term_what(x, y, &a, &c));
+
+            /* Dump it */
+            buf[x] = c;
+        }
+
+        /* Terminate */
+        buf[x] = '\0';
+        
+        /* End the row */
+        fprintf(fff, "%s\n", buf);
+    }
+
+    /* Display the player (with history) */
+    display_player(TRUE);
+
+    /* Dump part of the screen */
+    for (y = 15; y < 20; y++) {
+
+        /* Dump each row */
+        for (x = 0; x < 79; x++) {
+
+            /* Get the attr/char */
+            (void)(Term_what(x, y, &a, &c));
+
+            /* Dump it */
+            buf[x] = c;
+        }
+
+        /* Terminate */
+        buf[x] = '\0';
+        
+        /* End the row */
+        fprintf(fff, "%s\n", buf);
+    }
+
+    /* Restore screen */
+    Term_load();
+
+    /* Skip some lines */
+    fprintf(fff, "\n\n");
+
+
+    /* Dump the equipment */
+    if (equip_cnt) {
+        fprintf(fff, "  [Character Equipment]\n\n");
+        for (i = INVEN_WIELD; i < INVEN_TOTAL; i++) {
+            objdes(i_name, &inventory[i], TRUE, 3);
+            fprintf(fff, "%c%s %s\n",
+                    index_to_label(i), paren, i_name);
+        }
+        fprintf(fff, "\n\n");
+    }
+
+    /* Dump the inventory */
+    fprintf(fff, "  [Character Inventory]\n\n");
+    for (i = 0; i < INVEN_PACK; i++) {
+        objdes(i_name, &inventory[i], TRUE, 3);
+        fprintf(fff, "%c%s %s\n",
+                index_to_label(i), paren, i_name);
+    }
+    fprintf(fff, "\n\n");
+
+
+    /* Dump the Home (page 1) */
+    fprintf(fff, "  [Home Inventory (page 1)]\n\n");	
+    for (i = 0; i < 12; i++) {
+        objdes(i_name, &st_ptr->stock[i], TRUE, 3);
+        fprintf(fff, "%c%s %s\n", I2A(i%12), paren, i_name);
+    }
+    fprintf(fff, "\n\n");
+
+    /* Dump the Home (page 2) */
+    fprintf(fff, "  [Home Inventory (page 2)]\n\n");	
+    for (i = 12; i < 24; i++) {
+        objdes(i_name, &st_ptr->stock[i], TRUE, 3);
+        fprintf(fff, "%c%s %s\n", I2A(i%12), paren, i_name);
+    }
+    fprintf(fff, "\n\n");
+
+
+    /* Close it */
+    my_fclose(fff);
+
+
+    /* Message */
+    msg_print("Character dump successful.");
+    msg_print(NULL);
+
+    /* Success */
+    return (0);
+}
+
+
+
 /*
  * Attempt to open, and display, the "lib/file/news.txt" file.
  *
@@ -660,14 +907,13 @@ errr check_load_init(void)
  */
 void show_news(void)
 {
-    int i;
-
     FILE        *fp;
-
-    char	*s;
 
     char	buf[1024];
 
+
+    /* Clear the screen */
+    clear_screen();
 
     /* Access the "news" file */
     strcpy(buf, ANGBAND_DIR_FILE);
@@ -676,43 +922,36 @@ void show_news(void)
     /* Open the News file */
     fp = my_fopen(buf, "r");
 
-    /* No 'news.txt' file? */
-    if (!fp) quit_fmt("Cannot open the '%s' file!", buf);
+    /* Dump */
+    if (fp) {
 
-    /* Clear the screen */
-    clear_screen();
+        int i = 0;
 
-    /* Dump the file to the screen */
-    for (i = 0; (i < 20) && fgets(buf, 80, fp); i++) {
+        /* Dump the file to the screen */
+        while (0 == my_fgets(fp, buf, 1024)) {
 
-        /* Advance to "weirdness" (including the final newline) */
-        for (s = buf; isprint(*s); ++s) ;
-        
-        /* Nuke "weirdness" */
-        *s = '\0';
+            /* Display and advance */
+            put_str(buf, i++, 0);
+        }
 
-        /* Display the line */
-        put_str(buf, i+2, 0);
-
-        /* Flush it */
-        Term_fresh();
+        /* Close */
+        my_fclose(fp);
     }
 
     /* Flush it */
     Term_fresh();
-
-    /* Close */
-    my_fclose(fp);
 }
 
 
 
 /*
  * Recursive "help file" perusal.  Return FALSE on "ESCAPE".
+ *
+ * XXX XXX XXX Consider using a temporary file.
  */
 static bool do_cmd_help_aux(cptr name, int line)
 {
-    int		i, k, n;
+    int		i, k;
 
     /* Number of "real" lines passed by */
     int		next = 0;
@@ -782,21 +1021,8 @@ static bool do_cmd_help_aux(cptr name, int line)
     /* Pre-Parse the file */
     while (TRUE) {
 
-        /* Read a line from the file */
-        if (!fgets(buf, 128, fff)) break;
-
-        /* Hack -- verify the file */
-        for (n = 0; buf[n]; n++) {
-
-            /* Invalid character (stop reading) */
-            if (!isprint(buf[n])) break;
-        }
-
-        /* Strip trailing spaces and stuff */
-        for (n = strlen(buf) - 1; (n > 0) && (isspace(buf[n-1])); n--) ;
-
-        /* Truncate the text */
-        buf[n] = '\0';
+        /* Read a line or stop */
+        if (my_fgets(fff, buf, 1024)) break;
 
         /* XXX Parse "menu" items */
         if (prefix(buf, "***** ")) {
@@ -862,7 +1088,7 @@ static bool do_cmd_help_aux(cptr name, int line)
         for ( ; next < line; next++) {
 
             /* Skip a line */
-            if (!fgets(buf, 128, fff)) break;
+            if (my_fgets(fff, buf, 1024)) break;
         }
 
 
@@ -872,17 +1098,8 @@ static bool do_cmd_help_aux(cptr name, int line)
             /* Hack -- track the "first" line */
             if (!i) line = next;
 
-            /* Get a line of the file */
-            if (!fgets(buf, 128, fff)) break;
-
-            /* Check the length of the line */
-            n = strlen(buf) - 1;
-
-            /* Never more than 80 characters */
-            if (n > 80) n = 80;
-
-            /* Terminate the line */
-            buf[n] = '\0';
+            /* Get a line of the file or stop */
+            if (my_fgets(fff, buf, 1024)) break;
 
             /* Hack -- skip "special" lines */
             if (prefix(buf, "***** ")) continue;
@@ -1037,293 +1254,6 @@ void do_cmd_help(cptr name)
     character_icky = FALSE;
 }
 
-
-
-/*
- * Determine a "title" for the player
- */
-static cptr title_string()
-{
-    int plev = p_ptr->lev;
-
-    /* King or Queen */
-    if (total_winner || (plev > PY_MAX_LEVEL)) {
-        return (p_ptr->male ? "**KING**" : "**QUEEN**");
-    }
-
-#ifdef ALLOW_TITLES
-
-    /* Hack -- Novice */
-    if (plev < 1) return ("Novice");
-
-    /* Use the actual title */
-    return (player_title[p_ptr->pclass][plev - 1]);
-
-#else
-
-    /* No title */
-    return ("Player");
-
-#endif
-
-}
-
-
-
-/*
- * Print the character to a file or device.
- */
-errr file_character(cptr name)
-{
-    int			i;
-
-    cptr		p;
-
-    cptr		colon = ":";
-    cptr		blank = " ";
-
-#if 0
-    cptr		other = "(";
-#endif
-
-    cptr		paren = ")";
-
-    int			fd = -1;
-
-    FILE		*fp = NULL;
-
-    int			tmp;
-    int                 xthn, xthb, xfos, xsrh;
-    int			xdis, xdev, xsav, xstl;
-    char                xinfra[32];
-
-    int			show_to_h, show_to_d;
-
-    inven_type		*i_ptr;
-
-    store_type		*st_ptr = &store[7];
-
-    char		i_name[80];
-
-    char		buf[1024];
-
-
-    /* Drop priv's */
-    safe_setuid_drop();
-
-    /* Access the help file */
-    strcpy(buf, ANGBAND_DIR_USER);
-    strcat(buf, name);
-
-#if defined(MACINTOSH) && !defined(applec)
-    /* Global -- "text file" */
-    _ftype = 'TEXT';
-#endif
-
-    /* Check for existing file */
-    fd = fd_open(buf, O_RDONLY, 0);
-    
-    /* Existing file */
-    if (fd >= 0) {
-
-        char out_val[160];
-
-        /* Close the file */
-        (void)fd_close(fd);
-
-        /* Build query */
-        (void)sprintf(out_val, "Replace existing file %s? ", buf);
-
-        /* Ask */
-        if (get_check(out_val)) fd = -1;
-    }
-
-    /* Open the non-existing file */
-    if (fd < 0) fp = my_fopen(buf, "w");
-
-    /* Grab priv's */
-    safe_setuid_grab();
-
-
-    /* Invalid file */
-    if (!fp) {
-
-        /* Message */
-        msg_format("Cannot open file '%s'.", buf);
-        msg_print(NULL);
-
-        /* Error */
-        return (-1);
-    }
-
-
-    /* Fighting Skill (with current weapon) */
-    i_ptr = &inventory[INVEN_WIELD];
-    tmp = p_ptr->to_h + i_ptr->to_h;
-    xthn = p_ptr->skill_thn + (tmp * BTH_PLUS_ADJ);
-
-    /* Shooting Skill (with current bow and normal missile) */
-    i_ptr = &inventory[INVEN_BOW];
-    tmp = p_ptr->to_h + i_ptr->to_h;
-    xthb = p_ptr->skill_thb + (tmp * BTH_PLUS_ADJ);
-
-    /* Basic abilities */
-    xdis = p_ptr->skill_dis;
-    xdev = p_ptr->skill_dev;
-    xsav = p_ptr->skill_sav;
-    xstl = p_ptr->skill_stl;
-    xsrh = p_ptr->skill_srh;
-    xfos = p_ptr->skill_fos;
-
-    /* Infravision string */
-    (void)sprintf(xinfra, "%d feet", p_ptr->see_infra * 10);
-
-    /* Basic to hit/dam bonuses */
-    show_to_h = p_ptr->dis_to_h;
-    show_to_d = p_ptr->dis_to_d;
-
-    /* Check the weapon */
-    i_ptr = &inventory[INVEN_WIELD];
-
-    /* Hack -- add in weapon info if known */
-    if (inven_known_p(i_ptr)) show_to_h += i_ptr->to_h;
-    if (inven_known_p(i_ptr)) show_to_d += i_ptr->to_d;
-
-
-    /* Notify user */
-    prt(format("Dumping character to '%s'...", name), 0, 0);
-
-    /* Flush */
-    Term_fresh();
-
-    colon = ":";
-    blank = " ";
-
-    fprintf(fp, " Name%9s %-23s", colon, player_name);
-    fprintf(fp, "Age%11s %6d ", colon, (int)p_ptr->age);
-    cnv_stat(p_ptr->stat_use[A_STR], buf);
-    fprintf(fp, "   STR : %s\n", buf);
-    fprintf(fp, " Race%9s %-23s", colon, rp_ptr->title);
-    fprintf(fp, "Height%8s %6d ", colon, (int)p_ptr->ht);
-    cnv_stat(p_ptr->stat_use[A_INT], buf);
-    fprintf(fp, "   INT : %s\n", buf);
-    fprintf(fp, " Sex%10s %-23s", colon,
-                  (p_ptr->male ? "Male" : "Female"));
-    fprintf(fp, "Weight%8s %6d ", colon, (int)p_ptr->wt);
-    cnv_stat(p_ptr->stat_use[A_WIS], buf);
-    fprintf(fp, "   WIS : %s\n", buf);
-    fprintf(fp, " Class%8s %-23s", colon,
-                  cp_ptr->title);
-    fprintf(fp, "Social Class : %6d ", p_ptr->sc);
-    cnv_stat(p_ptr->stat_use[A_DEX], buf);
-    fprintf(fp, "   DEX : %s\n", buf);
-    fprintf(fp, " Title%8s %-23s", colon, title_string());
-    fprintf(fp, "%22s", blank);
-    cnv_stat(p_ptr->stat_use[A_CON], buf);
-    fprintf(fp, "   CON : %s\n", buf);
-    fprintf(fp, "%34s", blank);
-    fprintf(fp, "%26s", blank);
-    cnv_stat(p_ptr->stat_use[A_CHR], buf);
-    fprintf(fp, "   CHR : %s\n\n", buf);
-
-    fprintf(fp, " + To Hit    : %6d", show_to_h);
-    fprintf(fp, "%7sLevel      :%9d", blank, (int)p_ptr->lev);
-    fprintf(fp, "   Max Hit Points : %6d\n", p_ptr->mhp);
-    fprintf(fp, " + To Damage : %6d", show_to_d);
-    fprintf(fp, "%7sExperience :%9ld", blank, (long)p_ptr->exp);
-    fprintf(fp, "   Cur Hit Points : %6d\n", p_ptr->chp);
-    fprintf(fp, " + To AC     : %6d", p_ptr->dis_to_a);
-    fprintf(fp, "%7sMax Exp    :%9ld", blank, (long)p_ptr->max_exp);
-    fprintf(fp, "   Max Mana%8s %6d\n", colon, p_ptr->msp);
-    fprintf(fp, "   Base AC   : %6d", p_ptr->dis_ac);
-
-    if (p_ptr->lev >= PY_MAX_LEVEL) {
-        fprintf(fp, "%7sExp to Adv.:%9s", blank, "****");
-    }
-    else {
-        fprintf(fp, "%7sExp to Adv.:%9ld", blank,
-                      (long)(player_exp[p_ptr->lev - 1] *
-                             p_ptr->expfact / 100L));
-    }
-
-    fprintf(fp, "   Cur Mana%8s %6d\n", colon, p_ptr->csp);
-    fprintf(fp, "%28sGold%8s%9ld\n", blank, colon, (long)p_ptr->au);
-
-
-    /* Dump the misc. abilities */
-    fprintf(fp, "\n(Miscellaneous Abilities)\n");
-    fprintf(fp, " Fighting    : %-10s", likert(xthn, 12));
-    fprintf(fp, "   Stealth     : %-10s", likert(xstl, 1));
-    fprintf(fp, "   Perception  : %s\n", likert(xfos, 6));
-    fprintf(fp, " Bows/Throw  : %-10s", likert(xthb, 12));
-    fprintf(fp, "   Disarming   : %-10s", likert(xdis, 8));
-    fprintf(fp, "   Searching   : %s\n", likert(xsrh, 6));
-    fprintf(fp, " Saving Throw: %-10s", likert(xsav, 6));
-    fprintf(fp, "   Magic Device: %-10s", likert(xdev, 6));
-    fprintf(fp, "   Infra-Vision: %s\n\n", xinfra);
-
-    /* Write out the character's history     */
-    fprintf(fp, "Character Background\n");
-    for (i = 0; i < 4; i++) {
-        fprintf(fp, " %s\n", history[i]);
-    }
-
-    fprintf(fp, "\n\n");
-
-    /* Dump the equipment */
-    if (equip_cnt) {
-        fprintf(fp, "  [Character's Equipment List]\n\n");
-        for (i = INVEN_WIELD; i < INVEN_TOTAL; i++) {
-            p = mention_use(i);
-            objdes(i_name, &inventory[i], TRUE, 3);
-            fprintf(fp, "  %c%s %-19s: %s\n",
-                    index_to_label(i), paren, p, i_name);
-        }
-        fprintf(fp, "\n\n");
-    }
-
-
-    /* Dump the inventory */
-    if (inven_cnt) {
-        fprintf(fp, "  [General Inventory List]\n\n");
-        for (i = 0; i < INVEN_PACK; i++) {
-            objdes(i_name, &inventory[i], TRUE, 3);
-            fprintf(fp, "%c%s %s\n",
-                    index_to_label(i), paren, i_name);
-        }
-        fprintf(fp, "\n\n");
-    }
-
-
-    /* Dump the Home */
-    fprintf(fp, "  [Home Inventory]\n\n");	
-    if (!st_ptr->stock_num) {
-        fprintf(fp, "  Character has no objects at home.\n");
-    }
-    else {
-        for (i = 0; i < st_ptr->stock_num; i++) {
-            if (i == 12) fprintf(fp, "\n");
-            objdes(i_name, &st_ptr->stock[i], TRUE, 3);
-            fprintf(fp, "%c%s %s\n", I2A(i%12), paren, i_name);
-        }
-    }
-
-
-    /* Terminate it */
-    fprintf(fp, "\n");
-
-    /* Close it */
-    my_fclose(fp);
-
-    /* Message */
-    prt(format("Dumping character to '%s'... done.", name), 0, 0);
-
-    /* Dump */
-    Term_fresh();
-
-    /* Success */
-    return (0);
-}
 
 
 
@@ -1560,108 +1490,112 @@ static void make_bones(void)
 
 
 /*
- * Silly string (unbalanced) representing the "grass"
- */
-static cptr grass =
-    "________)/\\\\_)_/___(\\/___(//_\\)/_\\//__\\\\(/_|_)_______";
-
-/*
- * Prints the gravestone of the character  -RAK-
+ * Display a "tomb-stone"
  */
 static void print_tomb()
 {
-    int		i;
     cptr	p;
 
-    char	day[32];
+    char	tmp[160];
 
-    char	out_val[160];
-    char	tmp_val[160];
+    char	buf[1024];
+
+    FILE        *fp;
 
     time_t	ct = time((time_t)0);
 
 
-    /* Draw a tombstone */
+    /* Clear the screen */
     clear_screen();
 
-    put_str("_______________________", 1, 15);
-    put_str("/", 2, 14);
-    put_str("\\         ___", 2, 38);
-    put_str("/", 3, 13);
-    put_str("\\ ___   /   \\      ___", 3, 39);
-    put_str("/            RIP            \\   \\  :   :     /   \\", 4, 12);
-    put_str("/", 5, 11);
-    put_str("\\  : _;,,,;_    :   :", 5, 41);
+    /* Access the "dead" file */
+    strcpy(buf, ANGBAND_DIR_FILE);
+    strcat(buf, "dead.txt");
 
-    center_string(tmp_val, player_name);
-    (void)sprintf(out_val, "/%s\\,;_          _;,,,;_", tmp_val);
+    /* Open the News file */
+    fp = my_fopen(buf, "r");
 
-    put_str(out_val, 6, 10);
+    /* Dump */
+    if (fp) {
 
-    put_str("|               the               |   ___", 7, 9);
+        int i = 0;
 
-    p = title_string();
-    if (total_winner) p = "Magnificent";
-    center_string(tmp_val, p);
-    (void)sprintf(out_val, "| %s |  /   \\", tmp_val);
-    put_str(out_val, 8, 9);
+        /* Dump the file to the screen */
+        while (0 == my_fgets(fp, buf, 1024)) {
 
-    put_str("|", 9, 9);
-    put_str("|  :   :", 9, 43);
+            /* Display and advance */
+            put_str(buf, i++, 0);
+        }
 
-    if (!total_winner) {
-        p = cp_ptr->title;
+        /* Close */
+        my_fclose(fp);
     }
-    else if (p_ptr->male) {
-        p = "*King*";
+
+
+    /* King or Queen */
+    if (total_winner || (p_ptr->lev > PY_MAX_LEVEL)) {
+        p = "Magnificent";
     }
+
+#ifdef ALLOW_TITLES
+
+    /* Hack -- Novice */
+    else if (p_ptr->lev < 1) {
+        p = "Novice";
+    }
+    
+    /* Normal */
     else {
-        p = "*Queen*";
+        p =  player_title[p_ptr->pclass][p_ptr->lev - 1];
     }
 
-    center_string(tmp_val, p);
-    (void)sprintf(out_val, "| %s | _;,,,;_   ____", tmp_val);
-    put_str(out_val, 10, 9);
+#else
 
-    (void)sprintf(out_val, "Level : %d", (int)p_ptr->lev);
-    center_string(tmp_val, out_val);
-    (void)sprintf(out_val, "| %s |          /    \\", tmp_val);
-    put_str(out_val, 11, 9);
+    /* Oops */
+    else {
+        p = "Player";
+    }
 
-    (void)sprintf(out_val, "%ld Exp", (long)p_ptr->exp);
-    center_string(tmp_val, out_val);
-    (void)sprintf(out_val, "| %s |          :    :", tmp_val);
-    put_str(out_val, 12, 9);
+#endif
 
-    (void)sprintf(out_val, "%ld Au", (long)p_ptr->au);
-    center_string(tmp_val, out_val);
-    (void)sprintf(out_val, "| %s |          :    :", tmp_val);
-    put_str(out_val, 13, 9);
 
-    (void)sprintf(out_val, "Died on Level : %d", dun_level);
-    center_string(tmp_val, out_val);
-    (void)sprintf(out_val, "| %s |         _;,,,,;_", tmp_val);
-    put_str(out_val, 14, 9);
+    center_string(buf, player_name);
+    put_str(buf, 6, 11);
 
-    put_str("|            killed by            |", 15, 9);
+    center_string(buf, "the");
+    put_str(buf, 7, 11);
 
-    p = died_from;
-    i = strlen(p);
-    died_from[i] = '.';			   /* add a trailing period */
-    died_from[i + 1] = '\0';
-    center_string(tmp_val, p);
-    (void)sprintf(out_val, "| %s |", tmp_val);
-    put_str(out_val, 16, 9);
+    center_string(buf, p);
+    put_str(buf, 8, 11);
 
-    died_from[i] = '\0';		   /* strip off the period */
-    sprintf(day, "%-.24s", ctime(&ct));
-    center_string(tmp_val, day);
-    (void)sprintf(out_val, "| %s |", tmp_val);
-    put_str(out_val, 17, 9);
 
-    put_str("*|   *     *     *    *   *     *  | *", 18, 8);
+    center_string(buf, cp_ptr->title);
+    put_str(buf, 10, 11);
 
-    put_str(grass, 19, 0);
+    (void)sprintf(tmp, "Level: %d", (int)p_ptr->lev);
+    center_string(buf, tmp);
+    put_str(buf, 11, 11);
+
+    (void)sprintf(tmp, "Exp: %ld", (long)p_ptr->exp);
+    center_string(buf, tmp);
+    put_str(buf, 12, 11);
+
+    (void)sprintf(tmp, "AU: %ld", (long)p_ptr->au);
+    center_string(buf, tmp);
+    put_str(buf, 13, 11);
+
+    (void)sprintf(tmp, "Killed on Level %d", dun_level);
+    center_string(buf, tmp);
+    put_str(buf, 14, 11);
+
+    (void)sprintf(tmp, "by %s.", died_from);
+    center_string(buf, tmp);
+    put_str(buf, 15, 11);
+
+
+    (void)sprintf(tmp, "%-.24s", ctime(&ct));
+    center_string(buf, tmp);
+    put_str(buf, 17, 11);
 }
 
 
@@ -1717,15 +1651,17 @@ static void show_info(void)
 
         char out_val[160];
 
-        /* Get a filename (or escape) */
+        /* Prompt */
         put_str("Filename: ", 23, 0);
+
+        /* Ask for filename (or abort) */
         if (!askfor(out_val, 60)) return;
 
         /* Return means "show on screen" */
         if (!out_val[0]) break;
 
         /* Dump a character file */
-        (void)file_character(out_val);
+        (void)file_character(out_val, FALSE);
     }
 
 

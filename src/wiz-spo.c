@@ -505,7 +505,6 @@ static const flag_desc immune_flags_desc[] = {
         { TR2_IM_ELEC,    "Lightning" },
         { TR2_IM_FIRE,    "Fire" },
         { TR2_IM_COLD,    "Cold" },
-        { TR2_IM_POIS,    "Poison" },
 };
 
 /*

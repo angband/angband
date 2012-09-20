@@ -22,8 +22,6 @@
  * and uses the "termcap" information directly, or even bypasses the
  * "termcap" information and sends direct vt100 escape sequences.
  *
- * XXX XXX XXX We do not handle the "TERM_XTRA_FLUSH" action (!)
- *
  * XXX XXX XXX This file provides only a single "term" window.
  *
  * The "init" and "nuke" hooks are built so that only the first init and
@@ -343,10 +341,10 @@ static void keymap_game_prepare()
     /* Acquire the current mapping */
     tcgetattr(0, &game_termios);
 
-    /* Force "CTRL-C" to interupt */
+    /* Force "Ctrl-C" to interupt */
     game_termios.c_cc[VINTR] = (char)3;
 
-    /* Force "CTRL-Z" to suspend */
+    /* Force "Ctrl-Z" to suspend */
     game_termios.c_cc[VSUSP] = (char)26;
 
     /* Hack -- Leave "VSTART/VSTOP" alone */
@@ -369,10 +367,10 @@ static void keymap_game_prepare()
     /* Acquire the current mapping */
     (void)ioctl(0, TCGETA, (char *)&game_termio);
 
-    /* Force "CTRL-C" to interupt */
+    /* Force "Ctrl-C" to interupt */
     game_termio.c_cc[VINTR] = (char)3;
 
-    /* Force "CTRL-Z" to suspend */
+    /* Force "Ctrl-Z" to suspend */
     game_termio.c_cc[VSUSP] = (char)26;
 
     /* Hack -- Leave "VSTART/VSTOP" alone */
@@ -792,7 +790,7 @@ static errr Term_text_gcu(int x, int y, int n, byte a, cptr s)
  */
 errr init_gcu(void)
 {
-    int i, y, x, err;
+    int i;
 
     term *t = &term_screen_body;
 
@@ -811,29 +809,15 @@ errr init_gcu(void)
 
 
     /* Hack -- Require large screen, or Quit with message */
-    err = ((LINES < 24) || (COLS < 80));
-    if (err) quit("Angband needs an 80x24 'curses' screen");
-
-#if 0
-    /* Hack -- Check the tabs */
-    (void)move(0, 0);
-    for (i = 1; i < 10; i++)
-    {
-        (void)addch('\t');
-        getyx(stdscr, y, x);
-        if (y != 0 || x != i * 8) quit("Angband needs eight space tab-stops");
-    }
-#endif
+    i = ((LINES < 24) || (COLS < 80));
+    if (i) quit("Angband needs an 80x24 'curses' screen");
 
 #ifdef A_COLOR
 
     /*** Init the Color-pairs and set up a translation table ***/
 
-    /* Now let's go for a little bit of color! */
-    err = (start_color() == ERR);
-
     /* Do we have color, and enough color, available? */
-    can_use_color = (!err && has_colors() &&
+    can_use_color = ((start_color() != ERR) && has_colors() &&
                      (COLORS >= 8) && (COLOR_PAIRS >= 8));
 
 #ifdef REDEFINE_COLORS
@@ -842,49 +826,18 @@ errr init_gcu(void)
                      (COLOR_PAIRS >= 16));
 #endif
 
-    /* Initialize the color table if needed */
-    if (can_use_color && !can_fix_color) {
-
-        /* Color-pair 0 is *always* WHITE on BLACK */
-
-        /* Prepare the color pairs */
-        init_pair (1, COLOR_RED,     COLOR_BLACK);
-        init_pair (2, COLOR_GREEN,   COLOR_BLACK);
-        init_pair (3, COLOR_YELLOW,  COLOR_BLACK);
-        init_pair (4, COLOR_BLUE,    COLOR_BLACK);
-        init_pair (5, COLOR_MAGENTA, COLOR_BLACK);
-        init_pair (6, COLOR_CYAN,    COLOR_BLACK);
-        init_pair (7, COLOR_BLACK,   COLOR_BLACK);
-
-        /* Prepare the "Angband Colors" -- Bright white is too bright */
-        colortable[ 0] = (COLOR_PAIR(7) | A_NORMAL);	/* Black */
-        colortable[ 1] = (COLOR_PAIR(0) | A_NORMAL);	/* White */
-        colortable[ 2] = (COLOR_PAIR(6) | A_NORMAL);	/* Grey XXX */
-        colortable[ 3] = (COLOR_PAIR(3) | A_BRIGHT);	/* Orange XXX */
-        colortable[ 4] = (COLOR_PAIR(1) | A_NORMAL);	/* Red */
-        colortable[ 5] = (COLOR_PAIR(2) | A_NORMAL);	/* Green */
-        colortable[ 6] = (COLOR_PAIR(4) | A_NORMAL);	/* Blue */
-        colortable[ 7] = (COLOR_PAIR(3) | A_NORMAL);	/* Brown */
-        colortable[ 8] = (COLOR_PAIR(7) | A_BRIGHT);	/* Dark-grey XXX */
-        colortable[ 9] = (COLOR_PAIR(6) | A_BRIGHT);	/* Light-grey XXX */
-        colortable[10] = (COLOR_PAIR(5) | A_NORMAL);	/* Purple */
-        colortable[11] = (COLOR_PAIR(3) | A_BRIGHT);	/* Yellow */
-        colortable[12] = (COLOR_PAIR(1) | A_BRIGHT);	/* Light Red */
-        colortable[13] = (COLOR_PAIR(2) | A_BRIGHT);	/* Light Green */
-        colortable[14] = (COLOR_PAIR(4) | A_BRIGHT);	/* Light Blue */
-        colortable[15] = (COLOR_PAIR(3) | A_NORMAL);	/* Light Brown XXX */
-    }
-
-    /* Attempt to change the colors if allowed */
-    if (can_use_color && can_fix_color) {
+    /* Attempt to use customized colors */
+    if (can_fix_color) {
 
         /* Prepare the color pairs */
         for (i = 0; i < 16; i++) {
+        
+            /* Reset the color */
             init_pair(i, i, i);
+
+            /* Reset the color data */
             colortable[i] = (COLOR_PAIR(i) | A_NORMAL);
         }
-
-        /* XXX XXX XXX See new color definitions */
 
         /* XXX XXX XXX Take account of "gamma correction" */
 
@@ -892,19 +845,52 @@ errr init_gcu(void)
         init_color(0,     0,    0,    0);	/* Black */
         init_color(1,  1000, 1000, 1000);	/* White */
         init_color(2,   500,  500,  500);	/* Grey */
-        init_color(3,  1000,  400,   20);	/* Orange */
-        init_color(4,   900,   50,   50);	/* Red */
-        init_color(5,     0,  400,   50);	/* Green */
-        init_color(6,     0,    0,  900);	/* Blue */
-        init_color(7,   400,  200,   20);	/* Brown */
+        init_color(3,  1000,  500,    0);	/* Orange */
+        init_color(4,   750,    0,    0);	/* Red */
+        init_color(5,     0,  500,  250);	/* Green */
+        init_color(6,     0,    0, 1000);	/* Blue */
+        init_color(7,   500,  250,    0);	/* Brown */
         init_color(8,   250,  250,  250);	/* Dark-grey */
         init_color(9,   750,  750,  750);	/* Light-grey */
-        init_color(10,  250,    0,  750);	/* Purple */
-        init_color(11,  900,  900,   50);	/* Yellow */
-        init_color(12,  900,   50,   50);	/* Light Red */
-        init_color(13,   50,  900,   50);	/* Light Green */
-        init_color(14,   50,  600,  950);	/* Light Blue */
-        init_color(15,  600,  400,  250);	/* Light Brown */
+        init_color(10, 1000,    0, 1000);	/* Purple */
+        init_color(11, 1000, 1000,    0);	/* Yellow */
+        init_color(12, 1000,    0,    0);	/* Light Red */
+        init_color(13,    0, 1000,    0);	/* Light Green */
+        init_color(14,    0, 1000, 1000);	/* Light Blue */
+        init_color(15,  750,  500,  250);	/* Light Brown */
+    }
+
+    /* Attempt to use colors */
+    else if (can_use_color) {
+
+        /* Color-pair 0 is *always* WHITE on BLACK */
+
+        /* Prepare the color pairs */
+        init_pair(1, COLOR_RED,     COLOR_BLACK);
+        init_pair(2, COLOR_GREEN,   COLOR_BLACK);
+        init_pair(3, COLOR_YELLOW,  COLOR_BLACK);
+        init_pair(4, COLOR_BLUE,    COLOR_BLACK);
+        init_pair(5, COLOR_MAGENTA, COLOR_BLACK);
+        init_pair(6, COLOR_CYAN,    COLOR_BLACK);
+        init_pair(7, COLOR_BLACK,   COLOR_BLACK);
+
+        /* Prepare the "Angband Colors" -- Bright white is too bright */
+        colortable[ 0] = (COLOR_PAIR(7) | A_NORMAL);	/* Black */
+        colortable[ 1] = (COLOR_PAIR(0) | A_NORMAL);	/* White */
+        colortable[ 2] = (COLOR_PAIR(6) | A_NORMAL);	/* Grey XXX */
+        colortable[ 3] = (COLOR_PAIR(1) | A_BRIGHT);	/* Orange XXX */
+        colortable[ 4] = (COLOR_PAIR(1) | A_NORMAL);	/* Red */
+        colortable[ 5] = (COLOR_PAIR(2) | A_NORMAL);	/* Green */
+        colortable[ 6] = (COLOR_PAIR(4) | A_NORMAL);	/* Blue */
+        colortable[ 7] = (COLOR_PAIR(3) | A_NORMAL);	/* Umber */
+        colortable[ 8] = (COLOR_PAIR(7) | A_BRIGHT);	/* Dark-grey XXX */
+        colortable[ 9] = (COLOR_PAIR(6) | A_BRIGHT);	/* Light-grey XXX */
+        colortable[10] = (COLOR_PAIR(5) | A_NORMAL);	/* Purple */
+        colortable[11] = (COLOR_PAIR(3) | A_BRIGHT);	/* Yellow */
+        colortable[12] = (COLOR_PAIR(5) | A_BRIGHT);	/* Light Red XXX */
+        colortable[13] = (COLOR_PAIR(2) | A_BRIGHT);	/* Light Green */
+        colortable[14] = (COLOR_PAIR(4) | A_BRIGHT);	/* Light Blue */
+        colortable[15] = (COLOR_PAIR(3) | A_NORMAL);	/* Light Umber XXX */
     }
 
 #endif

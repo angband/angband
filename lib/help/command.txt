@@ -106,16 +106,16 @@ that you can always, for example, use "\" + "." + "6", to specify "run east".
  x  (unused)                             X  (unused)
  y  (unused)                             Y  (unused)
  z  Zap a rod                            Z  (unused)
- !  Define command macro                ^A  (special - wizard command)
- @  Define macro                        ^B  (unused)
+ !  Interact with system                ^A  (special - wizard command)
+ @  Interact with macros                ^B  (unused)
  #  (unused)                            ^C  (special - break)
- $  (unused)                            ^D  (unused)
- %  Manage preference files             ^E  Toggle choice window
+ $  User interface                      ^D  (unused)
+ %  Interact with visuals               ^E  Toggle choice window
  ^  (special - control key)             ^F  Repeat level feeling
- &  Define keymap                       ^G  (unused)
+ &  Interact with colors                ^G  (unused)
  *  Target monster or location          ^H  (unused)
- (  Dump screen                         ^I  (special - tab)
- )  Dump screen (with colors)           ^J  (special - linefeed)
+ (  Load screen dump                    ^I  (special - tab)
+ )  Dump screen dump                    ^J  (special - linefeed)
  {  Inscribe an object                  ^K  (unused)
  }  Uninscribe an object                ^L  (unused)
  [  Wear/Wield equipment                ^M  (special - return)
@@ -127,7 +127,7 @@ that you can always, for example, use "\" + "." + "6", to specify "run east".
  ;  Walk (with pickup)                  ^S  Save and don't quit
  :  Take notes                          ^T  (unused)
  '  (unused)                            ^U  (unused)
- "  (unused)                            ^V  (unused)
+ "  Enter a user pref command           ^V  (unused)
  ,  Stay still (with pickup)            ^W  (special - wizard mode)
  <  Go up staircase                     ^X  Save and quit
  .  Run                                 ^Y  (unused)
@@ -166,16 +166,16 @@ that you can always, for example, use "\" + "." + "6", to specify "run east".
  x  Look around                          X  (unused)
  y  (walk - north west)                  Y  (run - north west)
  z  Aim a wand (Zap)                     Z  Use a staff (Zap)
- !  Define command macro                ^A  (special - wizard command)
- @  Define macro                        ^B  (tunnel - south west)
+ !  Interact with system                ^A  (special - wizard command)
+ @  Interact with macros                ^B  (tunnel - south west)
  #  Toggle search mode                  ^C  (special - break)
  $  (unused)                            ^D  Destroy item
- %  Manage preference files             ^E  Toggle choice window
+ %  Interact with visuals               ^E  Toggle choice window
  ^  (special - control key)             ^F  Repeat level feeling
- &  Define keymap                       ^G  (unused)
+ &  Interact with colors                ^G  (unused)
  *  Target monster or location          ^H  (tunnel - west)
- (  Dump screen                         ^I  (special - tab)
- )  Dump screen (with colors)           ^J  (tunnel - south)
+ (  Load screen dump                    ^I  (special - tab)
+ )  Dump screen dump                    ^J  (tunnel - south)
  {  Inscribe an object                  ^K  (tunnel - north)
  }  Uninscribe an object                ^L  (tunnel - east)
  [  Wear/Wield equipment                ^M  (tunnel - south)
@@ -187,7 +187,7 @@ that you can always, for example, use "\" + "." + "6", to specify "run east".
  ;  Walk (with pickup)                  ^S  Save and don't quit
  :  Take notes                          ^T  (unused)
  '  (unused)                            ^U  (tunnel - north east)
- "  (unused)                            ^V  Examine current target
+ "  Enter a user pref command           ^V  Examine current target
  ,  Run                                 ^W  (special - wizard mode)
  <  Go up staircase                     ^X  Save and quit
  .  Stay still (with pickup)            ^Y  (tunnel - north west)
@@ -314,85 +314,160 @@ accident, and inscribing "!*" on an object will allow you to be very paranoid
 about the object.  Note that "selling" and "dropping" both use the "d" command.
 
 
-7.  Macros and Keymaps and Preference Files
+7.  User Pref Files
 
-        You can define a new macro with the "@" command.  You will be
-prompted for the key for the macro, and the action that key should
-perform.  From that point on, when you press that key, Angband will
-pretend you pressed the keys you entered for the action.  For example,
-if you use the macro command to attach the action "+6" to Ctrl-KP6, then
-whenever you press Ctrl-KP6, Angband will act as if you pressed "+" and
-then "6", and will thus tunnel to the east.  This is most useful for
-special keys such as the function keys, or with various combinations
-of modifier keys and keypad keys, or special modifier keys and normal
-keys.  After you have defined several macros, you can save them in a
-preference file (see preference files below).
+        Angband allows you to change various aspects of the game to suit
+your tastes.  You may define keymaps (changing the way Angband maps your
+keypresses to underlying commands), create macros (allowing you to map a
+single keypress to a series of keypresses), modify the visuals (allowing
+you to change the appearance of monsters, objects, or terrain features),
+change the colors (allowing you to make a given color brighter, darker,
+or even completely different), or set options (turning them off or on).
 
-        If the macro action includes special keys like RETURN or control
-characters, they have to be encoded.  Use "^X" for Ctrl-X (similar for
-other control characters), "\NNN" for character number NNN in octal,
-"\xHH" for character number HH in hex, "\e" for ESCAPE, "\n" for newline
-(ENTER or LINEFEED), "\r" for RETURN, "\s" for SPACE, "\\" for backslash,
-and "\^" for caret.
+        Angband stores your preferences in files called "user pref files",
+which contain comments and "user pref commands", which are simple strings
+describing one aspect of the system about which the user has a preference.
+There are many ways to load a user pref file, and in fact, some of these
+files are automatically loaded for you by the game.  All of the files are
+kept in the "lib/user/" directory, though you may have to use one of the
+command line arguments to redirect this directory, especially on multiuser
+systems.  You may also enter single user pref commands directly, using the
+special "Enter a user pref command" command, activated by "double quote".
+You may have to use the "redraw" command (^R) after changing certain of
+the aspects of the game, to allow Angband to adapt to your changes.
 
-        Note that the output of a macro CANNOT match against other macro
-sequences, so you do not have to worry about infinite loops.
+        When the game starts up, after you have loaded an old character,
+or created a new character, some user pref files are loaded automatically.
+First, the "pref.prf" file is loaded.  This file contains some user pref
+commands which will work on all platforms.  Then one of "font-xxx.prf"
+(for normal usage) or "graf-xxx.prf" (for bitmap usage) is loaded.  These
+files contain attr/char changes to allow the monsters, objects, and/or
+terrain features to look "better" on your system.  Then the "pref-xxx.prf"
+file is loaded.  This file contains pre-defined system specific stuff
+(macros, color definitions, etc).  Then, the "user-xxx.prf" file is loaded.
+This file contains user-defined system specific stuff.  The "user-xxx.prf"
+file is used as the "default" user pref file in many places.  The "xxx" is
+the "system suffix" for your system, taken from the "main-xxx.c" file which
+was used to generate your executable.  Finally, the "Race.prf", "Class.prf",
+and "Name.prf" files are loaded, where "Race", "Class", and "Name" are
+replaced by the actual race, class, and name of the current character.
 
-        The "\" command (which, in a macro, has to be encoded as "\\") is
-very useful in macros, since it bypasses all macros and keymaps and the
+        Several commands allow you to both load existing user pref files,
+create new user pref files, append information to existing user pref files,
+and/or interact with various of the user preferences in a more intuitive
+way than the user pref commands allow.  The commands include "Interact with
+macros" (@), "Interact with visuals" (%), and "Interact with colors" (&),
+described below.
+
+7.1.  User Pref Files (Macros)
+
+        The "Interact with macros" command allows you to define or remove
+"macros", which are mappings from a single logical keypress to a sequence
+of keypresses, allowing you to use special keys on the keyboard, such as
+function keys or keypad keys, possibly in conjunction with modifier keys,
+to "automate" repetitive multi-keypress commands that you use a lot.  The
+macros can be marked as "normal" macros, which means they will fire any
+time you press the trigger key, or as "command" macros, which means they
+will only fire if you are being asked for a command.  The command macros
+are a hack which allow you to use keys which are not used for any command
+to trigger a macro, without inducing strange behavior if you attempt to
+use those keys in a special situation, such as entering an inscription.
+Since macros represent sequences of keypresses, and not all keypresses
+have a printable representation, macro triggers and actions must often be
+"encoded" into a human readible form.  This is done using several types
+of encoding, including "\xHH" for character number HH in hexidecimal,
+"\NNN" for character number NNN in octal, "\e" for the "escape" code,
+"\n" for the "newline" code, "\r" for the "return" code, "\s" for the
+"space" code, "\\" for backslash, "\^" for caret, and "^X" for the code
+for any "control" key "ctrl-X".  Note that the "action" of a macro will
+not be checked against other macro triggers, so you cannot make infinite
+loops.  You may specify extremely long macros, but you are limited in
+length by the underlying input mechanisms, which in general limit you
+to about 1024 keys in both triggers and actions.
+
+        The special "\" command (which must be encoded in macros as "\\")
+is very useful in macros, since it bypasses all macros and keymaps and the
 next keystroke is considered a command in the underlying Angband command
 set.  For a list of the Angband command set, see the section on Command
 Descriptions below.  For example, a macro which maps Shift-KP6 to "\" +
-"." + "6" will induce "run east" on ALL keysets.
+"." + "6" will induce the "run east" behavior, regardless of what keyset
+the user has chosen, and regardless of what keymaps have been defined.
 
-        You can define command macros with the "!" command.  Command
-macros are exactly like normal macros, except they will only be used when
-the player is in command mode (when Angband is expecting a normal command).
+        Command macros, as mentioned above, can only be triggered when the
+player is in "command" mode (when Angband is expecting a normal command).
 This is useful for defining new commands or shortcuts that you want to map
 to normal keys.  For example, by default, the "X" key is bound via a
 command macro to "w0", as mentioned above, so that you can use it to
 quickly switch between two weapons (or a digger and a weapon).  Were this
 defined as a regular macro rather than a command macro, you would never be
-able to enter the name "MAX" or the filename "BOXES.TXT" since whenever
-you pressed "X", Angband would act as if you pressed "w0".  In general,
-you will want to use command macros rather than regular macros.  However,
-normal macros are nice for function keys and such, since you can simply
-tell them to produce a string of keys starting with a few escapes, so that
-they can be used even from a "-more-" prompt.
+able, for example, to enter the filename "BOXES.TXT", since the macro would
+fire, chaning your input to "BOw0ES.Tw0T".  In general, you will want to use
+command macros rather than normal macros, though, for example, normal macros
+can be told to produce a leading sequence of keys starting with "\e\e\e\e",
+which will clear any "-more-" prompts or other silliness.
 
-        You can also modify the keyset with the "&" command.  A keymap
-maps a single keypress to another single keypress with an optional
-direction.  Angband uses keymaps internally to map both the original and
-the roguelike keysets to the underlying command set.  This means that when
-you are defining keymaps, the keypress you map a key to must be an underlying
-command, not a keypress from the original or roguelike keysets.  Note that
-the original keyset is almost identical to the underlying keyset, with the
-addition of a few keymaps, such as numerical directions to ";" + direction,
-"T" to "+", "5" to ",", "w" to "[", and "t" to "]".  See below for the full
-set of underlying commands.  Normally, there is no reason to use a keymap.
+7.2.  User Pref Files (Keymaps)
 
-        You can now save some settings to a preference file, or load a
-preference file, with the "%" command.  The primary use of this option is
-to save your macros to a file so that you can use them each time you play
-Angband.  Macros are specified in a preference file as a line starting
-with "A:" containing the encoded action, followed by a "P:" line (for a
-standard macro) or a "C:" line (for a command macro) containing the
-encoded trigger.  To see how to encode special characters, see the section
-on macros above.
+        The "Interact with macros" command also allows you to define
+"keymaps", which are vaguely related to macros.  A keymap maps a single
+keypress to another single keypress with an optional direction.  Angband
+uses keymaps internally to map both the original and the roguelike keysets
+to the underlying command set.  This means that when you are defining
+keymaps, the keypress you map a key to must be an underlying command, not
+a keypress from the original or roguelike keysets.  Note that the original
+keyset is almost identical to the underlying keyset, with the addition of
+a few keymaps, such as numerical directions to ";" + direction, "T" to "+",
+"5" to ",", "w" to "[", and "t" to "]".  See below for the full set of
+underlying commands.  Normally, there is no reason to use a keymap, unless
+you want to prevent accidental use of certain commands, and you are afraid
+those commands might be contained in some macro action.  Also, you could
+use a keymap to allow the use of a single set of macros which included the
+"pray prayer" ("p") or "cast spell" ("m") command, as appropriate, by using
+"m" in the macros, and making a keymap from "m" to "p" when using a priest.
 
-        Preference files also allow you to save the character and color
-assignments for monsters and objects, as well as modify them
-interactively.  On the interactive modification screen, pressing a
-lowercase letter will add one to that field, while pressing a capital
-letter will subtract one.  Spoiler warning:  Using this option will allow
-you to see the names of all of the monsters in the game.  If you do not
-want to know that information, do not use this option.
+        There is only one way to specify a "keymap" in a user pref commands.
+The "S:<key>:<map>:<dir>" command activates a keymap from the "<key>" key to
+the "<map>" key, with optional direction "<dir>".  Note that both "<key>" and
+"<map>" must currently be specified as ascii values, and "<dir>" should be a
+"numeric" direction, 1 to 9, or "zero" for "no direction".  Eventually, the
+use of the "5" direction might be allowed to specify automatic use of the
+current target (if legal) with the given keymap.
 
-        The default preference file pref.prf in Angband's lib/pref
-directory is always loaded, so on a single-user system, you may want to
-just put all of your macros in there.  Take a look at this file for
-additional information about preference files.
- 
+7.3.  User Pref Files (Visuals)
+
+        You can use the "Interact with visuals" command to change various
+visual information, currently including the choice of what attr/char values
+are used to represent various monsters, objects, or terrain features.  Note
+that in combination appropriate support in "main-xxx.c", and with the use of
+the "use_graphics" flag, you may be able to specify that "graphic bitmaps"
+should be used instead of normal "colored characters" for various things.
+
+        When interactively modifying the attr/char values for monsters,
+objects, or terrain features, pressing "n" or "N" will change which entry
+you are changing, pressing "a" or "A" will rotate through the available
+attr values, and pressing "c" or "C" will rotate though the available char
+values.  Note that attr/char values with the "high bit" set may induce the
+display of special "graphic" pictures if the "use_graphics" flag is set,
+and your system supports the "use_graphics" flag.
+
+        Note that this command can be abused in various ways, and if you
+must do so, remember that you are only cheating yourself.
+
+7.3.  User Pref Files (Colors)
+
+        The "Interact with colors" command allows you to change the actual
+internal values used to display various colors.  This command may or may
+not have any effect on your machine.  Advanced machines may allow you to
+change the actual RGB values used to represent each of the 16 colors used
+by Angband, and perhaps even allow you to define new colors which are not
+currently used by Angband.
+
+7.4.  User Pref Files (Options)
+
+        The "Interact with options" command allows you to turn options
+on or off.  You may turn options off or on using the user pref commands
+of the form "X:<option>" or "Y:<option>" respectively.
+
  
 8.  Command Descriptions
 
@@ -402,7 +477,12 @@ and "roguelike" keyset key, if different from the underlying command key.
 Then comes a brief description of the command, including information about
 alternative methods of specifying the command in each keyset, when needed.
 Several commands (tunnel, disarm, bash, open) are repeated 99 times if the
-"always_repeat" option is set and no repeat count is given.
+"always_repeat" option is set and no repeat count is given.  Some commands
+use the "repeat count" to automatically repeat the command several times,
+while others use the "repeat count" as an "argument", for example, commands
+which need a "quantity" will use the "repeat count" instead of asking for
+a quantity, allowing the use of "0d" for "drop all".  Commands which ask
+for a quantity will convert any "letters" into the maximal legal value.
 
 8.1.  Inventory Commands
 
@@ -435,16 +515,12 @@ Drop an item (d)
         attempt to drop something, it may disappear and be destroyed.
         Doors and traps are considered objects for the purpose of
         determining if the space is occupied.  If the selected pile
-        contains multiple items, you will be prompted for how many to
-        drop, and, as always, you may press return to specify a single
-        item, and you may enter any letter to specify "all" of the items.
+        contains multiple items, you may specify a quantity.
 
 Destroy an item (k) or Destroy an item (^D)
         This destroys an item in your inventory or on the dungeon floor.
-        If the selected item is a "stack" of objects, you will be prompted
-        for the number of items to destroy, and, as always, you may press
-        return to specify a single item, and you may enter any letter to
-        specify "all" of the items.  You must always verify this command.
+        If the selected pile contains multiple objects, you may specify
+        a quantity.  You must always (currently) verify this command.
 
 Wear/Wield equipment ([)
         To wear or wield an object in your inventory, use this command.
@@ -881,26 +957,23 @@ Character Description (C)
 
 Check Artifacts (~)
         This command lists all of the artifacts that you have encountered.
-        Unless your character was created with the "Create characters in
-        preserve mode" option turned on, any artifact that is in this list
-        which you do not have in either your inventory or your home (or in
-        the inventory of one of the stores, or dropped somewhere on the
-        town level) has been lost, since artifacts, once seen, never
-        appear again.  This command can only be used on the town level,
-        not inside the dungeon.
+        Any artifact that appears in this list, which you cannot seem to
+        find, has been lost forever.  The "preserve" mode will prevent
+        you from accidentally losing any artifacts, but will also prevent
+        you from ever getting a "special" level feeling.  This command can
+        only be used on the town level, not inside the dungeon.
 
 Check Uniques (|)
-        Brings up a list of the unique monsters you have killed.  Once
-        killed, these monsters never show up again.
+        Brings up a list of known unique monsters, plus their current
+        status.  Once killed, unique monsters never show up again.
 
 8.13.  Saving and Exiting Commands
 
 Save and Quit (Ctrl-X)
         To save your game so that you can return to it later, use this
         command.  Save files will also be generated (hopefully) if the
-        game crashes due to a system error.  When you die, a reduced save
-        file is produced containing only your monster memory and your
-        option settings.
+        game crashes due to a system error.  After you die, you can use
+        your savefile to play again with the same options and such.
 
 Save (Ctrl-S)
         This command saves the game but doesn't exit Angband.  Use this
@@ -912,42 +985,36 @@ Quit (commit suicide) (Q)
         make sure you really want to do this, and then asked to verify
         that choice.  Note that dead characters are dead forever.
 
-8.14.  Options, Macros, and Preference File Commands
+8.14.  User pref file commands
 
-Set options (=)
-        Brings up the options screen, which allows you to change quite a
-        bit about how Angband works.  Some options may not be available,
-        depending on how Angband was compiled.  This command is also
-        active at other points in the game, most notably at the beginning
-        of character creation.
+Interact with options (=)
+        Allow you to interact with options.  Note that using the "cheat"
+        options may mark your savefile as unsuitable for the high score
+        list.  You may change normal options using the "X" and "Y" user
+        pref commands.  You must use the "redraw" command (^R) after
+        changing certain options.
 
-Define macro (@)
-        Defines a standard macro by prompting you for the trigger key and
-        the action.  From that point on, whenever Angband sees the trigger
-        key, it will act as if you typed the keys you gave as the action.
-        Be careful when using this command with regular alphanumeric keys,
-        since it can make it difficult to select objects, type words, or
-        even play the game.  For more information, see the section on
-        macros and keymaps above.
+Interact with macros (@)
+        Allow you to interact with macros.  You may load or save macros
+        from user pref files, create macros of various types, or define
+        keymaps.  You must define a "current action", shown at the bottom
+        of the screen, before you attempt to use any of the "create macro"
+        commands, which use that "current action" as their action.  This
+        is "backwards" from the old method.
 
-Define command macro (!)
-        Defines a command macro by prompting you for the trigger key and
-        the action.  This is just like the macro above, except that it is
-        only active when Angband is expecting a command, and is therefore
-        generally more useful.  For more information, see the section on
-        macros and keymaps above.
+Interact with visuals (%)
+        Allow you to interact with visuals.  You may load or save visuals
+        from user pref files, or modify the attr/char mappings for the
+        monsters, objects, and terrain features.  You must use the "redraw"
+        command (^R) to redraw the map after changing attr/char mappings.
 
-Define keymap (&)
-        Lets you change the mapping of a key.  The new command for the key
-        must be in the Angband command set (the third character listed in
-        parentheses after these command descriptions).  For more
-        information, see the section on macros and keymaps above.
+Interact with colors (&)
+        Allow the user to interact with colors.  This command only
+        works on some systems.
  
-Preference Files (%)
-        This command allows you to save or read in macros from a
-        preference file, as well as change the characters and colors
-        associated with different objects and monsters.  For more
-        information, see the section on preference files above.
+Interact with the system (!)
+        Allow the user to interact with the underlying visual system.
+        This command is currently unused.
  
 8.15.  Help
 
@@ -996,17 +1063,18 @@ Toggle Choice Window (^E)
         choice window is available.  This also redraws the choice window.
 
 Redraw Screen (^R)
-        This command simply redraws the screen.  It may be useful if your
-        visual display system (or Angband itself) contains certain bugs.
+        This command adapts to various changes in global options, and
+        redraws all of the windows.  This command should be used after
+        changing various global properties (options, attr/char mappings,
+        color definitions, etc).  When in doubt, use it.
         
-Dump screen (left-paren)
-        This command dumps a "snap-shot" of the current screen to the file
-        "dump.txt".  The snap-shot is 24 lines long with 79 chars per line.
+Load screen dump (left-paren)
+        This command loads a "snap-shot" of the current screen from the file
+        "dump.txt", and displays it on the screen.
         
-Dump screen with color codes (right-paren)
+Save screen dump (right-paren)
         This command dumps a "snap-shot" of the current screen to the file
-        "dump.txt".  The snap-shot is 48 lines long with 79 chars per line,
-        with a "color code" under each "screen symbol".
+        "dump.txt", including encoded color information.
 
 
 -- 

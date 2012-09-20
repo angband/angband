@@ -264,11 +264,11 @@ static void sense_inventory(void)
         /* Inscribe it textually */
         if (!i_ptr->note) i_ptr->note = quark_add(feel);
 
-        /* Combine the pack */
-        p_ptr->update |= (PU_COMBINE);
-
         /* Redraw the choice window */
         p_ptr->redraw |= (PR_CHOOSE);
+
+        /* Combine / Reorder the pack */
+        p_ptr->update |= (PU_COMBINE | PU_REORDER);
     }
 }
 
@@ -407,7 +407,7 @@ static void teleport_to(int ny, int nx)
  */
 static void teleport(int dis)
 {
-    int x, y, ox, oy, d, i, min;
+    int d, i, min, ox, oy, x = py, y = px;
 
     bool look = TRUE;
 
@@ -794,7 +794,6 @@ static void process_world(void)
     if (p_ptr->poisoned) {
 
         /* Take damage */
-        disturb(1, 0);
         take_hit(1, "poison");
     }
 
@@ -818,20 +817,46 @@ static void process_world(void)
 
         /* Take damage */
         take_hit(i, "a fatal wound");
-        disturb(1, 0);
     }
 
 
     /*** Check the Food, and Regenerate ***/
 
-    /* Digest some food (each game turn) */
-    p_ptr->food -= p_ptr->food_digested;
+    /* Digest normally */
+    if (p_ptr->food < PY_FOOD_MAX) {
+
+        /* Every 100 game turns */
+        if (!(turn % 100)) {
+
+            /* Basic digestion rate based on speed */
+            i = extract_energy[p_ptr->pspeed] * 2;
+
+            /* Regeneration takes more food */
+            if (p_ptr->regenerate) i += 30;
+
+            /* Slow digestion takes less food */
+            if (p_ptr->slow_digest) i -= 10;
+
+            /* Digest some food */
+            (void)set_food(p_ptr->food - i);
+        }
+    }
+    
+    /* Digest quickly when gorged */
+    else {
+
+        /* Digest a lot of food */
+        (void)set_food(p_ptr->food - 100);
+    }
 
     /* Starve to death (slowly) */
-    if (p_ptr->food < 0) {
-        i = 0 - p_ptr->food;
-        take_hit(i / 16, "starvation");
-        disturb(1, 0);
+    if (p_ptr->food < PY_FOOD_STARVE) {
+
+        /* Calculate damage */
+        i = (PY_FOOD_STARVE - p_ptr->food) / 10;
+
+        /* Take damage */
+        take_hit(i, "starvation");
     }
 
     /* Default regeneration */
@@ -841,7 +866,7 @@ static void process_world(void)
     if (p_ptr->food < PY_FOOD_WEAK) {
 
         /* Lower regeneration */
-        if (p_ptr->food < 0) {
+        if (p_ptr->food < PY_FOOD_STARVE) {
             regen_amount = 0;
         }
         else if (p_ptr->food < PY_FOOD_FAINT) {
@@ -1000,16 +1025,18 @@ static void process_world(void)
     /* Poison */
     if (p_ptr->poisoned) {
 
-        int adjust = (adj_con_fix[p_ptr->stat_ind[A_CON]] / 2 + 1);
+        int adjust = (adj_con_fix[p_ptr->stat_ind[A_CON]] + 1);
 
+        /* Apply some healing */
         (void)set_poisoned(p_ptr->poisoned - adjust);
     }
 
     /* Stun */
     if (p_ptr->stun) {
 
-        int adjust = (adj_con_fix[p_ptr->stat_ind[A_CON]] / 2 + 1);
+        int adjust = (adj_con_fix[p_ptr->stat_ind[A_CON]] + 1);
 
+        /* Apply some healing */
         (void)set_stun(p_ptr->stun - adjust);
     }
 
@@ -1085,6 +1112,9 @@ static void process_world(void)
         }
     }
 
+    /* Note changes */
+    j = 0;
+
     /* Process equipment */
     for (i = INVEN_WIELD; i < INVEN_TOTAL; i++) {
 
@@ -1100,13 +1130,13 @@ static void process_world(void)
             /* Recharge */
             i_ptr->timeout--;
 
-            /* Update choice window to reflect chance in "timeout" */
-            /* if (!(i_ptr->timeout)) p_ptr->redraw |= (PR_CHOOSE); */
+            /* Notice changes */
+            /* if (!(i_ptr->timeout)) j++; */
         }
     }
 
     /* Recharge rods */
-    for (j = 0, i = 0; i < INVEN_PACK; i++) {
+    for (i = 0; i < INVEN_PACK; i++) {
 
         i_ptr = &inventory[i];
 
@@ -1116,12 +1146,12 @@ static void process_world(void)
             /* Charge it */
             i_ptr->pval--;
 
-            /* Notice when done */
+            /* Notice changes */
             if (!(i_ptr->pval)) j++;
         }
     }
 
-    /* Notice */
+    /* Notice changes */
     if (j) {
 
         /* Redraw the Choice Window */
@@ -1283,12 +1313,6 @@ static void process_player()
         /* Handle stuff */
         handle_stuff();
 
-        /* Notice stuff */
-        notice_stuff();
-
-        /* Handle stuff */
-        handle_stuff();
-
         /* Hilite the player */
         move_cursor_relative(py, px);
 
@@ -1387,12 +1411,6 @@ static void process_player()
     /* Hack -- Process Teleportation */
     if (teleport_flag) handle_teleport();
 
-
-    /* Handle stuff */
-    handle_stuff();
-
-    /* Notice stuff (one last time) */
-    notice_stuff();
 
     /* Handle stuff (one last time) */
     handle_stuff();
@@ -1494,32 +1512,37 @@ static void dungeon(void)
     panel_bounds();
 
 
+    /* Flush messages */
+    msg_print(NULL);
+    
+    
     /* Hack -- Verify the lite radius */
     extract_cur_lite();
 
     /* Hack -- Verify the view radius */
     extract_cur_view();
 
-    /* Redraw everything */
+    /* Redraw the recall window */
+    p_ptr->redraw |= (PR_RECENT);
+
+    /* Redraw the choice window */
+    p_ptr->redraw |= (PR_CHOOSE);
+
+    /* Redraw dungeon */
     p_ptr->redraw |= (PR_WIPE | PR_MAP | PR_BASIC | PR_EXTRA);
-    p_ptr->redraw |= (PR_CHOOSE | PR_RECENT);
 
     /* Update stuff */
     p_ptr->update |= (PU_VIEW | PU_LITE | PU_FLOW | PU_DISTANCE);
-    p_ptr->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
 
     /* Handle stuff */
     handle_stuff();
 
-    /* Refresh */
-    Term_fresh();
 
+    /* Update stuff */
+    p_ptr->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
 
-    /* Hack -- Combine pack */
+    /* Combine / Reorder the pack */
     p_ptr->update |= (PU_COMBINE | PU_REORDER);
-
-    /* Notice stuff */
-    notice_stuff();
 
     /* Handle stuff */
     handle_stuff();
@@ -1595,54 +1618,68 @@ static void dungeon(void)
 
 
 /*
- * Load the various "pref" files
+ * Load the various "user pref files"
  */
 static void load_all_pref_files(void)
 {
     char buf[1024];
 
 
-    /* Access the basic "pref" file */
+    /* Access the "basic" pref file */
     strcpy(buf, "pref.prf");
 
-    /* Process the default pref file */
+    /* Process that file */
+    process_pref_file(buf);
+
+    /* Access the "user" pref file */
+    sprintf(buf, "user.prf");
+
+    /* Process that file */
     process_pref_file(buf);
 
 
-    /* Access the system "pref" file */
+
+    /* Access the "basic" system pref file */
     sprintf(buf, "pref-%s.prf", ANGBAND_SYS);
 
-    /* Attempt to process that file */
+    /* Process that file */
+    process_pref_file(buf);
+
+    /* Access the "visual" system pref file (if any) */
+    sprintf(buf, "%s-%s.prf", (use_graphics ? "graf" : "font"), ANGBAND_SYS);
+
+    /* Process that file */
+    process_pref_file(buf);
+
+    /* Access the "user" system pref file */
+    sprintf(buf, "user-%s.prf", ANGBAND_SYS);
+
+    /* Process that file */
     process_pref_file(buf);
 
 
-    /* Access the race "pref" file */
+    /* Access the "race" pref file */
     sprintf(buf, "%s.prf", rp_ptr->title);
 
-    /* Attempt to process that file */
+    /* Process that file */
     process_pref_file(buf);
 
-
-    /* Access the class "pref" file */
+    /* Access the "class" pref file */
     sprintf(buf, "%s.prf", cp_ptr->title);
 
-    /* Attempt to process that file */
+    /* Process that file */
     process_pref_file(buf);
 
-
-    /* Access the character "pref" file */
+    /* Access the "character" pref file */
     sprintf(buf, "%s.prf", player_base);
 
-    /* Attempt to process that file */
+    /* Process that file */
     process_pref_file(buf);
 }
 
 
 /*
  * Actually play a game
- *
- * Note the global "character_dungeon" which is TRUE when a dungeon has
- * been built for the player.  If FALSE, then a new level must be generated.
  */
 void play_game(bool new_game)
 {
@@ -1674,22 +1711,7 @@ void play_game(bool new_game)
     Rand_state_init(seed);
 
 
-    /* Hack -- restore dead players */
-    if (arg_fiddle) {
-
-        /* Attempt to load */
-        if (load_player()) {
-
-            /* Attempt to save */
-            if (!save_player()) quit("fiddle save failed!");
-        }
-
-        /* Quit */
-        quit(NULL);
-    }
-
-
-    /* If "restore game" requested, attempt to do so */
+    /* Load old character */
     if (!new_game) {
 
         /* Attempt to load, note dead player */
@@ -1700,7 +1722,7 @@ void play_game(bool new_game)
     }
 
 
-    /* Pick new "seeds" if needed */
+    /* Roll new character */
     if (new_game) {
 
         /* Hack -- seed for flavors */
@@ -1708,16 +1730,6 @@ void play_game(bool new_game)
 
         /* Hack -- seed for town layout */
         seed_town = rand_int(0x10000000);
-    }
-
-    /* Flavor the objects */
-    flavor_init();
-
-    /* Reset the visual mappings */
-    reset_visuals();
-
-    /* Roll up a new character if needed */
-    if (new_game) {
 
         /* Roll up a new character */
         player_birth();
@@ -1727,12 +1739,30 @@ void play_game(bool new_game)
     }
 
 
+    /* Flash a message */
+    prt("Please wait...", 0, 0);
+
+    /* Flush the message */
+    Term_fresh();
+
+
     /* Enter wizard mode AFTER "resurrection" */
     if (arg_wizard && enter_wiz_mode()) wizard = TRUE;
 
 
-    /* Recalculate some stuff */
-    p_ptr->update |= (PU_BONUS);
+    /* Mega-Hack -- enforce "delayed death" */
+    if (p_ptr->chp < 0) death = TRUE;
+
+
+    /* Flavor the objects */
+    flavor_init();
+
+    /* Reset the visual mappings */
+    reset_visuals();
+
+
+    /* Redraw the recall window */
+    p_ptr->redraw |= (PR_RECENT);
 
     /* Redraw the choice window */
     p_ptr->redraw |= (PR_CHOOSE);
@@ -1741,31 +1771,21 @@ void play_game(bool new_game)
     handle_stuff();
 
 
-    /* Mega-Hack -- enforce "delayed death" */
-    if (p_ptr->chp < 0) death = TRUE;
-
-
-    /* Display character (briefly) */
-    display_player(FALSE);
-
-    /* Flash a message */
-    prt("Please wait...", 0, 0);
-
-    /* Flush the message */
-    Term_fresh();
-
-
     /* Set or clear "rogue_like_commands" if requested */
     if (arg_force_original) rogue_like_commands = FALSE;
     if (arg_force_roguelike) rogue_like_commands = TRUE;
 
-
-    /* Verify the keymap (before loading preferences!) */
+    /* Verify the keymap */
     keymap_init();
-
 
     /* Load the "pref" files */
     load_all_pref_files();
+
+    /* Verify the keymap again */
+    keymap_init();
+
+    /* React to changes */
+    Term_xtra(TERM_XTRA_REACT, 0);
 
 
     /* Make a level if necessary */

@@ -15,16 +15,6 @@
 
 
 
-/*
- * Hack -- make sure we have a good "ANSI" definition for "CTRL()"
- */
-#undef CTRL
-#define CTRL(C) ((C)&037)
-
-
-
-
-
 
 /*
  * Go up one level					-RAK-	
@@ -133,13 +123,19 @@ void do_cmd_suicide(void)
 /*
  * Hack -- redraw the screen
  *
- * This command actually clears all the windows, and then requests
- * all interesting updates and redraws that I can think of.
+ * This command performs various low level updates, clears all the "extra"
+ * windows, does a total redraw of the main window, and requests all of the
+ * interesting updates and redraws that I can think of.
  */
 void do_cmd_redraw(void)
 {
+    /* Hack -- react to changes */
+    Term_xtra(TERM_XTRA_REACT, 0);
+
+
     /* Verify the keymap */
     keymap_init();
+
 
 #ifdef GRAPHIC_RECALL
     
@@ -173,16 +169,19 @@ void do_cmd_redraw(void)
     }
 
 #endif
-    
-    /* Hack -- erase the "screen" window */
-    if (term_screen) {
-        Term_activate(term_screen);
-        Term_clear();
-        Term_fresh();
-    }
 
-    /* Mega-Hack -- Combine the pack */
+    /* Activate the main screen */
+    Term_activate(term_screen);
+
+    /* Actual redraw */
+    Term_redraw();
+
+
+    /* Combine and Reorder the pack */
     p_ptr->update |= (PU_COMBINE | PU_REORDER);
+
+    /* Update stuff */
+    p_ptr->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
 
     /* Update stuff */
     p_ptr->update |= (PU_NOTE | PU_VIEW | PU_LITE);
@@ -193,8 +192,11 @@ void do_cmd_redraw(void)
     /* Redraw everything */
     p_ptr->redraw |= (PR_WIPE | PR_MAP | PR_BASIC | PR_EXTRA);
 
-    /* Redraw the "recent" / "choose" info */
-    p_ptr->redraw |= (PR_RECENT | PR_CHOOSE);
+    /* Redraw the recall window */
+    p_ptr->redraw |= (PR_RECENT);
+    
+    /* Redraw the choice window */
+    p_ptr->redraw |= (PR_CHOOSE);
 
     /* Hack -- update */
     handle_stuff();
@@ -215,7 +217,7 @@ void do_cmd_change_name(void)
 
     bool	history = FALSE;
     
-    char	temp[160];
+    char	tmp[160];
 
 
     /* Enter "icky" mode */
@@ -247,10 +249,10 @@ void do_cmd_change_name(void)
 
           case 'F':
           case 'f':
-            prt("File name:", 0, 0);
-            sprintf(temp, "%s.txt", player_base);
-            if (askfor_aux(temp, 60) && temp[0]) {
-                if (0 == file_character(temp)) flag = TRUE;
+            prt("File name: ", 0, 0);
+            sprintf(tmp, "%s.txt", player_base);
+            if (askfor_aux(tmp, 60) && tmp[0]) {
+                file_character(tmp, FALSE);
             }
             break;
 
@@ -493,6 +495,16 @@ void do_cmd_refill(void)
 
 
 /*
+ * Recall the most recent message
+ */
+void do_cmd_message_one(void)
+{
+    /* Recall */
+    prt(format("> %s", message_str(0)), 0, 0);
+}
+
+
+/*
  * Show previous messages to the user	-BEN-
  *
  * The screen format uses line 0 and 23 for headers and prompts,
@@ -504,6 +516,10 @@ void do_cmd_refill(void)
 void do_cmd_messages(void)
 {
     int i = 0, j = 0, k = 0, n = 0, t = 0;
+
+    bool find = FALSE;
+    
+    char finder[80] = "";
 
     cptr str[MESSAGE_MAX];
     
@@ -556,17 +572,22 @@ void do_cmd_messages(void)
         /* Dump up to 20 lines of messages */
         for (j = 0; (j < 20) && (i + j < n); j++) {
 
+            byte a = TERM_WHITE;
+
+            /* Handle searches */
+            if (find && strstr(str[i+j], finder)) a = TERM_YELLOW;
+
             /* Begin the next message */
             Term_gotoxy(0, 21-j);
             
             /* Dump the messages, bottom to top */
-            Term_addstr(-1, TERM_WHITE, str[i+j]);
+            Term_addstr(-1, a, str[i+j]);
 
             /* Hack -- add the message counter */
             if (cnt[i+j]) {
 
                 /* Hack -- add the message counter */
-                Term_addstr(-1, TERM_WHITE, format(" [x%d]", cnt[i+j] + 1));
+                Term_addstr(-1, a, format(" [x%d]", cnt[i+j] + 1));
             }
         }
 
@@ -574,7 +595,7 @@ void do_cmd_messages(void)
         prt(format("Message Recall (%d total, %d unique)", t, n), 0, 0);
 
         /* Display prompt */
-        prt("[Press 'p' for older, 'n' for newer, or ESCAPE]", 23, 0);
+        prt("[Press 'p' for older, 'n' for newer, '/' for search, or ESCAPE]", 23, 0);
 
         /* Get a command */
         k = inkey();
@@ -585,15 +606,31 @@ void do_cmd_messages(void)
         /* Hack -- Save the old index */
         j = i;
 
+        /* Hack -- handle search */
+        if (k == '/') {
+
+            /* Cancel find */
+            find = FALSE;
+
+            /* Prompt */
+            prt("Find: ", 23, 0);
+                    
+            /* Get a search stringm activate search */
+            if (askfor_aux(finder, 80)) find = TRUE;
+            
+            /* Okay */
+            continue;
+        }
+
         /* Recall more older messages */
-        if ((k == 'p') || (k == CTRL('P'))) {
+        if ((k == 'p') || (k == KTRL('P'))) {
 
             /* Go older if legal */
             if (i + 20 < n) i += 20;
         }
 
         /* Recall more newer messages */
-        if ((k == 'n') || (k == CTRL('N'))) {
+        if ((k == 'n') || (k == KTRL('N'))) {
 
             /* Go newer if legal */
             if (i >= 20) i -= 20;
@@ -878,64 +915,38 @@ void do_cmd_options(void)
 }
 
 
-#ifndef ANGBAND_LITE
 
 /*
- * Append monster attr/char definitions to the given file
+ * Ask for a "user pref line" and process it
  */
-static errr pref_dump_race(cptr fname)
+void do_cmd_pref(void)
 {
-    int i;
+    char buf[80];
 
-    FILE *fff;
+    /* Wipe it */
+    strcpy(buf, "");
 
-    char buf[1024];
+    /* Prompt */
+    prt("Pref: ", 0, 0);
 
+    /* Ask */
+    if (askfor_aux(buf, 80)) {
 
-    /* Build the filename */
-    strcpy(buf, ANGBAND_DIR_USER);
-    strcat(buf, fname);
-    
-#if defined(MACINTOSH) && !defined(applec)
-    _ftype = 'TEXT';
-#endif
-
-    /* Append to the file */
-    fff = my_fopen(buf, "a");
-
-    /* Failure */
-    if (!fff) return (-1);
-
-
-    /* Start dumping */
-    fprintf(fff, "\n\n# Monster attr/char definitions\n\n");
-
-    /* Dump them (including ghost) */
-    for (i = 1; i < MAX_R_IDX; i++) {
-
-        monster_race *r_ptr = &r_info[i];
-
-        /* Dump the monster attr/char info */
-        fprintf(fff, "R:%d:%d/%d\n", i,
-                (byte)(r_ptr->l_attr), (byte)(r_ptr->l_char));
+        /* Process XXX XXX XXX */
+        (void)process_pref_file_aux(buf);
     }
 
-    /* Start dumping */
-    fprintf(fff, "\n\n\n\n");
-
-
-    /* Close */
-    my_fclose(fff);
-
-    /* Success */
-    return (0);
+    /* Clear */
+    prt("", 0, 0);
 }
 
 
+#ifdef ALLOW_MACROS
+
 /*
- * Append object attr/char definitions to the given file
+ * Hack -- append all current macros to the given file
  */
-static errr pref_dump_kind(cptr fname)
+static errr macro_dump(cptr fname)
 {
     int i;
 
@@ -949,6 +960,7 @@ static errr pref_dump_kind(cptr fname)
     strcat(buf, fname);
     
 #if defined(MACINTOSH) && !defined(applec)
+    /* Global -- "text file" */
     _ftype = 'TEXT';
 #endif
 
@@ -959,17 +971,35 @@ static errr pref_dump_kind(cptr fname)
     if (!fff) return (-1);
 
 
+    /* Skip space */
+    fprintf(fff, "\n\n");
+    
     /* Start dumping */
-    fprintf(fff, "\n\n# Object attr/char definitions\n\n");
+    fprintf(fff, "# Automatic macro dump\n\n");
 
     /* Dump them */
-    for (i = 0; i < MAX_K_IDX; i++) {
+    for (i = 0; i < macro__num; i++) {
 
-        inven_kind *k_ptr = &k_info[i];
+        /* Start the macro */
+        fprintf(fff, "# Macro '%d'\n\n", i);
 
-        /* Dump the object attr/char info */
-        fprintf(fff, "K:%d:%d/%d\n", i,
-                (byte)(k_ptr->x_attr), (byte)(k_ptr->x_char));
+        /* Extract the action */
+        ascii_to_text(buf, macro__act[i]);
+
+        /* Dump the macro */
+        fprintf(fff, "A:%s\n", buf);
+
+        /* Extract the action */
+        ascii_to_text(buf, macro__pat[i]);
+
+        /* Dump command macros */
+        if (macro__cmd[i]) fprintf(fff, "C:%s\n", buf);
+
+        /* Dump normal macros */
+        else fprintf(fff, "P:%s\n", buf);
+
+        /* End the macro */
+        fprintf(fff, "\n\n");		
     }
 
     /* Start dumping */
@@ -985,67 +1015,388 @@ static errr pref_dump_kind(cptr fname)
 
 
 /*
- * Append terrain attr/char definitions to the given file
+ * Hack -- ask for a "trigger" (see below)
+ *
+ * Note the complex use of the "inkey()" function from "io.c".
+ *
+ * The "trigger" must be entered with less than 10 milliseconds
+ * between keypresses, as in "inkey_aux()".
  */
-static errr pref_dump_feat(cptr fname)
+static void do_cmd_macro_aux(char *buf)
+{
+    int i, n = 0, w = 0;
+
+    bool skipping = FALSE;
+
+    char tmp[1024];
+    
+
+    /* Important -- Flush input */
+    flush();
+
+    /* Do not process macros */
+    inkey_base = TRUE;
+
+    /* Attempt to read a key */
+    i = inkey();
+
+    /* Save the key */
+    buf[n++] = i;
+
+    /* Read the pattern */
+    while (TRUE) {
+
+        /* Do not process macros */
+        inkey_base = TRUE;
+
+        /* Do not wait for keys */
+        inkey_scan = TRUE;
+
+        /* Attempt to read a key */
+        i = inkey();
+
+        /* If a key is ready, acquire it */
+        if (i) {
+
+            /* Reset delay */
+            w = 0;
+
+            /* Hack -- process "ascii 28" */
+            if (i == 28) {
+
+                /* Toggle the "skipping" flag */
+                skipping = !skipping;
+            }
+
+            /* Save usable keys */
+            else if (!skipping) {
+
+                /* Save the key */
+                buf[n++] = i;
+            }
+
+            /* Next */
+            continue;
+        }
+
+        /* Excessive delay */
+        if (w > 30) break;
+
+        /* Increment and delay */
+        delay(++w);
+    }
+
+    /* Terminate */
+    buf[n] = '\0';
+
+    /* Important -- Flush the input */
+    flush();
+    
+    /* Convert the trigger */
+    ascii_to_text(tmp, buf);
+    
+    /* Hack -- display the trigger */
+    Term_addstr(-1, TERM_WHITE, tmp);
+}
+
+#endif
+
+
+/*
+ * Interact with "macros"
+ *
+ * Note that the macro "action" must be defined before the trigger.
+ *
+ * XXX XXX XXX Need messages for success, plus "helpful" info
+ */
+void do_cmd_macros(void)
 {
     int i;
 
-    FILE *fff;
+    char tmp[160];
 
     char buf[1024];
 
 
-    /* Build the filename */
-    strcpy(buf, ANGBAND_DIR_USER);
-    strcat(buf, fname);
-    
 #if defined(MACINTOSH) && !defined(applec)
     _ftype = 'TEXT';
 #endif
 
-    /* Append to the file */
-    fff = my_fopen(buf, "a");
 
-    /* Failure */
-    if (!fff) return (-1);
+    /* Enter "icky" mode */
+    character_icky = TRUE;
+
+    /* Save the screen */
+    Term_save();
+
+    /* Process requests until done */
+    while (1) {
+
+        /* Clear the screen */
+        clear_screen();
+
+        /* Describe */
+        Term_putstr(0, 2, -1, TERM_WHITE, "Interact with Macros");
 
 
-    /* Start dumping */
-    fprintf(fff, "\n\n# Terrain attr/char definitions\n\n");
+        /* Describe that action */
+        Term_putstr(0, 18, -1, TERM_WHITE, "Current action (if any) shown below:");
 
-    /* Dump them */
-    for (i = 0; i < MAX_F_IDX; i++) {
+        /* Analyze the current action */
+        ascii_to_text(buf, macro__buf);
 
-        feature_type *f_ptr = &f_info[i];
+        /* Display the current action */
+        Term_putstr(0, 20, -1, TERM_WHITE, buf);
 
-        /* Dump the terrain attr/char info */
-        fprintf(fff, "F:%d:%d/%d\n", i,
-                (byte)(f_ptr->z_attr), (byte)(f_ptr->z_char));
+
+        /* Selections */
+        Term_putstr(5,  4, -1, TERM_WHITE, "(1) Load a user pref file");
+#ifdef ALLOW_MACROS
+        Term_putstr(5,  5, -1, TERM_WHITE, "(2) Dump macros");
+        Term_putstr(5,  6, -1, TERM_WHITE, "(3) Enter a new action");
+        Term_putstr(5,  7, -1, TERM_WHITE, "(4) Query a macro action");
+        Term_putstr(5,  8, -1, TERM_WHITE, "(5) Create a command macro");
+        Term_putstr(5,  9, -1, TERM_WHITE, "(6) Create a normal macro");
+        Term_putstr(5, 10, -1, TERM_WHITE, "(7) Create an identity macro");
+        Term_putstr(5, 11, -1, TERM_WHITE, "(8) Create an empty macro");
+        Term_putstr(5, 12, -1, TERM_WHITE, "(9) Define a special keymap");
+#endif /* ALLOW_MACROS */
+
+        /* Prompt */
+        Term_putstr(0, 14, -1, TERM_WHITE, "Command: ");
+        
+        /* Get a command */
+        i = inkey();
+
+        /* Leave */
+        if (i == ESCAPE) break;
+
+        /* Load a 'macro' file */
+        else if (i == '1') {
+
+            /* Prompt */
+            Term_putstr(0, 14, -1, TERM_WHITE, "Command: Load a user pref file");
+
+            /* Get a filename, handle ESCAPE */
+            Term_putstr(0, 16, -1, TERM_WHITE, "File: ");
+
+            /* Default filename */
+            sprintf(tmp, "user-%s.prf", ANGBAND_SYS);
+
+            /* Ask for a file */
+            if (!askfor_aux(tmp, 70)) continue;
+
+            /* Process the given filename */
+            (void)process_pref_file(tmp);
+        }
+
+#ifdef ALLOW_MACROS
+
+        /* Save a 'macro' file */
+        else if (i == '2') {
+
+            /* Prompt */
+            Term_putstr(0, 14, -1, TERM_WHITE, "Command: Save a macro file");
+
+            /* Get a filename, handle ESCAPE */
+            Term_putstr(0, 16, -1, TERM_WHITE, "File: ");
+
+            /* Default filename */
+            sprintf(tmp, "user-%s.prf", ANGBAND_SYS);
+
+            /* Ask for a file */
+            if (!askfor_aux(tmp, 70)) continue;
+
+            /* Drop priv's */
+            safe_setuid_drop();
+
+            /* Dump the macros */
+            (void)macro_dump(tmp);
+
+            /* Grab priv's */
+            safe_setuid_grab();
+        }
+        
+        /* Enter a new action */
+        else if (i == '3') {
+
+            /* Prompt */
+            Term_putstr(0, 14, -1, TERM_WHITE, "Command: Enter a new action");
+            
+            /* Go to the correct location */
+            Term_gotoxy(0, 20);
+
+            /* Hack -- limit the value */
+            tmp[80] = '\0';
+
+            /* Get an encoded action */
+            if (askfor_aux(buf, 80)) text_to_ascii(macro__buf, buf);
+        }
+
+        /* Query a macro action */
+        else if (i == '4') {
+
+#if 0
+            /* Prompt */
+            Term_putstr(0, 14, -1, TERM_WHITE, "Command: Query a macro action");
+
+            /* Prompt */
+            Term_putstr(0, 16, -1, TERM_WHITE, "Enter a macro trigger: ");
+
+            /* Get a macro trigger */
+            do_cmd_macro_aux(buf);
+#endif
+
+            /* XXX XXX XXX */
+            msg_print("Command not ready.");
+        }
+        
+        /* Create a command macro */
+        else if (i == '5') {
+
+            /* Prompt */
+            Term_putstr(0, 14, -1, TERM_WHITE, "Command: Create a command macro");
+
+            /* Prompt */
+            Term_putstr(0, 16, -1, TERM_WHITE, "Trigger: ");
+
+            /* Get a macro trigger */
+            do_cmd_macro_aux(buf);
+            
+            /* Link the macro */
+            macro_add(buf, macro__buf, TRUE);
+            
+            /* Message */
+            msg_print("Created a new command macro.");
+        }
+        
+        /* Create a normal macro */
+        else if (i == '6') {
+
+            /* Prompt */
+            Term_putstr(0, 14, -1, TERM_WHITE, "Command: Create a normal macro");
+
+            /* Prompt */
+            Term_putstr(0, 16, -1, TERM_WHITE, "Trigger: ");
+
+            /* Get a macro trigger */
+            do_cmd_macro_aux(buf);
+            
+            /* Link the macro */
+            macro_add(buf, macro__buf, FALSE);
+            
+            /* Message */
+            msg_print("Created a new normal macro.");
+        }
+        
+        /* Create an identity macro */
+        else if (i == '7') {
+
+            /* Prompt */
+            Term_putstr(0, 14, -1, TERM_WHITE, "Command: Create an identity macro");
+
+            /* Prompt */
+            Term_putstr(0, 16, -1, TERM_WHITE, "Trigger: ");
+
+            /* Get a macro trigger */
+            do_cmd_macro_aux(buf);
+            
+            /* Link the macro */
+            macro_add(buf, buf, FALSE);
+            
+            /* Message */
+            msg_print("Created a new identity macro.");
+        }
+        
+        /* Create an empty macro */
+        else if (i == '8') {
+
+            /* Prompt */
+            Term_putstr(0, 14, -1, TERM_WHITE, "Command: Create an empty macro");
+
+            /* Prompt */
+            Term_putstr(0, 16, -1, TERM_WHITE, "Trigger: ");
+
+            /* Get a macro trigger */
+            do_cmd_macro_aux(buf);
+            
+            /* Link the macro */
+            macro_add(buf, "", FALSE);
+            
+            /* Message */
+            msg_print("Created a new empty macro.");
+        }
+
+        /* Define a keymap */
+        else if (i == '9') {
+
+            char i1, i2, i3;
+
+            /* Flush the input */
+            flush();
+
+            /* Get the trigger */
+            if (get_com("Type the trigger keypress: ", &i1) &&
+                get_com("Type the resulting keypress: ", &i2) &&
+                get_com("Type a direction (or space): ", &i3)) {
+
+                /* Acquire the array index */
+                int k = (byte)(i1);
+                int r = (byte)(i2);
+                int d = (byte)(i3);
+
+                /* Analyze the result key */
+                keymap_cmds[k] = r;
+
+                /* Hack -- Analyze the "direction" (always allow numbers) */
+                keymap_dirs[k] = (isdigit(d) ? (d - '0') : keymap_dirs[d]);
+
+                /* Success */
+                msg_format("Keypress 0x%02x mapped to 0x%02x/%d",
+                           k, keymap_cmds[k], keymap_dirs[k]);
+            }
+        }
+
+#endif /* ALLOW_MACROS */
+
+        /* Oops */
+        else {
+
+            /* Oops */        
+            bell();
+        }
+        
+        /* Flush messages */
+        msg_print(NULL);
     }
+    
 
-    /* Start dumping */
-    fprintf(fff, "\n\n\n\n");
-
-
-    /* Close */
-    my_fclose(fff);
-
-    /* Success */
-    return (0);
+    /* Load the screen */
+    Term_load();
+    
+    /* Leave "icky" mode */
+    character_icky = FALSE;
 }
 
-#endif /* ANGBAND_LITE */
 
 
 /*
- * Interact with the "pref" files
+ * Interact with "visuals"
  */
-void do_cmd_prefs(void)
+void do_cmd_visuals(void)
 {
     int i;
 
+    FILE *fff;
+    
+    char tmp[160];
+
     char buf[1024];
+
+
+#if defined(MACINTOSH) && !defined(applec)
+    _ftype = 'TEXT';
+#endif
 
 
     /* Enter "icky" mode */
@@ -1062,26 +1413,24 @@ void do_cmd_prefs(void)
         clear_screen();
 
         /* Ask for a choice */
-        prt("Angband Preferences", 2, 0);
+        prt("Interact with Visuals", 2, 0);
 
         /* Give some choices */
-        prt("(1) Reset visuals", 4, 5);
-        prt("(2) Load a 'pref' file", 5, 5);
-
+        prt("(1) Load a user pref file", 4, 5);
 #ifndef ANGBAND_LITE
-
-        prt("(3) Dump monster attr/chars", 6, 5);
-        prt("(4) Dump object attr/chars", 7, 5);
-        prt("(5) Dump feature attr/chars", 8, 5);
-
+        prt("(2) Dump monster attr/chars", 5, 5);
+        prt("(3) Dump object attr/chars", 6, 5);
+        prt("(4) Dump feature attr/chars", 7, 5);
+        prt("(5) (unused)", 8, 5);
         prt("(6) Change monster attr/chars", 9, 5);
         prt("(7) Change object attr/chars", 10, 5);
         prt("(8) Change feature attr/chars", 11, 5);
-
+        prt("(9) (unused)", 12, 5);
 #endif /* ANGBAND_LITE */
-        
+        prt("(0) Reset visuals", 13, 5);
+
         /* Prompt */
-        prt("Command: ", 13, 0);
+        prt("Command: ", 15, 0);
 
         /* Prompt */
         i = inkey();
@@ -1089,125 +1438,220 @@ void do_cmd_prefs(void)
         /* Done */
         if (i == ESCAPE) break;
 
-        /* Reset visuals */
-        if (i == '1') {
-
-            /* Reset */
-            reset_visuals();
-
-            /* Message */
-            msg_print("Visual attr/char tables reset.");
-        }
-
         /* Load a 'pref' file */
-        else if (i == '2') {
+        else if (i == '1') {
 
             /* Prompt */
-            prt("Command: Load a 'pref' file", 13, 0);
+            prt("Command: Load a user pref file", 15, 0);
 
             /* Prompt */
-            prt("File: ", 15, 0);
+            prt("File: ", 17, 0);
             
-            /* Default file */
-            strcpy(buf, "pref.prf");
+            /* Default filename */
+            sprintf(tmp, "user-%s.prf", ANGBAND_SYS);
 
             /* Query */
-            if (!askfor_aux(buf, 70)) continue;
+            if (!askfor_aux(tmp, 70)) continue;
 
             /* Process the given filename */
-            (void)process_pref_file(buf);
+            (void)process_pref_file(tmp);
         }
 
 #ifndef ANGBAND_LITE
 
         /* Dump monster attr/chars */
-        else if (i == '3') {
+        else if (i == '2') {
 
             /* Prompt */
-            prt("Command: Dump monster attr/chars", 13, 0);
+            prt("Command: Dump monster attr/chars", 15, 0);
 
             /* Prompt */
-            prt("File: ", 15, 0);
+            prt("File: ", 17, 0);
 
             /* Default filename */
-            strcpy(buf, "race.prf");
+            sprintf(tmp, "user-%s.prf", ANGBAND_SYS);
 
             /* Get a filename */
-            if (!askfor_aux(buf, 70)) continue;
+            if (!askfor_aux(tmp, 70)) continue;
 
+            /* Build the filename */
+            strcpy(buf, ANGBAND_DIR_USER);
+            strcat(buf, tmp);
+    
             /* Drop priv's */
             safe_setuid_drop();
 
-            /* Hack -- open the file */
-            (void)pref_dump_race(buf);
+            /* Append to the file */
+            fff = my_fopen(buf, "a");
 
             /* Grab priv's */
             safe_setuid_grab();
+
+            /* Failure */
+            if (!fff) continue;
+
+            /* Start dumping */
+            fprintf(fff, "\n\n");
+            fprintf(fff, "# Monster attr/char definitions\n\n");
+
+            /* Dump monsters */
+            for (i = 0; i < MAX_R_IDX; i++) {
+
+                monster_race *r_ptr = &r_info[i];
+
+                /* Skip non-entries */
+                if (!r_ptr->name) continue;
+
+                /* Dump a comment */
+                fprintf(fff, "# %s\n", (r_name + r_ptr->name));
+                
+                /* Dump the monster attr/char info */
+                fprintf(fff, "R:%d:0x%02X:0x%02X\n\n", i,
+                        (byte)(r_ptr->l_attr), (byte)(r_ptr->l_char));
+            }
+
+            /* All done */
+            fprintf(fff, "\n\n\n\n");
+
+            /* Close */
+            my_fclose(fff);
+
+            /* Message */
+            msg_print("Dumped monster attr/chars.");
         }
 
         /* Dump object attr/chars */
-        else if (i == '4') {
+        else if (i == '3') {
 
             /* Prompt */
-            prt("Command: Dump object attr/chars", 13, 0);
+            prt("Command: Dump object attr/chars", 15, 0);
 
             /* Prompt */
-            prt("File: ", 15, 0);
+            prt("File: ", 17, 0);
 
             /* Default filename */
-            strcpy(buf, "kind.prf");
+            sprintf(tmp, "user-%s.prf", ANGBAND_SYS);
 
             /* Get a filename */
-            if (!askfor_aux(buf, 70)) continue;
+            if (!askfor_aux(tmp, 70)) continue;
 
+            /* Build the filename */
+            strcpy(buf, ANGBAND_DIR_USER);
+            strcat(buf, tmp);
+    
             /* Drop priv's */
             safe_setuid_drop();
 
-            /* Hack -- open the file */
-            (void)pref_dump_kind(buf);
+            /* Append to the file */
+            fff = my_fopen(buf, "a");
 
             /* Grab priv's */
             safe_setuid_grab();
+
+            /* Failure */
+            if (!fff) continue;
+
+            /* Start dumping */
+            fprintf(fff, "\n\n");
+            fprintf(fff, "# Object attr/char definitions\n\n");
+
+            /* Dump objects */
+            for (i = 0; i < MAX_K_IDX; i++) {
+
+                inven_kind *k_ptr = &k_info[i];
+
+                /* Skip non-entries */
+                if (!k_ptr->name) continue;
+
+                /* Dump a comment */
+                fprintf(fff, "# %s\n", (k_name + k_ptr->name));
+                
+                /* Dump the object attr/char info */
+                fprintf(fff, "K:%d:0x%02X:0x%02X\n\n", i,
+                        (byte)(k_ptr->x_attr), (byte)(k_ptr->x_char));
+            }
+
+            /* All done */
+            fprintf(fff, "\n\n\n\n");
+
+            /* Close */
+            my_fclose(fff);
+
+            /* Message */
+            msg_print("Dumped object attr/chars.");
         }
         
         /* Dump feature attr/chars */
-        else if (i == '5') {
+        else if (i == '4') {
 
             /* Prompt */
-            prt("Command: Dump feature attr/chars", 13, 0);
+            prt("Command: Dump feature attr/chars", 15, 0);
 
             /* Prompt */
-            prt("File: ", 15, 0);
+            prt("File: ", 17, 0);
 
             /* Default filename */
-            strcpy(buf, "feat.prf");
+            sprintf(tmp, "user-%s.prf", ANGBAND_SYS);
 
             /* Get a filename */
-            if (!askfor_aux(buf, 70)) continue;
+            if (!askfor_aux(tmp, 70)) continue;
 
+            /* Build the filename */
+            strcpy(buf, ANGBAND_DIR_USER);
+            strcat(buf, tmp);
+    
             /* Drop priv's */
             safe_setuid_drop();
 
-            /* Hack -- open the file */
-            (void)pref_dump_feat(buf);
+            /* Append to the file */
+            fff = my_fopen(buf, "a");
 
             /* Grab priv's */
             safe_setuid_grab();
+
+            /* Failure */
+            if (!fff) continue;
+
+            /* Start dumping */
+            fprintf(fff, "\n\n");
+            fprintf(fff, "# Feature attr/char definitions\n\n");
+
+            /* Dump features */
+            for (i = 0; i < MAX_F_IDX; i++) {
+
+                feature_type *f_ptr = &f_info[i];
+
+                /* Skip non-entries */
+                if (!f_ptr->name) continue;
+
+                /* Dump a comment */
+                fprintf(fff, "# %s\n", (f_name + f_ptr->name));
+                
+                /* Dump the feature attr/char info */
+                fprintf(fff, "F:%d:0x%02X:0x%02X\n\n", i,
+                        (byte)(f_ptr->z_attr), (byte)(f_ptr->z_char));
+            }
+
+            /* All done */
+            fprintf(fff, "\n\n\n\n");
+
+            /* Close */
+            my_fclose(fff);
+
+            /* Message */
+            msg_print("Dumped feature attr/chars.");
         }
 
-        /* Hack -- monsters */
+        /* Modify monster attr/chars */
         else if (i == '6') {
 
-            /* Hack -- start on "nobody" */
-            int r_idx = 0;
+            static int r = 0;
 
-            /* Clear the screen */
-            clear_screen();
+            /* Prompt */
+            prt("Command: Change monster attr/chars", 15, 0);
 
             /* Hack -- query until done */
             while (1) {
-
-                int r = r_idx;
 
                 monster_race *r_ptr = &r_info[r];
 
@@ -1217,30 +1661,25 @@ void do_cmd_prefs(void)
                 int cc = (byte)(r_ptr->l_char);
 
                 /* Label the object */
-                Term_putstr(5, 10, -1, TERM_WHITE,
+                Term_putstr(5, 17, -1, TERM_WHITE,
                             format("Monster = %d, Name = %-40.40s",
                                    r, (r_name + r_ptr->name)));
 
                 /* Label the Default values */
-                Term_putstr(10, 12, -1, TERM_WHITE,
+                Term_putstr(10, 19, -1, TERM_WHITE,
                             format("Default attr/char = %3u / %3u", da, dc));
-                Term_putstr(40, 12, -1, TERM_WHITE, "<< ? >>");
-                Term_putch(43, 12, da, dc);
+                Term_putstr(40, 19, -1, TERM_WHITE, "<< ? >>");
+                Term_putch(43, 19, da, dc);
 
                 /* Label the Current values */
-                Term_putstr(10, 14, -1, TERM_WHITE,
+                Term_putstr(10, 20, -1, TERM_WHITE,
                             format("Current attr/char = %3u / %3u", ca, cc));
-                Term_putstr(40, 14, -1, TERM_WHITE, "<< ? >>");
-                Term_putch(43, 14, ca, cc);
-
-                /* Directions */
-                Term_putstr(5, 2, -1, TERM_WHITE, "n/N = change index");
-                Term_putstr(5, 3, -1, TERM_WHITE, "a/A = change attr");
-                Term_putstr(5, 4, -1, TERM_WHITE, "c/C = change char");
+                Term_putstr(40, 20, -1, TERM_WHITE, "<< ? >>");
+                Term_putch(43, 20, ca, cc);
 
                 /* Prompt */
-                Term_putstr(0, 0, -1, TERM_WHITE,
-                            "Object attr/char (n/N/a/A/c/C): ");
+                Term_putstr(0, 22, -1, TERM_WHITE,
+                            "Command (n/N/a/A/c/C): ");
 
                 /* Get a command */
                 i = inkey();
@@ -1249,8 +1688,8 @@ void do_cmd_prefs(void)
                 if (i == ESCAPE) break;
 
                 /* Analyze */
-                if (i == 'n') r_idx = (r_idx + MAX_R_IDX + 1) % MAX_R_IDX;
-                if (i == 'N') r_idx = (r_idx + MAX_R_IDX - 1) % MAX_R_IDX;
+                if (i == 'n') r = (r + MAX_R_IDX + 1) % MAX_R_IDX;
+                if (i == 'N') r = (r + MAX_R_IDX - 1) % MAX_R_IDX;
                 if (i == 'a') r_ptr->l_attr = (byte)(ca + 1);
                 if (i == 'A') r_ptr->l_attr = (byte)(ca - 1);
                 if (i == 'c') r_ptr->l_char = (byte)(cc + 1);
@@ -1258,19 +1697,16 @@ void do_cmd_prefs(void)
             }
         }
 
-        /* Hack -- Redefine object attr/chars */
+        /* Modify object attr/chars */
         else if (i == '7') {
 
-            /* Hack -- start on "nothing" */
-            int k_idx = 0;
+            static int k = 0;
 
-            /* Clear the screen */
-            clear_screen();
+            /* Prompt */
+            prt("Command: Change object attr/chars", 15, 0);
 
             /* Hack -- query until done */
             while (1) {
-
-                int k = k_idx;
 
                 inven_kind *k_ptr = &k_info[k];
 
@@ -1280,30 +1716,25 @@ void do_cmd_prefs(void)
                 int cc = (byte)k_ptr->x_char;
 
                 /* Label the object */
-                Term_putstr(5, 10, -1, TERM_WHITE,
+                Term_putstr(5, 17, -1, TERM_WHITE,
                             format("Object = %d, Name = %-40.40s",
                                    k, (k_name + k_ptr->name)));
 
                 /* Label the Default values */
-                Term_putstr(10, 12, -1, TERM_WHITE,
+                Term_putstr(10, 19, -1, TERM_WHITE,
                             format("Default attr/char = %3d / %3d", da, dc));
-                Term_putstr(40, 12, -1, TERM_WHITE, "<< ? >>");
-                Term_putch(43, 12, da, dc);
+                Term_putstr(40, 19, -1, TERM_WHITE, "<< ? >>");
+                Term_putch(43, 19, da, dc);
 
                 /* Label the Current values */
-                Term_putstr(10, 14, -1, TERM_WHITE,
+                Term_putstr(10, 20, -1, TERM_WHITE,
                             format("Current attr/char = %3d / %3d", ca, cc));
-                Term_putstr(40, 14, -1, TERM_WHITE, "<< ? >>");
-                Term_putch(43, 14, ca, cc);
-
-                /* Directions */
-                Term_putstr(5, 2, -1, TERM_WHITE, "n/N = change index");
-                Term_putstr(5, 3, -1, TERM_WHITE, "a/A = change attr");
-                Term_putstr(5, 4, -1, TERM_WHITE, "c/C = change char");
+                Term_putstr(40, 20, -1, TERM_WHITE, "<< ? >>");
+                Term_putch(43, 20, ca, cc);
 
                 /* Prompt */
-                Term_putstr(0, 0, -1, TERM_WHITE,
-                            "Object attr/char (n/N/a/A/c/C): ");
+                Term_putstr(0, 22, -1, TERM_WHITE,
+                            "Command (n/N/a/A/c/C): ");
 
                 /* Get a command */
                 i = inkey();
@@ -1312,8 +1743,8 @@ void do_cmd_prefs(void)
                 if (i == ESCAPE) break;
 
                 /* Analyze */
-                if (i == 'n') k_idx = (k_idx + MAX_K_IDX + 1) % MAX_K_IDX;
-                if (i == 'N') k_idx = (k_idx + MAX_K_IDX - 1) % MAX_K_IDX;
+                if (i == 'n') k = (k + MAX_K_IDX + 1) % MAX_K_IDX;
+                if (i == 'N') k = (k + MAX_K_IDX - 1) % MAX_K_IDX;
                 if (i == 'a') k_info[k].x_attr = (byte)(ca + 1);
                 if (i == 'A') k_info[k].x_attr = (byte)(ca - 1);
                 if (i == 'c') k_info[k].x_char = (byte)(cc + 1);
@@ -1321,19 +1752,16 @@ void do_cmd_prefs(void)
             }
         }
 
-        /* Hack -- Redefine terrain attr/chars */
+        /* Modify feature attr/chars */
         else if (i == '8') {
 
-            /* Hack -- start on "nothing" */
-            int f_idx = 0;
+            static int f = 0;
 
-            /* Clear the screen */
-            clear_screen();
+            /* Prompt */
+            prt("Command: Change feature attr/chars", 15, 0);
 
             /* Hack -- query until done */
             while (1) {
-
-                int f = f_idx;
 
                 feature_type *f_ptr = &f_info[f];
 
@@ -1343,30 +1771,25 @@ void do_cmd_prefs(void)
                 int cc = (byte)f_ptr->z_char;
 
                 /* Label the object */
-                Term_putstr(5, 10, -1, TERM_WHITE,
+                Term_putstr(5, 17, -1, TERM_WHITE,
                             format("Terrain = %d, Name = %-40.40s",
                                    f, (f_name + f_ptr->name)));
 
                 /* Label the Default values */
-                Term_putstr(10, 12, -1, TERM_WHITE,
+                Term_putstr(10, 19, -1, TERM_WHITE,
                             format("Default attr/char = %3d / %3d", da, dc));
-                Term_putstr(40, 12, -1, TERM_WHITE, "<< ? >>");
-                Term_putch(43, 12, da, dc);
+                Term_putstr(40, 19, -1, TERM_WHITE, "<< ? >>");
+                Term_putch(43, 19, da, dc);
 
                 /* Label the Current values */
-                Term_putstr(10, 14, -1, TERM_WHITE,
+                Term_putstr(10, 20, -1, TERM_WHITE,
                             format("Current attr/char = %3d / %3d", ca, cc));
-                Term_putstr(40, 14, -1, TERM_WHITE, "<< ? >>");
-                Term_putch(43, 14, ca, cc);
-
-                /* Directions */
-                Term_putstr(5, 2, -1, TERM_WHITE, "n/N = change index");
-                Term_putstr(5, 3, -1, TERM_WHITE, "a/A = change attr");
-                Term_putstr(5, 4, -1, TERM_WHITE, "c/C = change char");
+                Term_putstr(40, 20, -1, TERM_WHITE, "<< ? >>");
+                Term_putch(43, 20, ca, cc);
 
                 /* Prompt */
-                Term_putstr(0, 0, -1, TERM_WHITE,
-                            "Terrain attr/char (n/N/a/A/c/C): ");
+                Term_putstr(0, 22, -1, TERM_WHITE,
+                            "Command (n/N/a/A/c/C): ");
 
                 /* Get a command */
                 i = inkey();
@@ -1375,12 +1798,255 @@ void do_cmd_prefs(void)
                 if (i == ESCAPE) break;
 
                 /* Analyze */
-                if (i == 'n') f_idx = (f_idx + MAX_F_IDX + 1) % MAX_F_IDX;
-                if (i == 'N') f_idx = (f_idx + MAX_F_IDX - 1) % MAX_F_IDX;
+                if (i == 'n') f = (f + MAX_F_IDX + 1) % MAX_F_IDX;
+                if (i == 'N') f = (f + MAX_F_IDX - 1) % MAX_F_IDX;
                 if (i == 'a') f_info[f].z_attr = (byte)(ca + 1);
                 if (i == 'A') f_info[f].z_attr = (byte)(ca - 1);
                 if (i == 'c') f_info[f].z_char = (byte)(cc + 1);
                 if (i == 'C') f_info[f].z_char = (byte)(cc - 1);
+            }
+        }
+
+#endif /* ANGBAND_LITE */
+
+        /* Reset visuals */
+        else if (i == '0') {
+
+            /* Reset */
+            reset_visuals();
+
+            /* Message */
+            msg_print("Visual attr/char tables reset.");
+        }
+
+        /* Unknown option */
+        else {
+            bell();
+        }
+    }
+
+
+    /* Restore the screen */
+    Term_load();
+
+    /* Leave "icky" mode */
+    character_icky = FALSE;
+}
+
+
+/*
+ * Interact with "colors"
+ */
+void do_cmd_colors(void)
+{
+    int i;
+
+    FILE *fff;
+    
+    char tmp[160];
+    
+    char buf[1024];
+
+
+#if defined(MACINTOSH) && !defined(applec)
+    _ftype = 'TEXT';
+#endif
+
+
+    /* Enter "icky" mode */
+    character_icky = TRUE;
+
+    /* Save the screen */
+    Term_save();
+
+
+    /* Interact until done */
+    while (1) {
+
+        /* Clear the screen */
+        clear_screen();
+
+        /* Ask for a choice */
+        prt("Interact with Colors", 2, 0);
+
+        /* Give some choices */
+        prt("(1) Load a user pref file", 4, 5);
+#ifndef ANGBAND_LITE
+        prt("(2) Dump colors", 5, 5);
+        prt("(3) Modify colors", 6, 5);
+#endif /* ANGBAND_LITE */
+        
+        /* Prompt */
+        prt("Command: ", 8, 0);
+
+        /* Prompt */
+        i = inkey();
+
+        /* Done */
+        if (i == ESCAPE) break;
+
+        /* Load a 'pref' file */
+        if (i == '1') {
+
+            /* Prompt */
+            prt("Command: Load a user pref file", 8, 0);
+
+            /* Prompt */
+            prt("File: ", 10, 0);
+            
+            /* Default file */
+            sprintf(tmp, "user-%s.prf", ANGBAND_SYS);
+
+            /* Query */
+            if (!askfor_aux(tmp, 70)) continue;
+
+            /* Process the given filename */
+            (void)process_pref_file(tmp);
+
+            /* Mega-Hack -- react to changes */
+            Term_xtra(TERM_XTRA_REACT, 0);
+
+            /* Mega-Hack -- redraw */
+            Term_redraw();
+        }
+
+#ifndef ANGBAND_LITE
+
+        /* Dump colors */
+        else if (i == '2') {
+
+            /* Prompt */
+            prt("Command: Dump colors", 8, 0);
+
+            /* Prompt */
+            prt("File: ", 10, 0);
+
+            /* Default filename */
+            sprintf(tmp, "user-%s.prf", ANGBAND_SYS);
+
+            /* Get a filename */
+            if (!askfor_aux(tmp, 70)) continue;
+
+            /* Build the filename */
+            strcpy(buf, ANGBAND_DIR_USER);
+            strcat(buf, tmp);
+    
+            /* Drop priv's */
+            safe_setuid_drop();
+
+            /* Append to the file */
+            fff = my_fopen(buf, "a");
+
+            /* Grab priv's */
+            safe_setuid_grab();
+
+            /* Failure */
+            if (!fff) continue;
+
+            /* Start dumping */
+            fprintf(fff, "\n\n");
+            fprintf(fff, "# Color redefinitions\n\n");
+
+            /* Dump colors */
+            for (i = 0; i < 256; i++) {
+
+                int kv = color_table[i][0];
+                int rv = color_table[i][1];
+                int gv = color_table[i][2];
+                int bv = color_table[i][3];
+                
+                cptr name = "unknown";
+
+                /* Skip non-entries */
+                if (!kv && !rv && !gv && !bv) continue;
+
+                /* Extract the color name */
+                if (i < 16) name = color_names[i];
+                
+                /* Dump a comment */
+                fprintf(fff, "# Color '%s'\n", name);
+                
+                /* Dump the monster attr/char info */
+                fprintf(fff, "V:%d:0x%02X:0x%02X:0x%02X:0x%02X\n\n",
+                        i, kv, rv, gv, bv);
+            }
+
+            /* All done */
+            fprintf(fff, "\n\n\n\n");
+
+            /* Close */
+            my_fclose(fff);
+
+            /* Message */
+            msg_print("Dumped color redefinitions.");
+        }
+
+        /* Edit colors */
+        else if (i == '3') {
+
+            static int a = 0;
+
+            /* Prompt */
+            prt("Command: Modify colors", 8, 0);
+
+            /* Hack -- query until done */
+            while (1) {
+
+                cptr name;
+                
+                /* Clear */
+                clear_from(10);
+                
+                /* Exhibit the normal colors */
+                for (i = 0; i < 16; i++) {
+
+                    /* Exhibit this color */
+                    Term_putstr(i*4, 20, -1, a, "###");
+
+                    /* Exhibit all colors */
+                    Term_putstr(i*4, 22, -1, i, format("%3d", i));
+                }
+
+                /* Describe the color */
+                name = ((a < 16) ? color_names[a] : "undefined");
+
+                /* Describe the color */
+                Term_putstr(5, 10, -1, TERM_WHITE,
+                            format("Color = %d, Name = %s", a, name));
+
+                /* Label the Current values */
+                Term_putstr(5, 12, -1, TERM_WHITE,
+                            format("K = 0x%02x / R,G,B = 0x%02x,0x%02x,0x%02x",
+                                   color_table[a][0], color_table[a][1],
+                                   color_table[a][2], color_table[a][3]));
+
+                /* Prompt */
+                Term_putstr(0, 14, -1, TERM_WHITE,
+                            "Command (n/N/k/K/r/R/g/G/b/B): ");
+
+                /* Get a command */
+                i = inkey();
+
+                /* All done */
+                if (i == ESCAPE) break;
+
+                /* Analyze */
+                if (i == 'n') a = (byte)(a + 1);
+                if (i == 'N') a = (byte)(a - 1);
+                if (i == 'k') color_table[a][0] = (byte)(color_table[a][0] + 1);
+                if (i == 'K') color_table[a][0] = (byte)(color_table[a][0] - 1);
+                if (i == 'r') color_table[a][1] = (byte)(color_table[a][1] + 1);
+                if (i == 'R') color_table[a][1] = (byte)(color_table[a][1] - 1);
+                if (i == 'g') color_table[a][2] = (byte)(color_table[a][2] + 1);
+                if (i == 'G') color_table[a][2] = (byte)(color_table[a][2] - 1);
+                if (i == 'b') color_table[a][3] = (byte)(color_table[a][3] + 1);
+                if (i == 'B') color_table[a][3] = (byte)(color_table[a][3] - 1);
+                
+                /* Hack -- react to changes */
+                Term_xtra(TERM_XTRA_REACT, 0);
+
+                /* Hack -- redraw */
+                Term_redraw();
             }
         }
 
@@ -1551,6 +2217,9 @@ void do_cmd_destroy(void)
         /* Redraw the choice window */
         p_ptr->redraw |= (PR_CHOOSE);
 
+        /* Combine the pack */
+        p_ptr->update |= (PU_COMBINE);
+
         /* Done */
         return;
     }
@@ -1571,13 +2240,6 @@ void do_cmd_destroy(void)
         floor_item_describe(0 - item);
         floor_item_optimize(0 - item);
     }
-
-
-    /* Update bonuses */
-    p_ptr->update |= (PU_BONUS);
-
-    /* Redraw the choice window */
-    p_ptr->redraw |= (PR_CHOOSE);
 }
 
 
@@ -1629,6 +2291,17 @@ void do_cmd_observe(void)
 
 
 
+/*
+ * Toggle "mode" for the "choice" window
+ */
+void do_cmd_toggle_choose(void)
+{
+    /* Hack -- flip the current status */
+    choose_default = !choose_default;
+
+    /* Redraw the choice window */
+    p_ptr->redraw |= (PR_CHOOSE);
+}
 
 
 
@@ -2008,15 +2681,25 @@ void do_cmd_wield(void)
 
     /* Cursed! */
     if (cursed_p(i_ptr)) {
+
+        /* Warn the player */
         msg_print("Oops! It feels deathly cold!");
+
+        /* Note the curse */
         i_ptr->ident |= ID_SENSE;
     }
 
-    /* Update stuff */
-    p_ptr->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
+    /* Recalculate bonuses */
+    p_ptr->update |= (PU_BONUS);
 
-    /* Redraw stuff */
-    p_ptr->redraw |= (PR_EQUIPPY | PR_CHOOSE);
+    /* Recalculate mana */
+    p_ptr->update |= (PU_MANA);
+
+    /* Redraw equippy chars */
+    p_ptr->redraw |= (PR_EQUIPPY);
+    
+    /* Redraw the choice window */
+    p_ptr->redraw |= (PR_CHOOSE);
 }
 
 
@@ -2057,28 +2740,22 @@ void do_cmd_takeoff(void)
     }
 
 
-    /* Take a partial turn */
-    energy_use = 50;
-
-    /* Not gonna happen */
+    /* Item is cursed */
     if (cursed_p(i_ptr)) {
 
         /* Oops */
         msg_print("Hmmm, it seems to be cursed.");
+        
+        /* Nope */
+        return;
     }
 
-    /* Item selected? */
-    else {
 
-        /* Take off the "entire" item */
-        inven_takeoff(item, 255);
+    /* Take a partial turn */
+    energy_use = 50;
 
-        /* Update stuff */
-        p_ptr->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
-
-        /* Redraw equippy chars */
-        p_ptr->redraw |= (PR_EQUIPPY | PR_CHOOSE);
-    }
+    /* Take off the item */
+    inven_takeoff(item, 255);
 }
 
 
@@ -2109,6 +2786,17 @@ void do_cmd_drop(void)
     }
 
 
+    /* Cannot remove cursed items */
+    if ((item >= INVEN_WIELD) && cursed_p(i_ptr)) {
+
+        /* Oops */
+        msg_print("Hmmm, it seems to be cursed.");
+        
+        /* Nope */
+        return;
+    }
+
+
     /* See how many items */
     if (i_ptr->number > 1) {
 
@@ -2118,6 +2806,7 @@ void do_cmd_drop(void)
         /* Allow user abort */
         if (amt <= 0) return;
     }
+
 
     /* Mega-Hack -- verify "dangerous" drops */
     if (cave[py][px].i_idx) {
@@ -2131,458 +2820,8 @@ void do_cmd_drop(void)
     /* Take a partial turn */
     energy_use = 50;
 
-    /* Not gonna happen XXX inscribe */
-    if ((item >= INVEN_WIELD) && cursed_p(i_ptr)) {
-
-        /* Oops */
-        msg_print("Hmmm, it seems to be cursed.");
-    }
-
-    /* Okay */
-    else {
-
-        /* Drop (some of) the item */
-        inven_drop(item, amt);
-
-        /* Update stuff */
-        p_ptr->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
-
-        /* Redraw equippy chars */
-        p_ptr->redraw |= (PR_EQUIPPY | PR_CHOOSE);
-    }
-}
-
-
-
-
-
-
-
-
-
-
-
-/*
- * Define a new "keymap" entry
- */
-void do_cmd_keymap(void)
-{
-    char i1, i2, i3;
-
-#ifdef ALLOW_KEYMAP
-
-    /* Flush the input */
-    flush();
-
-    /* Get the trigger */
-    if (get_com("Type the trigger keypress: ", &i1) &&
-        get_com("Type the resulting keypress: ", &i2) &&
-        get_com("Type a direction (or space): ", &i3)) {
-
-        /* Acquire the array index */
-        int k = (byte)(i1);
-        int r = (byte)(i2);
-        int d = (byte)(i3);
-
-        /* Analyze the result key */
-        keymap_cmds[k] = r;
-
-        /* Hack -- Analyze the "direction" (always allow numbers) */
-        keymap_dirs[k] = (isdigit(d) ? (d - '0') : keymap_dirs[d]);
-
-        /* Success */
-        prt(format("Keypress 0x%02x mapped to 0x%02x/%d",
-                   k, keymap_cmds[k], keymap_dirs[k]), 0, 0);
-    }
-
-    /* Forget it */
-    else {
-
-        /* Message */
-        prt("Keymap cancelled.", 0, 0);
-    }
-
-#else
-
-    msg_print("You are not allowed to do that.");
-
-#endif
-
-}
-
-
-
-#ifdef ALLOW_MACROS
-
-/*
- * Hack -- append all current macros to the given file
- */
-static errr macro_dump(cptr fname)
-{
-    int i;
-
-    FILE *fff;
-
-    char buf[1024];
-
-
-    /* Build the filename */
-    strcpy(buf, ANGBAND_DIR_USER);
-    strcat(buf, fname);
-    
-#if defined(MACINTOSH) && !defined(applec)
-    /* Global -- "text file" */
-    _ftype = 'TEXT';
-#endif
-
-    /* Append to the file */
-    fff = my_fopen(buf, "a");
-
-    /* Failure */
-    if (!fff) return (-1);
-
-
-    /* Start dumping */
-    fprintf(fff, "\n\n# Automatic macro dump\n\n");
-
-    /* Dump them */
-    for (i = 0; i < macro__num; i++) {
-
-        /* Start the macro */
-        fprintf(fff, "# Macro '%d'\n\n", i);
-
-        /* Extract the action */
-        ascii_to_text(buf, macro__act[i]);
-
-        /* Dump the macro */
-        fprintf(fff, "A:%s\n", buf);
-
-        /* Extract the action */
-        ascii_to_text(buf, macro__pat[i]);
-
-        /* Dump command macros */
-        if (macro__cmd[i]) fprintf(fff, "C:%s\n", buf);
-
-        /* Dump normal macros */
-        else fprintf(fff, "P:%s\n", buf);
-
-        /* End the macro */
-        fprintf(fff, "\n\n");		
-    }
-
-    /* Start dumping */
-    fprintf(fff, "\n\n\n\n");
-
-
-    /* Close */
-    my_fclose(fff);
-
-    /* Success */
-    return (0);
-}
-
-
-/*
- * Hack -- ask for a "trigger" (see below)
- *
- * Note the complex use of the "inkey()" function from "io.c".
- *
- * The "trigger" must be entered with less than 10 milliseconds
- * between keypresses, as in "inkey_aux()".
- */
-static void do_cmd_macro_aux(char *buf)
-{
-    int i, n = 0, w = 0;
-
-    bool skipping = FALSE;
-
-
-    /* Important -- Flush input */
-    flush();
-
-    /* Do not process macros */
-    inkey_base = TRUE;
-
-    /* Attempt to read a key */
-    i = inkey();
-
-    /* Save the key */
-    buf[n++] = i;
-
-    /* Read the pattern */
-    while (TRUE) {
-
-        /* Do not process macros */
-        inkey_base = TRUE;
-
-        /* Do not wait for keys */
-        inkey_scan = TRUE;
-
-        /* Attempt to read a key */
-        i = inkey();
-
-        /* If a key is ready, acquire it */
-        if (i) {
-
-            /* Reset delay */
-            w = 0;
-
-            /* Hack -- process "ascii 28" */
-            if (i == 28) {
-
-                /* Toggle the "skipping" flag */
-                skipping = !skipping;
-            }
-
-            /* Save usable keys */
-            else if (!skipping) {
-
-                /* Save the key */
-                buf[n++] = i;
-            }
-
-            /* Next */
-            continue;
-        }
-
-        /* Excessive delay */
-        if (w > 30) break;
-
-        /* Increment and delay */
-        delay(++w);
-    }
-
-    /* Terminate */
-    buf[n] = '\0';
-
-    /* Important -- Flush the input */
-    flush();
-}
-
-#endif
-
-
-/*
- * Interact with "macros"
- *
- * Note that the macro "action" must be defined before the trigger.
- */
-void do_cmd_macro(void)
-{
-    int i;
-
-    char tmp[1024];
-
-
-#ifdef ALLOW_MACROS
-
-    /* Enter "icky" mode */
-    character_icky = TRUE;
-
-    /* Save the screen */
-    Term_save();
-
-    /* Process requests until done */
-    while (1) {
-
-        /* Clear the screen */
-        clear_screen();
-
-        /* Describe */
-        Term_putstr(0, 2, -1, TERM_WHITE, "Macro design screen");
-
-
-        /* Describe that action */
-        Term_putstr(0, 18, -1, TERM_WHITE, "Current action (if any) shown below:");
-
-        /* Analyze the current action */
-        ascii_to_text(tmp, macro__buf);
-
-        /* Display the current action */
-        Term_putstr(0, 20, -1, TERM_WHITE, tmp);
-
-
-        /* Selections */
-        Term_putstr(5,  4, -1, TERM_WHITE, "(1) Enter a new action");
-        Term_putstr(5,  5, -1, TERM_WHITE, "(2) Query a macro action");
-        Term_putstr(5,  6, -1, TERM_WHITE, "(3) Create a command macro");
-        Term_putstr(5,  7, -1, TERM_WHITE, "(4) Create a normal macro");
-        Term_putstr(5,  8, -1, TERM_WHITE, "(5) Create an identity macro");
-        Term_putstr(5,  9, -1, TERM_WHITE, "(6) Create an empty macro");
-        Term_putstr(5, 10, -1, TERM_WHITE, "(7) Load a macro file");
-        Term_putstr(5, 11, -1, TERM_WHITE, "(8) Save a macro file");
-
-        /* Prompt */
-        Term_putstr(0, 14, -1, TERM_WHITE, "Command: ");
-        
-        /* Get a command */
-        i = inkey();
-
-        /* Leave */
-        if (i == ESCAPE) break;
-
-
-        /* Enter a new action */
-        if (i == '1') {
-
-            /* Prompt */
-            Term_putstr(0, 14, -1, TERM_WHITE, "Command: Enter a new action");
-            
-            /* Go to the correct location */
-            Term_gotoxy(0, 20);
-
-            /* Hack -- limit the value */
-            tmp[80] = '\0';
-
-            /* Get an encoded action */
-            if (askfor_aux(tmp, 80)) text_to_ascii(macro__buf, tmp);
-        }
-
-        /* Query a macro action */
-        else if (i == '2') {
-
-            /* Prompt */
-            Term_putstr(0, 14, -1, TERM_WHITE, "Command: Query a macro action");
-
-            /* Prompt */
-            Term_putstr(0, 16, -1, TERM_WHITE, "Enter a macro trigger: ");
-
-            /* Get a macro trigger */
-            do_cmd_macro_aux(tmp);
-
-            /* XXX XXX XXX */
-            bell();
-        }
-        
-        /* Create a command macro */
-        else if (i == '3') {
-
-            /* Prompt */
-            Term_putstr(0, 14, -1, TERM_WHITE, "Command: Create a command macro");
-
-            /* Prompt */
-            Term_putstr(0, 16, -1, TERM_WHITE, "Enter command macro trigger: ");
-
-            /* Get a macro trigger */
-            do_cmd_macro_aux(tmp);
-            
-            /* Link the macro */
-            macro_add(tmp, macro__buf, TRUE);
-        }
-        
-        /* Create a normal macro */
-        else if (i == '4') {
-
-            /* Prompt */
-            Term_putstr(0, 14, -1, TERM_WHITE, "Command: Create a normal macro");
-
-            /* Prompt */
-            Term_putstr(0, 16, -1, TERM_WHITE, "Enter normal macro trigger: ");
-
-            /* Get a macro trigger */
-            do_cmd_macro_aux(tmp);
-            
-            /* Link the macro */
-            macro_add(tmp, macro__buf, FALSE);
-        }
-        
-        /* Create an identity macro */
-        else if (i == '5') {
-
-            /* Prompt */
-            Term_putstr(0, 14, -1, TERM_WHITE, "Command: Create an identity macro");
-
-            /* Prompt */
-            Term_putstr(0, 16, -1, TERM_WHITE, "Enter identity macro trigger: ");
-
-            /* Get a macro trigger */
-            do_cmd_macro_aux(tmp);
-            
-            /* Link the macro */
-            macro_add(tmp, tmp, FALSE);
-        }
-        
-        /* Create an empty macro */
-        else if (i == '6') {
-
-            /* Prompt */
-            Term_putstr(0, 14, -1, TERM_WHITE, "Command: Create an empty macro");
-
-            /* Prompt */
-            Term_putstr(0, 16, -1, TERM_WHITE, "Enter empty macro trigger: ");
-
-            /* Get a macro trigger */
-            do_cmd_macro_aux(tmp);
-            
-            /* Link the macro */
-            macro_add(tmp, "", FALSE);
-        }
-
-        /* Load a 'macro' file */
-        else if (i == '7') {
-
-            /* Prompt */
-            Term_putstr(0, 14, -1, TERM_WHITE, "Command: Load a macro file");
-
-            /* Get a filename, handle ESCAPE */
-            Term_putstr(0, 16, -1, TERM_WHITE, "File: ");
-
-            /* Default filename */
-            strcpy(tmp, "pref.prf");
-
-            /* Ask for a file */
-            if (!askfor_aux(tmp, 70)) continue;
-
-            /* Process the given filename */
-            (void)process_pref_file(tmp);
-        }
-
-        /* Save a 'macro' file */
-        else if (i == '8') {
-
-            /* Prompt */
-            Term_putstr(0, 14, -1, TERM_WHITE, "Command: Save a macro file");
-
-            /* Get a filename, handle ESCAPE */
-            Term_putstr(0, 16, -1, TERM_WHITE, "File: ");
-
-            /* Default filename */
-            strcpy(tmp, "pref.prf");
-
-            /* Ask for a file */
-            if (!askfor_aux(tmp, 70)) continue;
-
-            /* Drop priv's */
-            safe_setuid_drop();
-
-            /* Dump the macros */
-            (void)macro_dump(tmp);
-
-            /* Grab priv's */
-            safe_setuid_grab();
-        }
-        
-        /* Oops */
-        else {
-
-            /* Oops */        
-            bell();
-        }
-    }
-    
-    /* Load the screen */
-    Term_load();
-    
-    /* Leave "icky" mode */
-    character_icky = FALSE;
-    
-#else
-
-    /* Not allowed */
-    msg_print("You may not use this command.");
-
-#endif
-
+    /* Drop (some of) the item */
+    inven_drop(item, amt);
 }
 
 
@@ -2605,6 +2844,8 @@ void do_cmd_load_screen(void)
 
     byte a = 0;
     char c = ' ';
+
+    bool okay = TRUE;
 
     FILE *fff;
 
@@ -2633,10 +2874,10 @@ void do_cmd_load_screen(void)
 
     
     /* Load the screen */
-    for (y = 0; y < 24; y++) {
+    for (y = 0; okay && (y < 24); y++) {
 
         /* Get a line of data */
-        (void)fgets(buf, 128, fff);
+        if (my_fgets(fff, buf, 1024)) okay = FALSE;
         
         /* Show each row */
         for (x = 0; x < 79; x++) {
@@ -2647,14 +2888,14 @@ void do_cmd_load_screen(void)
     }
 
     /* Get the blank line */
-    (void)fgets(buf, 128, fff);
+    if (my_fgets(fff, buf, 1024)) okay = FALSE;
 
 
     /* Dump the screen */
-    for (y = 0; y < 24; y++) {
+    for (y = 0; okay && (y < 24); y++) {
 
         /* Get a line of data */
-        (void)fgets(buf, 128, fff);
+        if (my_fgets(fff, buf, 1024)) okay = FALSE;
         
         /* Dump each row */
         for (x = 0; x < 79; x++) {
@@ -2678,7 +2919,7 @@ void do_cmd_load_screen(void)
     }
 
     /* Get the blank line */
-    (void)fgets(buf, 128, fff);
+    if (my_fgets(fff, buf, 1024)) okay = FALSE;
 
 
     /* Close it */
@@ -2751,11 +2992,14 @@ void do_cmd_save_screen(void)
             (void)(Term_what(x, y, &a, &c));
 
             /* Dump it */
-            fprintf(fff, "%c", c);
+            buf[x] = c;
         }
 
+        /* Terminate */
+        buf[x] = '\0';
+        
         /* End the row */
-        fprintf(fff, "\n");
+        fprintf(fff, "%s\n", buf);
     }
 
     /* Skip a line */
@@ -2772,11 +3016,14 @@ void do_cmd_save_screen(void)
             (void)(Term_what(x, y, &a, &c));
 
             /* Dump it */
-            fprintf(fff, "%c", hack[a&0x0F]);
+            buf[x] = hack[a&0x0F];
         }
-            
+        
+        /* Terminate */
+        buf[x] = '\0';
+        
         /* End the row */
-        fprintf(fff, "\n");
+        fprintf(fff, "%s\n", buf);
     }
 
     /* Skip a line */

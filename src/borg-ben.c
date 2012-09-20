@@ -1047,10 +1047,6 @@ static cptr prefix_feeling[] = {
  * all sorts of errors arising from attempting to parse the "tomb"
  * screen, and to allow the user to "observe" the "cause" of death.
  *
- * Note the complete hack that allows the Borg to run in "demo"
- * mode, which allows the Borg to cheat death 100 times, and stamps
- * the number of cheats in the player "age" field.
- *
  * Note that detecting "failure" is EXTREMELY important, to prevent
  * bizarre situations after failing to use a staff of perceptions,
  * which would otherwise go ahead and send the "item index" which
@@ -1087,44 +1083,8 @@ static void borg_parse(cptr msg)
     if (auto_fff) borg_info(format("& Msg <%s>", msg));
 
 
-
-    /* Hack -- Notice "death" */
-    if (streq(msg, "You die.")) {
-
-        /* XXX XXX XXX */
-        if (!p_ptr->sc) {
-
-            /* Take note */
-            borg_note("# Cheating death...");
-
-            /* Increase "age" */
-            if (++p_ptr->age >= 100) {
-
-                /* End the demo */
-                borg_oops("final death");
-            }
-
-            /* Hack -- stupid death */
-            if (!dun_level) {
-
-                /* End the demo */
-                borg_oops("stupid death");
-            }
-
-            /* Mega-Hack -- cheat death */
-            p_ptr->food = PY_FOOD_MAX - 1;
-            p_ptr->chp = p_ptr->mhp;
-            p_ptr->chp_frac = 0;
-            p_ptr->csp = p_ptr->msp;
-            p_ptr->csp_frac = 0;
-            new_level_flag = 1;
-            dun_level = 0;
-            death = 0;
-            alive = 1;
-
-            /* Keep playing */
-            return;
-        }
+    /* Hack -- Notice death */
+    if (prefix(msg, "You die.")) {
 
         /* Oops */
         borg_oops("death");
@@ -1349,6 +1309,10 @@ static errr (*Term_xtra_hook_old)(int n, int v) = NULL;
  * XXX XXX XXX We should probably attempt to handle "broken" messages,
  * in which long messages are "broken" into pieces, and all but the
  * first message are "indented" by, um, two spaces or something.
+ *
+ * Note the complete hack that allows the Borg to run in "demo"
+ * mode, which allows the Borg to cheat death 100 times, and stamps
+ * the number of cheats in the player "age" field.  XXX XXX XXX
  */
 static errr Term_xtra_borg(int n, int v)
 {
@@ -1428,6 +1392,43 @@ static errr Term_xtra_borg(int n, int v)
         /* Hack -- Extract the cursor visibility */
         visible = (!Term_hide_cursor());
         if (visible) Term_show_cursor();
+
+
+        /* XXX XXX XXX Mega-Hack -- Catch "Die? [y/n]" messages */
+
+        /* Hack -- cheat death */
+        if (visible &&
+            (0 == Term_locate(&x, &y)) && (y == 0) && (x >= 4) &&
+            (0 == borg_what_text(0, 0, 4, &t_a, buf)) &&
+            (prefix(buf, "Die?"))) {
+
+            /* Take note */
+            borg_note("# Cheating death...");
+
+            /* Demo mode */
+            if (!p_ptr->sc) {
+
+                /* Increase "age" */
+                if (++p_ptr->age >= 100) {
+
+                    /* End the demo */
+                    borg_oops("final death");
+                }
+            }
+
+            /* Normal mode */
+            else {
+
+                /* Oops */
+                borg_oops("normal death");
+            }
+            
+            /* Cheat death */
+            Term_keypress('n');
+
+            /* Success */
+            return (0);
+        }
 
 
         /* XXX XXX XXX Mega-Hack -- Catch "-more-" messages */
@@ -1590,8 +1591,14 @@ void borg_ben(void)
             /* Nuke the weight */
             /* p_ptr->wt = 0; */
 
-            /* Reset the age */
+            /* Reset the age XXX XXX XXX */
             p_ptr->age = 0;
+            
+            /* Set the "cheat death" flag XXX XXX XXX */
+            cheat_live = TRUE;
+
+            /* Mark the use of "cheat death" XXX XXX XXX */
+            if (cheat_live) noscore |= 0x2000;
         }
         
         /* Note */
@@ -1707,7 +1714,7 @@ void borg_ben(void)
        msg_format("There are %d known monsters.", k);
        msg_print(NULL);
        
-       /* Redraw */
+       /* Hack -- Redraw */
        do_cmd_redraw();
     }
 
@@ -1743,7 +1750,7 @@ void borg_ben(void)
        msg_format("There are %d known objects.", k);
        msg_print(NULL);
        
-       /* Redraw */
+       /* Hack -- Redraw */
        do_cmd_redraw();
     }
 
@@ -2028,13 +2035,13 @@ void borg_ben_init(void)
     /* Ignore annoying hitpoint warnings */
     hitpoint_warn = 0;
 
-    /* XXX XXX Hack -- notice "command" mode */
+    /* Hack -- notice "command" mode */
     hilite_player = FALSE;
 
+    /* Hack -- reset visuals */
+    reset_visuals();
 
-    /*** Allow options to take effect ***/
-    
-    /* Mega-Hack -- Redraw Everything */
+    /* Hack -- Redraw */
     do_cmd_redraw();
 
 

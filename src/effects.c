@@ -99,11 +99,8 @@ void do_cmd_eat_food(void)
     switch (i_ptr->sval) {
 
         case SV_FOOD_POISON:
-            if (!(p_ptr->resist_pois ||
-                  p_ptr->oppose_pois ||
-                  p_ptr->immune_pois)) {
+            if (!(p_ptr->resist_pois || p_ptr->oppose_pois)) {
                 if (set_poisoned(p_ptr->poisoned + rand_int(10) + 10)) {
-                    msg_print("You are poisoned!");
                     ident = TRUE;
                 }
             }
@@ -112,7 +109,6 @@ void do_cmd_eat_food(void)
         case SV_FOOD_BLINDNESS:
             if (!p_ptr->resist_blind) {
                 if (set_blind(p_ptr->blind + rand_int(200) + 200)) {
-                    msg_print("A veil of darkness surrounds you.");
                     ident = TRUE;
                 }
             }
@@ -121,7 +117,6 @@ void do_cmd_eat_food(void)
         case SV_FOOD_PARANOIA:
             if (!p_ptr->resist_fear) {
                 if (set_afraid(p_ptr->afraid + rand_int(10) + 10)) {
-                    msg_print("You feel terrified!");
                     ident = TRUE;
                 }
             }
@@ -130,23 +125,22 @@ void do_cmd_eat_food(void)
         case SV_FOOD_CONFUSION:
             if (!p_ptr->resist_conf) {
                 if (set_confused(p_ptr->confused + rand_int(10) + 10)) {
-                    msg_print("You feel drugged.");
                     ident = TRUE;
                 }
             }
             break;
 
         case SV_FOOD_HALLUCINATION:
-            if (set_image(p_ptr->image + rand_int(250) + 250)) {
-                msg_print("You feel drugged.");
-                ident = TRUE;
+            if (!p_ptr->resist_chaos) {
+                if (set_image(p_ptr->image + rand_int(250) + 250)) {
+                    ident = TRUE;
+                }
             }
             break;
 
         case SV_FOOD_PARALYSIS:
             if (!p_ptr->free_act) {
                 if (set_paralyzed(p_ptr->paralyzed + rand_int(10) + 10)) {
-                    msg_print("You are paralyzed!");
                     ident = TRUE;
                 }
             }
@@ -256,6 +250,9 @@ void do_cmd_eat_food(void)
     /* Redraw the choice window */
     p_ptr->redraw |= (PR_CHOOSE);
 
+    /* Combine / Reorder the pack */
+    p_ptr->update |= (PU_COMBINE | PU_REORDER);
+
     /* We have tried it */
     inven_tried(i_ptr);
 
@@ -266,8 +263,8 @@ void do_cmd_eat_food(void)
         inven_aware(i_ptr);
     }
 
-    /* Consume the food */
-    add_food(i_ptr->pval);
+    /* Food can feed the player */
+    (void)set_food(p_ptr->food + i_ptr->pval);
 
 
     /* Destroy a food in the pack */
@@ -283,9 +280,6 @@ void do_cmd_eat_food(void)
         floor_item_describe(0 - item);
         floor_item_optimize(0 - item);
     }
-
-    /* Combine the pack */
-    p_ptr->update |= (PU_COMBINE | PU_REORDER);
 }
 
 
@@ -343,19 +337,15 @@ void do_cmd_quaff_potion(void)
 
         case SV_POTION_SALT_WATER:
             msg_print("The potion makes you vomit!");
-            if (p_ptr->food > 150) p_ptr->food = 150;
+            (void)set_food(PY_FOOD_STARVE - 1);
             (void)set_poisoned(0);
             (void)set_paralyzed(p_ptr->paralyzed + 4);
-            p_ptr->update |= (PU_BONUS);
             ident = TRUE;
             break;
 
         case SV_POTION_POISON:
-            if (!(p_ptr->resist_pois ||
-                  p_ptr->oppose_pois ||
-                  p_ptr->immune_pois)) {
+            if (!(p_ptr->resist_pois || p_ptr->oppose_pois)) {
                 if (set_poisoned(p_ptr->poisoned + rand_int(15) + 10)) {
-                    msg_print("You feel very sick.");
                     ident = TRUE;
                 }
             }
@@ -364,7 +354,6 @@ void do_cmd_quaff_potion(void)
         case SV_POTION_BLINDNESS:
             if (!p_ptr->resist_blind) {
                 if (set_blind(p_ptr->blind + rand_int(100) + 100)) {
-                    msg_print("You are covered by a veil of darkness.");
                     ident = TRUE;
                 }
             }
@@ -373,7 +362,6 @@ void do_cmd_quaff_potion(void)
         case SV_POTION_CONFUSION:
             if (!p_ptr->resist_conf) {
                 if (set_confused(p_ptr->confused + rand_int(20) + 15)) {
-                    msg_print("You mind becomes clouded and hazy.");
                     ident = TRUE;
                 }
             }
@@ -382,7 +370,6 @@ void do_cmd_quaff_potion(void)
         case SV_POTION_SLEEP:
             if (!p_ptr->free_act) {
                 if (set_paralyzed(p_ptr->paralyzed + rand_int(4) + 4)) {
-                    msg_print("You fall asleep.");
                     ident = TRUE;
                 }
             }
@@ -392,12 +379,8 @@ void do_cmd_quaff_potion(void)
             if (!p_ptr->hold_life && (p_ptr->exp > 0)) {
                 msg_print("You feel your memories fade.");
                 lose_exp(p_ptr->exp / 4);
+                ident = TRUE;
             }
-            else {
-                msg_format("You feel %s, but quickly return.",
-                           "your memories fade for a moment");
-            }
-            ident = TRUE;
             break;
 
         case SV_POTION_RUINATION:
@@ -438,8 +421,8 @@ void do_cmd_quaff_potion(void)
         case SV_POTION_DETONATIONS:
             msg_print("Massive explosions rupture your body!");
             take_hit(damroll(50, 20), "a potion of Detonation");
-            cut_player(5000);
-            stun_player(75);
+            (void)set_stun(p_ptr->stun + 75);
+            (void)set_cut(p_ptr->cut + 5000);
             ident = TRUE;
             break;
 
@@ -451,14 +434,12 @@ void do_cmd_quaff_potion(void)
 
         case SV_POTION_INFRAVISION:
             if (set_tim_infra(p_ptr->tim_infra + 100 + randint(100))) {
-                msg_print("Your eyes begin to tingle.");
                 ident = TRUE;
             }
             break;
 
         case SV_POTION_DETECT_INVIS:
             if (set_tim_invis(p_ptr->tim_invis + 12 + randint(12))) {
-                msg_print("Your eyes feel very sensitive.");
                 ident = TRUE;
             }
             break;
@@ -485,23 +466,25 @@ void do_cmd_quaff_potion(void)
             break;
 
         case SV_POTION_RESIST_HEAT:
-            (void)set_oppose_fire(p_ptr->oppose_fire + randint(10) + 10);
-            ident = TRUE;
+            if (set_oppose_fire(p_ptr->oppose_fire + randint(10) + 10)) {
+                ident = TRUE;
+            }
             break;
 
         case SV_POTION_RESIST_COLD:
-            (void)set_oppose_cold(p_ptr->oppose_cold + randint(10) + 10);
-            ident = TRUE;
+            if (set_oppose_cold(p_ptr->oppose_cold + randint(10) + 10)) {
+                ident = TRUE;
+            }
             break;
 
         case SV_POTION_HEROISM:
-            if (hp_player(10)) ident = TRUE;	/* XXX */
+            if (hp_player(10)) ident = TRUE;
             if (set_afraid(0)) ident = TRUE;
             if (set_hero(p_ptr->hero + randint(25) + 25)) ident = TRUE;
             break;
 
         case SV_POTION_BESERK_STRENGTH:
-            if (hp_player(30)) ident = TRUE;	/* XXX */
+            if (hp_player(30)) ident = TRUE;
             if (set_afraid(0)) ident = TRUE;
             if (set_shero(p_ptr->shero + randint(25) + 25)) ident = TRUE;
             break;
@@ -562,7 +545,6 @@ void do_cmd_quaff_potion(void)
             (void)do_res_stat(A_WIS);
             (void)do_res_stat(A_INT);
             (void)do_res_stat(A_CHR);
-            p_ptr->update |= (PU_BONUS);
             ident = TRUE;
             break;
 
@@ -684,6 +666,9 @@ void do_cmd_quaff_potion(void)
     /* Redraw the choice window */
     p_ptr->redraw |= (PR_CHOOSE);
 
+    /* Combine / Reorder the pack */
+    p_ptr->update |= (PU_COMBINE | PU_REORDER);
+
     /* The item has been tried */
     inven_tried(i_ptr);
 
@@ -695,7 +680,7 @@ void do_cmd_quaff_potion(void)
     }
 
     /* Potions can feed the player */
-    add_food(i_ptr->pval);
+    (void)set_food(p_ptr->food + i_ptr->pval);
 
 
     /* Destroy a potion in the pack */
@@ -711,9 +696,6 @@ void do_cmd_quaff_potion(void)
         floor_item_describe(0 - item);
         floor_item_optimize(0 - item);
     }
-
-    /* Combine the pack */
-    p_ptr->update |= (PU_COMBINE | PU_REORDER);
 }
 
 
@@ -770,7 +752,10 @@ static bool curse_armor(void)
         /* Recalculate bonuses */
         p_ptr->update |= (PU_BONUS);
 
-        /* Redraw choice window */
+        /* Recalculate mana */
+        p_ptr->update |= (PU_MANA);
+
+        /* Redraw the choice window */
         p_ptr->redraw |= (PR_CHOOSE);
     }
 
@@ -831,7 +816,10 @@ static bool curse_weapon(void)
         /* Recalculate bonuses */
         p_ptr->update |= (PU_BONUS);
 
-        /* Redraw choice window */
+        /* Recalculate mana */
+        p_ptr->update |= (PU_MANA);
+
+        /* Redraw the choice window */
         p_ptr->redraw |= (PR_CHOOSE);
     }
 
@@ -904,7 +892,7 @@ void do_cmd_read_scroll(void)
         case SV_SCROLL_DARKNESS:
             if (unlite_area(10, 3)) ident = TRUE;
             if (!p_ptr->resist_blind) {
-                set_blind(p_ptr->blind + 3 + randint(5));
+                (void)set_blind(p_ptr->blind + 3 + randint(5));
             }
             break;
 
@@ -1061,8 +1049,7 @@ void do_cmd_read_scroll(void)
             break;
 
         case SV_SCROLL_SATISFY_HUNGER:
-            satisfy_hunger();
-            ident = TRUE;
+            if (set_food(PY_FOOD_MAX - 1)) ident = TRUE;
             break;
 
         case SV_SCROLL_BLESSING:
@@ -1139,6 +1126,9 @@ void do_cmd_read_scroll(void)
     /* Redraw the choice window */
     p_ptr->redraw |= (PR_CHOOSE);
 
+    /* Combine / Reorder the pack */
+    p_ptr->update |= (PU_COMBINE | PU_REORDER);
+
     /* The item was tried */
     inven_tried(i_ptr);
 
@@ -1167,9 +1157,6 @@ void do_cmd_read_scroll(void)
         floor_item_describe(0 - item);
         floor_item_optimize(0 - item);
     }
-
-    /* Combine the pack */
-    p_ptr->update |= (PU_COMBINE | PU_REORDER);
 }
 
 
@@ -1275,7 +1262,7 @@ void do_cmd_use_staff(void)
       case SV_STAFF_DARKNESS:
         if (unlite_area(10, 3)) ident = TRUE;
         if (!p_ptr->resist_blind) {
-            (void)set_blind(p_ptr->blind + 3 + randint(5));
+            if (set_blind(p_ptr->blind + 3 + randint(5))) ident = TRUE;
         }
         break;
 
@@ -1364,8 +1351,8 @@ void do_cmd_use_staff(void)
         if (set_blind(0)) ident = TRUE;
         if (set_poisoned(0)) ident = TRUE;
         if (set_confused(0)) ident = TRUE;
-        if (set_cut(0)) ident = TRUE;
         if (set_stun(0)) ident = TRUE;
+        if (set_cut(0)) ident = TRUE;
         break;
 
       case SV_STAFF_HEALING:
@@ -1451,6 +1438,9 @@ void do_cmd_use_staff(void)
     /* Redraw the choice window */
     p_ptr->redraw |= (PR_CHOOSE);
 
+    /* Combine / Reorder the pack */
+    p_ptr->update |= (PU_COMBINE | PU_REORDER);
+
     /* Tried the item */
     inven_tried(i_ptr);
 
@@ -1496,9 +1486,6 @@ void do_cmd_use_staff(void)
     else {
         floor_item_charges(0 - item);
     }
-
-    /* Combine the pack */
-    p_ptr->update |= (PU_COMBINE | PU_REORDER);
 }
 
 
@@ -1764,6 +1751,9 @@ void do_cmd_aim_wand(void)
     /* Redraw the choice window */
     p_ptr->redraw |= (PR_CHOOSE);
 
+    /* Combine / Reorder the pack */
+    p_ptr->update |= (PU_COMBINE | PU_REORDER);
+
     /* Mark it as tried */
     inven_tried(i_ptr);
 
@@ -1805,9 +1795,6 @@ void do_cmd_aim_wand(void)
     else {
         floor_item_charges(0 - item);
     }
-
-    /* Combine the pack */
-    p_ptr->update |= (PU_COMBINE | PU_REORDER);
 }
 
 
@@ -2098,6 +2085,9 @@ void do_cmd_zap_rod(void)
     /* Redraw the choice window */
     p_ptr->redraw |= (PR_CHOOSE);
 
+    /* Combine / Reorder the pack */
+    p_ptr->update |= (PU_COMBINE | PU_REORDER);
+
     /* Tried the object */
     inven_tried(i_ptr);
 
@@ -2134,10 +2124,6 @@ void do_cmd_zap_rod(void)
         /* Message */
         msg_print("You unstack your rod.");
     }
-
-
-    /* Combine the pack */
-    p_ptr->update |= (PU_COMBINE | PU_REORDER);
 }
 
 
@@ -2526,7 +2512,6 @@ void do_cmd_activate(void)
 
             case ART_COLLUIN:
                 msg_print("Your cloak glows many colours...");
-                msg_print("You feel you can resist anything.");
                 (void)set_oppose_acid(p_ptr->oppose_acid + randint(20) + 20);
                 (void)set_oppose_elec(p_ptr->oppose_elec + randint(20) + 20);
                 (void)set_oppose_fire(p_ptr->oppose_fire + randint(20) + 20);
@@ -2623,9 +2608,7 @@ void do_cmd_activate(void)
 
             case ART_BLADETURNER:
                 msg_print("Your armor glows many colours...");
-                msg_print("You enter a berserk rage...");
-                msg_print("You feel you can resist anything...");
-                (void)hp_player(30);	/* XXX */
+                (void)hp_player(30);
                 (void)set_afraid(0);
                 (void)set_shero(p_ptr->shero + randint(50) + 50);
                 (void)set_blessed(p_ptr->blessed + randint(50) + 50);
@@ -2667,7 +2650,6 @@ void do_cmd_activate(void)
 
             case ART_CARLAMMAS:
                 msg_print("The amulet lets out a shrill wail...");
-                msg_print("You feel somewhat safer...");
                 k = 3 * p_ptr->lev;
                 (void)set_protevil(p_ptr->protevil + randint(25) + k);
                 i_ptr->timeout = rand_int(225) + 225;

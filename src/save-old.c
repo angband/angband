@@ -34,6 +34,10 @@
  * and which will not use a silly "protection" scheme on the savefiles,
  * but which may still use some form of "checksums" to prevent the use
  * of "corrupt" savefiles, which might cause nasty weirdness.
+ *
+ * Note that this file should not use the random number generator, the
+ * object flavors, the visual attr/char mappings, or anything else which
+ * is initialized *after* or *during* the "load character" function.
  */
 
 
@@ -99,8 +103,6 @@ static byte	sf_patch;	/* Savefile's "version_patch" */
 
 static u32b	v_check = 0L;	/* A simple "checksum" on the actual values */
 static u32b	x_check = 0L;	/* A simple "checksum" on the encoded bytes */
-
-static bool	say = FALSE;	/* Show "extra" messages */
 
 
 
@@ -1306,7 +1308,6 @@ static void rd_monster_old(monster_type *m_ptr)
 
     /* Hack -- recalculate speed */
     m_ptr->mspeed = r_ptr->speed;
-    m_ptr->energy = rand_int(100);
 
     /* Hack -- kill "broken" monsters and player ghosts */
     if ((m_ptr->r_idx <= 0) || (m_ptr->r_idx >= MAX_R_IDX-1)) {
@@ -2073,6 +2074,9 @@ static errr rd_dungeon_old()
 
         /* Read the monster */
         rd_monster_old(m_ptr);
+
+        /* Hack -- fake energy */
+        m_ptr->energy = i % 100;
     }
 
 
@@ -2292,7 +2296,7 @@ static errr rd_savefile_old()
 
     /* Read the artifacts */
     rd_artifacts_old();
-    if (say) note("Loaded Artifacts");
+    if (arg_fiddle) note("Loaded Artifacts");
 
 
     /* Load the Quests */
@@ -2304,7 +2308,7 @@ static errr rd_savefile_old()
     q_list[2].level = 0;
     rd_u32b(&tmp32u);
     q_list[3].level = 0;
-    if (say) note("Loaded Quests");
+    if (arg_fiddle) note("Loaded Quests");
 
 
     /* Load the old "Uniques" flags */
@@ -2325,7 +2329,7 @@ static errr rd_savefile_old()
         rd_u32b(&tmp32u);
         if (tmp32u) r_ptr->max_num = 0;
     }
-    if (say) note("Loaded Unique Beasts");
+    if (arg_fiddle) note("Loaded Unique Beasts");
 
 
     /* Hack -- assume previous lives */
@@ -2362,16 +2366,16 @@ static errr rd_savefile_old()
             if (r_ptr->max_num == 0) r_ptr->r_pkills = 1;
         }
     }
-    if (say) note("Loaded Monster Memory");
+    if (arg_fiddle) note("Loaded Monster Memory");
 
 
     /* Read the old options */
     rd_options_old();
-    if (say) note("Loaded options");
+    if (arg_fiddle) note("Loaded options");
 
     /* Read the extra stuff */
     rd_extra_old();
-    if (say) note("Loaded extra information");
+    if (arg_fiddle) note("Loaded extra information");
 
 
     /* XXX XXX Initialize the race/class */
@@ -2408,7 +2412,7 @@ static errr rd_savefile_old()
         rd_byte(&spell_order[i]);
     }
 
-    if (say) note("Read spell information");
+    if (arg_fiddle) note("Read spell information");
 
 
     /* Ignore old aware/tried flags */
@@ -2432,7 +2436,7 @@ static errr rd_savefile_old()
     /* Hack -- Version 2.6.2 did silly things */
     if (!older_than(2,6,2)) strip_bytes(100);
 
-    if (say) note("Read some more information.");
+    if (arg_fiddle) note("Read some more information.");
 
 
     /* Read the stores */
@@ -2450,7 +2454,7 @@ static errr rd_savefile_old()
     /* Read the cause of death, if any */
     rd_string(died_from, 80);
 
-    if (say) note("All player info restored");
+    if (arg_fiddle) note("All player info restored");
 
 
     /* Read dungeon */
@@ -2632,7 +2636,7 @@ static byte convert_ego_item[128] = {
  * may have had, and also, all "uncursed" items will become "cursed"
  * again, including Calris, even if it is being worn at the time.  As
  * a complete hack, items which are inscribed with "uncursed" will be
- * "uncursed" when imported from pre-2.7.9 savefiles.  XXX XXX XXX
+ * "uncursed" when imported from pre-2.7.9 savefiles.
  */
 static void rd_item(inven_type *i_ptr)
 {
@@ -3411,8 +3415,7 @@ static void rd_extra()
     rd_s16b(&p_ptr->paralyzed);
     rd_s16b(&p_ptr->confused);
     rd_s16b(&p_ptr->food);
-    rd_s16b(&p_ptr->food_digested);
-    strip_bytes(2);	/* Old "protection" */
+    strip_bytes(4);	/* Old "food_digested" / "protection" */
     rd_s16b(&p_ptr->energy);
     rd_s16b(&p_ptr->fast);
     rd_s16b(&p_ptr->slow);
@@ -4170,14 +4173,8 @@ static errr rd_dungeon()
 /*
  * Actually read the savefile
  *
- * XXX XXX XXX Several crashes / security problems lurk in this code,
- * wherever we read an array bound and then read array entries up to
- * that bound.  We need to do some form of "bounds" checking...
- *
- * Consider especially the case of "corrupt" savefiles, or even
- * savefiles which are intentionally "damaged".
- *
- * Angband 2.8.0 will completely replace this code, see "save.c"
+ * Angband 2.8.0 will completely replace this code, see "save.c",
+ * though this code will be kept to read pre-2.8.0 savefiles.
  */
 static errr rd_savefile()
 {
@@ -4288,12 +4285,12 @@ static errr rd_savefile()
 
     /* Then the options */
     rd_options();
-    if (say) note("Loaded Option Flags");
+    if (arg_fiddle) note("Loaded Option Flags");
 
 
     /* Then the "messages" */
     rd_messages();
-    if (say) note("Loaded Messages");
+    if (arg_fiddle) note("Loaded Messages");
 
 
     /* Monster Memory */
@@ -4340,7 +4337,7 @@ static errr rd_savefile()
             }
         }
     }
-    if (say) note("Loaded Monster Memory");
+    if (arg_fiddle) note("Loaded Monster Memory");
 
 
     /* Object Memory */
@@ -4364,7 +4361,7 @@ static errr rd_savefile()
         k_ptr->aware = (tmp8u & 0x01) ? TRUE: FALSE;
         k_ptr->tried = (tmp8u & 0x02) ? TRUE: FALSE;
     }
-    if (say) note("Loaded Object Memory");
+    if (arg_fiddle) note("Loaded Object Memory");
 
 
     /* Load the Quests */
@@ -4384,7 +4381,7 @@ static errr rd_savefile()
         rd_byte(&tmp8u);
         rd_byte(&tmp8u);
     }
-    if (say) note("Loaded Quests");
+    if (arg_fiddle) note("Loaded Quests");
 
 
     /* Load the Artifacts */
@@ -4404,12 +4401,12 @@ static errr rd_savefile()
         rd_byte(&tmp8u);
         rd_byte(&tmp8u);
     }
-    if (say) note("Loaded Artifacts");
+    if (arg_fiddle) note("Loaded Artifacts");
 
 
     /* Read the extra stuff */
     rd_extra();
-    if (say) note("Loaded extra information");
+    if (arg_fiddle) note("Loaded extra information");
 
 
     /* Read the player_hp array */
@@ -4543,14 +4540,6 @@ bool load_player(void)
     bool	ok = FALSE;
 
 
-    /* Hack -- allow "debugging" */
-    int wiz = arg_wizard;
-
-
-    /* Set "say" as well */
-    if (wiz) say = TRUE;
-
-
 #if !defined(MACINTOSH) && !defined(WINDOWS) && \
     !defined(ACORN) && !defined(VM)
 
@@ -4657,8 +4646,8 @@ bool load_player(void)
 
 
 #ifdef VERIFY_TIMESTAMP
-        /* Allow wizards to cheat */
-        if (!wiz) {
+        /* Allow cheating */
+        if (!arg_wizard) {
 
             /* Hack -- Verify the timestamp */
             if (sf_when > (statbuf.st_ctime + 100) ||
@@ -4685,7 +4674,7 @@ bool load_player(void)
         if (death) {
 
             /* Wizards can revive dead characters */
-            if (wiz && get_check("Resurrect a dead character? ")) {
+            if (arg_wizard && get_check("Resurrect a dead character? ")) {
 
                 /* Revive the player */
                 note("Attempting a resurrection!");
@@ -4696,7 +4685,7 @@ bool load_player(void)
                     p_ptr->chp_frac = 0;
                 }
 
-                /* Clean up food */
+                /* Hack -- No starving */
                 p_ptr->food = PY_FOOD_FULL - 1;
 
                 /* Hack -- Cure stuff */
@@ -4837,7 +4826,7 @@ closefiles:
     /* Abort */
     quit("unusable savefile");
 
-    /* Compiler food */
+    /* Paranoia */
     return (FALSE);
 }
 

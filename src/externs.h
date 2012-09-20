@@ -18,12 +18,14 @@ extern s16b ddx[10];
 extern s16b ddy[10];
 extern s16b ddx_ddd[9];
 extern s16b ddy_ddd[9];
+extern char hexsym[16];
 extern byte adj_val_min[];
 extern byte adj_val_max[];
 extern byte adj_mag_study[];
 extern byte adj_mag_mana[];
 extern byte adj_mag_fail[];
 extern byte adj_mag_stat[];
+extern byte adj_chr_gold[];
 extern byte adj_int_dev[];
 extern byte adj_wis_sav[];
 extern byte adj_dex_dis[];
@@ -51,6 +53,10 @@ extern u32b spell_flags[2][9][2];
 extern cptr spell_names[2][64];
 extern byte chest_traps[64];
 extern cptr player_title[MAX_CLASS][PY_MAX_LEVEL];
+extern cptr color_names[16];
+extern cptr sound_names[SOUND_MAX];
+extern cptr stat_names[6];
+extern cptr stat_names_reduced[6];
 extern option_type options[];
 
 /* variable.c */
@@ -253,16 +259,15 @@ extern char player_base[32];
 extern char died_from[80];
 extern char history[4][60];
 extern char savefile[1024];
-extern cave_type *cave[MAX_HGT];
 extern s16b lite_n;
-extern byte *lite_y;
-extern byte *lite_x;
+extern byte lite_y[LITE_MAX];
+extern byte lite_x[LITE_MAX];
 extern s16b view_n;
-extern byte *view_y;
-extern byte *view_x;
+extern byte view_y[VIEW_MAX];
+extern byte view_x[VIEW_MAX];
 extern s16b temp_n;
-extern byte *temp_y;
-extern byte *temp_x;
+extern byte temp_y[TEMP_MAX];
+extern byte temp_x[TEMP_MAX];
 extern s16b macro__num;
 extern cptr *macro__pat;
 extern cptr *macro__act;
@@ -276,11 +281,12 @@ extern u16b message__head;
 extern u16b message__tail;
 extern u16b *message__ptr;
 extern char *message__buf;
-extern store_type *store;
-extern inven_type *inventory;
+extern cave_type *cave[MAX_HGT];
+extern inven_type *i_list;
 extern monster_type *m_list;
 extern quest q_list[MAX_Q_IDX];
-extern inven_type *i_list;
+extern store_type *store;
+extern inven_type *inventory;
 extern s16b alloc_kind_size;
 extern s16b *alloc_kind_index;
 extern kind_entry *alloc_kind_table;
@@ -291,6 +297,7 @@ extern byte tval_to_attr[128];
 extern char tval_to_char[128];
 extern byte keymap_cmds[256];
 extern byte keymap_dirs[256];
+extern byte color_table[256][4];
 extern player_type *p_ptr;
 extern player_race *rp_ptr;
 extern player_class *cp_ptr;
@@ -418,12 +425,15 @@ extern void py_attack(int y, int x);
 extern void drop_near(inven_type *i_ptr, int chance, int y, int x);
 extern void take_hit(int damage, cptr hit_from);
 extern bool twall(int y, int x);
+extern void ang_sort_swap_distance(vptr u, vptr v, int a, int b);
+extern bool ang_sort_comp_distance(vptr u, vptr v, int a, int b);
 extern bool target_able(int m_idx);
 extern bool target_okay(void);
 extern s16b target_pick(int y1, int x1, int dy, int dx);
 extern bool target_set(void);
 extern bool get_aim_dir(int *dp);
 extern bool get_rep_dir(int *dp);
+extern void pick_trap(int y, int x);
 extern void search_on(void);
 extern void search_off(void);
 extern void disturb(int stop_search, int flush_output);
@@ -464,22 +474,25 @@ extern void do_cmd_redraw(void);
 extern void do_cmd_change_name(void);
 extern void do_cmd_toggle_search(void);
 extern void do_cmd_refill(void);
+extern void do_cmd_message_one(void);
 extern void do_cmd_messages(void);
 extern void do_cmd_target(void);
 extern void do_cmd_options(void);
-extern void do_cmd_prefs(void);
+extern void do_cmd_pref(void);
+extern void do_cmd_macros(void);
+extern void do_cmd_visuals(void);
+extern void do_cmd_colors(void);
 extern void do_cmd_note(void);
 extern void do_cmd_version(void);
 extern void do_cmd_save_game(void);
 extern void do_cmd_destroy(void);
 extern void do_cmd_observe(void);
+extern void do_cmd_toggle_choose(void);
 extern void do_cmd_inven(void);
 extern void do_cmd_equip(void);
 extern void do_cmd_drop(void);
 extern void do_cmd_wield(void);
 extern void do_cmd_takeoff(void);
-extern void do_cmd_keymap(void);
-extern void do_cmd_macro(void);
 extern void do_cmd_load_screen(void);
 extern void do_cmd_save_screen(void);
 
@@ -490,7 +503,6 @@ extern void do_cmd_cast(void);
 extern void do_cmd_pray(void);
 
 /* cmd6.c */
-extern bool enter_wiz_mode(void);
 extern void process_command(void);
 extern void request_command(void);
 
@@ -509,7 +521,9 @@ extern void do_cmd_activate(void);
 /* files.c */
 extern void safe_setuid_drop(void);
 extern void safe_setuid_grab(void);
-extern errr process_pref_file_aux(cptr buf);
+extern s16b tokenize(char *buf, s16b num, char **tokens);
+extern errr file_character(cptr name, bool full);
+extern errr process_pref_file_aux(char *buf);
 extern errr process_pref_file(cptr name);
 extern errr check_time_init(void);
 extern errr check_load_init(void);
@@ -518,7 +532,6 @@ extern errr check_load(void);
 extern void read_times(void);
 extern void show_news(void);
 extern void do_cmd_help(cptr name);
-extern errr file_character(cptr name);
 extern void process_player_name(bool sf);
 extern void get_name(void);
 extern long total_points(void);
@@ -577,6 +590,7 @@ extern s16b maxroll(int num, int sides);
 extern void ang_sort_aux(vptr u, vptr v, int p, int q);
 extern void ang_sort(vptr u, vptr v, int n);
 extern void scatter(int *yp, int *xp, int y, int x, int d, int m);
+extern bool enter_wiz_mode(void);
 extern void extract_cur_view(void);
 extern void extract_cur_lite(void);
 extern s16b modify_stat_value(int value, int amount);
@@ -584,8 +598,6 @@ extern bool inc_stat(int stat);
 extern bool dec_stat(int stat, int amount, int permanent);
 extern bool res_stat(int stat);
 extern void cnv_stat(int val, char *out_val);
-extern void cut_player(int c);
-extern void stun_player(int s);
 extern cptr likert(int x, int y);
 extern void display_player(bool do_hist);
 extern void health_redraw(void);
@@ -597,7 +609,6 @@ extern void check_experience(void);
 extern void gain_exp(s32b amount);
 extern void lose_exp(s32b amount);
 extern s16b spell_chance(int spell);
-extern void notice_stuff(void);
 extern void handle_stuff(void);
 extern bool set_blind(int v);
 extern bool set_confused(int v);
@@ -622,6 +633,7 @@ extern bool set_oppose_cold(int v);
 extern bool set_oppose_pois(int v);
 extern bool set_stun(int v);
 extern bool set_cut(int v);
+extern bool set_food(int v);
 
 /* mon-desc.c */
 extern void screen_roff(int r_idx);
@@ -736,7 +748,6 @@ extern void teleport_away(int m_idx, int dis);
 extern bool genocide(void);
 extern bool mass_genocide(void);
 extern bool hp_player(int num);
-extern void satisfy_hunger(void);
 extern bool banish_evil(int dist);
 extern bool probing(void);
 extern bool dispel_evil(int dam);
@@ -748,7 +759,6 @@ extern bool do_dec_stat(int stat);
 extern bool do_res_stat(int stat);
 extern bool do_inc_stat(int stat);
 extern void identify_pack(void);
-extern void add_food(int num);
 extern void message_pain(int m_idx, int dam);
 extern bool remove_curse(void);
 extern bool remove_all_curse(void);
@@ -782,14 +792,11 @@ extern void store_shuffle(void);
 extern void store_maint(void);
 extern void store_init(void);
 
-
-/*
- * Hack -- conditional (or "bizarre") externs
- */
-
 /* util.c */
 extern void delay(int t);
 extern FILE *my_fopen(cptr file, cptr mode);
+extern errr my_fgets(FILE *fff, char *buf, huge n);
+extern errr my_fputs(FILE *fff, cptr buf, huge n);
 extern errr my_fclose(FILE *fff);
 extern int fd_open(cptr file, int flags, int mode);
 extern errr fd_lock(int fd, int what);
@@ -797,6 +804,10 @@ extern errr fd_seek(int fd, huge n);
 extern errr fd_read(int fd, char *buf, huge n);
 extern errr fd_write(int fd, cptr buf, huge n);
 extern errr fd_close(int fd);
+
+/*
+ * Hack -- conditional (or "bizarre") externs
+ */
 
 #ifdef SET_UID
 /* util.c */

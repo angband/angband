@@ -123,7 +123,7 @@ bool func_false(void)
 
 
 /*
- * Are string 'a' and 'b' equal?
+ * Determine if string "t" is equal to string "t"
  */
 bool streq(cptr a, cptr b)
 {
@@ -132,34 +132,31 @@ bool streq(cptr a, cptr b)
 
 
 /*
- * Is string 'small' the suffix of string 'big'?
+ * Determine if string "t" is a suffix of string "s"
  */
-bool suffix(cptr big, cptr small)
+bool suffix(cptr s, cptr t)
 {
-  int blen = strlen (big);
-  int slen = strlen (small);
+  int tlen = strlen(t);
+  int slen = strlen(s);
 
-  /* Degenerate case: 'big' is smaller than 'small' */
-  if (slen > blen) return (FALSE);
+  /* Check for incompatible lengths */
+  if (tlen > slen) return (FALSE);
 
-  /* Compare small to the end of big */
-  return (!strcmp(big + blen - slen, small));
+  /* Compare "t" to the end of "s" */
+  return (!strcmp(s + slen - tlen, t));
 }
 
 
 /*
- * Is string 'small' the prefix of 'big'?
+ * Determine if string "t" is a prefix of string "s"
  */
-bool prefix(cptr big, cptr small)
+bool prefix(cptr s, cptr t)
 {
-  cptr b = big;
-  cptr s = small;
-
-  /* Scan each char of small */
-  while (*s)
+  /* Scan "t" */
+  while (*t)
   {
-    /* Note: case of ('big' < 'small') caught here */
-    if (*s++ != *b++) return (FALSE);
+    /* Compare content and length */
+    if (*t++ != *s++) return (FALSE);
   }
 
   /* Matched, we have a prefix */

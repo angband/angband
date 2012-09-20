@@ -603,10 +603,10 @@ static void keymap_game_prepare(void)
     /* Acquire the current mapping */
     tcgetattr(0, &game_termios);
 
-    /* Force "CTRL-C" to interupt */
+    /* Force "Ctrl-C" to interupt */
     game_termios.c_cc[VINTR] = (char)3;
 
-    /* Force "CTRL-Z" to suspend */
+    /* Force "Ctrl-Z" to suspend */
     game_termios.c_cc[VSUSP] = (char)26;
 
     /* Hack -- Leave "VSTART/VSTOP" alone */
@@ -632,10 +632,10 @@ static void keymap_game_prepare(void)
     /* Acquire the current mapping */
     (void)ioctl(0, TCGETA, (char *)&game_termio);
 
-    /* Force "CTRL-C" to interupt */
+    /* Force "Ctrl-C" to interupt */
     game_termio.c_cc[VINTR] = (char)3;
 
-    /* Force "CTRL-Z" to suspend */
+    /* Force "Ctrl-Z" to suspend */
     game_termio.c_cc[VSUSP] = (char)26;
 
     /* Hack -- Leave "VSTART/VSTOP" alone */

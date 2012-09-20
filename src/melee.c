@@ -135,7 +135,6 @@ static void update_smart_learn(int m_idx, int what)
       case DRS_POIS:
         if (p_ptr->resist_pois) m_ptr->smart |= SM_RES_POIS;
         if (p_ptr->oppose_pois) m_ptr->smart |= SM_OPP_POIS;
-        if (p_ptr->immune_pois) m_ptr->smart |= SM_IMM_POIS;
         break;
 
 
@@ -263,9 +262,10 @@ static void remove_bad_spells(int m_idx, u32b *f4p, u32b *f5p, u32b *f6p)
         if (p_ptr->resist_cold) smart |= SM_RES_COLD;
         if (p_ptr->oppose_cold) smart |= SM_OPP_COLD;
         if (p_ptr->immune_cold) smart |= SM_IMM_COLD;
+
+        /* Know poison info */
         if (p_ptr->resist_pois) smart |= SM_RES_POIS;
         if (p_ptr->oppose_pois) smart |= SM_OPP_POIS;
-        if (p_ptr->immune_pois) smart |= SM_IMM_POIS;
 
         /* Know special resistances */
         if (p_ptr->resist_neth) smart |= SM_RES_NETH;
@@ -361,11 +361,7 @@ static void remove_bad_spells(int m_idx, u32b *f4p, u32b *f5p, u32b *f6p)
     }
 
 
-    if (smart & SM_IMM_POIS) {
-        if (int_outof(r_ptr, 100)) f4 &= ~RF4_BR_POIS;
-        if (int_outof(r_ptr, 100)) f5 &= ~RF5_BA_POIS;
-    }
-    else if ((smart & SM_OPP_POIS) && (smart & SM_RES_POIS)) {
+    if ((smart & SM_OPP_POIS) && (smart & SM_RES_POIS)) {
         if (int_outof(r_ptr, 80)) f4 &= ~RF4_BR_POIS;
         if (int_outof(r_ptr, 80)) f5 &= ~RF5_BA_POIS;
     }
@@ -807,12 +803,8 @@ bool make_attack_normal(int m_idx)
                 take_hit(damage, ddesc);
 
                 /* Take "poison" effect */
-                if (!(p_ptr->resist_pois ||
-                      p_ptr->oppose_pois ||
-                      p_ptr->immune_pois)) {
-
+                if (!(p_ptr->resist_pois || p_ptr->oppose_pois)) {
                     if (set_poisoned(p_ptr->poisoned + randint(rlev) + 5)) {
-                        msg_print("You feel very sick.");
                         obvious = TRUE;
                     }
                 }
@@ -869,6 +861,9 @@ bool make_attack_normal(int m_idx)
 
                         /* Redraw the choice window */
                         p_ptr->redraw |= (PR_CHOOSE);
+
+                        /* Combine / Reorder the pack */
+                        p_ptr->update |= (PU_COMBINE | PU_REORDER);
 
                         /* Heal */
                         j = rlev;
@@ -980,9 +975,6 @@ bool make_attack_normal(int m_idx)
                     inven_item_increase(i,-1);
                     inven_item_optimize(i);
 
-                    /* Redraw the choice window */
-                    p_ptr->redraw |= (PR_CHOOSE);
-
                     /* Obvious */
                     obvious = TRUE;
                     
@@ -1026,9 +1018,6 @@ bool make_attack_normal(int m_idx)
                     /* Steal the items */
                     inven_item_increase(i,-1);
                     inven_item_optimize(i);
-
-                    /* Redraw the choice window */
-                    p_ptr->redraw |= (PR_CHOOSE);
 
                     /* Obvious */
                     obvious = TRUE;
@@ -1138,7 +1127,6 @@ bool make_attack_normal(int m_idx)
                 /* Increase "blind" */
                 if (!p_ptr->resist_blind) {
                     if (set_blind(p_ptr->blind + 10 + randint(rlev))) {
-                        msg_print("Your eyes begin to sting.");
                         obvious = TRUE;
                     }
                 }
@@ -1156,7 +1144,6 @@ bool make_attack_normal(int m_idx)
                 /* Increase "confused" */
                 if (!p_ptr->resist_conf) {
                     if (set_confused(p_ptr->confused + 3 + randint(rlev))) {
-                        msg_print("You feel confused.");
                         obvious = TRUE;
                     }
                 }
@@ -1182,7 +1169,6 @@ bool make_attack_normal(int m_idx)
                 }
                 else {
                     if (set_afraid(p_ptr->afraid + 3 + randint(rlev))) {
-                        msg_print("You are suddenly afraid!");
                         obvious = TRUE;
                     }
                 }
@@ -1208,7 +1194,6 @@ bool make_attack_normal(int m_idx)
                 }
                 else {
                     if (set_paralyzed(p_ptr->paralyzed + 3 + randint(rlev))) {
-                        msg_print("You are paralyzed!");
                         obvious = TRUE;
                     }
                 }
@@ -1421,31 +1406,52 @@ bool make_attack_normal(int m_idx)
                 }
             }
 
-            /* Critical hit (zero if non-critical) */
-            tmp = monster_critical(d_dice, d_side, damage);
+            /* Handle cut */
+            if (do_cut) {
+            
+                int k = 0;
 
-            /* Critical Cut (note check for "do_cut==0") */
-            switch (do_cut * tmp) {
-              case 0: break;
-              case 1: cut_player(randint(5)); break;
-              case 2: cut_player(randint(5) + 5); break;
-              case 3: cut_player(randint(30) + 20); break;
-              case 4: cut_player(randint(50) + 50); break;
-              case 5: cut_player(randint(100) + 100); break;
-              case 6: cut_player(300); break;
-              default: cut_player(500); break;
+                /* Critical hit (zero if non-critical) */
+                tmp = monster_critical(d_dice, d_side, damage);
+
+                /* Roll for damage */
+                switch (tmp) {
+                    case 0: k = 0; break;
+                    case 1: k = randint(5); break;
+                    case 2: k = randint(5) + 5; break;
+                    case 3: k = randint(20) + 20; break;
+                    case 4: k = randint(50) + 50; break;
+                    case 5: k = randint(100) + 100; break;
+                    case 6: k = 300; break;
+                    default: k = 500; break;
+                }
+
+                /* Apply the cut */                
+                if (k) (void)set_cut(p_ptr->cut + k);
             }
 
-            /* Critical Stun (note check for "do_stun==0") */
-            switch (do_stun * tmp) {
-              case 0: break;
-              case 1: stun_player(randint(5)); break;
-              case 2: stun_player(randint(10) + 10); break;
-              case 3: stun_player(randint(20) + 20); break;
-              case 4: stun_player(randint(30) + 30); break;
-              case 5: stun_player(randint(40) + 40); break;
-              case 6: stun_player(randint(50) + 50); break;
-              default: stun_player(randint(75) + 75); break;
+            /* Handle stun */
+            if (do_stun) {
+            
+                int k = 0;
+
+                /* Critical hit (zero if non-critical) */
+                tmp = monster_critical(d_dice, d_side, damage);
+
+                /* Roll for damage */
+                switch (tmp) {
+                    case 0: k = 0; break;
+                    case 1: k = randint(5); break;
+                    case 2: k = randint(10) + 10; break;
+                    case 3: k = randint(20) + 20; break;
+                    case 4: k = randint(30) + 30; break;
+                    case 5: k = randint(40) + 40; break;
+                    case 6: k = 100; break;
+                    default: k = 200; break;
+                }
+
+                /* Apply the stun */                
+                if (k) (void)set_stun(p_ptr->stun + k);
             }
         }
 
@@ -1562,6 +1568,9 @@ static void breath(int m_idx, int typ, int dam_hp)
  * keep it as optimized as possible, while retaining generic code.
  *
  * Verify the various "blind-ness" checks in the code.
+ *
+ * XXX XXX XXX Note that several effects should really not be "seen"
+ * if the player is blind.  See also "effects.c" for other "mistakes".
  *
  * Perhaps monsters should breathe at locations *near* the player,
  * since this would allow them to inflict "partial" damage.
@@ -2198,9 +2207,8 @@ bool make_attack_spell(int m_idx)
             msg_print("You resist the effects!");
         }
         else {
-            msg_print("You start to bleed!");
             take_hit(damroll(15, 15), ddesc);
-            cut_player(damroll(10, 10));
+            (void)set_cut(p_ptr->cut + damroll(10, 10));
         }
         break;
 
