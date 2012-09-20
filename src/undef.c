@@ -3,7 +3,13 @@
 #include "constant.h"
 #include "config.h"
 #include "types.h"
+
+#if defined(SOLARIS)
+#include <string.h>
+#else
 #include <strings.h>
+#endif
+
 #include <sys/file.h>
 
 extern short        log_index;

@@ -25,10 +25,10 @@
 void 
 aim()
 {
-    int32u              i;
-    register int        l, ident;
-    int                 item_val, done_effect, j, k, chance, dir;
-    register inven_type *i_ptr;
+    int32u                i;
+    register int          l, ident;
+    int                   item_val, done_effect, j, k, chance, dir;
+    register inven_type  *i_ptr;
     register struct misc *m_ptr;
 
     free_turn_flag = TRUE;
@@ -49,7 +49,8 @@ aim()
 	    }
 	    ident = FALSE;
 	    m_ptr = &py.misc;
-	    chance = m_ptr->save + stat_adj(A_INT) - (int)i_ptr->level
+	    chance = m_ptr->save + stat_adj(A_INT)
+		- (int)(i_ptr->level>42?42:i_ptr->level)
 		+ (class_level_adj[m_ptr->pclass][CLA_DEVICE] * m_ptr->lev / 3);
 	    if (py.flags.confused > 0)
 		chance = chance / 2;
@@ -74,63 +75,65 @@ aim()
 			done_effect = 1;
 			break;
 		      case WD_DRG_FIRE:
-			fire_ball(GF_FIRE, dir, k, l, 100, 3,
-				  "huge ball of Fire");
+			fire_ball(GF_FIRE, dir, k, l, 100, 3);
 			ident = TRUE;
 			done_effect = 1;
 			break;
 		      case WD_DRG_FRST:
-			fire_ball(GF_FROST, dir, k, l, 80, 3,
-				  "huge ball of Frost");
+			fire_ball(GF_FROST, dir, k, l, 80, 3);
 			ident = TRUE;
 			done_effect = 1;
 			break;
 		      case WD_DRG_BREA:
 			switch (randint(5)) {
 			  case 1:
-			    fire_ball(GF_FIRE, dir, k, l, 100, 3,
-				      "huge ball of Fire");
+			    fire_ball(GF_FIRE, dir, k, l, 100, 3);
 			    break;
 			  case 2:
-			    fire_ball(GF_FROST, dir, k, l, 80, 3,
-				      "huge ball of Frost");
+			    fire_ball(GF_FROST, dir, k, l, 80, 3);
 			    break;
 			  case 3:
-			    fire_ball(GF_ACID, dir, k, l, 90, 3,
-				      "huge ball of Acid");
+			    fire_ball(GF_ACID, dir, k, l, 90, 3);
 			    break;
 			  case 4:
-			    fire_ball(GF_LIGHTNING, dir, k, l, 70, 3,
-				      "huge ball of Lightning");
+			    fire_ball(GF_LIGHTNING, dir, k, l, 70, 3);
 			    break;
 			  default:
-			    fire_ball(GF_POISON_GAS, dir, k, l, 70, 3,
-				      "huge ball of Gas");
+			    fire_ball(GF_POISON_GAS, dir, k, l, 70, 3);
 			    break;
 			}
 			ident = TRUE;
 			done_effect = 1;
 			break;
 		      case WD_AC_BLTS:	/* Acid , New */
-			fire_bolt(GF_ACID, dir, k, l, damroll(5, 8), "Acid Bolt");
+			if (randint(5)==1)
+			    line_spell(GF_ACID,dir,k,l,damroll(5,8));
+			else
+			    fire_bolt(GF_ACID,dir,k,l,damroll(5,8));
 			ident = TRUE;
 			done_effect = 1;
 			break;
 		      case WD_LT_BLTS:	/* Lightning */
-			fire_bolt(GF_LIGHTNING, dir, k, l, damroll(3, 8),
-				  spell_names[10]);
+			if (randint(6)==1)
+			    line_spell(GF_LIGHTNING,dir,k,l,damroll(3,8));
+			else
+			    fire_bolt(GF_LIGHTNING, dir, k, l, damroll(3, 8));
 			ident = TRUE;
 			done_effect = 1;
 			break;
 		      case WD_FT_BLTS:	/* Frost */
-			fire_bolt(GF_FROST, dir, k, l, damroll(4, 8),
-				  spell_names[16]);
+			if (randint(6)==1)
+			    line_spell(GF_LIGHTNING,dir,k,l,damroll(3,8));
+			else
+			    fire_bolt(GF_LIGHTNING, dir, k, l, damroll(3, 8));
 			ident = TRUE;
 			done_effect = 1;
 			break;
 		      case WD_FR_BLTS:	/* Fire */
-			fire_bolt(GF_FIRE, dir, k, l, damroll(6, 8),
-				  spell_names[24]);
+			if (randint(4)==1)
+			    line_spell(GF_FIRE,dir,k,l,damroll(6,8));
+			else
+			    fire_bolt(GF_FIRE, dir, k, l, damroll(6, 8));
 			ident = TRUE;
 			done_effect = 1;
 			break;
@@ -167,8 +170,7 @@ aim()
 			done_effect = 1;
 			break;
 		      case WD_ANHIL:
-			fire_bolt(GF_HOLY_ORB, dir, k, l, 100, "Holy Bolt");
-			ident = TRUE;
+			ident = drain_life(dir, k, l, 125);
 			done_effect = 1;
 			break;
 		      case WD_TR_DEST:
@@ -176,8 +178,10 @@ aim()
 			done_effect = 1;
 			break;
 		      case WD_MAG_MIS:
-			fire_bolt(GF_MAGIC_MISSILE, dir, k, l, damroll(2, 6),
-				  spell_names[0]);
+			if (randint(6)==1)
+			    line_spell(GF_MAGIC_MISSILE,dir,k,l,damroll(2,6));
+			else
+			    fire_bolt(GF_MAGIC_MISSILE, dir, k, l, damroll(2, 6));
 			ident = TRUE;
 			done_effect = 1;
 			break;
@@ -198,27 +202,27 @@ aim()
 			done_effect = 1;
 			break;
 		      case WD_LT_BALL:
-			fire_ball(GF_LIGHTNING, dir, k, l, 32, 2, "Lightning Ball");
+			fire_ball(GF_LIGHTNING, dir, k, l, 32, 2);
 			ident = TRUE;
 			done_effect = 1;
 			break;
 		      case WD_CD_BALL:
-			fire_ball(GF_FROST, dir, k, l, 48, 2, "Cold Ball");
+			fire_ball(GF_FROST, dir, k, l, 48, 2);
 			ident = TRUE;
 			done_effect = 1;
 			break;
 		      case WD_FR_BALL:
-			fire_ball(GF_FIRE, dir, k, l, 72, 2, "Fire Ball");
+			fire_ball(GF_FIRE, dir, k, l, 72, 2);
 			ident = TRUE;
 			done_effect = 1;
 			break;
 		      case WD_ST_CLD:
-			fire_ball(GF_POISON_GAS, dir, k, l, 12, 2, "Poison Gas");
+			fire_ball(GF_POISON_GAS, dir, k, l, 12, 2);
 			ident = TRUE;
 			done_effect = 1;
 			break;
 		      case WD_AC_BALL:
-			fire_ball(GF_ACID, dir, k, l, 60, 2, "Acid Ball");
+			fire_ball(GF_ACID, dir, k, l, 60, 2);
 			ident = TRUE;
 			done_effect = 1;
 			break;

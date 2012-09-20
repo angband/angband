@@ -15,7 +15,7 @@
 
 int 
 set_room(element)
-    register int        element;
+register int element;
 {
     if ((element == DARK_FLOOR) || (element == LIGHT_FLOOR) ||
 	(element == NT_DARK_FLOOR) || (element == NT_LIGHT_FLOOR))
@@ -25,7 +25,7 @@ set_room(element)
 
 int 
 set_corr(element)
-    register int        element;
+register int element;
 {
     if (element == CORR_FLOOR || element == BLOCKED_FLOOR)
 	return (TRUE);
@@ -34,7 +34,7 @@ set_corr(element)
 
 int 
 set_floor(element)
-    int                 element;
+int element;
 {
     if (element <= MAX_CAVE_FLOOR)
 	return (TRUE);
@@ -44,9 +44,9 @@ set_floor(element)
 
 int 
 set_corrodes(e)			   /* changed -CFT */
-    inven_type         *e;
+inven_type *e;
 {
-    int                 element = e->tval;
+    int element = e->tval;
 
     switch (element) {
       case TV_SWORD:
@@ -67,9 +67,9 @@ set_corrodes(e)			   /* changed -CFT */
 
 int 
 set_flammable(e)		   /* changed -CFT */
-    inven_type         *e;
+inven_type *e;
 {
-    int                 element = e->tval;
+    int element = e->tval;
 
     switch (element) {
       case TV_ARROW:
@@ -89,8 +89,6 @@ set_flammable(e)		   /* changed -CFT */
       case TV_SCROLL1:
       case TV_SCROLL2:
       case TV_FLASK:
-      case TV_MAGIC_BOOK:
-      case TV_PRAYER_BOOK:
 	return (TRUE);
       case TV_LIGHT:
 	if (e->subval >= 192)	   /* only torches... -CFT */
@@ -104,9 +102,9 @@ set_flammable(e)		   /* changed -CFT */
 
 int 
 set_frost_destroy(e)		   /* changed -CFT */
-    inven_type         *e;
+inven_type *e;
 {
-    int                 element = e->tval;
+    int element = e->tval;
 
     if ((element == TV_POTION1) || (element == TV_POTION2)
 	|| (element == TV_FLASK))
@@ -117,9 +115,9 @@ set_frost_destroy(e)		   /* changed -CFT */
 
 int 
 set_meteor_destroy(e)		   /* added -DGK */
-    inven_type         *e;
+inven_type *e;
 {
-    int8u               fi, fo;
+    int8u fi, fo;
 
     fi = set_fire_destroy(e);
     fo = set_frost_destroy(e);
@@ -129,9 +127,9 @@ set_meteor_destroy(e)		   /* added -DGK */
 
 int 
 set_mana_destroy(e)		   /* added -DGK */
-    inven_type         *e;
+inven_type *e;
 {				   /* destroy everything but artifacts */
-    int                 element = e->tval;
+    int element = e->tval;
 
     if ((element >= TV_MIN_ENCHANT) && (element <= TV_MAX_WEAR) &&
 	(e->flags2 & TR_ARTIFACT))
@@ -142,9 +140,9 @@ set_mana_destroy(e)		   /* added -DGK */
 
 int 
 set_holy_destroy(e)		   /* added -DGK */
-    inven_type         *e;
+inven_type *e;
 {
-    int                 element = e->tval;
+    int element = e->tval;
 
     if ((element >= TV_MIN_ENCHANT) && (element <= TV_MAX_WEAR) &&
 	(e->flags & TR_CURSED) && (!(e->flags2 & TR_ARTIFACT)))
@@ -155,9 +153,9 @@ set_holy_destroy(e)		   /* added -DGK */
 
 int 
 set_plasma_destroy(e)		   /* added -DGK */
-    inven_type         *e;
+inven_type *e;
 {
-    int8u               fi, li;
+    int8u fi, li;
 
     fi = set_fire_destroy(e);
     li = set_lightning_destroy(e);
@@ -167,9 +165,9 @@ set_plasma_destroy(e)		   /* added -DGK */
 
 int 
 set_acid_affect(e)		   /* changed -CFT */
-    inven_type         *e;
+inven_type *e;
 {
-    int                 element = e->tval;
+    int element = e->tval;
 
     switch (element) {
       case TV_BOLT:
@@ -196,16 +194,15 @@ set_acid_affect(e)		   /* changed -CFT */
 
 int 
 set_lightning_destroy(e)	   /* changed -CFT */
-    inven_type         *e;
+inven_type *e;
 {
-    int                 element = e->tval;
+    int element = e->tval;
 
     switch (element) {
       case TV_RING:
 	if ((e->flags2 & TR_ARTIFACT)	/* shouldn't kill artifacts -CFT */
 	    ||(e->flags & TR_RES_LIGHT)	/* can't check outside, because flags */
-	    ||(e->flags2 & TR_IM_LIGHT))	/* used differently in
-						 * potions/etc */
+	    ||(e->flags2 & TR_IM_LIGHT))	/* used differently in potions/etc */
 	    return (FALSE);
 	return (TRUE);
       case TV_WAND:
@@ -215,10 +212,9 @@ set_lightning_destroy(e)	   /* changed -CFT */
 }
 
 
-/* ARGSUSED *//* to shut up lint about unused argument */
 int 
 set_null(e)
-    inven_type         *e;
+inven_type *e;
 {
     return (FALSE);
 }
@@ -226,9 +222,9 @@ set_null(e)
 
 int 
 set_acid_destroy(e)		   /* changed -CFT */
-    inven_type         *e;
+inven_type *e;
 {
-    int                 element = e->tval;
+    int element = e->tval;
 
     switch (element) {
       case TV_ARROW:
@@ -261,9 +257,9 @@ set_acid_destroy(e)		   /* changed -CFT */
 
 int 
 set_fire_destroy(e)		   /* changed -CFT */
-    inven_type         *e;
+inven_type *e;
 {
-    int                 element = e->tval;
+    int element = e->tval;
 
     switch (element) {
       case TV_ARROW:
@@ -288,8 +284,6 @@ set_fire_destroy(e)		   /* changed -CFT */
       case TV_FOOD:
       case TV_OPEN_DOOR:
       case TV_CLOSED_DOOR:
-      case TV_MAGIC_BOOK:
-      case TV_PRAYER_BOOK:
 	return (TRUE);
       case TV_LIGHT:
 	if (e->subval >= 192)	   /* only torches... -CFT */
@@ -303,7 +297,7 @@ set_fire_destroy(e)		   /* changed -CFT */
 
 int 
 general_store(element)
-    int                 element;
+int element;
 {
     switch (element) {
       case TV_DIGGING:
@@ -321,7 +315,7 @@ general_store(element)
 
 int 
 armory(element)
-    int                 element;
+int element;
 {
     switch (element) {
       case TV_BOOTS:
@@ -338,7 +332,7 @@ armory(element)
 
 int 
 weaponsmith(element)
-    int                 element;
+int element;
 {
     switch (element) {
       case TV_SLING_AMMO:
@@ -356,7 +350,7 @@ weaponsmith(element)
 
 int 
 temple(element)
-    int                 element;
+int element;
 {
     switch (element) {
       case TV_HAFTED:
@@ -373,7 +367,7 @@ temple(element)
 
 int 
 alchemist(element)
-    int                 element;
+int element;
 {
     switch (element) {
       case TV_SCROLL1:
@@ -388,7 +382,7 @@ alchemist(element)
 
 int 
 magic_shop(element)
-    int                 element;
+int element;
 {
     switch (element) {
       case TV_AMULET:
@@ -408,14 +402,14 @@ magic_shop(element)
 
 int 
 blackmarket(element)
-    int                 element;
+int element;
 {
     return (TRUE);
 }
 
 int 
 home(element)
-    int                 element;
+int element;
 {
     return (TRUE);
 }

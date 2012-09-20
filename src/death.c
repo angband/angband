@@ -12,6 +12,7 @@
  * some incorrectly define NULL as integer constant, so load this before
  * local includes 
  */
+
 #include <stdio.h>
 #include <signal.h>
 #include "config.h"
@@ -91,54 +92,48 @@ struct passwd      *getpwuid();
 /* Lets do all prototypes correctly.... -CWS */
 #ifndef NO_LINT_ARGS
 #ifdef __STDC__
-static void         date(char *);
-static char        *center_string(char *, const char *);
-static void 	    print_tomb(void);
-static void         kingly(void);
+static void  date(char *);
+static char *center_string(char *, const char *);
+static void  print_tomb(void);
+static void  kingly(void);
 
 #else
-static void         date();
-static char        *center_string();
-static void         print_tomb();
-static void         kingly();
+static void  date();
+static char *center_string();
+static void  print_tomb();
+static void  kingly();
 
 #endif
 #endif
 
 #ifndef MAC
-char               *getlogin();
-
-#ifndef ATARIST_MWC
-
-#ifdef ultrix
-time_t time();
-#else
-long time();
+char        *getlogin();
 #endif
 
-#endif
+#if !defined(time_t)
+#define time_t long
 #endif
 
 static void 
 date(day)
-    char               *day;
+char *day;
 {
-    register char      *tmp;
-    long                c;
+    register char *tmp;
+    time_t         c;
 
-    c = time((long *)0);
+    c = time((time_t *)0);
     tmp = ctime(&c);
     tmp[10] = '\0';
     (void)strcpy(day, tmp);
 }
 
 /* Centers a string within a 31 character string		-JWT-	 */
-static char        *
+static char *
 center_string(centered_str, in_str)
-    char               *centered_str;
-    const char               *in_str;
+char       *centered_str;
+const char *in_str;
 {
-    register int        i, j;
+    register int i, j;
 
     i = strlen(in_str);
     j = 15 - i / 2;
@@ -150,18 +145,18 @@ center_string(centered_str, in_str)
 /* Not touched for Mac port */
 void 
 display_scores(from, to)
-    int                 from, to;
+int from, to;
 {
-    register int        i = 0, j, k, l;
-    int                 fd;
-    high_scores         score;
+    register int i = 0, j, k, l;
+    int          fd;
+    high_scores  score;
 
 /* MAX_SAVE_HISCORES scores, 2 lines per score */
-    char                list[2 * MAX_SAVE_HISCORES][128];
-    char                hugebuffer[10000];
-    char                string[100];
+    char         list[2 * MAX_SAVE_HISCORES][128];
+    char         hugebuffer[10000];
+    char         string[100];
 
-    vtype               tmp_str;
+    vtype        tmp_str;
 
     if (to < 0)
 	to = 20;
@@ -180,17 +175,18 @@ display_scores(from, to)
 	if (score.uid != -1 && getpwuid(score.uid) != NULL)
 	    (void)sprintf(hugebuffer, "%3d) %-7ld %s the %s %s (Level %d), played by %s",
 			  i / 2 + 1,
-			  score.points, score.name,
+			  (long)score.points, score.name,
 			  race[score.prace].trace, class[score.pclass].title,
 			  (int)score.lev, getpwuid(score.uid)->pw_name);
 	else
 	    (void)sprintf(hugebuffer, "%3d) %-7ld %s the %s %s (Level %d)",
 			  i / 2 + 1,
-			  score.points, score.name,
+			  (long)score.points, score.name,
 			  race[score.prace].trace, class[score.pclass].title,
 			  (int)score.lev);
 	strncpy(list[i], hugebuffer, 127);
-	(void)sprintf(hugebuffer, "\t Killed by %s on Dungeon Level %d.",
+	(void)sprintf(hugebuffer,
+		      "             Killed by %s on Dungeon Level %d.",
 		      score.died_from, score.dun_level);
 	strncpy(list[i + 1], hugebuffer, 127);
 	i += 2;
@@ -208,7 +204,7 @@ display_scores(from, to)
 	} else {
 	    put_buffer("\t\tAngband Hall of Fame                     ", 0, 0);
 	}
-	put_buffer("Score", 1, 0);
+	put_buffer("     Score", 1, 0);
 	l = 0;
 	for (j = k; j < i && j < (to * 2) && j < (k + 20); j++, l++)
 	    put_buffer(list[j], l + 2, 0);
@@ -230,7 +226,7 @@ display_scores(from, to)
 /* Pauses for user response before returning		-RAK-	 */
 int 
 look_line(prt_line)
-    int                 prt_line;
+int prt_line;
 {
     prt("[Press ESC to quit, any other key to continue.]", prt_line, 17);
     if (inkey() == ESCAPE) {
@@ -248,13 +244,13 @@ look_line(prt_line)
 static void 
 print_tomb()
 {
-    vtype               str, tmp_str;
-    register int        i;
-    char                day[11];
-    register const char      *p;
-    FILE               *fp;
+    vtype                str, tmp_str;
+    register int         i;
+    char                 day[11];
+    register const char *p;
+    FILE                *fp;
 
-    if (strcmp(died_from, "Interrupting") && !wizard) {
+    if (stricmp(died_from, "Interrupting") && !wizard) {
 	sprintf(str, "%s/%d", ANGBAND_BONES, dun_level);
 	if ((fp = my_tfopen(str, "r")) == NULL && (dun_level > 1)) {
 	    if ((fp = my_tfopen(str, "w")) != NULL) {
@@ -305,10 +301,10 @@ print_tomb()
     (void)sprintf(str, "Level : %d", (int)py.misc.lev);
     (void)sprintf(str, "| %s |          /    \\", center_string(tmp_str, str));
     put_buffer(str, 11, 9);
-    (void)sprintf(str, "%ld Exp", py.misc.exp);
+    (void)sprintf(str, "%ld Exp", (long)py.misc.exp);
     (void)sprintf(str, "| %s |          :    :", center_string(tmp_str, str));
     put_buffer(str, 12, 9);
-    (void)sprintf(str, "%ld Au", py.misc.au);
+    (void)sprintf(str, "%ld Au", (long)py.misc.au);
     (void)sprintf(str, "| %s |          :    :", center_string(tmp_str, str));
     put_buffer(str, 13, 9);
     (void)sprintf(str, "Died on Level : %d", dun_level);
@@ -330,12 +326,15 @@ print_tomb()
 	       19, 0);
 
     flush();
-    put_buffer("(ESC to abort, return to print on screen)", 23, 0);
+    put_buffer("(ESC to abort, return to print on screen, or file name)", 23, 0);
     put_buffer("Character record?", 22, 0);
     if (get_string(str, 22, 18, 60)) {
 	for (i = 0; i < INVEN_ARRAY_SIZE; i++) {
-	    known1(&inventory[i]);
-	    known2(&inventory[i]);
+	    inven_type *i_ptr = &inventory[i];
+	    if (i_ptr && i_ptr->tval != TV_NOTHING) {
+		known1(i_ptr);
+		known2(i_ptr);
+	    }
 	}
 	calc_bonuses();
 	clear_screen();
@@ -346,31 +345,33 @@ print_tomb()
 	    msg_print("You are using:");
 	    (void)show_equip(TRUE, 0);
 	    msg_print(NULL);
-	    msg_print("You are carrying:");
-	    clear_from(1);
-	    (void)show_inven(0, inven_ctr - 1, TRUE, 0, 0);
-	    msg_print(NULL);
+	    if (inven_ctr) {
+		msg_print("You are carrying:");
+		clear_from(1);
+		(void)show_inven(0, inven_ctr - 1, TRUE, 0, 0);
+		msg_print(NULL);
+	    }
           msg_print ("You have stored at your house:");
           clear_from (1);
 	{ /* show home's inventory... */
             store_type *s_ptr = &store[7]; /* home */
-            int i = 0, j = 0;
+            int ii = 0, j = 0;
             vtype t1, t2;
             
-            while (i<s_ptr->store_ctr){
+            while ( ii <s_ptr->store_ctr) {
               j = 0;
-              sprintf(t2, "(page %d)", (i==0?1:2));
+              sprintf(t2, "(page %d)", (ii==0?1:2));
               prt(t2, 1, 3);
-              while ((i<s_ptr->store_ctr) && (j<12)){
-                known1(&s_ptr->store_inven[i].sitem);
-                known2(&s_ptr->store_inven[i].sitem);
-                objdes(t1, &s_ptr->store_inven[i].sitem, TRUE);
+              while ((ii<s_ptr->store_ctr) && (j<12)){
+                known1(&s_ptr->store_inven[ii].sitem);
+                known2(&s_ptr->store_inven[ii].sitem);
+                objdes(t1, &s_ptr->store_inven[ii].sitem, TRUE);
                 sprintf(t2, "%c) %s", 'a'+j, t1);
                 prt(t2, j+2, 4); 
                 j++;
-                i++;
+                ii++;
 	    } /* items 1-12, 13-24 loop */
-              if (i < s_ptr->store_ctr) { /* if we're done, skip this */
+              if (ii < s_ptr->store_ctr) { /* if we're done, skip this */
                 msg_print(NULL);
                 msg_print("Home inventory:");
                 clear_from (1);
@@ -408,14 +409,14 @@ top_twenty()
 	restore_term();
 	exit(0);
     }
-    if (!total_winner && !strcmp(died_from, "Interrupting")) {
+    if (!total_winner && !stricmp(died_from, "Interrupting")) {
 	msg_print("Score not registered due to interruption.");
 	display_scores(0, 10);
 	(void)save_char();
 	restore_term();
 	exit(0);
     }
-    if (!total_winner && !strcmp(died_from, "Quitting")) {
+    if (!total_winner && !stricmp(died_from, "Quitting")) {
 	msg_print("Score not registered due to quitting.");
 	display_scores(0, 10);
 	(void)save_char();
@@ -492,8 +493,8 @@ top_twenty()
     (void)close(highscore_fd);
     if (j < 10) {
 	display_scores(0, 10);
-    } else if (j > (i - 10)) {
-	display_scores(i - 10, i);
+    } else if (j > (i - 5)) {
+	display_scores(i - 9, i + 1);
     } else
 	display_scores(j - 5, j + 5);
     return (0);
@@ -502,10 +503,10 @@ top_twenty()
 /* Enters a players name on the hi-score table     SM	 */
 void 
 delete_entry(which)
-    int                 which;
+int which;
 {
-    register int        i;
-    high_scores         scores[MAX_SAVE_HISCORES];
+    register int i;
+    high_scores  scores[MAX_SAVE_HISCORES];
 
 /* added usg lockf call - cba */
 #ifdef USG
@@ -524,10 +525,23 @@ delete_entry(which)
 	 (0 != read(highscore_fd, (char *)&scores[i], sizeof(high_scores))))
 	i++;
 
+    if (i >= which) {
+
+#if defined(sun) || defined(ultrix) || defined(NeXT)
+	ftruncate(highscore_fd, 0);
+#endif
+
 /* If its the first score, or it gets appended to the file */
-    lseek(highscore_fd, 0, L_SET);
-    write(highscore_fd, (char *)&scores[0], (which - 1) * sizeof(high_scores));
-    write(highscore_fd, (char *)&scores[which], (i - which) * sizeof(high_scores));
+	lseek(highscore_fd, 0, L_SET);
+	if (which > 0)
+	    write(highscore_fd, (char *)&scores[0],
+		  (which - 1) * sizeof(high_scores));
+	if (i > which)
+	    write(highscore_fd, (char *)&scores[which],
+		  (i - which) * sizeof(high_scores));
+	} else {
+	    puts(" The high score table does not have that many entries!");
+	}
 
 /* added usg lockf call - cba */
 #ifdef USG

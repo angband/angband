@@ -44,7 +44,7 @@ load_average()
 int 
 users()
 {
-    int                 count = 0;
+    int count = 0;
 
     if ((count = rnusers("localhost")) == -1)
 	return 0;
@@ -56,10 +56,10 @@ users()
 /* Scan the list of directories looking for the game */
 int 
 game_exists(gamename)
-    char               *gamename;
+char *gamename;
 {
-    struct stat         buf;
-    int                 i = 0;
+    struct stat buf;
+    int         i = 0;
 
     while (strcmp(dir_list[i], "END")) {	/* Go through list of
 						 * possibles */
@@ -77,8 +77,8 @@ game_exists(gamename)
 int 
 restrictions()
 {
-    FILE               *fp;
-    char                temphost[10], thishost[10], discard[80];
+    FILE *fp;
+    char  temphost[10], thishost[10], discard[80];
 
     (void)gethostname(thishost, sizeof thishost);	/* get host */
     if ((fp = my_tfopen(RESTRICT_FILE, "r")) == (FILE *) NULL)
@@ -98,11 +98,11 @@ restrictions()
 
 
 main(argc, argv)
-    int                 argc;
-    char              **argv;
+int    argc;
+char **argv;
 {
-    char               *stroke = 0;
-    int                 count = 0, load = 0;
+    char *stroke = 0;
+    int   count = 0, load = 0;
 
 /* Peel off the basename to avoid people like Alfie being awkward */
     if ((stroke = strrchr(argv[0], '/')) != 0)
@@ -151,12 +151,12 @@ nochecks:
 
 void 
 log_game(game)
-    char               *game;
+char *game;
 {
-    char                user[9];
-    struct passwd      *userinfo;
-    char                buff[256];
-    int                 fd, uid;
+    char           user[9];
+    struct passwd *userinfo;
+    char           buff[256];
+    int            fd, uid;
 
     if ((fd = my_topen(GAME_LOG, O_APPEND | O_WRONLY)) < 0) {
 	perror(GAME_LOG);

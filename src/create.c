@@ -10,8 +10,8 @@
 
 #include "constant.h"
 #include "types.h"
-#include "externs.h"
 #include "config.h"
+#include "externs.h"
 
 #ifdef USG
 #ifndef ATARIST_MWC
@@ -25,75 +25,78 @@
 #ifndef NO_LINT_ARGS
 #ifdef __STDC__
 static void change_stat(int, int);
-static int monval(int);
+static int  monval(int);
 
 #else
-static void         change_stat();
-static int          monval();
+static void change_stat();
+static int  monval();
 
 #endif
 
-static void         get_stats();
-static void         set_prev_stats();
-static int          get_prev_stats();
-static void         get_all_stats();
-static void         put_auto_stats();
-static void         choose_race();
-static void         print_history();
-static void         set_prev_history();
-static void         get_prev_history();
-static void         get_sex();
-static void         get_ahw();
-static void         set_prev_ahw();
-static void         get_prev_ahw();
-static void         get_class();
-static void         get_class_choice();
-static void         get_money();
+static void get_stats();
+static void set_prev_stats();
+static int  get_prev_stats();
+static void get_all_stats();
+static void put_auto_stats();
+static void choose_race();
+static void print_history();
+static void set_prev_history();
+static void get_prev_history();
+static void get_sex();
+static void get_ahw();
+static void set_prev_ahw();
+static void get_prev_ahw();
+static void get_class();
+static void get_class_choice();
+static void get_money();
 
 #endif
 
 struct previous {
-    int16u              age;
-    int16u              wt;
-    int16u              ht;
-    int16               disarm;
-    int16u              stat[6];
-    int16u              sc;
-    char                history[4][60];
+    int16u age;
+    int16u wt;
+    int16u ht;
+    int16  disarm;
+    int16u stat[6];
+    int16u sc;
+    char   history[4][60];
     background_type     bg;
-}                   prev;
+}      prev;
 
-extern int          peek;
+extern int peek;
 
 /* Generates character's stats			-JWT-	 */
 static void
 get_stats()
 {
-    register int        i, tot;
-    int                 dice[18];
+    register int i, tot;
+    int dice[18];
 
     do {
 	tot = 0;
 	for (i = 0; i < 18; i++) {
-	    dice[i] = randint(3 + i % 3);	/* Roll 3,4,5 sided dice once
-						 * each */
+	    dice[i] = randint(3 + i % 3); /* Roll 3,4,5 sided dice once each */
 	    tot += dice[i];
 	}
     }
     while (tot <= 42 || tot >= 54);
-
+    
     for (i = 0; i < 6; i++)
 	py.stats.max_stat[i] = 5 + dice[3 * i] + dice[3 * i + 1] +
 	    dice[3 * i + 2];
 }
 
+
 /* Returns adjusted stat                                       -JK-  */
 /* Algorithm by ...                                            -JWT- */
-/* Used by change_stats and auto_roller */
-/* auto_roll is boolean and states maximum changes */
-/* should be used rather than random ones */
-/* to allow specification of higher values to wait for */
-static int adjust_stat(stat_value, amount, auto_roll)
+/* Used by change_stats and auto_roller
+ * auto_roll is boolean and states maximum changes
+ * should be used rather than random ones
+ * to allow specification of higher values to wait for
+ */
+
+static int
+adjust_stat(stat_value, amount, auto_roll)
 int stat_value;
 int16 amount;
 int auto_roll;
@@ -103,10 +106,9 @@ int auto_roll;
   if (amount < 0)
     for (i = 0; i > amount; i--)
       {
-             /* OK so auto_roll conditions not needed for */
-             /* -ve amounts since stat_value is always 15 */
-             /* at least currently ! */
-             /* JK */
+/* OK so auto_roll conditions not needed for negative amounts since stat_value
+ * is always 15 at least currently!  -JK
+ */
                 
              if (stat_value > 108)
                stat_value--;
@@ -146,6 +148,7 @@ int amount;
         adjust_stat(py.stats.max_stat[stat], (int16) amount, FALSE);
 }
 
+
 static void
 set_prev_stats()
 {
@@ -156,6 +159,7 @@ set_prev_stats()
 
     return;
 }
+
 
 static int
 get_prev_stats()
@@ -174,6 +178,7 @@ get_prev_stats()
     prev.stat[0] = 0;
     return 1;
 }
+
 
 /*
  * generate all stats and modify for race. needed in a separate module so
@@ -217,15 +222,16 @@ get_all_stats()
 }
 
 /* copied from misc2.c, so the display loop would work nicely -cft */
-static const char        *stat_names[] = {"STR: ", "INT: ", "WIS: ",
-				    "DEX: ", "CON: ", "CHR: "};
+static const char *stat_names[] = {"STR: ", "INT: ", "WIS: ", "DEX: ", "CON: ", "CHR: "};
 
+
+#ifdef AUTOROLLER
 /* used for auto-roller.  Just put_stats(), w/o the extra info -CFT */
 static void
 put_auto_stats()
 {
-    register int        i;
-    vtype               buf;
+    register int i;
+    vtype        buf;
 
     for (i = 0; i < 6; i++) {
 	cnv_stat(py.stats.use_stat[i], buf);
@@ -237,17 +243,18 @@ put_auto_stats()
 	}
     }
 }
+#endif
 
 /* Allows player to select a race			-JWT-	 */
 static void
 choose_race()
 {
-    register int        j, k;
-    int                 l, m, exit_flag;
-    char                s;
-    char                tmp_str[80];
+    register int         j, k;
+    int                  l, m, exit_flag;
+    char                 s;
+    char                 tmp_str[80];
     register player_type *p_ptr;
-    register race_type *r_ptr;
+    register race_type   *r_ptr;
 
     j = 0;
     k = 0;
@@ -299,6 +306,7 @@ print_history()
 	prt(py.misc.history[i], i + 15, 10);
 }
 
+
 static void
 set_prev_history()
 {
@@ -317,6 +325,7 @@ set_prev_history()
     return;
 }
 
+
 static void
 get_prev_history()
 {
@@ -333,17 +342,20 @@ get_prev_history()
 	strncpy(py.misc.history[i], prev.history[i], 60);
 }
 
+
 /* Get the racial history, determines social class	-RAK-	 */
-/* Assumptions:	Each race has init history beginning at          */
-/* (race-1)*3+1					                 */
-/* All history parts are in ascending order	                 */
+/* Assumptions:	Each race has init history beginning at
+ * (race-1)*3+1
+ * All history parts are in ascending order
+ */
+
 static void
 get_history()
 {
-    int                 hist_ptr, cur_ptr, test_roll, flag;
-    register int        start_pos, end_pos, cur_len;
-    int                 line_ctr, new_start = 0, social_class;
-    char                history_block[240];
+    int                      hist_ptr, cur_ptr, test_roll, flag;
+    register int             start_pos, end_pos, cur_len;
+    int                      line_ctr, new_start = 0, social_class;
+    char                     history_block[240];
     register background_type *b_ptr;
 
 /* Get a block of history text				 */
@@ -465,8 +477,9 @@ get_ahw()
 	py.misc.ht = randnor((int)race[i].f_b_ht, (int)race[i].f_m_ht);
 	py.misc.wt = randnor((int)race[i].f_b_wt, (int)race[i].f_m_wt);
     }
-    py.misc.disarm = race[i].b_dis;
+    py.misc.disarm += race[i].b_dis;
 }
+
 
 static void
 set_prev_ahw()
@@ -516,7 +529,7 @@ get_class()
 	p_ptr->stats.cur_stat[i] = p_ptr->stats.max_stat[i];
 	p_ptr->stats.use_stat[i] = p_ptr->stats.max_stat[i];
     }
-    p_ptr->misc.ptodam = todam_adj();	/* Real values		 */
+    p_ptr->misc.ptodam = todam_adj();           /* Real values		 */
     p_ptr->misc.ptohit = tohit_adj();
     p_ptr->misc.ptoac = toac_adj();
     p_ptr->misc.pac = 0;
@@ -524,8 +537,8 @@ get_class()
     p_ptr->misc.dis_th = p_ptr->misc.ptohit;
     p_ptr->misc.dis_tac = p_ptr->misc.ptoac;
     p_ptr->misc.dis_ac = p_ptr->misc.pac + p_ptr->misc.dis_tac;
-/*
- * now set misc stats, do this after setting stats because of con_adj() for
+
+/* now set misc stats, do this after setting stats because of con_adj() for
  * hitpoints 
  */
     m_ptr = &py.misc;
@@ -534,23 +547,14 @@ get_class()
     m_ptr->chp = m_ptr->mhp;
     m_ptr->chp_frac = 0;
 
-/* initialize hit_points array */
-/*
- * put bounds on total possible hp, only succeed if it is within 1/8 of
- * average value 
+/* initialize hit_points array: put bounds on total possible hp,
+ * only succeed if it is within 1/8 of average value
  */
     min_value = (MAX_PLAYER_LEVEL * 3 * (m_ptr->hitdie - 1)) / 8 +
 	MAX_PLAYER_LEVEL;
     max_value = (MAX_PLAYER_LEVEL * 5 * (m_ptr->hitdie - 1)) / 8 +
 	MAX_PLAYER_LEVEL;
-#ifndef MSDOS			   /* I don't like this -CFT */
-    if (is_wizard(player_uid) && !(peek || wizard)) {
-	min_value = (MAX_PLAYER_LEVEL * (m_ptr->hitdie - 1)) / 2 +
-	    MAX_PLAYER_LEVEL;
-	max_value = (MAX_PLAYER_LEVEL * 6 * (m_ptr->hitdie - 1)) / 8 +
-	    MAX_PLAYER_LEVEL;
-    }
-#endif
+
     player_hp[0] = m_ptr->hitdie;
     do {
 	for (i = 1; i < MAX_PLAYER_LEVEL; i++) {
@@ -570,7 +574,7 @@ get_class()
     m_ptr->bth += c_ptr->mbth;
     m_ptr->bthb += c_ptr->mbthb;   /* RAK */
     m_ptr->srh += c_ptr->msrh;
-    m_ptr->disarm += c_ptr->mdis + todis_adj();
+    m_ptr->disarm = c_ptr->mdis + todis_adj();
     m_ptr->fos += c_ptr->mfos;
     m_ptr->stl += c_ptr->mstl;
     m_ptr->save += c_ptr->msav;
@@ -580,9 +584,9 @@ get_class()
 void
 rerate()
 {
-    int                 min_value, max_value, i, percent;
-    char                buf[50];
-    struct misc        *m_ptr = &py.misc;
+    int         min_value, max_value, i, percent;
+    char        buf[50];
+    struct misc *m_ptr = &py.misc;
 
     min_value = (MAX_PLAYER_LEVEL * 3 * (m_ptr->hitdie - 1)) / 8 +
 	MAX_PLAYER_LEVEL;
@@ -598,17 +602,8 @@ rerate()
     while ((player_hp[MAX_PLAYER_LEVEL - 1] < min_value) ||
 	   (player_hp[MAX_PLAYER_LEVEL - 1] > max_value));
 
-/* This taken from above...  used here to avoid flt. pt. math -CFT */
     percent = (int)(((long)player_hp[MAX_PLAYER_LEVEL - 1] * 200L) /
 		(m_ptr->hitdie + ((MAX_PLAYER_LEVEL - 1) * m_ptr->hitdie)));
-
-#if 0				   /* this was here before -- I'm trying to
-				    * avoid floating pt.. -CFT */
-    percent = (int)(((double)(player_hp[MAX_PLAYER_LEVEL - 1] * 100) /
-		     (double)((double)m_ptr->hitdie +
-			      (double)((double)((MAX_PLAYER_LEVEL - 1) *
-					     m_ptr->hitdie) / (double)2))));
-#endif
 
     sprintf(buf, "%d%% Life Rating", percent);
     calc_hitpoints();
@@ -620,12 +615,12 @@ rerate()
 static void
 get_class_choice()
 {
-    register int        i, j;
-    int                 k, l, m;
-    int                 cl[MAX_CLASS], exit_flag;
-    class_type         *c_ptr;
-    char                tmp_str[80], s;
-    int32u              mask;
+    register int i, j;
+    int          k, l, m;
+    int          cl[MAX_CLASS], exit_flag;
+    class_type   *c_ptr;
+    char         tmp_str[80], s;
+    int32u       mask;
 
     for (j = 0; j < MAX_CLASS; j++)
 	cl[j] = 0;
@@ -673,8 +668,7 @@ get_class_choice()
 }
 
 
-/*
- * Given a stat value, return a monetary value, which affects the amount of
+/* Given a stat value, return a monetary value, which affects the amount of
  * gold a player has. 
  */
 static int
@@ -696,12 +690,12 @@ get_money()
 	+ monval(a_ptr[A_WIS]) + monval(a_ptr[A_CON])
 	+ monval(a_ptr[A_DEX]);
 
-    gold = py.misc.sc * 6 + randint(25) + 325;	/* Social Class adj */
+    gold = py.misc.sc * 6 + randint(25) + 325;          /* Social Class adj */
     gold -= tmp;		   /* Stat adj */
     gold += monval(a_ptr[A_CHR]);  /* Charisma adj	 */
     if (!py.misc.male)
 	gold += 50;		   /* She charmed the banker into it! -CJS- */
-/* She slept with the banker.. :) -GDH- */
+				   /* She slept with the banker.. :) -GDH-  */
     if (gold < 80)
 	gold = 80;		   /* Minimum */
     py.misc.au = gold;
@@ -716,18 +710,17 @@ create_character()
     register char       c;
 
 #ifdef AUTOROLLER
-    int32u              auto_round = 0;
-    register int        i;
-    int                 stat[6];
-    int                 autoroll = 0;
-    int                 msstat = 0;/* Max autoroll w/ look for -SAC */
-    class_type         *cptr;
-    race_type          *rptr;
-    char                inp[60];
+    int32u       auto_round = 0;
+    register int i;
+    int          stat[6];
+    int          autoroll = 0;
+    int          msstat = 0;/* Max autoroll w/ look for -SAC */
+    class_type   *cptr;
+    race_type    *rptr;
+    char         inp[60];
 
 #endif
-    int                 previous_exists = 0;	/* flag to prevent prev from
-						 * garbage values */
+    int previous_exists = 0;	/* flag to prevent prev from garbage values */
 
     town_seed = random();	/* Change random seeds for new characters -CWS */
     randes_seed = random();
@@ -745,9 +738,9 @@ create_character()
  */
 
     put_buffer("Do you want to use automatic rolling? (? for Help) ", 20, 2);
-    do {			   /* allow multiple key entry, so they can
-				    * ask for help and still get back to this
-				    * menu... -CFT */
+    do {   /* allow multiple key entry, so they can ask for help and
+            * still get back to this menu... -CFT */
+
 	move_cursor(20, 52);
 	c = inkey();
 	if (c == '?')
@@ -833,16 +826,17 @@ create_character()
 	do {			   /* Start of AUTOROLLing loop */
 #endif
 	    get_all_stats();
-	    get_history();	   /* Common stuff */
-	    get_ahw();
 	    get_class();
 
 #ifdef AUTOROLLER
 	    if (autoroll) {
 		put_auto_stats();
 		auto_round++;
-		sprintf(inp, "auto-rolling round #%lu.", auto_round);
+		sprintf(inp, "auto-rolling round #%lu.", (long)auto_round);
 		put_buffer(inp, 20, 2);
+#if defined(unix) && defined(NICE)
+		usleep((long)100000L);
+#endif
 		put_qio();
 	    } else
 		put_stats();
@@ -853,16 +847,20 @@ create_character()
 		  (stat[A_DEX] > py.stats.cur_stat[A_DEX]) ||
 		  (stat[A_CON] > py.stats.cur_stat[A_CON]) ||
 		  (stat[A_CHR] > py.stats.cur_stat[A_CHR]))
-#if (defined (unix) || defined(ATARI_ST))	/* CFT's if/elif/else */
-		 && (!check_input(1)));	/* unix needs flush here */
+
+#if (defined (unix) || defined(ATARI_ST)) /* CFT's if/elif/else    */
+		 && (!check_input(1)));	  /* unix needs flush here */
 #elif (defined(MSDOS) || defined(VMS))
 	&&(!kbhit()));
-	if (kbhit())
+    if (kbhit())
 	    flush();
 #else
-	    );
+    );
 #endif				   /* character checks */
 #endif				   /* AUTOROLLER main looping section */
+       get_history();	           /* Common stuff */
+       get_ahw();
+
 	calc_bonuses();
 	print_history();
 	put_misc1();
@@ -885,17 +883,15 @@ create_character()
 		    get_prev_ahw();
 		    print_history();
 		    put_misc1();
+		    calc_bonuses();
 		    put_stats();
 		    clear_from(20);
 		}
-	    } else if ((c != ' ') && (c != ESCAPE))	/* Prolly better way to
-							 * do this . . . -SAC */
+	    } else if ((c != ' ') && (c != ESCAPE))	/* Prolly better way to do this */
 		bell();
 	} while ((c != ' ') && (c != ESCAPE));
-    /*
-     * Not going to waste space w/ a check here. So ESC takes a little
-     * longer. -SAC 
-     */
+
+/* Not going to waste space w/ a check here. So ESC takes a little longer. -SAC */
 	set_prev_stats();
 	set_prev_history();
 	set_prev_ahw();
@@ -908,8 +904,9 @@ create_character()
     get_name();
     msg_print(NULL);
 
-/* This delay may be reduced, but is recommended to keep players	 */
-/* from continuously rolling up characters, which can be VERY	 */
-/* expensive CPU wise.						 */
+/* This delay may be reduced, but is recommended to keep players
+ * from continuously rolling up characters, which can be VERY
+ * expensive CPU wise.
+ */
     pause_exit(23, PLAYER_EXIT_PAUSE);
 }

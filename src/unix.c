@@ -29,8 +29,7 @@
 #include "externs.h"
 
 #if defined(SYS_V) && defined(lint)
-/*
- * for AIX, prevent hundreds of unnecessary lint errors, must define before
+/* for AIX, prevent hundreds of unnecessary lint errors, must define before
  * signal.h is included 
  */
 #define _h_IEEETRAP
@@ -81,8 +80,7 @@ struct screen {
 
 #endif
 
-/*
- * Fooling lint. Unfortunately, c defines all the TIO constants to be long,
+/* Fooling lint. Unfortunately, c defines all the TIO constants to be long,
  * and lint expects them to be int. Also, ioctl is sometimes called with just
  * two arguments. The following definition keeps lint happy. It may need to
  * be reset for different systems. 
@@ -112,8 +110,7 @@ static
 #define ioctl	    Ioctl
 #endif
 
-/*
- * Provides for a timeout on input. Does a non-blocking read, consuming the
+/* Provides for a timeout on input. Does a non-blocking read, consuming the
  * data if any, and then returns 1 if data was read, zero otherwise. 
  *
  * Porting: 
@@ -139,7 +136,7 @@ check_input(microsec)
     struct timeval      tbuf;
     int                 ch;
 
-#if defined(BSD4_3) || defined(M_XENIX)
+#if defined(BSD4_3) || defined(M_XENIX) || defined(linux)
     fd_set              smask;
 
 #else
@@ -152,7 +149,7 @@ check_input(microsec)
 #if !defined(USG) || defined(M_XENIX)
     tbuf.tv_sec = 0;
     tbuf.tv_usec = microsec;
-#if defined(BSD4_3) || defined(M_XENIX)
+#if defined(BSD4_3) || defined(M_XENIX) || defined(linux)
     FD_ZERO(&smask);
     FD_SET(fileno(stdin), &smask);
     if (select(1, &smask, (fd_set *) 0, (fd_set *) 0, &tbuf) == 1)

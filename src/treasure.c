@@ -463,8 +463,8 @@ treasure_type object_list[MAX_OBJECTS] = {
     0,	  35,	80,   1,   5,	0,   0,	 0,   0, {0,0}	,  5, 0, 0x0L},
 {"Trap Detection"		,0x00010000L,	TV_SCROLL1, '?',/*195*/
     0,	  35,	80,   1,   5,	0,   0,	 0,   0, {0,0}	,  8, 0, 0x0L},
-{"Trap Detection"		,0x00010000L,	TV_SCROLL1, '?',/*196*/
-    0,	  35,	80,   1,   5,	0,   0,	 0,   0, {0,0}	, 12, 0, 0x0L},
+{"Trap Location"                ,RD_TRAP_LOC,  TV_ROD, '-',     /*196*/
+    0,   100,   25,   1,  15,   0,   0,  0,   0, {1,1}  ,  5, 0, 0x800L },
 {"Door/Stair Location"		,0x00020000L,	TV_SCROLL1, '?',/*197*/
     0,	  35,	81,   1,   5,	0,   0,	 0,   0, {0,0}	,  5, 0, 0x0L},
 {"Door/Stair Location"		,0x00020000L,	TV_SCROLL1, '?',/*198*/
@@ -491,7 +491,11 @@ treasure_type object_list[MAX_OBJECTS] = {
     0,	   0,	90,   1,   5,	0,   0,	 0,   0, {0,0}	,  1, 0, 0x0L},
 {"Protection from Evil"		,0x08000000L,	TV_SCROLL1, '?',/*209*/
     0,	  50,	91,   1,   5,	0,   0,	 0,   0, {0,0}	, 30, 0, 0x0L},
+#if defined(SATISFY_HUNGER) /* new create food code -CWS */
+{"Satisfy Hunger"		,0x10000000L,	TV_SCROLL1, '?',/*210*/
+#else 
 {"Create Food"			,0x10000000L,	TV_SCROLL1, '?',/*210*/
+#endif
     0,	  10,	92,   1,   5,	0,   0,	 0,   0, {0,0}	,  5, 0, 0x0L},
 {"Dispel Undead"		,0x20000000L,	TV_SCROLL1, '?',/*211*/
     0,	 200,	93,   1,   5,	0,   0,	 0,   0, {0,0}	, 40, 0, 0x0L},
@@ -737,7 +741,7 @@ treasure_type object_list[MAX_OBJECTS] = {
     0,	 100,	65,   1,  30,   0,   0,	 0,   0, {1,1}	, 10, 0, 0x0L},
 {"[Incantations and Illusions]"	,0x03FC0000L,	TV_MAGIC_BOOK, '?',/*332*/
     0,	 400,	66,   1,  30,   0,   0,	 0,   0, {1,1}	, 20, 0, 0x0L},
-{"[Sorcery and Evocations]"	,0x7C000000L,	TV_MAGIC_BOOK, '?',/*333*/
+{"[Sorcery and Evocations]"	,0xFC000000L,	TV_MAGIC_BOOK, '?',/*333*/
     0,	 800,	67,   1,  30,   0,   0,	 0,   0, {1,1}	, 25, 0, 0x01L},
 {"[Beginners Handbook]"		,0x000000FFL,	TV_PRAYER_BOOK, '?',/*334*/
     0,	  25,	64,   1,  30,   0,   0,	 0,   0, {1,1}	, 5, 0, 0x0L},
@@ -841,7 +845,7 @@ treasure_type object_list[MAX_OBJECTS] = {
     0,	 100000, 72,   1,  30,  0,  0,	0, 0, {1,1},     100, 4, 0x0000FC0L},
 {"[Ethereal Openings]"         	,0x00000000L,	TV_PRAYER_BOOK, '?',/*384*/
     0,	 7000,	68,   1,  30,   0,   0,	 0,   0, {1,1}	, 30, 0, 0x3F00000L},
-{"[Godly Insights]"           	,0x00000000L,	TV_PRAYER_BOOK, '?',/*385*/
+{"[Godly Insights]"           	,0x80000000L,	TV_PRAYER_BOOK, '?',/*385*/
     0,	 9000,	69,   1,  30,   0,   0,	 0,   0, {1,1}	, 50, 0, 0x000000FL},
 {"[Purifications and Healing]" 	,0x00000000L,	TV_PRAYER_BOOK, '?',/*386*/
     0,	 25000,	70,   1,  30,   0,   0,	 0,   0, {1,1}	, 60, 0, 0x00001F0L},
@@ -1082,15 +1086,15 @@ treasure_type object_list[MAX_OBJECTS] = {
     0,	  18,	12,   1,   0,	0,   0,	 0,   0, {0,0}	  ,  1, 0, 0x0L},
 {"sapphires"			,0x00000000L, TV_GOLD, '*',
     0,	  20,	13,   1,   0,	0,   0,	 0,   0, {0,0}	  ,  1, 0, 0x0L},
-{"gold"				,0x00000000L, TV_GOLD, '$',
+{"rubies"				,0x00000000L, TV_GOLD, '*',
     0,	  24,	14,   1,   0,	0,   0,	 0,   0, {0,0}	  ,  1, 0, 0x0L},
-{"rubies"			,0x00000000L, TV_GOLD, '*',
-    0,	  28,	15,   1,   0,	0,   0,	 0,   0, {0,0}	  ,  1, 0, 0x0L},
 {"diamonds"			,0x00000000L, TV_GOLD, '*',
-    0,	  32,	16,   1,   0,	0,   0,	 0,   0, {0,0}	  ,  1, 0, 0x0L},
+    0,	  28,	15,   1,   0,	0,   0,	 0,   0, {0,0}	  ,  1, 0, 0x0L},
 {"emeralds"			,0x00000000L, TV_GOLD, '*',
+    0,	  32,	16,   1,   0,	0,   0,	 0,   0, {0,0}	  ,  1, 0, 0x0L},
+{"mithril"			,0x00000000L, TV_GOLD, '$',
     0,	  40,	17,   1,   0,	0,   0,	 0,   0, {0,0}	  ,  1, 0, 0x0L},
-{"mithril"			,0x00000000L, TV_GOLD, '$',	/* +74 */
+{"adamantite"		,0x00000000L, TV_GOLD, '$',	/* +74 */
     0,	  80,	18,   1,   0,	0,   0,	 0,   0, {0,0}	  ,  1, 0, 0x0L},
 /* nothing, used as inventory place holder */
 /* must be stackable, so that can be picked up by inven_carry */

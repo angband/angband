@@ -175,6 +175,7 @@ signal_handler(sig)
 	death = TRUE;
 	exit_game();
     }
+
 /* Die. */
     prt(
 	"OH NO!!!!!!  A gruesome software bug LEAPS out at you. There is NO defense!",

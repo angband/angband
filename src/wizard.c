@@ -24,16 +24,16 @@
 #endif
 
 #ifndef linux
-long                atol();
+long atol();
 #endif
 
 int
 is_wizard(uid)
-    int                 uid;
+int uid;
 {
-    FILE               *fp;
-    char                buf[100];
-    int                 test;
+    FILE *fp;
+    char  buf[100];
+    int   test;
 
     if ((fp = my_tfopen(ANGBAND_WIZ, "r")) == NULL) {
 	fprintf(stderr, "Can't get wizard check...");
@@ -56,8 +56,8 @@ is_wizard(uid)
 void
 artifact_check()
 {
-    FILE               *file1;
-    vtype               filename;
+    FILE *file1;
+    vtype filename;
 
     prt("Checking for artifacts that have been seen... ", 0, 0);
     prt("File name: ", 0, 0);
@@ -224,7 +224,7 @@ artifact_check()
 	    if (PAURNIMMEN)
 		fprintf(file1, "Paurnimmen\n");
 	    if (PAURAEGEN)
-		fprintf(file1, "Pauragen\n");
+		fprintf(file1, "Pauraegen\n");
 	    if (PAURNEN)
 		fprintf(file1, "Paurnen\n");
 	    if (CAMMITHRIM)
@@ -302,7 +302,7 @@ artifact_check()
 /* Light up the dungeon					-RAK-	 */
 void
 wizard_light(light)
-    int                 light;
+int light;
 {
     register cave_type *c_ptr;
     register int        k, l, i, j;
@@ -334,10 +334,10 @@ wizard_light(light)
 void
 change_character()
 {
-    register int        tmp_val;
-    register int32      tmp_lval;
-    int16u             *a_ptr;
-    vtype               tmp_str;
+    register int          tmp_val;
+    register int32        tmp_lval;
+    int16u               *a_ptr;
+    vtype                 tmp_str;
     register struct misc *m_ptr;
 
     a_ptr = py.stats.max_stat;
@@ -427,7 +427,7 @@ change_character()
     } else
 	return;
 
-    (void)sprintf(tmp_str, "Current=%ld  Gold = ", m_ptr->au);
+    (void)sprintf(tmp_str, "Current=%ld  Gold = ", (long)m_ptr->au);
     tmp_val = strlen(tmp_str);
     prt(tmp_str, 0, 0);
     if (get_string(tmp_str, 0, tmp_val, 7)) {
@@ -438,7 +438,7 @@ change_character()
 	}
     } else
 	return;
-    (void)sprintf(tmp_str, "Current=%ld  Max Exp = ", m_ptr->max_exp);
+    (void)sprintf(tmp_str, "Current=%ld  Max Exp = ", (long)m_ptr->max_exp);
     tmp_val = strlen(tmp_str);
     prt(tmp_str, 0, 0);
     if (get_string(tmp_str, 0, tmp_val, 7)) {
@@ -536,16 +536,16 @@ change_character()
 void
 wizard_create()
 {
-    register int        tmp_val;
-    int                 i, j, k;
-    int32               tmp_lval;
-    char                tmp_str[100];
+    register int         tmp_val;
+    int                  i, j, k;
+    int32                tmp_lval;
+    char                 tmp_str[100];
     register inven_type *i_ptr;
-    treasure_type       t_type, *t_ptr;
-    inven_type          forge;
-    register cave_type *c_ptr;
-    char                ch;
-    int                 more = FALSE;
+    treasure_type        t_type, *t_ptr;
+    inven_type           forge;
+    register cave_type  *c_ptr;
+    char                 ch;
+    int                  more = FALSE;
 
     t_ptr = &t_type;
     i_ptr = &forge;
@@ -1020,11 +1020,8 @@ again:
 
     save_screen();
     if ((i_ptr->tval <= TV_MAX_WEAR) && (i_ptr->tval >= TV_MIN_WEAR)) {
-    /*
-     * only then bother with TR_* flags, since otherwise they are
-     * meaningless... -CFT 
-     */
 
+    /* only then bother with TR_* flags, since otherwise they are meaningless... -CFT */
 	if ((i_ptr->tval == TV_SWORD) ||
 	    (i_ptr->tval == TV_HAFTED) ||
 	    (i_ptr->tval == TV_POLEARM) ||
@@ -1395,16 +1392,11 @@ end:
 /* pause if screen fills up while printint up artifacts - cba */
 
 void
-#ifdef __STDC__
-artifact_screen_full(int *i, int j)
-#else
 artifact_screen_full(i, j)
-    int                *i;
-    int                 j;
-
-#endif
+int *i;
+int  j;
 {
-    int                 t;
+    int t;
 
 /* is screen full? */
     if (*i == 22) {
@@ -1420,13 +1412,9 @@ artifact_screen_full(i, j)
 /* Print out the artifacts seen without using a file - cba */
 
 void
-#ifdef __STDC__
-artifact_check_no_file(void)
-#else
 artifact_check_no_file()
-#endif
 {
-    int                 i, j;
+    int i, j;
 
     save_screen();
     j = 15;
@@ -1567,6 +1555,10 @@ artifact_check_no_file()
 	prt("The Battle Axe 'Lotharang'", i++, j);
 	artifact_screen_full(&i, j);
     }
+    if (MAEDHROS) {
+	prt("The Main Gauche of Maedhros", i++, j);
+	artifact_screen_full(&i, j);
+    }
     if (MORMEGIL) {
 	prt("The Two-Handed Sword 'Mormegil'", i++, j);
 	artifact_screen_full(&i, j);
@@ -1589,6 +1581,10 @@ artifact_check_no_file()
     }
     if (NIMTHANC) {
 	prt("The Dagger 'Nimthanc'", i++, j);
+	artifact_screen_full(&i, j);
+    }
+    if (OLORIN) {
+	prt("The Quarterstraff of Olorin", i++, j);
 	artifact_screen_full(&i, j);
     }
     if (ORCRIST) {
@@ -1776,7 +1772,7 @@ artifact_check_no_file()
 	artifact_screen_full(&i, j);
     }
     if (HITHLOMIR) {
-	prt("The Soft Leather Armor 'Hithlomir'", i++, j);
+	prt("The Soft Leather Armour 'Hithlomir'", i++, j);
 	artifact_screen_full(&i, j);
     }
     if (HOLHENNETH) {
@@ -1784,11 +1780,11 @@ artifact_check_no_file()
 	artifact_screen_full(&i, j);
     }
     if (ISILDUR) {
-	prt("The Full Plate Armor of Isildur", i++, j);
+	prt("The Full Plate Armour of Isildur", i++, j);
 	artifact_screen_full(&i, j);
     }
     if (PAURAEGEN) {
-	prt("The Gauntlets 'Pauragen'", i++, j);
+	prt("The Gauntlets 'Pauraegen'", i++, j);
 	artifact_screen_full(&i, j);
     }
     if (PAURHACH) {
@@ -1808,7 +1804,7 @@ artifact_check_no_file()
 	artifact_screen_full(&i, j);
     }
     if (ROHAN) {
-	prt("The Metal Brigandine Armor of Rohan", i++, j);
+	prt("The Metal Brigandine Armor of the Rohirrim", i++, j);
 	artifact_screen_full(&i, j);
     }
     if (SOULKEEPER) {
@@ -1907,16 +1903,11 @@ artifact_check_no_file()
 /* print out the status of uniques - cba */
 
 void
-#ifdef __STDC__
-unique_screen_full(int *i, int j)
-#else
 unique_screen_full(i, j)
-    int                *i;
-    int                 j;
-
-#endif
+int *i;
+int  j;
 {
-    int                 t;
+    int t;
 
 /* is screen full? */
     if (*i == 22) {
@@ -1930,14 +1921,10 @@ unique_screen_full(i, j)
 }
 
 void
-#ifdef __STDC__
-check_uniques(void)
-#else
 check_uniques()
-#endif
 {
-    int                 i, j, k;
-    bigvtype            msg;
+    int      i, j, k;
+    bigvtype msg;
 
     save_screen();
     j = 15;
@@ -1948,15 +1935,15 @@ check_uniques()
     i = 1;
     prt("Uniques:", i++, j + 5);
 
-    for (k = 0; k < MAX_CREATURES; k++) {
-	if (strlen(c_list[k].name) > 0) {
+    for (k = 0; k < (MAX_CREATURES - 1); k++) {
+	if ((strlen(c_list[k].name) > 0) && (c_list[k].cdefense & UNIQUE)) {
 	    if (wizard) {
-		sprintf(msg, "%s is %s", c_list[k].name,
-			(u_list[k].dead) ? "DEAD" : "ALIVE");
+		sprintf(msg, "%s is %s.", c_list[k].name,
+			(u_list[k].dead) ? "dead" : "alive");
 		prt(msg, i++, j);
 		unique_screen_full(&i, j);
 	    } else if (u_list[k].dead) {
-		sprintf(msg, "%s is DEAD", c_list[k].name);
+		sprintf(msg, "%s is dead.", c_list[k].name);
 		prt(msg, i++, j);
 		unique_screen_full(&i, j);
 	    }

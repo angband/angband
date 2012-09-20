@@ -19,12 +19,12 @@
 void 
 pray()
 {
-    int                 i, j, item_val, dir;
-    int                 choice, chance, result;
-    register spell_type *s_ptr;
-    register struct misc *m_ptr;
+    int i, j, item_val, dir;
+    int choice, chance, result;
+    register spell_type  *s_ptr;
+    register struct misc  *m_ptr;
     register struct flags *f_ptr;
-    register inven_type *i_ptr;
+    register inven_type   *i_ptr;
 
     free_turn_flag = TRUE;
     if (py.flags.blind > 0)
@@ -78,6 +78,7 @@ pray()
 		    (void)light_area(char_row, char_col,
 		     damroll(2, (py.misc.lev / 2)), (py.misc.lev / 10) + 1);
 		    break;
+/* FIXME: hammer? */
 		  case 6:
 		    (void)detect_trap();
 		    break;
@@ -126,8 +127,9 @@ pray()
 		  case 18:
 		    if (get_dir(NULL, &dir))
 			fire_ball(GF_HOLY_ORB, dir, char_row, char_col,
-				  (int)(damroll(3, 6) + py.misc.lev), 2,
-				  "Black Sphere");
+				  (int)(damroll(3,6)+py.misc.lev+
+					(py.misc.pclass==2 ? 2 : 1)*stat_adj(A_WIS)),
+				  (py.misc.lev<30 ? 2 : 3));
 		    break;
 		  case 19:
 		    (void)hp_player(damroll(8, 4));
@@ -302,40 +304,13 @@ pray()
 		  case 50:	   /* enchant weapon */
 		    i_ptr = &inventory[INVEN_WIELD];
 		    if (i_ptr->tval != TV_NOTHING) {
-			int                 flag, k;
-			char                tmp_str[100], out_val[100];
-
+			char tmp_str[100], out_val[100];
+			
 			objdes(tmp_str, i_ptr, FALSE);
-			if ((i_ptr->flags2 & TR_ARTIFACT) && randint(2) == 1) {	/* DGK */
-			    sprintf(out_val, "Your %s resists enchantment!",
-				    tmp_str);
-			    msg_print(out_val);
-			} else {
-			    int                 maxench;
-
-			    sprintf(out_val, "Your %s glows brightly!", tmp_str);
-			    msg_print(out_val);
-			    flag = FALSE;
-			    for (k = 0; k < randint(4); k++)
-				if (enchant(&i_ptr->tohit, 10))
-				    flag = TRUE;
-			    for (k = 0; k < randint(4); k++) {
-				if ((i_ptr->tval >= TV_HAFTED) &&
-				    (i_ptr->tval <= TV_DIGGING))
-				    maxench = i_ptr->damage[0] * i_ptr->damage[1];
-				else	/* Bows' and arrows' enchantments
-					 * should not be limited by their low
-					 * base damages */
-				    maxench = 10;
-				if (enchant(&i_ptr->todam, maxench))
-				    flag = TRUE;
-			    }
-			    if (flag)
-				calc_bonuses();
-			/* used to clear TR_CURSED; should remain set -DGK- */
-			    else
-				msg_print("The enchantment fails.");
-			} /* DGK */
+			sprintf(out_val, "Your %s glows brightly!", tmp_str);
+			msg_print(out_val);
+			if (!enchant(i_ptr, randint(4), ENCH_TOHIT|ENCH_TODAM))
+			    msg_print("The enchantment fails.");
 		    }
 		    break;
 		  case 51:	   /* enchant armor */
@@ -377,32 +352,26 @@ pray()
 			    char                out_val[100], tmp_str[100];
 
 			    i_ptr = &inventory[l];
-			    objdes(tmp_str, i_ptr, FALSE);	/* DGK */
-			    if ((i_ptr->flags2 & TR_ARTIFACT) && randint(2) == 1) {
-				sprintf(out_val, "Your %s resists enchantment!",
-					tmp_str);
-				msg_print(out_val);
-			    } else {
-				sprintf(out_val, "Your %s glows faintly!", tmp_str);
-				msg_print(out_val);
-				if (enchant(&i_ptr->toac, 10))
-				    calc_bonuses();
-			    /*
-			     * used to clear TR_CURSED; should remain set
-			     * -DGK- 
-			     */
-				else
-				    msg_print("The enchantment fails.");
-			    } /* DGK */
+			    objdes(tmp_str, i_ptr, FALSE);
+			    sprintf(out_val, "Your %s glows faintly!", tmp_str);
+			    msg_print(out_val);
+			    if (!enchant(i_ptr, randint(3)+1, ENCH_TOAC))
+				msg_print("The enchantment fails.");
 			}
 		    }
 		    break;
 		  case 52:	   /* Elemental brand */
 		    i_ptr = &inventory[INVEN_WIELD];
 		    if (i_ptr->tval != TV_NOTHING &&
-			i_ptr->name2 == SN_NULL) {
-			int                 hot = randint(2) - 1;
-			char                tmp_str[100], out_val[100];
+			i_ptr->name2 == SN_NULL &&
+			!(i_ptr->flags & TR_CURSED)) {
+
+/* you can't create an ego weapon from a cursed object...
+ * the curse would "taint" the magic -CFT
+ */
+
+			int hot = randint(2)-1;
+			char tmp_str[100], out_val[100];
 
 			objdes(tmp_str, i_ptr, FALSE);
 			if (hot) {
@@ -418,9 +387,7 @@ pray()
 			    i_ptr->flags |= (TR_FROST_BRAND | TR_RES_COLD);
 			}
 			msg_print(out_val);
-			i_ptr->tohit += 3 + randint(3);
-			i_ptr->todam += 3 + randint(3);
-		    /* i_ptr->flags &= ~TR_CURSED; */
+			enchant(i_ptr, 3+randint(3), ENCH_TOHIT|ENCH_TODAM);
 			calc_bonuses();
 		    } else {
 			msg_print("The Branding fails.");

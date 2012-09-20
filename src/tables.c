@@ -10,7 +10,7 @@
 #include "config.h"
 #include "types.h"
 
-#ifdef ANGBAND_HOU
+#if defined(CHECKHOURS)
 /* Operating hours for ANGBAND				-RAK-	*/
 /*	 X = Open; . = Closed					*/
 char days[7][29] = { "SUN:XXXXXXXXXXXXXXXXXXXXXXXX",
@@ -28,43 +28,43 @@ store_type store[MAX_STORES];
 /* Note: Store owners should be added in groups, one for each store    */
 owner_type owners[MAX_OWNERS] = {
 {"Rincewind the Chicken  (Human)      General Store",
-	  250,	175,  108,    4, 0, 12},
+	  450,	175,  108,    4, 0, 12},
 {"Mauglin the Grumpy     (Dwarf)      Armoury"	    ,
 	32000,	200,  112,    4, 5,  5},
 {"Arndal Beast-Slayer    (Half-Elf)   Weaponsmith"  ,
 	10000,	185,  110,    5, 1,  8},
 {"Ludwig the Humble      (Human)      Temple"	    ,
-	 3500,	175,  109,    6, 0, 15},
+	 5000,	175,  109,    6, 0, 15},
 {"Ga-nat the Greedy      (Gnome)      Alchemist"    ,
 	12000,	220,  115,    4, 4,  9},
 {"Luthien Starshine      (Elf)        Magic Shop"   ,
 	32000,	175,  110,    5, 2, 11},
 {"Durwin the Shifty      (Human)      Black Market" ,
-        32000,	250,  190,    10, 0, 5},
+        32000,	250,  155,    10, 0, 5},
 {"Your home"   ,
 	    1,    1,    1,    1, 1, 1},
 {"Bilbo the Friendly     (Hobbit)     General Store",
-	  200,	170,  108,    5, 3, 15},
+	  300,	170,  108,    5, 3, 15},
 {"Darg-Low the Grim      (Human)      Armoury"	    ,
 	10000,	190,  111,    4, 0,  9},
 {"Oglign Dragon-Slayer   (Dwarf)      Weaponsmith"  ,
 	32000,	195,  112,    4, 5,  8},
 {"Gunnar the Paladin     (Human)      Temple"	    ,
-	 5000,	185,  110,    5, 0, 23},
+	12000,	185,  110,    5, 0, 23},
 {"Mauser the Chemist     (Half-Elf)   Alchemist"    ,
 	10000,	190,  111,    5, 1,  8},
 {"Buggerby the Great!    (Gnome)      Magic Shop"   ,
 	20000,	215,  113,    6, 4, 10},
 {"Histor the Goblin      (Orc)        Black Market"   ,
-	32000,	250,  190,    10, 6, 5},
+	32000,	250,  160,    10, 6, 5},
 {"Your sweet abode"   ,
 	    1,    1,    1,    1, 1, 1},
 {"Lyar-el the Comely     (Elf)        General Store",
-	  300,	165,  107,    6, 2, 18},
+	  600,	165,  107,    6, 2, 18},
 {"Decado the Handsome    (Human)      Armoury",
 	25000,  200,  112,    4, 5, 10},
 {"Ithyl-Mak the Beastly  (Half-Troll) Weaponsmith"  ,
-	 3000,	210,  115,    6, 7,  8},
+	 6000,	210,  115,    6, 7,  8},
 {"Delilah the Pure       (Half-Elf)   Temple"	    ,
 	25000,	180,  107,    6, 1, 20},
 {"Wizzle the Chaotic     (Hobbit)     Alchemist"    ,
@@ -72,7 +72,7 @@ owner_type owners[MAX_OWNERS] = {
 {"Inglorian the Mage     (Human?)     Magic Shop"   ,
 	32000,	200,  110,    7, 0, 10},
 {"Drago the Fair?        (Elf)        Black Market" ,
-	32000,	250,  190,    10, 2, 5},
+	32000,	250,  150,    10, 2, 5},
 {"Your house"   ,
 	    1,    1,    1,    1, 1, 1}
 };
@@ -230,18 +230,19 @@ const char *syllables[MAX_SYLLABLES] = {
 
 /* used to calculate the number of blows the player gets in combat */
 int8u blows_table[11][12] = {
-/* STR/W:	   9  18  67 107 117 118  128 138 148 158 168 more  : DEX */
-/* <2 */	{  1,  1,  1,  1,  1,  1,   2,  2,  2,  2,  2,   3},
-/* <3 */	{  1,  1,  1,  1,  2,  2,   3,  3,  3,  3,  3,   4},
-/* <4 */	{  1,  1,  1,  2,  2,  3,   4,  4,  4,  4,  4,   5},
-/* <5 */	{  1,  1,  2,  2,  3,  3,   4,  4,  4,  5,  5,   5},
-/* <7 */	{  1,  2,  2,  3,  3,  4,   4,  4,  5,  5,  5,   5},
-/* <9 */	{  1,  2,  2,  3,  4,  4,   4,  5,  5,  5,  5,   5},
-/* <10 */	{  2,  2,  3,  3,  4,  4,   5,  5,  5,  5,  5,   6},
-/* <11 */	{  2,  3,  3,  3,  4,  4,   5,  5,  5,  5,  5,   6},
-/* <12 */	{  3,  3,  3,  4,  4,  4,   5,  5,  5,  5,  6,   6},
-/* <13 */	{  3,  3,  3,  4,  4,  4,   5,  5,  5,  5,  6,   6},
-/* >13 */	{  3,  3,  4,  4,  4,  4,   5,  5,  5,  6,  6,   6}
+/* STR/W:	   9  18  67  107  117  118  128  138  148  158  168 more : DEX */
+/* <2 */	{  1,  1,  1,   1,   1,   1,   2,   2,   2,   2,   2,   3},
+/* <3 */	{  1,  1,  1,   1,   2,   2,   3,   3,   3,   3,   3,   4},
+/* <4 */    {  1,  1,  1,   2,   2,   3,   4,   4,   4,   4,   4,   5},
+/* <6 */    {  1,  1,  2,   2,   3,   3,   4,   4,   4,   5,   5,   5},
+/* <8 */    {  1,  2,  2,   3,   3,   4,   4,   4,   5,   5,   5,   5},
+/* <10 */   {  1,  2,  2,   3,   4,   4,   4,   5,   5,   5,   5,   5},
+/* <13 */   {  2,  2,  3,   3,   4,   4,   5,   5,   5,   5,   5,   6},
+/* <15 */   {  2,  3,  3,   3,   4,   4,   5,   5,   5,   5,   5,   6},
+/* <18 */   {  3,  3,  3,   4,   4,   4,   5,   5,   5,   5,   6,   6},
+/* <20 */   {  3,  3,  3,   4,   4,   4,   5,   5,   5,   5,   6,   6},
+/* else */  {  3,  3,  4,   4,   4,   4,   5,   5,   5,   6,   6,   6}
+
 };
 
 

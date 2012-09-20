@@ -23,18 +23,12 @@
 void 
 quaff()
 {
-    int32u              i, l;
-    int                 j, k, item_val;
-    int                 ident;
-    register inven_type *i_ptr;
-    register struct misc *m_ptr;
+    int32u i, l;
+    int    j, k, item_val;
+    int    ident;
+    register inven_type   *i_ptr;
+    register struct misc  *m_ptr;
     register struct flags *f_ptr;
-
-#if 0
-/* used by ifdefed out learn_spell potion */
-    register class_type *c_ptr;
-
-#endif
 
     free_turn_flag = TRUE;
     if (inven_ctr == 0)
@@ -58,7 +52,7 @@ quaff()
 		switch (j) {
 		  case 1:
 		    if (inc_stat(A_STR)) {
-			msg_print("Wow!  What bulging muscles!");
+			msg_print("Wow!  What bulging muscles! ");
 			ident = TRUE;
 		    }
 		    break;
@@ -74,7 +68,7 @@ quaff()
 		    break;
 		  case 4:
 		    if (inc_stat(A_INT)) {
-			msg_print("Aren't you brilliant!");
+			msg_print("Aren't you brilliant! ");
 			ident = TRUE;
 		    }
 		    break;
@@ -90,7 +84,7 @@ quaff()
 		    break;
 		  case 7:
 		    if (inc_stat(A_WIS)) {
-			msg_print("You suddenly have a profound thought!");
+			msg_print("You suddenly have a profound thought! ");
 			ident = TRUE;
 		    }
 		    break;
@@ -106,7 +100,7 @@ quaff()
 		    break;
 		  case 10:
 		    if (inc_stat(A_CHR)) {
-			msg_print("Gee, ain't you cute!");
+			msg_print("Gee, ain't you cute! ");
 			ident = TRUE;
 		    }
 		    break;
@@ -257,7 +251,7 @@ quaff()
 		    break;
 		  case 26:
 		    if (inc_stat(A_DEX)) {
-			msg_print("You feel more limber!");
+			msg_print("You feel more limber! ");
 			ident = TRUE;
 		    }
 		    break;
@@ -269,7 +263,7 @@ quaff()
 		    break;
 		  case 28:
 		    if (res_stat(A_CON)) {
-			msg_print("You feel your health returning!");
+			msg_print("You feel your health returning! ");
 			ident = TRUE;
 		    }
 		    break;
@@ -308,7 +302,7 @@ quaff()
 		    if (f_ptr->food > 150)
 			f_ptr->food = 150;
 		    f_ptr->paralysis = 4;
-		    msg_print("The potion makes you vomit!");
+		    msg_print("The potion makes you vomit! ");
 		    ident = TRUE;
 		    break;
 		  case 37:
@@ -342,6 +336,8 @@ quaff()
 		    f_ptr->resist_cold += randint(10) + 10;
 		    break;
 		  case 43:
+		    if (py.flags.detect_inv == 0)
+			ident = TRUE;
 		    detect_inv2(randint(12) + 12);
 		    break;
 		  case 44:
@@ -375,15 +371,19 @@ quaff()
 			inc_stat(A_WIS);
 		    if (!res_stat(A_INT))
 			inc_stat(A_INT);
-		    msg_print("You feel more enlightened!");
+		    msg_print("You feel more enlightened! ");
 		    msg_print(NULL);
 		    self_knowledge();	/* after all, what is the key to
 					 * enlightenment? -CFT */
 		    identify_pack();
+		    (void)detect_treasure();
+		    (void)detect_object();
+		    (void)detect_sdoor();
+		    (void)detect_trap();
 		    ident = TRUE;
 		    break;
 		  case 49:
-		    msg_print("Massive explosions rupture your body!");
+		    msg_print("Massive explosions rupture your body! ");
 		    take_hit(damroll(50, 20), "a potion of Detonation");
 		    cut_player(5000);
 		    stun_player(75);
@@ -419,7 +419,7 @@ quaff()
 		    if (inc_stat(A_DEX) | inc_stat(A_WIS) | inc_stat(A_INT) |
 		      inc_stat(A_STR) | inc_stat(A_CHR) | inc_stat(A_CON)) {
 			ident = TRUE;
-			msg_print("You feel power flow through your body!");
+			msg_print("You feel power flow through your body! ");
 		    }
 		    break;
 		  case 53:	   /* Ruination */
@@ -431,15 +431,16 @@ quaff()
 		    ruin_stat(A_CHR);
 		    ruin_stat(A_INT);
 		    ident = TRUE;
-		    msg_print("Your nerves and muscles feel weak and lifeless");
+		    msg_print("Your nerves and muscles feel weak and lifeless! ");
 		    break;
 		  case 54:
+		    msg_print("An image of your surroundings forms in your mind...");
 		    wizard_light(TRUE);
-		    msg_print("An image of your surroundings forms in your mind");
 		    ident = TRUE;
 		    break;
 		  case 55:
 		    msg_print("You feel you know yourself a little better...");
+		    msg_print(NULL);
 		    self_knowledge();
 		    ident = TRUE;
 		    break;

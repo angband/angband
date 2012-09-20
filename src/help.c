@@ -18,8 +18,8 @@
 void 
 ident_char()
 {
-    char                command, query;
-    register int        i, n;
+    char         command, query;
+    register int i, n;
 
     if (get_com("Enter character to be identified :", &command))
 	switch (command) {

@@ -25,28 +25,27 @@
 /* Lets do all prototypes correctly.... -CWS */
 #ifndef NO_LINT_ARGS
 #ifdef __STDC__
-static void regenhp(int);
-static void regenmana(int);
-/* static int enchanted(inven_type *); */
+static void        regenhp(int);
+static void        regenmana(int);
 static const char *value_check(inven_type *);
 #else
-static void         regenhp();
-static void         regenmana();
-/* static int          enchanted(); */
+static void        regenhp();
+static void        regenmana();
+/* static int      enchanted(); */
 static const char *value_check();
 #endif
 
-static void	    print_feeling();
-static char         original_commands();
-static void         do_command();
-static int          valid_countcommand();
-static void         examine_book();
-static void         activate();
-static void         go_up();
-static void         go_down();
-static void         jamdoor();
-static void         refill_lamp();
-static void         regen_monsters();
+static void print_feeling();
+static char original_commands();
+static void do_command();
+static int  valid_countcommand();
+static void examine_book();
+static void activate();
+static void go_up();
+static void go_down();
+static void jamdoor();
+static void refill_lamp();
+static void regen_monsters();
 #endif
 
 /* ANGBAND game module					-RAK-	 */
@@ -55,18 +54,18 @@ static void         regen_monsters();
 
 /* It has had a bit more hard work.			-CJS- */
 
-int                 good_item_flag = FALSE;
-int                 create_up_stair = FALSE;
-int                 create_down_stair = FALSE;
+int good_item_flag = FALSE;
+int create_up_stair = FALSE;
+int create_down_stair = FALSE;
 
 void 
 dungeon()
 {
-    int                 find_count, i;
-    int                 regen_amount;	/* Regenerate hp and mana */
-    char                command;   /* Last command		 */
-    register struct misc *p_ptr;
-    register inven_type *i_ptr;
+    int                    find_count, i;
+    int                    regen_amount; /* Regenerate hp and mana */
+    char                   command;      /* Last command           */
+    register struct misc  *p_ptr;
+    register inven_type   *i_ptr;
     register struct flags *f_ptr;
 
 /* Main procedure for dungeon.			-RAK-	 */
@@ -77,6 +76,7 @@ dungeon()
     p_ptr = &py.misc;
 
     i_ptr = &inventory[INVEN_LIGHT];
+
 /* Check light status for setup	   */
     if (i_ptr->p1 > 0 || f_ptr->light)
 	player_light = TRUE;
@@ -87,19 +87,24 @@ dungeon()
     else
 	i = 195;
     light_rad = 1 + (i < 190) + (i == 4 || i == 6);
+
 /* Check for a maximum level		   */
 /* Added check to avoid -50' being "deepest", since max_dlv unsigned -CFT */
     if ((dun_level >= 0) && ((unsigned) dun_level > p_ptr->max_dlv))
 	p_ptr->max_dlv = dun_level;
 
 /* Reset flags and initialize variables  */
-    command_count = 0;
-    eof_flag = FALSE;
-    find_count = 0;
+    command_count  = 0;
+    eof_flag       = FALSE;
+    find_count     = 0;
     new_level_flag = FALSE;
-    find_flag = FALSE;
-    teleport_flag = FALSE;
-    mon_tot_mult = 0;
+    find_flag      = FALSE;
+    teleport_flag  = FALSE;
+    mon_tot_mult   = 0;
+    old_rad        = (-1);
+    coin_type      = 0;
+    opening_chest  = FALSE;
+
 #ifdef TARGET
     target_mode = FALSE; /* target code taken from Morgul -CFT */
 #endif
@@ -113,9 +118,8 @@ dungeon()
 
 	c_ptr = &cave[char_row][char_col];
 	if ((c_ptr->tptr == 0) ||
-	    ((t_list[c_ptr->tptr].tval != TV_STORE_DOOR) &&	/* if not store */
-	     ((t_list[c_ptr->tptr].tval < TV_MIN_WEAR) ||	/* if no artifact here
-								 * -CFT */
+	    ((t_list[c_ptr->tptr].tval != TV_STORE_DOOR) && /* if not store */
+	     ((t_list[c_ptr->tptr].tval < TV_MIN_WEAR) ||   /* if no artifact here -CFT */
 	      (t_list[c_ptr->tptr].tval > TV_MIN_WEAR) ||
 	      !(t_list[c_ptr->tptr].flags2 & TR_ARTIFACT)))) {
 	    if (c_ptr->tptr != 0)
@@ -135,8 +139,8 @@ dungeon()
     panel_row = panel_col = (-1);
 /* Light up the area around character	   */
     check_view();
-/*
- * must do this after panel_row/col set to -1, because search_off() will call
+
+/* must do this after panel_row/col set to -1, because search_off() will call
  * check_view(), and so the panel_* variables must be valid before
  * search_off() is called 
  */
@@ -147,6 +151,7 @@ dungeon()
 /* Print the depth			   */
     prt_depth();
 
+/* FIXME: figure this out */
     if (((turn - old_turn) > randint(50) + 50) && dun_level) {
 	unfelt = FALSE;
 	print_feeling();
@@ -204,8 +209,7 @@ dungeon()
 		    msg_print("Your light has gone out!");
 		} else if ((i_ptr->p1 < 40) && (randint(5) == 1) &&
 			   (py.flags.blind < 1) &&
-			   !(i_ptr->flags2 & TR_LIGHT)) {	/* perm light doesn't
-								 * dim -CFT */
+			   !(i_ptr->flags2 & TR_LIGHT)) { /* perm light doesn't dim -CFT */
 		    disturb(0, 0);
 		    msg_print("Your light is growing faint.");
 		}
@@ -225,7 +229,7 @@ dungeon()
 	/* light creatures */
 	    creatures(FALSE);
 	}
-    /* Update counters and messages			 */
+    /* Update counters and messages    */
     /* Check food status	       */
 	regen_amount = PLAYER_REGEN_NORMAL;
 	if (f_ptr->food < PLAYER_FOOD_ALERT) {
@@ -254,15 +258,18 @@ dungeon()
 		prt_hunger();
 	    }
 	}
+
     /* Food consumption	 */
     /* Note: Speeded up characters really burn up the food!  */
-	if (f_ptr->speed < 0)
-	    f_ptr->food -= f_ptr->speed * f_ptr->speed;
+    /* now summation, not square, since spd less powerful -CFT */
+       if (f_ptr->speed < 0)
+	   f_ptr->food -=  (f_ptr->speed*f_ptr->speed - f_ptr->speed) / 2;
 	f_ptr->food -= f_ptr->food_digested;
 	if (f_ptr->food < 0) {
 	    take_hit(-f_ptr->food / 16, "starvation");	/* -CJS- */
 	    disturb(1, 0);
 	}
+
     /* Regenerate	       */
 	if (f_ptr->regenerate)
 	    regen_amount = regen_amount * 3 / 2;
@@ -331,21 +338,21 @@ dungeon()
 	}
     /* Cut */
 	if (f_ptr->cut > 0) {
-	    if (f_ptr->cut > 1000) {
+	    if (f_ptr->cut>1000) {
+		take_hit(3 , "a fatal wound");
+		disturb(1,0);
+	    } else if (f_ptr->cut>200) {
 		take_hit(3, "a fatal wound");
-		disturb(1, 0);
-	    } else if (f_ptr->cut > 200) {
-		take_hit(3, "a fatal wound");
-		f_ptr->cut -= con_adj() + 1;
-		disturb(1, 0);
-	    } else if (f_ptr->cut > 100) {
+		f_ptr->cut-=(con_adj()<0?1:con_adj())+1;
+		disturb(1,0);
+	    } else if (f_ptr->cut>100) {
 		take_hit(2, "a fatal wound");
-		f_ptr->cut -= con_adj() + 1;
-		disturb(1, 0);
+		f_ptr->cut-=(con_adj()<0?1:con_adj())+1;
+		disturb(1,0);
 	    } else {
 		take_hit(1, "a fatal wound");
-		f_ptr->cut -= con_adj() + 1;
-		disturb(1, 0);
+		f_ptr->cut-=(con_adj()<0?1:con_adj())+1;
+		disturb(1,0);
 	    }
 	    prt_cut();
 	    if (f_ptr->cut <= 0) {
@@ -744,10 +751,10 @@ dungeon()
 		f_ptr->word_recall = 0;
 		if (dun_level > 0) {
 		    dun_level = 0;
-		    msg_print("You feel yourself yanked upwards!");
+		    msg_print("You feel yourself yanked upwards! ");
 		} else if (py.misc.max_dlv != 0) {
 		    dun_level = py.misc.max_dlv;
-		    msg_print("You feel yourself yanked downwards!");
+		    msg_print("You feel yourself yanked downwards! ");
 		}
 	    } else
 		f_ptr->word_recall--;
@@ -813,15 +820,16 @@ dungeon()
 		if (i == inven_ctr)
 		    i = 22;
 		i_ptr = &inventory[i];
+
 	    /*
 	     * if in inventory, succeed 1 out of 50 times, if in equipment
-	     * list, success 1 out of 10 times, unless your a priest or
+	     * list, success 1 out of 10 times, unless you're a priest or
 	     * rogue... 
 	     */
-		if ((i_ptr->tval != TV_NOTHING) && special_check(i_ptr) &&
+		if (((i_ptr->tval >= TV_MIN_WEAR) && (i_ptr->tval <= TV_MAX_WEAR)) &&
+		    special_check(i_ptr) &&
 		    ((py.misc.pclass == 2 || py.misc.pclass == 3) ?
-		     (randint(i < 22 ? 5 : 1) == 1)
-		     :
+		     (randint(i < 22 ? 5 : 1) == 1) :
 		     (randint(i < 22 ? 50 : 10) == 1))) {
 
 		    if (py.misc.pclass == 0 || py.misc.pclass == 3 ||
@@ -953,6 +961,10 @@ dungeon()
 		default_dir = FALSE;
 		free_turn_flag = FALSE;
 
+		if ((old_rad >= 0) && (!find_flag)) {
+		    light_rad = old_rad;
+		    old_rad = (-1);
+		}
 		if (find_flag) {
 		    find_run();
 		    find_count--;
@@ -1063,6 +1075,9 @@ dungeon()
 		    if (find_flag) {
 			find_count = command_count;
 			command_count = 0;
+		    } else if (old_rad >= 0) {
+			light_rad = old_rad;
+			old_rad = (-1);
 		    }
 		    if (free_turn_flag)
 			command_count = 0;
@@ -1091,12 +1106,12 @@ dungeon()
 
 static char 
 original_commands(com_val)
-    char                com_val;
+char com_val;
 {
-    int                 dir_val;
+    int dir_val;
 
     switch (com_val) {
-      case CTRL('K'):		   /* ^K = exit    */
+      case CTRL('K'):		/* ^K = exit    */
 	com_val = 'Q';
 	break;
       case CTRL('J'):		/* not used */
@@ -1112,10 +1127,9 @@ original_commands(com_val)
 	break;
       case '.': {
 #ifdef TARGET
-	  int temp = target_mode;  /* If in target_mode, player will not be
-				      given a chance to pick a direction.
-				      So we save it, force it off, and then
-				      ask for the direction -CFT */
+/* If in target_mode, player will not be given a chance to pick a direction.
+ * So we save it, force it off, and then ask for the direction -CFT */
+	  int temp = target_mode;
 	  target_mode = FALSE;
 #endif
 	  if (get_dir(NULL, &dir_val))
@@ -1176,7 +1190,7 @@ original_commands(com_val)
       case '4':
 	com_val = 'h';
 	break;
-      case '5':		   /* Rest one turn */
+      case '5':			/* Rest one turn */
 	com_val = '.';
 	break;
       case '6':
@@ -1212,10 +1226,10 @@ original_commands(com_val)
 	break;
       case 'T': {
 #ifdef TARGET
-	int temp = target_mode;   /* If in target_mode, player will not be
-				     given a chance to pick a direction.
-				     So we save it, force it off, and then
-				     ask for the direction -CFT */
+/* If in target_mode, player will not be given a chance to pick a direction.
+ * So we save it, force it off, and then ask for the direction -CFT
+ */
+	int temp = target_mode;
 	target_mode = FALSE;
 #endif
 	if (get_dir(NULL, &dir_val))
@@ -1326,7 +1340,7 @@ original_commands(com_val)
       case '|':			/* check uniques - cba */
 	break;
       default:
-	com_val = '(';		   /* Anything illegal. */
+	com_val = '(';		/* Anything illegal. */
 	break;
     }
     return com_val;
@@ -1337,7 +1351,7 @@ original_commands(com_val)
 /* returns negative if a bad enchantment... */
 int 
 special_check(t_ptr)
-    register inven_type *t_ptr;
+register inven_type *t_ptr;
 {
     if (t_ptr->tval == TV_NOTHING)
 	return 0;
@@ -1362,6 +1376,11 @@ special_check(t_ptr)
 	return 0;
     if (t_ptr->tohit > 0 || t_ptr->todam > 0 || t_ptr->toac > 0)
 	return 1;
+    if ((t_ptr->tval == TV_DIGGING) && /* digging tools will pseudo ID, either
+					  as {good} or {average} -CFT */
+	(t_ptr->flags & TR_TUNNEL))
+	return 1;
+
     return 0;
 }
 
@@ -1370,7 +1389,7 @@ special_check(t_ptr)
 /* returns a description */
 static const char *
 value_check(t_ptr)
-    register inven_type *t_ptr;
+register inven_type *t_ptr;
 {
     if (t_ptr->tval == TV_NOTHING)
 	return 0;
@@ -1388,8 +1407,13 @@ value_check(t_ptr)
 	return "worthless";
     if (t_ptr->flags & TR_CURSED && t_ptr->name2 != SN_NULL)
 	return "terrible";
-    if ((t_ptr->tohit <= 0 && t_ptr->todam <= 0 && t_ptr->toac <= 0) &&
-	t_ptr->name2 == SN_NULL)
+    if ((t_ptr->tval == TV_DIGGING) &&  /* also, good digging tools -CFT */
+	(t_ptr->flags & TR_TUNNEL) &&
+	(t_ptr->p1 > object_list[t_ptr->index].p1)) /* better than normal for this
+						       type of shovel/pick? -CFT */
+	return "good";
+    if ((t_ptr->tohit<=0 && t_ptr->todam<=0 && t_ptr->toac<=0) &&
+	t_ptr->name2==SN_NULL)  /* normal shovels will also reach here -CFT */
 	return "average";
     if (t_ptr->name2 == SN_NULL)
 	return "good";
@@ -1423,13 +1447,13 @@ value_check(t_ptr)
 
 static void 
 do_command(com_val)
-    char                com_val;
+char com_val;
 {
-    int                 dir_val, do_pickup;
-    int                 y, x, i, j = 0;
-    vtype               out_val, tmp_str;
+    int                    dir_val, do_pickup;
+    int                    y, x, i, j = 0;
+    vtype                  out_val, tmp_str;
     register struct flags *f_ptr;
-    char prt1[80];
+    char                   prt1[80];
 
 /* hack for move without pickup.  Map '-' to a movement command. */
     if (com_val == '-') {
@@ -1437,10 +1461,10 @@ do_command(com_val)
 	i = command_count;
 #ifdef TARGET
 	{
-	int temp = target_mode;  /* If in target_mode, player will not be
-				    given a chance to pick a direction.
-				    So we save it, force it off, and then
-				    ask for the direction -CFT */
+/* If in target_mode, player will not be given a chance to pick a direction.
+ * So we save it, force it off, and then ask for the direction -CFT
+ */
+	int temp = target_mode;
 	target_mode = FALSE;
 #endif
 	if (get_dir(NULL, &dir_val)) {
@@ -1484,7 +1508,7 @@ do_command(com_val)
 	do_pickup = TRUE;
 
     switch (com_val) {
-      case 'Q':		   /* (Q)uit		(^K)ill */
+      case 'Q':			/* (Q)uit		(^K)ill */
 	flush();
 	if ((!total_winner) ? get_Yn("Do you really want to quit?")
 	    : get_Yn("Do you want to retire?")) {
@@ -1494,7 +1518,7 @@ do_command(com_val)
 	}
 	free_turn_flag = TRUE;
 	break;
-      case CTRL('P'):		   /* (^P)revious message. */
+      case CTRL('P'):		/* (^P)revious message. */
 	if (command_count > 0) {
 	    i = command_count;
 	    if (i > MAX_SAVE_MSG)
@@ -1526,11 +1550,11 @@ do_command(com_val)
 	}
 	free_turn_flag = TRUE;
 	break;
-      case CTRL('F'):		   /* Repeat (^F)eeling */
+      case CTRL('F'):		/* Repeat (^F)eeling */
 	free_turn_flag = TRUE;
 	print_feeling();
 	break;
-      case CTRL('W'):		   /* (^W)izard mode */
+      case CTRL('W'):		/* (^W)izard mode */
 	if (wizard) {
 	    wizard = FALSE;
 	    msg_print("Wizard mode off.");
@@ -1539,7 +1563,7 @@ do_command(com_val)
 	prt_winner();
 	free_turn_flag = TRUE;
 	break;
-      case CTRL('X'):		   /* e(^X)it and save */
+      case CTRL('X'):		/* e(^X)it and save */
 	if (total_winner) {
 	    msg_print("You are a Total Winner,  your character must be retired.");
 	    if (rogue_like_commands)
@@ -1561,34 +1585,34 @@ do_command(com_val)
 	    msg_print("You cannot be sure what is real and what is not!");
 	else {
 	    draw_cave();
-	    creatures(FALSE);	   /* draw monsters */
-	    prt_equippy_chars();   /* redraw equippy chars */
+	    creatures(FALSE);	  /* draw monsters */
+	    prt_equippy_chars();  /* redraw equippy chars */
 	}
 	free_turn_flag = TRUE;
 	break;
 #ifdef TARGET
-      case '*':	/* select a target (sorry, no intuitive letter keys were
-		   left: a/A for aim, t/T for target, f/F for focus,
-		   s/S for select, c/C for choose and p/P for pick
-		   were all already taken.  Wiz light command moved
-		   to '$', which was unused. -CFT */
-	target();	/* target code taken from Morgul -CFT */
+/* select a target (sorry, no intuitive letter keys were left: a/A for aim,
+ * t/T for target, f/F for focus, s/S for select, c/C for choose and p/P for pick
+ *  were all already taken.  Wiz light command moved to '$', which was unused. -CFT
+ */
+      case '*':
+	target();		/* target code taken from Morgul -CFT */
 	free_turn_flag = TRUE;
 	break;    			
 #endif
-      case '=':		   /* (=) set options */
+      case '=':			/* (=) set options */
 	save_screen();
 	set_options();
 	restore_screen();
 	free_turn_flag = TRUE;
 	break;
-      case '{':		   /* ({) inscribe an object    */
+      case '{':			/* ({) inscribe an object    */
 	scribe_object();
 	free_turn_flag = TRUE;
 	break;
-      case '!':		   /* (!) escape to the shell */
+      case '!':			/* (!) escape to the shell */
 	if (!wizard)
-#ifdef MSDOS			   /* Let's be a little more accurate... */
+#ifdef MSDOS			/* Let's be a little more accurate... */
 	    msg_print("Sorry, Angband doesn't leave enough free memory for a subshell.");
 #else
 	    msg_print("Sorry, inferior shells are not allowed from ANGBAND.");
@@ -1597,76 +1621,76 @@ do_command(com_val)
 	    rerate();
 	free_turn_flag = TRUE;
 	break;
-      case ESCAPE:		   /* (ESC)   do nothing. */
-      case ' ':		   /* (space) do nothing. */
+      case ESCAPE:		/* (ESC)   do nothing. */
+      case ' ':			/* (space) do nothing. */
 	free_turn_flag = TRUE;
 	break;
-      case 'b':		   /* (b) down, left	(1) */
+      case 'b':			/* (b) down, left	(1) */
 	move_char(1, do_pickup);
 	break;
-      case 'j':		   /* (j) down		(2) */
+      case 'j':			/* (j) down		(2) */
 	move_char(2, do_pickup);
 	break;
-      case 'n':		   /* (n) down, right	(3) */
+      case 'n':			/* (n) down, right	(3) */
 	move_char(3, do_pickup);
 	break;
-      case 'h':		   /* (h) left		(4) */
+      case 'h':			/* (h) left		(4) */
 	move_char(4, do_pickup);
 	break;
-      case 'l':		   /* (l) right		(6) */
+      case 'l':			/* (l) right		(6) */
 	move_char(6, do_pickup);
 	break;
-      case 'y':		   /* (y) up, left		(7) */
+      case 'y':			/* (y) up, left		(7) */
 	move_char(7, do_pickup);
 	break;
-      case 'k':		   /* (k) up		(8) */
+      case 'k':			/* (k) up		(8) */
 	move_char(8, do_pickup);
 	break;
-      case 'u':		   /* (u) up, right	(9) */
+      case 'u':			/* (u) up, right	(9) */
 	move_char(9, do_pickup);
 	break;
-      case 'B':		   /* (B) run down, left	(. 1) */
+      case 'B':			/* (B) run down, left	(. 1) */
 	find_init(1);
 	break;
-      case 'J':		   /* (J) run down		(. 2) */
+      case 'J':			/* (J) run down		(. 2) */
 	find_init(2);
 	break;
-      case 'N':		   /* (N) run down, right	(. 3) */
+      case 'N':			/* (N) run down, right	(. 3) */
 	find_init(3);
 	break;
-      case 'H':		   /* (H) run left		(. 4) */
+      case 'H':			/* (H) run left		(. 4) */
 	find_init(4);
 	break;
-      case 'L':		   /* (L) run right	(. 6) */
+      case 'L':			/* (L) run right	(. 6) */
 	find_init(6);
 	break;
-      case 'Y':		   /* (Y) run up, left	(. 7) */
+      case 'Y':			/* (Y) run up, left	(. 7) */
 	find_init(7);
 	break;
-      case 'K':		   /* (K) run up		(. 8) */
+      case 'K':			/* (K) run up		(. 8) */
 	find_init(8);
 	break;
-      case 'U':		   /* (U) run up, right	(. 9) */
+      case 'U':			/* (U) run up, right	(. 9) */
 	find_init(9);
 	break;
-      case '/':		   /* (/) identify a symbol */
+      case '/':			/* (/) identify a symbol */
 	ident_char();
 	free_turn_flag = TRUE;
 	break;
-      case '.':		   /* (.) stay in one place (5) */
+      case '.':			/* (.) stay in one place (5) */
 	move_char(5, do_pickup);
 	if (command_count > 1) {
 	    command_count--;
 	    rest();
 	}
 	break;
-      case '<':		   /* (<) go down a staircase */
+      case '<':			/* (<) go down a staircase */
 	go_up();
 	break;
-      case '>':		   /* (>) go up a staircase */
+      case '>':			/* (>) go up a staircase */
 	go_down();
 	break;
-      case '?':		   /* (?) help with commands */
+      case '?':			/* (?) help with commands */
 	if (rogue_like_commands)
 	    helpfile(ANGBAND_HELP);
 	else
@@ -1674,53 +1698,52 @@ do_command(com_val)
 	free_turn_flag = TRUE;
 	break;
 #ifdef ALLOW_SCORE
-      case 'v': /* score patch originally by Mike Welsh mikewe@acacia.cs.pdx.edu */
+      case 'v':   /* score patch originally by Mike Welsh mikewe@acacia.cs.pdx.edu */
 	sprintf(prt1,"Your current score is: %ld", total_points());
 	msg_print(prt1);
 	break;
 #endif
-      case 'f':		   /* (f)orce		(B)ash */
+      case 'f':			/* (f)orce		(B)ash */
 	bash();
 	break;
-      case 'A':		   /* (A)ctivate		(A)ctivate */
+      case 'A':			/* (A)ctivate		(A)ctivate */
 	activate();
 	break;
-      case 'C':		   /* (C)haracter description */
+      case 'C':			/* (C)haracter description */
 	save_screen();
 	change_name();
 	restore_screen();
 	free_turn_flag = TRUE;
 	break;
-      case 'D':		   /* (D)isarm trap */
+      case 'D':			/* (D)isarm trap */
 	disarm_trap();
 	break;
-      case 'E':		   /* (E)at food */
+      case 'E':			/* (E)at food */
 	eat();
 	break;
-      case 'F':		   /* (F)ill lamp */
+      case 'F':			/* (F)ill lamp */
 	refill_lamp();
 	break;
-      case 'G':		   /* (G)ain magic spells */
+      case 'G':			/* (G)ain magic spells */
 	gain_spells();
 	break;
-      case 'g':		   /* (g)et an object... */
+      case 'g':			/* (g)et an object... */
 	if (prompt_carry_flag) {
 	    if (cave[char_row][char_col].tptr != 0)	/* minor change -CFT */
 		carry(char_row, char_col, TRUE);
 	} else
 	    free_turn_flag = TRUE;
 	break;
-      case 'W':		   /* (W)here are we on the map	(L)ocate on
-				    * map */
+      case 'W':			/* (W)here are we on the map	(L)ocate on map */
 	if ((py.flags.blind > 0) || no_light())
 	    msg_print("You can't see your map.");
 	else {
 	    int                 cy, cx, p_y, p_x;
 #ifdef TARGET
-	    int temp = target_mode;  /* If in target_mode, player will not be
-					given a chance to pick a direction.
-					So we save it, force it off, and then
-					ask for the direction -CFT */
+/* If in target_mode, player will not be given a chance to pick a direction.
+ * So we save it, force it off, and then ask for the direction -CFT
+ */
+	    int temp = target_mode;
 	    target_mode = FALSE;
 #endif
 
@@ -1744,12 +1767,11 @@ do_command(com_val)
 			      p_y, p_x, tmp_str);
 		if (!get_dir(out_val, &dir_val))
 		    break;
-	    /*
-	     * -CJS- Should really use the move function, but what the
-	     * hell. This is nicer, as it moves exactly to the same place
-	     * in another section. The direction calculation is not
-	     * intuitive. Sorry. 
-	     */
+
+/* -CJS- Should really use the move function, but what the hell. This is nicer,
+ * as it moves exactly to the same place in another section. The direction
+ * calculation is not intuitive. Sorry.
+ */
 		for (;;) {
 		    x += ((dir_val - 1) % 3 - 1) * SCREEN_WIDTH / 2;
 		    y -= ((dir_val - 1) / 3 - 1) * SCREEN_HEIGHT / 2;
@@ -1774,117 +1796,121 @@ do_command(com_val)
 	}
 	free_turn_flag = TRUE;
 	break;
-      case 'R':		   /* (R)est a while */
+      case 'R':			/* (R)est a while */
 	rest();
 	break;
-      case '#':		   /* (#) search toggle	(S)earch toggle */
+      case '#':			/* (#) search toggle	(S)earch toggle */
 	if (py.flags.status & PY_SEARCH)
 	    search_off();
 	else
 	    search_on();
 	free_turn_flag = TRUE;
 	break;
-      case CTRL('B'):		   /* (^B) tunnel down left	(T 1) */
+      case CTRL('B'):		/* (^B) tunnel down left	(T 1) */
 	tunnel(1);
 	break;
-      case CTRL('M'):		   /* cr must be treated same as lf. */
-      case CTRL('J'):		   /* (^J) tunnel down		(T 2) */
+      case CTRL('M'):		/* cr must be treated same as lf. */
+      case CTRL('J'):		/* (^J) tunnel down		(T 2) */
 	tunnel(2);
 	break;
-      case CTRL('N'):		   /* (^N) tunnel down right	(T 3) */
+      case CTRL('N'):		/* (^N) tunnel down right	(T 3) */
 	tunnel(3);
 	break;
-      case CTRL('H'):		   /* (^H) tunnel left		(T 4) */
+      case CTRL('H'):		/* (^H) tunnel left		(T 4) */
 	tunnel(4);
 	break;
-      case CTRL('L'):		   /* (^L) tunnel right		(T 6) */
+      case CTRL('L'):		/* (^L) tunnel right		(T 6) */
 	tunnel(6);
 	break;
-      case CTRL('Y'):		   /* (^Y) tunnel up left		(T 7) */
+      case CTRL('Y'):		/* (^Y) tunnel up left		(T 7) */
 	tunnel(7);
 	break;
-      case CTRL('K'):		   /* (^K) tunnel up		(T 8) */
+      case CTRL('K'):		/* (^K) tunnel up		(T 8) */
 	tunnel(8);
 	break;
-      case CTRL('U'):		   /* (^U) tunnel up right		(T 9) */
+      case CTRL('U'):		/* (^U) tunnel up right		(T 9) */
 	tunnel(9);
 	break;
-      case 'z':		   /* (z)ap a wand		(a)im a wand */
+      case 'z':			/* (z)ap a wand		(a)im a wand */
 	aim();
 	break;
-      case 'a':		   /* (a)ctivate a rod	(z)ap a rod */
+      case 'a':			/* (a)ctivate a rod	(z)ap a rod */
 	activate_rod();
 	break;
       case 'M':
 	screen_map();
 	free_turn_flag = TRUE;
 	break;
-      case 'P':		   /* (P)eruse a book	(B)rowse in a book */
+      case 'P':			/* (P)eruse a book	(B)rowse in a book */
 	examine_book();
 	free_turn_flag = TRUE;
 	break;
-      case 'c':		   /* (c)lose an object */
+      case 'c':			/* (c)lose an object */
 	closeobject();
 	break;
-      case 'd':		   /* (d)rop something */
+      case 'd':			/* (d)rop something */
 	inven_command('d');
 	break;
-      case 'e':		   /* (e)quipment list */
+      case 'e':			/* (e)quipment list */
 	inven_command('e');
 	break;
-      case 't':		   /* (t)hrow something	(f)ire something */
+      case 't':			/* (t)hrow something	(f)ire something */
 	throw_object();
 	break;
-      case 'i':		   /* (i)nventory list */
+      case 'i':			/* (i)nventory list */
 	inven_command('i');
 	break;
-      case 'S':		   /* (S)pike a door	(j)am a door */
+      case 'S':			/* (S)pike a door	(j)am a door */
 	jamdoor();
 	break;
-      case 'x':		   /* e(x)amine surrounds	(l)ook about */
+      case 'x':			/* e(x)amine surrounds	(l)ook about */
 	look();
 	free_turn_flag = TRUE;
 	break;
-      case 'm':		   /* (m)agic spells */
+      case 'm':			/* (m)agic spells */
 	cast();
 	break;
-      case 'o':		   /* (o)pen something */
+      case 'o':			/* (o)pen something */
 	openobject();
 	break;
-      case 'p':		   /* (p)ray */
+      case 'p':			/* (p)ray */
 	pray();
 	break;
-      case 'q':		   /* (q)uaff */
+      case 'q':			/* (q)uaff */
 	quaff();
 	break;
-      case 'r':		   /* (r)ead */
+      case 'r':			/* (r)ead */
 	read_scroll();
 	break;
-      case 's':		   /* (s)earch for a turn */
+      case 's':			/* (s)earch for a turn */
 	search(char_row, char_col, py.misc.srh);
 	break;
-      case 'T':		   /* (T)ake off something	(t)ake off */
+      case 'T':			/* (T)ake off something	(t)ake off */
 	inven_command('t');
 	break;
-      case 'Z':		   /* (Z)ap a staff	(u)se a staff */
+      case 'Z':			/* (Z)ap a staff	(u)se a staff */
 	use();
 	break;
-      case 'V':		   /* (V)ersion of game */
+      case 'V':			/* (V)ersion of game */
 	helpfile(ANGBAND_VER);
 	free_turn_flag = TRUE;
 	break;
-      case 'w':		   /* (w)ear or wield */
+      case 'w':			/* (w)ear or wield */
 	inven_command('w');
 	break;
-      case 'X':		   /* e(X)change weapons	e(x)change */
+      case 'X':			/* e(X)change weapons	e(x)change */
 	inven_command('x');
 	break;
-#ifdef ALLOW_ARTIFACT_CHECK
+#ifdef ALLOW_ARTIFACT_CHECK /* -CWS */
       case '~':
-	artifact_check_no_file();
+	if ((!wizard) && (dun_level != 0)) {
+	    msg_print("You need to be on the town level to check artifacts!");
+	    msg_print(NULL);		/* make sure can see the message -CWS */
+	} else
+	    artifact_check_no_file();
 	break;
 #endif
-#ifdef ALLOW_CHECK_UNIQUES
+#ifdef ALLOW_CHECK_UNIQUES /* -CWS */
       case '|':
 	check_uniques();
 	break;
@@ -1893,9 +1919,9 @@ do_command(com_val)
 	if (wizard) {
 	    free_turn_flag = TRUE; /* Wizard commands are free moves */
 	    switch (com_val) {
-	      case '\\':	/* \ wizard help */
+	      case '\\':	   /* \ wizard help */
 		helpfile(ANGBAND_WIZ_HELP);
-	      case CTRL('A'):	/* ^A = Cure all */
+	      case CTRL('A'):	   /* ^A = Cure all */
 		(void)remove_all_curse();
 		(void)cure_blindness();
 		(void)cure_confusion();
@@ -2045,7 +2071,7 @@ do_command(com_val)
 /* Check whether this command will accept a count.     -CJS-  */
 static int 
 valid_countcommand(c)
-    char                c;
+char c;
 {
     switch (c) {
       case 'Q':
@@ -2144,11 +2170,11 @@ valid_countcommand(c)
 /* Regenerate hit points				-RAK-	 */
 static void 
 regenhp(percent)
-    int                 percent;
+int percent;
 {
     register struct misc *p_ptr;
-    register int32      new_chp, new_chp_frac;
-    int                 old_chp;
+    register int32        new_chp, new_chp_frac;
+    int                   old_chp;
 
     p_ptr = &py.misc;
     old_chp = p_ptr->chp;
@@ -2177,11 +2203,11 @@ regenhp(percent)
 /* Regenerate mana points				-RAK-	 */
 static void 
 regenmana(percent)
-    int                 percent;
+int percent;
 {
     register struct misc *p_ptr;
-    register int32      new_mana, new_mana_frac;
-    int                 old_cmana;
+    register int32        new_mana, new_mana_frac;
+    int                   old_cmana;
 
     p_ptr = &py.misc;
     old_cmana = p_ptr->cmana;
@@ -2207,36 +2233,12 @@ regenmana(percent)
 }
 
 
-#if 0 /* no longer used? -CWS */
-/* Is an item an enchanted weapon or armor and we don't know?  -CJS- */
-/* only returns true if it is a good enchantment */
-static int 
-enchanted(t_ptr)
-    register inven_type *t_ptr;
-{
-    if (t_ptr->tval < TV_MIN_ENCHANT || t_ptr->tval > TV_MAX_ENCHANT
-	|| t_ptr->flags & TR_CURSED)
-	return FALSE;
-    if (known2_p(t_ptr))
-	return FALSE;
-    if (t_ptr->ident & ID_MAGIK)
-	return FALSE;
-    if (t_ptr->tohit > 0 || t_ptr->todam > 0 || t_ptr->toac > 0)
-	return TRUE;
-    if ((0x4000107fL & t_ptr->flags) && t_ptr->p1 > 0)
-	return TRUE;
-    if (0x07ffe980L & t_ptr->flags)
-	return TRUE;
-
-    return FALSE;
-}
-#endif
 
 int 
 ruin_stat(stat)
-    register int        stat;
+register int stat;
 {
-    register int        tmp_stat;
+    register int tmp_stat;
 
     tmp_stat = py.stats.cur_stat[stat];
     if (tmp_stat > 3) {
@@ -2263,10 +2265,10 @@ ruin_stat(stat)
 static void 
 activate()
 {
-    int                 i, a, flag, first, num, j, redraw, dir;
-    char                out_str[200], tmp[200], tmp2[200], choice;
-    inven_type         *i_ptr;
-    struct misc        *m_ptr;
+    int          i, a, flag, first, num, j, redraw, dir, test = FALSE;
+    char         out_str[200], tmp[200], tmp2[200], choice;
+    inven_type  *i_ptr;
+    struct misc *m_ptr;
 
     flag = FALSE;
     redraw = FALSE;
@@ -2288,29 +2290,28 @@ activate()
     sprintf(out_str, "Activate which item? (%c-%c, * to list, ESC to exit) ?",
 	    'a', 'a' + (num - 1));
     flag = FALSE;
-    while (!flag && get_com(out_str, &choice)) {
-	if ((choice == '*') && !redraw) {	/* don't save screen again if
-						 * it's already listed, OW it
-						 * doesn't clear -CFT */
+    while (!flag){
+	if (!get_com(out_str, &choice))  /* on escape, get_com returns false: */
+	    choice = '\033';             /* so it's set here to ESC.  Wierd huh? -CFT */
+
+	if ((choice=='*') && !redraw) {  /* don't save screen again if it's already
+					  * listed, OW it doesn't clear -CFT */
 	    save_screen();
-	    j = 0;
+	    j=0;
 	    if (!redraw) {
 		for (i = first; i < (INVEN_ARRAY_SIZE - 1); i++) {
 		    if ((inventory[i].flags2 & TR_ACTIVATE) &&
 			known2_p(&(inventory[i]))) {
 			objdes(tmp2, &inventory[i], TRUE);
 			sprintf(tmp, "%c) %-61s", 'a' + j, tmp2);
-			erase_line(1 + j, 13);	/* we display at 15, but
-						 * erase from 13 to give a
-						 * couple of spaces, so it
-						 * looks tidy.  -CFT */
+			erase_line(1 + j, 13);
+/* we display at 15, but erase from 13 to give a couple of spaces,
+ * so it looks tidy.  -CFT */
 
 			sprintf(tmp, "%c) %-40s", 'a' + j, tmp2);
-			prt(tmp, 1 + j, 15);	/* No need to check for
-						 * bottom of screen, since
-						 * only have 11 items in
-						 * equip, so will never reach
-						 * bottom... -CFT */
+			prt(tmp, 1 + j, 15);
+/* No need to check for bottom of screen, since only have 11 items in equip,
+ * so will never reach bottom... -CFT */
 			j++;
 		    }
 		}
@@ -2318,8 +2319,10 @@ activate()
 		continue;
 	    }
 	} else {
-	    if (choice >= 'A' && choice <= ('A' + (num - 1)))
+	    if (choice >= 'A' && choice <= ('A' + (num - 1))) {
 		choice -= 'A';
+		test = TRUE; /* test to see if he means it */
+	    }
 	    else if (choice >= 'a' && choice <= ('a' + (num - 1)))
 		choice -= 'a';
 	    else if (choice == '\033') {
@@ -2349,6 +2352,15 @@ activate()
 		    j++;
 		}
 	    }
+
+	    if ( (test && verify("Activate", i)) || !test)
+		flag = TRUE;
+	    else {
+		flag = TRUE;           /* exit loop, he didn't want to try it... */
+		free_turn_flag = TRUE; /* but he didn't do anything either */
+		continue;
+	    }
+
 	    if (inventory[i].timeout > 0) {
 		msg_print("It whines, glows and fades...");
 		break;
@@ -2373,8 +2385,7 @@ activate()
 				dir = randint(9);
 			    } while (dir == 5);
 			}
-			fire_bolt(GF_FIRE, dir, char_row, char_col, damroll(9, 8),
-				  "Fire Bolt");
+			fire_bolt(GF_FIRE, dir, char_row, char_col, damroll(9, 8));
 			inventory[i].timeout = 5 + randint(10);
 		    }
 		} else if (inventory[i].name2 == SN_NIMTHANC) {
@@ -2386,8 +2397,7 @@ activate()
 				dir = randint(9);
 			    } while (dir == 5);
 			}
-			fire_bolt(GF_FROST, dir, char_row, char_col, damroll(6, 8),
-				  "Frost Bolt");
+			fire_bolt(GF_FROST, dir, char_row, char_col, damroll(6, 8));
 			inventory[i].timeout = 4 + randint(8);
 		    }
 		} else if (inventory[i].name2 == SN_DETHANC) {
@@ -2399,8 +2409,7 @@ activate()
 				dir = randint(9);
 			    } while (dir == 5);
 			}
-			fire_bolt(GF_LIGHTNING, dir, char_row, char_col, damroll(4, 8),
-				  "Lightning Bolt");
+			fire_bolt(GF_LIGHTNING, dir, char_row, char_col, damroll(4, 8));
 			inventory[i].timeout = 3 + randint(7);
 		    }
 		} else if (inventory[i].name2 == SN_RILIA) {
@@ -2412,8 +2421,7 @@ activate()
 				dir = randint(9);
 			    } while (dir == 5);
 			}
-			fire_ball(GF_POISON_GAS, dir, char_row, char_col, 12, 3,
-				  "Stinking Cloud");
+			fire_ball(GF_POISON_GAS, dir, char_row, char_col, 12, 3);
 			inventory[i].timeout = 3 + randint(3);
 		    }
 		} else if (inventory[i].name2 == SN_BELANGIL) {
@@ -2425,8 +2433,7 @@ activate()
 				dir = randint(9);
 			    } while (dir == 5);
 			}
-			fire_ball(GF_FROST, dir, char_row, char_col, 48, 2,
-				  "Frost Ball");
+			fire_ball(GF_FROST, dir, char_row, char_col, 48, 2);
 			inventory[i].timeout = 3 + randint(7);
 		    }
 		}
@@ -2450,8 +2457,7 @@ activate()
 				dir = randint(9);
 			    } while (dir == 5);
 			}
-			fire_ball(GF_FROST, dir, char_row, char_col, 100, 2,
-				  "Storm of Ice");
+			fire_ball(GF_FROST, dir, char_row, char_col, 100, 2);
 			inventory[i].timeout = 300;
 		    }
 		} else if (inventory[i].name2 == SN_ANDURIL) {
@@ -2463,8 +2469,7 @@ activate()
 				dir = randint(9);
 			    } while (dir == 5);
 			}
-			fire_ball(GF_FIRE, dir, char_row, char_col, 72, 2,
-				  "huge ball of Fire");
+			fire_ball(GF_FIRE, dir, char_row, char_col, 72, 2);
 			inventory[i].timeout = 400;
 		    }
 		}
@@ -2479,8 +2484,7 @@ activate()
 				dir = randint(9);
 			    } while (dir == 5);
 			}
-			fire_ball(GF_FIRE, dir, char_row, char_col, 72, 3,
-				  "huge ball of Fire");
+			fire_ball(GF_FIRE, dir, char_row, char_col, 72, 3);
 			inventory[i].timeout = 100;
 		    }
 		}
@@ -2579,16 +2583,18 @@ activate()
 	      case (75):
 		if (inventory[i].name2 == SN_CUBRAGOL) {
 		    for (a = 0; a < INVEN_WIELD; a++)
-			if (inventory[a].tval == TV_BOLT)
+/* search for bolts that are not cursed and are not already named -CWS */
+			if ((inventory[a].tval == TV_BOLT) &&
+			    !(inventory[a].flags & TR_CURSED) &&
+			    (inventory[a].name2 == SN_NULL))
 			    break;
-		    if (a < INVEN_WIELD && (inventory[a].name2 == SN_NULL)) {
+		    if (a < INVEN_WIELD) {
 			i_ptr = &inventory[a];
 			msg_print("Your bolts are covered in a fiery aura!");
 			i_ptr->name2 = SN_FIRE;
-			i_ptr->flags |= TR_FLAME_TONGUE;
-			i_ptr->tohit += 3 + randint(3);
-			i_ptr->todam += 3 + randint(3);
+			i_ptr->flags |= (TR_FLAME_TONGUE|TR_RES_FIRE);
 			i_ptr->cost += 25;
+			enchant(i_ptr, 3+randint(3), ENCH_TOHIT|ENCH_TODAM);
 			calc_bonuses();
 		    } else {
 			msg_print("The fiery enchantment fails.");
@@ -2607,8 +2613,7 @@ activate()
 				dir = randint(9);
 			    } while (dir == 5);
 			}
-			fire_bolt(GF_FROST, dir, char_row, char_col, damroll(12, 8),
-				  "bolt of Frost");
+			fire_bolt(GF_FROST, dir, char_row, char_col, damroll(12, 8));
 			inventory[i].timeout = 500;
 		    }
 		}
@@ -2623,8 +2628,7 @@ activate()
 				dir = randint(9);
 			    } while (dir == 5);
 			}
-			fire_ball(GF_FROST, dir, char_row, char_col, 100, 2,
-				  "huge ball of Frost");
+			fire_ball(GF_FROST, dir, char_row, char_col, 100, 2);
 			inventory[i].timeout = 500;
 		    }
 		} else if (inventory[i].name2 == SN_OROME) {
@@ -2716,8 +2720,7 @@ activate()
 				dir = randint(9);
 			    } while (dir == 5);
 			}
-			fire_ball(GF_CONFUSION, dir, char_row, char_col, 30, 3,
-				  "blast of Confusion");
+			confuse_monster(dir, char_row, char_col, 20);
 			inventory[i].timeout = 15;
 		    }
 		}
@@ -2733,7 +2736,7 @@ activate()
 			    } while (dir == 5);
 			}
 			fire_bolt(GF_MAGIC_MISSILE, dir, char_row, char_col,
-				  damroll(2, 6), "Magic Missile");
+				  damroll(2, 6));
 			inventory[i].timeout = 2;
 		    }
 		}
@@ -2748,8 +2751,10 @@ activate()
 				dir = randint(9);
 			    } while (dir == 5);
 			}
-			fire_bolt(GF_FIRE, dir, char_row, char_col, damroll(9, 8),
-				  "Fire Bolt");
+			if (randint(4)==1)
+			    line_spell(GF_FIRE, dir, char_row, char_col, damroll(9,8));
+			else
+			    fire_bolt(GF_FIRE, dir, char_row, char_col, damroll(9,8));
 			inventory[i].timeout = 5 + randint(10);
 		    }
 		} else if (inventory[i].name2 == SN_PAURNIMMEN) {
@@ -2761,8 +2766,7 @@ activate()
 				dir = randint(9);
 			    } while (dir == 5);
 			}
-			fire_bolt(GF_FROST, dir, char_row, char_col, damroll(6, 8),
-				  "Frost Bolt");
+			fire_bolt(GF_FROST, dir, char_row, char_col, damroll(6, 8));
 			inventory[i].timeout = 4 + randint(8);
 		    }
 		} else if (inventory[i].name2 == SN_PAURAEGEN) {
@@ -2774,8 +2778,7 @@ activate()
 				dir = randint(9);
 			    } while (dir == 5);
 			}
-			fire_bolt(GF_LIGHTNING, dir, char_row, char_col, damroll(4, 8),
-				  "Lightning Bolt");
+			fire_bolt(GF_LIGHTNING, dir, char_row, char_col, damroll(4, 8));
 			inventory[i].timeout = 3 + randint(7);
 		    }
 		} else if (inventory[i].name2 == SN_PAURNEN) {
@@ -2787,8 +2790,7 @@ activate()
 				dir = randint(9);
 			    } while (dir == 5);
 			}
-			fire_bolt(GF_ACID, dir, char_row, char_col, damroll(5, 8),
-				  "Acid Bolt");
+			fire_bolt(GF_ACID, dir, char_row, char_col, damroll(5, 8));
 			inventory[i].timeout = 4 + randint(7);
 		    }
 		}
@@ -2803,8 +2805,7 @@ activate()
 				dir = randint(9);
 			    } while (dir == 5);
 			}
-			fire_bolt(GF_ARROW, dir, char_row, char_col, 150,
-				  "set of spikes");
+			fire_bolt(GF_ARROW, dir, char_row, char_col, 150);
 			inventory[i].timeout = 88 + randint(88);
 		    }
 		}
@@ -2832,8 +2833,7 @@ activate()
 			    dir = randint(9);
 			} while (dir == 5);
 		    }
-		    fire_ball(GF_FIRE, dir, char_row, char_col, 120, 3,
-			      "huge ball of Fire");
+		    fire_ball(GF_FIRE, dir, char_row, char_col, 120, 3);
 		    inventory[i].timeout = 222 + randint(222);
 		}
 		break;
@@ -2846,8 +2846,7 @@ activate()
 			    dir = randint(9);
 			} while (dir == 5);
 		    }
-		    fire_ball(GF_FROST, dir, char_row, char_col, 200, 3,
-			      "huge ball of Frost");
+		    fire_ball(GF_FROST, dir, char_row, char_col, 200, 3);
 		    inventory[i].timeout = 222 + randint(333);
 		}
 		break;
@@ -2860,8 +2859,7 @@ activate()
 			    dir = randint(9);
 			} while (dir == 5);
 		    }
-		    fire_ball(GF_LIGHTNING, dir, char_row, char_col, 250, 3,
-			      "huge ball of Lightning");
+		    fire_ball(GF_LIGHTNING, dir, char_row, char_col, 250, 3);
 		    inventory[i].timeout = 222 + randint(444);
 		}
 		break;
@@ -2909,8 +2907,7 @@ activate()
 				dir = randint(9);
 			    } while (dir == 5);
 			}
-			fire_ball(GF_MANA, dir, char_row, char_col, 300, 3,
-				  "huge ball of Raw Mana");
+			fire_ball(GF_MANA, dir, char_row, char_col, 300, 3);
 		    }
 		    break;
 		  default:
@@ -2921,8 +2918,7 @@ activate()
 				dir = randint(9);
 			    } while (dir == 5);
 			}
-			fire_bolt(GF_MANA, dir, char_row, char_col, 250,
-				  "bolt of Raw Mana");
+			fire_bolt(GF_MANA, dir, char_row, char_col, 250);
 		    }
 		}
 		inventory[i].timeout = 444 + randint(444);
@@ -2936,8 +2932,7 @@ activate()
 			    dir = randint(9);
 			} while (dir == 5);
 		    }
-		    fire_ball(GF_LIGHTNING, dir, char_row, char_col, 100, 2,
-			      "huge ball of Lightning");
+		    fire_ball(GF_LIGHTNING, dir, char_row, char_col, 100, 2);
 		    inventory[i].timeout = 444 + randint(444);
 		}
 		break;
@@ -2950,8 +2945,7 @@ activate()
 			    dir = randint(9);
 			} while (dir == 5);
 		    }
-		    fire_ball(GF_FROST, dir, char_row, char_col, 110, 2,
-			      "huge ball of Frost");
+		    fire_ball(GF_FROST, dir, char_row, char_col, 110, 2);
 		    inventory[i].timeout = 444 + randint(444);
 		}
 		break;
@@ -2964,8 +2958,7 @@ activate()
 			    dir = randint(9);
 			} while (dir == 5);
 		    }
-		    fire_ball(GF_ACID, dir, char_row, char_col, 130, 2,
-			      "huge ball of Acid");
+		    fire_ball(GF_ACID, dir, char_row, char_col, 130, 2);
 		    inventory[i].timeout = 444 + randint(444);
 		}
 		break;
@@ -2978,8 +2971,7 @@ activate()
 			    dir = randint(9);
 			} while (dir == 5);
 		    }
-		    fire_ball(GF_POISON_GAS, dir, char_row, char_col, 150, 2,
-			      "huge cloud of Poison Gas");
+		    fire_ball(GF_POISON_GAS, dir, char_row, char_col, 150, 2);
 		    inventory[i].timeout = 444 + randint(444);
 		}
 		break;
@@ -2992,8 +2984,7 @@ activate()
 			    dir = randint(9);
 			} while (dir == 5);
 		    }
-		    fire_ball(GF_FIRE, dir, char_row, char_col, 200, 2,
-			      "huge ball of Fire");
+		    fire_ball(GF_FIRE, dir, char_row, char_col, 200, 2);
 		    inventory[i].timeout = 444 + randint(444);
 		}
 		break;
@@ -3017,18 +3008,11 @@ activate()
 				  ((choice == 3) ? "acid" :
 				((choice == 4) ? "poison gas" : "fire")))));
 			msg_print(tmp2);
-			sprintf(tmp2, "huge %s of %s",
-				((choice == 4) ? "cloud" : "ball"),
-				((choice == 1) ? "Lightning" :
-				 ((choice == 2) ? "Frost" :
-				  ((choice == 3) ? "Acid" :
-				((choice == 4) ? "Poison Gas" : "Fire")))));
 			fire_ball(((choice == 1) ? GF_LIGHTNING :
 				   ((choice == 2) ? GF_FROST :
 				    ((choice == 3) ? GF_ACID :
 			       ((choice == 4) ? GF_POISON_GAS : GF_FIRE)))),
-				  dir, char_row, char_col, 250, 2,
-				  tmp2);
+				  dir, char_row, char_col, 250, 2);
 			inventory[i].timeout = 222 + randint(222);
 		    }
 		}
@@ -3042,8 +3026,7 @@ activate()
 			    dir = randint(9);
 			} while (dir == 5);
 		    }
-		    fire_ball(GF_CONFUSION, dir, char_row, char_col, 120, 2,
-			      "huge blast of Confusion");
+		    fire_ball(GF_CONFUSION, dir, char_row, char_col, 120, 2);
 		    inventory[i].timeout = 444 + randint(444);
 		}
 		break;
@@ -3056,8 +3039,7 @@ activate()
 			    dir = randint(9);
 			} while (dir == 5);
 		    }
-		    fire_ball(GF_SOUND, dir, char_row, char_col, 130, 2,
-			      "huge blast of Sound");
+		    fire_ball(GF_SOUND, dir, char_row, char_col, 130, 2);
 		    inventory[i].timeout = 444 + randint(444);
 		}
 		break;
@@ -3073,10 +3055,8 @@ activate()
 		    sprintf(tmp2, "You breathe %s...",
 			    ((choice == 1 ? "chaos" : "disenchantment")));
 		    msg_print(tmp2);
-		    sprintf(tmp2, "huge ball of %s",
-			    ((choice == 1 ? "Chaos" : "Disenchantment")));
 		    fire_ball((choice == 1 ? GF_CHAOS : GF_DISENCHANT), dir,
-			      char_row, char_col, 220, 2, tmp2);
+			      char_row, char_col, 220, 2);
 		    inventory[i].timeout = 300 + randint(300);
 		}
 		break;
@@ -3092,10 +3072,8 @@ activate()
 		    sprintf(tmp2, "You breathe %s...",
 			    ((choice == 1 ? "sound" : "shards")));
 		    msg_print(tmp2);
-		    sprintf(tmp2, "huge %s of %s", ((choice == 1) ? "blast" : "ball"),
-			    ((choice == 1 ? "Sound" : "Shards")));
 		    fire_ball((choice == 1 ? GF_SOUND : GF_SHARDS), dir,
-			      char_row, char_col, 230, 2, tmp2);
+			      char_row, char_col, 230, 2);
 		    inventory[i].timeout = 300 + randint(300);
 		}
 		break;
@@ -3113,14 +3091,10 @@ activate()
 			     ((choice == 2) ? "disenchantment" :
 			      ((choice == 3) ? "sound" : "shards"))));
 		    msg_print(tmp2);
-		    sprintf(tmp2, "huge %s of %s", ((choice == 3) ? "blast" : "ball"),
-			    ((choice == 1) ? "Chaos" :
-			     ((choice == 2) ? "Disenchantment" :
-			      ((choice == 3) ? "Sound" : "Shards"))));
 		    fire_ball(((choice == 1) ? GF_CHAOS :
 			       ((choice == 2) ? GF_DISENCHANT :
 				((choice == 3) ? GF_SOUND : GF_SHARDS))),
-			      dir, char_row, char_col, 250, 2, tmp2);
+			      dir, char_row, char_col, 250, 2);
 		    inventory[i].timeout = 300 + randint(300);
 		}
 		break;
@@ -3136,10 +3110,8 @@ activate()
 		    sprintf(tmp2, "You breathe %s...",
 			    ((choice == 1 ? "light" : "darkness")));
 		    msg_print(tmp2);
-		    sprintf(tmp2, "huge %s of %s", ((choice == 1) ? "flash" : "sphere"),
-			    ((choice == 1 ? "Light" : "Darkness")));
 		    fire_ball((choice == 1 ? GF_LIGHT : GF_DARK), dir,
-			      char_row, char_col, 200, 2, tmp2);
+			      char_row, char_col, 200, 2);
 		    inventory[i].timeout = 300 + randint(300);
 		}
 		break;
@@ -3164,8 +3136,7 @@ activate()
 				dir = randint(9);
 			    } while (dir == 5);
 			}
-			fire_ball(GF_MAGIC_MISSILE, dir, char_row, char_col, 300, 2,
-				  "massive ball of the Elements");
+			fire_ball(GF_MAGIC_MISSILE, dir, char_row, char_col, 300, 2);
 			inventory[i].timeout = 300 + randint(300);
 		    }
 		}
@@ -3195,6 +3166,8 @@ activate()
 	      case (SPECIAL_OBJ + 7):
 		msg_print("The stone glows a deep green");
 		wizard_light(TRUE);
+		(void)detect_sdoor();
+		(void)detect_trap();
 		inventory[i].timeout = 100 + randint(100);
 		break;
 	      case (SPECIAL_OBJ + 8):
@@ -3223,13 +3196,13 @@ activate()
 static void 
 examine_book()
 {
-    int32u              j1;
-    int32u              j2;
-    int                 i, k, item_val, flag;
-    int                 spell_index[63];
+    int32u               j1;
+    int32u               j2;
+    int                  i, k, item_val, flag;
+    int                  spell_index[63];
     register inven_type *i_ptr;
     register spell_type *s_ptr;
-    int                 first_spell;
+    int                  first_spell;
 
     if (!find_range(TV_MAGIC_BOOK, TV_PRAYER_BOOK, &i, &k))
 	msg_print("You are not carrying any books.");
@@ -3300,13 +3273,13 @@ go_up()
 	    if (dun_level == Q_PLANE) {
 		dun_level = 0;
 		new_level_flag = TRUE;
-		msg_print("You enter an inter-dimensional staircase.");
+		msg_print("You enter an inter-dimensional staircase. ");
 	    } else {
 		dun_level--;
 		new_level_flag = TRUE;
 		if (dun_level > 0)
 		    create_down_stair = TRUE;
-		msg_print("You enter a maze of up staircases.");
+		msg_print("You enter a maze of up staircases. ");
 	    }
 	} else
 	    no_stairs = TRUE;
@@ -3333,12 +3306,12 @@ go_down()
 	    if (dun_level == Q_PLANE) {
 		dun_level = 0;
 		new_level_flag = TRUE;
-		msg_print("You enter an inter-dimensional staircase.");
+		msg_print("You enter an inter-dimensional staircase. ");
 	    } else {
 		dun_level++;
 		new_level_flag = TRUE;
 		create_up_stair = TRUE;
-		msg_print("You enter a maze of down staircases.");
+		msg_print("You enter a maze of down staircases. ");
 	    }
 	} else
 	    no_stairs = TRUE;
@@ -3356,12 +3329,12 @@ go_down()
 static void 
 jamdoor()
 {
-    int                 y, x, dir, i, j;
-    register cave_type *c_ptr;
+    int                  y, x, dir, i, j;
+    register cave_type  *c_ptr;
     register inven_type *t_ptr, *i_ptr;
-    char                tmp_str[80];
+    char                 tmp_str[80];
 #ifdef TARGET
-    int temp = target_mode; /* targetting will scrwe up get_dir.. -CFT */
+    int temp = target_mode; /* targetting will screw up get_dir.. -CFT */
 #endif /* TARGET */
 
     free_turn_flag = TRUE;
@@ -3382,15 +3355,15 @@ jamdoor()
 			count_msg_print("You jam the door with a spike.");
 			if (t_ptr->p1 > 0)
 			    t_ptr->p1 = (-t_ptr->p1);	/* Make locked to stuck. */
-		    /*
-		     * Successive spikes have a progressively smaller effect.
+		    /* Successive spikes have a progressively smaller effect.
 		     * Series is: 0 20 30 37 43 48 52 56 60 64 67 70 ... 
 		     */
 			t_ptr->p1 -= 1 + 190 / (10 - t_ptr->p1);
 			i_ptr = &inventory[i];
-			if (i_ptr->number > 1)
+			if (i_ptr->number > 1) {
 			    i_ptr->number--;
-			else
+			    inven_weight -= i_ptr->weight;
+			} else
 			    inven_destroy(i);
 		    } else
 			msg_print("But you have no spikes.");
@@ -3417,8 +3390,8 @@ jamdoor()
 static void 
 refill_lamp()
 {
-    int                 i, j;
-    register int        k;
+    int                  i, j;
+    register int         k;
     register inven_type *i_ptr;
 
     free_turn_flag = TRUE;
@@ -3448,7 +3421,7 @@ refill_lamp()
 
 int 
 is_quest(level)
-    int                 level;
+int level;
 {
     if (level == Q_PLANE)
 	return FALSE;
@@ -3460,8 +3433,8 @@ is_quest(level)
 static void 
 regen_monsters()
 {
-    register int        i;
-    int                 frac;
+    register int i;
+    int          frac;
 
     for (i = 0; i < MAX_MALLOC; i++) {
 	if (m_list[i].hp >= 0) {
@@ -3479,6 +3452,7 @@ regen_monsters()
 	} /* if hp >= 0 */
     } /* for loop */
 }
+
 
 static void
 print_feeling()

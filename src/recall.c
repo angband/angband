@@ -77,6 +77,7 @@ static const char  *desc_amethod[] = {
 				      "engulf",
 				      "moan"
 };
+
 static const char  *desc_howmuch[] = {
 				      " not at all",
 				      " a bit",
@@ -94,6 +95,7 @@ static const char  *desc_move[] = {
 				   "kill weaker creatures",
 				   "pick up objects",
 				   "breed explosively"};
+
 static const char  *desc_spell[] = {
 				    "1",
 				    "2",
@@ -177,10 +179,12 @@ static const char  *desc_spell[] = {
 				    "summon greater undead",
 				    "summon ancient dragons",
 };
+
 static const char  *desc_weakness[] = {
 				       "bright light",
 				       "rock remover"
 };
+
 static const char  *desc_immune[] = {
 				     "frost",
 				     "fire",
@@ -199,8 +203,8 @@ static int          roffpline;	   /* Place to print line now being loaded. */
 
 /* the higher the level of the monster, the fewer the kills you need */
 #define knowarmor(l,d)		((d) > 304 / (4 + (l)))
-/*
- * the higher the level of the monster, the fewer the attacks you need, the
+
+/* the higher the level of the monster, the fewer the attacks you need, the
  * more damage an attack does, the more attacks you need 
  */
 #define knowdamage(l,a,d)	((4 + (l))*(a) > 80 * (d))
@@ -212,10 +216,10 @@ static int          roffpline;	   /* Place to print line now being loaded. */
 /* Do we know anything about this monster? */
 int 
 bool_roff_recall(mon_num)
-    int                 mon_num;
+int mon_num;
 {
     register recall_type *mp;
-    register int        i;
+    register int          i;
 
     if (wizard)
 	return TRUE;
@@ -232,20 +236,18 @@ bool_roff_recall(mon_num)
 /* Print out what we have discovered about this monster. */
 int 
 roff_recall(mon_num)
-    int                 mon_num;
+int mon_num;
 {
-    const char               *p, *q;
-    attid              *pu;
-    vtype               temp;
-    register recall_type *mp;
+    const char             *p, *q;
+    attid                  *pu;
+    vtype                   temp;
+    register recall_type   *mp;
     register creature_type *cp;
-    register int32u     i, k;	   /* changed from int, to avoid PC's 16bit
-				    * ints -CFT */
+    register int32u         i, k;   /* changed from int, to avoid PC's 16bit ints -CFT */
     int32u              j;
     int                 mspeed;
     int32u              rcmove, rspells, rspells2, rspells3;
-    int32u              rcdefense; /* this was int16u, but c_recall[] uses
-				    * int32u -CFT */
+    int32u              rcdefense; /* this was int16u, but c_recall[] uses int32u -CFT */
     recall_type         save_mem;
     int                 breath = FALSE, magic = FALSE;
     char                sex;
@@ -347,11 +349,12 @@ roff_recall(mon_num)
     }
 #endif
     k = mon_num;
-    if (k == MAX_CREATURES)
-	roff("You feel you know it, and it knows you.  This can only mean trouble.");
-    else
+    if (k == MAX_CREATURES - 1)
+	roff("You feel you know it, and it knows you.  This can only mean trouble.  ");
+    else {
 	roff(desc_list[k].desc);
-    roff("  ");
+	roff("  ");
+    }
     k = FALSE;
     if (cp->level == 0) {
 	sprintf(temp, "%s in the town",
@@ -414,12 +417,14 @@ roff_recall(mon_num)
     }
     if (k)
 	roff(".  ");
-/*
- * Kill it once to know experience, and quality (evil, undead, monsterous).
+/* Kill it once to know experience, and quality (evil, undead, monsterous).
  * The quality of being a dragon is obvious. 
  */
     if (mp->r_kills) {
-	roff((sex == 'p' ? "A kill of these" : "A kill of this"));
+	if (cp->cdefense & UNIQUE)
+	    roff("Killing this");
+	else
+	    roff((sex == 'p' ? "A kill of these" : "A kill of this"));
 
 	if (cp->cdefense & ANIMAL)
 	    roff(" natural");
@@ -443,15 +448,15 @@ roff_recall(mon_num)
 
     /* calculate the integer exp part */
 	i = (long)cp->mexp * cp->level / py.misc.lev;
-    /*
-     * calculate the fractional exp part scaled by 100, must use long
+
+    /* calculate the fractional exp part scaled by 100, must use long
      * arithmetic to avoid overflow 
      */
 	j = (((long)cp->mexp * cp->level % py.misc.lev) * (long)1000 /
 	     py.misc.lev + 5) / 10;
 
 	(void)sprintf(temp, " is worth %lu.%02lu point%s", i,
-		      j, (i == 1 && j == 0 ? "" : "s"));
+		      (unsigned long)j, (unsigned long)(i == 1 && j == 0 ? "" : "s"));
 	roff(temp);
 
 	if ((py.misc.lev / 10) == 1)
@@ -472,10 +477,10 @@ roff_recall(mon_num)
 	    q = "n";
 	else
 	    q = "";
-	(void)sprintf(temp, " for a%s %lu%s level character.  ", q, i, p);
+	(void)sprintf(temp, " for a%s %lu%s level character.  ", q, (long)i, p);
 	roff(temp);
 	if (cp->cdefense & GROUP) {
-	    sprintf(temp, "%s usually appears in groups. ",
+	    sprintf(temp, "%s usually appears in groups.  ",
 		    (sex == 'm' ? "He" : sex == 'f' ? "She" :
 		     sex == 'p' ? "They" : "It"));
 	    roff(temp);
@@ -613,9 +618,9 @@ roff_recall(mon_num)
 	}
 	roff(".  ");
     }
+
 /* Do we know how hard they are to kill? Armor class, hit die. */
-    if (knowarmor(cp->level, mp->r_kills) ||	/* hasten learning  of
-						 * uniques -CFT */
+    if (knowarmor(cp->level, mp->r_kills) ||	/* hasten learning of uniques -CFT */
 	((cp->cdefense & UNIQUE) && knowuniqarmor(cp->level, mp->r_kills))) {
 	(void)sprintf(temp, "%s an armor rating of %d",
 		      (sex == 'm' ? "He has" : sex == 'f' ? "She has" :
@@ -630,8 +635,7 @@ roff_recall(mon_num)
 /* Do we know how clever they are? Special abilities. */
     k = TRUE;
     j = rcmove;
-    if (rcdefense & BREAK_WALL) {  /* I wonder why this wasn't here before?
-				    * -CFT */
+    if (rcdefense & BREAK_WALL) {  /* I wonder why this wasn't here before? -CFT */
 	roff((sex == 'm' ? "He can bore through rock" :
 	      sex == 'f' ? "She can bore through rock" :
 	      sex == 'p' ? "They can bore through rock" :
@@ -764,13 +768,18 @@ roff_recall(mon_num)
 				(CM_60_RANDOM | CM_90_RANDOM)))
 	    roff(" often");
 	roff(" carry");
-	p = " objects";
+	if (cp->cdefense & SPECIAL) /* it'll tell you who has better treasure -CFT */
+	    p = (j==1?"n exceptional object":" exceptional objects");
+	else if (cp->cdefense & GOOD)
+	    p = (j==1?" good object":" good objects");
+	else
+	    p = (j==1?"n object":" objects");
 	if (j == 1)
 	    p = " an object";
 	else if (j == 2)
 	    roff(" one or two");
 	else {
-	    (void)sprintf(temp, " up to %lu", j);
+	    (void)sprintf(temp, " up to %lu", (long)j);
 	    roff(temp);
 	}
 	if (rcmove & CM_CARRY_OBJ) {
@@ -786,6 +795,7 @@ roff_recall(mon_num)
 	else
 	    roff(" treasure.  ");
     }
+
 /* We know about attacks it has used on us, and maybe the damage they do. */
 /* k is the total number of known attacks, used for punctuation */
     k = 0;
@@ -864,10 +874,10 @@ roff_recall(mon_num)
 /* Print out strings, filling up lines as we go. */
 static void 
 roff(p)
-    register const char *p;
+register const char *p;
 {
-    register char      *q, *r;
-    register int        linesize;
+    register char *q, *r;
+    register int   linesize;
 
     linesize = sizeof(roffbuf);
     if (linesize > 80)
@@ -878,6 +888,8 @@ roff(p)
 	if (*p == '\n' || roffp >= roffbuf + linesize) {
 	    q = roffp;
 	    if (*p != '\n') {
+		if (*q == ' ')
+		    q--;
 		if (*q == ' ')
 		    q--;
 		while (*q != ' ')

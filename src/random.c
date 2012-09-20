@@ -85,30 +85,30 @@ extern char *setstate();
  * trinomial. 
  */
 
-#define         TYPE_0          0  /* linear congruential */
-#define         BREAK_0         8
-#define         DEG_0           0
-#define         SEP_0           0
+#define TYPE_0          0  /* linear congruential */
+#define BREAK_0         8
+#define DEG_0           0
+#define SEP_0           0
 
-#define         TYPE_1          1  /* x**7 + x**3 + 1 */
-#define         BREAK_1         32
-#define         DEG_1           7
-#define         SEP_1           3
+#define TYPE_1          1  /* x**7 + x**3 + 1 */
+#define BREAK_1         32
+#define DEG_1           7
+#define SEP_1           3
 
-#define         TYPE_2          2  /* x**15 + x + 1 */
-#define         BREAK_2         64
-#define         DEG_2           15
-#define         SEP_2           1
+#define TYPE_2          2  /* x**15 + x + 1 */
+#define BREAK_2         64
+#define DEG_2           15
+#define SEP_2           1
 
-#define         TYPE_3          3  /* x**31 + x**3 + 1 */
-#define         BREAK_3         128
-#define         DEG_3           31
-#define         SEP_3           3
+#define TYPE_3          3  /* x**31 + x**3 + 1 */
+#define BREAK_3         128
+#define DEG_3           31
+#define SEP_3           3
 
-#define         TYPE_4          4  /* x**63 + x + 1 */
-#define         BREAK_4         256
-#define         DEG_4           63
-#define         SEP_4           1
+#define TYPE_4          4  /* x**63 + x + 1 */
+#define BREAK_4         256
+#define DEG_4           63
+#define SEP_4           1
 
 
 /*
@@ -116,19 +116,17 @@ extern char *setstate();
  * on fact that TYPE_i == i. 
  */
 
-#define         MAX_TYPES       5  /* max number of types above */
+#define MAX_TYPES       5  /* max number of types above */
 
-static int          degrees[MAX_TYPES] = {DEG_0, DEG_1, DEG_2,
-					  DEG_3, DEG_4};
+static int degrees[MAX_TYPES] = {DEG_0, DEG_1, DEG_2, DEG_3, DEG_4};
 
-static int          seps[MAX_TYPES] = {SEP_0, SEP_1, SEP_2,
-				       SEP_3, SEP_4};
+static int seps[MAX_TYPES] = {SEP_0, SEP_1, SEP_2, SEP_3, SEP_4};
 
 
 
 /*
- * Initially, everything is set up as if from : initstate( 1, &randtbl, 128
- * ); Note that this initialization takes advantage of the fact that
+ * Initially, everything is set up as if from : initstate( 1, &randtbl, 128);
+ * Note that this initialization takes advantage of the fact that
  * srandom() advances the front and rear pointers 10*rand_deg times, and
  * hence the rear pointer which starts at 0 will also end up at zero; thus
  * the zeroeth element of the state information, which contains info about

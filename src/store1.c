@@ -27,16 +27,16 @@ static void special_offer(inven_type *);
 static void insert_store(int, int, int32, struct inven_type *);
 static void store_create(int);
 #else
-static void         special_offer();
-static void         insert_store();
-static void         store_create();
+static void special_offer();
+static void insert_store();
+static void store_create();
 #endif
 #endif
 
 /* Returns the value for any given object		-RAK-	 */
 int32 
 item_value(i_ptr)
-    register inven_type *i_ptr;
+register inven_type *i_ptr;
 {
     register int32      value;
 
@@ -76,8 +76,8 @@ item_value(i_ptr)
 	    else if (i_ptr->toac < 0)
 		value = 0;
 	    else
-	    /*
-	     * use 5, because missiles generally appear in groups of 20, so
+
+	    /* use 5, because missiles generally appear in groups of 20, so
 	     * 20 * 5 == 100, which is comparable to weapon bonus above 
 	     */
 		value = i_ptr->cost + (i_ptr->tohit + i_ptr->todam + i_ptr->toac) * 5;
@@ -93,12 +93,11 @@ item_value(i_ptr)
 	    value = 1;
 				/* Rings and amulets */
     } else if ((i_ptr->tval == TV_AMULET) || (i_ptr->tval == TV_RING)) {
-	if (!known1_p(i_ptr))
 	/* player does not know what type of ring/amulet this is */
+	if (!known1_p(i_ptr))
 	    value = 45;
 	else if (!known2_p(i_ptr))
-	/*
-	 * player knows what type of ring, but does not know whether it is
+	/* player knows what type of ring, but does not know whether it is
 	 * cursed or not, if refuse to buy cursed objects here, then player
 	 * can use this to 'identify' cursed objects 
 	 */
@@ -122,8 +121,8 @@ item_value(i_ptr)
 	    if (i_ptr->p1 < 0)
 		value = 0;
 	    else {
-	    /*
-	     * some digging tools start with non-zero p1 values, so only
+
+	    /* some digging tools start with non-zero p1 values, so only
 	     * multiply the plusses by 100, make sure result is positive 
 	     * no longer; have adjusted costs in treasure.c -CWS
 	     */
@@ -189,8 +188,8 @@ store_check_num(t_ptr, store_num)
     else if (t_ptr->subval >= ITEM_SINGLE_STACK_MIN)
 	for (i = 0; i < s_ptr->store_ctr; i++) {
 	    i_ptr = &s_ptr->store_inven[i].sitem;
-	/*
-	 * note: items with subval of gte ITEM_SINGLE_STACK_MAX only stack if
+
+	/* note: items with subval of gte ITEM_SINGLE_STACK_MAX only stack if
 	 * their subvals match 
 	 */
 	    if (i_ptr->tval == t_ptr->tval && i_ptr->subval == t_ptr->subval
@@ -199,10 +198,8 @@ store_check_num(t_ptr, store_num)
 		    || (i_ptr->p1 == t_ptr->p1)))
 		store_check = TRUE;
 	}
-/*
- * But, wait.  If at home, don't let player drop 25th item, or he will lose
- * it. -CFT 
- */
+
+/* But, wait.  If at home, don't let player drop 25th item, or he will lose it. -CFT */
     if (is_home && (t_ptr->subval >= ITEM_SINGLE_STACK_MIN))
 	for (i = 0; i < s_ptr->store_ctr; i++) {
 	    i_ptr = &s_ptr->store_inven[i].sitem;
@@ -252,73 +249,88 @@ store_carry(store_num, ipos, t_ptr)
     int32               icost, dummy;
     register inven_type *i_ptr;
     register store_type *s_ptr;
+    int stacked = FALSE; /* from inven_carry() -CFT */
 
-    *ipos = (-1);
-    if (sell_price(store_num, &icost, &dummy, t_ptr) > 0 || is_home) {
+    *ipos = -1;
+    if (sell_price(store_num, &icost, &dummy, t_ptr) > 0 || is_home)
+    {
 	s_ptr = &store[store_num];
 	item_val = 0;
 	item_num = t_ptr->number;
 	flag = FALSE;
-	typ = t_ptr->tval;
+	typ  = t_ptr->tval;
 	subt = t_ptr->subval;
-	do {
-	    i_ptr = &s_ptr->store_inven[item_val].sitem;
-	    if (typ == i_ptr->tval) {
-		if (subt == i_ptr->subval &&	/* Adds to other item	 */
-		    subt >= ITEM_SINGLE_STACK_MIN
-		    && (subt < ITEM_GROUP_MIN || i_ptr->p1 == t_ptr->p1)) {
-		    *ipos = item_val;
-		    i_ptr->number += item_num;
-		/*
-		 * must set new scost for group items, do this only for items
-		 * strictly greater than group_min, not for torches, this
-		 * must be recalculated for entire group 
-		 */
-		    if (subt > ITEM_GROUP_MIN) {
-			(void)sell_price(store_num, &icost, &dummy, i_ptr);
-			s_ptr->store_inven[item_val].scost = (-icost);
+	if (subt >= ITEM_SINGLE_STACK_MIN) { /* try to stack in store's inven */
+	    do {
+		i_ptr = &s_ptr->store_inven[item_val].sitem;
+		if (typ == i_ptr->tval)
+		{
+		    if (subt == i_ptr->subval && /* Adds to other item        */
+			subt >= ITEM_SINGLE_STACK_MIN
+			&& (subt < ITEM_GROUP_MIN || i_ptr->p1 == t_ptr->p1))
+		    {
+			stacked = TRUE; /* remember that we did stack it... -CFT */
+			*ipos = item_val;
+			i_ptr->number += item_num;
+			/* must set new scost for group items, do this only for items
+			   strictly greater than group_min, not for torches, this
+			   must be recalculated for entire group */
+			if (subt > ITEM_GROUP_MIN)
+			{
+			    (void) sell_price (store_num, &icost, &dummy, i_ptr);
+			    s_ptr->store_inven[item_val].scost = -icost;
+			}
+			/* must let group objects (except torches) stack over 24
+			   since there may be more than 24 in the group */
+			else if (i_ptr->number > 24)
+			    i_ptr->number = 24;
+			flag = TRUE;
 		    }
-		/*
-		 * must let group objects (except torches) stack over 24
-		 * since there may be more than 24 in the group 
-		 */
-		    else if (i_ptr->number > 24)
-			i_ptr->number = 24;
-		    flag = TRUE;
 		}
-	    } else if (((typ == i_ptr->tval) && (subt < i_ptr->tval)
-			&& (object_offset(t_ptr) == -1))
-		       || (typ > i_ptr->tval)) {	/* Insert into list */
-		insert_store(store_num, item_val, icost, t_ptr);
-		flag = TRUE;
-		*ipos = item_val;
-	    }
-	    item_val++;
-	}
-	while ((item_val < s_ptr->store_ctr) && (!flag));
-	if (!flag) {		   /* Becomes last item in list	 */
+		item_val ++;
+	    } while (!stacked && (item_val < s_ptr->store_ctr));
+	} /* if might stack... -CFT */
+	if (!stacked) {		/* either never stacks, or didn't find a place to stack */
+	    item_val = 0;
+	    do {
+		i_ptr = &s_ptr->store_inven[item_val].sitem;
+		if ((typ > i_ptr->tval) || /* sort by desc tval, */
+		    ((typ == i_ptr->tval) &&
+		     ((t_ptr->level < i_ptr->level) || /* then by inc level, */
+		      ((t_ptr->level == i_ptr->level) &&
+		       (subt < i_ptr->subval))))) /* and finally by inc subval -CFT */
+		{		/* Insert into list             */
+		    insert_store(store_num, item_val, icost, t_ptr);
+		    flag = TRUE;
+		    *ipos = item_val;
+		}
+		item_val++;
+	    } while ((item_val < s_ptr->store_ctr) && (!flag));
+	} /* if didn't already stack it... */
+	if (!flag)		/* Becomes last item in list    */
+	{
 	    insert_store(store_num, (int)s_ptr->store_ctr, icost, t_ptr);
 	    *ipos = s_ptr->store_ctr - 1;
 	}
     }
 }
 
+
 /* Destroy an item in the stores inventory.  Note that if	 */
 /* "one_of" is false, an entire slot is destroyed	-RAK-	 */
 void 
 store_destroy(store_num, item_val, one_of)
-    int                 store_num, item_val;
-    int                 one_of;
+int store_num, item_val;
+int one_of;
 {
-    register int        j, number;
+    register int         j, number;
     register store_type *s_ptr;
     register inven_type *i_ptr;
 
     s_ptr = &store[store_num];
     i_ptr = &s_ptr->store_inven[item_val].sitem;
 
-/*
- * for single stackable objects, only destroy one half on average, this will
+/* for single stackable objects, only destroy one half on average, this will
  * help ensure that general store and alchemist have reasonable selection of
  * objects 
  */
@@ -347,7 +359,7 @@ store_destroy(store_num, item_val, one_of)
 void 
 store_init()
 {
-    register int        i, j, k;
+    register int         i, j, k;
     register store_type *s_ptr;
 
     i = MAX_OWNERS / MAX_STORES;
@@ -370,17 +382,17 @@ store_init()
 /* Creates an item and inserts it into store's inven	-RAK-	 */
 static void 
 store_create(store_num)
-    int                 store_num;
+int store_num;
 {
-    register int        i, tries;
-    int                 cur_pos, dummy;
+    register int         i, tries;
+    int                  cur_pos, dummy;
     register store_type *s_ptr;
     register inven_type *t_ptr;
 
     tries = 0;
     cur_pos = popt();
     s_ptr = &store[store_num];
-    object_level = 1;
+    object_level = OBJ_TOWN_LEVEL;
     do {
 	if (store_num != 6) {
 	    i = store_choice[store_num][randint(STORE_CHOICES) - 1];
@@ -390,10 +402,8 @@ store_create(store_num)
 	    if (store_check_num(t_ptr, store_num)) {
 		if ((t_ptr->cost > 0) &&	/* Item must be good	 */
 		    (t_ptr->cost < owners[s_ptr->owner].max_cost)) {
-		/*
-		 * equivalent to calling ident_spell(), except will not
-		 * change the object_ident array 
-		 */
+
+/* equivalent to calling ident_spell(), except will not change the object_ident array */
 		    store_bought(t_ptr);
 		    special_offer(t_ptr);
 		    store_carry(store_num, &dummy, t_ptr);
@@ -427,28 +437,34 @@ store_create(store_num)
 
 static void 
 special_offer(i_ptr)
-    inven_type         *i_ptr;
+inven_type *i_ptr;
 {
+    int32 orig_cost = i_ptr->cost;
+
     if (randint(30) == 1) {
 	i_ptr->cost = (i_ptr->cost * 3) / 4;
 	if (i_ptr->cost < 1)
 	    i_ptr->cost = 1;
-	inscribe(i_ptr, "25% discount");
+	if (i_ptr->cost < orig_cost)
+	    inscribe(i_ptr, "25% discount");
     } else if (randint(150) == 1) {
 	i_ptr->cost /= 2;
 	if (i_ptr->cost < 1)
 	    i_ptr->cost = 1;
-	inscribe(i_ptr, "50% discount");
+	if (i_ptr->cost < orig_cost)
+	    inscribe(i_ptr, "50% discount");
     } else if (randint(300) == 1) {
 	i_ptr->cost /= 4;
 	if (i_ptr->cost < 1)
 	    i_ptr->cost = 1;
-	inscribe(i_ptr, "75% discount");
+	if (i_ptr->cost < orig_cost)
+	    inscribe(i_ptr, "75% discount");
     } else if (randint(500) == 1) {
 	i_ptr->cost /= 10;
 	if (i_ptr->cost < 1)
 	    i_ptr->cost = 1;
-	inscribe(i_ptr, "to clear");
+	if (i_ptr->cost < orig_cost)
+	    inscribe(i_ptr, "to clear");
     }
 }
 
@@ -456,7 +472,7 @@ special_offer(i_ptr)
 void 
 store_maint()
 {
-    register int        i, j;
+    register int         i, j;
     register store_type *s_ptr;
 
     for (i = 0; i < (MAX_STORES - 1); i++) {
@@ -482,10 +498,10 @@ store_maint()
 /* eliminate need to bargain if player has haggled well in the past   -DJB- */
 int 
 noneedtobargain(store_num, minprice)
-    int                 store_num;
-    int32               minprice;
+int store_num;
+int32 minprice;
 {
-    register int        flagnoneed;
+    register int         flagnoneed;
     register store_type *s_ptr;
 
     if (no_haggle_flag)
@@ -501,8 +517,8 @@ noneedtobargain(store_num, minprice)
 /* update the bargin info					-DJB- */
 void 
 updatebargain(store_num, price, minprice)
-    int                 store_num;
-    int32               price, minprice;
+int   store_num;
+int32 price, minprice;
 {
     register store_type *s_ptr;
 

@@ -600,8 +600,8 @@ creature_type c_list[MAX_CREATURES] = {
 			    ,(ANIMAL|IM_POISON),(NONE8),(NONE8)
 			    ,24,20,14,18,11,'i',{7,8},{65,139,0,0},9,3,'n'},
 
-{"Giant grey rat"	    ,(MULTIPLY|MV_ATT_NORM|MV_20),(NONE8),(ANIMAL)
-			    ,(NONE8),(NONE8)
+{"Giant grey rat"	    ,(MULTIPLY|MV_ATT_NORM|MV_20),(NONE8)
+                            ,(IM_POISON|ANIMAL),(NONE8),(NONE8)
 			    ,2,20,8,12,11,'r',{2,3},{154,0,0,0},9,1,'n'},
 
 {"Black harpy"		    ,(MV_ATT_NORM|MV_20),(NONE8),(EVIL|ANIMAL)
@@ -816,7 +816,7 @@ creature_type c_list[MAX_CREATURES] = {
 
 {"Spotted jelly"	    ,(THRO_DR|MV_ONLY_ATT|PICK_UP),(NONE8)
 			    ,(IM_ACID|IM_POISON|ANIMAL|CHARM_SLEEP|NO_INFRA|
-                             MINDLESS),(NONE8),(NONE8)
+                             HURT_LIGHT|MINDLESS),(NONE8),(NONE8)
 			    ,33,1,12,18,12,'j',{13,8},{115,138,138,0},12,3,'n'},
 
 {"Drider"		    ,(MV_ATT_NORM),(0x8L|CAUSE_LIGHT|CONFUSION)
@@ -2127,7 +2127,7 @@ creature_type c_list[MAX_CREATURES] = {
 			    ,(0x7L|BLINDNESS|CONFUSION|FIRE_BOLT)
 			    ,(EVIL|DEMON|CHARM_SLEEP|IM_FIRE|MAX_HP|IM_POISON)
 			    ,(NONE8),(NONE8)
-			    ,1000,80,20,50,11,'&',{18,8},{17,87,0,0},38,2,'n'},
+			    ,1000,80,20,50,11,'&',{30,8},{17,87,0,0},38,2,'n'},
 
 {"Nether wraith"	    ,(HAS_4D2|CARRY_OBJ|HAS_90|THRO_DR|MV_ATT_NORM|
 			      MV_INVIS|THRO_WALL)
@@ -2309,7 +2309,7 @@ creature_type c_list[MAX_CREATURES] = {
 			    ,(0x8L|BLINDNESS|CONFUSION)
 			    ,(EVIL|DEMON|CHARM_SLEEP|IM_FIRE|MAX_HP|GROUP)
 			    ,(NONE8),(NONE8)
-			    ,1000,80,20,50,11,'&',{20,11},{17,78,78,0},40,2,'n'},
+			    ,1000,80,20,50,11,'&',{20,20},{17,78,78,0},40,2,'n'},
 
 {"Death quasit"		    ,(HAS_4D2|HAS_2D2|HAS_90|CARRY_OBJ|MV_INVIS|
 			      THRO_WALL|MV_ATT_NORM)
@@ -2347,7 +2347,7 @@ creature_type c_list[MAX_CREATURES] = {
 			    ,(0x9L|S_DEMON|FIRE_BOLT)
 			    ,(EVIL|DEMON|CHARM_SLEEP|IM_FIRE|MAX_HP|GROUP)
 			    ,(NONE8),(NONE8)
-			    ,1500,80,20,40,11,'&',{20,15},{17,17,0,0},41,3,'n'},
+			    ,1500,80,20,40,11,'&',{35,15},{17,17,0,0},41,3,'n'},
 
 {"Akhorahil the Blind"	    ,(HAS_4D2|CARRY_OBJ|THRO_DR|MV_ATT_NORM)
 			    ,(0x3L|CAUSE_CRIT|HOLD_PERSON|FEAR|BLINDNESS
@@ -2378,7 +2378,7 @@ creature_type c_list[MAX_CREATURES] = {
 			    ,(0x9L|S_DEMON|FIRE_BOLT)
 			    ,(EVIL|DEMON|CHARM_SLEEP|IM_FIRE|MAX_HP)
 			    ,(NONE8),(NONE8)
-			    ,1750,80,20,40,11,'&',{22,15},{17,17,0,0},41,2,'n'},
+			    ,1750,80,20,40,11,'&',{40,15},{17,17,0,0},41,2,'n'},
 
 {"Ren the Unclean"	    ,(HAS_4D2|CARRY_OBJ|THRO_DR|MV_ATT_NORM|MV_INVIS)
 			    ,(0x3L|CAUSE_CRIT|HOLD_PERSON|FEAR|BLINDNESS
@@ -2392,7 +2392,7 @@ creature_type c_list[MAX_CREATURES] = {
 			    ,(0x9L|BLINDNESS|CONFUSION|BREATH_FI|S_DEMON)
 			    ,(EVIL|DEMON|CHARM_SLEEP|IM_FIRE|MAX_HP)
 			    ,(NONE8),(NONE8)
-			    ,2000,80,20,50,11,'&',{30,15},{17,17,17,0},42,2,'n'},
+			    ,2000,80,20,50,11,'&',{45,15},{17,17,17,0},42,2,'n'},
 
 {"Undead beholder"	    ,(MV_ATT_NORM)
 			    ,(0x2L|S_UNDEAD|SLOW|MANA_DRAIN|MANA_BOLT)
@@ -2441,7 +2441,7 @@ creature_type c_list[MAX_CREATURES] = {
 			    ,(0x9L|CAUSE_SERIOUS|BLINDNESS|S_DEMON)
 			    ,(EVIL|DEMON|CHARM_SLEEP|IM_FIRE|MAX_HP)
 			    ,(NONE8),(NONE8)
-			    ,5000,80,20,75,12,'&',{40,15},{19,19,19,19},43,2,'f'},
+			    ,5000,80,20,75,12,'&',{40,30},{19,19,19,19},43,2,'f'},
 
 {"Quaker, Master of Earth"  ,(THRO_WALL|PICK_UP|MV_ATT_NORM),(0x6L|ACID_BOLT)
 			    ,(IM_POISON|IM_FIRE|IM_FROST|IM_LIGHTNING|

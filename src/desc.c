@@ -26,7 +26,7 @@
 #ifdef __STDC__
 static void unsample(inven_type *);
 #else
-static void         unsample();
+static void unsample();
 #endif
 #endif
 
@@ -36,7 +36,7 @@ char                titles[MAX_TITLES][10];
 
 int 
 is_a_vowel(ch)
-    int                ch;
+int ch;
 {
     switch (ch & 127) {
       case 'a':
@@ -59,9 +59,9 @@ is_a_vowel(ch)
 void 
 magic_init()
 {
-    register int        h, i, j, k;
-    register const char      *tmp;
-    vtype               string;
+    register int         h, i, j, k;
+    register const char *tmp;
+    vtype                string;
 
     set_seed(randes_seed);
 
@@ -122,7 +122,7 @@ magic_init()
 
 int16 
 object_offset(t_ptr)
-    inven_type         *t_ptr;
+inven_type *t_ptr;
 {
     switch (t_ptr->tval) {
       case TV_ROD:
@@ -153,10 +153,10 @@ object_offset(t_ptr)
 /* Remove "Secret" symbol for identity of object			 */
 void 
 known1(i_ptr)
-    inven_type         *i_ptr;
+inven_type *i_ptr;
 {
-    int16               offset;
-    int8u               indexx;
+    int16 offset;
+    int8u indexx;
 
     if ((offset = object_offset(i_ptr)) < 0)
 	return;
@@ -169,13 +169,12 @@ known1(i_ptr)
 
 int 
 known1_p(i_ptr)
-    inven_type         *i_ptr;
+inven_type *i_ptr;
 {
-    int16               offset;
-    int8u               indexx;
+    int16 offset;
+    int8u indexx;
 
-/*
- * Items which don't have a 'color' are always known1, so that they can be
+/* Items which don't have a 'color' are always known1, so that they can be
  * carried in order in the inventory.  
  */
     if ((offset = object_offset(i_ptr)) < 0)
@@ -187,47 +186,52 @@ known1_p(i_ptr)
     return (object_ident[offset + indexx] & OD_KNOWN1);
 }
 
+
 /* Remove "Secret" symbol for identity of plusses			 */
 void 
 known2(i_ptr)
-    inven_type         *i_ptr;
+inven_type *i_ptr;
 {
     unsample(i_ptr);
     i_ptr->ident |= ID_KNOWN2;
 }
 
+
 int 
 known2_p(i_ptr)
-    inven_type         *i_ptr;
+inven_type *i_ptr;
 {
     return (i_ptr->ident & ID_KNOWN2);
 }
 
+
 void 
 clear_known2(i_ptr)
-    inven_type         *i_ptr;
+inven_type *i_ptr;
 {
     i_ptr->ident &= ~ID_KNOWN2;
 }
 
+
 void 
 clear_empty(i_ptr)
-    inven_type         *i_ptr;
+inven_type *i_ptr;
 {
     i_ptr->ident &= ~ID_EMPTY;
 }
 
 void 
 store_bought(i_ptr)
-    inven_type         *i_ptr;
+inven_type *i_ptr;
 {
     i_ptr->ident |= ID_STOREBOUGHT;
     known2(i_ptr);
 }
 
+
 int 
 store_bought_p(i_ptr)
-    inven_type         *i_ptr;
+inven_type *i_ptr;
 {
     return (i_ptr->ident & ID_STOREBOUGHT);
 }
@@ -235,10 +239,10 @@ store_bought_p(i_ptr)
 /* Remove an automatically generated inscription.	-CJS- */
 static void 
 unsample(i_ptr)
-    inven_type         *i_ptr;
+inven_type *i_ptr;
 {
-    int16               offset;
-    int8u               indexx;
+    int16 offset;
+    int8u indexx;
 
 /* used to clear ID_DAMD flag, but I think it should remain set */
     i_ptr->ident &= ~(ID_MAGIK | ID_EMPTY);
@@ -254,10 +258,10 @@ unsample(i_ptr)
 /* Somethings been sampled -CJS- */
 void 
 sample(i_ptr)
-    inven_type         *i_ptr;
+inven_type *i_ptr;
 {
-    int16               offset;
-    int8u               indexx;
+    int16 offset;
+    int8u indexx;
 
     if ((offset = object_offset(i_ptr)) < 0)
 	return;
@@ -273,10 +277,10 @@ sample(i_ptr)
  */
 void 
 identify(item)
-    int                *item;
+int *item;
 {
-    register int        i, x1, x2;
-    int                 j;
+    register int         i, x1, x2;
+    int                  j;
     register inven_type *i_ptr, *t_ptr;
 
     i_ptr = &inventory[*item];
@@ -321,10 +325,11 @@ identify(item)
  */
 void 
 unmagic_name(i_ptr)
-    inven_type         *i_ptr;
+inven_type *i_ptr;
 {
     i_ptr->name2 = SN_NULL;
 }
+
 
 /* defines for p1_use, determine how the p1 field is printed */
 #define IGNORED  0		/* never show (+x) */
@@ -334,27 +339,28 @@ unmagic_name(i_ptr)
 #define FLAGS    4		/* show p1 as (+x of yyy) */
 #define Z_PLUSSES 5             /* always show p1 as (+x), even if x==0 -CWS */
 
-/* Returns a description of item for inventory			 */
-/* pref indicates that there should be an article added (prefix) */
-/*
+
+/* Returns a description of item for inventory
+ * pref indicates that there should be an article added (prefix)
+ *
  * note that since out_val can easily exceed 80 characters, objdes must
  * always be called with a bigvtype as the first paramter 
- */
-/*
+ *****
  * Note that objdes now never returns a description ending with punctuation
  * (ie, "."'s) -CWS 
  */
+
 void 
 objdes(out_val, i_ptr, pref)
-    char               *out_val;
-    register inven_type *i_ptr;
-    int                 pref;
+char                *out_val;
+register inven_type *i_ptr;
+int                  pref;
 {
 /* base name, modifier string */
-    register const char      *basenm, *modstr;
-    bigvtype            tmp_val;
-    vtype               tmp_str, damstr;
-    int                 indexx, p1_use, modify, append_name;
+    register const char *basenm, *modstr;
+    bigvtype             tmp_val;
+    vtype                tmp_str, damstr;
+    int                  indexx, p1_use, modify, append_name;
 
     indexx = i_ptr->subval & (ITEM_SINGLE_STACK_MIN - 1);
     basenm = object_list[i_ptr->index].name;
@@ -384,18 +390,22 @@ objdes(out_val, i_ptr, pref)
       case TV_SPIKE:
 	break;
       case TV_BOW:
-	if (!stricmp("& Light Crossbow", object_list[i_ptr->index].name))
-	    (void)strcpy(damstr, " (x3)");
-	else if (!stricmp("& Heavy Crossbow", object_list[i_ptr->index].name))
-	    (void)strcpy(damstr, " (x4)");
-	else if (!stricmp("& Sling", object_list[i_ptr->index].name))
-	    (void)strcpy(damstr, " (x2)");
-	else if (!stricmp("& Short Bow", object_list[i_ptr->index].name))
-	    (void)strcpy(damstr, " (x2)");
-	else if (!stricmp("& Long Bow", object_list[i_ptr->index].name))
-	    (void)strcpy(damstr, " (x3)");
-	else if (!stricmp("& Composite Bow", object_list[i_ptr->index].name))
-	    (void)strcpy(damstr, " (x4)");
+	switch(i_ptr->subval) { /* whole new code -CFT */
+	  case 20: case 1: /* sling, sh. bow */
+	    strcpy(damstr, " (x2)");
+	    break;
+	  case 21: case 2: case 10: /* sling of M, s bow of M, l bow, l xbow */
+	    strcpy(damstr, " (x3)");
+	    break;
+	  case 3: case 11: /* l bow of M, l xbow of M, h xbow, BARD, CUBRAGOL */
+	    strcpy(damstr, " (x4)");
+	    break;
+	  case 4: case 12:        /* h xbow of M, BELEG */
+	    strcpy(damstr, " (x5)");
+	    break;
+	  default:        /* just in case... */
+	    strcpy(damstr, " (unknown mult.)");
+	}
 	if (i_ptr->flags2 & TR_ARTIFACT)	/* only show p1 for artifacts... */
 	    p1_use = FLAGS;
 	break;
@@ -518,8 +528,7 @@ objdes(out_val, i_ptr, pref)
 	    else if (indexx <= 20)
 		basenm = "& Hairy %s Mold~";
 	    else
-		append_name = FALSE;	/* Ordinary food has no name
-					 * appended. */
+		append_name = FALSE;	/* Ordinary food has no name appended. */
 	    if (indexx <= 20)
 		modstr = mushrooms[indexx];
 	} else {
@@ -546,9 +555,9 @@ objdes(out_val, i_ptr, pref)
       case TV_SECRET_DOOR:
       case TV_RUBBLE:
 	break;
+      case TV_GOLD:
       case TV_INVIS_TRAP:
       case TV_VIS_TRAP:
-      case TV_GOLD:
       case TV_UP_STAIR:
       case TV_DOWN_STAIR:
 	(void)strcpy(out_val, object_list[i_ptr->index].name);
@@ -594,14 +603,14 @@ objdes(out_val, i_ptr, pref)
 	/* originally used %+d, but several machines don't support it */
 	    if (i_ptr->ident & ID_SHOW_HITDAM)
 		(void)sprintf(tmp_str, " (%c%d,%c%d)",
-			  (i_ptr->tohit < 0) ? '-' : '+', abs((int) i_ptr->tohit),
-			 (i_ptr->todam < 0) ? '-' : '+', abs((int) i_ptr->todam));
+			  (i_ptr->tohit < 0) ? '-' : '+', MY_ABS( i_ptr->tohit),
+			 (i_ptr->todam < 0) ? '-' : '+', MY_ABS(i_ptr->todam));
 	    else if (i_ptr->tohit != 0)
 		(void)sprintf(tmp_str, " (%c%d)",
-			 (i_ptr->tohit < 0) ? '-' : '+', abs((int) i_ptr->tohit));
+			 (i_ptr->tohit < 0) ? '-' : '+', MY_ABS(i_ptr->tohit));
 	    else if (i_ptr->todam != 0)
 		(void)sprintf(tmp_str, " (%c%d)",
-			 (i_ptr->todam < 0) ? '-' : '+', abs((int) i_ptr->todam));
+			 (i_ptr->todam < 0) ? '-' : '+', MY_ABS(i_ptr->todam));
 	    else
 		tmp_str[0] = '\0';
 	    (void)strcat(tmp_val, tmp_str);
@@ -613,14 +622,14 @@ objdes(out_val, i_ptr, pref)
 	    if (known2_p(i_ptr)) {
 	    /* originally used %+d, but several machines don't support it */
 		(void)sprintf(tmp_str, ",%c%d",
-			   (i_ptr->toac < 0) ? '-' : '+', abs((int) i_ptr->toac));
+			   (i_ptr->toac < 0) ? '-' : '+', MY_ABS(i_ptr->toac));
 		(void)strcat(tmp_val, tmp_str);
 	    }
 	    (void)strcat(tmp_val, "]");
 	} else if ((i_ptr->toac != 0) && known2_p(i_ptr)) {
 	/* originally used %+d, but several machines don't support it */
 	    (void)sprintf(tmp_str, " [%c%d]",
-			  (i_ptr->toac < 0) ? '-' : '+', abs((int) i_ptr->toac));
+			  (i_ptr->toac < 0) ? '-' : '+', MY_ABS(i_ptr->toac));
 	    (void)strcat(tmp_val, tmp_str);
 	}
 
@@ -647,44 +656,44 @@ objdes(out_val, i_ptr, pref)
 
 	    else if (p1_use == Z_PLUSSES) /* (+0) digging implements -CWS */
 		    (void)sprintf(tmp_str, " (%c%d)",
-				  (i_ptr->p1 < 0) ? '-' : '+', abs((int) i_ptr->p1));
+				  (i_ptr->p1 < 0) ? '-' : '+', MY_ABS(i_ptr->p1));
 
 	    else if (i_ptr->p1 != 0) {
 		if (p1_use == PLUSSES)
 		    (void)sprintf(tmp_str, " (%c%d)",
-				  (i_ptr->p1 < 0) ? '-' : '+', abs((int) i_ptr->p1));
+				  (i_ptr->p1 < 0) ? '-' : '+', MY_ABS(i_ptr->p1));
 		else if (i_ptr->ident & ID_NOSHOW_TYPE)
 		    (void)sprintf(tmp_str, " (%c%d)",
-				  (i_ptr->p1 < 0) ? '-' : '+', abs((int) i_ptr->p1));
+				  (i_ptr->p1 < 0) ? '-' : '+', MY_ABS(i_ptr->p1));
 
 		else if (p1_use == FLAGS) {
 		    if ((i_ptr->flags & TR_SPEED) &&
 			     (i_ptr->name2 != SN_SPEED))
 			(void)sprintf(tmp_str, " (%c%d to speed)",
-				      (i_ptr->p1 < 0) ? '-' : '+', abs((int) i_ptr->p1));
+				      (i_ptr->p1 < 0) ? '-' : '+', MY_ABS(i_ptr->p1));
 		    else if (i_ptr->flags & TR_SEARCH)
 			/*			&& (i_ptr->name2 != SN_SEARCH)) */
 			(void)sprintf(tmp_str, " (%c%d to searching)",
-				      (i_ptr->p1 < 0) ? '-' : '+', abs((int) i_ptr->p1));
+				      (i_ptr->p1 < 0) ? '-' : '+', MY_ABS(i_ptr->p1));
 		    else if ((i_ptr->flags & TR_STEALTH) &&
 			     (i_ptr->name2 != SN_STEALTH))
 			(void)sprintf(tmp_str, " (%c%d to stealth)",
-				      (i_ptr->p1 < 0) ? '-' : '+', abs((int) i_ptr->p1));
+				      (i_ptr->p1 < 0) ? '-' : '+', MY_ABS(i_ptr->p1));
 		    else if ((i_ptr->flags & TR_INFRA) &&
 			     (i_ptr->name2 != SN_INFRAVISION))
 			(void)sprintf(tmp_str, " (%c%d to infravision)",
-				      (i_ptr->p1 < 0) ? '-' : '+', abs((int) i_ptr->p1));
+				      (i_ptr->p1 < 0) ? '-' : '+', MY_ABS(i_ptr->p1));
 		    else if (i_ptr->flags2 & TR_ATTACK_SPD) {
-			if (abs(i_ptr->p1) == 1)
+			if (MY_ABS(i_ptr->p1) == 1)
 			    (void)sprintf(tmp_str, " (%c%d attack)",
-					  (i_ptr->p1 < 0) ? '-' : '+', abs((int) i_ptr->p1));
+					  (i_ptr->p1 < 0) ? '-' : '+', MY_ABS(i_ptr->p1));
 			else
 			    (void)sprintf(tmp_str, " (%c%d attacks)",
-					  (i_ptr->p1 < 0) ? '-' : '+', abs((int) i_ptr->p1));
+					  (i_ptr->p1 < 0) ? '-' : '+', MY_ABS(i_ptr->p1));
 		    } /* attack speed */
 		    else
 			(void)sprintf(tmp_str, " (%c%d)",
-				      (i_ptr->p1 < 0) ? '-' : '+', abs((int) i_ptr->p1));
+				      (i_ptr->p1 < 0) ? '-' : '+', MY_ABS(i_ptr->p1));
 		}     /* p1_use == FLAGS */
 	    }         /* p1 != 0 */
 	}             /* if known2_p (fully identified) */
@@ -756,8 +765,8 @@ objdes(out_val, i_ptr, pref)
 
 void 
 invcopy(to, from_index)
-    register inven_type *to;
-    int                 from_index;
+register inven_type *to;
+int                  from_index;
 {
     register treasure_type *from;
 
@@ -788,10 +797,10 @@ invcopy(to, from_index)
 /* Describe number of remaining charges.		-RAK-	 */
 void 
 desc_charges(item_val)
-    int                 item_val;
+int item_val;
 {
-    register int        rem_num;
-    vtype               out_val;
+    register int rem_num;
+    vtype        out_val;
 
     if (known2_p(&inventory[item_val])) {
 	rem_num = inventory[item_val].p1;
@@ -804,9 +813,9 @@ desc_charges(item_val)
 /* Describe amount of item remaining.			-RAK-	 */
 void 
 desc_remain(item_val)
-    int                 item_val;
+int item_val;
 {
-    bigvtype            out_val, tmp_str;
+    bigvtype             out_val, tmp_str;
     register inven_type *i_ptr;
 
     i_ptr = &inventory[item_val];

@@ -27,59 +27,59 @@ lib/quests/:
 
 
 src/:
-	Makefile, CHANGES, CONTENTS, read.me, fixes
-	Source files:
-total 1674
--rw-rw-r--  1 root        4357 Apr  2 11:26 CONTENTS
--rw-rw-r--  1 root       13883 Apr 22 16:45 FIXES
--rw-rw-r--  1 root        4846 Apr 18 21:40 Makefile
--rw-rw-r--  1 root         844 Apr  2 12:00 READ.ME
--rw-rw-r--  1 root        8665 Apr  4 11:46 config.h
--rw-rw-r--  1 root       29392 Apr 17 23:34 constant.h
--rw-rw-r--  1 root       23842 Apr  4 12:50 create.c
--rw-rw-r--  1 root       93829 Apr 21 19:50 creature.c
--rw-rw-r--  1 root       16501 Apr 17 22:37 death.c
--rw-rw-r--  1 root       21996 Apr  2 11:26 desc.c
--rw-rw-r--  1 root       64994 Apr  2 11:26 describe_mon.c
--rw-rw-r--  1 root       94048 Apr 22 17:04 dungeon.c
--rw-rw-r--  1 root        4743 Apr  2 11:26 eat.c
--rw-rw-r--  1 root       33184 Apr 21 20:19 externs.h
--rw-r--r--  1 root           0 Apr 22 17:52 files
--rw-rw-r--  1 root       17070 Apr  2 11:26 files.c
--rw-rw-r--  1 root        4606 Apr  2 11:26 gamecheck.c
--rw-rw-r--  1 root         313 Apr  2 11:26 gamecheck.h
--rw-rw-r--  1 root       72295 Apr  2 11:26 generate.c
--rw-rw-r--  1 root        7357 Apr  2 11:26 help.c
--rw-rw-r--  1 root       32723 Apr  2 11:26 io.c
--rw-rw-r--  1 root        9285 Apr  2 11:26 magic.c
--rw-rw-r--  1 root       17904 Apr 21 19:36 main.c
--rw-rw-r--  1 root      147718 Apr 22 16:20 misc1.c
--rw-rw-r--  1 root       92775 Apr 22 16:46 misc2.c
--rw-rw-r--  1 root        4432 Apr  2 11:26 monster.h
--rw-rw-r--  1 root      130814 Apr  2 11:26 monsters.c
--rw-rw-r--  1 root       72720 Apr 21 20:27 moria1.c
--rw-rw-r--  1 root       84573 Apr 22 16:41 moria2.c
--rw-rw-r--  1 root       27550 Apr 21 19:41 player.c
--rw-rw-r--  1 root       11839 Apr  2 11:26 potions.c
--rw-rw-r--  1 root       13240 Apr  2 11:26 prayer.c
--rw-rw-r--  1 root       13684 Apr  2 11:26 random.c
--rw-rw-r--  1 root       24653 Apr 17 22:40 recall.c
--rw-rw-r--  1 root        7505 Apr  2 11:26 rods.c
--rw-rw-r--  1 root       48281 Apr 17 20:48 save.c
--rw-rw-r--  1 root       14616 Apr 21 19:43 scrolls.c
--rw-rw-r--  1 root        8456 Apr  2 11:26 sets.c
--rw-rw-r--  1 root        7514 Apr  2 11:26 signals.c
--rw-rw-r--  1 root      141597 Apr 22 13:06 spells.c
--rw-rw-r--  1 root        6024 Apr  2 11:26 staffs.c
--rw-rw-r--  1 root       14296 Apr 21 20:42 store1.c
--rw-rw-r--  1 root       33165 Apr  2 11:26 store2.c
--rw-rw-r--  1 root       12644 Apr  2 11:26 tables.c
--rw-rw-r--  1 root         143 Apr  2 11:26 test.c
--rw-rw-r--  1 root       71142 Apr  2 11:26 treasure.c
--rw-rw-r--  1 root       15042 Apr  2 11:26 types.h
--rw-rw-r--  1 root         249 Apr  2 11:26 undef.c
--rw-rw-r--  1 root        8166 Apr  2 11:26 unix.c
--rw-rw-r--  1 root        1352 Apr  2 11:26 util.c
--rw-rw-r--  1 root        4439 Apr 21 20:19 variable.c
--rw-rw-r--  1 root        6366 Apr  2 11:26 wands.c
--rw-rw-r--  1 root       47257 Apr 17 20:47 wizard.c
+	Makefile, CONTENTS, READ.ME, FIXES
+
+Source files:
+total 1685
+-rw-r--r--   1 root     staff        4057 Sep 18 10:36 CONTENTS
+-rw-r--r--   1 root     staff       19106 Sep 18 16:51 FIXES
+-rw-r--r--   1 root     staff        6282 Sep 18 11:50 Makefile
+-rw-r--r--   1 root     staff         766 Sep 18 10:36 READ.ME
+-rw-r--r--   1 root     staff          78 Sep 18 11:49 bzero.c
+-rw-r--r--   1 root     staff       10653 Sep 18 11:54 config.h
+-rw-r--r--   1 root     staff       33687 Sep 18 11:18 constant.h
+-rw-r--r--   1 root     staff       22734 Sep 18 12:15 create.c
+-rw-r--r--   1 root     staff       95403 Sep 18 11:40 creature.c
+-rw-r--r--   1 root     staff       16613 Sep 18 12:32 death.c
+-rw-r--r--   1 root     staff       21487 Sep 18 12:32 desc.c
+-rw-r--r--   1 root     staff       65198 Sep 18 10:36 describe_mon.c
+-rw-r--r--   1 root     staff       92942 Sep 18 11:33 dungeon.c
+-rw-r--r--   1 root     staff        4752 Sep 18 10:36 eat.c
+-rw-r--r--   1 root     staff       35090 Sep 18 10:50 externs.h
+-rw-r--r--   1 root     staff       24187 Sep 18 10:36 files.c
+-rw-r--r--   1 root     staff        4428 Sep 18 10:36 gamecheck.c
+-rw-r--r--   1 root     staff         313 Sep 18 10:36 gamecheck.h
+-rw-r--r--   1 root     staff       69462 Sep 18 12:15 generate.c
+-rw-r--r--   1 root     staff        7343 Sep 18 10:36 help.c
+-rw-r--r--   1 root     staff       31569 Sep 18 10:36 io.c
+-rw-r--r--   1 root     staff        9948 Sep 18 12:32 magic.c
+-rw-r--r--   1 root     staff       16741 Sep 18 12:11 main.c
+-rw-r--r--   1 root     staff      148977 Sep 18 12:22 misc1.c
+-rw-r--r--   1 root     staff       93082 Sep 18 12:29 misc2.c
+-rw-r--r--   1 root     staff        4478 Sep 18 10:36 monster.h
+-rw-r--r--   1 root     staff      130856 Sep 18 10:36 monsters.c
+-rw-r--r--   1 root     staff       74546 Sep 18 11:23 moria1.c
+-rw-r--r--   1 root     staff       89350 Sep 18 12:05 moria2.c
+-rw-r--r--   1 root     staff       27772 Sep 18 15:51 player.c
+-rw-r--r--   1 root     staff       11917 Sep 18 11:32 potions.c
+-rw-r--r--   1 root     staff       12212 Sep 18 10:36 prayer.c
+-rw-r--r--   1 root     staff       13479 Sep 18 10:36 random.c
+-rw-r--r--   1 root     staff       24963 Sep 18 10:37 recall.c
+-rw-r--r--   1 root     staff        7689 Sep 18 10:36 rods.c
+-rw-r--r--   1 root     staff       48457 Sep 18 10:36 save.c
+-rw-r--r--   1 root     staff       12382 Sep 18 12:46 scrolls.c
+-rw-r--r--   1 root     staff        7765 Sep 18 10:36 sets.c
+-rw-r--r--   1 root     staff        7515 Sep 18 10:36 signals.c
+-rw-r--r--   1 root     staff      137775 Sep 18 16:01 spells.c
+-rw-r--r--   1 root     staff        6050 Sep 18 10:36 staffs.c
+-rw-r--r--   1 root     staff       14922 Sep 18 12:17 store1.c
+-rw-r--r--   1 root     staff       32411 Sep 18 10:37 store2.c
+-rw-r--r--   1 root     staff       12755 Sep 18 10:36 tables.c
+-rw-r--r--   1 root     staff       71302 Sep 18 10:36 treasure.c
+-rw-r--r--   1 root     staff       16237 Sep 18 10:37 types.h
+-rw-r--r--   1 root     staff         305 Sep 18 10:36 undef.c
+-rw-r--r--   1 root     staff        8193 Sep 18 12:17 unix.c
+-rw-r--r--   1 root     staff        1768 Sep 18 12:01 util.c
+-rw-r--r--   1 root     staff        4636 Sep 18 10:36 variable.c
+-rw-r--r--   1 root     staff        6405 Sep 18 10:36 wands.c
+-rw-r--r--   1 root     staff       47012 Sep 18 12:17 wizard.c

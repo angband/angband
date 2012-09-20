@@ -22,6 +22,7 @@ vtype died_from;
 
 vtype savefile;			/* The savefile to use. */
 
+int light_rad = 0, old_rad;				/* light radius spoo */
 int16 total_winner = FALSE;
 int NO_SAVE=FALSE;
 int character_generated = 0;	/* don't save score until char gen finished */
@@ -54,6 +55,8 @@ int16 noscore = FALSE;		/* Don't log the game. -CJS- */
 int is_home = FALSE;		/* Are we in our home? */
 int in_store_flag = FALSE;	/* Don't redisplay light in stores -DGK */
 int monster_is_afraid = 0;      /* redo monster fear messages -CWS */
+int coin_type;			/* remember Creeping _xxx_ coin type -CWS */
+int opening_chest = 0;          /* don't generate another chest -CWS */
 
 struct unique_mon u_list[MAX_CREATURES]; /* Unique check list... -LVB- */ 
 
@@ -76,8 +79,8 @@ int carry_query_flag = TRUE;
 int delay_spd = 5;
 int plain_descriptions = FALSE;
 int no_haggle_flag = FALSE;	/* does the player not want to haggle? -CWS */
-int quick_messages = FALSE; /* quick messages -CWS */
-int equippy_chars = FALSE;  /* do equipment characters -CWS */
+int quick_messages = FALSE;     /* quick messages -CWS */
+int equippy_chars = FALSE;      /* do equipment characters -CWS */
 char doing_inven = FALSE;	/* Track inventory commands. -CJS- */
 int screen_change = FALSE;	/* Track screen updates for inven_commands. */
 char last_command = ' ';  	/* Memory of previous command. */

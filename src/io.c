@@ -56,8 +56,8 @@ char               *getenv();
  */
 #define _h_IEEETRAP
 typedef struct {
-    int                 stuff;
-}                   fpvmach;
+    int stuff;
+} fpvmach;
 
 #endif
 
@@ -86,19 +86,20 @@ typedef struct {
 #include <string.h>
 #else
 #include "string.h"
-#endif
+#endif /* !ATARIST_MWC */
 #if !defined(MAC) && !defined(MSDOS) && !defined(ATARIST_MWC) && !defined(__MINT__)
 #include <termio.h>
 #endif
 #else
 #ifndef VMS
 #include <strings.h>
-#if defined(atarist) && defined(__GNUC__) && !defined(__MINT__)
-/* doesn't have sys/wait.h */
-#else
 #include <sys/wait.h>
-#endif
-#endif
+#endif /* !VMS */
+#endif /* USG */
+
+/* ARGH!  This is driving me up the wall!  Brute force never hurt... [cjh] */
+#if defined(__MINT__) && !defined(_WAIT_H)
+#include <wait.h>
 #endif
 
 #if defined(SYS_V) && defined(lint)
@@ -169,7 +170,7 @@ int                 Use_value2;
 #endif
 
 #ifndef MAC
-char               *getenv();
+char *getenv();
 
 #endif
 
@@ -189,8 +190,8 @@ static int          save_local_chars;
 #endif
 
 #ifndef MAC
-static int          curses_on = FALSE;
-static WINDOW      *savescr;	   /* Spare window for saving the screen.
+static int     curses_on = FALSE;
+static WINDOW *savescr;	   /* Spare window for saving the screen.
 				    * -CJS- */
 
 #endif
@@ -217,11 +218,11 @@ suspend()
  * implement it 
  */
 #else
-    struct sgttyb       tbuf;
-    struct ltchars      lcbuf;
-    struct tchars       cbuf;
-    int                 lbuf;
-    long                time();
+    struct sgttyb  tbuf;
+    struct ltchars lcbuf;
+    struct tchars  cbuf;
+    int            lbuf;
+    long           time();
 
     py.misc.male |= 2;
     (void)ioctl(0, TIOCGETP, (char *)&tbuf);
@@ -254,7 +255,7 @@ init_curses()
 {
 /* Primary initialization is done in mac.c since game is restartable */
 /* Only need to clear the screen here */
-    Rect                scrn;
+    Rect scrn;
 
     scrn.left = scrn.top = 0;
     scrn.right = SCRN_COLS;
@@ -265,7 +266,7 @@ init_curses()
 
 #else
 {
-    int                 i, y, x;
+    int i, y, x;
 
 #ifndef USG
     (void)ioctl(0, TIOCGLTC, (char *)&save_special_chars);
@@ -279,7 +280,7 @@ init_curses()
 #endif
 
 #ifdef ATARIST_MWC
-    WINDOW             *newwin();
+    WINDOW *newwin();
 
     initscr();
     if (ERR)
@@ -351,24 +352,24 @@ moriaterm()
 {
 #if !defined(MSDOS) && !defined(ATARIST_MWC) && !defined(__MINT__)
 #ifdef USG
-    struct termio       tbuf;
+    struct termio  tbuf;
 
 #else
-    struct ltchars      lbuf;
-    struct tchars       buf;
+    struct ltchars lbuf;
+    struct tchars  buf;
 
 #endif
 #endif
 
     curses_on = TRUE;
 #ifndef BSD4_3
-    use_value           crmode();
+    use_value crmode();
 
 #else
-    use_value           cbreak();
+    use_value cbreak();
 
 #endif
-    use_value           noecho();
+    use_value noecho();
 
 /* can not use nonl(), because some curses do not handle it correctly */
 #ifdef MSDOS
@@ -428,8 +429,8 @@ moriaterm()
 /* Dump IO to buffer					-RAK-	 */
 void 
 put_buffer(out_str, row, col)
-    const char         *out_str;
-    int                 row, col;
+const char *out_str;
+int         row, col;
 
 #ifdef MAC
 {
@@ -440,7 +441,7 @@ put_buffer(out_str, row, col)
 
 #else
 {
-    vtype               tmp_str;
+    vtype tmp_str;
 
 /*
  * truncate the string, to make sure that it won't go past right edge of
@@ -715,9 +716,9 @@ inkey()
 /* Just returns their keypad ascii value (e.g. '0'-'9') */
 /* Compare with inkeydir() below */
 {
-    char                ch;
-    int                 dir;
-    int                 shift_flag, ctrl_flag;
+    char ch;
+    int  dir;
+    int  shift_flag, ctrl_flag;
 
     put_qio();
     command_count = 0;
@@ -735,7 +736,7 @@ inkey()
 
 #else
 {
-    int                 i;
+    int i;
 
     put_qio();			   /* Dump IO buffer		 */
     command_count = 0;		   /* Just to be safe -CJS- */
@@ -788,23 +789,23 @@ inkeydir()
 /* This routine translates the direction keys in rogue-like mode */
 /* Compare with inkeydir() below */
 {
-    char                ch;
-    int                 dir;
-    int                 shift_flag, ctrl_flag;
-    static char         tab[9] = {
-				  'b', 'j', 'n',
-				  'h', '.', 'l',
-				  'y', 'k', 'u'
+    char        ch;
+    int         dir;
+    int         shift_flag, ctrl_flag;
+    static char tab[9] = {
+	'b', 'j', 'n',
+	'h', '.', 'l',
+	'y', 'k', 'u'
     };
-    static char         shifttab[9] = {
-				       'B', 'J', 'N',
-				       'H', '.', 'L',
-				       'Y', 'K', 'U'
+    static char shifttab[9] = {
+	'B', 'J', 'N',
+	'H', '.', 'L',
+	'Y', 'K', 'U'
     };
-    static char         ctrltab[9] = {
-				      CTRL('B'), CTRL('J'), CTRL('N'),
-				      CTRL('H'), '.', CTRL('L'),
-				      CTRL('Y'), CTRL('K'), CTRL('U')
+    static char ctrltab[9] = {
+	CTRL('B'), CTRL('J'), CTRL('N'),
+	CTRL('H'), '.', CTRL('L'),
+	CTRL('Y'), CTRL('K'), CTRL('U')
     };
 
     put_qio();
@@ -869,12 +870,11 @@ flush()
 /* Clears given line of text				-RAK-	 */
 void 
 erase_line(row, col)
-    int                 row;
-    int                 col;
+int row, col;
 
 #ifdef MAC
 {
-    Rect                line;
+    Rect line;
 
     if (row == MSG_LINE && msg_flag)
 	msg_print(NULL);
@@ -902,7 +902,7 @@ void
 clear_screen()
 #ifdef MAC
 {
-    Rect                area;
+    Rect area;
 
     if (msg_flag)
 	msg_print(NULL);
@@ -915,8 +915,8 @@ clear_screen()
 
 #else
 {
-    if                  (msg_flag)
-	                    msg_print(NULL);
+    if (msg_flag)
+	msg_print(NULL);
     touchwin(stdscr);
     (void)clear();
     refresh();
@@ -926,11 +926,11 @@ clear_screen()
 
 void 
 clear_from(row)
-    int                 row;
+int row;
 
 #ifdef MAC
 {
-    Rect                area;
+    Rect area;
 
     area.left = 0;
     area.top = row;
@@ -951,12 +951,9 @@ clear_from(row)
 /* sign bit of a character used to indicate standout mode. -CJS */
 void 
 print(ch, row, col)
-    int                 ch;
-    int                 row;
-    int                 col;
+int ch, row, col;
 {
-    row -= panel_row_prt;	   /* Real co-ords convert to screen
-				    * positions */
+    row -= panel_row_prt;	   /* Real co-ords convert to screen positions */
     col -= panel_col_prt;
 #if 0
     if (ch & 0x80)
@@ -984,8 +981,7 @@ print(ch, row, col)
 /* Moves the cursor to a given interpolated y, x position	-RAK-	 */
 void 
 move_cursor_relative(row, col)
-    int                 row;
-    int                 col;
+int row, col;
 
 #ifdef MAC
 {
@@ -998,7 +994,7 @@ move_cursor_relative(row, col)
 
 #else
 {
-    vtype               tmp_str;
+    vtype tmp_str;
 
     row -= panel_row_prt;	   /* Real co-ords convert to screen
 				    * positions */
@@ -1023,9 +1019,9 @@ move_cursor_relative(row, col)
 /* Print a message so as not to interrupt a counted command. -CJS- */
 void 
 count_msg_print(p)
-    const char               *p;
+const char *p;
 {
-    int                 i;
+    int i;
 
     i = command_count;
     msg_print(p);
@@ -1036,13 +1032,12 @@ count_msg_print(p)
 /* Outputs a line to a given y, x position		-RAK-	 */
 void 
 prt(str_buff, row, col)
-    const char               *str_buff;
-    int                 row;
-    int                 col;
+const char *str_buff;
+int         row, col;
 
 #ifdef MAC
 {
-    Rect                line;
+    Rect line;
 
     if (row == MSG_LINE && msg_flag)
 	msg_print(NULL);
@@ -1071,7 +1066,7 @@ prt(str_buff, row, col)
 /* move cursor to a given y, x position */
 void 
 move_cursor(row, col)
-    int                 row, col;
+int row, col;
 
 #ifdef MAC
 {
@@ -1090,10 +1085,10 @@ move_cursor(row, col)
 /* These messages are kept for later reference.	 */
 void 
 msg_print(str_buff)
-    const char               *str_buff;
+const char *str_buff;
 {
-    char                in_char;
-    static              len = 0;
+    char   in_char;
+    static len = 0;
 
     if (msg_flag) {
 	if (str_buff && (len + strlen(str_buff)) > 72) {
@@ -1178,10 +1173,9 @@ msg_print(str_buff)
 /* Used to verify a choice - user gets the chance to abort choice.  -CJS- */
 int 
 get_check(prompt)
-    const char               *prompt;
+const char *prompt;
 {
-    int                 res;
-    int                 y, x;
+    int res, y, x;
 
     prt(prompt, 0, 0);
 #ifdef MAC
@@ -1221,10 +1215,10 @@ get_check(prompt)
 /* Function returns false if <ESCAPE> is input	 */
 int 
 get_com(prompt, command)
-    const char               *prompt;
-    char               *command;
+const char *prompt;
+char       *command;
 {
-    int                 res;
+    int res;
 
     if (prompt)
 	prt(prompt, 0, 0);
@@ -1241,10 +1235,10 @@ get_com(prompt, command)
 /* Same as get_com(), but translates direction keys from keypad */
 int 
 get_comdir(prompt, command)
-    char               *prompt;
-    char               *command;
+char *prompt;
+char *command;
 {
-    int                 res;
+    int res;
 
     if (prompt)
 	prt(prompt, 0, 0);
@@ -1264,12 +1258,12 @@ get_comdir(prompt, command)
 /* Function returns false if <ESCAPE> is input	 */
 int 
 get_string(in_str, row, column, slen)
-    char               *in_str;
-    int                 row, column, slen;
+char *in_str;
+int   row, column, slen;
 {
-    register int        start_col, end_col, i;
-    char               *p;
-    int                 flag, aborted;
+    register int start_col, end_col, i;
+    char        *p;
+    int          flag, aborted;
 
     aborted = FALSE;
     flag = FALSE;
@@ -1334,7 +1328,7 @@ get_string(in_str, row, column, slen)
 /* Pauses for user response before returning		-RAK-	 */
 void 
 pause_line(prt_line)
-    int                 prt_line;
+int prt_line;
 {
     prt("[Press any key to continue.]", prt_line, 23);
     (void)inkey();
@@ -1347,10 +1341,9 @@ pause_line(prt_line)
 /* characters.  Make them wait a bit.			 */
 void 
 pause_exit(prt_line, delay)
-    int                 prt_line;
-    int                 delay;
+int prt_line, delay;
 {
-    char                dummy;
+    char dummy;
 
     prt("[Press any key to continue, or Q to exit.]", prt_line, 10);
     dummy = inkey();
@@ -1440,18 +1433,18 @@ bell()
 void 
 screen_map()
 {
-    register int        i, j;
-    static int8u        screen_border[2][6] = {
-        		{'+', '+', '+', '+', '-', '|'},	/* normal chars */
-		        {201, 187, 200, 188, 205, 186}	/* graphics chars */
-			};
-    int8u               map[MAX_WIDTH / RATIO + 1];
-    int8u               tmp;
-    int                 priority[256];
-    int                 row, orow, col, myrow = 0, mycol = 0;
+    register int i, j;
+    static int8u screen_border[2][6] = {
+    {'+', '+', '+', '+', '-', '|'},	/* normal chars */
+    {201, 187, 200, 188, 205, 186}	/* graphics chars */
+    };
+    int8u map[MAX_WIDTH / RATIO + 1];
+    int8u tmp;
+    int   priority[256];
+    int   row, orow, col, myrow = 0, mycol = 0;
 
 #ifndef MAC
-    char                prntscrnbuf[80];
+    char  prntscrnbuf[80];
 
 #endif
 
@@ -1499,8 +1492,7 @@ screen_map()
 		DWriteScreenString(map);
 		DWriteScreenCharAttr(CH(VE), ATTR_NORMAL);
 #else
-	    /*
-	     * can not use mvprintw() on ibmpc, because PC-Curses is horribly
+	    /* can not use mvprintw() on ibmpc, because PC-Curses is horribly
 	     * written, and mvprintw() causes the fp emulation library to be
 	     * linked with PC-Moria, makes the program 10K bigger 
 	     */

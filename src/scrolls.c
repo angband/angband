@@ -24,12 +24,12 @@
 void 
 read_scroll()
 {
-    int32u              i;
-    int                 j, k, item_val, y, x;
-    int                 tmp[6], flag, used_up;
-    bigvtype            out_val, tmp_str;
-    register int        ident, l;
-    register inven_type *i_ptr;
+    int32u                i;
+    int                   j, k, item_val, y, x;
+    int                   tmp[6], used_up;
+    bigvtype              out_val, tmp_str;
+    register int          ident, l;
+    register inven_type  *i_ptr;
     register struct misc *m_ptr;
 
     free_turn_flag = TRUE;
@@ -61,20 +61,10 @@ read_scroll()
 		i_ptr = &inventory[INVEN_WIELD];
 		if (i_ptr->tval != TV_NOTHING) {
 		    objdes(tmp_str, i_ptr, FALSE);
-		    if ((i_ptr->flags2 & TR_ARTIFACT) && randint(2) == 1) {	/* DGK */
-			sprintf(out_val, "Your %s resists enchantment!",
-				tmp_str);
-			msg_print(out_val);
-		    } else {
-			(void)sprintf(out_val, "Your %s glows faintly!",
-				      tmp_str);
-			msg_print(out_val);
-			if (enchant(&i_ptr->tohit, 10))
-			/* used to clear TR_CURSED; should remain set -DGK- */
-			    calc_bonuses();
-			else
-			    msg_print("The enchantment fails.");
-		    } /* DGK */
+		    (void) sprintf(out_val, "Your %s glows faintly! ", tmp_str);
+		    msg_print(out_val);
+		    if (!enchant(i_ptr, 1, ENCH_TOHIT))
+			msg_print("The enchantment fails. ");
 		    ident = TRUE;
 		}
 		break;
@@ -82,32 +72,13 @@ read_scroll()
 		i_ptr = &inventory[INVEN_WIELD];
 		if (i_ptr->tval != TV_NOTHING) {
 		    objdes(tmp_str, i_ptr, FALSE);
-		    if ((i_ptr->flags2 & TR_ARTIFACT) && randint(2) == 1) {	/* DGK */
-			sprintf(out_val, "Your %s resists enchantment!",
-				tmp_str);
-			msg_print(out_val);
-		    } else {
-			int                 maxench;
-
-			(void)sprintf(out_val, "Your %s glows faintly!",
-				      tmp_str);
-			msg_print(out_val);
-			if ((i_ptr->tval >= TV_HAFTED) &&
-			    (i_ptr->tval <= TV_DIGGING))
-			    maxench = i_ptr->damage[0] * i_ptr->damage[1];
-			else	   /* Bows' and arrows' enchantments should
-				    * not be limited by their low base
-				    * damages */
-			    maxench = 10;
-			if (enchant(&i_ptr->todam, maxench))
-			    calc_bonuses();
-		    /* used to clear TR_CURSED; should remain set -DGK- */
-			else
-			    msg_print("The enchantment fails.");
-		    } /* DGK */
+		    (void) sprintf(out_val, "Your %s glows faintly! ", tmp_str);
+		    msg_print(out_val);
+		    if (!enchant(i_ptr, 1, ENCH_TODAM))
+			msg_print("The enchantment fails. ");
 		    ident = TRUE;
 		}
-		break;
+		break;		
 	      case 3:
 		k = 0;
 		l = 0;
@@ -143,31 +114,21 @@ read_scroll()
 		if (l > 0) {
 		    i_ptr = &inventory[l];
 		    objdes(tmp_str, i_ptr, FALSE);
-		    if ((i_ptr->flags2 & TR_ARTIFACT) && randint(2) == 1) {	/* DGK */
-			sprintf(out_val, "Your %s resists enchantment!",
-				tmp_str);
-			msg_print(out_val);
-		    } else {
-			(void)sprintf(out_val, "Your %s glows faintly!",
-				      tmp_str);
-			msg_print(out_val);
-			if (enchant(&i_ptr->toac, 10))
-			/* used to clear TR_CURSED; should remain set -DGK- */
-			    calc_bonuses();
-			else
-			    msg_print("The enchantment fails.");
-		    } /* DGK */
+		    (void) sprintf(out_val, "Your %s glows faintly! ", tmp_str);
+		    msg_print(out_val);
+		    if (!enchant(i_ptr, 1, ENCH_TOAC))
+			msg_print("The enchantment fails. ");
 		    ident = TRUE;
 		}
 		break;
+		
 	      case 4:
 		msg_print("This is an identify scroll.");
 		ident = TRUE;
 		used_up = ident_spell();
 
-	    /*
-	     * The identify may merge objects, causing the identify scroll to
-	     * move to a different place.	Check for that here.  It can
+	    /* The identify may merge objects, causing the identify scroll to
+	     * move to a different place.  Check for that here.  It can
 	     * move arbitrarily far if an identify scroll was used on another
 	     * identify scroll, but it always moves down. 
 	     */
@@ -236,8 +197,8 @@ read_scroll()
 		break;
 	      case 19:
 		msg_print("This is a mass genocide scroll.");
-		ident = TRUE;
 		mass_genocide(TRUE);
+		ident = TRUE;
 		break;
 	      case 20:
 		ident = detect_invisible();
@@ -262,12 +223,13 @@ read_scroll()
 		break;
 	      case 26:
 		msg_print("This is a genocide scroll.");
-		ident = TRUE;
 		genocide(TRUE);
+		ident = TRUE;
 		break;
 	      case 27:
 		ident = unlight_area(char_row, char_col);
-		py.flags.blind += 3 + randint(5);
+		if (!py.flags.blindness_resist)
+		    py.flags.blind += 3 + randint(5);
 		break;
 	      case 28:
 		ident = protect_evil();
@@ -287,40 +249,14 @@ read_scroll()
 		i_ptr = &inventory[INVEN_WIELD];
 		if (i_ptr->tval != TV_NOTHING) {
 		    objdes(tmp_str, i_ptr, FALSE);
-		    if ((i_ptr->flags2 & TR_ARTIFACT) && randint(2) == 1) {	/* DGK */
-			sprintf(out_val, "Your %s resists enchantment!",
-				tmp_str);
-			msg_print(out_val);
-		    } else {
-			(void)sprintf(out_val, "Your %s glows brightly!",
-				      tmp_str);
-			msg_print(out_val);
-			flag = FALSE;
-			for (k = 0; k < randint(2); k++)
-			    if (enchant(&i_ptr->tohit, 15))
-				flag = TRUE;
-			for (k = 0; k < randint(2); k++) {
-			    int                 maxench;
-
-			    if ((i_ptr->tval >= TV_HAFTED) &&
-				(i_ptr->tval <= TV_DIGGING))
-				maxench = i_ptr->damage[0] * i_ptr->damage[1] + 5;
-			    else   /* Bows' and arrows' enchantments should
-				    * not be limited by their low base
-				    * damages */
-				maxench = 15;
-			    if (enchant(&i_ptr->todam, maxench))
-				flag = TRUE;
-			}
-			if (flag)
-			/* used to clear TR_CURSED; should remain set -DGK- */
-			    calc_bonuses();
-			else
-			    msg_print("The enchantment fails.");
-		    } /* DGK */
+		    (void) sprintf(out_val, "Your %s glows brightly!", tmp_str);
+		    msg_print(out_val);
+		    if (!enchant(i_ptr, randint(3), ENCH_TOHIT|ENCH_TODAM))
+			msg_print("The enchantment fails.");
 		    ident = TRUE;
 		}
 		break;
+		
 	      case 34:
 		i_ptr = &inventory[INVEN_WIELD];
 		if (i_ptr->tval != TV_NOTHING) {
@@ -383,24 +319,10 @@ read_scroll()
 		if (l > 0) {
 		    i_ptr = &inventory[l];
 		    objdes(tmp_str, i_ptr, FALSE);
-		    if ((i_ptr->flags2 & TR_ARTIFACT) && randint(2) == 1) {	/* DGK */
-			sprintf(out_val, "Your %s resists enchantment!",
-				tmp_str);
-			msg_print(out_val);
-		    } else {
-			(void)sprintf(out_val, "Your %s glows brightly!",
-				      tmp_str);
-			msg_print(out_val);
-			flag = FALSE;
-			for (k = 0; k < randint(2) + 1; k++)
-			    if (enchant(&i_ptr->toac, 15))
-				flag = TRUE;
-			if (flag)
-			/* used to clear TR_CURSED; should remain set -DGK- */
-			    calc_bonuses();
-			else
-			    msg_print("The enchantment fails.");
-		    } /* DGK */
+		    (void) sprintf(out_val,"Your %s glows brightly!", tmp_str);
+		    msg_print(out_val);
+		    if (!enchant(i_ptr, randint(3)+1, ENCH_TOAC))
+			msg_print("The enchantment fails.");
 		    ident = TRUE;
 		}
 		break;
@@ -448,8 +370,7 @@ read_scroll()
 		    } else {	   /* not artifact or failed save... */
 		(void)sprintf(out_val, "A terrible black aura blasts your %s!", tmp_str);
 			msg_print(out_val);
-			py_bonuses(i_ptr, -1);	/* take off current bonuses
-						 * -CFT */
+			py_bonuses(i_ptr, -1);	/* take off current bonuses -CFT */
 			i_ptr->name2 = SN_BLASTED;
 			i_ptr->flags = TR_CURSED;
 			i_ptr->flags2 = 0;

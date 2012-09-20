@@ -1,3 +1,10 @@
+/*
+ * describe_mon.c: monster descriptions
+ *
+ * NB: The order of these descriptions *MUST* match with the order that the
+ *     monsters appear in monsters.c.  'make check' will confirm this.  -CWS
+ */
+
 #include "constant.h"
 #include "config.h"
 #include "types.h"

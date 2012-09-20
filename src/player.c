@@ -755,7 +755,11 @@ const char *spell_names[127] = {
   "Find Hidden Traps/Doors",  "Stinking Cloud",
   "Confusion",	"Lightning Bolt",  "Trap/Door Destruction", "Sleep I",
   "Cure Poison",  "Teleport Self",  "Spear of Light",  "Frost Bolt",
+#ifdef SATISFY_HUNGER
+  "Turn Stone to Mud",	"Staisfy Hunger",	"Recharge Item I",  "Sleep II",
+#else
   "Turn Stone to Mud",	"Create Food",	"Recharge Item I",  "Sleep II",
+#endif
   "Polymorph Other",  "Identify",  "Sleep III",	 "Fire Bolt",  "Slow Monster",
   "Frost Ball",	 "Recharge Item II", "Teleport Other",	"Haste Self",
   "Fire Ball", "Word of Destruction", "Genocide",
@@ -803,7 +807,11 @@ const char *spell_names[127] = {
   /* Priest Spells, start at index 31 now 63 ~Ludwig */
   "Detect Evil",  "Cure Light Wounds",	"Bless",  "Remove Fear", "Call Light",
   "Find Traps",	 "Detect Doors/Stairs",	 "Slow Poison",	 "Blind Creature",
+#ifdef SATISFY_HUNGER
+  "Portal",  "Cure Medium Wounds",  "Chant",  "Sanctuary",  "Satisfy Hunger",
+#else
   "Portal",  "Cure Medium Wounds",  "Chant",  "Sanctuary",  "Create Food",
+#endif
   "Remove Curse",  "Resist Heat and Cold",  "Neutralize Poison",
   "Orb of Draining",  "Cure Serious Wounds",  "Sense Invisible",
   "Protection from Evil",  "Earthquake",  "Sense Surroundings",
@@ -859,6 +867,7 @@ const char *spell_names[127] = {
 /* Note that the entries refer to elements of the object_list[] array*/
 /* 356 = Food Ration, 365 = Wooden Torch, 123 = Cloak, 30 = Stiletto,
    103 = Soft Leather Armor, 318 = Beginners-Magic, 322 = Beginners Handbook */
+
 int16u player_init[MAX_CLASS][5] = {
 		{ MDO, MDO+21,  34, 109, 258},	/* Warrior	 */
 		{ MDO, MDO+21,  29, 330, 220},	/* Mage		 */
@@ -874,9 +883,9 @@ int16u player_init[MAX_CLASS][5] = {
 	irritation.  -CFT */
 int32u spellmasks[MAX_CLASS][2] = {
 	{ 0x0L, 0x0L },			/* warrior */
-	{ 0x7fffffafL, 0x07ffffffL },	/* mage */
+	{ 0xffffffafL, 0x0fffffffL },	/* mage */
 	{ 0xffffffffL, 0x03ffffffL },	/* priest */
 	{ 0x284efafeL, 0x03fe70eeL },	/* rogue */
-	{ 0x7fffffafL, 0x03fe77feL },	/* ranger */
+	{ 0xffffffafL, 0x03fe77feL },	/* ranger */
 	{ 0xffffffffL, 0x03ffefffL }	/* paladin */
 };

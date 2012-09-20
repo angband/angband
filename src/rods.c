@@ -32,7 +32,7 @@ static int          direction();
 
 static int 
 direction(dir)
-    int                *dir;
+int *dir;
 {
     if (get_dir(NULL, dir)) {
 	if (py.flags.confused > 0) {
@@ -68,7 +68,7 @@ activate_rod()
 	ident = FALSE;
 	m_ptr = &py.misc;
 	chance = m_ptr->save + (stat_adj(A_INT) * 2) -
-	    (int)((i_ptr->level > 50) ? 50 : i_ptr->level)
+	    (int)((i_ptr->level > 70) ? 70 : i_ptr->level)
 	    + (class_level_adj[m_ptr->pclass][CLA_DEVICE] * m_ptr->lev / 3);
 	if (py.flags.confused > 0)
 	    chance = chance / 2;
@@ -99,31 +99,40 @@ activate_rod()
 	      case RD_AC_BLTS:	   /* Acid , New */
 		if (!direction(&dir))
 		    goto no_charge;
-		fire_bolt(GF_ACID, dir, k, l, damroll(6, 8), "Acid Bolt");
+		if (randint(10)==1)
+		    line_spell(GF_ACID,dir,k,l,damroll(6,8));
+		else
+		    fire_bolt(GF_ACID,dir,k,l,damroll(6,8));
 		ident = TRUE;
 		i_ptr->timeout = 12;
 		break;
 	      case RD_LT_BLTS:	   /* Lightning */
 		if (!direction(&dir))
 		    goto no_charge;
-		fire_bolt(GF_LIGHTNING, dir, k, l, damroll(3, 8),
-			  spell_names[10]);
+		if (randint(12)==1)
+		    line_spell(GF_LIGHTNING, dir, k, l, damroll(3, 8));
+		else
+		    fire_bolt(GF_LIGHTNING, dir, k, l, damroll(3, 8));
 		ident = TRUE;
 		i_ptr->timeout = 11;
 		break;
 	      case RD_FT_BLTS:	   /* Frost */
 		if (!direction(&dir))
 		    goto no_charge;
-		fire_bolt(GF_FROST, dir, k, l, damroll(5, 8),
-			  spell_names[16]);
+		if (randint(10)==1)
+		    line_spell(GF_FROST, dir, k, l, damroll(5, 8));
+		else
+		    fire_bolt(GF_FROST, dir, k, l, damroll(5, 8));
 		ident = TRUE;
 		i_ptr->timeout = 13;
 		break;
 	      case RD_FR_BLTS:	   /* Fire */
 		if (!direction(&dir))
 		    goto no_charge;
-		fire_bolt(GF_FIRE, dir, k, l, damroll(8, 8),
-			  spell_names[24]);
+		if (randint(8)==1)
+		    line_spell(GF_FIRE, dir, k, l, damroll(8, 8));
+		else
+		    fire_bolt(GF_FIRE, dir, k, l, damroll(8, 8));
 		ident = TRUE;
 		i_ptr->timeout = 15;
 		break;
@@ -166,28 +175,28 @@ activate_rod()
 	      case RD_LT_BALL:
 		if (!direction(&dir))
 		    goto no_charge;
-		fire_ball(GF_LIGHTNING, dir, k, l, 32, 2, "Lightning Ball");
+		fire_ball(GF_LIGHTNING, dir, k, l, 32, 2);
 		ident = TRUE;
 		i_ptr->timeout = 23;
 		break;
 	      case RD_CD_BALL:
 		if (!direction(&dir))
 		    goto no_charge;
-		fire_ball(GF_FROST, dir, k, l, 48, 2, "Cold Ball");
+		fire_ball(GF_FROST, dir, k, l, 48, 2);
 		ident = TRUE;
 		i_ptr->timeout = 25;
 		break;
 	      case RD_FR_BALL:
 		if (!direction(&dir))
 		    goto no_charge;
-		fire_ball(GF_FIRE, dir, k, l, 72, 2, "Fire Ball");
+		fire_ball(GF_FIRE, dir, k, l, 72, 2);
 		ident = TRUE;
 		i_ptr->timeout = 30;
 		break;
 	      case RD_AC_BALL:
 		if (!direction(&dir))
 		    goto no_charge;
-		fire_ball(GF_ACID, dir, k, l, 60, 2, "Acid Ball");
+		fire_ball(GF_ACID, dir, k, l, 60, 2);
 		ident = TRUE;
 		i_ptr->timeout = 27;
 		break;
@@ -278,13 +287,13 @@ activate_rod()
 		py.flags.fast += randint(30) + 15;
 		i_ptr->timeout = 99;
 		break;
-#if 0
 	      case RD_TRAP_LOC:
 		if (detect_trap())
 		    ident = TRUE;
 		i_ptr->timeout = 99;	/* fairly long timeout because rod so
 					 * low lv -CFT */
 		break;
+#if 0
 	      case RD_MK_WALL:	   /* JLS */
 		if (!direction(&dir))
 		    goto no_charge;

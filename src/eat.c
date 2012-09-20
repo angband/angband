@@ -23,11 +23,11 @@
 void 
 eat()
 {
-    int32u              i;
-    int                 j, k, item_val, ident;
+    int32u                 i;
+    int                    j, k, item_val, ident;
     register struct flags *f_ptr;
-    register struct misc *m_ptr;
-    register inven_type *i_ptr;
+    register struct misc  *m_ptr;
+    register inven_type   *i_ptr;
 
     free_turn_flag = TRUE;
     if (inven_ctr == 0)

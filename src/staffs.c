@@ -25,11 +25,11 @@
 void 
 use()
 {
-    int32u              i;
-    int                 j, k, item_val, chance, y, x;
-    register int        ident;
+    int32u                i;
+    int                   j, k, item_val, chance, y, x;
+    register int          ident;
     register struct misc *m_ptr;
-    register inven_type *i_ptr;
+    register inven_type  *i_ptr;
 
     free_turn_flag = TRUE;
     if (inven_ctr == 0)
@@ -40,8 +40,9 @@ use()
 	i_ptr = &inventory[item_val];
 	free_turn_flag = FALSE;
 	m_ptr = &py.misc;
-	chance = m_ptr->save + stat_adj(A_INT) - (int)i_ptr->level - 5
-	    + (class_level_adj[m_ptr->pclass][CLA_DEVICE] * m_ptr->lev / 3);
+	chance = m_ptr->save + stat_adj(A_INT)
+	    - (int)(i_ptr->level>50?50:i_ptr->level)
+		+ (class_level_adj[m_ptr->pclass][CLA_DEVICE] * m_ptr->lev / 3);
 	if (py.flags.confused > 0)
 	    chance = chance / 2;
 	if ((chance < USE_DEVICE) && (randint(USE_DEVICE - chance + 1) == 1))

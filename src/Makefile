@@ -1,44 +1,93 @@
 ####
 # Please take a look at config.h for *critical* configuration steps needed.
-# BINDIR is the directory where the angband binary while be put
+# BINDIR is the directory where the angband binary will be installed
 
 BINDIR = /User/games/bin
 PROGRAM = angband
 
 ####
-# Optimization flags (or debugging).
+# If you use gcc, you may find that adding '-traditional-cpp' will fix
+# defining the LIBDIR in config.h.  '-Dconst' may also help if your compiler
+# complains about conflicting definitions
+
+CC = cc
+
 ####
-# '-O' means optimize.  '-g' is for debugging.  Gcc lets you combine both.
+# Compiler flags
+####
+# '-O' means optimize.  '-g' is for debugging.
+#
+# If you are using gcc, you may combine both '-O' and '-g'.  Also:
 # '-pipe' uses pipes rather than temporary files (which is faster).
 # '-pg' enables profiling (for coders only).  '-W<something>' provides
 # additional warnings.
 ####
+# Remove one of the '#' from the list of compiler flag choices below:
+####
+
+# For normal compilers (ie, 'cc' on anything but a NeXT).
+# Once you are sure it works, you can and should use '-O' instead.
+# CFLAGS = -Wall -O1
+
 # For HPUX, the compiler flags for 'cc' should be:
-# COPT = -Ae -Dunix -g
-
-#COPT = -g -O1 -Wall -Wcast-align -Wpointer-arith -Wwrite-strings -pipe
-COPT = -g -O -pipe
+#CFLAGS = -Ae -Dunix -g
 
 ####
-# If you use gcc, you may find that adding -traditional-cpp will fix
-# defining the LIBDIR in config.h.  '-Dconst=' may also help if your compiler
-# complains about conflicting definitions
+# For gcc (or NeXT) users only.
+ 
+# Normal gcc users:
+# For SunOS 5.X (Solaris 2.X), add '-DSOLARIS'
+CFLAGS = -g -O1 -pipe
 
-CFLAGS = $(COPT)
-CC = cc
+# Full optimization (but only when you know it works right!):
+#CFLAGS = -O4 -pipe -fomit-frame-pointer
+
+# Developers:
+#CFLAGS = -g -O1 -pipe -Wall -Wcast-align -Wpointer-arith -Wwrite-strings
+
+# Anal developers:     [ :-) ]
+#CFLAGS = -g -O1 -pipe -Wall -Wcast-align -Wpointer-arith -Wwrite-strings \
+ -Wshadow -Wcast-align -Waggregate-return 
+
+# Profiling:
+#CFLAGS = -pg -g -O1 -pipe-Wall -Wcast-align -Wpointer-arith -Wwrite-strings
 
 ####
-# some people might be able to (or even might have to) remove -lrpcsvc
+# Libraries to link from
+####
+# some people might be able to (or even might have to) remove '-lrpcsvc'
+
+LIBS = -lcurses -ltermcap -lrpcsvc
+
+####
 # For Linux systems, this line should look like:
 # LIBS = -lncurses -ltermcap -lbsd
- 
-LIBS = -lcurses -ltermcap -lrpcsvc
+
+####
+# For NCR System 3000, you'll probably need this:
+# LIBS=-lcurses -ltermcap -lmalloc -L/usr/ucblib -lucb
+
+####
+# For SunOS 5.X (Solaris 2.X), this line should look like:
+# LIBS = -ltermlib -ltermcap -lrpcsvc -lnsl -lucb
+
+# For SunOS 5.X (Solaris 2.X), this line should look like:
+# ....unless you don't have the BSD/SunOS 4.x compatibility kit:
+# LIBS = -ltermlib -ltermcap -lrpcsvc -lnsl
+
 
 ####
 # If your system lacks the random() call, define EXTRAOBJS to include
 # random.o.  Otherwise, you can leave it out.
 
 #EXTRAOBJS=random.o
+
+####
+# For SunOS 5.X (Solaris 2.X), if you don't have the BSD/SunOS 4.x
+# compatibility kit.  Also, be sure to define NEEDS_USLEEP in config.h
+# EXTRAOBJS=random.o bzero.o
+
+# Otherwise, just use this:
 EXTRAOBJS=
 
 # end of user configurable stuff
@@ -49,7 +98,7 @@ SOURCES = main.c misc1.c misc2.c store1.c files.c io.c create.c desc.c\
 	potions.c prayer.c save.c staffs.c wands.c scrolls.c spells.c\
 	wizard.c store2.c signals.c moria1.c moria2.c monsters.c\
 	treasure.c variable.c recall.c unix.c undef.c\
-	player.c tables.c describe_mon.c rods.c random.c util.c
+	player.c tables.c describe_mon.c rods.c random.c util.c bzero.c
 
 OBJECTS = main.o misc1.o misc2.o store1.o files.o io.o create.o desc.o\
 	generate.o sets.o dungeon.o creature.o death.o eat.o help.o magic.o\
@@ -89,17 +138,20 @@ spotless: clean
 depend:
 	/usr/local/bin/X11/makedepend $(INCLUDES) -p$(OBJDIR)/ $(SRCS)
 
+####
+# verify that the monsters.c and describe_mon.c files correspond
+
 check:
-	-/bin/rm -f temp1 temp2
-	egrep '^{' monsters.c | awk -F\" '{print $$2}' > temp1
-	egrep '^{' describe_mon.c | awk -F\" '{print $$2}' > temp2
-	echo monster name problems
-	-diff -c1 temp1 temp2
+	@/bin/rm -f temp1 temp2
+	@egrep '^{' monsters.c | awk -F\" '{print $$2}' > temp1
+	@egrep '^{' describe_mon.c | awk -F\" '{print $$2}' > temp2
+	@echo Monster name problems present:
+	@diff -c1 temp1 temp2
 
 query:
-	echo "Monsters.c"
+	@echo "Monsters.c:"
 	egrep '^{"' monsters.c | wc -l
-	echo "Describe_Mon.c"
+	@echo "Describe_Mon.c:"
 	egrep '^{"' describe_mon.c | wc -l
 
 create.o: constant.h types.h externs.h config.h
