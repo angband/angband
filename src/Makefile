@@ -1,68 +1,100 @@
-# This will get rewritten a little to make it GNU Make portable for the
-# final release.  Until then, there are some rough edges...sorry.  -CWS
-
-# SRCDIR is the directory containing the sources
+####
+# Please take a look at config.h for *critical* configuration steps needed.
 # BINDIR is the directory where the angband binary while be put
-# LIBDIR is where the other files (score, news, hours) will be put
-# OBJDIR is where the object files will be put
 
-SRCDIR = .
-OBJDIR = .
-LIBDIR = /User/games/lib/angband
 BINDIR = /User/games/bin
 PROGRAM = angband
 
-#COPT = -g -Wall -Wshadow -Wcast-align -O1 -DLINT_ARGS
-COPT = -O
+####
+# Optimization flags (or debugging).
+####
+# '-O' means optimize.  '-g' is for debugging.  Gcc lets you combine both.
+# '-pipe' uses pipes rather than temporary files (which is faster).
+# '-pg' enables profiling (for coders only).  '-W<something>' provides
+# additional warnings.
+####
+# For HPUX, the compiler flags for 'cc' should be:
+# COPT = -Ae -Dunix -g
 
-# Note that any reasonably modern compiler does better when you *don't* use
-# "register".  I've hacked it out here because I don't want to change every arg
-# list in the game.  You might want to undo this if your compiler sucks.
+#COPT = -g -O1 -Wall -Wcast-align -Wpointer-arith -Wwrite-strings -pipe
+COPT = -g -O -pipe
 
-CFLAGS = $(COPT) -fwritable-strings -DLIBDIR=\"$(LIBDIR)\" -Dregister=\"\"
-CC = gcc
+####
+# If you use gcc, you may find that adding -traditional-cpp will fix
+# defining the LIBDIR in config.h.  '-Dconst=' may also help if your compiler
+# complains about conflicting definitions
+
+CFLAGS = $(COPT)
+CC = cc
+
+####
+# some people might be able to (or even might have to) remove -lrpcsvc
+# For Linux systems, this line should look like:
+# LIBS = -lncurses -ltermcap -lbsd
+ 
+LIBS = -lcurses -ltermcap -lrpcsvc
+
+####
+# If your system lacks the random() call, define EXTRAOBJS to include
+# random.o.  Otherwise, you can leave it out.
+
+#EXTRAOBJS=random.o
+EXTRAOBJS=
+
+# end of user configurable stuff
+#######
 
 SOURCES = main.c misc1.c misc2.c store1.c files.c io.c create.c desc.c\
 	generate.c sets.c dungeon.c creature.c death.c eat.c help.c magic.c\
 	potions.c prayer.c save.c staffs.c wands.c scrolls.c spells.c\
 	wizard.c store2.c signals.c moria1.c moria2.c monsters.c\
-	treasure.c variable.c rnd.c recall.c unix.c undef.c\
-	player.c tables.c describe_mon.c rods.c
+	treasure.c variable.c recall.c unix.c undef.c\
+	player.c tables.c describe_mon.c rods.c random.c util.c
 
 OBJECTS = main.o misc1.o misc2.o store1.o files.o io.o create.o desc.o\
 	generate.o sets.o dungeon.o creature.o death.o eat.o help.o magic.o\
 	potions.o prayer.o save.o staffs.o wands.o scrolls.o spells.o\
 	wizard.o store2.o signals.o moria1.o moria2.o monsters.o\
-	treasure.o variable.o rnd.o recall.o unix.o undef.o\
-	player.o tables.o describe_mon.o rods.o
+	treasure.o variable.o recall.o unix.o undef.o\
+	player.o tables.o describe_mon.o rods.o util.o $(EXTRAOBJS)
 
 LIBFILES = hours news origcmds.hlp owizcmds.hlp roglcmds.hlp rwizcmds.hlp \
 	scores version.hlp welcome.hlp
 
-default:	all
+default: all
 
-all:	angband
+all: $(PROGRAM)
 
-$(OBJDIR)/%.o: $(SRCDIR)/%.c
-	$(CC) $(CFLAGS) -c $(SRCDIR)/$*.c -o $@
+.c.o:
+	$(CC) $(CFLAGS) -c $*.c
 
-angband: $(OBJECTS)
-	$(CC) $(CFLAGS) $(OBJECTS) -o angband -lcurses -ltermcap -lrpcsvc
+$(PROGRAM): $(OBJECTS)
+	$(CC) $(CFLAGS) $(OBJECTS) -o $(PROGRAM) $(LIBS)
 
-install:	angband
-	cp angband $(BINDIR)/$(PROGRAM)
+install:	$(PROGRAM)
+	cp $(PROGRAM) $(BINDIR)/$(PROGRAM)
 	chown games.bin $(BINDIR)/$(PROGRAM)
 	chmod 4511 $(BINDIR)/$(PROGRAM)
 
 clean:;
-	rm -f $(OBJDIR)/*.o $(BINDIR)/core $(OBJDIR)/core ./core angband
+	rm -f *.o ./core *~ .*~ temp1 temp2 gmon.*
+
+realclean: clean
+	rm -f $(PROGRAM)
 
 spotless: clean
-	rm -f angband
-	rm -f $(BINDIR)/angband
+	rm -f $(PROGRAM)
+	rm -f $(BINDIR)/$(PROGRAM)
 
 depend:
 	/usr/local/bin/X11/makedepend $(INCLUDES) -p$(OBJDIR)/ $(SRCS)
+
+check:
+	-/bin/rm -f temp1 temp2
+	egrep '^{' monsters.c | awk -F\" '{print $$2}' > temp1
+	egrep '^{' describe_mon.c | awk -F\" '{print $$2}' > temp2
+	echo monster name problems
+	-diff -c1 temp1 temp2
 
 query:
 	echo "Monsters.c"

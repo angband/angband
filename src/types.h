@@ -39,7 +39,7 @@ typedef int16u attid;
 
 typedef struct creature_type
 {
-  char *name;		/* Descrip of creature	*/
+  const char *name;	/* Descrip of creature	*/
   int32u cmove;		/* Bit field		*/
   int32u spells;	/* Creature spells	*/
   int32u cdefense;	/* Bit field		*/
@@ -55,6 +55,7 @@ typedef struct creature_type
   attid damage[4];	/* Type attack and damage*/
   int16u level;		/* Level of creature	*/
   int8u rarity;		/* Rarity of creature	*/
+  char gender;         /* one of 'm','f','n','p' added to genderize monsters -CWS */
 } creature_type;
 
 typedef struct m_attack_type	/* Monster attack and damage types */
@@ -83,8 +84,9 @@ struct unique_mon {
 };
 
 typedef struct describe_mon_type {
-  char *name;
-  char *desc;
+  const char *name;
+  const char *desc;
+  char gender;   /* one of 'm','f','n','p' added to genderize monsters -CWS */
 } describe_mon_type;
 
 typedef struct monster_type
@@ -106,7 +108,7 @@ typedef struct monster_type
 
 typedef struct treasure_type
 {
-  char *name;		/* Object name		*/
+  const char *name;	/* Object name		*/
   int32u flags;		/* Special flags	*/
   int8u tval;		/* Category number	*/
   int8u tchar;		/* Character representation*/
@@ -295,7 +297,7 @@ typedef struct spell_type
 
 typedef struct race_type
 {
-  char	*trace;		/* Type of race			*/
+  const char	*trace;		/* Type of race			*/
   int16 str_adj;	/* adjustments			*/
   int16 int_adj;
   int16 wis_adj;
@@ -327,7 +329,7 @@ typedef struct race_type
 
 typedef struct class_type
 {
-  char *title;		/* type of class		*/
+  const char *title;		/* type of class		*/
   int8u adj_hd;		/* Adjust hit points		*/
   int8u mdis;		/* mod disarming traps		*/
   int8u msrh;		/* modifier to searching	*/
@@ -349,7 +351,7 @@ typedef struct class_type
 
 typedef struct background_type
 {
-  char *info;		/* History information		*/
+  const char *info;		/* History information		*/
   int8u roll;		/* Die roll needed for history	*/
   int8u chart;		/* Table number			*/
   int8u next;		/* Pointer to next table	*/
@@ -371,7 +373,7 @@ typedef struct cave_type
 
 typedef struct owner_type
 {
-  char *owner_name;
+  const char *owner_name;
   int16 max_cost;
   int8u max_inflate;
   int8u min_inflate;

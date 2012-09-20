@@ -1,20 +1,22 @@
-*  - Wizard light.
-!  - Rerate the characters hitpoints.
-:  - Map area.
 \  - Wizard Help.
 ^A - Remove Curse and Cure all maladies.
 ^D - Down/Up n levels.
 ^E - Change character.
-^F - Delete monsters.
 ^G - Allocate treasures.
-^V - Allocate quality treasures.
 ^I - Identify.
-^^ - (HOME) Identify all objects upto a certain level.
 ^O - Print random objects sample.
 ^T - Teleport player.
+^V - Allocate quality treasures.
 ^W - Wizard password on/off.
-@  - Create any object *CAN CAUSE FATAL ERROR*
-+  - Gain experience.
-&  - Summon monster.
+^Z - Genocide monsters.
+:  - Map area.
 ~  - Save 'found' artifact names to a file
+!  - Rerate the characters hitpoints.
+@  - Create any object *CAN CAUSE FATAL ERROR*
+$  - Wizard light.
 %  - Self-knowledge
+&  - Summon monster.
+* - (HOME) Identify all objects up to a certain level.
++  - Gain experience.
+
+

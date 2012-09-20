@@ -24,7 +24,7 @@
 /* Current version number of Moria				*/
 #define CUR_VERSION_MAJ 5 /* version 5.2 */
 #define CUR_VERSION_MIN 2
-#define PATCH_LEVEL 1
+#define PATCH_LEVEL 8
 
 #ifndef TRUE
 #define TRUE 1
@@ -128,7 +128,7 @@
 #define MAX_GOLD       18     /* Number of different types of gold     */
 /* with MAX_TALLOC 150, it is possible to get compacting objects during
    level generation, although it is extremely rare */
-#define MAX_TALLOC     500    /* Max objects per level		       */
+#define MAX_TALLOC     400    /* Max objects per level		       */
 #define MIN_TRIX	1     /* Minimum t_list index used		*/
 #define TREAS_ROOM_ALLOC  9   /* Amount of objects for rooms	       */
 #define TREAS_ANY_ALLOC	  3   /* Amount of objects for corridors       */
@@ -137,7 +137,7 @@
 /* Magic Treasure Generation constants				*/
 /* Note: Number of special objects, and degree of enchantments	 */
 /*	 can be adjusted here.					 */
-#define OBJ_STD_ADJ	 125  /* Adjust STD per level * 100	       */
+#define OBJ_STD_ADJ	 15  /* Adjust STD per level * 100	       */
 #define OBJ_STD_MIN	 7    /* Minimum STD			       */
 #define OBJ_TOWN_LEVEL	 5    /* Town object generation level	       */
 #define OBJ_BASE_MAGIC	 15   /* Base amount of magic		       */
@@ -155,7 +155,7 @@
 #define N_MONS_ATTS	  285 /* Number of monster attack types.	*/
 /* with MAX_MALLOC 101, it is possible to get compacting monsters messages
    while breeding/cloning monsters */
-#define MAX_MALLOC	 1500 /* Max that can be allocated	      */
+#define MAX_MALLOC	  600 /* Max that can be allocated	      */
 #define MAX_MALLOC_CHANCE 160 /* 1/x chance of new monster each round  */
 #define MAX_MONS_LEVEL	   99 /* Maximum level of creatures	       */
 #define MAX_SIGHT	   20 /* Maximum dis a creature can be seen    */
@@ -183,7 +183,7 @@
 #define MAX_METALS     32     /* Used with wands & rods*/
 #define MAX_ROCKS      42     /* Used with rings       */
 #define MAX_AMULETS    16     /* Used with amulets     */
-#define MAX_TITLES     41     /* Used with scrolls     */
+#define MAX_TITLES     45     /* Used with scrolls     */
 #define MAX_SYLLABLES  158    /* Used with scrolls     */
 
 /* Player constants						*/
@@ -245,13 +245,19 @@
 
 /* some systems have a non-ANSI definition of this, so undef it first */
 #undef CTRL
-#define CTRL(x)		(x & 0x1F)
+#define	CTRL(c)	((c)&037)
 #define DELETE		0x7f
 #define ESCAPE	      '\033'	/* ESCAPE character -CJS- */
 
 #ifndef NULL
+
+#ifdef __STDC__
+#define NULL ((void *)0)
+#else
 #define NULL (char *)0
-#endif
+#endif /* __STDC__ */
+
+#endif /* NULL */
 
 /* Fval definitions: these describe the various types of dungeon floors and
    walls, if numbers above 15 are ever used, then the test against
@@ -455,9 +461,9 @@
 #define CS_SLOW_PER	0x00008000L
 #define CS_DRAIN_MANA	0x00010000L
 
-#define CS_INT1         0x80060020L /* mask of good spells */
-#define CS_INT2         0x51023400L /* to escape with :-)  */
-#define CS_INT3         0x00000000L /* Creatures aren't daft yunno? */
+#define CS_INT1 0x0006FC30L     /* was 0x80060020L -DGK */
+#define CS_INT2 0x71027200L     /* was 0x51023400L -DGK */
+#define CS_INT3 0x0000F900L     /* was 0x00000000L -DGK */
 #define CS_BREATHE	0x00F80000L
 #define CS_BREATHE2	0x8000003FL
 #define CS_BREATHE3	0x0000007FL
@@ -512,8 +518,8 @@
 #define ID_KNOWN2	0x8
 #define ID_STOREBOUGHT	0x10
 #define ID_SHOW_HITDAM	0x20
-#define ID_NOSHOW_P1	0x40
-#define ID_SHOW_P1	0x80
+#define ID_NOSHOW_P1	0x40	/* don't show (+x) even if p1 != 0 -CWS   */
+#define ID_NOSHOW_TYPE	0x80    /* don't show (+x of yyy), just (+x) -CWS */
 
 /* indexes into the special name table */
 #define SN_NULL			0
@@ -668,7 +674,7 @@
 #define SN_THRANDUIL	       149
 #define SN_THENGEL	       150
 #define SN_HAMMERHAND	       151
-#define SN_CELEFARN	       152
+#define SN_CELEGORM	       152
 #define SN_THROR	       153
 #define SN_MAEDHROS	       154
 #define SN_OLORIN	       155
@@ -695,7 +701,8 @@
 #define SN_BLADETURNER         176
 #define SN_SHATTERED           177
 #define SN_BLASTED             178
-#define SN_ARRAY_SIZE	       179 /* must be at end of this list */
+#define SN_ATTACKS             179
+#define SN_ARRAY_SIZE	       180 /* must be at end of this list */
 
 /* defines for treasure type values (tval) */
 #define TV_NEVER	-1 /* used by find_range() for non-search */

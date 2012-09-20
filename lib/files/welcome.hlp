@@ -1,4 +1,4 @@
-		       Welcome to Moria!
+               Welcome to Angband!
 
 Your first task is to generate a character. You must specify a sex,
 a race and a class. Anytime before you have made these specifications,
@@ -7,3 +7,9 @@ often as you like by entering '%' to the class request. This will also
 regenerate your attributes.
 
 If this is your first time playing, you may want to read the manual first.
+The manual is stored in "lib/files/angband.man.txt"; ask your games
+administrator to help you if you don't know where this is.
+
+Auto-rolling:  The stats given are the maximum selectable for your character.
+Things work best if you just pick a few stats to go for, and select much lower
+numbers for the other stats that aren't important to you.

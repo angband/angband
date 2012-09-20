@@ -1,30 +1,33 @@
 Command summary: (@ is optional count, ~ is direction, ^R redraws, ESC aborts)
-  c ~	  Close a door.		    |	C	Character player description.
-  d	  Drop an item.		    | @ D ~	Disarm a trap/chest.
-  e	  Equipment list.	    |	E	Eat some food.
-@ f ~	  Force (bash) item or mons.|	F	Fill lamp with oil.
-  i	  Inventory list.	    |	G	Gain new magic spells.
-  m	  magic spell casting.	    |	M	Map, show reduced size.
-@ o ~	  Open a door/chest.	    |	P	Peruse a book.
-  p	  Pray.			    |	Q	Quit the game.
-  q	  Quaff a potion.	    | @ R	Rest for a period.
-  r	  Read a scroll.	    | @ S ~	Spike a door.
-@ s	  Search for traps or doors.|	T	Take off an item.
-  t	  Throw an item.	    |   A       Activate an Artifact
-  v	  Version info		    |	W	Where: locate self.
-  w	  Wear/Wield an item.	    |	X	Exchange weapon.
-  x ~	  Examine surroundings	    |	Z	Zap a staff.
-  z	  Zap a wand.		    |	#	Search Mode.
-  =	  Set options.		    |	<	Go up an up-staircase.
-  /	  Identify a character.	    |	>	Go down a down-staircase.
+  c ~     Close a door.             |   C   Character player description.
+  d   Drop an item.                 | @ D ~ Disarm a trap/chest.
+  e   Equipment list.               |   E   Eat some food.
+@ f ~     Force (bash) item or mons.|   F   Fill lamp with oil.
+  i   Inventory list.               |   G   Gain new magic spells.
+  m   magic spell casting.          |   M   Map, show reduced size.
+@ o ~     Open a door/chest.        |   P   Peruse a book.
+  p   Pray.                         |   Q   Quit the game.
+  q   Quaff a potion.               | @ R   Rest for a period.
+  r   Read a scroll.                | @ S ~ Spike a door.
+@ s   Search for traps or doors.    |   T   Take off an item.
+  t   Throw an item.                |   A       Activate an Artifact
+  v      display your score         |   V       Version, credits and manual
+  w      Wear/Wield an item         |   W       Where: locate self
+  x ~    Examine surroundings       |   X       Exchange weapon
+  z      Zap a wand                 |   Z       Zap a staff
+  =   Set options.                  |   <   Go up an up-staircase.
+  /   Identify a character.         |   >   Go down a down-staircase.
   a       Activate a rod.           |   g       get an item (OPTIONAL)
-@ CTRL-P  Previous message review   |	{	Inscribe an object.
-@ -  ~	  Move without pickup.	    |	?	Type this page.
-@ CTRL	~ Tunnel in a direction.    |	CTRL-X	Save character and exit.
-@ SHIFT ~ Run in direction.	    | @ ~	For movement.
+@ CTRL-P  Previous message review   |   {   Inscribe an object.
+@ -  ~    Move without pickup.      |   ?   Type this page.
+@ CTRL  ~ Tunnel in a direction.    |   CTRL-X  Save character and exit.
+@ SHIFT ~ Run in direction.         | @ ~   For movement.
+  #      Search Mode                |   CTRL-F  Repeat level feeling.
+  *   Targetting Mode (if available)
+
 Directions:     y  k  u
-		h  .  l  [. is stay]
-		b  j  n
+                h  .  l  [. is stay]
+                b  j  n
 
 To give a count to a command, type the number in digits, then the command.
 A count of 0 defaults to a count of 99. Counts only work with some
@@ -39,6 +42,7 @@ Control commands may be entered with a single key stroke, or with two key
 strokes by typing ^ and then a letter.
 
 Type ESCAPE to abort the look command at any point.
+
 
 Some commands will prompt for a spell, or an inventory item. Selection is
 by an alphabetic character - entering a capital causes a desription to be

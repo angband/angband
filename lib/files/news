@@ -1,6 +1,6 @@
-                 ******************************
-                 **  Angband 2.5   (beta)    **
-                 ******************************
+                   *******************************
+                   **  Angband 2.5.8 who_knows  **
+                   *******************************
         Based on Umoria: Copyright (c) 1985 Robert Alan Koeneke
                          Copyright (c) 1989 James E. Wilson
 
@@ -10,12 +10,11 @@
                    David Kahane, Charles Swiger
 
 News:
-        This is a beta version of Angband which includes a number of bug
-fixes from the net and from UMoria 5.5, PC Angband 1.32, and FAngband 1.0.
-Note that this version does not include anything I considered too
-revolutionary.  Consult the file fixes in the source directory for details.
+        This version of Angband which includes a number of bug fixes from
+the net and from UMoria 5.5, PC Angband 1.32, and FAngband 1.0.  This version
+has a number of new features that make the game more interesting and
+enjoyable.  Please read the documentation and bugfix list which can be
+found in the files "lib/files/angband.man.txt" and "src/FIXES".
 
 Bugs:
-        There is a redisplay bug that I haven't tracked down quite yet
-involving the edges of the maps not being drawn; redisplay using CTRL-R or use
-the 'M' command.   Please email other problems to "cs4w+@andrew.cmu.edu".
+        Please email problems to "cs4w+@andrew.cmu.edu".

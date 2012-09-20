@@ -21,9 +21,9 @@ int16u player_hp[MAX_PLAYER_LEVEL];
 
 /* Class titles for different levels				*/
 #ifdef MACGAME
-char *(*player_title)[MAX_PLAYER_LEVEL];
+const char *(*player_title)[MAX_PLAYER_LEVEL];
 #else
-char *player_title[MAX_CLASS][MAX_PLAYER_LEVEL] = {
+const char *player_title[MAX_CLASS][MAX_PLAYER_LEVEL] = {
 	/* Warrior	 */
 {"Rookie","Private","Soldier","Mercenary","Veteran(1st)","Veteran(2nd)",
 "Veteran(3rd)","Warrior(1st)","Warrior(2nd)","Warrior(3rd)","Warrior(4th)",
@@ -156,7 +156,8 @@ race_type race[MAX_RACES] = {
 #endif
 
 /* 5 char race for printing scores. */
-char *dsp_race[MAX_RACES] = {
+#if 0 /* not used */
+const char *dsp_race[MAX_RACES] = {
   "Human",
   "H-Elf",
   "Elf  ",
@@ -168,7 +169,7 @@ char *dsp_race[MAX_RACES] = {
   "Duned",
   "HiElf"
 };
-
+#endif
 /* Background information					*/
 #ifdef MACGAME
 background_type *background;
@@ -746,7 +747,7 @@ spell_type magic_spell[MAX_CLASS-1][63] = {
  };
 #endif
 
-char *spell_names[127] = {
+const char *spell_names[127] = {
   /* Mage Spells */
   "Magic Missile",  "Detect Monsters",	"Phase Door",  "Light Area",
   "Treasure Detection",

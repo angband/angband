@@ -1,4 +1,5 @@
-angband/lib/files/:
+lib:					where LIBDIR points to
+lib/files/:
 	GAMELOG				Saved gamelog file
 	angband.man.txt			Manual
 	glog				File to cat to GAMELOG
@@ -18,66 +19,67 @@ angband/lib/files/:
 	wizards				Wizlist
 	bugs.doc			My bugs file
 	to_do.doc			My to_do list
-angband/lib/save/			Where the savefiles are stored
-angband/lib/bones/			Where the bones files are stored
-angband/lib/quests/:
+lib/save/				Where the savefiles are stored
+lib/bones/			Where the bones files are stored
+lib/quests/:
 	dragons				Dragon quest plane
 	elemental			Elemental quest plane
-angband/lib/
-angband/obj/				Where the object code goes
-angband/bin/				Where the executable goes
-angband/src/:
+
+
+src/:
 	Makefile, CHANGES, CONTENTS, read.me, fixes
 	Source files:
-total 1579
--rw-r--r--   1 games    staff       34298 Apr  9  1993 CHANGES
--rw-r--r--   1 games    staff        3311 Apr  9  1993 CONTENTS
--rw-r--r--   1 games    staff        4238 Dec  8 11:56 Makefile
--rw-r--r--   1 games    staff        3907 Oct  1 18:15 config.h
--rw-r--r--   1 games    staff       29199 Dec  6 22:51 constant.h
--rw-r--r--   1 games    staff       22098 Dec  6 23:24 create.c
--rw-r--r--   1 games    staff       88885 Dec  8 12:03 creature.c
--rw-r--r--   1 games    staff       13828 Dec  7 09:36 death.c
--rw-r--r--   1 games    staff       19816 Dec  6 19:12 desc.c
--rw-r--r--   1 games    staff       61224 Dec  7 09:24 describe_mon.c
--rw-r--r--   1 games    staff       87545 Dec  7 04:15 dungeon.c
--rw-r--r--   1 games    staff        5124 Dec  6 04:49 eat.c
--rw-r--r--   1 games    staff       31357 Dec  8 11:32 externs.h
--rw-r--r--   1 games    staff       16531 Dec  7 05:37 files.c
--rw-r--r--   1 games    staff        2565 Dec  5 19:00 fixes
--rw-r--r--   1 games    staff        4309 Dec  6 21:26 gamecheck.c
--rw-r--r--   1 games    staff         313 Dec  6 21:26 gamecheck.h
--rw-r--r--   1 games    staff       67057 Dec  7 03:37 generate.c
--rw-r--r--   1 games    staff        6690 Dec  6 05:06 help.c
--rw-r--r--   1 games    staff       30368 Dec  7 04:41 io.c
--rw-r--r--   1 games    staff        9507 Dec  6 18:24 magic.c
--rw-r--r--   1 games    staff       16998 Dec  8 11:15 main.c
--rw-r--r--   1 games    staff      143924 Dec  7 10:00 misc1.c
--rw-r--r--   1 games    staff       84295 Dec  7 05:43 misc2.c
--rw-r--r--   1 games    staff        4353 Dec  4 06:43 monster.h
--rw-r--r--   1 games    staff      127349 Dec  7 09:27 monsters.c
--rw-r--r--   1 games    staff       68529 Dec  6 19:18 moria1.c
--rw-r--r--   1 games    staff       75426 Dec  7 03:48 moria2.c
--rw-r--r--   1 games    staff       27499 Dec  6 06:02 player.c
--rw-r--r--   1 games    staff       11984 Dec  6 06:03 potions.c
--rw-r--r--   1 games    staff       13177 Dec  6 18:25 prayer.c
--rw-r--r--   1 games    staff         380 Dec  8 11:47 read.me
--rw-r--r--   1 games    staff       20020 Dec  7 03:48 recall.c
--rw-r--r--   1 games    staff        3184 Dec  5 16:32 rnd.c
--rw-r--r--   1 games    staff        6863 Dec  6 18:26 rods.c
--rw-r--r--   1 games    staff       44602 Dec  7 09:57 save.c
--rw-r--r--   1 games    staff       15811 Dec  6 18:27 scrolls.c
--rw-r--r--   1 games    staff        7413 Dec  5 17:05 sets.c
--rw-r--r--   1 games    staff        5853 Dec  5 17:07 signals.c
--rw-r--r--   1 games    staff      134000 Dec  7 03:46 spells.c
--rw-r--r--   1 games    staff        6222 Dec  6 06:21 staffs.c
--rw-r--r--   1 games    staff       13770 Dec  7 04:47 store1.c
--rw-r--r--   1 games    staff       30197 Dec  6 06:23 store2.c
--rw-r--r--   1 games    staff       12561 Dec  5 18:52 tables.c
--rw-r--r--   1 games    staff       70806 Dec  5 22:31 treasure.c
--rw-r--r--   1 games    staff       14832 Dec  5 18:44 types.h
--rw-r--r--   1 games    staff         236 Dec  1 20:28 undef.c
--rw-r--r--   1 games    staff        7719 Oct  1 18:13 unix.c
--rw-r--r--   1 games    staff        3547 Dec  7 04:15 variable.c
--rw-r--r--   1 games    staff        6809 Dec  6 06:26 wands.c
--rw-r--r--   1 games    staff       32819 Dec  5 22:02 wizard.c
+total 1674
+-rw-rw-r--  1 root        4357 Apr  2 11:26 CONTENTS
+-rw-rw-r--  1 root       13883 Apr 22 16:45 FIXES
+-rw-rw-r--  1 root        4846 Apr 18 21:40 Makefile
+-rw-rw-r--  1 root         844 Apr  2 12:00 READ.ME
+-rw-rw-r--  1 root        8665 Apr  4 11:46 config.h
+-rw-rw-r--  1 root       29392 Apr 17 23:34 constant.h
+-rw-rw-r--  1 root       23842 Apr  4 12:50 create.c
+-rw-rw-r--  1 root       93829 Apr 21 19:50 creature.c
+-rw-rw-r--  1 root       16501 Apr 17 22:37 death.c
+-rw-rw-r--  1 root       21996 Apr  2 11:26 desc.c
+-rw-rw-r--  1 root       64994 Apr  2 11:26 describe_mon.c
+-rw-rw-r--  1 root       94048 Apr 22 17:04 dungeon.c
+-rw-rw-r--  1 root        4743 Apr  2 11:26 eat.c
+-rw-rw-r--  1 root       33184 Apr 21 20:19 externs.h
+-rw-r--r--  1 root           0 Apr 22 17:52 files
+-rw-rw-r--  1 root       17070 Apr  2 11:26 files.c
+-rw-rw-r--  1 root        4606 Apr  2 11:26 gamecheck.c
+-rw-rw-r--  1 root         313 Apr  2 11:26 gamecheck.h
+-rw-rw-r--  1 root       72295 Apr  2 11:26 generate.c
+-rw-rw-r--  1 root        7357 Apr  2 11:26 help.c
+-rw-rw-r--  1 root       32723 Apr  2 11:26 io.c
+-rw-rw-r--  1 root        9285 Apr  2 11:26 magic.c
+-rw-rw-r--  1 root       17904 Apr 21 19:36 main.c
+-rw-rw-r--  1 root      147718 Apr 22 16:20 misc1.c
+-rw-rw-r--  1 root       92775 Apr 22 16:46 misc2.c
+-rw-rw-r--  1 root        4432 Apr  2 11:26 monster.h
+-rw-rw-r--  1 root      130814 Apr  2 11:26 monsters.c
+-rw-rw-r--  1 root       72720 Apr 21 20:27 moria1.c
+-rw-rw-r--  1 root       84573 Apr 22 16:41 moria2.c
+-rw-rw-r--  1 root       27550 Apr 21 19:41 player.c
+-rw-rw-r--  1 root       11839 Apr  2 11:26 potions.c
+-rw-rw-r--  1 root       13240 Apr  2 11:26 prayer.c
+-rw-rw-r--  1 root       13684 Apr  2 11:26 random.c
+-rw-rw-r--  1 root       24653 Apr 17 22:40 recall.c
+-rw-rw-r--  1 root        7505 Apr  2 11:26 rods.c
+-rw-rw-r--  1 root       48281 Apr 17 20:48 save.c
+-rw-rw-r--  1 root       14616 Apr 21 19:43 scrolls.c
+-rw-rw-r--  1 root        8456 Apr  2 11:26 sets.c
+-rw-rw-r--  1 root        7514 Apr  2 11:26 signals.c
+-rw-rw-r--  1 root      141597 Apr 22 13:06 spells.c
+-rw-rw-r--  1 root        6024 Apr  2 11:26 staffs.c
+-rw-rw-r--  1 root       14296 Apr 21 20:42 store1.c
+-rw-rw-r--  1 root       33165 Apr  2 11:26 store2.c
+-rw-rw-r--  1 root       12644 Apr  2 11:26 tables.c
+-rw-rw-r--  1 root         143 Apr  2 11:26 test.c
+-rw-rw-r--  1 root       71142 Apr  2 11:26 treasure.c
+-rw-rw-r--  1 root       15042 Apr  2 11:26 types.h
+-rw-rw-r--  1 root         249 Apr  2 11:26 undef.c
+-rw-rw-r--  1 root        8166 Apr  2 11:26 unix.c
+-rw-rw-r--  1 root        1352 Apr  2 11:26 util.c
+-rw-rw-r--  1 root        4439 Apr 21 20:19 variable.c
+-rw-rw-r--  1 root        6366 Apr  2 11:26 wands.c
+-rw-rw-r--  1 root       47257 Apr 17 20:47 wizard.c

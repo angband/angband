@@ -6,14 +6,16 @@
 #include <strings.h>
 #include <sys/file.h>
 
-extern short log_index;
+extern short        log_index;
 
-void init_files()
+void 
+init_files()
 {
 }
 
-int _new_log()
+int 
+_new_log()
 {
-  log_index = 0;
-  return 1;
+    log_index = 0;
+    return 1;
 }

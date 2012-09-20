@@ -1,0 +1,14 @@
+To get Angband running, edit config.h and the Makefile as directed.
+You may need to change the compiler, as well.  Also, you need to have a
+case-insensitive string comparision routine available.  The code has been
+tested with the following systems: NEXTSTEP, SunOS, Ultrix, HPUX, Atari.
+Linux support is preliminary; contact Pete Berger@lm.net with Linux problems.
+
+I have included the BSD random() library because it offers a much better 
+random number generator than what was provided in rnd.c.  If your system
+complains about "random" being undefined at link time, then you should compile
+random.c and add it to your system's libc (or add it to the link via the
+Makefile).  Note that this is unlikely to be a problem on any but the most
+antiquated Sys V unix system, but will happen on PC's.
+
+	Any problems, please email cs4w@andrew.cmu.edu

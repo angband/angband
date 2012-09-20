@@ -69,29 +69,24 @@
 #include <strings.h>
 #endif
 
+#ifdef ultrix
+#include <sys/stat.h>
+#endif
+
 #include <ctype.h>
 
 #include <time.h>
 
-long time();
-char *getenv();
-
-#ifndef MAC
-#ifdef USG
-#ifndef MSDOS
-unsigned short getuid(), getgid();
-#endif
+#ifdef ultrix
+time_t time();
 #else
-#ifndef SECURE
-#ifdef BSD4_3
-uid_t getuid(), getgid();
-#else  /* other BSD versions */
-int getuid(), getgid();
-#endif
-#endif
-#endif
+long time();
 #endif
 
+/* To hell with prototyping getuid() & getgid().  Too much of a pain... -CWS */
+#if 0
+uid_t getuid(), getgid();
+#endif
 
 #if defined(ultrix) || defined(USG)
 void perror();
@@ -101,10 +96,18 @@ void perror();
 void exit();
 #endif
 
+/* Lets do all prototypes correctly.... -CWS */
+#ifndef NO_LINT_ARGS
+#ifdef __STDC__
 static int d_check(char *);
-static void init_m_level(void);
-static void init_t_level(void);
-static void char_inven_init(void);
+#else
+static int d_check();
+#endif
+
+static void init_m_level();
+static void init_t_level();
+static void char_inven_init();
+#endif
 
 #if (COST_ADJ != 100)
 static void price_adjust();
@@ -127,14 +130,14 @@ int GROND, RINGIL, AEGLOS, ARUNRUTH, MORMEGIL, ANGRIST, GURTHANG,
   HOLCOLLETH, TOTILA, PAIN, ELVAGIL, AGLARANG, EORLINGAS, BARUKKHELED,
   WRATH, HARADEKKET, MUNDWINE, GONDRICAM, ZARCUTHRA, CARETH, FORASGIL,
   CRISDURIAN, COLANNON, HITHLOMIR, THALKETTOTH, ARVEDUI, THRANDUIL, THENGEL,
-  HAMMERHAND, CELEFARN, THROR, MAEDHROS, OLORIN, ANGUIREL, OROME,
+  HAMMERHAND, CELEBORN, THROR, MAEDHROS, OLORIN, ANGUIREL, OROME,
   EONWE, THEODEN, ULMO, OSONDIR, TURMIL, TIL, DEATHWREAKER, AVAVIR, TARATOL;
 
 /* Unique artifact armor flags */
 int DOR_LOMIN, NENYA, NARYA, VILYA, BELEGENNON, FEANOR, ISILDUR, SOULKEEPER,
 FINGOLFIN, ANARION, POWER, PHIAL, BELEG, DAL, PAURHACH, PAURNIMMEN, PAURAEGEN,
 PAURNEN, CAMMITHRIM, CAMBELEG, INGWE, CARLAMMAS, HOLHENNETH, AEGLIN, CAMLOST,
-NIMLOTH, NAR, BERUTHIEL, GORLIM, ELENDIL, THORIN, CELEBORN, THRAIN,
+NIMLOTH, NAR, BERUTHIEL, GORLIM, ELENDIL, THORIN, CELEGORM, THRAIN,
 GONDOR, THINGOL, THORONGIL, LUTHIEN, TUOR, ROHAN, TULKAS, NECKLACE, BARAHIR,
 CASPANION, RAZORBACK, BLADETURNER;
 
@@ -144,18 +147,17 @@ int main(argc, argv)
 int argc;
 char *argv[];
 {
-  int32u seed;
   int generate, i;
   int result=FALSE, FIDDLE=FALSE;
   FILE *fp;
   int new_game = FALSE;
   int force_rogue_like = FALSE;
-  int force_keys_to = FALSE, FORGET;
-  char temphost[10], thishost[10], discard[80];
+  int force_keys_to = FALSE;
+  char temphost[MAXHOSTNAMELEN+1], thishost[MAXHOSTNAMELEN+1], discard[120];
   char string[80];
   struct rlimit rlp;
 
-#ifndef MSDOS
+#if !defined(MSDOS) && !defined(HPUX)
   /* Disable core dumps */
   getrlimit(RLIMIT_CORE,&rlp);
   rlp.rlim_cur=0;
@@ -217,25 +219,25 @@ char *argv[];
 #endif
 
 #ifndef MSDOS
-  (void)gethostname(thishost, sizeof thishost);	/* get host */
-  if ((fp=fopen(ANGBAND_LOAD, "r")) == NULL) {
+  (void)gethostname(thishost, (sizeof thishost) - 1);	/* get host */
+  if ((fp=my_tfopen(ANGBAND_LOAD, "r")) == NULL) {
     perror("Can't get load-check.\n");
     exit(0);
   }
 
   do {
-    if (fscanf(fp, "%s%d%d", temphost, &LOAD, &FORGET) == EOF) {
+    if (fscanf(fp, "%s%d", temphost, &LOAD) == EOF) {
       LOAD=100;
       break;
     }
     if (temphost[0]=='#')
-      (void)fgets(discard, sizeof discard, fp); /* Comment */
-  } while (strcmp(temphost,thishost)); /* Until we've found ourselves */
+      (void)fgets(discard, (sizeof discard)-1, fp); /* Comment */
+  } while (strcmp(temphost,thishost) && strcmp(temphost,"localhost"));
+         /* Until we've found ourselves */
 
   fclose(fp);
 #endif
 
-  seed = 0; /* let wizard specify rng seed */
   /* check for user interface option */
   for (--argc, ++argv; argc > 0 && argv[0][0] == '-'; --argc, ++argv)
     switch (argv[0][1]) {
@@ -334,7 +336,7 @@ char *argv[];
 #else
 	puts("Usage: angband [-nor] [-s<num>] [-u<name>]");
 #endif
-	puts("  n       Start a new character");
+  	puts("  n       Start a new character");
 	puts("  o       Use original command set");
 	puts("  r       Use the \"rogue-like\" command set");
 	puts("  s<num>  Show high scores.  Show <num> scores, or first 10");
@@ -356,7 +358,7 @@ char *argv[];
   init_signals();
 
   /* Check operating hours			*/
-  /* If not wizard  No_Control_Y	       */
+  /* If not wizard  No_Control_Y	        */
   read_times();
 
   /* Some necessary initializations		*/
@@ -366,9 +368,29 @@ char *argv[];
   price_adjust();
 #endif
 
-  /* Grab a random seed from the clock		*/
-  (void) initstate(((getpid() << 1) * (time(NULL) >> 3)),malloc(256),256);
-  init_seeds(seed);
+  old_state = (char *) malloc(260);       /* state array initialized by time */
+  dummy_state = (char *) malloc(260);     /* dummy state array -CWS          */
+
+                 /* if malloc choked on 540 bytes, we're dead anyways */
+  if (!old_state || !dummy_state) {
+      puts("\nError initializing; unable to malloc space for RNG arrays...\n");
+      exit(2);
+  }  
+
+#ifdef unix
+  /* Grab a random seed from the clock & PID... */
+  (void) initstate(time(NULL), dummy_state, 256);
+  (void) initstate(((getpid() << 1) * (time(NULL) >> 3)), old_state, 256);
+#else 
+  /* ...else just grab a random seed from the clock. -CWS */
+  (void) initstate(time(NULL), dummy_state, 256);
+  (void) initstate(random(), old_state, 256);
+#endif /* unix */
+
+  /* These'll only apply the first time, as the code in save.c will restore
+   * these values whenever a saved game gets loaded.... -CWS */
+  town_seed = random();
+  randes_seed = random();
 
   /* Init monster and treasure levels for allocate */
   init_m_level();
@@ -463,7 +485,7 @@ char *argv[];
       THRANDUIL=0;
       THENGEL=0;
       HAMMERHAND=0;
-      CELEFARN=0;
+      CELEGORM=0;
       THROR=0;
       MAEDHROS=0;
       OLORIN=0;
@@ -620,7 +642,7 @@ static void char_inven_init()
       (void) inven_carry(&inven_init);
     }
 
-  /* wierd place for it, but why not? */
+  /* weird place for it, but why not? */
   for (i = 0; i < 64; i++)
     spell_order[i] = 99;
 }

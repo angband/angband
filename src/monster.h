@@ -41,12 +41,12 @@
 #define BREATH_FI	0x800000L
 #define FIRE_BOLT      0x1000000L
 #define FROST_BOLT     0x2000000L
-#define ACID_BOLT    0x04000000L
-#define MAG_MISS     0x08000000L
-#define CAUSE_CRIT   0x10000000L
-#define FIRE_BALL    0x20000000L
-#define FROST_BALL   0x40000000L
-#define MANA_BOLT    0x80000000L
+#define ACID_BOLT     0x04000000L
+#define MAG_MISS      0x08000000L
+#define CAUSE_CRIT    0x10000000L
+#define FIRE_BALL     0x20000000L
+#define FROST_BALL    0x40000000L
+#define MANA_BOLT     0x80000000L
 
 /* spells 2 :-> */
 #define BREATH_CH    0x00000001L /* Chaos */
@@ -124,5 +124,6 @@
 #define BREAK_WALL      0x00200000L
 #define DESTRUCT        0x00400000L
 #define QUESTOR         0x00800000L /* killing it completes a quest */
-#define INTELLIGENT     0x01000000L /* casts spells intelligently */
+#define INTELLIGENT     0x01000000L /* casts spells intelligently   */
+#define MINDLESS        0x02000000L /* does not have a mind -CWS    */
 #define UNIQUE          0x80000000L /* unique monster */

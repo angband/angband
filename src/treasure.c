@@ -61,12 +61,14 @@
 	for item.  p1 is set in magic_init() in misc.c.
 
 	Chests:
+        p1 contains level chest is found on (randomly determined for
+        store-bought chests).
 	Traps are added randomly by magic_init() in misc.c.	*/
 
 /* Object list (All objects must be defined here)		 */
 #ifdef MACGAME
 treasure_type *object_list;
-#else              0
+#else
 treasure_type object_list[MAX_OBJECTS] = {
 /* Dungeon items from 0 to MAX_DUNGEON_OBJ */
 {"Poison"			,0x00000001L,	TV_FOOD, ',',	/*  0*/
@@ -244,13 +246,13 @@ treasure_type object_list[MAX_OBJECTS] = {
 {"& Wooden Torch~"		,0x00000000L,	TV_LIGHT, '~',	/* 86*/
  4000,	   2, 193,   1,  30,	0,   0,	 0,   0, {1,1}	,  1, 0, 0x0L},
 {"& Orcish Pick"		,0x20000000L,	TV_DIGGING, '\\',/* 87*/
-    2,	 500,	2,   1, 180,	0,   0,	 0,   0, {1,3}	, 20, 0, 0x0L},
+    2,	 300,	2,   1, 180,	0,   0,	 0,   0, {1,3}	, 20, 0, 0x0L},
 {"& Dwarven Pick"	       ,0x20000000L,	TV_DIGGING, '\\',/* 88*/
-    3,	1200,	3,   1, 200,	0,   0,	 0,   0, {1,4}	, 50, 0, 0x0L},
+    3,	900,	3,   1, 200,	0,   0,	 0,   0, {1,4}	, 50, 0, 0x0L},
 {"& Gnomish Shovel"		,0x20000000L,	TV_DIGGING, '\\',/* 89*/
-    1,	 100,	5,   1,  50,	0,   0,	 0,   0, {1,2}	, 20, 0, 0x0L},
+    1,	 10,	5,   1,  50,	0,   0,	 0,   0, {1,2}	, 20, 0, 0x0L},
 {"& Dwarven Shovel"		,0x20000000L,	TV_DIGGING, '\\',/* 90*/
-    2,	 250,	6,   1, 120,	0,   0,	 0,   0, {1,3}	, 40, 0, 0x0L},
+    2,	 50,	6,   1, 120,	0,   0,	 0,   0, {1,3}	, 40, 0, 0x0L},
 {"& Pair of Soft Leather Boots"	,0x00000000L,	TV_BOOTS, ']',	/* 91*/
     0,	   7,	2,   1,  20,	0,   0,	 2,   0, {1,1}	,  4, 0, 0x0L},
 {"& Pair of Hard Leather Boots"	,0x00000000L,	TV_BOOTS, ']',	/* 92*/
@@ -323,7 +325,7 @@ treasure_type object_list[MAX_OBJECTS] = {
     0,	   3,	1,   1,   5,	0,   0,	 1,   0, {0,0}	,  1, 0, 0x0L},
 {"& Set of Gauntlets"		,0x00000000L,	TV_GLOVES, ']',	/*126*/
     0,	  35,	2,   1,  25,	0,   0,	 2,   0, {1,1}	, 12, 0, 0x0L},
-{"& Set of Cestus"		,0x00000000L,	TV_GLOVES, ']',	/*127*/
+{"& Set of Cesti"		,0x00000000L,	TV_GLOVES, ']',	/*127*/
     0,	  100,	3,   1,  40,	0,   0,	 5,   0, {1,1}	, 50, 0, 0x0L},
 {"& Small Leather Shield"	,0x00000000L,	TV_SHIELD, ')',	/*128*/
     0,	  30,	1,   1,  50,	0,   0,	 2,   0, {1,1}	,  3, 0, 0x0L},
@@ -367,7 +369,7 @@ treasure_type object_list[MAX_OBJECTS] = {
     0,	3000,	15,   1,   2,	0,   0,	 0,   15, {0,0}	, 50, 0, 0x0L},
 {"Ice"          	        ,0x00200000L,	TV_RING, '=',	/*148*/
     0,	3000,	16,   1,   2,	0,   0,	 0,   15, {0,0}	, 50, 0, 0x0L},
-{"Woe"				,0x80000644L,	TV_RING, '=',	/*149*/
+{"WOE"				,0x80000644L,	TV_RING, '=',	/*149*/
    -5,	   0,	17,   1,   2,	0,   0,	 0,  -3, {0,0}	, 50, 0, 0x0L},
 {"Stupidity"			,0x80000002L,	TV_RING, '=',	/*150*/
    -5,	   0,	18,   1,   2,	0,   0,	 0,   0, {0,0}	,  7, 0, 0x0L},
@@ -400,7 +402,7 @@ treasure_type object_list[MAX_OBJECTS] = {
 {"Charisma"			,0x00000020L,	TV_AMULET, '"',	/*164*/
     0,	 250,	1,   1,   3,	0,   0,	 0,   0, {0,0}	, 20, 0, 0x0L},
 {"Searching"			,0x00000040L,	TV_AMULET, '"',	/*165*/
-    0,	 250,	2,   1,   3,	0,   0,	 0,   0, {0,0}	, 14, 0, 0x0L},
+    0,	 250,	2,   1,   3,	0,   0,	 0,   0, {0,0}	, 14, 0x40, 0x0L},
 {"Teleportation"		,0x80000400L,	TV_AMULET, '"',	/*166*/
     0,	   0,	3,   1,   3,	0,   0,	 0,   0, {0,0}	, 14, 0, 0x0L},
 {"Slow Digestion"		,0x00000080L,	TV_AMULET, '"',	/*167*/
@@ -413,7 +415,7 @@ treasure_type object_list[MAX_OBJECTS] = {
     0,	   2, 193,   1,   3,	0,   0,	 0,   0, {1,5}	, 25, 0, 0x0L},
 {"the Magi"			,0x01800040L,	TV_AMULET, '"',	/*171*/
     0,	30000,	8,   1,   3,	0,   0,	 0,   3, {0,0}	, 50, 0, 0x0L},
-{"Doom"				,0x8000007FL,	TV_AMULET, '"',	/*172*/
+{"DOOM"				,0x8000007FL,	TV_AMULET, '"',	/*172*/
    -5,	   0,	9,   1,   3,	0,   0,	 0,   0, {0,0}	, 50, 0, 0x0L},
 {"Enchant Weapon To-Hit"	,0x00000001L,	TV_SCROLL1, '?',/*173*/
     0,	 125,	64,   1,   5,	0,   0,	 0,   0, {0,0}	, 12, 0, 0x0L},
@@ -901,7 +903,7 @@ treasure_type object_list[MAX_OBJECTS] = {
 {"*Acquirement*"		,0x00000800L, TV_SCROLL2, '?', /*413*/
     0, 200000,105,   1,   5,    0,   0,  0,   0, {0,0},  60,  15, 0x0L},
 {"Free Action"			,0x00800000L, TV_RING,  '=',  /*414*/
-    0,   1500, 37,   1,   2,    0,   0,  0,   0, {0,0},  30,   0, 0x0L},
+    0,   1500, 37,   1,   2,    0,   0,  0,   0, {0,0},  20,   0, 0x0L},
 {"Chaos Dragon Scale Mail"	,0x00100000L,  TV_HARD_ARMOR, '[',/*415*/
     0, 70000,  25,   1, 200,   -2,   0, 30,  10, {2,4}, 75, 20, 0x00180800L},
 {"Law Dragon Scale Mail"	,0x00100000L,  TV_HARD_ARMOR, '[',/*416*/
@@ -911,7 +913,7 @@ treasure_type object_list[MAX_OBJECTS] = {
 {"Shining Dragon Scale Mail"    ,0x00100000L,  TV_HARD_ARMOR, '[',/*418*/
     0, 60000,  28,   1, 200,   -2,   0, 30,  10, {2,4}, 65, 12, 0x00060800L},
 {"Power Dragon Scale Mail"      ,0x12380000L,  TV_HARD_ARMOR, '[',/*419*/
-    0,300000,  29,   1, 200,   -3,   0, 40,  15, {2,4}, 110,  40, 0x017E0800L},
+    0,300000,  29,   1, 200,   -3,   0, 40,  15, {2,4}, 110,  40, 0x014E0800L},
 {"Enlightenment"		,0x00200000L,	TV_POTION2, '!',/*420*/
     0,	800,  113,   1,   4,	0,   0,	 0,   0, {1,1}	, 25, 0, 0x0L},
 {"Self Knowledge"               ,0x00400000L,   TV_POTION2, '!', /*421*/
@@ -974,23 +976,23 @@ treasure_type object_list[MAX_OBJECTS] = {
 /* start doors */
 /* Secret door must have same subval as closed door in	*/
 /* TRAP_LISTB.	See CHANGE_TRAP. Must use & because of stone_to_mud. */
-{"& open door"			,0x00000000L, TV_OPEN_DOOR, '\'',
+{"& open door"			,0x00000000L, TV_OPEN_DOOR, '\'', /* +23 */
     0,	   0,	1,   1,   0,	0,   0,	 0,   0, {1,1}	,  0, 0, 0x0L},
-{"& closed door"		,0x00000000L, TV_CLOSED_DOOR, '+',
+{"& closed door"		,0x00000000L, TV_CLOSED_DOOR, '+', /* +24 */
     0,	   0,	19,   1,   0,	0,   0,	 0,   0, {1,1}	,  0, 0, 0x0L},
-{"& secret door"		,0x00000000L, TV_SECRET_DOOR, '#',
+{"& secret door"		,0x00000000L, TV_SECRET_DOOR, '#', /* +25 */
     0,	   0,	19,   1,   0,	0,   0,	 0,   0, {1,1}	,  0, 0, 0x0L},
 /* end doors */
 /* stairs */
-{"an up staircase "		,0x00000000L, TV_UP_STAIR, '<',
+{"an up staircase"		,0x00000000L, TV_UP_STAIR, '<',	/* +26 */
     0,	   0,	1,   1,   0,	0,   0,	 0,   0, {1,1}	,  0, 0, 0x0L},
-{"a down staircase"		,0x00000000L, TV_DOWN_STAIR, '>',
+{"a down staircase"		,0x00000000L, TV_DOWN_STAIR, '>', /* +27 */
     0,	   0,	1,   1,   0,	0,   0,	 0,   0, {1,1}	,  0, 0, 0x0L},
 /* store door */
 /* Stores are just special traps		*/
-{"General Store"		,0x00000000L, TV_STORE_DOOR, '1',
+{"General Store"		,0x00000000L, TV_STORE_DOOR, '1', /* +28 */
     0,	   0, 101,   1,   0,	0,   0,	 0,   0, {0,0}	,  0, 0, 0x0L},
-{"Armoury"			,0x00000000L, TV_STORE_DOOR, '2',
+{"Armoury"			,0x00000000L, TV_STORE_DOOR, '2', /* +29 */
     0,	   0, 102,   1,   0,	0,   0,	 0,   0, {0,0}	,  0, 0, 0x0L},
 {"Weapon Smiths"		,0x00000000L, TV_STORE_DOOR, '3', /* +30 */
     0,	   0, 103,   1,   0,	0,   0,	 0,   0, {0,0}	,  0, 0, 0x0L},
@@ -1102,7 +1104,7 @@ treasure_type object_list[MAX_OBJECTS] = {
 {"Power named Narya"		,0x01C008BFL,	TV_RING, '=',	/* +78 */
     1,	100000,	31,   1,   2,	0,   0,	 0,   0, {0,0}	, 80, 0, 0x02000848L},
 
-/* For some reason THIS is where SPECIAL_OBJ should point */
+/* For some reason THIS is where SPECIAL_OBJ should point */    /* +79 */
 
 {"Power named Nenya"		,0x05C008BFL,	TV_RING, '=',	/*467*/
     2,	200000,	32,   1,   2,	0,   0,	 0,   0, {0,0}	, 90, 0, 0x02000888L},
@@ -1129,67 +1131,79 @@ treasure_type object_list[MAX_OBJECTS] = {
 };
 #endif
 
-char *special_names[SN_ARRAY_SIZE] = {
+const char *special_names[SN_ARRAY_SIZE] = {
 	NULL,			"of Resistance",	"of Resist Acid",
 	"of Resist Fire",	"of Resist Cold",	"of Resist Lightning",
 	"(Holy Avenger)",	"(Defender)",		"of Animal Slaying",
 	"of Dragon Slaying",	"of Slay Evil",		"of Slay Undead",
 	"of Flame",	        "of Frost",	        "of Free Action",
+/* 15 */
 	"of Slaying",		"of Clumsiness",	"of Weakness",
 	"of Slow Descent",	"of Speed",		"of Stealth",
 	"of Slowness",		"of Noise",		"of Great Mass",
 	"of Intelligence",	"of Wisdom",		"of Infra-Vision",
 	"of Might",		"of Lordliness",	"of the Magi",
+/* 30 */
 	"of Beauty",		"of Seeing",		"of Regeneration",
 	"of Stupidity",		"of Dullness",		"of Blindness",
 	"of Timidness",		"of Teleportation",	"of Ugliness",
 	"of Protection",	"of Irritation",	"of Vulnerability",
 	"of Enveloping",	"of Fire",		"of Slay Evil",
+/* 45 */
 	"of Dragon Slaying",	"(Empty)",		"(Locked)",
 	"(Poison Needle)",	"(Gas Trap)",		"(Explosion Device)",
 	"(Summoning Runes)",	"(Multiple Traps)",	"(Disarmed)",
 	"(Unlocked)",		"of Slay Animal",       "'Grond'",
 	"'Ringil'",             "'Aeglos'",             "'Arunruth'",
+/* 60 */
         "'Mormegil'"    ,       "of Morgul",            "'Angrist'",
 	"'Gurthang'",           "'Calris'",             "of Accuracy",
-	"named Anduril",        "of Orc Slaying",       "of Power",
+	"'Anduril'",            "of Orc Slaying",       "of Power",
 	"of Durin",             "of Aule",              "of Westernesse",
-        "(Blessed Blade)",      "of Demon Slaying",     "of Troll Slaying",
+        "(Blessed)",      "of Demon Slaying",     "of Troll Slaying",
+/* 75 */
 	"'Bloodspike'",         "'Thunderfist'",        "of Wounding",
 	"'Orcrist'",            "'Glamdring'",          "'Sting'",
 	"of Light",             "of Agility",           "of Backbiting",
 	"'Doomcaller'",         "of Giant Slaying", 	"of Telepathy",
 	"of Dragonkind",        "'Nenya'",		"'Narya'",
+/* 90 */
 	"'Vilya'",		"of Aman",		"'Belegennon'",
 	"of Feanor",		"of Anarion",		"of Isildur",
 	"of Fingolfin",		"of Elvenkind",		"'Soulkeeper'",
-	"of Dor-Lomin",         "of Morgoth",           "of Beleg Cuthalion",
+	"of Dor-Lomin",         "of Morgoth",           "'Belthronding'",
 	"'Dal-i-thalion'",      "'Paurhach'",           "'Paurnimmen'",
+/* 105 */
 	"'Pauraegen'",          "'Cammithrim'",         "'Cambeleg'",
         "'Holhenneth'",     "'Paurnen'",        "'Aeglin'",
 	"'Camlost'",        "'Nimloth'",        "'Nar-i-vagil'",
 	"of Beruthiel",         "of Gorlim",            "'Narthanc'",
 	"'Nimthanc'",       "'Dethanc'",        "'Gilettar'",
+/* 120 */
 	"of Rilia",             "'Belangil'",       "of Balli Stonehand",
 	"'Lotharang'",      "'Firestar'",       "'Eriril'",
 	"'Cubragol'",       "of Bard",              "'Colluin'",
 	"'Holcolleth'",     "'Totila'",         "of Pain",
-	"'Elvagil'",        "'Aglarang'",	"of Rohan",
-	"of the Eorlingas",     "'Barukkheled'",    "of Wrath",
+	"'Elvagil'",        "'Aglarang'",	"of the Rohirrim",
+/* 135 */
+	"of Eorlingas",     "'Barukkheled'",    "of Wrath",
 	"'Haradekket'",     "'Mundwine'",       "'Gondricam'",
         "'Zarcuthra'",      "'Careth Asdriag'",	"'Forasgil'",
 	"'Crisdurian'",     "'Colannon'",       "'Hithlomir'",
 	"'Thalkettoth'",    "of Arvedui",     	"of Thranduil",
-   	"of Thengel",           "'Hammerhand'",     "of Celefarn",
+/* 150 */
+   	"of Thengel",           "of Hammerhand",        "of Celegorm",
   	"of Thror",             "of Maedhros",          "of Olorin",
  	"'Anguirel'",       "of Thorin",		"of Celeborn",
 	"of Orome",		"of Eonwe",		"of Gondor",
         "of Theoden",		"of Thingol",		"of Thorongil",
+/* 165 */
         "of Luthien",           "of Tuor",              "of Ulmo",
-	"'Osondir'",	"'Turmil'",		"of Caspanion",
-	"'Til-i-arc'",	"'Deathwreaker'",	"'Avavir'",
-	"'Taratol'",        "'Razorback'",      "'Bladeturner'",
-	"(Shattered)",		"(Blasted)",
+	"'Osondir'",	        "'Turmil'",		"of Caspanion",
+	"'Til-i-arc'",	        "'Deathwreaker'",	"'Avavir'",
+	"'Taratol'",            "'Razorback'",          "'Bladeturner'",
+	"(Shattered)",		"(Blasted)",            "of Extra Attacks"
+/* 180 */
 };
 
 int16 sorted_objects[MAX_DUNGEON_OBJ];

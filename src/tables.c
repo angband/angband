@@ -13,7 +13,7 @@
 #ifdef ANGBAND_HOU
 /* Operating hours for ANGBAND				-RAK-	*/
 /*	 X = Open; . = Closed					*/
-char  days[7][29] = { "SUN:XXXXXXXXXXXXXXXXXXXXXXXX",
+char days[7][29] = { "SUN:XXXXXXXXXXXXXXXXXXXXXXXX",
 		    "MON:XXXXXXXX.........XXXXXXX",
 		    "TUE:XXXXXXXX.........XXXXXXX",
 		    "WED:XXXXXXXX.........XXXXXXX",
@@ -138,17 +138,17 @@ int (*store_buy[MAX_STORES])() = {
 
 #ifdef MACGAME
 
-char **colors;
-char **mushrooms;
-char **woods;
-char **metals;
-char **rocks;
-char **amulets;
-char **syllables;
+const char **colors;
+const char **mushrooms;
+const char **woods;
+const char **metals;
+const char **rocks;
+const char **amulets;
+const char **syllables;
 
 #else
 
-char *colors[MAX_COLORS] = {
+const char *colors[MAX_COLORS] = {
 /* Do not move the first three */
   "Icky Green", "Light Brown", "Clear",
   "Azure","Blue","Blue Speckled","Black","Brown","Brown Speckled","Bubbling",
@@ -163,14 +163,14 @@ char *colors[MAX_COLORS] = {
   "Shimmering","Coagulated Crimson"
 };
 
-char *mushrooms[MAX_MUSH] = {
+const char *mushrooms[MAX_MUSH] = {
   "Blue","Black","Black Spotted","Brown","Dark Blue","Dark Green","Dark Red",
   "Ecru","Furry","Green","Grey","Light Blue","Light Green","Plaid","Red",
   "Slimy","Tan","White","White Spotted","Wooden","Wrinkled"/*,"Yellow",
   "Shaggy","Red Spotted","Pale Blue","Dark Orange"*/
 };
 
-char *woods[MAX_WOODS] = {
+const char *woods[MAX_WOODS] = {
   "Aspen","Balsa","Banyan","Birch","Cedar","Cottonwood","Cypress","Dogwood",
   "Elm","Eucalyptus","Hemlock","Hickory","Ironwood","Locust","Mahogany",
   "Maple","Mulberry","Oak","Pine","Redwood","Rosewood","Spruce","Sycamore",
@@ -179,7 +179,7 @@ char *woods[MAX_WOODS] = {
   "Gnarled","Ivory","Decorative","Willow"*/
 };
 
-char *metals[MAX_METALS] = {
+const char *metals[MAX_METALS] = {
   "Aluminum","Cast Iron","Chromium","Copper","Gold","Iron","Magnesium",
   "Molybdenum","Nickel","Rusty","Silver","Steel","Tin","Titanium","Tungsten",
   "Zirconium","Zinc","Aluminum-Plated","Copper-Plated","Gold-Plated",
@@ -188,7 +188,7 @@ char *metals[MAX_METALS] = {
   "Lead"/*,"Lead-Plated","Ivory","Pewter"*/
 };
 
-char *rocks[MAX_ROCKS] = {
+const char *rocks[MAX_ROCKS] = {
   "Alexandrite","Amethyst","Aquamarine","Azurite","Beryl","Bloodstone",
   "Calcite","Carnelian","Corundum","Diamond","Emerald","Fluorite","Garnet",
   "Granite","Jade","Jasper","Lapis Lazuli","Malachite","Marble","Moonstone",
@@ -198,13 +198,13 @@ char *rocks[MAX_ROCKS] = {
   "Jet","Engagement","Adamantite"
 };
 
-char *amulets[MAX_AMULETS] = {
+const char *amulets[MAX_AMULETS] = {
   "Amber","Driftwood","Coral","Agate","Ivory","Obsidian",
   "Bone","Brass","Bronze","Pewter","Tortoise Shell","Golden","Azure",
   "Crystal","Silver","Copper"
 };
 
-char *syllables[MAX_SYLLABLES] = {
+const char *syllables[MAX_SYLLABLES] = {
   "a","ab","ag","aks","ala","an","ankh","app",
   "arg","arze","ash","aus","ban","bar","bat","bek",
   "bie","bin","bit","bjor","blu","bot","bu",
