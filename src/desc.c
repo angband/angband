@@ -38,13 +38,13 @@
 
 
 /*
- * Hack -- note that "COLOR_MULTI" is now just "COLOR_VIOLET"
+ * Hack -- note that "TERM_MULTI" is now just "TERM_VIOLET"
  * We will have to find a cleaner method for "MULTI_HUED" later.
  * There were only two multi-hued "flavors" (one potion, one food).
  * Plus five multi-hued "base-objects" (3 dragon scales, one blade
  * of chaos, and one something else).
  */
-#define COLOR_MULTI	COLOR_VIOLET
+#define TERM_MULTI	TERM_VIOLET
 
 
 /*
@@ -68,19 +68,19 @@ static cptr potion_adj[MAX_COLORS] = {
     "Shimmering","Coagulated Crimson"
 };
 
-static int8u potion_col[MAX_COLORS] = {
-    COLOR_GREEN,COLOR_L_BROWN,COLOR_WHITE,COLOR_L_BLUE,COLOR_BLUE,
-    COLOR_BLUE,COLOR_D_GRAY,COLOR_BROWN,COLOR_BROWN,COLOR_L_GRAY,
-    COLOR_RED,COLOR_WHITE,COLOR_L_BROWN,COLOR_RED,COLOR_L_BLUE,
-    COLOR_BLUE,COLOR_GREEN,COLOR_RED,COLOR_YELLOW,COLOR_GREEN,
-    COLOR_GREEN,COLOR_GRAY,COLOR_GRAY,COLOR_L_GRAY,COLOR_VIOLET,
-    COLOR_L_BLUE,COLOR_L_GREEN,COLOR_RED,COLOR_BLUE,COLOR_RED,
-    COLOR_GREEN,COLOR_VIOLET,COLOR_L_GRAY,COLOR_ORANGE,COLOR_ORANGE,
-    COLOR_L_RED,COLOR_L_RED,COLOR_VIOLET,COLOR_VIOLET,COLOR_VIOLET,
-    COLOR_RED,COLOR_RED,COLOR_L_GRAY,COLOR_D_GRAY,COLOR_ORANGE,
-    COLOR_VIOLET,COLOR_RED,COLOR_WHITE,COLOR_YELLOW,COLOR_VIOLET,
-    COLOR_L_RED,COLOR_RED,COLOR_L_RED,COLOR_YELLOW,COLOR_GREEN,
-    COLOR_MULTI,COLOR_RED
+static byte potion_col[MAX_COLORS] = {
+    TERM_GREEN,TERM_L_UMBER,TERM_WHITE,TERM_L_BLUE,TERM_BLUE,
+    TERM_BLUE,TERM_D_GRAY,TERM_UMBER,TERM_UMBER,TERM_L_GRAY,
+    TERM_RED,TERM_WHITE,TERM_L_UMBER,TERM_RED,TERM_L_BLUE,
+    TERM_BLUE,TERM_GREEN,TERM_RED,TERM_YELLOW,TERM_GREEN,
+    TERM_GREEN,TERM_GRAY,TERM_GRAY,TERM_L_GRAY,TERM_VIOLET,
+    TERM_L_BLUE,TERM_L_GREEN,TERM_RED,TERM_BLUE,TERM_RED,
+    TERM_GREEN,TERM_VIOLET,TERM_L_GRAY,TERM_ORANGE,TERM_ORANGE,
+    TERM_L_RED,TERM_L_RED,TERM_VIOLET,TERM_VIOLET,TERM_VIOLET,
+    TERM_RED,TERM_RED,TERM_L_GRAY,TERM_D_GRAY,TERM_ORANGE,
+    TERM_VIOLET,TERM_RED,TERM_WHITE,TERM_YELLOW,TERM_VIOLET,
+    TERM_L_RED,TERM_RED,TERM_L_RED,TERM_YELLOW,TERM_GREEN,
+    TERM_MULTI,TERM_RED
 };
 
 
@@ -96,12 +96,12 @@ static cptr food_adj[MAX_SHROOM] = {
     "Wrinkled",/*"Yellow","Shaggy","Red Spotted","Pale Blue","Dark Orange"*/
 };
 
-static int8u food_col[MAX_SHROOM] = {
-    COLOR_BLUE,COLOR_D_GRAY,COLOR_D_GRAY,COLOR_BROWN,COLOR_BLUE,
-    COLOR_GREEN,COLOR_RED,COLOR_YELLOW,COLOR_L_GRAY,COLOR_GREEN,
-    COLOR_GRAY,COLOR_L_BLUE,COLOR_L_GREEN,COLOR_MULTI,COLOR_RED,
-    COLOR_GRAY,COLOR_L_BROWN,COLOR_WHITE,COLOR_WHITE,COLOR_BROWN,
-    COLOR_BROWN,/*COLOR_YELLOW,???,COLOR_RED,COLOR_L_BLUE,COLOR_ORANGE*/
+static byte food_col[MAX_SHROOM] = {
+    TERM_BLUE,TERM_D_GRAY,TERM_D_GRAY,TERM_UMBER,TERM_BLUE,
+    TERM_GREEN,TERM_RED,TERM_YELLOW,TERM_L_GRAY,TERM_GREEN,
+    TERM_GRAY,TERM_L_BLUE,TERM_L_GREEN,TERM_MULTI,TERM_RED,
+    TERM_GRAY,TERM_L_UMBER,TERM_WHITE,TERM_WHITE,TERM_UMBER,
+    TERM_UMBER,/*TERM_YELLOW,???,TERM_RED,TERM_L_BLUE,TERM_ORANGE*/
 };
 
 
@@ -119,14 +119,14 @@ static cptr staff_adj[MAX_WOODS] = {
     "Golden","Ashen"/*,"Gnarled","Ivory","Decorative","Willow"*/
 };
 
-static int8u staff_col[MAX_WOODS] = {
-    COLOR_L_BROWN,COLOR_L_BROWN,COLOR_L_BROWN,COLOR_L_BROWN,COLOR_L_BROWN,
-    COLOR_L_BROWN,COLOR_L_BROWN,COLOR_L_BROWN,COLOR_L_BROWN,COLOR_L_BROWN,
-    COLOR_L_BROWN,COLOR_L_BROWN,COLOR_BROWN,COLOR_L_BROWN,COLOR_BROWN,
-    COLOR_L_BROWN,COLOR_L_BROWN,COLOR_L_BROWN,COLOR_L_BROWN,COLOR_RED,
-    COLOR_RED,COLOR_L_BROWN,COLOR_L_BROWN,COLOR_L_BROWN,COLOR_BROWN,
-    COLOR_GREEN,COLOR_L_BROWN,COLOR_L_BROWN,COLOR_L_GRAY,COLOR_BROWN,
-    COLOR_YELLOW,COLOR_GRAY,/*???,???,???,???*/
+static byte staff_col[MAX_WOODS] = {
+    TERM_L_UMBER,TERM_L_UMBER,TERM_L_UMBER,TERM_L_UMBER,TERM_L_UMBER,
+    TERM_L_UMBER,TERM_L_UMBER,TERM_L_UMBER,TERM_L_UMBER,TERM_L_UMBER,
+    TERM_L_UMBER,TERM_L_UMBER,TERM_UMBER,TERM_L_UMBER,TERM_UMBER,
+    TERM_L_UMBER,TERM_L_UMBER,TERM_L_UMBER,TERM_L_UMBER,TERM_RED,
+    TERM_RED,TERM_L_UMBER,TERM_L_UMBER,TERM_L_UMBER,TERM_UMBER,
+    TERM_GREEN,TERM_L_UMBER,TERM_L_UMBER,TERM_L_GRAY,TERM_UMBER,
+    TERM_YELLOW,TERM_GRAY,/*???,???,???,???*/
 };
 
 
@@ -144,14 +144,14 @@ static cptr wand_adj[MAX_METALS] = {
     "Platinum","Lead"/*,"Lead-Plated","Ivory","Pewter"*/
 };
 
-static int8u wand_col[MAX_METALS] = {
-    COLOR_L_BLUE,COLOR_D_GRAY,COLOR_WHITE,COLOR_L_BROWN,COLOR_YELLOW,
-    COLOR_GRAY,COLOR_L_GRAY,COLOR_L_GRAY,COLOR_L_BROWN,COLOR_RED,
-    COLOR_L_GRAY,COLOR_L_GRAY,COLOR_L_GRAY,COLOR_WHITE,COLOR_WHITE,
-    COLOR_L_GRAY,COLOR_L_GRAY,COLOR_L_BLUE,COLOR_L_BROWN,COLOR_YELLOW,
-    COLOR_L_BROWN,COLOR_L_GRAY,COLOR_L_GRAY,COLOR_L_GRAY,COLOR_L_GRAY,
-    COLOR_L_BLUE,COLOR_L_BLUE,COLOR_BROWN,COLOR_L_BROWN,COLOR_L_BROWN,
-    COLOR_WHITE,COLOR_GRAY,/*COLOR_GRAY,COLOR_WHITE,COLOR_GRAY*/
+static byte wand_col[MAX_METALS] = {
+    TERM_L_BLUE,TERM_D_GRAY,TERM_WHITE,TERM_L_UMBER,TERM_YELLOW,
+    TERM_GRAY,TERM_L_GRAY,TERM_L_GRAY,TERM_L_UMBER,TERM_RED,
+    TERM_L_GRAY,TERM_L_GRAY,TERM_L_GRAY,TERM_WHITE,TERM_WHITE,
+    TERM_L_GRAY,TERM_L_GRAY,TERM_L_BLUE,TERM_L_UMBER,TERM_YELLOW,
+    TERM_L_UMBER,TERM_L_GRAY,TERM_L_GRAY,TERM_L_GRAY,TERM_L_GRAY,
+    TERM_L_BLUE,TERM_L_BLUE,TERM_UMBER,TERM_L_UMBER,TERM_L_UMBER,
+    TERM_WHITE,TERM_GRAY,/*TERM_GRAY,TERM_WHITE,TERM_GRAY*/
 };
 
 
@@ -173,14 +173,14 @@ static cptr rod_adj[MAX_METALS] = {
     "Platinum","Lead"/*,"Lead-Plated","Ivory","Pewter"*/
 };
 
-static int8u rod_col[MAX_METALS] = {
-    COLOR_L_BLUE,COLOR_D_GRAY,COLOR_WHITE,COLOR_L_BROWN,COLOR_YELLOW,
-    COLOR_GRAY,COLOR_L_GRAY,COLOR_L_GRAY,COLOR_L_BROWN,COLOR_RED,
-    COLOR_L_GRAY,COLOR_L_GRAY,COLOR_L_GRAY,COLOR_WHITE,COLOR_WHITE,
-    COLOR_L_GRAY,COLOR_L_GRAY,COLOR_L_BLUE,COLOR_L_BROWN,COLOR_YELLOW,
-    COLOR_L_BROWN,COLOR_L_GRAY,COLOR_L_GRAY,COLOR_L_GRAY,COLOR_L_GRAY,
-    COLOR_L_BLUE,COLOR_L_BLUE,COLOR_BROWN,COLOR_L_BROWN,COLOR_L_BROWN,
-    COLOR_WHITE,COLOR_GRAY,/*COLOR_GRAY,COLOR_WHITE,COLOR_GRAY*/
+static byte rod_col[MAX_METALS] = {
+    TERM_L_BLUE,TERM_D_GRAY,TERM_WHITE,TERM_L_UMBER,TERM_YELLOW,
+    TERM_GRAY,TERM_L_GRAY,TERM_L_GRAY,TERM_L_UMBER,TERM_RED,
+    TERM_L_GRAY,TERM_L_GRAY,TERM_L_GRAY,TERM_WHITE,TERM_WHITE,
+    TERM_L_GRAY,TERM_L_GRAY,TERM_L_BLUE,TERM_L_UMBER,TERM_YELLOW,
+    TERM_L_UMBER,TERM_L_GRAY,TERM_L_GRAY,TERM_L_GRAY,TERM_L_GRAY,
+    TERM_L_BLUE,TERM_L_BLUE,TERM_UMBER,TERM_L_UMBER,TERM_L_UMBER,
+    TERM_WHITE,TERM_GRAY,/*TERM_GRAY,TERM_WHITE,TERM_GRAY*/
 };
 
 
@@ -200,16 +200,16 @@ static cptr ring_adj[MAX_ROCKS] = {
     "Engagement","Adamantite"
 };
 
-static int8u ring_col[MAX_ROCKS] = {
-    COLOR_GREEN,COLOR_VIOLET,COLOR_L_BLUE,COLOR_L_BLUE,COLOR_L_GREEN,
-    COLOR_RED,COLOR_WHITE,COLOR_RED,COLOR_GRAY,COLOR_WHITE,
-    COLOR_GREEN,COLOR_L_GREEN,COLOR_RED,COLOR_L_GRAY,COLOR_L_GREEN,
-    COLOR_BROWN,COLOR_BLUE,COLOR_GREEN,COLOR_WHITE,COLOR_L_GRAY,
-    COLOR_L_RED,COLOR_L_GRAY,COLOR_WHITE,COLOR_L_GRAY,COLOR_L_GRAY,
-    COLOR_L_RED,COLOR_RED,COLOR_BLUE,COLOR_YELLOW,COLOR_YELLOW,
-    COLOR_L_BLUE,COLOR_L_BROWN,COLOR_WHITE,COLOR_L_BROWN,COLOR_YELLOW,
-    COLOR_D_GRAY,COLOR_L_GRAY,COLOR_BROWN,COLOR_L_BLUE,COLOR_D_GRAY,
-    COLOR_YELLOW,COLOR_L_GREEN
+static byte ring_col[MAX_ROCKS] = {
+    TERM_GREEN,TERM_VIOLET,TERM_L_BLUE,TERM_L_BLUE,TERM_L_GREEN,
+    TERM_RED,TERM_WHITE,TERM_RED,TERM_GRAY,TERM_WHITE,
+    TERM_GREEN,TERM_L_GREEN,TERM_RED,TERM_L_GRAY,TERM_L_GREEN,
+    TERM_UMBER,TERM_BLUE,TERM_GREEN,TERM_WHITE,TERM_L_GRAY,
+    TERM_L_RED,TERM_L_GRAY,TERM_WHITE,TERM_L_GRAY,TERM_L_GRAY,
+    TERM_L_RED,TERM_RED,TERM_BLUE,TERM_YELLOW,TERM_YELLOW,
+    TERM_L_BLUE,TERM_L_UMBER,TERM_WHITE,TERM_L_UMBER,TERM_YELLOW,
+    TERM_D_GRAY,TERM_L_GRAY,TERM_UMBER,TERM_L_BLUE,TERM_D_GRAY,
+    TERM_YELLOW,TERM_L_GREEN
 };
 
 
@@ -224,11 +224,11 @@ static cptr amulet_adj[MAX_AMULETS] = {
     "Copper"
 };
 
-static int8u amulet_col[MAX_AMULETS] = {
-    COLOR_YELLOW,COLOR_L_BROWN,COLOR_WHITE,COLOR_L_GRAY,COLOR_WHITE,
-    COLOR_D_GRAY,COLOR_WHITE,COLOR_L_BROWN,COLOR_L_BROWN,COLOR_GRAY,
-    COLOR_BROWN,COLOR_YELLOW,COLOR_L_BLUE,COLOR_WHITE,COLOR_L_GRAY,
-    COLOR_L_BROWN
+static byte amulet_col[MAX_AMULETS] = {
+    TERM_YELLOW,TERM_L_UMBER,TERM_WHITE,TERM_L_GRAY,TERM_WHITE,
+    TERM_D_GRAY,TERM_WHITE,TERM_L_UMBER,TERM_L_UMBER,TERM_GRAY,
+    TERM_UMBER,TERM_YELLOW,TERM_L_BLUE,TERM_WHITE,TERM_L_GRAY,
+    TERM_L_UMBER
 };
 
 
@@ -267,7 +267,7 @@ static cptr syllables[MAX_SYLLABLES] = {
 
 static char scroll_adj[MAX_TITLES][10];
 
-static int8u scroll_col[MAX_TITLES];
+static byte scroll_col[MAX_TITLES];
 
 
 
@@ -288,7 +288,7 @@ void flavor_init(void)
 {
     register int        h, i, j, k;
     register cptr		tmp1;
-    register int8u		tmp2;
+    register byte		tmp2;
     vtype               string;
 
 
@@ -396,7 +396,7 @@ void flavor_init(void)
 	(void)strcpy(scroll_adj[h], string);
 
 	/* Hack -- all scrolls are white */
-	scroll_col[h] = COLOR_WHITE;
+	scroll_col[h] = TERM_WHITE;
     }
 
     /* Rods are made of metal */
@@ -473,7 +473,7 @@ static bool known2_aux(inven_type *i_ptr)
 
 	    /* Assume knowledge */
 	    return (TRUE);
-	    
+
 	/* Rings, Amulets */
 	case TV_RING:
 	case TV_AMULET:
@@ -482,7 +482,7 @@ static bool known2_aux(inven_type *i_ptr)
 	    if (!x_list[i_ptr->k_idx].aware) return (FALSE);
 
 	    /* XXX Fall through */
-	    
+
 	/* Lites (plus Rings and Amulets).  Could also do weapons/armor */
 	case TV_LITE:
 
@@ -491,7 +491,7 @@ static bool known2_aux(inven_type *i_ptr)
 
 	    /* Assume unknown */
 	    return (FALSE);
-	    
+
 	/* Spellbooks */
 	case TV_MAGIC_BOOK:
 	case TV_PRAYER_BOOK:
@@ -557,13 +557,15 @@ void known2(inven_type *i_ptr)
 
 	/* Hack -- Remove any inscription we may have made */
 	if ((streq(i_ptr->inscrip, "cursed")) ||
-	    (streq(i_ptr->inscrip, "blessed")) ||
 
 	    (streq(i_ptr->inscrip, "terrible")) ||
-	    (streq(i_ptr->inscrip, "special")) ||
-
 	    (streq(i_ptr->inscrip, "worthless")) ||
+
+	    (streq(i_ptr->inscrip, "blessed")) ||
+
+	    (streq(i_ptr->inscrip, "special")) ||
 	    (streq(i_ptr->inscrip, "excellent")) ||
+	    (streq(i_ptr->inscrip, "good")) ||
 
 	    (streq(i_ptr->inscrip, "average"))) {
 
@@ -611,7 +613,7 @@ bool inven_aware_p(inven_type *i_ptr)
 
     /* Hack -- "known" induces "aware" */
     if (known2_p(i_ptr)) return (TRUE);
-    
+
     /* Check the "x_list" */
     return (x_list[i_ptr->k_idx].aware);
 }
@@ -634,7 +636,7 @@ bool inven_tried_p(inven_type *i_ptr)
 {
     /* Hack -- "aware" cancels "tried" */
     if (inven_aware_p(i_ptr)) return (FALSE);
-    
+
     /* Check the "x_list" */
     return (x_list[i_ptr->k_idx].tried);
 }
@@ -658,26 +660,15 @@ void inven_tried(inven_type *i_ptr)
  */
 char inven_char(inven_type *i_ptr)
 {
-    char i_char;
-    
-    /* Hack -- allow "graphic pictures" */
+    /* Allow "graphic pictures" */
     if (inven_aware_p(i_ptr)) {
 
 	/* Get the "user" symbol */    
-        i_char = x_list[i_ptr->k_idx].x_char;
-
-	/* Use it if possible */
-	if (i_char) return (i_char);
+	if (k_char[i_ptr->k_idx]) return (k_char[i_ptr->k_idx]);
     }
 
-    /* Get the "user" symbol */    
-    i_char = k_list[i_ptr->k_idx].i_char;
-
-    /* Use it if possible */
-    if (i_char) return (i_char);
-    
-    /* Oops */
-    return (' ');
+    /* Hack -- must show something if non-aware */
+    return (k_list[i_ptr->k_idx].k_char);
 }
 
 
@@ -686,11 +677,9 @@ char inven_char(inven_type *i_ptr)
 /*
  * Return the "attr" corresponding to an object.
  *
- * Un-aware objects MUST use the "flavor" attribute.
+ * Allow the user to redefine the attr's of "aware" objects.
  *
- * Else, attempt to use the "user-defined" attribute.
- * Else, attempt to use the "kind-defined" attribute.
- * Else, use WHITE.
+ * Unaware flavored objects must use the "flavor" color.
  */
 byte inven_attr(inven_type *i_ptr)
 {
@@ -698,23 +687,13 @@ byte inven_attr(inven_type *i_ptr)
 #ifdef USE_COLOR
 
     int indexx;
-    byte i_char;
 
 
     /* Allow "special" colors if "aware" */
     if (inven_aware_p(i_ptr)) {
-    
-	/* Extract the "kind" color */
-	i_char = x_list[i_ptr->k_idx].x_attr;
 
-	/* Use the color of the "kind" if given */
-	if (i_char) return (i_char);
-	
 	/* Extract the "kind" color */
-	i_char = k_list[i_ptr->k_idx].i_attr;
-
-	/* Use the color of the "kind" if given */
-	if (i_char) return (i_char);
+	if (k_attr[i_ptr->k_idx]) return (k_attr[i_ptr->k_idx]);
     }
 
 
@@ -752,7 +731,7 @@ byte inven_attr(inven_type *i_ptr)
 #endif
 
     /* Nothing else found */
-    return (COLOR_WHITE);
+    return (TERM_WHITE);
 }
 
 
@@ -768,7 +747,7 @@ byte inven_attr(inven_type *i_ptr)
  */
 static bool similar_ident(inven_type *i_ptr, inven_type *j_ptr)
 {
-    /* XXX Hack -- no longer possible (???) */
+    /* XXX XXX Hack -- no longer possible (???) */
     if (inven_aware_p(i_ptr) != inven_aware_p(j_ptr)) return (0);
 
     /* XXX Hack -- force identical "ident" flag sets */
@@ -832,11 +811,25 @@ int item_similar(inven_type *i_ptr, inven_type *j_ptr)
     if (i_ptr->k_idx != j_ptr->k_idx) return (0);
 
 
+    /* Hack -- refuse weapons/armor if requested */
+    if (!stack_allow_items &&
+	(wearable_p(i_ptr)) &&
+        (i_ptr->tval != TV_LITE) &&
+        (i_ptr->tval != TV_RING) &&
+        (i_ptr->tval != TV_AMULET)) return (0);
+        
+    /* Hack -- refuse wands/staffs/rods if requested */
+    if (!stack_allow_wands &&
+        ((i_ptr->tval == TV_STAFF) ||
+         (i_ptr->tval == TV_WAND) ||
+         (i_ptr->tval == TV_ROD))) return (0);
+        
+
     /* Different charges (etc) cannot be stacked */
     if (i_ptr->pval != j_ptr->pval) return (0);
 
-    /* Require matching prices (prevents "value" loss) */
-    if (i_ptr->cost != j_ptr->cost) return (0);
+    /* Require matching prices, unless told not to */
+    if (!stack_force_costs && (i_ptr->cost != j_ptr->cost)) return (0);
 
 
     /* Require many identical values */
@@ -844,11 +837,15 @@ int item_similar(inven_type *i_ptr, inven_type *j_ptr)
 	(i_ptr->todam     != j_ptr->todam)     ||
 	(i_ptr->toac      != j_ptr->toac)      ||
 	(i_ptr->ac        != j_ptr->ac)        ||
-	(i_ptr->damage[0] != j_ptr->damage[0]) ||
-	(i_ptr->damage[1] != j_ptr->damage[1]) ||
-	(i_ptr->flags1    != j_ptr->flags1)    ||
-	(i_ptr->flags2    != j_ptr->flags2)    ||
-	(i_ptr->flags3    != j_ptr->flags3)) {
+	(i_ptr->dd        != j_ptr->dd)        ||
+	(i_ptr->ds        != j_ptr->ds)) {
+	return (0);
+    }
+
+    /* Require identical flags */
+    if ((i_ptr->flags1 != j_ptr->flags1) ||
+	(i_ptr->flags2 != j_ptr->flags2) ||
+	(i_ptr->flags3 != j_ptr->flags3)) {
 	return (0);
     }
 
@@ -861,7 +858,7 @@ int item_similar(inven_type *i_ptr, inven_type *j_ptr)
 
     /* Require identical "ego-item" names */
     if (i_ptr->name2 != j_ptr->name2) return (0);
-    
+
 
     /* XXX Hack -- never stack "activatable" items */
     if (wearable_p(i_ptr) && (i_ptr->flags3 & TR3_ACTIVATE)) return (0);
@@ -876,8 +873,8 @@ int item_similar(inven_type *i_ptr, inven_type *j_ptr)
     if (i_ptr->number + j_ptr->number >= MAX_STACK_SIZE) return (0);
 
 
-    /* Require matching "inscriptions" (various reasons for this) */
-    if (strcmp(i_ptr->inscrip, j_ptr->inscrip)) return (0);
+    /* Require matching "inscriptions", unless told not to. */
+    if (!stack_force_notes && strcmp(i_ptr->inscrip, j_ptr->inscrip)) return (0);
 
 
     /* Paranoia -- Different types cannot be stacked */
@@ -1035,35 +1032,20 @@ void objdes(char *out_val, inven_type *i_ptr, int pref)
 	strcpy(damstr, " (locked)");
 	break;
 
-      /* Weapons (and missiles) have a damage string, and flags */
-      case TV_SHOT:
-      case TV_BOLT:
-      case TV_ARROW:
+      /* Weapons have a damage string, and flags */
       case TV_HAFTED:
       case TV_POLEARM:
       case TV_SWORD:
-	pval_use = FLAGS;
-	(void)sprintf(damstr, " (%dd%d)", i_ptr->damage[0], i_ptr->damage[1]);
-	break;
-
-      /* Hack -- Display "Shovel (+0)" */
       case TV_DIGGING:
-	pval_use = Z_PLUSSES;
-	(void)sprintf(damstr, " (%dd%d)", i_ptr->damage[0], i_ptr->damage[1]);
+	pval_use = (i_ptr->flags1 & TR1_TUNNEL) ? Z_PLUSSES : FLAGS;
+	(void)sprintf(damstr, " (%dd%d)", i_ptr->dd, i_ptr->ds);
 	break;
 
       /* Bows get a special "damage string" */
       case TV_BOW:
 
-	/* Extract the "base power" from the bow type */
-	switch (i_ptr->sval) {
-	  case SV_SLING: power = 2; break;
-	  case SV_SHORT_BOW: power = 2; break;
-	  case SV_LONG_BOW: power = 3; break;
-	  case SV_LIGHT_XBOW: power = 3; break;
-	  case SV_HEAVY_XBOW: power = 4; break;
-	  default: power = 0; break;
-	}
+	/* Hack -- Extract the "base power" */
+	power = (i_ptr->sval % 10);
 
 	/* Apply the "Extra Might" flag */
 	if (i_ptr->flags3 & TR3_XTRA_MIGHT) power++;
@@ -1075,6 +1057,15 @@ void objdes(char *out_val, inven_type *i_ptr, int pref)
 	pval_use = FLAGS;
 
 	/* All done */
+	break;
+
+
+      /* Missiles have a damage string, and flags */
+      case TV_SHOT:
+      case TV_BOLT:
+      case TV_ARROW:
+	pval_use = FLAGS;
+	(void)sprintf(damstr, " (%dd%d)", i_ptr->dd, i_ptr->ds);
 	break;
 
 
@@ -1243,11 +1234,11 @@ void objdes(char *out_val, inven_type *i_ptr, int pref)
 	/* The Molds */
 	if (i_ptr->sval >= SV_FOOD_MIN_MOLD) {
 	    if (!aware) {
-		basenm = "& Hairy %s Mold~";
+		basenm = "& %s Hairy Mold~";
 		modstr = food_adj[indexx];
 	    }
 	    else if (!plain_descriptions) {
-		basenm = "& Hairy %s Mold~";
+		basenm = "& %s Hairy Mold~";
 		modstr = food_adj[indexx];
 		append_name = TRUE;
 	    }
@@ -1311,8 +1302,9 @@ void objdes(char *out_val, inven_type *i_ptr, int pref)
 	sprintf(out_val, "the entrance to the %s", basenm);
 	return;
 
+      /* Used in the "inventory" routine */
       default:
-	sprintf(out_val, "*** error in objdes(%d) ***", i_ptr->k_idx);
+	strcpy(out_val, "(nothing)");
 	return;
     }
 
@@ -1391,20 +1383,27 @@ void objdes(char *out_val, inven_type *i_ptr, int pref)
 
 	char *tail = tmp_val + strlen(tmp_val);
 
-	/* Add the tohit/todam */
+	/* Show the tohit/todam on request */
 	if (wearable_p(i_ptr) && (i_ptr->flags3 & TR3_SHOW_MODS)) {
 	    (void)sprintf(tail, " (%c%d,%c%d)",
 			  MY_POM(i_ptr->tohit), MY_ABS(i_ptr->tohit),
 			  MY_POM(i_ptr->todam), MY_ABS(i_ptr->todam));
 	}
 
-	/* Add the tohit */
+	/* Paranoia -- show both the tohit and todam if needed */
+	else if (i_ptr->tohit && i_ptr->todam) {
+	    (void)sprintf(tail, " (%c%d,%c%d)",
+			  MY_POM(i_ptr->tohit), MY_ABS(i_ptr->tohit),
+			  MY_POM(i_ptr->todam), MY_ABS(i_ptr->todam));
+	}
+	
+	/* Show the tohit if needed */
 	else if (i_ptr->tohit) {
 	    (void)sprintf(tail, " (%c%d)",
 			  MY_POM(i_ptr->tohit), MY_ABS(i_ptr->tohit));
 	}
 
-	/* Add the todam */
+	/* Show the todam if needed */
 	else if (i_ptr->todam) {
 	    (void)sprintf(tail, " (%c%d)",
 			  MY_POM(i_ptr->todam), MY_ABS(i_ptr->todam));
@@ -1413,19 +1412,19 @@ void objdes(char *out_val, inven_type *i_ptr, int pref)
 
 
     /* Add in the "armor class info", base and magic */
-    /* Crowns have a zero base AC, so make a special test for them. */
-    if (i_ptr->ac != 0 || (i_ptr->tval == TV_HELM)) {
+    /* Hack -- show "zero" ac for crowns */
+    if (i_ptr->ac || (i_ptr->tval == TV_HELM)) {
 	char *tail;
-	cptr b1 = "[", b2 = "]";            
+	char b1 = '[', b2 = ']';
 	tail = tmp_val + strlen(tmp_val);
-	(void)sprintf(tail, " %s%d", b1, i_ptr->ac);
+	(void)sprintf(tail, " %c%d", b1, i_ptr->ac);
 	if (known2_p(i_ptr)) {
 	    tail = tail + strlen(tail);
 	    (void)sprintf(tail, ",%c%d",
 			  MY_POM(i_ptr->toac), MY_ABS(i_ptr->toac));
 	}
 	tail = tail + strlen(tail);
-	(void)strcpy(tail, b2);
+	(void)sprintf(tail, "%c", b2);
     }
 
     /* No base armor, but does increase armor */
@@ -1493,7 +1492,7 @@ void objdes(char *out_val, inven_type *i_ptr, int pref)
 	/* Nothing */
     }
 
-    /* Speed */
+    /* Speed (Note that speed is now mod 10 */
     else if ((i_ptr->flags1 & TR1_SPEED) &&
 	     (i_ptr->name2 != EGO_SPEED)) {
 	(void)sprintf(tmp_str, "%c%d to speed",
@@ -1646,8 +1645,8 @@ void objdes(char *out_val, inven_type *i_ptr, int pref)
 void objdes_store(char *buf, inven_type *i_ptr, int mode)
 {
     /* Save the "known" flag */
-    bool hack_known = i_ptr->ident & ID_KNOWN;
-    
+    bool hack_known = (i_ptr->ident & ID_KNOWN) ? TRUE : FALSE;
+
     /* Save the actual "plain_descriptions" flag */
     bool hack_plain = plain_descriptions;
 
@@ -1656,7 +1655,7 @@ void objdes_store(char *buf, inven_type *i_ptr, int mode)
 
     /* Force "known" */
     i_ptr->ident |= ID_KNOWN;
-    
+
     /* Describe the (known) object, with no "adjectives" */
     objdes(buf, i_ptr, mode);
 
@@ -1699,8 +1698,8 @@ void invcopy(inven_type *i_ptr, int k_idx)
     i_ptr->todam = k_ptr->todam;
     i_ptr->toac = k_ptr->toac;
     i_ptr->ac = k_ptr->ac;
-    i_ptr->damage[0] = k_ptr->damage[0];
-    i_ptr->damage[1] = k_ptr->damage[1];
+    i_ptr->dd = k_ptr->dd;
+    i_ptr->ds = k_ptr->ds;
 
     /* Default cost and flags */
     i_ptr->cost = k_ptr->cost;
@@ -1711,7 +1710,7 @@ void invcopy(inven_type *i_ptr, int k_idx)
     /* Wipe the inscription */
     inscribe(i_ptr, "");
 
-    /* No artufact name */
+    /* No artifact name */
     i_ptr->name1 = 0;
 
     /* No special name */

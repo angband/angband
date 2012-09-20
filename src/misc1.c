@@ -56,17 +56,17 @@ static char *dummy_state = NULL;
 
 
 /*
- * gets a new random seed for the random number generator 
+ * Gets a new random seed for the random number generator 
  * Hack -- saves seeds for the town layout and object colors
  */
 void init_seeds(void)
 {
-    static char old_buf[256];
-    static char dummy_buf[8];
+    static u32b old_buf[256/4];
+    static u32b dummy_buf[8/4];
 
     /* Allocate some RNG arrays */
-    old_state = old_buf; /* excellent R.N.G. */
-    dummy_state = dummy_buf; /* simple R.N.G. */
+    old_state = (char*)old_buf; /* excellent R.N.G. */
+    dummy_state = (char*)dummy_buf; /* simple R.N.G. */
 
     /* Grab a random seed from the clock -- is this ignored by unix? */
     (void)initstate(time(NULL), dummy_state, 8);
@@ -74,28 +74,29 @@ void init_seeds(void)
     /* Note that "getpid()" is less than informative except on Unix */
     /* This may need to be changed.  It's fine for PCs, anyways... -CFT */
 
-#if defined(MACINTOSH) || defined(MSDOS)
-
-    /* Use the seed we got above to re-seed */
-    (void) initstate(random(), old_state, 256);
-
-#else /* MACINTOSH/MSDOS */
+#ifdef SET_UID
 
     /* Grab a random seed from the clock & PID... */
-    (void) initstate(((getpid() << 1) * (time(NULL) >> 3)), old_state, 256);
+    (void)initstate(((getpid() << 1) * (time(NULL) >> 3)), old_state, 256);
 
-#endif /* MACINTOSH/MSDOS */
+#else /* SET_UID */
+
+    /* Use the seed we got above to re-seed */
+    (void)initstate(random(), old_state, 256);
+
+#endif /* SET_UID */
 
     /* Hack -- Extract seeds for the town layout and object colors */
     town_seed = random();
     randes_seed = random();
 }
 
+
 /*
  * change to different random number generator state
  * Hack -- used to keep consistent object colors and town layout
  */
-void set_seed(int32u seed)
+void set_seed(u32b seed)
 {
     setstate(dummy_state);
     srandom((seed % 2147483646L) + 1);
@@ -111,10 +112,6 @@ void reset_seed(void)
 }
 
 
-#if !defined(time_t)
-#define time_t long
-#endif
-
 /*
  * Check the day-time strings to see if open		-RAK-	
  */
@@ -122,6 +119,11 @@ int check_time(void)
 {
 
 #ifdef CHECK_HOURS
+
+# if !defined(time_t)
+#  define time_t long
+# endif
+
     time_t              c;
     register struct tm *tp;
 
@@ -157,6 +159,11 @@ int check_time(void)
 
 /*
  * Generates a random integer number of NORMAL distribution -RAK- 
+ *
+ * XXX This should probably be retested just for paranoia's sake.
+ *
+ * There has been some suspicion that this function actually uses
+ * a standard deviation of about 1.25 times the one given. XXX XXX
  */
 int randnor(int mean, int stand)
 {
@@ -170,21 +177,24 @@ int randnor(int mean, int stand)
 	offset = 4 * stand + randint(stand);
 
 	/* one half are negative */
-	if (randint(2) == 1) offset = (-offset);
+	if (rand_int(2)) offset = (-offset);
 
 	return (mean + offset);
     }
 
-/* binary search normal normal_table to get index that matches tmp */
-/* this takes up to 8 iterations */
 
+    /* binary search normal normal_table to get index that matches tmp */
     low = 0;
     iindex = NORMAL_TABLE_SIZE >> 1;
     high = NORMAL_TABLE_SIZE;
+
+    /* this takes up to 8 iterations */
     while (TRUE) {
+
 	if ((normal_table[iindex] == tmp) || (high == (low + 1))) {
 	    break;
 	}
+
 	if (normal_table[iindex] > tmp) {
 	    high = iindex;
 	    iindex = low + ((iindex - low) >> 1);
@@ -202,8 +212,9 @@ int randnor(int mean, int stand)
     /* round the half way case up */
     offset = ((stand * iindex) + (NORMAL_TABLE_SD >> 1)) / NORMAL_TABLE_SD;
 
+
     /* one half should be negative */
-    if (randint(2) == 1) offset = (-offset);
+    if (rand_int(2)) offset = (-offset);
 
     return (mean + offset);
 }
@@ -212,10 +223,10 @@ int randnor(int mean, int stand)
 /*
  * Returns position of first set bit (and clears that bit) 
  */
-int bit_pos(int32u *test)
+int bit_pos(u32b *test)
 {
     register int    i;
-    register int32u mask = 0x1L;
+    register u32b mask = 0x1L;
 
     /* No bits set? */
     if (!(*test)) return (-1);
@@ -300,73 +311,31 @@ int get_panel(int y, int x, int update)
 
 
 /*
- * Distance between two points				-RAK-	
- * Quick and brutal, mostly accurate
+ * Approximate Distance between two points.
+ *
+ * When either the X or Y component dwarfs the other component,
+ * this function is almost perfect, and otherwise, it tends to
+ * over-estimate about one grid per fifteen grids of distance.
  */
 int distance(int y1, int x1, int y2, int x2)
 {
-    register int dy, dx;
+    register int dy, dx, d;
 
+    /* Find the absolute y/x distance components */
     dy = (y1 > y2) ? (y1 - y2) : (y2 - y1);
     dx = (x1 > x2) ? (x1 - x2) : (x2 - x1);
 
-    return ((((dy + dx) << 1) - (dy > dx ? dx : dy)) >> 1);
+    /* Hack -- approximate the distance */
+    d = (dy + dx + ((dy > dx) ? dy : dx)) >> 1;
+
+    /* Return the distance */
+    return (d);
 }
 
 
-/*
- * Checks points north, south, east, and west for a wall -RAK-
- *
- * note that y,x is always in_bounds(),
- * i.e. 0 < y < cur_height-1, and 0 < x < cur_width-1	 
- */
-int next_to_walls(int y, int x)
-{
-    register int        i;
-    register cave_type *c_ptr;
-
-    i = 0;
-    c_ptr = &cave[y - 1][x];
-    if (c_ptr->fval >= MIN_WALL) i++;
-    c_ptr = &cave[y + 1][x];
-    if (c_ptr->fval >= MIN_WALL) i++;
-    c_ptr = &cave[y][x - 1];
-    if (c_ptr->fval >= MIN_WALL) i++;
-    c_ptr = &cave[y][x + 1];
-    if (c_ptr->fval >= MIN_WALL) i++;
-
-    return (i);
-}
-
 
 /*
- * Checks all adjacent spots for corridors		-RAK-
- *
- * note that y, x is always in_bounds(), hence no need to check
- * that j, k are in_bounds(), even if they are 0 or cur_x-1
- */
-int next_to_corr(int y, int x)
-{
-    register int        k, j, i;
-    register cave_type *c_ptr;
-
-    i = 0;
-    for (j = y - 1; j <= (y + 1); j++) {
-	for (k = x - 1; k <= (x + 1); k++) {
-	    c_ptr = &cave[j][k];
-	/* should fail if there is already a door present */
-	    if ((c_ptr->fval == CORR_FLOOR) &&
-		(c_ptr->i_idx == 0 || (i_list[c_ptr->i_idx].tval < TV_MIN_DOORS))) {
-		i++;
-	    }
-	}
-    }
-    return (i);
-}
-
-
-/*
- * generates damage for "2d6" style dice rolls
+ * Generates damage for "2d6" style dice rolls
  */
 int damroll(int num, int sides)
 {
@@ -379,7 +348,7 @@ int damroll(int num, int sides)
 /* 
  * Old "array" format
  */
-int pdamroll(int8u *array)
+int pdamroll(byte *array)
 {
     return damroll((int)array[0], (int)array[1]);
 }
@@ -388,7 +357,7 @@ int pdamroll(int8u *array)
 /*
  * Same as above, but always maximal
  */
-int max_hp(int8u *array)
+int max_hp(byte *array)
 {
     return ((int)(array[0]) * (int)(array[1]));
 }

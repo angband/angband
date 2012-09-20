@@ -2,6 +2,8 @@
 
 /* Purpose: Termcap support for "term.c" */
 
+#if 0	/* Not ready yet */
+
 #include "h-include.h"
 
 #define DEFAULT_ROWS 24
@@ -862,5 +864,7 @@ int main(int argc, char *argv[])
   /* Nuke the term */
   if (term_nuke()) exit(-1);
 }
+
+#endif
 
 

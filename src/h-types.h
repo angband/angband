@@ -59,6 +59,34 @@ typedef double real;
 typedef int errr;
 
 
+/*
+ * Some annoying machines define "uint" in some "include" file
+ * Note that this "redefinition" should work on any machine.
+ */
+#if !defined(MACINTOSH) && !defined(__EMX__)
+# define uint uint_hack
+#endif
+
+/*
+ * Some annoying machines (Windows with Turbo C) reserve "huge".
+ * Note that this "redefinition" should work on any machine.
+ */
+#if defined(_Windows)
+# define huge huge_hack
+#endif
+
+/*
+ * Hack -- The Amiga appears to reserve "byte"
+ * So we will pre-empt "byte" and use "byte_hack" instead.
+ * XXX If this does not work, then remove it and surround
+ * the "typedef" of "byte" with "#ifndef AMIGA"/"#endif"
+ */
+#ifdef AMIGA
+# undef byte
+# define byte byte_hack
+#endif
+
+
 /* Note that "signed char" is not always "defined" */
 /* A (possibly signed) char (a byte) */
 /* typedef char char; */
@@ -74,16 +102,8 @@ typedef char bool;
 typedef int sint;
 
 /* An unsigned, "standard" integer (usually pre-defined) */
-#if defined(MACINTOSH) || defined(__EMX__) || defined(__alpha)
 typedef unsigned int uint;
-#endif
 
-/*
- * Hack -- Windows is annoying
- */
-#ifdef _Windows
-# define huge huge_hack
-#endif
 
 /* The largest signed integer there is (pre-defined) */
 /* typedef long long; */

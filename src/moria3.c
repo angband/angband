@@ -13,16 +13,6 @@
 #include "angband.h"
 
 
-/* Lets do all prototypes correctly.... -CWS */
-#ifndef NO_LINT_ARGS
-#ifdef __STDC__
-static int look_ray(int, int, int);
-static int look_see(int, int, int *);
-static cptr look_mon_desc(int);
-#endif
-#endif
-
-
 
 
 /*
@@ -191,7 +181,7 @@ static int look_see(int x, int y, int *transparent)
     m_ptr = &m_list[c_ptr->m_idx];
 
     /* Floor grids are transparent */
-    if (floor_grid(y,x)) *transparent = TRUE;
+    if (floor_grid_bold(y,x)) *transparent = TRUE;
 
     /* Hack -- Don't look at a direct line of sight. */
     if (gl_noquery) return FALSE;
@@ -208,13 +198,13 @@ static int look_see(int x, int y, int *transparent)
 	monster_desc(m_name, &m_list[c_ptr->m_idx], 0x08);
 
 	/* Auto-recall */
-	if (use_recall_win) {
+	if (use_recall_win && term_recall) {
 
 	    /* Describe */
 	    (void)sprintf(out_val, "%s %s (%s).  --pause--",
-		          dstring, m_name, look_mon_desc(c_ptr->m_idx));
+			  dstring, m_name, look_mon_desc(c_ptr->m_idx));
 
-	    /* Automatically recall */
+	    /* Auto-recall */
 	    roff_recall(j);
 	}
 
@@ -223,7 +213,7 @@ static int look_see(int x, int y, int *transparent)
 
 	    /* Describe, and prompt for recall */
 	    (void)sprintf(out_val, "%s %s (%s) [(r)ecall]",
-		          dstring, m_name, look_mon_desc(c_ptr->m_idx));
+			  dstring, m_name, look_mon_desc(c_ptr->m_idx));
 	}
 
 
@@ -233,12 +223,12 @@ static int look_see(int x, int y, int *transparent)
 
 
 	/* Use a recall window */
-	if (!use_recall_win) {
+	if (!(use_recall_win && term_recall)) {
 	    if (query == 'r' || query == 'R') {
-	        erase_line(0,0);
-	        save_screen();
-	        query = roff_recall(j);
-	        restore_screen();
+		erase_line(0,0);
+		save_screen();
+		query = roff_recall(j);
+		restore_screen();
 	    }
 	}
 
@@ -260,9 +250,10 @@ static int look_see(int x, int y, int *transparent)
 	    i_ptr = &i_list[c_ptr->i_idx];
 
 	    /* No rock, yes visible object */
-	    if (gl_rock == 0 &&
-	        (i_ptr->tval != TV_INVIS_TRAP) &&
-	        (i_ptr->tval != TV_SECRET_DOOR)) {
+	    if (!gl_rock &&
+		(i_ptr->tval != TV_INVIS_TRAP) &&
+		(i_ptr->tval != TV_SECRET_DOOR)) {
+		
 		objdes(tmp_str, &i_list[c_ptr->i_idx], TRUE);
 		(void)sprintf(out_val, "%s %s.  ---pause---", dstring, tmp_str);
 		prt(out_val, 0, 0);
@@ -637,8 +628,8 @@ void do_cmd_locate()
     /* Free move */
     free_turn_flag = TRUE;
 
-    /* Are we blind? */
-    if ((p_ptr->blind > 0) || no_lite()) {
+    /* Are we blind?  Ignore "no_lite()" */
+    if (p_ptr->blind > 0) {
 	msg_print("You can't see your map.");
 	return;
     }
@@ -679,7 +670,7 @@ void do_cmd_locate()
 	    p_y, p_x, tmp_str);
 
 	/* Get a direction (or Escape) */
-	if (!get_a_dir (out_val, &dir_val, 0)) break;
+	if (!get_a_dir(out_val, &dir_val, 0)) break;
 
 
 	/* Keep "moving" until the panel changes */
@@ -704,17 +695,17 @@ void do_cmd_locate()
 
 
     /* Paranoia -- make sure the screen is okay */
-    
+
     /* Get new panel, redraw the map */
-    (void)get_panel(char_row, char_col, TRUE);
+    (void)get_panel(char_row, char_col, FALSE);
 
     /* Update the view/lite */
     update_view();
     update_lite(); 
-       
+
     /* Update the monsters */
     update_monsters(); 
-       
+
     /* Check the view */
     check_view();
 }
@@ -732,8 +723,8 @@ static void chest_death(int y, int x, inven_type *i_ptr)
 {
     int			i, y1, x1, number;
 
-    bool	do_item = (i_ptr->flags1 & CH1_CARRY_OBJ);
-    bool	do_gold = (i_ptr->flags1 & CH1_CARRY_GOLD);
+    bool	do_item = (i_ptr->flags1 & CH1_CARRY_OBJ) ? TRUE : FALSE;
+    bool	do_gold = (i_ptr->flags1 & CH1_CARRY_GOLD) ? TRUE : FALSE;
 
 
     /* Must be a chest */
@@ -750,18 +741,6 @@ static void chest_death(int y, int x, inven_type *i_ptr)
     /* Summon some objects */
     if (number > 0) {
 
-	int hack = object_level;
-
-	/* The "pval" of a chest is how "good" it is */
-	object_level = i_ptr->pval;
-
-	/* XXX Paranoia -- verify "pval" */
-	if (object_level < 0) object_level = 0;
-	if (object_level > MAX_K_LEV) object_level = MAX_K_LEV;
-
-	/* Opening a chest */
-	opening_chest = TRUE;
-
 	/* Drop some objects (non-chests) */    
 	for ( ; number > 0; --number) {
 
@@ -769,25 +748,40 @@ static void chest_death(int y, int x, inven_type *i_ptr)
 	    for (i = 0; i < 20; ++i) {
 
 		/* Pick a location */
-		y1 = rand_range(y-2, y+2);
-		x1 = rand_range(x-2, x+2);
+		y1 = rand_spread(y, 2);
+		x1 = rand_spread(x, 2);
 
-		/* Must be an empty floor grid */
-		if (!clean_grid(y1, x1)) continue;
+		/* Must be a legal grid */
+		if (!in_bounds(y1, x1)) continue;
+		
+		/* Must be a clean floor grid */
+		if (!clean_grid_bold(y1, x1)) continue;
 
 		/* Must be legal, must be visible */
 		if (!los(y, x, y1, x1)) continue;
 
-		/* Place an Item */
-		if (do_item && do_gold && (randint(2) == 1)) {
-		    place_object(y1, x1);
+		/* Opening a chest */
+		opening_chest = TRUE;
+
+		/* The "pval" of a chest is how "good" it is */
+		object_level = i_ptr->pval;
+
+		/* Place an Item or Gold */
+		if (do_gold && (randint(2) == 1)) {
+		    place_gold(y1, x1);
 		}
 		else if (do_item) {
 		    place_object(y1, x1);
 		}
-		else {
+		else if (do_gold) {
 		    place_gold(y1, x1);
 		}
+
+		/* Reset the object level */
+		object_level = dun_level;
+		
+		/* No longer opening a chest */
+		opening_chest = FALSE;
 
 		/* Actually display the object's grid */
 		lite_spot(y1, x1);
@@ -796,12 +790,6 @@ static void chest_death(int y, int x, inven_type *i_ptr)
 		break;
 	    }
 	}
-
-	/* No longer opening a chest */
-	opening_chest = FALSE;
-
-	/* Paranoia -- restore object level */
-	object_level = hack;
     }
 
     /* The chest is now identified */
@@ -895,7 +883,7 @@ void do_cmd_open()
     register inven_type		*i_ptr;
     char			m_name[80];
 
-    
+
     /* Assume we will not continue repeating this command */
     int more = FALSE;
 
@@ -983,12 +971,12 @@ void do_cmd_open()
 
 		/* Draw the door */
 		lite_spot(y, x);
-		
+
 		/* A "blockage" is now gone */
 		forget_lite();
 		update_view();
 		update_lite();
-		
+
 		/* Monsters may have appeared */
 		update_monsters();
 
@@ -1112,14 +1100,14 @@ void do_cmd_close()
 	    /* Hack -- kill the old object */
 	    i_ptr = &i_list[c_ptr->i_idx];
 	    invcopy(i_ptr, OBJ_CLOSED_DOOR);
-	    
+
 	    /* Place it in the dungeon */
 	    i_ptr->iy = y;
 	    i_ptr->ix = x;
 
 	    /* Redisplay */
 	    lite_spot(y, x);
-	    
+
 	    /* Update the view */
 	    update_view();
 	    update_lite();
@@ -1155,22 +1143,22 @@ int twall(int y, int x, int t1, int t2)
 
 	/* Set to TRUE when we have acquired a "floor type" */
 	found = FALSE;
-	    
+
 	/* Hack -- Now make the grid a floor space */
 	if (c_ptr->info & CAVE_LR) {
-	
-	    /* Try to "extend" rooms to arbitrary size */
+
+	    /* Try to "extend" rooms (prevents teleportation into vaults) */
 	    for (i = y - 1; !found && (i <= y + 1); i++) {
 		for (j = x - 1; !found && (j <= x + 1); j++) {
 
-                    /* Notice when we are touching a "room floor" */
-		    if (floor_grid(i, j) &&
-		        (cave[i][j].fval != CORR_FLOOR)) {
+		    /* Notice when we are touching a "room floor" */
+		    if (floor_grid_bold(i, j) &&
+			(cave[i][j].fval != CORR_FLOOR)) {
 
 			/* Steal the floor type */
 			c_ptr->fval = cave[i][j].fval;
 
-			/* Obtain perma-lite from that room */
+			/* XXX XXX Hack -- Obtain perma-lite from that room */
 			if (cave[i][j].info & CAVE_PL) c_ptr->info |= CAVE_PL;
 
 			/* Double break; */
@@ -1181,15 +1169,15 @@ int twall(int y, int x, int t1, int t2)
 	}
 
 
-        /* Otherwise, make it a corridor */
+	/* Otherwise, make it a corridor */
 	if (!found) {
 	    c_ptr->fval = CORR_FLOOR;
-        }
+	}
 
 
 	/* Redisplay the grid */
 	lite_spot(y, x);
-	
+
 	/* Worked */
 	res = TRUE;
     }
@@ -1201,6 +1189,10 @@ int twall(int y, int x, int t1, int t2)
 /*
  * Tunnels through rubble and walls			-RAK-
  * Must take into account: secret doors,  special tools
+ *
+ * Note that tunneling almost always takes time, since otherwise
+ * you can use tunnelling to find monsters.  Also note that you
+ * must tunnel in order to hit monsters in walls or on closed doors.
  */
 void do_cmd_tunnel()
 {
@@ -1224,7 +1216,7 @@ void do_cmd_tunnel()
 
 	/* Notice visibility changes */
 	bool old_floor = FALSE;
-	
+
 	/* Take partial confusion into account */
 	dir = command_dir;
 	confuse_dir(&dir, 0x02);
@@ -1235,27 +1227,15 @@ void do_cmd_tunnel()
 	c_ptr = &cave[y][x];
 
 	/* Check the floor-hood */
-	old_floor = floor_grid(y, x);
+	old_floor = floor_grid_bold(y, x);
 
-	/* Compute the digging ability of player; */
-	/* based on strength, and type of tool used */
-	tabil = p_ptr->use_stat[A_STR];
+	/* And then apply the current weapon type */
 	i_ptr = &inventory[INVEN_WIELD];
 
 	/* Check the validity */
-	if ((c_ptr->fval < MIN_WALL) &&
-	    (c_ptr->i_idx == 0 ||
-		((i_list[c_ptr->i_idx].tval != TV_RUBBLE) &&
-		 (i_list[c_ptr->i_idx].tval != TV_SECRET_DOOR)))) {
-
-	    if (c_ptr->i_idx == 0) {
-		msg_print("Tunnel through what?	 Empty air?!?");
-		free_turn_flag = TRUE;
-	    }
-	    else {
-		msg_print("You can't tunnel through that.");
-		free_turn_flag = TRUE;
-	    }
+	if (old_floor) {
+	    free_turn_flag = TRUE;
+	    msg_print("You see nothing there to tunnel through.");
 	}
 
 	/* A monster is in the way */
@@ -1271,18 +1251,26 @@ void do_cmd_tunnel()
 	    else msg_print("You are too afraid!");
 	}
 
+	/* Hack -- no tunnelling through doors */
+	else if (i_list[c_ptr->i_idx].tval == TV_CLOSED_DOOR) {
+	    msg_print("You cannot tunnel through doors.");
+	}
+
 	/* You cannot dig without a weapon */        
 	else if (i_ptr->tval == TV_NOTHING) {
 	    msg_print("You dig with your hands, making no progress.");
 	}
 
-	/* Penalize heavy weapon */
-	else if (weapon_heavy) {
+	/* Hack -- Penalize heavy weapon */
+	else if (p_ptr->use_stat[A_STR] * 15 < i_ptr->weight) {
 	    msg_print("Your weapon is too heavy for you to dig with.");
 	}
 
 	/* Okay, try digging */
 	else {
+
+	    /* Compute the digging ability of player based on strength */
+	    tabil = p_ptr->use_stat[A_STR];
 
 	    /* Special diggers (includes all shovels, etc) */
 	    if (i_ptr->flags1 & TR1_TUNNEL) {
@@ -1295,13 +1283,13 @@ void do_cmd_tunnel()
 	    else {
 
 		/* Good weapons make digging easier */
-		tabil += (i_ptr->damage[0] * i_ptr->damage[1]);
+		tabil += (i_ptr->dd * i_ptr->ds);
 
-		/* The weapon bonuses (not player bonuses?) help too (XXX bows?) */
+		/* The weapon bonuses help too */
 		tabil += (i_ptr->tohit + i_ptr->todam);
 
 		/* But without a shovel, digging is hard */
-		tabil >>= 1;
+		tabil = tabil / 2;
 	    }
 
 	    /* Regular walls; Granite, magma intrusion, quartz vein  */
@@ -1368,7 +1356,6 @@ void do_cmd_tunnel()
 	    /* Empty air */
 	    else if (c_ptr->i_idx == 0) {
 		msg_print("Tunnel through what?  Empty air?!?");
-		free_turn_flag = TRUE;
 	    }
 
 	    /* Secret doors. */
@@ -1402,13 +1389,12 @@ void do_cmd_tunnel()
 	    /* Anything else is illegal */
 	    else {
 		msg_print("You can't tunnel through that.");
-		free_turn_flag = TRUE;
 	    }
 	}
 
 	/* Notice "blockage" changes */
-	if (old_floor != floor_grid(y, x)) {
-	
+	if (old_floor != floor_grid_bold(y, x)) {
+
 	    /* Update the view, lite, monsters */
 	    update_view();
 	    update_lite();
@@ -1638,9 +1624,6 @@ void do_cmd_bash()
 	    /* Bash a closed door */
 	    if (i_ptr->tval == TV_CLOSED_DOOR) {
 
-		/* Keep bashing */
-		more = TRUE;
-
 		msg_print("You smash into the door!");
 
 		tmp = p_ptr->use_stat[A_STR] + p_ptr->wt / 2;
@@ -1669,7 +1652,7 @@ void do_cmd_bash()
 		    if (p_ptr->confused == 0) {
 			move_player(dir, FALSE);
 		    }
-		    
+
 		    /* Update the view, lite, and monsters */
 		    update_view();
 		    update_lite();
@@ -1678,13 +1661,13 @@ void do_cmd_bash()
 		    /* Check the view */
 		    check_view();
 		}
-		
+
 		else if (randint(150) > p_ptr->use_stat[A_DEX]) {
 		    /* Note: this will cancel "repeat" */
 		    p_ptr->paralysis = 1 + randint(2);
 		    msg_print("You are off-balance.");
 		}
-		
+
 		else {
 		    /* Allow repeated bashing until dizzy */
 		    more = TRUE;
@@ -1831,7 +1814,7 @@ void do_cmd_spike()
 
 /*
  * Throw an object across the dungeon.
- * Flasks of oil do fire damage (very convenient for weak players)
+ * Flasks of oil do "fire damage" (is this still true?)
  * Extra damage and chance of hitting when missiles are used
  * with correct weapon (xbow + bolt, bow + arrow, sling + shot).
  * Rangers (with Bows) and Anyone (with "Extra Shots") get extra shots.
@@ -1851,10 +1834,15 @@ void do_cmd_fire()
 	return;
     }
 
-    if (!get_item(&item_val, "Fire/Throw which one?", 0, inven_ctr-1, 0)) {
-	return;
-    }
+    /* Hack -- allow auto-see */
+    command_wrk = TRUE;
+    
+    /* Get an item */
+    if (!get_item(&item_val, "Fire/Throw which item? ", 0, inven_ctr-1)) return;
 
+    /* Cancel auto-see */
+    command_see = FALSE;
+    
 
     i_ptr = &inventory[item_val];
 
@@ -1907,7 +1895,7 @@ void do_cmd_fire()
     /* always-throwable food/potions (but see "bad items" below)	*/
     else if (((i_ptr->tval == TV_FOOD) || (i_ptr->tval == TV_POTION)) &&
 	     (inven_aware_p(i_ptr)) &&
-	     ((i_ptr->damage[0] * i_ptr->damage[1]) > 1)) {
+	     ((i_ptr->dd * i_ptr->ds) > 1)) {
 	ok_throw = TRUE;
     }
 
@@ -2061,7 +2049,6 @@ void do_cmd_rest(void)
 	p_ptr->rest = command_arg;
 	p_ptr->status |= PY_REST;
 	prt_state();
-	p_ptr->food_digested--;
 
 	prt("Press any key to stop resting...", 0, 0);
 	Term_fresh();
@@ -2157,38 +2144,55 @@ void inscribe(inven_type *i_ptr, cptr str)
 /*
  * Add a comment to an object description.		-CJS- 
  */
-void scribe_object()
+void do_cmd_inscribe(void)
 {
-    int   item_val, j;
+    int   item_val;
     inven_type *i_ptr;
     vtype out_val, tmp_str;
 
-    if (inven_ctr + equip_ctr) {
-	if (get_item(&item_val, "Which one? ", 0, INVEN_ARRAY_SIZE, 0)) {
-	    i_ptr = &inventory[item_val];
-	    objdes(tmp_str, i_ptr, TRUE);
-	    (void)sprintf(out_val, "Inscribing %s.", tmp_str);
-	    msg_print(out_val);
-	    if (i_ptr->inscrip[0]) {
-		(void)sprintf(out_val, "Replace \"%s\" with the inscription: ",
-			      i_ptr->inscrip);
-	    }
-	    else {
-		(void)strcpy(out_val, "Inscription: ");
-	    }
-	    j = 78 - strlen(tmp_str);
-	    if (j > INSCRIP_SIZE - 1) j = INSCRIP_SIZE - 1;
-	    prt(out_val, 0, 0);
-	    if (get_string(out_val, 0, strlen(out_val), j)) {
-		inscribe(i_ptr, out_val);
-	    }
-	}
+
+    /* Free move */
+    free_turn_flag = TRUE; 
+
+    /* Require some objects */
+    if (!inven_ctr && !equip_ctr) {
+	msg_print("You are not carrying anything to inscribe.");
+	return;
+    }
+
+
+    /* Hack -- allow auto-see */
+    command_wrk = TRUE;
+    
+    /* Require a choice */
+    if (!get_item(&item_val, "Inscribe which item? ", 0, INVEN_TOTAL-1)) return;
+
+    /* Cancel auto-see */
+    command_see = FALSE;
+    
+
+    /* Get the item */
+    i_ptr = &inventory[item_val];
+
+    /* Describe the activity */
+    objdes(tmp_str, i_ptr, TRUE);
+    (void)sprintf(out_val, "Inscribing %s.", tmp_str);
+    msg_print(out_val);
+    msg_print(NULL);
+
+    /* Prompt for an inscription */
+    if (i_ptr->inscrip[0]) {
+	(void)sprintf(out_val, "Replace \"%s\" with the inscription: ",
+		      i_ptr->inscrip);
+	prt(out_val, 0, 0);
     }
     else {
-	msg_print("You are not carrying anything to inscribe.");
+	prt("Inscription: ", 0, 0);
     }
-}
 
+    /* Get a new inscription and apply it */
+    if (askfor(out_val, INSCRIP_SIZE - 1)) inscribe(i_ptr, out_val);
+}
 
 
 
@@ -2196,15 +2200,32 @@ void scribe_object()
  * Print out the artifacts seen.
  * This can be used to notice "missed" artifacts.
  *
- * XXX Currently, there is no "convenient" way to access the
- * "base type" of an artifact -- need to make a global array
- * or something.  Perhaps even a "art_types[ART_MAX]" array.
+ * XXX Perhaps this routine induces a blank final screen.
  */
-void artifact_check()
+void do_cmd_check_artifacts(void)
 {
     int i, j, k, t;
 
     char out_val[256];
+
+
+    /* Free turn */
+    free_turn_flag = TRUE;
+
+
+#ifndef ALLOW_CHECK_ARTIFACTS
+    if (!wizard) {
+	msg_print("That command was not compiled.");
+	return;
+    }
+#endif
+
+    /* Hack -- no checking in the dungeon */
+    if (dun_level && !wizard) {
+	msg_print("You need to be in town to check artifacts!");
+	return;
+    }
+
 
     /* Save the screen */
     save_screen();
@@ -2224,15 +2245,15 @@ void artifact_check()
     /* Scan the artifacts */
     for (k = 0; k < ART_MAX; k++) {
 
-	/* Skip "illegal" artifacts */
+	/* Hack -- Skip "illegal" artifacts */
 	if (!v_list[k].name) continue;
-	
+
 	/* Has that artifact been created? */
 	if (v_list[k].cur_num) {
 
 	    int z;
 	    char base_name[80];
-	    
+
 	    /* Hack -- default to "Artifact" */
 	    strcpy(base_name, "Artifact");
 
@@ -2241,9 +2262,11 @@ void artifact_check()
 		if ((k_list[z].tval == v_list[k].tval) &&
 		    (k_list[z].sval == v_list[k].sval)) {
 
-		    /* Make a fake object to steal the name */
+		    /* Hack -- Make a fake object */
 		    inven_type forge;
 		    invcopy(&forge, z);
+		    forge.name1 = k;
+		    known2(&forge);
 		    objdes(base_name, &forge, FALSE);
 		    break;
 		}
@@ -2278,13 +2301,27 @@ void artifact_check()
 
 /*
  * print out the status of uniques - cba 
+ *
+ * XXX This routine may induce a blank final screen.
  */
-void check_uniques()
+void do_cmd_check_uniques()
 {
     int      i, j, k, t;
     bigvtype msg;
 
+	
+    free_turn_flag = TRUE;
+
+#ifndef ALLOW_CHECK_UNIQUES
+    if (!wizard) {
+	msg_print("That command was not compiled.");
+	return;
+    }
+#endif
+
+
     save_screen();
+
     j = 15;
 
     for (i = 1; i < 23; i++) erase_line(i, j - 2);

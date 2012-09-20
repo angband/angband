@@ -20,9 +20,28 @@
 # include <libc.h>
 #else
 # include <stdlib.h>
-# include <fcntl.h>
 #endif
 
+#ifdef SGI
+# include <sys/types.h>
+# include <sys/time.h>
+#endif
+
+#if defined(Pyramid) || defined(NeXT) || defined(sun) || \
+    defined(NCR3K) || defined(linux) || defined(ibm032) || \
+    defined (__osf__)
+# include <sys/time.h>
+#endif
+
+#if !defined(MACINTOSH) && !defined(sgi) && !defined(AMIGA)
+# include <sys/timeb.h>
+#endif
+
+#include <time.h>
+
+#if !defined(NeXT) && !defined(__MWORKS__) && !defined(ATARIST_MWC)
+# include <fcntl.h>
+#endif
 
 /* This does not seem to work... */
 /* #include <ansi.h> */
@@ -31,22 +50,15 @@
 #ifdef MACINTOSH
 # include <unix.h>
 #else
-# include <unistd.h>
-# if !defined(GEMDOS)
+# ifndef __TURBOC__
+#  include <unistd.h>
+# endif
+# ifndef GEMDOS
 #  ifdef VMS
 #   include <types.h>
 #  else
 #   include <sys/types.h>
 #  endif
-# endif
-# if defined(Pyramid) || defined(NeXT) || defined(sun) || \
-     defined(NCR3K) || defined(linux) || defined(ibm032) || defined (__osf__)
-#  include <sys/time.h>
-# else
-#  include <time.h>
-# endif
-# ifndef sgi
-#  include <sys/timeb.h>
 # endif
 #endif
 
@@ -56,10 +68,13 @@
 # include <support.h>
 #endif
 
-#ifdef __TURBOC__
-# include <mem.h>
-#else
-# include <memory.h>
+#if !defined(AMIGA)
+# ifdef __TURBOC__
+#  include <mem.h>
+#  include <io.h>
+# else
+#  include <memory.h>
+# endif
 #endif
 
 #ifdef USG
@@ -69,12 +84,6 @@
    extern int   strlen();
 # else
 #  include <string.h>
-#  include <fcntl.h>
-# endif
-# ifdef __TURBOC__
-   extern void sleep();
-# else
-   extern unsigned sleep();
 # endif
 #else
 # ifdef VMS
@@ -94,7 +103,7 @@
 
 
 
-#ifndef linux
+#if !defined(linux) && !defined(__MWERKS__)
   extern long atol();
 #endif
 

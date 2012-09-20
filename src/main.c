@@ -13,15 +13,6 @@
 #include "angband.h"
 
 
-#if !defined(USG) || !defined(ibm032)
-# include <time.h>
-#endif
-
-#ifdef ultrix
-# include <sys/stat.h>
-#endif
-
-
 /*
  * Hack -- Local "game mode" vars
  */
@@ -32,39 +23,20 @@ static int force_keys_to = FALSE;
 
 
 
-#if defined(MACINTOSH) || defined(_Windows)
 
-/*
- * This is the Macintosh "hook" into "play_game()"
- * See macintosh.c for actual "main()" function 
- */
-
-void play_game_mac (int ng)
-{
-    /* No name (yet) */
-    strcpy(player_name, "");
-
-    /* Hack -- assume wizard permissions */
-    can_be_wizard = TRUE;
-
-    /* Hack -- extract a flag */
-    new_game = ng;
-
-    /* Play a game */
-    play_game();
-}
-
-#else /* MACINTOSH */
+#if !defined(MACINTOSH) && !defined(_Windows)
 
 /*
  * Unix machines need to "check wizard permissions"
  */
 static bool is_wizard(int uid)
 {
-    FILE *fp;
-    char  buf[100];
+    int		test;
+    FILE	*fp;
+    char	buf[100];
 
-    int   test = FALSE;
+    bool allow = FALSE;
+
 
     /* Open the wizard file */
     fp = my_tfopen(ANGBAND_WIZ, "r");
@@ -73,22 +45,17 @@ static bool is_wizard(int uid)
     if (!fp) return (FALSE);
 
     /* Scan the wizard file */
-    while (fgets(buf, sizeof(buf), fp)) {
-	if (buf[0] != '#') {
-	    if (sscanf(buf, "%d", &test)) {
-		if (test == uid) {
-		    test = TRUE;
-		    break;
-		}
-	    }
-	}
+    while (!allow && fgets(buf, sizeof(buf), fp)) {
+	if (buf[0] == '#') continue;
+	if (sscanf(buf, "%d", &test) != 1) continue;
+	if (test == uid) allow = TRUE;
     }
 
     /* Close the file */
     fclose(fp);
 
-    /* Return TRUE if found */
-    return (test);
+    /* Result */
+    return (allow);
 }
 
 
@@ -98,13 +65,13 @@ static bool is_wizard(int uid)
 static bool name_okay(cptr s)
 {
     cptr a;
-    
+
     /* Cannot be too long */
     if (strlen(s) > 15) {
 	plog_fmt("The name '%s' is too long for Angband", s);
 	return (FALSE);
     }
-    
+
     /* Cannot contain "icky" characters */
     for (a = s; *a; a++) {
 
@@ -130,8 +97,10 @@ static void quit_hook(cptr s)
     /* Close the high score file */
     nuke_scorefile();
 
-    /* Shut down the terminal */
-    Term_nuke();
+    /* Shut down the term windows */
+    if (term_choice) term_nuke(term_choice);
+    if (term_recall) term_nuke(term_recall);
+    if (term_screen) term_nuke(term_screen);
 }
 
 
@@ -141,12 +110,9 @@ static void quit_hook(cptr s)
 int main(int argc, char *argv[])
 {
     bool done = FALSE;
-    
+
     /* Dump score list (num lines)? */
     int show_score = 0;
-
-    /* Remove score (which one)? */
-    int kill_score = 0;
 
 #ifndef __MINT__
 #ifdef CHECK_LOAD
@@ -160,7 +126,7 @@ int main(int argc, char *argv[])
 
     /* Save the "program name" */
     argv0 = argv[0];
-    
+
 
 #ifndef SET_UID
 # if !defined(MSDOS) && !defined(__EMX__)
@@ -232,8 +198,8 @@ int main(int argc, char *argv[])
 	    break;
 	  case 'O':
 	  case 'o':
-	    /* rogue_like_commands may be set in load_player(), so delay this
-	       until after read savefile if any */
+	    /* rogue_like_commands may be set in load_player() */
+	    /* so delay this until after read savefile if any */
 	    force_rogue_like = TRUE;
 	    force_keys_to = FALSE;
 	    break;
@@ -246,11 +212,7 @@ int main(int argc, char *argv[])
 	  case 's':
 	    show_score = atoi(&argv[0][2]);
 	    if (show_score <= 0) show_score = 10;
-	  case 'D':
-	  case 'd':
-	    if (!can_be_wizard) goto usage;
-	    kill_score = atoi(&argv[0][2]);
-	    if (kill_score <= 0) show_score = 10;
+	    break;
 	  case 'F':
 	  case 'f':
 	    if (!can_be_wizard) goto usage;
@@ -276,33 +238,31 @@ int main(int argc, char *argv[])
 	    if (!argv[0][2]) goto usage;
 	    strcpy(player_name, &argv[0][2]);
 	    break;
+	  case 'x':
+	  case 'X':
+	    ANGBAND_A_LIST = &argv[0][2];
+	    break;
 
 	  default:
 	  usage:
 
 	    /* Note -- the Term is NOT initialized */
-	    
+	    puts("Usage: angband [-nor] [-s<num>] [-u<name>] [-x<file>]");
+	    puts("  n       Start a new character");
+	    puts("  o       Use original command set");
+	    puts("  r       Use the \"rogue-like\" command set");
+	    puts("  s<num>  Show high scores.  Show <num> scores, or first 10");
+	    puts("  u<name> Play with your <name> savefile");
+	    puts("  x<file> Parse the attr/char info in the file <file>");
+	    puts("Each option must be listed separately (ie '-r -n', not '-rn')");
+
+	    /* Extra wizard options */
 	    if (can_be_wizard) {
-		puts("Usage: angband [-afnorw] [-u<name>] [-s<num>] [-d<num>] [-p<uid>]");
+		puts("Extra wizard options: [-afw] [-p<uid>]");
 		puts("  a       Activate \"peek\" mode");
-		puts("  d<num>  Delete high score number <num>");
 		puts("  f       Enter \"fiddle\" mode");
-		puts("  n       Start a new character");
-		puts("  o       Use original command set");
 		puts("  p<num>  Pretend to have the player uid number <num>");
-		puts("  r       Use the \"rogue-like\" command set");
-		puts("  s<num>  Show high scores.  Show <num> scores, or first 10");
-		puts("  u<name> Play with your <name> savefile");
 		puts("  w       Start in wizard mode");
-		puts("Each option must be listed separately (ie '-r -n', not '-rn')");
-	    }
-	    else {
-		puts("Usage: angband [-nor] [-s<num>] [-u<name>]");
-		puts("  n       Start a new character");
-		puts("  o       Use original command set");
-		puts("  r       Use the \"rogue-like\" command set");
-		puts("  s<num>  Show high scores.  Show <num> scores, or first 10");
-		puts("  u<name> Play with your <name> savefile");
 		puts("Each option must be listed separately (ie '-r -n', not '-rn')");
 	    }
 
@@ -319,7 +279,7 @@ int main(int argc, char *argv[])
     /* Attempt to use the "main-ibm.c" support */
     if (!done) {
 	extern errr init_ibm(void);
-        if (0 == init_ibm()) done = TRUE;
+	if (0 == init_ibm()) done = TRUE;
     }
 #endif
 
@@ -327,23 +287,38 @@ int main(int argc, char *argv[])
     /* Attempt to use the "main-emx.c" support */
     if (!done) {
 	extern errr init_emx(void);
-        if (0 == init_emx()) done = TRUE;
+	if (0 == init_emx()) done = TRUE;
     }
 #endif
 
-    /* XXX Default to "X11" if available -- should have a "command line choice" */
+    /* XXX Default to "X11" if available XXX */
 
 #ifdef USE_X11
     /* Attempt to use the "main-x11.c" support */
     if (!done) {
-	extern errr init_x11(cptr, cptr);
-	/* Note that a "warning" will be produced if there is no */
-	/* Display to open.  This will annoy "curses" users, I assume. */
-        if (0 == init_x11("", USE_X11_FONT)) done = TRUE;
+	extern errr init_x11(void);
+	if (0 == init_x11()) done = TRUE;
     }
 #endif
 
-#ifdef USE_CURSES
+#ifdef USE_GCU
+    /* Attempt to use the "main-gcu.c" support */
+    if (!done) {
+	extern errr init_gcu(void);
+	if (0 == init_gcu()) done = TRUE;
+    }
+#endif
+
+#ifdef USE_NCU
+    /* Attempt to use the "main-ncu.c" support */
+    if (!done) {
+	extern errr init_ncu(void);
+	/* When "init_ncu()" fails, it quits (?) */
+	if (0 == init_ncu()) done = TRUE;
+    }
+#endif
+
+#ifdef USE_CUR
     /* Attempt to use the "main-cur.c" support */
     if (!done) {
 	extern errr init_cur(void);
@@ -362,24 +337,18 @@ int main(int argc, char *argv[])
 #endif
 
 
-    /* Set up the Terminal (using whatever was installed above) */
-    Term_init();
-
     /* Tell "quit()" to call "Term_nuke()" */
     quit_aux = quit_hook;
-    
 
-    /* Handle "delete score" requests */
-    if (kill_score > 0) {
-	delete_entry(kill_score);
-	quit(NULL);
-    }
 
     /* Handle "score list" requests */
     if (show_score > 0) {
 	display_scores(0, show_score);
 	quit(NULL);
     }
+
+    /* XXX XXX Verify the "player name" */
+    if (streq(player_name, "")) strcpy(player_name, "PLAYER");
 
 #ifdef SAVEFILE_USE_UID
     /* Load the savefile name */
@@ -400,10 +369,10 @@ int main(int argc, char *argv[])
     /* Show news file */
     show_news();
 
-    /* Label the task (can take a while) */
-    prt("[Initializing arrays...]", 23, 20);
-    Term_fresh();
+    /* Initialize the arrays */
     init_some_arrays();
+    
+    /* Wait for response */
     pause_line(23);
 
     /* Call the main function */
@@ -413,7 +382,7 @@ int main(int argc, char *argv[])
     return (0);
 }
 
-#endif /* MACINTOSH */
+#endif
 
 
 
@@ -428,18 +397,6 @@ static void player_outfit()
     register int i, j;
     inven_type inven_init;
     inven_type *i_ptr = &inven_init;
-
-
-    /* No items */
-    inven_ctr = equip_ctr = 0;
-
-    /* No weight */
-    inven_weight = 0;
-
-    /* Clear the inventory */
-    for (i = 0; i < INVEN_ARRAY_SIZE; i++) {
-	invcopy(&inventory[i], OBJ_NOTHING);
-    }
 
 
     /* Give the player some food */
@@ -467,13 +424,16 @@ static void player_outfit()
 }
 
 
+
 /*
  * Actually play a game
  */
 void play_game()
 {
+    int i;
     int generate;
     int result = FALSE;
+
 
     /* Hack -- turn off the cursor */
     Term_hide_cursor();
@@ -499,10 +459,8 @@ void play_game()
     if (!new_game) result = load_player(&generate);
 
     /* Enter wizard mode AFTER "resurrection" (if any) is complete */
-    if (to_be_wizard) {
-	/* Enter wizard mode or forget about it */
-	if (!enter_wiz_mode()) to_be_wizard = FALSE;
-    }
+    if (to_be_wizard && !enter_wiz_mode()) to_be_wizard = FALSE;
+
 
     /* See above */
     if (!new_game && result) {
@@ -523,16 +481,14 @@ void play_game()
 	/* Force "level generation" */
 	generate = TRUE;
 
-        /* Give him some stuff */
-        player_outfit();
+	/* Give him some stuff */
+	player_outfit();
 
 	/* Init the stores */
 	store_init();
 
-	/* Maintain the stores (three times) */
-	store_maint();
-	store_maint();
-	store_maint();
+	/* Maintain the stores (ten times) */
+	for (i = 0; i < 10; i++) store_maint();
     }
 
     /* Reset "rogue_like_commands" */
@@ -560,23 +516,11 @@ void play_game()
     character_generated = 1;
 
 
-    /* Loop till dead, or exit			*/
+    /* Loop till dead */
     while (!death) {
 
 	/* Process the level */
 	dungeon();
-
-	/* check for eof here, see inkey() in io.c */
-	/* eof can occur if the process gets a HANGUP signal */
-	if (eof_flag) {
-
-	    (void) strcpy(died_from, "(end of input: saved)");
-	    if (save_player()) quit(NULL);
-
-	    /* should not reach here, by if we do, this guarantees exit */
-	    (void) strcpy(died_from, "unexpected eof");
-	    death = TRUE;
-	}
 
 	/* Make the New level */
 	if (!death) generate_cave();
@@ -584,6 +528,27 @@ void play_game()
 
     /* Display death, Save the game, and exit */
     exit_game();
+}
+
+
+/*
+ * This is a "hook" into "play_game()" for "menu based" systems.
+ *
+ * See "main-mac.c" and other files for actual "main()" functions 
+ */
+void play_game_mac(int ng)
+{
+    /* No name (yet) */
+    strcpy(player_name, "");
+
+    /* Hack -- assume wizard permissions */
+    can_be_wizard = TRUE;
+
+    /* Hack -- extract a flag */
+    new_game = ng;
+
+    /* Play a game */
+    play_game();
 }
 
 

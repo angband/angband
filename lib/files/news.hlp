@@ -1,6 +1,6 @@
 
                         ***********************
-                        **   Angband 2.7.1   **
+                        **   Angband 2.7.4   **
                         ***********************
 
         Based on Umoria: Copyright (c) 1985 Robert Alan Koeneke
@@ -15,8 +15,8 @@
         Current Maintainer: Ben Harrison
         Email Address:      benh@linc.cis.upenn.edu
         
-This beta version of Angband 2.7.1 can be viewed as a (heavily) modified copy
+This beta version of Angband 2.7.4 can be viewed as a (heavily) modified copy
 of MacAngband 2.6.1.  Thus there are pieces derived from many places, such as
 the "net", PC Angband 1.40, UMoria 5.5, and FAngband.
 
-This version "works" on Macintosh/Unix/Linux/Curses/X11/etc.
+This version "works" on Macintosh/Unix/Linux/Curses/X11/IBM/etc.

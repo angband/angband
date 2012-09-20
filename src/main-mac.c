@@ -5,10 +5,14 @@
 /*
  * Adapted from "MacAngband 2.6.1" by Keith Randall
  *
- * See "term.c" for information on the "generic terminal" that we
- * support via "screen_w" and the "Term_xxx()" routines.
+ * See "term.c" for info on the "generic terminal" that we support.
  *
- * See "recall.c" for info on the "recall window".
+ * See "recall.c"/"moria1.c" for info on the "recall"/"choice" windows.
+ *
+ * Note that this file is the only one that requires "Non-ANSI"
+ * extensions to C, in particular, the "Think C Language Extensions"
+ * must be on, and the "enums are always ints" must be off.  Both of
+ * these are to allow the "Events.h" header file to be parsed.
  */
 
 #include "angband.h"
@@ -33,6 +37,70 @@
 
 
 /*
+ * Idea from "Maarten Hazewinkel <mmhazewi@cs.ruu.nl>"
+ * Optimize (non-blocking) calls to "CheckEvents(TRUE)" 
+ */
+#define EVENT_TICKS 6
+
+
+/*
+ * Forward declare
+ */
+typedef struct _term_data term_data;
+
+/*
+ * Extra "term" data
+ */
+struct _term_data {
+
+  term		t;
+  
+  Rect		r;
+
+  cptr		s;
+  
+  WindowPtr	w;
+
+  int		extra;
+  
+  int		rows;
+  int		cols;
+  
+  int		size_wid;
+  int		size_hgt;
+
+  int		size_ow1;
+  int		size_oh1;
+  int		size_ow2;
+  int		size_oh2;
+  
+  int		mapped;
+  int		font_id;
+  int		font_size;
+  int		font_face;
+
+  int		font_wid;
+  int		font_hgt;
+  int		font_o_x;
+  int		font_o_y;
+};
+
+
+
+
+/*
+ * Forward declare -- see below
+ */
+static bool CheckEvents(bool scanning);
+
+
+/*
+ * Hack -- request screen to be mapped
+ */
+static int use_screen_win = TRUE;
+
+
+/*
  * Hack -- game in progress
  */
 static int game_in_progress = 0;
@@ -51,12 +119,6 @@ static int rgbcolor = 0;
 
 
 /*
- * Hack -- don't reset scroll while scrolling
- */
-static int scrolling = FALSE;
-
-
-/*
  * The location of the "lib" folder
  */
 static short volhint;
@@ -71,90 +133,24 @@ static FILE *fff;
 
 
 /*
- * Reduce number of "SetPort()" commands
+ * Only do "SetPort()" when needed
  */
 static WindowPtr active = NULL;
 
 
-/*
- * Three main windows
- */
-static WindowPtr screen_w;
-static WindowPtr recall_w;
-static WindowPtr choice_w;
 
 /*
- * Some rectangles
- */
-static Rect screen_r;
-static Rect recall_r;
-static Rect choice_r;
+ * Some information for every "term" window
+ */ 
+term_data screen;
+term_data recall;
+term_data choice;
 
 
 /*
- * Two scroll bars
+ * Note when "open"/"new" become valid
  */
-static ControlHandle recall_sb;
-static ControlHandle choice_sb;
-
-
-/*
- * Font info
- */
- 
-static int screen_font_id;
-static int screen_font_size;
-static int screen_font_bold;
-
-static int recall_font_id;
-static int recall_font_size;
-static int recall_font_bold;
-
-static int choice_font_id;
-static int choice_font_size;
-static int choice_font_bold;
-
-
-/*
- * Font size info
- */
- 
-static int screen_font_wid;
-static int screen_font_hgt;
-static int screen_font_o_x;
-static int screen_font_o_y;
-
-static int recall_font_wid;
-static int recall_font_hgt;
-static int recall_font_o_x;
-static int recall_font_o_y;
-
-static int choice_font_wid;
-static int choice_font_hgt;
-static int choice_font_o_x;
-static int choice_font_o_y;
-
-
-/*
- * Window size info
- */
-  
-static int screen_rows = 24;
-static int screen_cols = 80;
-static int screen_size_wid;
-static int screen_size_hgt;
-
-static int recall_rows = 8;
-static int recall_cols = 80;
-static int recall_size_wid;
-static int recall_size_hgt;
-
-static int choice_rows = 5;
-static int choice_cols = 80;
-static int choice_size_wid;
-static int choice_size_hgt;
-
-
+static bool initialized = FALSE;
 
 
 
@@ -168,6 +164,8 @@ static int choice_size_hgt;
  * Colors 8 to 15 are basically "enhanced" versions of Colors 0 to 7.
  * Note that on B/W machines, all non-zero colors can be white (on black).
  *
+ * Note that "Light Red" is now really "light red", not "purple".
+ *
  * Note that all characters are assumed to be drawn on a black background.
  * This may require calling "Term_wipe()" before "Term_text()", etc.
  *
@@ -178,7 +176,7 @@ static RGBColor mac_clr[16] = {
     {65535,65535,65535},	/* 0 White */
     {32768,32768,32768},        /* 13 Gray */
     {65535,25738,652},		/* 2 Orange */
-    {56683,2242,1698},		/* 3 Red */
+    {45000,2000,2000},		/* 3 Red */
     {0,25775,4528},		/* 9 Green */
     {0,0,54272},		/* 6 Blue */
     {22016,11421,1316},		/* 10 Brown */
@@ -186,11 +184,12 @@ static RGBColor mac_clr[16] = {
     {49152,49152,49152},	/* 12 Light Gray */
     {18147,0,42302},		/* 5 Purple */
     {64512,62333,1327},		/* 1 Yellow */
-    {62167,2134,34028},		/* 4 Pink */
+    {60000,2000,2000},		/* 4 Light Red */
     {7969,46995,5169},		/* 8 Light Green */
     {577,43860,60159},		/* 7 Light Blue */
     {37079,29024,14900}		/* 11 Light Brown */
 };
+
 
 /*
  * The "term.c" Color Palette (for older machines), see names above
@@ -215,6 +214,10 @@ static int mac_pal_clr[16] = { 1,0,14,3,4,10,7,11,15,13,6,2,5,9,8,12 };
  */
 static void setcolor(int n)
 {
+    /* Hack -- Stop illegal attrs */
+    if ((n < 0) || (n >= 16)) n = TERM_RED;
+
+    /* Activate the color */
     if (rgbcolor==2)
     {
 	RGBForeColor(&mac_clr[n]);
@@ -231,14 +234,15 @@ static void setcolor(int n)
  */
 static void activate(WindowPtr w)
 {
-    /* Only do something if needed */
-    if (active != w)
-    {
-	SetPort(w);
-	active = w;
-    }
-}
+    /* Ignore "silly" effects */
+    if (active == w) return;
 
+    /* Activate */    
+    if (w) SetPort(w);
+
+    /* Remember */
+    active = w;
+}
 
 
 /*
@@ -263,282 +267,479 @@ static void mac_warning(cptr warning)
 }
 
 
-
-
-
-
 /*
- * Initialize the screen
+ * Delay for "x" milliseconds
  */
-static void screen_init()
+void delay(int x)
 {
-    /* XXX Force-Expose the window */
-    InvalRect(&screen_w->portRect);
-
-    /* Choose "white" color */
-    setcolor(COLOR_WHITE);
-
-    /* Erase the whole window */
-    EraseRect(&screen_w->portRect);
-
-    /* XXX The main window is now up to date */
-    ValidRect(&screen_w->portRect);
+    long t; t=TickCount(); while (TickCount() < t + (x*60)/1000);
 }
 
 
+
+
+
+
+
+/*** Hooks for the "term.c" functions ***/
+
 /*
- * Redraw the screen
+ * Hack -- redraw a term_data
  */
-static void screen_draw()
+static void term_data_redraw(term_data *td)
 {
-    /* Redraw the screen */
+    term *old = Term;
+
+    Rect r;
+    
+    /* Activate the term */
+    Term_activate(&td->t);
+
+    /* No clipping */
+    ClipRect(&td->w->portRect);
+
+    /* Erase the window */
+    EraseRect(&td->w->portRect);
+    
+    /* Frame the window in white */
+    setcolor(TERM_WHITE);
+    MoveTo(0, 0);
+    LineTo(0, td->size_hgt-1);
+    LineTo(td->size_wid-1, td->size_hgt-1);
+    LineTo(td->size_wid-1, 0);
+    
+    /* Clip to the new size */
+    r.left = td->w->portRect.left + td->size_ow1;
+    r.top = td->w->portRect.top + td->size_oh1;
+    r.right = td->w->portRect.right - td->size_ow2;
+    r.bottom = td->w->portRect.bottom - td->size_oh2;
+    ClipRect(&r);
+
+    /* Redraw the contents */
     Term_redraw();
 
-    /* Flush the output */
-    Term_fresh();
-}
-
-
-
-
-
-/*
- * Size the Recall Window.  React to a "new" size.
- */
-static void recall_grow()
-{
-    /* Extract the columns */
-    recall_cols = ((recall_w->portRect.right-15-4) / recall_font_wid);
-
-    /* Hack -- set that as the maximum */
-    recall_set_width(recall_cols);
-}
-
-
-
-/*
- * Draw the Recall Window.  Draw the scroll bar and everything.
- */
-static void recall_draw()
-{
-    int i;
-    int start;
-    Rect r;
-    int cols,rows;
-
-    WindowPtr old = active;
-
-    /* Make sure that the recall window is active */
-    activate(recall_w);
-
-    DrawControls(recall_w);
-    r=recall_w->portRect;
-    r.left = r.right-15;
-    ClipRect(&r);
-    DrawGrowIcon(recall_w);
-    ClipRect(&recall_w->portRect);
-
-    start = GetCtlValue(recall_sb);
-
-    r=recall_w->portRect;
-    r.right-=15;
-    EraseRect(&r);
-    cols = (r.right-4) / recall_font_wid;
-    rows = r.bottom / recall_font_hgt;
-    if (start + rows > 24) rows = 24 - start;
-
-    /* Do not reset the scrollbar */
-    scrolling = 1;
-
-    /* Redraw the contents */
-    recall_again();
-
-    /* All done */
-    scrolling = 0;
-
-    /* Restore the old active window */
-    activate(old);
+    /* Restore the old term */
+    Term_activate(old);
 }
 
 
 /*
- * Make sure the recall window is where we thought it was
+ * Hack -- react to a new size
  */
-static void recall_note()
+static void term_data_resize(term_data *td)
 {
-    static last_note = 0;
-    
-    /* Check the note */
-    if (last_note == use_recall_win) return;
-    
-    /* Update */
-    if (use_recall_win)
+    /* Actually resize the window */
+    SizeWindow(td->w, td->size_wid, td->size_hgt, 0);
+
+#if 0
+    /* XXX Unknown result */
+    ClipRect(&td->w->portRect);
+
+    /* Hack -- go ahead and erase */
+    EraseRect(&td->w->portRect);
+
+	/* Erase the window */
+	SizeWindow(w, LoWord(newsize), HiWord(newsize), 1);
+	ClipRect(&w->portRect);
+	EraseRect(&w->portRect);
+
+	/* Redraw Contents */
+	term_data_redraw(&recall);
+
+	/* we've drawn it all -- no need to redraw */
+	ValidRect(&w->portRect);
+#endif
+
+    /* This window needs to be redraw */
+    InvalRect(&td->w->portRect);
+}
+
+
+/*
+ * React to changing global options
+ */
+static void Term_xtra_mac_react()
+{
+    /* Show */
+    if (use_screen_win && !screen.mapped)
     {
-	ShowWindow(recall_w);
-	if (FrontWindow()==recall_w)
-	{
-	    HiliteControl(recall_sb,0);
-	}
-	else {
-	    HiliteControl(recall_sb,255);
-	}
+	/* Mapped */
+	screen.mapped = TRUE;
+	
+	/* Show the window */
+	ShowWindow(screen.w);
 
-	/* Resize and Redraw */
-	recall_grow();
-	recall_draw();
+	/* Redraw the window */
+	term_data_redraw(&screen);
+    }
+
+    /* Hide */
+    if (!use_screen_win && screen.mapped)
+    {
+	/* Not Mapped */
+	screen.mapped = FALSE;
+	
+	/* Hide the window */
+	HideWindow(screen.w);
+    }
+
+
+    /* Show */
+    if (use_recall_win && !recall.mapped)
+    {
+	/* Mapped */
+	recall.mapped = TRUE;
+	
+	/* Show the window */
+	ShowWindow(recall.w);
+
+	/* Redraw the window */
+	term_data_redraw(&recall);
+    }
+
+    /* Hide */
+    if (!use_recall_win && recall.mapped)
+    {
+	/* Not Mapped */
+	recall.mapped = FALSE;
+	
+	/* Hide the window */
+	HideWindow(recall.w);
+    }
+
+
+    /* Show */
+    if (use_choice_win && !choice.mapped)
+    {
+	/* Mapped */
+	choice.mapped = TRUE;
+	
+	/* Show the window */
+	ShowWindow(choice.w);
+
+	/* Redraw the window */
+	term_data_redraw(&choice);
+    }
+
+    /* Hide */
+    if (!use_choice_win && choice.mapped)
+    {
+	/* Not Mapped */
+	choice.mapped = FALSE;
+	
+	/* Hide the window */
+	HideWindow(choice.w);
+    }
+}
+
+
+
+
+
+
+
+
+/*** Function hooks needed by "Term" ***/
+
+
+/*
+ * Initialize a new Term
+ */
+static void Term_init_mac(term *t)
+{
+    term_data *td = (term_data*)(t->data);
+
+    Str255 title;
+
+    /* Extract the title */
+    strcpy((char*)(title+1), td->s);
+    title[0] = strlen(td->s);
+    
+#if 0
+
+    /* Make the window */
+    if (rgbcolor)
+    {
+	td->w = NewCWindow(0,&td->r,title,true,noGrowDocProc,(WindowPtr)-1,0,0);
     }
     else
     {
-	HideWindow(recall_w);
+	td->w = NewWindow(0,&td->r,title,true,noGrowDocProc,(WindowPtr)-1,0,0);
     }
 
-    /* Save the value */
-    last_note = use_recall_win;
-}
+#else
 
-
-/*
- * Initialize the recall window
- */
-static void recall_init()
-{
-    int i, j;
-
-    /* React to the size */
-    recall_grow();
-
-    /* Not scrolling */
-    scrolling = 0;
-
-    /* Wipe and clear the recall window */
-    recall_clear();
-
-    /* Force-Expose the recall windows */
-    InvalRect(&recall_w->portRect);
-}
-
-
-
-
-/*
- * Size the Choice Window.  React to a "new" size.
- * XXX Go to a lot of trouble to accomidate the scroll bar.
- * Should probably just require the user to resize the window.
- */
-static void choice_grow()
-{
-    /* Extract the columns */
-    choice_cols = ((choice_w->portRect.right-15-4) / choice_font_wid);
-
-#if 0
-    /* Hack -- set that as the maximum */
-    choice_set_width(choice_cols);
-#endif
-
-}
-
-
-/*
- * Draw the Choice Window.  Draw the scroll bar and everything.
- */
-static void choice_draw()
-{
-    int i;
-    int start;
-    Rect r;
-    int cols,rows;
-
-    WindowPtr old = active;
-
-    /* Make sure that the choice window is active */
-    activate(choice_w);
-
-    DrawControls(choice_w);
-    r=choice_w->portRect;
-    r.left = r.right-15;
-    ClipRect(&r);
-    DrawGrowIcon(choice_w);
-    ClipRect(&choice_w->portRect);
-
-    start = GetCtlValue(recall_sb);
-
-    r=choice_w->portRect;
-    r.right-=15;
-    EraseRect(&r);
-    cols = (r.right-4) / recall_font_wid;
-    rows = r.bottom/recall_font_hgt;
-    if (start + rows > 24) rows = 24 - start;
-
-    /* Do not reset the scrollbar */
-    scrolling = 1;
-
-#if 0
-    /* Redraw the contents */
-    roff_choice(-1);
-#endif
-
-    /* All done */
-    scrolling = 0;
-
-    /* Restore the old active window */
-    activate(old);
-}
-
-
-/*
- * Make sure the choice window is where we thought it was
- */
-static void choice_note()
-{
-    static last_note = 0;
-    
-    /* Check the note */
-    if (last_note == use_choice_win) return;
-    
-    /* Update */
-    if (use_choice_win)
+    /* Make the window */
+    if (rgbcolor)
     {
-	ShowWindow(choice_w);
-	if (FrontWindow()==choice_w)
-	{
-	    HiliteControl(recall_sb,0);
-	}
-	else {
-	    HiliteControl(recall_sb,255);
-	}
-
-	/* Resize and Redraw */
-	choice_grow();
-	choice_draw();
+	td->w = NewCWindow(0,&td->r,title,td->mapped,documentProc,(WindowPtr)-1,1,0L);
     }
     else
     {
-	HideWindow(choice_w);
+	td->w = NewWindow(0,&td->r,title,td->mapped,documentProc,(WindowPtr)-1,1,0L);
     }
 
-    /* Save the value */
-    last_note = use_choice_win;
+#endif
+
+    /* Activate the window */
+    activate(td->w);
+
+    /* Activate the font */
+    TextFont(td->font_id);
+    TextSize(td->font_size);
+    TextFace(td->font_face);
+
+    /* Prepare the colors */
+    if (rgbcolor==2)
+    {
+	RGBColor c;
+	c.red=0;
+	c.green=0;
+	c.blue=0;
+	RGBBackColor(&c);
+	c.red=0xFFFF;
+	c.green=0xFFFF;
+	c.blue=0xFFFF;
+	RGBForeColor(&c);
+    }
+    else if (rgbcolor==1)
+    {
+	PaletteHandle p;
+	p=GetNewPalette(128);
+	NSetPalette(td->w,p,pmAllUpdates);
+	BackColor(blackColor);
+	ForeColor(whiteColor);
+    }
+    else
+    {
+	BackColor(blackColor);
+	ForeColor(whiteColor);
+    }
+
+
+    /* Important -- Use "white" by default */
+    setcolor(TERM_WHITE);
+
+
+    /* Erase the whole window */
+    EraseRect(&td->w->portRect);
+
+    /* Force-Expose the window */
+    InvalRect(&td->w->portRect);
+}
+
+
+
+/*
+ * Nuke an old Term
+ */
+static void Term_nuke_mac(term *t)
+{
+    /* XXX */
+}
+
+
+
+/*
+ * Scan for events (do not block)
+ */
+static errr Term_xtra_mac_check(int v)
+{
+    int res;
+    
+    term *old = Term;
+    
+    /* Hack -- all keypresses go to the screen */
+    Term_activate(term_screen);
+    
+    /* Check for one event */
+    res = (CheckEvents(TRUE) ? 0 : 1);
+
+    /* Hack -- restore the Term */
+    Term_activate(old);
+    
+    /* Hack -- check windows */
+    Term_xtra_mac_react();
+
+    /* Success */
+    return (res);
 }
 
 
 /*
- * Initialze the choice window
+ * Scan for events (block)
  */
-static void choice_init()
+static errr Term_xtra_mac_event(int v)
 {
-    int i, j;
+    term *old = Term;
+    
+    /* Hack -- all keypresses go to the screen */
+    Term_activate(term_screen);
+    
+    /* Block until an event occurs */
+    while (!CheckEvents(FALSE));
 
-    /* React to the size */
-    choice_grow();
+    /* Hack -- restore the Term */
+    Term_activate(old);
+    
+    /* Hack -- check windows */
+    Term_xtra_mac_react();
 
-    /* Not scrolling */
-    scrolling = 0;
+    /* Success */
+    return (0);
+}
 
-    /* Wipe and clear the choice window */
-    choice_clear();
 
-    /* Force-Expose the choice windows */
-    InvalRect(&choice_w->portRect);
+/*
+ * Handle change in the "level"
+ */
+static errr Term_xtra_mac_level(int v)
+{
+    term_data *td = (term_data*)(Term->data);
+    
+    /* Hack -- Handle "software activate" */
+    if (v == TERM_LEVEL_SOFT_OPEN) activate(td->w);
+
+    /* Success */
+    return (0);
+}
+
+
+/*
+ * Do a "special thing"
+ */
+static errr Term_xtra_mac(int n, int v)
+{
+    switch (n)
+    {
+	case TERM_XTRA_NOISE: SysBeep(1); return (0);
+	case TERM_XTRA_CHECK: return (Term_xtra_mac_check(v));
+	case TERM_XTRA_EVENT: return (Term_xtra_mac_event(v));
+	case TERM_XTRA_LEVEL: return (Term_xtra_mac_level(v)); 
+    }
+
+    /* Oops */
+    return (1);
+}
+
+
+
+/*
+ * Low level graphics (Assumes valid input).
+ * Draw a "cursor" at (x,y), using a "yellow box".
+ * We are allowed to use "Term_grab()" to determine
+ * the current screen contents (for inverting, etc).
+ */
+static errr Term_curs_mac(int x, int y, int z)
+{
+    Rect r;
+    
+    term_data *td = (term_data*)(Term->data);
+
+    /* Cursor is done as a yellow "box" */
+    setcolor(TERM_YELLOW);
+
+    /* Frame the grid */
+    r.left = x * td->font_wid + td->size_ow1;
+    r.right = r.left + td->font_wid;
+    r.top = y * td->font_hgt + td->size_oh1;
+    r.bottom = r.top + td->font_hgt;
+    FrameRect(&r);
+    
+    /* Success */
+    return (0);
+}
+
+
+/*
+ * Low level graphics (Assumes valid input)
+ *
+ * Erase a "block" of characters starting at (x,y), with size (w,h)
+ */
+static errr Term_wipe_mac(int x, int y, int w, int h)
+{
+    Rect r;
+
+    term_data *td = (term_data*)(Term->data);
+
+    /* Erase the block of characters */
+    r.left = x * td->font_wid + td->size_ow1;
+    r.right = r.left + w * td->font_wid;
+    r.top = y * td->font_hgt + td->size_oh1;
+    r.bottom = r.top + h * td->font_hgt;
+    EraseRect(&r);
+    
+    /* Success */
+    return (0);
+}
+
+
+/*
+ * Low level graphics.  Assumes valid input.
+ * Draw several ("n") chars, with an attr, at a given location.
+ */
+static errr Term_text_mac(int x, int y, int n, byte a, cptr s)
+{
+    term_data *td = (term_data*)(Term->data);
+
+    /* Hack -- Stop illegal chars */
+    if (a >= 16) a = TERM_RED;
+
+    /* Erase behind the characters */
+    Term_wipe(x, y, n, 1);
+
+    /* Activate the color */
+    setcolor(a);
+
+    /* Move to the correct location */
+    MoveTo(x * td->font_wid + td->font_o_x + td->size_ow1,
+	   y * td->font_hgt + td->font_o_y + td->size_oh1);
+
+    /* Sometimes Just draw a single character */
+    if (n == 1) DrawChar(s[0]);
+
+    /* Draw the string (will only work for mono-spaced fonts) */
+    else DrawText(s, 0, n);
+    
+    /* Success */
+    return (0);
+}
+
+
+
+
+
+/*
+ * Create and initialize a "term_data" given a title
+ */
+static void term_data_link(term_data *td)
+{
+    term *t = &td->t;
+
+
+    /* Initialize the term */
+    term_init(t, 80, 24, 64);
+
+    /* Prepare the template values */
+    t->soft_cursor = TRUE;
+    t->scan_events = TRUE;
+
+    /* Prepare the init/nuke hooks */
+    t->init_hook = Term_init_mac;
+    t->nuke_hook = Term_nuke_mac;
+    
+    /* Prepare the template hooks */
+    t->xtra_hook = Term_xtra_mac;
+    t->curs_hook = Term_curs_mac;
+    t->wipe_hook = Term_wipe_mac;
+    t->text_hook = Term_text_mac;
+
+    /* Remember where we came from */
+    t->data = (vptr)(td);
+    
+    
+    /* Activate it */
+    Term_activate(t);
 }
 
 
@@ -591,8 +792,7 @@ static void refnum_to_name(char *buf,long refnum,short vrefnum,char *fname)
 	if (pb.ioDrDirID == fsRtDirID) break;
     }
 
-    /* Was: "return &(res[i+1])" */
-
+    /* Extract the result */
     for (j = 0, i++; res[i]; j++, i++) buf[j] = res[i];
     buf[j] = 0;
 }
@@ -628,24 +828,24 @@ int mac_file_character()
 
     if (reply.good)
     {
-        int fc;
+	int fc;
 	GetWDInfo(reply.vRefNum,&vrefnum,&drefnum,&longjunk);
 	refnum_to_name(fullname,drefnum,vrefnum,(char*)reply.fName);
 
-	/* Global flags: use a "TEXT" file */
+	/* Global flags: TeachText "TEXT" file */
 	_ftype='TEXT';
 	_fcreator='ttxt';
 
 	/* File that character */
 	fc = file_character(fullname);
 
-	/* Global flags: use a "SAVE" file */
-	_ftype='SAVE';
+	/* Global flags: Angband "TEXT" file */
+	_ftype='TEXT';
 	_fcreator='A271';
 
 	return (fc);
     }
-    
+
     return(FALSE);
 }
 
@@ -660,7 +860,7 @@ static pascal Boolean foldersonlyfilter(ParmBlkPtr pb, void *junk);
 static pascal Boolean foldersonlyfilter(ParmBlkPtr pb, void *junk)
 {
     FileParam *d=(FileParam*)pb;
-    return( !(d->ioFlAttrib & (1<<4)));
+    return (!(d->ioFlAttrib & (1<<4)));
 }
 
 static pascal short findlibdialoghook(short item, DialogPtr dialog, void *junk);
@@ -669,7 +869,7 @@ static pascal short findlibdialoghook(short item, DialogPtr dialog, void *junk)
     if (item==2) gotlibdir=0;
     if (item!=10) return(item);
 
-    return(sfItemCancelButton);
+    return (sfItemCancelButton);
 }
 
 
@@ -764,27 +964,6 @@ static int find_and_set_lib_dir()
 	    return(1);
 	}
     }
-
-#if 0
-
-    topleft.h=(qd.screenBits.bounds.left+qd.screenBits.bounds.right)/2-344/2;
-    topleft.v=(2*qd.screenBits.bounds.top+qd.screenBits.bounds.bottom)/3-197/2;
-
-    gotlibdir=1;
-    SFPGetFile(topleft,"\pLocate lib directory",foldersonlyfilter,
-	       1,t,findlibdialoghook, &reply, 131, NULL);
-
-    /* Abort? */
-    if (!gotlibdir) return (0);
-
-    GetWDInfo(reply.vRefNum,&vrefnum,&drefnum,&longjunk);
-
-    HSetVol(0,vrefnum,drefnum);
-    CloseWD(reply.vRefNum);
-    return(1); /* found & reset volume/directory */
-
-#endif
-
 }
 
 
@@ -794,24 +973,23 @@ static int find_and_set_lib_dir()
 /*
  * Very simple "preference file" read/write routines
  */
- 
-static short getshort(void)
+
+static int getshort(void)
 {
     short x;
-    if (fscanf(fff, "%d", &x) != 1) return(0);
+    if (fscanf(fff, "%d", &x) != 1) return (0);
     return (x);
 }
 
-static void putshort(short x)
+static void putshort(int x)
 {
     fprintf(fff, "%d\n", x);
 }
 
-
 static long getlong(void)
 {
     long x;
-    if (fscanf(fff,"%ld",&x) != 1) return(0);
+    if (fscanf(fff, "%ld", &x) != 1) return (0);
     return (x);
 }
 
@@ -823,99 +1001,83 @@ static void putlong(long x)
 
 
 /*
- * Get the "size" for the screen
+ * Extract the "font sizing" information
  */
-static void screen_getsize()
+static void term_data_check_font(term_data *td)
 {
     Rect r;
     WindowPtr tmpw;
     FontInfo info;
 
+    /* Remember the old window */
     WindowPtr old = active;
 
+    /* Fake window */
     r.left = r.right = r.top = r.bottom = 0;
     tmpw = NewWindow(0,&r,"\p",false,documentProc,0,0,0);
 
+    /* Activate the "fake" window */
     activate(tmpw);
 
-    TextFont(screen_font_id);
-    TextSize(screen_font_size);
-    TextFace(screen_font_bold);
-    
+    /* Prepare the font */
+    TextFont(td->font_id);
+    TextSize(td->font_size);
+    TextFace(td->font_face);
+
+    /* Extract the font info */
     GetFontInfo(&info);
-    
-    screen_font_wid = CharWidth('@'); /* info.widMax; */
-    screen_font_hgt = info.ascent+info.descent;
-    screen_font_o_x = 0;
-    screen_font_o_y = info.ascent;
 
-    screen_size_wid = screen_cols * screen_font_wid;
-    screen_size_hgt = screen_rows * screen_font_hgt;
+    /* Extract the font sizing values */
+    td->font_wid = CharWidth('@'); /* info.widMax; */
+    td->font_hgt = info.ascent + info.descent;
+    td->font_o_x = 0;
+    td->font_o_y = info.ascent;
 
+    /* Destroy the old window */
     DisposeWindow(tmpw);
 
+    /* Re-activate the old window */
     activate(old);
 }
 
-static void recall_getsize()
+
+/*
+ * Extract the "window sizing" information
+ */
+static void term_data_check_size(term_data *td)
 {
-    Rect r;
-    WindowPtr tmpw;
-    FontInfo info;
+    /* Calculate full window size */
+    td->size_wid = td->cols * td->font_wid + td->size_ow1 + td->size_ow2;
+    td->size_hgt = td->rows * td->font_hgt + td->size_oh1 + td->size_oh2;
 
-    WindowPtr old = active;
+    /* Verify the top */
+    if (td->r.top > qd.screenBits.bounds.bottom - td->size_hgt)
+    {
+	td->r.top = qd.screenBits.bounds.bottom - td->size_hgt;
+    }
 
-    r.left = r.right = r.top = r.bottom = 0;
-    tmpw = NewWindow(0,&r,"\p",false,documentProc,0,0,0);
+    /* Verify the top */
+    if (td->r.top < qd.screenBits.bounds.top + 30)
+    {
+	td->r.top = qd.screenBits.bounds.top + 30;
+    }
 
-    activate(tmpw);
+    /* Verify the left */
+    if (td->r.left > qd.screenBits.bounds.right - td->size_wid)
+    {
+	td->r.left = qd.screenBits.bounds.right - td->size_wid;
+    }
 
-    TextFont(recall_font_id);
-    TextSize(recall_font_size);
-    TextFace(recall_font_bold);
-    
-    GetFontInfo(&info);
+    /* Verify the left */
+    if (td->r.left < qd.screenBits.bounds.left)
+    {
+	td->r.left = qd.screenBits.bounds.left;
+    }
 
-    recall_font_wid = CharWidth('@'); /* info.widMax; */
-    recall_font_hgt = info.ascent+info.descent;
-    recall_font_o_x = 0;
-    recall_font_o_y = info.ascent;
-
-    DisposeWindow(tmpw);
-
-    activate(old);
+    /* Calculate bottom right corner */
+    td->r.right = td->r.left + td->size_wid;
+    td->r.bottom = td->r.top + td->size_hgt;
 }
-
-
-static void choice_getsize()
-{
-    Rect r;
-    WindowPtr tmpw;
-    FontInfo info;
-
-    WindowPtr old = active;
-
-    r.left = r.right = r.top = r.bottom = 0;
-    tmpw = NewWindow(0,&r,"\p",false,documentProc,0,0,0);
-
-    activate(tmpw);
-
-    TextFont(choice_font_id);
-    TextSize(choice_font_size);
-    TextFace(choice_font_bold);
-    
-    GetFontInfo(&info);
-
-    choice_font_wid = CharWidth('@'); /* info.widMax; */
-    choice_font_hgt = info.ascent+info.descent;
-    choice_font_o_x = 0;
-    choice_font_o_y = info.ascent;
-
-    DisposeWindow(tmpw);
-
-    activate(old);
-}
-
 
 
 /*
@@ -924,106 +1086,89 @@ static void choice_getsize()
 static void save_prefs()
 {
     Point p;
-    WindowPtr old = active;
 
+    term_data *td;
+    
 
     /*** Future Data ***/
-    
+
     putshort(0);
     putshort(0);
     putshort(0);
     putshort(0);
 
-    
+
     /*** The "volume" info ***/
-    
+
+    putshort(0);
     putshort(volhint);
     putlong(dirhint);
 
 
     /*** The "screen" info ***/
+
+    td = &screen;
     
-    activate(screen_w);
+    activate(td->w);
 
-    putshort(1);
-    putshort(screen_font_id);
-    putshort(screen_font_size);
-    putshort(screen_font_bold);
-
-    putshort(screen_cols);
-    putshort(screen_rows);
-    putshort(screen_size_wid);
-    putshort(screen_size_hgt);
+    putshort(1); /* Always mapped */
     
-    p.h = screen_w->portRect.left;
-    p.v = screen_w->portRect.top;
-    LocalToGlobal(&p);
-    putshort(p.h);
-    putshort(p.v);
+    putshort(td->font_id);
+    putshort(td->font_size);
+    putshort(td->font_face);
 
-    p.h = screen_w->portRect.right;
-    p.v = screen_w->portRect.bottom;
+    putshort(td->cols);
+    putshort(td->rows);
+
+    p.h = td->w->portRect.left;
+    p.v = td->w->portRect.top;
     LocalToGlobal(&p);
     putshort(p.h);
     putshort(p.v);
 
 
     /*** The "recall" info ***/
-    
-    activate(recall_w);
 
-    putshort(use_recall_win);
-    putshort(recall_font_id);
-    putshort(recall_font_size);
-    putshort(recall_font_bold);
-
-    putshort(recall_cols);
-    putshort(recall_rows);
-    putshort(recall_size_wid);
-    putshort(recall_size_hgt);
+    td = &recall;
     
-    p.h = recall_w->portRect.left;
-    p.v = recall_w->portRect.top;
+    activate(td->w);
+
+    putshort(td->mapped);
+    
+    putshort(td->font_id);
+    putshort(td->font_size);
+    putshort(td->font_face);
+
+    putshort(td->cols);
+    putshort(td->rows);
+
+    p.h = td->w->portRect.left;
+    p.v = td->w->portRect.top;
     LocalToGlobal(&p);
     putshort(p.h);
     putshort(p.v);
-
-    p.h = recall_w->portRect.right;
-    p.v = recall_w->portRect.bottom;
-    LocalToGlobal(&p);
-    putshort(p.h);
-    putshort(p.v);
-
 
 
     /*** The "choice" info ***/
-    
-    putshort(use_choice_win);
-    putshort(choice_font_id);
-    putshort(choice_font_size);
-    putshort(choice_font_bold);
 
-    putshort(choice_cols);
-    putshort(choice_rows);
-    putshort(choice_size_wid);
-    putshort(choice_size_hgt);
+    td = &choice;
     
-    p.h = choice_w->portRect.left;
-    p.v = choice_w->portRect.top;
+    activate(td->w);
+
+    putshort(td->mapped);
+    
+    putshort(td->font_id);
+    putshort(td->font_size);
+    putshort(td->font_face);
+
+    putshort(td->cols);
+    putshort(td->rows);
+
+    p.h = td->w->portRect.left;
+    p.v = td->w->portRect.top;
     LocalToGlobal(&p);
     putshort(p.h);
     putshort(p.v);
-
-    p.h = choice_w->portRect.right;
-    p.v = choice_w->portRect.bottom;
-    LocalToGlobal(&p);
-    putshort(p.h);
-    putshort(p.v);
-
-
-    /*** Restore the window ***/
-
-    activate(old);
 }
 
 
@@ -1033,9 +1178,12 @@ static void save_prefs()
 static void load_prefs(void)
 {
     int temp;
-    
+
+    term_data *td;
+
+
     /*** Later ***/
-    
+
     temp = getshort();
     temp = getshort();
     temp = getshort();
@@ -1044,125 +1192,75 @@ static void load_prefs(void)
 
     /*** Folder info ***/
 
-    /* get volume and directory hints for lib directory */
+    /* Volume/Directory hints for lib folder */
+    temp = getshort();
     volhint = getshort();
     dirhint = getlong();
 
 
     /*** Screen info ***/
-    
-    temp = getshort();
-    screen_font_id = getshort();
-    screen_font_size = getshort();
-    screen_font_bold = getshort();
 
-    screen_cols = getshort();
-    screen_rows = getshort();
-    screen_size_wid = getshort();
-    screen_size_hgt = getshort();
+    td = &screen;
     
-    screen_r.left = getshort();
-    screen_r.top = getshort();
-    screen_r.right = getshort();
-    screen_r.bottom = getshort();
+    use_screen_win = td->mapped = getshort();
 
+    td->font_id = getshort();
+    td->font_size = getshort();
+    td->font_face = getshort();
+
+    term_data_check_font(td);
+
+    td->cols = getshort();
+    td->rows = getshort();
+
+    td->r.left = getshort();
+    td->r.top = getshort();
+
+    term_data_check_size(td);
+    
 
     /*** Recall info ***/
-    
-    use_recall_win = getshort();
-    recall_font_id = getshort();
-    recall_font_size = getshort();
-    recall_font_bold = getshort();
 
-    recall_cols = getshort();
-    recall_rows = getshort();
-    recall_size_wid = getshort();
-    recall_size_hgt = getshort();
+    td = &recall;
     
-    recall_r.left = getshort();
-    recall_r.top = getshort();
-    recall_r.right = getshort();
-    recall_r.bottom = getshort();
+    use_recall_win = td->mapped = getshort();
 
+    td->font_id = getshort();
+    td->font_size = getshort();
+    td->font_face = getshort();
+
+    term_data_check_font(td);
+
+    td->cols = getshort();
+    td->rows = getshort();
+
+    td->r.left = getshort();
+    td->r.top = getshort();
+
+    term_data_check_size(td);
+    
 
     /*** Choice info ***/
-    
-    use_choice_win = getshort();
-    choice_font_id = getshort();
-    choice_font_size = getshort();
-    choice_font_bold = getshort();
 
-    choice_cols = getshort();
-    choice_rows = getshort();
-    choice_size_wid = getshort();
-    choice_size_hgt = getshort();
+    td = &choice;
     
-    choice_r.left = getshort();
-    choice_r.top = getshort();
-    choice_r.right = getshort();
-    choice_r.bottom = getshort();
-    
+    use_choice_win = td->mapped = getshort();
 
-    /*** Analyze that info ***/
-        
-    /* Get some window sizes */
-    screen_getsize();
-    recall_getsize();
-    choice_getsize();
-    
-#if 0    
-    /* Hack -- stretch the "screen" window */
-    screen_r.right = screen_r.left + screen_size_wid;
-    screen_r.bottom = screen_r.top + screen_size_hgt;
-#endif
+    td->font_id = getshort();
+    td->font_size = getshort();
+    td->font_face = getshort();
 
+    term_data_check_font(td);
+
+    td->cols = getshort();
+    td->rows = getshort();
+
+    td->r.left = getshort();
+    td->r.top = getshort();
+
+    term_data_check_size(td);
 }
 
-
-/*
- * Prepare a new set of preferences
- */
-static void init_prefs(void)
-{
-    short fid;
-    
-    /* Default to 9pt Monaco */
-    GetFNum("\pmonaco", &fid);
-    choice_font_id = recall_font_id = screen_font_id = fid;
-    choice_font_size = recall_font_size = screen_font_size = 9;
-    choice_font_bold = recall_font_bold = screen_font_bold = 0;
-
-    /* Extract "size" info from the font data */
-    screen_getsize();
-    recall_getsize();
-    choice_getsize();
-
-    /* Extract physical locations for the "screen" window */
-    screen_r.left = 20;
-    screen_r.top = 60;
-    screen_r.right = screen_r.left + screen_size_wid;
-    screen_r.bottom = screen_r.top + screen_size_hgt;
-
-    /* Extract physical locations for the "recall" window */
-    recall_r.left = 20;
-    recall_r.top = 60 + screen_size_hgt + 40;
-    if (recall_r.top > qd.screenBits.bounds.bottom - recall_font_hgt * recall_rows)
-    {
-	recall_r.top = qd.screenBits.bounds.bottom - recall_font_hgt * recall_rows;
-    }
-    recall_r.right = recall_r.left + screen_size_wid;
-    recall_r.bottom = recall_r.top + screen_font_hgt * recall_rows;
-
-    /* Extract physical locations for the "recall" window */
-    choice_r.top = screen_r.top;
-    choice_r.left = screen_r.right + 40;
-    if (choice_r.left > qd.screenBits.bounds.right - 200)
-    {
-	choice_r.left = qd.screenBits.bounds.right - 200;
-    }
-    choice_r.right = choice_r.left + 200;
-    choice_r.bottom = choice_r.top + choice_rows * choice_font_hgt;
-}
 
 
 
@@ -1173,19 +1271,95 @@ static void init_prefs(void)
 static void init_windows()
 {
     Rect r;
-    RGBColor c;
     SysEnvRec env;
     short savev;
     long saved;
-    PaletteHandle p;
     int i;
+
+    short fid;
+
+    term_data *td;
+    
+    
+    /* Default to Monaco font */
+    GetFNum("\pmonaco", &fid);
+
+
+    /* Recall window */
+    td = &recall;
+    WIPE(td, term_data);
+    td->s = "Recall";
+    td->size_ow1 = 2;
+    td->size_ow2 = 2;
+    td->size_oh2 = 2;
+    
+    /* Recall (Monaco 9) */
+    td->mapped = TRUE;
+    td->font_id = fid;
+    td->font_size = 9;
+    td->font_face = 0;
+    term_data_check_font(td);
+
+    /* Recall (80x24, top left) */
+    td->rows = 24;
+    td->cols = 80;
+    td->r.left = 10;
+    td->r.top = 40;
+    term_data_check_size(td);
+
+
+    /* Choice window */
+    td = &choice;
+    WIPE(td, term_data);
+    td->s = "Choice";
+    td->size_ow1 = 2;
+    td->size_ow2 = 2;
+    td->size_oh2 = 2;
+    
+    /* Choice (Monaco 9) */
+    td->mapped = TRUE;
+    td->font_id = fid;
+    td->font_size = 9;
+    td->font_face = 0;
+    term_data_check_font(td);
+
+    /* Choice (80x24, bottom left) */
+    td->rows = 24;
+    td->cols = 80;
+    td->r.left = recall.r.left;
+    td->r.top = recall.r.bottom + 40;
+    term_data_check_size(td);
+
+
+    /* Screen window */
+    td = &screen;
+    WIPE(td, term_data);
+    td->s = "Angband";
+    td->size_ow1 = 2;
+    td->size_ow2 = 2;
+    td->size_oh2 = 2;
+        
+    /* Screen (Monaco 12) */
+    td->mapped = TRUE;
+    td->font_id = fid;
+    td->font_size = 12;
+    td->font_face = 0;
+    term_data_check_font(td);
+
+    /* Screen (80x24, to the right of Choice) */
+    td->rows = 24;
+    td->cols = 80;
+    td->r.left = choice.r.right + 10;
+    td->r.top = choice.r.top;
+    term_data_check_size(td);
+
 
     /* Attempt to open a preference file */
     SysEnvirons(curSysEnvVers, &env);
     HGetVol(0,&savev,&saved);
     SetVol(0, env.sysVRefNum);
-    fff = fopen(":Preferences:Angband 2.7.1 Preferences", "r");
-    if (!fff) fff = fopen(":Angband 2.7.1 Preferences", "r");
+    fff = fopen(":Preferences:Angband 2.7.2 Preferences", "r");
+    if (!fff) fff = fopen(":Angband 2.7.2 Preferences", "r");
     HSetVol(0, savev, saved);
 
     /* Parse it */
@@ -1197,181 +1371,38 @@ static void init_windows()
 	/* Close the file */	
 	fclose(fff);
     }
-    else
-    {
-        /* Make a new set */
-        init_prefs();
-    }
+
+
+    /* Link/Activate the Choice "term" */
+    term_data_link(&choice);
+    term_choice = &choice.t;
     
+    /* Link/Activate the Recall "term" */
+    term_data_link(&recall);
+    term_recall = &recall.t;
 
-
-    /*** Create the "Choice" window ***/
-    
-    if (rgbcolor)
-    {
-	choice_w = NewCWindow(0,&choice_r,"\pChoices",use_choice_win,documentProc,(WindowPtr)-1,1,0);
-    }
-    else
-    {
-	choice_w = NewWindow(0,&choice_r,"\pChoices",use_choice_win,documentProc,(WindowPtr)-1,1,0);
-    }
-    
-    activate(choice_w);
-	
-    TextFont(choice_font_id);
-    TextSize(choice_font_size);
-    TextFace(choice_font_bold);
-	
-    if (rgbcolor==2)
-    {
-	c.red=0;
-	c.green=0;
-	c.blue=0;
-	RGBBackColor(&c);
-	c.red=0xFFFF;
-	c.green=0xFFFF;
-	c.blue=0xFFFF;
-	RGBForeColor(&c);
-    }
-    else if (rgbcolor==1)
-    {
-	p=GetNewPalette(128);
-	NSetPalette(choice_w,p,pmAllUpdates);
-	BackColor(blackColor);
-	ForeColor(whiteColor);
-    }
-    else
-    {
-	BackColor(blackColor);
-	ForeColor(whiteColor);
-    }
-
-
-    r = choice_w->portRect;
-    r.left = r.right-15;
-    r.right += 1;
-    r.bottom -= 14;
-    r.top -= 1;
-    choice_sb = NewControl(choice_w, &r, "\p", 1, 0, 0, 21, scrollBarProc, 0L);
-    
-#if 0
-
-    SetControlMaximum(choice_sb, choice_rows-(choice_w->portRect.bottom - choice_w->portRect.top-1)/choice_font_hgt);
-    HiliteControl(choice_sb,255);
-	
-#endif
-
-
-
-    /*** Create the recall window ***/
-
-    if (rgbcolor)
-    {
-	recall_w=NewCWindow(0,&recall_r,"\pRecall",use_recall_win,documentProc,(WindowPtr)-1,1,0);
-    }
-    else
-    {
-	recall_w=NewWindow(0,&recall_r,"\pRecall",use_recall_win,documentProc,(WindowPtr)-1,1,0);
-    }
-
-    activate(recall_w);
-
-    TextFont(recall_font_id);
-    TextSize(recall_font_size);
-    TextFace(recall_font_bold);
-
-
-    if (rgbcolor==2)
-    {
-	c.red=0;
-	c.green=0;
-	c.blue=0;
-	RGBBackColor(&c);
-	c.red=0xFFFF;
-	c.green=0xFFFF;
-	c.blue=0xFFFF;
-	RGBForeColor(&c);
-    }
-    else if (rgbcolor==1)
-    {
-	p=GetNewPalette(128);
-	NSetPalette(recall_w,p,pmAllUpdates);
-	BackColor(blackColor);
-	ForeColor(whiteColor);
-    }
-    else
-    {
-	BackColor(blackColor);
-	ForeColor(whiteColor);
-    }
-
-    r = recall_w->portRect;
-    r.left = r.right-15;
-    r.right += 1;
-    r.bottom -= 14;
-    r.top -= 1;
-
-    recall_sb = NewControl(recall_w, &r, "\p", 1, 0, 0, 29, scrollBarProc, 0L);
-
-
-    /*** Create the Angband window ***/
-
-    if (rgbcolor)
-    {
-	screen_w=NewCWindow(0,&screen_r,"\pAngband",true,noGrowDocProc,(WindowPtr)-1,0,0);
-    }
-    else
-    {
-	screen_w=NewWindow(0,&screen_r,"\pAngband",true,noGrowDocProc,(WindowPtr)-1,0,0);
-    }
-
-    activate(screen_w);
-
-    TextFont(screen_font_id);
-    TextSize(screen_font_size);
-    TextFace(screen_font_bold);
-
-    if (rgbcolor==2)
-    {
-	c.red=0;
-	c.green=0;
-	c.blue=0;
-	RGBBackColor(&c);
-	c.red=0xFFFF;
-	c.green=0xFFFF;
-	c.blue=0xFFFF;
-	RGBForeColor(&c);
-    }
-    else if (rgbcolor==1)
-    {
-	p=GetNewPalette(128);
-	NSetPalette(screen_w,p,pmAllUpdates);
-	BackColor(blackColor);
-	ForeColor(whiteColor);
-    }
-    else
-    {
-	BackColor(blackColor);
-	ForeColor(whiteColor);
-    }
+    /* Link/Activate the Screen "term" */
+    term_data_link(&screen);
+    term_screen = &screen.t;
 }
 
 
 /*
  * Exit the program
  */
-static void save_pref_file()
+static void save_pref_file(void)
 {
     SysEnvRec env;
-    
+
     SysEnvirons(curSysEnvVers, &env);
     SetVol(0, env.sysVRefNum);
 
+    /* It is a text file */
+    _ftype = 'TEXT';
+
     /* Open the preference file */
-    _ftype='TEXT';
-    fff = fopen(":Preferences:Angband 2.7.1 Preferences","w");
-    if (!fff) fff = fopen(":Angband 2.7.1 Preferences","w");
-    _ftype='SAVE';
+    fff = fopen(":Preferences:Angband 2.7.2 Preferences", "w");
+    if (!fff) fff = fopen(":Angband 2.7.2 Preferences", "w");
 
     /* Write prefs if allowed */
     if (fff)
@@ -1461,11 +1492,11 @@ static void disable_start()
 
 /*
  * Prepare the menus
- *   File (129) = { New,Open,Save,-,Quit+Save,Exit }
+ *   File (129) = { New,Open,Close,Save,-,Exit,Quit }
  *   Edit (130) = { Cut, Copy, Paste, Clear }   (?)
- *   Font (131) = { Bold, -, Monaco, Courier, ... }
- *   Size (132) = { 9, 10, ..., 18, ... }
- *   Options (133) = { Angband, -, Recall, Choices }
+ *   Font (131) = { Bold, Condensed, -, Monaco, Courier, Angben, ... }
+ *   Size (132) = { 9, 10, ..., 18 }
+ *   Options (133) = { Angband, -, Recall, Choice }
  */
 static void setup_menus()
 {
@@ -1474,9 +1505,17 @@ static void setup_menus()
     short fnum,fsize,currfsize;
     Str255 s;
 
+    term_data *td = NULL;
+    
 
     /* Hack -- extract the "can I save" flag */
     save_enabled = character_generated;
+
+
+    /* Extract the frontmost "term_data" */
+    if (FrontWindow() == screen.w) td = &screen;
+    if (FrontWindow() == recall.w) td = &recall;
+    if (FrontWindow() == choice.w) td = &choice;
 
 
     /* File menu ("Save" options) */
@@ -1485,77 +1524,44 @@ static void setup_menus()
     /* Enable/Disable "save" options */
     if (save_enabled)
     {
-	EnableItem(m,3);
-	EnableItem(m,5);
+	EnableItem(m,4);
     }
     else
     {
-	DisableItem(m,3);
-	DisableItem(m,5);
+	DisableItem(m,4);
     }
-    
+
 
     /* Font menu */
     m=GetMHandle(131);
-    
+
     /* Check the appropriate "bold-ness" */
-    if (FrontWindow()==screen_w)
-    {
-	CheckItem(m, 1, screen_font_bold ? 1 : 0);
-    }
-    if (FrontWindow()==recall_w)
-    {
-	CheckItem(m, 1, recall_font_bold ? 1 : 0);
-    }
-    if (FrontWindow()==choice_w)
-    {
-	CheckItem(m, 1, choice_font_bold ? 1 : 0);
-    }
+    CheckItem(m, 1, (td && (td->font_face & bold)));
+
+    /* Check the appropriate "wide-ness" */
+    CheckItem(m, 2, (td && (td->font_face & extend)));
 
     /* Check the appropriate "Font" for the current window */
-    for (i=3; i<=CountMItems(m); i++)
+    for (i = 4; i <= CountMItems(m); i++)
     {
 	GetItem(m,i,s);
 	GetFNum(s,&fnum);
-	if (((fnum==screen_font_id) && (FrontWindow()==screen_w)) ||
-	    ((fnum==choice_font_id) && (FrontWindow()==choice_w)) ||
-	    ((fnum==recall_font_id) && (FrontWindow()==recall_w)))
-	{
-	    CheckItem(m,i,1);
-	}
-	else
-	{
-	    CheckItem(m,i,0);
-	}
+	CheckItem(m, i, (td && (td->font_id == fnum)));
     }
 
 
     /* Size menu */
     m=GetMHandle(132);
-    
-    if (FrontWindow()==screen_w)
-    {
-	fnum = screen_font_id;
-	currfsize = screen_font_size;
-    }
-    if (FrontWindow()==recall_w)
-    {
-	fnum = recall_font_id;
-	currfsize = recall_font_size;
-    }
-    if (FrontWindow()==choice_w)
-    {
-	fnum = choice_font_id;
-	currfsize = choice_font_size;
-    }
 
-    /* Scan something */
+    /* Process the "size" options */
     for (i=1; i<=CountMItems(m); i++)
     {
 	GetItem(m,i,s);
 	s[s[0]+1]=0;
-	fsize=atoi((char*)(s+1));
-	if (RealFont(fnum,fsize))
+	fsize = atoi((char*)(s+1));
+
+	/* Enable the "real" sizes */
+	if (td && RealFont(td->font_id, fsize))
 	{
 	    EnableItem(m,i);
 	}
@@ -1563,28 +1569,23 @@ static void setup_menus()
 	{
 	    DisableItem(m,i);
 	}
-	if (fsize==currfsize)
-	{
-	    CheckItem(m,i,1);
-	}
-	else
-	{
-	    CheckItem(m,i,0);
-	}
+
+	/* Check the current size */
+	CheckItem(m, i, (td && (td->font_size == fsize)));
     }
 
 
-    /* Options menu */
+    /* Windows menu */
     m=GetMHandle(133);
 
-    /* Item "Angband Window" -- Hack -- encode "to_be_wizard" */
-    CheckItem(m, 1, to_be_wizard ? 1 : 0);
+    /* Item "Angband Window" */
+    CheckItem(m, 1, screen.mapped);
 
     /* Item "Recall Window" */
-    CheckItem(m, 3, use_recall_win ? 1 : 0);
+    CheckItem(m, 3, recall.mapped);
 
     /* Item "Choice Window" */
-    CheckItem(m, 4, use_choice_win ? 1 : 0);
+    CheckItem(m, 4, choice.mapped);
 }
 
 
@@ -1631,7 +1632,7 @@ static pascal Boolean ynfilter (DialogPtr dialog, EventRecord *event, short *ite
 /*
  * Process a menu selection
  */
-static void menu(long choice)
+static void menu(long mc)
 {
     int menuid,selection;
     static unsigned char s[1000];
@@ -1645,7 +1646,7 @@ static void menu(long choice)
     Rect r;
     AlertTHndl alert;
     int i;
-    int32 j;
+    s32b j;
     char *tmp;
 
     short vrefnum;
@@ -1653,11 +1654,26 @@ static void menu(long choice)
     long longjunk;
     DirInfo pb;
 
+    short fid;
+
+    term_data *td = NULL;
+
+
     /* Hack -- extract "can I save" flag */
     save_enabled = character_generated;
+
+    /* Analyze the menu command */
+    menuid = HiWord(mc);
+    selection = LoWord(mc);
+
+    /* Activate the current "term" */
+    if (FrontWindow() == screen.w) td = &screen;
+    if (FrontWindow() == recall.w) td = &recall;
+    if (FrontWindow() == choice.w) td = &choice;
     
-    menuid=HiWord(choice);
-    selection=LoWord(choice);
+    /* Hack -- Activate the appropriate term */
+    if (td) Term_activate(&td->t);
+
 
     /* Branch on the menu */
     switch (menuid)
@@ -1676,25 +1692,34 @@ static void menu(long choice)
 		DisposDialog(dialog);
 		break;
 	    }
+
 	    GetItem(GetMHandle(128),selection,s);
 	    OpenDeskAcc(s);
 	    break;
 
-	case 129:	/* File Menu */
+	case 129:	/* File Menu {New,Open,Close,Save,-,Exit,Quit} */
 
 	    switch (selection)
 	    {
-		case 1:		/* New*/
-		    if (game_in_progress)
+		case 1:		/* New */
+		    if (!initialized)
+		    {
+			mac_warning("You cannot do that yet...");
+		    }
+		    else if (game_in_progress)
 		    {
 			mac_warning("You can't start a new game while you're still playing!");
+		    }
+		    else if (td != &screen)
+		    {
+			mac_warning("The Angband window must be in front.");
 		    }
 		    else
 		    {
 			HiliteMenu(0);
 			game_in_progress=1;
 			disable_start();
-			Term_flush();
+			flush();
 			play_game_mac(TRUE);
 			quit(NULL);
 		    }
@@ -1702,9 +1727,17 @@ static void menu(long choice)
 
 		case 2:		/* Open... */
 
-		    if (game_in_progress)
+		    if (!initialized)
+		    {
+			mac_warning("You cannot do that yet...");
+		    }
+		    else if (game_in_progress)
 		    {
 			mac_warning("You can't open a new game while you're still playing!");
+		    }
+		    else if (td != &screen)
+		    {
+			mac_warning("The Angband window must be in front.");
 		    }
 		    else
 		    {
@@ -1746,391 +1779,267 @@ static void menu(long choice)
 			    /* Load 'savefile' */
 			    GetWDInfo(reply.vRefNum,&vrefnum,&drefnum,&longjunk);
 			    refnum_to_name(savefile,drefnum,vrefnum,
-			    		   (char*)reply.fName);
+					   (char*)reply.fName);
 
 			    game_in_progress=1;
 			    disable_start();
 			    HiliteMenu(0);
-			    Term_flush();
+			    flush();
 			    play_game_mac(FALSE);
 			    quit(NULL);
 			}
-
-#if 0
-			/*  This code is System 7 specific! */
-			StandardGetFile(NULL,1,types,&reply);
-			if (reply.sfGood)
-			{
-			    /* Load 'savefile' */
-			    refnum_to_name(savefile,
-					   reply.sfFile.parID,
-					   reply.sfFile.vRefNum,
-					   (char*)reply.sfFile.name);
-			    game_in_progress=1;
-			    disable_start();
-			    HiliteMenu(0);
-			    Term_flush();
-			    play_game_mac(FALSE);
-			    quit(NULL);
-			}
-#endif
-
 		    }
 		    break;
 
-		case 3: /* Save */
+		case 3: /* Close */
 
-		    if (game_in_progress)
-		    {
-			Term_fresh();
+		    if (td == &screen) use_screen_win = 0;
+		    if (td == &recall) use_recall_win = 0;
+		    if (td == &choice) use_choice_win = 0;
 
-			if (total_winner)
-			{
-			    msg_print("You are a Total Winner, your character must be retired.");
-			    if (rogue_like_commands)
-			    {
-				msg_print("Use 'Q' to when you are ready to retire.");
-			    }
-			    else
-			    {
-				msg_print("Use <Control>-K when you are ready to retire.");
-			    }
-			}
-			else
-			{
-			    /* The player is not dead */
-			    (void)strcpy(died_from, "(saved)");
+		    Term_xtra_mac_react();
 
-			    /* Save the player, note the result */
-			    prt("Saving game...",0,0);
-			    if (save_player()) prt("done.",0,14);
-			    else prt("Save failed.",0,14);
-				
-			    /* Forget that the player was saved */
-			    character_saved = 0;
-
-			    /* Hilite the player */
-			    move_cursor_relative(char_row,char_col);
-
-			    /* Note that the player is not dead */
-			    (void)strcpy(died_from, "(alive and well)");
-			}
-		    }
+		    break;
 		    
-		    break;
+		case 4: /* Save */
 
-
-		case 5:		/* Quit (and save) */
-
-		    if (game_in_progress && save_enabled)
+		    if (!game_in_progress)
 		    {
-			if (total_winner)
-			{
-			    msg_print("You are a Total Winner,        your character must be retired.");
-			    if (rogue_like_commands)
-				msg_print("Use 'Q' to when you are ready to retire.");
-			    else
-				msg_print("Use <Control>-K when you are ready to retire.");
-			}
-			else
-			{
-			    /* Save it */
-			    (void)strcpy(died_from, "(saved)");
-			    prt("Saving game...",0,0);
-			    if (save_player()) quit(NULL);
-
-			    /* Oops. */
-			    prt("Save failed.",0,14);
-			    move_cursor_relative(char_row,char_col);
-			    (void)strcpy(died_from, "(alive and well)");
-			}
+			mac_warning("No game in progress.");
+		    }
+		    else if (td != &screen)
+		    {
+			mac_warning("The Angband window must be in front.");
 		    }
 		    else
 		    {
-			/* Nothing to save */
-			quit(NULL);
+			Term_fresh();
+
+			/* The player is not dead */
+			(void)strcpy(died_from, "(saved)");
+
+			/* Save the player, note the result */
+			prt("Saving game...",0,0);
+			if (save_player()) prt("done.",0,14);
+			else prt("Save failed.",0,14);
+
+			/* Forget that the player was saved */
+			character_saved = 0;
+
+			/* Hilite the player */
+			move_cursor_relative(char_row,char_col);
+
+			/* Note that the player is not dead */
+			(void)strcpy(died_from, "(alive and well)");
 		    }
+
 		    break;
 
 		case 6:		/* Exit */
+
 		    if (game_in_progress && save_enabled)
 		    {
 			alert=(AlertTHndl)GetResource('ALRT',128);
 			center_rect(&(*alert)->boundsRect,&qd.screenBits.bounds);
 			item_hit=Alert(128,ynfilter);
 
-			/* Did they say "Okay"? */
+			/* Handle the "cancel" command */
 			if (item_hit != 2) break;
 		    }
+
+		    /* Quit */
+		    quit(NULL);
+		    break;
+
+		case 7:		/* Quit (and save) */
+
+		    if (game_in_progress && save_enabled)
+		    {
+			/* Save it */
+			(void)strcpy(died_from, "(saved)");
+			prt("Saving game...", 0, 0);
+			if (!save_player()) quit("Save failed!");
+		    }
+
+		    /* Quit */
 		    quit(NULL);
 		    break;
 	    }
 	    break;
 
-	case 130:  /* edit menu - nothing's enabled! */
+	case 130:  /* edit menu (unused) */
 	    break;
 
 	case 131:  /* font menu */
-	    if (selection==1)
-	    {
-		if (FrontWindow()==screen_w)
-		{
-		    screen_font_bold=1-screen_font_bold;
-		    screen_getsize();
+	
+	    if (!td) break;
 
-		    TextFace(screen_font_bold);
-		    SizeWindow(screen_w,screen_size_wid,screen_size_hgt,0);
-		    InvalRect(&screen_w->portRect);
+	    /* Toggle the "bold" setting */
+	    if (selection == 1)
+	    {		
+		/* Toggle the setting */
+		if (td->font_face & bold) {
+		    td->font_face &= ~bold;
 		}
-
-		if (FrontWindow()==recall_w)
-		{
-		    WindowPtr old = active;
-
-		    recall_font_bold=1-recall_font_bold;
-		    recall_getsize();
-
-		    activate(recall_w);
-
-		    TextFace(recall_font_bold);
-
-		    recall_grow();
-		    recall_draw();
-
-		    activate(old);
+		else {
+		    td->font_face |= bold;
 		}
+		
+		/* Instantiate the new text face */
+		TextFace(td->font_face);
+
+		/* Resize */
+		term_data_check_font(td);
+		term_data_check_size(td);
+
+		/* Resize the window */
+		term_data_resize(td);
+
 		break;
 	    }
-	    if (FrontWindow()==screen_w)
+
+	    /* Toggle the "wide" setting */
+	    if (selection == 2)
+	    {		
+		/* Toggle the setting */
+		if (td->font_face & extend) {
+		    td->font_face &= ~extend;
+		}
+		else {
+		    td->font_face |= extend;
+		}
+		
+		/* Instantiate the new text face */
+		TextFace(td->font_face);
+
+		/* Resize */
+		term_data_check_font(td);
+		term_data_check_size(td);
+
+		/* Resize the window */
+		term_data_resize(td);
+
+		break;
+	    }
+
+	    /* Get a new font name */
+	    GetItem(GetMHandle(131), selection, s);
+	    GetFNum(s, &fid);
+	    
+	    /* Save the new font id */
+	    td->font_id = fid;
+
+	    /* current size is bad for new font */
+	    if (!RealFont(td->font_id, td->font_size))
 	    {
-	        short fid;
-	        
-		GetItem(GetMHandle(131),selection,s);
-		GetFNum(s,&fid);
-		screen_font_id = fid;
-
-		/* current size is bad for new font */
-		if (!RealFont(screen_font_id,screen_font_size))
+		/* find good size */
+		for (i=1; i<=18; i++)
 		{
-		    /* find good size */
-		    for(i=1;i<=18;i++)
+		    if (td->font_size - i >= 9)
 		    {
-			if (screen_font_size-i>=9)
+			if (RealFont(td->font_id, td->font_size - i))
 			{
-			    if (RealFont(screen_font_id,screen_font_size-i))
-			    {
-				screen_font_size-=i;
-				break;
-			    }
-			}
-			if (screen_font_size+i<=18)
-			{
-			    if (RealFont(screen_font_id,screen_font_size+i))
-			    {
-				screen_font_size+=i;
-				break;
-			    }
-
+			    td->font_size -= i;
+			    break;
 			}
 		    }
-
-		    /* default size if can't find a good size */
-		    if (i==19) screen_font_size==9;
+		    if (td->font_size + i <= 18)
+		    {
+			if (RealFont(td->font_id, td->font_size + i))
+			{
+			    td->font_size += i;
+			    break;
+			}
+		    }
 		}
 
-		screen_getsize();
-
-		TextFont(screen_font_id);
-		TextSize(screen_font_size);
-		TextFace(screen_font_bold);
-		SizeWindow(screen_w,screen_size_wid,screen_size_hgt,0);
-		InvalRect(&screen_w->portRect);
+		/* Default size if can't find a good size */
+		if (i==19) td->font_size = 9;
 	    }
 	    
-	    if (FrontWindow()==recall_w)
-	    {
-	        short fid;
-		WindowPtr old = active;
+	    /* Instantiate new properties */
+	    TextFont(td->font_id);
+	    TextSize(td->font_size);
+	    TextFace(td->font_face);
 
-		GetItem(GetMHandle(131),selection,s);
-		GetFNum(s,&fid);
-		recall_font_id = fid;
-
-		/* current size is bad for new font */
-		if (!RealFont(recall_font_id,recall_font_size))
-		{
-		    /* find good size */
-		    for (i=1;i<=18;i++)
-		    {
-			if (recall_font_size-i>=9)
-			{
-			    if (RealFont(recall_font_id,recall_font_size-i))
-			    {
-				recall_font_size-=i;
-				break;
-			    }
-			}
-			if (recall_font_size + i <= 18)
-			{
-			    if (RealFont(recall_font_id,recall_font_size+i))
-			    {
-				recall_font_size += i;
-				break;
-			    }
-			}
-		    }
-
-		    /* default size if can't find a good size */
-		    if (i==19) recall_font_size==9;
-		}
-
-		recall_getsize();
-
-		activate(recall_w);
-
-		TextFont(recall_font_id);
-		TextSize(recall_font_size);
-		TextFace(recall_font_bold);
-
-		recall_grow();
-		recall_draw();
-
-		activate(old);
-	    }
-
-	    if (FrontWindow()==choice_w)
-	    {
-	        short fid;
-		WindowPtr old = active;
-
-		GetItem(GetMHandle(131),selection,s);
-		GetFNum(s,&fid);
-		choice_font_id = fid;
-
-		/* current size is bad for new font */
-		if (!RealFont(choice_font_id,choice_font_size))
-		{
-		    /* find good size */
-		    for (i=1;i<=18;i++)
-		    {
-			if (choice_font_size-i>=9)
-			{
-			    if (RealFont(choice_font_id,choice_font_size-i))
-			    {
-				choice_font_size-=i;
-				break;
-			    }
-			}
-			if (choice_font_size + i <= 18)
-			{
-			    if (RealFont(choice_font_id,choice_font_size+i))
-			    {
-				choice_font_size += i;
-				break;
-			    }
-			}
-		    }
-
-		    /* default size if can't find a good size */
-		    if (i==19) choice_font_size==9;
-		}
-
-		choice_getsize();
-
-		activate(choice_w);
-
-		TextFont(choice_font_id);
-		TextSize(choice_font_size);
-		TextFace(choice_font_bold);
-
-		choice_grow();
-		choice_draw();
-
-		activate(old);
-	    }
-
+	    /* Adapt to the new size */
+	    term_data_check_font(td);
+	    term_data_check_size(td);
+		
+	    /* Resize the window */
+	    term_data_resize(td);
+	    
 	    break;
-
 
 
 	case 132:  /* size menu */
-	
-	    if (FrontWindow()==screen_w)
-	    {
-		GetItem(GetMHandle(132),selection,s);
-		s[s[0]+1]=0;
-		screen_font_size = atoi((char*)(s+1));
-		screen_getsize();
 
-		TextSize(screen_font_size);
-		SizeWindow(screen_w,screen_size_wid,screen_size_hgt,0);
-		InvalRect(&screen_w->portRect);
-	    }
+	    if (!td) break;
 	    
-	    if (FrontWindow() == recall_w)
-	    {
-		WindowPtr old = active;
+	    GetItem(GetMHandle(132),selection,s);
+	    s[s[0]+1]=0;
+	    td->font_size = atoi((char*)(s+1));
 
-		GetItem(GetMHandle(132),selection,s);
-		s[s[0]+1]=0;
-		recall_font_size=atoi((char*)(s+1));
+	    /* Instantiate the new size */
+	    TextSize(td->font_size);
 
-		recall_getsize();
+	    /* React to the font */
+	    term_data_check_font(td);
+	    term_data_check_size(td);
 
-		activate(recall_w);
-
-		TextSize(recall_font_size);
-
-		recall_grow();
-		recall_draw();
-
-		activate(old);
-	    }
-
-	    if (FrontWindow()==choice_w)
-	    {
-		WindowPtr old = active;
-
-		GetItem(GetMHandle(132),selection,s);
-		s[s[0]+1]=0;
-		choice_font_size=atoi((char*)(s+1));
-		
-		choice_getsize();
-		
-		activate(choice_w);
-
-		TextSize(choice_font_size);
-
-		/* XXX */
-		/* SetControlMaximum(choice_sb, choice_rows - (choice_w->portRect.bottom - choice_w->portRect.top-1)/choice_font_hgt); */
-
-		choice_grow();
-		choice_draw();
-
-		activate(old);
-	    }
+	    /* Resize the window */
+	    term_data_resize(td);
 
 	    break;
 
-	case 133:   /* other menu */
+	case 133:   /* window menu */
+	
 	    switch (selection)
 	    {
-		case 1:		/* Angband -- Hack -- to_be_wizard */
-		    to_be_wizard = 1 - to_be_wizard;
-		    if (to_be_wizard) mac_warning("You shouldn't do that...");
+		case 1:		/* Angband window */
+
+		    /* Use the screen window */
+		    use_screen_win = TRUE;
+
+		    /* React */
+		    Term_xtra_mac_react();
+		    
+		    /* Bring to the front */
+		    SelectWindow(screen.w);
+		    
 		    break;
 
 		case 3:		/* Recall window */
-		    use_recall_win = (!use_recall_win);
-		    recall_note();
+
+		    /* Use the recall window */
+		    use_recall_win = TRUE;
+
+		    /* React */
+		    Term_xtra_mac_react();
+		    
+		    /* Bring to the front */
+		    SelectWindow(recall.w);
+		    
 		    break;
 
 		case 4:		/* Choice window */
-		    use_choice_win = (!use_choice_win);
-		    choice_note();
+
+		    /* Use the choice window */
+		    use_choice_win = TRUE;
+
+		    /* React */
+		    Term_xtra_mac_react();
+		    		    
+		    /* Bring to the front */
+		    SelectWindow(choice.w);
+		    
 		    break;
 	    }
     }
+
+
+    /* Activate the main screen */
+    Term_activate(term_screen);
 
     /* Clean the menu */
     HiliteMenu(0);
@@ -2139,124 +2048,105 @@ static void menu(long choice)
 
 
 /*
- * Scroll bar processor (recall window)
+ * Macintosh modifiers (event.modifier & ccc):
+ *   cmdKey, optionKey, shiftKey, alphaLock, controlKey
+ *
+ *
+ * Macintosh Keycodes (0-63 normal, 64-95 keypad, 96-127 extra):
+ *
+ * Return:36
+ * Delete:51
+ * 
+ * Period:65
+ * Star:67
+ * Plus:69
+ * Clear:71
+ * Slash:75
+ * Enter:76
+ * Minus:78
+ * Equal:81
+ * 0-7:82-89
+ * 8-9:91-92
+ * 
+ * F5: 96
+ * F6: 97
+ * F7: 98
+ * F3:99
+ * F8:100
+ * F10:101
+ * F11:103
+ * F13:105
+ * F14:107
+ * F9:109
+ * F12:111
+ * F15:113
+ * Help:114
+ * Home:115
+ * PgUp:116
+ * Del:117
+ * F4: 118
+ * End:119
+ * F2:120
+ * PgDn:121
+ * F1:122
+ * Lt:123
+ * Rt:124
+ * Dn:125
+ * Up:126
  */
-static pascal void recall_sb_proc (ControlHandle c, short code)
-{
-    int pageSize;
-    int amount;
-    int oldamt;
-
-    if (code == 0) return;
-
-    oldamt = amount = GetCtlValue(c);
-
-    switch (code)
-    {
-	case inUpButton:
-	    amount += -1;
-	    break;
-	case inDownButton:
-	    amount += 1;
-	    break;
-	case inPageUp:
-	    amount += -(recall_w->portRect.bottom / recall_font_hgt)+1;
-	    break;
-	case inPageDown:
-	    amount += (recall_w->portRect.bottom / recall_font_hgt)-1;
-	    break;
-    }
-
-    if (amount < 0) amount = 0;
-    if (amount > 24) amount = 24;
-
-#if 0
-    if (amount > GetControlMaximum(c)) amount = GetControlMaximum(c);
-#endif
-
-    if (amount != oldamt)
-    {
-	SetCtlValue(c, amount);
-	recall_draw();
-    }
-
-    /* XXX */
-}
-
-
-
-/*
- * Scroll bar processor (choice window)
- */
-static pascal void choice_sb_proc (ControlHandle c, short code)
-{
-	int	pageSize;
-	int	amount;
-	int oldamt;
-	
-	if (code == 0) return;
-	
-	oldamt = amount = GetCtlValue(c);
-	
-	switch (code) {
-		case inUpButton: 
-			amount += -1;
-			break;
-		case inDownButton: 
-			amount += 1;
-			break;
-		case inPageUp: 
-			amount += -(choice_w->portRect.bottom / choice_font_hgt)+1;
-			break;
-		case inPageDown: 
-			amount += (choice_w->portRect.bottom / choice_font_hgt)-1;
-			break;
-	}
-	if (amount < 0) amount = 0;
-	if (amount > 24) amount = 24;
-
-#if 0	
-	if (amount > GetControlMaximum(c)) amount = GetControlMaximum(c);
-#endif
-
-    if (amount != oldamt)
-    {
-	SetCtlValue(c, amount);
-	choice_draw();
-    }
-
-    /* XXX */
-}
-
-
-
-
 
 
 /*
  * Check Events, return "Did something happen?"
  */
-static bool CheckEvents(void)
+static bool CheckEvents(bool scanning)
 {
     EventRecord event;
     WindowPtr w;
-    char ch;
     Rect r,clipsave;
     ControlHandle c;
     int cntlcode;
     long newsize;
 
-    /* Hack -- extract the "can I save" flag */
-    save_enabled = character_generated;
+    int ch, ck, mc, ms, mo, mx;
+
+    WindowPtr old = active;
+
+
+#ifdef EVENT_TICKS
+
+    long curTicks = TickCount();
+    static long nextTicks = 0L;
+
+    /* Be efficient when "scanning" for events */
+    if (scanning && (curTicks < nextTicks)) {
+
+	/* Paranoia -- handle over-flow */
+	if ((curTicks < 0) && (nextTicks >= 0)) nextTicks = curTicks;
+
+	/* Do not bother to check */
+        return (FALSE);
+    }
     
+    /* Maintain efficiency */
+    nextTicks = curTicks + EVENT_TICKS;
+
+#endif
+
+
     /* Let the "system" run */
     SystemTask();
 
     /* Get an event (or null) */
-    GetNextEvent(everyEvent,&event);
+    GetNextEvent(everyEvent, &event);
 
     /* Nothing is ready */
     if (event.what == nullEvent) return (FALSE);
+
+
+    /* Hack -- extract the "can I save" flag */
+    save_enabled = character_generated;
+
 
     /* Analyze the event */
     switch (event.what)
@@ -2265,84 +2155,46 @@ static bool CheckEvents(void)
 
 	    w = (WindowPtr)event.message;
 
-	    if (w==recall_w)
-	    {
-		WindowPtr old = active;
+	    activate(w);
 
-		activate(recall_w);
-
-		if (event.modifiers & activeFlag)
-		{
-		    HiliteControl(recall_sb, 0);
-		}
-		else
-		{
-		    HiliteControl(recall_sb, 255);
-		}
-
-		r = w->portRect;
-		r.left = r.right-15;
-		ClipRect(&r);
-		DrawGrowIcon(recall_w);
-		ClipRect(&w->portRect);
-
-		activate(old);
-	    }
-	    
-	    if (w==choice_w)
-	    {
-		WindowPtr old = active;
-
-		activate(choice_w);
-
-		if (event.modifiers & activeFlag)
-		{
-		    HiliteControl(choice_sb,0);
-		}
-		else
-		{
-		    HiliteControl(choice_sb,255);
-		}
-
-		r = w->portRect;
-		r.left = r.right-15;
-		ClipRect(&r);
-		DrawGrowIcon(choice_w);
-		ClipRect(&w->portRect);
-
-		activate(old);
-	    }
-	    
 	    break;
 
 	case updateEvt:
 
-		w = (WindowPtr)event.message;
+	    w = (WindowPtr)event.message;
 
-		BeginUpdate(w);
+	    BeginUpdate(w);
 
-		/* refresh window */
-		if (w==screen_w) screen_draw();
+	    /* Redraw the window */
+	    if (w==screen.w) term_data_redraw(&screen);
+	    if (w==recall.w) term_data_redraw(&recall);
+	    if (w==choice.w) term_data_redraw(&choice);
 
-		/* refresh recall */
-		if (w==recall_w) recall_draw();
+	    EndUpdate(w);
 
-		/* refresh choice */
-		if (w==choice_w) choice_draw();
-
-		EndUpdate(w);
-
-		break;
+	    break;
 
 	case keyDown:
 	case autoKey:
-	
-	    ch = event.message & charCodeMask;
 
-	    if (event.modifiers & cmdKey)
+	    /* Extract some modifiers */
+	    mc = (event.modifiers & controlKey) ? TRUE : FALSE;
+	    ms = (event.modifiers & shiftKey) ? TRUE : FALSE;
+	    mo = (event.modifiers & optionKey) ? TRUE : FALSE;
+	    mx = (event.modifiers & cmdKey) ? TRUE : FALSE;
+
+	    /* Keypress: (only valid if ck < 96) */
+	    ch = (event.message & charCodeMask) & 255;
+
+	    /* Keycode: see above */
+	    ck = ((event.message & keyCodeMask) >> 8) & 255;
+	    
+	    /* Normal Command key -> menu action */	    
+	    if (mx && (ck < 64))
 	    {
+		/* Prepare the menus */
 		setup_menus();
-		
+
 		/* Hack -- allow easy exit if nothing to save */
 		if (!save_enabled && (ch=='Q' || ch=='q')) ch = 'e';
 
@@ -2351,25 +2203,56 @@ static bool CheckEvents(void)
 
 		/* Turn off the menus */
 		HiliteMenu(0);
+
+		/* Done */
+		break;
 	    }
-	    else
+
+
+	    /* Hide the mouse pointer */
+	    ObscureCursor();
+
+
+	    /* Normal key -> simple keypress */
+	    if (ck < 64)
 	    {
-		/* Hide the mouse pointer */
-		ObscureCursor();
-
-		/* Enter --> Return */
-		if (ch==3) ch=13;
-
-		/* XXX XXX Mega-Hack -- Convert Arrow keys into directions */
-		if (ch==28) ch = rogue_like_commands ? 'h' : '4';
-		if (ch==29) ch = rogue_like_commands ? 'l' : '6';
-		if (ch==30) ch = rogue_like_commands ? 'k' : '8';
-		if (ch==31) ch = rogue_like_commands ? 'j' : '2';
-
-		/* Queue the keypress */
+		/* Enqueue the keypress */
 		Term_keypress(ch);
 	    }
-	    
+
+	    /* Hack -- normal "Keypad keys" */
+	    else if (!mc && !ms && !mo && !mx && (ck < 96))
+	    {
+		/* Hack -- "enter" is confused */
+		if (ck == 76) ch = '\n';
+
+		/* Send control-caret as a trigger */
+		Term_keypress(30);
+		
+		/* Send the "ascii" keypress */
+		Term_keypress(ch);
+	    }
+
+	    /* Bizarre key -> encoded keypress */
+	    else if (ck < 127)
+	    {
+		/* Hack -- introduce with control-underscore */
+		Term_keypress(31);
+		
+		/* Send some modifier keys */
+		if (mc) Term_keypress('C');
+		if (ms) Term_keypress('S');
+		if (mo) Term_keypress('O');
+		if (mx) Term_keypress('X');
+		
+		/* Hack -- Downshift and encode the keycode */
+		Term_keypress('0' + (ck - 64) / 10);
+		Term_keypress('0' + (ck - 64) % 10);
+		
+		/* Hack -- Terminate the sequence */
+		Term_keypress(13);
+	    }
+
 	    break;
 
 	case mouseDown:
@@ -2377,217 +2260,134 @@ static bool CheckEvents(void)
 	    switch (FindWindow(event.where,&w))
 	    {
 		case inMenuBar:
-			setup_menus();
-			menu(MenuSelect(event.where));
-			HiliteMenu(0);
-			break;
+		
+		    setup_menus();
+		    menu(MenuSelect(event.where));
+		    HiliteMenu(0);
+		    break;
 
 		case inSysWindow:
-			SystemClick(&event,w);
-			break;
+		
+		    SystemClick(&event,w);
+		    break;
 
 		case inDrag:
-			r=qd.screenBits.bounds;
-			r.top+=20;
-			InsetRect(&r,4,4);
-			DragWindow(w,event.where,&r);
-			break;
+		
+		    r = qd.screenBits.bounds;
+		    r.top += 20;
+		    InsetRect(&r,4,4);
+		    DragWindow(w,event.where,&r);
+		    break;
 
 		case inGoAway:
-			if (TrackGoAway(w,event.where))
-			{
-			    if (w == recall_w)
-			    {
-				use_recall_win = 0;
-				recall_note();
-			    }
-			    if (w == choice_w)
-			    {
-				use_choice_win = 0;
-				choice_note();
-			    }
-			}
-			break;
+		
+		    if (TrackGoAway(w,event.where))
+		    {
+			if (w == screen.w) use_screen_win = 0;
+			if (w == recall.w) use_recall_win = 0;
+			if (w == choice.w) use_choice_win = 0;
+
+			Term_xtra_mac_react();
+		    }
+		    break;
 
 		case inGrow:
 
-		    if (w == recall_w)
+		    if (w == recall.w)
 		    {
-			WindowPtr old = active;
-
+			int x, y;
+			
+			term_data *td = &recall;
+			
 			activate(w);
+			
+			r.left = 20 * td->font_wid + td->size_ow1;
+			r.right = 80 * td->font_wid + td->size_ow1 + td->size_ow2 + 1;
+			r.top = 1 * td->font_hgt + td->size_oh1;
+			r.bottom = 24 * td->font_hgt + td->size_oh1 + td->size_oh2 + 1;
+			newsize = GrowWindow(w, event.where, &r);
+			if (!newsize) break;
 
-			r.left=20*screen_font_wid;
-			r.right=200*screen_font_wid;
-			r.top=screen_font_hgt;
-			r.bottom=30*screen_font_hgt;
-			newsize=GrowWindow(w,event.where,&r);
-
-			if (!newsize)
-			{
-			    activate(old);
-			    break;
-			}
-
-			SizeWindow(w,LoWord(newsize),HiWord(newsize),1);
-			ClipRect(&w->portRect);
-
-			/* move scroll bar to correct location */
-			r=w->portRect;
-			r.right++;
-			r.left=r.right-16;
-			r.top--;
-			r.bottom-=14;
-			(*recall_sb)->contrlRect=r;
-
-			EraseRect(&w->portRect);
-			DrawControls(recall_w);
-			r=w->portRect;
-			r.left=r.right-15;
-			ClipRect(&r);
-			DrawGrowIcon(recall_w);
-			ClipRect(&w->portRect);
-
-			/* Note new size */
-			recall_grow();
-
-			/* Redraw Contents */
-			recall_draw();
-
-			/* Reset the port */			
-			activate(w);
-
-			/* we've drawn it all -- no need to redraw */
-			ValidRect(&w->portRect);
-
-			/* Reset the port */
-			activate(old);
+			/* Extract the new size in pixels */
+			y = HiWord(newsize) - td->size_oh1 - td->size_oh2;
+			x = LoWord(newsize) - td->size_ow1 - td->size_ow2;
+			
+			/* Extract a "close" approximation */
+			td->rows = y / td->font_hgt;
+			td->cols = x / td->font_wid;
+			
+			/* React to the new size */
+			term_data_check_size(td);
+			
+			/* Resize the window */
+			term_data_resize(td);
 		    }
 
-		    if (w == choice_w)
+		    if (w == choice.w)
 		    {
-			WindowPtr old = active;
-
+			int x, y;
+			
+			term_data *td = &choice;
+			
 			activate(w);
+			
+			r.left = 20 * td->font_wid + td->size_ow1;
+			r.right = 80 * td->font_wid + td->size_ow1 + td->size_ow2 + 1;
+			r.top = 1 * td->font_hgt + td->size_oh1;
+			r.bottom = 24 * td->font_hgt + td->size_oh1 + td->size_oh2 + 1;
+			newsize = GrowWindow(w, event.where, &r);
+			if (!newsize) break;
 
-			r.left=20*screen_font_wid;
-			r.right=200*screen_font_wid;
-			r.top=screen_font_hgt;
-			r.bottom=30*screen_font_hgt;
-			newsize=GrowWindow(w,event.where,&r);
-
-			if (!newsize)
-			{
-			    activate(old);
-			    break;
-			}
-
-			SizeWindow(w,LoWord(newsize),HiWord(newsize),1);
-			ClipRect(&w->portRect);
-
-			/* move scroll bar to correct location */
-			r=w->portRect;
-			r.right++;
-			r.left=r.right-16;
-			r.top--;
-			r.bottom-=14;
-			(*choice_sb)->contrlRect=r;
-
-			EraseRect(&w->portRect);
-			DrawControls(choice_w);
-			r=w->portRect;
-			r.left=r.right-15;
-			ClipRect(&r);
-			DrawGrowIcon(choice_w);
-			ClipRect(&w->portRect);
-
-			/* Note new size */
-			choice_grow();
-
-			/* Redraw Contents */
-			choice_draw();
-
-			/* Reset the port */			
-			activate(w);
-
-			/* we've drawn it all -- no need to redraw */
-			ValidRect(&w->portRect);
-
-			/* Reset the port */
-			activate(old);
+			/* Extract the new size in pixels */
+			y = HiWord(newsize) - td->size_oh1 - td->size_oh2;
+			x = LoWord(newsize) - td->size_ow1 - td->size_ow2;
+			
+			/* Extract a "close" approximation */
+			td->rows = y / td->font_hgt;
+			td->cols = x / td->font_wid;
+			
+			/* React to the new size */
+			term_data_check_size(td);
+			
+			/* Resize the window */
+			term_data_resize(td);
 		    }
 
 		    break;
 
 		case inContent:
 
-			if (w == screen_w)
-			{
-			    WindowPtr old = active;
+		    if (w == screen.w)
+		    {
+			activate(w);
+			GlobalToLocal(&event.where);
+			SelectWindow(w);
+		    }
 
-			    activate(w);
+		    if (w == recall.w)
+		    {
+			activate(w);
+			GlobalToLocal(&event.where);
+			SelectWindow(w);
+		    }
 
-			    GlobalToLocal(&event.where);
-			    cntlcode=FindControl(event.where, w, &c);
-			    SelectWindow(w);
+		    if (w == choice.w)
+		    {
+			activate(w);
+			GlobalToLocal(&event.where);
+			SelectWindow(w);
+		    }
 
-			    activate(old);
-			}
-
-			if (w == recall_w)
-			{
-			    WindowPtr old = active;
-
-			    activate(w);
-
-			    GlobalToLocal(&event.where);
-			    cntlcode=FindControl(event.where, w, &c);
-			    if (cntlcode==0)
-			    {
-				SelectWindow(w);
-			    }
-			    else if (cntlcode==inThumb)
-			    {
-				TrackControl(c, event.where, 0L);
-				recall_draw();
-			    }
-			    else
-			    {
-				TrackControl(c, event.where, ((void *)recall_sb_proc));
-			    }
-
-			    activate(old);
-			}
-
-			if (w == choice_w)
-			{
-			    WindowPtr old = active;
-
-			    activate(w);
-
-			    GlobalToLocal(&event.where);
-			    cntlcode=FindControl(event.where, w, &c);
-			    if (cntlcode==0)
-			    {
-				SelectWindow(w);
-			    }
-			    else if (cntlcode==inThumb)
-			    {
-				TrackControl(c, event.where, 0L);
-				choice_draw();
-			    }
-			    else
-			    {
-				TrackControl(c, event.where, ((void *)choice_sb_proc));
-			    }
-
-			    activate(old);
-			}
-
-			break;
+		    break;
 		}
+
 		break;
     }
+
+
+    /* Re-activate the old active window */
+    activate(old);
+
 
     /* Something happened */
     return (TRUE);
@@ -2632,7 +2432,7 @@ static void check_for_save_file()
 
 	    /* Wait for it... */
 	    pause_line(23);
-	    Term_flush();
+	    flush();
 
 	    /* Hook into "play_game()" */
 	    play_game_mac(FALSE);
@@ -2674,261 +2474,6 @@ static void mac_check_lib_folder()
 
 
 
-/*** Hooks for the "recall" and "choice" windows ***/
-
-
-/*
- * Clear the recall window
- */
-static void recall_clear_mac(void)
-{
-    int i,j;
-    Rect r;
-
-    WindowPtr old = active;
-
-    /* Activate the recall window */
-    activate(recall_w);
-
-    /* Actually erase it (and reset the scroll bar) */
-    if (!scrolling) SetCtlValue(recall_sb,0);
-
-    /* Erase the recall window (but not the scroll bar) */
-    r = recall_w->portRect;
-    r.right -= 15;
-    EraseRect(&r);
-
-    /* Re-activate the main window */
-    activate(old);
-}
-
-
-/*
- * Print something in the recall window
- */
-static void recall_putstr_mac(int x, int y, int n, byte a, cptr s)
-{
-    Rect r;
-    int i, start;
-
-    WindowPtr old = active;
-
-    /* Assume no more than 24 rows used */
-    if (y >= 24) return;
-
-    /* Activate the recall window */
-    activate(recall_w);
-
-    /* Set the color */
-    setcolor(a);
-
-    /* Get the current scroll-bar setting */
-    start = GetCtlValue(recall_sb);
-
-    /* Get the length */
-    if (n < 0) n = strlen(s);
-    
-    /* Draw the text */
-    MoveTo(recall_font_wid * x + recall_font_o_x + 4,
-	   recall_font_hgt * (y-start) + recall_font_o_y);
-    DrawText(s,0,n);
-
-    /* Re-Activate the main window */
-    activate(old);
-}
-
-
-
-
-#ifdef GRAPHIC_CHOICE
-
-/*
- * Clear the choice window
- */
-static void choice_clear_mac(void)
-{
-    int i,j;
-    Rect r;
-
-    WindowPtr old = active;
-
-    /* Activate the choice window */
-    activate(choice_w);
-
-    /* Actually erase it (and reset the scroll bar) */
-    if (!scrolling) SetCtlValue(choice_sb,0);
-
-    /* Erase the choice window (but not the scroll bar) */
-    r = choice_w->portRect;
-    r.right -= 15;
-    EraseRect(&r);
-
-    /* Re-activate the main window */
-    activate(old);
-}
-
-
-/*
- * Print something in the choice window
- */
-static void choice_putstr_mac(int x, int y, int n, byte a, cptr s)
-{
-    Rect r;
-    int i,len;
-    int start;
-
-    WindowPtr old = active;
-
-    /* Assume no more than 24 rows used */
-    if (y >= 24) return;
-
-    /* Activate the choice window */
-    activate(choice_w);
-
-    /* Set the color */
-    setcolor(a);
-
-    /* Get the current scroll-bar setting */
-    start = GetCtlValue(choice_sb);
-
-    /* Get the length */
-    if (n < 0) n = strlen(s);
-    
-    /* Draw the text */
-    MoveTo(choice_font_wid * x + choice_font_o_x + 4,
-	   choice_font_hgt * (y-start) + choice_font_o_y);
-    DrawText(s,0,n);
-
-    /* Re-Activate the main window */
-    activate(old);
-}
-
-
-#endif
-
-
-
-/*** Function hooks needed by "Term" ***/
-
-
-/*
- * Low level graphics.  Assumes valid input.
- * Draw several ("n") chars, with an attr, at a given location.
- */
-static void Term_text_mac(int x, int y, int n, byte a, cptr s)
-{
-    /* Hack -- Stop illegal chars */
-    if ((a == 0) || (a >= 16)) a = COLOR_RED;
-
-    /* Erase behind the characters */
-    Term_wipe(x, y, n, 1);
-
-    /* Activate the color */
-    setcolor(a);
-
-    /* Move to the correct location */
-    MoveTo(x * screen_font_wid + screen_font_o_x, y * screen_font_hgt + screen_font_o_y);
-
-    /* Sometimes Just draw a single character */
-    if (n == 1) DrawChar(s[0]);
-
-    /* Draw the string (will only work for mono-spaced fonts) */
-    else DrawText(s, 0, n);
-}
-
-
-
-/*
- * Low level graphics (Assumes valid input)
- *
- * Erase a "block" of characters starting at (x,y), with size (w,h)
- */
-static void Term_wipe_mac(int x, int y, int w, int h)
-{
-    Rect r;
-
-    /* Erase the character grid */
-    r.left = x * screen_font_wid;
-    r.right = r.left + w * screen_font_wid;
-    r.top = y * screen_font_hgt;
-    r.bottom = r.top + h * screen_font_hgt;
-    EraseRect(&r);
-}
-
-
-
-/*
- * Low level graphics (Assumes valid input).
- * Draw a "cursor" at (x,y), using a "yellow box".
- * We are allowed to use "Term_grab()" to determine
- * the current screen contents (for inverting, etc).
- */
-static void Term_curs_mac(int x, int y, int z)
-{
-    Rect r;
-
-    /* Cursor is done as a yellow "box" */
-    setcolor(COLOR_YELLOW);
-
-    /* Paranoia -- verify the cursor */
-    if ((x < 0) || (y < 0) || (x >= screen_cols) || (y >= screen_rows))
-    {
-	x = 0, y = 0, setcolor(COLOR_RED);
-    }
-
-    /* Frame the grid */
-    r.left = x * screen_font_wid;
-    r.right = r.left + screen_font_wid;
-    r.top = y * screen_font_hgt;
-    r.bottom = r.top + screen_font_hgt;
-    FrameRect(&r);
-}
-
-
-
-/*
- * Scan for events
- *
- * Hack -- react to "events" like "user setting options that should
- * make us change the visibility of certain windows".
- */
-static void Term_scan_mac(int n)
-{
-    if (n < 0)
-    {
-	/* Scan until no events left */
-	while (CheckEvents());
-    }
-
-    else
-    {
-	/* Scan until 'n' events have been handled */
-	while (n > 0) if (CheckEvents()) n--;
-    }
-
-    /* Hack -- check windows */
-    recall_note();
-    choice_note();
-}
-
-
-/*
- * Do a "special thing"
- */
-static void Term_xtra_mac(int n)
-{
-    /* Handle a sub-set of the legal requests */
-    switch (n)
-    {
-	/* Handle "beep" requests */
-	case TERM_XTRA_NOISE: SysBeep(1); break;
-    }
-}
-
-
-
-
-
 /*** Some Hooks for various routines ***/
 
 
@@ -2951,7 +2496,7 @@ static errr hook_rnfree(vptr v, huge size)
 /*
  * See "z-util.c"
  */
- 
+
 static void hook_plog(cptr str)
 {
     mac_warning(str);
@@ -2962,9 +2507,12 @@ static void hook_quit(cptr str)
     /* Warning if needed */
     if (str) mac_warning(str);
 
+    /* Write a preference file */
+    save_pref_file();
+
     /* Oh yeah, close the high score list */
     nuke_scorefile();
-        
+
     /* All done */
     ExitToShell();
 }
@@ -2992,8 +2540,8 @@ static void hook_core(cptr str)
  */
 void main(void)
 {
-    /* Mac-Hack -- about 100K of extra stack */
-    SetApplLimit(GetApplLimit()-100000L);
+    /* Mac-Mega-Hack -- about 200K of extra stack */
+    SetApplLimit(GetApplLimit()-200000L);
     MaxApplZone();
 
     /* Set up the Macintosh */
@@ -3006,10 +2554,10 @@ void main(void)
 
 
     /* Mark ourself as the file creator */
-    _fcreator='A271';
+    _fcreator = 'A271';
 
-    /* Default to saving a "save" file */
-    _ftype='SAVE';
+    /* Default to saving a "text" file */
+    _ftype = 'TEXT';
 
 
     /* Hook in some "z-virt.c" hooks */
@@ -3022,29 +2570,6 @@ void main(void)
     core_aux = hook_core;
 
 
-    /* Hook in some hooks for "term.c" */
-    Term_text_hook = Term_text_mac;
-    Term_wipe_hook = Term_wipe_mac;
-    Term_curs_hook = Term_curs_mac;
-    Term_scan_hook = Term_scan_mac;
-    Term_xtra_hook = Term_xtra_mac;
-
-
-#ifdef GRAPHIC_RECALL
-    /* Hook in some hooks for "recall.c" */
-    recall_clear_hook = recall_clear_mac;
-    recall_putstr_hook = recall_putstr_mac;
-    use_recall_win = 1;
-#endif
-
-#ifdef GRAPHIC_CHOICE
-    /* Hook in some hooks for the "choice" window */
-    choice_clear_hook = choice_clear_mac;
-    choice_putstr_hook = choice_putstr_mac;
-    use_choice_win = 1;
-#endif
-
-
     /* Prepare the "colors" */
     init_colors();
 
@@ -3053,25 +2578,6 @@ void main(void)
 
     /* Prepare the windows */
     init_windows();
-
-
-    /* Init the Screen itself */
-    screen_init();
-
-    /* Init the Recall window */
-    recall_init();
-
-    /* Init the Choice window */
-    choice_init();
-
-
-    /* Hack -- Set some "methods" for "Term" */
-    Term_method(TERM_SOFT_CURSOR, TRUE);
-    Term_method(TERM_SCAN_EVENTS, TRUE);
-
-
-    /* Prepare the "Term" */
-    Term_init();
 
 
     /* Prepare the filepaths */
@@ -3087,12 +2593,11 @@ void main(void)
     show_news();
 
     /* Allocate and Initialize various arrays */
-    prt("[Initializing arrays...]", 23, 30);
-    Term_fresh();
     init_some_arrays();
-    prt("[Initializing arrays... done]", 23, 30);
-    Term_fresh();
 
+    /* We are now initialized */
+    initialized = TRUE;
+    
     /* Did the user double click on a save file? */
     check_for_save_file();
 
@@ -3100,8 +2605,8 @@ void main(void)
     prt("[Choose 'New' or 'Open' from the 'File' menu]", 23, 15);
     Term_fresh();
 
-    /* Process Events (until "play_game_mac()" is called) */
-    while (1) CheckEvents();
+    /* Process Events Forever */
+    while (1) CheckEvents(FALSE);
 }
 
 

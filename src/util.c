@@ -2,9 +2,6 @@
 
 /* Purpose: miscellanous utilities */
 
-/* Done: Ansi */
-/* Todo: verify "tilde()" and other functions */
-
 /*
  * Copyright (c) 1989 James E. Wilson 
  *
@@ -16,6 +13,7 @@
 #include "angband.h"
 
 
+
 #ifndef HAS_USLEEP
 
 /*
@@ -25,33 +23,105 @@
  */
 int usleep(huge microSeconds)
 {
-    unsigned int        Seconds, uSec;
-    int                 nfds, readfds, writefds, exceptfds;
     struct timeval      Timer;
 
-    nfds = readfds = writefds = exceptfds = 0;
+    int                 nfds = 0;
 
-    if (microSeconds > (unsigned long)4000000) {
-	errno = ERANGE;		   /* value out of range */
-	plog("usleep time out of range (0 to 4000000)");
-	return -1;
+#ifdef FD_SET
+    fd_set		*no_fds = NULL;
+#else
+    int			*no_fds = NULL;
+#endif
+
+
+    /* Was: int readfds, writefds, exceptfds; */
+    /* Was: readfds = writefds = exceptfds = 0; */
+
+
+    /* Paranoia -- No excessive sleeping */
+    if (microSeconds > 4000000L) core("Illegal usleep() call");
+    
+
+    /* Wait for it */
+    Timer.tv_sec = (microSeconds / 1000000L);
+    Timer.tv_usec = (microSeconds % 1000000L);
+
+    /* Wait for it */
+    if (select(nfds, no_fds, no_fds, no_fds, &Timer) < 0) {
+
+	/* Hack -- ignore interrupts */
+	if (errno != EINTR) return -1;
     }
-
-    Seconds = microSeconds / (unsigned long)1000000;
-    uSec = microSeconds % (unsigned long)1000000;
-
-    Timer.tv_sec = Seconds;
-    Timer.tv_usec = uSec;
-    if (select(nfds, &readfds, &writefds, &exceptfds, &Timer) < 0) {
-	if (errno != EINTR) {
-	    plog("usleep (select) failed");
-	    return -1;
-	}
-    }
+    
+    /* Success */
     return 0;
 }
 
 #endif
+
+
+#ifdef MACINTOSH
+
+/* See "main-mac.c" */
+
+#else
+
+#ifdef AMIGA
+
+void delay(int t)
+{
+    if (t >= 20) Delay(t / 20);
+}
+
+#else
+
+#ifdef __EMX__
+
+void delay(int x)
+{
+    _sleep2(x);
+}
+
+#else
+
+#ifndef MSDOS
+
+/*
+ * Unix port for "delay"
+ */
+void delay(int x)
+{
+    /* Do it in micro-seconds */
+    usleep(1000 * x);
+}
+
+#endif	/* MSDOS */
+
+#endif	/* __EMX__ */
+
+#endif	/* AMIGA */
+
+#endif	/* MACINTOSH */
+
+
+#ifdef AMIGA
+
+/*
+ * Is this actually used?
+ */
+int getuid()
+{
+  return 0;
+}
+
+/*
+ * Is this actually used?
+ */
+void umask(int x)
+{
+}
+
+#endif /* AMIGA */
 
 
 
@@ -66,25 +136,30 @@ struct passwd      *getpwnam();
 
 /*
  * Find a default user name from the system.
- * We do NOT capitalize this name.  It is probably
- * NOT a "human" name, and if it is, the player can
- * "choose" the proper name with "-uPlayername"
  */
 void user_name(char *buf, int id)
 {
     struct passwd *pw;
 
     /* Look up the user name */
-    pw = getpwuid(id);
-    (void)strcpy(buf, pw->pw_name);
+    if ((pw = getpwuid(id))) {
+	(void)strcpy(buf, pw->pw_name);
+	buf[16] = '\0';
 
-    /* Hack -- only allow 15 letters (just in case) */
-    buf[16] = '\0';
+#ifdef CAPITALIZE_USER_NAME
+	if (islower(buf[0])) buf[0] = toupper(buf[0]);
+#endif
+
+	return;
+    }
+
+    /* Oops.  Hack -- default to "PLAYER" */
+    strcpy(buf, "PLAYER");
 }
 
 
 /*
- * Attempt to expand leading tildes at the beginning of file names
+ * Attempt to expand leading tilde's at the beginning of file names
  * Replace "~user" by the home directory of the user named "user"
  * Thus "~user" refers to the home directory of "user",
  * and "~" refers to the home directory of the current user
@@ -92,7 +167,7 @@ void user_name(char *buf, int id)
  * If successful, load the result into "exp" and return "TRUE"
  * When FALSE is returned, the original file may be fine by itself.
  */
-int tilde(cptr file, char *exp)
+static int parse_path(cptr file, char *exp)
 {
     register cptr	u, s;
     struct passwd	*pw;
@@ -158,9 +233,9 @@ void user_name(char *buf, int id)
 }
 
 /*
- * There is no "tilde" expansion on single-user machines
+ * There is no expansion on single-user machines
  */
-int tilde(cptr file, char *exp)
+static int parse_path(cptr file, char *exp)
 {
     /* Always fails */
     return (0);
@@ -177,8 +252,8 @@ FILE *my_tfopen(cptr file, cptr mode)
 {
     char                buf[1024];
 
-    /* Try to parse the tilde */
-    if (tilde(file, buf)) file = buf;
+    /* Try to parse the path */
+    if (parse_path(file, buf)) file = buf;
 
     /* Attempt to fopen the file anyway */
     return (fopen(file, mode));
@@ -192,8 +267,8 @@ int my_topen(cptr file, int flags, int mode)
 {
     char                buf[1024];
 
-    /* Try to parse the tilde */
-    if (tilde(file, buf)) file = buf;
+    /* Try to parse the path */
+    if (parse_path(file, buf)) file = buf;
 
 #ifdef MACINTOSH    
     /* Attempt to open the file anyway */

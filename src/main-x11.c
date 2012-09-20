@@ -12,50 +12,7 @@
 #ifdef USE_X11
 
 
-#include "z-util.h"
-
-#include "x-metadpy.h"
-
-#include "x-infoclr.h"
-#include "x-infofnt.h"
-#include "x-infowin.h"
-
-#include "r-infoclr.h"
-#include "r-infofnt.h"
-#include "r-infowin.h"
-
-infoclr *clr[16];
-
-infoclr *xor;
-
-infofnt *fnt;
-
-
-#define WINDOW_ROWS 24
-#define WINDOW_COLS 80
-#define WINDOW_EDGE 1
-
-infowin *window_0;		/* Frame for "main window" */
-infowin *window_1;		/* Actual "main window" */
-
-
-
-#ifdef GRAPHIC_RECALL
-
-#define RECALL_ROWS 24
-#define RECALL_COLS 80
-#define RECALL_EDGE 1
-
-infowin *recall_0;		/* Frame for "recall window" */
-infowin *recall_1;		/* Actual "recall window" */
-
-#endif
-
-#ifdef GRAPHIC_CHOICE
-infowin *choice_0;		/* Frame for "choice window" */
-infowin *choice_1;		/* Actual "choice window" */
-#endif
-
+#include "xtra-x11.h"
 
 
 #ifndef __MAKEDEPEND__
@@ -66,85 +23,235 @@ infowin *choice_1;		/* Actual "choice window" */
 #endif /* __MAKEDEPEND__ */
 
 
+#ifndef IsModifierKey
 
 /*
- * Parse an XEvent of type 'Key' into an ascii code
- * Note that 'Shift' is parsed as an 'error'
- *
- * Inputs:
- *	code: Place to store the ascii value
- *	xev:  Pointer to an XEvent
+ * Keysym macros, used on Keysyms to test for classes of symbols
  */
-static errr ascii_from_xevent(int *code, XEvent *xev)
+
+#define IsKeypadKey(keysym) \
+  (((unsigned)(keysym) >= XK_KP_Space) && ((unsigned)(keysym) <= XK_KP_Equal))
+
+#define IsCursorKey(keysym) \
+  (((unsigned)(keysym) >= XK_Home)     && ((unsigned)(keysym) <  XK_Select))
+
+#define IsPFKey(keysym) \
+  (((unsigned)(keysym) >= XK_KP_F1)     && ((unsigned)(keysym) <= XK_KP_F4))
+
+#define IsFunctionKey(keysym) \
+  (((unsigned)(keysym) >= XK_F1)       && ((unsigned)(keysym) <= XK_F35))
+
+#define IsMiscFunctionKey(keysym) \
+  (((unsigned)(keysym) >= XK_Select)   && ((unsigned)(keysym) <  XK_KP_Space))
+
+#define IsModifierKey(keysym) \
+  (((unsigned)(keysym) >= XK_Shift_L)  && ((unsigned)(keysym) <= XK_Hyper_R))
+
+#endif
+
+
+
+/*
+ * Hack -- cursor color
+ */
+static infoclr *xor;
+
+/*
+ * Color table
+ */
+static infoclr *clr[16];
+
+
+/*
+ * Forward declare
+ */
+typedef struct _term_data term_data;
+
+/*
+ * A structure for each "term"
+ */
+struct _term_data {
+
+  term t;
+
+  infofnt *fnt;
+
+  infowin *outer;
+  infowin *inner;
+};
+
+
+/*
+ * The three term_data's
+ */
+static term_data screen;
+static term_data recall;
+static term_data choice;
+
+
+/*
+ * Process a keypress event
+ */
+static void react_keypress(XEvent *xev)
 {
+  int i, n, mc, ms, mo, mx;
+
+  uint ks1;
+
   XKeyEvent *ev = (XKeyEvent*)(xev);
 
-  char buf[2];
   KeySym ks;
 
-  int i;
-  unsigned int ks1;
+  char buf[128];
 
 
-  /* They hit a bizarre key like shift, extract arrow keys */
-  i = XLookupString (ev, buf, 2, &ks, NULL);
+  /* Check for "normal" keypresses */
+  n = XLookupString(ev, buf, 125, &ks, NULL);
 
-  /* Turn into an Int cause 'KeySym's are no good in 'switch' */
-  ks1 = (int)(ks);
+  /* Hack -- Ignore "modifier keys" */
+  if (IsModifierKey(ks)) return;
 
-  /* If i is weird, complain */
-  if (i != 0 && i != 1)
+  /* Normal keys */
+  if (n)
   {
-    plog_fmt("Weird length (%d) returned by XLookupString", i);
-    return (-11);
+    buf[n] = '\0';
+    for (i = 0; buf[i]; i++) Term_keypress(buf[i]);
+    return;
   }
 
-  /* If no "string" found, must be a weird key */
-  if (i == 0) 
-  {
-    /* Hack -- Arrow keys into numerical directions */
-    switch (ks1)
-    {
-      case XK_Up:    { *code = '8'; return (0); }
-      case XK_Down:  { *code = '2'; return (0); }
-      case XK_Left:  { *code = '4'; return (0); } 
-      case XK_Right: { *code = '6'; return (0); }
-    }
 
-    /* I can't decifer it */
-    return (-12);
-  }
+  /* Extract four "modifier flags" */
+  mc = (ev->state & ControlMask) ? TRUE : FALSE;
+  ms = (ev->state & ShiftMask) ? TRUE : FALSE;
+  mo = (ev->state & Mod1Mask) ? TRUE : FALSE;
+  mx = (ev->state & Mod2Mask) ? TRUE : FALSE;
 
-  /* Switch on a few bizarre KeySym codes */
+  /* Hack -- convert into an unsigned int */
+  ks1 = (uint)(ks);
+
+  /* Hack -- Build a buffer */
+  sprintf(buf, "%c%s%s%s%s%u%c", 31,
+	      mc ? "C" : "", ms ? "S" : "",
+	      mo ? "O" : "", mx ? "X" : "",
+	      ks1, 13);
+
+  /* Handle a few special KeySym codes */
   switch (ks1)
   {
-    case XK_Return:    { *code = CURSOR_RET; return (0); }
-    case XK_BackSpace: { *code = CURSOR_BS;  return (0); }
-    case XK_Delete:    { *code = CURSOR_BS;  return (0); }
-    case XK_Tab:       { *code = CURSOR_TAB; return (0); }
-    case XK_Escape:    { *code = CURSOR_ESC; return (0); }
+    case XK_Return:
+      strcpy(buf, "\n"); break;
+
+    case XK_Tab:
+      strcpy(buf, "\t"); break;
+
+    case XK_BackSpace: 
+      strcpy(buf, "\010"); break;
+
+    case XK_Delete: 
+      strcpy(buf, "\010"); break;
+
+    case XK_Escape:
+      sprintf(buf, "%c", ESCAPE); break;
+
+    case XK_Up:
+      sprintf(buf, "%c%d", 30, 8); break;
+
+    case XK_Down:
+      sprintf(buf, "%c%d", 30, 2); break;
+
+    case XK_Left:
+      sprintf(buf, "%c%d", 30, 4); break;
+
+    case XK_Right:
+      sprintf(buf, "%c%d", 30, 6); break;
   }
 
-  /* Try Normal Ascii Buffer Values */
-  if ((buf[0] > 0) && (buf[0] < 127))
-  {
-    *code = ((int)(buf[0]));
-    return (0);
-  }
-
-  /* Cannot decifer it */
-  return (-1);
+  /* Enqueue the "fake" string */
+  for (i = 0; buf[i]; i++) Term_keypress(buf[i]);
 }
 
 
+
+
 /*
- * Helper function for CheckEvents()
+ * Process an event (or just check for one)
  */
-static void react (XEvent *xev)
+static errr CheckEvent(bool check)
 {
+  term_data *old_td = (term_data*)(Term->data);
+
+  XEvent xev_body, *xev = &xev_body;
+
+  term_data *td = NULL;
+  infowin *iwin = NULL;
+
   int flag = 0;
 
   int x, y, data;
+
+
+  /* No events ready, and told to just check */
+  if (check && !XPending(Metadpy->dpy)) return (1);
+
+  /* Load the Event */
+  XNextEvent(Metadpy->dpy, xev);
+
+
+  /* Main screen, inner window */
+  if (xev->xany.window == screen.inner->win)
+  {
+    td = &screen;
+    iwin = td->inner;
+  }
+
+  /* Main screen, outer window */
+  else if (xev->xany.window == screen.outer->win)
+  {
+    td = &screen;
+    iwin = td->outer;
+  }
+
+
+  /* Recall window, inner window */
+  else if (xev->xany.window == recall.inner->win)
+  {
+    td = &recall;
+    iwin = td->inner;
+  }
+
+  /* Recall Window, outer window */
+  else if (xev->xany.window == recall.outer->win)
+  {
+    td = &recall;
+    iwin = td->outer;
+  }
+
+
+  /* Choice window, inner window */
+  else if (xev->xany.window == choice.inner->win)
+  {
+    td = &choice;
+    iwin = td->inner;
+  }
+
+  /* Choice Window, outer window */
+  else if (xev->xany.window == choice.outer->win)
+  {
+    td = &choice;
+    iwin = td->outer;
+  }
+
+
+  /* Unknown window */
+  if (!td || !iwin) return (0);
+
+
+  /* Hack -- activate the Term */
+  Term_activate(&td->t);
+
+  /* Hack -- activate the window */
+  Infowin_set(iwin);
+
 
   /* Switch on the Type */
   switch (xev->type)
@@ -188,6 +295,9 @@ static void react (XEvent *xev)
       /* Where is the mouse */
       x = xev->xcrossing.x;
       y = xev->xcrossing.y;
+
+      /* XXX Handle */
+
       break;
     }
 
@@ -197,6 +307,9 @@ static void react (XEvent *xev)
       /* Where is the mouse */
       x = xev->xmotion.x;
       y = xev->xmotion.y;
+
+      /* XXX Handle */
+
       break;
     }
 
@@ -210,18 +323,15 @@ static void react (XEvent *xev)
     /* A KeyPress */
     case KeyPress:
     {
-      /* Convert the Data into Ascii Form, or assume unknown */
-      if (ascii_from_xevent (&data, xev)) data = -128;
-
-      /* Only accept values that will fit inside a 'char' */
-      if ((data < -127) || (data > 127)) data = -128;
-
       /* Save the mouse location */
       x = xev->xkey.x;
       y = xev->xkey.y;
 
-      /* Enqueue the keypress, if useful */
-      if (data > 0) Term_keypress(data);
+      /* Hack -- use "old" term */
+      Term_activate(&old_td->t);
+
+      /* Process the key */
+      react_keypress(xev);
 
       break;
     }
@@ -229,9 +339,12 @@ static void react (XEvent *xev)
     /* An Expose Event */
     case Expose:
     {
-      /* Erase and redraw */
+      /* Clear the window */
       Infowin_wipe();
-      Term_redraw();
+
+      /* Redraw if allowed */
+      if (iwin == td->inner) Term_redraw();
+
       break;
     }
 
@@ -254,7 +367,7 @@ static void react (XEvent *xev)
     case ConfigureNotify:
     {
       int x1, y1, w1, h1;
-      int wid, hgt;
+      int cols, rows, wid, hgt;
 
       /* Save the Old information */
       x1 = Infowin->x;
@@ -268,134 +381,126 @@ static void react (XEvent *xev)
       Infowin->w = xev->xconfigure.width;
       Infowin->h = xev->xconfigure.height;
 
-      /* Process "window" */
-      if (Infowin == window_0)
+      /* Detemine "proper" number of rows/cols */
+      cols = ((Infowin->w - 2) / td->fnt->wid);
+      rows = ((Infowin->h - 2) / td->fnt->hgt);
+
+      /* Hack -- do not allow resize of main screen */
+      if (td == &screen) cols = 80;
+      if (td == &screen) rows = 24;
+
+      /* Hack -- minimal size */
+      if (cols < 1) cols = 1;
+      if (rows < 1) rows = 1;
+
+      /* Desired size of "outer" window */
+      wid = cols * td->fnt->wid;
+      hgt = rows * td->fnt->hgt;
+
+      /* Resize the windows if any "change" is needed */
+      if ((Infowin->w != wid + 2) || (Infowin->h != hgt + 2))
       {
-        /* Desired inner size */
-        wid = WINDOW_COLS * fnt->wid + 2 * WINDOW_EDGE;
-        hgt = WINDOW_ROWS * fnt->hgt + 2 * WINDOW_EDGE;
-
-        /* Reset the size */
-        if ((Infowin->w != wid) || (Infowin->h != hgt))
-        {
-          /* Hack -- cancel window resizes */
-          Infowin_resize(wid,hgt);
-        }
+        Infowin_set(td->outer);
+	Infowin_resize(wid + 2, hgt + 2);
+        Infowin_set(td->inner);
+        Infowin_resize(wid, hgt);
       }
-      break;
 
+      break;
     }
   }
+
+
+  /* Hack -- Activate the old term */
+  Term_activate(&old_td->t);
+
+  /* Hack -- Activate the proper "inner" window */
+  Infowin_set(old_td->inner);
+
+
+  /* XXX XXX Hack -- map/unmap as needed */
+
+
+  /* Success */
+  return (0);
 }
 
 
 
+
+
+
+
 /*
- * Check for events
+ * Handle "activation" of a term
  */
-static void Term_scan_x11(int n)
+static errr Term_xtra_x11_level(int v)
 {
-  XEvent xev;
+  term_data *td = (term_data*)(Term->data);
 
-  /* Scan for events */
-  while (1)
-  {
-    /* If we were told to handle 'n' events, see if we have */
-    if ((n >= 0) && (n-- == 0)) return;
+  /* Only handle "activate" */
+  if (v != TERM_LEVEL_SOFT_OPEN) return (1);
 
-    /* If we were told to Scan until done, see if we are done */
-    if ((n < 0) && !XPending(Metadpy->dpy)) return;
+  /* Activate the "inner" window */
+  Infowin_set(td->inner);
 
-    /* Load an Event (block if needed) */
-    XNextEvent(Metadpy->dpy, &xev);
+  /* Activate the "inner" font */
+  Infofnt_set(td->fnt);
 
-    /* Look up the window */
-    if (window_0->win == xev.xany.window)
-    {
-      Infowin_set(window_0);
-      react (&xev);
-      Infowin_set(window_1);
-    }
-
-    /* Look up the window */
-    if (window_1->win == xev.xany.window)
-    {
-      react (&xev);
-    }
-  }
+  /* Success */
+  return (0);
 }
 
 
 /*
  * Handle a "special request"
  */
-static void Term_xtra_x11(int n)
+static errr Term_xtra_x11(int n, int v)
 {
     /* Handle a subset of the legal requests */
     switch (n)
     {
 	/* Make a noise */
-	case TERM_XTRA_NOISE: Metadpy_do_beep(); break;
+	case TERM_XTRA_NOISE: Metadpy_do_beep(); return (0);
 
 	/* Flush the output */
-	case TERM_XTRA_FLUSH: Metadpy_update(1,0,0); break;
+	case TERM_XTRA_FLUSH: Metadpy_update(1,0,0); return (0);
+	
+	/* Check for a single event */
+	case TERM_XTRA_CHECK: return (CheckEvent(TRUE));
+	
+	/* Wait for a single event */
+	case TERM_XTRA_EVENT: return (CheckEvent(FALSE));
+	
+	/* Handle change in the "level" */
+	case TERM_XTRA_LEVEL: return (Term_xtra_x11_level(v));
     }
+
+    /* Unknown */
+    return (1);
 }
-
-
-
-#if 0
-
-void dump(void)
-{
-  int x, y, len;
-  char *str;
-
-  /* Set the Infowin and Infofnt */
-  Infowin_set (txt->w->iwin);
-  Infofnt_set (txt->fnt);
-
-  /* See how many chars would fit in this window */
-  w = Infowin->w / Infofnt->wid;
-  h = Infowin->h / Infofnt->hgt;
-
-  /* Save a clean, safe version of these values */
-  txt->wid = (w < 1) ? 1 : w;
-  txt->hgt = (h < 1) ? 1 : h;
-
-  /* XXX Be sure ind is on the screen */
-
-  /* XXX Now perhaps auto-resize to that exact size */
-
-  x = 0; y = 5;
-
-  /* Get the str and len */
-  str = "Hello There My Name is Ben";
-  len = strlen(str);
-
-  /* Figure out how many chars we should display */
-  if (x + len > 80) len = 80 - x;
-}
-#endif
 
 
 
 /*
  * Erase a number of characters
  */
-static void Term_wipe_x11(int x, int y, int w, int h)
+static errr Term_wipe_x11(int x, int y, int w, int h)
 {
   int k;
 
   /* Erase (use black) */
-  Infoclr_set (clr[0]);
+  Infoclr_set(clr[0]);
 
-  /* Erase each row */
+  /* Hack -- Erase each row */
   for (k = 0; k < h; ++k)
   {
     /* Mega-Hack -- Erase some space */
     Infofnt_text (x, y+k, "", w, TEXT_FILL | TEXT_GRID | TEXT_J_LT);
   }
+  
+  /* Success */
+  return (0);
 }
 
 
@@ -403,24 +508,24 @@ static void Term_wipe_x11(int x, int y, int w, int h)
 /*
  * Draw the cursor (XXX by hiliting)
  */
-static void Term_curs_x11(int x, int y, int z)
+static errr Term_curs_x11(int x, int y, int z)
 {
   /* Draw the cursor */
   Infoclr_set(xor);
 
   /* Hilite the cursor character */
   Infofnt_text(x, y, " ", 1, TEXT_GRID | TEXT_J_LT | TEXT_FILL);
+  
+  /* Success */
+  return (0);
 }
 
 
 /*
  * Draw a number of characters
  */
-static void Term_text_x11(int x, int y, int n, byte a, cptr s)
+static errr Term_text_x11(int x, int y, int n, byte a, cptr s)
 {
-  /* Hack -- Check stuff */
-  if (a == COLOR_BLACK) a = COLOR_RED;
-
   /* First, erase behind the chars */
   Term_wipe(x, y, n, 1);
 
@@ -429,8 +534,68 @@ static void Term_text_x11(int x, int y, int n, byte a, cptr s)
 
   /* Draw the text, left justified, in a grid */
   Infofnt_text(x, y, s, n, TEXT_GRID | TEXT_J_LT);
+  
+  /* Success */
+  return (0);
 }
 
+
+
+/*
+ * Initialize a term_data
+ */
+static errr term_data_init(term_data *td, int w, int h, cptr name, cptr font)
+{
+  term *t = &td->t;
+
+  int wid, hgt;
+
+  /* Prepare the standard font */
+  MAKE(td->fnt, infofnt);
+  Infofnt_set(td->fnt);
+  Infofnt_init_data(font);
+
+  /* Extract the font sizes, add a border */
+  wid = w * td->fnt->wid;
+  hgt = h * td->fnt->hgt;
+
+  /* Create a top-window (border 5) */
+  MAKE(td->outer, infowin);
+  Infowin_set(td->outer);
+  Infowin_init_top(0, 0, wid + 2, hgt + 2, 1, Metadpy->fg, Metadpy->bg);
+  Infowin_set_mask(StructureNotifyMask | KeyPressMask);
+  Infowin_set_name(name);
+  Infowin_map();
+
+  /* Create a sub-window for playing field */
+  MAKE(td->inner, infowin);
+  Infowin_set(td->inner);
+  Infowin_init_std(td->outer, 1, 1, wid, hgt, 0);
+  Infowin_set_mask(ExposureMask);
+  Infowin_map();
+
+  /* Initialize the term (full size) */
+  term_init(t, 80, 24, 64);
+
+  /* Hooks */
+  t->xtra_hook = Term_xtra_x11;
+  t->curs_hook = Term_curs_x11;
+  t->wipe_hook = Term_wipe_x11;
+  t->text_hook = Term_text_x11;
+
+  /* We are not a dumb terminal */
+  t->soft_cursor = TRUE;
+  t->scan_events = TRUE;
+
+  /* Save the data */
+  t->data = td;
+    
+  /* Activate (important) */
+  Term_activate(t);
+  
+  /* Success */
+  return (0);
+}
 
 
 /*
@@ -438,37 +603,41 @@ static void Term_text_x11(int x, int y, int n, byte a, cptr s)
  *   Black, White, Slate, Orange,    Red, Green, Blue, Umber
  *   D-Gray, L-Gray, Violet, Yellow, L-Red, L-Green, L-Blue, L-Umber
  *
- * On the machine I was testing on, these colors are all too dark.
+ * Colors courtesy of: Torbj|rn Lindgren <tl@ae.chalmers.se>
+ *
+ * These colors may no longer be valid...
  */
 static cptr color_name[16] = {
-	"black",	/* BLACK 15 */
-	"white",	/* WHITE 0 */
-	"#808080",	/* GRAY 13 */
-	"#FF6402",	/* ORANGE 2 */
-	"#E00806",	/* RED 3 */
-	"#006210",	/* GREEN 9 */
-	"#0000D0",	/* BLUE 6 */
-	"#562C06",	/* BROWN 10 */
-	"#404040",	/* DARKGRAY 14 */
-	"#C0C0C0",	/* LIGHTGRAY 12 */
-	"#4600A3",	/* PURPLE 5 */
-	"#F8F004",	/* YELLOW 1 */
-	"#F20884",	/* PINK 4 */
-	"#20B814",	/* LIGHTGREEN 8 */
-	"#02A0E8",	/* LIGHTBLUE 7 */
-	"#907039",	/* LIGHTBROWN 11 */
+      "black",        /* BLACK 15 */
+      "white",        /* WHITE 0 */
+      "#d7d7d7",      /* GRAY 13 */
+      "#ff9200",      /* ORANGE 2 */
+      "#ff0000",      /* RED 3 */
+      "#00cd00",      /* GREEN 9 */
+      "#0000fe",      /* BLUE 6 */
+      "#c86400",      /* BROWN 10 */
+      "#a3a3a3",      /* DARKGRAY 14 */
+      "#ebebeb",      /* LIGHTGRAY 12 */
+      "#a500ff",      /* PURPLE 5 */
+      "#fffd00",      /* YELLOW 1 */
+      "#ff00bc",      /* PINK 4 */
+      "#00ff00",      /* LIGHTGREEN 8 */
+      "#00c8ff",      /* LIGHTBLUE 7 */
+      "#ffcc80",      /* LIGHTBROWN 11 */
 };
-
 
 
 /*
  * Initialization function for an "X11" module to Angband
  */
-errr init_x11(cptr dpy_name, cptr fnt_name)
+errr init_x11(void)
 {
-  int wid, hgt;
-
   int i;
+
+  cptr fnt_name;
+
+  cptr dpy_name = "";
+
 
   /* Init the Metadpy if possible */
   if (Metadpy_init_name(dpy_name)) return (-1);
@@ -491,75 +660,25 @@ errr init_x11(cptr dpy_name, cptr fnt_name)
   }
 
 
-  /* Prepare the font */
-  MAKE(fnt, infofnt);
-  Infofnt_set (fnt);
-  Infofnt_init_data (fnt_name);
+  /* Attempt to get a font name from the environment */
+  fnt_name = getenv("ANGBAND_X11_FONT");
+
+  /* No environment variable, use the default */
+  if (!fnt_name) fnt_name = DEFAULT_X11_FONT;
 
 
-  /* Extract the font sizes, add a border */
-  wid = WINDOW_COLS * fnt->wid + 2 * WINDOW_EDGE;
-  hgt = WINDOW_ROWS * fnt->hgt + 2 * WINDOW_EDGE;
+  /* Initialize the recall window */
+  term_data_init(&recall, 80, 6, "Recall", fnt_name);
+  term_recall = Term;
 
-  /* Create a top-window (border 5) */
-  MAKE(window_0, infowin);
-  Infowin_set (window_0);
-  Infowin_init_top (0, 0, wid, hgt, 5, Metadpy->fg, Metadpy->bg);
-  Infowin_set_mask (StructureNotifyMask | KeyPressMask);
-  Infowin_set_name("Angband");
-  Infowin_map();
+  /* Initialize the choice window */
+  term_data_init(&choice, 80, 22, "Choice", fnt_name);
+  term_choice = Term;
 
-  /* Extract the font sizes, no border */
-  wid = WINDOW_COLS * fnt->wid;
-  hgt = WINDOW_ROWS * fnt->hgt;
+  /* Initialize the screen */
+  term_data_init(&screen, 80, 24, "Angband", fnt_name);
+  term_screen = Term;
 
-  /* Create a sub-window for playing field */
-  MAKE(window_1, infowin);
-  Infowin_set (window_1);
-  Infowin_init_std (window_0, WINDOW_EDGE, WINDOW_EDGE, wid, hgt, 0);
-  Infowin_set_mask (ExposureMask);
-  Infowin_map();
-
-
-
-#ifdef GRAPHIC_RECALL
-
-  /* Extract the font sizes, add a border */
-  wid = RECALL_COLS * fnt->wid + 2 * RECALL_EDGE;
-  hgt = RECALL_ROWS * fnt->hgt + 2 * RECALL_EDGE;
-
-  /* Create a top-window (border 5) */
-  MAKE(recall_0, infowin);
-  Infowin_set (recall_0);
-  Infowin_init_top (0, 0, wid, hgt, 5, Metadpy->fg, Metadpy->bg);
-  Infowin_set_mask (StructureNotifyMask | KeyPressMask);
-  Infowin_set_name("Angband");
-  Infowin_map();
-
-  /* Extract the font sizes, no border */
-  wid = RECALL_COLS * fnt->wid;
-  hgt = RECALL_ROWS * fnt->hgt;
-
-  /* Create a sub-window for playing field */
-  MAKE(recall_1, infowin);
-  Infowin_set (recall_1);
-  Infowin_init_std (recall_0, RECALL_EDGE, RECALL_EDGE, wid, hgt, 0);
-  Infowin_set_mask (ExposureMask);
-  Infowin_map();
-
-#endif
-
-
-  /* Add in the hooks */
-  Term_text_hook = Term_text_x11;
-  Term_wipe_hook = Term_wipe_x11;
-  Term_curs_hook = Term_curs_x11;
-  Term_scan_hook = Term_scan_x11;
-  Term_xtra_hook = Term_xtra_x11;
-
-  /* We support the latest technology... */
-  Term_method(TERM_SOFT_CURSOR, TRUE);
-  Term_method(TERM_SCAN_EVENTS, TRUE);
 
   /* Success */
   return (0);

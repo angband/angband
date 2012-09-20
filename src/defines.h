@@ -42,40 +42,58 @@
  * Actually, by that time, nobody will want to use 2.5 savefiles!
  *
  * Note that a version called "2.7.1" was released, but it had the
- * "savefiles" stamped as "2.7.0".  Since only minor differences in
- * the first 2.7.0 and second 2.7.0 exist (only present if you were
- * in "search mode" when you saved), no problems should appear.
+ * "savefiles" stamped as "2.7.0".  Since there are no differences
+ * between the first 2.7.0 and the second 2.7.0, who cares...
+ *
+ * The version released as "2.7.1v2" was the real "2.7.1".
+ * There was also a "2.7.1v3" just to keep everyone confused.
+ * Then, there were several versions "2.7.2" for testing.
+ *
+ * Version 2.7.3 clears all this up by starting over with a new
+ * formalism for saving "speed", which uses 110 for "normal" and
+ * 120 for "fast" and uses a "quantum" of "ten" for normal boosts.
+ *
+ * Version 2.7.4 extends the speed code and cleans up the inventory.
  */
 
 #define CUR_VERSION_MAJ 2
 #define CUR_VERSION_MIN 7
-#define CUR_PATCH_LEVEL 1
+#define CUR_PATCH_LEVEL 4
 
 
 
 /* 
  * Some constants
  */
- 
- 
- 
-/* These values are used to keep things "small" */
+
+
+
+/*
+ * These values are used to keep things "small"
+ */
 #define MAX_UCHAR       255
 #define MAX_SHORT       32767
 #define MAX_LONG        0xFFFFFFFFL
 
 
-/* Used for "Check Load" */
+/*
+ * Used for "Check Load"
+ */
 #ifndef MAXHOSTNAMELEN
 # define MAXHOSTNAMELEN  64
 #endif
 
 
-/* Do not try to change this without MAJOR code checking */
+/*
+ * This value cannot be changed (yet)
+ */
 #define MSG_LINE		0
 
-/* This can be used to keep the High Score list "small" */
+/*
+ * This is the maximum number of high scores to save
+ */
 #define MAX_SAVE_HISCORES	100
+
 
 /* Dungeon size parameters */
 #define MAX_HEIGHT		66	/* Multiple of 11; >= 22 */
@@ -117,8 +135,26 @@
 #define STORE_MIN_KEEP    6     /* Min slots to "always" keep full */
 #define STORE_MAX_KEEP   18     /* Max slots to "always" keep full */
 #define STORE_SHUFFLE	100	/* 1/Chance (per day) of an owner changing */
+#define STORE_TURNS    1000	/* Number of turns between turnovers	*/
 
-#define GREAT_OBJ        11     /* 1/Chance of item being a Great Item  */
+
+/* Misc constants */
+#define TOWN_DAWN     10000	/* Number of turns from dawn to dawn	*/
+
+
+/*
+ * Hack -- this is the chance (1/GREAT_OBJ) that when an item is
+ * created by "get_obj_num()", that the "level" will be "enhanced"
+ * by quite a large amount.  This will allow, for example, a ring
+ * of speed to be found at 50 feet.  Changed from 11 to 20 in 2.7.4.
+ */
+#define GREAT_OBJ        20     /* 1/Chance of item being a Great Item  */
+
+/*
+ * Bonuses in "m_bonus()" are pro-rated based upon this high level.
+ * Large bonuses will become common near this level.
+ */
+#define MBONUS_MAX_LEVEL 100
 
 
 /*
@@ -144,6 +180,7 @@
 #define OBJ_SHOT		83
 
 #define OBJ_IRON_CROWN		98
+
 #define OBJ_SOFT_LEATHER	103
 #define OBJ_CHAIN_MAIL		109
 
@@ -181,7 +218,15 @@
 #define OBJ_TRAP_LIST           460
 #define OBJ_GOLD_LIST           480
 
+
+/* The "Morgoth" artifacts */
+
+#define OBJ_GROND		498
+#define OBJ_MORGOTH		499
+
+
 /* Start of the "Special Objects" */
+
 #define OBJ_SPECIAL         	500
 
 /* The actual special objects */
@@ -223,9 +268,9 @@
 
 #define OBJ_STD_ADJ     125     /* Adjust STD per level * 100        */
 #define OBJ_STD_MIN       7     /* Minimum STD                       */
-#define OBJ_BASE_MAGIC   15     /* Base amount of magic              */
-#define OBJ_BASE_MAX     70     /* Max amount of magic               */
-#define OBJ_DIV_SPECIAL   4     /* magic_chance/# special magic      */
+#define OBJ_BASE_MAGIC   15     /* Base magic_chance                 */
+#define OBJ_BASE_MAX     70     /* Maximum magic_chance              */
+#define OBJ_DIV_SPECIAL  40     /* 10*magic_chance/# special magic   */
 #define OBJ_DIV_CURSED   13     /* 10*magic_chance/# cursed items    */
 
 /* Constants describing limits of certain objects */
@@ -240,9 +285,10 @@
 /* Monster attack type limit */
 #define MAX_A_IDX       285
 
-#define WIN_MON_APPEAR    100   /* Level where winning creatures begin      */
+#define WIN_MON_APPEAR    100   /* XXX Hack -- Morgoth's level */
 
 #define QUEST_MAX         4     /* The maximum number of Quests */
+
 
 
 
@@ -264,7 +310,6 @@
 
 #define MAX_SIGHT          20   /* Maximum dis a creature can be seen       */
 #define MAX_SPELL_DIS      18   /* Maximum dis creat. spell can be cast     */
-#define MAX_MON_MULT       75   /* Maximum reproductions on a level         */
 #define MON_MULT_ADJ        8   /* High value slows multiplication          */
 #define MON_NASTY          50   /* 1/chance of high level creat             */
 #define MAX_M_ALLOC_CHANCE 160  /* 1/chance of new monster each round       */
@@ -323,22 +368,39 @@
 /* Base to hit constants                                        */
 #define BTH_PLUS_ADJ    3       /* Adjust BTH per plus-to-hit   */
 
-/* magic numbers for players inventory array */
-#define INVEN_WIELD	22		/* must be first equipable item */
-#define INVEN_HEAD      23
-#define INVEN_NECK      24
-#define INVEN_BODY      25
-#define INVEN_ARM       26
-#define INVEN_HANDS     27
-#define INVEN_RIGHT     28		/* XXX Damn I wish I had "moved" this! */
-#define INVEN_LEFT      29
-#define INVEN_FEET      30
-#define INVEN_OUTER     31
-#define INVEN_LITE      32		/* must be last "contributing" item */
-#define INVEN_AUX       33		/* must be after INVEN_LITE */
+/*
+ * Maximum number of "normal pack slots" (22 or 23)
+ * This value is also used as the index of the "overflow" slot.
+ *
+ * In 2.7.4, the pack was expanded to hold 24 items, though the player
+ * is never allowed to actually hold 24 items, mainly because the item
+ * selection screens only hold 23 items.  So if the player actually fills
+ * the 23rd slot, a random item must fall to the ground.  See "dungeon.c".
+ */
+#define INVEN_PACK	23
 
-/* Actual "size" of player inventory */
-#define INVEN_ARRAY_SIZE 34
+/*
+ * Inventory slot values (do not change these)
+ */
+#define INVEN_WIELD	24
+#define INVEN_BOW       25
+#define INVEN_LEFT      26
+#define INVEN_RIGHT     27
+#define INVEN_NECK      28
+#define INVEN_LITE      29
+#define INVEN_BODY      30
+#define INVEN_OUTER     31
+#define INVEN_ARM       32
+#define INVEN_HEAD      33
+#define INVEN_HANDS     34
+#define INVEN_FEET      35
+
+/*
+ * Total number of inventory slots (24 pack, 12 equip)
+ */
+#define INVEN_TOTAL	36
+
+
 
 /* Hardcoded */
 #define A_STR	0
@@ -353,14 +415,14 @@
  * Fval definitions: various types of dungeon floors and walls
  * Note that numbers above "15" will cause all kinds of problems.
  * The "savefiles" in particular, will be totally trashed...
+ * In 2.7.3, the "darkness" quality was moved into the "info" flags.
  */
 
-#define NULL_WALL	0	/* Nothing */
-#define DARK_FLOOR	1	/* Floor (dark) */
-#define LITE_FLOOR	2	/* Floor (lite) */
-#define NT_DARK_FLOOR	3	/* Floor (dark) in a vault */
-#define NT_LITE_FLOOR	4	/* Floor (lite) in a vault */
-#define CORR_FLOOR	5	/* Floor, not in a room */
+#define NULL_WALL	0	/* Temp value for "generate.c" */
+
+#define ROOM_FLOOR	1	/* Floor, in a room */
+#define VAULT_FLOOR	3	/* Floor, in a vault */
+#define CORR_FLOOR	5	/* Floor, in a corridor */
 
 #define MIN_WALL	8	/* Hack -- minimum "wall" fval */
 
@@ -467,7 +529,6 @@
  *
  * All the "Bad" Ego-Items are at the end.
  * The holes were left by artifacts and old ego-items.
- * The Chests are stuck in for lack of a better idea.
  */
 
 #define EGO_R			1
@@ -507,6 +568,9 @@
 #define EGO_DRAGON_SLAYING	45
 
 #define EGO_SLAY_ANIMAL		55
+
+#define EGO_EXTRA_MIGHT		60
+#define EGO_EXTRA_SHOTS		61
 
 #define EGO_ACCURACY		65
 
@@ -713,13 +777,23 @@
 #define ART_MAX			128
 
 
+/* Maximum size of the artifact table */
+#define MAX_V_IDX		ART_MAX
+
+
 /*
  * The values for the "tval" field of various objects.
  * This value is the primary means by which items are sorted in the
  * player inventory.  It also groups things for MIN_WEAR/MAX_WEAR.
- * Note that a "BOW" with tval = 27 and sval S = 10*N+P takes a missile
- * weapon with tval = 15+N, and does (xP) damage when so combined.
- * Also note that a BOW does zero base damage when used as a "club".
+ *
+ * Note that all items with tval from 10 to 50 are "wearable_p()",
+ * which means that the special "TR#_*" flags apply to them.  Note
+ * that shots/arrows/bolts have no slot to be wielded into, and that
+ * bows are wielded into the special "bow slot".  This leaves the real
+ * "weapon" slot for shovels, swords, polearms, and hafted weapons.
+ *
+ * Note that a "BOW" with tval = 19 and sval S = 10*N+P takes a missile
+ * weapon with tval = 16+N, and does (xP) damage when so combined.
  */
 
 #define TV_NEVER        -1	/* used by find_range() for non-search */
@@ -729,21 +803,21 @@
 #define TV_JUNK          3	/* Sticks, Pottery, etc ('~') */
 #define TV_SPIKE         5	/* Spikes ('~') */
 #define TV_CHEST         7	/* Chests ('~') */
-#define TV_MIN_WEAR     10	/* Min tval for wearable items */
+#define TV_MIN_WEAR     10	/* Min tval for "wearable" items */
 #define TV_LITE         10	/* Torches, Lanterns, Specials */
-#define TV_BOW          15	/* Bows are "special" */
 #define TV_SHOT		16	/* Ammo for slings */
 #define TV_ARROW        17	/* Ammo for bows */
 #define TV_BOLT         18	/* Ammo for x-bows */
+#define TV_BOW          19	/* Slings/Bows/Xbows */
+#define TV_DIGGING      20	/* Shovels/Picks */
 #define TV_HAFTED       21	/* Priest Weapons */
 #define TV_POLEARM      22	/* Axes and Pikes */
 #define TV_SWORD        23	/* Edged Weapons */
-#define TV_DIGGING      25	/* Shovels are a type of weapon */
-#define TV_BOOTS        30
-#define TV_GLOVES       31
-#define TV_CLOAK        32
-#define TV_HELM         33
-#define TV_SHIELD       34
+#define TV_BOOTS        30	/* Boots */
+#define TV_GLOVES       31	/* Gloves */
+#define TV_HELM         33	/* Helms/Crowns */
+#define TV_SHIELD       34	/* Shields */
+#define TV_CLOAK        35	/* Cloaks */
 #define TV_SOFT_ARMOR   36	/* Soft Armor */
 #define TV_HARD_ARMOR   37	/* Hard Armor */
 #define TV_DRAG_ARMOR	38	/* Dragon Scale Mail */
@@ -760,22 +834,34 @@
 #define TV_MAGIC_BOOK   90
 #define TV_PRAYER_BOOK  91
 #define TV_MAX_OBJECT   99	/* This is the max TV monsters pick up */
-#define TV_GOLD         100
+#define TV_GOLD         100	/* Gold can only be picked up by players */
 #define TV_MAX_PICK_UP  100     /* This is the max TV players pick up */
-#define TV_INVIS_TRAP   101	/* Invisible traps */
-#define TV_MIN_VISIBLE  102	/* Start of visible objects (c_ptr->fm) */
-#define TV_VIS_TRAP     102     /* Visible traps -- based on invis */
-#define TV_RUBBLE       103
-#define TV_MIN_DOORS    104	/* Min "Invulnerable object" (cave_gen()) */
-#define TV_OPEN_DOOR    104
-#define TV_CLOSED_DOOR  105
-#define TV_UP_STAIR     107
-#define TV_DOWN_STAIR   108
-#define TV_SECRET_DOOR  109
-#define TV_STORE_DOOR   110
-#define TV_MAX_VISIBLE  110	/* End of the objects (all of them) */
+#define TV_INVIS_TRAP   101	/* Invisible traps -- see visible traps */
+#define TV_MIN_VISIBLE  102	/* This is the first "visible landmark" */
+#define TV_VIS_TRAP     102     /* Visible traps */
+#define TV_OPEN_DOOR    104	/* Open doorway */
+#define TV_UP_STAIR     107	/* Staircase up */
+#define TV_DOWN_STAIR   108	/* Staircase down */
+#define TV_STORE_DOOR   110	/* Entrance to store */
+#define TV_MIN_BLOCK	112	/* This is the first "line of sight blocker" */
+#define TV_SECRET_DOOR  117	/* Secret door -- treated as a "wall" */
+#define TV_CLOSED_DOOR  118	/* Closed door -- treated as a "wall" */
+#define TV_RUBBLE       119	/* Rubble pile -- treated as a "wall" */
 
+/*
+ * Some "fake" objects, used for "redefining" object pictures.
+ * These entries obey "TV_MIN_BLOCK" and use "tval = 100 + fval".
+ * The "floor" used the same "tval" as invisible traps.
+ */
+#define TV_HACK_FLOOR	101	/* Fake object -- floor */
+#define TV_HACK_GRANITE	112	/* Fake object -- granite */
+#define TV_HACK_QUARTZ	113	/* Fake object -- quartz */
+#define TV_HACK_MAGMA	114	/* Fake object -- magma */
 
+/*
+ * A really fake object, used only for "redefining" the player picture
+ */
+#define TV_HACK_PLAYER	109	/* Fake object -- player */
 
 
 /* The sval codes for TV_LITE */
@@ -785,6 +871,21 @@
 #define SV_LITE_ELENDIL		5
 #define SV_LITE_THRAIN		6
 
+
+/* The "sval" codes for TV_BOW */
+#define SV_SLING		2	/* (x2) */
+#define SV_SHORT_BOW		12	/* (x2) */
+#define SV_LONG_BOW		13	/* (x3) */
+#define SV_LIGHT_XBOW		23	/* (x3) */
+#define SV_HEAVY_XBOW		24	/* (x4) */
+
+/* The "sval" codes for TV_DIGGING */
+#define SV_SHOVEL		1
+#define SV_GNOMISH_SHOVEL	2
+#define SV_DWARVEN_SHOVEL	3
+#define SV_PICK			4
+#define SV_ORCISH_PICK		5
+#define SV_DWARVEN_PICK		6
 
 /* The "sval" values for TV_HAFTED */
 #define SV_WHIP			2	/* 1d6 */
@@ -798,6 +899,7 @@
 #define SV_LEAD_FILLED_MACE	15	/* 3d4 */
 #define SV_TWO_HANDED_FLAIL	18	/* 3d6 */
 #define SV_MACE_OF_DISRUPTION	20	/* 5d8 */
+#define SV_GROND		50	/* 3d4 */
 
 /* The "sval" values for TV_POLEARM */
 #define SV_SPEAR		2	/* 1d6 */
@@ -835,21 +937,6 @@
 #define SV_EXECUTIONERS_SWORD	28	/* 4d5 */
 #define SV_BLADE_OF_CHAOS	30	/* 6d5 */
 
-/* The "sval" codes for TV_DIGGING */
-#define SV_SHOVEL		1
-#define SV_GNOMISH_SHOVEL	2
-#define SV_DWARVEN_SHOVEL	3
-#define SV_PICK			4
-#define SV_ORCISH_PICK		5
-#define SV_DWARVEN_PICK		6
-
-/* The "sval" codes for TV_BOW */
-#define SV_SLING		2	/* (x2) */
-#define SV_SHORT_BOW		12	/* (x3) */
-#define SV_LONG_BOW		13	/* (x3) */
-#define SV_LIGHT_XBOW		23	/* (x4) */
-#define SV_HEAVY_XBOW		24	/* (x5) */
-
 /* The "sval" codes for TV_SHIELD */
 #define SV_SMALL_LEATHER_SHIELD		2
 #define SV_SMALL_METAL_SHIELD		3
@@ -865,6 +952,7 @@
 #define SV_IRON_CROWN			10
 #define SV_GOLDEN_CROWN			11
 #define SV_JEWELED_CROWN		12
+#define SV_MORGOTH			50
 
 /* The "sval" codes for TV_BOOTS */
 #define SV_PAIR_OF_SOFT_LEATHER_BOOTS	2
@@ -1179,19 +1267,18 @@
 #define TR2_RES_COLD		0x00080000L
 #define TR2_RES_POIS		0x00100000L
 #define TR2_RES_XXX1		0x00200000L	/* Later */
+#define TR2_RES_LITE		0x00400000L	/* Oops */
+#define TR2_RES_DARK		0x00800000L	/* Oops */
 
-#define TR2_RES_CONF		0x00008000L
-#define TR2_RES_SOUND		0x00010000L
-#define TR2_RES_LITE		0x00020000L
-#define TR2_RES_DARK		0x00040000L
+#define TR2_RES_BLIND		0x01000000L	/* Oops */
+#define TR2_RES_CONF		0x02000000L	/* Oops */
+#define TR2_RES_SOUND		0x04000000L	/* Oops */
+#define TR2_RES_SHARDS		0x08000000L	/* Oops */
 
-#define TR2_RES_CHAOS		0x00080000L
-#define TR2_RES_DISEN		0x00100000L
-#define TR2_RES_SHARDS		0x00200000L
-#define TR2_RES_NEXUS		0x00400000L
-
-#define TR2_RES_BLIND		0x00800000L
-#define TR2_RES_NETHER		0x01000000L
+#define TR2_RES_NETHER		0x10000000L	/* Oops */
+#define TR2_RES_NEXUS		0x20000000L	/* Oops */
+#define TR2_RES_CHAOS		0x40000000L	/* Oops */
+#define TR2_RES_DISEN		0x80000000L	/* Oops */
 
 
 #define TR3_FLAG_XXX1		0x00000001L	/* Later */
@@ -1203,9 +1290,9 @@
 #define TR3_FLAG_XXX7		0x00000040L	/* Later */
 #define TR3_FLAG_XXX8		0x00000080L	/* Later */
 #define TR3_EASY_KNOW		0x00000100L	/* Aware -> Known */
-#define TR3_HIDE_TYPE		0x00000200L	/* (+x to yyy) -> (+x) */
+#define TR3_HIDE_TYPE		0x00000200L	/* Change (+x to yyy) to (+x) */
 #define TR3_SHOW_MODS		0x00000400L	/* Always show Tohit/Todam */
-#define TR3_SHOW_BASE		0x00000800L	/* Always show Base Armor */
+#define TR3_INSTA_ART		0x00000800L	/* This item MUST be an artifact */
 #define TR3_FEATHER	 	0x00001000L	/* Feather Falling */
 #define TR3_LITE		0x00002000L	/* Permanent Light */
 #define TR3_SEE_INVIS		0x00004000L	/* See Invisible */
@@ -1236,12 +1323,6 @@
 #define TR1_PVAL_MASK	\
 	(TR1_STR | TR1_INT | TR1_WIS | TR1_DEX | TR1_CON | TR1_CHR | \
 	 TR1_SEARCH | TR1_STEALTH | TR1_SPEED | TR1_ATTACK_SPD | TR1_INFRA)
-
-/*
- * This mask can be used to tell if an object is an "Ego-Item"
- */
-#define TR1_EGO_MASK   0x0007E000L
-
 
 
 
@@ -1358,32 +1439,6 @@
 #define ENCH_TODAM   0x02
 #define ENCH_TOAC    0x04
 
-
-#ifdef KEYMAP
-#define KEYMAP_MODES	8		/* Number of Keymap modes */
-#define KEYMAP_CHARS	256		/* Maximum definable chars */
-#endif
-
-
-/*
- * "Normal" colors which may be used as attributes in term.c
- */
-#define COLOR_BLACK		TERM_BLACK
-#define COLOR_WHITE		TERM_WHITE
-#define COLOR_GRAY		TERM_GRAY
-#define COLOR_ORANGE		TERM_ORANGE
-#define COLOR_RED		TERM_RED
-#define COLOR_GREEN		TERM_GREEN
-#define COLOR_BLUE		TERM_BLUE
-#define COLOR_BROWN		TERM_UMBER
-#define COLOR_D_GRAY		TERM_D_GRAY
-#define COLOR_L_GRAY		TERM_L_GRAY
-#define COLOR_VIOLET		TERM_VIOLET
-#define COLOR_YELLOW		TERM_YELLOW
-#define COLOR_L_RED		TERM_L_RED
-#define COLOR_L_GREEN		TERM_L_GREEN
-#define COLOR_L_BLUE		TERM_L_BLUE
-#define COLOR_L_BROWN		TERM_L_UMBER
 
 
 /*
@@ -1570,7 +1625,7 @@
 /*
  * The "recall" of monster memory is a MESS
  */
- 
+
 /* Hack -- scan for "movement" */
 #define CM1_ALL_MV_FLAGS 0x0000001FL
 #define CM1_RANDOM_MOVE  0x0000001CL

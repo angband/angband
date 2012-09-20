@@ -2,67 +2,7 @@
 
 
 
-.autodepend
-
-
-
-SRCS = \
-
-  arrays.c birth.c cave.c command.c \
-
-  creature.c death.c desc.c dungeon.c \
-
-  effects.c files.c generate.c help.c io.c magic.c \
-
-  main.c main-win.c\
-
-  misc1.c misc2.c misc3.c misc4.c \
-
-  moria1.c moria2.c moria3.c moria4.c \
-
-  random.c recall.c save.c signals.c \
-
-  spells1.c spells2.c store.c tables.c term.c \
-
-  util.c variable.c wizard.c \
-
-  z-form.c z-util.c z-virt.c
-
-
-
-
-
-OBJS = \
-
-  arrays.obj birth.obj cave.obj command.obj \
-
-  creature.obj death.obj desc.obj dungeon.obj \
-
-  effects.obj files.obj generate.obj help.obj io.obj \
-
-  magic.obj \
-
-  main.obj main-win.obj \
-
-  misc1.obj misc2.obj misc3.obj misc4.obj \
-
-  moria1.obj moria2.obj moria3.obj moria4.obj \
-
-  random.obj recall.obj save.obj signals.obj \
-
-  spells1.obj spells2.obj store.obj tables.obj term.obj \
-
-  util.obj variable.obj wizard.obj \
-
-  z-form.obj z-util.obj z-virt.obj
-
-
-
-FSS = \
-
-  command.fs creature.fs effects.fs misc4.fs moria3.fs spells1.fs \
-
-  spells2.fs store.fs wizard.fs
+#.autodepend
 
 
 
@@ -74,7 +14,69 @@ LINK = \apps\bc\bin\tlink.exe
 
 RC = \apps\bc\bin\rc.exe
 
+LIBDIR = \apps\bc\lib
 
+INCLDIR = \apps\bc\include
+
+
+
+# shouldn't need to change anything below
+
+
+
+SRCS = \
+
+  arrays.c birth.c cave.c command.c \
+
+  creature.c death.c desc.c dungeon.c \
+
+  effects.c files.c generate.c io.c \
+
+  itsybits.c magic.c main.c main-win.c\
+
+  misc1.c misc2.c misc3.c misc4.c \
+
+  moria1.c moria2.c moria3.c moria4.c \
+
+  random.c recall.c save.c save-old.c signals.c \
+
+  spells1.c spells2.c store.c tables.c term.c \
+
+  util.c variable.c wizard.c \
+
+  z-form.c z-util.c z-virt.c
+
+
+
+OBJS = \
+
+  arrays.obj birth.obj cave.obj command.obj \
+
+  creature.obj death.obj desc.obj dungeon.obj \
+
+  effects.obj files.obj generate.obj io.obj \
+
+  itsybits.obj magic.obj main.obj main-win.obj \
+
+  misc1.obj misc2.obj misc3.obj misc4.obj \
+
+  moria1.obj moria2.obj moria3.obj moria4.obj \
+
+  random.obj recall.obj save.obj save-old.obj signals.obj \
+
+  spells1.obj spells2.obj store.obj tables.obj term.obj \
+
+  util.obj variable.obj wizard.obj \
+
+  z-form.obj z-util.obj z-virt.obj
+
+
+
+FSS = \
+
+  arrays.fs command.fs creature.fs effects.fs generate.fs misc4.fs \
+
+  moria3.fs spells1.fs spells2.fs store.fs wizard.fs
 
 
 
@@ -90,7 +92,7 @@ clean:
 
 	del *.fsh
 
-	del farstr.exe
+	del ..\farstr.exe
 
 	del ..\*.map
 
@@ -98,15 +100,21 @@ clean:
 
 
 
+
+
 copyold:
 
 	mkdir oldc
+
+    copy arrays.c oldc\arrays.c
 
 	copy command.c oldc\command.c
 
 	copy creature.c oldc\creature.c
 
 	copy effects.c oldc\effects.c
+
+    copy generate.c oldc\generate.c
 
 	copy misc4.c oldc\misc4.c
 
@@ -124,11 +132,15 @@ copyold:
 
 prepwin: copyold $(FSS)
 
+    move arrays.fs arrays.c
+
 	move command.fs command.c
 
 	move creature.fs creature.c
 
 	move effects.fs effects.c
+
+    move generate.fs generate.c
 
 	move misc4.fs misc4.c
 
@@ -144,13 +156,15 @@ prepwin: copyold $(FSS)
 
 
 
+
+
 borlandc.cfg:
 
 	copy &&|
 
--I\apps\bc\include
+-I$(INCLDIR)
 
--L\apps\bc\lib
+-L$(LIBDIR)
 
 -3
 
@@ -176,9 +190,21 @@ borlandc.cfg:
 
 | borlandc.cfg
 
+	copy ..\src-win\*.* .
+
+	copy ..\src-win\angband.ini ..
+
+	copy ..\lib\files\a_list.txt ..\lib\files\a_list_m.txt
+
+	copy ..\lib\files\a_list_w.txt ..\lib\files\a_list.txt
+
 
 
 .c.fs:
+
+	del $*.fs
+
+	del $*.fsh
 
 	farstr.exe $<
 
@@ -190,9 +216,19 @@ borlandc.cfg:
 
 
 
-farstr.exe: farstr\fsmain.c farstr\fsparse.c
+farstr.exe: ..\lib\extra\farstr\fsmain.c ..\lib\extra\farstr\fsparse.c
 
-        $(CC) -mc -f- -I\apps\bc\include;farstr -L\apps\bc\lib -efarstr farstr\fsmain.c farstr\fsparse.c
+        $(CC) @&&|
+
+-mc -f- -I\apps\bc\include;..\lib\extra\farstr -L\apps\bc\lib -efarstr ..\lib\extra\farstr\fsmain.c ..\lib\extra\farstr\fsparse.c
+
+|
+
+
+
+arrays.obj: arrays.fs
+
+	$(CC) -c $(CFLAGS) $?
 
 
 
@@ -209,6 +245,12 @@ creature.obj: creature.fs
 
 
 effects.obj: effects.fs
+
+	$(CC) -c $(CFLAGS) $?
+
+
+
+generate.obj: generate.fs
 
 	$(CC) -c $(CFLAGS) $?
 
@@ -258,11 +300,11 @@ angband: $(OBJS) angband.res
 
 command creature death desc dungeon+
 
-effects files generate help io magic main main-win+
+effects files generate io itsybits magic main+
 
-misc1 misc2 misc3 misc4 moria1 moria2+
+main-win misc1 misc2 misc3 misc4 moria1 moria2+
 
-moria3 moria4 random recall save+
+moria3 moria4 random recall save save-old+
 
 signals spells1 spells2 store tables term util+
 
@@ -273,6 +315,4 @@ z-virt,..\angband.exe,..\angband.map,import cwl,angband.def
 |
 
 	$(RC) -t -v -31 angband.res ..\angband.exe
-
-
 

@@ -1,0 +1,20 @@
+=== Standard Wizard Commands ===
+
+   A - cure All maladies
+   C - Create an object
+   E - Edit character
+   G - make Good object
+   H - rerate Hitpoints
+   I - Identify something
+   J - Jump to another level
+   K - Knowledge about player
+   L - Learn about objects
+   M - Map current panel
+   P - Phase door (10 grids)
+   R - summon Random monster
+   S - summon Specific monster
+   T - Teleport (100 grids)
+   V - make Very good object
+   W - Wizard light
+   X - Gain experience
+   Z - Zap all monsters

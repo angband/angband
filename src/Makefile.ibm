@@ -1,0 +1,27 @@
+# File: Makefile.ibm
+
+# Purpose: Makefile support for "main-ibm.c"
+
+# Note: Rename to "Makefile" before using
+
+
+OBJS = \
+  main.o main-ibm.o \
+  signals.o util.o io.o arrays.o save.o save-old.o death.o \
+  generate.o birth.o creature.o effects.o magic.o dungeon.o command.o \
+  misc1.o misc2.o misc3.o misc4.o moria1.o moria2.o moria3.o moria4.o \
+  spells1.o spells2.o cave.o desc.o tables.o variable.o \
+  store.o recall.o wizard.o borg.o \
+  term.o random.o z-util.o z-virt.o z-form.o
+
+
+CC = gcc
+CFLAGS = -Wall -O2 -DUSE_IBM
+LIBS = -lpc
+BINARY = ../angband.bin
+
+.c.o:
+        $(CC) $(CFLAGS) -c $*.c
+
+angband.exe: $(OBJS)
+        $(CC) $(CFLAGS)  -o $(BINARY) $(OBJS) $(LIBS)

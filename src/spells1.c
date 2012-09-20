@@ -9,9 +9,6 @@
 
 /*
  * Apply disenchantment to the player's stuff
- * XXX No disenchantment of "pval" ?
- * Nothing worse than losing a "+1 to speed"!
- * XXX Used to have Two BODY's and no WIELD's
  *
  * The "mode" is currently unused.
  *
@@ -25,14 +22,15 @@ bool apply_disenchant(int mode)
 
 
     /* Pick a random slot */
-    switch (randint(7)) {
+    switch (randint(8)) {
 	 case 1: t = INVEN_WIELD; break;
-	 case 2: t = INVEN_BODY; break;
-	 case 3: t = INVEN_ARM; break;
+	 case 2: t = INVEN_BOW; break;
+	 case 3: t = INVEN_BODY; break;
 	 case 4: t = INVEN_OUTER; break;
-	 case 5: t = INVEN_HANDS; break;
+	 case 5: t = INVEN_ARM; break;
 	 case 6: t = INVEN_HEAD; break;
-	 case 7: t = INVEN_FEET; break;
+	 case 7: t = INVEN_HANDS; break;
+	 case 8: t = INVEN_FEET; break;
     }
 
     /* Get the item */                                
@@ -160,33 +158,36 @@ static void apply_nexus(monster_type *m_ptr)
 
 
 
+/*
+ * Note that amulets, rods, and high-level spell books are immune
+ * to "inventory damage" of any kind.  Also sling ammo and shovels.
+ */
 
 
 /*
  * Does a given class of objects (usually) hate acid?
+ * Note that acid can either melt or corrode something.
  */
 static bool hates_acid(inven_type *i_ptr)
 {
     /* Analyze the type */
     switch (i_ptr->tval) {
 
-      /* Saving throw, then fall through */
-      case TV_BOLT:
-      case TV_HELM:
-      case TV_SHIELD:
-      case TV_HARD_ARMOR:
-      case TV_DRAG_ARMOR:
-	/* XXX Hack -- may interact badly... */
-	if (randint(2) == 1) return (FALSE);
-
+      /* Wearable items */
       case TV_ARROW:
+      case TV_BOLT:
       case TV_BOW:
+      case TV_SWORD:
       case TV_HAFTED:
       case TV_POLEARM:
+      case TV_HELM:
+      case TV_SHIELD:
       case TV_BOOTS:
       case TV_GLOVES:
       case TV_CLOAK:
       case TV_SOFT_ARMOR:
+      case TV_HARD_ARMOR:
+      case TV_DRAG_ARMOR:
 	return (TRUE);
 
       /* Staffs/Scrolls are wood/paper */
@@ -221,8 +222,11 @@ static bool hates_acid(inven_type *i_ptr)
 static bool hates_elec(inven_type *i_ptr)
 {
     switch (i_ptr->tval) {
-      case TV_WAND:
+
       case TV_RING:
+	return (TRUE);
+	
+      case TV_WAND:
 	return (TRUE);
     }
 
@@ -232,13 +236,15 @@ static bool hates_elec(inven_type *i_ptr)
 
 /*
  * Does a given object (usually) hate fire?
+ * Hafted/Polearm weapons have wooden shafts.
+ * Arrows/Bows are mostly wooden.
  */
 static bool hates_fire(inven_type *i_ptr)
 {
     /* Analyze the type */    
     switch (i_ptr->tval) {
 
-      /* Burnable items */
+      /* Wearable items */
       case TV_LITE:
       case TV_ARROW:
       case TV_BOW:
@@ -291,37 +297,6 @@ static bool hates_cold(inven_type *i_ptr)
 
 
 
-
-/*
- * Corrode something (done by certain jellies and one trap)
- * I really do not like this function.  What is corrosion,
- * anyway?  Note that "Resist Acid" will resist it quite well.
- *
- * I REALLY hate this function.  Note that "corrosion" is the only
- * "inventory damaging" function that has no "resist" function.
- * Why doesn't, say, "poison" also harm the inventory?  This is odd.
- * And if "corrosion" is "rust", why are "leather caps" harmed?
- * Remember that this is a "destroy" function...
- */
-static int set_corrodes(inven_type *i_ptr)
-{
-    if (artifact_p(i_ptr)) return (FALSE);
-
-    if (wearable_p(i_ptr) && (i_ptr->flags3 & TR3_IGNORE_ACID)) return (FALSE);
-
-    switch (i_ptr->tval) {
-      case TV_WAND:
-	return (TRUE);
-      case TV_SWORD:
-      case TV_HELM:
-      case TV_SHIELD:
-      case TV_DRAG_ARMOR:
-      case TV_HARD_ARMOR:
-	return (TRUE);
-    }
-
-    return (FALSE);
-}
 
 
 
@@ -376,80 +351,111 @@ static int set_cold_destroy(inven_type *i_ptr)
 
 
 
+/* This seems like a pretty standard "typedef" */
+/* For some reason, it was not being used on Unix */
+typedef int (*inven_func)(inven_type *);
+
+/*
+ * Destroys a type of item on a given percent chance	-RAK-	 
+ * Note that missiles are no longer necessarily all destroyed
+ * Destruction taken from "creature.c" code for "stealing".
+ * Returns TRUE if anything was damaged.
+ */
+static int inven_damage(inven_func typ, int perc)
+{
+    register int i;
+    register inven_type *i_ptr;
+    int		j, k, amt;
+    vtype	tmp_str, out_val;
+
+    /* Count the casualties */
+    k = 0;
+
+    /* Scan through the slots backwards */
+    for (i = inven_ctr - 1; i >= 0; i--) {
+
+	/* Get the item in that slot */
+	i_ptr = &inventory[i];
+
+	/* Hack -- for now, skip artifacts */
+	if (artifact_p(i_ptr)) continue;
+
+	/* Give this item slot a shot at death */
+	if ((*typ)(i_ptr)) {
+
+	    /* Count the casualties */
+	    for (amt = j = 0; j < i_ptr->number; ++j) {
+		if (rand_int(100) < perc) amt++;
+	    }
+
+	    /* Some casualities */
+	    if (amt) {
+
+		/* Get a description */
+		objdes(tmp_str, i_ptr, FALSE);
+
+		/* Message */
+		sprintf(out_val, "%sour %s (%c) %s destroyed!",
+			((i_ptr->number > 1) ? 
+			((amt == i_ptr->number) ? "All of y" :
+			 (amt > 1 ? "Some of y" : "One of y")) : "Y"),
+			tmp_str, index_to_label(i),
+			((amt > 1) ? "were" : "was"));
+		message(out_val, 0);
+
+		/* Destroy "amt" items */
+		inven_item_increase(i,-amt);
+		inven_item_optimize(i);
+
+		/* Count the casualties */
+		k += amt;
+	    }
+	}
+    }
+
+    /* Return the casualty count */
+    return (k);
+}
+
 
 
 
 /*
- * The magical AC bonuses of a players ARMOR gets worse
+ * Acid has hit the player, attempt to affect some armor.
  *
  * Note that the "base armor" of an object never changes.
  *
- * Artifacts only resist acid some of the time
- *
- * If "acid" is true, the damage is coming from acid, and can
- * be resisted in some situations.  Hack -- currently, objects
- * that resist "acid" also resist "corrosion"
- *
- * Note that wearing a damaged cloak will "protect" from acid :-)
+ * If any armor is damaged (or resists), the player takes less damage.
  */
-static int minus_ac(bool acid)
+static int minus_ac(void)
 {
-    register int         j;
-    int                  do_damage;
-    register inven_type *i_ptr;
-    bigvtype             out_val, tmp_str;
+    inven_type		*i_ptr;
+    bigvtype		out_val, tmp_str;
 
-    /* Number of available items */
-    int i = 0;
 
-    /* The available items */
-    int tmp[6];
-
-    /* Make a list of the available armor */
-    if (inventory[INVEN_BODY].tval != TV_NOTHING) {
-	tmp[i++] = INVEN_BODY;
-    }
-    if (inventory[INVEN_ARM].tval != TV_NOTHING) {
-	tmp[i++] = INVEN_ARM;
-    }
-    if (inventory[INVEN_OUTER].tval != TV_NOTHING) {
-	tmp[i++] = INVEN_OUTER;
-    }
-    if (inventory[INVEN_HANDS].tval != TV_NOTHING) {
-	tmp[i++] = INVEN_HANDS;
-    }
-    if (inventory[INVEN_HEAD].tval != TV_NOTHING) {
-	tmp[i++] = INVEN_HEAD;
-    }
-    if (inventory[INVEN_FEET].tval != TV_NOTHING) {
-	tmp[i++] = INVEN_FEET;
+    /* Pick a (possibly empty) inventory slot */
+    switch (randint(6)) {
+	case 1: i_ptr = &inventory[INVEN_BODY]; break;
+	case 2: i_ptr = &inventory[INVEN_ARM]; break;
+	case 3: i_ptr = &inventory[INVEN_OUTER]; break;
+	case 4: i_ptr = &inventory[INVEN_HANDS]; break;
+	case 5: i_ptr = &inventory[INVEN_HEAD]; break;
+	case 6: i_ptr = &inventory[INVEN_FEET]; break;
     }
 
     /* Nothing to damage */
-    if (!i) return (FALSE);
-
-    /* Pick an item */
-    j = tmp[rand_int(i)];
-    i_ptr = &inventory[j];
+    if (!i_ptr->tval) return (FALSE);
 
     /* No damage left to be done */
     if (i_ptr->ac + i_ptr->toac <= 0) return (FALSE);
 
-    /* Assume damage will be done */
-    do_damage = TRUE;
-
-    /* Check for resistance to acid damage */
-    if (acid && (i_ptr->flags3 & TR3_IGNORE_ACID)) do_damage = FALSE;
-
-    /* Artifacts get a saving throw */
-    if (artifact_p(i_ptr) && (randint(5) > 2)) do_damage = FALSE;
 
     /* Object resists? */
-    if (!do_damage) {
-	objdes(tmp_str, &inventory[j], FALSE);
-	(void)sprintf(out_val, "Your %s resists damage!", tmp_str);
+    if (i_ptr->flags3 & TR3_IGNORE_ACID) {
+	objdes(tmp_str, i_ptr, FALSE);
+	(void)sprintf(out_val, "Your %s is unaffected!", tmp_str);
 	msg_print(out_val);
-	return (FALSE);
+	return (TRUE);
     }
 
     /* Describe the damage */
@@ -468,58 +474,27 @@ static int minus_ac(bool acid)
 
 
 /*
- * Hurt the player with Corrosion
- * This is done by "jellies" and certain traps.
- * Note that "resist acid" does NOT lower the damage.
- */
-void corrode_gas(cptr kb_str)
-{
-    /* Hack -- Calculate damage */
-    int dam = randint(8);
-    
-    /* Total immunity */
-    if (p_ptr->immune_acid || (dam <= 0)) return;
-
-    /* Damage armor, OR take damage */
-    if (!minus_ac(TRUE)) take_hit(dam, kb_str);
-
-    /* Inventory damage */
-    inven_damage(set_corrodes, 3);
-
-#ifdef DAMAGE_STATS
-
-    /* Resist furthur damage */
-    if (p_ptr->oppose_acid) return;
-    if (p_ptr->resist_acid) return;
-
-    /* Stat damage */
-    if (!p_ptr->sustain_chr && (randint(5) == 1)) {
-	msg_print("Your features are twisted!");
-	dec_stat(A_CHR, 10, FALSE);
-    }
-
-#endif
-
-}
-
-/*
  * Hurt the player with Acid
  */
 void acid_dam(int dam, cptr kb_str)
 {
+    int inv = (dam < 30) ? 1 : (dam < 60) ? 2 : 3;
+
     /* Total Immunity */
     if (p_ptr->immune_acid || (dam <= 0)) return;
 
-    /* Slight resistance */
-    if (p_ptr->resist_acid) dam = dam / 3;
-    if (p_ptr->oppose_acid) dam = dam / 3;
-    if (dam < 1) dam = 1;
+    /* Resist the damage */
+    if (p_ptr->resist_acid) dam = (dam + 2) / 3;
+    if (p_ptr->oppose_acid) dam = (dam + 2) / 3;
 
-    /* Hurt the armor OR take damage */
-    if (!minus_ac(TRUE)) take_hit(dam, kb_str);
+    /* If any armor gets hit, defend the player */
+    if (minus_ac()) dam = (dam + 1) / 2;
+    
+    /* Take damage */
+    take_hit(dam, kb_str);
 
     /* Inventory damage */
-    inven_damage(set_acid_destroy, 3);
+    inven_damage(set_acid_destroy, inv);
 
 #ifdef DAMAGE_STATS
 
@@ -543,19 +518,20 @@ void acid_dam(int dam, cptr kb_str)
  */
 void elec_dam(int dam, cptr kb_str)
 {
+    int inv = (dam < 30) ? 1 : (dam < 60) ? 2 : 3;
+
     /* Total immunity */
     if (p_ptr->immune_elec || (dam <= 0)) return;
 
     /* Resist the damage */
-    if (p_ptr->oppose_elec) dam = dam / 3;
-    if (p_ptr->resist_elec) dam = dam / 3;
-    if (dam < 1) dam = 1;
+    if (p_ptr->oppose_elec) dam = (dam + 2) / 3;
+    if (p_ptr->resist_elec) dam = (dam + 2) / 3;
 
     /* Take damage */
     take_hit(dam, kb_str);
 
     /* Inventory damage */
-    inven_damage(set_elec_destroy, 3);
+    inven_damage(set_elec_destroy, inv);
 
 #ifdef DAMAGE_STATS
 
@@ -581,19 +557,20 @@ void elec_dam(int dam, cptr kb_str)
  */
 void fire_dam(int dam, cptr kb_str)
 {
+    int inv = (dam < 30) ? 1 : (dam < 60) ? 2 : 3;
+    
     /* Totally immune */
     if (p_ptr->immune_fire || (dam <= 0)) return;
 
-    /* Resist */
-    if (p_ptr->resist_fire) dam = dam / 3;
-    if (p_ptr->oppose_fire) dam = dam / 3;
-    if (dam < 1) dam = 1;
+    /* Resist the damage */
+    if (p_ptr->resist_fire) dam = (dam + 2) / 3;
+    if (p_ptr->oppose_fire) dam = (dam + 2) / 3;
 
     /* Take damage */
     take_hit(dam, kb_str);
 
-    /* Burn the inventory */
-    inven_damage(set_fire_destroy, 3);
+    /* Inventory damage */
+    inven_damage(set_fire_destroy, inv);
 
 #ifdef DAMAGE_STATS
 
@@ -617,19 +594,20 @@ void fire_dam(int dam, cptr kb_str)
  */
 void cold_dam(int dam, cptr kb_str)
 {
+    int inv = (dam < 30) ? 1 : (dam < 60) ? 2 : 3;
+
     /* Total immunity */
     if (p_ptr->immune_cold || (dam <= 0)) return;
 
-    /* Partial Resistance */
-    if (p_ptr->resist_cold) dam = dam / 3;
-    if (p_ptr->oppose_cold) dam = dam / 3;
-    if (dam < 1) dam = 1;
+    /* Resist the damage */
+    if (p_ptr->resist_cold) dam = (dam + 2) / 3;
+    if (p_ptr->oppose_cold) dam = (dam + 2) / 3;
 
     /* Take damage */
     take_hit(dam, kb_str);
 
     /* Inventory damage */
-    inven_damage(set_cold_destroy, 3);
+    inven_damage(set_cold_destroy, inv);
 
 #ifdef DAMAGE_STATS
 
@@ -657,10 +635,9 @@ void poison_gas(int dam, cptr kb_str)
     /* Immune means immune */
     if (p_ptr->immune_pois || (dam <= 0)) return;
 
-    /* Apply resistance, never complete */
-    if (p_ptr->oppose_pois) dam = dam / 3;
-    if (p_ptr->resist_pois) dam = dam / 3;
-    if (dam < 1) dam = 1;
+    /* Resist the damage */
+    if (p_ptr->oppose_pois) dam = (dam + 2) / 3;
+    if (p_ptr->resist_pois) dam = (dam + 2) / 3;
 
     /* Take damage */
     take_hit(dam, kb_str);
@@ -706,7 +683,7 @@ void poison_gas(int dam, cptr kb_str)
 static bool project_i(int who, int dist, int y, int x, int dam, int typ, int flg)
 {
     int i;
-    
+
     register cave_type *c_ptr;
     register inven_type *i_ptr;
 
@@ -720,9 +697,9 @@ static bool project_i(int who, int dist, int y, int x, int dam, int typ, int flg
     bool	do_make = FALSE;
 
     bool	old_floor = FALSE;
-    
+
     cptr	note_kill = NULL;
-    
+
     char	item_desc[128];
 
 
@@ -741,10 +718,10 @@ static bool project_i(int who, int dist, int y, int x, int dam, int typ, int flg
 
 
     /* XXX Perma-Walls need to "resist" GF_KILL_WALL below */
-    
+
 
     /* Check for "floor" before we function */
-    old_floor = (floor_grid(y, x));
+    old_floor = (floor_grid_bold(y, x));
 
 
     /* Get the "plural"-ness */
@@ -773,7 +750,7 @@ static bool project_i(int who, int dist, int y, int x, int dam, int typ, int flg
 	    case GF_ACID:
 		if (hates_acid(i_ptr)) {
 		    do_kill = TRUE;
-	            note_kill = (plural ? " melt!" : " melts!");
+		    note_kill = (plural ? " melt!" : " melts!");
 		    if (!wearable_p(i_ptr)) break;
 		    if (i_ptr->flags3 & TR3_IGNORE_ACID) ignore = TRUE;
 		}
@@ -869,7 +846,7 @@ static bool project_i(int who, int dist, int y, int x, int dam, int typ, int flg
 
 	    /* Destroy Traps (and Locks) */
 	    case GF_KILL_TRAP:
-	    
+
 		/* Destroy traps */
 		if ((i_ptr->tval == TV_INVIS_TRAP) ||
 		    (i_ptr->tval == TV_VIS_TRAP)) {
@@ -890,31 +867,31 @@ static bool project_i(int who, int dist, int y, int x, int dam, int typ, int flg
 			}
 		    }
 		}
-	
+
 		/* Doors are unlocked (without being seen) */
 		else if (i_ptr->tval == TV_CLOSED_DOOR) {
 		    i_ptr->pval = 0;
 		}
-	
+
 		/* Secret doors are found and unlocked, and seen if visible */
 		else if (i_ptr->tval == TV_SECRET_DOOR) {
-	
+
 		    /* Hack -- make a closed door */
 		    invcopy(i_ptr, OBJ_CLOSED_DOOR);
-		    
+
 		    /* Place it in the dungeon */
 		    i_ptr->iy = y;
 		    i_ptr->ix = x;
-	
+
 		    /* Hack -- if seen, notice and memorize */
 		    if (seen) note++;
-	
+
 		    /* Redraw */
 		    lite_spot(y, x);
 		}
 
 		break;
-	
+
 	    /* Destroy Doors (and traps) */
 	    case GF_KILL_DOOR:	    
 
@@ -923,7 +900,7 @@ static bool project_i(int who, int dist, int y, int x, int dam, int typ, int flg
 		    i_ptr->flags2 = 0L;
 		    i_ptr->flags2 |= CH2_DISARMED;
 		    if (seen) {
-		        note++;
+			note++;
 			message("Click!", 0);
 		    }
 		    break;
@@ -938,20 +915,20 @@ static bool project_i(int who, int dist, int y, int x, int dam, int typ, int flg
 
 		    /* Destroy it */
 		    do_kill = TRUE;
-		    
+
 		    /* Hack -- special message */
 		    if (seen) message("There is a bright flash of light!", 0);
 		}
 
 		break;
-		
+
 
 	    /* Turn walls and doors into Mud */
 	    case GF_KILL_WALL:	    
 
 		/* Hack -- allow rubble to hide objects */
 		if ((i_ptr->tval == TV_RUBBLE) && (randint(10)==1)) {
-		
+
 		    do_kill = do_make = TRUE;
 		    note_kill = " turns into mud, revealing an object!";
 		    break;
@@ -959,24 +936,24 @@ static bool project_i(int who, int dist, int y, int x, int dam, int typ, int flg
 
 		/* Rubble, and (closed) doors go away */
 		if ((i_ptr->tval == TV_CLOSED_DOOR) ||
-		    (i_ptr->tval == TV_OPEN_DOOR) ||
+		    (i_ptr->tval == TV_SECRET_DOOR) ||
 		    (i_ptr->tval == TV_RUBBLE)) {
 
 		    do_kill = TRUE;
 		    note_kill = " turns into mud.";
 		}
 
-	        break;
-	        
+		break;
+
 	    /* Kill everything, make doors later */
 	    case GF_MAKE_DOOR:
 
 		/* Never kill walls/doors/rubble */
-		if (!floor_grid(y, x)) break;
+		if (!floor_grid_bold(y, x)) break;
 
 		/* Never under any player/monster */
 		if (c_ptr->m_idx) break;
-		
+
 		/* Kill it, make a door below */
 		do_kill = TRUE;
 		note_kill = " turns into a door!";
@@ -985,20 +962,20 @@ static bool project_i(int who, int dist, int y, int x, int dam, int typ, int flg
 		if (i_ptr->tval == TV_OPEN_DOOR) note_kill = " closes!";
 		break;
 
-	        
+
 	    /* Kill everything, make doors later */
 	    case GF_MAKE_TRAP:
 
 		/* Never kill walls/doors/rubble */
-		if (!floor_grid(y, x)) break;
+		if (!floor_grid_bold(y, x)) break;
 
-		/* Never under any player/monster */
-		if (c_ptr->m_idx) break;
+		/* Never under the player */
+		if (c_ptr->m_idx == 1) break;
 
 		/* Kill it, make a trap below */
 		do_kill = TRUE;
 		note_kill = " disappears!";
-		
+
 		/* Hack -- Cannot see invisible traps */
 		if (i_ptr->tval == TV_INVIS_TRAP) note_kill = NULL;
 		break;
@@ -1007,10 +984,10 @@ static bool project_i(int who, int dist, int y, int x, int dam, int typ, int flg
 
 	/* Attempt to destroy the object */
 	if (do_kill) {
-	
+
 	    /* Effect "observed" */
 	    if (seen) note++;
-	    
+
 	    /* Artifacts, and other objects, get to resist */
 	    if (is_art || ignore) {
 
@@ -1034,18 +1011,18 @@ static bool project_i(int who, int dist, int y, int x, int dam, int typ, int flg
 		    message(item_desc, 0x02);
 		    message(note_kill, 0);
 		}
-		
+
 		/* Delete the object */
 		delete_object(y,x);
-		
+
 		/* Redraw */
 		lite_spot(y,x);
 	    }
 	}
 
-	
+
 	/* Create a new object if possible and requested */
-	if (do_make && clean_grid(y, x)) {
+	if (do_make && clean_grid_bold(y, x)) {
 	    if (seen) note++;
 	    place_object(y,x);
 	    lite_spot(y,x);
@@ -1067,13 +1044,13 @@ static bool project_i(int who, int dist, int y, int x, int dam, int typ, int flg
 
 		/* Ground zero -- lite the room */
 		if (!dist) lite_room(y, x);
-		
+
 		/* Turn on the light */
 		c_ptr->info |= CAVE_PL;
 
 		/* Draw (and perhaps memorize) the grid */
 		lite_spot(y, x);
-		
+
 		break;
 
 	    /* Darken the grid */            
@@ -1085,14 +1062,14 @@ static bool project_i(int who, int dist, int y, int x, int dam, int typ, int flg
 
 		/* Darken the room. */
 		if (!dist) unlite_room(y, x);
+
+		/* Turn off the light. */
+		c_ptr->info &= ~CAVE_PL;
+		c_ptr->info &= ~CAVE_FM;
 		
-		/* Turn off the light.  Hack -- unless its a wall */
-		if (floor_grid(y, x)) {
-		    c_ptr->info &= ~CAVE_PL;
-		    c_ptr->info &= ~CAVE_FM;
-		    lite_spot(y, x);
-		}
-		
+		/* Redraw */
+		lite_spot(y, x);
+
 		/* All done */
 		break;
 
@@ -1104,7 +1081,7 @@ static bool project_i(int who, int dist, int y, int x, int dam, int typ, int flg
 
 		/* Note */
 		if (seen) note++;
-		
+
 		/* Permanent wall */
 		if (c_ptr->fval == BOUNDARY_WALL) {
 		    if (seen) msg_print("The wall resists!");
@@ -1119,20 +1096,17 @@ static bool project_i(int who, int dist, int y, int x, int dam, int typ, int flg
 		    }
 		}
 
-	        break;
+		break;
 
 	    /* Build doors, if nothing there */
 	    case GF_MAKE_DOOR:
-	    
-		/* Require a "clean" grid */
-		if (!clean_grid(y,x)) break;
 
-		/* Never under a player/monster */
-		if (c_ptr->m_idx) break;
-		
+		/* Require a "naked" floor grid */
+		if (!naked_grid_bold(y, x)) break;
+
 		/* Observe */
 		if (seen) note++;
-		
+
 		/* Make a door */
 		i = i_pop();
 
@@ -1148,17 +1122,17 @@ static bool project_i(int who, int dist, int y, int x, int dam, int typ, int flg
 
 		/* Light the spot */
 		lite_spot(y, x);
-		
+
 		break;
-		
+
 	    /* Make traps */
 	    case GF_MAKE_TRAP:
 
-		/* Require a "clean" grid */
-		if (!clean_grid(y, x)) break;
+		/* Require a "clean" floor grid */
+		if (!clean_grid_bold(y, x)) break;
 
-		/* Never under a player/monster */
-		if (c_ptr->m_idx) break;
+		/* Never under the player */
+		if (cave[y][x].m_idx == 1) break;
 		
 		/* Observe */
 		if (seen) note++;
@@ -1175,20 +1149,20 @@ static bool project_i(int who, int dist, int y, int x, int dam, int typ, int flg
 
 
     /* Visibility change? */
-    if (old_floor != floor_grid(y, x)) {
+    if (old_floor != floor_grid_bold(y, x)) {
 
 	/* Update the view/lite */
 	update_view();
 	update_lite();
-	
+
 	/* Update the monsters */
 	update_monsters();
     }
-    
-    
+
+
     /* Check the view (note GF_LITE) */
     check_view();
-    
+
 
     /* Return "Anything seen?" */
     return (note);
@@ -1277,7 +1251,7 @@ static bool project_m(int who, int rad, int y, int x, int dam, int typ, int flg)
 
     /* Monster is "plural" */
     bool plural = (seen && (r_ptr->cflags1 & MF1_PLURAL));
-    
+
     /* Is the monster "living"? */
     bool living = TRUE;
 
@@ -1299,7 +1273,7 @@ static bool project_m(int who, int rad, int y, int x, int dam, int typ, int flg)
 
     /* Sleep amount (amount to sleep) */
     int do_sleep = 0;
-    
+
 
     /* "Damage" factor.  Multiply by "mul/div" */
     int mul = 1, div = 1;
@@ -1524,14 +1498,14 @@ static bool project_m(int who, int rad, int y, int x, int dam, int typ, int flg)
 	    if (seen) l_ptr->r_cflags2 |= MF2_HURT_LITE;
 	    note = (plural ? " cringe from the light!" : " cringes from the light!");
 	    note_dies = (plural ? " shrivel away in the light!" :
-	                 " shrivels away in the light!");
+			 " shrivels away in the light!");
 	}
 	else {
 	    obvious = FALSE;
 	    dam = 0;
 	}
 	break;
-      
+
       /* Lite -- opposite of Dark */
       case GF_LITE:
 	if (r_ptr->spells3 & MS3_BR_LITE) {
@@ -1542,14 +1516,14 @@ static bool project_m(int who, int rad, int y, int x, int dam, int typ, int flg)
 	    if (seen) l_ptr->r_cflags2 |= MF2_HURT_LITE;
 	    note = (plural ? " cringe from the light!" : " cringes from the light!");
 	    note_dies = (plural ? " shrivel away in the light!" :
-	                 " shrivels away in the light!");
+			 " shrivels away in the light!");
 	    dam *= 2;
 	}
 	else if (r_ptr->spells3 & MS3_BR_DARK) {
 	    if (seen) l_ptr->r_cflags2 |= MF2_HURT_LITE;
 	    note = (plural ? " cringe from the light." : " cringes from the light.");
 	    note_dies = (plural ? " shrivel away in the light!" :
-	                 " shrivels away in the light!");
+			 " shrivels away in the light!");
 	    dam = dam * 3 / 2;
 	}
 	break;
@@ -1564,7 +1538,7 @@ static bool project_m(int who, int rad, int y, int x, int dam, int typ, int flg)
 	    dam = 0;
 	}
 	break;
-	      
+
       /* Dark -- opposite of Lite */
       case GF_DARK:
 	if (r_ptr->spells2 & MS3_BR_DARK) {
@@ -1626,20 +1600,20 @@ static bool project_m(int who, int rad, int y, int x, int dam, int typ, int flg)
 
 	    /* Memorize the effects */
 	    if (seen) l_ptr->r_cflags2 |= MF2_HURT_ROCK;
-	    
+
 	    /* Cute little message */
 	    note = (plural ? " lose some skin!" : " loses some skin!");
 	    note_dies = (plural ? " dissolve!" : " dissolves!");
 	}
-	
+
 	/* Usually, ignore the effects */
 	else {
 	    obvious = FALSE;
 	    dam = 0;
-        }
+	}
 
 	break;
-	
+
 
       /* Drain Life */
       case GF_OLD_DRAIN:
@@ -1655,7 +1629,7 @@ static bool project_m(int who, int rad, int y, int x, int dam, int typ, int flg)
 	    dam = 0;
 	}
 
-        break;
+	break;
 
       /* Polymorph monster (Use "dam" as "power") */	
       case GF_OLD_POLY:
@@ -1672,7 +1646,7 @@ static bool project_m(int who, int rad, int y, int x, int dam, int typ, int flg)
 
 	/* No "real" damage */
 	dam = 0;	
-	
+
 	break;
 
 
@@ -1710,19 +1684,19 @@ static bool project_m(int who, int rad, int y, int x, int dam, int typ, int flg)
 	/* No "real" damage */
 	dam = 0;
 	break;
-	
+
 
       /* Speed Monster (Ignore "dam") */
       case GF_OLD_SPEED:
 
 	/* Speed up */
-	m_ptr->cspeed++;
+	m_ptr->mspeed += 10;
 	note = (plural ? " start moving faster" : " starts moving faster.");
 
 	/* No "real" damage */
 	dam = 0;
 	break;
-	
+
 
       /* Slow Monster (Use "dam" as "power") */
       case GF_OLD_SLOW:
@@ -1735,7 +1709,7 @@ static bool project_m(int who, int rad, int y, int x, int dam, int typ, int flg)
 
 	/* Normal monsters slow down */
 	else {
-	    m_ptr->cspeed--;
+	    m_ptr->mspeed -= 10;
 	    note = (plural ? " start moving slower" : " starts moving slower.");
 	}
 
@@ -1756,7 +1730,7 @@ static bool project_m(int who, int rad, int y, int x, int dam, int typ, int flg)
 	    if (seen && (r_ptr->cflags2 & MF2_CHARM_SLEEP)) {
 		l_ptr->r_cflags2 |= MF2_CHARM_SLEEP;
 	    }
-	    
+
 	    /* No obvious effect */
 	    obvious = FALSE;
 	}
@@ -1770,7 +1744,7 @@ static bool project_m(int who, int rad, int y, int x, int dam, int typ, int flg)
 	/* No "real" damage */
 	dam = 0;
 	break;
-	
+
 
       /* Confusion (Use "dam" as "power") */
       case GF_OLD_CONF:
@@ -1797,7 +1771,7 @@ static bool project_m(int who, int rad, int y, int x, int dam, int typ, int flg)
 	/* No "real" damage */
 	dam = 0;
 	break;
-	
+
 
       /* Confusion (Use "dam" as "power") */
       case GF_OLD_SCARE:
@@ -1810,7 +1784,7 @@ static bool project_m(int who, int rad, int y, int x, int dam, int typ, int flg)
 	    if (seen && (r_ptr->cflags2 & MF2_CHARM_SLEEP)) {
 		l_ptr->r_cflags2 |= MF2_CHARM_SLEEP;
 	    }
-	    
+
 	    /* No obvious effect */
 	    obvious = FALSE;
 	}
@@ -1820,7 +1794,7 @@ static bool project_m(int who, int rad, int y, int x, int dam, int typ, int flg)
 
 	    /* Don't overflow */
 	    if (m_ptr->monfear < 175) {
-		m_ptr->monfear += (int8u)(damroll(3, (dam / 2)) + 1);
+		m_ptr->monfear += (byte)(damroll(3, (dam / 2)) + 1);
 	    }
 
 	    /* Message */
@@ -1970,11 +1944,11 @@ static bool project_m(int who, int rad, int y, int x, int dam, int typ, int flg)
 
     /* Hack -- sleep is done INSTEAD of damage */
     if (do_sleep) {
-    
+
 	/* Just set the "sleep" field */
 	m_ptr->csleep = do_sleep;
     }
-    
+
     /* If another monster did the damage, hurt the monster by hand */
     else if (who > 1) {
 
@@ -1989,9 +1963,6 @@ static bool project_m(int who, int rad, int y, int x, int dam, int typ, int flg)
 
 	/* Dead monster */
 	if (m_ptr->hp < 0) {
-
-	    /* Treasure averages monster and dungeon level */  
-	    object_level = (dun_level + r_ptr->level) / 2;
 
 	    /* Generate treasure (Hack -- handle creeping coins) */
 	    coin_type = get_coin_type(r_ptr);
@@ -2054,7 +2025,7 @@ static bool project_p(int who, int rad, int y, int x, int dam, int typ, int flg)
     int fuzzy = FALSE;
 
     /* Player should take "extra" effects from "breath" */
-    int extra = (flg & PROJECT_XTRA);
+    int extra = (flg & PROJECT_XTRA) ? TRUE : FALSE;
 
     /* "Damage" factor.  Multiply by "mul/div" */
     int mul = 1, div = 1;
@@ -2353,7 +2324,7 @@ static bool project_p(int who, int rad, int y, int x, int dam, int typ, int flg)
 	    if (p_ptr->resist_dark) {
 	       dam *= 4; dam /= (randint(6) + 6);
 	    }
-	    else if (!blind) {
+	    else if (!blind && !p_ptr->resist_blind) {
 		msg_print("The darkness prevents you from seeing!");
 		p_ptr->blind += randint(5) + 2;
 	    }
@@ -2387,6 +2358,7 @@ static bool project_p(int who, int rad, int y, int x, int dam, int typ, int flg)
 		    set_use_stat(k);
 		    prt_stat(k);
 		    break;
+		    
 		case 10:
 		    for (k = 0; k < 6; k++) {
 			p_ptr->cur_stat[k] = (p_ptr->cur_stat[k] * 3) / 4;
@@ -2464,7 +2436,7 @@ static bool project_p(int who, int rad, int y, int x, int dam, int typ, int flg)
     disturb(1, 0);
 
 
-    /* XXX XXX XXX Hack -- Assume something happened */
+    /* Hack -- Assume something happened */
     return (TRUE);
 }
 
@@ -2619,7 +2591,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg)
 
     /* Assume the player sees nothing */
     bool notice = FALSE;
-    
+
     /* Is the player blind? */    
     int blind = FALSE;
 
@@ -2658,7 +2630,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg)
 
 
     /* Hack -- Assume there will be no blast (max radius 16) */
-    for (dist = 0; dist <= 16; dist++) gm[dist] = 0;
+    for (dist = 0; dist < 16; dist++) gm[dist] = 0;
 
 
     /* Default "destination" */
@@ -2674,30 +2646,34 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg)
 
 
     /* Start at the source */
-    x = x1;
-    y = y1;
+    x = x9 = x1;
+    y = y9 = y1;
     dist = 0;
 
     /* Project until done */
     while (1) {
 
-	/* Hack -- Gather "beam" grids */
-	if (!(flg & PROJECT_HIDE) && (flg & PROJECT_BEAM)) {
-
-	    /* Hack -- Visual effect -- "explode" the grids */
-	    if (dist) mh_print_rel('*', spell_color(typ), 0, y, x);
-
-	    /* Save the grid */
+	/* Gather beam grids */
+	if (flg & PROJECT_BEAM) {
 	    gy[grids] = y;
 	    gx[grids] = x;
 	    grids++;
+	}
+
+	/* XXX XXX Hack -- Display "beam" grids */
+	if (!blind && !(flg & PROJECT_HIDE) &&
+	    (dist > 0) && (flg & PROJECT_BEAM) &&
+	    panel_contains(y, x) && player_has_los(y, x)) {
+
+	    /* Hack -- Visual effect -- "explode" the grids */
+	    mh_print_rel('*', spell_color(typ), 0, y, x);
 	}
 
 	/* Check the grid */
 	c_ptr = &cave[y][x];
 
 	/* Never pass BEYOND a wall or door */
-	if (!floor_grid(y, x)) break;
+	if (!floor_grid_bold(y, x)) break;
 
 	/* Check for arrival at "final target" */
 	if ((x == x2) && (y == y2)) break;
@@ -2712,7 +2688,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg)
 	(void)mmove2(&y9, &x9, y1, x1, y2, x2);
 
 	/* Hack -- Balls explode BEFORE reaching walls or doors */
-	if (!floor_grid(y9, x9) && (rad > 0)) break;
+	if (!floor_grid_bold(y9, x9) && (rad > 0)) break;
 
 	/* Keep track of the distance traveled */
 	dist++;
@@ -2723,8 +2699,8 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg)
 	/* Hack -- Visual effects -- Display, Highlight, Flush, Pause, Erase */
 	/* Note that we consider the "bolt" to be "self illuminating" */
 	if (!blind && !(flg & PROJECT_HIDE) &&
-
 	    panel_contains(y9, x9) && player_has_los(y9, x9)) {
+
 	    mh_print_rel(bolt_char(y, x, y9, x9), spell_color(typ), 0, y9, x9);
 	    move_cursor_relative(y9, x9);
 	    Term_fresh();
@@ -2854,7 +2830,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg)
 	x = gx[i];
 
 	/* Walls protect monsters */
-	if (!floor_grid(y,x)) continue;
+	if (!floor_grid_bold(y,x)) continue;
 
 	/* Get the cave grid */
 	c_ptr = &cave[y][x];
@@ -2862,38 +2838,8 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg)
 	/* Affect real monsters (excluding the caster) */
 	if ((c_ptr->m_idx > 1) && (c_ptr->m_idx != who)) {
 
-	    /* The next twenty lines or so are a big hack to let the */
-	    /* player get a "flash" of psychic recognition of monsters */
-	    /* inside the blast radius or at the end of the bolt.  Note */
-	    /* that similar code is NOT done for, say, throwing arrows */
+	    /* XXX Perhaps hilite the monster in some way */
 	    
-	    /* Hack -- Remember the actual grid state */
-	    bool old_torch = (c_ptr->info & CAVE_TL);
-	    bool old_perma = (c_ptr->info & CAVE_PL);
-	    bool old_fmark = (c_ptr->info & CAVE_FM);
-
-	    /* Hack -- show the monster */
-	    if (!old_perma && !old_torch) {
-
-		/* Hack -- mark grid as "illuminated" */
-		c_ptr->info |= CAVE_PL;
-
-		/* Hack -- "flash" the monster */
-	        update_mon(c_ptr->m_idx);
-		move_cursor_relative(y, x);
-		Term_fresh();
-
-		/* Hack -- undo the hack above */
-		if (!old_torch) c_ptr->info &= ~CAVE_TL;
-		if (!old_perma) c_ptr->info &= ~CAVE_PL;
-		if (!old_fmark) c_ptr->info &= ~CAVE_FM;
-
-		/* Hack -- undo the "flash" above */
-		update_mon(c_ptr->m_idx);
-		move_cursor_relative(y, x);
-		Term_fresh();
-	    }
-
 	    /* Damage the monster */
 	    if (project_m(who, dist, y, x, dam, typ, flg)) notice = TRUE;
 	}
@@ -2914,7 +2860,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg)
 	x = gx[i];
 
 	/* Hack -- Walls protect the player (never happens) */
-	if (!floor_grid(y,x)) continue;
+	if (!floor_grid_bold(y,x)) continue;
 
 	/* Get the cave grid */
 	c_ptr = &cave[y][x];

@@ -18,14 +18,19 @@
  */
 static int test_place(int y, int x)
 {
-    if (!floor_grid(y, x)) return (FALSE);
+    /* Require legal grid */
+    if (!in_bounds(y, x)) return (FALSE);
+    
+    /* Require "empty" floor grid */
+    if (!empty_grid_bold(y, x)) return (FALSE);
 
+    /* And do not use special walls */
     if (cave[y][x].fval == NULL_WALL) return (FALSE);
 
-    if (cave[y][x].m_idx) return (FALSE);
-
+    /* Or the player himself */
     if ((y == char_row) && (x == char_col)) return (FALSE);
 
+    /* Use it */
     return TRUE;
 }
 
@@ -85,9 +90,6 @@ static void delete_monster_fully(int j)
 
     /* Wipe the monster record */
     m_list[m_max] = m_list[0];
-
-    /* Mega-Hack -- slow down reproduction */
-    if (mon_tot_mult > 0) mon_tot_mult--;
 }
 
 
@@ -111,8 +113,8 @@ static void delete_monster_fully(int j)
  * monster creation.  There are several solutions for this, none of which seem
  * to have been done.  The easiest is to put a limit on "births" per turn, and
  * to always compact before each turn to be sure at least that many spaces are
- * available.  This can induce thrashing, but "mon_tot_mult" should cut down
- * on stuff like that.
+ * available.  Hopefully, the use of the "tighten_m_list()" function combined
+ * with the backwards analysis of the list should be sufficient.
  *
  * In fact, in general, it is a bad idea to delete "monsters" or any other type
  * of record "mid-processing", the standard technique is to mark things as dead,
@@ -295,8 +297,8 @@ int m_pop(void)
     /* Out of space?  Compact. */
     if (m_max == MAX_M_IDX) compact_monsters();
 
-    /* Still no slots?  XXX Abort! */    
-    if (m_max == MAX_M_IDX) return (-1);
+    /* XXX XXX XXX XXX Out of memory! */    
+    if (m_max == MAX_M_IDX) quit("Too many monsters!");
 
     /* Return (and increase) free slot */
     return (m_max++);
@@ -343,7 +345,7 @@ static int has_breath(int z)
  */
 int place_monster(int y, int x, int r_idx, int slp)
 {
-    register int           cur_pos, j, z, ny, nx, count;
+    register int           cur_pos, i, j, z, ny, nx, count;
     register monster_type *m_ptr;
     register monster_race *r_ptr;
     char                   buf[100];
@@ -362,7 +364,7 @@ int place_monster(int y, int x, int r_idx, int slp)
 
 	/* Note for wizard */
 	if (wizard) {
-	    (void)sprintf(buf, "Ignoring %s '%s' monster.",
+	    (void)sprintf(buf, "Ignoring %s monster (%s).",
 			  (l_list[r_idx].max_num ? "excessive" : "dead"),
 			  r_ptr->name);
 	    msg_print(buf);
@@ -377,7 +379,8 @@ int place_monster(int y, int x, int r_idx, int slp)
 
 	/* Note for wizard */
 	if (wizard) {
-	    (void)sprintf(buf, "Ignoring shallow '%s' monster.", r_ptr->name);
+	    (void)sprintf(buf, "Ignoring shallow monster (%s).",
+	    		  r_ptr->name);
 	    msg_print(buf);
 	}
 
@@ -394,14 +397,23 @@ int place_monster(int y, int x, int r_idx, int slp)
     /* Mega-Paranoia */
     if (cur_pos == -1) return FALSE;
 
+    /* Note the monster */
+    if ((wizard || peek) && (r_ptr->cflags2 & MF2_UNIQUE)) {
+	msg_print(format("Unique (%s)", r_ptr->name));
+    }
+    
     /* Powerful monster */
     if (r_ptr->level > dun_level) {
 
-	j = r_ptr->level - dun_level;
-	rating += ((j > 30) ? 15 : (j / 2));
-
-	/* XXX Uniques get a double rating bonus? */
-	if (r_ptr->cflags2 & MF2_UNIQUE) rating += (j / 2);
+	/* Uniques get rating based on "out of depth" amount */
+	if (r_ptr->cflags2 & MF2_UNIQUE) {
+	    rating += (r_ptr->level - dun_level);
+	}
+	
+	/* Normal monsters are worth "half" as much */
+	else {
+	    rating += (r_ptr->level - dun_level) / 2;
+	}
     }
 
     /* Get a new monster record */
@@ -428,9 +440,16 @@ int place_monster(int y, int x, int r_idx, int slp)
     /* And start out fully healthy */
     m_ptr->hp = m_ptr->maxhp;
 
-    /* Hack -- speed saved in compact form */
-    m_ptr->cspeed = r_ptr->speed - 10;
+    /* Extract the monster base speed */
+    m_ptr->mspeed = r_ptr->speed;
 
+    /* Allow some small variation per monster */
+    i = extract_energy(r_ptr->speed) / 10;
+    if (i) m_ptr->mspeed += rand_spread(0, i);
+    
+    /* Give a random starting energy */
+    m_ptr->energy = rand_int(100);
+    
     /* No "damage" yet */
     m_ptr->stunned = 0;
     m_ptr->confused = 0;
@@ -486,14 +505,14 @@ int place_monster(int y, int x, int r_idx, int slp)
 
 		/* Find a similar, lower level, non-unique, monster */
 		if ((r_list[z].r_char == j) &&
-		    (r_list[z].level <= r_list[z].level) &&
+		    (r_list[z].level <= r_ptr->level) &&
 		    !(r_list[z].cflags2 & MF2_UNIQUE)) {
 
 		    /* Try up to 50 nearby places */
 		    count = 0;
 		    do {
-			ny = rand_range(y-3,y+3);
-			nx = rand_range(x-3,x+3);
+			ny = rand_spread(y, 3);
+			nx = rand_spread(x, 3);
 			count++;
 		    } while (!test_place(ny,nx) && (count<51));
 
@@ -534,12 +553,16 @@ int place_win_monster()
 
     /* Find a legal, distant, unoccupied, space */
     while (1) {
+
+	/* Pick a location */
 	y = randint(cur_height - 2);
 	x = randint(cur_width - 2);
-	if (!floor_grid(y,x)) continue;
-	if (cave[y][x].m_idx || cave[y][x].i_idx) continue;
-	if (distance(y, x, char_row, char_col) <= MAX_SIGHT) continue;
-	break;
+
+	/* Require "naked" floor grid */
+	if (!naked_grid_bold(y,x)) continue;
+
+	/* Accept far away grids */
+	if (distance(y, x, char_row, char_col) > MAX_SIGHT) break;
     }
 
     /* Hack -- Attempt to place him (sleeping) */
@@ -567,9 +590,9 @@ static cptr ghost_class_names[] = {
     "rogue", "ranger", "paladin"
 };
 
-static int8u ghost_class_colors[] = {
-    COLOR_L_BLUE, COLOR_RED, COLOR_L_GREEN,
-    COLOR_BLUE, COLOR_GREEN, COLOR_WHITE
+static byte ghost_class_colors[] = {
+    TERM_L_BLUE, TERM_RED, TERM_L_GREEN,
+    TERM_BLUE, TERM_GREEN, TERM_WHITE
 };
 
 
@@ -723,11 +746,11 @@ static void set_ghost(monster_race *g, cptr pn, int gr, int gc, int lev)
 	g->ac = 15 + randint(15);
 	if (gc == 0 || gc >= 3) g->ac += randint(60);
 
-	/* Default speed (encoded) */
-	g->speed = 11;
+	/* Default speed */
+	g->speed = 110;
 
 	/* High level mages and rogues are fast... */
-	if ((gc == 1 || gc == 3) && lev > 25) g->speed++;
+	if ((gc == 1 || gc == 3) && lev > 25) g->speed += 10;
 
 	/* Use the letter 'p' */
 	g->r_char = 'p';
@@ -777,9 +800,9 @@ static void set_ghost(monster_race *g, cptr pn, int gr, int gc, int lev)
 	if (gr == 6) g->cflags2 |= MF2_ORC;
 	if (gr == 7) g->cflags2 |= MF2_TROLL;
 	g->ac = 26;
-	g->speed = 11;
+	g->speed = 110;
 	g->r_char = 's';
-	g->r_attr = COLOR_WHITE;
+	g->r_attr = TERM_WHITE;
 	g->hd[1] = 1;
 	g->damage[0] = 5;
 	g->damage[1] = 5;
@@ -794,9 +817,9 @@ static void set_ghost(monster_race *g, cptr pn, int gr, int gc, int lev)
 	if (gr == 6) g->cflags2 |= MF2_ORC;
 	if (gr == 7) g->cflags2 |= MF2_TROLL;
 	g->ac = 30;
-	g->speed = 11;
+	g->speed = 110;
 	g->r_char = 'z';
-	g->r_attr = COLOR_GRAY;
+	g->r_attr = TERM_GRAY;
 	g->hd[1] *= 2;
 	g->damage[0] = 8;
 	g->damage[1] = 0;
@@ -809,9 +832,9 @@ static void set_ghost(monster_race *g, cptr pn, int gr, int gc, int lev)
 	g->cflags1 |= (MF1_MV_INVIS | MF1_HAS_1D2 | MF1_MV_75 | MF1_THRO_WALL);
 	g->cflags2 |= (MF2_IM_COLD);
 	g->ac = 20;
-	g->speed = 13;
+	g->speed = 130;
 	g->r_char = 'G';
-	g->r_attr = COLOR_WHITE;
+	g->r_attr = TERM_WHITE;
 	g->damage[0] = 5;
 	g->damage[1] = 5;
 	g->damage[2] = 93;
@@ -826,9 +849,9 @@ static void set_ghost(monster_race *g, cptr pn, int gr, int gc, int lev)
 	if (gr == 6) g->cflags2 |= MF2_ORC;
 	if (gr == 7) g->cflags2 |= MF2_TROLL;
 	g->ac = 35;
-	g->speed = 11;
+	g->speed = 110;
 	g->r_char = 'M';
-	g->r_attr = COLOR_GRAY;
+	g->r_attr = TERM_GRAY;
 	g->hd[1] *= 2;
 	g->damage[0] = 16;
 	g->damage[1] = 16;
@@ -844,9 +867,9 @@ static void set_ghost(monster_race *g, cptr pn, int gr, int gc, int lev)
 	g->cflags1 |= (MF1_MV_INVIS | MF1_THRO_WALL | MF1_HAS_1D2);
 	g->cflags2 |= (MF2_IM_COLD);
 	g->ac = 20;
-	g->speed = 11;
+	g->speed = 110;
 	g->r_char = 'G';
-	g->r_attr = COLOR_WHITE;
+	g->r_attr = TERM_WHITE;
 	g->hd[1] *= 2;
 	g->damage[0] = 19;
 	g->damage[1] = 185;
@@ -862,9 +885,9 @@ static void set_ghost(monster_race *g, cptr pn, int gr, int gc, int lev)
 	g->cflags2 |= (MF2_IM_COLD);
 	g->spells1 |= (0xFL | MS1_HOLD | MS1_MANA_DRAIN | MS1_BLIND);
 	g->ac = 40;
-	g->speed = 12;
+	g->speed = 120;
 	g->r_char = 'G';
-	g->r_attr = COLOR_WHITE;
+	g->r_attr = TERM_WHITE;
 	g->hd[1] *= 2;
 	g->damage[0] = 99;
 	g->damage[1] = 99;
@@ -879,9 +902,9 @@ static void set_ghost(monster_race *g, cptr pn, int gr, int gc, int lev)
 	g->cflags2 |= (MF2_HURT_LITE);
 	g->spells1 |= (0x8L | MS1_HOLD | MS1_FEAR | MS1_TELE_TO | MS1_CAUSE_2);
 	g->ac = 40;
-	g->speed = 11;
+	g->speed = 110;
 	g->r_char = 'V';
-	g->r_attr = COLOR_VIOLET;
+	g->r_attr = TERM_VIOLET;
 	g->hd[1] *= 3;
 	g->damage[0] = 20;
 	g->damage[1] = 20;
@@ -898,9 +921,9 @@ static void set_ghost(monster_race *g, cptr pn, int gr, int gc, int lev)
 	g->spells1 |= (0x7L | MS1_HOLD | MS1_FEAR | MS1_BLIND | MS1_CAUSE_3);
 	g->spells2 |= (MS2_BO_NETH);
 	g->ac = 60;
-	g->speed = 12;
+	g->speed = 120;
 	g->r_char = 'W';
-	g->r_attr = COLOR_WHITE;
+	g->r_attr = TERM_WHITE;
 	g->hd[1] *= 3;
 	g->damage[0] = 20;
 	g->damage[1] = 20;
@@ -916,9 +939,9 @@ static void set_ghost(monster_race *g, cptr pn, int gr, int gc, int lev)
 	g->spells1 |= (0x8L | MS1_HOLD | MS1_FEAR | MS1_TELE_TO | MS1_CAUSE_3);
 	g->spells2 |= (MS2_BO_NETH);
 	g->ac = 80;
-	g->speed = 11;
+	g->speed = 110;
 	g->r_char = 'V';
-	g->r_attr = COLOR_BLUE;
+	g->r_attr = TERM_BLUE;
 	g->hd[1] *= 2;
 	g->hd[0] = (g->hd[0] * 5) / 2;
 	g->damage[0] = 20;
@@ -935,9 +958,9 @@ static void set_ghost(monster_race *g, cptr pn, int gr, int gc, int lev)
 	g->cflags2 |= (MF2_SPECIAL | MF2_IM_COLD);
 	g->spells1 |= (0x5L | MS1_HOLD | MS1_MANA_DRAIN | MS1_BLIND | MS1_CONF);
 	g->ac = 90;
-	g->speed = 13;
+	g->speed = 130;
 	g->r_char = 'G';
-	g->r_attr = COLOR_WHITE;
+	g->r_attr = TERM_WHITE;
 	g->hd[1] *= 3;
 	g->damage[0] = 99;
 	g->damage[1] = 99;
@@ -955,9 +978,9 @@ static void set_ghost(monster_race *g, cptr pn, int gr, int gc, int lev)
 		       MS1_MANA_DRAIN | MS1_BLIND | MS1_CONF | MS1_TELEPORT);
 	g->spells2 |= (MS2_BRAIN_SMASH | MS2_RAZOR);
 	g->ac = 120;
-	g->speed = 12;
+	g->speed = 120;
 	g->r_char = 'L';
-	g->r_attr = COLOR_ORANGE;
+	g->r_attr = TERM_ORANGE;
 	g->hd[1] *= 3;
 	g->hd[0] *= 2;
 	g->damage[0] = 181;
@@ -978,9 +1001,9 @@ static void set_ghost(monster_race *g, cptr pn, int gr, int gc, int lev)
 	g->spells2 |= (MS2_BO_NETH | MS2_BA_NETH | MS2_BRAIN_SMASH |
 		       MS2_TELE_LEVEL);
 	g->ac = 130;
-	g->speed = 13;
+	g->speed = 130;
 	g->r_char = 'G';
-	g->r_attr = COLOR_WHITE;
+	g->r_attr = TERM_WHITE;
 	g->hd[1] *= 2;
 	g->hd[0] = (g->hd[0] * 5) / 2;
 	g->damage[0] = 99;
@@ -991,6 +1014,7 @@ static void set_ghost(monster_race *g, cptr pn, int gr, int gc, int lev)
 	break;
     }
 }
+
 
 
 /*
@@ -1018,7 +1042,7 @@ int place_ghost()
     /* In the town, ghosts have the same level as the player */
     if (!dun_level) {
 
-	/* You have to be level 5, and even then its only 90% */
+	/* You have to be level 5, and even then its only 10% */
 	if (p_ptr->lev < 5 || randint(10) > 1) return 0;
 
 	/* Look for a proper bones file */
@@ -1077,19 +1101,25 @@ int place_ghost()
     /* Set up the ghost */
     set_ghost(r_ptr, name, gr, gc, level);
 
-    /* Note for wizard */
-    if (wizard || peek) msg_print(r_ptr->name);
+    /* Note for wizard (special ghost name) */
+    if (wizard || peek) msg_print("Unique (Ghost)");
 
     cur_pos = m_pop();
     m_ptr = &m_list[cur_pos];
 
     /* Hack -- pick a nice (far away) location */
-    do {
+    while (1) {
+
+	/* Pick a location */
 	y = randint(cur_height - 2);
 	x = randint(cur_width - 2);
-    } while (!floor_grid(y,x) ||
-	     (cave[y][x].m_idx != 0) || (cave[y][x].i_idx != 0) ||
-	     (distance(y, x, char_row, char_col) <= MAX_SIGHT));
+
+	/* Require "naked" floor grid */
+        if (!naked_grid_bold(y,x)) continue;
+
+	/* Accept far away grids */
+	if (distance(y, x, char_row, char_col) > MAX_SIGHT) break;
+    }
 
 
     /*** Place the Ghost by Hand (so no-one else does it accidentally) ***/
@@ -1099,16 +1129,24 @@ int place_ghost()
 
     m_ptr->r_idx = MAX_R_IDX-1;
 
-    m_ptr->hp = (int16) r_ptr->hd[0] * (int16) r_ptr->hd[1];
+    /* Assign the max hitpoints and hitpoints */
+    m_ptr->maxhp = m_ptr->hp = (s16b) r_ptr->hd[0] * (s16b) r_ptr->hd[1];
 
-    /* the r_list speed value is 10 greater, so that it can be a int8u */
-    m_ptr->cspeed = r_list[m_ptr->r_idx].speed - 10;
+    /* Extract the base speed */
+    m_ptr->mspeed = r_list[m_ptr->r_idx].speed;
 
+    /* Pick a random energy */
+    m_ptr->energy = rand_int(100);
+    
     m_ptr->stunned = 0;
     m_ptr->csleep = 0;
 
     cave[y][x].m_idx = cur_pos;
 
+    /* Hack -- update the graphic info */
+    r_attr[MAX_R_IDX-1] = r_ptr->r_attr;
+    r_char[MAX_R_IDX-1] = r_ptr->r_char;
+    
     /* Update the monster */
     update_mon(cur_pos);
 
@@ -1123,7 +1161,7 @@ int place_ghost()
  *
  * Number of monsters with level 0-N 
  */
-static int16 r_level[MAX_R_LEV+1];
+static u16b r_level[MAX_R_LEV+1];
 
 
 
@@ -1228,7 +1266,7 @@ int get_mons_num(int level)
 	    continue;
 	}
 
-	/* Quest Monsters always appear on their Quest Level */
+	/* Quest Monsters never appear out of depth */
 	if ((r_list[i].level > dun_level) &&
 	    (r_list[i].cflags2 & MF2_QUESTOR)) {
 	    continue;
@@ -1294,6 +1332,7 @@ int get_nmons_num(int level)
 	    continue;
 	}
 
+	/* Quest monsters never appear out of depth */
 	if ((r_list[i].level > dun_level) &&
 	    (r_list[i].cflags2 & MF2_QUESTOR)) {
 	    continue;
@@ -1322,7 +1361,7 @@ void place_group(int y, int x, int r_idx, int slp)
 
     /* reduce size of group if out-of-depth */
     if (r_list[r_idx].level > (unsigned) dun_level) {
-	extra = (-randint(r_list[r_idx].level - dun_level));
+	extra = 0 - randint(r_list[r_idx].level - dun_level);
     }
 
     /* if monster is deeper than normal, then travel in bigger packs -CFT */
@@ -1400,16 +1439,22 @@ void alloc_monster(int num, int dis, int slp)
     register int y, x, i;
     int          r_idx;
 
+    /* Place the monsters */
     for (i = 0; i < num; i++) {
 
-	/* Pick a safe location */
-	do {
+	/* Find a legal, distant, unoccupied, space */
+	while (1) {
+
+	    /* Pick a location */
 	    y = randint(cur_height - 2);
 	    x = randint(cur_width - 2);
+
+	    /* Require "naked" floor grid */
+	    if (!naked_grid_bold(y,x)) continue;
+
+	    /* Accept far away grids */
+	    if (distance(y, x, char_row, char_col) > dis) break;
 	}
-	while ((!floor_grid(y, x)) ||
-	       (cave[y][x].m_idx != 0) ||
-	       (distance(y, x, char_row, char_col) <= dis));
 
 	/* Get a monster of the given level */
 	r_idx = get_mons_num(dun_level);
@@ -1435,41 +1480,48 @@ void alloc_monster(int num, int dis, int slp)
 
 
 /*
- * Places creature adjacent to given location		-RAK-	 
+ * Places a random creature at or adjacent to the given location
+ * We modify the given location to hold the location used, if any.
+ * We return TRUE if a monster (or group of monsters) was summoned.
  */
-int summon_monster(int *y, int *x, int slp)
+int summon_monster(int *yp, int *xp, int slp)
 {
-    register int        i, j, k;
-    int                 l, summon;
-    register cave_type *c_ptr;
+    register int        i, y, x, r_idx;
 
-    i = 0;
-    summon = FALSE;
-    l = get_mons_num(dun_level + MON_SUMMON_ADJ);
+    /* Try nine locations */
+    for (i = 0; i < 9; i++) {
 
-    do {
-	j = *y - 2 + randint(3);
-	k = *x - 2 + randint(3);
-	if (in_bounds(j, k)) {
-	    c_ptr = &cave[j][k];
-	    if (floor_grid(j, k) && (c_ptr->m_idx == 0)) {
-		if (r_list[l].cflags2 & MF2_GROUP) {
-		    place_group(j, k, l, slp);
-		}
-		else {
-		    place_monster(j, k, l, slp);
-		}
-		summon = TRUE;
-		i = 9;
-		*y = j;
-		*x = k;
-	    }
+	/* Pick a nearby location */
+	y = rand_spread(*yp, 1);
+	x = rand_spread(*xp, 1);
+
+	/* Require legal grid */
+	if (!in_bounds(y, x)) continue;
+	
+	/* Require "empty" floor grids */
+	if (!empty_grid_bold(y, x)) continue;
+	
+	/* Pick a monster race */
+	r_idx = get_mons_num(dun_level + MON_SUMMON_ADJ);
+
+	/* Place the monster */
+	if (r_list[r_idx].cflags2 & MF2_GROUP) {
+	    place_group(y, x, r_idx, slp);
 	}
-	i++;
-    }
-    while (i <= 9);
+	else {
+	    place_monster(y, x, r_idx, slp);
+	}
 
-    return (summon);
+	/* Save the location */
+	*yp = y;
+	*xp = x;
+		
+	/* Success */
+	return (TRUE);
+    }
+
+    /* Nothing summoned */
+    return (FALSE);
 }
 
 
@@ -1499,34 +1551,15 @@ int summon_monster(int *y, int *x, int slp)
 static int summon_level;
 
 
-/*
- * Place a monster (of the specified "type") adjacent to the given
- * location, and re-set the given location to the location of the
- * summoned monster.  Return TRUE iff a monster was actually summoned.
- *
- * We pick random entries in the monster table until we find a "good" one.
- *
- * We will attempt to place the monster up to 10 times before giving up.
- *
- * Note: SUMMON_UNIQUE and SUMMON_WRAITH (XXX) require "Unique-ness"
- * while SUMMON_GUNDEAD and SUMMON_ANCIENTD do not care.
- * All other summons forbid "Unique-ness".
- *
- * This function has to be careful not to summon illegal monsters!
+/* 
+ * Check if monster race "m" is "okay" for summon type "type"
  */
-static int summon_specific(int *y, int *x, int type)
+static bool summon_specific_okay(int type, int m)
 {
-    register int        i, m;
-    bool		okay = FALSE;
-
-    /* Repeat until a monster ("m") is found */
-    while (!okay) {
-
-	/* Try a random monster */
-	m = rand_int(MAX_R_IDX-1);
-
-	/* Check our requirements */
-	switch (type) {
+    bool okay = FALSE;
+    
+    /* Check our requirements */
+    switch (type) {
 
 	    case SUMMON_UNDEAD:
 		okay = ((r_list[m].cflags2 & MF2_UNDEAD) &&
@@ -1541,37 +1574,38 @@ static int summon_specific(int *y, int *x, int type)
 		break;
 
 	    case SUMMON_DRAGON:
-		okay = (r_list[m].cflags2 & MF2_DRAGON &&
-		    !(r_list[m].cflags2 & MF2_UNIQUE));
+		okay = ((r_list[m].cflags2 & MF2_DRAGON) &&
+		        !(r_list[m].cflags2 & MF2_UNIQUE));
 		break;
 
 	    case SUMMON_REPTILE:
-		okay = (r_list[m].r_char == 'R' &&
+		okay = ((r_list[m].r_char == 'R') &&
 			!(r_list[m].cflags2 & MF2_UNIQUE));
 		break;
 
 	    case SUMMON_SPIDER:
-		okay = (r_list[m].r_char == 'S' &&
+		okay = ((r_list[m].r_char == 'S') &&
 			!(r_list[m].cflags2 & MF2_UNIQUE));
 		break;
 
 	    case SUMMON_ANGEL:
-		okay = (r_list[m].r_char == 'A' &&
+		okay = ((r_list[m].r_char == 'A') &&
 			!(r_list[m].cflags2 & MF2_UNIQUE));
 		break;
 
 	    case SUMMON_ANT:
-		okay = (r_list[m].r_char == 'a' &&
+		okay = ((r_list[m].r_char == 'a') &&
 			!(r_list[m].cflags2 & MF2_UNIQUE));
 		break;
 
 	    case SUMMON_HOUND:
-		okay = ((r_list[m].r_char == 'C' || r_list[m].r_char == 'Z') &&
+		okay = (((r_list[m].r_char == 'C') || (r_list[m].r_char == 'Z')) &&
 			!(r_list[m].cflags2 & MF2_UNIQUE));
 		break;
 
 	    case SUMMON_JABBER:
-		okay = ((r_list[m].r_char == 'J') && !(r_list[m].cflags2 & MF2_UNIQUE));
+		okay = ((r_list[m].r_char == 'J') &&
+		        !(r_list[m].cflags2 & MF2_UNIQUE));
 		break;
 
 	    case SUMMON_UNIQUE:
@@ -1593,40 +1627,68 @@ static int summon_specific(int *y, int *x, int type)
 	    case SUMMON_ANCIENTD:
 		okay = (r_list[m].r_char == 'D');
 		break;
-
-	    default:
-		/* Invalid type! */
-		return (FALSE);
-	}
     }
+
+    /* Return the result */
+    return (okay);
+}
+
+
+/*
+ * Place a monster (of the specified "type") adjacent to the given
+ * location, and re-set the given location to the location of the
+ * summoned monster.  Return TRUE iff a monster was actually summoned.
+ *
+ * We pick random entries in the monster table until we find a "good" one.
+ *
+ * We will attempt to place the monster up to 10 times before giving up.
+ *
+ * Note: SUMMON_UNIQUE and SUMMON_WRAITH (XXX) require "Unique-ness"
+ * while SUMMON_GUNDEAD and SUMMON_ANCIENTD do not care.
+ * All other summons forbid "Unique-ness".
+ *
+ * This function has to be careful not to summon illegal monsters!
+ */
+static int summon_specific(int *yp, int *xp, int type)
+{
+    register int        i, j, x, y, m;
 
     /* Try to place it 10 times */
     for (i = 0; i < 10; ++i) {
 
-	register int mx, my;
-	my = *y - 2 + randint(3);
-	mx = *x - 2 + randint(3);
+	/* Pick a location */
+	y = rand_spread(*yp, 1);
+	x = rand_spread(*xp, 1);
 
-	if (in_bounds(my, mx)) {
+	/* Require a legal grid */
+	if (!in_bounds(y, x)) continue;
+	
+	/* Require "empty" floor grid */
+	if (!empty_grid_bold(y, x)) continue;
 
-	    register cave_type *c_ptr;
-	    c_ptr = &cave[my][mx];
-	    if (floor_grid(my, mx) && (c_ptr->m_idx == 0)) {
+	/* Find an acceptable monster race */
+	for (j = 0; j < 5000; j++) {
+
+	    /* Try a random monster */
+	    m = rand_int(MAX_R_IDX-1);
+	
+	    /* Check if that race is okay */
+	    if (summon_specific_okay(type, m)) {
 
 		/* Place the monster */
-		place_monster(my, mx, m, FALSE);
+		place_monster(y, x, m, FALSE);
 
 		/* Save the location */
-		*y = my;
-		*x = mx;
+		*yp = y;
+		*xp = x;
 
-		/* Successful summon */
+		/* Success */
 		return (TRUE);
 	    }
 	}
     }
 
-    /* Could not place it */
+    /* Failure */
     return (FALSE);
 }
 
@@ -1772,12 +1834,7 @@ int summon_ancientd(int *y, int *x)
  *   0x22 --> Possessive, genderized if visable ("his") or "its"
  *   0x23 --> Reflexive, genderized if visable (
  */
-
-void
-monster_desc (desc, m_ptr, mode)
-char               *desc;
-monster_type       *m_ptr;
-int		   mode;
+void monster_desc (char *desc, monster_type *m_ptr, int mode)
 {
     cptr res;
     monster_race *r_ptr;

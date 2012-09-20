@@ -20,6 +20,9 @@
  * Note: Also examine the "system" configuration file "h-config.h"
  * and the variable initialization file "variables.c".  If you change
  * anything in "variables.c", you only need to recompile that file.
+ *
+ * And finally, remember that the "Makefile" will specify some rather
+ * important compile time options, like what visual module to use.
  */
 
 
@@ -29,6 +32,17 @@
  */
 #define WIZARD	"benh@linc.cis.upenn.edu"
 
+
+/*
+ * OPTION: Hack -- Compile in support for "Wizard Commands"
+ */
+#define ALLOW_WIZARD
+
+
+/*
+ * OPTION: Hack -- Compile in support for "Cyborg" mode
+ */
+/* #define AUTO_PLAY */
 
 
 /*
@@ -43,67 +57,124 @@
 
 
 
+/*
+ * OPTION: Verify savefile Checksums (Angband 2.7.0 and up)
+ */
+#define VERIFY_CHECKSUMS
 
 
 /*
- * OPTION: Other miscellaneous defines that can be configured as the local
- * maintainer wishes.  If you want any of them, define the respective flag.
- * Note that some of these are turned off later if they make no sense.
+ * OPTION: Allow the player to copy save files.  Turning this off
+ * may or may not stop players from doing it, though.  In fact, this
+ * option is not even referenced on SET_UID machines.
  */
-#define ALLOW_FIDDLING		/* Allow the players to copy save files */
-#define ALLOW_SCORE		/* Allow the user to check his score (v-key) */
-#define ALLOW_ARTIFACT_CHECK	/* Allow the user to check artifacts */
-#define ALLOW_CHECK_UNIQUES	/* Allow player to check (dead) uniques */
-#define AUTOROLLER		/* Allow autorolling of characters */
-#define TARGET			/* Enable targeting mode */
-#define TAGGER			/* Enable inventory tags -BEN- */
-#undef  KEYMAP			/* The "keymapper" (not ready yet) -BEN- */
+#define ALLOW_FIDDLING
 
 
 /*
- * OPTION: Assume we may use "floating point" for better distribution
+ * OPTION: Allow checking of artifacts (in town)
  */
-#define USE_FLOATING_POINT
+#define ALLOW_CHECK_ARTIFACTS
+ 
+/*
+ * OPTION: Allow checking of dead uniques
+ */
+#define ALLOW_CHECK_UNIQUES
 
 /*
- * Turn it off on Windows machines
+ * OPTION: Allow "inventory tagging" via inscriptions
  */
-#ifdef _Windows
-# undef USE_FLOATING_POINT
+#define ALLOW_TAGS
+
+/*
+ * OPTION: Compile support for simple macro expansion
+ */
+#define ALLOW_MACROS
+
+/*
+ * OPTION: Compile support for keymap modification
+ */
+#define ALLOW_KEYMAP
+
+/*
+ * OPTION: Allow characteres to be "auto-rolled"
+ */
+#define AUTOROLLER
+
+/*
+ * OPTION: Allow locations and monsters to be "targetted"
+ */
+#define TARGET
+
+
+/*
+ * OPTION: Hack -- allow "proper" memorization of dungeon features
+ */
+/* #define NEW_MAP */
+
+
+/*
+ * OPTION: Hack -- allow "monster flowing" to the given depth, if any
+ */
+#define MONSTER_FLOW
+
+
+/*
+ * OPTION: Maximum flow depth when using "MONSTER_FLOW"
+ */
+#define MONSTER_FLOW_DEPTH 32
+
+
+/*
+ * OPTION: Compile in all necessary color code.  Undefining either of
+ * these will result in a decrease in code size and an increase in
+ * execution speed.
+ */
+#define USE_COLOR		/* Include full support for color terminals */
+#define USE_MULTIHUED		/* Include full "MULTIHUED" support */
+
+
+/*
+ * OPTION: Hack -- something for Windows
+ */
+#if defined(_Windows)
+# define USE_ITSYBITSY
 #endif
 
+
 /*
- * OPTION: Compile for X11 instead of Curses
- *
- * If you define it here, do not define it in the Makefile too.
+ * OPTION: Hack -- "Raybould's Amiga curses" has broken colors (?)
  */
-/* #define USE_X11 */
+#if defined(AMIGA)
+# undef USE_COLOR
+#endif
 
 
 /*
  * OPTION: Set the "default" path to the angband "lib" directory.
  * Angband will use this value if it cannot getenv("ANGBAND_PATH").
  * The final slash is optional in either case.  Not used on Macintosh.
+ * By default, the system expects the "angband" program to be located
+ * in the same directory as the "lib" directory.  This can be changed.
+ * Note that the "ANGBAND_PATH" environment variable over-rides this.
+ * Note: this value is ignored by Macintosh, Windows, and Amiga, see
+ * the file "arrays.c" for details.
  */
-#define DEFAULT_PATH "/tmp/angband/lib/"
+#define DEFAULT_PATH "./lib/"
 
 
 /*
- * OPTION: On multiuser systems, default to checking the "Hours"
- * and "Load" files, being nice, and to using the player UID in
- * the savefile names, and to NOT allowing the savefile names to
- * be changed.  On single user machines, do just the opposite.
+ * OPTION: On multiuser systems, be "nice" when autorolling.
  */
 #ifdef SET_UID
-# define NICE			/* Be nice while auto-rolling */
-# define CHECK_HOURS		/* Check the "Hours" file */
-# define CHECK_LOAD		/* Check the "Load" file */
-# define SAVEFILE_USE_UID	/* Use the "uid" in savefiles */
-#else
-# undef NICE			/* Be nice while auto-rolling */
-# undef CHECK_HOURS		/* Check the "Hours" file */
-# undef CHECK_LOAD		/* Check the "Load" file */
-# undef SAVEFILE_USE_UID	/* Use the "uid" in savefiles */
+# define NICE
+#endif
+
+/*
+ * OPTION: On multiuser systems, add the "uid" to savefile names
+ */
+#ifdef SET_UID
+# define SAVEFILE_USE_UID
 #endif
 
 
@@ -112,15 +183,22 @@
  * files (in the "data" directory).  Be sure to remove these files
  * every time the "monster race" or "object kind" structures are
  * modified.  And never send these files to other platforms.
+ *
+ * This whole concept needs to be optimized some more, it takes too
+ * long to initialize on Macintosh / IBM machines...
  */
 #define BINARY_ARRAY_IMAGES
 
 
 /*
- * OPTION: Hack -- (Don't) check the Hours or Load files
+ * OPTION: Check the "hours" file
  */
-#undef CHECK_HOURS		/* Check the 'hours' file */
-#undef CHECK_LOAD		/* Check the 'load' file (needs '-lrpcsvs') */
+#undef CHECK_HOURS
+
+/*
+ * OPTION: Check the "hours" file (may need the 'rpcsvs' library)
+ */
+#undef CHECK_LOAD
 
 
 /*
@@ -133,72 +211,86 @@
  * are not contained in the "lib:save:" folder, and if you change the
  * player's name, it will then save the savefile elsewhere.
  */
-#ifdef MACINTOSH
-# define SAVEFILE_MUTABLE	/* Player "name changes" affect savefile name */
+#if defined(MACINTOSH) || defined(_Windows) || defined(AMIGA)
+# define SAVEFILE_MUTABLE
+#endif
+
+
+/*
+ * OPTION: Capitalize the "user_name" (used as the "default" player name)
+ */
+#define CAPITALIZE_USER_NAME
+
+
+/*
+ * OPTION: See the Makefile, where several options may be declared.
+ * These options control the choice of which graphic systems to
+ * compile support for, and include "USE_X11", "USE_NCU", "USE_GCU",
+ * and the more or less obsolete "USE_CUR".  Note that "USE_NCU"
+ * is geared more towards linux/sys-v machines, and "USE_GCU" is
+ * geared more towards general case machines.
+ *
+ * Several other such options are available for non-unix machines,
+ * in particular, "MACINTOSH", and "USE_IBM", "USE_EMX", "USE_WIN".
+ *
+ * In addition, "SPECIAL_BSD" can be defined for using certain versions
+ * of "BSD" unix that use a slightly odd version of Curses (main-gcu.c).
+ */
+
+
+/*
+ * OPTION: Use the POSIX "termios" methods in "main-gcu.c"
+ */
+/* #define USE_TPOSIX */
+
+/*
+ * OPTION: Use the "termio" methods in "main-gcu.c"
+ */
+/* #define USE_TERMIO */
+
+/*
+ * OPTION: Use the icky BSD "tchars" methods in "main-gcu.c"
+ */
+/* #define USE_TCHARS */
+
+
+/*
+ * OPTION: Use "blocking getch() calls" in "main-gcu.c".
+ * Hack -- Note that this option will NOT work on many BSD machines
+ * Currently used whenever available, if you get a warning about
+ * "nodelay()" undefined, then make sure to undefine this.
+ */
+#if defined(SYS_V) || defined(AMIGA)
+# define USE_GETCH
+#endif
+
+
+/*
+ * OPTION: Use the "curs_set()" call in "main-gcu.c".
+ * Hack -- This option will not work on most BSD machines
+ */
+#ifdef SYS_V
+# define USE_CURS_SET
 #endif
 
 
 
 /*
- * OPTION: Compile support code for the "Curses" system.  This is a
- * compilation option, note that the "main()" function can choose
- * not to "activate" the "curses" code.  But defining "USE_CURSES"
- * will ALLOW the "executable" to run using "curses" if so desired.
- * Note that the platform must support curses to use this option.
+ * OPTION: Allow the use of a "Recall Window", if supported
  */
-/* #define USE_CURSES */
+#define GRAPHIC_RECALL
 
 
 /*
- * The Macintosh supports both the "RECALL" and "CHOICE" windows.
- * The Macintosh defaults to using both colors and "shimmer".
- * Also, we can NEVER use "curses" routines on the Macintosh.
+ * OPTION: Allow the use of a "Choice Window", if supported
  */
-#ifdef MACINTOSH
-# define GRAPHIC_RECALL		/* Monster Recall */
-# define GRAPHIC_CHOICE		/* Not quite ready */
-# define USE_COLOR		/* Include full support for color terminals */
-# define USE_MULTIHUED		/* Include full "MULTIHUED" support */
-# undef USE_CURSES		/* Cannot use Curses */
-#endif
+#define GRAPHIC_CHOICE
 
-
-/*
- * EMX terminal using video.a.  -EK-
- * OPTION: Refuse to work with Curses.
- */
-#ifdef __EMX__
-# undef USE_CURSES
-#endif
-
-/*
- * Note that the "__EMX__" makefile requires a certain directory
- */
-#ifdef __EMX__
-# undef DEFAULT_PATH
-# define DEFAULT_PATH "./lib/"
-#endif
-
-
-/*
- * OPTION: If "USE_X11" has been defined elsewhere, the options here
- * can be used to prepare a set of "default" compilation options for
- * the "X11" support.  Note that both "USE_X11" and "USE_CURSES" can
- * both be compiled at once.  Note also that the support for the
- * "RECALL" and "CHOICE" windows is not ready yet (see "main-x11.c").
- * Supporting X11 defaults to supporting "Color" and "Shimmer".
- */
-#ifdef USE_X11
-# define USE_COLOR 		/* Include full support for color terminals */
-# define USE_MULTIHUED		/* Include full "MULTIHUED" support */
-#endif
 
 /*
  * OPTION: This is the "Default" font when using X11.
  */
-#ifdef USE_X11
-# define USE_X11_FONT		"9x15"
-#endif
+#define DEFAULT_X11_FONT	"9x15"
 
 
 
@@ -215,9 +307,12 @@
 
 /*
  * Make sure that "usleep()" works.
+ *
+ * In general, this is only referenced by "Unix" machines.
  */
-#if !defined(HPUX) && !defined(ultrix) && !defined(SOLARIS)
+#if !defined(HPUX) && !defined(ultrix) && !defined(SOLARIS) && !defined(SGI)
 # define HAS_USLEEP
 #endif
+
 
 

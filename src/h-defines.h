@@ -20,7 +20,7 @@
 
 /* Hack */
 #ifndef O_BINARY
-#define O_BINARY 0x00
+# define O_BINARY 0x00
 #endif
 
 

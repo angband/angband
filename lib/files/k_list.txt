@@ -3,7 +3,7 @@
 # Available slots:
 #   29, 29, 90, 177, 178, 179, 182, 183, 195, 196, 205,
 #   268, 284, 293, 299, 350, 351, 399, 413, 414, 423-444,
-#   478, 479, 498, 499, 512+
+#   478, 479, 512+
 
 # XXX Should probably add some "IGNORE_XXX" flags to Rings and Amulets, too.
 
@@ -18,7 +18,7 @@
 
 ##### The "empty" item #####
 
-N:0:Nothing!
+N:0:(nothing)
 I: :d:0:0:0:0:0:0:0
 
 ##### Mushrooms #####
@@ -153,7 +153,7 @@ I:,:r:80:102:400:1:10:0:2
 ##### Edged Weapons #####
 
 N:30:& Broken Dagger~
-I:|:D:23:1:0:1:15:0:0
+I:|:D:23:1:0:1:15:0:1
 A:0/1
 P:0:1d1:-2:-4:0
 F:SHOW_MODS
@@ -257,7 +257,7 @@ P:0:1d6:0:0:0
 F:SHOW_MODS
 
 N:47:& Broken Sword~
-I:|:D:23:2:0:1:75:0:0
+I:|:D:23:2:0:1:75:0:2
 A:0/1
 P:0:1d1:-2:-4:0
 F:SHOW_MODS
@@ -369,9 +369,9 @@ P:0:1d6:0:0:0
 F:SHOW_MODS
 
 N:65:& Trident~
-I:/:y:22:5:0:1:70:8:65
+I:/:y:22:5:0:1:70:8:120
 A:8/1
-P:0:1d9:0:0:0
+P:0:1d8:0:0:0
 F:SHOW_MODS
 
 N:66:& Lance~
@@ -420,27 +420,27 @@ F:SHOW_MODS
 ##### Bows, Crossbows, Slings #####
 
 N:73:& Short Bow~
-I:}:U:15:12:0:1:30:3:50
+I:}:U:19:12:0:1:30:3:50
 A:3/1
 F:SHOW_MODS
 
 N:74:& Long Bow~
-I:}:U:15:13:0:1:40:10:120
+I:}:U:19:13:0:1:40:10:120
 A:10/1
 F:SHOW_MODS
 
 N:75:& Light Crossbow~
-I:}:s:15:23:0:1:110:15:140
+I:}:s:19:23:0:1:110:15:140
 A:15/1
 F:SHOW_MODS
 
 N:76:& Heavy Crossbow~
-I:}:s:15:24:0:1:200:30:300
+I:}:s:19:24:0:1:200:30:300
 A:30/1
 F:SHOW_MODS
 
 N:77:& Sling~
-I:}:u:15:2:0:1:5:1:5
+I:}:u:19:2:0:1:5:1:5
 A:1/1
 F:SHOW_MODS
 
@@ -487,35 +487,35 @@ F:SHOW_MODS
 ##### Shovels and Picks #####
 
 N:84:& Shovel~
-I:\:s:25:1:0:1:60:0:15
+I:\:s:20:1:0:1:60:0:15
 P:0:1d2:0:0:0
 F:SHOW_MODS | TUNNEL
 
 N:85:& Gnomish Shovel~
-I:\:G:25:2:1:1:50:20:10
+I:\:G:20:2:1:1:50:20:10
 A:20/1
 P:0:1d2:0:0:0
 F:SHOW_MODS | TUNNEL
 
 N:86:& Dwarven Shovel~
-I:\:B:25:3:2:1:120:40:50
+I:\:B:20:3:2:1:120:40:50
 A:40/1
 P:0:1d3:0:0:0
 F:SHOW_MODS | TUNNEL
 
 N:87:& Pick~
-I:\:s:25:4:1:1:150:0:50
+I:\:s:20:4:1:1:150:0:50
 P:0:1d3:0:0:0
 F:SHOW_MODS | TUNNEL
 
 N:88:& Orcish Pick~
-I:\:g:25:5:2:1:180:20:300
+I:\:g:20:5:2:1:180:20:300
 A:20/1
 P:0:1d3:0:0:0
 F:SHOW_MODS | TUNNEL
 
 N:89:& Dwarven Pick~
-I:\:b:25:6:3:1:200:50:900
+I:\:b:20:6:3:1:200:50:900
 A:50/1
 P:0:1d4:0:0:0
 F:SHOW_MODS | TUNNEL
@@ -583,7 +583,7 @@ A:1/1:50/1
 P:2:0d0:0:0:0
 
 N:102:& filthy rag~
-I:~:D:36:1:0:1:20:0:0
+I:~:D:36:1:0:1:20:0:1
 A:0/1
 P:1:0d0:0:0:0
 
@@ -623,7 +623,7 @@ A:26/1
 P:14:1d4:-2:0:0
 
 N:110:Rusty Chain Mail~
-I:[:r:37:1:0:1:200:26:0
+I:[:r:37:1:0:1:200:26:1
 A:26/1
 P:14:1d4:-5:0:-8
 
@@ -698,12 +698,12 @@ F:IGNORE_ACID
 ### The Cloaks ###
 
 N:123:& Cloak~
-I:(:g:32:1:0:1:10:1:3
+I:(:g:35:1:0:1:10:1:3
 A:1/1:20/1
 P:1:0d0:0:0:0
 
 N:124:& Shadow Cloak~
-I:(:D:32:6:0:1:5:60:4000
+I:(:D:35:6:0:1:5:60:4000
 A:60/3
 P:6:0d0:0:0:4
 
@@ -811,8 +811,10 @@ I:=:d:45:11:0:1:2:55:16000
 A:55/1
 F:RES_POIS | EASY_KNOW
 
+# Oops, this ring had an sval of "37" not "12"!
+
 N:144:Free Action
-I:=:d:45:37:0:1:2:20:1500
+I:=:d:45:12:0:1:2:20:1500
 A:20/1
 F:FREE_ACT | EASY_KNOW
 
@@ -981,7 +983,10 @@ I:?:d:70:67:0:1:5:1:50
 A:1/1:5/1:10/1:30/1
 F:0x8:0x0:0x0
 
-## XXX 177 XXX ##
+N:177:*Identify*
+I:?:d:70:106:0:1:5:30:1000
+A:30/1
+F:0x80000000:0x0:0x0
 
 ## XXX 178 XXX ##
 
@@ -1197,7 +1202,7 @@ A:0/1
 P:0:1d1:0:0:0
 
 N:224:Water
-I:!:d:75:66:200:1:4:0:0
+I:!:d:75:66:200:1:4:0:1
 A:0/1
 P:0:1d1:0:0:0
 
@@ -1756,25 +1761,25 @@ P:0:1d2:0:0:0
 ##### Basic Books #####
 
 N:330:[Magic for Beginners]
-I:?:o:90:64:0:1:30:5:25
+I:?:R:90:64:0:1:30:5:25
 A:5/1
 P:0:1d1:0:0:0
 F:0x1ff:0x0:0x0
 
 N:331:[Conjurings and Tricks]
-I:?:o:90:65:0:1:30:10:100
+I:?:R:90:65:0:1:30:10:100
 A:10/1
 P:0:1d1:0:0:0
 F:0x3fe00:0x0:0x0
 
 N:332:[Incantations and Illusions]
-I:?:o:90:66:0:1:30:20:400
+I:?:R:90:66:0:1:30:20:400
 A:20/1
 P:0:1d1:0:0:0
 F:0x3fc0000:0x0:0x0
 
 N:333:[Sorcery and Evocations]
-I:?:o:90:67:0:1:30:25:800
+I:?:R:90:67:0:1:30:25:800
 A:25/1
 P:0:1d1:0:0:0
 F:0xfc000000:0x1:0x0
@@ -1877,7 +1882,7 @@ P:0:1d1:0:0:0
 
 
 
-##### Here are the rods #####
+##### Here are the Rods #####
 
 ## XXX 350 XXX ##
 
@@ -2302,47 +2307,47 @@ F:0x0:0x8000:0x0
 ##### Items 425 to 439 unused #####
 
 
-##### Special objects (for visual effects) #####
+##### Special "fake" objects (for visual effects) #####
 
 # Player -- always white
 
 N:440:& player~
-I:@:w:103:1:0:1:0:0:0
+I:@:w:109:1:0:1:0:0:0
 
 # Floor -- white, but gray when unseen
 
 N:441:& floor~
-I:.:w:103:1:0:1:0:0:0
+I:.:w:101:1:0:1:0:0:0
 
 # Granite wall (and perma-wall) -- white, but gray when unseen
 
 N:442:& granite wall~
-I:#:w:103:1:0:1:0:0:0
+I:#:w:112:1:0:1:0:0:0
 
 # Quartz vein -- white, but gray when unseen
 
 N:443:& quartz vein~
-I:%:w:103:1:0:1:0:0:0
+I:%:w:113:1:0:1:0:0:0
 
 # Magma vein -- light gray, but dark gray when unseen
 
 N:444:& magma vein~
-I:%:W:103:1:0:1:0:0:0
+I:%:W:114:1:0:1:0:0:0
 
 
 ##### Dungeon features #####
 
 N:445:& pile~ of rubble
-I:::W:103:1:0:1:0:0:0
+I:::W:119:1:0:1:0:0:0
 
 N:446:& open door~
 I:':U:104:1:0:1:0:0:0
 
 N:447:& closed door~
-I:+:U:105:19:0:1:0:0:0
+I:+:U:118:1:0:1:0:0:0
 
 N:448:& secret door~
-I:#:W:109:19:0:1:0:0:0
+I:#:W:117:1:0:1:0:0:0
 
 N:449:& up staircase~
 I:<:w:107:1:0:1:0:0:0
@@ -2388,11 +2393,11 @@ I:^:y:102:63:0:1:0:10:0
 ##### Here are the (visible) traps. #####
 
 N:460:& pit~
-I: :w:102:1:1:1:0:50:0
+I:^:D:102:1:1:1:0:50:0
 P:0:2d6:0:0:0
 
 N:461:& spiked pit~
-I:^:s:102:3:2:1:0:60:0
+I:^:s:102:3:5:1:0:60:0
 P:0:2d6:0:0:0
 
 N:462:& trap door~
@@ -2517,120 +2522,129 @@ I:$:B:100:17:0:1:0:1:40
 N:497:adamantite
 I:$:G:100:18:0:1:0:1:80
 
-## XXX 498 XXX ##
 
-## XXX 499 XXX ##
+##### Objects 498 and 499 are the "Morgoth Artifacts" #####
 
+# These objects, like objects 500 to 511, are never created
+# without being turned into artifacts.  This simplifies the
+# code for "killing the winner monster"
+
+N:498:& Mighty Hammer~
+I:\:D:21:50:0:1:180:15:1000
+P:0:3d4:0:0:0
+F:SHOW_MODS | INSTA_ART
+
+N:499:& Massive Iron Crown~
+I:]:D:33:50:0:1:20:44:1000
+P:0:1d1:0:0:0
+F:INSTA_ART
 
 
 ##### Objects 500 to 511 are the "Special Artifacts" #####
 
-# Some of these objects do not specify "names" because the
-# name is added by the artifact code ("i_ptr->name1").  The
-# "Lites" must specify a "type" but not a "name" because that
-# also is added by the artifact code.  Note that the "of xxx"
-# is not added if the object has no "name", thus the Rings and
-# Amulets must NOT be given a "name".
-
-# The Lites and the One Ring specify "physical colors", which
+# These objects do not specify "full names" because the artifact name
+# is added in "desc.c" based on the artifact index ("i_ptr->name1").
+#
+# These objects do specify a "base name", which is used when the object
+# is "aware" (always true except for the Rings and Amulets).
+#
+# The Lites (and the One Ring) specify "physical colors", which
 # over-ride the built in colors.  Note that the "One Ring" also
 # has a specific check for "unknown" in which it changes its name
-# to "a plain gold ring".
+# to "a plain gold ring".  See "desc.c"
 #
 # Setting "EASY_KNOW" for LITE's means that they get "auto-identified"
 # while setting it for RING's/AMULET's means that once they have been
-# identified once, they can never be forgotten.
+# identified once, they can never be forgotten.  Note that the Lite's
+# do not currently use this feature.
 #
 # Note that ALL artifacts are given "IGNORE_ACID/ELEC/FIRE/COLD" when
 # they are created, so we do not need to specify that here.
+#
+# Note that the "INSTA_ART" flag is used to prevent these objects from
+# being created without also turning them into artifacts.
+#
+# Note that at some point, it will probably be useful to create "object
+# templates" for some other objects, including the two "Morgoth" items.
+#
+# Note also that there is no reason to have 6 different rings here, except
+# to allow the "sub-type" to choose different colors for all of them.
 
 
-
-# The Phial activates for "call light"
+# The Phial of Galadriel -- see artifact list
 
 N:500:& Phial~
 I:~:y:10:4:0:1:10:1:10000
 P:0:1d1:0:0:0
-F:ACTIVATE | LITE
+F:LITE | INSTA_ART
 
-# The Star activates for "magic mapping"
+# The Star of Elendil -- see artifact list
 
 N:501:& Star~
 I:~:w:10:5:0:1:5:25:25000
 P:0:1d1:0:0:0
-F:ACTIVATE | LITE
+F:LITE | INSTA_ART
 
-# The Stone activates for "wizard light"
-# The Stone gives Hold Life, See Invis, and +2 Wis/Dex.
+# The Arkenstone of Thrain -- see artifact list
 
 N:502:& Arkenstone~
-I:~:y:10:6:2:1:5:60:60000
+I:~:y:10:6:0:1:5:60:60000
 P:0:1d1:0:0:0
-F:ACTIVATE | LITE | HOLD_LIFE | SEE_INVIS | WIS | DEX
+F:LITE | INSTA_ART
 
 
-# The amulet of Carlammas (+2 Con, Resist Fire)
+# The Amulet of Carlammas -- see artifact list
 
 N:503:& Amulet~
-I:":d:40:10:2:1:3:50:60000
-F:ACTIVATE | CON | RES_FIRE | EASY_KNOW
+I:":d:40:10:0:1:3:50:60000
+F:INSTA_ART
 
-# The amulet of Ingwe
+# The Amulet of Ingwe -- see artifact list
 
 N:504:& Amulet~
-I:":d:40:11:3:1:3:65:90000
-F:ACTIVATE | INFRA | SEE_INVIS | FREE_ACT | WIS | CHR | 
-F:RES_ACID | RES_COLD | RES_ELEC | EASY_KNOW | HIDE_TYPE
+I:":d:40:11:0:1:3:65:90000
+F:INSTA_ART
 
-# The amulet of the Dwarves
+# The Necklace of the Dwarves -- see artifact list
 
 N:505:& Necklace~
-I:":d:40:12:3:1:3:70:75000
-F:INFRA | SEE_INVIS | FREE_ACT | REGEN |
-F:STR | CON | EASY_KNOW | HIDE_TYPE
+I:":d:40:12:0:1:3:70:75000
+F:INSTA_ART
 
 
-# The ring "Barahir" (+1 to stats)
+# The Ring of Barahir -- see artifact list
 
 N:506:& Ring~
-I:=:d:45:32:1:1:2:50:65000
-F:RES_POIS | AGGRAVATE | EASY_KNOW |
-F:STEALTH | STR | INT | WIS | DEX | HIDE_TYPE
+I:=:d:45:32:0:1:2:50:65000
+F:INSTA_ART
 
-# The ring "Tulkas" (+4 to stats)
+# The Ring of Tulkas -- see artifact list
 
 N:507:& Ring~
-I:=:d:45:33:4:1:2:90:150000
-F:ACTIVATE | STR | DEX | CON | EASY_KNOW
+I:=:d:45:33:0:1:2:90:150000
+F:INSTA_ART
 
-# The ring "Narya" -- sustain STR, +1 stats, etc
+# The Ring of Power (Narya) -- see artifact list
 
 N:508:& Ring~
-I:=:d:45:34:1:1:2:80:100000
-F:ACTIVATE | FREE_ACT | SEE_INVIS | REGEN | SLOW_DIGEST | 
-F:STR | INT | WIS | DEX | CON | CHR | SUST_STR | EASY_KNOW
+I:=:d:45:34:0:1:2:80:100000
+F:INSTA_ART
 
-# The ring "Nenya" -- sustain INT, +2 stats, etc
+# The Ring of Power (Nenya) -- see artifact list
 
 N:509:& Ring~
-I:=:d:45:35:2:1:2:90:200000
-F:ACTIVATE | HOLD_LIFE | FREE_ACT | SEE_INVIS | FEATHER | REGEN | 
-F:STR | INT | WIS | DEX | CON | CHR | SUST_INT | IM_COLD | EASY_KNOW
+I:=:d:45:35:0:1:2:90:200000
+F:INSTA_ART
 
-# The ring "Vilya" -- sustain WIS, +3 stats, etc
+# The Ring of Power (Vilya) -- see artifact list
 
 N:510:& Ring~
-I:=:d:45:36:3:1:2:100:300000
-F:ACTIVATE | HOLD_LIFE | FREE_ACT | SEE_INVIS | REGEN | 
-F:STR | INT | WIS | DEX | CON | CHR | SUST_WIS | IM_ELEC | EASY_KNOW
+I:=:d:45:36:0:1:2:100:300000
+F:INSTA_ART
 
-# The One Ring -- +5 stats, activates, etc
+# The Ring of Power (The One Ring) -- see artifact list
 
 N:511:& Ring~
-I:=:y:45:37:5:1:2:110:5000000
-F:ACTIVATE | CURSED | HEAVY_CURSE | PERMA_CURSE |
-F:AGGRAVATE | DRAIN_EXP | SEE_INVIS | REGEN |
-F:IM_FIRE | IM_COLD | IM_ELEC | IM_ACID |
-F:RES_FIRE | RES_COLD | RES_ELEC | RES_ACID |
-F:STR | INT | WIS | DEX | CON | CHR | EASY_KNOW
+I:=:y:45:37:0:1:2:110:5000000
+F:INSTA_ART
 

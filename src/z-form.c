@@ -180,7 +180,7 @@ uint vstrnfmt(char *buf, uint max, cptr fmt, va_list vp)
 
       /* Hack -- take note of "long" request */
       else if (a[-1] == 'l') do_long = 1;
-      
+
       /* XXX Oops.  We do not handle this. */
       else if (a[-1] == 'L') quit("vstrnfmt('%...L') not allowed");
 
@@ -195,19 +195,19 @@ uint vstrnfmt(char *buf, uint max, cptr fmt, va_list vp)
     /* Clear "tmp" */
     tmp[0] = '\0';
 
-    /* Hack -- user defined print routine */
+    /* Hack -- user defined print routine (see above) */
     if (a[-1] == 'v')
     {
       /* Access the "user argument" */
       vptr arg = va_arg(vp, vptr);
 
       /* Append the result, collect the length */
-      len += vstrnfmt(buf+len, max-len, aux, arg);
+      len += vstrnfmt_aux(buf+len, max-len, aux, arg);
 
       /* Continue */
       continue;
     }
-      
+
     /* Process the "format" char */
     switch (a[-1])
     {

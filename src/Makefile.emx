@@ -1,43 +1,33 @@
-# File: Makefile
+# File: Makefile.emx
 
-SRCS = \
-  arrays.c birth.c cave.c command.c \
-  creature.c death.c desc.c dungeon.c \
-  effects.c files.c generate.c help.c io.c \
-  magic.c main.c main-emx.c \
-  misc1.c misc2.c misc3.c misc4.c \
-  moria1.c moria2.c moria3.c moria4.c \
-  random.c recall.c save.c signals.c \
-  spells1.c spells2.c store.c tables.c term.c \
-  util.c variable.c wizard.c \
-  z-util.c z-virt.c z-form.c
+# Purpose: Makefile support for "main-emx.c"
 
+# Note: Rename this file "Makefile" before using
+
+# Note: Use "dmake" to compile (see "main-emx.c" for details).
+#       Since "dmake" does not demand "hard" tab stops as delimiters,
+#       don't bother to add them.
 
 OBJS = \
-  arrays.o birth.o cave.o command.o \
-  creature.o death.o desc.o dungeon.o \
-  effects.o files.o generate.o help.o io.o \
-  magic.o main.o main-emx.o \
-  misc1.o misc2.o misc3.o misc4.o \
-  moria1.o moria2.o moria3.o moria4.o \
-  random.o recall.o save.o signals.o \
-  spells1.o spells2.o store.o tables.o term.o \
-  util.o variable.o wizard.o \
-  z-util.o z-virt.o z-form.o
+  main.o main-emx.o \
+  signals.o util.o io.o arrays.o save.o save-old.o death.o \
+  generate.o birth.o creature.o effects.o magic.o dungeon.o command.o \
+  misc1.o misc2.o misc3.o misc4.o moria1.o moria2.o moria3.o moria4.o \
+  spells1.o spells2.o cave.o desc.o tables.o variable.o \
+  store.o recall.o wizard.o borg.o \
+  term.o random.o z-util.o z-virt.o z-form.o
 
 CC = gcc
-CFLAGS = -Wall -O2
+CFLAGS = -O2 -DUSE_EMX
+LIBS = -lvideo
 
 .c.o:
-	$(CC) $(CFLAGS) -c $*.c
+    $(CC) $(CFLAGS) -c $*.c
 
 angband.exe: $(OBJS)
-	$(CC) $(CFLAGS)  -o angband.exe $(OBJS) -lvideo
-	+ move angband.exe ..
-	+ del ..\lib\data\*.raw
+    $(CC) $(CFLAGS)  -o angband.exe $(OBJS) $(LIBS)
+    + move angband.exe ..
 
-depend:
-	makedepend -D__MAKEDEPEND__ $(SRCS)
-
-# DO NOT DELETE THIS LINE -- make depend depends on it.
-
+# At least *my* part of the source should compile without any warnings. -EK-
+main-emx.o:     main-emx.c
+    $(CC) $(CFLAGS) -Wall -c $*.c

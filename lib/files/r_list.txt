@@ -6,6 +6,8 @@
 
 # Note that (for now) the monsters MUST be sorted by level.
 
+# Note that the uniques are just another monster race.
+
 
 ##### This monster needs to be removed #####
 ##### Then we can have an actual "blank race" #####

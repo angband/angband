@@ -73,10 +73,6 @@
 #define SQR(a)		((a) * (a))
 #endif
 
-#undef CTRL		/* Nuke "non-ansi" definition first */
-#define CTRL(C) ((C)&037)
-
-
 
 /**** 32 bit (uint) Flag Macros ****/
 

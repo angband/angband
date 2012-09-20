@@ -13,18 +13,6 @@
 #include "angband.h"
 
 
-/* Lets do all prototypes correctly.... -CWS */
-#ifndef NO_LINT_ARGS
-#ifdef __STDC__
-static void regenhp(int);
-static void regenmana(int);
-static void regen_monsters(void);
-static int special_check(inven_type *);
-static cptr value_check(inven_type *);
-#endif
-#endif
-
-
 /* ANGBAND game module					-RAK-	 */
 /* The code in this section has gone through many revisions, and */
 /* some of it could stand some more hard work.	-RAK-	       */
@@ -36,48 +24,6 @@ static cptr value_check(inven_type *);
 
 
 
-/*
- * Tell us about the "special-ness" of an item
- * If we already know about it, don't tell us again
- * If there is a good, unknown enchantment, return 1
- * If there is a bad, unknown enchantment, return -1
- */
-static int special_check(inven_type *i_ptr)
-{
-    /* Paranoia -- No item given */
-    if (i_ptr->tval == TV_NOTHING) return 0;
-
-    /* We know about it already, do not tell us again */
-    if (i_ptr->ident & ID_FELT) return 0;
-
-    /* It is fully known, no information needed */
-    if (known2_p(i_ptr)) return 0;
-
-    /* We can only feel wearable items */
-    if (!wearable_p(i_ptr)) return (0);
-
-    /* We cannot "feel" Amulets or Rings or Lites */
-    if (i_ptr->tval == TV_LITE) return (0);
-    if (i_ptr->tval == TV_RING) return (0);
-    if (i_ptr->tval == TV_AMULET) return (0);
-
-    /* It is bad, and we were not aware of this */
-    if (cursed_p(i_ptr)) return (-1);
-
-    /* It feels good */
-    if (i_ptr->tohit > 0 || i_ptr->todam > 0 || i_ptr->toac > 0) {
-	return (1);
-    }
-
-    /* Excellent diggers are good */
-    if ((i_ptr->tval == TV_DIGGING) && (i_ptr->flags1 & TR1_TUNNEL) &&
-	(i_ptr->pval > k_list[i_ptr->k_idx].pval)) {
-	return (1);
-    }
-
-    /* Default to no feeling */
-    return 0;
-}
 
 
 /*
@@ -119,29 +65,226 @@ static cptr value_check(inven_type *i_ptr)
     /* Check for "good" ego-items */
     if (i_ptr->name2) {
 
-        /* Some of the ego-items are excellent */
-        if (i_ptr->name2 < EGO_MIN_WORTHLESS) return "excellent";
+	/* Some of the ego-items are excellent */
+	if (i_ptr->name2 < EGO_MIN_WORTHLESS) return "excellent";
 
-        /* The rest are awful */
-        return "worthless";
+	/* The rest are awful */
+	return "worthless";
     }
 
 
     /* Hack -- Any form of bonus is considered good */
     if ((i_ptr->toac > 0) || (i_ptr->tohit > 0) || (i_ptr->todam > 0)) {
-	return "blessed";
+	return "good";
     }
 
     /* Hack -- "good" digging tools -CFT */
     if ((i_ptr->tval == TV_DIGGING) && (i_ptr->flags1 & TR1_TUNNEL) &&
 	(i_ptr->pval > k_list[i_ptr->k_idx].pval)) {
-	return "blessed";
+	return "good";
     }
 
     /* Default to "average" */
     return "average";
 }
 
+
+/*
+ * Acquire a "sense" about an item (fighters, rogues, paladins)
+ * Note that this "sense" will "pre-empt" normal "feelings".
+ */
+static void sense_item(int i)
+{
+    cptr feel;
+    inven_type *i_ptr;
+    char tmp_str[160];
+    char out_val[160];
+
+    /* Get the item */
+    i_ptr = &inventory[i];
+
+    /* Mages, Priests, Rangers lose out */
+    if (p_ptr->pclass == 1) return;
+    if (p_ptr->pclass == 2) return;
+    if (p_ptr->pclass == 4) return;
+
+    /* Only wearable items can be sensed */
+    if (!wearable_p(i_ptr)) return;
+
+    /* Rings and Amulets cannot be sensed */
+    if (i_ptr->tval == TV_LITE) return;
+    if (i_ptr->tval == TV_RING) return;
+    if (i_ptr->tval == TV_AMULET) return;
+
+    /* Check it for a feeling */
+    feel = value_check(i_ptr);
+
+    /* Skip non-feelings */
+    if (!feel) return;
+
+    /* Stop everything */
+    disturb(0, 0);
+
+    /* Get an object description */
+    objdes(tmp_str, i_ptr, FALSE);
+    (void)sprintf(out_val,
+		  "You feel the %s (%c) you are %s %s %s...",
+		  tmp_str, index_to_label(i), describe_use(i),
+		  (i_ptr->number == 1) ? "is" : "are", feel);
+    message(out_val, 0x04);
+
+    /* We have "felt" it */
+    i_ptr->ident |= ID_FELT;
+
+    /* Inscribe it textually */
+    inscribe(i_ptr, feel);
+
+    /* Success */
+    return;
+}
+
+
+/*
+ * Sense the inventory
+ *
+ *   Class 0 = Warrior
+ *   Class 1 = Mage
+ *   Class 2 = Priest
+ *   Class 3 = Rogue
+ *   Class 4 = Ranger
+ *   Class 5 = Paladin
+ */
+static void sense_inventory(void)
+{
+    int i, i_f, lev2, penalty = 0;
+
+    inven_type *i_ptr;
+
+    char tmp_str[160];
+    char out_val[160];
+
+
+    /* Square the players level */
+    lev2 = p_ptr->lev * p_ptr->lev;
+
+
+    /*** Warriors, Rogues and Paladins get a "great" identifier ***/
+
+    /* Extract a "penalty" */
+    if (p_ptr->pclass == 5) penalty = 80;
+    if (p_ptr->pclass == 3) penalty = 20;
+    if (p_ptr->pclass == 0) penalty = 9;
+
+    /* Warriors, Rogues, Paladins get a "special" identifier */
+    if (penalty) {
+
+	/* The feeling just "kicks in" every one in a while */
+	if (randint((int)(1000L * penalty / (lev2 + 40)) + 1) == 1) {
+
+	    /* Check everything */
+	    for (i = 0; i < INVEN_TOTAL; i++) {
+
+		/* Hack -- Skip "missing" things */
+		if (!inventory[i].tval) continue;
+
+		/* Inventory items only get felt 1 in 5 times */
+		if ((i < INVEN_WIELD) && (randint(5) != 1)) continue;
+
+		/* Attempt to sense it */
+		sense_item(i);
+	    }
+	}
+
+	/* Do NOT do the "simpler" identification */
+	return;
+    }
+
+
+    /*** Mages, Priests, Rangers ***/
+
+    /* Priests use a calculation like "warriors" above */
+    if (p_ptr->pclass == 2) {
+	if (randint((10000 / (lev2 + 40)) + 1) != 1) return;
+    }
+
+    /* Mages/Rangers use a weird formula */
+    else {
+	if (randint(10 + 12000 / (5 + p_ptr->lev)) != 1) return;
+    }
+
+    /* Scan the inventory */
+    for (i = 0; i < INVEN_TOTAL; i++) {
+
+	/* Get the item */
+	i_ptr = &inventory[i];
+
+	/* Skip non-wearable items */
+	if (!wearable_p(i_ptr)) continue;
+
+	/* Paranoia -- No item given */
+	if (!i_ptr->tval) continue;
+
+	/* We know about it already, do not tell us again */
+	if (i_ptr->ident & ID_FELT) continue;
+
+	/* It is fully known, no information needed */
+	if (known2_p(i_ptr)) continue;
+
+	/* We can only feel wearable items */
+	if (!wearable_p(i_ptr)) continue;
+
+	/* We cannot "feel" Amulets or Rings or Lites */
+	if (i_ptr->tval == TV_LITE) continue;
+	if (i_ptr->tval == TV_RING) continue;
+	if (i_ptr->tval == TV_AMULET) continue;
+
+	/* Inventory only works 1/5 the time */
+	if ((i < INVEN_WIELD) && (randint(5) != 1)) continue;
+
+	/* Mages/Rangers only have a 1/10 chance of feeling */
+	if ((p_ptr->pclass != 2) && (randint(10) != 1)) continue;
+
+	/* Default to normal */
+	i_f = 0;
+
+	/* Always notice cursed items (including Calris) */
+	if (cursed_p(i_ptr)) i_f = -1;
+
+	/* Hack -- Uncursed artifacts feel good */
+	else if (artifact_p(i_ptr)) i_f = 1;
+
+	/* Hack -- All "good" ego-items feel good */
+	else if (i_ptr->name2 && (i_ptr->name2 < EGO_MIN_WORTHLESS)) i_f = 1;
+
+	/* Sometimes an item just "feels" good */
+	else if (i_ptr->tohit>0 || i_ptr->todam>0 || i_ptr->toac>0) i_f = 1;
+
+	/* Skip "unfelt" objects */
+	if (!i_f) continue;
+
+	/* Disturb everything */
+	disturb(0, 0);
+
+	/* Get an object description */
+	objdes(tmp_str, i_ptr, FALSE);
+	sprintf(out_val,
+		"There's something %s about the %s (%c) you are %s...",
+		(i_f > 0 ? "good" : "bad"),
+		tmp_str, index_to_label(i), describe_use(i));
+	message(out_val, 0x04);
+
+	/* We have "felt" it */
+	i_ptr->ident |= ID_FELT;
+
+	/* Inscribe a feeling */
+	if (cursed_p(i_ptr)) {
+	    inscribe(i_ptr, "cursed");
+	}
+	else {
+	    inscribe(i_ptr, "blessed");
+	}
+    }
+}
 
 
 
@@ -150,13 +293,14 @@ static cptr value_check(inven_type *i_ptr)
  */
 static void regenhp(int percent)
 {
-    register int32        new_chp, new_chp_frac;
+    register s32b        new_chp, new_chp_frac;
     int                   old_chp;
 
     old_chp = p_ptr->chp;
     new_chp = ((long)p_ptr->mhp) * percent + PLAYER_REGEN_HPBASE;
     p_ptr->chp += new_chp >> 16;   /* div 65536 */
-/* check for overflow */
+
+    /* check for overflow */
     if (p_ptr->chp < 0 && old_chp > 0) p_ptr->chp = MAX_SHORT;
     new_chp_frac = (new_chp & 0xFFFF) + p_ptr->chp_frac;	/* mod 65536 */
     if (new_chp_frac >= 0x10000L) {
@@ -167,12 +311,14 @@ static void regenhp(int percent)
 	p_ptr->chp_frac = new_chp_frac;
     }
 
-    /* must set frac to zero even if equal */
+    /* Must set frac to zero even if equal */
     if (p_ptr->chp >= p_ptr->mhp) {
 	p_ptr->chp = p_ptr->mhp;
 	p_ptr->chp_frac = 0;
     }
-    if (old_chp != p_ptr->chp) prt_chp();
+
+    /* Notice changes */
+    if (old_chp != p_ptr->chp) p_ptr->status |= PY_HP;
 }
 
 
@@ -181,12 +327,12 @@ static void regenhp(int percent)
  */
 static void regenmana(int percent)
 {
-    register int32        new_mana, new_mana_frac;
+    register s32b        new_mana, new_mana_frac;
     int                   old_cmana;
 
     old_cmana = p_ptr->cmana;
     new_mana = ((long)p_ptr->mana) * percent + PLAYER_REGEN_MNBASE;
-    p_ptr->cmana += new_mana >> 16;/* div 65536 */
+    p_ptr->cmana += new_mana >> 16;	/* div 65536 */
     /* check for overflow */
     if (p_ptr->cmana < 0 && old_cmana > 0) {
 	p_ptr->cmana = MAX_SHORT;
@@ -200,13 +346,14 @@ static void regenmana(int percent)
 	p_ptr->cmana_frac = new_mana_frac;
     }
 
-/* must set frac to zero even if equal */
+    /* Must set frac to zero even if equal */
     if (p_ptr->cmana >= p_ptr->mana) {
 	p_ptr->cmana = p_ptr->mana;
 	p_ptr->cmana_frac = 0;
     }
-    if (old_cmana != p_ptr->cmana)
-	prt_cmana();
+    
+    /* Redraw mana */
+    if (old_cmana != p_ptr->cmana) p_ptr->status |= PY_MANA;
 }
 
 
@@ -237,30 +384,28 @@ static void regen_monsters(void)
 
 
 
-
 /*
  * This is the main function of this file -- it places the user on the
  * current level and processes user input until the level is completed,
  * the user dies, or the game is terminated.
- *
- * The command parser has been restructured so as to reduce the differences
- * between the "Roguelike" and "Original" command sets, and to simplify the
- * actual routines which do the parsing.  This has resulted in (temporarily)
- * the reserving the keys in this string: ";,'}".
- *
- * Main procedure for dungeon.			-RAK-
- * Note: There is a lot of preliminary magic going on here at first
  *
  * Note that "compact_monsters()" is much more likely to succeed
  * here than in creatures.c, so we do it even if there are up to 10
  * monsters slots remaining.  This greatly reduces the chances of
  * failure during monster reproduction.  We do the compaction via
  * "tighten_m_list()" which only compacts if space is tight.
+ *
+ * This function is "probably" the best place to make sure that "extra"
+ * items do not get carried.  That is, if the player somehow manages to
+ * place 24 items in his pack, even though this should never happen, then
+ * immediate action is required to prevent fatal errors.  Thus we test
+ * the pack after every command, and induce "automatic item droppage" if
+ * the pack overflows.  Note that no monster action can cause the pack to
+ * gain items.  Make sure "disenchant" never affects individual pack items.
  */ 
-void dungeon()
+void dungeon(void)
 {
     int                    i;
-    int			   lev2;
 
     register cave_type		*c_ptr;
     register inven_type		*i_ptr;
@@ -268,15 +413,11 @@ void dungeon()
     /* Regenerate hp and mana */
     int                    regen_amount;
 
-    vtype                  tmp_str, out_val;
-
 
     /* Reset flags and initialize variables (most of it is overkill) */
-    eof_flag		= FALSE;
     new_level_flag	= FALSE;
     teleport_flag	= FALSE;
     find_flag		= 0;
-    mon_tot_mult	= 0;
 
     /* Reset the "command" vars (again, mostly overkill) */
     command_cmd		= 0;
@@ -286,6 +427,9 @@ void dungeon()
     command_arg		= 0;
     command_dir		= -1;
 
+    /* Reset the "object generation" level */
+    object_level = dun_level;
+    
 #ifdef TARGET
     /* target code taken from Morgul -CFT */
     target_mode = FALSE;
@@ -303,29 +447,28 @@ void dungeon()
 
 #ifdef NEW_MAPS
     if (TRUE) {
-        int x, y;
+	int x, y;
 
 	/* Forget all of the "map memory" */
 	for (y = 0; y < cur_height; y++) {
 	    for (x = 0; x < cur_width; x++) {
 		/* Start with a blank map */
 		cave[y][x].mchar = ' ';
-		cave[y][x].mattr = COLOR_WHITE;
+		cave[y][x].mattr = TERM_WHITE;
 	    }
-        }
+	}
     }    
 #endif
 
 
-    /* Check for a maximum level. */
+    /* Remember deepest dungeon level visited */
     if (dun_level > (unsigned)(p_ptr->max_dlv)) {
 	p_ptr->max_dlv = dun_level;
     }
 
 
-
-    /* Paranoia -- no stairs up from town */
-    if (!dun_level) create_up_stair = FALSE;
+    /* Paranoia -- no stairs from town */
+    if (!dun_level) create_down_stair = create_up_stair = FALSE;
 
     /* No stairs down from Quest */
     if (is_quest(dun_level)) create_down_stair = FALSE;
@@ -374,11 +517,7 @@ void dungeon()
 	    }
 	}
 
-	/* Refuse to convert artifacts or stores, etc */
-	else {
-	    msg_print("The object resists your attempt to transform it into a stairway.");
-	}
-
+	/* Cancel the stair request */
 	create_down_stair = FALSE;
 	create_up_stair = FALSE;
     }
@@ -389,7 +528,7 @@ void dungeon()
 
     /* Update the view */
     update_view();
-    
+
     /* Update the lite */
     update_lite();
 
@@ -399,7 +538,7 @@ void dungeon()
     /* Check the view */
     check_view();
 
-        
+
     /* Print the depth */
     prt_depth();
 
@@ -409,16 +548,16 @@ void dungeon()
 
     /* Check the mana occasionally just to stay in touch */
     if (class[p_ptr->pclass].spell == MAGE) {
-        calc_spells(A_INT);
-        calc_mana(A_INT);
+	calc_spells(A_INT);
+	calc_mana(A_INT);
     }
     else if (class[p_ptr->pclass].spell == PRIEST) {
-        calc_spells(A_WIS);
-        calc_mana(A_WIS);
+	calc_spells(A_WIS);
+	calc_mana(A_WIS);
     }
 
-    /* Check the player's strength */
-    check_strength();
+    /* Calculate bonuses */
+    calc_bonuses();
 
 
     /*** Process this dungeon level ***/
@@ -429,8 +568,34 @@ void dungeon()
     while (1) {
 
 
-	/* Turn zero used for "dead" players */
+	/* Notice death and new levels */
+	if (death || new_level_flag) break;
+
+
+	/*** Process the player ***/
+	
+	/* Give the player some energy */
+	p_ptr->energy += extract_energy(p_ptr->pspeed);
+	
+	/* Hack -- ignore the player when he has no energy */
+	if (p_ptr->energy < 100) {
+
+	    /* Just process the monsters */
+	    process_monsters();
+	    
+	    /* And wait until the next loop */
+	    continue;
+	}
+	
+
+	/*** Handle real turns for the player ***/
+	
+	/* Advance the turn counter */
 	turn++;
+
+	/* Hack -- small "energy boost" (see "creature.c") */
+	p_ptr->energy += rand_int(5);
+
 
 
 	/*** Check the Load ***/
@@ -457,16 +622,74 @@ void dungeon()
 
 	/*** Update the Stores ***/
 
-	/* Update the stores once a day */
-	if ((dun_level) && ((turn % 1000) == 0)) {
+	/* Hack -- Daybreak/Nighfall in town */
+	if (!dun_level && (turn % (TOWN_DAWN / 2) == 0)) {
 
-	    if (wizard) msg_print("Updating Stores...");
+	    int y, x;
+	    bool dawn;
+
+	    /* Check for dawn */
+	    dawn = (!(turn % TOWN_DAWN));
+
+	    /* Night falls */
+	    if (dawn) {
+		msg_print("The sun has risen.");
+	    }
+
+	    /* Day breaks */
+	    else {
+		msg_print("The sun has fallen.");
+	    }
+
+	    /* Hack -- Scan the town, switch the visibility */
+	    for (y = 0; y < cur_height; y++) {
+		for (x = 0; x < cur_width; x++) {
+
+		    /* Get the cave grid */
+		    c_ptr = &cave[y][x];
+
+		    /* Assume lit and marked */
+		    c_ptr->info |= CAVE_PL;
+		    c_ptr->info |= CAVE_FM;
+
+		    /* All done if dawn */
+		    if (dawn) continue;
+
+		    /* Skip real walls */
+		    if (!floor_grid_bold(y, x)) continue;
+
+		    /* Skip the doors/stairs */
+		    i_ptr = &i_list[c_ptr->i_idx];
+		    if (i_ptr->tval == TV_STORE_DOOR) continue;
+		    if (i_ptr->tval == TV_DOWN_STAIR) continue;
+
+		    /* Hack -- Make everything else dark */
+		    c_ptr->info &= ~CAVE_PL;
+		    c_ptr->info &= ~CAVE_FM;
+		}
+	    }
+
+	    /* Redraw the map */
+	    prt_map();
+	}
+
+
+	/*** Update the Stores ***/
+	
+	/* Perhaps only/always do this at dawn? */
+	/* Update the stores once a day */
+	if ((dun_level) && ((turn % STORE_TURNS) == 0)) {
+
+	    if (wizard || peek) msg_print("Updating Stores...");
+
 	    store_maint();
 
-            if (shuffle_owners && randint(STORE_SHUFFLE) == 1) {
-		if (wizard) msg_print("Shuffling a Store...");
+	    if (shuffle_owners && randint(STORE_SHUFFLE) == 1) {
+		if (wizard || peek) msg_print("Shuffling a Store...");
 		store_shuffle();
 	    }
+
+	    if (wizard || peek) msg_print("Done.");
 	}
 
 
@@ -489,8 +712,8 @@ void dungeon()
 	/* Extract "max radius" from current lite */
 	if (i_ptr->tval == TV_LITE) {
 
-	    /* Use some fuel */
-	    if (i_ptr->pval > 0) {
+	    /* Use some fuel (unless "permanent") */
+	    if (!(i_ptr->flags3 & TR3_LITE) && (i_ptr->pval > 0)) {
 
 		/* Decrease life-span */
 		i_ptr->pval--;
@@ -515,10 +738,8 @@ void dungeon()
 	    }
 	}
 
-	
-	/* Update the lite */
+	/* Update the lite (and the lite radius) */
 	update_lite();
-	
 
 	/* Any "view/lite" change should induce "update_monsters()" */
 	if (old_lite != cur_lite) {
@@ -526,7 +747,6 @@ void dungeon()
 	    /* Update the monsters */
 	    update_monsters();
 	}
-
 
 	/* Sudden loss of lite (can happen from "blind" too) */
 	if ((old_lite > 0) && (cur_lite <= 0)) {
@@ -536,12 +756,11 @@ void dungeon()
 
 		/* Notice the darkness */
 		msg_print("You can no longer see!");
-		
+
 		/* That is disturbing */
 		disturb(0, 0);
 	    }
 	}
-
 
 	/* Remember the old lite */
 	old_lite = cur_lite;
@@ -589,15 +808,22 @@ void dungeon()
 	/* Food consumption */
 	/* Note: Speeded up characters really burn up the food!  */
 	/* now summation, not square, since spd less powerful -CFT */
-	if (p_ptr->speed < 0) {
-	    p_ptr->food -=  (p_ptr->speed * p_ptr->speed - p_ptr->speed) / 2;
+	/* Hack -- Note that Speed is different now (2.7.3) */
+	
+	/* Fast players consume slightly more food */
+	if (p_ptr->pspeed > 110) {
+	    int ospeed = (110 - p_ptr->pspeed) / 10;
+	    p_ptr->food -=  (ospeed * ospeed - ospeed) / 2;
 	}
+
+	/* Digest some food */
 	p_ptr->food -= p_ptr->food_digested;
+
+	/* Starve to death */
 	if (p_ptr->food < 0) {
 	    take_hit(-p_ptr->food / 16, "starvation");	/* -CJS- */
 	    disturb(1, 0);
 	}
-
 
 	/* Regeneration ability */
 	if (p_ptr->regenerate) {
@@ -634,50 +860,40 @@ void dungeon()
 
 	/* Blindness */
 	if (p_ptr->blind > 0) {
-	    if ((PY_BLIND & p_ptr->status) == 0) {
+	    if (!(PY_BLIND & p_ptr->status)) {
 		p_ptr->status |= PY_BLIND;
 		update_lite();
 		draw_cave();
 		disturb(0, 0);
 	    }
 	    p_ptr->blind--;
-	    if (p_ptr->blind == 0) {
+	    if (!p_ptr->blind) {
 		p_ptr->status &= ~PY_BLIND;
 		msg_print("The veil of darkness lifts.");
-		update_lite();
 		draw_cave();
+		update_lite();
 		disturb(0, 0);
 	    }
 	}
 
 	/* Hallucinating? */
 	if (p_ptr->image > 0) {
-
-	    /* Hallucination is pretty disturbing */
-	    disturb(1, 0);
-
-	    /* Eventually, recover, and redraw */
 	    p_ptr->image--;
-
-	    /* Print the map at each step (that's the hallucination!) */
 	    prt_map();
+	    disturb(1, 0);
 	}
 
 	/* Confusion */
 	if (p_ptr->confused > 0) {
-
-	    /* Take note when confusion starts */
 	    if ((PY_CONFUSED & p_ptr->status) == 0) {
 		p_ptr->status |= PY_CONFUSED;
 		prt_confused();
 	    }
-
-	    /* Recover slowly */
 	    p_ptr->confused--;
-	    if (p_ptr->confused == 0) {
+	    if (!p_ptr->confused) {
 		p_ptr->status &= ~PY_CONFUSED;
-		prt_confused();
 		msg_print("You feel less confused now.");
+		prt_confused();
 
 		/* Hack -- Allow "mega-rest" to continue */
 		if (p_ptr->rest != -2) disturb(0, 0);
@@ -686,85 +902,36 @@ void dungeon()
 
 	/* Stun */
 	if (p_ptr->stun > 0) {
-	    int oldstun = p_ptr->stun;
-	    int adjust = con_adj();
-	    /* fixes endless stun if bad con. -CFT */
+	    int adjust = (con_adj() / 2 + 1);
 	    if (adjust < 1) adjust = 1;
-	    p_ptr->stun -= (adjust / 2 + 1);
-
-	    /* If crossed the 50 mark... */
-	    if ((oldstun > 50) && (p_ptr->stun <= 50)) { 
-		p_ptr->ptohit += 15;
-		p_ptr->ptodam += 15;
-		p_ptr->dis_th += 15;
-		p_ptr->dis_td += 15;
-	    }
-
-	    /* If all done with the stun */
-	    if (p_ptr->stun <= 0) {
-		p_ptr->stun = 0;
-		msg_print("Your head stops stinging.");
-		p_ptr->ptohit += 5;
-		p_ptr->ptodam += 5;
-		p_ptr->dis_th += 5;
-		p_ptr->dis_td += 5;
-	    }
+	    p_ptr->stun -= adjust;
+	    p_ptr->status |= PY_STR_WGT;
 	}
 
-	/* Always redraw the stun */
+	/* Hack -- Always redraw the stun */
 	prt_stun();
-
-	/* Afraid */
-	if (p_ptr->afraid > 0) {
-
-	    /* Notice fear */
-	    if ((PY_FEAR & p_ptr->status) == 0) {
-		p_ptr->status |= PY_FEAR;
-		prt_afraid();
-	    }
-
-	    /* Recover from fear */
-	    if ((p_ptr->shero + p_ptr->hero + p_ptr->resist_fear) > 0) {
-		p_ptr->afraid = 0;
-	    }
-
-	    /* Recover slowly */
-	    p_ptr->afraid--;
-	    if (p_ptr->afraid <= 0) {
-		p_ptr->status &= ~PY_FEAR;
-		prt_afraid();
-		msg_print("You feel bolder now.");
-
-		/* Hack -- Allow Mega-Rest to continue */
-		if (p_ptr->rest != -2) disturb(0, 0);
-	    }
-	}
 
 	/* Cut */
 	if (p_ptr->cut > 0) {
-	    if (p_ptr->cut>1000) {
-		take_hit(3 , "a fatal wound");
-		disturb(1, 0);
+	    int damage = 1;
+	    int adjust = con_adj() + 1;
+	    if (adjust < 1) adjust = 1;
+	    if (p_ptr->cut > 1000) {
+		adjust = 0;
+		damage = 3;
 	    }
-	    else if (p_ptr->cut>200) {
-		take_hit(3, "a fatal wound");
-		p_ptr->cut-=(con_adj()<0?1:con_adj())+1;
-		disturb(1, 0);
+	    else if (p_ptr->cut > 200) {
+		damage = 3;
 	    }
-	    else if (p_ptr->cut>100) {
-		take_hit(2, "a fatal wound");
-		p_ptr->cut-=(con_adj()<0?1:con_adj())+1;
-		disturb(1, 0);
+	    else if (p_ptr->cut > 100) {
+		damage = 2;
 	    }
-	    else {
-		take_hit(1, "a fatal wound");
-		p_ptr->cut-=(con_adj()<0?1:con_adj())+1;
-		disturb(1, 0);
-	    }
-	    if (p_ptr->cut <= 0) {
-		p_ptr->cut = 0;
-		if (p_ptr->chp >= 0)
-		    msg_print("Your wound heals.");
+	    take_hit(damage, "a fatal wound");
+	    disturb(1, 0);
+	    p_ptr->cut -= adjust;
+	    if (p_ptr->cut < 0) p_ptr->cut = 0;
+	    if (!p_ptr->cut) {
+		if (p_ptr->chp >= 0) msg_print("Your wound heals.");
 	    }
 	}
 
@@ -772,19 +939,18 @@ void dungeon()
 	prt_cut();
 
 	/* Poisoned */
-	if (p_ptr->poisoned) {
-
-	    /* Take note when poison starts */
-	    if (!(PY_POISONED & p_ptr->status)) {
+	if (p_ptr->poisoned > 0) {
+	    if ((PY_POISONED & p_ptr->status) == 0) {
 		p_ptr->status |= PY_POISONED;
 		prt_poisoned();
 	    }
-
-	    /* Recover slowly */
 	    p_ptr->poisoned--;
-	    if (p_ptr->poisoned == 0 || p_ptr->immune_pois ||
-		p_ptr->resist_pois || p_ptr->oppose_pois) {
+	    if (p_ptr->immune_pois ||
+		p_ptr->resist_pois ||
+		p_ptr->oppose_pois) {
 		p_ptr->poisoned = 0;
+	    }
+	    if (p_ptr->poisoned == 0) {
 		p_ptr->status &= ~PY_POISONED;
 		prt_poisoned();
 		msg_print("You feel better.");
@@ -811,26 +977,41 @@ void dungeon()
 	    }
 	}
 
+	/* Afraid */
+	if (p_ptr->afraid > 0) {
+	    if ((PY_FEAR & p_ptr->status) == 0) {
+		p_ptr->status |= PY_FEAR;
+		prt_afraid();
+	    }
+	    p_ptr->afraid--;
+	    if (p_ptr->shero || p_ptr->hero) p_ptr->afraid = 0;
+	    if (p_ptr->resist_fear) p_ptr->afraid = 0;
+	    if (!p_ptr->afraid) {
+		p_ptr->status &= ~PY_FEAR;
+		prt_afraid();
+		msg_print("You feel bolder now.");
+
+		/* Hack -- Allow Mega-Rest to continue */
+		if (p_ptr->rest != -2) disturb(0, 0);
+	    }
+	}
+
 
 	/*** Check the Speed ***/
 
 	/* Fast */
 	if (p_ptr->fast > 0) {
-
-	    /* Take note when speed starts */
-	    if ((PY_FAST & p_ptr->status) == 0) {
+	    if (!(PY_FAST & p_ptr->status)) {
 		p_ptr->status |= PY_FAST;
-		change_speed(-1);
 		msg_print("You feel yourself moving faster.");
+		p_ptr->status |= PY_STR_WGT;
 		disturb(0, 0);
 	    }
-
-	    /* Gradually lose speed */
 	    p_ptr->fast--;
-	    if (p_ptr->fast == 0) {
+	    if (!p_ptr->fast) {
 		p_ptr->status &= ~PY_FAST;
-		change_speed(1);
 		msg_print("You feel yourself slow down.");
+		p_ptr->status |= PY_STR_WGT;
 
 		/* Hack -- Allow Mega-Rest to continue */
 		if (p_ptr->rest != -2) disturb(0, 0);
@@ -839,21 +1020,17 @@ void dungeon()
 
 	/* Slow */
 	if (p_ptr->slow > 0) {
-
-	    /* Take note when it starts */
-	    if ((PY_SLOW & p_ptr->status) == 0) {
+	    if (!(PY_SLOW & p_ptr->status)) {
 		p_ptr->status |= PY_SLOW;
-		change_speed(1);
 		msg_print("You feel yourself moving slower.");
+		p_ptr->status |= PY_STR_WGT;
 		disturb(0, 0);
 	    }
-
-	    /* Recover slowly */
 	    p_ptr->slow--;
-	    if (p_ptr->slow == 0) {
+	    if (!p_ptr->slow) {
 		p_ptr->status &= ~PY_SLOW;
-		change_speed(-1);
 		msg_print("You feel yourself speed up.");
+		p_ptr->status |= PY_STR_WGT;
 
 		/* Hack -- allow Mega-Rest to continue */
 		if (p_ptr->rest != -2) disturb(0, 0);
@@ -866,7 +1043,7 @@ void dungeon()
 	/* Protection from evil counter */
 	if (p_ptr->protevil > 0) {
 	    p_ptr->protevil--;
-	    if (p_ptr->protevil == 0) {
+	    if (!p_ptr->protevil) {
 		msg_print("You no longer feel safe from evil.");
 	    }
 	}
@@ -875,176 +1052,114 @@ void dungeon()
 	if (p_ptr->invuln > 0) {
 	    if ((PY_INVULN & p_ptr->status) == 0) {
 		p_ptr->status |= PY_INVULN;
-		disturb(0, 0);
-		p_ptr->ptoac += 100;	/* changed to ptoac -CFT */
-		p_ptr->dis_tac += 100;
 		msg_print("Your skin turns to steel!");
-		p_ptr->status |= PY_ARMOR;	/* have to update ac display */
+		disturb(0, 0);
+		p_ptr->status |= PY_STR_WGT;
 	    }
 	    p_ptr->invuln--;
 	    if (p_ptr->invuln == 0) {
 		p_ptr->status &= ~PY_INVULN;
-		disturb(0, 0);
-		p_ptr->ptoac -= 100;	/* changed to ptoac -CFT */
-		p_ptr->dis_tac -= 100;
 		msg_print("Your skin returns to normal.");
-		p_ptr->status |= PY_ARMOR;	/* have to update ac display */
+		disturb(0, 0);
+		p_ptr->status |= PY_STR_WGT;
 	    }
 	}
 
 	/* Heroism */
 	if (p_ptr->hero > 0) {
-	    if ((PY_HERO & p_ptr->status) == 0) {
+	    if (!(PY_HERO & p_ptr->status)) {
 		p_ptr->status |= PY_HERO;
-		disturb(0, 0);
-		p_ptr->mhp += 10;
-		p_ptr->chp += 10;
-		p_ptr->ptohit += 12;
-		p_ptr->dis_th += 12;
 		msg_print("You feel like a HERO!");
-		prt_mhp();
-		prt_chp();
+		disturb(0, 0);
+		calc_hitpoints();
+		p_ptr->status |= PY_STR_WGT;
+		p_ptr->status |= PY_HP;
 	    }
 	    p_ptr->hero--;
-	    if (p_ptr->hero == 0) {
+	    if (!p_ptr->hero) {
 		p_ptr->status &= ~PY_HERO;
-		disturb(0, 0);
-		p_ptr->mhp -= 10;
-		if (p_ptr->chp > p_ptr->mhp) {
-		    p_ptr->chp = p_ptr->mhp;
-		    p_ptr->chp_frac = 0;
-		    prt_chp();
-		}
-		p_ptr->ptohit -= 12;
-		p_ptr->dis_th -= 12;
 		msg_print("The heroism wears off.");
-		prt_mhp();
+		disturb(0, 0);
+		calc_hitpoints();
+		p_ptr->status |= PY_STR_WGT;
+		p_ptr->status |= PY_HP;
 	    }
 	}
 
 	/* Super Heroism */
 	if (p_ptr->shero > 0) {
-	    if ((PY_SHERO & p_ptr->status) == 0) {
+	    if (!(PY_SHERO & p_ptr->status)) {
 		p_ptr->status |= PY_SHERO;
-		disturb(0, 0);
-		p_ptr->mhp += 30;
-		p_ptr->chp += 30;
-		p_ptr->ptohit += 24;
-		p_ptr->dis_th += 24;
-		p_ptr->ptoac -= 10;
-		p_ptr->dis_tac -= 10;
 		msg_print("You feel like a killing machine!");
-		prt_mhp();
-		prt_chp();
-		p_ptr->status |= PY_ARMOR;	/* have to update ac display */
+		disturb(0, 0);
+		calc_hitpoints();
+		p_ptr->status |= PY_STR_WGT;
+		p_ptr->status |= PY_HP;
 	    }
 	    p_ptr->shero--;
-	    if (p_ptr->shero == 0) {
+	    if (!p_ptr->shero) {
 		p_ptr->status &= ~PY_SHERO;
-		disturb(0, 0);
-		p_ptr->mhp -= 30;
-		p_ptr->ptoac += 10;
-		p_ptr->dis_tac += 10;
-		if (p_ptr->chp > p_ptr->mhp) {
-		    p_ptr->chp = p_ptr->mhp;
-		    p_ptr->chp_frac = 0;
-		    prt_chp();
-		}
-		p_ptr->ptohit -= 24;
-		p_ptr->dis_th -= 24;
 		msg_print("You feel less Berserk.");
-		prt_mhp();
-		p_ptr->status |= PY_ARMOR;	/* have to update ac display */
+		disturb(0, 0);
+		calc_hitpoints();
+		p_ptr->status |= PY_STR_WGT;
+		p_ptr->status |= PY_HP;
 	    }
 	}
 
 	/* Blessed */
 	if (p_ptr->blessed > 0) {
-	    if ((PY_BLESSED & p_ptr->status) == 0) {
+	    if (!(PY_BLESSED & p_ptr->status)) {
 		p_ptr->status |= PY_BLESSED;
-		disturb(0, 0);
-		p_ptr->ptohit += 10;
-		p_ptr->dis_th += 10;
-		p_ptr->ptoac += 5; /* changed to ptoac -CFT */
-		p_ptr->dis_tac += 5;
 		msg_print("You feel righteous!");
-		p_ptr->status |= PY_ARMOR;	/* have to update ac display */
+		disturb(0, 0);
+		p_ptr->status |= PY_STR_WGT;
 	    }
 	    p_ptr->blessed--;
-	    if (p_ptr->blessed == 0) {
+	    if (!p_ptr->blessed) {
 		p_ptr->status &= ~PY_BLESSED;
-		disturb(0, 0);
-		p_ptr->ptohit -= 10;
-		p_ptr->dis_th -= 10;
-		p_ptr->ptoac -= 5; /* changed to ptoac -CFT */
-		p_ptr->dis_tac -= 5;
 		msg_print("The prayer has expired.");
-		p_ptr->status |= PY_ARMOR;	/* have to update ac display */
+		disturb(0, 0);
+		p_ptr->status |= PY_STR_WGT;
 	    }
 	}
 
 	/* Shield */
 	if (p_ptr->shield > 0) {
 	    p_ptr->shield--;
-	    if (p_ptr->shield == 0) {
-		disturb(0, 0);
+	    if (!p_ptr->shield) {
 		msg_print("Your mystic shield crumbles away.");
-		p_ptr->ptoac -= 50;	/* changed to ptoac -CFT */
-		p_ptr->dis_tac -= 50;
-		p_ptr->status |= PY_ARMOR;	/* have to update ac display */
+		disturb(0, 0);
+		p_ptr->status |= PY_STR_WGT;
 	    }
 	}
 
 	/* Detect Invisible */
 	if (p_ptr->detect_inv > 0) {
-	    if ((PY_DET_INV & p_ptr->status) == 0) {
-
+	    if (!(PY_DET_INV & p_ptr->status)) {
 		p_ptr->status |= PY_DET_INV;
-		p_ptr->see_inv = TRUE;
-
+		p_ptr->status |= PY_STR_WGT;
 		update_monsters();
 	    }
-
-	    /* Hack -- turn off temporary see-invis */
 	    p_ptr->detect_inv--;
-	    if (p_ptr->detect_inv == 0) {
+	    if (!p_ptr->detect_inv) {
 		p_ptr->status &= ~PY_DET_INV;
-
-		/* Does our race grant "see invis"? */
-		if (p_ptr->prace == 9) {
-		    p_ptr->see_inv = TRUE;
-		}
-
-		/* How about our equipment? */
-		else {
-		    /* see if an item grants "see invis" */
-		    p_ptr->see_inv = FALSE;
-		    for (i = INVEN_WIELD; i <= INVEN_LITE; i++) {
-			if (TR3_SEE_INVIS & inventory[i].flags3) {
-			    p_ptr->see_inv = TRUE;
-			}
-		    }
-		}
-
+		p_ptr->status |= PY_STR_WGT;
 		update_monsters();
 	    }
 	}
 
 	/* Timed infra-vision */
 	if (p_ptr->tim_infra > 0) {
-	    if ((PY_TIM_INFRA & p_ptr->status) == 0) {
-
+	    if (!(PY_TIM_INFRA & p_ptr->status)) {
 		p_ptr->status |= PY_TIM_INFRA;
-		p_ptr->see_infra++;
-
+		p_ptr->status |= PY_STR_WGT;
 		update_monsters();
 	    }
 	    p_ptr->tim_infra--;
-	    if (p_ptr->tim_infra == 0) {
-
+	    if (!p_ptr->tim_infra) {
 		p_ptr->status &= ~PY_TIM_INFRA;
-		p_ptr->see_infra--;
-
+		p_ptr->status |= PY_STR_WGT;
 		update_monsters();
 	    }
 	}
@@ -1052,40 +1167,39 @@ void dungeon()
 
 	/*** Timed resistance must end eventually ***/
 
-	/* XXX Technically, should check "immune"/"resist" */
-	/* to make a "correct" message */
+	/* XXX Technically, should check "immune" flag as well */
 
 	if (p_ptr->oppose_fire) {
 	    p_ptr->oppose_fire--;
-	    if (!p_ptr->oppose_fire) {
+	    if (!p_ptr->oppose_fire && !p_ptr->resist_fire) {
 		msg_print("You no longer feel safe from flame.");
 	    }
 	}
 
 	if (p_ptr->oppose_cold) {
 	    p_ptr->oppose_cold--;
-	    if (!p_ptr->oppose_cold) {
+	    if (!p_ptr->oppose_cold && !p_ptr->resist_cold) {
 		msg_print("You no longer feel safe from cold.");
 	    }
 	}
 
 	if (p_ptr->oppose_acid) {
 	    p_ptr->oppose_acid--;
-	    if (!p_ptr->oppose_acid) {
+	    if (!p_ptr->oppose_acid && !p_ptr->resist_acid) {
 		msg_print("You no longer feel safe from acid.");
 	    }
 	}
 
 	if (p_ptr->oppose_elec) {
 	    p_ptr->oppose_elec--;
-	    if (!p_ptr->oppose_elec) {
+	    if (!p_ptr->oppose_elec && !p_ptr->resist_elec) {
 		msg_print("You no longer feel safe from lightning.");
 	    }
 	}
 
 	if (p_ptr->oppose_pois) {
 	    p_ptr->oppose_pois--;
-	    if (!p_ptr->oppose_pois) {
+	    if (!p_ptr->oppose_pois && !p_ptr->resist_pois) {
 		msg_print("You no longer feel safe from poison.");
 	    }
 	}
@@ -1116,18 +1230,109 @@ void dungeon()
 	    }
 	}
 
-	/* Random teleportation -- this could cause icky bugs... */
-	if ((p_ptr->teleport) && (randint(100) == 1)) {
-	    disturb(0, 0);
-	    teleport(40);
+
+	/*** Handle Resting ***/
+
+	/* Check "Resting" status */
+	if (p_ptr->rest != 0) {
+
+	    /* +n -> rest for n turns */
+	    if (p_ptr->rest > 0) {
+		p_ptr->rest--;
+		if (p_ptr->rest == 0) {
+		    rest_off();
+		}
+	    }
+
+	    /* -1 -> rest until HP/mana restored */
+	    else if (p_ptr->rest == -1) {
+		if ((p_ptr->chp == p_ptr->mhp) &&
+		    (p_ptr->cmana == p_ptr->mana)) {
+
+		    p_ptr->rest = 0;
+		    rest_off();
+		}
+	    }
+
+	    /* -2 -> like -1, plus stone/blind/conf/fear/stun/halluc/recall/slow */
+	    /* Note: stop (via "disturb") as soon as blind or recall is done */
+	    else if (p_ptr->rest == -2) {
+		if ((p_ptr->blind < 1) && (p_ptr->confused < 1) &&
+		    (p_ptr->afraid < 1) && (p_ptr->stun < 1) &&
+		    (p_ptr->image < 1) && (p_ptr->word_recall < 1) &&
+		    (p_ptr->slow < 1) && (p_ptr->paralysis < 1) &&
+		    (p_ptr->chp == p_ptr->mhp) &&
+		    (p_ptr->cmana == p_ptr->mana)) {
+
+		    p_ptr->rest = 0;
+		    rest_off();
+		}
+	    }
 	}
 
+
+        /*** Hack -- delay bonus calculations ***/
+        
+        /* Delayed calculation */
+	if (p_ptr->status & PY_STR_WGT) {
+	    calc_bonuses();
+	}
+
+	
+	/*** Display some things ***/
+
+	if (p_ptr->status & PY_STUDY) {
+	    prt_study();
+	}
+
+	if (p_ptr->status & PY_SPEED) {
+	    p_ptr->status &= ~PY_SPEED;
+	    prt_speed();
+	}
+
+	if ((p_ptr->status & PY_PARALYSED) && (p_ptr->paralysis < 1)) {
+	    p_ptr->status &= ~PY_PARALYSED;
+	    prt_state();
+	}
+	else if (p_ptr->paralysis > 0) {
+	    p_ptr->status |= PY_PARALYSED;
+	    prt_state();
+	}
+	else if (p_ptr->rest != 0) {
+	    prt_state();
+	}
+
+	if (p_ptr->status & PY_STATS) {
+	    if (p_ptr->status & PY_STR) prt_stat(A_STR);
+	    if (p_ptr->status & PY_INT) prt_stat(A_INT);
+	    if (p_ptr->status & PY_WIS) prt_stat(A_WIS);
+	    if (p_ptr->status & PY_DEX) prt_stat(A_DEX);
+	    if (p_ptr->status & PY_CON) prt_stat(A_CON);
+	    if (p_ptr->status & PY_CHR) prt_stat(A_CHR);
+	    p_ptr->status &= ~PY_STATS;
+	}
+
+	if (p_ptr->status & PY_ARMOR) {
+	    p_ptr->status &= ~PY_ARMOR;
+	    prt_pac();
+	}
+
+	if (p_ptr->status & PY_HP) {
+	    p_ptr->status &= ~PY_HP;
+	    prt_mhp();
+	    prt_chp();
+	}
+
+	if (p_ptr->status & PY_MANA) {
+	    p_ptr->status &= ~PY_MANA;
+	    prt_cmana();
+	}
 
 
 	/*** Process Inventory ***/
 
-	/* Process wielded objects */
-	for (i = INVEN_WIELD; i <= INVEN_LITE; i++) {
+	/* Process equipment */
+	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++) {
 
 	    /* Get the object */
 	    i_ptr = &inventory[i];
@@ -1172,268 +1377,13 @@ void dungeon()
 	}
 
 
-
-	/*** Handle Resting ***/
-
-	/* Check "Resting" status */
-	if (p_ptr->rest != 0) {
-
-	    /* +n -> rest for n turns */
-	    if (p_ptr->rest > 0) {
-		p_ptr->rest--;
-		if (p_ptr->rest == 0)
-		    rest_off();
-	    }
-
-	    /* -1 -> rest until HP/mana restored */
-	    else if (p_ptr->rest == -1) {
-		if (p_ptr->chp == p_ptr->mhp && p_ptr->cmana == p_ptr->mana) {
-
-		    p_ptr->rest = 0;
-		    rest_off();
-		}
-	    }
-
-	    /* -2 -> like -1, plus stone/blind/conf/fear/stun/halluc/recall/slow */
-	    /* Note: stop (via "disturb") as soon as blind or recall is done */
-	    else if (p_ptr->rest == -2) {
-		if ((p_ptr->blind < 1) && (p_ptr->confused < 1) &&
-		    (p_ptr->afraid < 1) && (p_ptr->stun < 1) &&
-		    (p_ptr->image < 1) && (p_ptr->word_recall < 1) &&
-		    (p_ptr->slow < 1) && (p_ptr->paralysis < 1) &&
-		    (p_ptr->chp == p_ptr->mhp) &&
-		    (p_ptr->cmana == p_ptr->mana)) {
-
-		    p_ptr->rest = 0;
-		    rest_off();
-		}
-	    }
-	}
-
-	/* See if we are too weak to handle the weapon or pack.  -CJS- */
-	if (p_ptr->status & PY_STR_WGT) check_strength();
-
-
-	/*** Display some things ***/
-
-	if (p_ptr->status & PY_STUDY) {
-	    prt_study();
-	}
-
-	if (p_ptr->status & PY_SPEED) {
-	    p_ptr->status &= ~PY_SPEED;
-	    prt_speed();
-	}
-
-	if ((p_ptr->status & PY_PARALYSED) && (p_ptr->paralysis < 1)) {
-	    prt_state();
-	    p_ptr->status &= ~PY_PARALYSED;
-	}
-	else if (p_ptr->paralysis > 0) {
-	    prt_state();
-	    p_ptr->status |= PY_PARALYSED;
-	}
-	else if (p_ptr->rest != 0) {
-	    prt_state();
-	}
-
-	if ((p_ptr->status & PY_ARMOR) != 0) {
-	    p_ptr->dis_ac = p_ptr->pac + p_ptr->dis_tac;	/* use updated ac */
-	    prt_pac();
-	    p_ptr->status &= ~PY_ARMOR;
-	}
-
-	if ((p_ptr->status & PY_STATS) != 0) {
-	    for (i = 0; i < 6; i++) {
-		/* Now there's an operation you don't see every day... */
-		if ((PY_STR << i) & p_ptr->status) prt_stat(i);
-	    }
-	    p_ptr->status &= ~PY_STATS;
-	}
-
-	if (p_ptr->status & PY_HP) {
-	    prt_mhp();
-	    prt_chp();
-	    p_ptr->status &= ~PY_HP;
-	}
-
-	if (p_ptr->status & PY_MANA) {
-	    prt_cmana();
-	    p_ptr->status &= ~PY_MANA;
-	}
-
-
 	/*** Auto-Detect-Enchantment ***/
 
-    /*
-     * for 1st level char, check once every 2160 turns for 40th level char,
-     * check once every 416 turns -CJS-  Weird check, first says "if priest"
-     * and also checks "not fighter", which of course is true.   XXX XXX
-     */
+	/* Have some "feelings" about the inventory */
+	if (!p_ptr->confused && !p_ptr->blind) {
 
-	if ((p_ptr->confused == 0) &&
-	    (p_ptr->pclass == 2) ?
-	    ((p_ptr->pclass != 0) &&
-		(randint((int)(10000 / (p_ptr->lev * p_ptr->lev + 40)) + 1) == 1)) :
-	    (((turn & 0xF) == 0) &&
-		(randint((int)(10 + 750 / (5 + p_ptr->lev))) == 1)) ) {
-
-	    /* Scan the inventory */
-	    for (i = 0; i < INVEN_ARRAY_SIZE; i++) {
-
-		int item_feeling;
-
-		if (i == inven_ctr) i = INVEN_WIELD;
-
-		i_ptr = &inventory[i];
-
-		/* Check the item for goodness */
-		item_feeling = special_check(i_ptr);
-
-	    /*
-	     * if in inventory, succeed 1 out of 50 times, if in equipment
-	     * list, success 1 out of 10 times, unless you're a priest or rogue... 
-	     */
-
-		if (item_feeling &&
-		    (wearable_p(i_ptr)) &&
-		    ((p_ptr->pclass == 2 || p_ptr->pclass == 3) ?
-		     (randint(i < 22 ? 5 : 1) == 1) :
-		     (randint(i < 22 ? 50 : 10) == 1))) {
-
-		    /* Hack -- Certain classes handled later */
-		    if (p_ptr->pclass == 0 ||
-			p_ptr->pclass == 3 ||
-			p_ptr->pclass == 5) {
-
-			/* Hack -- Those classes only ID certain things */
-			if ((i_ptr->tval == TV_SWORD) ||
-			    (i_ptr->tval == TV_HAFTED) ||
-			    (i_ptr->tval == TV_POLEARM) ||
-			    (i_ptr->tval == TV_BOW) ||
-			    (i_ptr->tval == TV_BOLT) ||
-			    (i_ptr->tval == TV_ARROW) ||
-			    (i_ptr->tval == TV_SHOT) ||
-			    (i_ptr->tval == TV_DIGGING) ||
-			    (i_ptr->tval == TV_DRAG_ARMOR) ||
-			    (i_ptr->tval == TV_HARD_ARMOR) ||
-			    (i_ptr->tval == TV_SOFT_ARMOR) ||
-			    (i_ptr->tval == TV_HELM) ||
-			    (i_ptr->tval == TV_BOOTS) ||
-			    (i_ptr->tval == TV_CLOAK) ||
-			    (i_ptr->tval == TV_GLOVES) ||
-			    (i_ptr->tval == TV_SHIELD)) {
-
-			    /* Leave this item for later */
-			    continue;
-			}
-		    }
-
-		    /* Disturb everything */
-		    disturb(0, 0);
-
-		    /* Get an object description */
-		    objdes(tmp_str, i_ptr, FALSE);
-		    sprintf(out_val,
-			    "There's something %s about the %s (%c) you are %s...",
-			    (item_feeling > 0 ? "good" : "bad"),
-			    tmp_str, index_to_label(i), describe_use(i));
-		    message(out_val, 0x04);
-
-		    /* We have "felt" it */
-		    i_ptr->ident |= ID_FELT;
-
-		    /* Inscribe a feeling */
-		    if (cursed_p(i_ptr)) {
-			inscribe(i_ptr, "cursed");
-		    }
-		    else {
-			inscribe(i_ptr, "blessed");
-		    }
-		}
-	    }
-	}
-
-
-	/*** Warriors, Rogues and paladins inbuilt ident ***/
-
-	/* Square the players level */
-	lev2 = p_ptr->lev * p_ptr->lev;
-
-	/* The feeling just "kicks in" every one in a while */
-	if ((p_ptr->confused == 0) &&
-	    (((p_ptr->pclass == 0) && 
-	      (randint((int)(9000 / (lev2 + 40)) + 1) == 1)) ||
-	     ((p_ptr->pclass == 3) &&
-	      (randint((int)(20000 / (lev2 + 40)) + 1) == 1)) ||
-	     ((p_ptr->pclass == 5) &&
-	      (randint((int)(80000L / (lev2 + 40)) + 1) == 1)) ) ) {
-
-	    /* Check everything */
-	    for (i = 0; i < INVEN_ARRAY_SIZE; i++) {
-
-		bool plr;
-		cptr feel;
-		
-		/* Hack -- Skip "missing" things */
-		if (i == inven_ctr) i = INVEN_WIELD;
-
-		/* Get that thing (may be Nothing) */
-		i_ptr = &inventory[i];
-
-		/* Skip silly things */
-		if (i_ptr->tval == TV_NOTHING) continue;
-
-		/* Skip "non-warrior" things */
-		if (!((i_ptr->tval == TV_DRAG_ARMOR) ||
-		      (i_ptr->tval == TV_HARD_ARMOR) ||
-		      (i_ptr->tval == TV_SOFT_ARMOR) ||
-		      (i_ptr->tval == TV_SWORD) ||
-		      (i_ptr->tval == TV_HAFTED) ||
-		      (i_ptr->tval == TV_POLEARM) ||
-		      (i_ptr->tval == TV_SHIELD) ||
-		      (i_ptr->tval == TV_HELM) ||
-		      (i_ptr->tval == TV_BOOTS) ||
-		      (i_ptr->tval == TV_GLOVES) ||
-		      (i_ptr->tval == TV_DIGGING) ||
-		      (i_ptr->tval == TV_SHOT) ||
-		      (i_ptr->tval == TV_BOLT) ||
-		      (i_ptr->tval == TV_ARROW) ||
-		      (i_ptr->tval == TV_BOW) ||
-		      (i_ptr->tval == TV_CLOAK))) continue;
-
-		/* Check it for a feeling */
-		feel = value_check(i_ptr);
-
-		/* Skip un-informative things */
-		if (!feel) continue;
-
-		/* Inventory items only get felt 1 in 5 times */
-		if ((i < INVEN_WIELD) && (randint(5) != 1)) continue;
-		
-		/* Stop everything */
-		disturb(0, 0);
-
-		/* Extract "probable plurality" */
-		plr = FALSE;
-		if (i_ptr->number > 1) plr = TRUE;
-		if (i_ptr->tval == TV_BOOTS) plr = TRUE;
-		if (i_ptr->tval == TV_GLOVES) plr = TRUE;
-
-		/* Get an object description */
-		objdes(tmp_str, i_ptr, FALSE);
-		(void)sprintf(out_val,
-			      "You feel the %s (%c) you are %s %s %s...",
-			      tmp_str, index_to_label(i), describe_use(i),
-			      (plr ? "are" : "is"), feel);
-		message(out_val, 0x04);
-
-		/* We have "felt" it */
-		i_ptr->ident |= ID_FELT;
-
-		/* Inscribe it textually */
-		inscribe(i_ptr, feel);
-	    }
+	    /* Feel the inventory */
+	    sense_inventory();
 	}
 
 
@@ -1456,38 +1406,41 @@ void dungeon()
 	/*** Handle actual user input ***/
 
 	/* Check for interrupts to repetition, or running, or resting. */
-	if ((command_rep > 0 || find_flag || p_ptr->rest != 0)) {
+	if (command_rep || find_flag || p_ptr->rest) {
 
 	    /* Hack -- move the cursor onto the player */
 	    move_cursor_relative(char_row, char_col);
 
 	    /* Flush output, check for keypress */
-	    if (kbhit()) {
+	    if (Term_kbhit()) {
 
 		/* Flush input */
 		flush();
 
 		/* Disturb the resting, running, and repeating */
 		disturb(0, 0);
+
+		/* XXX Message */
+		msg_print("Cancelled.");
 	    }
 	}
 
-#ifdef SET_UID
-	/* Hack -- On "fast" machines, wait for a bit */
+#if 0
+	/* Hack -- Wait for a bit */
 	if (command_rep || p_ptr->rest) delay(10);
 #endif
 
 	/* Resting -- Voluntary trade of moves for regeneration */
 	/* Mega-Stunned -- Unable to do anything but stagger */
 	/* Paralyzed -- Not allowed to do anything */
-	/* Dead -- Not really able to do anything :-) */
+	/* Dead -- Not really able to do anything */
 
-	if ((p_ptr->rest != 0) ||
+	if ((p_ptr->rest) ||
 	    (p_ptr->stun >= 100) ||
 	    (p_ptr->paralysis > 0) ||
 	    (death) ) {
 
-	    /* move the cursor onto the player */
+	    /* Hilite the player */
 	    move_cursor_relative(char_row, char_col);
 
 	    /* Flush output */
@@ -1498,100 +1451,139 @@ void dungeon()
 	/* Get (and execute) one or more user commands */
 	else {
 
+	    /* Hack -- Notice "disturbances" */
+	    if (screen_change) {
+		
+		/* Forget the interuption */
+		screen_change = FALSE;
+
+		/* Verify "continuing" command */
+		if (command_new) {
+
+		    /* Allow clean "cancel" */		
+		    if (!get_check("Continue with inventory command?")) {
+
+			/* Cancel command */
+			command_new = 0;
+
+			/* Cancel "list" mode */
+			command_see = FALSE;
+		    }
+		}
+
+		/* Just flush the changes */
+		else {
+		
+		    /* Hilite the player */
+		    move_cursor_relative(char_row, char_col);
+
+		    /* Flush the changes */
+		    Term_fresh();
+		}	
+	    }
+
+
 	    /* Repeat until the turn ends */
 	    while (1) {
-
-		/* Just to be safe... */
-		/* target_update(); */
-
-		/* Re-Display the state while repeating commands */
-		if (p_ptr->status & PY_REPEAT) prt_state();
 
 		/* Commands are assumed to take time */
 		free_turn_flag = FALSE;
 
-		/* If in "inventory mode", handle inventory */
-		if (doing_inven) {
+		/* Update the "repeat" count */
+		if (p_ptr->status & PY_REPEAT) prt_state();
 
-		    /* Handle the inventory parser */
-		    inven_command(doing_inven);
-		}
+		/* Hack -- If running, run some more */
+		if (find_flag) {
 
-		/* If running, run some more */
-		else if (find_flag) {
-
-		    /* Take a step */
-		    find_step();
-
-		    /* Illuminate the player */
+		    /* Hack -- Hilite the player */
 		    move_cursor_relative(char_row, char_col);
 
-		    /* Flush the output */
+		    /* Hack -- flush old output */
 		    Term_fresh();
+		    
+		    /* Take a step */
+		    find_step();
 		}
 
 		/* Else, get a command from the user */
 		else {
 
-		    /* "Counted" commands */
-		    if (command_rep > 0) {
+		    /* XXX XXX Hack -- update choice window */
+		    choice_inven(0, inven_ctr - 1);
+		    
+		    /* Get a command (new or old) */
+		    request_command();
 
-			/* move the cursor to the players character */
-			move_cursor_relative(char_row, char_col);
-
-			/* Count this execution */
-			command_rep--;
-
-			/* See the "msg_print()" function... */
-			msg_flag = FALSE;
-		    }
-
-		    else {
-
-			/* move the cursor to the players character */
-			move_cursor_relative(char_row, char_col);
-
-			/* Get a new command */
-			request_command();
-
-			/* Erase the message line. */
-			erase_line(MSG_LINE, 0);
-
-			/* Illuminate the player */
-			move_cursor_relative(char_row, char_col);
-
-			/* Flush the output */
-			Term_fresh();
-		    }
-
-		    /* Assume not aborted */
-		    command_esc = 0;
-
-		    /* Actually process the command */
+		    /* Process the command */
 		    process_command();
-
-		    /* Again, illuminate the player */
-		    move_cursor_relative(char_row, char_col);
-
-		    /* Flush the output */
-		    Term_fresh();
 		}
 
-		/* Exit when a "real" command is executed (or the level dies) */
-		if (!free_turn_flag || new_level_flag || eof_flag) break;
+
+		/* Hack -- handle over-flow of the pack */
+		if (inventory[INVEN_PACK].tval) {
+    
+		    int amt;
+		    vtype prt1;
+
+		    /* Choose an item to spill */
+		    i = INVEN_PACK;
+		    
+		    /* Access the slot to be dropped */
+		    i_ptr = &inventory[i];
+
+		    /* Drop all of that item */
+		    amt = i_ptr->number;
+		    
+		    /* Warning */
+		    msg_print("Your pack overflows!");
+
+		    /* Message */
+		    objdes(prt1, i_ptr, TRUE);
+		    msg_print(format("You drop %s.", prt1));
+
+		    /* Drop it (carefully) near the player */
+		    drop_near(i_ptr, 0, char_row, char_col);
+
+		    /* Decrease the item, optimize. */
+		    inven_item_increase(i, -amt);
+		    inven_item_optimize(i);
+		}
+    
+
+		/* Exit when a "real" command is executed */
+		if (!free_turn_flag) break;
+		
+		/* Notice death and new levels */
+		if (death || new_level_flag) break;
 	    }
 	}
 
 
-	/* Teleport (Self requested or Monster inflicted?) */
+	/* Hack -- notice death and new levels */
+	if (death || new_level_flag) break;
+
+
+	/* Random teleportation */
+	if ((p_ptr->teleport) && (randint(100) == 1)) teleport(40);
+
+	/* Mega-Hack -- process teleport traps */
 	if (teleport_flag) teleport(100);
 
-	/* Exit when new_level_flag is set */
-	if (new_level_flag || eof_flag) break;
+
+	/* Mega-Hack -- take a full turn from the player */
+	p_ptr->energy -= 100;
+
 
 	/* Process all of the monsters */
 	process_monsters();
     }
+
+
+    /* Forget the old lite */
+    forget_lite();
+
+    /* Forget the old view */
+    forget_view();
 }
 
 

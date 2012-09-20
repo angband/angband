@@ -27,7 +27,11 @@
  * ;-).... 
  *
  * And the same person has a wierd idea about "else if" indentation.
+ *
  * Cleaned up various pieces of the code.  -BEN-
+ * Note that for some reason this function likes "signed" arrays and
+ * such, but "unsigned" parameters.  This may be simply to allow the
+ * "random()" function to return a signed value.
  */
 
 
@@ -45,10 +49,10 @@
  * of state information and generates far better random numbers than a linear
  * congruential generator. If the amount of state information is less than 32
  * bytes, a simple linear congruential R.N.G. is used. Internally, the state
- * information is treated as an array of longs; the zeroeth element of the
+ * information is treated as an array of s32bs; the zeroeth element of the
  * array is the type of R.N.G. being used (small integer); the remainder of
  * the array is the state information for the R.N.G.  Thus, 32 bytes of state
- * information will give 7 longs worth of state information, which will allow
+ * information will give 7 s32bs worth of state information, which will allow
  * a degree seven polynomial.  (Note: the zeroeth word of state information
  * also has some other information stored in it -- see setstate() for
  * details). The random number generation technique is a linear feedback
@@ -126,7 +130,7 @@ static int seps[MAX_TYPES] = {SEP_0, SEP_1, SEP_2, SEP_3, SEP_4};
  * + TYPE_3 == TYPE_3. 
  */
 
-static long         randtbl[DEG_3 + 1] = {TYPE_3,
+static s32b         randtbl[DEG_3 + 1] = {TYPE_3,
 			     0x9a319039, 0x32d9c024, 0x9b663182, 0x5da1f342,
 			     0xde3b81e0, 0xdf0a6fb5, 0xf103bc02, 0x48f340fb,
 			     0x7449e56b, 0xbeb1dbb0, 0xab5c5918, 0x946554fd,
@@ -148,8 +152,8 @@ static long         randtbl[DEG_3 + 1] = {TYPE_3,
  * explained below). 
  */
 
-static long        *head = &randtbl[SEP_3 + 1];
-static long        *tail = &randtbl[1];
+static s32b        *head = &randtbl[SEP_3 + 1];
+static s32b        *tail = &randtbl[1];
 
 
 
@@ -165,13 +169,13 @@ static long        *tail = &randtbl[1];
  * wrapped. 
  */
 
-static long        *state = &randtbl[1];
+static s32b        *state = &randtbl[1];
 
 static int          rand_type = TYPE_3;
 static int          rand_deg = DEG_3;
 static int          rand_sep = SEP_3;
 
-static long        *rand_end = &randtbl[DEG_3 + 1];
+static s32b        *rand_end = &randtbl[DEG_3 + 1];
 
 
 
@@ -187,9 +191,9 @@ static long        *rand_end = &randtbl[DEG_3 + 1];
  * pointers can't wrap on the same call by not testing the rear pointer if
  * the front one has wrapped. Returns a 31-bit random number. 
  */
-long random(void)
+s32b random(void)
 {
-    long                i;
+    s32b                i;
 
     if (rand_type == TYPE_0) {
 	i = state[0] = (state[0] * 1103515245 + 12345) & 0x7fffffff;
@@ -223,9 +227,9 @@ long random(void)
  * dependencies introduced by the L.C.R.N.G. Note that the initialization of
  * randtbl[] for default usage relies on values produced by this routine.
  *
- * Note: this function used to return "int" if __STDC__ was undefined.
+ * Note: this function no longer returns "int" if __STDC__ is undefined.
  */
-void srandom(unsigned int x)
+void srandom(u32b x)
 {
     register int        i;
 
@@ -262,7 +266,7 @@ void srandom(unsigned int x)
  *   arg_state:  pointer to state array
  *   n:          size (in bytes) of arg_state
  */
-char *initstate(unsigned int seed, char *arg_state, int n)
+char *initstate(u32b seed, char *arg_state, int n)
 {
     register char      *ostate = (char *)(&state[-1]);
 
@@ -310,7 +314,7 @@ char *initstate(unsigned int seed, char *arg_state, int n)
     }
 
     /* first location */
-    state = &(((long *)arg_state)[1]);
+    state = &(((s32b *)arg_state)[1]);
 
     /* must set rand_end before srandom */
     rand_end = &state[rand_deg];
@@ -342,7 +346,7 @@ char *initstate(unsigned int seed, char *arg_state, int n)
  */
 char *setstate(char *arg_state)
 {
-    register long      *new_state = (long *)arg_state;
+    register s32b      *new_state = (s32b *)arg_state;
     register int        type = new_state[0] % MAX_TYPES;
     register int        rear = new_state[0] / MAX_TYPES;
     char               *ostate = (char *)(&state[-1]);

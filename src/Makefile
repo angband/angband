@@ -1,48 +1,178 @@
 # File: Makefile
 
-# See "Makefile" for more info.  This file should be the same except for
-# the definition of "USE_X11", the inclusion of some extra files, and the
-# addition of some libraries.  You may have to add X11 include/library
-# directories to the various places they can be added.  This Makefile
-# should generate an executable usable on both X11 and Curses.
+##
+## Note that you may have to make modifications below according
+## to your machine, available libraries, compilation options,
+## and your "visual module" of choice.  See below...
+##
+## Note that "main-ibm.c", "main-emx.c", and "main-win.c", all
+## visual module files for IBM-ish computers, have their own
+## Makefiles, see "Makefile.xxx".  And the Macintosh does not
+## use a Makefile, but a Think C 6.0 project file, see elsewhere.
+##
+
 
 SRCS = \
-  arrays.c birth.c cave.c command.c \
-  creature.c death.c desc.c dungeon.c \
-  effects.c files.c generate.c help.c io.c magic.c \
-  main.c main-mac.c main-x11.c main-cur.c \
-  misc1.c misc2.c misc3.c misc4.c \
-  moria1.c moria2.c moria3.c moria4.c \
-  recall.c save.c signals.c \
-  spells1.c spells2.c store.c tables.c term.c \
-  util.c variable.c wizard.c \
-  z-util.c z-virt.c z-form.c \
-  x-metadpy.c x-infowin.c x-infoclr.c x-infofnt.c \
-  r-metadpy.c r-infowin.c r-infoclr.c r-infofnt.c
+  main.c main-gcu.c main-ncu.c main-cur.c main-x11.c xtra-x11.c \
+  signals.c util.c io.c arrays.c save.c save-old.c death.c \
+  generate.c birth.c creature.c effects.c magic.c dungeon.c command.c \
+  misc1.c misc2.c misc3.c misc4.c moria1.c moria2.c moria3.c moria4.c \
+  spells1.c spells2.c cave.c desc.c tables.c variable.c \
+  store.c recall.c wizard.c borg.c \
+  term.c random.c z-util.c z-virt.c z-form.c
 
 OBJS = \
-  arrays.o birth.o cave.o command.o \
-  creature.o death.o desc.o dungeon.o \
-  effects.o files.o generate.o help.o io.o magic.o \
-  main.o main-mac.o main-x11.o main-cur.o \
-  misc1.o misc2.o misc3.o misc4.o \
-  moria1.o moria2.o moria3.o moria4.o \
-  recall.o save.o signals.o \
-  spells1.o spells2.o store.o tables.o term.o \
-  util.o variable.o wizard.o \
-  z-util.o z-virt.o z-form.o \
-  x-metadpy.o x-infowin.o x-infoclr.o x-infofnt.o \
-  r-metadpy.o r-infowin.o r-infoclr.o r-infofnt.o
+  main.o main-gcu.o main-ncu.o main-cur.o main-x11.o xtra-x11.o \
+  signals.o util.o io.o arrays.o save.o save-old.o death.o \
+  generate.o birth.o creature.o effects.o magic.o dungeon.o command.o \
+  misc1.o misc2.o misc3.o misc4.o moria1.o moria2.o moria3.o moria4.o \
+  spells1.o spells2.o cave.o desc.o tables.o variable.o \
+  store.o recall.o wizard.o borg.o \
+  term.o random.o z-util.o z-virt.o z-form.o
 
+
+
+
+###
+### Following are some "system" definitions
+###
+### No changes are needed to compile a version that will run on both
+### X11 and Curses, in debugging mode, with maximal warnings.
+###
+### You may want to add flags like "-O1" for optimization.
+###
+### To use an "alternative" definition, simply "modify" (or "replace")
+### the definition below with one that you like.  For example, you can
+### change the compiler to "cc", or remove the "debugging" options, or
+### remove the X11 or Curses support, etc, as desired.
+###
+### See also "config.h" and "h-config.h".
+###
+### Some "examples" are given below, they can be used by simply
+### removing the FIRST column of "#" signs from the "block" of lines
+### you wish to use.  Remember to comment out the "standard" stuff first!
+###
+
+
+#
+# This is my compiler of choice, it seems to work most everywhere
+#
 CC = gcc
-CFLAGS = -Wall -g -D"USE_X11" -D"USE_CURSES"
+
+
+#
+# Standard version (see main-x11.c and xtra-x11.c and main-gcu.c)
+#
+# This version supports both X11 and "curses" in a single executable
+#
+# Note that "-ltermcap" is not needed for some machines (ex: Solaris)
+#
+# You may be able to define "USE_GETCH" or "USE_CURS_SET", see "main-gcu.c"
+#
+CFLAGS = -Wall -g -D"USE_X11" -D"USE_GCU"
 LIBS = -lX11 -lcurses -ltermcap
 
+
+##
+## Pure "X11" version (see main-x11.c and xtra-x11.c)
+##
+## You may have to add various X11 include/library directories to the
+## "CFLAGS" line, this will vary according to machine.
+##
+#CFLAGS = -Wall -g -D"USE_X11"
+#LIBS = -lX11
+
+
+##
+## Pure "Curses" version (see main-gcu.c)
+##
+#CFLAGS = -Wall -g -D"USE_GCU"
+#LIBS = -lcurses -ltermcap
+
+
+##
+## Standard version (see main-x11.c and xtra-x11.c and main-gcu.c)
+## This one seems to work for Linux 1.1.93 using ncurses-1.8.7.
+##
+## This version supports both X11 and "curses" in a single executable
+##
+## You may be able to define "USE_GETCH" or "USE_CURS_SET", see "main-gcu.c"
+##
+#CFLAGS = -I/usr/X11R6/include -I/usr/include/ncurses \
+#         -Wall -O2 -fomit-frame-pointer -m486 -D"USE_X11" -D"USE_GCU"
+#LIBS = -L/usr/X11R6/lib -lX11 -lncurses -ltermcap
+
+##
+## Here is an alternate version of the code just above me
+## I cannot vouch for either one, try both and see what happens.
+## Note that the third line of defines tells "main-gcu.c" to
+## use the "best" options for a standard Linux machine.
+##
+#CFLAGS = -O2 -fomit-frame-pointer -I/usr/include/ncurses -Wall \
+#         -D"USE_X11" -D"USE_GCU" \
+#         -D"USE_TPOSIX" -D"USE_GETCH" -D"USE_CURS_SET"
+#LIBS = -lX11 -lncurses
+#LDFLAGS = -s
+
+
+##
+## Solaris with X11 and curses
+##
+#CFLAGS = -Wall -g -D"USE_X11" -D"USE_GCU" -D"SOLARIS"
+#LIBS = -lX11 -lsocket -lcurses
+
+
+##
+## SGI Indigo runnig Irix
+##
+#CFLAGS = -Wall -g -D"USE_X11" -D"USE_GCU" -D"SGI"
+#LIBS = -lX11 -lcurses -ltermcap -lsun
+
+
+
+##
+## Dec ALPHA OSF/1 v2.0
+##
+#CC     = cc
+##CFLAGS = -std -O -g3 -Olimit 4000 -D"USE_X11" -D"USE_GCU"
+#CFLAGS = -std -g -D"USE_X11" -D"USE_GCU"
+#LIBS   = -lX11 -lcurses -ltermcap -lrpcsvc
+
+
+##
+## Standard version, but use "ncurses" instead of "curses"
+##
+## You may be able to replace "USE_NCU" with "USE_GCU" below.
+##
+## This version supports both X11 and Ncurses in a single executable
+##
+#CFLAGS = -Wall -g -D"USE_X11" -D"USE_NCU" -I/usr/include/ncurses
+#LIBS = -lX11 -lncurses
+
+
+##
+## Pure "ncurses" version (see above)
+##
+#CFLAGS = -Wall -g -D"USE_NCU" -I/usr/include/ncurses
+#LIBS = -lncurses
+
+
+
+#
+# Build the "Angband" program and move it up one directory
+#
+
 angband: $(OBJS)
-	$(CC) $(CFLAGS)  -o angband $(OBJS) $(LIBS)
+	$(CC) $(CFLAGS)  -o angband $(OBJS) $(LIBS) $(LDFLAGS)
+	mv angband ..
+
+#
+# Generate dependancies automatically (not required)
+#
 
 depend:
 	makedepend -D__MAKEDEPEND__ $(SRCS)
+
 
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.

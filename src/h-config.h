@@ -47,6 +47,11 @@
 /* #define HPUX */
 
 /*
+ * OPTION: Compile on an SGI running IRIX
+ */
+/* #define SGI */
+
+/*
  * OPTION: Compile on Solaris, treat it as System V
  */
 #if defined(SOLARIS)
@@ -60,6 +65,14 @@
 # define ultrix
 #endif
 
+/*
+ * Extract the "MSDOS" flag from the compiler
+ */
+#ifdef __MSDOS__
+# ifndef MSDOS
+#  define MSDOS
+# endif
+#endif
 
 
 
@@ -96,7 +109,7 @@
  */
 #undef SET_UID
 #define SET_UID
-#if defined(MACINTOSH) || defined(MSDOS) || \
+#if defined(MACINTOSH) || defined(MSDOS) || defined(AMIGA) || \
     defined(__MINT__) || defined(__EMX__)
 # undef SET_UID
 #endif
@@ -116,9 +129,10 @@
 /*
  * Lots of systems use USG
  */
-#if defined(MSDOS) || defined(MACINTOSH) || \
+#if defined(MACINTOSH) || defined(MSDOS) || defined(AMIGA) || \
+    defined(__EMX__) || \
     defined(SYS_III) || defined(SYS_V) || defined(HPUX) || \
-    defined(ATARIST_MWC) || defined (__MINT__) || defined(__EMX__)
+    defined(ATARIST_MWC) || defined (__MINT__) || defined(SGI)
 # undef USG
 # define USG
 #endif
@@ -148,6 +162,14 @@
 # undef PATH_SEP
 # define PATH_SEP ":"
 #endif
+#ifdef __GO32__
+# undef PATH_SEP
+# define PATH_SEP "/"
+#endif
+#ifdef AMIGA
+# undef PATH_SEP
+# define PATH_SEP "/"
+#endif
 
 
 
@@ -156,9 +178,12 @@
  */
 #if !defined(SOLARIS)
 # if defined(SYS_V) || defined(MSDOS)
-#  define strchr index
+#  if !defined(__TURBOC__)
+#   define strchr index
+#  endif
 # endif
 #endif
+
 
 /*
  * OPTION: Define "HAS_STRICMP" only if stricmp() exists.
@@ -169,6 +194,21 @@
 # define stricmp strcasecmp
 # define HAS_STRICMP
 #endif
+
+/*
+ * Note that "Amiga" actually has the "stricmp()" function
+ */
+#ifdef AMIGA
+# define HAS_STRICMP
+#endif
+
+/*
+ * Note that "Turbo C" defines "stricmp"
+ */
+#ifdef __TURBOC__
+#define HAS_STRICMP
+#endif
+
 
 /*
  * OPTION: Define "HAS_MEMSET" only if "memset()" exists.

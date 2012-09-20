@@ -13,13 +13,6 @@
 #include "angband.h"
 
 
-#ifndef NO_LINT_ARGS
-#ifdef __STDC__
-static void roff(cptr );
-#endif
-#endif
-
-
 
 static const char  *desc_atype[] = {
     "do something undefined",
@@ -80,7 +73,7 @@ static const char  *desc_amethod[] = {
 static const char  *desc_howmuch[] = {
     " not at all",
     " a bit",
-    "",
+    " somewhat",
     " quite",
     " very",
     " most",
@@ -101,7 +94,7 @@ static const char  *desc_spell[] = {
     "1",
     "2",
     "4",
-    "8",	/* 1+2+4+8=0xF = CS_FREQ freaky huh? */
+    "8",
     "teleport short distances",
     "teleport long distances",
     "teleport %s prey",
@@ -235,9 +228,9 @@ static cptr wd_resist[4] = { "resist", "resists", "resists", "resists" };
 void lore_do_probe(monster_type *m_ptr)
 {
     int num;
-    
+
     monster_race *r_ptr = &r_list[m_ptr->r_idx];
-    
+
     /* Get the monster lore pointer */
     monster_lore *l_ptr = &l_list[m_ptr->r_idx];
 
@@ -259,57 +252,29 @@ void lore_do_probe(monster_type *m_ptr)
  */
 void lore_treasure(monster_type *m_ptr, int num_item, int num_gold)
 {
-    int old_num, new_num;
+    int new_num;
 
     /* Get the monster lore pointer */
     monster_lore *l_ptr = &l_list[m_ptr->r_idx];
 
     /* Count the treasures */
     new_num = num_item + num_gold;
-    
+
     /* Nothing new to know */
     if (!new_num) return;
-    
+
     /* Note the type of things dropped */
     if (num_item) l_ptr->r_cflags1 |= MF1_CARRY_OBJ;
     if (num_gold) l_ptr->r_cflags1 |= MF1_CARRY_GOLD;
 
-    /* Hack -- See how many items we THOUGHT the monster could drop */
-    old_num = (l_ptr->r_cflags1 & CM1_TREASURE) >> CM1_TR_SHIFT;
-
     /* Nothing useful learned */
-    if (new_num <= old_num) return;
-        
-    /* Hack -- Remember the total number of treasures */
-    l_ptr->r_cflags1 &= ~CM1_TREASURE;
-    l_ptr->r_cflags1 |= (new_num << CM1_TR_SHIFT);
+    if (new_num > l_ptr->r_drop) l_ptr->r_drop = new_num;
 }
 
 
 
 
 
-
-
-
-
-
-/*
- * Max Linesize (can be reset externally) 
- */
-static int recall_max_width = 80;
-
-/*
- * Reset the maximum recall width
- */
-void recall_set_width(int n)
-{
-    /* Force positive */
-    if (n < 1) n = 1;
-
-    /* Accept the size */
-    recall_max_width = n;
-}
 
 
 /*
@@ -319,75 +284,73 @@ static int max_clear = 0;
 
 
 /*
- * Hooks for the GRAPHIC_RECALL functions
- */
-
-void (*recall_fresh_hook)(void) = NULL;
-void (*recall_clear_hook)(void) = NULL;
-void (*recall_putstr_hook)(int x, int y, int n, byte a, cptr s) = NULL;
-
-
-/*
  * A simple "recall fresh" function
  */
-void recall_fresh(void)
+static void recall_fresh(void)
 {
-    /* Hook -- if allowed */
-    if (use_recall_win) {
-	if (recall_fresh_hook) (*recall_fresh_hook)();
-	return;
+    /* Hack -- use a special window */
+    if (use_recall_win && term_recall) {
+
+	Term_activate(term_recall);
+	Term_fresh();
+	Term_activate(term_screen);
     }
-    
-    /* Use the "Term" */
-    Term_fresh();
+
+    /* On top of the normal window */
+    else {
+
+	Term_fresh();
+    }
 }
+
 
 /*
  * A simple "recall clear" function
  */
-void recall_clear(void)
+static void recall_clear(void)
 {
-    /* Hook -- if allowed */
-    if (use_recall_win) {
-	if (recall_clear_hook) (*recall_clear_hook)();
-	return;
-    }
-    
-    /* Hack -- flush messages */
-    msg_print(NULL);
+    /* Hack -- use a special window */
+    if (use_recall_win && term_recall) {
 
-    /* Nothing cleared yet */
-    max_clear = 0;
+	Term_activate(term_recall);
+	Term_clear();
+	Term_activate(term_screen);
+    }
+
+    /* On top of the normal window */
+    else {
+        
+	msg_print(NULL);
+	max_clear = 0;
+    }
 }
+
 
 /*
  * A simple "recall print" function, with color.
  */
-void recall_putstr(int x, int y, int n, byte a, cptr s)
+static void recall_putstr(int x, int y, int n, byte a, cptr s)
 {
-    /* Hook -- if allowed */
-    if (use_recall_win) {
-	if (recall_putstr_hook) (*recall_putstr_hook)(x, y, n, a, s);
-	return;
-    }
-    
-    /* Be sure we have cleared up to the line below us */
-    while (max_clear < y+2) {
-	Term_erase(0, max_clear, 80-1, max_clear);
-	max_clear++;
+    /* Hack -- use a special window */
+    if (use_recall_win && term_recall) {
+
+	Term_activate(term_recall);
+	Term_putstr(x, y, n, a, s);
+	Term_activate(term_screen);
     }
 
-    /* Send it to the Term */
-    Term_putstr(x, y, n, a, s);
-}
+    /* On top of the normal window */
+    else {
+        
+	/* Be sure we have cleared up to the line below us */
+	while (max_clear < y+2) {
+	    Term_erase(0, max_clear, 80-1, max_clear);
+	    max_clear++;
+	}
 
-
-/*
- * Simply "redo" the last "screen image"
- */
-void recall_again(void)
-{
-    roff_recall(-1);
+	/* Send it to the Term */
+	Term_putstr(x, y, n, a, s);
+    }
 }
 
 
@@ -416,23 +379,17 @@ static void c_roff(byte a, cptr str)
     /* Place to print current line */
     static int roff_row = 0;
 
-    /* Max Linesize (can be reset) */
-    static int roff_width = 80;
-
 #ifdef USE_COLOR
-    if (!use_color) a = COLOR_WHITE;
+    if (!use_color) a = TERM_WHITE;
 #else
-    a = COLOR_WHITE;
+    a = TERM_WHITE;
 #endif
 
     /* Special handling for "new sequence" */
     if (!str) {
 
-	/* Clear the recall window */
-	recall_clear();
-
 	/* Reset the row */
-	roff_row = 0;
+	roff_row = 1;
 
 	/* Reset the pointer */
 	roff_p = roff_buf;
@@ -442,37 +399,6 @@ static void c_roff(byte a, cptr str)
 
 	/* Simple string (could just return) */
 	str = "";
-    }
-
-    /* Hack -- use 80 columns unless "graphic" */
-    if (!use_recall_win) recall_max_width = 80;
-    
-    /* React to new "max_linesize" */
-    if (roff_width != recall_max_width) {
-
-        /* Shrink request to maximum legal size */
-        if (recall_max_width > sizeof(roff_buf) - 1) {
-            recall_max_width = sizeof(roff_buf) - 1;
-        }
-
-	/* Save the new size */
-	roff_width = recall_max_width;
-
-	/* Hack -- If they shrank us too much, dump */
-	if (roff_p >= roff_buf + roff_width) {
-
-	    /* They were rude, so are we */
-	    *roff_p = 0;
-
-	    /* Dump the line */	    
-	    recall_putstr(0, roff_row++, -1, COLOR_WHITE, roff_buf);
-
-	    /* Restart */
-	    roff_p = roff_buf;
-
-	    /* No spaces */
-	    roff_s = NULL;
-	}
     }
 
     /* Scan the given string, character at a time */
@@ -485,10 +411,10 @@ static void c_roff(byte a, cptr str)
 	if (!isprint(ch)) ch = ' ';
 
 	/* We may be "forced" to wrap */
-	if (roff_p >= roff_buf + roff_width) wrap = 1;
+	if (roff_p >= roff_buf + 80) wrap = 1;
 
 	/* Try to avoid "hanging" single letter words */
-	if ((ch == ' ') && (roff_p + 2 >= roff_buf + roff_width)) wrap = 1;
+	if ((ch == ' ') && (roff_p + 2 >= roff_buf + 80)) wrap = 1;
 
 	/* Handle line-wrap */
 	if (wrap) {
@@ -510,7 +436,7 @@ static void c_roff(byte a, cptr str)
 	    }
 
 	    /* Dump the line, advance the row */	    
-	    recall_putstr(0, roff_row++, -1, COLOR_WHITE, roff_buf);
+	    recall_putstr(0, roff_row++, -1, TERM_WHITE, roff_buf);
 
 	    /* No spaces yet */
 	    roff_s = NULL;
@@ -532,7 +458,7 @@ static void c_roff(byte a, cptr str)
 
 static void roff(cptr str)
 {
-    c_roff(COLOR_WHITE, str);
+    c_roff(TERM_WHITE, str);
 }
 
 
@@ -576,16 +502,16 @@ int roff_recall(int r_idx)
 
     register monster_lore  *l_ptr;
     register monster_race  *r_ptr;
-    register int32u         i, j, k;
+    register u32b         i, j, k;
 
     const char             *p, *q;
-    int16u                  *pu;
+    u16b                  *pu;
 
     int			n_len;
     int                 mspeed;
-    int32u		flags;
-    int32u              rcflags1, rcflags2;
-    int32u              rspells1, rspells2, rspells3;
+    u32b		flags;
+    u32b              rcflags1, rcflags2;
+    u32b              rspells1, rspells2, rspells3;
     int                 breath = FALSE, magic = FALSE;
     int			msex;
 
@@ -614,34 +540,34 @@ int roff_recall(int r_idx)
     else if (r_ptr->cflags1 & MF1_FEMALE) msex = 2;
     else if (r_ptr->cflags1 & MF1_MALE) msex = 1;
     else msex = 3;
-    
+
 
     /* Hack -- Wizards know everything */
     if (wizard) {
 
-        /* Save the "old" memory */
+	/* Save the "old" memory */
 	save_mem = *l_ptr;
 
-        /* Make assumptions about kills, etc */
+	/* Make assumptions about kills, etc */
 	l_ptr->r_kills = MAX_SHORT;
 	l_ptr->r_wake = l_ptr->r_ignore = MAX_UCHAR;
 
-        /* Observe "maximal" attacks */
+	/* Observe "maximal" attacks */
 	for (j = 0, pu = r_ptr->damage; (j < 4) && (*pu); j++, pu++) {
 	    l_ptr->r_attacks[j] = MAX_UCHAR;
 	}
 
-        /* Count the total possible treasures */
+	/* Count the total possible treasures */
 	l_ptr->r_drop = (((r_ptr->cflags1 & MF1_HAS_4D2) ? 8 : 0) +
-		 	 ((r_ptr->cflags1 & MF1_HAS_2D2) ? 4 : 0) +
+			 ((r_ptr->cflags1 & MF1_HAS_2D2) ? 4 : 0) +
 			 ((r_ptr->cflags1 & MF1_HAS_1D2) ? 2 : 0) +
 			 ((r_ptr->cflags1 & MF1_HAS_90)  ? 1 : 0) +
 			 ((r_ptr->cflags1 & MF1_HAS_60)  ? 1 : 0));
 
-        /* Full "spell" knowledge */
-        l_ptr->r_cast = 15;
+	/* Full "spell" knowledge */
+	l_ptr->r_cast = 15;
 
-        /* Full "flag" knowledge */
+	/* Full "flag" knowledge */
 	l_ptr->r_cflags1 = r_ptr->cflags1;
 	l_ptr->r_cflags2 = r_ptr->cflags2;
 	l_ptr->r_spells1 = r_ptr->spells1;
@@ -663,44 +589,49 @@ int roff_recall(int r_idx)
     if (r_ptr->cflags2 & MF2_QUESTOR)   rcflags2 |= MF2_QUESTOR;
     if (r_ptr->cflags2 & MF2_SPECIAL)   rcflags2 |= MF2_SPECIAL;
     if (r_ptr->cflags2 & MF2_GOOD)      rcflags2 |= MF2_GOOD;
-    
 
-    /* Begin a new "recall" */
-    roff(NULL);
 
+    /* Clear the recall window */
+    recall_clear();
 
     /* No length yet */
     n_len = 0;
 
     /* A title (use "The" for sigular non-uniques) */
     if (!(rcflags2 & MF2_UNIQUE) && (!(r_ptr->cflags1 & MF1_PLURAL))) {
-	roff("The ");
+	recall_putstr(n_len, 0, -1, TERM_WHITE, "The ");
 	n_len += 4;
     }
 
     /* Dump the name */
-    roff(r_ptr->name);
+    recall_putstr(n_len, 0, -1, TERM_WHITE, r_ptr->name);
     n_len += strlen(r_ptr->name);
 
-    /* Append the basic char/attr */
-    c_roff(r_ptr->r_attr, format(" ('%c')", r_ptr->r_char));
+    /* Append the "standard" attr/char info */
+    sprintf(temp, " ('%c')", r_ptr->r_char);
+    recall_putstr(n_len, 0, -1, TERM_WHITE, temp);
+    recall_putstr(n_len + 3, 0, 1, r_ptr->r_attr, temp + 3);
     n_len += 6;
 
-    /* Append the "optional" char/attr */    
-    if (l_ptr->l_char || l_ptr->l_attr) {
-	c_roff(l_ptr->l_attr, format("/('%c')", l_ptr->l_char));
-	n_len += 6;
-    }
+    /* Append the "optional" attr/char info */    
+    sprintf(temp, "/('%c')", r_char[r_idx]);
+    recall_putstr(n_len, 0, -1, TERM_WHITE, temp);
+    recall_putstr(n_len + 3, 0, 1, r_attr[r_idx], temp + 3);
+    n_len += 6;
     
     /* End the line */
-    roff(":\n");
+    recall_putstr(n_len, 0, -1, TERM_WHITE, ":");
     n_len += 1;
+
+
+    /* Begin a new "recall" */
+    roff(NULL);
 
 
     /* Treat uniques differently... -CFT */
     if (rcflags2 & MF2_UNIQUE) {
 
-        /* Hack -- Determine if the unique is "dead" */
+	/* Hack -- Determine if the unique is "dead" */
 	bool dead = (l_ptr->max_num == 0);
 
 	/* We've been killed... */
@@ -749,7 +680,7 @@ int roff_recall(int r_idx)
 	    roff(temp);
 	}
     }
-    
+
     /* Not unique, and never killed us */
     else if (l_ptr->r_kills) {
 	(void)sprintf(temp, "At least %d of these creatures %s",
@@ -783,7 +714,7 @@ int roff_recall(int r_idx)
 
 
     /* Describe location */
-    
+
     k = FALSE;
     if (r_ptr->level == 0) {
 	roff(format("%s %s in the town", wd_They[msex], wd_live[msex]));
@@ -792,18 +723,18 @@ int roff_recall(int r_idx)
     else if (l_ptr->r_kills) {
 	if (depth_in_feet) {
 	    roff(format("%s %s normally found at depths of %d feet",
-		        wd_They[msex], wd_are[msex], r_ptr->level * 50));
+			wd_They[msex], wd_are[msex], r_ptr->level * 50));
 	}
 	else {
 	    roff(format("%s %s normally found on dungeon level %d",
-		        wd_They[msex], wd_are[msex], r_ptr->level));
+			wd_They[msex], wd_are[msex], r_ptr->level));
 	}
 	k = TRUE;
     }
 
 
-    /* Hack -- the r_list speed value is 10 greater, so that it can be a int8u */
-    mspeed = (int)(r_ptr->speed) - 10;
+    /* Extract the "speed" */
+    mspeed = ((int)(r_ptr->speed) - 100) / 10;
 
     /* Describe movement, if any observed */
     if (rcflags1 & CM1_ALL_MV_FLAGS) {
@@ -817,7 +748,7 @@ int roff_recall(int r_idx)
 	}
 	roff(wd_move[msex]);
 	if (rcflags1 & CM1_RANDOM_MOVE) {
-	    roff(desc_howmuch[(rcflags1 & CM1_RANDOM_MOVE) >> 3]);
+	    roff(desc_howmuch[(rcflags1 & CM1_RANDOM_MOVE) >> 2]);
 	    roff(" erratically");
 	}
 	if (mspeed == 1) {
@@ -864,8 +795,6 @@ int roff_recall(int r_idx)
     /* (natural, evil, undead) and variety (race) */
     if (l_ptr->r_kills) {
 
-	/* XXX XXX XXX "A kill of these creatures is..." */
-
 	if (r_ptr->cflags2 & MF2_UNIQUE) {
 	    roff("Killing this");
 	}
@@ -874,12 +803,12 @@ int roff_recall(int r_idx)
 	    roff(wd_these[msex]);
 	}
 
-        /* Describe the "quality" */
+	/* Describe the "quality" */
 	if (r_ptr->cflags2 & MF2_ANIMAL) roff(" natural");
 	if (r_ptr->cflags2 & MF2_EVIL) roff(" evil");
 	if (r_ptr->cflags2 & MF2_UNDEAD) roff(" undead");
 
-	/* XXX XXX XXX "A kill of these demon are..." */
+	/* XXX Plural "specials" will yield stupid message */
 
 	roff(" ");
 	if (r_ptr->cflags2 & MF2_GIANT) roff("giant");
@@ -897,13 +826,13 @@ int roff_recall(int r_idx)
 	j = ((((long)r_ptr->mexp * r_ptr->level % p_ptr->lev) * (long)1000 /
 	     p_ptr->lev + 5) / 10);
 
-        /* Mention the experience */
+	/* Mention the experience */
 	(void)sprintf(temp, " is worth %lu.%02lu point%s",
 		      (huge)i, (huge)j,
 		      (i == 1 && j == 0 ? "" : "s"));
 	roff(temp);
 
-        /* Take account of annoying English */
+	/* Take account of annoying English */
 	p = "th";
 	i = p_ptr->lev % 10;
 	if ((p_ptr->lev / 10) == 1);
@@ -911,12 +840,12 @@ int roff_recall(int r_idx)
 	else if (i == 2) p = "nd";
 	else if (i == 3) p = "rd";
 
-        /* Take account of "leading vowels" in numbers */
+	/* Take account of "leading vowels" in numbers */
 	q = "";
 	i = p_ptr->lev;
 	if ((i == 8) || (i == 11) || (i == 18)) q = "n";
 
-        /* Mention the dependance on the player's level */
+	/* Mention the dependance on the player's level */
 	(void)sprintf(temp, " for a%s %lu%s level character.  ",
 		      q, (long)i, p);
 	roff(temp);
@@ -933,22 +862,22 @@ int roff_recall(int r_idx)
 
     /* Remove any "frequency" information */
     rspells1 &= ~CS1_FREQ;
-    
+
     /* Count something */
     i = 0;
 
     /* Describe the Breath, if any */
     k = TRUE;
-    
+
     /* First, handle (and forget!) the "breath" */
     if ((rspells1 & CS1_BREATHE) ||
 	(rspells2 & CS2_BREATHE) ||
 	(rspells3 & CS3_BREATHE)) {
 
-        /* Note that breathing has occurred */
+	/* Note that breathing has occurred */
 	breath = TRUE;
 
-        /* Process the "breath" and remove it */
+	/* Process the "breath" and remove it */
 	j = rspells1 & CS1_BREATHE;
 	rspells1 &= ~CS1_BREATHE;
 	while ((i = bit_pos(&j)) != -1) {
@@ -967,7 +896,7 @@ int roff_recall(int r_idx)
 	    roff(temp);
 	}
 
-        /* Process the "breath" and remove it */
+	/* Process the "breath" and remove it */
 	j = rspells2 & CS2_BREATHE;
 	rspells2 &= ~CS2_BREATHE;
 	while ((i = bit_pos(&j)) != -1) {
@@ -986,9 +915,9 @@ int roff_recall(int r_idx)
 	    roff(temp);
 	}
 
-        /* Process the "breath" and remove it */
+	/* Process the "breath" and remove it */
 	j = rspells3 & CS3_BREATHE;
-	rspells1 &= ~CS3_BREATHE;
+	rspells3 &= ~CS3_BREATHE;
 	while ((i = bit_pos(&j)) != -1) {
 	    if (k) {
 		roff(wd_They[msex]);
@@ -1012,10 +941,10 @@ int roff_recall(int r_idx)
     /* Dump the normal spells */
     if (rspells1 || rspells2 || rspells3) {
 
-        /* Note that spells exist */
+	/* Note that spells exist */
 	magic = TRUE;
 
-        /* Describe the spells */
+	/* Describe the spells */
 	j = rspells1;
 	while ((i = bit_pos(&j)) != -1) {
 	    if (k) {
@@ -1097,17 +1026,17 @@ int roff_recall(int r_idx)
 
     /* The monster has SOME form of magic */
     if (breath || magic) {
-    
+
 	/* XXX Could offset by level (?) */
 
-        /* Describe the spell frequency */
+	/* Describe the spell frequency */
 	if (l_ptr->r_cast > 5) {
 	    int freq = (r_ptr->spells1 & CS1_FREQ);
 	    (void)sprintf(temp, "; 1 time in %d", freq);
 	    roff(temp);
 	}
 
-        /* End this sentence */
+	/* End this sentence */
 	roff(".  ");
     }
 
@@ -1130,7 +1059,7 @@ int roff_recall(int r_idx)
     /* I wonder why this wasn't here before? -CFT */
     if (rcflags2 & MF2_BREAK_WALL) {
 	roff(wd_They[msex]);
-	roff(" can bore through rock");
+	roff(" can bore through rock.  ");
 	k = FALSE;
     }
 
@@ -1301,7 +1230,7 @@ int roff_recall(int r_idx)
 	roff(" may");
 
 
-        /* Only one treasure observed */
+	/* Only one treasure observed */
 	if (num == 1) {
 	    if ((r_ptr->cflags1 & CM1_TREASURE) == MF1_HAS_60) {
 		roff(" sometimes");
@@ -1311,14 +1240,14 @@ int roff_recall(int r_idx)
 	    }
 	}
 
-        /* Only two treasures observed */
+	/* Only two treasures observed */
 	else if ((num == 2) &&
 		 ((r_ptr->cflags1 & CM1_TREASURE) ==
 		  (MF1_HAS_60 | MF1_HAS_90))) {
 	    roff(" often");
 	}
 
-        /* They have to carry it before they drop it */
+	/* They have to carry it before they drop it */
 	roff(" carry");
 
 
@@ -1379,7 +1308,7 @@ int roff_recall(int r_idx)
 	    if (num != 1) roff("s");
 	}
 
-        /* End this sentence */
+	/* End this sentence */
 	roff(".  ");
     }
 
@@ -1397,25 +1326,25 @@ int roff_recall(int r_idx)
 
 	int ppp, nnn, att_type, att_how, d1, d2;
 
-        /* Get the attack index */
-        ppp = r_ptr->damage[i];
+	/* Get the attack index */
+	ppp = r_ptr->damage[i];
 
-        /* Number of times used on player */
-        nnn = l_ptr->r_attacks[i];
+	/* Number of times used on player */
+	nnn = l_ptr->r_attacks[i];
 
-        /* Skip "empty" or "unknown" attacks */
+	/* Skip "empty" or "unknown" attacks */
 	if (!ppp || !nnn) continue;
 
-        /* Extract the attack info */
+	/* Extract the attack info */
 	att_type = a_list[ppp].attack_type;
 	att_how = a_list[ppp].attack_desc;
 	d1 = a_list[ppp].attack_dice;
 	d2 = a_list[ppp].attack_sides;
 
-        /* Count the attacks as printed */
+	/* Count the attacks as printed */
 	j++;
 
-        /* Introduce the attack description */
+	/* Introduce the attack description */
 	if (j == 1) {
 	    roff(wd_They[msex]);
 	    roff(" can ");
@@ -1427,22 +1356,22 @@ int roff_recall(int r_idx)
 	    roff(", ");
 	}
 
-        /* Hack -- only describe attacks this routine "knows" about */
+	/* Hack -- only describe attacks this routine "knows" about */
 	if (att_how > 23) att_how = 0;
 	roff(desc_amethod[att_how]);
 
-        /* Non-standard attacks, or attacks doing damage */
+	/* Non-standard attacks, or attacks doing damage */
 	if (att_type != 1 || (d1 && d2)) {
 	    roff(" to ");
 
-            /* Hack -- only describe certain attacks */
+	    /* Hack -- only describe certain attacks */
 	    if (att_type > 25) att_type = 0;
 	    roff(desc_atype[att_type]);
 
-            /* Does it do damage? */
+	    /* Does it do damage? */
 	    if (d1 && d2) {
 
-                /* Hack -- do we KNOW the damage? */
+		/* Hack -- do we KNOW the damage? */
 		if (knowdamage(r_ptr->level, nnn, d1 * d2) ||
 		    ((rcflags2 & MF2_UNIQUE) &&
 		     knowuniqdamage(r_ptr->level, nnn, d1 * d2))) {
@@ -1470,12 +1399,23 @@ int roff_recall(int r_idx)
 	roff(".");
     }
 
+#if 0
+	/* This code was taken from "creature.c" */
+	/* Mega-Hack -- let the player notice (eventually) that Quylthulgs */
+	/* have no physical attacks or motion of any kind */
+	else if ((r_ptr->cflags1 & CM1_ALL_MV_FLAGS) == 0 && (m_ptr->cdis < 2)) {
+	    if ((m_ptr->ml) && (l_ptr->r_attacks[0] < MAX_UCHAR)) {
+		l_ptr->r_attacks[0]++;
+	    }
+	}
+
     /* Hack -- Or describe the lack of attacks */
     else if (k > 0 && l_ptr->r_attacks[0] >= 10) {
 	sprintf(temp, " %s %s no physical attacks.",
 		wd_They[msex], wd_have[msex]);
 	roff(temp);
     }
+#endif
 
     /* Or describe the lack of knowledge */
     else {
@@ -1497,25 +1437,224 @@ int roff_recall(int r_idx)
     }
 
 
-    /* Flush the roff-ing */
+    /* Finish the roff-ing */
     roff("\n");
 
+    /* Refresh the roff-ing */
+    recall_fresh();
+    
 
     /* Hack -- Undo the "wizard memory" */
     if (wizard) *l_ptr = save_mem;
 
 
     /* Not needed for graphic recall */
-    if (use_recall_win) return (ESCAPE);
+    if (use_recall_win && term_recall) return (ESCAPE);
 
     /* Prompt for pause */
     prt("--pause--", 0, n_len + 3);
 
     /* Get a keypress */
     k = inkey();
-    
+
     /* Return it */
     return (k);
 }
 
+
+
+
+
+
+
+/*
+ * The table of "symbol info" -- each entry is a string of the form
+ * "X:desc" where "X" is the trigger, and "desc" is the "info".
+ */
+static cptr ident_info[] = {
+    " :A dark grid",
+    "!:A potion", 
+    "\":An amulet (or necklace)", 
+    "#:A stone wall", 
+    "$:Treasure", 
+    "%:A magma or quartz vein", 
+    "&:Demon (Oh dear!)", 
+    "':An open door", 
+    "(:Soft armor", 
+    "):A shield", 
+    "*:Gems", 
+    "+:A closed door", 
+    ",:Food (or mushroom patch)", 
+    "-:A wand (or rod)", 
+    ".:Floor", 
+    "/:A polearm (Axe/Pike/etc)", 
+	/* "0:unused", */
+    "1:Entrance to General Store", 
+    "2:Entrance to Armory", 
+    "3:Entrance to Weaponsmith", 
+    "4:Entrance to Temple", 
+    "5:Entrance to Alchemy shop", 
+    "6:Entrance to Magic store", 
+    "7:Entrance to Black Market", 
+    "8:Entrance to your home", 
+	/* "9:unused", */
+    "::Rubble", 
+    ";:A loose rock", 
+    "<:An up staircase", 
+    "=:A ring", 
+    ">:A down staircase", 
+    "?:A scroll", 
+    "@:You", 
+    "A:Angel", 
+    "B:Birds", 
+    "C:Canine", 
+    "D:Ancient Dragon (Beware)", 
+    "E:Elemental", 
+    "F:Giant Fly", 
+    "G:Ghost", 
+    "H:Hybrid", 
+    "I:Minor Demon", 
+    "J:Jabberwock", 
+    "K:Killer Beetle", 
+    "L:Lich", 
+    "M:Mummy", 
+	/* "N:unused", */
+    "O:Ogre", 
+    "P:Giant humanoid", 
+    "Q:Quylthulg (Pulsing Flesh Mound)", 
+    "R:Reptile (or Amphibian)", 
+    "S:Giant Spider (or Scorpion)", 
+    "T:Troll", 
+    "U:Umber Hulk", 
+    "V:Vampire", 
+    "W:Wight (or Wraith)", 
+    "X:Xorn (or Xaren)", 
+    "Y:Yeti", 
+    "Z:Zephyr (Elemental) hound", 
+    "[:Hard armor", 
+    "\\:A hafted weapon (mace/whip/etc)", 
+    "]:Misc. armor", 
+    "^:A trap", 
+    "_:A staff", 
+	/* "`:unused", */
+    "a:Giant Ant/Ant Lion", 
+    "b:Giant Bat", 
+    "c:Giant Centipede", 
+    "d:Dragon", 
+    "e:Floating Eye", 
+    "f:Feline", 
+    "g:Golem", 
+    "h:Humanoid (Dwarf/Elf/Halfling)", 
+    "i:Icky Thing", 
+    "j:Jelly", 
+    "k:Kobold", 
+    "l:Giant Louse", 
+    "m:Mold", 
+    "n:Naga", 
+    "o:Orc", 
+    "p:Person (Humanoid)", 
+    "q:Quadruped", 
+    "r:Rodent", 
+    "s:Skeleton", 
+    "t:Giant Tick", 
+	/* "u:unused", */
+    "v:Vortex", 
+    "w:Worm (or Worm Mass)", 
+	/* "x:unused", */
+    "y:Yeek", 
+    "z:Zombie", 
+    "{:A missile (Arrow/bolt/bullet)", 
+    "|:An edged weapon (sword/dagger/etc)", 
+    "}:A launcher (Bow/crossbow/sling)", 
+    "~:A tool (or miscellaneous item)",
+    NULL
+};
+
+
+
+/*
+ * Identify a character, allow recall of monnsters
+ */
+void do_cmd_query_symbol(void)
+{
+    char         command, query;
+    register int i;
+    int n;
+
+    /* The turn is free */
+    free_turn_flag = TRUE;
+
+    /* Get a character, or abort */
+    if (!get_com("Enter character to be identified :", &command)) return;
+
+    /* Find that character info, and describe it */
+    for (i = 0; ident_info[i]; ++i) {
+	if (command == ident_info[i][0]) {
+	    char buf[128];
+	    sprintf(buf, "%c - %s.", command, ident_info[i] + 2);
+	    prt(buf, 0, 0);
+	    break;
+	}
+    }
+
+    /* Abort if nothing found */
+    if (!ident_info[i]) return;
+
+
+    /* No monsters recalled yet */
+    n = 0;
+
+    /* Allow access to monster memory. */
+    for (i = MAX_R_IDX - 1; i >= 0; i--) {
+
+	/* Did they ask about this monster? */
+	if ((r_list[i].r_char == command) && bool_roff_recall(i))
+	{
+	    /* Hack -- assume no response */
+	    query = 'n';
+
+	    /* First monster gets a query */
+	    if (!n) {
+
+		put_str("You recall those details? [y/n]", 0, 40);
+		query = inkey();
+		erase_line(0, 40);
+
+		if (query != 'y' && query != 'Y') break;
+	    }
+
+	    /* Count the monsters shown */
+	    n++;
+
+	    /* Graphic Recall window */
+	    if (use_recall_win && term_recall) {
+		roff_recall(i);
+		prt("--pause--", 0, 70);
+		query = inkey();
+	    }
+
+	    /* On-screen recall */
+	    else {
+
+		/* Did they quit? */
+		if (query == ESCAPE) break;
+
+		/* Save the screen */
+		save_screen();
+
+		/* Describe the monster */
+		query = roff_recall(i);
+
+		/* Restore the screen */
+		restore_screen();
+	    }
+
+	    /* Let the user stop it */
+	    if (query == ESCAPE) break;
+	}
+    }
+
+    /* Erase any "Recall" prompts */
+    if (n) erase_line(0, 70);
+}
 

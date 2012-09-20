@@ -10,20 +10,21 @@
  * included in all such copies.
  */
 
-#include "angband.h"
-
-
-#ifdef USE_CURSES
-
 /*
- * These are not really constants so much as assertions
+ * Some annoying machines define "bool" in various packages
+ * Note that this "redefinition" should work on any machine.
  */
 
-#define SCRN_ROWS	24
-#define SCRN_COLS	80
+#define bool bool_hack
+#include "angband.h"
+#undef bool
+
+
+#ifdef USE_CUR
 
 
 #ifndef __MAKEDEPEND__
+
 
 # ifdef linux
 #  include <bsd/sgtty.h>
@@ -102,14 +103,13 @@
 #endif /* __MAKEDEPEND__ */
 
 
+
 extern char *getenv();
 
 #ifdef ATARIST_MWC
 extern WINDOW *newwin();
 #endif
 
-
-static int     curses_on = FALSE;
 
 #if !defined(MSDOS) && !defined(ATARIST_MWC) && !defined(__MINT__)
 #ifdef USG
@@ -125,11 +125,20 @@ static int          save_local_chars;
 #endif
 
 
+static int     curses_on = FALSE;
+
+
+/*
+ * The main screen
+ */
+static term term_screen_body;
+
+
 
 /*
  * Shut down curses (restore_term)
  */
-void unix_restore_curses()
+static void unix_restore_curses()
 {
     if (!curses_on) return;
 
@@ -306,7 +315,7 @@ static void moriaterm()
 /*
  * Nuke the "curses" system
  */
-static void Term_nuke_cur(void)
+static void Term_nuke_cur(term *t)
 {
     /* XXX Restore the terminal */
     unix_restore_curses();
@@ -314,20 +323,24 @@ static void Term_nuke_cur(void)
 
 
 
+
+
 /*
  * Actually MOVE the hardware cursor
  */
-static void Term_curs_cur(int x, int y, int z)
+static errr Term_curs_cur(int x, int y, int z)
 {
     /* Literally move the cursor */
     move(y,x);
+
+    return (0);
 }
 
 /*
  * Erase a grid of space
  * Hack -- try to be "semi-efficient".
  */
-static void Term_wipe_cur(int x, int y, int w, int h)
+static errr Term_wipe_cur(int x, int y, int w, int h)
 {
     int dx, dy;
 
@@ -363,6 +376,8 @@ static void Term_wipe_cur(int x, int y, int w, int h)
 
     /* Hack -- Fix the cursor */
     move(y,x);
+
+    return (0);
 }
 
 
@@ -370,11 +385,11 @@ static void Term_wipe_cur(int x, int y, int w, int h)
  * Place some text on the screen using an attribute
  * Unfortunately, the "attribute" is ignored...
  */
-static void Term_text_cur(int x, int y, int n, byte a, cptr s)
+static errr Term_text_cur(int x, int y, int n, byte a, cptr s)
 {
     int i;
     char buf[81];
-    
+
     /* Hack -- force "termination" of the text */
     if (n > 80) n = 80;
     for (i = 0; (i < n) && s[i]; ++i) buf[i] = s[i];
@@ -383,7 +398,10 @@ static void Term_text_cur(int x, int y, int n, byte a, cptr s)
     /* Move the cursor and dump the string */
     move(y, x);
     addstr(buf);
+
+    return (0);
 }
+
 
 
 /*
@@ -409,13 +427,13 @@ static void Term_text_cur(int x, int y, int n, byte a, cptr s)
  */
 static int check_input(int microsec)
 {
-    int result;
+    int result = 0;
 
 #if defined(USG) && !defined(M_XENIX)
     int                 arg;
 #else
     struct timeval      tbuf;
-    
+
 #ifdef FD_SET
     fd_set              smask;
     fd_set		*no_fds = NULL;
@@ -470,11 +488,7 @@ static int check_input(int microsec)
     result = getchar();
 
     /* See "EOF" handling below */
-    if (result == EOF)
-    {
-	eof_flag++;
-	return 0;
-    }
+    if (result == EOF) exit_game_panic();
 
 #endif
 
@@ -484,107 +498,100 @@ static int check_input(int microsec)
 
 
 
+
 /*
- * Scan for events.  If "n" is "-1", scan until done.
- * Otherwise, block until "n" events have been handled.
- * XXX Need to choose a behavior if "n" is zero...
+ * Check for events
  */
-static void Term_scan_cur(int n)
+static errr Term_xtra_cur_check(int v)
+{
+    int i;
+    
+    /* Get a keypress */
+    i = check_input(0);
+
+    /* Nothing ready */
+    if (!i) return (1);
+
+    /* Enqueue the keypress */
+    Term_keypress(i);
+
+    /* Success */
+    return (0);
+}
+
+
+/*
+ * Wait for a keypress.
+ */
+static errr Term_xtra_cur_event(int v)
 {
     int i;
 
-    /* Scan events until done */
-    if (n < 0) {
+    /* Get a keypress */
+    i = getchar();
 
-	/* Enqueue keys while available */
-	while ((i = check_input(0))) Term_keypress(i);
+    /* Broken input is special */
+    if (i == EOF) exit_game_panic();
 
-	/* All done */
-	return;
-    }	
+    /* Enqueue the keypress */
+    Term_keypress(i);
 
-
-    /* Scan events until 'n' are processed */
-    while (1) {
-
-	/* Decrease counter, return when done */
-	if (n-- == 0) return;
-
-	/* Get a keypress */
-	i = getchar();
-
-	/* Broken input is special */
-	if (i == EOF) break;
-
-	/* Enqueue the keypress */
-	Term_keypress(i);
-    }
+    return (0);
+}
 
 
-    /*** Handle death of standard input ***/
-
-    /* Count the interupts */
-    eof_flag++;
-
-    /* avoid infinite loops while trying to call */
-    /* inkey() for a -more- prompt.  */
-    msg_flag = FALSE;
-
-    /* Just exit if nothing important is here */
-    if (!character_generated || character_saved) exit_game();
-
-    /* Yeah, I'd say that's pretty disturbing */
-    disturb(1, 0);
-
-    /* just in case, to make sure that the process eventually dies */
-    if (eof_flag > 100)
+/*
+ * Suspend/Resume
+ */
+static errr Term_xtra_cur_level(int v)
+{
+    switch (v)
     {
-	/* Panic save */
-	panic_save = 1;
-	(void)strcpy(died_from, "(end of input: panic saved)");
-	if (save_player()) quit(NULL);
+        case TERM_LEVEL_HARD_SHUT: unix_suspend_curses(1); break;
 
-	/* Kill the player anyway */
-	(void)strcpy(died_from, "panic: unexpected eof");
-	death = TRUE;
-	exit_game();
+	/* Come back from suspend */
+	case TERM_LEVEL_HARD_OPEN: unix_suspend_curses(0); break;
     }
-
-    /* Hack -- pretend "Escape" was pressed */
-    Term_keypress(ESCAPE);
+    
+    return (0);
 }
 
 
 /*
  * Handle a "special request"
  */
-static void Term_xtra_cur(int n)
+static errr Term_xtra_cur(int n, int v)
 {
     /* Analyze the request */
     switch (n)
     {
 	/* Make a noise */
-	case TERM_XTRA_NOISE: (void)write(1, "\007", 1); break;
+	case TERM_XTRA_NOISE: (void)write(1, "\007", 1); return (0);
 
 	/* Flush the Curses buffer */
-	case TERM_XTRA_FLUSH: (void)refresh(); break;
+	case TERM_XTRA_FLUSH: (void)refresh(); return (0);
 
 #ifdef SYS_V
 
 	/* XXX Make the cursor invisible */
-	case TERM_XTRA_INVIS: curs_set(0); break;
+	case TERM_XTRA_INVIS: curs_set(0); return (0);
 
 	/* XXX Make the cursor visible */
-	case TERM_XTRA_BEVIS: curs_set(1); break;
+	case TERM_XTRA_BEVIS: curs_set(1); return (0);
 
 #endif
 
-	/* Suspend curses */
-	case TERM_XTRA_LEAVE: unix_suspend_curses(1); break;
+	/* Suspend/Resume curses */
+	case TERM_XTRA_LEVEL: return (Term_xtra_cur_level(v));
 
-	/* Come back from suspend */
-	case TERM_XTRA_ENTER: unix_suspend_curses(0); break;
+	/* Check for event */
+	case TERM_XTRA_CHECK: return (Term_xtra_cur_check(v));
+
+	/* Wait for event */
+	case TERM_XTRA_EVENT: return (Term_xtra_cur_event(v));
     }
+
+    return (1);
 }
 
 
@@ -596,6 +603,8 @@ errr init_cur(void)
 {
     int i, y, x, err;
 
+    term *t = &term_screen_body;
+    
 
 #if defined(VMS) || defined(MSDOS) || \
     defined(ATARIST_MWC) || defined(__MINT__)
@@ -633,7 +642,7 @@ errr init_cur(void)
     if (err) quit("failure initializing curses");
 
     /* Check we have enough screen. -CJS- */
-    err = (LINES < SCRN_ROWS || COLS < SCRN_COLS);
+    err = (LINES < 24 || COLS < 80);
 
     /* Quit with message */
     if (err) quit("screen too small (need at least 80x24)");
@@ -677,13 +686,23 @@ errr init_cur(void)
     if (i != 10) quit("must have 8-space tab-stops");
 
 
+    /* Initialize the term */
+    term_init(t, 80, 24, 64);
+
+    /* Hack -- shutdown hook */
+    t->nuke_hook = Term_nuke_cur;
+
     /* Stick in some hooks */
-    Term_nuke_hook = Term_nuke_cur;
-    Term_text_hook = Term_text_cur;
-    Term_wipe_hook = Term_wipe_cur;
-    Term_curs_hook = Term_curs_cur;
-    Term_scan_hook = Term_scan_cur;
-    Term_xtra_hook = Term_xtra_cur;
+    t->text_hook = Term_text_cur;
+    t->wipe_hook = Term_wipe_cur;
+    t->curs_hook = Term_curs_cur;
+    t->xtra_hook = Term_xtra_cur;
+
+    /* Save the term */
+    term_screen = t;
+    
+    /* Activate it */
+    Term_activate(term_screen);
 
 
     /* Success */
@@ -919,7 +938,7 @@ int system_cmd(cptr p)
 	else {
 	    execl("/bin/sh", "sh", "-c", p, 0);
 	}
-	
+
 	/* Hack (?) */
 	_exit(1);
     }
@@ -946,7 +965,7 @@ int system_cmd(cptr p)
     }
 
     (void)sigsetmask(mask);	   /* Interrupts on. */
-    
+
     /* XXX This is no longer defined -- use "term.c" */
     xxx xxx xxx
     moriaterm();		   /* Terminal in moria mode. */
@@ -960,6 +979,6 @@ int system_cmd(cptr p)
 #endif
 
 
-#endif /* USE_CURSES */
+#endif /* USE_CUR */
 
 

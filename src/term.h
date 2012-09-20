@@ -6,8 +6,9 @@
 #include "h-include.h"
 
 
+
 /*
- * A term_win is a "window" for the Term
+ * A term_win is a "window" for a Term
  *
  *  - Window "flags" (unused)
  *
@@ -37,7 +38,7 @@ typedef struct _term_win term_win;
 struct _term_win {
 
     huge flags;
-    
+
     short x, y;
 
     byte w, h;
@@ -46,18 +47,86 @@ struct _term_win {
     byte cx, cy;
 
     byte y1, y2;
-    
+
     byte *x1;
     byte *x2;
-
-#if 0
-    byte *r1;
-    byte *r2;
-#endif
 
     byte *a;
     char *c;
 };
+
+
+
+/*
+ * An actual "term" structure
+ *
+ *	- Have we been activated for the first time
+ *	- Do our support routines use a "software cursor"?
+ *	- Should we call the "Event Loop" when "bored"?
+ *	- Unused
+ *
+ *	- Keypress Queue -- various data
+ *
+ *	- Keypress Queue -- pending keys
+ *
+ *	- Keypress Queue -- current macro
+ *
+ *	- Current screen image
+ *
+ *	- Desired screen image
+ *
+ *
+ *	- Extra info (used by application)
+ *
+ *	- Extra data (used by implementation)
+ *
+ *	- Hook for init-ing the term
+ *	- Hook for nuke-ing the term
+ *
+ *	- Hook for various actions
+ *	- Hook for placing a cursor
+ *	- Hook for erasing a block of characters
+ *	- Hook for drawing a string of characters
+ */
+
+typedef struct _term term;
+
+struct _term {
+
+    bool initialized;
+    bool soft_cursor;
+    bool scan_events;
+    bool unused_flag;
+
+    byte key_head;
+    byte key_tail;
+    byte key_xtra;
+    byte key_size;
+    
+    char *key_queue;
+
+    cptr key_macro;
+
+    term_win *old;
+
+    term_win *scr;
+
+
+    vptr info;
+
+    vptr data;
+    
+    void (*init_hook)(term *t);
+    void (*nuke_hook)(term *t);
+    
+    errr (*xtra_hook)(int n, int v);
+    errr (*curs_hook)(int x, int y, int z);
+    errr (*wipe_hook)(int x, int y, int w, int h);
+    errr (*text_hook)(int x, int y, int n, byte a, cptr s);
+};
+
+
+
 
 
 
@@ -86,19 +155,21 @@ struct _term_win {
 #define TERM_L_BLUE            14
 #define TERM_L_UMBER           15
 
+/* Available levels */
+#define TERM_LEVEL_HARD_SHUT	1	/* Hardware Suspend */
+#define TERM_LEVEL_SOFT_SHUT	2	/* Software Suspend */
+#define TERM_LEVEL_SOFT_OPEN	3	/* Software Resume */
+#define TERM_LEVEL_HARD_OPEN	4	/* Hardware Resume */
+
 /* Definitions for "Term_xtra" */
-#define TERM_XTRA_NOISE 11	/* Make a noise */
-#define TERM_XTRA_FLUSH 12	/* Flush output */
-#define TERM_XTRA_INVIS 21	/* Cursor invisible */
-#define TERM_XTRA_BEVIS 22	/* Cursor visible */
-#define TERM_XTRA_LEAVE 91	/* Temporary suspend */
-#define TERM_XTRA_ENTER 92	/* Resume from suspend */
-
-
-/* Definitions for "Term_method()" */
-#define TERM_SOFT_CURSOR	1
-#define TERM_SCAN_EVENTS	2
-
+#define TERM_XTRA_CHECK	11	/* Check for event */
+#define TERM_XTRA_EVENT	12	/* Block until event */
+#define TERM_XTRA_NOISE 21	/* Make a noise */
+#define TERM_XTRA_FLUSH 22	/* Flush output */
+#define TERM_XTRA_INVIS 31	/* Cursor invisible */
+#define TERM_XTRA_BEVIS 32	/* Cursor visible */
+#define TERM_XTRA_REACT 41	/* React to global veriable changes */
+#define TERM_XTRA_LEVEL 91	/* Change the "level" (see above) */
 
 /* Max recursion depth of "screen memory" */
 /* Note that unused screens waste only 32 bytes each */
@@ -115,46 +186,27 @@ struct _term_win {
 
 
 
-/**** Available variables ****/
+/**** Available Variables ****/
 
-
-/*
- * Basic Init/Nuke hooks (optional) that can be provided by the various
- * "graphic modules" to do "module dependant" startup/shutdown when the
- * Term_init() and Term_nuke() routines are called (see below).
- */
-extern void (*Term_init_hook)(void);
-extern void (*Term_nuke_hook)(void);
-
- 
-/*
- * Hooks, provided by particular "graphic modules"
- * See, for example, "main-mac.c" for a Macintosh Module
- * These hooks are used below to provide the "bodies" of functions.
- */
-extern void (*Term_wipe_hook)(int x, int y, int w, int h);
-extern void (*Term_curs_hook)(int x, int y, int z);
-extern void (*Term_text_hook)(int x, int y, int n, byte a, cptr s);
-extern void (*Term_scan_hook)(int n);
-extern void (*Term_xtra_hook)(int n);
-
-
-
-
-
+extern term *Term;
 
 
 /**** Available Functions ****/
 
 extern errr term_win_wipe(term_win*);
 extern errr term_win_load(term_win*, term_win*);
+extern errr term_win_nuke(term_win*);
 extern errr term_win_init(term_win*, int, int);
 
-extern int Term_method(int, int);
+extern errr Term_xtra(int n, int v);
+extern errr Term_curs(int x, int y, int z);
+extern errr Term_wipe(int x, int y, int w, int h);
+extern errr Term_text(int x, int y, int n, byte a, cptr s);
 
 extern int Term_kbhit(void);
 extern int Term_inkey(void);
 extern errr Term_keypress(int);
+extern errr Term_key_push(int);
 extern errr Term_flush(void);
 extern errr Term_fresh(void);
 extern errr Term_redraw(void);
@@ -175,13 +227,11 @@ extern errr Term_putch(int x, int y, byte a, char c);
 extern errr Term_putstr(int x, int y, int n, byte a, cptr s);
 extern errr Term_erase(int x1, int y1, int x2, int y2);
 extern errr Term_clear(void);
-extern errr Term_init(void);
-extern errr Term_nuke(void);
-extern void Term_text(int x, int y, int n, byte a, cptr s);
-extern void Term_wipe(int x, int y, int w, int h);
-extern void Term_curs(int x, int y, int z);
-extern void Term_scan(int n);
-extern void Term_xtra(int n);
+
+extern errr Term_activate(term*);
+
+extern errr term_nuke(term*);
+extern errr term_init(term*, int w, int h, int k);
 
 #endif
 

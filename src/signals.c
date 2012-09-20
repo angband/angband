@@ -28,41 +28,43 @@
 # define signal_handler ((__Sigfunc)(signal_handler_proc))
 # define suspend_handler ((__Sigfunc)(suspend_handler_proc))
 #else
-# ifdef linux
-#  define signal_handler ((void (*)())(signal_handler_proc))
-#  define suspend_handler ((void (*)())(suspend_handler_proc))
-# else
-#  define signal_handler (signal_handler_proc)
-#  define suspend_handler (suspend_handler_proc)
-# endif
+# define signal_handler (signal_handler_proc)
+# define suspend_handler (suspend_handler_proc)
 #endif
 
 
 /*
  * suspend_handler_proc
+ *
+ * Note that the "raise()" function is not always available
  */
 static void suspend_handler_proc(int sig)
 {
 
 #ifdef SIGSTOP
 
-    /* Hack -- note suspend status */
-    p_ptr->male |= 2;
+    /* Flush the term */
+    Term_fresh();
 
     /* Suspend the "Term" */
-    Term_xtra(TERM_XTRA_LEAVE);
+    Term_xtra(TERM_XTRA_LEVEL, TERM_LEVEL_HARD_SHUT);
 
-    /* Suspend the process */
+    /* Suspend ourself */
     (void)kill(0, SIGSTOP);
 
     /* Resume the "Term" */
-    Term_xtra(TERM_XTRA_ENTER);
+    Term_xtra(TERM_XTRA_LEVEL, TERM_LEVEL_HARD_OPEN);
 
-    /* Hack -- forget suspend status */
-    p_ptr->male &= ~2;
+    /* Redraw the term */
+    Term_redraw();
+
+    /* Flush the term */
+    Term_fresh();
 
 #endif
 
+    /* Have to restore handler. */
+    (void)signal(sig, suspend_handler);
 }
 
 
@@ -77,72 +79,93 @@ static void suspend_handler_proc(int sig)
 
 static void signal_handler_proc(int sig)
 {
-    int simple;
+    int simple = FALSE;
 
-#if !defined(MACINTOSH)
+#if !defined(MACINTOSH) && !defined(_Windows)
 
     /* Ignore all second signals */
     (void)signal(sig, SIG_IGN);
 
-    /* Simple "Ctrl-C" interupt, or "Quit" key */
-    simple = (sig == SIGINT || sig == SIGQUIT);
-    
+#ifdef SIGINT
+    /* Simple "Ctrl-C" interupt */
+    if (sig == SIGINT) simple = TRUE;
+#endif
+
+#ifdef SIGQUIT
+    /* Simple "Quit" key */
+    if (sig == SIGQUIT) simple = TRUE;
+#endif
+
     /* Handle simple interrupt */
     if (simple) {
 
+	/* Only treat real characters specially */
 	if (!death && !character_saved && character_generated) {
 
-	    /* Allow player to think twice. */
+	    /* Save the screen */
+	    save_screen();
+
+	    /* Hack -- Allow player to think twice. */
 	    if (!get_check(total_winner ?
 			   "Do you want to retire?" :
 			   "Really commit *Suicide*?")) {
 
+		/* Restore the screen */
+		restore_screen();
+
 		/* Disturb and clear */
-		if (turn > 0) disturb(1, 0);
-		erase_line(0, 0);
 		Term_fresh();
 
-		/* Have to restore handler. */
+		/* Disturb */
+		disturb(1, 0);
+
+		/* Restore handler for later. */
 		(void)signal(sig, signal_handler);
 
 		/* OK. We don't quit. */
 		return;
 	    }
 
+	    /* Restore the screen */
+	    restore_screen();
+
+	    /* Death */
 	    (void)strcpy(died_from, "Interrupting");
 	}
 	else {
 	    (void)strcpy(died_from, "Abortion");
 	}
 
-        /* Interrupted */
+	/* Interrupted */
 	prt("Interrupt!", 0, 0);
+
+	/* Suicide */
 	death = TRUE;
 
-        /* Save and exit */
+	/* Save and exit */
 	exit_game();
 
 	/* Just in case */
 	quit("interrupted");
-
-	/* Paranoia */
-	return;
     }
 
 #endif /* !MACINTOSH */
 
     /* Die. */
-    prt("OH NO!!!!!!  A gruesome software bug LEAPS out at you!", 22, 0);
+    prt("OH NO!!!!!!  A gruesome software bug LEAPS out at you!", 21, 0);
 
     /* Try to save anyway */
     if (!death && !character_saved && character_generated) {
 
 	/* Try a panic save */
 	panic_save = 1;
-	prt("Your guardian angel is trying to save you.", 23, 0);
+	prt("Your guardian angel is trying to save you.", 22, 0);
+	prt("", 23, 0);
+
+	/* Attempt to save */
 	(void)sprintf(died_from, "(panic save %d)", sig);
 	if (save_player()) quit("panic save succeeded");
-	
+
 	/* Oops */
 	(void)strcpy(died_from, "software bug");
 	death = TRUE;
@@ -150,14 +173,15 @@ static void signal_handler_proc(int sig)
     }
     else {
 	death = TRUE;
-	prt("There is NO defense!", 23, 60);
+	prt("There is NO defense!", 22, 0);
+	prt("", 23, 0);
 
 	/* Low level access -- Quietly save the memory anyway. */
 	(void)_save_player(savefile);
     }
 
-    /* Shut down the terminal */
-    Term_nuke();
+    /* Shut down the terminal XXX XXX */
+    term_nuke(term_screen);
 
 #ifdef SET_UID
     /* generate a core dump if necessary */
@@ -166,7 +190,7 @@ static void signal_handler_proc(int sig)
     (void)sleep(5);
 #endif
 
-    /* Paranoia -- quit anyway */
+    /* Quit anyway */
     quit(NULL);
 }
 

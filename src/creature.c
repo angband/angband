@@ -13,20 +13,6 @@
 #include "angband.h"
 
 
-/* Lets do all prototypes correctly.... -CWS */
-#ifndef NO_LINT_ARGS
-#ifdef __STDC__
-static void get_moves(int, int *);
-static int  monster_critical(int, int, int);
-static void make_attack(int);
-static void make_move(int, int *);
-static void mon_cast_spell(int, int *);
-static void mon_move(int);
-static void shatter_quake(int, int);
-static void br_wall(int, int);
-#endif
-#endif
-
 
 
 /*
@@ -35,20 +21,16 @@ static void br_wall(int, int);
  * for visibility (natural, infravision, see-invis, telepathy),
  * updating the monster visibility flag, redrawing or erasing the
  * monster, and taking note of any "visual" features of the monster.
- * The only monster fields that are changed here are "cdis" and "ml".
+ * Monster fields that are changed here are "cdis" and "los" and "ml".
  *
  * It is slightly inefficient to calculate "distance from player" (cdis)
  * in this function, especially for monsters that never move, but it will
  * prevent the calculation from being done in multiple places.
- *
- * Perhaps we should take a parameter...
+ * Perhaps the "cdis" field should be recalculated as needed.
  *
  * We need to verify that "update_mon()" is called after every change to
  * a monster's location, and that "update_monsters()" is called after
- * every change to the player location.
- *
- * But then those will be the ONLY times such checks are needed.
- * And even if we miss one, we will "catch up" when the player "moves".
+ * every change to the player location.  This appears to be true.
  */
 void update_mon(int m_idx)
 {
@@ -75,7 +57,7 @@ void update_mon(int m_idx)
 
     /* Get the monster */
     m_ptr = &m_list[m_idx];
-    
+
     /* Get the monster race (to check flags) */
     r_ptr = &r_list[m_ptr->r_idx];
 
@@ -87,32 +69,6 @@ void update_mon(int m_idx)
     fy = m_ptr->fy;
     fx = m_ptr->fx;
 
-    /* XXX XXX Mega-Hack -- notice "missing" monsters */
-    if (cave[fy][fx].m_idx != m_idx) {
-
-	/* Debugging -- should only happen with 2.7.0/2.7.1 savefiles */
-	message("You hear the fabric of the world ripping...", 0);
-	message(NULL, 0);
-
-	/* Pick a "new" location */
-	while ((cave[fy][fx].m_idx > 0) ||
-	       (!clean_grid(fy, fx))) {
-	    fy = rand_int(cur_height-2)+1;
-	    fx = rand_int(cur_width-2)+1;
-	}
-
-	/* Forget the "old" location */
-	cave[m_ptr->fy][m_ptr->fx].m_idx = 0;
-
-	/* Save the new location */
-	m_ptr->fy = fy;
-	m_ptr->fx = fx;
-	
-	/* Use the new location instead */
-	cave[fy][fx].m_idx = m_idx;
-    }
-    
-    
     /* Re-Calculate the "distance from player" field */
     m_ptr->cdis = distance(char_row, char_col, fy, fx);
 
@@ -122,11 +78,10 @@ void update_mon(int m_idx)
 
     /* The monster is "nearby", and on the current "panel", */
     /* and the player has "vision" (sight or telepathy or wiz-sight) */
-    if ((m_ptr->cdis <= MAX_SIGHT) && (panel_contains(fy, fx)) &&
-	(!(p_ptr->blind) || p_ptr->telepathy || wizard)) {
+    if (panel_contains(fy, fx) && (!(p_ptr->blind))) {
 
-	/* Telepathy can see all monsters with "minds" */
-	if (p_ptr->telepathy) {
+	/* Telepathy can see all "nearby" monsters with "minds" */
+	if (p_ptr->telepathy && (m_ptr->cdis <= MAX_SIGHT)) {
 
 	    char c = r_ptr->r_char;
 	    cptr n = r_ptr->name;
@@ -175,8 +130,7 @@ void update_mon(int m_idx)
 	    if (!flag) no_mind = TRUE;
 	}
 
-	/* There is line of sight from the player to the monster */
-	/* So unless the creature is invisible or dark, it gets seen */
+	/* Normal line of sight */
 	if (m_ptr->los) {
 
 	    /* Get the cave grid (to check light) */
@@ -187,27 +141,25 @@ void update_mon(int m_idx)
 		(m_ptr->cdis <= (unsigned)(p_ptr->see_infra))) {
 
 		/* Infravision only works on "warm" creatures */
-		if (!(r_ptr->cflags2 & MF2_NO_INFRA)) flag = TRUE;
-
 		/* Below, we will need to know that infravision failed */
-		else no_infra = TRUE;
+		if (r_ptr->cflags2 & MF2_NO_INFRA) no_infra = TRUE;
+		
+		/* Infravision works */
+		if (!no_infra) flag = TRUE;
 	    }
 
 	    /* Check for "illumination" of the monster grid */
-	    if ((c_ptr->info & CAVE_PL) || (c_ptr->info & CAVE_TL)) {
+	    if (player_can_see(fy, fx)) {
 
-		/* Unless the monster is invisible, we see it */
-		if (!(r_ptr->cflags1 & MF1_MV_INVIS)) flag = TRUE;
-
-		/* Take note of invisible monsters */
-		else is_invis = TRUE;
-
-		/* Invisible monsters can be seen by some players */
-		if (is_invis && p_ptr->see_inv) flag = TRUE;
+		/* Take note of invisibility */
+		if (r_ptr->cflags1 & MF1_MV_INVIS) is_invis = TRUE;
+		
+		/* Visible, or detectable, monsters get seen */
+		if (!is_invis || p_ptr->see_inv) flag = TRUE;
 	    }
 	}
 
-	/* Wizards have "wizard sight" */
+	/* Wizards see everything */
 	if (wizard) flag = TRUE;
     }
 
@@ -273,70 +225,6 @@ void update_monsters(void)
 
 
 /*
- * Given speed,  returns number of moves this turn.     -RAK-
- *
- * NOTE: Player must always move at least once per iteration,
- *       a slowed player is handled by moving monsters faster
- * m_idx = index in m_list[] now passed in, so (turn+m_idx) can
- *          be used to vary when monsters move. -CFT
- */
-int movement_rate(int m_idx)
-{
-    register int ps, ms, tm, i;
-
-    /* Player Speed: fast->2, normal->1, slow->0, etc. -CFT */
-    ps = 1 - p_ptr->speed;
-
-    /* The monster speed is already in that format */
-    ms = m_list[m_idx].cspeed;
-
-    /* Player and monster have same speeds -CFT */
-    if (ps == ms) return 1;
-
-    /* 0xFF to prevent negative values -CFT */
-    i = m_idx + (int)(turn & 0xFF);
-
-    if (ps<1 && ms<1) {		/* both slow, swap "reciprocals" -CFT */
-	tm = 2 - ps;
-	ps = 2 - ms;
-	ms = tm;
-    }
-
-    /* then mon must be fast, or above would have happened -CFT */
-    if (ps < 1)	return ms * (2 - ps);	
-
-    /* then player fast... move once in a while -CFT */
-    if (ms < 1) return !(i % (ps * (2 - ms)));
-
-/*
- * player faster.         
- * This formula is not intuitive, but it effectively uses the turn counter
- * (offset by the monster index, so not every monster moves at same time)
- * to compute factional parts of movement ratios.. so that a monster 2/3 the
- * player's spd will move twice every 3 turns.  An earlier version of this
- * equation performed the same result on average, but it was prone to "clumps"
- * of speed... if the player was spd 4, and the monster spd 2, then for each
- * 4 turn cycle, the monster would move 0,0,1,1.  This equation will result
- * in 0,1,0,1, which is better. -CFT
- */
-
-    if (ps>ms) return (((i*ms) % ps) < ms);
-
-    /* divides evenly, simple case -CFT */
-    if (!(tm = (ms % ps))) return (ms / ps);
-
-  /*
-   * Like the player-faster formula, this is NOT intuitive.  However, it
-   * effectively uses the turn counter & monster index to decide when a
-   * monster should get an "extra" move.  It also prevents "clumps". -CFT
-   */
-
-    return ((ms / ps) + (((i*tm) % ps) < tm));
-}
-
-
-
-/*
  * Returns whether a given monster will try to run from the player.
  *
  * Monsters will attempt to avoid very powerful players.  See below for details.
@@ -362,7 +250,7 @@ static int mon_will_run(int m_idx)
     /* Keep monsters from running too far away */
     if (m_ptr->cdis > MAX_SIGHT + 5) return FALSE;
 
-    /* Afraid monsters are afraid */
+    /* Afraid monsters are already afraid */
     if (m_ptr->monfear) return TRUE;
 
     /* If the monster is "close" assume too late to run away */
@@ -378,12 +266,130 @@ static int mon_will_run(int m_idx)
     /* This bonus used to be based on "(m_ptr->maxhp % 8)". */
     morale += (m_idx % 10);
 
-    /* Strong players terrify weak monsters */
-    if (power > morale + 25) return (TRUE);
+    /* Only Strong players terrify weak monsters */
+    if (power <= morale + 25) return (FALSE);
 
-    /* Assume not scared */
-    return (FALSE);
+#if 0
+    /* Observe the terror */
+    if (m_ptr->ml && m_ptr->los) {
+	char m_name[80];
+	monster_desc(m_name, m_ptr, 0);
+	message(m_name, 0x03);
+	message(" flees in terror!", 0);
+    }
+
+    /* Hack -- Be afraid for a while */
+    m_ptr->monfear = (20 + randint(10));
+#endif
+
+    /* The monster is now terrified */
+    return (TRUE);
 }
+
+
+#ifdef MONSTER_FLOW
+
+/*
+ * Convert "directions" into "offsets"
+ */ 
+static int dx[10] = {0, -1, 0, 1, -1, 0, 1, -1, 0, 1};
+static int dy[10] = {0, 1, 1, 1, 0, 0, 0, -1, -1, -1};
+static int dd[9] =  {2, 8, 6, 4, 3, 1, 9, 7, 5};
+
+
+/*
+ * Choose the "best" direction for "flowing"
+ *
+ * Note that ghosts and rock-eaters are never allowed to "flow"
+ *
+ * Prefer "non-diagonal" directions, but twiddle them a little
+ * to angle slightly towards the player's actual location.
+ *
+ * Allow very perceptive monsters to track old "spoor" left by
+ * previous locations occupied by the player.  This will tend
+ * to have monsters end up either near the player or on a grid
+ * recently occupied by the player (and left via "teleport").
+ * Note that if "smell" is turned on, all monsters get vicious.
+ * Also note that teleporting away from a location will cause
+ * the monsters who were chasing you to converge on that location
+ * as long as you are still near enough to "annoy" them without
+ * being close enough to chase directly.  I have no idea what will
+ * happen if you combine "smell" with low "aaf" values.
+ */
+static bool get_moves_aux(int m_idx, int *yp, int *xp)
+{
+    int d, y, x, y1, x1, when = 0, cost = 999;
+
+    cave_type *c_ptr;
+    
+    monster_type *m_ptr = &m_list[m_idx];
+    monster_race *r_ptr = &r_list[m_ptr->r_idx];
+    
+    /* Monster flowing disabled */
+    if (!flow_by_sound) return (FALSE);
+    
+    /* Monster can go through rocks */
+    if (r_ptr->cflags1 & MF1_THRO_WALL) return (FALSE);
+    if (r_ptr->cflags2 & MF2_BREAK_WALL) return (FALSE);
+
+    /* Monster location */
+    y1 = m_ptr->fy;
+    x1 = m_ptr->fx;
+
+    /* Monster grid */
+    c_ptr = &cave[y1][x1];
+
+    /* The player is not currently near the monster grid */
+    if (c_ptr->when < cave[char_row][char_col].when) {
+
+	/* The player has never been near the monster grid */
+	if (!c_ptr->when) return (FALSE);
+        
+	/* The monster is not allowed to track the player */
+	if (!flow_by_smell) return (FALSE);
+    }
+    
+    /* Monster is too far away to notice the player */
+    if (c_ptr->cost > MONSTER_FLOW_DEPTH) return (FALSE);
+    if (c_ptr->cost > r_ptr->aaf) return (FALSE);
+
+    /* Hack -- Player can see us, run towards him */
+    if (player_has_los(y1, x1)) return (FALSE);
+    
+    /* Check nearby grids, diagonals first */
+    for (d = 7; d >= 0; d--) {
+
+	/* Get the location */
+	y = y1 + dy[dd[d]];
+	x = x1 + dx[dd[d]];
+
+	/* Ignore illegal locations */
+	if (!cave[y][x].when) continue;
+	
+	/* Ignore ancient locations */
+	if (cave[y][x].when < when) continue;
+
+	/* Ignore distant locations */
+	if (cave[y][x].cost > cost) continue;
+
+	/* Save the cost and time */
+	when = cave[y][x].when;
+	cost = cave[y][x].cost;
+
+	/* Hack -- Save the "twiddled" location */
+	(*yp) = char_row + 100 * dy[dd[d]];
+	(*xp) = char_col + 100 * dx[dd[d]];
+    }
+
+    /* No legal move (?) */
+    if (!when) return (FALSE);
+    
+    /* Success */
+    return (TRUE);
+}
+
+#endif
+
 
 
 /*
@@ -393,43 +399,44 @@ static int mon_will_run(int m_idx)
  */
 static void get_moves(int m_idx, int *mm)
 {
-    int y, ay, x, ax, move_val;
+    int y2 = char_row, x2 = char_col;
+    int y, ay, x, ax, move_val = 0;
 
-    /* Extract the "standard" direction to move */
-    y = m_list[m_idx].fy - char_row;
-    x = m_list[m_idx].fx - char_col;
+#ifdef MONSTER_FLOW
+    /* Get a "destination" (may be off screen) */
+    (void)get_moves_aux(m_idx, &y2, &x2);
+#endif
+
+    /* Extract the "pseudo-direction" */
+    y = m_list[m_idx].fy - y2;
+    x = m_list[m_idx].fx - x2;
 
     /* Apply fear if possible and necessary */
     if (mon_will_run(m_idx)) {
+    
+	/* XXX Not very "bright" */
 	y = (-y);
 	x = (-x);
     }
 
-    /* Apply the move */
-    if (y < 0) {
-	move_val = 8;
-	ay = (-y);
-    }
-    else {
-	move_val = 0;
-	ay = y;
-    }
-    if (x > 0) {
-	move_val += 4;
-	ax = x;
-    }
-    else {
-	ax = (-x);
-    }
+    /* Extract the "absolute distances" */
+    ax = ABS(x);
+    ay = ABS(y);
 
-    /* this has the advantage of preventing the diamond maneuvre, also faster */
+    /* Do something weird */
+    if (y < 0) move_val += 8;
+    if (x > 0) move_val += 4;
+
+    /* Prevent the diamond maneuvre */
     if (ay > (ax << 1)) {
-	move_val += 2;
+	move_val++;
+	move_val++;
     }
     else if (ax > (ay << 1)) {
 	move_val++;
     }
 
+    /* Extract some directions */
     switch (move_val) {
       case 0:
 	mm[0] = 9;
@@ -561,28 +568,323 @@ static void get_moves(int m_idx, int *mm)
 static int monster_critical(int dice, int sides, int dam)
 {
     int total = dice * sides;
-    int max = 0;
 
-    if (dam == total && dam > 20)
-	max = 1;
-    if ((dam > (19 * total) / 20) && ((dam < 20) ? randint(20) == 1 : TRUE)) {
-	if (dam > 20)
-	    while (randint(50) == 1)
-		max++;
-	if (dam > 45)
-	    return 6 + max;
-	if (dam > 33)
-	    return 5 + max;
-	if (dam > 25)
-	    return 4 + max;
-	if (dam > 18)
-	    return 3 + max;
-	if (dam > 11)
-	    return 2 + max;
-	return 1 + max;
+    if ((dam > total * 19 / 20) && ((dam >= 20) || (randint(20) == 1))) {
+
+	int max = 0;
+	
+	if (dam > 20) {
+	    if (dam == total) max++;
+	    while (randint(50) == 1) max++;
+	}
+
+	if (dam > 45) return (6 + max);
+	if (dam > 33) return (5 + max);
+	if (dam > 25) return (4 + max);
+	if (dam > 18) return (3 + max);
+	if (dam > 11) return (2 + max);
+	return (1 + max);
     }
+
     return 0;
 }
+
+
+
+
+/*
+ * Apply an "earthquake" to the player's location
+ * Take the "cause" of the quake as a paramater
+ *
+ * This function ALWAYS "re-updates" the view/lite/monsters
+ */
+static void quake_player(cptr what)
+{
+    register int        x, y;
+    register int	cx, cy;
+    register cave_type *c_ptr;
+    int                 tmp;
+    int			damage = 0;
+    int			sy = 0, sx = 0, safe = 0;
+
+
+    /* Get the player location */
+    cx = char_row;
+    cy = char_col;
+
+    /* See if we can find a "safe" location to "move" to */
+    for (y = cy - 1; !safe && y <= cy + 1; y++) {
+	for (x = cx - 1; !safe && x <= cx + 1; x++) {
+	    if ((y == cy) && (x == cx)) continue;
+	    if (!in_bounds(y, x)) continue;
+	    if (empty_grid_bold(y, x)) {
+		sy = y, sx = x, safe = TRUE;
+	    }
+	}
+    }
+
+    /* Random message */
+    switch (randint(3)) {
+      case 1:
+	msg_print("The cave ceiling collapses!");
+	break;
+      case 2:
+	msg_print("The cave floor twists in an unnatural way!");
+	break;
+      default:
+	msg_print("The cave quakes!  You are pummeled with debris!");
+	break;
+    }
+
+
+    /* Hurt the player a lot (is this "fair"?) */
+    if (!safe) {
+	msg_print("You are trapped, crushed and cannot move!");
+	damage = 300;
+    }
+
+    /* Destroy the grid, and push the player to safety */
+    else {
+
+	/* Calculate results */
+	switch (randint(3)) {
+	  case 1:
+	    msg_print("You nimbly dodge the blast!");
+	    damage = 0;
+	    break;
+	  case 2:
+	    msg_print("You are bashed by rubble!");
+	    damage = damroll(10, 4);
+	    stun_player(randint(50));
+	    break;
+	  case 3:
+	    msg_print("You are crushed between the floor and ceiling!");
+	    damage = damroll(10, 4);
+	    stun_player(randint(50));
+	    break;
+	}
+
+
+	/* Destroy the player's old grid */
+	c_ptr = &cave[cy][cx];
+
+	/* Destroy location (unless artifact or stairs) */
+	if (valid_grid(cy, cx)) {
+	    tmp = randint(10);
+	    if (tmp < 6) c_ptr->fval = QUARTZ_WALL;
+	    else if (tmp < 9) c_ptr->fval = MAGMA_WALL;
+	    else c_ptr->fval = GRANITE_WALL;
+	    delete_object(cy, cx);
+	    c_ptr->info &= ~CAVE_PL;
+	    c_ptr->info &= ~CAVE_FM;
+	    lite_spot(cy, cx);
+	}
+
+
+	/* Move the player to the safe location */
+	move_rec(char_row, char_col, sy, sx);
+
+	/* Check for new panel (redraw map) */
+	(void)get_panel(char_row, char_col, FALSE);
+
+	/* Update the view */
+	update_view();
+
+	/* Update the lite */
+	update_lite();
+
+	/* Update the monsters */
+	update_monsters();
+
+	/* Check the view */
+	check_view();
+    }
+
+
+
+    /* Take some damage */
+    if (damage) take_hit(damage, what);
+}
+
+
+
+
+/*
+ * Hack -- Drop a "wall" on the player, who must be at the given location.
+ *
+ * XXX XXX Perhaps replace this with a "beam" of rock breathing.
+ */
+static void br_wall(int cy, int cx)
+{
+    /* Hack -- Verify location */
+    if (cx != char_row || cy != char_col) return;
+
+    /* Take some damage */
+    quake_player("a breathed wall");
+}
+
+
+
+
+/*
+ * This is a fun one.  In a given block, pick some walls and
+ * turn them into open spots.  Pick some open spots and turn
+ * them into walls.  An "Earthquake" effect.	       -LVB-
+ *
+ * Note below that we prevent unique monster from death by other monsters.
+ * It causes trouble (monster not marked as dead, quest monsters don't
+ * satisfy quest, etc).  So, we let then live, but extremely wimpy.
+ * This isn't great, because monster might heal itself before player's
+ * next swing... -CFT
+ *
+ * Note that since the entire outer edge of the maze is solid rocks,
+ * we can skip "in_bounds()" checks of distance "one" from any monster.
+ *
+ * XXX Replace this with a "radius 8" ball attack on the monster itself.
+ */
+static void shatter_quake(int cy, int cx)
+{
+    register int		i, j;
+    register cave_type		*c_ptr;
+    register monster_type	*m_ptr;
+    register monster_race	*r_ptr;
+    int				kill, y, x;
+    int				tmp, damage = 0;
+    char			m_name[80];
+
+
+    /* Check around the epicenter */
+    for (i = cy - 8; i <= cy + 8; i++) {
+	for (j = cx - 8; j <= cx + 8; j++) {
+
+	    /* Skip the epicenter */
+	    if ((i == cy) && (j == cx)) continue;
+
+	    /* Skip illegal grids */
+	    if (!in_bounds(i, j)) continue;
+
+	    /* Sometimes, shatter that grid */
+	    if (randint(8) == 1) {
+
+		c_ptr = &cave[i][j];
+
+		/* See if the player is here */
+
+		/* Treat the player grid specially */
+		if ((i == char_row) && (j == char_col)) {
+
+		    /* Quake the player */
+		    quake_player("an earthquake");
+
+		    /* Continue */
+		    continue;
+		}
+
+
+		/* Embed a (non-player) monster */
+		if (c_ptr->m_idx > 1) {
+
+		    m_ptr = &m_list[c_ptr->m_idx];
+		    r_ptr = &r_list[m_ptr->r_idx];
+
+		    if (!(r_ptr->cflags1 & MF1_THRO_WALL) &&
+			!(r_ptr->cflags2 & MF2_BREAK_WALL)) {
+
+			/* Monster can not move to escape the wall */
+			if (r_ptr->cflags1 & MF1_MV_ONLY_ATT) {
+			    kill = TRUE;
+			}
+
+			/* The monster MAY be able to dodge the walls */
+			else {
+
+			    /* Assume surrounded by rocks */
+			    kill = TRUE;
+
+			    /* Look for non-rock space (dodge later) */
+			    for (y = i - 1; y <= i + 1; y++) {
+				for (x = j - 1; x <= j + 1; x++) {
+				    if (y == i && x == j) continue;
+				    if (!in_bounds(y, x)) continue;
+				    if (empty_grid_bold(y, x)) kill = FALSE;
+				}
+			    }
+			}
+
+			/* Scream in pain */
+			monster_desc(m_name, m_ptr, 0);
+			message(m_name, 0x03);
+			message(" wails out in pain!", 0);
+
+			/* Take damage from the quake */
+			damage = damroll(4, 8);
+
+			/* Monster is certainly awake */
+			m_ptr->csleep = 0;
+
+			/* This is NOT player induced damage */
+			m_ptr->hp -= damage;
+
+			/* If totally embedded, die instantly */
+			if (kill) m_ptr->hp = -1;
+
+			/* Unique monsters will not quite die */
+			if ((r_ptr->cflags2 & MF2_UNIQUE) && (m_ptr->hp < 0)) {
+			    m_ptr->hp = 0;
+			}
+
+			/* Handle "dead monster" */
+			if (m_ptr->hp < 0) {
+
+			    message(m_name, 0x03);
+			    message(" is embedded in the rock.", 0);
+
+			    /* Kill the monster */
+			    monster_death(m_ptr, FALSE, m_ptr->ml);
+
+			    /* Delete it -- see "hack_m_idx" */
+			    delete_monster_idx(c_ptr->m_idx);
+			}
+		    }
+		}
+
+		/* Do not hurt artifacts or stairs */
+		if (valid_grid(i, j)) {
+
+		    /* Delete any "walls" */
+		    if (!floor_grid_bold(i, j)) {
+			c_ptr->fval = CORR_FLOOR;
+		    }
+
+		    /* Floor grids turn into rubble.  */
+		    else {
+			tmp = randint(10);
+			if (tmp < 6) c_ptr->fval = QUARTZ_WALL;
+			else if (tmp < 9) c_ptr->fval = MAGMA_WALL;
+			else c_ptr->fval = GRANITE_WALL;
+		    }
+
+		    /* Delete any object that is still there */
+		    delete_object(i, j);
+
+		    /* Hack -- not lit, not known */
+		    c_ptr->info &= ~CAVE_PL;
+		    c_ptr->info &= ~CAVE_FM;
+
+		    /* Erase the grid */
+		    lite_spot(i, j);
+		}
+	    }
+	}
+    }
+
+    /* Hack -- always update the view/lite/etc */
+    update_view();
+    update_lite();
+    update_monsters();
+}
+
+
 
 /*
  * Make an attack on the player (chuckle.)		-RAK-	 
@@ -593,8 +895,8 @@ static void make_attack(int m_idx)
     int                    i, j, tmp, damage, flag, attackn, notice, visible;
     int                    shatter = FALSE;
     int                    do_cut, do_stun;
-    int32                  gold;
-    int16u                  *ap, *ap_orig;
+    s32b                  gold;
+    u16b                  *ap, *ap_orig;
     vtype                  ddesc;
     char		   m_name[80];
 
@@ -603,7 +905,7 @@ static void make_attack(int m_idx)
     register inven_type		*i_ptr;
 
     /* flag to see if blinked away (after steal) -CFT */
-    int8u                  blinked = 0;
+    byte                  blinked = 0;
 
 
     /* don't beat a dead body! */
@@ -798,7 +1100,7 @@ static void make_attack(int m_idx)
 	      case 1:
 		message(m_name, 0x03);
 		message(" hits you.", 0);
-		if (randint(2) == 1) {
+		if (rand_int(2)) {
 		    /* Cut, but not stunned */
 		    do_cut = 1;
 		}
@@ -975,8 +1277,8 @@ static void make_attack(int m_idx)
 
 	      /* No physical attacks */
 	      case 0:
-		/* notice if monster *has* no physical attacks -CWS */
-		if (!randint(10)) notice = TRUE;
+		/* notice eventually */
+		if (!rand_int(10)) notice = TRUE;
 		break;
 
 	      /* Normal attack	 */
@@ -997,7 +1299,7 @@ static void make_attack(int m_idx)
 		if (p_ptr->sustain_str) {
 		    msg_print("You feel weaker for a moment, but it passes.");
 		}
-		else if (randint(2) == 1) {
+		else if (rand_int(2)) {
 		    msg_print("You feel weaker.");
 		    (void)dec_stat(A_STR, 15, FALSE);
 		}
@@ -1029,8 +1331,9 @@ static void make_attack(int m_idx)
 	      /* Fear attack */		
 	      case 4:
 		take_hit(damage, ddesc);
-		if (player_saves() || (p_ptr->pclass == 1 && randint(3) == 1)
-		    || p_ptr->resist_fear) {
+		if (player_saves() ||
+		    (p_ptr->pclass == 1 && randint(3) == 1) ||
+		    p_ptr->resist_fear) {
 		    msg_print("You stand your ground!");
 		}
 		else if (p_ptr->afraid < 1) {
@@ -1067,11 +1370,10 @@ static void make_attack(int m_idx)
 		elec_dam(damage, ddesc);
 		break;
 
-	      /* Corrosion attack */
+	      /* Hack -- Corrosion attack (really acid) */
 	      case 9:
 		msg_print("A stinging red gas swirls about you.");
-		corrode_gas(ddesc);
-		take_hit(damage, ddesc);
+		acid_dam(damage, ddesc);
 		break;
 
 	      /* Blindness attack */
@@ -1096,8 +1398,9 @@ static void make_attack(int m_idx)
 		    msg_print("You resist the effects!");
 		}
 		else if (p_ptr->paralysis < 1) {
-		    if (p_ptr->free_act)
+		    if (p_ptr->free_act) {
 			msg_print("You are unaffected.");
+		    }
 		    else {
 			p_ptr->paralysis = randint((int)r_ptr->level) + 3;
 			msg_print("You are paralysed.");
@@ -1121,21 +1424,22 @@ static void make_attack(int m_idx)
 		    if (gold < 2) gold = 2;
 		    if (gold > 5000) gold = 2000 + randint(1000) + (p_ptr->au / 20);
 		    if (gold > p_ptr->au) gold = p_ptr->au;
+		    p_ptr->au -= gold;
 		    if (gold <= 0) {
 			message("Nothing was stolen.", 0);
 		    }
-		    if (p_ptr->au) {
+		    else if (p_ptr->au) {
 			msg_print("Your purse feels lighter.");
 			sprintf(t1, "%ld coins were stolen!", (long)gold);
 			message(t1, 0);
 		    }
 		    else {
+			msg_print("Your purse feels lighter.");
 			message("All of your coins were stolen!", 0);
 		    }
-		    p_ptr->au -= gold;
 		    prt_gold();
 		}
-		if (randint(2) == 1) {
+		if (rand_int(2)) {
 		    msg_print("There is a puff of smoke!");
 		    blinked = 1;   /* added -CFT */
 		    teleport_away(m_idx, MAX_SIGHT + 5);
@@ -1154,7 +1458,7 @@ static void make_attack(int m_idx)
 		    vtype               t1, t2;
 
 		    /* Steal a single item from the pack */
-		    i = randint(inven_ctr) - 1;
+		    i = rand_int(inven_ctr);
 
 		    /* Get the item */
 		    i_ptr = &inventory[i];
@@ -1197,9 +1501,9 @@ static void make_attack(int m_idx)
 	      /* Poison	 */
 	      case 14:
 		take_hit(damage, ddesc);
-		if (!(p_ptr->immune_pois ||
-		      p_ptr->resist_pois ||
-		      p_ptr->oppose_pois)) {
+		if (!p_ptr->immune_pois &&
+		    !p_ptr->resist_pois &&
+		    !p_ptr->oppose_pois) {
 		    msg_print("You feel very sick.");
 		    p_ptr->poisoned += randint((int)r_ptr->level) + 5;
 		}
@@ -1258,7 +1562,7 @@ static void make_attack(int m_idx)
 
 	      /* Lose experience  */
 	      case 19:
-		if (p_ptr->hold_life && randint(5) > 1) {
+		if (p_ptr->hold_life && rand_int(5)) {
 		    msg_print("You keep hold of your life force!");
 		}
 		else {
@@ -1296,9 +1600,9 @@ static void make_attack(int m_idx)
 	      case 22:
 		if (find_range(TV_FOOD, TV_NEVER, &i, &j)) {
 		    int arg = rand_range(i,j);
-		    msg_print("It got at your rations!");
 		    inven_item_increase(arg, -1);
 		    inven_item_optimize(arg);
+		    msg_print("It got at your rations!");
 		}
 		else {
 		    notice = FALSE;
@@ -1325,7 +1629,7 @@ static void make_attack(int m_idx)
 
 	      /* Eat charges */
 	      case 24:
-		i = randint(inven_ctr) - 1;
+		i = rand_int(inven_ctr);
 		j = r_ptr->level;
 		i_ptr = &inventory[i];
 		if (((i_ptr->tval == TV_STAFF) || (i_ptr->tval == TV_WAND)) &&
@@ -1429,8 +1733,7 @@ static void make_attack(int m_idx)
 	      default: stun_player(100 + randint(10)); break;
 	    }
 
-	    /* moved here from mon_move, so that monster only */
-	    /* confused if it actually hits */
+	    /* monster is only confused if it actually hits */
 	    /* if no attacks, monster can't get confused -dbd */
 	    if (!attype) {
 		if (p_ptr->confusing && p_ptr->protevil <= 0) {
@@ -1447,7 +1750,7 @@ static void make_attack(int m_idx)
 			m_ptr->confused = TRUE;
 		    }
 
-		    if (visible && !death && randint(4) == 1) {
+		    if (visible && !death && !rand_int(4)) {
 			l_list[m_ptr->r_idx].r_cflags2 |=
 			    r_ptr->cflags2 & MF2_CHARM_SLEEP;
 		    }
@@ -1497,6 +1800,10 @@ static void make_attack(int m_idx)
  * also guarantee to call update_mon() if we change the monster location.
  *
  * Note that we can directly update the monster lore if needed.
+ *
+ * XXX Monster fear is slightly odd, in particular, monsters will
+ * fixate on opening a door even if they cannot open it.  Actually,
+ * the same thing happens to normal monsters when they hit a door.
  */
 static void make_move(int m_idx, int *mm)
 {
@@ -1509,11 +1816,11 @@ static void make_move(int m_idx, int *mm)
     int                   i, newy, newx;
 
     bool stuck_door = FALSE;
-    
+
     bool do_turn = FALSE;
     bool do_move = FALSE;
     bool do_view = FALSE;
-    
+
     char		  m_name[80];
 
 
@@ -1540,21 +1847,25 @@ static void make_move(int m_idx, int *mm)
 	i_ptr = &i_list[c_ptr->i_idx];
 
 
-	/* Ignore requests to move through boundary walls */
-	if (c_ptr->fval == BOUNDARY_WALL) break;
+	/* XXX Ignore requests to move through boundary walls */
+	if (c_ptr->fval == BOUNDARY_WALL) continue;
 
 
 	/* XXX Technically, need to check for monster in the way */
 	/* combined with that monster being in a wall (or door?) */
 
 	/* Floor is open? */
-	if (floor_grid(newy, newx)) {
+	if (floor_grid_bold(newy, newx)) {
+
 	    do_move = TRUE;
 	}
 
 	/* Creature moves through walls? */
 	else if (r_ptr->cflags1 & MF1_THRO_WALL) {
+
 	    do_move = TRUE;
+	    
+	    /* XXX XXX XXX Hack -- never notice moving *into* los() */
 	    if (m_ptr->ml) l_ptr->r_cflags1 |= MF1_THRO_WALL;
 	}
 
@@ -1606,7 +1917,7 @@ static void make_move(int m_idx, int *mm)
 		    do_turn = TRUE;
 
 		    /* XXX Hack -- scared monsters can open locked/stuck doors */
-		    if ((m_ptr->monfear) && randint(2) == 1) {
+		    if ((m_ptr->monfear) && rand_int(2)) {
 			i_ptr->pval = 0;
 		    }
 
@@ -1644,7 +1955,7 @@ static void make_move(int m_idx, int *mm)
 
 		/* Deal with doors in the way */
 		if (do_move) {
-		
+
 		    /* XXX Should create a new object XXX */
 		    invcopy(i_ptr, OBJ_OPEN_DOOR);
 
@@ -1653,7 +1964,7 @@ static void make_move(int m_idx, int *mm)
 		    i_ptr->ix = newx;
 
 		    /* 50% chance of breaking door */
-		    if (stuck_door) i_ptr->pval = 1 - randint(2);
+		    if (stuck_door) i_ptr->pval = 0 - rand_int(2);
 
 		    /* Redraw door */
 		    lite_spot(newy, newx);
@@ -1683,9 +1994,9 @@ static void make_move(int m_idx, int *mm)
 			/* Place it in the dungeon */
 			i_ptr->iy = newy;
 			i_ptr->ix = newx;
-			
+
 			/* 50% chance of breaking door */
-			i_ptr->pval = 1 - randint(2);
+			i_ptr->pval = 0 - rand_int(2);
 
 			/* Redraw */
 			lite_spot(newy, newx);
@@ -1704,21 +2015,16 @@ static void make_move(int m_idx, int *mm)
 	if (do_move && (c_ptr->i_idx != 0) &&
 	    (i_ptr->tval == TV_VIS_TRAP) && (i_ptr->sval == SV_TRAP_GLYPH)) {
 
+	    /* Assume no move allowed */
+	    do_move = FALSE;
+	    
 	    /* Break the ward */
 	    if (randint(OBJ_BREAK_GLYPH) < r_list[m_ptr->r_idx].level) {
-		if ((newy == char_row) && (newx == char_col)) {
+		if (player_can_see(newy, newx)) {
 		    msg_print("The rune of protection is broken!");
 		}
 		delete_object(newy, newx);
-	    }
-
-	    /* Still warded */
-	    else {
-		do_move = FALSE;
-
-		/* If the creature moves only to attack, don't let */
-		/* it move if the glyph prevents it from attacking */
-		if (r_ptr->cflags1 & MF1_MV_ONLY_ATT) do_turn = TRUE;
+		do_move = TRUE;
 	    }
 	}
 
@@ -1763,11 +2069,11 @@ static void make_move(int m_idx, int *mm)
 	}
 
 
-	/* XXX Hack -- make sure molds never "run away" */
+	/* Hack -- prevent bizarre "running molds" */
 	if (r_ptr->cflags1 & MF1_MV_ONLY_ATT) do_move = FALSE;
 
 
-	/* Creature has been allowed move. */
+	/* Creature has been allowed move */
 	if (do_move) {
 
 	    /* Move the creature */
@@ -1778,34 +2084,36 @@ static void make_move(int m_idx, int *mm)
 
 	    /* XXX Moving monsters disturb the player */
 	    if (m_ptr->ml &&
-	        (disturb_move || (disturb_near && (m_ptr->cdis < 5)))) {
-	        disturb(0, 0);
-            }
-            
+		(disturb_move || (disturb_near && (m_ptr->cdis < 5)))) {
+		disturb(0, 0);
+	    }
+
 
 	    /* XXX XXX Update l_ptr (eating others, crushing walls, etc) */
+
 
 	    /* A turn was taken */
 	    do_turn = TRUE;
 
+
 	    /* Pick up or eat an object	*/
 	    if (r_ptr->cflags1 & MF1_PICK_UP) {
 
-		/* used in code to prevent orcs from picking up */
-		/* Slay Orc weapons, artifacts, etc -CFT */
-		int32u flg = 0L;
-
+		/* Check the grid */
 		c_ptr = &cave[newy][newx];
 		i_ptr = &i_list[c_ptr->i_idx];
 
 		/* Is there a (non-gold) object the monster can pick up? */
-		if ((c_ptr->i_idx != 0) && (i_ptr->tval <= TV_MAX_OBJECT)) {
+		if ((i_ptr->tval > 0) && (i_ptr->tval <= TV_MAX_OBJECT)) {
+
+		    /* Prevent monsters from picking up certain objects */
+		    u32b flg = 0L;
 
 		    /* The monster TRIES to pick things up */
 		    if (m_ptr->ml) l_ptr->r_cflags1 |= MF1_PICK_UP;
 
 		    /* Analyze "monster hurting" flags on the object */
-		    if (wearable_p(&i_list[c_ptr->i_idx])) {
+		    if (wearable_p(i_ptr)) {
 
 			/* React to objects that hurt the monster */
 			if (i_ptr->flags1 & TR1_SLAY_DRAGON) flg |= MF2_DRAGON;
@@ -1849,7 +2157,7 @@ static void make_move(int m_idx, int *mm)
     }
 
 
-    /* XXX Hack -- If no move or turn taken, cancel fear */
+    /* Hack -- get "bold" if out of options */
     if (!do_turn && !do_move && m_ptr->monfear) {
 
 	/* No longer afraid */
@@ -1883,23 +2191,28 @@ static void make_move(int m_idx, int *mm)
  * Assumes update_mon() has been called, and will call it again if we move.
  *
  * Blindness check is really not correct.  What if the monster is out of sight?
+ *
+ * Returns "TRUE" if a spell was (successfully) cast
  */
-static void mon_cast_spell(int m_idx, int *took_turn)
+static bool mon_cast_spell(int m_idx)
 {
-    int32u		i;
+    u32b		i;
     int			chance, thrown_spell, r1;
     register int	k;
     int			spell_choice[64];
     bool		desperate = FALSE;
     bool		recovered = FALSE;
-    vtype		ddesc;
 
-    register monster_type  *m_ptr;
-    register monster_race *r_ptr;
+    monster_type	*m_ptr;
+    monster_race	*r_ptr;
+    monster_lore	*l_ptr;
 
     char		m_name[80];
     char		m_poss[80];
     char		m_self[80];
+
+    vtype		ddesc;
+
 
     /* Extract the blind-ness -CFT */
     int blind = (p_ptr->blind > 0);
@@ -1915,10 +2228,12 @@ static void mon_cast_spell(int m_idx, int *took_turn)
     int y = char_row;
 
     /* Already dead */
-    if (death) return;
+    if (death) return (FALSE);
 
+    /* Access the monster */
     m_ptr = &m_list[m_idx];
     r_ptr = &r_list[m_ptr->r_idx];
+    l_ptr = &l_list[m_ptr->r_idx];
 
     /* Get the monster name (or "it") */
     monster_desc(m_name, m_ptr, 0x00);
@@ -1933,74 +2248,64 @@ static void mon_cast_spell(int m_idx, int *took_turn)
     /* Hack -- extract the "1 in x" chance of casting spell */
     chance = (int)(r_ptr->spells1 & CS1_FREQ);
 
-    /* Paranoia -- Just to be sure */
-    if (chance == 0) {
-	msg_print("CHANCE == 0");
-	msg_print("caused by ....");
-	msg_print(r_ptr->name);
-	*took_turn = FALSE;
-    }
+    /* Mega-Paranoia */
+    if (chance == 0) core_fmt("Bad spells for monster #%d\n", m_ptr->r_idx);
 
-    else if (randint(chance) != 1) {
-	*took_turn = FALSE;
-    }
+    /* Failed to cast */
+    if (rand_int(chance)) return (FALSE);
 
     /* Must be within certain range */
-    else if (m_ptr->cdis > MAX_SPELL_DIS) {
-	*took_turn = FALSE;
-    }
+    if (m_ptr->cdis > MAX_SPELL_DIS) return (FALSE);
 
     /* Must have unobstructed Line-Of-Sight, from Monster to Player -CWS */
-    else if (!los((int)m_ptr->fy, (int)m_ptr->fx, char_row, char_col)) {
-	*took_turn = FALSE;
+    if (!los((int)m_ptr->fy, (int)m_ptr->fx, y, x)) return (FALSE);
+
+
+    /* Get the "died from" name */
+    monster_desc(ddesc, m_ptr, 0x88);
+
+    /* Extract all possible spells into spell_choice */
+    if ((r_ptr->cflags2 & MF2_INTELLIGENT) &&
+	(m_ptr->hp < ((r_ptr->hd[0] * r_ptr->hd[1]) / 10)) &&
+	(r_ptr->spells1 & CS1_INT || r_ptr->spells2 & CS2_INT ||
+	 r_ptr->spells3 & CS3_INT) && rand_int(2)) {
+
+	desperate = TRUE;
+	l_list[m_ptr->r_idx].r_cflags2 |= MF2_INTELLIGENT;
     }
 
-    /* Creature is going to cast a spell	 */
-    else {
+    /* No spells yet */
+    k = 0;
 
-	*took_turn = TRUE;
+    /* Extract the first set of spells */
+    i = (r_ptr->spells1 & ~CS1_FREQ);
+    if (desperate) i &= CS1_INT;
+    while (i) spell_choice[k++] = bit_pos(&i);
 
-	/* Get the "died from" name */
-	monster_desc(ddesc, m_ptr, 0x88);
+    /* Extract the second set of spells */
+    i = r_ptr->spells2;
+    if (desperate) i &= CS2_INT;
+    while (i) spell_choice[k++] = bit_pos(&i) + 32;
 
-	/* Extract all possible spells into spell_choice */
-	if ((r_ptr->cflags2 & MF2_INTELLIGENT) &&
-	    (m_ptr->hp < ((r_ptr->hd[0] * r_ptr->hd[1]) / 10)) &&
-	    (r_ptr->spells1 & CS1_INT || r_ptr->spells2 & CS2_INT ||
-	     r_ptr->spells3 & CS3_INT) && randint(2) == 1) {
-	    desperate = TRUE;
-	    l_list[m_ptr->r_idx].r_cflags2 |= MF2_INTELLIGENT;
-	}
+    /* Extract the third set of spells */
+    i = r_ptr->spells3;
+    if (desperate) i &= CS3_INT;
+    while (i) spell_choice[k++] = bit_pos(&i) + 64;
 
-	k = 0;
+    /* Mega-Paranoia */
+    if (!k) core_fmt("Monster %s had no spells!", ddesc);
 
-	i = (r_ptr->spells1 & ~CS1_FREQ);
-	if (desperate) i &= CS1_INT;
-	while (i) spell_choice[k++] = bit_pos(&i);
+    /* Choose a spell to cast */
+    thrown_spell = spell_choice[rand_int(k)];
+    thrown_spell++;
 
-	i = r_ptr->spells2;
-	if (desperate) i &= CS2_INT;
-	while (i) spell_choice[k++] = bit_pos(&i) + 32;
+    /* Most spells disturb the player */
+    if (thrown_spell > 6 && thrown_spell != 17) disturb(1, 0);
 
-	i = r_ptr->spells3;
-	if (desperate) i &= CS3_INT;
-	while (i) spell_choice[k++] = bit_pos(&i) + 64;
-
-	/* Paranoia */
-	if (!k) {
-	    message(ddesc, 0x03);
-	    message(" had no spell to cast, tell someone NOW!", 0);
-	    return;
-	}
-
-	/* Choose a spell to cast			       */
-	thrown_spell = spell_choice[randint(k) - 1];
-	thrown_spell++;
-
-	/* all except teleport_away() and drain mana spells always disturb */
-	if (thrown_spell > 6 && thrown_spell != 17) disturb(1, 0);
-
-	/* Cast the spell.			     */
+    /* XXX Indent */
+    if (TRUE) {
+    
+	/* Cast the spell. */
 	switch (thrown_spell) {
 
 	  case 5:		   /* Teleport Short */
@@ -2432,7 +2737,7 @@ static void mon_cast_spell(int m_idx, int *took_turn)
 	    if (m_ptr->hp >= m_ptr->maxhp) {
 
 		message(m_name, 0x03);
-		message(seen ? " sounds" : " looks", 0x02);
+		message(seen ? " looks" : " sounds", 0x02);
 		message(" as healthy as can be.", 0);
 
 		/* can't be afraid at max hp's */
@@ -2490,13 +2795,13 @@ static void mon_cast_spell(int m_idx, int *took_turn)
 		message(" casts a spell.", 0);
 	    }
 
-	    if ((m_ptr->cspeed) <= ((int)(r_list[m_ptr->r_idx].speed) - 10)) {
-		if ((r_list[m_ptr->r_idx].speed) <= 15) {
-		    message(m_name, 0x03);
-		    message(" starts moving faster.", 0);
-		    m_ptr->cspeed += 1;
-		}
+	    /* Hack -- allow one "speed up" above racial max */
+	    if ((m_ptr->mspeed) <= (r_list[m_ptr->r_idx].speed)) {
+		message(m_name, 0x03);
+		message(" starts moving faster.", 0);
+		m_ptr->mspeed += 10;
 	    }
+
 	    break;
 
 	  case 48:
@@ -2549,7 +2854,7 @@ static void mon_cast_spell(int m_idx, int *took_turn)
 	    message(m_name, 0x03);
 	    message(" tries to blank your mind.", 0);
 
-	    if (player_saves() || randint(2) == 1) {
+	    if (player_saves() || rand_int(2)) {
 		msg_print("You resist the spell.");
 	    }
 	    else if (lose_all_info()) {
@@ -2619,8 +2924,9 @@ static void mon_cast_spell(int m_idx, int *took_turn)
 	    message(m_name, 0x03);
 	    if (blind) message(" mumbles strangely.", 0);
 	    else message(" gestures at you.", 0);
-	    if ((player_saves()) || (randint(3) != 1) ||
-		(p_ptr->resist_nexus)) {
+	    if (p_ptr->resist_nexus ||
+	        player_saves() ||
+	        rand_int(3)) {
 		msg_print("You keep your feet firmly on the ground.");
 	    }
 	    else {
@@ -2632,7 +2938,7 @@ static void mon_cast_spell(int m_idx, int *took_turn)
 		    msg_print("You rise up through the ceiling.");
 		    dun_level--;
 		}
-		else if (randint(2) == 1) {
+		else if (rand_int(2)) {
 		    msg_print("You rise up through the ceiling.");
 		    dun_level--;
 		}
@@ -2707,8 +3013,8 @@ static void mon_cast_spell(int m_idx, int *took_turn)
 	    else message(" breathes elemental force.", 0);
 
 	    /* Breath "walls", at PLAYER location */
-	    /* XXX This should be done as a "beam" */
-	    if (randint(10) == 1) {
+	    /* XXX This should be done as a "beam" via "project()" */
+	    if (!rand_int(10)) {
 		br_wall(char_row, char_col);
 	    }
 
@@ -2850,31 +3156,32 @@ static void mon_cast_spell(int m_idx, int *took_turn)
 	    message(" casts a buggy spell.", 0);
 	}
 
+
 	/* Remember what the monster did to us */
 	/* If we can see him, or he cast "teleport away" or "teleport level" */
 	if ((m_ptr->ml)	|| (thrown_spell == 45) || (thrown_spell == 57)) {
 
 	    if (thrown_spell < 33) {
-		l_list[m_ptr->r_idx].r_spells1 |= 1L << (thrown_spell - 1);
+		l_ptr->r_spells1 |= 1L << (thrown_spell - 1);
 	    }
 	    else if (thrown_spell < 65) {
-		l_list[m_ptr->r_idx].r_spells2 |= 1L << (thrown_spell - 33);
+		l_ptr->r_spells2 |= 1L << (thrown_spell - 33);
 	    }
 	    else if (thrown_spell < 97) {
-		l_list[m_ptr->r_idx].r_spells3 |= 1L << (thrown_spell - 65);
+		l_ptr->r_spells3 |= 1L << (thrown_spell - 65);
 	    }
 
 	    /* Count the number of castings of this spell */
-	    if ((l_list[m_ptr->r_idx].r_spells1 & CS1_FREQ) != CS1_FREQ) {
-		l_list[m_ptr->r_idx].r_spells1++;
-	    }
-	    
-	    /* Count the player deaths, if dead */
-	    if (death && l_list[m_ptr->r_idx].r_deaths < MAX_SHORT) {
-		l_list[m_ptr->r_idx].r_deaths++;
-	    }
+	    if (l_ptr->r_cast < 15) l_ptr->r_cast++;
 	}
+
+
+	/* Always take note of monsters that kill you */
+	if (death && l_ptr->r_deaths < MAX_SHORT) l_ptr->r_deaths++;
     }
+
+    /* A spell was cast */
+    return (TRUE);
 }
 
 
@@ -2885,7 +3192,6 @@ static void mon_cast_spell(int m_idx, int *took_turn)
 int multiply_monster(int m_idx)
 {
     register int        i, y2, x2;
-    register cave_type *c_ptr;
 
     monster_type *m_ptr = &m_list[m_idx];
 
@@ -2899,36 +3205,17 @@ int multiply_monster(int m_idx)
     for (i = 0; i < 18; i++) {
 
 	/* Pick a location near the given one */
-	y2 = fy - 2 + randint(3);
-	x2 = fx - 2 + randint(3);
+	y2 = rand_spread(fy, 1);
+	x2 = rand_spread(fx, 1);
 
-	/* Ignore illegal ones */
-	if (!floor_grid(y2, x2)) continue;
-
-	/* Do not eat yourself */
-	if ((y2 == fy) && (x2 == fx)) continue;
-
-	/* Do not drop on the player (also checked below) */
-	if ((y2 == char_row) && (x2 == char_col)) continue;
-
-	/* Get the cave grid */
-	c_ptr = &cave[y2][x2];
-
-	/* Must have space to reproduce */
-	if (c_ptr->m_idx) continue;
-
-	/* XXX Hack -- Do not drop onto objects (such as traps) */
-	if (c_ptr->i_idx) continue;
-
+	/* Require an "empty" floor grid */
+	if (!empty_grid_bold(y2, x2)) continue;
 
 	/* Create a new monster */
 	result = place_monster(y2, x2, m_ptr->r_idx, FALSE);
 
 	/* Failed to create! */
 	if (!result) return FALSE;
-
-	/* Hack -- Made a new monster */
-	mon_tot_mult++;
 
 	/* Return the visibility of the created monster */
 	return (m_list[cave[y2][x2].m_idx].ml);
@@ -2941,7 +3228,21 @@ int multiply_monster(int m_idx)
 
 
 /*
- * Move a critter about the dungeon			-RAK-	 
+ * Hack -- get some random moves
+ */
+static void get_moves_random(int *mm)
+{
+    mm[0] = randint(9);
+    mm[1] = randint(9);
+    mm[2] = randint(9);
+    mm[3] = randint(9);
+    mm[4] = randint(9);
+}
+
+
+/*
+ * Move a critter about the dungeon			-RAK-
+ *
  * Note that update_mon() has been called, so "m_ptr->ml" is correct.
  * Thus, we will just directly modify the monster lore when appropriate.
  * Note that make_move() will call update_mon() if necessary.
@@ -2952,65 +3253,103 @@ int multiply_monster(int m_idx)
  * per deleted monster, in misc.c, by delete_monster().  So monsters
  * can multiply up to 75 entities, but then they will stop until the
  * player kills some of them off.  This is a silly algorithm.
+ *
+ * Note that this routine is called ONLY from "process_monsters()".
  */
 static void mon_move(int m_idx)
 {
-    register int           i, j, t;
-    int                    k, move_test, dir;
-    register monster_type *m_ptr;
-    register monster_race *r_ptr;
-    register monster_lore *l_ptr;
-    int                    mm[9];
-    bigvtype               out_val;
-    char		   m_name[80];
-    char		   m_poss[8];
+    int			i, j, k, dir, fx, fy;
+    monster_type	*m_ptr;
+    monster_race	*r_ptr;
+    monster_lore	*l_ptr;
+    int			mm[9];
+
 
     /* Get the monster, its race, and its lore info */
     m_ptr = &m_list[m_idx];
     r_ptr = &r_list[m_ptr->r_idx];
     l_ptr = &l_list[m_ptr->r_idx];
 
+    /* Get the monster location */
+    fx = m_ptr->fx;
+    fy = m_ptr->fy;
 
-    /* reduce fear, tough monsters can unfear faster -CFT, hacked by DGK */
-    if (m_ptr->monfear) {
 
-	/* Reduce the fear (use ints to avoid problems) */
-	t = (int)m_ptr->monfear;
-	t -= randint(r_list[m_ptr->r_idx].level / 10);
-	if (t <= 0) t = 0;
-	m_ptr->monfear = (int8u) t;
+    /* Hack -- if in wall, must immediately escape to a clear area */
+    if (!floor_grid_bold(fy, fx) &&
+	(!(r_ptr->cflags1 & MF1_THRO_WALL))) {
 
-	/* Recover from fear, take note if seen */
-	if (!m_ptr->monfear && m_ptr->ml) {
+	/* Start with random moves */
+	get_moves_random(mm);
+	
+	/* Attempt to find an *empty* space to escape into */
+	for (k = 0, dir = 1, i = fy + 1; i >= fy - 1; i--) {
+	    for (j = fx - 1; j <= fx + 1; j++, dir++) {
 
-	    /* Get the monster name/poss */
-	    monster_desc(m_name, m_ptr, 0);
-	    monster_desc(m_poss, m_ptr, 0x22);
-	    sprintf(out_val, "%s recovers %s courage.", m_name, m_poss);
-	    message(out_val, 0x01);
+		/* No staying still */
+		if (dir == 5) continue;
+
+		/* Require floor space */
+		if (!floor_grid_bold(i,j)) continue;
+
+		/* Do not allow attack against the player */
+		if (cave[i][j].m_idx != 1) mm[k++] = dir;
+	    }
 	}
+
+
+	/* Attempt to "escape" */
+	if (k) {
+
+	    /* Pick a random direction to prefer */
+	    j = rand_int(k);
+
+	    /* Prefer that direction */
+	    i = mm[0];
+	    mm[0] = mm[j];
+	    mm[j] = i;
+
+	    /* Move the monster */
+	    make_move(m_idx, mm);
+	}
+
+
+	/* Hack -- if still in a wall, apply more damage, and dig out */
+	if (cave[m_ptr->fy][m_ptr->fx].fval >= MIN_WALL) {
+
+	    /* XXX XXX XXX XXX The player may not have caused the rocks */
+
+	    /* Apply damage, check for death */
+	    if (mon_take_hit(m_idx, damroll(8, 8), FALSE)) {
+		msg_print("You hear a scream muffled by rock!");
+	    }
+	    else {
+		(void)twall((int)m_ptr->fy, (int)m_ptr->fx, 1, 0);
+	    }
+	}
+
+
+	/* monster movement finished */
+	return;
     }
 
 
     /* Does the critter multiply?  Are creatures allowed to multiply? */
+    /* Efficiency -- pre-empt multiplying if place_monster() will fail */
     /* Hack -- If the player is resting, only multiply occasionally */
     if ((r_ptr->cflags1 & MF1_MULTIPLY) &&
-	(mon_tot_mult <= MAX_MON_MULT) &&
-	(!p_ptr->rest || (randint(MON_MULT_ADJ) == 1)) ) {
+	(l_ptr->cur_num < l_ptr->max_num) &&
+	(!p_ptr->rest || (!rand_int(MON_MULT_ADJ))) ) {
 
 	/* Count the adjacent monsters */
-	k = 0;
-	for (i = (int)m_ptr->fy - 1; i <= (int)m_ptr->fy + 1; i++) {
-	    for (j = (int)m_ptr->fx - 1; j <= (int)m_ptr->fx + 1; j++) {
-		if (in_bounds(i, j) && (cave[i][j].m_idx > 1)) {
-		    k++;
-		}
+	for (k = 0, i = fy - 1; i <= fy + 1; i++) {
+	    for (j = fx - 1; j <= fx + 1; j++) {
+		if (cave[i][j].m_idx > 1) k++;
 	    }
 	}
 
-	/* No non-positive multiplication */
-	if (k <= 0) k = 1;
-	if ((k < 4) && (randint(k * MON_MULT_ADJ) == 1)) {
+	/* Hack -- multiply slower in crowded rooms */
+	if ((k < 4) && (!k || !rand_int(k * MON_MULT_ADJ))) {
 
 	    /* Try to multiply, take note if kid is visible */
 	    if (multiply_monster(m_idx)) {
@@ -3022,163 +3361,72 @@ static void mon_move(int m_idx)
     }
 
 
-    move_test = FALSE;
-
-    /* if in wall, must immediately escape to a clear area */
-    if ((cave[m_ptr->fy][m_ptr->fx].fval >= MIN_WALL) &&
-	(!(r_ptr->cflags1 & MF1_THRO_WALL))) {
-
-    /*
-     * If the monster is already dead, don't kill it again! This can happen
-     * for monsters moving faster than the player.  They will get multiple
-     * moves, but should not if they die on the first move.  This is only a
-     * problem for monsters stuck in rock.  
-     */
-
-	/* Hack -- Handle "fast dead monsters in rocks" */
-	if (m_ptr->hp < 0) return;
-
-	/* note direction of for loops matches direction of keypad from 1 to 9 */
-	/* do not allow attack against the player */
-	k = 0;
-	dir = 1;
-	for (i = m_ptr->fy + 1; i >= (int)(m_ptr->fy - 1); i--) {
-	    for (j = m_ptr->fx - 1; j <= (int)(m_ptr->fx + 1); j++) {
-		if ((dir != 5) && floor_grid(i,j) && (cave[i][j].m_idx != 1)) {
-		    mm[k++] = dir;
-		}
-		dir++;
-	    }
-	}
-
-	if (k != 0) {
-	    /* put a random direction first */
-	    dir = randint(k) - 1;
-	    i = mm[0];
-	    mm[0] = mm[dir];
-	    mm[dir] = i;
-	    make_move(m_idx, mm);
-	    /* this can only fail if mm[0] has a rune of protection */
-	}
-
-	/* Hack -- if still in a wall, apply more damage, and dig out */
-	if (cave[m_ptr->fy][m_ptr->fx].fval >= MIN_WALL) {
-
-	    /* XXX XXX XXX The player may not have caused the rocks */
-	    
-	    /* Apply damage, check for death */
-	    if (mon_take_hit(m_idx, damroll(8, 8), FALSE)) {
-		msg_print("You hear a scream muffled by rock!");
-	    }
-	    else {
-		(void)twall((int)m_ptr->fy, (int)m_ptr->fx, 1, 0);
-	    }
-	}
-
-	/* monster movement finished */
-	return;
-    }
-
-    /* Creature is confused?  Chance it becomes un-confused  */
-    else if (m_ptr->confused) {
-
-	mm[0] = randint(9);
-	mm[1] = randint(9);
-	mm[2] = randint(9);
-	mm[3] = randint(9);
-	mm[4] = randint(9);
-
-	/* don't move him if he is not supposed to move! */
-	if (!(r_ptr->cflags1 & MF1_MV_ONLY_ATT)) {
-	    if (m_ptr->ml) l_ptr->r_cflags1 |= MF1_MV_ONLY_ATT;
-	    make_move(m_idx, mm);
-	}
-
-	/* reduce conf, tough monsters can unconf faster -CFT */
-	/* use int so avoid unsigned wraparound -CFT */
-	t = (int)m_ptr->confused;
-	t -= randint(r_list[m_ptr->r_idx].level / 10);
-	if (t < 0) t = 0;
-	m_ptr->confused = (int8u) t;
-
-	move_test = TRUE;
-    }
-
-    /* Creature may cast a spell */
-    else if (r_ptr->spells1 != 0) {
-	mon_cast_spell(m_idx, &move_test);
+    /* Creature may cast a spell if not confused */
+    if (!m_ptr->confused && r_ptr->spells1) {
+	if (mon_cast_spell(m_idx)) return;
     }
 
 
     /* XXX This is weird, was 75% random supposed to mean that 75% of the moves */
     /* were random, or that 75% of the time, the monster moves, always randomly? */
 
-    if (!move_test) {
+
+    /* XXX Indent Me */
+    if (TRUE) {
+
+	/* Attack, but don't move */
+	if (r_ptr->cflags1 & MF1_MV_ONLY_ATT) {
+
+	    /* Only notice immobility when strange */
+	    if (m_ptr->cdis >= 2) {
+		if (m_ptr->ml) l_ptr->r_cflags1 |= MF1_MV_ONLY_ATT;
+	    }
+
+	    /* Confused immobile monster */
+	    else if (m_ptr->confused) {
+		get_moves_random(mm);
+		make_move(m_idx, mm);
+	    }
+
+	    /* Reach out and touch the player */
+	    else {
+		get_moves(m_idx, mm);
+		make_move(m_idx, mm);
+	    }
+	}
+
+	/* Confused -- 100% random */
+	else if (m_ptr->confused) {
+	    get_moves_random(mm);
+	    make_move(m_idx, mm);
+	}
 
 	/* 75% random movement */
-	if ((r_ptr->cflags1 & MF1_MV_75) && (randint(100) < 75)) {
+	else if ((r_ptr->cflags1 & MF1_MV_75) && (randint(100) < 75)) {
 	    if (m_ptr->ml) l_ptr->r_cflags1 |= MF1_MV_75;
-	    mm[0] = randint(9);
-	    mm[1] = randint(9);
-	    mm[2] = randint(9);
-	    mm[3] = randint(9);
-	    mm[4] = randint(9);
+	    get_moves_random(mm);
 	    make_move(m_idx, mm);
 	}
 
 	/* 40% random movement */
 	else if ((r_ptr->cflags1 & MF1_MV_40) && (randint(100) < 40)) {
 	    if (m_ptr->ml) l_ptr->r_cflags1 |= MF1_MV_40;
-	    mm[0] = randint(9);
-	    mm[1] = randint(9);
-	    mm[2] = randint(9);
-	    mm[3] = randint(9);
-	    mm[4] = randint(9);
+	    get_moves_random(mm);
 	    make_move(m_idx, mm);
 	}
 
 	/* 20% random movement */
 	else if ((r_ptr->cflags1 & MF1_MV_20) && (randint(100) < 20)) {
 	    if (m_ptr->ml) l_ptr->r_cflags1 |= MF1_MV_20;
-	    mm[0] = randint(9);
-	    mm[1] = randint(9);
-	    mm[2] = randint(9);
-	    mm[3] = randint(9);
-	    mm[4] = randint(9);
+	    get_moves_random(mm);
 	    make_move(m_idx, mm);
 	}
 
 	/* Normal movement */
 	else if (r_ptr->cflags1 & MF1_MV_ATT_NORM) {
-
 	    if (m_ptr->ml) l_ptr->r_cflags1 |= MF1_MV_ATT_NORM;
 	    get_moves(m_idx, mm);
-
-	    /* For variety, stumble occasionally */
-	    if (randint(200) == 1) {
-		mm[0] = randint(9);
-		mm[1] = randint(9);
-		mm[2] = randint(9);
-		mm[3] = randint(9);
-		mm[4] = randint(9);
-	    }
-
 	    make_move(m_idx, mm);
-	}
-
-	/* Attack, but don't move */
-	else if ((r_ptr->cflags1 & MF1_MV_ONLY_ATT) && (m_ptr->cdis < 2)) {
-	    if (m_ptr->ml) l_ptr->r_cflags1 |= MF1_MV_ONLY_ATT;
-	    get_moves(m_idx, mm);
-	    make_move(m_idx, mm);
-	}
-
-	/* Little hack for Quylthulgs, so that will eventually notice */
-	/* that they have no physical attacks */
-	else if ((r_ptr->cflags1 & CM1_ALL_MV_FLAGS) == 0 && (m_ptr->cdis < 2)) {
-	    if ((m_ptr->ml) && (l_ptr->r_attacks[0] < MAX_UCHAR)) {
-		l_ptr->r_attacks[0]++;
-	    }
 	}
     }
 }
@@ -3187,28 +3435,20 @@ static void mon_move(int m_idx)
 
 
 /*
- * Creatures movement and attacking are done from here	-RAK-
+ * Creatures movement and attacking are done from here
  *
  * Get rid of eaten/breathed on monsters.  Note: Be sure not to process
  * these monsters. This is necessary because we can't delete monsters
  * while scanning the m_list here.  See "hack_m_idx".
  *
- * Poly-morph is extremely dangerous, cause it changes the
- * monster race.  Luckily, it seems to be done by killing
- * the old monster and making a new one.  Usually...
- *
- * Note that this routine may be called for two reasons.  If "attack" is
- * TRUE, then it is actually time for the monsters to move and stuff.  But
- * if "attack" is FALSE, we are just "updating" the monsters, say, after
- * the player casts "detection", to make sure that the monster flags are
- * correctly set, in particular, the monster visibility flag "ml".
- * In this case, we simply branch to "update_monsters()", the proper routine.
- *
  * Notice the hacks to deal with "dead" monsters that could not be deleted
  * at the time.  See "hack_m_idx" for info.  Note that we check this at the
  * beginning to deal with the monster having been killed by another monster
- * appearing later in the list, and at the end to deal with monsters that in
- * some bizarre way manage to commit suicide.
+ * appearing later in the list.  No monster can induce its own death.
+ *
+ * Poly-morph is extremely dangerous, cause it changes the monster race.
+ * Luckily, it seems to be done by killing the old monster and making a new
+ * one.  Usually...  No monster may induce its own polymorphing.
  *
  * Note that this routine ASSUMES that "update_monsters()" has been called
  * every time the player changes his view or lite, and that "update_mon()"
@@ -3219,61 +3459,76 @@ static void mon_move(int m_idx)
  * the "distance" field, but they all do now for consistency.
  *
  * We assume that a monster, during its own "turn", can NEVER:
- *   (1) induce its own "death"
- *   (2) change its own "race"
- *   (3) move in the monster array
+ *   (1) induce its own "death" or "polymorph"
+ *   (2) move in the monster array
  *
- * The last one (#3) is guaranteed by the use of "hack_m_idx" to hold the
- * "current monster index", and by the "queuing" of monster deaths by monsters
- * who appear "earlier" in the array then the "hack_m_idx" monster.
- *
- * Actually, the second one is simpler, since a monster's race NEVER changes,
- * and we handle "polymorph" by creating a "new" monster after removing
- * the old one.  I think.
+ * The latter is guaranteed by the use of "hack_m_idx" to hold the
+ * "current monster index", and by the "queuing" of monster deaths by
+ * monsters who appear "earlier" in the array than the "hack_m_idx" monster.
  *
  * It is very important to process the array "backwards", as "newly created"
- * monsters should not get a turn until the next turn.
+ * monsters should not get a turn until the next round of processing.
  *
  * Note that (eventually) we should "remove" the "street urchin" monster
  * record, and use "monster race zero" as the "no-race" indicator, that is,
  * the indicator of "free space" in the monster list.  But that is of a very
  * low priority for now.
+ *
+ * Note also the new "speed code" which allows "better" distribution of events.
+ *
+ * There is a (hackish) "speed boost" of rand_int(5) energy units applied each
+ * time the monster attempt to move.  This means that fast monsters get more
+ * "boosts".  On average, for a normal monster, this produces one "extra" move
+ * every 50 moves, barely noticable, but also provides some random spread to
+ * the monster clumpings.
+ *
+ * Finally, note that some estimates show that 20 percent of the CPU time
+ * is spent in this function.  So optimizations here are important.
  */
 void process_monsters(void)
 {
-    register int          i, k;
-    register monster_type *m_ptr;
-    register monster_race *r_ptr;
-    monster_lore          *l_ptr;
-    int			  fx, fy;
-    bool                  wake, ignore;
+    int			i, d;
 
+    monster_type	*m_ptr;
+    monster_race	*r_ptr;
+    monster_lore	*l_ptr;
+    
 
     /* Process the monsters (backwards) */
     for (i = m_max - 1; i >= MIN_M_IDX; i--) {
 
-	/* Hack -- This monster is "sacred" */
-	hack_m_idx = i;
+
+	/* Hack -- notice player death or departure */
+	if (death || new_level_flag) break;
+	
+
+	/* Get the i'th monster */
+	m_ptr = &m_list[i];
+
 
 	/* Hack -- Remove dead monsters. */
-	if (m_list[i].hp < 0) {
+	if (m_ptr->hp < 0) {
 
-	    /* We are no longer sacred */
+	    /* Hack -- allow deletion */
 	    hack_m_idx = i - 1;
 
-	    /* Kill us */
+	    /* Kill ourself */
 	    delete_monster_idx(i);
 
 	    /* Continue */
 	    continue;
 	}
 
-	/* Hack -- notice player death  */
-	if (death) continue;
 
+	/* Give this monster some energy */
+	m_ptr->energy += extract_energy(m_ptr->mspeed);
+	
+	/* Not enough energy to move */
+	if (m_ptr->energy < 100) continue;
+	
 
-	/* Get the i'th monster */
-	m_ptr = &m_list[i];
+	/* Hack -- This monster is now "sacred" */
+	hack_m_idx = i;
 
 	/* Get the monster race */
 	r_ptr = &r_list[m_ptr->r_idx];
@@ -3282,101 +3537,148 @@ void process_monsters(void)
 	l_ptr = &l_list[m_ptr->r_idx];
 
 
-	/* Hack -- Update the monster record.  This catches both player movement */
-	/* and wall-breaking, door-opening, or teleportation by other monsters. */
-	/* update_mon(i); <-- not needed if everyone calls it correctly */
+	/* Hack -- small "energy boost" (see "dungeon.c") */
+	m_ptr->energy += rand_int(5);
 
 
-	/* Determine the number of moves this turn */
-	k = movement_rate(i);
+	/* Trade "energy" for "chances" to move */
+	while (m_ptr->energy >= 100) {
 
 
-	/* Get the monster location */
-	fx = m_ptr->fx;
-	fy = m_ptr->fy;
-
-	/* Hack -- monsters trapped in rock get real agitated */
-	if ((cave[fy][fx].fval >= MIN_WALL) &&
-	    (!(r_ptr->cflags1 & MF1_THRO_WALL)) ) {
-
-	    /* Wake up fast */
-	    m_ptr->csleep = 0;
-	    m_ptr->stunned = 0;
-
-	    /* Hack -- move immediately */
-	    mon_move(i);
-
-	    /* Hack -- No normal movement */
-	    k = 0;
-	}
-
-
-	/* Process the moves */
-	while (k-- > 0) {
-
-	    wake = FALSE;
-	    ignore = FALSE;
+	    /* Assume no action necessary */
+	    bool test = FALSE;
 
 	    /* Get the monster location */
-	    fx = m_ptr->fx;
-	    fy = m_ptr->fy;
+	    int fx = m_ptr->fx;
+	    int fy = m_ptr->fy;
 
 
-	    /* Monsters have a "player sensing radius" */
-	    /* Monsters have "very long range vision" */
-	    if ((m_ptr->cdis <= r_ptr->aaf) ||
-		((m_ptr->cdis <= MAX_SIGHT * 2) &&
+	    /* Use up "some" energy */
+	    m_ptr->energy -= 100;
+
+
+	    /* XXX XXX This block is slightly better than it was */
+	    /* but it is probably still a total hack XXX XXX */
+
+
+	    /* Hack -- falling rocks wake monsters */
+	    if (!floor_grid_bold(fy, fx) &&
+	        !(r_ptr->cflags1 & MF1_THRO_WALL)) {
+
+	        /* Wake up */
+	        m_ptr->csleep = 0;
+
+		/* No stun */
+	        m_ptr->stunned = 0;
+
+	        /* Jump out of the way */
+	        test = TRUE;
+	    }
+
+
+	    /* Hack -- If the player can see us, we react */
+	    if (player_has_los(fy, fx)) test = TRUE;
+	    
+	    /* Hack -- non-pre-compute-view needs more tests */
+	    if (!test && !view_pre_compute &&
+	        ((m_ptr->cdis <= MAX_SIGHT + 5) &&
 		 (los(fy, fx, char_row, char_col)))) {
 
-		/* Monsters wake up occasionally */
-		if (m_ptr->csleep > 0) {
+		/* We can see the player */
+		test = TRUE;
+	    }
 
-		    /* Aggravation wakes up everyone (nearby) */
-		    if (p_ptr->aggravate) {
-			m_ptr->csleep = 0;
-		    }
 
-		    /* Hack -- If the player is resting or paralyzed, then only */
-		    /* run this block about one turn in 50, since he is "quiet". */
-		    else if ((p_ptr->rest == 0 && p_ptr->paralysis < 1) ||
-			     (randint(50) == 1)) {
+	    /* Hack -- Monsters can "sense" the player through rock */
+	    if (!test && (m_ptr->cdis <= r_ptr->aaf)) test = TRUE;
 
-			int32u notice;
+
+#ifdef MONSTER_FLOW
+	    /* Hack -- Monsters can "smell" the player from far away */
+	    /* Note that most monsters have "aaf" of "20" or so */
+	    if (!test && flow_by_sound &&
+		(cave[char_row][char_col].when == cave[fy][fx].when) &&
+		(cave[fy][fx].cost < MONSTER_FLOW_DEPTH) &&
+		(cave[fy][fx].cost < r_ptr->aaf)) {
+
+		/* We can "smell" the player */
+		test = TRUE;
+	    }
+#endif
+
+	    /* Hack -- Aggravation wakes up nearby monsters */
+	    if (p_ptr->aggravate) {
+		m_ptr->csleep = 0;
+		if (!test && (m_ptr->cdis < MAX_SIGHT)) test = TRUE;
+	    }
+
+
+	    /* Not allowed to do anything */	    	    
+	    if (!test) continue;
+	    
+
+	    /* Handle "sleep" */
+	    if (m_ptr->csleep > 0) {
+
+		/* Hack -- If the player is resting or paralyzed, then only */
+		/* run this block about one turn in 50, since he is "quiet". */
+		if ((p_ptr->rest == 0 && p_ptr->paralysis < 1) ||
+		    (!rand_int(50))) {
+
+		    u32b notice = rand_int(1024);
 			
-			/* Bizarre computation to see if monster "notices" player */
-			notice = randint(1024);
-			if ((notice * notice * notice) <=
-			    (1L << (29 - p_ptr->stl))) {
+		    /* XXX See if monster "notices" player */
+		    if ((notice * notice * notice) <=
+			(1L << (29 - p_ptr->stl))) {
+
+			/* Hack -- amount of "waking" */
+			d = (100 / m_ptr->cdis);
+
+			/* Still asleep */
+			if (m_ptr->csleep > d) {
 
 			    /* Monster wakes up "a little bit" */
-			    m_ptr->csleep -= (100 / m_ptr->cdis);
-			    if (m_ptr->csleep > 0) {
-				/* Still sleeping */
-				ignore = TRUE;
+			    m_ptr->csleep -= d;
+
+			    /* Notice the "not waking up" */
+			    if (m_ptr->ml && (l_ptr->r_ignore < MAX_UCHAR)) {
+				l_ptr->r_ignore++;
 			    }
-			    else {
-				/* force it to be exactly zero */
-				m_ptr->csleep = 0;
-				wake = TRUE;
+			}
+
+			/* Just woke up */
+			else {
+
+			    /* Reset sleep counter */
+			    m_ptr->csleep = 0;
+
+			    /* Notice the "waking up" */
+			    if (m_ptr->ml && (l_ptr->r_wake < MAX_UCHAR)) {
+				l_ptr->r_wake++;
 			    }
 			}
 		    }
 		}
 
-		/* Process stunned-ness */
-		if (m_ptr->stunned > 0) {
+		/* Still sleeping */
+		if (m_ptr->csleep) continue;
+	    }
 
-		    /* Recover a little bit */
-		    m_ptr->stunned--;
 
-		    /* Make a "saving throw" against stun */
-		    /* Level 70 (or above) monsters recover instantly */
-		    if (randint(5000) < r_ptr->level * r_ptr->level) {
-			m_ptr->stunned = 0;
-		    }
+	    /* Handle "stun" */
+	    if (m_ptr->stunned > 0) {
 
-		    /* Recover from stun */
-		    if (m_ptr->stunned == 0) {
+		/* Recover a little bit */
+		m_ptr->stunned--;
+
+		/* Make a "saving throw" against stun */
+		if (rand_int(5000) <= r_ptr->level * r_ptr->level) {
+		    m_ptr->stunned = 0;
+		}
+
+		/* Hack -- Recover from stun */
+		if (!m_ptr->stunned) {
+		    if (m_ptr->ml) {
 			char m_name[80];
 			monster_desc(m_name, m_ptr, 0);
 			message(m_name, 0x03);
@@ -3384,337 +3686,77 @@ void process_monsters(void)
 		    }
 		}
 
-		/* Not sleeping, not stunned, so "move" (and update) */
-		if ((m_ptr->csleep == 0) && (m_ptr->stunned == 0)) mon_move(i);
+		/* Still stunned */
+		if (m_ptr->stunned) continue;
 	    }
 
 
-	    /* Count "waking" and "ignoring" by visible monsters */
-	    if (m_ptr->ml) {
-		if (wake) {
-		    if (l_ptr->r_wake < MAX_UCHAR) l_ptr->r_wake++;
+	    /* Handle "fear" */
+	    if (m_ptr->monfear) {
+
+		/* Amount of "boldness" */
+		d = randint(r_list[m_ptr->r_idx].level / 10);
+
+		/* Still afraid */
+		if (m_ptr->monfear > d) {
+
+		    /* Reduce the fear */
+		    m_ptr->monfear -= d;
 		}
-		else if (ignore) {
-		    if (l_ptr->r_ignore < MAX_UCHAR) l_ptr->r_ignore++;
+		
+		/* Recover from fear, take note if seen */
+		else {
+
+		    /* No longer afraid */
+		    m_ptr->monfear = 0;
+		
+		    /* Visual note */
+		    if (m_ptr->ml) {
+			char m_name[80];
+			char m_poss[8];
+			monster_desc(m_name, m_ptr, 0);
+			monster_desc(m_poss, m_ptr, 0x22);
+			message(m_name, 0x03);
+			message(" recovers ", 0x02);
+			message(m_poss, 0x02);
+			message(" courage.", 0);
+		    }
 		}
 	    }
+	    
+
+	    /* Handle confusion */
+	    if (m_ptr->confused > 0) {
+
+		/* Amount of "boldness" */
+		d = randint(r_list[m_ptr->r_idx].level / 10);
+
+		/* Still confused */
+		if (m_ptr->confused > d) {
+
+		    /* Reduce the confusion */
+		    m_ptr->confused -= d;
+		}
+		
+		/* Recovered */
+		else {
+
+		    /* No longer confused */
+		    m_ptr->confused = 0;
+		}
+	    }
+	    
+	    
+	    /* Okay, let the monster move */
+	    mon_move(i);
 	}
-
-
-	/* Hack -- This monster is no longer sacred */
-	hack_m_idx = i - 1;
-
-
-	/* XXX What monster gets killed during its own turn? */
-	/* I suppose it could "attack" itself in some bizarre way */
-
-	/* Hack -- Remove dead monsters. */
-	if (m_list[i].hp < 0) delete_monster_idx(i);
     }
 
 
     /* Hack -- nobody is sacred now */
     hack_m_idx = -1;
-
-
-    /* Flush the screen */
-    Term_fresh();
 }
 
-
-
-/*
- * Apply an "earthquake" to the player's location
- * Take the "cause" of the quake as a paramater
- *
- * This function ALWAYS "re-updates" the view/lite/monsters
- */
-static void quake_player(cptr what)
-{
-    register int        x, y;
-    register int	cx, cy;
-    register cave_type *c_ptr;
-    int                 tmp;
-    int			damage = 0;
-    int			sy = 0, sx = 0, safe = 0;
-
-
-    /* Get the player location */
-    cx = char_row;
-    cy = char_col;
-
-    /* See if we can find a "safe" location to "move" to */
-    for (y = cy - 1; !safe && y <= cy + 1; y++) {
-	for (x = cx - 1; !safe && x <= cx + 1; x++) {
-	    if ((y == cy) && (x == cx)) continue;
-	    if (floor_grid(y, x) && (!cave[y][x].m_idx)) {
-		sy = y, sx = x, safe = TRUE;
-	    }
-	}
-    }
-
-    /* Random message */
-    switch (randint(3)) {
-      case 1:
-	msg_print("The cave ceiling collapses!");
-	break;
-      case 2:
-	msg_print("The cave floor twists in an unnatural way!");
-	break;
-      default:
-	msg_print("The cave quakes!  You are pummeled with debris!");
-	break;
-    }
-
-
-    /* Hurt the player a lot (is this "fair"?) */
-    if (!safe) {
-	msg_print("You are trapped, crushed and cannot move!");
-	damage = 300;
-    }
-
-    /* Destroy the grid, and push the player to safety */
-    else {
-
-	/* Calculate results */
-	switch (randint(3)) {
-	  case 1:
-	    msg_print("You nimbly dodge the blast!");
-	    damage = 0;
-	    break;
-	  case 2:
-	    msg_print("You are bashed by rubble!");
-	    damage = damroll(10, 4);
-	    stun_player(randint(50));
-	    break;
-	  case 3:
-	    msg_print("You are crushed between the floor and ceiling!");
-	    damage = damroll(10, 4);
-	    stun_player(randint(50));
-	    break;
-	}
-
-
-	/* Destroy the player's old grid */
-	c_ptr = &cave[cy][cx];
-
-	/* Destroy location (unless artifact or stairs) */
-	if (valid_grid(cy, cx)) {
-	    tmp = randint(10);
-	    if (tmp < 6) c_ptr->fval = QUARTZ_WALL;
-	    else if (tmp < 9) c_ptr->fval = MAGMA_WALL;
-	    else c_ptr->fval = GRANITE_WALL;
-	    delete_object(cy, cx);
-	    c_ptr->info &= ~CAVE_PL;
-	    c_ptr->info &= ~CAVE_FM;
-	    lite_spot(cy, cx);
-	}
-
-
-	/* Move the player to the safe location */
-	move_rec(char_row, char_col, sy, sx);
-	
-	/* Check for new panel (redraw map) */
-	(void)get_panel(char_row, char_col, FALSE);
-
-	/* Update the view */
-	update_view();
-
-	/* Update the lite */
-	update_lite();
-
-	/* Update the monsters */
-	update_monsters();
-
-	/* Check the view */
-	check_view();
-    }
-
-    
-    
-    /* Take some damage */
-    if (damage) take_hit(damage, what);
-}
-
-
-
-
-/*
- * This is a fun one.  In a given block, pick some walls and
- * turn them into open spots.  Pick some open spots and turn
- * them into walls.  An "Earthquake" effect.	       -LVB-
- *
- * Note below that we prevent unique monster from death by other monsters.
- * It causes trouble (monster not marked as dead, quest monsters don't
- * satisfy quest, etc).  So, we let then live, but extremely wimpy.
- * This isn't great, because monster might heal itself before player's
- * next swing... -CFT
- *
- * Note that since the entire outer edge of the maze is solid rocks,
- * we can skip "in_bounds()" checks of distance "one" from any monster.
- *
- * XXX Replace this with a "radius 8" ball attack on the monster itself.
- */
-static void shatter_quake(int cy, int cx)
-{
-    register int		i, j;
-    register cave_type		*c_ptr;
-    register monster_type	*m_ptr;
-    register monster_race	*r_ptr;
-    int				kill, y, x;
-    int				tmp, damage = 0;
-    char			m_name[80];
-
-
-    /* Check around the epicenter */
-    for (i = cy - 8; i <= cy + 8; i++) {
-	for (j = cx - 8; j <= cx + 8; j++) {
-
-	    /* Skip the epicenter */
-	    if ((i == cy) && (j == cx)) continue;
-
-	    /* Skip illegal grids */
-	    if (!in_bounds(i, j)) continue;
-
-	    /* Sometimes, shatter that grid */
-	    if (randint(8) == 1) {
-
-		c_ptr = &cave[i][j];
-
-		/* See if the player is here */
-
-		/* Treat the player grid specially */
-		if ((i == char_row) && (j == char_col)) {
-
-		    /* Quake the player */
-		    quake_player("an earthquake");
-
-		    /* Continue */
-		    continue;
-		}
-
-
-		/* Embed a (non-player) monster */
-		if (c_ptr->m_idx > 1) {
-
-		    m_ptr = &m_list[c_ptr->m_idx];
-		    r_ptr = &r_list[m_ptr->r_idx];
-
-		    if (!(r_ptr->cflags1 & MF1_THRO_WALL) &&
-			!(r_ptr->cflags2 & MF2_BREAK_WALL)) {
-
-			/* Monster can not move to escape the wall */
-			if ((movement_rate(c_ptr->m_idx) == 0) ||
-			    (r_ptr->cflags1 & MF1_MV_ONLY_ATT)) {
-			    kill = TRUE;
-			}
-
-			/* The monster MAY be able to dodge the walls */
-			else {
-
-			    /* Assume surrounded by rocks */
-			    kill = TRUE;
-
-			    /* Look for non-rock space (dodge later) */
-			    for (y = i - 1; y <= i + 1; y++) {
-				for (x = j - 1; x <= j + 1; x++) {
-				    if (y == i && x == j) continue;
-				    if (floor_grid(y, x)) kill = FALSE;
-				}
-			    }
-			}
-
-			/* Scream in pain */
-			monster_desc(m_name, m_ptr, 0);
-			message(m_name, 0x03);
-			message(" wails out in pain!", 0);
-
-			/* Take damage from the quake */
-			damage = damroll(4, 8);
-
-			/* Monster is certainly awake */
-			m_ptr->csleep = 0;
-
-			/* This is NOT player induced damage */
-			m_ptr->hp -= damage;
-
-			/* If totally embedded, die instantly */
-			if (kill) m_ptr->hp = -1;
-
-			/* Unique monsters will not quite die */
-			if ((r_ptr->cflags2 & MF2_UNIQUE) && (m_ptr->hp < 0)) {
-			    m_ptr->hp = 0;
-			}
-
-			/* Handle "dead monster" */
-			if (m_ptr->hp < 0) {
-
-			    message(m_name, 0x03);
-			    message(" is embedded in the rock.", 0);
-
-			    /* Average the monster and dungeon levels */
-			    object_level = (dun_level + r_ptr->level) >> 1;
-
-			    /* Kill the monster */
-			    monster_death(m_ptr, FALSE, m_ptr->ml);
-
-			    /* Delete it -- see "hack_m_idx" */
-			    delete_monster_idx(c_ptr->m_idx);
-			}
-		    }
-		}
-
-		/* Do not hurt artifacts or stairs */
-		if (valid_grid(i, j)) {
-
-		    /* Delete any "walls" or "rubble" or "doors" */
-		    if (!floor_grid(i, j)) {
-			c_ptr->fval = CORR_FLOOR;
-		    }
-
-		    /* Floor grids turn into rubble.  */
-		    else {
-			tmp = randint(10);
-			if (tmp < 6) c_ptr->fval = QUARTZ_WALL;
-			else if (tmp < 9) c_ptr->fval = MAGMA_WALL;
-			else c_ptr->fval = GRANITE_WALL;
-		    }
-
-		    /* Delete any object that is still there */
-		    delete_object(i, j);
-
-		    /* Hack -- not lit, not known */
-		    c_ptr->info &= ~CAVE_PL;
-		    c_ptr->info &= ~CAVE_FM;
-
-		    /* Erase the grid */
-		    lite_spot(i, j);
-		}
-	    }
-	}
-    }
-    
-    /* Hack -- always update the view/lite/etc */
-    update_view();
-    update_lite();
-    update_monsters();
-}
-
-
-
-/*
- * Hack -- Drop a "wall" on the player, who must be at the given location.
- *
- * XXX XXX Perhaps replace this with a "beam" of rock breathing.
- */
-static void br_wall(int cy, int cx)
-{
-    /* Hack -- Verify location */
-    if (cx != char_row || cy != char_col) return;
-
-    /* Take some damage */
-    quake_player("a breathed wall");
-}
 
 
 

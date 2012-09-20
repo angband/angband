@@ -13,6 +13,14 @@
 #include "angband.h"
 
 
+/*
+ * Hack -- make sure we have a good "ANSI" definition for "CTRL()"
+ */
+#undef CTRL
+#define CTRL(C) ((C)&037)
+
+
+
 
 /*
  * Prepare the ANGBAND_xxx filepath "constants".
@@ -44,11 +52,12 @@ cptr ANGBAND_LOG = NULL;		/* Log file of some form */
 
 cptr ANGBAND_R_HELP = NULL;		/* Roguelike command help */
 cptr ANGBAND_O_HELP = NULL;		/* Original command help */
-cptr ANGBAND_RWIZ_HELP = NULL;		/* Roguelike Wiz-cmd help */
-cptr ANGBAND_OWIZ_HELP = NULL;		/* Original Wiz-cmd help */
+cptr ANGBAND_W_HELP = NULL;		/* Wizard command help */
 
-cptr ANGBAND_K_LIST = NULL;		/* Ascii item kind file */
 cptr ANGBAND_R_LIST = NULL;		/* Ascii monster race file */
+cptr ANGBAND_K_LIST = NULL;		/* Ascii item kind file */
+cptr ANGBAND_V_LIST = NULL;		/* Ascii artifact file */
+cptr ANGBAND_A_LIST = NULL;		/* Ascii attr/char extra file */
 
 
 
@@ -83,6 +92,20 @@ void get_file_paths()
 
 #else
 
+# ifdef _Windows
+
+    /* Hack -- The Windows system also uses a special prefix */
+    strcpy(path, get_lib_path());
+
+# else
+
+#  ifdef AMIGA
+
+    /* The Amiga uses a special method */
+    strcpy(path, "Angband:");
+
+#  else
+
     /* Get the environment variable */
     angband_path = getenv("ANGBAND_PATH");
 
@@ -91,6 +114,10 @@ void get_file_paths()
 
     /* Be sure not to duplicate any "Path separator" */
     if (!suffix(path,PATH_SEP)) strcat(path, PATH_SEP);
+
+#  endif
+
+# endif
 
 #endif
 
@@ -123,14 +150,12 @@ void get_file_paths()
     ANGBAND_VERSION = string_make(path);
 
     /* The command help files */
-    strcpy(tail, "rstdcmds.hlp");
+    strcpy(tail, "cmds_r.hlp");
     ANGBAND_R_HELP = string_make(path);
-    strcpy(tail, "ostdcmds.hlp");
+    strcpy(tail, "cmds_o.hlp");
     ANGBAND_O_HELP = string_make(path);
-    strcpy(tail, "rwizcmds.hlp");
-    ANGBAND_RWIZ_HELP = string_make(path);
-    strcpy(tail, "owizcmds.hlp");
-    ANGBAND_OWIZ_HELP = string_make(path);
+    strcpy(tail, "cmds_w.hlp");
+    ANGBAND_W_HELP = string_make(path);
 
     /* Some parsable text files */
     strcpy(tail, "wizards.txt");
@@ -141,16 +166,46 @@ void get_file_paths()
     ANGBAND_LOAD = string_make(path);
 
     /* Parsable Item/Monster template files */
-    strcpy(tail, "k_list.txt");
-    ANGBAND_K_LIST = string_make(path);
     strcpy(tail, "r_list.txt");
     ANGBAND_R_LIST = string_make(path);
+    strcpy(tail, "k_list.txt");
+    ANGBAND_K_LIST = string_make(path);
+    strcpy(tail, "v_list.txt");
+    ANGBAND_V_LIST = string_make(path);
+
+    /* Default "extra info" file */
+    strcpy(tail, "a_list.txt");
+    ANGBAND_A_LIST = string_make(path);
 }
 
 
 
+/*
+ * Hack -- let the various systems "breathe"
+ */
+static void gasp()
+{
+
+#if defined(MACINTOSH) || defined(_Windows)
+
+    /* Don't hog the processor */
+    Term_xtra(TERM_XTRA_CHECK, -999);
+
+#endif
+
+}
 
 
+
+/*
+ * Hack -- return the "buffer length" of a string
+ * This is "zero" for NULL and "strlen(str)+1" otherwise.
+ */
+static uint string_size(cptr str)
+{
+    if (!str) return (0);
+    return (strlen(str) + 1);
+}
 
 
 /*
@@ -164,7 +219,7 @@ void get_file_paths()
  */
 static int grab_one_flag(monster_race *r_ptr, cptr what)
 {
-    int32u flags1 = 0L, flags2 = 0L;
+    u32b flags1 = 0L, flags2 = 0L;
 
     if (!what) what = what;
 
@@ -223,7 +278,7 @@ static int grab_one_flag(monster_race *r_ptr, cptr what)
     else if (streq(what,"MALE"))	flags1 |= MF1_MALE;
     else if (streq(what,"FEMALE"))	flags1 |= MF1_FEMALE;
     else if (streq(what,"PLURAL"))	flags1 |= MF1_PLURAL;
-    
+
     else if (streq(what,"CHAR_CLEAR"))	flags1 |= MF1_CHAR_CLEAR;
     else if (streq(what,"CHAR_MULTI"))	flags1 |= MF1_CHAR_MULTI;
     else if (streq(what,"ATTR_CLEAR"))	flags1 |= MF1_ATTR_CLEAR;
@@ -243,7 +298,7 @@ static int grab_one_flag(monster_race *r_ptr, cptr what)
  */
 static int grab_one_spell(monster_race *r_ptr, cptr what)
 {
-    int32u flags1 = 0L, flags2 = 0L, flags3 = 0L;
+    u32b flags1 = 0L, flags2 = 0L, flags3 = 0L;
 
     int chance;
 
@@ -251,9 +306,9 @@ static int grab_one_spell(monster_race *r_ptr, cptr what)
 
     /* Hack -- store the "frequency" in the spell flags */
     else if (1 == sscanf(what, "1_IN_%d", &chance)) {
-    
+
 	/* Hack -- frequency stored as "flags" */
-	flags1 |= (chance & CS1_FREQ);
+	flags1 |= ((u32b)chance & CS1_FREQ);
     }
 
     else if (streq(what,"HEAL"))		flags2 |= MS2_HEAL;
@@ -359,23 +414,23 @@ static int color_char_to_attr(char c)
 {
     switch (c) {
 
-	case 'd': return (COLOR_BLACK);
-	case 'w': return (COLOR_WHITE);
-	case 's': return (COLOR_GRAY);
-	case 'o': return (COLOR_ORANGE);
-	case 'r': return (COLOR_RED);
-	case 'g': return (COLOR_GREEN);
-	case 'b': return (COLOR_BLUE);
-	case 'u': return (COLOR_BROWN);
+	case 'd': return (TERM_BLACK);
+	case 'w': return (TERM_WHITE);
+	case 's': return (TERM_GRAY);
+	case 'o': return (TERM_ORANGE);
+	case 'r': return (TERM_RED);
+	case 'g': return (TERM_GREEN);
+	case 'b': return (TERM_BLUE);
+	case 'u': return (TERM_UMBER);
 
-	case 'D': return (COLOR_D_GRAY);
-	case 'W': return (COLOR_L_GRAY);
-	case 'v': return (COLOR_VIOLET);
-	case 'y': return (COLOR_YELLOW);
-	case 'R': return (COLOR_L_RED);
-	case 'G': return (COLOR_L_GREEN);
-	case 'B': return (COLOR_L_BLUE);
-	case 'U': return (COLOR_L_BROWN);
+	case 'D': return (TERM_D_GRAY);
+	case 'W': return (TERM_L_GRAY);
+	case 'v': return (TERM_VIOLET);
+	case 'y': return (TERM_YELLOW);
+	case 'R': return (TERM_L_RED);
+	case 'G': return (TERM_L_GREEN);
+	case 'B': return (TERM_L_BLUE);
+	case 'U': return (TERM_L_UMBER);
     }
 
     return (-1);
@@ -416,6 +471,7 @@ static errr init_r_list_txt(void)
     /* Failure */
     if (!fp) return (-1);
 
+    
     /* Load the monster descriptions from the file */
     while (1) {
 
@@ -439,6 +495,9 @@ static errr init_r_list_txt(void)
 
 	    /* Now there is no current r_ptr */
 	    r_ptr = NULL;
+
+	    /* Don't hog the processor */
+	    gasp();
 
 	    /* Next... */
 	    continue;
@@ -507,9 +566,9 @@ static errr init_r_list_txt(void)
 	    if (tmp < 0) return (12);
 	    r_ptr->r_attr = tmp;
 
-	    /* Save the values */
+	    /* Save the values (XXX note that "speed" is encoded) */
 	    r_ptr->r_char = chr;
-	    r_ptr->speed = 10 + spd;	/* Hack */
+	    r_ptr->speed = 10 * spd + 100;
 	    r_ptr->hd[0] = hp1;
 	    r_ptr->hd[1] = hp2;
 	    r_ptr->aaf = aaf;
@@ -614,31 +673,46 @@ static errr init_r_list_txt(void)
 }
 
 
-/*
- * Attempt to "dump" a "quick-load binary image" for "r_list"
- */
-static errr dump_r_list_raw()
-{
+
 
 #ifdef BINARY_ARRAY_IMAGES
 
+/*
+ * Attempt to "dump" a "quick-load binary image" for "r_list"
+ *
+ * But we cannot actually "read()" the whole chunk at once because
+ * the piece of shit Macintosh "read()" function expects to read()
+ * only 64K at a time.  Brain damaged personal computers piss me off.
+ * We might even be able to squeeze by if we forbid expansion of the
+ * records, but that is too heavy a price to pay...
+ *
+ * Thus: three separate files:
+ *   r_list.raw = (Intro) + (N records) 
+ *   r_name.raw = (N name sizes) + (N names)
+ *   r_desc.raw = (N desc sizes) + (N descs)
+ *
+ * The "r_name" and "r_desc" files start with an array of "lengths"
+ * (including terminators), where "zero" means "no string" (NULL).
+ * Then the files contain each non-NULL string in order.
+ */
+static errr dump_r_list_raw()
+{
     int i, fd;
 
-    /* One race at a time */
-    monster_race *r_ptr;
-
-    /* Do not save the name or desc fields */
-    uint size = sizeof(monster_race) - 2 * sizeof(cptr);
-    
     int mode = 0666;
-    
-    int16u tmp2;
 
     char tmp[1024];
-    char buf[2048];
 
-    /* Use the "fast" binary version whenever possible */
-    sprintf(tmp, "%s%s%s", ANGBAND_DIR_DATA, PATH_SEP, "r_list.raw");
+
+    /* Hack -- sizes */
+    uint len[MAX_R_IDX-1];
+    
+    /* Size of the "lengths" array */
+    uint slen = sizeof(len);
+
+    /* Size of one normal record */
+    uint size = sizeof(monster_race);
+
 
 #ifdef SET_UID
     mode = 0644;
@@ -648,71 +722,81 @@ static errr dump_r_list_raw()
     _ftype = 'DATA';
 #endif
 
-    /* Create a new file */
+
+    /* File "r_list.raw" -- raw records */
+    sprintf(tmp, "%s%s%s", ANGBAND_DIR_DATA, PATH_SEP, "r_list.raw");
     fd = my_topen(tmp, O_RDWR | O_CREAT | O_BINARY, mode);
-
-#ifdef MACINTOSH
-    _ftype = 'SAVE';
-#endif
-
-    /* Failure to make */
     if (fd < 0) return (-1);
 
-
     /* Dump the version info */
-    buf[0] = CUR_VERSION_MAJ;
-    buf[1] = CUR_VERSION_MIN; 
-    buf[2] = CUR_PATCH_LEVEL;
-    buf[3] = 0; /* Platform */
+    tmp[0] = CUR_VERSION_MAJ;
+    tmp[1] = CUR_VERSION_MIN; 
+    tmp[2] = CUR_PATCH_LEVEL;
+    tmp[3] = size;
 
-    /* Dump it, ignore errors */
-    write(fd, buf, 4);
+    /* Dump it */
+    write(fd, tmp, 4);
 
-           
     /* Attempt to dump the (normal) monster races */
     for (i = 0; i < MAX_R_IDX-1; i++) {
-
-	/* Access the monster race */
-	r_ptr = &r_list[i];
-
-	/* Load the main record */
-	if (size != write(fd, (char*)(r_ptr), size)) break;
-
-	/* Dump the monster name (if any) */
-	if (r_ptr->name) {
-	    strcpy(buf, r_ptr->name);
-	    tmp2 = strlen(buf) + 1;
-	    if (2 != write(fd, (char*)(&tmp2), 2)) break;
-	    if (tmp2 != write(fd, buf, tmp2)) break;
-	}
-	else {
-	    tmp2 = 0;
-	    if (2 != write(fd, (char*)(&tmp2), 2)) break;
-	}
-
-	/* Dump the monster desc (if any) */
-	if (r_ptr->desc) {
-		strcpy(buf, r_ptr->desc);
-		tmp2 = strlen(buf) + 1;
-		if (2 != write(fd, (char*)(&tmp2), 2)) break;
-		if (tmp2 != write(fd, buf, tmp2)) break;
-	}
-	else {
-	    tmp2 = 0;
-	    if (2 != write(fd, (char*)(&tmp2), 2)) break;
-	}
+	if (size != write(fd, (char*)(&r_list[i]), size)) break;
     }
-    
-    /* Close it */
+
+    /* Close and verify */
+    gasp();
     close(fd);
+    if (i < MAX_R_IDX-1) return (1);
 
-    /* Failure */
-    if (i < MAX_R_IDX-1) {
-	message("Warning: failure writing 'r_list.raw'", 0);
-	message(NULL, 0);
+    
+    /* File "r_name.raw" -- race names */
+    sprintf(tmp, "%s%s%s", ANGBAND_DIR_DATA, PATH_SEP, "r_name.raw");
+    fd = my_topen(tmp, O_RDWR | O_CREAT | O_BINARY, mode);
+    if (fd < 0) return (-1);
+
+    /* Prepare the "lengths" array */
+    for (i = 0; i < MAX_R_IDX-1; i++) {
+	len[i] = string_size(r_list[i].name);
     }
     
-#endif
+    /* Dump the array */
+    write(fd, (char*)(len), slen);
+
+    /* Dump the names */
+    for (i = 0; i < MAX_R_IDX-1; i++) {
+	char *str = (char*)(r_list[i].name);
+	if (len[i] && (len[i] != write(fd, str, len[i]))) break;
+    }
+    
+    /* Close and verify */
+    gasp();
+    close(fd);
+    if (i < MAX_R_IDX-1) return (1);
+
+    
+    /* File "r_desc.raw" -- race names */
+    sprintf(tmp, "%s%s%s", ANGBAND_DIR_DATA, PATH_SEP, "r_desc.raw");
+    fd = my_topen(tmp, O_RDWR | O_CREAT | O_BINARY, mode);
+    if (fd < 0) return (-1);
+    
+    /* Prepare the "lengths" array */
+    for (i = 0; i < MAX_R_IDX-1; i++) {
+	len[i] = string_size(r_list[i].desc);
+    }
+    
+    /* Dump the array */
+    write(fd, (char*)(len), slen);
+
+    /* Dump the names */
+    for (i = 0; i < MAX_R_IDX-1; i++) {
+	char *str = (char*)(r_list[i].desc);
+	if (len[i] && (len[i] != write(fd, str, len[i]))) break;
+    }
+    
+    /* Close and verify */
+    gasp();
+    close(fd);
+    if (i < MAX_R_IDX-1) return (1);
+
 
     /* Success */
     return (0);
@@ -720,33 +804,27 @@ static errr dump_r_list_raw()
 
 
 
- 
 /*
  * Attempt to "quick-load" a binary image for "r_list"
  */
 static errr init_r_list_raw()
 {
-
-#ifdef BINARY_ARRAY_IMAGES
-
     int i, fd;
 
-    /* One race at a time */
-    monster_race *r_ptr;
-
-    /* Do not save the name or desc fields */
-    uint size = sizeof(monster_race) - 2 * sizeof(cptr);
-    
     int mode = 0666;
-    
-    int16u tmp2;
 
     char tmp[1024];
-    char buf[2048];
 
 
-    /* Use the "fast" binary version whenever possible */
-    sprintf(tmp, "%s%s%s", ANGBAND_DIR_DATA, PATH_SEP, "r_list.raw");
+    /* Hack -- sizes */
+    uint len[MAX_R_IDX-1];
+    
+    /* Size of the "lengths" array */
+    uint slen = sizeof(len);
+
+    /* Size of one normal record */
+    uint size = sizeof(monster_race);
+
 
 #ifdef SET_UID
     mode = 0644;
@@ -756,94 +834,109 @@ static errr init_r_list_raw()
     _ftype = 'DATA';
 #endif
 
-    /* Open a read-only copy */
+
+    /* File "r_list.raw" -- raw records */
+    sprintf(tmp, "%s%s%s", ANGBAND_DIR_DATA, PATH_SEP, "r_list.raw");
     fd = my_topen(tmp, O_RDONLY | O_BINARY, mode);
-
-#ifdef MACINTOSH
-    _ftype = 'SAVE';
-#endif
-
-    /* Failure to open */
     if (fd < 0) return (-1);
 
-    /* Read the version info */
-    if ((4 != read(fd, buf, 4)) ||
-	(buf[0] != CUR_VERSION_MAJ) ||
-	(buf[1] != CUR_VERSION_MIN) ||
-	(buf[2] != CUR_PATCH_LEVEL) ||
-	(buf[0] != 0)) {
+    /* Read and Verify the version info */    
+    if ((4 != read(fd, tmp, 4)) ||
+	(tmp[0] != CUR_VERSION_MAJ) ||
+	(tmp[1] != CUR_VERSION_MIN) ||
+	(tmp[2] != CUR_PATCH_LEVEL) ||
+	(tmp[3] != size)) {
 
-	/* Close and Fail (cleanly) */
+	/* Hack -- message */
+	msg_print("Ignoring old 'm_list.raw'...");
+	msg_print(NULL);
+	
+	/* Close */
 	close(fd);
+
+	/* Fail */
 	return (-1);
     }
-        
+
     /* Attempt to read the (normal) monster races */
     for (i = 0; i < MAX_R_IDX-1; i++) {
-
-	/* Access the monster race */
-	r_ptr = &r_list[i];
-
-	/* Load the main record */
-	if (size != read(fd, (char*)(r_ptr), size)) break;
-
-	/* Hack -- Load the monster name */
-	r_ptr->name = NULL;
-	if (2 != read(fd, (char*)(&tmp2), 2)) break;
-	if (tmp2) {
-	    if (tmp2 != read(fd, buf, tmp2)) break;
-	    r_ptr->name = string_make(buf);
-	}
-
-	/* Hack -- Load the monster desc */
-	r_ptr->desc = NULL;
-	if (2 != read(fd, (char*)(&tmp2), 2)) break;
-	if (tmp2) {
-	    if (tmp2 != read(fd, buf, tmp2)) break;
-	    r_ptr->desc = string_make(buf);
-	}
+	if (size != read(fd, (char*)(&r_list[i]), size)) break;
+	r_list[i].name = NULL;
+	r_list[i].desc = NULL;
     }
-
-    /* Close the file */
+    
+    /* Close and verify */
+    gasp();
     close(fd);
+    if (i < MAX_R_IDX-1) return (1);
 
-    /* Aborted load */
-    if (i < MAX_R_IDX-1) {
-	message("Major error loading 'r_list.raw'", 0);
-	message("Try removing it from the 'data' directory", 0);
-	message(NULL, 0);
-	quit("cannot load 'r_list.raw'");
+
+    /* File "r_name.raw" -- race names */
+    sprintf(tmp, "%s%s%s", ANGBAND_DIR_DATA, PATH_SEP, "r_name.raw");
+    fd = my_topen(tmp, O_RDONLY | O_BINARY, mode);
+    if (fd < 0) return (-1);
+
+    /* Read the size array */
+    if (slen != read(fd, (char*)(len), slen)) return (1);
+
+    /* Attempt to read the (normal) monster race names */
+    for (i = 0; i < MAX_R_IDX-1; i++) {
+	if (len[i] != read(fd, tmp, len[i])) break;
+	if (len[i]) r_list[i].name = string_make(tmp);
+    }
+    
+    /* Close and verify */
+    gasp();
+    close(fd);
+    if (i < MAX_R_IDX-1) return (1);
+
+
+    /* File "r_desc.raw" -- descriptions */
+    sprintf(tmp, "%s%s%s", ANGBAND_DIR_DATA, PATH_SEP, "r_desc.raw");
+    fd = my_topen(tmp, O_RDONLY | O_BINARY, mode);
+    if (fd < 0) return (-1);
+
+    /* Read the size array */
+    if (slen != read(fd, (char*)(len), slen)) return (1);
+
+    /* Attempt to read the (normal) monster race descs */
+    for (i = 0; i < MAX_R_IDX-1; i++) {
+	if (len[i] != read(fd, tmp, len[i])) break;
+	if (len[i]) r_list[i].desc = string_make(tmp);
     }
 
-#endif
+    /* Close and verify */
+    gasp();
+    close(fd);
+    if (i < MAX_R_IDX-1) return (1);
+
 
     /* Success */
     return (0);
 }
 
+#endif
+
 
 /*
- * Note that r_list now includes a description
- * Note that "r_list" starts out totally cleared
+ * Initialize the "r_list" array by parsing various files.
  */
 static void init_r_list()
 {
     errr err;
 
-    /* Ghost */
-    monster_race *r_ptr;
-
-    char tmp[1024];
-
 
     /* XXX Hack -- prepare "ghost" race */
+    monster_race *r_ptr = &r_list[MAX_R_IDX-1];
 
-    /* Prepare the "player ghost" */
-    r_ptr = &r_list[MAX_R_IDX-1];
 
     /* Hack -- Give the ghost monster a "fake" name */
     r_ptr->name = ghost_name;
 
+    /* Hack -- set the char/attr info */
+    r_ptr->r_attr = TERM_WHITE;
+    r_ptr->r_char = 'G';
+    
     /* Hack -- Prepare a fake ghost name */
     strcpy(ghost_name, "Someone's Ghost");
 
@@ -851,26 +944,44 @@ static void init_r_list()
     r_ptr->cflags2 |= MF2_UNIQUE;
 
 
+#ifdef BINARY_ARRAY_IMAGES
+
     /* Try to load a "binary image" */
     err = init_r_list_raw();
 
     /* Otherwise try the text version */
-    if (err) err = init_r_list_txt();
+    if (!err) return;
+    
+#endif
+
+    /* Try the text version */
+    err = init_r_list_txt();
 
     /* Still no luck? Fail! */
     if (err) {
-	sprintf(tmp, "Fatal error #%d parsing 'r_list.txt', record %d",
-		err, error_r_idx);
-	message(tmp, 0);
-	message(NULL,0);
+    
+	/* Warning */
+	msg_print(format("Fatal error #%d parsing 'r_list.txt', record %d",
+			 err, error_r_idx));
+	msg_print(NULL);
+
+	/* Quit */
 	quit("cannot load 'r_list.txt'");
     }
 
+#ifdef BINARY_ARRAY_IMAGES
+
     /* Attempt to dump a "quick-load" version */
     err = dump_r_list_raw();
+
+    /* Warn on errors */
     if (err) {
-	message("Warning: unable to create 'r_list.raw'", 0);
+	msg_print("Warning: unable to create binary monster race images!");
+	msg_print(NULL);
     }
+
+#endif
+
 }
 
 
@@ -883,7 +994,7 @@ static void init_r_list()
  */
 static bool grab_one_kind_flag(inven_kind *k_ptr, cptr what)
 {
-    int32u flags1 = 0L, flags2 = 0L, flags3 = 0L;
+    u32b flags1 = 0L, flags2 = 0L, flags3 = 0L;
 
     if (!what) what = what;
 
@@ -929,22 +1040,23 @@ static bool grab_one_kind_flag(inven_kind *k_ptr, cptr what)
     else if (streq(what, "IM_POIS"))		flags2 |= TR2_IM_POIS;
 
 
-    else if (streq(what, "RES_CONF"))		flags2 |= TR2_RES_CONF;
-    else if (streq(what, "RES_SOUND"))		flags2 |= TR2_RES_SOUND;
-    else if (streq(what, "RES_LITE"))		flags2 |= TR2_RES_LITE;
-    else if (streq(what, "RES_DARK"))		flags2 |= TR2_RES_DARK;
-    else if (streq(what, "RES_CHAOS"))		flags2 |= TR2_RES_CHAOS;
-    else if (streq(what, "RES_DISEN"))		flags2 |= TR2_RES_DISEN;
-    else if (streq(what, "RES_SHARDS"))		flags2 |= TR2_RES_SHARDS;
-    else if (streq(what, "RES_NEXUS"))		flags2 |= TR2_RES_NEXUS;
-    else if (streq(what, "RES_BLIND"))		flags2 |= TR2_RES_BLIND;
-    else if (streq(what, "RES_NETHER"))		flags2 |= TR2_RES_NETHER;
-
-    else if (streq(what, "RES_POIS"))		flags2 |= TR2_RES_POIS;
+    else if (streq(what, "RES_ACID"))		flags2 |= TR2_RES_ACID;
+    else if (streq(what, "RES_ELEC"))		flags2 |= TR2_RES_ELEC;
     else if (streq(what, "RES_FIRE"))		flags2 |= TR2_RES_FIRE;
     else if (streq(what, "RES_COLD"))		flags2 |= TR2_RES_COLD;
-    else if (streq(what, "RES_ELEC"))		flags2 |= TR2_RES_ELEC;
-    else if (streq(what, "RES_ACID"))		flags2 |= TR2_RES_ACID;
+    else if (streq(what, "RES_POIS"))		flags2 |= TR2_RES_POIS;
+    else if (streq(what, "RES_LITE"))		flags2 |= TR2_RES_LITE;
+    else if (streq(what, "RES_DARK"))		flags2 |= TR2_RES_DARK;
+
+    else if (streq(what, "RES_BLIND"))		flags2 |= TR2_RES_BLIND;
+    else if (streq(what, "RES_CONF"))		flags2 |= TR2_RES_CONF;
+    else if (streq(what, "RES_SOUND"))		flags2 |= TR2_RES_SOUND;
+    else if (streq(what, "RES_SHARDS"))		flags2 |= TR2_RES_SHARDS;
+
+    else if (streq(what, "RES_NETHER"))		flags2 |= TR2_RES_NETHER;
+    else if (streq(what, "RES_NEXUS"))		flags2 |= TR2_RES_NEXUS;
+    else if (streq(what, "RES_CHAOS"))		flags2 |= TR2_RES_CHAOS;
+    else if (streq(what, "RES_DISEN"))		flags2 |= TR2_RES_DISEN;
 
     else if (streq(what, "SUST_STR"))		flags2 |= TR2_SUST_STR;
     else if (streq(what, "SUST_INT"))		flags2 |= TR2_SUST_INT;
@@ -956,7 +1068,7 @@ static bool grab_one_kind_flag(inven_kind *k_ptr, cptr what)
     else if (streq(what, "EASY_KNOW"))		flags3 |= TR3_EASY_KNOW;
     else if (streq(what, "HIDE_TYPE"))		flags3 |= TR3_HIDE_TYPE;
     else if (streq(what, "SHOW_MODS"))		flags3 |= TR3_SHOW_MODS;
-    else if (streq(what, "SHOW_BASE"))		flags3 |= TR3_SHOW_BASE;
+    else if (streq(what, "INSTA_ART"))		flags3 |= TR3_INSTA_ART;
 
     else if (streq(what, "FEATHER"))		flags3 |= TR3_FEATHER;
     else if (streq(what, "LITE"))		flags3 |= TR3_LITE;
@@ -1047,6 +1159,9 @@ static errr init_k_list_txt()
 	    /* Now there is no current k_ptr */
 	    k_ptr = NULL;
 
+	    /* Don't hog the processor */
+	    gasp();
+
 	    /* Next... */
 	    continue;
 	}
@@ -1111,8 +1226,8 @@ static errr init_k_list_txt()
 	    if (tmp < 0) return (12);
 
 	    /* Save the values */
-	    k_ptr->i_char = sym;
-	    k_ptr->i_attr = tmp;
+	    k_ptr->k_char = sym;
+	    k_ptr->k_attr = tmp;
 	    k_ptr->tval = tval;
 	    k_ptr->sval = sval;
 	    k_ptr->pval = pval;
@@ -1134,8 +1249,8 @@ static errr init_k_list_txt()
 	    /* Simply read each number following a colon */
 	    for (i = 0, s = buf+1; s && (s[0] == ':') && s[1]; ++i) {
 
-		/* Default rarity */
-		k_ptr->rarity[i] = 1;
+		/* Default chance */
+		k_ptr->chance[i] = 1;
 
 		/* Store the attack damage index */
 		k_ptr->locale[i] = atoi(s+1);
@@ -1148,8 +1263,8 @@ static errr init_k_list_txt()
 
 		/* If the slash is "nearby", use it */
 		if (t && (!s || t < s)) {
-		    int rarity = atoi(t+1);
-		    if (rarity > 0) k_ptr->rarity[i] = rarity;
+		    int chance = atoi(t+1);
+		    if (chance > 0) k_ptr->chance[i] = chance;
 		}
 	    }
 
@@ -1167,8 +1282,8 @@ static errr init_k_list_txt()
 		&ac, &hd1, &hd2, &th, &td, &ta)) return (15);
 
 	    k_ptr->ac = ac;
-	    k_ptr->damage[0] = hd1;
-	    k_ptr->damage[1] = hd2;
+	    k_ptr->dd = hd1;
+	    k_ptr->ds = hd2;
 	    k_ptr->tohit = th;
 	    k_ptr->todam = td;
 	    k_ptr->toac =  ta;
@@ -1183,7 +1298,7 @@ static errr init_k_list_txt()
 	    huge flags1, flags2, flags3;
 
 	    /* XXX XXX Hack -- Scan for "pure" values */
-	    /* Note that "huge" may not equal "int32u" */
+	    /* Note that "huge" may not equal "u32b" */
 	    if (3 == sscanf(buf+2, "0x%lx:0x%lx:0x%lx",
 		&flags1, &flags2, &flags3)) {
 
@@ -1230,32 +1345,30 @@ static errr init_k_list_txt()
 
 
 
+#ifdef BINARY_ARRAY_IMAGES
+
 
 /*
  * Attempt to "dump" a "quick-load binary image" for "k_list"
  */
 static errr dump_k_list_raw()
 {
-
-#ifdef BINARY_ARRAY_IMAGES
-
     int i, fd;
 
-    /* One object  at a time */
-    inven_kind *k_ptr;
-
-    /* Do not save the name or desc fields */
-    uint size = sizeof(inven_kind) - sizeof(cptr);
-    
     int mode = 0666;
-    
-    int16u tmp2;
 
     char tmp[1024];
-    char buf[2048];
 
-    /* Use the "fast" binary version whenever possible */
-    sprintf(tmp, "%s%s%s", ANGBAND_DIR_DATA, PATH_SEP, "k_list.raw");
+
+    /* Hack -- sizes */
+    uint len[MAX_K_IDX];
+    
+    /* Size of the "lengths" array */
+    uint slen = sizeof(len);
+
+    /* Size of one normal record */
+    uint size = sizeof(inven_kind);
+
 
 #ifdef SET_UID
     mode = 0644;
@@ -1265,60 +1378,56 @@ static errr dump_k_list_raw()
     _ftype = 'DATA';
 #endif
 
-    /* Create a new file */
+
+    /* File "k_list.raw" -- raw records */
+    sprintf(tmp, "%s%s%s", ANGBAND_DIR_DATA, PATH_SEP, "k_list.raw");
     fd = my_topen(tmp, O_RDWR | O_CREAT | O_BINARY, mode);
-
-#ifdef MACINTOSH
-    _ftype = 'SAVE';
-#endif
-
-    /* Failure to make */
     if (fd < 0) return (-1);
 
-
     /* Dump the version info */
-    buf[0] = CUR_VERSION_MAJ;
-    buf[1] = CUR_VERSION_MIN; 
-    buf[2] = CUR_PATCH_LEVEL;
-    buf[3] = 0; /* Platform */
+    tmp[0] = CUR_VERSION_MAJ;
+    tmp[1] = CUR_VERSION_MIN; 
+    tmp[2] = CUR_PATCH_LEVEL;
+    tmp[3] = size;
 
-    /* Dump it, ignore errors */
-    write(fd, buf, 4);
+    /* Dump it */
+    write(fd, tmp, 4);
 
-           
-    /* Attempt to dump the object kinds */
+    /* Attempt to dump the (normal) monster races */
     for (i = 0; i < MAX_K_IDX; i++) {
-
-	/* Access the object kind */
-	k_ptr = &k_list[i];
-
-	/* Load the main record */
-	if (size != write(fd, (char*)(k_ptr), size)) break;
-
-	/* Dump the object name (if any) */
-	if (k_ptr->name) {
-	    strcpy(buf, k_ptr->name);
-	    tmp2 = strlen(buf) + 1;
-	    if (2 != write(fd, (char*)(&tmp2), 2)) break;
-	    if (tmp2 != write(fd, buf, tmp2)) break;
-	}
-	else {
-	    tmp2 = 0;
-	    if (2 != write(fd, (char*)(&tmp2), 2)) break;
-	}
+	if (size != write(fd, (char*)(&k_list[i]), size)) break;
     }
-    
-    /* Close it */
+
+    /* Close and verify */
+    gasp();
     close(fd);
+    if (i < MAX_K_IDX) return (1);
 
-    /* Failure */
-    if (i < MAX_K_IDX) {
-	message("Warning: failure writing 'k_list.raw'", 0);
-	message("Warning: you should probably remove it.", 0);
-	message(NULL, 0);
+    
+    /* File "k_name.raw" -- item kind names */
+    sprintf(tmp, "%s%s%s", ANGBAND_DIR_DATA, PATH_SEP, "k_name.raw");
+    fd = my_topen(tmp, O_RDWR | O_CREAT | O_BINARY, mode);
+    if (fd < 0) return (-1);
+
+    /* Prepare the "lengths" array */
+    for (i = 0; i < MAX_K_IDX; i++) {
+	len[i] = string_size(k_list[i].name);
     }
     
-#endif
+    /* Dump the array */
+    write(fd, (char*)(len), slen);
+
+    /* Dump the names */
+    for (i = 0; i < MAX_K_IDX; i++) {
+	char *str = (char*)(k_list[i].name);
+	if (len[i] && (len[i] != write(fd, str, len[i]))) break;
+    }
+    
+    /* Close and verify */
+    gasp();
+    close(fd);
+    if (i < MAX_K_IDX) return (1);
+
 
     /* Success */
     return (0);
@@ -1326,33 +1435,28 @@ static errr dump_k_list_raw()
 
 
 
- 
+
 /*
  * Attempt to "quick-load" a binary image for "k_list"
  */
 static errr init_k_list_raw()
 {
-
-#ifdef BINARY_ARRAY_IMAGES
-
     int i, fd;
 
-    /* One kind at a time */
-    inven_kind *k_ptr;
-
-    /* Do not save the name or desc fields */
-    uint size = sizeof(inven_kind) - sizeof(cptr);
-    
     int mode = 0666;
-    
-    int16u tmp2;
 
     char tmp[1024];
-    char buf[2048];
 
 
-    /* Use the "fast" binary version whenever possible */
-    sprintf(tmp, "%s%s%s", ANGBAND_DIR_DATA, PATH_SEP, "k_list.raw");
+    /* Hack -- sizes */
+    uint len[MAX_K_IDX];
+    
+    /* Size of the "lengths" array */
+    uint slen = sizeof(len);
+
+    /* Size of one normal record */
+    uint size = sizeof(inven_kind);
+
 
 #ifdef SET_UID
     mode = 0644;
@@ -1362,62 +1466,68 @@ static errr init_k_list_raw()
     _ftype = 'DATA';
 #endif
 
-    /* Open a read-only copy */
+
+    /* File "k_list.raw" -- raw records */
+    sprintf(tmp, "%s%s%s", ANGBAND_DIR_DATA, PATH_SEP, "k_list.raw");
     fd = my_topen(tmp, O_RDONLY | O_BINARY, mode);
-
-#ifdef MACINTOSH
-    _ftype = 'SAVE';
-#endif
-
-    /* Failure to open */
     if (fd < 0) return (-1);
 
-    /* Read the version info */
-    if ((4 != read(fd, buf, 4)) ||
-	(buf[0] != CUR_VERSION_MAJ) ||
-	(buf[1] != CUR_VERSION_MIN) ||
-	(buf[2] != CUR_PATCH_LEVEL) ||
-	(buf[0] != 0)) {
+    /* Read and Verify the version info */    
+    if ((4 != read(fd, tmp, 4)) ||
+	(tmp[0] != CUR_VERSION_MAJ) ||
+	(tmp[1] != CUR_VERSION_MIN) ||
+	(tmp[2] != CUR_PATCH_LEVEL) ||
+	(tmp[3] != size)) {
 
-	/* Close and Fail (cleanly) */
+	/* Hack -- message */
+	msg_print("Ignoring old 'k_list.raw'...");
+	msg_print(NULL);
+
+	/* Close */
 	close(fd);
+
+	/* Fail */
 	return (-1);
     }
-        
+
     /* Attempt to read the (normal) object kinds */
     for (i = 0; i < MAX_K_IDX; i++) {
-
-	/* Access the object kind */
-	k_ptr = &k_list[i];
-
-	/* Load the main record */
-	if (size != read(fd, (char*)(k_ptr), size)) break;
-
-	/* Hack -- Load the monster name */
-	k_ptr->name = NULL;
-	if (2 != read(fd, (char*)(&tmp2), 2)) break;
-	if (tmp2) {
-	    if (tmp2 != read(fd, buf, tmp2)) break;
-	    k_ptr->name = string_make(buf);
-	}
+	if (size != read(fd, (char*)(&k_list[i]), size)) break;
+	k_list[i].name = NULL;
     }
-
-    /* Close the file */
+    
+    /* Close and verify */
+    gasp();
     close(fd);
+    if (i < MAX_K_IDX) return (1);
 
-    /* Aborted load */
-    if (i < MAX_K_IDX) {
-	message("Major error loading 'k_list.raw'", 0);
-	message("Try removing it from the 'data' directory", 0);
-	message(NULL, 0);
-	quit("failed while loading 'k_list.raw'");
+
+    /* File "k_name.raw" -- kind names */
+    sprintf(tmp, "%s%s%s", ANGBAND_DIR_DATA, PATH_SEP, "k_name.raw");
+    fd = my_topen(tmp, O_RDONLY | O_BINARY, mode);
+    if (fd < 0) return (-1);
+
+    /* Read the size array */
+    if (slen != read(fd, (char*)(len), slen)) return (1);
+
+    /* Attempt to read the (normal) item kind names */
+    for (i = 0; i < MAX_K_IDX; i++) {
+	if (len[i] != read(fd, tmp, len[i])) break;
+	if (len[i]) k_list[i].name = string_make(tmp);
     }
+    
+    /* Close and verify */
+    gasp();
+    close(fd);
+    if (i < MAX_K_IDX) return (1);
 
-#endif
 
     /* Success */
     return (0);
 }
+
+#endif
+
 
 
 /*
@@ -1427,31 +1537,1161 @@ static void init_k_list()
 {
     errr err;
 
+
+#ifdef BINARY_ARRAY_IMAGES
+
     /* Try to load a "binary image" */
     err = init_k_list_raw();
 
     /* Otherwise try the text version */
-    if (err) err = init_k_list_txt();
+    if (!err) return;
+
+#endif
+    
+    /* Try a text version */
+    err = init_k_list_txt();
 
     /* Still no luck? Fail! */
     if (err) {
-	char tmp[128];
-	sprintf(tmp, "Fatal error #%d parsing 'k_list.txt', record %d",
-		err, error_k_idx);
-	message(tmp, 0);
-	message(NULL,0);
+    
+	/* Warning */
+	msg_print(format("Fatal error #%d parsing 'k_list.txt', record %d",
+			 err, error_k_idx));
+	msg_print(NULL);
+
+	/* Quit */
 	quit("cannot load 'k_list.txt'");
     }
 
+#ifdef BINARY_ARRAY_IMAGES
+
     /* Attempt to dump a "quick-load" version */
     err = dump_k_list_raw();
+    
+    /* Warn on errors */
     if (err) {
-	message("Warning: unable to create 'k_list.raw'", 0);
+	msg_print("Warning: unable to create 'k_list.raw'");
+	msg_print(NULL);
     }
+
+#endif
+
 }
 
 
 
+
+
+
+/*
+ * Grab one flag in a inven_very from a textual string
+ */
+static bool grab_one_very_flag(inven_very *v_ptr, cptr what)
+{
+    u32b flags1 = 0L, flags2 = 0L, flags3 = 0L;
+
+    if (!what) what = what;
+
+    else if (streq(what, "STR"))		flags1 |= TR1_STR;
+    else if (streq(what, "INT"))		flags1 |= TR1_INT;
+    else if (streq(what, "WIS"))		flags1 |= TR1_WIS;
+    else if (streq(what, "DEX"))		flags1 |= TR1_DEX;
+    else if (streq(what, "CON"))		flags1 |= TR1_CON;
+    else if (streq(what, "CHR"))		flags1 |= TR1_CHR;
+
+    else if (streq(what, "SEARCH"))		flags1 |= TR1_SEARCH;
+    else if (streq(what, "SPEED"))		flags1 |= TR1_SPEED;
+    else if (streq(what, "STEALTH"))		flags1 |= TR1_STEALTH;
+    else if (streq(what, "TUNNEL"))		flags1 |= TR1_TUNNEL;
+    else if (streq(what, "INFRA"))		flags1 |= TR1_INFRA;
+    else if (streq(what, "ATTACK_SPD"))		flags1 |= TR1_ATTACK_SPD;
+
+    else if (streq(what, "KILL_DRAGON"))	flags1 |= TR1_KILL_DRAGON;
+    else if (streq(what, "SLAY_DRAGON"))	flags1 |= TR1_SLAY_DRAGON;
+    else if (streq(what, "SLAY_ANIMAL"))	flags1 |= TR1_SLAY_ANIMAL;
+    else if (streq(what, "SLAY_EVIL"))		flags1 |= TR1_SLAY_EVIL;
+
+    else if (streq(what, "IMPACT"))		flags1 |= TR1_IMPACT;
+    else if (streq(what, "BRAND_COLD"))		flags1 |= TR1_BRAND_COLD;
+    else if (streq(what, "BRAND_FIRE"))		flags1 |= TR1_BRAND_FIRE;
+    else if (streq(what, "BRAND_ELEC"))		flags1 |= TR1_BRAND_ELEC;
+
+    else if (streq(what, "SLAY_UNDEAD"))	flags1 |= TR1_SLAY_UNDEAD;
+    else if (streq(what, "SLAY_DEMON"))		flags1 |= TR1_SLAY_DEMON;
+
+    else if (streq(what, "SLAY_TROLL"))		flags1 |= TR1_SLAY_TROLL;
+    else if (streq(what, "SLAY_GIANT"))		flags1 |= TR1_SLAY_GIANT;
+    else if (streq(what, "SLAY_ORC"))		flags1 |= TR1_SLAY_ORC;
+
+    else if (streq(what, "FREE_ACT"))		flags2 |= TR2_FREE_ACT;
+    else if (streq(what, "HOLD_LIFE"))		flags2 |= TR2_HOLD_LIFE;
+
+
+    else if (streq(what, "IM_FIRE"))		flags2 |= TR2_IM_FIRE;
+    else if (streq(what, "IM_COLD"))		flags2 |= TR2_IM_COLD;
+    else if (streq(what, "IM_ACID"))		flags2 |= TR2_IM_ACID;
+    else if (streq(what, "IM_ELEC"))		flags2 |= TR2_IM_ELEC;
+    else if (streq(what, "IM_POIS"))		flags2 |= TR2_IM_POIS;
+
+
+    else if (streq(what, "RES_ACID"))		flags2 |= TR2_RES_ACID;
+    else if (streq(what, "RES_ELEC"))		flags2 |= TR2_RES_ELEC;
+    else if (streq(what, "RES_FIRE"))		flags2 |= TR2_RES_FIRE;
+    else if (streq(what, "RES_COLD"))		flags2 |= TR2_RES_COLD;
+    else if (streq(what, "RES_POIS"))		flags2 |= TR2_RES_POIS;
+    else if (streq(what, "RES_LITE"))		flags2 |= TR2_RES_LITE;
+    else if (streq(what, "RES_DARK"))		flags2 |= TR2_RES_DARK;
+
+    else if (streq(what, "RES_BLIND"))		flags2 |= TR2_RES_BLIND;
+    else if (streq(what, "RES_CONF"))		flags2 |= TR2_RES_CONF;
+    else if (streq(what, "RES_SOUND"))		flags2 |= TR2_RES_SOUND;
+    else if (streq(what, "RES_SHARDS"))		flags2 |= TR2_RES_SHARDS;
+
+    else if (streq(what, "RES_NETHER"))		flags2 |= TR2_RES_NETHER;
+    else if (streq(what, "RES_NEXUS"))		flags2 |= TR2_RES_NEXUS;
+    else if (streq(what, "RES_CHAOS"))		flags2 |= TR2_RES_CHAOS;
+    else if (streq(what, "RES_DISEN"))		flags2 |= TR2_RES_DISEN;
+
+    else if (streq(what, "SUST_STR"))		flags2 |= TR2_SUST_STR;
+    else if (streq(what, "SUST_INT"))		flags2 |= TR2_SUST_INT;
+    else if (streq(what, "SUST_WIS"))		flags2 |= TR2_SUST_WIS;
+    else if (streq(what, "SUST_DEX"))		flags2 |= TR2_SUST_DEX;
+    else if (streq(what, "SUST_CON"))		flags2 |= TR2_SUST_CON;
+    else if (streq(what, "SUST_CHR"))		flags2 |= TR2_SUST_CHR;
+
+    else if (streq(what, "EASY_KNOW"))		flags3 |= TR3_EASY_KNOW;
+    else if (streq(what, "HIDE_TYPE"))		flags3 |= TR3_HIDE_TYPE;
+    else if (streq(what, "SHOW_MODS"))		flags3 |= TR3_SHOW_MODS;
+    else if (streq(what, "INSTA_ART"))		flags3 |= TR3_INSTA_ART;
+
+    else if (streq(what, "FEATHER"))		flags3 |= TR3_FEATHER;
+    else if (streq(what, "LITE"))		flags3 |= TR3_LITE;
+    else if (streq(what, "SEE_INVIS"))		flags3 |= TR3_SEE_INVIS;
+    else if (streq(what, "TELEPATHY"))		flags3 |= TR3_TELEPATHY;
+
+    else if (streq(what, "SLOW_DIGEST"))	flags3 |= TR3_SLOW_DIGEST;
+    else if (streq(what, "REGEN"))		flags3 |= TR3_REGEN;
+
+    else if (streq(what, "XTRA_MIGHT"))		flags3 |= TR3_XTRA_MIGHT;
+    else if (streq(what, "XTRA_SHOTS"))		flags3 |= TR3_XTRA_SHOTS;
+
+#if 0
+    else if (streq(what, "IGNORE_FIRE"))	flags3 |= TR3_IGNORE_FIRE;
+    else if (streq(what, "IGNORE_COLD"))	flags3 |= TR3_IGNORE_COLD;
+    else if (streq(what, "IGNORE_ELEC"))	flags3 |= TR3_IGNORE_ELEC;
+    else if (streq(what, "IGNORE_ACID"))	flags3 |= TR3_IGNORE_ACID;
+#endif
+
+    else if (streq(what, "ACTIVATE"))		flags3 |= TR3_ACTIVATE;
+    else if (streq(what, "DRAIN_EXP"))		flags3 |= TR3_DRAIN_EXP;
+    else if (streq(what, "TELEPORT"))		flags3 |= TR3_TELEPORT;
+    else if (streq(what, "AGGRAVATE"))		flags3 |= TR3_AGGRAVATE;
+
+    else if (streq(what, "BLESSED"))		flags3 |= TR3_BLESSED;
+    else if (streq(what, "CURSED"))		flags3 |= TR3_CURSED;
+    else if (streq(what, "HEAVY_CURSE"))	flags3 |= TR3_HEAVY_CURSE;
+    else if (streq(what, "PERMA_CURSE"))	flags3 |= TR3_PERMA_CURSE;
+
+    if (!flags1 && !flags2 && !flags3) return (FALSE);
+
+    if (flags1) v_ptr->flags1 |= flags1;
+    if (flags2) v_ptr->flags2 |= flags2;
+    if (flags3) v_ptr->flags3 |= flags3;
+
+    return (TRUE);
+}
+
+
+/*
+ * Hack -- location saver for error messages
+ */
+static int error_v_idx = -1;
+
+
+/*
+ * Initialize the "v_list" array by parsing a file
+ * Note that "v_list" starts out totally cleared
+ */
+static errr init_v_list_txt()
+{
+    register char *s, *t;
+
+    /* No item very yet */
+    int m = -1;
+
+    /* No v_ptr yet */
+    inven_very *v_ptr = NULL;
+
+    /* The "objects" file */
+    FILE *fp;
+
+    /* No line should be more than 80 chars */
+    char buf[160];
+
+    /* Open the file */
+    fp = fopen(ANGBAND_V_LIST, "r");
+
+    /* Failure */
+    if (!fp) return (-1);
+
+    /* Parse the file to initialize "v_list" */
+    while (1) {
+
+	/* Read a line from the file, stop when done */
+	if (!fgets(buf, 160, fp)) break;
+
+	/* Skip comments */
+	if (buf[0] == '#') continue;
+
+	/* Strip the final newline */
+	for (s = buf; isprint(*s); ++s); *s = '\0';
+
+	/* Blank lines terminate artifact entries */
+	if (!buf[0]) {
+
+	    /* No current v_ptr */
+	    if (!v_ptr) continue;
+
+	    /* Now there is no current v_ptr */
+	    v_ptr = NULL;
+
+	    /* Don't hog the processor */
+	    gasp();
+
+	    /* Next... */
+	    continue;
+	}
+
+	/* The line better have a colon and such */
+	if (buf[1] != ':') return (1);
+
+	/* Process 'N' for "New/Number/Name" */
+	if (buf[0] == 'N') {
+
+	    /* Not done the previous one */
+	    if (v_ptr) return (2);
+
+	    /* Find, verify, and nuke the colon before the name */
+	    if (!(s = strchr(buf+2, ':'))) return (3);
+
+	    /* Nuke the colon, advance to the name */
+	    *s++ = '\0';
+
+	    /* Do not allow empty names */
+	    if (!*s) return (4);
+
+	    /* Get the index */
+	    m = atoi(buf+2);
+
+	    /* For errors */
+	    error_v_idx = m;
+
+	    /* Verify */
+	    if ((m < 0) || (m >= MAX_V_IDX)) return (5);
+
+	    /* Start a new v_ptr */
+	    v_ptr = &v_list[m];
+
+	    /* Make sure we have not done him yet */
+	    if (v_ptr->name) return (6);
+
+	    /* Save the name */
+	    v_ptr->name = string_make(s);
+
+	    /* Set a few flags */
+	    v_ptr->flags3 |= TR3_IGNORE_ACID;
+	    v_ptr->flags3 |= TR3_IGNORE_ELEC;
+	    v_ptr->flags3 |= TR3_IGNORE_FIRE;
+	    v_ptr->flags3 |= TR3_IGNORE_COLD;
+	    
+	    /* Next... */
+	    continue;
+	}
+
+	/* There better be a current v_ptr */
+	if (!v_ptr) return (10);
+
+	/* Process 'I' for "Info" (one line only) */
+	if (buf[0] == 'I') {
+
+	    int k_idx, tval, sval, pval, rarity, wgt, lev;
+	    long cost;
+
+	    /* Scan for the values */
+	    if (8 != sscanf(buf+2, "%d:%d:%d:%d:%d:%d:%d:%ld",
+		&k_idx, &tval, &sval, &pval,
+		&rarity, &wgt, &lev, &cost)) return (11);
+
+	    /* Save the values */
+	    v_ptr->k_idx = k_idx;
+	    v_ptr->tval = tval;
+	    v_ptr->sval = sval;
+	    v_ptr->pval = pval;
+	    v_ptr->rarity = rarity;
+	    v_ptr->weight = wgt;
+	    v_ptr->level = lev;
+	    v_ptr->cost = cost;
+
+
+	    /* Next... */
+	    continue;
+	}
+
+	/* Hack -- Process 'P' for "power" and such */
+	if (buf[0] == 'P') {
+
+	    int ac, hd1, hd2, th, td, ta;
+
+	    /* Scan for the values */
+	    if (6 != sscanf(buf+2, "%d:%dd%d:%d:%d:%d",
+		&ac, &hd1, &hd2, &th, &td, &ta)) return (15);
+
+	    v_ptr->ac = ac;
+	    v_ptr->dd = hd1;
+	    v_ptr->ds = hd2;
+	    v_ptr->tohit = th;
+	    v_ptr->todam = td;
+	    v_ptr->toac =  ta;
+
+	    /* Next... */
+	    continue;
+	}
+
+	/* Hack -- Process 'F' for flags */
+	if (buf[0] == 'F') {
+
+	    /* Parse every entry textually */
+	    for (s = buf + 2; *s; ) {
+
+		/* Find the end of this entry */
+		for (t = s; *t && *t != ' ' && *t != '|'; ++t);
+
+		/* Nuke and skip any dividers */
+		if (*t) {
+		    *t++ = '\0';
+		    while (*t == ' ' || *t == '|') t++;
+		}
+
+		/* Parse this entry */
+		if (!grab_one_very_flag(v_ptr, s)) return (18);
+
+		/* Start the next entry */
+		s = t;
+	    }
+
+	    /* Next... */
+	    continue;
+	}
+    }
+
+    /* Close the file */
+    fclose(fp);
+
+    /* Success */
+    return (0);
+}
+
+
+
+
+
+
+
+#ifdef BINARY_ARRAY_IMAGES
+
+/*
+ * Attempt to "dump" a "quick-load binary image" for "v_list"
+ */
+static errr dump_v_list_raw()
+{
+    int i, fd;
+
+    int mode = 0666;
+
+    char tmp[1024];
+
+
+    /* Hack -- sizes */
+    uint len[MAX_V_IDX];
+    
+    /* Size of the "lengths" array */
+    uint slen = sizeof(len);
+
+    /* Size of one normal record */
+    uint size = sizeof(inven_very);
+
+
+#ifdef SET_UID
+    mode = 0644;
+#endif
+
+#ifdef MACINTOSH
+    _ftype = 'DATA';
+#endif
+
+
+    /* File "v_list.raw" -- raw records */
+    sprintf(tmp, "%s%s%s", ANGBAND_DIR_DATA, PATH_SEP, "v_list.raw");
+    fd = my_topen(tmp, O_RDWR | O_CREAT | O_BINARY, mode);
+    if (fd < 0) return (-1);
+
+    /* Dump the version info */
+    tmp[0] = CUR_VERSION_MAJ;
+    tmp[1] = CUR_VERSION_MIN; 
+    tmp[2] = CUR_PATCH_LEVEL;
+    tmp[3] = size;
+
+    /* Dump it */
+    write(fd, tmp, 4);
+
+    /* Attempt to dump the artifact records */
+    for (i = 0; i < MAX_V_IDX; i++) {
+	if (size != write(fd, (char*)(&v_list[i]), size)) break;
+    }
+
+    /* Close and verify */
+    gasp();
+    close(fd);
+    if (i < MAX_V_IDX) return (1);
+
+    
+    /* File "v_name.raw" -- artifact names */
+    sprintf(tmp, "%s%s%s", ANGBAND_DIR_DATA, PATH_SEP, "v_name.raw");
+    fd = my_topen(tmp, O_RDWR | O_CREAT | O_BINARY, mode);
+    if (fd < 0) return (-1);
+
+    /* Prepare the "lengths" array */
+    for (i = 0; i < MAX_V_IDX; i++) {
+	len[i] = string_size(v_list[i].name);
+    }
+    
+    /* Dump the array */
+    write(fd, (char*)(len), slen);
+
+    /* Dump the names */
+    for (i = 0; i < MAX_V_IDX; i++) {
+	char *str = (char*)(v_list[i].name);
+	if (len[i] && (len[i] != write(fd, str, len[i]))) break;
+    }
+    
+    /* Close and verify */
+    gasp();
+    close(fd);
+    if (i < MAX_V_IDX) return (1);
+
+
+    /* Success */
+    return (0);
+}
+
+
+
+
+/*
+ * Attempt to "quick-load" a binary image for "v_list"
+ */
+static errr init_v_list_raw()
+{
+    int i, fd;
+
+    int mode = 0666;
+
+    char tmp[1024];
+
+
+    /* Hack -- sizes */
+    uint len[MAX_V_IDX];
+    
+    /* Size of the "lengths" array */
+    uint slen = sizeof(len);
+
+    /* Size of one normal record */
+    uint size = sizeof(inven_very);
+
+
+#ifdef SET_UID
+    mode = 0644;
+#endif
+
+#ifdef MACINTOSH
+    _ftype = 'DATA';
+#endif
+
+
+
+    /* File "v_list.raw" -- raw records */
+    sprintf(tmp, "%s%s%s", ANGBAND_DIR_DATA, PATH_SEP, "v_list.raw");
+    fd = my_topen(tmp, O_RDONLY | O_BINARY, mode);
+    if (fd < 0) return (-1);
+
+    /* Read and Verify the version info */    
+    if ((4 != read(fd, tmp, 4)) ||
+	(tmp[0] != CUR_VERSION_MAJ) ||
+	(tmp[1] != CUR_VERSION_MIN) ||
+	(tmp[2] != CUR_PATCH_LEVEL) ||
+	(tmp[3] != size)) {
+
+	/* Hack -- message */
+	msg_print("Ignoring old 'v_list.raw'...");
+	msg_print(NULL);
+
+	/* Close */
+	close(fd);
+
+	/* Fail */
+	return (-1);
+    }
+
+    /* Attempt to read the (normal) object kinds */
+    for (i = 0; i < MAX_V_IDX; i++) {
+	if (size != read(fd, (char*)(&v_list[i]), size)) break;
+	v_list[i].name = NULL;
+    }
+    
+    /* Close and verify */
+    gasp();
+    close(fd);
+    if (i < MAX_V_IDX) return (1);
+
+
+    /* File "v_name.raw" -- artifact names */
+    sprintf(tmp, "%s%s%s", ANGBAND_DIR_DATA, PATH_SEP, "v_name.raw");
+    fd = my_topen(tmp, O_RDONLY | O_BINARY, mode);
+    if (fd < 0) return (-1);
+
+    /* Read the size array */
+    if (slen != read(fd, (char*)(len), slen)) return (1);
+
+    /* Attempt to read the artifact names */
+    for (i = 0; i < MAX_V_IDX; i++) {
+	if (len[i] != read(fd, tmp, len[i])) break;
+	if (len[i]) v_list[i].name = string_make(tmp);
+    }
+    
+    /* Close and verify */
+    gasp();
+    close(fd);
+    if (i < MAX_V_IDX) return (1);
+
+
+    /* Success */
+    return (0);
+}
+
+#endif
+
+
+/*
+ * Note that "v_list" starts out totally cleared
+ */
+static void init_v_list()
+{
+    errr err;
+
+
+#ifdef BINARY_ARRAY_IMAGES
+
+    /* Try to load a "binary image" */
+    err = init_v_list_raw();
+
+    /* Otherwise try the text version */
+    if (!err) return;
+    
+#endif
+    
+    /* Try a text version */
+    err = init_v_list_txt();
+
+    /* Still no luck? Fail! */
+    if (err) {
+    
+	/* Warning */
+	msg_print(format("Fatal error #%d parsing 'v_list.txt', record %d",
+			 err, error_v_idx));
+	msg_print(NULL);
+
+	/* Quit */
+	quit("cannot load 'v_list.txt'");
+    }
+
+#ifdef BINARY_ARRAY_IMAGES
+
+    /* Attempt to dump a "quick-load" version */
+    err = dump_v_list_raw();
+
+    /* Warn on error */
+    if (err) {
+	msg_print("Warning: unable to create 'v_list.raw'");
+	msg_print(NULL);
+    }
+
+#endif
+
+}
+
+
+
+/*
+ * Parse a sub-file of the "extra info" (format shown below)
+ *
+ * Comments:
+ *   # <str>
+ *
+ * Parse another file:
+ *   %:<fname>
+ *
+ * Specify the "monster race" info:
+ *   R:<num>:<a>/<c>		<-- attr/char by race index
+ *   M:<a>/<c>:<a>/<c>		<-- attr/char by race attr/char
+ *
+ * Specify the "object kind" info:
+ *   K:<num>:<a>/<c>		<-- attr/char by kind index
+ *   I:<a>/<c>:<a>/<c>		<-- attr/char by kind attr/char
+ *   T:<tv>,<sv>:<a>/<c>	<-- attr/char by kind type/subtype
+ *
+ * Specify the "inventory" colors:
+ *   E:<tv>:<a>			<-- inventory attr by kind type
+ *
+ * Specify keypress bindings:
+ *   A:<str>			<-- macro action, as a string
+ *   P:<str>			<-- macro pattern, as a string
+ */
+static errr init_a_list_aux(FILE *fp)
+{
+    int i, i1, i2, n1, n2;
+
+    /* Current input line */
+    char buf[1024];
+
+    /* Hold current macro action */
+    static char pat[1024] = "";
+    static char act[1024] = "";
+
+
+    /* Process the file */
+    while (1) {
+    
+	/* Read a line from the file, stop when done */
+	if (!fgets(buf, 1024, fp)) break;
+
+	/* Skip comments */
+	if (buf[0] == '#') continue;
+
+	/* See how long the input is */
+	i = strlen(buf);
+
+	/* Strip the final newline (and spaces) */
+	while (i && isspace(buf[i-1])) buf[--i] = '\0';
+
+	/* Skip blank lines */
+	if (!buf[0]) continue;
+
+	/* The line better have a colon and such */
+	if (buf[1] != ':') return (1);
+
+	/* Process "%:<fname>" */
+	if (buf[0] == '%') {
+	
+	    /* Open the given file */
+	    FILE *fff = my_tfopen(buf + 2, "r");
+
+	    /* Failure -- skip the file */
+	    if (!fff) continue;
+
+	    /* Parse the file (recursively) */
+	    i = init_a_list_aux(fff);
+    
+	    /* Close it */
+	    fclose(fff);
+    
+	    /* Failure */
+	    if (i) return (1);
+	}
+	
+	/* Process "R:<num>:<a>/<c>" */
+	else if (buf[0] == 'R') {
+	    if (sscanf(buf, "R:%d:%d/%d", &i, &n1, &n2) != 3) continue;
+	    if (n1) r_attr[i] = n1;
+	    if (n2) r_char[i] = n2;
+	}
+
+	/* Process "M:<a>/<c>:<a>/<c>" */
+	else if (buf[0] == 'M') {
+	    if (sscanf(buf, "R:%d/%d:%d/%d", &i1, &i2, &n1, &n2) != 4) continue;
+	    for (i = 0; i < MAX_R_IDX; i++) {
+		if ((!i1 || r_list[i].r_attr == i1) &&
+		    (!i2 || r_list[i].r_char == i2)) {
+		    if (n1) r_attr[i] = n1;
+		    if (n2) r_char[i] = n2;
+		}
+	    }
+	}
+
+	/* Process "K:<num>:<a>/<c>" */
+	else if (buf[0] == 'K') {
+	    if (sscanf(buf, "K:%d:%d/%d", &i, &n1, &n2) != 3) continue;
+	    if (n1) k_attr[i] = n1;
+	    if (n2) k_char[i] = n2;
+	}
+
+	/* Process "I:<a>/<c>:<a>/<c>" */
+	else if (buf[0] == 'I') {
+	    if (sscanf(buf, "I:%d/%d:%d/%d", &i1, &i2, &n1, &n2) != 4) continue;
+	    for (i = 0; i < MAX_K_IDX; i++) {
+		if ((!i1 || k_list[i].k_attr == i1) &&
+		    (!i2 || k_list[i].k_char == i2)) {
+		    if (n1) k_attr[i] = n1;
+		    if (n2) k_char[i] = n2;
+		}
+	    }
+	}
+
+	/* Process "T:<tv>,<sv>:<a>/<c>" */
+	else if (buf[0] == 'T') {
+	    if (sscanf(buf, "T:%d,%d:%d/%d", &i1, &i2, &n1, &n2) != 4) continue;
+	    for (i = 0; i < MAX_K_IDX; i++) {
+		if ((!i1 || k_list[i].tval == i1) &&
+		    (!i2 || k_list[i].sval == i2)) {
+		    if (n1) k_attr[i] = n1;
+		    if (n2) k_char[i] = n2;
+		}
+	    }
+	}
+
+	/* Process "E:<tv>:<a>" -- Changes "inventory" colors */
+	else if (buf[0] == 'E') {
+	    if (sscanf(buf, "T:%d:%d", &i1, &n1) != 2) continue;
+	    tval_to_attr[i1] = n1;
+	}
+	
+	/* Process "A:<str>" -- save an action for later */
+	else if (buf[0] == 'A') {
+	    text_to_ascii(act, buf+2);
+	}
+
+	/* Process "P:<str>" -- instantiate a macro binding */
+	else if (buf[0] == 'P') {
+	    text_to_ascii(pat, buf+2);
+	    macro(pat, act);
+	}
+    }
+
+    /* Success */
+    return (0);
+}
+
+
+
+
+/*
+ * Parse the "extra file".  See above.
+ */
+static errr init_a_list(void)
+{
+    int i;
+
+    FILE *fp;
+
+
+    /* Default attr/chars for monster races */
+    for (i = 0; i < MAX_R_IDX; i++) {
+	r_attr[i] = r_list[i].r_attr;
+	r_char[i] = r_list[i].r_char;
+    }
+
+    /* Default attr/chars for object kinds */
+    for (i = 0; i < MAX_K_IDX; i++) {
+	k_attr[i] = k_list[i].k_attr;
+	k_char[i] = k_list[i].k_char;
+    }
+    
+
+    /* Open the given file */
+    fp = my_tfopen(ANGBAND_A_LIST, "r");
+
+    /* No such file */
+    if (!fp) return (-1);
+
+    /* Parse the file */
+    i = init_a_list_aux(fp);
+    
+    /* Close it */
+    fclose(fp);
+    
+    /* Failure */
+    if (i) return (1);
+    
+    
+    /* Success */
+    return (0);
+}
+
+
+
+/*
+ * Variable used by the functions below
+ */
+static int hack_dir;
+
+
+/*
+ * Convert a "Rogue" keypress into an "Angband" keypress
+ * Pass extra information as needed via "hack_dir"
+ */
+static char roguelike_commands(char command)
+{
+    /* Default to "no direction" */
+    hack_dir = 255;
+    
+    /* Process the command */
+    switch (command) {
+
+	/* Movement (rogue keys) */
+	case 'b': hack_dir = 1; return (';');
+	case 'j': hack_dir = 2; return (';');
+	case 'n': hack_dir = 3; return (';');
+	case 'h': hack_dir = 4; return (';');
+	case 'l': hack_dir = 6; return (';');
+	case 'y': hack_dir = 7; return (';');
+	case 'k': hack_dir = 8; return (';');
+	case 'u': hack_dir = 9; return (';');
+
+	/* Running (shift + rogue keys) */
+	case 'B': hack_dir = 1; return ('.');
+	case 'J': hack_dir = 2; return ('.');
+	case 'N': hack_dir = 3; return ('.');
+	case 'H': hack_dir = 4; return ('.');
+	case 'L': hack_dir = 6; return ('.');
+	case 'Y': hack_dir = 7; return ('.');
+	case 'K': hack_dir = 8; return ('.');
+	case 'U': hack_dir = 9; return ('.');
+
+	/* Tunnelling (control + rogue keys) */
+	case CTRL('B'): hack_dir = 1; return ('+');
+	case CTRL('J'): hack_dir = 2; return ('+');
+	case CTRL('N'): hack_dir = 3; return ('+');
+	case CTRL('H'): hack_dir = 4; return ('+');
+	case CTRL('L'): hack_dir = 6; return ('+');
+	case CTRL('Y'): hack_dir = 7; return ('+');
+	case CTRL('K'): hack_dir = 8; return ('+');
+	case CTRL('U'): hack_dir = 9; return ('+');
+
+	/* Hack -- CTRL('M') == return == linefeed == CTRL('J') */
+	case CTRL('M'): hack_dir = 2; return ('+');
+
+	/* Zap a staff */
+	case 'Z':
+	    return ('u');
+
+	/* Wield */
+	case 'w':
+	    return ('[');
+
+	/* Take off */
+	case 'T':
+	    return (']');
+
+	/* Fire */
+	case 't':
+	    return ('f');
+
+	/* Bash */
+	case 'f':
+	    return ('B');
+
+	/* Look */
+	case 'x':
+	    return ('l');
+
+	/* Exchange */
+	case 'X':
+	    return ('x');
+
+	/* Walking without picking up */
+	case '-':
+	    return ('-');
+
+	/* Aim a wand */
+	case 'z':
+	    return ('a');
+
+	/* Zap a rod */
+	case 'a':
+	    return ('z');
+
+	/* Stand still */
+	case '.':
+	    return (',');
+
+
+
+	/* Wizard Commands */
+	case CTRL('W'):		/* Enter Wizard Mode */
+	case CTRL('A'):		/* Special Wizard Command */
+	case CTRL('Z'):		/* Auto-Player command */
+	    return (command);
+
+	/* Other commands */
+	case ' ':
+	case CTRL('F'):
+	case CTRL('R'):
+	case CTRL('P'):
+	case CTRL('X'):
+	case CTRL('_'):
+	case '@':
+	case '!':
+	case '^':
+	case '0':
+	case ':':
+	case '#':
+	case '/':
+	case '<':
+	case '>':
+	case '=':
+	case '{':
+	case '}':
+	case '[':
+	case ']':
+	case '?':
+	case '~':
+	case '|':
+	case '*':
+	case 'A':
+	case 'C':
+	case 'D':
+	case 'E':
+	case 'F':
+	case 'G':
+	case 'M':
+	case 'P':
+	case 'Q':
+	case 'R':
+	case 'S':
+	case 'V':
+	case 'W':
+	case 'c':
+	case 'd':
+	case 'e':
+	case 'g':
+	case 'i':
+	case 'm':
+	case 'o':
+	case 'p':
+	case 'q':
+	case 'r':
+	case 's':
+	case 'v':
+	case '+':
+	case ';':
+	    return (command);
+
+	/* Stand still (That is, Rest one turn) */
+	case '5':
+	    return (',');
+
+	/* Standard walking */
+	case '1': hack_dir = 1; return (';');
+	case '2': hack_dir = 2; return (';');
+	case '3': hack_dir = 3; return (';');
+	case '4': hack_dir = 4; return (';');
+	case '6': hack_dir = 6; return (';');
+	case '7': hack_dir = 7; return (';');
+	case '8': hack_dir = 8; return (';');
+	case '9': hack_dir = 9; return (';');
+    }
+
+    /* Hack -- Invalid command */
+    return (0);
+}
+
+
+/*
+ * Convert an "Original" keypress into an "Angband" keypress
+ * Pass direction information back via "hack_dir".
+ */
+static char original_commands(char command)
+{
+    /* Default to "no direction" */
+    hack_dir = 255;
+    
+    /* Process the command */
+    switch (command) {
+
+	/* White space */
+	case CTRL('J'):
+	case CTRL('M'):
+	case ' ':
+	    return (' ');
+
+	/* Suicide */
+	case CTRL('K'):
+	    return ('Q');
+
+	/* Locate */
+	case 'L':
+	    return ('W');
+
+	/* Search mode */
+	case 'S':
+	    return ('#');
+
+	/* Browse */
+	case 'b':
+	    return ('P');
+
+	/* Help */
+	case 'h':
+	    return ('?');
+
+	/* Spike */
+	case 'j':
+	    return ('S');
+
+	/* Wield */
+	case 'w':
+	    return ('[');
+
+	/* Take off */
+	case 't':
+	    return (']');
+
+	/* Wizard Commands */
+	case CTRL('A'):		/* Special Wizard Command */
+	case CTRL('W'):		/* Enter Wizard Mode */
+	case CTRL('Z'):
+	    return (command);
+
+	/* Normal commands */
+	case ESCAPE:
+	case CTRL('F'):
+	case CTRL('R'):
+	case CTRL('P'):
+	case CTRL('X'):
+	case CTRL('_'):
+	case '-':
+	case '.':
+	case '+':
+	case ';':
+	case '[':
+	case ']':
+	case '@':
+	case '!':
+	case '^':
+	case '0':
+	case ':':
+	case '/':
+	case '<':
+	case '>':
+	case '=':
+	case '{':
+	case '}':
+	case '?':
+	case '~':
+	case '|':
+	case '*':
+	case 'A':
+	case 'B':
+	case 'C':
+	case 'D':
+	case 'E':
+	case 'F':
+	case 'G':
+	case 'M':
+	case 'R':
+	case 'V':
+	case 'a':
+	case 'c':
+	case 'd':
+	case 'e':
+	case 'f':
+	case 'g':
+	case 'i':
+	case 'l':
+	case 'm':
+	case 'o':
+	case 'p':
+	case 'q':
+	case 'r':
+	case 's':
+	case 'u':
+	case 'v':
+	case 'x':
+	case 'z':
+	    return (command);
+
+	/* Stand still (That is, Rest one turn) */
+	case '5':
+	    return (',');
+
+	/* Standard walking */
+	case '1': hack_dir = 1; return (';');
+	case '2': hack_dir = 2; return (';');
+	case '3': hack_dir = 3; return (';');
+	case '4': hack_dir = 4; return (';');
+	case '6': hack_dir = 6; return (';');
+	case '7': hack_dir = 7; return (';');
+	case '8': hack_dir = 8; return (';');
+	case '9': hack_dir = 9; return (';');
+
+	/* Tunnel digging */
+	case 'T':
+	    return ('+');
+    }
+
+    /* Return an obviously invalid command */
+    return (0);
+}
+
+
+/*
+ * Initialize the "keymap" arrays based on the current value of
+ * "rogue_like_commands".  Note that all "undefined" keypresses
+ * are left in whatever state they started.
+ *
+ * The keymap arrays map keys to "command_cmd" and "command_dir".
+ * Note that not all of the 256 keypresses can actually be entered,
+ * but this is the simplest method.
+ * If "keymap_dirs[n] == 255" then "command_dir" will be "-1".
+ * No "keymap_cmds[n]" is ever greater than 127, but can be "zero",
+ * which means that the keypress is currently "undefined".
+ * See "arrays.c" and "command.c" for more information.
+ */
+void keymap_init(void)
+{
+    int i, k;
+
+    /* Initialize every entry */
+    for (i = 0; i < 128; i++) {
+
+	/* Attempt to translate */
+	if (rogue_like_commands) {
+	    k = roguelike_commands(i);
+	}
+	else {
+	    k = original_commands(i);
+	}
+
+	/* Skip "unused" entries */
+	if (!k) k = i;
+	
+	/* Save the keypress */
+	keymap_cmds[i] = k;
+
+	/* Save the direction */
+	keymap_dirs[i] = hack_dir;
+    }
+}
+
+
+/*
+ * Hack -- take notes on line 23
+ */
+static void note(cptr str)
+{
+    Term_erase(0, 23, 79, 23);
+    Term_putstr(20, 23, -1, TERM_WHITE, str);
+    Term_fresh();
+}
 
 
 /*
@@ -1465,29 +2705,45 @@ void init_some_arrays()
 {
     register int i;
 
-    /* Prepare array of monster "race info" */
+
+    /* Label the task */
+    note("[Initializing arrays...]");
+
+
+    /* Allocate and Wipe the array of monster "race info" */
     C_MAKE(r_list, MAX_R_IDX, monster_race);
 
-    /* Prepare array of object "kind info" */
+    /* Allocate and Wipe the array of object "kind info" */
     C_MAKE(k_list, MAX_K_IDX, inven_kind);
 
+    /* Allocate and Wipe the array of artifact templates */
+    C_MAKE(v_list, MAX_V_IDX, inven_very);
 
-    /* Prepare array of monster "memories" */
+
+    /* Allocate and Wipe the array of object attr/char info */
+    C_MAKE(k_attr, MAX_K_IDX, byte);
+    C_MAKE(k_char, MAX_K_IDX, char);
+
+    /* Allocate and Wipe the array of monster attr/char info */
+    C_MAKE(r_attr, MAX_R_IDX, byte);
+    C_MAKE(r_char, MAX_R_IDX, char);
+
+
+    /* Allocate and Wipe the array of monster "memories" */
     C_MAKE(l_list, MAX_R_IDX, monster_lore);
 
-    /* Prepare array of object "memories" */
+    /* Allocate and Wipe the array of object "memories" */
     C_MAKE(x_list, MAX_K_IDX, inven_xtra);
 
 
-    /* Prepare object list */
+    /* Allocate and Wipe the object list */
     C_MAKE(i_list, MAX_I_IDX, inven_type);
 
-
-    /* Prepare monster list */
+    /* Allocate and Wipe the monster list */
     C_MAKE(m_list, MAX_M_IDX, monster_type);
 
-    
-    /* Allocate each line of the cave */
+
+    /* Allocate and wipe each line of the cave */
     for (i=0; i<MAX_HEIGHT; i++)
     {
 	/* Allocate one row of the cave */
@@ -1495,12 +2751,27 @@ void init_some_arrays()
     }
 
 
-    /* Initialize r_list from a file */
+
+    /* Initialize r_list from a file of some kind */
+    note("[Initializing 'r_list'...]");
     init_r_list();
 
-
     /* Initialize k_list from a file */
+    note("[Initializing 'k_list'...]");
     init_k_list();
+
+    /* Initialize v_list from a file */
+    note("[Initializing 'v_list'...]");
+    init_v_list();
+
+
+    /* Initialize extra stuff from a file */
+    note("[Parsing 'extra' info...]");
+    init_a_list();
+
+
+    /* Hack -- all done */
+    note("[Initializing arrays... done]");    
 }
 
 

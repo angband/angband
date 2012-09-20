@@ -13,44 +13,28 @@
 #include "angband.h"
 
 
-/* Lets do all prototypes correctly.... -CWS */
-#ifndef NO_LINT_ARGS
-#ifdef __STDC__
-static char original_commands(char);
-static char roguelike_commands(char);
-static int command_takes_rep(char);
-static int command_takes_arg(char);
-static void do_cmd_help(void);
-static void do_cmd_messages(void);
-static void do_cmd_browse(void);
-static void do_cmd_go_up(void);
-static void do_cmd_go_down(void);
-static void do_cmd_refill(void);
-static void do_cmd_target(void);
-static void do_cmd_options(void);
-static int do_std_command(void);
-#endif
-#endif
 
+/*
+ * Hack -- make sure we have a good "ANSI" definition for "CTRL()"
+ */
+#undef CTRL
+#define CTRL(C) ((C)&037)
 
 
 
 /*
- * Give the player some help
- * XXX These files are out of date
+ * Give the player some help (files may be out of date)
  */
-static void do_cmd_help(void)
+static void do_cmd_help(cptr fname)
 {	    
     /* Help is always free */
     free_turn_flag = TRUE;
 
-    /* Dump a file */
-    if (rogue_like_commands) {
-	helpfile(ANGBAND_R_HELP);
-    }
-    else {
-	helpfile(ANGBAND_O_HELP);
-    }
+    /* Default help files */
+    if (!fname) fname = rogue_like_commands ? ANGBAND_R_HELP : ANGBAND_O_HELP;
+
+    /* Dump the help file file */
+    helpfile(fname);
 }
 
 
@@ -61,7 +45,7 @@ static void do_cmd_help(void)
  */
 static void do_cmd_browse(void)
 {
-    int32u               j1, j2, tmp;
+    u32b               j1, j2, tmp;
     int                  i, k, item_val, flag;
     int                  spell_index[64];
     register inven_type *i_ptr;
@@ -91,9 +75,15 @@ static void do_cmd_browse(void)
 	return;
     }
 
-    if (!get_item(&item_val, "Which Book?", i, k, 0)) {
-	return;
-    }
+    /* Hack -- allow auto-see */
+    command_wrk = TRUE;
+    
+    /* Get a book or stop checking */
+    if (!get_item(&item_val, "Browse which Book?", i, k)) return;
+
+    /* Cancel auto-see */
+    command_see = FALSE;
+    
 
     flag = FALSE;
 
@@ -181,8 +171,8 @@ static void do_cmd_go_up()
     dun_level--;
     new_level_flag = TRUE;
 
-    /* Prepare to create a reverse-stairway */
-    if (dun_level > 0) create_down_stair = TRUE;
+    /* Create a way back */
+    create_down_stair = TRUE;
 }
 
 
@@ -215,6 +205,93 @@ static void do_cmd_go_down()
 }
 
 
+/*
+ * Hack -- commit suicide
+ */
+static void do_cmd_suicide(void)
+{
+    free_turn_flag = TRUE;
+
+    flush();
+
+    if (total_winner) {
+	if (!get_check("Do you want to retire?")) return;
+    }
+    else {
+	int i;
+	if (!get_check("Do you really want to quit?")) return;
+	prt("Please verify QUITTING by typing the '@' sign: ", 0, 0);
+	i = inkey();
+	prt("", 0, 0);
+	if (i != '@') return;
+    }
+
+    death = TRUE;
+    (void)strcpy(died_from, "Quitting");
+}
+
+
+/*
+ * Hack -- redraw the screen
+ */
+static void do_cmd_redraw(void)
+{
+    free_turn_flag = TRUE;
+
+    if (p_ptr->image > 0) {
+	msg_print("You cannot be sure what is real and what is not!");
+    }
+
+    /* Redraw the screen */
+    draw_cave();
+    Term_redraw();
+}
+
+
+/*
+ * Hack -- change name
+ */
+static void do_cmd_change_name(void)
+{
+    free_turn_flag = TRUE;
+
+    save_screen();
+    change_name();
+    restore_screen();
+}
+
+
+/*
+ * Hack -- toggle search mode
+ */
+static void do_cmd_toggle_search(void)
+{
+    free_turn_flag = TRUE;
+
+    if (p_ptr->searching) {
+	search_off();
+    }
+    else {
+	search_on();
+    }
+}
+
+
+/*
+ * Hack -- pick up objects
+ */
+static void do_cmd_pick_up(void)
+{
+    free_turn_flag = TRUE;
+
+    if (!prompt_carry_flag) return;
+    
+    if (cave[char_row][char_col].i_idx == 0) return;
+
+    free_turn_flag = FALSE;
+    carry(char_row, char_col, TRUE);
+}
+
 
 /*
  * Refill the players lamp	-RAK-
@@ -236,7 +313,7 @@ static void do_cmd_refill_lamp()
 	free_turn_flag = FALSE;
 	i_ptr = &inventory[INVEN_LITE];
 
-	/* Use the oil from the bottom to the top */
+	/* Use the cheapest oil first */
 	i_ptr->pval += inventory[j].pval;
 
 	if (i_ptr->pval < FUEL_LAMP / 2) {
@@ -276,7 +353,7 @@ static void do_cmd_refill_torch()
     register inven_type *j_ptr;
 
 
-    /* Find a wielded torch */
+    /* Refuel the wielded torch */
     j_ptr = &inventory[INVEN_LITE];
 
     /* No lites in the pack */
@@ -285,11 +362,10 @@ static void do_cmd_refill_torch()
 	return;
     }
 
-    /* Hack -- Scan the Lite's for a usable torch (bottom first) */
+    /* Hack -- Scan the Lite's for a usable torch (bottom up) */
     for (j = i2 ; j >= i1; j--) {
 	i_ptr = &inventory[j];
-	if (i_ptr->sval != SV_LITE_TORCH) continue;
-	if (i_ptr->pval > 0) break;
+	if (i_ptr->sval == SV_LITE_TORCH) break;
     }
 
     /* None found */
@@ -308,8 +384,8 @@ static void do_cmd_refill_torch()
     /* Get the torch (again) */
     i_ptr = &inventory[j];
 
-    /* Add the fuel */
-    j_ptr->pval += i_ptr->pval;
+    /* Add the fuel (empty torches yield 5 fuel) */
+    j_ptr->pval += i_ptr->pval + 5;
 
     /* Over-fuel */
     if (j_ptr->pval > FUEL_TORCH) {
@@ -511,22 +587,26 @@ typedef struct _opt_desc {
 static opt_desc options_interface[] = {
 
     { "Rogue-like commands", 			&rogue_like_commands },
+    { "Quick messages",		                &quick_messages },
     { "Require (g)et-key to pickup", 		&prompt_carry_flag },
     { "Prompt before pickup", 			&carry_query_flag },
+    { "Use old target by default",		&use_old_target },
+    { "Accept all pickup commands", 		&always_pickup },
     { "Accept all throw commands",		&always_throw },
-    { "Always repeat commands",			&always_repeat },
-    { "Plain object descriptions",		&plain_descriptions },
-    { "Quick messages",		                &quick_messages },
+    { "Repeat obvious commands",		&always_repeat },
 
-    { "Hilite player",				&hilite_player },
-    { "Dungeon level in feet",			&depth_in_feet },
-    { "Notice mineral seams", 			&notice_seams },
     { "Use new screen layout",                  &new_screen_layout },
-    { "Equippy chars",		                &equippy_chars },
+    { "Display Equippy chars",		        &equippy_chars },
+    { "Show dungeon level in feet",		&depth_in_feet },
+    { "Notice mineral seams", 			&notice_seams },
 
     { "Use color",				&use_color },
     { "Recall window",				&use_recall_win },
     { "Choice window",				&use_choice_win },
+
+    { "Compress savefiles",			&compress_savefile },
+    
+    { "Hilite the player",			&hilite_player },
 
     { "Ring bell on error",			&ring_bell },
 
@@ -551,6 +631,16 @@ static opt_desc options_disturb[] = {
     { "Monster appearance disturbs me",		&disturb_enter },
     { "Monster disappearance disturbs me",	&disturb_leave },
     
+    { "Flush input whenever disturbed",		&flush_disturb },
+    { "Flush input on various failures",	&flush_failure },
+    { "Flush input before every command",	&flush_command },
+    { "Flush input (not used yet)",		&flush_unused },
+
+    { "Draw Torch-Lite in yellow",		&view_yellow_lite },
+    { "Draw Viewable Lite brightly",		&view_bright_lite },
+    { "Optimize Yellow-Lite when running",	&view_yellow_fast },
+    { "Optimize Bright-Lite when running",	&view_bright_fast },
+
     { NULL,					NULL }
 };
 
@@ -560,27 +650,33 @@ static opt_desc options_disturb[] = {
  */
 static opt_desc options_gameplay[] = {
 
+    { "Pre-compute viewable region",		&view_pre_compute },
+    { "Pre-compute something else",		&view_xxx_compute },
+
+    { "Reduce view-radius when running",	&view_reduce_view },
+    { "Reduce lite-radius when running",	&view_reduce_lite },
+    
+    { "Map remembers all illuminated walls",	&view_wall_memory },
+    { "Map remembers all important stuff",	&view_xtra_memory },
+    { "Map remembers all perma-lit grids",	&view_perma_grids },
+    { "Map remembers all torch-lit grids",	&view_torch_grids },
+
+    { "Monsters chase current location",	&flow_by_sound },
+    { "Monsters chase recent locations",	&flow_by_smell },
+    
     { "Disable haggling in stores",		&no_haggle_flag },
     { "Shuffle store owners",                   &shuffle_owners },
 
     { "Show weights in inventory", 		&show_inven_weight },
     { "Show weights in equipment list",		&show_equip_weight },
     { "Show weights in stores",			&show_store_weight },
+    { "Plain object descriptions",		&plain_descriptions },
 
-    { "Pre-compute viewable region",		&view_pre_compute },
-    { "Reduce view-radius when running",	&view_reduce_view },
-    { "Reduce lite-radius when running",	&view_reduce_lite },
+    { "Allow weapons and armor to stack",	&stack_allow_items },
+    { "Allow wands/staffs/rods to stack",	&stack_allow_wands },
+    { "Over-ride inscriptions when stacking",	&stack_force_notes },
+    { "Over-ride discounts when stacking",	&stack_force_costs },
 
-    { "Draw Torch-Lite in yellow",		&view_yellow_lite },
-    { "Optimize Yellow-Lite when running",	&view_yellow_fast },
-    { "Draw Viewable Lite brightly",		&view_bright_lite },
-    { "Optimize Bright-Lite when running",	&view_bright_fast },
-
-    { "Map remembers all perma-lit grids",	&view_perma_grids },
-    { "Map remembers all torch-lit grids",	&view_torch_grids },
-
-    { "Compress savefile (lose messages)",	&compress_savefile },
-    
     { NULL,					NULL}
 };
 
@@ -651,6 +747,7 @@ static void do_cmd_options()
 {
     register int i;
 
+
     while (1) {
 
 	clear_screen();
@@ -663,7 +760,7 @@ static void do_cmd_options()
 	prt("(5) Delay Speed", 6, 5);
 	prt("(6) Object attr/chars", 7, 5);
 	prt("(7) Monster attr/chars", 8, 5);
-	prt("(8) Undefined options", 9, 5);
+	prt("(8) Dump a macro file", 9, 5);
 
 	/* Ask for a choice */        
 	prt("Angband Options (1-8 or ESC to exit) ", 0, 0);
@@ -675,9 +772,6 @@ static void do_cmd_options()
 
 	    /* Process the general options */
 	    do_cmd_options_aux(options_interface, "User Interface Options");
-	    
-	    /* Hack -- turn "choices" window back off, it's broken */
-	    use_choice_win = FALSE;
 	}
 
 	/* Disturbance Options */
@@ -730,7 +824,7 @@ static void do_cmd_options()
 	    }
 	}
 
-	/* Redefine object attr/chars */
+	/* Hack -- Redefine object attr/chars */
 	else if (i == '6') {
 
 	    /* Hack -- start on the "floor" */
@@ -743,37 +837,36 @@ static void do_cmd_options()
 	    while (1) {
 
 		int k = k_idx;
-		int k_a = (byte)k_list[k].i_attr;
-		int k_c = (byte)k_list[k].i_char;
-		int x_a = (byte)x_list[k].x_attr;
-		int x_c = (byte)x_list[k].x_char;
-
+		
+		int da = (byte)k_list[k].k_attr;
+		int dc = (byte)k_list[k].k_char;
+		int ca = (byte)k_attr[k];
+		int cc = (byte)k_char[k];
+		
 		/* Label the object */
-		Term_putstr(5, 10, -1, COLOR_WHITE,
+		Term_putstr(5, 10, -1, TERM_WHITE,
 			    format("Object = %d, Name = %-40.40s",
 				   k, k_list[k].name));
 
 		/* Label the Default values */
-		Term_putstr(10, 12, -1, COLOR_WHITE,
-			    format("Default attr/char = %3d / %3d",
-			           k_a, k_c));
-		Term_putstr(40, 12, -1, COLOR_WHITE, "<< ? >>");
-		Term_putch(43, 12, k_a, k_c);
+		Term_putstr(10, 12, -1, TERM_WHITE,
+			    format("Default attr/char = %3d / %3d", da, dc));
+		Term_putstr(40, 12, -1, TERM_WHITE, "<< ? >>");
+		Term_putch(43, 12, da, dc);
 
 		/* Label the Current values */
-		Term_putstr(10, 14, -1, COLOR_WHITE,
-			    format("Current attr/char = %3d / %3d",
-		                   x_a, x_c));
-		Term_putstr(40, 14, -1, COLOR_WHITE, "<< ? >>");
-		Term_putch(43, 14, x_a, x_c);
+		Term_putstr(10, 14, -1, TERM_WHITE,
+			    format("Current attr/char = %3d / %3d", ca, cc));
+		Term_putstr(40, 14, -1, TERM_WHITE, "<< ? >>");
+		Term_putch(43, 14, ca, cc);
 
 		/* Directions */
-		Term_putstr(5, 2, -1, COLOR_WHITE, "n/N = change index");
-		Term_putstr(5, 3, -1, COLOR_WHITE, "a/A = change attr");
-		Term_putstr(5, 4, -1, COLOR_WHITE, "c/C = change char");
+		Term_putstr(5, 2, -1, TERM_WHITE, "n/N = change index");
+		Term_putstr(5, 3, -1, TERM_WHITE, "a/A = change attr");
+		Term_putstr(5, 4, -1, TERM_WHITE, "c/C = change char");
 		
 		/* Prompt */
-		Term_putstr(0, 0, -1, COLOR_WHITE,
+		Term_putstr(0, 0, -1, TERM_WHITE,
 			    "Object attr/char (n/N/a/A/c/C): ");
 
 		/* Get a command */
@@ -783,20 +876,16 @@ static void do_cmd_options()
 		if (i == ESCAPE) break;
 
 		/* Analyze */
-		if (i == 'n') k_idx = (k_idx + 1) % MAX_K_IDX;
+		if (i == 'n') k_idx = (k_idx + MAX_K_IDX + 1) % MAX_K_IDX;
 		if (i == 'N') k_idx = (k_idx + MAX_K_IDX - 1) % MAX_K_IDX;
-		if (i == 'a') x_a = (x_a + 1) % 256;
-		if (i == 'A') x_a = (x_a + 256 - 1) % 256;
-		if (i == 'c') x_c = (x_c + 1) % 256;
-		if (i == 'C') x_c = (x_c + 256 - 1) % 256;
-		
-		/* Hack -- Save the values */
-		x_list[k].x_attr = x_a;
-		x_list[k].x_char = x_c;
+		if (i == 'a') k_attr[k] = ca + 1;
+		if (i == 'A') k_attr[k] = ca - 1;
+		if (i == 'c') k_char[k] = cc + 1;
+		if (i == 'C') k_char[k] = cc - 1;
 	    }
 	}
 	
-	/* Hack -- edit monsters */
+	/* Hack -- monsters */
 	else if (i == '7') {
 
 	    /* Hack -- start on the "urchin" */
@@ -808,38 +897,37 @@ static void do_cmd_options()
 	    /* Hack -- query until done */
 	    while (1) {
 
-		int k = r_idx;
-		int r_a = (byte)r_list[k].r_attr;
-		int r_c = (byte)r_list[k].r_char;
-		int l_a = (byte)l_list[k].l_attr;
-		int l_c = (byte)l_list[k].l_char;
+		int r = r_idx;
+
+		int da = (byte)r_list[r].r_attr;
+		int dc = (byte)r_list[r].r_char;
+		int ca = (byte)r_attr[r];
+		int cc = (byte)r_char[r];
 
 		/* Label the object */
-		Term_putstr(5, 10, -1, COLOR_WHITE,
-			    format("Monster = %d, Name = %-40.40s",
-				   k, r_list[k].name));
+		Term_putstr(5, 10, -1, TERM_WHITE,
+			    format("Object = %d, Name = %-40.40s",
+				   r, r_list[r].name));
 
 		/* Label the Default values */
-		Term_putstr(10, 12, -1, COLOR_WHITE,
-			    format("Default attr/char = %3d / %3d",
-			           r_a, r_c));
-		Term_putstr(40, 12, -1, COLOR_WHITE, "<< ? >>");
-		Term_putch(43, 12, r_a, r_c);
+		Term_putstr(10, 12, -1, TERM_WHITE,
+			    format("Default attr/char = %3u / %3u", da, dc));
+		Term_putstr(40, 12, -1, TERM_WHITE, "<< ? >>");
+		Term_putch(43, 12, da, dc);
 
 		/* Label the Current values */
-		Term_putstr(10, 14, -1, COLOR_WHITE,
-			    format("Current attr/char = %3d / %3d",
-		                   l_a, l_c));
-		Term_putstr(40, 14, -1, COLOR_WHITE, "<< ? >>");
-		Term_putch(43, 14, l_a, l_c);
+		Term_putstr(10, 14, -1, TERM_WHITE,
+			    format("Current attr/char = %3u / %3u", ca, cc));
+		Term_putstr(40, 14, -1, TERM_WHITE, "<< ? >>");
+		Term_putch(43, 14, ca, cc);
 
 		/* Directions */
-		Term_putstr(5, 2, -1, COLOR_WHITE, "n/N = change index");
-		Term_putstr(5, 3, -1, COLOR_WHITE, "a/A = change attr");
-		Term_putstr(5, 4, -1, COLOR_WHITE, "c/C = change char");
+		Term_putstr(5, 2, -1, TERM_WHITE, "n/N = change index");
+		Term_putstr(5, 3, -1, TERM_WHITE, "a/A = change attr");
+		Term_putstr(5, 4, -1, TERM_WHITE, "c/C = change char");
 		
 		/* Prompt */
-		Term_putstr(0, 0, -1, COLOR_WHITE,
+		Term_putstr(0, 0, -1, TERM_WHITE,
 			    "Object attr/char (n/N/a/A/c/C): ");
 
 		/* Get a command */
@@ -849,17 +937,36 @@ static void do_cmd_options()
 		if (i == ESCAPE) break;
 
 		/* Analyze */
-		if (i == 'n') r_idx = (r_idx + 1) % MAX_K_IDX;
+		if (i == 'n') r_idx = (r_idx + MAX_K_IDX + 1) % MAX_K_IDX;
 		if (i == 'N') r_idx = (r_idx + MAX_K_IDX - 1) % MAX_K_IDX;
-		if (i == 'a') l_a = (l_a + 1) % 256;
-		if (i == 'A') l_a = (l_a + 256 - 1) % 256;
-		if (i == 'c') l_c = (l_c + 1) % 256;
-		if (i == 'C') l_c = (l_c + 256 - 1) % 256;
-		
-		/* Hack -- Save the values */
-		l_list[k].l_attr = l_a;
-		l_list[k].l_char = l_c;
+		if (i == 'a') r_attr[r] = ca + 1;
+		if (i == 'A') r_attr[r] = ca - 1;
+		if (i == 'c') r_char[r] = cc + 1;
+		if (i == 'C') r_char[r] = cc - 1;
 	    }
+	}
+	
+	/* Macro interaction */
+	else if (i == '8') {
+
+	    char buf[80];
+
+	    /* Hack -- dump macros to a file */
+	    clear_screen();
+
+	    /* Info */
+	    prt("This option allows all current macros to be appended to", 0, 0);
+	    prt("the file of your choice.  Return uses the startup file.", 1, 0);
+	    
+	    /* Get a filename, dump the macros to it */
+	    prt("File: ", 5, 0);
+	    if (!askfor(buf, 70)) continue;
+	    
+	    /* Empty filename yields "default" */
+	    if (!buf[0]) macro_dump(ANGBAND_A_LIST);
+	    
+	    /* Dump the macros */
+	    else macro_dump(buf);
 	}
 	
 	/* Unknown option */
@@ -880,14 +987,201 @@ static void do_cmd_options()
 
 
 /*
- * Attempt to parse and execute the command 'command' in normal mode.
- * Return 'TRUE' iff we successfully parsed the message.
+ * Note something in the message recall
  */
-static int do_std_command ()
+static void do_cmd_note(void)
 {
-    char prt1[80];
+    char buf[128];
+    free_turn_flag = TRUE;
+    prt("Note: ", 0, 0);
+    if (askfor(buf, 60)) msg_print(format("Note: %s", buf));
+}
 
 
+
+
+
+
+#ifdef ALLOW_KEYMAP
+
+/*
+ * Define a new "keymap" entry
+ */
+static void do_cmd_keymap(void)
+{
+    int k, r, d;
+    char i1, i2, i3;
+    
+    /* Free turn */
+    free_turn_flag = TRUE;
+    
+    /* Flush the input */
+    flush();
+
+    /* Get the trigger */
+    if (get_com("Type the trigger keypress: ", &i1) &&
+	get_com("Type the resulting keypress: ", &i2) &&
+	get_com("Type a direction (or space): ", &i3)) {
+
+	/* Acquire the array index */
+	k = (byte)(i1);
+	r = (byte)(i2);
+	d = (byte)(i3);
+	
+	/* Hack -- ignore icky keys */
+	if (k >= 128) k = 0;
+	
+	/* Analyze the result key */
+	keymap_cmds[k] = (r < 128) ? i2 : ESCAPE;
+
+	/* Analyze the "direction" */
+	keymap_dirs[k] = keymap_dirs[d];
+
+	/* Success */
+	prt(format("Keypress 0x%02x mapped to 0x%02x/%d",
+		   k, keymap_cmds[k], keymap_dirs[k]), 0, 0);
+    }
+
+    /* Forget it */
+    else {
+	prt("Cancelled.", 0, 0);
+    }
+}
+
+#endif
+
+
+
+#ifdef ALLOW_MACROS
+
+/*
+ * Define a new macro
+ *
+ * Note that this function resembles "inkey_aux()" in "io.c"
+ *
+ * The "trigger" must be entered with less than 10 milliseconds
+ * between keypresses, as in "inkey_aux()".
+ */
+static void do_cmd_macro(void)
+{
+    int i, n = 0, w, fix;
+    
+    char pat[1024] = "";
+    char act[1024] = "";
+
+    char tmp[1024];
+
+
+    /* Free turn */
+    free_turn_flag = TRUE;
+    
+    
+    /* Flush the input */
+    flush();
+
+    /* Show the cursor */
+    fix = (0 == Term_show_cursor());
+    
+    /* Get the first key */
+    prt("Press the macro trigger key: ", 0, 0);
+    Term_fresh();
+
+    /* Wait for the first key */
+    i = Term_inkey();
+    pat[n++] = i;
+    pat[n] = '\0';
+
+    /* Read the rest of the pattern */
+    for (w = 0; TRUE; ) {
+
+	/* If a key is ready, acquire it */
+	if (Term_kbhit()) {
+	    i = Term_inkey();
+	    pat[n++] = i;
+	    pat[n] = '\0';
+	    w = 0;
+	}
+	
+	/* Wait for it */
+	else {
+	    if (w > 30) break;
+	    delay(++w);
+	}	
+    }
+
+    /* Hide cursor if needed */    
+    if (fix) Term_hide_cursor();
+
+
+    /* Hack -- verify "normal" characters */
+    if ((n == 1) && (pat[0] >= 32) && (pat[0] < 127)) {
+	if (!get_check("Are you sure you want to redefine that?")) {
+	    prt("Macro cancelled.", 0, 0);
+	    return;
+	}
+    }
+    
+
+    /* Convert the trigger to text */
+    ascii_to_text(tmp, pat);
+
+    /* Flush the input */
+    flush();
+
+    /* Verify */
+    msg_print(format("Macro trigger '%s' accepted.", tmp));
+    msg_print("Enter an encoded action.");
+    msg_print(NULL);
+
+
+    /* Prompt for the action */
+    prt("Action: ", 0, 0);
+
+    /* Get the encoded action */
+    if (askfor(tmp, 70)) {
+
+	/* Analyze the string */
+	text_to_ascii(act, tmp);
+	
+	/* Add the macro */
+	macro(pat, act);
+    
+	/* Clear the line */
+	prt("Macro accepted.", 0, 0);    
+    }
+
+    /* Cancel */
+    else {
+
+	/* Cancelled */
+	prt("Macro cancelled.", 0, 0);
+    }
+}
+
+#endif
+
+
+/*
+ * Hack -- allow the system to "strip" special undefined macros
+ *
+ * These macros are all introduced by "control-underscore" and
+ * followed by a series of "normal" keys, and terminated by return.
+ */
+static void do_cmd_strip(void)
+{
+    int i;
+
+    /* Strip "normal" keys, plus a "terminator" */
+    for (i = 32; i >= 32; i = inkey());
+}
+
+
+/*
+ * Parse and execute the current command
+ * Give "Warning" on illegal commands.
+ */
+void process_command(void)
+{
     /* Parse the command */
     switch (command_cmd) {
 
@@ -900,15 +1194,86 @@ static int do_std_command ()
 	    free_turn_flag = TRUE; break;
 
 
+	 
+	/*** Wizard Commands ***/
+	    
+	/* Toggle Wizard Mode */
+	case CTRL('W'):
+	    free_turn_flag = TRUE;
+	    if (wizard) {
+		wizard = FALSE;
+		msg_print("Wizard mode off.");
+	    }
+	    else if (enter_wiz_mode()) {
+		msg_print("Wizard mode on.");
+	    }
+	    else {
+		msg_print("You are not allowed to do that.");
+	    }
+	    prt_winner();
+	    break;
+
+	/* Special Wizard Command */
+	case CTRL('A'):
+	    if (wizard) {
+		do_wiz_command();
+	    }
+	    else {
+		msg_print("You are not allowed to do that.");
+	    }
+	    break;
+
+	/* Interact with the Borg */
+	case CTRL('Z'):
+	    free_turn_flag = TRUE;
+#ifdef AUTO_PLAY
+	    Borg_mode();
+#endif
+	    break;
+
+
+	/*** Extra commands ***/
+
+	case ':':
+	    free_turn_flag = TRUE;
+	    do_cmd_note();
+	    break;	    
+
+	case '@':
+	    free_turn_flag = TRUE;
+#ifdef ALLOW_MACROS
+	    do_cmd_macro();
+#endif
+	    break;
+
+	case '!':
+	    free_turn_flag = TRUE;
+#ifdef ALLOW_KEYMAP
+	    do_cmd_keymap();
+#endif
+	    break;
+
+	case CTRL('_'):
+	    free_turn_flag = TRUE;
+	    do_cmd_strip();
+	    break;
+
+
 	/*** Inventory Commands ***/
 
-	/* Wear or weild something */
-	case 'w':
+	/* Wear or wield something */
+	case '[':
 	    inven_command('w'); break;
 
+	/* Take something off */
+	case ']':
+	    inven_command('t'); break;
+
+#if 0
 	/* Exchange primary and aux weapons */
 	case 'x':
 	    inven_command('x'); break;
+#endif
 
 	/* Drop something */
 	case 'd':
@@ -922,15 +1287,11 @@ static int do_std_command ()
 	case 'i':
 	    inven_command('i'); break;
 
-	/* Take something off */
-	case 't':
-	    inven_command('t'); break;
-
 
 	/*** Standard "Movement" Commands ***/
 
-	/* Tunnel digging */
-	case '}':
+	/* Dig a tunnel */
+	case '+':
 	    do_cmd_tunnel(); break;
 
 	/* Move without picking anything up */
@@ -944,46 +1305,31 @@ static int do_std_command ()
 
 	/*** Commands that "re-interpret" the repeat count ***/
 
-	/* Begin Running (done "off-line") -- Arg is Max Distance */
-	case ',':
-	    do_cmd_run();
-	    break;
+	/* Begin Running -- Arg is Max Distance */
+	case '.':
+	    do_cmd_run(); break;
 
 	/* Stay still, and, if repeated, Begin Resting -- Arg is time */
-	case '\'':
+	case ',':
 	    do_cmd_stay(TRUE);
 	    if (command_arg > 1) do_cmd_rest();
 	    break;
 
-	/* Begin Resting (rest done "off-line") -- Arg is time */
+	/* Begin Resting -- Arg is time */
 	case 'R':
-	    do_cmd_rest();
-	    break;
+	    do_cmd_rest(); break;
+
 
 
 	/*** Searching, Resting ***/
 
-	/* Get an object (Should it always be a free move?) */
+	/* Pick up an object */
 	case 'g':
-	    free_turn_flag = TRUE;
-	    if (prompt_carry_flag) {
-		if (cave[char_row][char_col].i_idx != 0) {
-		    free_turn_flag = FALSE;
-		    carry(char_row, char_col, TRUE);
-		}
-	    }
-	    break;
+	    do_cmd_pick_up(); break;
 
 	/* Toggle search status */
 	case '#':
-	    free_turn_flag = TRUE;
-	    if (p_ptr->searching) {
-		search_off();
-	    }
-	    else {
-		search_on();
-	    }
-	    break;
+	    do_cmd_toggle_search(); break;
 
 	/* Search the adjoining grids */
 	case 's':
@@ -1042,9 +1388,13 @@ static int do_std_command ()
 
 	/*** Use various objects ***/
 
-	/* ({) inscribe an object    */
+	/* Inscribe an object */
 	case '{':
-	    scribe_object(); free_turn_flag = TRUE; break;
+	    do_cmd_inscribe(); break;
+
+	/* Inscribe an object (in a different way) */
+	case '}':
+	    do_cmd_inscribe(); break;
 
 	/* Activate an artifact */
 	case 'A':
@@ -1052,7 +1402,7 @@ static int do_std_command ()
 
 	/* Eat some food */
 	case 'E':
-	    eat_food(); break;
+	    do_cmd_eat_food(); break;
 
 	/* Fill the lamp */
 	case 'F':
@@ -1064,23 +1414,23 @@ static int do_std_command ()
 
 	/* Zap a wand */
 	case 'a':
-	    aim_wand(); break;
+	    do_cmd_aim_wand(); break;
 
 	/* Activate a rod */
 	case 'z':
-	    zap_rod(); break;
+	    do_cmd_zap_rod(); break;
 
 	/* Quaff a potion */
 	case 'q':
-	    quaff_potion(); break;
+	    do_cmd_quaff_potion(); break;
 
 	/* Read a scroll */
 	case 'r':
-	    read_scroll(); break;
+	    do_cmd_read_scroll(); break;
 
 	/* Zap a staff */
 	case 'u':
-	    use_staff(); break;
+	    do_cmd_use_staff(); break;
 
 
 	/*** Looking at Things (nearby or on map) ***/
@@ -1089,11 +1439,11 @@ static int do_std_command ()
 	case 'M':
 	    do_cmd_view_map(); break;
 
-	/* (W)here are we on the map	(L)ocate on map */	
+	/* Locate player on the map */	
 	case 'W':
 	    do_cmd_locate(); break;
 
-	/* Examine surroundings (lowercase "L") */
+	/* Examine surroundings */
 	case 'l':
 	    do_cmd_look(); break;
 
@@ -1107,178 +1457,66 @@ static int do_std_command ()
 
 	/* Help */
 	case '?':
-	    do_cmd_help(); break;
+	    do_cmd_help(NULL); break;
 
 	/* Identify Symbol */
 	case '/':
-	    ident_char(); free_turn_flag = TRUE; break;
+	    do_cmd_query_symbol(); break;
 
 	/* Character Description */
 	case 'C':
-	    save_screen();
-	    change_name();
-	    restore_screen();
-	    free_turn_flag = TRUE;
-	    break;
-
+	    do_cmd_change_name(); break;
 
 
 	/*** System Commands ***/
 
 	/* Game Version */
 	case 'V':
-	    helpfile(ANGBAND_VERSION); free_turn_flag = TRUE; break;
+	    do_cmd_help(ANGBAND_VERSION); break;
 
-	/* Repeat (^F)eeling */
+	/* Repeat Feeling */
 	case CTRL('F'):
 	    do_cmd_feeling(); break;
 
-	/* (^P)revious message. */
+	/* Previous message(s). */
 	case CTRL('P'):
 	    do_cmd_messages(); break;
 
-	/* (^W)izard mode */
-	case CTRL('W'):
-	    if (!wizard && enter_wiz_mode()) {
-		msg_print("Wizard mode on.");
-	    }
-	    prt_winner();
-	    free_turn_flag = TRUE;
-	    break;
-
 	/* Commit Suicide and Quit */
 	case 'Q':
-	    flush();
-	    if (get_check(total_winner ?
-			  "Do you want to retire?" :
-			  "Do you really want to quit?")) {
-		new_level_flag = TRUE;
-		death = TRUE;
-		(void)strcpy(died_from, "Quitting");
-	    }
-	    free_turn_flag = TRUE;
-	    break;
+	    do_cmd_suicide(); break;
 
 	/* Save and Quit */
 	case CTRL('X'):
-	    if (total_winner) {
-		msg_print("You are a Total Winner, your character must be retired.");
-		if (rogue_like_commands) {
-		    msg_print("Use 'Q' to when you are ready to retire.");
-		}
-		else {
-		    msg_print("Use <Control>-K when you are ready to retire.");
-		}
-	    }
-	    else {
+	    exit_game(); break;
 
-		/* Attempt to save */
-		(void)strcpy(died_from, "(saved)");
-		msg_print("Saving game...");
-		if (save_player()) {
-		    msg_print("done.");
-		    quit(NULL);
-		}
-
-		/* Oops. */
-		msg_print("Save failed...");
-		(void)strcpy(died_from, "(alive and well)");
-	    }
-	    free_turn_flag = TRUE;
-	    break;
-
-	/* Redraw the screen (i.e. when hallucinations run out */
+	/* Redraw the screen */
 	case CTRL('R'):
+	    do_cmd_redraw(); break;
 
-	    /* Hallucination, redraw with a "warning" :-) */
-	    if (p_ptr->image > 0) {
-		msg_print("You cannot be sure what is real and what is not!");
-	    }
-
-	    /* Redraw the screen */
-	    draw_cave();
-	    Term_redraw();
-
-	    free_turn_flag = TRUE;
-	    break;
-
-	/* (=) set options */
+	/* Set options */
 	case '=':
-	    do_cmd_options();
-	    break;
+	    do_cmd_options(); break;
 
-#ifdef ALLOW_SCORE
-	/* score patch originally by Mike Welsh mikewe@acacia.cs.pdx.edu */
-	case 'v':
-	    sprintf(prt1,"Your current score is: %ld", total_points());
-	    message(prt1, 0);
-	    free_turn_flag = TRUE;
-	    break;
-#endif
-
-#ifdef ALLOW_ARTIFACT_CHECK /* -CWS */
-	/* Check artifacts -- NOT as a wizard */
+	/* Check artifacts */
 	case '~':
-	    /* Hack -- no checking in the dungeon */
-	    if (dun_level) {
-		msg_print("You need to be in town to check artifacts!");
-	    }
-	    else {
-		artifact_check();
-	    }
-	    free_turn_flag = TRUE;
-	    break;
-#endif
+	    do_cmd_check_artifacts(); break;
 
-#ifdef ALLOW_CHECK_UNIQUES /* -CWS */
-	/* Check uniques -- NOT as a wizard */
+	/* Check uniques */
 	case '|':
-	    check_uniques();
-	    free_turn_flag = TRUE;
-	    break;
-#endif
+	    do_cmd_check_uniques(); break;
 
+
+	/* Hack -- Unknown command */
 	default:
-	    return (FALSE);
-    }
-
-    /* Successful Parse */
-    return (TRUE);
-}
-
-
-/*
- * Parse and execute the command 'command', or warn if unable
- */
-
-void process_command(void)
-{
-    int okay = FALSE;
-
-    /* Try the Wizard Commands */
-    if (!okay && do_wiz_command()) okay = TRUE;
-
-    /* Try the Standard Commands */
-    if (!okay && do_std_command()) okay = TRUE;
-
-    /* If the command scanned, save it -- and if not? */
-    if (okay) command_old = command_cmd;
-
-    /* Otherwise, give help */
-    else {
-	/* Wizard Help */
-	if (wizard) {
-	    prt("Type '?' or '\\' for help.", 0, 0);
-	}
-
-	/* Normal Help */
-	else {
+	    free_turn_flag = TRUE;
 	    prt("Type '?' for help.", 0, 0);
-	}
-
-	/* A free move in either case */
-	free_turn_flag = TRUE;
+	    return;
     }
+
+
+    /* Save the command */
+    command_old = command_cmd;
 }
 
 
@@ -1293,13 +1531,15 @@ void process_command(void)
  * even a "repeat" count or similar argument (such as a "max run distance").
  *
  * These components are thus explicitly represented, with globals.
+ *
  * The "base command" (see below) is stored in "command_cmd"
  * The "desired direction" is stored in "command_dir".
  * The "repeat count" is stored in "command_rep"
  * The "numerical argument" is stored in "command_arg"
  *
- * When "command_dir" is set, it overrides all calls to "get_*dir()"
+ * When "command_dir" is set, it overrides all calls to "get*dir()"
  * So we always reset command_dir to -1 before getting a new command.
+ * Hack -- a "command_dir" of "zero" means "the current target".
  *
  * Note that "command_arg" is sometimes used to select an argument
  * to a command (whereas "command_rep" actually "repeats" it).
@@ -1322,30 +1562,21 @@ void process_command(void)
  * dir to apply confusion, via "dir = command_dir; confuse_dir(&dir,mode);"
  * where mode is, for example, 0x02 for "partial" confusion.
  *
- * The functions below this comment encode conversions from the traditional
- * "roguelike" and "original" command sets into the new "Angband Commands"
- * (command_cmd + command_dir, etc).  Note that since the "Angband Chars"
- * are never officially entered by the user, they may be modified at will,
- * and can in fact be replaced by integers.  This may first require a rewrite
- * of "inven_command()" and "target()" and such, however.
+ * The last command successfully executed is stored in "command_old".
  *
- * Actually, it looks like a low level "keymapper" will do the trick...
- *
- * To go along with the vars described above, there are two others.
- * The last command is stored in "command_old".
  * Eventually, "command_esc" will allow one to track low level "Escapes".
  *
- * The actual "Angband Chars" should not be relevant to the user, since
- * they are totally internal, but they are used to prepare the keymapper.
- * Currently, they greatly resemble the "original keys" but this will
- * go through several revisions until they are all symbolic constants.
+ * The functions below this comment encode conversions from the traditional
+ * "roguelike" and "original" command sets into the new "Angband Commands"
+ * (command_cmd + command_dir, etc).  Note that the "Angband Chars" bear a
+ * striking resemblance to the "original commands", with special keys for
+ * "walk", "jump", "run", "tunnel", "stay", and a few others.
  *
- * For interest's sake, note that:
  *   "Walk" is encoded as ";" plus a direction.
- *   "Walk without picking up" is encoded as "-" plus a direction
- *   "Tunnel" is encoded as "}" plus a direction
- *   "Run until bored" is encoded as "," plus a direction
- *   Stay still is encoded as "'" (with no direction)
+ *   "Jump" is encoded as "-" plus a direction
+ *   "Tunnel" is encoded as "+" plus a direction
+ *   "Run" is encoded as "." plus a direction
+ *   "Stay" is encoded as "," (with no direction)
  *
  * The separation of the actual keys from the encodings shuold greatly
  * facilitate the use of macros of various kinds...   Note that now the
@@ -1357,315 +1588,17 @@ void process_command(void)
  * pick up whatever is there".  Hmmm...  For ease of use, the keymapper may
  * encode directions via use of the "Meta-Keys" in the upper regions.
  * The other solution (a hack) would be to not have a strict "one-to-one"
- * mapping from keypress to command.  Hmmm...
- *
- * Note that targeting mode will soon be changed to do "on-demand" reset
- * of the target (along with requiring the target to be "chosen").  Should
- * this "over-ride" the "specify no-direction" flag?  Hmmm...
+ * mapping from keypress to command.  Hmmm...  Also note that there are
+ * now a few "extra" commands, such as "[" and "]" for wear/remove so that
+ * we can eliminate some annoying problems from "inven_command()".
  */
 
-
-
-
-/*
- * Convert a "Rogue" keypress into an "Angband" keypress
- * Where necessary, set the global variable "command_dir"
- */
-static char roguelike_commands(char command)
-{
-    /* Process the command */
-    switch (command) {
-
-	/* Wizard Commands */
-	case '\\':		/* wizard help */
-	case CTRL('A'):		/* cure all */
-	case CTRL('D'):		/* up/down */
-	case CTRL('E'):		/* wizchar */
-	case CTRL('G'):		/* good treasure */
-	case CTRL('I'):		/* identify */
-	case CTRL('T'):		/* teleport */
-	case CTRL('V'):		/* very good treasure */
-	case CTRL('Z'):		/* genocide */
-	case CTRL('^'):		/* Identify up to level? */
-	case ':':		/* map area */
-	case '!':		/* rerate hitpoints */
-	case '@':		/* create object */
-	case '$':		/* wiz. light */
-	case '%':		/* self knowledge */
-	case '&':		/* summon monster */
-	case '+':		/* add experience */
-	    return (command);
-
-	/* Movement (rogue keys) */
-	case 'b': command_dir = 1; return (';');
-	case 'j': command_dir = 2; return (';');
-	case 'n': command_dir = 3; return (';');
-	case 'h': command_dir = 4; return (';');
-	case 'l': command_dir = 6; return (';');
-	case 'y': command_dir = 7; return (';');
-	case 'k': command_dir = 8; return (';');
-	case 'u': command_dir = 9; return (';');
-
-	/* Running (press SHFT(move)) */
-	case 'B': command_dir = 1; return (',');
-	case 'J': command_dir = 2; return (',');
-	case 'N': command_dir = 3; return (',');
-	case 'H': command_dir = 4; return (',');
-	case 'L': command_dir = 6; return (',');
-	case 'Y': command_dir = 7; return (',');
-	case 'K': command_dir = 8; return (',');
-	case 'U': command_dir = 9; return (',');
-
-	/* Tunnel digging (press CTRL(move)) */
-	case CTRL('B'): command_dir = 1; return ('}');
-	case CTRL('J'): command_dir = 2; return ('}');
-	case CTRL('N'): command_dir = 3; return ('}');
-	case CTRL('H'): command_dir = 4; return ('}');
-	case CTRL('L'): command_dir = 6; return ('}');
-	case CTRL('Y'): command_dir = 7; return ('}');
-	case CTRL('K'): command_dir = 8; return ('}');
-	case CTRL('U'): command_dir = 9; return ('}');
-
-	/* Hack -- CTRL('M') == return == linefeed == CTRL('J') */
-	case CTRL('M'): command_dir = 2; return ('}');
-
-	/* Zap a staff */
-	case 'Z':
-	    return ('u');
-
-	/* Take off */
-	case 'T':
-	    return ('t');
-
-	/* Fire */
-	case 't':
-	    return ('f');
-
-	/* Bash */
-	case 'f':
-	    return ('B');
-
-	/* Look */
-	case 'x':
-	    return ('l');
-
-	/* Exchange */
-	case 'X':
-	    return ('x');
-
-	/* Walking without picking up */
-	case '-':
-	    return ('-');
-
-	/* Aim a wand */
-	case 'z':
-	    return ('a');
-
-	/* Zap a rod */
-	case 'a':
-	    return ('z');
-
-	/* Stand still */
-	case '.':
-	    return ('\'');
-
-
-
-
-	case ' ':
-	case CTRL('F'):
-	case CTRL('R'):
-	case CTRL('P'):
-	case CTRL('W'):
-	case CTRL('X'):
-	case '#':
-	case '/':
-	case '<':
-	case '>':
-	case '=':
-	case '{':
-	case '?':
-	case '~':
-	case '|':
-	case '*':
-	case 'A':
-	case 'C':
-	case 'D':
-	case 'E':
-	case 'F':
-	case 'G':
-	case 'M':
-	case 'P':
-	case 'Q':
-	case 'R':
-	case 'S':
-	case 'V':
-	case 'W':
-	case 'c':
-	case 'd':
-	case 'e':
-	case 'g':
-	case 'i':
-	case 'm':
-	case 'o':
-	case 'p':
-	case 'q':
-	case 'r':
-	case 's':
-	case 'v':
-	case 'w':
-	case '}':
-	case ',':
-	case ';':
-	    return (command);
-    }
-
-    /* Hack -- Invalid command */
-    return (ESCAPE);
-}
-
-
-/*
- * Convert an "Original" keypress into an "Angband" keypress
- * Where necessary, set the global variable "command_dir"
- */
-static char original_commands(char command)
-{
-    /* Process the command */
-    switch (command) {
-
-	case CTRL('J'):
-	case CTRL('M'):
-	case ' ':
-	    return (' ');
-
-	case CTRL('K'):
-	    return ('Q');
-
-	case 'L':
-	    return ('W');
-
-	case 'S':
-	    return ('#');
-
-	case 'b':
-	    return ('P');
-
-	case 'h':
-	    return ('?');
-
-	case 'j':
-	    return ('S');
-
-	case ESCAPE:
-	case CTRL('F'):
-	case CTRL('R'):
-	case CTRL('P'):
-	case CTRL('W'):
-	case CTRL('X'):
-	case '/':
-	case '<':
-	case '>':
-	case '=':
-	case '{':
-	case '?':
-	case '~':
-	case '|':
-	case '*':
-	case 'A':
-	case 'B':
-	case 'C':
-	case 'D':
-	case 'E':
-	case 'F':
-	case 'G':
-	case 'M':
-	case 'R':
-	case 'V':
-	case 'a':
-	case 'c':
-	case 'd':
-	case 'e':
-	case 'f':
-	case 'g':
-	case 'i':
-	case 'l':
-	case 'm':
-	case 'o':
-	case 'p':
-	case 'q':
-	case 'r':
-	case 's':
-	case 't':
-	case 'u':
-	case 'v':
-	case 'w':
-	case 'x':
-	case 'z':
-	    return (command);
-
-	/* Wizard Commands */
-	case '\\':		/* wizard help */
-	case CTRL('A'):		/* cure all */
-	case CTRL('D'):		/* up/down */
-	case CTRL('E'):		/* wizchar */
-	case CTRL('G'):		/* good treasure */
-	case CTRL('I'):		/* identify */
-	case CTRL('T'):		/* teleport */
-	case CTRL('V'):		/* very good treasure */
-	case CTRL('Z'):		/* genocide */
-	case CTRL('^'):		/* Identify up to level? */
-	case ':':		/* map area */
-	case '!':		/* rerate hitpoints */
-	case '@':		/* create object */
-	case '$':		/* wiz. light */
-	case '%':		/* self knowledge */
-	case '&':		/* summon monster */
-	case '+':		/* add experience */
-	    return (command);
-
-	/* Stand still (That is, Rest one turn) */
-	case '5':
-	    return ('\'');
-
-	/* Standard walking */
-	case '1': command_dir = 1; return (';');
-	case '2': command_dir = 2; return (';');
-	case '3': command_dir = 3; return (';');
-	case '4': command_dir = 4; return (';');
-	case '6': command_dir = 6; return (';');
-	case '7': command_dir = 7; return (';');
-	case '8': command_dir = 8; return (';');
-	case '9': command_dir = 9; return (';');
-
-	/* Walking without picking up */
-	case '-':
-	    return ('-');
-
-	/* Running as far as possible (allow comma as well) */
-	case '.':
-	    return (',');
-
-	/* Tunnel digging (allow '}' as well) */
-	case 'T':
-	    return ('}');
-
-	/* Hack -- allow certain "Angband Keys" to be themselves */
-	case '}':
-	case ';':
-	    return (command);
-    }
-
-    /* Return an obviously invalid command */
-    return (ESCAPE);
-}
 
 
 /*
  * Check whether this command can be "repeated".
  *
  * Note -- this routine applies ONLY to "Angband Commands".
- * Thus, the "Roguelike Movement Keys" are meaningless.
  *
  * Repeated commands must be VERY careful to correctly
  * turn off the repeat when they are done with it!
@@ -1678,7 +1611,7 @@ static int command_takes_rep(char c)
 	/* Take a direction */
 	case '-': /* Jump */
 	case ';': /* Walk */
-	case '}': /* Tunnel */
+	case '+': /* Tunnel */
 	case 'B': /* Bash/Force */
 	case 'D': /* Disarm */
 	case 'S': /* Spike */
@@ -1712,16 +1645,12 @@ static int command_takes_arg(char c)
     switch (c) {
 
 	/* Normal commands */
-	case ',': /* Run */
+	case '.': /* Run */
+	case ',': /* Stay */
 	case 'R': /* Rest */
-	case '\'': /* Stay */
 
-	/* Wizard commands */
-	case CTRL('P'): /* Recall */
-	case CTRL('D'): /* Teleport to Level */
-	case CTRL('G'): /* Good treasure */
-	case CTRL('V'): /* Very good treasure */
-	case '+':       /* Add experience */
+	/* Hack -- All Wizard Commands */
+	case CTRL('A'): /* Special Wizard Command */
 	    return TRUE;
     }
 
@@ -1732,79 +1661,124 @@ static int command_takes_arg(char c)
 
 
 /*
+ * Apply a keypress to extract "command_cmd" and "command_dir"
+ */
+static void keymap_apply(char cmd)
+{
+    int k = (byte)(cmd);
+    
+    /* Hack -- prevent illegal commands */
+    if (k >= 128) k = 0;
+    
+    /* Access the array info */
+    command_cmd = keymap_cmds[k];
+    command_dir = keymap_dirs[k];
+
+    /* Hack -- notice "undefined" commands */
+    if (!command_cmd) command_cmd = ESCAPE;
+    
+    /* Hack -- extract "non-directions" if needed */
+    if (command_dir > 9) command_dir = -1;
+}
+
+
+/*
  * Request a command from the user.
  *
  * Sets command_cmd, command_dir, command_rep, command_arg.
+ *
+ * Note that "caret" ("^") is treated special, and is used to
+ * allow manual input of control characters.  This can be used
+ * on many machines to request repeated tunneling (Ctrl-H) and
+ * on the Macintosh to request "Control-Caret".
  */
-void request_command()
+void request_command(void)
 {
-    int i;
+    int i = 0;
     char cmd;
-    char tmp[8];
 
 
-    /* Receive the command */
-    command_cmd = 0;
+    /* Notice changes in the "rogue_like_commands" flag */
+    static old_rogue_like = -1;
+    
+    /* Hack -- notice changes in "rogue_like_commands" */
+    if (old_rogue_like != rogue_like_commands) keymap_init();
+    
+    /* Save the "rogue_like_commands" setting */
+    old_rogue_like = rogue_like_commands;
+    
 
-    /* Commands start without a direction */
-    command_dir = -1;
-
-    /* Reset the count (already done) */
-    command_rep = 0;
-
-    /* Allow commands to take a "non-count" argument */
-    command_arg = 0;
-
-    /* Later -- see if a command gets aborted */
+    /* Hack -- Assume no abortion yet */
     command_esc = 0;
 
 
-    /* Assume no "Count" */
-    i = 0;
+    /* Hack -- Illuminate the player */
+    move_cursor_relative(char_row, char_col);
 
-    /* No message pending */
-    msg_flag = FALSE;
 
-    /* Usually, we "hilite" the player */
-    if (hilite_player) {
+    /* Hack -- process "repeated" commands */
+    if (command_rep > 0) {
+
+	/* Count this execution */
+	command_rep--;
+
+	/* Hack -- Flush the output */
+	Term_fresh();
+
+	/* Hack -- Assume messages were seen */
+	msg_flag = FALSE;
+
+	/* All done */
+	return;
+    }
+
+
+    /* No command yet */
+    command_cmd = 0;
+
+    /* No "argument" yet */
+    command_arg = 0;
+
+    /* Hack -- no direction yet */
+    command_dir = -1;
+
+
+
+    /* Hack -- auto-commands */
+    if (command_new) {
+	prt("", 0, 0);
+	cmd = command_new;
+	command_new = 0;
+    }
     
-	/* Get a key */
-	cmd = inkey();
-    }
-
-    /* Some systems can cleverly "hide" the cursor */
+    /* Get a keypress in "command" mode */
     else {
-
-	int okay;
-	
-	/* Hack -- Hide the cursor cause it is ugly */
-	okay = Term_hide_cursor();
-
-	/* Get a key */
-	cmd = Term_inkey();
-
-	/* Hack -- Show the cursor to undo the hack above */
-	if (!okay) Term_show_cursor();
+	msg_flag = FALSE;
+	inkey_flag = TRUE;
+	cmd = inkey();
+	inkey_flag = FALSE;
     }
 
-    /* Pseudo-Hack -- Get a count for a command -- allow "0" always */
-    if ((rogue_like_commands && cmd >= '0' && cmd <= '9') ||
-	(!rogue_like_commands && cmd == '#') ||
-	(!rogue_like_commands && cmd == '0')) {
 
+    /* Analyze the keypress */
+    keymap_apply(cmd);
+
+    /* Special command -- Get a "count" for another command */
+    if (command_cmd == '0') {
+
+	/* Begin the input */
 	prt("Repeat count:", 0, 0);
-
-	/* Hack to "forget" about the '#' keypress */
-	if (cmd == '#') cmd = '0';
 
 	/* Get a command count */
 	while (1) {
 
-	    /* Simple editing -- see hack below to repeat "CTRL('H')" */
+	    /* Get a new keypress */
+	    cmd = inkey();
+
+	    /* Simple editing */
 	    if (cmd == DELETE || cmd == CTRL('H')) {
 		i = i / 10;
-		(void)sprintf(tmp, "%d ", i);
-		prt(tmp, 0, 14);
+		prt(format("Repeat count: %d", i), 0, 0);
 	    }
 
 	    /* Actual numeric data */
@@ -1818,8 +1792,7 @@ void request_command()
 		/* Incorporate that digit */
 		else {
 		    i = i * 10 + cmd - '0';
-		    (void)sprintf(tmp, "%d", i);
-		    prt(tmp, 0, 14);
+		    prt(format("Repeat count: %d", i), 0, 0);
 		}
 	    }
 
@@ -1827,63 +1800,48 @@ void request_command()
 	    else {
 		break;
 	    }
-
-	    /* Get the next digit, edit, or command */
-	    cmd = inkey();
 	}
 
 	/* Let a "non-count" default to 99 repetitions */
 	if (i == 0) {
 	    i = 99;
-	    (void)sprintf(tmp, "%d", i);
-	    prt(tmp, 0, 14);
+	    prt(format("Repeat count: %d", i), 0, 0);
 	}
 
-	/* Hack -- allow "0" to "9" and "^H" to be used as commands */
-	/* Simply hit space to break out of the "count" specification */
-	if (cmd == ' ') {
+	/* Hack -- white-space means "enter command now" */
+	if ((cmd == ' ') || (cmd == '\n') || (cmd == '\r')) {
 	    if (!get_com("Command:", &cmd)) cmd = ESCAPE;
 	}
+
+	/* Analyze the keypress */
+	keymap_apply(cmd);
     }
 
-    /* Allow control codes to be entered with '^' + a char. [-CJS-] */
-    /* This is very useful on the Mac for CTRL('R') and CTRL('^'). */
-    if (cmd == '^') {
+    /* Hack -- allow "control chars" to be entered */
+    if (command_cmd == '^') {
 
 	/* Get a char to "cast" into a control char */
 	if (!get_com("Control-", &cmd)) cmd = ESCAPE;
 
-	/* Do not allow Control-Space */
-	else if (cmd == ' ') cmd = ESCAPE;
+	/* Hack -- create a control char if legal */
+	else if (CTRL(cmd)) cmd = CTRL(cmd);
 
-	/* Special hack to allow "Control-Six" */
-	else if (cmd == '6') cmd = CTRL('^');
-
-	/* Special hack to allow "Control-Minus" */
-	else if (cmd == '-') cmd = CTRL('_');
-
-	/* Just cast the character to a control char */
-	else cmd = CTRL(cmd);
+	/* Analyze the keypress */
+	keymap_apply(cmd);
     }
 
-    /* move cursor to player char again, in case it moved */
+
+    /* Move cursor to player char again, in case it moved */
     move_cursor_relative(char_row, char_col);
-
-    /* Process (and Convert) Roguelike Commands */
-    if (rogue_like_commands) {
-	command_cmd = roguelike_commands(cmd);
-    }
-
-    /* Process (and Convert) Original Commands */
-    else {
-	command_cmd = original_commands(cmd);
-    }
 
     /* Hack -- let some commands get repeated by default */
     if (always_repeat && (i <= 0)) {
 
-	/* Tunnel, Bash, Disarm, Open, Search get 99 tries */
-	if (strchr("}BDos", command_cmd)) i = 99;
+	/* Hack -- Tunnel gets 99 tries */
+	if (command_cmd == '+') i = 99;
+	
+	/* Bash, Disarm, Open, Search get 99 tries */
+	else if (strchr("BDos", command_cmd)) i = 99;
     }
 
     /* Make sure a "Count" is legal for this command */
@@ -1917,6 +1875,12 @@ void request_command()
 	    command_cmd = ESCAPE;
 	}
     }
+    
+    /* Hack -- erase the message line. */
+    prt("", 0, 0);
+
+    /* Hack -- Re-Illuminate the player */
+    move_cursor_relative(char_row, char_col);
 }
 
 

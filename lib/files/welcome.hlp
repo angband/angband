@@ -1,7 +1,7 @@
                        Welcome to Angband!
 
 Your first task is to generate a character. You must specify a race,
-a sex, and a class.  You may "Quit" with "Ctrl-C".
+a sex, and a class.  You may "Quit" with "Ctrl-C" on most machines.
 
 Then, you will roll a character, using the "Autoroller" if desired.
 Your character has "stats" ranging from 3 to 18 (and above), which
@@ -12,5 +12,3 @@ Then name your character, and enter the world of Angband...
 
 If this is your first time playing, you may want to read the manual first.
 If you cannot find the Manual, you can always try the source... :-)
-
-

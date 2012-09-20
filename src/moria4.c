@@ -13,16 +13,6 @@
 #include "angband.h"
 
 
-/* Lets do all prototypes correctly.... -CWS */
-#ifndef NO_LINT_ARGS
-#ifdef __STDC__
-static void area_affect(int,int,int);
-static int see_wall(int,int,int);
-static int see_nothing(int,int,int);
-#endif
-#endif
-
-
 
 
 
@@ -127,10 +117,10 @@ int target_okay()
 
 
 /*
+ * Set a new target.  This code can be called from get_a_dir()
+ *
  * This targetting code stolen from Morgul -CFT
  * Targetting routine 					CDW
- * Need to teach it to be smart enough to save/restore screen
- * This will let it be used as a sub-prompt in "get_a_dir();" 
  */
 int target_set()
 {
@@ -148,7 +138,7 @@ int target_set()
     target_mode = FALSE;
 
     /* Check monsters first */
-    for (m_idx = 0; (m_idx < m_max) && (!exit_1); m_idx++) {
+    for (m_idx = MIN_M_IDX; (m_idx < m_max) && (!exit_1); m_idx++) {
 
 	monster_type *m_ptr = &m_list[m_idx];
 
@@ -159,10 +149,13 @@ int target_set()
 	row = m_ptr->fy;
 	col = m_ptr->fx;
 
+	/* XXX XXX Consider showing "monster health" in the prompt */
+	
+	/* Auto-recall */
+	if (use_recall_win && term_recall) {
 
-	if (use_recall_win) {
 	    /* Describe */
-	    sprintf(desc, "%s [(t)arget] [(l)ocation] [ESC quits]",
+	    sprintf(desc, "%s [(t)arget] [(p)osition] [ESC quits]",
 		    r_list[m_list[m_idx].r_idx].name);
 	    prt(desc,0,0);
 	    move_cursor_relative(row,col);
@@ -172,10 +165,11 @@ int target_set()
 	    query = inkey();
 	}
 
+	/* Optional recall */
 	else {
-	
+
 	    /* Describe, prompt for recall */
-	    sprintf(desc, "%s [(t)arget] [(l)ocation] [(r)ecall] [ESC quits]",
+	    sprintf(desc, "%s [(t)arget] [(p)osition] [(r)ecall] [ESC quits]",
 		    r_list[m_list[m_idx].r_idx].name);
 	    prt(desc,0,0);
 	    move_cursor_relative(row,col);
@@ -184,13 +178,14 @@ int target_set()
 	    query = inkey();
 	    while ((query == 'r') || (query == 'R')) {
 
-	        save_screen();
-	        query = roff_recall(m_list[m_idx].r_idx);
-	        restore_screen();
+		/* Recall on screen */
+		save_screen();
+		query = roff_recall(m_list[m_idx].r_idx);
+		restore_screen();
 
-	        /* XXX This is done by "good" restore_screen() */
-	        move_cursor_relative(row, col);
-	        query = inkey();
+		/* XXX This is done by "good" restore_screen() */
+		move_cursor_relative(row, col);
+		query = inkey();
 	    }
 	}
 
@@ -202,14 +197,15 @@ int target_set()
 		return (FALSE);
 
 	    case 'T': case 't':
-	    case '5': case '0': case '.':
+	    case '5': case '.':
+	    case '0':
 		target_mode = TRUE;
 		target_mon  = m_idx;
 		target_row  = row;
 		target_col  = col;
 		return (TRUE);
 
-	    case 'L': case 'l':
+	    case 'P': case 'p':
 		exit_1 = TRUE;
 	}
     }
@@ -230,35 +226,31 @@ int target_set()
 
 	/* Get a command, and convert it to standard form */
 	query = inkey();
-	if (rogue_like_commands) {
-	    switch (query) {
-		case ESCAPE: break;
-		case 'Q': case 'q': query = ESCAPE; break;
-		case 'T': case 't': query = '0'; break;
-		case '0': case '5': query = '0'; break;
-		case '.': query = '0'; break;
-		case 'B': case 'b': query = '1'; break;
-		case 'J': case 'j': query = '2'; break;
-		case 'N': case 'n': query = '3'; break;
-		case 'H': case 'h': query = '4'; break;
-		case 'L': case 'l': query = '6'; break;
-		case 'Y': case 'y': query = '7'; break;
-		case 'K': case 'k': query = '8'; break;
-		case 'U': case 'u': query = '9'; break;
-		default: query = ' '; break;
-	    }
-	}
-	else {
-	    switch (query) {
-		case ESCAPE: break;
-		case 'Q': case 'q': query = ESCAPE; break;
-		case '5': case '0': query = '0'; break;
-		case '.': query = '0'; break;
-		case 'T': case 't': query = '0'; break;
-		case '1': case '2': case '3': case '4': break;
-		case '6': case '7': case '8': case '9': break;
-		default: query = ' '; break;
-	    }
+
+	/* Analyze the keypress */
+	switch (query) {
+
+	    case ESCAPE: break;
+	    case 'Q': case 'q': query = ESCAPE; break;
+
+	    /* Nowhere means "target" */
+	    case '5': case '.': query = '0'; break;
+
+	    /* Target means "target" */
+	    case 'T': case 't': case '0': query = '0'; break;
+
+	    /* Real directions */
+	    case '1': case 'B': case 'b': query = '1'; break;
+	    case '2': case 'J': case 'j': query = '2'; break;
+	    case '3': case 'N': case 'n': query = '3'; break;
+	    case '4': case 'H': case 'h': query = '4'; break;
+	    case '6': case 'L': case 'l': query = '6'; break;
+	    case '7': case 'Y': case 'y': query = '7'; break;
+	    case '8': case 'K': case 'k': query = '8'; break;
+	    case '9': case 'U': case 'u': query = '9'; break;
+
+	    /* Ignore all other keys */
+	    default: query = ' '; break;
 	}
 
 	/* Analyze the command */
@@ -294,6 +286,7 @@ int target_set()
 	    case '8':
 		row--;
 		break;
+		
 	    default:
 		break;
 	}
@@ -343,7 +336,7 @@ void mmove2(int *y, int *x, int sourcey, int sourcex, int desty, int destx)
     for (k = 0, shift = max_dist >> 1; k < dist; k++, shift -= min_dist) {
 	shift = (shift > 0) ? shift : shift + max_dist;
     }
-    
+
     if (shift < 0) shift = 0;
 
     if (d_y > d_x) {
@@ -455,11 +448,7 @@ int mmove(int dir, int *y, int *x)
  *   0x04 = Allow the direction "5"
  *   0x08 = ??? Handle stun like confused
  */
-
-void
-confuse_dir (dir, mode)
-int *dir;
-int mode;
+void confuse_dir (int *dir, int mode)
 {
     /* Check for confusion */
     if (p_ptr->confused > 0) {
@@ -540,77 +529,66 @@ int get_a_dir(cptr prompt, int *dir, int mode)
 	*dir = command_dir;
     }
 
+    /* Use "old target" if possible */
+    else if (use_old_target && (mode & 0x10) && target_okay()) {
+	*dir = 0;
+    }
+
     /* Ask user for a direction */
     else {
 
 	/* Start with a non-direction */
 	*dir = -1;
 
-	/* Default prompt */
-	if (!prompt) {
-	    if (!(mode & 0x10) || !(target_mode)) {
+	/* Ask until satisfied */    
+	while (1) {
+
+	    if (prompt) {
+		strcpy(pbuf, prompt);
+	    }
+	    else if (!(mode & 0x10) || !(target_mode)) {
 		sprintf(pbuf, "Direction (%sEscape to cancel)? ",
 			(mode & 0x20) ? "'*' to choose a target, " : "");
-	    }
-	    else if (rogue_like_commands) {
-		sprintf(pbuf, "Direction (%s%sEscape to cancel)? ",
-			(mode & 0x10) ? "'.' for target, " : "",
-			(mode & 0x20) ? "'*' to re-target, " : "");
 	    }
 	    else {
 		sprintf(pbuf, "Direction (%s%sEscape to cancel)? ",
 			(mode & 0x10) ? "'5' for target, " : "", 
 			(mode & 0x20) ? "'*' to re-target, " : "");
 	    }
-	    prompt = pbuf;
-	}
-	
-	
-	/* Ask until satisfied */    
-	while (1) {
 
 	    /* Get a command (or Escape) */
-	    if (!get_com (prompt, &command)) command = ESCAPE;
+	    if (!get_com(pbuf, &command)) command = ESCAPE;
 
 	    /* Escape yields "cancel" */
 	    if (command == ESCAPE) return (FALSE);
 
-	    /* In THIS function, we use numbers as the default */
-	    if (rogue_like_commands) {
-		switch (command) {
-		    case 'H': case 'h': command = '4'; break;
-		    case 'Y': case 'y': command = '7'; break;
-		    case 'K': case 'k': command = '8'; break;
-		    case 'U': case 'u': command = '9'; break;
-		    case 'L': case 'l': command = '6'; break;
-		    case 'N': case 'n': command = '3'; break;
-		    case 'J': case 'j': command = '2'; break;
-		    case 'B': case 'b': command = '1'; break;
-		    case '.': command = '5'; break;
-		    case 'T': case 't': command = '0'; break;
-		    case '0': command = '0'; break;
-		    case '*': command = '*'; break;
-		    case '?': command = '?'; break;
-		    default: command = ' '; break;
-		}
-	    }
-	    else {
-		switch (command) {
-		    case '?':
-		    case '*':
-		    case '1':
-		    case '2':
-		    case '3':
-		    case '4':
-		    case '6':
-		    case '7':
-		    case '8':
-		    case '9': break;
-		    case '5': break;
-		    case '0': command = '0'; break;
-		    case 'T': case 't': command = '0'; break;
-		    default: command = ' '; break;
-		}
+	    /* Convert various keys to "standard" keys */
+	    switch (command) {
+
+		/* Standard directions */
+		case '1': case 'B': case 'b': command = '1'; break;
+		case '2': case 'J': case 'j': command = '2'; break;
+		case '3': case 'N': case 'n': command = '3'; break;
+		case '4': case 'H': case 'h': command = '4'; break;
+		case '6': case 'L': case 'l': command = '6'; break;
+		case '7': case 'Y': case 'y': command = '7'; break;
+		case '8': case 'K': case 'k': command = '8'; break;
+		case '9': case 'U': case 'u': command = '9'; break;
+
+		/* Central "direction" often means "target" */
+		case '5': case '.': command = '5'; break;
+
+		/* This is the underlying "target" command */
+		case 'T': case 't': case '0': command = '0'; break;
+
+		/* Re-target */
+		case '*': command = '*'; break;
+
+		/* Unused -- Help */
+		case '?': command = '?'; break;
+
+		/* Ignore other commands */
+		default: command = ' '; break;
 	    }
 
 	    /* Hack -- Perhaps accept '5' as itself */
@@ -669,7 +647,7 @@ int get_dir(cptr prompt, int *dir)
     /* Allow use of "target" commands.  Forbid the "5" direction. */
     if (get_a_dir(prompt, dir, 0x30)) return (TRUE);
 
-    /* Hack -- allow commands to be careless */
+    /* XXX Mega-Hack -- allow commands to be careless */
     free_turn_flag = TRUE;
 
     /* Command aborted */
@@ -706,11 +684,12 @@ void search_on()
 {
     if (p_ptr->searching) return;
 
+    /* Set the searching flag */
     p_ptr->searching = TRUE;
-    
-    change_speed(1);
-    p_ptr->food_digested++;
 
+    /* Re-calculate bonuses */
+    calc_bonuses();
+    
     /* Visual feedback */
     p_ptr->status |= PY_SEARCH;
     prt_state();
@@ -721,11 +700,12 @@ void search_off(void)
 {
     if (!p_ptr->searching) return;
 
+    /* Clear the searching flag */
     p_ptr->searching = FALSE;
-    
-    change_speed(-1);
-    p_ptr->food_digested--;
 
+    /* Re-calculate the bonuses */
+    calc_bonuses();
+    
     /* Visual feedback */
     p_ptr->status &= ~PY_SEARCH;
     prt_state();
@@ -747,8 +727,8 @@ void disturb(int stop_search, int light_change)
     screen_change = TRUE;
 
     /* Note that "light_change" is disabled */
-    if (light_change) message("XXX Light change", 0);
-    
+    if (light_change) message("XXX Light change XXX", 0);
+
     /* Always cancel repeated commands */
     if (command_rep) command_rep = 0;
 
@@ -764,6 +744,9 @@ void disturb(int stop_search, int light_change)
     /* Hack -- center the cursor */
     move_cursor_relative(char_row, char_col);
 
+    /* Hack -- sometimes flush the input */
+    if (flush_disturb) flush();
+    
     /* Hack -- Flush the output */
     Term_fresh();
 }
@@ -814,7 +797,7 @@ void search(int y, int x, int chance)
 
 		    /* Hack -- drop on top */
 		    invcopy(i_ptr, OBJ_CLOSED_DOOR);
-		    
+
 		    /* Place it in the dungeon */
 		    i_ptr->iy = i;
 		    i_ptr->ix = j;
@@ -844,16 +827,13 @@ void search(int y, int x, int chance)
 void rest_off()
 {
     p_ptr->rest = 0;
-    
+
     /* Hack -- update the state */
     p_ptr->status &= ~PY_REST;
     prt_state();
 
     /* flush last message, or delete "press any key" message */
     msg_print(NULL);
-
-    /* Restore the digestion speed */
-    p_ptr->food_digested++;
 }
 
 
@@ -880,6 +860,10 @@ void carry(int y, int x, int pickup)
     disturb(0, 0);
 
 
+    /* Hack -- apply "obvious" flags */
+    if (known2_p(i_ptr)) known2(i_ptr);
+
+
     /* Pick up gold */
     if (i_ptr->tval == TV_GOLD) {
 	p_ptr->au += i_ptr->cost;
@@ -895,22 +879,20 @@ void carry(int y, int x, int pickup)
     /* Can it be picked up? */
     else if (i <= TV_MAX_PICK_UP) {
 
-	/* Can we pick it up? */
-	if (pickup && inven_check_num(i_ptr)) {
+	/* Pick up the item */
+	if (pickup) {
 
-	    /* Okay,  pick it up  */
-	    if (carry_query_flag) {	
+	    /* Hack -- warn about overflow */
+	    if (!inven_check_num(i_ptr)) {
 		objdes(tmp_str, i_ptr, TRUE);
-		(void)sprintf(out_val, "Pick up %s? ", tmp_str);
+		(void)sprintf(out_val, "Stuff %s into your pack? ", tmp_str);
 		pickup = get_check(out_val);
 	    }
-
-	    /* Check to see if it will change the players speed. */
-	    if (pickup && !inven_check_weight(i_ptr)) {
+	    
+	    /* Hack -- query every item */
+	    else if (carry_query_flag) {	
 		objdes(tmp_str, i_ptr, TRUE);
-		(void)sprintf(out_val,
-			      "Exceed your weight limit to pick up %s? ",
-			      tmp_str);
+		(void)sprintf(out_val, "Pick up %s? ", tmp_str);
 		pickup = get_check(out_val);
 	    }
 
@@ -924,376 +906,14 @@ void carry(int y, int x, int pickup)
 		delete_object(y, x);
 	    }
 	}
-
-	/* only if was trying to pick it up. -CFT */
-	else if (pickup) {
-	    objdes(tmp_str, i_ptr, TRUE);
-	    (void)sprintf(out_val, "You can't carry %s.", tmp_str);
-	    msg_print(out_val);
-	}
     }
 }
 
 
 
-/*
- * Moves player from one space to another. -RAK-
- * Note: Confusion is NOT checked by this routine
- *
- * This function must be sure to check the validity of "continuing"
- * to repeat a "walk" or "walk without pickup" command, and reset
- * command_rep accordingly.
- *
- * Note that "moving" into a wall is a free move, and will NOT hit any monster
- * which is "hiding" in the walls.  The player must tunnel into the wall.
- * Otherwise, moving into a wall would have to always take a turn.
- * In fact, moving into a wall will not hit ANY monster in the wall.
- * After all, the monster has the entire wall as protection!
- *
- * XXX Someone needs to verify that teleporting onto a rubble trap either will
- * never happen or that it will not cause the player to be trapped in the rubble.
- * I think the "teleport" code is nice enough to require a "clean" destination.
- *
- * The "rubble recovery" routine needs to be moved into the "rubble_trap" code.
- *
- * Note that "moving" into the same square is a "good" way to "update" the screen.
- */
-void move_player(int dir, int do_pickup)
-{
-    int                 y, x;
-    register cave_type *c_ptr;
-    register inven_type	*i_ptr;
-
-    /* Remember if the player was running */
-    bool was_running = find_flag;
-    
-    /* Save info for dealing with traps and such */
-    int old_row = char_row;
-    int old_col = char_col;
-
-    /* May we continue walking? */
-    int more = FALSE;
-
-
-    /* Find the result of moving */
-    y = char_row;
-    x = char_col;
-    (void)mmove(dir, &y, &x);
-
-    /* Examine the destination */    
-    c_ptr = &cave[y][x];
-
-    /* Player can NEVER move into walls, rubble, closed doors */
-    if (!floor_grid(y,x)) {
-
-	/* Disturb the player */
-	disturb(0, 0);
-
-	/* Get the "object" if any */
-	i_ptr = &i_list[c_ptr->i_idx];
-
-	/* Hack -- allow "mapping" in the dark */
-	if (!player_can_see(y, x)) {
-
-	    /* Rubble */
-	    if (i_ptr->tval == TV_RUBBLE) {
-		msg_print("You feel some rubble blocking your way.");
-		c_ptr->info |= CAVE_FM;
-		lite_spot(y, x);
-	    }
-
-	    /* Closed door */
-	    else if (i_ptr->tval == TV_CLOSED_DOOR) {
-		msg_print("You feel a closed door blocking your way.");
-		c_ptr->info |= CAVE_FM;
-		lite_spot(y, x);
-	    }
-
-	    /* Wall (or secret door) */
-	    else {
-		msg_print("You feel a wall blocking your way.");
-		c_ptr->info |= CAVE_FM;
-		lite_spot(y, x);
-	    }
-	}
-	
-	/* Notice non-walls unless starting to "run" */
-	else if (!was_running && (c_ptr->i_idx)) {
-
-	    /* Rubble */
-	    if (i_ptr->tval == TV_RUBBLE) {
-		msg_print("There is rubble blocking your way.");
-	    }
-
-	    /* Closed doors */
-	    else if (i_ptr->tval == TV_CLOSED_DOOR) {
-		msg_print("There is a closed door blocking your way.");
-	    }
-	}
-
-	/* Free move */
-	free_turn_flag = TRUE;
-    }
-
-    /* Attacking a creature! */
-    else if (c_ptr->m_idx > 1) {
-
-	/* Hitting a monster is disturbing */
-	disturb(0, 0);
-
-	/* Handle fear */
-	if (p_ptr->afraid < 1) {
-	    py_attack(y, x);
-	}
-	else {
-	    msg_print("You are too afraid!");
-	}
-    }
-
-    /* Normal movement */
-    else {
-
-	/* Move "player" record to the new location */
-	move_rec(char_row, char_col, y, x);
-
-	/* Check for new panel (redraw map) */
-	(void)get_panel(char_row, char_col, FALSE);
-
-	/* Update the view/lite */
-	update_view();
-	update_lite();
-	
-	/* Update the monsters */
-	update_monsters();
-	
-
-	/* Check the view */
-	check_view();
-	
-
-	/* Check to see if he should stop running */
-	if (find_flag) area_affect(dir, char_row, char_col);
-
-
-	/* Check to see if he notices something  */
-	/* "fos" may be negative if have good rings of searching */
-	if ((p_ptr->fos <= 1) || (randint(p_ptr->fos) == 1)) {
-	    search(char_row, char_col, p_ptr->srh);
-	}
-
-	/* Allow "search" mode to always get a "bonus" search */
-	if (p_ptr->searching) {
-	    search(char_row, char_col, p_ptr->srh);
-	}
-
-
-	/* Nothing interesting here, keep walking */
-	if (c_ptr->i_idx == 0) {
-
-	    /* Allow repeated walk to continue */
-	    more = TRUE;
-	}
-
-	/* An object is beneath him. */
-	else {
-
-	    /* Get the object */            
-	    i_ptr = &i_list[c_ptr->i_idx];
-
-	    /* Pre-handle open doors and stairs */
-	    if ((i_ptr->tval == TV_UP_STAIR) ||
-		(i_ptr->tval == TV_DOWN_STAIR)) {
-		/* Nothing */
-	    }
-
-	    /* Pre-handle open doors */
-	    else if (i_ptr->tval == TV_OPEN_DOOR) {
-		/* Hack -- allow running through doors */
-		if (find_ignore_doors) more = TRUE;
-	    }
-
-	    /* Set off a trap */
-	    else if ((i_ptr->tval == TV_VIS_TRAP) ||
-		     (i_ptr->tval == TV_INVIS_TRAP)) {
-		disturb(0, 0);
-		hit_trap(y, x);
-	    }
-
-	    /* Enter a store */
-	    else if (i_ptr->tval == TV_STORE_DOOR) {
-		 disturb(0, 0);
-		 enter_store(i_ptr->sval - 1);
-	    }
-
-	    /* Note that we only carry things that can be "carried" */
-	    else if (i_ptr->tval == TV_GOLD || !prompt_carry_flag) {
-		carry(char_row, char_col, do_pickup);
-	    }
-
-	    /* Inform the user he could have carried it */
-	    else if (prompt_carry_flag) {
-		bigvtype            tmp_str, tmp2_str;
-		objdes(tmp_str, i_ptr, TRUE);
-		sprintf(tmp2_str, "You see %s.", tmp_str);
-		msg_print(tmp2_str);
-	    }
-
-
-	    /* Get the object */            
-	    i_ptr = &i_list[c_ptr->i_idx];
-
-	    /* Hack -- if stepped on falling rock trap, the space will */
-	    /* now contain rubble, so step back into a clear area */
-	    /* XXX There may not BE a "clear area", I suppose */
-
-	    /* Back away from rubble.  Do NOT set off recursive traps */
-	    if (i_ptr->tval == TV_RUBBLE) {
-
-		/* Move back to the old location */
-		move_rec(char_row, char_col, old_row, old_col);
-
-		/* Check for new panel (redraw map) */
-		(void)get_panel(char_row, char_col, FALSE);
-
-		/* Update the view/lite */
-		update_view();
-		update_lite();
-		
-		/* Update the monsters */
-		update_monsters();
-		
-
-		/* Paranoia -- check the view */
-		check_view();
-	    }
-	}
-    }
-
-
-    /* Perhaps Cancel repeated walking */
-    if (!more) command_rep = 0;
-}
-
-
-
-
-
-
-/* The running algorithm:			-CJS-
-
-   Overview: You keep moving until something interesting happens.
-   If you are in an enclosed space, you follow corners. This is
-   the usual corridor scheme. If you are in an open space, you go
-   straight, but stop before entering enclosed space. This is
-   analogous to reaching doorways. If you have enclosed space on
-   one side only (that is, running along side a wall) stop if
-   your wall opens out, or your open space closes in. Either case
-   corresponds to a doorway.
-
-   What happens depends on what you can really SEE. (i.e. if you
-   have no light, then running along a dark corridor is JUST like
-   running in a dark room.) The algorithm works equally well in
-   corridors, rooms, mine tailings, earthquake rubble, etc, etc.
-
-   These conditions are kept in static memory:
-	find_openarea	 You are in the open on at least one
-			 side.
-	find_breakleft	 You have a wall on the left, and will
-			 stop if it opens
-	find_breakright	 You have a wall on the right, and will
-			 stop if it opens
-
-   To initialize these conditions is the task of . If
-   moving from the square marked @ to the square marked . (in the
-   two diagrams below), then two adjacent sqares on the left and
-   the right (L and R) are considered. If either one is seen to
-   be closed, then that side is considered to be closed. If both
-   sides are closed, then it is an enclosed (corridor) run.
-
-	 LL		L
-	@.	       L.R
-	 RR	       @R
-
-   Looking at more than just the immediate squares is
-   significant. Consider the following case. A run along the
-   corridor will stop just before entering the center point,
-   because a choice is clearly established. Running in any of
-   three available directions will be defined as a corridor run.
-   Note that a minor hack is inserted to make the angled corridor
-   entry (with one side blocked near and the other side blocked
-   further away from the runner) work correctly. The runner moves
-   diagonally, but then saves the previous direction as being
-   straight into the gap. Otherwise, the tail end of the other
-   entry would be perceived as an alternative on the next move.
-
-	   #.#
-	  ##.##
-	  .@...
-	  ##.##
-	   #.#
-
-   Likewise, a run along a wall, and then into a doorway (two
-   runs) will work correctly. A single run rightwards from @ will
-   stop at 1. Another run right and down will enter the corridor
-   and make the corner, stopping at the 2.
-
-	#@	  1
-	########### ######
-	2	    #
-	#############
-	#
-
-   After any move, the function area_affect is called to
-   determine the new surroundings, and the direction of
-   subsequent moves. It takes a location (at which the runner has
-   just arrived) and the previous direction (from which the
-   runner is considered to have come). Moving one square in some
-   direction places you adjacent to three or five new squares
-   (for straight and diagonal moves) to which you were not
-   previously adjacent.
-
-       ...!	  ...	       EG Moving from 1 to 2.
-       .12!	  .1.!		  . means previously adjacent
-       ...!	  ..2!		  ! means newly adjacent
-		   !!!
-
-   You STOP if you can't even make the move in the chosen
-   direction. You STOP if any of the new squares are interesting
-   in any way: usually containing monsters or treasure. You STOP
-   if any of the newly adjacent squares seem to be open, and you
-   are also looking for a break on that side. (i.e. find_openarea
-   AND find_break) You STOP if any of the newly adjacent squares
-   do NOT seem to be open and you are in an open area, and that
-   side was previously entirely open.
-
-   Corners: If you are not in the open (i.e. you are in a
-   corridor) and there is only one way to go in the new squares,
-   then turn in that direction. If there are more than two new
-   ways to go, STOP. If there are two ways to go, and those ways
-   are separated by a square which does not seem to be open, then
-   STOP.
-
-   Otherwise, we have a potential corner. There are two new open
-   squares, which are also adjacent. One of the new squares is
-   diagonally located, the other is straight on (as in the
-   diagram). We consider two more squares further out (marked
-   below as ?).
-	  .X
-	 @.?
-	  #?
-   If they are both seen to be closed, then it is seen that no
-   benefit is gained from moving straight. It is a known corner.
-   To cut the corner, go diagonally, otherwise go straight, but
-   pretend you stepped diagonally into that next location for a
-   full view next time. Conversely, if one of the ? squares is
-   not seen to be closed, then there is a potential choice. We check
-   to see whether it is a potential corner or an intersection/room entrance.
-   If the square two spaces straight ahead, and the space marked with 'X'
-   are both blank, then it is a potential corner and enter if find_examine
-   is set, otherwise must stop because it is not a corner. */
 
 /*
- * The cycle lists the directions in anticlockwise order, for	-CJS- over
+ * The cycle lists the directions in anticlockwise order, for over  -CJS- 
  * two complete cycles. The chome array maps a direction on to its position
  * in the cycle. 
  */
@@ -1302,211 +922,53 @@ static int chome[] = {-1, 8, 9, 10, 7, -1, 11, 6, 5, 4};
 static int find_openarea, find_breakright, find_breakleft, find_prevdir;
 
 
-/*
- * Walk one step along the current running direction
- * Apply confusion, and if we become too confused, stop running
- *
- * Note that move_player() may modify command_dir via "area_affect"
- * Note that the "running" routines now use "command_dir" instead
- * of "find_direction"
- *
- * This routine had better not be called if find_flag is off.
- */
-void find_step(void)
-{
-    int dir;
-
-    /* Hack -- prevent infinite running */
-    if (find_flag++ > 100) {
-	msg_print("You stop running to catch your breath.");
-	end_find();
-    }
-
-    /* Take a step (pick up if necessary) */
-    else {
-
-	/* Take account of partial confusion */
-	dir = command_dir;
-	confuse_dir(&dir, 0x02);
-
-	/* Cancel the running if we have done enough */
-	if (command_arg-- == 0) end_find();
-
-	/* Cancel the running if we mis-step */
-	if (dir != command_dir) end_find();
-
-	/* Move the player, picking up as you go */
-	move_player(dir, TRUE);
-    }
-}
-
 
 /*
- * Initialize the running algorithm, do NOT take any steps.
- *
- * Note that we use "command_arg" as a "limit" on running time.
- * If "command_arg" is zero (as usual) then impose no limit.
- *
- * The player is not allowed to run with a full light pattern.
- * This reduces the number of things that can cancel running.
- */
-void find_init()
-{
-    int          dir, row, col, deepleft, deepright;
-    register int i, shortleft, shortright;
-
-
-    /* Start running */
-    find_flag = 1;
-    
-
-    /* Extract the desired direction */
-    dir = command_dir;
-
-    /* Find the destination grid */
-    row = char_row;
-    col = char_col;
-    (void)mmove(dir, &row, &col);
-
-    /* XXX Un-indent */
-    if (TRUE) {
-	find_flag = 1;
-	find_breakright = find_breakleft = FALSE;
-	find_prevdir = dir;
-	if (p_ptr->blind < 1) {
-	    i = chome[dir];
-	    deepleft = deepright = FALSE;
-	    shortright = shortleft = FALSE;
-	    if (see_wall(cycle[i + 1], char_row, char_col)) {
-		find_breakleft = TRUE;
-		shortleft = TRUE;
-	    }
-	    else if (see_wall(cycle[i + 1], row, col)) {
-		find_breakleft = TRUE;
-		deepleft = TRUE;
-	    }
-	    if (see_wall(cycle[i - 1], char_row, char_col)) {
-		find_breakright = TRUE;
-		shortright = TRUE;
-	    }
-	    else if (see_wall(cycle[i - 1], row, col)) {
-		find_breakright = TRUE;
-		deepright = TRUE;
-	    }
-	    if (find_breakleft && find_breakright) {
-		find_openarea = FALSE;
-		/* a hack to allow angled corridor entry */
-		if (dir & 1) {
-		    if (deepleft && !deepright)
-			find_prevdir = cycle[i - 1];
-		    else if (deepright && !deepleft)
-			find_prevdir = cycle[i + 1];
-		}
-	    /* else if there is a wall two spaces ahead and seem to be in a
-	     * corridor, then force a turn into the side corridor, must be
-	     * moving straight into a corridor here 
-	     */
-		else if (see_wall(cycle[i], row, col)) {
-		    if (shortleft && !shortright)
-			find_prevdir = cycle[i - 2];
-		    else if (shortright && !shortleft)
-			find_prevdir = cycle[i + 2];
-		}
-	    }
-	    else {
-		find_openarea = TRUE;
-	    }
-	}
-    }
-}
-
-
-/*
- * Stop running.  Hack -- fix the lights.
- */
-void end_find()
-{
-    /* Were we running? */
-    if (find_flag) {
-
-	bool f_lite = (view_yellow_lite && view_yellow_fast);
-	bool f_view = (view_bright_lite && view_bright_fast);
-	
-	/* XXX Hack XXX */
-	if (f_lite) forget_lite();
-	if (f_view) forget_view();
-	
-	/* Cancel the running */
-	find_flag = 0;
-
-	/* Redraw the player (only needed sometimes) */
-	lite_spot(char_row, char_col);
-
-	/* Hack -- Update the view/lite */
-	if (view_reduce_view || f_view) update_view();
-	if (view_reduce_lite || f_lite) update_view();
-
-	/* Update the monsters */
-	update_monsters();
-
-	/* Hack -- Check the view */
-	check_view();
-    }
-}
-
-
-
-/*
- * Do we see a wall? Used in running.		-CJS- 
+ * Hack -- Do we see a wall?  Used in running.		-CJS- 
  */
 static int see_wall(int dir, int y, int x)
 {
-    int m;
-    int8u a;
-    char c;
-
     /* Attempt to move from (x,y) along dir */
-    if (!mmove(dir, &y, &x)) return TRUE;
+    if (!mmove(dir, &y, &x)) return (TRUE);
 
-    /* Check the map (using new x and y) */
-    map_info(y, x, &m, &a, &c);
-
-    /* Does it LOOK like a wall? */
-    if (c == '#' || c == '%') return TRUE;
-
+    /* Floor space means no blockage */
+    if (floor_grid_bold(y,x)) return (FALSE);
+    
+    /* Unseen, unmarked grids are blank, and thus not walls */
+    if (!(cave[y][x].info & CAVE_FM) && !player_can_see(y, x)) return (FALSE);
+    
     /* Default */
-    return (FALSE);
+    return (TRUE);
 }
 
 /*
- * Do we see anything? Used in running.		-CJS- 
+ * Hack -- Do we see anything? Used in running.		-CJS- 
  * Hopefully this is only used for "adjacent" grids,
  * since otherwise, the "torch radius" matters.
  */
 static int see_nothing(int dir, int y, int x)
 {
-    int m;
-    int8u a;
-    char c;
-
+    cave_type *c_ptr;
+    
     /* Attempt to move from (x,y) along dir */
-    if (!mmove(dir, &y, &x)) return FALSE;
+    if (!mmove(dir, &y, &x)) return TRUE;
 
-    /* Check the map (using new x and y) */
-    map_info(y, x, &m, &a, &c);
-
-    /* Nothing there */
-    if (c == ' ') return TRUE;
-
+    /* Get the cave grid */
+    c_ptr = &cave[y][x];
+    
+    /* Unseen, unmarked grids are blank */
+    if (!(c_ptr->info & CAVE_FM) && !player_can_see(y, x)) return (TRUE);
+    
     /* Default */
-    return FALSE;
+    return (FALSE);
 }
+
 
 
 /*
  * Determine the next direction for a run, or if we should stop.  -CJS- 
  */
-void area_affect(int dir, int y, int x)
+static void area_affect(int dir, int y, int x)
 {
     int                  newdir = 0, t, inv, check_dir = 0, row, col;
     register int         i, max, option, option2;
@@ -1568,7 +1030,7 @@ void area_affect(int dir, int y, int x)
 
 
 	    /* If cannot see the grid, assume it is clear */
-	    if (inv || floor_grid(row, col)) {
+	    if (inv || floor_grid_bold(row, col)) {
 
 		/* Certain somethings */
 		if (find_openarea) {
@@ -1697,6 +1159,515 @@ void area_affect(int dir, int y, int x)
 
 
 
+
+/*
+ * Moves player from one space to another. -RAK-
+ * Note: Confusion is NOT checked by this routine
+ *
+ * This function must be sure to check the validity of "continuing"
+ * to repeat a "walk" or "walk without pickup" command, and reset
+ * command_rep accordingly.
+ *
+ * Note that "moving" into a wall is a free move, and will NOT hit any monster
+ * which is "hiding" in the walls.  The player must tunnel into the wall.
+ * Otherwise, moving into a wall would have to always take a turn.
+ * In fact, moving into a wall will not hit ANY monster in the wall.
+ * After all, the monster has the entire wall as protection!
+ *
+ * The "rubble recovery" routine needs to be moved into the "rubble_trap" code.
+ *
+ * Hack -- note that "direction 5" is a "good" way to "update" the screen.
+ */
+void move_player(int dir, int do_pickup)
+{
+    int                 y, x;
+    register cave_type *c_ptr;
+    register inven_type	*i_ptr;
+
+    /* Remember if the player was running */
+    bool was_running = find_flag;
+
+    /* Save info for dealing with traps and such */
+    int old_row = char_row;
+    int old_col = char_col;
+
+    /* May we continue walking? */
+    int more = FALSE;
+
+
+    /* Find the result of moving */
+    y = char_row;
+    x = char_col;
+    (void)mmove(dir, &y, &x);
+
+    /* Examine the destination */    
+    c_ptr = &cave[y][x];
+
+    /* Player can only walk on floors */
+    if (!floor_grid_bold(y,x)) {
+
+	/* Disturb the player */
+	disturb(0, 0);
+
+	/* Get the "object" if any */
+	i_ptr = &i_list[c_ptr->i_idx];
+
+	/* Hack -- allow "mapping" in the dark */
+	if (!(c_ptr->info & CAVE_FM) && !(c_ptr->info & CAVE_TL)) {
+
+	    /* Rubble */
+	    if (i_ptr->tval == TV_RUBBLE) {
+		msg_print("You feel some rubble blocking your way.");
+		c_ptr->info |= CAVE_FM;
+		lite_spot(y, x);
+	    }
+
+	    /* Closed door */
+	    else if (i_ptr->tval == TV_CLOSED_DOOR) {
+		msg_print("You feel a closed door blocking your way.");
+		c_ptr->info |= CAVE_FM;
+		lite_spot(y, x);
+	    }
+
+	    /* Wall (or secret door) */
+	    else {
+		msg_print("You feel a wall blocking your way.");
+		c_ptr->info |= CAVE_FM;
+		lite_spot(y, x);
+	    }
+	}
+
+	/* Notice non-walls unless starting to "run" */
+	else if (!was_running && (c_ptr->i_idx)) {
+
+	    /* Rubble */
+	    if (i_ptr->tval == TV_RUBBLE) {
+		msg_print("There is rubble blocking your way.");
+	    }
+
+	    /* Closed doors */
+	    else if (i_ptr->tval == TV_CLOSED_DOOR) {
+		msg_print("There is a closed door blocking your way.");
+	    }
+	}
+
+	/* Free move */
+	free_turn_flag = TRUE;
+    }
+
+    /* Attacking a creature! */
+    else if (c_ptr->m_idx > 1) {
+
+	/* Hitting a monster is disturbing */
+	disturb(0, 0);
+
+	/* Handle fear */
+	if (p_ptr->afraid < 1) {
+	    py_attack(y, x);
+	}
+	else {
+	    msg_print("You are too afraid!");
+	}
+    }
+
+    /* Normal movement */
+    else {
+
+	/* Move "player" record to the new location */
+	move_rec(char_row, char_col, y, x);
+
+	/* Check for new panel (redraw map) */
+	(void)get_panel(char_row, char_col, FALSE);
+
+	/* Update the view/lite */
+	update_view();
+	update_lite();
+
+	/* Update the monsters */
+	update_monsters();
+
+
+	/* Check the view */
+	check_view();
+
+
+	/* Check to see if he should stop running */
+	if (find_flag) area_affect(dir, char_row, char_col);
+
+
+	/* Check to see if he notices something  */
+	/* "fos" may be negative if have good rings of searching */
+	if ((p_ptr->fos <= 1) || (randint(p_ptr->fos) == 1)) {
+	    search(char_row, char_col, p_ptr->srh);
+	}
+
+	/* Allow "search" mode to always get a "bonus" search */
+	if (p_ptr->searching) {
+	    search(char_row, char_col, p_ptr->srh);
+	}
+
+
+	/* Nothing interesting here, keep walking */
+	if (c_ptr->i_idx == 0) {
+
+	    /* Allow repeated walk to continue */
+	    more = TRUE;
+	}
+
+	/* An object is beneath him. */
+	else {
+
+	    /* Get the object */            
+	    i_ptr = &i_list[c_ptr->i_idx];
+
+	    /* Pre-handle open doors and stairs */
+	    if ((i_ptr->tval == TV_UP_STAIR) ||
+		(i_ptr->tval == TV_DOWN_STAIR)) {
+		/* Nothing */
+	    }
+
+	    /* Pre-handle open doors */
+	    else if (i_ptr->tval == TV_OPEN_DOOR) {
+		/* Hack -- allow running through doors */
+		if (find_ignore_doors) more = TRUE;
+	    }
+
+	    /* Set off a trap */
+	    else if ((i_ptr->tval == TV_VIS_TRAP) ||
+		     (i_ptr->tval == TV_INVIS_TRAP)) {
+		disturb(0, 0);
+		hit_trap(y, x);
+	    }
+
+	    /* Enter a store */
+	    else if (i_ptr->tval == TV_STORE_DOOR) {
+		 disturb(0, 0);
+		 enter_store(i_ptr->sval - 1);
+	    }
+
+	    /* Note that we only carry things that can be "carried" */
+	    else if (i_ptr->tval == TV_GOLD || !prompt_carry_flag) {
+		carry(char_row, char_col, do_pickup);
+	    }
+
+	    /* Inform the user he could have carried it */
+	    else if (prompt_carry_flag) {
+		bigvtype            tmp_str, tmp2_str;
+		objdes(tmp_str, i_ptr, TRUE);
+		sprintf(tmp2_str, "You see %s.", tmp_str);
+		msg_print(tmp2_str);
+	    }
+
+
+	    /* Get the object */            
+	    i_ptr = &i_list[c_ptr->i_idx];
+
+	    /* Hack -- if stepped on falling rock trap, the space will */
+	    /* now contain rubble, so step back into a clear area */
+	    /* XXX There may not BE a "clear area", I suppose */
+
+	    /* Back away from rubble.  Do NOT set off recursive traps */
+	    if (i_ptr->tval == TV_RUBBLE) {
+
+		/* Move back to the old location */
+		move_rec(char_row, char_col, old_row, old_col);
+
+		/* Check for new panel (redraw map) */
+		(void)get_panel(char_row, char_col, FALSE);
+
+		/* Update the view/lite */
+		update_view();
+		update_lite();
+
+		/* Update the monsters */
+		update_monsters();
+
+
+		/* Paranoia -- check the view */
+		check_view();
+	    }
+	}
+    }
+
+
+    /* Perhaps Cancel repeated walking */
+    if (!more) command_rep = 0;
+}
+
+
+
+
+
+
+/* The running algorithm:			-CJS- */
+
+
+/*
+   Overview: You keep moving until something interesting happens.
+   If you are in an enclosed space, you follow corners. This is
+   the usual corridor scheme. If you are in an open space, you go
+   straight, but stop before entering enclosed space. This is
+   analogous to reaching doorways. If you have enclosed space on
+   one side only (that is, running along side a wall) stop if
+   your wall opens out, or your open space closes in. Either case
+   corresponds to a doorway.
+
+   What happens depends on what you can really SEE. (i.e. if you
+   have no light, then running along a dark corridor is JUST like
+   running in a dark room.) The algorithm works equally well in
+   corridors, rooms, mine tailings, earthquake rubble, etc, etc.
+
+   These conditions are kept in static memory:
+	find_openarea	 You are in the open on at least one
+			 side.
+	find_breakleft	 You have a wall on the left, and will
+			 stop if it opens
+	find_breakright	 You have a wall on the right, and will
+			 stop if it opens
+
+   To initialize these conditions is the task of . If
+   moving from the square marked @ to the square marked . (in the
+   two diagrams below), then two adjacent sqares on the left and
+   the right (L and R) are considered. If either one is seen to
+   be closed, then that side is considered to be closed. If both
+   sides are closed, then it is an enclosed (corridor) run.
+
+	 LL		L
+	@.	       L.R
+	 RR	       @R
+
+   Looking at more than just the immediate squares is
+   significant. Consider the following case. A run along the
+   corridor will stop just before entering the center point,
+   because a choice is clearly established. Running in any of
+   three available directions will be defined as a corridor run.
+   Note that a minor hack is inserted to make the angled corridor
+   entry (with one side blocked near and the other side blocked
+   further away from the runner) work correctly. The runner moves
+   diagonally, but then saves the previous direction as being
+   straight into the gap. Otherwise, the tail end of the other
+   entry would be perceived as an alternative on the next move.
+
+	   #.#
+	  ##.##
+	  .@...
+	  ##.##
+	   #.#
+
+   Likewise, a run along a wall, and then into a doorway (two
+   runs) will work correctly. A single run rightwards from @ will
+   stop at 1. Another run right and down will enter the corridor
+   and make the corner, stopping at the 2.
+
+	#@	  1
+	########### ######
+	2	    #
+	#############
+	#
+
+   After any move, the function area_affect is called to
+   determine the new surroundings, and the direction of
+   subsequent moves. It takes a location (at which the runner has
+   just arrived) and the previous direction (from which the
+   runner is considered to have come). Moving one square in some
+   direction places you adjacent to three or five new squares
+   (for straight and diagonal moves) to which you were not
+   previously adjacent.
+
+       ...!	  ...	       EG Moving from 1 to 2.
+       .12!	  .1.!		  . means previously adjacent
+       ...!	  ..2!		  ! means newly adjacent
+		   !!!
+
+   You STOP if you can't even make the move in the chosen
+   direction. You STOP if any of the new squares are interesting
+   in any way: usually containing monsters or treasure. You STOP
+   if any of the newly adjacent squares seem to be open, and you
+   are also looking for a break on that side. (i.e. find_openarea
+   AND find_break) You STOP if any of the newly adjacent squares
+   do NOT seem to be open and you are in an open area, and that
+   side was previously entirely open.
+
+   Corners: If you are not in the open (i.e. you are in a
+   corridor) and there is only one way to go in the new squares,
+   then turn in that direction. If there are more than two new
+   ways to go, STOP. If there are two ways to go, and those ways
+   are separated by a square which does not seem to be open, then
+   STOP.
+
+   Otherwise, we have a potential corner. There are two new open
+   squares, which are also adjacent. One of the new squares is
+   diagonally located, the other is straight on (as in the
+   diagram). We consider two more squares further out (marked
+   below as ?).
+	  .X
+	 @.?
+	  #?
+   If they are both seen to be closed, then it is seen that no
+   benefit is gained from moving straight. It is a known corner.
+   To cut the corner, go diagonally, otherwise go straight, but
+   pretend you stepped diagonally into that next location for a
+   full view next time. Conversely, if one of the ? squares is
+   not seen to be closed, then there is a potential choice. We check
+   to see whether it is a potential corner or an intersection/room entrance.
+   If the square two spaces straight ahead, and the space marked with 'X'
+   are both blank, then it is a potential corner and enter if find_examine
+   is set, otherwise must stop because it is not a corner.
+*/
+
+
+
+/*
+ * Walk one step along the current running direction
+ * Apply confusion, and if we become too confused, stop running
+ *
+ * Note that move_player() may modify command_dir via "area_affect"
+ * Note that the "running" routines now use "command_dir" instead
+ * of "find_direction"
+ *
+ * This routine had better not be called if find_flag is off.
+ */
+void find_step(void)
+{
+    int dir;
+
+    /* Hack -- prevent infinite running */
+    if (find_flag++ > 100) {
+	msg_print("You stop running to catch your breath.");
+	end_find();
+    }
+
+    /* Take a step (pick up if necessary) */
+    else {
+
+	/* Take account of partial confusion */
+	dir = command_dir;
+	confuse_dir(&dir, 0x02);
+
+	/* Cancel the running if we have done enough */
+	if (command_arg-- == 0) end_find();
+
+	/* Cancel the running if we mis-step */
+	if (dir != command_dir) end_find();
+
+	/* Move the player, picking up as you go */
+	move_player(dir, TRUE);
+    }
+}
+
+
+/*
+ * Initialize the running algorithm, do NOT take any steps.
+ *
+ * Note that we use "command_arg" as a "limit" on running time.
+ * If "command_arg" is zero (as usual) then impose no limit.
+ *
+ * The player is not allowed to run with a full light pattern.
+ * This reduces the number of things that can cancel running.
+ */
+void find_init()
+{
+    int          dir, row, col, deepleft, deepright;
+    register int i, shortleft, shortright;
+
+
+    /* Start running */
+    find_flag = 1;
+
+
+    /* Extract the desired direction */
+    dir = command_dir;
+
+    /* Find the destination grid */
+    row = char_row;
+    col = char_col;
+    (void)mmove(dir, &row, &col);
+
+    /* XXX Un-indent */
+    if (TRUE) {
+	find_flag = 1;
+	find_breakright = find_breakleft = FALSE;
+	find_prevdir = dir;
+	if (p_ptr->blind < 1) {
+	    i = chome[dir];
+	    deepleft = deepright = FALSE;
+	    shortright = shortleft = FALSE;
+	    if (see_wall(cycle[i + 1], char_row, char_col)) {
+		find_breakleft = TRUE;
+		shortleft = TRUE;
+	    }
+	    else if (see_wall(cycle[i + 1], row, col)) {
+		find_breakleft = TRUE;
+		deepleft = TRUE;
+	    }
+	    if (see_wall(cycle[i - 1], char_row, char_col)) {
+		find_breakright = TRUE;
+		shortright = TRUE;
+	    }
+	    else if (see_wall(cycle[i - 1], row, col)) {
+		find_breakright = TRUE;
+		deepright = TRUE;
+	    }
+	    if (find_breakleft && find_breakright) {
+		find_openarea = FALSE;
+		/* a hack to allow angled corridor entry */
+		if (dir & 1) {
+		    if (deepleft && !deepright)
+			find_prevdir = cycle[i - 1];
+		    else if (deepright && !deepleft)
+			find_prevdir = cycle[i + 1];
+		}
+	    /* else if there is a wall two spaces ahead and seem to be in a
+	     * corridor, then force a turn into the side corridor, must be
+	     * moving straight into a corridor here 
+	     */
+		else if (see_wall(cycle[i], row, col)) {
+		    if (shortleft && !shortright)
+			find_prevdir = cycle[i - 2];
+		    else if (shortright && !shortleft)
+			find_prevdir = cycle[i + 2];
+		}
+	    }
+	    else {
+		find_openarea = TRUE;
+	    }
+	}
+    }
+}
+
+
+/*
+ * Stop running.  Hack -- fix the lights.
+ */
+void end_find()
+{
+    /* Were we running? */
+    if (find_flag) {
+
+	bool f_lite = (view_yellow_lite && view_yellow_fast);
+	bool f_view = (view_bright_lite && view_bright_fast);
+
+	/* XXX Hack XXX */
+	if (f_lite) forget_lite();
+	if (f_view) forget_view();
+
+	/* Cancel the running */
+	find_flag = 0;
+
+	/* Redraw the player (only needed sometimes) */
+	lite_spot(char_row, char_col);
+
+	/* Hack -- Update the view/lite */
+	if (view_reduce_view || f_view) update_view();
+	if (view_reduce_lite || f_lite) update_lite();
+
+	/* Update the monsters */
+	update_monsters();
+
+	/* Hack -- Check the view */
+	check_view();
+    }
+}
 
 
 

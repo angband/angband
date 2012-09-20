@@ -14,8 +14,11 @@
 
 
 #ifdef CHECK_HOURS
-/* Operating hours for ANGBAND				-RAK-	*/
-/*	 X = Open; . = Closed					*/
+
+/*
+ * Operating hours for ANGBAND	-RAK-
+ *	 X = Open; . = Closed
+ */
 char days[7][29] = {
 	"SUN:XXXXXXXXXXXXXXXXXXXXXXXX",
 	"MON:XXXXXXXX.........XXXXXXX",
@@ -23,7 +26,9 @@ char days[7][29] = {
 	"WED:XXXXXXXX.........XXXXXXX",
 	"THU:XXXXXXXX.........XXXXXXX",
 	"FRI:XXXXXXXX.........XXXXXXX",
-	"SAT:XXXXXXXXXXXXXXXXXXXXXXXX" };
+	"SAT:XXXXXXXXXXXXXXXXXXXXXXXX"
+};
+
 #endif
 
 
@@ -33,7 +38,7 @@ char days[7][29] = {
  * The OBJ_xxx constants refer to k_list indexes
  */
 
-int16u player_init[MAX_CLASS][3] = {
+u16b player_init[MAX_CLASS][3] = {
 
 	/* Warrior */
     { OBJ_POTION_BERSERK, OBJ_BROAD_SWORD, OBJ_CHAIN_MAIL },
@@ -57,8 +62,10 @@ int16u player_init[MAX_CLASS][3] = {
 
 
 
-/* used to calculate the number of blows the player gets in combat */
-int8u blows_table[11][12] = {
+/*
+ * used to calculate the number of blows the player gets in combat
+ */
+byte blows_table[11][12] = {
 /* STR/W:	   9  18  67  107  117  118  128  138  148  158  168 more : DEX */
 /* <2 */	{  1,  1,  1,   1,   1,   1,   2,   2,   2,   2,   2,   3},
 /* <3 */	{  1,  1,  1,   1,   2,   2,   3,   3,   3,   3,   3,   4},
@@ -75,10 +82,12 @@ int8u blows_table[11][12] = {
 };
 
 
-/* this table is used to generate a psuedo-normal distribution.	 See the
-   function randnor() in misc1.c, this is much faster than calling
-   transcendental function to calculate a true normal distribution */
-int16u normal_table[NORMAL_TABLE_SIZE] = {
+/*
+ * This table is used to generate a psuedo-normal distribution.
+ * See the function randnor() in misc1.c, this is much faster than calling
+ * transcendental function to calculate a true normal distribution
+ */
+u16b normal_table[NORMAL_TABLE_SIZE] = {
      206,     613,    1022,    1430,	1838,	 2245,	  2652,	   3058,
     3463,    3867,    4271,    4673,	5075,	 5475,	  5874,	   6271,
     6667,    7061,    7454,    7845,	8234,	 8621,	  9006,	   9389,
@@ -372,8 +381,8 @@ NULL,
 NULL,
 NULL,
 NULL,
-NULL,				/* 60 */
-NULL,
+    "of Extra Might",				/* 60 */
+    "of Extra Shots",
 NULL,
 NULL,
 NULL,
@@ -408,7 +417,7 @@ NULL,				/* 92 */
 NULL,				/* 93 */
 NULL,				/* 94 */
 NULL,				/* 95 */
-NULL,				/* 96 */
+NULL,				/* 96 -- first "bad" item */
 NULL,				/* 97 */
 NULL,				/* 98 */
 NULL,				/* 99 */
@@ -442,164 +451,6 @@ NULL,				/* 125 */
     "(Blasted)",		/* 127 */
 };
 
-
-
-
-
-/*
- * Artifact "information" indexed by the ART_XXX values
- *
- * The 'NULL' entries (except the first) can be used later.
- *
- * Note that "The Ring of Power (XXX)" can easily be changed into
- * "The Ring 'XXX'" by changing the entries below.  Note that there
- * is no simple way to use "The One Ring" all by itself...
- */
-inven_very v_list[ART_MAX] = {
-
-    { NULL, 0, 0 },
-
-    { "of Galadriel", TV_LITE, SV_LITE_GALADRIEL },
-    { "of Elendil", TV_LITE, SV_LITE_ELENDIL },
-    { "of Thrain", TV_LITE, SV_LITE_THRAIN },
-    { "of Carlammas", TV_AMULET, SV_AMULET_CARLAMMAS },
-    { "of Ingwe", TV_AMULET, SV_AMULET_INGWE },
-    { "of the Dwarves", TV_AMULET, SV_AMULET_DWARVES },
-    { NULL, 0, 0 },
-
-    { "of Barahir", TV_RING, SV_RING_BARAHIR },
-    { "of Tulkas", TV_RING, SV_RING_TULKAS },
-    { "of Power (Narya)", TV_RING, SV_RING_NARYA },
-    { "of Power (Nenya)", TV_RING, SV_RING_NENYA },
-    { "of Power (Vilya)", TV_RING, SV_RING_VILYA },
-    { "of Power (The One Ring)", TV_RING, SV_RING_POWER },
-    { NULL, 0, 0 },
-    { NULL, 0, 0 },
-
-    { "'Razorback'", TV_DRAG_ARMOR, SV_DRAGON_MULTIHUED },
-    { "'Bladeturner'", TV_DRAG_ARMOR, SV_DRAGON_POWER },
-    { NULL, 0, 0 },
-
-    { "'Soulkeeper'", TV_HARD_ARMOR, SV_ADAMANTITE_PLATE_MAIL },
-    { "of Isildur", TV_HARD_ARMOR, SV_FULL_PLATE_ARMOUR },
-    { "of the Rohirrim", TV_HARD_ARMOR, SV_METAL_BRIGANDINE_ARMOUR },
-    { "'Belegennon'", TV_HARD_ARMOR, SV_MITHRIL_CHAIN_MAIL },
-    { "of Celeborn", TV_HARD_ARMOR, SV_MITHRIL_PLATE_MAIL },
-    { "of Arvedui", TV_HARD_ARMOR, SV_CHAIN_MAIL },
-    { "of Caspanion", TV_HARD_ARMOR, SV_AUGMENTED_CHAIN_MAIL },
-    { NULL, 0, 0 },
-
-    { "'Hithlomir'", TV_SOFT_ARMOR, SV_SOFT_LEATHER_ARMOR },
-    { "'Thalkettoth'", TV_SOFT_ARMOR, SV_LEATHER_SCALE_MAIL },
-    { NULL, 0, 0 },
-
-    { "of Thorin", TV_SHIELD, SV_SMALL_METAL_SHIELD },
-    { "of Celegorm", TV_SHIELD, SV_LARGE_LEATHER_SHIELD },
-    { "of Anarion", TV_SHIELD, SV_LARGE_METAL_SHIELD },
-    { NULL, 0, 0 },
-
-    { "of Morgoth", TV_HELM, SV_IRON_CROWN },
-    { "of Beruthiel", TV_HELM, SV_IRON_CROWN },
-    { "of Thranduil", TV_HELM, SV_HARD_LEATHER_CAP },
-    { "of Thengel", TV_HELM, SV_METAL_CAP },
-    { "of Hammerhand", TV_HELM, SV_STEEL_HELM },
-    { "of Dor-Lomin", TV_HELM, SV_IRON_HELM },
-    { "'Holhenneth'", TV_HELM, SV_IRON_HELM },
-    { "of Gorlim", TV_HELM, SV_IRON_HELM },
-    { "of Gondor", TV_HELM, SV_GOLDEN_CROWN },
-    { NULL, 0, 0 },
-
-    { "'Colluin'", TV_CLOAK, SV_CLOAK },
-    { "'Holcolleth'", TV_CLOAK, SV_CLOAK },
-    { "of Thingol", TV_CLOAK, SV_CLOAK },
-    { "of Thorongil", TV_CLOAK, SV_CLOAK },
-    { "'Colannon'", TV_CLOAK, SV_CLOAK },
-    { "of Luthien", TV_CLOAK, SV_SHADOW_CLOAK },
-    { "of Tuor", TV_CLOAK, SV_SHADOW_CLOAK },
-    { NULL, 0, 0 },
-
-    { "'Cambeleg'", TV_GLOVES, SV_SET_OF_LEATHER_GLOVES },
-    { "'Cammithrim'", TV_GLOVES, SV_SET_OF_LEATHER_GLOVES },
-    { "'Paurhach'", TV_GLOVES, SV_SET_OF_GAUNTLETS },
-    { "'Paurnimmen'", TV_GLOVES, SV_SET_OF_GAUNTLETS },
-    { "'Pauraegen'", TV_GLOVES, SV_SET_OF_GAUNTLETS },
-    { "'Paurnen'", TV_GLOVES, SV_SET_OF_GAUNTLETS },
-    { "'Camlost'", TV_GLOVES, SV_SET_OF_GAUNTLETS },
-    { "of Fingolfin", TV_GLOVES, SV_SET_OF_CESTI },
-
-    { "of Feanor", TV_BOOTS, SV_PAIR_OF_HARD_LEATHER_BOOTS },
-    { "'Dal-i-thalion'", TV_BOOTS, SV_PAIR_OF_SOFT_LEATHER_BOOTS },
-    { "of Thror", TV_BOOTS, SV_PAIR_OF_METAL_SHOD_BOOTS },
-    { NULL, 0, 0 },
-
-    { "of Maedhros", TV_SWORD, SV_MAIN_GAUCHE },
-    { "'Angrist'", TV_SWORD, SV_DAGGER },
-    { "'Narthanc'", TV_SWORD, SV_DAGGER },
-    { "'Nimthanc'", TV_SWORD, SV_DAGGER },
-    { "'Dethanc'", TV_SWORD, SV_DAGGER },
-    { "of Rilia", TV_SWORD, SV_DAGGER },
-    { "'Belangil'", TV_SWORD, SV_DAGGER },
-    { "'Calris'", TV_SWORD, SV_BASTARD_SWORD },
-    { "'Arunruth'", TV_SWORD, SV_BROAD_SWORD },
-    { "'Glamdring'", TV_SWORD, SV_BROAD_SWORD },
-    { "'Aeglin'", TV_SWORD, SV_BROAD_SWORD },
-    { "'Orcrist'", TV_SWORD, SV_BROAD_SWORD },
-    { "'Gurthang'", TV_SWORD, SV_TWO_HANDED_SWORD },
-    { "'Zarcuthra'", TV_SWORD, SV_TWO_HANDED_SWORD },
-    { "'Mormegil'", TV_SWORD, SV_TWO_HANDED_SWORD },
-    { "'Gondricam'", TV_SWORD, SV_CUTLASS },
-    { "'Crisdurian'", TV_SWORD, SV_EXECUTIONERS_SWORD },
-    { "'Aglarang'", TV_SWORD, SV_KATANA },
-    { "'Ringil'", TV_SWORD, SV_LONG_SWORD },
-    { "'Anduril'", TV_SWORD, SV_LONG_SWORD },
-    { "'Anguirel'", TV_SWORD, SV_LONG_SWORD },
-    { "'Elvagil'", TV_SWORD, SV_LONG_SWORD },
-    { "'Forasgil'", TV_SWORD, SV_RAPIER },
-    { "'Careth Asdriag'", TV_SWORD, SV_SABRE },
-    { "'Sting'", TV_SWORD, SV_SMALL_SWORD },
-    { "'Haradekket'", TV_SWORD, SV_SCIMITAR },
-    { "'Gilettar'", TV_SWORD, SV_SHORT_SWORD },
-    { "'Doomcaller'", TV_SWORD, SV_BLADE_OF_CHAOS },
-    { NULL, 0, 0 },
-
-    { "of Theoden", TV_POLEARM, SV_BEAKED_AXE },
-    { "of Pain", TV_POLEARM, SV_GLAIVE },
-    { "'Osondir'", TV_POLEARM, SV_HALBERD },
-    { "'Til-i-arc'", TV_POLEARM, SV_PIKE },
-    { "'Aeglos'", TV_POLEARM, SV_SPEAR },
-    { "of Orome", TV_POLEARM, SV_SPEAR },
-    { "'Nimloth'", TV_POLEARM, SV_SPEAR },
-    { "of Eorlingas", TV_POLEARM, SV_LANCE },
-    { "of Durin", TV_POLEARM, SV_GREAT_AXE },
-    { "of Eonwe", TV_POLEARM, SV_GREAT_AXE },
-    { "of Balli Stonehand", TV_POLEARM, SV_BATTLE_AXE },
-    { "'Lotharang'", TV_POLEARM, SV_BATTLE_AXE },
-    { "'Mundwine'", TV_POLEARM, SV_LOCHABER_AXE },
-    { "'Barukkheled'", TV_POLEARM, SV_BROAD_AXE },
-    { "of Wrath", TV_POLEARM, SV_TRIDENT },
-    { "of Ulmo", TV_POLEARM, SV_TRIDENT },
-    { "'Avavir'", TV_POLEARM, SV_SCYTHE },
-    { NULL, 0, 0 },
-
-    { "'Grond'", TV_HAFTED, SV_LEAD_FILLED_MACE },
-    { "'Totila'", TV_HAFTED, SV_FLAIL },
-    { "'Thunderfist'", TV_HAFTED, SV_TWO_HANDED_FLAIL },
-    { "'Bloodspike'", TV_HAFTED, SV_MORNING_STAR },
-    { "'Firestar'", TV_HAFTED, SV_MORNING_STAR },
-    { "'Taratol'", TV_HAFTED, SV_MACE },
-    { "of Aule", TV_HAFTED, SV_WAR_HAMMER },
-    { "'Nar-i-vagil'", TV_HAFTED, SV_QUARTERSTAFF },
-    { "'Eriril'", TV_HAFTED, SV_QUARTERSTAFF },
-    { "of Olorin", TV_HAFTED, SV_QUARTERSTAFF },
-    { "'Deathwreaker'", TV_HAFTED, SV_MACE_OF_DISRUPTION },
-    { "'Turmil'", TV_HAFTED, SV_LUCERN_HAMMER },
-    { NULL, 0, 0 },
-
-    { "'Belthronding'", TV_BOW, SV_LONG_BOW },
-    { "of Bard", TV_BOW, SV_LONG_BOW },
-    { "'Cubragol'", TV_BOW, SV_LIGHT_XBOW },
-    { NULL, 0, 0 }
-};
 
 
 
@@ -686,7 +537,7 @@ cptr player_title[MAX_CLASS][MAX_PLAYER_LEVEL] = {
 
 
 /* Base experience levels, may be adjusted up for race and/or class*/
-int32u player_exp[MAX_PLAYER_LEVEL] = {
+u32b player_exp[MAX_PLAYER_LEVEL] = {
 	10,		25,		45,		70,
 	100,		140,		200,		280,
 	380,		500,		650,		850,
@@ -949,7 +800,7 @@ player_class class[MAX_CLASS] = {
  * CLA_MISC_HIT is identical to CLA_SAVE, which takes advantage of
  * the fact that the save values are independent of the class
  */
-int16 class_level_adj[MAX_CLASS][MAX_LEV_ADJ] = {
+s16b class_level_adj[MAX_CLASS][MAX_LEV_ADJ] = {
 
 /*	       bth    bthb   device  disarm   save/misc hit  */
 /* Warrior */ {	4,	4,	2,	2,	3 },
@@ -1047,7 +898,7 @@ spell_type magic_spell[MAX_CLASS-1][63] = {
    },
 
    {
-        /*** Priest ***/
+	/*** Priest ***/
 
      {	1,  1, 10, 0,   1},
      {	1,  2, 15, 0,   1},
@@ -1076,6 +927,7 @@ spell_type magic_spell[MAX_CLASS-1][63] = {
      { 13, 10, 45, 0,  15},
      { 13, 11, 45, 0,  16},
      { 15, 12, 50, 0,  20},
+     
      { 15, 14, 50, 0,  22},
      { 17, 14, 55, 0,  32},
      { 21, 16, 60, 0,  38},
@@ -1123,7 +975,7 @@ spell_type magic_spell[MAX_CLASS-1][63] = {
    },
 
    {
-        /*** Rogue ***/
+	/*** Rogue ***/
 
      { 99, 99,	0, 0,   0},
      {	5,  1, 50, 0,   1},
@@ -1200,7 +1052,7 @@ spell_type magic_spell[MAX_CLASS-1][63] = {
    },
 
    {
-        /*** Ranger ***/
+	/*** Ranger ***/
 
      {	3,  1, 30, 0,   1},
      {	3,  2, 35, 0,   2},
@@ -1274,7 +1126,7 @@ spell_type magic_spell[MAX_CLASS-1][63] = {
    },
 
    {
-        /*** Paladin ***/
+	/*** Paladin ***/
 
      {	1,  1, 30, 0,   1},
      {	2,  2, 35, 0,   2},
@@ -1354,13 +1206,16 @@ cptr spell_names[127] = {
     /*** Mage Spells ***/
 
   "Magic Missile",  "Detect Monsters", "Phase Door",  "Light Area",
-  "Treasure Detection",
-  "Cure Light Wounds",  "Object Detection",
+  "Treasure Detection", "Cure Light Wounds",  "Object Detection",
   "Find Hidden Traps/Doors",  "Stinking Cloud",
+
   "Confusion", "Lightning Bolt",  "Trap/Door Destruction", "Sleep I",
   "Cure Poison",  "Teleport Self",  "Spear of Light",  "Frost Bolt",
-  "Turn Stone to Mud", "Satisfy Hunger", "Recharge Item I",  "Sleep II",
-  "Polymorph Other",  "Identify",  "Sleep III",  "Fire Bolt",  "Slow Monster",
+  "Turn Stone to Mud",
+  
+  "Satisfy Hunger", "Recharge Item I",  "Sleep II", "Polymorph Other",
+  "Identify",  "Sleep III",  "Fire Bolt",  "Slow Monster",
+
   "Frost Ball", "Recharge Item II", "Teleport Other", "Haste Self",
   "Fire Ball", "Word of Destruction", "Genocide",
 
@@ -1408,14 +1263,18 @@ cptr spell_names[127] = {
 
     /*** Priest Spells (starting at 63) ***/
 
-  "Detect Evil",  "Cure Light Wounds", "Bless",  "Remove Fear", "Call Light",
-  "Find Traps",  "Detect Doors/Stairs",  "Slow Poison",  "Blind Creature",
-  "Portal",  "Cure Medium Wounds",  "Chant",  "Sanctuary",  "Satisfy Hunger",
-  "Remove Curse",  "Resist Heat and Cold",  "Neutralize Poison",
-  "Orb of Draining",  "Cure Serious Wounds",  "Sense Invisible",
-  "Protection from Evil",  "Earthquake",  "Sense Surroundings",
-  "Cure Critical Wounds",  "Turn Undead",  "Prayer",  "Dispel Undead",
-  "Heal",  "Dispel Evil",  "Glyph of Warding", "Holy Word",
+  "Detect Evil",  "Cure Light Wounds", "Bless",  "Remove Fear",
+  "Call Light", "Find Traps",  "Detect Doors/Stairs",  "Slow Poison",
+  
+  "Blind Creature", "Portal",  "Cure Medium Wounds",  "Chant",
+  "Sanctuary",  "Satisfy Hunger", "Remove Curse",  "Resist Heat and Cold",
+  
+  "Neutralize Poison", "Orb of Draining",  "Cure Serious Wounds",
+  "Sense Invisible", "Protection from Evil",  "Earthquake",
+  "Sense Surroundings", "Cure Critical Wounds",  "Turn Undead",
+  
+  "Prayer",  "Dispel Undead", "Heal",  "Dispel Evil",
+  "Glyph of Warding", "Holy Word",
 
     /* Godly Insights... */
   "Detect Monsters",
@@ -1466,7 +1325,7 @@ cptr spell_names[127] = {
  * spellmasks[][] is used to control the "you seem to be missing a book"
  * messages, because they look stupid otherwise.
  */
-int32u spellmasks[MAX_CLASS][2] = {
+u32b spellmasks[MAX_CLASS][2] = {
 	{ 0x0L, 0x0L },			/* warrior */
 	{ 0xffffffafL, 0x0fffffffL },	/* mage */
 	{ 0xffffffffL, 0x03ffffffL },	/* priest */

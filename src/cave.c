@@ -16,72 +16,12 @@
 
 
 /*
- * Is a given location "open" like a floor?
- * That is, can it legally be "walked" on?
- * Note that "illegal" locations are treated as "walls".
- * Note that "open doors" count as "floor space".
- * But walls, rubble, and closed doors do not.
- */
-bool floor_grid(int y, int x)
-{
-    cave_type *c_ptr;
-    inven_type *i_ptr;
-
-    /* Out of bounds */
-    if (!in_bounds(y,x)) return (FALSE);
-
-    /* Get that location */
-    c_ptr = &cave[y][x];
-
-    /* Solid rock (and doors) are invalid */
-    if (c_ptr->fval >= MIN_WALL) return (FALSE);
-
-    /* No object, must be a floor */
-    if (c_ptr->i_idx == 0) return (TRUE);
-    
-    /* Get the object */
-    i_ptr = &i_list[c_ptr->i_idx];
-
-    /* Rubble and closed (and secret) doors are blockages */
-    if (i_ptr->tval == TV_RUBBLE) return (FALSE);
-    if (i_ptr->tval == TV_CLOSED_DOOR) return (FALSE);
-    if (i_ptr->tval == TV_SECRET_DOOR) return (FALSE);
-    
-    /* Must be open floor */
-    return (TRUE);
-}
-
-
-/*
- * Determine if a given location is a floor with no objects on it.
- */
-bool clean_grid(int y, int x)
-{
-    cave_type *c_ptr;
-
-    /* Out of bounds */
-    if (!in_bounds(y,x)) return (FALSE);
-
-    /* Get that location */
-    c_ptr = &cave[y][x];
-
-    /* Objects are "messy" */
-    if (c_ptr->i_idx) return (FALSE);
-    
-    /* Blockage is "messy" */
-    if (c_ptr->fval >= MIN_WALL) return (FALSE);
-    
-    /* Assume clean */
-    return (TRUE);
-}
-
-
-/*
  * Is a given location "valid" for placing things?
  * Note that solid rock, doors, and rubble evaluate as "valid".
  * Note that artifacts, store doors, and stairs, do not.
- * See also "clean_grid()" and "floor_grid()" above.
- * This function is usually "combined" with "floor_grid()".
+ *
+ * This function is usually "combined" with "floor_grid_bold(y,x)",
+ * which checks to see if the grid is not a wall or blockage.
  */
 bool valid_grid(int y, int x)
 {
@@ -134,108 +74,137 @@ bool valid_grid(int y, int x)
 
 /*
  * Because this function uses (short) ints for all calculations, overflow may
- * occur if deltaX and deltaY exceed 90.
+ * occur if d_x and d_y exceed 90.
  *
  * Also note that this function and the "move towards target" code do NOT
  * share the same properties.  Thus, you can see someone, target them, and
- * then fire a bolt at them, and the bolt will hit a wall, not them.  XXX.
+ * then fire a bolt at them, but the bolt may hit a wall, not them.  However,
+ * by clever choice of target locations, you can sometimes throw a "curve".
  */
-
 int los(int fromY, int fromX, int toY, int toX)
 {
-    register int deltaX, deltaY;
+    register int p_x, p_y, d_x, d_y, a_x, a_y;
 
-    deltaX = toX - fromX;
-    deltaY = toY - fromY;
 
-    /* Adjacent?  Or equal? */
-    if ((deltaX < 2) && (deltaX > -2) && (deltaY < 2) && (deltaY > -2)) {
-	return TRUE;
-    }
+    /* Extract the offset */    
+    d_y = toY - fromY;
+    d_x = toX - fromX;
 
-    /* Along a vertical path */
-    if (deltaX == 0) {
+    /* Extract the absolute offset */
+    a_y = MY_ABS(d_y);
+    a_x = MY_ABS(d_x);
+
+
+    /* Handle adjacent (or identical) grids */
+    if ((a_x < 2) && (a_y < 2)) return (TRUE);
+
+
+    /* XXX XXX XXX Paranoia -- require "safe" origin */
+    if (!in_bounds(fromY, fromX)) return (FALSE);
+
+
+    /* Directly South/North */
+    if (!d_x) {
+
 	register int p_y;
-	if (deltaY < 0) {
-	    register int tmp;
-	    tmp = fromY;
-	    fromY = toY;
-	    toY = tmp;
+
+	/* South -- check for walls */
+	if (d_y > 0) {
+	    for (p_y = fromY + 1; p_y < toY; p_y++) {
+		if (!floor_grid_bold(p_y,fromX)) return FALSE;
+	    }
 	}
-	for (p_y = fromY + 1; p_y < toY; p_y++) {
-	    if (!floor_grid(p_y,fromX)) return FALSE;
+	
+	/* North -- check for walls */
+	else {
+	    for (p_y = fromY - 1; p_y > toY; p_y--) {
+		if (!floor_grid_bold(p_y,fromX)) return FALSE;
+	    }
 	}
+	
+	/* Assume los */
 	return TRUE;
     }
 
-    /* Along a horizontal path */
-    if (deltaY == 0) {
+    /* Directly East/West */
+    if (!d_y) {
+    
 	register int p_x;
-	if (deltaX < 0) {
-	    register int tmp;
-	    tmp = fromX;
-	    fromX = toX;
-	    toX = tmp;
+
+	/* East -- check for walls */
+	if (d_x > 0) {
+	    for (p_x = fromX + 1; p_x < toX; p_x++) {
+		if (!floor_grid_bold(fromY,p_x)) return FALSE;
+	    }
 	}
-	for (p_x = fromX + 1; p_x < toX; p_x++) {
-	    if (!floor_grid(fromY,p_x)) return FALSE;
+
+	/* West -- check for walls */
+	else {
+	    for (p_x = fromX - 1; p_x > toX; p_x--) {
+		if (!floor_grid_bold(fromY,p_x)) return FALSE;
+	    }
 	}
+		
+	/* Assume los */
 	return TRUE;
     }
 
-    /* handle Knightlike shapes -CWS */
-    if (MY_ABS(deltaX) == 1) {
-	if (deltaY == 2) {
-	    if (floor_grid(fromY + 1,fromX)) return TRUE;
+
+    /* Handle Knightlike shapes -CWS */
+    if (a_x == 1) {
+	if (d_y == 2) {
+	    if (floor_grid_bold(fromY + 1, fromX)) return TRUE;
 	}
-	else if (deltaY == (-2)) {
-	    if (floor_grid(fromY - 1,fromX)) return TRUE;
-	}
-    }
-    else if (MY_ABS(deltaY) == 1) {
-	if (deltaX == 2) {
-	    if (floor_grid(fromY,fromX + 1)) return TRUE;
-	}
-	else if (deltaX == (-2)) {
-	    if (floor_grid(fromY,fromX - 1)) return TRUE;
+	else if (d_y == (-2)) {
+	    if (floor_grid_bold(fromY - 1, fromX)) return TRUE;
 	}
     }
+    else if (a_y == 1) {
+	if (d_x == 2) {
+	    if (floor_grid_bold(fromY, fromX + 1)) return TRUE;
+	}
+	else if (d_x == (-2)) {
+	    if (floor_grid_bold(fromY, fromX - 1)) return TRUE;
+	}
+    }
+
 
 /*
  * Now, we've eliminated all the degenerate cases. In the computations below,
- * dy (or dx) and m are multiplied by a scale factor, scale = abs(deltaX *
- * deltaY * 2), so that we can use integer arithmetic. 
+ * dy (or dx) and m are multiplied by a scale factor, scale = abs(d_x *
+ * d_y * 2), so that we can use integer arithmetic. 
  */
 
     {
-	register int        p_x,	/* x position			 */
-			    p_y,	/* y position			 */
+	register int        scale,	/* a scale factor		 */
 			    scale2;	/* above scale factor / 2	 */
-	int                 scale,	/* above scale factor		 */
-			    xSign,	/* sign of deltaX		 */
-			    ySign,	/* sign of deltaY		 */
+
+	int		    xSign,	/* sign of d_x		 */
+			    ySign,	/* sign of d_y		 */
 			    m;		/* slope or 1/slope of LOS	 */
 
-	scale2 = MY_ABS(deltaX * deltaY);
+	scale2 = (a_x * a_y);
 	scale = scale2 << 1;
-	xSign = (deltaX < 0) ? -1 : 1;
-	ySign = (deltaY < 0) ? -1 : 1;
+
+	xSign = (d_x < 0) ? -1 : 1;
+	ySign = (d_y < 0) ? -1 : 1;
 
 
 	/* Travel from one end of the line to the other, */
 	/* oriented along the longer axis. */
 
-	if (MY_ABS(deltaX) >= MY_ABS(deltaY)) {
+	if (a_x >= a_y) {
+
 	    register int        dy;  /* "fractional" y position	 */
 
 	/*
 	 * We start at the border between the first and second tiles, where
 	 * the y offset = .5 * slope.  Remember the scale factor.  We have: 
 	 *
-	 * m = deltaY / deltaX * 2 * (deltaY * deltaX) = 2 * deltaY * deltaY. 
+	 * m = d_y / d_x * 2 * (d_y * d_x) = 2 * d_y * d_y. 
 	 */
 
-	    dy = deltaY * deltaY;
+	    dy = a_y * a_y;
 	    m = dy << 1;
 	    p_x = fromX + xSign;
 
@@ -251,14 +220,14 @@ int los(int fromY, int fromX, int toY, int toX)
 	    /* Note (below) the case (dy == scale2), where */
 	    /* the LOS exactly meets the corner of a tile. */
 	    while (toX - p_x) {
-		if (!floor_grid(p_y,p_x)) return FALSE;
+		if (!floor_grid_bold(p_y,p_x)) return FALSE;
 		dy += m;
 		if (dy < scale2) {
 		    p_x += xSign;
 		}
 		else if (dy > scale2) {
 		    p_y += ySign;
-		    if (!floor_grid(p_y,p_x)) return FALSE;
+		    if (!floor_grid_bold(p_y,p_x)) return FALSE;
 		    dy -= scale;
 		    p_x += xSign;
 		}
@@ -272,9 +241,10 @@ int los(int fromY, int fromX, int toY, int toX)
 	}
 
 	else {
-	    register int        dx;/* "fractional" x position	 */
+	
+	    register int        dx;	/* "fractional" x position	 */
 
-	    dx = deltaX * deltaX;
+	    dx = a_x * a_x;
 	    m = dx << 1;
 
 	    p_y = fromY + ySign;
@@ -289,14 +259,14 @@ int los(int fromY, int fromX, int toY, int toX)
 	    /* Note (below) the case (dx == scale2), where */
 	    /* the LOS exactly meets the corner of a tile. */
 	    while (toY - p_y) {
-		if (!floor_grid(p_y,p_x)) return FALSE;
+		if (!floor_grid_bold(p_y,p_x)) return FALSE;
 		dx += m;
 		if (dx < scale2) {
 		    p_y += ySign;
 		}
 		else if (dx > scale2) {
 		    p_x += xSign;
-		    if (!floor_grid(p_y,p_x)) return FALSE;
+		    if (!floor_grid_bold(p_y,p_x)) return FALSE;
 		    dx -= scale;
 		    p_y += ySign;
 		}
@@ -306,1433 +276,11 @@ int los(int fromY, int fromX, int toY, int toX)
 		    p_y += ySign;
 		}
 	    }
-	    return TRUE;
-	}
-    }
-}
-
-
-
-
-
-
-
-
-/*
- * This suggests a rethinking of the "permanent light" / "temp light"
- * concept.  Perhaps "temp light" should be replaced by "reachable space",
- * that is, we collect a set of "grids which can be seen by the player".
- * They are all marked "temp light" which now means "seen by player", and
- * whenever something major (like player motion) occurs, this "set" of grids
- * is first all marked as "not lit" and then "reconstructed" by combining
- * "lamp radius" with "permanent light" to result in "viewable grids".
- *
- * The algorithm marks grids as "CAVE_VIEW" if the player has "los()" to
- * the grid, and it marks them as "CAVE_XTRA" if, in addition, the "los()"
- * is very "obvious" or "easily determinable".
- *
- * The algorithm is very fast, since it spreads "obvious" grids very quickly,
- * and only has to call "los()" on the borderline cases.  The major axes/diags
- * even terminate early when they hit walls.  I need to find a quick way
- * to "terminate" the other scans.
- *
- * Note that in the worst case (a big empty area with maybe 5% scattered walls),
- * each of the under 1500 grids is checked once, with most of them getting an
- * "instant" rating, and only a small portion requiring a call to "los()".
- *
- * In the "best" case (say, a corridor, with no room at the end), no calls to
- * "los()" are made, even for updating the monsters just outside the corridor.
- * So all I need to do is teach the algorithm to "stop" at "solid walls"...
- *
- * There are two separate flags for "lite" (combining to make four "states"):
- *   CAVE_PL: Perma-Lite: The grid is permanently "illuminated"
- *   CAVE_TL: Torch-Lite: The grid is within the player's "torch" radius
- *
- * There is a hacked flag for "omniscient sight" of a grid:
- *   CAVE_FM: Field-Mark: The grid contents are "remembered" even if not lit
- *
- * Later, we can use this flag for noting the "first observation" of a grid:
- *   CAVE_SEEN: The grid has been observed by the player
- *
- * Hack -- for now, walls, when first seen, are marked as "CAVE_PL" AND "CAVE_FM".
- * This has the effect that they are "always visible" once seen for the first time.
- *
- * Walls, doors, stairs, and "detected objects" are marked as "CAVE_FM" when
- * first "seen" or "detected".
- *
- * Technically, we should have:
- *   CAVE_PL + CAVE_FM: The wall is in a lite room, and has been seen.
- *   CAVE_PL: The wall is in a lite room, but has not been noticed yet.
- *   CAVE_FM: The wall has been noticed, but not lit (?).
- *
- * However, instead, we use a hack involving:
- *   CAVE_INIT: This grid has been "initialized" by the system
- *
- * Floors in lit rooms are not actually set to "Perma-Lit" until the player enters
- * them, at which time "CAVE_INIT" is used to spread "initialization" through the
- * room, also marking walls and landmarks as "CAVE_FM", and marking the whole room
- * as "CAVE_PL".  Note that "CAVE_PL" is NOT as powerful as "CAVE_FM".
- *
- * This will allow "seeing" a wall (in a lit room) before the room itself is
- * actually "displayed".  This will require "pre-scanning" all the lit rooms.
- * And observe that the floors of lit rooms can also be marked as "lit", but
- * not "field marked", until the player enters the room, via "check_view()".
- *
- * Potential advantage: never "field mark" objects, so that they "disappear" when
- * the player leaves the room.  No more "magic doors" or "screaming treasure".
- *
- * Note that the "efficiency issue" is VERY important when the player is running.
- * I am thinking that we could literally "reduce" the "vision" parameter, say,
- * to 1 or 2 or 3, and thus have a much smaller "viewable space".  The player
- * would then NOT see monsters as he ran down halls.  Or, we could turn off the
- * "construct view" flag, and default to using the true "los()" routine for, say,
- * checking monster visibility.
- *
- * Note that running implies two separate hacks:
- *   (1) The light radius is auto-reduced to one grid
- *   (2) The viewable space algorithm needs to be "neutered".
- *
- * Note that we would no longer have to do as many "los()" checks, since once
- * the region has been built, very few things cause it to be "changed" (mostly
- * "light" changes, plus player movement, and the opening/closing of doors).
- * If the player was willing to "forgive" small inconsistancies (until he stood
- * still, or moved), then we could ignore the latter.  Note that technically, the
- * "viewable space" is important, as it indicates which grids will be "noticed"
- * by the player, for things like treasure dropping, and such.  Also, the actual
- * algorithm seems to only call "los()" from zero to ten times, usually only when
- * coming down a corridor into a room, or standing in a room, just misaligned
- * with a corridor.  So if, say, there are five "nearby" monsters, we will be
- * reducing the calls to "los()".
- *
- * I am thinking in terms of an algorithm that "walks" from the central point out
- * to the maximal "distance", at each point, determining the "view" code (above).
- * Note that for each grid not on a major axis or diagonal, the "view" code depends
- * on the "floor_grid()" and "view" of exactly two other grids (the one along the
- * nearest diagonal, and the one next to that one, see "update_view_aux()"...).
- *
- * Notice that we "memorize" the viewable space array, so that at the cost of
- * under 3000 bytes, we reduce the time taken by "forget_view()" to one assignment
- * for each grid actually in the "viewable space".  And for another 3000 bytes,
- * we prevent "erase + redraw" ineffiencies via the "seen" set.
- *
- * A similar thing is done for "forget_lite()" in which case the savings are
- * much less, but save us from doing bizarre "temp_lite" maintenance checking.
- *
- * In the worst case (in the middle of the town), the reachable space actually
- * reaches to the largest possible "circle" of view, just under 1500 grids.
- *
- * Each grid G examines the "state" of two (?) other (adjacent) grids, G1 & G2.
- * If G1 is lite, G is lite.  Else if G2 is lite, G is half.  Else if G1 and G2
- * are both half, G is half.  Else G is dark.  It only takes 2 (or 4) bits to
- * "name" a grid, so (for MAX_RAD of 20) we could use 1600 bytes, and scan the
- * entire possible space (including initialization) in one step per grid.  If
- * we do the "clearing" as a separate step (and use an array of "view" grids),
- * then the clearing will take as many steps as grids that were viewed, and the
- * algorithm will be able to "stop" scanning at various points.
- * Oh, and outside of the "torch radius", only "lite" grids need to be scanned.
- *
- * And note that only "CAVE_PL" and "CAVE_LR" and "CAVE_FM" need to be saved
- * in the savefile, along with "CAVE_SEEN" if we use it, or "CAVE_INIT" if we
- * do not.  In fact, "CAVE_SEEN" and "CAVE_INIT" are very similar...
- *
- * A major "test of worth" is going to be "running".  We will need to "reduce"
- * in some way the "view space" when running.  I am wondering about just lowering
- * the "view distance" to 10 or something.
- *
- * Note that (for free) we get a method of drawing, say, in yellow, the grids 
- * which are hit by the torch, and in orange the ones that we can currently "see",
- * and in "green" the ones that we remember but cannot currently see.
- */
-
-
-
-
-
-/*
- * Maintain an array of "torch lit" cave grids
- * Note that "radius 11" light only fills 480 grids
- *
- * Currently this accesses "CAVE_TL"
- * Could call this flag "CAVE_LITE"
- */
-static int lite_n = 0;
-static byte lite_y[500];
-static byte lite_x[500];
-
-
-/*
- * Maintain an array of "viewable cave grids" (see below)
- * The "view radius" must NEVER be larger than 20...
- */
-static int view_n = 0;
-static byte view_y[1500];
-static byte view_x[1500];
-
-
-/*
- * This is the "set" of grids marked as "CAVE_SEEN".
- * These grids have many interpretations, see below.
- *
- * Note that we must be at least 1500 long for "CAVE_VIEW" below.
- */
-static int seen_n = 0;
-static byte seen_y[2000];
-static byte seen_x[2000];
-
-
-
-
-
-/*
- * This routine adds a grid to the "seen" set.
- *
- * This routine had better not be called when the "seen" array is "full".
- */
-static void cave_seen_add(int y, int x)
-{
-    /* Already in the set */
-    if (cave[y][x].info & CAVE_SEEN) return;
-
-    /* Mark the grid as being in the set */
-    cave[y][x].info |= CAVE_SEEN;
-    
-    /* Add to queue */
-    seen_y[seen_n] = y;
-    seen_x[seen_n] = x;
-    seen_n++;
-}
-
-
-
-/*
- * This routine clears the entire "seen" set.
- * This routine will "lite_spot()" all non-CAVE_TL grids
- *
- * This routine is used by "update_lite()"
- */
-static void cave_seen_wipe_lite(void)
-{
-    int i;
-
-    /* None to forget */
-    if (!seen_n) return;
-    
-    /* Clear them all */
-    for (i = 0; i < seen_n; i++) {
-
-	int y = seen_y[i];
-	int x = seen_x[i];
-	
-	/* No longer in the array */
-        cave[y][x].info &= ~CAVE_SEEN;
-
-	/* Update only non-CAVE_TL grids */
-	if (!(cave[y][x].info & CAVE_TL)) lite_spot(y, x);
-    }
-
-    /* None left */
-    seen_n = 0;
-}
-
-
-
-/*
- * Copy the "lite" set into the "seen" set, clearing the "CAVE_TL" flag.
- */
-static void cave_seen_grab_lite(void)
-{
-    int i;
-
-    /* None to forget */
-    if (!lite_n) return;
-    
-    /* Clear them all */
-    for (i = 0; i < lite_n; i++) {
-
-	int y = lite_y[i];
-	int x = lite_x[i];
-	
-	/* Remove it from the "lite" set */
-        cave[y][x].info &= ~CAVE_TL;
-
-	/* Add it to the "seen" set */
-	cave_seen_add(y, x);
-    }
-
-    /* None left */
-    lite_n = 0;
-}
-
-
-/*
- * This routine clears the entire "seen" set.
- * This routine will "lite_spot()" all non-CAVE_VIEW grids
- *
- * This routine is used by "update_view()"
- */
-static void cave_seen_wipe_view(void)
-{
-    int i;
-
-    /* None to forget */
-    if (!seen_n) return;
-    
-    /* Clear them all */
-    for (i = 0; i < seen_n; i++) {
-
-	int y = seen_y[i];
-	int x = seen_x[i];
-	
-	/* No longer in the array */
-        cave[y][x].info &= ~CAVE_SEEN;
-
-	/* Update only non-CAVE_TL grids */
-	if (!(cave[y][x].info & CAVE_VIEW)) lite_spot(y, x);
-    }
-
-    /* None left */
-    seen_n = 0;
-}
-
-
-
-/*
- * Copy the "view" set into the "seen" set, clearing the "CAVE_VIEW" flag.
- */
-static void cave_seen_grab_view(void)
-{
-    int i;
-
-    /* None to forget */
-    if (!view_n) return;
-    
-    /* Clear them all */
-    for (i = 0; i < view_n; i++) {
-
-	int y = view_y[i];
-	int x = view_x[i];
-	
-	/* Remove it from the "view" set */
-        cave[y][x].info &= ~CAVE_VIEW;
-        cave[y][x].info &= ~CAVE_XTRA;
-
-	/* Add it to the "seen" set */
-	cave_seen_add(y, x);
-    }
-
-    /* None left */
-    view_n = 0;
-}
-
-
-
-/*
- * This routine clears the entire "seen" set.
- *
- * This routine will Perma-Lite all "seen" grids.
- *
- * This routine is used by "lite_room()"
- */
-static void cave_seen_room_lite(void)
-{
-    int i;
-
-    /* None to forget */
-    if (!seen_n) return;
-    
-    /* Clear them all */
-    for (i = 0; i < seen_n; i++) {
-
-	int y = seen_y[i];
-	int x = seen_x[i];
-	
-	/* No longer in the array */
-        cave[y][x].info &= ~CAVE_SEEN;
-
-	/* Update only non-CAVE_TL grids */
-	if (cave[y][x].info & CAVE_PL) continue;
-
-	/* Perma-Lite */
-	cave[y][x].info |= CAVE_PL;
-	
-	/* Lite that spot */
-	lite_spot(y, x);
-    }
-
-    /* None left */
-    seen_n = 0;
-}
-
-
-
-/*
- * This routine clears the entire "seen" set.
- *
- * This routine will Perma-Lite all "seen" grids.
- *
- * This routine is used by "unlite_room()"
- */
-static void cave_seen_room_unlite(void)
-{
-    int i;
-
-    /* None to forget */
-    if (!seen_n) return;
-    
-    /* Clear them all */
-    for (i = 0; i < seen_n; i++) {
-
-	int y = seen_y[i];
-	int x = seen_x[i];
-	
-	/* No longer in the array */
-        cave[y][x].info &= ~CAVE_SEEN;
-
-	/* Only update grids which are changing */
-	if (!(cave[y][x].info & (CAVE_PL | CAVE_FM))) continue;
-
-	/* Forget about the grid */
-	cave[y][x].info &= ~CAVE_PL;
-	cave[y][x].info &= ~CAVE_FM;
-	
-	/* Lite that spot */
-	lite_spot(y, x);
-    }
-
-    /* None left */
-    seen_n = 0;
-}
-
-
-
-
-
-
-
-
-
-
-/*
- * Actually erase the entire "lite" array, redrawing every grid
- */
-void forget_lite(void)
-{
-    int i;
-
-    /* None to forget */
-    if (!lite_n) return;
-    
-    /* Clear them all */
-    for (i = 0; i < lite_n; i++) {
-
-	/* Forget that we can see it */
-        cave[lite_y[i]][lite_x[i]].info &= ~CAVE_TL;
-
-	/* Hack -- update the screen */
-	lite_spot(lite_y[i], lite_x[i]);
-    }
-
-    /* None left */
-    lite_n = 0;
-}
-
-
-/*
- * Mark the given grid as "illuminated by torch lite"
- * Never call this routine when the "lite" array is "full".
- * This routine does a "lite_spot()" on grids for whom the
- * "CAVE_SEEN" flag is NOT set.
- */
-static void cave_lite(int y, int x)
-{
-    /* Already lit */
-    if (cave[y][x].info & CAVE_TL) return;
-
-    /* Set the flag */
-    cave[y][x].info |= CAVE_TL;
-    
-    /* Add to queue */
-    lite_y[lite_n] = y;
-    lite_x[lite_n] = x;
-    lite_n++;
-
-    /* Lite "un-seen" spots */
-    if (!(cave[y][x].info & CAVE_SEEN)) lite_spot(y, x);
-}
-
-
-
-/*
- * Update the current "lite radius" and "illuminate" nearby grids.
- *
- * This routine may only work after "update_view()" has been called.
- *
- * Note that "torch lite" and "perma-lite" are separate things.
- */
-void update_lite(void)
-{
-    int x, y, min_x, max_x, min_y, max_y;
-
-    inven_type *i_ptr;
-
-
-    /* Check for light being wielded */
-    i_ptr = &inventory[INVEN_LITE];
-
-    /* Start with no light */
-    cur_lite = 0;
-    
-    /* Extract "max radius" from current lite */
-    if (i_ptr->tval == TV_LITE) {
-
-	/* Default radius */
-	cur_lite = 1;
-
-	/* Lanterns have more power */
-	if (i_ptr->sval == SV_LITE_LANTERN) cur_lite = 2;
-
-	/* Most lite's need fuel */
-	if (i_ptr->pval <= 0) cur_lite = 0;
-	    
-	/* Artifact Lites last forever */
-	if (i_ptr->sval == SV_LITE_GALADRIEL)    cur_lite = 3;
-	else if (i_ptr->sval == SV_LITE_ELENDIL) cur_lite = 2;
-	else if (i_ptr->sval == SV_LITE_THRAIN)  cur_lite = 3;
-    }
-
-    /* Player is glowing */
-    if (p_ptr->lite && (cur_lite < 1)) cur_lite = 1;
-
-    /* Hack -- player is running, reduce the lite */
-    if (view_reduce_lite && find_flag && (cur_lite > 1)) cur_lite = 1;
-
-    /* Hack -- player is blind */
-    if (p_ptr->blind) cur_lite = 0;
-    
-
-    /* Hack -- player is in a store */
-    if (in_store_flag) return;
-    
-
-    /* XXX Hack -- Blind or Dark */
-    if (cur_lite <= 0) {
-
-	/* Forget the old lite */
-	forget_lite();
-	
-	/* Hack -- Draw the player's grid */
-	lite_spot(char_row, char_col);
-
-	/* All done */
-	return;
-    }
-
-    
-    /* Grab the "old" lite */
-    cave_seen_grab_lite();
-    
-    
-    /* Hack -- be very efficient with "radius one" light */
-    if (cur_lite == 1) {
-
-	/* Scan the "radius one" box */
-	for (y = char_row - 1; y <= char_row + 1; y++) {
-	    for (x = char_col - 1; x <= char_col + 1; x++) {
-	    
-		/* Radius one lite is simple */
-		cave_lite(y, x);
-	    }
 	}
     }
 
-    /* Larger radius */    
-    else {
-
-	/* Extract maximal legal bounded light box */
-	min_y = MY_MAX(0, (char_row - cur_lite));
-	max_y = MY_MIN(cur_height-1, (char_row + cur_lite));
-	min_x = MY_MAX(0, (char_col - cur_lite));
-	max_x = MY_MIN(cur_width-1, (char_col + cur_lite));
-
-	/* Scan that box (the viewable, reachable, portions of it) */
-	for (y = min_y; y <= max_y; y++) {
-	    for (x = min_x; x <= max_x; x++) {
-
-		/* Viewable, nearby, grids get "torch lit" */
-		if (player_has_los(y, x) &&
-		    (distance(char_row, char_col, y, x) <= cur_lite)) {
-
-		    /* This grid is "torch lit" */
-		    cave_lite(y, x);
-		}
-	    }
-	}
-    }
-
-
-    /* Now "erase" the "old" lite */
-    cave_seen_wipe_lite();
-}
-
-
-
-
-
-
-/*
- * Clear the viewable space
- */
-void forget_view(void)
-{
-    int i;
-
-    /* None to forget */
-    if (!view_n) return;
-    
-    /* Clear them all */
-    for (i = 0; i < view_n; i++) {
-
-	int y = view_y[i];
-	int x = view_x[i];
-	
-	/* Forget that the grid is viewable */
-        cave[y][x].info &= ~CAVE_VIEW;
-        cave[y][x].info &= ~CAVE_XTRA;
-
-	/* Hack -- update the screen */
-	lite_spot(y, x);
-    }
-
-    /* None left */
-    view_n = 0;
-}
-
-
-
-/*
- * Set the "view" flag of the given cave grid
- * Never call this function when the "view" array is full.
- */
-static void cave_view(int y, int x)
-{
-    /* Can only be set once */
-    if (cave[y][x].info & CAVE_VIEW) return;
-    
-    /* Set the value */
-    cave[y][x].info |= CAVE_VIEW;
-
-    /* Add to queue */
-    view_y[view_n] = y;
-    view_x[view_n] = x;
-    view_n++;
-
-    /* Lite "un-seen" spots */
-    if (!(cave[y][x].info & CAVE_SEEN)) lite_spot(y, x);
-}
-
-
-
-/*
- * Another "helper" function, used for "main" grids
- */
-static bool update_view_aux_1(int y, int x)
-{
-    cave_view(y, x);
-    return (!floor_grid(y, x));
-}
-
-
-/*
- * Another "helper" function, used for "main" grids
- */
-static bool update_view_aux_2(int y, int x)
-{
-    cave[y][x].info |= CAVE_XTRA;
-    cave_view(y, x);
-    return (!floor_grid(y, x));
-}
-
-
-/*
- * We are checking the "viewability" of grid (y,x) by the player.
- *
- * Grid (y1,x1) is on the "diagonal" between (py,px) and (y,x)
- * Grid (y2,x2) is "adjacent", also between (py,px) and (y,x).
- *
- * We must be rather careful about "falling off the map"
- *
- * Note that we are using the "CAVE_XTRA" field for marking grids as
- * "easily viewable".  We can (easily) clear this field in "update_view()".
- *
- * This function now returns "TRUE" if vision is "blocked" by grid (y,x).
- */
-static bool update_view_aux(int y, int x, int y1, int x1, int y2, int x2)
-{
-    bool f1, f2, v1, v2, b1, b2;
-    
-    /* Check the walls */
-    f1 = floor_grid(y1,x1);
-    f2 = floor_grid(y2,x2);
-    
-    /* Totally blocked by physical walls */
-    if (!f1 && !f2) return (TRUE);
-    
-    
-    /* Check the visibility */
-    v1 = (f1 && (cave[y1][x1].info & CAVE_VIEW));
-    v2 = (f2 && (cave[y2][x2].info & CAVE_VIEW));
-    
-    /* Totally blocked by "unviewable neighbors" */
-    if (!v1 && !v2) return (TRUE);
-    
-    
-    /* Check the "ease" of visibility */
-    b1 = (v1 && (cave[y1][x1].info & CAVE_XTRA));
-    b2 = (v2 && (cave[y2][x2].info & CAVE_XTRA));
-
-    /* Hack -- "easy" plus "easy" yields "easy" */
-    if (b1 && b2) {
-    
-	/* Non-floors block vision */
-	return (update_view_aux_2(y,x));
-    }
-
-    /* Hack -- primary "easy" yields "viewed" */
-    else if (b1) {
-
-	/* Non-floors block vision */
-	return (update_view_aux_1(y,x));
-    }
-
-    /* Hack -- "view" plus "view" yields "view" */
-    else if (v1 && v2) {
-
-	/* Non-floors block vision */
-	return (update_view_aux_1(y,x));
-    }
-
-    /* Hack -- check line of sight */
-    else if (los(char_row, char_col, y, x)) {
-    
-	/* Non-floors block vision */
-	return (update_view_aux_1(y,x));
-    }
-
-    /* We must not be in "line of sight".  Block vision. */
-    return (TRUE);
-}
-
-
-
-/*
- * Calculate the viewable space
- *
- * Step 1: The player is viewable
- * Step 2: Process the main axes, stop at blockage and prepare Step 4
- * Step 3: Process the main diagonals (stop at first blockage)
- * Step 4: Process each of the eight "octants" (stay inside the "octagon")
- *      4a: Process each strip (each starts adjacent to the diagonal)
- *      4a1: Process each octant's strip, aborting as soon as possible
- *
- * Note that the octant processing involves some pretty interesting
- * onservations involving when a grid might possibly be viewable from
- * a given grid, and on the order in which the strips are processed.
- *
- * Note the use of the mathematical facts that:
- *   if (manhatten(dy,dx) < R) then (dist(dy,dx) < R)
- *   if (manhatten(dy,dx) > R*3/2) then (dist(dy,dx) > R)
- *
- * This is based on the observation that (1 < 1.415 < 1.5) and the speed
- * of the "manhatten()" function.  Look for "20" and "30" in the code below.
- * Also look for "15", when "propagating", since "n" is used for dx AND dy.
- *
- * This "optimization" replaces a "circle" with an "octagon" that completely
- * includes the circle, but gets pretty close to it at the major edges.
- * In this function, we only have to do the manhatten checks one-eighth of
- * the time, since the "octagon" is symetrical.  By "skipping" the corners
- * of the octagon (with very little speed cost), we skip one-eighth of the
- * possible 1681 grids, or 210 of 1681.  So the array only has to hold 1475
- * grids, call it 1500.
- *
- * Note that this algorithm is hard-coded to a "maximum sight" of 20 grids.
- * Changing this would require calculating "max", "max/2", and "max*3/2".
- *
- * Note the "optimizations" involving the "se","sw","ne","nw","es","en",
- * "ws","wn" variables.  They work like this: While travelling down the
- * south-bound strip just to the east of the main south axis, as soon as
- * we get to a grid which does not "transmit" viewing, if all of the strips
- * preceding us (in this case, just the main axis) had terminated at or before
- * the same point, then we can stop, and reset the "max distance" to ourself.
- * So, each strip (named by major axis plus offset, thus "se" in this case)
- * maintains a "blockage" variable, initialized during the main axis step,
- * and checks it whenever a blockage is observed.
- */
-void update_view(void)
-{
-    int d, n;
-    int y, x;
-
-    int se, sw, ne, nw, es, en, ws, wn;
-    
-    int over, full = MAX_SIGHT;
-
-
-    /* Hack -- If not pre-computing, just clear it */
-    if (!view_pre_compute) {
-        forget_view();
-        return;
-    }
-
-
-    /* Hack -- reduce view when running */
-    if (view_reduce_view && find_flag) {
-        full = full - (find_flag-1);
-        if (full < 10) full = 10;
-    }
-    
-    /* Extract the "octagon" limits */
-    over = full * 3 / 2;
-    
-
-    /*** Step 0 -- save the old view ***/
-    
-    /* Wipe the old stuff */
-    cave_seen_grab_view();
-    
-    
-    /*** Step 1 -- adjacent grids ***/
-    
-    /* Now start on the player */
-    y = char_row;
-    x = char_col;
-
-    /* Hack -- note obstructed player grid */
-    if (update_view_aux_2(y,x)) {
-	/* This should never happen */
-    }
-    
-
-    /*** Step 2 -- major axes ***/
-
-    /* Scan south */
-    for (d = 1; d <= full; d++) {
-	if (update_view_aux_2(y+d,x)) break;
-    }
-
-    /* Initialize the "south strips" */
-    se = sw = d;
-        
-    /* Scan north */
-    for (d = 1; d <= full; d++) {
-	if (update_view_aux_2(y-d,x)) break;
-    }
-        
-    /* Initialize the "north strips" */
-    ne = nw = d;
-        
-    /* Scan east */
-    for (d = 1; d <= full; d++) {
-	if (update_view_aux_2(y,x+d)) break;
-    }
-        
-    /* Initialize the "east strips" */
-    es = en = d;
-        
-    /* Scan west */
-    for (d = 1; d <= full; d++) {
-	if (update_view_aux_2(y,x-d)) break;
-    }
-
-    /* Initialize the "west strips" */
-    ws = wn = d;
-
-
-    /*** Step 3 -- Major Diags ***/
-    
-    /* Scan south-east */
-    for (d = 1; d <= full; d++) {
-	if (update_view_aux_2(y+d,x+d)) break;
-    }
-    
-    /* Scan south-west */
-    for (d = 1; d <= full; d++) {
-	if (update_view_aux_2(y+d,x-d)) break;
-    }
-    
-    /* Scan north-east */
-    for (d = 1; d <= full; d++) {
-	if (update_view_aux_2(y-d,x+d)) break;
-    }
-    
-    /* Scan north-west */
-    for (d = 1; d <= full; d++) {
-	if (update_view_aux_2(y-d,x-d)) break;
-    }
-    
-
-    /*** Step 4 -- Divide each "octant" into "strips" ***/
-
-    /* Now check each "diagonal" (in parallel) */
-    for (n = 1; n <= over / 2; n++) {
-
-	int full_n = full - n;
-	int over_n_n = over - n - n;
-	int ypn = y + n;
-	int ymn = y - n;
-	int xpn = x + n;
-	int xmn = x - n;
-	
-	
-	/* Scan south strip, east side */
-	for (d = 1; (d <= full_n) && (d <= over_n_n); d++) {
-
-	    /* Check grid "d" in strip "n", abort if totally blocked */
-            if (update_view_aux(ypn+d,xpn,ypn+d-1,xpn-1,ypn+d-1,xpn)) {
-		if (n+d > se) break;
-	    }
-        }
-
-	/* Maintain the "strip blocker" */
-	if (n+d > se) se = n+d;
-
-
-	/* Scan south strip, west side */
-	for (d = 1; (d <= full_n) && (d <= over_n_n); d++) {
-
-	    /* Check grid "d" in strip "n", abort if totally blocked */
-            if (update_view_aux(ypn+d,xmn,ypn+d-1,xmn+1,ypn+d-1,xmn)) {
-		if (n+d > sw) break;
-	    }
-        }
-
-	/* Maintain the "strip blocker" */
-	if (n+d > sw) sw = n+d;
-
-
-	/* Scan north strip, east side */
-	for (d = 1; (d <= full_n) && (d <= over_n_n); d++) {
-
-	    /* Check grid "d" in strip "n", abort if totally blocked */
-            if (update_view_aux(ymn-d,xpn,ymn-d+1,xpn-1,ymn-d+1,xpn)) {
-		if (n+d > ne) break;
-	    }
-        }
-
-	/* Maintain the "strip blocker" */
-	if (n+d > ne) ne = n+d;
-
-
-	/* Scan north strip, west side */
-	for (d = 1; (d <= full_n) && (d <= over_n_n); d++) {
-
-	    /* Check grid "d" in strip "n", abort if totally blocked */
-            if (update_view_aux(ymn-d,xmn,ymn-d+1,xmn+1,ymn-d+1,xmn)) {
-		if (n+d > nw) break;
-	    }
-        }
-
-	/* Maintain the "strip blocker" */
-	if (n+d > nw) nw = n+d;
-
-
-	/* Scan east strip, south side */
-	for (d = 1; (d <= full_n) && (d <= over_n_n); d++) {
-
-	    /* Check grid "d" in strip "n", abort if totally blocked */
-            if (update_view_aux(ypn,xpn+d,ypn-1,xpn+d-1,ypn,xpn+d-1)) {
-		if (n+d > es) break;
-	    }
-        }
-
-	/* Maintain the "strip blocker" */
-	if (n+d > es) es = n+d;
-
-
-	/* Scan east strip, north side */
-	for (d = 1; (d <= full_n) && (d <= over_n_n); d++) {
-
-	    /* Check grid "d" in strip "n", abort if totally blocked */
-            if (update_view_aux(ymn,xpn+d,ymn+1,xpn+d-1,ymn,xpn+d-1)) {
-		if (n+d > en) break;
-	    }
-        }
-
-	/* Maintain the "strip blocker" */
-	if (n+d > en) en = n+d;
-
-
-	/* Scan west strip, south side */
-	for (d = 1; (d <= full_n) && (d <= over_n_n); d++) {
-
-	    /* Check grid "d" in strip "n", abort if totally blocked */
-            if (update_view_aux(ypn,xmn-d,ypn-1,xmn-d+1,ypn,xmn-d+1)) {
-		if (n+d > ws) break;
-	    }
-        }
-
-	/* Maintain the "strip blocker" */
-	if (n+d > ws) ws = n+d;
-
-
-	/* Scan west strip, north side */
-	for (d = 1; (d <= full_n) && (d <= over_n_n); d++) {
-
-	    /* Check grid "d" in strip "n", abort if totally blocked */
-            if (update_view_aux(ymn,xmn-d,ymn+1,xmn-d+1,ymn,xmn-d+1)) {
-		if (n+d > wn) break;
-	    }
-        }
-
-	/* Maintain the "strip blocker" */
-	if (n+d > wn) wn = n+d;
-    }
-    
-
-#if 0
-
-    /* XXX Old, non "optimizing" method */
-    
-    /* Now fill in the holes, one group of strips at a time */
-    for (n = 1; n <= 15; n++) {
-
-	/* Now scan the next strips */
-	for (d = 1; (d <= 20-n) && (d <= 30-n-n); d++) {
-
-	    /* South (east side) */
-            update_view_aux(y+n+d,x+n,y+n+d-1,x+n-1,y+n+d-1,x+n);
-	    
-	    /* South (west side) */
-            update_view_aux(y+n+d,x-n,y+n+d-1,x-n+1,y+n+d-1,x-n);
-
-	    /* North (east side) */
-            update_view_aux(y-n-d,x+n,y-n-d+1,x+n-1,y-n-d+1,x+n);
-	    
-	    /* North (west side) */
-            update_view_aux(y-n-d,x-n,y-n-d+1,x-n+1,y-n-d+1,x-n);
-
-	    /* East (south side) */
-            update_view_aux(y+n,x+n+d,y+n-1,x+n+d-1,y+n,x+n+d-1);
-	    
-	    /* East (north side) */
-            update_view_aux(y-n,x+n+d,y-n+1,x+n+d-1,y-n,x+n+d-1);
-
-	    /* West (south side) */
-            update_view_aux(y+n,x-n-d,y+n-1,x-n-d+1,y+n,x-n-d+1);
-	    
-	    /* West (north side) */
-            update_view_aux(y-n,x-n-d,y-n+1,x-n-d+1,y-n,x-n-d+1);
-	}
-    }    
-
-#endif
-
-
-    /*** Step 5 -- Remove the "old" view space ***/
-    cave_seen_wipe_view();
-}
-
-
-
-
-
-
-/*
- * Aux function -- see below
- */
-static void lite_room_aux(int y, int x, int n)
-{
-    cave_type *c_ptr = &cave[y][x];
-
-
-    /* Avoid infinite recursion */
-    if (c_ptr->info & CAVE_SEEN) return;
-    
-    /* Not part of a room */
-    if (!(c_ptr->info & CAVE_LR)) return;
-
-    /* Hack -- Refuse to recurse too "deep" */
-    if (!n) return;
-
-
-    /* Collect "processed" grids */
-    cave_seen_add(y, x);
-
-
-    /* Hack -- Dark to Lite */
-    if (c_ptr->fval == NT_DARK_FLOOR) c_ptr->fval = NT_LITE_FLOOR;
-    else if (c_ptr->fval == DARK_FLOOR) c_ptr->fval = LITE_FLOOR;
-
-
-    /* Previously dark grids are "lit", waking up the monsters */
-    if (!(c_ptr->info & CAVE_PL)) {    
-
-	/* Check the monsters */
-	monster_type *m_ptr = &m_list[c_ptr->m_idx];
-
-	/* Perhaps wake up */
-	if ((r_list[m_ptr->r_idx].cflags2 & MF2_INTELLIGENT) ||
-	    (!(r_list[m_ptr->r_idx].cflags2 & MF2_MINDLESS) && (randint(3) == 1)) ||
-	    (randint(10) == 1)) {
-
-	    /* Wake up! */
-	    m_ptr->csleep = 0;
-	}
-    }
-
-
-    
-    /* Stop at walls */
-    if (!floor_grid(y, x)) return;
-
-
-    /* Spread adjacent */
-    lite_room_aux(y + 1, x, n - 1);
-    lite_room_aux(y - 1, x, n - 1);
-    lite_room_aux(y, x + 1, n - 1);
-    lite_room_aux(y, x - 1, n - 1);
-
-    /* Spread diagonal */
-    lite_room_aux(y + 1, x + 1, n - 1);
-    lite_room_aux(y - 1, x - 1, n - 1);
-    lite_room_aux(y - 1, x + 1, n - 1);
-    lite_room_aux(y + 1, x - 1, n - 1);
-}
-
-/*
- * Spread lite through a room.
- *
- * Dark grids are illuminated, and monsters notice it.
- * Monsters that are intelligent wake up all the time,
- * non-MF2_MINDLESS monsters wake up 1/3 the time,
- * and MF2_MINDLESS monsters wake up 1/10 the time -CWS
- *
- * Mega-Hack -- we use "torch lite" to mark processed grids,
- * so we must first forget the view to avoid updating them.
- */
-void lite_room(int y, int x)
-{
-    /* Collect all the "room grids" */
-    lite_room_aux(y, x, 128);
-
-    /* Now, update each of those grids */
-    cave_seen_room_lite();
-
-    /* Hack -- check the view */
-    check_view();
-}
-
-
-/*
- * Aux function -- see below
- *
- * Note -- "darkness" now "forgets" the room walls, which is
- * okay, because "lite" restores them, and because the "init"
- * function is only needed on unseen "lit" rooms, which this
- * will no longer be...
- */
-static void unlite_room_aux(int y, int x, int n)
-{
-    cave_type *c_ptr = &cave[y][x];
-
-
-    /* Avoid infinite recursion */
-    if (c_ptr->info & CAVE_SEEN) return;
-    
-    /* Not part of a room */
-    if (!(c_ptr->info & CAVE_LR)) return;
-
-    /* Refuse to recurse too "deep" */
-    if (!n) return;
-
-
-    /* Collect "processed" grids */
-    cave_seen_add(y, x);
-
-    
-    /* Turn Lite to Dark */
-    if (c_ptr->fval == NT_LITE_FLOOR) c_ptr->fval = NT_DARK_FLOOR;
-    else if (c_ptr->fval == LITE_FLOOR) c_ptr->fval = DARK_FLOOR;
-
-
-    /* Stop at walls */
-    if (!floor_grid(y,x)) return;
-
-
-    /* Spread to adjacent grids */
-    unlite_room_aux(y + 1, x, n - 1);
-    unlite_room_aux(y - 1, x, n - 1);
-    unlite_room_aux(y, x + 1, n - 1);
-    unlite_room_aux(y, x - 1, n - 1);
-
-    /* Spread to diagonal grids */
-    unlite_room_aux(y + 1, x + 1, n - 1);
-    unlite_room_aux(y - 1, x - 1, n - 1);
-    unlite_room_aux(y - 1, x + 1, n - 1);
-    unlite_room_aux(y + 1, x - 1, n - 1);
-}
-
-
-
-
-/*
- * Darken the room containing the given location
- *
- * Mega-Hack -- we use "torch lite" to mark processed grids,
- * so we must first forget the view to avoid updating them.
- */
-void unlite_room(int y, int x)
-{
-    /* Darken the room */
-    unlite_room_aux(y, x, 128);
-
-    /* Now, update each of those grids */
-    cave_seen_room_unlite();
-}
-
-
-
-
-
-
-
-
-
-/*
- * Does the player have "line of sight" to a grid
- */
-bool player_has_los(int y, int x)
-{
-    /* Must be a "legal location" (including edges) */
-    if (!in_bounds2(y, x)) return (FALSE);
-
-    /* New method -- use "precomputed" view */
-    if (view_pre_compute) {
-
-	/* Check the "pre-computed" view */
-	return ((cave[y][x].info & CAVE_VIEW) ? TRUE : FALSE);
-    }
-
-    /* Check distance */
-    if (distance(char_row, char_col, y, x) > MAX_SIGHT) return (FALSE);
-    
-    /* Call the "los()" function */
-    return (los(char_row, char_col, y, x));
-}
-
-
-/*
- * Can the player "see" the given grid in detail?
- *
- * He must have vision, illumination, and line of sight.
- *
- * Note -- "CAVE_TL" is only set if the "torch" has "los()".
- * So, given "CAVE_TL", we know that the grid is "fully visible".
- *
- * The new "VIEW" code maintains a "current viewable space", so that it
- * can very quickly answer the questions "can the player see a grid?"
- * and "could the player see a grid assuming that it was lit?"
- *
- * Note that pre-calculating the "viewable space" ahead of time has some
- * rather obvious advantages.  On of the most notable is that, since the
- * "maximal view area" is precalculated, it takes no time at all to note
- * that a given grid is NOT viewable, which otherwise takes up a lot of
- * processing power when many monsters are nearby.
- *
- * Also note that unless the player "moves" or "opens doors", there is
- * no need to recalculate the "viewable space", and even when doors are
- * opened, it only matters if that door itself was already viewable.
- * So, if the player is, say, resting, then the monsters can move around
- * without ever having to check "los()" from the player.
- *
- * I wouldn't be surprised if slight modifications could prepare some field
- * in the cave array to indicate which grids have "los()" on the player...
- */
-bool player_can_see(int y, int x)
-{
-    /* Blind players see nothing */
-    if (p_ptr->blind > 0) return (FALSE);
-
-    /* Hack -- off screen cannot be seen */
-    if (!panel_contains(y, x)) return (FALSE);
-
-    /* Hack -- "torch-lite" implies "viewable" */
-    if (cave[y][x].info & CAVE_TL) return (TRUE);
-
-    /* No "torch-lite" and no "perma-lite" yields "dark" */
-    if (!(cave[y][x].info & CAVE_PL)) return (FALSE);
-    
-    /* Check for "line of sight" */
-    if (player_has_los(y, x)) return (TRUE);
-
-    /* Default to unseen */
-    return (FALSE);    
-}
-
-
-/*
- * Tests a spot for light or field mark status		-RAK-	
- */
-int test_lite(int y, int x)
-{
-    register cave_type *c_ptr;
-    c_ptr = &cave[y][x];
-    if (c_ptr->info & CAVE_PL) return (TRUE);
-    if (c_ptr->info & CAVE_TL) return (TRUE);
-    if (c_ptr->info & CAVE_FM) return (TRUE);
-    return (FALSE);
-}
-
-
-/*
- * Returns true if player cannot see himself.
- */
-int no_lite(void)
-{
-    return (!player_can_see(char_row, char_col));
-}
-
-
-
-
-
-
-
-/*
- * Map the current panel (plus some) ala "detection"
- * This function is a big hack -- see "update_map()".
- */
-void map_area()
-{
-    register cave_type *c_ptr;
-    register int        dx, dy, x, y;
-    int                 y1, y2, x1, x2;
-
-    /* Pick an area to map */
-    y1 = panel_row_min - randint(10);
-    y2 = panel_row_max + randint(10);
-    x1 = panel_col_min - randint(20);
-    x2 = panel_col_max + randint(20);
-
-    /* Speed -- shrink to fit legal bounds (for floors) */
-    if (y1 < 1) y1 = 1;
-    if (y2 > cur_height-2) y2 = cur_height-2;
-    if (x1 < 1) x1 = 1;
-    if (x2 > cur_width-2) x2 = cur_width-2;
-
-    /* Scan that area */
-    for (y = y1; y <= y2; y++) {
-	for (x = x1; x <= x2; x++) {
-
-	    /* If that grid holds a (legal) floor */
-	    if (floor_grid(y,x)) {
-
-		c_ptr = &cave[y][x];
-
-		/* Field mark any visible object */
-		if (c_ptr->i_idx) {
-		    inven_type *i_ptr = &i_list[c_ptr->i_idx];
-		    if ((i_ptr->tval >= TV_MIN_VISIBLE) &&
-			(i_ptr->tval <= TV_MAX_VISIBLE)) {
-			
-			/* Memorize the object */
-			c_ptr->info |= CAVE_FM;
-		    }
-		}
-
-		/* Field-Mark the "true" walls */
-		for (dy = -1; dy <= 1; dy++) {
-		    for (dx = -1; dx <= 1; dx++) {
-			if (!dx && !dy) continue;
-
-			c_ptr = &cave[y+dy][x+dx];
-
-			/* Perma-light the walls touching spaces */
-			if (c_ptr->fval >= MIN_WALL) {
-			    
-			    /* Memorize the walls */
-			    c_ptr->info |= CAVE_FM;
-			}
-		    }
-		}
-	    }
-	}
-    }
-
-    /* Redraw the map */
-    prt_map();
-}
-
-
-
-/*
- * Light up the dungeon.
- */
-void wiz_lite(void)
-{
-    register cave_type *c_ptr;
-    register int        yy, xx, y, x;
-
-    /* Perma-light all open space and adjacent walls */
-    for (y = 0; y < cur_height; y++) {
-	for (x = 0; x < cur_width; x++) {
-
-	    /* Process all non-walls */
-	    if (cave[y][x].fval < MIN_WALL) {
-
-		/* Perma-lite all grids touching those grids */
-		for (yy = y - 1; yy <= y + 1; yy++) {
-		    for (xx = x - 1; xx <= x + 1; xx++) {
-
-			/* Get the grid */
-			c_ptr = &cave[yy][xx];
-
-			/* Perma-lite all the grid */
-			c_ptr->info |= CAVE_PL;
-
-			/* Hack -- Field Mark all of the objects */
-			c_ptr->info |= CAVE_FM;
-		    }
-		}
-	    }
-	}
-    }
-
-    /* Redraw the map */    
-    prt_map();
-}
-
-
-/*
- * Hack -- Darken the dungeon.
- */
-void wiz_dark(void)
-{
-    register int        y, x;
-    register cave_type *c_ptr;
-
-    /* Forget lite */
-    forget_lite();
-    
-    /* Darken everything */
-    for (y = 0; y < cur_height; y++) {
-	for (x = 0; x < cur_width; x++) {
-	    c_ptr = &cave[y][x];
-	    c_ptr->info &= ~CAVE_PL;
-	    c_ptr->info &= ~CAVE_FM;
-	    if (c_ptr->fval == NT_LITE_FLOOR) c_ptr->fval = NT_DARK_FLOOR;
-	    else if (c_ptr->fval == LITE_FLOOR) c_ptr->fval = DARK_FLOOR;
-	}
-    }
-
-    /* Re-examine lite */
-    update_lite();
-    
-    /* Redraw the map */    
-    prt_map();
-    
-    
-    /* Check the view */
-    check_view();
+    /* Assume los */
+    return TRUE;
 }
 
 
@@ -1761,60 +309,60 @@ static char image_char(void)
  * Does NOT include White, Black, or any Grays.
  * Should it include "Brown" and "Light Brown"?
  */
-static int8u mh_attr(void)
+static byte mh_attr(void)
 {
 
 #ifdef USE_COLOR
 
     switch (randint(11)) {
-	case 1: return (COLOR_RED);
-	case 2: return (COLOR_BLUE);
-	case 3: return (COLOR_GREEN);
-	case 4: return (COLOR_YELLOW);
-	case 5: return (COLOR_ORANGE);
-	case 6: return (COLOR_VIOLET);
-	case 7: return (COLOR_BROWN);
-	case 8: return (COLOR_L_RED);
-	case 9: return (COLOR_L_BLUE);
-	case 10: return (COLOR_L_GREEN);
-	case 11: return (COLOR_L_BROWN);
+	case 1: return (TERM_RED);
+	case 2: return (TERM_BLUE);
+	case 3: return (TERM_GREEN);
+	case 4: return (TERM_YELLOW);
+	case 5: return (TERM_ORANGE);
+	case 6: return (TERM_VIOLET);
+	case 7: return (TERM_UMBER);
+	case 8: return (TERM_L_RED);
+	case 9: return (TERM_L_BLUE);
+	case 10: return (TERM_L_GREEN);
+	case 11: return (TERM_L_UMBER);
     }
 
 #endif
 
-    return (COLOR_WHITE);
+    return (TERM_WHITE);
 }
 
 
 /*
  * Hack -- Get a random "hallucination" attr
  */
-static int8u image_attr(void)
+static byte image_attr(void)
 {
 
 #ifdef USE_COLOR
 
     switch (randint(15)) {
-	case 1: return (COLOR_RED);
-	case 2: return (COLOR_BLUE);
-	case 3: return (COLOR_GREEN);
-	case 4: return (COLOR_YELLOW);
-	case 5: return (COLOR_ORANGE);
-	case 6: return (COLOR_VIOLET);
-	case 7: return (COLOR_BROWN);
-	case 8: return (COLOR_L_RED);
-	case 9: return (COLOR_L_BLUE);
-	case 10: return (COLOR_L_GREEN);
-	case 11: return (COLOR_L_BROWN);
-	case 12: return (COLOR_WHITE);
-	case 13: return (COLOR_GRAY);
-	case 14: return (COLOR_L_GRAY);
-	case 15: return (COLOR_D_GRAY);
+	case 1: return (TERM_RED);
+	case 2: return (TERM_BLUE);
+	case 3: return (TERM_GREEN);
+	case 4: return (TERM_YELLOW);
+	case 5: return (TERM_ORANGE);
+	case 6: return (TERM_VIOLET);
+	case 7: return (TERM_UMBER);
+	case 8: return (TERM_L_RED);
+	case 9: return (TERM_L_BLUE);
+	case 10: return (TERM_L_GREEN);
+	case 11: return (TERM_L_UMBER);
+	case 12: return (TERM_WHITE);
+	case 13: return (TERM_GRAY);
+	case 14: return (TERM_L_GRAY);
+	case 15: return (TERM_D_GRAY);
     }
 
 #endif
 
-    return (COLOR_WHITE);
+    return (TERM_WHITE);
 }
 
 
@@ -1828,69 +376,73 @@ byte inven_attr_by_tval(inven_type *i_ptr)
 #ifdef USE_COLOR
 
     /* Run-time mono */
-    if (!use_color) return (COLOR_WHITE);
+    if (!use_color) return (TERM_WHITE);
 
+    /* Hack -- check the attribute table */
+    if (tval_to_attr[i_ptr->tval]) return (tval_to_attr[i_ptr->tval]);
+    
     /* Examine the object */
     switch (i_ptr->tval) {
       case TV_SKELETON:
       case TV_BOTTLE:
       case TV_JUNK:
-	return (COLOR_WHITE);
+	return (TERM_WHITE);
       case TV_CHEST:
-	return (COLOR_GRAY);
+	return (TERM_GRAY);
       case TV_SHOT:
       case TV_BOLT:
       case TV_ARROW:
-	return (COLOR_L_BROWN);
+	return (TERM_L_UMBER);
       case TV_LITE:
-	return (COLOR_YELLOW);
+	return (TERM_YELLOW);
       case TV_SPIKE:
-	return (COLOR_GRAY);
+	return (TERM_GRAY);
       case TV_BOW:
+	return (TERM_UMBER);
+      case TV_DIGGING:
+	return (TERM_GRAY);
       case TV_HAFTED:
       case TV_POLEARM:
       case TV_SWORD:
-	return (COLOR_L_GRAY);  /* weapons */
-      case TV_DIGGING:
-	return (COLOR_GRAY);
+	return (TERM_L_GRAY);
       case TV_BOOTS:
       case TV_GLOVES:
       case TV_HELM:
       case TV_SHIELD:
       case TV_CLOAK:
-	return (COLOR_L_BROWN);
+	return (TERM_L_UMBER);
       case TV_SOFT_ARMOR:
       case TV_HARD_ARMOR:
       case TV_DRAG_ARMOR:
-	return (COLOR_GRAY);
+	return (TERM_GRAY);
       case TV_AMULET:
-	return (COLOR_ORANGE);
+	return (TERM_ORANGE);
       case TV_RING:
-	return (COLOR_RED);
+	return (TERM_RED);
       case TV_STAFF:
-	return (COLOR_L_BROWN);
+	return (TERM_L_UMBER);
       case TV_WAND:
-	return (COLOR_L_GREEN);
+	return (TERM_L_GREEN);
       case TV_ROD:
-	return (COLOR_L_GRAY);
+	return (TERM_L_GRAY);
       case TV_SCROLL:
-	return (COLOR_WHITE);
+	return (TERM_WHITE);
       case TV_POTION:
-	return (COLOR_L_BLUE);
+	return (TERM_L_BLUE);
       case TV_FLASK:
-	return (COLOR_YELLOW);
+	return (TERM_YELLOW);
       case TV_FOOD:
-	return (COLOR_L_BROWN);
+	return (TERM_L_UMBER);
       case TV_MAGIC_BOOK:
-	return (COLOR_ORANGE);
+	return (TERM_L_RED);
       case TV_PRAYER_BOOK:
-	return (COLOR_L_GREEN);
+	return (TERM_L_GREEN);
     }
 
 #endif
 
     /* No colors */
-    return (COLOR_WHITE);
+    return (TERM_WHITE);
 }
 
 
@@ -1900,93 +452,221 @@ byte inven_attr_by_tval(inven_type *i_ptr)
 /* 
  * Return a color to use for the bolt/ball spells
  */
-int8u spell_color(int type)
+byte spell_color(int type)
 {
 
 #ifdef USE_COLOR
 
-    if (!use_color) return (COLOR_WHITE);
+    if (!use_color) return (TERM_WHITE);
 
     switch (type) {
 
 	case GF_MISSILE:
 		return (mh_attr());		/* multihued */
 	case GF_ELEC:
-		return (COLOR_YELLOW);
+		return (TERM_YELLOW);
 	case GF_POIS:
-		return (COLOR_GREEN);
+		return (TERM_GREEN);
 	case GF_ACID:
-		return (COLOR_GRAY);
+		return (TERM_GRAY);
 	case GF_COLD:
-		return (COLOR_L_BLUE);
+		return (TERM_L_BLUE);
 	case GF_FIRE:
-		return (COLOR_RED);
+		return (TERM_RED);
 	case GF_HOLY_ORB:
-		return (COLOR_D_GRAY);
+		return (TERM_D_GRAY);
 	case GF_ARROW:
-		return (COLOR_L_BROWN);
+		return (TERM_L_UMBER);
 	case GF_PLASMA:
-		return (COLOR_RED);
+		return (TERM_RED);
 	case GF_NETHER:
-		return (COLOR_VIOLET);
+		return (TERM_VIOLET);
 	case GF_WATER:
-		return (COLOR_BLUE);
+		return (TERM_BLUE);
 	case GF_CHAOS:
 		return (mh_attr());		/* multihued */
 	case GF_SHARDS:
-		return (COLOR_L_BROWN);
+		return (TERM_L_UMBER);
 	case GF_SOUND:
-		return (COLOR_ORANGE);
+		return (TERM_ORANGE);
 	case GF_CONFUSION:
 		return (mh_attr());		/* multihued */
 	case GF_DISENCHANT:
-		return (COLOR_VIOLET);
+		return (TERM_VIOLET);
 	case GF_NEXUS:
-		return (COLOR_L_RED);
+		return (TERM_L_RED);
 	case GF_FORCE:
-		return (COLOR_WHITE);
+		return (TERM_WHITE);
 	case GF_INERTIA:
-		return (COLOR_L_GRAY);
+		return (TERM_L_GRAY);
 	case GF_LITE_WEAK:
 	case GF_LITE:
-		return (COLOR_YELLOW);
+		return (TERM_YELLOW);
 	case GF_DARK_WEAK:
 	case GF_DARK:
-		return (COLOR_D_GRAY);
+		return (TERM_D_GRAY);
 	case GF_TIME:
-		return (COLOR_L_BLUE);
+		return (TERM_L_BLUE);
 	case GF_GRAVITY:
-		return (COLOR_GRAY);
+		return (TERM_GRAY);
 	case GF_MANA:
-		return (COLOR_L_RED);
+		return (TERM_L_RED);
 	case GF_METEOR:
-		return (COLOR_ORANGE);
+		return (TERM_ORANGE);
 	case GF_ICE:
-		return (COLOR_L_BLUE);
+		return (TERM_L_BLUE);
     }
 
 #endif
 
     /* Standard "color" */
-    return (COLOR_WHITE);
+    return (TERM_WHITE);
+}
+
+
+
+/*
+ * Does the player have "line of sight" to a grid
+ *
+ * The new "VIEW" code maintains a "current viewable space", so that it
+ * can very quickly answer the questions "can the player see a grid?"
+ * and "could the player see a grid assuming that it was lit?"
+ *
+ * Note that pre-calculating the "viewable space" ahead of time has some
+ * rather obvious advantages.  On of the most notable is that, since the
+ * "maximal view area" is precalculated, it takes no time at all to note
+ * that a given grid is NOT viewable, which otherwise takes up a lot of
+ * processing power when many monsters are nearby.
+ *
+ * Also note that unless the player "moves" or "opens doors", there is
+ * no need to recalculate the "viewable space", and even when doors are
+ * opened, it only matters if that door itself was already viewable.
+ * So, if the player is, say, resting, then the monsters can move around
+ * without ever having to check "los()" from the player.
+ *
+ * I wouldn't be surprised if slight modifications could prepare some field
+ * in the cave array to indicate which grids have "los()" on the player...
+ */
+bool player_has_los(int y, int x)
+{
+    /* Must be a "legal location" (including edges) */
+    if (!in_bounds2(y, x)) return (FALSE);
+
+    /* New method -- use "precomputed" view */
+    if (view_pre_compute) {
+
+	/* Check the "pre-computed" view */
+	return ((cave[y][x].info & CAVE_VIEW) ? TRUE : FALSE);
+    }
+
+    /* Check distance */
+    if (distance(char_row, char_col, y, x) > MAX_SIGHT) return (FALSE);
+
+    /* Semi-Hack -- Call the "los()" function */
+    return (los(char_row, char_col, y, x));
+}
+
+
+/*
+ * Can the player "see" the given grid in detail?
+ *
+ * He must have vision, illumination, and line of sight.
+ *
+ * Note -- "CAVE_TL" is only set if the "torch" has "los()".
+ * So, given "CAVE_TL", we know that the grid is "fully visible".
+ *
+ * Note that "CAVE_PL" makes little sense for a wall, since it would mean
+ * that a wall is visible from any direction.  That would be odd.  Except
+ * under wizard light, which might make sense.
+ *
+ * Note that the test for walls includes a loop which cannot use the
+ * "floor_grid_bold()" function, since this function may be called on
+ * a grid which is actually in the outer wall.
+ *
+ * XXX XXX XXX XXX Potential problem...
+ * Note that the non-pre-computed view must be handled in a special
+ * way to prevent "monster light tracks" in dark rooms.  Unfortunately,
+ * this results in potential problems with the "beam of light" spell
+ * when it enters a room.  Until the player actually enters the room,
+ * he will not necessarily see monsters that are in the room.
+ */
+bool player_can_see(int y, int x)
+{
+    int yy, xx;
+    
+    /* Blind players see nothing */
+    if (p_ptr->blind > 0) return (FALSE);
+
+    /* Require "legal" location */
+    if (!in_bounds2(y, x)) return (FALSE);
+    
+    /* Hack -- off screen cannot be "seen" */
+    /* if (!panel_contains(y, x)) return (FALSE); */
+
+    /* Hack -- "torch-lite" implies "viewable" */
+    if (cave[y][x].info & CAVE_TL) return (TRUE);
+
+    /* No "torch-lite" and no "perma-lite" yields "dark" */
+    if (!(cave[y][x].info & CAVE_PL)) return (FALSE);
+
+    /* Mega-Hack -- non-pre-compute-view has some more requirements */
+    if (!view_pre_compute && (cave[y][x].info & CAVE_LR) &&
+	(!(cave[y][x].info & CAVE_INIT))) return (FALSE);
+    
+    /* Non-walls merely require line-of-sight */
+    if ((cave[y][x].fval < MIN_WALL) && player_has_los(y, x)) return (TRUE);
+
+    /* Hack -- require line of sight when pre-computing view */
+    if (view_pre_compute && !player_has_los(y, x)) return (FALSE);
+
+    /* Walls require line-of-sight to an adjacent, perma-lit, non-wall */
+    for (yy = y - 1; yy <= y + 1; yy++) {
+	for (xx = x - 1; xx <= x + 1; xx++) {
+	    if (!in_bounds(yy, xx)) continue;
+	    if (cave[yy][xx].fval >= MIN_WALL) continue;
+	    if (!(cave[yy][xx].info & CAVE_PL)) continue;
+	    if (player_has_los(yy, xx)) return (TRUE);
+	}
+    }
+    
+    /* Assume not visible */
+    return (FALSE);
+}
+
+
+/*
+ * Tests a spot for light or field mark status		-RAK-	
+ */
+int test_lite(int y, int x)
+{
+    /* Hack -- player remembers grid */
+    if (cave[y][x].info & CAVE_FM) return (TRUE);
+
+    /* Player can see the grid and it is lit */
+    return (player_can_see(y, x));
+}
+
+
+/*
+ * Returns true if player cannot see himself.
+ */
+int no_lite(void)
+{
+    return (!player_can_see(char_row, char_col));
 }
 
 
 
 
 
-/*
- * Minor Hack -- color character constructor from (Color, Char)
- */
-
-#define CC(a,b) ((((int16u)(a))<<8) | (int16u)(b))
 
 
 
 
 /*
- * Originally set highlight bit to display mineral veins
- * but that is not portable, now use the percent sign instead.
+ * This function helps decide what attr/char to use for a grid.
+ *
+ * Warning: This function may ONLY be called from "map_info()".
  *
  * Note the "fake" objects such as "OBJ_FLOOR" and "OBJ_GRANITE".
  *
@@ -1996,35 +676,34 @@ int8u spell_color(int type)
  *   Option "view_require_los" draws "hidden grids" dimmer.
  *   Option "view_run_quickly" cancels both those modes.
  *
- * Note that "view_require_los" does not really work unless either
- * "view_pre_compute" is set, or the player hits "Redraw" a lot.
- *
- * Warning: This function may ONLY be called from "map_info()".
+ * Note that "view_bright_lite" requires "view_pre_compute".
  *
  * Need to handle "MULTI_HUED" property better.  Probably best to
  * use another flag on "wearable objects".  If we can find one.
+ *
+ * Hack -- only floors, walls, and seams are drawn yellow/bright.
  */
-static int16u c_loc_symbol(int y, int x)
+static void map_info_aux(int y, int x, byte *ap, char *cp)
 {
     register cave_type *c_ptr;
 
     /* The "object" to draw */
     inven_type *i_ptr;
-    
+
     /* Should the object be "dimmed"? */
     bool darken = FALSE;
     bool yellow = FALSE;
-    
+
     /* Used at the end of the function */
     int mattr, mchar;
-    
+
     /* Hack -- some fake objects */
     static bool prepare = TRUE;
     static inven_type ii_floor;
     static inven_type ii_granite;
     static inven_type ii_quartz;
     static inven_type ii_magma;
-    
+
 
     /* Initialize the fake objects */
     if (prepare) {
@@ -2034,12 +713,12 @@ static int16u c_loc_symbol(int y, int x)
 	invcopy(&ii_magma, OBJ_MAGMA_VEIN);
 	prepare = FALSE;
     }
-     
-        
+
+
     /* Get the cave */
     c_ptr = &cave[y][x];
 
-    
+
     /* Hack -- skip "Field Marks" */
     if (!(c_ptr->info & CAVE_FM)) {
 
@@ -2047,38 +726,42 @@ static int16u c_loc_symbol(int y, int x)
 	if (!player_can_see(y, x)) {
 
 #ifdef NEW_MAPS
-	    return CC(c_ptr->mattr,c_ptr->mchar);
+	    (*ap) = c_ptr->mattr;
+	    (*cp) = c_ptr->mchar;
+#else
+	    (*ap) = TERM_WHITE;
+	    (*cp) = ' ';
 #endif
 
-	    /* Blank space */
-	    return CC(COLOR_WHITE, ' ');
+	    /* Done */
+	    return;
 	}
     }
-    
+
 
 #ifdef USE_COLOR
 
     /* XXX Note -- view_yellow_fast and view_bright_fast suck */
-    
+
     /* Option -- Draw the "torch-radius" in yellow */
     if (view_yellow_lite && (!find_flag || !view_yellow_fast) &&
-        (c_ptr->info & CAVE_TL)) yellow = TRUE;
+	(c_ptr->info & CAVE_TL)) yellow = TRUE;
 
-    /* Option -- Dim unseen grids in certain situations */
+    /* Option -- Sometimes only visible grids are bright */
     else if (view_pre_compute && view_bright_lite &&
-             (!(c_ptr->info & CAVE_VIEW))) darken = TRUE;
+	     !player_can_see(y, x)) darken = TRUE;
 
 #endif
-    
+
 
     /* Hack -- invisible traps (treat as "floor") */
     if (i_list[c_ptr->i_idx].tval == TV_INVIS_TRAP) {
-        i_ptr = &ii_floor;
+	i_ptr = &ii_floor;
     }
-    
+
     /* Hack -- secret doors (treat as "granite wall") */
     else if (i_list[c_ptr->i_idx].tval == TV_SECRET_DOOR) {
-        i_ptr = &ii_granite;
+	i_ptr = &ii_granite;
     }
 
     /* Use the actual object (no color change) */
@@ -2086,10 +769,10 @@ static int16u c_loc_symbol(int y, int x)
 	i_ptr = &i_list[c_ptr->i_idx];
 	yellow = darken = FALSE;
     }
-    
+
     /* Non walls yield "floors" */
     else if (c_ptr->fval < MIN_WALL) {
-        i_ptr = &ii_floor;
+	i_ptr = &ii_floor;
     }
 
     /* Handle illuminated normal seams */
@@ -2114,15 +797,16 @@ static int16u c_loc_symbol(int y, int x)
 #ifdef USE_COLOR
     /* Extract the color */
     mattr = inven_attr(i_ptr);
-    if (yellow) mattr = COLOR_YELLOW;
-    else if (darken) mattr = COLOR_GRAY;
-    if (!use_color) mattr = COLOR_WHITE;
+    if (yellow) mattr = TERM_YELLOW;
+    else if (darken) mattr = TERM_GRAY;
+    if (!use_color) mattr = TERM_WHITE;
 #else
-    mattr = COLOR_WHITE;
+    mattr = TERM_WHITE;
 #endif
 
-    /* Return the result */
-    return CC(mattr,mchar);
+    /* Accept */
+    (*ap) = mattr;
+    (*cp) = mchar;
 }
 
 
@@ -2144,42 +828,44 @@ static int16u c_loc_symbol(int y, int x)
  * the color of whatever is under them, and "CHAR_CLEAR", which means they
  * take the symbol of whatever is under them.  And "CHAR_MULTI" (undefined).
  */
-void map_info(int y, int x, int *m, byte *a, char *c)
+static void map_info(int y, int x, int *m, byte *a, char *c)
 {
-    register int16u tmp;
-    register int ma, mc;
-    register cave_type *c_ptr;    
+    byte ma;
+    char mc;
+    
+    cave_type *c_ptr;    
 
 
     /* Default to NOT "multihued" */
     (*m) = 0;
 
     /* Default to "white" */
-    (*a) = COLOR_WHITE;
-    
+    (*a) = TERM_WHITE;
+
     /* Default to "space" */
     (*c) = ' ';
-    
+
 
     /* Off the map -- invisible */
     if (!in_bounds2(y, x)) return;
-    
-    
+
+
     /* Get the cave */
     c_ptr = &cave[y][x];
-    
-    /* Hack -- player is "visible" unless "running blind" */
+
+
+    /* Hack -- player is always "visible" unless "running blind" */
     if ((c_ptr->m_idx == 1) && (!find_flag || find_prself)) {
 
 	static bool prepare = TRUE;
 	static inven_type ii_player;
-	
+
 	/* Initialize */
 	if (prepare) {
 	    invcopy(&ii_player, OBJ_PLAYER);
 	    prepare = FALSE;
 	}
-	
+
 	/* Get the player char/attr */
 	(*c) = inven_char(&ii_player);
 	(*a) = inven_attr(&ii_player);
@@ -2188,9 +874,11 @@ void map_info(int y, int x, int *m, byte *a, char *c)
 	return;
     }
 
-    /* Blind people see nothing (except themselves) */
+
+    /* Mega-Hack -- Blind people see nothing (except themselves) */
     if (p_ptr->blind > 0) return;
-    
+
+
     /* Hallucination kicks in occasionally */
     if ((p_ptr->image > 0) && (randint(12) == 1)) {
 	(*c) = image_char();
@@ -2199,10 +887,8 @@ void map_info(int y, int x, int *m, byte *a, char *c)
     }
 
 
-    /* Call "c_loc_symbol()" above */
-    tmp = c_loc_symbol(y, x);
-    mc = (tmp & 0xFF);
-    ma = (tmp >> 8);
+    /* Examine the ground / object */
+    map_info_aux(y, x, &ma, &mc);
 
 
     /* Normal, visible monsters "block" the object they are on */
@@ -2211,22 +897,30 @@ void map_info(int y, int x, int *m, byte *a, char *c)
 	/* Get the monster, and race */
 	monster_type *m_ptr = &m_list[c_ptr->m_idx];
 	monster_race *r_ptr = &r_list[m_ptr->r_idx];
-	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
 
 	/* Use the given attribute unless "clear" */
 	if (!(r_ptr->cflags1 & MF1_ATTR_CLEAR)) {
-	    ma = l_ptr->l_attr;
-	    if (!ma) ma = r_ptr->r_attr;
+
+	    /* Extract an attribute */
+	    ma = r_attr[m_ptr->r_idx];
+
+	    /* Apply the "multi-hued" flag */
 	    if (r_ptr->cflags1 & MF1_ATTR_MULTI) {
 		(*m) = 1;
-	        ma = mh_attr();
+		ma = mh_attr();
 	    }
 	}
-	
+
 	/* Use the given symbol unless "clear" */
 	if (!(r_ptr->cflags1 & MF1_CHAR_CLEAR)) {
-	    mc = l_ptr->l_char;
-	    if (!mc) mc = r_ptr->r_char;
+
+	    /* Extract a character */
+	    mc = r_char[m_ptr->r_idx];
+
+	    /* Apply the "mimic" flag */
+	    if (r_ptr->cflags1 & MF1_ATTR_MULTI) {
+		/* XXX */
+	    }
 	}
     }
 
@@ -2280,7 +974,7 @@ void move_cursor_relative(int row, int col)
  */
 static int mh_y[MH_MAX];
 static int mh_x[MH_MAX];
-static int8u mh_a[MH_MAX];
+static byte mh_a[MH_MAX];
 static char mh_c[MH_MAX];
 
 /*
@@ -2334,18 +1028,15 @@ void mh_cycle(void)
     /* Turn off the cursor */
     okay = Term_hide_cursor();
 
-    /* Flush */
-    Term_fresh();
-
     /* Scan the multi-hued set */
     for (i = 0; i<mh_n; ++i)
     {
 	int x = mh_x[i];
 	int y = mh_y[i];
-	int8u a = mh_a[i];
+	byte a = mh_a[i];
 	char c = mh_c[i];
 
-	int8u sa;
+	byte sa;
 	char sc;
 
 	/* Get the current screen info at that location */
@@ -2386,9 +1077,6 @@ void mh_cycle(void)
 
     /* Turn the cursor back on */
     if (!okay) Term_show_cursor();    
-
-    /* Flush */
-    Term_fresh();
 }
 
 
@@ -2457,7 +1145,7 @@ void mh_print(char c, byte a, int m, int y, int x)
     }
 
     /* Run-time color choosing */
-    if (!use_color) a = COLOR_WHITE;
+    if (!use_color) a = TERM_WHITE;
 
     /* Display it */
     Term_draw(x, y, a, c);
@@ -2471,10 +1159,10 @@ void mh_cycle(void) {}
 
 /*
  */
-void mh_print(char c, int8u a, int m, int y, int x)
+void mh_print(char c, byte a, int m, int y, int x)
 {
     /* Run-time color choosing */
-    if (!use_color) a = COLOR_WHITE;
+    if (!use_color) a = TERM_WHITE;
 
     /* Simply place the character using the attribute */
     Term_draw(x, y, a, c);
@@ -2488,10 +1176,10 @@ void mh_forget(void) {}
 
 void mh_cycle(void) {}
 
-void mh_print(char c, int8u a, int m, int y, int x)
+void mh_print(char c, byte a, int m, int y, int x)
 {
     /* Simply place the character using no attributes */
-    Term_draw(x, y, COLOR_WHITE, c);
+    Term_draw(x, y, TERM_WHITE, c);
 }
 
 #endif /* USE_COLOR */
@@ -2504,7 +1192,12 @@ void mh_print(char c, int8u a, int m, int y, int x)
  */
 void mh_print_rel(char c, byte a, int m, int y, int x)
 {
-    mh_print(c, a, m, y-panel_row_prt, x-panel_col_prt);
+    /* Only do "legal" locations */
+    if (panel_contains(y, x)) {
+
+	/* Do a "real" call to "mh_print()" */
+	mh_print(c, a, m, y-panel_row_prt, x-panel_col_prt);
+    }
 }
 
 
@@ -2513,7 +1206,12 @@ void mh_print_rel(char c, byte a, int m, int y, int x)
 
 /*
  * Allow the player to "take notes" on the terrain
- * This routine is only called by "lite_spot()"
+ *
+ * This function is only called by "lite_spot()"
+ * This function is only called on "legal" grids.
+ *
+ * This function is basically a giant hack to allow people to play
+ * without turning "view_pre_compute" on.
  *
  * This is the ONLY way a player can "remember" things that he cannot
  * currently "see" (at least until "NEW_MAPS" is compiled in).  And even
@@ -2522,39 +1220,45 @@ void mh_print_rel(char c, byte a, int m, int y, int x)
  * us first, to take notes on the terrain.
  *
  * Note that we will NOT take notes on "unknown" grids.
+ *
+ * This function works very well with "view_pre_compute" but I am
+ * afraid that otherwise moving monsters nearby in a lit, unexplored
+ * room will cause some problems.
  */
 static void update_map(int y, int x)
 {
     cave_type *c_ptr = &cave[y][x];
 
-    /* Already marked */
+
+    /* Only need to memorize a grid once */
     if (c_ptr->info & CAVE_FM) return;
 
-    /* No ilumination */
-    if (!(c_ptr->info & CAVE_PL) && !(c_ptr->info & CAVE_TL)) return;
+
+    /* Hack -- Only memorize grids that can be seen */
+    if (!player_can_see(y, x)) return;
+    
 
     /* Option -- field mark every torch-lit grid */
     if (view_torch_grids && (c_ptr->info & CAVE_TL)) {
 	c_ptr->info |= CAVE_FM;
 	return;
     }
-	
+    
     /* Option -- field mark every perma-lit grid */
     if (view_perma_grids && (c_ptr->info & CAVE_PL)) {
 	c_ptr->info |= CAVE_FM;
 	return;
     }
-
-    /* Always memorize walls */
-    if (c_ptr->fval >= MIN_WALL) {
+    
+    /* Option -- field mark all "non-floor" grids */
+    if (view_wall_memory && !floor_grid_bold(y, x)) {
 	c_ptr->info |= CAVE_FM;
 	return;
     }
 
-    /* Always memorize certain landmarks */
-    if (c_ptr->i_idx &&
-	(i_list[c_ptr->i_idx].tval >= TV_MIN_VISIBLE) &&
-	(i_list[c_ptr->i_idx].tval <= TV_MAX_VISIBLE)) {
+    /* Option -- field mark all "floor landmarks" */
+    if (view_xtra_memory && floor_grid_bold(y, x) &&
+        (i_list[c_ptr->i_idx].tval >= TV_MIN_VISIBLE)) {
 	c_ptr->info |= CAVE_FM;
 	return;
     }
@@ -2567,14 +1271,14 @@ static void update_map(int y, int x)
  */
 void lite_spot(int y, int x)
 {
-    /* Update the map */
+    /* Hack -- Update the map */
     update_map(y, x);
 
     /* Redraw if on screen */
     if (panel_contains(y, x)) {
 
 	int m;
-	int8u a;
+	byte a;
 	char c;
 
 	/* Determine the multi-hued-ity, and attr/char there */
@@ -2596,13 +1300,13 @@ void lite_monster(monster_type *m_ptr)
 
     /* Hack -- assume telepathy */
     bool ml = m_ptr->ml;
-    
+
     /* Set the visibility */
     m_ptr->ml = TRUE;
 
     /* Update this grid */
     lite_spot(m_y, m_x);
-    
+
     /* Fix the visibility */
     m_ptr->ml = ml;
 }
@@ -2612,15 +1316,14 @@ void lite_monster(monster_type *m_ptr)
 
 
 /*
- * Prints the map of the dungeon (speed this up!)
- * Hack -- Handles MULTIHUED objects
+ * Prints the map of the dungeon
  */
 void prt_map(void)
 {
     register int x, y;
 
     int m;
-    int8u a;
+    byte a;
     char c;
 
     int okay;
@@ -2651,6 +1354,1691 @@ void prt_map(void)
     /* Show the cursor (if necessary) */
     if (!okay) Term_show_cursor();
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+ * And now for something completely different...
+ *
+ * This suggests a rethinking of the "permanent light" / "temp light"
+ * concept.  Perhaps "temp light" should be replaced by "reachable space",
+ * that is, we collect a set of "grids which can be seen by the player".
+ * They are all marked "temp light" which now means "seen by player", and
+ * whenever something major (like player motion) occurs, this "set" of grids
+ * is first all marked as "not lit" and then "reconstructed" by combining
+ * "lamp radius" with "permanent light" to result in "viewable grids".
+ *
+ * The algorithm marks grids as "CAVE_VIEW" if the player has "los()" to
+ * the grid, and it marks them as "CAVE_XTRA" if, in addition, the "los()"
+ * is very "obvious" or "easily determinable".
+ *
+ * The algorithm is very fast, since it spreads "obvious" grids very quickly,
+ * and only has to call "los()" on the borderline cases.  The major axes/diags
+ * even terminate early when they hit walls.  I need to find a quick way
+ * to "terminate" the other scans.
+ *
+ * Note that in the worst case (a big empty area with maybe 5% scattered walls),
+ * each of the under 1500 grids is checked once, with most of them getting an
+ * "instant" rating, and only a small portion requiring a call to "los()".
+ *
+ * In the "best" case (say, a corridor, with no room at the end), no calls to
+ * "los()" are made, even for updating the monsters just outside the corridor.
+ * So all I need to do is teach the algorithm to "stop" at "solid walls"...
+ *
+ * There are two separate flags for "lite" (combining to make four "states"):
+ *   CAVE_PL: Perma-Lite: The grid is permanently "illuminated"
+ *   CAVE_TL: Torch-Lite: The grid is within the player's "torch" radius
+ *
+ * There is a hacked flag for "omniscient sight" of a grid:
+ *   CAVE_FM: Field-Mark: The grid contents are "remembered" even if not lit
+ *
+ * There is a special flag for various "temporary" things:
+ *   CAVE_SEEN: A temporary flag
+ *
+ * Hack -- for now, walls, when first seen, are marked as "CAVE_PL" AND "CAVE_FM".
+ * This has the effect that they are "always visible" once seen for the first time.
+ *
+ * Walls, doors, stairs, and "detected objects" are marked as "CAVE_FM" when
+ * first "seen" or "detected".
+ *
+ * Technically, we should have:
+ *   CAVE_PL + CAVE_FM: The wall is in a lite room, and has been seen.
+ *   CAVE_PL: The wall is in a lite room, but has not been noticed yet.
+ *   CAVE_FM: The wall has been noticed, but not lit (?).
+ *
+ * However, instead, we use a hack involving:
+ *   CAVE_INIT: This grid has been "initialized" by the system
+ *
+ * Floors in lit rooms are not actually set to "Perma-Lit" until the player enters
+ * them, at which time "CAVE_INIT" is used to spread "initialization" through the
+ * room, also marking walls and landmarks as "CAVE_FM", and marking the whole room
+ * as "CAVE_PL".  Note that "CAVE_PL" is NOT as powerful as "CAVE_FM".
+ *
+ * This will allow "seeing" a wall (in a lit room) before the room itself is
+ * actually "displayed".  This will require "pre-scanning" all the lit rooms.
+ * And observe that the floors of lit rooms can also be marked as "lit", but
+ * not "field marked", until the player enters the room, via "check_view()".
+ *
+ * Potential advantage: never "field mark" objects, so that they "disappear" when
+ * the player leaves the room.  No more "magic doors" or "screaming treasure".
+ *
+ * Note that the "efficiency issue" is VERY important when the player is running.
+ * I am thinking that we could literally "reduce" the "vision" parameter, say,
+ * to 1 or 2 or 3, and thus have a much smaller "viewable space".  The player
+ * would then NOT see monsters as he ran down halls.  Or, we could turn off the
+ * "construct view" flag, and default to using the true "los()" routine for, say,
+ * checking monster visibility.
+ *
+ * Note that running implies two separate hacks:
+ *   (1) The light radius is auto-reduced to one grid
+ *   (2) The viewable space algorithm needs to be "neutered".
+ *
+ * Note that we would no longer have to do as many "los()" checks, since once
+ * the region has been built, very few things cause it to be "changed" (mostly
+ * "light" changes, plus player movement, and the opening/closing of doors).
+ * If the player was willing to "forgive" small inconsistancies (until he stood
+ * still, or moved), then we could ignore the latter.  Note that technically, the
+ * "viewable space" is important, as it indicates which grids will be "noticed"
+ * by the player, for things like treasure dropping, and such.  Also, the actual
+ * algorithm seems to only call "los()" from zero to ten times, usually only when
+ * coming down a corridor into a room, or standing in a room, just misaligned
+ * with a corridor.  So if, say, there are five "nearby" monsters, we will be
+ * reducing the calls to "los()".
+ *
+ * I am thinking in terms of an algorithm that "walks" from the central point out
+ * to the maximal "distance", at each point, determining the "view" code (above).
+ * Note that for each grid not on a major axis or diagonal, the "view" code depends
+ * on the "floor_grid_bold()" and "view" of exactly two other grids (the one along
+ * the nearest diagonal, and the one next to that one, see "update_view_aux()"...).
+ *
+ * Notice that we "memorize" the viewable space array, so that at the cost of
+ * under 3000 bytes, we reduce the time taken by "forget_view()" to one assignment
+ * for each grid actually in the "viewable space".  And for another 3000 bytes,
+ * we prevent "erase + redraw" ineffiencies via the "seen" set.
+ *
+ * A similar thing is done for "forget_lite()" in which case the savings are
+ * much less, but save us from doing bizarre "temp_lite" maintenance checking.
+ *
+ * In the worst case (in the middle of the town), the reachable space actually
+ * reaches to the largest possible "circle" of view, just under 1500 grids.
+ *
+ * Each grid G examines the "state" of two (?) other (adjacent) grids, G1 & G2.
+ * If G1 is lite, G is lite.  Else if G2 is lite, G is half.  Else if G1 and G2
+ * are both half, G is half.  Else G is dark.  It only takes 2 (or 4) bits to
+ * "name" a grid, so (for MAX_RAD of 20) we could use 1600 bytes, and scan the
+ * entire possible space (including initialization) in one step per grid.  If
+ * we do the "clearing" as a separate step (and use an array of "view" grids),
+ * then the clearing will take as many steps as grids that were viewed, and the
+ * algorithm will be able to "stop" scanning at various points.
+ * Oh, and outside of the "torch radius", only "lite" grids need to be scanned.
+ *
+ * And note that only "CAVE_PL" and "CAVE_LR" and "CAVE_FM" need to be saved
+ * in the savefile, along with "CAVE_SEEN" if we use it, or "CAVE_INIT" if we
+ * do not.  In fact, "CAVE_SEEN" and "CAVE_INIT" are very similar...
+ *
+ * A major "test of worth" is going to be "running".  We will need to "reduce"
+ * in some way the "view space" when running.  I am wondering about just lowering
+ * the "view distance" to 10 or something.
+ *
+ * Note that (for free) we get a method of drawing, say, in yellow, the grids 
+ * which are hit by the torch, and in orange the ones that we can currently "see",
+ * and in "green" the ones that we remember but cannot currently see.
+ */
+
+
+
+
+
+/*
+ * Maintain an array of "torch lit" cave grids
+ * Note that "radius 11" light only fills 480 grids
+ *
+ * Currently this accesses "CAVE_TL"
+ * Could call this flag "CAVE_LITE"
+ */
+static int lite_n = 0;
+static byte lite_y[500];
+static byte lite_x[500];
+
+
+/*
+ * Maintain an array of "viewable cave grids" (see below)
+ * The "view radius" must NEVER be larger than 20...
+ */
+static int view_n = 0;
+static byte view_y[1500];
+static byte view_x[1500];
+
+
+/*
+ * Number of grids in the "seen" array
+ */
+#define SEEN_MAX 2000
+
+/*
+ * This is the "set" of grids marked as "CAVE_SEEN".
+ * These grids have many interpretations, see below.
+ *
+ * Note that we must be at least 1500 long for "CAVE_VIEW" below.
+ *
+ * We must also be as large as the largest illuminatable room.
+ */
+static int seen_n = 0;
+static byte seen_y[SEEN_MAX];
+static byte seen_x[SEEN_MAX];
+
+
+
+#ifdef AUTO_PLAY
+
+extern int auto_cheat_get_view_n(void);
+extern byte *auto_cheat_get_view_x(void);
+extern byte *auto_cheat_get_view_y(void);
+
+int auto_cheat_get_view_n(void) { return (view_n); }
+byte *auto_cheat_get_view_x(void) { return (view_x); }
+byte *auto_cheat_get_view_y(void) { return (view_y); }
+
+#endif
+
+
+/*
+ * This routine adds a grid to the "seen" set.
+ *
+ * This routine had better not be called when the "seen" array is "full".
+ */
+static void cave_seen_add(int y, int x)
+{
+    /* Already in the set */
+    if (cave[y][x].info & CAVE_SEEN) return;
+
+    /* Paranoia -- verify space */
+    if (seen_n == SEEN_MAX) return;
+    
+    /* Mark the grid as being in the set */
+    cave[y][x].info |= CAVE_SEEN;
+
+    /* Add to queue */
+    seen_y[seen_n] = y;
+    seen_x[seen_n] = x;
+    seen_n++;
+}
+
+
+
+/*
+ * This routine clears the entire "seen" set.
+ * This routine will "lite_spot()" all non-CAVE_TL grids
+ *
+ * This routine is used by "update_lite()"
+ */
+static void cave_seen_wipe_lite(void)
+{
+    int i;
+
+    /* None to forget */
+    if (!seen_n) return;
+
+    /* Clear them all */
+    for (i = 0; i < seen_n; i++) {
+
+	int y = seen_y[i];
+	int x = seen_x[i];
+
+	/* No longer in the array */
+	cave[y][x].info &= ~CAVE_SEEN;
+
+	/* Update only non-CAVE_TL grids */
+	if (!(cave[y][x].info & CAVE_TL)) lite_spot(y, x);
+    }
+
+    /* None left */
+    seen_n = 0;
+}
+
+
+
+/*
+ * Copy the "lite" set into the "seen" set, clearing the "CAVE_TL" flag.
+ */
+static void cave_seen_grab_lite(void)
+{
+    int i;
+
+    /* None to forget */
+    if (!lite_n) return;
+
+    /* Clear them all */
+    for (i = 0; i < lite_n; i++) {
+
+	int y = lite_y[i];
+	int x = lite_x[i];
+
+	/* Remove it from the "lite" set */
+	cave[y][x].info &= ~CAVE_TL;
+
+	/* Add it to the "seen" set */
+	cave_seen_add(y, x);
+    }
+
+    /* None left */
+    lite_n = 0;
+}
+
+
+/*
+ * This routine clears the entire "seen" set.
+ * This routine will "lite_spot()" all non-CAVE_VIEW grids
+ *
+ * This routine is used by "update_view()"
+ */
+static void cave_seen_wipe_view(void)
+{
+    int i;
+
+    /* None to forget */
+    if (!seen_n) return;
+
+    /* Clear them all */
+    for (i = 0; i < seen_n; i++) {
+
+	int y = seen_y[i];
+	int x = seen_x[i];
+
+	/* No longer in the array */
+	cave[y][x].info &= ~CAVE_SEEN;
+
+	/* Update only non-CAVE_TL grids */
+	if (!(cave[y][x].info & CAVE_VIEW)) lite_spot(y, x);
+    }
+
+    /* None left */
+    seen_n = 0;
+}
+
+
+
+/*
+ * Copy the "view" set into the "seen" set, clearing the "CAVE_VIEW" flag.
+ */
+static void cave_seen_grab_view(void)
+{
+    int i;
+
+    /* None to forget */
+    if (!view_n) return;
+
+    /* Clear them all */
+    for (i = 0; i < view_n; i++) {
+
+	int y = view_y[i];
+	int x = view_x[i];
+
+	/* Remove it from the "view" set */
+	cave[y][x].info &= ~CAVE_VIEW;
+	cave[y][x].info &= ~CAVE_XTRA;
+
+	/* Add it to the "seen" set */
+	cave_seen_add(y, x);
+    }
+
+    /* None left */
+    view_n = 0;
+}
+
+
+/*
+ * The given grid just got lit, wake up monsters
+ */
+static void wake_monster(int y, int x)
+{
+    /* Check the monsters */
+    monster_type *m_ptr = &m_list[cave[y][x].m_idx];
+    monster_race *r_ptr = &r_list[m_ptr->r_idx];
+	
+    /* Perhaps wake up */
+    if ((r_ptr->cflags2 & MF2_INTELLIGENT) ||
+	(!(r_ptr->cflags2 & MF2_MINDLESS) && (randint(3) == 1)) ||
+	(randint(10) == 1)) {
+
+	/* Wake up! */
+	m_ptr->csleep = 0;
+    }
+}
+
+
+/*
+ * This routine clears the entire "seen" set.
+ *
+ * This routine will Perma-Lite all "seen" grids.
+ *
+ * This routine is used by "lite_room()"
+ *
+ * Dark grids are illuminated, and monsters notice it.
+ * Monsters that are intelligent wake up all the time,
+ * non-MF2_MINDLESS monsters wake up 1/3 the time,
+ * and MF2_MINDLESS monsters wake up 1/10 the time -CWS
+ */
+static void cave_seen_room_lite(void)
+{
+    int i;
+
+    /* None to forget */
+    if (!seen_n) return;
+
+    /* Clear them all */
+    for (i = 0; i < seen_n; i++) {
+
+	int y = seen_y[i];
+	int x = seen_x[i];
+
+	/* No longer in the array */
+	cave[y][x].info &= ~CAVE_SEEN;
+
+	/* Update only non-CAVE_PL grids */
+	if (cave[y][x].info & CAVE_PL) continue;
+
+	/* Perma-Lite */
+	cave[y][x].info |= CAVE_PL;
+
+	/* Hack -- Update the monster (visibility change) */
+	if (cave[y][x].m_idx > 1) update_mon(cave[y][x].m_idx);
+
+	/* Attempt to wake up monsters in that grid */
+	wake_monster(y, x);
+
+	/* Lite that spot */
+	lite_spot(y, x);
+    }
+
+    /* None left */
+    seen_n = 0;
+}
+
+
+
+/*
+ * This routine clears the entire "seen" set.
+ *
+ * This routine will Perma-Lite all "seen" grids.
+ *
+ * This routine is used by "unlite_room()"
+ */
+static void cave_seen_room_unlite(void)
+{
+    int i;
+
+    /* None to forget */
+    if (!seen_n) return;
+
+    /* Clear them all */
+    for (i = 0; i < seen_n; i++) {
+
+	int y = seen_y[i];
+	int x = seen_x[i];
+
+	/* No longer in the array */
+	cave[y][x].info &= ~CAVE_SEEN;
+
+	/* Only update grids which are changing */
+	if (!(cave[y][x].info & (CAVE_PL | CAVE_FM))) continue;
+
+	/* Forget about the grid */
+	cave[y][x].info &= ~CAVE_PL;
+	cave[y][x].info &= ~CAVE_FM;
+
+	/* Hack -- Update the monster (visibility change) */
+	if (cave[y][x].m_idx > 1) update_mon(cave[y][x].m_idx);
+
+	/* Lite that spot */
+	lite_spot(y, x);
+    }
+
+    /* None left */
+    seen_n = 0;
+}
+
+
+
+/*
+ * This routine clears the entire "seen" set.
+ *
+ * This routine will display all "lit" grids.
+ *
+ * This routine is used by "check_view()"
+ *
+ * XXX This routine may be broken.
+ */
+static void cave_seen_room_init(void)
+{
+    int i;
+
+    /* None to forget */
+    if (!seen_n) return;
+
+    /* Clear them all */
+    for (i = 0; i < seen_n; i++) {
+
+	int y = seen_y[i];
+	int x = seen_x[i];
+
+	/* No longer in the array */
+	cave[y][x].info &= ~CAVE_SEEN;
+
+	/* Only handle lit grids */
+	if (!(cave[y][x].info & CAVE_PL)) continue;
+
+	/* Hack -- Only do a grid once */
+	if (cave[y][x].info & CAVE_INIT) continue;
+
+	/* Memorize the grid */
+	cave[y][x].info |= CAVE_FM;
+	cave[y][x].info |= CAVE_INIT;
+
+	/* Hack -- Update the monster (visibility change) */
+	if (cave[y][x].m_idx > 1) update_mon(cave[y][x].m_idx);
+
+	/* Lite that spot */
+	lite_spot(y, x);
+    }
+
+    /* None left */
+    seen_n = 0;
+}
+
+
+
+
+
+/*
+ * Actually erase the entire "lite" array, redrawing every grid
+ */
+void forget_lite(void)
+{
+    int i;
+
+    /* None to forget */
+    if (!lite_n) return;
+
+    /* Clear them all */
+    for (i = 0; i < lite_n; i++) {
+
+	/* Forget that we can see it */
+	cave[lite_y[i]][lite_x[i]].info &= ~CAVE_TL;
+
+	/* Hack -- update the screen */
+	lite_spot(lite_y[i], lite_x[i]);
+    }
+
+    /* None left */
+    lite_n = 0;
+}
+
+
+/*
+ * Mark the given grid as "illuminated by torch lite"
+ * Never call this routine when the "lite" array is "full".
+ * This routine does a "lite_spot()" on grids for whom the
+ * "CAVE_SEEN" flag is NOT set.
+ *
+ * We should probably do "wake_monster(y, x)" in some cases
+ */
+static void cave_lite(int y, int x)
+{
+    /* Already lit */
+    if (cave[y][x].info & CAVE_TL) return;
+
+    /* Set the flag */
+    cave[y][x].info |= CAVE_TL;
+
+    /* Add to queue */
+    lite_y[lite_n] = y;
+    lite_x[lite_n] = x;
+    lite_n++;
+
+    /* Lite "un-seen" spots */
+    if (!(cave[y][x].info & CAVE_SEEN)) lite_spot(y, x);
+}
+
+
+
+/*
+ * Update the current "lite radius" and "illuminate" nearby grids.
+ *
+ * This routine may only work after "update_view()" has been called.
+ *
+ * Note that "torch lite" and "perma-lite" are separate things.
+ */
+void update_lite(void)
+{
+    int x, y, min_x, max_x, min_y, max_y;
+
+    inven_type *i_ptr;
+
+
+    /* Check for light being wielded */
+    i_ptr = &inventory[INVEN_LITE];
+
+    /* Start with no light */
+    cur_lite = 0;
+
+    /* Extract "max radius" from current lite */
+    if (i_ptr->tval == TV_LITE) {
+
+	/* Default radius */
+	cur_lite = 1;
+
+	/* Lanterns have more power */
+	if (i_ptr->sval == SV_LITE_LANTERN) cur_lite = 2;
+
+	/* Most lite's need fuel */
+	if (i_ptr->pval <= 0) cur_lite = 0;
+
+	/* Artifact Lites last forever */
+	if (i_ptr->sval == SV_LITE_GALADRIEL)    cur_lite = 3;
+	else if (i_ptr->sval == SV_LITE_ELENDIL) cur_lite = 2;
+	else if (i_ptr->sval == SV_LITE_THRAIN)  cur_lite = 3;
+    }
+
+    /* Player is glowing */
+    if (p_ptr->lite && (cur_lite < 1)) cur_lite = 1;
+
+    /* Hack -- player is running, reduce the lite */
+    if (view_reduce_lite && find_flag && (cur_lite > 1)) cur_lite = 1;
+
+    /* Hack -- player is blind */
+    if (p_ptr->blind) cur_lite = 0;
+
+
+    /* Hack -- player is in a store */
+    if (in_store_flag) return;
+
+
+    /* XXX Hack -- Blind or Dark */
+    if (cur_lite <= 0) {
+
+	/* Forget the old lite */
+	forget_lite();
+
+	/* Hack -- Draw the player's grid */
+	lite_spot(char_row, char_col);
+
+	/* All done */
+	return;
+    }
+
+
+    /* Grab the "old" lite */
+    cave_seen_grab_lite();
+
+
+    /* Efficiency -- small lite radius */
+    if (cur_lite == 1) {
+
+	/* Scan the "radius one" box */
+	for (y = char_row - 1; y <= char_row + 1; y++) {
+	    for (x = char_col - 1; x <= char_col + 1; x++) {
+
+		/* Radius one lite is simple */
+		cave_lite(y, x);
+	    }
+	}
+    }
+
+    /* Larger radius */    
+    else {
+
+	/* Extract maximal legal bounded light box */
+	min_y = MY_MAX(0, (char_row - cur_lite));
+	max_y = MY_MIN(cur_height-1, (char_row + cur_lite));
+	min_x = MY_MAX(0, (char_col - cur_lite));
+	max_x = MY_MIN(cur_width-1, (char_col + cur_lite));
+
+	/* Scan that box (the viewable, reachable, portions of it) */
+	for (y = min_y; y <= max_y; y++) {
+	    for (x = min_x; x <= max_x; x++) {
+
+		/* Viewable, nearby, grids get "torch lit" */
+		if (player_has_los(y, x) &&
+		    (distance(char_row, char_col, y, x) <= cur_lite)) {
+
+		    /* This grid is "torch lit" */
+		    cave_lite(y, x);
+		}
+	    }
+	}
+    }
+
+
+    /* Now "erase" the "old" lite */
+    cave_seen_wipe_lite();
+}
+
+
+
+
+
+
+/*
+ * Clear the viewable space
+ */
+void forget_view(void)
+{
+    int i;
+
+    /* None to forget */
+    if (!view_n) return;
+
+    /* Clear them all */
+    for (i = 0; i < view_n; i++) {
+
+	int y = view_y[i];
+	int x = view_x[i];
+
+	/* Forget that the grid is viewable */
+	cave[y][x].info &= ~CAVE_VIEW;
+	cave[y][x].info &= ~CAVE_XTRA;
+
+	/* Hack -- update the screen */
+	lite_spot(y, x);
+    }
+
+    /* None left */
+    view_n = 0;
+}
+
+
+
+/*
+ * Set the "view" flag of the given cave grid
+ * Never call this function when the "view" array is full.
+ * Never call this function with an "illegal" locations.
+ */
+static void cave_view(int y, int x)
+{
+    /* Can only be set once */
+    if (cave[y][x].info & CAVE_VIEW) return;
+
+    /* Set the value */
+    cave[y][x].info |= CAVE_VIEW;
+
+    /* Add to queue */
+    view_y[view_n] = y;
+    view_x[view_n] = x;
+    view_n++;
+
+    /* Lite "un-seen" spots */
+    if (!(cave[y][x].info & CAVE_SEEN)) lite_spot(y, x);
+}
+
+
+
+/*
+ * Another "helper" function, used for "main" grids
+ */
+static bool update_view_aux_1(int y, int x)
+{
+    cave_view(y, x);
+    return (!floor_grid_bold(y, x));
+}
+
+
+/*
+ * Another "helper" function, used for "main" grids
+ */
+static bool update_view_aux_2(int y, int x)
+{
+    cave[y][x].info |= CAVE_XTRA;
+    cave_view(y, x);
+    return (!floor_grid_bold(y, x));
+}
+
+
+/*
+ * We are checking the "viewability" of grid (y,x) by the player.
+ *
+ * We must be rather careful about "falling off the map".  This
+ * function assumes that (y,x) is either on the map, or perhaps
+ * just over the edge, and in either case, (y1,x1) and (y2,x2)
+ * are both on the map.  Thus "floor_grid_bold()".
+ *
+ * Grid (y1,x1) is on the "diagonal" between (py,px) and (y,x)
+ * Grid (y2,x2) is "adjacent", also between (py,px) and (y,x).
+ *
+ * Note that we are using the "CAVE_XTRA" field for marking grids as
+ * "easily viewable".  We can (easily) clear this field in "update_view()".
+ *
+ * This function adds (y,x) to the "viewable set" if necessary.
+ *
+ * This function now returns "TRUE" if vision is "blocked" by grid (y,x).
+ */
+static bool update_view_aux(int y, int x, int y1, int x1, int y2, int x2)
+{
+    register bool f1, f2, v1, v2, b1, b2;
+
+
+    /* Check the walls */
+    f1 = (floor_grid_bold(y1,x1));
+    f2 = (floor_grid_bold(y2,x2));
+
+    /* Totally blocked by physical walls */
+    if (!f1 && !f2) return (TRUE);
+
+
+    /* Check the visibility */
+    v1 = (f1 && (cave[y1][x1].info & CAVE_VIEW));
+    v2 = (f2 && (cave[y2][x2].info & CAVE_VIEW));
+
+    /* Totally blocked by "unviewable neighbors" */
+    if (!v1 && !v2) return (TRUE);
+
+    
+    /* Check the "ease" of visibility */
+    b1 = (v1 && (cave[y1][x1].info & CAVE_XTRA));
+    b2 = (v2 && (cave[y2][x2].info & CAVE_XTRA));
+
+    /* Hack -- "easy" plus "easy" yields "easy" */
+    if (b1 && b2) {
+
+	/* Non-floors block vision */
+	return (update_view_aux_2(y,x));
+    }
+
+    /* Hack -- primary "easy" yields "viewed" */
+    else if (b1) {
+
+	/* Non-floors block vision */
+	return (update_view_aux_1(y,x));
+    }
+
+    /* Hack -- "view" plus "view" yields "view" */
+    else if (v1 && v2) {
+
+	/* Non-floors block vision */
+	return (update_view_aux_1(y,x));
+    }
+
+    /* Hack -- check line of sight */
+    else if (los(char_row, char_col, y, x)) {
+
+	/* Non-floors block vision */
+	return (update_view_aux_1(y,x));
+    }
+    
+    /* We must not be in "line of sight".  Block vision. */
+    return (TRUE);
+}
+
+
+
+/*
+ * Calculate the viewable space
+ *
+ * Step 1: The player is viewable
+ * Step 2: Process the main axes, stop at blockage and prepare Step 4
+ * Step 3: Process the main diagonals (stop at first blockage)
+ * Step 4: Process each of the eight "octants" (stay inside the "octagon")
+ *      4a: Process each strip (each starts adjacent to the diagonal)
+ *      4a1: Process each octant's strip, aborting as soon as possible
+ *
+ * Note that the octant processing involves some pretty interesting
+ * observations involving when a grid might possibly be viewable from
+ * a given grid, and on the order in which the strips are processed.
+ *
+ * Note the use of the mathematical facts that:
+ *   if (manhatten(dy,dx) < R) then (dist(dy,dx) < R)
+ *   if (manhatten(dy,dx) > R*3/2) then (dist(dy,dx) > R)
+ *
+ * This is based on the observation that (1 < 1.415 < 1.5) and the speed
+ * of the "manhatten()" function.  Look for "20" and "30" in the code below.
+ * Also look for "15", when "propagating", since "n" is used for dx AND dy.
+ * These values are now scaled to "MAX_SIGHT" (assumed to equal 20).
+ *
+ * A similar calculation is used by the "distance()" function to determine
+ * that hypot(dx, dy) is almost equal to ((dx+dy+MAX(dx,dy)) / 2).
+ *
+ * This "optimization" replaces a "circle" with an "octagon" that completely
+ * includes the circle, but gets pretty close to it at the major edges.
+ * In this function, we only have to do the manhatten checks one-eighth of
+ * the time, since the "octagon" is symetrical.  By "skipping" the corners
+ * of the octagon (with very little speed cost), we skip one-eighth of the
+ * possible 1681 grids, or 210 of 1681.  So the array only has to hold 1475
+ * grids, call it 1500.
+ *
+ * Note the "optimizations" involving the "se","sw","ne","nw","es","en",
+ * "ws","wn" variables.  They work like this: While travelling down the
+ * south-bound strip just to the east of the main south axis, as soon as
+ * we get to a grid which does not "transmit" viewing, if all of the strips
+ * preceding us (in this case, just the main axis) had terminated at or before
+ * the same point, then we can stop, and reset the "max distance" to ourself.
+ * So, each strip (named by major axis plus offset, thus "se" in this case)
+ * maintains a "blockage" variable, initialized during the main axis step,
+ * and checks it whenever a blockage is observed.
+ *
+ * Note also the care taken to prevent "running off the map".  This allows
+ * the use of "floor_grid_bold()" in the "update_view_aux()" function.
+ */
+void update_view(void)
+{
+    int d, n, m;
+    int y, x;
+
+    int se, sw, ne, nw, es, en, ws, wn;
+
+    int over, full = MAX_SIGHT;
+
+
+    /* Hack -- always recompute the flow first */
+    update_flow();
+    
+    
+    /* Hack -- If not pre-computing, just clear it */
+    if (!view_pre_compute) {
+	forget_view();
+	return;
+    }
+
+
+    /* Hack -- reduce view when running */
+    if (view_reduce_view && find_flag) {
+	full = full - (find_flag-1);
+	if (full < 10) full = 10;
+    }
+
+    /* Extract the "octagon" limits */
+    over = full * 3 / 2;
+
+
+    /*** Step 0 -- save the old view ***/
+
+    /* Wipe the old stuff */
+    cave_seen_grab_view();
+
+
+    /*** Step 1 -- adjacent grids ***/
+
+    /* Now start on the player */
+    y = char_row;
+    x = char_col;
+
+    /* Hack -- note obstructed player grid */
+    if (update_view_aux_2(y,x)) {
+	/* This should never happen */
+    }
+
+
+    /*** Step 2 -- major axes ***/
+
+    /* Scan south */
+    for (d = 1; d <= full; d++) {
+	if (update_view_aux_2(y+d,x)) break;
+    }
+
+    /* Initialize the "south strips" */
+    se = sw = d;
+
+    /* Scan north */
+    for (d = 1; d <= full; d++) {
+	if (update_view_aux_2(y-d,x)) break;
+    }
+
+    /* Initialize the "north strips" */
+    ne = nw = d;
+
+    /* Scan east */
+    for (d = 1; d <= full; d++) {
+	if (update_view_aux_2(y,x+d)) break;
+    }
+
+    /* Initialize the "east strips" */
+    es = en = d;
+
+    /* Scan west */
+    for (d = 1; d <= full; d++) {
+	if (update_view_aux_2(y,x-d)) break;
+    }
+
+    /* Initialize the "west strips" */
+    ws = wn = d;
+
+
+    /*** Step 3 -- Major Diags ***/
+
+    /* Scan south-east */
+    for (d = 1; d <= full; d++) {
+	if (update_view_aux_2(y+d,x+d)) break;
+    }
+
+    /* Scan south-west */
+    for (d = 1; d <= full; d++) {
+	if (update_view_aux_2(y+d,x-d)) break;
+    }
+
+    /* Scan north-east */
+    for (d = 1; d <= full; d++) {
+	if (update_view_aux_2(y-d,x+d)) break;
+    }
+
+    /* Scan north-west */
+    for (d = 1; d <= full; d++) {
+	if (update_view_aux_2(y-d,x-d)) break;
+    }
+
+
+    /*** Step 4 -- Divide each "octant" into "strips" ***/
+
+    /* Now check each "diagonal" (in parallel) */
+    for (n = 1; n <= over / 2; n++) {
+
+	int full_n = full - n;
+	int over_n_n = over - n - n;
+	int limit = MY_MIN(full_n, over_n_n);
+	
+	int ypn = y + n;
+	int ymn = y - n;
+	int xpn = x + n;
+	int xmn = x - n;
+
+
+	/* South strip */
+	if (ypn < cur_height-1) {
+
+	    /* Maximum distance */
+	    m = MY_MIN(limit, (cur_height-1) - ypn);
+	
+	    /* East side */
+	    if (xpn <= cur_width-1) {
+
+		/* Scan */
+		for (d = 1; d <= m; d++) {
+
+		    /* Check grid "d" in strip "n", abort if totally blocked */
+		    if (update_view_aux(ypn+d,xpn,ypn+d-1,xpn-1,ypn+d-1,xpn)) {
+			if (n+d >= se) break;
+		    }
+		}
+
+		/* Maintain the "strip blocker" */
+		if (n+d > se) se = n+d;
+	    }
+
+	    /* West side */
+	    if (xmn >= 0) {
+
+		/* Scan */
+		for (d = 1; d <= m; d++) {
+
+		    /* Check grid "d" in strip "n", abort if totally blocked */
+		    if (update_view_aux(ypn+d,xmn,ypn+d-1,xmn+1,ypn+d-1,xmn)) {
+			if (n+d >= sw) break;
+		    }
+		}
+
+		/* Maintain the "strip blocker" */
+		if (n+d > sw) sw = n+d;
+	    }
+	}
+
+
+	/* North strip */
+	if (ymn > 0) {
+
+	    /* Maximum distance */
+	    m = MY_MIN(limit, ymn);
+	
+	    /* East side */
+	    if (xpn <= cur_width-1) {
+
+		/* Scan */
+		for (d = 1; d <= m; d++) {
+
+		    /* Check grid "d" in strip "n", abort if totally blocked */
+		    if (update_view_aux(ymn-d,xpn,ymn-d+1,xpn-1,ymn-d+1,xpn)) {
+			if (n+d >= ne) break;
+		    }
+		}
+
+		/* Maintain the "strip blocker" */
+		if (n+d > ne) ne = n+d;
+	    }
+
+	    /* West side */
+	    if (xmn >= 0) {
+
+		/* Scan */
+		for (d = 1; d <= m; d++) {
+
+		    /* Check grid "d" in strip "n", abort if totally blocked */
+		    if (update_view_aux(ymn-d,xmn,ymn-d+1,xmn+1,ymn-d+1,xmn)) {
+			if (n+d >= nw) break;
+		    }
+		}
+
+		/* Maintain the "strip blocker" */
+		if (n+d > nw) nw = n+d;
+	    }
+	}
+	
+
+	/* East strip */
+	if (xpn < cur_width-1) {
+
+	    /* Maximum distance */
+	    m = MY_MIN(limit, (cur_width-1) - xpn);
+	
+	    /* South side */
+	    if (ypn <= cur_height-1) {
+
+		/* Scan */
+		for (d = 1; d <= m; d++) {
+
+		    /* Check grid "d" in strip "n", abort if totally blocked */
+		    if (update_view_aux(ypn,xpn+d,ypn-1,xpn+d-1,ypn,xpn+d-1)) {
+			if (n+d >= es) break;
+		    }
+		}
+
+		/* Maintain the "strip blocker" */
+		if (n+d > es) es = n+d;
+	    }
+
+	    /* North side */
+	    if (ymn >= 0) {
+
+		/* Scan */
+		for (d = 1; d <= m; d++) {
+
+		    /* Check grid "d" in strip "n", abort if totally blocked */
+		    if (update_view_aux(ymn,xpn+d,ymn+1,xpn+d-1,ymn,xpn+d-1)) {
+			if (n+d >= en) break;
+		    }
+		}
+
+		/* Maintain the "strip blocker" */
+		if (n+d > en) en = n+d;
+	    }
+	}
+
+
+	/* West strip */
+	if (xmn > 0) {
+
+	    /* Maximum distance */
+	    m = MY_MIN(limit, xmn);
+	
+	    /* South side */
+	    if (ypn <= cur_height-1) {
+
+		/* Scan */
+		for (d = 1; d <= m; d++) {
+
+		    /* Check grid "d" in strip "n", abort if totally blocked */
+		    if (update_view_aux(ypn,xmn-d,ypn-1,xmn-d+1,ypn,xmn-d+1)) {
+			if (n+d >= ws) break;
+		    }
+		}
+
+		/* Maintain the "strip blocker" */
+		if (n+d > ws) ws = n+d;
+	    }
+
+	    /* North side */
+	    if (ymn >= 0) {
+
+		/* Scan */
+		for (d = 1; d <= m; d++) {
+
+		    /* Check grid "d" in strip "n", abort if totally blocked */
+		    if (update_view_aux(ymn,xmn-d,ymn+1,xmn-d+1,ymn,xmn-d+1)) {
+			if (n+d >= wn) break;
+		    }
+		}
+
+		/* Maintain the "strip blocker" */
+		if (n+d > wn) wn = n+d;
+	    }
+	}
+    }
+
+
+    /*** Step 5 -- Remove the "old" view space ***/
+    cave_seen_wipe_view();
+}
+
+
+
+
+
+
+/*
+ * Aux function -- see below
+ */
+static void cave_seen_room_aux(int y, int x)
+{
+    cave_type *c_ptr = &cave[y][x];
+
+    /* Avoid infinite recursion */
+    if (c_ptr->info & CAVE_SEEN) return;
+
+    /* Do not "leave" the current room */
+    if (!(c_ptr->info & CAVE_LR)) return;
+
+    /* Add this grid to the queue */
+    cave_seen_add(y, x);
+}
+
+
+
+
+
+/*
+ * This function "initializes" a lit room when first "entered".
+ *
+ * This function is NOT used if the "view_pre_compute" flag is set.
+ * Those players get the advantage of seeing the room ahead of time
+ * as they walk down the corridor, but lose the ability to get a
+ * full picture of vaults and pillar filled rooms upon entry.
+ *
+ * Systems which are not actually recomputing the view must somehow
+ * notice when a new "region" has entered the "viewable space".  This
+ * function provides such a hook, allowing never-before seen rooms to
+ * be displayed.  Note that only the "lit" grids are actually displayed,
+ * but this is okay, since the dark ones will be caught at a later time.
+ * 
+ * Note that this function will check each grid in a dungeon at
+ * most once, and always in "groups" (logical "rooms").  Once
+ * a grid (and its "friends") have been checked by this function,
+ * they are marked as "CAVE_INIT".  Note that since "CAVE_INIT" is
+ * NOT saved in the save-file, restoring a game causes every room
+ * to require re-CAVE_INIT-ing, but that causes no harm.
+ *
+ * This is a big hack, to allow "proper" functioning when:
+ * "view_pre_compute" is FALSE and "view_perma_grids" is TRUE.
+ * Note that this is the "normal" state of the game.  This function
+ * is required so that "perma-lit" rooms that the player has never
+ * seen can be "pre-memorized" when he enters that room.
+ *
+ * Note that if "view_pre_compute" is FALSE, and "view_perma_grids" is
+ * also FALSE, then all sorts of weird things may happen.  Actually,
+ * it appears as though the only effect will be to NOT let the player
+ * memorize the "floors" of perma-lit rooms.
+ *
+ * This function gives a player "permanent knowledge" of a room when
+ * it is first "entered" (see "check_view()").  This includes permanent
+ * knowledge about the "floor" of the room.  In addition, it "displays"
+ * the room, even if some of the grids are not "visible" to the player.
+ *
+ * Note that "wiz_lite()" must mark rooms as "seen", since otherwise
+ * the player will not see monsters correctly.
+ *
+ * We are only called when the player "notices" that he is inside
+ * a room that he has never seen before.
+ */
+void check_view(void)
+{
+    int i, x, y;
+
+    int y1 = char_row;
+    int x1 = char_col;
+    
+
+    /* All done if blind */
+    if (p_ptr->blind) return;
+
+    /* Do not check view if pre-computing view */
+    if (view_pre_compute) return;
+
+    
+    /* Add the initial grid */
+    cave_seen_room_aux(y1, x1);
+
+    /* While grids are in the queue, add their neighbors */
+    for (i = 0; i < seen_n; i++) {
+
+	x = seen_x[i], y = seen_y[i];
+	
+	/* Walls get lit, but stop light */
+	if (!floor_grid_bold(y, x)) continue;
+	
+	/* Spread adjacent */
+	cave_seen_room_aux(y + 1, x);
+	cave_seen_room_aux(y - 1, x);
+	cave_seen_room_aux(y, x + 1);
+	cave_seen_room_aux(y, x - 1);
+
+	/* Spread diagonal */
+	cave_seen_room_aux(y + 1, x + 1);
+	cave_seen_room_aux(y - 1, x - 1);
+	cave_seen_room_aux(y - 1, x + 1);
+	cave_seen_room_aux(y + 1, x - 1);
+    }
+    
+    /* Now, lite them all up at once */
+    cave_seen_room_init();
+}
+
+
+/*
+ * Illuminate any room containing the given location.
+ */
+void lite_room(int y1, int x1)
+{
+    int i, x, y;
+    
+    /* Add the initial grid */
+    cave_seen_room_aux(y1, x1);
+
+    /* While grids are in the queue, add their neighbors */
+    for (i = 0; i < seen_n; i++) {
+
+	x = seen_x[i], y = seen_y[i];
+	
+	/* Walls get lit, but stop light */
+	if (!floor_grid_bold(y, x)) continue;
+	
+	/* Spread adjacent */
+	cave_seen_room_aux(y + 1, x);
+	cave_seen_room_aux(y - 1, x);
+	cave_seen_room_aux(y, x + 1);
+	cave_seen_room_aux(y, x - 1);
+
+	/* Spread diagonal */
+	cave_seen_room_aux(y + 1, x + 1);
+	cave_seen_room_aux(y - 1, x - 1);
+	cave_seen_room_aux(y - 1, x + 1);
+	cave_seen_room_aux(y + 1, x - 1);
+    }
+    
+    /* Now, lite them all up at once */
+    cave_seen_room_lite();
+
+    /* Hack -- check the view */
+    check_view();
+}
+
+
+/*
+ * Darken all rooms containing the given location
+ */
+void unlite_room(int y1, int x1)
+{
+    int i, x, y;
+    
+    /* Add the initial grid */
+    cave_seen_room_aux(y1, x1);
+
+    /* Spread, breadth first */
+    for (i = 0; i < seen_n; i++) {
+
+	x = seen_x[i], y = seen_y[i];
+	
+	/* Walls get dark, but stop darkness */
+	if (!floor_grid_bold(y, x)) continue;
+	
+	/* Spread adjacent */
+	cave_seen_room_aux(y + 1, x);
+	cave_seen_room_aux(y - 1, x);
+	cave_seen_room_aux(y, x + 1);
+	cave_seen_room_aux(y, x - 1);
+
+	/* Spread diagonal */
+	cave_seen_room_aux(y + 1, x + 1);
+	cave_seen_room_aux(y - 1, x - 1);
+	cave_seen_room_aux(y - 1, x + 1);
+	cave_seen_room_aux(y + 1, x - 1);
+    }
+    
+    /* Now, darken them all at once */
+    cave_seen_room_unlite();
+    
+    /* Hack -- check the view */
+    check_view();
+}
+
+
+
+/*
+ * Convert "directions" into "offsets"
+ */ 
+static int dx[10] = {0, -1, 0, 1, -1, 0, 1, -1, 0, 1};
+static int dy[10] = {0, 1, 1, 1, 0, 0, 0, -1, -1, -1};
+static int dd[9] =  {2, 8, 6, 4, 3, 1, 9, 7, 5};
+
+
+/*
+ * Hack -- provide some "speed" for the "flow" code
+ * This entry is the "current index" for the "when" field
+ * Note that a "when" value of "zero" means "not used".
+ *
+ * Note that the "cost" indexes from 1 to 127 are for
+ * "old" data, and from 128 to 255 are for "new" data.
+ *
+ * This means that as long as the player does not "teleport",
+ * then any monster up to 128 + MONSTER_FLOW_DEPTH will be
+ * able to track down the player, and in general, will be
+ * able to track down either the player or a position recently
+ * occupied by the player.
+ */
+static int flow_n = 0;
+
+
+/*
+ * Hack -- forget the "flow" information
+ */
+void forget_flow(void)
+{
+
+#ifdef MONSTER_FLOW
+
+    int x, y;
+
+    /* Nothing to forget */
+    if (!flow_n) return;
+
+    /* Check the entire dungeon */
+    for (y = 0; y < cur_height; y++) {
+	for (x = 0; x < cur_width; x++) {
+
+	    /* Forget the old data */
+	    cave[y][x].cost = 0;
+	    cave[y][x].when = 0;
+	}
+    }
+
+    /* Start over */
+    flow_n = 0;
+    
+#endif
+
+}
+
+
+#ifdef MONSTER_FLOW
+
+/*
+ * Hack -- Allow us to treat the "seen" array as a queue
+ */
+static int flow_head = 0;
+static int flow_tail = 0;
+
+
+/*
+ * Take note of a reachable grid
+ */
+static void update_flow_aux(int y, int x, int n)
+{
+    int old_head = flow_head;
+
+    /* Paranoia -- require valid grids */
+    if (!in_bounds(y, x)) return;
+        
+    /* Ignore "pre-stamped" entries */
+    if (cave[y][x].when == flow_n) return;
+
+    /* Ignore "wall" grids (but not doors) */
+    if (cave[y][x].fval >= MIN_WALL) return;
+
+    /* Hack -- Ignore "rubble" since no monsters eat rubble */
+    if (i_list[cave[y][x].i_idx].tval == TV_RUBBLE) return;
+    
+    /* Save the time-stamp */
+    cave[y][x].when = flow_n;
+
+    /* Save the flow cost */
+    cave[y][x].cost = n;
+
+    /* Hack -- limit flow depth */
+    if (n == MONSTER_FLOW_DEPTH) return;
+    
+    /* Enqueue that entry */
+    seen_y[flow_head] = y;
+    seen_x[flow_head] = x;
+
+    /* Advance the queue */
+    if (++flow_head == SEEN_MAX) flow_head = 0;
+
+    /* Hack -- notice overflow by forgetting new entry */
+    if (flow_head == flow_tail) flow_head = old_head;
+}
+
+#endif
+
+
+/*
+ * Hack -- fill in the "cost" field of every grid that the player
+ * can "reach" with the number of steps needed to reach that grid.
+ * This also yields the "distance" of the player from every grid.
+ *
+ * In addition, mark the "when" of the grids that can reach
+ * the player with the incremented value of "flow_n".
+ *
+ * Hack -- use the "seen" array as a "circular queue".
+ *
+ * We do not need a priority queue because the cost from grid
+ * to grid is always "one" and we process them in order.
+ */
+void update_flow(void)
+{
+
+#ifdef MONSTER_FLOW
+
+    int x, y, d;
+
+    /* Hack -- disabled */
+    if (!flow_by_sound) return;
+    
+    /* Paranoia -- make sure the array is empty */
+    if (seen_n) return;
+    
+    /* Cycle the old entries (once per 128 updates) */
+    if (flow_n == 255) {
+
+	/* Rotate the time-stamps */
+	for (y = 0; y < cur_height; y++) {
+	    for (x = 0; x < cur_width; x++) {
+		register int w = cave[y][x].when;
+		cave[y][x].when = (w > 128) ? (w - 128) : 0;
+	    }
+	}
+
+	/* Restart */
+	flow_n = 127;
+    }
+
+    /* Start a new flow (never use "zero") */
+    flow_n++;
+    
+
+    /* Reset the "queue" */
+    flow_head = flow_tail = 0;
+    
+    /* Add the player's grid to the queue */
+    update_flow_aux(char_row, char_col, 0);
+
+    /* Now process the queue */
+    while (flow_head != flow_tail) {
+
+	/* Extract the next entry */
+	y = seen_y[flow_tail];
+	x = seen_x[flow_tail];
+
+	/* Forget that entry */
+	if (++flow_tail == SEEN_MAX) flow_tail = 0;
+
+	/* Add the "children" */
+	for (d = 0; d < 8; d++) {
+
+	    /* Add that child if "legal" */
+	    update_flow_aux(y+dy[dd[d]], x+dx[dd[d]], cave[y][x].cost+1);
+	}
+    }
+    
+    /* Forget the flow info */
+    flow_head = flow_tail = 0;
+#endif
+
+}
+
+
+
+
+
+
+
+/*
+ * Map the current panel (plus some) ala "detection"
+ * This function is a big hack -- see "update_map()".
+ */
+void map_area(void)
+{
+    register cave_type *c_ptr;
+    register int        dx, dy, x, y;
+    int                 y1, y2, x1, x2;
+
+    /* Pick an area to map */
+    y1 = panel_row_min - randint(10);
+    y2 = panel_row_max + randint(10);
+    x1 = panel_col_min - randint(20);
+    x2 = panel_col_max + randint(20);
+
+    /* Speed -- shrink to fit legal bounds (for floors) */
+    if (y1 < 1) y1 = 1;
+    if (y2 > cur_height-2) y2 = cur_height-2;
+    if (x1 < 1) x1 = 1;
+    if (x2 > cur_width-2) x2 = cur_width-2;
+
+    /* Scan that area */
+    for (y = y1; y <= y2; y++) {
+	for (x = x1; x <= x2; x++) {
+
+	    c_ptr = &cave[y][x];
+
+	    /* All non-walls are "checked" */
+	    if (c_ptr->fval < MIN_WALL) {
+
+		/* Field mark "landmark" objects */
+		if (c_ptr->i_idx) {
+
+		    /* Notice landmark objects */
+		    if (i_list[c_ptr->i_idx].tval >= TV_MIN_VISIBLE) {
+
+			/* Memorize the object */
+			c_ptr->info |= CAVE_FM;
+		    }
+		}
+
+		/* Field-Mark the "true" walls */
+		for (dy = -1; dy <= 1; dy++) {
+		    for (dx = -1; dx <= 1; dx++) {
+
+			if (!dx && !dy) continue;
+
+			c_ptr = &cave[y+dy][x+dx];
+
+			/* Perma-light "significant" walls */
+			if (c_ptr->fval >= MIN_WALL) {
+
+			    /* Memorize the walls */
+			    c_ptr->info |= CAVE_FM;
+			}
+		    }
+		}
+	    }
+	}
+    }
+
+    /* Redraw the map */
+    prt_map();
+}
+
+
+
+/*
+ * Light up the dungeon.
+ */
+void wiz_lite(void)
+{
+    register cave_type *c_ptr;
+    register int        yy, xx, y, x;
+
+    /* Perma-light all open space and adjacent walls */
+    for (y = 1; y < cur_height-1; y++) {
+	for (x = 1; x < cur_width-1; x++) {
+
+	    /* Process all non-walls */
+	    if (cave[y][x].fval < MIN_WALL) {
+
+		/* Perma-lite all grids touching those grids */
+		for (yy = y - 1; yy <= y + 1; yy++) {
+		    for (xx = x - 1; xx <= x + 1; xx++) {
+
+			/* Get the grid */
+			c_ptr = &cave[yy][xx];
+
+			/* Perma-lite all the grid */
+			c_ptr->info |= CAVE_PL;
+
+			/* Hack -- Field Mark all of the objects */
+			c_ptr->info |= CAVE_FM;
+
+			/* Mega-Hack -- mark rooms as initialized */
+			if (c_ptr->info & CAVE_LR) c_ptr->info |= CAVE_INIT;
+		    }
+		}
+	    }
+	}
+    }
+
+    /* Redraw the map */    
+    prt_map();
+}
+
+
+/*
+ * Hack -- Darken the dungeon.  And erase the map.
+ * This function makes very little sense...
+ */
+void wiz_dark(void)
+{
+    register int        y, x;
+    register cave_type *c_ptr;
+
+    /* Forget lite */
+    forget_lite();
+
+    /* Darken everything */
+    for (y = 0; y < cur_height; y++) {
+	for (x = 0; x < cur_width; x++) {
+	    c_ptr = &cave[y][x];
+	    c_ptr->info &= ~CAVE_PL;
+	    c_ptr->info &= ~CAVE_FM;
+	}
+    }
+
+    /* Re-examine lite */
+    update_lite();
+
+    /* Redraw the map */    
+    prt_map();
+
+
+    /* Check the view */
+    check_view();
+}
+
+
+
 
 
 
@@ -2687,12 +3075,14 @@ void prt_map(void)
 
 /*
  * Display a small-scale map of the dungeon
+ *
+ * Verify that the "priority" function works.
  */
 void screen_map(void)
 {
     register int i, j, x, y;
 
-    register int8u ta;
+    register byte ta;
     register char tc;
 
     int m, okay;
@@ -2702,36 +3092,30 @@ void screen_map(void)
 
     int myrow = -1, mycol = -1;
 
-    static int prioritized = 0;
-    static int   priority[256];
+    byte priority[256];
 
 
 
-    /* Set up the priority table */
-    if (!prioritized)
-    {
-	/* Everything defaults to zero */
-	for (i = 0; i < 256; i++) priority[i] = 0;
+    /* Default priority used for objects and such */
+    for (i = 0; i < 256; i++) priority[i] = 20;
 
-	/* A few things are special */    
-	priority['<'] = 5;
-	priority['>'] = 5;
-	priority['@'] = 10;
-	priority['#'] = (-5);
-	priority['.'] = (-10);
-	priority['x'] = (-1);
-	priority['\''] = (-3);
-	priority[' '] = (-15);
-
-	/* Only do it once */
-	prioritized = 1;
-    }
+    /* A few things are special */    
+    priority[(byte)k_char[OBJ_PLAYER]] = 30;
+    priority[(byte)k_char[OBJ_UP_STAIR]] = 25;
+    priority[(byte)k_char[OBJ_DOWN_STAIR]] = 25;
+    priority[(byte)k_char[OBJ_CLOSED_DOOR]] = 19;
+    priority[(byte)k_char[OBJ_OPEN_DOOR]] = 17;
+    priority[(byte)k_char[OBJ_MAGMA_VEIN]] = 16;
+    priority[(byte)k_char[OBJ_QUARTZ_VEIN]] = 16;
+    priority[(byte)k_char[OBJ_GRANITE_WALL]] = 15;
+    priority[(byte)k_char[OBJ_FLOOR]] = 10;
+    priority[(byte)(' ')] = 5;
 
 
     /* Clear the chars and attributes */
     for (y = 0; y < MAP_HGT+2; ++y) {
 	for (x = 0; x < MAP_WID+2; ++x) {
-	    ma[y][x] = COLOR_WHITE;
+	    ma[y][x] = TERM_WHITE;
 	    mc[y][x] = ' ';
 	}
     }
@@ -2763,7 +3147,7 @@ void screen_map(void)
 	    }
 
 	    /* Remember where we saw the "player" */
-	    if (tc == '@') {
+	    if (tc == k_char[OBJ_PLAYER]) {
 		mycol = x; myrow = y;
 	    }
 	}
@@ -2787,9 +3171,9 @@ void screen_map(void)
 	    tc = mc[y][x];
 
 #ifdef USE_COLOR
-	    if (!use_color) ta = COLOR_WHITE;
+	    if (!use_color) ta = TERM_WHITE;
 #else
-	    ta = COLOR_WHITE;
+	    ta = TERM_WHITE;
 #endif
 
 	    Term_addch(ta, tc);
@@ -2814,160 +3198,5 @@ void screen_map(void)
 
 
 
-
-
-/* I may have written the town level code, but I'm not exactly	 */
-/* proud of it.	 Adding the stores required some real slucky	 */
-/* hooks which I have not had time to re-think.		 -RAK-	 */
-
-
-
-
-
-
-
-
-/*
- * Hack -- count grid updates
- */
-static int check_view_num = 0;
-
-
-/*
- * This function "initializes" a lit room when first "entered".
- *
- * Note that this function will check each grid in a dungeon at
- * most once, and always in "groups" (logical "rooms").  Once
- * a grid (and its "friends") have been checked by this function,
- * they are marked as "CAVE_INIT".  Note that since "CAVE_INIT" is
- * NOT saved in the save-file, restoring a game causes every room
- * to require re-CAVE_INIT-ing, but that causes no harm.
- *
- * This is a big hack, to allow "proper" functioning when:
- * "view_pre_compute" is FALSE and "view_perma_grids" is TRUE.
- * Note that this is the "normal" state of the game.  This function
- * is required so that "perma-lit" rooms that the player has never
- * seen can be "pre-memorized" when he enters that room.  Note that
- * if "view_pre_compute" is TRUE, the rooms could be pre-initialized
- * to "perma-lit", and this function would be un-necessary.  Note
- * that if "view_pre_compute" is FALSE, and "view_perma_grids" is
- * also FALSE, then all sorts of weird things may happen.  Actually,
- * it appears as though the only effect will be to NOT let the player
- * memorize the "floors" of perma-lit rooms.
- *
- * This is a purely "visual" thing, to prevent "room walls" from
- * being visible before they are seen.  It is also a big hack.
- *
- * The "first time" a room is "lit" some important stuff happens.
- *
- * Note that this function is DIFFERENT from "lite_a_dark_room()".
- * This function is a hack used to "initialize" rooms when seen for
- * the first time.
- *
- * The big "problem" is that we use "pl" to say if the player "knows"
- * about a wall.  We should probably be using "fm" instead.  Then we
- * can use "pl" to mean "the wall is illuminated" and "fm" to mean
- * "the player remembers the wall".
- *
- * This function gives a player "permanent knowledge" of a room when
- * it is first "entered" (see "check_view()").  This includes permanent
- * knowledge about the "floor" of the room.  In addition, it "displays"
- * the room, even if some of the grids are not "visible" to the player.
- *
- * Note that "wiz_lite()" bypasses this function entirely, but it is
- * still true that this function is activated when the various "pre-lit"
- * rooms are "entered".
- *
- * We are only called when the player "notices" that he is inside
- * (or possibly next to) a lit room that he has never seen before.
- */
-static void check_view_aux(int y, int x)
-{
-    cave_type *c_ptr;
-
-    /* Get the grid */
-    c_ptr = &cave[y][x];
-
-
-    /* Only initialize something once */
-    if (c_ptr->info & CAVE_INIT) return;
-
-    /* Only initialize "rooms" */
-    if (!(c_ptr->info & CAVE_LR)) return;
-
-
-    /* Do not initialize "Dark Rooms" */
-    if (c_ptr->fval == DARK_FLOOR) return;
-    if (c_ptr->fval == NT_DARK_FLOOR) return;
-
-
-    /* Count the grids */
-    check_view_num++;
-    
-    /* This grid has been initialized */
-    c_ptr->info |= CAVE_INIT;
-    
-    /* Initialize the grid as "perma-lit" */
-    c_ptr->info |= CAVE_PL;
-
-
-    /* Redraw */
-    lite_spot(y, x);
-
-
-    /* Stop at walls */
-    if (!floor_grid(y, x)) return;
-
-
-    /* Spread adjacent */
-    check_view_aux(y + 1, x);
-    check_view_aux(y - 1, x);
-    check_view_aux(y, x + 1);
-    check_view_aux(y, x - 1);
-
-    /* Spread diagonal */
-    check_view_aux(y + 1, x + 1);
-    check_view_aux(y - 1, x - 1);
-    check_view_aux(y - 1, x + 1);
-    check_view_aux(y + 1, x - 1);
-}
-
-
-
-/*
- * The new "check_view()" routine ONLY checks for certain "inconsistancies" on
- * the map.  In particular, "uninitialized" lit rooms get "initialized".
- *
- * An interesting thing to note is that to make rooms light up on
- * entry, we must also have "beam of light" and "call light" light
- * up rooms (before we enter them).  Otherwise, with the current method,
- * these rooms will not lite up when you DO enter them.
- */
-void check_view()
-{
-    register int        y, x;
-
-
-    /* All done if blind */
-    if (p_ptr->blind) return;
-    
-    
-    /* Hack -- "initialize" adjacent lite rooms */
-    for (y = (char_row - 1); y <= (char_row + 1); y++) {
-	for (x = (char_col - 1); x <= (char_col + 1); x++) {
-	    check_view_aux(y, x);
-	}
-    }
-
-    /* Hack -- extra "lite" requires monster redraw */
-    if (check_view_num) {
-
-	/* Clear the count */
-        check_view_num = 0;
-
-	/* Redraw everything */
-	update_monsters();
-    }
-}
 
 

@@ -14,6 +14,55 @@
  */
 
 
+
+/*
+ * First, include the low-level includes.  Be sure to edit "h-config.h"
+ * to reflect any hardware, operating system, or compiler nuances.
+ */
+#include "h-include.h"
+
+/*
+ * Then, include the header files for the low-level code
+ */
+#include "z-util.h"
+#include "z-virt.h"
+#include "z-form.h"
+
+
+
+/* 
+ * Include the header file for the "terminal" stuff
+ */
+#include "term.h"
+
+
+/* 
+ * Include the header file for the random number generator
+ * Note that ALL machines can safely include this file now,
+ * it simply "redefines" the standard name space to prevent
+ * conflicts.  If you include the header (random.h) you must
+ * compile the source (random.c).
+ */
+#include "random.h"
+
+
+/*
+ * Include the "Angband" configuration header
+ */
+#include "config.h"
+
+
+/*
+ * Now, include the define's, the type's, and the extern's
+ */
+#include "defines.h"
+#include "types.h"
+#include "externs.h"
+
+
+
+/***** Some copyright messages follow below *****/
+
 /*
  * UNIX ANGBAND Version 5.0 
  */
@@ -58,78 +107,6 @@
 /*	 this software in any form without the expressed written consent */
 /*	 of the author Robert Alan Koeneke.				 */
 /*									 */
-
-
-/*
- * Metaphor -- There are "two" layers, the "game" and the "play".
- *
- * The outer layer deals with stuff like creating windows, managing menus,
- * preparing to handle signals, and cleaning up, while the inner "play"
- * layer actually does things related to game playing (including loading
- * and saving character files, but NOT preference files).  This makes
- * it easier to replace the outer layer without changing the "play" layer.
- *
- * Thus, there is a "main()" function (i.e. below), which takes a different
- * form on every system.  It parses its arguments/ preference files,
- * and then invokes the game playing function, "play_game()". There
- * is an "escape" function called "exit_game()" which completes the
- * game, showing scores and such.  The "main()" function can also set up
- * a special "hook" for the "quit()" function to execute at "exit()"...
- *
- * Unfortunately, Angband does not "want" to be event driven, so events
- * are hacked by inverting them, and having requests for specific event
- * information cycle the event loop, and then extract any needed info.
- * The game will thus "hang" inside long loops.  Luckily, frequent calls
- * to the "get key" or "check key" routines are made, flushing the events.
- * See 'term.c' for how this is done.
- */
-
-
-
-/*
- * First, include the low-level includes.  Be sure to edit "h-config.h"
- * to reflect any hardware, operating system, or compiler nuances.
- */
-#include "h-include.h"
-
-/*
- * Then, include the header files for the low-level code
- */
-#include "z-util.h"
-#include "z-virt.h"
-#include "z-form.h"
-
-
-
-/* 
- * Include the header file for the "terminal" stuff
- */
-#include "term.h"
-
-
-/* 
- * Include the header file for the random number generator
- * The only machine that I *know* of that needs this is Macintosh.
- * Just add "|| defined(xxx)" as necessary...
- */
-#if defined(MACINTOSH)
-# include "random.h"
-#endif
-
-
-/*
- * Include the "Angband" configuration header
- */
-#include "config.h"
-
-
-/*
- * Now, include the define's, the type's, and the extern's
- */
-#include "defines.h"
-#include "types.h"
-#include "externs.h"
-
 
 
 #endif

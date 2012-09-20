@@ -24,33 +24,33 @@ int cur_patch_level = CUR_PATCH_LEVEL;
 int hack_m_idx = (-1);		/* XXX Current monster in "process_monsters()" */
 
 
-int weapon_heavy = FALSE;
-int pack_heavy = FALSE;
-
-int cumber_armor = FALSE;
-int cumber_glove = FALSE;
-
 int cur_lite = 0;		/* Current light radius (zero for none) */
 int old_lite = 1;		/* Previous light radius (assume lite) */
 
-int16 total_winner = FALSE;
+s16b total_winner = FALSE;	/* Semi-Hack -- Game has been won */
 
-int character_generated = 0;	/* don't save score until char gen finished */
-int character_saved = 0;	/* prevents save on kill after save_player() */
+int character_generated = 0;	/* A character has been generated */
+int character_saved = 0;	/* The character has been saved */
 
 
 int LOAD = 0;			/* Hack -- used for CHECK_LOAD */
 
 
-int32u randes_seed;		/* Hack -- consistent object colors */
-int32u town_seed;		/* Hack -- consistent town layout */
+u32b randes_seed;		/* Hack -- consistent object colors */
+u32b town_seed;		/* Hack -- consistent town layout */
 
 int command_cmd = 0;		/* Current "Angband Command" */
-int command_old = 0;		/* Last command completed */
+int command_old = 0;		/* Last "Angband Command" completed */
 int command_esc = 0;		/* Later -- was current command aborted? */
-int command_arg = 0;		/* Gives argument of current command -BEN- */
-int command_rep = 0;		/* Gives repetition of current command -BEN- */
-int command_dir = -1;		/* Gives direction of current command -BEN- */
+int command_arg = 0;		/* Gives argument of current command */
+int command_rep = 0;		/* Gives repetition of current command */
+int command_dir = -1;		/* Gives direction of current command */
+
+int command_wrk = 0;		/* See "moria1.c" */
+int command_see = 0;		/* See "moria1.c" */
+int command_xxx = 0;		/* See "moria1.c" */
+int command_new = 0;		/* Next command to execute */
+int command_gap = 0;		/* First column to use for inven/equip list */
 
 int create_up_stair = FALSE;
 int create_down_stair = FALSE;
@@ -61,87 +61,76 @@ int find_flag;			/* Number of turns spent running */
 
 int msg_flag;			/* Used in msg_print() for "buffering" */
 
-int16 cur_height;		/* Cur dungeon height */
-int16 cur_width;		/* Cur dungeon width  */
-int16 dun_level = 0;		/* Cur dungeon level   */
-int16 object_level = 0;		/* level for objects to be created -CWS  */
-int32u turn = 0;		/* Cur turn of game    */
-int32u old_turn = 0;		/* Last feeling message */
+s16b cur_height;		/* Cur dungeon height */
+s16b cur_width;			/* Cur dungeon width */
+s16b dun_level = 0;		/* Cur dungeon level */
+s16b object_level = 0;		/* Cur object creation level */
+
+u32b turn = 0;			/* Cur turn of game    */
+u32b old_turn = 0;		/* Last feeling message */
+
 int wizard = FALSE;		/* Is the player currently in Wizard mode? */
 int to_be_wizard = FALSE;	/* Is the player about to be a wizard? */
 int can_be_wizard = FALSE;	/* Does the player have wizard permissions? */
-int16 panic_save = FALSE;	/* this is true if playing from a panic save */
-int16 noscore = FALSE;		/* Don't log the game. -CJS- */
+
+s16b panic_save = FALSE;	/* this is true if playing from a panic save */
+s16b noscore = FALSE;		/* Don't log the game. -CJS- */
 
 int in_store_flag = FALSE;	/* Don't redisplay light in stores -DGK */
+int inkey_flag = FALSE;		/* Do a special "inkey()" command */
 
-int coin_type = 0;		/* remember Creeping _xxx_ coin type -CWS */
-int opening_chest = 0;          /* don't generate another chest -CWS */
+int coin_type = 0;		/* Hack -- force coin type */
+int opening_chest = 0;          /* Hack -- prevent chest generation */
 
 
 /* Inventory info */
-int16 inven_ctr = 0;		/* Total different obj's	*/
-int16 inven_weight = 0;		/* Cur carried weight	*/
-int16 equip_ctr = 0;		/* Cur equipment ctr	*/
+s16b inven_ctr = 0;		/* Total different obj's	*/
+s16b inven_weight = 0;		/* Cur carried weight	*/
+s16b equip_ctr = 0;		/* Cur equipment ctr	*/
 
 
 /* Basic savefile information */
-int32u sf_xtra = 0L;		/* Operating system info */
-int32u sf_when = 0L;		/* Time when savefile created */
-int16u sf_lives = 0L;		/* Number of "lives" with this file */
-int16u sf_saves = 0L;		/* Number of "saves" during this life */
+u32b sf_xtra = 0L;		/* Operating system info */
+u32b sf_when = 0L;		/* Time when savefile created */
+u16b sf_lives = 0L;		/* Number of "lives" with this file */
+u16b sf_saves = 0L;		/* Number of "saves" during this life */
 
-int16 i_max;			/* Treasure heap size */
-int16 m_max;			/* Monster heap size */
-
-int16 mon_tot_mult;		/* Hack -- limit reproduction */
+s16b i_max;			/* Treasure heap size */
+s16b m_max;			/* Monster heap size */
 
 
-
-/* OPTION: options set via the '=' command (in order) */
+/* OPTION: options set via the '=' command */
 /* note that the values set here will be the default settings */
 /* the default keyset can thus be chosen via "rogue_like_commands" */
 
+/* Option set 1 */
+
 int rogue_like_commands = FALSE;	/* Pick initial keyset */
+int quick_messages = FALSE;		/* Quick messages -CWS */
 int prompt_carry_flag = FALSE;		/* Require "g" key to pick up */
 int carry_query_flag = FALSE;		/* Prompt for pickup */
+int always_pickup = FALSE;		/* Warn about over-flow */
 int always_throw = FALSE;		/* Do not prompt for throw */
 int always_repeat = FALSE;		/* Always repeat commands */
-int quick_messages = TRUE;		/* quick messages -CWS */
+int use_old_target = FALSE;		/* Use old target somehow */
+
+int new_screen_layout = TRUE;	/* Use the new screen layout */
+int equippy_chars = TRUE;	/* do equipment characters -CWS */
+int depth_in_feet = TRUE;	/* Display the depth in "feet" */
+int notice_seams = TRUE;	/* Highlight mineral seams */
 
 int use_color = TRUE;		/* Use color if possible */
-int notice_seams = TRUE;	/* Highlight mineral seams */
-int ring_bell = TRUE;		/* Ring the bell */
-int equippy_chars = TRUE;	/* do equipment characters -CWS */
-int new_screen_layout = TRUE;	/* Use the new screen layout */
-int depth_in_feet = TRUE;	/* Display the depth in "feet" */
-int hilite_player = TRUE;	/* Hilite the player */
-
-int show_inven_weight = TRUE;	/* Show weights in inven */
-int show_equip_weight = TRUE;	/* Show weights in equip */
-int show_store_weight = TRUE;	/* Show weights in store */
-int plain_descriptions = TRUE;	/* Plain descriptions */
-
 int use_recall_win = TRUE;	/* Use the "recall window" */
 int use_choice_win = TRUE;	/* Use the "choice window" */
 
-int no_haggle_flag = FALSE;	/* Cancel haggling -CWS */
-int shuffle_owners = FALSE;	/* Let store owners shuffle */
-
-int view_pre_compute = FALSE;	/* Precompute the "view" */
-int view_reduce_view = TRUE;	/* Reduce "view" radius if running */
-int view_reduce_lite = TRUE;	/* Reduce torch lite if running */
-
-int view_yellow_lite = FALSE;	/* Use "yellow" for "torch lite" */
-int view_bright_lite = FALSE;	/* Use "bright" for (viewable) "perma-lite" */
-int view_yellow_fast = FALSE;	/* Ignore "yellow_lite" when running */
-int view_bright_fast = FALSE;	/* Ignore "bright_lite" when running */
-
-int view_perma_grids = TRUE;	/* Map "remembers" perma-lit grids */
-int view_torch_grids = FALSE;	/* Map "remembers" torch-lit grids */
-
 int compress_savefile = TRUE;	/* Compress the savefile as possible */
 
+int hilite_player = TRUE;	/* Hilite the player */
+
+int ring_bell = TRUE;		/* Ring the bell */
+
+
+/* Option Set 2 -- Disturbance */
 
 int find_cut = TRUE;		/* Cut corners */
 int find_examine = TRUE;	/* Examine corners */
@@ -155,8 +144,57 @@ int disturb_move = TRUE;	/* Disturbed by monster movement */
 int disturb_enter = TRUE;	/* Disturbed by monster appearing */
 int disturb_leave = TRUE;	/* Disturbed by monster disappearing */
 
-int hitpoint_warn = 1;		/* Warn at 10% of hit points */
-int delay_spd = 1;		/* Delay speed of one */
+int flush_disturb = TRUE;	/* Flush input on disturbance */
+int flush_failure = TRUE;	/* Flush input on any failure */
+int flush_command = FALSE;	/* Flush input before every command */
+int flush_unused = FALSE;	/* Flush input on some condition */
+
+int view_yellow_lite = TRUE;	/* Use "yellow" for "torch lite" */
+int view_bright_lite = TRUE;	/* Use "bright" for (viewable) "perma-lite" */
+int view_yellow_fast = FALSE;	/* Ignore "yellow_lite" when running */
+int view_bright_fast = FALSE;	/* Ignore "bright_lite" when running */
+
+
+
+/* Option set 3 -- Gameplay */
+
+int view_pre_compute = TRUE;	/* Precompute the "view" */
+int view_xxx_compute = TRUE;	/* XXX Unused */
+
+int view_reduce_view = FALSE;	/* Reduce "view" radius if running */
+int view_reduce_lite = FALSE;	/* Reduce torch lite if running */
+
+int view_wall_memory = TRUE;	/* Map "remembers" walls */
+int view_xtra_memory = TRUE;	/* Map "remembers" extra stuff */
+int view_perma_grids = TRUE;	/* Map "remembers" perma-lit grids */
+int view_torch_grids = FALSE;	/* Map "remembers" torch-lit grids */
+
+int flow_by_sound = FALSE;	/* Monsters track new player location */
+int flow_by_smell = FALSE;	/* Monsters track old player location */
+
+int no_haggle_flag = FALSE;	/* Cancel haggling */
+int shuffle_owners = FALSE;	/* Shuffle store owners occasionally */
+
+int show_inven_weight = TRUE;	/* Show weights in inven */
+int show_equip_weight = TRUE;	/* Show weights in equip */
+int show_store_weight = TRUE;	/* Show weights in store */
+int plain_descriptions = TRUE;	/* Plain descriptions */
+
+int stack_allow_items = TRUE;	/* Allow weapons and armor and such to stack */
+int stack_allow_wands = TRUE;	/* Allow wands and staffs and rods to stack */
+int stack_force_notes = FALSE;	/* Force items with different notes to stack */
+int stack_force_costs = FALSE;	/* Force items with different costs to stack */
+
+
+
+
+
+int hitpoint_warn = 1;		/* Hitpoint warning (0 to 9) */
+int delay_spd = 1;		/* Delay factor (0 to 9) */
+
+term *term_screen = NULL;	/* The main screen */
+term *term_recall = NULL;	/* The recall window */
+term *term_choice = NULL;	/* The choice window */
 
 
 int peek = FALSE;		/* Let user "see" internal stuff */
@@ -169,22 +207,20 @@ char doing_inven = 0;		/* Hack -- track inventory commands */
 int screen_change = FALSE;	/* Hack -- disturb inventory commands */
 
 int new_level_flag;		/* Start a new level */
-int teleport_flag;		/* Teleport the player */
-int eof_flag = FALSE;		/* Hack -- catch some signals */
+int teleport_flag;		/* Hack -- handle teleport traps */
 
-int wait_for_more = FALSE;	/* Hack -- react to signals in "more" */
 int closing_flag = FALSE;	/* Dungeon is closing */
 
 /*  Following are calculated from max dungeon sizes		*/
-int16 max_panel_rows, max_panel_cols;
+s16b max_panel_rows, max_panel_cols;
 int panel_row, panel_col;
 int panel_row_min, panel_row_max;
 int panel_col_min, panel_col_max;
 int panel_col_prt, panel_row_prt;
 
 /* Player location in dungeon */
-int16 char_row;
-int16 char_col;
+s16b char_row;
+s16b char_col;
 
 #ifdef TARGET
 /* Targetting information, this code stolen from Morgul -CFT */
@@ -194,13 +230,6 @@ int target_row;
 int target_mon;
 #endif
 
-
-
-/*
- * Hack -- allow consistant creation of "WINNER" artifacts
- */
-bool permit_grond = TRUE;
-bool permit_morgoth = TRUE;
 
 
 
@@ -226,48 +255,67 @@ cave_type *cave[MAX_HEIGHT];
 /* Buffer to hold the name of the ghost */
 char ghost_name[128];
 
-/* The player's inventory */
-inven_type inventory[INVEN_ARRAY_SIZE];
+/* The player's inventory (24 pack items, 12 equipment items) */
+inven_type inventory[INVEN_TOTAL];
 
 
 
-/* Was: monster_type m_list[MAX_M_IDX] */
+/* The array of dungeon monsters [MAX_M_IDX] */
 monster_type *m_list;
 
-/* The array of monster races (see arrays.c) */
-/* Was: monster_race r_list[MAX_R_IDX]; */
+/* The array of monster races [MAX_R_IDX] */
 monster_race *r_list;
 
-/* Was: monster_lore l_list[MAX_R_IDX]; */
+/* The arrays of monster attr/char codes [MAX_R_IDX] */
+byte *r_attr;
+char *r_char;
+
+/* The array of monster "memory" [MAX_R_IDX] */
 monster_lore *l_list;
 
 /* Hack -- Quest array */
 quest q_list[QUEST_MAX];
 
 
-/* Was: inven_type i_list[MAX_I_IDX]; */
+/* The array of dungeon items [MAX_I_IDX] */
 inven_type *i_list;
 
-/* The array of object types (see arays.c) */
-/* Was: inven_kind k_list[MAX_K_IDX]; */
+/* The array of object types [MAX_K_IDX] */
 inven_kind *k_list;
 
-/* Extra item "memory" */ 
+/* The array of "artifact" information [MAX_V_IDX] */
+inven_very *v_list;
+
+/* The arrays of object attr/char codes [MAX_K_IDX] */
+byte *k_attr;
+char *k_char;
+
+/* Extra item "memory" [MAX_K_IDX] */ 
 inven_xtra *x_list;
+
+
+/* Hack -- Attribute table for inventory */
+byte tval_to_attr[128];
+
+
+/*
+ * Hack -- simple keymap method, see "arrays.c" and "commands.c".
+ */
+byte keymap_cmds[128];
+byte keymap_dirs[128];
 
 
 
 static player_type p_body;	/* Static player info record */
-
 player_type *p_ptr = &p_body;	/* Pointer to the player info */
 
-int32u spell_learned = 0;       /* bit mask of spells learned */
-int32u spell_learned2 = 0;      /* bit mask of spells learned */
-int32u spell_worked = 0;        /* bit mask of spells tried and worked */
-int32u spell_worked2 = 0;       /* bit mask of spells tried and worked */
-int32u spell_forgotten = 0;     /* bit mask of spells learned but forgotten */
-int32u spell_forgotten2 = 0;    /* bit mask of spells learned but forgotten */
-int8u spell_order[64];          /* order spells learned/remembered/forgotten */
+u32b spell_learned = 0;       /* bit mask of spells learned */
+u32b spell_learned2 = 0;      /* bit mask of spells learned */
+u32b spell_worked = 0;        /* bit mask of spells tried and worked */
+u32b spell_worked2 = 0;       /* bit mask of spells tried and worked */
+u32b spell_forgotten = 0;     /* bit mask of spells learned but forgotten */
+u32b spell_forgotten2 = 0;    /* bit mask of spells learned but forgotten */
+byte spell_order[64];          /* order spells learned/remembered/forgotten */
 
 /*
  * Calculated base hp values for player at each level,
@@ -275,5 +323,5 @@ int8u spell_order[64];          /* order spells learned/remembered/forgotten */
  * affect hit points.  Also prevents shameless use of backup
  * savefiles for hitpoint acquirement.
  */
-int16u player_hp[MAX_PLAYER_LEVEL];
+u16b player_hp[MAX_PLAYER_LEVEL];
 

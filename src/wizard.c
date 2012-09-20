@@ -14,6 +14,56 @@
 
 
 
+#ifdef ALLOW_WIZARD
+
+/*
+ * Hack -- whatever I need at the moment
+ */
+static void hack_ben(int arg)
+{
+    static int cost = 0;
+    static int when = 1;
+    
+    int y, x;
+
+    /* Hack -- redraw the map */
+    prt_map();
+        
+#ifdef MONSTER_FLOW
+
+    /* Hack -- allow "re-cycle" */
+    if (command_arg) cost = 0;
+
+    /* Reset the flow */    
+    if (!cost) when = cave[char_row][char_col].when;
+
+    /* Check the "flow" */
+    for (y = 0; y < cur_height; y++) {
+	for (x = 0; x < cur_width; x++) {
+
+	    /* Illuminate the "sound" */
+	    if ((cave[y][x].when == when) &&
+		(cave[y][x].cost == cost)) {
+		mh_print_rel('*', TERM_RED, 0, y, x);
+	    }
+
+	    /* Hack -- Illuminate the "smell" */
+	    if (cave[y][x].when == cost + 1) {
+		mh_print_rel('*', TERM_ORANGE, 0, y, x);
+	    }
+	}
+    }
+
+#endif
+
+    /* Flush */
+    Term_fresh();
+
+    /* Advance */
+    if (cost++ == 256) cost = 0;
+}
+
+
 
 /*
  * Wizard routine for gaining on stats                  -RAK-    
@@ -21,7 +71,7 @@
 static void change_character()
 {
     register int          tmp_val;
-    register int32        tmp_lval;
+    register s32b        tmp_lval;
 
     vtype                 tmp_str;
 
@@ -122,60 +172,6 @@ static void change_character()
 	prt_experience();
     }
 
-    (void)sprintf(tmp_str, "Current=%d  (0-200) Searching = ", p_ptr->srh);
-    prt(tmp_str, 0, 0);
-    if (!askfor(tmp_str, 3)) return;
-
-    tmp_val = atoi(tmp_str);
-    if ((tmp_val >= 0) && (tmp_val < 201) && (*tmp_str != '\0')) {
-	p_ptr->srh = tmp_val;
-    }
-
-    (void)sprintf(tmp_str, "Current=%d  (-1-18) Stealth = ", p_ptr->stl);
-    prt(tmp_str, 0, 0);
-    if (!askfor(tmp_str, 3)) return;
-
-    tmp_val = atoi(tmp_str);
-    if ((tmp_val >= -1) && (tmp_val < 19) && (*tmp_str != '\0')) {
-	p_ptr->stl = tmp_val;
-    }
-
-    (void)sprintf(tmp_str, "Current=%d  (0-200) Disarming = ", p_ptr->disarm);
-    prt(tmp_str, 0, 0);
-    if (!askfor(tmp_str, 3)) return;
-
-    tmp_val = atoi(tmp_str);
-    if ((tmp_val >= 0) && (tmp_val < 201) && (*tmp_str != '\0')) {
-	p_ptr->disarm = tmp_val;
-    }
-
-    (void)sprintf(tmp_str, "Current=%d  (0-100) Save = ", p_ptr->save);
-    prt(tmp_str, 0, 0);
-    if (!askfor(tmp_str, 3)) return;
-
-    tmp_val = atoi(tmp_str);
-    if ((tmp_val > -1) && (tmp_val < 201) && (*tmp_str != '\0')) {
-	p_ptr->save = tmp_val;
-    }
-
-    (void)sprintf(tmp_str, "Current=%d  (0-200) Base to hit = ", p_ptr->bth);
-    prt(tmp_str, 0, 0);
-    if (!askfor(tmp_str, 3)) return;
-
-    tmp_val = atoi(tmp_str);
-    if ((tmp_val > -1) && (tmp_val < 201) && (*tmp_str != '\0')) {
-	p_ptr->bth = tmp_val;
-    }
-
-    (void)sprintf(tmp_str, "Current=%d  (0-200) Bows/Throwing = ", p_ptr->bthb);
-    prt(tmp_str, 0, 0);
-    if (!askfor(tmp_str, 3)) return;
-
-    tmp_val = atoi(tmp_str);
-    if ((tmp_val > -1) && (tmp_val < 201) && (*tmp_str != '\0')) {
-	p_ptr->bthb = tmp_val;
-    }
-
     (void)sprintf(tmp_str, "Current=%d  Weight = ", p_ptr->wt);
     prt(tmp_str, 0, 0);
     if (!askfor(tmp_str, 3)) return;
@@ -183,16 +179,6 @@ static void change_character()
     tmp_val = atoi(tmp_str);
     if (tmp_val > -1 && (*tmp_str != '\0')) {
 	p_ptr->wt = tmp_val;
-    }
-
-    while (get_com("Alter base speed? (+/-)", tmp_str)) {
-	if (*tmp_str == '+')
-	    change_speed(-1);
-	else if (*tmp_str == '-')
-	    change_speed(1);
-	else
-	    break;
-	prt_speed();
     }
 }
 
@@ -221,7 +207,7 @@ static void wizard_create_aux1(inven_type *i_ptr)
 
       case 'W': case 'w':
 	prt("What type of Weapon?", 0, 0);
-	prt("[S]word, [H]afted, [P]olearm, [B]ow, [A]mmo.", 1, 0);
+	prt("[S]word, [P]olearm, [H]afted, [D]igger, [B]ow, [A]mmo.", 1, 0);
 	if (!get_com(NULL, &ch)) return;
 
 	switch (ch) {
@@ -229,12 +215,16 @@ static void wizard_create_aux1(inven_type *i_ptr)
 	    tval = TV_SWORD;
 	    break;
 
+	  case 'P': case 'p':
+	    tval = TV_POLEARM;
+	    break;
+
 	  case 'H': case 'h':
 	    tval = TV_HAFTED;
 	    break;
 
-	  case 'P': case 'p':
-	    tval = TV_POLEARM;
+	  case 'D': case 'd':
+	    tval = TV_DIGGING;
 	    break;
 
 	  case 'B': case 'b':
@@ -472,7 +462,7 @@ static void wizard_create_aux1(inven_type *i_ptr)
 static void wizard_create_aux2(inven_type *i_ptr)
 {
     int                  tmp_val;
-    int32                tmp_lval;
+    s32b                tmp_lval;
 
     int			 i, j, page, num;
 
@@ -482,9 +472,11 @@ static void wizard_create_aux2(inven_type *i_ptr)
     char                 tmp_str[100];
 
 
+#if 0
     msg_print("Now you may specify extra information about the object.");
     msg_print("Hit ESCAPE at any time to skip the remaining questions.");
     msg_print("Hit RETURN to accept the default response for any question.");
+#endif
 
     prt("Number of items: ", 0, 0);
     if (!askfor(tmp_str, 5)) return;
@@ -507,12 +499,12 @@ static void wizard_create_aux2(inven_type *i_ptr)
 	prt("Damage (dice): ", 0, 0);
 	if (!askfor(tmp_str, 3)) return;
 	tmp_val = atoi(tmp_str);
-	if (tmp_val) i_ptr->damage[0] = tmp_val;
+	if (tmp_val) i_ptr->dd = tmp_val;
 
 	prt("Damage (sides): ", 0, 0);
 	if (!askfor(tmp_str, 3)) return;
 	tmp_val = atoi(tmp_str);
-	if (tmp_val) i_ptr->damage[1] = tmp_val;
+	if (tmp_val) i_ptr->ds = tmp_val;
     }
 
     prt("To hit modifier: ", 0, 0);
@@ -757,7 +749,7 @@ static void wizard_create_aux2(inven_type *i_ptr)
 	    if (!get_com("Ignore Cold? ", &ch)) return;
 	    if (ch == 'y' || ch == 'Y') i_ptr->flags3 |= TR3_IGNORE_COLD;
     }
-    
+
 	if (!get_com("Free Action? ", &ch)) return;
 	if (ch == 'y' || ch == 'Y') i_ptr->flags2 |= TR2_FREE_ACT;
 
@@ -822,8 +814,7 @@ static void wizard_create_aux2(inven_type *i_ptr)
     /*** Special Name ***/
 
     /* Get a "ego-name" */
-    msg_print("Warning: Improper use of Ego-Item Names can be fatal");
-    if (!get_com("Choose a Ego-Item Name? ", &ch)) return;
+    if (!get_com("Choose a (possibly fatal) Ego-Item Name? ", &ch)) return;
     if (ch != 'y' && ch != 'Y') return;
 
     /* Show pages until a legal value is chosen for "k" */
@@ -978,16 +969,16 @@ static void wizard_goto_level(int level)
 	i = level;
     }
     else {
-	prt("Go to which level (0-1000)? ", 0, 0);
+	prt("Go to which level (0-500)? ", 0, 0);
 	i = (-1);
 	if (get_string(tmp_str, 0, 27, 10)) i = atoi(tmp_str);
     }
 
-    if (i > 1000) i = 1000;
+    if (i > 500) i = 500;
 
     if (i >= 0) {
 	dun_level = i;
-	if (dun_level > 1000) dun_level = 1000;
+	if (dun_level > 500) dun_level = 500;
 	new_level_flag = TRUE;
     }
 
@@ -1028,22 +1019,9 @@ static void wizard_identify_many()
 }
 
 
-/*
- * Wizard Help
- */
-static void do_cmd_wiz_help()
-{	    
-    /* Dump a file */
-    if (rogue_like_commands) {
-	helpfile(ANGBAND_RWIZ_HELP);
-    }
-    else {
-	helpfile(ANGBAND_OWIZ_HELP);
-    }
-}
 
 /*
- * Rerate Hitpoints
+ * Hack -- Rerate Hitpoints
  */
 static void do_cmd_rerate()
 {
@@ -1074,129 +1052,262 @@ static void do_cmd_rerate()
 }
 
 
+/*
+ * Summon a creature of the specified type
+ */
+static void do_cmd_summon(int r_idx, int slp)
+{
+    int i, x, y;
+
+    /* Paranoia */
+    if (r_idx < 0) return;
+    if (r_idx >= MAX_R_IDX-1) return;
+    
+    /* Try 10 times */
+    for (i = 0; i < 10; i++) {
+
+	/* Pick a location */
+	y = rand_spread(char_row, 1);
+	x = rand_spread(char_col, 1);
+
+	/* Require empty grids */
+	if (!empty_grid_bold(y, x)) continue;
+
+	/* Place it */
+	if (r_list[r_idx].cflags2 & MF2_GROUP) {
+	    place_group(y, x, r_idx, slp);
+	}
+	else {
+	    place_monster(y, x, r_idx, slp);
+	}
+
+	/* Done */
+	break;
+    }
+}
+
 
 /*
- * Attempt to parse 'command' as a wizard command.
- * Return 'TRUE' iff the command was correctly parsed.
+ * View an item's flags -- by David Reeve Sward <sward+@CMU.EDU>
+ */
+static void wizard_flags(void)
+{
+    int                 item_val, i, j;
+    register inven_type *i_ptr;
+
+    /* Choose an item */
+    if (!get_item(&item_val, "View which item? ", 0, INVEN_TOTAL-1)) return;
+
+    /* Save the screen */
+    save_screen();
+
+    /* Use column 15 */
+    j = 15;
+
+    /* Erase some lines */
+    for (i = 1; i < 23; i++) erase_line(i, j - 2);
+
+    /* Start in line 1 */
+    i = 1;
+
+    /* Title the screen */
+    prt("Item information:", i++, j);
+    prt("", i++, j);
+
+    /* Get the item */
+    i_ptr = &inventory[item_val];
+
+    prt(format("kind=%d", i_ptr->k_idx), i++, j);
+    prt(format("tval=%d, sval=%d", i_ptr->tval, i_ptr->sval), i++, j);
+    prt(format("pval=%d", i_ptr->pval), i++, j);
+    prt(format("timeout=%d", i_ptr->timeout), i++, j);
+    prt(format("name1=%d, name2=%d", i_ptr->name1, i_ptr->name2), i++, j);
+    prt(format("ident=%d", i_ptr->ident), i++, j);
+    prt(format("number=%d, weight=%d", i_ptr->number, i_ptr->weight),
+        i++, j);
+    prt(format("tohit=%d, todam=%d, toac=%d",
+               i_ptr->tohit, i_ptr->todam, i_ptr->toac), i++, j);
+    prt(format("ac=%d, damage=%dd%d",
+               i_ptr->ac, i_ptr->ds, i_ptr->ds), i++, j);
+    prt(format("unused=%d", i_ptr->unused), i++, j);
+    prt(format("cost=%d, scost=%d", i_ptr->cost, i_ptr->scost), i++, j);
+    prt(format("flags1=%lx, flags2=%lx, flags3=%lx",
+               (long)i_ptr->flags1, (long)i_ptr->flags2,
+               (long)i_ptr->flags3), i++, j);
+    prt(format("inscrip=%s", i_ptr->inscrip), i++, j);
+
+    /* Pause */
+    prt("", i++, j);
+    prt("[Press any key to continue]", i, j);
+    inkey();
+
+    /* Restore the screen */
+    restore_screen();
+    Term_fresh();
+}
+
+#endif
+
+
+/*
+ * Ask for and parse a "wizard command"
+ * The "command_arg" may have been set.
+ * We return "FALSE" on unknown commands.
  */
 int do_wiz_command(void)
 {
-    int                    y, x;
+    char		cmd;
+    int			y, x;
 
-    /* You must be a wizard! */
-    if (!wizard) return (FALSE);
 
-    /* All wizard commands default to "free" */
+    /* All wizard commands are "free" */
     free_turn_flag = TRUE;
 
+    /* Get a "wizard command" */
+    if (!get_com("Wizard Command: ", &cmd)) cmd = ESCAPE;
+
     /* Analyze the command */
-    switch (command_cmd) {
+    switch (cmd) {
 
-	/* Wizard Help */
-	case '\\':
-	    do_cmd_wiz_help(); break;
-
-	/* Rerate Hitpoints */
-	case '!':
-	    do_cmd_rerate(); break;
-
-	/* Check on all Artifacts */
-	case '~':
-	    artifact_check(); break;
-
-	/* Check on all Uniques */
-	case '|':
-	    check_uniques(); break;
-
-	/* Teleport */
-	case CTRL('T'):
-	    teleport(100); break;
-
-	/* Zap Monsters (Genocide) */
-	case CTRL('Z'):
-	    (void)mass_genocide(FALSE); break;
-
-	/* Magic Mapping */
-	case ':':
-	    map_area(); break;
-
-	/* Create any object */
-	case '@':
-	    wizard_create(); break;
-
-	/* Wizard Light the Level */
-	case '$':
-	    wiz_lite(); break;
-
-	/* Self-Knowledge */
-	case '%':
-	    self_knowledge(); break;
-
-	/* Identify all up to a level */
-	case CTRL('^'):
-	    wizard_identify_many(); break;
-
-	/* Identify */
-	case CTRL('I'):
-	    if (!ident_floor()) combine(ident_spell()); break;
-
-	/* Edit character */
-	case CTRL('E'):
-	    change_character(); erase_line(MSG_LINE, 0); break;
-
-	/* Cure all maladies */
-	case CTRL('A'):
-	    wizard_cure_all(); break;
-
-	/* Go up or down in the dungeon */
-	case CTRL('D'):
-	    wizard_goto_level(command_arg); break;
-
-	/* Generate Treasure */
-	case CTRL('G'):
-		if (command_arg <= 0) command_arg = 1;
-		random_object(char_row, char_col, command_arg);
-		prt_map();
-		break;
-
-	/* Generate Very Good Treasure */	
-	case CTRL('V'):
-		if (command_arg <= 0) command_arg = 1;
-		special_random_object(char_row, char_col, command_arg);
-		prt_map();
-		break;
-
-	/* Summon Monster */	
-	case '&':
-		y = char_row;
-		x = char_col;
-		(void)summon_monster(&y, &x, TRUE);
-		break;
-
-	/* Increase Experience */
-	case '+':
-		if (command_arg > 0) {
-		    p_ptr->exp = command_arg;
-		}
-		else if (p_ptr->exp == 0) {
-		    p_ptr->exp = 1;
-		}
-		else {
-		    p_ptr->exp = p_ptr->exp * 2;
-		}
-		prt_experience();
-		break;
-
-	/* Exit Wizard Mode */
-	case CTRL('W'):
-	    wizard = FALSE;
-	    msg_print("Wizard mode off.");
-	    prt_winner();
+	/* Nothing */
+	case ESCAPE:
+	case ' ':
+	case '\n':
+	case '\r':
 	    break;
 
+
+	/* Initialize the Borg */
+	case '$':
+#ifdef AUTO_PLAY
+	    Borg_init();
+#endif
+	    break;
+
+
+#ifdef ALLOW_WIZARD
+
+	/* Help */
+	case '?':
+	    helpfile(ANGBAND_W_HELP); break;
+
+
+	/* Cure all maladies */
+	case 'a':
+	case 'A':
+	    wizard_cure_all(); break;
+
+	/* Create any object */
+	case 'c':
+	case 'C':
+	    wizard_create(); break;
+
+	/* Edit character */
+	case 'e':
+	case 'E':
+	    change_character(); erase_line(MSG_LINE, 0); break;
+
+	/* View item info */
+        case 'f':
+        case 'F':
+            wizard_flags(); break;
+
+	/* Generate Treasure */
+	case 'g':
+	case 'G':
+	    if (command_arg <= 0) command_arg = 1;
+	    random_object(char_row, char_col, command_arg);
+	    prt_map();
+	    break;
+
+	/* Hitpoint rerating */
+	case 'h':
+	case 'H':
+	    do_cmd_rerate(); break;
+
+	/* Identify */
+	case 'i':
+	case 'I':
+	    if (!ident_floor()) combine(ident_spell()); break;
+
+	/* Go up or down in the dungeon */
+	case 'j':
+	case 'J':
+	    wizard_goto_level(command_arg); break;
+
+	/* Self-Knowledge */
+	case 'k':
+	case 'K':
+	    self_knowledge(); break;
+
+	/* Learn about objects */
+	case 'l':
+	case 'L':
+	    wizard_identify_many(); break;
+
+	/* Magic Mapping */
+	case 'm':
+	case 'M':
+	    map_area(); break;
+
+	/* Phase Door */
+	case 'p':
+	case 'P':
+	    teleport(10); break;
+
+	/* Random Monster */	
+	case 'r':
+	case 'R':
+	    y = char_row;
+	    x = char_col;
+	    (void)summon_monster(&y, &x, TRUE);
+	    break;
+
+	/* Summon */
+	case 's':
+	case 'S':
+	    do_cmd_summon(command_arg, TRUE); break;
+	    
+	/* Teleport */
+	case 't':
+	case 'T':
+	    teleport(100); break;
+
+	/* Generate Very Good Treasure */	
+	case 'v':
+	case 'V':
+	    if (command_arg <= 0) command_arg = 1;
+	    special_random_object(char_row, char_col, command_arg);
+	    prt_map();
+	    break;
+
+	/* Wizard Light the Level */
+	case 'w':
+	case 'W':
+	    wiz_lite(); break;
+
+	/* Increase Experience */
+	case 'x':
+	case 'X':
+	    p_ptr->exp = p_ptr->exp * 2 + 1;
+	    if (command_arg) p_ptr->exp = command_arg;
+	    prt_experience();
+	    break;
+
+	/* Zap Monsters (Genocide) */
+	case 'z':
+	case 'Z':
+	    (void)mass_genocide(FALSE); break;
+
+	/* Hack -- whatever I desire */
+	case '_':
+	    hack_ben(command_arg); break;
+
+#endif
+	
 	/* Not a Wizard Command */
 	default:
-	    free_turn_flag = FALSE;
+	    msg_print("That is not a valid wizard command.");
 	    return (FALSE);
 	    break;
     }
@@ -1204,4 +1315,5 @@ int do_wiz_command(void)
     /* Success */
     return (TRUE);
 }
+
 

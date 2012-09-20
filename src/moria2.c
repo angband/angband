@@ -13,16 +13,6 @@
 #include "angband.h"
 
 
-/* Lets do all prototypes correctly.... -CWS */
-#ifndef NO_LINT_ARGS
-#ifdef __STDC__
-static void facts(inven_type *, int *, int *, int *, int *, int *);
-static void drop_throw(int, int, inven_type *);
-static int fearless(monster_race *);
-#endif
-#endif
-
-
 
 
 /*
@@ -35,13 +25,13 @@ void move_rec(int y1, int x1, int y2, int x2)
     if ((y1 != y2) || (x1 != x2)) {
 
 	int m_idx = cave[y1][x1].m_idx;
-	
+
 	/* No monster is at the old location */
 	cave[y1][x1].m_idx = 0;
 
 	/* Hack -- erase the old grid */
 	lite_spot(y1, x1);
-	
+
 	/* Copy the monster index */
 	cave[y2][x2].m_idx = m_idx;
 
@@ -50,31 +40,16 @@ void move_rec(int y1, int x1, int y2, int x2)
 	    char_row = y2;
 	    char_col = x2;
 	}
-	
+
 	/* Move a monster */
 	else {
 	    m_list[m_idx].fy = y2;
 	    m_list[m_idx].fx = x2;
 	}
-	
+
 	/* Hack -- draw the new grid */
 	lite_spot(y2, x2);
     }
-}
-
-
-/* Changes speed of monsters relative to player		-RAK-
- * Note: When the player is sped up or slowed down, I simply change the
- * speed of all the monsters.  This greatly simplified the logic.
- *****
- * No LONGER!  A change in player speed only affect player's speed.  The new
- * code in movement_rate() allows monsters to have attacks in correct
- * proportions, and still uses only int math -CFT 
- */
-void change_speed(int num)
-{
-    p_ptr->speed += num;
-    p_ptr->status |= PY_SPEED;
 }
 
 
@@ -122,7 +97,7 @@ void hit_trap(int y, int x)
     lite_spot(y, x);
 
     /* Roll for damage */
-    dam = pdamroll(i_ptr->damage);
+    dam = damroll(i_ptr->dd, i_ptr->ds);
 
     /* Examine the trap sub-val */
     switch (i_ptr->sval) {
@@ -259,7 +234,7 @@ void hit_trap(int y, int x)
 
       case SV_TRAP_GAS_ACID:
 	msg_print("A strange red gas surrounds you.");
-	corrode_gas("corrosion gas");
+	acid_dam(randint(8), "corrosion gas");
 	break;
 
       case SV_TRAP_SUMMON:
@@ -354,7 +329,7 @@ void hit_trap(int y, int x)
  */
 int cast_spell(cptr prompt, int item_val, int *sn, int *sc)
 {
-    int32u               j1, j2, tmp;
+    u32b               j1, j2, tmp;
     register int         i, k;
     int                  spell[64], result;
     int                  first_spell = -1;
@@ -408,7 +383,7 @@ int cast_spell(cptr prompt, int item_val, int *sn, int *sc)
 
     /* Verify if needed */
     if (result && magic_spell[p_ptr->pclass - 1][*sn].smana > p_ptr->cmana) {
-        cptr q;
+	cptr q;
 	if (class[p_ptr->pclass].spell == MAGE) {
 	    q = "You summon your limited strength to cast this one! Confirm?";
 	}
@@ -472,8 +447,8 @@ static void check_quest(monster_type *m_ptr)
 
 	/* Stagger around until we find a legal grid */
 	while (!valid_grid(ty, tx)) {
-	    ny = rand_range(ty-1,ty+1);
-	    nx = rand_range(tx-1,tx+1);
+	    ny = rand_spread(ty, 1);
+	    nx = rand_spread(tx, 1);
 	    if (!in_bounds(ny,nx)) continue;
 	    ty = ny, tx = nx;
 	}
@@ -493,11 +468,11 @@ static void check_quest(monster_type *m_ptr)
 
 	/* Explain the stairway */
 	msg_print("A magical stairway appears...");
-	
+
 	/* Update the view/lite */
 	update_view();
 	update_lite();
-
+	
 	/* Update the monsters */
 	update_monsters();
     }
@@ -538,15 +513,15 @@ void monster_death(monster_type *m_ptr, bool examine, bool visible)
 
     monster_race *r_ptr = &r_list[m_ptr->r_idx];
 
-    int good = (examine && (r_ptr->cflags2 & MF2_GOOD));
-    int great = (examine && (r_ptr->cflags2 & MF2_SPECIAL));
-    int winner = (examine && (r_ptr->cflags1 & MF1_WINNER));
+    bool good = (examine && (r_ptr->cflags2 & MF2_GOOD));
+    bool great = (examine && (r_ptr->cflags2 & MF2_SPECIAL));
+    bool winner = (examine && (r_ptr->cflags1 & MF1_WINNER));
 
     int y = (int)m_ptr->fy;
     int x = (int)m_ptr->fx;
 
-    bool	do_item = (r_ptr->cflags1 & MF1_CARRY_OBJ);
-    bool	do_gold = (r_ptr->cflags1 & MF1_CARRY_GOLD);
+    bool	do_item = (r_ptr->cflags1 & MF1_CARRY_OBJ) ? TRUE : FALSE;
+    bool	do_gold = (r_ptr->cflags1 & MF1_CARRY_GOLD) ? TRUE : FALSE;
 
     int		dump_item = 0;
     int		dump_gold = 0;
@@ -566,36 +541,47 @@ void monster_death(monster_type *m_ptr, bool examine, bool visible)
 	/* Drop some objects */    
 	for ( ; number > 0; --number) {
 
-	    /* Try 20 times per item */
+	    /* Try 20 times per item, increasing range */
 	    for (i = 0; i < 20; ++i) {
 
+		int d = (i + 15) / 10;
+		
 		/* Pick a location */
-		y1 = rand_range(y-2, y+2);
-		x1 = rand_range(x-2, x+2);
+		y1 = rand_spread(y, d);
+		x1 = rand_spread(x, d);
 
-		/* Must be an empty floor grid */
-		if (!clean_grid(y1, x1)) continue;
+		/* Must be a legal grid */
+		if (!in_bounds(y1, x1)) continue;
 
-		/* Must be legal, must be visible */
+		/* Must be "clean" floor grid */
+		if (!clean_grid_bold(y1, x1)) continue;
+
+		/* Must be visible to dead monster */
 		if (!los(y, x, y1, x1)) continue;
+
+		/* Average dungeon and monster levels */
+		object_level = (dun_level + r_ptr->level) / 2;
 
 		/* Place something and count it if seen */                
 		if (good) {
 		    place_good(y1, x1, great);
 		    if (test_lite(y1, x1)) dump_item++;
 		}
-		else if (do_item && do_gold && (randint(2) == 1)) {
-		    place_object(y1, x1);
-		    if (test_lite(y1, x1)) dump_item++;
+		else if (do_gold && (randint(2) == 1)) {
+		    place_gold(y1, x1);
+		    if (test_lite(y1, x1)) dump_gold++;
 		}
 		else if (do_item) {
 		    place_object(y1, x1);
 		    if (test_lite(y1, x1)) dump_item++;
 		}
-		else {
+		else if (do_gold) {
 		    place_gold(y1, x1);
 		    if (test_lite(y1, x1)) dump_gold++;
 		}
+
+		/* Reset the object level */
+		object_level = dun_level;
 
 		/* Actually display the object's grid */
 		lite_spot(y1, x1);
@@ -614,30 +600,24 @@ void monster_death(monster_type *m_ptr, bool examine, bool visible)
 	inven_type prize;
 
 
-	/* Permit Grond */
-	permit_grond = TRUE;
+	/* Prepare to make "Grond" */
+	invcopy(&prize, OBJ_GROND);
 
-	/* Make the Lead Filled Mace "Grond" */
-	invcopy(&prize, OBJ_LEAD_FILLED_MACE);
-
-	/* Turn it into an artifact */
-	make_artifact(&prize);
-
-	/* Place the artifact */
-	drop_throw(y, x, &prize);
-
-
-	/* Permit Morgoth */
-	permit_morgoth = TRUE;
-
-	/* Make the Crown of Morgoth */
-	invcopy(&prize, OBJ_IRON_CROWN);
-
-	/* Make it into an artifact */
+	/* Actually create "Grond" */
 	make_artifact(&prize);
 
 	/* Drop it in the dungeon */
-	drop_throw(y, x, &prize);
+	drop_near(&prize, -1, y, x);
+
+
+	/* Prepare to make "Morgoth" */
+	invcopy(&prize, OBJ_MORGOTH);
+
+	/* Actually create "Morgoth" */
+	make_artifact(&prize);
+
+	/* Drop it in the dungeon */
+	drop_near(&prize, -1, y, x);
     }
 
 
@@ -720,7 +700,7 @@ static int fearless(monster_race *r_ptr)
 bool mon_take_hit(int m_idx, int dam, bool print_fear)
 {
     int			    r_idx;
-    int32                   new_exp, new_exp_frac;
+    s32b                   new_exp, new_exp_frac;
     int                     percentage;
     bool		    seen;
 
@@ -766,9 +746,6 @@ bool mon_take_hit(int m_idx, int dam, bool print_fear)
 	    unlink(tmp);
 	}
 
-	/* Average the monster and dungeon levels */
-	object_level = (dun_level + r_ptr->level) >> 1;
-
 	/* Determine if the "lore" should be updated */
 	seen = ((p_ptr->blind < 1 && m_ptr->ml) ||
 		(r_ptr->cflags2 & MF2_UNIQUE));
@@ -778,6 +755,7 @@ bool mon_take_hit(int m_idx, int dam, bool print_fear)
 	monster_death(m_ptr, TRUE, seen);
 	coin_type = 0;
 
+	/* Give some experience */
 	new_exp = ((long)r_ptr->mexp * r_ptr->level) / p_ptr->lev;
 	new_exp_frac = ((((long)r_ptr->mexp * r_ptr->level) % p_ptr->lev)
 			* 0x10000L / p_ptr->lev) + p_ptr->exp_frac;
@@ -820,8 +798,7 @@ bool mon_take_hit(int m_idx, int dam, bool print_fear)
 	    }
 
 	    /* Auto-recall if possible */
-	    if (use_recall_win) {
-		/* Display recall info on the current monster */
+	    if (use_recall_win && term_recall) {
 		roff_recall(r_idx);
 	    }
 	}
@@ -912,32 +889,41 @@ void py_attack(int y, int x)
     monster_desc(m_poss, &m_list[cr_idx], 0x22);
 
 
-    /* Auto-Recall if possible */
-    if (use_recall_win) {
-	/* Activate the recall if visible */
+    /* Auto-Recall if possible and visible */
+    if (use_recall_win && term_recall) {
 	if (m_list[cr_idx].ml) roff_recall(r_idx);
     }
 
-    /* Proper weapon (including a missile wielded as a dagger) */
-    if (i_ptr->tval != TV_NOTHING) {
-	blows = attack_blows((int)i_ptr->weight, &tot_tohit);
+    /* Start with base bonus */
+    tot_tohit = p_ptr->ptohit;
+
+    /* Proper weapon */
+    if (i_ptr->tval) {
+
+	/* Calculate blows */
+	blows = attack_blows((int)i_ptr->weight);
+
+	/* Good weapon yields bonus to hit */
+	tot_tohit += inventory[INVEN_WIELD].tohit;
     }
 
     /* Fists */
     else {
+
+	/* Two blows */
 	blows = 2;
-	tot_tohit = (-3);
+
+	/* Hard to hit */
+	tot_tohit -= 3;
     }
 
-    tot_tohit += p_ptr->ptohit;
-
-    /* if creature is lit, use base rates, else, make it harder to hit */
+    /* If creature is lit, use base rates, else, make it harder to hit */
     if (m_list[cr_idx].ml) {
 	base_tohit = p_ptr->bth;
     }
     else {
-	base_tohit = (p_ptr->bth / 2) - (tot_tohit * (BTH_PLUS_ADJ - 1))
-	    - (p_ptr->lev * class_level_adj[p_ptr->pclass][CLA_BTH] / 2);
+	base_tohit = (p_ptr->bth / 2) - (tot_tohit * (BTH_PLUS_ADJ - 1)) -
+	             (p_ptr->lev * class_level_adj[p_ptr->pclass][CLA_BTH] / 2);
     }
 
     /* Assume no fear messages need to be redone */
@@ -946,15 +932,19 @@ void py_attack(int y, int x)
     /* Loop for number of blows, trying to hit the critter. */
     do {
 
+	bool do_quake = FALSE;
+	
 	/* We hit it! */
 	if (test_hit(base_tohit, (int)p_ptr->lev, tot_tohit,
 		     (int)r_list[r_idx].ac, CLA_BTH)) {
 
-	    /* Normal weapon */
-	    if (i_ptr->tval != TV_NOTHING) {
-		k = pdamroll(i_ptr->damage);
+	    /* Normal weapon.  Hack -- handle "earthquake brand" */
+	    if (i_ptr->tval) {
+		k = damroll(i_ptr->dd, i_ptr->ds);
 		k = tot_dam(i_ptr, k, r_idx);
+		if ((i_ptr->flags1 & TR1_IMPACT) && (k > 50)) do_quake = TRUE;
 		k = critical_blow((int)i_ptr->weight, tot_tohit, k, CLA_BTH);
+		k += i_ptr->todam;
 	    }
 
 	    /* Bare hands */
@@ -963,7 +953,11 @@ void py_attack(int y, int x)
 		k = critical_blow(1, 0, k, CLA_BTH);
 	    }
 
+	    /* Apply the player damage bonuses */
 	    k += p_ptr->ptodam;
+
+	    /* No negative damage (no "sword of healing!") */
+	    if (k < 0) k = 0;
 
 
 	    /* Boring message */
@@ -975,14 +969,10 @@ void py_attack(int y, int x)
 	    /* Complex message */
 	    else {
 		(void)sprintf(out_val,
-			      "You hit %s with %d hp, doing %d+%d damage.",
-			      m_name, m_list[cr_idx].hp, (k - p_ptr->ptodam),
-			      p_ptr->ptodam);
+			      "You hit %s with %d hp, doing %d damage.",
+			      m_name, m_list[cr_idx].hp, k);
 		msg_print(out_val);
 	    }
-
-	    /* No negative damage (no "sword of healing!") */
-	    if (k < 0) k = 0;
 
 	    /* Confusion attack */
 	    if (p_ptr->confusing) {
@@ -1027,13 +1017,16 @@ void py_attack(int y, int x)
 
 #if 0	    
 	    /* Hack -- test for possible weapon breakage */
-	    if (???) {
+	    if (FALSE) {
 		message("Your weapon breaks!", 0);
 		invcopy(&inventory[INVEN_WIELD], OBJ_NOTHING);
 		blows = 0;
 	    }
 #endif
 
+
+	    /* Hack -- apply earthquake brand */
+	    if (do_quake) earthquake();
 	}
 
 	else {
@@ -1063,37 +1056,34 @@ void py_attack(int y, int x)
 
 
 /*
- * Obtain the "facts" about a thrown object (or missile)
- * Take account of several things, including the current weapon.
- * Extract to-hit and to-dam bonuses, the maximum range, and the
- * maximum number of shots.
+ * Obtain the "facts" about a thrown object (or missile), taking into
+ * account factors such as the current bow.
+ *
+ * Extract base chance to hit, bonus to hit, total damage,
+ * the maximum distance, and the maximum number of shots.
+ *
+ * The separation of normal weapons from missile launchers via the
+ * "bow slot" of 2.7.4 allowed simplification of the missile code below.
  */
-static void facts(i_ptr, tbth, tpth, tdam, tdis, thits)
-inven_type *i_ptr;
-int *tbth, *tpth, *tdam, *tdis, *thits;
+static void facts(inven_type *i_ptr, \
+		  int *tbth, int *tpth, int *tdam, int *tdis, int *thits)
 {
-    register int        scatter, tmp_weight, tmp_tohit;
+    register int scatter, tmp_weight;
 
-    /* Get the primary weapon */
-    inven_type *j_ptr = &inventory[INVEN_WIELD];
+    /* Get the "bow" (if any) */
+    inven_type *j_ptr = &inventory[INVEN_BOW];
 
-    /* Hack -- everything has weight */
+    /* Paranoia -- everything has weight */
     tmp_weight = MY_MAX(1,i_ptr->weight);
 
-    /* Throwing objects (ignore all player "damage" bonuses) */
-    *tdam = pdamroll(i_ptr->damage) + i_ptr->todam;
-    *tbth = p_ptr->bthb * 3 / 4;
-    *tpth = p_ptr->ptohit + i_ptr->tohit;
+    /* Damage from thrown object */
+    *tdam = damroll(i_ptr->dd, i_ptr->ds) + i_ptr->todam;
 
-    /* XXX Hack -- Note that the main weapon's "tohit" bonus has already */
-    /* been added into "p_ptr->ptohit", UNLESS that weapon is a bow, */
-    /* so we have to remove it here.  That is, wielding a good sword */
-    /* has no effect on the accuracy of throwing flasks of oil. */
-    /* But note that wearing, say, rings of accuracy, does help */
-    /* I am surprised that we do not have to account for damage here */
-    if ((j_ptr->tval != TV_NOTHING) && (j_ptr->tval != TV_BOW)) {
-	*tpth -= j_ptr->tohit;
-    }
+    /* Base chance to hit */
+    *tbth = p_ptr->bthb * 3 / 4;
+
+    /* Plusses to hit */
+    *tpth = p_ptr->ptohit + i_ptr->tohit;
 
     /* Distance based on strength */
     *tdis = (((p_ptr->use_stat[A_STR] + 20) * 10) / tmp_weight);
@@ -1105,7 +1095,7 @@ int *tbth, *tpth, *tdam, *tdis, *thits;
     *thits = 1;
 
 
-    /* XXX Hack -- Rangers get multiple shots -BEN- */
+    /* Hack -- Rangers get multiple shots with a bow and arrow */
     if ((p_ptr->pclass == 4) &&
 	(i_ptr->tval == TV_ARROW) &&
 	(j_ptr->tval == TV_BOW) &&
@@ -1113,7 +1103,7 @@ int *tbth, *tpth, *tdam, *tdis, *thits;
 	 (j_ptr->sval == SV_LONG_BOW))) {
 
 	 /* Give the Ranger some extra shots */
-	 *thits = attack_blows(j_ptr->weight, &tmp_tohit) / 2;
+	 *thits = attack_blows(j_ptr->weight) / 2;
 
 	 /* Never lose shots */
 	 if (*thits < 1) *thits = 1;
@@ -1127,8 +1117,6 @@ int *tbth, *tpth, *tdam, *tdis, *thits;
     /* Bows of "Extra Might" get extra range and an extra bonus for */
     /* the damage multiplier, and Bows of "Extra Shots" give an extra */
     /* shot.  These only work when the proper missile is used.        */
-    /* Note that the tohit/todam bonuses of a Bow are NOT handled      */
-    /* anywhere except below, so we do not have to "undo" their effects. */
 
     /* Examine the launcher */
     if (j_ptr->tval == TV_BOW) {
@@ -1201,19 +1189,21 @@ int *tbth, *tpth, *tdam, *tdis, *thits;
 
     /* Hack -- Apply a small "scatter effect" to the maximum range -BEN- */
     scatter = (*tdis+8) / 16;
-    if (scatter) *tdis += rand_range(-scatter,scatter);
+    if (scatter) *tdis = rand_spread(*tdis, scatter);
 }
 
 
 /*
- * Drop an item 'i_ptr' to the ground after being thrown to (y,x).
- * XXX Normal objects have a 1/5 chance of disappearing permanently.
- * This function should take a "dead item" flag so that it can be
- * chained with "stays when thrown"... XXX
+ * Let an item 'i_ptr' fall to the ground at or near (y,x).
+ * The initial location is assumed to be "in_bounds()".
+ *
+ * This function takes a parameter "chance".  This is the percentage
+ * chance that the item will "disappear" instead of drop.  If the object
+ * has been thrown, then this is the chance of disappearance on contact.
  */
-static void drop_throw(int y, int x, inven_type *i_ptr)
+void drop_near(inven_type *i_ptr, int chance, int y, int x)
 {
-    register int i, j, k;
+    register int i, j, k, d;
     int x1, y1;
     int flag, cur_pos;
     register cave_type *c_ptr;
@@ -1223,15 +1213,11 @@ static void drop_throw(int y, int x, inven_type *i_ptr)
     flag = FALSE;
 
 
-    /* Describe the singular object (without detail) */
-    objdes(tmp_str, i_ptr, FALSE);
-
-
     /* Start at the drop point */
     i = y1 = y;  j = x1 = x;
 
-    /* Try to place the object nearby */
-    if (artifact_p(i_ptr) || (randint(5) != 1)) {
+    /* See if the object "survives" the fall */
+    if (artifact_p(i_ptr) || (randint(100) > chance)) {
 
 	/* Start at the drop point */
 	i = y1 = y; j = x1 = x;
@@ -1239,15 +1225,21 @@ static void drop_throw(int y, int x, inven_type *i_ptr)
 	/* Try (20 times) to find an adjacent usable location */
 	for (k = 0; !flag && (k < 20); ++k) {
 
-	    /* Pick an adjacent location */
-	    if (k) i = rand_range(y1-1, y1+1);
-	    if (k) j = rand_range(x1-1, x1+1);
+	    /* Distance distribution */
+	    d = ((k + 14) / 15);
+	    
+	    /* Pick a "nearby" location */
+	    i = rand_spread(y1, d);
+	    j = rand_spread(x1, d);
 
 	    /* Ignore "invalid" locations */
 	    if (!valid_grid(i, j)) continue;
 
 	    /* Require empty floor space */
-	    if (!clean_grid(i, j)) continue;
+	    if (!clean_grid_bold(i, j)) continue;
+
+	    /* Require "los()" */
+	    if ((d > 1) && !los(y1, x1, i, j)) continue;
 
 	    /* Here looks good */
 	    flag = TRUE;
@@ -1264,13 +1256,13 @@ static void drop_throw(int y, int x, inven_type *i_ptr)
 	for (k = 0; !flag && (k < 1000); k++) {
 
 	    /* Move one space in any direction */
-	    i = rand_range(y1-1, y1+1);
-	    j = rand_range(x1-1, x1+1);
+	    i = rand_spread(y1, 1);
+	    j = rand_spread(x1, 1);
 
 	    /* Do not move through walls */
-	    if (!floor_grid(i,j)) continue;
+	    if (!floor_grid_bold(i,j)) continue;
 
-	    /* This space is "valid", so "bounce" to there */
+	    /* Hack -- "bounce" to that location */
 	    y1 = i;  x1 = j;
 
 	    /* Get the cave grid */
@@ -1286,6 +1278,7 @@ static void drop_throw(int y, int x, inven_type *i_ptr)
 	/* XXX Artifacts will destroy ANYTHING to stay alive */
 	if (!flag) {
 	    i = y, j = x, flag = TRUE;
+	    objdes(tmp_str, i_ptr, FALSE);
 	    (void)sprintf(out_val, "The %s crashes to the floor.", tmp_str);
 	    message(out_val, 0);
 	}
@@ -1294,9 +1287,9 @@ static void drop_throw(int y, int x, inven_type *i_ptr)
     /* Successful drop */
     if (flag) {
 
-	bool old_floor = floor_grid(i, j);
-	
-	/* Crush anything under us */
+	bool old_floor = floor_grid_bold(i, j);
+
+	/* Crush anything under us (for artifacts) */
 	delete_object(i,j);
 
 	/* Make a dungeon object based on the given object */
@@ -1306,8 +1299,8 @@ static void drop_throw(int y, int x, inven_type *i_ptr)
 	i_list[cur_pos].iy = i;
 	i_list[cur_pos].ix = j;
 
-	/* Under the player */
-	if (cave[i][j].m_idx == 1) {
+	/* Under the player.  Hack -- no message if "dropped". */
+	if (chance && (cave[i][j].m_idx == 1)) {
 	    msg_print("You feel something roll beneath your feet.");
 	}
 
@@ -1315,7 +1308,7 @@ static void drop_throw(int y, int x, inven_type *i_ptr)
 	lite_spot(i, j);
 
 	/* Hack -- react to disappearing doors, etc */
-	if (old_floor != floor_grid(i, j)) {
+	if (old_floor != floor_grid_bold(i, j)) {
 	    update_view();
 	    update_lite();
 	    update_monsters();
@@ -1324,6 +1317,7 @@ static void drop_throw(int y, int x, inven_type *i_ptr)
 
     /* Poor little object */
     else {
+	objdes(tmp_str, i_ptr, FALSE);
 	(void)sprintf(out_val, "The %s disappears.", tmp_str);
 	msg_print(out_val);
     }
@@ -1331,31 +1325,40 @@ static void drop_throw(int y, int x, inven_type *i_ptr)
 
 
 /*
- * Determine if an object should "survive" a collision
- * XXX Combine this with the "throw_drop()" function.
+ * Determines the odds of an object breaking when thrown
+ * Note that "impact" is true if the object hit a monster
+ * Artifacts never break, see the "drop_near()" function.
  */   
-static int stays_when_throw(inven_type *i_ptr)
+static int breakage_chance(inven_type *i_ptr, bool impact)
 {
-    /* Artifacts never die */
-    if (artifact_p(i_ptr)) return (TRUE);
-
     /* Examine the item type */
     switch (i_ptr->tval) {
 
-      /* Potions and Flasks and Bottles always break */
-      case TV_POTION: case TV_FLASK: case TV_BOTTLE:
-	return (FALSE); 
+      /* Very breakable objects */
+      case TV_POTION:
+      case TV_FLASK:
+      case TV_BOTTLE:
+      case TV_FOOD:
+	return (impact ? 100 : 50);
 
-      /* Missiles and such disappear 50% of the time */
-      case TV_JUNK: case TV_SKELETON:
-      case TV_FOOD: case TV_LITE:
-      case TV_BOLT: case TV_ARROW: case TV_SPIKE:
-      case TV_SCROLL: case TV_WAND:
-	if (randint(2)==1) return (FALSE);
+      /* Somewhat breakable objects */
+      case TV_LITE:
+      case TV_SCROLL:
+      case TV_ARROW:
+      case TV_JUNK:
+      case TV_SKELETON:
+	return (impact ? 60 : 30);
+
+      /* Slightly breakable objects */
+      case TV_WAND:
+      case TV_SHOT:
+      case TV_BOLT:
+      case TV_SPIKE:
+	return (impact ? 40 : 20);
     }
 
-    /* Assume it survives */
-    return (TRUE);
+    /* Normal objects */
+    return (impact ? 20 : 10);
 }
 
 
@@ -1371,25 +1374,25 @@ static int stays_when_throw(inven_type *i_ptr)
  */
 void shoot(int item_val, int dir)
 {
-    register int        i;
+    int			i, j, y, x, ny, nx;
     int			tbth, tpth, tdam, tdis, thits;
-    int			y, x, ny, nx, cur_dis;
-    int			visible, shot;
-    bigvtype            out_val, tmp_str;
+    int			cur_dis, visible, shot, mshots;
+    
     inven_type          throw_obj;
-    register cave_type *c_ptr;
-    register monster_type *m_ptr;
-    register inven_type		*i_ptr;
+    inven_type		*i_ptr;
+    cave_type		*c_ptr;
+    monster_type	*m_ptr;
 
-    int missile_attr;
-    int missile_char;
+    bool		flag = FALSE;
+    
+    int			missile_attr;
+    int			missile_char;
 
-    char m_name[80];
+    char		m_name[80];
 
-    /* Assume the missile will survive */
-    bool flag = TRUE;
+    bigvtype            out_val, tmp_str;
 
-
+    
     /* Get the missile item */
     i_ptr = &inventory[item_val];
 
@@ -1397,9 +1400,11 @@ void shoot(int item_val, int dir)
     missile_attr = inven_attr(i_ptr);
     missile_char = inven_char(i_ptr);
 
+    /* Count the maximum number of shouts */
+    mshots = i_ptr->number;
 
     /* Keep shooting until out of arrows, count the shots */
-    for (shot = 0; i_ptr->number; shot++) {
+    for (shot = 0; shot < mshots; shot++) {
 
 	/* Create a "local missile object" */
 	throw_obj = *i_ptr;
@@ -1412,15 +1417,15 @@ void shoot(int item_val, int dir)
 	if (shot >= thits) break;
 
 	/* Verify "continued" shots (in the same direction) */
-	if ((shot > 0) && (!get_check("Fire/Throw again?"))) break;
+	if (shot && (!get_check("Fire/Throw again?"))) break;
 
 	/* Reduce and describe inventory */
 	inven_item_increase(item_val,-1);
 	inven_item_describe(item_val);
 	inven_item_optimize(item_val);
 
-	/* Hack -- Penalize Heavy Crossbows. XXX Not done correctly anyway. */
-	/* if (inventory[INVEN_WIELD].sval == SV_HEAVY_CROSSBOW) tpth -= 10; */
+	/* Hack -- Penalize Heavy Crossbows. ??? ??? */
+	/* if (inventory[INVEN_BOW].sval == SV_HEAVY_CROSSBOW) tpth -= 10; */
 
 	/* Start at the player */
 	y = char_row;
@@ -1429,13 +1434,16 @@ void shoot(int item_val, int dir)
 	/* Travel until stopped */
 	for (cur_dis = 1; cur_dis < tdis; cur_dis++) {
 
+	    /* XXX Hack -- handle "self-target" */
+	    if ((dir == 5) || (!dir && target_at(y, x))) break;
+
 	    /* Move the char */
 	    ny = y;
 	    nx = x;
 	    (void)mmove(dir, &ny, &nx);
 
 	    /* Stopped by walls/doors */
-	    if (!floor_grid(ny,nx)) break;
+	    if (!floor_grid_bold(ny,nx)) break;
 
 	    /* Save the new location */
 	    x = nx;
@@ -1501,6 +1509,7 @@ void shoot(int item_val, int dir)
 		    }
 		    msg_print(out_val);
 
+		    /* Apply special damage */
 		    tdam = tot_dam(&throw_obj, tdam, i);
 		    tdam = critical_blow((int)throw_obj.weight,
 					 tpth, tdam, CLA_BTHB);
@@ -1521,8 +1530,8 @@ void shoot(int item_val, int dir)
 			message(out_val, 0x01);
 		    }
 
-		    /* Sometimes, the missile survives the collision */
-		    if (stays_when_throw(&throw_obj)) flag = FALSE;
+		    /* Note the collision */
+		    flag = TRUE;
 		}
 
 		/* Stop looking */
@@ -1530,8 +1539,11 @@ void shoot(int item_val, int dir)
 	    }
 	}
 
-	/* Drop to the floor */
-	if (flag) drop_throw(y, x, &throw_obj);
+	/* Chance of breakage */
+	j = breakage_chance(&throw_obj, flag);
+
+	/* Drop (or break) near that location */
+	drop_near(&throw_obj, j, y, x);
     }
 }
 
@@ -1542,6 +1554,9 @@ void shoot(int item_val, int dir)
 /*
  * Make a bash attack on someone.  -CJS-
  * Used to be part of bash (below). 
+ *
+ * This function should probably access "p_ptr->ptohit" and the shield
+ * bonus "inventory[INVEN_ARM].tohit".
  */
 void py_bash(int y, int x)
 {
@@ -1573,12 +1588,13 @@ void py_bash(int y, int x)
 	     (p_ptr->lev * class_level_adj[p_ptr->pclass][CLA_BTH] / 2));
     }
 
+    /* Hack -- test for contact */
     if (test_hit(base_tohit, (int)p_ptr->lev,
 		 (int)p_ptr->use_stat[A_DEX], (int)r_ptr->ac, CLA_BTH)) {
 
 	(void)sprintf(out_val, "You hit %s.", m_name);
 	msg_print(out_val);
-	k = pdamroll(inventory[INVEN_ARM].damage);
+	k = damroll(inventory[INVEN_ARM].dd, inventory[INVEN_ARM].ds);
 	k = critical_blow((int)(inventory[INVEN_ARM].weight / 4 +
 				p_ptr->use_stat[A_STR]), 0, k, CLA_BTH);
 	k += p_ptr->wt / 60 + 3;
@@ -1606,9 +1622,9 @@ void py_bash(int y, int x)
 	else {
 
 	    /* Powerful monsters cannot be stunned */
-	    avg_max_hp = (r_ptr->cflags2 & MF2_MAX_HP ?
-			  r_ptr->hd[0] * r_ptr->hd[1] :
-			  (r_ptr->hd[0] * (r_ptr->hd[1] + 1)) >> 1);
+	    avg_max_hp = ((r_ptr->cflags2 & MF2_MAX_HP) ?
+			   (r_ptr->hd[0] * r_ptr->hd[1]) :
+			   ((r_ptr->hd[0] * (r_ptr->hd[1] + 1)) >> 1));
 
 	    /* Start the message */
 	    message(m_name, 0x03);
@@ -1645,8 +1661,7 @@ void py_bash(int y, int x)
  * Note: pth could be less than 0 if weapon is too heavy
  * Always miss 1 out of 20, always hit 1 out of 20
  */
-int test_hit(bth, level, pth, ac, attack_type)
-int bth, level, pth, ac, attack_type;
+int test_hit(int bth, int level, int pth, int ac, int attack_type)
 {
     register int i;
 
@@ -1701,9 +1716,6 @@ void take_hit(int damage, cptr hit_from)
 	    (void)strcpy(died_from, hit_from);
 	    total_winner = FALSE;
 	}
-
-	/* Hack -- use "new_level_flag" as a test */
-	new_level_flag = TRUE;
 
 	/* Dead */
 	return; 

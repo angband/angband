@@ -18,7 +18,7 @@ static long ralloc_block = 0;
  * The "lifeboat" in "rpanic()" can sometimes prevent crashes
  */
 #ifndef RPANIC_LIFEBOAT
-# define RPANIC_LIFEBOAT 1024
+# define RPANIC_LIFEBOAT 256
 #endif
 
 
@@ -103,11 +103,11 @@ vptr rpanic(huge len)
   /* Hopefully, we have a real "panic" function */  
   if (rpanic_aux) return ((*rpanic_aux)(len));
 
-  /* Lifeboat is too small! */
-  if (lifesize < len) return (V_NULL);
-
   /* We are probably going to crash anyway */
   plog("Running out of memory!!!");
+
+  /* Lifeboat is too small! */
+  if (lifesize < len) return (V_NULL);
 
   /* Hack -- decrease the lifeboat */
   lifesize -= len;
@@ -122,16 +122,15 @@ vptr rpanic(huge len)
  */
 vptr (*ralloc_aux)(huge) = NULL;
 
+
 /*
  * Allocate some memory
- * XXX Consider using "NewPtr()" on Macintosh.
- * XXX Then you will need to use FreePtr() below.
  */
 vptr ralloc(huge len)
 {
   vptr mem;
 
-  /* Allow allocation of zero bytes */
+  /* Allow allocation of "zero bytes" */
   if (len == 0) return (V_NULL);
 
 #ifdef VERBOSE_RALLOC

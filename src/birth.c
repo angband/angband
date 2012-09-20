@@ -1,4 +1,4 @@
-/* File: create.c */
+/* File: birth.c */
 
 /* Purpose: create a player character */
 
@@ -13,153 +13,77 @@
 #include "angband.h"
 
 
-/* Lets do all prototypes correctly.... -CWS */
-#ifndef NO_LINT_ARGS
-#ifdef __STDC__
 
-static void change_stat(int, int);
-static int  monval(int);
-static void get_stats(void);
-static void set_prev_stats(void);
-static int  get_prev_stats(void);
-static void get_all_stats(void);
-static void put_auto_stats(void);
-static void choose_race(void);
-static void print_history(void);
-static void set_prev_history(void);
-static void get_prev_history(void);
-static void get_sex(void);
-static void get_ahw(void);
-static void set_prev_ahw(void);
-static void get_prev_ahw(void);
-static void get_class(void);
-static void get_class_choice(void);
-static void get_money(void);
+/*
+ * Hold the data from the previous "roll"
+ */
+static struct {
 
-#endif
-#endif
+    s16b age;
+    s16b wt;
+    s16b ht;
+    s16b sc;
 
+    s16b stat[6];
 
-typedef struct _previous previous;
+    s32b au;
 
-struct _previous {
-    int16u age;
-    int16u wt;
-    int16u ht;
-    int16  disarm;
-    int16u stat[6];
-    int16u sc;
-    char   history[4][60];
-    player_background	bg;
-};
+    char history[4][60];
+
+    player_background bg;
+
+} prev;
+
 
 
 /*
- * Previous stats
+ * Is the structure below ready
  */
-static previous prev;
+static int prev_ready = FALSE;
+
+
+
 
 
 /*
- * Generates character's stats			-JWT-	 
+ * Save the current data for later
  */
-static void get_stats()
-{
-    register int i, tot;
-    int dice[18];
-
-    do {
-	tot = 0;
-	for (i = 0; i < 18; i++) {
-	    dice[i] = randint(3 + i % 3); /* Roll 3,4,5 sided dice once each */
-	    tot += dice[i];
-	}
-    }
-    while (tot <= 42 || tot >= 54);
-
-    for (i = 0; i < 6; i++) {
-	p_ptr->max_stat[i] = 5 + dice[3 * i] + dice[3 * i + 1] +
-	    dice[3 * i + 2];
-    }
-}
-
-
-/* Returns adjusted stat                                       -JK-  */
-/* Algorithm by ...                                            -JWT- */
-/* Used by change_stats and auto_roller
- * auto_roll is boolean and states maximum changes
- * should be used rather than random ones
- * to allow specification of higher values to wait for
- */
-
-static int adjust_stat(int stat_value, int16 amount, int auto_roll)
+static void save_prev_data()
 {
     register int i;
 
-    /* OK so auto_roll conditions not needed for negative amounts */
-    /* since stat_value is always 15 at least currently!  -JK */
-    if (amount < 0) {
-	for (i = 0; i > amount; i--) {
+    prev.age = p_ptr->age;
 
-	    if (stat_value > 108)
-		stat_value--;
-	    else if (stat_value > 88)
-		stat_value -= ((auto_roll ? 6 : randint(6)) + 2);
-	    else if (stat_value > 18) {
-		stat_value -= ((auto_roll ? 15 : randint(15)) + 5);
-		if (stat_value < 18) stat_value = 18;
-	    }
-	    else if (stat_value > 3)
-		stat_value--;
-	}
-    }
+    prev.wt = p_ptr->wt;
+    prev.ht = p_ptr->ht;
 
-    else {
-	for (i = 0; i < amount; i++) {
-	    if (stat_value < 18)
-		stat_value++;
-	    else if (stat_value < 88)
-		stat_value += ((auto_roll ? 15 : randint(15)) + 5);
-	    else if (stat_value < 108)
-		stat_value += ((auto_roll ? 6 : randint(6)) + 2);
-	    else if (stat_value < 118)
-		stat_value++;
-	}
-    }
+    prev.sc = p_ptr->sc;
 
-    return stat_value;
-}
+    prev.au = p_ptr->au;
 
-
-/*
- * Changes stats by given amount                                -JWT-   
- */
-static void change_stat(int stat, int amount)
-{
-    p_ptr->max_stat[stat] = adjust_stat(p_ptr->max_stat[stat],
-					(int16) amount, FALSE);
-}
-
-
-/*
- * Save the old stats
- */
-static void set_prev_stats()
-{
-    register int        i;
-
+    /* Save the stats */
     for (i = 0; i < 6; i++) {
-	prev.stat[i] = (int16u)(p_ptr->max_stat[i]);
+	prev.stat[i] = p_ptr->max_stat[i];
     }
 
-    return;
+    for (i = 0; i < 4; i++) {
+	(void)strncpy(prev.history[i], history[i], 60);
+    }
+
+    prev.bg.info = background->info;
+    prev.bg.roll = background->roll;
+    prev.bg.chart = background->chart;
+    prev.bg.next = background->next;
+    prev.bg.bonus = background->bonus;
 }
 
-static int get_prev_stats()
+
+/*
+ * Load the previous data
+ */
+static void load_prev_data()
 {
     register int        i;
-
-    if (!prev.stat[0]) return 0;
 
     for (i = 0; i < 6; i++) {
 	p_ptr->cur_stat[i] = prev.stat[i];
@@ -167,34 +91,273 @@ static int get_prev_stats()
 	p_ptr->use_stat[i] = prev.stat[i];
     }
 
-    p_ptr->ptodam = todam_adj();
-    p_ptr->ptohit = tohit_adj();
-    p_ptr->pac = toac_adj();
+    p_ptr->age = prev.age;
+    p_ptr->wt = prev.wt;
+    p_ptr->ht = prev.ht;
 
-    prev.stat[0] = 0;
+    p_ptr->sc = prev.sc;
 
-    return 1;
+    p_ptr->au = prev.au;
+
+    for (i = 0; i < 4; i++) {
+	strncpy(history[i], prev.history[i], 60);
+    }
+
+    background->info = prev.bg.info;
+    background->roll = prev.bg.roll;
+    background->chart = prev.bg.chart;
+    background->next = prev.bg.next;
+    background->bonus = prev.bg.bonus;
 }
+
+
+
+
+
+
+
+
+/*
+ * Choose the character's sex				-JWT-	 
+ */
+static void choose_sex(void)
+{
+    char        c;
+
+    clear_from(20);
+    put_str("m) Male       f) Female", 21, 2);
+
+    while (1) {
+	put_str("Choose a sex (? for Help): ", 20, 2);
+	move_cursor(20, 29);
+	c = inkey();
+	if (c == 'm' || c == 'M') {
+	    p_ptr->male = TRUE;
+	    c_put_str(TERM_L_BLUE, "Male", 3, 15);
+	    break;
+	}
+	else if (c == 'f' || c == 'F') {
+	    p_ptr->male = FALSE;
+	    c_put_str(TERM_L_BLUE, "Female", 3, 15);
+	    break;
+	}
+	else if (c == '?') {
+	    helpfile(ANGBAND_WELCOME);
+	}
+	else {
+	    bell();
+	}
+    }
+}
+
+
+/*
+ * Allows player to select a race			-JWT-	 
+ */
+static void choose_race(void)
+{
+    int                  j, k, l, m;
+    char                 s, tmp_str[80];
+
+    k = 0;
+    l = 2;
+    m = 21;
+
+    clear_from(20);
+
+    for (j = 0; j < MAX_RACES; j++) {
+	(void)sprintf(tmp_str, "%c) %s", j + 'a', race[j].trace);
+	put_str(tmp_str, m, l);
+	l += 15;
+	if (l > 70) {
+	    l = 2;
+	    m++;
+	}
+    }
+
+    while (1) {
+	put_str("Choose a race (? for Help): ", 20, 2);
+	s = inkey();
+	j = s - 'a';
+	if ((j < MAX_RACES) && (j >= 0)) {
+	    p_ptr->prace = j;
+	    c_put_str(TERM_L_BLUE, race[j].trace, 4, 15);
+	    break;
+	}
+	else if (s == '?') {
+	    helpfile(ANGBAND_WELCOME);
+	}
+	else {
+	    bell();
+	}
+    }
+}
+
+
+
+/*
+ * Gets a character class				-JWT-	 
+ */
+static void choose_class()
+{
+    int          j, k, l, m;
+    int          cl[MAX_CLASS];
+    char         tmp_str[80], s;
+
+    /* Clear the display */
+    clear_from(20);
+
+    /* Prepare to list */
+    k = 0;
+    l = 2;
+    m = 21;
+
+    /* No legal choices yet */
+    for (j = 0; j < MAX_CLASS; j++) cl[j] = 0;
+
+    /* Display the legal choices */
+    for (j = 0; j < MAX_CLASS; j++) {
+	if (race[p_ptr->prace].rtclass & (1L << j)) {
+	    sprintf(tmp_str, "%c) %s", k + 'a', class[j].title);
+	    put_str(tmp_str, m, l);
+	    cl[k++] = j;
+	    l += 15;
+	    if (l > 70) {
+		l = 2;
+		m++;
+	    }
+	}
+    }
+
+    /* Get a class */
+    while (1) {
+	put_str("Choose a class (? for Help): ", 20, 2);
+	s = inkey();
+	j = s - 'a';
+	if ((j < k) && (j >= 0)) {
+	    p_ptr->pclass = cl[j];
+	    c_put_str(TERM_L_BLUE, class[p_ptr->pclass].title, 5, 15);
+	    clear_from(20);
+	    break;
+	}
+	else if (s == '?') {
+	    helpfile(ANGBAND_WELCOME);
+	}
+	else {
+	    bell();
+	}
+    }
+}
+
+
+
+
+
+/*
+ * Returns adjusted stat -JK-
+ * Algorithm by -JWT-
+ *
+ * Used by change_stats and auto_roller
+ *
+ * auto_roll is boolean and states maximum changes should be used rather
+ * than random ones to allow specification of higher values to wait for
+ */
+static int adjust_stat(int stat_value, s16b amount, int auto_roll)
+{
+    register int i;
+
+    /* Negative amounts (unused) */
+    if (amount < 0) {
+	for (i = 0; i > amount; i--) {
+
+	    if (stat_value > 108) {
+		stat_value--;
+	    }
+	    else if (stat_value > 88) {
+		stat_value -= ((auto_roll ? 6 : randint(6)) + 2);
+	    }
+	    else if (stat_value > 18) {
+		stat_value -= ((auto_roll ? 15 : randint(15)) + 5);
+		if (stat_value < 18) stat_value = 18;
+	    }
+	    else if (stat_value > 3) {
+		stat_value--;
+	    }
+	}
+    }
+
+    /* Positive amounts */
+    else {
+	for (i = 0; i < amount; i++) {
+	    if (stat_value < 18) {
+		stat_value++;
+	    }
+	    else if (stat_value < 88) {
+		stat_value += ((auto_roll ? 15 : randint(15)) + 5);
+	    }
+	    else if (stat_value < 108) {
+		stat_value += ((auto_roll ? 6 : randint(6)) + 2);
+	    }
+	    else if (stat_value < 118) {
+		stat_value++;
+	    }
+	}
+    }
+
+    /* Return the result */
+    return stat_value;
+}
+
+
+/*
+ * Changes stats by given amount
+ */
+static void change_stat(int stat, int amount)
+{
+    int max = p_ptr->max_stat[stat];
+    int tmp = adjust_stat(max, amount, FALSE);
+    p_ptr->max_stat[stat] = tmp;
+}
+
 
 
 /*
  * Generate all stats and modify for race.
  * Needed in a separate module so looping of character
  * selection would be allowed     -RGM- 
- *
- * It strikes me that nobody was clearing the players
- * experience points (from past lives).  It looks like
- * some vague accident took care of this...
  */
 static void get_all_stats(void)
 {
-    register player_race *rp_ptr;
+    register int        i, j;
+    int                 min_value, max_value;
 
-    register int        j;
+    int dice[18];
 
-    rp_ptr = &race[p_ptr->prace];
+    player_race		*rp_ptr = &race[p_ptr->prace];
+    player_class	*cp_ptr = &class[p_ptr->pclass];
 
-    get_stats();
+
+    /* Roll and verify some stats */
+    while (TRUE) {
+
+	/* Roll some dice */
+	for (j = i = 0; i < 18; i++) {
+	    dice[i] = randint(3 + i % 3);
+	    j += dice[i];
+	}
+
+	/* Verify totals */
+	if (j > 42 && j < 54) break;
+    }
+
+    /* Each stat is 5 + 1d3 + 1d4 + 1d5 */
+    for (i = 0; i < 6; i++) {
+	j = 5 + dice[3*i] + dice[3*i+1] + dice[3*i+2];
+	p_ptr->max_stat[i] = j;
+    }
+    
+    
+    /* Modify the stats for "race" */
     change_stat(A_STR, rp_ptr->str_adj);
     change_stat(A_INT, rp_ptr->int_adj);
     change_stat(A_WIS, rp_ptr->wis_adj);
@@ -202,166 +365,118 @@ static void get_all_stats(void)
     change_stat(A_CON, rp_ptr->con_adj);
     change_stat(A_CHR, rp_ptr->chr_adj);
 
+    /* Analyze the stats */
     for (j = 0; j < 6; j++) {
 	p_ptr->cur_stat[j] = p_ptr->max_stat[j];
 	p_ptr->use_stat[j] = modify_stat(j, p_ptr->mod_stat[j]);
     }
 
-    p_ptr->expfact = rp_ptr->b_exp;
-    p_ptr->lev = 1;
 
-    p_ptr->hitdie = rp_ptr->bhitdie;
+    /* Modify the stats for "class" */
+    change_stat(A_STR, cp_ptr->madj_str);
+    change_stat(A_INT, cp_ptr->madj_int);
+    change_stat(A_WIS, cp_ptr->madj_wis);
+    change_stat(A_DEX, cp_ptr->madj_dex);
+    change_stat(A_CON, cp_ptr->madj_con);
+    change_stat(A_CHR, cp_ptr->madj_chr);
 
-    p_ptr->srh = rp_ptr->srh;
-    p_ptr->fos = rp_ptr->fos;
-    p_ptr->stl = rp_ptr->stl;
-    p_ptr->save = rp_ptr->bsav;
-    p_ptr->see_infra = rp_ptr->infra;
+    /* Analyze the stats */
+    for (i = 0; i < 6; i++) {
+	p_ptr->cur_stat[i] = p_ptr->max_stat[i];
+	p_ptr->use_stat[i] = p_ptr->max_stat[i];
+    }
 
-    p_ptr->bth = rp_ptr->bth;
-    p_ptr->bthb = rp_ptr->bthb;
-    p_ptr->ptoac = 0;
-    p_ptr->pac = toac_adj();
-    p_ptr->ptodam = todam_adj();
-    p_ptr->ptohit = tohit_adj();
+
+    /* Experience factor XXX Why here? */
+    p_ptr->expfact = rp_ptr->b_exp + cp_ptr->m_exp;
+
+    /* Hitdice XXX Why here? */
+    p_ptr->hitdie = rp_ptr->bhitdie + cp_ptr->adj_hd;
+
+
+    /* Minimum hitpoints at highest level */
+    min_value = (MAX_PLAYER_LEVEL * (p_ptr->hitdie - 1) * 3) / 8;
+    min_value += MAX_PLAYER_LEVEL;
+
+    /* Maximum hitpoints at highest level */
+    max_value = (MAX_PLAYER_LEVEL * (p_ptr->hitdie - 1) * 5) / 8;
+    max_value += MAX_PLAYER_LEVEL;
+
+    /* Pre-calculate level 1 hitdice */
+    player_hp[0] = p_ptr->hitdie;
+
+    /* Roll out the hitpoints */
+    while (TRUE) {
+
+	/* Roll the hitpoint values */
+	for (i = 1; i < MAX_PLAYER_LEVEL; i++) {
+	    j = randint((int)p_ptr->hitdie);
+	    player_hp[i] = player_hp[i-1] + j;
+	}
+
+	/* XXX Could also require acceptable "mid-level" hitpoints */
+	
+	/* Require "valid" hitpoints at highest level */
+	if (player_hp[MAX_PLAYER_LEVEL-1] < min_value) continue;
+	if (player_hp[MAX_PLAYER_LEVEL-1] > max_value) continue;
+
+	/* Acceptable */
+	break;
+    }
+
+
+    /* Hack -- calculate the bonuses */
+    calc_bonuses();
+
+    /* Hack -- Reset starting hitpoints */
+    p_ptr->mhp = p_ptr->hitdie + con_adj();
+
+    /* Hack -- Restart as Fully healed */
+    p_ptr->chp = p_ptr->mhp;
+    p_ptr->chp_frac = 0;
 }
-
-/*
- * copied from misc2.c, so the display loop would work nicely -cft
- */
-static cptr stat_names[] = {
-    "STR: ", "INT: ", "WIS: ", "DEX: ", "CON: ", "CHR: "
-};
 
 
 #ifdef AUTOROLLER
 
 /*
- * Used for auto-roller.
- * Just put_stats(), w/o the extra info -CFT 
+ * Display stat values, subset of "put_stats()"
  */
-static void put_auto_stats()
+static void birth_put_stats()
 {
     register int i;
     vtype        buf;
 
+    /* Put the stats */
     for (i = 0; i < 6; i++) {
 	cnv_stat(p_ptr->use_stat[i], buf);
-	c_put_str(COLOR_L_GREEN, buf, 2 + i, 66);
-	if (p_ptr->max_stat[i] > p_ptr->cur_stat[i]) {
-	    cnv_stat(p_ptr->max_stat[i], buf);
-	    c_put_str(COLOR_L_GREEN, buf, 2 + i, 73);
-	}
+	c_put_str(TERM_L_GREEN, buf, 2 + i, 66);
     }
 }
+
 #endif
-
-/* Allows player to select a race			-JWT-	 */
-static void choose_race(void)
-{
-    register int         j, k;
-    int                  l, m, exit_flag;
-    char                 s;
-    char                 tmp_str[80];
-
-    register player_race *rp_ptr;
-
-    j = 0;
-    k = 0;
-    l = 2;
-    m = 21;
-
-    clear_from(20);
-    put_str("Choose a race (? for Help):", 20, 2);
-    do {
-	(void)sprintf(tmp_str, "%c) %s", k + 'a', race[j].trace);
-	put_str(tmp_str, m, l);
-	k++;
-	l += 15;
-	if (l > 70) {
-	    l = 2;
-	    m++;
-	}
-	j++;
-    }
-    while (j < MAX_RACES);
-
-    exit_flag = FALSE;
-
-    do {
-	move_cursor(20, 30);
-	s = inkey();
-	j = s - 'a';
-	if ((j < MAX_RACES) && (j >= 0))
-	    exit_flag = TRUE;
-	else if (s == '?')
-	    helpfile(ANGBAND_WELCOME);
-	else
-	    bell();
-    }
-    while (!exit_flag);
-
-    rp_ptr = &race[j];
-    p_ptr->prace = j;
-
-    c_put_str(COLOR_L_BLUE, rp_ptr->trace, 3, 15);
-}
 
 
 /*
  * Will print the history of a character			-JWT-	 
  */
-static void print_history()
+static void put_history()
 {
     register int        i;
 
-    put_str("Character Background", 14, 27);
+    clear_from(15);
+    
+    put_str("Character Background", 15, 27);
     for (i = 0; i < 4; i++) {
-	prt(history[i], i + 15, 10);
+	put_str(history[i], i + 16, 10);
     }
 }
 
 
-static void set_prev_history()
-{
-    register int	i;
-
-    prev.bg.info = background->info;
-    prev.bg.roll = background->roll;
-    prev.bg.chart = background->chart;
-    prev.bg.next = background->next;
-    prev.bg.bonus = background->bonus;
-
-    prev.sc = p_ptr->sc;
-
-    for (i = 0; i < 4; i++) {
-	(void)strncpy(prev.history[i], history[i], 60);
-    }
-}
-
-
-static void get_prev_history(void)
-{
-    register int        i;
-
-    background->info = prev.bg.info;
-    background->roll = prev.bg.roll;
-    background->chart = prev.bg.chart;
-    background->next = prev.bg.next;
-    background->bonus = prev.bg.bonus;
-
-    p_ptr->sc = prev.sc;
-
-    for (i = 0; i < 4; i++) {
-	strncpy(history[i], prev.history[i], 60);
-    }
-}
-
-
-/* Get the racial history, determines social class	-RAK-	 */
-/* Assumptions:	Each race has init history beginning at
- * (race-1)*3+1
- * All history parts are in ascending order
+/*
+ * Get the racial history, determines social class	-RAK-
+ * Assumptions:	Each race has init history beginning at
+ * (race-1)*3+1.  All history parts are in ascending order
  */
 
 static void get_history(void)
@@ -372,24 +487,31 @@ static void get_history(void)
     char                     history_block[240];
     player_background		*bp_ptr;
 
-    /* Get a block of history text				 */
-    if (p_ptr->prace == 8)
+    /* Special race */
+    if (p_ptr->prace == 8) {
 	hist_idx = 1;
-    else if (p_ptr->prace > 8)
+    }
+
+    /* Special race */
+    else if (p_ptr->prace > 8) {
 	hist_idx = 2 * 3 + 1;
-    else
+    }
+
+    /* Normal races */
+    else {
 	hist_idx = p_ptr->prace * 3 + 1;
+    }
 
     history_block[0] = '\0';
     social_class = randint(4);
     cur_idx = 0;
-    do {
-	flag = FALSE;
-	do {
+
+    /* Process the history */
+    while (hist_idx >= 1) {
+	for (flag = FALSE; !flag; ) {
 	    if (background[cur_idx].chart == hist_idx) {
 		test_roll = randint(100);
-		while (test_roll > background[cur_idx].roll)
-		    cur_idx++;
+		while (test_roll > background[cur_idx].roll) cur_idx++;
 		bp_ptr = &background[cur_idx];
 		(void)strcat(history_block, bp_ptr->info);
 		social_class += bp_ptr->bonus - 50;
@@ -401,33 +523,28 @@ static void get_history(void)
 		cur_idx++;
 	    }
 	}
-	while (!flag);
     }
-    while (hist_idx >= 1);
 
-/* clear the previous history strings */
+    /* clear the previous history strings */
     for (hist_idx = 0; hist_idx < 4; hist_idx++) {
 	history[hist_idx][0] = '\0';
     }
 
-/* Process block of history text for pretty output	 */
+    /* Process block of history text for pretty output	 */
     start_pos = 0;
     end_pos = strlen(history_block) - 1;
     line_ctr = 0;
     flag = FALSE;
-    while (history_block[end_pos] == ' ')
-	end_pos--;
-    do {
-	while (history_block[start_pos] == ' ')
-	    start_pos++;
+    while (history_block[end_pos] == ' ') end_pos--;
+
+    for (flag = FALSE; !flag; ) {
+	while (history_block[start_pos] == ' ') start_pos++;
 	cur_len = end_pos - start_pos + 1;
 	if (cur_len > 60) {
 	    cur_len = 60;
-	    while (history_block[start_pos + cur_len - 1] != ' ')
-		cur_len--;
+	    while (history_block[start_pos + cur_len - 1] != ' ') cur_len--;
 	    new_start = start_pos + cur_len;
-	    while (history_block[start_pos + cur_len - 1] == ' ')
-		cur_len--;
+	    while (history_block[start_pos + cur_len - 1] == ' ') cur_len--;
 	}
 	else {
 	    flag = TRUE;
@@ -439,272 +556,83 @@ static void get_history(void)
 	line_ctr++;
 	start_pos = new_start;
     }
-    while (!flag);
 
-/* Compute social class for player			 */
-    if (social_class > 100)
-	social_class = 100;
-    else if (social_class < 1)
-	social_class = 1;
+    /* Verify social class */
+    if (social_class > 100) social_class = 100;
+    else if (social_class < 1) social_class = 1;
+
+    /* Save the social class */
     p_ptr->sc = social_class;
 }
 
 
 /*
- * Gets the character's sex				-JWT-	 
- */
-static void get_sex(void)
-{
-    register int        exit_flag;
-    char                c;
-
-    exit_flag = FALSE;
-    clear_from(20);
-    put_str("Choose a sex (? for Help):", 20, 2);
-    put_str("m) Male       f) Female", 21, 2);
-    do {
-	move_cursor(20, 29);
-    /* speed not important here */
-	c = inkey();
-	if (c == 'f' || c == 'F') {
-	    p_ptr->male = FALSE;
-	    c_put_str(COLOR_L_BLUE, "Female", 4, 15);
-	    exit_flag = TRUE;
-	}
-	else if (c == 'm' || c == 'M') {
-	    p_ptr->male = TRUE;
-	    c_put_str(COLOR_L_BLUE, "Male", 4, 15);
-	    exit_flag = TRUE;
-	}
-	else if (c == '?')
-	    helpfile(ANGBAND_WELCOME);
-	else
-	    bell();
-    }
-    while (!exit_flag);
-}
-
-
-/*
- * Computes character's age, height, and weight		-JWT-	 
+ * Computes character's age, height, and weight
  */
 static void get_ahw(void)
 {
     register int        i;
 
     i = p_ptr->prace;
+    
+    /* Calculate the starting age */
     p_ptr->age = race[i].b_age + randint((int)race[i].m_age);
+
+    /* Calculate the height/weight for males */
     if (p_ptr->male) {
 	p_ptr->ht = randnor((int)race[i].m_b_ht, (int)race[i].m_m_ht);
 	p_ptr->wt = randnor((int)race[i].m_b_wt, (int)race[i].m_m_wt);
     }
+
+    /* Calculate the height/weight for females */
     else {
 	p_ptr->ht = randnor((int)race[i].f_b_ht, (int)race[i].f_m_ht);
 	p_ptr->wt = randnor((int)race[i].f_b_wt, (int)race[i].f_m_wt);
     }
-    p_ptr->disarm += race[i].b_dis;
 }
 
 
-static void set_prev_ahw(void)
-{
-    prev.age = p_ptr->age;
-    prev.wt = p_ptr->wt;
-    prev.ht = p_ptr->ht;
-    prev.disarm = p_ptr->disarm;
-
-    return;
-}
-
-
-static void get_prev_ahw(void)
-{
-    p_ptr->age = prev.age;
-    p_ptr->wt = prev.wt;
-    p_ptr->ht = prev.ht;
-    p_ptr->disarm = prev.disarm;
-    prev.age = prev.wt = prev.ht = prev.disarm = 0;
-}
 
 
 /*
- * Gets a character class				-JWT-	 
- */
-static void get_class(void)
-{
-    register int        i;
-    int                 min_value, max_value;
-    int                 percent;
-    char                buf[50];
-
-    player_class		*cp_ptr = &class[p_ptr->pclass];
-
-    change_stat(A_STR, cp_ptr->madj_str);
-    change_stat(A_INT, cp_ptr->madj_int);
-    change_stat(A_WIS, cp_ptr->madj_wis);
-    change_stat(A_DEX, cp_ptr->madj_dex);
-    change_stat(A_CON, cp_ptr->madj_con);
-    change_stat(A_CHR, cp_ptr->madj_chr);
-
-    for (i = 0; i < 6; i++) {
-	p_ptr->cur_stat[i] = p_ptr->max_stat[i];
-	p_ptr->use_stat[i] = p_ptr->max_stat[i];
-    }
-    p_ptr->ptodam = todam_adj();           /* Real values		 */
-    p_ptr->ptohit = tohit_adj();
-    p_ptr->ptoac = toac_adj();
-    p_ptr->pac = 0;
-    p_ptr->dis_td = p_ptr->ptodam;	/* Displayed values	 */
-    p_ptr->dis_th = p_ptr->ptohit;
-    p_ptr->dis_tac = p_ptr->ptoac;
-    p_ptr->dis_ac = p_ptr->pac + p_ptr->dis_tac;
-
-/* now set misc stats, do this after setting stats because of con_adj() for
- * hitpoints 
- */
-
-    p_ptr->hitdie += cp_ptr->adj_hd;
-    p_ptr->mhp = con_adj() + p_ptr->hitdie;
-    p_ptr->chp = p_ptr->mhp;
-    p_ptr->chp_frac = 0;
-
-/* initialize hit_points array: put bounds on total possible hp,
- * only succeed if it is within 1/8 of average value
- */
-    min_value = (MAX_PLAYER_LEVEL * 3 * (p_ptr->hitdie - 1)) / 8 +
-	MAX_PLAYER_LEVEL;
-    max_value = (MAX_PLAYER_LEVEL * 5 * (p_ptr->hitdie - 1)) / 8 +
-	MAX_PLAYER_LEVEL;
-
-    player_hp[0] = p_ptr->hitdie;
-    do {
-	for (i = 1; i < MAX_PLAYER_LEVEL; i++) {
-	    player_hp[i] = randint((int)p_ptr->hitdie);
-	    player_hp[i] += player_hp[i - 1];
-	}
-    }
-    while ((player_hp[MAX_PLAYER_LEVEL - 1] < min_value) ||
-	   (player_hp[MAX_PLAYER_LEVEL - 1] > max_value));
-
-    if (peek) {
-	percent = (int)(((long)player_hp[MAX_PLAYER_LEVEL - 1] * 200L) /
-		(p_ptr->hitdie + ((MAX_PLAYER_LEVEL - 1) * p_ptr->hitdie)));
-	sprintf(buf, "%d%% Life Rating", percent);
-	msg_print(buf);
-    }
-    p_ptr->bth += cp_ptr->mbth;
-    p_ptr->bthb += cp_ptr->mbthb;   /* RAK */
-    p_ptr->srh += cp_ptr->msrh;
-    p_ptr->disarm = cp_ptr->mdis + todis_adj();
-    p_ptr->fos += cp_ptr->mfos;
-    p_ptr->stl += cp_ptr->mstl;
-    p_ptr->save += cp_ptr->msav;
-    p_ptr->expfact += cp_ptr->m_exp;
-}
-
-
-/*
- * Gets a character class				-JWT-	 
- */
-static void get_class_choice()
-{
-    register int i, j;
-    int          k, l, m;
-    int          cl[MAX_CLASS], exit_flag;
-    char         tmp_str[80], s;
-    int32u       mask;
-
-    for (j = 0; j < MAX_CLASS; j++) cl[j] = 0;
-
-    i = p_ptr->prace;
-    j = 0;
-    k = 0;
-    l = 2;
-    m = 21;
-    mask = 0x1;
-    clear_from(20);
-    put_str("Choose a class (? for Help):", 20, 2);
-    do {
-	if (race[i].rtclass & mask) {
-	    (void)sprintf(tmp_str, "%c) %s", k + 'a', class[j].title);
-	    put_str(tmp_str, m, l);
-	    cl[k] = j;
-	    l += 15;
-	    if (l > 70) {
-		l = 2;
-		m++;
-	    }
-	    k++;
-	}
-	j++;
-	mask <<= 1;
-    }
-    while (j < MAX_CLASS);
-    p_ptr->pclass = 0;
-    exit_flag = FALSE;
-    do {
-	move_cursor(20, 31);
-	s = inkey();
-	j = s - 'a';
-	if ((j < k) && (j >= 0)) {
-	    p_ptr->pclass = cl[j];
-	    c_put_str(COLOR_L_BLUE, class[p_ptr->pclass].title, 5, 15);
-	    clear_from(20);
-	    exit_flag = TRUE;
-	}
-	else if (s == '?')
-	    helpfile(ANGBAND_WELCOME);
-	else
-	    bell();
-    } while (!exit_flag);
-}
-
-
-/*
- * Given a stat value, return a monetary value, which affects the amount of
- * gold a player has. 
+ * Given a stat value, return a monetary value,
+ * which affects the amount of gold a player has. 
  */
 static int monval(int i)
 {
-    return (5 * ((int)i - 10));
+    return (5 * (i - 10));
 }
 
-
+/*
+ * Get the player's starting money
+ */
 static void get_money(void)
 {
     register int        gold;
-    register int16	*ip;
 
-    /* Index into the stats */
-    ip = p_ptr->max_stat;
-
-    /* Social Class adj */
+    /* Social Class is very important */
     gold = p_ptr->sc * 6 + randint(25) + 325;
 
     /* Stat adj */
-    gold -= monval(ip[A_STR]);
-    gold -= monval(ip[A_INT]);
-    gold -= monval(ip[A_WIS]);
-    gold -= monval(ip[A_CON]);
-    gold -= monval(ip[A_DEX]);
+    gold -= monval(p_ptr->max_stat[A_STR]);
+    gold -= monval(p_ptr->max_stat[A_INT]);
+    gold -= monval(p_ptr->max_stat[A_WIS]);
+    gold -= monval(p_ptr->max_stat[A_CON]);
+    gold -= monval(p_ptr->max_stat[A_DEX]);
 
-    /* Charisma adj	 */
-    gold += monval(ip[A_CHR]);
+    /* Charisma adj */
+    gold += monval(p_ptr->max_stat[A_CHR]);
+
+    /* Minimum 80 gold */
+    if (gold < 80) gold = 80;
 
     /* She charmed the banker into it! -CJS- */
     /* She slept with the banker.. :) -GDH-  */
     if (!p_ptr->male) gold += 50;
 
-    /* Minimum 80 gold */
-    if (gold < 80) gold = 80;
-
-    /* Save the gold (minimum 80) */
+    /* Save the gold */
     p_ptr->au = gold;
 }
-
-
-
-/*** ---------- M A I N  for Character Creation Routine ---------- ***/
 
 
 /*
@@ -717,6 +645,18 @@ static void player_wipe()
 
     /* Hack -- zero the struct */
     WIPE(p_ptr, player_type);
+
+
+    /* No items */
+    inven_ctr = equip_ctr = 0;
+
+    /* No weight */
+    inven_weight = 0;
+
+    /* Clear the inventory */
+    for (i = 0; i < INVEN_TOTAL; i++) {
+	invcopy(&inventory[i], OBJ_NOTHING);
+    }
 
 
     /* Start with no artifacts made yet */
@@ -739,10 +679,10 @@ static void player_wipe()
 	/* None alive right now */
 	l_list[i].cur_num = 0;
 
-	/* Hack -- Assume we can have 255 of them */
-	l_list[i].max_num = 255;
+	/* Assume we can have 100 of them alive at the same time */
+	l_list[i].max_num = 100;
 
-	/* But we can only have 1 unique */
+	/* But we can only have 1 unique at a time */
 	if (r_list[i].cflags2 & MF2_UNIQUE) l_list[i].max_num = 1;
     }
 
@@ -762,11 +702,16 @@ static void player_wipe()
     p_ptr->food_digested = 2;
 
 
+    /* Start at level one */    
+    p_ptr->lev = 1;
+
+
     /* Wipe the spells */
     spell_learned = spell_learned2 = 0L;
     spell_worked = spell_worked2 = 0L;
     spell_forgotten = spell_forgotten2 = 0L;
     for (i = 0; i < 64; i++) spell_order[i] = 99;
+
 
     /* Hack -- reset seeds */
     town_seed = random();
@@ -787,18 +732,20 @@ static void player_wipe()
  */
 void player_birth()
 {
-    register char       c;
+    char		c;
+    bool		use_history;
+
+    player_class	*cp_ptr;
+    player_race		*rp_ptr;
 
 #ifdef AUTOROLLER
 
     register int	i;
-    int32u		auto_round = 0;
-    int32u		last_round = 0;
+    u32b		auto_round = 0;
+    u32b		last_round = 0;
     int			stat[6];
     int			autoroll = 0;
-    int			msstat = 0;    /* Max autoroll w/ look for -SAC */
-    player_class	*cp_ptr;
-    player_race		*rp_ptr;
+    int			msstat = 0;
     int			stat_idx = 0;
 
     static cptr stat_name[6] = {
@@ -810,19 +757,32 @@ void player_birth()
 
 #endif
 
-    /* Do not use "previous" data until it exists */
-    int previous_exists = 0;
-
 
     /* Clear old information */
     player_wipe();
 
 
-    /* Get the basic choices */
-    put_character();
+    /* Clear the screen */
+    clear_screen();
+
+    /* Title everything */
+    put_str("Name        :", 2, 1);
+    put_str("Sex         :", 3, 1);
+    put_str("Race        :", 4, 1);
+    put_str("Class       :", 5, 1);
+
+    /* Choose a sex */
+    choose_sex();
+
+    /* Choose a race */
     choose_race();
-    get_sex();
-    get_class_choice();
+
+    /* Choose a class */
+    choose_class();
+
+    /* Access the race/class */
+    cp_ptr = &class[p_ptr->pclass];
+    rp_ptr = &race[p_ptr->prace];
 
 
 #ifdef AUTOROLLER
@@ -833,9 +793,10 @@ void player_birth()
  * copyright, take it out, and someone let me know -CFT 
  */
 
-    /* allow multiple key entry, so they can ask for help and */
-    /* still get back to this menu... -CFT */
+    /* Prompt for it */
     put_str("Do you want to use automatic rolling? (? for Help) ", 20, 2);
+
+    /* Process help requests until a choice is made */
     while (1) {
 	move_cursor(20, 52);
 	c = inkey();
@@ -846,10 +807,10 @@ void player_birth()
 
     /* Prepare the autoroller */
     if ((c == 'Y') || (c == 'y')) {
-	autoroll = 1;
+
+	autoroll = TRUE;
+
 	clear_from(15);
-	cp_ptr = &class[p_ptr->pclass];
-	rp_ptr = &race[p_ptr->prace];
 	put_str("Enter minimum attribute for: ", 15, 2);
 
 	/* Check the stats */
@@ -883,7 +844,7 @@ void player_birth()
 	    }
 
 	    msstat = adjust_stat(17, msstat, TRUE);
-	    clear_from(16 + i);
+
 	    sprintf(inp, "%-12s (Max of %2d): ", stat_name[i], msstat);
 	    put_str(inp, 16 + i, 5);
 
@@ -919,44 +880,60 @@ void player_birth()
     /* Actually Generate */
     while (1) {
 
+	/* Clear the old data */
 	clear_from(9);
 
 #ifdef AUTOROLLER
 
+	/* Autoroller needs some feedback */
 	if (autoroll) {
+
+	    /* Note when we started */
 	    last_round = auto_round;
-	    for (i = 2; i < 6; i++)
-		erase_line(i, 30);
-		for (i = 0; i < 6; i++) {
-		    put_str(stat_names[i], 2 + i, 61);
-		}
-		put_str("Auto-rolling round #",20,2);
-		put_str("Hit any key to stop.",22,2);
+
+	    /* Re-caption the screen */
+	    put_character();
+	    put_stats();
+	    
+	    /* Indicate the state */
+	    put_str("Auto-rolling round #",21,2);
+	    put_str("Hit any key to stop.",21,40);
 	}
 
+	/* Otherwise just get a character */
 	else {
 	    get_all_stats();
-	    get_class();
 	}
 
 
 	/* Start of AUTOROLLing loop */
 	while (autoroll) {
 
+	    /* Get a new character */
 	    get_all_stats();
-	    get_class();
 
-	    put_auto_stats();
+	    /* Advance the round */
 	    auto_round++;
-	    sprintf(inp, "%9lu.", (long)auto_round);
-	    put_str(inp, 20, 22);
 
 #if defined(NICE)
-	    /* Wait 1/10 second */
-	    delay(100);
 
-	    /* When nice, force occasional quit */
-	    if (auto_round > last_round + 9999) {
+	    /* See how many rolls have gone by */
+	    i = (auto_round - last_round);
+	    
+	    /* Update the display occasionally */
+	    if ((i < 20) ||
+		((i < 100) && (auto_round % 10 == 0)) ||
+		((auto_round % 100 == 0))) {
+
+		/* Dump data every few rounds */
+		birth_put_stats();
+		sprintf(inp, "%9lu.", (long)auto_round);
+		put_str(inp, 21, 22);
+	    }
+
+#if 0	    
+	    /* Disallow picky rolling */
+	    if (i > 9000) {
 		autoroll = FALSE;
 		msg_print("You are too picky.  Autoroll cancelled.");
 		msg_print(NULL);
@@ -964,16 +941,28 @@ void player_birth()
 	    }
 #endif
 
+	    /* Wait 1/10 second per roll */
+	    delay(10);
+
+#else
+
+	    /* Dump data every round */
+	    birth_put_stats();
+	    sprintf(inp, "%9lu.", (long)auto_round);
+	    put_str(inp, 21, 22);
+
+#endif
+
 	    /* Make sure they see everything */
 	    Term_fresh();
 
 	    /* Let the auto-roller get stopped by keypresses */
-	    if (kbhit()) {
+	    if (Term_kbhit()) {
 		flush();
 		break;
 	    }
 
-	    /* Break if happy */
+	    /* Break if "happy" */
 	    if ((stat[A_STR] <= p_ptr->cur_stat[A_STR]) &&
 		(stat[A_INT] <= p_ptr->cur_stat[A_INT]) &&
 		(stat[A_WIS] <= p_ptr->cur_stat[A_WIS]) &&
@@ -984,90 +973,96 @@ void player_birth()
 
 #else
 
+	/* No autoroller */
 	get_all_stats();
-	get_class();
 
-#endif				   /* AUTOROLLER main looping section */
+#endif
 
-	/* Get and Display some player stats */
+	/* Calculate stuff */
 	get_history();
 	get_ahw();
-	calc_bonuses();
-	print_history();
-	put_misc1();
-	put_stats();
-	clear_from(20);
+	get_money();
+
+
+	/* Start with the "Misc" data */
+	use_history = FALSE;
 
 	/* Input loop */
 	while (1) {
 
-	    if (previous_exists) {
-		prt("Hit space: Reroll, ^P: Previous or ESC: Accept: ", 20, 2);
-	    }
-	    else {
-		prt("Hit space: Reroll, or ESC: Accept: ", 20, 2);
-	    }
+	    /* Calculate all the bonuses */
+	    calc_bonuses();
 
+	    /* Display the player */
+	    display_player();
+
+	    /* Hack -- display history instead */
+	    if (use_history) put_history();
+	    
+	    /* Prepare a prompt */
+	    Term_putstr(2, 21, -1, TERM_WHITE, "Hit ");
+	    if (prev_ready) Term_addstr(-1, TERM_WHITE, "'P' for Previous, ");
+	    if (use_history) Term_addstr(-1, TERM_WHITE, "'H' for Misc., ");
+	    else Term_addstr(-1, TERM_WHITE, "'H' for History, ");
+	    Term_addstr(-1, TERM_WHITE, "'R' to Reroll, or ESCAPE to Accept: ");
+
+	    /* Prompt and get a command */
 	    c = inkey();
 
-	    if ((c == ESCAPE) || (c == ' ')) break;
+	    /* Escape accepts the roll */
+	    if (c == ESCAPE) break;
+	    
+	    /* Space (or 'R') rerolls */
+	    if ((c == ' ') || (c == 'R') || (c == 'r')) break;
 
-	    if ((previous_exists) && (c == CTRL('P'))) {
-
-		previous_exists = FALSE;
-
-		if (get_prev_stats()) {
-		    get_prev_history();
-		    get_prev_ahw();
-		    calc_bonuses();
-		    print_history();
-		    put_misc1();
-		    put_stats();
-		    clear_from(20);
-		}
-
+	    /* Go back to last character with 'P' */
+	    if (prev_ready && ((c == 'P') || (c == 'p'))) {
+		prev_ready = FALSE;
+		load_prev_data();		    
+		continue;
+	    }
+	    
+	    /* Print the History/MiscData */
+	    if ((c == 'H') || (c == 'h')) {
+		use_history = !use_history;
 		continue;
 	    }
 
-	    /* Warn */
+	    /* Warning */
 	    bell();
 	}
 
-	/* Are we done? (hit ESCAPE) */
-	if (c != ' ') break;	
+	/* Are we done? */
+	if (c == ESCAPE) break;	
 
 	/* Save this for the "previous" character */
-	set_prev_stats();
-	set_prev_history();
-	set_prev_ahw();
+	save_prev_data();
 
 	/* Remember that he exists */
-	previous_exists = TRUE;
+	prev_ready = TRUE;
     }
 
 
-    /* Calculate the money */
-    get_money();
-
-    /* Display the character */
-    put_stats();
-    put_misc2();
-    put_misc3();
-
+    /* Clear from line 20 down */
+    clear_from(20);
+    
     /* Get a name, recolor it, prepare savefile */
     get_name();
 
-#if !defined(MACINTOSH) && !defined(MSDOS)
-    /* Pause for a moment */
-    (void)sleep(1);
-#endif
-
+    /* Prompt for it */    
     prt("[Press any key to continue, or Q to commit suicide]", 23, 15);
-    c = inkey();
-    erase_line(23, 0);
     Term_fresh();
 
-    /* Allow Suicide */
+#if !defined(MACINTOSH) && !defined(MSDOS)
+    /* Hack -- Pause for a moment */
+    (void)delay(1000);
+#endif
+
+    /* Get a key */
+    c = inkey();
+
+    /* Allow Total Suicide */
     if (c == 'Q') quit(NULL);
 }
+
 

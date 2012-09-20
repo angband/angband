@@ -1,0 +1,23 @@
+=== Angband 2.7.4 ===
+
+There really isn't a proper README file for Angband 2.7.4 yet.
+
+Angband is a "graphical" dungeon adventure game using textual characters
+to represent the walls of a dungeon and the inhabitants therein, in the
+vein of "rogue", "hack", "nethack", and "moria".
+
+This version of Angband will run on Unix/X11, Unix/Curses, Macintosh,
+Linux/X11, Linux/Ncurses, and various forms of IBM compatibles...
+See "Makefile.xxx" and "main-xxx.c" for more details...
+
+Look at the files in ../lib/info for more information.
+Look at Makefile, h-config.h, and config.h for details on compiling.
+
+Send bug reports, suggestions, etc, to "benh@linc.cis.upenn.edu".
+There is an Angband newsgroup: "rec.games.roguelike.angband".
+
+Note that 2.7.4 is slightly advanced over 2.7.4-Beta from a week ago.
+I recommend throwing out any versions of 2.7.4 that pre-date this one.
+
+--- Ben ---
+
