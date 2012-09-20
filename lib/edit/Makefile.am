@@ -1,9 +1,18 @@
 ## Makefile.am -- Process this file with automake to process Makefile.in
 
 angband_files = \
-  a_info.txt b_info.txt e_info.txt f_info.txt \
-  g_info.txt h_info.txt k_info.txt p_info.txt \
-  r_info.txt v_info.txt z_info.txt
+  artifact.txt \
+  cost_adj.txt \
+  ego_item.txt \
+  limits.txt \
+  monster.txt \
+  object.txt \
+  p_class.txt \
+  p_hist.txt \
+  p_race.txt \
+  shop_own.txt \
+  terrain.txt \
+  vault.txt
 
 EXTRA_DIST = \
   $(angband_files)

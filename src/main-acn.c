@@ -438,7 +438,7 @@ static char alarm_file[2][260] = { "","" };			/* Alarm choices paths (read/write
 static int initialised = 0;		/* Used to determine whether to try to save */
 static int game_in_progress = 0;/* if Quit (or core() is called),  etc. */
 
-static char a_palette[256][4];		/* a copy of the raw Angband palette */
+static byte a_palette[256][4];		/* a copy of the raw Angband palette */
 static unsigned int palette[256];	/* palette as gamma'd bbggrrxx words */
 static unsigned int zpalette[256];	/* And our version for ZapRedraw */
 static double gamma = 1.0;			/* assume gamma of 1.0 if unspecified */
@@ -831,7 +831,7 @@ static int file_is_newer( const char *a, const char *b )
 
 	/* If 'b' doesn't exist then 'b' is OOD. */
 	if ( !b_type ) { return -1; }
-	/* If 'a' doesn't exist then 'b' isn't OOD. ??? */
+	/* If 'a' doesn't exist then 'b' isn't OOD. (?) */
 	if ( !a_type ) { return 0; }
 
 	/* Compare the timestamps (assume that the files are typed) */
@@ -1275,16 +1275,6 @@ errr path_build(char *buf, int max, cptr path, cptr file)
 
 	/* Success */
 	return (0);
-}
-
-
-FILE *my_fopen_temp(char *buf, int max)
-{
-	/* Generate a temporary filename */
-	if (path_temp(buf, max)) return (NULL);
-
-	/* Open the file */
-	return (my_fopen(buf, "w"));
 }
 
 

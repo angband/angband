@@ -14,14 +14,12 @@
 /*
  * Hack -- Link a copyright message into the executable
  */
-cptr copyright[5] =
-{
-	"Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Keoneke",
-	"",
-	"This software may be copied and distributed for educational, research,",
-	"and not for profit purposes provided that this copyright and statement",
-	"are included in all such copies.  Other copyrights may also apply."
-};
+cptr copyright =
+	"Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Keoneke\n"
+	"\n"
+	"This software may be copied and distributed for educational, research,\n"
+	"and not for profit purposes provided that this copyright and statement\n"
+	"are included in all such copies.  Other copyrights may also apply.\n";
 
 
 /*
@@ -162,59 +160,6 @@ cptr *macro__pat;
  * Array of macro actions [MACRO_MAX]
  */
 cptr *macro__act;
-
-
-/*
- * The number of quarks (first quark is NULL)
- */
-s16b quark__num = 1;
-
-/*
- * The array[QUARK_MAX] of pointers to the quarks
- */
-cptr *quark__str;
-
-
-/*
- * The next "free" index to use
- */
-u16b message__next;
-
-/*
- * The index of the oldest message (none yet)
- */
-u16b message__last;
-
-/*
- * The next "free" offset
- */
-u16b message__head;
-
-/*
- * The offset to the oldest used char (none yet)
- */
-u16b message__tail;
-
-/*
- * The array[MESSAGE_MAX] of offsets, by index
- */
-u16b *message__ptr;
-
-/*
- * The array[MESSAGE_BUF] of chars, by offset
- */
-char *message__buf;
-
-/*
- * The array[MESSAGE_MAX] of u16b for the types of messages
- */
-u16b *message__type;
-
-
-/*
- * Table of colors associated to message-types
- */
-byte message__color[MSG_MAX];
 
 
 /*
@@ -553,6 +498,13 @@ char *r_text;
 player_race *p_info;
 char *p_name;
 char *p_text;
+
+/*
+ * The player class arrays
+ */
+player_class *c_info;
+char *c_name;
+char *c_text;
 
 /*
  * The player history arrays

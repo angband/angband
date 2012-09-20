@@ -13,12 +13,6 @@
 
 
 /*
- * You may or may not want to use the following "#undef".
- */
-/* #undef _POSIX_SAVED_IDS */
-
-
-/*
  * Hack -- drop permissions
  */
 void safe_setuid_drop(void)
@@ -28,33 +22,36 @@ void safe_setuid_drop(void)
 
 # ifdef SAFE_SETUID
 
-#  ifdef SAFE_SETUID_POSIX
+#  ifdef HAVE_SETEGID
 
-	if (setuid(getuid()) != 0)
+	if (setegid(getgid()) != 0)
 	{
-		quit("setuid(): cannot set permissions correctly!");
+		quit("setegid(): cannot set permissions correctly!");
 	}
+ 
+#  else /* HAVE_SETEGID */
+
+#   ifdef SAFE_SETUID_POSIX
+
 	if (setgid(getgid()) != 0)
 	{
 		quit("setgid(): cannot set permissions correctly!");
 	}
+    
+#   else /* SAFE_SETUID_POSIX */
 
-#  else
-
-	if (setreuid(geteuid(), getuid()) != 0)
-	{
-		quit("setreuid(): cannot set permissions correctly!");
-	}
 	if (setregid(getegid(), getgid()) != 0)
 	{
 		quit("setregid(): cannot set permissions correctly!");
 	}
 
-#  endif
+#   endif /* SAFE_SETUID_POSIX */
 
-# endif
+#  endif /* HAVE_SETEGID */
 
-#endif
+# endif /* SAFE_SETUID */
+
+#endif /* SET_UID */
 
 }
 
@@ -69,33 +66,36 @@ void safe_setuid_grab(void)
 
 # ifdef SAFE_SETUID
 
-#  ifdef SAFE_SETUID_POSIX
+#  ifdef HAVE_SETEGID
 
-	if (setuid(player_euid) != 0)
+	if (setegid(player_egid) != 0)
 	{
-		quit("setuid(): cannot set permissions correctly!");
+		quit("setegid(): cannot set permissions correctly!");
 	}
+
+#  else /* HAVE_SETEGID */
+
+#   ifdef SAFE_SETUID_POSIX
+
 	if (setgid(player_egid) != 0)
 	{
 		quit("setgid(): cannot set permissions correctly!");
 	}
 
-#  else
+#   else /* SAFE_SETUID_POSIX */
 
-	if (setreuid(geteuid(), getuid()) != 0)
-	{
-		quit("setreuid(): cannot set permissions correctly!");
-	}
 	if (setregid(getegid(), getgid()) != 0)
 	{
 		quit("setregid(): cannot set permissions correctly!");
 	}
 
-#  endif
+#   endif /* SAFE_SETUID_POSIX */
 
-# endif
+#  endif /* HAVE_SETEGID */
 
-#endif
+# endif /* SAFE_SETUID */
+
+#endif /* SET_UID */
 
 }
 
@@ -533,16 +533,13 @@ errr process_pref_file_command(char *buf)
 		if (tokenize(buf+2, 2, zz) == 2)
 		{
 			u16b type = (u16b)strtol(zz[0], NULL, 0);
-			byte color = color_char_to_attr(zz[1][0]);
+			int color = color_char_to_attr(zz[1][0]);
 
-			/* Ignore illegal types */
-			if (type >= MSG_MAX) return (1);
+			/* Ignore illegal color */
+			if (color < 0) return (1);
 
 			/* Store the color */
-			message__color[type] = color;
-
-			/* Success */
-			return (0);
+			return (message_color_define(type, (byte)color));
 		}
 	}
 
@@ -734,7 +731,7 @@ static cptr process_pref_file_expr(char **sp, char *fp)
 			/* Class */
 			else if (streq(b+1, "CLASS"))
 			{
-				v = cp_ptr->title;
+				v = c_name + cp_ptr->name;
 			}
 
 			/* Player */
@@ -1507,7 +1504,7 @@ void player_flags(u32b *f1, u32b *f2, u32b *f3)
 	(*f2) |= rp_ptr->flags2;
 	(*f3) |= rp_ptr->flags3;
 
-	if (p_ptr->pclass == CLASS_WARRIOR)
+	if (cp_ptr->flags & CF_BRAVERY_30)
 	{
 		if (p_ptr->lev >= 30) (*f2) |= (TR2_RES_FEAR);
 	}
@@ -1717,7 +1714,7 @@ static void display_player_flag_info(void)
 			}
 
 			/* Check flags */
-			if (f[set] & flag) c_put_str(TERM_WHITE, "+", row, col+n);
+			else if (f[set] & flag) c_put_str(TERM_WHITE, "+", row, col+n);
 
 			/* Advance */
 			row++;
@@ -1759,7 +1756,7 @@ static void display_player_misc_info(void)
 
 	/* Class */
 	put_str("Class", 5, 1);
-	c_put_str(TERM_L_BLUE, cp_ptr->title, 5, 8);
+	c_put_str(TERM_L_BLUE, c_name + cp_ptr->name, 5, 8);
 
 
 	/* Title */
@@ -1780,7 +1777,7 @@ static void display_player_misc_info(void)
 	/* Normal */
 	else
 	{
-		p = player_title[p_ptr->pclass][(p_ptr->lev-1)/5];
+		p = c_text + cp_ptr->title[(p_ptr->lev - 1) / 5];
 	}
 
 	/* Dump it */
@@ -2075,6 +2072,9 @@ errr file_character(cptr name, bool full)
 	cptr info[128];
 	cptr blanks = "     ";
 
+
+	/* Unused parameter */
+	(void)full;
 
 	/* Build the filename */
 	path_build(buf, 1024, ANGBAND_DIR_USER, name);
@@ -2852,7 +2852,7 @@ void get_name(void)
 	strcpy(tmp, op_ptr->full_name);
 
 	/* Prompt for a new name */
-	if (get_string("Enter a name for your character: ", tmp, 15))
+	if (get_string("Enter a name for your character: ", tmp, sizeof(tmp)))
 	{
 		/* Use the name */
 		strcpy(op_ptr->full_name, tmp);
@@ -3114,7 +3114,7 @@ static void print_tomb(void)
 	/* Normal */
 	else
 	{
-		p = player_title[p_ptr->pclass][(p_ptr->lev-1)/5];
+		p = c_text + cp_ptr->title[(p_ptr->lev - 1) / 5];
 	}
 
 	center_string(buf, op_ptr->full_name);
@@ -3127,7 +3127,7 @@ static void print_tomb(void)
 	put_str(buf, 8, 11);
 
 
-	center_string(buf, cp_ptr->title);
+	center_string(buf, c_name + cp_ptr->name);
 	put_str(buf, 10, 11);
 
 	sprintf(tmp, "Level: %d", (int)p_ptr->lev);
@@ -3319,34 +3319,29 @@ static void death_examine(void)
 	/* Get an item */
 	q = "Examine which item? ";
 	s = "You have nothing to examine.";
-	if (!get_item(&item, q, s, (USE_INVEN | USE_EQUIP))) return;
 
-	/* Get the item (in the pack) */
-	if (item >= 0)
+	while (TRUE)
 	{
+		if (!get_item(&item, q, s, (USE_INVEN | USE_EQUIP))) return;
+
+		/* Get the item */
 		o_ptr = &inventory[item];
-	}
 
-	/* Get the item (on the floor) */
-	else
-	{
-		o_ptr = &o_list[0 - item];
-	}
+		/* Fully known */
+		o_ptr->ident |= (IDENT_MENTAL);
 
-	/* Fully known */
-	o_ptr->ident |= (IDENT_MENTAL);
+		/* Description */
+		object_desc(o_name, o_ptr, TRUE, 3);
 
-	/* Description */
-	object_desc(o_name, o_ptr, TRUE, 3);
+		/* Describe */
+		msg_format("Examining %s...", o_name);
 
-	/* Describe */
-	msg_format("Examining %s...", o_name);
-
-	/* Describe it fully */
-	if (!identify_fully_aux(o_ptr))
-	{
-		msg_print("You see nothing special.");
-		message_flush();
+		/* Describe it fully */
+		if (!identify_fully_aux(o_ptr))
+		{
+			msg_print("You see nothing special.");
+			message_flush();
+		}
 	}
 }
 
@@ -3377,7 +3372,7 @@ static errr highscore_read(high_score *score)
 static int highscore_write(const high_score *score)
 {
 	/* Write the record, note failure */
-	return (fd_write(highscore_fd, (char*)(score), sizeof(high_score)));
+	return (fd_write(highscore_fd, (cptr)(score), sizeof(high_score)));
 }
 
 
@@ -3578,7 +3573,7 @@ void display_scores_aux(int from, int to, int note, high_score *score)
 			/* Dump some info */
 			sprintf(out_val, "%3d.%9s  %s the %s %s, Level %d",
 			        place, the_score.pts, the_score.who,
-			        p_name + p_info[pr].name, class_info[pc].title,
+			        p_name + p_info[pr].name, c_name + c_info[pc].name,
 			        clev);
 
 			/* Append a "maximum level" */
@@ -4004,11 +3999,9 @@ static void kingly(void)
 static void close_game_aux(void)
 {
 	int ch;
+	bool wants_to_quit = FALSE;
+	cptr p = "[(i)nformation, (m)essages, (f)ile dump, (v)iew scores, e(x)amine item, ESC]";
 
-	cptr p;
-
-	/* Prompt */
-	p = "['i' for info, 'f' to file, 't' for scores, 'x' to examine, or ESC]";
 
 	/* Handle retirement */
 	if (p_ptr->total_winner) kingly();
@@ -4038,89 +4031,133 @@ static void close_game_aux(void)
 	/* Flush messages */
 	message_flush();
 
-	/* Forever */
-	while (1)
+	/* Loop */
+	while (!wants_to_quit)
 	{
 		/* Describe options */
-		Term_putstr(2, 23, -1, TERM_WHITE, p);
+		Term_putstr(1, 23, -1, TERM_WHITE, p);
 
 		/* Query */
 		ch = inkey();
 
-		/* Exit */
-		if (ch == ESCAPE)
+		switch (ch)
 		{
-			if (get_check("Do you want to quit? ")) break;
-		}
-
-		/* File dump */
-		else if (ch == 'f')
-		{
-			char ftmp[80];
-
-			sprintf(ftmp, "%s.txt", op_ptr->base_name);
-
-			if (get_string("File name: ", ftmp, 80))
+			/* Exit */
+			case ESCAPE:
 			{
-				if (ftmp[0] && (ftmp[0] != ' '))
-				{
-					errr err;
+				if (get_check("Do you want to quit? "))
+					wants_to_quit = TRUE;
 
-					/* Save screen */
-					screen_save();
-
-					/* Dump a character file */
-					err = file_character(ftmp, FALSE);
-
-					/* Load screen */
-					screen_load();
-
-					/* Check result */
-					if (err)
-					{
-						msg_print("Character dump failed!");
-					}
-					else
-					{
-						msg_print("Character dump successful.");
-					}
-
-					/* Flush messages */
-					message_flush();
-				}
+				break;
 			}
-		}
 
-		/* Show more info */
-		else if (ch == 'i')
-		{
-			/* Save screen */
-			screen_save();
+			/* File dump */
+			case 'f':
+			case 'F':
+			{
+				char ftmp[80];
 
-			/* Show the character */
-			show_info();
+				sprintf(ftmp, "%s.txt", op_ptr->base_name);
 
-			/* Load screen */
-			screen_load();
-		}
+				if (get_string("File name: ", ftmp, 80))
+				{
+					if (ftmp[0] && (ftmp[0] != ' '))
+					{
+						errr err;
 
-		/* Show top scores */
-		else if (ch == 't')
-		{
-			/* Save screen */
-			screen_save();
+						/* Save screen */
+						screen_save();
 
-			/* Show the scores */
-			top_twenty();
+						/* Dump a character file */
+						err = file_character(ftmp, FALSE);
 
-			/* Load screen */
-			screen_load();
-		}
+						/* Load screen */
+						screen_load();
 
-		/* Examine an item */
-		else if (ch == 'x')
-		{
-			death_examine();
+						/* Check result */
+						if (err)
+						{
+							msg_print("Character dump failed!");
+						}
+						else
+						{
+							msg_print("Character dump successful.");
+						}
+
+						/* Flush messages */
+						message_flush();
+					}
+				}
+
+				break;
+			}
+
+			/* Show more info */
+			case 'i':
+			case 'I':
+			{
+				/* Save screen */
+				screen_save();
+
+				/* Show the character */
+				show_info();
+
+				/* Load screen */
+				screen_load();
+
+				break;
+			}
+
+			/* Show last messages */
+			case 'm':
+			case 'M':
+			{
+				/* Save screen */
+				screen_save();
+
+				/* Display messages */
+				do_cmd_messages();
+
+				/* Load screen */
+				screen_load();
+
+				break;
+			}
+
+			/* Show top scores */
+			case 'v':
+			case 'V':
+			{
+				/* Save screen */
+				screen_save();
+
+				/* Show the scores */
+				top_twenty();
+
+				/* Load screen */
+				screen_load();
+
+				break;
+			}
+
+			/* Examine an item */
+			case 'x':
+			case 'X':
+			{
+				/* Save screen */
+				screen_save();
+
+				/* Clear the screen */
+				Term_clear();
+
+				/* Examine items */
+				death_examine();
+
+				/* Load screen */
+				screen_load();
+
+				break;
+			}
 		}
 	}
 

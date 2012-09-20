@@ -1335,8 +1335,8 @@ static void choose_item(int a_idx)
 		case TV_POLEARM:
 			a_ptr->to_h += (s16b)(a_ptr->level / 10 + rand_int(4) +
 			                      rand_int(4));
-			a_ptr->to_d += (s16b)(a_ptr->level / 10 + rand_int(4) +
-			                      rand_int((a_ptr->dd * a_ptr->ds) / 2 + 1));
+			a_ptr->to_d += (s16b)(a_ptr->level / 10 + rand_int(4));
+			a_ptr->to_d += (s16b)(rand_int((a_ptr->dd * a_ptr->ds) / 2 + 1));
 			break;
 		case TV_BOOTS:
 		case TV_GLOVES:
@@ -1849,15 +1849,12 @@ static void do_curse(artifact_type *a_ptr)
 	}
 
 	a_ptr->flags3 |= TR3_LIGHT_CURSE;
-	
+
 	if (rand_int(4) == 0)
 		a_ptr->flags3 |= TR3_HEAVY_CURSE;
 }
 
 
-/*
- * Note the three special cases (One Ring, Grond, Morgoth).
- */
 static void scramble_artifact(int a_idx)
 {
 	artifact_type *a_ptr = &a_info[a_idx];
@@ -1868,13 +1865,13 @@ static void scramble_artifact(int a_idx)
 	bool curse_me = FALSE;
 	bool aggravate_me = FALSE;
 
-	/* Special cases -- don't randomize these! */
+	/* XXX XXX XXX Special cases -- don't randomize these! */
 	if ((a_idx == ART_POWER) ||
 	    (a_idx == ART_GROND) ||
 	    (a_idx == ART_MORGOTH))
 		return;
 
-	/* Skip unused artifacts, too! */
+	/* Skip unused artifacts */
 	if (a_ptr->tval == 0) return;
 
 	/* Evaluate the original artifact to determine the power level. */
@@ -1912,9 +1909,10 @@ static void scramble_artifact(int a_idx)
 	}
 	else
 	{
-		/* Special artifact (light source, ring, or
-		   amulet).  Clear the following fields; leave
-		   the rest alone. */
+		/*
+		 * Special artifact (light source, ring, or amulet).
+		 * Clear the following fields; leave the rest alone.
+		 */
 		a_ptr->pval = 0;
 		a_ptr->to_h = a_ptr->to_d = a_ptr->to_a = 0;
 		a_ptr->flags1 = a_ptr->flags2 = 0;
@@ -1948,13 +1946,13 @@ static void scramble_artifact(int a_idx)
 			a_old = *a_ptr;
 			add_ability(a_ptr);
 			ap = artifact_power(a_idx);
+
 			if (ap > (power * 11) / 10 + 1)
 			{
 				/* too powerful -- put it back */
 				*a_ptr = a_old;
 				continue;
 			}
-
 			else if (ap >= (power * 9) / 10)	/* just right */
 			{
 				break;
@@ -2003,11 +2001,9 @@ static void scramble_artifact(int a_idx)
 
 
 /*
- * Return nonzero if the whole set of random artifacts meets certain
- * criteria.  Return 0 if we fail to meet those criteria (which will
- * restart the whole process).
+ * Return TRUE if the whole set of random artifacts meets certain criteria.
  */
-static int artifacts_acceptable(void)
+static bool artifacts_acceptable(void)
 {
 	int swords = 5, polearms = 5, blunts = 5, bows = 3;
 	int bodies = 5, shields = 3, cloaks = 3, hats = 4;
@@ -2064,19 +2060,24 @@ static int artifacts_acceptable(void)
 			msg_format("Restarting generation process: not enough%s",
 				types);
 		}
-		return (0);
+
+		/* Not acceptable */
+		return (FALSE);
 	}
 	else
 	{
-		return (1);
+		/* Acceptable */
+		return (TRUE);
 	}
 }
 
 
 static errr scramble(void)
 {
-	/* If our artifact set fails to meet certain criteria, we start over. */
-	do
+	/* Allocate the "kinds" array */
+	C_MAKE(kinds, z_info->a_max, s16b);
+
+	while (1)
 	{
 		int a_idx;
 
@@ -2085,27 +2086,43 @@ static errr scramble(void)
 		{
 			scramble_artifact(a_idx);
 		}
-	} while (!artifacts_acceptable());	/* end of all artifacts */
+
+		if (artifacts_acceptable()) break;
+	}
+
+	/* Free the "kinds" array */
+	C_FREE(kinds, z_info->a_max, s16b);
 
 	/* Success */
 	return (0);
 }
 
 
-static errr do_randart_aux(void)
+static errr do_randart_aux(bool full)
 {
 	errr result;
 
+	/* Generate random names */
 	if ((result = init_names()) != 0) return (result);
 
-	if ((result = scramble()) != 0) return (result);
+	if (full)
+	{
+		/* Randomize the artifacts */
+		if ((result = scramble()) != 0) return (result);
+	}
 
 	/* Success */
 	return (0);
 }
 
 
-errr do_randart(u32b randart_seed)
+/*
+ * Randomize the artifacts
+ *
+ * The full flag toggles between just randomizing the names and
+ * complete randomization of the artifacts.
+ */
+errr do_randart(u32b randart_seed, bool full)
 {
 	errr err;
 
@@ -2113,13 +2130,8 @@ errr do_randart(u32b randart_seed)
 	Rand_value = randart_seed;
 	Rand_quick = TRUE;
 
-	/* Allocate the "kinds" array */
-	C_MAKE(kinds, z_info->a_max, s16b);
-
-	err = do_randart_aux();
-
-	/* Free the "kinds" array */
-	C_FREE(kinds, z_info->a_max, s16b);
+	/* Generate the random artifact (names) */
+	err = do_randart_aux(full);
 
 	/* When done, resume use of the Angband "complex" RNG. */
 	Rand_quick = FALSE;

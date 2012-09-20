@@ -1,12 +1,12 @@
-# File: r_info.txt
+# File: monster.txt
 
 
-# This file is used to initialize the "lib/data/r_info.raw" file, which is
+# This file is used to initialize the "lib/data/monster.raw" file, which is
 # used to initialize the "monster race" information for the Angband game.
 
 # Do not modify this file unless you know exactly what you are doing,
 # unless you wish to risk possible system crashes and broken savefiles.
-# After modifying this file, delete the "lib/data/r_info.raw" file.
+# After modifying this file, delete the "lib/data/monster.raw" file.
 
 # Currently, "unique" monsters are just "special" monster races, with
 # the requirement that only one monster of that race can exist at a time,
@@ -106,7 +106,7 @@
 # Note that monster zero contains the "player" picture.
 
 
-# === Understanding r_info.txt ===
+# === Understanding monster.txt ===
 
 # N: serial number : monster name
 # G: symbol : color
@@ -156,7 +156,7 @@
 
 # Version stamp (required)
 
-V:2.9.2
+V:2.9.3
 
 
 ##### Non-race (contains the "player" picture) #####
@@ -3821,7 +3821,7 @@ B:CLAW:POISON:3d3
 B:BITE:HURT:1d6
 F:FRIENDS | DROP_60 | 
 F:OPEN_DOOR | BASH_DOOR | 
-F:EVIL | TROLL
+F:EVIL | TROLL | IM_POIS
 D:A powerful troll form.  Venom drips from its needlelike claws.
 
 N:294:Vibration hound
@@ -5229,7 +5229,7 @@ F:FORCE_MAXHP |
 F:ESCORT | 
 F:ONLY_ITEM | DROP_2D2 | DROP_GOOD | 
 F:TAKE_ITEM | OPEN_DOOR | BASH_DOOR | 
-F:EVIL | TROLL | IM_COLD | IM_POIS
+F:EVIL | TROLL | IM_ACID | IM_POIS
 D:A massive and cruel troll of great power, drool slides caustically down 
 D:his muscular frame.  Despite his bulk, he strikes with stunning speed.
 

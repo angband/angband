@@ -1,19 +1,19 @@
-# File: f_info.txt
+# File: terrain.txt
 
 
-# This file is used to initialize the "lib/data/f_info.raw" file, which is
+# This file is used to initialize the "lib/data/terrain.raw" file, which is
 # used to initialize the "terrain feature" information for the Angband game.
 
 # Do not modify this file unless you know exactly what you are doing,
 # unless you wish to risk possible system crashes and broken savefiles.
-# After modifying this file, delete the "lib/data/f_info.raw" file.
+# After modifying this file, delete the "lib/data/terrain.raw" file.
 
 # Note that the terrain feature are grouped into very regular groups,
 # such that each of the bits in the feature type conveys information.
 
 # Note that terrain feature zero contains the "darkness" picture.
 
-# === Understanding f_info.txt ===
+# === Understanding terrain.txt ===
 
 # N : serial number : terrain name
 # G : symbol : color
@@ -35,7 +35,7 @@
 
 # Version stamp (required)
 
-V:2.9.2
+V:2.9.3
 
 
 # 0x00 --> <darkness>

@@ -112,7 +112,7 @@
 #endif
 
 /*
- * One version needs this file
+ * One version needs these files
  */
 #ifdef USE_TERMIO
 # include <sys/ioctl.h>
@@ -120,7 +120,7 @@
 #endif
 
 /*
- * The other needs this file
+ * The other needs these files
  */
 #ifdef USE_TCHARS
 # include <sys/ioctl.h>
@@ -455,6 +455,9 @@ static void keymap_game_prepare(void)
  */
 static errr Term_xtra_gcu_alive(int v)
 {
+	int x, y;
+
+
 	/* Suspend */
 	if (!v)
 	{
@@ -472,13 +475,11 @@ static errr Term_xtra_gcu_alive(int v)
 		/* Flush the curses buffer */
 		(void)refresh();
 
-#ifdef SPECIAL_BSD
-		/* this moves curses to bottom right corner */
-		mvcur(curscr->cury, curscr->curx, LINES - 1, 0);
-#else
-		/* this moves curses to bottom right corner */
-		mvcur(curscr->_cury, curscr->_curx, LINES - 1, 0);
-#endif
+		/* Get current cursor position */
+		getyx(curscr, y, x);
+
+		/* Move the cursor to bottom right corner */
+		mvcur(y, x, LINES - 1, 0);
 
 		/* Exit curses */
 		endwin();
@@ -539,6 +540,7 @@ static void Term_init_gcu(term *t)
  */
 static void Term_nuke_gcu(term *t)
 {
+	int x, y;
 	term_data *td = (term_data *)(t->data);
 
 	/* Delete this window */
@@ -555,13 +557,11 @@ static void Term_nuke_gcu(term *t)
 	start_color();
 #endif
 
-#ifdef SPECIAL_BSD
-	/* This moves curses to bottom right corner */
-	mvcur(curscr->cury, curscr->curx, LINES - 1, 0);
-#else
-	/* This moves curses to bottom right corner */
-	mvcur(curscr->_cury, curscr->_curx, LINES - 1, 0);
-#endif
+	/* Get current cursor position */
+	getyx(curscr, y, x);
+
+	/* Move the cursor to bottom right corner */
+	mvcur(y, x, LINES - 1, 0);
 
 	/* Flush the curses buffer */
 	(void)refresh();
@@ -845,15 +845,20 @@ static errr Term_text_gcu(int x, int y, int n, byte a, cptr s)
 			/* Determine picture to use */
 			switch (s[i] & 0x7F)
 			{
+
+#ifdef ACS_CKBOARD
 				/* Wall */
 				case '#':
 					pic = ACS_CKBOARD;
 					break;
+#endif /* ACS_CKBOARD */
 
+#ifdef ACS_BOARD
 				/* Mineral vein */
 				case '%':
 					pic = ACS_BOARD;
 					break;
+#endif /* ACS_BOARD */
 
 				/* XXX */
 				default:
@@ -930,6 +935,9 @@ static errr term_data_init_gcu(term_data *td, int rows, int cols, int y, int x)
 
 static void hook_quit(cptr str)
 {
+	/* Unused */
+	(void)str;
+
 	/* Exit curses */
 	endwin();
 }
@@ -949,6 +957,11 @@ errr init_gcu(int argc, char *argv[])
 
 	int num_term = MAX_TERM_DATA, next_win = 0;
 
+	
+	/* Unused */
+	(void)argc;
+	(void)argv;
+	
 	/* Extract the normal keymap */
 	keymap_norm_prepare();
 

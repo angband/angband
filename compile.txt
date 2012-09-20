@@ -1,7 +1,7 @@
 Compiling Angband
 =================
 
-Last updated on 18th January 2001 by Robert Ruehlmann
+Last updated on 4th July 2001 by Robert Ruehlmann
 
 
 ----------------------------------------------------------------------
@@ -13,15 +13,15 @@ is available, which contains everything you need to install and play
 Angband.  For other platforms, including most UNIX systems, you must
 compile the source code yourself.  Try the following non-trivial steps:
 
-Step 1: Acquire.  Ftp to "clockwork.dementia.org/angband/Source"
-                  Try "bin" and "mget angband*.tar.gz" and "y"
-Step 2: Extract.  Try "gunzip *.gz" then "tar -xvf *.tar"
-Step 3: Prepare.  Try "cd angband*/src", then edit "Makefile"
-                  You may also edit "h-config.h" and "config.h"
-Step 4: Compile.  Try "make", and then "cd .." if successful
-Step 5: Execute.  Try "angband -uTest" to initialize stuff
-
-Step 6: Play....  Read the "online help" via the "?" command.
+Step 1: Acquire.   Ftp to "clockwork.dementia.org/angband/Source"
+                   Try "bin" and "mget angband*.tar.gz" and "y"
+Step 2: Extract.   Try "gunzip *.gz" then "tar -xvf *.tar"
+Step 3: Prepare.   Try "cd angband*/".
+Step 4: Configure. Try "./configure".
+Step 5: Compile.   Try "make".
+Step 6: Install.   Try "make install".
+Step 7: Play...    Try "./angband".
+                   Read the "online help" via the "?" command.
 
 Of course, if you have a compiler, you can compile a (possibly customized)
 executable on almost any system.  You will need the "source archive" (as
@@ -88,11 +88,11 @@ Windows 95/98/NT/2000 + MS Visual C++ 5.0/6.0
 - Install the Angband source:
 	Get the source code and the untgz tool from:
 	< ftp://clockwork.dementia.org/angband/Tool/untgz32.exe >.
-	Then extract the source with "untgz32 angband-292-src.tgz".
+	Then extract the source with "untgz32 angband-2.9.3.tar.gz".
 - Install other required files:
 	Get the "extra archive" from
 	< ftp://clockwork.dementia.org/angband/Windows/ext-win.zip >.
-	Go to the angband-292 directory and unzip the ext-win archive into it.
+	Go to the angband directory and unzip the ext-win archive into it.
 	Again make sure the directory structure is preserved (use the -d
 	option in pkunzip).
 	Then get the graphics archive from
@@ -103,7 +103,7 @@ Windows 95/98/NT/2000 + MS Visual C++ 5.0/6.0
 	Visual C++ already properly configured for compiling Angband.
 - Compile Angband:
 	Select "Build Angband.exe" in the Build menu.  Angband should now
-	be compiled and the Angband.exe will be placed into the "angband-292"
+	be compiled and the Angband.exe will be placed into the "angband-293"
 	directory.
 - Run Angband:
 	Go back to the Angband-folder and run the Angband.exe.
@@ -121,11 +121,11 @@ Windows 95/98/NT/2000 + Borland C++ 5.5 commandline tools
 - Install the Angband source:
 	Get the source code and  the untgz tool from:
 	< ftp://clockwork.dementia.org/angband/Tool/untgz32.exe >.
-	Then extract the source with "untgz32 angband-292-src.tgz".
+	Then extract the source with "untgz32 angband-2.9.3.tar.gz".
 - Install other required files:
 	Get the "extra archive" from
 	< ftp://clockwork.dementia.org/angband/Windows/ext-win.zip >.
-	Go to the angband-292 directory and unzip the ext-win archive into it.
+	Go to the angband directory and unzip the ext-win archive into it.
 	Again make sure the directory structure is preserved (use the -d
 	option in pkunzip).
 	Then get the graphics archive from
@@ -157,12 +157,12 @@ Windows 95/98/NT/2000 + Cygwin
 	interface very similiar to a normal Unix/Linux shell with many
 	useful tools. Install it and start the shell.
 - Install the Angband source code
-	Extract the source code with "tar -xvzf angband-292-src.tgz".
+	Extract the source code with "tar -xvzf angband-2.9.3.tar.gz".
 - Install other required files:
 	Get the "extra archive" from
 	< ftp://clockwork.dementia.org/angband/Windows/ext-win.zip >.
-	Go to the angband-292 directory and unzip the ext-win archive into it.
-	Then get the graphics archive from
+	Go to the angband directory and unzip the ext-win archive into
+	it.  Then get the graphics archive from
 	< ftp://clockwork.dementia.org/angband/Extra/angband-graf.zip >
 	and unzip it into the lib/xtra/graf/ folder.
 - Compile Angband:
@@ -174,12 +174,12 @@ Windows 95/98/NT/2000 + Cygwin
 
 
 ----------------------------------------------------------------------
-Linux + GCC
+GNU/Linux or Unix + GCC
 ----------------------------------------------------------------------
 (written by Robert Ruehlmann < rr9@angband.org >)
 
 - Install the Angband source:
-	Extract the source code with "tar -xvzf angband-292-src.tgz".
+	Extract the source code with "tar -xvzf angband-2.9.3.tar.gz".
 - Install the graphics files:
 	If you want to use graphics under X11 then get the archive from
 	< ftp://clockwork.dementia.org/angband/Extra/angband-graf.zip >
@@ -189,4 +189,3 @@ Linux + GCC
 	directory.
 - Run Angband:
 	Start Angband with "angband".
-

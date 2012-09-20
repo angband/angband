@@ -40,7 +40,7 @@ static int get_spell(int *sn, cptr prompt, int sval, bool known)
 
 	char out_val[160];
 
-	cptr p = ((mp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
+	cptr p = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
 
 #ifdef ALLOW_REPEAT
 
@@ -62,8 +62,8 @@ static int get_spell(int *sn, cptr prompt, int sval, bool known)
 	{
 		/* Check for this spell */
 		if ((spell < 32) ?
-		    (spell_flags[mp_ptr->spell_type][sval][0] & (1L << spell)) :
-		    (spell_flags[mp_ptr->spell_type][sval][1] & (1L << (spell - 32))))
+		    (spell_flags[cp_ptr->spell_type][sval][0] & (1L << spell)) :
+		    (spell_flags[cp_ptr->spell_type][sval][1] & (1L << (spell - 32))))
 		{
 			/* Collect this spell */
 			spells[num++] = spell;
@@ -186,7 +186,7 @@ static int get_spell(int *sn, cptr prompt, int sval, bool known)
 
 			/* Prompt */
 			strnfmt(tmp_val, 78, "%^s %s (%d mana, %d%% fail)? ",
-			        prompt, spell_names[mp_ptr->spell_type][spell],
+			        prompt, spell_names[cp_ptr->spell_type][spell],
 			        s_ptr->smana, spell_chance(spell));
 
 			/* Belay that order */
@@ -251,7 +251,7 @@ void do_cmd_browse(void)
 
 
 	/* Warriors are illiterate */
-	if (!mp_ptr->spell_book)
+	if (!cp_ptr->spell_book)
 	{
 		msg_print("You cannot read books!");
 		return;
@@ -276,7 +276,7 @@ void do_cmd_browse(void)
 #endif
 
 	/* Restrict choices to "useful" books */
-	item_tester_tval = mp_ptr->spell_book;
+	item_tester_tval = cp_ptr->spell_book;
 
 	/* Get an item */
 	q = "Browse which book? ";
@@ -311,8 +311,8 @@ void do_cmd_browse(void)
 	{
 		/* Check for this spell */
 		if ((spell < 32) ?
-		    (spell_flags[mp_ptr->spell_type][sval][0] & (1L << spell)) :
-		    (spell_flags[mp_ptr->spell_type][sval][1] & (1L << (spell - 32))))
+		    (spell_flags[cp_ptr->spell_type][sval][0] & (1L << spell)) :
+		    (spell_flags[cp_ptr->spell_type][sval][1] & (1L << (spell - 32))))
 		{
 			/* Collect this spell */
 			spells[num++] = spell;
@@ -356,14 +356,14 @@ void do_cmd_study(void)
 
 	int spell = -1;
 
-	cptr p = ((mp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
+	cptr p = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
 
 	cptr q, s;
 
 	object_type *o_ptr;
 
 
-	if (!mp_ptr->spell_book)
+	if (!cp_ptr->spell_book)
 	{
 		msg_print("You cannot read books!");
 		return;
@@ -389,7 +389,7 @@ void do_cmd_study(void)
 
 
 	/* Restrict choices to "useful" books */
-	item_tester_tval = mp_ptr->spell_book;
+	item_tester_tval = cp_ptr->spell_book;
 
 	/* Get an item */
 	q = "Study which book? ";
@@ -420,14 +420,12 @@ void do_cmd_study(void)
 
 
 	/* Mage -- Learn a selected spell */
-	if (mp_ptr->spell_book == TV_MAGIC_BOOK)
+	if (cp_ptr->flags & CF_CHOOSE_SPELLS)
 	{
 		/* Ask for a spell, allow cancel */
 		if (!get_spell(&spell, "study", sval, FALSE) && (spell == -1)) return;
 	}
-
-	/* Priest -- Learn a random prayer */
-	if (mp_ptr->spell_book == TV_PRAYER_BOOK)
+	else
 	{
 		int k = 0;
 
@@ -438,8 +436,8 @@ void do_cmd_study(void)
 		{
 			/* Check spells in the book */
 			if ((spell < 32) ?
-			    (spell_flags[mp_ptr->spell_type][sval][0] & (1L << spell)) :
-			    (spell_flags[mp_ptr->spell_type][sval][1] & (1L << (spell - 32))))
+			    (spell_flags[cp_ptr->spell_type][sval][0] & (1L << spell)) :
+			    (spell_flags[cp_ptr->spell_type][sval][1] & (1L << (spell - 32))))
 			{
 				/* Skip non "okay" prayers */
 				if (!spell_okay(spell, FALSE)) continue;
@@ -492,7 +490,7 @@ void do_cmd_study(void)
 
 	/* Mention the result */
 	message_format(MSG_STUDY, 0, "You have learned the %s of %s.",
-	           p, spell_names[mp_ptr->spell_type][spell]);
+	           p, spell_names[cp_ptr->spell_type][spell]);
 
 	/* One less spell available */
 	p_ptr->new_spells--;
@@ -539,7 +537,7 @@ void do_cmd_cast(void)
 
 
 	/* Require spell ability */
-	if (mp_ptr->spell_book != TV_MAGIC_BOOK)
+	if (cp_ptr->spell_book != TV_MAGIC_BOOK)
 	{
 		msg_print("You cannot cast spells!");
 		return;
@@ -561,7 +559,7 @@ void do_cmd_cast(void)
 
 
 	/* Restrict choices to spell books */
-	item_tester_tval = mp_ptr->spell_book;
+	item_tester_tval = cp_ptr->spell_book;
 
 	/* Get an item */
 	q = "Use which book? ";
@@ -631,9 +629,9 @@ void do_cmd_cast(void)
 	else
 	{
 		/* Hack -- chance of "beam" instead of "bolt" */
-		beam = ((p_ptr->pclass == CLASS_MAGE) ? plev : (plev / 2));
+		beam = ((cp_ptr->flags & CF_BEAM) ? plev : (plev / 2));
 
-		/* Spells.  */
+		/* Spells. */
 		switch (spell)
 		{
 			case SPELL_MAGIC_MISSILE:
@@ -1188,7 +1186,7 @@ void do_cmd_pray(void)
 
 
 	/* Must use prayer books */
-	if (mp_ptr->spell_book != TV_PRAYER_BOOK)
+	if (cp_ptr->spell_book != TV_PRAYER_BOOK)
 	{
 		msg_print("Pray hard enough and your prayers may be answered.");
 		return;
@@ -1210,7 +1208,7 @@ void do_cmd_pray(void)
 
 
 	/* Restrict choices */
-	item_tester_tval = mp_ptr->spell_book;
+	item_tester_tval = cp_ptr->spell_book;
 
 	/* Get an item */
 	q = "Use which book? ";
@@ -1393,7 +1391,7 @@ void do_cmd_pray(void)
 				if (!get_aim_dir(&dir)) return;
 				fire_ball(GF_HOLY_ORB, dir,
 				          (damroll(3, 6) + plev +
-				           (plev / ((p_ptr->pclass == CLASS_PRIEST) ? 2 : 4))),
+				           (plev / ((cp_ptr->flags & CF_BLESS_WEAPON) ? 2 : 4))),
 				          ((plev < 30) ? 2 : 3));
 				break;
 			}

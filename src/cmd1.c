@@ -269,7 +269,7 @@ sint tot_dam_aux(const object_type *o_ptr, int tdam, const monster_type *m_ptr)
 				if (mult < 3) mult = 3;
 			}
 
-			/* Slay Dragon  */
+			/* Slay Dragon */
 			if ((f1 & (TR1_SLAY_DRAGON)) &&
 			    (r_ptr->flags3 & (RF3_DRAGON)))
 			{
@@ -1641,7 +1641,7 @@ static const byte chome[] =
  *
  * Blunt Corridor -- If there is a wall two spaces ahead and
  * we seem to be in a corridor, then force a turn into the side
- * corridor, must be moving straight into a corridor here. ???
+ * corridor, must be moving straight into a corridor here. (?)
  *
  * Diagonal Corridor    Blunt Corridor (?)
  *       # #                  #

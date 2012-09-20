@@ -99,7 +99,7 @@ static byte staff_col[MAX_WOODS] =
 	TERM_L_UMBER, TERM_L_UMBER, TERM_L_UMBER, TERM_L_UMBER, TERM_RED,
 	TERM_RED, TERM_L_UMBER, TERM_L_UMBER, TERM_L_UMBER, TERM_UMBER,
 	TERM_GREEN, TERM_L_UMBER, TERM_L_UMBER, TERM_L_WHITE, TERM_UMBER,
-	TERM_YELLOW, TERM_SLATE, /*???,???,???*/
+	TERM_YELLOW, TERM_SLATE, /* (?), (?), (?) */
 };
 
 
@@ -306,61 +306,6 @@ static bool object_flavor(int k_idx)
 
 	/* No flavor */
 	return (0);
-}
-
-
-/*
- * Certain items, if aware, are known instantly.
- *
- * This function is used only by "flavor_init()".
- *
- * Add "EASY_KNOW" flag to "k_info.txt" file.  XXX XXX XXX
- */
-static bool object_easy_know(int i)
-{
-	object_kind *k_ptr = &k_info[i];
-
-	/* Analyze the "tval" */
-	switch (k_ptr->tval)
-	{
-		/* Spellbooks */
-		case TV_MAGIC_BOOK:
-		case TV_PRAYER_BOOK:
-		{
-			return (TRUE);
-		}
-
-		/* Simple items */
-		case TV_FLASK:
-		case TV_JUNK:
-		case TV_BOTTLE:
-		case TV_SKELETON:
-		case TV_SPIKE:
-		{
-			return (TRUE);
-		}
-
-		/* All Food, Potions, Scrolls, Rods */
-		case TV_FOOD:
-		case TV_POTION:
-		case TV_SCROLL:
-		case TV_ROD:
-		{
-			return (TRUE);
-		}
-
-		/* Some Rings, Amulets, Lites */
-		case TV_RING:
-		case TV_AMULET:
-		case TV_LITE:
-		{
-			if (k_ptr->flags3 & (TR3_EASY_KNOW)) return (TRUE);
-			return (FALSE);
-		}
-	}
-
-	/* Nope */
-	return (FALSE);
 }
 
 
@@ -594,9 +539,6 @@ void flavor_init(void)
 
 		/* No flavor yields aware */
 		if (!k_ptr->flavor) k_ptr->aware = TRUE;
-
-		/* Check for "easily known" */
-		k_ptr->easy_know = object_easy_know(i);
 	}
 }
 
@@ -625,6 +567,9 @@ void reset_visuals(bool unused)
 {
 	int i;
 
+
+	/* Unused parameter */
+	(void)unused;
 
 	/* Extract default attr/char code for features */
 	for (i = 0; i < z_info->f_max; i++)
@@ -1352,7 +1297,7 @@ void object_desc(char *buf, const object_type *o_ptr, int pref, int mode)
 		if (*s == '~')
 		{
 			/* Add a plural if needed */
-			if (o_ptr->number != 1)
+			if ((o_ptr->number != 1) && !(known && artifact_p(o_ptr)))
 			{
 				char k = t[-1];
 
@@ -1876,40 +1821,46 @@ object_desc_done:
  * Hack -- describe an item currently in a store's inventory
  * This allows an item to *look* like the player is "aware" of it
  */
-void object_desc_store(char *buf, object_type *o_ptr, int pref, int mode)
+void object_desc_store(char *buf, const object_type *o_ptr, int pref, int mode)
 {
+	object_type *i_ptr;
+	object_type object_type_body;
+
+	byte hack_flavor;
+	bool hack_aware;
+
+
+	/* Get local object */
+	i_ptr = &object_type_body;
+
+	/* Copy the object */
+	object_copy(i_ptr, o_ptr);
+
 	/* Save the "flavor" */
-	byte hack_flavor = k_info[o_ptr->k_idx].flavor;
+	hack_flavor = k_info[i_ptr->k_idx].flavor;
 
 	/* Save the "aware" flag */
-	bool hack_aware = k_info[o_ptr->k_idx].aware;
-
-	/* Save the "known" flag */
-	bool hack_known = (o_ptr->ident & (IDENT_KNOWN)) ? TRUE : FALSE;
-
+	hack_aware = k_info[i_ptr->k_idx].aware;
 
 	/* Clear the flavor */
-	k_info[o_ptr->k_idx].flavor = FALSE;
+	k_info[i_ptr->k_idx].flavor = FALSE;
 
 	/* Set the "known" flag */
-	o_ptr->ident |= (IDENT_KNOWN);
+	i_ptr->ident |= (IDENT_KNOWN);
 
 	/* Force "aware" for description */
-	k_info[o_ptr->k_idx].aware = TRUE;
+	k_info[i_ptr->k_idx].aware = TRUE;
 
 
 	/* Describe the object */
-	object_desc(buf, o_ptr, pref, mode);
+	object_desc(buf, i_ptr, pref, mode);
 
 
 	/* Restore "flavor" value */
-	k_info[o_ptr->k_idx].flavor = hack_flavor;
+	k_info[i_ptr->k_idx].flavor = hack_flavor;
 
 	/* Restore "aware" flag */
-	k_info[o_ptr->k_idx].aware = hack_aware;
-
-	/* Clear the known flag */
-	if (!hack_known) o_ptr->ident &= ~(IDENT_KNOWN);
+	k_info[i_ptr->k_idx].aware = hack_aware;
 }
 
 
@@ -2094,6 +2045,10 @@ static bool identify_fully_aux2(const object_type *o_ptr, int mode, cptr *info, 
 	int i = 0;
 
 	u32b f1, f2, f3;
+
+
+	/* Unused parameter */
+	(void)len;
 
 	/* Extract the "known" and "random" flags */
 	object_flags_aux(mode, o_ptr, &f1, &f2, &f3);
@@ -2447,21 +2402,29 @@ static bool identify_fully_aux2(const object_type *o_ptr, int mode, cptr *info, 
 		}
 	}
 
-	if (f3 & (TR3_IGNORE_ACID))
+	if ((f3 & (TR3_IGNORE_ACID)) && (f3 & (TR3_IGNORE_ELEC)) &&
+	    (f3 & (TR3_IGNORE_FIRE)) && (f3 & (TR3_IGNORE_COLD)))
 	{
-		info[i++] = "It cannot be harmed by acid.";
+		info[i++] = "It cannot be harmed by the elements.";
 	}
-	if (f3 & (TR3_IGNORE_ELEC))
+	else
 	{
-		info[i++] = "It cannot be harmed by electricity.";
-	}
-	if (f3 & (TR3_IGNORE_FIRE))
-	{
-		info[i++] = "It cannot be harmed by fire.";
-	}
-	if (f3 & (TR3_IGNORE_COLD))
-	{
-		info[i++] = "It cannot be harmed by cold.";
+		if (f3 & (TR3_IGNORE_ACID))
+		{
+			info[i++] = "It cannot be harmed by acid.";
+		}
+		if (f3 & (TR3_IGNORE_ELEC))
+		{
+			info[i++] = "It cannot be harmed by electricity.";
+		}
+		if (f3 & (TR3_IGNORE_FIRE))
+		{
+			info[i++] = "It cannot be harmed by fire.";
+		}
+		if (f3 & (TR3_IGNORE_COLD))
+		{
+			info[i++] = "It cannot be harmed by cold.";
+		}
 	}
 
 	/* Unknown extra powers (ego-item with random extras or artifact) */
@@ -2469,7 +2432,7 @@ static bool identify_fully_aux2(const object_type *o_ptr, int mode, cptr *info, 
 		(!(o_ptr->ident & IDENT_MENTAL)) &&
 	    ((o_ptr->xtra1) || artifact_p(o_ptr)))
 	{
-		info[i++] = "It has hidden powers.";
+		info[i++] = "It might have hidden powers.";
 	}
 
 

@@ -2719,7 +2719,7 @@ static void do_cmd_knowledge_artifacts(void)
 	my_fclose(fff);
 
 	/* Display the file contents */
-	show_file(file_name, "Known artifacts", 0, 0);
+	show_file(file_name, "Known (or lost) artifacts", 0, 0);
 
 	/* Remove the file */
 	fd_kill(file_name);
@@ -2784,7 +2784,7 @@ static void do_cmd_knowledge_uniques(void)
 		if (dead) killed++;
 
 		/* Print a message */
-		fprintf(fff, "     %s is %s\n",
+		fprintf(fff, "     %-30s is %s\n",
 			    (r_name + r_ptr->name),
 			    (dead ? "dead" : "alive"));
 	}

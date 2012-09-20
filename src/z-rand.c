@@ -354,9 +354,9 @@ u32b Rand_simple(u32b m)
 {
 	static bool initialized = FALSE;
 	static u32b simple_rand_value;
-
 	bool old_rand_quick;
 	u32b old_rand_value;
+	u32b result;
 
 
 	/* Save RNG state */
@@ -368,7 +368,7 @@ u32b Rand_simple(u32b m)
 
 	if (initialized)
 	{
-		/* Use old seed */
+		/* Use stored seed */
 		Rand_value = simple_rand_value;
 	}
 	else
@@ -379,12 +379,15 @@ u32b Rand_simple(u32b m)
 	}
 
 	/* Get a random number */
-	simple_rand_value = rand_int(m);
+	result = rand_int(m);
+
+	/* Store the new seed */
+	simple_rand_value = Rand_value;
 
 	/* Restore RNG state */
 	Rand_quick = old_rand_quick;
 	Rand_value = old_rand_value;
 
 	/* Use the value */
-	return (simple_rand_value);
+	return (result);
 }

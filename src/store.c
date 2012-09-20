@@ -884,10 +884,10 @@ static int home_carry(object_type *o_ptr)
 		j_ptr = &st_ptr->stock[slot];
 
 		/* Hack -- readable books always come first */
-		if ((o_ptr->tval == mp_ptr->spell_book) &&
-		    (j_ptr->tval != mp_ptr->spell_book)) break;
-		if ((j_ptr->tval == mp_ptr->spell_book) &&
-		    (o_ptr->tval != mp_ptr->spell_book)) continue;
+		if ((o_ptr->tval == cp_ptr->spell_book) &&
+		    (j_ptr->tval != cp_ptr->spell_book)) break;
+		if ((j_ptr->tval == cp_ptr->spell_book) &&
+		    (o_ptr->tval != cp_ptr->spell_book)) continue;
 
 		/* Objects sort by decreasing type */
 		if (o_ptr->tval > j_ptr->tval) break;
@@ -2840,7 +2840,14 @@ static void store_examine(void)
 	o_ptr = &st_ptr->stock[item];
 
 	/* Description */
-	object_desc_store(o_name, o_ptr, TRUE, 3);
+	if (store_num == STORE_HOME)
+	{
+		object_desc(o_name, o_ptr, TRUE, 3);
+	}
+	else
+	{
+		object_desc_store(o_name, o_ptr, TRUE, 3);
+	}
 
 	/* Describe */
 	msg_format("Examining %s...", o_name);

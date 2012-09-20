@@ -120,10 +120,10 @@ static errr wr_block(void)
 	fake[3] = (byte)(data_size >> 8);
 
 	/* Dump the head */
-	err = fd_write(data_fd, (char*)&fake, 4);
+	err = fd_write(data_fd, (cptr)&fake, 4);
 
 	/* Dump the actual data */
-	err = fd_write(data_fd, (char*)data_head, data_size);
+	err = fd_write(data_fd, (cptr)data_head, data_size);
 
 	/* XXX XXX XXX */
 	fake[0] = 0;
@@ -132,7 +132,7 @@ static errr wr_block(void)
 	fake[3] = 0;
 
 	/* Dump the tail */
-	err = fd_write(data_fd, (char*)&fake, 4);
+	err = fd_write(data_fd, (cptr)&fake, 4);
 
 	/* Hack -- reset */
 	data_next = data_head;
@@ -252,7 +252,7 @@ static errr wr_savefile(void)
 	fake[3] = (byte)(VERSION_EXTRA);
 
 	/* Dump the data */
-	err = fd_write(data_fd, (char*)&fake, 4);
+	err = fd_write(data_fd, (cptr)&fake, 4);
 
 
 	/* Make array XXX XXX XXX */
@@ -1146,6 +1146,48 @@ static void wr_extra(void)
 }
 
 
+/*
+ * Dump the random artifacts
+ */
+static void wr_randarts(void)
+{
+	int i;
+
+	wr_u16b(z_info->a_max);
+
+	for (i = 0; i < z_info->a_max; i++)
+	{
+		artifact_type *a_ptr = &a_info[i];
+
+		wr_byte(a_ptr->tval);
+		wr_byte(a_ptr->sval);
+		wr_s16b(a_ptr->pval);
+
+		wr_s16b(a_ptr->to_h);
+		wr_s16b(a_ptr->to_d);
+		wr_s16b(a_ptr->to_a);
+		wr_s16b(a_ptr->ac);
+
+		wr_byte(a_ptr->dd);
+		wr_byte(a_ptr->ds);
+
+		wr_s16b(a_ptr->weight);
+
+		wr_s32b(a_ptr->cost);
+
+		wr_u32b(a_ptr->flags1);
+		wr_u32b(a_ptr->flags2);
+		wr_u32b(a_ptr->flags3);
+
+		wr_byte(a_ptr->level);
+		wr_byte(a_ptr->rarity);
+
+		wr_byte(a_ptr->activation);
+		wr_u16b(a_ptr->time);
+		wr_u16b(a_ptr->randtime);
+	}
+}
+
 
 /*
  * The cave grid flags that get saved in the savefile
@@ -1418,7 +1460,6 @@ static bool wr_savefile_new(void)
 	}
 
 
-
 	/* Write the "extra" information */
 	wr_extra();
 
@@ -1444,6 +1485,13 @@ static bool wr_savefile_new(void)
 	for (i = 0; i < PY_MAX_SPELLS; i++)
 	{
 		wr_byte(p_ptr->spell_order[i]);
+	}
+
+
+	/* Write randart information */
+	if (adult_rand_artifacts)
+	{
+		wr_randarts();
 	}
 
 

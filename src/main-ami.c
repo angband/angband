@@ -2590,7 +2590,7 @@ PROTO int amiga_tomb( void )
 	/* Normal */
 	else
 	{
-		p = player_title[p_ptr->pclass][(p_ptr->lev-1)/5];
+		p = c_text + cp_ptr->title[(p_ptr->lev - 1) / 5];
 	}
 
 	tomb_str( 3, " R.I.P." );
@@ -4426,13 +4426,13 @@ PROTO void amiga_makepath( char *name )
 	}
 	/* Use PROGDIR if available; check if progdir points to correct path */
 
-	f = fopen("PROGDIR:/EDIT/f_info.txt","r");
+	f = fopen("PROGDIR:/EDIT/feature.txt","r");
 	if (!f)
-		f = fopen("PROGDIR:/DATA/f_info.raw","r");
+		f = fopen("PROGDIR:/DATA/feature.raw","r");
 	if (!f)
-		f = fopen("/DATA/r_info.raw","r");
+		f = fopen("/DATA/monster.raw","r");
 	if (!f)
-		f = fopen("/EDIT/r_info.txt","r");
+		f = fopen("/EDIT/monster.txt","r");
 	if (f && KICK20)
 	{
 		char c;
@@ -4593,7 +4593,7 @@ PROTO static void amiga_hs_to_ascii(void)
 	/* Dump some info */
 	sprintf(temp, "%3d.%9s  %s the %s %s, Level %d",
 	        i + 1, h.pts, h.who,
-	        p_name + p_info[pr].name, class_info[pc].title,
+	        p_name + p_info[pr].name, c_info[pc].title,
 	        clev);
 
 	/* Dump the first line */

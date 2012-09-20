@@ -18,7 +18,7 @@
 
 ##### System Specific Subfiles #####
 
-?:[IOR [EQU $SYS xaw] [EQU $SYS x11]]
+?:[IOR [EQU $SYS xaw] [EQU $SYS x11] [EQU $SYS xpj] [EQU $SYS gtk]]
 %:user-x11.prf
 
 ?:[EQU $SYS gcu]
@@ -42,37 +42,37 @@
 
 ##### Race Specific Subfiles #####
 
-?:[EQU $CLASS Human]
+?:[EQU $RACE Human]
 %:Human.prf
 
-?:[EQU $CLASS Half-Elf]
+?:[EQU $RACE Half-Elf]
 %:Half-Elf.prf
 
-?:[EQU $CLASS Elf]
+?:[EQU $RACE Elf]
 %:Elf.prf
 
-?:[EQU $CLASS Hobbit]
+?:[EQU $RACE Hobbit]
 %:Hobbit.prf
 
-?:[EQU $CLASS Gnome]
+?:[EQU $RACE Gnome]
 %:Gnome.prf
 
-?:[EQU $CLASS Dwarf]
+?:[EQU $RACE Dwarf]
 %:Dwarf.prf
 
-?:[EQU $CLASS Half-Orc]
+?:[EQU $RACE Half-Orc]
 %:Half-Orc.prf
 
 # "Half-Troll.prf" is too long for stupid 8.3 filenames,
 # so try to load the shortened filename too.
-?:[EQU $CLASS Half-Troll]
+?:[EQU $RACE Half-Troll]
 %:Half-Troll.prf
 %:H-Troll.prf
 
-?:[EQU $CLASS Dunadan]
+?:[EQU $RACE Dunadan]
 %:Dunadan.prf
 
-?:[EQU $CLASS High-Elf]
+?:[EQU $RACE High-Elf]
 %:High-Elf.prf
 
 

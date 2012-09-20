@@ -96,49 +96,49 @@ P:^_x53\r
 # Shift + Keypad (/,*,7,8,9,-,4,5,6,+,1,2,3,0,.)
 #
 
-A:\e\e\e
+A:\a
 P:^_Sx35\r
 
-A:\e\e\e
+A:\a
 P:^_Sx37\r
 
-A:\e\e\\.7
+A:\a\\.7
 P:^_Sx47\r
 
-A:\e\e\\.8
+A:\a\\.8
 P:^_Sx48\r
 
-A:\e\e\\.9
+A:\a\\.9
 P:^_Sx49\r
 
-A:\e\e\e
+A:\a
 P:^_Sx4A\r
 
-A:\e\e\\.4
+A:\a\\.4
 P:^_Sx4B\r
 
-A:\e\e\\.5
+A:\a\\.5
 P:^_Sx4C\r
 
-A:\e\e\\.6
+A:\a\\.6
 P:^_Sx4D\r
 
-A:\e\e\e
+A:\a
 P:^_Sx4E\r
 
-A:\e\e\\.1
+A:\a\\.1
 P:^_Sx4F\r
 
-A:\e\e\\.2
+A:\a\\.2
 P:^_Sx50\r
 
-A:\e\e\\.3
+A:\a\\.3
 P:^_Sx51\r
 
-A:\e\e\e
+A:\a
 P:^_Sx52\r
 
-A:\e\e\e
+A:\a
 P:^_Sx53\r
 
 
@@ -146,49 +146,49 @@ P:^_Sx53\r
 # Control + Keypad (/,*,7,8,9,-,4,5,6,+,1,2,3,0,.)
 #
 
-A:\e\e\e
+A:\a
 P:^_Cx35\r
 
-A:\e\e\e
+A:\a
 P:^_Cx37\r
 
-A:\e\e\\+7
+A:\a\\+7
 P:^_Cx47\r
 
-A:\e\e\\+8
+A:\a\\+8
 P:^_Cx48\r
 
-A:\e\e\\+9
+A:\a\\+9
 P:^_Cx49\r
 
-A:\e\e\e
+A:\a
 P:^_Cx4A\r
 
-A:\e\e\\+4
+A:\a\\+4
 P:^_Cx4B\r
 
-A:\e\e\\+5
+A:\a\\+5
 P:^_Cx4C\r
 
-A:\e\e\\+6
+A:\a\\+6
 P:^_Cx4D\r
 
-A:\e\e\e
+A:\a
 P:^_Cx4E\r
 
-A:\e\e\\+1
+A:\a\\+1
 P:^_Cx4F\r
 
-A:\e\e\\+2
+A:\a\\+2
 P:^_Cx50\r
 
-A:\e\e\\+3
+A:\a\\+3
 P:^_Cx51\r
 
-A:\e\e\e
+A:\a
 P:^_Cx52\r
 
-A:\e\e\e
+A:\a
 P:^_Cx53\r
 
 
@@ -196,48 +196,48 @@ P:^_Cx53\r
 # Control + Keypad (/,*,7,8,9,-,4,5,6,+,1,2,3,0,.)
 #
 
-A:\e\e\e
+A:\a
 P:^_Cx95\r
 
-A:\e\e\e
+A:\a
 P:^_Cx96\r
 
-A:\e\e\\+7
+A:\a\\+7
 P:^_Cx77\r
 
-A:\e\e\\+8
+A:\a\\+8
 P:^_Cx8D\r
 
-A:\e\e\\+9
+A:\a\\+9
 P:^_Cx84\r
 
-A:\e\e\e
+A:\a
 P:^_Cx8E\r
 
-A:\e\e\\+4
+A:\a\\+4
 P:^_Cx73\r
 
-A:\e\e\\+5
+A:\a\\+5
 P:^_Cx8F\r
 
-A:\e\e\\+6
+A:\a\\+6
 P:^_Cx74\r
 
-A:\e\e\e
+A:\a
 P:^_Cx90\r
 
-A:\e\e\\+1
+A:\a\\+1
 P:^_Cx75\r
 
-A:\e\e\\+2
+A:\a\\+2
 P:^_Cx91\r
 
-A:\e\e\\+3
+A:\a\\+3
 P:^_Cx76\r
 
-A:\e\e\e
+A:\a
 P:^_Cx92\r
 
-A:\e\e\e
+A:\a
 P:^_Cx93\r
 

@@ -103,7 +103,7 @@ static bool know_damage(int r_idx, int i)
  */
 static void roff_aux(int r_idx)
 {
-	monster_race *r_ptr;
+	const monster_race *r_ptr;
 	monster_lore *l_ptr;
 
 	bool old = FALSE;
@@ -128,7 +128,7 @@ static void roff_aux(int r_idx)
 	int vn;
 	cptr vp[64];
 
-	monster_race save_mem;
+	monster_lore save_mem;
 
 	long i, j;
 
@@ -161,7 +161,7 @@ static void roff_aux(int r_idx)
 		/* XXX XXX XXX */
 
 		/* Hack -- save memory */
-		COPY(&save_mem, r_ptr, monster_race);
+		COPY(&save_mem, l_ptr, monster_lore);
 
 		/* Hack -- Maximal kills */
 		l_ptr->r_tkills = MAX_SHORT;
@@ -274,8 +274,7 @@ static void roff_aux(int r_idx)
 			/* But we've also killed it */
 			if (dead)
 			{
-				roff(format(", but you have avenged %s!  ",
-				            plural(l_ptr->r_deaths, "him", "them")));
+				roff(", but you have taken revenge!  ");
 			}
 
 			/* Unavenged (ever) */
@@ -557,7 +556,7 @@ static void roff_aux(int r_idx)
 		i = (long)r_ptr->mexp * r_ptr->level / p_ptr->lev;
 
 		/* calculate the fractional exp part scaled by 100, */
-		/* must use long arithmetic to avoid overflow  */
+		/* must use long arithmetic to avoid overflow */
 		j = ((((long)r_ptr->mexp * r_ptr->level % p_ptr->lev) *
 			  (long)1000 / p_ptr->lev + 5) / 10);
 
@@ -1343,7 +1342,7 @@ static void roff_aux(int r_idx)
 	if (cheat_know)
 	{
 		/* Hack -- restore memory */
-		COPY(r_ptr, &save_mem, monster_race);
+		COPY(l_ptr, &save_mem, monster_lore);
 	}
 }
 

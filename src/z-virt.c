@@ -58,7 +58,7 @@ vptr rnfree(vptr p, huge len)
 	if (rnfree_aux) return ((*rnfree_aux)(p, len));
 
 	/* Use "free" */
-	free ((char*)(p));
+	free((char*)(p));
 
 	/* Done */
 	return (NULL);

@@ -8,8 +8,8 @@
 
 CC = gcc
 WRES = windres
-LIBS = -s -mwindows -e _mainCRTStartup -lwinmm
-CFLAGS = -Wall -O2 -fno-strength-reduce -DUSE_TRANSPARENCY -DWINDOWS
+LIBS = -s -mno-cygwin -mwindows -e _mainCRTStartup -lwinmm
+CFLAGS = -Wall -W -pedantic -mno-cygwin -O2 -fno-strength-reduce -DUSE_TRANSPARENCY -DWINDOWS
 
 
 SRCS = \

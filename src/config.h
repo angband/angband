@@ -41,13 +41,6 @@
 
 
 /*
- * OPTION: define "SPECIAL_BSD" for using certain versions of UNIX
- * that use the 4.4BSD Lite version of Curses in "main-gcu.c"
- */
-/* #define SPECIAL_BSD */
-
-
-/*
  * OPTION: Use the POSIX "termios" methods in "main-gcu.c"
  */
 /* #define USE_TPOSIX */
@@ -588,14 +581,3 @@
 #  define ALLOW_BORG_GRAPHICS
 # endif /* USE_GRAPHICS */
 #endif /* ALLOW_BORG */
-
-/*
- * OPTION: Enable some old code for compatibility with weird systems.
- * 
- * Switch on when your system doesn't support some ANSI-C functions
- * like memset(), strstr(), strchr(), and strrchr().
- *
- * Please send a mail to rr9@angband.org if you have to use this
- * switch.  If nobody uses the code then it will be removed.
- */
-/* #define OLD_CRUFT */

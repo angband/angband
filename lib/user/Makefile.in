@@ -57,8 +57,10 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
+ANGBAND_OBJS = @ANGBAND_OBJS@
 CC = @CC@
 DEFAULT_PATH = @DEFAULT_PATH@
+EXEEXT = @EXEEXT@
 GAMEGROUP = @GAMEGROUP@
 MAKEINFO = @MAKEINFO@
 PACKAGE = @PACKAGE@
@@ -125,7 +127,7 @@ distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
-	    cp -pr $$/$$file $(distdir)/$$file; \
+	    cp -pr $$d/$$file $(distdir)/$$file; \
 	  else \
 	    test -f $(distdir)/$$file \
 	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \

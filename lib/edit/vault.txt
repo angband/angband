@@ -1,16 +1,16 @@
-# File: v_info.txt
+# File: vault.txt
 
 
-# This file is used to initialize the "lib/data/v_info.raw" file, which is
+# This file is used to initialize the "lib/data/vault.raw" file, which is
 # used to initialize the "vault template" information for the Angband game.
 
 # Do not modify this file unless you know exactly what you are doing,
 # unless you wish to risk possible system crashes and broken savefiles.
-# After modifying this file, delete the "lib/data/v_info.raw" file.
+# After modifying this file, delete the "lib/data/vault.raw" file.
 
 # Note that the "spacing" in the "description" lines is very important!
 
-# === Understanding v_info.txt ===
+# === Understanding vault.txt ===
 
 # N:serial number:vault name
 # X:room type:rating:rows:columns
@@ -46,13 +46,13 @@
 
 # Version stamp (required)
 
-V:2.9.2
+V:2.9.3
 
 
 ### Simple Vaults (type 7) -- maximum size 44x22 ###
 
 
-N:1:Lesser vault (round)
+N:1:round
 X:7:5:12:20
 D:       %%%%%%       
 D:    %%%..##..%%%    
@@ -68,7 +68,7 @@ D:    %%%..##..%%%
 D:       %%%%%%       
 
 
-N:2:Lesser vault (octagon)
+N:2:octagon
 X:7:5:14:20
 D:   %%%%%%%%%%%%%%   
 D:  %%.##########.%%  
@@ -86,7 +86,7 @@ D:  %%.##########.%%
 D:   %%%%%%%%%%%%%%   
 
 
-N:3:Lesser vault (octagon)
+N:3:octagon
 X:7:5:12:20
 D:    %%%%%%%%%%%%    
 D: %%%%..........%%%% 
@@ -102,7 +102,7 @@ D: %%%%..........%%%%
 D:    %%%%%%%%%%%%    
 
 
-N:4:Lesser vault (square)
+N:4:square
 X:7:5:12:20
 D:%%%%%%%%%%%%%%%%%%%%
 D:%*.......&........*%
@@ -118,7 +118,7 @@ D:%*........&.......*%
 D:%%%%%%%%%%%%%%%%%%%%
 
 
-N:5:Lesser vault (diagonal)
+N:5:diagonal
 X:7:5:12:20
 D:%%%%%%%%%%%%%%%%%   
 D:%,,,##,,,,##....%%  
@@ -134,7 +134,7 @@ D:  %%...##,,,,##,,,,%
 D:   %%%%%%%%%%%%%%%%%
 
 
-N:6:Lesser vault (diagonal)
+N:6:diagonal
 X:7:5:12:20
 D:   %%%%%%%%%%%%%%%%%
 D:  %%....##,,,,##,,,%
@@ -150,7 +150,7 @@ D:%,,,,##,,,,##...%%
 D:%%%%%%%%%%%%%%%%%   
 
 
-N:7:Lesser vault (square)
+N:7:square
 X:7:5:12:20
 D:%%%%%%%%%%%%%%%%%%%%
 D:%,################,%
@@ -170,7 +170,7 @@ D:%%%%%%%%%%%%%%%%%%%%
 ### Greater vaults (type 8) -- maximum size 66x44 ###
 
 
-N:10:Greater vault (huge)
+N:10:huge
 X:8:45:17:39
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 D:%XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX%
@@ -191,7 +191,7 @@ D:%XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-N:11:Greater vault (large)
+N:11:large
 X:8:35:18:40
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 D:%XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX%
@@ -213,7 +213,7 @@ D:%XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-N:12:Greater vault (butterfly)
+N:12:butterfly
 X:8:25:18:40
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 D:%XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX%
@@ -235,7 +235,7 @@ D:%XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-N:13:Greater vault (chambers)
+N:13:chambers
 X:8:25:15:40
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 D:%&+.^..^..^..^..^..^..^..^..^..^..^..+&%
@@ -254,7 +254,7 @@ D:%&+..^..^..^..^..^..^..^..^..^..^..^.+&%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-N:14:Greater vault (Planet X)
+N:14:Planet X
 X:7:10:13:15
 D:%%%%%%%%%%%%%%%
 D:%.............%
@@ -271,7 +271,7 @@ D:%.............%
 D:%%%%%%%%%%%%%%%
 
 
-N:15:Lesser vault (Turnabout)
+N:15:Turnabout
 X:7:10:12:15
 D:###############
 D:#.............#
@@ -287,7 +287,7 @@ D:#.............#
 D:###############
 
 
-N:16:Lesser Vault (Rooms)
+N:16:Rooms
 X:7:10:13:19
 D:%%%%%%%%%%%%%%%%%%%
 D:%.................%
@@ -304,7 +304,7 @@ D:%.................%
 D:%%%%%%%%%%%%%%%%%%%
 
 
-N:17:Lesser Vault (Cross)
+N:17:Cross
 X:7:10:13:20
 D:%%%%%%%%%%%%%%%%%%%%
 D:%########++########%
@@ -321,7 +321,7 @@ D:%########++########%
 D:%%%%%%%%%%%%%%%%%%%%
 
 
-N:18:Lesser Vault (Central)
+N:18:Central
 X:7:12:10:12
 D:############
 D:#,#^^^^^^#,#
@@ -335,7 +335,7 @@ D:#,#^^^^^^#,#
 D:############
 
 
-N:19:Lesser Vault (Camouflaged)
+N:19:Camouflaged
 X:7:10:9:12
 D:%%%%%%%%%%%%
 D:%XXXXXXXXXX%
@@ -348,7 +348,7 @@ D:%XXXXXXXXXX%
 D:%%%%%%%%%%%%
 
 
-N:20:Greater vault (The I in the Storm)
+N:20:The I in the Storm
 X:8:40:25:41
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 D:%XXXXXXXXXXXXXXXXXXX#XXXXXXXXXXXXXXXXXXX%
@@ -377,7 +377,7 @@ D:%XXXXXXXXXXXXXXXXXXX#XXXXXXXXXXXXXXXXXXX%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-N:21:Greater vault (The Bank From Hell)
+N:21:The Bank From Hell
 X:8:30:20:31
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 D:%XXXXXXXXXXXXXX+XXXXXXXXXXXXXX%
@@ -401,7 +401,7 @@ D:%XXXXXXXXXXXXXXXXXXXXXXXXXXXXX%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-N:22:Greater vault (Snake Maze)
+N:22:Snake Maze
 X:8:15:21:23
 D:%%%%%%%%%%%%%%%%%%%%%%%
 D:%.....................%
@@ -426,7 +426,7 @@ D:%.....................%
 D:%%%%%%%%%%%%%%%%%%%%%%%
 
 
-N:23:Greater vault (Roundabouts One)
+N:23:Roundabouts One
 X:8:15:21:43
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 D:%#XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX%
@@ -451,7 +451,7 @@ D:%XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX#%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-N:24:Greater vault (Roundabout Two)
+N:24:Roundabout Two
 X:8:25:25:40
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 D:%XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX%
@@ -480,7 +480,7 @@ D:%XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-N:25:Greater Vault (Huge - Modified)
+N:25:Huge - Modified
 X:8:45:17:39
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 D:%XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX%
@@ -501,7 +501,7 @@ D:%XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-N:26:Greater vault (Mirrored Quartet)
+N:26:Mirrored Quartet
 X:8:20:21:49
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 D:%XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX%
@@ -526,7 +526,7 @@ D:%XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-N:27:Greater vault (False Wall)
+N:27:False Wall
 X:8:20:15:64
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 D:%X+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX+X%
@@ -545,7 +545,7 @@ D:%XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-N:28:Greater Vault (Divisi)
+N:28:Divisi
 X:8:35:31:55
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 D:%.....................................................%
@@ -580,7 +580,7 @@ D:%.....................................................%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-N:29:Greater vault (Curlicues One)
+N:29:Curlicues One
 X:8:15:23:44
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 D:%XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX%
@@ -607,7 +607,7 @@ D:%XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-N:30:Greater vault (Bubbles)
+N:30:Bubbles
 X:8:35:25:41
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 D:%XXX#XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX%
@@ -636,7 +636,7 @@ D:%XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-N:31:Greater vault (Symmet)
+N:31:Symmet
 X:8:20:23:29
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 D:%...........................%
@@ -663,7 +663,7 @@ D:%...........................%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-N:32:Greater vault (Crown)
+N:32:Crown
 X:8:12:19:28
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 D:%..........................%
@@ -686,7 +686,7 @@ D:%..........................%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-N:33:Lesser vault (X^2)
+N:33:X^2
 X:7:8:13:15
 D:%%%%%%%%%%%%%%%
 D:%.............%
@@ -703,7 +703,7 @@ D:%.............%
 D:%%%%%%%%%%%%%%%
 
 
-N:34:Greater vault (V-vault)
+N:34:V-vault
 X:8:25:23:48
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 D:%XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX%

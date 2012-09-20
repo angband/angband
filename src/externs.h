@@ -51,12 +51,9 @@ extern const byte blows_table[12][12];
 extern const byte extract_energy[200];
 extern const s32b player_exp[PY_MAX_LEVEL];
 extern const player_sex sex_info[MAX_SEXES];
-extern const player_class class_info[MAX_CLASS];
-extern const player_magic magic_info[MAX_CLASS];
 extern const u32b spell_flags[2][9][2];
 extern cptr spell_names[2][PY_MAX_SPELLS];
 extern const byte chest_traps[64];
-extern cptr player_title[MAX_CLASS][PY_MAX_LEVEL/5];
 extern cptr color_names[16];
 extern cptr stat_names[A_MAX];
 extern cptr stat_names_reduced[A_MAX];
@@ -68,7 +65,7 @@ extern const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER];
 extern cptr inscrip_text[MAX_INSCRIP];
 
 /* variable.c */
-extern cptr copyright[5];
+extern cptr copyright;
 extern byte version_major;
 extern byte version_minor;
 extern byte version_patch;
@@ -133,16 +130,6 @@ extern char savefile[1024];
 extern s16b macro__num;
 extern cptr *macro__pat;
 extern cptr *macro__act;
-extern s16b quark__num;
-extern cptr *quark__str;
-extern u16b message__next;
-extern u16b message__last;
-extern u16b message__head;
-extern u16b message__tail;
-extern u16b *message__ptr;
-extern char *message__buf;
-extern u16b *message__type;
-extern byte message__color[MSG_MAX];
 extern term *angband_term[ANGBAND_TERM_MAX];
 extern char angband_term_name[ANGBAND_TERM_MAX][16];
 extern byte angband_color_table[256][4];
@@ -204,6 +191,9 @@ extern char *r_text;
 extern player_race *p_info;
 extern char *p_name;
 extern char *p_text;
+extern player_class *c_info;
+extern char *c_name;
+extern char *c_text;
 extern hist_type *h_info;
 extern char *h_text;
 extern owner_type *b_info;
@@ -455,7 +445,7 @@ extern void reset_visuals(bool prefs);
 extern void object_flags(const object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3);
 extern void object_flags_known(const object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3);
 extern void object_desc(char *buf, const object_type *o_ptr, int pref, int mode);
-extern void object_desc_store(char *buf, object_type *o_ptr, int pref, int mode);
+extern void object_desc_store(char *buf, const object_type *o_ptr, int pref, int mode);
 extern cptr item_activation(const object_type *o_ptr);
 extern int identify_random_gen(const object_type *o_ptr, cptr *info, int len);
 extern bool identify_fully_aux(const object_type *o_ptr);
@@ -655,13 +645,16 @@ extern void bell(cptr reason);
 extern void sound(int val);
 extern s16b quark_add(cptr str);
 extern cptr quark_str(s16b i);
-extern errr quark_init(void);
+extern errr quarks_init(void);
+extern errr quarks_free(void);
 extern s16b message_num(void);
 extern cptr message_str(s16b age);
 extern u16b message_type(s16b age);
 extern byte message_color(s16b age);
+extern errr message_color_define(u16b type, byte color);
 extern void message_add(cptr str, u16b type);
-extern errr message_init(void);
+extern errr messages_init(void);
+extern void messages_free(void);
 extern void move_cursor(int row, int col);
 extern void msg_print(cptr msg);
 extern void msg_format(cptr fmt, ...);
@@ -755,20 +748,6 @@ extern bool confuse_dir(int *dp);
  * Hack -- conditional (or "bizarre") externs
  */
 
-#ifdef OLD_CRUFT
-#ifndef HAS_MEMSET
-/* util.c */
-extern char *memset(char*, int, huge);
-#endif /* HAS_MEMSET */
-#endif /* OLD_CRUFT */
-
-
-#ifndef HAS_STRICMP
-/* util.c */
-extern int stricmp(cptr a, cptr b);
-#endif /* HAS_STRICMP */
-
-
 #ifdef SET_UID
 # ifndef HAS_USLEEP
 /* util.c */
@@ -795,5 +774,5 @@ extern void show_floor(const int *floor_list, int floor_num);
 
 #ifdef GJW_RANDART
 /* randart.c */
-extern errr do_randart(u32b randart_seed);
+extern errr do_randart(u32b randart_seed, bool full);
 #endif /* GJW_RANDART */

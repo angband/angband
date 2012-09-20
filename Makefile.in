@@ -57,23 +57,27 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
+ANGBAND_OBJS = @ANGBAND_OBJS@
 CC = @CC@
 DEFAULT_PATH = @DEFAULT_PATH@
+EXEEXT = @EXEEXT@
 GAMEGROUP = @GAMEGROUP@
 MAKEINFO = @MAKEINFO@
 PACKAGE = @PACKAGE@
 VERSION = @VERSION@
 
-EXTRA_DIST = readme.txt changes.txt compile.txt
+AUTOMAKE_OPTIONS = foreign
+
+EXTRA_DIST = readme.txt changes.txt compile.txt acconfig.h
 
 SUBDIRS = src lib
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ./src/autoconf.h
 CONFIG_CLEAN_FILES = 
-DIST_COMMON =  AUTHORS COPYING INSTALL Makefile.am Makefile.in THANKS \
-TODO acconfig.h acinclude.m4 aclocal.m4 configure configure.in \
-install-sh missing mkinstalldirs src/autoconf.h.in src/stamp-h.in
+DIST_COMMON =  AUTHORS COPYING Makefile.am Makefile.in THANKS TODO \
+acconfig.h acinclude.m4 aclocal.m4 configure configure.in install-sh \
+missing mkinstalldirs src/autoconf.h.in src/stamp-h.in
 
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
@@ -255,7 +259,7 @@ distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
-	    cp -pr $$/$$file $(distdir)/$$file; \
+	    cp -pr $$d/$$file $(distdir)/$$file; \
 	  else \
 	    test -f $(distdir)/$$file \
 	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \

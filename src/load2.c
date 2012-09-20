@@ -783,7 +783,7 @@ static errr rd_item(object_type *o_ptr)
 	o_ptr->weight = k_ptr->weight;
 
 	/* Hack -- extract the "broken" flag */
-	if (!o_ptr->pval < 0) o_ptr->ident |= (IDENT_BROKEN);
+	if (o_ptr->pval < 0) o_ptr->ident |= (IDENT_BROKEN);
 
 
 	/* Artifacts */
@@ -1280,6 +1280,7 @@ static void rd_ghost(void)
 }
 
 
+static u32b randart_version;
 
 
 /*
@@ -1292,7 +1293,6 @@ static errr rd_extra(void)
 	byte tmp8u;
 	u16b tmp16u;
 
-	u32b randart_version;
 
 	rd_string(op_ptr->full_name, 32);
 
@@ -1317,7 +1317,7 @@ static errr rd_extra(void)
 	rd_byte(&p_ptr->pclass);
 
 	/* Verify player class */
-	if (p_ptr->pclass >= MAX_CLASS)
+	if (p_ptr->pclass >= z_info->c_max)
 	{
 		note(format("Invalid player class (%d).", p_ptr->pclass));
 		return (-1);
@@ -1460,40 +1460,6 @@ static errr rd_extra(void)
 	rd_byte(&tmp8u);
 	p_ptr->is_dead = tmp8u;
 
-	/* Initialize random artifacts */
-	if (adult_rand_artifacts && !(p_ptr->is_dead))
-	{
-#ifdef GJW_RANDART
-
-		/*
-		 * XXX XXX XXX
-		 * Importing old savefiles with random artifacts is dangerous
-		 * since the randart-generators differ and produce different
-		 * artifacts from the same random seed.
-		 *
-		 * Switching off the check for incompatible randart versions
-		 * allows to import such a savefile - do it at your own risk.
-		 */
-
-		/* Check for incompatible randart version */
-		if (randart_version != RANDART_VERSION)
-		{
-			note(format("Incompatible random artifacts version!"));
-			return (-1);
-		}
-
-		/* Initialize randarts */
-		do_randart(seed_randart);
-
-#else /* GJW_RANDART */
-
-		note("Random artifacts are disabled in this binary.");
-		return (-1);
-
-#endif /* GJW_RANDART */
-
-	}
-
 	/* Read "feeling" */
 	rd_byte(&tmp8u);
 	feeling = tmp8u;
@@ -1536,6 +1502,152 @@ static errr rd_extra(void)
 	}
 
 	return (0);
+}
+
+
+/*
+ * Read the random artifacts
+ */
+static errr rd_randarts(void)
+{
+
+#ifdef GJW_RANDART
+
+	int i;
+	byte tmp8u;
+	s16b tmp16s;
+	u16b tmp16u;
+	u16b artifact_count;
+	s32b tmp32s;
+	u32b tmp32u;
+
+
+	if (older_than(2, 9, 3))
+	{
+		/*
+		 * XXX XXX XXX
+		 * Importing old savefiles with random artifacts is dangerous
+		 * since the randart-generators differ and produce different
+		 * artifacts from the same random seed.
+		 *
+		 * Switching off the check for incompatible randart versions
+		 * allows to import such a savefile - do it at your own risk.
+		 */
+
+		/* Check for incompatible randart version */
+		if (randart_version != RANDART_VERSION)
+		{
+			note(format("Incompatible random artifacts version!"));
+			return (-1);
+		}
+
+		/* Initialize randarts */
+		do_randart(seed_randart, TRUE);
+	}
+	else
+	{
+		/* Read the number of artifacts */
+		rd_u16b(&artifact_count);
+
+		/* Alive or cheating death */
+		if (!p_ptr->is_dead || arg_wizard)
+		{
+			/* Incompatible save files */
+			if (artifact_count > z_info->a_max)
+			{
+				note(format("Too many (%u) random artifacts!", artifact_count));
+				return (-1);
+			}
+
+			/* Mark the old artifacts as "empty" */
+			for (i = 0; i < z_info->a_max; i++)
+			{
+				artifact_type *a_ptr = &a_info[i];
+				a_ptr->name = 0;
+				a_ptr->tval = 0;
+				a_ptr->sval = 0;
+			}
+
+			/* Read the artifacts */
+			for (i = 0; i < artifact_count; i++)
+			{
+				artifact_type *a_ptr = &a_info[i];
+
+				rd_byte(&a_ptr->tval);
+				rd_byte(&a_ptr->sval);
+				rd_s16b(&a_ptr->pval);
+
+				rd_s16b(&a_ptr->to_h);
+				rd_s16b(&a_ptr->to_d);
+				rd_s16b(&a_ptr->to_a);
+				rd_s16b(&a_ptr->ac);
+
+				rd_byte(&a_ptr->dd);
+				rd_byte(&a_ptr->ds);
+
+				rd_s16b(&a_ptr->weight);
+
+				rd_s32b(&a_ptr->cost);
+
+				rd_u32b(&a_ptr->flags1);
+				rd_u32b(&a_ptr->flags2);
+				rd_u32b(&a_ptr->flags3);
+
+				rd_byte(&a_ptr->level);
+				rd_byte(&a_ptr->rarity);
+
+				rd_byte(&a_ptr->activation);
+				rd_u16b(&a_ptr->time);
+				rd_u16b(&a_ptr->randtime);
+			}
+		}
+		else
+		{
+			/* Read the artifacts */
+			for (i = 0; i < artifact_count; i++)
+			{
+				rd_byte(&tmp8u); /* a_ptr->tval */
+				rd_byte(&tmp8u); /* a_ptr->sval */
+				rd_s16b(&tmp16s); /* a_ptr->pval */
+
+				rd_s16b(&tmp16s); /* a_ptr->to_h */
+				rd_s16b(&tmp16s); /* a_ptr->to_d */
+				rd_s16b(&tmp16s); /* a_ptr->to_a */
+				rd_s16b(&tmp16s); /* a_ptr->ac */
+
+				rd_byte(&tmp8u); /* a_ptr->dd */
+				rd_byte(&tmp8u); /* a_ptr->ds */
+
+				rd_s16b(&tmp16s); /* a_ptr->weight */
+
+				rd_s32b(&tmp32s); /* a_ptr->cost */
+
+				rd_u32b(&tmp32u); /* a_ptr->flags1 */
+				rd_u32b(&tmp32u); /* a_ptr->flags2 */
+				rd_u32b(&tmp32u); /* a_ptr->flags3 */
+
+				rd_byte(&tmp8u); /* a_ptr->level */
+				rd_byte(&tmp8u); /* a_ptr->rarity */
+
+				rd_byte(&tmp8u); /* a_ptr->activation */
+				rd_u16b(&tmp16u); /* a_ptr->time */
+				rd_u16b(&tmp16u); /* a_ptr->randtime */
+			}
+		}
+
+		/* Initialize only the randart names */
+		do_randart(seed_randart, FALSE);
+	}
+
+	return (0);
+
+#else /* GJW_RANDART */
+
+	note("Random artifacts are disabled in this binary.");
+	return (-1);
+
+#endif /* GJW_RANDART */
+
 }
 
 
@@ -2801,15 +2913,23 @@ static errr rd_savefile_new_aux(void)
 	if (arg_fiddle) note("Loaded extra information");
 
 
+	/* Read random artifacts */
+	if (adult_rand_artifacts)
+	{
+		if (rd_randarts()) return (-1);
+		if (arg_fiddle) note("Loaded Random Artifacts");
+	}
+
+
 	/* Important -- Initialize the sex */
 	sp_ptr = &sex_info[p_ptr->psex];
 
 	/* Important -- Initialize the race/class */
 	rp_ptr = &p_info[p_ptr->prace];
-	cp_ptr = &class_info[p_ptr->pclass];
+	cp_ptr = &c_info[p_ptr->pclass];
 
 	/* Important -- Initialize the magic */
-	mp_ptr = &magic_info[p_ptr->pclass];
+	mp_ptr = &cp_ptr->spells;
 
 
 	/* Read the inventory */

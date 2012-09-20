@@ -57,14 +57,16 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
+ANGBAND_OBJS = @ANGBAND_OBJS@
 CC = @CC@
 DEFAULT_PATH = @DEFAULT_PATH@
+EXEEXT = @EXEEXT@
 GAMEGROUP = @GAMEGROUP@
 MAKEINFO = @MAKEINFO@
 PACKAGE = @PACKAGE@
 VERSION = @VERSION@
 
-angband_files =    a_info.txt b_info.txt e_info.txt f_info.txt   g_info.txt h_info.txt k_info.txt p_info.txt   r_info.txt v_info.txt z_info.txt
+angband_files =    artifact.txt   cost_adj.txt   ego_item.txt   limits.txt   monster.txt   object.txt   p_class.txt   p_hist.txt   p_race.txt   shop_own.txt   terrain.txt   vault.txt
 
 
 EXTRA_DIST =    $(angband_files)
@@ -125,7 +127,7 @@ distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
-	    cp -pr $$/$$file $(distdir)/$$file; \
+	    cp -pr $$d/$$file $(distdir)/$$file; \
 	  else \
 	    test -f $(distdir)/$$file \
 	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \

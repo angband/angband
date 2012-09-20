@@ -772,6 +772,9 @@ static errr Term_user_dos(int n)
 
 	char section[80];
 
+	/* Unused parameter */
+	(void)n;
+
 	/* Interact */
 	while (1)
 	{
@@ -1269,6 +1272,9 @@ static errr Term_pict_dos(int x, int y, int n, const byte *ap, const char *cp)
  */
 static void Term_init_dos(term *t)
 {
+	/* Unused parameter */
+	(void)t;
+
 	/* XXX Nothing */
 }
 
@@ -1359,6 +1365,10 @@ static void term_data_link(term_data *td)
 static void dos_quit_hook(cptr str)
 {
 	int i;
+
+
+	/* Unused parameter */
+	(void)str;
 
 	/* Destroy windows */
 	for (i = MAX_TERM_DATA - 1; i >= 0; i--)

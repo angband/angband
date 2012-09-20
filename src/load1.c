@@ -2733,10 +2733,10 @@ static errr rd_savefile_old_aux(void)
 
 	/* Initialize the race/class */
 	rp_ptr = &p_info[p_ptr->prace];
-	cp_ptr = &class_info[p_ptr->pclass];
+	cp_ptr = &c_info[p_ptr->pclass];
 
 	/* Initialize the magic */
-	mp_ptr = &magic_info[p_ptr->pclass];
+	mp_ptr = &cp_ptr->spells;
 
 
 	/* Fake some "item awareness" */

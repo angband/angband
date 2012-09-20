@@ -268,40 +268,6 @@
 #endif
 
 
-#ifdef OLD_CRUFT
-/*
- * OPTION: Hack -- Make sure "strchr()" and "strrchr()" will work
- */
-#if defined(SYS_III) || defined(SYS_V) || defined(MSDOS)
-# if !defined(__TURBOC__) && !defined(__WATCOMC__) && !defined(__DJGPP__)
-#  define strchr(S,C) index((S),(C))
-#  define strrchr(S,C) rindex((S),(C))
-# endif
-#endif
-#endif /* OLD_CRUFT */
-
-
-/*
- * OPTION: Define "HAS_STRICMP" only if "stricmp()" exists.
- */
-/* #define HAS_STRICMP */
-
-/*
- * Linux has "stricmp()" with a different name
- */
-#if defined(linux)
-# define HAS_STRICMP
-# define stricmp(S,T) strcasecmp((S),(T))
-#endif
-
-
-#ifdef OLD_CRUFT
-/*
- * OPTION: Define "HAS_MEMSET" only if "memset()" exists.
- */
-#define HAS_MEMSET
-#endif /* OLD_CRUFT */
-
 /*
  * OPTION: Define "HAS_USLEEP" only if "usleep()" exists.
  *

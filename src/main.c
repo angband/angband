@@ -29,6 +29,9 @@ static void quit_hook(cptr s)
 {
 	int j;
 
+	/* Unused parameter */
+	(void)s;
+
 	/* Scan windows */
 	for (j = ANGBAND_TERM_MAX - 1; j >= 0; j--)
 	{
@@ -331,15 +334,15 @@ int main(int argc, char *argv[])
 
 # ifdef SAFE_SETUID
 
-#  ifdef _POSIX_SAVED_IDS
+#  if defined(HAVE_SETEGID) || defined(SAFE_SETUID_POSIX)
 
 	/* Save some info for later */
 	player_euid = geteuid();
 	player_egid = getegid();
 
-#  endif /* _POSIX_SAVED_IDS */
+#  endif /* defined(HAVE_SETEGID) || defined(SAFE_SETUID_POSIX) */
 
-#  if 0	/* XXX XXX XXX */
+#  if 0 /* XXX XXX XXX */
 
 	/* Redundant setting necessary in case root is running the game */
 	/* If not root or game not setuid the following two calls do nothing */
@@ -362,7 +365,7 @@ int main(int argc, char *argv[])
 
 
 	/* Drop permissions */
- 	safe_setuid_drop();
+	safe_setuid_drop();
 
 
 #ifdef SET_UID
@@ -577,6 +580,20 @@ int main(int argc, char *argv[])
 #endif /* USE_X11 */
 
 
+#ifdef USE_XPJ
+        /* Attempt to use the "main-xpj.c" support */
+        if (!done && (!mstr || (streq(mstr, "xpj"))))
+        {
+                extern errr init_xpj(int argc, char** argv);
+                if (0 == init_xpj(argc, argv))
+                {
+                        ANGBAND_SYS = "xpj";
+                        done = TRUE;
+                }
+        }
+#endif /* USE_XPJ */ 
+
+
 #ifdef USE_GCU
 	/* Attempt to use the "main-gcu.c" support */
 	if (!done && (!mstr || (streq(mstr, "gcu"))))
@@ -701,6 +718,20 @@ int main(int argc, char *argv[])
 		}
 	}
 #endif /* USE_VME */
+
+
+#ifdef USE_VCS
+	/* Attempt to use the "main-vcs.c" support */
+	if (!done && (!mstr || (streq(mstr, "vcs"))))
+	{
+		extern errr init_vcs(int argc, char** argv);
+		if (0 == init_vcs(argc, argv))
+		{
+			ANGBAND_SYS = "vcs";
+			done = TRUE;
+		}
+	}
+#endif /* USE_VCS */
 
 
 	/* Make sure we have a display! */

@@ -14,31 +14,31 @@
 # Shift-Keypad -- Directed running
 #
 
-A:\e\e\\.1
+A:\a\\.1
 P:^_S19\r
 
-A:\e\e\\.2
+A:\a\\.2
 P:^_S20\r
 
-A:\e\e\\.3
+A:\a\\.3
 P:^_S21\r
 
-A:\e\e\\.4
+A:\a\\.4
 P:^_S22\r
 
-A:\e\e\\.5
+A:\a\\.5
 P:^_S23\r
 
-A:\e\e\\.6
+A:\a\\.6
 P:^_S24\r
 
-A:\e\e\\.7
+A:\a\\.7
 P:^_S25\r
 
-A:\e\e\\.8
+A:\a\\.8
 P:^_S27\r
 
-A:\e\e\\.9
+A:\a\\.9
 P:^_S28\r
 
 
@@ -46,31 +46,31 @@ P:^_S28\r
 # Control-Keypad -- Directed tunneling
 #
 
-A:\e\e\\+1
+A:\a\\+1
 P:^_C19\r
 
-A:\e\e\\+2
+A:\a\\+2
 P:^_C20\r
 
-A:\e\e\\+3
+A:\a\\+3
 P:^_C21\r
 
-A:\e\e\\+4
+A:\a\\+4
 P:^_C22\r
 
-A:\e\e\\+5
+A:\a\\+5
 P:^_C23\r
 
-A:\e\e\\+6
+A:\a\\+6
 P:^_C24\r
 
-A:\e\e\\+7
+A:\a\\+7
 P:^_C25\r
 
-A:\e\e\\+8
+A:\a\\+8
 P:^_C27\r
 
-A:\e\e\\+9
+A:\a\\+9
 P:^_C28\r
 
 
@@ -79,31 +79,31 @@ P:^_C28\r
 # Option-Control-Keypad -- wield {@0} and tunnel
 #
 
-A:\e\ew0\s\s\\+1
+A:\aw0\s\s\\+1
 P:^_CO19\r
 
-A:\e\ew0\s\s\\+2
+A:\aw0\s\s\\+2
 P:^_CO20\r
 
-A:\e\ew0\s\s\\+3
+A:\aw0\s\s\\+3
 P:^_CO21\r
 
-A:\e\ew0\s\s\\+4
+A:\aw0\s\s\\+4
 P:^_CO22\r
 
-A:\e\ew0\s\s\\+5
+A:\aw0\s\s\\+5
 P:^_CO23\r
 
-A:\e\ew0\s\s\\+6
+A:\aw0\s\s\\+6
 P:^_CO24\r
 
-A:\e\ew0\s\s\\+7
+A:\aw0\s\s\\+7
 P:^_CO25\r
 
-A:\e\ew0\s\s\\+8
+A:\aw0\s\s\\+8
 P:^_CO27\r
 
-A:\e\ew0\s\s\\+9
+A:\aw0\s\s\\+9
 P:^_CO28\r
 
 
@@ -111,7 +111,7 @@ P:^_CO28\r
 # Option-Control-Keypad-Zero -- wield {@0}
 #
 
-A:\e\ew0\s
+A:\aw0\s
 P:^_CO18\r
 
 

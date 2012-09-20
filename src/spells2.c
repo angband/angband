@@ -471,7 +471,7 @@ void self_knowledge(void)
 
 	if (p_ptr->blessed)
 	{
-		info[i++] = "You feel rightous.";
+		info[i++] = "You feel righteous.";
 	}
 	if (p_ptr->hero)
 	{
@@ -918,7 +918,7 @@ bool lose_all_info(void)
 
 
 /*
- *  Set word of recall as appropriate
+ * Set word of recall as appropriate
  */
 void set_recall(void)
 {
@@ -2506,6 +2506,9 @@ void destroy_area(int y1, int x1, int r, bool full)
 
 	bool flag = FALSE;
 
+
+	/* Unused parameter */
+	(void)full;
 
 	/* Big area of affect */
 	for (y = (y1 - r); y <= (y1 + r); y++)

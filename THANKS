@@ -10,7 +10,8 @@ Dennis van Es, Kenneth A. Strom, Wei-Hwa Huang, Nikodemus, Timo Pietilä,
 Shayne Steele, Dr. Andrew White, Chris Carr, Greg Flint, Christopher Jeris,
 Ian Parkhouse, "Warhammer", Scott Holder, Brent Ross, Kazuo Ito,
 Willem Siemelink, "Luthien", David J. Grabiner, Ilya Bely, "chungkuo",
-Kieron Dunbar, Timo Pietla, Hallvard B. Furuseth, George W. Harris
+Kieron Dunbar, Timo Pietla, George W. Harris, Willem Siemelink,
+Joseph Oberlander, Paul Moore, Andreas Tophinke, Leon Marrick
 
 Greg Wooledge < greg@wooledge.org >
 Basic autoconf support, random artifacts
@@ -28,7 +29,7 @@ John I'anson-Holton < jianson@milbank.com >
 Many bugfixes and patches
 
 Steven Fuerst < sfuerst@physics.usyd.edu.au >
-Improved X11/XAW code
+Improved X11, XAW, and GTK code
 
 "Bablos" < angband@blueyonder.co.uk >
 Updated Amiga code
@@ -62,6 +63,10 @@ Improvements to the Amiga code
 Musus Umbra
 Improvements to the Acorn RISC OS code
 
+Hallvard B. Furuseth
+Many improvements to the autoconf support, code-cleanups, and small
+bugfixes
+
 The UPX team (Markus Oberhumer and Laszlo Molnar)
 The UPX packer for executables < http://upx.tsx.org/ > is used to reduce
 the size of the Windows and DOS binaries.
@@ -72,4 +77,3 @@ the oversight!
 
 -- 
 Robert Ruehlmann < rr9@angband.org >
-

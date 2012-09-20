@@ -19,7 +19,7 @@
  * This entire file is only needed for generating levels.
  * This may allow smart compilers to only load it when needed.
  *
- * Consider the "v_info.txt" file for vault generation.
+ * Consider the "vault.txt" file for vault generation.
  *
  * In this file, we use the "special" granite and perma-wall sub-types,
  * where "basic" is normal, "inner" is inside a room, "outer" is the
@@ -1139,7 +1139,7 @@ static void build_type3(int y0, int x0)
 
 
 	/* Special features */
-	switch (rand_int(4))
+	switch (randint(4))
 	{
 		/* Nothing */
 		case 1:
@@ -2296,7 +2296,7 @@ static void build_vault(int y0, int x0, int ymax, int xmax, cptr data)
 
 
 /*
- * Type 7 -- simple vaults (see "v_info.txt")
+ * Type 7 -- simple vaults (see "vault.txt")
  */
 static void build_type7(int y0, int x0)
 {
@@ -2313,7 +2313,7 @@ static void build_type7(int y0, int x0)
 	}
 
 	/* Message */
-	if (cheat_room) msg_format("%s", v_name + v_ptr->name);
+	if (cheat_room) msg_format("Lesser vault (%s)", v_name + v_ptr->name);
 
 	/* Boost the rating */
 	rating += v_ptr->rat;
@@ -2332,7 +2332,7 @@ static void build_type7(int y0, int x0)
 
 
 /*
- * Type 8 -- greater vaults (see "v_info.txt")
+ * Type 8 -- greater vaults (see "vault.txt")
  */
 static void build_type8(int y0, int x0)
 {
@@ -2349,7 +2349,7 @@ static void build_type8(int y0, int x0)
 	}
 
 	/* Message */
-	if (cheat_room) msg_format("%s", v_name + v_ptr->name);
+	if (cheat_room) msg_format("Greater vault (%s)", v_name + v_ptr->name);
 
 	/* Boost the rating */
 	rating += v_ptr->rat;

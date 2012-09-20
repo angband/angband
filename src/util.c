@@ -12,52 +12,6 @@
 
 
 
-#ifdef OLD_CRUFT
-#ifndef HAS_MEMSET
-
-/*
- * For those systems that don't have "memset()"
- *
- * Set the value of each of 'n' bytes starting at 's' to 'c', return 's'
- * If 'n' is negative, you will erase a whole lot of memory.
- */
-char *memset(char *s, int c, huge n)
-{
-	char *t;
-	for (t = s; len--; ) *t++ = c;
-	return (s);
-}
-
-#endif /* HAS_MEMSET */
-#endif /* OLD_CRUFT */
-
-
-#ifndef HAS_STRICMP
-
-/*
- * For those systems that don't have "stricmp()"
- *
- * Compare the two strings "a" and "b" ala "strcmp()" ignoring case.
- */
-int stricmp(cptr a, cptr b)
-{
-	cptr s1, s2;
-	char z1, z2;
-
-	/* Scan the strings */
-	for (s1 = a, s2 = b; TRUE; s1++, s2++)
-	{
-		z1 = FORCEUPPER(*s1);
-		z2 = FORCEUPPER(*s2);
-		if (z1 < z2) return (-1);
-		if (z1 > z2) return (1);
-		if (!z1) return (0);
-	}
-}
-
-#endif
-
-
 #ifdef SET_UID
 
 # ifndef HAS_USLEEP
@@ -230,6 +184,9 @@ errr path_parse(char *buf, int max, cptr file)
 	char user[128];
 
 
+	/* Unused */
+	(void)max;
+
 	/* Assume no result */
 	buf[0] = '\0';
 
@@ -304,6 +261,8 @@ errr path_parse(char *buf, int max, cptr file)
 #endif /* SET_UID */
 
 
+#ifndef HAVE_MKSTEMP
+
 /*
  * Hack -- acquire a "temporary" file name if possible
  *
@@ -325,6 +284,8 @@ static errr path_temp(char *buf, int max)
 	/* Success */
 	return (0);
 }
+
+#endif /* HAVE_MKSTEMP */
 
 
 /*
@@ -405,6 +366,8 @@ errr my_fclose(FILE *fff)
 	return (0);
 }
 
+#endif /* ACORN */
+
 
 #ifdef HAVE_MKSTEMP
 
@@ -437,8 +400,6 @@ FILE *my_fopen_temp(char *buf, int max)
 }
 
 #endif /* HAVE_MKSTEMP */
-
-#endif /* ACORN */
 
 
 /*
@@ -478,11 +439,8 @@ errr my_fgets(FILE *fff, char *buf, huge n)
 				/* Hack -- require room */
 				if (i + 8 >= n) break;
 
-				/* Append a space */
-				buf[i++] = ' ';
-
-				/* Append some more spaces */
-				while (!(i % 8)) buf[i++] = ' ';
+				/* Append 1-8 spaces */
+				do { buf[i++] = ' '; } while (i % 8);
 			}
 
 			/* Handle printables */
@@ -514,6 +472,9 @@ errr my_fgets(FILE *fff, char *buf, huge n)
  */
 errr my_fputs(FILE *fff, cptr buf, huge n)
 {
+	/* Unused paramter */
+	(void)n;
+
 	/* Dump, ignore errors */
 	(void)fprintf(fff, "%s\n", buf);
 
@@ -692,7 +653,7 @@ errr fd_lock(int fd, int what)
 		if (lockf(fd, F_LOCK, 0) != 0) return (1);
 	}
 
-#  endif
+#  endif /* defined(F_ULOCK) && defined(F_LOCK) */
 
 # else
 
@@ -712,11 +673,16 @@ errr fd_lock(int fd, int what)
 		if (flock(fd, LOCK_EX) != 0) return (1);
 	}
 
-#  endif
+#  endif /* defined(LOCK_UN) && defined(LOCK_EX) */
 
-# endif
+# endif /* USG */
 
-#endif
+#else /* SET_UID */
+
+	/* Unused parameter */
+	(void)what;
+
+#endif /* SET_UID */
 
 	/* Success */
 	return (0);
@@ -954,6 +920,12 @@ void text_to_ascii(char *buf, cptr str)
 				*s++ = '\t';
 			}
 
+			/* Bell */
+			else if (*str == 'a')
+			{
+				*s++ = '\a';
+			}
+
 			/* Actual "backslash" */
 			else if (*str == '\\')
 			{
@@ -1037,6 +1009,11 @@ void ascii_to_text(char *buf, cptr str)
 		{
 			*s++ = '\\';
 			*s++ = 't';
+		}
+		else if (i == '\a')
+		{
+			*s++ = '\\';
+			*s++ = 'a';
 		}
 		else if (i == '\n')
 		{
@@ -1853,6 +1830,19 @@ void sound(int val)
  * ToDo: Automatically resize the array if necessary.
  */
 
+
+/*
+ * The number of quarks (first quark is NULL)
+ */
+static s16b quark__num = 1;
+
+
+/*
+ * The array[QUARK_MAX] of pointers to the quarks
+ */
+static cptr *quark__str;
+
+
 /*
  * Add a new "quark" to the set of quarks.
  */
@@ -1902,7 +1892,7 @@ cptr quark_str(s16b i)
 /*
  * Initialize the "quark" package
  */
-errr quark_init(void)
+errr quarks_init(void)
 {
 	/* Quark variables */
 	C_MAKE(quark__str, QUARK_MAX, cptr);
@@ -1911,6 +1901,26 @@ errr quark_init(void)
 	return (0);
 }
 
+
+/*
+ * Free the "quark" package
+ */
+errr quarks_free(void)
+{
+	int i;
+
+	/* Free the "quarks" */
+	for (i = 1; i < quark__num; i++)
+	{
+		string_free(quark__str[i]);
+	}
+
+	/* Free the list of "quarks" */
+	C_FREE((void*)quark__str, QUARK_MAX, cptr);
+
+	/* Success */
+	return (0);
+}
 
 
 /*
@@ -1953,6 +1963,47 @@ errr quark_init(void)
  * extremely efficient, both in space and time, for use with the Borg.
  */
 
+
+/*
+ * The next "free" index to use
+ */
+static u16b message__next;
+
+/*
+ * The index of the oldest message (none yet)
+ */
+static u16b message__last;
+
+/*
+ * The next "free" offset
+ */
+static u16b message__head;
+
+/*
+ * The offset to the oldest used char (none yet)
+ */
+static u16b message__tail;
+
+/*
+ * The array[MESSAGE_MAX] of offsets, by index
+ */
+static u16b *message__ptr;
+
+/*
+ * The array[MESSAGE_BUF] of chars, by offset
+ */
+static char *message__buf;
+
+/*
+ * The array[MESSAGE_MAX] of u16b for the types of messages
+ */
+static u16b *message__type;
+
+
+/*
+ * Table of colors associated to message-types
+ */
+static byte message__color[MSG_MAX];
 
 
 /*
@@ -2016,6 +2067,19 @@ u16b message_type(s16b age)
 byte message_color(s16b age)
 {
 	return message__color[message_type(age)];
+}
+
+
+errr message_color_define(u16b type, byte color)
+{
+	/* Ignore illegal types */
+	if (type >= MSG_MAX) return (1);
+
+	/* Store the color */
+	message__color[type] = color;
+
+	/* Success */
+	return (0);
 }
 
 
@@ -2221,7 +2285,7 @@ void message_add(cptr str, u16b type)
 /*
  * Initialize the "message" package
  */
-errr message_init(void)
+errr messages_init(void)
 {
 	/* Message variables */
 	C_MAKE(message__ptr, MESSAGE_MAX, u16b);
@@ -2239,6 +2303,16 @@ errr message_init(void)
 }
 
 
+/*
+ * Free the "message" package
+ */
+void messages_free(void)
+{
+	/* Free the messages */
+	C_FREE(message__ptr, MESSAGE_MAX, u16b);
+	C_FREE(message__buf, MESSAGE_BUF, char);
+	C_FREE(message__type, MESSAGE_MAX, u16b);
+}
 
 
 /*
@@ -2510,6 +2584,9 @@ void msg_format(cptr fmt, ...)
  */
 void message(u16b message_type, s16b extra, cptr message)
 {
+	/* Unused parameter */
+	(void)extra;
+
 	sound(message_type);
 
 	msg_print_aux(message_type, message);
@@ -2808,9 +2885,8 @@ void clear_from(int row)
  * Return accepts the current buffer contents and returns TRUE.
  * Escape clears the buffer and the window and returns FALSE.
  *
- * Note that 'buf' must be able to hold 'len+1' characters, not just 'len'
- * characters, as might be expected.  That is, 'len' primarily refers to
- * the input, not the buffer itself.
+ * Note that 'len' refers to the size of the buffer.  The maximum length
+ * of the input is 'len-1'.
  */
 bool askfor_aux(char *buf, int len)
 {
@@ -2838,7 +2914,7 @@ bool askfor_aux(char *buf, int len)
 	if (x + len > 80) len = 80 - x;
 
 	/* Truncate the default entry */
-	buf[len] = '\0';
+	buf[len-1] = '\0';
 
 
 	/* Display the default answer */
@@ -2881,7 +2957,7 @@ bool askfor_aux(char *buf, int len)
 
 			default:
 			{
-				if ((k < len) && (isprint(ch)))
+				if ((k < len-1) && (isprint(ch)))
 				{
 					buf[k++] = ch;
 				}
@@ -2987,7 +3063,7 @@ s16b get_quantity(cptr prompt, int max)
 		sprintf(buf, "%d", amt);
 
 		/* Ask for a quantity */
-		if (!get_string(prompt, buf, 6)) return (0);
+		if (!get_string(prompt, buf, 7)) return (0);
 
 		/* Extract a number */
 		amt = atoi(buf);

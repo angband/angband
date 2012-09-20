@@ -57,8 +57,10 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
+ANGBAND_OBJS = @ANGBAND_OBJS@
 CC = @CC@
 DEFAULT_PATH = @DEFAULT_PATH@
+EXEEXT = @EXEEXT@
 GAMEGROUP = @GAMEGROUP@
 MAKEINFO = @MAKEINFO@
 PACKAGE = @PACKAGE@
@@ -125,7 +127,7 @@ distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
-	    cp -pr $$/$$file $(distdir)/$$file; \
+	    cp -pr $$d/$$file $(distdir)/$$file; \
 	  else \
 	    test -f $(distdir)/$$file \
 	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
@@ -198,19 +200,21 @@ maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 install-data-hook:
 @SET_GID_TRUE@	if test "@GAMEGROUP@" != ""; then \
-@SET_GID_TRUE@	  touch "$(angbanddir)/a_info.raw" && \
-@SET_GID_TRUE@	  touch "$(angbanddir)/e_info.raw" && \
-@SET_GID_TRUE@	  touch "$(angbanddir)/g_info.raw" && \
-@SET_GID_TRUE@	  touch "$(angbanddir)/k_info.raw" && \
-@SET_GID_TRUE@	  touch "$(angbanddir)/r_info.raw" && \
-@SET_GID_TRUE@	  touch "$(angbanddir)/z_info.raw" && \
-@SET_GID_TRUE@	  touch "$(angbanddir)/b_info.raw" && \
-@SET_GID_TRUE@	  touch "$(angbanddir)/f_info.raw" && \
-@SET_GID_TRUE@	  touch "$(angbanddir)/h_info.raw" && \
-@SET_GID_TRUE@	  touch "$(angbanddir)/p_info.raw" && \
-@SET_GID_TRUE@	  touch "$(angbanddir)/v_info.raw" && \
-@SET_GID_TRUE@	  chown -R root.@GAMEGROUP@ "$(angbanddir)" && \
-@SET_GID_TRUE@	  chmod -R g+w "$(angbanddir)" ;\
+@SET_GID_TRUE@	  touch "$(DESTDIR)$(angbanddir)/artifact.raw" && \
+@SET_GID_TRUE@	  touch "$(DESTDIR)$(angbanddir)/cost_adj.raw" && \
+@SET_GID_TRUE@	  touch "$(DESTDIR)$(angbanddir)/ego_item.raw" && \
+@SET_GID_TRUE@	  touch "$(DESTDIR)$(angbanddir)/limits.raw" && \
+@SET_GID_TRUE@	  touch "$(DESTDIR)$(angbanddir)/monster.raw" && \
+@SET_GID_TRUE@	  touch "$(DESTDIR)$(angbanddir)/object.raw" && \
+@SET_GID_TRUE@	  touch "$(DESTDIR)$(angbanddir)/p_class.raw" && \
+@SET_GID_TRUE@	  touch "$(DESTDIR)$(angbanddir)/p_hist.raw" && \
+@SET_GID_TRUE@	  touch "$(DESTDIR)$(angbanddir)/p_race.raw" && \
+@SET_GID_TRUE@	  touch "$(DESTDIR)$(angbanddir)/prices.raw" && \
+@SET_GID_TRUE@	  touch "$(DESTDIR)$(angbanddir)/shop_own.raw" && \
+@SET_GID_TRUE@	  touch "$(DESTDIR)$(angbanddir)/terrain.raw" && \
+@SET_GID_TRUE@	  touch "$(DESTDIR)$(angbanddir)/vault.raw" && \
+@SET_GID_TRUE@	  chown -R root.@GAMEGROUP@ "$(DESTDIR)$(angbanddir)" && \
+@SET_GID_TRUE@	  chmod -R g+w "$(DESTDIR)$(angbanddir)" ;\
 @SET_GID_TRUE@	fi
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.

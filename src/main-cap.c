@@ -55,7 +55,7 @@
 #  if defined(_POSIX_VERSION)
 #   define USE_TPOSIX
 #  else
-#   if defined(USG) || defined(linux) || defined(SOLARIS)
+#   if defined(USG) || defined(linux) || defined(SOLARIS) || defined(WINDOWS)
 #    define USE_TERMIO
 #   else
 #    define USE_TCHARS

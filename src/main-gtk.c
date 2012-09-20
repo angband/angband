@@ -16,7 +16,15 @@
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 
+/*
+ * Include some helpful X11 code.
+ */
+#include "maid-x11.h"
+
+
 #define NO_PADDING 0
+
+#define MAX_TERM_DATA 8
 
 /*
  * Extra data to associate with each "window"
@@ -51,13 +59,18 @@ struct term_data
 /*
  * An array of "term_data" structures, one for each "sub-window"
  */
-static term_data data[8];
+static term_data data[MAX_TERM_DATA];
 
 
 /*
  * game in progress
  */
-bool game_in_progress = FALSE;
+static bool game_in_progress = FALSE;
+
+/*
+ * Number of active terms
+ */
+static int num_term = MAX_TERM_DATA;
 
 
 /*
@@ -302,7 +315,9 @@ static void new_event_handler(GtkButton *was_clicked, gpointer user_data)
 		game_in_progress = TRUE;
 		Term_flush();
 		play_game(TRUE);
+#ifdef HAS_CLEANUP
 		cleanup_angband();
+#endif /* HAS_CLEANUP */
 		quit(NULL);
 	}
 }
@@ -431,7 +446,30 @@ static gboolean keypress_event_handler(GtkWidget *widget, GdkEventKey *event, gp
 	mc = (event->state & GDK_CONTROL_MASK) ? TRUE : FALSE;
 	ms = (event->state & GDK_SHIFT_MASK) ? TRUE : FALSE;
 	mo = (event->state & GDK_MOD1_MASK) ? TRUE : FALSE;
-	mx = (event->state & GDK_MOD2_MASK) ? TRUE : FALSE;
+	mx = (event->state & GDK_MOD3_MASK) ? TRUE : FALSE;
+
+	/*
+	 * Hack XXX
+	 * Parse shifted numeric (keypad) keys specially.
+	 */
+	if ((event->state == GDK_SHIFT_MASK)
+		&& (event->keyval >= GDK_KP_0) && (event->keyval <= GDK_KP_9))
+	{
+		/* Build the macro trigger string */
+		sprintf(msg, "%cS_%X%c", 31, event->keyval, 13);
+
+		/* Enqueue the "macro trigger" string */
+		for (i = 0; msg[i]; i++) Term_keypress(msg[i]);
+
+		/* Hack -- auto-define macros as needed */
+		if (event->length && (macro_find_exact(msg) < 0))
+		{
+			/* Create a macro */
+			macro_add(msg, event->string);
+		}
+
+		return (TRUE);
+	}
 
 	/* Normal keys with no modifiers */
 	if (event->length && !mo && !mx)
@@ -445,7 +483,7 @@ static gboolean keypress_event_handler(GtkWidget *widget, GdkEventKey *event, gp
 
 
 	/* Handle a few standard keys (bypass modifiers) XXX XXX XXX */
-	switch (event->keyval)
+	switch ((uint) event->keyval)
 	{
 		case GDK_Escape:
 		{
@@ -471,16 +509,42 @@ static gboolean keypress_event_handler(GtkWidget *widget, GdkEventKey *event, gp
 			Term_keypress('\010');
 			return (TRUE);
 		}
+
+		case GDK_Shift_L:
+		case GDK_Shift_R:
+		case GDK_Control_L:
+		case GDK_Control_R:
+		case GDK_Caps_Lock:
+		case GDK_Shift_Lock:
+		case GDK_Meta_L:
+		case GDK_Meta_R:
+		case GDK_Alt_L:
+		case GDK_Alt_R:
+		case GDK_Super_L:
+		case GDK_Super_R:
+		case GDK_Hyper_L:
+		case GDK_Hyper_R:
+		{
+			/* Hack - do nothing to control characters */
+			return (TRUE);
+		}
 	}
 
 	/* Build the macro trigger string */
-	sprintf(msg, "%c%s%s%s%s_%s%c", 31,
+	sprintf(msg, "%c%s%s%s%s_%X%c", 31,
 	        mc ? "N" : "", ms ? "S" : "",
 	        mo ? "O" : "", mx ? "M" : "",
-	        gdk_keyval_name(event->keyval), 13);
+	        event->keyval, 13);
 
 	/* Enqueue the "macro trigger" string */
 	for (i = 0; msg[i]; i++) Term_keypress(msg[i]);
+
+	/* Hack -- auto-define macros as needed */
+	if (event->length && (macro_find_exact(msg) < 0))
+	{
+		/* Create a macro */
+		macro_add(msg, event->string);
+	}
 
 	return (TRUE);
 }
@@ -545,13 +609,20 @@ static errr term_data_init(term_data *td, int i)
 }
 
 
-static void init_gtk_window(term_data *td, bool main)
+static void init_gtk_window(term_data *td, int i)
 {
+	cptr font;
+
+	bool main_window = (i == 0) ? TRUE : FALSE;
+
 	GtkWidget *menu_bar, *file_item, *file_menu, *box;
 	GtkWidget *seperator_item, *file_exit_item, *file_new_item, *file_open_item;
 	GtkWidget *options_item, *options_menu, *options_font_item;
 
-	load_font(td, DEFAULT_X11_FONT_0);
+	/* Get default font for this term */
+	font = get_default_font(i);
+
+	load_font(td, font);
 
 	/* Create widgets */
 	td->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -559,7 +630,7 @@ static void init_gtk_window(term_data *td, bool main)
 	td->drawing_area = gtk_drawing_area_new();
 
 	/* Create menu */
-	if (main)
+	if (main_window)
 	{
 		menu_bar = gtk_menu_bar_new();
 		file_item = gtk_menu_item_new_with_label("File");
@@ -571,14 +642,14 @@ static void init_gtk_window(term_data *td, bool main)
 		options_item = gtk_menu_item_new_with_label("Options");
 		options_menu = gtk_menu_new();
 		options_font_item = gtk_menu_item_new_with_label("Font");
-	 }
+	}
 
 	/* Set attributes */
 	gtk_window_set_title(GTK_WINDOW(td->window), td->name);
 	gtk_drawing_area_size(GTK_DRAWING_AREA(td->drawing_area), td->cols * td->font_wid, td->rows * td->font_hgt);
 
 	/* Register callbacks */
-	if (main)
+	if (main_window)
 	{
 		gtk_signal_connect(GTK_OBJECT(file_exit_item), "activate", quit_event_handler, NULL);
 		gtk_signal_connect(GTK_OBJECT(file_new_item), "activate", new_event_handler, NULL);
@@ -586,19 +657,19 @@ static void init_gtk_window(term_data *td, bool main)
 		gtk_signal_connect(GTK_OBJECT(options_font_item), "activate", change_font_event_handler, td);
 	}
 
-	gtk_signal_connect(GTK_OBJECT(td->window), "delete-event", GTK_SIGNAL_FUNC(delete_event_handler), NULL);
-	gtk_signal_connect(GTK_OBJECT(td->window), "key-press-event", GTK_SIGNAL_FUNC(keypress_event_handler), NULL);
-	gtk_signal_connect(GTK_OBJECT(td->drawing_area), "expose-event", GTK_SIGNAL_FUNC(expose_event_handler), td);
+	gtk_signal_connect(GTK_OBJECT(td->window), "delete_event", GTK_SIGNAL_FUNC(delete_event_handler), NULL);
+	gtk_signal_connect(GTK_OBJECT(td->window), "key_press_event", GTK_SIGNAL_FUNC(keypress_event_handler), NULL);
+	gtk_signal_connect(GTK_OBJECT(td->drawing_area), "expose_event", GTK_SIGNAL_FUNC(expose_event_handler), td);
 
-	if (main)
-		gtk_signal_connect(GTK_OBJECT(td->window), "destroy", GTK_SIGNAL_FUNC(destroy_event_handler), NULL);
+	if (main_window)
+		gtk_signal_connect(GTK_OBJECT(td->window), "destroy_event", GTK_SIGNAL_FUNC(destroy_event_handler), NULL);
 	else
-		gtk_signal_connect(GTK_OBJECT(td->window), "destroy", GTK_SIGNAL_FUNC(hide_event_handler), td);
+		gtk_signal_connect(GTK_OBJECT(td->window), "destroy_event", GTK_SIGNAL_FUNC(hide_event_handler), td);
 
 	/* Pack widgets */
 	gtk_container_add(GTK_CONTAINER(td->window), box);
 
-	if (main)
+	if (main_window)
 	{
 		gtk_box_pack_start(GTK_BOX(box), menu_bar, FALSE, FALSE, NO_PADDING);
 	}
@@ -606,7 +677,7 @@ static void init_gtk_window(term_data *td, bool main)
 	gtk_box_pack_start_defaults(GTK_BOX(box), td->drawing_area);
 
 	/* Pack the menu bar */
-	if (main)
+	if (main_window)
 	{
 		gtk_menu_bar_append(GTK_MENU_BAR(menu_bar), file_item);
 		gtk_menu_bar_append(GTK_MENU_BAR(menu_bar), options_item);
@@ -626,6 +697,16 @@ static void init_gtk_window(term_data *td, bool main)
 	td->pixmap = gdk_pixmap_new(td->drawing_area->window, td->cols * td->font_wid, td->rows * td->font_hgt, -1);
 	gtk_object_set_data(GTK_OBJECT(td->drawing_area), "pixmap", td->pixmap);
 	td->gc = gdk_gc_new(td->drawing_area->window);
+
+	/* Clear the pixmap */
+	gdk_draw_rectangle(td->pixmap, td->drawing_area->style->black_gc, TRUE,
+		                0, 0,
+		                td->cols * td->font_wid, td->rows * td->font_hgt);
+
+	/* Copy it to the window */
+	gdk_draw_pixmap(td->drawing_area->window, td->gc, td->pixmap,
+	                0, 0, 0, 0,
+					td->cols * td->font_wid, td->rows * td->font_hgt);
 }
 
 
@@ -639,8 +720,22 @@ errr init_gtk(int argc, char **argv)
 	/* Initialize the environment */
 	gtk_init(&argc, &argv);
 
+	/* Parse args */
+	for (i = 1; i < argc; i++)
+	{
+		if (prefix(argv[i], "-n"))
+		{
+			num_term = atoi(&argv[i][2]);
+			if (num_term > MAX_TERM_DATA) num_term = MAX_TERM_DATA;
+			else if (num_term < 1) num_term = 1;
+			continue;
+		}
+
+		plog_fmt("Ignoring option: %s", argv[i]);
+	}
+
 	/* Initialize the windows */
-	for (i = 0; i < 8; i++)
+	for (i = 0; i < num_term; i++)
 	{
 		term_data *td = &data[i];
 
@@ -651,7 +746,7 @@ errr init_gtk(int argc, char **argv)
 		angband_term[i] = Term;
 
 		/* Init the window */
-		init_gtk_window(td, (i == 0));
+		init_gtk_window(td, i);
 	}
 
 	/* Activate the "Angband" window screen */
@@ -660,6 +755,9 @@ errr init_gtk(int argc, char **argv)
 	/* Activate hooks */
 	quit_aux = hook_quit;
 	core_aux = hook_quit;
+
+	/* Set the system suffix */
+	ANGBAND_SYS = "gtk";
 
 	/* Catch nasty signals */
 	signals_init();

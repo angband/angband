@@ -1164,6 +1164,9 @@ bool apply_disenchant(int mode)
 	char o_name[80];
 
 
+	/* Unused parameter */
+	(void)mode;
+
 	/* Pick a random slot */
 	switch (randint(8))
 	{
@@ -1282,8 +1285,8 @@ static void apply_nexus(const monster_type *m_ptr)
 			msg_print("Your body starts to scramble...");
 
 			/* Pick a pair of stats */
-			ii = rand_int(6);
-			for (jj = ii; jj == ii; jj = rand_int(6)) /* loop */;
+			ii = rand_int(A_MAX);
+			for (jj = ii; jj == ii; jj = rand_int(A_MAX)) /* loop */;
 
 			max1 = p_ptr->stat_max[ii];
 			cur1 = p_ptr->stat_cur[ii];
@@ -1334,6 +1337,11 @@ static int project_m_y;
 static bool project_f(int who, int r, int y, int x, int dam, int typ)
 {
 	bool obvious = FALSE;
+
+	/* Unused parameters */
+	(void)who;
+	(void)r;
+	(void)dam;
 
 #if 0 /* unused */
 	/* Reduce damage by distance */
@@ -1681,6 +1689,12 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ)
 	u32b f1, f2, f3;
 
 	char o_name[80];
+
+
+	/* Unused parameters */
+	(void)who;
+	(void)r;
+	(void)dam;
 
 #if 0 /* unused */
 	/* Reduce damage by distance */
@@ -2945,7 +2959,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ)
 		/* Pick a "new" monster race */
 		tmp = poly_r_idx(m_ptr->r_idx);
 
-		/* Handle polymorh */
+		/* Handle polymorph */
 		if (tmp != m_ptr->r_idx)
 		{
 			/* Obvious */

@@ -1,3 +1,111 @@
+Changes in Angband 2.9.3:
+- The known uniques list is now separated into two columns to make it
+  easier to read. One column for the names and one for the "is dead/alive"
+  text.
+- Allowed examining multiple items without having to return to the
+  tombstone screen.
+- Added an option to review messages to the tombstone.
+- Changed the keys to view high scores from 't' to 'v' and allowed upper
+  case for each of the options in the tombstone screen.
+- Rogrog the Black Troll resists acid instead of cold.
+- Algroths resist poison.
+- Moved the player-class info to an external lib/edit/p_class.txt file.
+- Unified parts of the *_info.txt parsers.
+- Improved the error-messages when parsing *_info.txt files.
+- Examining an item that ignores all elements now shows "It cannot be
+  harmed by the elements." instead of one line for each element.
+- Updated the documentation for the lib/edit/*.txt file formats.
+- The randart info is now stored in the savefile.
+- Various command-line options like wizard- and fiddle-mode are now
+  available from the *.ini file of the Windows version.
+- Improved the GTK, X11, and XAW ports.
+- The cursor in the X11 and XAW modules is a rectangle, instead of a
+  filled box.
+- Made the windows of the XAW module resizable.
+- Added Steven Fuerst's X11 projected view (start with -mXPJ where
+  available).
+- Potions of life will now restore stats before healing to provide full
+  health even if CON was drained.
+- Added the Linux vcsa display driver written by Alexander Malmberg.
+- Gave the *_info.txt files more meaningful names.
+- The EASY_KNOW flag is no longer hardcoded for various item types.
+- Added a workaround for a bug in the Borland compiler for Windows.  The
+  game crashed when parsing an lib/edit/*.txt file containing 11 player
+  races.
+- Fixed a bug that could cause the random artifacts to be different
+  depending on the used compiler and optimizations.
+- Replaced several magic numbers with the proper constants.
+- The lesser vault "Planet X" was labeled as greater vault.
+- If a custom player race has both an elemental immunity and resistance
+  then only the resistance was shown in the character display grid.
+- Fixed a typo in the "bless" spell.
+- Ego-items generated in vaults should now be of the proper level.
+- Used staircases are now always marked as known when the connected_stairs
+  option is turned on.
+- Added a new macro action that stops macro execution when the game is at
+  a prompt, and is ignored otherwise.
+- One type of cross shaped rooms was never been generated.
+- The error checking when parsing artifact.txt, ego_item.txt, monster.txt,
+  and p_race.txt didn't warn about duplicated entries.
+- It's now possible to create junk items in wizard mode.
+- The easy_open option no longer counts doors under the player when
+  determining which door to close.
+- The cheat_know option marked monsters as known even after it was turned
+  off.
+- The experience gained from killing monsters was sometimes incorrect
+  after tweaking the maximum experience in wizard mode.
+- The spell-info for the mage's fire-bolt spell was used for the stone to
+  mud spell.
+- Examining an item in the home displayed the item as if it was
+  identified, even if it wasn't.
+- The Windows version didn't exit correctly when starting with a savefile
+  from the command-line.
+- Pref files for player races were not loaded automatically.
+- Fixed a compile problem in the Windows version when USE_GRAPHICS is
+  turned off.
+- The random selection of sound samples in the Windows and DOS version got
+  non-random after a while.
+- The message when dropping a known artifact is now something like "You no
+  longer have the Golden Crown of Gondor" instead of "You have no more
+  Golden Crowns of Gondor".
+- Finding out that a wand or staff has no charges left didn't update the
+  inventory window.
+- Attacks that didn't do any damage could sometimes scare wounded monsters.
+- Monsters at 1% of max hps got frightened less often than monsters with
+  10% hps left.
+- The item flag descriptions when tweaking items in wizard mode are now
+  correct.
+- Removed the special handling for weapons of Morgul and ammo of backbiting.
+- Moved the "Lesser vault" and "Greater vault" strings into the source.
+- The get_string() and askfor_aux() functions now use the 'len' argument
+  as the buffer size instead of the maximum length of the input string.
+- Corrected the message when encountering an error while parsing a
+  lib/edit/*.txt file.
+- The path_temp() function is no longer compiled if mkstemp() is
+  available.
+- Removed a hack for the curses module of some BSD versions.
+- Fixed some problems on BSD machines with the ACS macros for the special
+  curses font symbols.
+- The *_info.txt parsing routines can now be turned off with the
+  ALLOW_TEMPLATES #define.
+- The *.prf file loading code checks for invalid message colors.
+- Fixed the inversed logic for handling tabs in files.
+- Changed the title of the 'Known artifacts' list to the more truthful
+  'Known (or lost) artifacts'.
+- Changed the message when looking at un-*id*'ed artifacts/ego-items to
+  "It might have hidden powers.".
+- Changed the monster memory info when you have avenged your ancestor to a
+  gender-neutral form.
+- The error message "Couldn't allocate bitmap color" in the X11 version
+  displayed an uninitialized colour name.
+- Corrected the names of some options in the documentation.
+- Fixed some errors in the lsl module, but it's still buggy.
+- Improved the autoconf support. The Cygwin compiler is now supported,
+  detection routines for the X11, XAW, and GCU modules have been improved,
+  DESTDIR is now supported, and a workaround for a bug in some versions of
+  the GCC compiler is turned on.
+- Cleaned up the source code and some of the Makefiles.
+
 Changes in Angband 2.9.2:
 - Fixed several security problems (buffer overflows, tempfile-races,
   reading files that the player has no permission to read, and incorrect or

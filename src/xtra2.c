@@ -2147,8 +2147,8 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note)
 			message_format(MSG_KILL, m_ptr->r_idx, "You have slain %s.", m_name);
 		}
 
-		/* Maximum player level */
-		div = p_ptr->max_lev;
+		/* Player level */
+		div = p_ptr->lev;
 
 		/* Give some experience for the kill */
 		new_exp = ((long)r_ptr->mexp * r_ptr->level) / div;
@@ -2227,7 +2227,7 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note)
 	}
 
 	/* Sometimes a monster gets scared by damage */
-	if (!m_ptr->monfear && !(r_ptr->flags3 & (RF3_NO_FEAR)))
+	if (!m_ptr->monfear && !(r_ptr->flags3 & (RF3_NO_FEAR)) && (dam > 0))
 	{
 		int percentage;
 
@@ -2238,7 +2238,7 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note)
 		 * Run (sometimes) if at 10% or less of max hit points,
 		 * or (usually) when hit for half its current hit points
 		 */
-		if (((percentage <= 10) && (rand_int(10) < percentage)) ||
+		if ((randint(10) >= percentage) ||
 		    ((dam >= m_ptr->hp) && (rand_int(100) < 80)))
 		{
 			/* Hack -- note fear */
@@ -2251,7 +2251,7 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note)
 		}
 	}
 
-#endif
+#endif /* ALLOW_FEAR */
 
 
 	/* Not dead yet */

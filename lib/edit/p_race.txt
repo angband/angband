@@ -1,13 +1,14 @@
-# File: p_info.txt
+# File: p_race.txt
 
 
-# This file is used to initialize the "lib/data/p_info.raw" file, which is
+# This file is used to initialize the "lib/data/p_race.raw" file, which is
 # used to initialize the "player race" information for the Angband game.
 
 # Do not modify this file unless you know exactly what you are doing,
 # unless you wish to risk possible system crashes and broken savefiles.
-# After modifying this file, delete the "lib/data/p_info.raw" file.
+# After modifying this file, delete the "lib/data/p_race.raw" file.
 
+# === Understanding p_race.txt ===
 
 # Format:
 # N:race number:race name
@@ -15,15 +16,41 @@
 # R:dis:dev:sav:stl:srh:fos:thn:thb
 # X:hitdie:expbase:infra
 # I:history:agebase:agemod
-# H:hgtmale:hgtfemale
-# W:wgtmale:wgtfemale
+# H:hgtmale:modhgtmale:hgtfemale:modhgtfemale
+# W:wgtmale:modwgtmale:wgtfemale:modwgtfemale
 # F:racial flags
 # C:classes (numeric)
+
+# 'N' indicates the beginning of an entry. The serial number must
+# increase for each new race.
+
+# 'S' is for the stat modifiers - strength, intelligence, wisdom,
+# dexterity, constitution, charisma.
+
+# 'R' is for the base skills - disarming, magic devices, saving throws,
+# stealth, searching ability, searching frequency, to hit (normal),
+# to hit (bows).
+
+# 'X' is for extra info - max. hitpoints gained per level, experience
+# factor in percent, range of infravision in 10 feets.
+
+# 'I' is for info - starting point of the player history, base age,
+# random age modifier.
+
+# 'H' is height info - base height (males), mod height (males),
+# base height (females), mod height (females).
+
+# 'W' is weight info - base weight (males), mod weight (males),
+# base weight (females), mod weight (females).
+
+# 'F' is for racial flags.
+
+# 'C' is for class choices.
 
 
 # Version stamp (required)
 
-V:2.9.2
+V:2.9.3
 
 
 N:0:Human

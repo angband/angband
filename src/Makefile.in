@@ -57,8 +57,10 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
+ANGBAND_OBJS = @ANGBAND_OBJS@
 CC = @CC@
 DEFAULT_PATH = @DEFAULT_PATH@
+EXEEXT = @EXEEXT@
 GAMEGROUP = @GAMEGROUP@
 MAKEINFO = @MAKEINFO@
 PACKAGE = @PACKAGE@
@@ -66,14 +68,22 @@ VERSION = @VERSION@
 
 bin_PROGRAMS = angband
 
-angband_SOURCES =    z-util.c z-virt.c z-form.c z-rand.c z-term.c   variable.c tables.c util.c cave.c   object1.c object2.c monster1.c monster2.c   xtra1.c xtra2.c spells1.c spells2.c   melee1.c melee2.c save.c files.c   cmd1.c cmd2.c cmd3.c cmd4.c cmd5.c cmd6.c   store.c birth.c load1.c load2.c   wizard1.c wizard2.c   generate.c dungeon.c init1.c init2.c randart.c   main-cap.c main-gcu.c main-x11.c main-xaw.c main.c   angband.h config.h defines.h externs.h h-basic.h   h-config.h h-define.h h-system.h h-type.h init.h   types.h z-form.h z-rand.h z-term.h z-util.h   z-virt.h maid-x11.c
+WRES = windres
+
+SUFFIXES = .rc
+
+angband_LDADD = @ANGBAND_OBJS@
+angband_DEPENDENCIES = @ANGBAND_OBJS@
+
+angband_SOURCES =    z-util.c z-virt.c z-form.c z-rand.c z-term.c   variable.c tables.c util.c cave.c   object1.c object2.c monster1.c monster2.c   xtra1.c xtra2.c spells1.c spells2.c   melee1.c melee2.c save.c files.c   cmd1.c cmd2.c cmd3.c cmd4.c cmd5.c cmd6.c   store.c birth.c load1.c load2.c   wizard1.c wizard2.c   main-cap.c main-gcu.c main-x11.c main-xaw.c main.c   main-win.c main-xpj.c main-vcs.c   generate.c dungeon.c init1.c init2.c randart.c   angband.h config.h defines.h externs.h h-basic.h   h-config.h h-define.h h-system.h h-type.h init.h   types.h z-form.h z-rand.h z-term.h z-util.h   z-virt.h
 
 
-EXTRA_angband_SOURCES =    main-acn.c main-ami.c main-dos.c main-emx.c main-gtk.c   main-ibm.c main-lsl.c main-mac.c main-sla.c main-vme.c   main-win.c main-xxx.c   Makefile.acn Makefile.ami Makefile.bcc Makefile.cyg   Makefile.dos Makefile.emx Makefile.gtk Makefile.ibm   Makefile.lcc Makefile.lsl Makefile.std Makefile.wat   Makefile.win
+EXTRA_angband_SOURCES =    main-acn.c main-ami.c main-dos.c main-emx.c main-gtk.c   main-ibm.c main-lsl.c main-mac.c main-sla.c main-vme.c   main-xxx.c   Makefile.acn Makefile.ami Makefile.bcc Makefile.cyg   Makefile.dos Makefile.emx Makefile.gtk Makefile.ibm   Makefile.lcc Makefile.lsl Makefile.std Makefile.wat   Makefile.win   angband.rc angband.ico readdib.c readdib.h   maid-x11.c maid-x11.h
 
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = autoconf.h
 CONFIG_CLEAN_FILES = 
+bin_PROGRAMS =  angband$(EXEEXT)
 PROGRAMS =  $(bin_PROGRAMS)
 
 
@@ -89,11 +99,9 @@ angband_OBJECTS =  z-util.o z-virt.o z-form.o z-rand.o z-term.o \
 variable.o tables.o util.o cave.o object1.o object2.o monster1.o \
 monster2.o xtra1.o xtra2.o spells1.o spells2.o melee1.o melee2.o save.o \
 files.o cmd1.o cmd2.o cmd3.o cmd4.o cmd5.o cmd6.o store.o birth.o \
-load1.o load2.o wizard1.o wizard2.o generate.o dungeon.o init1.o \
-init2.o randart.o main-cap.o main-gcu.o main-x11.o main-xaw.o main.o \
-maid-x11.o
-angband_LDADD = $(LDADD)
-angband_DEPENDENCIES = 
+load1.o load2.o wizard1.o wizard2.o main-cap.o main-gcu.o main-x11.o \
+main-xaw.o main.o main-win.o main-xpj.o main-vcs.o generate.o dungeon.o \
+init1.o init2.o randart.o
 angband_LDFLAGS = 
 CFLAGS = @CFLAGS@
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -111,7 +119,7 @@ OBJECTS = $(angband_OBJECTS)
 
 all: all-redirect
 .SUFFIXES:
-.SUFFIXES: .S .c .o .s
+.SUFFIXES: .S .c .o .rc .s
 $(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
 	cd $(top_srcdir) && $(AUTOMAKE) --foreign --include-deps src/Makefile
 
@@ -192,8 +200,8 @@ distclean-compile:
 
 maintainer-clean-compile:
 
-angband: $(angband_OBJECTS) $(angband_DEPENDENCIES)
-	@rm -f angband
+angband$(EXEEXT): $(angband_OBJECTS) $(angband_DEPENDENCIES)
+	@rm -f angband$(EXEEXT)
 	$(LINK) $(angband_LDFLAGS) $(angband_OBJECTS) $(angband_LDADD) $(LIBS)
 
 tags: TAGS
@@ -233,7 +241,7 @@ distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
-	    cp -pr $$/$$file $(distdir)/$$file; \
+	    cp -pr $$d/$$file $(distdir)/$$file; \
 	  else \
 	    test -f $(distdir)/$$file \
 	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
@@ -285,20 +293,34 @@ load1.o: load1.c angband.h h-basic.h autoconf.h h-config.h h-system.h \
 load2.o: load2.c angband.h h-basic.h autoconf.h h-config.h h-system.h \
 	h-type.h h-define.h z-util.h z-virt.h z-form.h z-rand.h \
 	z-term.h config.h defines.h types.h externs.h
-maid-x11.o: maid-x11.c
+maid-x11.o: maid-x11.c angband.h h-basic.h autoconf.h h-config.h \
+	h-system.h h-type.h h-define.h z-util.h z-virt.h z-form.h \
+	z-rand.h z-term.h config.h defines.h types.h externs.h \
+	maid-x11.h
 main-cap.o: main-cap.c angband.h h-basic.h autoconf.h h-config.h \
 	h-system.h h-type.h h-define.h z-util.h z-virt.h z-form.h \
 	z-rand.h z-term.h config.h defines.h types.h externs.h
 main-gcu.o: main-gcu.c angband.h h-basic.h autoconf.h h-config.h \
 	h-system.h h-type.h h-define.h z-util.h z-virt.h z-form.h \
 	z-rand.h z-term.h config.h defines.h types.h externs.h
-main-x11.o: main-x11.c angband.h h-basic.h autoconf.h h-config.h \
+main-vcs.o: main-vcs.c angband.h h-basic.h autoconf.h h-config.h \
 	h-system.h h-type.h h-define.h z-util.h z-virt.h z-form.h \
 	z-rand.h z-term.h config.h defines.h types.h externs.h
+main-win.o: main-win.c angband.h h-basic.h autoconf.h h-config.h \
+	h-system.h h-type.h h-define.h z-util.h z-virt.h z-form.h \
+	z-rand.h z-term.h config.h defines.h types.h externs.h
+main-x11.o: main-x11.c angband.h h-basic.h autoconf.h h-config.h \
+	h-system.h h-type.h h-define.h z-util.h z-virt.h z-form.h \
+	z-rand.h z-term.h config.h defines.h types.h externs.h \
+	maid-x11.h
 main-xaw.o: main-xaw.c angband.h h-basic.h autoconf.h h-config.h \
 	h-system.h h-type.h h-define.h z-util.h z-virt.h z-form.h \
 	z-rand.h z-term.h config.h defines.h types.h externs.h \
-	maid-x11.c
+	maid-x11.h
+main-xpj.o: main-xpj.c angband.h h-basic.h autoconf.h h-config.h \
+	h-system.h h-type.h h-define.h z-util.h z-virt.h z-form.h \
+	z-rand.h z-term.h config.h defines.h types.h externs.h \
+	maid-x11.h
 main.o: main.c angband.h h-basic.h autoconf.h h-config.h h-system.h \
 	h-type.h h-define.h z-util.h z-virt.h z-form.h z-rand.h \
 	z-term.h config.h defines.h types.h externs.h
@@ -445,10 +467,12 @@ uninstall-am uninstall all-redirect all-am all installdirs \
 mostlyclean-generic distclean-generic clean-generic \
 maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
+angband.res: angband.rc
+	$(WRES) $< -O coff -o $@
 
 install-exec-hook:
-@SET_GID_TRUE@	chgrp "@GAMEGROUP@" "$(bindir)/angband"
-@SET_GID_TRUE@	chmod g+s "$(bindir)/angband"
+@SET_GID_TRUE@	chgrp "@GAMEGROUP@" "$(DESTDIR)$(bindir)/angband"
+@SET_GID_TRUE@	chmod g+s "$(DESTDIR)$(bindir)/angband"
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

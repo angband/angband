@@ -17,19 +17,21 @@ endif
 install-data-hook:
 if SET_GID
 	if test "@GAMEGROUP@" != ""; then \
-	  touch "$(angbanddir)/a_info.raw" && \
-	  touch "$(angbanddir)/e_info.raw" && \
-	  touch "$(angbanddir)/g_info.raw" && \
-	  touch "$(angbanddir)/k_info.raw" && \
-	  touch "$(angbanddir)/r_info.raw" && \
-	  touch "$(angbanddir)/z_info.raw" && \
-	  touch "$(angbanddir)/b_info.raw" && \
-	  touch "$(angbanddir)/f_info.raw" && \
-	  touch "$(angbanddir)/h_info.raw" && \
-	  touch "$(angbanddir)/p_info.raw" && \
-	  touch "$(angbanddir)/v_info.raw" && \
-	  chown -R root.@GAMEGROUP@ "$(angbanddir)" && \
-	  chmod -R g+w "$(angbanddir)" ;\
+	  touch "$(DESTDIR)$(angbanddir)/artifact.raw" && \
+	  touch "$(DESTDIR)$(angbanddir)/cost_adj.raw" && \
+	  touch "$(DESTDIR)$(angbanddir)/ego_item.raw" && \
+	  touch "$(DESTDIR)$(angbanddir)/limits.raw" && \
+	  touch "$(DESTDIR)$(angbanddir)/monster.raw" && \
+	  touch "$(DESTDIR)$(angbanddir)/object.raw" && \
+	  touch "$(DESTDIR)$(angbanddir)/p_class.raw" && \
+	  touch "$(DESTDIR)$(angbanddir)/p_hist.raw" && \
+	  touch "$(DESTDIR)$(angbanddir)/p_race.raw" && \
+	  touch "$(DESTDIR)$(angbanddir)/prices.raw" && \
+	  touch "$(DESTDIR)$(angbanddir)/shop_own.raw" && \
+	  touch "$(DESTDIR)$(angbanddir)/terrain.raw" && \
+	  touch "$(DESTDIR)$(angbanddir)/vault.raw" && \
+	  chown -R root.@GAMEGROUP@ "$(DESTDIR)$(angbanddir)" && \
+	  chmod -R g+w "$(DESTDIR)$(angbanddir)" ;\
 	fi
 endif
 

@@ -100,41 +100,7 @@
 #include <unistd.h>
 #endif /* __DJGPP__ */
 
-#ifdef OLD_CRUFT
-
-#ifdef SET_UID
-
-#ifdef USG
-# include <string.h>
-#else
-# include <strings.h>
-# ifndef strstr
-extern char *strstr();
-# endif
-# ifndef strchr
-extern char *strchr();
-# endif
-# ifndef strrchr
-extern char *strrchr();
-# endif
-#endif
-
-#else
-
-# include <string.h>
-
-#endif
-
-
-#if !defined(linux) && !defined(__MWERKS__) && !defined(ACORN)
-extern long atol();
-#endif
-
-#else /* OLD_CRUFT */
-
 #include <string.h>
-
-#endif /* OLD_CRUFT */
 
 #include <stdarg.h>
 

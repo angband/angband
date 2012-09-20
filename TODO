@@ -1,6 +1,6 @@
 - Add support for gamma correction to the DOS version.
-- Move various information to external files (player classes, spells,
-  items that can be bought in stores).
+- Move various information to external files (spells, items that can be
+  bought in stores).
 - Add player ghosts.
 - Equipment slots should be configurable for every player race.
 - Gender selection should be done after selecting the player race (for
@@ -20,14 +20,12 @@
 - Add color support to the show_file() function.
 - Find a better way for saving options than appending to *.prf files.
 - Allow multiple pvals per object.
-- Improve message compression "You tunnel into the granite wall. <5x>"
+- Add message compression "You tunnel into the granite wall. <5x>"
 - Split long lines in the message recall.
 - The ANSI-C standard reserves some prefixes for external names like "str".
   Make sure that Angband doesn't use them.
 - Rewrite the debug-mode object flag display so that it doesn't require
   manual changes for every new flag.
-- Move the "Greater vault", "Lesser vault" prefixes out of the v_info.txt
-  file.
 - Use sizeof(buffer) instead of using the numeric size. The compiler is
   won't forget to update the number when the size of the buffer changes.
 - Write helper functions for accessing items on the floor so that handling
@@ -36,8 +34,8 @@
 - Unify line of sight and projection paths.
 - Make sure that signed integers aren't bit-shifted.
 - Use enumerations instead of #defines when possible.
-- Move spaces at the end of lines in r_info.txt to the beginning of the
-  next line.
+- Move spaces at the end of description lines in monster.txt to the
+  beginning of the next line.
 - Add optional support for the metric system.
 - Add a main-net.c modules that sends/receives term-updates via TCP/IP.
   This allows slim clients on machines where Angband isn't available.
@@ -45,4 +43,12 @@
   have minimal hardware requirements.
 - Adjust the Unix/Linux installation for full compliance with the
   Filesystem Hierarchy Standard.
-
+- Move the elemental damage types that are ignored by items to object.txt.
+- Make the filenames in src/ more meaningful.
+- Add reference counting for the "quarks" (inscriptions).
+- Add a compile-time option that prevents the player from saving pref-files,
+  character dumps, and screenshots.
+- "Panic saves" shouldn't overwrite normal savefiles.
+- Replace the maximize mode option with a "half-maximized" mode.
+- Properly integrate the transparency code into the game.
+- Simplify the FREE() and KILL() macros.

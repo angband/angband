@@ -84,13 +84,6 @@ static int value_check_aux2(const object_type *o_ptr)
 
 /*
  * Sense the inventory
- *
- *   Class 0 = Warrior --> fast and heavy
- *   Class 1 = Mage    --> slow and light
- *   Class 2 = Priest  --> fast but light
- *   Class 3 = Rogue   --> okay and heavy
- *   Class 4 = Ranger  --> slow and light
- *   Class 5 = Paladin --> slow but heavy
  */
 static void sense_inventory(void)
 {
@@ -98,7 +91,7 @@ static void sense_inventory(void)
 
 	int plev = p_ptr->lev;
 
-	bool heavy = FALSE;
+	bool heavy = ((cp_ptr->flags & CF_PSEUDO_ID_HEAVY) ? TRUE : FALSE);
 
 	int feel;
 
@@ -112,71 +105,15 @@ static void sense_inventory(void)
 	/* No sensing when confused */
 	if (p_ptr->confused) return;
 
-	/* Analyze the class */
-	switch (p_ptr->pclass)
+	if (cp_ptr->flags & CF_PSEUDO_ID_IMPROV)
 	{
-		case CLASS_WARRIOR:
-		{
-			/* Good sensing */
-			if (0 != rand_int(9000L / (plev * plev + 40))) return;
-
-			/* Heavy sensing */
-			heavy = TRUE;
-
-			/* Done */
-			break;
-		}
-
-		case CLASS_MAGE:
-		{
-			/* Very bad (light) sensing */
-			if (0 != rand_int(240000L / (plev + 5))) return;
-
-			/* Done */
-			break;
-		}
-
-		case CLASS_PRIEST:
-		{
-			/* Good (light) sensing */
-			if (0 != rand_int(10000L / (plev * plev + 40))) return;
-
-			/* Done */
-			break;
-		}
-
-		case CLASS_ROGUE:
-		{
-			/* Okay sensing */
-			if (0 != rand_int(20000L / (plev * plev + 40))) return;
-
-			/* Heavy sensing */
-			heavy = TRUE;
-
-			/* Done */
-			break;
-		}
-
-		case CLASS_RANGER:
-		{
-			/* Very bad (light) sensing */
-			if (0 != rand_int(120000L / (plev + 5))) return;
-
-			/* Done */
-			break;
-		}
-
-		case CLASS_PALADIN:
-		{
-			/* Bad sensing */
-			if (0 != rand_int(80000L / (plev * plev + 40))) return;
-
-			/* Heavy sensing */
-			heavy = TRUE;
-
-			/* Done */
-			break;
-		}
+		if (0 != rand_int(cp_ptr->sense_base / (plev * plev + cp_ptr->sense_div)))
+			return;
+	}
+	else
+	{
+		if (0 != rand_int(cp_ptr->sense_base / (plev + cp_ptr->sense_div)))
+			return;
 	}
 
 
@@ -1192,6 +1129,7 @@ static void process_command(void)
 		case ' ':
 		case '\n':
 		case '\r':
+		case '\a':
 		{
 			break;
 		}
@@ -2317,6 +2255,9 @@ static void dungeon(void)
 			{
 				cave_set_feat(py, px, FEAT_LESS);
 			}
+
+			/* Mark the stairs as known */
+			cave_info[py][px] |= (CAVE_MARK);
 		}
 
 		/* Cancel the stair request */
@@ -2689,7 +2630,7 @@ void play_game(bool new_game)
 		/* Hack -- seed for random artifacts */
 		seed_randart = rand_int(0x10000000);
 
-#endif
+#endif /* GJW_RANDART */
 
 		/* Roll up a new character */
 		player_birth();
@@ -2699,10 +2640,15 @@ void play_game(bool new_game)
 		/* Randomize the artifacts */
 		if (adult_rand_artifacts)
 		{
-			do_randart(seed_randart);
+			do_randart(seed_randart, TRUE);
 		}
 
-#endif
+#else /* GJW_RANDART */
+
+		/* Make sure random artifacts are turned off if not available */
+		adult_rand_artifacts = FALSE;
+
+#endif /* GJW_RANDART */
 
 		/* Hack -- enter the world */
 		turn = 1;

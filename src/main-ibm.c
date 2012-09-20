@@ -881,6 +881,11 @@ static errr Term_pict_ibm(int x, int y, int n, const byte *ap, const char *cp)
 	register byte attr;
 	register byte *dest;
 
+#ifdef USE_TRANSPARENCY
+	/* Unused parameter */
+	(void)tap;
+	(void)tcp;
+#endif /* USE_TRANSPARENCY */
 
 #ifdef USE_CONIO
 
@@ -950,6 +955,9 @@ static errr Term_pict_ibm(int x, int y, int n, const byte *ap, const char *cp)
  */
 static void Term_init_ibm(term *t)
 {
+	/* Unused parameter */
+	(void)t;
+
 	/* XXX Nothing */
 }
 
@@ -959,7 +967,6 @@ static void Term_init_ibm(term *t)
  */
 static void Term_nuke_ibm(term *t)
 {
-
 #ifdef USE_WAT
 
 	/* Nothing */
@@ -969,6 +976,9 @@ static void Term_nuke_ibm(term *t)
 	union REGS r;
 
 #endif /* USE_WAT */
+
+	/* Unused parameter */
+	(void)t;
 
 	/* Move the cursor to the bottom of the screen */
 	Term_curs_ibm(0, rows-1);

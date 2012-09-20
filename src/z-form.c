@@ -163,6 +163,9 @@ static uint vstrnfmt_aux_dflt(char *buf, uint max, cptr fmt, vptr arg)
 	char tmp[32];
 
 
+	/* Unused parameter */
+	(void)fmt;
+
 	/* Pointer display */
 	sprintf(tmp, "<<%p>>", arg);
 	len = strlen(tmp);

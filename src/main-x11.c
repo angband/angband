@@ -111,7 +111,7 @@
 /*
  * Include some helpful X11 code.
  */
-#include "maid-x11.c"
+#include "maid-x11.h"
 
 
 /*
@@ -503,7 +503,7 @@ static errr Metadpy_init_2(Display *dpy, cptr name)
 	m->fg = m->white;
 
 	/* Calculate the Maximum allowed Pixel value.  */
-	m->zg = (1 << m->depth) - 1;
+	m->zg = ((Pixell)1 << m->depth) - 1;
 
 	/* Save various default Flag Settings */
 	m->color = ((m->depth > 1) ? 1 : 0);
@@ -1605,7 +1605,7 @@ static errr CheckEvent(bool wait)
 	infowin *iwin = NULL;
 
 	int i, x, y;
-
+	int window = 0;
 
 	/* Do not wait unless requested */
 	if (!wait && !XPending(Metadpy->dpy)) return (1);
@@ -1629,6 +1629,7 @@ static errr CheckEvent(bool wait)
 		{
 			td = &data[i];
 			iwin = td->win;
+			window = i;
 			break;
 		}
 	}
@@ -1719,14 +1720,26 @@ static errr CheckEvent(bool wait)
 
 		case Expose:
 		{
+			int x1, x2, y1, y2;
+
 			/* Ignore "extra" exposes */
-			if (xev->xexpose.count) break;
+			/*if (xev->xexpose.count) break;*/
 
 			/* Clear the window */
-			Infowin_wipe();
+			/*Infowin_wipe();*/
+
+			x1 = (xev->xexpose.x - Infowin->ox)/Infofnt->wid;
+			x2 = (xev->xexpose.x + xev->xexpose.width -
+				 Infowin->ox)/Infofnt->wid;
+
+			y1 = (xev->xexpose.y - Infowin->oy)/Infofnt->hgt;
+			y2 = (xev->xexpose.y + xev->xexpose.height -
+				 Infowin->oy)/Infofnt->hgt;
+
+			Term_redraw_section(x1, y1, x2, y2);
 
 			/* Redraw */
-			Term_redraw();
+			/*Term_redraw();*/
 
 			break;
 		}
@@ -1763,20 +1776,23 @@ static errr CheckEvent(bool wait)
 			cols = ((Infowin->w - (ox + ox)) / td->fnt->wid);
 			rows = ((Infowin->h - (oy + oy)) / td->fnt->hgt);
 
-			/* Paranoia */
-			if (td == &data[0]) cols = 80;
-			if (td == &data[0]) rows = 24;
-
 			/* Hack -- minimal size */
 			if (cols < 1) cols = 1;
 			if (rows < 1) rows = 1;
+
+			if (window == 0)
+			{
+				/* Hack the main window must be at least 80x24 */
+				if (cols < 80) cols = 80;
+				if (rows < 24) rows = 24;
+			}
 
 			/* Desired size of window */
 			wid = cols * td->fnt->wid + (ox + ox);
 			hgt = rows * td->fnt->hgt + (oy + oy);
 
 			/* Resize the Term (if needed) */
-			Term_resize(cols, rows);
+			(void)Term_resize(cols, rows);
 
 			/* Resize the windows if any "change" is needed */
 			if ((Infowin->w != wid) || (Infowin->h != hgt))
@@ -1916,11 +1932,10 @@ static errr Term_xtra_x11(int n, int v)
  */
 static errr Term_curs_x11(int x, int y)
 {
-	/* Draw the cursor */
-	Infoclr_set(xor);
-
-	/* Hilite the cursor character */
-	Infofnt_text_non(x, y, " ", 1);
+	XDrawRectangle(Metadpy->dpy, Infowin->win, xor->gc,
+			 x * Infofnt->wid + Infowin->ox,
+			 y * Infofnt->hgt + Infowin->oy,
+			 Infofnt->wid - 1, Infofnt->hgt - 1);
 
 	/* Success */
 	return (0);
@@ -2085,8 +2100,6 @@ static errr term_data_init(term_data *td, int i)
 {
 	term *t = &td->t;
 
-	bool fixed = (i == 0);
-
 	cptr name = angband_term_name[i];
 
 	cptr font;
@@ -2115,67 +2128,8 @@ static errr term_data_init(term_data *td, int i)
 
 	XSizeHints *sh;
 
-
-	/* Window specific font name */
-	sprintf(buf, "ANGBAND_X11_FONT_%d", i);
-
-	/* Check environment for that font */
-	font = getenv(buf);
-
-	/* Check environment for "base" font */
-	if (!font) font = getenv("ANGBAND_X11_FONT");
-
-	/* No environment variables, use default font */
-	if (!font)
-	{
-		switch (i)
-		{
-			case 0:
-			{
-				font = DEFAULT_X11_FONT_0;
-			}
-			break;
-			case 1:
-			{
-				font = DEFAULT_X11_FONT_1;
-			}
-			break;
-			case 2:
-			{
-				font = DEFAULT_X11_FONT_2;
-			}
-			break;
-			case 3:
-			{
-				font = DEFAULT_X11_FONT_3;
-			}
-			break;
-			case 4:
-			{
-				font = DEFAULT_X11_FONT_4;
-			}
-			break;
-			case 5:
-			{
-				font = DEFAULT_X11_FONT_5;
-			}
-			break;
-			case 6:
-			{
-				font = DEFAULT_X11_FONT_6;
-			}
-			break;
-			case 7:
-			{
-				font = DEFAULT_X11_FONT_7;
-			}
-			break;
-			default:
-			{
-				font = DEFAULT_X11_FONT;
-			}
-		}
-	}
+	/* Get default font for this term */
+	font = get_default_font(i);
 
 	/* Window specific location (x) */
 	sprintf(buf, "ANGBAND_X11_AT_X_%d", i);
@@ -2187,22 +2141,24 @@ static errr term_data_init(term_data *td, int i)
 	str = getenv(buf);
 	y = (str != NULL) ? atoi(str) : -1;
 
+	/* Window specific cols */
+	sprintf(buf, "ANGBAND_X11_COLS_%d", i);
+	str = getenv(buf);
+	val = (str != NULL) ? atoi(str) : -1;
+	if (val > 0) cols = val;
 
-	if (!fixed)
+	/* Window specific rows */
+	sprintf(buf, "ANGBAND_X11_ROWS_%d", i);
+	str = getenv(buf);
+	val = (str != NULL) ? atoi(str) : -1;
+	if (val > 0) rows = val;
+
+	/* Hack the main window must be at least 80x24 */
+	if (!i)
 	{
-		/* Window specific cols */
-		sprintf(buf, "ANGBAND_X11_COLS_%d", i);
-		str = getenv(buf);
-		val = (str != NULL) ? atoi(str) : -1;
-		if (val > 0) cols = val;
-
-		/* Window specific rows */
-		sprintf(buf, "ANGBAND_X11_ROWS_%d", i);
-		str = getenv(buf);
-		val = (str != NULL) ? atoi(str) : -1;
-		if (val > 0) rows = val;
+		if (cols < 80) cols = 80;
+		if (rows < 24) rows = 24;
 	}
-
 
 	/* Window specific inner border offset (ox) */
 	sprintf(buf, "ANGBAND_X11_IBOX_%d", i);
@@ -2223,7 +2179,7 @@ static errr term_data_init(term_data *td, int i)
 	Infofnt_init_data(font);
 
 	/* Hack -- key buffer size */
-	num = (fixed ? 1024 : 16);
+	num = ((i == 0) ? 1024 : 16);
 
 	/* Assume full size windows */
 	wid = cols * td->fnt->wid + (ox + ox);
@@ -2265,24 +2221,26 @@ static errr term_data_init(term_data *td, int i)
 	/* Oops */
 	if (sh == NULL) quit("XAllocSizeHints failed");
 
-	/* Fixed window size */
-	if (fixed)
+	/* Main window has a differing minimum size */
+	if (i == 0)
 	{
-		/* Fixed size */
+		/* Main window min size is 80x24 */
 		sh->flags = PMinSize | PMaxSize;
-		sh->min_width = sh->max_width = wid;
-		sh->min_height = sh->max_height = hgt;
+		sh->min_width = 80 * td->fnt->wid + (ox + ox);
+		sh->min_height = 24 * td->fnt->hgt + (oy + oy);
+		sh->max_width = 255 * td->fnt->wid + (ox + ox);
+		sh->max_height = 255 * td->fnt->hgt + (oy + oy);
 	}
 
-	/* Variable window size */
+	/* Other windows can be shrunk to 1x1 */
 	else
 	{
-		/* Variable size */
+		/* Other windows */
 		sh->flags = PMinSize | PMaxSize;
 		sh->min_width = td->fnt->wid + (ox + ox);
 		sh->min_height = td->fnt->hgt + (oy + oy);
-		sh->max_width = 256 * td->fnt->wid + (ox + ox);
-		sh->max_height = 256 * td->fnt->hgt + (oy + oy);
+		sh->max_width = 255 * td->fnt->wid + (ox + ox);
+		sh->max_height = 255 * td->fnt->hgt + (oy + oy);
 	}
 
 	/* Resize increment */
@@ -2354,6 +2312,7 @@ errr init_x11(int argc, char *argv[])
 #ifdef USE_TRANSPARENCY
 
 	char *TmpData;
+
 #endif /* USE_TRANSPARENCY */
 
 #endif /* USE_GRAPHICS */
@@ -2369,13 +2328,11 @@ errr init_x11(int argc, char *argv[])
 		}
 
 #ifdef USE_GRAPHICS
-
 		if (prefix(argv[i], "-s"))
 		{
 			smoothRescaling = FALSE;
 			continue;
 		}
-
 #endif /* USE_GRAPHICS */
 
 		if (prefix(argv[i], "-n"))
@@ -2543,7 +2500,7 @@ errr init_x11(int argc, char *argv[])
 
 			td->TmpImage = XCreateImage(dpy,visual,depth,
 				ZPixmap, 0, TmpData,
-				td->fnt->wid, td->fnt->hgt, 8, 0);
+				td->fnt->wid, td->fnt->hgt, 32, 0);
 
 		}
 #endif /* USE_TRANSPARENCY */

@@ -1,12 +1,12 @@
-# File: a_info.txt
+# File: artifact.txt
 
 
-# This file is used to initialize the "lib/data/a_info.raw" file, which is
-# used to initialize the "artifact" information for the Angband game.
+# This file is used to initialize the "lib/data/artifact.raw" file, which
+# is used to initialize the "artifact" information for the Angband game.
 
 # Do not modify this file unless you know exactly what you are doing,
 # unless you wish to risk possible system crashes and broken savefiles.
-# After modifying this file, delete the "lib/data/a_info.raw" file.
+# After modifying this file, delete the "lib/data/artifact.raw" file.
 
 # The artifact indexes are defined in "defines.h", and must not be changed.
 
@@ -16,7 +16,7 @@
 # not be dropped when Morgoth is killed.  Note that they, like the "special"
 # artifacts, are never created "accidentally".
 
-# === Understanding a_info.txt ===
+# === Understanding artifact.txt ===
 
 # N: serial number : item name
 # I: tval : sval : pval
@@ -56,7 +56,7 @@
 
 # Version stamp (required)
 
-V:2.9.2
+V:2.9.3
 
 
 
@@ -1352,4 +1352,3 @@ A:FIREBRAND:999:0
 
 
 # Artifact 127 is unused
-

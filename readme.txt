@@ -1,7 +1,7 @@
 
 
               **************************************************
-              **   Angband 2.9.2   **   The Pits of Angband   **
+              **   Angband 2.9.3   **   The Pits of Angband   **
               **************************************************
 
            Based on Moria:   Copyright (c) 1985 Robert Alan Koeneke
@@ -13,7 +13,7 @@
 
                    Angband 2.7.0 - 2.8.5 by Ben Harrison
 
-                 Angband 2.9.0 - 2.9.2 by Robert Ruehlmann
+                 Angband 2.9.0 - 2.9.3 by Robert Ruehlmann
 
         Send comments, bug reports, and patches, to "rr9@angband.org"
        Visit the Angband Home Page at "http://thangorodrim.angband.org/"
@@ -24,7 +24,7 @@
 
 === General Info ===
 
-This is the README file for Angband 2.9.2 (9th November 2000).
+This is the README file for Angband 2.9.3 (8th July 2000).
 
 Angband is a "graphical" dungeon adventure game using textual characters
 to represent the walls and floors of a dungeon and the inhabitants therein,
@@ -38,9 +38,9 @@ a list (mostly complete) of what has changed in each recent version.
 See the various Angband ftp sites (including "clockwork.dementia.org" and
 "ftp.cis.ksu.edu") for the latest files, patches, and executables.
 
-Contact Robert Ruehlmann < rr9@angband.org > to report any bugs or to make
-any suggestions.  Use the newsgroup "rec.games.roguelike.angband" to ask
-any general questions about the game, including compilation questions.
+Contact Robert Ruehlmann < rr9@angband.org > to report bugs. Use the
+newsgroup "rec.games.roguelike.angband" to ask general questions about the
+game, including compilation questions.
 
 This version of Angband will run on Macintosh, Windows, Unix (X11/Curses), 
 Linux (X11/Curses), Acorn, Amiga, various DOS machines, and many others...
@@ -74,7 +74,7 @@ appropriate "extra archive", which contains some extra platform specific
 files, and instructions about how to use them.  Some "extra archives" may
 be found at the ftp site (including "/angband/Macintosh/ext-mac.sit.bin"
 and "/angband/Windows/ext-win.zip"), but be sure that you get a version
-of the "extra archive" designed for Angband 2.9.0.
+of the "extra archive" designed for Angband 2.9.3.
 
 
 === Special instructions for certain platforms ===
@@ -99,10 +99,10 @@ delete these files if you so desire.
 === Upgrading from older versions (and/or other platforms) ===
 
 If you have been using an older version of Angband (and/or playing on a
-different platform), you can "upgrade" (or "sidegrade") to Angband 2.9.0,
+different platform), you can "upgrade" (or "sidegrade") to Angband 2.9.3,
 bringing your old savefiles, high score list, and other files with you.
 
-Angband 2.9.0 uses a platform independant file format for the binary files
+Angband 2.9.3 uses a platform independant file format for the binary files
 that store information about games in progress, known as "savefiles", and
 is able to translate savefiles from all known versions of Angband.  To use
 an "old" savefile, simply copy it into the "lib/save" directory, changing
@@ -112,17 +112,17 @@ or "NNN" where "UUU" is the userid of the player (on "multiuser" systems),
 and "NNN" is the name of the "character" in the savefile.  Note that only
 "multiuser" platforms use the "UUU.NNN" form, and the "dot" is required.
 
-Angband 2.9.0 uses a platform independant file format for the binary file
+Angband 2.9.3 uses a platform independant file format for the binary file
 used to store the high score list.  This file is named "scores.raw".  To
 use an "old" high score list, simply copy it into the "lib/apex" directory.
 
-Angband 2.9.0 uses a set of special ascii "configuration files" which are
+Angband 2.9.3 uses a set of special ascii "configuration files" which are
 kept in the "lib/file" directory.  These files should not be modified (or
 imported from older versions) unless you know exactly what you are doing,
 but often you can use "old" versions of these files with little trouble.
 
-Angband 2.9.0 uses a set of ascii "user pref files" which are kept in the
-"lib/user" directory.  Most of these files can only be used on a small set
+Angband 2.9.3 uses a set of ascii "user pref files" which are kept in the
+"lib/pref" directory.  Most of these files can only be used on a small set
 of platforms, and may need slight modifications when imported from older
 versions.  Note that only some of these files are auto-loaded by the game.
 
@@ -158,8 +158,7 @@ The "lib/bone" directory is currently unused.
 
 The "lib/data" directory contains various special binary data files.
 
-The files 'f_info.raw', 'k_info.raw', 'a_info.raw', 'e_info.raw', 'r_info.raw',
-and 'v_info.raw' are binary image files constructed by parsing the ascii
+The *.raw files are binary image files constructed by parsing the ascii
 template files in "lib/edit", described below.  These files are required,
 but can be created by the game if the "lib/edit" directory contains the
 proper files, and if the game was compiled to allow this creation.
@@ -169,15 +168,14 @@ proper files, and if the game was compiled to allow this creation.
 
 The "lib/edit" directory contains various special ascii data files.
 
-The files 'f_info.txt', 'k_info.txt', 'a_info.txt', 'e_info.txt', 'r_info.txt',
-and 'v_info.txt' are ascii template files used to construct the binary image
+The *.txt files are ascii template files used to construct the binary image
 files in "lib/data", described above.  These files describe the "terrain
 features", "object kinds", "artifacts", "ego-items", "monster races", and
-"dungeon vaults", respectively.
+"dungeon vaults", "player races", "player classes", and many other things.
 
-The ascii template files are easier to edit than hard-coded arrays, and also
-prevent compilation errors on some machines, and also shrink the size of the
-binary executable, and also provide a user-readible spoiler file of sorts.
+The ascii template files are easier to edit than hard-coded arrays, prevent
+compilation errors on some machines, and also shrink the size of the binary
+executable, and also provide a user-readable spoiler file of sorts.
 
 These files should not be modified unless you know exactly what you are doing.
 
@@ -302,4 +300,3 @@ POSSIBILITY OF SUCH DAMAGES.
 
 
 --- Ben Harrison and Robert Ruehlmann ---
-

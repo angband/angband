@@ -29,8 +29,8 @@ Activate quick messages    [quick_messages]
     (useful for monster farming).  Allows most keys to mean "no" to any
     "[y/n]" prompt.
 
-***** <other_query_flag>
-Prompt for floor item selection    [other_query_flag]
+***** <floor_query_flag>
+Prompt for floor item selection    [floor_query_flag]
     Allows the user to select objects from the center of stacks.  Without
     this option, the uppermost appropriate object will always be selected.
 
@@ -111,21 +111,21 @@ Audible bell (on errors, etc)    [ring_bell]
 
 === Option Set 2 -- Disturbance ===
 
-***** <find_ignore_stairs>
-Run past stairs    [find_ignore_stairs]
+***** <run_ignore_stairs>
+Run past stairs    [run_ignore_stairs]
     Ignore stairs when running.
 
-***** <find_ignore_doors>
-Run through open doors    [find_ignore_doors]
+***** <run_ignore_doors>
+Run through open doors    [run_ignore_doors]
     Ignore open doors when running.
 
-***** <find_cut>
-Run past known corners    [find_cut]
+***** <run_cut>
+Run past known corners    [run_cut]
     Cut sharply around "known" corners when running.  This will result in
     "faster" running, but may cause you to run into a "lurking" monster.
 
-***** <find_examine>
-Run into potential corners    [find_examine]
+***** <run_examine>
+Run into potential corners    [run_examine]
     Fully explore "potential corners" in hallways.
 
 ***** <disturb_move>
@@ -217,8 +217,8 @@ Expand the power of the look command    [expand_look]
     objects/monsters which have only been detected by spells, or sensed
     via telepathy.
 
-***** <expand_wrap>
-Expand the power of the list commands    [expand_wrap]
+***** <expand_list>
+Expand the power of the list commands    [expand_list]
     Expand the "listing" commands so that they "wrap" at the "edges" of
     the appropriate list.  This allows the "look" and "target" commands
     to "cycle" through all appropriate grids forever, and the "identify
@@ -308,8 +308,8 @@ Open/Disarm doors/traps on movement.    [easy_alter]
      to leave a known teleport trap as a guaranteed escape route, this 
      option must therefore be off.
 
-***** <easy_piles>
-Display floor stacks in a list    [easy_piles]
+***** <easy_floor>
+Display floor stacks in a list    [easy_floor]
      When moving into a stack, if this option is *off*, the character will 
      attempt to pick up items from the stack, from top to bottom, until the 
      stack is gone or the inventory is full. This option allows the player

@@ -1,26 +1,22 @@
-# File: b_info.txt
+# File: shop_own.txt
 
 
-# This file is used to initialize the "lib/data/b_info.raw" file, which is
+# This file is used to initialize the "lib/data/shop_own.raw" file, which is
 # used to initialize the "shop owner" information for the Angband game.
 
 # Do not modify this file unless you know exactly what you are doing,
 # unless you wish to risk possible system crashes and broken savefiles.
-# After modifying this file, delete the "lib/data/b_info.raw" file.
+# After modifying this file, delete the "lib/data/shop_own.raw" file.
 
 
 # Format:
 # N:store:owner idx:owner name
 # I:race idx:purse:maxgreed:mingreed:haggleper:tolerance
 
-# Old format:
-# Store owners (exactly four "possible" owners per store, chosen randomly)
-# { name, purse, max greed, min greed, haggle_per, tolerance, race, unused }
-
 
 # Version stamp (required)
 
-V:2.9.2
+V:2.9.3
 
 
 # General Store

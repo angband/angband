@@ -157,7 +157,7 @@ static void do_cmd_wiz_change_aux(void)
 		sprintf(tmp_val, "%d", p_ptr->stat_max[i]);
 
 		/* Query */
-		if (!get_string(ppp, tmp_val, 3)) return;
+		if (!get_string(ppp, tmp_val, 4)) return;
 
 		/* Extract */
 		tmp_int = atoi(tmp_val);
@@ -175,7 +175,7 @@ static void do_cmd_wiz_change_aux(void)
 	sprintf(tmp_val, "%ld", (long)(p_ptr->au));
 
 	/* Query */
-	if (!get_string("Gold: ", tmp_val, 9)) return;
+	if (!get_string("Gold: ", tmp_val, 10)) return;
 
 	/* Extract */
 	tmp_long = atol(tmp_val);
@@ -191,7 +191,7 @@ static void do_cmd_wiz_change_aux(void)
 	sprintf(tmp_val, "%ld", (long)(p_ptr->exp));
 
 	/* Query */
-	if (!get_string("Experience: ", tmp_val, 9)) return;
+	if (!get_string("Experience: ", tmp_val, 10)) return;
 
 	/* Extract */
 	tmp_long = atol(tmp_val);
@@ -209,7 +209,7 @@ static void do_cmd_wiz_change_aux(void)
 	sprintf(tmp_val, "%ld", (long)(p_ptr->max_exp));
 
 	/* Query */
-	if (!get_string("Max Exp: ", tmp_val, 9)) return;
+	if (!get_string("Max Exp: ", tmp_val, 10)) return;
 
 	/* Extract */
 	tmp_long = atol(tmp_val);
@@ -291,7 +291,7 @@ static void do_cmd_wiz_change(void)
 /*
  * Display an item's properties
  */
-static void wiz_display_item(object_type *o_ptr)
+static void wiz_display_item(const object_type *o_ptr)
 {
 	int j = 0;
 
@@ -328,19 +328,19 @@ static void wiz_display_item(object_type *o_ptr)
 	           o_ptr->ident, o_ptr->timeout), 8, j);
 
 	prt("+------------FLAGS1------------+", 10, j);
-	prt("AFFECT..........SLAY......BRAND.", 11, j);
-	prt("                ae      x q aefc", 12, j);
-	prt("siwdcc  ssidsa  nvudotgdd u clio", 13, j);
-	prt("tnieoh  trnipt  iinmrrnrr a ierl", 14, j);
-	prt("rtsxna..lcfgdk..mldncltgg.k.dced", 15, j);
+	prt("AFFECT..........SLAY.......BRAND", 11, j);
+	prt("                ae      x  paefc", 12, j);
+	prt("siwdcc  ssidsasmnvudotgdd  oclio", 13, j);
+	prt("tnieoh  trnipthgiinmrrnrr  iierl", 14, j);
+	prt("rtsxna..lcfgdkttmldncltgg..sdced", 15, j);
 	prt_binary(f1, 16, j);
 
 	prt("+------------FLAGS2------------+", 17, j);
-	prt("SUST....IMMUN.RESIST............", 18, j);
-	prt("        aefcp psaefcp ldbc sn   ", 19, j);
-	prt("siwdcc  clioo atclioo ialoshtncd", 20, j);
-	prt("tnieoh  ierli raierli trnnnrhehi", 21, j);
-	prt("rtsxna..dceds.atdceds.ekdfddrxss", 22, j);
+	prt("SUST........IMM.RESIST.........", 18, j);
+	prt("            afecaefcpfldbc s n  ", 19, j);
+	prt("siwdcc      cilocliooeialoshnecd", 20, j);
+	prt("tnieoh      irelierliatrnnnrethi", 21, j);
+	prt("rtsxna......decddcedsrekdfddxhss", 22, j);
 	prt_binary(f2, 23, j);
 
 	prt("+------------FLAGS3------------+", 10, j+32);
@@ -401,6 +401,9 @@ static const tval_desc tvals[] =
 	{ TV_CHEST,             "Chest"                },
 	{ TV_FOOD,              "Food"                 },
 	{ TV_FLASK,             "Flask"                },
+	{ TV_SKELETON,          "Skeletons"            },
+	{ TV_BOTTLE,            "Empty bottle"         },
+	{ TV_JUNK,              "Junk"                 },
 	{ 0,                    NULL                   }
 };
 
@@ -474,7 +477,7 @@ static int wiz_create_itemtype(void)
 		prt(format("[%c] %s", ch, tvals[num].desc), row, col);
 	}
 
-	/* Me need to know the maximal possible tval_index */
+	/* We need to know the maximal possible tval_index */
 	max_num = num;
 
 	/* Choose! */
@@ -560,25 +563,25 @@ static void wiz_tweak_item(object_type *o_ptr)
 
 	p = "Enter new 'pval' setting: ";
 	sprintf(tmp_val, "%d", o_ptr->pval);
-	if (!get_string(p, tmp_val, 5)) return;
+	if (!get_string(p, tmp_val, 6)) return;
 	o_ptr->pval = atoi(tmp_val);
 	wiz_display_item(o_ptr);
 
 	p = "Enter new 'to_a' setting: ";
 	sprintf(tmp_val, "%d", o_ptr->to_a);
-	if (!get_string(p, tmp_val, 5)) return;
+	if (!get_string(p, tmp_val, 6)) return;
 	o_ptr->to_a = atoi(tmp_val);
 	wiz_display_item(o_ptr);
 
 	p = "Enter new 'to_h' setting: ";
 	sprintf(tmp_val, "%d", o_ptr->to_h);
-	if (!get_string(p, tmp_val, 5)) return;
+	if (!get_string(p, tmp_val, 6)) return;
 	o_ptr->to_h = atoi(tmp_val);
 	wiz_display_item(o_ptr);
 
 	p = "Enter new 'to_d' setting: ";
 	sprintf(tmp_val, "%d", o_ptr->to_d);
-	if (!get_string(p, tmp_val, 5)) return;
+	if (!get_string(p, tmp_val, 6)) return;
 	o_ptr->to_d = atoi(tmp_val);
 	wiz_display_item(o_ptr);
 }
@@ -859,7 +862,7 @@ static void wiz_quantity_item(object_type *o_ptr, bool carried)
 	sprintf(tmp_val, "%d", o_ptr->number);
 
 	/* Query */
-	if (get_string("Quantity: ", tmp_val, 2))
+	if (get_string("Quantity: ", tmp_val, 3))
 	{
 		/* Extract */
 		tmp_int = atoi(tmp_val);
@@ -1171,7 +1174,7 @@ static void do_cmd_wiz_jump(void)
 		sprintf(tmp_val, "%d", p_ptr->depth);
 
 		/* Ask for a level */
-		if (!get_string(ppp, tmp_val, 10)) return;
+		if (!get_string(ppp, tmp_val, 11)) return;
 
 		/* Extract request */
 		p_ptr->command_arg = atoi(tmp_val);

@@ -38,7 +38,7 @@ LIBS = -lz -lvgagl -lvga
 # Build the "Angband" program 
 # 
 angband: $(OBJS) 
-	$(CC) $(CFLAGS) -o testing $(OBJS) $(LDFLAGS) $(LIBS) 
+	$(CC) $(CFLAGS) -o angband $(OBJS) $(LDFLAGS) $(LIBS) 
 
 
 #
@@ -51,7 +51,7 @@ install: angband
 # Clean up old junk
 #
 clean:
-	\rm *.o angband
+	\rm -f *.o angband
 
 
 #
