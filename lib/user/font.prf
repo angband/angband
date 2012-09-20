@@ -9,17 +9,27 @@
 #
 
 
-## # OPTION: Display "veins" (white "%") as "normal walls" (white "#") 
-## # This replaces the old method of setting "notice_seams" to false,
-## # which no longer works as of Angband 2.7.9, for various reasons.
-## 
-## F:50:1/35
-## F:51:1/35
-## F:52:1/35
-## F:53:1/35
+## #
+## # OPTION: Display "veins" (white "%") as "normal walls" (white "#").
+## #
+## F:50:0x01/0x23
+## F:51:0x01/0x23
+## F:52:0x01/0x23
+## F:53:0x01/0x23
+
+
+##### Standard font file #####
+
+%:font-xxx.prf
 
 
 ##### System Specific Subfiles #####
+
+?:[IOR [EQU $SYS xaw] [EQU $SYS x11]]
+%:font-x11.prf
+
+?:[EQU $SYS gcu]
+%:font-gcu.prf
 
 ?:[EQU $SYS ami]
 %:font-ami.prf
@@ -30,6 +40,18 @@
 ?:[EQU $SYS win]
 %:font-win.prf
 
+?:[EQU $SYS dos]
+%:font-dos.prf
+
 ?:[EQU $SYS ibm]
 %:font-ibm.prf
+
+?:[EQU $SYS emx]
+%:font-emx.prf
+
+?:[EQU $SYS acn]
+%:font-acn.prf
+
+?:1
+
 

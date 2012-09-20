@@ -3,9 +3,6 @@
 # Purpose: Makefile support for "main-emx.c"
 
 # Note: Use 'dmake -B -r -f makefile.emx' to compile (see "main-emx.c" for details).
-#       Since "dmake" does not demand "hard" tab stops as delimiters,
-#       don't bother to add them.
-#
 #       Use 'dmake -B -r -f makefile.emx install' to install the executables
 #       and the batch file used for multiple VIO windows in the parent directory.
 #
@@ -18,7 +15,7 @@
 #                  all changed files (diff -c). "..\exp\patches.uue" will 
 #                  contain the same file gziped and uuencodes. "..\exp\files.uue"
 #		   will contain the three emx-specific files tared, gziped and
-#  		   uuencoded. Needs 4OS2.
+#                  uuencoded. Needs 4OS2.
 #
 #       'export': The file "..\exp\$(EXPORT)" is created so that it 
 #                 can directly be uploaded as an official distribution archive.
@@ -28,13 +25,13 @@
 VERSION         = 279v5
 EXPORT          = angband-$(VERSION).os2.zip
 
-CC 		= gcc
+CC		= gcc
 AR		= ar
-CFLAGS 		= -MMD -O3 -DUSE_EMX -Zmt 
-LFLAGS 		= -lvideo 
+CFLAGS		= -MMD -O3 -DUSE_EMX -Zmt 
+LFLAGS		= -lvideo 
 
 # Uncomment this if you have nice installed
-NICE 		= nice -i -n -30
+NICE		= nice -i -n -30
 
 ###################################################################################
 
@@ -45,13 +42,13 @@ default: all depends :-)
 install: ..\angband.exe ..\aclient.exe ..\startwnd.cmd
 
 clean:
-    -+@ del angband.exe
-    -+@ del aclient.exe
-    -+@ del depends
-    -+@ del _state.mk
-    -+@ del *.a
-    -+@ del *.d
-    -+@ del *.o
+	-+@ del angband.exe
+	-+@ del aclient.exe
+	-+@ del depends
+	-+@ del _state.mk
+	-+@ del *.a
+	-+@ del *.d
+	-+@ del *.o
 
 patches:  ..\patches.txt ..\exp\patches.uue ..\exp\files.uue
 
@@ -62,78 +59,78 @@ export: ..\exp\$(EXPORT)
 ####################################################################################
 
 OBJS = \
-  z-util.o z-virt.o z-form.o z-rand.o z-term.o \
-  variable.o tables.o util.o cave.o \
-  object1.o object2.o monster1.o monster2.o \
-  xtra1.o xtra2.o spells1.o spells2.o \
-  melee1.o melee2.o save.o files.o \
-  cmd1.o cmd2.o cmd3.o cmd4.o cmd5.o cmd6.o \
-  store.o birth.o load1.o load2.o \
-  wizard1.o wizard2.o \
-  generate.o dungeon.o init1.o init2.o
+	z-util.o z-virt.o z-form.o z-rand.o z-term.o \
+	variable.o tables.o util.o cave.o \
+	object1.o object2.o monster1.o monster2.o \
+	xtra1.o xtra2.o spells1.o spells2.o \
+	melee1.o melee2.o save.o files.o \
+	cmd1.o cmd2.o cmd3.o cmd4.o cmd5.o cmd6.o \
+	store.o birth.o load1.o load2.o \
+	wizard1.o wizard2.o \
+	generate.o dungeon.o init1.o init2.o
 
 .c.o:
-    $(NICE) $(CC) $(CFLAGS) -c $*.c
+	$(NICE) $(CC) $(CFLAGS) -c $*.c
 
 all .PHONY: angband.exe aclient.exe 
-    +@echo. 
-    +@echo Now type 
-    +@echo. 
-    +@echo       '$(MAKECMD) $(MFLAGS) $(MAKEFILE) install'
-    +@echo. 
-    +@echo to install Angband in the parent directory, and/or
-    +@echo. 
-    +@echo       '$(MAKECMD) $(MFLAGS) $(MAKEFILE) clean'
-    +@echo. 
-    +@echo to remove a bunch of temporary files used during compilation!
-    +@echo You may want to remove the src subdirectory, now that you have
-    +@echo working executables.
-    +@echo. 
+	+@echo. 
+	+@echo Now type 
+	+@echo. 
+	+@echo       '$(MAKECMD) $(MFLAGS) $(MAKEFILE) install'
+	+@echo. 
+	+@echo to install Angband in the parent directory, and/or
+	+@echo. 
+	+@echo       '$(MAKECMD) $(MFLAGS) $(MAKEFILE) clean'
+	+@echo. 
+	+@echo to remove a bunch of temporary files used during compilation!
+	+@echo You may want to remove the src subdirectory, now that you have
+	+@echo working executables.
+	+@echo. 
 
 EXPFILES = angband.exe;aclient.exe;patches.txt;readme;startwnd.cmd
 
 ..\exp\$(EXPORT) .PHONY .IGNORE: install patches
 # Needs 4OS2!
-        +@ md ..\exp >& nul                     ^ \
-           md ..\exp\tmpdir >& nul              ^ \
-           cd ..\exp\tmpdir                     ^ \
-           copy ...\$(EXPFILES) > nul           ^ \
-           md lib                               ^ \
-           copy ...\lib\ lib\ /s >& nul         ^ \
-           del lib\save\player >& nul         	^ \
-           zip -m -r $(EXPORT) * > nul          ^ \
-           move $(EXPORT) ..                    ^ \
-           cd ..                                ^ \
-           del tmpdir /xsqy >& nul
-  
+	+@ md ..\exp >& nul                          ^ \
+		md ..\exp\tmpdir >& nul              ^ \
+		cd ..\exp\tmpdir                     ^ \
+		copy ...\$(EXPFILES) > nul           ^ \
+		md lib                               ^ \
+		copy ...\lib\ lib\ /s >& nul         ^ \
+		del lib\save\player >& nul           ^ \
+		zip -m -r $(EXPORT) * > nul          ^ \
+		move $(EXPORT) ..                    ^ \
+		cd ..                                ^ \
+		del tmpdir /xsqy >& nul
+	
 PATCHFILES  = *.c *.h makefile* ..\lib\user\pref-emx.prf
 
 # Needs 4OS2! 
 ..\patches.txt .PHONY .IGNORE:
-    +@ echo These are the changes to the original source  > ..\patches.txt       	^ \
-       echo archive ($(VERSION)). You don't need to apply them >> ..\patches.txt 	^ \
-       echo if you can get the latest archive, which will >> ..\patches.txt 		^ \
-       echo have them applied already. >> ..\patches.txt 				^ \
-       echo. >> ..\patches.txt 								^ \
-       except (*~) for %a in ($(PATCHFILES)) 						  \
-       do (diff -c ..\old\src\%a %a >> ..\patches.txt)
+	+@ echo These are the changes to the original source  > ..\patches.txt		^ \
+	echo archive ($(VERSION)). You don't need to apply them >> ..\patches.txt	^ \
+	echo if you can get the latest archive, which will >> ..\patches.txt		^ \
+	echo have them applied already. >> ..\patches.txt				^ \
+	echo. >> ..\patches.txt								^ \
+	except (*~) for %a in ($(PATCHFILES))						  \
+	do (diff -c ..\old\src\%a %a >> ..\patches.txt)
 
 # Needs 4OS2!
 ..\exp\patches.uue: ..\patches.txt
-    +@ md ..\exp >& nul                                         ^ \
-       cd ..\exp                                                ^ \
-       copy ..\patches.txt patches-$(VERSION).os2               ^ \
-       gzip -f patches-$(VERSION).os2                           ^ \
-       uuencode patches-$(VERSION).os2.gz >& nul                ^ \
-       del patches-$(VERSION).os2.gz                            ^ \
-       move patches-$(VERSION).os2.gz.uue patches.uue           
+	+@ md ..\exp >& nul                                         ^ \
+	cd ..\exp                                                ^ \
+	copy ..\patches.txt patches-$(VERSION).os2               ^ \
+	gzip -f patches-$(VERSION).os2                           ^ \
+	uuencode patches-$(VERSION).os2.gz >& nul                ^ \
+	del patches-$(VERSION).os2.gz                            ^ \
+	move patches-$(VERSION).os2.gz.uue patches.uue           
 
 FILES  = main-emx.c makefile.emx ..\lib\user\pref-emx.prf 
 FILESP = main-emx.c makefile.emx pref-emx.prf 
 
 # Needs 4OS2!
 ..\exp\files.uue: $(FILES)
-    +@ 	md ..\exp >& nul                                        ^ \
+	+@ md ..\exp >& nul                                        ^ \
 	cd ..\exp                                               ^ \
 	for %a in ($(FILES)) copy ..\src\%a > nul               ^ \
 	tar -cvf files.tar $(FILESP)                            ^ \
@@ -144,59 +141,51 @@ FILESP = main-emx.c makefile.emx pref-emx.prf
 	move files.tar.gz.uue files.uue                          
 
 depends .IGNORE: $(OBJS)
-    + echo. > depends
-    + for %a in (*.d) type %a >> depends
+	+ echo. > depends
+	+ for %a in (*.d) type %a >> depends
 
 ..\angband.exe: angband.exe
-    + copy angband.exe ..
-    emxbind -s ..\angband.exe
+	+ copy angband.exe ..
+	emxbind -s ..\angband.exe
 
 ..\aclient.exe: aclient.exe
-    + copy aclient.exe ..
-    emxbind -s ..\aclient.exe
+	+ copy aclient.exe ..
+	emxbind -s ..\aclient.exe
 
 EC=+@ echo 
 ECF=>> ..\startwnd.cmd
 
 ..\startwnd.cmd: 
- $(EC) @echo off                                             > ..\startwnd.cmd
- $(EC) REM This file starts up Angband and up to three other views. The $(ECF)
- $(EC) REM optional number behind the name sets the number of lines for $(ECF)
- $(EC) REM that screen.                                                 $(ECF)
- $(EC) REM                                                              $(ECF)
- $(EC) REM The function of the three views:                             $(ECF)
- $(EC) REM                                                              $(ECF)
- $(EC) REM   recall window - display monster recall info                $(ECF)
- $(EC) REM   choice window - display equipment and inventory            $(ECF)
- $(EC) REM   mirror window - display both of them as new information    $(ECF)
- $(EC) REM                   pops up - use this if you've got a small   $(ECF)
- $(EC) REM                   screen that doesn't comfortably allow for  $(ECF)
- $(EC) REM                   three windows.                             $(ECF)
- $(EC).                                                                 $(ECF)
- $(EC) start /win /n aclient recall 10                                  $(ECF)
- $(EC) start /win /n aclient choice                                     $(ECF)
- $(EC) rem start /win /n aclient mirror                                 $(ECF)
- $(EC) delay                                                            $(ECF)
- $(EC) angband %1 %2 %3 %4 %5 %6 %7 %8 %9                               $(ECF)
+	$(EC) @echo off                                             > ..\startwnd.cmd
+	$(EC) REM This file starts up Angband and up to seven other views. The $(ECF)
+	$(EC) REM optional number behind the name sets the number of lines for $(ECF)
+	$(EC) REM that screen.  Choose contents for each via the game options. $(ECF)
+	$(EC) REM                                                              $(ECF)
+	$(EC).                                                                 $(ECF)
+	$(EC) start /win /n aclient Term-1                                     $(ECF)
+	$(EC) start /win /n aclient Term-2 10                                  $(ECF)
+	$(EC) rem start /win /n aclient Term-3 24                              $(ECF)
+	$(EC) delay                                                            $(ECF)
+	$(EC) angband %1 %2 %3 %4 %5 %6 %7 %8 %9                               $(ECF)
 
 angband.exe: angband.a main.o main-emx.o main-epm.o
-    $(CC) -o angband.exe main.o main-emx.o angband.a $(LFLAGS) 
+	$(CC) -o angband.exe main.o main-emx.o angband.a $(LFLAGS) 
 
 angband.a: $(OBJS)
-    $(AR) r angband.a $(OBJS)
+	$(AR) r angband.a $(OBJS)
 
 aclient.exe: main-emx.c
-    $(NICE) $(CC) $(CFLAGS) -Wall -D__EMX__CLIENT__ -o aclient.exe main-emx.c -lvideo
+	$(NICE) $(CC) $(CFLAGS) -Wall -D__EMX__CLIENT__ -o aclient.exe main-emx.c -lvideo
 
 main-emx.o: main-emx.c
-    $(NICE) $(CC) $(CFLAGS) -Wall -c main-emx.c -o main-emx.o
+	$(NICE) $(CC) $(CFLAGS) -Wall -c main-emx.c -o main-emx.o
 
 main-epm.o: main-emx.c
-    $(NICE) $(CC) $(CFLAGS) -Wall -DEMXPM -c main-emx.c -o main-epm.o
+	$(NICE) $(CC) $(CFLAGS) -Wall -DEMXPM -c main-emx.c -o main-epm.o
 
 # Forgive me :)
 ":-)":
-        +@echo.
+	+@echo.
 
 .INCLUDE .IGNORE: depends
 

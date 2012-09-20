@@ -386,14 +386,6 @@ static void breath(int m_idx, int typ, int dam_hp)
  * Perhaps smart monsters should decline to use "bolt" spells if
  * there is a monster in the way, unless they wish to kill it.
  *
- * Note that, to allow the use of the "track_target" option at some
- * later time, certain non-optimal things are done in the code below,
- * including explicit checks against the "direct" variable, which is
- * currently always true by the time it is checked, but which should
- * really be set according to an explicit "projectable()" test, and
- * the use of generic "x,y" locations instead of the player location,
- * with those values being initialized with the player location.
- *
  * It will not be possible to "correctly" handle the case in which a
  * monster attempts to attack a location which is thought to contain
  * the player, but which in fact is nowhere near the player, since this
@@ -410,8 +402,7 @@ static void breath(int m_idx, int typ, int dam_hp)
  * Note that certain spell attacks do not use the "project()" function
  * but "simulate" it via the "direct" variable, which is always at least
  * as restrictive as the "project()" function.  This is necessary to
- * prevent "blindness" attacks and such from bending around walls, etc,
- * and to allow the use of the "track_target" option in the future.
+ * prevent "blindness" attacks and such from bending around walls.
  *
  * Note that this function attempts to optimize the use of spells for the
  * cases in which the monster has no spells, or has spells but cannot use
@@ -478,9 +469,6 @@ bool make_attack_spell(int m_idx)
 
 	/* Only do spells occasionally */
 	if (rand_int(100) >= chance) return (FALSE);
-
-
-	/* XXX XXX XXX Handle "track_target" option (?) */
 
 
 	/* Hack -- require projectable player */
@@ -1039,7 +1027,7 @@ bool make_attack_spell(int m_idx)
 				p_ptr->redraw |= (PR_MANA);
 
 				/* Window stuff */
-				p_ptr->window |= (PW_SPELL | PW_PLAYER);
+				p_ptr->window |= (PW_PLAYER_0 | PW_PLAYER_1);
 
 				/* Heal the monster */
 				if (m_ptr->hp < m_ptr->maxhp)
@@ -3158,8 +3146,11 @@ static void process_monster(int m_idx)
 	/* Notice changes in view */
 	if (do_view)
 	{
-		/* Update some things */
-		p_ptr->update |= (PU_VIEW | PU_LITE | PU_FLOW | PU_MONSTERS);
+		/* Update the visuals */
+		p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
+
+		/* Fully update the flow XXX XXX XXX */
+		p_ptr->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);
 	}
 
 

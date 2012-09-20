@@ -583,7 +583,7 @@ bool make_attack_normal(int m_idx)
 						p_ptr->redraw |= (PR_GOLD);
 
 						/* Window stuff */
-						p_ptr->window |= (PW_SPELL | PW_PLAYER);
+						p_ptr->window |= (PW_PLAYER_0 | PW_PLAYER_1);
 
 						/* Blink away */
 						blinked = TRUE;

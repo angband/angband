@@ -169,14 +169,14 @@
 
 
 /*
- * OPTION: Hack -- Compile in support for "Cyborg" mode
+ * OPTION: Hack -- Compile in support for "Borg mode"
  */
 /* #define ALLOW_BORG */
 
 /*
- * OPTION: Hack -- Compile in support for "Wizard Commands"
+ * OPTION: Hack -- Compile in support for "Debug Commands"
  */
-/* #define ALLOW_WIZARD */
+/* #define ALLOW_DEBUG */
 
 /*
  * OPTION: Hack -- Compile in support for "Spoiler Generation"
@@ -305,6 +305,22 @@
 #define MONSTER_FLOW_DEPTH 32
 
 
+/*
+ * OPTION: Support multiple "player" grids in "map_info()"
+ */
+/* #define MAP_INFO_MULTIPLE_PLAYERS */
+
+
+/*
+ * OPTION: Use the new "update_view()" algorithm
+ */
+#define UPDATE_VIEW_NEW
+
+/*
+ * OPTION: Use the "complex" wall illumination code
+ */
+/* #define UPDATE_VIEW_COMPLEX_WALL_ILLUMINATION */
+
 
 /*
  * OPTION: Enable the "smart_learn" and "smart_cheat" options.
@@ -420,22 +436,6 @@
 
 
 /*
- * OPTION: For some brain-dead computers with no command line interface,
- * namely Macintosh, there has to be some way of "naming" your savefiles.
- * The current "Macintosh" hack is to make it so whenever the character
- * name changes, the savefile is renamed accordingly.  But on normal
- * machines, once you manage to "load" a savefile, it stays that way.
- * Macintosh is particularly weird because you can load savefiles that
- * are not contained in the "lib:save:" folder, and if you change the
- * player's name, it will then save the savefile elsewhere.  Note that
- * this also gives a method of "bypassing" the "VERIFY_TIMESTAMP" code.
- */
-#if defined(MACINTOSH) || defined(WINDOWS) || defined(AMIGA)
-# define SAVEFILE_MUTABLE
-#endif
-
-
-/*
  * OPTION: Capitalize the "user_name" (for "default" player name)
  * This option is only relevant on SET_UID machines.
  */
@@ -446,7 +446,7 @@
 /*
  * OPTION: Person to bother if something goes wrong.
  */
-#define MAINTAINER	"benh@voicenet.com"
+#define MAINTAINER	"benh@phial.com"
 
 
 /*
@@ -492,7 +492,7 @@
 # undef DRS_SMART_OPTIONS
 # undef ALLOW_OLD_SAVEFILES
 # undef ALLOW_BORG
-# undef ALLOW_WIZARD
+# undef ALLOW_DEBUG
 # undef ALLOW_SPOILERS
 # undef ALLOW_TEMPLATES
 # undef DELAY_LOAD_R_TEXT

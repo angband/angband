@@ -713,7 +713,7 @@ void do_cmd_quaff_potion(void)
 				p_ptr->csp_frac = 0;
 				msg_print("Your feel your head clear.");
 				p_ptr->redraw |= (PR_MANA);
-				p_ptr->window |= (PW_SPELL | PW_PLAYER);
+				p_ptr->window |= (PW_PLAYER_0 | PW_PLAYER_1);
 				ident = TRUE;
 			}
 			break;
@@ -955,7 +955,7 @@ static bool curse_armor(void)
 		p_ptr->update |= (PU_MANA);
 
 		/* Window stuff */
-		p_ptr->window |= (PW_INVEN | PW_EQUIP | PW_SPELL | PW_PLAYER);
+		p_ptr->window |= (PW_INVEN | PW_EQUIP | PW_PLAYER_0 | PW_PLAYER_1);
 	}
 
 	return (TRUE);
@@ -1019,7 +1019,7 @@ static bool curse_weapon(void)
 		p_ptr->update |= (PU_MANA);
 
 		/* Window stuff */
-		p_ptr->window |= (PW_INVEN | PW_EQUIP | PW_SPELL | PW_PLAYER);
+		p_ptr->window |= (PW_INVEN | PW_EQUIP | PW_PLAYER_0 | PW_PLAYER_1);
 	}
 
 	/* Notice */
@@ -1714,7 +1714,7 @@ void do_cmd_use_staff(void)
 				ident = TRUE;
 				msg_print("Your feel your head clear.");
 				p_ptr->redraw |= (PR_MANA);
-				p_ptr->window |= (PW_SPELL | PW_PLAYER);
+				p_ptr->window |= (PW_PLAYER_0 | PW_PLAYER_1);
 			}
 			break;
 		}

@@ -8,41 +8,39 @@
  * are included in all such copies.  Other copyrights may also apply.
  */
 
-/* Purpose: a simple random number generator -BEN- */
-
-#include "z-rand.h"
-
-
-
 
 /*
- * Angband 2.7.9 introduced a new (optimized) random number generator,
- * based loosely on the old "random.c" from Berkeley but with some major
- * optimizations and algorithm changes.  See below for more details.
+ * This file provides an optimized random number generator.
  *
- * Code by myself (benh@voicenet.com) and Randy (randy@stat.tamu.edu).
  *
- * This code provides (1) a "decent" RNG, based on the "BSD-degree-63-RNG"
- * used in Angband 2.7.8, but rather optimized, and (2) a "simple" RNG,
- * based on the simple "LCRNG" currently used in Angband, but "corrected"
- * to give slightly better values.  Both of these are available in two
- * flavors, first, the simple "mod" flavor, which is fast, but slightly
- * biased at high values, and second, the simple "div" flavor, which is
- * less fast (and potentially non-terminating) but which is not biased
- * and is much less subject to low-bit-non-randomness problems.
- *
- * You can select your favorite flavor by proper definition of the
- * "rand_int()" macro in the "defines.h" file.
- *
- * Note that, in Angband 2.8.0, the "state" table will be saved in the
- * savefile, so a special "initialization" phase will be necessary.
+ * This code provides both a "quick" random number generator (4 bytes of
+ * state), and a "decent" random number generator (256 bytes of state),
+ * both available in two flavors, first, the simple "mod" flavor, which
+ * is fast, but slightly biased at high values, and second, the simple
+ * "div" flavor, which is less fast (and potentially non-terminating)
+ * but which is not biased and is much less subject to non-randomness
+ * problems in the low bits.  Note the "rand_int()" macro in "z-rand.h",
+ * which must specify a "default" flavor.
  *
  * Note the use of the "simple" RNG, first you activate it via
  * "Rand_quick = TRUE" and "Rand_value = seed" and then it is used
  * automatically used instead of the "complex" RNG, and when you are
  * done, you de-activate it via "Rand_quick = FALSE" or choose a new
  * seed via "Rand_value = seed".
+ *
+ *
+ * This (optimized) random number generator is based loosely on the old
+ * "random.c" file from Berkeley but with some major optimizations and
+ * algorithm changes.  See below for more details.
+ *
+ * Some code by Ben Harrison (benh@phial.com).
+ *
+ * Some code by Randy (randy@stat.tamu.edu).
  */
+
+
+
+#include "z-rand.h"
 
 
 /*
@@ -111,7 +109,7 @@ void Rand_state_init(u32b seed)
  * Note that "m" should probably be less than 500000, or the
  * results may be rather biased towards low values.
  */
-s32b Rand_mod(s32b m)
+u32b Rand_mod(u32b m)
 {
 	int j;
 	u32b r;
@@ -161,8 +159,11 @@ s32b Rand_mod(s32b m)
  *
  * This method has no bias, and is much less affected by patterns
  * in the "low" bits of the underlying RNG's.
+ *
+ * Note that "m" must not be greater than 0x1000000, or division
+ * by zero will result.
  */
-s32b Rand_div(s32b m)
+u32b Rand_div(u32b m)
 {
 	u32b r, n;
 
@@ -223,19 +224,19 @@ s32b Rand_div(s32b m)
 
 
 /*
- * The number of entries in the "randnor_table"
+ * The number of entries in the "Rand_normal_table"
  */
 #define RANDNOR_NUM	256
 
 /*
- * The standard deviation of the "randnor_table"
+ * The standard deviation of the "Rand_normal_table"
  */
 #define RANDNOR_STD	64
 
 /*
- * The normal distribution table for the "randnor()" function (below)
+ * The normal distribution table for the "Rand_normal()" function (below)
  */
-static s16b randnor_table[RANDNOR_NUM] =
+static s16b Rand_normal_table[RANDNOR_NUM] =
 {
 	206,     613,    1022,    1430,		1838,	 2245,	  2652,	   3058,
 	3463,    3867,    4271,    4673,	5075,	 5475,	  5874,	   6271,
@@ -295,7 +296,7 @@ static s16b randnor_table[RANDNOR_NUM] =
  *
  * Note that the binary search takes up to 16 quick iterations.
  */
-s16b randnor(int mean, int stand)
+s16b Rand_normal(int mean, int stand)
 {
 	s16b tmp;
 	s16b offset;
@@ -315,7 +316,7 @@ s16b randnor(int mean, int stand)
 		int mid = (low + high) >> 1;
 
 		/* Move right if forced */
-		if (randnor_table[mid] < tmp)
+		if (Rand_normal_table[mid] < tmp)
 		{
 			low = mid + 1;
 		}
@@ -336,27 +337,5 @@ s16b randnor(int mean, int stand)
 	/* One half should be positive */
 	return (mean + offset);
 }
-
-
-
-/*
- * Generates damage for "2d6" style dice rolls
- */
-s16b damroll(int num, int sides)
-{
-	int i, sum = 0;
-	for (i = 0; i < num; i++) sum += randint(sides);
-	return (sum);
-}
-
-
-/*
- * Same as above, but always maximal
- */
-s16b maxroll(int num, int sides)
-{
-	return (num * sides);
-}
-
 
 

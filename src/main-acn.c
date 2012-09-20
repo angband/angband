@@ -8,17 +8,17 @@
  * are included in all such copies.
  */
 
-/* Purpose: Support for Acorn RISC OS Angband */
 
 /*
+ * Purpose: Support for Acorn RISC OS Angband
+ *
+ *
  * Author: Kevin Bracey (kbracey@art.acorn.co.uk)
  *
- */
-
-/* Check compiler flag */
-#ifdef __riscos
-
-/*
+ *
+ * This file is *known* to be out of date.  It needs some work.  XXX XXX XXX
+ *
+ *
  * === Instructions for compiling Angband for RISC OS ===
  *
  * You will require:
@@ -32,6 +32,10 @@
  * RISC OS form, and bug fixes for OSLib.
  *
  */
+
+
+/* Check compiler flag */
+#ifdef __riscos
 
 #define VERSION "2.7.9v6 (07-May-96)"
 
@@ -2350,3 +2354,5 @@ errr path_temp(char *buf, int max)
 }
 
 #endif /* __riscos */
+
+

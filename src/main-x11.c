@@ -8,18 +8,28 @@
  * are included in all such copies.
  */
 
-/* Purpose: One (awful) way to run Angband under X11 -BEN- */
 
 /*
- * Most of this file provides a user interface package composed of
- * several pseudo-objects, including "metadpy" (a display), "infowin"
- * (a window), "infoclr" (a color), and "infofnt" (a font).  Actually,
- * the package was originally much more interesting, but I bastardized
- * it to keep this file simple.
+ * This file helps Angband work with UNIX/X11 computers.
  *
- * The rest of the file (search for 'ANGBAND') provides a simple
- * implementation of the "main-xxx.c" file for Angband using this
- * user interface package.
+ * See also "main-xaw.c"
+ *
+ *
+ * Part of this file defines some "XImage" manipulation functions.
+ *
+ * Part of this file provides a user interface package composed of several
+ * pseudo-objects, including "metadpy" (a display), "infowin" (a window),
+ * "infoclr" (a color), and "infofnt" (a font).  Actually, the package was
+ * originally much more interesting, but it was bastardized to keep this
+ * file simple.
+ *
+ * Part of this file supplies an implementation of the "main-xxx.c" file.
+ *
+ *
+ * Initial framework (and most code) by Ben Harrison (benh@phial.com).
+ *
+ * Graphics support (the "XImage" functions) by Desvignes Sebastien
+ * (desvigne@solar12.eerie.fr).
  */
 
 
@@ -42,6 +52,11 @@
 #endif /* __MAKEDEPEND__ */
 
 
+/*
+ * Hack -- avoid some compiler warnings
+ */
+#define IGNORE_UNUSED_FUNCTIONS
+
 
 /*
  * Notes on Colors:
@@ -62,6 +77,216 @@
  */
 
 
+
+
+/**** Graphics Functions ****/
+
+
+#ifdef USE_GRAPHICS
+
+
+/*
+ * Read a raw file. XXX XXX XXX
+ *
+ * Also appears in "main-xaw.c".
+ */
+static XImage *ReadRaw(Display *disp, char Name[], int width, int height)
+{
+	FILE *f;
+
+	XImage *Res = NULL;
+
+	char *Data;
+
+	int depth, i;
+
+
+	f = fopen(Name, "r");
+
+	if (f != NULL)
+	{
+		depth = 4;
+
+		Data = (char *)calloc(width * height * depth / 8, 1);
+
+		if (Data != NULL)
+		{
+			Res = XCreateImage(disp,
+			                   DefaultVisual(disp, DefaultScreen(disp)),
+			                   depth, XYPixmap, 0, Data,
+			                   width, height, 8, 0);
+
+			if (Res != NULL)
+			{
+				for (i=0; i<4; i++)
+				{
+					fread(Data+(3-i)*(width*height/8), width>>3, height, f);
+				}
+			}
+			else
+			{
+				free(Data);
+			}
+		}
+
+		fclose(f);
+	}
+
+	return Res;
+}
+
+
+/*
+ * Remap colors. XXX XXX XXX
+ *
+ * Also appears in "main-xaw.c".
+ */
+static XImage *RemapColors(Display *disp, XImage *Im, unsigned long ColT[])
+{
+	XImage *Tmp = NULL;
+
+	char *Data;
+
+	int width, height, depth;
+
+	int x, y;
+
+
+	width = Im->width;
+	height = Im->height;
+
+	depth = DefaultDepth(disp, DefaultScreen(disp));
+
+	x = 1;
+	y = (depth-1) >> 2;
+
+	while (y>>=1) x<<=1;
+
+	Data = (char *)malloc(width * height * x);
+
+	if (Data != NULL)
+	{
+		Tmp = XCreateImage(disp,
+		                   DefaultVisual(disp, DefaultScreen(disp)),
+		                   depth, ZPixmap, 0, Data, width, height,
+		                   32, 0);
+
+		if (Tmp != NULL)
+		{
+			for (y=0; y<height; y++)
+			{
+				for (x=0; x<width; x++)
+				{
+					XPutPixel(Tmp, x, y, ColT[ 16 + XGetPixel(Im, x, y) ]);
+				}
+			}
+		}
+		else
+		{
+			free(Data);
+		}
+	}
+
+	return Tmp;
+}
+
+
+/*
+ * Resize an image. XXX XXX XXX
+ *
+ * Also appears in "main-xaw.c".
+ */
+static XImage *ResizeImage(Display *disp, XImage *Im,
+                           int ix, int iy, int ox, int oy)
+{
+	int width1, height1, width2, height2;
+	int x1, x2, y1, y2, Tx, Ty;
+	int *px1, *px2, *dx1, *dx2;
+	int *py1, *py2, *dy1, *dy2;
+
+	XImage *Tmp;
+
+	char *Data;
+
+
+	width1 = Im->width;
+	height1 = Im->height;
+
+	width2 = ox * width1 / ix;
+	height2 = oy * height1 / iy;
+
+	Data = (char *)malloc(width2 * height2 * Im->bits_per_pixel / 8);
+
+	Tmp = XCreateImage(disp,
+	                   DefaultVisual(disp, DefaultScreen(disp)),
+	                   Im->depth, ZPixmap, 0, Data, width2, height2,
+	                   32, 0);
+
+	if (ix > ox)
+	{
+		px1 = &x1;
+		px2 = &x2;
+		dx1 = &ix;
+		dx2 = &ox;
+	}
+	else
+	{
+		px1 = &x2;
+		px2 = &x1;
+		dx1 = &ox;
+		dx2 = &ix;
+	}
+
+	if (iy > oy)
+	{
+		py1 = &y1;
+		py2 = &y2;
+		dy1 = &iy;
+		dy2 = &oy;
+	}
+	else
+	{
+		py1 = &y2;
+		py2 = &y1;
+		dy1 = &oy;
+		dy2 = &iy;
+	}
+
+	Ty = *dy1;
+
+	for (y1=0, y2=0; (y1 < height1) && (y2 < height2); )
+	{
+		Tx = *dx1;
+
+		for (x1=0, x2=0; (x1 < width1) && (x2 < width2); )
+		{
+			XPutPixel(Tmp, x2, y2, XGetPixel(Im, x1, y1));
+
+			(*px1)++;
+
+			Tx -= *dx2;
+			if (Tx < 0)
+			{
+				Tx += *dx1;
+				(*px2)++;
+			}
+		}
+
+		(*py1)++;
+
+		Ty -= *dy2;
+		if (Ty < 0)
+		{
+			Ty += *dy1;
+			(*py2)++;
+		}      
+	}
+
+	return Tmp;
+}
+
+
+#endif /* USE_GRAPHICS */
 
 
 
@@ -259,6 +484,8 @@ struct infofnt
 /*
  * Keysym macros, used on Keysyms to test for classes of symbols
  * These were stolen from one of the X11 header files
+ *
+ * Also appears in "main-xaw.c".
  */
 
 #define IsKeypadKey(keysym) \
@@ -285,6 +512,8 @@ struct infofnt
 /*
  * Checks if the keysym is a special key or a normal key
  * Assume that XK_MISCELLANY keysyms are special
+ *
+ * Also appears in "main-xaw.c".
  */
 #define IsSpecialKey(keysym) \
     ((unsigned)(keysym) >= 0xFF00)
@@ -489,6 +718,8 @@ static errr Metadpy_init_2(Display *dpy, cptr name)
 }
 
 
+#ifndef IGNORE_UNUSED_FUNCTIONS
+
 /*
  * Nuke the current metadpy
  */
@@ -513,6 +744,8 @@ static errr Metadpy_nuke(void)
 	/* Return Success */
 	return (0);
 }
+
+#endif /* IGNORE_UNUSED_FUNCTIONS */
 
 
 /*
@@ -560,6 +793,8 @@ static errr Infowin_set_name(cptr name)
 }
 
 
+#ifndef IGNORE_UNUSED_FUNCTIONS
+
 /*
  * Set the icon name of Infowin
  */
@@ -594,6 +829,8 @@ static errr Infowin_nuke(void)
 	return (0);
 }
 
+#endif /* IGNORE_UNUSED_FUNCTIONS */
+
 
 /*
  * Prepare a new 'infowin'.
@@ -604,7 +841,8 @@ static errr Infowin_prepare(Window xid)
 
 	Window tmp_win;
 	XWindowAttributes xwa;
-	int x, y, w, h, b, d;
+	int x, y;
+	unsigned int w, h, b, d;
 
 	/* Assign stuff */
 	iwin->win = xid;
@@ -634,6 +872,8 @@ static errr Infowin_prepare(Window xid)
 }
 
 
+#ifndef IGNORE_UNUSED_FUNCTIONS
+
 /*
  * Initialize a new 'infowin'.
  */
@@ -648,6 +888,8 @@ static errr Infowin_init_real(Window xid)
 	/* Attempt to Prepare ourself */
 	return (Infowin_prepare(xid));
 }
+
+#endif /* IGNORE_UNUSED_FUNCTIONS */
 
 
 /*
@@ -727,6 +969,8 @@ static errr Infowin_map(void)
 }
 
 
+#ifndef IGNORE_UNUSED_FUNCTIONS
+
 /*
  * Request that Infowin be unmapped
  */
@@ -738,6 +982,8 @@ static errr Infowin_unmap(void)
 	/* Success */
 	return (0);
 }
+
+#endif /* IGNORE_UNUSED_FUNCTIONS */
 
 
 /*
@@ -752,6 +998,8 @@ static errr Infowin_raise(void)
 	return (0);
 }
 
+
+#ifndef IGNORE_UNUSED_FUNCTIONS
 
 /*
  * Request that Infowin be lowered
@@ -778,6 +1026,8 @@ static errr Infowin_impell(int x, int y)
 	return (0);
 }
 
+#endif /* IGNORE_UNUSED_FUNCTIONS */
+
 
 /*
  * Resize an infowin
@@ -792,6 +1042,8 @@ static errr Infowin_resize(int w, int h)
 }
 
 
+#ifndef IGNORE_UNUSED_FUNCTIONS
+
 /*
  * Move and Resize an infowin
  */
@@ -803,6 +1055,8 @@ static errr Infowin_locate(int x, int y, int w, int h)
 	/* Success */
 	return (0);
 }
+
+#endif /* IGNORE_UNUSED_FUNCTIONS */
 
 
 /*
@@ -818,6 +1072,8 @@ static errr Infowin_wipe(void)
 }
 
 
+#ifndef IGNORE_UNUSED_FUNCTIONS
+
 /*
  * Visually Paint Infowin with the current color
  */
@@ -830,6 +1086,8 @@ static errr Infowin_fill(void)
 	/* Success */
 	return (0);
 }
+
+#endif /* IGNORE_UNUSED_FUNCTIONS */
 
 
 /*
@@ -1030,6 +1288,8 @@ static Pixell Infoclr_Pixell(cptr name)
 }
 
 
+#ifndef IGNORE_UNUSED_FUNCTIONS
+
 /*
  * Initialize a new 'infoclr' with a real GC.
  */
@@ -1068,6 +1328,8 @@ static errr Infoclr_nuke(void)
 	/* Success */
 	return (0);
 }
+
+#endif /* IGNORE_UNUSED_FUNCTIONS */
 
 
 /*
@@ -1179,6 +1441,8 @@ static errr Infoclr_change_fg(Pixell fg)
 
 
 
+#ifndef IGNORE_UNUSED_FUNCTIONS
+
 /*
  * Nuke an old 'infofnt'.
  */
@@ -1203,6 +1467,8 @@ static errr Infofnt_nuke(void)
 	/* Success */
 	return (0);
 }
+
+#endif /* IGNORE_UNUSED_FUNCTIONS */
 
 
 /*
@@ -1237,6 +1503,8 @@ static errr Infofnt_prepare(XFontStruct *info)
 }
 
 
+#ifndef IGNORE_UNUSED_FUNCTIONS
+
 /*
  * Initialize a new 'infofnt'.
  */
@@ -1251,6 +1519,8 @@ static errr Infofnt_init_real(XFontStruct *info)
 	/* Attempt to prepare it */
 	return (Infofnt_prepare(info));
 }
+
+#endif /* IGNORE_UNUSED_FUNCTIONS */
 
 
 /*
@@ -1448,6 +1718,13 @@ struct term_data
 
 	infowin *outer;
 	infowin *inner;
+
+#ifdef USE_GRAPHICS
+
+	XImage *tiles;
+
+#endif
+
 };
 
 
@@ -1464,8 +1741,10 @@ static term_data data[MAX_TERM_DATA];
 
 /*
  * Process a keypress event
+ *
+ * Also appears in "main-xaw.c".
  */
-static void react_keypress(XEvent *xev)
+static void react_keypress(XKeyEvent *xev)
 {
 	int i, n, mc, ms, mo, mx;
 
@@ -1485,6 +1764,11 @@ static void react_keypress(XEvent *xev)
 	/* Terminate */
 	buf[n] = '\0';
 
+
+	/* Hack -- Ignore "modifier keys" */
+	if (IsModifierKey(ks)) return;
+
+
 	/* Hack -- convert into an unsigned int */
 	ks1 = (uint)(ks);
 
@@ -1493,10 +1777,6 @@ static void react_keypress(XEvent *xev)
 	ms = (ev->state & ShiftMask) ? TRUE : FALSE;
 	mo = (ev->state & Mod1Mask) ? TRUE : FALSE;
 	mx = (ev->state & Mod2Mask) ? TRUE : FALSE;
-
-
-	/* Hack -- Ignore "modifier keys" */
-	if (IsModifierKey(ks)) return;
 
 
 	/* Normal keys with no modifiers */
@@ -1510,41 +1790,34 @@ static void react_keypress(XEvent *xev)
 	}
 
 
-	/* Handle a few standard keys */
+	/* Handle a few standard keys (bypass modifiers) XXX XXX XXX */
 	switch (ks1)
 	{
 		case XK_Escape:
-		Term_keypress(ESCAPE); return;
+		{
+			Term_keypress(ESCAPE);
+			return;
+		}
 
 		case XK_Return:
-		Term_keypress('\r'); return;
+		{
+			Term_keypress('\r');
+			return;
+		}
 
 		case XK_Tab:
-		Term_keypress('\t'); return;
+		{
+			Term_keypress('\t');
+			return;
+		}
 
 		case XK_Delete:
 		case XK_BackSpace:
-		Term_keypress('\010'); return;
+		{
+			Term_keypress('\010');
+			return;
+		}
 	}
-
-
-#if 0
-	/* Hack -- Handle a few special KeySym codes */
-	switch (ks1)
-	{
-		case XK_Up:
-		Term_keypress(30); Term_keypress('8'); return;
-
-		case XK_Down:
-		Term_keypress(30); Term_keypress('2'); return;
-
-		case XK_Left:
-		Term_keypress(30); Term_keypress('4'); return;
-
-		case XK_Right:
-		Term_keypress(30); Term_keypress('6'); return;
-	}
-#endif
 
 
 	/* Hack -- Use the KeySym */
@@ -1565,21 +1838,15 @@ static void react_keypress(XEvent *xev)
 		        ev->keycode, 13);
 	}
 
-	/* Enqueue the "fake" string */
+	/* Enqueue the "macro trigger" string */
 	for (i = 0; msg[i]; i++) Term_keypress(msg[i]);
 
 
-	/* Hack -- dump an "extra" string */
-	if (n)
+	/* Hack -- auto-define macros as needed */
+	if (n && (macro_find_exact(msg) < 0))
 	{
-		/* Start the "extra" string */
-		Term_keypress(28);
-
-		/* Enqueue the "real" string */
-		for (i = 0; buf[i]; i++) Term_keypress(buf[i]);
-
-		/* End the "extra" string */
-		Term_keypress(28);
+		/* Create a macro */
+		macro_add(msg, buf);
 	}
 }
 
@@ -1727,7 +1994,7 @@ static errr CheckEvent(bool wait)
 			Term_activate(&old_td->t);
 
 			/* Process the key */
-			react_keypress(xev);
+			react_keypress(&(xev->xkey));
 
 			break;
 		}
@@ -1942,7 +2209,7 @@ static errr Term_curs_x11(int x, int y)
 
 
 /*
- * Erase a number of characters
+ * Erase some characters.
  */
 static errr Term_wipe_x11(int x, int y, int n)
 {
@@ -1958,7 +2225,7 @@ static errr Term_wipe_x11(int x, int y, int n)
 
 
 /*
- * Draw a number of characters (XXX Consider using "cpy" mode)
+ * Draw some textual characters.
  */
 static errr Term_text_x11(int x, int y, int n, byte a, cptr s)
 {
@@ -1971,6 +2238,47 @@ static errr Term_text_x11(int x, int y, int n, byte a, cptr s)
 	/* Success */
 	return (0);
 }
+
+
+#ifdef USE_GRAPHICS
+
+/*
+ * Draw some graphical characters.
+ */
+static errr Term_pict_x11(int x, int y, int n, const byte *ap, const char *cp)
+{
+	int i;
+
+	byte a;
+	char c;
+
+	term_data *td = (term_data*)(Term->data);
+
+	y *= Infofnt->hgt;
+	x *= Infofnt->wid;
+
+	for (i = 0; i < n; ++i)
+	{
+		a = *ap++;
+		c = *cp++;
+
+		XPutImage(Metadpy->dpy, td->inner->win,
+		          clr[17]->gc,
+		          td->tiles,
+		          (c&0x7F) * td->fnt->wid + 1,
+		          (a&0x7F) * td->fnt->hgt + 1,
+		          x, y,
+		          td->fnt->wid, td->fnt->hgt);
+
+		x += td->fnt->wid;
+	}
+
+	/* Success */
+	return (0);
+}
+
+#endif /* USE_GRAPHICS */
+
 
 
 /*
@@ -2011,6 +2319,9 @@ static errr term_data_init(term_data *td, bool fixed, cptr name, cptr font)
 	Infowin_set_mask(ExposureMask);
 	Infowin_map();
 
+	/* No graphics yet */
+	td->tiles = NULL;
+
 	/* Initialize the term */
 	term_init(t, 80, 24, num);
 
@@ -2026,6 +2337,20 @@ static errr term_data_init(term_data *td, bool fixed, cptr name, cptr font)
 	t->curs_hook = Term_curs_x11;
 	t->wipe_hook = Term_wipe_x11;
 	t->text_hook = Term_text_x11;
+
+#ifdef USE_GRAPHICS
+
+	/* Use graphics */
+	if (use_graphics)
+	{
+		/* Graphics hook */
+		t->pict_hook = Term_pict_x11;
+
+		/* Use graphics sometimes */
+		t->higher_pict = TRUE;
+	}
+
+#endif /* USE_GRAPHICS */
 
 	/* Save the data */
 	t->data = td;
@@ -2050,6 +2375,12 @@ errr init_x11(int argc, char *argv[])
 	int num_term = MAX_TERM_DATA;
 
 	char buf[80];
+
+#ifdef USE_GRAPHICS
+
+	char filename[1024];
+
+#endif /* USE_GRAPHICS */
 
 
 	/* Parse args */
@@ -2076,6 +2407,38 @@ errr init_x11(int argc, char *argv[])
 		}
 
 		plog_fmt("Ignoring option: %s", argv[i]);
+	}
+
+
+#ifdef USE_GRAPHICS
+
+	/* Try graphics */
+	if (arg_graphics)
+	{
+		/* Build the name of the "tiles.raw" file */
+		path_build(filename, 1024, ANGBAND_DIR_XTRA, "tiles.raw");
+
+		/* Use graphics if bitmap file exists */
+		if (0 == fd_close(fd_open(filename, O_RDONLY)))
+		{
+			/* Use graphics */
+			use_graphics = TRUE;
+		}
+	}
+
+#endif /* USE_GRAPHICS */
+
+
+	/* Load colors */
+	if (use_graphics)
+	{
+		/* Process "graf-x11.prf" XXX XXX XXX */
+		(void)process_pref_file("graf-x11.prf");
+	}
+	else
+	{
+		/* Process "font-x11.prf" XXX XXX XXX */
+		(void)process_pref_file("font-x11.prf");
 	}
 
 
@@ -2118,6 +2481,8 @@ errr init_x11(int argc, char *argv[])
 	/* Initialize the windows */
 	for (i = 0; i < num_term; i++)
 	{
+		term_data *td = &data[i];
+
 		cptr fnt_name = NULL;
 
 		cptr name = angband_term_name[i];
@@ -2141,11 +2506,47 @@ errr init_x11(int argc, char *argv[])
 		if (!fnt_name) fnt_name = DEFAULT_X11_FONT_SCREEN;
 
 		/* Initialize the term_data */
-		term_data_init(&data[i], TRUE, name, fnt_name);
+		term_data_init(td, TRUE, name, fnt_name);
 
 		/* Save global entry */
 		angband_term[i] = Term;
 	}
+
+
+#ifdef USE_GRAPHICS
+
+	/* Load graphics */
+	if (use_graphics)
+	{
+		unsigned long ColTable[256];
+
+		XImage *tiles_raw;
+		XImage *tiles_good;
+
+		/* Prepare color table */
+		for (i = 0; i < 256; ++i)
+		{
+			ColTable[i] = clr[i]->fg;
+		}
+
+		/* Load the graphics XXX XXX XXX */
+		tiles_raw = ReadRaw(Metadpy->dpy, filename, 256, 256);
+		tiles_good = RemapColors(Metadpy->dpy, tiles_raw, ColTable);
+		XDestroyImage(tiles_raw);
+
+		/* Initialize the windows */
+		for (i = 0; i < num_term; i++)
+		{
+			term_data *td = &data[i];
+
+			/* Resize tiles */
+			td->tiles = ResizeImage(Metadpy->dpy, tiles_good, 8, 8,
+			                        td->fnt->wid, td->fnt->hgt);
+		}
+	}
+
+#endif /* USE_GRAPHICS */
+
 
 	/* Activate the "Angband" window screen */
 	Term_activate(&data[0].t);

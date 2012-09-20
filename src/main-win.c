@@ -9,15 +9,30 @@
  */
 
 
-/* Purpose: Support for Windows Angband */
-
 /*
- * Original code by Skirmantas Kligys (kligys@scf.usc.edu).
+ * This file helps Angband work with Windows computers.
  *
- * Additional code by Ross E Becker (beckerr@cis.ohio-state.edu),
- * and Chris R. Martin (crm7479@tam2000.tamu.edu).
+ * To use this file, use an appropriate "Makefile" or "Project File",
+ * make sure that "WINDOWS" and/or "WIN32" are defined somewhere, and
+ * make sure to obtain various extra files as described below.
  *
- * Extensive modifications by Ben Harrison (benh@voicenet.com).
+ * The official compilation uses the CodeWarrior Pro compiler, which
+ * includes a special project file and precompilable header file.
+ *
+ *
+ * See also "main-dos.c" and "main-ibm.c".
+ *
+ *
+ * The "lib/user/pref-win.prf" file contains keymaps, macro definitions,
+ * and/or color redefinitions.
+ *
+ * The "lib/user/font-win.prf" contains attr/char mappings for use with the
+ * normal "lib/xtra/font/*.fon" font files.
+ *
+ * The "lib/user/graf-win.prf" contains attr/char mappings for use with the
+ * special "lib/xtra/graf/*.bmp" bitmap files, which are activated by a menu
+ * item.
+ *
  *
  * Compiling this file, and using the resulting executable, requires
  * several extra files not distributed with the standard Angband code.
@@ -30,31 +45,31 @@
  * files must be placed into "lib/xtra/sound/".  All of these extra
  * files can be found in the "ext-win" archive.
  *
- * See "h-config.h" for the extraction of the "WINDOWS" flag based
- * on the "_Windows", "__WINDOWS__", "__WIN32__", "WIN32", "__WINNT__",
- * or "__NT__" flags.  If your compiler uses a different compiler flag,
- * add it to "h-config.h", or, simply place it in the "Makefile".
  *
- *
- * XXX XXX XXX
  * The "Term_xtra_win_clear()" function should probably do a low-level
  * clear of the current window, and redraw the borders and other things,
- * if only for efficiency.
+ * if only for efficiency.  XXX XXX XXX
  *
- * XXX XXX XXX
  * A simpler method is needed for selecting the "tile size" for windows.
- *
  * XXX XXX XXX
+ *
  * The various "warning" messages assume the existance of the "screen.w"
  * window, I think, and only a few calls actually check for its existance,
  * this may be okay since "NULL" means "on top of all windows". (?)  The
  * user must never be allowed to "hide" the main window, or the "menubar"
- * will disappear.
+ * will disappear.  XXX XXX XXX
  *
- * XXX XXX XXX
  * Special "Windows Help Files" can be placed into "lib/xtra/help/" for
  * use with the "winhelp.exe" program.  These files *may* be available
- * at the ftp site somewhere, but I have not seen them.
+ * at the ftp site somewhere, but I have not seen them.  XXX XXX XXX
+ *
+ *
+ * Initial framework (and most code) by Ben Harrison (benh@phial.com).
+ *
+ * Original code by Skirmantas Kligys (kligys@scf.usc.edu).
+ *
+ * Additional code by Ross E Becker (beckerr@cis.ohio-state.edu),
+ * and Chris R. Martin (crm7479@tam2000.tamu.edu).
  */
 
 
@@ -512,6 +527,89 @@ static BYTE win_pal[256] =
 	VID_YELLOW					/* Light Umber XXX */
 };
 
+
+/*
+ * Hack -- define which keys are "special"
+ */
+static bool special_key[256];
+
+/*
+ * Hack -- initialization list for "special_key"
+ *
+ * We ignore the modifier keys (shift, control, alt, num lock, scroll lock),
+ * and the normal keys (escape, tab, return, letters, numbers, etc), but we
+ * catch the keypad keys (with and without numlock set, including keypad 5),
+ * the function keys (including the "menu" key which maps to F10), and the
+ * "pause" key (between scroll lock and numlock).  We also catch a few odd
+ * keys which I do not recognize, but which are listed among keys which we
+ * do catch, so they should be harmless to catch.
+ */
+static byte special_key_list[] =
+{
+	VK_CLEAR,		/* 0x0C (KP<5>) */
+
+	VK_PAUSE,		/* 0x13 (pause) */
+
+	VK_PRIOR,		/* 0x21 (KP<9>) */
+	VK_NEXT,		/* 0x22 (KP<3>) */
+	VK_END,			/* 0x23 (KP<1>) */
+	VK_HOME,		/* 0x24 (KP<7>) */
+	VK_LEFT,		/* 0x25 (KP<4>) */
+	VK_UP,			/* 0x26 (KP<8>) */
+	VK_RIGHT,		/* 0x27 (KP<6>) */
+	VK_DOWN,		/* 0x28 (KP<2>) */
+	VK_SELECT,		/* 0x29 (?????) */
+	VK_PRINT,		/* 0x2A (?????) */
+	VK_EXECUTE,		/* 0x2B (?????) */
+	VK_SNAPSHOT,	/* 0x2C (?????) */
+	VK_INSERT,		/* 0x2D (KP<0>) */
+	VK_DELETE,		/* 0x2E (KP<.>) */
+	VK_HELP,		/* 0x2F (?????) */
+
+	VK_NUMPAD0,		/* 0x60 (KP<0>) */
+	VK_NUMPAD1,		/* 0x61 (KP<1>) */
+	VK_NUMPAD2,		/* 0x62 (KP<2>) */
+	VK_NUMPAD3,		/* 0x63 (KP<3>) */
+	VK_NUMPAD4,		/* 0x64 (KP<4>) */
+	VK_NUMPAD5,		/* 0x65 (KP<5>) */
+	VK_NUMPAD6,		/* 0x66 (KP<6>) */
+	VK_NUMPAD7,		/* 0x67 (KP<7>) */
+	VK_NUMPAD8,		/* 0x68 (KP<8>) */
+	VK_NUMPAD9,		/* 0x69 (KP<9>) */
+	VK_MULTIPLY,	/* 0x6A (KP<*>) */
+	VK_ADD,			/* 0x6B (KP<+>) */
+	VK_SEPARATOR,	/* 0x6C (?????) */
+	VK_SUBTRACT,	/* 0x6D (KP<->) */
+	VK_DECIMAL,		/* 0x6E (KP<.>) */
+	VK_DIVIDE,		/* 0x6F (KP</>) */
+
+	VK_F1,			/* 0x70 */
+	VK_F2,			/* 0x71 */
+	VK_F3,			/* 0x72 */
+	VK_F4,			/* 0x73 */
+	VK_F5,			/* 0x74 */
+	VK_F6,			/* 0x75 */
+	VK_F7,			/* 0x76 */
+	VK_F8,			/* 0x77 */
+	VK_F9,			/* 0x78 */
+	VK_F10,			/* 0x79 */
+	VK_F11,			/* 0x7A */
+	VK_F12,			/* 0x7B */
+	VK_F13,			/* 0x7C */
+	VK_F14,			/* 0x7D */
+	VK_F15,			/* 0x7E */
+	VK_F16,			/* 0x7F */
+	VK_F17,			/* 0x80 */
+	VK_F18,			/* 0x81 */
+	VK_F19,			/* 0x82 */
+	VK_F20,			/* 0x83 */
+	VK_F21,			/* 0x84 */
+	VK_F22,			/* 0x85 */
+	VK_F23,			/* 0x86 */
+	VK_F24,			/* 0x87 */
+
+	0
+};
 
 
 /*
@@ -2125,23 +2223,11 @@ static void init_windows(void)
 	}
 
 
-	/* Main window */
-	td = &data[0];
-    my_td = td;
-	td->w = CreateWindowEx(td->dwExStyle, AppName,
-	                       td->s, td->dwStyle,
-	                       td->pos_x, td->pos_y,
-	                       td->size_wid, td->size_hgt,
-	                       HWND_DESKTOP, NULL, hInstance, NULL);
-	my_td = NULL;
-	if (!td->w) quit("Failed to create Angband window");
-	term_data_link(td);
-	angband_term[0] = &td->t;
-
-	/* Sub windows */
-	for (i = 1; i < MAX_TERM_DATA; i++)
+	/* Sub windows (reverse order) */
+	for (i = MAX_TERM_DATA - 1; i >= 1; --i)
 	{
 		td = &data[i];
+
 		my_td = td;
 		td->w = CreateWindowEx(td->dwExStyle, AngList,
 		                       td->s, td->dwStyle,
@@ -2150,19 +2236,43 @@ static void init_windows(void)
 		                       HWND_DESKTOP, NULL, hInstance, NULL);
 		my_td = NULL;
 		if (!td->w) quit("Failed to create sub-window");
+
 		if (td->visible)
 		{
 			td->size_hack = TRUE;
 			ShowWindow(td->w, SW_SHOW);
 			td->size_hack = FALSE;
 		}
+
 		term_data_link(td);
 		angband_term[i] = &td->t;
+
+		if (td->visible)
+		{
+			/* Activate the window */
+			SetActiveWindow(td->w);
+
+			/* Bring window to top */
+			SetWindowPos(td->w, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+		}
 	}
 
 
 	/* Main window */
 	td = &data[0];
+
+	/* Main window */
+	my_td = td;
+	td->w = CreateWindowEx(td->dwExStyle, AppName,
+	                       td->s, td->dwStyle,
+	                       td->pos_x, td->pos_y,
+	                       td->size_wid, td->size_hgt,
+	                       HWND_DESKTOP, NULL, hInstance, NULL);
+	my_td = NULL;
+	if (!td->w) quit("Failed to create Angband window");
+
+	term_data_link(td);
+	angband_term[0] = &td->t;
 
 	/* Activate the main window */
 	SetActiveWindow(td->w);
@@ -2233,7 +2343,7 @@ static void setup_menus(void)
 
 	/* Menu "File", Item "Exit" */
 	EnableMenuItem(hm, IDM_FILE_EXIT,
-    	           MF_BYCOMMAND | MF_ENABLED);
+	               MF_BYCOMMAND | MF_ENABLED);
 
 
 	/* Menu "Window::Visibility" */
@@ -2368,7 +2478,7 @@ static void setup_menus(void)
 #ifdef USE_SAVER
 	/* Menu "Options", Item "ScreenSaver" */
 	EnableMenuItem(hm, IDM_OPTIONS_SAVER,
-    	           MF_BYCOMMAND | MF_ENABLED);
+	               MF_BYCOMMAND | MF_ENABLED);
 #endif
 
 }
@@ -2485,13 +2595,24 @@ static void process_menus(WORD wCmd)
 		/* Save game */
 		case IDM_FILE_SAVE:
 		{
-			if (!game_in_progress)
+			if (game_in_progress && character_generated)
 			{
-				plog("No game in progress.");
+				/* Paranoia */
+				if (!inkey_flag)
+				{
+					plog("You may not do that right now.");
+					break;
+				}
+
+				/* Hack -- Forget messages */
+				msg_flag = FALSE;
+
+				/* Save the game */
+				do_cmd_save_game();
 			}
 			else
 			{
-				do_cmd_save_game();
+				plog("You may not do that right now.");
 			}
 			break;
 		}
@@ -2501,6 +2622,13 @@ static void process_menus(WORD wCmd)
 		{
 			if (game_in_progress && character_generated)
 			{
+				/* Paranoia */
+				if (!inkey_flag)
+				{
+					plog("You may not do that right now.");
+					break;
+				}
+
 				/* Hack -- Forget messages */
 				msg_flag = FALSE;
 
@@ -2713,6 +2841,13 @@ static void process_menus(WORD wCmd)
 
 		case IDM_OPTIONS_GRAPHICS:
 		{
+			/* Paranoia */
+			if (!inkey_flag)
+			{
+				plog("You may not do that right now.");
+				break;
+			}
+
 			/* Toggle "arg_graphics" */
 			arg_graphics = !arg_graphics;
 
@@ -2727,6 +2862,13 @@ static void process_menus(WORD wCmd)
 
 		case IDM_OPTIONS_SOUND:
 		{
+			/* Paranoia */
+			if (!inkey_flag)
+			{
+				plog("You may not do that right now.");
+				break;
+			}
+
 			/* Toggle "arg_sound" */
 			arg_sound = !arg_sound;
 
@@ -2793,6 +2935,7 @@ static void process_menus(WORD wCmd)
 			else
 			{
 				plog_fmt("Cannot find help file: %s", tmp);
+				plog("Use the online help files instead.");
 			}
 			break;
 		}
@@ -2810,6 +2953,7 @@ static void process_menus(WORD wCmd)
 			else
 			{
 				plog_fmt("Cannot find help file: %s", tmp);
+				plog("Use the online help files instead.");
 			}
 			break;
 		}
@@ -2910,7 +3054,7 @@ LRESULT FAR PASCAL _export AngbandWndProc(HWND hWnd, UINT uMsg,
 		case WM_KEYDOWN:
 		{
 			BYTE KeyState = 0x00;
-			bool enhanced = FALSE;
+
 			bool mc = FALSE;
 			bool ms = FALSE;
 			bool ma = FALSE;
@@ -2920,13 +3064,8 @@ LRESULT FAR PASCAL _export AngbandWndProc(HWND hWnd, UINT uMsg,
 			if (GetKeyState(VK_SHIFT)   & 0x8000) ms = TRUE;
 			if (GetKeyState(VK_MENU)    & 0x8000) ma = TRUE;
 
-			/* Check for non-normal keys */
-			if ((wParam >= VK_PRIOR) && (wParam <= VK_DOWN)) enhanced = TRUE;
-			if ((wParam >= VK_F1) && (wParam <= VK_F12)) enhanced = TRUE;
-			if ((wParam == VK_INSERT) || (wParam == VK_DELETE)) enhanced = TRUE;
-
-			/* XXX XXX XXX */
-			if (enhanced)
+			/* Handle "special" keys */
+			if (special_key[(byte)(wParam)])
 			{
 				/* Begin the macro trigger */
 				Term_keypress(31);
@@ -2936,7 +3075,7 @@ LRESULT FAR PASCAL _export AngbandWndProc(HWND hWnd, UINT uMsg,
 				if (ms) Term_keypress('S');
 				if (ma) Term_keypress('A');
 
-				/* Extract "scan code" from bits 16..23 of lParam */
+				/* Extract "scan code" */
 				i = LOBYTE(HIWORD(lParam));
 
 				/* Introduce the scan code */
@@ -3213,7 +3352,7 @@ LRESULT FAR PASCAL _export AngbandListProc(HWND hWnd, UINT uMsg,
 		case WM_KEYDOWN:
 		{
 			BYTE KeyState = 0x00;
-			bool enhanced = FALSE;
+
 			bool mc = FALSE;
 			bool ms = FALSE;
 			bool ma = FALSE;
@@ -3223,13 +3362,8 @@ LRESULT FAR PASCAL _export AngbandListProc(HWND hWnd, UINT uMsg,
 			if (GetKeyState(VK_SHIFT)   & 0x8000) ms = TRUE;
 			if (GetKeyState(VK_MENU)    & 0x8000) ma = TRUE;
 
-			/* Check for non-normal keys */
-			if ((wParam >= VK_PRIOR) && (wParam <= VK_DOWN)) enhanced = TRUE;
-			if ((wParam >= VK_F1) && (wParam <= VK_F12)) enhanced = TRUE;
-			if ((wParam == VK_INSERT) || (wParam == VK_DELETE)) enhanced = TRUE;
-
-			/* XXX XXX XXX */
-			if (enhanced)
+			/* Handle "special" keys */
+			if (special_key[(byte)(wParam)])
 			{
 				/* Begin the macro trigger */
 				Term_keypress(31);
@@ -3239,7 +3373,7 @@ LRESULT FAR PASCAL _export AngbandListProc(HWND hWnd, UINT uMsg,
 				if (ms) Term_keypress('S');
 				if (ma) Term_keypress('A');
 
-				/* Extract "scan code" from bits 16..23 of lParam */
+				/* Extract "scan code" */
 				i = LOBYTE(HIWORD(lParam));
 
 				/* Introduce the scan code */
@@ -3702,6 +3836,12 @@ int FAR PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrevInst,
 	/* Prepare the filepaths */
 	init_stuff();
 
+	/* Initialize the keypress analyzer */
+	for (i = 0; special_key_list[i]; ++i)
+	{
+		special_key[special_key_list[i]] = TRUE;
+	}
+	
 	/* Determine if display is 16/256/true color */
 	hdc = GetDC(NULL);
 	colors16 = (GetDeviceCaps(hdc, BITSPIXEL) == 4);
@@ -3765,3 +3905,5 @@ int FAR PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrevInst,
 
 
 #endif /* WINDOWS */
+
+

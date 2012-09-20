@@ -202,3 +202,4 @@ main-win.o32 readdib.o32 itsybits.o32,+
 ..\angband32.exe,..\angband.map,import32 cw32,..\ext-win\src\angband.def
 |
 	$(RC32) -w32 ..\ext-win\src\angband.rc ..\angband32.exe
+

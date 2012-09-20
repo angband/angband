@@ -19,11 +19,11 @@ used for walking/running/altering.  In particular, the "roguelike" keyset
 includes many more "capital" and "control" keys, as shown below.
 
     Note that any keys that are not required for access to the underlying
-command set may be used by the user as "command macro" triggers (see below).
-You may always specify any "underlying command" directly by pressing backslash
-("\") plus the "underlying command" key.  This is normally only used in "macro"
-definitions.  You may often enter "control-keys" as a caret ("^") plus the key
-(so "^" + "p" often yields "^P").
+command set may be used by the user to extend the "keyset" which is being
+used, by defining new "keymaps".  To avoid the use of any "keymaps", press
+backslash ("\") plus the "underlying command" key.  This is normally only
+used in "macro" definitions.  You may enter "control-keys" as a caret ("^")
+plus the key (so "^" + "p" yields "^P").
 
     Some commands allow an optional "repeat count", which allows you to tell
 the game that you wish to do the command multiple times, unless you press a
@@ -69,12 +69,12 @@ instead of using the "run" or "alter" command plus a direction.  Both keysets
 allow the use of the "5" key to "stand still", which is most convenient when
 using the original keyset.
 
-    Note that on many systems, it is possible to define "macros" (or "command
-macros") to various keys, or key combinations, so that it is often possible to
-make macros which, for example, allow the use of the shift or control modifier
-keys, plus a numeric keypad key, to specify the "run" or "alter" command, with
-the given direction, regardless of any keymap definitions, by using the fact
-that you can always, for example, use "\" + "." + "6", to specify "run east".
+    Note that on many systems, it is possible to define "macros" to various
+keys, or key combinations, so that it is often possible to make macros which,
+for example, allow the use of the shift and/or control modifier keys, plus a
+numeric keypad key, to specify the "run" or "alter" command, with the given
+direction, regardless of any keymap definitions, by using the fact that you
+can always, for example, use "\" + "." + "6", to specify "run east".
 
 
 
@@ -365,73 +365,51 @@ described below.
 "macros", which are mappings from a single logical keypress to a sequence
 of keypresses, allowing you to use special keys on the keyboard, such as
 function keys or keypad keys, possibly in conjunction with modifier keys,
-to "automate" repetitive multi-keypress commands that you use a lot.  The
-macros can be marked as "normal" macros, which means they will fire any
-time you press the trigger key, or as "command" macros, which means they
-will only fire if you are being asked for a command.  The command macros
-are a hack which allow you to use keys which are not used for any command
-to trigger a macro, without inducing strange behavior if you attempt to
-use those keys in a special situation, such as entering an inscription.
-Since macros represent sequences of keypresses, and not all keypresses
+to "automate" repetitive multi-keypress commands that you use a lot.
+
+        Since macros represent keypress sequences, and not all keypresses
 have a printable representation, macro triggers and actions must often be
 "encoded" into a human readible form.  This is done using several types
-of encoding, including "\xHH" for character number HH in hexidecimal,
-"\NNN" for character number NNN in octal, "\e" for the "escape" code,
-"\n" for the "newline" code, "\r" for the "return" code, "\s" for the
-"space" code, "\\" for backslash, "\^" for caret, and "^X" for the code
-for any "control" key "ctrl-X".  Note that the "action" of a macro will
-not be checked against other macro triggers, so you cannot make infinite
+of encoding, including "\xHH" for character number HH in hexidecimal, "\e"
+for the "escape" code, "\n" for the "newline" code, "\r" for the "return"
+code, "\s" for the "space" code, "\\" for backslash, "\^" for caret, and
+"^X" for the code for any "control" key "ctrl-X".  Note that the "action"
+of a macro will not be checked against other macro triggers (unless the
+macro action contains a "control-backslash"), so you cannot make infinite
 loops.  You may specify extremely long macros, but you are limited in
 length by the underlying input mechanisms, which in general limit you
 to about 1024 keys in both triggers and actions.
 
         The special "\" command (which must be encoded in macros as "\\")
-is very useful in macros, since it bypasses all macros and keymaps and the
-next keystroke is considered a command in the underlying Angband command
-set.  For a list of the Angband command set, see the section on Command
-Descriptions below.  For example, a macro which maps Shift-KP6 to "\" +
-"." + "6" will induce the "run east" behavior, regardless of what keyset
-the user has chosen, and regardless of what keymaps have been defined.
+is very useful in macros, since it bypasses all keymaps and allows the next
+keystroke to be considered a command in the underlying Angband command set.
+For a list of the Angband command set, see the "command.txt" help file.
+For example, a macro which maps Shift-KP6 to "\" + "." + "6" will induce
+the "run east" behavior, regardless of what keyset the user has chosen, and
+regardless of what keymaps have been defined.
 
-        Command macros, as mentioned above, can only be triggered when the
-player is in "command" mode (when Angband is expecting a normal command).
-This is useful for defining new commands or shortcuts that you want to map
-to normal keys.  For example, by default, the "X" key is bound via a
-command macro to "w0", as mentioned above, so that you can use it to
-quickly switch between two weapons (or a digger and a weapon).  Were this
-defined as a regular macro rather than a command macro, you would never be
-able, for example, to enter the filename "BOXES.TXT", since the macro would
-fire, chaning your input to "BOw0ES.Tw0T".  In general, you will want to use
-command macros rather than normal macros, though, for example, normal macros
-can be told to produce a leading sequence of keys starting with "\e\e\e\e",
-which will clear any "-more-" prompts or other silliness.
+	Macros can be specified in user pref files as a pair of lines, one
+of the form "A:<str>", which defines the encoded macro action, and one of
+the form "P:<str>", which defines the encoded macro trigger.
 
 --- User Pref Files (Keymaps) ---
 
         The "Interact with macros" command also allows you to define
 "keymaps", which are vaguely related to macros.  A keymap maps a single
-keypress to another single keypress with an optional direction.  Angband
-uses keymaps internally to map both the original and the roguelike keysets
-to the underlying command set.  This means that when you are defining
-keymaps, the keypress you map a key to must be an underlying command, not
-a keypress from the original or roguelike keysets.  Note that the original
-keyset is almost identical to the underlying keyset, except that "numbers"
-are mapped to "," or ";" plus a direction, "T" is mapped to "+", and a few
-control-keys are mapped to various things.  See below for the full set of
-underlying commands.  Normally, there is no reason to use a keymap, unless
-you want to prevent accidental use of certain commands, and you are afraid
-those commands might be contained in some macro action.  Also, you could
-use a keymap to allow the use of a single set of macros which included the
-"pray prayer" ("p") or "cast spell" ("m") command, as appropriate, by using
-"m" in the macros, and making a keymap from "m" to "p" when using a priest.
+keypress to a series of keypresses, which bypass both other keymaps and
+any macros.  Angband uses keymaps to map the original and the roguelike
+keysets to the underlying command set, and allows the user to modify or
+add keymaps of their own.  Note that all keymap actions must be specified
+using underlying commands, not keypresses from the original or roguelike
+keysets.  The original keyset is almost identical to the underlying keyset,
+except that "numbers" are mapped to ";" plus a direction, "5" is mapped to
+",", and a few control-keys are mapped to various things.  See "command.txt"
+for the full set of underlying commands.  Some uses for keymaps include the
+ability to "disable" a command by mapping it to "\x00", 
 
-        There is only one way to specify a "keymap" in a user pref commands.
-The "S:<key>:<map>:<dir>" command activates a keymap from the "<key>" key to
-the "<map>" key, with optional direction "<dir>".  Note that both "<key>" and
-"<map>" must currently be specified as ascii values, and "<dir>" should be a
-"numeric" direction, 1 to 9, or "zero" for "no direction".  Eventually, the
-use of the "5" direction might be allowed to specify automatic use of the
-current target (if legal) with the given keymap.
+	Keymaps can be specified in user pref files as line of the form
+"M:<T> <key> <str>", where <T> is the keyset (0/1 for original/roguelike),
+<key> is the encoded trigger key, and <str> is the encoded keymap action.
 
 --- User Pref Files (Visuals) ---
 
@@ -453,6 +431,9 @@ and your system supports the "use_graphics" flag.
         Note that this command can be abused in various ways, and if you
 must do so, remember that you are only cheating yourself.
 
+	Keymaps can be specified in user pref files as line of the form
+"R:<N>:<A>/<C>" or "K:<N>:<A>/<C>" or "F:<N>:<A>/<C>" or "U:<N>:<A>/<C>".
+
 --- User Pref Files (Colors) ---
 
         The "Interact with colors" command allows you to change the actual
@@ -461,6 +442,9 @@ not have any effect on your machine.  Advanced machines may allow you to
 change the actual RGB values used to represent each of the 16 colors used
 by Angband, and perhaps even allow you to define new colors which are not
 currently used by Angband.
+
+	Colors can be specified in user pref files as line of the form
+"V:<N>:<V>:<R>:<G>:<B>".
 
 --- User Pref Files (Options) ---
 

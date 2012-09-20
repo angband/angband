@@ -45,6 +45,9 @@
  * Note that this file should not use the random number generator, the
  * object flavors, the visual attr/char mappings, or anything else which
  * is initialized *after* or *during* the "load character" function.
+ *
+ * This file assumes that many global variables, including the "dungeon"
+ * arrays, are initialized to all zeros.
  */
 
 
@@ -313,21 +316,22 @@ static s16b convert_slot(int old)
 
 
 /*
- * Mega-Hack -- convert the old "name2" fields into the new name1/name2
- * fields.  Note that the entries below must map one-to-one onto the old
- * "SN_*" defines, shown in the comments after the new values.  Also note
- * that this code relies on the fact that there are only 128 ego-items and
- * only 128 artifacts in the new system.  If this changes, the array below
- * should be modified to contain "u16b" entries instead of "byte" entries.
+ * Hack -- convert the old "name2" fields into the new name1/name2 fields.
+ *
+ * Note that the entries below must map one-to-one onto the old "SN_*"
+ * defines, shown in the comments after the new values.
+ *
+ * Note that this code relies on the fact that there are only 128 ego-items
+ * and only 128 artifacts in the new system.
  */
 static byte convert_old_names[180] =
 {
 	0,						/* 0 = SN_NULL */
-	EGO_RESISTANCE,			/* 1 = SN_R (XXX) */
-	EGO_RESIST_ACID,		/* 2 = SN_RA (XXX) */
-	EGO_RESIST_FIRE,		/* 3 = SN_RF (XXX) */
-	EGO_RESIST_COLD,		/* 4 = SN_RC (XXX) */
-	EGO_RESIST_ELEC,		/* 5 = SN_RL (XXX) */
+	EGO_RESISTANCE,			/* 1 = SN_R */
+	EGO_RESIST_ACID,		/* 2 = SN_RA */
+	EGO_RESIST_FIRE,		/* 3 = SN_RF */
+	EGO_RESIST_COLD,		/* 4 = SN_RC */
+	EGO_RESIST_ELEC,		/* 5 = SN_RL */
 	EGO_HA,					/* 6 = SN_HA */
 	EGO_DF,					/* 7 = SN_DF */
 	EGO_SLAY_ANIMAL,		/* 8 = SN_SA */
@@ -336,22 +340,22 @@ static byte convert_old_names[180] =
 	EGO_SLAY_UNDEAD,		/* 11 = SN_SU */
 	EGO_BRAND_FIRE,			/* 12 = SN_FT */
 	EGO_BRAND_COLD,			/* 13 = SN_FB */
-	EGO_FREE_ACTION,		/* 14 = SN_FREE_ACTION (XXX) */
-	EGO_SLAYING,			/* 15 = SN_SLAYING (XXX) */
+	EGO_FREE_ACTION,		/* 14 = SN_FREE_ACTION */
+	EGO_SLAYING,			/* 15 = SN_SLAYING */
 	EGO_CLUMSINESS,			/* 16 = SN_CLUMSINESS */
 	EGO_WEAKNESS,			/* 17 = SN_WEAKNESS */
 	EGO_SLOW_DESCENT,		/* 18 = SN_SLOW_DESCENT */
 	EGO_SPEED,				/* 19 = SN_SPEED */
-	EGO_STEALTH,			/* 20 = SN_STEALTH (XXX) */
+	EGO_STEALTH,			/* 20 = SN_STEALTH */
 	EGO_SLOWNESS,			/* 21 = SN_SLOWNESS */
 	EGO_NOISE,				/* 22 = SN_NOISE */
 	EGO_ANNOYANCE,			/* 23 = SN_GREAT_MASS */
 	EGO_INTELLIGENCE,		/* 24 = SN_INTELLIGENCE */
 	EGO_WISDOM,				/* 25 = SN_WISDOM */
 	EGO_INFRAVISION,		/* 26 = SN_INFRAVISION */
-	EGO_MIGHT,				/* 27 = SN_MIGHT (XXX) */
+	EGO_MIGHT,				/* 27 = SN_MIGHT */
 	EGO_LORDLINESS,			/* 28 = SN_LORDLINESS */
-	EGO_MAGI,				/* 29 = SN_MAGI (XXX) */
+	EGO_MAGI,				/* 29 = SN_MAGI */
 	EGO_BEAUTY,				/* 30 = SN_BEAUTY */
 	EGO_SEEING,				/* 31 = SN_SEEING */
 	EGO_REGENERATION,		/* 32 = SN_REGENERATION */
@@ -365,9 +369,9 @@ static byte convert_old_names[180] =
 	EGO_IRRITATION,			/* 40 = SN_IRRITATION */
 	EGO_VULNERABILITY,		/* 41 = SN_VULNERABILITY */
 	EGO_ENVELOPING,			/* 42 = SN_ENVELOPING */
-	EGO_BRAND_FIRE,			/* 43 = SN_FIRE (XXX) */
-	EGO_HURT_EVIL,			/* 44 = SN_SLAY_EVIL (XXX) */
-	EGO_HURT_DRAGON,		/* 45 = SN_DRAGON_SLAYING (XXX) */
+	EGO_BRAND_FIRE,			/* 43 = SN_FIRE */
+	EGO_HURT_EVIL,			/* 44 = SN_SLAY_EVIL */
+	EGO_HURT_DRAGON,		/* 45 = SN_DRAGON_SLAYING */
 	0,						/* 46 = SN_EMPTY */
 	0,						/* 47 = SN_LOCKED */
 	0,						/* 48 = SN_POISON_NEEDLE */
@@ -377,7 +381,7 @@ static byte convert_old_names[180] =
 	0,						/* 52 = SN_MULTIPLE_TRAPS */
 	0,						/* 53 = SN_DISARMED */
 	0,						/* 54 = SN_UNLOCKED */
-	EGO_HURT_ANIMAL,		/* 55 = SN_SLAY_ANIMAL (XXX) */
+	EGO_HURT_ANIMAL,		/* 55 = SN_SLAY_ANIMAL */
 	ART_GROND + 128,		/* 56 = SN_GROND */
 	ART_RINGIL + 128,		/* 57 = SN_RINGIL */
 	ART_AEGLOS + 128,		/* 58 = SN_AEGLOS */
@@ -419,7 +423,7 @@ static byte convert_old_names[180] =
 	ART_ANARION + 128,		/* 94 = SN_ANARION */
 	ART_ISILDUR + 128,		/* 95 = SN_ISILDUR */
 	ART_FINGOLFIN + 128,	/* 96 = SN_FINGOLFIN */
-	EGO_ELVENKIND,			/* 97 = SN_ELVENKIND (XXX) */
+	EGO_ELVENKIND,			/* 97 = SN_ELVENKIND */
 	ART_SOULKEEPER + 128,	/* 98 = SN_SOULKEEPER */
 	ART_DOR + 128,			/* 99 = SN_DOR_LOMIN */
 	ART_MORGOTH + 128,		/* 100 = SN_MORGOTH */
@@ -508,7 +512,7 @@ static byte convert_old_names[180] =
 /*
  * Convert old kinds into normal kinds
  *
- * Note hard-coded use of object kind indexes XXX XXX XXX
+ * Note the hard-coded use of the new object kind indexes.  XXX XXX XXX
  */
 static s16b convert_old_kinds_normal[501] =
 {
@@ -1855,61 +1859,18 @@ static void rd_messages_old(void)
 
 
 
-
-
-/*
- * More obsolete definitions...
- *
- * Fval definitions: various types of dungeon floors and walls
- *
- * In 2.7.3 (?), the "darkness" quality was moved into the "info" flags.
- *
- * In 2.7.6 (?), the grid flags changed completely
- */
-
-#define NULL_WALL		0	/* Temp value for "generate.c" */
-
-#define ROOM_FLOOR		1	/* Floor, in a room */
-#define VAULT_FLOOR		3	/* Floor, in a vault */
-#define CORR_FLOOR		5	/* Floor, in a corridor */
-
-#define MIN_WALL		8	/* Hack -- minimum "wall" fval */
-
-#define TMP1_WALL		8
-#define TMP2_WALL		9
-
-#define GRANITE_WALL	12	/* Granite */
-#define QUARTZ_WALL		13	/* Quartz */
-#define MAGMA_WALL		14	/* Magma */
-#define BOUNDARY_WALL	15	/* Permanent */
-
-
-/*
- * Old cave "info" flags
- */
-#define OLD_CAVE_LR		0x01	/* Grid is part of a room */
-#define OLD_CAVE_FM		0x02	/* Grid is "field marked" */
-#define OLD_CAVE_PL		0x04	/* Grid is perma-lit */
-#define OLD_CAVE_TL		0x08	/* Grid is torch-lit */
-#define OLD_CAVE_INIT	0x10	/* Grid has been "initialized" */
-#define OLD_CAVE_SEEN	0x20	/* Grid is "being processed" */
-#define OLD_CAVE_VIEW	0x40	/* Grid is currently "viewable" */
-#define OLD_CAVE_XTRA	0x80	/* Grid is "easily" viewable */
-
-
-
 /*
  * Read a pre-2.7.0 dungeon
  *
- * All sorts of information is lost from pre-2.7.0 savefiles,
- * because they were not saved in a very intelligent manner.
+ * All sorts of information is lost from pre-2.7.0 savefiles, because they
+ * were not saved in a very intelligent manner.
  *
- * Where important, we attempt to recover lost information, or
- * at least to simulate the presence of such information.
+ * Where important, we attempt to recover lost information, or at least to
+ * simulate the presence of such information.
  *
  * Old savefiles may only contain 512 objects and 1024 monsters.
  *
- * Prevent old "terrain" objects in inventory XXX XXX
+ * Old savefiles encode some "terrain" information in "fake objects".
  */
 static errr rd_dungeon_old(void)
 {
@@ -1949,14 +1910,12 @@ static errr rd_dungeon_old(void)
 	/* Ignore illegal dungeons */
 	if ((ymax != DUNGEON_HGT) || (xmax != DUNGEON_WID))
 	{
-		/* XXX XXX XXX */
 		note(format("Ignoring illegal dungeon size (%d,%d).", xmax, ymax));
 		return (0);
 	}
 
 	/* Ignore illegal dungeons */
-	if ((px < 0) || (px >= DUNGEON_WID) ||
-	    (py < 0) || (py >= DUNGEON_HGT))
+	if (!in_bounds(py, px))
 	{
 		note(format("Ignoring illegal player location (%d,%d).", px, py));
 		return (1);
@@ -1972,8 +1931,12 @@ static errr rd_dungeon_old(void)
 		ychar = tmp8u;
 		rd_byte(&xchar);
 
+		/* Location */
+		y = ychar;
+		x = xchar;
+
 		/* Invalid cave location */
-		if ((xchar >= DUNGEON_WID) || (ychar >= DUNGEON_HGT))
+		if (!in_bounds(y, x))
 		{
 			note("Illegal monster location!");
 			return (71);
@@ -2006,8 +1969,12 @@ static errr rd_dungeon_old(void)
 		ychar = tmp8u;
 		rd_byte(&xchar);
 
+		/* Location */
+		y = ychar;
+		x = xchar;
+
 		/* Invalid cave location */
-		if ((xchar >= DUNGEON_WID) || (ychar >= DUNGEON_HGT))
+		if (!in_bounds(y, x))
 		{
 			note("Illegal object location!");
 			return (72);
@@ -2024,8 +1991,8 @@ static errr rd_dungeon_old(void)
 		}
 
 		/* Remember the location */
-		ix[tmp16u] = xchar;
-		iy[tmp16u] = ychar;
+		iy[tmp16u] = y;
+		ix[tmp16u] = x;
 	}
 
 
@@ -2043,6 +2010,9 @@ static errr rd_dungeon_old(void)
 		/* Apply the RLE info */
 		for (i = count; i > 0; i--)
 		{
+			byte info = 0x00;
+			byte feat = FEAT_FLOOR;
+
 			/* Invalid cave location */
 			if ((x >= DUNGEON_WID) || (y >= DUNGEON_HGT))
 			{
@@ -2050,27 +2020,21 @@ static errr rd_dungeon_old(void)
 				return (81);
 			}
 
-			/* Hack -- Clear all the flags */
-			cave_info[y][x] = 0x00;
-
-			/* Hack -- Clear all the flags */
-			cave_feat[y][x] = FEAT_NONE;
-
 			/* Extract the old "info" flags */
-			if ((tmp8u >> 4) & 0x1) cave_info[y][x] |= (CAVE_ROOM);
-			if ((tmp8u >> 5) & 0x1) cave_info[y][x] |= (CAVE_MARK);
-			if ((tmp8u >> 6) & 0x1) cave_info[y][x] |= (CAVE_GLOW);
+			if ((tmp8u >> 4) & 0x1) info |= (CAVE_ROOM);
+			if ((tmp8u >> 5) & 0x1) info |= (CAVE_MARK);
+			if ((tmp8u >> 6) & 0x1) info |= (CAVE_GLOW);
 
 			/* Hack -- process old style "light" */
-			if (cave_info[y][x] & (CAVE_GLOW))
+			if (info & (CAVE_GLOW))
 			{
-				cave_info[y][x] |= (CAVE_MARK);
+				info |= (CAVE_MARK);
 			}
 
 			/* Mega-Hack -- light all walls */
 			else if ((tmp8u & 0xF) >= 12)
 			{
-				cave_info[y][x] |= (CAVE_GLOW);
+				info |= (CAVE_GLOW);
 			}
 
 			/* Process the "floor type" */
@@ -2079,27 +2043,27 @@ static errr rd_dungeon_old(void)
 				/* Lite Room Floor */
 				case 2:
 				{
-					cave_info[y][x] |= (CAVE_GLOW);
+					info |= (CAVE_GLOW);
 				}
 
 				/* Dark Room Floor */
 				case 1:
 				{
-					cave_info[y][x] |= (CAVE_ROOM);
+					info |= (CAVE_ROOM);
 					break;
 				}
 
 				/* Lite Vault Floor */
 				case 4:
 				{
-					cave_info[y][x] |= (CAVE_GLOW);
+					info |= (CAVE_GLOW);
 				}
 
 				/* Dark Vault Floor */
 				case 3:
 				{
-					cave_info[y][x] |= (CAVE_ROOM);
-					cave_info[y][x] |= (CAVE_ICKY);
+					info |= (CAVE_ROOM);
+					info |= (CAVE_ICKY);
 					break;
 				}
 
@@ -2109,34 +2073,40 @@ static errr rd_dungeon_old(void)
 					break;
 				}
 
-				/* Perma-wall (assume "solid") XXX */
+				/* Perma-wall */
 				case 15:
 				{
-					cave_feat[y][x] = FEAT_PERM_SOLID;
+					feat = FEAT_PERM_SOLID;
 					break;
 				}
 
-				/* Granite wall (assume "basic") XXX */
+				/* Granite wall */
 				case 12:
 				{
-					cave_feat[y][x] = FEAT_WALL_EXTRA;
+					feat = FEAT_WALL_EXTRA;
 					break;
 				}
 
 				/* Quartz vein */
 				case 13:
 				{
-					cave_feat[y][x] = FEAT_QUARTZ;
+					feat = FEAT_QUARTZ;
 					break;
 				}
 
 				/* Magma vein */
 				case 14:
 				{
-					cave_feat[y][x] = FEAT_MAGMA;
+					feat = FEAT_MAGMA;
 					break;
 				}
 			}
+
+			/* Save the info */
+			cave_info[y][x] = info;
+
+			/* Save the feat */
+			cave_set_feat(y, x, feat);
 
 			/* Advance the cave pointers */
 			x++;
@@ -2195,17 +2165,16 @@ static errr rd_dungeon_old(void)
 		/* Read the item */
 		rd_item_old(i_ptr);
 
-		/* Save location */
-		i_ptr->iy = iy[i];
-		i_ptr->ix = ix[i];
-
-
 		/* Skip dead objects */
 		if (!i_ptr->k_idx) continue;
 
 
+		/* Save location */
+		i_ptr->iy = y = iy[i];
+		i_ptr->ix = x = ix[i];
+
 		/* Invalid cave location */
-		if ((i_ptr->iy >= DUNGEON_HGT) || (i_ptr->ix >= DUNGEON_WID))
+		if ((y >= DUNGEON_HGT) || (x >= DUNGEON_WID))
 		{
 			note("Illegal object location!!!");
 			return (72);
@@ -2215,7 +2184,7 @@ static errr rd_dungeon_old(void)
 		/* Hack -- convert old "dungeon" objects */
 		if ((i_ptr->k_idx >= 445) && (i_ptr->k_idx <= 479))
 		{
-			int feat = 0;
+			byte feat = 0;
 
 			/* Analyze the "dungeon objects" */
 			switch (i_ptr->k_idx)
@@ -2327,7 +2296,7 @@ static errr rd_dungeon_old(void)
 			}
 
 			/* Hack -- use the feature */
-			cave_feat[i_ptr->iy][i_ptr->ix] = feat;
+			cave_set_feat(y, x, feat);
 
 			/* Done */
 			continue;
@@ -2338,11 +2307,11 @@ static errr rd_dungeon_old(void)
 		if (i_ptr->tval == TV_GOLD)
 		{
 			/* Quartz or Magma with treasure */
-			if ((cave_feat[i_ptr->iy][i_ptr->ix] == FEAT_QUARTZ) ||
-			    (cave_feat[i_ptr->iy][i_ptr->ix] == FEAT_MAGMA))
+			if ((cave_feat[y][x] == FEAT_QUARTZ) ||
+			    (cave_feat[y][x] == FEAT_MAGMA))
 			{
 				/* Add treasure */
-				cave_feat[i_ptr->iy][i_ptr->ix] += 4;
+				cave_set_feat(y, x, cave_feat[y][x] + 0x04);
 
 				/* Done */
 				continue;
@@ -2405,6 +2374,10 @@ static errr rd_dungeon_old(void)
 		rd_byte(&n_ptr->fy);
 		rd_byte(&n_ptr->fx);
 
+		/* Extract location */
+		y = n_ptr->fy;
+		x = n_ptr->fx;
+
 		/* Strip confusion, etc */
 		strip_bytes(4);
 
@@ -2423,7 +2396,7 @@ static errr rd_dungeon_old(void)
 
 
 		/* Invalid cave location */
-		if ((n_ptr->fx >= DUNGEON_WID) || (n_ptr->fy >= DUNGEON_HGT))
+		if ((x >= DUNGEON_WID) || (y >= DUNGEON_HGT))
 		{
 			note("Illegal monster location!!!");
 			return (71);
@@ -2452,17 +2425,6 @@ static errr rd_dungeon_old(void)
 	}
 
 
-	/* Hack -- clean up terrain */
-	for (y = 0; y < DUNGEON_HGT; y++)
-	{
-		for (x = 0; x < DUNGEON_WID; x++)
-		{
-			/* Convert nothing-ness into floors */
-			if (!cave_feat[y][x]) cave_feat[y][x] = FEAT_FLOOR;
-		}
-	}
-
-
 	/* The dungeon is ready */
 	character_dungeon = TRUE;
 
@@ -2470,9 +2432,6 @@ static errr rd_dungeon_old(void)
 	/* Success */
 	return (0);
 }
-
-
-
 
 
 
@@ -2637,7 +2596,7 @@ static errr rd_savefile_old_aux(void)
 	            sf_major, sf_minor, sf_patch));
 
 
-	/* Mega-Hack XXX XXX XXX */
+	/* Mega-Hack */
 	if (older_than(2, 5, 2))
 	{
 		/* Allow use of old MacAngband 1.0 and 2.0.3 savefiles */
@@ -2668,9 +2627,6 @@ static errr rd_savefile_old_aux(void)
 
 	/* Hack -- decrypt */
 	xor_byte = sf_extra;
-
-
-	/* Fake the system info XXX XXX */
 
 
 	/* Read the artifacts */
@@ -2873,30 +2829,30 @@ static errr rd_savefile_old_aux(void)
 	r_info[MAX_R_IDX-1].max_num = 0;
 
 
-	/* Hack -- reset morgoth XXX XXX */
+	/* Hack -- reset morgoth */
 	r_info[MAX_R_IDX-2].max_num = 1;
 
-	/* Hack -- reset sauron XXX XXX */
+	/* Hack -- reset sauron */
 	r_info[MAX_R_IDX-3].max_num = 1;
 
 
-	/* Hack -- reset morgoth XXX XXX */
+	/* Hack -- reset morgoth */
 	r_info[MAX_R_IDX-2].r_pkills = 0;
 
-	/* Hack -- reset sauron XXX XXX */
+	/* Hack -- reset sauron */
 	r_info[MAX_R_IDX-3].r_pkills = 0;
 
 
-	/* Add first quest XXX XXX */
+	/* Add first quest */
 	q_list[0].level = 99;
 
-	/* Add second quest XXX XXX */
+	/* Add second quest */
 	q_list[1].level = 100;
 
-	/* Reset third quest XXX XXX */
+	/* Reset third quest */
 	q_list[2].level = 0;
 
-	/* Reset fourth quest XXX XXX */
+	/* Reset fourth quest */
 	q_list[3].level = 0;
 
 

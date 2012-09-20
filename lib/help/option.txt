@@ -65,35 +65,32 @@ Merge discounts when stacking    [stack_force_costs]
     discounts.  The resulting stack keeps the largest discount.  This option
     may cause you to lose "value", but will give you optimal pack usage.
 
-Show labels in object lists    [show_labels]
-    Display the "labels" for objects in the "equipment" list, and in any
-    "special" window which is displaying the "equipment".  These labels
-    indicate what the player is "using" the object for, such as "wielding"
-    or "wearing" (in a given location).  After you have played for a while,
-    this information is no longer useful, and can be annoying.
+Show labels in equipment listings    [show_labels]
+    Display "labels" (what an object is being used for) for objects in all
+    "equipment" listings.
 
-Show weights in object lists    [show_weights]
-    Display the weights of objects in the "inventory" and "equipment" lists,
-    and in "stores", and in any "special" window which is displaying objects.
+Show weights in all object listings    [show_weights]
+    Display "weights" (in pounds) of objects in all "inventory", "equipment",
+    "store items", and "home items" listings.
 
-Show choices in certain sub-windows    [show_choices]
-    Display "choices" in any sub-windows which are being used to display
-    your inventory or equipment.  Also, if exactly one sub-window is being
-    used to display your inventory or equipment, then it will (temporarily)
-    be toggled as needed to always show the "appropriate" set of objects.
+Show choices in inven/equip listings    [show_choices]
+    Display "choices" (legal responses) in any sub-windows which are being
+    used to display your inventory or equipment.  Also, if one sub-window
+    is being used to display your inventory or equipment, then this option
+    will cause it to be (temporarily) toggled as needed to always show the
+    "appropriate" set of objects (inventory or equipment).
 
-Show details in certain sub-windows    [show_details]
-    Display extra details in any sub-windows (and the main screen) which
-    are being used to display monster recall.  These details include the
-    number of monsters killed and the textual descriptions.
+Show details in monster descriptions    [show_details]
+    Display "details" (including number of monsters killed, and textual
+    descriptions) in monster descriptions.
+    are displaying the monster.
+
+Show flavors in object descriptions    [show_flavors]
+    Display "flavors" (color or variety) in object descriptions, even for
+    objects whose type is known.  This does not affect objects in stores.
 
 Audible bell (on errors, etc)    [ring_bell]
     Attempt to make a "bell" noise when various "errors" occur.
-
-Use color for inventory listings    [inventory_colors]
-    Use color for object descriptions whenever the inventory, equipment,
-    or store contents are being displayed.  The colors are based on object
-    types, not on actual object colors.
 
 
 === Option Set 2 -- Disturbance ===
@@ -147,6 +144,16 @@ Alert user to critical hitpoints    [alert_hitpoint]
 Alert user to various failures    [alert_failure]
     Produce a "bell" noise, and flush all pending input, when various
     "failures" occur, as described above.
+
+Verify destruction of objects    [verify_destroy]
+    Prompt for verification of the "destroy" command.
+
+Verify use of special commands    [verify_special]
+    Prompt for verification of the "special" commands (borg and debug).
+
+Allow quantity specification    [allow_quantity]
+    Prompt for a quantity when necessary, instead of defaulting to a
+    single object.
 
 
 === Option Set 3 -- Game-play ===
@@ -224,14 +231,8 @@ Monsters chase current location (v.slow)    [flow_by_sound]
     option is extremely slow, but can produce viciously smart monsters.
 
 Monsters chase recent locations (v.slow)    [flow_by_smell]
-    As above, but also allow monsters to take advantage of "old" trails
-    that you may have left in the dungeon.
-
-Monsters follow the player (beta)    [track_follow]
-    This option is currently non-functional.
-
-Monsters target the player (beta)    [track_target]
-    This option is currently non-functional.
+    Allow monsters to take advantage of "old" trails that you may have left
+    in the dungeon.  This has no effect unless "flow_by_sound" is also set.
 
 Monsters learn from their mistakes    [smart_learn]
     Allow monsters to learn what spell attacks you are resistant to,
@@ -247,14 +248,11 @@ Monsters exploit players weaknesses    [smart_cheat]
 Reduce lite-radius when running    [view_reduce_lite]
     Reduce the "radius" of the player's "lite" to that of a "torch"
     when the player is "running", which makes running more "efficient",
-    but is extremely annoying.  Certain older versions of Angband used
-    this behavior always, so "purists" should turn it on.
+    but is extremely annoying.
 
-Reduce view-radius in town    [view_reduce_view]
-    Reduce the "radius" of the player's "view" by half when the player
-    is in town.  This makes running faster in town, and also allows the
-    player to ignore monsters in town which are more than ten grids away,
-    which is usually safe, since none have distance attacks.
+Hide player symbol when running    [hidden_player]
+    Hide the player symbol when the player is "running", which makes the
+    game somewhat faster.
 
 Avoid checking for user abort    [avoid_abort]
     Avoid checking to see if the user has pressed a key during resting
@@ -293,10 +291,6 @@ Flush input whenever disturbed    [flush_disturb]
     time, since it will prevent you from continuing your macro while being
     attacked by a monster.
 
-Flush input before every command    [flush_command]
-    This option forces the game to flush all pending input before every
-    command.  This option is silly, unless you are very paranoid.
-
 Flush output before every command    [fresh_before]
     This option forces the game to flush all output before every command.
     This will give you maximal information, but may slow down the game
@@ -304,17 +298,12 @@ Flush output before every command    [fresh_before]
     resting, running, or repeating commands, since the outout is always
     flushed when the game is waiting for a keypress from the user.
 
-Flush output after every command    [fresh_after]
+Flush output after certain things    [fresh_after]
     This option forces the game to flush all output after not only every
     player command, but also after every round of processing monsters and
-    objects, which will give you maximal information, but may slow down
-    the game a lot, especially on slower machines, and on faster machines
-    you normally do not have a chance to see the results anyway.
-
-Flush output after every message    [fresh_message]
-    This option forces the game to flush all output after every message
-    displayed by the game.  This will give you maximal information, but
-    may slow down the game somewhat.
+    objects, and after every message, which will maximize your information,
+    but may slow down the game a lot, especially on slower machines, and on
+    faster machines you cannot see the results anyway.
 
 Compress messages in savefiles    [compress_savefile]
     Compress the savefile, by only saving the most recent "messages" that
@@ -410,6 +399,11 @@ Display player screen
     Display a brief description of the character, including a breakdown
     of the current player "skills" (including attacks/shots per round).
 
+Display player flags
+    Display a brief description of the character, including a breakdown
+    of the contributions of each equipment item to various resistances
+    and stats.
+
 Display messages
     Display the most recently generated "messages".
 
@@ -442,18 +436,20 @@ The "hitpoint_warn" value, if non-zero, is the percentage of maximal hitpoints
 at which the player is warned that he may die.  It is also used as the cut-off
 for using red to display both hitpoints and mana.
 
-The "delay_factor" value, if non-zero, is used to "slow down" the game, which is
-useful to allow you to "observe" the temporal effects of bolt, beam, and ball
-attacks.  The actual delay is equal to "delay_factor" cubed, in milliseconds.
+The "delay_factor" value, if non-zero, will slow down the visual effects used
+for missile, bolt, beam, and ball attacks.  The actual time delay is equal to
+"delay_factor" cubed, in milliseconds.
 
-The "preserve" flag, if set when the character was created, cancels all level
+The "preserve" flag (specified when a character is created) cancels all level
 feelings of the "special" variety, but allows "missed" artifacts to be "saved"
 by wandering monsters and found again at a later time.  This only works for
-non-identified artifacts.
+non-identified artifacts.  The character description screen shows the value
+of this flag.
 
-The "maximize" flag, if set when the character was created, causes the "race"
+The "maximize" flag (specified when a character is created) causes the "race"
 and "class" stat bonuses to be applied as "equipment" bonuses.  This usually
 makes the character harder at the beginning of the game, but easier later on,
-since the stats are no longer limited to a "natural" value of "18/100".
+since the stats are no longer limited to a "natural" value of "18/100".  The
+character description screen shows the value of this flag.
 
 

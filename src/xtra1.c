@@ -491,14 +491,14 @@ static void prt_state(void)
 			i = n / 100;
 			text[9] = '0';
 			text[8] = '0';
-			text[7] = '0' + (i % 10);
+			text[7] = I2D(i % 10);
 			if (i >= 10)
 			{
 				i = i / 10;
-				text[6] = '0' + (i % 10);
+				text[6] = I2D(i % 10);
 				if (i >= 10)
 				{
-					text[5] = '0' + (i / 10);
+					text[5] = I2D(i / 10);
 				}
 			}
 		}
@@ -507,25 +507,25 @@ static void prt_state(void)
 		else if (n >= 100)
 		{
 			i = n;
-			text[9] = '0' + (i % 10);
+			text[9] = I2D(i % 10);
 			i = i / 10;
-			text[8] = '0' + (i % 10);
-			text[7] = '0' + (i / 10);
+			text[8] = I2D(i % 10);
+			text[7] = I2D(i / 10);
 		}
 
 		/* Medium (timed) rest */
 		else if (n >= 10)
 		{
 			i = n;
-			text[9] = '0' + (i % 10);
-			text[8] = '0' + (i / 10);
+			text[9] = I2D(i % 10);
+			text[8] = I2D(i / 10);
 		}
 
 		/* Short (timed) rest */
 		else if (n > 0)
 		{
 			i = n;
-			text[9] = '0' + (i);
+			text[9] = I2D(i);
 		}
 
 		/* Rest until healed */
@@ -902,9 +902,9 @@ static void fix_equip(void)
 
 
 /*
- * Hack -- display flags in sub-windows
+ * Hack -- display player in sub-windows (mode 0)
  */
-static void fix_pflags(void)
+static void fix_player_0(void)
 {
 	int j;
 
@@ -917,40 +917,7 @@ static void fix_pflags(void)
 		if (!angband_term[j]) continue;
 
 		/* No relevant flags */
-		if (!(op_ptr->window_flag[j] & (PW_SPELL))) continue;
-
-		/* Activate */
-		Term_activate(angband_term[j]);
-
-		/* Display flags */
-		display_player(2);
-
-		/* Fresh */
-		Term_fresh();
-
-		/* Restore */
-		Term_activate(old);
-	}
-}
-
-
-/*
- * Hack -- display character in sub-windows
- */
-static void fix_player(void)
-{
-	int j;
-
-	/* Scan windows */
-	for (j = 0; j < 8; j++)
-	{
-		term *old = Term;
-
-		/* No window */
-		if (!angband_term[j]) continue;
-
-		/* No relevant flags */
-		if (!(op_ptr->window_flag[j] & (PW_PLAYER))) continue;
+		if (!(op_ptr->window_flag[j] & (PW_PLAYER_0))) continue;
 
 		/* Activate */
 		Term_activate(angband_term[j]);
@@ -969,9 +936,42 @@ static void fix_player(void)
 
 
 /*
+ * Hack -- display player in sub-windows (mode 1)
+ */
+static void fix_player_1(void)
+{
+	int j;
+
+	/* Scan windows */
+	for (j = 0; j < 8; j++)
+	{
+		term *old = Term;
+
+		/* No window */
+		if (!angband_term[j]) continue;
+
+		/* No relevant flags */
+		if (!(op_ptr->window_flag[j] & (PW_PLAYER_1))) continue;
+
+		/* Activate */
+		Term_activate(angband_term[j]);
+
+		/* Display flags */
+		display_player(1);
+
+		/* Fresh */
+		Term_fresh();
+
+		/* Restore */
+		Term_activate(old);
+	}
+}
+
+
+/*
  * Hack -- display recent messages in sub-windows
  *
- * XXX XXX XXX Adjust for width and split messages
+ * Adjust for width and split messages.  XXX XXX XXX
  */
 static void fix_message(void)
 {
@@ -1499,7 +1499,7 @@ static void calc_mana(void)
 		p_ptr->redraw |= (PR_MANA);
 
 		/* Window stuff */
-		p_ptr->window |= (PW_SPELL | PW_PLAYER);
+		p_ptr->window |= (PW_PLAYER_0 | PW_PLAYER_1);
 	}
 
 
@@ -1579,7 +1579,7 @@ static void calc_hitpoints(void)
 		p_ptr->redraw |= (PR_HP);
 
 		/* Window stuff */
-		p_ptr->window |= (PW_SPELL | PW_PLAYER);
+		p_ptr->window |= (PW_PLAYER_0 | PW_PLAYER_1);
 	}
 }
 
@@ -1627,11 +1627,8 @@ static void calc_torch(void)
 	/* Notice changes in the "lite radius" */
 	if (p_ptr->old_lite != p_ptr->cur_lite)
 	{
-		/* Update the lite */
-		p_ptr->update |= (PU_LITE);
-
-		/* Update the monsters */
-		p_ptr->update |= (PU_MONSTERS);
+		/* Update the visuals */
+		p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 
 		/* Remember the old lite */
 		p_ptr->old_lite = p_ptr->cur_lite;
@@ -2133,7 +2130,7 @@ static void calc_bonuses(void)
 	/* Extract the "weight limit" (in tenth pounds) */
 	i = weight_limit();
 
-	/* XXX XXX XXX Apply "encumbrance" from weight */
+	/* Apply "encumbrance" from weight */
 	if (j > i/2) p_ptr->pspeed -= ((j - (i/2)) / (i / 10));
 
 	/* Bloating slows the player down (a little) */
@@ -2423,7 +2420,7 @@ static void calc_bonuses(void)
 			p_ptr->redraw |= (PR_STATS);
 
 			/* Window stuff */
-			p_ptr->window |= (PW_SPELL | PW_PLAYER);
+			p_ptr->window |= (PW_PLAYER_0 | PW_PLAYER_1);
 		}
 
 		/* Notice changes */
@@ -2433,7 +2430,7 @@ static void calc_bonuses(void)
 			p_ptr->redraw |= (PR_STATS);
 
 			/* Window stuff */
-			p_ptr->window |= (PW_SPELL | PW_PLAYER);
+			p_ptr->window |= (PW_PLAYER_0 | PW_PLAYER_1);
 		}
 
 		/* Notice changes */
@@ -2493,7 +2490,7 @@ static void calc_bonuses(void)
 		p_ptr->redraw |= (PR_ARMOR);
 
 		/* Window stuff */
-		p_ptr->window |= (PW_SPELL | PW_PLAYER);
+		p_ptr->window |= (PW_PLAYER_0 | PW_PLAYER_1);
 	}
 
 	/* Hack -- handle "xtra" mode */
@@ -2638,35 +2635,28 @@ void update_stuff(void)
 	if (character_icky) return;
 
 
-	if (p_ptr->update & (PU_UN_LITE))
+	if (p_ptr->update & (PU_FORGET_VIEW))
 	{
-		p_ptr->update &= ~(PU_UN_LITE);
-		forget_lite();
-	}
-
-	if (p_ptr->update & (PU_UN_VIEW))
-	{
-		p_ptr->update &= ~(PU_UN_VIEW);
+		p_ptr->update &= ~(PU_FORGET_VIEW);
 		forget_view();
 	}
 
-
-	if (p_ptr->update & (PU_VIEW))
+	if (p_ptr->update & (PU_UPDATE_VIEW))
 	{
-		p_ptr->update &= ~(PU_VIEW);
+		p_ptr->update &= ~(PU_UPDATE_VIEW);
 		update_view();
 	}
 
-	if (p_ptr->update & (PU_LITE))
+
+	if (p_ptr->update & (PU_FORGET_FLOW))
 	{
-		p_ptr->update &= ~(PU_LITE);
-		update_lite();
+		p_ptr->update &= ~(PU_FORGET_FLOW);
+		forget_flow();
 	}
 
-
-	if (p_ptr->update & (PU_FLOW))
+	if (p_ptr->update & (PU_UPDATE_FLOW))
 	{
-		p_ptr->update &= ~(PU_FLOW);
+		p_ptr->update &= ~(PU_UPDATE_FLOW);
 		update_flow();
 	}
 
@@ -2682,6 +2672,13 @@ void update_stuff(void)
 	{
 		p_ptr->update &= ~(PU_MONSTERS);
 		update_monsters(FALSE);
+	}
+
+
+	if (p_ptr->update & (PU_PANEL))
+	{
+		p_ptr->update &= ~(PU_PANEL);
+		verify_panel();
 	}
 }
 
@@ -2702,15 +2699,6 @@ void redraw_stuff(void)
 	/* Character is in "icky" mode, no screen updates */
 	if (character_icky) return;
 
-
-
-	/* Hack -- clear the screen */
-	if (p_ptr->redraw & (PR_WIPE))
-	{
-		p_ptr->redraw &= ~(PR_WIPE);
-		msg_print(NULL);
-		Term_clear();
-	}
 
 
 	if (p_ptr->redraw & (PR_MAP))
@@ -2921,18 +2909,18 @@ void window_stuff(void)
 		fix_equip();
 	}
 
-	/* Display pflags */
-	if (p_ptr->window & (PW_SPELL))
+	/* Display player (mode 0) */
+	if (p_ptr->window & (PW_PLAYER_0))
 	{
-		p_ptr->window &= ~(PW_SPELL);
-		fix_pflags();
+		p_ptr->window &= ~(PW_PLAYER_0);
+		fix_player_0();
 	}
 
-	/* Display player */
-	if (p_ptr->window & (PW_PLAYER))
+	/* Display player (mode 1) */
+	if (p_ptr->window & (PW_PLAYER_1))
 	{
-		p_ptr->window &= ~(PW_PLAYER);
-		fix_player();
+		p_ptr->window &= ~(PW_PLAYER_1);
+		fix_player_1();
 	}
 
 	/* Display overhead view */

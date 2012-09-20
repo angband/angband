@@ -8,16 +8,10 @@
  * are included in all such copies.
  */
 
-/* Purpose: Support for "z-term.c" using "termcap" calls */
-
-#include "angband.h"
-
-
-#ifdef USE_CAP
-
 
 /*
- * This file is a total hack, but is often very helpful.  :-)
+ * This file helps Angband run on really crappy Unix machines.
+ *
  *
  * This file allows use of the terminal without requiring the
  * "curses" routines.  In fact, if "USE_HARDCODE" is defined,
@@ -30,10 +24,17 @@
  * but which seem to be able to support the "termcap" library, or
  * which at least seem able to support "vt100" terminals.
  *
- * Large portions of this file were stolen from "main-gcu.c"
- *
  * This file incorrectly handles output to column 80, I think.
+ *
+ *
+ * Large portions of this file were stolen from "main-gcu.c"
  */
+
+
+#include "angband.h"
+
+
+#ifdef USE_CAP
 
 
 /*
@@ -715,7 +716,7 @@ static void keymap_game_prepare(void)
 	game_ltchars.t_werasc = (char)-1;
 	game_ltchars.t_lnextc = (char)-1;
 
-	/* XXX XXX XXX XXX Verify this before use */
+	/* Verify this before use XXX XXX XXX */
 	/* Hack -- Turn off "echo" and "canonical" mode */
 	/* game_termios.c_lflag &= ~(ECHO | ICANON); */
 	game_ttyb.flag &= ~(ECHO | ICANON);

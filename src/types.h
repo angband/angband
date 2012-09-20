@@ -41,6 +41,32 @@
 /**** Available Types ****/
 
 
+/*
+ * An array of 256 byte's
+ */
+typedef byte byte_256[256];
+
+/*
+ * An array of 256 s16b's
+ */
+typedef s16b s16b_256[256];
+
+
+/*
+ * An array of DUNGEON_WID byte's
+ */
+typedef byte byte_wid[DUNGEON_WID];
+
+/*
+ * An array of DUNGEON_WID s16b's
+ */
+typedef s16b s16b_wid[DUNGEON_WID];
+
+
+
+/**** Available Structs ****/
+
+
 typedef struct header header;
 typedef struct feature_type feature_type;
 typedef struct object_kind object_kind;
@@ -133,11 +159,13 @@ struct feature_type
 
 	s16b unused;		/* Extra bytes (unused) */
 
-	byte f_attr;		/* Object "attribute" */
-	char f_char;		/* Object "symbol" */
 
-	byte z_attr;		/* The desired attr for this feature */
-	char z_char;		/* The desired char for this feature */
+	byte d_attr;		/* Default feature attribute */
+	char d_char;		/* Default feature character */
+
+
+	byte x_attr;		/* Desired feature attribute */
+	char x_char;		/* Desired feature character */
 };
 
 
@@ -179,10 +207,6 @@ struct object_kind
 	byte extra;			/* Something */
 
 
-	byte k_attr;		/* Standard object attribute */
-	char k_char;		/* Standard object character */
-
-
 	byte d_attr;		/* Default object attribute */
 	char d_char;		/* Default object character */
 
@@ -191,7 +215,7 @@ struct object_kind
 	char x_char;		/* Desired object character */
 
 
-	bool has_flavor;	/* This object has a flavor */
+	byte flavor;		/* Special object flavor (or zero) */
 
 	bool easy_know;		/* This object is always known (if aware) */
 
@@ -911,6 +935,7 @@ struct player_type
 	s16b inven_cnt;			/* Number of items in inventory */
 	s16b equip_cnt;			/* Number of items in equipment */
 
+	s16b target_set;		/* Target flag */
 	s16b target_who;		/* Target identity */
 	s16b target_row;		/* Target location */
 	s16b target_col;		/* Target location */

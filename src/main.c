@@ -470,6 +470,10 @@ int main(int argc, char *argv[])
 
 
 
+	/* Install "quit" hook */
+	quit_aux = quit_hook;
+
+
 	/* Drop privs (so X11 will work correctly) */
 	safe_setuid_drop();
 
@@ -500,7 +504,6 @@ int main(int argc, char *argv[])
 	}
 #endif
 
-
 #ifdef USE_GCU
 	/* Attempt to use the "main-gcu.c" support */
 	if (!done && (!mstr || (streq(mstr, "gcu"))))
@@ -528,67 +531,99 @@ int main(int argc, char *argv[])
 #endif
 
 
-#ifdef USE_IBM
-	/* Attempt to use the "main-ibm.c" support */
-	if (!done)
+#ifdef USE_DOS
+	/* Attempt to use the "main-dos.c" support */
+	if (!done && (!mstr || (streq(mstr, "dos"))))
 	{
-		extern errr init_ibm(void);
-		if (0 == init_ibm()) done = TRUE;
-		if (done) ANGBAND_SYS = "ibm";
+		extern errr init_dos(void);
+		if (0 == init_dos())
+		{
+			ANGBAND_SYS = "dos";
+			done = TRUE;
+		}
 	}
 #endif
 
+#ifdef USE_IBM
+	/* Attempt to use the "main-ibm.c" support */
+	if (!done && (!mstr || (streq(mstr, "ibm"))))
+	{
+		extern errr init_ibm(void);
+		if (0 == init_ibm())
+		{
+			ANGBAND_SYS = "ibm";
+			done = TRUE;
+		}
+	}
+#endif
+
+
 #ifdef USE_EMX
 	/* Attempt to use the "main-emx.c" support */
-	if (!done)
+	if (!done && (!mstr || (streq(mstr, "emx"))))
 	{
 		extern errr init_emx(void);
-		if (0 == init_emx()) done = TRUE;
-		if (done) ANGBAND_SYS = "emx";
+		if (0 == init_emx())
+		{
+			ANGBAND_SYS = "emx";
+			done = TRUE;
+		}
 	}
 #endif
 
 
 #ifdef USE_SLA
 	/* Attempt to use the "main-sla.c" support */
-	if (!done)
+	if (!done && (!mstr || (streq(mstr, "sla"))))
 	{
 		extern errr init_sla(void);
-		if (0 == init_sla()) done = TRUE;
-		if (done) ANGBAND_SYS = "sla";
+		if (0 == init_sla())
+		{
+			ANGBAND_SYS = "sla";
+			done = TRUE;
+		}
 	}
 #endif
 
 
 #ifdef USE_LSL
 	/* Attempt to use the "main-lsl.c" support */
-	if (!done)
+	if (!done && (!mstr || (streq(mstr, "lsl"))))
 	{
 		extern errr init_lsl(void);
-		if (0 == init_lsl()) done = TRUE;
-		if (done) ANGBAND_SYS = "lsl";
+		if (0 == init_lsl())
+		{
+			ANGBAND_SYS = "lsl";
+			done = TRUE;
+		}
 	}
 #endif
 
 
 #ifdef USE_AMI
 	/* Attempt to use the "main-ami.c" support */
-	if (!done)
+	if (!done && (!mstr || (streq(mstr, "ami"))))
 	{
 		extern errr init_ami(void);
-		if (0 == init_ami()) done = TRUE;
-		if (done) ANGBAND_SYS = "ami";
+		if (0 == init_ami())
+		{
+			ANGBAND_SYS = "ami";
+			done = TRUE;
+		}
 	}
 #endif
 
 
 #ifdef USE_VME
 	/* Attempt to use the "main-vme.c" support */
-	if (!done)
+	if (!done && (!mstr || (streq(mstr, "vme"))))
 	{
 		extern errr init_vme(void);
-		if (0 == init_vme()) done = TRUE;
-		if (done) ANGBAND_SYS = "vme";
+		if (0 == init_vme())
+		{
+			ANGBAND_SYS = "vme";
+			done = TRUE;
+		}
 	}
 #endif
 
@@ -601,11 +636,7 @@ int main(int argc, char *argv[])
 	if (!done) quit("Unable to prepare any 'display module'!");
 
 
-	/* Tell "quit()" to call "Term_nuke()" */
-	quit_aux = quit_hook;
-
-
-	/* If requested, display scores and quit */
+	/* Hack -- If requested, display scores and quit */
 	if (show_score > 0) display_scores(0, show_score);
 
 

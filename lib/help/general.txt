@@ -55,28 +55,26 @@ Angband 2.7.8 was the most recent official "stable" version.  However,
 it contained a few minor (non-fatal) bugs (see the web page).  You can
 give Angband 2.7.8 to your friends while they wait for Angband 2.8.2.
 
-Angband 2.8.2 will be the next official "stable" version.  A whole lot of
+Angband 2.8.3 will be the next official "stable" version.  A whole lot of
 changes have been made since Angband 2.7.8 was released, and there is now
 a web page listing all of the changes made in each version since that one.
-Angband 2.7.9v1, 2.7.9v2, 2.7.9v3, 2.7.9v4, 2.7.9v5, 2.7.9v6, 2.8.0, and
-2.8.1 are intended as "transition" versions leading up to Angband 2.8.2,
-and they are all still available (for now) at the ftp sites.  Note that
-Angband 2.8.2 is based on Angband 2.8.1, and will incorporate only those
-changes needed to fix problems encountered in Angband 2.8.1, so it should
-be available as soon as the public beta testing phase is complete.
+Angband 2.7.9v1, 2.7.9v2, 2.7.9v3, 2.7.9v4, 2.7.9v5, 2.7.9v6, 2.8.0, 2.8.1,
+and 2.8.2, are basically "transition" versions leading up to Angband 2.8.3,
+and they are all still available (for now) at the ftp sites.  Angband 2.8.3
+is based on all previous versions, and incorporates bug fixes in addition to
+new features.
 
-See the Official Angband Home Page "http://www.voicenet.com/~benh/Angband"
-for up to date information about the latest version of Angband, including
-a complete list of recent modifications and known bugs.
+See the Official Angband Home Page ("http://www.phial.com/angband/") for up
+to date information about the latest version of Angband, including a complete
+list of recent modifications and known bugs.
 
 You can obtain the latest source and pre-compiled executables from various
 places, try "ftp://ftp.cis.ksu.edu/pub/Games/Angband/Angband-2.7.x" and
 the developer site at "ftp://export.andrew.cmu.edu/angband".
 
-You can email compliments, complaints, bug reports, and presents to
-me ("benh@voicenet.com"), and you can post interesting experiences,
-general questions, compilation questions and code suggestions to the
-newsgroup ("rec.games.roguelike.angband").
+You can email compliments, complaints, suggestions, bug reports, and patches
+to me ("benh@phial.com"), and you can post interesting experiences and basic
+questions to the newsgroup ("rec.games.roguelike.angband").
 
 You may freely distribute the game, and its source, though you are bound
 not only by the existing copyright notice from 1984, but also whatever
@@ -97,6 +95,8 @@ spoiler files may be placed into the "lib/info" directory, or into a user
 specified external directory, to allow access via the "online help" system.
 
 Remember to tell all your friends about how much you like Angband...
+
+
 
 === A quick demonstration ===
 

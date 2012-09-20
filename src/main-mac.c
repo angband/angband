@@ -8,38 +8,19 @@
  * are included in all such copies.
  */
 
-/* Purpose: Simple support for MACINTOSH Angband */
 
 /*
- * This file should only be compiled with the "Macintosh" version
+ * This file helps Angband work with Macintosh computers.
  *
- * This file written by "Ben Harrison (benh@voicenet.com)".
+ * To use this file, use an appropriate "Makefile" or "Project File", which
+ * should define "MACINTOSH".
  *
- * Some code adapted from "MacAngband 2.6.1" by Keith Randall
+ * The official compilation uses the CodeWarrior Pro compiler.
  *
- * Maarten Hazewinkel (mmhazewi@cs.ruu.nl) provided some initial
- * suggestions for the PowerMac port.
+ * If you are never going to use "graphics" (especially if you are not
+ * compiling support for graphics anyway) then you can delete the "pict"
+ * resource with id "1001" with no dangerous side effects.
  *
- * Steve Linberg (slinberg@crocker.com) provided the code surrounded
- * by "USE_SFL_CODE".
- *
- * The graphics code is adapted from an extremely minimal subset of
- * the code from "Sprite World II", an amazing animation package.
- *
- * See "z-term.c" for info on the concept of the "generic terminal".
- *
- * Note that the "preference" file is now a simple text file called
- * "Angband preferences", which contains a version stamp, so that
- * obsolete preference files can be ignored.  This should probably
- * be replaced with a "structured" preference file of some kind.
- *
- * Note that "init1.c", "init2.c", "load1.c", "load2.c", and "birth.c"
- * should probably be "unloaded" as soon as they are no longer needed,
- * to save space, but I do not know how to do this.
- *
- * Stange bug -- The first "ClipRect()" call crashes if the user closes
- * all the windows, switches to another application, switches back, and
- * then re-opens the main window, for example, using "command-a".
  *
  * By default, this file assumes that you will be using a 68020 or better
  * machine, running System 7 and Color Quickdraw.  In fact, the game will
@@ -56,13 +37,33 @@
  * flag will be automatically defined, which will disable many of the
  * advanced features of the game itself, reducing the total memory usage.
  *
- * If you are never going to use "graphics" (especially if you are not
- * compiling support for graphics anyway) then you can delete the "pict"
- * resource with id "1001" with no dangerous side effects.
- */
-
-
-/*
+ *
+ * Note that the "preference" file is now a simple text file called
+ * "Angband Preferences", which contains a version stamp, so that
+ * obsolete preference files can be ignored.  This should probably
+ * be replaced with a "structured" preference file of some kind.
+ *
+ * Note that "init1.c", "init2.c", "load1.c", "load2.c", and "birth.c"
+ * should probably be "unloaded" as soon as they are no longer needed,
+ * to save space, but I do not know how to do this.  XXX XXX XXX
+ *
+ * Stange bug -- The first "ClipRect()" call crashes if the user closes
+ * all the windows, switches to another application, switches back, and
+ * re-opens the main window, for example, using "command-a".  XXX XXX XXX
+ *
+ *
+ * Initial framework (and most code) by Ben Harrison (benh@phial.com).
+ *
+ * Some code adapted from "MacAngband 2.6.1" by Keith Randall
+ *
+ * Initial PowerMac port by Maarten Hazewinkel (mmhazewi@cs.ruu.nl).
+ *
+ * Most "USE_SFL_CODE" code provided by Steve Linberg (slinberg@crocker.com).
+ *
+ * Most of the graphics code is adapted from an extremely minimal subset of
+ * the "Sprite World II" package, an amazing (and free) animation package.
+ *
+ *
  * Important Resources in the resource file:
  *
  *   FREF 130 = 'A271' / 'APPL' (application)
@@ -87,10 +88,8 @@
  *   MENU 130 = Edit (undo, -, cut, copy, paste, clear)
  *
  *   PICT 1001 = Graphics tile set
- */
-
-
-/*
+ *
+ *
  * File name patterns:
  *   all 'APEX' files have a filename of the form "*:apex:*" (?)
  *   all 'BONE' files have a filename of the form "*:bone:*" (?)
@@ -102,10 +101,8 @@
  * to avoid nasty file type information being spread all through the
  * rest of the code.  (?)  This might require adding hooks into the
  * "fd_open()" and "my_fopen()" functions in "util.c".  XXX XXX XXX
- */
-
-
-/*
+ *
+ *
  * Reasons for each header file:
  *
  *   angband.h = Angband header file
@@ -2217,7 +2214,7 @@ static void do_menu_file_new(void)
 	game_in_progress = 1;
 
 	/* Flush input */
-	flush();
+	Term_flush();
 
 	/* Play a game */
 	play_game(TRUE);
@@ -2517,7 +2514,7 @@ static void init_menubar(void)
 		AppendMenu(m, buf);
 
 		/* Command-Key shortcuts */
-		if (i < 8) SetItemCmd(m, i + 1, '0' + i);
+		if (i < 8) SetItemCmd(m, i + 1, I2D(i));
 	}
 
 
@@ -2582,6 +2579,10 @@ static void init_menubar(void)
 
 /*
  * Prepare the menus
+ *
+ * It is very important that the player not be allowed to "save" the game
+ * unless the "inkey_flag" variable is set, indicating that the game is
+ * waiting for a new command.  XXX XXX XXX
  */
 static void setup_menus(void)
 {
@@ -2636,15 +2637,20 @@ static void setup_menus(void)
 	}
 
 	/* Enable "save" */
-	if (initialized && character_generated)
+	if (initialized && character_generated && inkey_flag)
 	{
 		EnableItem(m, 5);
 	}
 
-	/* Enable "exit"/"quit" */
+	/* Enable "exit" */
 	if (TRUE)
 	{
 		EnableItem(m, 7);
+	}
+
+	/* Enable "quit" */
+	if (!initialized || !character_generated || inkey_flag)
+	{
 		EnableItem(m, 8);
 	}
 
@@ -2695,7 +2701,7 @@ static void setup_menus(void)
 	/* SetItemStyle(m, 2, extend); */
 
 	/* Active window */
-	if (td)
+	if (initialized && td)
 	{
 		/* Enable "bold" */
 		EnableItem(m, 1);
@@ -2740,7 +2746,7 @@ static void setup_menus(void)
 	}
 
 	/* Active window */
-	if (td)
+	if (initialized && td)
 	{
 		/* Analyze sizes */
 		for (i = 1; i <= n; i++)
@@ -2822,7 +2828,7 @@ static void setup_menus(void)
 	}
 
 	/* Active window */
-	if (td)
+	if (initialized && td)
 	{
 		/* Analyze sizes */
 		for (i = 1; i <= n; i++)
@@ -2856,7 +2862,7 @@ static void setup_menus(void)
 	}
 
 	/* Active window */
-	if (td)
+	if (initialized && td)
 	{
 		/* Analyze sizes */
 		for (i = 1; i <= n; i++)
@@ -3657,14 +3663,20 @@ static bool CheckEvents(bool wait)
 				Term_keypress(ch);
 			}
 
-			/* Hack -- normal "keypad keys" -> special keypress */
+			/* Keypad keys -> trigger plus simple keypress */
 			else if (!mc && !ms && !mo && !mx && (ck < 96))
 			{
 				/* Hack -- "enter" is confused */
 				if (ck == 76) ch = '\n';
 
-				/* Send control-caret as a trigger */
-				Term_keypress(30);
+				/* Begin special trigger */
+				Term_keypress(31);
+
+				/* Send the "keypad" modifier */
+				Term_keypress('K');
+
+				/* Terminate the trigger */
+				Term_keypress(13);
 
 				/* Send the "ascii" keypress */
 				Term_keypress(ch);
@@ -3673,7 +3685,7 @@ static bool CheckEvents(bool wait)
 			/* Bizarre key -> encoded keypress */
 			else if (ck <= 127)
 			{
-				/* Hack -- introduce with control-underscore */
+				/* Begin special trigger */
 				Term_keypress(31);
 
 				/* Send some modifier keys */
@@ -3682,11 +3694,11 @@ static bool CheckEvents(bool wait)
 				if (mo) Term_keypress('O');
 				if (mx) Term_keypress('X');
 
-				/* Hack -- Downshift and encode the keycode */
-				Term_keypress('0' + (ck - 64) / 10);
-				Term_keypress('0' + (ck - 64) % 10);
+				/* Downshift and encode the keycode */
+				Term_keypress(I2D((ck - 64) / 10));
+				Term_keypress(I2D((ck - 64) % 10));
 
-				/* Hack -- Terminate the sequence */
+				/* Terminate the trigger */
 				Term_keypress(13);
 			}
 
@@ -4399,4 +4411,5 @@ void main(void)
 	/* Hack -- Process Events Forever */
 	while (TRUE) CheckEvents(TRUE);
 }
+
 

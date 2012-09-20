@@ -67,8 +67,8 @@ bool character_dungeon;		/* The character has a dungeon */
 bool character_loaded;		/* The character was loaded from a savefile */
 bool character_saved;		/* The character was just saved to a savefile */
 
-bool character_icky;		/* The game is in an icky full screen mode */
-bool character_xtra;		/* The game is in an icky startup mode */
+s16b character_icky;		/* Depth of the game in special mode */
+s16b character_xtra;		/* Depth of the game in startup mode */
 
 u32b seed_flavor;		/* Hack -- consistent object colors */
 u32b seed_town;			/* Hack -- consistent town layout */
@@ -139,28 +139,6 @@ char savefile[1024];
 
 
 /*
- * Array of grids lit by player lite (see "cave.c")
- */
-s16b lite_n;
-byte lite_y[LITE_MAX];
-byte lite_x[LITE_MAX];
-
-/*
- * Array of grids viewable to the player (see "cave.c")
- */
-s16b view_n;
-byte view_y[VIEW_MAX];
-byte view_x[VIEW_MAX];
-
-/*
- * Array of grids for use by various functions (see "cave.c")
- */
-s16b temp_n;
-byte temp_y[TEMP_MAX];
-byte temp_x[TEMP_MAX];
-
-
-/*
  * Number of active macros.
  */
 s16b macro__num;
@@ -175,24 +153,14 @@ cptr *macro__pat;
  */
 cptr *macro__act;
 
+
 /*
- * Array of macro types [MACRO_MAX]
+ * The number of quarks (first quark is NULL)
  */
-bool *macro__cmd;
+s16b quark__num = 1;
 
 /*
- * Current macro action [1024]
- */
-char *macro__buf;
-
-
-/*
- * The number of quarks
- */
-s16b quark__num;
-
-/*
- * The pointers to the quarks [QUARK_MAX]
+ * The array[QUARK_MAX] of pointers to the quarks
  */
 cptr *quark__str;
 
@@ -218,24 +186,24 @@ u16b message__head;
 u16b message__tail;
 
 /*
- * The array of offsets, by index [MESSAGE_MAX]
+ * The array[MESSAGE_MAX] of offsets, by index
  */
 u16b *message__ptr;
 
 /*
- * The array of chars, by offset [MESSAGE_BUF]
+ * The array[MESSAGE_BUF] of chars, by offset
  */
 char *message__buf;
 
 
 /*
- * The array of window pointers
+ * The array[8] of window pointers
  */
 term *angband_term[8];
 
 
 /*
- * Standard window names
+ * The array[8] of window names (modifiable?)
  */
 char angband_term_name[8][16] =
 {
@@ -275,7 +243,7 @@ byte angband_color_table[256][4] =
 
 
 /*
- * Standard sound names
+ * Standard sound names (modifiable?)
  */
 char angband_sound_name[SOUND_MAX][16] =
 {
@@ -307,33 +275,37 @@ char angband_sound_name[SOUND_MAX][16] =
 };
 
 
-#ifdef MONSTER_FLOW
-
 /*
- * The array of cave grid flow "cost" values
+ * Array[VIEW_MAX] used by "update_view()"
  */
-byte cave_cost[DUNGEON_HGT][DUNGEON_WID];
+sint view_n = 0;
+u16b *view_g;
 
 /*
- * The array of cave grid flow "when" stamps
+ * Arrays[TEMP_MAX] used for various things
  */
-byte cave_when[DUNGEON_HGT][DUNGEON_WID];
+sint temp_n = 0;
+u16b *temp_g;
+byte *temp_y;
+byte *temp_x;
 
-#endif	/* MONSTER_FLOW */
 
 /*
- * The array of cave grid info flags
+ * Array[DUNGEON_HGT][256] of cave grid info flags (padded)
+ *
+ * This array is padded to a width of 256 to allow fast access to elements
+ * in the array via "grid" values (see the GRID() macros).
  */
-byte cave_info[DUNGEON_HGT][DUNGEON_WID];
+byte (*cave_info)[256];
 
 /*
- * The array of cave grid feature codes
+ * Array[DUNGEON_HGT][DUNGEON_WID] of cave grid feature codes
  */
-byte cave_feat[DUNGEON_HGT][DUNGEON_WID];
+byte (*cave_feat)[DUNGEON_WID];
 
 
 /*
- * The array of cave grid object indexes
+ * Array[DUNGEON_HGT][DUNGEON_WID] of cave grid object indexes
  *
  * Note that this array yields the index of the top object in the stack of
  * objects in a given grid, using the "next_o_idx" field in that object to
@@ -343,10 +315,10 @@ byte cave_feat[DUNGEON_HGT][DUNGEON_WID];
  * any object is in a grid, and relatively fast determination of which objects
  * are in a grid.
  */
-s16b cave_o_idx[DUNGEON_HGT][DUNGEON_WID];
+s16b (*cave_o_idx)[DUNGEON_WID];
 
 /*
- * The array of cave grid monster indexes
+ * Array[DUNGEON_HGT][DUNGEON_WID] of cave grid monster indexes
  *
  * Note that this array yields the index of the monster or player in a grid,
  * where negative numbers are used to represent the player, positive numbers
@@ -355,32 +327,46 @@ s16b cave_o_idx[DUNGEON_HGT][DUNGEON_WID];
  * the player structure, but provides extremely fast determination of which,
  * if any, monster or player is in any given grid.
  */
-s16b cave_m_idx[DUNGEON_HGT][DUNGEON_WID];
+s16b (*cave_m_idx)[DUNGEON_WID];
 
+
+#ifdef MONSTER_FLOW
 
 /*
- * The array of dungeon objects
+ * Array[DUNGEON_HGT][DUNGEON_WID] of cave grid flow "cost" values
  */
-object_type o_list[MAX_O_IDX];
+byte (*cave_cost)[DUNGEON_WID];
 
 /*
- * The array of dungeon monsters
+ * Array[DUNGEON_HGT][DUNGEON_WID] of cave grid flow "when" stamps
  */
-monster_type m_list[MAX_M_IDX];
+byte (*cave_when)[DUNGEON_WID];
+
+#endif	/* MONSTER_FLOW */
 
 /*
- * Hack -- Quest array
+ * Array[MAX_O_IDX] of dungeon objects
  */
-quest q_list[MAX_Q_IDX];
+object_type *o_list;
+
+/*
+ * Array[MAX_M_IDX] of dungeon monsters
+ */
+monster_type *m_list;
+
+/*
+ * Hack -- Array[MAX_Q_IDX] of quests
+ */
+quest *q_list;
 
 
 /*
- * The stores [MAX_STORES]
+ * Array[MAX_STORES] of stores
  */
 store_type *store;
 
 /*
- * The player's inventory [INVEN_TOTAL]
+ * Array[INVEN_TOTAL] of objects in the player's inventory
  */
 object_type *inventory;
 
@@ -391,7 +377,7 @@ object_type *inventory;
 s16b alloc_kind_size;
 
 /*
- * The entries in the "kind allocator table"
+ * The array[alloc_kind_size] of entries in the "kind allocator table"
  */
 alloc_entry *alloc_kind_table;
 
@@ -402,17 +388,17 @@ alloc_entry *alloc_kind_table;
 s16b alloc_race_size;
 
 /*
- * The entries in the "race allocator table"
+ * The array[alloc_race_size] of entries in the "race allocator table"
  */
 alloc_entry *alloc_race_table;
 
 
 /*
  * Specify attr/char pairs for visual special effects
- * Be sure to use "index & 0x7F" to avoid illegal access
+ * Be sure to use "index & 0xFF" to avoid illegal access
  */
-byte misc_to_attr[128];
-char misc_to_char[128];
+byte misc_to_attr[256];
+char misc_to_char[256];
 
 
 /*
@@ -421,20 +407,24 @@ char misc_to_char[128];
  */
 byte tval_to_attr[128];
 
+
 /*
- * Simple keymap method, see "init.c" and "cmd6.c".
- * Be sure to use "index & 0x7F" to avoid illegal access
+ * Current (or recent) macro action
  */
-byte keymap_cmds[128];
-byte keymap_dirs[128];
+char macro_buffer[1024];
+
+
+/*
+ * Keymaps for each "mode" associated with each keypress.
+ */
+cptr keymap_act[KEYMAP_MODES][256];
 
 
 
 /*** Player information ***/
 
 /*
- * Pointer to the player tables
- * (sex, race, class, magic)
+ * Pointer to the player tables (sex, race, class, magic)
  */
 player_sex *sp_ptr;
 player_race *rp_ptr;
@@ -501,7 +491,6 @@ header *e_head;
 ego_item_type *e_info;
 char *e_name;
 char *e_text;
-
 
 /*
  * The monster race arrays
@@ -631,4 +620,6 @@ bool (*get_mon_num_hook)(int r_idx);
  * Hack -- function hook to restrict "get_obj_num_prep()" function
  */
 bool (*get_obj_num_hook)(int k_idx);
+
+
 

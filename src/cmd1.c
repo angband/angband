@@ -14,6 +14,7 @@
 
 /*
  * Determine if the player "hits" a monster (normal combat).
+ *
  * Note -- Always miss 5%, always hit 5%, otherwise random.
  */
 bool test_hit_fire(int chance, int ac, int vis)
@@ -26,17 +27,14 @@ bool test_hit_fire(int chance, int ac, int vis)
 	/* Hack -- Instant miss or hit */
 	if (k < 10) return (k < 5);
 
-	/* Never hit */
-	if (chance <= 0) return (FALSE);
-
 	/* Invisible monsters are harder to hit */
-	if (!vis) chance = (chance + 1) / 2;
+	if (!vis) chance = chance / 2;
 
 	/* Power competes against armor */
-	if (rand_int(chance) < (ac * 3 / 4)) return (FALSE);
+	if ((chance > 0) && (rand_int(chance) >= (ac * 3 / 4))) return (TRUE);
 
-	/* Assume hit */
-	return (TRUE);
+	/* Assume miss */
+	return (FALSE);
 }
 
 
@@ -56,17 +54,14 @@ bool test_hit_norm(int chance, int ac, int vis)
 	/* Hack -- Instant miss or hit */
 	if (k < 10) return (k < 5);
 
-	/* Wimpy attack never hits */
-	if (chance <= 0) return (FALSE);
-
 	/* Penalize invisible targets */
-	if (!vis) chance = (chance + 1) / 2;
+	if (!vis) chance = chance / 2;
 
-	/* Power must defeat armor */
-	if (rand_int(chance) < (ac * 3 / 4)) return (FALSE);
+	/* Power competes against armor */
+	if ((chance > 0) && (rand_int(chance) >= (ac * 3 / 4))) return (TRUE);
 
-	/* Assume hit */
-	return (TRUE);
+	/* Assume miss */
+	return (FALSE);
 }
 
 
@@ -75,7 +70,7 @@ bool test_hit_norm(int chance, int ac, int vis)
  * Critical hits (from objects thrown by player)
  * Factor in item weight, total plusses, and player level.
  */
-s16b critical_shot(int weight, int plus, int dam)
+sint critical_shot(int weight, int plus, int dam)
 {
 	int i, k;
 
@@ -114,7 +109,7 @@ s16b critical_shot(int weight, int plus, int dam)
  *
  * Factor in weapon weight, total plusses, player level.
  */
-s16b critical_norm(int weight, int plus, int dam)
+sint critical_norm(int weight, int plus, int dam)
 {
 	int i, k;
 
@@ -167,7 +162,7 @@ s16b critical_norm(int weight, int plus, int dam)
  * Note that most brands and slays are x3, except Slay Animal (x2),
  * Slay Evil (x2), and Kill dragon (x5).
  */
-s16b tot_dam_aux(object_type *o_ptr, int tdam, monster_type *m_ptr)
+sint tot_dam_aux(object_type *o_ptr, int tdam, monster_type *m_ptr)
 {
 	int mult = 1;
 
@@ -522,7 +517,7 @@ void py_pickup(int pickup)
 			p_ptr->redraw |= (PR_GOLD);
 
 			/* Window stuff */
-			p_ptr->window |= (PW_SPELL | PW_PLAYER);
+			p_ptr->window |= (PW_PLAYER_0 | PW_PLAYER_1);
 
 			/* Delete the gold */
 			delete_object_idx(this_o_idx);
@@ -600,14 +595,11 @@ static int check_hit(int power)
 	/* Hack -- 5% hit, 5% miss */
 	if (k < 10) return (k < 5);
 
-	/* Paranoia -- No power */
-	if (power <= 0) return (FALSE);
-
 	/* Total armor */
 	ac = p_ptr->ac + p_ptr->to_a;
 
 	/* Power competes against Armor */
-	if (randint(power) > ((ac * 3) / 4)) return (TRUE);
+	if ((power > 0) && (randint(power) >= (ac * 3 / 4))) return (TRUE);
 
 	/* Assume miss */
 	return (FALSE);
@@ -1756,7 +1748,8 @@ static bool run_test(void)
 			row = py + ddy[new_dir];
 			col = px + ddx[new_dir];
 
-			/* Unknown grid or non-wall XXX XXX XXX cave_floor_bold(row, col)) */
+			/* Unknown grid or non-wall */
+			/* Was: cave_floor_bold(row, col) */
 			if (!(cave_info[row][col] & (CAVE_MARK)) ||
 			    (cave_feat[row][col] < FEAT_SECRET))
 			{
@@ -1786,7 +1779,8 @@ static bool run_test(void)
 			row = py + ddy[new_dir];
 			col = px + ddx[new_dir];
 
-			/* Unknown grid or non-wall XXX XXX XXX cave_floor_bold(row, col)) */
+			/* Unknown grid or non-wall */
+			/* Was: cave_floor_bold(row, col) */
 			if (!(cave_info[row][col] & (CAVE_MARK)) ||
 			    (cave_feat[row][col] < FEAT_SECRET))
 			{

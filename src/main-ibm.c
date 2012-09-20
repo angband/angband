@@ -8,44 +8,57 @@
  * are included in all such copies.
  */
 
-/* Purpose: Visual Display Support for "term.c", for the IBM */
-
 
 /*
- * Original code by "Billy Tanksley (wtanksle@ucsd.edu)"
- * Use "Makefile.ibm" to compile Angband using this file.
+ * This file helps Angband work with DOS computers.
  *
- * Support for DJGPP v2 by "Scott Egashira (egashira@u.washington.edu)"
+ * To use this file with DJGPP, use "Makefile.ibm", which defines "USE_IBM".
  *
- * Extensive modifications by "Ben Harrison (benh@voicenet.com)",
- * including "collation" of the Watcom C/C++ and DOS-286 patches.
+ * To use this file with Watcom C/C++, use "Makefile.wat", which defines
+ * "USE_IBM" and "USE_WAT".
  *
- * Watcom C/C++ changes by "David Boeren (akemi@netcom.com)"
- * Use "Makefile.wat" to compile this file with Watcom C/C++, and
- * be sure to define "USE_IBM" and "USE_WAT".
+ * To use this file with a DOS-286 machine, use "Makefile.286" (not ready),
+ * which defines "USE_IBM", "USE_WAT", "USE_286", and, depending on your
+ * compiler, perhaps "USE_CONIO".
  *
- * DOS-286 (conio.h) changes by (Roland Jay Roberts (jay@map.com)
- * Use "Makefile.286" (not ready) to compile this file for DOS-286,
- * and be sure to define "USE_IBM", "USE_WAT", and "USE_286".  Also,
- * depending on your compiler, you may need to define "USE_CONIO".
+ * See also "main-dos.c" and "main-win.c".
  *
- * True color palette support by "Mike Marcelais (mrmarcel@eos.ncsu.edu)",
- * with interface to the "color_table" array by Ben Harrison.
+ *
+ * The "lib/user/pref-ibm.prf" file contains keymaps, macro definitions,
+ * and/or color redefinitions.
+ *
+ * The "lib/user/font-ibm.prf" contains attr/char mappings for use with the
+ * normal DOS fonts.
+ *
+ * The "lib/user/graf-ibm.prf" contains attr/char mappings for use with the
+ * special "lib/xtra/angband.fnt" font file, which is activated by the "-g"
+ * flag.
+ *
  *
  * Both "shift" keys are treated as "identical", and all the modifier keys
  * (control, shift, alt) are ignored when used with "normal" keys, unless
  * they modify the underlying "ascii" value of the key.  You must use the
  * new "user pref files" to be able to interact with the keypad and such.
  *
- * The "lib/user/pref-ibm.prf" file contains macro definitions and possible
- * alternative color set definitions.  The "lib/user/font-ibm.prf" contains
- * attr/char mappings for walls and floors and such.
- *
  * Note the "Term_user_ibm()" function hook, which could allow the user
  * to interact with the "main-ibm.c" visual system.  Currently this hook
  * is unused, but, for example, it could allow the user to toggle "sound"
  * or "graphics" modes, or to select the number of screen rows, with the
  * extra screen rows being used for the mirror window.
+ *
+ *
+ * Initial framework (and some code) by Ben Harrison (benh@phial.com).
+ *
+ * Original code by Billy Tanksley (wtanksle@ucsd.edu).
+ *
+ * Support for DJGPP v2 by Scott Egashira (egashira@u.washington.edu).
+ *
+ * Support for DOS-286 (conio.h) by Roland Jay Roberts (jay@map.com).
+ *
+ * Support for Watcom C/C++ by David Boeren (akemi@netcom.com).
+ *
+ * True color palette support, and graphics support, by Mike Marcelais
+ * (michmarc@microsoft.com).
  */
 
 
@@ -68,13 +81,14 @@
 
 # include <conio.h>
 
-# ifndef USE_CONIO
+# ifdef USE_CONIO
+# else /* USE_CONIO */
 
 #  include <graph.h>
 
 #  define bioskey(C)	_bios_keybrd(C)
 
-# endif
+# endif /* USE_CONIO */
 
 # ifndef USE_286
 #  define int86(a,b,c)	int386(a,b,c)
@@ -206,14 +220,15 @@ static int saved_cur_high;
 static int saved_cur_low;
 
 
-#ifndef USE_CONIO
+#ifdef USE_CONIO
+#else /* USE_CONIO */
 
 /*
  * This array is used for "wiping" the screen
  */
 static byte wiper[160];
 
-#endif
+#endif /* USE_CONIO */
 
 
 /*
@@ -301,6 +316,11 @@ static byte ibm_color_simple[16] =
 static void activate_color_complex(void)
 {
 	int i;
+
+#if 0
+	/* Is this important? */
+	printf("%c%c%c%c",8,8,8,8);
+#endif
 
 #if 1
 
@@ -613,72 +633,77 @@ static errr Term_xtra_ibm(int n, int v)
 	{
 		/* Make a "bell" noise */
 		case TERM_XTRA_NOISE:
+		{
+			/* Make a bell noise */
+			(void)write(1, "\007", 1);
 
-		/* Make a bell noise */
-		(void)write(1, "\007", 1);
-
-		/* Success */
-		return (0);
+			/* Success */
+			return (0);
+		}
 
 		/* Set the cursor shape */
 		case TERM_XTRA_SHAPE:
+		{
+			/* Set cursor shape */
+			curs_set(v);
 
-		/* Set cursor shape */
-		curs_set(v);
-
-		/* Success */
-		return (0);
-
-#ifdef USE_VIRTUAL
+			/* Success */
+			return (0);
+		}
 
 		/* Flush one line of output */
 		case TERM_XTRA_FROSH:
+		{
+
+#ifdef USE_VIRTUAL
 
 # ifdef USE_WAT
 
-		/* Copy the virtual screen to the physical screen */
-		memcpy(PhysicalScreen + (v*160), VirtualScreen + (v*160), 160);
+			/* Copy the virtual screen to the physical screen */
+			memcpy(PhysicalScreen + (v*160), VirtualScreen + (v*160), 160);
 
 # else /* USE_WAT */
 
-		/* Apply the virtual screen to the physical screen */
-		ScreenUpdateLine(VirtualScreen + ((v*cols) << 1), v);
+			/* Apply the virtual screen to the physical screen */
+			ScreenUpdateLine(VirtualScreen + ((v*cols) << 1), v);
 
 # endif /* USE_WAT */
 
-		/* Success */
-		return (0);
-
 #endif /* USE_VIRTUAL */
+
+			/* Success */
+			return (0);
+		}
 
 		/* Clear the screen */
 		case TERM_XTRA_CLEAR:
+		{
 
 #ifdef USE_CONIO
 
-		/* Clear the screen */
-		clrscr();
+			/* Clear the screen */
+			clrscr();
 
 #else /* USE_CONIO */
 
-		/* Clear each line (virtual or physical) */
-		for (i = 0; i < rows; i++)
-		{
-			/* Clear the line */
-			memcpy((VirtualScreen + ((i*cols) << 1)), wiper, (cols << 1));
-		}
+			/* Clear each line (virtual or physical) */
+			for (i = 0; i < rows; i++)
+			{
+				/* Clear the line */
+				memcpy((VirtualScreen + ((i*cols) << 1)), wiper, (cols << 1));
+			}
 
 # ifdef USE_VIRTUAL
 
 #  ifdef USE_WAT
 
-		/* Copy the virtual screen to the physical screen */
-		memcpy(PhysicalScreen, VirtualScreen, 25*80*2);
+			/* Copy the virtual screen to the physical screen */
+			memcpy(PhysicalScreen, VirtualScreen, 25*80*2);
 
 #  else /* USE_WAT */
 
-		/* Erase the physical screen */
-		ScreenClear();
+			/* Erase the physical screen */
+			ScreenClear();
 
 #  endif /* USE_WAT */
 
@@ -686,38 +711,43 @@ static errr Term_xtra_ibm(int n, int v)
 
 #endif /* USE_CONIO */
 
-		/* Success */
-		return (0);
+			/* Success */
+			return (0);
+		}
 
 		/* Process events */
 		case TERM_XTRA_EVENT:
-
-		/* Process one event */
-		return (Term_xtra_ibm_event(v));
+		{
+			/* Process one event */
+			return (Term_xtra_ibm_event(v));
+		}
 
 		/* Flush events */
 		case TERM_XTRA_FLUSH:
+		{
+			/* Strip events */
+			while (!Term_xtra_ibm_event(FALSE)) /* loop */;
 
-		/* Strip events */
-		while (!Term_xtra_ibm_event(FALSE));
-
-		/* Success */
-		return (0);
+			/* Success */
+			return (0);
+		}
 
 		/* React to global changes */
 		case TERM_XTRA_REACT:
-
-		/* React to "color_table" changes */
-		return (Term_xtra_ibm_react());
+		{
+			/* React to "color_table" changes */
+			return (Term_xtra_ibm_react());
+		}
 
 		/* Delay for some milliseconds */
 		case TERM_XTRA_DELAY:
+		{
+			/* Delay if needed */
+			if (v > 0) delay(v);
 
-		/* Delay if needed */
-		if (v > 0) delay(v);
-
-		/* Success */
-		return (0);
+			/* Success */
+			return (0);
+		}
 	}
 
 	/* Unknown request */
@@ -942,20 +972,33 @@ static void Term_init_ibm(term *t)
  */
 static void Term_nuke_ibm(term *t)
 {
+
+#ifdef USE_WAT
+
+	/* Nothing */
+
+#else /* USE_WAT */
+
 	union REGS r;
+
+#endif /* USE_WAT */
 
 	/* Move the cursor to the bottom of the screen */
 	Term_curs_ibm(0, rows-1);
 
 #ifdef USE_WAT
+
 	/* Restore the original video mode */
 	_setvideomode(_DEFAULTMODE);
-#else
+
+#else /* USE_WAT */
+
 	/* Restore the original video mode */
 	r.h.ah = 0x00;
 	r.h.al = 0x03;
 	int86(0x10, &r, &r);
-#endif
+
+#endif /* USE_WAT */
 
 	/* Make the cursor visible */
 	curs_set(1);
@@ -1096,6 +1139,7 @@ extern void _farnspokeb(unsigned long offset, unsigned char value);
 
 #endif /* USE_WAT */
 
+
 /*
  * Since you cannot send 32bit pointers to a 16bit interrupt handler
  * and the video BIOS wants a (16bit) pointer to the font, we have
@@ -1107,9 +1151,7 @@ extern void _farnspokeb(unsigned long offset, unsigned char value);
  */
 void enable_graphic_font(const char *font)
 {
-	__dpmi_regs dblock =
-	{
-	{0}};
+	__dpmi_regs dblock = {{0}};
 
 	unsigned seg, sel, i;
 
@@ -1169,7 +1211,6 @@ errr init_ibm(void)
 {
 	int i;
 	int mode;
-	int rv, gv, bv;
 
 	term *t = &term_screen_body;
 
@@ -1183,6 +1224,23 @@ errr init_ibm(void)
 		r.h.bh = r.h.bl = 0x00;  /* 0x0000 = current Dos box */
 		int86(0x2F, &r, &r);       /* Call the Windows API */
 	};
+
+	/* Initialize "color_table" */
+	for (i = 0; i < 16; i++)
+	{
+		long rv, gv, bv;
+
+		/* Extract desired values */
+		rv = angband_color_table[i][1] >> 2;
+		gv = angband_color_table[i][2] >> 2;
+		bv = angband_color_table[i][3] >> 2;
+
+		/* Extract the "complex" codes */
+		ibm_color_complex[i] = ((rv) | (gv << 8) | (bv << 16));
+
+		/* Save the "simple" codes */
+		angband_color_table[i][0] = ibm_color_simple[i];
+	}
 
 #ifdef USE_WAT
 
@@ -1271,25 +1329,8 @@ errr init_ibm(void)
 
 #endif
 
-	/* Initialize "color_table" */
-	for (i = 0; i < 16; i++)
-	{
-		long rv, gv, bv;
-
-		/* Extract desired values */
-		rv = angband_color_table[i][1] >> 2;
-		gv = angband_color_table[i][2] >> 2;
-		bv = angband_color_table[i][3] >> 2;
-
-		/* Extract the "complex" codes */
-		ibm_color_complex[i] = ((rv) | (gv << 8) | (bv << 16));
-
-		/* Save the "simple" codes */
-		angband_color_table[i][0] = ibm_color_simple[i];
-	}
-
-
-#ifndef USE_CONIO
+#ifdef USE_CONIO
+#else /* USE_CONIO */
 
 	/* Build a "wiper line" */
 	for (i = 0; i < 80; i++)
@@ -1298,10 +1339,10 @@ errr init_ibm(void)
 		wiper[2*i] = ' ';
 
 		/* Black */
-		wiper[2*i+1] = 0;
+		wiper[2*i+1] = TERM_WHITE;
 	}
 
-#endif
+#endif /* USE_CONIO */
 
 
 #ifdef USE_VIRTUAL
@@ -1309,7 +1350,7 @@ errr init_ibm(void)
 	/* Make the virtual screen */
 	C_MAKE(VirtualScreen, rows * cols * 2, byte);
 
-#endif
+#endif /* USE_VIRTUAL */
 
 
 	/* Erase the screen */
@@ -1336,12 +1377,17 @@ errr init_ibm(void)
 	/* Initialize the term */
 	term_init(t, 80, 24, 256);
 
-#ifndef USE_CONIO
+#ifdef USE_CONIO
+#else /* USE_CONIO */
 
 	/* Always use "Term_pict()" */
 	t->always_pict = TRUE;
 
 #endif /* USE_CONIO */
+
+	/* Use "white space" to erase */
+	t->attr_blank = TERM_WHITE;
+	t->char_blank = ' ';
 
 	/* Prepare the init/nuke hooks */
 	t->init_hook = Term_init_ibm;
@@ -1366,4 +1412,5 @@ errr init_ibm(void)
 
 
 #endif /* USE_IBM */
+
 

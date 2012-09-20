@@ -38,9 +38,7 @@
  * Consider changing the "globe of invulnerability" code so that it
  * takes some form of "maximum damage to protect from" in addition to
  * the existing "number of turns to protect for", and where each hit
- * by a monster will reduce the shield by that amount.
- *
- * XXX XXX XXX
+ * by a monster will reduce the shield by that amount.  XXX XXX XXX
  */
 
 
@@ -1580,9 +1578,9 @@ static void rd_messages(void)
 /*
  * Read pre-2.8.0 dungeon info
  *
- * XXX XXX XXX Try to be more flexible about "too many monsters"
+ * Try to be more flexible about "too many monsters" XXX XXX
  *
- * Convert the old terrain objects into the new terrain features.
+ * Convert the old "flags" and "fake objects" into the new terrain features.
  */
 static errr rd_dungeon_aux(s16b depth, s16b py, s16b px)
 {
@@ -1603,30 +1601,27 @@ static errr rd_dungeon_aux(s16b depth, s16b py, s16b px)
 		/* Apply the RLE info */
 		for (i = count; i > 0; i--)
 		{
-			/* Hack -- Clear all the flags */
-			cave_info[y][x] = 0x00;
-
-			/* Hack -- Clear feature */
-			cave_feat[y][x] = FEAT_NONE;
+			byte info = 0x00;
+			byte feat = FEAT_FLOOR;
 
 			/* Old method */
 			if (older_than(2, 7, 5))
 			{
 				/* Extract the old "info" flags */
-				if ((tmp8u >> 4) & 0x1) cave_info[y][x] |= (CAVE_ROOM);
-				if ((tmp8u >> 5) & 0x1) cave_info[y][x] |= (CAVE_MARK);
-				if ((tmp8u >> 6) & 0x1) cave_info[y][x] |= (CAVE_GLOW);
+				if ((tmp8u >> 4) & 0x1) info |= (CAVE_ROOM);
+				if ((tmp8u >> 5) & 0x1) info |= (CAVE_MARK);
+				if ((tmp8u >> 6) & 0x1) info |= (CAVE_GLOW);
 
 				/* Hack -- process old style "light" */
-				if (cave_info[y][x] & (CAVE_GLOW))
+				if (info & (CAVE_GLOW))
 				{
-					cave_info[y][x] |= (CAVE_MARK);
+					info |= (CAVE_MARK);
 				}
 
 				/* Mega-Hack -- light all walls */
 				else if ((tmp8u & 0x0F) >= 12)
 				{
-					cave_info[y][x] |= (CAVE_GLOW);
+					info |= (CAVE_GLOW);
 				}
 
 				/* Process the "floor type" */
@@ -1635,27 +1630,27 @@ static errr rd_dungeon_aux(s16b depth, s16b py, s16b px)
 					/* Lite Room Floor */
 					case 2:
 					{
-						cave_info[y][x] |= (CAVE_GLOW);
+						info |= (CAVE_GLOW);
 					}
 
 					/* Dark Room Floor */
 					case 1:
 					{
-						cave_info[y][x] |= (CAVE_ROOM);
+						info |= (CAVE_ROOM);
 						break;
 					}
 
 					/* Lite Vault Floor */
 					case 4:
 					{
-						cave_info[y][x] |= (CAVE_GLOW);
+						info |= (CAVE_GLOW);
 					}
 
 					/* Dark Vault Floor */
 					case 3:
 					{
-						cave_info[y][x] |= (CAVE_ROOM);
-						cave_info[y][x] |= (CAVE_ICKY);
+						info |= (CAVE_ROOM);
+						info |= (CAVE_ICKY);
 						break;
 					}
 
@@ -1665,31 +1660,31 @@ static errr rd_dungeon_aux(s16b depth, s16b py, s16b px)
 						break;
 					}
 
-					/* Perma-wall (assume "solid") XXX XXX XXX */
+					/* Perma-wall */
 					case 15:
 					{
-						cave_feat[y][x] = FEAT_PERM_SOLID;
+						feat = FEAT_PERM_SOLID;
 						break;
 					}
 
-					/* Granite wall (assume "basic") XXX XXX XXX */
+					/* Granite wall */
 					case 12:
 					{
-						cave_feat[y][x] = FEAT_WALL_EXTRA;
+						feat = FEAT_WALL_EXTRA;
 						break;
 					}
 
 					/* Quartz vein */
 					case 13:
 					{
-						cave_feat[y][x] = FEAT_QUARTZ;
+						feat = FEAT_QUARTZ;
 						break;
 					}
 
 					/* Magma vein */
 					case 14:
 					{
-						cave_feat[y][x] = FEAT_MAGMA;
+						feat = FEAT_MAGMA;
 						break;
 					}
 				}
@@ -1699,26 +1694,32 @@ static errr rd_dungeon_aux(s16b depth, s16b py, s16b px)
 			else
 			{
 				/* The old "vault" flag */
-				if (tmp8u & (OLD_GRID_ICKY)) cave_info[y][x] |= (CAVE_ICKY);
+				if (tmp8u & (OLD_GRID_ICKY)) info |= (CAVE_ICKY);
 
 				/* The old "room" flag */
-				if (tmp8u & (OLD_GRID_ROOM)) cave_info[y][x] |= (CAVE_ROOM);
+				if (tmp8u & (OLD_GRID_ROOM)) info |= (CAVE_ROOM);
 
 				/* The old "glow" flag */
-				if (tmp8u & (OLD_GRID_GLOW)) cave_info[y][x] |= (CAVE_GLOW);
+				if (tmp8u & (OLD_GRID_GLOW)) info |= (CAVE_GLOW);
 
 				/* The old "mark" flag */
-				if (tmp8u & (OLD_GRID_MARK)) cave_info[y][x] |= (CAVE_MARK);
+				if (tmp8u & (OLD_GRID_MARK)) info |= (CAVE_MARK);
 
 				/* The old "wall" flags -- granite wall */
 				if ((tmp8u & (OLD_GRID_WALL_MASK)) ==
 				    OLD_GRID_WALL_GRANITE)
 				{
-					/* Permanent wall (assume "solid") XXX XXX XXX */
-					if (tmp8u & (OLD_GRID_PERM)) cave_feat[y][x] = FEAT_PERM_SOLID;
+					/* Permanent wall */
+					if (tmp8u & (OLD_GRID_PERM))
+					{
+						feat = FEAT_PERM_SOLID;
+					}
 
-					/* Normal wall (assume "basic") XXX XXX XXX */
-					else cave_feat[y][x] = FEAT_WALL_EXTRA;
+					/* Normal wall */
+					else
+					{
+						feat = FEAT_WALL_EXTRA;
+					}
 				}
 
 				/* The old "wall" flags -- quartz vein */
@@ -1726,7 +1727,7 @@ static errr rd_dungeon_aux(s16b depth, s16b py, s16b px)
 				         OLD_GRID_WALL_QUARTZ)
 				{
 					/* Assume no treasure */
-					cave_feat[y][x] = FEAT_QUARTZ;
+					feat = FEAT_QUARTZ;
 				}
 
 				/* The old "wall" flags -- magma vein */
@@ -1734,9 +1735,15 @@ static errr rd_dungeon_aux(s16b depth, s16b py, s16b px)
 				         OLD_GRID_WALL_MAGMA)
 				{
 					/* Assume no treasure */
-					cave_feat[y][x] = FEAT_MAGMA;
+					feat = FEAT_MAGMA;
 				}
 			}
+
+			/* Save the info */
+			cave_info[y][x] = info;
+
+			/* Save the feat */
+			cave_set_feat(y, x, feat);
 
 			/* Advance/Wrap */
 			if (++x >= DUNGEON_WID)
@@ -1792,6 +1799,10 @@ static errr rd_dungeon_aux(s16b depth, s16b py, s16b px)
 		/* Read the item */
 		rd_item(i_ptr);
 
+		/* Location */
+		y = i_ptr->iy;
+		x = i_ptr->ix;
+
 
 		/* Skip dead objects */
 		if (!i_ptr->k_idx) continue;
@@ -1800,7 +1811,7 @@ static errr rd_dungeon_aux(s16b depth, s16b py, s16b px)
 		/* Hack -- convert old "dungeon" objects */
 		if ((i_ptr->k_idx >= 445) && (i_ptr->k_idx <= 479))
 		{
-			int k = 0;
+			byte feat = FEAT_FLOOR;
 
 			bool invis = FALSE;
 
@@ -1813,7 +1824,7 @@ static errr rd_dungeon_aux(s16b depth, s16b py, s16b px)
 				/* Rubble */
 				case 445:
 				{
-					k = FEAT_RUBBLE;
+					feat = FEAT_RUBBLE;
 					break;
 				}
 
@@ -1823,13 +1834,13 @@ static errr rd_dungeon_aux(s16b depth, s16b py, s16b px)
 					/* Broken door */
 					if (i_ptr->pval)
 					{
-						k = FEAT_BROKEN;
+						feat = FEAT_BROKEN;
 					}
 
 					/* Open door */
 					else
 					{
-						k = FEAT_OPEN;
+						feat = FEAT_OPEN;
 					}
 
 					break;
@@ -1841,17 +1852,17 @@ static errr rd_dungeon_aux(s16b depth, s16b py, s16b px)
 					/* Jammed door */
 					if (i_ptr->pval < 0)
 					{
-						k = (0 - i_ptr->pval) / 2;
-						if (k > 7) k = 7;
-						k = FEAT_DOOR_HEAD + 0x08 + k;
+						feat = (0 - i_ptr->pval) / 2;
+						if (feat > 0x07) feat = 0x07;
+						feat = FEAT_DOOR_HEAD + 0x08 + feat;
 					}
 
 					/* Locked door */
 					else
 					{
-						k = i_ptr->pval / 2;
-						if (k > 7) k = 7;
-						k = FEAT_DOOR_HEAD + k;
+						feat = i_ptr->pval / 2;
+						if (feat > 0x07) feat = 0x07;
+						feat = FEAT_DOOR_HEAD + feat;
 					}
 
 					break;
@@ -1860,219 +1871,219 @@ static errr rd_dungeon_aux(s16b depth, s16b py, s16b px)
 				/* Secret Door */
 				case 448:
 				{
-					k = FEAT_SECRET;
+					feat = FEAT_SECRET;
 					break;
 				}
 
 				/* Up Stairs */
 				case 449:
 				{
-					k = FEAT_LESS;
+					feat = FEAT_LESS;
 					break;
 				}
 
 				/* Down Stairs */
 				case 450:
 				{
-					k = FEAT_MORE;
+					feat = FEAT_MORE;
 					break;
 				}
 
 				/* Store '1' */
 				case 451:
 				{
-					k = FEAT_SHOP_HEAD + 0;
+					feat = FEAT_SHOP_HEAD + 0x00;
 					break;
 				}
 
 				/* Store '2' */
 				case 452:
 				{
-					k = FEAT_SHOP_HEAD + 1;
+					feat = FEAT_SHOP_HEAD + 0x01;
 					break;
 				}
 
 				/* Store '3' */
 				case 453:
 				{
-					k = FEAT_SHOP_HEAD + 2;
+					feat = FEAT_SHOP_HEAD + 0x02;
 					break;
 				}
 
 				/* Store '4' */
 				case 454:
 				{
-					k = FEAT_SHOP_HEAD + 3;
+					feat = FEAT_SHOP_HEAD + 0x03;
 					break;
 				}
 
 				/* Store '5' */
 				case 455:
 				{
-					k = FEAT_SHOP_HEAD + 4;
+					feat = FEAT_SHOP_HEAD + 0x04;
 					break;
 				}
 
 				/* Store '6' */
 				case 456:
 				{
-					k = FEAT_SHOP_HEAD + 5;
+					feat = FEAT_SHOP_HEAD + 0x05;
 					break;
 				}
 
 				/* Store '7' */
 				case 457:
 				{
-					k = FEAT_SHOP_HEAD + 6;
+					feat = FEAT_SHOP_HEAD + 0x06;
 					break;
 				}
 
 				/* Store '8' */
 				case 458:
 				{
-					k = FEAT_SHOP_HEAD + 7;
+					feat = FEAT_SHOP_HEAD + 0x07;
 					break;
 				}
 
 				/* Glyph of Warding */
 				case 459:
 				{
-					k = FEAT_GLYPH;
+					feat = FEAT_GLYPH;
 					break;
 				}
 
 				/* Trap -- Pit */
 				case 460:
 				{
-					k = FEAT_TRAP_HEAD + 0x01;
+					feat = FEAT_TRAP_HEAD + 0x01;
 					break;
 				}
 
 				/* Trap -- Spiked Pit */
 				case 461:
 				{
-					k = FEAT_TRAP_HEAD + 0x02;
+					feat = FEAT_TRAP_HEAD + 0x02;
 					break;
 				}
 
 				/* Trap -- Trap Door */
 				case 462:
 				{
-					k = FEAT_TRAP_HEAD + 0x00;
+					feat = FEAT_TRAP_HEAD + 0x00;
 					break;
 				}
 
 				/* Trap -- Gas -- Sleep */
 				case 463:
 				{
-					k = FEAT_TRAP_HEAD + 0x0F;
+					feat = FEAT_TRAP_HEAD + 0x0F;
 					break;
 				}
 
 				/* Trap -- Loose rock */
 				case 464:
 				{
-					k = FEAT_TRAP_HEAD + 0x01;
+					feat = FEAT_TRAP_HEAD + 0x01;
 					break;
 				}
 
 				/* Trap -- Dart -- lose str */
 				case 465:
 				{
-					k = FEAT_TRAP_HEAD + 0x09;
+					feat = FEAT_TRAP_HEAD + 0x09;
 					break;
 				}
 
 				/* Trap -- Teleport */
 				case 466:
 				{
-					k = FEAT_TRAP_HEAD + 0x05;
+					feat = FEAT_TRAP_HEAD + 0x05;
 					break;
 				}
 
 				/* Trap -- Falling rock */
 				case 467:
 				{
-					k = FEAT_TRAP_HEAD + 0x03;
+					feat = FEAT_TRAP_HEAD + 0x03;
 					break;
 				}
 
 				/* Trap -- Dart -- lose dex */
 				case 468:
 				{
-					k = FEAT_TRAP_HEAD + 0x0A;
+					feat = FEAT_TRAP_HEAD + 0x0A;
 					break;
 				}
 
 				/* Trap -- Summoning */
 				case 469:
 				{
-					k = FEAT_TRAP_HEAD + 0x04;
+					feat = FEAT_TRAP_HEAD + 0x04;
 					break;
 				}
 
 				/* Trap -- Fire */
 				case 470:
 				{
-					k = FEAT_TRAP_HEAD + 0x06;
+					feat = FEAT_TRAP_HEAD + 0x06;
 					break;
 				}
 
 				/* Trap -- Acid */
 				case 471:
 				{
-					k = FEAT_TRAP_HEAD + 0x07;
+					feat = FEAT_TRAP_HEAD + 0x07;
 					break;
 				}
 
 				/* Trap -- Gas -- poison */
 				case 472:
 				{
-					k = FEAT_TRAP_HEAD + 0x0E;
+					feat = FEAT_TRAP_HEAD + 0x0E;
 					break;
 				}
 
 				/* Trap -- Gas -- blind */
 				case 473:
 				{
-					k = FEAT_TRAP_HEAD + 0x0C;
+					feat = FEAT_TRAP_HEAD + 0x0C;
 					break;
 				}
 
 				/* Trap -- Gas -- confuse */
 				case 474:
 				{
-					k = FEAT_TRAP_HEAD + 0x0D;
+					feat = FEAT_TRAP_HEAD + 0x0D;
 					break;
 				}
 
 				/* Trap -- Dart -- slow */
 				case 475:
 				{
-					k = FEAT_TRAP_HEAD + 0x08;
+					feat = FEAT_TRAP_HEAD + 0x08;
 					break;
 				}
 
 				/* Trap -- Dart -- lose con */
 				case 476:
 				{
-					k = FEAT_TRAP_HEAD + 0x0B;
+					feat = FEAT_TRAP_HEAD + 0x0B;
 					break;
 				}
 
 				/* Trap -- Arrow */
 				case 477:
 				{
-					k = FEAT_TRAP_HEAD + 0x08;
+					feat = FEAT_TRAP_HEAD + 0x08;
 					break;
 				}
 			}
 
 			/* Hack -- handle "invisible traps" */
-			if (invis) k = FEAT_INVIS;
+			if (invis) feat = FEAT_INVIS;
 
 			/* Set new bits */
-			cave_feat[i_ptr->iy][i_ptr->ix] = k;
+			cave_set_feat(y, x, feat);
 
 			/* Skip it */
 			continue;
@@ -2083,11 +2094,11 @@ static errr rd_dungeon_aux(s16b depth, s16b py, s16b px)
 		if (i_ptr->tval == TV_GOLD)
 		{
 			/* Quartz + treasure */
-			if ((cave_feat[i_ptr->iy][i_ptr->ix] == FEAT_QUARTZ) ||
-			    (cave_feat[i_ptr->iy][i_ptr->ix] == FEAT_MAGMA))
+			if ((cave_feat[y][x] == FEAT_QUARTZ) ||
+			    (cave_feat[y][x] == FEAT_MAGMA))
 			{
 				/* Add known treasure */
-				cave_feat[i_ptr->iy][i_ptr->ix] += 0x04;
+				cave_set_feat(y, x, cave_feat[y][x] + 0x04);
 
 				/* Done */
 				continue;
@@ -2096,7 +2107,7 @@ static errr rd_dungeon_aux(s16b depth, s16b py, s16b px)
 
 
 		/* Give the item to the floor */
-		if (!floor_carry(i_ptr->iy, i_ptr->ix, i_ptr))
+		if (!floor_carry(y, x, i_ptr))
 		{
 			note(format("Cannot place object %d!", o_max));
 			return (152);
@@ -2151,16 +2162,6 @@ static errr rd_dungeon_aux(s16b depth, s16b py, s16b px)
 		}
 	}
 
-
-	/* Hack -- clean up the dungeon */
-	for (y = 0; y < DUNGEON_HGT; y++)
-	{
-		for (x = 0; x < DUNGEON_WID; x++)
-		{
-			/* Hack -- convert nothing-ness into floors */
-			if (!cave_feat[y][x]) cave_feat[y][x] = FEAT_FLOOR;
-		}
-	}
 
 
 	/* The dungeon is ready */
@@ -2282,7 +2283,7 @@ static errr rd_dungeon(void)
 		for (i = count; i > 0; i--)
 		{
 			/* Extract "feat" */
-			cave_feat[y][x] = tmp8u;
+			cave_set_feat(y, x, tmp8u);
 
 			/* Advance/Wrap */
 			if (++x >= DUNGEON_WID)

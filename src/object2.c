@@ -1405,10 +1405,10 @@ void object_prep(object_type *o_ptr, int k_idx)
  * we simply round the results of division in such a way as to "average" the
  * correct floating point value.
  *
- * This function has been changed.  It uses "randnor()" to choose values from
- * a normal distribution, whose mean moves from zero towards the max as the
- * level increases, and whose standard deviation is equal to 1/4 of the max,
- * and whose values are forced to lie between zero and the max, inclusive.
+ * This function has been changed.  It uses "Rand_normal()" to choose values
+ * from a normal distribution, whose mean moves from zero towards the max as
+ * the level increases, and whose standard deviation is equal to 1/4 of the
+ * max, and whose values are forced to lie between zero and the max, inclusive.
  *
  * Since the "level" rarely passes 100 before Morgoth is dead, it is very
  * rare to get the "full" enchantment on an object, even a deep levels.
@@ -1467,7 +1467,7 @@ static s16b m_bonus(int max, int level)
 
 
 	/* Choose an "interesting" value */
-	value = randnor(bonus, stand);
+	value = Rand_normal(bonus, stand);
 
 	/* Enforce the minimum value */
 	if (value < 0) return (0);
@@ -1546,7 +1546,7 @@ static bool make_artifact_special(object_type *o_ptr)
 		/* Cannot make an artifact twice */
 		if (a_ptr->cur_num) continue;
 
-		/* XXX XXX Enforce minimum "depth" (loosely) */
+		/* Enforce minimum "depth" (loosely) */
 		if (a_ptr->level > p_ptr->depth)
 		{
 			/* Acquire the "out-of-depth factor" */
@@ -1557,12 +1557,12 @@ static bool make_artifact_special(object_type *o_ptr)
 		}
 
 		/* Artifact "rarity roll" */
-		if (rand_int(a_ptr->rarity) != 0) return (0);
+		if (rand_int(a_ptr->rarity) != 0) continue;
 
 		/* Find the base object */
 		k_idx = lookup_kind(a_ptr->tval, a_ptr->sval);
 
-		/* XXX XXX Enforce minimum "object" level (loosely) */
+		/* Enforce minimum "object" level (loosely) */
 		if (k_info[k_idx].level > object_level)
 		{
 			/* Acquire the "out-of-depth factor" */
@@ -1956,7 +1956,11 @@ static void a_m_aux_1(object_type *o_ptr, int level, int power)
 				}
 
 				/* Hack -- Super-charge the damage dice */
-				while (rand_int(10L * o_ptr->dd * o_ptr->ds) == 0) o_ptr->dd++;
+				while ((o_ptr->dd * o_ptr->ds > 0) &&
+				       (rand_int(10L * o_ptr->dd * o_ptr->ds) == 0))
+				{
+					o_ptr->dd++;
+				}
 
 				/* Hack -- Lower the damage dice */
 				if (o_ptr->dd > 9) o_ptr->dd = 9;
@@ -2092,7 +2096,11 @@ static void a_m_aux_1(object_type *o_ptr, int level, int power)
 				}
 
 				/* Hack -- super-charge the damage dice */
-				while (rand_int(10L * o_ptr->dd * o_ptr->ds) == 0) o_ptr->dd++;
+				while ((o_ptr->dd * o_ptr->ds > 0) &&
+				       (rand_int(10L * o_ptr->dd * o_ptr->ds) == 0))
+				{
+					o_ptr->dd++;
+				}
 
 				/* Hack -- restrict the damage dice */
 				if (o_ptr->dd > 9) o_ptr->dd = 9;
@@ -2952,13 +2960,13 @@ static void a_m_aux_4(object_type *o_ptr, int level, int power)
 			/* Hack -- Torches -- random fuel */
 			if (o_ptr->sval == SV_LITE_TORCH)
 			{
-				if (o_ptr->pval) o_ptr->pval = randint(o_ptr->pval);
+				if (o_ptr->pval > 0) o_ptr->pval = randint(o_ptr->pval);
 			}
 
 			/* Hack -- Lanterns -- random fuel */
 			if (o_ptr->sval == SV_LITE_LANTERN)
 			{
-				if (o_ptr->pval) o_ptr->pval = randint(o_ptr->pval);
+				if (o_ptr->pval > 0) o_ptr->pval = randint(o_ptr->pval);
 			}
 
 			break;
@@ -3055,23 +3063,23 @@ void apply_magic(object_type *o_ptr, int lev, bool okay, bool good, bool great)
 	power = 0;
 
 	/* Roll for "good" */
-	if (good || magik(f1))
+	if (good || (rand_int(100) < f1))
 	{
 		/* Assume "good" */
 		power = 1;
 
 		/* Roll for "great" */
-		if (great || magik(f2)) power = 2;
+		if (great || (rand_int(100) < f2)) power = 2;
 	}
 
 	/* Roll for "cursed" */
-	else if (magik(f1))
+	else if (rand_int(100) < f1)
 	{
 		/* Assume "cursed" */
 		power = -1;
 
 		/* Roll for "broken" */
-		if (magik(f2)) power = -2;
+		if (rand_int(100) < f2) power = -2;
 	}
 
 
@@ -3226,24 +3234,24 @@ void apply_magic(object_type *o_ptr, int lev, bool okay, bool good, bool great)
 		if (cursed_p(o_ptr) || broken_p(o_ptr))
 		{
 			/* Hack -- obtain bonuses */
-			if (e_ptr->max_to_h) o_ptr->to_h -= randint(e_ptr->max_to_h);
-			if (e_ptr->max_to_d) o_ptr->to_d -= randint(e_ptr->max_to_d);
-			if (e_ptr->max_to_a) o_ptr->to_a -= randint(e_ptr->max_to_a);
+			if (e_ptr->max_to_h > 0) o_ptr->to_h -= randint(e_ptr->max_to_h);
+			if (e_ptr->max_to_d > 0) o_ptr->to_d -= randint(e_ptr->max_to_d);
+			if (e_ptr->max_to_a > 0) o_ptr->to_a -= randint(e_ptr->max_to_a);
 
 			/* Hack -- obtain pval */
-			if (e_ptr->max_pval) o_ptr->pval -= randint(e_ptr->max_pval);
+			if (e_ptr->max_pval > 0) o_ptr->pval -= randint(e_ptr->max_pval);
 		}
 
 		/* Hack -- apply extra bonuses if needed */
 		else
 		{
 			/* Hack -- obtain bonuses */
-			if (e_ptr->max_to_h) o_ptr->to_h += randint(e_ptr->max_to_h);
-			if (e_ptr->max_to_d) o_ptr->to_d += randint(e_ptr->max_to_d);
-			if (e_ptr->max_to_a) o_ptr->to_a += randint(e_ptr->max_to_a);
+			if (e_ptr->max_to_h > 0) o_ptr->to_h += randint(e_ptr->max_to_h);
+			if (e_ptr->max_to_d > 0) o_ptr->to_d += randint(e_ptr->max_to_d);
+			if (e_ptr->max_to_a > 0) o_ptr->to_a += randint(e_ptr->max_to_a);
 
 			/* Hack -- obtain pval */
-			if (e_ptr->max_pval) o_ptr->pval += randint(e_ptr->max_pval);
+			if (e_ptr->max_pval > 0) o_ptr->pval += randint(e_ptr->max_pval);
 		}
 
 		/* Hack -- apply rating bonus */
@@ -3978,7 +3986,7 @@ void inven_item_describe(int item)
 	object_desc(o_name, o_ptr, TRUE, 3);
 
 	/* Print a message */
-	msg_format("You have %s.", o_name);
+	msg_format("You have %s (%c).", o_name, index_to_label(item));
 }
 
 
@@ -4077,7 +4085,7 @@ void inven_item_optimize(int item)
 		p_ptr->update |= (PU_MANA);
 
 		/* Window stuff */
-		p_ptr->window |= (PW_EQUIP | PW_SPELL | PW_PLAYER);
+		p_ptr->window |= (PW_EQUIP | PW_PLAYER_0 | PW_PLAYER_1);
 	}
 }
 
@@ -4734,19 +4742,22 @@ s16b spell_chance(int spell)
 	/* Extract the minimum failure rate */
 	minfail = adj_mag_fail[p_ptr->stat_ind[mp_ptr->spell_stat]];
 
-	/* Non mage/priest characters never get too good */
-	if ((p_ptr->pclass != 1) && (p_ptr->pclass != 2))
+	/* Non mage/priest characters never get better than 5 percent */
+	if ((p_ptr->pclass != CLASS_MAGE) && (p_ptr->pclass != CLASS_PRIEST))
 	{
 		if (minfail < 5) minfail = 5;
 	}
 
-	/* Hack -- Priest prayer penalty for "edged" weapons  -DGK */
-	if ((p_ptr->pclass == 2) && (p_ptr->icky_wield)) chance += 25;
+	/* Priest prayer penalty for "edged" weapons (before minfail) */
+	if ((p_ptr->pclass == CLASS_PRIEST) && (p_ptr->icky_wield))
+	{
+		chance += 25;
+	}
 
 	/* Minimum failure rate */
 	if (chance < minfail) chance = minfail;
 
-	/* Stunning makes spells harder */
+	/* Stunning makes spells harder (after minfail) */
 	if (p_ptr->stun > 50) chance += 25;
 	else if (p_ptr->stun) chance += 15;
 
@@ -5046,4 +5057,5 @@ void display_koff(int k_idx)
 		print_spells(spells, num, 2, 0);
 	}
 }
+
 

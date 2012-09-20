@@ -15,10 +15,10 @@
 /*
  * Set "p_ptr->blind", notice observable changes
  *
- * Note the use of "PU_UN_LITE" and "PU_UN_VIEW", which is needed to
- * memorize any terrain features which suddenly become "visible".
- * Note that blindness is currently the only thing which can affect
- * "player_can_see_bold()".
+ * Note the use of "PU_FORGET_VIEW" and "PU_UPDATE_VIEW", which are needed
+ * because "p_ptr->blind" affects the "CAVE_SEEN" flag, and "PU_MONSTERS",
+ * because "p_ptr->blind" affects monster visibility, and "PU_MAP", because
+ * "p_ptr->blind" affects the way in which many cave grids are displayed.
  */
 bool set_blind(int v)
 {
@@ -56,14 +56,8 @@ bool set_blind(int v)
 	/* Disturb */
 	if (disturb_state) disturb(0, 0);
 
-	/* Forget stuff */
-	p_ptr->update |= (PU_UN_VIEW | PU_UN_LITE);
-
-	/* Update stuff */
-	p_ptr->update |= (PU_VIEW | PU_LITE);
-
-	/* Update the monsters */
-	p_ptr->update |= (PU_MONSTERS);
+	/* Fully update the visuals */
+	p_ptr->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
 
 	/* Redraw map */
 	p_ptr->redraw |= (PR_MAP);
@@ -285,7 +279,8 @@ bool set_paralyzed(int v)
 /*
  * Set "p_ptr->image", notice observable changes
  *
- * Note that we must redraw the map when hallucination changes.
+ * Note the use of "PR_MAP", which is needed because "p_ptr->image" affects
+ * the way in which monsters, objects, and some normal grids, are displayed.
  */
 bool set_image(int v)
 {
@@ -325,9 +320,6 @@ bool set_image(int v)
 
 	/* Redraw map */
 	p_ptr->redraw |= (PR_MAP);
-
-	/* Update monsters */
-	p_ptr->update |= (PU_MONSTERS);
 
 	/* Window stuff */
 	p_ptr->window |= (PW_OVERHEAD);
@@ -740,6 +732,9 @@ bool set_invuln(int v)
 
 /*
  * Set "p_ptr->tim_invis", notice observable changes
+ *
+ * Note the use of "PU_MONSTERS", which is needed because
+ * "p_ptr->tim_image" affects monster visibility.
  */
 bool set_tim_invis(int v)
 {
@@ -780,7 +775,7 @@ bool set_tim_invis(int v)
 	/* Recalculate bonuses */
 	p_ptr->update |= (PU_BONUS);
 
-	/* Update the monsters */
+	/* Update the monsters XXX */
 	p_ptr->update |= (PU_MONSTERS);
 
 	/* Handle stuff */
@@ -793,6 +788,9 @@ bool set_tim_invis(int v)
 
 /*
  * Set "p_ptr->tim_infra", notice observable changes
+ *
+ * Note the use of "PU_MONSTERS", which is needed because because
+ * "p_ptr->tim_infra" affects monster visibility.
  */
 bool set_tim_infra(int v)
 {
@@ -833,7 +831,7 @@ bool set_tim_infra(int v)
 	/* Recalculate bonuses */
 	p_ptr->update |= (PU_BONUS);
 
-	/* Update the monsters */
+	/* Update the monsters XXX */
 	p_ptr->update |= (PU_MONSTERS);
 
 	/* Handle stuff */
@@ -1698,7 +1696,7 @@ void check_experience(void)
 		p_ptr->redraw |= (PR_LEV | PR_TITLE);
 
 		/* Window stuff */
-		p_ptr->window |= (PW_SPELL | PW_PLAYER);
+		p_ptr->window |= (PW_PLAYER_0 | PW_PLAYER_1);
 
 		/* Handle stuff */
 		handle_stuff();
@@ -1729,7 +1727,7 @@ void check_experience(void)
 		p_ptr->redraw |= (PR_LEV | PR_TITLE);
 
 		/* Window stuff */
-		p_ptr->window |= (PW_SPELL | PW_PLAYER);
+		p_ptr->window |= (PW_PLAYER_0 | PW_PLAYER_1);
 
 		/* Handle stuff */
 		handle_stuff();
@@ -1779,7 +1777,7 @@ void lose_exp(s32b amount)
  * Hack -- Return the "automatic coin type" of a monster race
  * Used to allocate proper treasure when "Creeping coins" die
  *
- * XXX XXX XXX Note the use of actual "monster names"
+ * Note the use of actual "monster names".  XXX XXX XXX
  */
 static int get_coin_type(monster_race *r_ptr)
 {
@@ -1953,7 +1951,7 @@ void monster_death(int m_idx)
 			/* Make some gold */
 			if (!make_gold(i_ptr)) continue;
 
-			/* XXX XXX XXX */
+			/* Assume seen XXX XXX XXX */
 			dump_gold++;
 		}
 
@@ -1963,7 +1961,7 @@ void monster_death(int m_idx)
 			/* Make an object */
 			if (!make_object(i_ptr, good, great)) continue;
 
-			/* XXX XXX XXX */
+			/* Assume seen XXX XXX XXX */
 			dump_item++;
 		}
 
@@ -2016,7 +2014,7 @@ void monster_death(int m_idx)
 			y = ny; x = nx;
 		}
 
-		/* XXX XXX XXX */
+		/* Destroy any objects */
 		delete_object(y, x);
 
 		/* Explain the staircase */
@@ -2025,8 +2023,11 @@ void monster_death(int m_idx)
 		/* Create stairs down */
 		cave_set_feat(y, x, FEAT_MORE);
 
-		/* Remember to update everything */
-		p_ptr->update |= (PU_VIEW | PU_LITE | PU_FLOW | PU_MONSTERS);
+		/* Update the visuals */
+		p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
+
+		/* Fully update the flow */
+		p_ptr->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);
 	}
 
 
@@ -2226,7 +2227,7 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note)
 			/* Hack -- note fear */
 			(*fear) = TRUE;
 
-			/* XXX XXX XXX Hack -- Add some timed fear */
+			/* Hack -- Add some timed fear */
 			m_ptr->monfear = (randint(10) +
 			                  (((dam >= m_ptr->hp) && (percentage > 7)) ?
 			                   20 : ((11 - percentage) * 5)));
@@ -2315,9 +2316,6 @@ void verify_panel(void)
 	{
 		/* Optional disturb on "panel change" */
 		if (disturb_panel) disturb(0, 0);
-
-		/* Update stuff */
-		p_ptr->update |= (PU_MONSTERS);
 
 		/* Redraw map */
 		p_ptr->redraw |= (PR_MAP);
@@ -2449,6 +2447,57 @@ void ang_sort(vptr u, vptr v, int n)
 
 
 /*
+ * Extract a direction (or zero) from a character
+ */
+sint target_dir(char ch)
+{
+	int d;
+
+	int mode;
+
+	cptr act;
+
+	cptr s;
+
+
+	/* Default direction */
+	d = (isdigit(ch) ? D2I(ch) : 0);
+
+	/* Roguelike */
+	if (rogue_like_commands)
+	{
+		mode = KEYMAP_MODE_ROGUE;
+	}
+
+	/* Original */
+	else
+	{
+		mode = KEYMAP_MODE_ORIG;
+	}
+
+	/* Extract the action (if any) */
+	act = keymap_act[mode][(byte)(ch)];
+
+	/* Analyze */
+	if (act)
+	{
+		/* Convert to a direction */
+		for (s = act; *s; ++s)
+		{
+			/* Use any digits in keymap */
+			if (isdigit(*s)) d = D2I(*s);
+		}
+	}
+
+	/* Paranoia */
+	if (d == 5) d = 0;
+
+	/* Return direction */
+	return (d);
+}
+
+
+/*
  * Determine is a monster makes a reasonable target
  *
  * The concept of "targetting" was stolen from "Morgul" (?)
@@ -2487,7 +2536,7 @@ bool target_able(int m_idx)
 	/* Hack -- no targeting hallucinations */
 	if (p_ptr->image) return (FALSE);
 
-	/* XXX XXX XXX Hack -- Never target trappers */
+	/* Hack -- Never target trappers XXX XXX XXX */
 	/* if (CLEAR_ATTR && (CLEAR_CHAR)) return (FALSE); */
 
 	/* Assume okay */
@@ -2504,16 +2553,21 @@ bool target_able(int m_idx)
  */
 bool target_okay(void)
 {
-	/* Accept stationary targets */
-	if (p_ptr->target_who < 0) return (TRUE);
+	/* No target */
+	if (!p_ptr->target_set) return (FALSE);
 
-	/* Check moving targets */
+	/* Accept "location" targets */
+	if (p_ptr->target_who == 0) return (TRUE);
+
+	/* Check "monster" targets */
 	if (p_ptr->target_who > 0)
 	{
+		int m_idx = p_ptr->target_who;
+
 		/* Accept reasonable targets */
-		if (target_able(p_ptr->target_who))
+		if (target_able(m_idx))
 		{
-			monster_type *m_ptr = &m_list[p_ptr->target_who];
+			monster_type *m_ptr = &m_list[m_idx];
 
 			/* Acquire monster location */
 			p_ptr->target_row = m_ptr->fy;
@@ -2528,6 +2582,61 @@ bool target_okay(void)
 	return (FALSE);
 }
 
+
+/*
+ * Set the target to a monster (or nobody)
+ */
+void target_set_monster(int m_idx)
+{
+	/* Acceptable target */
+	if ((m_idx > 0) && target_able(m_idx))
+	{
+		monster_type *m_ptr = &m_list[m_idx];
+
+		/* Save target info */
+		p_ptr->target_set = TRUE;
+		p_ptr->target_who = m_idx;
+		p_ptr->target_row = m_ptr->fy;
+		p_ptr->target_col = m_ptr->fx;
+	}
+
+	/* Clear target */
+	else
+	{
+		/* Reset target info */
+		p_ptr->target_set = FALSE;
+		p_ptr->target_who = 0;
+		p_ptr->target_row = 0;
+		p_ptr->target_col = 0;
+	}
+}
+
+
+/*
+ * Set the target to a location
+ */
+void target_set_location(int y, int x)
+{
+	/* Legal target */
+	if (in_bounds_fully(y, x))
+	{
+		/* Save target info */
+		p_ptr->target_set = TRUE;
+		p_ptr->target_who = 0;
+		p_ptr->target_row = y;
+		p_ptr->target_col = x;
+	}
+
+	/* Clear target */
+	else
+	{
+		/* Reset target info */
+		p_ptr->target_set = FALSE;
+		p_ptr->target_who = 0;
+		p_ptr->target_row = 0;
+		p_ptr->target_col = 0;
+	}
+}
 
 
 /*
@@ -2629,7 +2738,7 @@ static s16b target_pick(int y1, int x1, int dy, int dx)
 		/* Approximate Double Distance */
 		v = ((x4 > y4) ? (x4 + x4 + y4) : (y4 + y4 + x4));
 
-		/* XXX XXX XXX Penalize location */
+		/* Penalize location XXX XXX XXX */
 
 		/* Track best */
 		if ((b_i >= 0) && (v >= b_v)) continue;
@@ -2646,7 +2755,7 @@ static s16b target_pick(int y1, int x1, int dy, int dx)
 /*
  * Hack -- determine if a given location is "interesting"
  */
-static bool target_set_accept(int y, int x)
+static bool target_set_interactive_accept(int y, int x)
 {
 	s16b this_o_idx, next_o_idx = 0;
 
@@ -2723,11 +2832,11 @@ static bool target_set_accept(int y, int x)
 
 
 /*
- * Prepare the "temp" array for "target_set"
+ * Prepare the "temp" array for "target_interactive_set"
  *
  * Return the number of target_able monsters in the set.
  */
-static void target_set_prepare(int mode)
+static void target_set_interactive_prepare(int mode)
 {
 	int y, x;
 
@@ -2743,7 +2852,7 @@ static void target_set_prepare(int mode)
 			if (!expand_look && !player_has_los_bold(y, x)) continue;
 
 			/* Require "interesting" contents */
-			if (!target_set_accept(y, x)) continue;
+			if (!target_set_interactive_accept(y, x)) continue;
 
 			/* Special mode */
 			if (mode & (TARGET_KILL))
@@ -2787,12 +2896,12 @@ static void target_set_prepare(int mode)
  * Note that if a monster is in the grid, we update both the monster
  * recall info and the health bar info to track that monster.
  *
- * Eventually, we may allow multiple objects per grid, or objects
- * and terrain features in the same grid. XXX XXX XXX
+ * This function correctly handles multiple objects per grid, and objects
+ * and terrain features in the same grid, though the latter never happens.
  *
  * This function must handle blindness/hallucination.
  */
-static int target_set_aux(int y, int x, int mode, cptr info)
+static int target_set_interactive_aux(int y, int x, int mode, cptr info)
 {
 	s16b this_o_idx, next_o_idx = 0;
 
@@ -2886,8 +2995,8 @@ static int target_set_aux(int y, int x, int mode, cptr info)
 					/* Recall */
 					if (recall)
 					{
-						/* Save */
-						Term_save();
+						/* Save screen */
+						screen_save();
 
 						/* Recall on screen */
 						screen_roff(m_ptr->r_idx);
@@ -2898,8 +3007,8 @@ static int target_set_aux(int y, int x, int mode, cptr info)
 						/* Command */
 						query = inkey();
 
-						/* Restore */
-						Term_load();
+						/* Load screen */
+						screen_load();
 					}
 
 					/* Normal */
@@ -3120,7 +3229,7 @@ static int target_set_aux(int y, int x, int mode, cptr info)
  * This command will cancel any old target, even if used from
  * inside the "look" command.
  */
-bool target_set(int mode)
+bool target_set_interactive(int mode)
 {
 	int py = p_ptr->py;
 	int px = p_ptr->px;
@@ -3140,7 +3249,7 @@ bool target_set(int mode)
 
 
 	/* Cancel target */
-	p_ptr->target_who = 0;
+	target_set_monster(0);
 
 
 	/* Cancel tracking */
@@ -3148,7 +3257,7 @@ bool target_set(int mode)
 
 
 	/* Prepare the "temp" array */
-	target_set_prepare(mode);
+	target_set_interactive_prepare(mode);
 
 	/* Start near the player */
 	m = 0;
@@ -3175,7 +3284,7 @@ bool target_set(int mode)
 			}
 
 			/* Describe and Prompt */
-			query = target_set_aux(y, x, mode, info);
+			query = target_set_interactive_aux(y, x, mode, info);
 
 			/* Cancel tracking */
 			/* health_track(0); */
@@ -3190,26 +3299,6 @@ bool target_set(int mode)
 				case 'q':
 				{
 					done = TRUE;
-					break;
-				}
-
-				case 't':
-				case '.':
-				case '5':
-				case '0':
-				{
-					if ((cave_m_idx[y][x] > 0) && target_able(cave_m_idx[y][x]))
-					{
-						health_track(cave_m_idx[y][x]);
-						p_ptr->target_who = cave_m_idx[y][x];
-						p_ptr->target_row = y;
-						p_ptr->target_col = x;
-						done = TRUE;
-					}
-					else
-					{
-						bell();
-					}
 					break;
 				}
 
@@ -3252,10 +3341,33 @@ bool target_set(int mode)
 					break;
 				}
 
+				case 't':
+				case '5':
+				case '0':
+				{
+					int m_idx = cave_m_idx[y][x];
+
+					if ((m_idx > 0) && target_able(m_idx))
+					{
+						health_track(m_idx);
+						target_set_monster(m_idx);
+						done = TRUE;
+					}
+					else
+					{
+						bell("Illegal target!");
+					}
+					break;
+				}
+
 				default:
 				{
-					d = keymap_dirs[query & 0x7F];
-					if (!d) bell();
+					/* Extract direction */
+					d = target_dir(query);
+
+					/* Oops */
+					if (!d) bell("Illegal command for target mode!");
+
 					break;
 				}
 			}
@@ -3278,7 +3390,7 @@ bool target_set(int mode)
 			strcpy(info, "q,t,p,m,+,-,<dir>");
 
 			/* Describe and Prompt (enable "TARGET_LOOK") */
-			query = target_set_aux(y, x, mode | TARGET_LOOK, info);
+			query = target_set_interactive_aux(y, x, mode | TARGET_LOOK, info);
 
 			/* Cancel tracking */
 			/* health_track(0); */
@@ -3292,18 +3404,6 @@ bool target_set(int mode)
 				case ESCAPE:
 				case 'q':
 				{
-					done = TRUE;
-					break;
-				}
-
-				case 't':
-				case '.':
-				case '5':
-				case '0':
-				{
-					p_ptr->target_who = -1;
-					p_ptr->target_row = y;
-					p_ptr->target_col = x;
 					done = TRUE;
 					break;
 				}
@@ -3333,10 +3433,23 @@ bool target_set(int mode)
 					break;
 				}
 
+				case 't':
+				case '5':
+				case '0':
+				{
+					target_set_location(y, x);
+					done = TRUE;
+					break;
+				}
+
 				default:
 				{
-					d = keymap_dirs[query & 0x7F];
-					if (!d) bell();
+					/* Extract a direction */
+					d = target_dir(query);
+
+					/* Oops */
+					if (!d) bell("Illegal command for target mode!");
+
 					break;
 				}
 			}
@@ -3366,7 +3479,7 @@ bool target_set(int mode)
 	prt("", 0, 0);
 
 	/* Failure to set target */
-	if (!p_ptr->target_who) return (FALSE);
+	if (!p_ptr->target_set) return (FALSE);
 
 	/* Success */
 	return (TRUE);
@@ -3393,7 +3506,7 @@ bool get_aim_dir(int *dp)
 {
 	int dir;
 
-	char command;
+	char ch;
 
 	cptr p;
 
@@ -3421,41 +3534,37 @@ bool get_aim_dir(int *dp)
 		}
 
 		/* Get a command (or Cancel) */
-		if (!get_com(p, &command)) break;
+		if (!get_com(p, &ch)) break;
 
-		/* Convert various keys to "standard" keys */
-		switch (command)
+		/* Analyze */
+		switch (ch)
 		{
-			/* Use current target */
-			case 'T':
+			/* Set new target, use target if legal */
+			case '*':
+			{
+				if (target_set_interactive(TARGET_KILL)) dir = 5;
+				break;
+			}
+
+			/* Use current target, if set and legal */
 			case 't':
-			case '.':
 			case '5':
 			case '0':
 			{
-				dir = 5;
+				if (target_okay()) dir = 5;
 				break;
 			}
 
-			/* Set new target */
-			case '*':
-			{
-				if (target_set(TARGET_KILL)) dir = 5;
-				break;
-			}
-
+			/* Possible direction */
 			default:
 			{
-				dir = keymap_dirs[command & 0x7F];
+				dir = target_dir(ch);
 				break;
 			}
 		}
 
-		/* Verify requested targets */
-		if ((dir == 5) && !target_okay()) dir = 0;
-
 		/* Error */
-		if (!dir) bell();
+		if (!dir) bell("Illegal aim direction!");
 	}
 
 	/* No direction */
@@ -3467,7 +3576,6 @@ bool get_aim_dir(int *dp)
 	/* Check for confusion */
 	if (p_ptr->confused)
 	{
-		/* XXX XXX XXX */
 		/* Random direction */
 		dir = ddd[rand_int(8)];
 	}
@@ -3498,7 +3606,7 @@ bool get_aim_dir(int *dp)
  * as all commands which must reference a grid adjacent to the player,
  * and which may not reference the grid under the player.
  *
- * Direction "5" (and "0") are illegal and will not be accepted.
+ * Directions "5" and "0" are illegal and will not be accepted.
  *
  * This function tracks and uses the "global direction", and uses
  * that as the "desired direction", if it is set.
@@ -3506,6 +3614,10 @@ bool get_aim_dir(int *dp)
 bool get_rep_dir(int *dp)
 {
 	int dir;
+
+	char ch;
+
+	cptr p;
 
 
 	/* Initialize */
@@ -3517,19 +3629,17 @@ bool get_rep_dir(int *dp)
 	/* Get a direction */
 	while (!dir)
 	{
-		char ch;
+		/* Choose a prompt */
+		p = "Direction (Escape to cancel)? ";
 
 		/* Get a command (or Cancel) */
-		if (!get_com("Direction (Escape to cancel)? ", &ch)) break;
+		if (!get_com(p, &ch)) break;
 
-		/* Look up the direction */
-		dir = keymap_dirs[ch & 0x7F];
-
-		/* Prevent weirdness */
-		if (dir == 5) dir = 0;
+		/* Convert keypress into a direction */
+		dir = target_dir(ch);
 
 		/* Oops */
-		if (!dir) bell();
+		if (!dir) bell("Illegal repeatable direction!");
 	}
 
 	/* Aborted */
@@ -3561,7 +3671,7 @@ bool confuse_dir(int *dp)
 	/* Apply "confusion" */
 	if (p_ptr->confused)
 	{
-		/* Apply confusion */
+		/* Apply confusion XXX XXX XXX */
 		if ((dir == 5) || (rand_int(100) < 75))
 		{
 			/* Random direction */
@@ -3585,4 +3695,5 @@ bool confuse_dir(int *dp)
 	/* Not confused */
 	return (FALSE);
 }
+
 

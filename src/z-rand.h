@@ -19,7 +19,7 @@
 
 
 /*
- * Random Number Generator -- Degree of "complex" RNG -- see "misc.c"
+ * The "degree" of the "complex" Random Number Generator.
  * This value is hard-coded at 63 for a wide variety of reasons.
  */
 #define RAND_DEG 63
@@ -36,7 +36,7 @@
  * For example, if M is 100, you get "percentile dice"
  */
 #define rand_int(M) \
-	(Rand_div(M))
+	((s32b)(Rand_div(M)))
 
 /*
  * Generates a random long integer X where A<=X<=B
@@ -55,22 +55,6 @@
 	((A) + (rand_int(1+(D)+(D))) - (D))
 
 
-/*
- * Generate a random long integer X where 1<=X<=M
- * Also, "correctly" handle the case of M<=1
- */
-#define randint(M) \
-	(rand_int(M) + 1)
-
-
-/*
- * Evaluate to TRUE "P" percent of the time
- */
-#define magik(P) \
-	(rand_int(100) < (P))
-
-
-
 
 /**** Available Variables ****/
 
@@ -85,11 +69,9 @@ extern u32b Rand_state[RAND_DEG];
 
 
 extern void Rand_state_init(u32b seed);
-extern s32b Rand_mod(s32b m);
-extern s32b Rand_div(s32b m);
-extern s16b randnor(int mean, int stand);
-extern s16b damroll(int num, int sides);
-extern s16b maxroll(int num, int sides);
+extern u32b Rand_mod(u32b m);
+extern u32b Rand_div(u32b m);
+extern s16b Rand_normal(int mean, int stand);
 
 
 #endif

@@ -1150,6 +1150,12 @@ static void wr_extra(void)
 
 
 /*
+ * The cave grid flags that get saved in the savefile
+ */
+#define IMPORTANT_FLAGS (CAVE_MARK | CAVE_GLOW | CAVE_ICKY | CAVE_ROOM)
+
+
+/*
  * Write the current dungeon
  */
 static void wr_dungeon(void)
@@ -1186,8 +1192,8 @@ static void wr_dungeon(void)
 	{
 		for (x = 0; x < DUNGEON_WID; x++)
 		{
-			/* Extract a byte */
-			tmp8u = cave_info[y][x];
+			/* Extract the important cave_info flags */
+			tmp8u = (cave_info[y][x] & (IMPORTANT_FLAGS));
 
 			/* If the run is broken, or too full, flush it */
 			if ((tmp8u != prev_char) || (count == MAX_UCHAR))

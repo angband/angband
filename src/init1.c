@@ -871,13 +871,15 @@ errr init_f_info_txt(FILE *fp, char *buf)
 			if (!buf[3]) return (1);
 			if (!buf[4]) return (1);
 
-			/* Extract the color */
+			/* Extract the attr */
 			tmp = color_char_to_attr(buf[4]);
+
+			/* Paranoia */
 			if (tmp < 0) return (1);
 
 			/* Save the values */
-			f_ptr->f_char = buf[2];
-			f_ptr->f_attr = tmp;
+			f_ptr->d_attr = tmp;
+			f_ptr->d_char = buf[2];
 
 			/* Next... */
 			continue;
@@ -1113,8 +1115,8 @@ errr init_k_info_txt(FILE *fp, char *buf)
 			if (tmp < 0) return (1);
 
 			/* Save the values */
-			k_ptr->k_char = sym;
-			k_ptr->k_attr = tmp;
+			k_ptr->d_attr = tmp;
+			k_ptr->d_char = sym;
 
 			/* Next... */
 			continue;
@@ -2087,8 +2089,8 @@ errr init_r_info_txt(FILE *fp, char *buf)
 			if (tmp < 0) return (1);
 
 			/* Save the values */
-			r_ptr->d_char = sym;
 			r_ptr->d_attr = tmp;
+			r_ptr->d_char = sym;
 
 			/* Next... */
 			continue;
@@ -2290,7 +2292,7 @@ errr init_r_info_txt(FILE *fp, char *buf)
 	strcpy(r_name + r_ptr->name, "Nobody, the Undefined Ghost");
 	strcpy(r_text + r_ptr->text, "It seems strangely familiar...");
 
-	/* Hack -- set the char/attr info */
+	/* Hack -- set the attr/char info */
 	r_ptr->d_attr = r_ptr->x_attr = TERM_WHITE;
 	r_ptr->d_char = r_ptr->x_char = 'G';
 
@@ -2323,4 +2325,5 @@ static int i = 0;
 #endif
 
 #endif	/* ALLOW_TEMPLATES */
+
 

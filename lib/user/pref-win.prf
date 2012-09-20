@@ -1,17 +1,30 @@
 # File: pref-ibm.prf
 
 #
-# This file is used by Angband (when it was compiled using "main-ibm.c")
-# to specify various "user preferences", including "macros".
+# This file is used by Angband (when it was compiled using "main-ibm.c"
+# or "main-dos.c" or "main-win.c") to specify various "user preferences",
+# including "macros".
 #
 # This file defines some basic macros, which allow the use of the "keypad",
 # alone, and with the shift and/or control modifier keys.  All "special"
-# keys are translated by "main-ibm.c" into special "macro triggers" of the
-# encoded form "^_MMMxSS\r", where the "modifier" flags are stored in "MMM",
-# and the two digit hexidecimal scan code of the keypress is stored in "SS",
-# see "main-ibm.c" for info.
+# keys are translated by "main-ibm.c" (or "main-win.c") into special "macro
+# triggers" of the encoded form "^_MMMxSS\r", where the "modifier" flags are
+# stored in "MMM", and the two digit hexidecimal scan code of the keypress is
+# stored in "SS".
 #
-
+# The "main-ibm.prf" and "main-dos.prf" files may not be able to recognize
+# the "/" and "*" keys on the keypad, because it mistakenly classifies the
+# "0x35" and "0x37" codes as the keycodes of "normal" keys.
+#
+# The "main-win.prf" file should not be using the final "control + keypad"
+# section in this file, it was created for "main-ibm.c" and "main-dos.c".
+#
+# The "main-win.prf" file may actually send the "ascii" equivalent of some
+# keypad keys after the keypad key itself, especially if "numlock" is down,
+# which may cause problems.  Or it may not, it is hard to tell.  This is bad.
+#
+# See "main-ibm.c" and "main-dos.c" and "main-win.c" for more info.
+#
 
 
 #
@@ -30,8 +43,14 @@ P:^_Ax56\r
 
 
 #
-# Keypad (7,8,9,-,4,5,6,+,1,2,3,0,.)
+# Keypad (/,*,7,8,9,-,4,5,6,+,1,2,3,0,.)
 #
+
+A:/
+P:^_x35\r
+
+A:*
+P:^_x37\r
 
 A:7
 P:^_x47\r
@@ -74,8 +93,14 @@ P:^_x53\r
 
 
 #
-# Shift + Keypad (7,8,9,-,4,5,6,+,1,2,3,0,.)
+# Shift + Keypad (/,*,7,8,9,-,4,5,6,+,1,2,3,0,.)
 #
+
+A:\e\e\e
+P:^_Sx35\r
+
+A:\e\e\e
+P:^_Sx37\r
 
 A:\e\e\\.7
 P:^_Sx47\r
@@ -118,8 +143,14 @@ P:^_Sx53\r
 
 
 #
-# Control + Keypad (7,8,9,-,4,5,6,+,1,2,3,0,.)
+# Control + Keypad (/,*,7,8,9,-,4,5,6,+,1,2,3,0,.)
 #
+
+A:\e\e\e
+P:^_Cx35\r
+
+A:\e\e\e
+P:^_Cx37\r
 
 A:\e\e\\+7
 P:^_Cx47\r
@@ -162,8 +193,14 @@ P:^_Cx53\r
 
 
 #
-# Control + Keypad (7,8,9,-,4,5,6,+,1,2,3,0,.)
+# Control + Keypad (/,*,7,8,9,-,4,5,6,+,1,2,3,0,.)
 #
+
+A:\e\e\e
+P:^_Cx95\r
+
+A:\e\e\e
+P:^_Cx96\r
 
 A:\e\e\\+7
 P:^_Cx77\r

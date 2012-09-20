@@ -1,0 +1,3178 @@
+# Graphics definition preference file.
+#
+# Generated automatically by `makepref' by Mike Marcelais
+#
+# Feature Graphic Definitions
+
+# open floor
+F:1:1/-39
+
+# invisible trap
+F:2:1/-39
+
+# glyph of warding
+F:3:11/-48
+
+# open door
+F:4:15/-40
+
+# broken door
+F:5:15/-40
+
+# up staircase
+F:6:1/-32
+
+# down staircase
+F:7:1/-50
+
+# General Store
+F:8:15/-61
+
+# Armoury
+F:9:2/-60
+
+# Weapon Smiths
+F:10:1/-59
+
+# Temple
+F:11:5/-58
+
+# Alchemy Shop
+F:12:6/-57
+
+# Magic Shop
+F:13:4/-56
+
+# Black Market
+F:14:8/-55
+
+# Home
+F:15:11/-54
+
+# trap door
+F:16:1/-34
+
+# pit
+F:17:2/-34
+
+# pit
+F:18:2/-34
+
+# pit
+F:19:2/-34
+
+# strange rune
+F:20:3/-33
+
+# strange rune
+F:21:3/-33
+
+# discolored spot
+F:22:7/-33
+
+# discolored spot
+F:23:7/-33
+
+# dart trap
+F:24:4/-36
+
+# dart trap
+F:25:4/-36
+
+# dart trap
+F:26:4/-36
+
+# dart trap
+F:27:4/-36
+
+# gas trap
+F:28:5/-35
+
+# gas trap
+F:29:5/-35
+
+# gas trap
+F:30:5/-35
+
+# gas trap
+F:31:5/-35
+
+# door
+F:32:15/-51
+
+# locked door
+F:33:15/-42
+
+# locked door
+F:34:15/-42
+
+# locked door
+F:35:15/-42
+
+# locked door
+F:36:15/-42
+
+# locked door
+F:37:15/-42
+
+# locked door
+F:38:15/-42
+
+# locked door
+F:39:15/-42
+
+# jammed door
+F:40:15/-43
+
+# jammed door
+F:41:15/-43
+
+# jammed door
+F:42:15/-43
+
+# jammed door
+F:43:15/-43
+
+# jammed door
+F:44:15/-43
+
+# jammed door
+F:45:15/-43
+
+# jammed door
+F:46:15/-43
+
+# jammed door
+F:47:15/-43
+
+# secret door
+F:48:1/-44
+
+# pile of rubble
+F:49:1/-37
+
+# magma vein
+F:50:2/-41
+
+# quartz vein
+F:51:1/-38
+
+# magma vein
+F:52:2/-41
+
+# quartz vein
+F:53:1/-38
+
+# magma vein with treasure
+F:54:3/-46
+
+# quartz vein with treasure
+F:55:3/-45
+
+# granite wall
+F:56:1/-44
+
+# granite wall
+F:57:1/-44
+
+# granite wall
+F:58:1/-44
+
+# granite wall
+F:59:1/-44
+
+# permanent wall
+F:60:1/-44
+
+# permanent wall
+F:61:1/-44
+
+# permanent wall
+F:62:1/-44
+
+# permanent wall
+F:63:1/-44
+
+
+# Item Graphic Definitions
+
+# Blindness
+K:1:0/-112
+
+# Paranoia
+K:2:0/-112
+
+# Confusion
+K:3:0/-112
+
+# Hallucination
+K:4:0/-112
+
+# Cure Poison
+K:5:0/-112
+
+# Cure Blindness
+K:6:0/-112
+
+# Cure Paranoia
+K:7:0/-112
+
+# Cure Confusion
+K:8:0/-112
+
+# Weakness
+K:9:0/-112
+
+# Unhealth
+K:10:0/-112
+
+# Restore Constitution
+K:11:0/-112
+
+# Restoring
+K:12:0/-112
+
+# Stupidity
+K:13:0/-112
+
+# Naivety
+K:14:0/-112
+
+# Poison
+K:15:0/-112
+
+# Sickness
+K:16:0/-112
+
+# Paralysis
+K:17:0/-112
+
+# Restore Strength
+K:18:0/-112
+
+# Disease
+K:19:0/-112
+
+# Cure Serious Wounds
+K:20:0/-112
+
+# & Ration~ of Food
+K:21:15/-119
+
+# & Hard Biscuit~
+K:22:15/-119
+
+# & Strip~ of Beef Jerky
+K:23:7/-119
+
+# & Slime Mold~
+K:24:5/-119
+
+# & Piece~ of Elvish Waybread
+K:25:14/-119
+
+# & Pint~ of Fine Ale
+K:26:11/-119
+
+# & Pint~ of Fine Wine
+K:27:4/-119
+
+# & Broken Dagger~
+K:30:8/-98
+
+# & Bastard Sword~
+K:31:9/-98
+
+# & Scimitar~
+K:32:9/-98
+
+# & Tulwar~
+K:33:9/-98
+
+# & Broad Sword~
+K:34:9/-98
+
+# & Short Sword~
+K:35:9/-98
+
+# & Blade~ of Chaos
+K:36:10/-98
+
+# & Two-Handed Sword~
+K:37:9/-98
+
+# & Main Gauche~
+K:38:9/-98
+
+# & Cutlass~
+K:39:9/-98
+
+# & Executioner's Sword~
+K:40:4/-98
+
+# & Katana~
+K:41:9/-98
+
+# & Long Sword~
+K:42:9/-98
+
+# & Dagger~
+K:43:9/-98
+
+# & Rapier~
+K:44:9/-98
+
+# & Sabre~
+K:45:9/-98
+
+# & Small Sword~
+K:46:9/-98
+
+# & Broken Sword~
+K:47:8/-98
+
+# & Ball-and-Chain~
+K:48:8/-96
+
+# & Whip~
+K:49:8/-96
+
+# & Flail~
+K:50:8/-96
+
+# & Two-Handed Flail~
+K:51:11/-96
+
+# & Morning Star~
+K:52:8/-96
+
+# & Mace~
+K:53:8/-96
+
+# & Quarterstaff~
+K:54:15/-96
+
+# & War Hammer~
+K:55:8/-96
+
+# & Lead-Filled Mace~
+K:56:8/-96
+
+# & Mace~ of Disruption
+K:57:10/-96
+
+# & Lucerne Hammer~
+K:58:14/-96
+
+# & Beaked Axe~
+K:59:2/-97
+
+# & Glaive~
+K:60:2/-97
+
+# & Halberd~
+K:61:2/-97
+
+# & Awl-Pike~
+K:62:2/-97
+
+# & Pike~
+K:63:2/-97
+
+# & Spear~
+K:64:2/-97
+
+# & Trident~
+K:65:11/-97
+
+# & Lance~
+K:66:2/-97
+
+# & Great Axe~
+K:67:2/-97
+
+# & Battle Axe~
+K:68:2/-97
+
+# & Lochaber Axe~
+K:69:8/-97
+
+# & Broad Axe~
+K:70:2/-97
+
+# & Scythe~
+K:71:2/-97
+
+# & Scythe~ of Slicing
+K:72:4/-97
+
+# & Short Bow~
+K:73:15/-113
+
+# & Long Bow~
+K:74:15/-113
+
+# & Light Crossbow~
+K:75:2/-113
+
+# & Heavy Crossbow~
+K:76:2/-113
+
+# & Sling~
+K:77:7/-113
+
+# & Arrow~
+K:78:15/-114
+
+# & Seeker Arrow~
+K:79:13/-114
+
+# & Bolt~
+K:80:2/-114
+
+# & Seeker Bolt~
+K:81:14/-114
+
+# & Rounded Pebble~
+K:82:2/-114
+
+# & Iron Shot~
+K:83:2/-114
+
+# & Shovel~
+K:84:2/-105
+
+# & Gnomish Shovel~
+K:85:13/-105
+
+# & Dwarven Shovel~
+K:86:14/-105
+
+# & Pick~
+K:87:2/-105
+
+# & Orcish Pick~
+K:88:5/-105
+
+# & Dwarven Pick~
+K:89:6/-105
+
+# & Pair~ of Soft Leather Boots
+K:91:15/-122
+
+# & Pair~ of Hard Leather Boots
+K:92:15/-122
+
+# & Pair~ of Metal Shod Boots
+K:93:2/-122
+
+# & Hard Leather Cap~
+K:94:7/-117
+
+# & Metal Cap~
+K:95:2/-117
+
+# & Iron Helm~
+K:96:2/-117
+
+# & Steel Helm~
+K:97:9/-117
+
+# & Iron Crown~
+K:98:2/-117
+
+# & Golden Crown~
+K:99:11/-117
+
+# & Jewel Encrusted Crown~
+K:100:10/-117
+
+# & Robe~
+K:101:6/-124
+
+# & Filthy Rag~
+K:102:8/-124
+
+# Soft Leather Armour~
+K:103:15/-124
+
+# Soft Studded Leather~
+K:104:15/-124
+
+# Hard Leather Armour~
+K:105:15/-124
+
+# Hard Studded Leather~
+K:106:15/-124
+
+# Leather Scale Mail~
+K:107:15/-124
+
+# Metal Scale Mail~
+K:108:2/-124
+
+# Chain Mail~
+K:109:2/-124
+
+# Rusty Chain Mail~
+K:110:4/-124
+
+# Augmented Chain Mail~
+K:111:2/-124
+
+# Bar Chain Mail~
+K:112:2/-124
+
+# Metal Brigandine Armour~
+K:113:2/-124
+
+# Partial Plate Armour~
+K:114:9/-124
+
+# Metal Lamellar Armour~
+K:115:9/-124
+
+# Full Plate Armour~
+K:116:9/-124
+
+# Ribbed Plate Armour~
+K:117:9/-124
+
+# Adamantite Plate Mail~
+K:118:13/-124
+
+# Mithril Plate Mail~
+K:119:14/-124
+
+# Mithril Chain Mail~
+K:120:14/-124
+
+# Double Chain Mail~
+K:121:2/-124
+
+# & Shield~ of Deflection
+K:122:14/-106
+
+# & Cloak~
+K:123:5/-120
+
+# & Shadow Cloak~
+K:124:8/-120
+
+# & Set~ of Leather Gloves
+K:125:15/-118
+
+# & Set~ of Gauntlets
+K:126:15/-118
+
+# & Set~ of Cesti
+K:127:9/-118
+
+# & Small Leather Shield~
+K:128:15/-106
+
+# & Large Leather Shield~
+K:129:15/-106
+
+# & Small Metal Shield~
+K:130:2/-106
+
+# & Large Metal Shield~
+K:131:2/-106
+
+# Strength
+K:132:0/-109
+
+# Dexterity
+K:133:0/-109
+
+# Constitution
+K:134:0/-109
+
+# Intelligence
+K:135:0/-109
+
+# Speed
+K:136:0/-109
+
+# Searching
+K:137:0/-109
+
+# Teleportation
+K:138:0/-109
+
+# Slow Digestion
+K:139:0/-109
+
+# Resist Fire
+K:140:0/-109
+
+# Resist Cold
+K:141:0/-109
+
+# Feather Falling
+K:142:0/-109
+
+# Poison Resistance
+K:143:0/-109
+
+# Free Action
+K:144:0/-109
+
+# Weakness
+K:145:0/-109
+
+# Flames
+K:146:0/-109
+
+# Acid
+K:147:0/-109
+
+# Ice
+K:148:0/-109
+
+# Woe
+K:149:0/-109
+
+# Stupidity
+K:150:0/-109
+
+# Damage
+K:151:0/-109
+
+# Accuracy
+K:152:0/-109
+
+# Protection
+K:153:0/-109
+
+# Aggravate Monster
+K:154:0/-109
+
+# See Invisible
+K:155:0/-109
+
+# Sustain Strength
+K:156:0/-109
+
+# Sustain Intelligence
+K:157:0/-109
+
+# Sustain Wisdom
+K:158:0/-109
+
+# Sustain Constitution
+K:159:0/-109
+
+# Sustain Dexterity
+K:160:0/-109
+
+# Sustain Charisma
+K:161:0/-109
+
+# Slaying
+K:162:0/-109
+
+# Wisdom
+K:163:0/-126
+
+# Charisma
+K:164:0/-126
+
+# Searching
+K:165:0/-126
+
+# Teleportation
+K:166:0/-126
+
+# Slow Digestion
+K:167:0/-126
+
+# Resist Acid
+K:168:0/-126
+
+# Adornment
+K:169:0/-126
+
+# the Magi
+K:171:0/-126
+
+# DOOM
+K:172:0/-126
+
+# Enchant Weapon To-Hit
+K:173:0/-107
+
+# Enchant Weapon To-Dam
+K:174:0/-107
+
+# Enchant Armor
+K:175:0/-107
+
+# Identify
+K:176:0/-107
+
+# *Identify*
+K:177:0/-107
+
+# Remove Curse
+K:180:0/-107
+
+# Light
+K:181:0/-107
+
+# Summon Monster
+K:184:0/-107
+
+# Phase Door
+K:185:0/-107
+
+# Teleportation
+K:186:0/-107
+
+# Teleport Level
+K:187:0/-107
+
+# Monster Confusion
+K:188:0/-107
+
+# Magic Mapping
+K:189:0/-107
+
+# Rune of Protection
+K:190:0/-107
+
+# *Remove Curse*
+K:191:0/-107
+
+# Treasure Detection
+K:192:0/-107
+
+# Object Detection
+K:193:0/-107
+
+# Trap Detection
+K:194:0/-107
+
+# Door/Stair Location
+K:197:0/-107
+
+# Acquirement
+K:198:0/-107
+
+# *Acquirement*
+K:199:0/-107
+
+# Mass Genocide
+K:200:0/-107
+
+# Detect Invisible
+K:201:0/-107
+
+# Aggravate Monster
+K:202:0/-107
+
+# Trap Creation
+K:203:0/-107
+
+# Trap/Door Destruction
+K:204:0/-107
+
+# Recharging
+K:206:0/-107
+
+# Genocide
+K:207:0/-107
+
+# Darkness
+K:208:0/-107
+
+# Protection from Evil
+K:209:0/-107
+
+# Satisfy Hunger
+K:210:0/-107
+
+# Dispel Undead
+K:211:0/-107
+
+# *Enchant Weapon*
+K:212:0/-107
+
+# Curse Weapon
+K:213:0/-107
+
+# *Enchant Armor*
+K:214:0/-107
+
+# Curse Armor
+K:215:0/-107
+
+# Summon Undead
+K:216:0/-107
+
+# Blessing
+K:217:0/-107
+
+# Holy Chant
+K:218:0/-107
+
+# Holy Prayer
+K:219:0/-107
+
+# Word of Recall
+K:220:0/-107
+
+# *Destruction*
+K:221:0/-107
+
+# Slime Mold Juice
+K:222:0/-110
+
+# Apple Juice
+K:223:0/-110
+
+# Water
+K:224:0/-110
+
+# Strength
+K:225:0/-110
+
+# Weakness
+K:226:0/-110
+
+# Restore Strength
+K:227:0/-110
+
+# Intelligence
+K:228:0/-110
+
+# Stupidity
+K:229:0/-110
+
+# Restore Intelligence
+K:230:0/-110
+
+# Wisdom
+K:231:0/-110
+
+# Naivety
+K:232:0/-110
+
+# Restore Wisdom
+K:233:0/-110
+
+# Charisma
+K:234:0/-110
+
+# Ugliness
+K:235:0/-110
+
+# Restore Charisma
+K:236:0/-110
+
+# Cure Light Wounds
+K:237:0/-110
+
+# Clumsiness
+K:238:0/-110
+
+# Sickliness
+K:239:0/-110
+
+# Cure Serious Wounds
+K:240:0/-110
+
+# Cure Critical Wounds
+K:241:0/-110
+
+# Healing
+K:242:0/-110
+
+# Constitution
+K:243:0/-110
+
+# Experience
+K:244:0/-110
+
+# Sleep
+K:245:0/-110
+
+# Blindness
+K:246:0/-110
+
+# Confusion
+K:247:0/-110
+
+# Poison
+K:248:0/-110
+
+# Speed
+K:249:0/-110
+
+# Slowness
+K:250:0/-110
+
+# Dexterity
+K:251:0/-110
+
+# Restore Dexterity
+K:252:0/-110
+
+# Restore Constitution
+K:253:0/-110
+
+# Lose Memories
+K:254:0/-110
+
+# Salt Water
+K:255:0/-110
+
+# Enlightenment
+K:256:0/-110
+
+# Heroism
+K:257:0/-110
+
+# Berserk Strength
+K:258:0/-110
+
+# Boldness
+K:259:0/-110
+
+# Restore Life Levels
+K:260:0/-110
+
+# Resist Heat
+K:261:0/-110
+
+# Resist Cold
+K:262:0/-110
+
+# Detect Invisible
+K:263:0/-110
+
+# Slow Poison
+K:264:0/-110
+
+# Neutralize Poison
+K:265:0/-110
+
+# Restore Mana
+K:266:0/-110
+
+# Infra-vision
+K:267:0/-110
+
+# Light
+K:269:0/-99
+
+# Lightning Bolts
+K:270:0/-99
+
+# Frost Bolts
+K:271:0/-99
+
+# Fire Bolts
+K:272:0/-99
+
+# Stone to Mud
+K:273:0/-99
+
+# Polymorph
+K:274:0/-99
+
+# Heal Monster
+K:275:0/-99
+
+# Haste Monster
+K:276:0/-99
+
+# Slow Monster
+K:277:0/-99
+
+# Confuse Monster
+K:278:0/-99
+
+# Sleep Monster
+K:279:0/-99
+
+# Drain Life
+K:280:0/-99
+
+# Trap/Door Destruction
+K:281:0/-99
+
+# Magic Missile
+K:282:0/-99
+
+# Clone Monster
+K:283:0/-99
+
+# Scare Monster
+K:284:0/-99
+
+# Teleport Other
+K:285:0/-99
+
+# Disarming
+K:286:0/-99
+
+# Lightning Balls
+K:287:0/-99
+
+# Cold Balls
+K:288:0/-99
+
+# Fire Balls
+K:289:0/-99
+
+# Stinking Cloud
+K:290:0/-99
+
+# Acid Balls
+K:291:0/-99
+
+# Wonder
+K:292:0/-99
+
+# Acid Bolts
+K:294:0/-99
+
+# Dragon's Flame
+K:295:0/-99
+
+# Dragon's Frost
+K:296:0/-99
+
+# Dragon's Breath
+K:297:0/-99
+
+# Annihilation
+K:298:0/-99
+
+# Trap Location
+K:300:0/-102
+
+# Treasure Location
+K:301:0/-102
+
+# Object Location
+K:302:0/-102
+
+# Teleportation
+K:303:0/-102
+
+# Earthquakes
+K:304:0/-102
+
+# Summoning
+K:305:0/-102
+
+# Light
+K:306:0/-102
+
+# *Destruction*
+K:307:0/-102
+
+# Starlight
+K:308:0/-102
+
+# Haste Monsters
+K:309:0/-102
+
+# Slow Monsters
+K:310:0/-102
+
+# Sleep Monsters
+K:311:0/-102
+
+# Cure Light Wounds
+K:312:0/-102
+
+# Detect Invisible
+K:313:0/-102
+
+# Speed
+K:314:0/-102
+
+# Slowness
+K:315:0/-102
+
+# Door/Stair Location
+K:316:0/-102
+
+# Remove Curse
+K:317:0/-102
+
+# Detect Evil
+K:318:0/-102
+
+# Curing
+K:319:0/-102
+
+# Dispel Evil
+K:320:0/-102
+
+# Probing
+K:321:0/-102
+
+# Darkness
+K:322:0/-102
+
+# Genocide
+K:323:0/-102
+
+# Power
+K:324:0/-102
+
+# the Magi
+K:325:0/-102
+
+# Perception
+K:326:0/-102
+
+# Holiness
+K:327:0/-102
+
+# Enlightenment
+K:328:0/-102
+
+# Healing
+K:329:0/-102
+
+# [Magic for Beginners]
+K:330:12/-123
+
+# [Conjurings and Tricks]
+K:331:12/-123
+
+# [Incantations and Illusions]
+K:332:12/-123
+
+# [Sorcery and Evocations]
+K:333:12/-123
+
+# [Beginners Handbook]
+K:334:13/-123
+
+# [Words of Wisdom]
+K:335:13/-123
+
+# [Chants and Blessings]
+K:336:13/-123
+
+# [Exorcism and Dispelling]
+K:337:13/-123
+
+# & Small wooden chest~
+K:338:2/-121
+
+# & Large wooden chest~
+K:339:2/-121
+
+# & Small iron chest~
+K:340:2/-121
+
+# & Large iron chest~
+K:341:2/-121
+
+# & Small steel chest~
+K:342:2/-121
+
+# & Large steel chest~
+K:343:2/-121
+
+# & Ruined chest~
+K:344:2/-121
+
+# & Iron Spike~
+K:345:9/-103
+
+# & Wooden Torch~
+K:346:7/-100
+
+# & Brass Lantern~
+K:347:15/-115
+
+# & Flask~ of oil
+K:348:11/-110
+
+# & Empty Bottle~
+K:349:1/-110
+
+# Door/Stair Location
+K:351:0/-108
+
+# Trap Location
+K:352:0/-108
+
+# Probing
+K:353:0/-108
+
+# Recall
+K:354:0/-108
+
+# Illumination
+K:355:0/-108
+
+# Light
+K:356:0/-108
+
+# Lightning Bolts
+K:357:0/-108
+
+# Frost Bolts
+K:358:0/-108
+
+# Fire Bolts
+K:359:0/-108
+
+# Polymorph
+K:360:0/-108
+
+# Slow Monster
+K:361:0/-108
+
+# Sleep Monster
+K:362:0/-108
+
+# Drain Life
+K:363:0/-108
+
+# Teleport Other
+K:364:0/-108
+
+# Disarming
+K:365:0/-108
+
+# Lightning Balls
+K:366:0/-108
+
+# Cold Balls
+K:367:0/-108
+
+# Fire Balls
+K:368:0/-108
+
+# Acid Balls
+K:369:0/-108
+
+# Acid Bolts
+K:370:0/-108
+
+# Enlightenment
+K:371:0/-108
+
+# Perception
+K:372:0/-108
+
+# Curing
+K:373:0/-108
+
+# Healing
+K:374:0/-108
+
+# Detection
+K:375:0/-108
+
+# Restoration
+K:376:0/-108
+
+# Speed
+K:377:0/-108
+
+# [Resistance of Scarabtarices]
+K:379:4/-123
+
+# [Mordenkainen's Escapes]
+K:380:4/-123
+
+# [Kelek's Grimoire of Power]
+K:381:4/-123
+
+# [Tenser's Transformations]
+K:382:4/-123
+
+# [Raal's Tome of Destruction]
+K:383:4/-123
+
+# [Ethereal Openings]
+K:384:5/-123
+
+# [Godly Insights]
+K:385:5/-123
+
+# [Purifications and Healing]
+K:386:5/-123
+
+# [Holy Infusions]
+K:387:5/-123
+
+# [Wrath of God]
+K:388:5/-123
+
+# & Shard~ of Pottery
+K:389:4/-116
+
+# & Broken Stick~
+K:390:4/-116
+
+# & Broken Skull~
+K:391:1/-104
+
+# & Broken Bone~
+K:392:1/-104
+
+# & Canine Skeleton~
+K:393:1/-104
+
+# & Rodent Skeleton~
+K:394:1/-104
+
+# & Human Skeleton~
+K:395:1/-104
+
+# & Dwarf Skeleton~
+K:396:1/-104
+
+# & Elf Skeleton~
+K:397:1/-104
+
+# & Gnome Skeleton~
+K:398:1/-104
+
+# Black Dragon Scale Mail~
+K:400:2/-124
+
+# Blue Dragon Scale Mail~
+K:401:6/-124
+
+# White Dragon Scale Mail~
+K:402:1/-124
+
+# Red Dragon Scale Mail~
+K:403:4/-124
+
+# Green Dragon Scale Mail~
+K:404:5/-124
+
+# Multi-Hued Dragon Scale Mail~
+K:405:10/-124
+
+# Shining Dragon Scale Mail~
+K:406:3/-124
+
+# Law Dragon Scale Mail~
+K:407:14/-124
+
+# Bronze Dragon Scale Mail~
+K:408:15/-124
+
+# Gold Dragon Scale Mail~
+K:409:11/-124
+
+# Chaos Dragon Scale Mail~
+K:410:10/-124
+
+# Balance Dragon Scale Mail~
+K:411:10/-124
+
+# Power Dragon Scale Mail~
+K:412:10/-124
+
+# Death
+K:415:0/-110
+
+# Ruination
+K:416:0/-110
+
+# Detonations
+K:417:0/-110
+
+# Augmentation
+K:418:0/-110
+
+# *Healing*
+K:419:0/-110
+
+# Life
+K:420:0/-110
+
+# Self Knowledge
+K:421:0/-110
+
+# *Enlightenment*
+K:422:0/-110
+
+# copper
+K:480:7/-47
+
+# copper
+K:481:7/-47
+
+# copper
+K:482:7/-47
+
+# silver
+K:483:2/-47
+
+# silver
+K:484:2/-47
+
+# silver
+K:485:2/-47
+
+# garnets
+K:486:4/-47
+
+# garnets
+K:487:4/-47
+
+# gold
+K:488:11/-47
+
+# gold
+K:489:11/-47
+
+# gold
+K:490:11/-47
+
+# opals
+K:491:9/-47
+
+# sapphires
+K:492:6/-47
+
+# rubies
+K:493:4/-47
+
+# diamonds
+K:494:1/-47
+
+# emeralds
+K:495:5/-47
+
+# mithril
+K:496:14/-47
+
+# adamantite
+K:497:13/-47
+
+# & Mighty Hammer~
+K:498:8/-96
+
+# & Massive Iron Crown~
+K:499:8/-117
+
+# & Phial~
+K:500:11/-111
+
+# & Star~
+K:501:11/-101
+
+# & Arkenstone~
+K:502:11/-125
+
+# & Amulet~
+K:503:0/-126
+
+# & Amulet~
+K:504:0/-126
+
+# & Necklace~
+K:505:0/-126
+
+# & Ring~
+K:506:0/-109
+
+# & Ring~
+K:507:0/-109
+
+# & Ring~
+K:508:0/-109
+
+# & Ring~
+K:509:0/-109
+
+# & Ring~
+K:510:0/-109
+
+# & Ring~
+K:511:11/-109
+
+
+# TV_AMULET
+U:40:0/130
+
+# TV_RING
+U:45:0/147
+
+# TV_STAFF
+U:55:0/154
+
+# TV_WAND
+U:65:0/157
+
+# TV_ROD
+U:66:0/148
+
+# TV_SCROLL
+U:70:0/149
+
+# TV_POTION
+U:75:0/146
+
+# TV_FOOD
+U:80:0/144
+
+# Monster Graphic Definitions
+
+# Player
+R:0:1/-5
+
+# Filthy street urchin
+R:1:8/-12
+
+# Scrawny cat
+R:2:15/-26
+
+# Scruffy little dog
+R:3:15/-89
+
+# Farmer Maggot
+R:4:1/-24
+
+# Blubbering idiot
+R:5:9/-12
+
+# Boil-covered wretch
+R:6:5/-12
+
+# Village idiot
+R:7:13/-12
+
+# Pitiful looking beggar
+R:8:15/-12
+
+# Mangy looking leper
+R:9:7/-12
+
+# Squint eyed rogue
+R:10:6/-12
+
+# Singing, happy drunk
+R:11:11/-12
+
+# Aimless looking merchant
+R:12:3/-12
+
+# Mean looking mercenary
+R:13:4/-12
+
+# Battle scarred veteran
+R:14:14/-12
+
+# Grey mold
+R:15:2/-19
+
+# Grey mushroom patch
+R:16:2/-4
+
+# Giant yellow centipede
+R:17:11/-29
+
+# Giant white centipede
+R:18:1/-29
+
+# White icky thing
+R:19:1/-23
+
+# Clear icky thing
+R:20:1/-23
+
+# Giant white mouse
+R:21:1/-14
+
+# Large brown snake
+R:22:7/-82
+
+# Large white snake
+R:23:1/-82
+
+# Small kobold
+R:24:11/-21
+
+# Kobold
+R:25:13/-21
+
+# White worm mass
+R:26:1/-9
+
+# Floating eye
+R:27:3/-27
+
+# Rock lizard
+R:28:15/-74
+
+# Jackal
+R:29:15/-89
+
+# Soldier ant
+R:30:9/-31
+
+# Fruit bat
+R:31:3/-30
+
+# Shrieker mushroom patch
+R:32:12/-4
+
+# Blubbering icky thing
+R:33:9/-23
+
+# Metallic green centipede
+R:34:5/-29
+
+# Novice warrior
+R:35:7/-16
+
+# Novice rogue
+R:36:6/-16
+
+# Novice priest
+R:37:5/-16
+
+# Novice mage
+R:38:4/-16
+
+# Yellow mushroom patch
+R:39:11/-4
+
+# White jelly
+R:40:1/-22
+
+# Giant green frog
+R:41:5/-74
+
+# Giant black ant
+R:42:8/-31
+
+# Salamander
+R:43:3/-74
+
+# White harpy
+R:44:1/-84
+
+# Blue yeek
+R:45:6/-7
+
+# Grip, Farmer Maggot's dog
+R:46:15/-89
+
+# Fang, Farmer Maggot's dog
+R:47:15/-89
+
+# Green worm mass
+R:48:5/-9
+
+# Large yellow snake
+R:49:11/-82
+
+# Cave spider
+R:50:8/-73
+
+# Wild cat
+R:51:15/-26
+
+# Smeagol
+R:52:6/-24
+
+# Green ooze
+R:53:5/-22
+
+# Poltergeist
+R:54:9/-85
+
+# Metallic blue centipede
+R:55:6/-29
+
+# Giant white louse
+R:56:1/-20
+
+# Black naga
+R:57:8/-18
+
+# Spotted mushroom patch
+R:58:3/-4
+
+# Silver jelly
+R:59:9/-22
+
+# Yellow jelly
+R:60:11/-22
+
+# Scruffy looking hobbit
+R:61:6/-24
+
+# Giant white ant
+R:62:1/-31
+
+# Yellow mold
+R:63:11/-19
+
+# Metallic red centipede
+R:64:4/-29
+
+# Yellow worm mass
+R:65:11/-9
+
+# Clear worm mass
+R:66:1/-9
+
+# Radiation eye
+R:67:12/-27
+
+# Cave lizard
+R:68:7/-74
+
+# Novice ranger
+R:69:9/-16
+
+# Novice paladin
+R:70:1/-16
+
+# Blue jelly
+R:71:6/-22
+
+# Creeping copper coins
+R:72:7/-47
+
+# Giant white rat
+R:73:9/-14
+
+# Blue worm mass
+R:74:6/-9
+
+# Large grey snake
+R:75:2/-82
+
+# Bullroarer the Hobbit
+R:76:6/-24
+
+# Novice mage
+R:77:4/-16
+
+# Green naga
+R:78:5/-18
+
+# Blue ooze
+R:79:6/-22
+
+# Green glutton ghost
+R:80:5/-85
+
+# Green jelly
+R:81:5/-22
+
+# Large kobold
+R:82:6/-21
+
+# Skeleton kobold
+R:83:1/-13
+
+# Grey icky thing
+R:84:2/-23
+
+# Disenchanter eye
+R:85:10/-27
+
+# Red worm mass
+R:86:4/-9
+
+# Copperhead snake
+R:87:3/-82
+
+# Purple mushroom patch
+R:88:10/-4
+
+# Novice priest
+R:89:5/-16
+
+# Novice warrior
+R:90:7/-16
+
+# Novice rogue
+R:91:6/-16
+
+# Brown mold
+R:92:7/-19
+
+# Giant brown bat
+R:93:7/-30
+
+# Novice archer
+R:94:9/-16
+
+# Creeping silver coins
+R:95:2/-47
+
+# Snaga
+R:96:15/-17
+
+# Rattlesnake
+R:97:4/-82
+
+# Cave orc
+R:98:13/-17
+
+# Wood spider
+R:99:15/-73
+
+# Manes
+R:100:7/-11
+
+# Bloodshot eye
+R:101:4/-27
+
+# Pink naga
+R:102:12/-18
+
+# Pink jelly
+R:103:12/-22
+
+# Giant pink frog
+R:104:12/-74
+
+# Green icky thing
+R:105:5/-23
+
+# Zombified kobold
+R:106:2/-6
+
+# Lost soul
+R:107:14/-85
+
+# Dark elf
+R:108:8/-24
+
+# Night lizard
+R:109:8/-74
+
+# Mughash the Kobold Lord
+R:110:6/-21
+
+# Wormtongue, Agent of Saruman
+R:111:6/-16
+
+# Lagduf, the Snaga
+R:112:3/-17
+
+# Brown yeek
+R:113:7/-7
+
+# Novice ranger
+R:114:9/-16
+
+# Giant salamander
+R:115:11/-74
+
+# Green mold
+R:116:5/-19
+
+# Skeleton orc
+R:117:1/-13
+
+# Novice paladin
+R:118:1/-16
+
+# Lemure
+R:119:15/-11
+
+# Hill orc
+R:120:7/-17
+
+# Bandit
+R:121:6/-16
+
+# Yeti
+R:122:6/-67
+
+# Bloodshot icky thing
+R:123:4/-23
+
+# Giant grey rat
+R:124:2/-14
+
+# Black harpy
+R:125:8/-84
+
+# Orc shaman
+R:126:4/-17
+
+# Baby blue dragon
+R:127:6/-28
+
+# Baby white dragon
+R:128:1/-28
+
+# Baby green dragon
+R:129:5/-28
+
+# Baby black dragon
+R:130:2/-28
+
+# Baby red dragon
+R:131:4/-28
+
+# Giant pink ant
+R:132:12/-31
+
+# Brodda, the Easterling
+R:133:7/-16
+
+# King cobra
+R:134:5/-82
+
+# Giant spider
+R:135:10/-73
+
+# Dark elven mage
+R:136:10/-24
+
+# Orfax, Son of Boldor
+R:137:6/-7
+
+# Dark elven warrior
+R:138:7/-24
+
+# Clear mushroom patch
+R:139:1/-4
+
+# Grishnakh, the Hill Orc
+R:140:15/-17
+
+# Giant white tick
+R:141:1/-73
+
+# Hairy mold
+R:142:3/-19
+
+# Disenchanter mold
+R:143:10/-19
+
+# Pseudo dragon
+R:144:3/-28
+
+# Tengu
+R:145:12/-11
+
+# Creeping gold coins
+R:146:11/-47
+
+# Wolf
+R:147:7/-89
+
+# Giant fruit fly
+R:148:13/-83
+
+# Panther
+R:149:7/-26
+
+# Brigand
+R:150:6/-16
+
+# Baby multi-hued dragon
+R:151:10/-28
+
+# Hippogriff
+R:152:15/-84
+
+# Zombified orc
+R:153:2/-6
+
+# Gnome mage
+R:154:4/-24
+
+# Black mamba
+R:155:8/-82
+
+# White wolf
+R:156:1/-89
+
+# Grape jelly
+R:157:10/-22
+
+# Nether worm mass
+R:158:8/-9
+
+# Golfimbul, the Hill Orc Chief
+R:159:15/-17
+
+# Master yeek
+R:160:15/-7
+
+# Priest
+R:161:5/-16
+
+# Dark elven priest
+R:162:5/-24
+
+# Air spirit
+R:163:14/-87
+
+# Skeleton human
+R:164:1/-13
+
+# Zombified human
+R:165:2/-6
+
+# Tiger
+R:166:3/-26
+
+# Moaning spirit
+R:167:7/-85
+
+# Swordsman
+R:168:15/-16
+
+# Stegocentipede
+R:169:7/-29
+
+# Spotted jelly
+R:170:3/-22
+
+# Drider
+R:171:7/-73
+
+# Killer brown beetle
+R:172:7/-81
+
+# Boldor, King of the Yeeks
+R:173:15/-7
+
+# Ogre
+R:174:15/-77
+
+# Creeping mithril coins
+R:175:14/-47
+
+# Illusionist
+R:176:4/-16
+
+# Druid
+R:177:4/-16
+
+# Black orc
+R:178:8/-17
+
+# Ochre jelly
+R:179:15/-22
+
+# Giant flea
+R:180:2/-83
+
+# Ufthak of Cirith Ungol
+R:181:5/-17
+
+# Giant white dragon fly
+R:182:1/-86
+
+# Blue icky thing
+R:183:6/-23
+
+# Hill giant
+R:184:15/-76
+
+# Flesh golem
+R:185:12/-25
+
+# Warg
+R:186:2/-89
+
+# Giant black louse
+R:187:8/-20
+
+# Lurker
+R:188:1/-39
+
+# Wererat
+R:189:8/-14
+
+# Black ogre
+R:190:8/-77
+
+# Magic mushroom patch
+R:191:14/-4
+
+# Guardian naga
+R:192:14/-18
+
+# Light hound
+R:193:3/-66
+
+# Dark hound
+R:194:8/-66
+
+# Half-orc
+R:195:2/-17
+
+# Giant tarantula
+R:196:3/-73
+
+# Giant clear centipede
+R:197:1/-29
+
+# Mirkwood spider
+R:198:5/-73
+
+# Frost giant
+R:199:1/-76
+
+# Griffon
+R:200:7/-84
+
+# Homonculous
+R:201:11/-11
+
+# Gnome mage
+R:202:4/-24
+
+# Clear hound
+R:203:1/-66
+
+# Clay golem
+R:204:15/-25
+
+# Umber hulk
+R:205:15/-68
+
+# Orc captain
+R:206:3/-17
+
+# Gelatinous cube
+R:207:13/-22
+
+# Giant green dragon fly
+R:208:5/-86
+
+# Fire giant
+R:209:4/-76
+
+# Hummerhorn
+R:210:11/-83
+
+# Ulfast, Son of Ulfang
+R:211:15/-16
+
+# Quasit
+R:212:3/-11
+
+# Imp
+R:213:5/-11
+
+# Forest troll
+R:214:5/-72
+
+# Nar, the Dwarf
+R:215:11/-24
+
+# 2-headed hydra
+R:216:7/-79
+
+# Water spirit
+R:217:2/-87
+
+# Giant pink scorpion
+R:218:12/-73
+
+# Earth spirit
+R:219:7/-87
+
+# Fire spirit
+R:220:4/-87
+
+# Fire hound
+R:221:4/-66
+
+# Cold hound
+R:222:1/-66
+
+# Energy hound
+R:223:6/-66
+
+# Mimic (potion)
+R:224:1/-110
+
+# Blink dog
+R:225:14/-89
+
+# Uruk
+R:226:14/-17
+
+# Shagrat, the Orc Captain
+R:227:5/-17
+
+# Gorbag, the Orc Captain
+R:228:5/-17
+
+# Shambling mound
+R:229:9/-4
+
+# Stone giant
+R:230:9/-76
+
+# Giant black dragon fly
+R:231:2/-86
+
+# Stone golem
+R:232:9/-25
+
+# Red mold
+R:233:4/-19
+
+# Giant gold dragon fly
+R:234:11/-86
+
+# Bolg, Son of Azog
+R:235:4/-17
+
+# Phase spider
+R:236:14/-73
+
+# 3-headed hydra
+R:237:3/-79
+
+# Earth hound
+R:238:7/-66
+
+# Air hound
+R:239:5/-66
+
+# Sabre-tooth tiger
+R:240:11/-26
+
+# Water hound
+R:241:2/-66
+
+# Chimera
+R:242:4/-84
+
+# Quylthulg
+R:243:11/-75
+
+# Sasquatch
+R:244:5/-67
+
+# Werewolf
+R:245:8/-89
+
+# Dark elven lord
+R:246:8/-24
+
+# Cloud giant
+R:247:6/-76
+
+# Ugluk, the Uruk
+R:248:6/-17
+
+# Lugdush, the Uruk
+R:249:6/-17
+
+# Blue dragon bat
+R:250:6/-30
+
+# Mimic (scroll)
+R:251:1/-107
+
+# Fire vortex
+R:252:4/-10
+
+# Water vortex
+R:253:2/-10
+
+# Cold vortex
+R:254:1/-10
+
+# Energy vortex
+R:255:6/-10
+
+# Mummified orc
+R:256:1/-6
+
+# Killer stag beetle
+R:257:5/-81
+
+# Iron golem
+R:258:2/-25
+
+# Giant yellow scorpion
+R:259:11/-73
+
+# Black ooze
+R:260:8/-22
+
+# Hardened warrior
+R:261:7/-16
+
+# Azog, King of the Uruk-Hai
+R:262:4/-17
+
+# Master rogue
+R:263:14/-16
+
+# Red dragon bat
+R:264:4/-30
+
+# Killer white beetle
+R:265:1/-81
+
+# Giant bronze dragon fly
+R:266:15/-86
+
+# Forest wight
+R:267:5/-69
+
+# Ibun, Son of Mim
+R:268:3/-24
+
+# Khim, Son of Mim
+R:269:3/-24
+
+# 4-headed hydra
+R:270:11/-79
+
+# Mummified human
+R:271:1/-6
+
+# Vampire bat
+R:272:10/-30
+
+# Sangahyando of Umbar
+R:273:7/-16
+
+# Angamaite of Umbar
+R:274:7/-16
+
+# Banshee
+R:275:6/-85
+
+# Pukelman
+R:276:8/-25
+
+# Dark elven druid
+R:277:5/-24
+
+# Stone troll
+R:278:9/-72
+
+# Troll priest
+R:279:13/-72
+
+# Wereworm
+R:280:8/-9
+
+# Carrion crawler
+R:281:3/-29
+
+# Killer pink beetle
+R:282:12/-81
+
+# Giant grey ant
+R:283:2/-31
+
+# Ulwarth, Son of Ulfang
+R:284:15/-16
+
+# Displacer beast
+R:285:8/-26
+
+# Giant red tick
+R:286:4/-73
+
+# Cave ogre
+R:287:7/-77
+
+# White wraith
+R:288:1/-69
+
+# Monadic Deva
+R:289:3/-91
+
+# Mim, Betrayer of Turin
+R:290:3/-24
+
+# Killer red beetle
+R:291:4/-81
+
+# Creeping adamantite coins
+R:292:13/-47
+
+# Algroth
+R:293:3/-72
+
+# Vibration hound
+R:294:11/-66
+
+# Nexus hound
+R:295:12/-66
+
+# Ogre mage
+R:296:4/-77
+
+# Lokkak, the Ogre Chieftain
+R:297:5/-77
+
+# Vampire
+R:298:10/-70
+
+# Gorgimera
+R:299:3/-84
+
+# Colbran
+R:300:11/-25
+
+# Spirit naga
+R:301:1/-18
+
+# 5-headed hydra
+R:302:5/-79
+
+# Black knight
+R:303:2/-16
+
+# Uldor the Accursed
+R:304:15/-16
+
+# Mage
+R:305:4/-16
+
+# Mind flayer
+R:306:12/-24
+
+# Draebor, the Imp
+R:307:5/-11
+
+# Basilisk
+R:308:6/-74
+
+# Ice troll
+R:309:1/-72
+
+# Giant purple worm
+R:310:10/-9
+
+# Movanic Deva
+R:311:14/-91
+
+# Catoblepas
+R:312:5/-15
+
+# Mimic (ring)
+R:313:1/-109
+
+# Young blue dragon
+R:314:6/-28
+
+# Young white dragon
+R:315:1/-28
+
+# Young green dragon
+R:316:5/-28
+
+# Young bronze dragon
+R:317:15/-28
+
+# Mithril golem
+R:318:14/-25
+
+# Shadow drake
+R:319:8/-28
+
+# Skeleton troll
+R:320:1/-13
+
+# Manticore
+R:321:11/-84
+
+# Giant blue ant
+R:322:6/-31
+
+# Giant army ant
+R:323:3/-31
+
+# Grave wight
+R:324:6/-69
+
+# Killer slicer beetle
+R:325:11/-81
+
+# Ghost
+R:326:1/-85
+
+# Death watch beetle
+R:327:8/-81
+
+# Ogre shaman
+R:328:3/-77
+
+# Nexus quylthulg
+R:329:12/-75
+
+# Shelob, Spider of Darkness
+R:330:8/-73
+
+# Ninja
+R:331:11/-16
+
+# Memory moss
+R:332:4/-4
+
+# Storm giant
+R:333:14/-76
+
+# Cave troll
+R:334:7/-72
+
+# Half-troll
+R:335:15/-72
+
+# Mystic
+R:336:3/-16
+
+# Barrow wight
+R:337:10/-69
+
+# Giant skeleton troll
+R:338:1/-13
+
+# Chaos drake
+R:339:10/-28
+
+# Law drake
+R:340:14/-28
+
+# Balance drake
+R:341:10/-28
+
+# Ethereal drake
+R:342:3/-28
+
+# Bert the Stone Troll
+R:343:9/-72
+
+# Bill the Stone Troll
+R:344:9/-72
+
+# Tom the Stone Troll
+R:345:9/-72
+
+# Shade
+R:346:8/-85
+
+# Spectre
+R:347:15/-85
+
+# Water troll
+R:348:2/-72
+
+# Fire elemental
+R:349:4/-87
+
+# Astral Deva
+R:350:13/-91
+
+# Water elemental
+R:351:2/-87
+
+# Invisible stalker
+R:352:11/-87
+
+# Carrion crawler
+R:353:3/-29
+
+# Master thief
+R:354:14/-16
+
+# Ulfang the Black
+R:355:15/-16
+
+# Lich
+R:356:3/-80
+
+# Master vampire
+R:357:5/-70
+
+# Giant grey scorpion
+R:358:2/-73
+
+# Earth elemental
+R:359:7/-87
+
+# Air elemental
+R:360:14/-87
+
+# Hell hound
+R:361:4/-89
+
+# Eog golem
+R:362:7/-25
+
+# Olog
+R:363:11/-72
+
+# Dagashi
+R:364:11/-16
+
+# Gravity hound
+R:365:9/-66
+
+# Acidic cytoplasm
+R:366:2/-22
+
+# Inertia hound
+R:367:9/-66
+
+# Impact hound
+R:368:7/-66
+
+# Dread
+R:369:3/-85
+
+# Ooze elemental
+R:370:5/-87
+
+# Smoke elemental
+R:371:12/-87
+
+# Young black dragon
+R:372:2/-28
+
+# Mumak
+R:373:2/-15
+
+# Giant red ant
+R:374:4/-31
+
+# Mature white dragon
+R:375:1/-28
+
+# Xorn
+R:376:7/-68
+
+# Shadow
+R:377:8/-85
+
+# Phantom
+R:378:10/-85
+
+# Grey wraith
+R:379:2/-69
+
+# Young multi-hued dragon
+R:380:10/-28
+
+# Colossus
+R:381:13/-25
+
+# Young gold dragon
+R:382:11/-28
+
+# Rogrog the Black Troll
+R:383:8/-72
+
+# Mature blue dragon
+R:384:6/-28
+
+# Mature green dragon
+R:385:5/-28
+
+# Mature bronze dragon
+R:386:15/-28
+
+# Young red dragon
+R:387:4/-28
+
+# Trapper
+R:388:1/-39
+
+# Bodak
+R:389:4/-11
+
+# Ice elemental
+R:390:1/-87
+
+# Necromancer
+R:391:12/-16
+
+# Lorgan, Chief of the Easterlings
+R:392:12/-16
+
+# Demonologist
+R:393:12/-16
+
+# Mummified troll
+R:394:1/-6
+
+# The Queen Ant
+R:395:8/-31
+
+# Will o' the wisp
+R:396:9/-87
+
+# Magma elemental
+R:397:4/-87
+
+# Black pudding
+R:398:8/-22
+
+# Killer blue beetle
+R:399:6/-81
+
+# Nexus vortex
+R:400:12/-10
+
+# Plasma vortex
+R:401:4/-10
+
+# Mature red dragon
+R:402:4/-28
+
+# Mature gold dragon
+R:403:11/-28
+
+# Crystal drake
+R:404:10/-28
+
+# Mature black dragon
+R:405:2/-28
+
+# Mature multi-hued dragon
+R:406:10/-28
+
+# Death knight
+R:407:8/-16
+
+# Castamir the Usurper
+R:408:12/-16
+
+# Time vortex
+R:409:14/-10
+
+# Shimmering vortex
+R:410:10/-10
+
+# Ancient blue dragon
+R:411:6/-88
+
+# Ancient bronze dragon
+R:412:15/-88
+
+# Beholder
+R:413:15/-27
+
+# Emperor wight
+R:414:4/-69
+
+# Planetar
+R:415:4/-91
+
+# Vargo, Tyrant of Fire
+R:416:4/-87
+
+# Black wraith
+R:417:8/-69
+
+# Erinyes
+R:418:7/-71
+
+# Nether wraith
+R:419:13/-69
+
+# Eldrak
+R:420:4/-72
+
+# Ettin
+R:421:6/-72
+
+# Waldern, King of Water
+R:422:2/-87
+
+# Kavlax the Many-Headed
+R:423:10/-28
+
+# Ancient white dragon
+R:424:1/-88
+
+# Ancient green dragon
+R:425:5/-88
+
+# 7-headed hydra
+R:426:13/-79
+
+# Night mare
+R:427:8/-15
+
+# Vampire lord
+R:428:6/-70
+
+# Ancient black dragon
+R:429:2/-88
+
+# Disenchanter worm mass
+R:430:10/-9
+
+# Rotting quylthulg
+R:431:7/-75
+
+# Spirit troll
+R:432:14/-72
+
+# Lesser titan
+R:433:11/-76
+
+# 9-headed hydra
+R:434:4/-79
+
+# Enchantress
+R:435:12/-16
+
+# Archpriest
+R:436:13/-16
+
+# Sorcerer
+R:437:10/-16
+
+# Xaren
+R:438:2/-68
+
+# Giant roc
+R:439:7/-90
+
+# Uvatha the Horseman
+R:440:8/-69
+
+# Minotaur
+R:441:2/-84
+
+# Medusa, the Gorgon
+R:442:3/-18
+
+# Death drake
+R:443:13/-88
+
+# Ancient red dragon
+R:444:4/-88
+
+# Ancient gold dragon
+R:445:11/-88
+
+# Great crystal drake
+R:446:10/-88
+
+# Vrock
+R:447:2/-71
+
+# Death quasit
+R:448:8/-11
+
+# Adunaphel the Quiet
+R:449:8/-69
+
+# Dark elven sorceror
+R:450:10/-24
+
+# Master lich
+R:451:4/-80
+
+# Hezrou
+R:452:10/-71
+
+# Akhorahil the Blind
+R:453:8/-69
+
+# Gorlim, Betrayer of Barahir
+R:454:2/-16
+
+# Solar
+R:455:11/-91
+
+# Glabrezu
+R:456:3/-71
+
+# Ren the Unclean
+R:457:8/-69
+
+# Nalfeshnee
+R:458:4/-71
+
+# Undead beholder
+R:459:7/-27
+
+# Dread
+R:460:3/-85
+
+# Mumak
+R:461:2/-15
+
+# Ancient multi-hued dragon
+R:462:10/-88
+
+# Ethereal dragon
+R:463:3/-88
+
+# Ji Indur Dawndeath
+R:464:8/-69
+
+# Marilith
+R:465:11/-71
+
+# Quaker, Master of Earth
+R:466:7/-87
+
+# Lesser Balrog
+R:467:12/-71
+
+# Ariel, Queen of Air
+R:468:14/-87
+
+# 11-headed hydra
+R:469:12/-79
+
+# Patriarch
+R:470:13/-16
+
+# Dreadmaster
+R:471:11/-85
+
+# Drolem
+R:472:5/-25
+
+# Scatha the Worm
+R:473:1/-88
+
+# Dwar, Dog Lord of Waw
+R:474:8/-69
+
+# Smaug the Golden
+R:475:4/-88
+
+# Dracolich
+R:476:13/-88
+
+# Greater titan
+R:477:3/-76
+
+# Dracolisk
+R:478:13/-88
+
+# Death mold
+R:479:8/-19
+
+# Itangast the Fire Drake
+R:480:4/-88
+
+# Glaurung, Father of the Dragons
+R:481:4/-88
+
+# Master mystic
+R:482:3/-16
+
+# Muar, the Balrog
+R:483:3/-71
+
+# Nightwing
+R:484:8/-69
+
+# Nether hound
+R:485:13/-66
+
+# Time hound
+R:486:14/-66
+
+# Plasma hound
+R:487:4/-66
+
+# Demonic quylthulg
+R:488:4/-75
+
+# Great storm wyrm
+R:489:6/-88
+
+# Baphomet the Minotaur Lord
+R:490:2/-84
+
+# Harowen the Black Hand
+R:491:14/-16
+
+# Hoarmurath of Dir
+R:492:8/-69
+
+# Grand master mystic
+R:493:3/-16
+
+# Khamul the Easterling
+R:494:8/-69
+
+# Ethereal hound
+R:495:13/-66
+
+# Great ice wyrm
+R:496:1/-88
+
+# The Phoenix
+R:497:4/-90
+
+# Nightcrawler
+R:498:8/-69
+
+# Hand druj
+R:499:11/-13
+
+# Eye druj
+R:500:4/-13
+
+# Skull druj
+R:501:3/-13
+
+# Chaos vortex
+R:502:10/-10
+
+# Aether vortex
+R:503:10/-10
+
+# The Lernean Hydra
+R:504:1/-79
+
+# Thuringwethil
+R:505:8/-70
+
+# Great hell wyrm
+R:506:4/-88
+
+# Draconic quylthulg
+R:507:5/-75
+
+# Fundin Bluecloak
+R:508:13/-24
+
+# Uriel, Angel of Fire
+R:509:4/-91
+
+# Azriel, Angel of Death
+R:510:8/-91
+
+# Ancalagon the Black
+R:511:8/-88
+
+# Nightwalker
+R:512:8/-69
+
+# Gabriel, the Messenger
+R:513:1/-91
+
+# Saruman of Many Colours
+R:514:10/-16
+
+# Dreadlord
+R:515:4/-85
+
+# The Cat Lord
+R:516:4/-26
+
+# Chaos beetle
+R:517:10/-81
+
+# Chaos hound
+R:518:10/-66
+
+# Great Wyrm of Chaos
+R:519:10/-88
+
+# Great Wyrm of Law
+R:520:14/-88
+
+# Great Wyrm of Balance
+R:521:10/-88
+
+# Tselakus, the Dreadlord
+R:522:4/-85
+
+# Tiamat, Celestial Dragon of Evil
+R:523:10/-88
+
+# Black reaver
+R:524:8/-80
+
+# Master quylthulg
+R:525:14/-75
+
+# Greater draconic quylthulg
+R:526:13/-75
+
+# Greater rotting quylthulg
+R:527:15/-75
+
+# Vecna, the Emperor Lich
+R:528:12/-80
+
+# Omarax the Eye Tyrant
+R:529:10/-27
+
+# Ungoliant, the Unlight
+R:530:8/-73
+
+# Aether hound
+R:531:10/-66
+
+# The Mouth of Sauron
+R:532:10/-16
+
+# The Emperor Quylthulg
+R:533:1/-75
+
+# Qlzqqlzuup, the Lord of Flesh
+R:534:3/-75
+
+# Murazor, the Witch-King of Angmar
+R:535:8/-69
+
+# Pazuzu, Lord of Air
+R:536:1/-90
+
+# Hell hound
+R:537:4/-89
+
+# Cantoras, the Skeletal Lord
+R:538:1/-13
+
+# The Tarrasque
+R:539:10/-74
+
+# Lungorthin, the Balrog of White Fire
+R:540:1/-71
+
+# Draugluin, Sire of All Werewolves
+R:541:7/-89
+
+# Feagwath the Undead Sorceror
+R:542:12/-80
+
+# Carcharoth, the Jaws of Thirst
+R:543:8/-89
+
+# Cerberus, Guardian of Hades
+R:544:4/-89
+
+# Gothmog, the High Captain of Balrogs
+R:545:12/-71
+
+# Sauron, the Sorcerer
+R:546:10/-16
+
+# Morgoth, Lord of Darkness
+R:547:8/-76
+
+# Nobody, the Undefined Ghost
+R:548:1/-85
+
+

@@ -8,11 +8,13 @@
  * are included in all such copies.
  */
 
-/* Purpose: Allow use of Unix "curses" with Angband -BEN- */
-
 
 /*
+ * This file helps Angband run on Unix/Curses machines.
+ *
+ *
  * To use this file, you must define "USE_GCU" in the Makefile.
+ *
  *
  * Hack -- note that "angband.h" is included AFTER the #ifdef test.
  * This was necessary because of annoying "curses.h" silliness.
@@ -30,18 +32,19 @@
  * and uses the "termcap" information directly, or even bypasses the
  * "termcap" information and sends direct vt100 escape sequences.
  *
- * XXX XXX XXX This file provides only a single "term" window.
+ * This file provides only a single "term" window.  XXX XXX XXX
+ *
+ * But in theory, it should be possible to allow a 50 line screen to be
+ * split into two (or more) sub-screens.
  *
  * The "init" and "nuke" hooks are built so that only the first init and
  * the last nuke actually do anything, but the other functions are not
  * "correct" for multiple windows.  Minor changes would also be needed
  * to allow the system to handle the "locations" of the various windows.
  *
- * But in theory, it should be possible to allow a 50 line screen to be
- * split into two (or more) sub-screens.
- *
- * XXX XXX XXX Consider the use of "savetty()" and "resetty()".
+ * Consider the use of "savetty()" and "resetty()".  XXX XXX XXX
  */
+
 
 #include "angband.h"
 

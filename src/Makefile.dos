@@ -1,9 +1,9 @@
-# File: Makefile.ibm
+# File: Makefile.dos
 
 #
-# Makefile support for "main-ibm.c"
+# Makefile support for "main-dos.c" and "main-ibm.c"
 #
-# See "main-ibm.c" for more information.
+# See "main-dos.c" and "main-ibm.c" for more information.
 #
 
 
@@ -13,7 +13,7 @@
 
 # Objects
 OBJS = \
-  main.o main-ibm.o \
+  main.o main-dos.o main-ibm.o \
   generate.o dungeon.o init1.o init2.o \
   store.o birth.o wizard1.o wizard2.o \
   cmd1.o cmd2.o cmd3.o cmd4.o cmd5.o cmd6.o \
@@ -27,7 +27,7 @@ OBJS = \
 CC = gcc
 
 # Compiler flags
-CFLAGS = -Wall -O2 -s -DUSE_IBM
+CFLAGS = -Wall -O2 -s -DUSE_DOS -DUSE_IBM
 
 # Libraries
 LIBS = -lpc
@@ -55,7 +55,7 @@ all: angband.exe makepref.exe gredit.exe
 #
 
 angband.exe: $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LIBS)
+	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LIBS) -lalleg
 
 makepref.exe: makepref.o
 	$(CC) $(CFLAGS) -o $@ makepref.o $(LIBS)

@@ -50,9 +50,17 @@ struct term_win
 /*
  * An actual "term" structure
  *
- *	- Extra info (used by application)
+ *	- Extra "user" info (used by application)
  *
- *	- Extra data (used by implementation)
+ *	- Extra "data" info (used by implementation)
+ *
+ *
+ *	- Flag "user_flag"
+ *	  An extra "user" flag (used by application)
+ *
+ *
+ *	- Flag "data_flag"
+ *	  An extra "data" flag (used by implementation)
  *
  *
  *	- Flag "active_flag"
@@ -63,6 +71,9 @@ struct term_win
  *
  *	- Flag "total_erase"
  *	  This "term" should be fully erased
+ *
+ *	- Flag "fixed_shape"
+ *	  This "term" is not allowed to resize
  *
  *	- Flag "icky_corner"
  *	  This "term" has an "icky" corner grid
@@ -78,6 +89,9 @@ struct term_win
  *
  *	- Flag "always_text"
  *	  Use the "Term_text()" routine for invisible text
+ *
+ *	- Flag "unused_flag"
+ *	  Reserved for future use
  *
  *	- Flag "never_bored"
  *	  Never call the "TERM_XTRA_BORED" action
@@ -141,14 +155,20 @@ struct term
 
 	vptr data;
 
+	bool user_flag;
+
+	bool data_flag;
+
 	bool active_flag;
 	bool mapped_flag;
 	bool total_erase;
+	bool fixed_shape;
 	bool icky_corner;
 	bool soft_cursor;
 	bool always_pict;
 	bool higher_pict;
 	bool always_text;
+	bool unused_flag;
 	bool never_bored;
 	bool never_frosh;
 
@@ -283,4 +303,5 @@ extern errr term_init(term *t, int w, int h, int k);
 
 
 #endif
+
 

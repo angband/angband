@@ -8,18 +8,18 @@
  * are included in all such copies.
  */
 
+
 /*
-   File:     main-ami.c
+ * This file helps Angband run on Amiga computers.
+ *
+ * Author:   Lars Haugseth
+ * Email:    larshau@ifi.uio.no
+ * WWW:      http://www.ifi.uio.no/~larshau
+ *
+ *
+ * This file is *known* to be out of date.  It needs some work.  XXX XXX XXX
+ */
 
-   Version:  2.7.9v6 (09.May.96)
-
-   Purpose:  Amiga module for Angband with graphics and sound
-
-   Author:   Lars Haugseth
-   Email:    larshau@ifi.uio.no
-   WWW:      http://www.ifi.uio.no/~larshau
-
-*/
 
 #define VERSION "Angband 2.7.9v6"
 
@@ -2679,8 +2679,8 @@ static void amiga_map( void )
          /* Get frame tile */
          if ( i==0 || i == DUNGEON_WID - 1 || j == 0 || j == DUNGEON_HGT - 1 )
          {
-            ta = f_info[ 63 ].z_attr;
-            tc = f_info[ 63 ].z_char;
+            ta = f_info[ 63 ].x_attr;
+            tc = f_info[ 63 ].x_char;
          }
 
          /* Get tile from cave table */
@@ -3253,4 +3253,5 @@ int depth_of_bitmap( struct BitMap *bm )
 }
 
 ///}
+
 

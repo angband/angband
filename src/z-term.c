@@ -529,7 +529,7 @@ void Term_queue_chars(int x, int y, int n, byte a, cptr s)
  *
  * Display text using "Term_pict()"
  */
-static void Term_fresh_row_pict(int y)
+static void Term_fresh_row_pict(int y, int x1, int x2)
 {
 	int x;
 
@@ -552,8 +552,8 @@ static void Term_fresh_row_pict(int y)
 	char nc;
 
 
-	/* Scan the columns marked as "modified" */
-	for (x = Term->x1[y]; x <= Term->x2[y]; x++)
+	/* Scan "modified" columns */
+	for (x = x1; x <= x2; x++)
 	{
 		/* See what is currently here */
 		oa = old_aa[x];
@@ -606,7 +606,7 @@ static void Term_fresh_row_pict(int y)
  * Display text using "Term_text()" and "Term_wipe()",
  * but use "Term_pict()" for high-bit attr/char pairs
  */
-static void Term_fresh_row_both(int y)
+static void Term_fresh_row_both(int y, int x1, int x2)
 {
 	int x;
 
@@ -635,8 +635,8 @@ static void Term_fresh_row_both(int y)
 	char nc;
 
 
-	/* Scan the columns marked as "modified" */
-	for (x = Term->x1[y]; x <= Term->x2[y]; x++)
+	/* Scan "modified" columns */
+	for (x = x1; x <= x2; x++)
 	{
 		/* See what is currently here */
 		oa = old_aa[x];
@@ -758,7 +758,7 @@ static void Term_fresh_row_both(int y)
  *
  * Display text using "Term_text()" and "Term_wipe()"
  */
-static void Term_fresh_row_text(int y)
+static void Term_fresh_row_text(int y, int x1, int x2)
 {
 	int x;
 
@@ -787,8 +787,8 @@ static void Term_fresh_row_text(int y)
 	char nc;
 
 
-	/* Scan the columns marked as "modified" */
-	for (x = Term->x1[y]; x <= Term->x2[y]; x++)
+	/* Scan "modified" columns */
+	for (x = x1; x <= x2; x++)
 	{
 		/* See what is currently here */
 		oa = old_aa[x];
@@ -975,7 +975,7 @@ static void Term_fresh_row_text(int y)
  * On systems with a "soft" cursor, we must explicitly erase the cursor
  * before flushing the output, if needed, to prevent a "jumpy" refresh.
  * The actual method for this is horrible, but there is very little that
- * we can do to simplify it.  XXX XXX XXX
+ * we can do to simplify it efficiently.  XXX XXX XXX
  *
  * On systems with a "hard" cursor, we will "hide" the cursor before
  * flushing the output, if needed, to avoid a "flickery" refresh.  It
@@ -998,6 +998,9 @@ errr Term_fresh(void)
 	int w = Term->wid;
 	int h = Term->hgt;
 
+	int y1 = Term->y1;
+	int y2 = Term->y2;
+
 	term_win *old = Term->old;
 	term_win *scr = Term->scr;
 
@@ -1007,7 +1010,7 @@ errr Term_fresh(void)
 
 
 	/* Trivial Refresh */
-	if ((Term->y1 > Term->y2) &&
+	if ((y1 > y2) &&
 	    (scr->cu == old->cu) &&
 	    (scr->cv == old->cv) &&
 	    (scr->cx == old->cx) &&
@@ -1029,8 +1032,8 @@ errr Term_fresh(void)
 	/* Handle "total erase" */
 	if (Term->total_erase)
 	{
-		byte a = Term->attr_blank;
-		char c = Term->char_blank;
+		byte na = Term->attr_blank;
+		char nc = Term->char_blank;
 
 		/* Physically erase the entire window */
 		Term_xtra(TERM_XTRA_CLEAR, 0);
@@ -1048,14 +1051,14 @@ errr Term_fresh(void)
 			for (x = 0; x < w; x++)
 			{
 				/* Wipe each grid */
-				*aa++ = a;
-				*cc++ = c;
+				*aa++ = na;
+				*cc++ = nc;
 			}
 		}
 
 		/* Redraw every row */
-		Term->y1 = 0;
-		Term->y2 = h - 1;
+		Term->y1 = y1 = 0;
+		Term->y2 = y2 = h - 1;
 
 		/* Redraw every column */
 		for (y = 0; y < h; y++)
@@ -1081,25 +1084,25 @@ errr Term_fresh(void)
 			byte *old_aa = old->a[ty];
 			char *old_cc = old->c[ty];
 
-			byte a = old_aa[tx];
-			char c = old_cc[tx];
+			byte oa = old_aa[tx];
+			char oc = old_cc[tx];
 
 			/* Hack -- use "Term_pict()" always */
 			if (Term->always_pict)
 			{
-				(void)((*Term->pict_hook)(tx, ty, 1, &a, &c));
+				(void)((*Term->pict_hook)(tx, ty, 1, &oa, &oc));
 			}
 
 			/* Hack -- use "Term_pict()" sometimes */
-			else if (Term->higher_pict && (a & 0x80) && (c & 0x80))
+			else if (Term->higher_pict && (oa & 0x80) && (oc & 0x80))
 			{
-				(void)((*Term->pict_hook)(tx, ty, 1, &a, &c));
+				(void)((*Term->pict_hook)(tx, ty, 1, &oa, &oc));
 			}
 
 			/* Hack -- restore the actual character */
-			else if (a || Term->always_text)
+			else if (oa || Term->always_text)
 			{
-				(void)((*Term->text_hook)(tx, ty, 1, a, &c));
+				(void)((*Term->text_hook)(tx, ty, 1, oa, &oc));
 			}
 
 			/* Hack -- erase the grid */
@@ -1123,13 +1126,13 @@ errr Term_fresh(void)
 
 
 	/* Something to update */
-	if (Term->y1 <= Term->y2)
+	if (y1 <= y2)
 	{
 		/* Handle "icky corner" */
 		if (Term->icky_corner)
 		{
 			/* Avoid the corner */
-			if (Term->y2 > h - 2)
+			if (y2 >= h - 1)
 			{
 				/* Avoid the corner */
 				if (Term->x2[h - 1] > w - 2)
@@ -1142,30 +1145,33 @@ errr Term_fresh(void)
 
 
 		/* Scan the "modified" rows */
-		for (y = Term->y1; y <= Term->y2; ++y)
+		for (y = y1; y <= y2; ++y)
 		{
+			int x1 = Term->x1[y];
+			int x2 = Term->x2[y];
+
 			/* Flush each "modified" row */
-			if (Term->x1[y] <= Term->x2[y])
+			if (x1 <= x2)
 			{
 				/* Always use "Term_pict()" */
 				if (Term->always_pict)
 				{
 					/* Flush the row */
-					Term_fresh_row_pict(y);
+					Term_fresh_row_pict(y, x1, x2);
 				}
 
 				/* Sometimes use "Term_pict()" */
 				else if (Term->higher_pict)
 				{
 					/* Flush the row */
-					Term_fresh_row_both(y);
+					Term_fresh_row_both(y, x1, x2);
 				}
 
 				/* Never use "Term_pict()" */
 				else
 				{
 					/* Flush the row */
-					Term_fresh_row_text(y);
+					Term_fresh_row_text(y, x1, x2);
 				}
 
 				/* This row is all done */
@@ -1528,8 +1534,8 @@ errr Term_clear(void)
 	int w = Term->wid;
 	int h = Term->hgt;
 
-	byte a = Term->attr_blank;
-	char c = Term->char_blank;
+	byte na = Term->attr_blank;
+	char nc = Term->char_blank;
 
 	/* Cursor usable */
 	Term->scr->cu = 0;
@@ -1546,8 +1552,8 @@ errr Term_clear(void)
 		/* Wipe each column */
 		for (x = 0; x < w; x++)
 		{
-			scr_aa[x] = a;
-			scr_cc[x] = c;
+			scr_aa[x] = na;
+			scr_cc[x] = nc;
 		}
 
 		/* This row has changed */
@@ -1664,42 +1670,10 @@ errr Term_what(int x, int y, byte *a, char *c)
 
 
 /*
- * XXX XXX XXX Mega-Hack -- special "Term_inkey_hook" hook
- *
- * This special function hook basically acts as a replacement function
- * for both "Term_flush()" and "Term_inkey()", depending on whether the
- * first parameter is NULL or not, and is currently used only to allow
- * the "Borg" to bypass the "standard" keypress routines, and instead
- * use its own internal algorithms to "generate" keypress values.
- *
- * Note that this function hook can do anything it wants, including
- * in most cases simply doing exactly what is normally done by the
- * functions below, and in other cases, doing some of the same things
- * to check for "interuption" by the user, and replacing the rest of
- * the code with specialized "think about the world" code.
- *
- * Similar results could be obtained by "stealing" the "Term->xtra_hook"
- * hook, and doing special things for "TERM_XTRA_EVENT", "TERM_XTRA_FLUSH",
- * and "TERM_XTRA_BORED", but this method is a lot "cleaner", and gives
- * much better results when "profiling" the code.
- *
- * See the "Borg" documentation for more details.
- */
-errr (*Term_inkey_hook)(char *ch, bool wait, bool take) = NULL;
-
-
-/*
  * Flush and forget the input
  */
 errr Term_flush(void)
 {
-	/* XXX XXX XXX */
-	if (Term_inkey_hook)
-	{
-		/* Special "Borg" hook (flush keys) */
-		return ((*Term_inkey_hook)(NULL, 0, 0));
-	}
-
 	/* Hack -- Flush all events */
 	Term_xtra(TERM_XTRA_FLUSH, 0);
 
@@ -1783,13 +1757,6 @@ errr Term_inkey(char *ch, bool wait, bool take)
 {
 	/* Assume no key */
 	(*ch) = '\0';
-
-	/* XXX XXX XXX */
-	if (Term_inkey_hook)
-	{
-		/* Special "Borg" hook (generate keys) */
-		return ((*Term_inkey_hook)(ch, wait, take));
-	}
 
 	/* Hack -- get bored */
 	if (!Term->never_bored)
@@ -1972,8 +1939,13 @@ errr Term_resize(int w, int h)
 	term_win *hold_tmp;
 
 
+	/* Resizing is forbidden */
+	if (Term->fixed_shape) return (-1);
+
+
 	/* Ignore illegal changes */
-	if ((w < 1) || (h < 1)) return (1);
+	if ((w < 1) || (h < 1)) return (-1);
+
 
 	/* Ignore non-changes */
 	if ((Term->wid == w) && (Term->hgt == h)) return (1);

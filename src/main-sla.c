@@ -8,13 +8,18 @@
  * are included in all such copies.
  */
 
-/* Purpose: Actual Unix "slang" support for Angband */
 
 /*
+ * This file helps Angband work with Unix/slang computers.
+ *
+ * This file is probably out of date.  XXX XXX XXX
+ *
+ *
  * Author: hans@grumbeer.pfalz.de (Hans-Joachim Baader)
  *
  * Most of this code is adapted directly from "main-gcu.c"
  */
+
 
 #include "angband.h"
 
@@ -460,4 +465,5 @@ errr init_sla(void)
 }
 
 #endif /* USE_SLA */
+
 

@@ -1,9 +1,11 @@
-# graf-ami.prf
+# File: graf-ami.prf
+
 #
 # This file contains color definitions and
 # graphics remapping for the Amiga version.
 #
 # Lars Haugseth <larshau@ifi.uio.no>
+#
 
 
 # Color palette - Graphics
@@ -23,6 +25,7 @@ V:12:0x01:0x80:0x00:0x00
 V:13:0x01:0x90:0x00:0xB0
 V:14:0x01:0x00:0x60:0x10
 V:15:0x01:0x60:0xF0:0x40
+
 
 # Color palette - Text
 V:16:0x01:0x00:0x00:0x00

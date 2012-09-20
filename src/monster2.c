@@ -41,10 +41,10 @@ void delete_monster_idx(int i)
 
 
 	/* Hack -- remove target monster */
-	if (i == p_ptr->target_who) p_ptr->target_who = 0;
+	if (p_ptr->target_who == i) target_set_monster(0);
 
 	/* Hack -- remove tracked monster */
-	if (i == p_ptr->health_who) health_track(0);
+	if (p_ptr->health_who == i) health_track(0);
 
 
 	/* Monster is gone */
@@ -140,7 +140,7 @@ static void compact_monsters_aux(int i1, int i2)
 	if (p_ptr->target_who == i1) p_ptr->target_who = i2;
 
 	/* Hack -- Update the health bar */
-	if (p_ptr->health_who == i1) health_track(i2);
+	if (p_ptr->health_who == i1) p_ptr->health_who = i2;
 
 	/* Hack -- move monster */
 	COPY(&m_list[i2], &m_list[i1], monster_type);
@@ -279,7 +279,7 @@ void wipe_m_list(void)
 	num_repro = 0;
 
 	/* Hack -- no more target */
-	p_ptr->target_who = 0;
+	target_set_monster(0);
 
 	/* Hack -- no more tracking */
 	health_track(0);
@@ -794,25 +794,25 @@ void lore_treasure(int m_idx, int num_item, int num_gold)
 /*
  * This function updates the monster record of the given monster
  *
- * This involves extracting the distance to the player (if needed),
+ * This involves extracting the distance to the player (if requested),
  * and then checking for visibility (natural, infravision, see-invis,
  * telepathy), updating the monster visibility flag, redrawing (or
- * erasing) the monster when the visibility changes, and taking note
+ * erasing) the monster when its visibility changes, and taking note
  * of any interesting monster flags (cold-blooded, invisible, etc).
  *
- * Note the new "mflag" field which encodes several monster state
- * flags, including "view" for "currently in line of sight" and
- * "mark" for "currently visible via detection".
+ * Note the new "mflag" field which encodes several monster state flags,
+ * including "view" for when the monster is currently in line of sight,
+ * and "mark" for when the monster is currently visible via detection.
  *
  * The only monster fields that are changed here are "cdis" (the
  * distance from the player), "ml" (visible to the player), and
  * "mflag" (to maintain the "MFLAG_VIEW" flag).
  *
- * Note the special "update_monsters()" function which can be used
- * to call this function for every monster.
+ * Note the special "update_monsters()" function which can be used to
+ * call this function once for every monster.
  *
- * Note the "full" flag which requests that the "cdis" field be
- * updated, often, such an update is not needed.
+ * Note the "full" flag which requests that the "cdis" field be updated,
+ * this is only needed when the monster (or the player) has moved.
  *
  * Every time a monster moves, we must call this function for that
  * monster, and update the distance, and the visibility.  Every time
@@ -822,9 +822,9 @@ void lore_treasure(int m_idx, int num_item, int num_gold)
  * and "see invisible"), we must call this function for every monster,
  * and update the visibility.
  *
- * Routines that change the "illumination" of grids must also call
- * this function, since the "visibility" of some monsters may be
- * based on the illumination of their grid.
+ * Routines that change the "illumination" of a grid must also call this
+ * function for any monster in that grid, since the "visibility" of some
+ * monsters may be based on the illumination of their grid.
  *
  * Note that this function is called once per monster every time the
  * player moves.  When the player is running, this function is one
@@ -833,16 +833,12 @@ void lore_treasure(int m_idx, int num_item, int num_gold)
  *
  * Note the optimized "inline" version of the "distance()" function.
  *
- * Note the optimized "inline" version of the "player_can_see_bold()"
- * function, which has been so optimized that it no longer has the
- * same semantics, in particular, monsters in perma-lit walls can
- * be seen even from the wrong side of the wall.
- *
  * A monster is "visible" to the player if (1) it has been detected
  * by the player, (2) it is close to the player and the player has
  * telepathy, or (3) it is close to the player, and in line of sight
  * of the player, and it is "illuminated" by some combination of
- * light, infravision, and/or see-invisible.
+ * infravision, torch light, or permanent light (invisible monsters
+ * are only affected by "light" if the player can see invisible).
  *
  * Monsters which are not on the current panel may be "visible" to
  * the player, and their descriptions will include an "offscreen"
@@ -949,7 +945,7 @@ void update_mon(int m_idx, bool full)
 		}
 
 		/* Normal line of sight, and not blind */
-		if ((cave_info[fy][fx] & (CAVE_VIEW)) && !p_ptr->blind)
+		if (player_has_los_bold(fy, fx) && !p_ptr->blind)
 		{
 			bool do_invisible = FALSE;
 			bool do_cold_blood = FALSE;
@@ -973,7 +969,7 @@ void update_mon(int m_idx, bool full)
 			}
 
 			/* Use "illumination" */
-			if (cave_info[fy][fx] & (CAVE_LITE | CAVE_GLOW))
+			if (player_can_see_bold(fy, fx))
 			{
 				/* Handle "invisible" monsters */
 				if (r_ptr->flags2 & (RF2_INVISIBLE))
@@ -1221,14 +1217,14 @@ void monster_swap(int y1, int x1, int y2, int x2)
 		p_ptr->py = y2;
 		p_ptr->px = x2;
 
-		/* Check for new panel (redraw map) */
-		verify_panel();
+		/* Update the panel */
+		p_ptr->update |= (PU_PANEL);
 
-		/* Update stuff */
-		p_ptr->update |= (PU_VIEW | PU_LITE | PU_FLOW);
+		/* Update the visuals (and monster distances) */
+		p_ptr->update |= (PU_UPDATE_VIEW | PU_DISTANCE);
 
-		/* Update the monsters */
-		p_ptr->update |= (PU_DISTANCE);
+		/* Update the flow */
+		p_ptr->update |= (PU_UPDATE_FLOW);
 
 		/* Window stuff */
 		p_ptr->window |= (PW_OVERHEAD);
@@ -1248,20 +1244,20 @@ void monster_swap(int y1, int x1, int y2, int x2)
 	}
 
 	/* Player 2 */
-	else if (m2 > 0)
+	else if (m2 < 0)
 	{
 		/* Move player */
 		p_ptr->py = y1;
 		p_ptr->px = x1;
 
-		/* Check for new panel (redraw map) */
-		verify_panel();
+		/* Update the panel */
+		p_ptr->update |= (PU_PANEL);
 
-		/* Update stuff */
-		p_ptr->update |= (PU_VIEW | PU_LITE | PU_FLOW);
+		/* Update the visuals (and monster distances) */
+		p_ptr->update |= (PU_UPDATE_VIEW | PU_DISTANCE);
 
-		/* Update the monsters */
-		p_ptr->update |= (PU_DISTANCE);
+		/* Update the flow */
+		p_ptr->update |= (PU_UPDATE_FLOW);
 
 		/* Window stuff */
 		p_ptr->window |= (PW_OVERHEAD);

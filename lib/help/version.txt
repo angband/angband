@@ -1,12 +1,12 @@
 === Version Information ===
 
-This file was last updated for Angband 2.8.2.
+This file was last updated for Angband 2.8.3.
 
-Make sure to read the newsgroup "rec.games.roguelike.angband", and to
-visit the website "http://www.voicenet.com/~benh/Angband/" for the most
+Make sure to read the newsgroup ("rec.games.roguelike.angband"), and to visit
+the Official Angband Home Page ("http://www.phial.com/angband/") for the most
 up to date information about Angband.
 
-Angband 2.8.2 has an incredibly complex history, and is the result of a
+Angband 2.8.3 has an incredibly complex history, and is the result of a
 lot of work by a lot of people, all of whom have contributed their time
 and energy for free, being rewarded only by the pleasure of keeping alive
 one of the best freeware games available anywhere.
@@ -16,6 +16,7 @@ time, and more than five different primary developers.  Without such files,
 we must rely on simpler methods, such as change logs, source file diffs, and
 word of mouth.  Some of this information is summarized in this file.
 
+Please be sure to read the copyright information at the end of this file.
 
 === Brief Version History ===
 
@@ -92,24 +93,21 @@ variety of minor tweaks and some new features.
 After Angband 2.7.8 was released, I created a web site to keep track of
 all the changes made in each version (though a few may have been missed),
 and acquired the use of a new develoepement ftp server to supplement the
-official "mirror" server.  The next few releases, from Angband 2.7.9v1
-through Angband 2.7.9v6, really should have been given their own separate
-version numbers, but I kept thinking that I wanted to save Angband 2.8.0
-for a really special release.  Angband 2.8.0 and Angband 2.8.1 were then
-released using a more normal version scheme.  Angband 2.8.2 will hopefully
-be an official stable release cleanup, and includes mostly just bug fixes
-and general cleanup of Angband 2.8.1, plus a few minor new features.  Note
-that almost all changes made in each version released after Angband 2.7.8
-can be found at the Official Angband Home Page, and I just wish that I had
-thought of keeping a change log for the earlier versions as well.
+official "mirror" server.  This web site is now permanently located at
+the Official Angband Home Page (http://www.phial.com).  Unfortunately,
+the next six versions were numbered Angband 2.7.9v1 to Angband 2.7.9v6,
+but really each were rather major updates.  Angband 2.8.0 and 2.8.1 were
+released using a more normal version scheme.  Angband 2.8.2 and 2.8.3 add
+a few random features, clean up some code, and provide graphics support
+and such for a few more platforms.
 
-The Official Angband Home Page ("http://www.voicenet.com/~benh/Angband/")
-was created to serve as the most up to date description of Angband, listing
+The Official Angband Home Page ("http://www.phial.com/angband/") serves
+not only as the most up to date description of Angband, but also lists
 changes made between versions, and changes planned for upcoming versions,
-and to list various email addresses and web sites related to Angband.
+and lists various email addresses and web sites related to Angband.
 
 
-=== Some of the changes from Angband 2.6.1 to Angband 2.7.9 ===
+=== Some of the changes between Angband 2.6.1 and Angband 2.7.8 ===
 
 It is very hard to pin down, along the way from 2.6.2 to 2.7.8, exactly
 what changes were made, and exactly when they were made.  Most releases
@@ -118,8 +116,8 @@ not very useful, since often the diff files are as long as the code itself.
 Most of the changes, with the notable exception of the creation of some of
 the new "main-xxx.c" files for the various new platforms, and a few other
 minor exceptions generally noted directly in comments in the source, were
-written by myself, either spontaneously, or, more commonly, as the result of
-a suggestion or comment by an Angband player.
+written by myself, either spontaneously, or, more commonly, as the result
+of a suggestion or comment by an Angband player.
 
 The most important modification was a massive "code level cleanup" that made
 all of my other modifications much simpler and safer.  This cleanup was so
@@ -431,5 +429,14 @@ Angband Version 2.6   : 09/04/94 Charles Swiger
 Angband Version 2.7   : 01/01/95  Ben Harrison
 
 Angband Version 2.8   : 01/01/97  Ben Harrison
+
+
+
+Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
+
+This software may be copied and distributed for educational, research,
+and not for profit purposes provided that this copyright and statement
+are included in all such copies.  Other copyrights may also apply.
+
 
 

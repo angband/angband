@@ -9,7 +9,18 @@
 #
 
 
+##### Standard font file #####
+
+%:font-xxx.prf
+
+
 ##### System Specific Subfiles #####
+
+?:[IOR [EQU $SYS xaw] [EQU $SYS x11]]
+%:graf-x11.prf
+
+?:[EQU $SYS gcu]
+%:graf-gcu.prf
 
 ?:[EQU $SYS ami]
 %:graf-ami.prf
@@ -17,9 +28,18 @@
 ?:[EQU $SYS mac]
 %:graf-mac.prf
 
-?:[EQU $SYS win]
+?:[IOR [EQU $SYS win] [EQU $SYS dos]]
 %:graf-win.prf
 
-## ?:[EQU $SYS ibm]
-## %:graf-ibm.prf
+?:[EQU $SYS ibm]
+%:graf-ibm.prf
+
+?:[EQU $SYS emx]
+%:graf-emx.prf
+
+?:[EQU $SYS acn]
+%:graf-acn.prf
+
+?:1
+
 
