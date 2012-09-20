@@ -195,7 +195,8 @@ void do_cmd_messages(void)
 {
 	char ch;
 
-	int i, j, n, q;
+	int i, j, n;
+	uint q;
 
 	char shower[80];
 	char finder[80];
@@ -230,7 +231,7 @@ void do_cmd_messages(void)
 		/* Dump up to 20 lines of messages */
 		for (j = 0; (j < 20) && (i + j < n); j++)
 		{
-			cptr msg = message_str(i+j);
+			cptr msg = message_str((s16b)(i+j));
 
 			/* Apply horizontal scroll */
 			msg = (strlen(msg) >= q) ? (msg + q) : "";
@@ -309,7 +310,7 @@ void do_cmd_messages(void)
 		/* Hack -- handle find */
 		if (ch == '/')
 		{
-			int z;
+			s16b z;
 
 			/* Prompt */
 			prt("Find: ", 23, 0);
@@ -1925,10 +1926,10 @@ void do_cmd_visuals(void)
 			{
 				monster_race *r_ptr = &r_info[r];
 
-				int da = (byte)(r_ptr->d_attr);
-				int dc = (byte)(r_ptr->d_char);
-				int ca = (byte)(r_ptr->x_attr);
-				int cc = (byte)(r_ptr->x_char);
+				byte da = (byte)(r_ptr->d_attr);
+				char dc = (byte)(r_ptr->d_char);
+				byte ca = (byte)(r_ptr->x_attr);
+				char cc = (byte)(r_ptr->x_char);
 
 				/* Label the object */
 				Term_putstr(5, 17, -1, TERM_WHITE,
@@ -1980,10 +1981,10 @@ void do_cmd_visuals(void)
 			{
 				object_kind *k_ptr = &k_info[k];
 
-				int da = (byte)(k_ptr->d_attr);
-				int dc = (byte)(k_ptr->d_char);
-				int ca = (byte)(k_ptr->x_attr);
-				int cc = (byte)(k_ptr->x_char);
+				byte da = (byte)(k_ptr->d_attr);
+				char dc = (byte)(k_ptr->d_char);
+				byte ca = (byte)(k_ptr->x_attr);
+				char cc = (byte)(k_ptr->x_char);
 
 				/* Label the object */
 				Term_putstr(5, 17, -1, TERM_WHITE,
@@ -2035,10 +2036,10 @@ void do_cmd_visuals(void)
 			{
 				feature_type *f_ptr = &f_info[f];
 
-				int da = (byte)(f_ptr->d_attr);
-				int dc = (byte)(f_ptr->d_char);
-				int ca = (byte)(f_ptr->x_attr);
-				int cc = (byte)(f_ptr->x_char);
+				byte da = (byte)(f_ptr->d_attr);
+				char dc = (byte)(f_ptr->d_char);
+				byte ca = (byte)(f_ptr->x_attr);
+				char cc = (byte)(f_ptr->x_char);
 
 				/* Label the object */
 				Term_putstr(5, 17, -1, TERM_WHITE,
@@ -2246,7 +2247,7 @@ void do_cmd_colors(void)
 		/* Edit colors */
 		else if (ch == '3')
 		{
-			static int a = 0;
+			static byte a = 0;
 
 			/* Prompt */
 			prt("Command: Modify colors", 8, 0);
@@ -2266,7 +2267,7 @@ void do_cmd_colors(void)
 					Term_putstr(i*4, 20, -1, a, "###");
 
 					/* Exhibit all colors */
-					Term_putstr(i*4, 22, -1, i, format("%3d", i));
+					Term_putstr(i*4, 22, -1, (byte)i, format("%3d", i));
 				}
 
 				/* Describe the color */
@@ -2391,7 +2392,6 @@ static cptr do_cmd_feeling_text[11] =
 void do_cmd_feeling(void)
 {
 	/* Verify the feeling */
-	if (feeling < 0) feeling = 0;
 	if (feeling > 10) feeling = 10;
 
 	/* No useful feeling in town */

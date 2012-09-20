@@ -126,7 +126,7 @@ bool command_repeating = FALSE;
  * Dungeon variables
  */
 
-s16b feeling;			/* Most recent feeling */
+byte feeling;			/* Most recent feeling */
 s16b rating;			/* Level's current rating */
 
 bool good_item_flag;	/* True if "Artifact" on this level */
@@ -518,6 +518,12 @@ char *r_text;
 cptr ANGBAND_SYS = "xxx";
 
 /*
+ * Hack -- The special Angband "Graphics Suffix"
+ * This variable is used to choose an appropriate "graf-xxx" file
+ */
+cptr ANGBAND_GRAF = "old";
+
+/*
  * Path name: The main "lib" directory
  * This variable is not actually used anywhere in the code
  */
@@ -632,4 +638,18 @@ bool (*get_mon_num_hook)(int r_idx);
 bool (*get_obj_num_hook)(int k_idx);
 
 
+/*
+ * The "highscore" file descriptor, if available.
+ */
+int highscore_fd = -1;
 
+
+/*
+ * Use transparent tiles
+ */
+bool use_transparency = FALSE;
+
+/*
+ * Game can be saved
+ */
+bool can_save = TRUE;

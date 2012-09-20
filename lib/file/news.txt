@@ -1,7 +1,7 @@
 
 
               **************************************************
-              **   Angband 2.8.5   **   The Pits of Angband   **
+              **   Angband 2.9.0   **   The Pits of Angband   **
               **************************************************
 
            Based on Moria:   Copyright (c) 1985 Robert Alan Koeneke
@@ -11,14 +11,13 @@
                    Alex Cutler, Andy Astrand, Sean Marsh,
                  Geoff Hill, Charles Teague, Charles Swiger
 
-            Angband 2.8.5:  Copyright (c) 1995-1999 Ben Harrison
+                   Angband 2.7.0 - 2.8.5 by Ben Harrison
 
-         Send comments, bug reports, and patches, to "benh@phial.com"
-        Visit the Angband Home Page at "http://www.phial.com/angband/"
+                     Angband 2.9.0 by Robert Ruehlmann
+
+        Send comments, bug reports, and patches, to "rr9@angband.org"
+       Visit the Angband Home Page at "http://thangorodrim.angband.org/"
       Browse the Angband newsgroup at "news:rec.games.roguelike.angband"
     Read the online help files, especially "general.txt" and "version.txt"
    Angband is available for Unix, X11, DOS, Windows, Macintosh, Amiga, etc.
-
-
-
 

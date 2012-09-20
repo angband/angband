@@ -14,7 +14,7 @@
 # Objects
 OBJS = \
   main.o main-ibm.o \
-  generate.o dungeon.o init1.o init2.o \
+  generate.o dungeon.o init1.o init2.o init3.o \
   store.o birth.o wizard1.o wizard2.o \
   cmd1.o cmd2.o cmd3.o cmd4.o cmd5.o cmd6.o \
   load1.o load2.o save.o files.o \

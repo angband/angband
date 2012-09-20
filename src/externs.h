@@ -124,7 +124,7 @@ extern s16b o_max;
 extern s16b o_cnt;
 extern s16b m_max;
 extern s16b m_cnt;
-extern s16b feeling;
+extern byte feeling;
 extern s16b rating;
 extern bool good_item_flag;
 extern bool closing_flag;
@@ -204,6 +204,7 @@ extern monster_race *r_info;
 extern char *r_name;
 extern char *r_text;
 extern cptr ANGBAND_SYS;
+extern cptr ANGBAND_GRAF;
 extern cptr ANGBAND_DIR;
 extern cptr ANGBAND_DIR_APEX;
 extern cptr ANGBAND_DIR_BONE;
@@ -222,6 +223,10 @@ extern bool (*ang_sort_comp)(vptr u, vptr v, int a, int b);
 extern void (*ang_sort_swap)(vptr u, vptr v, int a, int b);
 extern bool (*get_mon_num_hook)(int r_idx);
 extern bool (*get_obj_num_hook)(int k_idx);
+extern int highscore_fd;
+extern bool use_transparency;
+extern bool can_save;
+
 
 /*
  * Automatically generated "function declarations"
@@ -235,7 +240,12 @@ extern sint distance(int y1, int x1, int y2, int x2);
 extern bool los(int y1, int x1, int y2, int x2);
 extern bool no_lite(void);
 extern bool cave_valid_bold(int y, int x);
+extern bool feat_supports_lighting(byte feat);
+#ifdef USE_TRANSPARENCY
+extern void map_info(int y, int x, byte *ap, char *cp, byte *tap, char *tcp);
+#else /* USE_TRANSPARENCY */
 extern void map_info(int y, int x, byte *ap, char *cp);
+#endif /* USE_TRANSPARENCY */
 extern void move_cursor_relative(int y, int x);
 extern void print_rel(char c, byte a, int y, int x);
 extern void note_spot(int y, int x);
@@ -373,6 +383,7 @@ extern void exit_game_panic(void);
 extern void signals_ignore_tstp(void);
 extern void signals_handle_tstp(void);
 extern void signals_init(void);
+extern void display_scores_aux(int from, int to, int note, high_score *score);
 
 /* generate.c */
 extern void generate_cave(void);
@@ -425,7 +436,7 @@ extern s16b player_place(int y, int x);
 extern s16b monster_place(int y, int x, monster_type *n_ptr);
 extern bool place_monster_aux(int y, int x, int r_idx, bool slp, bool grp);
 extern bool place_monster(int y, int x, bool slp, bool grp);
-extern bool alloc_monster(int dis, int slp);
+extern bool alloc_monster(int dis, bool slp);
 extern bool summon_specific(int y1, int x1, int lev, int type);
 extern bool multiply_monster(int m_idx);
 extern void message_pain(int m_idx, int dam);
@@ -440,7 +451,7 @@ extern void object_desc(char *buf, object_type *o_ptr, int pref, int mode);
 extern void object_desc_store(char *buf, object_type *o_ptr, int pref, int mode);
 extern cptr item_activation(object_type *o_ptr);
 extern bool identify_fully_aux(object_type *o_ptr);
-extern s16b index_to_label(int i);
+extern char index_to_label(int i);
 extern s16b label_to_inven(int c);
 extern s16b label_to_equip(int c);
 extern s16b wield_slot(object_type *o_ptr);
@@ -743,7 +754,7 @@ extern void user_name(char *buf, int id);
 
 #ifdef MACINTOSH
 /* main-mac.c */
-/* extern void main(void); */
+/* extern int main(void); */
 #endif
 
 #ifdef WINDOWS
@@ -776,4 +787,3 @@ extern void show_floor(int *floor_list, int floor_num);
 extern int do_randart(u32b randart_seed);
 
 #endif /* GJW_RANDART */
-

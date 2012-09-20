@@ -293,19 +293,19 @@ static void regenhp(int percent)
 
 	/* Extract the new hitpoints */
 	new_chp = ((long)p_ptr->mhp) * percent + PY_REGEN_HPBASE;
-	p_ptr->chp += new_chp >> 16;   /* div 65536 */
+	p_ptr->chp += (s16b)(new_chp >> 16);   /* div 65536 */
 
 	/* check for overflow */
 	if ((p_ptr->chp < 0) && (old_chp > 0)) p_ptr->chp = MAX_SHORT;
 	new_chp_frac = (new_chp & 0xFFFF) + p_ptr->chp_frac;	/* mod 65536 */
 	if (new_chp_frac >= 0x10000L)
 	{
-		p_ptr->chp_frac = new_chp_frac - 0x10000L;
+		p_ptr->chp_frac = (u16b)(new_chp_frac - 0x10000L);
 		p_ptr->chp++;
 	}
 	else
 	{
-		p_ptr->chp_frac = new_chp_frac;
+		p_ptr->chp_frac = (u16b)new_chp_frac;
 	}
 
 	/* Fully healed */
@@ -337,7 +337,7 @@ static void regenmana(int percent)
 
 	old_csp = p_ptr->csp;
 	new_mana = ((long)p_ptr->msp) * percent + PY_REGEN_MNBASE;
-	p_ptr->csp += new_mana >> 16;	/* div 65536 */
+	p_ptr->csp += (s16b)(new_mana >> 16);	/* div 65536 */
 	/* check for overflow */
 	if ((p_ptr->csp < 0) && (old_csp > 0))
 	{
@@ -346,12 +346,12 @@ static void regenmana(int percent)
 	new_mana_frac = (new_mana & 0xFFFF) + p_ptr->csp_frac;	/* mod 65536 */
 	if (new_mana_frac >= 0x10000L)
 	{
-		p_ptr->csp_frac = new_mana_frac - 0x10000L;
+		p_ptr->csp_frac = (u16b)(new_mana_frac - 0x10000L);
 		p_ptr->csp++;
 	}
 	else
 	{
-		p_ptr->csp_frac = new_mana_frac;
+		p_ptr->csp_frac = (u16b)new_mana_frac;
 	}
 
 	/* Must set frac to zero even if equal */
@@ -1872,7 +1872,9 @@ static void process_player(void)
 	/*** Apply energy ***/
 
 	/* Give the player some energy */
-	p_ptr->energy += extract_energy[p_ptr->pspeed];
+	if (p_ptr->pspeed > 199) p_ptr->energy += 49;
+	else if (p_ptr->pspeed < 0) p_ptr->energy += 1;
+	else p_ptr->energy += extract_energy[p_ptr->pspeed];
 
 	/* No turn yet */
 	if (p_ptr->energy < 100) return;
@@ -2537,11 +2539,13 @@ static void process_some_user_pref_files(void)
 {
 	char buf[1024];
 
+#ifdef ALLOW_PREF_IN_HOME
 #ifdef SET_UID
 
 	char *homedir;
 
-#endif
+#endif /* SET_UID */
+#endif /* ALLOW_PREF_IN_HOME */
 
 	/* Process the "user.prf" file */
 	(void)process_pref_file("user.prf");
@@ -2552,6 +2556,7 @@ static void process_some_user_pref_files(void)
 	/* Process the "PLAYER.prf" file */
 	(void)process_pref_file(buf);
 
+#ifdef ALLOW_PREF_IN_HOME
 #ifdef SET_UID
 
 	/* Process the "~/.angband.prf" file */
@@ -2565,7 +2570,7 @@ static void process_some_user_pref_files(void)
 	}
 
 #endif /* SET_UID */
-
+#endif /* ALLOW_PREF_IN_HOME */
 }
 
 

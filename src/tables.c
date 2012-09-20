@@ -3098,9 +3098,9 @@ cptr option_desc[OPT_MAX] =
 bool option_norm[OPT_MAX] =
 {
 	FALSE,		/* OPT_rogue_like_commands */
-	FALSE,		/* OPT_quick_messages */
-	TRUE,		/* OPT_floor_query_flag */
-	FALSE,		/* OPT_carry_query_flag */
+	TRUE,		/* OPT_quick_messages */
+	FALSE,		/* OPT_floor_query_flag */
+	TRUE,		/* OPT_carry_query_flag */
 	FALSE,		/* OPT_use_old_target */
 	TRUE,		/* OPT_always_pickup */
 	FALSE,		/* OPT_always_repeat */
@@ -3133,8 +3133,8 @@ bool option_norm[OPT_MAX] =
 	FALSE,		/* OPT_auto_scum */
 	FALSE,		/* xxx */
 	FALSE,		/* xxx */
-	FALSE,		/* OPT_expand_look */
-	FALSE,		/* OPT_expand_list */
+	TRUE,		/* OPT_expand_look */
+	TRUE,		/* OPT_expand_list */
 	TRUE,		/* OPT_view_perma_grids */
 	FALSE,		/* OPT_view_torch_grids */
 	TRUE,		/* OPT_dungeon_align */
@@ -3227,8 +3227,8 @@ bool option_norm[OPT_MAX] =
 	FALSE,		/* xxx */
 	FALSE,		/* OPT_birth_point_based */
 	FALSE,		/* OPT_birth_auto_roller */
-	FALSE,		/* OPT_birth_maximize */
-	FALSE,		/* OPT_birth_preserve */
+	TRUE,		/* OPT_birth_maximize */
+	TRUE,		/* OPT_birth_preserve */
 	FALSE,		/* OPT_birth_ironman */
 	FALSE,		/* OPT_birth_no_stores */
 	FALSE,		/* OPT_birth_no_artifacts */
@@ -3291,8 +3291,8 @@ bool option_norm[OPT_MAX] =
 	FALSE,		/* xxx */
 	FALSE,		/* OPT_adult_point_based */
 	FALSE,		/* OPT_adult_auto_roller */
-	FALSE,		/* OPT_adult_maximize */
-	FALSE,		/* OPT_adult_preserve */
+	TRUE,		/* OPT_adult_maximize */
+	TRUE,		/* OPT_adult_preserve */
 	FALSE,		/* OPT_adult_ironman */
 	FALSE,		/* OPT_adult_no_stores */
 	FALSE,		/* OPT_adult_no_artifacts */

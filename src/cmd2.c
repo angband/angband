@@ -904,7 +904,11 @@ void do_cmd_close(void)
 		/* Handle a single open door */
 		if (count_feats(&y, &x, FEAT_OPEN, FEAT_OPEN) == 1)
 		{
-			p_ptr->command_dir = coords_to_dir(y, x);
+			/* Don't close door player is on */
+			if ((y != py) || (x != px))
+			{
+				p_ptr->command_dir = coords_to_dir(y, x);
+			}
 		}
 	}
 
@@ -1816,7 +1820,7 @@ void do_cmd_alter(void)
 		/* Tunnel */
 		more = do_cmd_disarm_aux(y, x);
 	}
-	
+
 #if 0
 
 	/* Close open doors */

@@ -22,7 +22,7 @@
 
 # Version stamp (required)
 
-V:2.8.5
+V:2.9.0
 
 
 ### Body Armor ###
@@ -666,5 +666,4 @@ N:127:(Blasted)
 X:30:0
 W:0:0:0:0
 C:0:0:10:0
-
 

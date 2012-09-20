@@ -469,4 +469,3 @@ ways as a character which has cheated death.  Cheating death, like using
 any of the "cheating options", will prevent your character from appearing
 on the high score list.
 
-

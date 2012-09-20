@@ -1148,7 +1148,7 @@ bool make_attack_normal(int m_idx)
 			/* Handle cut */
 			if (do_cut)
 			{
-				int k = 0;
+				int k;
 
 				/* Critical hit (zero if non-critical) */
 				tmp = monster_critical(d_dice, d_side, damage);
@@ -1173,7 +1173,7 @@ bool make_attack_normal(int m_idx)
 			/* Handle stun */
 			if (do_stun)
 			{
-				int k = 0;
+				int k;
 
 				/* Critical hit (zero if non-critical) */
 				tmp = monster_critical(d_dice, d_side, damage);

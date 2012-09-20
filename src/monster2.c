@@ -71,7 +71,7 @@ void delete_monster_idx(int i)
 
 
 	/* Wipe the Monster */
-	WIPE(m_ptr, monster_type);
+	(void)WIPE(m_ptr, monster_type);
 
 	/* Count monsters */
 	m_cnt--;
@@ -146,7 +146,7 @@ static void compact_monsters_aux(int i1, int i2)
 	COPY(&m_list[i2], &m_list[i1], monster_type);
 
 	/* Hack -- wipe hole */
-	WIPE(&m_list[i1], monster_type);
+	(void)WIPE(&m_list[i1], monster_type);
 }
 
 
@@ -266,7 +266,7 @@ void wipe_m_list(void)
 		cave_m_idx[m_ptr->fy][m_ptr->fx] = 0;
 
 		/* Wipe the Monster */
-		WIPE(m_ptr, monster_type);
+		(void)WIPE(m_ptr, monster_type);
 	}
 
 	/* Reset "m_max" */
@@ -1449,7 +1449,7 @@ static bool place_monster_one(int y, int x, int r_idx, bool slp)
 	n_ptr = &monster_type_body;
 
 	/* Clean out the monster */
-	WIPE(n_ptr, monster_type);
+	(void)WIPE(n_ptr, monster_type);
 
 
 	/* Save the race */
@@ -1491,7 +1491,7 @@ static bool place_monster_one(int y, int x, int r_idx, bool slp)
 
 
 	/* Give a random starting energy */
-	n_ptr->energy = rand_int(100);
+	n_ptr->energy = (byte)rand_int(100);
 
 	/* Force monster to wait for player */
 	if (r_ptr->flags1 & (RF1_FORCE_SLEEP))
@@ -1833,7 +1833,7 @@ bool place_monster(int y, int x, bool slp, bool grp)
  *
  * Use "monster_level" for the monster level
  */
-bool alloc_monster(int dis, int slp)
+bool alloc_monster(int dis, bool slp)
 {
 	int py = p_ptr->py;
 	int px = p_ptr->px;
@@ -1979,7 +1979,7 @@ static bool summon_specific_okay(int r_idx)
 
 		case SUMMON_UNIQUE:
 		{
-			okay = (r_ptr->flags1 & (RF1_UNIQUE));
+			okay = (r_ptr->flags1 & (RF1_UNIQUE)) ? TRUE : FALSE;
 			break;
 		}
 	}

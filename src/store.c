@@ -3434,7 +3434,7 @@ void store_shuffle(int which)
 	/* Pick a new owner */
 	for (j = st_ptr->owner; j == st_ptr->owner; )
 	{
-		st_ptr->owner = rand_int(MAX_OWNERS);
+		st_ptr->owner = (byte)rand_int(MAX_OWNERS);
 	}
 
 	/* Activate the new owner */
@@ -3571,7 +3571,7 @@ void store_init(int which)
 
 
 	/* Pick an owner */
-	st_ptr->owner = rand_int(MAX_OWNERS);
+	st_ptr->owner = (byte)rand_int(MAX_OWNERS);
 
 	/* Activate the new owner */
 	ot_ptr = &owners[store_num][st_ptr->owner];

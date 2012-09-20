@@ -510,10 +510,10 @@ static bool auto_pickup_okay(object_type *o_ptr)
 static void py_pickup_aux(int o_idx)
 {
 	int slot;
-	
+
 	char o_name[80];
 	object_type *o_ptr;
-	
+
 	o_ptr = &o_list[o_idx];
 
 	/* Carry the object */
@@ -546,7 +546,7 @@ void py_pickup(int pickup)
 	s16b this_o_idx, next_o_idx = 0;
 
 	object_type *o_ptr;
-	
+
 	char o_name[80];
 
 #ifdef ALLOW_EASY_FLOOR
@@ -602,7 +602,7 @@ void py_pickup(int pickup)
 		{
 			/* Pick up the object */
 			py_pickup_aux(this_o_idx);
-			
+
 			/* Check the next object */
 			continue;
 		}
@@ -653,7 +653,7 @@ void py_pickup(int pickup)
 		if (!pickup)
 		{
 			msg_format("You see %s.", o_name);
-			
+
 			/* Check the next object */
 			continue;
 		}
@@ -662,7 +662,7 @@ void py_pickup(int pickup)
 		if (!inven_carry_okay(o_ptr))
 		{
 			msg_format("You have no room for %s.", o_name);
-			
+
 			/* Check the next object */
 			continue;
 		}
@@ -719,7 +719,7 @@ void py_pickup(int pickup)
 			{
 				/* Get the object */
 				o_ptr = &o_list[last_o_idx];
-	
+
 				/* Describe the object */
 				object_desc(o_name, o_ptr, TRUE, 3);
 

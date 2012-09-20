@@ -374,7 +374,7 @@ static void load_prev_data(void)
  * is being used, the changes are fixed.  Otherwise, semi-random
  * changes will occur, with larger changes at lower values.
  */
-static int adjust_stat(int value, s16b amount, int auto_roll)
+static int adjust_stat(int value, int amount, int auto_roll)
 {
 	/* Negative amounts or maximize mode */
 	if ((amount < 0) || adult_maximize)
@@ -764,7 +764,7 @@ static void player_wipe(void)
 
 
 	/* Wipe the player */
-	WIPE(p_ptr, player_type);
+	(void)WIPE(p_ptr, player_type);
 
 
 	/* Clear the inventory */
@@ -912,7 +912,7 @@ static void player_outfit(void)
 
 	/* Hack -- Give the player some food */
 	object_prep(i_ptr, lookup_kind(TV_FOOD, SV_FOOD_RATION));
-	i_ptr->number = rand_range(3, 7);
+	i_ptr->number = (byte)rand_range(3, 7);
 	object_aware(i_ptr);
 	object_known(i_ptr);
 	(void)inven_carry(i_ptr);
@@ -923,7 +923,7 @@ static void player_outfit(void)
 
 	/* Hack -- Give the player some torches */
 	object_prep(i_ptr, lookup_kind(TV_LITE, SV_LITE_TORCH));
-	i_ptr->number = rand_range(3, 7);
+	i_ptr->number = (byte)rand_range(3, 7);
 	i_ptr->pval = rand_range(3, 7) * 500;
 	object_aware(i_ptr);
 	object_known(i_ptr);
@@ -954,7 +954,7 @@ static void player_outfit(void)
  * This function allows the player to select a sex, race, and class, and
  * modify options (including the birth options).
  */
-static bool player_birth_aux_1()
+static bool player_birth_aux_1(void)
 {
 	int k, n, i;
 
@@ -1185,7 +1185,7 @@ static bool player_birth_aux_1()
 /*
  * Initial stat costs (initial stats always range from 10 to 18 inclusive).
  */
-static birth_stat_costs[(18-10)+1] = { 0, 1, 2, 4, 7, 11, 16, 22, 30 };
+static int birth_stat_costs[(18-10)+1] = { 0, 1, 2, 4, 7, 11, 16, 22, 30 };
 
 
 /*
@@ -1199,7 +1199,7 @@ static birth_stat_costs[(18-10)+1] = { 0, 1, 2, 4, 7, 11, 16, 22, 30 };
  *
  * Each unused point is converted into 100 gold pieces.
  */
-static bool player_birth_aux_2()
+static bool player_birth_aux_2(void)
 {
 	int i;
 
@@ -1210,7 +1210,7 @@ static bool player_birth_aux_2()
 
 	int stats[A_MAX];
 
-	int cost = 0;
+	int cost;
 
 	char ch;
 
@@ -1369,11 +1369,11 @@ static bool player_birth_aux_2()
  * from continuously rolling up characters, which can be VERY
  * expensive CPU wise.  And it cuts down on player stupidity.
  */
-static bool player_birth_aux_3()
+static bool player_birth_aux_3(void)
 {
 	int i, j, m, v;
 
-	bool flag = FALSE;
+	bool flag;
 	bool prev = FALSE;
 
 	char ch;
@@ -1392,7 +1392,7 @@ static bool player_birth_aux_3()
 
 	s32b auto_round = 0L;
 
-	s32b last_round = 0L;
+	s32b last_round;
 
 
 	/*** Autoroll ***/
@@ -1727,7 +1727,7 @@ static bool player_birth_aux_3()
  *
  * See "display_player" for screen layout code.
  */
-static bool player_birth_aux()
+static bool player_birth_aux(void)
 {
 	char ch;
 

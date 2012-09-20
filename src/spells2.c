@@ -2478,9 +2478,6 @@ void destroy_area(int y1, int x1, int r, bool full)
 	bool flag = FALSE;
 
 
-	/* XXX XXX */
-	full = full ? full : 0;
-
 	/* Big area of affect */
 	for (y = (y1 - r); y <= (y1 + r); y++)
 	{

@@ -1,3 +1,6 @@
+# File: graf-ibm.prf
+
+#
 # Graphics definition preference file.
 #
 # Generated automatically by `makepref' by Mike Marcelais, which will
@@ -3180,5 +3183,4 @@ R:547:8/-76
 
 # Nobody, the Undefined Ghost
 R:548:1/-85
-
 

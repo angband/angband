@@ -41,14 +41,14 @@
 /*
  * Current version string
  */
-#define VERSION_STRING	"2.8.5"
+#define VERSION_STRING	"2.9.0"
 
 /*
  * Current version numbers
  */
 #define VERSION_MAJOR	2
-#define VERSION_MINOR	8
-#define VERSION_PATCH	5
+#define VERSION_MINOR	9
+#define VERSION_PATCH	0
 #define VERSION_EXTRA	0
 
 
@@ -2996,3 +2996,9 @@ extern int PlayerUID;
 #endif
 
 
+/*
+ * Available graphic modes
+ */
+#define GRAPHICS_NONE       0
+#define GRAPHICS_ORIGINAL   1
+#define GRAPHICS_ADAM_BOLT  2

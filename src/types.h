@@ -591,7 +591,7 @@ struct alloc_entry
  */
 struct quest
 {
-	int level;		/* Dungeon level */
+	byte level;		/* Dungeon level */
 	int r_idx;		/* Monster race */
 
 	int cur_num;	/* Number killed (unused) */
@@ -618,8 +618,6 @@ struct owner_type
 	byte insult_max;	/* Insult limit */
 
 	byte owner_race;	/* Owner race */
-
-	byte unused;		/* Unused */
 };
 
 
@@ -647,7 +645,7 @@ struct store_type
 	s16b table_size;		/* Table -- Total Size of Array */
 	s16b *table;			/* Table -- Legal item kinds */
 
-	s16b stock_num;			/* Stock -- Number of entries */
+	byte stock_num;			/* Stock -- Number of entries */
 	s16b stock_size;		/* Stock -- Total Size of Array */
 	object_type *stock;		/* Stock -- Actual stock items */
 };
@@ -676,7 +674,7 @@ struct magic_type
  */
 struct player_magic
 {
-	s16b spell_book;		/* Tval of spell books (if any) */
+	byte spell_book;		/* Tval of spell books (if any) */
 	s16b spell_xtra;		/* Something for later */
 
 	s16b spell_stat;		/* Stat for spells (if any)  */
@@ -788,9 +786,9 @@ struct player_other
 
 	u32b window_flag[8];	/* Window flags */
 
-	s16b hitpoint_warn;		/* Hitpoint warning (0 to 9) */
+	byte hitpoint_warn;		/* Hitpoint warning (0 to 9) */
 
-	s16b delay_factor;		/* Delay factor (0 to 9) */
+	byte delay_factor;		/* Delay factor (0 to 9) */
 };
 
 
@@ -1078,3 +1076,43 @@ struct player_type
 };
 
 
+/*
+ * Semi-Portable High Score List Entry (128 bytes)
+ *
+ * All fields listed below are null terminated ascii strings.
+ *
+ * In addition, the "number" fields are right justified, and
+ * space padded, to the full available length (minus the "null").
+ *
+ * Note that "string comparisons" are thus valid on "pts".
+ */
+
+typedef struct high_score high_score;
+
+struct high_score
+{
+	char what[8];		/* Version info (string) */
+
+	char pts[10];		/* Total Score (number) */
+
+	char gold[10];		/* Total Gold (number) */
+
+	char turns[10];		/* Turns Taken (number) */
+
+	char day[10];		/* Time stamp (string) */
+
+	char who[16];		/* Player Name (string) */
+
+	char uid[8];		/* Player UID (number) */
+
+	char sex[2];		/* Player Sex (string) */
+	char p_r[3];		/* Player Race (number) */
+	char p_c[3];		/* Player Class (number) */
+
+	char cur_lev[4];		/* Current Player Level (number) */
+	char cur_dun[4];		/* Current Dungeon Level (number) */
+	char max_lev[4];		/* Max Player Level (number) */
+	char max_dun[4];		/* Max Dungeon Level (number) */
+
+	char how[32];		/* Method of death (string) */
+};

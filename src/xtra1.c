@@ -145,7 +145,7 @@ static void prt_stat(int stat)
  */
 static void prt_title(void)
 {
-	cptr p = "";
+	cptr p;
 
 	/* Wizard */
 	if (p_ptr->wizard)
@@ -578,7 +578,7 @@ static void prt_speed(void)
 {
 	int i = p_ptr->pspeed;
 
-	int attr = TERM_WHITE;
+	byte attr = TERM_WHITE;
 	char buf[32] = "";
 
 	/* Hack -- Visually "undo" the Search Mode Slowdown */
@@ -1006,7 +1006,7 @@ static void fix_message(void)
 		for (i = 0; i < h; i++)
 		{
 			/* Dump the message on the appropriate line */
-			Term_putstr(0, (h - 1) - i, -1, TERM_WHITE, message_str(i));
+			Term_putstr(0, (h - 1) - i, -1, TERM_WHITE, message_str((s16b)i));
 
 			/* Cursor */
 			Term_locate(&x, &y);
@@ -2336,7 +2336,8 @@ static void calc_bonuses(void)
 	{
 		int str_index, dex_index;
 
-		int num = 0, wgt = 0, mul = 0, div = 0;
+		int num = 0, wgt = 0, mul = 0;
+		int div;
 
 		/* Analyze the class */
 		switch (p_ptr->pclass)

@@ -1,7 +1,7 @@
 # File: pref-emx.prf
 
 #
-# Include "pref-ibm.prf" to get the default macros.
+# Include "pref-win.prf" to get the default macros.
 #
 # Note that, while most key-to-trigger mappings are the same as DOS/Win,
 # some few odd keys will be different or not available at all.
@@ -12,5 +12,4 @@
 #
 
 %:pref-win.prf
-
 

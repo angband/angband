@@ -208,7 +208,7 @@ C:1:X
 ?:[IOR [EQU $SYS xaw] [EQU $SYS x11]]
 %:pref-x11.prf
 
-?:[EQU $SYS gcu]
+?:[IOR [EQU $SYS gcu] [EQU $SYS lsl]]
 %:pref-gcu.prf
 
 ?:[EQU $SYS ami]
@@ -227,5 +227,4 @@ C:1:X
 %:pref-acn.prf
 
 ?:1
-
 

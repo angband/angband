@@ -1,18 +1,18 @@
 === Version Information ===
 
-This file was last updated for Angband 2.8.3.
+This file was last updated for Angband 2.9.0.
 
 Make sure to read the newsgroup ("rec.games.roguelike.angband"), and to visit
-the Official Angband Home Page ("http://www.phial.com/angband/") for the most
-up to date information about Angband.
+the Official Angband Home Page ("http://thangorodrim.angband.org") for the
+most up to date information about Angband.
 
-Angband 2.8.3 has an incredibly complex history, and is the result of a
+Angband 2.9.0 has an incredibly complex history, and is the result of a
 lot of work by a lot of people, all of whom have contributed their time
 and energy for free, being rewarded only by the pleasure of keeping alive
 one of the best freeware games available anywhere.
 
 The version control files, if they existed, would span more than ten years
-time, and more than five different primary developers.  Without such files,
+time, and more than six different primary developers.  Without such files,
 we must rely on simpler methods, such as change logs, source file diffs, and
 word of mouth.  Some of this information is summarized in this file.
 
@@ -94,14 +94,23 @@ After Angband 2.7.8 was released, I created a web site to keep track of
 all the changes made in each version (though a few may have been missed),
 and acquired the use of a new develoepement ftp server to supplement the
 official "mirror" server.  This web site is now permanently located at
-the Official Angband Home Page (http://www.phial.com).  Unfortunately,
-the next six versions were numbered Angband 2.7.9v1 to Angband 2.7.9v6,
-but really each were rather major updates.  Angband 2.8.0 and 2.8.1 were
-released using a more normal version scheme.  Angband 2.8.2 and 2.8.3 add
-a few random features, clean up some code, and provide graphics support
-and such for a few more platforms.
+the Official Angband Home Page (http://thangorodrim.angband.org/).
+Unfortunately, the next six versions were numbered Angband 2.7.9v1 to
+Angband 2.7.9v6, but really each were rather major updates.  Angband 2.8.0
+and 2.8.1 were released using a more normal version scheme.  Angband 2.8.2
+and 2.8.3 add a few random features, clean up some code, and provide
+graphics support and such for a few more platforms.
 
-The Official Angband Home Page ("http://www.phial.com/angband/") serves
+After the release of Angband 2.8.3 Ben's free time was more and more
+occupied by his work.  He released a beta version of Angband 2.8.5,
+introducing many new features, but couldn't give as much attention to
+maintaining the game as he wanted to.
+
+So in March 2000, I (Robert Ruehlmann) offered to take over Angband and
+started to fix the remaining bugs in the Angband 2.8.5 beta.  The
+resulting version has now been released as Angband 2.9.0.
+
+The Official Angband Home Page ("http://thangorodrim.angband.org/") serves
 not only as the most up to date description of Angband, but also lists
 changes made between versions, and changes planned for upcoming versions,
 and lists various email addresses and web sites related to Angband.
@@ -439,4 +448,10 @@ and not for profit purposes provided that this copyright and statement
 are included in all such copies.  Other copyrights may also apply.
 
 
+All changes made by Ben Harrison and Robert Ruehlmann are also available
+under the GNU GENERAL PUBLIC LICENSE.  Note that this doesn't influence
+the current distribution, since parts of the source are still only
+available under the old Moria/Angband license.  Until all parts of
+Angband are distributed under the GPL the only valid license remains
+the original Moria/Angband license.
 

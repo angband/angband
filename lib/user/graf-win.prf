@@ -8,6 +8,10 @@
 
 
 # Standard file
+?:[EQU $GRAF old]
 %:graf-xxx.prf
 
+# New tiles
+?:[EQU $GRAF new]
+%:graf-new.prf
 

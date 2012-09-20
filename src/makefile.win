@@ -26,7 +26,7 @@ SRCS = \
   cmd1.c cmd2.c cmd3.c cmd4.c cmd5.c cmd6.c \
   store.c birth.c load1.c load2.c \
   wizard1.c wizard2.c \
-  generate.c dungeon.c init1.c init2.c \
+  generate.c dungeon.c init1.c init2.c init3.c \
   main-win.c readdib.c itsybits.c
 
 OBJS = \
@@ -38,7 +38,7 @@ OBJS = \
   cmd1.obj cmd2.obj cmd3.obj cmd4.obj cmd5.obj cmd6.obj \
   store.obj birth.obj load1.obj load2.obj \
   wizard1.obj wizard2.obj \
-  generate.obj dungeon.obj init1.obj init2.obj \
+  generate.obj dungeon.obj init1.obj init2.obj init3.obj \
   main-win.obj readdib.obj itsybits.obj
 
 OBJS32 = \
@@ -50,7 +50,7 @@ OBJS32 = \
   cmd1.o32 cmd2.o32 cmd3.o32 cmd4.o32 cmd5.o32 cmd6.o32 \
   store.o32 birth.o32 load1.o32 load2.o32 \
   wizard1.o32 wizard2.o32 \
-  generate.o32 dungeon.o32 init1.o32 init2.o32 \
+  generate.o32 dungeon.o32 init1.o32 init2.o32 init3.o32 \
   main-win.o32 readdib.o32 itsybits.o32
 
 default: bccw16.cfg angband cleanobj bccw32.cfg angband32 cleanobj32
@@ -166,7 +166,7 @@ melee1 melee2 save files +
 cmd1 cmd2 cmd3 cmd4 cmd5 cmd6 +
 store birth load1 load2 +
 wizard1 wizard2 +
-generate dungeon init1 init2 +
+generate dungeon init1 init2 init3 +
 main-win readdib itsybits,+
 ..\angband.exe,..\angband.map,import cwl,..\ext-win\src\angband.def
 |
@@ -197,7 +197,7 @@ melee1.o32 melee2.o32 save.o32 files.o32 +
 cmd1.o32 cmd2.o32 cmd3.o32 cmd4.o32 cmd5.o32 cmd6.o32 +
 store.o32 birth.o32 load1.o32 load2.o32 +
 wizard1.o32 wizard2.o32 +
-generate.o32 dungeon.o32 init1.o32 init2.o32 +
+generate.o32 dungeon.o32 init1.o32 init2.o32 init3.o32 +
 main-win.o32 readdib.o32 itsybits.o32,+
 ..\angband32.exe,..\angband.map,import32 cw32,..\ext-win\src\angband.def
 |

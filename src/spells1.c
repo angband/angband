@@ -1831,6 +1831,7 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ)
 			{
 				do_kill = TRUE;
 				note_kill = (plural ? " are destroyed!" : " is destroyed!");
+				break;
 			}
 
 			/* Holy Orb -- destroys cursed non-artifacts */

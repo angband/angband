@@ -1,0 +1,118 @@
+Changes in Angband 2.9.0:
+- Chaos resistance no longer automatically grants confusion resistance.
+  All normal items and standard artifacts with chaos resistance now
+  provide confusion resistance as well.
+- Two-handed swords appear earlier now.
+- Added an optional point-based character generator.
+- Added randomized character generation.
+- Moved the questions about the autoroller, maximize, and preserve mode
+  to a new option screen.
+- Added an option to display piles of items with a special symbol
+- Allowed secret doors to be looked or stuck
+- Items with an '=g' inscription will be automatically picked up
+- Added options to automatically select the direction when opening
+  doors/chests and disarming traps.
+- Added an option to display piles of items on the floor as lists.
+- Arrows break less often now.
+- Refilling a latern from another latern leaves an empty latern now.
+  Empty laterns are no longer displayed as choice for refilling.
+- Added random artifacts.  Note that importing characters created with
+  older versions of the random artifacts generator is not supported.
+- Scrolling while targetting.
+- Improved monster AI.
+- Increased the maximum number of vaults to 64.
+- Very high or low speed modifiers no longer cause problems.
+- Entry into debug, wizard, or borg mode is only confirmed once per
+  character, not once per session.
+- The debug command 'e' now allows current and maximum experience to be
+  altered.
+- Boldor, Gabriel, Khamul, Murazor, Tselukas, Draebor, Hoarmurath,
+  Thuringwethil, Omarax, Qlzqqlzuup, and Feagwath can now summon similar
+  monsters.
+- Master quylthulg, Emperor Quylthulg, Qlzqqlzuup, Murazor, Pazuzu,
+  Lungorthin, Gothmog, Sauron, and Morgoth can now summon greater demons.
+- Ancalagon the Black can now breath fire.
+- Objects carried by monsters are now loaded properly.
+- A command to repeat the last command has been added ('n' in original,
+  ''' in roguelike keyset).
+- At character creation, some extra difficulty options are
+  available (no artifacts, no stores, no up stairs/recall).
+- The "special" inscriptions ("cursed", "worthless", "good", ...) are
+  now handled outside the normal inscription system, and so neither
+  overwrite, nor are overwritten by, normal inscriptions.
+- Made destroyed levels rarer.
+- The quest monsters (Sauron and Morgoth) are now always generated on
+  levels 99 and 100.
+- Fixed a bug in the "know complete monster info" cheat option.
+- The spell-list now uses color.
+- The disarm traps spell will now work on the locks of doors, revealing
+  secret doors and unlocking locked doors.
+- The 'detect doors' spell can now detect locked and jammed doors.
+- Monsters crushed by an earthquake spell are now killed.
+- Fixed a bug that could cause problems when entering illegal values
+  while haggling with a shopkeeper.
+- Support for Adam Bolt's tiles.
+- Support for transparency and lighting effects.
+- Added class and race dependent player graphics.
+- Cleaned up the new code introduced in the 2.8.5 beta version.
+- Fixed the bug with opening a door you are standing on with the easy_open
+  patch.
+- Random artifacts with chaos resist can now get confusion resist too.
+- Fixed a bug that added a discount to a cursed item when wielding it.
+- The fear resistance of level 30+ warriors is now correctly displayed.
+
+Compilation changes:
+- Added a compile.txt file with compile guides for various systems and
+  compilers.
+- Added a makefile for the free Borland C++ 5.5 compiler.
+- Removed lots of compiler warnings.
+- Fixed a problem when compiling Angband on newer (glibc-based) Linux
+  systems.
+- Added a compile-time option to allow players to put an .angband.prf
+  file in their home directory and have it read on systems where
+  Angband is running set-[ug]id.  Default is off.
+- Added support for compiling a Linux SVGALIB version with graphics.
+- Added support for the use of the 8x8 and 16x16 tiles in the X11
+  version.
+
+Windows specific changes:
+- You can select between the "old" tiles, the new tiles, and ASCII mode.
+- The Windows version no longer requires changes to angband.ini when
+  installing.  The angband.ini file will be created when you first start
+  the program, so it doesn't need to be present in the binary archive.
+  That also allows easy updates to newer versions, since the settings
+  in the angband.ini are not overwritten when installing a new version
+  over an old one.
+- The windows can be resized and the (graphical) tiles will adjust
+  automatically to the new size.
+- Added the "Show scores" command to the menu.
+- Fixed a bug that created all files as "read-only" (causing the game to
+  fail when saving the game).
+- Fixed a bug that caused all numbers to be registered twice by the game,
+  leading to "double-steps".
+- Fixed a bug that didn't free the used bitmaps correctly when closing
+  the game.
+
+DOS-specific changes:
+- Graphics, sounds, and music options
+  You can switch the graphics/music/sound options from the user menu
+  (press ! to get there).  The volume of the sound and the music can be
+  adjusted from 0 (min) to 255 (max).  All changes to the screen-resolution
+  and the selection between the old and the new graphical tiles will be
+  active after you restart Angband.
+- Terminal windows
+  The windows can be activated from the "Angband options screen"
+  (press the '=' key to get there) in the "Window flags" menu.
+  Just toggle the display you want for "Term-1" and "Term-2".
+- Added a stone-background to the terminals.
+- Midi jukebox
+  DOS-Angband automatically plays midi-files from the "lib/xtra/music"
+  folder in your Angband-directory.
+- Sound Events
+  DOS-Angband will play samples from the "lib/xtra/sound" folder to the
+  corresponding Angband-event. You can configure the available samples in
+  the "lib/xtra/sound/sound.cfg" file.  Multiple sounds per event are
+  supported.
+- "Classic mode": If you want the old display, just start Angband with the
+  '-mibm' option ('Angband.exe -mibm').
+

@@ -1023,7 +1023,7 @@ static s16b convert_old_kinds_normal[501] =
 /*
  * Convert old kinds (501-512) into special artifacts
  */
-static s16b convert_old_kinds_special[12] =
+static byte convert_old_kinds_special[12] =
 {
 	ART_NARYA,		/* Old 501 */
 	ART_NENYA,		/* Old 502 */
@@ -1063,7 +1063,7 @@ static errr rd_item_old(object_type *o_ptr)
 
 
 	/* Hack -- wipe */
-	WIPE(o_ptr, object_type);
+	(void)WIPE(o_ptr, object_type);
 
 	/* Old kind index */
 	rd_s16b(&old_k_idx);
@@ -1334,7 +1334,7 @@ static errr rd_item_old(object_type *o_ptr)
 		if (o_ptr->tval == TV_STAFF) o_ptr->pval = old_pval;
 
 		/* Hack -- Gold uses "pval" for "value" */
-		if (o_ptr->tval == TV_GOLD) o_ptr->pval = old_cost;
+		if (o_ptr->tval == TV_GOLD) o_ptr->pval = (s16b)old_cost;
 
 		/* Success */
 		return (0);
@@ -2353,7 +2353,7 @@ static errr rd_dungeon_old(void)
 		n_ptr = &monster_type_body;
 
 		/* Hack -- wipe */
-		WIPE(n_ptr, monster_type);
+		(void)WIPE(n_ptr, monster_type);
 
 		/* Read the current hitpoints */
 		rd_s16b(&n_ptr->hp);

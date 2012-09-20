@@ -29,7 +29,11 @@ V:31:0x01:0x60:0xF0:0x40
 ?:[NOT [EQU $SYS xxx]]
 
 # Standard file
+?:[EQU $GRAF old]
 %:graf-xxx.prf
 
-?:1
+# New tiles
+?:[EQU $GRAF new]
+%:graf-new.prf
 
+?:1

@@ -1,7 +1,7 @@
 
 
               **************************************************
-              **   Angband 2.8.5   **   The Pits of Angband   **
+              **   Angband 2.9.0   **   The Pits of Angband   **
               **************************************************
 
            Based on Moria:   Copyright (c) 1985 Robert Alan Koeneke
@@ -11,19 +11,20 @@
                    Alex Cutler, Andy Astrand, Sean Marsh,
                  Geoff Hill, Charles Teague, Charles Swiger
 
-            Angband 2.8.5:  Copyright (c) 1995-1999 Ben Harrison
+                   Angband 2.7.0 - 2.8.5 by Ben Harrison
 
-         Send comments, bug reports, and patches, to "benh@phial.com"
-        Visit the Angband Home Page at "http://www.phial.com/angband/"
+                     Angband 2.9.0 by Robert Ruehlmann
+
+        Send comments, bug reports, and patches, to "rr9@angband.org"
+       Visit the Angband Home Page at "http://thangorodrim.angband.org/"
       Browse the Angband newsgroup at "news:rec.games.roguelike.angband"
     Read the online help files, especially "general.txt" and "version.txt"
    Angband is available for Unix, X11, DOS, Windows, Macintosh, Amiga, etc.
 
 
-
 === General Info ===
 
-This is the README file for Angband 2.8.5 (1999-09-01)
+This is the README file for Angband 2.9.0 (27th March 2000).
 
 Angband is a "graphical" dungeon adventure game using textual characters
 to represent the walls and floors of a dungeon and the inhabitants therein,
@@ -31,26 +32,25 @@ in the vein of "rogue", "hack", "nethack", and "moria".
 
 There are some ascii "on line help" files in the "lib/help" directory.
 
-Angband 2.8.5 is an experimental release, use at your own risk.
-
-See the Official Angband Home Page "http://www.phial.com/angband/" for
+See the Official Angband Home Page "http://thangorodrim.angband.org/" for
 a list (mostly complete) of what has changed in each recent version.
 
 See the various Angband ftp sites (including "export.andrew.cmu.edu" and
 "ftp.cis.ksu.edu") for the latest files, patches, and executables.
 
-Contact Ben Harrison ("benh@phial.com") to report any bugs or to make any
-suggestions.  Use the newsgroup "rec.games.roguelike.angband" to ask any
-general questions about the game, including compilation question.
+Contact Robert Ruehlmann < rr9@angband.org > to report any bugs or to make
+any suggestions.  Use the newsgroup "rec.games.roguelike.angband" to ask
+any general questions about the game, including compilation questions.
 
 This version of Angband will run on Macintosh, Windows, Unix (X11/Curses), 
 Linux (X11/Curses), Acorn, Amiga, various DOS machines, and many others...
 
-See Makefile, h-config.h, and config.h for details on compiling.
+See compile.txt, the Makefiles, h-config.h, and config.h for details on
+compiling.
 See "Makefile.xxx" and "main-xxx.c" for various supported systems.
 
 
-=== Quick and dirty compilation instructions === 
+=== Quick and dirty compilation instructions ===
 
 For many platforms (including Macintosh and Windows), a "pre-compiled"
 archive is available, which contains everything you need to install and
@@ -74,7 +74,7 @@ appropriate "extra archive", which contains some extra platform specific
 files, and instructions about how to use them.  Some "extra archives" may
 be found at the ftp site (including "/angband/Macintosh/ext-mac.sit.bin"
 and "/angband/Windows/ext-win.zip"), but be sure that you get a version
-of the "extra archive" designed for Angband 2.8.2.
+of the "extra archive" designed for Angband 2.9.0.
 
 
 === Special instructions for certain platforms ===
@@ -99,10 +99,10 @@ delete these files if you so desire.
 === Upgrading from older versions (and/or other platforms) ===
 
 If you have been using an older version of Angband (and/or playing on a
-different platform), you can "upgrade" (or "sidegrade") to Angband 2.8.X,
+different platform), you can "upgrade" (or "sidegrade") to Angband 2.9.0,
 bringing your old savefiles, high score list, and other files with you.
 
-Angband 2.8.X uses a platform independant file format for the binary files
+Angband 2.9.0 uses a platform independant file format for the binary files
 that store information about games in progress, known as "savefiles", and
 is able to translate savefiles from all known versions of Angband.  To use
 an "old" savefile, simply copy it into the "lib/save" directory, changing
@@ -112,16 +112,16 @@ or "NNN" where "UUU" is the userid of the player (on "multiuser" systems),
 and "NNN" is the name of the "character" in the savefile.  Note that only
 "multiuser" platforms use the "UUU.NNN" form, and the "dot" is required.
 
-Angband 2.8.X uses a platform independant file format for the binary file
+Angband 2.9.0 uses a platform independant file format for the binary file
 used to store the high score list.  This file is named "scores.raw".  To
 use an "old" high score list, simply copy it into the "lib/apex" directory.
 
-Angband 2.8.X uses a set of special ascii "configuration files" which are
+Angband 2.9.0 uses a set of special ascii "configuration files" which are
 kept in the "lib/file" directory.  These files should not be modified (or
 imported from older versions) unless you know exactly what you are doing,
 but often you can use "old" versions of these files with little trouble.
 
-Angband 2.8.X uses a set of ascii "user pref files" which are kept in the
+Angband 2.9.0 uses a set of ascii "user pref files" which are kept in the
 "lib/user" directory.  Most of these files can only be used on a small set
 of platforms, and may need slight modifications when imported from older
 versions.  Note that only some of these files are auto-loaded by the game.
@@ -276,5 +276,30 @@ See "src/files.c" for information on the proper "format" of these files.
 The "lib/xtra" directory contains special system files, if any.
 
 
---- Ben ---
+
+
+=== NO WARRANTY ===
+
+    BECAUSE THE PROGRAM IS LICENSED FREE OF CHARGE, THERE IS NO WARRANTY
+FOR THE PROGRAM, TO THE EXTENT PERMITTED BY APPLICABLE LAW.  EXCEPT WHEN
+OTHERWISE STATED IN WRITING THE COPYRIGHT HOLDERS AND/OR OTHER PARTIES
+PROVIDE THE PROGRAM "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESSED
+OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.  THE ENTIRE RISK AS
+TO THE QUALITY AND PERFORMANCE OF THE PROGRAM IS WITH YOU.  SHOULD THE
+PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING,
+REPAIR OR CORRECTION.
+
+    IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING
+WILL ANY COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR
+REDISTRIBUTE THE PROGRAM AS PERMITTED ABOVE, BE LIABLE TO YOU FOR DAMAGES,
+INCLUDING ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING
+OUT OF THE USE OR INABILITY TO USE THE PROGRAM (INCLUDING BUT NOT LIMITED
+TO LOSS OF DATA OR DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY
+YOU OR THIRD PARTIES OR A FAILURE OF THE PROGRAM TO OPERATE WITH ANY OTHER
+PROGRAMS), EVEN IF SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGES.
+
+
+--- Ben Harrison and Robert Ruehlmann ---
 

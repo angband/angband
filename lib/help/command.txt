@@ -631,4 +631,3 @@ Save screen dump (right-paren)
         This command dumps a "snap-shot" of the current screen to the file
         "dump.txt", including encoded color information.
 
-

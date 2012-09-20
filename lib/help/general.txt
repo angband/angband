@@ -64,17 +64,17 @@ and they are all still available (for now) at the ftp sites.  Angband 2.8.3
 is based on all previous versions, and incorporates bug fixes in addition to
 new features.
 
-See the Official Angband Home Page ("http://www.phial.com/angband/") for up
-to date information about the latest version of Angband, including a complete
-list of recent modifications and known bugs.
+See the Official Angband Home Page ("http://thangorodrim.angband.org/") for
+up to date information about the latest version of Angband, including a
+complete list of recent modifications and known bugs.
 
 You can obtain the latest source and pre-compiled executables from various
 places, try "ftp://ftp.cis.ksu.edu/pub/Games/Angband/Angband-2.7.x" and
 the developer site at "ftp://export.andrew.cmu.edu/angband".
 
 You can email compliments, complaints, suggestions, bug reports, and patches
-to me ("benh@phial.com"), and you can post interesting experiences and basic
-questions to the newsgroup ("rec.games.roguelike.angband").
+to me ("rr9@angband.org"), and you can post interesting experiences and
+basic questions to the newsgroup ("rec.games.roguelike.angband").
 
 You may freely distribute the game, and its source, though you are bound
 not only by the existing copyright notice from 1984, but also whatever
@@ -327,5 +327,4 @@ learning these things is the online help, which include, among other things,
 a complete list of all commands available to your player, and a list of all
 the symbols which you may encounter in the dungeon, and information about
 creating new characters.
-
 

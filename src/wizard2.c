@@ -1236,7 +1236,7 @@ static void do_cmd_wiz_summon(int num)
  *
  * This function is rather dangerous XXX XXX XXX
  */
-static void do_cmd_wiz_named(int r_idx, int slp)
+static void do_cmd_wiz_named(int r_idx, bool slp)
 {
 	int py = p_ptr->py;
 	int px = p_ptr->px;

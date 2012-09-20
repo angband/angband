@@ -2144,11 +2144,11 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note)
 		if (new_exp_frac >= 0x10000L)
 		{
 			new_exp++;
-			p_ptr->exp_frac = new_exp_frac - 0x10000L;
+			p_ptr->exp_frac = (u16b)(new_exp_frac - 0x10000L);
 		}
 		else
 		{
-			p_ptr->exp_frac = new_exp_frac;
+			p_ptr->exp_frac = (u16b)new_exp_frac;
 		}
 
 		/* Gain experience */
@@ -2246,7 +2246,7 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note)
  *
  * Return TRUE if the panel was changed.
  */
-bool change_panel(int dir)
+static bool change_panel(int dir)
 {
 	int y = p_ptr->wy + ddy[dir] * PANEL_HGT;
 	int x = p_ptr->wx + ddx[dir] * PANEL_WID;
@@ -2317,7 +2317,7 @@ void verify_panel(void)
 	}
 
 	/* Scroll screen when 2 grids from top/bottom edge */
-	else if ((py < p_ptr->wy + 2) || (py >= p_ptr->wy+SCREEN_HGT - 2))
+	else if ((py < p_ptr->wy + 2) || (py >= p_ptr->wy + SCREEN_HGT - 2))
 	{
 		i = ((py - PANEL_HGT / 2) / PANEL_HGT) * PANEL_HGT;
 		if (i < 0) i = 0;
@@ -2351,7 +2351,7 @@ void verify_panel(void)
 	}
 
 	/* Scroll screen when 4 grids from left/right edge */
-	else if ((px < p_ptr->wx + 4) || (px >= p_ptr->wx+SCREEN_WID - 4))
+	else if ((px < p_ptr->wx + 4) || (px >= p_ptr->wx + SCREEN_WID - 4))
 	{
 		i = ((px - PANEL_WID / 2) / PANEL_WID) * PANEL_WID;
 		if (i < 0) i = 0;

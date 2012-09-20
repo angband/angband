@@ -465,7 +465,7 @@ void wipe_o_list(void)
 		}
 
 		/* Wipe the object */
-		WIPE(o_ptr, object_type);
+		(void)WIPE(o_ptr, object_type);
 	}
 
 	/* Reset "o_max" */
@@ -1371,7 +1371,7 @@ s16b lookup_kind(int tval, int sval)
 void object_wipe(object_type *o_ptr)
 {
 	/* Wipe the structure */
-	WIPE(o_ptr, object_type);
+	(void)WIPE(o_ptr, object_type);
 }
 
 
@@ -1393,7 +1393,7 @@ void object_prep(object_type *o_ptr, int k_idx)
 	object_kind *k_ptr = &k_info[k_idx];
 
 	/* Clear the record */
-	WIPE(o_ptr, object_type);
+	(void)WIPE(o_ptr, object_type);
 
 	/* Save the kind index */
 	o_ptr->k_idx = k_idx;
@@ -3039,7 +3039,7 @@ static void a_m_aux_4(object_type *o_ptr, int level, int power)
 			o_ptr->pval = randint(k_info[o_ptr->k_idx].level);
 
 			/* Never exceed "difficulty" of 55 to 59 */
-			if (o_ptr->pval > 55) o_ptr->pval = 55 + rand_int(5);
+			if (o_ptr->pval > 55) o_ptr->pval = (s16b)(55 + rand_int(5));
 
 			break;
 		}
@@ -3244,7 +3244,7 @@ void apply_magic(object_type *o_ptr, int lev, bool okay, bool good, bool great)
 			case EGO_DF:
 			{
 				o_ptr->xtra1 = OBJECT_XTRA_TYPE_SUSTAIN;
-				o_ptr->xtra2 = rand_int(OBJECT_XTRA_SIZE_SUSTAIN);
+				o_ptr->xtra2 = (byte)rand_int(OBJECT_XTRA_SIZE_SUSTAIN);
 				break;
 			}
 
@@ -3253,7 +3253,7 @@ void apply_magic(object_type *o_ptr, int lev, bool okay, bool good, bool great)
 			case EGO_AMAN:
 			{
 				o_ptr->xtra1 = OBJECT_XTRA_TYPE_RESIST;
-				o_ptr->xtra2 = rand_int(OBJECT_XTRA_SIZE_RESIST);
+				o_ptr->xtra2 = (byte)rand_int(OBJECT_XTRA_SIZE_RESIST);
 				break;
 			}
 
@@ -3261,7 +3261,7 @@ void apply_magic(object_type *o_ptr, int lev, bool okay, bool good, bool great)
 			case EGO_MAGI:
 			{
 				o_ptr->xtra1 = OBJECT_XTRA_TYPE_POWER;
-				o_ptr->xtra2 = rand_int(OBJECT_XTRA_SIZE_POWER);
+				o_ptr->xtra2 = (byte)rand_int(OBJECT_XTRA_SIZE_POWER);
 				break;
 			}
 		}
@@ -4182,7 +4182,7 @@ void inven_item_optimize(int item)
 		}
 
 		/* Hack -- wipe hole */
-		WIPE(&inventory[i], object_type);
+		(void)WIPE(&inventory[i], object_type);
 
 		/* Window stuff */
 		p_ptr->window |= (PW_INVEN);

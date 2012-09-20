@@ -10,7 +10,10 @@
 
 #include "angband.h"
 
-
+/*
+ * Support for Adam Bolt's tileset, lighting and transparency effects
+ * by Robert Ruehlmann (rr9@angband.org)
+ */
 
 /*
  * Approximate Distance between two points.
@@ -408,6 +411,37 @@ static u16b image_random(void)
 }
 
 
+/*
+ * The 16x16 tile of the terrain supports lighting
+ */
+bool feat_supports_lighting(byte feat)
+{
+	if ((feat >= FEAT_TRAP_HEAD) && (feat <= FEAT_TRAP_TAIL))
+		return TRUE;
+
+	switch (feat)
+	{
+		case FEAT_FLOOR:
+		case FEAT_INVIS:
+		case FEAT_SECRET:
+		case FEAT_MAGMA:
+		case FEAT_QUARTZ:
+		case FEAT_MAGMA_H:
+		case FEAT_QUARTZ_H:
+		case FEAT_WALL_EXTRA:
+		case FEAT_WALL_INNER:
+		case FEAT_WALL_OUTER:
+		case FEAT_WALL_SOLID:
+		case FEAT_PERM_EXTRA:
+		case FEAT_PERM_INNER:
+		case FEAT_PERM_OUTER:
+		case FEAT_PERM_SOLID:
+			return TRUE;
+		default:
+			return FALSE;
+	}
+}
+
 
 /*
  * Extract the attr/char to display at the given (legal) map location
@@ -574,7 +608,11 @@ static u16b image_random(void)
  * The "hidden_player" efficiency option, which only makes sense with a
  * single player, allows the player symbol to be hidden while running.
  */
+#ifdef USE_TRANSPARENCY
+void map_info(int y, int x, byte *ap, char *cp, byte *tap, char *tcp)
+#else /* USE_TRANSPARENCY */
 void map_info(int y, int x, byte *ap, char *cp)
+#endif /* USE_TRANSPARENCY */
 {
 	byte a;
 	char c;
@@ -588,40 +626,16 @@ void map_info(int y, int x, byte *ap, char *cp)
 
 	s16b m_idx;
 
-	bool image = p_ptr->image;
+	s16b image = p_ptr->image;
 
 	int floor_num = 0;
 
+#ifdef USE_AB_TILES
+	bool graf_new = ((strcmp(ANGBAND_GRAF, "new") == 0) && use_graphics);
+#endif /* USE_AB_TILES */
+
 	/* Monster/Player */
 	m_idx = cave_m_idx[y][x];
-
-#ifdef MAP_INFO_MULTIPLE_PLAYERS
-
-	/* Handle "player" grids below */
-
-#else /* MAP_INFO_MULTIPLE_PLAYERS */
-
-	/* Handle "player" */
-	if ((m_idx < 0) && !(p_ptr->running && hidden_player))
-	{
-		monster_race *r_ptr = &r_info[0];
-
-		/* Get the "player" attr */
-		a = r_ptr->x_attr;
-
-		/* Get the "player" char */
-		c = r_ptr->x_char;
-
-		/* Result */
-		(*ap) = a;
-		(*cp) = c;
-
-		/* Done */
-		return;
-	}
-
-#endif /* MAP_INFO_MULTIPLE_PLAYERS */
-
 
 	/* Feature */
 	feat = cave_feat[y][x];
@@ -655,7 +669,11 @@ void map_info(int y, int x, byte *ap, char *cp)
 			c = f_ptr->x_char;
 
 			/* Special lighting effects */
+#ifdef USE_AB_TILES
+			if (view_special_lite && ((a == TERM_WHITE) || graf_new))
+#else /* USE_AB_TILES */
 			if (view_special_lite && (a == TERM_WHITE))
+#endif /* USE_AB_TILES */
 			{
 				/* Handle "seen" grids */
 				if (info & (CAVE_SEEN))
@@ -663,30 +681,70 @@ void map_info(int y, int x, byte *ap, char *cp)
 					/* Only lit by "torch" lite */
 					if (view_yellow_lite && !(info & (CAVE_GLOW)))
 					{
-						/* Use "yellow" */
-						a = TERM_YELLOW;
+#ifdef USE_AB_TILES
+						if (graf_new)
+						{
+							/* Use a brightly lit tile */
+							c += 2;
+						}
+						else
+#endif /* USE_AB_TILES */
+						{
+							/* Use "yellow" */
+							a = TERM_YELLOW;
+						}
 					}
 				}
 
 				/* Handle "blind" */
 				else if (p_ptr->blind)
 				{
-					/* Use "dark gray" */
-					a = TERM_L_DARK;
+#ifdef USE_AB_TILES
+					if (graf_new)
+					{
+						/* Use a dark tile */
+						c++;
+					}
+					else
+#endif /* USE_AB_TILES */
+					{
+						/* Use "dark gray" */
+						a = TERM_L_DARK;
+					}
 				}
 
 				/* Handle "dark" grids */
 				else if (!(info & (CAVE_GLOW)))
 				{
-					/* Use "dark gray" */
-					a = TERM_L_DARK;
+#ifdef USE_AB_TILES
+					if (graf_new)
+					{
+						/* Use a dark tile */
+						c++;
+					}
+					else
+#endif /* USE_AB_TILES */
+					{
+						/* Use "dark gray" */
+						a = TERM_L_DARK;
+					}
 				}
 
 				/* Handle "view_bright_lite" */
 				else if (view_bright_lite)
 				{
-					/* Use "gray" */
-					a = TERM_SLATE;
+#ifdef USE_AB_TILES
+					if (graf_new)
+					{
+						/* Use a dark tile */
+						c++;
+					}
+					else
+#endif /* USE_AB_TILES */
+					{
+						/* Use "gray" */
+						a = TERM_SLATE;
+					}
 				}
 			}
 		}
@@ -724,27 +782,61 @@ void map_info(int y, int x, byte *ap, char *cp)
 			c = f_ptr->x_char;
 
 			/* Special lighting effects (walls only) */
-			if (view_granite_lite && (a == TERM_WHITE) &&
-			    (feat >= FEAT_SECRET))
+#ifdef USE_AB_TILES
+			if (view_granite_lite &&
+			   (((a == TERM_WHITE) && !use_transparency && (feat >= FEAT_SECRET)) ||
+			   (use_transparency && feat_supports_lighting(feat))))
+#else /* USE_AB_TILES */
+			if (view_granite_lite && (a == TERM_WHITE) && (feat >= FEAT_SECRET))
+#endif /* USE_AB_TILES */
 			{
 				/* Handle "seen" grids */
 				if (info & (CAVE_SEEN))
 				{
-					/* Use "white" */
+#ifdef USE_AB_TILES
+					if (graf_new)
+					{
+						/* Use a brightly lit tile */
+						c += 2;
+					}
+					else
+#endif /* USE_AB_TILES */
+					{
+						/* Use "white" */
+					}
 				}
 
 				/* Handle "blind" */
 				else if (p_ptr->blind)
 				{
-					/* Use "dark gray" */
-					a = TERM_L_DARK;
+#ifdef USE_AB_TILES
+					if (graf_new)
+					{
+						/* Use a dark tile */
+						c++;
+					}
+					else
+#endif /* USE_AB_TILES */
+					{
+						/* Use "dark gray" */
+						a = TERM_L_DARK;
+					}
 				}
 
 				/* Handle "view_bright_lite" */
 				else if (view_bright_lite)
 				{
-					/* Use "gray" */
-					a = TERM_SLATE;
+#ifdef USE_AB_TILES
+					if (graf_new)
+					{
+						/* Use a lit tile */
+					}
+					else
+#endif /* USE_AB_TILES */
+					{
+						/* Use "gray" */
+						a = TERM_SLATE;
+					}
 				}
 			}
 		}
@@ -763,6 +855,11 @@ void map_info(int y, int x, byte *ap, char *cp)
 		}
 	}
 
+#ifdef USE_TRANSPARENCY
+	/* Save the terrain info for the transparency effects */
+	(*tap) = a;
+	(*tcp) = c;
+#endif /* USE_TRANSPARENCY */
 
 	/* Objects */
 	for (this_o_idx = cave_o_idx[y][x]; this_o_idx; this_o_idx = next_o_idx)
@@ -912,10 +1009,8 @@ void map_info(int y, int x, byte *ap, char *cp)
 		}
 	}
 
-#ifdef MAP_INFO_MULTIPLE_PLAYERS
-
-	/* Players */
-	else if (m_idx < 0)
+	/* Handle "player" */
+	else if ((m_idx < 0) && !(p_ptr->running && hidden_player))
 	{
 		monster_race *r_ptr = &r_info[0];
 
@@ -926,8 +1021,22 @@ void map_info(int y, int x, byte *ap, char *cp)
 		c = r_ptr->x_char;
 	}
 
-#endif
+#ifdef MAP_INFO_MULTIPLE_PLAYERS
+	/* Players */
+	else if (m_idx < 0)
+#else /* MAP_INFO_MULTIPLE_PLAYERS */
+	/* Handle "player" */
+	else if ((m_idx < 0) && !(p_ptr->running && hidden_player))
+#endif /* MAP_INFO_MULTIPLE_PLAYERS */
+	{
+		monster_race *r_ptr = &r_info[0];
 
+		/* Get the "player" attr */
+		a = r_ptr->x_attr;
+
+		/* Get the "player" char */
+		c = r_ptr->x_char;
+	}
 
 	/* Result */
 	(*ap) = a;
@@ -1003,7 +1112,11 @@ void print_rel(char c, byte a, int y, int x)
 	vx = kx + COL_MAP;
 
 	/* Hack -- Queue it */
+#ifdef USE_TRANSPARENCY
+	Term_queue_char(vx, vy, a, c, 0, 0);
+#else /* USE_TRANSPARENCY */
 	Term_queue_char(vx, vy, a, c);
+#endif /* USE_TRANSPARENCY */
 }
 
 
@@ -1104,6 +1217,11 @@ void lite_spot(int y, int x)
 	byte a;
 	char c;
 
+#ifdef USE_TRANSPARENCY
+	byte ta;
+	char tc;
+#endif /* USE_TRANSPARENCY */
+
 	unsigned ky, kx;
 	unsigned vy, vx;
 
@@ -1125,11 +1243,19 @@ void lite_spot(int y, int x)
 	/* Location in window */
 	vx = kx + COL_MAP;
 
+#ifdef USE_TRANSPARENCY
+	/* Hack -- redraw the grid */
+	map_info(y, x, &a, &c, &ta, &tc);
+
+	/* Hack -- Queue it */
+	Term_queue_char(vx, vy, a, c, ta, tc);
+#else /* USE_TRANSPARENCY */
 	/* Hack -- redraw the grid */
 	map_info(y, x, &a, &c);
 
 	/* Hack -- Queue it */
 	Term_queue_char(vx, vy, a, c);
+#endif /* USE_TRANSPARENCY */
 }
 
 
@@ -1146,6 +1272,11 @@ void prt_map(void)
 	byte a;
 	char c;
 
+#ifdef USE_TRANSPARENCY
+	byte ta;
+	char tc;
+#endif /* USE_TRANSPARENCY */
+
 	int y, x;
 	int vy, vx;
 	int ty, tx;
@@ -1159,11 +1290,19 @@ void prt_map(void)
 	{
 		for (x = p_ptr->wx, vx = COL_MAP; vx < tx; vx++, x++)
 		{
+#ifdef USE_TRANSPARENCY
+			/* Determine what is there */
+			map_info(y, x, &a, &c, &ta, &tc);
+
+			/* Hack -- Queue it */
+			Term_queue_char(vx, vy, a, c, ta, tc);
+#else /* USE_TRANSPARENCY */
 			/* Determine what is there */
 			map_info(y, x, &a, &c);
 
 			/* Hack -- Queue it */
 			Term_queue_char(vx, vy, a, c);
+#endif /* USE_TRANSPARENCY */
 		}
 	}
 }
@@ -1325,7 +1464,11 @@ void display_map(int *cy, int *cx)
 			y = j / RATIO + 1;
 
 			/* Extract the current attr/char at that map location */
+#ifdef USE_TRANSPARENCY
+			map_info(j, i, &ta, &tc, &ta, &tc);
+#else /* USE_TRANSPARENCY */
 			map_info(j, i, &ta, &tc);
+#endif /* USE_TRANSPARENCY */
 
 			/* Extract the priority of that attr/char */
 			tp = priority(ta, tc);

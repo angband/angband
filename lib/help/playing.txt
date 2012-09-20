@@ -452,4 +452,3 @@ currently used by Angband.
 on or off.  You may turn options off or on using the user pref commands
 of the form "X:<option>" or "Y:<option>" respectively.
 
- 

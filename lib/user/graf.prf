@@ -19,6 +19,9 @@
 ?:[IOR [EQU $SYS xaw] [EQU $SYS x11]]
 %:graf-x11.prf
 
+?:[EQU $SYS lsl]
+%:graf-lsl.prf
+
 ?:[EQU $SYS gcu]
 %:graf-gcu.prf
 
@@ -41,5 +44,4 @@
 %:graf-acn.prf
 
 ?:1
-
 

@@ -644,8 +644,8 @@ static void wr_byte(byte v)
 
 static void wr_u16b(u16b v)
 {
-	sf_put(v & 0xFF);
-	sf_put((v >> 8) & 0xFF);
+	sf_put((byte)(v & 0xFF));
+	sf_put((byte)((v >> 8) & 0xFF));
 }
 
 static void wr_s16b(s16b v)
@@ -655,10 +655,10 @@ static void wr_s16b(s16b v)
 
 static void wr_u32b(u32b v)
 {
-	sf_put(v & 0xFF);
-	sf_put((v >> 8) & 0xFF);
-	sf_put((v >> 16) & 0xFF);
-	sf_put((v >> 24) & 0xFF);
+	sf_put((byte)(v & 0xFF));
+	sf_put((byte)((v >> 8) & 0xFF));
+	sf_put((byte)((v >> 16) & 0xFF));
+	sf_put((byte)((v >> 24) & 0xFF));
 }
 
 static void wr_s32b(s32b v)
@@ -1374,7 +1374,7 @@ static bool wr_savefile_new(void)
 	/* Dump the messages (oldest first!) */
 	for (i = tmp16u - 1; i >= 0; i--)
 	{
-		wr_string(message_str(i));
+		wr_string(message_str((s16b)i));
 	}
 
 
@@ -1452,7 +1452,7 @@ static bool wr_savefile_new(void)
 		if (!o_ptr->k_idx) continue;
 
 		/* Dump index */
-		wr_u16b(i);
+		wr_u16b((u16b)i);
 
 		/* Dump object */
 		wr_item(o_ptr);

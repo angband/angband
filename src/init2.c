@@ -2171,7 +2171,7 @@ static errr init_other(void)
 	/*** Pre-allocate space for the "format()" buffer ***/
 
 	/* Hack -- Just call the "format()" function */
-	(void)format("%s (%s).", "Ben Harrison", MAINTAINER);
+	(void)format("%s (%s).", "Robert Ruehlmann", MAINTAINER);
 
 
 	/* Success */
@@ -2201,10 +2201,10 @@ static errr init_alloc(void)
 	/*** Analyze object allocation info ***/
 
 	/* Clear the "aux" array */
-	C_WIPE(&aux, MAX_DEPTH, s16b);
+	(void)C_WIPE(&aux, MAX_DEPTH, s16b);
 
 	/* Clear the "num" array */
-	C_WIPE(&num, MAX_DEPTH, s16b);
+	(void)C_WIPE(&num, MAX_DEPTH, s16b);
 
 	/* Size of "alloc_kind_table" */
 	alloc_kind_size = 0;
@@ -2290,10 +2290,10 @@ static errr init_alloc(void)
 	/*** Analyze monster allocation info ***/
 
 	/* Clear the "aux" array */
-	C_WIPE(&aux, MAX_DEPTH, s16b);
+	(void)C_WIPE(&aux, MAX_DEPTH, s16b);
 
 	/* Clear the "num" array */
-	C_WIPE(&num, MAX_DEPTH, s16b);
+	(void)C_WIPE(&num, MAX_DEPTH, s16b);
 
 	/* Size of "alloc_race_table" */
 	alloc_race_size = 0;

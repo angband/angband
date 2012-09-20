@@ -1179,7 +1179,7 @@ static XFontStruct *getFont(AngbandWidget widget,
 #define IsModifierKey(keysym) \
   (((unsigned)(keysym) >= XK_Shift_L)  && ((unsigned)(keysym) <= XK_Hyper_R))
 
-#endif
+#endif /* IsModifierKey */
 
 
 /*
@@ -1546,7 +1546,7 @@ static errr Term_xtra_xaw(int n, int v)
 
 		/* Clear the window */
 		case TERM_XTRA_CLEAR:
-		for (i=0; i<MAX_TERM_DATA; i++)
+		for (i = 0; i < MAX_TERM_DATA; i++)
 		{
 		    if (Term == &data[i].t)
 			XClearWindow(XtDisplay((Widget)data[i].widget),
@@ -1718,6 +1718,13 @@ errr init_xaw(int argc, char *argv[])
 	Widget topLevel;
 	Display *dpy;
 
+	cptr dpy_name = "";
+
+	int num_term = MAX_TERM_DATA;
+
+	char buf[80];
+
+
 #ifdef USE_GRAPHICS
 
 	char filename[1024];
@@ -1726,6 +1733,27 @@ errr init_xaw(int argc, char *argv[])
 
 #endif /* USE_GRAPHICS */
 
+	/* Parse args */
+	for (i = 1; i < argc; i++)
+	{
+		if (prefix(argv[i], "-d"))
+		{
+			dpy_name = &argv[i][2];
+			continue;
+		}
+
+		if (prefix(argv[i], "-n"))
+		{
+			num_term = atoi(&argv[i][2]);
+
+			if (num_term < 1) num_term = 1;
+			if (num_term > MAX_TERM_DATA) num_term = MAX_TERM_DATA;
+
+			continue;
+		}
+
+		plog_fmt("Ignoring option: %s", argv[i]);
+	}
 
 	/* Attempt to open the local display */
 	dpy = XOpenDisplay("");
@@ -1740,7 +1768,7 @@ errr init_xaw(int argc, char *argv[])
 #ifdef USE_XAW_LANG
 	/* Support locale processing */
 	XtSetLanguageProc(NULL, NULL, NULL);
-#endif
+#endif /* USE_XAW_LANG */
 
 
 #ifdef USE_GRAPHICS
@@ -1781,7 +1809,7 @@ errr init_xaw(int argc, char *argv[])
 
 
 	/* Initialize the windows */
-	for (i=0; i<MAX_TERM_DATA; i++)
+	for (i = 0; i < num_term; i++)
 	{
 		term_data *td = &data[i];
 
@@ -1829,7 +1857,7 @@ errr init_xaw(int argc, char *argv[])
 	if (use_graphics)
 	{
 		/* Initialize the windows */
-		for (i=0; i<MAX_TERM_DATA; i++)
+		for (i = 0; i < num_term; i++)
 		{
 			term_data *td = &data[i];
 
@@ -1858,6 +1886,5 @@ errr init_xaw(int argc, char *argv[])
 	return (0);
 }
 
-#endif
-
+#endif /* USE_XAW */
 

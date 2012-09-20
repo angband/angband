@@ -558,7 +558,7 @@ int fd_make(cptr file, int mode)
 	/* Hack -- Try to parse the path */
 	if (path_parse(buf, 1024, file)) return (-1);
 
-#if defined(MACINTOSH) || defined(WINDOWS)
+#if defined(MACINTOSH)
 
 	/* Create the file, fail if exists, write-only, binary */
 	return (open(buf, O_CREAT | O_EXCL | O_WRONLY | O_BINARY));
@@ -666,7 +666,7 @@ errr fd_lock(int fd, int what)
  */
 errr fd_seek(int fd, huge n)
 {
-	long p;
+	huge p;
 
 	/* Verify fd */
 	if (fd < 0) return (-1);
@@ -729,7 +729,7 @@ errr fd_read(int fd, char *buf, huge n)
 #endif
 
 	/* Read the final piece */
-	if (read(fd, buf, n) != n) return (1);
+	if (read(fd, buf, n) != (int)n) return (1);
 
 	/* Success */
 	return (0);
@@ -762,7 +762,7 @@ errr fd_write(int fd, cptr buf, huge n)
 #endif
 
 	/* Write the final piece */
-	if (write(fd, buf, n) != n) return (1);
+	if (write(fd, buf, n) != (int)n) return (1);
 
 	/* Success */
 	return (0);
@@ -2965,7 +2965,7 @@ void request_command(bool shopping)
 			msg_print(NULL);
 
 			/* Use auto-command */
-			ch = p_ptr->command_new;
+			ch = (char)p_ptr->command_new;
 
 			/* Forget it */
 			p_ptr->command_new = 0;
@@ -3207,11 +3207,13 @@ void request_command(bool shopping)
  */
 uint damroll(uint num, uint sides)
 {
-	int i, sum = 0;
+	uint i, sum = 0;
+
 	for (i = 0; i < num; i++)
 	{
 		sum += (rand_int(sides) + 1);
 	}
+
 	return (sum);
 }
 

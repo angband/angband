@@ -1872,7 +1872,7 @@ object_desc_done:
 	/* Copy the string over */
 	object_desc_str_macro(t, tmp_buf);
 
-#endif SAFE_OBJECT_DESC
+#endif /* SAFE_OBJECT_DESC */
 
 	/* Terminate */
 	*t = '\0';
@@ -2655,7 +2655,7 @@ bool identify_fully_aux(object_type *o_ptr)
  *
  * Note that the label does NOT distinguish inven/equip.
  */
-s16b index_to_label(int i)
+char index_to_label(int i)
 {
 	/* Indexes for "inven" are easy */
 	if (i < INVEN_WIELD) return (I2A(i));

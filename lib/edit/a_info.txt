@@ -19,7 +19,7 @@
 
 # Version stamp (required)
 
-V:2.8.5
+V:2.9.0
 
 
 
@@ -1262,6 +1262,4 @@ F:RES_FIRE | ACTIVATE | SHOW_MODS
 
 
 # Artifact 127 is unused
-
-
 

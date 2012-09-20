@@ -693,6 +693,12 @@ static cptr process_pref_file_expr(char **sp, char *fp)
 				v = ANGBAND_SYS;
 			}
 
+			/* Graphics */
+			else if (streq(b+1, "GRAF"))
+			{
+				v = ANGBAND_GRAF;
+			}
+
 			/* Race */
 			else if (streq(b+1, "RACE"))
 			{
@@ -1467,6 +1473,11 @@ static void player_flags(u32b *f1, u32b *f2, u32b *f3)
 	/* High Elf */
 	if (p_ptr->prace == RACE_HIGH_ELF) (*f2) |= (TR2_RES_LITE);
 	if (p_ptr->prace == RACE_HIGH_ELF) (*f3) |= (TR3_SEE_INVIS);
+	
+	if (p_ptr->pclass == CLASS_WARRIOR)
+	{
+		if (p_ptr->lev >= 30) (*f2) |= (TR2_RES_FEAR);
+	}
 }
 
 
@@ -3153,58 +3164,6 @@ static void show_info(void)
 }
 
 
-
-
-
-/*
- * Semi-Portable High Score List Entry (128 bytes)
- *
- * All fields listed below are null terminated ascii strings.
- *
- * In addition, the "number" fields are right justified, and
- * space padded, to the full available length (minus the "null").
- *
- * Note that "string comparisons" are thus valid on "pts".
- */
-
-typedef struct high_score high_score;
-
-struct high_score
-{
-	char what[8];		/* Version info (string) */
-
-	char pts[10];		/* Total Score (number) */
-
-	char gold[10];		/* Total Gold (number) */
-
-	char turns[10];		/* Turns Taken (number) */
-
-	char day[10];		/* Time stamp (string) */
-
-	char who[16];		/* Player Name (string) */
-
-	char uid[8];		/* Player UID (number) */
-
-	char sex[2];		/* Player Sex (string) */
-	char p_r[3];		/* Player Race (number) */
-	char p_c[3];		/* Player Class (number) */
-
-	char cur_lev[4];		/* Current Player Level (number) */
-	char cur_dun[4];		/* Current Dungeon Level (number) */
-	char max_lev[4];		/* Max Player Level (number) */
-	char max_dun[4];		/* Max Dungeon Level (number) */
-
-	char how[32];		/* Method of death (string) */
-};
-
-
-
-/*
- * The "highscore" file descriptor, if available.
- */
-static int highscore_fd = -1;
-
-
 /*
  * Seek score 'i' in the highscore file
  */
@@ -3317,16 +3276,18 @@ static int highscore_add(high_score *score)
  *
  * Mega-Hack -- allow "fake" entry at the given position.
  */
-static void display_scores_aux(int from, int to, int note, high_score *score)
+void display_scores_aux(int from, int to, int note, high_score *score)
 {
 	char ch;
 
-	int i, j, k, n, attr, place;
+	int i, j, k, n, place;
 
 	high_score the_score;
 
 	char out_val[160];
 	char tmp_val[160];
+
+	byte attr;
 
 
 	/* Paranoia -- it may not have opened */
@@ -3593,7 +3554,7 @@ static errr top_twenty(void)
 
 
 	/* Clear the record */
-	WIPE(&the_score, high_score);
+	(void)WIPE(&the_score, high_score);
 
 	/* Save the version */
 	sprintf(the_score.what, "%u.%u.%u",

@@ -257,7 +257,7 @@ void do_cmd_wield(void)
 		if (o_ptr->discount >= INSCRIP_NULL) o_ptr->discount = 0;
 
 		/* Sense the object if allowed */
-		if (o_ptr->discount == 0) o_ptr->discount = IDENT_CURSED;
+		if (o_ptr->discount == 0) o_ptr->discount = INSCRIP_CURSED;
 
 		/* The object has been "sensed" */
 		o_ptr->ident |= (IDENT_SENSE);

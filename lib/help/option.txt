@@ -452,4 +452,3 @@ makes the character harder at the beginning of the game, but easier later on,
 since the stats are no longer limited to a "natural" value of "18/100".  The
 character description screen shows the value of this flag.
 
-

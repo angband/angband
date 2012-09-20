@@ -592,7 +592,7 @@ static void rd_item(object_type *o_ptr)
 	if (older_than(2, 7, 8) && (o_ptr->tval == TV_GOLD))
 	{
 		/* Extract the value */
-		o_ptr->pval = old_cost;
+		o_ptr->pval = (s16b)old_cost;
 
 		/* Done */
 		return;
@@ -1354,6 +1354,7 @@ static errr rd_extra(void)
 	rd_byte(&tmp8u);	/* oops */
 	if (older_than(2, 8, 5)) adult_preserve = tmp8u;
 	rd_byte(&tmp8u);
+	if (older_than(2, 8, 5)) adult_rand_artifacts = tmp8u;
 
 	/* Future use */
 	for (i = 0; i < 40; i++) rd_byte(&tmp8u);
@@ -1372,6 +1373,16 @@ static errr rd_extra(void)
 	{
 
 #ifdef GJW_RANDART
+
+		/*
+		 * XXX XXX XXX
+		 * Importing old savefiles with random artifacts is dangerous
+		 * since the randart-generators differ and produce different
+		 * artifacts from the same random seed.
+		 *
+		 * Switching off the check for incompatible randart versions
+		 * allows to import such a savefile - do it at your own risk.
+		 */
 
 		/* Check for incompatible randart version */
 		if (randart_version != RANDART_VERSION)
@@ -2169,7 +2180,7 @@ static errr rd_dungeon_aux(s16b depth, s16b py, s16b px)
 		n_ptr = &monster_type_body;
 
 		/* Clear the monster */
-		WIPE(n_ptr, monster_type);
+		(void)WIPE(n_ptr, monster_type);
 
 		/* Read the monster */
 		rd_monster(n_ptr);
@@ -2432,7 +2443,7 @@ static errr rd_dungeon(void)
 		n_ptr = &monster_type_body;
 
 		/* Clear the monster */
-		WIPE(n_ptr, monster_type);
+		(void)WIPE(n_ptr, monster_type);
 
 		/* Read the monster */
 		rd_monster(n_ptr);

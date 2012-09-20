@@ -131,7 +131,7 @@ bool func_false(void)
 
 
 /*
- * Determine if string "t" is equal to string "t"
+ * Determine if string "a" is equal to string "b"
  */
 bool streq(cptr a, cptr b)
 {
