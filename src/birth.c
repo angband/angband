@@ -30,7 +30,7 @@ struct birther
 
 	s16b stat[A_MAX];
 
-	char history[4][60];
+	char history[250];
 };
 
 
@@ -72,10 +72,7 @@ static void save_prev_data(void)
 	}
 
 	/* Save the history */
-	for (i = 0; i < 4; i++)
-	{
-		strcpy(prev.history[i], p_ptr->history[i]);
-	}
+	my_strcpy(prev.history, p_ptr->history, sizeof(prev.history));
 }
 
 
@@ -105,10 +102,7 @@ static void load_prev_data(void)
 	}
 
 	/* Save the history */
-	for (i = 0; i < 4; i++)
-	{
-		strcpy(temp.history[i], p_ptr->history[i]);
-	}
+	my_strcpy(temp.history, p_ptr->history, sizeof(temp.history));
 
 
 	/*** Load the previous data ***/
@@ -128,10 +122,7 @@ static void load_prev_data(void)
 	}
 
 	/* Load the history */
-	for (i = 0; i < 4; i++)
-	{
-		strcpy(p_ptr->history[i], prev.history[i]);
-	}
+	my_strcpy(p_ptr->history, prev.history, sizeof(p_ptr->history));
 
 
 	/*** Save the current data ***/
@@ -150,10 +141,7 @@ static void load_prev_data(void)
 	}
 
 	/* Save the history */
-	for (i = 0; i < 4; i++)
-	{
-		strcpy(prev.history[i], temp.history[i]);
-	}
+	my_strcpy(prev.history, temp.history, sizeof(prev.history));
 }
 
 
@@ -337,20 +325,12 @@ static void get_extra(void)
  */
 static void get_history(void)
 {
-	int i, n, chart, roll, social_class;
-
-	char *s, *t;
-
-	char buf[240];
-
+	int i, chart, roll, social_class;
 
 
 	/* Clear the previous history strings */
-	for (i = 0; i < 4; i++) p_ptr->history[i][0] = '\0';
+	p_ptr->history[0] = '\0';
 
-
-	/* Clear the history text */
-	buf[0] = '\0';
 
 	/* Initial social class */
 	social_class = randint(4);
@@ -372,7 +352,7 @@ static void get_history(void)
 		while ((chart != h_info[i].chart) || (roll > h_info[i].roll)) i++;
 
 		/* Get the textual history */
-		strcat(buf, (h_text + h_info[i].text));
+		my_strcat(p_ptr->history, (h_text + h_info[i].text), sizeof(p_ptr->history));
 
 		/* Add in the social class */
 		social_class += (int)(h_info[i].bonus) - 50;
@@ -389,52 +369,6 @@ static void get_history(void)
 
 	/* Save the social class */
 	p_ptr->sc = social_class;
-
-
-	/* Skip leading spaces */
-	for (s = buf; *s == ' '; s++) /* loop */;
-
-	/* Get apparent length */
-	n = strlen(s);
-
-	/* Kill trailing spaces */
-	while ((n > 0) && (s[n-1] == ' ')) s[--n] = '\0';
-
-
-	/* Start at first line */
-	i = 0;
-
-	/* Collect the history */
-	while (TRUE)
-	{
-		/* Extract remaining length */
-		n = strlen(s);
-
-		/* All done */
-		if (n < 60)
-		{
-			/* Save one line of history */
-			strcpy(p_ptr->history[i++], s);
-
-			/* All done */
-			break;
-		}
-
-		/* Find a reasonable break-point */
-		for (n = 60; ((n > 0) && (s[n-1] != ' ')); n--) /* loop */;
-
-		/* Save next location */
-		t = s + n;
-
-		/* Wipe trailing spaces */
-		while ((n > 0) && (s[n-1] == ' ')) s[--n] = '\0';
-
-		/* Save one line of history */
-		strcpy(p_ptr->history[i++], s);
-
-		/* Start next line */
-		for (s = t; *s == ' '; s++) /* loop */;
-	}
 }
 
 
@@ -700,7 +634,7 @@ static bool player_birth_aux_1(void)
 		str = sp_ptr->title;
 
 		/* Display */
-		sprintf(buf, "%c%c %s", I2A(n), p2, str);
+		strnfmt(buf, sizeof(buf), "%c%c %s", I2A(n), p2, str);
 		put_str(buf, 21 + (n/5), 2 + 15 * (n%5));
 	}
 
@@ -713,7 +647,7 @@ static bool player_birth_aux_1(void)
 		ch = inkey();
 		if (ch == 'Q') quit(NULL);
 		if (ch == 'S') return (FALSE);
-		k = (islower(ch) ? A2I(ch) : -1);
+		k = (islower((unsigned char)ch) ? A2I(ch) : -1);
 		if (ch == ESCAPE) ch = '*';
 		if (ch == '*') k = rand_int(MAX_SEXES);
 		if ((k >= 0) && (k < n)) break;
@@ -748,7 +682,7 @@ static bool player_birth_aux_1(void)
 		str = p_name + rp_ptr->name;
 
 		/* Display */
-		sprintf(buf, "%c%c %s", I2A(n), p2, str);
+		strnfmt(buf, sizeof(buf), "%c%c %s", I2A(n), p2, str);
 		put_str(buf, 21 + (n/5), 2 + 15 * (n%5));
 	}
 
@@ -761,7 +695,7 @@ static bool player_birth_aux_1(void)
 		ch = inkey();
 		if (ch == 'Q') quit(NULL);
 		if (ch == 'S') return (FALSE);
-		k = (islower(ch) ? A2I(ch) : -1);
+		k = (islower((unsigned char)ch) ? A2I(ch) : -1);
 		if (ch == ESCAPE) ch = '*';
 		if (ch == '*') k = rand_int(z_info->p_max);
 		if ((k >= 0) && (k < n)) break;
@@ -804,7 +738,7 @@ static bool player_birth_aux_1(void)
 		if (!(rp_ptr->choice & (1L << n))) mod = " (*)";
 
 		/* Display */
-		sprintf(buf, "%c%c %s%s", I2A(n), p2, str, mod);
+		strnfmt(buf, sizeof(buf), "%c%c %s%s", I2A(n), p2, str, mod);
 		put_str(buf, 21 + (n/3), 2 + 20 * (n%3));
 	}
 
@@ -817,7 +751,7 @@ static bool player_birth_aux_1(void)
 		ch = inkey();
 		if (ch == 'Q') quit(NULL);
 		if (ch == 'S') return (FALSE);
-		k = (islower(ch) ? A2I(ch) : -1);
+		k = (islower((unsigned char)ch) ? A2I(ch) : -1);
 		if (ch == ESCAPE) ch = '*';
 		if (ch == '*')
 		{
@@ -1165,7 +1099,7 @@ static bool player_birth_aux_3(void)
 			}
 
 			/* Prepare a prompt */
-			sprintf(buf, "%-5s%-20s", stat_names[i], inp);
+			strnfmt(buf, sizeof(buf), "%-5s%-20s", stat_names[i], inp);
 
 			/* Dump the prompt */
 			put_str(buf, 16 + i, 5);
@@ -1535,6 +1469,3 @@ void player_birth(void)
 		for (i = 0; i < 10; i++) store_maint(n);
 	}
 }
-
-
-

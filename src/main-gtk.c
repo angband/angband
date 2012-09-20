@@ -386,8 +386,7 @@ static void file_ok_callback(GtkWidget *widget, GtkWidget *file_selector)
 {
 	char *f = gtk_file_selection_get_filename(GTK_FILE_SELECTION(file_selector));
 
-	strncpy(savefile, f, sizeof(savefile)-1);
-	savefile[sizeof(savefile)-1] = '\0';
+	my_strcpy(savefile, f, sizeof(savefile));
 
 	gtk_widget_destroy(file_selector);
 
@@ -411,7 +410,7 @@ static void open_event_handler(GtkButton *was_clicked, gpointer user_data)
 	else
 	{
 		/* Prepare the savefile path */
-		path_build(buf, 1024, ANGBAND_DIR_SAVE, "*");
+		path_build(buf, sizeof(buf), ANGBAND_DIR_SAVE, "*");
 
 		file_selector = gtk_file_selection_new("Select a savefile");
 		gtk_file_selection_set_filename(GTK_FILE_SELECTION(file_selector), buf);
@@ -489,7 +488,7 @@ static gboolean keypress_event_handler(GtkWidget *widget, GdkEventKey *event, gp
 
 
 	/* Handle a few standard keys (bypass modifiers) XXX XXX XXX */
-	switch ((uint) event->keyval)
+	switch (event->keyval)
 	{
 		case GDK_Escape:
 		{
@@ -537,7 +536,7 @@ static gboolean keypress_event_handler(GtkWidget *widget, GdkEventKey *event, gp
 	}
 
 	/* Build the macro trigger string */
-	sprintf(msg, "%c%s%s%s%s_%X%c", 31,
+	strnfmt(msg, sizeof(msg), "%c%s%s%s%s_%X%c", 31,
 	        mc ? "N" : "", ms ? "S" : "",
 	        mo ? "O" : "", mx ? "M" : "",
 	        event->keyval, 13);
@@ -635,33 +634,9 @@ static void init_gtk_window(term_data *td, int i)
 	box = gtk_vbox_new(FALSE, 0);
 	td->drawing_area = gtk_drawing_area_new();
 
-	/* Create menu */
-	if (main_window)
-	{
-		menu_bar = gtk_menu_bar_new();
-		file_item = gtk_menu_item_new_with_label("File");
-		file_menu = gtk_menu_new();
-		file_new_item = gtk_menu_item_new_with_label("New");
-		file_open_item = gtk_menu_item_new_with_label("Open");
-		seperator_item = gtk_menu_item_new();
-		file_exit_item = gtk_menu_item_new_with_label("Exit");
-		options_item = gtk_menu_item_new_with_label("Options");
-		options_menu = gtk_menu_new();
-		options_font_item = gtk_menu_item_new_with_label("Font");
-	}
-
 	/* Set attributes */
 	gtk_window_set_title(GTK_WINDOW(td->window), td->name);
 	gtk_drawing_area_size(GTK_DRAWING_AREA(td->drawing_area), td->cols * td->font_wid, td->rows * td->font_hgt);
-
-	/* Register callbacks */
-	if (main_window)
-	{
-		gtk_signal_connect(GTK_OBJECT(file_exit_item), "activate", quit_event_handler, NULL);
-		gtk_signal_connect(GTK_OBJECT(file_new_item), "activate", new_event_handler, NULL);
-		gtk_signal_connect(GTK_OBJECT(file_open_item), "activate", open_event_handler, NULL);
-		gtk_signal_connect(GTK_OBJECT(options_font_item), "activate", change_font_event_handler, td);
-	}
 
 	gtk_signal_connect(GTK_OBJECT(td->window), "delete_event", GTK_SIGNAL_FUNC(delete_event_handler), NULL);
 	gtk_signal_connect(GTK_OBJECT(td->window), "key_press_event", GTK_SIGNAL_FUNC(keypress_event_handler), NULL);
@@ -672,19 +647,30 @@ static void init_gtk_window(term_data *td, int i)
 	else
 		gtk_signal_connect(GTK_OBJECT(td->window), "destroy_event", GTK_SIGNAL_FUNC(hide_event_handler), td);
 
-	/* Pack widgets */
 	gtk_container_add(GTK_CONTAINER(td->window), box);
 
+	/* Create main-menu */
 	if (main_window)
 	{
-		gtk_box_pack_start(GTK_BOX(box), menu_bar, FALSE, FALSE, NO_PADDING);
-	}
+		/* Create the menu-bar and menu-items */
+		menu_bar = gtk_menu_bar_new();
+		file_item = gtk_menu_item_new_with_label("File");
+		file_menu = gtk_menu_new();
+		file_new_item = gtk_menu_item_new_with_label("New");
+		file_open_item = gtk_menu_item_new_with_label("Open");
+		seperator_item = gtk_menu_item_new();
+		file_exit_item = gtk_menu_item_new_with_label("Exit");
+		options_item = gtk_menu_item_new_with_label("Options");
+		options_menu = gtk_menu_new();
+		options_font_item = gtk_menu_item_new_with_label("Font");
 
-	gtk_box_pack_start_defaults(GTK_BOX(box), td->drawing_area);
+		/* Register callbacks */
+		gtk_signal_connect(GTK_OBJECT(file_exit_item), "activate", quit_event_handler, NULL);
+		gtk_signal_connect(GTK_OBJECT(file_new_item), "activate", new_event_handler, NULL);
+		gtk_signal_connect(GTK_OBJECT(file_open_item), "activate", open_event_handler, NULL);
+		gtk_signal_connect(GTK_OBJECT(options_font_item), "activate", change_font_event_handler, td);
 
-	/* Pack the menu bar */
-	if (main_window)
-	{
+		/* Build the menu bar */
 		gtk_menu_bar_append(GTK_MENU_BAR(menu_bar), file_item);
 		gtk_menu_bar_append(GTK_MENU_BAR(menu_bar), options_item);
 		gtk_menu_item_set_submenu(GTK_MENU_ITEM(file_item), file_menu);
@@ -694,7 +680,13 @@ static void init_gtk_window(term_data *td, int i)
 		gtk_menu_append(GTK_MENU(file_menu), seperator_item);
 		gtk_menu_append(GTK_MENU(file_menu), file_exit_item);
 		gtk_menu_append(GTK_MENU(options_menu), options_font_item);
+
+		/* Pack the menu bar */
+		gtk_box_pack_start(GTK_BOX(box), menu_bar, FALSE, FALSE, NO_PADDING);
 	}
+
+	/* Pack the display area */
+	gtk_box_pack_start_defaults(GTK_BOX(box), td->drawing_area);
 
 	/* Show the widgets */
 	gtk_widget_show_all(td->window);

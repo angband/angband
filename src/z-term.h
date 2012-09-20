@@ -157,9 +157,9 @@ typedef struct term term;
 
 struct term
 {
-	vptr user;
+	void *user;
 
-	vptr data;
+	void *data;
 
 	bool user_flag;
 
@@ -274,7 +274,7 @@ extern void Term_queue_char(int x, int y, byte a, char c, byte ta, char tc);
 extern void Term_queue_chars(int x, int y, int n, byte a, cptr s);
 
 extern errr Term_fresh(void);
-extern errr Term_set_cursor(int v);
+extern errr Term_set_cursor(bool v);
 extern errr Term_gotoxy(int x, int y);
 extern errr Term_draw(int x, int y, byte a, char c);
 extern errr Term_addch(byte a, char c);
@@ -286,7 +286,7 @@ extern errr Term_clear(void);
 extern errr Term_redraw(void);
 extern errr Term_redraw_section(int x1, int y1, int x2, int y2);
 
-extern errr Term_get_cursor(int *v);
+extern errr Term_get_cursor(bool *v);
 extern errr Term_get_size(int *w, int *h);
 extern errr Term_locate(int *x, int *y);
 extern errr Term_what(int x, int y, byte *a, char *c);

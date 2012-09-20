@@ -28,10 +28,10 @@
 /**** Available Functions ****/
 
 /* Format arguments into given bounded-length buffer */
-extern uint vstrnfmt(char *buf, uint max, cptr fmt, va_list vp);
+extern size_t vstrnfmt(char *buf, size_t max, cptr fmt, va_list vp);
 
 /* Simple interface to "vstrnfmt()" */
-extern uint strnfmt(char *buf, uint max, cptr fmt, ...);
+extern size_t strnfmt(char *buf, size_t max, cptr fmt, ...);
 
 /* Format arguments into a static resizing buffer */
 extern char *vformat(cptr fmt, va_list vp);

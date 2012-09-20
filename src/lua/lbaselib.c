@@ -1,5 +1,5 @@
 /*
-** $Id: lbaselib.c,v 1.1 2001/10/27 19:35:29 angband Exp $
+** $Id: lbaselib.c,v 1.2 2002/07/10 20:56:38 rr9 Exp $
 ** Basic library
 ** See Copyright Notice in lua.h
 */
@@ -165,7 +165,7 @@ static int luaB_globals (lua_State *L) {
 static int luaB_rawget (lua_State *L) {
   luaL_checktype(L, 1, LUA_TTABLE);
   luaL_checkany(L, 2);
-  lua_rawget(L, -2);
+  lua_rawget(L, 1);
   return 1;
 }
 
@@ -173,7 +173,7 @@ static int luaB_rawset (lua_State *L) {
   luaL_checktype(L, 1, LUA_TTABLE);
   luaL_checkany(L, 2);
   luaL_checkany(L, 3);
-  lua_rawset(L, -3);
+  lua_rawset(L, 1);
   return 1;
 }
 
@@ -257,7 +257,7 @@ static int luaB_dostring (lua_State *L) {
   int oldtop = lua_gettop(L);
   size_t l;
   const char *s = luaL_check_lstr(L, 1, &l);
-  if (*s == '\27')  /* binary files start with ESC... */
+  if (*s == '\33')  /* binary files start with ESC... */
     lua_error(L, "`dostring' cannot run pre-compiled code");
   return passresults(L, lua_dobuffer(L, s, l, luaL_opt_string(L, 2, s)), oldtop);
 }

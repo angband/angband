@@ -2244,13 +2244,13 @@ void do_cmd_rest(void)
 	{
 		cptr p = "Rest (0-9999, '*' for HP/SP, '&' as needed): ";
 
-		char out_val[80];
+		char out_val[5];
 
 		/* Default */
 		strcpy(out_val, "&");
 
 		/* Ask for duration */
-		if (!get_string(p, out_val, 5)) return;
+		if (!get_string(p, out_val, sizeof(out_val))) return;
 
 		/* Rest until done */
 		if (out_val[0] == '&')
@@ -2476,7 +2476,7 @@ void do_cmd_fire(void)
 
 
 	/* Describe the object */
-	object_desc(o_name, i_ptr, FALSE, 3);
+	object_desc(o_name, sizeof(o_name), i_ptr, FALSE, 3);
 
 	/* Find the color and symbol for the object for throwing */
 	missile_attr = object_attr(i_ptr);
@@ -2564,7 +2564,7 @@ void do_cmd_fire(void)
 		/* Handle monster */
 		if (cave_m_idx[y][x] > 0)
 		{
-			monster_type *m_ptr = &m_list[cave_m_idx[y][x]];
+			monster_type *m_ptr = &mon_list[cave_m_idx[y][x]];
 			monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 			int chance2 = chance - distance(p_ptr->py, p_ptr->px, y, x);
@@ -2606,7 +2606,7 @@ void do_cmd_fire(void)
 					char m_name[80];
 
 					/* Get "the monster" or "it" */
-					monster_desc(m_name, m_ptr, 0);
+					monster_desc(m_name, sizeof(m_name), m_ptr, 0);
 
 					/* Message */
 					msg_format("The %s hits %s.", o_name, m_name);
@@ -2650,7 +2650,7 @@ void do_cmd_fire(void)
 						char m_name[80];
 
 						/* Get the monster name (or "it") */
-						monster_desc(m_name, m_ptr, 0);
+						monster_desc(m_name, sizeof(m_name), m_ptr, 0);
 
 						/* Message */
 						message_format(MSG_FLEE, m_ptr->r_idx,
@@ -2755,7 +2755,7 @@ void do_cmd_throw(void)
 
 
 	/* Description */
-	object_desc(o_name, i_ptr, FALSE, 3);
+	object_desc(o_name, sizeof(o_name), i_ptr, FALSE, 3);
 
 	/* Find the color and symbol for the object for throwing */
 	missile_attr = object_attr(i_ptr);
@@ -2842,7 +2842,7 @@ void do_cmd_throw(void)
 		/* Handle monster */
 		if (cave_m_idx[y][x] > 0)
 		{
-			monster_type *m_ptr = &m_list[cave_m_idx[y][x]];
+			monster_type *m_ptr = &mon_list[cave_m_idx[y][x]];
 			monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 			int chance2 = chance - distance(p_ptr->py, p_ptr->px, y, x);
@@ -2884,7 +2884,7 @@ void do_cmd_throw(void)
 					char m_name[80];
 
 					/* Get "the monster" or "it" */
-					monster_desc(m_name, m_ptr, 0);
+					monster_desc(m_name, sizeof(m_name), m_ptr, 0);
 
 					/* Message */
 					msg_format("The %s hits %s.", o_name, m_name);
@@ -2928,7 +2928,7 @@ void do_cmd_throw(void)
 						char m_name[80];
 
 						/* Get the monster name (or "it") */
-						monster_desc(m_name, m_ptr, 0);
+						monster_desc(m_name, sizeof(m_name), m_ptr, 0);
 
 						/* Message */
 						message_format(MSG_FLEE, m_ptr->r_idx,

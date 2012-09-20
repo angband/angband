@@ -225,7 +225,7 @@ void flavor_init(void)
 				for (q = 0; q < s; q++)
 				{
 					/* Add the syllable */
-					strcat(tmp, syllables[rand_int(MAX_SYLLABLES)]);
+					my_strcat(tmp, syllables[rand_int(MAX_SYLLABLES)], sizeof(tmp));
 				}
 
 				/* Stop before getting too long */
@@ -235,11 +235,11 @@ void flavor_init(void)
 				strcat(buf, " ");
 
 				/* Add the word */
-				strcat(buf, tmp);
+				my_strcat(buf, tmp, sizeof(buf));
 			}
 
 			/* Save the title */
-			strcpy(scroll_adj[i], buf+1);
+			my_strcpy(scroll_adj[i], buf+1, sizeof(scroll_adj[0]));
 
 			/* Assume okay */
 			okay = TRUE;
@@ -540,7 +540,7 @@ void object_flags_known(const object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3)
 
 
 /*
- * Efficient version of '(T) += strfmt((T), "%c", (C))'
+ * Efficient version of '(T) += sprintf((T), "%c", (C))'
  */
 #define object_desc_chr_macro(T,C) do { \
  \
@@ -552,7 +552,7 @@ void object_flags_known(const object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3)
 
 
 /*
- * Efficient version of '(T) += strfmt((T), "%s", (S))'
+ * Efficient version of '(T) += sprintf((T), "%s", (S))'
  */
 #define object_desc_str_macro(T,S) do { \
  \
@@ -566,13 +566,13 @@ void object_flags_known(const object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3)
 
 
 /*
- * Efficient version of '(T) += strfmt((T), "%u", (N))'
+ * Efficient version of '(T) += sprintf((T), "%u", (N))'
  */
 #define object_desc_num_macro(T,N) do { \
  \
-	uint n = (N); \
+	int n = (N); \
  \
-	uint p; \
+	int p; \
  \
 	/* Find "size" of "n" */ \
 	for (p = 1; n >= p * 10; p = p * 10) /* loop */; \
@@ -595,11 +595,11 @@ void object_flags_known(const object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3)
 
 
 /*
- * Efficient version of '(T) += strfmt((T), "%+d", (I))'
+ * Efficient version of '(T) += sprintf((T), "%+d", (I))'
  */
 #define object_desc_int_macro(T,I) do { \
  \
-	sint i = (I); \
+	int i = (I); \
  \
 	/* Negative */ \
 	if (i < 0) \
@@ -646,7 +646,7 @@ void object_flags_known(const object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3)
  *
  * Note the use of "object_desc_int_macro()" and "object_desc_num_macro()"
  * and "object_desc_str_macro()" and "object_desc_chr_macro()" as extremely
- * efficient, portable, versions of some common "strfmt()" commands (without
+ * efficient, portable, versions of some common "sprintf()" commands (without
  * the bounds checking or termination writing), which allow a pointer to
  * efficiently move through a buffer while modifying it in various ways.
  *
@@ -693,7 +693,7 @@ void object_flags_known(const object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3)
  *   2 -- Amulet of Death [1,+3] (+2 to Stealth)
  *   3 -- Rings of Death [1,+3] (+2 to Stealth) {nifty}
  */
-void object_desc(char *buf, const object_type *o_ptr, int pref, int mode)
+void object_desc(char *buf, size_t max, const object_type *o_ptr, int pref, int mode)
 {
 	cptr basenm;
 	cptr modstr;
@@ -929,14 +929,14 @@ void object_desc(char *buf, const object_type *o_ptr, int pref, int mode)
 		/* Hack -- Gold/Gems */
 		case TV_GOLD:
 		{
-			strcpy(buf, basenm);
+			my_strcpy(buf, basenm, max);
 			return;
 		}
 
 		/* Hack -- Default -- Used in the "inventory" routine */
 		default:
 		{
-			strcpy(buf, "(nothing)");
+			my_strcpy(buf, "(nothing)", max);
 			return;
 		}
 	}
@@ -1553,11 +1553,8 @@ object_desc_done:
 	/* Terminate */
 	*t = '\0';
 
-	/* Truncate the string to 80 chars */
-	tmp_buf[79] = '\0';
-
 	/* Copy the string over */
-	strcpy(buf, tmp_buf);
+	my_strcpy(buf, tmp_buf, max);
 }
 
 
@@ -1565,7 +1562,7 @@ object_desc_done:
  * Hack -- describe an item currently in a store's inventory
  * This allows an item to *look* like the player is "aware" of it
  */
-void object_desc_store(char *buf, const object_type *o_ptr, int pref, int mode)
+void object_desc_store(char *buf, size_t max, const object_type *o_ptr, int pref, int mode)
 {
 	object_type *i_ptr;
 	object_type object_type_body;
@@ -1597,7 +1594,7 @@ void object_desc_store(char *buf, const object_type *o_ptr, int pref, int mode)
 
 
 	/* Describe the object */
-	object_desc(buf, i_ptr, pref, mode);
+	object_desc(buf, max, i_ptr, pref, mode);
 
 
 	/* Restore "flavor" value */
@@ -2113,7 +2110,7 @@ bool identify_fully_aux(const object_type *o_ptr)
 
 
 	/* Temporary file */
-	fff = my_fopen_temp(file_name, 1024);
+	fff = my_fopen_temp(file_name, sizeof(file_name));
 
 	/* Failure */
 	if (!fff) return (FALSE);
@@ -2189,7 +2186,7 @@ s16b label_to_inven(int c)
 	int i;
 
 	/* Convert */
-	i = (islower(c) ? A2I(c) : -1);
+	i = (islower((unsigned char)c) ? A2I(c) : -1);
 
 	/* Verify the index */
 	if ((i < 0) || (i > INVEN_PACK)) return (-1);
@@ -2212,7 +2209,7 @@ s16b label_to_equip(int c)
 	int i;
 
 	/* Convert */
-	i = (islower(c) ? A2I(c) : -1) + INVEN_WIELD;
+	i = (islower((unsigned char)c) ? A2I(c) : -1) + INVEN_WIELD;
 
 	/* Verify the index */
 	if ((i < INVEN_WIELD) || (i >= INVEN_TOTAL)) return (-1);
@@ -2457,7 +2454,7 @@ bool item_tester_okay(const object_type *o_ptr)
  *   0x01 -- Verify item tester
  *   0x02 -- Marked items only
  */
-sint scan_floor(int *items, int size, int y, int x, int mode)
+int scan_floor(int *items, int size, int y, int x, int mode)
 {
 	int this_o_idx, next_o_idx;
 
@@ -2547,7 +2544,7 @@ void display_inven(void)
 		Term_putstr(0, i, 3, TERM_WHITE, tmp_val);
 
 		/* Obtain an item description */
-		object_desc(o_name, o_ptr, TRUE, 3);
+		object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
 
 		/* Obtain the length of the description */
 		n = strlen(o_name);
@@ -2617,7 +2614,7 @@ void display_equip(void)
 		Term_putstr(0, i - INVEN_WIELD, 3, TERM_WHITE, tmp_val);
 
 		/* Obtain an item description */
-		object_desc(o_name, o_ptr, TRUE, 3);
+		object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
 
 		/* Obtain the length of the description */
 		n = strlen(o_name);
@@ -2710,7 +2707,7 @@ void show_inven(void)
 		if (!item_tester_okay(o_ptr)) continue;
 
 		/* Describe the object */
-		object_desc(o_name, o_ptr, TRUE, 3);
+		object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
 
 		/* Hack -- enforce max length */
 		o_name[lim] = '\0';
@@ -2722,7 +2719,7 @@ void show_inven(void)
 		out_color[k] = tval_to_attr[o_ptr->tval % N_ELEMENTS(tval_to_attr)];
 
 		/* Save the object description */
-		strcpy(out_desc[k], o_name);
+		my_strcpy(out_desc[k], o_name, sizeof(out_desc[0]));
 
 		/* Find the predicted "line length" */
 		l = strlen(out_desc[k]) + 5;
@@ -2815,7 +2812,7 @@ void show_equip(void)
 		if (!item_tester_okay(o_ptr)) continue;
 
 		/* Description */
-		object_desc(o_name, o_ptr, TRUE, 3);
+		object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
 
 		/* Truncate the description */
 		o_name[lim] = 0;
@@ -2827,7 +2824,7 @@ void show_equip(void)
 		out_color[k] = tval_to_attr[o_ptr->tval % N_ELEMENTS(tval_to_attr)];
 
 		/* Save the description */
-		strcpy(out_desc[k], o_name);
+		my_strcpy(out_desc[k], o_name, sizeof(out_desc[0]));
 
 		/* Extract the maximal length (see below) */
 		l = strlen(out_desc[k]) + (2 + 3);
@@ -2870,7 +2867,7 @@ void show_equip(void)
 		if (show_labels)
 		{
 			/* Mention the use */
-			sprintf(tmp_val, "%-14s: ", mention_use(i));
+			strnfmt(tmp_val, sizeof(tmp_val), "%-14s: ", mention_use(i));
 			put_str(tmp_val, j+1, col + 3);
 
 			/* Display the entry itself */
@@ -2937,7 +2934,7 @@ void show_floor(const int *floor_list, int floor_num)
 		if (!item_tester_okay(o_ptr)) continue;
 
 		/* Describe the object */
-		object_desc(o_name, o_ptr, TRUE, 3);
+		object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
 
 		/* Hack -- enforce max length */
 		o_name[lim] = '\0';
@@ -2949,7 +2946,7 @@ void show_floor(const int *floor_list, int floor_num)
 		out_color[k] = tval_to_attr[o_ptr->tval % N_ELEMENTS(tval_to_attr)];
 
 		/* Save the object description */
-		strcpy(out_desc[k], o_name);
+		my_strcpy(out_desc[k], o_name, sizeof(out_desc[0]));
 
 		/* Find the predicted "line length" */
 		l = strlen(out_desc[k]) + 5;
@@ -3071,10 +3068,10 @@ static bool verify_item(cptr prompt, int item)
 	}
 
 	/* Describe */
-	object_desc(o_name, o_ptr, TRUE, 3);
+	object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
 
 	/* Prompt */
-	sprintf(out_val, "%s %s? ", prompt, o_name);
+	strnfmt(out_val, sizeof(out_val), "%s %s? ", prompt, o_name);
 
 	/* Query */
 	return (get_check(out_val));
@@ -3515,7 +3512,7 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 				        index_to_label(i1), index_to_label(i2));
 
 				/* Append */
-				strcat(out_val, tmp_val);
+				my_strcat(out_val, tmp_val, sizeof(out_val));
 			}
 
 			/* Indicate ability to "view" */
@@ -3545,7 +3542,7 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 				        index_to_label(e1), index_to_label(e2));
 
 				/* Append */
-				strcat(out_val, tmp_val);
+				my_strcat(out_val, tmp_val, sizeof(out_val));
 			}
 
 			/* Indicate ability to "view" */
@@ -3576,7 +3573,7 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 				sprintf(tmp_val, " %c-%c,", I2A(f1), I2A(f2));
 
 				/* Append */
-				strcat(out_val, tmp_val);
+				my_strcat(out_val, tmp_val, sizeof(out_val));
 			}
 
 			/* Indicate ability to "view" */
@@ -3595,7 +3592,7 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 		strcat(out_val, " ESC");
 
 		/* Build the prompt */
-		sprintf(tmp_val, "(%s) %s", out_val, pmt);
+		strnfmt(tmp_val, sizeof(tmp_val), "(%s) %s", out_val, pmt);
 
 		/* Show the prompt */
 		prt(tmp_val, 0, 0);
@@ -3865,10 +3862,10 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 				bool verify;
 
 				/* Note verify */
-				verify = (isupper(which) ? TRUE : FALSE);
+				verify = (isupper((unsigned char)which) ? TRUE : FALSE);
 
 				/* Lowercase */
-				which = tolower(which);
+				which = tolower((unsigned char)which);
 
 				/* Convert letter to inventory index */
 				if (p_ptr->command_wrk == (USE_INVEN))
@@ -3899,7 +3896,7 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 				/* Convert letter to floor index */
 				else
 				{
-					k = (islower(which) ? A2I(which) : -1);
+					k = (islower((unsigned char)which) ? A2I(which) : -1);
 
 					if (k < 0 || k >= floor_num)
 					{

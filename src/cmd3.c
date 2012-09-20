@@ -167,7 +167,7 @@ void do_cmd_wield(void)
 	if (cursed_p(&inventory[slot]))
 	{
 		/* Describe it */
-		object_desc(o_name, &inventory[slot], FALSE, 0);
+		object_desc(o_name, sizeof(o_name), &inventory[slot], FALSE, 0);
 
 		/* Message */
 		msg_format("The %s you are %s appears to be cursed.",
@@ -242,7 +242,7 @@ void do_cmd_wield(void)
 	}
 
 	/* Describe the result */
-	object_desc(o_name, o_ptr, TRUE, 3);
+	object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
 
 	/* Message */
 	msg_format("%s %s (%c).", act, o_name, index_to_label(slot));
@@ -426,13 +426,13 @@ void do_cmd_destroy(void)
 	/* Describe the object */
 	old_number = o_ptr->number;
 	o_ptr->number = amt;
-	object_desc(o_name, o_ptr, TRUE, 3);
+	object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
 	o_ptr->number = old_number;
 
 	/* Verify destruction */
 	if (verify_destroy)
 	{
-		sprintf(out_val, "Really destroy %s? ", o_name);
+		strnfmt(out_val, sizeof(out_val), "Really destroy %s? ", o_name);
 		if (!get_check(out_val)) return;
 	}
 
@@ -528,7 +528,7 @@ void do_cmd_observe(void)
 	}
 
 	/* Description */
-	object_desc(o_name, o_ptr, TRUE, 3);
+	object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
 
 	/* Describe */
 	msg_format("Examining %s...", o_name);
@@ -624,7 +624,7 @@ void do_cmd_inscribe(void)
 	}
 
 	/* Describe the activity */
-	object_desc(o_name, o_ptr, TRUE, 3);
+	object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
 
 	/* Message */
 	msg_format("Inscribing %s.", o_name);
@@ -637,11 +637,11 @@ void do_cmd_inscribe(void)
 	if (o_ptr->note)
 	{
 		/* Start with the old inscription */
-		strnfmt(tmp, 80, "%s", quark_str(o_ptr->note));
+		strnfmt(tmp, sizeof(tmp), "%s", quark_str(o_ptr->note));
 	}
 
 	/* Get a new inscription (possibly empty) */
-	if (get_string("Inscription: ", tmp, 80))
+	if (get_string("Inscription: ", tmp, sizeof(tmp)))
 	{
 		/* Save the inscription */
 		o_ptr->note = quark_add(tmp);
@@ -971,20 +971,20 @@ void do_cmd_locate(void)
 		}
 		else
 		{
-			sprintf(tmp_val, "%s%s of",
+			strnfmt(tmp_val, sizeof(tmp_val), "%s%s of",
 			        ((y2 < y1) ? " north" : (y2 > y1) ? " south" : ""),
 			        ((x2 < x1) ? " west" : (x2 > x1) ? " east" : ""));
 		}
 
 		/* Prepare to ask which way to look */
-		sprintf(out_val,
+		strnfmt(out_val, sizeof(out_val),
 		        "Map sector [%d,%d], which is%s your sector.  Direction?",
 		        (y2 / PANEL_HGT), (x2 / PANEL_WID), tmp_val);
 
 		/* More detail */
 		if (center_player)
 		{
-			sprintf(out_val,
+			strnfmt(out_val, sizeof(out_val),
 		        	"Map sector [%d(%02d),%d(%02d)], which is%s your sector.  Direction?",
 		        	(y2 / PANEL_HGT), (y2 % PANEL_HGT),
 		        	(x2 / PANEL_WID), (x2 % PANEL_WID), tmp_val);
@@ -1333,11 +1333,11 @@ void do_cmd_query_symbol(void)
 	}
 	else if (ident_info[i])
 	{
-		sprintf(buf, "%c - %s.", sym, ident_info[i] + 2);
+		strnfmt(buf, sizeof(buf), "%c - %s.", sym, ident_info[i] + 2);
 	}
 	else
 	{
-		sprintf(buf, "%c - %s.", sym, "Unknown Symbol");
+		strnfmt(buf, sizeof(buf), "%c - %s.", sym, "Unknown Symbol");
 	}
 
 	/* Display the result */

@@ -185,7 +185,7 @@ static void sense_inventory(void)
 		if (disturb_minor) disturb(0, 0);
 
 		/* Get an object description */
-		object_desc(o_name, o_ptr, FALSE, 0);
+		object_desc(o_name, sizeof(o_name), o_ptr, FALSE, 0);
 
 		/* Message (equipment) */
 		if (i >= INVEN_WIELD)
@@ -329,10 +329,10 @@ static void regen_monsters(void)
 	int i, frac;
 
 	/* Regenerate everyone */
-	for (i = 1; i < m_max; i++)
+	for (i = 1; i < mon_max; i++)
 	{
 		/* Check the i'th monster */
-		monster_type *m_ptr = &m_list[i];
+		monster_type *m_ptr = &mon_list[i];
 		monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 		/* Skip dead monsters */
@@ -1918,7 +1918,7 @@ static void process_player(void)
 			msg_print("Your pack overflows!");
 
 			/* Describe */
-			object_desc(o_name, o_ptr, TRUE, 3);
+			object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
 
 			/* Message */
 			msg_format("You drop %s (%c).", o_name, index_to_label(item));
@@ -2047,13 +2047,13 @@ static void process_player(void)
 				shimmer_monsters = FALSE;
 
 				/* Shimmer multi-hued monsters */
-				for (i = 1; i < m_max; i++)
+				for (i = 1; i < mon_max; i++)
 				{
 					monster_type *m_ptr;
 					monster_race *r_ptr;
 
 					/* Get the monster */
-					m_ptr = &m_list[i];
+					m_ptr = &mon_list[i];
 
 					/* Skip dead monsters */
 					if (!m_ptr->r_idx) continue;
@@ -2079,12 +2079,12 @@ static void process_player(void)
 				repair_mflag_nice = FALSE;
 
 				/* Process monsters */
-				for (i = 1; i < m_max; i++)
+				for (i = 1; i < mon_max; i++)
 				{
 					monster_type *m_ptr;
 
 					/* Get the monster */
-					m_ptr = &m_list[i];
+					m_ptr = &mon_list[i];
 
 					/* Skip dead monsters */
 					/* if (!m_ptr->r_idx) continue; */
@@ -2101,12 +2101,12 @@ static void process_player(void)
 				repair_mflag_mark = FALSE;
 
 				/* Process the monsters */
-				for (i = 1; i < m_max; i++)
+				for (i = 1; i < mon_max; i++)
 				{
 					monster_type *m_ptr;
 
 					/* Get the monster */
-					m_ptr = &m_list[i];
+					m_ptr = &mon_list[i];
 
 					/* Skip dead monsters */
 					/* if (!m_ptr->r_idx) continue; */
@@ -2141,12 +2141,12 @@ static void process_player(void)
 			repair_mflag_show = FALSE;
 
 			/* Process the monsters */
-			for (i = 1; i < m_max; i++)
+			for (i = 1; i < mon_max; i++)
 			{
 				monster_type *m_ptr;
 
 				/* Get the monster */
-				m_ptr = &m_list[i];
+				m_ptr = &mon_list[i];
 
 				/* Skip dead monsters */
 				/* if (!m_ptr->r_idx) continue; */
@@ -2205,7 +2205,6 @@ static void dungeon(void)
 	shimmer_objects = TRUE;
 
 	/* Reset repair flags */
-	repair_mflag_born = TRUE;
 	repair_mflag_nice = TRUE;
 	repair_mflag_show = TRUE;
 	repair_mflag_mark = TRUE;
@@ -2369,10 +2368,10 @@ static void dungeon(void)
 	while (TRUE)
 	{
 		/* Hack -- Compact the monster list occasionally */
-		if (m_cnt + 32 > z_info->m_max) compact_monsters(64);
+		if (mon_cnt + 32 > z_info->m_max) compact_monsters(64);
 
 		/* Hack -- Compress the monster list occasionally */
-		if (m_cnt + 32 < m_max) compact_monsters(0);
+		if (mon_cnt + 32 < mon_max) compact_monsters(0);
 
 
 		/* Hack -- Compact the object list occasionally */
@@ -2388,10 +2387,10 @@ static void dungeon(void)
 		p_ptr->energy += extract_energy[p_ptr->pspeed];
 
 		/* Give energy to all monsters */
-		for (i = m_max - 1; i >= 1; i--)
+		for (i = mon_max - 1; i >= 1; i--)
 		{
 			/* Access the monster */
-			m_ptr = &m_list[i];
+			m_ptr = &mon_list[i];
 
 			/* Ignore "dead" monsters */
 			if (!m_ptr->r_idx) continue;
@@ -2562,7 +2561,7 @@ void play_game(bool new_game)
 	}
 
 	/* Hack -- Turn off the cursor */
-	(void)Term_set_cursor(0);
+	(void)Term_set_cursor(FALSE);
 
 
 	/* Attempt to load */
@@ -2762,7 +2761,7 @@ void play_game(bool new_game)
 
 		/* Erase the old cave */
 		wipe_o_list();
-		wipe_m_list();
+		wipe_mon_list();
 
 
 		/* XXX XXX XXX */

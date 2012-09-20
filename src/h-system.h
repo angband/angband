@@ -11,9 +11,6 @@
  *
  * This file is a big hack to make other files less of a hack.
  * This file has been rebuilt -- it may need a little more work.
- *
- * It is (very) unlikely that VMS will work without help, primarily
- * because VMS does not use the "ASCII" character set.
  */
 
 

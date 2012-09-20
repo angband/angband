@@ -21,7 +21,7 @@
  *
  * Fake "usleep()" function grabbed from the inl netrek server -cba
  */
-int usleep(huge usecs)
+int usleep(unsigned long usecs)
 {
 	struct timeval      Timer;
 
@@ -70,7 +70,7 @@ extern struct passwd *getpwnam();
 /*
  * Find a default user name from the system.
  */
-void user_name(char *buf, int id)
+void user_name(char *buf, size_t len, int id)
 {
 	struct passwd *pw;
 
@@ -78,50 +78,19 @@ void user_name(char *buf, int id)
 	if ((pw = getpwuid(id)))
 	{
 		/* Get the first 15 characters of the user name */
-		strncpy(buf, pw->pw_name, 16);
-		buf[15] = '\0';
+		my_strcpy(buf, pw->pw_name, len);
 
 #ifdef CAPITALIZE_USER_NAME
 		/* Hack -- capitalize the user name */
-		if (islower(buf[0])) buf[0] = toupper(buf[0]);
-#endif
+		if (islower((unsigned char)buf[0]))
+			buf[0] = toupper((unsigned char)buf[0]);
+#endif /* CAPITALIZE_USER_NAME */
 
 		return;
 	}
 
 	/* Oops.  Hack -- default to "PLAYER" */
-	strcpy(buf, "PLAYER");
-}
-
-
-/*
- * Find the users home directory.
- */
-errr user_home(char *buf, int len)
-{
-	char *homedir;
-	struct passwd *pw;
-
-	/* Get the "HOME" environment variable */
-	homedir = getenv("HOME");
-
-	if (!homedir)
-	{
-		/* Get the directory from the passwd structure */
-		pw = getpwuid(getuid());
-
-		if (pw) homedir = pw->pw_dir;
-
-		/* Paranoia */
-		if (!homedir) return (-1);
-	}
-
-	/* Store the users home directory */
-	strncpy(buf, homedir, len);
-	buf[len-1] = '\0';
-
-	/* Success */
-	return (0);
+	my_strcpy(buf, "PLAYER", len);
 }
 
 #endif /* SET_UID */
@@ -177,15 +146,12 @@ errr user_home(char *buf, int len)
  * Replace "~user/" by the home directory of the user named "user"
  * Replace "~/" by the home directory of the current user
  */
-errr path_parse(char *buf, int max, cptr file)
+errr path_parse(char *buf, size_t max, cptr file)
 {
 	cptr u, s;
 	struct passwd	*pw;
 	char user[128];
 
-
-	/* Unused */
-	(void)max;
 
 	/* Assume no result */
 	buf[0] = '\0';
@@ -196,7 +162,7 @@ errr path_parse(char *buf, int max, cptr file)
 	/* File needs no parsing */
 	if (file[0] != '~')
 	{
-		strcpy(buf, file);
+		my_strcpy(buf, file, max);
 		return (0);
 	}
 
@@ -229,10 +195,10 @@ errr path_parse(char *buf, int max, cptr file)
 	if (!pw) return (1);
 
 	/* Make use of the info */
-	strcpy(buf, pw->pw_dir);
+	my_strcpy(buf, pw->pw_dir, max);
 
 	/* Append the rest of the filename, if any */
-	if (s) strcat(buf, s);
+	if (s) my_strcat(buf, s, max);
 
 	/* Success */
 	return (0);
@@ -248,7 +214,7 @@ errr path_parse(char *buf, int max, cptr file)
  * This requires no special processing on simple machines,
  * except for verifying the size of the filename.
  */
-errr path_parse(char *buf, int max, cptr file)
+errr path_parse(char *buf, size_t max, cptr file)
 {
 	/* Accept the filename */
 	strnfmt(buf, max, "%s", file);
@@ -268,7 +234,7 @@ errr path_parse(char *buf, int max, cptr file)
  *
  * This filename is always in "system-specific" form.
  */
-static errr path_temp(char *buf, int max)
+static errr path_temp(char *buf, size_t max)
 {
 	cptr s;
 
@@ -301,7 +267,7 @@ static errr path_temp(char *buf, int max)
  * Note that this function yields a path which must be "parsed"
  * using the "parse" function above.
  */
-errr path_build(char *buf, int max, cptr path, cptr file)
+errr path_build(char *buf, size_t max, cptr path, cptr file)
 {
 	/* Special file */
 	if (file[0] == '~')
@@ -344,7 +310,7 @@ FILE *my_fopen(cptr file, cptr mode)
 	char buf[1024];
 
 	/* Hack -- Try to parse the path */
-	if (path_parse(buf, 1024, file)) return (NULL);
+	if (path_parse(buf, sizeof(buf), file)) return (NULL);
 
 	/* Attempt to fopen the file anyway */
 	return (fopen(buf, mode));
@@ -371,12 +337,12 @@ errr my_fclose(FILE *fff)
 
 #ifdef HAVE_MKSTEMP
 
-FILE *my_fopen_temp(char *buf, int max)
+FILE *my_fopen_temp(char *buf, size_t max)
 {
 	int fd;
 
 	/* Prepare the buffer for mkstemp */
-	strncpy(buf, "/tmp/anXXXXXX", max);
+	my_strcpy(buf, "/tmp/anXXXXXX", max);
 
 	/* Secure creation of a temporary file */
 	fd = mkstemp(buf);
@@ -390,7 +356,7 @@ FILE *my_fopen_temp(char *buf, int max)
 
 #else /* HAVE_MKSTEMP */
 
-FILE *my_fopen_temp(char *buf, int max)
+FILE *my_fopen_temp(char *buf, size_t max)
 {
 	/* Generate a temporary filename */
 	if (path_temp(buf, max)) return (NULL);
@@ -411,14 +377,14 @@ FILE *my_fopen_temp(char *buf, int max)
  */
 errr my_fgets(FILE *fff, char *buf, size_t n)
 {
-	huge i = 0;
+	size_t i = 0;
 
 	char *s;
 
 	char tmp[1024];
 
 	/* Read a line */
-	if (fgets(tmp, 1024, fff))
+	if (fgets(tmp, (int)sizeof(tmp), fff))
 	{
 		/* Convert weirdness */
 		for (s = tmp; *s; s++)
@@ -444,7 +410,7 @@ errr my_fgets(FILE *fff, char *buf, size_t n)
 			}
 
 			/* Handle printables */
-			else if (isprint(*s))
+			else if (isprint((unsigned char)*s))
 			{
 				/* Copy */
 				buf[i++] = *s;
@@ -513,7 +479,7 @@ errr fd_kill(cptr file)
 	char buf[1024];
 
 	/* Hack -- Try to parse the path */
-	if (path_parse(buf, 1024, file)) return (-1);
+	if (path_parse(buf, sizeof(buf), file)) return (-1);
 
 	/* Remove */
 	(void)remove(buf);
@@ -532,10 +498,10 @@ errr fd_move(cptr file, cptr what)
 	char aux[1024];
 
 	/* Hack -- Try to parse the path */
-	if (path_parse(buf, 1024, file)) return (-1);
+	if (path_parse(buf, sizeof(buf), file)) return (-1);
 
 	/* Hack -- Try to parse the path */
-	if (path_parse(aux, 1024, what)) return (-1);
+	if (path_parse(aux, sizeof(aux), what)) return (-1);
 
 	/* Rename */
 	(void)rename(buf, aux);
@@ -554,10 +520,10 @@ errr fd_copy(cptr file, cptr what)
 	char aux[1024];
 
 	/* Hack -- Try to parse the path */
-	if (path_parse(buf, 1024, file)) return (-1);
+	if (path_parse(buf, sizeof(buf), file)) return (-1);
 
 	/* Hack -- Try to parse the path */
-	if (path_parse(aux, 1024, what)) return (-1);
+	if (path_parse(aux, sizeof(aux), what)) return (-1);
 
 	/* Copy XXX XXX XXX */
 	/* (void)rename(buf, aux); */
@@ -579,7 +545,7 @@ int fd_make(cptr file, int mode)
 	char buf[1024];
 
 	/* Hack -- Try to parse the path */
-	if (path_parse(buf, 1024, file)) return (-1);
+	if (path_parse(buf, sizeof(buf), file)) return (-1);
 
 #if defined(MACINTOSH)
 
@@ -606,7 +572,7 @@ int fd_open(cptr file, int flags)
 	char buf[1024];
 
 	/* Hack -- Try to parse the path */
-	if (path_parse(buf, 1024, file)) return (-1);
+	if (path_parse(buf, sizeof(buf), file)) return (-1);
 
 #if defined(MACINTOSH) || defined(WINDOWS)
 
@@ -811,7 +777,7 @@ errr check_modification_date(int fd, cptr template_file)
 	struct stat txt_stat, raw_stat;
 
 	/* Build the filename */
-	path_build(buf, 1024, ANGBAND_DIR_EDIT, template_file);
+	path_build(buf, sizeof(buf), ANGBAND_DIR_EDIT, template_file);
 
 	/* Access stats on text file */
 	if (stat(buf, &txt_stat))
@@ -846,9 +812,9 @@ errr check_modification_date(int fd, cptr template_file)
 /*
  * Convert a decimal to a single digit hex number
  */
-static char hexify(uint i)
+static char hexify(int i)
 {
-	return (hexsym[i%16]);
+	return (hexsym[i % 16]);
 }
 
 
@@ -858,8 +824,8 @@ static char hexify(uint i)
  */
 static int dehex(char c)
 {
-	if (isdigit(c)) return (D2I(c));
-	if (isalpha(c)) return (A2I(tolower(c)) + 10);
+	if (isdigit((unsigned char)c)) return (D2I(c));
+	if (isalpha((unsigned char)c)) return (A2I(tolower((unsigned char)c)) + 10);
 	return (0);
 }
 
@@ -871,7 +837,7 @@ static int dehex(char c)
  *
  * To be safe, "buf" should be at least as large as "str".
  */
-void text_to_ascii(char *buf, int len, cptr str)
+void text_to_ascii(char *buf, size_t len, cptr str)
 {
 	char *s = buf;
 
@@ -990,7 +956,7 @@ void text_to_ascii(char *buf, int len, cptr str)
  *
  * This function will not work on non-ascii systems.
  */
-void ascii_to_text(char *buf, int len, cptr str)
+void ascii_to_text(char *buf, size_t len, cptr str)
 {
 	char *s = buf;
 
@@ -1051,7 +1017,7 @@ void ascii_to_text(char *buf, int len, cptr str)
 		else if (i < 32)
 		{
 			*s++ = '^';
-			*s++ = i + 64;
+			*s++ = UN_KTRL(i);
 		}
 		else if (i < 127)
 		{
@@ -1061,8 +1027,8 @@ void ascii_to_text(char *buf, int len, cptr str)
 		{
 			*s++ = '\\';
 			*s++ = 'x';
-			*s++ = hexify(i / 16);
-			*s++ = hexify(i % 16);
+			*s++ = hexify((int)i / 16);
+			*s++ = hexify((int)i % 16);
 		}
 	}
 
@@ -1091,7 +1057,7 @@ static bool macro__use[256];
 /*
  * Find the macro (if any) which exactly matches the given pattern
  */
-sint macro_find_exact(cptr pat)
+int macro_find_exact(cptr pat)
 {
 	int i;
 
@@ -1119,7 +1085,7 @@ sint macro_find_exact(cptr pat)
 /*
  * Find the first macro (if any) which contains the given pattern
  */
-static sint macro_find_check(cptr pat)
+static int macro_find_check(cptr pat)
 {
 	int i;
 
@@ -1147,7 +1113,7 @@ static sint macro_find_check(cptr pat)
 /*
  * Find the first macro (if any) which contains the given pattern and more
  */
-static sint macro_find_maybe(cptr pat)
+static int macro_find_maybe(cptr pat)
 {
 	int i;
 
@@ -1178,7 +1144,7 @@ static sint macro_find_maybe(cptr pat)
 /*
  * Find the longest macro (if any) which starts with the given pattern
  */
-static sint macro_find_ready(cptr pat)
+static int macro_find_ready(cptr pat)
 {
 	int i, t, n = -1, s = -1;
 
@@ -1248,6 +1214,9 @@ errr macro_add(cptr pat, cptr act)
 	{
 		/* Get a new index */
 		n = macro__num++;
+
+		/* Boundary check */
+		if (macro__num >= MACRO_MAX) quit("Too many macros!");
 
 		/* Save the pattern */
 		macro__pat[n] = string_make(pat);
@@ -1559,7 +1528,7 @@ char (*inkey_hack)(int flush_first) = NULL;
  */
 char inkey(void)
 {
-	int v;
+	bool cursor_state;
 
 	char kk;
 
@@ -1617,13 +1586,13 @@ char inkey(void)
 
 
 	/* Get the cursor state */
-	(void)Term_get_cursor(&v);
+	(void)Term_get_cursor(&cursor_state);
 
 	/* Show the cursor if waiting, except sometimes in "command" mode */
 	if (!inkey_scan && (!inkey_flag || hilite_player || character_icky))
 	{
 		/* Show the cursor */
-		(void)Term_set_cursor(1);
+		(void)Term_set_cursor(TRUE);
 	}
 
 
@@ -1774,7 +1743,7 @@ char inkey(void)
 
 
 	/* Restore the cursor */
-	Term_set_cursor(v);
+	Term_set_cursor(cursor_state);
 
 
 	/* Cancel the various "global parameters" */
@@ -2027,7 +1996,7 @@ static byte message__color[MSG_MAX];
 /*
  * Calculate the index of a message
  */
-static s16b message_age2idx(s16b age)
+static s16b message_age2idx(int age)
 {
 	return ((message__next + MESSAGE_MAX - (age + 1)) % MESSAGE_MAX);
 }
@@ -2051,7 +2020,7 @@ cptr message_str(s16b age)
 {
 	static char buf[1024];
 	s16b x;
-	s16b o;
+	u16b o;
 	cptr s;
 
 	/* Forgotten messages have no text */
@@ -2069,7 +2038,7 @@ cptr message_str(s16b age)
 	/* HACK - Handle repeated messages */
 	if (message__count[x] > 1)
 	{
-		strnfmt(buf, 1024, "%s <%dx>", s, message__count[x]);
+		strnfmt(buf, sizeof(buf), "%s <%dx>", s, message__count[x]);
 		s = buf;
 	}
 
@@ -2102,7 +2071,7 @@ u16b message_type(s16b age)
 /*
  * Recall the "color" of a message type
  */
-byte message_type_color(u16b type)
+static byte message_type_color(u16b type)
 {
 	byte color = message__color[type];
 
@@ -2147,7 +2116,8 @@ errr message_color_define(u16b type, byte color)
  */
 void message_add(cptr str, u16b type)
 {
-	int n, k, i, x, o;
+	int k, i, x, o;
+	size_t n;
 
 	cptr s;
 
@@ -2557,8 +2527,7 @@ static void msg_print_aux(u16b type, cptr msg)
 
 
 	/* Copy it */
-	strncpy(buf, msg, sizeof(buf));
-	buf[sizeof(buf)-1] = '\0';
+	my_strcpy(buf, msg, sizeof(buf));
 
 	/* Analyze the buffer */
 	t = buf;
@@ -2641,7 +2610,7 @@ void msg_format(cptr fmt, ...)
 	va_start(vp, fmt);
 
 	/* Format the args, save the length */
-	(void)vstrnfmt(buf, 1024, fmt, vp);
+	(void)vstrnfmt(buf, sizeof(buf), fmt, vp);
 
 	/* End the Varargs Stuff */
 	va_end(vp);
@@ -2683,7 +2652,7 @@ void message_format(u16b message_type, s16b extra, cptr fmt, ...)
 	va_start(vp, fmt);
 
 	/* Format the args, save the length */
-	(void)vstrnfmt(buf, 1024, fmt, vp);
+	(void)vstrnfmt(buf, sizeof(buf), fmt, vp);
 
 	/* End the Varargs Stuff */
 	va_end(vp);
@@ -2825,16 +2794,24 @@ void text_out_to_screen(byte a, cptr str)
 {
 	int x, y;
 
-	int w, h;
+	int wid, h;
+
+	int wrap;
 
 	cptr s;
 
 
 	/* Obtain the size */
-	(void)Term_get_size(&w, &h);
+	(void)Term_get_size(&wid, &h);
 
 	/* Obtain the cursor */
 	(void)Term_locate(&x, &y);
+
+	/* Use special wrapping boundary? */
+	if ((text_out_wrap > 0) && (text_out_wrap < wid))
+		wrap = text_out_wrap;
+	else
+		wrap = wid;
 
 	/* Process the string */
 	for (s = str; *s; s++)
@@ -2845,7 +2822,7 @@ void text_out_to_screen(byte a, cptr str)
 		if (*s == '\n')
 		{
 			/* Wrap */
-			x = 0;
+			x = text_out_indent;
 			y++;
 
 			/* Clear line, move cursor */
@@ -2855,10 +2832,10 @@ void text_out_to_screen(byte a, cptr str)
 		}
 
 		/* Clean up the char */
-		ch = (isprint(*s) ? *s : ' ');
+		ch = (isprint((unsigned char)*s) ? *s : ' ');
 
 		/* Wrap words as needed */
-		if ((x >= w - 1) && (ch != ' '))
+		if ((x >= wrap - 1) && (ch != ' '))
 		{
 			int i, n = 0;
 
@@ -2866,10 +2843,10 @@ void text_out_to_screen(byte a, cptr str)
 			char cv[256];
 
 			/* Wrap word */
-			if (x < w)
+			if (x < wrap)
 			{
 				/* Scan existing text */
-				for (i = w - 2; i >= 0; i--)
+				for (i = wrap - 2; i >= 0; i--)
 				{
 					/* Grab existing attr/char */
 					Term_what(i, y, &av[i], &cv[i]);
@@ -2883,26 +2860,26 @@ void text_out_to_screen(byte a, cptr str)
 			}
 
 			/* Special case */
-			if (n == 0) n = w;
+			if (n == 0) n = wrap;
 
 			/* Clear line */
 			Term_erase(n, y, 255);
 
 			/* Wrap */
-			x = 0;
+			x = text_out_indent;
 			y++;
 
 			/* Clear line, move cursor */
 			Term_erase(x, y, 255);
 
 			/* Wrap the word (if any) */
-			for (i = n; i < w - 1; i++)
+			for (i = n; i < wrap - 1; i++)
 			{
 				/* Dump */
 				Term_addch(av[i], cv[i]);
 
 				/* Advance (no wrap) */
-				if (++x > w) x = w;
+				if (++x > wrap) x = wrap;
 			}
 		}
 
@@ -2910,7 +2887,7 @@ void text_out_to_screen(byte a, cptr str)
 		Term_addch(a, ch);
 
 		/* Advance */
-		if (++x > w) x = w;
+		if (++x > wrap) x = wrap;
 	}
 }
 
@@ -2965,7 +2942,7 @@ void text_out_to_file(byte attr, cptr str)
 		/* Reset indentation after explicit wrap */
 		if (wrap) indent = 0;
 
-		if (!isprint(ch)) ch = ' ';
+		if (!isprint((unsigned char)ch)) ch = ' ';
 
 		if (roff_p >= roff_buf + 75) wrap = TRUE;
 
@@ -3074,11 +3051,11 @@ void clear_from(int row)
  * Note that 'len' refers to the size of the buffer.  The maximum length
  * of the input is 'len-1'.
  */
-bool askfor_aux(char *buf, int len)
+bool askfor_aux(char *buf, size_t len)
 {
 	int y, x;
 
-	int k = 0;
+	size_t k = 0;
 
 	char ch = '\0';
 
@@ -3088,9 +3065,6 @@ bool askfor_aux(char *buf, int len)
 	/* Locate the cursor */
 	Term_locate(&x, &y);
 
-
-	/* Paranoia */
-	if (len < 0) len = 0;
 
 	/* Paranoia */
 	if ((x < 0) || (x >= 80)) x = 0;
@@ -3104,7 +3078,7 @@ bool askfor_aux(char *buf, int len)
 
 
 	/* Display the default answer */
-	Term_erase(x, y, len);
+	Term_erase(x, y, (int)len);
 	Term_putstr(x, y, -1, TERM_YELLOW, buf);
 
 	/* Process input */
@@ -3143,7 +3117,7 @@ bool askfor_aux(char *buf, int len)
 
 			default:
 			{
-				if ((k < len-1) && (isprint(ch)))
+				if ((k < len-1) && (isprint((unsigned char)ch)))
 				{
 					buf[k++] = ch;
 				}
@@ -3159,7 +3133,7 @@ bool askfor_aux(char *buf, int len)
 		buf[k] = '\0';
 
 		/* Update the entry */
-		Term_erase(x, y, len);
+		Term_erase(x, y, (int)len);
 		Term_putstr(x, y, -1, TERM_WHITE, buf);
 	}
 
@@ -3176,7 +3150,7 @@ bool askfor_aux(char *buf, int len)
  * See "askfor_aux" for some notes about "buf" and "len", and about
  * the return value of this function.
  */
-bool get_string(cptr prompt, char *buf, int len)
+bool get_string(cptr prompt, char *buf, size_t len)
 {
 	bool res;
 
@@ -3255,7 +3229,7 @@ s16b get_quantity(cptr prompt, int max)
 		amt = atoi(buf);
 
 		/* A letter means "all" */
-		if (isalpha(buf[0])) amt = max;
+		if (isalpha((unsigned char)buf[0])) amt = max;
 	}
 
 	/* Enforce the maximum */
@@ -3485,7 +3459,7 @@ void request_command(bool shopping)
 				}
 
 				/* Actual numeric data */
-				else if (isdigit(ch))
+				else if (isdigit((unsigned char)ch))
 				{
 					/* Stop count at 9999 */
 					if (p_ptr->command_arg >= 1000)
@@ -3674,13 +3648,14 @@ void request_command(bool shopping)
 /*
  * Generates damage for "2d6" style dice rolls
  */
-uint damroll(uint num, uint sides)
+int damroll(int num, int sides)
 {
-	uint i, sum = 0;
+	int i;
+	int sum = 0;
 
 
-	/* HACK - rand_die(0) is undefined */
-	if (sides == 0) return (0);
+	/* HACK - prevent undefined behaviour */
+	if (sides <= 0) return (0);
 
 	for (i = 0; i < num; i++)
 	{
@@ -3694,7 +3669,7 @@ uint damroll(uint num, uint sides)
 /*
  * Same as above, but always maximal
  */
-uint maxroll(uint num, uint sides)
+int maxroll(int num, int sides)
 {
 	return (num * sides);
 }

@@ -67,7 +67,7 @@ static bool int_outof(const monster_race *r_ptr, int prob)
  */
 static void remove_bad_spells(int m_idx, u32b *f4p, u32b *f5p, u32b *f6p)
 {
-	monster_type *m_ptr = &m_list[m_idx];
+	monster_type *m_ptr = &mon_list[m_idx];
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 	u32b f4 = (*f4p);
@@ -427,7 +427,7 @@ static void breath(int m_idx, int typ, int dam_hp)
 
 	int flg = PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
 
-	monster_type *m_ptr = &m_list[m_idx];
+	monster_type *m_ptr = &mon_list[m_idx];
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 	/* Determine the radius of the blast */
@@ -460,7 +460,7 @@ static void breath(int m_idx, int typ, int dam_hp)
  */
 static int choose_attack_spell(int m_idx, u32b f4, u32b f5, u32b f6)
 {
-	monster_type *m_ptr = &m_list[m_idx];
+	monster_type *m_ptr = &mon_list[m_idx];
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 	u32b f4_mask = 0L;
@@ -686,7 +686,7 @@ bool make_attack_spell(int m_idx)
 
 	u32b f4, f5, f6;
 
-	monster_type *m_ptr = &m_list[m_idx];
+	monster_type *m_ptr = &mon_list[m_idx];
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
 
@@ -851,13 +851,13 @@ bool make_attack_spell(int m_idx)
 
 
 	/* Get the monster name (or "it") */
-	monster_desc(m_name, m_ptr, 0x00);
+	monster_desc(m_name, sizeof(m_name), m_ptr, 0x00);
 
 	/* Get the monster possessive ("his"/"her"/"its") */
-	monster_desc(m_poss, m_ptr, 0x22);
+	monster_desc(m_poss, sizeof(m_poss), m_ptr, 0x22);
 
 	/* Hack -- Get the "died from" name */
-	monster_desc(ddesc, m_ptr, 0x88);
+	monster_desc(ddesc, sizeof(ddesc), m_ptr, 0x88);
 
 
 	/* Choose a spell to cast */
@@ -2331,7 +2331,7 @@ bool make_attack_spell(int m_idx)
  */
 static int mon_will_run(int m_idx)
 {
-	monster_type *m_ptr = &m_list[m_idx];
+	monster_type *m_ptr = &mon_list[m_idx];
 
 #ifdef ALLOW_TERROR
 
@@ -2423,7 +2423,7 @@ static bool get_moves_aux(int m_idx, int *yp, int *xp)
 	int when = 0;
 	int cost = 999;
 
-	monster_type *m_ptr = &m_list[m_idx];
+	monster_type *m_ptr = &mon_list[m_idx];
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 	/* Monster flowing disabled */
@@ -2501,7 +2501,7 @@ static bool get_fear_moves_aux(int m_idx, int *yp, int *xp)
 	int when = 0, score = -1;
 	int i;
 
-	monster_type *m_ptr = &m_list[m_idx];
+	monster_type *m_ptr = &mon_list[m_idx];
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 	/* Monster flowing disabled */
@@ -2608,112 +2608,112 @@ static bool get_fear_moves_aux(int m_idx, int *yp, int *xp)
  */
 
 
-static const sint d_off_y_0[] =
+static const int d_off_y_0[] =
 { 0 };
 
-static const sint d_off_x_0[] =
+static const int d_off_x_0[] =
 { 0 };
 
 
-static const sint d_off_y_1[] =
+static const int d_off_y_1[] =
 { -1, -1, -1, 0, 0, 1, 1, 1, 0 };
 
-static const sint d_off_x_1[] =
+static const int d_off_x_1[] =
 { -1, 0, 1, -1, 1, -1, 0, 1, 0 };
 
 
-static const sint d_off_y_2[] =
+static const int d_off_y_2[] =
 { -1, -1, -2, -2, -2, 0, 0, 1, 1, 2, 2, 2, 0 };
 
-static const sint d_off_x_2[] =
+static const int d_off_x_2[] =
 { -2, 2, -1, 0, 1, -2, 2, -2, 2, -1, 0, 1, 0 };
 
 
-static const sint d_off_y_3[] =
+static const int d_off_y_3[] =
 { -1, -1, -2, -2, -3, -3, -3, 0, 0, 1, 1, 2, 2,
   3, 3, 3, 0 };
 
-static const sint d_off_x_3[] =
+static const int d_off_x_3[] =
 { -3, 3, -2, 2, -1, 0, 1, -3, 3, -3, 3, -2, 2,
   -1, 0, 1, 0 };
 
 
-static const sint d_off_y_4[] =
+static const int d_off_y_4[] =
 { -1, -1, -2, -2, -3, -3, -3, -3, -4, -4, -4, 0,
   0, 1, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 0 };
 
-static const sint d_off_x_4[] =
+static const int d_off_x_4[] =
 { -4, 4, -3, 3, -2, -3, 2, 3, -1, 0, 1, -4, 4,
   -4, 4, -3, 3, -2, -3, 2, 3, -1, 0, 1, 0 };
 
 
-static const sint d_off_y_5[] =
+static const int d_off_y_5[] =
 { -1, -1, -2, -2, -3, -3, -4, -4, -4, -4, -5, -5,
   -5, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 4, 4, 5, 5,
   5, 0 };
 
-static const sint d_off_x_5[] =
+static const int d_off_x_5[] =
 { -5, 5, -4, 4, -4, 4, -2, -3, 2, 3, -1, 0, 1,
   -5, 5, -5, 5, -4, 4, -4, 4, -2, -3, 2, 3, -1,
   0, 1, 0 };
 
 
-static const sint d_off_y_6[] =
+static const int d_off_y_6[] =
 { -1, -1, -2, -2, -3, -3, -4, -4, -5, -5, -5, -5,
   -6, -6, -6, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5,
   5, 5, 6, 6, 6, 0 };
 
-static const sint d_off_x_6[] =
+static const int d_off_x_6[] =
 { -6, 6, -5, 5, -5, 5, -4, 4, -2, -3, 2, 3, -1,
   0, 1, -6, 6, -6, 6, -5, 5, -5, 5, -4, 4, -2,
   -3, 2, 3, -1, 0, 1, 0 };
 
 
-static const sint d_off_y_7[] =
+static const int d_off_y_7[] =
 { -1, -1, -2, -2, -3, -3, -4, -4, -5, -5, -5, -5,
   -6, -6, -6, -6, -7, -7, -7, 0, 0, 1, 1, 2, 2, 3,
   3, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6, 7, 7, 7, 0 };
 
-static const sint d_off_x_7[] =
+static const int d_off_x_7[] =
 { -7, 7, -6, 6, -6, 6, -5, 5, -4, -5, 4, 5, -2,
   -3, 2, 3, -1, 0, 1, -7, 7, -7, 7, -6, 6, -6,
   6, -5, 5, -4, -5, 4, 5, -2, -3, 2, 3, -1, 0,
   1, 0 };
 
 
-static const sint d_off_y_8[] =
+static const int d_off_y_8[] =
 { -1, -1, -2, -2, -3, -3, -4, -4, -5, -5, -6, -6,
   -6, -6, -7, -7, -7, -7, -8, -8, -8, 0, 0, 1, 1,
   2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 6, 6, 7, 7, 7, 7,
   8, 8, 8, 0 };
 
-static const sint d_off_x_8[] =
+static const int d_off_x_8[] =
 { -8, 8, -7, 7, -7, 7, -6, 6, -6, 6, -4, -5, 4,
   5, -2, -3, 2, 3, -1, 0, 1, -8, 8, -8, 8, -7,
   7, -7, 7, -6, 6, -6, 6, -4, -5, 4, 5, -2, -3,
   2, 3, -1, 0, 1, 0 };
 
 
-static const sint d_off_y_9[] =
+static const int d_off_y_9[] =
 { -1, -1, -2, -2, -3, -3, -4, -4, -5, -5, -6, -6,
   -7, -7, -7, -7, -8, -8, -8, -8, -9, -9, -9, 0,
   0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 7,
   7, 8, 8, 8, 8, 9, 9, 9, 0 };
 
-static const sint d_off_x_9[] =
+static const int d_off_x_9[] =
 { -9, 9, -8, 8, -8, 8, -7, 7, -7, 7, -6, 6, -4,
   -5, 4, 5, -2, -3, 2, 3, -1, 0, 1, -9, 9, -9,
   9, -8, 8, -8, 8, -7, 7, -7, 7, -6, 6, -4, -5,
   4, 5, -2, -3, 2, 3, -1, 0, 1, 0 };
 
 
-static const sint *dist_offsets_y[10] =
+static const int *dist_offsets_y[10] =
 {
 	d_off_y_0, d_off_y_1, d_off_y_2, d_off_y_3, d_off_y_4,
 	d_off_y_5, d_off_y_6, d_off_y_7, d_off_y_8, d_off_y_9
 };
 
-static const sint *dist_offsets_x[10] =
+static const int *dist_offsets_x[10] =
 {
 	d_off_x_0, d_off_x_1, d_off_x_2, d_off_x_3, d_off_x_4,
 	d_off_x_5, d_off_x_6, d_off_x_7, d_off_x_8, d_off_x_9
@@ -2740,7 +2740,7 @@ static bool find_safety(int m_idx, int *yp, int *xp)
 #ifdef MONSTER_AI
 #ifdef MONSTER_FLOW
 
-	monster_type *m_ptr = &m_list[m_idx];
+	monster_type *m_ptr = &mon_list[m_idx];
 
 	int fy = m_ptr->fy;
 	int fx = m_ptr->fx;
@@ -2751,8 +2751,8 @@ static bool find_safety(int m_idx, int *yp, int *xp)
 	int i, y, x, dy, dx, d, dis;
 	int gy = 0, gx = 0, gdis = 0;
 
-	const sint *y_offsets;
-	const sint *x_offsets;
+	const int *y_offsets;
+	const int *x_offsets;
 
 	/* Start with adjacent locations, spread further */
 	for (d = 1; d < 10; d++)
@@ -2833,7 +2833,7 @@ static bool find_safety(int m_idx, int *yp, int *xp)
  */
 static bool find_hiding(int m_idx, int *yp, int *xp)
 {
-	monster_type *m_ptr = &m_list[m_idx];
+	monster_type *m_ptr = &mon_list[m_idx];
 
 	int fy = m_ptr->fy;
 	int fx = m_ptr->fx;
@@ -2844,7 +2844,7 @@ static bool find_hiding(int m_idx, int *yp, int *xp)
 	int i, y, x, dy, dx, d, dis;
 	int gy = 0, gx = 0, gdis = 999, min;
 
-	const sint *y_offsets, *x_offsets;
+	const int *y_offsets, *x_offsets;
 
 	/* Closest distance to get */
 	min = distance(py, px, fy, fx) * 3 / 4 + 2;
@@ -2915,7 +2915,7 @@ static bool get_moves(int m_idx, int mm[5])
 	int py = p_ptr->py;
 	int px = p_ptr->px;
 
-	monster_type *m_ptr = &m_list[m_idx];
+	monster_type *m_ptr = &mon_list[m_idx];
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 	int y, ay, x, ax;
@@ -3292,7 +3292,7 @@ static int compare_monsters(const monster_type *m_ptr, const monster_type *n_ptr
  */
 static void process_monster(int m_idx)
 {
-	monster_type *m_ptr = &m_list[m_idx];
+	monster_type *m_ptr = &mon_list[m_idx];
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
 
@@ -3333,7 +3333,7 @@ static void process_monster(int m_idx)
 				char m_name[80];
 
 				/* Get the monster name */
-				monster_desc(m_name, m_ptr, 0);
+				monster_desc(m_name, sizeof(m_name), m_ptr, 0);
 
 				/* Dump a message */
 				msg_format("%^s wakes up.", m_name);
@@ -3386,7 +3386,7 @@ static void process_monster(int m_idx)
 					char m_name[80];
 
 					/* Get the monster name */
-					monster_desc(m_name, m_ptr, 0);
+					monster_desc(m_name, sizeof(m_name), m_ptr, 0);
 
 					/* Dump a message */
 					msg_format("%^s wakes up.", m_name);
@@ -3439,7 +3439,7 @@ static void process_monster(int m_idx)
 				char m_name[80];
 
 				/* Get the monster name */
-				monster_desc(m_name, m_ptr, 0);
+				monster_desc(m_name, sizeof(m_name), m_ptr, 0);
 
 				/* Dump a message */
 				msg_format("%^s is no longer stunned.", m_name);
@@ -3478,7 +3478,7 @@ static void process_monster(int m_idx)
 				char m_name[80];
 
 				/* Get the monster name */
-				monster_desc(m_name, m_ptr, 0);
+				monster_desc(m_name, sizeof(m_name), m_ptr, 0);
 
 				/* Dump a message */
 				msg_format("%^s is no longer confused.", m_name);
@@ -3516,8 +3516,8 @@ static void process_monster(int m_idx)
 				char m_poss[80];
 
 				/* Get the monster name/poss */
-				monster_desc(m_name, m_ptr, 0);
-				monster_desc(m_poss, m_ptr, 0x22);
+				monster_desc(m_name, sizeof(m_name), m_ptr, 0);
+				monster_desc(m_poss, sizeof(m_poss), m_ptr, 0x22);
 
 				/* Dump a message */
 				msg_format("%^s recovers %s courage.", m_name, m_poss);
@@ -3880,7 +3880,7 @@ static void process_monster(int m_idx)
 		/* A monster is in the way */
 		if (do_move && (cave_m_idx[ny][nx] > 0))
 		{
-			monster_type *n_ptr = &m_list[cave_m_idx[ny][nx]];
+			monster_type *n_ptr = &mon_list[cave_m_idx[ny][nx]];
 
 			/* Assume no movement */
 			do_move = FALSE;
@@ -3905,7 +3905,7 @@ static void process_monster(int m_idx)
 		/* A monster is in the way */
 		if (do_move && (cave_m_idx[ny][nx] > 0))
 		{
-			monster_type *n_ptr = &m_list[cave_m_idx[ny][nx]];
+			monster_type *n_ptr = &mon_list[cave_m_idx[ny][nx]];
 
 			/* Assume no movement */
 			do_move = FALSE;
@@ -3977,10 +3977,10 @@ static void process_monster(int m_idx)
 					object_flags(o_ptr, &f1, &f2, &f3);
 
 					/* Get the object name */
-					object_desc(o_name, o_ptr, TRUE, 3);
+					object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
 
 					/* Get the monster name */
-					monster_desc(m_name, m_ptr, 0x04);
+					monster_desc(m_name, sizeof(m_name), m_ptr, 0x04);
 
 					/* React to objects that hurt the monster */
 					if (f1 & (TR1_KILL_DRAGON)) flg3 |= (RF3_DRAGON);
@@ -4127,7 +4127,7 @@ static void process_monster(int m_idx)
 			char m_name[80];
 
 			/* Get the monster name */
-			monster_desc(m_name, m_ptr, 0);
+			monster_desc(m_name, sizeof(m_name), m_ptr, 0);
 
 			/* Dump a message */
 			msg_format("%^s turns to fight!", m_name);
@@ -4160,10 +4160,6 @@ static void process_monster(int m_idx)
  * Most of the rest of the time is spent in "update_view()" and "lite_spot()",
  * especially when the player is running.
  *
- * Note the special "MFLAG_BORN" flag, which prevents monsters from doing
- * anything during the game turn in which they are created.  This flag is
- * optimized via the "repair_mflag_born" flag.
- *
  * Note the special "MFLAG_NICE" flag, which prevents "nasty" monsters from
  * using any of their spell attacks until the player gets a turn.  This flag
  * is optimized via the "repair_mflag_nice" flag.
@@ -4177,44 +4173,19 @@ void process_monsters(byte minimum_energy)
 	monster_race *r_ptr;
 
 
-	/* Repair "born" flags */
-	if (repair_mflag_born)
-	{
-		/* Clear flag */
-		repair_mflag_born = FALSE;
-
-		/* Process the monsters */
-		for (i = 1; i < m_max; i++)
-		{
-			/* Get the monster */
-			m_ptr = &m_list[i];
-
-			/* Ignore "dead" monsters */
-			/* if (!m_ptr->r_idx) continue; */
-
-			/* Clear "born" flag */
-			m_ptr->mflag &= ~(MFLAG_BORN);
-		}
-	}
-
-
 	/* Process the monsters (backwards) */
-	for (i = m_max - 1; i >= 1; i--)
+	for (i = mon_max - 1; i >= 1; i--)
 	{
 		/* Handle "leaving" */
 		if (p_ptr->leaving) break;
 
 
 		/* Get the monster */
-		m_ptr = &m_list[i];
+		m_ptr = &mon_list[i];
 
 
 		/* Ignore "dead" monsters */
 		if (!m_ptr->r_idx) continue;
-
-
-		/* Ignore "born" monsters XXX XXX */
-		if (m_ptr->mflag & (MFLAG_BORN)) continue;
 
 
 		/* Not enough energy to move */

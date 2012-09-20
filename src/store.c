@@ -550,7 +550,7 @@ static s16b label_to_store(int c)
 	int i;
 
 	/* Convert */
-	i = (islower(c) ? A2I(c) : -1);
+	i = (islower((unsigned char)c) ? A2I(c) : -1);
 
 	/* Verify the index */
 	if ((i < 0) || (i >= st_ptr->stock_num)) return (-1);
@@ -1346,7 +1346,7 @@ static void display_entry(int item)
 		if (show_weights) maxwid -= 10;
 
 		/* Describe the object */
-		object_desc(o_name, o_ptr, TRUE, 3);
+		object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
 		o_name[maxwid] = '\0';
 
 		/* Get inventory color */
@@ -1377,7 +1377,7 @@ static void display_entry(int item)
 		if (show_weights) maxwid -= 7;
 
 		/* Describe the object (fully) */
-		object_desc_store(o_name, o_ptr, TRUE, 3);
+		object_desc_store(o_name, sizeof(o_name), o_ptr, TRUE, 3);
 		o_name[maxwid] = '\0';
 
 		/* Get inventory color */
@@ -1520,11 +1520,11 @@ static void display_store(void)
 		cptr race_name = p_name + p_info[ot_ptr->owner_race].name;
 
 		/* Put the owner name and race */
-		sprintf(buf, "%s (%s)", owner_name, race_name);
+		strnfmt(buf, sizeof(buf), "%s (%s)", owner_name, race_name);
 		put_str(buf, 3, 10);
 
 		/* Show the max price in the store (above prices) */
-		sprintf(buf, "%s (%ld)", store_name, (long)(ot_ptr->max_cost));
+		strnfmt(buf, sizeof(buf), "%s (%ld)", store_name, (long)(ot_ptr->max_cost));
 		prt(buf, 3, 50);
 
 		/* Label the object descriptions */
@@ -1592,7 +1592,7 @@ static bool get_stock(int *com_val, cptr pmt)
 	*com_val = (-1);
 
 	/* Build the prompt */
-	sprintf(buf, "(Items %c-%c, ESC to exit) %s",
+	strnfmt(buf, sizeof(buf), "(Items %c-%c, ESC to exit) %s",
 	        store_to_label(0), store_to_label(st_ptr->stock_num - 1),
 	        pmt);
 
@@ -1605,10 +1605,10 @@ static bool get_stock(int *com_val, cptr pmt)
 		if (!get_com(buf, &which)) return (FALSE);
 
 		/* Note verify */
-		verify = (isupper(which) ? TRUE : FALSE);
+		verify = (isupper((unsigned char)which) ? TRUE : FALSE);
 
 		/* Lowercase */
-		which = tolower(which);
+		which = tolower((unsigned char)which);
 
 		/* Convert response to item */
 		item = label_to_store(which);
@@ -1632,18 +1632,18 @@ static bool get_stock(int *com_val, cptr pmt)
 		if (store_num == STORE_HOME)
 		{
 			/* Describe */
-			object_desc(o_name, o_ptr, TRUE, 3);
+			object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
 		}
 
 		/* Shop */
 		else
 		{
 			/* Describe */
-			object_desc_store(o_name, o_ptr, TRUE, 3);
+			object_desc_store(o_name, sizeof(o_name), o_ptr, TRUE, 3);
 		}
 
 		/* Prompt */
-		sprintf(out_val, "Try %s? ", o_name);
+		strnfmt(out_val, sizeof(out_val), "Try %s? ", o_name);
 
 		/* Query */
 		if (!get_check(out_val)) return (FALSE);
@@ -1749,25 +1749,25 @@ static int get_haggle(cptr pmt, s32b *poffer, s32b price, int final)
 	/* Final offer */
 	if (final)
 	{
-		sprintf(buf, "%s [accept] ", pmt);
+		strnfmt(buf, sizeof(buf), "%s [accept] ", pmt);
 	}
 
 	/* Old (negative) increment, and not final */
 	else if (last_inc < 0)
 	{
-		sprintf(buf, "%s [-%ld] ", pmt, (long)(ABS(last_inc)));
+		strnfmt(buf, sizeof(buf), "%s [-%ld] ", pmt, (long)(ABS(last_inc)));
 	}
 
 	/* Old (positive) increment, and not final */
 	else if (last_inc > 0)
 	{
-		sprintf(buf, "%s [+%ld] ", pmt, (long)(ABS(last_inc)));
+		strnfmt(buf, sizeof(buf), "%s [+%ld] ", pmt, (long)(ABS(last_inc)));
 	}
 
 	/* Normal haggle */
 	else
 	{
-		sprintf(buf, "%s ", pmt);
+		strnfmt(buf, sizeof(buf), "%s ", pmt);
 	}
 
 
@@ -1786,7 +1786,7 @@ static int get_haggle(cptr pmt, s32b *poffer, s32b price, int final)
 		strcpy(out_val, "");
 
 		/* Ask the user for a response */
-		if (!get_string(buf, out_val, 80)) return (FALSE);
+		if (!get_string(buf, out_val, sizeof(out_val))) return (FALSE);
 
 		/* Skip leading spaces */
 		for (p = out_val; *p == ' '; p++) /* loop */;
@@ -1983,7 +1983,7 @@ static bool purchase_haggle(object_type *o_ptr, s32b *price)
 
 		while (!flag && loop_flag)
 		{
-			sprintf(out_val, "%s :  %ld", pmt, (long)cur_ask);
+			strnfmt(out_val, sizeof(out_val), "%s :  %ld", pmt, (long)cur_ask);
 			put_str(out_val, 1, 0);
 			cancel = receive_offer("What do you offer? ",
 			                       &offer, last_offer, 1, cur_ask, final);
@@ -2200,7 +2200,7 @@ static bool sell_haggle(object_type *o_ptr, s32b *price)
 		{
 			loop_flag = TRUE;
 
-			sprintf(out_val, "%s :  %ld", pmt, (long)cur_ask);
+			strnfmt(out_val, sizeof(out_val), "%s :  %ld", pmt, (long)cur_ask);
 			put_str(out_val, 1, 0);
 			cancel = receive_offer("What price do you ask? ",
 			                       &offer, last_offer, -1, cur_ask, final);
@@ -2378,7 +2378,7 @@ static void store_purchase(void)
 	if (store_num != STORE_HOME)
 	{
 		/* Describe the object (fully) */
-		object_desc_store(o_name, i_ptr, TRUE, 3);
+		object_desc_store(o_name, sizeof(o_name), i_ptr, TRUE, 3);
 
 		/* Message */
 		msg_format("Buying %s (%c).",
@@ -2426,7 +2426,7 @@ static void store_purchase(void)
 				i_ptr->ident &= ~(IDENT_FIXED);
 
 				/* Describe the transaction */
-				object_desc(o_name, i_ptr, TRUE, 3);
+				object_desc(o_name, sizeof(o_name), i_ptr, TRUE, 3);
 
 				/* Message */
 				msg_format("You bought %s (%c) for %ld gold.",
@@ -2443,7 +2443,7 @@ static void store_purchase(void)
 				item_new = inven_carry(i_ptr);
 
 				/* Describe the final result */
-				object_desc(o_name, &inventory[item_new], TRUE, 3);
+				object_desc(o_name, sizeof(o_name), &inventory[item_new], TRUE, 3);
 
 				/* Message */
 				msg_format("You have %s (%c).",
@@ -2532,7 +2532,7 @@ static void store_purchase(void)
 #if 0
 
 		/* Describe the object */
-		object_desc(o_name, i_ptr, TRUE, 3);
+		object_desc(o_name, sizeof(o_name), i_ptr, TRUE, 3);
 
 		/* Message */
 		msg_format("You pick up %s (%c).",
@@ -2544,7 +2544,7 @@ static void store_purchase(void)
 		item_new = inven_carry(i_ptr);
 
 		/* Describe just the result */
-		object_desc(o_name, &inventory[item_new], TRUE, 3);
+		object_desc(o_name, sizeof(o_name), &inventory[item_new], TRUE, 3);
 
 		/* Message */
 		msg_format("You have %s (%c).", o_name, index_to_label(item_new));
@@ -2662,7 +2662,7 @@ static void store_sell(void)
 	i_ptr->number = amt;
 
 	/* Get a full description */
-	object_desc(o_name, i_ptr, TRUE, 3);
+	object_desc(o_name, sizeof(o_name), i_ptr, TRUE, 3);
 
 
 	/* Is there room in the store (or the home?) */
@@ -2742,7 +2742,7 @@ static void store_sell(void)
 			value = object_value(i_ptr) * i_ptr->number;
 
 			/* Get the description all over again */
-			object_desc(o_name, i_ptr, TRUE, 3);
+			object_desc(o_name, sizeof(o_name), i_ptr, TRUE, 3);
 
 			/* Describe the result (in message buffer) */
 			msg_format("You sold %s (%c) for %ld gold.",
@@ -2849,11 +2849,11 @@ static void store_examine(void)
 	/* Description */
 	if (store_num == STORE_HOME)
 	{
-		object_desc(o_name, o_ptr, TRUE, 3);
+		object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
 	}
 	else
 	{
-		object_desc_store(o_name, o_ptr, TRUE, 3);
+		object_desc_store(o_name, sizeof(o_name), o_ptr, TRUE, 3);
 	}
 
 	/* Describe */
@@ -3375,7 +3375,7 @@ void do_cmd_store(void)
 				object_copy(i_ptr, o_ptr);
 
 				/* Describe it */
-				object_desc(o_name, i_ptr, TRUE, 3);
+				object_desc(o_name, sizeof(o_name), i_ptr, TRUE, 3);
 
 				/* Message */
 				msg_format("You drop %s (%c).", o_name, index_to_label(item));

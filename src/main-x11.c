@@ -583,7 +583,7 @@ static errr Infowin_set_name(cptr name)
 	XTextProperty tp;
 	char buf[128];
 	char *bp = buf;
-	strcpy(buf, name);
+	my_strcpy(buf, name, sizeof(buf));
 	st = XStringListToTextProperty(&bp, 1, &tp);
 	if (st) XSetWMName(Metadpy->dpy, Infowin->win, &tp);
 	return (0);
@@ -601,7 +601,7 @@ static errr Infowin_set_icon_name(cptr name)
 	XTextProperty tp;
 	char buf[128];
 	char *bp = buf;
-	strcpy(buf, name);
+	my_strcpy(buf, name, sizeof(buf));
 	st = XStringListToTextProperty(&bp, 1, &tp);
 	if (st) XSetWMIconName(Metadpy->dpy, Infowin->win, &tp);
 	return (0);
@@ -1557,7 +1557,7 @@ static void react_keypress(XKeyEvent *ev)
 	/* Hack -- Use the KeySym */
 	if (ks)
 	{
-		sprintf(msg, "%c%s%s%s%s_%lX%c", 31,
+		strnfmt(msg, sizeof(msg), "%c%s%s%s%s_%lX%c", 31,
 		        mc ? "N" : "", ms ? "S" : "",
 		        mo ? "O" : "", mx ? "M" : "",
 		        (unsigned long)(ks), 13);
@@ -1566,7 +1566,7 @@ static void react_keypress(XKeyEvent *ev)
 	/* Hack -- Use the Keycode */
 	else
 	{
-		sprintf(msg, "%c%s%s%s%sK_%X%c", 31,
+		strnfmt(msg, sizeof(msg), "%c%s%s%s%sK_%X%c", 31,
 		        mc ? "N" : "", ms ? "S" : "",
 		        mo ? "O" : "", mx ? "M" : "",
 		        ev->keycode, 13);
@@ -2181,7 +2181,7 @@ static errr term_data_init(term_data *td, int i)
 
 	if (ch == NULL) quit("XAllocClassHint failed");
 
-	strcpy(res_name, name);
+	my_strcpy(res_name, name, sizeof(res_name));
 	res_name[0] = FORCELOWER(res_name[0]);
 	ch->res_name = res_name;
 
@@ -2394,7 +2394,7 @@ errr init_x11(int argc, char **argv)
 	if (arg_graphics)
 	{
 		/* Try the "16x16.bmp" file */
-		path_build(filename, 1024, ANGBAND_DIR_XTRA, "graf/16x16.bmp");
+		path_build(filename, sizeof(filename), ANGBAND_DIR_XTRA, "graf/16x16.bmp");
 
 		/* Use the "16x16.bmp" file if it exists */
 		if (0 == fd_close(fd_open(filename, O_RDONLY)))
@@ -2411,7 +2411,7 @@ errr init_x11(int argc, char **argv)
 		else
 		{
 			/* Try the "8x8.bmp" file */
-			path_build(filename, 1024, ANGBAND_DIR_XTRA, "graf/8x8.bmp");
+			path_build(filename, sizeof(filename), ANGBAND_DIR_XTRA, "graf/8x8.bmp");
 
 			/* Use the "8x8.bmp" file if it exists */
 			if (0 == fd_close(fd_open(filename, O_RDONLY)))

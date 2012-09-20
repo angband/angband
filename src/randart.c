@@ -666,19 +666,19 @@ static void build_prob(cptr learn)
 		do
 		{
 			c_next = *learn++;
-		} while (!isalpha(c_next) && (c_next != '\0'));
+		} while (!isalpha((unsigned char)c_next) && (c_next != '\0'));
 
 		if (c_next == '\0') break;
 
 		do
 		{
-			c_next = A2I(tolower(c_next));
+			c_next = A2I(tolower((unsigned char)c_next));
 			lprobs[c_prev][c_cur][c_next]++;
 			ltotal[c_prev][c_cur]++;
 			c_prev = c_cur;
 			c_cur = c_next;
 			c_next = *learn++;
-		} while (isalpha(c_next));
+		} while (isalpha((unsigned char)c_next));
 
 		lprobs[c_prev][c_cur][E_WORD]++;
 		ltotal[c_prev][c_cur]++;
@@ -745,7 +745,7 @@ startover:
 		c_cur = c_next;
 	}
 
-	word_buf[0] = toupper(word_buf[0]);
+	word_buf[0] = toupper((unsigned char)word_buf[0]);
 
 	return (word_buf);
 }
@@ -777,9 +777,9 @@ static errr init_names(void)
 		char *word = make_word();
 
 		if (rand_int(3) == 0)
-			sprintf(buf, "'%s'", word);
+			strnfmt(buf, sizeof(buf), "'%s'", word);
 		else
-			sprintf(buf, "of %s", word);
+			strnfmt(buf, sizeof(buf), "of %s", word);
 
 		names[i] = string_make(buf);
 	}
@@ -2053,7 +2053,7 @@ static bool artifacts_acceptable(void)
 		if (randart_verbose)
 		{
 			char types[256];
-			sprintf(types, "%s%s%s%s%s%s%s%s%s%s",
+			strnfmt(types, sizeof(types), "%s%s%s%s%s%s%s%s%s%s",
 				swords > 0 ? " swords" : "",
 				polearms > 0 ? " polearms" : "",
 				blunts > 0 ? " blunts" : "",
@@ -2064,8 +2064,8 @@ static bool artifacts_acceptable(void)
 				hats > 0 ? " hats" : "",
 				gloves > 0 ? " gloves" : "",
 				boots > 0 ? " boots" : "");
-			msg_format("Restarting generation process: not enough%s",
-				types);
+
+			msg_format("Restarting generation process: not enough%s", types);
 		}
 
 		/* Not acceptable */

@@ -109,14 +109,13 @@ extern s16b coin_type;
 extern bool opening_chest;
 extern bool shimmer_monsters;
 extern bool shimmer_objects;
-extern bool repair_mflag_born;
 extern bool repair_mflag_nice;
 extern bool repair_mflag_show;
 extern bool repair_mflag_mark;
 extern s16b o_max;
 extern s16b o_cnt;
-extern s16b m_max;
-extern s16b m_cnt;
+extern s16b mon_max;
+extern s16b mon_cnt;
 extern byte feeling;
 extern s16b rating;
 extern bool good_item_flag;
@@ -132,9 +131,9 @@ extern term *angband_term[ANGBAND_TERM_MAX];
 extern char angband_term_name[ANGBAND_TERM_MAX][16];
 extern byte angband_color_table[256][4];
 extern const cptr angband_sound_name[MSG_MAX];
-extern sint view_n;
+extern int view_n;
 extern u16b *view_g;
-extern sint temp_n;
+extern int temp_n;
 extern u16b *temp_g;
 extern byte *temp_y;
 extern byte *temp_x;
@@ -146,7 +145,7 @@ extern byte (*cave_cost)[DUNGEON_WID];
 extern byte (*cave_when)[DUNGEON_WID];
 extern maxima *z_info;
 extern object_type *o_list;
-extern monster_type *m_list;
+extern monster_type *mon_list;
 extern monster_lore *l_list;
 extern quest *q_list;
 extern store_type *store;
@@ -227,6 +226,8 @@ extern bool (*get_mon_num_hook)(int r_idx);
 extern bool (*get_obj_num_hook)(int k_idx);
 extern FILE *text_out_file;
 extern void (*text_out_hook)(byte a, cptr str);
+extern int text_out_wrap;
+extern int text_out_indent;
 extern int highscore_fd;
 extern bool use_transparency;
 
@@ -239,7 +240,7 @@ extern bool use_transparency;
 extern void player_birth(void);
 
 /* cave.c */
-extern sint distance(int y1, int x1, int y2, int x2);
+extern int distance(int y1, int x1, int y2, int x2);
 extern bool los(int y1, int x1, int y2, int x2);
 extern bool no_lite(void);
 extern bool cave_valid_bold(int y, int x);
@@ -262,7 +263,7 @@ extern void wiz_lite(void);
 extern void wiz_dark(void);
 extern void town_illuminate(bool daytime);
 extern void cave_set_feat(int y, int x, int feat);
-extern sint project_path(u16b *gp, int range, \
+extern int project_path(u16b *gp, int range, \
                          int y1, int x1, int y2, int x2, int flg);
 extern bool projectable(int y1, int x1, int y2, int x2);
 extern void scatter(int *yp, int *xp, int y, int x, int d, int m);
@@ -274,9 +275,9 @@ extern bool is_quest(int level);
 
 /* cmd1.c */
 extern bool test_hit(int chance, int ac, int vis);
-extern sint critical_shot(int weight, int plus, int dam);
-extern sint critical_norm(int weight, int plus, int dam);
-extern sint tot_dam_aux(const object_type *o_ptr, int tdam, const monster_type *m_ptr);
+extern int critical_shot(int weight, int plus, int dam);
+extern int critical_norm(int weight, int plus, int dam);
+extern int tot_dam_aux(const object_type *o_ptr, int tdam, const monster_type *m_ptr);
 extern void search(void);
 extern void py_pickup(int pickup);
 extern void hit_trap(int y, int x);
@@ -418,11 +419,11 @@ extern void display_roff(int r_idx);
 extern void delete_monster_idx(int i);
 extern void delete_monster(int y, int x);
 extern void compact_monsters(int size);
-extern void wipe_m_list(void);
-extern s16b m_pop(void);
+extern void wipe_mon_list(void);
+extern s16b mon_pop(void);
 extern errr get_mon_num_prep(void);
 extern s16b get_mon_num(int level);
-extern void monster_desc(char *desc, const monster_type *m_ptr, int mode);
+extern void monster_desc(char *desc, size_t max, const monster_type *m_ptr, int mode);
 extern void lore_do_probe(int m_idx);
 extern void lore_treasure(int m_idx, int num_item, int num_gold);
 extern void update_mon(int m_idx, bool full);
@@ -444,8 +445,8 @@ extern void flavor_init(void);
 extern void reset_visuals(bool prefs);
 extern void object_flags(const object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3);
 extern void object_flags_known(const object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3);
-extern void object_desc(char *buf, const object_type *o_ptr, int pref, int mode);
-extern void object_desc_store(char *buf, const object_type *o_ptr, int pref, int mode);
+extern void object_desc(char *buf, size_t max, const object_type *o_ptr, int pref, int mode);
+extern void object_desc_store(char *buf, size_t max, const object_type *o_ptr, int pref, int mode);
 extern void describe_item_activation(const object_type *o_ptr);
 extern void identify_random_gen(const object_type *o_ptr);
 extern bool identify_fully_aux(const object_type *o_ptr);
@@ -456,7 +457,7 @@ extern s16b wield_slot(const object_type *o_ptr);
 extern cptr mention_use(int i);
 extern cptr describe_use(int i);
 extern bool item_tester_okay(const object_type *o_ptr);
-extern sint scan_floor(int *items, int size, int y, int x, int mode);
+extern int scan_floor(int *items, int size, int y, int x, int mode);
 extern void display_inven(void);
 extern void display_equip(void);
 extern void show_inven(void);
@@ -625,10 +626,10 @@ extern void store_maint(int which);
 extern void store_init(int which);
 
 /* util.c */
-extern errr path_parse(char *buf, int max, cptr file);
-extern errr path_build(char *buf, int max, cptr path, cptr file);
+extern errr path_parse(char *buf, size_t max, cptr file);
+extern errr path_build(char *buf, size_t max, cptr path, cptr file);
 extern FILE *my_fopen(cptr file, cptr mode);
-extern FILE *my_fopen_temp(char *buf, int max);
+extern FILE *my_fopen_temp(char *buf, size_t max);
 extern errr my_fclose(FILE *fff);
 extern errr my_fgets(FILE *fff, char *buf, size_t n);
 extern errr my_fputs(FILE *fff, cptr buf, size_t n);
@@ -643,9 +644,9 @@ extern errr fd_read(int fd, char *buf, size_t n);
 extern errr fd_write(int fd, cptr buf, size_t n);
 extern errr fd_close(int fd);
 extern errr check_modification_date(int fd, cptr template_file);
-extern void text_to_ascii(char *buf, int len, cptr str);
-extern void ascii_to_text(char *buf, int len, cptr str);
-extern sint macro_find_exact(cptr pat);
+extern void text_to_ascii(char *buf, size_t len, cptr str);
+extern void ascii_to_text(char *buf, size_t len, cptr str);
+extern int macro_find_exact(cptr pat);
 extern errr macro_add(cptr pat, cptr act);
 extern errr macro_init(void);
 extern void flush(void);
@@ -681,15 +682,15 @@ extern void text_out_to_screen(byte a, cptr str);
 extern void text_out(cptr str);
 extern void text_out_c(byte a, cptr str);
 extern void clear_from(int row);
-extern bool askfor_aux(char *buf, int len);
-extern bool get_string(cptr prompt, char *buf, int len);
+extern bool askfor_aux(char *buf, size_t len);
+extern bool get_string(cptr prompt, char *buf, size_t len);
 extern s16b get_quantity(cptr prompt, int max);
 extern bool get_check(cptr prompt);
 extern bool get_com(cptr prompt, char *command);
 extern void pause_line(int row);
 extern void request_command(bool shopping);
-extern uint damroll(uint num, uint sides);
-extern uint maxroll(uint num, uint sides);
+extern int damroll(int num, int sides);
+extern int maxroll(int num, int sides);
 extern bool is_a_vowel(int ch);
 extern int color_char_to_attr(char c);
 
@@ -743,8 +744,8 @@ extern bool change_panel(int dir);
 extern void verify_panel(void);
 extern void ang_sort_aux(void *u, void *v, int p, int q);
 extern void ang_sort(void *u, void *v, int n);
-extern sint motion_dir(int y1, int x1, int y2, int x2);
-extern sint target_dir(char ch);
+extern int motion_dir(int y1, int x1, int y2, int x2);
+extern int target_dir(char ch);
 extern bool target_able(int m_idx);
 extern bool target_okay(void);
 extern void target_set_monster(int m_idx);
@@ -762,10 +763,9 @@ extern bool confuse_dir(int *dp);
 #ifdef SET_UID
 # ifndef HAVE_USLEEP
 /* util.c */
-extern int usleep(huge usecs);
+extern int usleep(unsigned long usecs);
 # endif /* HAVE_USLEEP */
-extern void user_name(char *buf, int id);
-extern errr user_home(char *buf, int len);
+extern void user_name(char *buf, size_t len, int id);
 #endif /* SET_UID */
 
 
@@ -788,3 +788,8 @@ extern void show_floor(const int *floor_list, int floor_num);
 /* randart.c */
 extern errr do_randart(u32b randart_seed, bool full);
 #endif /* GJW_RANDART */
+
+#ifdef ACORN
+/* main-ros.c */
+extern char *riscosify_name(cptr path);
+#endif /* ACORN */

@@ -18,7 +18,7 @@
 */
 
 /* Variant name and version */
-#define VARIANT "Angband 2.9.6 alpha 3"
+#define VARIANT "Angband 3.0.1"
 
 /* Main 'assign' needed. Kick2.0+ systems usually don't need it anyway */
 #define VERPATH "Angband:"
@@ -1747,7 +1747,7 @@ static void link_term( int i )
 	t->char_blank = ' ';
 
 	/* Remember where we come from */
-	t->data = (vptr) td;
+	t->data = td;
 
 	/* Activate it */
 	Term_activate( t );
@@ -5059,9 +5059,9 @@ void amiga_hs_to_ascii(void)
 	mdun = atoi(h.max_dun);
 
 	/* Hack -- extract the gold and such */
-	for (when = h.day; isspace(*when); when++) /* loop */;
-	for (gold = h.gold; isspace(*gold); gold++) /* loop */;
-	for (aged = h.turns; isspace(*aged); aged++) /* loop */;
+	for (when = h.day; isspace((unsigned char)*when); when++) /* loop */;
+	for (gold = h.gold; isspace((unsigned char)*gold); gold++) /* loop */;
+	for (aged = h.turns; isspace((unsigned char)*aged); aged++) /* loop */;
 
 	/* Reconfigure Date */
 	if ((*when == '@') && strlen(when) == 9)

@@ -134,9 +134,9 @@ void do_cmd_change_name(void)
 		{
 			char ftmp[80];
 
-			sprintf(ftmp, "%s.txt", op_ptr->base_name);
+			strnfmt(ftmp, sizeof(ftmp), "%s.txt", op_ptr->base_name);
 
-			if (get_string("File name: ", ftmp, 80))
+			if (get_string("File name: ", ftmp, sizeof(ftmp)))
 			{
 				if (ftmp[0] && (ftmp[0] != ' '))
 				{
@@ -311,7 +311,7 @@ void do_cmd_messages(void)
 			prt("Show: ", hgt - 1, 0);
 
 			/* Get a "shower" string, or continue */
-			if (!askfor_aux(shower, 80)) continue;
+			if (!askfor_aux(shower, sizeof(shower))) continue;
 
 			/* Okay */
 			continue;
@@ -326,10 +326,10 @@ void do_cmd_messages(void)
 			prt("Find: ", hgt - 1, 0);
 
 			/* Get a "finder" string, or continue */
-			if (!askfor_aux(finder, 80)) continue;
+			if (!askfor_aux(finder, sizeof(finder))) continue;
 
 			/* Show it */
-			strcpy(shower, finder);
+			my_strcpy(shower, finder, sizeof(shower));
 
 			/* Scan messages */
 			for (z = i + 1; z < n; z++)
@@ -411,7 +411,7 @@ void do_cmd_pref(void)
 	strcpy(tmp, "");
 
 	/* Ask for a "user pref command" */
-	if (!get_string("Pref: ", tmp, 80)) return;
+	if (!get_string("Pref: ", tmp, sizeof(tmp))) return;
 
 	/* Process that pref command */
 	(void)process_pref_file_command(tmp);
@@ -437,10 +437,10 @@ static void do_cmd_pref_file_hack(int row)
 	prt("File: ", row + 2, 0);
 
 	/* Default filename */
-	sprintf(ftmp, "%s.prf", op_ptr->base_name);
+	strnfmt(ftmp, sizeof(ftmp), "%s.prf", op_ptr->base_name);
 
 	/* Ask for a file (or cancel) */
-	if (!askfor_aux(ftmp, 80)) return;
+	if (!askfor_aux(ftmp, sizeof(ftmp))) return;
 
 	/* Process the given filename */
 	if (process_pref_file(ftmp))
@@ -477,7 +477,7 @@ static void do_cmd_options_aux(int page, cptr info)
 	for (i = 0; i < OPT_PAGE_PER; i++)
 	{
 		/* Collect options on this "page" */
-		if (option_page[page][i] != 255)
+		if (option_page[page][i] != OPT_NONE)
 		{
 			opt[n++] = option_page[page][i];
 		}
@@ -491,7 +491,7 @@ static void do_cmd_options_aux(int page, cptr info)
 	while (TRUE)
 	{
 		/* Prompt XXX XXX XXX */
-		sprintf(buf, "%s (RET to advance, y/n to set, ESC to accept) ", info);
+		strnfmt(buf, sizeof(buf), "%s (RET to advance, y/n to set, ESC to accept) ", info);
 		prt(buf, 0, 0);
 
 		/* Display the options */
@@ -503,7 +503,7 @@ static void do_cmd_options_aux(int page, cptr info)
 			if (i == k) a = TERM_L_BLUE;
 
 			/* Display the option text */
-			sprintf(buf, "%-48s: %s  (%s)",
+			strnfmt(buf, sizeof(buf), "%-48s: %s  (%s)",
 			        option_desc[opt[i]],
 			        op_ptr->opt[opt[i]] ? "yes" : "no ",
 			        option_text[opt[i]]);
@@ -583,7 +583,7 @@ static void do_cmd_options_aux(int page, cptr info)
 
 			case '?':
 			{
-				sprintf(buf, "option.txt#%s", option_text[opt[k]]);
+				strnfmt(buf, sizeof(buf), "option.txt#%s", option_text[opt[k]]);
 				show_file(buf, NULL, 0, 0);
 				Term_clear();
 				break;
@@ -768,7 +768,7 @@ static errr option_dump(cptr fname)
 	char buf[1024];
 
 	/* Build the filename */
-	path_build(buf, 1024, ANGBAND_DIR_USER, fname);
+	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, fname);
 
 	/* File type is "TEXT" */
 	FILE_TYPE(FILE_TYPE_TEXT);
@@ -968,10 +968,10 @@ void do_cmd_options(void)
 			prt("File: ", 21, 0);
 
 			/* Default filename */
-			sprintf(ftmp, "%s.prf", op_ptr->base_name);
+			strnfmt(ftmp, sizeof(ftmp), "%s.prf", op_ptr->base_name);
 
 			/* Ask for a file */
-			if (!askfor_aux(ftmp, 80)) continue;
+			if (!askfor_aux(ftmp, sizeof(ftmp))) continue;
 
 			/* Dump the options */
 			if (option_dump(ftmp))
@@ -1003,7 +1003,7 @@ void do_cmd_options(void)
 
 				cx = inkey();
 				if (cx == ESCAPE) break;
-				if (isdigit(cx)) op_ptr->delay_factor = D2I(cx);
+				if (isdigit((unsigned char)cx)) op_ptr->delay_factor = D2I(cx);
 				else bell("Illegal delay factor!");
 			}
 		}
@@ -1024,7 +1024,7 @@ void do_cmd_options(void)
 
 				cx = inkey();
 				if (cx == ESCAPE) break;
-				if (isdigit(cx)) op_ptr->hitpoint_warn = D2I(cx);
+				if (isdigit((unsigned char)cx)) op_ptr->hitpoint_warn = D2I(cx);
 				else bell("Illegal hitpoint warning!");
 			}
 		}
@@ -1062,7 +1062,7 @@ static errr macro_dump(cptr fname)
 
 
 	/* Build the filename */
-	path_build(buf, 1024, ANGBAND_DIR_USER, fname);
+	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, fname);
 
 	/* File type is "TEXT" */
 	FILE_TYPE(FILE_TYPE_TEXT);
@@ -1233,7 +1233,7 @@ static errr keymap_dump(cptr fname)
 
 
 	/* Build the filename */
-	path_build(buf, 1024, ANGBAND_DIR_USER, fname);
+	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, fname);
 
 	/* File type is "TEXT" */
 	FILE_TYPE(FILE_TYPE_TEXT);
@@ -1399,10 +1399,10 @@ void do_cmd_macros(void)
 			prt("File: ", 18, 0);
 
 			/* Default filename */
-			sprintf(ftmp, "%s.prf", op_ptr->base_name);
+			strnfmt(ftmp, sizeof(ftmp), "%s.prf", op_ptr->base_name);
 
 			/* Ask for a file */
-			if (!askfor_aux(ftmp, 80)) continue;
+			if (!askfor_aux(ftmp, sizeof(ftmp))) continue;
 
 			/* Dump the macros */
 			(void)macro_dump(ftmp);
@@ -1439,7 +1439,7 @@ void do_cmd_macros(void)
 			else
 			{
 				/* Obtain the action */
-				strcpy(macro_buffer, macro__act[k]);
+				my_strcpy(macro_buffer, macro__act[k], sizeof(macro_buffer));
 
 				/* Analyze the current action */
 				ascii_to_text(tmp, sizeof(tmp), macro_buffer);
@@ -1518,10 +1518,10 @@ void do_cmd_macros(void)
 			prt("File: ", 18, 0);
 
 			/* Default filename */
-			sprintf(ftmp, "%s.prf", op_ptr->base_name);
+			strnfmt(ftmp, sizeof(ftmp), "%s.prf", op_ptr->base_name);
 
 			/* Ask for a file */
-			if (!askfor_aux(ftmp, 80)) continue;
+			if (!askfor_aux(ftmp, sizeof(ftmp))) continue;
 
 			/* Dump the macros */
 			(void)keymap_dump(ftmp);
@@ -1558,7 +1558,7 @@ void do_cmd_macros(void)
 			else
 			{
 				/* Obtain the action */
-				strcpy(macro_buffer, act);
+				my_strcpy(macro_buffer, act, sizeof(macro_buffer));
 
 				/* Analyze the current action */
 				ascii_to_text(tmp, sizeof(tmp), macro_buffer);
@@ -1747,13 +1747,13 @@ void do_cmd_visuals(void)
 			prt("File: ", 17, 0);
 
 			/* Default filename */
-			sprintf(ftmp, "%s.prf", op_ptr->base_name);
+			strnfmt(ftmp, sizeof(ftmp), "%s.prf", op_ptr->base_name);
 
 			/* Get a filename */
-			if (!askfor_aux(ftmp, 80)) continue;
+			if (!askfor_aux(ftmp, sizeof(ftmp))) continue;
 
 			/* Build the filename */
-			path_build(buf, 1024, ANGBAND_DIR_USER, ftmp);
+			path_build(buf, sizeof(buf), ANGBAND_DIR_USER, ftmp);
 
 			/* Append to the file */
 			fff = my_fopen(buf, "a");
@@ -1806,13 +1806,13 @@ void do_cmd_visuals(void)
 			prt("File: ", 17, 0);
 
 			/* Default filename */
-			sprintf(ftmp, "%s.prf", op_ptr->base_name);
+			strnfmt(ftmp, sizeof(ftmp), "%s.prf", op_ptr->base_name);
 
 			/* Get a filename */
-			if (!askfor_aux(ftmp, 80)) continue;
+			if (!askfor_aux(ftmp, sizeof(ftmp))) continue;
 
 			/* Build the filename */
-			path_build(buf, 1024, ANGBAND_DIR_USER, ftmp);
+			path_build(buf, sizeof(buf), ANGBAND_DIR_USER, ftmp);
 
 			/* Append to the file */
 			fff = my_fopen(buf, "a");
@@ -1865,13 +1865,13 @@ void do_cmd_visuals(void)
 			prt("File: ", 17, 0);
 
 			/* Default filename */
-			sprintf(ftmp, "%s.prf", op_ptr->base_name);
+			strnfmt(ftmp, sizeof(ftmp), "%s.prf", op_ptr->base_name);
 
 			/* Get a filename */
-			if (!askfor_aux(ftmp, 80)) continue;
+			if (!askfor_aux(ftmp, sizeof(ftmp))) continue;
 
 			/* Build the filename */
-			path_build(buf, 1024, ANGBAND_DIR_USER, ftmp);
+			path_build(buf, sizeof(buf), ANGBAND_DIR_USER, ftmp);
 
 			/* Append to the file */
 			fff = my_fopen(buf, "a");
@@ -1924,13 +1924,13 @@ void do_cmd_visuals(void)
 			prt("File: ", 17, 0);
 
 			/* Default filename */
-			sprintf(ftmp, "%s.prf", op_ptr->base_name);
+			strnfmt(ftmp, sizeof(ftmp), "%s.prf", op_ptr->base_name);
 
 			/* Get a filename */
-			if (!askfor_aux(ftmp, 80)) continue;
+			if (!askfor_aux(ftmp, sizeof(ftmp))) continue;
 
 			/* Build the filename */
-			path_build(buf, 1024, ANGBAND_DIR_USER, ftmp);
+			path_build(buf, sizeof(buf), ANGBAND_DIR_USER, ftmp);
 
 			/* Append to the file */
 			fff = my_fopen(buf, "a");
@@ -2293,13 +2293,13 @@ void do_cmd_colors(void)
 			prt("File: ", 10, 0);
 
 			/* Default filename */
-			sprintf(ftmp, "%s.prf", op_ptr->base_name);
+			strnfmt(ftmp, sizeof(ftmp), "%s.prf", op_ptr->base_name);
 
 			/* Get a filename */
-			if (!askfor_aux(ftmp, 80)) continue;
+			if (!askfor_aux(ftmp, sizeof(ftmp))) continue;
 
 			/* Build the filename */
-			path_build(buf, 1024, ANGBAND_DIR_USER, ftmp);
+			path_build(buf, sizeof(buf), ANGBAND_DIR_USER, ftmp);
 
 			/* Append to the file */
 			fff = my_fopen(buf, "a");
@@ -2448,7 +2448,7 @@ void do_cmd_note(void)
 	strcpy(tmp, "");
 
 	/* Input */
-	if (!get_string("Note: ", tmp, 80)) return;
+	if (!get_string("Note: ", tmp, sizeof(tmp))) return;
 
 	/* Ignore empty notes */
 	if (!tmp[0] || (tmp[0] == ' ')) return;
@@ -2541,7 +2541,7 @@ void do_cmd_load_screen(void)
 
 
 	/* Build the filename */
-	path_build(buf, 1024, ANGBAND_DIR_USER, "dump.txt");
+	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "dump.txt");
 
 	/* Open the file */
 	fp = my_fopen(buf, "r");
@@ -2632,7 +2632,7 @@ void do_cmd_save_screen(void)
 
 
 	/* Build the filename */
-	path_build(buf, 1024, ANGBAND_DIR_USER, "dump.txt");
+	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "dump.txt");
 
 	/* File type is "TEXT" */
 	FILE_TYPE(FILE_TYPE_TEXT);
@@ -2729,7 +2729,7 @@ static void do_cmd_knowledge_artifacts(void)
 
 
 	/* Temporary file */
-	fff = my_fopen_temp(file_name, 1024);
+	fff = my_fopen_temp(file_name, sizeof(file_name));
 
 	/* Failure */
 	if (!fff) return;
@@ -2825,7 +2825,7 @@ static void do_cmd_knowledge_artifacts(void)
 			i_ptr->name1 = k;
 
 			/* Describe the artifact */
-			object_desc_store(o_name, i_ptr, FALSE, 0);
+			object_desc_store(o_name, sizeof(o_name), i_ptr, FALSE, 0);
 		}
 
 		/* Hack -- Build the artifact name */
@@ -2863,7 +2863,7 @@ static void do_cmd_knowledge_uniques(void)
 
 
 	/* Temporary file */
-	fff = my_fopen_temp(file_name, 1024);
+	fff = my_fopen_temp(file_name, sizeof(file_name));
 
 	/* Failure */
 	if (!fff) return;
@@ -2941,7 +2941,7 @@ static void do_cmd_knowledge_objects(void)
 
 
 	/* Temporary file */
-	fff = my_fopen_temp(file_name, 1024);
+	fff = my_fopen_temp(file_name, sizeof(file_name));
 
 	/* Failure */
 	if (!fff) return;
@@ -2967,7 +2967,7 @@ static void do_cmd_knowledge_objects(void)
 			object_prep(i_ptr, k);
 
 			/* Describe the object */
-			object_desc_store(o_name, i_ptr, FALSE, 0);
+			object_desc_store(o_name, sizeof(o_name), i_ptr, FALSE, 0);
 
 			/* Print a message */
 			fprintf(fff, "     %s\n", o_name);

@@ -74,7 +74,7 @@ void teleport_away(int m_idx, int dis)
 
 	bool look = TRUE;
 
-	monster_type *m_ptr = &m_list[m_idx];
+	monster_type *m_ptr = &mon_list[m_idx];
 
 
 	/* Paranoia */
@@ -465,7 +465,7 @@ void take_hit(int dam, cptr kb_str)
 		message_flush();
 
 		/* Note cause of death */
-		strcpy(p_ptr->died_from, kb_str);
+		my_strcpy(p_ptr->died_from, kb_str, sizeof(p_ptr->died_from));
 
 		/* No longer a winner */
 		p_ptr->total_winner = FALSE;
@@ -748,7 +748,7 @@ static int inven_damage(inven_func typ, int perc)
 			if (amt)
 			{
 				/* Get a description */
-				object_desc(o_name, o_ptr, FALSE, 3);
+				object_desc(o_name, sizeof(o_name), o_ptr, FALSE, 3);
 
 				/* Message */
 				msg_format("%sour %s (%c) %s destroyed!",
@@ -810,7 +810,7 @@ static int minus_ac(void)
 
 
 	/* Describe */
-	object_desc(o_name, o_ptr, FALSE, 0);
+	object_desc(o_name, sizeof(o_name), o_ptr, FALSE, 0);
 
 	/* Extract the flags */
 	object_flags(o_ptr, &f1, &f2, &f3);
@@ -1196,7 +1196,7 @@ bool apply_disenchant(int mode)
 
 
 	/* Describe the object */
-	object_desc(o_name, o_ptr, FALSE, 0);
+	object_desc(o_name, sizeof(o_name), o_ptr, FALSE, 0);
 
 
 	/* Artifacts have 60% chance to resist */
@@ -1888,7 +1888,7 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ)
 			if (o_ptr->marked)
 			{
 				obvious = TRUE;
-				object_desc(o_name, o_ptr, FALSE, 0);
+				object_desc(o_name, sizeof(o_name), o_ptr, FALSE, 0);
 			}
 
 			/* Artifacts, and other objects, get to resist */
@@ -2040,7 +2040,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ)
 
 
 	/* Obtain monster info */
-	m_ptr = &m_list[cave_m_idx[y][x]];
+	m_ptr = &mon_list[cave_m_idx[y][x]];
 	r_ptr = &r_info[m_ptr->r_idx];
 	l_ptr = &l_list[m_ptr->r_idx];
 	name = (r_name + r_ptr->name);
@@ -2052,7 +2052,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ)
 
 
 	/* Get the monster name (BEFORE polymorphing) */
-	monster_desc(m_name, m_ptr, 0);
+	monster_desc(m_name, sizeof(m_name), m_ptr, 0);
 
 
 
@@ -2980,7 +2980,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ)
 			/* Hack -- Assume success XXX XXX XXX */
 
 			/* Hack -- Get new monster */
-			m_ptr = &m_list[cave_m_idx[y][x]];
+			m_ptr = &mon_list[cave_m_idx[y][x]];
 
 			/* Hack -- Get new race */
 			r_ptr = &r_info[m_ptr->r_idx];
@@ -3234,13 +3234,13 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 
 
 	/* Get the source monster */
-	m_ptr = &m_list[who];
+	m_ptr = &mon_list[who];
 
 	/* Get the monster name */
-	monster_desc(m_name, m_ptr, 0);
+	monster_desc(m_name, sizeof(m_name), m_ptr, 0);
 
 	/* Get the monster's real name */
-	monster_desc(killer, m_ptr, 0x88);
+	monster_desc(killer, sizeof(killer), m_ptr, 0x88);
 
 
 	/* Analyze the damage */
@@ -3871,8 +3871,8 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg)
 	/* Start at monster */
 	else if (who > 0)
 	{
-		x1 = m_list[who].fx;
-		y1 = m_list[who].fy;
+		x1 = mon_list[who].fx;
+		y1 = mon_list[who].fy;
 	}
 
 	/* Oops */
@@ -4207,7 +4207,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg)
 			/* Track if possible */
 			if (cave_m_idx[y][x] > 0)
 			{
-				monster_type *m_ptr = &m_list[cave_m_idx[y][x]];
+				monster_type *m_ptr = &mon_list[cave_m_idx[y][x]];
 
 				/* Hack -- auto-recall */
 				if (m_ptr->ml) monster_race_track(m_ptr->r_idx);

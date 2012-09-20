@@ -993,7 +993,7 @@ static errr Term_user_dos(int n)
 				prt(format("Screen Resolution : %d", resolution), 20, 0);
 				k = inkey();
 				if (k == ESCAPE) break;
-				if (isdigit(k)) resolution = D2I(k);
+				if (isdigit((unsigned char)k)) resolution = D2I(k);
 
 				/* Check for min, max value */
 				if ((resolution < 1) || (resolution >= i)) resolution = 1;
@@ -1335,7 +1335,7 @@ static void term_data_link(term_data *td)
 #endif /* USE_GRAPHICS */
 
 	/* Remember where we came from */
-	t->data = (vptr)(td);
+	t->data = td;
 }
 
 
@@ -1426,7 +1426,7 @@ static void dos_dump_screen(void)
 	get_palette(pal);
 
 	/* Build the filename for the screen-dump */
-	path_build(filename, 1024, ANGBAND_DIR_USER, "dump.bmp");
+	path_build(filename, sizeof(filename), ANGBAND_DIR_USER, "dump.bmp");
 
 	/* Save it */
 	save_bmp(filename, bmp, pal);
@@ -1690,7 +1690,7 @@ static bool init_windows(void)
 		strcpy(buf, get_config_string(section, "font_file", "xm8x13.fnt"));
 
 		/* Build the name of the font file */
-		path_build(filename, 1024, xtra_font_dir, buf);
+		path_build(filename, sizeof(filename), xtra_font_dir, buf);
 
 		/* Load a "*.fnt" file */
 		if (suffix(filename, ".fnt"))
@@ -1760,7 +1760,7 @@ static void init_background(void)
 		strcpy(buf, get_config_string("Background", format("Background-%d", i), ""));
 
 		/* Build the filename for the background-bitmap */
-		path_build(filename, 1024, xtra_graf_dir, buf);
+		path_build(filename, sizeof(filename), xtra_graf_dir, buf);
 
 		/* Try to open the bitmap file */
 		background[i] = load_bitmap(filename, background_pallete);
@@ -1817,7 +1817,7 @@ static bool init_graphics(void)
 		num_windows = get_config_int(section, "num_windows", 1);
 
 		/* Build the name of the bitmap file */
-		path_build(filename, 1024, xtra_graf_dir, name_tiles);
+		path_build(filename, sizeof(filename), xtra_graf_dir, name_tiles);
 
 		/* Open the bitmap file */
 		if ((tiles = load_bitmap(filename, tiles_pallete)) != NULL)
@@ -1934,7 +1934,7 @@ static bool init_sound(void)
 #endif /* USE_MOD_FILES */
 
 		/* Access the new sample */
-		path_build(filename, 1024, xtra_sound_dir, "sound.cfg");
+		path_build(filename, sizeof(filename), xtra_sound_dir, "sound.cfg");
 
 		/* Read config info from "lib/xtra/sound/sound.cfg" */
 		override_config_file(filename);
@@ -1954,7 +1954,7 @@ static bool init_sound(void)
 			for (j = 0; j < sample_count[i]; j++)
 			{
 				/* Access the new sample */
-				path_build(filename, 1024, xtra_sound_dir, argv[j]);
+				path_build(filename, sizeof(filename), xtra_sound_dir, argv[j]);
 
 				/* Load the sample */
 				samples[i][j] = load_sample(filename);
@@ -1977,8 +1977,7 @@ static bool init_sound(void)
 		while (!done && (song_number < MAX_SONGS))
 		{
 			/* Add music files */
-			strncpy(music_files[song_number], f.ff_name, 15);
-			music_files[song_number][15] = '\0';
+			my_strcpy(music_files[song_number], f.ff_name, sizeof(music_files[0]));
 			song_number++;
 
 			done = findnext(&f);
@@ -2038,7 +2037,7 @@ static errr Term_xtra_dos_sound(int v)
  */
 static void play_song(void)
 {
-	char filename[256];
+	char filename[1024];
 
 	/* Clear the old song */
 	if (midi_song) destroy_midi(midi_song);
@@ -2053,7 +2052,7 @@ static void play_song(void)
 #endif /* USE_MOD_FILES */
 
 	/* Access the new song */
-	path_build(filename, 1024, xtra_music_dir, music_files[current_song - 1]);
+	path_build(filename, sizeof(filename), xtra_music_dir, music_files[current_song - 1]);
 
 	/* Load and play the new song */
 	midi_song = load_midi(filename);
@@ -2160,16 +2159,16 @@ errr init_dos(int argc, char **argv)
 	quit_aux = dos_quit_hook;
 
 	/* Build the "graf" path */
-	path_build(xtra_graf_dir, 1024, ANGBAND_DIR_XTRA, "graf");
+	path_build(xtra_graf_dir, sizeof(xtra_graf_dir), ANGBAND_DIR_XTRA, "graf");
 
 	/* Build the "font" path */
-	path_build(xtra_font_dir, 1024, ANGBAND_DIR_XTRA, "font");
+	path_build(xtra_font_dir, sizeof(xtra_font_dir), ANGBAND_DIR_XTRA, "font");
 
 	/* Build the "sound" path */
-	path_build(xtra_sound_dir, 1024, ANGBAND_DIR_XTRA, "sound");
+	path_build(xtra_sound_dir, sizeof(xtra_sound_dir), ANGBAND_DIR_XTRA, "sound");
 
 	/* Build the "music" path */
-	path_build(xtra_music_dir, 1024, ANGBAND_DIR_XTRA, "music");
+	path_build(xtra_music_dir, sizeof(xtra_music_dir), ANGBAND_DIR_XTRA, "music");
 
 	/* Initialize the windows */
 	init_windows();

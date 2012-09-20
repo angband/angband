@@ -411,7 +411,7 @@ static void term_data_link(int i, int x0, int y0, int sx, int sy)
 	t->text_hook = Term_text_vcs;
 
 	/* Remember where we came from */
-	t->data = (vptr)(td);
+	t->data = td;
 
 	/* Activate it */
 	if (!i) Term_activate(t);

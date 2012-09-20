@@ -1184,7 +1184,7 @@ function activate_object(object)
 			brand_bolts()
 		elseif artifact.activation == ACT_STARLIGHT then
 			msg_print(format("Your %s glows with the light of a thousand stars...", o_name))
-			for i = 1, 9 do strong_lite_line(ddd[k]) end
+			for i = 1, 9 do strong_lite_line(ddd[i]) end
 		elseif artifact.activation == ACT_MANA_BOLT then
 			msg_print(format("Your %s glows white...", o_name))
 			success, dir = get_aim_dir()

@@ -1012,10 +1012,7 @@ static void wr_extra(void)
 
 	wr_string(p_ptr->died_from);
 
-	for (i = 0; i < 4; i++)
-	{
-		wr_string(p_ptr->history[i]);
-	}
+	wr_string(p_ptr->history);
 
 	/* Race/Class/Gender/Spells */
 	wr_byte(p_ptr->prace);
@@ -1326,12 +1323,12 @@ static void wr_dungeon(void)
 	/*** Dump the monsters ***/
 
 	/* Total monsters */
-	wr_u16b(m_max);
+	wr_u16b(mon_max);
 
 	/* Dump the monsters */
-	for (i = 1; i < m_max; i++)
+	for (i = 1; i < mon_max; i++)
 	{
-		monster_type *m_ptr = &m_list[i];
+		monster_type *m_ptr = &mon_list[i];
 
 		/* Dump it */
 		wr_monster(m_ptr);
@@ -1650,12 +1647,12 @@ bool save_player(void)
 
 
 	/* New savefile */
-	strcpy(safe, savefile);
+	my_strcpy(safe, savefile, sizeof(safe));
 	strcat(safe, ".new");
 
 #ifdef VM
 	/* Hack -- support "flat directory" usage on VM/ESA */
-	strcpy(safe, savefile);
+	my_strcpy(safe, savefile, sizeof(safe));
 	strcat(safe, "n");
 #endif /* VM */
 
@@ -1674,12 +1671,12 @@ bool save_player(void)
 		char temp[1024];
 
 		/* Old savefile */
-		strcpy(temp, savefile);
+		my_strcpy(temp, savefile, sizeof(temp));
 		strcat(temp, ".old");
 
 #ifdef VM
 		/* Hack -- support "flat directory" usage on VM/ESA */
-		strcpy(temp, savefile);
+		my_strcpy(temp, savefile, sizeof(temp));
 		strcat(temp, "o");
 #endif /* VM */
 
@@ -1707,7 +1704,7 @@ bool save_player(void)
 #ifdef VERIFY_SAVEFILE
 
 		/* Lock on savefile */
-		strcpy(temp, savefile);
+		my_strcpy(temp, savefile, sizeof(temp));
 		strcat(temp, ".lok");
 
 		/* Grab permissions */

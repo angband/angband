@@ -15,7 +15,7 @@ LUAOBJS = \
   lua\lapi.o lua\ldebug.o lua\lmem.o lua\lstrlib.o lua\lvm.o \
   lua\tolua_lb.o lua\lauxlib.o lua\ldo.o lua\lobject.o lua\ltable.o \
   lua\lzio.o lua\tolua_rg.o lua\lbaselib.o lua\lfunc.o lua\lparser.o \
-  lua\ltests.o lua\tolua_bd.o lua\tolua_tm.o lua\lcode.o lua\lgc.o \
+  lua\tolua_bd.o lua\tolua_tm.o lua\lcode.o lua\lgc.o \
   lua\lstate.o lua\ltm.o lua\tolua_eh.o lua\tolua_tt.o lua\ldblib.o \
   lua\llex.o lua\lstring.o lua\lundump.o lua\tolua_gp.o
 
@@ -67,6 +67,7 @@ OBJS = \
   script.o \
   l-monst.o l-object.o l-player.o l-random.o l-ui.o l-misc.o l-spell.o \
   use-obj.o \
+  x-spell.o \
   $(LUAOBJS)
 
 # Compiler

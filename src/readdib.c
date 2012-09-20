@@ -31,14 +31,6 @@
 # endif
 #endif
 
-/*
- * Make sure "huge" is legal XXX XXX XXX
- */
-#undef huge
-#ifdef WIN32
-# define huge /* oops */
-#endif
-
 
 /*
  * Needed for lcc-win32
@@ -63,7 +55,7 @@
 static DWORD PASCAL lread(HFILE fh, VOID FAR *pv, DWORD ul)
 {
 	DWORD ulT = ul;
-	BYTE huge *hp = pv;
+	BYTE *hp = pv;
 
 	while (ul > (DWORD)MAXREAD)
 	{

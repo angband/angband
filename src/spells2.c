@@ -1351,9 +1351,9 @@ bool detect_monsters_normal(void)
 
 
 	/* Scan monsters */
-	for (i = 1; i < m_max; i++)
+	for (i = 1; i < mon_max; i++)
 	{
-		monster_type *m_ptr = &m_list[i];
+		monster_type *m_ptr = &mon_list[i];
 		monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 		/* Skip dead monsters */
@@ -1406,9 +1406,9 @@ bool detect_monsters_invis(void)
 
 
 	/* Scan monsters */
-	for (i = 1; i < m_max; i++)
+	for (i = 1; i < mon_max; i++)
 	{
-		monster_type *m_ptr = &m_list[i];
+		monster_type *m_ptr = &mon_list[i];
 		monster_race *r_ptr = &r_info[m_ptr->r_idx];
 		monster_lore *l_ptr = &l_list[m_ptr->r_idx];
 
@@ -1473,9 +1473,9 @@ bool detect_monsters_evil(void)
 
 
 	/* Scan monsters */
-	for (i = 1; i < m_max; i++)
+	for (i = 1; i < mon_max; i++)
 	{
-		monster_type *m_ptr = &m_list[i];
+		monster_type *m_ptr = &mon_list[i];
 		monster_race *r_ptr = &r_info[m_ptr->r_idx];
 		monster_lore *l_ptr = &l_list[m_ptr->r_idx];
 
@@ -1850,7 +1850,7 @@ bool enchant_spell(int num_hit, int num_dam, int num_ac)
 
 
 	/* Description */
-	object_desc(o_name, o_ptr, FALSE, 0);
+	object_desc(o_name, sizeof(o_name), o_ptr, FALSE, 0);
 
 	/* Describe */
 	msg_format("%s %s glow%s brightly!",
@@ -1928,7 +1928,7 @@ bool ident_spell(void)
 	p_ptr->window |= (PW_INVEN | PW_EQUIP | PW_PLAYER_0 | PW_PLAYER_1);
 
 	/* Description */
-	object_desc(o_name, o_ptr, TRUE, 3);
+	object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
 
 	/* Describe */
 	if (item >= INVEN_WIELD)
@@ -2010,7 +2010,7 @@ bool identify_fully(void)
 	handle_stuff();
 
 	/* Description */
-	object_desc(o_name, o_ptr, TRUE, 3);
+	object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
 
 	/* Describe */
 	if (item >= INVEN_WIELD)
@@ -2232,9 +2232,9 @@ bool project_los(int typ, int dam)
 
 
 	/* Affect all (nearby) monsters */
-	for (i = 1; i < m_max; i++)
+	for (i = 1; i < mon_max; i++)
 	{
-		monster_type *m_ptr = &m_list[i];
+		monster_type *m_ptr = &mon_list[i];
 
 		/* Paranoia -- Skip dead monsters */
 		if (!m_ptr->r_idx) continue;
@@ -2337,9 +2337,9 @@ void aggravate_monsters(int who)
 	bool speed = FALSE;
 
 	/* Aggravate everyone nearby */
-	for (i = 1; i < m_max; i++)
+	for (i = 1; i < mon_max; i++)
 	{
-		monster_type *m_ptr = &m_list[i];
+		monster_type *m_ptr = &mon_list[i];
 		monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 		/* Paranoia -- Skip dead monsters */
@@ -2396,9 +2396,9 @@ bool genocide(void)
 	(void)(get_com("Choose a monster race (by symbol) to genocide: ", &typ));
 
 	/* Delete the monsters of that "type" */
-	for (i = 1; i < m_max; i++)
+	for (i = 1; i < mon_max; i++)
 	{
-		monster_type *m_ptr = &m_list[i];
+		monster_type *m_ptr = &mon_list[i];
 		monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 		/* Paranoia -- Skip dead monsters */
@@ -2435,9 +2435,9 @@ bool mass_genocide(void)
 
 
 	/* Delete the (nearby) monsters */
-	for (i = 1; i < m_max; i++)
+	for (i = 1; i < mon_max; i++)
 	{
-		monster_type *m_ptr = &m_list[i];
+		monster_type *m_ptr = &mon_list[i];
 		monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 		/* Paranoia -- Skip dead monsters */
@@ -2475,9 +2475,9 @@ bool probing(void)
 
 
 	/* Probe all (nearby) monsters */
-	for (i = 1; i < m_max; i++)
+	for (i = 1; i < mon_max; i++)
 	{
-		monster_type *m_ptr = &m_list[i];
+		monster_type *m_ptr = &mon_list[i];
 
 		/* Paranoia -- Skip dead monsters */
 		if (!m_ptr->r_idx) continue;
@@ -2494,7 +2494,7 @@ bool probing(void)
 			if (!probe) msg_print("Probing...");
 
 			/* Get "the monster" or "something" */
-			monster_desc(m_name, m_ptr, 0x04);
+			monster_desc(m_name, sizeof(m_name), m_ptr, 0x04);
 
 			/* Describe the monster */
 			msg_format("%^s has %d hit points.", m_name, m_ptr->hp);
@@ -2823,7 +2823,7 @@ void earthquake(int cy, int cx, int r)
 			/* Process monsters */
 			if (cave_m_idx[yy][xx] > 0)
 			{
-				monster_type *m_ptr = &m_list[cave_m_idx[yy][xx]];
+				monster_type *m_ptr = &mon_list[cave_m_idx[yy][xx]];
 				monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 				/* Most monsters cannot co-exist with rock */
@@ -2864,7 +2864,7 @@ void earthquake(int cy, int cx, int r)
 					}
 
 					/* Describe the monster */
-					monster_desc(m_name, m_ptr, 0);
+					monster_desc(m_name, sizeof(m_name), m_ptr, 0);
 
 					/* Scream in pain */
 					msg_format("%^s wails out in pain!", m_name);
@@ -3039,7 +3039,7 @@ static void cave_temp_room_lite(void)
 		{
 			int chance = 25;
 
-			monster_type *m_ptr = &m_list[cave_m_idx[y][x]];
+			monster_type *m_ptr = &mon_list[cave_m_idx[y][x]];
 			monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 			/* Stupid monsters rarely wake up */
@@ -3060,7 +3060,7 @@ static void cave_temp_room_lite(void)
 					char m_name[80];
 
 					/* Get the monster name */
-					monster_desc(m_name, m_ptr, 0);
+					monster_desc(m_name, sizeof(m_name), m_ptr, 0);
 
 					/* Dump a message */
 					msg_format("%^s wakes up.", m_name);
@@ -3580,7 +3580,7 @@ bool curse_armor(void)
 
 
 	/* Describe */
-	object_desc(o_name, o_ptr, FALSE, 3);
+	object_desc(o_name, sizeof(o_name), o_ptr, FALSE, 3);
 
 	/* Attempt a saving throw for artifacts */
 	if (artifact_p(o_ptr) && (rand_int(100) < 50))
@@ -3644,7 +3644,7 @@ bool curse_weapon(void)
 
 
 	/* Describe */
-	object_desc(o_name, o_ptr, FALSE, 3);
+	object_desc(o_name, sizeof(o_name), o_ptr, FALSE, 3);
 
 	/* Attempt a saving throw */
 	if (artifact_p(o_ptr) && (rand_int(100) < 50))
@@ -3707,7 +3707,7 @@ void brand_object(object_type *o_ptr, byte brand_type)
 		cptr act = "magical";
 		char o_name[80];
 
-		object_desc(o_name, o_ptr, FALSE, 0);
+		object_desc(o_name, sizeof(o_name), o_ptr, FALSE, 0);
 
 		switch (brand_type)
 		{

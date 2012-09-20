@@ -1,5 +1,5 @@
 /*
-** $Id: lstring.c,v 1.1 2001/10/27 19:35:29 angband Exp $
+** $Id: lstring.c,v 1.2 2002/07/10 20:56:38 rr9 Exp $
 ** String table (keeps all strings handled by Lua)
 ** See Copyright Notice in lua.h
 */
@@ -119,7 +119,7 @@ TString *luaS_newudata (lua_State *L, size_t s, void *udata) {
   ts->nexthash = NULL;
   ts->len = s;
   ts->u.d.tag = 0;
-  ts->u.d.value = (udata == NULL) ? uts+1 : udata;
+  ts->u.d.value = (s > 0) ? uts+1 : udata;
   L->nblocks += sizestring(s);
  /* insert it on table */
   newentry(L, &L->udt, ts, IntPoint(ts->u.d.value) & (L->udt.size-1));

@@ -183,6 +183,34 @@ Windows 95/98/NT/2000 + Cygwin
 	Go back to the Angband-folder and run the Angband.exe.
 
 
+----------------------------------------------------------------------
+Windows 95/98/NT/2000 + LCC-win32
+----------------------------------------------------------------------
+(written by Robert Ruehlmann < rr9@angband.org >)
+
+- Getting the free lcc-win32 compiler:
+	Download the compiler from < http://www.cs.virginia.edu/~lcc-win32/ >
+	and install it.
+- Install the Angband source code
+	Extract the source code with "tar -xvzf angband-3.0.0.tar.gz".
+- Install other required files:
+	Get the "extra archive" from
+	< ftp://clockwork.dementia.org/angband/Windows/ext-win-300.zip >.
+	Go to the angband directory and unzip the ext-win archive into
+	it.  Then get the graphics archive from
+	< ftp://clockwork.dementia.org/angband/Extra/angband-graf.zip >
+	and unzip it into the lib/xtra/graf/ folder.
+- Adjust the LCC-win32 makefile:
+	Go to the Angband src-directory and open "Makefile.lcc" with a
+	text editor.  Change the values of 'ANGBAND_PATH' and 'LCC_PATH'
+	to the path of your Angband and LCC directories and save the
+	Makefile.
+- Compile Angband:
+	Run "make -f makefile.lcc" in the Angband src-folder.  The game
+	should now be compiled and installed into the Angband folder.
+- Run Angband:
+	Go back to the Angband-folder and run the Angband.exe.
+
 
 ----------------------------------------------------------------------
 GNU/Linux or Unix + GCC

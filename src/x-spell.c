@@ -675,7 +675,6 @@ cptr get_spell_info(int tval, int spell)
 		case SPELL_MANA_STORM:
 			sprintf(p, " dam %d", 300 + plev * 2);
 			break;
-
 		}
 	}
 

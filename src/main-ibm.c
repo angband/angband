@@ -1299,7 +1299,7 @@ errr init_ibm(int argc, char **argv)
 		char buf[4096];
 
 		/* Build the filename */
-		path_build(buf, 1024, ANGBAND_DIR_XTRA, "angband.fnt");
+		path_build(buf, sizeof(buf), ANGBAND_DIR_XTRA, "angband.fnt");
 
 		/* Open the file */
 		f = fopen(buf, "rb");
@@ -1308,7 +1308,7 @@ errr init_ibm(int argc, char **argv)
 		if (f)
 		{
 			/* Load the bitmap data */
-			if (fread(buf, 1, 4096, f) != 4096)
+			if (fread(buf, 1, sizeof(buf), f) != 4096)
 			{
 				quit("Corrupt 'angband.fnt' file");
 			}

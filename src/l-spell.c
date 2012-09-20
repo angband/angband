@@ -1439,6 +1439,28 @@ tolua_lerror:
  return 0;
 }
 
+/* function: strong_lite_line */
+static int toluaI_spell_strong_lite_line00(lua_State* tolua_S)
+{
+ if (
+ !tolua_istype(tolua_S,1,LUA_TNUMBER,0) ||
+ !tolua_isnoobj(tolua_S,2)
+ )
+ goto tolua_lerror;
+ else
+ {
+  int dir = ((int)  tolua_getnumber(tolua_S,1,0));
+ {
+  bool toluaI_ret = (bool)  strong_lite_line(dir);
+ tolua_pushbool(tolua_S,(int)toluaI_ret);
+ }
+ }
+ return 1;
+tolua_lerror:
+ tolua_error(tolua_S,"#ferror in function 'strong_lite_line'.");
+ return 0;
+}
+
 /* function: drain_life */
 static int toluaI_spell_drain_life00(lua_State* tolua_S)
 {
@@ -2153,6 +2175,7 @@ int tolua_spell_open (lua_State* tolua_S)
  tolua_function(tolua_S,NULL,"fire_bolt_or_beam",toluaI_spell_fire_bolt_or_beam00);
  tolua_function(tolua_S,NULL,"project_los",toluaI_spell_project_los00);
  tolua_function(tolua_S,NULL,"lite_line",toluaI_spell_lite_line00);
+ tolua_function(tolua_S,NULL,"strong_lite_line",toluaI_spell_strong_lite_line00);
  tolua_function(tolua_S,NULL,"drain_life",toluaI_spell_drain_life00);
  tolua_function(tolua_S,NULL,"wall_to_mud",toluaI_spell_wall_to_mud00);
  tolua_function(tolua_S,NULL,"destroy_door",toluaI_spell_destroy_door00);
@@ -2322,6 +2345,7 @@ void tolua_spell_close (lua_State* tolua_S)
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"fire_bolt_or_beam");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"project_los");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"lite_line");
+ lua_pushnil(tolua_S); lua_setglobal(tolua_S,"strong_lite_line");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"drain_life");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"wall_to_mud");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"destroy_door");

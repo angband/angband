@@ -16,9 +16,9 @@ LUALIBS = -s -mno-cygwin
 LUAOBJS = \
 	lua/lapi.o      lua/ldebug.o  lua/lmem.o     lua/lstrlib.o  lua/lvm.o       lua/tolua_lb.o \
 	lua/lauxlib.o   lua/ldo.o     lua/lobject.o  lua/ltable.o   lua/lzio.o      lua/tolua_rg.o \
-	lua/lbaselib.o  lua/lfunc.o   lua/lparser.o  lua/ltests.o   lua/tolua_bd.o  lua/tolua_tm.o \
-	lua/lcode.o     lua/lgc.o     lua/lstate.o   lua/ltm.o      lua/tolua_eh.o  lua/tolua_tt.o \
-	lua/ldblib.o    lua/llex.o    lua/lstring.o  lua/lundump.o  lua/tolua_gp.o
+	lua/lbaselib.o  lua/lfunc.o   lua/lparser.o  lua/tolua_bd.o lua/tolua_tm.o  lua/lcode.o \
+	lua/lgc.o       lua/lstate.o  lua/ltm.o      lua/tolua_eh.o lua/tolua_tt.o  lua/ldblib.o \
+	lua/llex.o      lua/lstring.o lua/lundump.o  lua/tolua_gp.o
 
 TOLUAOBJS = \
 	lua/tolua.o lua/tolualua.o lua/liolib.o \
@@ -67,6 +67,7 @@ EXOBJS = \
 	z-virt.o \
 	script.o \
 	use-obj.o \
+	x-spell.o \
 	l-monst.o l-object.o l-player.o l-random.o l-ui.o l-misc.o l-spell.o \
 	$(LUAOBJS)
 
@@ -287,6 +288,9 @@ wizard1.o: wizard1.c $(INCS)
 	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
 
 wizard2.o: wizard2.c $(INCS) script.h
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
+x-spell.o: x-spell.c $(INCS)
 	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
 
 xtra1.o: xtra1.c $(INCS) script.h

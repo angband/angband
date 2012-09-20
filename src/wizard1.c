@@ -166,7 +166,7 @@ static void kind_info(char *buf, char *dam, char *wgt, int *lev, s32b *val, int 
 
 
 	/* Description (too brief) */
-	object_desc_store(buf, i_ptr, FALSE, 0);
+	object_desc_store(buf, 80, i_ptr, FALSE, 0);
 
 
 	/* Misc info */
@@ -239,7 +239,7 @@ static void spoil_obj_desc(cptr fname)
 	cptr format = "%-51s  %7s%6s%4s%9s\n";
 
 	/* Build the filename */
-	path_build(buf, 1024, ANGBAND_DIR_USER, fname);
+	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, fname);
 
 	/* File type is "TEXT" */
 	FILE_TYPE(FILE_TYPE_TEXT);
@@ -699,7 +699,7 @@ static cptr *spoiler_flag_aux(const u32b art_flags, const flag_desc *flag_x_ptr,
 static void analyze_general(const object_type *o_ptr, char *desc_x_ptr)
 {
 	/* Get a "useful" description of the object */
-	object_desc_store(desc_x_ptr, o_ptr, TRUE, 1);
+	object_desc_store(desc_x_ptr, 80, o_ptr, TRUE, 1);
 
 }
 
@@ -730,7 +730,8 @@ static void analyze_pval(const object_type *o_ptr, pval_info_type *pval_x_ptr)
 	affects_list = pval_x_ptr->pval_affects;
 
 	/* Create the "+N" string */
-	sprintf(pval_x_ptr->pval_desc, "%s%d", POSITIZE(o_ptr->pval), o_ptr->pval);
+	strnfmt(pval_x_ptr->pval_desc, sizeof(pval_x_ptr->pval_desc),
+	        "%s%d", POSITIZE(o_ptr->pval), o_ptr->pval);
 
 	/* First, check to see if the pval affects all stats */
 	if ((f1 & all_stats) == all_stats)
@@ -950,7 +951,7 @@ static void print_header(void)
 {
 	char buf[80];
 
-	sprintf(buf, "Artifact Spoilers for %s Version %s",
+	strnfmt(buf, sizeof(buf), "Artifact Spoilers for %s Version %s",
 	        VERSION_NAME, VERSION_STRING);
 	spoiler_underline(buf);
 }
@@ -1004,12 +1005,12 @@ static void spoiler_outlist(cptr header, const cptr *list, char separator)
 	if (*list == NULL) return;
 
 	/* This function always indents */
-	strcpy(line, INDENT1);
+	my_strcpy(line, INDENT1, sizeof(line));
 
 	/* Create header (if one was given) */
 	if (header && (header[0]))
 	{
-		strcat(line, header);
+		my_strcat(line, header, sizeof(line));
 		strcat(line, " ");
 	}
 
@@ -1019,7 +1020,7 @@ static void spoiler_outlist(cptr header, const cptr *list, char separator)
 	while (1)
 	{
 		/* Copy the current item to a buffer */
-		strcpy(buf, *list);
+		my_strcpy(buf, *list, sizeof(buf));
 
 		/* Note the buffer's length */
 		buf_len = strlen(buf);
@@ -1040,7 +1041,7 @@ static void spoiler_outlist(cptr header, const cptr *list, char separator)
 		 */
 		if (line_len + buf_len <= MAX_LINE_LEN)
 		{
-			strcat(line, buf);
+			my_strcat(line, buf, sizeof(line));
 			line_len += buf_len;
 		}
 		/* Apply line wrapping and indention semantics described above */
@@ -1061,7 +1062,7 @@ static void spoiler_outlist(cptr header, const cptr *list, char separator)
 				text_out("\n");
 
 				/* Begin new line at primary indention level */
-				sprintf(line, "%s%s", INDENT1, buf);
+				strnfmt(line, sizeof(line), "%s%s", INDENT1, buf);
 			}
 			else
 			{
@@ -1070,7 +1071,7 @@ static void spoiler_outlist(cptr header, const cptr *list, char separator)
 				text_out("\n");
 
 				/* Begin new line at secondary indention level */
-				sprintf(line, "%s%s", INDENT2, buf);
+				strnfmt(line, sizeof(line), "%s%s", INDENT2, buf);
 			}
 
 			line_len = strlen(line);
@@ -1103,7 +1104,7 @@ static void spoiler_print_art(const obj_desc_list *art_ptr)
 	if (pval_ptr->pval_desc[0])
 	{
 		/* Mention the effects of pval */
-		sprintf(buf, "%s to", pval_ptr->pval_desc);
+		strnfmt(buf, sizeof(buf), "%s to", pval_ptr->pval_desc);
 		spoiler_outlist(buf, pval_ptr->pval_affects, ITEM_SEP);
 	}
 
@@ -1158,6 +1159,9 @@ static bool make_fake_artifact(object_type *o_ptr, byte name1)
 	o_ptr->to_d = a_ptr->to_d;
 	o_ptr->weight = a_ptr->weight;
 
+	/* Hack -- extract the "cursed" flag */
+	if (a_ptr->flags3 & (TR3_LIGHT_CURSE)) o_ptr->ident |= (IDENT_CURSED);
+
 	/* Success */
 	return (TRUE);
 }
@@ -1179,7 +1183,7 @@ static void spoil_artifact(cptr fname)
 
 
 	/* Build the filename */
-	path_build(buf, 1024, ANGBAND_DIR_USER, fname);
+	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, fname);
 
 	/* File type is "TEXT" */
 	FILE_TYPE(FILE_TYPE_TEXT);
@@ -1289,7 +1293,7 @@ static void spoil_mon_desc(cptr fname)
 
 
 	/* Build the filename */
-	path_build(buf, 1024, ANGBAND_DIR_USER, fname);
+	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, fname);
 
 	/* File type is "TEXT" */
 	FILE_TYPE(FILE_TYPE_TEXT);
@@ -1344,15 +1348,15 @@ static void spoil_mon_desc(cptr fname)
 		/* Get the "name" */
 		if (r_ptr->flags1 & (RF1_QUESTOR))
 		{
-			sprintf(nam, "[Q] %s", name);
+			strnfmt(nam, sizeof(nam), "[Q] %s", name);
 		}
 		else if (r_ptr->flags1 & (RF1_UNIQUE))
 		{
-			sprintf(nam, "[U] %s", name);
+			strnfmt(nam, sizeof(nam), "[U] %s", name);
 		}
 		else
 		{
-			sprintf(nam, "The %s", name);
+			strnfmt(nam, sizeof(nam), "The %s", name);
 		}
 
 
@@ -1390,7 +1394,7 @@ static void spoil_mon_desc(cptr fname)
 		sprintf(exp, "%ld", (long)(r_ptr->mexp));
 
 		/* Hack -- use visual instead */
-		sprintf(exp, "%s '%c'", attr_to_text(r_ptr->d_attr), r_ptr->d_char);
+		strnfmt(exp, sizeof(exp), "%s '%c'", attr_to_text(r_ptr->d_attr), r_ptr->d_char);
 
 		/* Dump the info */
 		fprintf(fff, "%-40.40s%4s%4s%6s%8s%4s  %11.11s\n",
@@ -1436,7 +1440,7 @@ static void spoil_mon_info(cptr fname)
 
 
 	/* Build the filename */
-	path_build(buf, 1024, ANGBAND_DIR_USER, fname);
+	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, fname);
 
 	/* File type is "TEXT" */
 	FILE_TYPE(FILE_TYPE_TEXT);
@@ -1456,7 +1460,7 @@ static void spoil_mon_info(cptr fname)
 	text_out_file = fff;
 
 	/* Dump the header */
-	sprintf(buf, "Monster Spoilers for %s Version %s\n",
+	strnfmt(buf, sizeof(buf), "Monster Spoilers for %s Version %s\n",
 	        VERSION_NAME, VERSION_STRING);
 	text_out(buf);
 	text_out("------------------------------------------\n\n");
@@ -1503,7 +1507,7 @@ static void spoil_mon_info(cptr fname)
 		}
 
 		/* Name */
-		sprintf(buf, "%s  (", (r_name + r_ptr->name));	/* ---)--- */
+		strnfmt(buf, sizeof(buf), "%s  (", (r_name + r_ptr->name));	/* ---)--- */
 		text_out(buf);
 
 		/* Color */

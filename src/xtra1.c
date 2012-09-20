@@ -735,7 +735,7 @@ static void health_redraw(void)
 	}
 
 	/* Tracking an unseen monster */
-	else if (!m_list[p_ptr->health_who].ml)
+	else if (!mon_list[p_ptr->health_who].ml)
 	{
 		/* Indicate that the monster health is "unknown" */
 		Term_putstr(COL_INFO, ROW_INFO, 12, TERM_WHITE, "[----------]");
@@ -749,7 +749,7 @@ static void health_redraw(void)
 	}
 
 	/* Tracking a dead monster (?) */
-	else if (!m_list[p_ptr->health_who].hp < 0)
+	else if (!mon_list[p_ptr->health_who].hp < 0)
 	{
 		/* Indicate that the monster health is "unknown" */
 		Term_putstr(COL_INFO, ROW_INFO, 12, TERM_WHITE, "[----------]");
@@ -760,7 +760,7 @@ static void health_redraw(void)
 	{
 		int pct, len;
 
-		monster_type *m_ptr = &m_list[p_ptr->health_who];
+		monster_type *m_ptr = &mon_list[p_ptr->health_who];
 
 		/* Default to almost dead */
 		byte attr = TERM_RED;

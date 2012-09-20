@@ -39,7 +39,7 @@ LUAOBJS = \
   lua/lapi.o lua/ldebug.o lua/lmem.o lua/lstrlib.o lua/lvm.o \
   lua/tolua_lb.o lua/lauxlib.o lua/ldo.o lua/lobject.o lua/ltable.o \
   lua/lzio.o lua/tolua_rg.o lua/lbaselib.o lua/lfunc.o lua/lparser.o \
-  lua/ltests.o lua/tolua_bd.o lua/tolua_tm.o lua/lcode.o lua/lgc.o \
+  lua/tolua_bd.o lua/tolua_tm.o lua/lcode.o lua/lgc.o \
   lua/lstate.o lua/ltm.o lua/tolua_eh.o lua/tolua_tt.o lua/ldblib.o \
   lua/llex.o lua/lstring.o lua/lundump.o lua/tolua_gp.o
 
@@ -65,7 +65,7 @@ SRCS = \
   main-cap.c main-gcu.c main-x11.c main-xaw.c main.c \
   main-gtk.c main-lsl.c main-sla.c main-vcs.c main-xpj.c \
   maid-x11.c \
-  script.c use-obj.c \
+  script.c use-obj.c x-spell.c \
   l-monst.c l-object.c l-player.c l-random.c l-ui.c \
   l-misc.c l-spell.c
 
@@ -82,7 +82,7 @@ OBJS = \
   main-cap.o main-gcu.o main-x11.o main-xaw.o main.o \
   main-gtk.o main-lsl.o main-sla.o main-vcs.o main-xpj.o \
   maid-x11.o \
-  script.o use-obj.o \
+  script.o use-obj.o x-spell.o \
   l-monst.o l-object.o l-player.o l-random.o l-ui.o \
   l-misc.o l-spell.o \
   $(LUAOBJS)
@@ -395,6 +395,7 @@ util.o: util.c $(INCS)
 variable.o: variable.c $(INCS)
 wizard1.o: wizard1.c $(INCS)
 wizard2.o: wizard2.c $(INCS) script.h
+x-spell.o: x-spell.c $(INCS)
 xtra1.o: xtra1.c $(INCS) script.h
 xtra2.o: xtra2.c $(INCS)
 z-form.o: z-form.c $(HDRS) z-form.h z-util.h z-virt.h

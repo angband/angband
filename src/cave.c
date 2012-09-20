@@ -24,7 +24,7 @@
  *
  * Algorithm: hypot(dy,dx) = max(dy,dx) + min(dy,dx) / 2
  */
-sint distance(int y1, int x1, int y2, int x2)
+int distance(int y1, int x1, int y2, int x2)
 {
 	int ay, ax;
 
@@ -884,7 +884,7 @@ void map_info(int y, int x, byte *ap, char *cp, byte *tap, char *tcp)
 	/* Monsters */
 	if (m_idx > 0)
 	{
-		monster_type *m_ptr = &m_list[m_idx];
+		monster_type *m_ptr = &mon_list[m_idx];
 
 		/* Visible monster */
 		if (m_ptr->ml)
@@ -1018,20 +1018,20 @@ void map_info(int y, int x, byte *ap, char *cp, byte *tap, char *tcp)
  */
 void move_cursor_relative(int y, int x)
 {
-	unsigned ky, kx;
-	unsigned vy, vx;
+	int ky, kx;
+	int vy, vx;
 
 	/* Location relative to panel */
-	ky = (unsigned)(y - p_ptr->wy);
+	ky = y - p_ptr->wy;
 
 	/* Verify location */
-	if (ky >= (unsigned)(SCREEN_HGT)) return;
+	if ((ky < 0) || (ky >= SCREEN_HGT)) return;
 
 	/* Location relative to panel */
-	kx = (unsigned)(x - p_ptr->wx);
+	kx = x - p_ptr->wx;
 
 	/* Verify location */
-	if (kx >= (unsigned)(SCREEN_WID)) return;
+	if ((kx < 0) || (kx >= SCREEN_WID)) return;
 
 	/* Location in window */
 	vy = ky + ROW_MAP;
@@ -1040,7 +1040,7 @@ void move_cursor_relative(int y, int x)
 	vx = kx + COL_MAP;
 
 	/* Go there */
-	Term_gotoxy(vx, vy);
+	(void)Term_gotoxy(vx, vy);
 }
 
 
@@ -1056,20 +1056,20 @@ void move_cursor_relative(int y, int x)
  */
 void print_rel(char c, byte a, int y, int x)
 {
-	unsigned ky, kx;
-	unsigned vy, vx;
+	int ky, kx;
+	int vy, vx;
 
 	/* Location relative to panel */
-	ky = (unsigned)(y - p_ptr->wy);
+	ky = y - p_ptr->wy;
 
 	/* Verify location */
-	if (ky >= (unsigned)(SCREEN_HGT)) return;
+	if ((ky < 0) || (ky >= SCREEN_HGT)) return;
 
 	/* Location relative to panel */
-	kx = (unsigned)(x - p_ptr->wx);
+	kx = x - p_ptr->wx;
 
 	/* Verify location */
-	if (kx >= (unsigned)(SCREEN_WID)) return;
+	if ((kx < 0) || (kx >= SCREEN_WID)) return;
 
 	/* Location in window */
 	vy = ky + ROW_MAP;
@@ -1175,20 +1175,20 @@ void lite_spot(int y, int x)
 	byte ta;
 	char tc;
 	
-	unsigned ky, kx;
-	unsigned vy, vx;
+	int ky, kx;
+	int vy, vx;
 
 	/* Location relative to panel */
-	ky = (unsigned)(y - p_ptr->wy);
+	ky = y - p_ptr->wy;
 
 	/* Verify location */
-	if (ky >= (unsigned)(SCREEN_HGT)) return;
+	if ((ky < 0) || (ky >= SCREEN_HGT)) return;
 
 	/* Location relative to panel */
-	kx = (unsigned)(x - p_ptr->wx);
+	kx = x - p_ptr->wx;
 
 	/* Verify location */
-	if (kx >= (unsigned)(SCREEN_WID)) return;
+	if ((kx < 0) || (kx >= SCREEN_WID)) return;
 
 	/* Location in window */
 	vy = ky + ROW_MAP;
@@ -1253,7 +1253,7 @@ void prt_map(void)
  *
  * Note that all "walls" always look like "secret doors" (see "map_info()").
  */
-static const byte priority_table[][2] =
+static const int priority_table[14][2] =
 {
 	/* Dark */
 	{ FEAT_NONE, 2 },
@@ -3433,7 +3433,7 @@ void cave_set_feat(int y, int x, int feat)
  * This algorithm is similar to, but slightly different from, the one used
  * by "update_view_los()", and very different from the one used by "los()".
  */
-sint project_path(u16b *gp, int range, int y1, int x1, int y2, int x2, int flg)
+int project_path(u16b *gp, int range, int y1, int x1, int y2, int x2, int flg)
 {
 	int y, x;
 

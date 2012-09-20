@@ -485,14 +485,14 @@ void Term_queue_char(int x, int y, byte a, char c, byte ta, char tc)
 	byte *scr_aa = Term->scr->a[y];
 	char *scr_cc = Term->scr->c[y];
 
-	int oa = scr_aa[x];
-	int oc = scr_cc[x];
+	byte oa = scr_aa[x];
+	char oc = scr_cc[x];
 
 	byte *scr_taa = Term->scr->ta[y];
 	char *scr_tcc = Term->scr->tc[y];
 
-	int ota = scr_taa[x];
-	int otc = scr_tcc[x];
+	byte ota = scr_taa[x];
+	char otc = scr_tcc[x];
 
 	/* Don't change is the terrain value is 0 */
 	if (!ta) ta = ota;
@@ -539,11 +539,11 @@ void Term_queue_chars(int x, int y, int n, byte a, cptr s)
 	/* Queue the attr/chars */
 	for ( ; n; x++, s++, n--)
 	{
-		int oa = scr_aa[x];
-		int oc = scr_cc[x];
+		byte oa = scr_aa[x];
+		char oc = scr_cc[x];
 
-		int ota = scr_taa[x];
-		int otc = scr_tcc[x];
+		byte ota = scr_taa[x];
+		char otc = scr_tcc[x];
 
 		/* Hack -- Ignore non-changes */
 		if ((oa == a) && (oc == *s) && (ota == 0) && (otc == 0)) continue;
@@ -1129,7 +1129,8 @@ errr Term_fresh(void)
 		Term_xtra(TERM_XTRA_CLEAR, 0);
 
 		/* Hack -- clear all "cursor" data */
-		old->cv = old->cu = old->cx = old->cy = 0;
+		old->cv = old->cu = FALSE;
+		old->cx = old->cy = 0;
 
 		/* Wipe each row */
 		for (y = 0; y < h; y++)
@@ -1359,7 +1360,7 @@ errr Term_fresh(void)
 /*
  * Set the cursor visibility
  */
-errr Term_set_cursor(int v)
+errr Term_set_cursor(bool v)
 {
 	/* Already done */
 	if (Term->scr->cv == v) return (1);
@@ -1569,8 +1570,8 @@ errr Term_erase(int x, int y, int n)
 	int x1 = -1;
 	int x2 = -1;
 
-	int na = Term->attr_blank;
-	int nc = Term->char_blank;
+	byte na = Term->attr_blank;
+	char nc = Term->char_blank;
 
 	byte *scr_aa;
 	char *scr_cc;
@@ -1594,8 +1595,8 @@ errr Term_erase(int x, int y, int n)
 	/* Scan every column */
 	for (i = 0; i < n; i++, x++)
 	{
-		int oa = scr_aa[x];
-		int oc = scr_cc[x];
+		byte oa = scr_aa[x];
+		char oc = scr_cc[x];
 
 		/* Hack -- Ignore "non-changes" */
 		if ((oa == na) && (oc == nc)) continue;
@@ -1759,7 +1760,7 @@ errr Term_redraw_section(int x1, int y1, int x2, int y2)
 /*
  * Extract the cursor visibility
  */
-errr Term_get_cursor(int *v)
+errr Term_get_cursor(bool *v)
 {
 	/* Extract visibility */
 	(*v) = Term->scr->cv;

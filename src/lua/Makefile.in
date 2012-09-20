@@ -73,7 +73,7 @@ noinst_LIBRARIES = liblua.a
 
 noinst_PROGRAMS = tolua
 
-liblua_a_SOURCES =    lapi.c ldebug.c lmem.c lstrlib.c lvm.c   tolua_lb.c lauxlib.c ldo.c lobject.c ltable.c   lzio.c tolua_rg.c lbaselib.c lfunc.c lparser.c   ltests.c tolua_bd.c tolua_tm.c lcode.c lgc.c   lstate.c ltm.c tolua_eh.c tolua_tt.c ldblib.c   llex.c lstring.c lundump.c tolua_gp.c   lapi.h lauxlib.h lcode.h ldebug.h ldo.h lfunc.h   lgc.h llex.h llimits.h lmem.h lobject.h lopcodes.h   lparser.h lstate.h lstring.h ltable.h ltm.h lua.h   luadebug.h lualib.h lundump.h lvm.h lzio.h   tolua.h tolua_eh.h tolua_rg.h tolua_tm.h   tolua_tt.h
+liblua_a_SOURCES =    lapi.c ldebug.c lmem.c lstrlib.c lvm.c   tolua_lb.c lauxlib.c ldo.c lobject.c ltable.c   lzio.c tolua_rg.c lbaselib.c lfunc.c lparser.c   tolua_bd.c tolua_tm.c lcode.c lgc.c   lstate.c ltm.c tolua_eh.c tolua_tt.c ldblib.c   llex.c lstring.c lundump.c tolua_gp.c   lapi.h lauxlib.h lcode.h ldebug.h ldo.h lfunc.h   lgc.h llex.h llimits.h lmem.h lobject.h lopcodes.h   lparser.h lstate.h lstring.h ltable.h ltm.h lua.h   luadebug.h lualib.h lundump.h lvm.h lzio.h   tolua.h tolua_eh.h tolua_rg.h tolua_tm.h   tolua_tt.h
 
 
 tolua_SOURCES =    tolua.c tolualua.c liolib.c
@@ -100,8 +100,8 @@ X_PRE_LIBS = @X_PRE_LIBS@
 liblua_a_LIBADD = 
 liblua_a_OBJECTS =  lapi.o ldebug.o lmem.o lstrlib.o lvm.o tolua_lb.o \
 lauxlib.o ldo.o lobject.o ltable.o lzio.o tolua_rg.o lbaselib.o lfunc.o \
-lparser.o ltests.o tolua_bd.o tolua_tm.o lcode.o lgc.o lstate.o ltm.o \
-tolua_eh.o tolua_tt.o ldblib.o llex.o lstring.o lundump.o tolua_gp.o
+lparser.o tolua_bd.o tolua_tm.o lcode.o lgc.o lstate.o ltm.o tolua_eh.o \
+tolua_tt.o ldblib.o llex.o lstring.o lundump.o tolua_gp.o
 AR = ar
 noinst_PROGRAMS =  tolua$(EXEEXT)
 PROGRAMS =  $(noinst_PROGRAMS)
@@ -258,9 +258,6 @@ lstring.o: lstring.c lua.h lmem.h llimits.h lobject.h lstate.h \
 lstrlib.o: lstrlib.c lua.h lauxlib.h lualib.h
 ltable.o: ltable.c lua.h lmem.h llimits.h lobject.h lstate.h luadebug.h \
 	lstring.h ltable.h
-ltests.o: ltests.c lua.h lapi.h lobject.h llimits.h lauxlib.h lcode.h \
-	llex.h lzio.h lopcodes.h lparser.h ldebug.h lstate.h luadebug.h \
-	ldo.h lfunc.h lmem.h lstring.h ltable.h lualib.h
 ltm.o: ltm.c lua.h ldo.h lobject.h llimits.h lstate.h luadebug.h lmem.h \
 	ltm.h
 lundump.o: lundump.c lfunc.h lobject.h llimits.h lua.h lmem.h lopcodes.h \

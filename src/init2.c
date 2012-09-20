@@ -172,7 +172,7 @@ void init_file_paths(char *path)
 #ifdef PRIVATE_USER_PATH
 
 	/* Build the path to the user specific directory */
-	path_build(buf, 1024, PRIVATE_USER_PATH, VERSION_NAME);
+	path_build(buf, sizeof(buf), PRIVATE_USER_PATH, VERSION_NAME);
 
 	/* Build a relative path name */
 	ANGBAND_DIR_USER = string_make(buf);
@@ -267,6 +267,7 @@ static cptr err_str[PARSE_ERROR_MAX] =
 	"invalid spell frequency",
 	"invalid number of items (0-99)",
 	"too many entries",
+	"vault too big",
 };
 
 
@@ -421,7 +422,7 @@ static errr init_info(cptr filename, header *head)
 	/*** Load the binary image file ***/
 
 	/* Build the filename */
-	path_build(buf, 1024, ANGBAND_DIR_DATA, format("%s.raw", filename));
+	path_build(buf, sizeof(buf), ANGBAND_DIR_DATA, format("%s.raw", filename));
 
 	/* Attempt to open the "raw" file */
 	fd = fd_open(buf, O_RDONLY);
@@ -462,7 +463,7 @@ static errr init_info(cptr filename, header *head)
 		/*** Load the ascii template file ***/
 
 		/* Build the filename */
-		path_build(buf, 1024, ANGBAND_DIR_EDIT, format("%s.txt", filename));
+		path_build(buf, sizeof(buf), ANGBAND_DIR_EDIT, format("%s.txt", filename));
 
 		/* Open the file */
 		fp = my_fopen(buf, "r");
@@ -486,7 +487,7 @@ static errr init_info(cptr filename, header *head)
 		FILE_TYPE(FILE_TYPE_DATA);
 
 		/* Build the filename */
-		path_build(buf, 1024, ANGBAND_DIR_DATA, format("%s.raw", filename));
+		path_build(buf, sizeof(buf), ANGBAND_DIR_DATA, format("%s.raw", filename));
 
 
 		/* Attempt to open the file */
@@ -512,7 +513,7 @@ static errr init_info(cptr filename, header *head)
 				char why[1024];
 
 				/* Message */
-				sprintf(why, "Cannot create the '%s' file!", buf);
+				strnfmt(why, sizeof(why), "Cannot create the '%s' file!", buf);
 
 				/* Crash and burn */
 				quit(why);
@@ -569,7 +570,7 @@ static errr init_info(cptr filename, header *head)
 		/*** Load the binary image file ***/
 
 		/* Build the filename */
-		path_build(buf, 1024, ANGBAND_DIR_DATA, format("%s.raw", filename));
+		path_build(buf, sizeof(buf), ANGBAND_DIR_DATA, format("%s.raw", filename));
 
 		/* Attempt to open the "raw" file */
 		fd = fd_open(buf, O_RDONLY);
@@ -1299,7 +1300,7 @@ static errr init_other(void)
 	C_MAKE(o_list, z_info->o_max, object_type);
 
 	/* Monsters */
-	C_MAKE(m_list, z_info->m_max, monster_type);
+	C_MAKE(mon_list, z_info->m_max, monster_type);
 
 
 	/*** Prepare lore array ***/
@@ -1763,7 +1764,7 @@ void init_angband(void)
 	/*** Verify the "news" file ***/
 
 	/* Build the filename */
-	path_build(buf, 1024, ANGBAND_DIR_FILE, "news.txt");
+	path_build(buf, sizeof(buf), ANGBAND_DIR_FILE, "news.txt");
 
 	/* Attempt to open the file */
 	fd = fd_open(buf, O_RDONLY);
@@ -1774,7 +1775,7 @@ void init_angband(void)
 		char why[1024];
 
 		/* Message */
-		sprintf(why, "Cannot access the '%s' file!", buf);
+		strnfmt(why, sizeof(why), "Cannot access the '%s' file!", buf);
 
 		/* Crash and burn */
 		init_angband_aux(why);
@@ -1790,7 +1791,7 @@ void init_angband(void)
 	Term_clear();
 
 	/* Build the filename */
-	path_build(buf, 1024, ANGBAND_DIR_FILE, "news.txt");
+	path_build(buf, sizeof(buf), ANGBAND_DIR_FILE, "news.txt");
 
 	/* Open the News file */
 	fp = my_fopen(buf, "r");
@@ -1818,7 +1819,7 @@ void init_angband(void)
 	/*** Verify (or create) the "high score" file ***/
 
 	/* Build the filename */
-	path_build(buf, 1024, ANGBAND_DIR_APEX, "scores.raw");
+	path_build(buf, sizeof(buf), ANGBAND_DIR_APEX, "scores.raw");
 
 	/* Attempt to open the high score file */
 	fd = fd_open(buf, O_RDONLY);
@@ -1844,7 +1845,7 @@ void init_angband(void)
 			char why[1024];
 
 			/* Message */
-			sprintf(why, "Cannot create the '%s' file!", buf);
+			strnfmt(why, sizeof(why), "Cannot create the '%s' file!", buf);
 
 			/* Crash and burn */
 			init_angband_aux(why);
@@ -1996,7 +1997,7 @@ void cleanup_angband(void)
 
 	/* Free the lore, monster, and object lists */
 	FREE(l_list);
-	FREE(m_list);
+	FREE(mon_list);
 	FREE(o_list);
 
 #ifdef MONSTER_FLOW

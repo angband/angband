@@ -48,65 +48,65 @@
 
 /* Size of 'N' things of type 'T' */
 #define C_SIZE(N,T) \
-	((huge)((N)*(sizeof(T))))
+	((N)*(sizeof(T)))
 
 /* Size of one thing of type 'T' */
 #define SIZE(T) \
-	((huge)(sizeof(T)))
+	(sizeof(T))
 
 
 /* Compare two arrays of type T[N], at locations P1 and P2 */
 #define C_DIFF(P1,P2,N,T) \
-	(memcmp((const char*)(P1),(const char*)(P2),C_SIZE(N,T)))
+	(memcmp((P1),(P2),C_SIZE(N,T)))
 
 /* Compare two things of type T, at locations P1 and P2 */
 #define DIFF(P1,P2,T) \
-	(memcmp((const char*)(P1),(const char*)(P2),SIZE(T)))
+	(memcmp((P1),(P2),SIZE(T)))
 
 
 /* Set every byte in an array of type T[N], at location P, to V, and return P */
 #define C_BSET(P,V,N,T) \
-	(T*)(memset((char*)(P),(V),C_SIZE(N,T)))
+	(memset((P),(V),C_SIZE(N,T)))
 
 /* Set every byte in a thing of type T, at location P, to V, and return P */
 #define BSET(P,V,T) \
-	(T*)(memset((char*)(P),(V),SIZE(T)))
+	(memset((P),(V),SIZE(T)))
 
 
 /* Wipe an array of type T[N], at location P, and return P */
 #define C_WIPE(P,N,T) \
-	(T*)(memset((char*)(P),0,C_SIZE(N,T)))
+	(memset((P),0,C_SIZE(N,T)))
 
 /* Wipe a thing of type T, at location P, and return P */
 #define WIPE(P,T) \
-	(T*)(memset((char*)(P),0,SIZE(T)))
+	(memset((P),0,SIZE(T)))
 
 
 /* Load an array of type T[N], at location P1, from another, at location P2 */
 #define C_COPY(P1,P2,N,T) \
-	(T*)(memcpy((char*)(P1),(const char*)(P2),C_SIZE(N,T)))
+	(memcpy((P1),(P2),C_SIZE(N,T)))
 
 /* Load a thing of type T, at location P1, from another, at location P2 */
 #define COPY(P1,P2,T) \
-	(T*)(memcpy((char*)(P1),(const char*)(P2),SIZE(T)))
+	(memcpy((P1),(P2),SIZE(T)))
 
 
 /* Allocate, and return, an array of type T[N] */
 #define C_RNEW(N,T) \
-	((T*)(ralloc(C_SIZE(N,T))))
+	(ralloc(C_SIZE(N,T)))
 
 /* Allocate, and return, a thing of type T */
 #define RNEW(T) \
-	((T*)(ralloc(SIZE(T))))
+	(ralloc(SIZE(T)))
 
 
 /* Allocate, wipe, and return an array of type T[N] */
 #define C_ZNEW(N,T) \
-	((T*)(C_WIPE(C_RNEW(N,T),N,T)))
+	(C_WIPE(C_RNEW(N,T),N,T))
 
 /* Allocate, wipe, and return a thing of type T */
 #define ZNEW(T) \
-	((T*)(WIPE(RNEW(T),T)))
+	(WIPE(RNEW(T),T))
 
 
 /* Allocate a wiped array of type T[N], assign to pointer P */
@@ -131,25 +131,25 @@
 /**** Available variables ****/
 
 /* Replacement hook for "rnfree()" */
-extern vptr (*rnfree_aux)(vptr);
+extern void* (*rnfree_aux)(void*);
 
 /* Replacement hook for "rpanic()" */
-extern vptr (*rpanic_aux)(huge);
+extern void* (*rpanic_aux)(size_t);
 
 /* Replacement hook for "ralloc()" */
-extern vptr (*ralloc_aux)(huge);
+extern void* (*ralloc_aux)(size_t);
 
 
 /**** Available functions ****/
 
 /* De-allocate memory */
-extern vptr rnfree(vptr p);
+extern void* rnfree(void *p);
 
-/* Panic, attempt to Allocate 'len' bytes */
-extern vptr rpanic(huge len);
+/* Panic, attempt to allocate 'len' bytes */
+extern void* rpanic(size_t len);
 
 /* Allocate (and return) 'len', or dump core */
-extern vptr ralloc(huge len);
+extern void* ralloc(size_t len);
 
 /* Create a "dynamic string" */
 extern cptr string_make(cptr str);

@@ -304,7 +304,7 @@ static errr rd_item(object_type *o_ptr)
 	rd_byte(&o_ptr->xtra2);
 
 	/* Inscription */
-	rd_string(buf, 128);
+	rd_string(buf, sizeof(buf));
 
 	/* Save the inscription */
 	if (buf[0]) o_ptr->note = quark_add(buf);
@@ -894,13 +894,33 @@ static errr rd_extra(void)
 	u16b tmp16u;
 
 
-	rd_string(op_ptr->full_name, 32);
+	rd_string(op_ptr->full_name, sizeof(op_ptr->full_name));
 
 	rd_string(p_ptr->died_from, 80);
 
-	for (i = 0; i < 4; i++)
+	if (older_than(3, 0, 1))
 	{
-		rd_string(p_ptr->history[i], 60);
+		char *hist = p_ptr->history;
+
+		for (i = 0; i < 4; i++)
+		{
+			/* Read a part of the history */
+			rd_string(hist, 60);
+
+			/* Advance */
+			hist += strlen(hist);
+
+			/* Separate by spaces */
+			hist[0] = ' ';
+			hist++;
+		}
+
+		/* Make sure it is terminated */
+		hist[0] = '\0';
+	}
+	else
+	{
+		rd_string(p_ptr->history, 250);
 	}
 
 	/* Player race */
@@ -1336,7 +1356,7 @@ static void rd_messages(void)
 	for (i = 0; i < num; i++)
 	{
 		/* Read the message */
-		rd_string(buf, 128);
+		rd_string(buf, sizeof(buf));
 
 		/* Read the message type */
 		if (!older_than(2, 9, 1))
@@ -1619,7 +1639,7 @@ static errr rd_dungeon(void)
 		}
 
 		/* Get the monster */
-		m_ptr = &m_list[o_ptr->held_m_idx];
+		m_ptr = &mon_list[o_ptr->held_m_idx];
 
 		/* Link the object to the pile */
 		o_ptr->next_o_idx = m_ptr->hold_o_idx;
@@ -2003,7 +2023,7 @@ bool load_player(void)
 		char temp[1024];
 
 		/* Extract name of lock file */
-		strcpy(temp, savefile);
+		my_strcpy(temp, savefile, sizeof(temp));
 		strcat(temp, ".lok");
 
 		/* Grab permissions */
@@ -2217,7 +2237,7 @@ bool load_player(void)
 		char temp[1024];
 
 		/* Extract name of lock file */
-		strcpy(temp, savefile);
+		my_strcpy(temp, savefile, sizeof(temp));
 		strcat(temp, ".lok");
 
 		/* Grab permissions */

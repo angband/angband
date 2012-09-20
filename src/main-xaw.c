@@ -931,7 +931,7 @@ static XFontStruct *getFont(AngbandWidget widget,
 
 	if (!(fnt = XLoadQueryFont(dpy, font)) && fallback)
 	{
-		sprintf(buf, "Can't find the font \"%s\", trying fixed\n", font);
+		strnfmt(buf, sizeof(buf), "Can't find the font \"%s\", trying fixed\n", font);
 		XtWarning(buf);
 		if (!(fnt = XLoadQueryFont(dpy, "fixed")))
 		{
@@ -1069,8 +1069,6 @@ static void react_keypress(XKeyEvent *ev)
 {
 	int i, n, mc, ms, mo, mx;
 
-	uint ks1;
-
 	KeySym ks;
 
 	char buf[128];
@@ -1087,9 +1085,6 @@ static void react_keypress(XKeyEvent *ev)
 	/* Hack -- Ignore "modifier keys" */
 	if (IsModifierKey(ks)) return;
 
-
-	/* Hack -- convert into an unsigned int */
-	ks1 = (uint)(ks);
 
 	/* Extract four "modifier flags" */
 	mc = (ev->state & ControlMask) ? TRUE : FALSE;
@@ -1110,7 +1105,7 @@ static void react_keypress(XKeyEvent *ev)
 
 
 	/* Handle a few standard keys (bypass modifiers) XXX XXX XXX */
-	switch (ks1)
+	switch (ks)
 	{
 		case XK_Escape:
 		{
@@ -1142,7 +1137,7 @@ static void react_keypress(XKeyEvent *ev)
 	/* Hack -- Use the KeySym */
 	if (ks)
 	{
-		sprintf(msg, "%c%s%s%s%s_%lX%c", 31,
+		strnfmt(msg, sizeof(msg), "%c%s%s%s%s_%lX%c", 31,
 		        mc ? "N" : "", ms ? "S" : "",
 		        mo ? "O" : "", mx ? "M" : "",
 		        (unsigned long)(ks), 13);
@@ -1151,7 +1146,7 @@ static void react_keypress(XKeyEvent *ev)
 	/* Hack -- Use the Keycode */
 	else
 	{
-		sprintf(msg, "%c%s%s%s%sK_%X%c", 31,
+		strnfmt(msg, sizeof(msg), "%c%s%s%s%sK_%X%c", 31,
 		        mc ? "N" : "", ms ? "S" : "",
 		        mo ? "O" : "", mx ? "M" : "",
 		        ev->keycode, 13);
@@ -1723,7 +1718,7 @@ errr init_xaw(int argc, char **argv)
 	if (arg_graphics)
 	{
 		/* Try the "16x16.bmp" file */
-		path_build(filename, 1024, ANGBAND_DIR_XTRA, "graf/16x16.bmp");
+		path_build(filename, sizeof(filename), ANGBAND_DIR_XTRA, "graf/16x16.bmp");
 
 		/* Use the "16x16.bmp" file if it exists */
 		if (0 == fd_close(fd_open(filename, O_RDONLY)))
@@ -1740,7 +1735,7 @@ errr init_xaw(int argc, char **argv)
 		else
 		{
 			/* Try the "8x8.bmp" file */
-			path_build(filename, 1024, ANGBAND_DIR_XTRA, "graf/8x8.bmp");
+			path_build(filename, sizeof(filename), ANGBAND_DIR_XTRA, "graf/8x8.bmp");
 
 			/* Use the "8x8.bmp" file if it exists */
 			if (0 == fd_close(fd_open(filename, O_RDONLY)))

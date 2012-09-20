@@ -71,7 +71,7 @@ Many improvements to the autoconf support, code-cleanups, and tons of
 bugfixes
 
 Kusunose Toru
-Bugfixes to the object activations.
+Various bugfixes
 
 The developers of the Lua scripting language and the 'tolua' wrapper
 generators for a nice scripting language that is not only easy to learn

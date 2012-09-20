@@ -630,7 +630,7 @@ static void term_data_link(int i)
 	t->pict_hook = Term_pict_xxx;
 
 	/* Remember where we came from */
-	t->data = (vptr)(td);
+	t->data = td;
 
 	/* Activate it */
 	Term_activate(t);

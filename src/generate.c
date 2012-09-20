@@ -3371,7 +3371,7 @@ void generate_cave(void)
 
 		/* Reset */
 		o_max = 1;
-		m_max = 1;
+		mon_max = 1;
 
 
 		/* Start with a blank cave */
@@ -3470,7 +3470,7 @@ void generate_cave(void)
 		}
 
 		/* Prevent monster over-flow */
-		if (m_max >= z_info->m_max)
+		if (mon_max >= z_info->m_max)
 		{
 			/* Message */
 			why = "too many monsters";
@@ -3513,7 +3513,7 @@ void generate_cave(void)
 		wipe_o_list();
 
 		/* Wipe the monsters */
-		wipe_m_list();
+		wipe_mon_list();
 	}
 
 

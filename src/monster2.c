@@ -21,7 +21,7 @@ void delete_monster_idx(int i)
 {
 	int x, y;
 
-	monster_type *m_ptr = &m_list[i];
+	monster_type *m_ptr = &mon_list[i];
 
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
@@ -74,7 +74,7 @@ void delete_monster_idx(int i)
 	(void)WIPE(m_ptr, monster_type);
 
 	/* Count monsters */
-	m_cnt--;
+	mon_cnt--;
 
 
 	/* Visual update */
@@ -112,7 +112,7 @@ static void compact_monsters_aux(int i1, int i2)
 
 
 	/* Old monster */
-	m_ptr = &m_list[i1];
+	m_ptr = &mon_list[i1];
 
 	/* Location */
 	y = m_ptr->fy;
@@ -143,10 +143,10 @@ static void compact_monsters_aux(int i1, int i2)
 	if (p_ptr->health_who == i1) p_ptr->health_who = i2;
 
 	/* Hack -- move monster */
-	COPY(&m_list[i2], &m_list[i1], monster_type);
+	COPY(&mon_list[i2], &mon_list[i1], monster_type);
 
 	/* Hack -- wipe hole */
-	(void)WIPE(&m_list[i1], monster_type);
+	(void)WIPE(&mon_list[i1], monster_type);
 }
 
 
@@ -183,9 +183,9 @@ void compact_monsters(int size)
 		cur_dis = 5 * (20 - cnt);
 
 		/* Check all the monsters */
-		for (i = 1; i < m_max; i++)
+		for (i = 1; i < mon_max; i++)
 		{
-			monster_type *m_ptr = &m_list[i];
+			monster_type *m_ptr = &mon_list[i];
 
 			monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
@@ -220,19 +220,19 @@ void compact_monsters(int size)
 
 
 	/* Excise dead monsters (backwards!) */
-	for (i = m_max - 1; i >= 1; i--)
+	for (i = mon_max - 1; i >= 1; i--)
 	{
 		/* Get the i'th monster */
-		monster_type *m_ptr = &m_list[i];
+		monster_type *m_ptr = &mon_list[i];
 
 		/* Skip real monsters */
 		if (m_ptr->r_idx) continue;
 
 		/* Move last monster into open hole */
-		compact_monsters_aux(m_max - 1, i);
+		compact_monsters_aux(mon_max - 1, i);
 
-		/* Compress "m_max" */
-		m_max--;
+		/* Compress "mon_max" */
+		mon_max--;
 	}
 }
 
@@ -243,14 +243,14 @@ void compact_monsters(int size)
  * This is an efficient method of simulating multiple calls to the
  * "delete_monster()" function, with no visual effects.
  */
-void wipe_m_list(void)
+void wipe_mon_list(void)
 {
 	int i;
 
 	/* Delete all the monsters */
-	for (i = m_max - 1; i >= 1; i--)
+	for (i = mon_max - 1; i >= 1; i--)
 	{
-		monster_type *m_ptr = &m_list[i];
+		monster_type *m_ptr = &mon_list[i];
 
 		monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
@@ -269,11 +269,11 @@ void wipe_m_list(void)
 		(void)WIPE(m_ptr, monster_type);
 	}
 
-	/* Reset "m_max" */
-	m_max = 1;
+	/* Reset "mon_max" */
+	mon_max = 1;
 
-	/* Reset "m_cnt" */
-	m_cnt = 0;
+	/* Reset "mon_cnt" */
+	mon_cnt = 0;
 
 	/* Hack -- reset "reproducer" count */
 	num_repro = 0;
@@ -291,22 +291,22 @@ void wipe_m_list(void)
  *
  * This routine should almost never fail, but it *can* happen.
  */
-s16b m_pop(void)
+s16b mon_pop(void)
 {
 	int i;
 
 
 	/* Normal allocation */
-	if (m_max < z_info->m_max)
+	if (mon_max < z_info->m_max)
 	{
 		/* Get the next hole */
-		i = m_max;
+		i = mon_max;
 
 		/* Expand the array */
-		m_max++;
+		mon_max++;
 
 		/* Count monsters */
-		m_cnt++;
+		mon_cnt++;
 
 		/* Return the index */
 		return (i);
@@ -314,18 +314,18 @@ s16b m_pop(void)
 
 
 	/* Recycle dead monsters */
-	for (i = 1; i < m_max; i++)
+	for (i = 1; i < mon_max; i++)
 	{
 		monster_type *m_ptr;
 
 		/* Get the monster */
-		m_ptr = &m_list[i];
+		m_ptr = &mon_list[i];
 
 		/* Skip live monsters */
 		if (m_ptr->r_idx) continue;
 
 		/* Count monsters */
-		m_cnt++;
+		mon_cnt++;
 
 		/* Use this monster */
 		return (i);
@@ -598,7 +598,7 @@ s16b get_mon_num(int level)
  *   0x22 --> Possessive, genderized if visable ("his") or "its"
  *   0x23 --> Reflexive, genderized if visable ("himself") or "itself"
  */
-void monster_desc(char *desc, const monster_type *m_ptr, int mode)
+void monster_desc(char *desc, size_t max, const monster_type *m_ptr, int mode)
 {
 	cptr res;
 
@@ -668,7 +668,7 @@ void monster_desc(char *desc, const monster_type *m_ptr, int mode)
 		}
 
 		/* Copy the result */
-		strcpy(desc, res);
+		my_strcpy(desc, res, max);
 	}
 
 
@@ -676,9 +676,9 @@ void monster_desc(char *desc, const monster_type *m_ptr, int mode)
 	else if ((mode & 0x02) && (mode & 0x01))
 	{
 		/* The monster is visible, so use its gender */
-		if (r_ptr->flags1 & (RF1_FEMALE)) strcpy(desc, "herself");
-		else if (r_ptr->flags1 & (RF1_MALE)) strcpy(desc, "himself");
-		else strcpy(desc, "itself");
+		if (r_ptr->flags1 & (RF1_FEMALE)) my_strcpy(desc, "herself", max);
+		else if (r_ptr->flags1 & (RF1_MALE)) my_strcpy(desc, "himself", max);
+		else my_strcpy(desc, "itself", max);
 	}
 
 
@@ -689,7 +689,7 @@ void monster_desc(char *desc, const monster_type *m_ptr, int mode)
 		if (r_ptr->flags1 & (RF1_UNIQUE))
 		{
 			/* Start with the name (thus nominative and objective) */
-			strcpy(desc, name);
+			my_strcpy(desc, name, max);
 		}
 
 		/* It could be an indefinite monster */
@@ -698,16 +698,16 @@ void monster_desc(char *desc, const monster_type *m_ptr, int mode)
 			/* XXX Check plurality for "some" */
 
 			/* Indefinite monsters need an indefinite article */
-			strcpy(desc, is_a_vowel(name[0]) ? "an " : "a ");
-			strcat(desc, name);
+			my_strcpy(desc, is_a_vowel(name[0]) ? "an " : "a ", max);
+			my_strcat(desc, name, max);
 		}
 
 		/* It could be a normal, definite, monster */
 		else
 		{
 			/* Definite monsters need a definite article */
-			strcpy(desc, "the ");
-			strcat(desc, name);
+			my_strcpy(desc, "the ", max);
+			my_strcat(desc, name, max);
 		}
 
 		/* Handle the Possessive as a special afterthought */
@@ -716,14 +716,14 @@ void monster_desc(char *desc, const monster_type *m_ptr, int mode)
 			/* XXX Check for trailing "s" */
 
 			/* Simply append "apostrophe" and "s" */
-			strcat(desc, "'s");
+			my_strcat(desc, "'s", max);
 		}
 
 		/* Mention "offscreen" monsters XXX XXX */
 		if (!panel_contains(m_ptr->fy, m_ptr->fx))
 		{
 			/* Append special notation */
-			strcat(desc, " (offscreen)");
+			my_strcat(desc, " (offscreen)", max);
 		}
 	}
 }
@@ -736,7 +736,7 @@ void monster_desc(char *desc, const monster_type *m_ptr, int mode)
  */
 void lore_do_probe(int m_idx)
 {
-	monster_type *m_ptr = &m_list[m_idx];
+	monster_type *m_ptr = &mon_list[m_idx];
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
 
@@ -770,7 +770,7 @@ void lore_do_probe(int m_idx)
  */
 void lore_treasure(int m_idx, int num_item, int num_gold)
 {
-	monster_type *m_ptr = &m_list[m_idx];
+	monster_type *m_ptr = &mon_list[m_idx];
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
 
@@ -854,7 +854,7 @@ void lore_treasure(int m_idx, int num_item, int num_gold)
  */
 void update_mon(int m_idx, bool full)
 {
-	monster_type *m_ptr = &m_list[m_idx];
+	monster_type *m_ptr = &mon_list[m_idx];
 
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
@@ -1092,9 +1092,9 @@ void update_monsters(bool full)
 	int i;
 
 	/* Update each (live) monster */
-	for (i = 1; i < m_max; i++)
+	for (i = 1; i < mon_max; i++)
 	{
-		monster_type *m_ptr = &m_list[i];
+		monster_type *m_ptr = &mon_list[i];
 
 		/* Skip dead monsters */
 		if (!m_ptr->r_idx) continue;
@@ -1116,7 +1116,7 @@ s16b monster_carry(int m_idx, object_type *j_ptr)
 
 	s16b this_o_idx, next_o_idx = 0;
 
-	monster_type *m_ptr = &m_list[m_idx];
+	monster_type *m_ptr = &mon_list[m_idx];
 
 
 	/* Scan objects already being held for combination */
@@ -1200,7 +1200,7 @@ void monster_swap(int y1, int x1, int y2, int x2)
 	/* Monster 1 */
 	if (m1 > 0)
 	{
-		m_ptr = &m_list[m1];
+		m_ptr = &mon_list[m1];
 
 		/* Move monster */
 		m_ptr->fy = y2;
@@ -1233,7 +1233,7 @@ void monster_swap(int y1, int x1, int y2, int x2)
 	/* Monster 2 */
 	if (m2 > 0)
 	{
-		m_ptr = &m_list[m2];
+		m_ptr = &mon_list[m2];
 
 		/* Move monster */
 		m_ptr->fy = y1;
@@ -1307,7 +1307,7 @@ s16b monster_place(int y, int x, monster_type *n_ptr)
 
 
 	/* Get a new record */
-	m_idx = m_pop();
+	m_idx = mon_pop();
 
 	/* Oops */
 	if (m_idx)
@@ -1316,7 +1316,7 @@ s16b monster_place(int y, int x, monster_type *n_ptr)
 		cave_m_idx[y][x] = m_idx;
 
 		/* Get the new monster */
-		m_ptr = &m_list[m_idx];
+		m_ptr = &mon_list[m_idx];
 
 		/* Copy the monster XXX */
 		COPY(m_ptr, n_ptr, monster_type);
@@ -1506,13 +1506,6 @@ static bool place_monster_one(int y, int x, int r_idx, bool slp)
 		/* Optimize -- Repair flags */
 		repair_mflag_nice = TRUE;
 	}
-
-	/* Monster is still being born */
-	n_ptr->mflag |= (MFLAG_BORN);
-
-	/* Optimize -- Repair flags */
-	repair_mflag_born = TRUE;
-
 
 	/* Place the monster in the dungeon */
 	if (!monster_place(y, x, n_ptr)) return (FALSE);
@@ -2101,7 +2094,7 @@ bool summon_specific(int y1, int x1, int lev, int type)
  */
 bool multiply_monster(int m_idx)
 {
-	monster_type *m_ptr = &m_list[m_idx];
+	monster_type *m_ptr = &mon_list[m_idx];
 
 	int i, y, x;
 
@@ -2143,14 +2136,14 @@ void message_pain(int m_idx, int dam)
 	long oldhp, newhp, tmp;
 	int percentage;
 
-	monster_type *m_ptr = &m_list[m_idx];
+	monster_type *m_ptr = &mon_list[m_idx];
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 	char m_name[80];
 
 
 	/* Get the monster name */
-	monster_desc(m_name, m_ptr, 0);
+	monster_desc(m_name, sizeof(m_name), m_ptr, 0);
 
 	/* Notice non-damage */
 	if (dam == 0)
@@ -2253,7 +2246,7 @@ void update_smart_learn(int m_idx, int what)
 
 #ifdef DRS_SMART_OPTIONS
 
-	monster_type *m_ptr = &m_list[m_idx];
+	monster_type *m_ptr = &mon_list[m_idx];
 
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 

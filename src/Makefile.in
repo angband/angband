@@ -327,6 +327,33 @@ distdir: $(DISTFILES)
 birth.o: birth.c angband.h h-basic.h autoconf.h h-config.h h-system.h \
 	h-type.h h-define.h z-util.h z-virt.h z-form.h z-rand.h \
 	z-term.h config.h defines.h types.h externs.h
+borg1.o: borg1.c angband.h h-basic.h autoconf.h h-config.h h-system.h \
+	h-type.h h-define.h z-util.h z-virt.h z-form.h z-rand.h \
+	z-term.h config.h defines.h types.h externs.h borg.h
+borg2.o: borg2.c angband.h h-basic.h autoconf.h h-config.h h-system.h \
+	h-type.h h-define.h z-util.h z-virt.h z-form.h z-rand.h \
+	z-term.h config.h defines.h types.h externs.h borg.h
+borg3.o: borg3.c angband.h h-basic.h autoconf.h h-config.h h-system.h \
+	h-type.h h-define.h z-util.h z-virt.h z-form.h z-rand.h \
+	z-term.h config.h defines.h types.h externs.h borg.h script.h
+borg4.o: borg4.c angband.h h-basic.h autoconf.h h-config.h h-system.h \
+	h-type.h h-define.h z-util.h z-virt.h z-form.h z-rand.h \
+	z-term.h config.h defines.h types.h externs.h borg.h
+borg5.o: borg5.c angband.h h-basic.h autoconf.h h-config.h h-system.h \
+	h-type.h h-define.h z-util.h z-virt.h z-form.h z-rand.h \
+	z-term.h config.h defines.h types.h externs.h borg.h
+borg6.o: borg6.c angband.h h-basic.h autoconf.h h-config.h h-system.h \
+	h-type.h h-define.h z-util.h z-virt.h z-form.h z-rand.h \
+	z-term.h config.h defines.h types.h externs.h borg.h
+borg7.o: borg7.c angband.h h-basic.h autoconf.h h-config.h h-system.h \
+	h-type.h h-define.h z-util.h z-virt.h z-form.h z-rand.h \
+	z-term.h config.h defines.h types.h externs.h borg.h
+borg8.o: borg8.c angband.h h-basic.h autoconf.h h-config.h h-system.h \
+	h-type.h h-define.h z-util.h z-virt.h z-form.h z-rand.h \
+	z-term.h config.h defines.h types.h externs.h borg.h
+borg9.o: borg9.c angband.h h-basic.h autoconf.h h-config.h h-system.h \
+	h-type.h h-define.h z-util.h z-virt.h z-form.h z-rand.h \
+	z-term.h config.h defines.h types.h externs.h borg.h
 cave.o: cave.c angband.h h-basic.h autoconf.h h-config.h h-system.h \
 	h-type.h h-define.h z-util.h z-virt.h z-form.h z-rand.h \
 	z-term.h config.h defines.h types.h externs.h

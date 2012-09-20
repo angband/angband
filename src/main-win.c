@@ -743,7 +743,7 @@ static char *analyze_font(char *path, int *wp, int *hp)
 	for (s = p; *s; ++s)
 	{
 		/* Capitalize (be paranoid) */
-		if (islower(*s)) *s = toupper(*s);
+		if (islower((unsigned char)*s)) *s = toupper((unsigned char)*s);
 	}
 
 	/* Find first 'X' */
@@ -782,7 +782,7 @@ static bool check_file(cptr s)
 #endif /* WIN32 */
 
 	/* Copy it */
-	strcpy(path, s);
+	my_strcpy(path, s, sizeof(path));
 
 #ifdef WIN32
 
@@ -833,7 +833,7 @@ static bool check_dir(cptr s)
 #endif /* WIN32 */
 
 	/* Copy it */
-	strcpy(path, s);
+	my_strcpy(path, s, sizeof(path));
 
 	/* Check length */
 	i = strlen(path);
@@ -1160,13 +1160,13 @@ static s16b tokenize_whitespace(char *buf, s16b num, char **tokens)
 		char *t;
 
 		/* Skip leading whitespace */
-		for ( ; *s && isspace(*s); ++s) /* loop */;
+		for ( ; *s && isspace((unsigned char)*s); ++s) /* loop */;
 
 		/* All done */
 		if (!*s) break;
 
 		/* Find next whitespace, if any */
-		for (t = s; *t && !isspace(*t); ++t) /* loop */;
+		for (t = s; *t && !isspace((unsigned char)*t); ++t) /* loop */;
 
 		/* Nuke and advance (if necessary) */
 		if (*t) *t++ = '\0';
@@ -1192,21 +1192,21 @@ static void load_sound_prefs(void)
 	char *zz[SAMPLE_MAX];
 
 	/* Access the sound.cfg */
-	path_build(ini_path, 1024, ANGBAND_DIR_XTRA_SOUND, "sound.cfg");
+	path_build(ini_path, sizeof(ini_path), ANGBAND_DIR_XTRA_SOUND, "sound.cfg");
 
 	for (i = 0; i < SOUND_MAX; i++)
 	{
 		/* Ignore empty sound strings */
 		if (!angband_sound_name[i][0]) continue;
 
-		GetPrivateProfileString("Sound", angband_sound_name[i], "", tmp, 1024, ini_path);
+		GetPrivateProfileString("Sound", angband_sound_name[i], "", tmp, sizeof(tmp), ini_path);
 
 		num = tokenize_whitespace(tmp, SAMPLE_MAX, zz);
 
 		for (j = 0; j < num; j++)
 		{
 			/* Access the sound */
-			path_build(wav_path, 1024, ANGBAND_DIR_XTRA_SOUND, zz[j]);
+			path_build(wav_path, sizeof(wav_path), ANGBAND_DIR_XTRA_SOUND, zz[j]);
 
 			/* Save the sound filename, if it exists */
 			if (check_file(wav_path))
@@ -1398,7 +1398,7 @@ static bool init_graphics(void)
 		}
 
 		/* Access the bitmap file */
-		path_build(buf, 1024, ANGBAND_DIR_XTRA_GRAF, name);
+		path_build(buf, sizeof(buf), ANGBAND_DIR_XTRA_GRAF, name);
 
 		/* Load the bitmap or quit */
 		if (!ReadDIB(data[0].w, buf, &infGraph))
@@ -1414,7 +1414,7 @@ static bool init_graphics(void)
 		if (arg_graphics == GRAPHICS_ADAM_BOLT)
 		{
 			/* Access the mask file */
-			path_build(buf, 1024, ANGBAND_DIR_XTRA_GRAF, "mask.bmp");
+			path_build(buf, sizeof(buf), ANGBAND_DIR_XTRA_GRAF, "mask.bmp");
 
 			/* Load the bitmap or quit */
 			if (!ReadDIB(data[0].w, buf, &infMask))
@@ -1543,7 +1543,7 @@ static errr term_force_font(term_data *td, cptr path)
 
 
 	/* Local copy */
-	strcpy(buf, path);
+	my_strcpy(buf, path, sizeof(buf));
 
 	/* Analyze font path */
 	base = analyze_font(buf, &wid, &hgt);
@@ -1629,7 +1629,7 @@ static void term_change_font(term_data *td)
 		if (term_force_font(td, tmp))
 		{
 			/* Access the standard font file */
-			path_build(tmp, 1024, ANGBAND_DIR_XTRA_FONT, "8X13.FON");
+			path_build(tmp, sizeof(tmp), ANGBAND_DIR_XTRA_FONT, "8X13.FON");
 
 			/* Force the use of that font */
 			(void)term_force_font(td, tmp);
@@ -2005,7 +2005,7 @@ static errr Term_xtra_win_sound(int v)
 	if (i == 0) return (1);
 
 	/* Build the path */
-	path_build(buf, 1024, ANGBAND_DIR_XTRA_SOUND, sound_file[v][Rand_simple(i)]);
+	path_build(buf, sizeof(buf), ANGBAND_DIR_XTRA_SOUND, sound_file[v][Rand_simple(i)]);
 
 #ifdef WIN32
 
@@ -2601,7 +2601,7 @@ static void term_data_link(term_data *td)
 	t->pict_hook = Term_pict_win;
 
 	/* Remember where we came from */
-	t->data = (vptr)(td);
+	t->data = td;
 }
 
 
@@ -2685,13 +2685,13 @@ static void init_windows(void)
 		td = &data[i];
 
 		/* Access the standard font file */
-		path_build(buf, 1024, ANGBAND_DIR_XTRA_FONT, td->font_want);
+		path_build(buf, sizeof(buf), ANGBAND_DIR_XTRA_FONT, td->font_want);
 
 		/* Activate the chosen font */
 		if (term_force_font(td, buf))
 		{
 			/* Access the standard font file */
-			path_build(buf, 1024, ANGBAND_DIR_XTRA_FONT, "8X13.FON");
+			path_build(buf, sizeof(buf), ANGBAND_DIR_XTRA_FONT, "8X13.FON");
 
 			/* Force the use of that font */
 			(void)term_force_font(td, buf);
@@ -3068,7 +3068,8 @@ static void check_for_save_file(LPSTR cmd_line)
 	if (p) *p = '\0';
 
 	/* Extract filename */
-	strcat(savefile, s);
+	*savefile = '\0';
+	strncat(savefile, s, sizeof(savefile) - 1);
 
 	/* Validate the file */
 	validate_file(savefile);
@@ -3130,10 +3131,7 @@ static void start_screensaver(void)
 #endif /* ALLOW_BORG */
 
 	/* Set the name for process_player_name() */
-	strncpy(op_ptr->full_name, saverfilename, 32);
-
-	/* Terminate after 15 characters */
-	op_ptr->full_name[15] = '\0';
+	my_strcpy(op_ptr->full_name, saverfilename, sizeof(op_ptr->full_name));
 
 	/* Set 'savefile' to a valid name */
 	process_player_name(TRUE);
@@ -3246,7 +3244,7 @@ static void display_help(cptr filename)
 {
 	char tmp[1024];
 
-	path_build(tmp, 1024, ANGBAND_DIR_XTRA_HELP, filename);
+	path_build(tmp, sizeof(tmp), ANGBAND_DIR_XTRA_HELP, filename);
 
 	if (check_file(tmp))
 	{
@@ -3378,7 +3376,7 @@ static void process_menus(WORD wCmd)
 			}
 
 			/* Build the filename */
-			path_build(buf, 1024, ANGBAND_DIR_APEX, "scores.raw");
+			path_build(buf, sizeof(buf), ANGBAND_DIR_APEX, "scores.raw");
 
 			/* Open the binary high score file, for reading */
 			highscore_fd = fd_open(buf, O_RDONLY);
@@ -4745,11 +4743,11 @@ static void init_stuff(void)
 #endif /* USE_SAVER */
 
 	/* Get program name with full path */
-	if (GetModuleFileName(hInstance, path, 1024) == 0)
+	if (GetModuleFileName(hInstance, path, sizeof(path)) == 0)
 		show_win_error();
 
 	/* Paranoia */
-	path[1023] = '\0';
+	path[sizeof(path) - 1] = '\0';
 
 	/* Save the "program name" */
 	argv0 = string_make(path);
@@ -4763,9 +4761,9 @@ static void init_stuff(void)
 	if (screensaver)
 	{
 		/* Extract the filename of the savefile for the screensaver */
-		GetPrivateProfileString("Angband", "SaverFile", "", saverfilename, 1024, path);
+		GetPrivateProfileString("Angband", "SaverFile", "", saverfilename, sizeof(saverfilename), path);
 
-		GetPrivateProfileString("Angband", "AngbandPath", "", tmp, 1024, path);
+		GetPrivateProfileString("Angband", "AngbandPath", "", tmp, sizeof(tmp), path);
 
 		sprintf(path, "%sangband.ini", tmp);
 	}
@@ -4816,14 +4814,14 @@ static void init_stuff(void)
 	validate_dir(ANGBAND_DIR_XTRA);
 
 	/* Build the filename */
-	path_build(path, 1024, ANGBAND_DIR_FILE, "news.txt");
+	path_build(path, sizeof(path), ANGBAND_DIR_FILE, "news.txt");
 
 	/* Hack -- Validate the "news.txt" file */
 	validate_file(path);
 
 
 	/* Build the "font" path */
-	path_build(path, 1024, ANGBAND_DIR_XTRA, "font");
+	path_build(path, sizeof(path), ANGBAND_DIR_XTRA, "font");
 
 	/* Allocate the path */
 	ANGBAND_DIR_XTRA_FONT = string_make(path);
@@ -4832,7 +4830,7 @@ static void init_stuff(void)
 	validate_dir(ANGBAND_DIR_XTRA_FONT);
 
 	/* Build the filename */
-	path_build(path, 1024, ANGBAND_DIR_XTRA_FONT, "8X13.FON");
+	path_build(path, sizeof(path), ANGBAND_DIR_XTRA_FONT, "8X13.FON");
 
 	/* Hack -- Validate the basic font */
 	validate_file(path);
@@ -4841,7 +4839,7 @@ static void init_stuff(void)
 #ifdef USE_GRAPHICS
 
 	/* Build the "graf" path */
-	path_build(path, 1024, ANGBAND_DIR_XTRA, "graf");
+	path_build(path, sizeof(path), ANGBAND_DIR_XTRA, "graf");
 
 	/* Allocate the path */
 	ANGBAND_DIR_XTRA_GRAF = string_make(path);
@@ -4855,7 +4853,7 @@ static void init_stuff(void)
 #ifdef USE_SOUND
 
 	/* Build the "sound" path */
-	path_build(path, 1024, ANGBAND_DIR_XTRA, "sound");
+	path_build(path, sizeof(path), ANGBAND_DIR_XTRA, "sound");
 
 	/* Allocate the path */
 	ANGBAND_DIR_XTRA_SOUND = string_make(path);
@@ -4866,7 +4864,7 @@ static void init_stuff(void)
 #endif /* USE_SOUND */
 
 	/* Build the "help" path */
-	path_build(path, 1024, ANGBAND_DIR_XTRA, "help");
+	path_build(path, sizeof(path), ANGBAND_DIR_XTRA, "help");
 
 	/* Allocate the path */
 	ANGBAND_DIR_XTRA_HELP = string_make(path);

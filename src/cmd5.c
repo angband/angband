@@ -141,7 +141,7 @@ void print_spells(const byte *spells, int num, int y, int x)
 		/* Skip illegible spells */
 		if (s_ptr->slevel >= 99)
 		{
-			sprintf(out_val, "  %c) %-30s", I2A(i), "(illegible)");
+			strnfmt(out_val, sizeof(out_val), "  %c) %-30s", I2A(i), "(illegible)");
 			c_prt(TERM_L_DARK, out_val, y + i + 1, x);
 			continue;
 		}
@@ -178,7 +178,7 @@ void print_spells(const byte *spells, int num, int y, int x)
 		}
 
 		/* Dump the spell --(-- */
-		sprintf(out_val, "  %c) %-30s%2d %4d %3d%%%s",
+		strnfmt(out_val, sizeof(out_val), "  %c) %-30s%2d %4d %3d%%%s",
 		        I2A(i), get_spell_name(cp_ptr->spell_book, spell),
 		        s_ptr->slevel, s_ptr->smana, spell_chance(spell), comment);
 		c_prt(line_attr, out_val, y + i + 1, x);
@@ -227,7 +227,7 @@ void display_koff(int k_idx)
 
 
 	/* Describe */
-	object_desc_store(o_name, i_ptr, FALSE, 0);
+	object_desc_store(o_name, sizeof(o_name), i_ptr, FALSE, 0);
 
 	/* Mention the object name */
 	Term_putstr(0, 0, -1, TERM_WHITE, o_name);
@@ -382,13 +382,13 @@ static int get_spell(const object_type *o_ptr, cptr prompt, bool known)
 
 
 		/* Note verify */
-		verify = (isupper(choice) ? TRUE : FALSE);
+		verify = (isupper((unsigned char)choice) ? TRUE : FALSE);
 
 		/* Lowercase */
-		choice = tolower(choice);
+		choice = tolower((unsigned char)choice);
 
 		/* Extract request */
-		i = (islower(choice) ? A2I(choice) : -1);
+		i = (islower((unsigned char)choice) ? A2I(choice) : -1);
 
 		/* Totally Illegal */
 		if ((i < 0) || (i >= num))

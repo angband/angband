@@ -162,10 +162,10 @@ static int toluaI_random_damroll00(lua_State* tolua_S)
  goto tolua_lerror;
  else
  {
-  uint num = ((uint)  tolua_getnumber(tolua_S,1,0));
-  uint sides = ((uint)  tolua_getnumber(tolua_S,2,0));
+  int num = ((int)  tolua_getnumber(tolua_S,1,0));
+  int sides = ((int)  tolua_getnumber(tolua_S,2,0));
  {
-  uint toluaI_ret = (uint)  damroll(num,sides);
+  int toluaI_ret = (int)  damroll(num,sides);
  tolua_pushnumber(tolua_S,(long)toluaI_ret);
  }
  }
@@ -186,10 +186,10 @@ static int toluaI_random_maxroll00(lua_State* tolua_S)
  goto tolua_lerror;
  else
  {
-  uint num = ((uint)  tolua_getnumber(tolua_S,1,0));
-  uint sides = ((uint)  tolua_getnumber(tolua_S,2,0));
+  int num = ((int)  tolua_getnumber(tolua_S,1,0));
+  int sides = ((int)  tolua_getnumber(tolua_S,2,0));
  {
-  uint toluaI_ret = (uint)  maxroll(num,sides);
+  int toluaI_ret = (int)  maxroll(num,sides);
  tolua_pushnumber(tolua_S,(long)toluaI_ret);
  }
  }

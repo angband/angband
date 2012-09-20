@@ -112,7 +112,6 @@ typedef int errr;
  */
 #define MFLAG_VIEW	0x01	/* Monster is in line of sight */
 /* xxx */
-#define MFLAG_BORN	0x10	/* Monster is still being born */
 #define MFLAG_NICE	0x20	/* Monster is still being nice */
 #define MFLAG_SHOW	0x40	/* Monster is recently memorized */
 #define MFLAG_MARK	0x80	/* Monster is currently memorized */
@@ -444,8 +443,8 @@ struct monster_type
 
 /***** Variables *****/
 
-extern s16b m_max;
-extern s16b m_cnt;
+extern s16b mon_max;
+extern s16b mon_cnt;
 
 
 /***** Functions *****/
@@ -465,11 +464,11 @@ extern void display_roff(int r_idx);
 extern void delete_monster_idx(int i);
 extern void delete_monster(int y, int x);
 extern void compact_monsters(int size);
-extern void wipe_m_list(void);
-extern s16b m_pop(void);
+extern void wipe_mon_list(void);
+extern s16b mon_pop(void);
 extern errr get_mon_num_prep(void);
 extern s16b get_mon_num(int level);
-extern void monster_desc(char *desc, const monster_type *m_ptr, int mode);
+extern void monster_desc(char *desc, size_t max, const monster_type *m_ptr, int mode);
 extern void lore_do_probe(int m_idx);
 extern void lore_treasure(int m_idx, int num_item, int num_gold);
 extern void update_mon(int m_idx, bool full);

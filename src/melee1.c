@@ -107,7 +107,7 @@ static cptr desc_moan[MAX_DESC_MOAN] =
  */
 bool make_attack_normal(int m_idx)
 {
-	monster_type *m_ptr = &m_list[m_idx];
+	monster_type *m_ptr = &mon_list[m_idx];
 
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
@@ -143,10 +143,10 @@ bool make_attack_normal(int m_idx)
 
 
 	/* Get the monster name (or "it") */
-	monster_desc(m_name, m_ptr, 0);
+	monster_desc(m_name, sizeof(m_name), m_ptr, 0);
 
 	/* Get the "died from" information (i.e. "a kobold") */
-	monster_desc(ddesc, m_ptr, 0x88);
+	monster_desc(ddesc, sizeof(ddesc), m_ptr, 0x88);
 
 
 	/* Assume no blink */
@@ -635,7 +635,7 @@ bool make_attack_normal(int m_idx)
 						if (artifact_p(o_ptr)) continue;
 
 						/* Get a description */
-						object_desc(o_name, o_ptr, FALSE, 3);
+						object_desc(o_name, sizeof(o_name), o_ptr, FALSE, 3);
 
 						/* Message */
 						msg_format("%sour %s (%c) was stolen!",
@@ -692,7 +692,7 @@ bool make_attack_normal(int m_idx)
 						if (o_ptr->tval != TV_FOOD) continue;
 
 						/* Get a description */
-						object_desc(o_name, o_ptr, FALSE, 0);
+						object_desc(o_name, sizeof(o_name), o_ptr, FALSE, 0);
 
 						/* Message */
 						msg_format("%sour %s (%c) was eaten!",

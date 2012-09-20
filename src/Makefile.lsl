@@ -18,7 +18,7 @@ LUAOBJS = \
   lua/lapi.o lua/ldebug.o lua/lmem.o lua/lstrlib.o lua/lvm.o \
   lua/tolua_lb.o lua/lauxlib.o lua/ldo.o lua/lobject.o lua/ltable.o \
   lua/lzio.o lua/tolua_rg.o lua/lbaselib.o lua/lfunc.o lua/lparser.o \
-  lua/ltests.o lua/tolua_bd.o lua/tolua_tm.o lua/lcode.o lua/lgc.o \
+  lua/tolua_bd.o lua/tolua_tm.o lua/lcode.o lua/lgc.o \
   lua/lstate.o lua/ltm.o lua/tolua_eh.o lua/tolua_tt.o lua/ldblib.o \
   lua/llex.o lua/lstring.o lua/lundump.o lua/tolua_gp.o
 
@@ -37,7 +37,7 @@ OBJS = \
   wizard1.o wizard2.o \
   generate.o dungeon.o init1.o init2.o randart.o \
   main-lsl.o main.o \
-  script.o use-obj.o \
+  script.o use-obj.o x-spell.o \
   l-monst.o l-object.o l-player.o l-random.o l-ui.o \
   l-misc.o l-spell.o \
   $(LUAOBJS)
@@ -105,17 +105,25 @@ cmd1.o: cmd1.c $(INCS)
 cmd2.o: cmd2.c $(INCS)
 cmd3.o: cmd3.c $(INCS)
 cmd4.o: cmd4.c $(INCS)
-cmd5.o: cmd5.c $(INCS)
-cmd6.o: cmd6.c $(INCS)
+cmd5.o: cmd5.c $(INCS) script.h
+cmd6.o: cmd6.c $(INCS) script.h
 dungeon.o: dungeon.c $(INCS)
 files.o: files.c $(INCS)
 generate.o: generate.c $(INCS)
-init1.o: init1.c $(INCS)
-init2.o: init2.c $(INCS)
-randart.o: randart.c $(INCS)
+init1.o: init1.c $(INCS) init.h
+init2.o: init2.c $(INCS) init.h script.h
+l-misc.o: l-misc.c $(INCS) lua/tolua.h
+l-monst.o: l-monst.c $(INCS) lua/tolua.h
+l-object.o: l-object.c $(INCS) lua/tolua.h
+l-player.o: l-player.c $(INCS) lua/tolua.h
+l-random.o: l-random.c $(INCS) lua/tolua.h
+l-spell.o: l-spell.c $(INCS) lua/tolua.h
+l-ui.o: l-ui.c $(INCS) lua/tolua.h
+randart.o: randart.c $(INCS) init.h
 load.o: load.c $(INCS)
 main-cap.o: main-cap.c $(INCS) main.h
 main-gcu.o: main-gcu.c $(INCS) main.h
+main-lsl.o: main-lsl.c $(INCS) main.h
 main-x11.o: main-x11.c $(INCS) main.h
 main-xaw.o: main-xaw.c $(INCS) main.h
 main.o: main.c $(INCS) main.h
@@ -126,15 +134,20 @@ monster2.o: monster2.c $(INCS)
 object1.o: object1.c $(INCS)
 object2.o: object2.c $(INCS)
 save.o: save.c $(INCS)
+script.o: script.c $(INCS) script.h \
+		lua/lauxlib.h lua/lua.h lua/luadebug.h lua/lualib.h lua/tolua.h \
+		lua/luadebug.h
 spells1.o: spells1.c $(INCS)
 spells2.o: spells2.c $(INCS)
 store.o: store.c $(INCS)
 tables.o: tables.c $(INCS)
+use-obj.o: use-obj.c $(INCS)
 util.o: util.c $(INCS)
 variable.o: variable.c $(INCS)
 wizard1.o: wizard1.c $(INCS)
-wizard2.o: wizard2.c $(INCS)
-xtra1.o: xtra1.c $(INCS)
+wizard2.o: wizard2.c $(INCS) script.h
+x-spell.o: x-spell.c $(INCS)
+xtra1.o: xtra1.c $(INCS) script.h
 xtra2.o: xtra2.c $(INCS)
 z-form.o: z-form.c $(HDRS) z-form.h z-util.h z-virt.h
 z-rand.o: z-rand.c $(HDRS) z-rand.h

@@ -15,6 +15,7 @@ void tolua_monster_close (lua_State* tolua_S);
 static void toluaI_reg_types (lua_State* tolua_S)
 {
 (void)tolua_S; /* Hack - prevent compiler warnings */
+ tolua_usertype(tolua_S,"size_t");
  tolua_usertype(tolua_S,"monster_type");
  tolua_usertype(tolua_S,"monster_blow");
  tolua_usertype(tolua_S,"object_type");
@@ -1294,35 +1295,35 @@ static int toluaI_set_monster_monster_type_hold_o_idx(lua_State* tolua_S)
  return 0;
 }
 
-/* get function: m_max */
-static int toluaI_get_monster_m_max(lua_State* tolua_S)
+/* get function: mon_max */
+static int toluaI_get_monster_mon_max(lua_State* tolua_S)
 {
- tolua_pushnumber(tolua_S,(long)m_max);
+ tolua_pushnumber(tolua_S,(long)mon_max);
  return 1;
 }
 
-/* set function: m_max */
-static int toluaI_set_monster_m_max(lua_State* tolua_S)
+/* set function: mon_max */
+static int toluaI_set_monster_mon_max(lua_State* tolua_S)
 {
  if (!tolua_istype(tolua_S,1,LUA_TNUMBER,0))
  TOLUA_ERR_ASSIGN;
-  m_max = ((s16b)  tolua_getnumber(tolua_S,1,0));
+  mon_max = ((s16b)  tolua_getnumber(tolua_S,1,0));
  return 0;
 }
 
-/* get function: m_cnt */
-static int toluaI_get_monster_m_cnt(lua_State* tolua_S)
+/* get function: mon_cnt */
+static int toluaI_get_monster_mon_cnt(lua_State* tolua_S)
 {
- tolua_pushnumber(tolua_S,(long)m_cnt);
+ tolua_pushnumber(tolua_S,(long)mon_cnt);
  return 1;
 }
 
-/* set function: m_cnt */
-static int toluaI_set_monster_m_cnt(lua_State* tolua_S)
+/* set function: mon_cnt */
+static int toluaI_set_monster_mon_cnt(lua_State* tolua_S)
 {
  if (!tolua_istype(tolua_S,1,LUA_TNUMBER,0))
  TOLUA_ERR_ASSIGN;
-  m_cnt = ((s16b)  tolua_getnumber(tolua_S,1,0));
+  mon_cnt = ((s16b)  tolua_getnumber(tolua_S,1,0));
  return 0;
 }
 
@@ -1498,8 +1499,8 @@ tolua_lerror:
  return 0;
 }
 
-/* function: wipe_m_list */
-static int toluaI_monster_wipe_m_list00(lua_State* tolua_S)
+/* function: wipe_mon_list */
+static int toluaI_monster_wipe_mon_list00(lua_State* tolua_S)
 {
  if (
  !tolua_isnoobj(tolua_S,1)
@@ -1508,17 +1509,17 @@ static int toluaI_monster_wipe_m_list00(lua_State* tolua_S)
  else
  {
  {
-  wipe_m_list();
+  wipe_mon_list();
  }
  }
  return 0;
 tolua_lerror:
- tolua_error(tolua_S,"#ferror in function 'wipe_m_list'.");
+ tolua_error(tolua_S,"#ferror in function 'wipe_mon_list'.");
  return 0;
 }
 
-/* function: m_pop */
-static int toluaI_monster_m_pop00(lua_State* tolua_S)
+/* function: mon_pop */
+static int toluaI_monster_mon_pop00(lua_State* tolua_S)
 {
  if (
  !tolua_isnoobj(tolua_S,1)
@@ -1527,13 +1528,13 @@ static int toluaI_monster_m_pop00(lua_State* tolua_S)
  else
  {
  {
-  s16b toluaI_ret = (s16b)  m_pop();
+  s16b toluaI_ret = (s16b)  mon_pop();
  tolua_pushnumber(tolua_S,(long)toluaI_ret);
  }
  }
  return 1;
 tolua_lerror:
- tolua_error(tolua_S,"#ferror in function 'm_pop'.");
+ tolua_error(tolua_S,"#ferror in function 'mon_pop'.");
  return 0;
 }
 
@@ -1584,18 +1585,20 @@ static int toluaI_monster_monster_desc00(lua_State* tolua_S)
 {
  if (
  !tolua_istype(tolua_S,1,LUA_TSTRING,0) ||
- !tolua_istype(tolua_S,2,tolua_tag(tolua_S,"const monster_type"),0) ||
- !tolua_istype(tolua_S,3,LUA_TNUMBER,0) ||
- !tolua_isnoobj(tolua_S,4)
+ !tolua_istype(tolua_S,2,tolua_tag(tolua_S,"size_t"),0) ||
+ !tolua_istype(tolua_S,3,tolua_tag(tolua_S,"const monster_type"),0) ||
+ !tolua_istype(tolua_S,4,LUA_TNUMBER,0) ||
+ !tolua_isnoobj(tolua_S,5)
  )
  goto tolua_lerror;
  else
  {
   char* desc = ((char*)  tolua_getstring(tolua_S,1,0));
-  const monster_type* m_ptr = ((const monster_type*)  tolua_getusertype(tolua_S,2,0));
-  int mode = ((int)  tolua_getnumber(tolua_S,3,0));
+  size_t max = *((size_t*)  tolua_getusertype(tolua_S,2,0));
+  const monster_type* m_ptr = ((const monster_type*)  tolua_getusertype(tolua_S,3,0));
+  int mode = ((int)  tolua_getnumber(tolua_S,4,0));
  {
-  monster_desc(desc,m_ptr,mode);
+  monster_desc(desc,max,m_ptr,mode);
  }
  }
  return 0;
@@ -2114,7 +2117,6 @@ int tolua_monster_open (lua_State* tolua_S)
  tolua_constant(tolua_S,NULL,"SM_RES_CHAOS",SM_RES_CHAOS);
  tolua_constant(tolua_S,NULL,"SM_RES_DISEN",SM_RES_DISEN);
  tolua_constant(tolua_S,NULL,"MFLAG_VIEW",MFLAG_VIEW);
- tolua_constant(tolua_S,NULL,"MFLAG_BORN",MFLAG_BORN);
  tolua_constant(tolua_S,NULL,"MFLAG_NICE",MFLAG_NICE);
  tolua_constant(tolua_S,NULL,"MFLAG_SHOW",MFLAG_SHOW);
  tolua_constant(tolua_S,NULL,"MFLAG_MARK",MFLAG_MARK);
@@ -2376,8 +2378,8 @@ int tolua_monster_open (lua_State* tolua_S)
  tolua_tablevar(tolua_S,"monster_type","mflag",toluaI_get_monster_monster_type_mflag,toluaI_set_monster_monster_type_mflag);
  tolua_tablevar(tolua_S,"monster_type","ml",toluaI_get_monster_monster_type_ml,toluaI_set_monster_monster_type_ml);
  tolua_tablevar(tolua_S,"monster_type","hold_o_idx",toluaI_get_monster_monster_type_hold_o_idx,toluaI_set_monster_monster_type_hold_o_idx);
- tolua_globalvar(tolua_S,"m_max",toluaI_get_monster_m_max,toluaI_set_monster_m_max);
- tolua_globalvar(tolua_S,"m_cnt",toluaI_get_monster_m_cnt,toluaI_set_monster_m_cnt);
+ tolua_globalvar(tolua_S,"mon_max",toluaI_get_monster_mon_max,toluaI_set_monster_mon_max);
+ tolua_globalvar(tolua_S,"mon_cnt",toluaI_get_monster_mon_cnt,toluaI_set_monster_mon_cnt);
  tolua_function(tolua_S,NULL,"make_attack_normal",toluaI_monster_make_attack_normal00);
  tolua_function(tolua_S,NULL,"make_attack_spell",toluaI_monster_make_attack_spell00);
  tolua_function(tolua_S,NULL,"process_monsters",toluaI_monster_process_monsters00);
@@ -2386,8 +2388,8 @@ int tolua_monster_open (lua_State* tolua_S)
  tolua_function(tolua_S,NULL,"delete_monster_idx",toluaI_monster_delete_monster_idx00);
  tolua_function(tolua_S,NULL,"delete_monster",toluaI_monster_delete_monster00);
  tolua_function(tolua_S,NULL,"compact_monsters",toluaI_monster_compact_monsters00);
- tolua_function(tolua_S,NULL,"wipe_m_list",toluaI_monster_wipe_m_list00);
- tolua_function(tolua_S,NULL,"m_pop",toluaI_monster_m_pop00);
+ tolua_function(tolua_S,NULL,"wipe_mon_list",toluaI_monster_wipe_mon_list00);
+ tolua_function(tolua_S,NULL,"mon_pop",toluaI_monster_mon_pop00);
  tolua_function(tolua_S,NULL,"get_mon_num_prep",toluaI_monster_get_mon_num_prep00);
  tolua_function(tolua_S,NULL,"get_mon_num",toluaI_monster_get_mon_num00);
  tolua_function(tolua_S,NULL,"monster_desc",toluaI_monster_monster_desc00);
@@ -2499,7 +2501,6 @@ void tolua_monster_close (lua_State* tolua_S)
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"SM_RES_CHAOS");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"SM_RES_DISEN");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"MFLAG_VIEW");
- lua_pushnil(tolua_S); lua_setglobal(tolua_S,"MFLAG_BORN");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"MFLAG_NICE");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"MFLAG_SHOW");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"MFLAG_MARK");
@@ -2700,10 +2701,10 @@ void tolua_monster_close (lua_State* tolua_S)
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"monster_lore");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"monster_type");
  lua_getglobals(tolua_S);
- lua_pushstring(tolua_S,"m_max"); lua_pushnil(tolua_S); lua_rawset(tolua_S,-3);
+ lua_pushstring(tolua_S,"mon_max"); lua_pushnil(tolua_S); lua_rawset(tolua_S,-3);
  lua_pop(tolua_S,1);
  lua_getglobals(tolua_S);
- lua_pushstring(tolua_S,"m_cnt"); lua_pushnil(tolua_S); lua_rawset(tolua_S,-3);
+ lua_pushstring(tolua_S,"mon_cnt"); lua_pushnil(tolua_S); lua_rawset(tolua_S,-3);
  lua_pop(tolua_S,1);
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"make_attack_normal");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"make_attack_spell");
@@ -2713,8 +2714,8 @@ void tolua_monster_close (lua_State* tolua_S)
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"delete_monster_idx");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"delete_monster");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"compact_monsters");
- lua_pushnil(tolua_S); lua_setglobal(tolua_S,"wipe_m_list");
- lua_pushnil(tolua_S); lua_setglobal(tolua_S,"m_pop");
+ lua_pushnil(tolua_S); lua_setglobal(tolua_S,"wipe_mon_list");
+ lua_pushnil(tolua_S); lua_setglobal(tolua_S,"mon_pop");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"get_mon_num_prep");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"get_mon_num");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"monster_desc");

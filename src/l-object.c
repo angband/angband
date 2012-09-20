@@ -2623,7 +2623,7 @@ static int toluaI_object_scan_floor00(lua_State* tolua_S)
   int x = ((int)  tolua_getnumber(tolua_S,4,0));
   int mode = ((int)  tolua_getnumber(tolua_S,5,0));
  {
-  sint toluaI_ret = (sint)  scan_floor(&items,size,y,x,mode);
+  int toluaI_ret = (int)  scan_floor(&items,size,y,x,mode);
  tolua_pushnumber(tolua_S,(long)toluaI_ret);
  tolua_pushnumber(tolua_S,(long)items);
  }

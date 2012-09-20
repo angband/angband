@@ -32,7 +32,7 @@ void excise_object_idx(int o_idx)
 		monster_type *m_ptr;
 
 		/* Monster */
-		m_ptr = &m_list[j_ptr->held_m_idx];
+		m_ptr = &mon_list[j_ptr->held_m_idx];
 
 		/* Scan all objects in the grid */
 		for (this_o_idx = m_ptr->hold_o_idx; this_o_idx; this_o_idx = next_o_idx)
@@ -240,7 +240,7 @@ static void compact_objects_aux(int i1, int i2)
 		monster_type *m_ptr;
 
 		/* Get the monster */
-		m_ptr = &m_list[o_ptr->held_m_idx];
+		m_ptr = &mon_list[o_ptr->held_m_idx];
 
 		/* Repair monster */
 		if (m_ptr->hold_o_idx == i1)
@@ -340,7 +340,7 @@ void compact_objects(int size)
 				monster_type *m_ptr;
 
 				/* Get the monster */
-				m_ptr = &m_list[o_ptr->held_m_idx];
+				m_ptr = &mon_list[o_ptr->held_m_idx];
 
 				/* Get the location */
 				y = m_ptr->fy;
@@ -438,7 +438,7 @@ void wipe_o_list(void)
 			monster_type *m_ptr;
 
 			/* Monster */
-			m_ptr = &m_list[o_ptr->held_m_idx];
+			m_ptr = &mon_list[o_ptr->held_m_idx];
 
 			/* Hack -- see above */
 			m_ptr->hold_o_idx = 0;
@@ -1543,7 +1543,7 @@ static void object_mention(const object_type *o_ptr)
 	char o_name[80];
 
 	/* Describe */
-	object_desc_store(o_name, o_ptr, FALSE, 0);
+	object_desc_store(o_name, sizeof(o_name), o_ptr, FALSE, 0);
 
 	/* Artifact */
 	if (artifact_p(o_ptr))
@@ -2715,6 +2715,18 @@ void apply_magic(object_type *o_ptr, int lev, bool okay, bool good, bool great)
 			break;
 		}
 
+		case TV_LITE:
+		{
+			if ((power > 1) || (power < -1))
+			{
+				make_ego_item(o_ptr, (bool)(good || great));
+			}
+
+			/* Fuel it */
+			a_m_aux_4(o_ptr, lev, power);
+			break;
+		}
+
 		default:
 		{
 			a_m_aux_4(o_ptr, lev, power);
@@ -3066,7 +3078,7 @@ s16b floor_carry(int y, int x, object_type *j_ptr)
 	}
 
 	/* Option -- disallow stacking */
-	if (birth_no_stacking && n) return (0);
+	if (adult_no_stacking && n) return (0);
 
 	/* Make an object */
 	o_idx = o_pop();
@@ -3145,7 +3157,7 @@ void drop_near(object_type *j_ptr, int chance, int y, int x)
 	if (j_ptr->number != 1) plural = TRUE;
 
 	/* Describe object */
-	object_desc(o_name, j_ptr, FALSE, 0);
+	object_desc(o_name, sizeof(o_name), j_ptr, FALSE, 0);
 
 
 	/* Handle normal "breakage" */
@@ -3217,7 +3229,7 @@ void drop_near(object_type *j_ptr, int chance, int y, int x)
 			if (!comb) k++;
 
 			/* Option -- disallow stacking */
-			if (birth_no_stacking && (k > 1)) continue;
+			if (adult_no_stacking && (k > 1)) continue;
 			
 			/* Paranoia */
 			if (k > 99) continue;
@@ -3586,7 +3598,7 @@ void inven_item_describe(int item)
 	if (artifact_p(o_ptr) && object_known_p(o_ptr))
 	{
 		/* Get a description */
-		object_desc(o_name, o_ptr, FALSE, 3);
+		object_desc(o_name, sizeof(o_name), o_ptr, FALSE, 3);
 
 		/* Print a message */
 		msg_format("You no longer have the %s (%c).", o_name, index_to_label(item));
@@ -3594,7 +3606,7 @@ void inven_item_describe(int item)
 	else
 	{
 		/* Get a description */
-		object_desc(o_name, o_ptr, TRUE, 3);
+		object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
 
 		/* Print a message */
 		msg_format("You have %s (%c).", o_name, index_to_label(item));
@@ -3734,7 +3746,7 @@ void floor_item_describe(int item)
 	char o_name[80];
 
 	/* Get a description */
-	object_desc(o_name, o_ptr, TRUE, 3);
+	object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
 
 	/* Print a message */
 	msg_format("You see %s.", o_name);
@@ -4045,7 +4057,7 @@ s16b inven_takeoff(int item, int amt)
 	i_ptr->number = amt;
 
 	/* Describe the object */
-	object_desc(o_name, i_ptr, TRUE, 3);
+	object_desc(o_name, sizeof(o_name), i_ptr, TRUE, 3);
 
 	/* Took off weapon */
 	if (item == INVEN_WIELD)
@@ -4135,7 +4147,7 @@ void inven_drop(int item, int amt)
 	i_ptr->number = amt;
 
 	/* Describe local object */
-	object_desc(o_name, i_ptr, TRUE, 3);
+	object_desc(o_name, sizeof(o_name), i_ptr, TRUE, 3);
 
 	/* Message */
 	msg_format("You drop %s (%c).", o_name, index_to_label(item));

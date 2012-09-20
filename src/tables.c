@@ -1583,7 +1583,7 @@ cptr option_text[OPT_MAX] =
 	"adult_no_stores",			/* OPT_adult_no_stores */
 	"adult_no_artifacts",		/* OPT_adult_no_artifacts */
 	"adult_rand_artifacts",		/* OPT_adult_rand_artifacts */
-	NULL,						/* xxx */
+	"adult_no_stacking",		/* OPT_adult_no_stacking */
 	NULL,						/* xxx */
 	NULL,						/* xxx */
 	NULL,						/* xxx */
@@ -1847,7 +1847,7 @@ cptr option_desc[OPT_MAX] =
 	"Adult: Restrict the use of stores/home",	/* OPT_adult_no_stores */
 	"Adult: Restrict creation of artifacts",	/* OPT_adult_no_artifacts */
 	"Adult: Randomize some of the artifacts (beta)",	/* OPT_adult_rand_artifacts */
-	NULL,										/* xxx */
+	"Adult: Don't stack objects on the floor",	/* OPT_adult_adult_no_stacking */
 	NULL,										/* xxx */
 	NULL,										/* xxx */
 	NULL,										/* xxx */
@@ -2111,7 +2111,7 @@ const bool option_norm[OPT_MAX] =
 	FALSE,		/* OPT_adult_no_stores */
 	FALSE,		/* OPT_adult_no_artifacts */
 	FALSE,		/* OPT_adult_rand_artifacts */
-	FALSE,		/* xxx */
+	FALSE,		/* OPT_adult_no_stacking */
 	FALSE,		/* xxx */
 	FALSE,		/* xxx */
 	FALSE,		/* xxx */
@@ -2172,8 +2172,6 @@ const bool option_norm[OPT_MAX] =
 
 /*
  * Option screen interface
- *
- * Note the special significance given to the constant "255".
  */
 const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 {
@@ -2194,12 +2192,12 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_easy_alter,
 		OPT_easy_floor,
 		OPT_scroll_target,
-		255,
-		255,
-		255,
-		255,
-		255,
-		255
+		OPT_NONE,
+		OPT_NONE,
+		OPT_NONE,
+		OPT_NONE,
+		OPT_NONE,
+		OPT_NONE
 	},
 
 	/*** Disturbance ***/
@@ -2218,13 +2216,13 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_verify_special,
 		OPT_allow_quantity,
 		OPT_auto_more,
-		255,
-		255,
-		255,
-		255,
-		255,
-		255,
-		255
+		OPT_NONE,
+		OPT_NONE,
+		OPT_NONE,
+		OPT_NONE,
+		OPT_NONE,
+		OPT_NONE,
+		OPT_NONE
 	},
 
 	/*** Game-Play ***/
@@ -2244,12 +2242,12 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_smart_packs,
 		OPT_smart_learn,
 		OPT_smart_cheat,
-		255,
-		255,
-		255,
-		255,
-		255,
-		255
+		OPT_NONE,
+		OPT_NONE,
+		OPT_NONE,
+		OPT_NONE,
+		OPT_NONE,
+		OPT_NONE
 	},
 
 	/*** Efficiency ***/
@@ -2264,17 +2262,17 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_fresh_before,
 		OPT_fresh_after,
 		OPT_compress_savefile,
-		255,
-		255,
-		255,
-		255,
-		255,
-		255,
-		255,
-		255,
-		255,
-		255,
-		255,
+		OPT_NONE,
+		OPT_NONE,
+		OPT_NONE,
+		OPT_NONE,
+		OPT_NONE,
+		OPT_NONE,
+		OPT_NONE,
+		OPT_NONE,
+		OPT_NONE,
+		OPT_NONE,
+		OPT_NONE,
 	},
 
 	/*** Display ***/
@@ -2294,12 +2292,12 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
  		OPT_center_player,
  		OPT_run_avoid_center,
 		OPT_show_piles,
-		255,
-		255,
-		255,
-		255,
-		255,
-		255
+		OPT_NONE,
+		OPT_NONE,
+		OPT_NONE,
+		OPT_NONE,
+		OPT_NONE,
+		OPT_NONE
 	},
 
 	/*** Birth ***/
@@ -2314,17 +2312,17 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_birth_no_artifacts,
 		OPT_birth_rand_artifacts,
 		OPT_birth_no_stacking,
-		255,
-		255,
-		255,
-		255,
-		255,
-		255,
-		255,
-		255,
-		255,
-		255,
-		255
+		OPT_NONE,
+		OPT_NONE,
+		OPT_NONE,
+		OPT_NONE,
+		OPT_NONE,
+		OPT_NONE,
+		OPT_NONE,
+		OPT_NONE,
+		OPT_NONE,
+		OPT_NONE,
+		OPT_NONE
 	},
 
 	/*** Cheat ***/
@@ -2336,20 +2334,20 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_cheat_xtra,
 		OPT_cheat_know,
 		OPT_cheat_live,
-		255,
-		255,
-		255,
-		255,
-		255,
-		255,
-		255,
-		255,
-		255,
-		255,
-		255,
-		255,
-		255,
-		255
+		OPT_NONE,
+		OPT_NONE,
+		OPT_NONE,
+		OPT_NONE,
+		OPT_NONE,
+		OPT_NONE,
+		OPT_NONE,
+		OPT_NONE,
+		OPT_NONE,
+		OPT_NONE,
+		OPT_NONE,
+		OPT_NONE,
+		OPT_NONE,
+		OPT_NONE
 	}
 };
 

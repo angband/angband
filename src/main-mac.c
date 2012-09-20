@@ -1896,7 +1896,7 @@ static void term_data_link(int i)
 	td->t->pict_hook = Term_pict_mac;
 
 	/* Link the local structure */
-	td->t->data = (vptr)(td);
+	td->t->data = td;
 
 	/* Activate it */
 	Term_activate(td->t);
@@ -3808,9 +3808,9 @@ static bool CheckEvents(bool wait)
 
 	term_data *td = NULL;
 
-	huge curTicks;
+	unsigned long curTicks;
 
-	static huge lastTicks = 0L;
+	static unsigned long lastTicks = 0L;
 
 
 	/* Access the clock */
@@ -4202,16 +4202,14 @@ static bool CheckEvents(bool wait)
 /*
  * Mega-Hack -- emergency lifeboat
  */
-static vptr lifeboat = NULL;
+static void *lifeboat = NULL;
 
 
 /*
  * Hook to "release" memory
  */
-static vptr hook_rnfree(vptr v, huge size)
+static void* hook_rnfree(void *v)
 {
-
-#pragma unused (size)
 
 #ifdef USE_MALLOC
 
@@ -4232,7 +4230,7 @@ static vptr hook_rnfree(vptr v, huge size)
 /*
  * Hook to "allocate" memory
  */
-static vptr hook_ralloc(huge size)
+static void* hook_ralloc(size_t size)
 {
 
 #ifdef USE_MALLOC
@@ -4252,12 +4250,12 @@ static vptr hook_ralloc(huge size)
 /*
  * Hook to handle "out of memory" errors
  */
-static vptr hook_rpanic(huge size)
+static void* hook_rpanic(size_t size)
 {
 
 #pragma unused (size)
 
-	vptr mem = NULL;
+	void *mem = NULL;
 
 	/* Free the lifeboat */
 	if (lifeboat)
@@ -4386,7 +4384,7 @@ static void init_stuff(void)
 		init_file_paths(path);
 
 		/* Build the filename */
-		path_build(path, 1024, ANGBAND_DIR_FILE, "news.txt");
+		path_build(path, sizeof(path), ANGBAND_DIR_FILE, "news.txt");
 
 		/* Attempt to open and close that file */
 		if (0 == fd_close(fd_open(path, O_RDONLY))) break;

@@ -95,8 +95,7 @@ static void describe_monster_desc(int r_idx)
 	char buf[2048];
 
 	/* Simple method */
-	strncpy(buf, r_text + r_ptr->text, sizeof(buf));
-	buf[sizeof(buf) - 1] = '\0';
+	my_strcpy(buf, r_text + r_ptr->text, sizeof(buf));
 
 	/* Dump it */
 	text_out(buf);
@@ -1183,15 +1182,6 @@ static void describe_monster_movement(int r_idx, const monster_lore *l_ptr)
 
 	/* End this sentence */
 	text_out(".  ");
-
-#if 0
-
-	if (flags1 & RF1_FORCE_SLEEP)
-	{
-		sprintf(buf, "%s is always created sluggish.  ", wd_che[msex]);
-	}
-
-#endif
 }
 
 

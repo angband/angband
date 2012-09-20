@@ -8,7 +8,7 @@ liblua_a_SOURCES = \
   lapi.c ldebug.c lmem.c lstrlib.c lvm.c \
   tolua_lb.c lauxlib.c ldo.c lobject.c ltable.c \
   lzio.c tolua_rg.c lbaselib.c lfunc.c lparser.c \
-  ltests.c tolua_bd.c tolua_tm.c lcode.c lgc.c \
+  tolua_bd.c tolua_tm.c lcode.c lgc.c \
   lstate.c ltm.c tolua_eh.c tolua_tt.c ldblib.c \
   llex.c lstring.c lundump.c tolua_gp.c \
   lapi.h lauxlib.h lcode.h ldebug.h ldo.h lfunc.h \

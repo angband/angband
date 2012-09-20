@@ -1880,7 +1880,7 @@ void monster_death(int m_idx)
 
 	s16b this_o_idx, next_o_idx = 0;
 
-	monster_type *m_ptr = &m_list[m_idx];
+	monster_type *m_ptr = &mon_list[m_idx];
 
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
@@ -2093,7 +2093,7 @@ void monster_death(int m_idx)
  */
 bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note)
 {
-	monster_type *m_ptr = &m_list[m_idx];
+	monster_type *m_ptr = &mon_list[m_idx];
 
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
@@ -2118,7 +2118,7 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note)
 		char m_name[80];
 
 		/* Extract monster name */
-		monster_desc(m_name, m_ptr, 0);
+		monster_desc(m_name, sizeof(m_name), m_ptr, 0);
 
 		/* Death by Missile/Spell attack */
 		if (note)
@@ -2275,12 +2275,12 @@ bool modify_panel(int wy, int wx)
 	/* Verify wy, adjust if needed */
 	if (p_ptr->depth == 0) wy = 0;
 	else if (wy > DUNGEON_HGT - SCREEN_HGT) wy = DUNGEON_HGT - SCREEN_HGT;
-	else if (wy < 0) wy = 0;
+	if (wy < 0) wy = 0;
 
 	/* Verify wx, adjust if needed */
 	if (p_ptr->depth == 0) wx = 0;
 	else if (wx > DUNGEON_WID - SCREEN_WID) wx = DUNGEON_WID - SCREEN_WID;
-	else if (wx < 0) wx = 0;
+	if (wx < 0) wx = 0;
 
 	/* React to changes */
 	if ((p_ptr->wy != wy) || (p_ptr->wx != wx))
@@ -2403,9 +2403,9 @@ void verify_panel(void)
 /*
  * Monster health description
  */
-static void look_mon_desc(char *buf, int m_idx)
+static void look_mon_desc(char *buf, size_t max, int m_idx)
 {
-	monster_type *m_ptr = &m_list[m_idx];
+	monster_type *m_ptr = &mon_list[m_idx];
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 	bool living = TRUE;
@@ -2421,7 +2421,7 @@ static void look_mon_desc(char *buf, int m_idx)
 	if (m_ptr->hp >= m_ptr->maxhp)
 	{
 		/* No damage */
-		strcpy(buf, (living ? "unhurt" : "undamaged"));
+		my_strcpy(buf, (living ? "unhurt" : "undamaged"), max);
 	}
 	else
 	{
@@ -2429,19 +2429,19 @@ static void look_mon_desc(char *buf, int m_idx)
 		int perc = 100L * m_ptr->hp / m_ptr->maxhp;
 
 		if (perc >= 60)
-			strcpy(buf, (living ? "somewhat wounded" : "somewhat damaged"));
+			my_strcpy(buf, (living ? "somewhat wounded" : "somewhat damaged"), max);
 		else if (perc >= 25)
-			strcpy(buf, (living ? "wounded" : "damaged"));
+			my_strcpy(buf, (living ? "wounded" : "damaged"), max);
 		else if (perc >= 10)
-			strcpy(buf, (living ? "badly wounded" : "badly damaged"));
+			my_strcpy(buf, (living ? "badly wounded" : "badly damaged"), max);
 		else
-			strcpy(buf, (living ? "almost dead" : "almost destroyed"));
+			my_strcpy(buf, (living ? "almost dead" : "almost destroyed"), max);
 	}
 
-	if (m_ptr->csleep) strcat(buf, ", asleep");
-	if (m_ptr->confused) strcat(buf, ", confused");
-	if (m_ptr->monfear) strcat(buf, ", afraid");
-	if (m_ptr->stunned) strcat(buf, ", stunned");
+	if (m_ptr->csleep) my_strcat(buf, ", asleep", max);
+	if (m_ptr->confused) my_strcat(buf, ", confused", max);
+	if (m_ptr->monfear) my_strcat(buf, ", afraid", max);
+	if (m_ptr->stunned) my_strcat(buf, ", stunned", max);
 }
 
 
@@ -2524,7 +2524,7 @@ void ang_sort(void *u, void *v, int n)
  *
  * We return "5" if no motion is needed.
  */
-sint motion_dir(int y1, int x1, int y2, int x2)
+int motion_dir(int y1, int x1, int y2, int x2)
 {
 	/* No movement required */
 	if ((y1 == y2) && (x1 == x2)) return (5);
@@ -2549,7 +2549,7 @@ sint motion_dir(int y1, int x1, int y2, int x2)
 /*
  * Extract a direction (or zero) from a character
  */
-sint target_dir(char ch)
+int target_dir(char ch)
 {
 	int d = 0;
 
@@ -2561,7 +2561,7 @@ sint target_dir(char ch)
 
 
 	/* Already a direction? */
-	if (isdigit(ch))
+	if (isdigit((unsigned char)ch))
 	{
 		d = D2I(ch);
 	}
@@ -2589,7 +2589,7 @@ sint target_dir(char ch)
 			for (s = act; *s; ++s)
 			{
 				/* Use any digits in keymap */
-				if (isdigit(*s)) d = D2I(*s);
+				if (isdigit((unsigned char)*s)) d = D2I(*s);
 			}
 		}
 	}
@@ -2627,7 +2627,7 @@ bool target_able(int m_idx)
 	if (m_idx <= 0) return (FALSE);
 
 	/* Get monster */
-	m_ptr = &m_list[m_idx];
+	m_ptr = &mon_list[m_idx];
 
 	/* Monster must be alive */
 	if (!m_ptr->r_idx) return (FALSE);
@@ -2672,7 +2672,7 @@ bool target_okay(void)
 		/* Accept reasonable targets */
 		if (target_able(m_idx))
 		{
-			monster_type *m_ptr = &m_list[m_idx];
+			monster_type *m_ptr = &mon_list[m_idx];
 
 			/* Get the monster location */
 			p_ptr->target_row = m_ptr->fy;
@@ -2696,7 +2696,7 @@ void target_set_monster(int m_idx)
 	/* Acceptable target */
 	if ((m_idx > 0) && target_able(m_idx))
 	{
-		monster_type *m_ptr = &m_list[m_idx];
+		monster_type *m_ptr = &mon_list[m_idx];
 
 		/* Save target info */
 		p_ptr->target_set = TRUE;
@@ -2876,7 +2876,7 @@ static bool target_set_interactive_accept(int y, int x)
 	/* Visible monsters */
 	if (cave_m_idx[y][x] > 0)
 	{
-		monster_type *m_ptr = &m_list[cave_m_idx[y][x]];
+		monster_type *m_ptr = &mon_list[cave_m_idx[y][x]];
 
 		/* Visible monsters */
 		if (m_ptr->ml) return (TRUE);
@@ -3051,9 +3051,16 @@ static int target_set_interactive_aux(int y, int x, int mode, cptr info)
 
 			/* Display a message */
 			if (p_ptr->wizard)
-				sprintf(out_val, "%s%s%s%s [%s] (%d:%d)", s1, s2, s3, name, info, y, x);
+			{
+				strnfmt(out_val, sizeof(out_val),
+				        "%s%s%s%s [%s] (%d:%d)", s1, s2, s3, name, info, y, x);
+			}
 			else
-				sprintf(out_val, "%s%s%s%s [%s]", s1, s2, s3, name, info);
+			{
+				strnfmt(out_val, sizeof(out_val),
+				        "%s%s%s%s [%s]", s1, s2, s3, name, info);
+			}
+
 			prt(out_val, 0, 0);
 			move_cursor_relative(y, x);
 			query = inkey();
@@ -3069,7 +3076,7 @@ static int target_set_interactive_aux(int y, int x, int mode, cptr info)
 		/* Actual monsters */
 		if (cave_m_idx[y][x] > 0)
 		{
-			monster_type *m_ptr = &m_list[cave_m_idx[y][x]];
+			monster_type *m_ptr = &mon_list[cave_m_idx[y][x]];
 			monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 			/* Visible */
@@ -3083,7 +3090,7 @@ static int target_set_interactive_aux(int y, int x, int mode, cptr info)
 				boring = FALSE;
 
 				/* Get the monster name ("a kobold") */
-				monster_desc(m_name, m_ptr, 0x08);
+				monster_desc(m_name, sizeof(m_name), m_ptr, 0x08);
 
 				/* Hack -- track this monster race */
 				monster_race_track(m_ptr->r_idx);
@@ -3122,17 +3129,19 @@ static int target_set_interactive_aux(int y, int x, int mode, cptr info)
 						char buf[80];
 
 						/* Describe the monster */
-						look_mon_desc(buf, cave_m_idx[y][x]);
+						look_mon_desc(buf, sizeof(buf), cave_m_idx[y][x]);
 
 						/* Describe, and prompt for recall */
 						if (p_ptr->wizard)
 						{
-							sprintf(out_val, "%s%s%s%s (%s) [r,%s] (%d:%d)",
+							strnfmt(out_val, sizeof(out_val),
+							        "%s%s%s%s (%s) [r,%s] (%d:%d)",
 						            s1, s2, s3, m_name, buf, info, y, x);
 						}
 						else
 						{
-							sprintf(out_val, "%s%s%s%s (%s) [r,%s]",
+							strnfmt(out_val, sizeof(out_val),
+							        "%s%s%s%s (%s) [r,%s]",
 							        s1, s2, s3, m_name, buf, info);
 						}
 
@@ -3184,13 +3193,21 @@ static int target_set_interactive_aux(int y, int x, int mode, cptr info)
 					next_o_idx = o_ptr->next_o_idx;
 
 					/* Obtain an object description */
-					object_desc(o_name, o_ptr, TRUE, 3);
+					object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
 
 					/* Describe the object */
 					if (p_ptr->wizard)
-						sprintf(out_val, "%s%s%s%s [%s] (%d:%d)", s1, s2, s3, o_name, info, y, x);
+					{
+						strnfmt(out_val, sizeof(out_val),
+						        "%s%s%s%s [%s] (%d:%d)",
+						        s1, s2, s3, o_name, info, y, x);
+					}
 					else
-						sprintf(out_val, "%s%s%s%s [%s]", s1, s2, s3, o_name, info);
+					{
+						strnfmt(out_val, sizeof(out_val),
+						        "%s%s%s%s [%s]", s1, s2, s3, o_name, info);
+					}
+
 					prt(out_val, 0, 0);
 					move_cursor_relative(y, x);
 					query = inkey();
@@ -3244,10 +3261,18 @@ static int target_set_interactive_aux(int y, int x, int mode, cptr info)
 				{
 					/* Describe the pile */
 					if (p_ptr->wizard)
-						sprintf(out_val, "%s%s%sa pile of %d objects [r,%s] (%d:%d)", s1, s2, s3, floor_num, info, y, x);
+					{
+						strnfmt(out_val, sizeof(out_val),
+						        "%s%s%sa pile of %d objects [r,%s] (%d:%d)",
+						        s1, s2, s3, floor_num, info, y, x);
+					}
 					else
-						sprintf(out_val, "%s%s%sa pile of %d objects [r,%s]",
-							s1, s2, s3, floor_num, info);
+					{
+						strnfmt(out_val, sizeof(out_val),
+						        "%s%s%sa pile of %d objects [r,%s]",
+						        s1, s2, s3, floor_num, info);
+					}
+
 					prt(out_val, 0, 0);
 					move_cursor_relative(y, x);
 					query = inkey();
@@ -3315,13 +3340,21 @@ static int target_set_interactive_aux(int y, int x, int mode, cptr info)
 				boring = FALSE;
 
 				/* Obtain an object description */
-				object_desc(o_name, o_ptr, TRUE, 3);
+				object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
 
 				/* Describe the object */
 				if (p_ptr->wizard)
-					sprintf(out_val, "%s%s%s%s [%s] (%d:%d)", s1, s2, s3, o_name, info, y, x);
+				{
+					strnfmt(out_val, sizeof(out_val),
+					        "%s%s%s%s [%s] (%d:%d)",
+					        s1, s2, s3, o_name, info, y, x);
+				}
 				else
-					sprintf(out_val, "%s%s%s%s [%s]", s1, s2, s3, o_name, info);
+				{
+					strnfmt(out_val, sizeof(out_val),
+					        "%s%s%s%s [%s]", s1, s2, s3, o_name, info);
+				}
+
 				prt(out_val, 0, 0);
 				move_cursor_relative(y, x);
 				query = inkey();
@@ -3379,9 +3412,16 @@ static int target_set_interactive_aux(int y, int x, int mode, cptr info)
 
 			/* Display a message */
 			if (p_ptr->wizard)
-				sprintf(out_val, "%s%s%s%s [%s] (%d:%d)", s1, s2, s3, name, info, y, x);
+			{
+				strnfmt(out_val, sizeof(out_val),
+				        "%s%s%s%s [%s] (%d:%d)", s1, s2, s3, name, info, y, x);
+			}
 			else
-				sprintf(out_val, "%s%s%s%s [%s]", s1, s2, s3, name, info);
+			{
+				strnfmt(out_val, sizeof(out_val),
+				        "%s%s%s%s [%s]", s1, s2, s3, name, info);
+			}
+
 			prt(out_val, 0, 0);
 			move_cursor_relative(y, x);
 			query = inkey();
@@ -3624,7 +3664,6 @@ bool target_set_interactive(int mode)
 						/* Restore panel if needed */
 						if ((i < 0) && modify_panel(old_wy, old_wx))
 						{
-
 							/* Recalculate interesting grids */
 							target_set_interactive_prepare(mode);
 						}

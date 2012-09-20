@@ -420,7 +420,7 @@ errr init_sla(int argc, char **argv)
 	err = (SLang_init_tty(-1, TRUE, 0) == -1);
 
 	/* Quit on error */
-	if (err) quit("SLang initialization failed");
+	if (err) quit("S-Lang initialization failed");
 
 	/* Get terminal info */
 	SLtt_get_terminfo();
@@ -448,7 +448,7 @@ errr init_sla(int argc, char **argv)
 	{
 		SLsmg_reset_smg();
 		SLang_reset_tty();
-		quit("SLang screen must be at least 80x24");
+		quit("S-Lang screen must be at least 80x24");
 	}
 
 	/* Now let's go for a little bit of color! */

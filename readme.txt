@@ -1,7 +1,7 @@
 
 
               **************************************************
-              **   Angband 3.0.0   **   The Pits of Angband   **
+              **   Angband 3.0.1   **   The Pits of Angband   **
               **************************************************
 
            Based on Moria:   Copyright (c) 1985 Robert Alan Koeneke
@@ -13,7 +13,7 @@
 
                    Angband 2.7.0 - 2.8.5 by Ben Harrison
 
-                 Angband 2.9.0 - 3.0.0 by Robert Ruehlmann
+                 Angband 2.9.0 - 3.0.x by Robert Ruehlmann
 
         Send comments, bug reports, and patches, to "rr9@angband.org"
        Visit the Angband Home Page at "http://thangorodrim.angband.org/"
@@ -24,7 +24,7 @@
 
 === General Info ===
 
-This is the README file for Angband 3.0.0.
+This is the README file for Angband 3.0.1.
 
 Angband is a "graphical" dungeon adventure game using textual characters
 to represent the walls and floors of a dungeon and the inhabitants therein,
@@ -74,7 +74,7 @@ appropriate "extra archive", which contains some extra platform specific
 files, and instructions about how to use them.  Some "extra archives" may
 be found at the ftp site (including "/angband/Macintosh/ext-mac.sit.bin"
 and "/angband/Windows/ext-win.zip"), but be sure that you get a version
-of the "extra archive" designed for Angband 3.0.0.
+of the "extra archive" designed for your Angband version.
 
 
 === Special instructions for certain platforms ===
@@ -99,8 +99,9 @@ delete these files if you so desire.
 === Upgrading from older versions (and/or other platforms) ===
 
 If you have been using an older version of Angband (and/or playing on a
-different platform), you can "upgrade" (or "sidegrade") to Angband 3.0.0,
-bringing your old savefiles, high score list, and other files with you.
+different platform), you can "upgrade" (or "sidegrade") to the current
+Angband, bringing your old savefiles, high score list, and other files
+with you.
 
 Angband uses a platform independant file format for the binary files
 that store information about games in progress, known as "savefiles", and
@@ -199,11 +200,6 @@ and only the next 20 lines should contain information.
 The 'dead.txt' file is displayed to the user when the player dies.  It
 contains a picture of a tombstone which is filled in with interesting
 information about the dead player.  You should not edit this file.
-
-The optional file 'wizards.txt' may be used to specify which users may enter
-'wizard' mode.  A missing file provides no restrictions, and an empty file
-prevents everyone from entering 'wizard' mode.  This file is only used on
-multi-user machines, otherwise there are no restrictions.
 
 The optional file 'time.txt' may be used to restrict the "times" at which
 the game may be played, by providing specification of which hours of each day

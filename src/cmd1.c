@@ -43,7 +43,7 @@ bool test_hit(int chance, int ac, int vis)
  * Critical hits (from objects thrown by player)
  * Factor in item weight, total plusses, and player level.
  */
-sint critical_shot(int weight, int plus, int dam)
+int critical_shot(int weight, int plus, int dam)
 {
 	int i, k;
 
@@ -82,7 +82,7 @@ sint critical_shot(int weight, int plus, int dam)
  *
  * Factor in weapon weight, total plusses, player level.
  */
-sint critical_norm(int weight, int plus, int dam)
+int critical_norm(int weight, int plus, int dam)
 {
 	int i, k;
 
@@ -135,7 +135,7 @@ sint critical_norm(int weight, int plus, int dam)
  * Note that most brands and slays are x3, except Slay Animal (x2),
  * Slay Evil (x2), and Kill dragon (x5).
  */
-sint tot_dam_aux(const object_type *o_ptr, int tdam, const monster_type *m_ptr)
+int tot_dam_aux(const object_type *o_ptr, int tdam, const monster_type *m_ptr)
 {
 	int mult = 1;
 
@@ -534,7 +534,7 @@ static void py_pickup_aux(int o_idx)
 	o_ptr = &inventory[slot];
 
 	/* Describe the object */
-	object_desc(o_name, o_ptr, TRUE, 3);
+	object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
 
 	/* Message */
 	msg_format("You have %s (%c).", o_name, index_to_label(slot));
@@ -577,7 +577,7 @@ void py_pickup(int pickup)
 		o_ptr = &o_list[this_o_idx];
 
 		/* Describe the object */
-		object_desc(o_name, o_ptr, TRUE, 3);
+		object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
 
 		/* Get the next object */
 		next_o_idx = o_ptr->next_o_idx;
@@ -682,7 +682,7 @@ void py_pickup(int pickup)
 		if (carry_query_flag)
 		{
 			char out_val[160];
-			sprintf(out_val, "Pick up %s? ", o_name);
+			strnfmt(out_val, sizeof(out_val), "Pick up %s? ", o_name);
 			if (!get_check(out_val)) continue;
 		}
 
@@ -705,7 +705,7 @@ void py_pickup(int pickup)
 				o_ptr = &o_list[last_o_idx];
 
 				/* Describe the object */
-				object_desc(o_name, o_ptr, TRUE, 3);
+				object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
 
 				/* Message */
 				msg_format("You see %s.", o_name);
@@ -732,7 +732,7 @@ void py_pickup(int pickup)
 				o_ptr = &o_list[last_o_idx];
 
 				/* Describe the object */
-				object_desc(o_name, o_ptr, TRUE, 3);
+				object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
 
 				/* Message */
 				msg_format("You have no room for %s.", o_name);
@@ -1076,7 +1076,7 @@ void py_attack(int y, int x)
 
 
 	/* Get the monster */
-	m_ptr = &m_list[cave_m_idx[y][x]];
+	m_ptr = &mon_list[cave_m_idx[y][x]];
 	r_ptr = &r_info[m_ptr->r_idx];
 	l_ptr = &l_list[m_ptr->r_idx];
 
@@ -1090,7 +1090,7 @@ void py_attack(int y, int x)
 
 
 	/* Extract monster name (or "it") */
-	monster_desc(m_name, m_ptr, 0);
+	monster_desc(m_name, sizeof(m_name), m_ptr, 0);
 
 
 	/* Auto-Recall if possible and visible */
@@ -1768,7 +1768,7 @@ static bool run_test(void)
 		/* Visible monsters abort running */
 		if (cave_m_idx[row][col] > 0)
 		{
-			monster_type *m_ptr = &m_list[cave_m_idx[row][col]];
+			monster_type *m_ptr = &mon_list[cave_m_idx[row][col]];
 
 			/* Visible monster */
 			if (m_ptr->ml) return (TRUE);

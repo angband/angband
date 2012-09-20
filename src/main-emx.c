@@ -1242,7 +1242,7 @@ static void init_stuff(void)
 	strcpy(path, tail ? tail : DEFAULT_PATH);
 
 	/* Hack -- Add a path separator (only if needed) */
-	if (!suffix(path, PATH_SEP)) strcat(path, PATH_SEP);
+	if (!suffix(path, PATH_SEP)) my_strcat(path, PATH_SEP, sizeof(path));
 
 	/* Initialize */
 	init_file_paths(path);

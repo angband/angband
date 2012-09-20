@@ -47,7 +47,7 @@
 /*
  * Current version string
  */
-#define VERSION_STRING	"3.0.0"
+#define VERSION_STRING	"3.0.1"
 
 
 /*
@@ -55,7 +55,7 @@
  */
 #define VERSION_MAJOR	3
 #define VERSION_MINOR	0
-#define VERSION_PATCH	0
+#define VERSION_PATCH	1
 #define VERSION_EXTRA	0
 
 
@@ -336,7 +336,7 @@
 /*
  * A monster can only "multiply" (reproduce) if there are fewer than 100
  * monsters on the level capable of such spontaneous reproduction.  This
- * is a hack which prevents the "m_list[]" array from exploding due to
+ * is a hack which prevents the "mon_list[]" array from exploding due to
  * reproducing monsters.  Messy, but necessary.
  */
 #define MAX_REPRO	100
@@ -1952,7 +1952,6 @@
  */
 #define MFLAG_VIEW	0x01	/* Monster is in line of sight */
 /* xxx */
-#define MFLAG_BORN	0x10	/* Monster is still being born */
 #define MFLAG_NICE	0x20	/* Monster is still being nice */
 #define MFLAG_SHOW	0x40	/* Monster is recently memorized */
 #define MFLAG_MARK	0x80	/* Monster is currently memorized */
@@ -2363,6 +2362,7 @@
 #define OPT_CHEAT					160
 #define OPT_ADULT					192
 #define OPT_SCORE					224
+#define OPT_NONE					255
 #define OPT_MAX						256
 
 
@@ -2477,6 +2477,7 @@
 #define OPT_adult_no_stores			(OPT_ADULT+5)
 #define OPT_adult_no_artifacts		(OPT_ADULT+6)
 #define OPT_adult_rand_artifacts	(OPT_ADULT+7)
+#define OPT_adult_no_stacking		(OPT_ADULT+8)
 /* xxx xxx */
 #define OPT_score_peek				(OPT_SCORE+0)
 #define OPT_score_hear				(OPT_SCORE+1)
@@ -2596,6 +2597,7 @@
 #define adult_no_stores			op_ptr->opt[OPT_adult_no_stores]
 #define adult_no_artifacts		op_ptr->opt[OPT_adult_no_artifacts]
 #define adult_rand_artifacts	op_ptr->opt[OPT_adult_rand_artifacts]
+#define adult_no_stacking		op_ptr->opt[OPT_adult_no_stacking]
 /* xxx xxx */
 #define score_peek				op_ptr->opt[OPT_score_peek]
 #define score_hear				op_ptr->opt[OPT_score_hear]

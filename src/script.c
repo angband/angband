@@ -30,9 +30,16 @@ static int xxx_build_script_path(lua_State *L)
 
 	filename = tolua_getstring(L, 1, 0);
 
-	path_build(buf, 1024, ANGBAND_DIR_SCRIPT, filename);
+	path_build(buf, sizeof(buf), ANGBAND_DIR_SCRIPT, filename);
 
+#ifdef ACORN
+	{
+		char *realname = riscosify_name(buf);
+		tolua_pushstring(L, realname);
+	}
+#else /* ACORN */
 	tolua_pushstring(L, buf);
+#endif /* ACORN */
 
 	return 1;
 }
@@ -56,7 +63,7 @@ static int xxx_object_desc(lua_State *L)
 	mode = (int)luaL_check_number(L, 3);
 
 	/* Get the description */
-	object_desc(buf, o_ptr, pref, mode);
+	object_desc(buf, sizeof(buf), o_ptr, pref, mode);
 
 	/* Return the name */
 	tolua_pushstring(L, buf);
@@ -229,10 +236,7 @@ cptr get_spell_name(int tval, int index)
 		name = tolua_getstring(L, -1, "");
 
 		/* Get a copy of the name */
-		strncpy(buffer, name, 80);
-
-		/* Make sure it's terminated */
-		buffer[79] = '\0';
+		my_strcpy(buffer, name, sizeof(buffer));
 
 		/* Remove the result */
 		lua_pop(L, 1);
@@ -260,10 +264,7 @@ cptr get_spell_info(int tval, int index)
 		info = tolua_getstring(L, -1, "");
 
 		/* Get a copy of the name */
-		strncpy(buffer, info, 80);
-
-		/* Make sure it's terminated */
-		buffer[79] = '\0';
+		my_strcpy(buffer, info, sizeof(buffer));
 
 		/* Remove the result */
 		lua_pop(L, 1);
@@ -352,7 +353,7 @@ static void line_hook(lua_State *L, lua_Debug *ar)
 			/* Activate */
 			Term_activate(angband_term[j]);
 
-			path_build(buf, 1024, ANGBAND_DIR_SCRIPT, "trace.lua");
+			path_build(buf, sizeof(buf), ANGBAND_DIR_SCRIPT, "trace.lua");
 
 			/* Execute the file */
 			script_do_file(buf);
@@ -427,12 +428,12 @@ void do_cmd_script(void)
 			sprintf(tmp, "test.lua");
 
 			/* Ask for a file */
-			if (!askfor_aux(tmp, 80)) break;
+			if (!askfor_aux(tmp, sizeof(tmp))) break;
 
 			/* Clear the prompt */
 			prt("", 0, 0);
 
-			path_build(buf, 1024, ANGBAND_DIR_SCRIPT, tmp);
+			path_build(buf, sizeof(buf), ANGBAND_DIR_SCRIPT, tmp);
 
 			/* Execute the file */
 			script_do_file(buf);
@@ -448,7 +449,7 @@ void do_cmd_script(void)
 			strcpy(tmp, "");
 
 			/* Ask for a command */
-			if (!askfor_aux(tmp, 80)) break;
+			if (!askfor_aux(tmp, sizeof(tmp))) break;
 
 			/* Clear the prompt */
 			prt("", 0, 0);
@@ -475,7 +476,7 @@ void do_cmd_script(void)
 			char buf[1024];
 
 			/* Initialization code */
-			path_build(buf, 1024, ANGBAND_DIR_SCRIPT, "init.lua");
+			path_build(buf, sizeof(buf), ANGBAND_DIR_SCRIPT, "init.lua");
 			script_do_file(buf);
 
 			break;
@@ -540,7 +541,7 @@ errr script_init(void)
 	tolua_spell_open(L);
 
 	/* Initialization code */
-	path_build(buf, 1024, ANGBAND_DIR_SCRIPT, "init.lua");
+	path_build(buf, sizeof(buf), ANGBAND_DIR_SCRIPT, "init.lua");
 	script_do_file(buf);
 
 	return 0;
@@ -576,7 +577,14 @@ bool script_do_file(cptr filename)
 {
 	if (!L) return FALSE;
 
+#ifdef ACORN
+	{
+		char *realname = riscosify_name(filename);
+		if (!lua_dofile(L, realname)) return TRUE;
+	}
+#else /* ACORN */
 	if (!lua_dofile(L, filename)) return TRUE;
+#endif /* ACORN */
 
 	return FALSE;
 }
@@ -614,3 +622,4 @@ bool script_do_file(cptr filename)
 
 
 #endif /* USE_SCRIPT */
+

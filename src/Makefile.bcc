@@ -50,7 +50,7 @@ LUAOBJS = \
   lua\lapi.obj lua\ldebug.obj lua\lmem.obj lua\lstrlib.obj lua\lvm.obj \
   lua\tolua_lb.obj lua\lauxlib.obj lua\ldo.obj lua\lobject.obj \
   lua\ltable.obj lua\lzio.obj lua\tolua_rg.obj lua\lbaselib.obj \
-  lua\lfunc.obj lua\lparser.obj lua\ltests.obj lua\tolua_bd.obj \
+  lua\lfunc.obj lua\lparser.obj lua\tolua_bd.obj \
   lua\tolua_tm.obj lua\lcode.obj lua\lgc.obj lua\lstate.obj \
   lua\ltm.obj lua\tolua_eh.obj lua\tolua_tt.obj lua\ldblib.obj \
   lua\llex.obj lua\lstring.obj lua\lundump.obj lua\tolua_gp.obj
@@ -74,7 +74,7 @@ OBJ = \
   script.obj \
   l-monst.obj l-object.obj l-player.obj l-random.obj l-random.obj \
   l-ui.obj l-misc.obj l-spell.obj \
-  use-obj.obj \
+  use-obj.obj x-spell.obj \
   $(LUAOBJS)
 
 

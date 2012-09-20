@@ -1,3 +1,30 @@
+Changes in Angband 3.0.1:
+- Added support for creating ego-item light-sources in ego_item.txt.
+- Added bigscreen support to main-gcu.c. (pelpel)
+- Check the panel-bounds more carefully to prevent problems when using
+  a huge main window (heigher or wider than the dungeon).
+- Added the missing error message for a vault that is too big.
+- Applied the bugfixes from the new Lua 4.0.1 release. (Lua devteam)
+- Added a boundary check to the macro adding code to prevent crashes
+  when defining more than the maximum number of macros. (Eytan Zweig)
+- Fixed various potential buffer overflows.
+- Updated the Makefile for the lcc-win32 compiler and added compile
+  instructions to compile.txt.
+- Added x-spell.o and use-obj.o to various Makefiles and fixed some
+  missing dependencies. (Hallvard B. Furuseth)
+- my_strnicmp() in main-ros.c was quite buggy. (Hallvard B. Furuseth)
+- The islower(), isupper(), ... and the tolower() and toupper()
+  functions take an 'int' as the argument but actually expect it to be
+  an 'unsigned char' or EOF.  We now cast the argument to 'unsigned
+  char' to prevent breakage with 8-bit character data on hosts where
+  'char' is signed.  (based on the patch by Hallvard B. Furuseth)
+- Fixed an off-by-one error when checking if playing Angband is allowed
+  at this time of day. (Hallvard B. Furuseth)
+- Fixed the activation of 'The Shield of Deflection of Gil-galad'.
+- Show the 'cursed' flag of artifacts in the spoilers. (KUSUNOSE Toru)
+- Fixed a bug that allowed changes to the 'birth_no_stacking' birth-
+  option to affect the current game. (KUSUNOSE Toru)
+
 Changes in Angband 3.0:
 - Added Jonathan Ellis' JLE patch that adds a new player race
   ("Kobold"), many new artifacts, vaults, monsters, objects, and
@@ -11,11 +38,7 @@ Changes in Angband 3.0:
   range of attack-spells to choose from including chaos, nether, sound,
   shards, and gravity effects.  Other big changes are the removal of
   the 'Globe of Invulnerability' and the addition of 'Rune of
-  Protection'. The new spellbooks are more "themed" with 9 books
-  specialized on 'detection', 'teleportation', 'protection', ...
-  plus a beginner book containing a mix of spells similar to the good
-  old "Magic for Beginners".  The depths where the spellbooks are
-  common and the prices for spellbooks were changed accordingly.
+  Protection'.
 - ***** WARNING *****: All spells known by magic-users are discarded
   when importing an old savefile, so that the player can choose freely
   from the new spell-list.  Don't forget to relearn your spells before
@@ -69,6 +92,20 @@ Changes in Angband 3.0:
 - Executables build with configure under Cygwin no longer require the
   Cygwin DLL.
 - Added the latest Amiga code (Bablos).
+- Fixed a possible crash when searching disarmed chests for traps.
+- Monsters draining large stacks of wands or staffs could get negative
+  hitpoints due to the overflow of a signed 16 bit variable.
+- Fixed the problems with the 'repeat command' command.
+- Bounds-checking for detection spells and some wizard mode commands
+  was missing.  That could cause crashs when resizing the Terms.
+- 'Interact with visuals' could display negative char numbers.
+- Don't partially repair blasted equipment when loading the savefile.
+- Fixed a bug that caused an infinite loop in the RNG when the u32b
+  type has more than 32 bits.
+- The confirmation for wizard mode was required every time wizard mode
+  was switched on.
+- Vaults could sometimes have up to 9 times the requested number of
+  monsters.
   Improvements by Hallvard B Furuseth:
 - Running 'angband --help' will now display basic usage info.
 - Problems with the lib/ folder were not correctly reported when using
@@ -83,21 +120,7 @@ Changes in Angband 3.0:
   compiling GTK versions with "--enable-gtk", and the result of the
   usleep() detection is now actually used.
 - Fixed a compatibility problem with 64 bit machines.
-- Fixed a possible crash when searching disarmed chests for traps.
-- Monsters draining large stacks of wands or staffs could get negative
-  hitpoints due to the overflow of a signed 16 bit variable.
-- Fixed the problems with the 'repeat command' command.
-- Bounds-checking for detection spells and some wizard mode commands
-  was missing.  That could cause crashs when resizing the Terms.
-- 'Interact with visuals' could display negative char numbers.
 - Corrected two wrong option names in the help files.
-- Don't partially repair blasted equipment when loading the savefile.
-- Fixed a bug that caused an infinite loop in the RNG when the u32b
-  type has more than 32 bits.
-- The confirmation for wizard mode was required every time wizard mode
-  was switched on.
-- Vaults could sometimes have up to 9 times the requested number of
-  monsters.
 
 Changes in Angband 2.9.3:
 - Rogrog the Black Troll resists acid instead of cold.
