@@ -2575,7 +2575,7 @@ void do_cmd_fire(void)
 			hit_body = TRUE;
 
 			/* Did we hit it (penalize distance travelled) */
-			if (test_hit_fire(chance2, r_ptr->ac, m_ptr->ml))
+			if (test_hit(chance2, r_ptr->ac, m_ptr->ml))
 			{
 				bool fear = FALSE;
 
@@ -2853,7 +2853,7 @@ void do_cmd_throw(void)
 			hit_body = TRUE;
 
 			/* Did we hit it (penalize range) */
-			if (test_hit_fire(chance2, r_ptr->ac, m_ptr->ml))
+			if (test_hit(chance2, r_ptr->ac, m_ptr->ml))
 			{
 				bool fear = FALSE;
 

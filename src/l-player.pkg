@@ -45,6 +45,19 @@ typedef int errr;
 #define PY_FOOD_STARVE	100		/* Food value (Starving) */
 
 /*
+ * Maximum number of players spells
+ */
+#define PY_MAX_SPELLS 64
+
+
+/*
+ * Flags for player_type.spell_flags[]
+ */
+#define PY_SPELL_LEARNED    0x01 /* Spell has been learned */
+#define PY_SPELL_WORKED     0x02 /* Spell has been successfully tried */
+#define PY_SPELL_FORGOTTEN  0x04 /* Spell has been forgotten */
+
+/*
  * Player regeneration constants
  */
 #define PY_REGEN_NORMAL		197		/* Regen factor*2^16 when full */
@@ -143,14 +156,9 @@ struct player_type
 	byte confusing;		/* Glowing hands */
 	byte searching;		/* Currently searching */
 
-	u32b spell_learned1;	/* Spell flags */
-	u32b spell_learned2;	/* Spell flags */
-	u32b spell_worked1;		/* Spell flags */
-	u32b spell_worked2;		/* Spell flags */
-	u32b spell_forgotten1;	/* Spell flags */
-	u32b spell_forgotten2;	/* Spell flags */
+	byte spell_flags[PY_MAX_SPELLS]; /* Spell flags */
 
-	byte spell_order[PY_MAX_SPELLS];	/* Spell order */
+	byte spell_order[PY_MAX_SPELLS]; /* Spell order */
 
 	s16b player_hp[PY_MAX_LEVEL];	/* HP Array */
 

@@ -31,7 +31,7 @@ angband_SOURCES = \
   z-virt.h main.h \
   script.c script.h \
   l-monst.c l-object.c l-player.c l-random.c l-ui.c l-misc.c l-spell.c \
-  use-obj.c
+  use-obj.c x-spell.c
 
 l-monst.c: lua/tolua l-monst.pkg
 	lua/tolua -n monster -o l-monst.c l-monst.pkg

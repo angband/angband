@@ -152,11 +152,6 @@ Disturb whenever boring things happen    [disturb_minor]
     including monsters bashing down doors, inventory feelings, and
     beginning to run out of fuel.
 
-***** <alert_failure>
-Alert user to various failures    [alert_failure]
-    Produce a "bell" noise, and flush all pending input, when various
-    "failures" occur, as described above.
-
 ***** <verify_destroy>
 Verify destruction of objects    [verify_destroy]
     Prompt for verification of the "destroy" command.

@@ -541,7 +541,7 @@ object_type* get_first_object(int y, int x)
  * Get the next object in a stack or
  * NULL if there isn't one.
  */
-object_type* get_next_object(object_type *o_ptr)
+object_type* get_next_object(const object_type *o_ptr)
 {
 	if (o_ptr->next_o_idx) return (&o_list[o_ptr->next_o_idx]);
 
@@ -1954,15 +1954,8 @@ static void a_m_aux_1(object_type *o_ptr, int level, int power)
 	{
 		case TV_DIGGING:
 		{
-			/* Very good */
-			if (power > 1)
-			{
-				/* Special Ego-item */
-				o_ptr->name2 = EGO_DIGGING;
-			}
-
 			/* Very bad */
-			else if (power < -1)
+			if (power < -1)
 			{
 				/* Hack -- Horrible digging bonus */
 				o_ptr->pval = 0 - (5 + randint(5));

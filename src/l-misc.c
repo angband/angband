@@ -1,6 +1,6 @@
 /*
 ** Lua binding: misc
-** Generated automatically by tolua 4.0a - angband on Tue Mar 12 21:29:15 2002.
+** Generated automatically by tolua 4.0a - angband.
 */
 
 #include "lua/tolua.h"
@@ -14,6 +14,7 @@ void tolua_misc_close (lua_State* tolua_S);
 /* function to register type */
 static void toluaI_reg_types (lua_State* tolua_S)
 {
+(void)tolua_S; /* Hack - prevent compiler warnings */
 }
 
 /* error messages */

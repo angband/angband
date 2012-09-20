@@ -1,6 +1,6 @@
 /*
 ** Lua binding: spell
-** Generated automatically by tolua 4.0a - angband on Sat Mar 16 15:40:27 2002.
+** Generated automatically by tolua 4.0a - angband.
 */
 
 #include "lua/tolua.h"
@@ -14,6 +14,7 @@ void tolua_spell_close (lua_State* tolua_S);
 /* function to register type */
 static void toluaI_reg_types (lua_State* tolua_S)
 {
+(void)tolua_S; /* Hack - prevent compiler warnings */
  tolua_usertype(tolua_S,"object_type");
 }
 
@@ -1282,6 +1283,36 @@ tolua_lerror:
  return 0;
 }
 
+/* function: fire_swarm */
+static int toluaI_spell_fire_swarm00(lua_State* tolua_S)
+{
+ if (
+ !tolua_istype(tolua_S,1,LUA_TNUMBER,0) ||
+ !tolua_istype(tolua_S,2,LUA_TNUMBER,0) ||
+ !tolua_istype(tolua_S,3,LUA_TNUMBER,0) ||
+ !tolua_istype(tolua_S,4,LUA_TNUMBER,0) ||
+ !tolua_istype(tolua_S,5,LUA_TNUMBER,0) ||
+ !tolua_isnoobj(tolua_S,6)
+ )
+ goto tolua_lerror;
+ else
+ {
+  int num = ((int)  tolua_getnumber(tolua_S,1,0));
+  int typ = ((int)  tolua_getnumber(tolua_S,2,0));
+  int dir = ((int)  tolua_getnumber(tolua_S,3,0));
+  int dam = ((int)  tolua_getnumber(tolua_S,4,0));
+  int rad = ((int)  tolua_getnumber(tolua_S,5,0));
+ {
+  bool toluaI_ret = (bool)  fire_swarm(num,typ,dir,dam,rad);
+ tolua_pushbool(tolua_S,(int)toluaI_ret);
+ }
+ }
+ return 1;
+tolua_lerror:
+ tolua_error(tolua_S,"#ferror in function 'fire_swarm'.");
+ return 0;
+}
+
 /* function: fire_bolt */
 static int toluaI_spell_fire_bolt00(lua_State* tolua_S)
 {
@@ -1359,6 +1390,30 @@ static int toluaI_spell_fire_bolt_or_beam00(lua_State* tolua_S)
  return 1;
 tolua_lerror:
  tolua_error(tolua_S,"#ferror in function 'fire_bolt_or_beam'.");
+ return 0;
+}
+
+/* function: project_los */
+static int toluaI_spell_project_los00(lua_State* tolua_S)
+{
+ if (
+ !tolua_istype(tolua_S,1,LUA_TNUMBER,0) ||
+ !tolua_istype(tolua_S,2,LUA_TNUMBER,0) ||
+ !tolua_isnoobj(tolua_S,3)
+ )
+ goto tolua_lerror;
+ else
+ {
+  int typ = ((int)  tolua_getnumber(tolua_S,1,0));
+  int dam = ((int)  tolua_getnumber(tolua_S,2,0));
+ {
+  bool toluaI_ret = (bool)  project_los(typ,dam);
+ tolua_pushbool(tolua_S,(int)toluaI_ret);
+ }
+ }
+ return 1;
+tolua_lerror:
+ tolua_error(tolua_S,"#ferror in function 'project_los'.");
  return 0;
 }
 
@@ -2092,9 +2147,11 @@ int tolua_spell_open (lua_State* tolua_S)
  tolua_function(tolua_S,NULL,"lite_area",toluaI_spell_lite_area00);
  tolua_function(tolua_S,NULL,"unlite_area",toluaI_spell_unlite_area00);
  tolua_function(tolua_S,NULL,"fire_ball",toluaI_spell_fire_ball00);
+ tolua_function(tolua_S,NULL,"fire_swarm",toluaI_spell_fire_swarm00);
  tolua_function(tolua_S,NULL,"fire_bolt",toluaI_spell_fire_bolt00);
  tolua_function(tolua_S,NULL,"fire_beam",toluaI_spell_fire_beam00);
  tolua_function(tolua_S,NULL,"fire_bolt_or_beam",toluaI_spell_fire_bolt_or_beam00);
+ tolua_function(tolua_S,NULL,"project_los",toluaI_spell_project_los00);
  tolua_function(tolua_S,NULL,"lite_line",toluaI_spell_lite_line00);
  tolua_function(tolua_S,NULL,"drain_life",toluaI_spell_drain_life00);
  tolua_function(tolua_S,NULL,"wall_to_mud",toluaI_spell_wall_to_mud00);
@@ -2259,9 +2316,11 @@ void tolua_spell_close (lua_State* tolua_S)
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"lite_area");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"unlite_area");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"fire_ball");
+ lua_pushnil(tolua_S); lua_setglobal(tolua_S,"fire_swarm");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"fire_bolt");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"fire_beam");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"fire_bolt_or_beam");
+ lua_pushnil(tolua_S); lua_setglobal(tolua_S,"project_los");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"lite_line");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"drain_life");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"wall_to_mud");

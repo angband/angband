@@ -96,7 +96,7 @@
 
 # Version stamp (required)
 
-V:2.9.7
+V:3.0.0
 
 
 ##### Non-race (contains the "player" picture) #####
@@ -5406,7 +5406,6 @@ W:38:4:0:500
 B:HIT:HURT:1d9
 B:HIT:HURT:1d9
 B:HIT:HALLU:1d9
-B:HIT:HALLU:1d9
 F:FORCE_SLEEP | FORCE_MAXHP | RAND_50
 F:SMART | EMPTY_MIND | INVISIBLE
 F:PASS_WALL | POWERFUL
@@ -8440,7 +8439,7 @@ D: human form - and still less when in bear's shape, as he is now.
 N:567:Barbazu
 G:U:G
 I:120:80d10:25:60:80
-W:55:2:0:3000
+W:55:4:0:3000
 B:HIT:HURT:4d10
 B:HIT:HURT:4d10
 B:HIT:LOSE_CON:10d2
@@ -8449,7 +8448,7 @@ F:FORCE_SLEEP | FORCE_MAXHP | FRIENDS
 F:ONLY_ITEM | DROP_1D2
 F:OPEN_DOOR | BASH_DOOR | POWERFUL
 F:EVIL | DEMON | IM_POIS | NO_CONF | NO_SLEEP
-S:1_IN_7
+S:1_IN_10
 S:SCARE | S_DEMON
 D:A foul, humanoid creature with a long tail, clawed hands and feet,
 D: and a disgusting, wiry, snaky beard.  They are the elite shock troops
@@ -9046,8 +9045,8 @@ D:A large basilisk, whose shape resembles that of a great wyrm.
 
 N:602:Aranea
 G:S:R
-I:120:30d10:20:45:50
-W:38:2:0:250
+I:110:30d10:20:45:50
+W:38:3:0:250
 B:CLAW:POISON:2d8
 B:CLAW:POISON:2d8
 B:BITE:POISON:2d6
@@ -9062,7 +9061,7 @@ D:An intelligent arachnid whose hairy legs weave spells in the air.
 N:603:Elder aranea
 G:S:r
 I:120:60d20:20:65:50
-W:48:3:0:2500
+W:48:5:0:2500
 B:CLAW:POISON:5d8
 B:CLAW:POISON:5d8
 B:BITE:POISON:5d6

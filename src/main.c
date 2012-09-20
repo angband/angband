@@ -640,7 +640,7 @@ int main(int argc, char *argv[])
 	if (show_score > 0) display_scores(0, show_score);
 
 	/* Wait for response */
-	pause_line(23);
+	pause_line(Term->hgt - 1);
 
 	/* Play the game */
 	play_game(new_game);

@@ -7,7 +7,7 @@
  * Basic "types".
  *
  * Note the attempt to make all basic types have 4 letters.
- * This improves readibility and standardizes the code.
+ * This improves readability and standardizes the code.
  *
  * Likewise, all complex types are at least 4 letters.
  * Thus, almost every 1 to 3 letter word is a legal variable,
@@ -16,8 +16,6 @@
  * Note that the type used in structures for bit flags should be uint.
  * As long as these bit flags are sequential, they will be space smart.
  *
- * Note that on some machines, apparently "signed char" is illegal.
- *
  * A char/byte takes exactly 1 byte
  * A s16b/u16b takes exactly 2 bytes
  * A s32b/u32b takes exactly 4 bytes
@@ -25,7 +23,6 @@
  * A sint/uint takes at least 2 bytes
  * A long/huge takes at least 4 bytes
  *
- * A real normally takes from 4 to 10 bytes
  * A vptr normally takes 4 (rarely 8) bytes
  *
  * Note that some files have already been included by "h-system.h"
@@ -52,10 +49,6 @@ typedef void *vptr;
 
 /* A string pointer */
 typedef const char *cptr;
-
-
-/* A real number */
-typedef double real;
 
 
 /* An error code */
@@ -118,12 +111,10 @@ typedef unsigned short u16b;
 #ifdef L64	/* 64 bit longs */
 typedef signed int s32b;
 typedef unsigned int u32b;
-#else
+#else /* L64 */
 typedef signed long s32b;
 typedef unsigned long u32b;
-#endif
+#endif /* L64 */
 
 
-#endif
-
-
+#endif /* INCLUDED_H_TYPE_H */

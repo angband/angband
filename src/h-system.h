@@ -68,7 +68,7 @@
 #endif
 
 
-#if !defined(NeXT) && !defined(__MWERKS__) && !defined(ACORN)
+#if !defined(NeXT) && !defined(ACORN)
 # include <fcntl.h>
 #endif
 
@@ -96,9 +96,9 @@
 
 #endif
 
-#ifdef __DJGPP__
+#if defined(__DJGPP__) || defined(__MWERKS__)
 #include <unistd.h>
-#endif /* __DJGPP__ */
+#endif /* __DJGPP__ || __MWERKS__ */
 
 #include <string.h>
 

@@ -654,13 +654,13 @@ bool (*item_tester_hook)(const object_type*);
 /*
  * Current "comp" function for ang_sort()
  */
-bool (*ang_sort_comp)(vptr u, vptr v, int a, int b);
+bool (*ang_sort_comp)(const void *u, const void *v, int a, int b);
 
 
 /*
  * Current "swap" function for ang_sort()
  */
-void (*ang_sort_swap)(vptr u, vptr v, int a, int b);
+void (*ang_sort_swap)(void *u, void *v, int a, int b);
 
 
 

@@ -1410,7 +1410,7 @@ cptr option_text[OPT_MAX] =
 	"disturb_minor",			/* OPT_disturb_minor */
 	NULL,						/* xxx disturb_other */
 	NULL,						/* xxx alert_hitpoint */
-	"alert_failure",			/* OPT_alert_failure */
+	NULL,						/* xxx alert_failure */
 	"verify_destroy",			/* OPT_verify_destroy */
 	"verify_special",			/* OPT_verify_special */
 	"allow_quantity",			/* OPT_allow_quantity */
@@ -1674,7 +1674,7 @@ cptr option_desc[OPT_MAX] =
 	"Disturb whenever boring things happen",	/* OPT_disturb_minor */
 	NULL,										/* xxx disturb_other */
 	NULL,										/* xxx alert_hitpoint */
-	"Alert user to various failures",			/* OPT_alert_failure */
+	NULL,										/* xxx alert_failure */
 	"Verify destruction of objects",			/* OPT_verify_destroy */
 	"Verify use of special commands",			/* OPT_verify_special */
 	"Allow quantity specification",				/* OPT_allow_quantity */
@@ -1938,7 +1938,7 @@ const bool option_norm[OPT_MAX] =
 	TRUE,		/* OPT_disturb_minor */
 	FALSE,		/* xxx disturb_other */
 	FALSE,		/* xxx alert_hitpoint */
-	FALSE,		/* OPT_alert_failure */
+	FALSE,		/* xxx alert_failure */
 	TRUE,		/* OPT_verify_destroy */
 	TRUE,		/* OPT_verify_special */
 	TRUE,		/* OPT_allow_quantity */
@@ -2214,11 +2214,11 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_disturb_panel,
 		OPT_disturb_state,
 		OPT_disturb_minor,
-		OPT_alert_failure,
 		OPT_verify_destroy,
 		OPT_verify_special,
 		OPT_allow_quantity,
 		OPT_auto_more,
+		255,
 		255,
 		255,
 		255,

@@ -1,6 +1,6 @@
 /*
 ** Lua binding: player
-** Generated automatically by tolua 4.0a - angband on Tue Mar 12 21:28:54 2002.
+** Generated automatically by tolua 4.0a - angband.
 */
 
 #include "lua/tolua.h"
@@ -14,6 +14,7 @@ void tolua_player_close (lua_State* tolua_S);
 /* function to register type */
 static void toluaI_reg_types (lua_State* tolua_S)
 {
+(void)tolua_S; /* Hack - prevent compiler warnings */
  tolua_usertype(tolua_S,"player_magic");
  tolua_usertype(tolua_S,"player_class");
  tolua_usertype(tolua_S,"start_item");
@@ -1156,123 +1157,37 @@ static int toluaI_set_player_player_type_searching(lua_State* tolua_S)
  return 0;
 }
 
-/* get function: spell_learned1 of class  player_type */
-static int toluaI_get_player_player_type_spell_learned1(lua_State* tolua_S)
+/* get function: spell_flags of class  player_type */
+static int toluaI_get_player_player_type_spell_flags(lua_State* tolua_S)
 {
-  player_type* self = (player_type*)  tolua_getusertype(tolua_S,1,0);
- if (!self) TOLUA_ERR_SELF;
- tolua_pushnumber(tolua_S,(long)self->spell_learned1);
+ int toluaI_index;
+  player_type* self;
+ lua_pushstring(tolua_S,".self");
+ lua_rawget(tolua_S,1);
+ self = (player_type*)  lua_touserdata(tolua_S,-1);
+ if (!tolua_istype(tolua_S,2,LUA_TNUMBER,0))
+ tolua_error(tolua_S,"invalid type in array indexing.");
+ toluaI_index = (int)tolua_getnumber(tolua_S,2,0)-1;
+ if (toluaI_index<0 || toluaI_index>=PY_MAX_SPELLS)
+ tolua_error(tolua_S,"array indexing out of range.");
+ tolua_pushnumber(tolua_S,(long)self->spell_flags[toluaI_index]);
  return 1;
 }
 
-/* set function: spell_learned1 of class  player_type */
-static int toluaI_set_player_player_type_spell_learned1(lua_State* tolua_S)
+/* set function: spell_flags of class  player_type */
+static int toluaI_set_player_player_type_spell_flags(lua_State* tolua_S)
 {
-  player_type* self = (player_type*)  tolua_getusertype(tolua_S,1,0);
- if (!self) TOLUA_ERR_SELF;
+ int toluaI_index;
+  player_type* self;
+ lua_pushstring(tolua_S,".self");
+ lua_rawget(tolua_S,1);
+ self = (player_type*)  lua_touserdata(tolua_S,-1);
  if (!tolua_istype(tolua_S,2,LUA_TNUMBER,0))
- TOLUA_ERR_ASSIGN;
-  self->spell_learned1 = ((u32b)  tolua_getnumber(tolua_S,2,0));
- return 0;
-}
-
-/* get function: spell_learned2 of class  player_type */
-static int toluaI_get_player_player_type_spell_learned2(lua_State* tolua_S)
-{
-  player_type* self = (player_type*)  tolua_getusertype(tolua_S,1,0);
- if (!self) TOLUA_ERR_SELF;
- tolua_pushnumber(tolua_S,(long)self->spell_learned2);
- return 1;
-}
-
-/* set function: spell_learned2 of class  player_type */
-static int toluaI_set_player_player_type_spell_learned2(lua_State* tolua_S)
-{
-  player_type* self = (player_type*)  tolua_getusertype(tolua_S,1,0);
- if (!self) TOLUA_ERR_SELF;
- if (!tolua_istype(tolua_S,2,LUA_TNUMBER,0))
- TOLUA_ERR_ASSIGN;
-  self->spell_learned2 = ((u32b)  tolua_getnumber(tolua_S,2,0));
- return 0;
-}
-
-/* get function: spell_worked1 of class  player_type */
-static int toluaI_get_player_player_type_spell_worked1(lua_State* tolua_S)
-{
-  player_type* self = (player_type*)  tolua_getusertype(tolua_S,1,0);
- if (!self) TOLUA_ERR_SELF;
- tolua_pushnumber(tolua_S,(long)self->spell_worked1);
- return 1;
-}
-
-/* set function: spell_worked1 of class  player_type */
-static int toluaI_set_player_player_type_spell_worked1(lua_State* tolua_S)
-{
-  player_type* self = (player_type*)  tolua_getusertype(tolua_S,1,0);
- if (!self) TOLUA_ERR_SELF;
- if (!tolua_istype(tolua_S,2,LUA_TNUMBER,0))
- TOLUA_ERR_ASSIGN;
-  self->spell_worked1 = ((u32b)  tolua_getnumber(tolua_S,2,0));
- return 0;
-}
-
-/* get function: spell_worked2 of class  player_type */
-static int toluaI_get_player_player_type_spell_worked2(lua_State* tolua_S)
-{
-  player_type* self = (player_type*)  tolua_getusertype(tolua_S,1,0);
- if (!self) TOLUA_ERR_SELF;
- tolua_pushnumber(tolua_S,(long)self->spell_worked2);
- return 1;
-}
-
-/* set function: spell_worked2 of class  player_type */
-static int toluaI_set_player_player_type_spell_worked2(lua_State* tolua_S)
-{
-  player_type* self = (player_type*)  tolua_getusertype(tolua_S,1,0);
- if (!self) TOLUA_ERR_SELF;
- if (!tolua_istype(tolua_S,2,LUA_TNUMBER,0))
- TOLUA_ERR_ASSIGN;
-  self->spell_worked2 = ((u32b)  tolua_getnumber(tolua_S,2,0));
- return 0;
-}
-
-/* get function: spell_forgotten1 of class  player_type */
-static int toluaI_get_player_player_type_spell_forgotten1(lua_State* tolua_S)
-{
-  player_type* self = (player_type*)  tolua_getusertype(tolua_S,1,0);
- if (!self) TOLUA_ERR_SELF;
- tolua_pushnumber(tolua_S,(long)self->spell_forgotten1);
- return 1;
-}
-
-/* set function: spell_forgotten1 of class  player_type */
-static int toluaI_set_player_player_type_spell_forgotten1(lua_State* tolua_S)
-{
-  player_type* self = (player_type*)  tolua_getusertype(tolua_S,1,0);
- if (!self) TOLUA_ERR_SELF;
- if (!tolua_istype(tolua_S,2,LUA_TNUMBER,0))
- TOLUA_ERR_ASSIGN;
-  self->spell_forgotten1 = ((u32b)  tolua_getnumber(tolua_S,2,0));
- return 0;
-}
-
-/* get function: spell_forgotten2 of class  player_type */
-static int toluaI_get_player_player_type_spell_forgotten2(lua_State* tolua_S)
-{
-  player_type* self = (player_type*)  tolua_getusertype(tolua_S,1,0);
- if (!self) TOLUA_ERR_SELF;
- tolua_pushnumber(tolua_S,(long)self->spell_forgotten2);
- return 1;
-}
-
-/* set function: spell_forgotten2 of class  player_type */
-static int toluaI_set_player_player_type_spell_forgotten2(lua_State* tolua_S)
-{
-  player_type* self = (player_type*)  tolua_getusertype(tolua_S,1,0);
- if (!self) TOLUA_ERR_SELF;
- if (!tolua_istype(tolua_S,2,LUA_TNUMBER,0))
- TOLUA_ERR_ASSIGN;
-  self->spell_forgotten2 = ((u32b)  tolua_getnumber(tolua_S,2,0));
+ tolua_error(tolua_S,"invalid type in array indexing.");
+ toluaI_index = (int)tolua_getnumber(tolua_S,2,0)-1;
+ if (toluaI_index<0 || toluaI_index>=PY_MAX_SPELLS)
+ tolua_error(tolua_S,"array indexing out of range.");
+  self->spell_flags[toluaI_index] = ((byte)  tolua_getnumber(tolua_S,3,0));
  return 0;
 }
 
@@ -6319,6 +6234,10 @@ int tolua_player_open (lua_State* tolua_S)
  tolua_constant(tolua_S,NULL,"PY_FOOD_WEAK",PY_FOOD_WEAK);
  tolua_constant(tolua_S,NULL,"PY_FOOD_FAINT",PY_FOOD_FAINT);
  tolua_constant(tolua_S,NULL,"PY_FOOD_STARVE",PY_FOOD_STARVE);
+ tolua_constant(tolua_S,NULL,"PY_MAX_SPELLS",PY_MAX_SPELLS);
+ tolua_constant(tolua_S,NULL,"PY_SPELL_LEARNED",PY_SPELL_LEARNED);
+ tolua_constant(tolua_S,NULL,"PY_SPELL_WORKED",PY_SPELL_WORKED);
+ tolua_constant(tolua_S,NULL,"PY_SPELL_FORGOTTEN",PY_SPELL_FORGOTTEN);
  tolua_constant(tolua_S,NULL,"PY_REGEN_NORMAL",PY_REGEN_NORMAL);
  tolua_constant(tolua_S,NULL,"PY_REGEN_WEAK",PY_REGEN_WEAK);
  tolua_constant(tolua_S,NULL,"PY_REGEN_FAINT",PY_REGEN_FAINT);
@@ -6389,12 +6308,7 @@ int tolua_player_open (lua_State* tolua_S)
  tolua_tablevar(tolua_S,"player_type","food",toluaI_get_player_player_type_food,toluaI_set_player_player_type_food);
  tolua_tablevar(tolua_S,"player_type","confusing",toluaI_get_player_player_type_confusing,toluaI_set_player_player_type_confusing);
  tolua_tablevar(tolua_S,"player_type","searching",toluaI_get_player_player_type_searching,toluaI_set_player_player_type_searching);
- tolua_tablevar(tolua_S,"player_type","spell_learned1",toluaI_get_player_player_type_spell_learned1,toluaI_set_player_player_type_spell_learned1);
- tolua_tablevar(tolua_S,"player_type","spell_learned2",toluaI_get_player_player_type_spell_learned2,toluaI_set_player_player_type_spell_learned2);
- tolua_tablevar(tolua_S,"player_type","spell_worked1",toluaI_get_player_player_type_spell_worked1,toluaI_set_player_player_type_spell_worked1);
- tolua_tablevar(tolua_S,"player_type","spell_worked2",toluaI_get_player_player_type_spell_worked2,toluaI_set_player_player_type_spell_worked2);
- tolua_tablevar(tolua_S,"player_type","spell_forgotten1",toluaI_get_player_player_type_spell_forgotten1,toluaI_set_player_player_type_spell_forgotten1);
- tolua_tablevar(tolua_S,"player_type","spell_forgotten2",toluaI_get_player_player_type_spell_forgotten2,toluaI_set_player_player_type_spell_forgotten2);
+ tolua_tablearray(tolua_S,"player_type","spell_flags",toluaI_get_player_player_type_spell_flags,toluaI_set_player_player_type_spell_flags);
  tolua_tablearray(tolua_S,"player_type","spell_order",toluaI_get_player_player_type_spell_order,toluaI_set_player_player_type_spell_order);
  tolua_tablearray(tolua_S,"player_type","player_hp",toluaI_get_player_player_type_player_hp,toluaI_set_player_player_type_player_hp);
  tolua_tablearray(tolua_S,"player_type","died_from",toluaI_get_player_player_type_died_from,toluaI_set_player_player_type_died_from);
@@ -6664,6 +6578,10 @@ void tolua_player_close (lua_State* tolua_S)
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"PY_FOOD_WEAK");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"PY_FOOD_FAINT");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"PY_FOOD_STARVE");
+ lua_pushnil(tolua_S); lua_setglobal(tolua_S,"PY_MAX_SPELLS");
+ lua_pushnil(tolua_S); lua_setglobal(tolua_S,"PY_SPELL_LEARNED");
+ lua_pushnil(tolua_S); lua_setglobal(tolua_S,"PY_SPELL_WORKED");
+ lua_pushnil(tolua_S); lua_setglobal(tolua_S,"PY_SPELL_FORGOTTEN");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"PY_REGEN_NORMAL");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"PY_REGEN_WEAK");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"PY_REGEN_FAINT");

@@ -1,5 +1,5 @@
 /*
-** $Id: ldo.c,v 1.1 2001/10/27 19:35:29 angband Exp $
+** $Id: ldo.c,v 1.2 2002/05/09 18:07:00 rr9 Exp $
 ** Stack and Call structure of Lua
 ** See Copyright Notice in lua.h
 */
@@ -328,7 +328,7 @@ struct lua_longjmp {
 };
 
 
-static void message (lua_State *L, const char *s) {
+static void lua_message (lua_State *L, const char *s) {
   const TObject *em = luaH_getglobal(L, LUA_ERRORMESSAGE);
   if (ttype(em) == LUA_TFUNCTION) {
     *L->top = *em;
@@ -343,7 +343,7 @@ static void message (lua_State *L, const char *s) {
 ** Reports an error, and jumps up to the available recovery label
 */
 LUA_API void lua_error (lua_State *L, const char *s) {
-  if (s) message(L, s);
+  if (s) lua_message(L, s);
   luaD_breakrun(L, LUA_ERRRUN);
 }
 
@@ -355,7 +355,7 @@ void luaD_breakrun (lua_State *L, int errcode) {
   }
   else {
     if (errcode != LUA_ERRMEM)
-      message(L, "unable to recover; exiting\n");
+      lua_message(L, "unable to recover; exiting\n");
     exit(EXIT_FAILURE);
   }
 }

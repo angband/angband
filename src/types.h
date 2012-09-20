@@ -566,10 +566,6 @@ struct alloc_entry
  * the "quest level" is then the level past which progress is forbidden
  * until the quest is complete.  Note that the "QUESTOR" flag then could
  * become a more general "never out of depth" flag for monsters.
- *
- * Actually, in Angband 2.8.0 it will probably prove easier to restrict
- * the concept of quest monsters to specific unique monsters, and to
- * actually scan the dead unique list to see what quests are left.
  */
 struct quest
 {
@@ -895,12 +891,7 @@ struct player_type
 	byte confusing;		/* Glowing hands */
 	byte searching;		/* Currently searching */
 
-	u32b spell_learned1;	/* Spell flags */
-	u32b spell_learned2;	/* Spell flags */
-	u32b spell_worked1;		/* Spell flags */
-	u32b spell_worked2;		/* Spell flags */
-	u32b spell_forgotten1;	/* Spell flags */
-	u32b spell_forgotten2;	/* Spell flags */
+	byte spell_flags[PY_MAX_SPELLS]; /* Spell flags */
 
 	byte spell_order[PY_MAX_SPELLS];	/* Spell order */
 

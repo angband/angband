@@ -974,14 +974,8 @@ errr init_gcu(int argc, char **argv)
 	/* Extract the normal keymap */
 	keymap_norm_prepare();
 
-
-#if defined(USG)
-	/* Initialize for USG Unix */
+	/* Initialize */
 	if (initscr() == NULL) return (-1);
-#else
-	/* Initialize for other systems */
-	if (initscr() == (WINDOW*)ERR) return (-1);
-#endif
 
 	/* Activate hooks */
 	quit_aux = hook_quit;

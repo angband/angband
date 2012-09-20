@@ -2474,7 +2474,6 @@ static bool activate_object(object_type *o_ptr, bool *ident)
 		{
 			case SV_RING_ACID:
 			{
-				msg_print("You feel resistant to acid.");
 				fire_ball(GF_ACID, dir, 70, 2);
 				set_oppose_acid(p_ptr->oppose_acid + randint(20) + 20);
 				o_ptr->timeout = rand_int(50) + 50;
@@ -2483,7 +2482,6 @@ static bool activate_object(object_type *o_ptr, bool *ident)
 
 			case SV_RING_FLAMES:
 			{
-				msg_print("You feel resistant to fire.");
 				fire_ball(GF_FIRE, dir, 80, 2);
 				set_oppose_fire(p_ptr->oppose_fire + randint(20) + 20);
 				o_ptr->timeout = rand_int(50) + 50;
@@ -2492,7 +2490,6 @@ static bool activate_object(object_type *o_ptr, bool *ident)
 
 			case SV_RING_ICE:
 			{
-				msg_print("You feel resistant to cold.");
 				fire_ball(GF_COLD, dir, 75, 2);
 				set_oppose_cold(p_ptr->oppose_cold + randint(20) + 20);
 				o_ptr->timeout = rand_int(50) + 50;
@@ -2501,7 +2498,6 @@ static bool activate_object(object_type *o_ptr, bool *ident)
 
 			case SV_RING_LIGHTNING:
 			{
-				msg_print("You feel resistant to electricity.");
 				fire_ball(GF_ELEC, dir, 85, 2);
 				set_oppose_elec(p_ptr->oppose_elec + randint(20) + 20);
 				o_ptr->timeout = rand_int(50) + 50;
@@ -2518,6 +2514,9 @@ static bool activate_object(object_type *o_ptr, bool *ident)
 
 	/* Mistake */
 	msg_print("Oops.  That object cannot be activated.");
+
+	/* Not used up */
+	return (FALSE);
 }
 
 

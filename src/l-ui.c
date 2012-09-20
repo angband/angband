@@ -1,6 +1,6 @@
 /*
 ** Lua binding: ui
-** Generated automatically by tolua 4.0a - angband on Tue Mar 12 21:29:13 2002.
+** Generated automatically by tolua 4.0a - angband.
 */
 
 #include "lua/tolua.h"
@@ -14,6 +14,7 @@ void tolua_ui_close (lua_State* tolua_S);
 /* function to register type */
 static void toluaI_reg_types (lua_State* tolua_S)
 {
+(void)tolua_S; /* Hack - prevent compiler warnings */
 }
 
 /* error messages */
@@ -447,6 +448,29 @@ tolua_lerror:
  return 0;
 }
 
+/* function: get_aim_dir */
+static int toluaI_ui_get_aim_dir00(lua_State* tolua_S)
+{
+ if (
+ !tolua_istype(tolua_S,1,LUA_TNUMBER,1) ||
+ !tolua_isnoobj(tolua_S,2)
+ )
+ goto tolua_lerror;
+ else
+ {
+  int dp = ((int)  tolua_getnumber(tolua_S,1,0));
+ {
+  bool toluaI_ret = (bool)  get_aim_dir(&dp);
+ tolua_pushbool(tolua_S,(int)toluaI_ret);
+ tolua_pushnumber(tolua_S,(long)dp);
+ }
+ }
+ return 2;
+tolua_lerror:
+ tolua_error(tolua_S,"#ferror in function 'get_aim_dir'.");
+ return 0;
+}
+
 /* function: text_out_to_screen */
 static int toluaI_ui_text_out00(lua_State* tolua_S)
 {
@@ -614,6 +638,7 @@ int tolua_ui_open (lua_State* tolua_S)
  tolua_function(tolua_S,NULL,"clear_from",toluaI_ui_clear_from00);
  tolua_function(tolua_S,NULL,"pause_line",toluaI_ui_pause_line00);
  tolua_function(tolua_S,NULL,"request_command",toluaI_ui_request_command00);
+ tolua_function(tolua_S,NULL,"get_aim_dir",toluaI_ui_get_aim_dir00);
  tolua_function(tolua_S,NULL,"text_out",toluaI_ui_text_out00);
  tolua_function(tolua_S,NULL,"Term_clear",toluaI_ui_Term_clear00);
  return 1;
@@ -740,6 +765,7 @@ void tolua_ui_close (lua_State* tolua_S)
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"clear_from");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"pause_line");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"request_command");
+ lua_pushnil(tolua_S); lua_setglobal(tolua_S,"get_aim_dir");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"text_out");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"Term_clear");
 }

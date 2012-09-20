@@ -91,18 +91,14 @@ bool spell_okay(int spell, bool known)
 	if (s_ptr->slevel > p_ptr->lev) return (FALSE);
 
 	/* Spell is forgotten */
-	if ((spell < 32) ?
-	    (p_ptr->spell_forgotten1 & (1L << spell)) :
-	    (p_ptr->spell_forgotten2 & (1L << (spell - 32))))
+	if (p_ptr->spell_flags[spell] & PY_SPELL_FORGOTTEN)
 	{
 		/* Never okay */
 		return (FALSE);
 	}
 
 	/* Spell is learned */
-	if ((spell < 32) ?
-	    (p_ptr->spell_learned1 & (1L << spell)) :
-	    (p_ptr->spell_learned2 & (1L << (spell - 32))))
+	if (p_ptr->spell_flags[spell] & PY_SPELL_LEARNED)
 	{
 		/* Okay to cast, not to study */
 		return (known);
@@ -157,16 +153,12 @@ void print_spells(const byte *spells, int num, int y, int x)
 		line_attr = TERM_WHITE;
 
 		/* Analyze the spell */
-		if ((spell < 32) ?
-		    ((p_ptr->spell_forgotten1 & (1L << spell))) :
-		    ((p_ptr->spell_forgotten2 & (1L << (spell - 32)))))
+		if (p_ptr->spell_flags[spell] & PY_SPELL_FORGOTTEN)
 		{
 			comment = " forgotten";
 			line_attr = TERM_YELLOW;
 		}
-		else if (!((spell < 32) ?
-		           (p_ptr->spell_learned1 & (1L << spell)) :
-		           (p_ptr->spell_learned2 & (1L << (spell - 32)))))
+		else if (!(p_ptr->spell_flags[spell] & PY_SPELL_LEARNED))
 		{
 			if (s_ptr->slevel <= p_ptr->lev)
 			{
@@ -179,9 +171,7 @@ void print_spells(const byte *spells, int num, int y, int x)
 				line_attr = TERM_RED;
 			}
 		}
-		else if (!((spell < 32) ?
-		           (p_ptr->spell_worked1 & (1L << spell)) :
-		           (p_ptr->spell_worked2 & (1L << (spell - 32)))))
+		else if (!(p_ptr->spell_flags[spell] & PY_SPELL_WORKED))
 		{
 			comment = " untried";
 			line_attr = TERM_L_GREEN;
@@ -588,7 +578,7 @@ void do_cmd_study(void)
 {
 	int i, item;
 
-	int spell = -1;
+	int spell;
 
 	cptr p = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
 
@@ -702,14 +692,7 @@ void do_cmd_study(void)
 	p_ptr->energy_use = 100;
 
 	/* Learn the spell */
-	if (spell < 32)
-	{
-		p_ptr->spell_learned1 |= (1L << spell);
-	}
-	else
-	{
-		p_ptr->spell_learned2 |= (1L << (spell - 32));
-	}
+	p_ptr->spell_flags[spell] |= PY_SPELL_LEARNED;
 
 	/* Find the next open entry in "spell_order[]" */
 	for (i = 0; i < PY_MAX_SPELLS; i++)
@@ -856,21 +839,12 @@ void do_cmd_cast(void)
 		if (!cast_spell(cp_ptr->spell_book, spell)) return;
 
 		/* A spell was cast */
-		if (!((spell < 32) ?
-		      (p_ptr->spell_worked1 & (1L << spell)) :
-		      (p_ptr->spell_worked2 & (1L << (spell - 32)))))
+		if (!(p_ptr->spell_flags[spell] & PY_SPELL_WORKED))
 		{
 			int e = s_ptr->sexp;
 
 			/* The spell worked */
-			if (spell < 32)
-			{
-				p_ptr->spell_worked1 |= (1L << spell);
-			}
-			else
-			{
-				p_ptr->spell_worked2 |= (1L << (spell - 32));
-			}
+			p_ptr->spell_flags[spell] |= PY_SPELL_WORKED;
 
 			/* Gain experience */
 			gain_exp(e * s_ptr->slevel);
@@ -1034,21 +1008,12 @@ void do_cmd_pray(void)
 		if (!cast_spell(cp_ptr->spell_book, spell)) return;
 
 		/* A prayer was prayed */
-		if (!((spell < 32) ?
-		      (p_ptr->spell_worked1 & (1L << spell)) :
-		      (p_ptr->spell_worked2 & (1L << (spell - 32)))))
+		if (!(p_ptr->spell_flags[spell] & PY_SPELL_WORKED))
 		{
 			int e = s_ptr->sexp;
 
 			/* The spell worked */
-			if (spell < 32)
-			{
-				p_ptr->spell_worked1 |= (1L << spell);
-			}
-			else
-			{
-				p_ptr->spell_worked2 |= (1L << (spell - 32));
-			}
+			p_ptr->spell_flags[spell] |= PY_SPELL_WORKED;
 
 			/* Gain experience */
 			gain_exp(e * s_ptr->slevel);
@@ -1102,4 +1067,3 @@ void do_cmd_pray(void)
 	/* Window stuff */
 	p_ptr->window |= (PW_PLAYER_0 | PW_PLAYER_1);
 }
-

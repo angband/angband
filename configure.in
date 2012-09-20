@@ -7,7 +7,7 @@ AC_INIT(src/main.c)
 dnl write the resulting #defines into a header file
 AM_CONFIG_HEADER(src/autoconf.h)
 
-AM_INIT_AUTOMAKE(angband, 2.9.7-alpha1)
+AM_INIT_AUTOMAKE(angband, 3.0.0)
 
 AC_ARG_WITH(setgid,
 [  --with-setgid=NAME      install angband as group NAME],
@@ -44,7 +44,7 @@ AC_SUBST(DEFAULT_PATH)
 
 dnl Checks for programs.
 AC_PROG_CC
-AC_PROG_RANLIB
+AC_CHECK_TOOL(RANLIB, ranlib)
 
 dnl -fno-strength-reduce prevents a bug in some versions of gcc
 if test "$GCC" = yes; then

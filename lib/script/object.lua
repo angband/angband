@@ -638,7 +638,7 @@ function aim_wand(object)
 	player.energy_use = 100
 
 	-- Get the object level
-	local lev = k_info[object.k_idx].level
+	local lev = k_info[object.k_idx + 1].level
 
 	-- Base chance of success
 	local chance = player.skill_dev
@@ -795,7 +795,7 @@ function zap_rod(object)
 	player.energy_use = 100
 
 	-- Get the object level
-	local lev = k_info[object.k_idx].level
+	local lev = k_info[object.k_idx + 1].level
 
 	-- Base chance of success
 	local chance = player.skill_dev
@@ -1268,7 +1268,7 @@ function activate_object(object)
 		elseif object.sval == SV_DRAGON_BALANCE then
 			local chance = randint(4)
 			local name = {"shards", "sound", "chaos", "disenchantment"}
-			local effect = {GF_SHARD, GF_SOUND, GF_CHAOS, GF_SHARD}
+			local effect = {GF_SHARD, GF_SOUND, GF_CHAOS, GF_DISENCHANT}
 			msg_print(format("You breathe %s.", name[chance]))
 			fire_ball(effect[chance], dir, 250, 2)
 			object.timeout = rand_int(300) + 300
@@ -1299,22 +1299,18 @@ function activate_object(object)
 
 		-- Branch on the sub-type
 		if object.sval == SV_RING_ACID then
-			msg_print("You feel resistant to acid.")
 			fire_ball(GF_ACID, dir, 70, 2)
 			set_oppose_acid(player.oppose_acid + randint(20) + 20)
 			object.timeout = rand_int(50) + 50
 		elseif object.sval == SV_RING_FLAMES then
-			msg_print("You feel resistant to fire.")
 			fire_ball(GF_FIRE, dir, 80, 2)
 			set_oppose_fire(player.oppose_fire + randint(20) + 20)
 			object.timeout = rand_int(50) + 50
 		elseif object.sval == SV_RING_ICE then
-			msg_print("You feel resistant to cold.")
 			fire_ball(GF_COLD, dir, 75, 2)
 			set_oppose_cold(player.oppose_cold + randint(20) + 20)
 			object.timeout = rand_int(50) + 50
 		elseif object.sval == SV_RING_LIGHTNING then
-			msg_print("You feel resistant to electricity.")
 			fire_ball(GF_ELEC, dir, 85, 2)
 			set_oppose_elec(player.oppose_elec + randint(20) + 20)
 			object.timeout = rand_int(50) + 50

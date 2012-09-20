@@ -244,43 +244,6 @@
 
 
 /*
- * OPTION: Delay the loading of the "f_text" array until it is actually
- * needed, saving ~1K, since "feature" descriptions are unused.
- */
-#define DELAY_LOAD_F_TEXT
-
-/*
- * OPTION: Delay the loading of the "k_text" array until it is actually
- * needed, saving ~1K, since "object" descriptions are unused.
- */
-#define DELAY_LOAD_K_TEXT
-
-/*
- * OPTION: Delay the loading of the "a_text" array until it is actually
- * needed, saving ~1K, since "artifact" descriptions are unused.
- */
-#define DELAY_LOAD_A_TEXT
-
-/*
- * OPTION: Delay the loading of the "e_text" array until it is actually
- * needed, saving ~1K, since "ego-item" descriptions are unused.
- */
-#define DELAY_LOAD_E_TEXT
-
-/*
- * OPTION: Delay the loading of the "r_text" array until it is actually
- * needed, saving ~60K, but "simplifying" the "monster" descriptions.
- */
-/* #define DELAY_LOAD_R_TEXT */
-
-/*
- * OPTION: Delay the loading of the "v_text" array until it is actually
- * needed, saving ~1K, but "destroying" the "vault" generation.
- */
-/* #define DELAY_LOAD_V_TEXT */
-
-
-/*
  * OPTION: Handle signals
  */
 #define HANDLE_SIGNALS
@@ -459,6 +422,18 @@
 
 
 /*
+ * Allow the user to execute his own scripts in debug mode.
+ *
+ * The user-script code has not been checked for security issues yet,
+ * so the user shouldn't be allowed to execute his own scripts from
+ * a setgid executable.
+ */
+#ifndef SET_UID
+# define ALLOW_USER_SCRIPTS
+#endif /* SET_UID */
+
+
+/*
  * OPTION: Check the "time" against "lib/file/hours.txt"
  */
 /* #define CHECK_TIME */
@@ -547,8 +522,6 @@
 # undef ALLOW_SPOILERS
 # undef ALLOW_TEMPLATES
 # undef MONSTER_AI
-# undef DELAY_LOAD_R_TEXT
-# define DELAY_LOAD_R_TEXT
 #endif
 
 

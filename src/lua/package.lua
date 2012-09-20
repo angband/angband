@@ -2,7 +2,7 @@
 -- Written by Waldemar Celes
 -- TeCGraf/PUC-Rio
 -- Jul 1998
--- $Id: package.lua,v 1.2 2001/10/28 16:18:38 angband Exp $
+-- $Id: package.lua,v 1.3 2002/04/02 13:42:32 rr9 Exp $
 
 -- This code is free software; you can redistribute it and/or modify it.
 -- The software provided hereunder is on an "as is" basis, and
@@ -78,7 +78,7 @@ end
 function classPackage:preamble ()
  output('/*\n')
  output('** Lua binding: '..self.name..'\n')
- output('** Generated automatically by '..TOLUA_VERSION..' on '..date()..'.\n')
+ output('** Generated automatically by '..TOLUA_VERSION..'.\n')
  output('*/\n\n')
 
  output('#include "lua/tolua.h"\n\n')
@@ -99,6 +99,8 @@ function classPackage:preamble ()
  output('/* function to register type */')
  output('static void toluaI_reg_types (lua_State* tolua_S)')
  output('{')
+ -- Hack - prevent compiler warnings when no types.
+ output('(void)tolua_S;	/* Hack - prevent compiler warnings */')
  foreach(_usertype,function(n,v) output(' tolua_usertype(tolua_S,"',v,'");') end)
  output('}')
  output('\n')
@@ -143,7 +145,7 @@ end
 -- write header file
 function classPackage:header ()
  output('/*\n') output('** Lua binding: '..self.name..'\n')
- output('** Generated automatically by '..TOLUA_VERSION..' on '..date()..'.\n')
+ output('** Generated automatically by '..TOLUA_VERSION..'.\n')
  output('*/\n\n')
 
  if not flags.h then

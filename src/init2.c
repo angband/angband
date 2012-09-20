@@ -2029,6 +2029,7 @@ void cleanup_angband(void)
 	free_info(&flavor_head);
 	free_info(&g_head);
 	free_info(&b_head);
+	free_info(&c_head);
 	free_info(&p_head);
 	free_info(&h_head);
 	free_info(&v_head);

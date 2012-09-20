@@ -174,6 +174,8 @@ extern void clear_from(int row);
 extern void pause_line(int row);
 extern void request_command(bool shopping);
 
+extern bool get_aim_dir(int *dp = 0);
+
 /*
 extern bool askfor_aux(char *buf, int len);
 extern bool get_string(cptr prompt, char *buf, int len);

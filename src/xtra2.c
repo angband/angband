@@ -2454,7 +2454,7 @@ static void look_mon_desc(char *buf, int m_idx)
  * function hooks to interact with the data, which is given as
  * two pointers, and which may have any user-defined form.
  */
-void ang_sort_aux(vptr u, vptr v, int p, int q)
+void ang_sort_aux(void *u, void *v, int p, int q)
 {
 	int z, a, b;
 
@@ -2503,7 +2503,7 @@ void ang_sort_aux(vptr u, vptr v, int p, int q)
  * function hooks to interact with the data, which is given as
  * two pointers, and which may have any user-defined form.
  */
-void ang_sort(vptr u, vptr v, int n)
+void ang_sort(void *u, void *v, int n)
 {
 	/* Sort the array */
 	ang_sort_aux(u, v, 0, n-1);
@@ -2750,7 +2750,7 @@ void target_set_location(int y, int x)
  * We use "u" and "v" to point to arrays of "x" and "y" positions,
  * and sort the arrays by double-distance to the player.
  */
-static bool ang_sort_comp_distance(vptr u, vptr v, int a, int b)
+static bool ang_sort_comp_distance(const void *u, const void *v, int a, int b)
 {
 	int py = p_ptr->py;
 	int px = p_ptr->px;
@@ -2785,7 +2785,7 @@ static bool ang_sort_comp_distance(vptr u, vptr v, int a, int b)
  * We use "u" and "v" to point to arrays of "x" and "y" positions,
  * and sort the arrays by distance to the player.
  */
-static void ang_sort_swap_distance(vptr u, vptr v, int a, int b)
+static void ang_sort_swap_distance(void *u, void *v, int a, int b)
 {
 	byte *x = (byte*)(u);
 	byte *y = (byte*)(v);

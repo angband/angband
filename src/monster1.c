@@ -94,69 +94,9 @@ static void describe_monster_desc(int r_idx)
 	const monster_race *r_ptr = &r_info[r_idx];
 	char buf[2048];
 
-#ifdef DELAY_LOAD_R_TEXT
-
-	int fd;
-
-	/* Build the filename */
-	path_build(buf, 1024, ANGBAND_DIR_DATA, "monster.raw");
-
-	/* Open the "raw" file */
-	fd = fd_open(buf, O_RDONLY);
-
-	/* Use file */
-	if (fd >= 0)
-	{
-		long pos;
-
-		/* Starting position */
-		pos = r_ptr->text;
-
-		/* Additional offsets */
-		pos += r_head->head_size;
-		pos += r_head->info_size;
-		pos += r_head->name_size;
-
-#if 0
-
-		/* Maximal length */
-		len = r_head->text_size - r_ptr->text;
-
-		/* Actual length */
-		for (i = r_idx+1; i < z_info->r_max; i++)
-		{
-			/* Actual length */
-			if (r_info[i].text > r_ptr->text)
-			{
-				/* Extract length */
-				len = r_info[i].text - r_ptr->text;
-
-				/* Done */
-				break;
-			}
-		}
-
-		/* Maximal length */
-		if (len > 2048) len = 2048;
-
-#endif
-
-		/* Seek */
-		fd_seek(fd, pos);
-
-		/* Read a chunk of data */
-		fd_read(fd, buf, sizeof(buf));
-
-		/* Close it */
-		fd_close(fd);
-	}
-
-#else
-
 	/* Simple method */
-	strcpy(buf, r_text + r_ptr->text);
-
-#endif
+	strncpy(buf, r_text + r_ptr->text, sizeof(buf));
+	buf[sizeof(buf) - 1] = '\0';
 
 	/* Dump it */
 	text_out(buf);

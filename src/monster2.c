@@ -1776,8 +1776,10 @@ bool place_monster(int y, int x, bool slp, bool grp)
 
 /*
  * XXX XXX XXX Player Ghosts are such a hack, they have been completely
- * removed until Angband 2.8.0, in which there will actually be a small
- * number of "unique" monsters which will serve as the "player ghosts".
+ * removed.
+ *
+ * An idea for reintroducing them is to create a small number of
+ * "unique" monsters which will serve as the "player ghosts".
  * Each will have a place holder for the "name" of a deceased player,
  * which will be extracted from a "bone" file, or replaced with a
  * "default" name if a real name is not available.  Each ghost will

@@ -51,7 +51,7 @@
 
 # Version stamp (required)
 
-V:2.9.7
+V:3.0.0
 
 # 1 (unused)
 
@@ -110,7 +110,7 @@ F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 
 N:10:of Vulnerability
 X:0:0
-W:127:1:0:0
+W:0:2:0:0
 C:0:0:50:0
 T:36:0:99
 T:37:0:99
@@ -198,7 +198,7 @@ F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 
 N:23:of Vulnerability
 X:0:0
-W:127:1:0:0
+W:0:2:0:0
 C:0:0:50:0
 T:34:0:99
 F:AGGRAVATE | LIGHT_CURSE
@@ -781,7 +781,7 @@ F:STR | TUNNEL | BRAND_ACID | IMPACT | HIDE_TYPE
 
 N:102:of Morgul
 X:0:0
-W:127:1:0:1
+W:0:5:0:1
 C:0:0:0:0
 T:21:0:99
 T:22:0:99
@@ -838,12 +838,12 @@ N:110:of Buckland
 X:25:0
 W:40:4:0:20000
 C:8:8:0:2
-T:19:1:1
+T:19:2:2
 F:DEX | SHOTS | MIGHT | IGNORE_ACID | IGNORE_FIRE | HIDE_TYPE
 
 N:111:of the Nazgul
 X:0:0
-W:127:1:0:0
+W:0:2:0:0
 C:10:10:0:0
 T:19:0:99
 F:LIGHT_CURSE | DRAIN_EXP | SEE_INVIS
@@ -959,7 +959,7 @@ T:18:0:99
 
 N:125:of Backbiting
 X:0:0
-W:127:1:0:0
+W:0:1:0:0
 C:50:50:0:0
 T:16:0:99
 T:17:0:99

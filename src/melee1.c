@@ -52,30 +52,19 @@ static int monster_critical(int dice, int sides, int dam)
 
 /*
  * Determine if a monster attack against the player succeeds.
- * Always miss 5% of the time, Always hit 5% of the time.
- * Otherwise, match monster power against player armor.
  */
-static int check_hit(int power, int level)
+static bool check_hit(int power, int level)
 {
-	int i, k, ac;
-
-	/* Percentile dice */
-	k = rand_int(100);
-
-	/* Hack -- Always miss or hit */
-	if (k < 10) return (k < 5);
+	int chance, ac;
 
 	/* Calculate the "attack quality" */
-	i = (power + (level * 3));
+	chance = (power + (level * 3));
 
 	/* Total armor */
 	ac = p_ptr->ac + p_ptr->to_a;
 
-	/* Power and Level compete against Armor */
-	if ((i > 0) && (randint(i) > ((ac * 3) / 4))) return (TRUE);
-
-	/* Assume miss */
-	return (FALSE);
+	/* Check if the player was hit */
+	return test_hit(chance, ac, TRUE);
 }
 
 

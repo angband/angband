@@ -1474,12 +1474,12 @@ static bool wr_savefile_new(void)
 
 
 	/* Write spell data */
-	wr_u32b(p_ptr->spell_learned1);
-	wr_u32b(p_ptr->spell_learned2);
-	wr_u32b(p_ptr->spell_worked1);
-	wr_u32b(p_ptr->spell_worked2);
-	wr_u32b(p_ptr->spell_forgotten1);
-	wr_u32b(p_ptr->spell_forgotten2);
+	wr_u16b(PY_MAX_SPELLS);
+
+	for (i = 0; i < PY_MAX_SPELLS; i++)
+	{
+		wr_byte(p_ptr->spell_flags[i]);
+	}
 
 	/* Dump the ordered spells */
 	for (i = 0; i < PY_MAX_SPELLS; i++)

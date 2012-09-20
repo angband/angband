@@ -332,10 +332,10 @@ static void wiz_display_item(const object_type *o_ptr)
 
 	prt("+------------FLAGS1------------+", 10, j);
 	prt("AFFECT..........SLAY.......BRAND", 11, j);
-	prt("                ae      x  paefc", 12, j);
-	prt("siwdcc  ssidsasmnvudotgdd  oclio", 13, j);
-	prt("tnieoh  trnipthgiinmrrnrr  iierl", 14, j);
-	prt("rtsxna..lcfgdkttmldncltgg..sdced", 15, j);
+	prt("                ae      xxxpaefc", 12, j);
+	prt("siwdcc  ssidsasmnvudotgddduoclio", 13, j);
+	prt("tnieoh  trnipthgiinmrrnrrmniierl", 14, j);
+	prt("rtsxna..lcfgdkttmldncltggndsdced", 15, j);
 	prt_binary(f1, 16, j);
 
 	prt("+------------FLAGS2------------+", 17, j);

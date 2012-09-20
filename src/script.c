@@ -20,24 +20,6 @@
 static lua_State* L = NULL;
 
 
-static int xxx_msg_print(lua_State *L)
-{
-	cptr text = lua_tostring(L, 1);
-	if (text) msg_print(text);
-	lua_pop(L, 1);
-
-	return 0;
-}
-
-
-static int xxx_msg_flush(lua_State *L)
-{
-	message_flush();
-
-	return 0;
-}
-
-
 static int xxx_build_script_path(lua_State *L)
 {
 	char buf[1024];
@@ -51,34 +33,6 @@ static int xxx_build_script_path(lua_State *L)
 	path_build(buf, 1024, ANGBAND_DIR_SCRIPT, filename);
 
 	tolua_pushstring(L, buf);
-
-	return 1;
-}
-
-
-static int xxx_get_aim_dir(lua_State *L)
-{
-	int dir;
-	bool success;
-
-	success = get_aim_dir(&dir);
-	tolua_pushbool(L, success);
-	lua_pushnumber(L, dir);
-
-	return 2;
-}
-
-
-static int xxx_fire_beam(lua_State *L)
-{
-	int typ, dir, dam;
-	bool result;
-
-	typ = (int)luaL_check_number(L, 1);
-	dir = (int)luaL_check_number(L, 2);
-	dam = (int)luaL_check_number(L, 3);
-	result = fire_beam(typ, dir, dam);
-	tolua_pushbool(L, result);
 
 	return 1;
 }
@@ -114,10 +68,6 @@ static int xxx_object_desc(lua_State *L)
 
 static const struct luaL_reg anglib[] =
 {
-	{"msg_print", xxx_msg_print},
-	{"msg_flush", xxx_msg_flush},
-	{"get_aim_dir", xxx_get_aim_dir},
-	{"fire_beam", xxx_fire_beam},
 	{"build_script_path", xxx_build_script_path},
 	{"object_desc", xxx_object_desc},
 };
@@ -126,43 +76,65 @@ static const struct luaL_reg anglib[] =
 #define luaL_check_bit(L, n)  ((long)luaL_check_number(L, n))
 #define luaL_check_ubit(L, n) ((unsigned long)luaL_check_bit(L, n))
 
-#define TDYADIC(name, op, t1, t2) \
-	static int int_ ## name(lua_State* L) \
-	{ \
-		lua_pushnumber(L, \
-		luaL_check_ ## t1 ## bit(L, 1) op luaL_check_ ## t2 ## bit(L, 2)); \
-		return 1; \
-	}
+static int int_not(lua_State* L)
+{
+	lua_pushnumber(L, ~luaL_check_bit(L, 1));
+	return 1;
+}
 
-#define DYADIC(name, op) \
-	TDYADIC(name, op, , )
+static int int_mod(lua_State* L)
+{
+	lua_pushnumber(L, luaL_check_bit(L, 1) % luaL_check_bit(L, 2));
+	return 1;
+}
 
-#define MONADIC(name, op) \
-	static int int_ ## name(lua_State* L) \
-	{ \
-		lua_pushnumber(L, op luaL_check_bit(L, 1)); \
-		return 1; \
-	}
+static int int_or(lua_State *L)
+{
+	int n = lua_gettop(L), i;
+	long w = luaL_check_bit(L, 1);
+	for (i = 2; i <= n; i++)
+		w |= luaL_check_bit(L, i);
+	lua_pushnumber(L, w);
+	return 1;
+}
 
-#define VARIADIC(name, op) \
-	static int int_ ## name(lua_State *L) \
-	{ \
-		int n = lua_gettop(L), i; \
-		long w = luaL_check_bit(L, 1); \
-		for (i = 2; i <= n; i++) \
-			w op ## = luaL_check_bit(L, i); \
-		lua_pushnumber(L, w); \
-		return 1; \
-	}
+static int int_xor(lua_State *L)
+{
+	int n = lua_gettop(L), i;
+	long w = luaL_check_bit(L, 1);
+	for (i = 2; i <= n; i++)
+		w ^= luaL_check_bit(L, i);
+	lua_pushnumber(L, w);
+	return 1;
+}
 
-MONADIC(not,     ~)
-DYADIC(mod,      %)
-VARIADIC(and,    &)
-VARIADIC(or,     |)
-VARIADIC(xor,    ^)
-TDYADIC(lshift,  <<, , u)
-TDYADIC(rshift,  >>, u, u)
-TDYADIC(arshift, >>, , u)
+static int int_and(lua_State *L)
+{
+	int n = lua_gettop(L), i;
+	long w = luaL_check_bit(L, 1);
+	for (i = 2; i <= n; i++)
+		w &= luaL_check_bit(L, i);
+	lua_pushnumber(L, w);
+	return 1;
+}
+
+static int int_lshift(lua_State* L)
+{
+	lua_pushnumber(L, luaL_check_bit(L, 1) << luaL_check_ubit(L, 2));
+	return 1;
+}
+
+static int int_rshift(lua_State* L)
+{
+	lua_pushnumber(L, luaL_check_ubit(L, 1) >> luaL_check_ubit(L, 2));
+	return 1;
+}
+
+static int int_arshift(lua_State* L)
+{
+	lua_pushnumber(L, luaL_check_bit(L, 1) >> luaL_check_ubit(L, 2));
+	return 1;
+}
 
 static const struct luaL_reg bitlib[] =
 {
@@ -303,15 +275,11 @@ cptr get_spell_info(int tval, int index)
 
 bool cast_spell(int tval, int index)
 {
-	static char buffer[80];
 	bool done = FALSE;
 
 	lua_getglobal(L, "cast_spell_hook");
 	lua_pushnumber(L, tval);
 	lua_pushnumber(L, index);
-
-	/* Erase the buffer */
-	buffer[0] = '\0';
 
 	/* Call the function with 2 arguments and 1 result */
 	if (!lua_call(L, 2, 1))
@@ -346,6 +314,8 @@ void describe_item_activation(const object_type *o_ptr)
 	}
 }
 
+
+#ifdef ALLOW_USER_SCRIPTS
 
 static void line_hook(lua_State *L, lua_Debug *ar)
 {
@@ -512,6 +482,15 @@ void do_cmd_script(void)
 		}
 	}
 }
+
+#else /* ALLOW_USER_SCRIPTS */
+
+void do_cmd_script(void)
+{
+	/* Do nothing */
+}
+
+#endif /* ALLOW_USER_SCRIPTS */
 
 
 extern int tolua_player_open(lua_State* tolua_S);

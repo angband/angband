@@ -1219,9 +1219,7 @@ static void calc_spells(void)
 	for (j = 0; j < PY_MAX_SPELLS; j++)
 	{
 		/* Count known spells */
-		if ((j < 32) ?
-		    (p_ptr->spell_learned1 & (1L << j)) :
-		    (p_ptr->spell_learned2 & (1L << (j - 32))))
+		if (p_ptr->spell_flags[j] & PY_SPELL_LEARNED)
 		{
 			num_known++;
 		}
@@ -1235,9 +1233,6 @@ static void calc_spells(void)
 	/* Forget spells which are too hard */
 	for (i = PY_MAX_SPELLS - 1; i >= 0; i--)
 	{
-		/* Efficiency -- all done */
-		if (!p_ptr->spell_learned1 && !p_ptr->spell_learned2) break;
-
 		/* Get the spell */
 		j = p_ptr->spell_order[i];
 
@@ -1251,29 +1246,13 @@ static void calc_spells(void)
 		if (s_ptr->slevel <= p_ptr->lev) continue;
 
 		/* Is it known? */
-		if ((j < 32) ?
-		    (p_ptr->spell_learned1 & (1L << j)) :
-		    (p_ptr->spell_learned2 & (1L << (j - 32))))
+		if (p_ptr->spell_flags[j] & PY_SPELL_LEARNED)
 		{
 			/* Mark as forgotten */
-			if (j < 32)
-			{
-				p_ptr->spell_forgotten1 |= (1L << j);
-			}
-			else
-			{
-				p_ptr->spell_forgotten2 |= (1L << (j - 32));
-			}
+			p_ptr->spell_flags[j] |= PY_SPELL_FORGOTTEN;
 
 			/* No longer known */
-			if (j < 32)
-			{
-				p_ptr->spell_learned1 &= ~(1L << j);
-			}
-			else
-			{
-				p_ptr->spell_learned2 &= ~(1L << (j - 32));
-			}
+			p_ptr->spell_flags[j] &= ~PY_SPELL_LEARNED;
 
 			/* Message */
 			msg_format("You have forgotten the %s of %s.", p,
@@ -1291,9 +1270,6 @@ static void calc_spells(void)
 		/* Stop when possible */
 		if (p_ptr->new_spells >= 0) break;
 
-		/* Efficiency -- all done */
-		if (!p_ptr->spell_learned1 && !p_ptr->spell_learned2) break;
-
 		/* Get the (i+1)th spell learned */
 		j = p_ptr->spell_order[i];
 
@@ -1301,29 +1277,13 @@ static void calc_spells(void)
 		if (j >= 99) continue;
 
 		/* Forget it (if learned) */
-		if ((j < 32) ?
-		    (p_ptr->spell_learned1 & (1L << j)) :
-		    (p_ptr->spell_learned2 & (1L << (j - 32))))
+		if (p_ptr->spell_flags[j] & PY_SPELL_LEARNED)
 		{
 			/* Mark as forgotten */
-			if (j < 32)
-			{
-				p_ptr->spell_forgotten1 |= (1L << j);
-			}
-			else
-			{
-				p_ptr->spell_forgotten2 |= (1L << (j - 32));
-			}
+			p_ptr->spell_flags[j] |= PY_SPELL_FORGOTTEN;
 
 			/* No longer known */
-			if (j < 32)
-			{
-				p_ptr->spell_learned1 &= ~(1L << j);
-			}
-			else
-			{
-				p_ptr->spell_learned2 &= ~(1L << (j - 32));
-			}
+			p_ptr->spell_flags[j] &= ~PY_SPELL_LEARNED;
 
 			/* Message */
 			msg_format("You have forgotten the %s of %s.", p,
@@ -1341,9 +1301,6 @@ static void calc_spells(void)
 		/* None left to remember */
 		if (p_ptr->new_spells <= 0) break;
 
-		/* Efficiency -- all done */
-		if (!p_ptr->spell_forgotten1 && !p_ptr->spell_forgotten2) break;
-
 		/* Get the next spell we learned */
 		j = p_ptr->spell_order[i];
 
@@ -1357,29 +1314,13 @@ static void calc_spells(void)
 		if (s_ptr->slevel > p_ptr->lev) continue;
 
 		/* First set of spells */
-		if ((j < 32) ?
-		    (p_ptr->spell_forgotten1 & (1L << j)) :
-		    (p_ptr->spell_forgotten2 & (1L << (j - 32))))
+		if (p_ptr->spell_flags[j] & PY_SPELL_FORGOTTEN)
 		{
 			/* No longer forgotten */
-			if (j < 32)
-			{
-				p_ptr->spell_forgotten1 &= ~(1L << j);
-			}
-			else
-			{
-				p_ptr->spell_forgotten2 &= ~(1L << (j - 32));
-			}
+			p_ptr->spell_flags[j] &= ~PY_SPELL_FORGOTTEN;
 
 			/* Known once more */
-			if (j < 32)
-			{
-				p_ptr->spell_learned1 |= (1L << j);
-			}
-			else
-			{
-				p_ptr->spell_learned2 |= (1L << (j - 32));
-			}
+			p_ptr->spell_flags[j] |= PY_SPELL_LEARNED;
 
 			/* Message */
 			msg_format("You have remembered the %s of %s.",
@@ -1404,9 +1345,7 @@ static void calc_spells(void)
 		if (s_ptr->slevel > p_ptr->lev) continue;
 
 		/* Skip spells we already know */
-		if ((j < 32) ?
-		    (p_ptr->spell_learned1 & (1L << j)) :
-		    (p_ptr->spell_learned2 & (1L << (j - 32))))
+		if (p_ptr->spell_flags[j] & PY_SPELL_LEARNED)
 		{
 			continue;
 		}

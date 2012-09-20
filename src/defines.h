@@ -47,15 +47,15 @@
 /*
  * Current version string
  */
-#define VERSION_STRING	"2.9.7 alpha"
+#define VERSION_STRING	"3.0.0"
 
 
 /*
  * Current version numbers
  */
-#define VERSION_MAJOR	2
-#define VERSION_MINOR	9
-#define VERSION_PATCH	7
+#define VERSION_MAJOR	3
+#define VERSION_MINOR	0
+#define VERSION_PATCH	0
 #define VERSION_EXTRA	0
 
 
@@ -373,6 +373,14 @@
  * Maximum number of players spells
  */
 #define PY_MAX_SPELLS 64
+
+
+/*
+ * Flags for player_type.spell_flags[]
+ */
+#define PY_SPELL_LEARNED    0x01 /* Spell has been learned */
+#define PY_SPELL_WORKED     0x02 /* Spell has been successfully tried */
+#define PY_SPELL_FORGOTTEN  0x04 /* Spell has been forgotten */
 
 
 /*
@@ -2390,7 +2398,7 @@
 #define OPT_disturb_minor			24
 /* xxx OPT_disturb_other */
 /* xxx OPT_alert_hitpoint */
-#define OPT_alert_failure			27
+/* xxx OPT_alert_failure */
 #define OPT_verify_destroy			28
 #define OPT_verify_special			29
 #define OPT_allow_quantity			30
@@ -2509,7 +2517,7 @@
 #define disturb_minor			op_ptr->opt[OPT_disturb_minor]
 /* xxx disturb_other */
 /* xxx */
-#define alert_failure			op_ptr->opt[OPT_alert_failure]
+/* xxx alert_failure */
 #define verify_destroy			op_ptr->opt[OPT_verify_destroy]
 #define verify_special			op_ptr->opt[OPT_verify_special]
 #define allow_quantity			op_ptr->opt[OPT_allow_quantity]

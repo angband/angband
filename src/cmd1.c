@@ -13,38 +13,11 @@
 
 
 /*
- * Determine if the player "hits" a monster (normal combat).
+ * Determine if the player "hits" a monster.
  *
  * Note -- Always miss 5%, always hit 5%, otherwise random.
  */
-bool test_hit_fire(int chance, int ac, int vis)
-{
-	int k;
-
-	/* Percentile dice */
-	k = rand_int(100);
-
-	/* Hack -- Instant miss or hit */
-	if (k < 10) return (k < 5);
-
-	/* Invisible monsters are harder to hit */
-	if (!vis) chance = chance / 2;
-
-	/* Power competes against armor */
-	if ((chance > 0) && (rand_int(chance) >= (ac * 3 / 4))) return (TRUE);
-
-	/* Assume miss */
-	return (FALSE);
-}
-
-
-
-/*
- * Determine if the player "hits" a monster (normal combat).
- *
- * Note -- Always miss 5%, always hit 5%, otherwise random.
- */
-bool test_hit_norm(int chance, int ac, int vis)
+bool test_hit(int chance, int ac, int vis)
 {
 	int k;
 
@@ -801,32 +774,15 @@ void py_pickup(int pickup)
 }
 
 
-
 /*
  * Determine if a trap affects the player.
  * Always miss 5% of the time, Always hit 5% of the time.
  * Otherwise, match trap power against player armor.
  */
-static int check_hit(int power)
+static bool check_hit(int power)
 {
-	int k, ac;
-
-	/* Percentile dice */
-	k = rand_int(100);
-
-	/* Hack -- 5% hit, 5% miss */
-	if (k < 10) return (k < 5);
-
-	/* Total armor */
-	ac = p_ptr->ac + p_ptr->to_a;
-
-	/* Power competes against Armor */
-	if ((power > 0) && (randint(power) >= (ac * 3 / 4))) return (TRUE);
-
-	/* Assume miss */
-	return (FALSE);
+	return test_hit(power, p_ptr->ac + p_ptr->to_a, TRUE);
 }
-
 
 
 /*
@@ -1167,7 +1123,7 @@ void py_attack(int y, int x)
 	while (num++ < p_ptr->num_blow)
 	{
 		/* Test for hit */
-		if (test_hit_norm(chance, r_ptr->ac, m_ptr->ml))
+		if (test_hit(chance, r_ptr->ac, m_ptr->ml))
 		{
 			/* Message */
 			message_format(MSG_HIT, m_ptr->r_idx, "You hit %s.", m_name);

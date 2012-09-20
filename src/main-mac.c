@@ -2560,7 +2560,7 @@ static void handle_open_when_ready(void)
 		game_in_progress = 1;
 
 		/* Wait for it */
-		pause_line(23);
+		pause_line(Term->hgt - 1);
 
 		/* Flush input */
 		flush();

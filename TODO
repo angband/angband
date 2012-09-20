@@ -43,7 +43,6 @@
 - Mimics should be true objects until the player steps next to them.
 - Throwing potions should cause the potions effect on the target.
 - Add race-specific starting equipment.
-- Change the spell list and remove or downgrade the GoI spell.
 - Extend the use of scripts for customization.
 - Improve the script-debugger.
 - Allow a restricted amount of functions to be used by the player

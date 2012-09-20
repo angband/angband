@@ -3586,12 +3586,12 @@ void display_scores_aux(int from, int to, int note, high_score *score)
 
 			/* Another line of info */
 			sprintf(out_val, "               Killed by %s on %s %d",
-			        the_score.how, "Dungeon Level", cdun);
+			        the_score.how, "dungeon level", cdun);
 
 			/* Hack -- some people die in the town */
 			if (!cdun)
 			{
-				sprintf(out_val, "               Killed by %s in the Town",
+				sprintf(out_val, "               Killed by %s in the town",
 				        the_score.how);
 			}
 
@@ -3985,7 +3985,7 @@ static void kingly(void)
 	flush();
 
 	/* Wait for response */
-	pause_line(23);
+	pause_line(Term->hgt - 1);
 }
 
 

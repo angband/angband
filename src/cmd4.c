@@ -470,6 +470,8 @@ static void do_cmd_options_aux(int page, cptr info)
 
 	char buf[80];
 
+	int dir;
+
 
 	/* Scan the options */
 	for (i = 0; i < OPT_PAGE_PER; i++)
@@ -513,6 +515,14 @@ static void do_cmd_options_aux(int page, cptr info)
 
 		/* Get a key */
 		ch = inkey();
+
+		/*
+		 * HACK - Try to translate the key into a direction
+		 * to allow using the roguelike keys for navigation.
+		 */
+		dir = target_dir(ch);
+		if ((dir == 2) || (dir == 4) || (dir == 6) || (dir == 8))
+			ch = I2D(dir);
 
 		/* Analyze */
 		switch (ch)

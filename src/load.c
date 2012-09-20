@@ -85,7 +85,7 @@ static void note(cptr msg)
  * This function determines if the version of the savefile
  * currently being read is older than version "x.y.z".
  */
-bool older_than(int x, int y, int z)
+static bool older_than(int x, int y, int z)
 {
 	/* Much older, or much more recent */
 	if (sf_major < x) return (TRUE);
@@ -792,6 +792,97 @@ static void rd_ghost(void)
 static u32b randart_version;
 
 
+static errr rd_player_spells(void)
+{
+	int i;
+	u16b tmp16u;
+
+	if (older_than(2, 9, 8))
+	{
+		/* The magic spells were changed drastically in Angband 2.9.7 */
+		if (older_than(2, 9, 7) &&
+		    (c_info[p_ptr->pclass].spell_book == TV_MAGIC_BOOK))
+		{
+			/* Discard old spell info */
+			strip_bytes(24);
+
+			/* Discard old spell order */
+			strip_bytes(64);
+
+			/* None of the spells have been learned yet */
+			for (i = 0; i < 64; i++)
+				p_ptr->spell_order[i] = 99;
+		}
+		else
+		{
+			u32b spell_learned1, spell_learned2;
+			u32b spell_worked1, spell_worked2;
+			u32b spell_forgotten1, spell_forgotten2;
+
+			/* Read spell info */
+			rd_u32b(&spell_learned1);
+			rd_u32b(&spell_learned2);
+			rd_u32b(&spell_worked1);
+			rd_u32b(&spell_worked2);
+			rd_u32b(&spell_forgotten1);
+			rd_u32b(&spell_forgotten2);
+
+			for (i = 0; i < 64; i++)
+			{
+				if (i < 32)
+				{
+					if (spell_learned1 & (1L << i))
+						p_ptr->spell_flags[i] |= PY_SPELL_LEARNED;
+					if (spell_worked1 & (1L << i))
+						p_ptr->spell_flags[i] |= PY_SPELL_WORKED;
+					if (spell_forgotten1 & (1L << i))
+						p_ptr->spell_flags[i] |= PY_SPELL_FORGOTTEN;
+				}
+				else
+				{
+					if (spell_learned2 & (1L << (i - 32)))
+						p_ptr->spell_flags[i] |= PY_SPELL_LEARNED;
+					if (spell_worked2 & (1L << (i - 32)))
+						p_ptr->spell_flags[i] |= PY_SPELL_WORKED;
+					if (spell_forgotten2 & (1L << (i - 32)))
+						p_ptr->spell_flags[i] |= PY_SPELL_FORGOTTEN;
+				}
+			}
+
+			for (i = 0; i < 64; i++)
+			{
+				rd_byte(&p_ptr->spell_order[i]);
+			}
+		}
+	}
+	else
+	{
+		/* Read the number of spells */
+		rd_u16b(&tmp16u);
+		if (tmp16u > PY_MAX_SPELLS)
+		{
+			note(format("Too many player spells (%d).", tmp16u));
+			return (-1);
+		}
+
+		/* Read the spell flags */
+		for (i = 0; i < tmp16u; i++)
+		{
+			rd_byte(&p_ptr->spell_flags[i]);
+		}
+
+		/* Read the spell order */
+		for (i = 0; i < tmp16u; i++)
+		{
+			rd_byte(&p_ptr->spell_order[i]);
+		}
+	}
+
+	/* Success */
+	return (0);
+}
+
+
 /*
  * Read the "extra" information
  */
@@ -984,35 +1075,8 @@ static errr rd_extra(void)
 		rd_s16b(&p_ptr->player_hp[i]);
 	}
 
-	/* The magic spells were changed drastically in Angband 2.9.7 */
-	if (older_than(2, 9, 7) &&
-	    (c_info[p_ptr->pclass].spell_book == TV_MAGIC_BOOK))
-	{
-		/* Discard old spell info */
-		strip_bytes(24);
-
-		/* Discard old spell order */
-		strip_bytes(PY_MAX_SPELLS);
-
-		/* None of the spells have been learned yet */
-		for (i = 0; i < PY_MAX_SPELLS; i++)
-			p_ptr->spell_order[i] = 99;
-	}
-	else
-	{
-	 	/* Read spell info */
- 		rd_u32b(&p_ptr->spell_learned1);
-	 	rd_u32b(&p_ptr->spell_learned2);
- 		rd_u32b(&p_ptr->spell_worked1);
-	 	rd_u32b(&p_ptr->spell_worked2);
- 		rd_u32b(&p_ptr->spell_forgotten1);
-	 	rd_u32b(&p_ptr->spell_forgotten2);
-
- 		for (i = 0; i < PY_MAX_SPELLS; i++)
-	 	{
- 			rd_byte(&p_ptr->spell_order[i]);
-	 	}
-	 }
+	/* Read the player spells */
+	if (rd_player_spells()) return (-1);
 
 	return (0);
 }
@@ -1836,7 +1900,7 @@ static errr rd_savefile_new_aux(void)
 /*
  * Actually read the savefile
  */
-errr rd_savefile(void)
+static errr rd_savefile(void)
 {
 	errr err;
 

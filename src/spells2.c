@@ -2222,7 +2222,7 @@ bool recharge(int num)
  *
  * Note that affected monsters are NOT auto-tracked by this usage.
  */
-static bool project_hack(int typ, int dam)
+bool project_los(int typ, int dam)
 {
 	int i, x, y;
 
@@ -2260,7 +2260,7 @@ static bool project_hack(int typ, int dam)
  */
 bool speed_monsters(void)
 {
-	return (project_hack(GF_OLD_SPEED, p_ptr->lev));
+	return (project_los(GF_OLD_SPEED, p_ptr->lev));
 }
 
 /*
@@ -2268,7 +2268,7 @@ bool speed_monsters(void)
  */
 bool slow_monsters(void)
 {
-	return (project_hack(GF_OLD_SLOW, p_ptr->lev));
+	return (project_los(GF_OLD_SLOW, p_ptr->lev));
 }
 
 /*
@@ -2276,7 +2276,7 @@ bool slow_monsters(void)
  */
 bool sleep_monsters(void)
 {
-	return (project_hack(GF_OLD_SLEEP, p_ptr->lev));
+	return (project_los(GF_OLD_SLEEP, p_ptr->lev));
 }
 
 
@@ -2285,7 +2285,7 @@ bool sleep_monsters(void)
  */
 bool banish_evil(int dist)
 {
-	return (project_hack(GF_AWAY_EVIL, dist));
+	return (project_los(GF_AWAY_EVIL, dist));
 }
 
 
@@ -2294,7 +2294,7 @@ bool banish_evil(int dist)
  */
 bool turn_undead(void)
 {
-	return (project_hack(GF_TURN_UNDEAD, p_ptr->lev));
+	return (project_los(GF_TURN_UNDEAD, p_ptr->lev));
 }
 
 
@@ -2303,7 +2303,7 @@ bool turn_undead(void)
  */
 bool dispel_undead(int dam)
 {
-	return (project_hack(GF_DISP_UNDEAD, dam));
+	return (project_los(GF_DISP_UNDEAD, dam));
 }
 
 /*
@@ -2311,7 +2311,7 @@ bool dispel_undead(int dam)
  */
 bool dispel_evil(int dam)
 {
-	return (project_hack(GF_DISP_EVIL, dam));
+	return (project_los(GF_DISP_EVIL, dam));
 }
 
 /*
@@ -2319,7 +2319,7 @@ bool dispel_evil(int dam)
  */
 bool dispel_monsters(int dam)
 {
-	return (project_hack(GF_DISP_ALL, dam));
+	return (project_los(GF_DISP_ALL, dam));
 }
 
 
@@ -3321,6 +3321,44 @@ bool fire_ball(int typ, int dir, int dam, int rad)
 
 
 /*
+ * Cast multiple non-jumping ball spells at the same target.
+ *
+ * Targets absolute coordinates instead of a specific monster, so that
+ * the death of the monster doesn't change the target's location.
+ */
+bool fire_swarm(int num, int typ, int dir, int dam, int rad)
+{
+	bool noticed = FALSE;
+
+	int py = p_ptr->py;
+	int px = p_ptr->px;
+
+	int ty, tx;
+
+	int flg = PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
+
+	/* Use the given direction */
+	ty = py + 99 * ddy[dir];
+	tx = px + 99 * ddx[dir];
+
+	/* Hack -- Use an actual "target" (early detonation) */
+	if ((dir == 5) && target_okay())
+	{
+		ty = p_ptr->target_row;
+		tx = p_ptr->target_col;
+	}
+
+	while (num--)
+	{
+		/* Analyze the "dir" and the "target".  Hurt items on floor. */
+		if (project(-1, rad, ty, tx, dam, typ, flg)) noticed = TRUE;
+	}
+
+	return noticed;
+}
+
+
+/*
  * Hack -- apply a "projection()" in a direction (or at the target)
  */
 static bool project_hook(int typ, int dir, int dam, int flg)
@@ -3673,9 +3711,18 @@ void brand_object(object_type *o_ptr, byte brand_type)
 
 		switch (brand_type)
 		{
-			case EGO_BRAND_FIRE: act = "fiery"; break;
-			case EGO_BRAND_COLD: act = "frosty"; break;
-			case EGO_BRAND_POIS: act = "sickly"; break;
+			case EGO_BRAND_FIRE:
+			case EGO_FLAME:
+				act = "fiery";
+				break;
+			case EGO_BRAND_COLD:
+			case EGO_FROST:
+				act = "frosty";
+				break;
+			case EGO_BRAND_POIS:
+			case EGO_AMMO_VENOM:
+				act = "sickly";
+				break;
 		}
 
 		/* Describe */
@@ -3770,11 +3817,11 @@ bool brand_ammo(void)
 
 	/* Select the brand */
 	if (r < 33)
-		brand_type = EGO_BRAND_FIRE;
+		brand_type = EGO_FLAME;
 	else if (r < 67)
-		brand_type = EGO_BRAND_COLD;
+		brand_type = EGO_FROST;
 	else
-		brand_type = EGO_BRAND_POIS;
+		brand_type = EGO_AMMO_VENOM;
 
 	/* Brand the ammo */
 	brand_object(o_ptr, brand_type);

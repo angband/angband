@@ -1779,7 +1779,7 @@ static bool identify_fully_aux2(const object_type *o_ptr, int mode)
 	}
 	if (f1 & (TR1_KILL_UNDEAD))
 	{
-		text_out("   It is a great bane of undeads.\n");
+		text_out("   It is a great bane of the undead.\n");
 		known = TRUE;
 	}
 	if (f1 & (TR1_BRAND_ACID))

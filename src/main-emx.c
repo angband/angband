@@ -1313,7 +1313,7 @@ void angbandThread(void *arg)
 	init_angband();
 
 	/* Wait for response */
-	pause_line(23);
+	pause_line(Term->hgt - 1);
 
 	/* Play the game */
 	play_game(new_game);

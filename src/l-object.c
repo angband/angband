@@ -1,6 +1,6 @@
 /*
 ** Lua binding: object
-** Generated automatically by tolua 4.0a - angband on Tue Mar 12 21:28:28 2002.
+** Generated automatically by tolua 4.0a - angband.
 */
 
 #include "lua/tolua.h"
@@ -14,6 +14,7 @@ void tolua_object_close (lua_State* tolua_S);
 /* function to register type */
 static void toluaI_reg_types (lua_State* tolua_S)
 {
+(void)tolua_S; /* Hack - prevent compiler warnings */
  tolua_usertype(tolua_S,"flavor_type");
  tolua_usertype(tolua_S,"artifact_type");
  tolua_usertype(tolua_S,"ego_item_type");
@@ -2402,66 +2403,6 @@ static int toluaI_object_reset_visuals00(lua_State* tolua_S)
  return 0;
 tolua_lerror:
  tolua_error(tolua_S,"#ferror in function 'reset_visuals'.");
- return 0;
-}
-
-/* function: object_flags */
-static int toluaI_object_object_flags00(lua_State* tolua_S)
-{
- if (
- !tolua_istype(tolua_S,1,tolua_tag(tolua_S,"const object_type"),0) ||
- !tolua_istype(tolua_S,2,LUA_TNUMBER,0) ||
- !tolua_istype(tolua_S,3,LUA_TNUMBER,0) ||
- !tolua_istype(tolua_S,4,LUA_TNUMBER,0) ||
- !tolua_isnoobj(tolua_S,5)
- )
- goto tolua_lerror;
- else
- {
-  const object_type* o_ptr = ((const object_type*)  tolua_getusertype(tolua_S,1,0));
-  u32b f1 = ((u32b)  tolua_getnumber(tolua_S,2,0));
-  u32b f2 = ((u32b)  tolua_getnumber(tolua_S,3,0));
-  u32b f3 = ((u32b)  tolua_getnumber(tolua_S,4,0));
- {
-  object_flags(o_ptr,&f1,&f2,&f3);
- tolua_pushnumber(tolua_S,(long)f1);
- tolua_pushnumber(tolua_S,(long)f2);
- tolua_pushnumber(tolua_S,(long)f3);
- }
- }
- return 3;
-tolua_lerror:
- tolua_error(tolua_S,"#ferror in function 'object_flags'.");
- return 0;
-}
-
-/* function: object_flags_known */
-static int toluaI_object_object_flags_known00(lua_State* tolua_S)
-{
- if (
- !tolua_istype(tolua_S,1,tolua_tag(tolua_S,"const object_type"),0) ||
- !tolua_istype(tolua_S,2,LUA_TNUMBER,0) ||
- !tolua_istype(tolua_S,3,LUA_TNUMBER,0) ||
- !tolua_istype(tolua_S,4,LUA_TNUMBER,0) ||
- !tolua_isnoobj(tolua_S,5)
- )
- goto tolua_lerror;
- else
- {
-  const object_type* o_ptr = ((const object_type*)  tolua_getusertype(tolua_S,1,0));
-  u32b f1 = ((u32b)  tolua_getnumber(tolua_S,2,0));
-  u32b f2 = ((u32b)  tolua_getnumber(tolua_S,3,0));
-  u32b f3 = ((u32b)  tolua_getnumber(tolua_S,4,0));
- {
-  object_flags_known(o_ptr,&f1,&f2,&f3);
- tolua_pushnumber(tolua_S,(long)f1);
- tolua_pushnumber(tolua_S,(long)f2);
- tolua_pushnumber(tolua_S,(long)f3);
- }
- }
- return 3;
-tolua_lerror:
- tolua_error(tolua_S,"#ferror in function 'object_flags_known'.");
  return 0;
 }
 
@@ -4885,8 +4826,6 @@ int tolua_object_open (lua_State* tolua_S)
  tolua_globalvar(tolua_S,"flavor_text",toluaI_get_object_flavor_text,toluaI_set_object_flavor_text);
  tolua_function(tolua_S,NULL,"flavor_init",toluaI_object_flavor_init00);
  tolua_function(tolua_S,NULL,"reset_visuals",toluaI_object_reset_visuals00);
- tolua_function(tolua_S,NULL,"object_flags",toluaI_object_object_flags00);
- tolua_function(tolua_S,NULL,"object_flags_known",toluaI_object_object_flags_known00);
  tolua_function(tolua_S,NULL,"identify_random_gen",toluaI_object_identify_random_gen00);
  tolua_function(tolua_S,NULL,"identify_fully_aux",toluaI_object_identify_fully_aux00);
  tolua_function(tolua_S,NULL,"index_to_label",toluaI_object_index_to_label00);
@@ -5735,8 +5674,6 @@ void tolua_object_close (lua_State* tolua_S)
  lua_pop(tolua_S,1);
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"flavor_init");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"reset_visuals");
- lua_pushnil(tolua_S); lua_setglobal(tolua_S,"object_flags");
- lua_pushnil(tolua_S); lua_setglobal(tolua_S,"object_flags_known");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"identify_random_gen");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"identify_fully_aux");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"index_to_label");

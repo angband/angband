@@ -48,45 +48,23 @@
 # ACTIVATE flag.
 
 ### IMPORTANT NOTES ###
-# (1.) Any changes or additions to the file will have influence on randarts 
-# and may break savefile compatibility for old savegames with randarts.  If 
-# using random artifacts, finish your existing game before making any changes
-# to the artifact.txt file at all.
-# (2.) Removing any artifact, or changing its "base" type (as defined by 
-# the tval and sval entries in the "I:" line), will break savefile compatibility
-# for ALL savefiles.
-# (3.) Adding a new artifact, or changing the powers of existing ones, will NOT 
-# affect savefile compatibility for games with the standard artifact set: it is 
-# perfectly safe to do this. (If your new artifact is a new kind of object, or a 
-# new one at the end of the file, you must also amend object.txt or limits.txt.)
+# (1.) Any changes or additions to the file will have influence on randarts
+# and may break savefile compatibility for old savegames with randarts.  If
+# using random artifacts, finish your existing game before making any
+# changes to the artifact.txt file at all.
+# (2.) Removing any artifact, or changing its "base" type (as defined by
+# the tval and sval entries in the "I:" line), will break savefile
+# compatibility for ALL savefiles.
+# (3.) Adding a new artifact, or changing the powers of existing ones, will
+# NOT affect savefile compatibility for games with the standard artifact set:
+# it is perfectly safe to do this. (If your new artifact is a new kind of
+# object, or a new one at the end of the file, you must also amend object.txt
+# or limits.txt.)
 
-# New artifacts (22) are as follows:
-# 7: The Palantir of Westernesse (original creation by JLE)
-# 14: The Elfstone 'Elessar'
-# 15: The Jewel 'Evenstar'
-# 18: The Balance Dragon Scale Mail 'Mediator' (original JLE creation)
-# 26: The Hard Leather Armor of Himring (adapted from OAngband)
-# 29: The Shield of Deflection of Gil-galad (adapted from OAngband)
-# 33: The Metal Cap of Celebrimbor (suggested by Matthias Kurzke)
-# 43: The Jewel-Encrusted Crown of Numenor (adapted from OAngband)
-# 51: The Gauntlets of Eol (adapted from OAngband)
-# 63: The Soft Leather Boots of Wormtongue (original JLE creation)
-# 92: The Spear of Melkor (adapted from KAngband)
-# 110: The Beaked Axe of Hurin (adapted from KAngband)
-# 123: The Whip of Gothmog (original JLE creation)
-# 127: The Heavy Crossbow of Umbar (adapted from OAngband)
-# 128, 129: The Short Bows of Amrod and Amras (original JLE creations)
-# 130: The Mattock of Nain (original JLE creation)
-# 131: The Dwarven Pick of Erebor (adapted from SAngband)
-# 132: The Ball-and-Chain of Fundin Bluecloak (suggested by Skylar Thompson)
-# 133: The Main Gauche of Azaghal (adapted from KAngband)
-# 134: The Large Leather Shield of the Haradrim (suggested by Skylar Thompson)
-# 135: The Broken Sword 'Narsil' (original JLE creation)
-# 136: The Bastard Sword of Eowyn (original JLE creation)
 
 # Version stamp (required)
 
-V:2.9.7
+V:3.0.0
 
 
 # Here is the list of "Special" artifacts - Amulets, Light Sources, Rings.
@@ -822,7 +800,7 @@ N:63:of Wormtongue
 I:30:2:3
 W:10:15:20:17000
 P:2:1d1:-8:-8:0
-F:INT | DEX | STEALTH | SPEED | FEATHER | LIGHT_CURSE | 
+F:INT | DEX | STEALTH | SPEED | FEATHER | LIGHT_CURSE | HIDE_TYPE
 F:ACTIVATE
 A:PHASE:20:0
 
@@ -1034,7 +1012,7 @@ N:82:'Ringil'
 I:23:17:10
 W:20:120:130:300000
 P:0:4d5:22:25:0
-F:SPEED | HIDE_TYPE | RES_FEAR | BLESSED | 
+F:SPEED | RES_FEAR | BLESSED |
 F:SLAY_EVIL | BRAND_COLD | SLAY_UNDEAD | KILL_DEMON | SLAY_TROLL | 
 F:FREE_ACT | RES_COLD | RES_LITE | LITE | SEE_INVIS | SLOW_DIGEST | REGEN | 
 F:ACTIVATE | SHOW_MODS

@@ -1,582 +1,85 @@
-SPELL_MAGIC_MISSILE = 0
-SPELL_DETECT_MONSTERS = 1
-SPELL_PHASE_DOOR = 2
-SPELL_LIGHT_AREA = 3
-SPELL_FIND_TRAPS_DOORS = 4
-SPELL_CURE_LIGHT_WOUNDS = 5
-SPELL_TREASURE_DETECTION = 6
-SPELL_OBJECT_DETECTION = 7
-SPELL_IDENTIFY = 8
-SPELL_DETECT_INVISIBLE = 9
-SPELL_DETECT_ENCHANTMENT = 10
-SPELL_STINKING_CLOUD = 11
-SPELL_LIGHTNING_BOLT = 12
-SPELL_CONFUSE_MONSTER = 13
-SPELL_SLEEP_MONSTER = 14
-SPELL_WONDER = 15
-SPELL_FROST_BOLT = 16
-SPELL_ACID_BOLT = 17
-SPELL_FIRE_BOLT = 18
-SPELL_TRAP_DOOR_DESTRUCTION = 19
-SPELL_SPEAR_OF_LIGHT = 20
-SPELL_TURN_STONE_TO_MUD = 21
-SPELL_DOOR_CREATION = 22
-SPELL_EARTHQUAKE = 23
-SPELL_STAIR_CREATION = 24
-SPELL_CURE_POISON = 25
-SPELL_SATISFY_HUNGER = 26
-SPELL_HEROISM = 27
-SPELL_BERSERKER = 28
-SPELL_HASTE_SELF = 29
-SPELL_TELEPORT_SELF = 30
-SPELL_SLOW_MONSTER = 31
-SPELL_TELEPORT_OTHER = 32
-SPELL_TELEPORT_LEVEL = 33
-SPELL_WORD_OF_RECALL = 34
-SPELL_POLYMORPH_OTHER = 35
-SPELL_SHOCK_WAVE = 36
-SPELL_EXPLOSION = 37
-SPELL_CLOUD_KILL = 38
-SPELL_MASS_SLEEP = 39
-SPELL_BEDLAM = 40
-SPELL_REND_SOUL = 41
-SPELL_WORD_OF_DESTRUCTION = 42
-SPELL_CHAOS_STRIKE = 43
-SPELL_RESIST_COLD = 44
-SPELL_RESIST_FIRE = 45
-SPELL_RESIST_POISON = 46
-SPELL_RESISTANCE = 47
-SPELL_SHIELD = 48
-SPELL_RUNE_OF_PROTECTION = 49
-SPELL_RECHARGE_ITEM_I = 50
-SPELL_ENCHANT_ARMOR = 51
-SPELL_ENCHANT_WEAPON = 52
-SPELL_RECHARGE_ITEM_II = 53 -- ToDo - replace one of the recharge spells
-SPELL_ELEMENTAL_BRAND = 54
-SPELL_FROST_BALL = 55
-SPELL_ACID_BALL = 56
-SPELL_FIRE_BALL = 57
-SPELL_ICE_STORM = 58
-SPELL_GENOCIDE = 59
-SPELL_METEOR_SWARM = 60
-SPELL_MASS_GENOCIDE = 61
-SPELL_RIFT = 62
-SPELL_MANA_STORM = 63
-
--- Beginners Handbook
-PRAYER_DETECT_EVIL = 0
-PRAYER_CURE_LIGHT_WOUNDS = 1
-PRAYER_BLESS = 2
-PRAYER_REMOVE_FEAR = 3
-PRAYER_CALL_LIGHT = 4
-PRAYER_FIND_TRAPS = 5
-PRAYER_DETECT_DOORS_STAIRS = 6
-PRAYER_SLOW_POISON = 7
-
--- Words of Wisdom
-PRAYER_SCARE_MONSTER = 8
-PRAYER_PORTAL = 9
-PRAYER_CURE_SERIOUS_WOUNDS = 10
-PRAYER_CHANT = 11
-PRAYER_SANCTUARY = 12
-PRAYER_SATISFY_HUNGER = 13
-PRAYER_REMOVE_CURSE = 14
-PRAYER_RESIST_HEAT_COLD = 15
-
--- Chants and Blessings
-PRAYER_NEUTRALIZE_POISON = 16
-PRAYER_ORB_OF_DRAINING = 17
-PRAYER_CURE_CRITICAL_WOUNDS = 18
-PRAYER_SENSE_INVISIBLE = 19
-PRAYER_PROTECTION_FROM_EVIL = 20
-PRAYER_EARTHQUAKE = 21
-PRAYER_SENSE_SURROUNDINGS = 22
-PRAYER_CURE_MORTAL_WOUNDS = 23
-PRAYER_TURN_UNDEAD = 24
-
--- Exorcism and Dispelling
-PRAYER_PRAYER = 25
-PRAYER_DISPEL_UNDEAD = 26
-PRAYER_HEAL = 27
-PRAYER_DISPEL_EVIL = 28
-PRAYER_GLYPH_OF_WARDING = 29
-PRAYER_HOLY_WORD = 30
-
--- Godly Insights
-PRAYER_DETECT_MONSTERS = 31
-PRAYER_DETECTION = 32
-PRAYER_PERCEPTION = 33
-PRAYER_PROBING = 34
-PRAYER_CLAIRVOYANCE = 35
-
--- Purifications and Healing
-PRAYER_CURE_SERIOUS_WOUNDS2 = 36
-PRAYER_CURE_MORTAL_WOUNDS2 = 37
-PRAYER_HEALING = 38
-PRAYER_RESTORATION = 39
-PRAYER_REMEMBRANCE = 40
-
--- Wrath of God
-PRAYER_DISPEL_UNDEAD2 = 41
-PRAYER_DISPEL_EVIL2 = 42
-PRAYER_BANISHMENT = 43
-PRAYER_WORD_OF_DESTRUCTION = 44
-PRAYER_ANNIHILATION = 45
-
--- Holy Infusions
-PRAYER_UNBARRING_WAYS = 46
-PRAYER_RECHARGING = 47
-PRAYER_DISPEL_CURSE = 48
-PRAYER_ENCHANT_WEAPON = 49
-PRAYER_ENCHANT_ARMOUR = 50
-PRAYER_ELEMENTAL_BRAND = 51
-
--- Ethereal openings
-PRAYER_BLINK = 52
-PRAYER_TELEPORT_SELF = 53
-PRAYER_TELEPORT_OTHER = 54
-PRAYER_TELEPORT_LEVEL = 55
-PRAYER_WORD_OF_RECALL = 56
-PRAYER_ALTER_REALITY = 57
+-- Spell-casting code
 
 
-magic_books = {
-	-- An Introduction to Spellcasting
-	[0] = {SPELL_MAGIC_MISSILE,
-	       SPELL_DETECT_MONSTERS,
-	       SPELL_PHASE_DOOR,
-	       SPELL_LIGHT_AREA,
-	       SPELL_FIND_TRAPS_DOORS,
-	       SPELL_CURE_LIGHT_WOUNDS},
-	-- The Art of Divination
-	[1] = {SPELL_DETECT_MONSTERS,
-	       SPELL_FIND_TRAPS_DOORS,
-	       SPELL_TREASURE_DETECTION,
-	       SPELL_OBJECT_DETECTION,
-	       SPELL_IDENTIFY,
-	       SPELL_DETECT_INVISIBLE,
-	       SPELL_DETECT_ENCHANTMENT},
-	-- Elementary Evocations
-	[2] = {SPELL_MAGIC_MISSILE,
-	       SPELL_STINKING_CLOUD,
-	       SPELL_LIGHTNING_BOLT,
-	       SPELL_CONFUSE_MONSTER,
-	       SPELL_SLEEP_MONSTER,
-	       SPELL_WONDER,
-	       SPELL_FROST_BOLT,
-	       SPELL_ACID_BOLT,
-	       SPELL_FIRE_BOLT},
-	-- Applied Conjuration
-	[3] = {SPELL_LIGHT_AREA,
-	       SPELL_TRAP_DOOR_DESTRUCTION,
-	       SPELL_SPEAR_OF_LIGHT,
-	       SPELL_TURN_STONE_TO_MUD,
-	       SPELL_DOOR_CREATION,
-	       SPELL_EARTHQUAKE,
-	       SPELL_STAIR_CREATION},
-	-- Anatomy and Physiology
-	[4] = {SPELL_CURE_LIGHT_WOUNDS,
-	       SPELL_CURE_POISON,
-	       SPELL_SATISFY_HUNGER,
-	       SPELL_HEROISM,
-	       SPELL_BERSERKER,
-	       SPELL_HASTE_SELF},
-	-- The Space-Time Continuum
-	[5] = {SPELL_PHASE_DOOR,
-	       SPELL_TELEPORT_SELF,
-	       SPELL_SLOW_MONSTER,
-	       SPELL_TELEPORT_OTHER,
-	       SPELL_TELEPORT_LEVEL,
-	       SPELL_WORD_OF_RECALL},
-	-- Grimoire of Black Magic
-	[6] = {SPELL_POLYMORPH_OTHER,
-	       SPELL_SHOCK_WAVE,
-	       SPELL_EXPLOSION,
-	       SPELL_CLOUD_KILL,
-	       SPELL_MASS_SLEEP,
-	       SPELL_BEDLAM,
-	       SPELL_REND_SOUL,
-	       SPELL_WORD_OF_DESTRUCTION,
-	       SPELL_CHAOS_STRIKE},
-	-- Ethereal Armor
-	[7] = {SPELL_RESIST_COLD,
-	       SPELL_RESIST_FIRE,
-	       SPELL_RESIST_POISON,
-	       SPELL_RESISTANCE,
-	       SPELL_SHIELD,
-	       SPELL_RUNE_OF_PROTECTION},
-	-- Energy Transference
-	[8] = {SPELL_RECHARGE_ITEM_I,
-	       SPELL_ENCHANT_ARMOR,
-	       SPELL_ENCHANT_WEAPON,
-	       SPELL_RECHARGE_ITEM_II,
-	       SPELL_ELEMENTAL_BRAND},
-	-- Tome of Destruction
-	[9] = {SPELL_FROST_BALL,
-	       SPELL_ACID_BALL,
-	       SPELL_FIRE_BALL,
-	       SPELL_ICE_STORM,
-	       SPELL_GENOCIDE,
-	       SPELL_METEOR_SWARM,
-	       SPELL_MASS_GENOCIDE,
-	       SPELL_RIFT,
-	       SPELL_MANA_STORM}}
+-----------------------------------------------------------
+-- Available "schools" of magic
+magic_schools = {}
 
-prayer_books = {
-	[0] = {PRAYER_DETECT_EVIL,
-	       PRAYER_CURE_LIGHT_WOUNDS,
-	       PRAYER_BLESS,
-	       PRAYER_REMOVE_FEAR,
-	       PRAYER_CALL_LIGHT,
-	       PRAYER_FIND_TRAPS,
-	       PRAYER_DETECT_DOORS_STAIRS,
-	       PRAYER_SLOW_POISON},
-	[1] = {PRAYER_SCARE_MONSTER,
-	       PRAYER_PORTAL,
-	       PRAYER_CURE_SERIOUS_WOUNDS,
-	       PRAYER_CHANT,
-	       PRAYER_SANCTUARY,
-	       PRAYER_SATISFY_HUNGER,
-	       PRAYER_REMOVE_CURSE,
-	       PRAYER_RESIST_HEAT_COLD},
-	[2] = {PRAYER_NEUTRALIZE_POISON,
-	       PRAYER_ORB_OF_DRAINING,
-	       PRAYER_CURE_CRITICAL_WOUNDS,
-	       PRAYER_SENSE_INVISIBLE,
-	       PRAYER_PROTECTION_FROM_EVIL,
-	       PRAYER_EARTHQUAKE,
-	       PRAYER_SENSE_SURROUNDINGS,
-	       PRAYER_CURE_MORTAL_WOUNDS,
-	       PRAYER_TURN_UNDEAD},
-	[3] = {PRAYER_PRAYER,
-	       PRAYER_DISPEL_UNDEAD,
-	       PRAYER_HEAL,
-	       PRAYER_DISPEL_EVIL,
-	       PRAYER_GLYPH_OF_WARDING,
-	       PRAYER_HOLY_WORD},
-	[4] = {PRAYER_BLINK,
-	       PRAYER_TELEPORT_SELF,
-	       PRAYER_TELEPORT_OTHER,
-	       PRAYER_TELEPORT_LEVEL,
-	       PRAYER_WORD_OF_RECALL,
-	       PRAYER_ALTER_REALITY},
-	[5] = {PRAYER_DETECT_MONSTERS,
-	       PRAYER_DETECTION,
-	       PRAYER_PERCEPTION,
-	       PRAYER_PROBING,
-	       PRAYER_CLAIRVOYANCE},
-	[6] = {PRAYER_CURE_SERIOUS_WOUNDS2,
-	       PRAYER_CURE_MORTAL_WOUNDS2,
-	       PRAYER_HEALING,
-	       PRAYER_RESTORATION,
-	       PRAYER_REMEMBRANCE},
-	[7] = {PRAYER_UNBARRING_WAYS,
-	       PRAYER_RECHARGING,
-	       PRAYER_DISPEL_CURSE,
-	       PRAYER_ENCHANT_WEAPON,
-	       PRAYER_ENCHANT_ARMOUR,
-	       PRAYER_ELEMENTAL_BRAND},
-	[8] = {PRAYER_DISPEL_UNDEAD2,
-	       PRAYER_DISPEL_EVIL2,
-	       PRAYER_BANISHMENT,
-	       PRAYER_WORD_OF_DESTRUCTION,
-	       PRAYER_ANNIHILATION}}
 
-function get_spell_index_hook(object, index)
-	local book
-	local spell
+-----------------------------------------------------------
+-- Helper functions for spell-casting
 
-	-- Find the book
-	if object.tval == TV_MAGIC_BOOK then
-		book = magic_books[object.sval]
-	elseif object.tval == TV_PRAYER_BOOK then
-		book = prayer_books[object.sval]
-	end
+-- Create a new "school" of magic
+function add_school(tval)
+	local school = {}
+	school.spells = {}
+	school.books = {}
+	magic_schools[tval] = school
+	return school
+end
 
-	-- Find the spell
-	spell = book[index + 1]
 
-	-- No spell at that index
+-- Adds a spell to a "school" of magic and
+-- returns the zero-based index of the spell
+function add_spell(school, spell)
+	tinsert(school.spells, spell)
+	return getn(school.spells) - 1
+end
+
+
+-- Add a new book to a "school" of magic
+-- sval is the sval of the book to be added
+-- spells is a table of spell-indices for that book
+function add_book(school, sval, spells)
+	school.books[sval] = spells
+end
+
+
+-- Get the index of the spell on a specific page of a spellbook
+-- return -1 when the page doesn't exist
+function get_spell_index(book, position)
+	local spell = book[position + 1]
+
+	-- No spell on that page
 	if not spell then return -1 end
 
 	return spell
 end
 
 
-magic_name = {
-	"Magic Missile",
-	"Detect Monsters",
-	"Phase Door",
-	"Light Area",
-	"Find Hidden Traps/Doors",
-	"Cure Light Wounds",
-	"Detect Treasure",
-	"Detect Objects",
-	"Identify",
-	"Detect Invisible",
-	"Detect Enchantment",
-	"Stinking Cloud",
-	"Lightning Bolt",
-	"Confuse Monster",
-	"Sleep Monster",
-	"Wonder",
-	"Frost Bolt",
-	"Acid Bolt",
-	"Fire Bolt",
-	"Trap/Door Destruction",
-	"Spear of Light",
-	"Turn Stone to Mud",
-	"Door Creation",
-	"Earthquake",
-	"Stair Creation",
-	"Cure Poison",
-	"Satisfy Hunger",
-	"Heroism",
-	"Berserker",
-	"Haste Self",
-	"Teleport Self",
-	"Slow Monster",
-	"Teleport Other",
-	"Teleport Level",
-	"Word of Recall",
-	"Polymorph Other",
-	"Shock Wave",
-	"Explosion",
-	"Cloudkill",
-	"Mass Sleep",
-	"Bedlam",
-	"Rend Soul",
-	"Word of Destruction",
-	"Chaos Strike",
-	"Resist Cold",
-	"Resist Fire",
-	"Resist Poison",
-	"Resistance",
-	"Shield",
-	"Rune of Protection",
-	"Lesser Recharging",
-	"Enchant Armor",
-	"Enchant Weapon",
-	"Greater Recharging",
-	"Elemental Brand",
-	"Frost Ball",
-	"Acid Ball",
-	"Fire Ball",
-	"Ice Storm",
-	"Genocide",
-	"Meteor Swarm",
-	"Mass Genocide",
-	"Rift",
-	"Mana Storm"}
-
-prayer_name = {
-	"Detect Evil",
-	"Cure Light Wounds",
-	"Bless",
-	"Remove Fear",
-	"Call Light",
-	"Find Traps",
-	"Detect Doors/Stairs",
-	"Slow Poison",
-	"Scare Monster",
-	"Portal",
-	"Cure Serious Wounds",
-	"Chant",
-	"Sanctuary",
-	"Satisfy Hunger",
-	"Remove Curse",
-	"Resist Heat and Cold",
-	"Neutralize Poison",
-	"Orb of Draining",
-	"Cure Critical Wounds",
-	"Sense Invisible",
-	"Protection from Evil",
-	"Earthquake",
-	"Sense Surroundings",
-	"Cure Mortal Wounds",
-	"Turn Undead",
-	"Prayer",
-	"Dispel Undead",
-	"Heal",
-	"Dispel Evil",
-	"Glyph of Warding",
-	"Holy Word",
-	"Detect Monsters",
-	"Detection",
-	"Perception",
-	"Probing",
-	"Clairvoyance",
-	"Cure Serious Wounds",
-	"Cure Mortal Wounds",
-	"Healing",
-	"Restoration",
-	"Remembrance",
-	"Dispel Undead",
-	"Dispel Evil",
-	"Banishment",
-	"Word of Destruction",
-	"Annihilation",
-	"Unbarring Ways",
-	"Recharging",
-	"Dispel Curse",
-	"Enchant Weapon",
-	"Enchant Armour",
-	"Elemental Brand",
-	"Blink",
-	"Teleport Self",
-	"Teleport Other",
-	"Teleport Level",
-	"Word of Recall",
-	"Alter Reality"}
-
-
-function get_spell_name_hook(tval, index)
-	local name
-
-	-- Find the name
-	if tval == TV_MAGIC_BOOK then
-		name = magic_name[index + 1]
-	elseif tval == TV_PRAYER_BOOK then
-		name = prayer_name[index + 1]
-	end
-
-	-- No spell at that index
-	if not name then return "(blank)" end
-
-	return name
+-- Cast a spell
+-- return FALSE if the player canceled the casting
+function cast_spell(school, index)
+	return school.spells[index + 1].effect()
 end
 
 
-function get_spell_info_hook(tval, index)
-	local info = ""
+-- Get extra info about a spell (damage, duration, ...)
+function get_spell_info(school, index)
+	local info = school.spells[index + 1].info
+	if not info then return "" end
 
-	local plev = player.lev
-
-	if tval == TV_MAGIC_BOOK then
-		if index == SPELL_MAGIC_MISSILE then
-			info = format(" dam %dd4", 3 + ((plev - 1) / 5))
-		elseif index == SPELL_PHASE_DOOR then
-			info = " range 10"
-		elseif index == SPELL_CURE_LIGHT_WOUNDS then
-			info = " heal 2d8"
-		elseif index == SPELL_STINKING_CLOUD then
-			info = format(" dam %d", 10 + (plev / 2))
-		elseif index == SPELL_LIGHTNING_BOLT then
-			info = format(" dam %dd6", (3 + ((plev - 5) / 6)))
-		elseif index == SPELL_FROST_BOLT then
-			info = format(" dam %dd8", (5 + ((plev - 5) / 4)))
-		elseif index == SPELL_ACID_BOLT then
-			info = format(" dam %dd8", (6 + ((plev - 5) / 4)))
-		elseif index == SPELL_FIRE_BOLT then
-			info = format(" dam %dd8", (8 + ((plev - 5) / 4)))
-		elseif index == SPELL_SPEAR_OF_LIGHT then
-			info = " dam 6d8"
-		elseif index == SPELL_HEROISM then
-			info = " dur 25+d25"
-		elseif index == SPELL_BERSERKER then
-			info = " dur 25+d25"
-		elseif index == HASTE_SELF then
-			info = format(" dur %d+d20", plev)
-		elseif index == SPELL_TELEPORT_SELF then
-			info = format(" range %d", plev * 5)
-		elseif index == SPELL_SHOCK_WAVE then
-			info = format(" dam %d", 10 + plev)
-		elseif index == SPELL_EXPLOSION then
-			info = format(" dam %d", 20 + plev * 2)
-		elseif index == SPELL_CLOUD_KILL then
-			info = format(" dam %d", 40 + (plev / 2))
-		elseif index == SPELL_REND_SOUL then
-			info = format(" dam 11d%d", plev)
-		elseif index == SPELL_CHAOS_STRIKE then
-			info = format(" dam 13d%d", plev)
-		elseif index == SPELL_RESIST_COLD then
-			info = " dur 20+d20"
-		elseif index == SPELL_RESIST_FIRE then
-			info = " dur 20+d20"
-		elseif index == SPELL_RESIST_POISON then
-			info = " dur 20+d20"
-		elseif index == SPELL_RESISTANCE then
-			info = " dur 20+d20"
-		elseif index == SPELL_SHIELD then
-			info = " dur 30+d20"
-		elseif index == SPELL_FROST_BALL then
-			info = format(" dam %d", 30 + plev)
-		elseif index == SPELL_ACID_BALL then
-			info = format(" dam %d", 40 + plev)
-		elseif index == SPELL_FIRE_BALL then
-			info = format(" dam %d", 55 + plev)
-		elseif index == SPELL_ICE_STORM then
-			info = format(" dam %d", 75 + (plev * 3))
-		elseif index == SPELL_METEOR_SWARM then
-			info = format(" dam %d", 50 + (plev * 3)) -- ToDo
-		elseif index == SPELL_RIFT then
-			info = format(" dam 40+%dd7", plev)
-		elseif index == SPELL_MANA_STORM then
-			info = format(" dam %d", 300 + plev * 2)
-		end
-	elseif tval == TV_PRAYER_BOOK then
-		if index == PRAYER_CURE_LIGHT_WOUNDS then
-			info = " heal 2d10"
-		elseif index == PRAYER_BLESS then
-			info = " dur 12+d12"
-		elseif index == PRAYER_PORTAL then
-			info = format(" range %d", 3 * plev)
-		elseif index == PRAYER_CURE_SERIOUS_WOUNDS then
-			info = " heal 4d10"
-		elseif index == PRAYER_CHANT then
-			info = " dur 24+d24"
-		elseif index == PRAYER_RESIST_HEAT_COLD then
-			info = " dur 10+d10"
-		elseif index == PRAYER_ORB_OF_DRAINING then
-			local div
-			if bAnd(cp_ptr.flags, CF_BLESS_WEAPON) ~= 0 then
-				div = 2
-			else
-				div = 4
-			end
-			info = format(" %d+3d6", plev + (plev / div))
-		elseif index == PRAYER_CURE_CRITICAL_WOUNDS then
-			info = " heal 6d10"
-		elseif index == PRAYER_SENSE_INVISIBLE then
-			info = " dur 24+d24"
-		elseif index == PRAYER_PROTECTION_FROM_EVIL then
-			info = format(" dur %d+d25", 3 * plev)
-		elseif index == PRAYER_CURE_MORTAL_WOUNDS then
-			info = " heal 8d10"
-		elseif index == PRAYER_PRAYER then
-			info = " dur 48+d48"
-		elseif index == PRAYER_DISPEL_UNDEAD then
-			info = format(" dam d%d", 3 * plev)
-		elseif index == PRAYER_HEAL then
-			info = " heal 300"
-		elseif index == PRAYER_DISPEL_EVIL then
-			info = format(" dam d%d", 3 * plev)
-		elseif index == PRAYER_HOLY_WORD then
-			info = " heal 1000"
-		elseif index == PRAYER_CURE_SERIOUS_WOUNDS2 then
-			info = " heal 4d10"
-		elseif index == PRAYER_CURE_MORTAL_WOUNDS2 then
-			info = " heal 8d10"
-		elseif index == PRAYER_HEALING then
-			info = " heal 2000"
-		elseif index == PRAYER_DISPEL_UNDEAD2 then
-			info = format(" dam d%d", 4 * plev)
-		elseif index == PRAYER_DISPEL_EVIL2 then
-			info = format(" dam d%d", 4 * plev)
-		elseif index == PRAYER_ANNIHILATION then
-			info = " dam 200"
-		elseif index == PRAYER_BLINK then
-			info = " range 10"
-		elseif index == PRAYER_TELEPORT_SELF then
-			info = format(" range %d", 8 * plev)
-		end
-	end
-
-	return info
+	return info()
 end
 
 
--- Chance of "beam" instead of "bolt"
+-- Get the name of a spell
+function get_spell_name(school, index)
+	return school.spells[index + 1].name
+end
+
+
+-----------------------------------------------------------
+-- Magic spells
+
+magic_spells = add_school(TV_MAGIC_BOOK)
+
+function add_magic_spell(spell)
+	return add_spell(magic_spells, spell)
+end
+
+
+-- Helper-function: Chance of "beam" instead of "bolt"
 function beam_chance()
 	if bAnd(cp_ptr.flags, CF_BEAM) ~= 0 then
 		return player.lev
@@ -586,499 +89,1710 @@ function beam_chance()
 end
 
 
-function spell_wonder()
-	local success
-	local dir
-	local plev = player.lev
-	local die = randint(100) + plev / 5
-	local beam = beam_chance()
+SPELL_MAGIC_MISSILE = add_magic_spell
+{
+	name = "Magic Missile",
+	info = function()
+			return format(" dam %dd4", 3 + ((player.lev - 1) / 5))
+		end,
+	effect = function()
+			local success, dir = get_aim_dir()
+			if not success then return FALSE end
 
-	success, dir = get_aim_dir()
-	if not success then return FALSE end
+			fire_bolt_or_beam(beam_chance()-10, GF_MISSILE, dir,
+		    	              damroll(3 + ((player.lev - 1) / 5), 4))
+			return TRUE
+		end,
+}
 
-	if (die > 100) then
-		msg_print("You feel a surge of power!")
-	end
-				
-	if (die < 8) then
-		clone_monster(dir)
-	elseif (die < 14) then
-		speed_monster(dir)
-	elseif (die < 26) then
-		heal_monster(dir)
-	elseif (die < 31) then
-		poly_monster(dir)
-	elseif (die < 36) then
-		fire_bolt_or_beam(beam - 10, GF_MISSILE, dir,
-		                  damroll(3 + ((plev - 1) / 5), 4))
-	elseif (die < 41) then
-		confuse_monster(dir, plev)
-	elseif (die < 46) then
-		fire_ball(GF_POIS, dir, 20 + (plev / 2), 3)
-	elseif (die < 51) then
-		lite_line(dir)
-	elseif (die < 56) then
-		fire_beam(GF_ELEC, dir, damroll(3 + ((plev - 5) / 6), 6))
-	elseif (die < 61) then
-		fire_bolt_or_beam(beam-10, GF_COLD, dir,
-		                  damroll(5 + ((plev - 5) / 4), 8))
-	elseif (die < 66) then
-		fire_bolt_or_beam(beam, GF_ACID, dir,
-		                  damroll(6 + ((plev - 5) / 4), 8))
-	elseif (die < 71) then
-		fire_bolt_or_beam(beam, GF_FIRE, dir,
-		                  damroll(8 + ((plev - 5) / 4), 8))
-	elseif (die < 76) then
-		drain_life(dir, 75)
-	elseif (die < 81) then
-		fire_ball(GF_ELEC, dir, 30 + plev / 2, 2)
-	elseif (die < 86) then
-		fire_ball(GF_ACID, dir, 40 + plev, 2)
-	elseif (die < 91) then
-		fire_ball(GF_ICE, dir, 70 + plev, 3)
-	elseif (die < 96) then
-		fire_ball(GF_FIRE, dir, 80 + plev, 3)
-	elseif (die < 101) then
-		drain_life(dir, 100 + plev)
-	elseif (die < 104) then
-		earthquake(player.py, player.px, 12)
-	elseif (die < 106) then
-		destroy_area(player.py, player.px, 15, TRUE)
-	elseif (die < 108) then
-		genocide()
-	elseif (die < 110) then
-		dispel_monsters(120)
-	else -- RARE
-		dispel_monsters(150)
-		slow_monsters()
-		sleep_monsters()
-		hp_player(300)
-	end
+SPELL_DETECT_MONSTERS = add_magic_spell
+{
+	name = "Detect Monsters",
+	effect = function()
+			detect_monsters_normal()
+			return TRUE
+		end,
+}
+
+SPELL_PHASE_DOOR = add_magic_spell
+{
+	name = "Phase Door",
+	info = function()
+			return " range 10"
+		end,
+	effect = function()
+			teleport_player(10)
+			return TRUE
+		end,
+}
+
+
+SPELL_LIGHT_AREA = add_magic_spell
+{
+	name = "Light Area",
+	effect = function()
+			lite_area(damroll(2, (player.lev / 2)), (player.lev / 10) + 1)
+			return TRUE
+		end,
+}
+
+SPELL_FIND_TRAPS_DOORS = add_magic_spell
+{
+	name = "Find Hidden Traps/Doors",
+	effect = function()
+			detect_traps()
+			detect_doors()
+			detect_stairs()
+			return TRUE
+		end,
+}
+
+SPELL_CURE_LIGHT_WOUNDS = add_magic_spell
+{
+	name = "Cure Light Wounds",
+	info = function()
+			return " heal 2d8"
+		end,
+	effect = function()
+			hp_player(damroll(2, 8))
+			set_cut(player.cut - 15)
+			return TRUE
+		end,
+}
+
+SPELL_TREASURE_DETECTION = add_magic_spell
+{
+	name = "Detect Treasure",
+	effect = function()
+			detect_treasure()
+			detect_objects_gold()
+			return TRUE
+		end,
+}
+
+SPELL_OBJECT_DETECTION = add_magic_spell
+{
+	name = "Detect Objects",
+	effect = function()
+			detect_objects_normal()
+			return TRUE
+		end,
+}
+
+SPELL_IDENTIFY = add_magic_spell
+{
+	name = "Identify",
+	effect = function()
+			ident_spell()
+			return TRUE
+		end,
+}
+
+SPELL_DETECT_INVISIBLE = add_magic_spell
+{
+	name = "Detect Invisible",
+	effect = function()
+			detect_monsters_invis()
+			return TRUE
+		end,
+}
+
+SPELL_DETECT_ENCHANTMENT = add_magic_spell
+{
+	name = "Detect Enchantment",
+	effect = function()
+			detect_objects_magic()
+			return TRUE
+		end,
+}
+
+SPELL_STINKING_CLOUD = add_magic_spell
+{
+	name = "Stinking Cloud",
+	info = function()
+			return format(" dam %d", 10 + (player.lev / 2))
+		end,
+	effect = function()
+			local success, dir = get_aim_dir()
+			if not success then return FALSE end
+
+			fire_ball(GF_POIS, dir, 10 + (player.lev / 2), 2)
+			return TRUE
+		end,
+}
+
+SPELL_LIGHTNING_BOLT = add_magic_spell
+{
+	name = "Lightning Bolt",
+	info = function()
+			return format(" dam %dd6", (3 + ((player.lev - 5) / 6)))
+		end,
+	effect = function()
+			local success, dir = get_aim_dir()
+			if not success then return FALSE end
+
+			fire_beam(GF_ELEC, dir, damroll(3 + ((player.lev - 5) / 6), 6))
+			return TRUE
+		end,
+}
+
+SPELL_CONFUSE_MONSTER = add_magic_spell
+{
+	name = "Confuse Monster",
+	effect = function()
+			local success, dir = get_aim_dir()
+			if not success then return FALSE end
+
+			confuse_monster(dir, player.lev)
+			return TRUE
+		end,
+}
+
+SPELL_SLEEP_MONSTER = add_magic_spell
+{
+	name = "Sleep Monster",
+	effect = function()
+			local success, dir = get_aim_dir()
+			if not success then return FALSE end
+
+			sleep_monster(dir)
+			return TRUE
+		end,
+}
+
+SPELL_WONDER = add_magic_spell
+{
+	name = "Wonder",
+	effect = function()
+			local plev = player.lev
+			local die = randint(100) + plev / 5
+			local beam = beam_chance()
+
+			local success, dir = get_aim_dir()
+			if not success then return FALSE end
+
+			if (die > 100) then
+				msg_print("You feel a surge of power!")
+			end
+
+			if (die < 8) then
+				clone_monster(dir)
+			elseif (die < 14) then
+				speed_monster(dir)
+			elseif (die < 26) then
+				heal_monster(dir)
+			elseif (die < 31) then
+				poly_monster(dir)
+			elseif (die < 36) then
+				fire_bolt_or_beam(beam - 10, GF_MISSILE, dir,
+				                  damroll(3 + ((plev - 1) / 5), 4))
+			elseif (die < 41) then
+				confuse_monster(dir, plev)
+			elseif (die < 46) then
+				fire_ball(GF_POIS, dir, 20 + (plev / 2), 3)
+			elseif (die < 51) then
+				lite_line(dir)
+			elseif (die < 56) then
+				fire_beam(GF_ELEC, dir, damroll(3 + ((plev - 5) / 6), 6))
+			elseif (die < 61) then
+				fire_bolt_or_beam(beam-10, GF_COLD, dir,
+				                  damroll(5 + ((plev - 5) / 4), 8))
+			elseif (die < 66) then
+				fire_bolt_or_beam(beam, GF_ACID, dir,
+				                  damroll(6 + ((plev - 5) / 4), 8))
+			elseif (die < 71) then
+				fire_bolt_or_beam(beam, GF_FIRE, dir,
+				                  damroll(8 + ((plev - 5) / 4), 8))
+			elseif (die < 76) then
+				drain_life(dir, 75)
+			elseif (die < 81) then
+				fire_ball(GF_ELEC, dir, 30 + plev / 2, 2)
+			elseif (die < 86) then
+				fire_ball(GF_ACID, dir, 40 + plev, 2)
+			elseif (die < 91) then
+				fire_ball(GF_ICE, dir, 70 + plev, 3)
+			elseif (die < 96) then
+				fire_ball(GF_FIRE, dir, 80 + plev, 3)
+			elseif (die < 101) then
+				drain_life(dir, 100 + plev)
+			elseif (die < 104) then
+				earthquake(player.py, player.px, 12)
+			elseif (die < 106) then
+				destroy_area(player.py, player.px, 15, TRUE)
+			elseif (die < 108) then
+				genocide()
+			elseif (die < 110) then
+				dispel_monsters(120)
+			else -- RARE
+				dispel_monsters(150)
+				slow_monsters()
+				sleep_monsters()
+				hp_player(300)
+			end
+
+			return TRUE
+		end,
+}
+
+SPELL_FROST_BOLT = add_magic_spell
+{
+	name = "Frost Bolt",
+	info = function()
+			return format(" dam %dd8", (5 + ((player.lev - 5) / 4)))
+		end,
+	effect = function()
+			local success, dir = get_aim_dir()
+			if not success then return FALSE end
+
+			fire_bolt_or_beam(beam_chance() - 10, GF_COLD, dir,
+			                  damroll(5 + ((player.lev - 5) / 4), 8))
+			return TRUE
+		end,
+}
+
+SPELL_ACID_BOLT = add_magic_spell
+{
+	name = "Acid Bolt",
+	info = function()
+			return format(" dam %dd8", (8 + ((player.lev - 5) / 4)))
+		end,
+	effect = function()
+			local success, dir = get_aim_dir()
+			if not success then return FALSE end
+
+			fire_bolt_or_beam(beam_chance(), GF_ACID, dir,
+			                  damroll(8 + ((player.lev - 5) / 4), 8))
+			return TRUE
+		end,
+}
+
+SPELL_FIRE_BOLT = add_magic_spell
+{
+	name = "Fire Bolt",
+	info = function()
+			return format(" dam %dd8", (6 + ((player.lev - 5) / 4)))
+		end,
+	effect = function()
+			local success, dir = get_aim_dir()
+			if not success then return FALSE end
+
+			fire_bolt_or_beam(beam_chance(), GF_FIRE, dir,
+			                  damroll(6 + ((player.lev - 5) / 4), 8))
+			return TRUE
+		end,
+}
+
+SPELL_TRAP_DOOR_DESTRUCTION = add_magic_spell
+{
+	name = "Trap/Door Destruction",
+	effect = function()
+			destroy_doors_touch()
+			return TRUE
+		end,
+}
+
+SPELL_SPEAR_OF_LIGHT = add_magic_spell
+{
+	name = "Spear of Light",
+	info = function()
+			return " dam 6d8"
+		end,
+	effect = function()
+			local success, dir = get_aim_dir()
+			if not success then return FALSE end
+
+			msg_print("A line of blue shimmering light appears.")
+			lite_line(dir)
+			return TRUE
+		end,
+}
+
+SPELL_TURN_STONE_TO_MUD = add_magic_spell
+{
+	name = "Turn Stone to Mud",
+	effect = function()
+			local success, dir = get_aim_dir()
+			if not success then return FALSE end
+
+			wall_to_mud(dir)
+			return TRUE
+		end,
+}
+
+SPELL_DOOR_CREATION = add_magic_spell
+{
+	name = "Door Creation",
+	effect = function()
+			door_creation()
+			return TRUE
+		end,
+}
+
+SPELL_EARTHQUAKE = add_magic_spell
+{
+	name = "Earthquake",
+	effect = function()
+			earthquake(player.py, player.px, 10)
+			return TRUE
+		end,
+}
+
+SPELL_STAIR_CREATION = add_magic_spell
+{
+	name = "Stair Creation",
+	effect = function()
+			stair_creation()
+			return TRUE
+		end,
+}
+
+SPELL_CURE_POISON = add_magic_spell
+{
+	name = "Cure Poison",
+	effect = function()
+			set_poisoned(0)
+			return TRUE
+		end,
+}
+
+SPELL_SATISFY_HUNGER = add_magic_spell
+{
+	name = "Satisfy Hunger",
+	effect = function()
+			set_food(PY_FOOD_MAX - 1)
+			return TRUE
+		end,
+}
+
+SPELL_HEROISM = add_magic_spell
+{
+	name = "Heroism",
+	info = function()
+			return " dur 25+d25"
+		end,
+	effect = function()
+			hp_player(10)
+			set_hero(player.hero + randint(25) + 25)
+			set_afraid(0)
+			return TRUE
+		end,
+}
+
+SPELL_BERSERKER = add_magic_spell
+{
+	name = "Berserker",
+	info = function()
+			return " dur 25+d25"
+		end,
+	effect = function()
+			hp_player(30)
+			set_shero(player.shero + randint(25) + 25)
+			set_afraid(0)
+			return TRUE
+		end,
+}
+
+SPELL_HASTE_SELF = add_magic_spell
+{
+	name = "Haste Self",
+	info = function()
+			return format(" dur %d+d20", player.lev)
+		end,
+	effect = function()
+			if player.fast == 0 then
+				set_fast(randint(20) + player.lev)
+			else
+				set_fast(player.fast + randint(5))
+			end
+			return TRUE
+		end,
+}
+
+SPELL_TELEPORT_SELF = add_magic_spell
+{
+	name = "Teleport Self",
+	info = function()
+			return format(" range %d", player.lev * 5)
+		end,
+	effect = function()
+			teleport_player(player.lev * 5)
+			return TRUE
+		end,
+}
+
+SPELL_SLOW_MONSTER = add_magic_spell
+{
+	name = "Slow Monster",
+	effect = function()
+			local success, dir = get_aim_dir()
+			if not success then return FALSE end
+
+			slow_monster(dir)
+			return TRUE
+		end,
+}
+
+SPELL_TELEPORT_OTHER = add_magic_spell
+{
+	name = "Teleport Other",
+	effect = function()
+			local success, dir = get_aim_dir()
+			if not success then return FALSE end
+
+			teleport_monster(dir)
+			return TRUE
+		end,
+}
+
+SPELL_TELEPORT_LEVEL = add_magic_spell
+{
+	name = "Teleport Level",
+	effect = function()
+			teleport_player_level()
+			return TRUE
+		end,
+}
+
+SPELL_WORD_OF_RECALL = add_magic_spell
+{
+	name = "Word of Recall",
+	effect = function()
+			set_recall()
+			return TRUE
+		end,
+}
+
+SPELL_POLYMORPH_OTHER = add_magic_spell
+{
+	name = "Polymorph Other",
+	effect = function()
+			local success, dir = get_aim_dir()
+			if not success then return FALSE end
+
+			poly_monster(dir)
+			return TRUE
+		end,
+}
+
+SPELL_SHOCK_WAVE = add_magic_spell
+{
+	name = "Shock Wave",
+	info = function()
+			return format(" dam %d", 10 + player.lev)
+		end,
+	effect = function()
+			local success, dir = get_aim_dir()
+			if not success then return FALSE end
+
+			fire_ball(GF_SOUND, dir, 10 + player.lev, 2)
+			return TRUE
+		end,
+}
+
+SPELL_EXPLOSION = add_magic_spell
+{
+	name = "Explosion",
+	info = function()
+			return format(" dam %d", 20 + player.lev * 2)
+		end,
+	effect = function()
+			local success, dir = get_aim_dir()
+			if not success then return FALSE end
+
+			fire_ball(GF_SHARD, dir, 20 + (player.lev * 2), 2)
+			return TRUE
+		end,
+}
+
+SPELL_CLOUD_KILL = add_magic_spell
+{
+	name = "Cloudkill",
+	info = function()
+			return format(" dam %d", 40 + (player.lev / 2))
+		end,
+	effect = function()
+			local success, dir = get_aim_dir()
+			if not success then return FALSE end
+
+			fire_ball(GF_POIS, dir, 40 + (player.lev / 2), 3)
+			return TRUE
+		end,
+}
+
+SPELL_MASS_SLEEP = add_magic_spell
+{
+	name = "Mass Sleep",
+	effect = function()
+			sleep_monsters()
+			return TRUE
+		end,
+}
+
+SPELL_BEDLAM = add_magic_spell
+{
+	name = "Bedlam",
+	effect = function()
+			local success, dir = get_aim_dir()
+			if not success then return FALSE end
+
+			fire_ball(GF_OLD_CONF, dir, player.lev, 4)
+			return TRUE
+		end,
+}
+
+SPELL_REND_SOUL = add_magic_spell
+{
+	name = "Rend Soul",
+	info = function()
+			return format(" dam 11d%d", player.lev)
+		end,
+	effect = function()
+			local success, dir = get_aim_dir()
+			if not success then return FALSE end
+
+			fire_bolt_or_beam(beam_chance() / 4, GF_NETHER, dir,
+			                  damroll(11, player.lev))
+			return TRUE
+		end,
+}
+
+SPELL_WORD_OF_DESTRUCTION = add_magic_spell
+{
+	name = "Word of Destruction",
+	effect = function()
+			destroy_area(player.py, player.px, 15, TRUE)
+			return TRUE
+		end,
+}
+
+SPELL_CHAOS_STRIKE = add_magic_spell
+{
+	name = "Chaos Strike",
+	info = function()
+			return format(" dam 13d%d", player.lev)
+		end,
+	effect = function()
+			local success, dir = get_aim_dir()
+			if not success then return FALSE end
+
+			fire_bolt_or_beam(beam_chance(), GF_CHAOS, dir,
+			                  damroll(13, player.lev))
+			return TRUE
+		end,
+}
+
+SPELL_RESIST_COLD = add_magic_spell
+{
+	name = "Resist Cold",
+	info = function()
+			return " dur 20+d20"
+		end,
+	effect = function()
+			set_oppose_cold(player.oppose_cold + randint(20) + 20)
+			return TRUE
+		end,
+}
+
+SPELL_RESIST_FIRE = add_magic_spell
+{
+	name = "Resist Fire",
+	info = function()
+			return " dur 20+d20"
+		end,
+	effect = function()
+			set_oppose_fire(player.oppose_fire + randint(20) + 20)
+			return TRUE
+		end,
+}
+
+SPELL_RESIST_POISON = add_magic_spell
+{
+	name = "Resist Poison",
+	info = function()
+			return " dur 20+d20"
+		end,
+	effect = function()
+			set_oppose_pois(player.oppose_pois + randint(20) + 20)
+			return TRUE
+		end,
+}
+
+SPELL_RESISTANCE = add_magic_spell
+{
+	name = "Resistance",
+	info = function()
+			return " dur 20+d20"
+		end,
+	effect = function()
+			local time = randint(20) + 20
+			set_oppose_acid(player.oppose_acid + time)
+			set_oppose_elec(player.oppose_elec + time)
+			set_oppose_fire(player.oppose_fire + time)
+			set_oppose_cold(player.oppose_cold + time)
+			set_oppose_pois(player.oppose_pois + time)
+			return TRUE
+		end,
+}
+
+SPELL_SHIELD = add_magic_spell
+{
+	name = "Shield",
+	info = function()
+			return " dur 30+d20"
+		end,
+	effect = function()
+			set_shield(player.shield + randint(20) + 30)
+			return TRUE
+		end,
+}
+
+SPELL_RUNE_OF_PROTECTION = add_magic_spell
+{
+	name = "Rune of Protection",
+	effect = function()
+			warding_glyph()
+			return TRUE
+		end,
+}
+
+SPELL_RECHARGE_ITEM_I = add_magic_spell
+{
+	name = "Lesser Recharging",
+	effect = function()
+			recharge(2 + player.lev / 5)
+			return TRUE
+		end,
+}
+
+SPELL_ENCHANT_ARMOR = add_magic_spell
+{
+	name = "Enchant Armor",
+	effect = function()
+			enchant_spell(0, 0, rand_int(3) + player.lev / 20)
+			return TRUE
+		end,
+}
+
+SPELL_ENCHANT_WEAPON = add_magic_spell
+{
+	name = "Enchant Weapon",
+	effect = function()
+			enchant_spell(rand_int(4) + player.lev / 20,
+			              rand_int(4) + player.lev / 20, 0)
+			return TRUE
+		end,
+}
+
+-- ToDo - replace one of the recharge spells
+SPELL_RECHARGE_ITEM_II = add_magic_spell
+{
+	name = "Greater Recharging",
+	effect = function()
+			recharge(50 + player.lev)
+			return TRUE
+		end,
+}
+
+SPELL_ELEMENTAL_BRAND = add_magic_spell
+{
+	name = "Elemental Brand",
+	effect = function()
+			-- ToDo: poison brand for rogues
+			brand_ammo()
+			return TRUE
+		end,
+}
+
+SPELL_FROST_BALL = add_magic_spell
+{
+	name = "Frost Ball",
+	info = function()
+			return format(" dam %d", 30 + player.lev)
+		end,
+	effect = function()
+			local success, dir = get_aim_dir()
+			if not success then return FALSE end
+
+			fire_ball(GF_COLD, dir, 30 + player.lev, 2)
+			return TRUE
+		end,
+}
+
+SPELL_ACID_BALL = add_magic_spell
+{
+	name = "Acid Ball",
+	info = function()
+			return format(" dam %d", 40 + player.lev)
+		end,
+	effect = function()
+			local success, dir = get_aim_dir()
+			if not success then return FALSE end
+
+			fire_ball(GF_ACID, dir, 40 + player.lev, 2)
+			return TRUE
+		end,
+}
+
+SPELL_FIRE_BALL = add_magic_spell
+{
+	name = "Fire Ball",
+	info = function()
+			return format(" dam %d", 55 + player.lev)
+		end,
+	effect = function()
+			local success, dir = get_aim_dir()
+			if not success then return FALSE end
+
+			fire_ball(GF_FIRE, dir, 55 + player.lev, 2)
+			return TRUE
+		end,
+}
+
+SPELL_ICE_STORM = add_magic_spell
+{
+	name = "Ice Storm",
+	info = function()
+			return format(" dam %d", 50 + (2 * player.lev))
+		end,
+	effect = function()
+			local success, dir = get_aim_dir()
+			if not success then return FALSE end
+
+			fire_ball(GF_ICE, dir, 50 + (2 * player.lev), 3)
+			return TRUE
+		end,
+}
+
+SPELL_GENOCIDE = add_magic_spell
+{
+	name = "Genocide",
+	effect = function()
+			genocide()
+			return TRUE
+		end,
+}
+
+SPELL_METEOR_SWARM = add_magic_spell
+{
+	name = "Meteor Swarm",
+	info = function()
+			return format(" dam %dx%d", 30 + player.lev / 2,
+			              2 + player.lev / 20)
+		end,
+	effect = function()
+			local success, dir = get_aim_dir()
+			if not success then return FALSE end
+			fire_swarm(2 + player.lev / 20, GF_METEOR, dir,
+			           30 + player.lev / 2, 1);
+			return TRUE
+		end,
+}
+
+SPELL_MASS_GENOCIDE = add_magic_spell
+{
+	name = "Mass Genocide",
+	effect = function()
+			mass_genocide()
+			return TRUE
+		end,
+}
+
+SPELL_RIFT = add_magic_spell
+{
+	name = "Rift",
+	info = function()
+			return format(" dam 40+%dd7", player.lev)
+		end,
+	effect = function()
+			local success, dir = get_aim_dir()
+			if not success then return FALSE end
+
+			fire_beam(GF_GRAVITY, dir, 40 + damroll(player.lev, 7))
+			return TRUE
+		end,
+}
+
+SPELL_MANA_STORM = add_magic_spell
+{
+	name = "Mana Storm",
+	info = function()
+			return format(" dam %d", 300 + (player.lev * 2))
+		end,
+	effect = function()
+			local success, dir = get_aim_dir()
+			if not success then return FALSE end
+
+			fire_ball(GF_MANA, dir, 300 + (player.lev * 2), 3)
+			return TRUE
+		end,
+}
+
+
+-----------------------------------------------------------
+-- Add spells to the spell-books
+
+-- Magic for Beginners
+add_book(magic_spells, 0,
+         {SPELL_MAGIC_MISSILE,
+          SPELL_DETECT_MONSTERS,
+          SPELL_PHASE_DOOR,
+          SPELL_LIGHT_AREA,
+          SPELL_TREASURE_DETECTION,
+          SPELL_CURE_LIGHT_WOUNDS,
+          SPELL_OBJECT_DETECTION,
+          SPELL_FIND_TRAPS_DOORS,
+          SPELL_STINKING_CLOUD})
+
+-- Conjurings and Tricks
+add_book(magic_spells, 1,
+         {SPELL_CONFUSE_MONSTER,
+          SPELL_LIGHTNING_BOLT,
+          SPELL_TRAP_DOOR_DESTRUCTION,
+          SPELL_CURE_POISON,
+          SPELL_SLEEP_MONSTER,
+          SPELL_TELEPORT_SELF,
+          SPELL_SPEAR_OF_LIGHT,
+          SPELL_FROST_BOLT,
+          SPELL_WONDER})
+
+-- Incantations and Illusions
+add_book(magic_spells, 2,
+         {SPELL_SATISFY_HUNGER,
+          SPELL_RECHARGE_ITEM_I,
+          SPELL_TURN_STONE_TO_MUD,
+          SPELL_FIRE_BOLT,
+          SPELL_POLYMORPH_OTHER,
+          SPELL_IDENTIFY,
+          SPELL_DETECT_INVISIBLE,
+          SPELL_ACID_BOLT,
+          SPELL_SLOW_MONSTER})
+
+-- Sorcery and Evocations
+add_book(magic_spells, 3,
+         {SPELL_FROST_BALL,
+          SPELL_TELEPORT_OTHER,
+          SPELL_HASTE_SELF,
+          SPELL_MASS_SLEEP,
+          SPELL_FIRE_BALL,
+          SPELL_DETECT_ENCHANTMENT})
+
+-- Resistances of Scarabtarices
+add_book(magic_spells, 4,
+         {SPELL_RESIST_COLD,
+          SPELL_RESIST_FIRE,
+          SPELL_RESIST_POISON,
+          SPELL_RESISTANCE,
+          SPELL_SHIELD})
+
+-- Raal's Tome of Destruction
+add_book(magic_spells, 5,
+         {SPELL_SHOCK_WAVE,
+          SPELL_EXPLOSION,
+          SPELL_CLOUD_KILL,
+          SPELL_ACID_BALL,
+          SPELL_ICE_STORM,
+          SPELL_METEOR_SWARM,
+          SPELL_RIFT})
+
+-- Mordenkainen's Escapes
+add_book(magic_spells, 6,
+         {SPELL_DOOR_CREATION,
+          SPELL_STAIR_CREATION,
+          SPELL_TELEPORT_LEVEL,
+          SPELL_WORD_OF_RECALL,
+          SPELL_RUNE_OF_PROTECTION})
+
+-- Tenser's transformations
+add_book(magic_spells, 7,
+         {SPELL_HEROISM,
+          SPELL_BERSERKER,
+          SPELL_ENCHANT_ARMOR,
+          SPELL_ENCHANT_WEAPON,
+          SPELL_RECHARGE_ITEM_II,
+          SPELL_ELEMENTAL_BRAND})
+
+-- Kelek's Grimoire of Power
+add_book(magic_spells, 8,
+         {SPELL_EARTHQUAKE,
+          SPELL_BEDLAM,
+          SPELL_REND_SOUL,
+          SPELL_GENOCIDE,
+          SPELL_WORD_OF_DESTRUCTION,
+          SPELL_MASS_GENOCIDE,
+          SPELL_CHAOS_STRIKE,
+          SPELL_MANA_STORM})
+
+
+-----------------------------------------------------------
+-- Prayers
+
+prayers = add_school(TV_PRAYER_BOOK)
+
+function add_prayer(prayer)
+	return add_spell(prayers, prayer)
 end
 
-function cast_spell(index)
-	local plev = player.lev
 
-	local success
-	local dir
+PRAYER_DETECT_EVIL = add_prayer
+{
+	name = "Detect Evil",
+	effect = function()
+			detect_monsters_evil()
+			return TRUE
+		end,
+}
 
-	local beam = beam_chance()
+PRAYER_CURE_LIGHT_WOUNDS = add_prayer
+{
+	name = "Cure Light Wounds",
+	info = function()
+			return " heal 2d10"
+		end,
+	effect = function()
+			hp_player(damroll(2, 10))
+			set_cut(player.cut - 10)
+			return TRUE
+		end,
+}
 
-	if index == SPELL_MAGIC_MISSILE then
-		success, dir = get_aim_dir()
-		if not success then return FALSE end
+PRAYER_BLESS = add_prayer
+{
+	name = "Bless",
+	info = function()
+			return " dur 12+d12"
+		end,
+	effect = function()
+			set_blessed(player.blessed + randint(12) + 12)
+			return TRUE
+		end,
+}
 
-		fire_bolt_or_beam(beam-10, GF_MISSILE, dir,
-		                  damroll(3 + ((plev - 1) / 5), 4))
-	elseif index == SPELL_DETECT_MONSTERS then
-		detect_monsters_normal()
-	elseif index == SPELL_PHASE_DOOR then
-		teleport_player(10)
-	elseif index == SPELL_LIGHT_AREA then
-		lite_area(damroll(2, (plev / 2)), (plev / 10) + 1)
-	elseif index == SPELL_TREASURE_DETECTION then
-		detect_treasure()
-		detect_objects_gold()
-	elseif index == SPELL_CURE_LIGHT_WOUNDS then
-		hp_player(damroll(2, 8))
-		set_cut(player.cut - 15)
-	elseif index == SPELL_OBJECT_DETECTION then
-		detect_objects_normal()
-	elseif index == SPELL_FIND_TRAPS_DOORS then
-		detect_traps()
-		detect_doors()
-		detect_stairs()
-	elseif index == SPELL_STINKING_CLOUD then
-		success, dir = get_aim_dir()
-		if not success then return FALSE end
+PRAYER_REMOVE_FEAR = add_prayer
+{
+	name = "Remove Fear",
+	effect = function()
+			set_afraid(0)
+			return TRUE
+		end,
+}
 
-		fire_ball(GF_POIS, dir, 10 + (plev / 2), 2)
-	elseif index == SPELL_CONFUSE_MONSTER then
-		success, dir = get_aim_dir()
-		if not success then return FALSE end
+PRAYER_CALL_LIGHT = add_prayer
+{
+	name = "Call Light",
+	effect = function()
+			lite_area(damroll(2, (player.lev / 2)), (player.lev / 10) + 1)
+			return TRUE
+		end,
+}
 
-		confuse_monster(dir, plev)
-	elseif index == SPELL_LIGHTNING_BOLT then
-		success, dir = get_aim_dir()
-		if not success then return FALSE end
+PRAYER_FIND_TRAPS = add_prayer
+{
+	name = "Find Traps",
+	effect = function()
+			detect_traps()
+			return TRUE
+		end,
+}
 
-		fire_bolt_or_beam(beam-10, GF_ELEC, dir, damroll(3+((plev-5)/6), 6))
-	elseif index == SPELL_TRAP_DOOR_DESTRUCTION then
-		destroy_doors_touch()
-	elseif index == SPELL_SLEEP_MONSTER then
-		success, dir = get_aim_dir()
-		if not success then return FALSE end
+PRAYER_DETECT_DOORS_STAIRS = add_prayer
+{
+	name = "Detect Doors/Stairs",
+	effect = function()
+			detect_doors()
+			detect_stairs()
+			return TRUE
+		end,
+}
 
-		sleep_monster(dir)
-	elseif index == SPELL_CURE_POISON then
-		set_poisoned(0)
-	elseif index == SPELL_TELEPORT_SELF then
-		teleport_player(plev * 5)
-	elseif index == SPELL_SPEAR_OF_LIGHT then
-		success, dir = get_aim_dir()
-		if not success then return FALSE end
+PRAYER_SLOW_POISON = add_prayer
+{
+	name = "Slow Poison",
+	effect = function()
+			set_poisoned(player.poisoned / 2)
+			return TRUE
+		end,
+}
 
-		msg_print("A line of blue shimmering light appears.")
-		lite_line(dir)
-	elseif index == SPELL_FROST_BOLT then
-		success, dir = get_aim_dir()
-		if not success then return FALSE end
+PRAYER_SCARE_MONSTER = add_prayer
+{
+	name = "Scare Monster",
+	effect = function()
+			local success, dir = get_aim_dir()
+			if not success then return FALSE end
 
-		fire_bolt_or_beam(beam-10, GF_COLD, dir, damroll(5+((plev-5)/4), 8))
-	elseif index == SPELL_TURN_STONE_TO_MUD then
-		success, dir = get_aim_dir()
-		if not success then return FALSE end
+			fear_monster(dir, player.lev)
+			return TRUE
+		end,
+}
 
-		wall_to_mud(dir)
-	elseif index == SPELL_SATISFY_HUNGER then
-		set_food(PY_FOOD_MAX - 1)
-	elseif index == SPELL_RECHARGE_ITEM_I then
-		recharge(2 + plev / 5)
-	elseif index == SPELL_WONDER then
-		spell_wonder()
-	elseif index == SPELL_POLYMORPH_OTHER then
-		success, dir = get_aim_dir()
-		if not success then return FALSE end
+PRAYER_PORTAL = add_prayer
+{
+	name = "Portal",
+	info = function()
+			return format(" range %d", 3 * player.lev)
+		end,
+	effect = function()
+			teleport_player(3 * player.lev)
+			return TRUE
+		end,
+}
 
-		poly_monster(dir)
-	elseif index == SPELL_IDENTIFY then
-		ident_spell()
-	elseif index == SPELL_MASS_SLEEP then
-		sleep_monsters()
-	elseif index == SPELL_FIRE_BOLT then
-		success, dir = get_aim_dir()
-		if not success then return FALSE end
+PRAYER_CURE_SERIOUS_WOUNDS = add_prayer
+{
+	name = "Cure Serious Wounds",
+	info = function()
+			return " heal 4d10"
+		end,
+	effect = function()
+			hp_player(damroll(4, 10))
+			set_cut((player.cut / 2) - 20)
+			return TRUE
+		end,
+}
 
-		fire_bolt_or_beam(beam, GF_FIRE, dir, damroll(8+((plev-5)/4), 8))
-	elseif index == SPELL_SLOW_MONSTER then
-		success, dir = get_aim_dir()
-		if not success then return FALSE end
+PRAYER_CHANT = add_prayer
+{
+	name = "Chant",
+	info = function()
+			return " dur 24+d24"
+		end,
+	effect = function()
+			set_blessed(player.blessed + randint(24) + 24)
+			return TRUE
+		end,
+}
 
-		slow_monster(dir)
-	elseif index == SPELL_FROST_BALL then
-		success, dir = get_aim_dir()
-		if not success then return FALSE end
+PRAYER_SANCTUARY = add_prayer
+{
+	name = "Sanctuary",
+	effect = function()
+			sleep_monsters_touch()
+			return TRUE
+		end,
+}
 
-		fire_ball(GF_COLD, dir, 30 + plev, 2)
-	elseif index == SPELL_RECHARGE_ITEM_II then
-		recharge(50 + plev)
-	elseif index == SPELL_TELEPORT_OTHER then
-		success, dir = get_aim_dir()
-		if not success then return FALSE end
+PRAYER_SATISFY_HUNGER = add_prayer
+{
+	name = "Satisfy Hunger",
+	effect = function()
+			set_food(PY_FOOD_MAX - 1)
+			return TRUE
+		end,
+}
 
-		teleport_monster(dir)
-	elseif index == SPELL_BEDLAM then
-		success, dir = get_aim_dir()
-		if not success then return FALSE end
+PRAYER_REMOVE_CURSE = add_prayer
+{
+	name = "Remove Curse",
+	effect = function()
+			remove_curse()
+			return TRUE
+		end,
+}
 
-		fire_ball(GF_OLD_CONF, dir, plev, 4)
-	elseif index == SPELL_FIRE_BALL then
-		success, dir = get_aim_dir()
-		if not success then return FALSE end
+PRAYER_RESIST_HEAT_COLD = add_prayer
+{
+	name = "Resist Heat and Cold",
+	info = function()
+			return " dur 10+d10"
+		end,
+	effect = function()
+			set_oppose_fire(player.oppose_fire + randint(10) + 10)
+			set_oppose_cold(player.oppose_cold + randint(10) + 10)
+			return TRUE
+		end,
+}
 
-		fire_ball(GF_FIRE, dir, 55 + plev, 2)
-	elseif index == SPELL_WORD_OF_DESTRUCTION then
-		destroy_area(player.py, player.px, 15, TRUE)
-	elseif index == SPELL_GENOCIDE then
-		genocide()
-	elseif index == SPELL_DOOR_CREATION then
-		door_creation()
-	elseif index == SPELL_STAIR_CREATION then
-		stair_creation()
-	elseif index == SPELL_TELEPORT_LEVEL then
-		teleport_player_level()
-	elseif index == SPELL_EARTHQUAKE then
-		earthquake(player.py, player.px, 10)
-	elseif index == SPELL_WORD_OF_RECALL then
-		set_recall()
-	elseif index == SPELL_ACID_BOLT then
-		success, dir = get_aim_dir()
-		if not success then return FALSE end
+PRAYER_NEUTRALIZE_POISON = add_prayer
+{
+	name = "Neutralize Poison",
+	effect = function()
+			set_poisoned(0)
+			return TRUE
+		end,
+}
 
-		fire_bolt_or_beam(beam, GF_ACID, dir, damroll(6+((plev-5)/4), 8))
-	elseif index == SPELL_CLOUD_KILL then
-		success, dir = get_aim_dir()
-		if not success then return FALSE end
+PRAYER_ORB_OF_DRAINING = add_prayer
+{
+	name = "Orb of Draining",
+	info = function()
+			local div
+			if bAnd(cp_ptr.flags, CF_BLESS_WEAPON) ~= 0 then
+				div = 2
+			else
+				div = 4
+			end
+			return format(" %d+3d6", player.lev + (player.lev / div))
+		end,
+	effect = function()
+			local success, dir = get_aim_dir()
+			if not success then return FALSE end
 
-		fire_ball(GF_POIS, dir, 40 + (plev / 2), 3)
-	elseif index == SPELL_ACID_BALL then
-		success, dir = get_aim_dir()
-		if not success then return FALSE end
+			local div
+			if bAnd(cp_ptr.flags, CF_BLESS_WEAPON) ~= 0 then
+				div = 2
+			else
+				div = 4
+			end
 
-		fire_ball(GF_ACID, dir, 40 + plev, 2)
-	elseif index == SPELL_ICE_STORM then
-		success, dir = get_aim_dir()
-		if not success then return FALSE end
+			local rad
+			if player.lev < 30 then rad = 2 else rad = 3 end
 
-		fire_ball(GF_ICE, dir, 50 + (2 * plev), 3)
-	elseif index == SPELL_METEOR_SWARM then
-		success, dir = get_aim_dir()
-		if not success then return FALSE end
-		-- XXX ToDo XXX
-		fire_ball(GF_METEOR, dir, 50 + (plev * 3), 3)
-	elseif index == SPELL_MANA_STORM then
-		success, dir = get_aim_dir()
-		if not success then return FALSE end
+			fire_ball(GF_HOLY_ORB, dir,
+			          (damroll(3, 6) + player.lev + (player.lev / div)), rad)
 
-		fire_ball(GF_MANA, dir, 300 + (plev * 2), 3)
-	elseif index == SPELL_DETECT_INVISIBLE then
-		detect_monsters_invis()
-	elseif index == SPELL_DETECT_ENCHANTMENT then
-		detect_objects_magic()
-	elseif index == SPELL_SHOCK_WAVE then
-		success, dir = get_aim_dir()
-		if not success then return FALSE end
+			return TRUE
+		end,
+}
 
-		fire_ball(GF_SOUND, dir, 10 + plev, 2)
-	elseif index == SPELL_EXPLOSION then
-		success, dir = get_aim_dir()
-		if not success then return FALSE end
+PRAYER_CURE_CRITICAL_WOUNDS = add_prayer
+{
+	name = "Cure Critical Wounds",
+	info = function()
+			return " heal 6d10"
+		end,
+	effect = function()
+			hp_player(damroll(6, 10))
+			set_cut(0)
+			return TRUE
+		end,
+}
 
-		fire_ball(GF_SHARD, dir, 20 + (plev * 2), 2)
-	elseif index == SPELL_MASS_GENOCIDE then
-		mass_genocide()
-	elseif index == SPELL_RESIST_FIRE then
-		set_oppose_fire(player.oppose_fire + randint(20) + 20)
-	elseif index == SPELL_RESIST_COLD then
-		set_oppose_cold(player.oppose_cold + randint(20) + 20)
-	elseif index == SPELL_ELEMENTAL_BRAND then
-		-- ToDo: poison brand for rogues
-		brand_ammo()
-	elseif index == SPELL_RESIST_POISON then
-		set_oppose_pois(player.oppose_pois + randint(20) + 20)
-	elseif index == SPELL_RESISTANCE then
-		local time = randint(20) + 20
-		set_oppose_acid(player.oppose_acid + time)
-		set_oppose_elec(player.oppose_elec + time)
-		set_oppose_fire(player.oppose_fire + time)
-		set_oppose_cold(player.oppose_cold + time)
-		set_oppose_pois(player.oppose_pois + time)
-	elseif index == SPELL_HEROISM then
-		hp_player(10)
-		set_hero(player.hero + randint(25) + 25)
-		set_afraid(0)
-	elseif index == SPELL_SHIELD then
-		set_shield(player.shield + randint(20) + 30)
-	elseif index == SPELL_BERSERKER then
-		hp_player(30)
-		set_shero(player.shero + randint(25) + 25)
-		set_afraid(0)
-	elseif index == SPELL_HASTE_SELF then
-		if player.fast == 0 then
-			set_fast(randint(20) + plev)
-		else
-			set_fast(player.fast + randint(5))
-		end
-	elseif index == SPELL_RIFT then
-		success, dir = get_aim_dir()
-		if not success then return FALSE end
+PRAYER_SENSE_INVISIBLE = add_prayer
+{
+	name = "Sense Invisible",
+	info = function()
+			return " dur 24+d24"
+		end,
+	effect = function()
+			set_tim_invis(player.tim_invis + randint(24) + 24)
+			return TRUE
+		end,
+}
 
-		fire_beam(GF_GRAVITY, dir, 40 + damroll(plev, 7))
-	elseif index == SPELL_REND_SOUL then
-		success, dir = get_aim_dir()
-		if not success then return FALSE end
+PRAYER_PROTECTION_FROM_EVIL = add_prayer
+{
+	name = "Protection from Evil",
+	info = function()
+			return format(" dur %d+d25", 3 * player.lev)
+		end,
+	effect = function()
+			set_protevil(player.protevil + randint(25) + 3 * player.lev)
+			return TRUE
+		end,
+}
 
-		fire_bolt_or_beam(beam / 4, GF_NETHER, dir, damroll(11, plev))
-	elseif index == SPELL_CHAOS_STRIKE then
-		success, dir = get_aim_dir()
-		if not success then return FALSE end
+PRAYER_EARTHQUAKE = add_prayer
+{
+	name = "Earthquake",
+	effect = function()
+			earthquake(player.py, player.px, 10)
+			return TRUE
+		end,
+}
 
-		fire_bolt_or_beam(beam, GF_CHAOS, dir, damroll(13, plev))
-	elseif index == SPELL_RUNE_OF_PROTECTION then
-		warding_glyph()
-	elseif index == SPELL_ENCHANT_ARMOR then
-		enchant_spell(0, 0, rand_int(3) + plev / 20)
-	elseif index == SPELL_ENCHANT_WEAPON then
-		enchant_spell(rand_int(4) + plev / 20, rand_int(4) + plev/20, 0)
-	end
+PRAYER_SENSE_SURROUNDINGS = add_prayer
+{
+	name = "Sense Surroundings",
+	effect = function()
+			map_area()
+			return TRUE
+		end,
+}
 
-	return TRUE
+PRAYER_CURE_MORTAL_WOUNDS = add_prayer
+{
+	name = "Cure Mortal Wounds",
+	info = function()
+			return " heal 8d10"
+		end,
+	effect = function()
+			hp_player(damroll(8, 10))
+			set_stun(0)
+			set_cut(0)
+			return TRUE
+		end,
+}
+
+PRAYER_TURN_UNDEAD = add_prayer
+{
+	name = "Turn Undead",
+	effect = function()
+			turn_undead()
+			return TRUE
+		end,
+}
+
+PRAYER_PRAYER = add_prayer
+{
+	name = "Prayer",
+	info = function()
+			return " dur 48+d48"
+		end,
+	effect = function()
+			set_blessed(player.blessed + randint(48) + 48)
+			return TRUE
+		end,
+}
+
+PRAYER_DISPEL_UNDEAD = add_prayer
+{
+	name = "Dispel Undead",
+	info = function()
+			return format(" dam d%d", 3 * player.lev)
+		end,
+	effect = function()
+			dispel_undead(randint(3 * player.lev))
+			return TRUE
+		end,
+}
+
+PRAYER_HEAL = add_prayer
+{
+	name = "Heal",
+	info = function()
+			return " heal 300"
+		end,
+	effect = function()
+			hp_player(300)
+			set_stun(0)
+			set_cut(0)
+			return TRUE
+		end,
+}
+
+PRAYER_DISPEL_EVIL = add_prayer
+{
+	name = "Dispel Evil",
+	info = function()
+			return format(" dam d%d", 3 * player.lev)
+		end,
+	effect = function()
+			dispel_evil(randint(3 * player.lev))
+			return TRUE
+		end,
+}
+
+PRAYER_GLYPH_OF_WARDING = add_prayer
+{
+	name = "Glyph of Warding",
+	effect = function()
+			warding_glyph()
+			return TRUE
+		end,
+}
+
+PRAYER_HOLY_WORD = add_prayer
+{
+	name = "Holy Word",
+	info = function()
+			return " heal 1000"
+		end,
+	effect = function()
+			dispel_evil(randint(player.lev * 4))
+			hp_player(1000)
+			set_afraid(0)
+			set_poisoned(0)
+			set_stun(0)
+			set_cut(0)
+			return TRUE
+		end,
+}
+
+PRAYER_DETECT_MONSTERS = add_prayer
+{
+	name = "Detect Monsters",
+	effect = function()
+			detect_monsters_normal()
+			return TRUE
+		end,
+}
+
+PRAYER_DETECTION = add_prayer
+{
+	name = "Detection",
+	effect = function()
+			detect_all()
+			return TRUE
+		end,
+}
+
+PRAYER_PERCEPTION = add_prayer
+{
+	name = "Perception",
+	effect = function()
+			ident_spell()
+			return TRUE
+		end,
+}
+
+PRAYER_PROBING = add_prayer
+{
+	name = "Probing",
+	effect = function()
+			probing()
+			return TRUE
+		end,
+}
+
+PRAYER_CLAIRVOYANCE = add_prayer
+{
+	name = "Clairvoyance",
+	effect = function()
+			wiz_lite()
+			return TRUE
+		end,
+}
+
+PRAYER_CURE_SERIOUS_WOUNDS2 = add_prayer
+{
+	name = "Cure Serious Wounds",
+	info = function()
+			return " heal 4d10"
+		end,
+	effect = function()
+			hp_player(damroll(4, 10))
+			set_cut(0)
+			return TRUE
+		end,
+}
+
+PRAYER_CURE_MORTAL_WOUNDS2 = add_prayer
+{
+	name = "Cure Mortal Wounds",
+	info = function()
+			return " heal 8d10"
+		end,
+	effect = function()
+			hp_player(damroll(8, 10))
+			set_stun(0)
+			set_cut(0)
+			return TRUE
+		end,
+}
+
+PRAYER_HEALING = add_prayer
+{
+	name = "Healing",
+	info = function()
+			return " heal 2000"
+		end,
+	effect = function()
+			hp_player(2000)
+			set_stun(0)
+			set_cut(0)
+			return TRUE
+		end,
+}
+
+PRAYER_RESTORATION = add_prayer
+{
+	name = "Restoration",
+	effect = function()
+			do_res_stat(A_STR)
+			do_res_stat(A_INT)
+			do_res_stat(A_WIS)
+			do_res_stat(A_DEX)
+			do_res_stat(A_CON)
+			do_res_stat(A_CHR)
+			return TRUE
+		end,
+}
+
+PRAYER_REMEMBRANCE = add_prayer
+{
+	name = "Remembrance",
+	effect = function()
+			restore_level()
+			return TRUE
+		end,
+}
+
+PRAYER_DISPEL_UNDEAD2 = add_prayer
+{
+	name = "Dispel Undead",
+	info = function()
+			return format(" dam d%d", 4 * player.lev)
+		end,
+	effect = function()
+			dispel_undead(randint(4 * player.lev))
+			return TRUE
+		end,
+}
+
+PRAYER_DISPEL_EVIL2 = add_prayer
+{
+	name = "Dispel Evil",
+	info = function()
+			return format(" dam d%d", 4 * player.lev)
+		end,
+	effect = function()
+			dispel_evil(randint(4 * player.lev))
+			return TRUE
+		end,
+}
+
+PRAYER_BANISHMENT = add_prayer
+{
+	name = "Banishment",
+	effect = function()
+			if banish_evil(100) then
+				msg_print("The power of your god banishes evil!")
+			end
+			return TRUE
+		end,
+}
+
+PRAYER_WORD_OF_DESTRUCTION = add_prayer
+{
+	name = "Word of Destruction",
+	effect = function()
+			destroy_area(player.py, player.px, 15, TRUE)
+			return TRUE
+		end,
+}
+
+PRAYER_ANNIHILATION = add_prayer
+{
+	name = "Annihilation",
+	info = function()
+			return " dam 200"
+		end,
+	effect = function()
+			local success, dir = get_aim_dir()
+			if not success then return FALSE end
+
+			drain_life(dir, 200)
+			return TRUE
+		end,
+}
+
+PRAYER_UNBARRING_WAYS = add_prayer
+{
+	name = "Unbarring Ways",
+	effect = function()
+			destroy_doors_touch()
+			return TRUE
+		end,
+}
+
+PRAYER_RECHARGING = add_prayer
+{
+	name = "Recharging",
+	effect = function()
+			recharge(15)
+			return TRUE
+		end,
+}
+
+PRAYER_DISPEL_CURSE = add_prayer
+{
+	name = "Dispel Curse",
+	effect = function()
+			remove_all_curse()
+			return TRUE
+		end,
+}
+
+PRAYER_ENCHANT_WEAPON = add_prayer
+{
+	name = "Enchant Weapon",
+	effect = function()
+			enchant_spell(rand_int(4) + 1, rand_int(4) + 1, 0)
+			return TRUE
+		end,
+}
+
+PRAYER_ENCHANT_ARMOUR = add_prayer
+{
+	name = "Enchant Armour",
+	effect = function()
+			enchant_spell(0, 0, rand_int(3) + 2)
+			return TRUE
+		end,
+}
+
+PRAYER_ELEMENTAL_BRAND = add_prayer
+{
+	name = "Elemental Brand",
+	effect = function()
+			brand_weapon()
+			return TRUE
+		end,
+}
+
+PRAYER_BLINK = add_prayer
+{
+	name = "Blink",
+	info = function()
+			return " range 10"
+		end,
+	effect = function()
+			teleport_player(10)
+			return TRUE
+		end,
+}
+
+PRAYER_TELEPORT_SELF = add_prayer
+{
+	name = "Teleport Self",
+	info = function()
+			return format(" range %d", 8 * player.lev)
+		end,
+	effect = function()
+			teleport_player(player.lev * 8)
+			return TRUE
+		end,
+}
+
+PRAYER_TELEPORT_OTHER = add_prayer
+{
+	name = "Teleport Other",
+	effect = function()
+			local success, dir = get_aim_dir()
+			if not success then return FALSE end
+
+			teleport_monster(dir)
+			return TRUE
+		end,
+}
+
+PRAYER_TELEPORT_LEVEL = add_prayer
+{
+	name = "Teleport Level",
+	effect = function()
+			teleport_player_level()
+			return TRUE
+		end,
+}
+
+PRAYER_WORD_OF_RECALL = add_prayer
+{
+	name = "Word of Recall",
+	effect = function()
+			set_recall()
+			return TRUE
+		end,
+}
+
+PRAYER_ALTER_REALITY = add_prayer
+{
+	name = "Alter Reality",
+	effect = function()
+			msg_print("The world changes!")
+			player.leaving = TRUE
+			return TRUE
+		end,
+}
+
+
+-----------------------------------------------------------
+-- Add spells to the prayer books
+
+-- Beginners Handbook
+add_book(prayers, 0,
+         {PRAYER_DETECT_EVIL,
+          PRAYER_CURE_LIGHT_WOUNDS,
+          PRAYER_BLESS,
+          PRAYER_REMOVE_FEAR,
+          PRAYER_CALL_LIGHT,
+          PRAYER_FIND_TRAPS,
+          PRAYER_DETECT_DOORS_STAIRS,
+          PRAYER_SLOW_POISON})
+
+-- Words of Wisdom
+add_book(prayers, 1,
+         {PRAYER_SCARE_MONSTER,
+          PRAYER_PORTAL,
+          PRAYER_CURE_SERIOUS_WOUNDS,
+          PRAYER_CHANT,
+          PRAYER_SANCTUARY,
+          PRAYER_SATISFY_HUNGER,
+          PRAYER_REMOVE_CURSE,
+          PRAYER_RESIST_HEAT_COLD})
+
+-- Chants and Blessings
+add_book(prayers, 2,
+         {PRAYER_NEUTRALIZE_POISON,
+          PRAYER_ORB_OF_DRAINING,
+          PRAYER_CURE_CRITICAL_WOUNDS,
+          PRAYER_SENSE_INVISIBLE,
+          PRAYER_PROTECTION_FROM_EVIL,
+          PRAYER_EARTHQUAKE,
+          PRAYER_SENSE_SURROUNDINGS,
+          PRAYER_CURE_MORTAL_WOUNDS,
+          PRAYER_TURN_UNDEAD})
+
+-- Exorcism and Dispelling
+add_book(prayers, 3,
+         {PRAYER_PRAYER,
+          PRAYER_DISPEL_UNDEAD,
+          PRAYER_HEAL,
+          PRAYER_DISPEL_EVIL,
+          PRAYER_GLYPH_OF_WARDING,
+          PRAYER_HOLY_WORD})
+
+-- Ethereal Openings
+add_book(prayers, 4,
+         {PRAYER_BLINK,
+          PRAYER_TELEPORT_SELF,
+          PRAYER_TELEPORT_OTHER,
+          PRAYER_TELEPORT_LEVEL,
+          PRAYER_WORD_OF_RECALL,
+          PRAYER_ALTER_REALITY})
+
+-- Godly Insights
+add_book(prayers, 5,
+         {PRAYER_DETECT_MONSTERS,
+          PRAYER_DETECTION,
+          PRAYER_PERCEPTION,
+          PRAYER_PROBING,
+          PRAYER_CLAIRVOYANCE})
+
+-- Purifications and Healing
+add_book(prayers, 6,
+         {PRAYER_CURE_SERIOUS_WOUNDS2,
+          PRAYER_CURE_MORTAL_WOUNDS2,
+          PRAYER_HEALING,
+          PRAYER_RESTORATION,
+          PRAYER_REMEMBRANCE})
+
+-- Holy Infusions
+add_book(prayers, 7,
+         {PRAYER_UNBARRING_WAYS,
+          PRAYER_RECHARGING,
+          PRAYER_DISPEL_CURSE,
+          PRAYER_ENCHANT_WEAPON,
+          PRAYER_ENCHANT_ARMOUR,
+          PRAYER_ELEMENTAL_BRAND})
+
+-- Wrath of God
+add_book(prayers, 8,
+         {PRAYER_DISPEL_UNDEAD2,
+          PRAYER_DISPEL_EVIL2,
+          PRAYER_BANISHMENT,
+          PRAYER_WORD_OF_DESTRUCTION,
+          PRAYER_ANNIHILATION})
+
+
+-----------------------------------------------------------
+-- Hooks for spellcasting
+
+function get_spell_index_hook(object, index)
+	local book = magic_schools[object.tval].books[object.sval]
+	return get_spell_index(book, index)
 end
 
 
-function pray(index)
-	local plev = player.lev
+function get_spell_info_hook(tval, index)
+	return get_spell_info(magic_schools[tval], index)
+end
 
-	local success
-	local dir
 
-	if index == PRAYER_DETECT_EVIL then
-		detect_monsters_evil()
-	elseif index == PRAYER_CURE_LIGHT_WOUNDS then
-		hp_player(damroll(2, 10))
-		set_cut(player.cut - 10)
-	elseif index == PRAYER_BLESS then
-		set_blessed(player.blessed + randint(12) + 12)
-	elseif index == PRAYER_REMOVE_FEAR then
-		set_afraid(0)
-	elseif index == PRAYER_CALL_LIGHT then
-		lite_area(damroll(2, (plev / 2)), (plev / 10) + 1)
-	elseif index == PRAYER_FIND_TRAPS then
-		detect_traps()
-	elseif index == PRAYER_DETECT_DOORS_STAIRS then
-		detect_doors()
-		detect_stairs()
-	elseif index == PRAYER_SLOW_POISON then
-		set_poisoned(player.poisoned / 2)
-	elseif index == PRAYER_SCARE_MONSTER then
-		success, dir = get_aim_dir()
-		if not success then return FALSE end
-
-		fear_monster(dir, plev)
-	elseif index == PRAYER_PORTAL then
-		teleport_player(plev * 3)
-	elseif index == PRAYER_CURE_SERIOUS_WOUNDS then
-		hp_player(damroll(4, 10))
-		set_cut((player.cut / 2) - 20)
-	elseif index == PRAYER_CHANT then
-		set_blessed(player.blessed + randint(24) + 24)
-	elseif index == PRAYER_SANCTUARY then
-		sleep_monsters_touch()
-	elseif index == PRAYER_SATISFY_HUNGER then
-		set_food(PY_FOOD_MAX - 1)
-	elseif index == PRAYER_REMOVE_CURSE then
-		remove_curse()
-	elseif index == PRAYER_RESIST_HEAT_COLD then
-		set_oppose_fire(player.oppose_fire + randint(10) + 10)
-		set_oppose_cold(player.oppose_cold + randint(10) + 10)
-	elseif index == PRAYER_NEUTRALIZE_POISON then
-		set_poisoned(0)
-	elseif index == PRAYER_ORB_OF_DRAINING then
-		success, dir = get_aim_dir()
-		if not success then return FALSE end
-
-		local div
-		if bAnd(cp_ptr.flags, CF_BLESS_WEAPON) ~= 0 then
-			div = 2
-		else
-			div = 4
-		end
-
-		local rad
-		if plev < 30 then rad = 2 else rad = 3 end
-
-		fire_ball(GF_HOLY_ORB, dir, (damroll(3, 6) + plev + (plev / div)), rad)
-	elseif index == PRAYER_CURE_CRITICAL_WOUNDS then
-		hp_player(damroll(6, 10))
-		set_cut(0)
-	elseif index == PRAYER_SENSE_INVISIBLE then
-		set_tim_invis(player.tim_invis + randint(24) + 24)
-	elseif index == PRAYER_PROTECTION_FROM_EVIL then
-		set_protevil(player.protevil + randint(25) + 3 * player.lev)
-	elseif index == PRAYER_EARTHQUAKE then
-		earthquake(player.py, player.px, 10)
-	elseif index == PRAYER_SENSE_SURROUNDINGS then
-		map_area()
-	elseif index == PRAYER_CURE_MORTAL_WOUNDS then
-		hp_player(damroll(8, 10))
-		set_stun(0)
-		set_cut(0)
-	elseif index == PRAYER_TURN_UNDEAD then
-		turn_undead()
-	elseif index == PRAYER_PRAYER then
-		set_blessed(player.blessed + randint(48) + 48)
-	elseif index == PRAYER_DISPEL_UNDEAD then
-		dispel_undead(randint(plev * 3))
-	elseif index == PRAYER_HEAL then
-		hp_player(300)
-		set_stun(0)
-		set_cut(0)
-	elseif index == PRAYER_DISPEL_EVIL then
-		dispel_evil(randint(plev * 3))
-	elseif index == PRAYER_GLYPH_OF_WARDING then
-		warding_glyph()
-	elseif index == PRAYER_HOLY_WORD then
-		dispel_evil(randint(plev * 4))
-		hp_player(1000)
-		set_afraid(0)
-		set_poisoned(0)
-		set_stun(0)
-		set_cut(0)
-	elseif index == PRAYER_DETECT_MONSTERS then
-		detect_monsters_normal()
-	elseif index == PRAYER_DETECTION then
-		detect_all()
-	elseif index == PRAYER_PERCEPTION then
-		ident_spell()
-	elseif index == PRAYER_PROBING then
-		probing()
-	elseif index == PRAYER_CLAIRVOYANCE then
-		wiz_lite()
-	elseif index == PRAYER_CURE_SERIOUS_WOUNDS2 then
-		hp_player(damroll(4, 10))
-		set_cut(0)
-	elseif index == PRAYER_CURE_MORTAL_WOUNDS2 then
-		hp_player(damroll(8, 10))
-		set_stun(0)
-		set_cut(0)
-	elseif index == PRAYER_HEALING then
-		hp_player(2000)
-		set_stun(0)
-		set_cut(0)
-	elseif index == PRAYER_RESTORATION then
-		do_res_stat(A_STR)
-		do_res_stat(A_INT)
-		do_res_stat(A_WIS)
-		do_res_stat(A_DEX)
-		do_res_stat(A_CON)
-		do_res_stat(A_CHR)
-	elseif index == PRAYER_REMEMBRANCE then
-		restore_level()
-	elseif index == PRAYER_DISPEL_UNDEAD2 then
-		dispel_undead(randint(plev * 4))
-	elseif index == PRAYER_DISPEL_EVIL2 then
-		dispel_evil(randint(plev * 4))
-	elseif index == PRAYER_BANISHMENT then
-		if banish_evil(100) then
-			msg_print("The power of your god banishes evil!")
-		end
-	elseif index == PRAYER_WORD_OF_DESTRUCTION then
-		destroy_area(player.py, player.px, 15, TRUE)
-	elseif index == PRAYER_ANNIHILATION then
-		success, dir = get_aim_dir()
-		if not success then return FALSE end
-
-		drain_life(dir, 200)
-	elseif index == PRAYER_UNBARRING_WAYS then
-		destroy_doors_touch()
-	elseif index == PRAYER_RECHARGING then
-		recharge(15)
-	elseif index == PRAYER_DISPEL_CURSE then
-		remove_all_curse()
-	elseif index == PRAYER_ENCHANT_WEAPON then
-		enchant_spell(rand_int(4) + 1, rand_int(4) + 1, 0)
-	elseif index == PRAYER_ENCHANT_ARMOUR then
-		enchant_spell(0, 0, rand_int(3) + 2)
-	elseif index == PRAYER_ELEMENTAL_BRAND then
-		brand_weapon()
-	elseif index == PRAYER_BLINK then
-		teleport_player(10)
-	elseif index == PRAYER_TELEPORT_SELF then
-		teleport_player(plev * 8)
-	elseif index == PRAYER_TELEPORT_OTHER then
-		success, dir = get_aim_dir()
-		if not success then return FALSE end
-
-		teleport_monster(dir)
-	elseif index == PRAYER_TELEPORT_LEVEL then
-		teleport_player_level()
-	elseif index == PRAYER_WORD_OF_RECALL then
-		set_recall()
-	elseif index == PRAYER_ALTER_REALITY then
-		msg_print("The world changes!")
-		player.leaving = TRUE
-	end
-
-	return TRUE
+function get_spell_name_hook(tval, index)
+	return get_spell_name(magic_schools[tval], index)
 end
 
 
 function cast_spell_hook(tval, index)
-	if tval == TV_MAGIC_BOOK then
-		return cast_spell(index)
-	elseif tval == TV_PRAYER_BOOK then
-		return pray(index)
-	else
-		error(format("unknown tval (%d) in function cast_spell_hook()", tval))
-	end
+	return cast_spell(magic_schools[tval], index)
 end
