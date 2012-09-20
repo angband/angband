@@ -181,7 +181,7 @@ creature_type c_list[MAX_CREATURES] = {
 {"Aimless looking merchant" ,(CARRY_GOLD|HAS_60|
 			      MV_ATT_NORM|MV_40|THRO_DR|PICK_UP)
 			    ,(NONE8),(NONE8),(NONE8),(NONE8)
-			    ,0,1000,10,1,11,'p',{3,3},{2,0,0,0},0,1
+			    ,0,255,10,1,11,'p',{3,3},{2,0,0,0},0,1
 #ifdef TC_COLOR
   , YELLOW
 #endif
@@ -4900,7 +4900,7 @@ creature_type c_list[MAX_CREATURES] = {
 			      MV_ATT_NORM),(0x3L|FEAR|BLINDNESS|CONFUSION|
 			     S_DRAGON),(DRAGON|CHARM_SLEEP|MAX_HP|GOOD)
 			    ,(BREATH_SH|BREATH_SD),(NONE8)
-		      ,29000,400,40,170,12,'D',{70,65},{273,273,274,280},67,2
+		      ,29000,255,40,170,12,'D',{70,65},{273,273,274,280},67,2
 #ifdef TC_COLOR
   , WHITE
 #endif
@@ -4912,7 +4912,7 @@ creature_type c_list[MAX_CREATURES] = {
 			    ,(DRAGON|CHARM_SLEEP|MAX_HP|GOOD)
 			    ,(BREATH_SH|BREATH_SD|BREATH_CH|BREATH_DI),
 			     (S_ANCIENTD)
-		      ,31000,400,40,170,12,'D',{70,70},{273,273,274,280},67,4
+		      ,31000,255,40,170,12,'D',{70,70},{273,273,274,280},67,4
 #ifdef TC_COLOR
   , LIGHTGRAY
 #endif
@@ -5040,7 +5040,7 @@ creature_type c_list[MAX_CREATURES] = {
 			     |INTELLIGENT|IM_FROST|IM_FIRE|IM_LIGHTNING),
 			     (TRAP_CREATE|WATER_BALL|PLASMA_BOLT|NETHER_BALL)
 			    ,(MANA_STORM|DARK_STORM)
-		    ,38000U,10,60,100,13,'p',{700,10},{230,230,214,214},78,3
+		    ,38000U,10,60,100,13,'p',{70,100},{230,230,214,214},78,3
 #ifdef TC_COLOR
   , LIGHTCYAN
 #endif
@@ -5049,7 +5049,7 @@ creature_type c_list[MAX_CREATURES] = {
 {"The Emperor Quylthulg"    ,(MV_INVIS|CARRY_OBJ|HAS_4D2)
 			    ,(0x2L),(ANIMAL|EVIL|MAX_HP|UNIQUE|CHARM_SLEEP)
 			    ,(BRAIN_SMASH),(S_GUNDEAD|S_ANCIENTD)
-		     ,20000,0,30,1,13,'Q',{500,10},{0,0,0,0},78,3
+		     ,20000,0,30,1,13,'Q',{50,100},{0,0,0,0},78,3
 #ifdef TC_COLOR
   , LIGHTMAGENTA
 #endif
@@ -5061,7 +5061,7 @@ creature_type c_list[MAX_CREATURES] = {
 			    ,(SUMMON|S_ANGEL|S_SPIDER|S_HOUND)
 			    ,(S_REPTILE|S_ANT|S_GUNDEAD|S_ANCIENTD|S_UNIQUE|
 			      S_WRAITH)
-		      ,20000,0,30,1,13,'Q',{500,10},{0,0,0,0},78,3
+		      ,20000,0,30,1,13,'Q',{50,100},{0,0,0,0},78,3
 #ifdef TC_COLOR
   , LIGHTMAGENTA
 #endif

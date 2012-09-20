@@ -167,6 +167,8 @@ static int sv_write()
     l |= 0x200L;
   if (no_haggle_flag)
     l |= 0x400L;
+  if (no_color_flag)
+    l |= 0x800L;
 #endif    
   if (death)
     l |= 0x80000000L;	/* Sign bit */
@@ -1038,6 +1040,10 @@ int *generate;
       	no_haggle_flag = TRUE;
       else
         no_haggle_flag = FALSE;
+      if (l & 0x800L)
+      	no_color_flag = TRUE;
+      else
+        no_color_flag = FALSE;
 #endif        
       if (to_be_wizard && (l & 0x80000000L)
 	  && get_check("Resurrect a dead character?"))

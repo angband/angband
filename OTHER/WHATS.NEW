@@ -1,0 +1,87 @@
+Here's what's new in the updated PC Angband:
+
+---------------------------------------------------------------------------
+New in first update (angexe11.exe)
+---------------------------------------------------------------------------
+
+  *	A serious stack-overflow problem, which could potentially (but
+	very unlikely) could mess up your CMOS settings (or worse) by
+	currupting data.  To insure that this problem doesn't occur again,
+	this update has stack-checking code compiled in.  This slightly
+	increases the size of the executable, and maginally slows the
+	performance of Angband, but it protects your system from any
+	problems related to stack overflow.  If Angband suddenly exits,
+	with the message "stack overflow", please let me know ASAP so I
+	can look into it.  This fix alone is important enough for you to
+	get the updated executable.
+  *	Monochrome monitors showed dark-gray monsters and items as black
+	spaces.  There is now an option (accessible by the '=' key) to
+	turn off color.
+  *	Scrolls and Staves of Darkness will now be properly IDed when
+	used in a room.
+  *	The Potion of Self Knowledge will now correctly indicate SLAY
+	EVIL.
+  *	Minor change in potions code now means several potions will ID
+	correctly when used.
+  *	HPs for some high-level unique monsters have been fixed.  (It was a
+	"wrap-around" problem with the c_list[] array of monster info).
+  *     Experience gained from high level spells has been fixed.
+  *	Monster pits are no longer always considered "special".  As you
+	get deeper and deeper, monster pits are less likely to give you
+	the "special" message.  This was how the Unix code worked, but a
+	16-bit wrap-around caused all monster pits to be special on the PC
+	version.
+---------------------------------------------------------------------------
+New in second update (angexe12.exe or angsrc12.exe)
+---------------------------------------------------------------------------
+  *	The look command now gives you an idea how hurt monsters are. 
+	By looking at a monster, you will get one of the following
+	messages:
+		(normal monsters)	(unliving monsters)
+		unhurt			undamaged
+		somewhat wounded	somewhat damaged
+		wounded			damaged
+		badly wounded		badly damaged
+		almost dead		almost destroyed
+  *	There is now a rod of trap location.  It can be found quite
+	early in the dungeon. (Because of this, it is not worth much).
+	This rod should make warriors more fun to play.  (Note that,
+	when loading a savefile from one of the older versions, a
+	scroll of detect traps may have its description changed to
+	"rod of trap location" or "scroll of trap location".  In either
+	case, it will still act like a scroll, and any new scrolls you
+	find should have the correct description.  If the altered name
+	disturbs you, just drop the scroll(s).)
+  *	Updated desc_mon.dat file included in the archive.  It corrects
+	all of the mispellings, grammer errors, etc. in the monster
+	descriptions.
+  *	The highscore table will no longer record your wizard
+	characters, so you can go into wizard mode and explore without
+	fear of overshadowing your future accomplishments.  Note that
+	wizard characters still accumulate monster memory information
+	on monsters they fight, so if you don't want this info in your
+	later games, erase the memory file before you create your later
+	characters.
+  *	Deletion from the highscore table now works properly.  Now
+	you can remove any clutter from your highscore table, without
+	resorting to the drastic measure of erasing the highscore file.
+  *	An auto-roller has been added (adapted from the auto-roller used
+	in Druid Moria).
+  *	High score display colorized to highlight your score.
+  *	You can now write out your character description to a file from
+	the tombstone.  (This wasn't in the earlier versions for some
+	reason).  Now you can have your character's stats, history, and
+	items recorded for a brag post to rec.games.moria after you
+	kill Morgoth.
+  *	*Enlightenment* potions now provide self-knowledge as well as
+	their other powers.  (After all, what is the key to
+	enlightenment?)
+  *	Lot's of bugs fixed, including: summoned group monsters are all
+	lit properly, no need to use 'g' key to enter a shop, quest
+	code fixed so that killing a quest monster (Sauron) out of depth
+	still completes the quest, no trap doors on (uncompleted) quest
+	levels, Arkenstone will not be harmed by silver jellys, and curse
+	weapon and curse armor scrolls fixed (aren't you glad? :-)
+	For more info on bugs, read the 'changes.tc' file packaged
+	with the source code.
+

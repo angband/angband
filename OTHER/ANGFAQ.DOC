@@ -1,0 +1,450 @@
+  Okay folks, until a real Angband FAQ file is built, here's a lot of
+info to try to cut down on traffic on rec.games.moria.  I've tried to
+organize it loosely into categories.  Some of the information contained
+below is definately "Spoilers", so read on at risk of your own thrill of
+discovery...
+
+	Where to get Angband
+* For anyone looking to get the game, it's available for anonymous ftp
+  from ftp.cis.ksu.edu  The Unix source is in pub/Games/Moria/Angband and
+  the PC source and executable are in pub/Games/Moria/Angband/PC.
+
+	Ports
+* There have been ports to several platforms announced recently.  I've
+  seen an announcement for Amiga and Atari ST ports.  I don't know
+  where they are available, but ksu would be a good place to start
+  looking.  None of the information below is specific to these versions,
+  although the general information should still apply.
+
+	Public Service Announcement
+* When posting a message to rec.games.moria about something that relates
+  to Angband, please include the word 'Angband' in your subject.  If
+  your posting is specific to some version of angband, try to mention
+  that as well.  For example, if you're asking a question about PC
+  Angband, put 'Angband (PC)' in the subject.  This simple courtesy will
+  be greatly appreciated by all the moria fans on rec.games.moria. 
+  After all, the group is primarily for Moria, and offshoots like
+  Angband, Morgul, Druid Moria, etc. are secondary.
+
+	Warning!
+* Don't cast the 'create stair' spell on the town level, and go UP.
+  It will confuse the Word of Recall scroll badly.  For more info,
+  see "Bugs", below.
+
+	Artifacts
+* Artifacts don't appear in stores (unless you sell it to them).
+* The artifact list in the angband.doc file is incomplete ON PURPOSE.
+  It's only meant to tell you a little info about some "legendary" items.
+* In some places, the artifact description is (slightly) wrong.  This
+  reflects the "legend and rumor" basis for the descriptions (It also
+  reflects the fact that the angband.doc file is slightly out-of-date).
+* Unique items, once missed, are gone forever...  If you get a "special"
+  message, I suggest you use that Staff of Trap Detection, so you don't
+  fall through a pit!
+* Unique items should resist destruction by fire/frost/lightning/etc, and
+  shouldn't be picked up by monsters, so you don't have to worry too much
+  about some *&%&^ing green glutton ghost picking up an awesome item.
+  Ditto with thieves stealing them...
+* Artifacts CAN appear on a level that doesn't give you the "special"
+  message.  The "special" message only lets you know if there is an artifact
+  (or other special feature) on the level when it's first generated.  If a
+  monster is killed and drops an artifact, the only way you'll know about it
+  is to ID it (or carry it a while, and hope for the "pseudo-ID" to tell you).
+  However, if there is an artifact on the level at the time of creation, you
+  will get the "special" message (see below on feelings, though).
+* Many (but not all!) artifact weapons can be identified as artifacts
+  just by looking at them, because they do non-standard damage.  For
+  example, if you see a longsword (normally does 2d5), that says 4d5, you
+  know it's an artifact.  (In fact, it's Ringil, the best weapon in the
+  game.) 
+
+	Feelings
+* About "special about this level", or "good feeling", or "luck is turning",
+  etc messages:  You will only get them when you enter a level IF you've
+  been on the previous 2 levels "long enough".  This is to prevent people
+  from standing on a stairway, and going up and down until they get a
+  "special" message.  "Long enough" is a couple hundred turns or so, if
+  I remember right.  This means that the 1st time you go to 50' into
+  dungeon, you will never get a message, because you can't have been on
+  the previous TWO levels yet.
+* Another note on the "something special about this level" message: 
+  There are three things that could cause it... Artifacts, monster pits,
+  and player ghosts.  As you get deeper in the dungeon, the game
+  considers monster pits to be less special.  At 2500', only 1 pit in 5
+  or 6 is likely to trigger a "special" message.  So there is no
+  guarantee that you can stop looking for an artifact just because you
+  found a monster pit.  In fact, a monster pit, or a player ghost, or
+  an artifact on the level doesn't prevent another artifact from
+  appearing on the level, although the odds are slim at shallow depths.
+* The other "feelings" you can get relate to the general 'rating' of the
+  level.  Many things can contribute to the 'rating' of a level:  Out
+  of depth monsters, out of depth items, some excellent items (DF, HA,
+  of Westernesse, RA, R, etc), and special rooms (vaults, round rooms,
+  giant vaults, etc).  If you get one of these messages, you should be
+  fairly careful, in case there's some out of depth monsters around, but
+  you should also try to grab everything you can, in hopes of getting
+  some better items.
+ 
+	Spellcasting
+* All spellcasters are penalized for high ACs.  This is based on true AC,
+  w/o any magical bonuses.  This simulates the general encumbering effects
+  of heavy armor.
+* Mages, and other mage-type spell caster, lose mana for wearing gloves (or
+  gauntlets or cestus).  This simulates the interference they cause with
+  the intricate gestures required for spellcasting.  Priests and paladins
+  don't have this problem, as they invoke the power of their diety...
+* The minimum spell failure chance depends both on your class and on
+  your spell stat.  Only pure spellcasters (mage and priest) can get
+  really low failure rates.
+* Many duration spells don't provide much duration if cast again while the
+  effects still last.  For example, casting haste self 10 times in a row
+  isn't a very good use of mana...
+* There are 9 spells books for mages, and 9 for priests.  The new 5
+  books can be found deeper in the dungeon.  Or you could get lucky and
+  see them at the Black Market.  These books are not artifacts. 
+* Monster spell resistances have been changed from Moria...  In Moria, a
+  white dragon took extra damage from a fire bolt/ball, and partial
+  (1/4th) damage from a frost bolt/ball.  In Angband, a white dragon
+  takes normal damage from a fire bolt/ball, and almost no (1/9th)
+  damage from a frost bolt/ball.  Basically, there are no more
+  "susceptibilities".  There are a couple of exceptions to this...
+  Monsters can be susceptible to bright light (ie, wand of light, not
+  lightning), and holy orb does extra damage vs evil AND less damage
+  against non-evil creatures (It never does 'normal' damage, which seems
+  a bit weird to me, but...).
+* Many of the mage spells are now adjusted by your level.  However, a
+  lot more monsters are immune to frost/fire/lightning, so either you
+  need a LOT of magic missiles, or haste up and hack-n-slash...
+* Priests and paladins now need the right prayer book to learn spells. 
+  In Moria, they didn't. (Moria did it that way to prevent players from
+  dropping all but the 3rd book to "force" Orb of Draining.)  Angband does
+  it this way so that the new spells in the extra books wouldn't be
+  given to a low level character (who then couldn't cast it until he
+  journeys deep in the dungeon and finds the right book).  This means you
+  can "force" the spells you want, if you drop all but 1 book at home
+  before learning new spells.  (Don't forget to pick the books up again
+  afterwards!  I lost a half-troll priest to a bunch of water trolls,
+  since he forgot the book with 'portal' in it!)
+* "You seem to be missing a book" means that you have the capacity to
+   learn more spells than you happen to have available to you at the
+   moment.  This might mean that you are level 50, and already know all
+   the spells, but could learn more if there were any.  It might mean
+   that you are a 6th level rogue, who could learn a second spell, but
+   the normal books only have one spell below level 7.  (In this case,
+   you really are missing a book).  The wording of the message may be
+   a little confusing, but, to be honest, I can't think of a relatively
+   short message that applies to both situations and sounds good.
+
+	Combat
+* Group monster can be DANGEROUS!  Even if you can kill a single orc/
+  troll/novice whatever/whatever hound/etc without too much trouble,
+  it's easy to get overwhelmed by sheer numbers.  My advice: Make sure
+  only 1 can attack you at a time, and for any spell-casting or
+  breathing groups, ambush them from around a corner so that only 1 can
+  see you at a time.  A possible exception to this is novice rangers;
+  they can only cast magic missile, and missile spells (as opposed to
+  ball spells or breath weapons) cannot "jump" other monsters in
+  Angband.  So, if you're having trouble with novice rangers, get them
+  all lined up in a corridor, and then some of them will be wounded/
+  killed by M.M.s from other rangers.  Of course, you don't get
+  experience for anything that you don't kill, but you might survive
+  a bit longer...
+* Another major piece of advice is that you should always try to carry
+  some cure serious wound (or better) potions (to cure some HPs, and
+  remove blindness and confusion).  This will allow spell casters to
+  cast their escape spells, and allow others to read their escape
+  scrolls.  Scrolls of phase door or teleport are important for
+  characters who don't have an escape spell.  Staves of teleportation
+  work also, but a thief can only steal 1 scroll at a time, or a fire
+  trap can only burn up 1 scroll at a time...  On the other hand, you
+  can use a staff while blinded and confused.
+* Damage from "ego" weapons/artifacts is calculated as follows:
+  damage = ((base weapon damage "rolled") * weap_mult) * hit_mult +
+	  hit_bonus + +to-dam
+  weap_mult is the bonuses granted for the weapon.  hit_mult is the
+  multiplier granted from a "good", "excellent", etc hit.  hit_bonus is
+  the additional damage granted from a "good", etc hit.  +to-dam is the
+  character's total pluses to damage.
+
+  Note that damage bonuses are not multiplied in.  This means that a
+  dagger (1d4), even if it does x5 damage, is not as good as a two-handed
+  sword (3d6) that does x2 damage, unless you get more swings with the
+  dagger.  Of course, if the T-H-sword had +0 to damage, and the dagger
+  had +20 to damage, you might want to use the dagger anyways.
+
+  There is an exception to the above equation:  slings/bows/Xbows when
+  used in conjunction with the appropriate ammo.  This helps warriors
+  survive without spells.  For "bows" with the correct ammo, the formula
+  is:
+  damage = (base ammo damage "roll" + +to-dam-ammo + +to-dam-"bow")
+	   * "bow"_mult * ammo_mult * hit_mult + hit_bonus
+  "bow"_mult is the multiplier with the missile launcher.  ammo_mult is
+  for special ammos -- of Fire, of Dragon Slaying, etc.  hit_mult is the
+  multiplier gained from a "good",etc hit.  hit_bonus is the extra
+  damage gained from a "good",etc hit.
+
+  Note that, in this case, damage bonuses ARE multiplied.  This makes a
+  heavy crossbow (x4) with a high +to-dam very powerful... If you have
+  some bolts.
+* Multiplers for various weapon powers are:
+	L   -  x5	XD  -  x5	FB  -  x3	FT  -  x3
+	SD  -  x3	SDm -  x3	SU  -  x3	SO  -  x3
+	SG  -  x3	ST  -  x3	SE  -  x2	SA  -  x2
+  Abbreviations used above are: (self knowledge mesg. in parenthesis)
+    L   - Lightning, unless res. ("electrocutes your foes")
+    XD  - Execute Dragon ("great bane of dragons")
+    FB  - Frost (Brand), unless res. ("freezes your foes")
+    FT  - Flame (Tongue), unless res. ("burns your foes")
+    SD  - Slay Dragon ("especially deadly against dragons")
+	NOTE: SD is x3 in Angband, not x4 like it was in Moria...
+    SDm - Slay Demon ("strikes at demons with holy wrath")
+    SU  - Slay Undead ("strikes at undead with holy wrath")
+    SO  - Slay Orcs ("especially deadly against orcs")
+    SG  - Slay Giants ("especially deadly against giants")
+    ST  - Slay Trolls ("especially deadly against trolls")
+    SE  - Slay Evil ("fights against evil with holy fury")
+    SA  - Slay Animals ("especially deadly against Nature's creatures")
+  Note that only the highest applicable multiplier is used, if several
+  apply.  For example, a weapon with XD, SU, SE used against a Dracolich
+  will only do the x5 from XD, NOT x5x3x2 == x30 from all three.
+* Damage bonues for special hits are:
+  "good hit"		x2 + 5
+  "execellent hit"	x2 + 10
+  "superb hit"		x3 + 15
+  "*GREAT* hit"		x3 + 20
+  The odds of getting a special hit are influenced by your pluses to
+  hit, your combat skill, and the weight of your weapon (Heavier weapons
+  are more likely to deliver an extra-hard hit).
+* Priests are penalized for weilding "non-priestly" weapons.  This
+  penalty comes from D&D.  Priests are basically restricted to maces,
+  clubs, and other blunt weapons.   They should get a message ("You are
+  not comfortable with your weapon" or something like that) if they
+  wield a non-priestly weapon.  But this is a relatively minor
+  penalty...  If you find Ringil, WIELD IT!
+* For those who have examined the "blows" table (which tells how many
+  swings you can get, based on your strength, your dex, and the weight
+  of your weapon), be warned:  When calculating your STR to weapon
+  weight ratio, the code considers any weapon lighter than 5 pounds to
+  weigh 5 pounds.  So there is no longer any advantage gained by
+  weilding really light weapons (ie a Stilleto no longer gives two
+  swings even to a character with moderate stats.)
+
+	General
+* You don't get any extra speed from wearing a second speed ring.  You
+  can still get extra speed by wearing a speed ring with some other
+  source of speed, like boots of speed.  This is not a bug.
+* If you kill Sauron out-of-depth (not on level 99 (4950')), then you
+  will have to fall through a trap door to get beyond level 99.  This
+  is a bug, caused by an oversight in the quest code.  Sorry, folks...
+
+  This has been fixed in the new PC update, and I've sent the changes
+  to Sean Marsh, so it should not be a problem too much longer.
+* There is now a Potion of Self Knowledge, much like the potion from
+  Nethack, which can tell you what your resistances etc. are.  With
+  judicious use of these potions, you should be able to tell what powers
+  various artifacts grant you.  This should reduce people's reliance on
+  spoilers to decide which of 2 weapons, or 2 armors, etc. to use.
+* Farmer Maggot CAN be killed.  Just hit him a lot...
+* Infravision allows you to see SOME invisible monsters (if they aren't
+  cold-blooded).  This is not a bug.
+* Weapons "of Flame" are (FT).  "of Frost" is (FB).  "of Fire" does x3 fire
+  damage like a (FT), but doesn't give you fire resistance.
+* Orcs and trolls can be fun to line up in a long corridor, and then
+  blast with a wand of light!  (Not all types are susceptible...)
+* Unique monsters, once missed, come back again (until killed).  If you are
+  having a LOT of trouble with one of them, run and read a WoR scroll.  Maybe
+  he won't be on the level next time...  You can kill him later, when you're
+  tougher.  I especially recommend this with "Mim, betrayer of Turin" for
+  mages...  (You'll see why  :-)
+* Some advice on identifying items:  How you go about it depends on your
+  class and level.  For warriors, paladins and rogues, carry everything
+  you find (weapons + armor; this doesn't work for potions, etc) for a
+  while.  Your 'pseudo-identify' should kick in and give you some idea
+  how good/bad the item is.  For anyone with the 'remove curse' spell,
+  try on any armor you find.  If it's cursed, uncurse it, and drop it.
+  That way you don't have to carry cursed items at least.  But DO NOT
+  do this with weapons.  There are some really bad weapons that can
+  laugh off your feeble attempts to uncurse!  For mages and rangers
+  who have the identify spell and know it well enough to cast fairly
+  often, ID everything you can.  If you've got some really nice Mithral
+  Plate, you don't have to ID things like studded leather armor, but you
+  should try to get everything you can.  Besides, you should be on the
+  lookout for light armor artifacts, to avoid the mana penalty of heavy
+  armor.  For priests, and low levels mages and rangers, you have to
+  depend on ID scrolls, staves of perceptions, etc.  Even priests do get
+  some feeling of 'cursed' items if they carry things long enough.  Try
+  not to waste ID spells on cursed items.  At high levels, priests can
+  get the ID spell, but it's in one of the deeper books.
+* Damage messages when you cast a spell, or fire a missile, are
+  dependant on the amount of damage done relative to the current HPs of
+  the monster.  There are a number of messages, depending on how
+  severe the attack was, and on what type of monster it is (for example,
+  monsters without mouths don't "scream in pain", they "draw back in
+  pain").  Note that throwing many items (like food rations) does NO
+  DAMAGE and, for PC people, can cause trouble (see "guardian angel"
+  below, in the "Bugs" section).
+* The monster memory does show more than one description for some
+  monsters.  Some examples are filthy street urchins, novice mages/
+  priests/wariors/rangers, mimics, gnome mages, ethereal hounds, etc.
+  There are two or more entries because there are actually two or more
+  different types of these monsters.  Often the difference between them
+  is that one is found solo and the other is found in groups, at a
+  slightly deeper level.
+* Also note that the monster memory doesn't give you credit for killing
+  a monster if you cannot see the monster (if you are blind, or the
+  monster is in a dark area beyond your infravision range, etc).  The
+  recall code for uniques is slightly different, and the monster memory
+  will note their deaths even if you never saw them.
+* To use rods with the "non-rogue" command set, use the 'z' key.  This
+  IS documented in the help screen, but it doesn't fit on the first
+  screen.  If you hit ESC instead of space, you'll never see the second
+  (and following) help screens, so you wouldn't know this.
+* Monster "vaults", or whatever you prefer to call the unusual rooms
+  with lots of monsters, unusual size/shape/both, are dangerous.  They
+  often have some very nice out-of-depth items, but they also include
+  some very nasty out-of-depth monsters.  Some "vaults" have walls that
+  are made of impenetratible rock, but don't worry.  Somewhere there
+  will be a way in, even if it's a granite wall that you have to dig
+  through (Usually near the corners).  "Monster vaults" (as opposed to
+  "monster pits") do not cause a "special" feeling, but they do greatly
+  improve the 'rating' of the level, so you will often get some form of
+  "your luck is turning" message.  Of course, if the "vault" happens to
+  contain an artifact, you should get the "special" message as usual.
+
+	PC specific
+* There is now a second update uploaded to ftp.cis.ksu.edu:
+  'angexe12.exe' and 'angsrc12.exe' for the executable and source
+  files.  Both of these are self-extracting .zip archives.  Be sure
+  to get them in BINARY mode!
+
+  The new update includes: look command to see how hurt a monster is,
+  rod of trap location (to help warriors), updated monster descriptions,
+  highscore table will no longer show wizards, highscore delete fixed,
+  quest code fixed so that killing Sauron out-of-depth doesn't cause
+  problems getting past level 99, auto-roller option, player score
+  highlighted on death/retirement (color only), file character
+  description on death/retirement, summoned group monsters are now ALL
+  properly lit when summoned, entering shops fixed for people who use
+  'g' key for pickup, *Enlighenment* now also grants self-knowledge, and
+  many minor changes and bug fixes.
+* For PC people: If you still use the original release, GET ONE OF
+  THE UPDATES! ('angexe11.exe', 'angexe12.exe' or 'angsrc12.exe' at
+  ksu)  I'm not kidding...  There is a serious bug in the original
+  executable which can harm your system.  (See next, and under "Bugs")
+* For PC people, the "tombstone" bug has been fixed.  Get one of the
+  updates from ftp.cis.ksu.edu in pub/Games/Moria/Angband/PC if you
+  haven't already done so.  The "tombstone" bug was caused by
+  overflowing the stack, which could have (possibly) messed up your
+  system.
+* For PC people: If you're planning on compiling your own Angband, or
+  have already done so, get the updated sources ('angsrc12.exe' on ksu).
+  Don't use the old sources, which still contain the "stack overflow"
+  bug.
+* PC users: "Abnormal program termination" means that you do not have enough
+  free memory to load angband.  "Out of memory in init_curses()" means
+  you have just enough memory to load Angband, but not quite enough to
+  run it (It needs some extra space for some variables).  Try to free up
+  as much memory as possible.  If you need help doing so, the file
+  'free-mem.doc' that was packaged with the updated executable should
+  give you some ideas.
+* For PC users:  My estimate of the minimum memory required to run
+  Angband is 500-505k.  Please note that when I say 505k, I mean 517,120
+  bytes, not 505,000 bytes.  This estimate was obtained during my
+  playtesting of the updated executable, using DOS's 'mem' command, from
+  the "largest executable program size" line.
+* For PC users:  To specify the name of your savefile at the command
+  line, just type 'Angband savefilename'...  No '-u' switch is needed.
+* For PC users (and maybe Unix also, I'm not sure):  There IS a way to turn
+  off haggling (compiled into the PC executable).  Just use the '=' command
+  to get to the options menu.
+* For PC users with monochrome monitors:  You can now turn off color from
+  the options menu (use the '=' key to get to it).
+* For PC users:  The mon_desc.dat file has a minor error in it which
+  causes the description for the 1st monster (Filthy street urchin) to
+  have the 1st 4 letters as gibberish.  I've fixed this, and fixed
+  many spelling/grammar errors in the description file.  If you want
+  to, you can get the corrected file 'mon_desc.dat' from KSU.  It's in
+  pub/Games/Moria/Angband/PC/patches.  Just replace the old mon_desc.dat
+  file with the new one.  This is a minor fix, though.  If you don't
+  care about a few spelling errors, you don't have to get the file.
+  If you've got the new update 'angexe12.exe', then you already have the
+  corrected description file.
+  
+	Bugs
+  (As far as the PC executable goes, most of these are fixed in the new
+   update.  I included them here anyways to help people who may not be
+   using the most current version.  If it says "This should be fixed",
+   then the new update fixes it, and I've sent the fix to Sean Marsh.
+   -CFT)
+* The high score table will currently allow ex-wizards to show up.  This
+  isn't too bad of a problem on unix systems, because you have to be on
+  the wiz list to enter wizard mode.  But on PCs, anyone can enter wiz
+  mode.  Of course, the only person likely to see the high score list on
+  a PC is the user of that PC, so this also isn't such a big deal.  This
+  should be fixed.
+* Mages/rangers/rogues can cast the 'create stair' spell and clobber the
+  entrance to a store.  Also, you could create an upstairway from town,
+  and go to -50'.  This would confuse the Word of Recall scroll, and
+  ruin your character's day.  You would not go down from the town level
+  to your old depth any more, but always go to -50'.  Word of Recall
+  will still bring you from the dungeon to town, but walking down to
+  2500' or deeper will become incredibly tedious...  For PC people
+  who have already messed up their characters, I've put together a
+  program to read in your savefile, set the "max level" to 0 (town),
+  and write it back out again.  You'll still have to walk back down to
+  whatever depth you were at, but you'll only have to do it once.  It
+  is available at KSU as 'fix-lv.exe' in pub/Games/Moria/Angband/PC/
+  patches.  Remember to ftp in binary mode.
+  These 2 bugs should be fixed.
+* Silver jellies could mess up the Arkenstone of Thrain.  This should be
+  fixed.
+* If you cast a spell/throw something at a monster with 0 hp, and your
+  attack does 0 hp, it will cause a divide by zero error.  PC users
+  will see this as the "guardian angel" message.  Your character should
+  be saved.  This should be fixed.
+* As I mentioned above, killing Sauron on any level except 4950' will
+  mean that you have to fall through a trap door to get past level 99.
+  This is because of a bug in the quest code, where it only lists a
+  quest as done if you kill the quest monster on the correct level. 
+  This should be fixed.
+* Also, the very fact that you can fall through a trap door on a quest
+  level is a bug.  At the moment, it's a good one, because otherwise the
+  above bug would be serious.  This should be fixed.
+* When a group of monsters is summoned, only one (?some) of them are lit
+  initially.  A round later, all are properly lit, but this delay can
+  be deadly.  This should be fixed.
+* The movement code was wrong if you set the option to use the 'g' key
+  to get objects.  The result was that you had to hit 'g' to enter a
+  store, or to hit a trap.  I would have kept this last bit a secret,
+  but someone already asked about it on rec.games.moria.  This should
+  be fixed.
+* If a unique monster was killed by a spell/breath from another monster,
+  it would not be properly marked as deleted.  Also, if a quest monster
+  (just Sauron for now) was killed, you would not get credit for
+  completing the quest.  Because the monster was not marked as dead, you
+  could face the unique AGAIN after it had died!  I have one report of
+  someone who had to face Azriel THREE times, because something would
+  breath on him when he had Azriel almost dead.  This should be fixed.
+  Well, that's all of the common questions I can think of just now.
+* The character creation code used to allow you to type ^P to get the
+  stats from the previous character, even if there was no previous
+  character.  Combined with the -n flag, this could get the stats of
+  an existing character, but this would often cause some nasty bugs,
+  as things were not getting properly initialized.  This should be
+  fixed.
+* Artifact bows did not cause a "special" feeling.  (An oversight...
+  Sorry)  Additionally, because the bow code didn't properly handle
+  "special" flags, normal or just (+0, +1) bows could be produced
+  by killing Wormtongue or by reading a scroll of *Acquirement*.
+  This should be fixed.
+
+I will be adding to this file, and posting it regularly until someone
+starts a real FAQ.  But I don't want to become the "keeper" of the FAQ...
+I'll leave that honor to someone else (someone with more free time).
+--
+Charles F. Teague II  Net:cteague@cs.umb.edu  Real:33 Sidney Ave, Lynn MA 01902
++------------------------------------+-----------------------+----------------+
+| Computers are so powerful because  | "Don't do what I SAY, | 'lush' CS 1993 |
+| they do whatever you tell them to. |  do what I mean!!!!"  | TKE-zm sn 603  |
++------------------------------------+-----------------------+----------------+
+Hi!  I'm a replicating .sig virus!  Join in the fun and copy me into yours!

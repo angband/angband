@@ -295,11 +295,12 @@ void read_scroll()
 		  objdes(tmp_str, i_ptr, FALSE);
 		  (void)sprintf(out_val,"Your %s glows black, fades.",tmp_str);
 		  msg_print(out_val);
+		  py_bonuses(i_ptr, -1); /* take off current bonuses -CFT */
 		  unmagic_name(i_ptr);
 		  i_ptr->tohit = -randint(5) - randint(5);
 		  i_ptr->todam = -randint(5) - randint(5);
 		  i_ptr->flags = TR_CURSED;
-		  py_bonuses(i_ptr, -1);
+		  py_bonuses(i_ptr, 1); /* now apply new "bonuses" -CFT */
 		  calc_bonuses ();
 		  ident = TRUE;
 		}
@@ -395,9 +396,11 @@ void read_scroll()
 		  objdes(tmp_str, i_ptr, FALSE);
 		  (void)sprintf(out_val,"Your %s glows black, fades.",tmp_str);
 		  msg_print(out_val);
+		  py_bonuses(i_ptr, -1); /* take off current bonuses -CFT */
 		  unmagic_name(i_ptr);
 		  i_ptr->flags = TR_CURSED;
 		  i_ptr->toac = -randint(5) - randint(5);
+		  py_bonuses(i_ptr, 1); /* now apply new "bonuses" -CFT */
 		  calc_bonuses ();
 		  ident = TRUE;
 		}
@@ -435,10 +438,12 @@ void read_scroll()
 	      break;
 	    case 43:
 	      place_special(char_row, char_col, SPECIAL);
+	      ident = TRUE;
 	      prt_map();
 	      break;
 	    case 44:
 	      special_random_object(char_row, char_col, 1);
+	      ident = TRUE;
 	      prt_map();
 	      break;
 	    default:

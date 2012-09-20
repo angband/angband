@@ -9,9 +9,12 @@
 
 OV1 = -Y -DTC_OVERLAY
 OV2 = -Yo
-CFLAGS1 = -mh -c -O -G- -DUSG -DMSDOS -DTC_COLOR -g0 -w+
+# This CFLAGS1 is my debugging one.
+#CFLAGS1 = -mh -c -O -G- -DUSG -DMSDOS -DTC_COLOR -g0 -w+ -N
+# This CFLAGS1 is the "production" version
+CFLAGS1 = -mh -c -O -G- -DUSG -DMSDOS -DTC_COLOR -N -w-
 CFLAGS2 = $(OV1)
-MAINFLAGS = -DSTK_LEN_SZ=0x3000 -DOVLY_BUF_SZ=0x3000
+MAINFLAGS = -DSTK_LEN_SZ=0x3000 -DOVLY_BUF_SZ=0x2000
 CC = tcc
 
 
@@ -41,8 +44,9 @@ all:	angband
 
 # create.c and spells.c need floating point stuff
 # No longer!  Code re-written to avoid doubles... -CFT
+# if you want to include the autoroller, define AUTOROLLER -CFT
 create.obj: create.c config.h constant.h types.h externs.h
-	$(CC) $(CFLAGS1) $(CFLAGS2) $(OV2) -d create.c 
+	$(CC) $(CFLAGS1) $(CFLAGS2) -DAUTOROLLER $(OV2) -d create.c 
 spells.obj: spells.c config.h constant.h types.h externs.h monster.h
 	$(CC) $(CFLAGS1) $(CFLAGS2) $(OV2) -d spells.c 
 
@@ -148,6 +152,8 @@ query:
 	del temp-999.fff
 
 mkdesc: mkdesc.c monsters.obj describe.obj
-  $(CC) -mh -v- -y- -O -G- -a- -DUSG -DMSDOS mkdesc.c monsters.obj describe.obj
+  $(CC) -mh -v- -y- -O -G- -a- -DUSG -DMSDOS -DTC_COLOR mkdesc.c monsters.obj describe.obj
 
+cklist: cklist.c monsters.obj
+  $(CC) -mh -v- -y- -O -G- -a- -DUSG -DMSDOS -DTC_COLOR cklist.c monsters.obj
 

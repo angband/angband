@@ -1016,7 +1016,7 @@ int store_num, *cur_top;
 		      msg_print("You bastard!");
 		      break;
 		    case 3:
-		      msg_print("You here sobs coming from the back of the store...");
+		      msg_print("You hear sobs coming from the back of the store...");
 		      break;
 		    case 4:
 		      msg_print("Arrgghh!!!!");
@@ -1037,7 +1037,7 @@ int store_num, *cur_top;
 		  } else if (real> (4*cost)) {
 		    switch (randint(4)) {
 		    case 1:
-		      msg_print("You here someone jumping for joy!");
+		      msg_print("You hear someone jumping for joy!");
 		      break;
 		    case 2:
 		      msg_print("Yipee!");

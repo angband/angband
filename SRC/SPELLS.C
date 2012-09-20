@@ -262,10 +262,10 @@ int detection()
 	  m_ptr->ml = TRUE;
 	  /* works correctly even if hallucinating */
 #ifdef TC_COLOR
-	  textcolor(c_list[m_ptr->mptr].color);
+	  if (!no_color_flag) textcolor(c_list[m_ptr->mptr].color);
 	  print((char)c_list[m_ptr->mptr].cchar, (int)m_ptr->fy,
 		(int)m_ptr->fx);
-	  textcolor(LIGHTGRAY);
+	  if (!no_color_flag) textcolor(LIGHTGRAY);
 #else
 	  print((char)c_list[m_ptr->mptr].cchar, (int)m_ptr->fy,
 		(int)m_ptr->fx);
@@ -343,14 +343,15 @@ int stair_creation()
     c_ptr = &cave[char_row][char_col];
  
     if ((c_ptr->tptr == 0) ||
-        (t_list[c_ptr->tptr].tval < TV_MIN_WEAR) ||
-        (t_list[c_ptr->tptr].tval > TV_MAX_WEAR) ||
-        !(t_list[c_ptr->tptr].flags2 & TR_ARTIFACT)) { /* if no artifact here -CFT */
+         ((t_list[c_ptr->tptr].tval != TV_STORE_DOOR) && /* if not store, or */
+	   ((t_list[c_ptr->tptr].tval < TV_MIN_WEAR) || /* if no artifact here -CFT */
+	    (t_list[c_ptr->tptr].tval > TV_MAX_WEAR) ||
+	    !(t_list[c_ptr->tptr].flags2 & TR_ARTIFACT)))){ 
       if (c_ptr->tptr != 0)
         (void) delete_object(char_row, char_col);
       cur_pos = popt();
       c_ptr->tptr = cur_pos;
-      if (randint(2)==1 || is_quest(dun_level))
+      if ((randint(2)==1 || is_quest(dun_level)) && (dun_level > 0))
         invcopy(&t_list[cur_pos], OBJ_UP_STAIR);
       else
         invcopy(&t_list[cur_pos], OBJ_DOWN_STAIR);
@@ -443,10 +444,10 @@ int detect_invisible()
 	  m_ptr->ml = TRUE;
 	  /* works correctly even if hallucinating */
 #ifdef TC_COLOR
-	  textcolor(c_list[m_ptr->mptr].color);
+	  if (!no_color_flag) textcolor(c_list[m_ptr->mptr].color);
 	  print((char)c_list[m_ptr->mptr].cchar, (int)m_ptr->fy,
 		(int)m_ptr->fx);
-	  textcolor(LIGHTGRAY);
+	  if (!no_color_flag) textcolor(LIGHTGRAY);
 #else
 	  print((char)c_list[m_ptr->mptr].cchar, (int)m_ptr->fy,
 		(int)m_ptr->fx);
@@ -496,8 +497,12 @@ int y, x;
   register cave_type *c_ptr;
 
   unlight = FALSE;
-  if (cave[y][x].lr && (dun_level > 0))
+  if (cave[y][x].lr && (dun_level > 0)) {
     darken_room(y, x);
+    unlight = TRUE; /* this isn't really good, as it returns true, even if rm
+    		       was already dark, but at least scrolls of darkness
+    		       will be IDed when used -CFT */
+    }
   else
     for (i = y-1; i <= y+1; i++)
       for (j = x-1; j <= x+1; j++)
@@ -686,10 +691,10 @@ int detect_monsters()
 	  m_ptr->ml = TRUE;
 	  /* works correctly even if hallucinating */
 #ifdef TC_COLOR
-	  textcolor(c_list[m_ptr->mptr].color);
+	  if (!no_color_flag) textcolor(c_list[m_ptr->mptr].color);
 	  print((char)c_list[m_ptr->mptr].cchar, (int)m_ptr->fy,
 		(int)m_ptr->fx);
-	  textcolor(LIGHTGRAY);
+	  if (!no_color_flag) textcolor(LIGHTGRAY);
 #else
 	  print((char)c_list[m_ptr->mptr].cchar, (int)m_ptr->fy,
 		(int)m_ptr->fx);
@@ -995,7 +1000,7 @@ char *bolt_typ;
 	  else if (panel_contains(y, x) && (py.flags.blind < 1))
 	    {
 #ifdef TC_COLOR
-	      textcolor(bolt_color(typ));
+	      if (!no_color_flag) textcolor(bolt_color(typ));
 #endif
 	      print(bolt_shape(dir), y, x);
 	      /* show the bolt */
@@ -1004,7 +1009,7 @@ char *bolt_typ;
 	      delay(23); /* slow it down, so we can actually see it! -CFT */
 #endif
 #ifdef TC_COLOR
-	      textcolor(LIGHTGRAY);
+	      if (!no_color_flag) textcolor(LIGHTGRAY);
 #endif
 	    }
 	}
@@ -1102,12 +1107,12 @@ int bolt(typ, y, x, dam_hp, ddesc, ptr, monptr)
       if (c_ptr->fval <= MAX_OPEN_SPACE) {
 	if (panel_contains(i, j) && !(py.flags.status & PY_BLIND)) {
 #ifdef TC_COLOR
-	  textcolor(bolt_color(typ));
+	  if (!no_color_flag) textcolor(bolt_color(typ));
 #endif	  
 	  print(bolt_char, i, j);
 	  put_qio();
 #ifdef TC_COLOR
-	  textcolor(LIGHTGRAY);
+	  if (!no_color_flag) textcolor(LIGHTGRAY);
 #endif	  
 #ifdef MSDOS
 	  delay(23); /* milli-secs -CFT */
@@ -1126,6 +1131,14 @@ int bolt(typ, y, x, dam_hp, ddesc, ptr, monptr)
 	  }
 	  m_ptr->hp = m_ptr->hp - dam;
 	  m_ptr->csleep = 0;
+	  if ((r_ptr->cdefense & UNIQUE) && (m_ptr->hp < 0))
+	    m_ptr->hp = 0; /* prevent unique monster from death by other
+	    		     monsters.  It causes trouble (monster not
+	    		     marked as dead, quest monsters don't satisfy
+	    		     quest, etc).  So, we let then live, but
+	    		     extremely wimpy.  This isn't great, because
+	    		     monster might heal itself before player's
+	    		     next swing... -CFT */
 	  if (m_ptr->hp < 0) {
 	    treas = monster_death((int)m_ptr->fy, (int)m_ptr->fx,
 				  r_ptr->cmove, 0, 0);
@@ -1357,10 +1370,10 @@ char *descrip;
 		los(origy, origx, i, j) && los(y, x, i, j) &&
 		(cave[i][j].fval <= MAX_OPEN_SPACE) &&
 		panel_contains(i, j) && (py.flags.blind < 1)) {
-	      textcolor(bolt_color(typ));
+	      if (!no_color_flag) textcolor(bolt_color(typ));
 	      print('*', i, j);
 	      put_qio();
-	      textcolor(LIGHTGRAY); /* prob don't need here, but... -CFT */
+	      if (!no_color_flag) textcolor(LIGHTGRAY); /* prob don't need here, but... -CFT */
 	      }
 	if (py.flags.blind < 1)      
 	  delay(75); /* millisecs, so we see the ball we just drew */
@@ -1493,12 +1506,12 @@ char *descrip;
 	/* End ball hitting.		     */
       } else if (panel_contains(y, x) && (py.flags.blind < 1)) {
 #ifdef TC_COLOR
-	textcolor(bolt_color(typ));
+	if (!no_color_flag) textcolor(bolt_color(typ));
 #endif	  
 	print(bolt_shape(dir), y, x);
 	put_qio();
 #ifdef TC_COLOR
-	textcolor(LIGHTGRAY);
+	if (!no_color_flag) textcolor(LIGHTGRAY);
 #endif	  
 #ifdef MSDOS
 	delay(23); /* milli-secs -CFT */
@@ -1565,10 +1578,10 @@ int monptr;
 	    if (in_bounds(i, j) && (distance(y, x, i, j) <= max_dis) &&
 		los(y, x, i, j) && (cave[i][j].fval <= MAX_OPEN_SPACE) &&
 		panel_contains(i, j) && !(py.flags.status & PY_BLIND)) {
-	      textcolor(bolt_color(typ));
+	      if (!no_color_flag) textcolor(bolt_color(typ));
 	      print('*', i, j);
 	      put_qio();
-	      textcolor(LIGHTGRAY); /* prob don't need here, but... -CFT */
+	      if (!no_color_flag) textcolor(LIGHTGRAY); /* prob don't need here, but... -CFT */
 	      }
         if (!(py.flags.status & PY_BLIND))
 	  delay(75); /* millisecs, so we see the ball we just drew */
@@ -1597,6 +1610,14 @@ int monptr;
 		     get experience for kill */
 		  m_ptr->hp = m_ptr->hp - dam;
 		  m_ptr->csleep = 0;
+	  if ((r_ptr->cdefense & UNIQUE) && (m_ptr->hp < 0))
+	    m_ptr->hp = 0; /* prevent unique monster from death by other
+	    		     monsters.  It causes trouble (monster not
+	    		     marked as dead, quest monsters don't satisfy
+	    		     quest, etc).  So, we let then live, but
+	    		     extremely wimpy.  This isn't great, because
+	    		     monster might heal itself before player's
+	    		     next swing... -CFT */
 		  if (m_ptr->hp < 0)
 		    {
 		      treas = monster_death((int)m_ptr->fy, (int)m_ptr->fx,
@@ -1675,6 +1696,14 @@ int monptr;
 		     get experience for kill */
 		  m_ptr->hp = m_ptr->hp - dam;
 		  m_ptr->csleep = 0;
+	  if ((r_ptr->cdefense & UNIQUE) && (m_ptr->hp < 0))
+	    m_ptr->hp = 0; /* prevent unique monster from death by other
+	    		     monsters.  It causes trouble (monster not
+	    		     marked as dead, quest monsters don't satisfy
+	    		     quest, etc).  So, we let then live, but
+	    		     extremely wimpy.  This isn't great, because
+	    		     monster might heal itself before player's
+	    		     next swing... -CFT */
 		  if (m_ptr->hp < 0)
 		    {
 		      treas = monster_death((int)m_ptr->fy, (int)m_ptr->fx,
@@ -2678,10 +2707,10 @@ int detect_evil()
 	  m_ptr->ml = TRUE;
 	  /* works correctly even if hallucinating */
 #ifdef TC_COLOR
-	  textcolor(c_list[m_ptr->mptr].color);
+	  if (!no_color_flag) textcolor(c_list[m_ptr->mptr].color);
 	  print((char)c_list[m_ptr->mptr].cchar, (int)m_ptr->fy,
 		(int)m_ptr->fx);
-	  textcolor(LIGHTGRAY);
+	  if (!no_color_flag) textcolor(LIGHTGRAY);
 #else
 	  print((char)c_list[m_ptr->mptr].cchar, (int)m_ptr->fy,
 		(int)m_ptr->fx);
@@ -3356,6 +3385,8 @@ char *pain_message(monptr,dam)
   int percentage,oldhp,newhp;
 #endif
 
+  if (dam == 0) return "%s is unharmed."; /* avoid potential div by 0 */
+  
   m_ptr=&m_list[monptr];
   c_ptr=&c_list[m_ptr->mptr];
 #ifdef MSDOS /* more fix -CFT */
@@ -3628,7 +3659,7 @@ void self_knowledge(void){
   }
 
   if (py.flags.blindness_resist){
-    prt("Your eye are resistant to blindness.", i++, j);    
+    prt("Your eyes are resistant to blindness.", i++, j);    
     pause_if_screen_full(&i, j);
   }
   if (py.flags.fire_im){
@@ -3835,7 +3866,7 @@ void self_knowledge(void){
     prt("Your weapon strikes at undead with holy wrath.", i++, j);  
     pause_if_screen_full(&i, j);
   }
-  if (f2 & TR_SLAY_EVIL){
+  if (f & TR_SLAY_EVIL){
     prt("Your weapon fights against evil with holy fury.", i++, j);  
     pause_if_screen_full(&i, j);
   }

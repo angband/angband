@@ -131,9 +131,103 @@ char *in_str;
 
 
 /* Not touched for Mac port */
-void display_scores(from, to)
+/* That's no longer true AT ALL.. changed at least twice, with much
+   plaguarism from Um5.5 sources... -CFT */
+void display_scores(from, to, hl_rank)
   int from, to;
+  int hl_rank; /* if positive, which rank to highlight, else unused -CFT */
+		/* currently only used if TC_COLOR being used -CFT */
+#ifdef MSDOS /* fix this gluttonous stack usage to avoid stack overflow -CFT */
 {
+  register int i = 0, j, k, l, tt;
+  int fd;
+  int rank, not_eof = 1, input;
+  high_scores score;
+  char string[100];
+
+  vtype tmp_str;
+
+  if (to<0) to=20;
+  if (to>MAX_SAVE_HISCORES) to=MAX_SAVE_HISCORES;
+#ifdef MSDOS
+  if (1 > (fd = open(ANGBAND_TOP, O_RDONLY | O_BINARY, 0666))) {
+	/* binary mode to avoid lf/cr conversions, which cause havoc -CFT */
+#else
+#ifdef SET_UID
+  if (1 > (fd = open(ANGBAND_TOP, O_RDONLY, 0644))) {
+#else
+  if (1 > (fd = open(ANGBAND_TOP, O_RDONLY, 0666))) {
+#endif
+#endif
+    (void) sprintf(string, "Error opening score file \"%s\"\n", ANGBAND_TOP);
+    prt(string, 0, 0);
+    return ;
+  }
+
+  rank = 1;
+  not_eof = (0 < read(fd, (char *)&score, sizeof(high_scores)));
+  while (not_eof && (rank <= to)){
+    i = 1;
+    erase_line (0, 0);
+    erase_line (1, 0);
+    if ((from>1) || (rank > 1)) {
+      sprintf(tmp_str, "               Angband Hall of Fame (from position %d)", 
+	      (rank > 1 ? rank : from));
+#ifdef TC_COLOR
+  if (!no_color_flag) textcolor(WHITE);
+#endif
+      prt(tmp_str, 0, 0);
+#ifdef TC_COLOR
+  if (!no_color_flag) textcolor(LIGHTGRAY);
+#endif
+    } else {
+#ifdef TC_COLOR
+  if (!no_color_flag) textcolor(WHITE);
+#endif
+      prt("               Angband Hall of Fame                     ", 0, 0);
+#ifdef TC_COLOR
+  if (!no_color_flag) textcolor(LIGHTGRAY);
+#endif
+    }
+    prt("Rank Score", 1, 0);
+    /* put 10 scores on each page, on lines 2 - 21 */
+    while ((not_eof) && (i < 21) && (rank <= to)){
+      if ((rank >= from) && (rank <= to)){ /* only show if in range */
+        (void) sprintf(string, "%3d) %-9ld %*s the %*s %*s (Level %d)",
+		   rank,
+		   score.points,
+		   ((tt = strlen(score.name)) > 35 ? 35 : tt),
+		   score.name,
+		   ((tt = strlen(race[score.prace].trace)) > 16 ? 16 : tt),
+		   race[score.prace].trace,
+		   ((tt = strlen(class[score.pclass].title)) > 16 ? 16 : tt),
+		   class[score.pclass].title,
+		   (int)score.lev);
+#ifdef TC_COLOR
+	if (((hl_rank+1) == rank) && !no_color_flag)
+	  textcolor(YELLOW); /* make score easy to see */
+#endif	  
+        prt(string, ++i, 0);
+        (void) sprintf(string, "    Killed by %s on Dungeon Level %d.",
+		   score.died_from, score.dun_level);
+        prt(string, ++i, 0);
+#ifdef TC_COLOR
+	if (((hl_rank+1) == rank) && !no_color_flag)
+	  textcolor(LIGHTGRAY);
+#endif	  
+      }
+      rank++;
+      not_eof = (0 < read(fd, (char *)&score, sizeof(high_scores)));
+    } /* end inner while */
+    prt("[Press ESC to quit, any other key to continue.]", 23, 17);
+    input = inkey();
+    clear_from(2); /* erase previous scores */
+    if (input == ESCAPE)
+      break;
+  } /* end outer while */
+  clear_screen();
+}
+#else
   register int i = 0, j, k, l;
   int fd;
   high_scores score;
@@ -210,6 +304,7 @@ void display_scores(from, to)
     clear_screen();
   } while (k<(to*2) && k<i);
 }
+#endif
 
 /* Pauses for user response before returning		-RAK-	*/
 static int look_line(prt_line)
@@ -234,7 +329,7 @@ static void print_tomb()
   register int i;
   char day[11];
   register char *p;
-  FILE *fp;
+  FILE *fp = NULL;
 
   if (strcmp(died_from, "Interrupting") && !wizard) {
     sprintf(str, "%s%d", ANGBAND_BONES, dun_level);
@@ -248,7 +343,7 @@ static void print_tomb()
 	fclose(fp);
       }
     } else {
-      fclose(fp);
+      if (fp != NULL) fclose(fp);
     }
   }
   clear_screen();
@@ -309,7 +404,7 @@ static void print_tomb()
 
  retry:
   flush();
-  put_buffer ("(ESC to abort, return to print on screen)", 23, 0);
+  put_buffer ("(ESC to abort, return to print on screen, or file name)", 23, 0);
   put_buffer ("Character record?", 22, 0);
   if (get_string (str, 22, 18, 60))
     {
@@ -319,6 +414,7 @@ static void print_tomb()
 	  known2(&inventory[i]);
 	}
       calc_bonuses ();
+      if (str[0]) file_character(str); /* if typed in filename, write it */
       clear_screen ();
       display_char ();
       put_buffer ("Type ESC to skip the inventory:", 23, 0);
@@ -327,6 +423,7 @@ static void print_tomb()
 	  clear_screen ();
 	  msg_print ("You are using:");
 	  (void) show_equip (TRUE, 0);
+	  msg_print (NULL);
 	  msg_print ("You are carrying:");
 	  clear_from (1);
 	  (void) show_inven (0, inven_ctr-1, TRUE, 0, 0);
@@ -347,6 +444,140 @@ long total_points()
 /* Enters a players name on a hi-score table...    SM */
 static int top_twenty()
 {
+#ifdef MSDOS /* fix this gluttonous stack usage to avoid stack overflow -CFT */
+  register int i, j, k, not_eof;
+  high_scores myscore, new_entry, old_entry, cur_entry;
+  char *tmp;
+#if defined(MSDOS) || defined(VMS) || defined(AMIGA) || defined(MAC)
+  FILE *highscore_fp; /* used in opening file instead of locking it */
+  vtype string; /* used in error msgs -CFT */
+#endif
+  
+  clear_screen();
+
+  if (wizard || to_be_wizard) {
+    display_scores (0, 10, -1);
+    (void) save_char();
+    restore_term();
+    exit(0);
+  }
+
+  if (!total_winner && !strcmp(died_from, "Interrupting")) {
+    msg_print("Score not registered due to interruption.");
+    display_scores (0, 10, -1);
+    (void) save_char();
+    restore_term();
+    exit(0);
+  }
+
+  if (!total_winner && !strcmp(died_from, "Quitting")) {
+    msg_print("Score not registered due to quitting.");
+    display_scores (0, 10, -1);
+    (void) save_char();
+    restore_term();
+    exit(0);
+  }
+
+  myscore.points = total_points();
+  myscore.dun_level = dun_level;
+  myscore.lev = py.misc.lev;
+  myscore.max_lev = py.misc.max_dlv;
+  myscore.mhp = py.misc.mhp;
+  myscore.chp = py.misc.chp;
+  myscore.uid = -1;
+  /* First character of sex, lower case */
+  myscore.sex = py.misc.male;
+  myscore.prace = py.misc.prace;
+  myscore.pclass = py.misc.pclass;
+  (void) strcpy(myscore.name, py.misc.name);
+  (void) strncpy(myscore.died_from, died_from, strlen(died_from));
+  myscore.died_from[strlen(died_from)] = '\0';
+  /* Get rid of '.' at end of death description */
+
+
+  /*  First, get a lock on the high score file so no-one else tries */
+  /*  to write to it while we are using it, on VMS and IBMPCs only one
+      process can have the file open at a time, so we just open it here */
+#if defined(MSDOS) || defined(VMS) || defined(AMIGA) || defined(MAC)
+#if defined(MAC) || defined(MSDOS)
+  if ((highscore_fp = fopen(ANGBAND_TOP, "rb+")) == NULL)
+#else
+  if ((highscore_fp = fopen(ANGBAND_TOP, "r+")) == NULL)
+#endif
+    {
+      (void) sprintf (string, "Error opening score file \"%s\"\n", ANGBAND_TOP);
+      perror(string);
+      exit_game();
+    }
+  highscore_fd = fileno(highscore_fp); /* get fd from fp...  This must
+  					  happen bacause rest of code
+  					  assumes fd, not fp  -CFT */
+#else
+#ifdef ATARIST_TC
+  /* 'lock' always succeeds on the Atari ST */
+#else
+  if (0 != flock((int)fileno(highscore_fp), LOCK_EX))
+    {
+      perror("Error gaining lock for score file");
+      exit_game();
+    }
+#endif
+#endif
+
+  /*  Check to see if this score is a high one and where it goes */
+  i = 0;
+#ifndef BSD4_3
+  (void) lseek(highscore_fd, (long)0, L_SET);
+#else
+  (void) lseek(highscore_fd, (off_t)0, L_SET);
+#endif
+  
+  not_eof = (0 != read(highscore_fd, (char *)&cur_entry, sizeof(high_scores)));
+  while ((i < MAX_SAVE_HISCORES) && not_eof &&
+  	 (cur_entry.points >= myscore.points)) {
+    not_eof = (0 != read(highscore_fd, (char *)&cur_entry, sizeof(high_scores)));
+    i++; /* find out which position this score belongs in */
+    }
+  if (i == MAX_SAVE_HISCORES) {
+    close(highscore_fd);
+    return 0; /* no room for it */
+    }
+  if (!not_eof) {
+    (void) lseek(highscore_fd, (long)(i * sizeof(high_scores)), L_SET);
+    (void) write(highscore_fd, (char *)&myscore, sizeof(high_scores));
+    close(highscore_fd);
+    j = i+1; /* this makes sense in context of display_scores() -CFT */
+    if (i<10) {
+      display_scores(1, 10, i);
+    } else if (i>(j-10)) {
+      display_scores(j-9, j, i);
+    } else display_scores(i-4, i+5, i);
+    return 1;
+    }
+/* to get here, we must have found the place to insert myscore */
+  new_entry = myscore; /* this will get put in place here */
+  j = i;
+  do { /* insert new score by copying table, moving down 1 at a time */
+    (void) lseek(highscore_fd, (long)(j * sizeof(high_scores)), L_SET);
+    (void) write(highscore_fd, (char *)&new_entry, sizeof(high_scores));
+    new_entry = cur_entry;
+    not_eof = (0 != read(highscore_fd, (char *)&cur_entry, sizeof(high_scores)));
+    j++;
+  } while (not_eof);
+  if ( j < MAX_SAVE_HISCORES ){ /* then write last one, still in mem */
+    (void) lseek(highscore_fd, (long)(j * sizeof(high_scores)), L_SET);
+    (void) write(highscore_fd, (char *)&new_entry, sizeof(high_scores));
+    j++;
+    }
+  (void) close(highscore_fd);
+  if (i<10) {
+    display_scores(1, 10, i);
+  } else if (i>(j-10)) {
+    display_scores(j-9, j, i);
+  } else display_scores(i-4, i+5, i);
+  return 1;
+} /* end of MSDOS version of this fn */
+#else
   register int i, j, k;
   high_scores scores[MAX_SAVE_HISCORES], myscore;
   char *tmp;
@@ -358,7 +589,7 @@ static int top_twenty()
   clear_screen();
 
   if (wizard || to_be_wizard) {
-    display_scores (0, 10);
+    display_scores (0, 10, -1);
     (void) save_char();
     restore_term();
     exit(0);
@@ -366,7 +597,7 @@ static int top_twenty()
 
   if (!total_winner && !strcmp(died_from, "Interrupting")) {
     msg_print("Score not registered due to interruption.");
-    display_scores (0, 10);
+    display_scores (0, 10, -1);
     (void) save_char();
     restore_term();
     exit(0);
@@ -374,7 +605,7 @@ static int top_twenty()
 
   if (!total_winner && !strcmp(died_from, "Quitting")) {
     msg_print("Score not registered due to quitting.");
-    display_scores (0, 10);
+    display_scores (0, 10, -1);
     (void) save_char();
     restore_term();
     exit(0);
@@ -468,16 +699,90 @@ static int top_twenty()
 #endif
   (void) close(highscore_fd);
   if (j<10) {
-    display_scores(0, 10);
+    display_scores(0, 10, j);
   } else if (j>(i-10)) {
-    display_scores(i-10, i);
-  } else display_scores(j-5, j+5);
+    display_scores(i-10, i, j);
+  } else display_scores(j-5, j+5, j);
 }
+#endif
+
 
 /* Enters a players name on the hi-score table     SM	 */
 delete_entry(which)
   int which;
 {
+#ifdef MSDOS /* DOS version of this fn rewritten to avoid stack overflows -CFT */
+  register int i, j, k;
+  high_scores tscore;
+  char *tmp;
+  FILE *highscore_fp; /* used in opening file instead of locking it */
+  FILE *tfile_fp; /* temp file: when done, it will be renamed to hiscore file */
+  int tfile_fd;
+  char string[80], tfname[16]; /* used in error msgs -CFT */
+  int8u not_eof;
+  
+  if ((which < 1) || (which > MAX_SAVE_HISCORES))
+    return 0;  /* save a little wasted effort */
+    
+  if ((highscore_fp = fopen(ANGBAND_TOP, "rb")) == NULL)
+    {
+      (void) sprintf (string, "Error opening score file \"%s\"\n", ANGBAND_TOP);
+      perror(string);
+      exit_game();
+    }
+  highscore_fd = fileno(highscore_fp); /* get fd from fp...  This must
+  					  happen bacause rest of code
+  					  assumes fd, not fp  -CFT */
+
+  tmpnam(tfname); /* get a filename for temp file */
+  if ((tfile_fp = fopen(tfname, "wb")) == NULL)
+    {
+      (void) sprintf (string, "Error opening temp file \"%s\"\n", tfname);
+      perror(string);
+      exit_game();
+    }
+  tfile_fd = fileno(tfile_fp); /* get fd from fp...  This must
+  					  happen bacause rest of code
+  					  assumes fd, not fp  -CFT */
+
+  /*  Check to see if this score is a high one and where it goes */
+  i = 1;
+  not_eof = 1;
+  while (not_eof && (i < which)) { /* copy into tfile */
+    not_eof = (0 != read(highscore_fd, (char *)&tscore, sizeof(high_scores)));
+    if (not_eof){
+      write(tfile_fd, (char *)&tscore, sizeof(high_scores));
+      i++;
+      }
+    }    
+  if (!not_eof) { /* ran out before which (ie del'ing #42 of 35) */
+    close(highscore_fd);
+    close(tfile_fd);
+    unlink(tfname); /* junk the temp file... */
+    return 0;
+    }
+  /* now read the which-th score in.  We do nothing with it... */
+  not_eof = (0 != read(highscore_fd, (char *)&tscore, sizeof(high_scores)));
+  /* now copy rest */
+  while (not_eof) { /* copy into tfile */
+    not_eof = (0 != read(highscore_fd, (char *)&tscore, sizeof(high_scores)));
+    if (not_eof){
+      write(tfile_fd, (char *)&tscore, sizeof(high_scores));
+      i++;
+      }
+    }    
+  close(highscore_fd);
+  close(tfile_fd);
+  unlink(ANGBAND_TOP); /* erase old */
+  rename(tfname, ANGBAND_TOP); /* rename tfile to highscore file */
+
+  if (which<10) {
+    display_scores(0, 10, -1);
+  } else if (which>(i-10)) {
+    display_scores(i-9, i, -1);
+  } else display_scores(which-4, which+5, -1);
+} /* end of temp. DOS version of this function -CFT */
+#else
   register int i, j, k;
   high_scores scores[MAX_SAVE_HISCORES];
   char *tmp;
@@ -537,11 +842,12 @@ delete_entry(which)
 #endif
   (void) close(highscore_fd);
   if (which<10) {
-    display_scores(0, 10);
+    display_scores(0, 10, which);
   } else if (which>(i-10)) {
-    display_scores(i-10, i);
-  } else display_scores(which-5, which+5);
+    display_scores(i-10, i, which);
+  } else display_scores(which-5, which+5, which);
 }
+#endif
 
 /* Change the player into a King!			-RAK-	 */
 static void kingly()
@@ -589,7 +895,10 @@ static void kingly()
 void exit_game ()
 {
   register int i;
-
+#ifdef MSDOS
+  int t;
+#endif
+  
 #ifdef MAC
   /* Prevent strange things from happening */
   enablefilemenu(FALSE);
@@ -604,14 +913,23 @@ void exit_game ()
       if (total_winner)
 	kingly();
       print_tomb();
-      if (!wizard && !to_be_wizard) 
+      if (!wizard && !to_be_wizard && !noscore) 
+#ifdef MSDOS
+	t = top_twenty(); /* top_twenty should ret 1 if made hiscore.  if so
+			     it already showed hi-scores -CFT*/
+#else
 	top_twenty();
+#endif
       else msg_print("Score not registered.");
     }
   i = log_index;
   (void) save_char ();		/* Save the memory at least. */
+#ifdef MSDOS
+  if (!t) /* then top_twenty() didn't show scores, so we do here... -CFT */
+#else
   if (i > 0)
-    display_scores (0, 10);
+#endif
+    display_scores (0, 10, -1);
   erase_line (23, 0);
   restore_term();
   exit(0);

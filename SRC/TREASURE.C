@@ -1245,10 +1245,11 @@ treasure_type object_list[MAX_OBJECTS] = {
   ,WHITE
 #endif
 },
-{"Trap Detection"		,0x00010000L,	TV_SCROLL1, '?',/*196*/
-    0,	  35,	80,   1,   5,	0,   0,	 0,   0, {0,0}	, 12, 0, 0L
+
+{"Trap Location"		,RD_TRAP_LOC,  TV_ROD, '-',	/*196*/
+    0,	 100,	25,   1,  15,	0,   0,	 0,   0, {1,1}	, 5, 0, 0x800L
 #ifdef TC_COLOR
-  ,WHITE
+  ,0
 #endif
 },
 {"Door/Stair Location"		,0x00020000L,	TV_SCROLL1, '?',/*197*/

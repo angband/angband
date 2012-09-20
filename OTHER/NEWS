@@ -9,10 +9,12 @@
                   PC port by: Charles Teague
                      With TC color code by: Justin Anderson
 News:
-  Take note:  Priests (and Paladins) now need spellbook to learn spells.
-        This was done to keep the spells in the deeper books special.
+        Take note:  Priests (and Paladins) now need spellbooks to learn spells.
 Bugs:
         "probing" sometimes completely ignores a monster...  This may be
           related to the "monster heal bug" (which has been patched over,
           not truly fixed), but I don't know.
+        Sometimes "special offers" in the stores seem to be ignored -- the
+          shopkeeper asks for full price.  This seems to happen only with
+          "stackable" items like arrows, etc.
 

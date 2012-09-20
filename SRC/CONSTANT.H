@@ -44,7 +44,7 @@
 
 /* number of messages to save in a buffer */
 #define MAX_SAVE_MSG   22   /* How many messages to save -CJS- */
-#define MAX_SAVE_HISCORES 20
+#define MAX_SAVE_HISCORES 50
 /* How many hiscores to be saved */
 
 /* Dungeon size parameters					*/
@@ -845,6 +845,7 @@
 #define RD_ILLUME	29L
 #define RD_PROBE        30L
 #define RD_RECALL	31L
+#define RD_TRAP_LOC	32L
 
 #define ST_LIGHT 	1L
 #define ST_DR_LC        2L

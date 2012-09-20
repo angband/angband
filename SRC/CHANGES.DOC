@@ -1,0 +1,22 @@
+  The changes.tc file records (in prose. It's NOT a diff) the changes
+I've made to the Angband source since I received an alpha version of
+the Unix Angband source in February.  Often, it tells WHY the change
+was made, as well as what was done.
+
+  Be careful (and forgiving) of my changes.tc file...  I wrote it as I
+was trying to get Angband to compile, and then as I fixed things, so it
+occasionally says "I did X", and then later says "I un-did X".  I have
+cleaned it up a little, but I figured it would be safer to delete too
+little than to erase too much (esp since it my ONLY record of my changes).
+Since I typed it as I made changes, often late at night, the quality of
+my spelling, punctuation, and typing is fairly low.  If you have any
+important questions about something I've written, feel free to ask...
+
+--
+Charles F. Teague II  Net:cteague@cs.umb.edu  Real:33 Sidney Ave, Lynn MA 01902
++------------------------------------+-----------------------+----------------+
+| Computers are so powerful because  | "Don't do what I SAY, | 'lush' CS 1993 |
+| they do whatever you tell them to. |  do what I mean!!!!"  | TKE-zm sn 603  |
++------------------------------------+-----------------------+----------------+
+Hi!  I'm a replicating .sig virus!  Join in the fun and copy me into yours!
+

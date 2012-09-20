@@ -46,6 +46,7 @@ static void inven_throw(ARG_INT ARG_COMMA ARG_INV_PTR);
 static void facts(ARG_INV_PTR ARG_COMMA ARG_INT_PTR ARG_COMMA ARG_INT_PTR ARG_COMMA ARG_INT_PTR ARG_COMMA ARG_INT_PTR);
 static void drop_throw(ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INV_PTR);
 static void py_bash(ARG_INT ARG_COMMA ARG_INT);
+static char *look_mon_desc(ARG_INT);
 int unlink(ARG_CHAR_PTR);
 #endif
 
@@ -99,15 +100,31 @@ int y, x;
       place_trap(y, x, 0);
       break;
     case 4: /* Trap door*/
-      msg_print("You fell through a trap door!");
-      new_level_flag = TRUE;
-      dun_level++;
-      if (py.flags.ffall)
-	msg_print("You gently float down.");
-      else
-      {
-	objdes(tmp, t_ptr, TRUE);
-	take_hit(dam, tmp);
+      if (!is_quest(dun_level)){ /* that would be too easy... -CFT */
+        msg_print("You fell through a trap door!");
+        new_level_flag = TRUE;
+        dun_level++;
+        if (py.flags.ffall)
+	  msg_print("You gently float down.");
+        else {
+	  objdes(tmp, t_ptr, TRUE);
+	  take_hit(dam, tmp);
+          }
+        } /* end normal */
+      else { /* it's a quest level, can't let them fall through */
+        msg_print("You fall into a spiked pit!");
+        if (py.flags.ffall)
+	  msg_print("You gently float down.");
+        else {
+	  dam = (dam * 3) / 2; /* do a little extra damage for spikes */
+	  if (randint(3) == 1) {
+	    msg_print("The spikes are poisoned!");
+            if (!(py.flags.poison_im || py.flags.poison_resist ||
+	          py.flags.resist_poison))
+	      dam *= 2; /* more damage from poison!  :-)  -CFT */
+	    else msg_print("You are unaffected by the poison.");
+	    }
+	} /* no ffall */
       }
       break;
     case 5: /* Sleep gas*/
@@ -774,43 +791,48 @@ int monptr, dam;
 	unlink(tmp);
       }
       if (c_list[m_ptr->mptr].cdefense & QUESTOR) {
-	for (i=0; i<DEFINED_QUESTS; i++) {
-	  if (quests[i]==dun_level) {
+	for (i=0; i<DEFINED_QUESTS; i++) { /* search for monster's lv, not... */
+	  if (quests[i]==c_list[m_ptr->mptr].level) { /* ...cur lv. -CFT */
 	    quests[i]=0;
 	    found=TRUE;
 	    break;
 	  }
 	}
 	if (found) {
-	  cave_type *c_ptr;
-	  int cur_pos;
+	  if (dun_level != c_list[m_ptr->mptr].level) { /* just mesg */
+	    msg_print("Well done!!  Now continue onward towards Morgoth.");
+	    }
+	  else { /* stairs and mesg */
+	    cave_type *c_ptr;
+	    int cur_pos;
 
-	  c_ptr = &cave[m_ptr->fy][m_ptr->fx];
-	  if (c_ptr->tptr != 0) { /* don't overwrite artifact -CFT */
-	    int8u ty = m_ptr->fy, tx = m_ptr->fx, ny, nx;
+	    c_ptr = &cave[m_ptr->fy][m_ptr->fx];
+	    if (c_ptr->tptr != 0) { /* don't overwrite artifact -CFT */
+	      int8u ty = m_ptr->fy, tx = m_ptr->fx, ny, nx;
 
-	    while ((cave[ty][tx].tptr != 0) &&
+	      while ((cave[ty][tx].tptr != 0) &&
 	    	   (t_list[cave[ty][tx].tptr].tval >= TV_MIN_WEAR) &&
 	    	   (t_list[cave[ty][tx].tptr].tval <= TV_MAX_WEAR) &&
 	           (t_list[cave[ty][tx].tptr].flags2 & TR_ARTIFACT)) {
-	      do {
-		ny = ty + (int8u)randint(3) -2; /* pick new possible spot */
-		nx = tx + (int8u)randint(3) -2;
-	        } while (cave[ny][nx].fval > MAX_OPEN_SPACE);
-	      ty = ny; /* this is a new spot, not in a wall/door/etc */
-	      tx = nx;
-	      } /* ok, to exit this, [ty][tx] must not be artifact -CFT */
-	    if (cave[ty][tx].tptr != 0) /* so we can delete it -CFT */
-	      (void) delete_object(ty,tx);
-            c_ptr = &cave[ty][tx]; /* put stairway here... */
-	    }
-	  cur_pos = popt();
-	  c_ptr->tptr = cur_pos;
-	  invcopy(&t_list[cur_pos], OBJ_DOWN_STAIR);
-	  msg_print("Well done!! Go for it!");
-	  msg_print("A magical stairway appears...");
-	}
-      }
+	        do {
+		  ny = ty + (int8u)randint(3) -2; /* pick new possible spot */
+		  nx = tx + (int8u)randint(3) -2;
+	          } while (cave[ny][nx].fval > MAX_OPEN_SPACE);
+	        ty = ny; /* this is a new spot, not in a wall/door/etc */
+	        tx = nx;
+	        } /* ok, to exit this, [ty][tx] must not be artifact -CFT */
+	      if (cave[ty][tx].tptr != 0) /* so we can delete it -CFT */
+	        (void) delete_object(ty,tx);
+              c_ptr = &cave[ty][tx]; /* put stairway here... */
+	      }
+	    cur_pos = popt();
+	    c_ptr->tptr = cur_pos;
+	    invcopy(&t_list[cur_pos], OBJ_DOWN_STAIR);
+	    msg_print("Well done!! Go for it!");
+	    msg_print("A magical stairway appears...");
+	  } /* if-else for stairway */
+	} /* if found */
+      } /* if quest monster */
       i = monster_death((int)m_ptr->fy, (int)m_ptr->fx,
 			c_list[m_ptr->mptr].cmove,
 			(c_list[m_ptr->mptr].cdefense & (SPECIAL|GOOD)),
@@ -1060,7 +1082,9 @@ int dir, do_pickup;
 	      /* An object is beneath him.	     */
 	      if (c_ptr->tptr != 0)
 		{
-		  if (!prompt_carry_flag)
+		  i = t_list[c_ptr->tptr].tval;
+		  if (i == TV_INVIS_TRAP || i == TV_VIS_TRAP
+		      || i == TV_STORE_DOOR || !prompt_carry_flag)
 		    carry(char_row, char_col, do_pickup);
 		  /* if stepped on falling rock trap, and space contains
 		     rubble, then step back into a clear area */
@@ -1947,10 +1971,11 @@ int *transparent;
   if (gl_rock == 0 && c_ptr->cptr > 1 && m_list[c_ptr->cptr].ml)
     {
       j = m_list[c_ptr->cptr].mptr;
-      (void) sprintf(out_val, "%s %s %s. [(r)ecall]",
+      (void) sprintf(out_val, "%s %s %s (%s). [(r)ecall]",
 		     dstring,
 		     is_a_vowel( c_list[j].name[0] ) ? "an" : "a",
-		     c_list[j].name);
+		     c_list[j].name,
+		     look_mon_desc(c_ptr->cptr));
       dstring = "It is on";
       prt(out_val, 0, 0);
       move_cursor_relative(y, x);
@@ -2261,7 +2286,11 @@ void throw_object()
 			    }
 			  else
 			    {
-			      (void) sprintf(out_val, "The %s hits the %s.",
+			      if (c_list[i].cdefense & UNIQUE)
+			        (void) sprintf(out_val, "The %s hits %s.",
+					     tmp_str, c_list[i].name);
+			      else
+			        (void) sprintf(out_val, "The %s hits the %s.",
 					     tmp_str, c_list[i].name);
 			      visible = TRUE;
 			    }
@@ -2290,8 +2319,12 @@ void throw_object()
 				msg_print("You have killed something!");
 			      else
 				{
-			  (void) sprintf(out_val,"You have killed the %s.",
-						 c_list[i].name);
+			        if (c_list[i].cdefense & UNIQUE)
+			          (void) sprintf(out_val, "You have killed %s.",
+					     c_list[i].name);
+			        else
+			          (void) sprintf(out_val, "You have killed the %s.",
+					     c_list[i].name);
 				  msg_print(out_val);
 				}
 			      prt_experience();
@@ -2506,3 +2539,33 @@ void bash()
 	}
     }
 }
+
+static char *look_mon_desc(int mnum){
+  monster_type *m = &m_list[mnum];
+  int32 thp, tmax, perc;
+  int8u living = !(c_list[m->mptr].cdefense & (UNDEAD | DEMON));
+  
+  if (m->maxhp == 0){ /* then we're just going to fix it! -CFT */
+    if ((c_list[m->mptr].cdefense & MAX_HP) || be_nasty)
+      m->maxhp = max_hp(c_list[m->mptr].hd);
+    else
+      m->maxhp = pdamroll(c_list[m->mptr].hd);
+    }
+  if (m->hp > m->maxhp)
+    m->hp = m->maxhp;
+
+ if ((m->maxhp == 0) || (m->hp >= m->maxhp)) /* shouldn't ever need > -CFT */
+   return (living ? "unhurt" : "undamaged");
+ thp = (int32)m->hp;
+ tmax = (int32)m->maxhp;
+ perc = (thp * 100L) / tmax;
+ if (perc > 60)
+   return (living ? "somewhat wounded" : "somewhat damaged");
+ if (perc > 25)
+   return (living ? "wounded" : "damaged");
+ if (perc > 10)
+   return (living ? "badly wounded" : "badly damaged");
+ return (living ? "almost dead" : "almost destroyed");
+}
+
+

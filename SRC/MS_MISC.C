@@ -30,6 +30,15 @@
 #include "ms_ansi.h"
 #endif
 
+#include <dos.h>
+#define DEVICE	0x80
+#define RAW	0x20
+#define IOCTL	0x44
+#define STDIN	fileno(stdin)
+#define STDOUT	fileno(stdout)
+#define GETBITS	0
+#define SETBITS	1
+
 #ifdef LINT_ARGS
 void exit(int);
 static FILE *fopenp(char *, char *, char *);
@@ -277,14 +286,6 @@ msdos_init()
 	/* The only text file has been read.  Switch to binary mode */
 }
 
-#include <dos.h>
-#define DEVICE	0x80
-#define RAW	0x20
-#define IOCTL	0x44
-#define STDIN	fileno(stdin)
-#define STDOUT	fileno(stdout)
-#define GETBITS	0
-#define SETBITS	1
 
 static unsigned	old_stdin, old_stdout;
 #ifndef __TURBOC__

@@ -1747,7 +1747,7 @@ register int y, x;
   if (panel_contains(y, x))
     print(loc_symbol(y, x), y, x);
 #ifdef TC_COLOR
-  textcolor(LIGHTGRAY);
+  if (!no_color_flag) textcolor(LIGHTGRAY);
 #endif
 }
 
@@ -2321,13 +2321,13 @@ int dir, y, x;
 #endif
 #endif
 #ifdef TC_COLOR
-    { textcolor(LIGHTGRAY);  return TRUE; }
+    { if (!no_color_flag) textcolor(LIGHTGRAY);  return TRUE; }
 #else
     return TRUE;
 #endif
   else
 #ifdef TC_COLOR
-    { textcolor(LIGHTGRAY);  return FALSE; }
+    { if (!no_color_flag) textcolor(LIGHTGRAY);  return FALSE; }
 #else
     return FALSE;
 #endif
@@ -2341,13 +2341,13 @@ int dir, y, x;
     return FALSE;
   else if (loc_symbol(y, x) == ' ')
 #ifdef TC_COLOR
-    { textcolor(LIGHTGRAY);  return TRUE; }
+    { if (!no_color_flag) textcolor(LIGHTGRAY);  return TRUE; }
 #else
     return TRUE;
 #endif
   else
 #ifdef TC_COLOR
-    { textcolor(LIGHTGRAY);  return FALSE; }
+    { if (!no_color_flag) textcolor(LIGHTGRAY);  return FALSE; }
 #else
     return FALSE;
 #endif

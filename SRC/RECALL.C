@@ -288,24 +288,31 @@ int mon_num;
       (void) sprintf(temp, "It has slain %d of your ancestors", mp->r_deaths);
       roff(temp);
       if (u_list[mon_num].dead) { /* but we've also killed it */
-	roff(", but you have avenged them!");
+        sprintf(temp, ", but you have avenged %s! ",
+		plural(mp->r_deaths, "him", "them"));
+	roff(temp);
+        }
+      else {
+        sprintf(temp, ", who %s unavenged. ",
+		plural(mp->r_deaths, "remains", "remain"));
+	roff(temp);
         }
       }        
     else if (u_list[mon_num].dead) { /* we killed it w/o dying... yet! */
-      roff("You have slain this foe.");
+      roff("You have slain this foe. ");
       }
     }      
   else if (mp->r_deaths) { /* not unique.... */
   (void) sprintf(temp,
-		   "%d of ancestors %s",
+		   "%d of your ancestors %s",
 		   mp->r_deaths, plural(mp->r_deaths, "has", "have") );
     roff(temp);
     roff(" been killed by this creature, and ");
     if (mp->r_kills == 0)
-      roff("it is not ever known to have been defeated.");
+      roff("it is not ever known to have been defeated. ");
     else {
       (void) sprintf(temp,
-		       "at least %d of the beasts %s been exterminated.",
+		       "at least %d of the beasts %s been exterminated. ",
 		       mp->r_kills, plural(mp->r_kills, "has", "have") );
       roff(temp);
       }
@@ -314,9 +321,9 @@ int mon_num;
     (void) sprintf(temp, "At least %d of these creatures %s",
 		     mp->r_kills, plural(mp->r_kills, "has", "have") );
     roff(temp);
-    roff(" been killed by your ancestors.");
+    roff(" been killed by your ancestors. ");
     }
-   else roff("No battles to the death are recalled.");
+   else roff("No battles to the death are recalled. ");
   /* Immediately obvious. */
 #ifdef MSDOS
 /* begin my external description code.  It'll be slow as hell if you're
@@ -333,7 +340,6 @@ int mon_num;
     buf[MAX_DESC_LEN-1] = 0; /* just-in-case null termination... -CFT */
     if (strlen(buf))
       buf[strlen(buf) - 1] = 0; /* insure null term, and rem final \n */
-    roff(" ");
     roff(buf);
     roff(".");
   }    

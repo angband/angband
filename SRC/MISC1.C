@@ -126,20 +126,22 @@ int check_time()
   struct statstime st;
 #endif
 
+#ifdef MSDOS
+  return TRUE;  /* no time limits on a PC... -CFT */
+#else
   clock = time((long *)0);
   tp = localtime(&clock);
   if (days[tp->tm_wday][tp->tm_hour+4] != 'X') {
     return FALSE;
   }
-#ifndef MSDOS 
  else {
     if (!rstat("localhost", &st)) {
       if (((int) ((double)st.avenrun[2]/(double) FSCALE)) >= (int)LOAD)
 	return FALSE;
     }
   }
-#endif
   return TRUE;
+#endif
 }
 
 
@@ -585,7 +587,7 @@ int y, x;
   register struct flags *f_ptr;
 
 #ifdef TC_COLOR
-  textcolor(LIGHTGRAY);
+  if (!no_color_flag) textcolor(LIGHTGRAY);
 #endif
 
   cave_ptr = &cave[y][x];
@@ -597,13 +599,14 @@ int y, x;
     return ' ';
   else if ((f_ptr->image > 0) && (randint (12) == 1))
 #ifdef TC_COLOR
-    { textcolor( randint(15) );  return randint (95) + 31; }
+    { if (!no_color_flag) textcolor( randint(15) );
+      return randint (95) + 31; }
 #else
     return randint (95) + 31;
 #endif
   else if ((cave_ptr->cptr > 1) && (m_list[cave_ptr->cptr].ml))
 #ifdef TC_COLOR
-  { textcolor(c_list[m_list[cave_ptr->cptr].mptr].color);
+  { if (!no_color_flag) textcolor(c_list[m_list[cave_ptr->cptr].mptr].color);
     return c_list[m_list[cave_ptr->cptr].mptr].cchar; }
 #else
     return c_list[m_list[cave_ptr->cptr].mptr].cchar;
@@ -613,32 +616,33 @@ int y, x;
   else if ((cave_ptr->tptr != 0)
 	   && (t_list[cave_ptr->tptr].tval != TV_INVIS_TRAP))
 #ifdef TC_COLOR
-    {  if (t_list[cave_ptr->tptr].color != 0)
-         textcolor(t_list[cave_ptr->tptr].color);
+    {  if (t_list[cave_ptr->tptr].color != 0) {
+         if (!no_color_flag) textcolor(t_list[cave_ptr->tptr].color);
+       }
        else switch(t_list[cave_ptr->tptr].tval){
        	 case TV_POTION1:
        	 case TV_POTION2:
-	   textcolor(tccolors[t_list[cave_ptr->tptr].subval
+	   if (!no_color_flag) textcolor(tccolors[t_list[cave_ptr->tptr].subval
 					- ITEM_SINGLE_STACK_MIN]);
 	   break;
 	 case TV_WAND:
 	 case TV_ROD:
-	   textcolor(tcmetals[t_list[cave_ptr->tptr].subval]);
+	   if (!no_color_flag) textcolor(tcmetals[t_list[cave_ptr->tptr].subval]);
 	   break;
 	 case TV_STAFF:
-	   textcolor(tcwoods[t_list[cave_ptr->tptr].subval]);
+	   if (!no_color_flag) textcolor(tcwoods[t_list[cave_ptr->tptr].subval]);
 	   break;
 	 case TV_RING:
-	   textcolor(tcrocks[t_list[cave_ptr->tptr].subval]);
+	   if (!no_color_flag) textcolor(tcrocks[t_list[cave_ptr->tptr].subval]);
 	   break;
 	 case TV_AMULET:
-	   textcolor(tcamulets[t_list[cave_ptr->tptr].subval]);
+	   if (!no_color_flag) textcolor(tcamulets[t_list[cave_ptr->tptr].subval]);
 	   break;
 	 case TV_FOOD:
-	   textcolor(tcmushrooms[t_list[cave_ptr->tptr].subval
+	   if (!no_color_flag) textcolor(tcmushrooms[t_list[cave_ptr->tptr].subval
 	   				- ITEM_SINGLE_STACK_MIN]);
 	   break;
-	 default: textcolor( randint(15) ); /* should never happen. -CFT */
+	 default: if (!no_color_flag) textcolor( randint(15) ); /* should never happen. -CFT */
        } /* switch */
     return t_list[cave_ptr->tptr].tchar;
     } /* else-if clause */	 
@@ -671,9 +675,11 @@ int y, x;
     {
 #ifdef TC_COLOR
       if (cave_ptr->fval == MAGMA_WALL)
-        textcolor(DARKGRAY);
+        if (!no_color_flag) textcolor(DARKGRAY);
+        else return '%';
       else
-        textcolor(WHITE);
+        if (!no_color_flag) textcolor(WHITE);
+        else return '%';
       return wallsym;
 #else
       return '%';
@@ -714,7 +720,7 @@ void prt_map()
 	  if (tmp_char != ' ')
 	    print(tmp_char, i, j);
 #ifdef TC_COLOR
-	  textcolor(LIGHTGRAY); /* clear colors */
+	  if (!no_color_flag) textcolor(LIGHTGRAY); /* clear colors */
 #endif	  
 	}
     }
@@ -872,11 +878,12 @@ int slp;
       if (c_list[z].sleep == 0)
 	mon_ptr->csleep = 0;
       else
-	mon_ptr->csleep = (c_list[z].sleep * 2) +
+	mon_ptr->csleep = ( (int)c_list[z].sleep * 2) +
 	  randint((int)c_list[z].sleep*10);
     }
   else
     mon_ptr->csleep = 0;
+  update_mon(cur_pos); /* light up the monster if we can see it... -CFT */
 }
 
 /* Places a monster at given location			-RAK-	*/
@@ -4140,6 +4147,7 @@ int x, level, good, not_unique;
 	  if (magik(chance)||good) {
 	    t_ptr->tohit += m_bonus(1, 30, level);
 	    t_ptr->todam += m_bonus(1, 20, level);
+	    if (magik(3*special/2)||good==666)  /* get a special bow? */
 	    switch (randint(15)) {
 	    case 1:
 	      if (((randint(3)==1)||(good==666)) && !not_unique &&
@@ -4148,6 +4156,7 @@ int x, level, good, not_unique;
 		    case 1:
 		      if (BELEG) break;
 		      if (wizard || peek) msg_print("Beleg Cuthalion");
+		      else good_item_flag = TRUE;
 		      t_ptr->name2 = SN_BELEG;
 		      t_ptr->tohit += 20;
 		      t_ptr->todam += 22;
@@ -4161,6 +4170,7 @@ int x, level, good, not_unique;
 		    case 2:
 		      if (BARD) break;
 		      if (wizard || peek) msg_print("Bard");
+		      else good_item_flag = TRUE;
 		      t_ptr->name2 = SN_BARD;
 		      t_ptr->tohit += 17;
 		      t_ptr->todam += 19;
@@ -4178,6 +4188,7 @@ int x, level, good, not_unique;
 		{
 		  if (CUBRAGOL) break;
 		  if (wizard || peek) msg_print("Cubragol");
+		  else good_item_flag = TRUE;
 		  t_ptr->name2 = SN_CUBRAGOL;
 		  t_ptr->tohit += 10;
 		  t_ptr->todam += 14;
@@ -4195,7 +4206,16 @@ int x, level, good, not_unique;
 	      t_ptr->tohit += 7;
 	      t_ptr->todam += 13;
 	      break;
-	    case 2:
+	    case 2: case 3: case 4: case 5:
+	    case 6: case 7: case 8:
+	      t_ptr->name2 = SN_MIGHT;
+	      if (peek) msg_print("Bow of Might");
+	      rating += 11;
+	      t_ptr->tohit += 7;
+	      t_ptr->todam += 13;
+	      break;
+	    case 9: case 10: case 11:
+	    case 12: case 13: case 14: case 15:
 	      t_ptr->name2 = SN_ACCURACY;
 	      rating += 11;
 	      if (peek) msg_print("Accuracy");
@@ -5150,6 +5170,9 @@ static struct opt_desc { char *o_prompt; int8u *o_var; } options[] = {
 #ifdef MSDOS
   { "Beep for invalid character",		&sound_beep_flag },
   { "Turn off haggling",			&no_haggle_flag },
+#ifdef TC_COLOR
+  { "Turn off color (for monochrome)",		&no_color_flag },
+#endif
 #endif
   { 0, 0 } };
 

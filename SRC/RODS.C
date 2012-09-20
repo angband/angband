@@ -243,6 +243,10 @@ void activate_rod()
 	py.flags.fast += randint(30) + 15;
 	i_ptr->timeout=99;
 	break;
+      case RD_TRAP_LOC:
+	if (detect_trap()) ident = TRUE;
+        i_ptr->timeout=99; /* fairly long timeout because rod so low lv -CFT */
+	break;
       default:
 	msg_print("Internal error in rods() ");
 	break;

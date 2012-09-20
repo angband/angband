@@ -98,6 +98,9 @@ int8u highlight_seams = FALSE;
 int8u find_ignore_doors = FALSE;
 int8u sound_beep_flag = FALSE; /* I hate beeps! -CFT */
 int8u no_haggle_flag = FALSE; /* for those who find it tedious... -CFT */
+#ifdef TC_COLOR
+int8u no_color_flag = FALSE; /* for mono monitors -CFT */
+#endif
 #else
 int find_cut = TRUE;
 int find_examine = TRUE;

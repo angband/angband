@@ -1,6 +1,7 @@
 /* mkdesc.c : make an external description file from describe_mon.c,
-	monsters.c, and this source file...
-	-CFT */
+	monsters.c, and this source file...  This automates the process
+	a bit.  Note that this program should be remade whenever the monster
+	list or the descriptions change. 	-CFT */
 #include "constant.h"
 #include "config.h"
 #include "types.h"
@@ -17,7 +18,7 @@ int main(int ac, char *av[]){
   int mnum, i, j;
   long oldseek, newseek;
   FILE *descfile;
-  char *not_found = "ERROR - NO MATCHING DESCRIPTION FOUND!!!!";
+  char *not_found = "ERROR - NO MATCHING DESCRIPTION FOUND!!!!\n";
   char buf[1024];
   
   if (ac < 2){
@@ -30,13 +31,14 @@ int main(int ac, char *av[]){
   }
   
   oldseek = newseek = 0L; /* write out dummy values to pad file */
-  for(i=1;i<MAX_CREATURES;i++) fwrite(&oldseek, sizeof(long), 1, descfile);
+  for(i=0;i<MAX_CREATURES;i++) fwrite(&oldseek, sizeof(long), 1, descfile);
   newseek = ftell(descfile); /* ptr to 1st string */
   
   mnum = 0;
   while (mnum < MAX_CREATURES){
     for(i=0; i<MAX_CREATURES;i++){
-      if (!strcmp(desc_list[i].name, c_list[mnum].name)){
+      if (!strcmp(desc_list[i].name,
+	   (mnum != (MAX_CREATURES-1) ? c_list[mnum].name : "Player ghost"))){
 	oldseek = newseek; /* remember current place */
         strcpy(buf, desc_list[i].desc);
         fprintf(descfile, "%s\n", buf);
@@ -51,8 +53,7 @@ int main(int ac, char *av[]){
     if (i==MAX_CREATURES){
     	/* unfound, put some "BOOGA BOOGA" message... */
 	oldseek = newseek; /* remember current place */
-	fwrite(&not_found, 1, strlen(not_found)+1,
-	  	descfile); /* write string */
+        fprintf(descfile, "%s\n", not_found);
 	newseek = ftell(descfile); /* remember new place */
 	fseek(descfile, (long)(mnum * sizeof(long)), SEEK_SET);
 	fwrite(&oldseek, sizeof(long), 1, descfile); /* overwrite dummy

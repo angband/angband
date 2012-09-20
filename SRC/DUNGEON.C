@@ -83,7 +83,8 @@ void dungeon()
   else
     player_light = FALSE;
   /* Check for a maximum level		   */
-  if (dun_level > p_ptr->max_dlv)
+  /* Added check to avoid -50' being "deepest", since max_dlv unsigned -CFT */
+  if ((dun_level >= 0) && (dun_level > p_ptr->max_dlv)) 
     p_ptr->max_dlv = dun_level;
 
   /* Reset flags and initialize variables  */
@@ -94,15 +95,19 @@ void dungeon()
   teleport_flag = FALSE;
   mon_tot_mult	= 0;
   cave[char_row][char_col].cptr = 1;
+
+  if (create_up_stair && (dun_level == 0)) /* just in case... */
+    create_up_stair = FALSE;
   if (create_up_stair || create_down_stair) {
     register cave_type *c_ptr;
     register int cur_pos;
 
     c_ptr = &cave[char_row][char_col];
     if ((c_ptr->tptr == 0) ||
-          (t_list[c_ptr->tptr].tval < TV_MIN_WEAR) ||
-      	  (t_list[c_ptr->tptr].tval > TV_MIN_WEAR) ||
-      	  !(t_list[c_ptr->tptr].flags2 & TR_ARTIFACT)) { /* if no artifact here -CFT */
+	 ((t_list[c_ptr->tptr].tval != TV_STORE_DOOR) && /* if not store */
+           ((t_list[c_ptr->tptr].tval < TV_MIN_WEAR) || /* if no artifact here -CFT */
+      	    (t_list[c_ptr->tptr].tval > TV_MIN_WEAR) ||
+            !(t_list[c_ptr->tptr].flags2 & TR_ARTIFACT)))) { 
       if (c_ptr->tptr != 0)
         (void) delete_object(char_row, char_col);
       cur_pos = popt();
@@ -1671,8 +1676,10 @@ char com_val;
       gain_spells();
       break;
     case 'g':		/* (g)et an object... */
-      if (prompt_carry_flag)
-	carry(char_row, char_col, TRUE);
+      if (prompt_carry_flag) {
+	if (cave[char_row][char_col].tptr != 0) /* minor change -CFT */
+	  carry(char_row, char_col, TRUE);
+        }
       else
 	free_turn_flag = TRUE;
       break;
@@ -3352,11 +3359,19 @@ static int regen_monsters() {
   register int i;
   int frac;
 
-  for (i=0; i<MAX_MALLOC; i++)
-    if (m_list[i].hp>0)
-      if (m_list[i].hp < m_list[i].maxhp) {
-	m_list[i].hp+= ((frac=2*m_list[i].maxhp/100)>0)? frac : 1;
-	if (m_list[i].hp > m_list[i].maxhp)
+  for (i=0; i<MAX_MALLOC; i++) {
+    if (m_list[i].hp >= 0) {
+      if (m_list[i].maxhp == 0){ /* then we're just going to fix it! -CFT */
+        if ((c_list[m_list[i].mptr].cdefense & MAX_HP) || be_nasty)
+	  m_list[i].maxhp = max_hp(c_list[m_list[i].mptr].hd);
+        else
+	  m_list[i].maxhp = pdamroll(c_list[m_list[i].mptr].hd);
+        }
+      if (m_list[i].hp < m_list[i].maxhp)
+	m_list[i].hp += ((frac=2*m_list[i].maxhp/100)>0)? frac : 1;
+      if (m_list[i].hp > m_list[i].maxhp)
 	  m_list[i].hp=m_list[i].maxhp;
-      }
+      } /* if hp >= 0 */
+    } /* for loop */
 }
+

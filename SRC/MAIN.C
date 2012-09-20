@@ -93,7 +93,10 @@ int getuid(), getgid();
 #endif
 
 #ifdef MSDOS
+#ifdef TC_COLOR
 void textcolor(int newc);
+void textbackground(int newc);
+#endif
 extern unsigned _stklen = STK_LEN_SZ; /* defined by makefile -CFT */
 #ifdef TC_OVERLAY /* Am I trying to make an overlayed executable? -CFT */
 extern unsigned _ovrbuffer = OVLY_BUF_SZ; /* defined by makefile -CFT */
@@ -289,9 +292,9 @@ char *argv[];
     case 's':
       init_curses();
       if (isdigit((int)argv[0][2]))
-	display_scores(0, atoi(&argv[0][2]));
+	display_scores(0, atoi(&argv[0][2]), -1);
       else
-	display_scores(0, 10);
+	display_scores(0, 10, -1);
       exit_game();
     case 'D':
     case 'd':
@@ -300,7 +303,7 @@ char *argv[];
       if (isdigit((int)argv[0][2]))
 	delete_entry(atoi(&argv[0][2]));
       else
-	display_scores(0, 10);
+	display_scores(0, 10, -1);
       exit_game();
     case 'F':
     case 'f':
@@ -346,8 +349,9 @@ char *argv[];
 
   /* Check operating hours			*/
   /* If not wizard  No_Control_Y	       */
+#ifndef MSDOS /* we don't care about times on a PC -CFT */
   read_times();
-
+#endif
   /* Some necessary initializations		*/
   /* all made into constants or initialized in variables.c */
 
@@ -566,7 +570,11 @@ char *argv[];
   magic_init();
 
 #ifdef MSDOS
-  textcolor(7); /* set color to gray to avoid ansi prompts */
+#ifdef TC_COLOR
+  textbackground(0); /* clear bkgnd color to avoid ansi prompts */
+  textcolor(0); /* clear color to avoid ansi prompts */
+  textcolor(7); /* set color to gray */
+#endif
 #endif
 
   /* Begin the game				*/

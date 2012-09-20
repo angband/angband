@@ -1,0 +1,62 @@
+This file contains a brief version history of the PC port of Angband.
+I've included it to help prevent confusion of which version is current
+and which version has which features. -CFT
+
+
+Feb 12 1993
+	  Unix Angband "alpha" sources obtained from Sean Marsh, so I
+	could begin porting Angband to the PC.
+
+Apr 11 1993	Original Release
+	  After much effort, the original executable seemed ready for
+	release.  PC source and an executable uploaded to ftp.cis.ksu.edu
+	as 'angpcsrc.exe' and 'angpcexe.exe'.
+	  This version contains many bugs, including the dreaded stack
+	overflow trouble.  I have one confirmed report of Angband
+	erasing CMOS settings due to this bug.  Don't use this version!
+
+Apr 20 1993	Updated Executable
+	  As the seriousness of the stack overflow problem became
+	apparent, I rushed the updated executable.  Uploaded to
+	ftp.cis.ksu.edu as 'ang11exe.exe', it corrects the stack overflow
+	problems, and has a few minor changes.  Also, it contains
+	compiler-generated stack checking code to prevent any stack
+	overflow that I missed from harming your system.
+	
+May 20 1993	Second Update
+	  The first update was a rush job.  This meant that I did not
+	get a chance to playtest it very thoroughly, and some problems
+	slipped through the cracks (I had forgotten to change the
+	delete high score code, so trying to do this generated a "Stack
+	overflow!!" message).  Now, I've had time to track down many
+	bugs, and to add in some of the features I wanted.
+	  This update still includes the compiler-generated stack
+	checking code as a precaution.
+	  Source code and a new executable uploaded to ftp.cis.ksu.edu
+	as 'ang12src.exe' and 'ang12exe.exe'.
+
+	  The new update includes: look command to see how hurt a
+	monster is, rod of trap location (to help warriors), updated
+	monster descriptions, highscore table will no longer show
+	ex-wizards, highscore delete fixed, quest code fixed so that
+	killing Sauron out-of-depth doesn't cause problems getting past
+	level 99, auto-roller option, player score highlighted on death/
+	retirement (color only), character description to file on death/
+	retirement, summoned group monsters are now ALL properly lit
+	when summoned, entering shops fixed for people who use 'g' key
+	for pickup, *Enlighenment* now also grants self-knowledge, and
+	many minor changes and bug fixes.
+
+	NOTE:  If you use this new update with a savefile from one
+		of the earlier releases, it is possible for a scroll
+		of detect traps to change into a rod of detect traps,
+		as far as the description goes.  This is because I
+		inserted the rod of trap location in the treasure
+		list in place of one of the scrolls of detect traps
+		listed there.  The "rod of trap location" should still
+		work like a scroll, not like a rod (ie use 'r'ead to use
+		it, not 'a'pply, it goes away after being read, etc).
+		This is the only incompatibility between this update and
+		the earlier versions, and it should not cause any
+		problems.
+

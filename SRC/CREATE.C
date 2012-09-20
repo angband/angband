@@ -654,13 +654,97 @@ void create_character()
 {
   register int exit_flag = 1;
   register char c;
+#ifdef AUTOROLLER
+  register int auto_round = 0, i;
+  int stat[6];
+  char inp[60];
+#endif
   class_type *c_ptr;
-
+  int previous_exists = 0; /* flag to prevent prev from garbage values */
+  
   put_character();
   choose_race();
   get_sex();
   get_class_choice();
   
+#ifdef AUTOROLLER
+/* This auto-roller stolen from a post on rec.games.moria, which I belive
+   was taken from druid moria 5.something.  If this intrudes on someone's
+   copyright, take it out, and someone let me know -CFT */
+  put_buffer("Do you want to use automatic rolling? ", 20,2);
+  move_cursor(20,40);
+  c=inkey();
+  if ((c == 'Y') || (c == 'y')){
+    clear_from(15);
+    put_buffer("Enter minimum attribute for: ",15,2);
+    for(i=0;i<6;i++){
+      int stat_idx;
+      switch(i) {
+      case 0:
+       stat_idx = A_STR;
+       clear_from(16+i);
+       put_buffer("    Strength: ",16+i,5);break;
+      case 1:
+       stat_idx = A_INT;
+       clear_from(16+i);
+       put_buffer("Intelligence: ",16+i,5);break;
+      case 2:
+       stat_idx = A_WIS;
+       clear_from(16+i);
+       put_buffer("      Wisdom: ",16+i,5);break;
+      case 3:
+       stat_idx = A_DEX;
+       clear_from(16+i);
+       put_buffer("   Dexterity: ",16+i,5);break;
+      case 4:
+       stat_idx = A_CON;
+       clear_from(16+i);
+       put_buffer("Constitution: ",16+i,5);break;
+      case 5:
+       stat_idx = A_CHR;
+       clear_from(16+i);
+       put_buffer("    Charisma: ",16+i,5);break;
+      } /* switch */
+      do{
+       exit_flag=0;
+       inp[0] = '\000';
+       get_string(inp, 16+i, 19, 3);
+       stat[stat_idx]=atoi(inp);
+      } while (stat[stat_idx]>118 || stat[stat_idx]<0);
+      exit_flag=1;
+     } /* for i 0 - 5 */
+     clear_from(15);
+     put_qio();
+     do {
+      char hlp[64];
+      sprintf(hlp, "auto-rolling round #%d.", auto_round);
+      put_buffer(hlp, 20 ,2);
+      put_qio();
+      get_all_stats();
+      get_class();
+      put_stats();
+      auto_round++;
+      } while(((stat[A_STR] > py.stats.cur_stat[A_STR]) ||
+            (stat[A_INT] > py.stats.cur_stat[A_INT]) ||
+  	   (stat[A_DEX] > py.stats.cur_stat[A_DEX]) ||
+  	   (stat[A_CHR] > py.stats.cur_stat[A_CHR]) ||
+  	   (stat[A_CON] > py.stats.cur_stat[A_CON]) ||
+  	   (stat[A_WIS] > py.stats.cur_stat[A_WIS]))
+#if (defined(unix) || defined(ATART_ST))
+  	    && (!check_input(1)));
+#elif (defined(MSDOS) || defined(VMS))  /* #if/elif/else rewritten -CFT */
+	    && (!kbhit()));
+#else
+	    );	    
+#endif
+     if (kbhit()) flush(); /* -CFT */
+     get_history();
+     get_ahw();
+     print_history();
+     put_misc1();
+   } /* if 'y' */    /* end of Sam */
+  else { /* use the current code... */
+#endif
   /* here we start a loop giving a player a choice of characters -RGM- */
   get_all_stats (); 
   get_history();
@@ -671,7 +755,10 @@ void create_character()
   put_stats();
 
   clear_from (20);
-  put_buffer("Hit space: Reroll, ^P: Previous or ESC: Accept: ", 20, 2);
+  if (previous_exists)
+    put_buffer("Hit space: Reroll, ^P: Previous or ESC: Accept: ", 20, 2);
+  else
+    put_buffer("Hit space: Reroll, or ESC: Accept: ", 20, 2);
   do
     {
       move_cursor (20, 50);
@@ -679,6 +766,7 @@ void create_character()
       if (c == ESCAPE) {
 	exit_flag = 0;
       } else if (c == ' ') {
+        previous_exists = 1; /* once rolled again, we have a previous */
 	get_all_stats();
 	get_history();
 	get_ahw();
@@ -686,7 +774,7 @@ void create_character()
 	put_misc1();
 	get_class();
 	put_stats();
-      } else if (c == CTRL('P')) {
+      } else if (previous_exists && (c == CTRL('P'))) {
 	if (get_prev_stats()) {
 	  get_prev_history();
 	  get_prev_ahw();
@@ -701,7 +789,9 @@ void create_character()
       }
     }		    /* done with stats generation */
   while (exit_flag == 1);
-
+#ifdef AUTOROLLER
+  } /* close if-use-auto-else-use-normal clause  -CFT */
+#endif
   get_money();
   put_stats();
   put_misc2();

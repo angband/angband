@@ -128,7 +128,7 @@ void quaff()
 		}
 	      break;
 	    case 13:
-	      ident = hp_player(damroll(2, 7));
+	      if (hp_player(damroll(2, 7))) ident = TRUE;
 	      if (py.flags.cut>0) {
 		py.flags.cut-=10;
 		if (py.flags.cut<0) py.flags.cut=0;
@@ -137,7 +137,7 @@ void quaff()
 	      }
 	      break;
 	    case 14:
-	      ident = hp_player(damroll(4, 7));
+	      if (hp_player(damroll(4, 7))) ident = TRUE;
 	      if (py.flags.cut>0) {
 		py.flags.cut=(py.flags.cut/2)-50;
 		if (py.flags.cut<0) py.flags.cut=0;
@@ -146,7 +146,7 @@ void quaff()
 	      }
 	      break;
 	    case 15:
-	      ident = hp_player(damroll(6, 7));
+	      if (hp_player(damroll(6, 7))) ident = TRUE;
 	      if (py.flags.cut>0) {
 		py.flags.cut=0;
 		ident = TRUE;
@@ -166,7 +166,7 @@ void quaff()
 	      }
 	      break;
 	    case 16:
-	      ident = hp_player(400);
+	      if (hp_player(400)) ident = TRUE;
 	      if (py.flags.stun>0) {
 		if (py.flags.stun>50) {
 		  py.misc.ptohit+=20;
@@ -284,15 +284,16 @@ void quaff()
 		}
 	      break;
 	    case 29:
-	      ident = cure_blindness();
+	      if (cure_blindness()) ident = TRUE;
 	      break;
 	    case 30:
-	      ident = cure_confusion();
+	      if (cure_confusion()) ident = TRUE;
 	      break;
 	    case 31:
-	      ident = cure_poison();
+	      if (cure_poison()) ident = TRUE;
 	      break;
 	    case 34:
+	      ident=TRUE;
 	      if (!py.flags.hold_life && py.misc.exp>0) {
 		  int32 m, scale;
 		  msg_print("You feel your memories fade.");
@@ -303,7 +304,6 @@ void quaff()
 		  }
 		  else m+=randint((int)py.misc.exp)/5;
 		  lose_exp(m);
-		  ident=TRUE;
 	      }
 	      else msg_print
 	     ("You feel you memories fade for a moment, but quickly return.");
@@ -327,10 +327,10 @@ void quaff()
 	      py.flags.shero += randint(25) + 25;
 	      break;
 	    case 39:
-	      ident = remove_fear();
+	      if (remove_fear()) ident = TRUE;
 	      break;
 	    case 40:
-	      ident = restore_level();
+	      if (restore_level()) ident = TRUE;
 	      break;
 	    case 41:
 	      f_ptr = &py.flags;
@@ -350,10 +350,10 @@ void quaff()
 	      detect_inv2(randint(12)+12);
 	      break;
 	    case 44:
-	      ident = slow_poison();
+	      if (slow_poison()) ident = TRUE;
 	      break;
 	    case 45:
-	      ident = cure_poison();
+	      if (cure_poison()) ident = TRUE;
 	      break;
 	    case 46:
 	      m_ptr = &py.misc;
@@ -379,6 +379,8 @@ void quaff()
 	      if (!res_stat(A_WIS)) inc_stat(A_WIS);
 	      if (!res_stat(A_INT)) inc_stat(A_INT);
 	      msg_print("You feel more enlightened!");
+	      msg_print(NULL);
+	      self_knowledge(); /* after all, what is the key to enlightenment? -CFT */
 	      identify_pack();
 	      ident=TRUE;
 	      break;
@@ -440,11 +442,12 @@ void quaff()
 	      break;
 	    case 55:
 	      msg_print("You feel you know yourself a little better...");
+	      msg_print(NULL);
 	      self_knowledge();
 	      ident = TRUE;
 	      break;
 	    case 56: /*   *Healing*  */
-	      ident = hp_player(1200);
+	      if (hp_player(1200)) ident = TRUE;
 	      if (py.flags.stun>0) {
 		if (py.flags.stun>50) {
 		  py.misc.ptohit+=20;
@@ -478,7 +481,7 @@ void quaff()
 	  /* End of Potions.					*/
 	}
       if (ident)
-	{
+	{ 
 	  if (!known1_p(i_ptr))
 	    {
 	      m_ptr = &py.misc;

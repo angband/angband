@@ -70,6 +70,7 @@ IBMBIOS
 RAWIO
 
 # Being used to LARN and HACK, I prefer the ROGUE-like interface
+# Keyboard alternatives are KEYBOARD ROGUE or KEYBOARD VMS
 KEYBOARD ROGUE
 
 # It is possible to have MORIA output ANSI sequences, rather than

@@ -924,7 +924,7 @@ int monptr;
 	      break;
 	    case 23:	/*Eat light	   */
 	      i_ptr = &inventory[INVEN_LIGHT];
-	      if (i_ptr->p1 > 0)
+	      if ((i_ptr->p1 > 0) && ((i_ptr-> flags2 & TR_ARTIFACT) == 0))
 		{
 		  i_ptr->p1 -= (250 + randint(250));
 		  if (i_ptr->p1 < 1)  i_ptr->p1 = 1;
@@ -3050,20 +3050,15 @@ static shatter_quake(mon_y, mon_x)
   register creature_type *r_ptr;
   int kill, damage, tmp, y, x;
   vtype out_val, m_name;
-
+  int monptr = cave[mon_y][mon_x].cptr; /* needed when we kill another
+  					   monster */
+  
   for (i = mon_y-8; i <= mon_y+8; i++)
     for (j = mon_x-8; j <= mon_x+8; j++)
       if (in_bounds(i, j) && (randint(8) == 1))
 	{
 	  if ((i==mon_y) && (j==mon_x)) continue;
 	  c_ptr = &cave[i][j];
-	  if (c_ptr->tptr != 0)
-	    if ((t_list[c_ptr->tptr].tval >= TV_MIN_WEAR) &&
-	        (t_list[c_ptr->tptr].tval <= TV_MAX_WEAR) &&
-	        (t_list[c_ptr->tptr].flags2 & TR_ARTIFACT))
-	      continue; /* don't kill artifacts... */
-	    else
-	      (void) delete_object(i, j);
 	  if (c_ptr->cptr>1) {
 	    m_ptr = &m_list[c_ptr->cptr];
 	    r_ptr = &c_list[m_ptr->mptr];
@@ -3083,18 +3078,46 @@ static shatter_quake(mon_y, mon_x)
 		      kill = FALSE;
 	      }
 	      if (kill)
-		damage = 3000;  /* this will kill everything */
+		damage = 0x7fff;  /* this will kill everything */
 	      else
 		damage = damroll (4, 8);
 	      monster_name (m_name, m_ptr, r_ptr);
 	      (void) sprintf (out_val, "%s wails out in pain!", m_name);
 	      msg_print (out_val);
-	      i = mon_take_hit((int)c_ptr->cptr, damage);
-	      if (i >= 0) {
+/* kill monster "by hand", so player doesn't get exp -CFT */
+	      m_ptr->hp = m_ptr->hp - damage;
+	      m_ptr->csleep = 0;
+	      if ((r_ptr->cdefense & UNIQUE) && (m_ptr->hp < 0))
+	        m_ptr->hp = 0; /* prevent unique monster from death by other
+	    		     monsters.  It causes trouble (monster not
+	    		     marked as dead, quest monsters don't satisfy
+	    		     quest, etc).  So, we let then live, but
+	    		     extremely wimpy.  This isn't great, because
+	    		     monster might heal itself before player's
+	    		     next swing... -CFT */
+	      if (m_ptr->hp < 0) {
+		int32u tmp, treas;
+
 		(void) sprintf (out_val, "%s is embedded in the rock.",
 				m_name);
 		msg_print (out_val);
-	      }
+	        treas = monster_death((int)m_ptr->fy, (int)m_ptr->fx,
+				  r_ptr->cmove, 0, 0);
+	        if (m_ptr->ml) {
+	          tmp = (c_recall[m_ptr->mptr].r_cmove & CM_TREASURE)
+			>> CM_TR_SHIFT;
+	          if (tmp > ((treas & CM_TREASURE) >> CM_TR_SHIFT))
+		    treas = (treas & ~CM_TREASURE)|(tmp<<CM_TR_SHIFT);
+	          c_recall[m_ptr->mptr].r_cmove = treas |
+			(c_recall[m_ptr->mptr].r_cmove & ~CM_TREASURE);
+	          }
+
+	        if (monptr < c_ptr->cptr)
+	          delete_monster((int) c_ptr->cptr);
+	        else
+	          fix1_delete_monster((int) c_ptr->cptr);
+	        } /* if monster's hp < 0 */
+
 	    }
 	  } else if (c_ptr->cptr == 1) { /* Kill the dumb player! */
 	    kill = TRUE;
@@ -3157,7 +3180,15 @@ static shatter_quake(mon_y, mon_x)
 	    take_hit(damage,"an Earthquake");
 	  }
 
-	  if ((c_ptr->fval >= MIN_CAVE_WALL) && (c_ptr->fval != BOUNDARY_WALL))            {
+	  if (c_ptr->tptr != 0)
+	    if ((t_list[c_ptr->tptr].tval >= TV_MIN_WEAR) &&
+	        (t_list[c_ptr->tptr].tval <= TV_MAX_WEAR) &&
+	        (t_list[c_ptr->tptr].flags2 & TR_ARTIFACT))
+	      continue; /* don't kill artifacts... */
+	    else
+	      (void) delete_object(i, j);
+
+	  if ((c_ptr->fval >= MIN_CAVE_WALL) && (c_ptr->fval != BOUNDARY_WALL)){
 	    c_ptr->fval  = CORR_FLOOR;
 	    c_ptr->pl = FALSE;
 	    c_ptr->fm = FALSE;
@@ -3232,29 +3263,29 @@ static br_wall(mon_y, mon_x)
       stun_player(randint(50));
       break;
     }
-  }
-  c_ptr = &cave[char_row][char_col];
-  move_rec(char_row, char_col, y, x);
-  if (c_ptr->fval <= MAX_CAVE_FLOOR) {
-    tmp = randint(10);
-    if (tmp < 6)
-      c_ptr->fval  = QUARTZ_WALL;
-    else if (tmp < 9)
-      c_ptr->fval  = MAGMA_WALL;
-    else
-      c_ptr->fval  = GRANITE_WALL;
+    c_ptr = &cave[char_row][char_col];
+    move_rec(char_row, char_col, y, x);
+    if (c_ptr->fval <= MAX_CAVE_FLOOR) {
+      tmp = randint(10);
+      if (tmp < 6)
+        c_ptr->fval  = QUARTZ_WALL;
+      else if (tmp < 9)
+        c_ptr->fval  = MAGMA_WALL;
+      else
+        c_ptr->fval  = GRANITE_WALL;
 
-    c_ptr->fm = FALSE;
-  }
+      c_ptr->fm = FALSE;
+    }
   for (k = char_row-1; k <= char_row+1; k++)
     for (l = char_col-1; l <= char_col+1; l++) {
       c_ptr = &cave[k][l];
       c_ptr->tl = FALSE;
       lite_spot(k, l);
     }
-  lite_spot(char_row, char_col);
-  char_row = y;
-  char_col = x;
+    lite_spot(char_row, char_col);
+    char_row = y;
+    char_col = x;
+  } /* !kill */
   check_view();
   /* light creatures */
   creatures(FALSE);

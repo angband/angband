@@ -309,7 +309,7 @@ typedef struct spell_type
   int8u slevel;
   int8u smana;
   int8u sfail;
-  int8u sexp;	/* 1/4 of exp gained for learning spell */
+  int16u sexp;	/* 1/4 of exp gained for learning spell */
 } spell_type;
 
 typedef struct race_type

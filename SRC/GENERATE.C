@@ -2137,7 +2137,11 @@ static void build_pit(yval, xval)
 {
   int tmp;
 
+#ifndef MSDOS
   if (randint((dun_level*dun_level*dun_level)+1)<25000) good_item_flag = TRUE;
+#else
+  if (randint((dun_level*dun_level+1))<650) good_item_flag = TRUE;
+#endif
   tmp = randint(dun_level>80?80:dun_level);
   rating += 10;
   if (tmp < 10)      special_pit(yval, xval,1);

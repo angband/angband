@@ -382,7 +382,7 @@ void screen_map()
             col = j / RATIO;
           tmp = loc_symbol(i, j);
 #ifdef TC_COLOR
-          textcolor(LIGHTGRAY);
+          if (!no_color_flag) textcolor(LIGHTGRAY);
 #endif
           if (priority[map[col]] < priority[tmp])
             map[col] = tmp;

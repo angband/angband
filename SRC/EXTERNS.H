@@ -102,6 +102,9 @@ extern int8u highlight_seams;		/* Highlight magma and quartz */
 extern int8u find_ignore_doors;		/* Run through open doors */
 extern int8u sound_beep_flag;	/* shut up bell() ! -CFT */
 extern int8u no_haggle_flag; /* for those who find it tedious -CFT */
+#ifdef TC_COLOR
+extern int8u no_color_flag; /* for monochrome monitors -CFT */
+#endif
 #else
 extern int rogue_like_commands;
 extern int find_cut;			/* Cut corners on a run */
@@ -872,7 +875,7 @@ int multiply_monster(ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_I
 
 /* death.c */
 void exit_game(ARG_VOID);
-void display_scores(ARG_INT ARG_COMMA ARG_INT);
+void display_scores(ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT);
 int delete_entry(ARG_INT);
 
 /* desc.c */

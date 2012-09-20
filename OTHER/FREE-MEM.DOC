@@ -1,0 +1,124 @@
+*   The following is extracted from the readme file that accompanied the
+* PC executable of NH3.1.  NH3.1 is a major memory hog, even worse than
+* Angband, but most of the advice here is still sound.  I've added my
+* comments in lines prefixed by '*' characters.  Hopefully this will help
+* people to free up enough memory to run Angband.  Standard disclaimers
+* apply -- If you read a subliminal message to make a peanut butter and
+* mayonaise sandwich, don't come to me about it...  -CFT
+*
+* p.s.  I've taken a couple of editorial liberties, to make this file
+* slightly more applicable to Angband.  Oh, and anyone offended by the
+* humor in the NH doc file can complain to them, not to me... -CFT
+
+You asked:
+
+	ARGH!  The game is *so* slow.  What can I do?
+
+A sales representative replies:
+
+Buy a faster machine.  Get a faster hard disk!  Technology,
+technology and Yankee know-how, technology and, let's be honest,
+we're both people of the world, Japanese production techniques, are
+the answers to all our needs!
+	What's that you say? You want to use THIS machine?  And your
+recommendation to the free computers for employees programme depends
+on my proving it can be done?  Ah.  That puts a different complexion
+on matters.  May I use your phone...?
+				* * *
+Yeah, yeah, ok.  Uh-huh.  Right.  Catch programmes?  Cache.  Right.
+And TSRs.  Yeah, ok.  Right.  Thanks, Lesley.
+				* * *
+Great tech support, there.  Yeah, so the word is, you've got to get
+everything out of RAM that you can.  It's as simple as that.  All the
+TSRs, everything.  Even RAMdisks.
+
+Some reports of a faster game with a cache program, but we cannot
+recommend one brand other another.  Read your cache manual.
+
+
+You asked:
+
+	Zounds, my man!  How in the name of all that's pompous can one
+	get 500-510K of user RAM free on one's machine?  Surely one can't
+	be expected to use a computer without one's Pop-Up-Ducky
+	programme, one's resident Latin Grammar Checker, one's TSR
+	edition Who's Who?  We are talking, you understand, of the
+	bare necessities of civilised existence!
+
+Our resident iconoclast replies:
+
+Er, yeah.  Well, safe sex an' all that, you might wanna keep your
+virus protection in place, mate.  But the rest you can chuck, along
+with the horse.
+	Now, don't panic, chum, don't take a fit.  If you need that
+stuff when you work, that's one thing.  But when you're playing
+NetHack, that's all the fun you need, right?  So what you do is, you
+take a floppy disk, you format it bootable, and on that you put your
+COMMAND.COM, your ANSI.SYS, and a minimal CONFIG.SYS; just what you
+*
+* You shouldn't need ANSI.SYS for Angband.  But, if you use it (for color
+* prompts, or other nice features), you shouldn't have to worry, since it's
+* so tiny... -CFT
+*
+need to boot.  Oh, yeah, and an AUTOEXEC.BAT that sets up the path to
+your NETHACK.EXE.
+	So when you want to play NetHack, you put this floppy in the
+drive, and reboot.  Presto!  500-510K free, and away you go with the game.
+Time to do some work?  Save the game, take out the floppy, reboot, and
+back comes your pop-up duck.
+	Just 'cause you got a hard disk, no law says it's from it you
+have to boot.  And just 'cause you boot from a floppy, there's no
+reason not to run programmes on the hard disk.
+
+* Or you could to set up a second set of config.sys and autoexec.bat
+* files, or use DOS 6's multiple configuration ability.  For those w/o DOS
+* 6, a batch file like the following (I named mine 'swap.bat') should make
+* switching configuations easier:
+*
+@echo off
+if not exist \angconf goto fromang
+if not exist \normconf goto fromnorm
+:error
+echo Hey! There's a problem with your swap program!
+goto end
+:fromang
+echo Restoring normal setup...
+copy \config.sys \angconf
+copy \normconf \config.sys
+del \normconf
+copy \autoexec.bat \angauto
+copy \normauto \autoexec.bat
+del \normauto
+goto done
+:fromnorm
+echo Setting up for Angband...
+copy \config.sys \normconf
+copy \angconf \config.sys
+del \angconf
+copy \autoexec.bat \normauto
+copy \angauto \autoexec.bat
+del \angauto
+goto done
+:done
+echo Set up complete.  Please reboot for it to take effect.
+:end
+*
+* That's it.  To make it work, make a copy of your \config.sys as \angconf,
+* and a copy of your \autoexec.bat as \angauto.  Then edit \angconf and
+* \angauto to take out everything you can spare (except maybe a disk
+* cache... It depends if you've got extended (>1M) memory or not).  When
+* you want to play angband, run this "swap" batch file, and hit control-alt-
+* delete.  When you're done playing angband, run it again (it will detect
+* which setup is in use by the existance of either \angconf or \normconf, so
+* these files shouldn't be messed with), and hit control-alt-delete.
+*
+* With a bit more headaches, this "swap" batch file is expandable to more
+* configurations (I've run as many as 5), but you have to be very careful
+* about how things are copied and deleted, so you don't erase something
+* important.
+*
+* That's about it.  For more info, try your DOS manual, or friends, or your
+* local BBS, or (try these last) the Usenet (comp.os.msdos.misc maybe), or
+* email me (as a last resort). -CFT
+* 			cteague@cs.umb.edu
+
