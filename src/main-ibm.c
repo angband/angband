@@ -807,20 +807,11 @@ static errr Term_xtra_ibm(int n, int v)
 
 #ifdef USE_CURS_SET
 
-        /* Make the cursor visible */
-        case TERM_XTRA_BEVIS:
+        /* Set cursor visibility */
+        case TERM_XTRA_SHAPE:
         
-            /* Set cursor visible */
-            curs_set(1);
-
-            /* Success */
-       	    return (0);
-
-        /* Make the cursor invisible */
-        case TERM_XTRA_INVIS:
-
-            /* Set cursor invisible */
-            curs_set(0);
+            /* Set cursor visibility */
+            curs_set(v);
 
             /* Success */
        	    return (0);
@@ -1203,6 +1194,10 @@ errr init_ibm(void)
 
     /* Initialize the term */
     term_init(t, 80, 24, 256);
+
+    /* Erase with "black space" */
+    t->attr_blank = TERM_DARK;
+    t->char_blank = ' ';
 
     /* Prepare the init/nuke hooks */
     t->init_hook = Term_init_ibm;

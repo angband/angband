@@ -2060,6 +2060,9 @@ static errr Term_xtra_x11(int n, int v)
         /* Flush the output XXX XXX XXX */
         case TERM_XTRA_FRESH: Metadpy_update(1,0,0); return (0);
 
+        /* Process random events XXX XXX XXX */
+        case TERM_XTRA_BORED: return (CheckEvent(0));
+
         /* Process Events XXX XXX XXX */
         case TERM_XTRA_EVENT: return (CheckEvent(v));
 
@@ -2170,15 +2173,18 @@ static errr term_data_init(term_data *td, bool fixed, cptr name, cptr font)
   /* Initialize the term (full size) */
   term_init(t, 80, 24, num);
 
+  /* Use a "soft" cursor */
+  t->soft_cursor = TRUE;
+
+  /* Erase with "white space" */
+  t->attr_blank = TERM_WHITE;
+  t->char_blank = ' ';
+
   /* Hooks */
   t->xtra_hook = Term_xtra_x11;
   t->curs_hook = Term_curs_x11;
   t->wipe_hook = Term_wipe_x11;
   t->text_hook = Term_text_x11;
-
-  /* We are not a dumb terminal */
-  t->soft_cursor = TRUE;
-  t->scan_events = TRUE;
 
   /* Save the data */
   t->data = td;

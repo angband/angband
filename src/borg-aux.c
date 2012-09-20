@@ -181,9 +181,6 @@ static void borg_notice_aux1(void)
     my_num_fire = 1;
 
 
-    /* Assume normal view radius */
-    my_cur_view = MAX_SIGHT;
-    
     /* Assume normal lite radius */
     my_cur_lite = 0;
 
@@ -1069,15 +1066,15 @@ static void borg_notice_aux2(void)
     /* No need for fuel */
     if (auto_items[INVEN_LITE].name1) amt_fuel += 1000;
 
-    /* No need for stats */
-    if (my_stat_cur[A_STR] >= 18+100) amt_add_stat[A_STR] += 1000;
-    if (my_stat_cur[A_INT] >= 18+100) amt_add_stat[A_INT] += 1000;
-    if (my_stat_cur[A_WIS] >= 18+100) amt_add_stat[A_WIS] += 1000;
-    if (my_stat_cur[A_DEX] >= 18+100) amt_add_stat[A_DEX] += 1000;
-    if (my_stat_cur[A_CON] >= 18+100) amt_add_stat[A_CON] += 1000;
-    if (my_stat_cur[A_CHR] >= 18+100) amt_add_stat[A_CHR] += 1000;
+    /* No need to *buy* stat increase potions */
+    if (my_stat_cur[A_STR] >= 18+80) amt_add_stat[A_STR] += 1000;
+    if (my_stat_cur[A_INT] >= 18+80) amt_add_stat[A_INT] += 1000;
+    if (my_stat_cur[A_WIS] >= 18+80) amt_add_stat[A_WIS] += 1000;
+    if (my_stat_cur[A_DEX] >= 18+80) amt_add_stat[A_DEX] += 1000;
+    if (my_stat_cur[A_CON] >= 18+80) amt_add_stat[A_CON] += 1000;
+    if (my_stat_cur[A_CHR] >= 18+80) amt_add_stat[A_CHR] += 1000;
 
-    /* No need for stat repair */
+    /* No need to *buy* stat repair potions XXX XXX XXX */
     if (!do_fix_stat[A_STR]) amt_fix_stat[A_STR] += 1000;
     if (!do_fix_stat[A_INT]) amt_fix_stat[A_INT] += 1000;
     if (!do_fix_stat[A_WIS]) amt_fix_stat[A_WIS] += 1000;
@@ -1988,7 +1985,7 @@ static bool borg_use_things(void)
     }
 
 
-    /* Quaff potions of "increase" stat if needed */
+    /* Quaff potions of "increase" stat if "needed" */
     if (((my_stat_cur[A_STR] < 18+100) &&
          borg_quaff_potion(SV_POTION_INC_STR)) ||
         ((my_stat_cur[A_INT] < 18+100) &&
@@ -2705,7 +2702,7 @@ static bool borg_crush_junk(void)
     greed = (auto_gold / 100L) + 100L;
 
     /* Minimal greed */
-    if (greed > 10000L) greed = 10000L;
+    if (greed > 1000L) greed = 1000L;
 
 
     /* Scan for junk */
@@ -2815,7 +2812,7 @@ static bool borg_free_space(void)
     greed = (auto_gold / 100L) + 100L;
 
     /* Minimal greed */
-    if (greed > 10000L) greed = 10000L;
+    if (greed > 1000L) greed = 1000L;
 
 
     /* Scan the inventory */
@@ -3002,7 +2999,7 @@ static int borg_count_sell(void)
     greed = (auto_gold / 100L) + 100L;
 
     /* Minimal greed */
-    if (greed > 10000L) greed = 10000L;
+    if (greed > 1000L) greed = 1000L;
     
 
     /* Count "sellable" items */
@@ -3327,140 +3324,6 @@ static bool borg_test_stuff(void)
 
 
 /*
- * Attempt to "swap" rings, for efficiency purposes
- *
- * Note that the "INVEN_RIGHT" ring should always be "better" than the
- * "INVEN_LEFT" ring since it is more "tightly" held by the player.
- *
- * This routine is only called in shops, to allow us to "safely" play
- * the ring shuffling game.  Note that on any one trip to the dungeon,
- * we may collect several useful rings, but only actually keep the best,
- * since we may sell them before we shuffle rings.  Oh well.
- */
-static bool borg_swap_rings(void)
-{
-    int hole;
-    int icky;
-    
-    s32b v, v1, v2;
-
-
-    /* Look for an empty slot */
-    for (hole = 0; hole < INVEN_PACK; hole++) {
-    
-        auto_item *item = &auto_items[hole];
-        
-        /* Notice empty slot */
-        if (!item->iqty) break;
-    }
-    
-    /* Need an empty slot */
-    if (hole == INVEN_PACK) return (FALSE);
-
-    /* Look for an empty slot */
-    for (icky = hole + 1; icky < INVEN_PACK; icky++) {
-    
-        auto_item *item = &auto_items[icky];
-
-        /* Notice empty slot */
-        if (!item->iqty) break;
-    }
-    
-    /* Need an empty slot */
-    if (icky == INVEN_PACK) return (FALSE);
-
-
-    /*** Consider taking off the "left" ring ***/
-
-    /* Save the hole */
-    COPY(&safe_items[hole], &auto_items[hole], auto_item);
-
-    /* Save the ring */
-    COPY(&safe_items[INVEN_LEFT], &auto_items[INVEN_LEFT], auto_item);
-
-    /* Take off the ring */
-    COPY(&auto_items[hole], &auto_items[INVEN_LEFT], auto_item);
-
-    /* Erase left ring */
-    WIPE(&auto_items[INVEN_LEFT], auto_item);
-
-    /* Examine the inventory */
-    borg_notice();
-                
-    /* Evaluate the inventory */
-    v1 = borg_power();
-
-    /* Restore the ring */
-    COPY(&auto_items[INVEN_LEFT], &safe_items[INVEN_LEFT], auto_item);
-
-    /* Restore the hole */
-    COPY(&auto_items[hole], &safe_items[hole], auto_item);
-
-
-    /*** Consider taking off the "right" ring ***/
-
-    /* Save the hole */
-    COPY(&safe_items[hole], &auto_items[hole], auto_item);
-
-    /* Save the ring */
-    COPY(&safe_items[INVEN_RIGHT], &auto_items[INVEN_RIGHT], auto_item);
-
-    /* Take off the ring */
-    COPY(&auto_items[hole], &auto_items[INVEN_RIGHT], auto_item);
-
-    /* Erase left ring */
-    WIPE(&auto_items[INVEN_RIGHT], auto_item);
-
-    /* Examine the inventory */
-    borg_notice();
-                
-    /* Evaluate the inventory */
-    v2 = borg_power();
-
-    /* Restore the ring */
-    COPY(&auto_items[INVEN_RIGHT], &safe_items[INVEN_RIGHT], auto_item);
-
-    /* Restore the hole */
-    COPY(&auto_items[hole], &safe_items[hole], auto_item);
-
-    
-    /*** Swap rings if necessary ***/
-
-    /* Examine the inventory */
-    borg_notice();
-
-    /* Evaluate the inventory */
-    v = borg_power();
-
-    /* Prepare to "swap" if needed */
-    if (v2 > v1) {
-    
-        /* Log */
-        borg_note("# Taking off both rings.");
-
-        /* Take off "tight"/"right" ring */
-        if (auto_items[INVEN_RIGHT].iqty) {
-            borg_keypress('t');
-            borg_keypress(I2A(INVEN_RIGHT - INVEN_WIELD));
-        }
-        
-        /* Take off "loose"/"left" ring */
-        if (auto_items[INVEN_LEFT].iqty) {
-            borg_keypress('t');
-            borg_keypress(I2A(INVEN_LEFT - INVEN_WIELD));
-        }
-
-        /* Success */
-        return (TRUE);
-    }
-    
-    /* Nope */
-    return (FALSE);
-}
-
-
-
-/*
  * Attempt to take off useless equipment
  */
 static bool borg_takeoff_stuff(void)
@@ -3552,116 +3415,188 @@ static bool borg_takeoff_stuff(void)
 
 
 
-
 /*
- * Helper function (see below)
+ * This function is responsible for making sure that, if possible,
+ * the "best" ring we have is always on the "right" (tight) finger,
+ * so that the other functions, such as "borg_best_stuff()", do not
+ * have to think about the "tight" ring, but instead, can just assume
+ * that the "right" ring is "good for us" and should never be removed.
+ *
+ * In general, this will mean that our "best" ring of speed will end
+ * up on the "right" finger, if we have one, or a ring of free action,
+ * or a ring of see invisible, or some other "useful" ring.
+ *
+ * This routine is only called in shops, to allow us to "safely" play
+ * the ring shuffling game, since this routine may take several steps,
+ * and we must be able to do them all without being attacked.
  */
-static void borg_best_stuff_aux(int n, byte *test, byte *best, s32b *vp)
+static bool borg_swap_rings(void)
 {
-    int i;
+    int hole;
+    int icky;
     
-    int slot;
+    s32b v, v1, v2;
 
 
-    /* All done */
-    if (n >= 12) {
+    /* Look for an empty slot */
+    for (hole = 0; hole < INVEN_PACK; hole++) {
+    
+        auto_item *item = &auto_items[hole];
+        
+        /* Notice empty slot */
+        if (!item->iqty) break;
+    }
 
-        s32b p;
+    /* Need an empty slot */
+    if (hole == INVEN_PACK) return (FALSE);
 
-        /* Examine */
-        borg_notice();
 
-        /* Evaluate */
-        p = borg_power();
+    /*** Remove naked "loose" rings ***/
 
-        /* Track best */
-        if (p > *vp) {
+    /* Remove any naked loose ring */
+    if (auto_items[INVEN_LEFT].iqty &&
+        !auto_items[INVEN_RIGHT].iqty) {
+    
+        /* Log */
+        borg_note("# Taking off naked loose ring.");
 
-            /* Save the results */
-            for (i = 0; i < n; i++) best[i] = test[i];
-
-            /* Use it */
-            *vp = p;
-        }
+        /* Remove it */
+        borg_keypress('t');
+        borg_keypress(I2A(INVEN_LEFT - INVEN_WIELD));
 
         /* Success */
-        return;
+        return (TRUE);
     }
 
 
-    /* Extract the slot XXX XXX XXX */
-    slot = INVEN_WIELD + n;
+    /* Require "tight" ring */
+    if (!auto_items[INVEN_RIGHT].iqty) return (FALSE);
 
 
-    /* Note the attempt */
-    test[n] = slot;
-
-    /* Evaluate the default item */
-    borg_best_stuff_aux(n + 1, test, best, vp);
-
-
-    /* Try other possible objects */
-    for (i = 0; i < INVEN_PACK; i++) {
-
-        auto_item *item = &auto_items[i];
-
-        /* Skip empty items */
-        if (!item->iqty) continue;
-        
-        /* Require "aware" */
-        if (!item->kind) continue;
-        
-        /* Require "known" (or average) */
-        if (!item->able && !streq(item->note, "{average}")) continue;
-
-        /* Hack -- ignore "worthless" items */
-        if (!item->value) continue;
-
-
-        /* Make sure it goes in this slot */
-        if (slot != borg_wield_slot(item)) continue;
-
-        /* Take off old item */
-        COPY(&auto_items[i], &safe_items[slot], auto_item);
-
-        /* Wear the new item */
-        COPY(&auto_items[slot], &safe_items[i], auto_item);
-
-        /* Note the attempt */
-        test[n] = i;
-
-        /* Evaluate the possible item */
-        borg_best_stuff_aux(n + 1, test, best, vp);
-
-        /* Restore equipment */
-        COPY(&auto_items[slot], &safe_items[slot], auto_item);
-
-        /* Restore inventory */
-        COPY(&auto_items[i], &safe_items[i], auto_item);
+    /* Look for another empty slot */
+    for (icky = hole + 1; icky < INVEN_PACK; icky++) {
+    
+        auto_item *item = &auto_items[icky];
+ 
+        /* Notice empty slot */
+        if (!item->iqty) break;
     }
+
+    /* Need an empty slot */
+    if (icky == INVEN_PACK) return (FALSE);
+
+
+    /*** Remove nasty "tight" rings ***/
+
+    /* Save the hole */
+    COPY(&safe_items[hole], &auto_items[hole], auto_item);
+
+    /* Save the ring */
+    COPY(&safe_items[INVEN_LEFT], &auto_items[INVEN_LEFT], auto_item);
+
+    /* Take off the ring */
+    COPY(&auto_items[hole], &auto_items[INVEN_LEFT], auto_item);
+
+    /* Erase left ring */
+    WIPE(&auto_items[INVEN_LEFT], auto_item);
+
+    /* Examine the inventory */
+    borg_notice();
+                
+    /* Evaluate the inventory */
+    v1 = borg_power();
+
+    /* Restore the ring */
+    COPY(&auto_items[INVEN_LEFT], &safe_items[INVEN_LEFT], auto_item);
+
+    /* Restore the hole */
+    COPY(&auto_items[hole], &safe_items[hole], auto_item);
+
+
+    /*** Consider taking off the "right" ring ***/
+
+    /* Save the hole */
+    COPY(&safe_items[hole], &auto_items[hole], auto_item);
+
+    /* Save the ring */
+    COPY(&safe_items[INVEN_RIGHT], &auto_items[INVEN_RIGHT], auto_item);
+
+    /* Take off the ring */
+    COPY(&auto_items[hole], &auto_items[INVEN_RIGHT], auto_item);
+
+    /* Erase left ring */
+    WIPE(&auto_items[INVEN_RIGHT], auto_item);
+
+    /* Examine the inventory */
+    borg_notice();
+                
+    /* Evaluate the inventory */
+    v2 = borg_power();
+
+    /* Restore the ring */
+    COPY(&auto_items[INVEN_RIGHT], &safe_items[INVEN_RIGHT], auto_item);
+
+    /* Restore the hole */
+    COPY(&auto_items[hole], &safe_items[hole], auto_item);
+
+    
+    /*** Swap rings if necessary ***/
+
+    /* Examine the inventory */
+    borg_notice();
+
+    /* Evaluate the inventory */
+    v = borg_power();
+
+    /* Remove "useless" ring */
+    if (v2 > v1) {
+    
+        /* Log */
+        borg_note("# Taking off nasty tight ring.");
+
+        /* Take it off */
+        borg_keypress('t');
+        borg_keypress(I2A(INVEN_RIGHT - INVEN_WIELD));
+
+        /* Success */
+        return (TRUE);
+    }
+    
+    /* Nope */
+    return (FALSE);
 }
 
 
 
 /*
- * Attempt to instantiate the *best* possible equipment.
+ * Place our "best" ring on the "tight" finger if needed
+ *
+ * This function is adopted from "borg_wear_stuff()"
+ *
+ * Basically, we evaluate the world in which each ring is added
+ * to the current set of equipment, and we wear the ring, if any,
+ * that gives us the most "power".
+ *
+ * The "borg_swap_rings()" code above occasionally allows us to remove
+ * both rings, at which point this function will place the "best" ring
+ * on the "tight" finger, and then the "borg_best_stuff()" function will
+ * allow us to put on our second "best" ring on the "loose" finger.
  */
-static bool borg_best_stuff(void)
+static bool borg_wear_rings(void)
 {
-    int k;
-
-    int hole;
     int slot;
+    int hole;
 
-    s32b value;
-
-    int i, b_i = -1;
     s32b p, b_p = 0L;
 
-    byte test[12];
-    byte best[12];
-    
+    int i, b_i = -1;
+
     auto_item *item;
+
+
+    /* Require no rings */
+    if (auto_items[INVEN_LEFT].iqty) return (FALSE);
+    if (auto_items[INVEN_RIGHT].iqty) return (FALSE);
 
 
     /* Look for an empty slot */
@@ -3677,53 +3612,37 @@ static bool borg_best_stuff(void)
     if (hole == INVEN_PACK) return (FALSE);
 
 
-    /* Hack -- Initialize */
-    for (k = 0; k < 12; k++) best[k] = 255;
+    /* Scan inventory */
+    for (i = 0; i < INVEN_PACK; i++) {
 
-    /* Hack -- Copy all the slots */
-    for (i = 0; i < INVEN_TOTAL; i++) {
-
-        /* Save the item */
-        COPY(&safe_items[i], &auto_items[i], auto_item);
-    }
-        
-
-    /* Examine the inventory */
-    borg_notice();
-
-    /* Evaluate the inventory */
-    value = borg_power();
-
-    /* Determine the best possible equipment */
-    (void)borg_best_stuff_aux(0, test, best, &value);
-
-
-    /* Find "easiest" step */
-    for (k = 0; k < 12; k++) {
-
-        /* Get choice */
-        i = best[k];
-        
-        /* Ignore non-changes */
-        if (i >= INVEN_WIELD) continue;
-
-        /* Access the item */
         item = &auto_items[i];
 
-        /* Access the slot */
-        slot = borg_wield_slot(item);
 
-        /* Save the old item */
+        /* Skip empty items */
+        if (!item->iqty) continue;
+        
+
+        /* Require "aware" */
+        if (!item->kind) continue;
+        
+        /* Require "known" (or average) */
+        if (!item->able && !streq(item->note, "{average}")) continue;
+
+        /* Hack -- ignore "worthless" items */
+        if (!item->value) continue;
+
+
+        /* Where does it go */
+        slot = borg_wield_slot(item);
+    
+        /* Only process "rings" */
+        if (slot != INVEN_LEFT) continue;
+
+        /* Save the old item (empty) */
         COPY(&safe_items[slot], &auto_items[slot], auto_item);
 
         /* Save the new item */
         COPY(&safe_items[i], &auto_items[i], auto_item);
-
-        /* Save the hole */
-        COPY(&safe_items[hole], &auto_items[hole], auto_item);
-
-        /* Take off old item */
-        COPY(&auto_items[hole], &safe_items[slot], auto_item);
 
         /* Wear new item */
         COPY(&auto_items[slot], &safe_items[i], auto_item);
@@ -3740,14 +3659,11 @@ static bool borg_best_stuff(void)
         /* Evaluate the inventory */
         p = borg_power();
 
-        /* Restore the old item */
+        /* Restore the old item (empty) */
         COPY(&auto_items[slot], &safe_items[slot], auto_item);
 
         /* Restore the new item */
         COPY(&auto_items[i], &safe_items[i], auto_item);
-
-        /* Restore the hole */
-        COPY(&auto_items[hole], &safe_items[hole], auto_item);
 
         /* Ignore "bad" swaps */
         if ((b_i >= 0) && (p < b_p)) continue;
@@ -3762,15 +3678,17 @@ static bool borg_best_stuff(void)
     /* Evaluate the inventory */
     p = borg_power();
 
-
-    /* Start changing */
-    if (b_i >= 0) {
-
+    /* No item */
+    if ((b_i >= 0) && (b_p > p)) {
+    
         /* Get the item */
-        auto_item *item = &auto_items[b_i];
+        item = &auto_items[b_i];
 
         /* Log */
-        borg_note(format("# Besting %s.", item->desc));
+        borg_note("# Putting on best tight ring.");
+
+        /* Log */
+        borg_note(format("# Wearing %s.", item->desc));
 
         /* Wear it */
         borg_keypress('w');
@@ -3780,13 +3698,9 @@ static bool borg_best_stuff(void)
         return (TRUE);
     }
     
-
     /* Nope */
     return (FALSE);
 }
-
-
-
 
 
 
@@ -3934,6 +3848,281 @@ static bool borg_wear_stuff(void)
     /* Nope */
     return (FALSE);
 }
+
+
+
+/*
+ * Hack -- order of the slots
+ *
+ * XXX XXX XXX Note that we ignore the "tight" ring, and we
+ * assume that we will always be wearing our "best" ring on
+ * our "right" (tight) finger, and if we are not, then the
+ * "borg_swap_rings()" function will remove both the rings,
+ * which will induce the "borg_best_stuff()" function to put
+ * the rings back on in the "optimal" order.
+ */
+static byte borg_best_stuff_order[] = {
+
+    INVEN_BOW,
+    INVEN_WIELD,
+    INVEN_BODY,
+    INVEN_OUTER,
+    INVEN_ARM,
+    INVEN_HEAD,
+    INVEN_HANDS,
+    INVEN_FEET,
+    INVEN_LITE,
+    INVEN_NECK,
+    INVEN_LEFT,
+    255
+};
+
+
+/*
+ * Helper function (see below)
+ */
+static void borg_best_stuff_aux(int n, byte *test, byte *best, s32b *vp)
+{
+    int i;
+    
+    int slot;
+
+
+    /* Extract the slot */
+    slot = borg_best_stuff_order[n];
+
+
+    /* All done */
+    if (slot == 255) {
+
+        s32b p;
+
+        /* Examine */
+        borg_notice();
+
+        /* Evaluate */
+        p = borg_power();
+
+        /* Track best */
+        if (p > *vp) {
+
+            /* Save the results */
+            for (i = 0; i < n; i++) best[i] = test[i];
+
+            /* Use it */
+            *vp = p;
+        }
+
+        /* Success */
+        return;
+    }
+
+
+    /* Note the attempt */
+    test[n] = slot;
+
+    /* Evaluate the default item */
+    borg_best_stuff_aux(n + 1, test, best, vp);
+
+
+    /* Try other possible objects */
+    for (i = 0; i < INVEN_PACK; i++) {
+
+        auto_item *item = &auto_items[i];
+
+        /* Skip empty items */
+        if (!item->iqty) continue;
+        
+        /* Require "aware" */
+        if (!item->kind) continue;
+        
+        /* Require "known" (or average) */
+        if (!item->able && !streq(item->note, "{average}")) continue;
+
+        /* Hack -- ignore "worthless" items */
+        if (!item->value) continue;
+
+
+        /* Make sure it goes in this slot */
+        if (slot != borg_wield_slot(item)) continue;
+
+        /* Take off old item */
+        COPY(&auto_items[i], &safe_items[slot], auto_item);
+
+        /* Wear the new item */
+        COPY(&auto_items[slot], &safe_items[i], auto_item);
+
+        /* Note the attempt */
+        test[n] = i;
+
+        /* Evaluate the possible item */
+        borg_best_stuff_aux(n + 1, test, best, vp);
+
+        /* Restore equipment */
+        COPY(&auto_items[slot], &safe_items[slot], auto_item);
+
+        /* Restore inventory */
+        COPY(&auto_items[i], &safe_items[i], auto_item);
+    }
+}
+
+
+
+/*
+ * Attempt to instantiate the *best* possible equipment.
+ *
+ * XXX XXX XXX Make sure this works with both "rings"
+ */
+static bool borg_best_stuff(void)
+{
+    int k;
+    int n = 0;
+
+    int hole;
+    int slot;
+
+    s32b value;
+
+    int i, b_i = -1;
+    s32b p, b_p = 0L;
+
+    byte test[12];
+    byte best[12];
+    
+    auto_item *item;
+
+
+    /* Look for an empty slot */
+    for (hole = 0; hole < INVEN_PACK; hole++) {
+    
+        item = &auto_items[hole];
+        
+        /* Found an empty slot */
+        if (!item->iqty) break;
+    }
+    
+    /* No empty slots */
+    if (hole == INVEN_PACK) return (FALSE);
+
+
+    /* Hack -- Initialize */
+    for (k = 0; k < 12; k++) {
+
+        /* Initialize */
+        best[k] = test[k] = 255;
+    }
+
+    /* Hack -- Copy all the slots */
+    for (i = 0; i < INVEN_TOTAL; i++) {
+
+        /* Save the item */
+        COPY(&safe_items[i], &auto_items[i], auto_item);
+    }
+        
+
+    /* Examine the inventory */
+    borg_notice();
+
+    /* Evaluate the inventory */
+    value = borg_power();
+
+    /* Determine the best possible equipment */
+    (void)borg_best_stuff_aux(0, test, best, &value);
+
+
+    /* Find "easiest" step */
+    for (k = 0; k < 12; k++) {
+
+        /* Get choice */
+        i = best[k];
+        
+        /* Ignore non-changes */
+        if (i >= INVEN_WIELD) continue;
+
+        /* Count changes */
+        n++;
+
+        /* Access the item */
+        item = &auto_items[i];
+
+        /* Access the slot */
+        slot = borg_wield_slot(item);
+
+        /* Save the old item */
+        COPY(&safe_items[slot], &auto_items[slot], auto_item);
+
+        /* Save the new item */
+        COPY(&safe_items[i], &auto_items[i], auto_item);
+
+        /* Save the hole */
+        COPY(&safe_items[hole], &auto_items[hole], auto_item);
+
+        /* Take off old item */
+        COPY(&auto_items[hole], &safe_items[slot], auto_item);
+
+        /* Wear new item */
+        COPY(&auto_items[slot], &safe_items[i], auto_item);
+
+        /* Only a single item */
+        auto_items[slot].iqty = 1;
+
+        /* Reduce the inventory quantity by one */
+        auto_items[i].iqty--;
+        
+        /* Examine the inventory */
+        borg_notice();
+                
+        /* Evaluate the inventory */
+        p = borg_power();
+
+        /* Restore the old item */
+        COPY(&auto_items[slot], &safe_items[slot], auto_item);
+
+        /* Restore the new item */
+        COPY(&auto_items[i], &safe_items[i], auto_item);
+
+        /* Restore the hole */
+        COPY(&auto_items[hole], &safe_items[hole], auto_item);
+
+        /* Track the "best" change */
+        if ((b_i >= 0) && (p < b_p)) continue;
+
+        /* Maintain the "best" */
+        b_i = i; b_p = p;
+    }
+
+    /* Restore bonuses */
+    borg_notice();
+                
+    /* Evaluate the inventory */
+    p = borg_power();
+
+
+    /* Start changing */
+    if (b_i >= 0) {
+
+        /* Get the item */
+        auto_item *item = &auto_items[b_i];
+
+        /* Log */
+        borg_note(format("# Besting %s (1/%d).", item->desc, n));
+
+        /* Wear it */
+        borg_keypress('w');
+        borg_keypress(I2A(b_i));
+
+        /* Did something */
+        return (TRUE);
+    }
+    
+
+    /* Nope */
+    return (FALSE);
+}
+
+
+
+
 
 
 /*
@@ -4279,7 +4468,7 @@ static bool borg_prepared(int depth)
     /* Potions of Cure Critical Wounds */
     if (amt_cure_critical < 10) return (FALSE);
 
-    /* XXX XXX See invisible */
+    /* See invisible */
     if (!my_see_inv) return (FALSE);
 
     /* Usually ready for level 10 to 19 */
@@ -4295,8 +4484,11 @@ static bool borg_prepared(int depth)
     /* Cure Critical Wounds */
     if (amt_cure_critical < 15) return (FALSE);
 
-    /* XXX XXX Free action */
+    /* Free action */
     if (!my_free_act) return (FALSE);
+
+    /* Basic resistance XXX XXX XXX */
+    if (!my_resist_fire) return (FALSE);
 
     /* Usually ready for level 20 to 39 */
     if (depth <= 39) return (TRUE);
@@ -4308,9 +4500,9 @@ static bool borg_prepared(int depth)
     if (auto_level < 40) return (FALSE);
 
     /* Minimal hitpoints */
-    if (auto_chp < 400) return (FALSE);
+    if (auto_mhp < 400) return (FALSE);
 
-    /* High stats */
+    /* High stats XXX XXX XXX */
     if (auto_stat[A_STR] < 18+70) return (FALSE);
     if (auto_stat[A_INT] < 18+70) return (FALSE);
     if (auto_stat[A_WIS] < 18+70) return (FALSE);
@@ -4334,9 +4526,6 @@ static bool borg_prepared(int depth)
 
     /* Minimal level */
     if (auto_level < 50) return (FALSE);
-
-    /* Minimal hitpoints */
-    if (auto_chp < 750) return (FALSE);
 
     /* Assume ready */
     return (TRUE);
@@ -5872,17 +6061,20 @@ bool borg_think_store(void)
     /* Examine the inventory */
     borg_notice();
 
-    /* Hack -- best stuff */
+    /* Remove "backwards" rings */
+    if (borg_swap_rings()) return (TRUE);
+
+    /* Repair "backwards" rings */
+    if (borg_wear_rings()) return (TRUE);
+
+    /* Wear "optimal" equipment */
     if (borg_best_stuff()) return (TRUE);
 
-    /* Wear things */
-    if (borg_wear_stuff()) return (TRUE);
+    /* Wear "useful" equipment */
+    /* if (borg_wear_stuff()) return (TRUE); */
 
-    /* Take off things */
+    /* Remove "useless" equipment */
     if (borg_takeoff_stuff()) return (TRUE);
-
-    /* Hack -- swap rings */
-    if (borg_swap_rings()) return (TRUE);
 
     /* Choose a shop to visit */
     if (borg_choose_shop()) {

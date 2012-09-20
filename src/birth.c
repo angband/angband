@@ -1004,7 +1004,7 @@ static void player_wipe()
     q_list[1].level = 100;
 
 
-    /* Reset the "current" and "maximum" monster populations */
+    /* Reset the "monsters" */
     for (i = 1; i < MAX_R_IDX; i++) {
 
         monster_race *r_ptr = &r_info[i];
@@ -1022,16 +1022,16 @@ static void player_wipe()
         r_ptr->r_pkills = 0;
     }
 
-    /* Reset the "tried" and "aware" flags for objects */
-    for (i=0; i<MAX_K_IDX; i++) {
+    /* Reset the "objects" */
+    for (i = 1; i < MAX_K_IDX; i++) {
 
         inven_kind *k_ptr = &k_info[i];
 
-        /* Never tried one */
+        /* Reset "tried" */
         k_ptr->tried = FALSE;
 
-        /* Not aware of hidden effects */
-        if (k_ptr->has_flavor) k_ptr->aware = FALSE;
+        /* Reset "aware" */
+        k_ptr->aware = FALSE;
     }
 
 
@@ -1197,6 +1197,9 @@ start_over:
     /* Dump the default name */
     c_put_str(TERM_L_BLUE, player_name, 2, 15);
 
+
+    /* Display some helpful information XXX XXX XXX */
+    
 
     /* Choose a sex */
     choose_sex();

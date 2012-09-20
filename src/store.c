@@ -1,6 +1,6 @@
 /* File: store.c */
 
-/* Purpose: store code, updating store inventory, pricing objects */
+/* Purpose: Store commands */
 
 /*
  * Copyright (c) 1989 James E. Wilson, Robert A. Koeneke
@@ -1073,6 +1073,9 @@ static void store_create(void)
 
             /* Random item (usually of given level) */
             i = get_obj_num(level);
+
+            /* Handle failure */
+            if (!i) continue;
         }
 
         /* Normal Store */
@@ -1191,39 +1194,6 @@ static void updatebargain(s32b price, s32b minprice)
     }
 }
 
-
-
-/*
- * Displays the set of commands
- */
-static void display_commands(void)
-{
-    /* Clear */
-    clear_from(21);
-
-    /* Display the legal commands */
-    prt("You may:", 21, 0);
-
-    /* Basic commands */
-    prt(" ESC) Exit from Building.", 22, 0);
-
-    /* Browse if necessary */
-    if (st_ptr->stock_num > 12) {
-        prt(" SPACE) Next page of stock", 23, 0);
-    }
-    
-    /* Home commands */
-    if (store_num == 7) {
-        prt(" g) Get an item.", 22, 40);
-        prt(" d) Drop an item.", 23, 40);
-    }
-
-    /* Shop commands */
-    else {
-        prt(" p) Purchase an item.", 22, 40);
-        prt(" s) Sell an item.", 23, 40);
-    }
-}
 
 
 /*
@@ -1455,9 +1425,6 @@ static void display_store(void)
 
     /* Draw in the inventory */
     display_inventory();
-
-    /* Hack -- Display the commands */
-    display_commands();
 }
 
 
@@ -1470,6 +1437,10 @@ static int get_stock(int *com_val, cptr pmt, int i, int j)
     char	command;
 
     char	out_val[160];
+
+
+    /* Paranoia XXX XXX XXX */
+    msg_print(NULL);
 
 
     /* Assume failure */
@@ -1588,6 +1559,10 @@ static int get_haggle(cptr pmt, s32b *poffer, s32b price, int final)
     char		out_val[160];
 
 
+    /* Paranoia XXX XXX XXX */
+    msg_print(NULL);
+    
+    
     /* Clear old increment if necessary */
     if (!allow_inc) last_inc = 0L;
 
@@ -2509,94 +2484,13 @@ static bool leave_store = FALSE;
 /*
  * Process a command in a store
  *
- * Note that the "keymaps" are not used, and we must convert a few
- * commands by hand to allow simulated usage of the "roguelike" and
- * "original" keysets, ala the "command_cmd" variable.
+ * Note that we must allow the use of a few "special" commands
+ * in the stores which are not allowed in the dungeon, and we
+ * must disable some commands which are allowed in the dungeon
+ * but not in the stores.
  */
 static void store_process_command(void)
 {
-    char cmd;
-
-
-    /* Hack -- Automatic commands */
-    if (command_new) {
-
-        /* Do the same command again */
-        cmd = command_new;
-
-        /* Forget the command */
-        command_new = 0;
-
-        /* Flush messages */
-        msg_print(NULL);
-        
-        /* Wipe top line */
-        prt("", 0, 0);
-    }
-
-    /* Get a new command */
-    else {
-
-        /* Assume player has read his messages */
-        msg_flag = FALSE;
-
-        /* Cursor to the prompt location */
-        move_cursor(21, 9);
-
-        /* Get a command */
-        cmd = inkey();
-    }
-
-
-    /* Translate the command */
-    switch (cmd) {
-
-        /* Purchase (Get) */
-        case 'p':
-            command_cmd = 'g';
-            break;
-
-        /* Sell (Drop) */
-        case 's':
-            command_cmd = 'd';
-            break;
-
-        /* Get (not buy) */
-        case 'g':
-            command_cmd = ((store_num == 7) ? 'g' : '`');
-            break;
-
-        /* Drop (not sell) */
-        case 'd':
-            command_cmd = ((store_num == 7) ? 'd' : '`');
-            break;
-
-        /* Wear an item (various keysets) */
-        case 'W': case 'w':
-            command_cmd = '[';
-            break;
-
-        /* Take off an item (various keysets) */
-        case 'T': case 't':
-            command_cmd = ']';
-            break;
-
-        /* Browse a Book (roguelike) */
-        case 'P':
-            command_cmd = 'b';
-            break;
-
-        /* Destroy an item (roguelike) */
-        case KTRL('d'):
-            command_cmd = 'k';
-
-        /* Normal commands */
-        default:
-            command_cmd = cmd;
-            break;
-    }
-
-
     /* Parse the command */
     switch (command_cmd) {
 
@@ -2623,18 +2517,18 @@ static void store_process_command(void)
             display_store();
             break;
 
-        /* Get/Purchase */
+        /* Get (purchase) */
         case 'g':
             store_purchase(); break;
 
-        /* Drop/Sell */
+        /* Drop (Sell) */
         case 'd':
             store_sell(); break;
 
-        /* White-space */
+        /* Ignore */
         case '\n':
         case '\r':
-        case KTRL('I'):
+        case '\t':
             break;
 
 
@@ -2734,6 +2628,10 @@ static void store_process_command(void)
         /*** Stairs and Doors and Chests and Traps ***/
 
 #if 0
+
+        /* Enter store */
+        case '_':
+            do_cmd_store(); break;
 
         /* Go up staircase */
         case '<':
@@ -2979,9 +2877,7 @@ static void store_process_command(void)
 
         /* Hack -- Unknown command */
         default:
-            bell();
             msg_print("That command does not work in stores.");
-            msg_print(NULL);
             break;
     }
 }
@@ -2989,13 +2885,37 @@ static void store_process_command(void)
 
 /*
  * Enter a store, and interact with it.
+ *
+ * Note that we use the standard "request_command()" function
+ * to get a command, allowing us to use "command_arg" and all
+ * command macros and other nifty stuff, but we then do weird
+ * things with the "g" (get), "p" (pray/purchase), "m" (magic),
+ * "d" (drop), and "s" (search/sell) commands, depending on
+ * whether we are in a store or the home.
  */
-void store_enter(int which)
+void do_cmd_store(void)
 {
-    int                  tmp_chr;
+    int			which;
+
+    int			tmp_chr;
+
+    cave_type		*c_ptr;
 
 
-    /* Check the "locked doors" */
+    /* Access the player grid */
+    c_ptr = &cave[py][px];
+
+    /* Verify a store */
+    if (((c_ptr->feat & 0x3F) < 0x08) ||
+        ((c_ptr->feat & 0x3F) > 0x0F)) {
+        msg_print("You see no store here.");
+        return;
+    }
+
+    /* Extract the store code */
+    which = (c_ptr->feat & 0x07);
+    
+    /* Hack -- Check the "locked doors" */
     if (store[which].store_open >= turn) {
         msg_print("The doors are locked.");
         return;
@@ -3039,11 +2959,77 @@ void store_enter(int which)
         /* Hack -- Clear line 1 */
         prt("", 1, 0);
 
-        /* Display the legal commands */
-        display_commands();
-
         /* Hack -- Check the charisma */
         tmp_chr = p_ptr->stat_use[A_CHR];
+
+        /* Clear */
+        clear_from(21);
+
+        /* Basic commands */
+        prt(" ESC) Exit from Building.", 22, 0);
+
+        /* Browse if necessary */
+        if (st_ptr->stock_num > 12) {
+            prt(" SPACE) Next page of stock", 23, 0);
+        }
+    
+        /* Home commands */
+        if (store_num == 7) {
+            prt(" g) Get an item.", 22, 40);
+            prt(" d) Drop an item.", 23, 40);
+        }
+
+        /* Shop commands XXX XXX XXX */
+        else {
+            prt(" p) Purchase an item.", 22, 40);
+            prt(" s) Sell an item.", 23, 40);
+        }
+
+        /* Prompt */
+        prt("You may: ", 21, 0);
+
+        /* Get a command */
+        request_command();
+
+        /* Home commands XXX XXX XXX */
+        if (store_num == 7) {
+
+            /* Convert */
+            switch (command_cmd) {
+
+                /* Command "p" -> "purchase" */
+                case 'p': command_cmd = 'g'; break;
+
+                /* Command "m" -> "purchase" */
+                case 'm': command_cmd = 'g'; break;
+
+                /* Command "s" -> "sell" */
+                case 's': command_cmd = 'd'; break;
+            }
+        }
+
+        /* Shop commands XXX XXX XXX */
+        else {
+
+            /* Convert and restrict */
+            switch (command_cmd) {
+            
+                /* Command "g" -> "get" (ignore) */
+                case 'g': command_cmd = '`'; break;
+
+                /* Command "d" -> "drop" (ignore) */
+                case 'd': command_cmd = '`'; break;
+
+                /* Command "p" -> "purchase" */
+                case 'p': command_cmd = 'g'; break;
+
+                /* Command "m" -> "purchase" */
+                case 'm': command_cmd = 'g'; break;
+
+                /* Command "s" -> "sell" */
+                case 's': command_cmd = 'd'; break;
+            }
+        }
 
         /* Process the command */
         store_process_command();

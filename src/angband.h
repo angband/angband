@@ -21,19 +21,15 @@
  */
 #include "h-basic.h"
 
+
 /*
  * Then, include the header files for the low-level code
  */
 #include "z-util.h"
 #include "z-virt.h"
 #include "z-form.h"
-
-
-
-/*
- * Include the header file for the "terminal" stuff
- */
-#include "term.h"
+#include "z-rand.h"
+#include "z-term.h"
 
 
 /*

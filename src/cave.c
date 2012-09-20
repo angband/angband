@@ -2,6 +2,7 @@
 
 /* Purpose: low level dungeon routines -BEN- */
 
+
 #include "angband.h"
 
 
@@ -390,89 +391,50 @@ bool no_lite(void)
 
 
 /*
- * Get a legal "multi-hued" color
+ * Hack -- Legal monster codes
  */
-static byte mh_attr(void)
-{
-    /* Anything but black */
-    switch (randint(15)) {
-        case 1: return (TERM_WHITE);
-        case 2: return (TERM_SLATE);
-        case 3: return (TERM_ORANGE);
-        case 4: return (TERM_RED);
-        case 5: return (TERM_GREEN);
-        case 6: return (TERM_BLUE);
-        case 7: return (TERM_UMBER);
-        case 8: return (TERM_L_DARK);
-        case 9: return (TERM_L_WHITE);
-        case 10: return (TERM_VIOLET);
-        case 11: return (TERM_YELLOW);
-        case 12: return (TERM_L_RED);
-        case 13: return (TERM_L_GREEN);
-        case 14: return (TERM_L_BLUE);
-        case 15: return (TERM_L_UMBER);
-    }
-
-    /* Assume white */
-    return (TERM_WHITE);
-}
-
+static cptr image_monster_hack = \
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 /*
- * XXX XXX XXX Mega-Hack -- Hallucinatory monster
+ * Mega-Hack -- Hallucinatory monster
  */
 static void image_monster(byte *ap, char *cp)
 {
     int i;
-    
-    /* Hack -- Choose a monster */
-    for (i = 0; i < 100; i++) {
 
-        /* Pick a random race */
-        int r = get_mon_num(dun_level);
+    /* Pick a symbol */
+    i = rand_int(strlen(image_monster_hack));
 
-        /* Acquire the race */
-        monster_race *r_ptr = &r_info[r];
+    /* Random letter */
+    (*cp) = (image_monster_hack[i]);
 
-        /* Skip "bizarre" monster races */
-        if (r_ptr->flags1 & RF1_ATTR_CLEAR) continue;
-        if (r_ptr->flags1 & RF1_CHAR_CLEAR) continue;
-        if (r_ptr->flags1 & RF1_ATTR_MULTI) continue;
-        if (r_ptr->flags1 & RF1_CHAR_MULTI) continue;
-
-        /* Use that monster */
-        (*ap) = r_ptr->l_attr;
-        (*cp) = r_ptr->l_char;
-
-        /* Stop */
-        return;
-    }
+    /* Random color */
+    (*ap) = randint(15);
 }
 
 
 /*
- * XXX XXX XXX Mega-Hack -- Hallucinatory object
+ * Hack -- Legal object codes
+ */
+static cptr image_object_hack = \
+    "?/|\\\"!$()_-=[]{},~";
+
+/*
+ * Mega-Hack -- Hallucinatory object
  */
 static void image_object(byte *ap, char *cp)
 {
     int i;
-    
-    /* Hack -- Choose an object */
-    for (i = 0; i < 100; i++) {
 
-        /* Pick a random object */
-        int k = get_obj_num(dun_level);
+    /* Pick a symbol */
+    i = rand_int(strlen(image_object_hack));
 
-        /* Access the kind */
-        inven_kind *k_ptr = &k_info[k];
+    /* Random letter */
+    (*cp) = (image_object_hack[i]);
 
-        /* Use the attr/char */
-        (*ap) = k_ptr->x_attr;
-        (*cp) = k_ptr->x_char;
-
-        /* Done */
-        return;
-    }
+    /* Random color */
+    (*ap) = randint(15);
 }
 
 
@@ -558,8 +520,10 @@ static void image_random(byte *ap, char *cp)
  * Note the assumption that doing "x_ptr = &x_info[f]" plus a few of
  * "x_ptr->f", is quicker than "x_info[x].f", if this is incorrect
  * then a whole lot of code should be changed...  XXX XXX
+ *
+ * XXX XXX XXX We need to do something about "use_graphics"
  */
-static void map_info(int y, int x, byte *ap, char *cp)
+void map_info(int y, int x, byte *ap, char *cp)
 {
     cave_type *c_ptr;
 
@@ -583,20 +547,16 @@ static void map_info(int y, int x, byte *ap, char *cp)
     /* Handle "player" */
     if ((y == py) && (x == px)) {
     
-        /* Unless "optimizing" and "running" */
-        if (!running || !optimize_running) {
+        monster_race *r_ptr = &r_info[0];
 
-            monster_race *r_ptr = &r_info[0];
+        /* Get the "player" char */
+        (*cp) = r_ptr->l_char;
 
-            /* Get the "player" char */
-            (*cp) = r_ptr->l_char;
+        /* Get the "player" attr */
+        (*ap) = r_ptr->l_attr;
 
-            /* Get the "player" attr */
-            (*ap) = r_ptr->l_attr;
-
-            /* Done */
-            return;
-        }
+        /* Done */
+        return;
     }
 
 
@@ -638,7 +598,24 @@ static void map_info(int y, int x, byte *ap, char *cp)
             /* Done */
             return;
         }
-        
+
+#if 0
+
+        /* Hack -- graphics */
+        else if (use_graphics && (r_ptr->l_char & 0x80) && (r_ptr->l_attr & 0x80)) {
+
+            /* Normal char */
+            (*cp) = r_ptr->l_char;
+
+            /* Normal attr */
+            (*ap) = r_ptr->l_attr;
+            
+            /* Done */
+            return;
+        }
+
+#endif
+
         /* Hack -- Clear "char" monster */
         else if (r_ptr->flags1 & RF1_CHAR_CLEAR) {
 
@@ -665,12 +642,12 @@ static void map_info(int y, int x, byte *ap, char *cp)
 
         /* Hack -- Multi-hued monster */
         else if (r_ptr->flags1 & RF1_ATTR_MULTI) {
-        
+
             /* Normal char */
             (*cp) = r_ptr->l_char;
 
             /* Multi-hued attr */
-            (*ap) = mh_attr();
+            (*ap) = randint(15);
             
             /* Done */
             return;
@@ -980,10 +957,13 @@ void prt_map(void)
 {
     int x, y;
 
-    int okay;
+    int v;
 
+    /* Access the cursor state */
+    (void)Term_get_cursor(&v);
+    
     /* Hide the cursor */
-    okay = Term_hide_cursor();
+    (void)Term_set_cursor(0);
 
     /* Dump the map */
     for (y = panel_row_min; y <= panel_row_max; y++) {
@@ -1010,8 +990,8 @@ void prt_map(void)
         }
     }
 
-    /* Show the cursor (if necessary) */
-    if (!okay) Term_show_cursor();
+    /* Restore the cursor */
+    (void)Term_set_cursor(v);
 }
 
 
@@ -1089,145 +1069,6 @@ void prt_map(void)
  * "floors" in the "viewable region" brightly (actually, to draw the *other*
  * grids dimly), providing a "pretty" effect as the player runs around.
  */
-
-
-
-/*
- * This routine clears the entire "temp" set.
- *
- * This routine will Perma-Lite all "temp" grids.
- *
- * This routine is used (only) by "lite_room()"
- *
- * Dark grids are illuminated.
- *
- * Also, process all affected monsters.
- *
- * SMART monsters always wake up when illuminated
- * NORMAL monsters wake up 1/4 the time when illuminated
- * STUPID monsters wake up 1/10 the time when illuminated
- */
-static void cave_temp_room_lite(void)
-{
-    int i;
-
-    /* Clear them all */
-    for (i = 0; i < temp_n; i++) {
-
-        int y = temp_y[i];
-        int x = temp_x[i];
-
-        cave_type *c_ptr = &cave[y][x];
-        
-        /* No longer in the array */
-        c_ptr->feat &= ~CAVE_TEMP;
-
-        /* Update only non-CAVE_GLOW grids */
-        /* if (c_ptr->feat & CAVE_GLOW) continue; */
-
-        /* Perma-Lite */
-        c_ptr->feat |= CAVE_GLOW;
-
-        /* Process affected monsters */
-        if (c_ptr->m_idx) {
-
-            monster_type	*m_ptr = &m_list[c_ptr->m_idx];
-
-            monster_race	*r_ptr = &r_info[m_ptr->r_idx];
-
-            /* Update the monster */
-            update_mon(c_ptr->m_idx, FALSE);
-            
-            /* Sometimes monsters wake up */
-            if (m_ptr->csleep &&
-                (((r_ptr->flags2 & RF2_STUPID) && (rand_int(100) < 10)) ||
-                 (rand_int(100) < 25) ||
-                 (r_ptr->flags2 & RF2_SMART))) {
-
-                /* Wake up! */
-                m_ptr->csleep = 0;
-
-                /* Notice the "waking up" */
-                if (m_ptr->ml) {
-
-                    char m_name[80];
-
-                    /* Acquire the monster name */
-                    monster_desc(m_name, m_ptr, 0);
-
-                    /* Dump a message */
-                    msg_format("%^s wakes up.", m_name);
-                }
-            }
-        }
-
-        /* Note */
-        note_spot(y, x);
-
-        /* Redraw */
-        lite_spot(y, x);
-    }
-
-    /* None left */
-    temp_n = 0;
-}
-
-
-
-/*
- * This routine clears the entire "temp" set.
- *
- * This routine will "darken" all "temp" grids.
- *
- * In addition, some of these grids will be "unmarked".
- *
- * This routine is used (only) by "unlite_room()"
- *
- * Also, process all affected monsters
- */
-static void cave_temp_room_unlite(void)
-{
-    int i;
-
-    /* Clear them all */
-    for (i = 0; i < temp_n; i++) {
-
-        int y = temp_y[i];
-        int x = temp_x[i];
-
-        cave_type *c_ptr = &cave[y][x];
-
-        /* No longer in the array */
-        c_ptr->feat &= ~CAVE_TEMP;
-
-        /* Darken the grid */
-        c_ptr->feat &= ~CAVE_GLOW;
-
-        /* Hack -- Forget "boring" grids */
-        if ((c_ptr->feat & 0x3F) <= 0x02) {
-
-            /* Forget the grid */
-            c_ptr->feat &= ~CAVE_MARK;
-
-            /* Notice */
-            note_spot(y, x);
-        }
-
-        /* Process affected monsters */
-        if (c_ptr->m_idx) {
-
-            /* Update the monster */
-            update_mon(c_ptr->m_idx, FALSE);
-        }
-
-        /* Redraw */
-        lite_spot(y, x);
-    }
-
-    /* None left */
-    temp_n = 0;
-}
-
 
 
 
@@ -1868,20 +1709,20 @@ static bool update_view_aux(int y, int x, int y1, int x1, int y2, int x2)
  */
 void update_view(void)
 {
-    int n, m, d, k, y, x;
+    int n, m, d, k, y, x, z;
 
     int se, sw, ne, nw, es, en, ws, wn;
 
-    int limit, over, full;
+    int full, over;
 
     cave_type *c_ptr;
 
 
-    /* Extract the "view" radius */
-    full = p_ptr->cur_view;
+    /* Full radius (20) */
+    full = MAX_SIGHT;
 
-    /* Extract the "octagon" limits */
-    over = full * 3 / 2;
+    /* Octagon factor (30) */
+    over = MAX_SIGHT * 3 / 2;
 
 
     /*** Step 0 -- Begin ***/
@@ -1930,10 +1771,10 @@ void update_view(void)
     /*** Step 2 -- Major Diagonals ***/
 
     /* Hack -- Limit */
-    limit = full * 2 / 3;
+    z = full * 2 / 3;
 
     /* Scan south-east */
-    for (d = 1; d <= limit; d++) {
+    for (d = 1; d <= z; d++) {
         c_ptr = &cave[y+d][x+d];
         c_ptr->feat |= CAVE_XTRA;
         cave_view_hack(c_ptr, y+d, x+d);
@@ -1941,7 +1782,7 @@ void update_view(void)
     }
 
     /* Scan south-west */
-    for (d = 1; d <= limit; d++) {
+    for (d = 1; d <= z; d++) {
         c_ptr = &cave[y+d][x-d];
         c_ptr->feat |= CAVE_XTRA;
         cave_view_hack(c_ptr, y+d, x-d);
@@ -1949,7 +1790,7 @@ void update_view(void)
     }
 
     /* Scan north-east */
-    for (d = 1; d <= limit; d++) {
+    for (d = 1; d <= z; d++) {
         c_ptr = &cave[y-d][x+d];
         c_ptr->feat |= CAVE_XTRA;
         cave_view_hack(c_ptr, y-d, x+d);
@@ -1957,7 +1798,7 @@ void update_view(void)
     }
 
     /* Scan north-west */
-    for (d = 1; d <= limit; d++) {
+    for (d = 1; d <= z; d++) {
         c_ptr = &cave[y-d][x-d];
         c_ptr->feat |= CAVE_XTRA;
         cave_view_hack(c_ptr, y-d, x-d);
@@ -2021,9 +1862,9 @@ void update_view(void)
 
 
         /* Acquire the "bounds" of the maximal circle */
-        limit = over - n - n;
-        if (limit > full - n) limit = full - n;	
-        while ((limit + n + (n>>1)) > full) limit--;
+        z = over - n - n;
+        if (z > full - n) z = full - n;	
+        while ((z + n + (n>>1)) > full) z--;
 
 
         /* Access the four diagonal grids */
@@ -2037,7 +1878,7 @@ void update_view(void)
         if (ypn < cur_hgt-1) {
 
             /* Maximum distance */
-            m = MIN(limit, (cur_hgt-1) - ypn);
+            m = MIN(z, (cur_hgt-1) - ypn);
 
             /* East side */
             if ((xpn <= cur_wid-1) && (n < se)) {
@@ -2087,7 +1928,7 @@ void update_view(void)
         if (ymn > 0) {
 
             /* Maximum distance */
-            m = MIN(limit, ymn);
+            m = MIN(z, ymn);
 
             /* East side */
             if ((xpn <= cur_wid-1) && (n < ne)) {
@@ -2137,7 +1978,7 @@ void update_view(void)
         if (xpn < cur_wid-1) {
 
             /* Maximum distance */
-            m = MIN(limit, (cur_wid-1) - xpn);
+            m = MIN(z, (cur_wid-1) - xpn);
 
             /* South side */
             if ((ypn <= cur_hgt-1) && (n < es)) {
@@ -2187,7 +2028,7 @@ void update_view(void)
         if (xmn > 0) {
 
             /* Maximum distance */
-            m = MIN(limit, xmn);
+            m = MIN(z, xmn);
 
             /* South side */
             if ((ypn <= cur_hgt-1) && (n < ws)) {
@@ -2281,109 +2122,6 @@ void update_view(void)
     temp_n = 0;
 }
 
-
-
-
-
-
-/*
- * Aux function -- see below
- */
-static void cave_temp_room_aux(int y, int x)
-{
-    cave_type *c_ptr = &cave[y][x];
-
-    /* Avoid infinite recursion */
-    if (c_ptr->feat & CAVE_TEMP) return;
-
-    /* Do not "leave" the current room */
-    if (!(c_ptr->feat & CAVE_ROOM)) return;
-
-    /* Paranoia -- verify space */
-    if (temp_n == TEMP_MAX) return;
-
-    /* Mark the grid as "seen" */
-    c_ptr->feat |= CAVE_TEMP;
-
-    /* Add it to the "seen" set */
-    temp_y[temp_n] = y;
-    temp_x[temp_n] = x;
-    temp_n++;
-}
-
-
-
-
-/*
- * Illuminate any room containing the given location.
- */
-void lite_room(int y1, int x1)
-{
-    int i, x, y;
-
-    /* Add the initial grid */
-    cave_temp_room_aux(y1, x1);
-
-    /* While grids are in the queue, add their neighbors */
-    for (i = 0; i < temp_n; i++) {
-
-        x = temp_x[i], y = temp_y[i];
-
-        /* Walls get lit, but stop light */
-        if (!floor_grid_bold(y, x)) continue;
-
-        /* Spread adjacent */
-        cave_temp_room_aux(y + 1, x);
-        cave_temp_room_aux(y - 1, x);
-        cave_temp_room_aux(y, x + 1);
-        cave_temp_room_aux(y, x - 1);
-
-        /* Spread diagonal */
-        cave_temp_room_aux(y + 1, x + 1);
-        cave_temp_room_aux(y - 1, x - 1);
-        cave_temp_room_aux(y - 1, x + 1);
-        cave_temp_room_aux(y + 1, x - 1);
-    }
-
-    /* Now, lite them all up at once */
-    cave_temp_room_lite();
-}
-
-
-/*
- * Darken all rooms containing the given location
- */
-void unlite_room(int y1, int x1)
-{
-    int i, x, y;
-
-    /* Add the initial grid */
-    cave_temp_room_aux(y1, x1);
-
-    /* Spread, breadth first */
-    for (i = 0; i < temp_n; i++) {
-
-        x = temp_x[i], y = temp_y[i];
-
-        /* Walls get dark, but stop darkness */
-        if (!floor_grid_bold(y, x)) continue;
-
-        /* Spread adjacent */
-        cave_temp_room_aux(y + 1, x);
-        cave_temp_room_aux(y - 1, x);
-        cave_temp_room_aux(y, x + 1);
-        cave_temp_room_aux(y, x - 1);
-
-        /* Spread diagonal */
-        cave_temp_room_aux(y + 1, x + 1);
-        cave_temp_room_aux(y - 1, x - 1);
-        cave_temp_room_aux(y - 1, x + 1);
-        cave_temp_room_aux(y + 1, x - 1);
-    }
-
-    /* Now, darken them all at once */
-    cave_temp_room_unlite();
-}
 
 
 
@@ -2721,7 +2459,7 @@ void wiz_dark(void)
     }
 
     /* Mega-Hack -- Forget the view and lite */
-    p_ptr->update |= (PU_NOTE);
+    p_ptr->update |= (PU_UN_VIEW | PU_UN_LITE);
     
     /* Update the view and lite */
     p_ptr->update |= (PU_VIEW | PU_LITE);
@@ -2738,265 +2476,290 @@ void wiz_dark(void)
 
 
 /*
- * Display highest priority object in the RATIO by RATIO area
+ * Calculate "incremental motion". Used by project() and shoot().
+ * Assumes that (*y,*x) lies on the path from (y1,x1) to (y2,x2).
  */
-#define	RATIO 3
-
-/*
- * Display the entire map
- */
-#define MAP_HGT (MAX_HGT / RATIO)
-#define MAP_WID (MAX_WID / RATIO)
-
-/*
- * Hack -- priority array (see below)
- */
-static byte priority_table[][2] = {
-
-    /* Floors */
-    { 0x01, 5 },
-
-    /* Walls */
-    { 0x30, 10 },
-
-    /* Quartz */
-    { 0x33, 11 },
-
-    /* Magma */
-    { 0x32, 12 },
-
-    /* Rubble */
-    { 0x31, 13 },
-
-    /* Open doors */
-    { 0x05, 15 },
-    { 0x04, 15 },
-
-    /* Closed doors */
-    { 0x20, 17 },
-
-    /* Hidden gold */
-    { 0x37, 19 },
-    { 0x36, 19 },
-
-    /* Stairs */
-    { 0x06, 25 },
-    { 0x07, 25 },
-
-    /* End */
-    { 0, 0 }
-};
-
-
-/*
- * Hack -- a priority function
- */
-static byte priority(byte a, char c)
+void mmove2(int *y, int *x, int y1, int x1, int y2, int x2)
 {
-    byte i;
+    int d_y, d_x, dist, shift;
 
-    feature_type *f_ptr;
+    /* Extract the distance travelled */
+    d_y = (*y < y1) ? y1 - *y : *y - y1;
+    d_x = (*x < x1) ? x1 - *x : *x - x1;
+    dist = (d_y > d_x) ? d_y : d_x;
 
-    monster_race *r_ptr;
-        
-
-    /* Hack -- Nothing */
-    if (c == ' ') return (1);
-
-
-    /* Access nothing */
-    f_ptr = &f_info[0];
-
-    /* Compare to nothing */
-    if ((c == f_ptr->z_char) && (a == f_ptr->z_attr)) return (1);
+    /* We are calculating the next location */
+    dist++;
 
 
-    /* Scan the table */
-    for (i = 0; priority_table[i][0]; i++) {
+    /* Calculate the total distance along each axis */
+    d_y = (y2 < y1) ? (y1 - y2) : (y2 - y1);
+    d_x = (x2 < x1) ? (x1 - x2) : (x2 - x1);
 
-        int p1 = priority_table[i][0];
-        int p2 = priority_table[i][1];
-
-        /* Access the feature */
-        f_ptr = &f_info[p1];
-        
-        /* Found a match */
-        if ((c == f_ptr->z_char) && (a == f_ptr->z_attr)) return (p2);
-    }
+    /* Paranoia -- Hack -- no motion */
+    if (!d_y && !d_x) return;
 
 
-    /* Access player */
-    r_ptr = &r_info[0];
-    
-    /* Compare to player */
-    if ((c == r_ptr->l_char) && (a == r_ptr->l_attr)) return (30);
+    /* Move mostly vertically */
+    if (d_y > d_x) {
 
-    
-    /* Default */
-    return (20);
-}
+#if 0
 
+        int k;
 
-/*
- * Display a "small-scale" map of the dungeon
- *
- * Note that we must cancel the "lighting" options during this
- * function or the "priority()" code will not work correctly.
- *
- * Note that the "map_info()" function must return fully colorized
- * data or this function will not work correctly.
- *
- * Note the use of a specialized "priority" function to allow this
- * function to work with any graphic attr/char mappings, and the
- * attempts to optimize this function where possible.
- */
-void do_cmd_view_map(void)
-{
-    int i, j, x, y;
+        /* Starting shift factor */
+        shift = d_y >> 1;
 
-    byte ta;
-    char tc;
-
-    byte tp;
-
-    byte ma[MAP_HGT + 2][MAP_WID + 2];
-    char mc[MAP_HGT + 2][MAP_WID + 2];
-
-    byte mp[MAP_HGT + 2][MAP_WID + 2];
-
-    bool old_view_yellow_lite = view_yellow_lite;
-    bool old_view_bright_lite = view_bright_lite;
-    
-
-    /* Paranoia */
-    msg_print(NULL);
-
-
-    /* Hack -- Cancel the options */
-    view_yellow_lite = FALSE;
-    view_bright_lite = FALSE;
-
-
-    /* Enter "icky" mode */
-    character_icky = TRUE;
-
-    /* Save the screen */
-    Term_save();
-
-    /* Note */
-    prt("Please wait...", 0, 0);
-    
-    /* Flush */
-    Term_fresh();
-
-    
-    /* Clear the chars and attributes */
-    for (y = 0; y < MAP_HGT+2; ++y) {
-        for (x = 0; x < MAP_WID+2; ++x) {
-        
-            /* Nothing here */
-            ma[y][x] = TERM_WHITE;
-            mc[y][x] = ' ';
-
-            /* No priority */
-            mp[y][x] = 0;
+        /* Extract a shift factor */
+        for (k = 0; k < dist; k++) {
+            if (shift <= 0) shift += d_y;
+            shift -= d_x;
         }
-    }
 
-    /* Fill in the map */
-    for (i = 0; i < cur_wid; ++i) {
-        for (j = 0; j < cur_hgt; ++j) {
+        /* Sometimes move along minor axis */
+        if (shift <= 0) (*x) = (x2 < x1) ? (*x - 1) : (*x + 1);
 
-            /* Index into mc/ma */
-            x = i / RATIO + 1;
-            y = j / RATIO + 1;
+        /* Always move along major axis */
+        (*y) = (y2 < y1) ? (*y - 1) : (*y + 1);
 
-            /* Extract the current attr/char at that map location */
-            map_info(j, i, &ta, &tc);
-
-            /* Extract the priority of that attr/char */
-            tp = priority(ta, tc);
-            
-            /* Save "best" */
-            if (mp[y][x] < tp) {
-
-                /* Save the char */
-                mc[y][x] = tc;
-
-                /* Save the attr */
-                ma[y][x] = ta;
-
-                /* Save priority */
-                mp[y][x] = tp;
-            }
-        }
-    }
-
-
-    /* Corners */
-    x = MAP_WID + 1;
-    y = MAP_HGT + 1;
-
-    /* Draw the corners */
-    mc[0][0] = mc[0][x] = mc[y][0] = mc[y][x] = '+';
-
-    /* Draw the horizontal edges */
-    for (x = 1; x <= MAP_WID; x++) mc[0][x] = mc[y][x] = '-';
-
-    /* Draw the vertical edges */
-    for (y = 1; y <= MAP_HGT; y++) mc[y][0] = mc[y][x] = '|';
-
-
-    /* Clear the screen */
-    Term_clear();
-
-    /* Display each map line in order */
-    for (y = 0; y < MAP_HGT+2; ++y) {
-
-        /* Start a new line */
-        Term_gotoxy(0, y);
-
-        /* Display the line */
-        for (x = 0; x < MAP_WID+2; ++x) {
-
-            ta = ma[y][x];
-            tc = mc[y][x];
-
-#ifdef USE_COLOR
-            /* Fake Monochrome */
-            if (!use_color) ta = TERM_WHITE;
-#else
-            /* Monochrome */
-            ta = TERM_WHITE;
 #endif
 
-            /* Add the character */
-            Term_addch(ta, tc);
-        }
+        /* Extract a shift factor */
+        shift = (dist * d_x + (d_y-1) / 2) / d_y;
+
+        /* Sometimes move along the minor axis */
+        (*x) = (x2 < x1) ? (x1 - shift) : (x1 + shift);
+
+        /* Always move along major axis */
+        (*y) = (y2 < y1) ? (y1 - dist) : (y1 + dist);
     }
 
-    /* Wait for it */
-    put_str("Hit any key to continue", 23, 23);
+    /* Move mostly horizontally */
+    else {
 
-    /* Hack -- Hilite the player */
-    move_cursor(py / RATIO + 1, px / RATIO + 1);
+#if 0
 
-    /* Get any key */
-    inkey();
+        int k;
 
-    /* Restore the screen */
-    Term_load();
+        /* Starting shift factor */
+        shift = d_x >> 1;
 
-    /* Leave "icky" mode */
-    character_icky = FALSE;
+        /* Extract a shift factor */
+        for (k = 0; k < dist; k++) {
+            if (shift <= 0) shift += d_x;
+            shift -= d_y;
+        }
 
+        /* Sometimes move along minor axis */
+        if (shift <= 0) (*y) = (y2 < y1) ? (*y - 1) : (*y + 1);
 
-    /* Hack -- Restore the options */
-    view_yellow_lite = old_view_yellow_lite;
-    view_bright_lite = old_view_bright_lite;
+        /* Always move along major axis */
+        (*x) = (x2 < x1) ? (*x - 1) : (*x + 1);
+
+#endif
+
+        /* Extract a shift factor */
+        shift = (dist * d_y + (d_x-1) / 2) / d_x;
+
+        /* Sometimes move along the minor axis */
+        (*y) = (y2 < y1) ? (y1 - shift) : (y1 + shift);
+
+        /* Always move along major axis */
+        (*x) = (x2 < x1) ? (x1 - dist) : (x1 + dist);
+    }
 }
 
 
+/*
+ * Determine if a bolt spell cast from (y1,x1) to (y2,x2) will arrive
+ * at the final destination, assuming no monster gets in the way.
+ *
+ * This is slightly (but significantly) different from "los(y1,x1,y2,x2)".
+ */
+bool projectable(int y1, int x1, int y2, int x2)
+{
+    int dist, y, x;
+
+    /* Start at the initial location */
+    y = y1, x = x1;
+
+    /* See "project()" */
+    for (dist = 0; dist < MAX_RANGE; dist++) {
+
+        /* Never pass through walls */
+        if (dist && !floor_grid_bold(y, x)) break;
+
+        /* Check for arrival at "final target" */
+        if ((x == x2) && (y == y2)) return (TRUE);
+
+        /* Calculate the new location */
+        mmove2(&y, &x, y1, x1, y2, x2);
+    }
+
+
+    /* Assume obstruction */
+    return (FALSE);
+}
+
+
+
+/*
+ * Standard "find me a location" function
+ *
+ * Obtains a legal location within the given distance of the initial
+ * location, and with "los()" from the source to destination location
+ *
+ * This function is often called from inside a loop which searches for
+ * locations while increasing the "d" distance.
+ *
+ * Currently the "m" parameter is unused.
+ */
+void scatter(int *yp, int *xp, int y, int x, int d, int m)
+{
+    int nx, ny;
+
+    /* Pick a location */
+    while (TRUE) {
+
+        /* Pick a new location */
+        ny = rand_spread(y, d);
+        nx = rand_spread(x, d);
+
+        /* Ignore illegal locations and outer walls */
+        if (!in_bounds(y, x)) continue;
+
+        /* Ignore "excessively distant" locations */
+        if ((d > 1) && (distance(y, x, ny, nx) > d)) continue;
+
+        /* Require "line of sight" */
+        if (los(y, x, ny, nx)) break;
+    }
+
+    /* Save the location */
+    (*yp) = ny;
+    (*xp) = nx;
+}
+
+
+
+
+/*
+ * Track a new monster
+ */
+void health_track(int m_idx)
+{
+    /* Track a new guy */
+    health_who = m_idx;
+
+    /* Redraw (later) */
+    p_ptr->redraw |= (PR_HEALTH);
+}
+
+
+
+/*
+ * Hack -- track the given monster race
+ */
+void recent_track(int r_idx)
+{
+    /* Save this monster ID */
+    recent_idx = r_idx;
+
+    /* Update later */
+    p_ptr->redraw |= (PR_RECENT);
+}
+
+
+
+
+/*
+ * Something has happened to disturb the player.
+ *
+ * The first arg indicates a major disturbance, which affects search.
+ *
+ * The second arg is currently unused, but could induce output flush.
+ *
+ * All disturbance cancels repeated commands, resting, and running.
+ */
+void disturb(int stop_search, int unused_flag)
+{
+    /* Cancel auto-commands */
+    /* command_new = 0; */
+
+    /* Cancel repeated commands */
+    if (command_rep) {
+
+        /* Cancel */
+        command_rep = 0;
+    
+        /* Redraw the state (later) */
+        p_ptr->redraw |= (PR_STATE);
+    }
+    
+    /* Cancel Resting */
+    if (resting) {
+
+        /* Cancel */
+        resting = 0;
+
+        /* Redraw the state (later) */
+        p_ptr->redraw |= (PR_STATE);
+    }
+
+    /* Cancel running */
+    if (running) {
+
+        /* Cancel */
+        running = 0;
+
+        /* Calculate torch radius */
+        p_ptr->update |= (PU_TORCH);
+    }
+
+    /* Cancel searching if requested */
+    if (stop_search && p_ptr->searching) {
+
+        /* Cancel */
+        p_ptr->searching = FALSE;
+
+        /* Recalculate bonuses */
+        p_ptr->update |= (PU_BONUS);
+
+        /* Redraw the state */
+        p_ptr->redraw |= (PR_STATE);
+    }
+    
+    /* Flush the input if requested */
+    if (flush_disturb) flush();
+
+    /* Flush messages if requested */
+    if (filch_disturb) msg_print(NULL);
+}
+
+
+
+
+
+/*
+ * Hack -- Check if a level is a "quest" level
+ */
+bool is_quest(int level)
+{
+    int i;
+
+    /* Town is never a quest */
+    if (!level) return (FALSE);
+
+    /* Check quests */
+    for (i = 0; i < MAX_Q_IDX; i++) {
+    
+        /* Check for quest */
+        if (q_list[i].level == level) return (TRUE);
+    }
+
+    /* Nope */
+    return (FALSE);
+}
 
 
 

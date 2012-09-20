@@ -182,13 +182,6 @@
 
 
 /*
- * Random Number Generator -- Degree of "complex" RNG -- see "misc.c"
- * This value is hard-coded at 63 for a wide variety of reasons.
- */
-#define RAND_DEG 63
-
-
-/*
  * Maximum value storable in a "byte" (hard-coded)
  */
 #define MAX_UCHAR       255
@@ -1392,21 +1385,25 @@
  * Bit flags for the "p_ptr->update" variable
  */
 #define PU_BONUS	0x00000001L	/* Calculate bonuses */
-#define PU_HP		0x00000002L	/* Calculate chp and mhp */
-#define PU_MANA		0x00000004L	/* Calculate csp and msp */
-#define PU_SPELLS	0x00000008L	/* Calculate spells */
+#define PU_TORCH	0x00000002L	/* Calculate torch radius */
 /* xxx (many) */
-#define PU_COMBINE	0x00000100L	/* Combine the pack (if legal) */
-#define PU_REORDER	0x00000200L	/* Reorder the pack (if legal) */
+#define PU_HP		0x00000010L	/* Calculate chp and mhp */
+#define PU_MANA		0x00000020L	/* Calculate csp and msp */
+#define PU_SPELLS	0x00000040L	/* Calculate spells */
 /* xxx (many) */
-#define PU_VIEW		0x01000000L	/* Update view (if legal) */
-#define PU_LITE		0x02000000L	/* Update lite (if legal) */
-#define PU_NOTE		0x04000000L	/* Update note (if legal) */
+#define PU_COMBINE	0x00000100L	/* Combine the pack */
+#define PU_REORDER	0x00000200L	/* Reorder the pack */
+/* xxx (many) */
+#define PU_UN_VIEW	0x00010000L	/* Forget view */
+#define PU_UN_LITE	0x00020000L	/* Forget lite */
+/* xxx (many) */
+#define PU_VIEW		0x00100000L	/* Update view */
+#define PU_LITE		0x00200000L	/* Update lite */
 /* xxx */
-#define PU_MONSTERS	0x10000000L	/* Update monsters (if legal) */
-#define PU_DISTANCE	0x20000000L	/* Update distances (if legal) */
+#define PU_MONSTERS	0x01000000L	/* Update monsters */
+#define PU_DISTANCE	0x02000000L	/* Update distances */
 /* xxx */
-#define PU_FLOW		0x80000000L	/* Update flow (if legal) */
+#define PU_FLOW		0x10000000L	/* Update flow */
 
 
 /*
@@ -2222,52 +2219,6 @@
  */
 #define cursed_p(T) \
         ((T)->ident & ID_CURSED)
-
-
-
-/*** Some more macros ***/
-
-
-/*
- * Generates a random long integer X where O<=X<M.
- * The integer X falls along a uniform distribution.
- * For example, if M is 100, you get "percentile dice"
- */
-#define rand_int(M) \
-	(Rand_mod(M))
-
-/*
- * Generates a random long integer X where A<=X<=B
- * The integer X falls along a uniform distribution.
- * Note: rand_range(0,N-1) == rand_int(N)
- */
-#define rand_range(A,B) \
-	((A) + (rand_int(1+(B)-(A))))
-
-/*
- * Generate a random long integer X where A-D<=X<=A+D
- * The integer X falls along a uniform distribution.
- * Note: rand_spread(A,D) == rand_range(A-D,A+D)
- */
-#define rand_spread(A,D) \
-	((A) + (rand_int(1+(D)+(D))) - (D))
-
-
-/*
- * Generate a random long integer X where 1<=X<=M
- * Also, "correctly" handle the case of M<=1
- */
-#define randint(M) \
-	(rand_int(M) + 1)
-
-
-/*
- * Evaluate to TRUE "P" percent of the time
- */
-#define magik(P) \
-	(rand_int(100) < (P))
-
-
 
 
 

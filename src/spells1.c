@@ -1,8 +1,337 @@
 /* File: spells1.c */
 
-/* Purpose: generic bolt/ball/beam code	-BEN- */
+/* Purpose: Spell code (part 1) */
+
+/*
+ * Copyright (c) 1989 James E. Wilson, Robert A. Koeneke
+ *
+ * This software may be copied and distributed for educational, research, and
+ * not for profit purposes provided that this copyright and statement are
+ * included in all such copies.
+ */
 
 #include "angband.h"
+
+
+
+
+/*
+ * Helper function -- return a "nearby" race for polymorphing
+ *
+ * XXX XXX XXX This function may be very expensive...
+ */
+s16b poly_r_idx(int r_idx)
+{
+    monster_race *r_ptr = &r_info[r_idx];
+
+    int i, r, lev1, lev2;
+
+    /* Hack -- Uniques never polymorph */
+    if (r_ptr->flags1 & RF1_UNIQUE) return (r_idx);
+
+    /* Pick a (possibly new) non-unique race */
+    for (i = 0; i < 1000; i++) {
+
+        /* Allowable range of "levels" for resulting monster */
+        lev1 = r_ptr->level - ((randint(20)/randint(9))+1);
+        lev2 = r_ptr->level + ((randint(20)/randint(9))+1);
+
+        /* Increase monster depth */
+        monster_level = (dun_level + r_ptr->level) / 2 + 5;
+
+        /* Hack -- Pick a new race */
+        r = get_mon_num(monster_level);
+
+        /* Restore monster depth */
+        monster_level = dun_level;
+
+        /* Handle failure */
+        if (!r) continue;
+        
+        /* Extract that monster */
+        r_ptr = &r_info[r];
+
+        /* Skip uniques */
+        if (r_ptr->flags1 & RF1_UNIQUE) continue;
+
+        /* Accept valid monsters */
+        if ((r_ptr->level < lev1) && (r_ptr->level > lev2)) continue;
+
+        /* Use that index */
+        r_idx = r;
+        
+        /* Done */
+        break;
+    }
+
+    /* Use the original */
+    return (r_idx);
+}
+
+
+/*
+ * Teleport a monster, normally up to "dis" grids away.
+ *
+ * Attempt to move the monster at least "dis/2" grids away.
+ *
+ * But allow variation to prevent infinite loops.
+ */
+void teleport_away(int m_idx, int dis)
+{
+    int			ny, nx, oy, ox, d, i, min;
+
+    bool		look = TRUE;
+
+    monster_type	*m_ptr = &m_list[m_idx];
+
+
+    /* Paranoia */
+    if (!m_ptr->r_idx) return;
+
+    /* Save the old location */
+    oy = m_ptr->fy;
+    ox = m_ptr->fx;
+
+    /* Minimum distance */
+    min = dis / 2;
+
+    /* Look until done */
+    while (look) {
+
+        /* Verify max distance */
+        if (dis > 200) dis = 200;
+
+        /* Try several locations */
+        for (i = 0; i < 500; i++) {
+
+            /* Pick a (possibly illegal) location */
+            while (1) {
+                ny = rand_spread(oy, dis);
+                nx = rand_spread(ox, dis);
+                d = distance(oy, ox, ny, nx);
+                if ((d >= min) && (d <= dis)) break;
+            }
+
+            /* Ignore illegal locations */
+            if (!in_bounds(ny, nx)) continue;
+
+            /* Require "empty" floor space */
+            if (!empty_grid_bold(ny, nx)) continue;
+
+            /* Hack -- no teleport onto glyph of warding */
+            if ((cave[ny][nx].feat & 0x3F) == 0x03) continue;
+        
+            /* No teleporting into vaults and such */
+            /* if (cave[ny][nx].info & CAVE_ICKY) continue; */
+
+            /* This grid looks good */
+            look = FALSE;
+
+            /* Stop looking */
+            break;
+        }
+
+        /* Increase the maximum distance */
+        dis = dis * 2;
+
+        /* Decrease the minimum distance */
+        min = min / 2;
+    }
+    
+    /* Update the new location */
+    cave[ny][nx].m_idx = m_idx;
+
+    /* Update the old location */
+    cave[oy][ox].m_idx = 0;
+
+    /* Move the monster */
+    m_ptr->fy = ny;
+    m_ptr->fx = nx;
+
+    /* Update the monster (new location) */
+    update_mon(m_idx, TRUE);
+
+    /* Redraw the old grid */
+    lite_spot(oy, ox);
+            
+    /* Redraw the new grid */
+    lite_spot(ny, nx);
+}
+
+
+/*
+ * Teleport the player to a location up to "dis" grids away.
+ *
+ * If no such spaces are readily available, the distance may increase.
+ * Try very hard to move the player at least a quarter that distance.
+ */
+void teleport_player(int dis)
+{
+    int d, i, min, ox, oy, x = py, y = px;
+
+    bool look = TRUE;
+
+    /* Minimum distance */
+    min = dis / 2;
+
+    /* Look until done */
+    while (look) {
+
+        /* Verify max distance */
+        if (dis > 200) dis = 200;
+
+        /* Try several locations */
+        for (i = 0; i < 500; i++) {
+
+            /* Pick a (possibly illegal) location */
+            while (1) {
+                y = rand_spread(py, dis);
+                x = rand_spread(px, dis);
+                d = distance(py, px, y, x);
+                if ((d >= min) && (d <= dis)) break;
+            }
+
+            /* Ignore illegal locations */
+            if (!in_bounds(y, x)) continue;
+
+            /* Require "naked" floor space */
+            if (!naked_grid_bold(y, x)) continue;
+
+            /* No teleporting into vaults and such */
+            if (cave[y][x].feat & CAVE_ICKY) continue;
+
+            /* This grid looks good */
+            look = FALSE;
+
+            /* Stop looking */
+            break;
+        }
+
+        /* Increase the maximum distance */
+        dis = dis * 2;
+
+        /* Decrease the minimum distance */
+        min = min / 2;
+    }
+
+    /* Save the old location */
+    oy = py;
+    ox = px;
+    
+    /* Move the player */
+    py = y;
+    px = x;
+    
+    /* Redraw the old spot */
+    lite_spot(oy, ox);
+    
+    /* Redraw the new spot */
+    lite_spot(py, px);
+
+    /* Check for new panel (redraw map) */
+    verify_panel();
+
+    /* Update stuff */
+    p_ptr->update |= (PU_VIEW | PU_LITE | PU_FLOW);
+
+    /* Update the monsters */
+    p_ptr->update |= (PU_DISTANCE);
+
+    /* Handle stuff XXX XXX XXX */
+    handle_stuff();
+}
+
+
+
+/*
+ * Teleport player to a grid near the given location
+ *
+ * This function is slightly obsessive about correctness.
+ * This function allows teleporting into vaults (!)
+ */
+void teleport_player_to(int ny, int nx)
+{
+    int y, x, oy, ox, dis = 0, ctr = 0;
+
+
+    /* Find a usable location */
+    while (1) {
+
+        /* Pick a nearby legal location */
+        while (1) {
+            y = rand_spread(ny, dis);
+            x = rand_spread(nx, dis);
+            if (in_bounds(y, x)) break;
+        }
+
+        /* Accept "naked" floor grids */
+        if (naked_grid_bold(y, x)) break;
+
+        /* Occasionally advance the distance */
+        if (++ctr > (4 * dis * dis + 4 * dis + 1)) {
+            ctr = 0;
+            dis++;
+        }
+    }
+
+    /* Save the old location */
+    oy = py;
+    ox = px;
+    
+    /* Move the player */
+    py = y;
+    px = x;
+    
+    /* Redraw the old spot */
+    lite_spot(oy, ox);
+    
+    /* Redraw the new spot */
+    lite_spot(py, px);
+
+    /* Check for new panel (redraw map) */
+    verify_panel();
+
+    /* Update stuff */
+    p_ptr->update |= (PU_VIEW | PU_LITE | PU_FLOW);
+    
+    /* Update the monsters */
+    p_ptr->update |= (PU_DISTANCE);
+
+    /* Handle stuff XXX XXX XXX */
+    handle_stuff();
+}
+
+
+
+/*
+ * Teleport the player one level up or down (random when legal)
+ */
+void tele_level()
+{
+    if (!dun_level) {
+        msg_print("You sink through the floor.");
+        dun_level++;
+        new_level_flag = TRUE;
+    }
+    else if (is_quest(dun_level) || (dun_level >= MAX_DEPTH-1)) {
+        msg_print("You rise up through the ceiling.");
+        dun_level--;
+        new_level_flag = TRUE;
+    }
+    else if (rand_int(100) < 50) {
+        msg_print("You rise up through the ceiling.");
+        dun_level--;
+        new_level_flag = TRUE;
+    }
+    else {
+        msg_print("You sink through the floor.");
+        dun_level++;
+        new_level_flag = TRUE;
+    }
+}
+
+
+
 
 
 
@@ -109,130 +438,324 @@ byte spell_color(int type)
 
 
 
+
 /*
- * Calculate "incremental motion". Used by project() and shoot().
- * Assumes that (*y,*x) lies on the path from (y1,x1) to (y2,x2).
+ * Decreases players hit points and sets death flag if necessary
+ *
+ * XXX XXX XXX Invulnerability needs to be changed into a "shield"
  */
-void mmove2(int *y, int *x, int y1, int x1, int y2, int x2)
+void take_hit(int damage, cptr hit_from)
 {
-    int d_y, d_x, dist, shift;
+    int old_chp = p_ptr->chp;
 
-    /* Extract the distance travelled */
-    d_y = (*y < y1) ? y1 - *y : *y - y1;
-    d_x = (*x < x1) ? x1 - *x : *x - x1;
-    dist = (d_y > d_x) ? d_y : d_x;
+    int warning = (p_ptr->mhp * hitpoint_warn / 10);
 
-    /* We are calculating the next location */
-    dist++;
+    
+    /* Disturb */
+    disturb(1, 0);
 
+    /* Mega-Hack -- Apply "invulnerability" */
+    if (p_ptr->invuln && (damage < 9000)) return;
 
-    /* Calculate the total distance along each axis */
-    d_y = (y2 < y1) ? (y1 - y2) : (y2 - y1);
-    d_x = (x2 < x1) ? (x1 - x2) : (x2 - x1);
+    /* Hurt the player */
+    p_ptr->chp -= damage;
 
-    /* Paranoia -- Hack -- no motion */
-    if (!d_y && !d_x) return;
+    /* Display the hitpoints */
+    p_ptr->redraw |= (PR_HP);
 
+    /* Dead player */
+    if (p_ptr->chp < 0) {
 
-    /* Move mostly vertically */
-    if (d_y > d_x) {
+        /* Cheat -- avoid death */
+        if (wizard || cheat_live) {
+        
+            /* Hack -- cheat death */
+            if (!get_check("Die? ")) {
 
-#if 0
+                /* Mark savefile */
+                noscore |= 0x0001;
 
-        int k;
+                /* Message */
+                msg_print("You invoke wizard mode and cheat death.");
 
-        /* Starting shift factor */
-        shift = d_y >> 1;
+                /* Restore hit points */
+                p_ptr->chp = p_ptr->mhp;
+                p_ptr->chp_frac = 0;
 
-        /* Extract a shift factor */
-        for (k = 0; k < dist; k++) {
-            if (shift <= 0) shift += d_y;
-            shift -= d_x;
+                /* Restore spell points */
+                p_ptr->csp = p_ptr->msp;
+                p_ptr->csp_frac = 0;
+
+                /* Hack -- Healing */
+                (void)set_blind(0);
+                (void)set_confused(0);
+                (void)set_poisoned(0);
+                (void)set_afraid(0);
+                (void)set_paralyzed(0);
+                (void)set_image(0);
+                (void)set_stun(0);
+                (void)set_cut(0);
+
+                /* Hack -- Prevent starvation */
+                (void)set_food(PY_FOOD_MAX - 1);
+
+                /* Hack -- Prevent recall */
+                p_ptr->word_recall = 0;
+                
+                /* Teleport to town */
+                new_level_flag = TRUE;
+
+                /* Go to town */
+                dun_level = 0;
+                
+                /* Done */
+                return;
+            }
         }
 
-        /* Sometimes move along minor axis */
-        if (shift <= 0) (*x) = (x2 < x1) ? (*x - 1) : (*x + 1);
+        /* New death */
+        if (!death) {
 
-        /* Always move along major axis */
-        (*y) = (y2 < y1) ? (*y - 1) : (*y + 1);
+            /* No longer a winner */
+            total_winner = FALSE;
 
-#endif
+            /* Stop playing */
+            alive = FALSE;
+            
+            /* Note death */
+            death = TRUE;
 
-        /* Extract a shift factor */
-        shift = (dist * d_x + (d_y-1) / 2) / d_y;
+            /* Note cause of death */
+            (void)strcpy(died_from, hit_from);
 
-        /* Sometimes move along the minor axis */
-        (*x) = (x2 < x1) ? (x1 - shift) : (x1 + shift);
+            /* Sound */
+            sound(SOUND_DEATH);
 
-        /* Always move along major axis */
-        (*y) = (y2 < y1) ? (y1 - dist) : (y1 + dist);
+            /* Hack -- Note death */
+            msg_print("You die.");
+            msg_print(NULL);
+        }
+
+        /* Dead */
+        return;
     }
 
-    /* Move mostly horizontally */
-    else {
+    /* Hack -- hitpoint warning */
+    if (warning && (p_ptr->chp <= warning)) {
 
-#if 0
-
-        int k;
-
-        /* Starting shift factor */
-        shift = d_x >> 1;
-
-        /* Extract a shift factor */
-        for (k = 0; k < dist; k++) {
-            if (shift <= 0) shift += d_x;
-            shift -= d_y;
-        }
-
-        /* Sometimes move along minor axis */
-        if (shift <= 0) (*y) = (y2 < y1) ? (*y - 1) : (*y + 1);
-
-        /* Always move along major axis */
-        (*x) = (x2 < x1) ? (*x - 1) : (*x + 1);
-
-#endif
-
-        /* Extract a shift factor */
-        shift = (dist * d_y + (d_x-1) / 2) / d_x;
-
-        /* Sometimes move along the minor axis */
-        (*y) = (y2 < y1) ? (y1 - shift) : (y1 + shift);
-
-        /* Always move along major axis */
-        (*x) = (x2 < x1) ? (x1 - dist) : (x1 + dist);
+        /* Hack -- bell on first notice */
+        if (alert_hitpoint && (old_chp > warning)) bell();
+        
+        /* Message */
+        msg_print("*** LOW HITPOINT WARNING! ***");
+        msg_print(NULL);
     }
 }
 
 
 
 /*
- * Determine if a bolt spell cast from (y1,x1) to (y2,x2) will arrive
- * at the final destination, assuming no monster gets in the way.
+ * Increases a stat by one randomized level		-RAK-	
  *
- * This is slightly (but significantly) different from "los(y1,x1,y2,x2)".
+ * Note that this function (used by stat potions) now restores
+ * the stat BEFORE increasing it.
  */
-bool projectable(int y1, int x1, int y2, int x2)
+bool inc_stat(int stat)
 {
-    int dist, y, x;
+    int value, gain;
 
-    /* Start at the initial location */
-    y = y1, x = x1;
+    /* Then augment the current/max stat */
+    value = p_ptr->stat_cur[stat];
 
-    /* See "project()" */
-    for (dist = 0; dist < MAX_RANGE; dist++) {
+    /* Cannot go above 18/100 */
+    if (value < 18+100) {
 
-        /* Never pass through walls */
-        if (dist && !floor_grid_bold(y, x)) break;
+        /* Gain one (sometimes two) points */
+        if (value < 18) {	
+            gain = ((rand_int(100) < 75) ? 1 : 2);
+            value += gain;
+        }
 
-        /* Check for arrival at "final target" */
-        if ((x == x2) && (y == y2)) return (TRUE);
+        /* Gain 1/6 to 1/3 of distance to 18/100 */
+        else if (value < 18+98) {
 
-        /* Calculate the new location */
-        mmove2(&y, &x, y1, x1, y2, x2);
+            /* Approximate gain value */
+            gain = (((18+100) - value) / 2 + 3) / 2;
+
+            /* Paranoia */
+            if (gain < 1) gain = 1;
+            
+            /* Apply the bonus */
+            value += randint(gain) + gain / 2;
+
+            /* Maximal value */
+            if (value > 18+99) value = 18 + 99;
+        }
+
+        /* Gain one point at a time */
+        else {
+            value++;
+        }
+
+        /* Save the new value */
+        p_ptr->stat_cur[stat] = value;
+
+        /* Bring up the maximum too */
+        if (value > p_ptr->stat_max[stat]) {
+            p_ptr->stat_max[stat] = value;
+        }
+
+        /* Recalculate bonuses */
+        p_ptr->update |= (PU_BONUS);
+
+        /* Success */
+        return (TRUE);
     }
 
+    /* Nothing to gain */
+    return (FALSE);
+}
 
-    /* Assume obstruction */
+
+
+/*
+ * Decreases a stat by an amount indended to vary from 0 to 100 percent.
+ *
+ * Amount could be a little higher in extreme cases to mangle very high
+ * stats from massive assaults.  -CWS
+ *
+ * Note that "permanent" means that the *given* amount is permanent,
+ * not that the new value becomes permanent.  This may not work exactly
+ * as expected, due to "weirdness" in the algorithm, but in general,
+ * if your stat is already drained, the "max" value will not drop all
+ * the way down to the "cur" value.
+ */
+bool dec_stat(int stat, int amount, int permanent)
+{
+    int cur, max, loss, same, res = FALSE;
+
+
+    /* Acquire current value */
+    cur = p_ptr->stat_cur[stat];
+    max = p_ptr->stat_max[stat];
+
+    /* Note when the values are identical */
+    same = (cur == max);
+
+    /* Damage "current" value */
+    if (cur > 3) {
+
+        /* Handle "low" values */
+        if (cur <= 18) {
+
+            if (amount > 90) cur--;
+            if (amount > 50) cur--;
+            if (amount > 20) cur--;
+            cur--;
+        }
+
+        /* Handle "high" values */
+        else {
+
+            /* Hack -- Decrement by a random amount between one-quarter */
+            /* and one-half of the stat bonus times the percentage, with a */
+            /* minimum damage of half the percentage. -CWS */
+            loss = (((cur-18) / 2 + 1) / 2 + 1);
+            
+            /* Paranoia */
+            if (loss < 1) loss = 1;
+            
+            /* Randomize the loss */
+            loss = ((randint(loss) + loss) * amount) / 100;
+
+            /* Maximal loss */
+            if (loss < amount/2) loss = amount/2;
+
+            /* Lose some points */
+            cur = cur - loss;
+
+            /* Hack -- Only reduce stat to 17 sometimes */
+            if (cur < 18) cur = (amount <= 20) ? 18 : 17;
+        }
+
+        /* Prevent illegal values */
+        if (cur < 3) cur = 3;
+
+        /* Something happened */
+        if (cur != p_ptr->stat_cur[stat]) res = TRUE;
+    }
+
+    /* Damage "max" value */
+    if (permanent && (max > 3)) {
+
+        /* Handle "low" values */
+        if (max <= 18) {
+
+            if (amount > 90) max--;
+            if (amount > 50) max--;
+            if (amount > 20) max--;
+            max--;
+        }
+
+        /* Handle "high" values */
+        else {
+
+            /* Hack -- Decrement by a random amount between one-quarter */
+            /* and one-half of the stat bonus times the percentage, with a */
+            /* minimum damage of half the percentage. -CWS */
+            loss = (((max-18) / 2 + 1) / 2 + 1);
+            loss = ((randint(loss) + loss) * amount) / 100;
+            if (loss < amount/2) loss = amount/2;
+
+            /* Lose some points */
+            max = max - loss;
+
+            /* Hack -- Only reduce stat to 17 sometimes */
+            if (max < 18) max = (amount <= 20) ? 18 : 17;
+        }
+
+        /* Hack -- keep it clean */
+        if (same || (max < cur)) max = cur;
+
+        /* Something happened */
+        if (max != p_ptr->stat_max[stat]) res = TRUE;
+    }
+
+    /* Apply changes */
+    if (res) {
+
+        /* Actually set the stat to its new value. */
+        p_ptr->stat_cur[stat] = cur;
+        p_ptr->stat_max[stat] = max;
+
+        /* Recalculate bonuses */
+        p_ptr->update |= (PU_BONUS);
+    }
+
+    /* Done */
+    return (res);
+}
+
+
+/*
+ * Restore a stat.  Return TRUE only if this actually makes a difference.
+ */
+bool res_stat(int stat)
+{
+    /* Restore if needed */
+    if (p_ptr->stat_cur[stat] != p_ptr->stat_max[stat]) {
+
+        /* Restore */
+        p_ptr->stat_cur[stat] = p_ptr->stat_max[stat];
+
+        /* Recalculate bonuses */
+        p_ptr->update |= (PU_BONUS);
+
+        /* Success */
+        return (TRUE);
+    }
+
+    /* Nothing to restore */
     return (FALSE);
 }
 
@@ -338,16 +861,12 @@ static void apply_nexus(monster_type *m_ptr)
 
         case 1: case 2: case 3:
 
-            teleport_flag = TRUE;
-            teleport_dist = 200;
+            teleport_player(200);
             break;
 
         case 4: case 5:
 
-            teleport_flag = TRUE;
-            teleport_dist = 0;
-            teleport_to_y = m_ptr->fy;
-            teleport_to_x = m_ptr->fx;
+            teleport_player_to(m_ptr->fy, m_ptr->fx);
             break;
 
         case 6:
@@ -2706,8 +3225,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, int flg)
         case GF_GRAVITY:
             if (fuzzy) msg_print("You are hit by something strange!");
             msg_print("Gravity warps around you.");
-            teleport_flag = TRUE;
-            teleport_dist = 5;
+            teleport_player(5);
             (void)set_slow(p_ptr->slow + rand_int(4) + 4);
             if (!p_ptr->resist_sound) {
                 if (extra) {
@@ -3309,207 +3827,6 @@ static bool project_hack(int typ, int dam)
 
 
 /*
- * Hack -- apply a "projection()" in a direction (or at the target)
- */
-static bool project_hook(int typ, int dir, int dam, int flg)
-{
-    int tx, ty;
-
-    /* Pass through the target if needed */
-    flg |= (PROJECT_THRU);
-
-    /* Use the given direction */
-    tx = px + ddx[dir];
-    ty = py + ddy[dir];
-
-    /* Use an actual "target" */
-    if ((dir == 5) && target_okay()) {
-        tx = target_col;
-        ty = target_row;
-    }
-
-    /* Analyze the "dir" and the "target", do NOT explode */
-    return (project(0, 0, ty, tx, dam, typ, flg));
-}
-
-/*
- * Cast a bolt spell
- */
-bool fire_bolt(int typ, int dir, int dam)
-{
-    int flg = PROJECT_STOP;
-    return (project_hook(typ, dir, dam, flg));
-}
-
-/*
- * Cast a beam spell
- */
-bool fire_beam(int typ, int dir, int dam)
-{
-    /* Go until we have to stop, do "beam" damage to everyone */
-    /* Also, affect all grids (NOT objects) we pass through */
-    int flg = PROJECT_BEAM | PROJECT_GRID;
-    return (project_hook(typ, dir, dam, flg));
-}
-
-/*
- * Cast a ball spell
- */
-bool fire_ball(int typ, int dir, int dam, int rad)
-{
-    int tx, ty;
-
-    int flg = PROJECT_GRID | PROJECT_ITEM | PROJECT_STOP;
-
-    /* Use the given direction */
-    tx = px + 99 * ddx[dir];
-    ty = py + 99 * ddy[dir];
-
-    /* Use an actual "target" */
-    if ((dir == 5) && target_okay()) {
-        flg &= ~PROJECT_STOP;
-        tx = target_col;
-        ty = target_row;
-    }
-
-    /* Analyze the "dir" and the "target".  Hurt items on floor. */
-    return (project(0, rad, ty, tx, dam, typ, flg));
-}
-
-/*
- * Cast a bolt spell, or rarely, a beam spell
- */
-bool fire_bolt_or_beam(int prob, int typ, int dir, int dam)
-{
-    if (rand_int(100) < prob) {
-        return (fire_beam(typ, dir, dam));
-    }
-    else {
-        return (fire_bolt(typ, dir, dam));
-    }
-}
-
-
-/*
- * Some of the old functions
- */
-
-bool lite_line(int dir)
-{
-    return (fire_beam(GF_LITE_WEAK, dir, damroll(6, 8)));
-}
-
-bool drain_life(int dir, int dam)
-{
-    int flg = PROJECT_STOP;
-    return (project_hook(GF_OLD_DRAIN, dir, dam, flg));
-}
-
-bool wall_to_mud(int dir)
-{
-    int flg = PROJECT_BEAM | PROJECT_GRID | PROJECT_ITEM;
-    return (project_hook(GF_KILL_WALL, dir, 20 + randint(30), flg));
-}
-
-bool destroy_door(int dir)
-{
-    int flg = PROJECT_BEAM | PROJECT_GRID | PROJECT_ITEM;
-    return (project_hook(GF_KILL_DOOR, dir, 0, flg));
-}
-
-bool disarm_trap(int dir)
-{
-    int flg = PROJECT_BEAM | PROJECT_GRID | PROJECT_ITEM;
-    return (project_hook(GF_KILL_TRAP, dir, 0, flg));
-}
-
-bool heal_monster(int dir)
-{
-    int flg = PROJECT_STOP;
-    return (project_hook(GF_OLD_HEAL, dir, damroll(4, 6), flg));
-}
-
-bool speed_monster(int dir)
-{
-    int flg = PROJECT_STOP;
-    return (project_hook(GF_OLD_SPEED, dir, p_ptr->lev, flg));
-}
-
-bool slow_monster(int dir)
-{
-    int flg = PROJECT_STOP;
-    return (project_hook(GF_OLD_SLOW, dir, p_ptr->lev, flg));
-}
-
-bool sleep_monster(int dir)
-{
-    int flg = PROJECT_STOP;
-    return (project_hook(GF_OLD_SLEEP, dir, p_ptr->lev, flg));
-}
-
-bool confuse_monster(int dir, int plev)
-{
-    int flg = PROJECT_STOP;
-    return (project_hook(GF_OLD_CONF, dir, plev, flg));
-}
-
-bool fear_monster(int dir, int plev)
-{
-    int flg = PROJECT_STOP;
-    return (project_hook(GF_OLD_SCARE, dir, plev, flg));
-}
-
-bool poly_monster(int dir)
-{
-    int flg = PROJECT_BEAM;
-    return (project_hook(GF_OLD_POLY, dir, p_ptr->lev, flg));
-}
-
-bool clone_monster(int dir)
-{
-    int flg = PROJECT_STOP;
-    return (project_hook(GF_OLD_CLONE, dir, 0, flg));
-}
-
-bool teleport_monster(int dir)
-{
-    int flg = PROJECT_BEAM;
-    return (project_hook(GF_OLD_TPORT, dir, MAX_SIGHT * 5, flg));
-}
-
-
-
-/*
- * Hooks -- affect adjacent grids (radius 1 ball attack)
- */
-
-bool door_creation()
-{
-    int flg = PROJECT_GRID | PROJECT_ITEM | PROJECT_HIDE;
-    return (project(0, 1, py, px, 0, GF_MAKE_DOOR, flg));
-}
-
-bool trap_creation()
-{
-    int flg = PROJECT_GRID | PROJECT_ITEM | PROJECT_HIDE;
-    return (project(0, 1, py, px, 0, GF_MAKE_TRAP, flg));
-}
-
-bool destroy_doors_touch()
-{
-    int flg = PROJECT_GRID | PROJECT_ITEM | PROJECT_HIDE;
-    return (project(0, 1, py, px, 0, GF_KILL_DOOR, flg));
-}
-
-bool sleep_monsters_touch(void)
-{
-    int flg = PROJECT_HIDE;
-    return (project(0, 1, py, px, p_ptr->lev, GF_OLD_SLEEP, flg));
-}
-
-
-
-/*
  * Hooks -- affect all nearby monsters
  */
 
@@ -3529,47 +3846,5 @@ bool sleep_monsters(void)
 }
 
 
-
-
-/*
- * Hack -- call light around the player
- */
-bool lite_area(int dam, int rad)
-{
-    /* Hack -- Message */
-    if (!p_ptr->blind) {
-        msg_print("You are surrounded by a white light.");
-    }
-
-    /* Hook into the "project()" function */
-    (void)project(0, rad, py, px, dam, GF_LITE_WEAK, PROJECT_GRID);
-
-    /* Lite up the room */
-    lite_room(py, px);
-
-    /* Assume seen */
-    return (TRUE);
-}
-
-
-/*
- * Hack -- call darkness around the player
- */
-bool unlite_area(int dam, int rad)
-{
-    /* Hack -- Message */
-    if (!p_ptr->blind) {
-        msg_print("Darkness surrounds you.");
-    }
-
-    /* Hook into the "project()" function */
-    (void)project(0, rad, py, px, dam, GF_DARK_WEAK, PROJECT_GRID);
-
-    /* Lite up the room */
-    unlite_room(py, px);
-
-    /* Assume seen */
-    return (TRUE);
-}
 
 

@@ -55,10 +55,6 @@
  * the global "color_table[]" variable at startup.  Also, we should
  * modify the "default" color set.  See "main-ibm.c" for more info.
  *
- * XXX XXX XXX 
- * We would like "term.c" to correctly handle the "Term_pict()" routine,
- * but we need to be careful about verifying the "use_graphics" flag.
- *
  * XXX XXX XXX
  * We need to think about the meaning of "scrollable" windows, and about
  * a "resizable" main window, especially in terms of efficiency.  It seems
@@ -78,20 +74,16 @@
  * required to have the "screen" window act in a "special" way.
  *
  * XXX XXX XXX
- * Something is wrong with the creation of all the "sub-windows".
- *
- * XXX XXX XXX
- * Something was wrong with the loading of the fonts, may be fixed.
- *
- * XXX XXX XXX
  * The various "warning" messages assume the existance of the "screen.w"
  * window, I think, and only a few calls actually check for its existance.
  *
  * XXX XXX XXX
  * The "ANGBAND.INI" file needs to use "Visible" for the "window is shown"
- * flags, and needs an entry for the Mirror window.  The "ANGBAND.RC" (?)
- * file needs menu item(s) for the mirror window.  Some of the "sound"
- * files should be slightly renamed.
+ * flags, and needs an entry for the Mirror window.  If the "death.wav"
+ * sound file is duplicated into "kill.wav", and the "terror.wav" file
+ * is renamed "flee.wav", then the "Sound" section of "ANGBAND.INI" can
+ * be removed.  The "ANGBAND.RC" (?) file needs menu item(s) for the mirror
+ * window.
  *
  * XXX XXX XXX
  * Special "Windows Help Files" can be placed into "lib/xtra/help/" for
@@ -309,7 +301,7 @@ typedef struct _term_data term_data;
  * Note the use of "want_file" for the name of the font or bitmap
  * that the user thinks he wants, and the use of "font_file" and
  * "graf_file" for the names of the actual font and/or bitmap that
- * have actually been loaded.  XXX XXX XXX
+ * have actually been loaded.
  *
  * The "font_file" and "graf_file" are capitilized, and are of the
  * form "7X13.FON" and "7X13.BMP", while "want_file" can be in many
@@ -439,7 +431,8 @@ static HWND hwndSaver;
 #endif
 
 /*
- * The actual "graphic data" for the "screen" window XXX XXX XXX
+ * The actual "graphic data" for the "screen" window
+ * XXX XXX XXX Should perhaps have one per window (?)
  */
 static DIBINIT infGraph;
 
@@ -971,7 +964,8 @@ static void load_prefs(void)
  * entry palette derived from "win_clr[]" which is used for
  * the basic 16 Angband colors.
  *
- * XXX XXX XXX Use this function to allow changing the colors.
+ * XXX XXX XXX Use this function to allow changing the colors,
+ * using the new "TERM_XTRA_REACT" hook.
  */
 void new_palette(void)
 {
@@ -1140,8 +1134,6 @@ static void term_window_resize(term_data *td)
 
 /*
  * Mega-Hack -- force the use of a new font for a window
- *
- * XXX XXX XXX This function (or children) may have some bugs.
  */
 static void term_force_font(term_data *td, cptr name)
 {
@@ -1177,7 +1169,7 @@ static void term_force_font(term_data *td, cptr name)
       base[i] = FORCEUPPER(s[i]);
 
       /* Extract "hgt" when found */
-      if (base[i] == 'X') hgt = atoi(s+1);
+      if (base[i] == 'X') hgt = atoi(s+i+1);
   }
 
   /* Terminate */
@@ -1223,7 +1215,7 @@ static void term_force_font(term_data *td, cptr name)
   }
 
   /* Create the font */
-  td->font_id = CreateFont(wid, hgt, 0, 0, FW_DONTCARE, 0, 0, 0,
+  td->font_id = CreateFont(hgt, wid, 0, 0, FW_DONTCARE, 0, 0, 0,
                            ANSI_CHARSET, OUT_DEFAULT_PRECIS,
                            CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
                            FIXED_PITCH | FF_DONTCARE, base_font);
@@ -1516,7 +1508,9 @@ static errr Term_xtra_win_flush(void)
 
 
 /*
- * Hack -- clear the screen XXX XXX XXX
+ * Hack -- clear the screen
+ *
+ * XXX XXX XXX Make this more efficient
  */
 static errr Term_xtra_win_clear(void)
 {
@@ -1555,7 +1549,7 @@ static errr Term_xtra_win_noise(void)
 }
 
 /*
- * Hack -- make a sound XXX XXX XXX
+ * Hack -- make a sound
  */
 static errr Term_xtra_win_sound(int v)
 {
@@ -1567,12 +1561,12 @@ static errr Term_xtra_win_sound(int v)
 
 #ifdef WIN32
 
-  /* Play the sound */
+  /* Play the sound, catch errors */
   return (PlaySound(sound_file[v], 0, SND_FILENAME | SND_ASYNC));
 
 #else /* WIN32 */
 
-  /* Play the sound */
+  /* Play the sound, catch errors */
   return (sndPlaySound(sound_file[v], SND_ASYNC));
 
 #endif /* WIN32 */
@@ -1595,6 +1589,10 @@ static errr Term_xtra_win(int n, int v)
     /* Make a special sound */
     case TERM_XTRA_SOUND:
       return (Term_xtra_win_sound(v));
+
+    /* Process random events */
+    case TERM_XTRA_BORED:
+      return (Term_xtra_win_event(0));
 
     /* Process an event */
     case TERM_XTRA_EVENT:
@@ -1667,7 +1665,7 @@ static errr Term_wipe_win(int x, int y, int n)
  * Low level graphics (Assumes valid input).
  * Draw a "cursor" at (x,y), using a "yellow box".
  *
- * XXX XXX XXX Scrolling the main window, why would you do that?
+ * XXX XXX XXX Do we really need scrolling windows?
  */
 static errr Term_curs_win(int x, int y)
 {
@@ -1704,6 +1702,15 @@ static errr Term_curs_win(int x, int y)
 /*
  * Low level graphics.  Assumes valid input.
  * Draw a "special" attr/char at the given location.
+ *
+ * XXX XXX XXX We use the "Term_pict_win()" function for "graphic" data,
+ * which are encoded by setting the "high-bits" of both the "attr" and
+ * the "char" data.  We use the "attr" to represent the "row" of the main
+ * bitmap, and the "char" to represent the "col" of the main bitmap.  The
+ * use of this function is induced by the "higher_pict" flag.
+ *
+ * If we are called for anything but the "screen" window, or if the global
+ * "use_graphics" flag is off, we simply "wipe" the given grid.
  */
 static errr Term_pict_win(int x, int y, byte a, char c)
 {
@@ -1715,6 +1722,15 @@ static errr Term_pict_win(int x, int y, byte a, char c)
     HBITMAP hbmSrcOld, hbmMemOld, hbmMem;
     int  scr_x, scr_y;
     int  w, h, row, col;
+
+
+    /* Paranoia -- handle weird requests */
+    if ((td != &screen) || (!use_graphics)) {
+
+        /* Just erase this grid */
+        return (Term_wipe_win(x, y, 1));
+    }
+
 
     /* Handle scroll bars */
     y -= td->scroll_vpos;
@@ -1761,13 +1777,7 @@ static errr Term_pict_win(int x, int y, byte a, char c)
  * Low level graphics.  Assumes valid input.
  * Draw several ("n") chars, with an attr, at a given location.
  *
- * XXX XXX XXX We use the "Term_pict_win()" function for "graphic" data,
- * which are encoded by setting the "high-bits" of both the "attr" and
- * the "char" data.  We use the "attr" to represent the "row" of the main
- * bitmap, and the "char" to represent the "col" of the main bitmap.  We
- * draw the graphic information one character at a time, since normally
- * we will only get it one datum at a time, and we would have to do a
- * proper "buffering" of the data, flushed by the "TERM_XTRA_FROSH" action.
+ * All "graphic" data is handled by "Term_pict_win()", above.
  *
  * XXX XXX XXX Note that this function assumes the font is monospaced.
  */
@@ -1780,23 +1790,6 @@ static errr Term_text_win(int x, int y, int n, byte a, const char *s)
     int  scr_x, scr_y;
 
 
-    /* Hack -- Handle "graphics" */
-    if ((a & 0x80) && use_graphics) {
-
-        int i;
-
-        /* Dump the "string" */
-        for (i = 0; i < n; i++) {
-
-            /* Dump each "graphic" request */
-            (void)Term_pict_win(x+i, y, a, s[i]);
-        }
-
-        /* Success */
-        return (0);
-    }
-
-  
     /* Handle scroll bars */
     y -= td->scroll_vpos;
     if ((y < 0) || (y >= (int)td->vis_rows)) return 0;
@@ -1814,9 +1807,6 @@ static errr Term_text_win(int x, int y, int n, byte a, const char *s)
     n = min(n, td->vis_cols - x);
     if (n <= 0) return 0;
 
-    /* Catch "illegal" attributes */
-    if ((a == 0) || (a >= 16)) a = TERM_RED;
-
     /* Location */
     rc.left   = x * td->font_wid + td->size_ow1;
     rc.right  = rc.left + n * td->font_wid;
@@ -1826,7 +1816,12 @@ static errr Term_text_win(int x, int y, int n, byte a, const char *s)
     /* Draw the string */
     hdc = GetDC(td->w);
     SetBkColor(hdc, RGB(0,0,0));
-    SetTextColor(hdc, colors16 ? PALETTEINDEX(win_pal[a]) : win_clr[a]);
+    if (colors16) {
+        SetTextColor(hdc, PALETTEINDEX(win_pal[a&0x0F]));
+    }
+    else {
+        SetTextColor(hdc, win_clr[a&0x0F]);
+    }
     SelectObject(hdc, td->font_id);
     ExtTextOut(hdc, rc.left, rc.top, ETO_OPAQUE | ETO_CLIPPED, &rc,
                s, n, NULL);
@@ -1850,9 +1845,15 @@ static void term_data_link(term_data *td)
     /* Initialize the term */
     term_init(t, 80, 24, td->keys);
 
-    /* Prepare the template values */
+    /* Use a "software" cursor */
     t->soft_cursor = TRUE;
-    t->scan_events = TRUE;
+
+    /* Use "Term_pict" for "graphic" data */
+    t->higher_pict = TRUE;
+
+    /* Erase with "white space" */
+    t->attr_blank = TERM_WHITE;
+    t->char_blank = ' ';
 
 #if 0
     /* Prepare the init/nuke hooks */
@@ -1925,7 +1926,7 @@ static void init_windows(void)
   td->s = "Recall";
   td->type_1 = TRUE;
   td->keys = 16;
-  td->rows = 12;
+  td->rows = 24;
   td->cols = 80;
   td->visible = TRUE;
   td->resizing = FALSE;
@@ -2236,7 +2237,7 @@ static void setup_menus(void)
 
 
 /*
- * XXX XXX XXX check for double clicked savefile (?)
+ * XXX XXX XXX check for double clicked savefile
  */
 static void check_for_save_file(LPSTR cmd_line)
 {
@@ -3007,6 +3008,7 @@ LRESULT FAR PASCAL _export AngbandListProc(HWND hWnd, UINT uMsg,
 #endif
     }
 
+    /* XXX XXX XXX */
     case WM_CREATE:
     {
       td = (term_data *)GetWindowLong(hWnd, 0);
@@ -3260,8 +3262,8 @@ LRESULT FAR PASCAL _export AngbandSaverProc(HWND hWnd, UINT uMsg,
  */
 static void hack_plog(cptr str)
 {
-  /* XXX XXX XXX Give a warning */
-  /* if (str) MessageBox(screen.w, str, "Warning", MB_OK); */
+  /* Give a warning */
+  if (str) MessageBox(NULL, str, "Warning", MB_OK);
 }
 
 
@@ -3270,8 +3272,8 @@ static void hack_plog(cptr str)
  */
 static void hack_quit(cptr str)
 {
-  /* XXX XXX XXX Give a warning */
-  /* if (str) MessageBox(screen.w, str, "Error", MB_OK | MB_ICONSTOP); */
+  /* Give a warning */
+  if (str) MessageBox(NULL, str, "Error", MB_OK | MB_ICONSTOP);
 
   /* Unregister the classes */
   UnregisterClass(AppName, hInstance);
@@ -3289,8 +3291,8 @@ static void hack_quit(cptr str)
  */
 static void hack_core(cptr str)
 {
-  /* XXX XXX XXX Give a warning */
-  /* if (str) MessageBox(screen.w, str, "Error", MB_OK | MB_ICONSTOP); */
+  /* Give a warning */
+  if (str) MessageBox(NULL, str, "Error", MB_OK | MB_ICONSTOP);
 
   /* Quit */
   quit (NULL);

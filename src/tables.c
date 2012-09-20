@@ -1,6 +1,6 @@
 /* File: tables.c */
 
-/* Purpose: store/attack/RNG/etc tables and variables */
+/* Purpose: Angband Tables */
 
 /*
  * Copyright (c) 1989 James E. Wilson, Robert A. Koeneke
@@ -2413,10 +2413,6 @@ cptr stat_names_reduced[6] = {
  *	Set 3: 12
  *	Set 4: 8-15, 28-31
  *
- * XXX XXX XXX Possible options:
- *   Disturb on "bash door" (FALSE)
- *   Disturb on "los monster" / "near los monster"
- *
  * XXX XXX XXX Note that the "cheating options" can only be set in
  * the "do_cmd_prefs()" function, since they must set the special
  * "I am a cheater" flags.
@@ -2452,38 +2448,20 @@ option_type options[] = {
     { &plain_descriptions,	TRUE,	1,	3, 23,
       "plain_descriptions",	"Plain object descriptions" },
 
+    { &depth_in_feet,		FALSE,	1,	1, 14,
+      "depth_in_feet",		"Show dungeon level in feet" },
+
     { &equippy_chars,		FALSE,	1,	1, 12,
       "equippy_chars",		"Display Equippy Characters" },
 
     { &show_health_bar,		FALSE,	1,	3, 19,
       "show_health_bar",	"Display Monster Health Bar" },
 
-    { &show_spell_info,		FALSE,	1,	3, 18,
-      "show_spell_info",	"Show extra spell info" },
-
-    { &depth_in_feet,		FALSE,	1,	1, 14,
-      "depth_in_feet",		"Show dungeon level in feet" },
-
-    { &notice_seams,		TRUE,	1,	1, 10,
-      "notice_seams",		"Notice mineral seams" },
-
-    { &compress_savefile,	TRUE,	1,	1, 20,
-      "compress_savefile",	"Compress savefiles" },
-
     { &ring_bell,		TRUE,	1,	1, 11,
       "ring_bell",		"Audible bell (on errors, etc)" },
 
-    { &hilite_player,		FALSE,	1,	1, 15,
-      "hilite_player",		"Hilite the player with the cursor" },
-
     { &use_color,		TRUE,	1,	1, 8,
       "use_color",		"Use color if possible (slow)" },
-
-    { &view_yellow_lite,	TRUE,	1,	1, 24,
-      "view_yellow_lite",	"Draw Torch-Lite in yellow (slow)" },
-
-    { &view_bright_lite,	TRUE,	1,	1, 25,
-      "view_bright_lite",	"Draw Viewable Lite brightly (v.slow)" },
 
 
     /*** Disturbance ***/
@@ -2500,41 +2478,23 @@ option_type options[] = {
     { &find_examine,		TRUE,	2,	2, 9,
       "find_examine",		"Run into potential corners" },
 
-    { &disturb_near,		TRUE,	2,	2, 16,
-      "disturb_near",		"Disturb whenever monster moves (nearby)" },
-
     { &disturb_move,		TRUE,	2,	2, 17,
-      "disturb_move",		"Disturb whenever monster moves (anywhere)" },
+      "disturb_move",		"Disturb whenever any monster moves" },
+
+    { &disturb_near,		TRUE,	2,	2, 16,
+      "disturb_near",		"Disturb whenever viewable monster moves" },
 
     { &disturb_enter,		TRUE,	2,	2, 18,
-      "disturb_enter",		"Disturb whenever monster appears" },
+      "disturb_enter",		"Disturb whenever viewable monster appears" },
 
     { &disturb_leave,		TRUE,	2,	2, 19,
-      "disturb_leave",		"Disturb whenever monster disappears" },
+      "disturb_leave",		"Disturb whenever viewable monster disappears" },
 
     { &disturb_panel,		TRUE,	2,	2, 11,
       "disturb_panel",		"Disturb whenever map panel changes" },
 
     { &disturb_other,		TRUE,	2,	2, 10,
       "disturb_other",		"Disturb whenever various things happen" },
-
-    { &flush_command,		FALSE,	2,	2, 24,
-      "flush_command",		"Flush input before normal commands" },
-
-    { &flush_disturb,		TRUE,	2,	2, 26,
-      "flush_disturb",		"Flush input whenever disturbed" },
-
-    { &flush_failure,		TRUE,	2,	2, 27,
-      "flush_failure",		"Flush input on various failures" },
-
-    { &fresh_before,		TRUE,	2,	2, 28,
-      "fresh_before",		"Flush output before all commands" },
-
-    { &fresh_after,		TRUE,	2,	2, 29,
-      "fresh_after",		"Flush output after all commands" },
-
-    { &fresh_find,		TRUE,	2,	2, 30,
-      "fresh_find",		"Flush output while running (slow)" },
 
     { &filch_message,		FALSE,	2,	2, 20,
       "filch_message",		"Flush messages before every new message" },
@@ -2635,23 +2595,41 @@ option_type options[] = {
     { &view_reduce_lite_town,	FALSE,	5,	2, 15,
       "view_reduce_lite_town",	"Reduce lite-radius when running (in town)" },
 
-    { &view_reduce_view,	FALSE,	5,	3, 2,
-      "view_reduce_view",	"Reduce view-radius when running" },
-
-    { &view_reduce_view_town,	FALSE,	5,	2, 14,
-      "view_reduce_view_town",	"Reduce view-radius when running (in town)" },
-
-    { &optimize_running,	FALSE,	5,	2, 0,
-      "optimize_running",	"Optimize various things when running" },
-
-    { &optimize_resting,	FALSE,	5,	2, 1,
-      "optimize_resting",	"Optimize various things when resting" },
-
     { &optimize_display,	FALSE,	5,	4, 18,
       "optimize_display",	"Optimize various things (visual display)" },
 
     { &optimize_various,	FALSE,	5,	4, 19,
       "optimize_various",	"Optimize various things (message recall)" },
+
+    { &flush_failure,		TRUE,	5,	2, 27,
+      "flush_failure",		"Flush input on various failures" },
+
+    { &flush_disturb,		TRUE,	5,	2, 26,
+      "flush_disturb",		"Flush input whenever disturbed" },
+
+    { &flush_command,		FALSE,	5,	2, 24,
+      "flush_command",		"Flush input before every command" },
+
+    { &fresh_before,		TRUE,	5,	2, 28,
+      "fresh_before",		"Flush output before every command" },
+
+    { &fresh_after,		TRUE,	5,	2, 29,
+      "fresh_after",		"Flush output after every command" },
+
+    { &fresh_message,		TRUE,	5,	2, 30,
+      "fresh_message",		"Flush output after every message" },
+
+    { &compress_savefile,	TRUE,	5,	1, 20,
+      "compress_savefile",	"Compress savefiles" },
+
+    { &hilite_player,		FALSE,	5,	1, 15,
+      "hilite_player",		"Hilite the player with the cursor" },
+
+    { &view_yellow_lite,	FALSE,	5,	1, 24,
+      "view_yellow_lite",	"Draw Torch-Lite in yellow (slow)" },
+
+    { &view_bright_lite,	FALSE,	5,	1, 25,
+      "view_bright_lite",	"Draw Viewable Lite brightly (slow)" },
 
 
     /*** Special ***/

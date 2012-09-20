@@ -1030,6 +1030,10 @@ static errr Term_xtra_xaw(int n, int v)
 	    CheckEvent(FALSE);
 	    return (0);
 
+	/* Process random events */
+	case TERM_XTRA_BORED:
+	    return (CheckEvent(0));
+
 	/* Process events */
 	case TERM_XTRA_EVENT:
 	    return (CheckEvent(v));
@@ -1164,15 +1168,18 @@ static errr term_data_init(term_data *td, Widget topLevel,
     /* Initialize the term (full size) */
     term_init(t, 80, 24, key_buf);
 
+    /* Use a "soft" cursor */
+    t->soft_cursor = TRUE;
+
+    /* Erase with "white space" */
+    t->attr_blank = TERM_WHITE;
+    t->char_blank = ' ';
+
     /* Hooks */
     t->xtra_hook = Term_xtra_xaw;
     t->curs_hook = Term_curs_xaw;
     t->wipe_hook = Term_wipe_xaw;
     t->text_hook = Term_text_xaw;
-
-    /* We are not a dumb terminal */
-    t->soft_cursor = TRUE;
-    t->scan_events = TRUE;
 
     /* Save the data */
     t->data = td;

@@ -1,6 +1,6 @@
 /* File: generate.c */
 
-/* Purpose: initialize/create a dungeon or town level */
+/* Purpose: Dungeon generation */
 
 /*
  * Copyright (c) 1989 James E. Wilson, Robert A. Koeneke
@@ -1787,6 +1787,9 @@ static bool vault_aux_demon(int r_idx)
  *   a nest of "jelly" monsters   (Dungeon level 5 and deeper)
  *   a nest of "animal" monsters  (Dungeon level 30 and deeper)
  *   a nest of "undead" monsters  (Dungeon level 50 and deeper)
+ *
+ * Note that the "get_mon_num()" function may fail, in which case
+ * the nest will be empty and will not effect the level rating.
  */
 static void build_type5(int yval, int xval)
 {
@@ -1794,7 +1797,9 @@ static void build_type5(int yval, int xval)
     
     int			tmp, i, what[16];
 
-    cave_type *c_ptr;
+    bool		empty = FALSE;
+
+    cave_type		*c_ptr;
 
 
     /* Large room */
@@ -1902,6 +1907,9 @@ static void build_type5(int yval, int xval)
 
         /* Get (and save) a monster type */
         what[i] = get_mon_num(monster_level);
+
+        /* Notice failure */
+        if (!what[i]) empty = TRUE;
     }
         
     /* Restore depth allowance */
@@ -1910,6 +1918,10 @@ static void build_type5(int yval, int xval)
 
     /* Remove restriction */
     get_mon_num_hook = NULL;
+
+
+    /* Oops */
+    if (empty) return;
 
 
     /* Increase the level rating */
@@ -1970,8 +1982,8 @@ static void build_type5(int yval, int xval)
  * Currently, we are using every other entry.  Note that "wyrms" may be
  * present in many of the dragon pits, if they have the proper breath.
  *
- * Note that the "minimum depth" information is needed only to ensure
- * that there is at least one acceptable monster at that depth.
+ * Note that the "get_mon_num()" function may fail, in which case
+ * the pit will be empty and will not effect the level rating.
  */
 static void build_type6(int yval, int xval)
 {
@@ -1979,7 +1991,9 @@ static void build_type6(int yval, int xval)
     
     int			i, j, y, x, y1, x1, y2, x2;
 
-    cave_type *c_ptr;
+    bool		empty = FALSE;
+    
+    cave_type		*c_ptr;
 
 
     /* Large room */
@@ -2285,6 +2299,9 @@ static void build_type6(int yval, int xval)
 
         /* Get (and save) a monster type */
         what[i] = get_mon_num(monster_level);
+
+        /* Notice failure */
+        if (!what[i]) empty = TRUE;
     }
 
     /* Restore depth allowance */
@@ -2293,6 +2310,10 @@ static void build_type6(int yval, int xval)
 
     /* Remove restriction */
     get_mon_num_hook = NULL;
+
+
+    /* Oops */
+    if (empty) return;
 
 
     /* XXX XXX XXX */

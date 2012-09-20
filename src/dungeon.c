@@ -1,6 +1,6 @@
 /* File: dungeon.c */
 
-/* Purpose: the main command interpreter, updating player status */
+/* Purpose: Angband game engine */
 
 /*
  * Copyright (c) 1989 James E. Wilson, Robert A. Koeneke
@@ -347,156 +347,6 @@ static void regenmana(int percent)
 
 
 
-
-
-
-/*
- * Teleport player to a location (presumably near a monster)
- * This function is slightly obsessive about correctness.
- * This function allows teleporting into vaults (!)
- */
-static void teleport_to(int ny, int nx)
-{
-    int y, x, oy, ox, dis = 0, ctr = 0;
-
-
-    /* Find a usable location */
-    while (1) {
-
-        /* Pick a nearby legal location */
-        while (1) {
-            y = rand_spread(ny, dis);
-            x = rand_spread(nx, dis);
-            if (in_bounds(y, x)) break;
-        }
-
-        /* Accept "naked" floor grids */
-        if (naked_grid_bold(y, x)) break;
-
-        /* Occasionally advance the distance */
-        if (++ctr > (4 * dis * dis + 4 * dis + 1)) {
-            ctr = 0;
-            dis++;
-        }
-    }
-
-    /* Save the old location */
-    oy = py;
-    ox = px;
-    
-    /* Move the player */
-    py = y;
-    px = x;
-    
-    /* Redraw the old spot */
-    lite_spot(oy, ox);
-    
-    /* Redraw the new spot */
-    lite_spot(py, px);
-
-    /* Check for new panel (redraw map) */
-    verify_panel();
-}
-
-
-/*
- * Teleport the player to a new location, up to "dis" units away.
- * If no such spaces are readily available, the distance may increase.
- * Try very hard to move the player at least a quarter that distance.
- * A previous version of this function caused infinite loops.
- */
-static void teleport(int dis)
-{
-    int d, i, min, ox, oy, x = py, y = px;
-
-    bool look = TRUE;
-
-    /* Minimum distance */
-    min = dis / 2;
-
-    /* Look until done */
-    while (look) {
-
-        /* Verify max distance */
-        if (dis > 200) dis = 200;
-
-        /* Try several locations */
-        for (i = 0; i < 500; i++) {
-
-            /* Pick a (possibly illegal) location */
-            while (1) {
-                y = rand_spread(py, dis);
-                x = rand_spread(px, dis);
-                d = distance(py, px, y, x);
-                if ((d >= min) && (d <= dis)) break;
-            }
-
-            /* Ignore illegal locations */
-            if (!in_bounds(y, x)) continue;
-
-            /* Require "naked" floor space */
-            if (!naked_grid_bold(y, x)) continue;
-
-            /* No teleporting into vaults and such */
-            if (cave[y][x].feat & CAVE_ICKY) continue;
-
-            /* This grid looks good */
-            look = FALSE;
-
-            /* Stop looking */
-            break;
-        }
-
-        /* Increase the maximum distance */
-        dis = dis * 2;
-
-        /* Decrease the minimum distance */
-        min = min / 2;
-    }
-
-    /* Save the old location */
-    oy = py;
-    ox = px;
-    
-    /* Move the player */
-    py = y;
-    px = x;
-    
-    /* Redraw the old spot */
-    lite_spot(oy, ox);
-    
-    /* Redraw the new spot */
-    lite_spot(py, px);
-}
-
-
-/*
- * Handle teleportation
- */
-static void handle_teleport(void)
-{
-    /* No teleport needed */
-    if (!teleport_flag) return;
-
-    /* Basic teleport */
-    if (teleport_dist) teleport(teleport_dist);
-
-    /* Directed teleport */
-    else teleport_to(teleport_to_y, teleport_to_x);
-
-    /* Forget teleport distance */
-    teleport_dist = 0;
-    
-    /* Teleport complete */
-    teleport_flag = FALSE;
-
-    /* Check for new panel (redraw map) */
-    verify_panel();
-
-    /* Update stuff */
-    p_ptr->update |= (PU_VIEW | PU_LITE | PU_FLOW);
-    p_ptr->update |= (PU_DISTANCE);
-}
 
 
 
@@ -1094,11 +944,8 @@ static void process_world(void)
         }
     }
 
-    /* Extract the current lite radius */
-    extract_cur_lite();
-
-    /* Extract the current view radius */
-    extract_cur_view();
+    /* Calculate torch radius */
+    p_ptr->update |= (PU_TORCH);
 
 
     /*** Process Inventory ***/
@@ -1198,6 +1045,450 @@ static void process_world(void)
 
 
 /*
+ * Verify desire to be a wizard, and do so if verified
+ * This routine should only be called if "can_be_wizard"
+ */
+static bool enter_wiz_mode(void)
+{
+    int answer = FALSE;
+
+    /* Already been asked */
+    if (noscore & 0x0002) return (TRUE);
+
+    /* Mention effects */
+    msg_print("Wizard mode is for debugging and experimenting.");
+    msg_print("The game will not be scored if you enter wizard mode.");
+
+    /* Verify request */
+    answer = get_check("Are you sure you want to enter wizard mode? ");
+
+    /* Never Mind */
+    if (!answer) return (FALSE);
+
+    /* Remember old setting */
+    noscore |= 0x0002;
+
+    /* Make me a wizard */
+    return (TRUE);
+}
+
+
+
+#ifdef ALLOW_WIZARD
+
+/*
+ * Hack -- Declare the Wizard Routines
+ */
+extern int do_cmd_wizard(void);
+
+#endif
+
+
+#ifdef ALLOW_BORG
+
+/*
+ * Hack -- Declare the Ben Borg
+ */
+extern void do_cmd_borg(void);
+
+#endif
+
+
+
+/*
+ * Parse and execute the current command
+ * Give "Warning" on illegal commands.
+ */
+static void process_command(void)
+{
+    /* Parse the command */
+    switch (command_cmd) {
+
+        /* Ignore */
+        case ESCAPE:
+        case ' ':
+            break;
+
+        /* Ignore */
+        case '\r':
+        case '\n':
+        case '\t':
+            break;
+
+
+
+        /*** Wizard Commands ***/
+
+        /* Toggle Wizard Mode */
+        case KTRL('W'):
+            if (wizard) {
+                wizard = FALSE;
+                msg_print("Wizard mode off.");
+            }
+            else if (!can_be_wizard) {
+                msg_print("You are not allowed to do that.");
+            }
+            else if (enter_wiz_mode()) {
+                wizard = TRUE;
+                msg_print("Wizard mode on.");
+            }
+
+            /* Update monsters */
+            p_ptr->update |= (PU_MONSTERS);
+
+            /* Redraw "title" */
+            p_ptr->redraw |= (PR_TITLE);
+
+            break;
+
+
+#ifdef ALLOW_WIZARD
+
+        /* Special Wizard Command */
+        case KTRL('A'):
+            if (wizard) {
+                do_cmd_wizard();
+            }
+            else {
+                msg_print("You are not allowed to do that.");
+            }
+            break;
+
+#endif
+
+
+#ifdef ALLOW_BORG
+
+        /* Interact with the Borg */
+        case KTRL('Z'):
+
+            /* Interact with the borg */
+            do_cmd_borg();
+
+            break;
+
+#endif
+
+
+
+        /*** Inventory Commands ***/
+
+        /* Wear/wield equipment */
+        case '[':
+            do_cmd_wield(); break;
+
+        /* Take off equipment */
+        case ']':
+            do_cmd_takeoff(); break;
+
+        /* Drop an item */
+        case 'd':
+            do_cmd_drop(); break;
+
+        /* Destroy an item */
+        case 'k':
+            do_cmd_destroy(); break;
+
+        /* Equipment list */
+        case 'e':
+            do_cmd_equip(); break;
+
+        /* Inventory list */
+        case 'i':
+            do_cmd_inven(); break;
+
+
+        /*** Various commands ***/
+
+        /* Identify an object */
+        case 'I':
+            do_cmd_observe(); break;
+
+        /* Hack -- toggle choice window */
+        case KTRL('E'):
+            do_cmd_toggle_choose(); break;
+
+
+        /*** Standard "Movement" Commands ***/
+
+        /* Dig a tunnel */
+        case '+':
+            do_cmd_tunnel(); break;
+
+        /* Move (usually pick up things) */
+        case ';':
+            do_cmd_walk(always_pickup); break;
+
+        /* Move (usually do not pick up) */
+        case '-':
+            do_cmd_walk(!always_pickup); break;
+
+
+        /*** Running, Resting, Searching, Staying */
+
+        /* Begin Running -- Arg is Max Distance */
+        case '.':
+            do_cmd_run(); break;
+
+        /* Stay still (usually pick things up) */
+        case ',':
+            do_cmd_stay(always_pickup); break;
+
+        /* Stay still (usually do not pick up) */
+        case 'g':
+            do_cmd_stay(!always_pickup); break;
+
+        /* Rest -- Arg is time */
+        case 'R':
+            do_cmd_rest(); break;
+
+        /* Search for traps/doors */
+        case 's':
+            do_cmd_search(); break;
+
+        /* Toggle search mode */
+        case 'S':
+            do_cmd_toggle_search(); break;
+
+
+        /*** Stairs and Doors and Chests and Traps ***/
+
+        /* Enter store */
+        case '_':
+            do_cmd_store(); break;
+
+        /* Go up staircase */
+        case '<':
+            do_cmd_go_up(); break;
+
+        /* Go down staircase */
+        case '>':
+            do_cmd_go_down(); break;
+
+        /* Open a door or chest */
+        case 'o':
+            do_cmd_open(); break;
+
+        /* Close a door */
+        case 'c':
+            do_cmd_close(); break;
+
+        /* Jam a door with spikes */
+        case 'j':
+            do_cmd_spike(); break;
+
+        /* Bash a door */
+        case 'B':
+            do_cmd_bash(); break;
+
+        /* Disarm a trap or chest */
+        case 'D':
+            do_cmd_disarm(); break;
+
+
+        /*** Magic and Prayers ***/
+
+        /* Gain new spells/prayers */
+        case 'G':
+            do_cmd_study(); break;
+
+        /* Browse a book */
+        case 'b':
+            do_cmd_browse(); break;
+
+        /* Cast a spell */
+        case 'm':
+            do_cmd_cast(); break;
+
+        /* Pray a prayer */
+        case 'p':
+            do_cmd_pray(); break;
+
+
+        /*** Use various objects ***/
+
+        /* Inscribe an object */
+        case '{':
+            do_cmd_inscribe(); break;
+
+        /* Uninscribe an object */
+        case '}':
+            do_cmd_uninscribe(); break;
+
+        /* Activate an artifact */
+        case 'A':
+            do_cmd_activate(); break;
+
+        /* Eat some food */
+        case 'E':
+            do_cmd_eat_food(); break;
+
+        /* Fuel your lantern/torch */
+        case 'F':
+            do_cmd_refill(); break;
+
+        /* Fire an item */
+        case 'f':
+            do_cmd_fire(); break;
+
+        /* Throw an item */
+        case 'v':
+            do_cmd_throw(); break;
+
+        /* Aim a wand */
+        case 'a':
+            do_cmd_aim_wand(); break;
+
+        /* Zap a rod */
+        case 'z':
+            do_cmd_zap_rod(); break;
+
+        /* Quaff a potion */
+        case 'q':
+            do_cmd_quaff_potion(); break;
+
+        /* Read a scroll */
+        case 'r':
+            do_cmd_read_scroll(); break;
+
+        /* Use a staff */
+        case 'u':
+            do_cmd_use_staff(); break;
+
+
+        /*** Looking at Things (nearby or on map) ***/
+
+        /* Full dungeon map */
+        case 'M':
+            do_cmd_view_map(); break;
+
+        /* Locate player on map */	
+        case 'L':
+            do_cmd_locate(); break;
+
+        /* Look around */
+        case 'l':
+            do_cmd_look(); break;
+
+        /* Target monster or location */
+        case '*':
+            do_cmd_target(); break;
+
+
+
+        /*** Help and Such ***/
+
+        /* Help */
+        case '?':
+            do_cmd_help("help.hlp"); break;
+
+        /* Identify symbol */
+        case '/':
+            do_cmd_query_symbol(); break;
+
+        /* Character description */
+        case 'C':
+            do_cmd_change_name(); break;
+
+
+        /*** System Commands ***/
+
+        /* Hack -- User interface */
+        case '!':
+            (void)Term_user(0); break;
+
+        /* Single line from a pref file */
+        case '"':
+            do_cmd_pref(); break;
+
+        /* Interact with macros */
+        case '@':
+            do_cmd_macros(); break;
+
+        /* Interact with visuals */
+        case '%':
+            do_cmd_visuals(); break;
+
+        /* Interact with colors */
+        case '&':
+            do_cmd_colors(); break;
+
+        /* Interact with options */
+        case '=':
+            do_cmd_options(); break;
+
+
+        /*** Misc Commands ***/
+
+        /* Take notes */
+        case ':':
+            do_cmd_note(); break;	
+
+        /* Version info */
+        case 'V':
+            do_cmd_version(); break;
+
+        /* Repeat level feeling */
+        case KTRL('F'):
+            do_cmd_feeling(); break;
+
+        /* Show previous message */
+        case KTRL('O'):
+            do_cmd_message_one(); break;
+
+        /* Show previous messages */
+        case KTRL('P'):
+            do_cmd_messages(); break;
+
+        /* Redraw the screen */
+        case KTRL('R'):
+            do_cmd_redraw(); break;
+
+#ifndef VERIFY_SAVEFILE
+        /* Hack -- Save and don't quit */
+        case KTRL('S'):
+            do_cmd_save_game(); break;
+#endif
+
+        /* Save and quit */
+        case KTRL('X'):
+            alive = FALSE; break;
+
+        /* Quit (commit suicide) */
+        case 'Q':
+            do_cmd_suicide(); break;
+
+        /* Check artifacts */
+        case '~':
+            do_cmd_check_artifacts(); break;
+
+        /* Check uniques */
+        case '|':
+            do_cmd_check_uniques(); break;
+
+#ifndef ANGBAND_LITE
+
+        /* Load "screen dump" */
+        case '(':
+            do_cmd_load_screen(); break;
+
+        /* Save "screen dump" */
+        case ')':
+            do_cmd_save_screen(); break;
+
+#endif
+
+        /* Hack -- Unknown command */
+        default:
+            prt("Type '?' for help.", 0, 0);
+            return;
+    }
+}
+
+
+
+
+/*
  * Process the player
  */
 static void process_player()
@@ -1263,7 +1554,9 @@ static void process_player()
     /*** Handle actual user input ***/
 
     /* Hack -- Check for "player interrupts" */
-    if (command_rep || running || resting) {
+    if ((command_rep && !(command_rep & 0x07)) ||
+        (running && !(running & 0x07)) ||
+        (resting && !(resting & 0x07))) {
 
         /* Do not wait */
         inkey_scan = TRUE;
@@ -1274,24 +1567,20 @@ static void process_player()
             /* Flush input */
             flush();
 
-            /* Hack -- Show a Message */
-            msg_print("Cancelled.");
-
-            /* Disturb the resting, running, or repeating */
+            /* Disturb */
             disturb(0, 0);
 
-            /* Hack -- Redraw the state */
-            p_ptr->redraw |= (PR_STATE);
+            /* Hack -- Show a Message */
+            msg_print("Cancelled.");
         }
     }
 
 
-    /* Mega-Hack -- Random teleportation */
+    /* Mega-Hack -- Random teleportation XXX XXX XXX */
     if ((p_ptr->teleport) && (rand_int(100) < 1)) {
 
-        /* Short range teleport */
-        teleport_flag = TRUE;
-        teleport_dist = 40;
+        /* Teleport player */
+        teleport_player(40);
     }
 
 
@@ -1302,9 +1591,6 @@ static void process_player()
         /* Hack -- Notice death or departure */
         if (!alive || new_level_flag) break;
 
-
-        /* Hack -- Process Teleportation */
-        if (teleport_flag) handle_teleport();
 
         /* Hack -- constant hallucination */
         if (p_ptr->image) p_ptr->redraw |= (PR_MAP);
@@ -1336,28 +1622,70 @@ static void process_player()
             /* Take a turn */
             energy_use = 100;
 
-            /* Refresh */
+            /* Hack -- Hilite the player */
+            move_cursor_relative(py, px);
+
+            /* Hack -- Refresh */
             Term_fresh();
         }
 
         /* Hack -- Running */
         else if (running) {
 
-            /* Take a turn */
-            energy_use = 100;
-
             /* Take a step */
-            do_cmd_run();
+            run_step(0);
+        }
+
+        /* Repeated command */
+        else if (command_rep) {
+
+            /* Count this execution */
+            command_rep--;
+
+            /* Redraw the state */
+            p_ptr->redraw |= (PR_STATE);
+
+            /* Handle stuff */
+            handle_stuff();
+
+            /* Hack -- Illuminate the player */
+            move_cursor_relative(py, px);
+
+            /* Refresh */
+            Term_fresh();
+
+            /* Hack -- Assume messages were seen */
+            msg_flag = FALSE;
+
+            /* Process the command */
+            process_command();
         }
 
         /* Normal command */
         else {
+
+            /* Place the cursor on the player */
+            move_cursor_relative(py, px);
 
             /* Get a command (new or old) */
             request_command();
 
             /* Process the command */
             process_command();
+        }
+
+
+        /* Optional fresh */
+        if (fresh_after) {
+
+            /* Handle stuff */
+            handle_stuff();
+
+            /* Hack -- Hilite the player */
+            move_cursor_relative(py, px);
+
+            /* Refresh */
+            Term_fresh();
         }
 
 
@@ -1399,6 +1727,10 @@ static void process_player()
         }
 
 
+        /* Hack -- Re-Illuminate the player */
+        move_cursor_relative(py, px);
+
+
         /* Use some energy, if required */
         if (energy_use) p_ptr->energy -= energy_use;
     }
@@ -1406,10 +1738,6 @@ static void process_player()
 
     /* Hack -- notice death or departure */
     if (!alive || new_level_flag) return;
-
-
-    /* Hack -- Process Teleportation */
-    if (teleport_flag) handle_teleport();
 
 
     /* Handle stuff (one last time) */
@@ -1428,13 +1756,7 @@ static void dungeon(void)
 {
     /* Reset various flags */
     new_level_flag = FALSE;
-    teleport_flag = FALSE;
 
-    /* Not running */
-    running = 0;
-
-    /* Not resting */
-    resting = 0;
 
     /* Reset the "command" vars */
     command_cmd = 0;
@@ -1451,8 +1773,8 @@ static void dungeon(void)
     health_track(0);
 
 
-    /* Turn off searching */
-    search_off();
+    /* Disturb */
+    disturb(1, 0);
 
 
     /* Remember deepest dungeon level visited */
@@ -1516,12 +1838,6 @@ static void dungeon(void)
     msg_print(NULL);
     
     
-    /* Hack -- Verify the lite radius */
-    extract_cur_lite();
-
-    /* Hack -- Verify the view radius */
-    extract_cur_view();
-
     /* Redraw the recall window */
     p_ptr->redraw |= (PR_RECENT);
 
@@ -1530,6 +1846,9 @@ static void dungeon(void)
 
     /* Redraw dungeon */
     p_ptr->redraw |= (PR_WIPE | PR_MAP | PR_BASIC | PR_EXTRA);
+
+    /* Calculate torch radius */
+    p_ptr->update |= (PU_TORCH);
 
     /* Update stuff */
     p_ptr->update |= (PU_VIEW | PU_LITE | PU_FLOW | PU_DISTANCE);
@@ -1680,42 +1999,60 @@ static void load_all_pref_files(void)
 
 /*
  * Actually play a game
+ *
+ * If the "new_game" parameter is true, then, after loading the
+ * savefile, we will commit suicide, if necessary, to allow the
+ * player to start a new game.
  */
 void play_game(bool new_game)
 {
-    u32b seed;
-
-
     /* Hack -- Character is "icky" */
     character_icky = TRUE;
 
 
     /* Hack -- turn off the cursor */
-    Term_hide_cursor();
+    (void)Term_set_cursor(0);
 
 
-    /* Basic seed */
-    seed = (time(NULL));
-    
+    /* Init the RNG */
+    if (TRUE) {
+
+        u32b seed;
+
+        /* Basic seed */
+        seed = (time(NULL));
+
 #ifdef SET_UID
 
-    /* Mutate the seed on Unix machines */
-    seed = ((seed >> 3) * (getpid() << 1));
+        /* Mutate the seed on Unix machines */
+        seed = ((seed >> 3) * (getpid() << 1));
 
 #endif
 
-    /* Use the complex RNG */
-    Rand_quick = FALSE;
+        /* Use the complex RNG */
+        Rand_quick = FALSE;
 
-    /* Seed the "complex" RNG */
-    Rand_state_init(seed);
+        /* Seed the "complex" RNG */
+        Rand_state_init(seed);
+    }
+
+
+    /* Attempt to load */
+    if (!load_player()) {
+    
+        /* Make new player */
+        new_game = TRUE;
+
+        /* Create a new dungeon */
+        character_dungeon = FALSE;
+    }
+
+    /* Flush messages */
+    msg_print(NULL);
 
 
     /* Load old character */
     if (!new_game) {
-
-        /* Attempt to load, note dead player */
-        if (!load_player()) new_game = TRUE;
 
         /* Process the player name */
         process_player_name(FALSE);
@@ -1771,17 +2108,14 @@ void play_game(bool new_game)
     handle_stuff();
 
 
+    /* Load the "pref" files */
+    load_all_pref_files();
+
     /* Set or clear "rogue_like_commands" if requested */
     if (arg_force_original) rogue_like_commands = FALSE;
     if (arg_force_roguelike) rogue_like_commands = TRUE;
 
     /* Verify the keymap */
-    keymap_init();
-
-    /* Load the "pref" files */
-    load_all_pref_files();
-
-    /* Verify the keymap again */
     keymap_init();
 
     /* React to changes */

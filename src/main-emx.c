@@ -4,7 +4,7 @@
 
 /* Author: ekraemer@pluto.camelot.de (Ekkehard Kraemer) */
 
-#ifdef __EMX__
+#ifdef __EMX__ 
 
 /*
  * === Instructions for using Angband 2.7.X with OS/2 ===
@@ -63,19 +63,37 @@
  *                      v3      Removed (improved) keyboard hack
  *                              Introduced pref-emx.prf
  *                              Phew... Makefile.emx grows! (patches, export)
+ *                              Uploaded binary to export.andrew.cmu.edu
  *
  *  26.01.96   EK               Added files.uue target
+ *
+ *  22.02.96   EK               Added PM support 
+ *
+ *   2.03.96   EK      2.7.9    Uploaded binaries to export.andrew.cmu.edu
+ *                      v4
+ *                              
  */
 
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h> 
 #include <sys/kbdscan.h>
-#include <sys/video.h>
 #include <io.h>
 #include <os2.h>
+#include <sys/video.h>
 
 #include "angband.h"
+
+/*
+ * Prototypes!
+ */
+static errr Term_curs_emx(int x, int y);
+static errr Term_wipe_emx(int x, int y, int n);
+static errr Term_text_emx(int x, int y, int n, unsigned char a, cptr s);
+static void Term_init_emx(term *t);
+static void Term_nuke_emx(term *t);
+
+#ifndef EMXPM
 
 /*
  * termPipe* is sometimes cast to term* and vice versa, 
@@ -102,15 +120,6 @@ enum
     PIP_TEXT,
 };
 
-
-/*
- * Prototypes!
- */
-static errr Term_curs_emx(int x, int y);
-static errr Term_wipe_emx(int x, int y, int n);
-static errr Term_text_emx(int x, int y, int n, unsigned char a, cptr s);
-static void Term_init_emx(term *t);
-static void Term_nuke_emx(term *t);
 
 /*
  * Current cursor "size"
@@ -151,7 +160,6 @@ static int colors[16]=
     F_BLUE|INTENSITY,           /* Light Blue */
     F_BROWN|INTENSITY           /* Light brown */
 };
-
 
 /*
  * Display a cursor, on top of a given attr/char
@@ -236,7 +244,7 @@ static void Term_nuke_emx(term *t)
 }
 
 
-#ifndef __EMX__CLIENT__           
+#ifndef __EMX__CLIENT__
 
 /*
  * Oh no, more prototypes!
@@ -259,7 +267,7 @@ errr init_emx(void);
 /*
  * The screens 
  */
-static termPipe term_screen_body,
+static termPipe term_screen_main,
                 term_screen_recall,
                 term_screen_choice,
                 term_screen_mirror;
@@ -337,17 +345,17 @@ static errr Term_xtra_emx(int n, int v)
 {
     switch (n)
     {
-
-        case TERM_XTRA_INVIS: 
-            v_hidecursor(); 
-            return (0);
-
-        case TERM_XTRA_BEVIS: 
-            v_ctype(curs_start,curs_end); 
+        case TERM_XTRA_SHAPE: 
+            if (v) {
+                v_ctype(curs_start,curs_end); 
+            }
+            else {
+                v_hidecursor(); 
+            }
             return (0);
 
         case TERM_XTRA_NOISE: 
-            putchar(7); 
+            DosBeep(440,50);
             return (0);
 
         case TERM_XTRA_FLUSH:
@@ -377,13 +385,10 @@ static errr Term_xtra_pipe_emx(int n, int v)
     switch (n)
     {
         case TERM_XTRA_NOISE: 
-            putchar(7); 
+            DosBeep(440,50);
             return (0);
 
-        case TERM_XTRA_INVIS: 
-            return (0);
-
-        case TERM_XTRA_BEVIS: 
+        case TERM_XTRA_SHAPE: 
             return (0);
 
         case TERM_XTRA_EVENT: 
@@ -403,8 +408,6 @@ static errr Term_xtra_pipe_emx(int n, int v)
 
     return (1);
 }
-
-
 
 static errr Term_curs_pipe_emx(int x, int y)
 {
@@ -522,7 +525,7 @@ errr init_emx(void)
     initPipeTerm(&term_screen_mirror,"mirror",&term_mirror);
 
     /* Initialize main window */
-    t = (term*)(&term_screen_body);
+    t = (term*)(&term_screen_main);
     
     /* Initialize the term -- big key buffer */
     term_init(t, 80, 24, 1024);    
@@ -559,7 +562,7 @@ static FILE *initPipe(char *name)
 
 #else /* __EMX__CLIENT__ */
 
-int main(int argc, char **argv)
+int __EMX__CLIENT__(int argc, char **argv)
 {
     int c, end = 0, lines = 25;
     int x, y, h, n, v;
@@ -569,6 +572,7 @@ int main(int argc, char **argv)
     char buf[160];
     HPIPE pipe;
     APIRET rc;
+    char *target;
 
     /* Check command line */
     if (argc!=2 && argc!=3)
@@ -583,7 +587,10 @@ int main(int argc, char **argv)
 
     printf("Looking for Angband... press ^C to abort\n");
 
-    sprintf(buf,"\\pipe\\angband\\%s",argv[1]);
+    target=strdup(argv[1]);
+    for (c=0; c<strlen(target); c++) target[c]=tolower(target[c]);
+    
+    sprintf(buf,"\\pipe\\angband\\%s",target);
 
     do
     {
@@ -696,6 +703,298 @@ int main(int argc, char **argv)
 }
 
 #endif /* __EMX__CLIENT__ */
+
+#else /* EMXPM */
+
+void emx_endPM(const char *reason);
+int emx_options(char **ANGBAND_DIR_USER,
+                char **ANGBAND_DIR_SAVE,
+                char **ANGBAND_DIR_INFO,
+                char *arg_force_roguelike,
+                char *arg_force_original,
+                char *arg_fiddle,
+                char *arg_wizard,
+                char player_name[32]);
+
+void emx_init_window(void **instance,void *main_instance,int n);
+
+errr emx_curs(void *instance,int x, int y);
+errr emx_wipe(void *instance,int x, int y, int n);
+errr emx_text(void *instance,int x, int y, int n, unsigned char a, cptr s);
+void emx_init(void *instance);
+void emx_nuke(void *instance);
+int emx_read_kbd(void *instance,int wait);
+void emx_clear(void *instance);
+void emx_hidecursor(void *instance);
+void emx_showcursor(void *instance);
+
+/*
+ * termWindow* is sometimes cast to term* and vice versa, 
+ * so "term t;" must be the first line 
+ */
+
+typedef struct
+{
+    term t;
+    void *instance;                          /* Pointer to window */
+} termWindow;
+
+/*
+ * Display a cursor, on top of a given attr/char
+ */
+static errr Term_curs_emx(int x, int y)
+{
+    return emx_curs(((termWindow*)Term)->instance,x,y);
+}
+
+/*
+ * Erase a grid of space (as if spaces were printed)
+ */
+static errr Term_wipe_emx(int x, int y, int n)
+{
+    return emx_wipe(((termWindow*)Term)->instance,x,y,n);
+}
+
+/*
+ * Draw some text, wiping behind it first
+ */
+static errr Term_text_emx(int x, int y, int n, unsigned char a, cptr s)
+{
+    return emx_text(((termWindow*)Term)->instance,x,y,n,a,s);
+}
+
+/*
+ * EMX initialization
+ */
+static void Term_init_emx(term *t) 
+{
+    return emx_init(((termWindow*)t)->instance);
+}
+
+/*
+ * EMX shutdown
+ */
+static void Term_nuke_emx(term *t)
+{
+}
+
+/*
+ * Oh no, more prototypes!
+ */
+static errr CheckEvents(int returnImmediately);
+
+/*
+ * Main initialization function
+ */
+errr init_emx(void);
+
+/*
+ * The screens 
+ */
+static termWindow term_screen_main,
+                  term_screen_recall,
+                  term_screen_choice,
+                  term_screen_mirror;
+
+/*
+ * Check for events -- called by "Term_scan_emx()"
+ */
+static errr CheckEvents(int returnImmediately)
+{
+    /* Get key - Macro triggers are generated by emx_read_kbd() */
+    int k=emx_read_kbd(((termWindow*)Term)->instance,returnImmediately?0:1);
+
+    /* Nothing ready */
+    if (k < 0) return (1);
+
+    /* Enqueue the key */
+    Term_keypress(k);
+
+    /* Success */
+    return (0);
+}
+
+/*
+ * Do a special thing (beep, flush, etc)
+ */
+static errr Term_xtra_emx(int n, int v)
+{
+    void *instance=((termWindow*)Term)->instance;
+
+    switch (n)
+    {
+        case TERM_XTRA_SHAPE:
+            if (v) {
+                emx_showcursor(instance);
+            }
+            else {
+                emx_hidecursor(instance); 
+            }
+            return (0);
+
+        case TERM_XTRA_NOISE: 
+            DosBeep(440,50);
+            return (0);
+
+        case TERM_XTRA_FLUSH:
+            while (!CheckEvents(TRUE));
+            return 0;
+
+        case TERM_XTRA_EVENT:
+            return (CheckEvents(!v));
+
+        case TERM_XTRA_CLEAR:
+            emx_clear(instance);
+            return (0);
+    }
+
+    return (1);
+}
+
+void emx_init_term(termWindow *t,void *main_instance,term **angTerm,int n)
+{
+    term *te=(term*)t;
+    
+    /* Initialize window */
+    emx_init_window(&t->instance,main_instance,n);
+    
+    *angTerm=te;
+
+    /* Initialize the term -- big key buffer */
+    term_init(te, 80, 24, 1024);    
+
+    /* Special hooks */
+    te->init_hook = Term_init_emx;
+    te->nuke_hook = Term_nuke_emx;
+
+    /* Add the hooks */
+    te->text_hook = Term_text_emx;
+    te->wipe_hook = Term_wipe_emx;
+    te->curs_hook = Term_curs_emx;
+    te->xtra_hook = Term_xtra_emx;
+}
+
+/*
+ * Prepare "term.c" to use "__EMX__" built-in faked video library
+ */
+errr init_emx(void)
+{
+    /* Initialize the windows */
+    emx_init_term(&term_screen_main,  NULL,                      &term_screen,0);
+    emx_init_term(&term_screen_recall,term_screen_main.instance,&term_recall,1);
+    emx_init_term(&term_screen_choice,term_screen_main.instance,&term_choice,2);
+    emx_init_term(&term_screen_mirror,term_screen_main.instance,&term_mirror,3);
+
+    /* Activate main window */
+    Term_activate(term_screen);
+
+    /* Success */
+    return (0);
+}
+
+static void init_stuff(void)
+{
+    char path[1024];
+    cptr tail;
+    
+    /* Get the environment variable */
+    tail = getenv("ANGBAND_PATH");
+
+    /* Use the angband_path, or a default */
+    strcpy(path, tail ? tail : DEFAULT_PATH);
+
+    /* Hack -- Add a path separator (only if needed) */
+    if (!suffix(path, PATH_SEP)) strcat(path, PATH_SEP);
+
+    /* Initialize */
+    init_file_paths(path);
+}
+
+static void quit_hook(cptr s)
+{
+    /* Shut down the term windows */
+    if (term_choice) 
+    {
+        term_nuke(term_choice);
+        emx_nuke(((termWindow*)term_choice)->instance);
+    }
+    if (term_recall) 
+    {
+        term_nuke(term_recall);
+        emx_nuke(((termWindow*)term_recall)->instance);
+    }
+    if (term_mirror) 
+    {
+        term_nuke(term_mirror);
+        emx_nuke(((termWindow*)term_mirror)->instance);
+    }
+    if (term_screen) 
+    {
+        term_nuke(term_screen);
+        emx_nuke(((termWindow*)term_screen)->instance);
+    }
+
+    /* Shut down window system - doesn't return */
+    emx_endPM(s);
+}
+
+void angbandThread(void *arg)
+{
+    bool new_game = FALSE;
+    
+    int show_score = 0;
+
+    /* Save the "program name" */
+    argv0 = (char*)arg;
+
+    /* Use the "main-emx.c" support */
+    init_emx();
+    ANGBAND_SYS = "ibm";
+
+    /* Get the file paths */
+    init_stuff();
+
+    /* Assume "Wizard" permission */
+    can_be_wizard = TRUE;
+
+    if (!emx_options((char**)&ANGBAND_DIR_USER,
+                     (char**)&ANGBAND_DIR_SAVE,
+                     (char**)&ANGBAND_DIR_INFO,
+                     &arg_force_roguelike,
+                     &arg_force_original,
+                     &arg_fiddle,
+                     &arg_wizard,
+                     player_name)) quit(NULL);                
+
+    /* Process the player name */
+    process_player_name(TRUE);
+
+    /* Tell "quit()" to call "Term_nuke()" */
+    quit_aux = quit_hook;
+
+    /* If requested, display scores and quit */
+    if (show_score > 0) display_scores(0, show_score); 
+
+    /* Catch nasty signals */
+    signals_init();
+
+    /* Display the 'news' file */
+    show_news();
+
+    /* Initialize the arrays */
+    init_some_arrays();
+
+    /* Wait for response */
+    pause_line(23);
+
+    /* Play the game */
+    play_game(new_game);
+
+    /* Quit */
+    quit(NULL);
+}
+
+#endif /* EMXPM */
 
 #endif /* __EMX__ */
 

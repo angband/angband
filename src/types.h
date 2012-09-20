@@ -530,10 +530,10 @@ struct monster_type {
   byte stunned;			/* Monster is stunned		*/
   byte confused;		/* Monster is confused		*/
   byte monfear;			/* Monster is afraid		*/
-  byte xtra;			/* Monster is ???		*/
 
   byte cdis;			/* Current dis from player	*/
 
+  bool los;			/* Monster is "in sight"	*/
   bool ml;			/* Monster is "visible"		*/
 
 #ifdef WDT_TRACK_OPTIONS
@@ -947,15 +947,16 @@ struct player_type {
   bool icky_wield;		/* Icky weapon			*/
   
   s16b cur_lite;		/* Radius of lite (if any)	*/
-  s16b cur_view;		/* Radius of view (if any)	*/
 
 
   u32b update;			/* Pending Updates (bit flags)	*/
   u32b redraw;			/* Desired Redraws (bit flags)	*/
 
 
-  s16b stat_use[6];		/* Resulting stat values	*/
+  s16b stat_use[6];		/* Current modified stats	*/
+  s16b stat_top[6];		/* Maximal modified stats	*/
 
+  s16b stat_add[6];		/* Modifiers to stat values	*/
   s16b stat_ind[6];		/* Indexes into stat tables	*/
 
   byte immune_acid;		/* Immunity to acid		*/

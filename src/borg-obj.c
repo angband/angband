@@ -2164,7 +2164,11 @@ void borg_parse_equip(void)
             (0 == borg_what_text(col+19, row+1, -80, &t_a, buf)) &&
             (buf[0] && (buf[0] != ' '))) {
 
-            /* XXX Strip final spaces */
+            int k;
+
+            /* Strip trailing spaces */
+            for (k = strlen(buf); (k > 0) && (buf[k-1] == ' '); k--) ;
+            buf[k] = '\0';
         }
 
         /* Default to "nothing" */
@@ -2194,7 +2198,7 @@ void borg_parse_inven(void)
 
     int row, col;
 
-    int w1a, w1b, w2a, w2b;
+    int w1a, w1b;
     
     bool done = FALSE;
 
@@ -2203,10 +2207,11 @@ void borg_parse_inven(void)
     char buf[160];
 
 
+    /* XXX XXX XXX */
     /* Hack -- Parse the current and maximum weight */
     if ((0 == borg_what_text_hack(0, 0, -80, &t_a, buf)) &&
-        (sscanf(buf, "Inventory (carrying %d.%d / %d.%d pounds)",
-                &w1a, &w1b, &w2a, &w2b) == 4)) {
+        (sscanf(buf, "Inventory (carrying %d.%d pounds)",
+                &w1a, &w1b) == 2)) {
 
         /* Save the current weight */
         auto_cur_wgt = w1a * 10 + w1b;
@@ -2237,7 +2242,11 @@ void borg_parse_inven(void)
             (0 == borg_what_text(col+3, row+1, -80, &t_a, buf)) &&
             (buf[0] && (buf[0] != ' '))) {
 
-            /* XXX Strip final spaces */
+            int k;
+
+            /* Strip trailing spaces */
+            for (k = strlen(buf); (k > 0) && (buf[k-1] == ' '); k--) ;
+            buf[k] = '\0';
         }
 
         /* Default to "nothing" */

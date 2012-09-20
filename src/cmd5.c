@@ -1,6 +1,6 @@
 /* File: cmd5.c */
 
-/* Purpose: code for mage/priest spells/prayers */
+/* Purpose: Spell/Prayer commands */
 
 /*
  * Copyright (c) 1989 James E. Wilson, Robert A. Koeneke
@@ -11,6 +11,63 @@
  */
 
 #include "angband.h"
+
+
+
+/*
+ * Returns spell chance of failure for spell		-RAK-	
+ */
+static s16b spell_chance(int spell)
+{
+    int		chance, minfail;
+
+    magic_type	*s_ptr;
+
+
+    /* Paranoia -- must be literate */
+    if (!mp_ptr->spell_book) return (100);
+
+    /* Access the spell */
+    s_ptr = &mp_ptr->info[spell];
+
+    /* Extract the base spell failure rate */
+    chance = s_ptr->sfail;
+
+    /* Reduce failure rate by "effective" level adjustment */
+    chance -= 3 * (p_ptr->lev - s_ptr->slevel);
+
+    /* Reduce failure rate by INT/WIS adjustment */
+    chance -= 3 * (adj_mag_stat[p_ptr->stat_ind[mp_ptr->spell_stat]] - 1);
+
+    /* Not enough mana to cast */
+    if (s_ptr->smana > p_ptr->csp) {
+        chance += 5 * (s_ptr->smana - p_ptr->csp);
+    }
+
+    /* Extract the minimum failure rate */
+    minfail = adj_mag_fail[p_ptr->stat_ind[mp_ptr->spell_stat]];
+
+    /* Non mage/priest characters never get too good */
+    if ((p_ptr->pclass != 1) && (p_ptr->pclass != 2)) {
+        if (minfail < 5) minfail = 5;
+    }
+
+    /* Hack -- Priest prayer penalty for "edged" weapons  -DGK */
+    if ((p_ptr->pclass == 2) && (p_ptr->icky_wield)) chance += 25;
+
+    /* Minimum failure rate */
+    if (chance < minfail) chance = minfail;
+
+    /* Stunning makes spells harder */
+    if (p_ptr->stun > 50) chance += 25;
+    else if (p_ptr->stun) chance += 15;
+
+    /* Always a 5 percent chance of working */
+    if (chance > 95) chance = 95;
+
+    /* Return the chance */
+    return (chance);
+}
 
 
 
@@ -190,14 +247,11 @@ static void print_spells(byte *spell, int num)
 
         /* XXX XXX Could label spells above the players level */
 
-        /* Default to no comment */
-        comment = "";
+        /* Get extra info */
+        spell_info(info, j);
 
-        /* Get an additional comment */
-        if (show_spell_info) {
-            spell_info(info, j);
-            comment = info;
-        }
+        /* Use that info */
+        comment = info;
 
         /* Analyze the spell */
         if ((j < 32) ?
@@ -275,14 +329,11 @@ static void display_spells(byte *spell, int num)
             continue;
         }
 
-        /* Default to no comment */
-        comment = "";
+        /* Get extra info */
+        spell_info(info, j);
 
-        /* Get an additional comment */
-        if (show_spell_info) {
-            spell_info(info, j);
-            comment = info;
-        }
+        /* Use that info */
+        comment = info;
 
         /* Analyze the spell */
         if ((j < 32) ?
@@ -644,8 +695,14 @@ void do_cmd_browse(void)
     /* Display the spells */
     print_spells(spell, num);
 
-    /* Wait for it */
-    pause_line(0);
+    /* Clear the top line */
+    prt("", 0, 0);
+
+    /* Prompt user */
+    put_str("[Press any key to continue]", 0, 23);
+
+    /* Wait for key */
+    (void)inkey();
 
     /* Restore the screen */
     Term_load();
@@ -788,6 +845,9 @@ void do_cmd_study(void)
         msg_format("You can learn more %ss.", p);
     }
 
+    /* Save the new_spells value */
+    p_ptr->old_spells = p_ptr->new_spells;
+
     /* Redraw Study Status */
     p_ptr->redraw |= (PR_STUDY);
 }
@@ -901,8 +961,7 @@ void do_cmd_cast(void)
             break;
 
           case 2:
-            teleport_flag = TRUE;
-            teleport_dist = 10;
+            teleport_player(10);
             break;
 
           case 3:
@@ -958,8 +1017,7 @@ void do_cmd_cast(void)
             break;
 
           case 14:
-            teleport_flag = TRUE;
-            teleport_dist = plev * 5;
+            teleport_player(plev * 5);
             break;
 
           case 15:
@@ -1429,8 +1487,7 @@ void do_cmd_pray(void)
             break;
 
           case 9:
-            teleport_flag = TRUE;
-            teleport_dist = plev * 3;
+            teleport_player(plev * 3);
             break;
 
           case 10:
@@ -1631,13 +1688,11 @@ void do_cmd_pray(void)
             break;
 
           case 52:
-            teleport_flag = TRUE;
-            teleport_dist = 10;
+            teleport_player(10);
             break;
 
           case 53:
-            teleport_flag = TRUE;
-            teleport_dist = plev * 8;
+            teleport_player(plev * 8);
             break;
 
           case 54:

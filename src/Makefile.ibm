@@ -6,15 +6,17 @@
 
 
 OBJS = \
-  main.o main-ibm.o \
-  signals.o util.o io.o init.o save.o save-old.o files.o \
-  generate.o birth.o melee.o dungeon.o store.o \
-  effects.o cmd1.o cmd2.o cmd3.o cmd4.o cmd5.o cmd6.o \
-  misc.o monster.o mon-desc.o object.o obj-desc.o \
-  spells1.o spells2.o cave.o tables.o variable.o \
-  term.o z-util.o z-virt.o z-form.o \
-  borg-ben.o borg-aux.o borg-ext.o borg-obj.o borg-map.o borg.o \
-  wizard.o wiz-spo.o
+  z-util.o z-virt.o z-form.o z-rand.o z-term.o \
+  variable.o tables.o util.o cave.o \
+  object1.o object2.o monster1.o monster2.o \
+  xtra1.o xtra2.o spells1.o spells2.o \
+  melee1.o melee2.o save.o files.o \
+  cmd1.o cmd2.o cmd3.o cmd4.o cmd5.o cmd6.o \
+  store.o birth.o load1.o load2.o \
+  wizard1.o wizard2.o borg.o borg-map.o \
+  borg-obj.o borg-ext.o borg-aux.o borg-ben.o \
+  generate.o dungeon.o init1.o init2.o \
+  main-ibm.o main.o
 
 
 # Compiler

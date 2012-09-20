@@ -1,6 +1,6 @@
 /* File: cmd4.c */
 
-/* Purpose: more low level code */
+/* Purpose: Interface commands */
 
 /*
  * Copyright (c) 1989 James E. Wilson, Robert A. Koeneke
@@ -12,112 +12,6 @@
 
 #include "angband.h"
 
-
-
-
-
-/*
- * Go up one level					-RAK-	
- */
-void do_cmd_go_up(void)
-{
-    cave_type *c_ptr;
-
-    /* Player grid */
-    c_ptr = &cave[py][px];
-
-    /* Verify stairs */
-    if ((c_ptr->feat & 0x3F) != 0x06) {
-        msg_print("I see no up staircase here.");
-        return;
-    }
-
-    /* Hack -- take a turn */
-    energy_use = 100;
-    
-    /* Success */
-    msg_print("You enter a maze of up staircases.");
-
-    /* Go up the stairs */
-    dun_level--;
-    new_level_flag = TRUE;
-
-    /* Create a way back */
-    create_down_stair = TRUE;
-}
-
-
-/*
- * Go down one level
- */
-void do_cmd_go_down(void)
-{
-    cave_type *c_ptr;
-
-    /* Player grid */
-    c_ptr = &cave[py][px];
-
-    /* Verify stairs */
-    if ((c_ptr->feat & 0x3F) != 0x07) {
-        msg_print("I see no down staircase here.");
-        return;
-    }
-
-    /* Hack -- take a turn */
-    energy_use = 100;
-    
-    /* Success */
-    msg_print("You enter a maze of down staircases.");
-
-    /* Go down */
-    dun_level++;
-    new_level_flag = TRUE;
-
-    /* Create a way back */
-    create_up_stair = TRUE;
-}
-
-
-/*
- * Hack -- commit suicide
- */
-void do_cmd_suicide(void)
-{
-    int i;
-
-    /* Flush input */
-    flush();
-
-    /* Verify Retirement */
-    if (total_winner) {
-
-        /* Verify */
-        if (!get_check("Do you want to retire? ")) return;
-    }
-
-    /* Verify Suicide */
-    else {
-
-        /* Verify */
-        if (!get_check("Do you really want to quit? ")) return;
-
-        /* Special Verify */
-        prt("Please verify QUITTING by typing the '@' sign: ", 0, 0);
-        flush();
-        i = inkey();
-        prt("", 0, 0);
-        if (i != '@') return;
-    }
-
-    /* Stop playing */
-    alive = FALSE;
-
-    /* Kill the player */
-    death = TRUE;
-
-    /* Cause of death */
-    (void)strcpy(died_from, "Quitting");
-}
 
 
 /*
@@ -180,11 +74,17 @@ void do_cmd_redraw(void)
     /* Combine and Reorder the pack */
     p_ptr->update |= (PU_COMBINE | PU_REORDER);
 
+    /* Update torch */
+    p_ptr->update |= (PU_TORCH);
+
     /* Update stuff */
     p_ptr->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
 
-    /* Update stuff */
-    p_ptr->update |= (PU_NOTE | PU_VIEW | PU_LITE);
+    /* Forget lite/view */
+    p_ptr->update |= (PU_UN_VIEW | PU_UN_LITE);
+
+    /* Update lite/view */
+    p_ptr->update |= (PU_VIEW | PU_LITE);
     
     /* Update monsters */
     p_ptr->update |= (PU_MONSTERS);
@@ -272,6 +172,9 @@ void do_cmd_change_name(void)
             bell();
             break;
         }
+
+        /* Flush messages */
+        msg_print(NULL);
     }
 
     /* Restore the screen */
@@ -279,218 +182,6 @@ void do_cmd_change_name(void)
 
     /* Leave "icky" mode */
     character_icky = FALSE;
-}
-
-
-/*
- * Hack -- toggle search mode
- */
-void do_cmd_toggle_search(void)
-{
-    if (p_ptr->searching) {
-        search_off();
-    }
-    else {
-        search_on();
-    }
-}
-
-
-
-/*
- * An "item_tester_hook" for refilling lanterns
- */
-static bool item_tester_refill_lantern(inven_type *i_ptr)
-{
-    /* Flasks of oil are okay */
-    if (i_ptr->tval == TV_FLASK) return (TRUE);
-
-    /* Assume not okay */
-    return (FALSE);
-}
-
-
-/*
- * Refill the players lamp (from the pack or floor)
- */
-static void do_cmd_refill_lamp(void)
-{
-    int item;
-
-    inven_type *i_ptr;
-    inven_type *j_ptr;
-
-
-    /* Restrict the choices */
-    item_tester_hook = item_tester_refill_lantern;
-
-    /* Get an item (from inven or floor) */
-    if (!get_item(&item, "Refill with which flask? ", FALSE, TRUE, TRUE)) {
-        if (item == -2) msg_print("You have no flasks of oil.");
-        return;
-    }
-
-    /* Get the item (in the pack) */
-    if (item >= 0) {
-        i_ptr = &inventory[item];
-    }
-
-    /* Get the item (on the floor) */
-    else {
-        i_ptr = &i_list[0 - item];
-    }
-
-
-    /* Take a partial turn */
-    energy_use = 50;
-
-    /* Access the lantern */
-    j_ptr = &inventory[INVEN_LITE];
-
-    /* Refuel */
-    j_ptr->pval += i_ptr->pval;
-
-    /* Message */
-    msg_print("You fuel your lamp.");
-
-    /* Comment */
-    if (j_ptr->pval >= FUEL_LAMP) {
-        j_ptr->pval = FUEL_LAMP;
-        msg_print("Your lamp is full.");
-    }
-
-    /* Decrease the item (from the pack) */
-    if (item >= 0) {
-        inven_item_increase(item, -1);
-        inven_item_describe(item);
-        inven_item_optimize(item);
-    }
-
-    /* Decrease the item (from the floor) */
-    else {
-        floor_item_increase(0 - item, -1);
-        floor_item_describe(0 - item);
-        floor_item_optimize(0 - item);
-    }
-}
-
-
-
-/*
- * An "item_tester_hook" for refilling torches
- */
-static bool item_tester_refill_torch(inven_type *i_ptr)
-{
-    /* Torches are okay */
-    if ((i_ptr->tval == TV_LITE) &&
-        (i_ptr->sval == SV_LITE_TORCH)) return (TRUE);
-
-    /* Assume not okay */
-    return (FALSE);
-}
-
-
-/*
- * Refuel the players torch (from the pack or floor)
- */
-static void do_cmd_refill_torch(void)
-{
-    int item;
-
-    inven_type *i_ptr;
-    inven_type *j_ptr;
-
-
-    /* Restrict the choices */
-    item_tester_hook = item_tester_refill_torch;
-
-    /* Get an item (from inven or floor) */
-    if (!get_item(&item, "Refuel with which torch? ", FALSE, TRUE, TRUE)) {
-        if (item == -2) msg_print("You have no extra torches.");
-        return;
-    }
-
-    /* Get the item (in the pack) */
-    if (item >= 0) {
-        i_ptr = &inventory[item];
-    }
-
-    /* Get the item (on the floor) */
-    else {
-        i_ptr = &i_list[0 - item];
-    }
-
-
-    /* Take a partial turn */	
-    energy_use = 50;
-
-    /* Access the primary torch */
-    j_ptr = &inventory[INVEN_LITE];
-
-    /* Refuel */
-    j_ptr->pval += i_ptr->pval;
-
-    /* Message */
-    msg_print("You combine the torches.");
-
-    /* Over-fuel message */
-    if (j_ptr->pval >= FUEL_TORCH) {
-        j_ptr->pval = FUEL_TORCH;
-        msg_print("Your torch is fully fueled.");
-    }
-
-    /* Refuel message */
-    else {
-        msg_print("Your torch glows more brightly.");
-    }
-
-    /* Decrease the item (from the pack) */
-    if (item >= 0) {
-        inven_item_increase(item, -1);
-        inven_item_describe(item);
-        inven_item_optimize(item);
-    }
-
-    /* Decrease the item (from the floor) */
-    else {
-        floor_item_increase(0 - item, -1);
-        floor_item_describe(0 - item);
-        floor_item_optimize(0 - item);
-    }
-}
-
-
-
-
-/*
- * Refill the players lamp, or restock his torches
- */
-void do_cmd_refill(void)
-{
-    inven_type *i_ptr;
-
-    /* Get the light */
-    i_ptr = &inventory[INVEN_LITE];
-
-    /* It is nothing */
-    if (i_ptr->tval != TV_LITE) {
-        msg_print("You are not wielding a light.");
-    }
-
-    /* It's a lamp */
-    else if (i_ptr->sval == SV_LITE_LANTERN) {
-        do_cmd_refill_lamp();
-    }
-
-    /* It's a torch */
-    else if (i_ptr->sval == SV_LITE_TORCH) {
-        do_cmd_refill_torch();
-    }
-
-    /* No torch to refill */
-    else {
-        msg_print("Your light cannot be refilled.");
-    }
 }
 
 
@@ -646,22 +337,6 @@ void do_cmd_messages(void)
     /* Leave "icky" mode */
     character_icky = FALSE;
 }
-
-
-/*
- * Target command
- */
-void do_cmd_target(void)
-{
-    /* Set the target */
-    if (target_set()) {
-        msg_print("Target Selected.");
-    }
-    else {
-        msg_print("Target Aborted.");
-    }
-}
-
 
 
 /*
@@ -904,6 +579,9 @@ void do_cmd_options(void)
             /* Oops */
             bell();
         }
+
+        /* Flush messages */
+        msg_print(NULL);
     }
 
 
@@ -1823,6 +1501,9 @@ void do_cmd_visuals(void)
         else {
             bell();
         }
+        
+        /* Flush messages */
+        msg_print(NULL);
     }
 
 
@@ -2056,6 +1737,9 @@ void do_cmd_colors(void)
         else {
             bell();
         }
+        
+        /* Flush messages */
+        msg_print(NULL);
     }
 
 
@@ -2096,733 +1780,56 @@ void do_cmd_version(void)
 
 
 /*
- * Save the game
+ * Note that "feeling" is set to zero unless some time has passed.
+ * Note that this is done when the level is GENERATED, not entered.
  */
-void do_cmd_save_game(void)
+void do_cmd_feeling()
 {
-    /* Disturb the player */
-    disturb(1, 0);
-
-    /* Clear messages */
-    msg_print(NULL);
-
-    /* Handle stuff */
-    handle_stuff();
-
-    /* Message */
-    prt("Saving game...", 0, 0);
-
-    /* Refresh */
-    Term_fresh();
-
-    /* The player is not dead */
-    (void)strcpy(died_from, "(saved)");
-
-    /* Save the player */
-    if (save_player()) {
-        prt("Saving game... done.", 0, 0);
-    }
-
-    /* Save failed (oops) */
-    else {
-        prt("Saving game... failed!", 0, 0);
-    }
-    
-    /* Refresh */
-    Term_fresh();
-
-    /* Hack -- Forget that the player was saved */
-    character_saved = FALSE;
-
-    /* Note that the player is not dead */
-    (void)strcpy(died_from, "(alive and well)");
-}
-
-
-
-/*
- * Destroy an item
- */
-void do_cmd_destroy(void)
-{
-    int			item, amt = 1;
-    int			old_number;
-
-    inven_type		*i_ptr;
-
-    char		i_name[80];
-
-    char		out_val[160];
-
-
-    /* Get an item (from inven or floor) */
-    if (!get_item(&item, "Destroy which item? ", FALSE, TRUE, TRUE)) {
-        if (item == -2) msg_print("You have nothing to destroy.");
+    /* No useful feeling in town */
+    if (!dun_level) {
+        msg_print("Looks like a typical town.");
         return;
     }
 
-    /* Get the item (in the pack) */
-    if (item >= 0) {
-        i_ptr = &inventory[item];
-    }
-
-    /* Get the item (on the floor) */
-    else {
-        i_ptr = &i_list[0 - item];
-    }
-
-
-    /* See how many items */
-    if (i_ptr->number > 1) {
-
-        /* Get a quantity */
-        amt = get_quantity(NULL, i_ptr->number);
-
-        /* Allow user abort */
-        if (amt <= 0) return;
-    }
-
-
-    /* Describe the object */
-    old_number = i_ptr->number;
-    i_ptr->number = amt;
-    objdes(i_name, i_ptr, TRUE, 3);
-    i_ptr->number = old_number;
-
-    /* Make a verification */
-    sprintf(out_val, "Really destroy %s? ", i_name);
-    if (!get_check(out_val)) return;
-
-
-    /* Take a turn */
-    energy_use = 100;
-
-    /* Artifacts cannot be destroyed */
-    if (artifact_p(i_ptr)) {
-
-        cptr feel = "special";
-
-        /* Message */
-        msg_format("You cannot destroy %s.", i_name);
-
-        /* Hack -- Handle icky artifacts */
-        if (cursed_p(i_ptr) || broken_p(i_ptr)) feel = "terrible";
-
-        /* Hack -- inscribe the artifact */
-        i_ptr->note = quark_add(feel);
-
-        /* We have "felt" it (again) */
-        i_ptr->ident |= (ID_SENSE);
-
-        /* Redraw the choice window */
-        p_ptr->redraw |= (PR_CHOOSE);
-
-        /* Combine the pack */
-        p_ptr->update |= (PU_COMBINE);
-
-        /* Done */
-        return;
-    }
-
-    /* Message */
-    msg_format("You destroy %s.", i_name);
-
-    /* Eliminate the item (from the pack) */
-    if (item >= 0) {
-        inven_item_increase(item, -amt);
-        inven_item_describe(item);
-        inven_item_optimize(item);
-    }
-
-    /* Eliminate the item (from the floor) */
-    else {
-        floor_item_increase(0 - item, -amt);
-        floor_item_describe(0 - item);
-        floor_item_optimize(0 - item);
+    /* Analyze the feeling */
+    switch (feeling) {
+      case 0:
+        msg_print("Looks like any other level.");
+        break;
+      case 1:
+        msg_print("You feel there is something special about this level.");
+        break;
+      case 2:
+        msg_print("You have a superb feeling about this level.");
+        break;
+      case 3:
+        msg_print("You have an excellent feeling...");
+        break;
+      case 4:
+        msg_print("You have a very good feeling...");
+        break;
+      case 5:
+        msg_print("You have a good feeling...");
+        break;
+      case 6:
+        msg_print("You feel strangely lucky...");
+        break;
+      case 7:
+        msg_print("You feel your luck is turning...");
+        break;
+      case 8:
+        msg_print("You like the look of this place...");
+        break;
+      case 9:
+        msg_print("This level can't be all bad...");
+        break;
+      default:
+        msg_print("What a boring place...");
+        break;
     }
 }
 
 
-/*
- * Observe an item which has been *identify*-ed
- */
-void do_cmd_observe(void)
-{
-    int			item;
-
-    inven_type		*i_ptr;
-
-    char		i_name[80];
-
-
-    /* Get an item (from equip or inven or floor) */
-    if (!get_item(&item, "Examine which item? ", TRUE, TRUE, TRUE)) {
-        if (item == -2) msg_print("You have nothing to examine.");
-        return;
-    }
-
-    /* Get the item (in the pack) */
-    if (item >= 0) {
-        i_ptr = &inventory[item];
-    }
-
-    /* Get the item (on the floor) */
-    else {
-        i_ptr = &i_list[0 - item];
-    }
-
-
-    /* Require full knowledge */
-    if (!(i_ptr->ident & ID_MENTAL)) {
-        msg_print("You have no special knowledge about that item.");
-        return;
-    }
-
-
-    /* Description */
-    objdes(i_name, i_ptr, TRUE, 3);
-
-    /* Describe */
-    msg_format("Examining %s...", i_name);
-
-    /* Describe it fully */
-    if (!identify_fully_aux(i_ptr)) msg_print("You see nothing special.");
-}
-
-
-
-/*
- * Toggle "mode" for the "choice" window
- */
-void do_cmd_toggle_choose(void)
-{
-    /* Hack -- flip the current status */
-    choose_default = !choose_default;
-
-    /* Redraw the choice window */
-    p_ptr->redraw |= (PR_CHOOSE);
-}
-
-
-
-
-/*
- * Move an item from equipment list to pack
- * Note that only one item at a time can be wielded per slot.
- * Note that taking off an item when "full" will cause that item
- * to fall to the ground.
- */
-static void inven_takeoff(int item, int amt)
-{
-    int			posn;
-
-    inven_type		*i_ptr;
-    inven_type		tmp_obj;
-
-    cptr		act;
-
-    char		i_name[80];
-
-
-    /* Get the item to take off */
-    i_ptr = &inventory[item];
-
-    /* Paranoia */
-    if (amt <= 0) return;
-
-    /* Verify */
-    if (amt > i_ptr->number) amt = i_ptr->number;
-
-    /* Make a copy to carry */
-    tmp_obj = *i_ptr;
-    tmp_obj.number = amt;
-
-    /* What are we "doing" with the object */
-    if (amt < i_ptr->number) {
-        act = "Took off";
-    }
-    else if (item == INVEN_WIELD) {
-        act = "Was wielding";
-    }
-    else if (item == INVEN_BOW) {
-        act = "Was shooting with";
-    }
-    else if (item == INVEN_LITE) {
-        act = "Light source was";
-    }
-    else {
-        act = "Was wearing";
-    }
-
-    /* Carry the object, saving the slot it went in */
-    posn = inven_carry(&tmp_obj);
-
-    /* Describe the result */
-    objdes(i_name, i_ptr, TRUE, 3);
-
-    /* Message */
-    msg_format("%^s %s (%c).", act, i_name, index_to_label(posn));
-
-    /* Delete (part of) it */
-    inven_item_increase(item, -amt);
-    inven_item_optimize(item);
-}
-
-
-
-
-/*
- * Drops (some of) an item from inventory to "near" the current location
- */
-static void inven_drop(int item, int amt)
-{
-    inven_type		*i_ptr;
-    inven_type		 tmp_obj;
-
-    cptr		act;
-
-    char		i_name[80];
-
-
-    /* Access the slot to be dropped */
-    i_ptr = &inventory[item];
-
-    /* Error check */
-    if (amt <= 0) return;
-
-    /* Not too many */
-    if (amt > i_ptr->number) amt = i_ptr->number;
-
-    /* Nothing done? */
-    if (amt <= 0) return;
-
-    /* Make a "fake" object */
-    tmp_obj = *i_ptr;
-    tmp_obj.number = amt;
-
-    /* What are we "doing" with the object */
-    if (amt < i_ptr->number) {
-        act = "Dropped";
-    }
-    else if (item == INVEN_WIELD) {
-        act = "Was wielding";
-    }
-    else if (item == INVEN_BOW) {
-        act = "Was shooting with";
-    }
-    else if (item == INVEN_LITE) {
-        act = "Light source was";
-    }
-    else if (item >= INVEN_WIELD) {
-        act = "Was wearing";
-    }
-    else {
-        act = "Dropped";
-    }
-
-    /* Message */
-    objdes(i_name, &tmp_obj, TRUE, 3);
-
-    /* Message */
-    msg_format("%^s %s (%c).", act, i_name, index_to_label(item));
-
-    /* Drop it (carefully) near the player */
-    drop_near(&tmp_obj, 0, py, px);
-
-    /* Decrease the item, optimize. */
-    inven_item_increase(item, -amt);
-    inven_item_describe(item);
-    inven_item_optimize(item);
-}
-
-
-
-
-
-/*
- * Display inventory
- */
-void do_cmd_inven(void)
-{
-    char out_val[160];
-
-
-    /* Note that we are in "inventory" mode */
-    command_wrk = FALSE;
-
-
-    /* Save the screen */
-    Term_save();
-
-    /* Hack -- show empty slots */
-    item_tester_full = TRUE;
-
-    /* Display the inventory */
-    show_inven();
-
-    /* Hack -- hide empty slots */
-    item_tester_full = FALSE;
-
-    /* Build a prompt */
-    sprintf(out_val, "Inventory (carrying %d.%d pounds). Command: ",
-            total_weight / 10, total_weight % 10);
-
-    /* Get a command */
-    prt(out_val, 0, 0);
-
-    /* Get a new command */
-    command_new = inkey();
-
-    /* Restore the screen */
-    Term_load();
-
-
-    /* Process "Escape" */
-    if (command_new == ESCAPE) {
-
-        /* Reset stuff */
-        command_new = 0;
-        command_gap = 50;
-    }
-
-    /* Process normal keys */
-    else {
-
-        /* Hack -- Use "display" mode */
-        command_see = TRUE;
-    }
-}
-
-
-/*
- * Display equipment
- */
-void do_cmd_equip(void)
-{
-    char out_val[160];
-
-
-    /* Note that we are in "equipment" mode */
-    command_wrk = TRUE;
-
-
-    /* Save the screen */
-    Term_save();
-
-    /* Hack -- show empty slots */
-    item_tester_full = TRUE;
-
-    /* Display the equipment */
-    show_equip();
-
-    /* Hack -- undo the hack above */
-    item_tester_full = FALSE;
-
-    /* Build a prompt */
-    sprintf(out_val, "Equipment (carrying %d.%d pounds). Command: ",
-            total_weight / 10, total_weight % 10);
-
-    /* Get a command */
-    prt(out_val, 0, 0);
-
-    /* Get a new command */
-    command_new = inkey();
-
-    /* Restore the screen */
-    Term_load();
-
-
-    /* Process "Escape" */
-    if (command_new == ESCAPE) {
-
-        /* Reset stuff */
-        command_new = 0;
-        command_gap = 50;
-    }
-
-    /* Process normal keys */
-    else {
-
-        /* Enter "display" mode */
-        command_see = TRUE;
-    }
-}
-
-
-/*
- * The "wearable" tester
- */
-static bool item_tester_hook_wear(inven_type *i_ptr)
-{
-    /* Check for a usable slot */
-    if (wield_slot(i_ptr) >= INVEN_WIELD) return (TRUE);
-
-    /* Assume not wearable */
-    return (FALSE);
-}
-
-
-/*
- * Wield or wear a single item from the pack or floor
- */
-void do_cmd_wield(void)
-{
-    int item, slot;
-    inven_type tmp_obj;
-    inven_type *i_ptr;
-
-    cptr act;
-
-    char i_name[80];
-
-
-    /* Restrict the choices */
-    item_tester_hook = item_tester_hook_wear;
-
-    /* Get an item (from inven or floor) */
-    if (!get_item(&item, "Wear/Wield which item? ", FALSE, TRUE, TRUE)) {
-        if (item == -2) msg_print("You have nothing you can wear or wield.");
-        return;
-    }
-
-    /* Get the item (in the pack) */
-    if (item >= 0) {
-        i_ptr = &inventory[item];
-    }
-
-    /* Get the item (on the floor) */
-    else {
-        i_ptr = &i_list[0 - item];
-    }
-
-
-    /* Check the slot */
-    slot = wield_slot(i_ptr);
-
-    /* Prevent wielding into a cursed slot */
-    if (cursed_p(&inventory[slot])) {
-
-        /* Describe it */
-        objdes(i_name, &inventory[slot], FALSE, 0);
-
-        /* Message */
-        msg_format("The %s you are %s appears to be cursed.",
-                   i_name, describe_use(slot));
-
-        /* Cancel the command */
-        return;
-    }
-
-    /* Hack -- Verify potential overflow */
-    if ((inven_cnt >= INVEN_PACK) &&
-        ((item < 0) || (i_ptr->number > 1))) {
-
-        /* Verify with the player */
-        if (other_query_flag &&
-            !get_check("Your pack may overflow.  Continue? ")) return;
-    }
-
-
-    /* Take a turn */
-    energy_use = 100;
-
-    /* Get a copy of the object to wield */
-    tmp_obj = *i_ptr;
-    tmp_obj.number = 1;
-
-    /* Decrease the item (from the pack) */
-    if (item >= 0) {
-        inven_item_increase(item, -1);
-        inven_item_optimize(item);
-    }
-
-    /* Decrease the item (from the floor) */
-    else {
-        floor_item_increase(0 - item, -1);
-        floor_item_optimize(0 - item);
-    }
-
-    /* Access the wield slot */
-    i_ptr = &inventory[slot];
-
-    /* Take off the "entire" item if one is there */
-    if (inventory[slot].k_idx) inven_takeoff(slot, 255);
-
-    /*** Could make procedure "inven_wield()" ***/
-
-    /* Wear the new stuff */
-    *i_ptr = tmp_obj;
-
-    /* Increase the weight */
-    total_weight += i_ptr->weight;
-
-    /* Increment the equip counter by hand */
-    equip_cnt++;
-
-    /* Where is the item now */
-    if (slot == INVEN_WIELD) {
-        act = "You are wielding";
-    }
-    else if (slot == INVEN_BOW) {
-        act = "You are shooting with";
-    }
-    else if (slot == INVEN_LITE) {
-        act = "Your light source is";
-    }
-    else {
-        act = "You are wearing";
-    }
-
-    /* Describe the result */
-    objdes(i_name, i_ptr, TRUE, 3);
-
-    /* Message */
-    msg_format("%^s %s (%c).", act, i_name, index_to_label(slot));
-
-    /* Cursed! */
-    if (cursed_p(i_ptr)) {
-
-        /* Warn the player */
-        msg_print("Oops! It feels deathly cold!");
-
-        /* Note the curse */
-        i_ptr->ident |= ID_SENSE;
-    }
-
-    /* Recalculate bonuses */
-    p_ptr->update |= (PU_BONUS);
-
-    /* Recalculate mana */
-    p_ptr->update |= (PU_MANA);
-
-    /* Redraw equippy chars */
-    p_ptr->redraw |= (PR_EQUIPPY);
-    
-    /* Redraw the choice window */
-    p_ptr->redraw |= (PR_CHOOSE);
-}
-
-
-
-/*
- * Take off an item
- */
-void do_cmd_takeoff(void)
-{
-    int item;
-
-    inven_type *i_ptr;
-
-
-    /* Hack -- verify potential overflow */
-    if (inven_cnt >= INVEN_PACK) {
-
-        /* Verify with the player */
-        if (other_query_flag &&
-            !get_check("Your pack may overflow.  Continue? ")) return;
-    }
-
-
-    /* Get an item (from equip) */
-    if (!get_item(&item, "Take off which item? ", TRUE, FALSE, FALSE)) {
-        if (item == -2) msg_print("You are not wearing anything to take off.");
-        return;
-    }
-
-    /* Get the item (in the pack) */
-    if (item >= 0) {
-        i_ptr = &inventory[item];
-    }
-
-    /* Get the item (on the floor) */
-    else {
-        i_ptr = &i_list[0 - item];
-    }
-
-
-    /* Item is cursed */
-    if (cursed_p(i_ptr)) {
-
-        /* Oops */
-        msg_print("Hmmm, it seems to be cursed.");
-        
-        /* Nope */
-        return;
-    }
-
-
-    /* Take a partial turn */
-    energy_use = 50;
-
-    /* Take off the item */
-    inven_takeoff(item, 255);
-}
-
-
-/*
- * Drop an item
- */
-void do_cmd_drop(void)
-{
-    int item, amt = 1;
-
-    inven_type *i_ptr;
-
-
-    /* Get an item (from equip or inven) */
-    if (!get_item(&item, "Drop which item? ", TRUE, TRUE, FALSE)) {
-        if (item == -2) msg_print("You have nothing to drop.");
-        return;
-    }
-
-    /* Get the item (in the pack) */
-    if (item >= 0) {
-        i_ptr = &inventory[item];
-    }
-
-    /* Get the item (on the floor) */
-    else {
-        i_ptr = &i_list[0 - item];
-    }
-
-
-    /* Cannot remove cursed items */
-    if ((item >= INVEN_WIELD) && cursed_p(i_ptr)) {
-
-        /* Oops */
-        msg_print("Hmmm, it seems to be cursed.");
-        
-        /* Nope */
-        return;
-    }
-
-
-    /* See how many items */
-    if (i_ptr->number > 1) {
-
-        /* Get a quantity */
-        amt = get_quantity(NULL, i_ptr->number);
-
-        /* Allow user abort */
-        if (amt <= 0) return;
-    }
-
-
-    /* Mega-Hack -- verify "dangerous" drops */
-    if (cave[py][px].i_idx) {
-
-        /* XXX XXX Verify with the player */
-        if (other_query_flag &&
-            !get_check("The item may disappear.  Continue? ")) return;
-    }
-
-
-    /* Take a partial turn */
-    energy_use = 50;
-
-    /* Drop (some of) the item */
-    inven_drop(item, amt);
-}
 
 
 
@@ -3048,4 +2055,187 @@ void do_cmd_save_screen(void)
 
 
 #endif
+
+
+
+
+/*
+ * Check the status of "artifacts"
+ *
+ * XXX Consider use of "term_mirror"
+ */
+void do_cmd_check_artifacts(void)
+{
+    int i, k, z, x, y;
+
+    FILE *fff;
+
+    char file_name[1024];
+
+    char base_name[80];
+
+    bool okay[MAX_A_IDX];
+
+
+    /* Temporary file */
+    if (path_temp(file_name, 1024)) return;
+
+    /* Open a new file */
+    fff = fopen(file_name, "w");
+
+    /* Scan the artifacts */
+    for (k = 0; k < MAX_A_IDX; k++) {
+
+        artifact_type *a_ptr = &a_info[k];
+
+        /* Default */
+        okay[k] = FALSE;
+
+        /* Skip "empty" artifacts */
+        if (!a_ptr->name) continue;
+
+        /* Skip "uncreated" artifacts */
+        if (!a_ptr->cur_num) continue;
+
+        /* Assume okay */
+        okay[k] = TRUE;
+    }
+
+    /* Check the dungeon */
+    for (y = 0; y < cur_hgt; y++) {
+        for (x = 0; x < cur_wid; x++) {
+
+            cave_type *c_ptr = &cave[y][x];
+
+            /* Process objects */
+            if (c_ptr->i_idx) {
+
+                inven_type *i_ptr = &i_list[c_ptr->i_idx];
+
+                /* Ignore non-artifacts */
+                if (!artifact_p(i_ptr)) continue;
+
+                /* Ignore known items */
+                if (inven_known_p(i_ptr)) continue;
+                    
+                /* Note the artifact */
+                okay[i_ptr->name1] = FALSE;
+            }
+        }
+    }
+
+    /* Check the inventory */
+    for (i = 0; i < INVEN_PACK; i++) {
+
+        inven_type *i_ptr = &inventory[i];
+
+        /* Ignore non-objects */
+        if (!i_ptr->k_idx) continue;
+
+        /* Ignore non-artifacts */
+        if (!artifact_p(i_ptr)) continue;
+
+        /* Ignore known items */
+        if (inven_known_p(i_ptr)) continue;
+                    
+        /* Note the artifact */
+        okay[i_ptr->name1] = FALSE;
+    }
+
+    /* Scan the artifacts */
+    for (k = 0; k < MAX_A_IDX; k++) {
+
+        artifact_type *a_ptr = &a_info[k];
+        
+        /* List "dead" ones */
+        if (!okay[k]) continue;
+       
+        /* Paranoia */
+        strcpy(base_name, "Unknown Artifact");
+
+        /* Obtain the base object type */
+        z = lookup_kind(a_ptr->tval, a_ptr->sval);
+
+        /* Real object */
+        if (z) {
+        
+            inven_type forge;
+
+            /* Create the object */
+            invcopy(&forge, z);
+
+            /* Create the artifact */
+            forge.name1 = k;
+
+            /* Describe the artifact */
+            objdes_store(base_name, &forge, FALSE, 0);
+        }
+
+        /* Hack -- Build the artifact name */
+        fprintf(fff, "     The %s\n", base_name);
+    }
+
+    /* Close the file */
+    fclose(fff);
+
+    /* Display the file contents */
+    show_file(file_name, "Artifacts Seen");
+    
+    /* Remove the file */
+    remove(file_name);
+}
+
+
+/*
+ * Check the status of "uniques"
+ *
+ * XXX Consider use of "term_mirror"
+ */
+void do_cmd_check_uniques()
+{
+    int k;
+
+    FILE *fff;
+
+    char file_name[1024];
+
+
+    /* Temporary file */
+    if (path_temp(file_name, 1024)) return;
+
+    /* Open a new file */
+    fff = fopen(file_name, "w");
+
+    /* Note -- skip the ghost */
+    for (k = 1; k < MAX_R_IDX-1; k++) {
+
+        monster_race *r_ptr = &r_info[k];
+
+        /* Only print Uniques */
+        if (r_ptr->flags1 & RF1_UNIQUE) {
+
+            bool dead = (r_ptr->max_num == 0);
+
+            /* Only display "known" uniques */
+            if (dead || cheat_know || r_ptr->r_sights) {
+
+                /* Print a message */
+                fprintf(fff, "     %s is %s\n",
+                        (r_name + r_ptr->name),
+                        (dead ? "dead" : "alive"));
+            }
+        }
+    }
+
+    /* Close the file */
+    fclose(fff);
+
+    /* Display the file contents */
+    show_file(file_name, "Known Uniques");
+    
+    /* Remove the file */
+    remove(file_name);
+}
+
+
 

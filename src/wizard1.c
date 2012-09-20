@@ -1,4 +1,6 @@
-/* File: wiz-spo.c */
+/* File: wizard1.c */
+
+/* Purpose: Spoiler generation -BEN- */
 
 #include "angband.h"
 
@@ -301,7 +303,7 @@ static void spoil_obj_desc(cptr fname)
         }
 
         /* Acquire legal item types */
-        for (k = 0; k < MAX_K_IDX; k++) {
+        for (k = 1; k < MAX_K_IDX; k++) {
 
             inven_kind *k_ptr = &k_info[k];
 
@@ -2180,6 +2182,9 @@ void do_cmd_spoilers(void)
         else {
             bell();
         }
+        
+        /* Flush messages */
+        msg_print(NULL);
     }
 
 

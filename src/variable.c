@@ -1,6 +1,14 @@
 /* File: variable.c */
 
-/* Purpose: Global variables */
+/* Purpose: Angband variables */
+
+/*
+ * Copyright (c) 1989 James E. Wilson, Robert A. Koeneke
+ *
+ * This software may be copied and distributed for educational, research, and
+ * not for profit purposes provided that this copyright and statement are
+ * included in all such copies.
+ */
 
 #include "angband.h"
 
@@ -184,7 +192,7 @@ bool flush_failure;		/* Flush input on any failure */
 
 bool fresh_before;		/* Flush output before normal commands */
 bool fresh_after;		/* Flush output after normal commands */
-bool fresh_find;		/* Flush output while running */
+bool fresh_message;		/* Flush output after all messages */
 
 bool filch_message;		/* Flush messages before new messages */
 bool filch_disturb;		/* Flush messages before disturbances */
@@ -216,7 +224,6 @@ bool smart_cheat;		/* Monsters exploit player weaknesses */
 bool no_haggle_flag;		/* Cancel haggling */
 bool shuffle_owners;		/* Shuffle store owners occasionally */
 
-bool show_spell_info;		/* Show extra spell info */
 bool show_health_bar;		/* Show monster health bar */
 
 bool show_inven_weight;		/* Show weights in inven */
@@ -237,11 +244,7 @@ bool auto_reorder_pack;		/* Automatically reorder items in the pack */
 
 bool view_reduce_lite;		/* Reduce torch lite if running */
 bool view_reduce_lite_town;	/* Reduce torch lite if running (in town) */
-bool view_reduce_view;		/* Reduce "view" radius if running */
-bool view_reduce_view_town;	/* Reduce "view" radius if running (in town) */
 
-bool optimize_running;		/* Optimize various things when running */
-bool optimize_resting;		/* Optimize various things when resting */
 bool optimize_display;		/* Optimize various things (visual display) */
 bool optimize_various;		/* Optimize various things (message recall) */
 
@@ -297,11 +300,6 @@ bool good_item_flag;		/* True if "Artifact" on this level */
 
 bool new_level_flag;		/* Start a new level */
 
-bool teleport_flag;		/* Teleport required */
-s16b teleport_dist;		/* Teleport distance */
-s16b teleport_to_y;		/* Teleport location (Y) */
-s16b teleport_to_x;		/* Teleport location (X) */
-
 bool closing_flag;		/* Dungeon is closing */
 
 
@@ -325,6 +323,9 @@ s16b target_row;
 
 /* Health bar variable -DRS- */
 s16b health_who;
+
+/* Monster recall race */
+s16b recent_idx;
 
 
 
@@ -704,30 +705,6 @@ byte item_tester_tval;
  * "show_inven()" and "show_equip()", and the choice window routines.
  */
 bool (*item_tester_hook)(inven_type*);
-
-
-
-/*
- * Use the "simple" LCRNG
- */
-bool Rand_quick = TRUE;
-
-
-/*
- * Current "value" of the "simple" RNG
- */
-u32b Rand_value;
-
-
-/*
- * Current "index" for the "complex" RNG
- */
-u16b Rand_place;
-
-/*
- * Current "state" table for the "complex" RNG
- */
-u32b Rand_state[RAND_DEG];
 
 
 

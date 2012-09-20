@@ -7,7 +7,7 @@
 #       don't bother to add them.
 #
 #       Use 'dmake -B -r -f makefile.emx install' to install the executables
-#       and the batch file used for multiple windows in the parent directory.
+#       and the batch file used for multiple VIO windows in the parent directory.
 #
 #       Use 'dmake -B -r -f makefile.emx clean' to remove temporary files.
 #
@@ -25,27 +25,18 @@
 #		  Needs 4OS2.
 #
 
-VERSION         = 2.7.9v3
+VERSION         = 279v4
 EXPORT          = angband-$(VERSION).os2.zip
-
-OBJS = \
-birth.o borg-aux.o borg-ben.o borg-ext.o borg-map.o borg-obj.o borg.o  \
-cave.o cmd1.o cmd2.o cmd3.o cmd4.o cmd5.o cmd6.o dungeon.o effects.o  \
-files.o generate.o init.o io.o main-emx.o main.o melee.o misc.o mon-desc.o  \
-monster.o obj-desc.o object.o save-old.o save.o signals.o spells1.o  \
-spells2.o store.o tables.o term.o util.o variable.o wiz-spo.o wizard.o  \
-z-form.o z-util.o z-virt.o 
 
 .KEEP_STATE:
 
-CC = gcc
-CFLAGS = -MMD -O3 -DUSE_EMX -g -Zcrtdll
-LIBS = -lvideo
-# Comment this out if you don't have nice installed
-#NICE = nice -i -n -30
+CC 		= gcc
+AR		= ar
+CFLAGS 		= -MMD -O3 -DUSE_EMX -Zmt 
+LFLAGS 		= -lvideo 
 
-.c.o:
-    $(NICE) $(CC) $(CFLAGS) -c $*.c
+# Uncomment this if you have nice installed
+#NICE 		= nice -i -n -30
 
 ###################################################################################
 
@@ -54,8 +45,12 @@ default: all depends :-)
 install: ..\angband.exe ..\aclient.exe ..\startwnd.cmd
 
 clean:
-    + del *.d
-    + del depends
+    -+@ del angband.exe
+    -+@ del aclient.exe
+    -+@ del depends
+    -+@ del _state.mk
+    -+@ del *.o
+    -+@ del *.d
 
 patches:  ..\patches.txt ..\exp\patches.uue ..\exp\files.uue
 
@@ -64,6 +59,21 @@ export: ..\exp\$(EXPORT)
 ####################################################################################
 ###   You don't have to change anything below.   ###################################
 ####################################################################################
+
+OBJS = \
+  z-util.o z-virt.o z-form.o z-rand.o z-term.o \
+  variable.o tables.o util.o cave.o \
+  object1.o object2.o monster1.o monster2.o \
+  xtra1.o xtra2.o spells1.o spells2.o \
+  melee1.o melee2.o save.o files.o \
+  cmd1.o cmd2.o cmd3.o cmd4.o cmd5.o cmd6.o \
+  store.o birth.o load1.o load2.o \
+  wizard1.o wizard2.o borg.o borg-map.o \
+  borg-obj.o borg-ext.o borg-aux.o borg-ben.o \
+  generate.o dungeon.o init1.o init2.o
+
+.c.o:
+    $(NICE) $(CC) $(CFLAGS) -c $*.c
 
 all .PHONY: angband.exe aclient.exe 
     +@echo. 
@@ -80,18 +90,21 @@ all .PHONY: angband.exe aclient.exe
     +@echo working executables.
     +@echo. 
 
+EXPFILES = angband.exe;aclient.exe;patches.txt;readme;startwnd.cmd
+
 ..\exp\$(EXPORT) .PHONY .IGNORE: install patches
 # Needs 4OS2!
         +@ md ..\exp >& nul                     ^ \
            md ..\exp\tmpdir >& nul              ^ \
            cd ..\exp\tmpdir                     ^ \
-           copy ... > nul                       ^ \
+           copy ...\$(EXPFILES) > nul           ^ \
            md lib                               ^ \
-           copy ...\lib\ lib\ /s > nul          ^ \
+           copy ...\lib\ lib\ /s >& nul         ^ \
+           del lib\save\player >& nul         	^ \
            zip -m -r $(EXPORT) * > nul          ^ \
            move $(EXPORT) ..                    ^ \
            cd ..                                ^ \
-           del tmpdir /xsqy > nul
+           del tmpdir /xsqy >& nul
   
 PATCHFILES  = *.c
 PATCHFILES += *.h
@@ -118,19 +131,20 @@ PATCHFILES += ..\lib\user\pref-emx.prf
        del patches-$(VERSION).os2.gz                            ^ \
        move patches-$(VERSION).os2.gz.uue patches.uue           
 
-FILES = main-emx.c makefile.emx ..\lib\user\pref-emx.prf
+FILES  = main-emx.c makefile.emx ..\lib\user\pref-emx.prf 
+FILESP = main-emx.c makefile.emx pref-emx.prf 
 
 ..\exp\files.uue: $(FILES)
 # Needs 4OS2!
-    +@ md ..\exp >& nul                                         ^ \
-       cd ..\exp                                                ^ \
-       for %a in ($(FILES)) copy ..\src\%a > nul                ^ \
-       tar -cvf files.tar $(FILES)                              ^ \
-       for %a in ($(FILES)) del %@name[$(FILES)] >& nul         ^ \
-       gzip files.tar                                           ^ \
-       uuencode files.tar.gz                                    ^ \
-       del files.tar.gz >& nul                                  ^ \
-       move files.tar.gz.uue files.uue                          
+    +@ 	md ..\exp >& nul                                        ^ \
+	cd ..\exp                                               ^ \
+	for %a in ($(FILES)) copy ..\src\%a > nul               ^ \
+	tar -cvf files.tar $(FILESP)                            ^ \
+	del $(FILESP)						^ \
+	gzip files.tar                                          ^ \
+	uuencode files.tar.gz                                   ^ \
+	del files.tar.gz >& nul                                 ^ \
+	move files.tar.gz.uue files.uue                          
 
 depends .IGNORE: $(OBJS)
     + echo. > depends
@@ -153,7 +167,7 @@ ECF=>> ..\startwnd.cmd
  $(EC) REM optional number behind the name sets the number of lines for $(ECF)
  $(EC) REM that screen.                                                 $(ECF)
  $(EC) REM                                                              $(ECF)
- $(EC) REM Note the function of the three views:                        $(ECF)
+ $(EC) REM The function of the three views:                             $(ECF)
  $(EC) REM                                                              $(ECF)
  $(EC) REM   recall window - display monster recall info                $(ECF)
  $(EC) REM   choice window - display equipment and inventory            $(ECF)
@@ -168,18 +182,24 @@ ECF=>> ..\startwnd.cmd
  $(EC) delay                                                            $(ECF)
  $(EC) angband %1 %2 %3 %4 %5 %6 %7 %8 %9                               $(ECF)
 
-angband.exe: $(OBJS)
-    $(CC) $(CFLAGS)  -o angband.exe $(OBJS) $(LIBS)
+angband.exe: angband.a main.o main-emx.o main-epm.o
+    $(CC) -o angband.exe main.o main-emx.o angband.a $(LFLAGS) 
+
+angband.a: $(OBJS)
+    $(AR) r angband.a $(OBJS)
 
 aclient.exe: main-emx.c
-    $(CC) $(CFLAGS) -D__EMX__ -D__EMX__CLIENT__ -o aclient.exe main-emx.c $(LIBS)
+    $(NICE) $(CC) $(CFLAGS) -D__EMX__CLIENT__=main  -o aclient.exe main-emx.c -lvideo
+
+main-emx.o: main-emx.c
+    $(NICE) $(CC) $(CFLAGS) -Wall -c main-emx.c -o main-emx.o
+
+main-epm.o: main-emx.c
+    $(NICE) $(CC) $(CFLAGS) -Wall -DEMXPM -c main-emx.c -o main-epm.o
 
 # Forgive me :)
 ":-)":
         +@echo.
-
-main-emx.o: 
-    $(NICE) $(CC) $(CFLAGS) -Wall -c $*.c
 
 .INCLUDE .IGNORE: depends
 

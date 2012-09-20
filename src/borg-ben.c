@@ -76,9 +76,9 @@
  *
  * The Ben Borg is only supposed to "know" what is visible on the screen,
  * which it learns by using the "term.c" screen access function "Term_what()",
- * and the cursor location function "Term_locate()", and a hack to access the
- * cursor visibility using "Term_show/hide_cursor()".  It is only allowed to
- * send keypresses to the "Term" like a normal user, by using the standard
+ * the cursor location function "Term_locate()", and the cursor visibility
+ * extraction function "Term_get_cursor()".  It is only allowed to send
+ * keypresses to the "Term" like a normal user, by using the standard
  * "Term_keypress()" routine.
  *
  * The Ben Borg only thinks and sends keys when it catches calls to
@@ -126,6 +126,10 @@
  * to send keypresses directly (via "Term_keypress()").  The Borg also
  * accesses the cursor location ("Term_locate()") and visibility (via
  * a hack involving "Term_show/hide_cursor()") directly as well.
+ *
+ * The "efficient direct access" to "Term->scr->a" and "Term->scr->c"
+ * is technically a hack, but they can be replaced by "correct" calls
+ * to the "Term_grab()" function.  XXX XXX XXX
  *
  * The Borg should not know when the game is ready for a keypress, but it
  * checks this anyway by distinguishing between the "check for keypress"
@@ -362,6 +366,10 @@ static int old_more = 0;	/* Hack -- pages in old store */
 
 /*
  * Mega-Hack -- extract some "hidden" variables
+ *
+ * XXX XXX XXX This step would not be necessary if more info
+ * was available on the screen.  Perhaps we should track the
+ * maximal value of "my_stat_cur" so we have "my_stat_max".
  */
 static void borg_hidden(void)
 {
@@ -429,7 +437,7 @@ static void borg_hidden(void)
  * information.  These can be replaced by (very expensive) "parse"
  * functions, which cause an insane amount of "screen flashing".
  */
-static void borg_think(void)
+static bool borg_think(void)
 {
     int i;
 
@@ -450,7 +458,7 @@ static void borg_think(void)
         borg_cheat_equip();
 
         /* Done */
-        return;
+        return (FALSE);
     }
 
     /* Cheat */
@@ -463,7 +471,7 @@ static void borg_think(void)
         borg_cheat_inven();
 
         /* Done */
-        return;
+        return (FALSE);
     }
 
 
@@ -478,7 +486,7 @@ static void borg_think(void)
         borg_keypress(ESCAPE);
 
         /* Done */
-        return;
+        return (TRUE);
     }
 
 
@@ -493,7 +501,7 @@ static void borg_think(void)
         borg_keypress(ESCAPE);
 
         /* Done */
-        return;
+        return (TRUE);
     }
 
 
@@ -507,7 +515,7 @@ static void borg_think(void)
         borg_keypress('e');
 
         /* Done */
-        return;
+        return (TRUE);
     }
 
     /* Check "inven" */
@@ -520,7 +528,7 @@ static void borg_think(void)
         borg_keypress('i');
 
         /* Done */
-        return;
+        return (TRUE);
     }
 
 
@@ -610,12 +618,16 @@ static void borg_think(void)
             if ((0 == borg_what_text(0, i + 6, 3, &t_a, buf)) &&
                 (buf[0] == I2A(i)) && (buf[1] == p2) && (buf[2] == ' ')) {
 
+                int k;
+
                 /* Extract the item description */
                 if (0 != borg_what_text(3, i + 6, -65, &t_a, desc)) {
                     desc[0] = '\0';
                 }
-
-                /* XXX XXX Make sure trailing spaces get stripped */
+                
+                /* Strip trailing spaces */
+                for (k = strlen(desc); (k > 0) && (desc[k-1] == ' '); k--) ;
+                desc[k] = '\0';
 
                 /* Extract the item cost in stores */
                 if (shop_num != 7) {
@@ -648,7 +660,7 @@ static void borg_think(void)
             do_browse = FALSE;
 
             /* Done */
-            return;
+            return (TRUE);
         }
 
         /* Hack -- recheck inventory/equipment */
@@ -658,10 +670,7 @@ static void borg_think(void)
         do_browse = TRUE;
 
         /* Think until done */
-        (void)borg_think_store();
-
-        /* Done */
-        return;
+        return (borg_think_store());
     }
 
 
@@ -691,7 +700,7 @@ static void borg_think(void)
         borg_keypress(ESCAPE);
 
         /* Done */
-        return;
+        return (TRUE);
     }
 
     /* Check equipment */
@@ -704,7 +713,7 @@ static void borg_think(void)
         borg_keypress('L');
 
         /* Done */
-        return;
+        return (TRUE);
     }
 
 
@@ -749,7 +758,7 @@ static void borg_think(void)
         do_spell_aux++;
 
         /* Done */
-        return;
+        return (FALSE);
     }
 
     /* Check for "browse" mode */
@@ -759,14 +768,14 @@ static void borg_think(void)
         /* Parse the "spell" screen */
         borg_parse_spell(do_spell_aux);
 
-        /* Leave that mode */
-        borg_keypress(ESCAPE);
-
         /* Advance to the next book */
         do_spell_aux++;
 
+        /* Leave that mode */
+        borg_keypress(ESCAPE);
+
         /* Done */
-        return;
+        return (TRUE);
     }
 
     /* Check "spells" */
@@ -783,17 +792,16 @@ static void borg_think(void)
 
             /* Pick the next book */
             borg_keypress(I2A(i));
+
+            /* Done */
+            return (TRUE);
         }
 
-        /* Otherwise, advance */
-        else {
-
-            /* Advance to the next book */
-            do_spell_aux++;
-        }
+        /* Advance to the next book */
+        do_spell_aux++;
 
         /* Done */
-        return;
+        return (FALSE);
     }
 
 
@@ -837,7 +845,7 @@ static void borg_think(void)
     borg_hidden();
 
     /* Do something */
-    (void)borg_think_dungeon();
+    return (borg_think_dungeon());
 }
 
 
@@ -1301,10 +1309,14 @@ static errr (*Term_xtra_hook_old)(int n, int v) = NULL;
  *
  * This function allows the Borg to "steal" the "key checker"
  *
- * Note the use of the "old" hook for parsing non-input related requests,
- * and also, in combination with a special "bypass", for checking for
- * interuption by the user.  This whole function is a complete hack,
- * made necessary by the framework in which we are working.
+ * Note the use of the "old" hook for checking for user input.
+ * When user input is detected, we abort, and after flushing
+ * the actual keypress queue, and setting the "flush_later" flag
+ * so that "inkey()" can recover from weirdness, we enqueue some
+ * "escape" keypresses, to complete the "inkey()" function, and
+ * as a side effect, to leave stores and such.
+ *
+ * Note the use of the "old" hook for non-input related requests.
  *
  * XXX XXX XXX We should probably attempt to handle "broken" messages,
  * in which long messages are "broken" into pieces, and all but the
@@ -1316,18 +1328,15 @@ static errr (*Term_xtra_hook_old)(int n, int v) = NULL;
  */
 static errr Term_xtra_borg(int n, int v)
 {
-    /* Mega-Hack -- The Borg notices "TERM_XTRA_NOISE" */
+    /* Mega-Hack -- Intercept "TERM_XTRA_NOISE" */
     if (auto_active && (n == TERM_XTRA_NOISE)) {
 
         /* Halt the Borg */
         borg_oops("bell");
-
-        /* Success */
-        return (0);
     }
 
 
-    /* Mega-Hack -- The Borg notices "TERM_XTRA_FLUSH" */
+    /* Mega-Hack -- Intercept "TERM_XTRA_FLUSH" */
     if (auto_active && (n == TERM_XTRA_FLUSH)) {
 
         /* Hack -- flush the key buffer */
@@ -1338,47 +1347,28 @@ static errr Term_xtra_borg(int n, int v)
     }
 
 
-    /* Hack -- The Borg intercepts "TERM_XTRA_EVENT" */
-    while (auto_active && (n == TERM_XTRA_EVENT)) {
+    /* Mega-Hack -- Intercept "TERM_XTRA_BORED" */
+    if (auto_active && (n == TERM_XTRA_BORED)) {
 
-        errr err;
+        /* Success */
+        return (1);
+    }
 
-        char ch;
-                
+
+    /* Mega-Hack -- Intercept "TERM_XTRA_EVENT" */
+    if (auto_active && (n == TERM_XTRA_EVENT)) {
+
         int i, x, y;
 
-        bool visible;
+        int visible;
 
         byte t_a;
         char buf[128];
 
 
-        /* Open Bypass */
-        Term->xtra_hook = Term_xtra_hook_old;
-
-        /* Hack -- Check for keypress */
-        err = Term_inkey(&ch, FALSE, FALSE);
-
-        /* Shut Bypass */
-        Term->xtra_hook = Term_xtra_borg;
-
-        /* User Abort */
-        if (!err) {
-
-            /* Stop the Borg */
-            borg_oops("user abort");
-
-            /* Flush input */
-            flush();
-
-            /* Success */
-            return (0);
-        }
-
-
-        /* Only "think" when "waiting" */
+        /* Hack -- no wait */
         if (!v) return (0);
-        
+
 
         /* XXX XXX XXX Mega-Hack -- Check the "cursor state" */
 
@@ -1388,10 +1378,9 @@ static errr Term_xtra_borg(int n, int v)
 
         /* We also make use of the "filch_message" option flag */
         /* to make sure each message is on a line by itself XXX */
-        
+
         /* Hack -- Extract the cursor visibility */
-        visible = (!Term_hide_cursor());
-        if (visible) Term_show_cursor();
+        (void)Term_get_cursor(&visible);
 
 
         /* XXX XXX XXX Mega-Hack -- Catch "Die? [y/n]" messages */
@@ -1445,6 +1434,12 @@ static errr Term_xtra_borg(int n, int v)
             /* Get the message */
             if (0 == borg_what_text(0, 0, -80, &t_a, buf)) {
 
+                int k;
+
+                /* Strip trailing spaces */
+                for (k = strlen(buf); (k > 0) && (buf[k-1] == ' '); k--) ;
+                buf[k] = '\0';
+
                 /* Parse it */
                 borg_parse(buf);
             }
@@ -1469,6 +1464,12 @@ static errr Term_xtra_borg(int n, int v)
             /* Get the message */
             if (0 == borg_what_text(0, 0, -80, &t_a, buf)) {
 
+                int k;
+
+                /* Strip trailing spaces */
+                for (k = strlen(buf); (k > 0) && (buf[k-1] == ' '); k--) ;
+                buf[k] = '\0';
+
                 /* Parse */
                 borg_parse(buf);
             }
@@ -1481,8 +1482,11 @@ static errr Term_xtra_borg(int n, int v)
         }
 
 
-        /* Take the next keypress, if any */
-        if ((i = borg_inkey()) != 0) {
+        /* Check for key */
+        i = borg_inkey();
+        
+        /* Use it */
+        if (i) {
 
             /* Enqueue the keypress */
             Term_keypress(i);
@@ -1492,8 +1496,54 @@ static errr Term_xtra_borg(int n, int v)
         }
 
 
-        /* Think */
-        borg_think();
+        /* XXX XXX XXX Mega-Hack -- Allow user abort */
+
+        /* Hack -- Process events (do not wait) */
+        (void)((*Term_xtra_hook_old)(TERM_XTRA_EVENT, FALSE));
+
+        /* Hack -- User Abort */
+        if (Term->key_head != Term->key_tail) {
+
+            /* Stop the Borg */
+            borg_oops("user abort");
+
+            /* Flush input now */
+            Term_flush();
+            
+            /* Flush input later */
+            flush();
+
+            /* Hack -- Escape! */
+            Term_keypress(ESCAPE);
+            Term_keypress(ESCAPE);
+            Term_keypress(ESCAPE);
+            Term_keypress(ESCAPE);
+
+            /* Success */
+            return (0);
+        }
+
+
+        /* Hack -- Think */
+        while (!borg_think()) ;
+
+
+        /* Check for key */
+        i = borg_inkey();
+        
+        /* Use it */
+        if (i) {
+
+            /* Enqueue the keypress */
+            Term_keypress(i);
+
+            /* Success */
+            return (0);
+        }
+
+
+        /* Oops */
+        borg_oops("broken");
     }
 
 
@@ -1504,9 +1554,185 @@ static errr Term_xtra_borg(int n, int v)
 
 
 /*
+ * Initialize the "Ben Borg"
+ */
+void borg_ben_init(void)
+{
+    byte *test;
+
+
+    /*** Hack -- verify system ***/
+
+    /* Message */
+    prt("Initializing the Borg... (memory)", 0, 0);
+
+    /* Hack -- flush it */
+    Term_fresh();
+
+    /* Mega-Hack -- verify memory */
+    C_MAKE(test, 400 * 1024L, byte);
+    C_KILL(test, 400 * 1024L, byte);
+
+
+    /*** Hack -- initialize game options ***/
+
+    /* Message */
+    prt("Initializing the Borg... (options)", 0, 0);
+
+    /* Hack -- flush it */
+    Term_fresh();
+
+    /* We use the original keypress codes */
+    rogue_like_commands = FALSE;
+
+    /* We pick up items when we step on them */
+    always_pickup = TRUE;
+
+    /* We require explicit target request */
+    use_old_target = FALSE;
+
+    /* We do NOT verify throwing */
+    always_throw = TRUE;
+
+    /* We do NOT query any commands */
+    carry_query_flag = FALSE;
+    other_query_flag = FALSE;
+
+    /* We do NOT auto-repeat any commands */
+    always_repeat = FALSE;
+
+    /* We do not know how to haggle */
+    no_haggle_flag = TRUE;
+
+    /* We need as much information as possible */
+    fresh_before = TRUE;
+    fresh_after = TRUE;
+
+    /* We need to see each message by itself */
+    filch_message = TRUE;    
+
+    /* We do not want extra confusing info */
+    plain_descriptions = TRUE;
+
+    /* We need maximal space for descriptions */
+    show_inven_weight = FALSE;
+    show_equip_weight = FALSE;
+    show_store_weight = FALSE;
+    show_equip_label = FALSE;
+    
+    /* We use color to identify monsters and objects */
+    use_color = TRUE;
+
+    /* We do not want to be confused by lighting effects */
+    view_bright_lite = FALSE;
+    view_yellow_lite = FALSE;
+
+    /* We need to see the actual dungeon level */
+    depth_in_feet = FALSE;
+
+    /* We may use the health bar later */
+    show_health_bar = TRUE;
+
+    /* We do not want to get confused by equippy chars */
+    equippy_chars = FALSE;
+
+    /* Allow items to stack */
+    stack_allow_items = TRUE;
+    
+    /* Allow wands to stack */
+    stack_allow_wands = TRUE;
+    
+    /* Do not ignore discounts */
+    stack_force_costs = FALSE;
+    
+    /* Ignore inscriptions */
+    stack_force_notes = TRUE;
+
+    /* Ignore annoying hitpoint warnings */
+    hitpoint_warn = 0;
+
+    /* Hack -- notice "command" mode */
+    hilite_player = FALSE;
+
+    /* Hack -- reset visuals */
+    reset_visuals();
+
+    /* Hack -- Redraw */
+    do_cmd_redraw();
+
+
+    /*** Various ***/
+    
+    /* Message */
+    prt("Initializing the Borg... (various)", 0, 0);
+
+    /* Hack -- flush it */
+    Term_fresh();
+
+
+    /*** Cheat / Panic ***/
+
+    /* Mega-Hack -- Cheat a lot */
+    cheat_inven = TRUE;
+    cheat_equip = TRUE;
+
+    /* Mega-Hack -- Cheat a lot */
+    cheat_spell = TRUE;
+
+    /* Mega-Hack -- Cheat a lot */
+    cheat_panel = TRUE;
+
+
+    /*** Insert special hook function ***/
+
+    /* Remember the "normal" event scanner */
+    Term_xtra_hook_old = Term->xtra_hook;
+
+    /* Cheat -- drop a hook into the "event scanner" */
+    Term->xtra_hook = Term_xtra_borg;
+
+
+    /*** Initialize ***/
+
+    /* Init "borg.c" */
+    borg_init();
+
+    /* Init "borg-map.c" */
+    borg_map_init();
+
+    /* Init "borg-obj.c" */
+    borg_obj_init();
+
+    /* Init "borg-ext.c" */
+    borg_ext_init();
+
+    /* Init "borg-aux.c" */
+    borg_aux_init();
+
+
+    /*** All done ***/
+
+    /* Done initialization */
+    prt("Initializing the Borg... done.", 0, 0);
+
+    /* Official message */
+    borg_note("# Ready...");
+
+    /* Now it is ready */
+    initialized = TRUE;
+}
+
+
+/*
+ * Hack -- forward declare
+ */
+void do_cmd_borg(void);
+
+
+/*
  * Hack -- interact with the "Ben Borg".
  */
-void borg_ben(void)
+void do_cmd_borg(void)
 {
     char cmd;
 
@@ -1521,6 +1747,7 @@ void borg_ben(void)
         /* Mention effects */
         msg_print("The Borg is for debugging and experimenting.");
         msg_print("The game will not be scored if you use the Borg.");
+        msg_print(NULL);
 
         /* Verify request */
         if (!get_check("Are you sure you want to use the Borg? ")) return;
@@ -1932,179 +2159,6 @@ void borg_ben(void)
 }
 
 
-
-/*
- * Initialize the "Ben Borg"
- */
-void borg_ben_init(void)
-{
-    byte *test;
-
-
-    /* Clear messages */
-    msg_print(NULL);
-    
-    /* Message */
-    prt("Initializing the Borg... (memory)", 0, 0);
-
-    /* Hack -- flush it */
-    Term_fresh();
-
-    /* Mega-Hack -- verify memory */
-    C_MAKE(test, 400 * 1024L, byte);
-    C_KILL(test, 400 * 1024L, byte);
-
-
-    /*** Hack -- initialize game options ***/
-
-    /* Message */
-    prt("Initializing the Borg... (options)", 0, 0);
-
-    /* Hack -- flush it */
-    Term_fresh();
-
-    /* We use the original keypress codes */
-    rogue_like_commands = FALSE;
-
-    /* We pick up items when we step on them */
-    always_pickup = TRUE;
-
-    /* We require explicit target request */
-    use_old_target = FALSE;
-
-    /* We do NOT verify throwing */
-    always_throw = TRUE;
-
-    /* We do NOT query any commands */
-    carry_query_flag = FALSE;
-    other_query_flag = FALSE;
-
-    /* We do NOT auto-repeat any commands */
-    always_repeat = FALSE;
-
-    /* We do not know how to haggle */
-    no_haggle_flag = TRUE;
-
-    /* We need as much information as possible */
-    fresh_before = TRUE;
-    fresh_after = TRUE;
-
-    /* We need to see each message by itself */
-    filch_message = TRUE;    
-
-    /* We do not want extra confusing info */
-    plain_descriptions = TRUE;
-
-    /* We need maximal space for descriptions */
-    show_inven_weight = FALSE;
-    show_equip_weight = FALSE;
-    show_store_weight = FALSE;
-    show_equip_label = FALSE;
-    
-    /* We use color to identify monsters and objects */
-    use_color = TRUE;
-
-    /* We do not want to be confused by lighting effects */
-    view_bright_lite = FALSE;
-    view_yellow_lite = FALSE;
-
-    /* We need to see the actual dungeon level */
-    depth_in_feet = FALSE;
-
-    /* We may use the health bar later */
-    show_health_bar = TRUE;
-
-    /* We do not want to get confused by extra spell info */
-    show_spell_info = FALSE;
-
-    /* We do not want to get confused by equippy chars */
-    equippy_chars = FALSE;
-
-    /* Allow items to stack */
-    stack_allow_items = TRUE;
-    
-    /* Allow wands to stack */
-    stack_allow_wands = TRUE;
-    
-    /* Do not ignore discounts */
-    stack_force_costs = FALSE;
-    
-    /* Ignore inscriptions */
-    stack_force_notes = TRUE;
-
-    /* Ignore annoying hitpoint warnings */
-    hitpoint_warn = 0;
-
-    /* Hack -- notice "command" mode */
-    hilite_player = FALSE;
-
-    /* Hack -- reset visuals */
-    reset_visuals();
-
-    /* Hack -- Redraw */
-    do_cmd_redraw();
-
-
-    /*** Various ***/
-    
-    /* Message */
-    prt("Initializing the Borg...", 0, 0);
-
-    /* Hack -- flush it */
-    Term_fresh();
-
-
-    /*** Cheat / Panic ***/
-
-    /* Mega-Hack -- Cheat a lot */
-    cheat_inven = TRUE;
-    cheat_equip = TRUE;
-
-    /* Mega-Hack -- Cheat a lot */
-    cheat_spell = TRUE;
-
-    /* Mega-Hack -- Cheat a lot */
-    cheat_panel = TRUE;
-
-
-    /*** Insert special hook function ***/
-
-    /* Remember the "normal" event scanner */
-    Term_xtra_hook_old = Term->xtra_hook;
-
-    /* Cheat -- drop a hook into the "event scanner" */
-    Term->xtra_hook = Term_xtra_borg;
-
-
-    /*** Initialize ***/
-
-    /* Init "borg.c" */
-    borg_init();
-
-    /* Init "borg-map.c" */
-    borg_map_init();
-
-    /* Init "borg-obj.c" */
-    borg_obj_init();
-
-    /* Init "borg-ext.c" */
-    borg_ext_init();
-
-    /* Init "borg-aux.c" */
-    borg_aux_init();
-
-
-    /*** All done ***/
-
-    /* Done initialization */
-    prt("Initializing the Borg... done.", 0, 0);
-
-    /* Official message */
-    borg_note("# Ready...");
-
-    /* Now it is ready */
-    initialized = TRUE;
-}
 
 
 #else

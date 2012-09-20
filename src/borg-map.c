@@ -1753,9 +1753,9 @@ void borg_update_map(void)
     /* Analyze the current (66x22 grid) map sector */
     for (dy = 0; dy < SCREEN_HGT; dy++) {
     
-        /* Direct access XXX XXX */
-        aa = &(Term->old->a[dy+1][13]);
-        cc = &(Term->old->c[dy+1][13]);
+        /* Direct access XXX XXX XXX */
+        aa = &(Term->scr->a[dy+1][13]);
+        cc = &(Term->scr->c[dy+1][13]);
         
         /* Scan the row */
         for (dx = 0; dx < SCREEN_WID; dx++) {

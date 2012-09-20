@@ -11,7 +11,8 @@
  * actually work, but if the "XXX XXX XXX" comments were replaced
  * with functional code, then it probably would.
  *
- * See "term.c" for info on the concept of the "generic terminal"
+ * See "term.c" for info on the concept of the "generic terminal",
+ * and for more comments about what this file must supply.
  *
  * Basically, there are three ways to port Angband to a new system,
  * first, to modify the "main-gcu.c" file to support a version of
@@ -21,11 +22,11 @@
  * "main.c", and third, to write a new "main-xxx.c" file that works
  * in a similar manner to "main-mac.c" or "main-win.c" and which
  * replaces the "main.c" file entirely.  The second and third ways
- * are shown in this file, based on the "USE_XXX" define.  By the
- * way, if you are using the "USE_XXX" method, and it is possible
- * to include this file without "USE_XXX" being defined, then you
- * should uncomment the "#ifdef USE_XXX" below, and the "#endif"
- * at the end of the file.
+ * are shown in this file, based on the "USE_XXX" define.  If you
+ * are using the "USE_XXX" method, and it is possible to include
+ * this file without "USE_XXX" being defined, then you should
+ * uncomment the "#ifdef USE_XXX" below, and the "#endif" at the
+ * end of the file.
  *
  * Note that the "util.c" file often contains functions which must
  * be modified in small ways for various platforms, for example,
@@ -33,8 +34,9 @@
  *
  * When you complete a port to a new system, you should email both
  * your new files (if any), and any changes you needed to make to
- * existing files, including "h-config.h", "config.h", and "Makefile",
- * to me (benh@voicenet.com) for inclusion in the next version.
+ * existing files, including "h-config.h", "config.h", and any of
+ * the "Makefile" files, to me (benh@voicenet.com) for inclusion
+ * in the next version.
  *
  * Try to stick to a "three letter" naming scheme for "main-xxx.c"
  * and "Makefile.xxx" and such for consistency.
@@ -110,7 +112,7 @@ static term_data choice;
  * parts of each Red,Green,Blue are shown in the comments below,
  * again, these values are *before* gamma correction.
  */
-static color_data_type color_data[16] = {
+static local_color_data_type color_data[16] = {
 
     /* XXX XXX XXX 0,0,0 */,		/* TERM_DARK */
     /* XXX XXX XXX 4,4,4 */,		/* TERM_WHITE */
@@ -219,10 +221,6 @@ static errr Term_user_xxx(int n)
  *
  * In general, this function should return zero if the action is successfully
  * handled, and non-zero if the action is unknown or incorrectly handled.
- *
- * The most important action is the "TERM_XTRA_EVENT" action, without which
- * there is no way to interact with the user.  Make sure that this action
- * works as expected, or various nasty things will happen at various times.
  */
 static errr Term_xtra_xxx(int n, int v)
 {
@@ -231,12 +229,6 @@ static errr Term_xtra_xxx(int n, int v)
     /* Analyze */
     switch (n)
     {
-        case TERM_XTRA_CLEAR:
-        
-            /* XXX XXX XXX Clear the "screen" */
-            
-            return (0);
-
         case TERM_XTRA_EVENT:
         
             /* XXX XXX XXX Process some pending events */
@@ -253,6 +245,7 @@ static errr Term_xtra_xxx(int n, int v)
             /* should handle as many events as is efficiently possible */
             /* but is only required to handle a single event, and then */
             /* only if one is ready or "v" is true */
+            /* This action is required. */
 
             return (0);
 
@@ -262,16 +255,35 @@ static errr Term_xtra_xxx(int n, int v)
             /* This action should handle all events waiting on the */
             /* queue, optionally discarding all "keypress" events, */
             /* since they will be discarded anyway in "term.c". */
-            /* This action is NOT optional */
+            /* This action is required, but is often not "essential". */
             
             return (0);
 
+        case TERM_XTRA_CLEAR:
+        
+            /* XXX XXX XXX Clear the entire window */
+            /* This action should clear the entire window, and redraw */
+            /* any "borders" or other "graphic" aspects of the window. */
+            /* This action is required. */
+            
+            return (0);
+
+        case TERM_XTRA_SHAPE:
+        
+            /* XXX XXX XXX Set the cursor visibility (optional) */
+            /* This action should change the visibility of the cursor, */
+            /* if possible, to the requested value (0=off, 1=on) */
+            /* This action is optional, but can improve both the */
+            /* efficiency (and attractiveness) of the program. */
+            
+            return (0);
+            
         case TERM_XTRA_FROSH:
         
             /* XXX XXX XXX Flush a row of output (optional) */
             /* This action should make sure that row "v" of the "output" */
-            /* to the window will actually appear on the window.  This */
-            /* action is optional, but useful for some machines. */
+            /* to the window will actually appear on the window. */
+            /* This action is optional on most systems. */
             
             return (0);
             
@@ -279,55 +291,54 @@ static errr Term_xtra_xxx(int n, int v)
         
             /* XXX XXX XXX Flush output (optional) */
             /* This action should make sure that all "output" to the */
-            /* window will actually appear on the window.  This action */
-            /* is optional if the "output" will eventually show up on */
-            /* its own, or if the various functions which induce "output" */
-            /* do so in such a way as to be immediately visible. */
-            
-            return (0);
-            
-        case TERM_XTRA_INVIS:
-        
-            /* XXX XXX XXX Make cursor invisible (optional) */
-            /* This action should hide the visual cursor, if possible */
-            /* This action is optional, but if used can improve both */
-            /* the efficiency and attractiveness of the program */
-            
-            return (0);
-            
-        case TERM_XTRA_BEVIS:
-        
-            /* XXX XXX XXX Make cursor visible (optional) */
-            /* This action should show the visual cursor, if possible */
-            /* This action is optional, but if used can improve both */
-            /* the efficiency and attractiveness of the program. */
+            /* window will actually appear on the window. */
+            /* This action is optional if all "output" will eventually */
+            /* show up on its own, or when actually requested. */
             
             return (0);
             
         case TERM_XTRA_NOISE:
         
             /* XXX XXX XXX Make a noise (optional) */
-            /* This action should produce a "beep" noise.   It is */
-            /* optional, but will make the program better */
+            /* This action should produce a "beep" noise. */
+            /* This action is optional, but nice. */
             
             return (0);
 
         case TERM_XTRA_SOUND:
         
             /* XXX XXX XXX Make a sound (optional) */
-            /* This action is optional and still in beta test */
+            /* This action should produce sound number "v", where */
+            /* the "name" of that sound is "sound_names[v]". */
+            /* This action is optional, and not important. */
+            
+            return (0);
+            
+        case TERM_XTRA_BORED:
+        
+            /* XXX XXX XXX Handle random events when bored (optional) */
+            /* This action is optional, and not important */
+            
+            return (0);
+            
+        case TERM_XTRA_REACT:
+        
+            /* XXX XXX XXX React to global changes (optional) */
+            /* For example, this action can be used to react to */
+            /* changes in the global "color_table[256][4]" array. */
+            /* This action is optional, but can be very useful */
             
             return (0);
             
         case TERM_XTRA_ALIVE:
         
             /* XXX XXX XXX Change the "hard" level (optional) */
-            /* This action is used if the program is "suspended" */
-            /* or "resumed", with a "v" value of "FALSE" or "TRUE" */
-            /* This action is optional unless the computer uses the */
+            /* This action is used if the program changes "aliveness" */
+            /* by being either "suspended" (v=0) or "resumed" (v=1) */
+            /* This action is optional, unless the computer uses the */
             /* same "physical screen" for multiple programs, in which */
             /* case this action should clean up to let other programs */
-            /* use the screen, or resume from such a cleaned up state */
+            /* use the screen, or resume from such a cleaned up state. */
             /* This action is currently only used on UNIX machines */
             
             return (0);
@@ -336,9 +347,9 @@ static errr Term_xtra_xxx(int n, int v)
         
             /* XXX XXX XXX Change the "soft" level (optional) */
             /* This action is used when the term window changes "activation" */
-            /* either by becoming inactive ("v" is FALSE) or active ("v" is */
-            /* TRUE).  This action is optional but often does things like */
-            /* activates the proper font / drawing mode for the newly active */
+            /* either by becoming "inactive" (v=0) or "active" (v=1) */
+            /* This action is optional but can be used to do things like */
+            /* activate the proper font / drawing mode for the newly active */
             /* term window.  This action should NOT change which window has */
             /* the "focus", which window is "raised", or anything like that. */
             /* This action is optional if all the other things which depend */
@@ -376,9 +387,9 @@ static errr Term_wipe_xxx(int x, int y, int n)
  * This routine should display the cursor at the given location
  * (x,y) in some manner.  On some machines this involves actually
  * moving the physical cursor, on others it involves drawing a fake
- * cursor in some form of graphics mode.  Note the "software_cursor"
- * flag which tells "term.c" to treat the "cursor" as a "visual" thing
- * and not as a "hardware" cursor.
+ * cursor in some form of graphics mode.  Note the "soft_cursor"
+ * flag which tells "term.c" to treat the "cursor" as a "visual"
+ * thing and not as a "hardware" cursor.
  *
  * You may assume "valid" input if the window is properly sized.
  *
@@ -400,11 +411,26 @@ static errr Term_curs_xxx(int x, int y)
 /*
  * XXX XXX XXX Draw a "picture" on the screen
  *
- * This routine should display a "picture" (with index "p") at the
- * given location (x,y).  This function is currently unused, but in
- * the future will be used to support special "graphic" characters.
+ * This routine should display the given attr/char pair at the
+ * given location (x,y).  This function is only used if one of
+ * the flags "always_pict" or "higher_pict" is defined.
+ *
+ * You must be sure that the attr/char pair, when displayed, will
+ * erase anything (including any visual cursor) that used to be
+ * at the given location.  On many machines this is automatic, on
+ * others, you must first call "Term_wipe_xxx(x, y, 1)".
+ *
+ * With the "higher_pict" flag, this function can be used to allow
+ * the display of "pseudo-graphic" pictures, for example, by using
+ * "(a&0x7F)" as a "row" and "(c&0x7F)" as a "column" to index into
+ * a special auxiliary pixmap of special pictures.
+ *
+ * With the "always_pict" flag, this function can be used to force
+ * every attr/char pair to be drawn one at a time, instead of trying
+ * to "collect" the attr/char pairs into "strips" with similar "attr"
+ * codes, which would be sent to "Term_text_xxx()".
  */
-static errr Term_pict_xxx(int x, int y, int p)
+static errr Term_pict_xxx(int x, int y, byte a, char c)
 {
     term_data *td = (term_data*)(Term->data);
 
@@ -431,14 +457,20 @@ static errr Term_pict_xxx(int x, int y, int p)
  * you must first call "Term_wipe_xxx()" to clear the area.
  *
  * You may ignore the "color" parameter if you are only supporting
- * a monochrome environment, since this routine is never called to
- * display "black" (invisible) text.
+ * a monochrome environment, unless you have set the "draw_blanks"
+ * flag, since this routine is normally never called to display
+ * "black" (invisible) text, and all other colors should be drawn
+ * in the "normal" color in a monochrome environment.
+ *
+ * Note that this function must correctly handle "black" text if
+ * the "always_text" flag is set, if this flag is not set, all the
+ * "black" text will be handled by the "Term_wipe_xxx()" hook.
  */
 static errr Term_text_xxx(int x, int y, int n, byte a, cptr s)
 {
     term_data *td = (term_data*)(Term->data);
 
-    /* XXX XXX XXX Use color "color_data[a & 0x0F]" */
+    /* XXX XXX XXX Normally use color "color_data[a & 0x0F]" */
     
     /* XXX XXX XXX Draw the string */
 
@@ -473,14 +505,36 @@ static void term_data_link(term_data *td)
     /* XXX XXX XXX Choose "soft" or "hard" cursor */
     /* A "soft" cursor must be explicitly "drawn" by the program */
     /* while a "hard" cursor has some "physical" existance and is */
-    /* moved whenever text is drawn on the screen.  See "term.c" */
-    t->soft_cursor = TRUE;
+    /* moved whenever text is drawn on the screen.  See "term.c". */
+    /* t->soft_cursor = TRUE; */
 
-    /* XXX XXX XXX Choose whether "event scanning" should be done */
-    /* at various times.  This is normally true if you have an event */
-    /* loop, and false if you only handle keypress checking */
-    t->scan_events = TRUE;
+    /* XXX XXX XXX Avoid the "corner" of the window */
+    /* t->icky_corner = TRUE; */
 
+    /* XXX XXX XXX Use "Term_pict()" for all data */
+    /* See the "Term_pict_xxx()" function above. */
+    /* t->always_pict = TRUE; */
+
+    /* XXX XXX XXX Use "Term_pict()" for "special" data */
+    /* See the "Term_pict_xxx()" function above. */
+    /* t->higher_pict = TRUE; */
+
+    /* XXX XXX XXX Use "Term_text()" for all data */
+    /* See the "Term_text_xxx()" function above. */
+    /* t->always_text = TRUE; */
+
+    /* XXX XXX XXX Ignore the "TERM_XTRA_BORED" action */
+    /* This may make things slightly more efficient. */
+    /* t->never_bored = TRUE; */
+
+    /* XXX XXX XXX Ignore the "TERM_XTRA_FROSH" action */
+    /* This may make things slightly more efficient. */
+    /* t->never_frosh = TRUE; */
+
+    /* Erase with "white space" */
+    t->attr_blank = TERM_WHITE;
+    t->char_blank = ' ';
+    
     /* Prepare the init/nuke hooks */
     t->init_hook = Term_init_xxx;
     t->nuke_hook = Term_nuke_xxx;

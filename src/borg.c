@@ -189,9 +189,9 @@ errr borg_what_text(int x, int y, int n, byte *a, char *s)
     /* Hack -- Do not run off the screen */
     if (x + m > 80) m = 80 - x;
 
-    /* Direct access XXX XXX */
-    aa = &(Term->old->a[y][x]);
-    cc = &(Term->old->c[y][x]);
+    /* Direct access XXX XXX XXX */
+    aa = &(Term->scr->a[y][x]);
+    cc = &(Term->scr->c[y][x]);
 
     /* Access */
     t_a = aa[0];
@@ -256,9 +256,9 @@ errr borg_what_text_hack(int x, int y, int n, byte *a, char *s)
     /* Hack -- Do not run off the screen */
     if (x + m > 80) m = 80 - x;
 
-    /* Direct access XXX XXX */
-    aa = &(Term->old->a[y][x]);
-    cc = &(Term->old->c[y][x]);
+    /* Direct access XXX XXX XXX */
+    aa = &(Term->scr->a[y][x]);
+    cc = &(Term->scr->c[y][x]);
 
     /* Access */
     t_a = aa[0];

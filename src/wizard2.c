@@ -1,6 +1,6 @@
-/* File: wizard.c */
+/* File: wizard2.c */
 
-/* Purpose: Wizard mode debugging aids. */
+/* Purpose: Wizard commands */
 
 /*
  * Copyright (c) 1989 James E. Wilson, Robert A. Koeneke
@@ -92,15 +92,8 @@ static void do_cmd_wiz_bamf(void)
     /* Must have a target */
     if (!target_who) return;
 
-    /* Initiate teleport */
-    teleport_flag = TRUE;
-
-    /* Teleport to a location */
-    teleport_dist = 0;
-    
     /* Teleport to the target */
-    teleport_to_x = target_col;
-    teleport_to_y = target_row;
+    teleport_player_to(target_row, target_col);
 }
 
 
@@ -201,9 +194,6 @@ static void do_cmd_wiz_change()
 {
     /* Interact */
     do_cmd_wiz_change_aux();
-
-    /* Clear prompts */
-    prt("", 0, 0);
 
     /* Redraw everything */
     do_cmd_redraw();
@@ -476,7 +466,7 @@ static int wiz_create_itemtype(void)
     clear_screen();
 
     /* We have to search the whole itemlist. */
-    for (i = num = 0; (num < 60) && (i < MAX_K_IDX); i++) {
+    for (num = 0, i = 1; (num < 60) && (i < MAX_K_IDX); i++) {
 
         inven_kind *k_ptr = &k_info[i];
 
@@ -539,7 +529,6 @@ static void wiz_tweak_item(inven_type *i_ptr)
 
     /* Hack -- leave artifacts alone */
     if (artifact_p(i_ptr)) return;
-
 
     prt("Change 'pval' setting: ", 0, 0);
     if (!askfor_default(tmp_val, format("%d", i_ptr->pval), 5)) return;
@@ -716,6 +705,7 @@ static void wiz_statistics(inven_type *i_ptr)
         /* Let us know what we are doing */
         msg_format("Creating a lot of %s items. Base level = %d.",
                    quality, dun_level);
+        msg_print(NULL);
 
         /* Set counters to zero */
         matches = better = worse = other = 0;
@@ -816,7 +806,6 @@ static void wiz_quantity_item(inven_type *i_ptr)
 
     /* Never duplicate artifacts */
     if (artifact_p(i_ptr)) return;
-
 
     /* Ask for a value */
     prt("Number of items ", 0, 0);
@@ -1103,7 +1092,7 @@ static void do_cmd_wiz_learn()
         m = atoi(tmp_val);
 
         /* Scan every object */
-        for (i = 0; i < MAX_K_IDX; i++) {
+        for (i = 1; i < MAX_K_IDX; i++) {
 
             inven_kind *k_ptr = &k_info[i];
 
@@ -1180,7 +1169,9 @@ static void do_cmd_wiz_named(int r_idx, int slp)
     int i, x, y;
 
     /* Paranoia */
-    if (r_idx <= 0) return;
+    /* if (!r_idx) return; */
+
+    /* Prevent illegal monsters */
     if (r_idx >= MAX_R_IDX-1) return;
 
     /* Try 10 times */
@@ -1235,9 +1226,9 @@ extern void do_cmd_spoilers(void);
 
 
 /*
- * Hack -- declare
+ * Hack -- declare external function
  */
-extern int do_wiz_command(void);
+extern void do_cmd_wizard(void);
 
 
 
@@ -1246,7 +1237,7 @@ extern int do_wiz_command(void);
  * The "command_arg" may have been set.
  * We return "FALSE" on unknown commands.
  */
-int do_wiz_command(void)
+void do_cmd_wizard(void)
 {
     char		cmd;
 
@@ -1358,8 +1349,7 @@ int do_wiz_command(void)
 
         /* Phase Door */
         case 'p':
-            teleport_flag = TRUE;
-            teleport_dist = 10;
+            teleport_player(10);
             break;
 
         /* Summon Random Monster(s) */
@@ -1370,8 +1360,7 @@ int do_wiz_command(void)
 
         /* Teleport */
         case 't':
-            teleport_flag = TRUE;
-            teleport_dist = 100;
+            teleport_player(100);
             break;
 
         /* Very Good Objects */	
@@ -1408,12 +1397,8 @@ int do_wiz_command(void)
         /* Not a Wizard Command */
         default:
             msg_print("That is not a valid wizard command.");
-            return (FALSE);
             break;
     }
-
-    /* Success */
-    return (TRUE);
 }
 
 

@@ -185,7 +185,7 @@ static void wr_monster(monster_type *m_ptr)
     wr_byte(m_ptr->stunned);
     wr_byte(m_ptr->confused);
     wr_byte(m_ptr->monfear);
-    wr_byte(m_ptr->xtra);
+    wr_byte(0);
 }
 
 
@@ -1249,10 +1249,6 @@ static bool save_player_aux(char *name)
     int		mode = 0644;
 
 
-    /* Forbid suspend */
-    signals_ignore_tstp();
-
-
     /* No file yet */
     fff = NULL;
 
@@ -1289,8 +1285,6 @@ static bool save_player_aux(char *name)
         if (!ok) (void)remove(name);
     }
 
-    /* Allow suspend again */
-    signals_handle_tstp();
 
     /* Failure */
     if (!ok) return (FALSE);

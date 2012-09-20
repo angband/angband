@@ -435,7 +435,7 @@ static void ShowCentred(toolbox_show_flags flags, toolbox_o obj,
  *              Interfaces to the Term package               *
  *                                                           *
  *************************************************************/
-static errr Term_xtra_acn_check(int v)
+static errr Term_xtra_acn_check(void)
 {
     static os_t last_poll;
     int buf, bufhi;
@@ -473,7 +473,7 @@ static errr Term_xtra_acn_check(int v)
     return 1;
 }
 
-static errr Term_xtra_acn_event(int v)
+static errr Term_xtra_acn_event(void)
 {
     while (!key_pressed)
         if (event_poll(0, 0, 0))
@@ -580,9 +580,12 @@ errr Term_xtra_acn(int n, int v)
 
       case TERM_XTRA_EVENT:
         if (v)
-            return Term_xtra_acn_event(v);
+            return Term_xtra_acn_event();
         else
-            return Term_xtra_acn_check(v);
+            return Term_xtra_acn_check();
+
+      case TERM_XTRA_BORED:
+        return Term_xtra_acn_check();
 
       case TERM_XTRA_FLUSH:
         if (have_caret)
@@ -599,12 +602,8 @@ errr Term_xtra_acn(int n, int v)
         t->froshed[v]=1;
         return 0;
 
-      case TERM_XTRA_INVIS:
-        cursor(Term, 0);
-        return 0;
-
-      case TERM_XTRA_BEVIS:
-        cursor(Term, 1);
+      case TERM_XTRA_SHAPE:
+        cursor(Term, v);
         return 0;
 
       case TERM_XTRA_NOISE:
@@ -1821,12 +1820,15 @@ static void term_data_link(term_data *td, int keys)
 
     term_init(t, 80, 24, keys);
 
-    t->soft_cursor = FALSE;
-    t->scan_events = FALSE;
-    t->dark_blanks = TRUE;
+    /* Use a "soft" cursor XXX XXX XXX */
+    /* t->soft_cursor = TRUE; */
 
+    /* Erase with "white space" */
+    t->attr_blank = TERM_WHITE;
+    t->char_blank = ' ';
+
+    /* Set some of the hooks */
     t->init_hook = Term_init_acn;
-
     t->xtra_hook = Term_xtra_acn;
     t->wipe_hook = Term_wipe_acn;
     t->curs_hook = Term_curs_acn;

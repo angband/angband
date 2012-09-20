@@ -827,6 +827,10 @@ static errr Term_curs_cap(int x, int y)
 
 /*
  * Erase a grid of space
+ *
+ * XXX XXX XXX Note that we will never be asked to clear the
+ * bottom line all the way to the bottom right edge, since we
+ * have set the "avoid the bottom right corner" flag.
  */
 static errr Term_wipe_cap(int x, int y, int n)
 {
@@ -907,16 +911,10 @@ static errr Term_xtra_cap(int n, int v)
             (void)write(1, "\007", 1);
             return (0);
 
-        /* Make the cursor invisible */
-        case TERM_XTRA_INVIS:
-            curv = 0;
-            curs_set(0);
-            return (0);
-
-        /* Make the cursor visible */
-        case TERM_XTRA_BEVIS:
-            curv = 1;
-            curs_set(1);
+        /* Change the cursor visibility */
+        case TERM_XTRA_SHAPE:
+            curv = v;
+            curs_set(v);
             return (0);
 
         /* Suspend/Resume */
@@ -1029,13 +1027,20 @@ errr init_cap(void)
     /*** Now prepare the term ***/
 
     /* Initialize the term */
-    term_init(t, 80, 24, 64);
+    term_init(t, 80, 24, 256);
 
-    /* Hack -- shutdown hook */
+    /* Avoid the bottom right corner */
+    t->icky_corner = TRUE;
+
+    /* Erase with "white space" */
+    t->attr_blank = TERM_WHITE;
+    t->char_blank = ' ';
+
+    /* Set some hooks */
     t->init_hook = Term_init_cap;
     t->nuke_hook = Term_nuke_cap;
 
-    /* Stick in some hooks */
+    /* Set some more hooks */
     t->text_hook = Term_text_cap;
     t->wipe_hook = Term_wipe_cap;
     t->curs_hook = Term_curs_cap;

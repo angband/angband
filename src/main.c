@@ -269,8 +269,13 @@ int main(int argc, char *argv[])
 #endif
 
 
-    /* check for user interface option */
-    for (--argc, ++argv; argc > 0 && argv[0][0] == '-'; --argc, ++argv) {
+    /* Process the command line arguments */
+    for (--argc, ++argv; argc > 0; --argc, ++argv) {
+
+        /* Require proper options */
+        if (argv[0][0] != '-') goto usage;
+
+        /* Analyze option */
         switch (argv[0][1]) {
 
           case 'c':

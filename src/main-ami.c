@@ -510,15 +510,16 @@ static errr amiga_xtra(int n, int v)
          if(amiscr) DisplayBeep(amiscr);
          else DisplayBeep(wbscr);
          return(0);
-      // Make the cursor invisible
-      case TERM_XTRA_INVIS:
-         cursor_off();
-         cursor_visible=FALSE;
-         return(0);
-      // Make the cursor visible
-      case TERM_XTRA_BEVIS:
-         cursor_on();
-         cursor_visible=TRUE;
+      // Change the cursor visibility
+      case TERM_XTRA_SHAPE:
+         if (v) {
+             cursor_on();
+             cursor_visible=TRUE;
+         }
+         else {
+             cursor_off();
+             cursor_visible=FALSE;
+         }
          return(0);
       // Wait for event
       case TERM_XTRA_EVENT:

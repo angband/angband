@@ -285,8 +285,7 @@ s16b i_pop(void)
  * than one of a lower level.  This is done by choosing several objects
  * appropriate to the given level and keeping the "hardest" one.
  *
- * Note that we only attempt to choose 10000 different objects before
- * failing.  This may prevent infinite loops somewhere.
+ * XXX XXX XXX Note that this function may fail (very rarely).
  */
 s16b get_obj_num(int level)
 {
@@ -983,7 +982,7 @@ s16b lookup_kind(int tval, int sval)
     int k;
 
     /* Look for it */
-    for (k = 0; k < MAX_K_IDX; k++) {
+    for (k = 1; k < MAX_K_IDX; k++) {
 
         inven_kind *k_ptr = &k_info[k];
 
@@ -1300,92 +1299,6 @@ static bool make_artifact(inven_type *i_ptr)
 
     /* Failure */
     return (FALSE);
-}
-
-
-/*
- * Obtain the "flags" for an item
- */
-void inven_flags(inven_type *i_ptr, u32b *f1, u32b *f2, u32b *f3)
-{
-    inven_kind *k_ptr = &k_info[i_ptr->k_idx];
-    
-    /* Base object */
-    (*f1) = k_ptr->flags1;
-    (*f2) = k_ptr->flags2;
-    (*f3) = k_ptr->flags3;
-
-    /* Artifact */
-    if (i_ptr->name1) {
-
-        artifact_type *a_ptr = &a_info[i_ptr->name1];
-
-        (*f1) = a_ptr->flags1;
-        (*f2) = a_ptr->flags2;
-        (*f3) = a_ptr->flags3;
-    }
-
-    /* Ego-item */
-    if (i_ptr->name2) {
-
-        ego_item_type *e_ptr = &e_info[i_ptr->name2];
-    
-        (*f1) |= e_ptr->flags1;
-        (*f2) |= e_ptr->flags2;
-        (*f3) |= e_ptr->flags3;
-    }
-
-    /* Extra powers */
-    switch (i_ptr->xtra1) {
-    
-        case EGO_XTRA_SUSTAIN:
-
-            /* Choose a sustain */
-            switch (i_ptr->xtra2 % 6) {
-                case 0: (*f2) |= TR2_SUST_STR; break;
-                case 1: (*f2) |= TR2_SUST_INT; break;
-                case 2: (*f2) |= TR2_SUST_WIS; break;
-                case 3: (*f2) |= TR2_SUST_DEX; break;
-                case 4: (*f2) |= TR2_SUST_CON; break;
-                case 5: (*f2) |= TR2_SUST_CHR; break;
-            }
-            
-            break;
-            
-        case EGO_XTRA_POWER:
-
-            /* Choose a power */
-            switch (i_ptr->xtra2 % 9) {
-                case 0: (*f2) |= TR2_RES_BLIND; break;
-                case 1: (*f2) |= TR2_RES_CONF; break;
-                case 2: (*f2) |= TR2_RES_SOUND; break;
-                case 3: (*f2) |= TR2_RES_SHARDS; break;
-                case 4: (*f2) |= TR2_RES_NETHER; break;
-                case 5: (*f2) |= TR2_RES_NEXUS; break;
-                case 6: (*f2) |= TR2_RES_CHAOS; break;
-                case 7: (*f2) |= TR2_RES_DISEN; break;
-                case 8: (*f2) |= TR2_RES_POIS; break;
-            }
-            
-            break;
-            
-        case EGO_XTRA_ABILITY:
-
-            /* Choose an ability */
-            switch (i_ptr->xtra2 % 8) {
-                case 0: (*f3) |= TR3_FEATHER; break;
-                case 1: (*f3) |= TR3_LITE; break;
-                case 2: (*f3) |= TR3_SEE_INVIS; break;
-                case 3: (*f3) |= TR3_TELEPATHY; break;
-                case 4: (*f3) |= TR3_SLOW_DIGEST; break;
-                case 5: (*f3) |= TR3_REGEN; break;
-                case 6: (*f2) |= TR2_FREE_ACT; break;
-                case 7: (*f2) |= TR2_HOLD_LIFE; break;
-            }
-            
-            break;
-            
-    }
 }
 
 
@@ -2908,7 +2821,7 @@ void place_object(int y, int x, bool good, bool great)
         /* Hack -- forget the hook */
         get_obj_num_hook = NULL;
 
-        /* Paranoia */
+        /* Handle failure */
         if (!k_idx) return;
 
         /* Prepare the object */
@@ -3102,5 +3015,666 @@ void place_gold(int y, int x)
         i_ptr->pval = (base + (8L * randint(base)) + randint(8));
     }
 }
+
+
+
+/*
+ * Let an item 'i_ptr' fall to the ground at or near (y,x).
+ * The initial location is assumed to be "in_bounds()".
+ *
+ * This function takes a parameter "chance".  This is the percentage
+ * chance that the item will "disappear" instead of drop.  If the object
+ * has been thrown, then this is the chance of disappearance on contact.
+ *
+ * Hack -- this function uses "chance" to determine if it should produce
+ * some form of "description" of the drop event (under the player).
+ *
+ * This function should probably be broken up into a function to determine
+ * a "drop location", and several functions to actually "drop" an object.
+ *
+ * XXX XXX XXX Consider allowing objects to combine on the ground.
+ */
+void drop_near(inven_type *i_ptr, int chance, int y, int x)
+{
+    int		k, d, ny, nx, y1, x1, i_idx;
+
+    cave_type	*c_ptr;
+
+    bool flag = FALSE;
+
+
+    /* Start at the drop point */
+    ny = y1 = y;  nx = x1 = x;
+
+    /* See if the object "survives" the fall */
+    if (artifact_p(i_ptr) || (rand_int(100) >= chance)) {
+
+        /* Start at the drop point */
+        ny = y1 = y; nx = x1 = x;
+
+        /* Try (20 times) to find an adjacent usable location */
+        for (k = 0; !flag && (k < 20); ++k) {
+
+            /* Distance distribution */
+            d = ((k + 14) / 15);
+
+            /* Pick a "nearby" location */
+            scatter(&ny, &nx, y1, x1, d, 0);
+
+            /* Require clean floor space */
+            if (!clean_grid_bold(ny, nx)) continue;
+
+            /* Here looks good */
+            flag = TRUE;
+        }
+    }
+
+    /* Try really hard to place an artifact */
+    if (!flag && artifact_p(i_ptr)) {
+
+        /* Start at the drop point */
+        ny = y1 = y;  nx = x1 = x;
+
+        /* Try really hard to drop it */
+        for (k = 0; !flag && (k < 1000); k++) {
+
+            d = 1;
+
+            /* Pick a location */
+            scatter(&ny, &nx, y1, x1, d, 0);
+
+            /* Do not move through walls */
+            if (!floor_grid_bold(ny,nx)) continue;
+
+            /* Hack -- "bounce" to that location */
+            y1 = ny; x1 = nx;
+
+            /* Get the cave grid */
+            c_ptr = &cave[ny][nx];
+
+            /* XXX XXX XXX */
+            
+            /* Nothing here?  Use it */
+            if (!(c_ptr->i_idx)) flag = TRUE;
+
+            /* After trying 99 places, crush any (normal) object */
+            else if ((k>99) && valid_grid(ny,nx)) flag = TRUE;
+        }
+
+        /* Hack -- Artifacts will destroy ANYTHING to stay alive */
+        if (!flag) {
+
+            char i_name[80];
+
+            /* Location */
+            ny = y;
+            nx = x;
+
+            /* Always okay */
+            flag = TRUE;
+
+            /* Description */
+            objdes(i_name, i_ptr, FALSE, 0);
+
+            /* Message */
+            msg_format("The %s crashes to the floor.", i_name);
+        }
+    }
+
+
+    /* Successful drop */
+    if (flag) {
+
+        /* Assume fails */
+        flag = FALSE;
+
+        /* XXX XXX XXX */
+        
+        /* Crush anything under us (for artifacts) */
+        delete_object(ny,nx);
+
+        /* Make a new object */
+        i_idx = i_pop();
+
+        /* Success */
+        if (i_idx) {
+
+            /* Structure copy */
+            i_list[i_idx] = *i_ptr;
+
+            /* Access */
+            i_ptr = &i_list[i_idx];
+
+            /* Locate */
+            i_ptr->iy = ny;
+            i_ptr->ix = nx;
+
+            /* Place */
+            c_ptr = &cave[ny][nx];
+            c_ptr->i_idx = i_idx;
+            
+            /* Note the spot */
+            note_spot(ny, nx);
+
+            /* Draw the spot */
+            lite_spot(ny, nx);
+
+            /* Sound */
+            sound(SOUND_DROP);
+
+            /* Mega-Hack -- no message if "dropped" by player */
+            /* Message when an object falls under the player */
+            if (chance && (ny == py) && (nx == px)) {
+                msg_print("You feel something roll beneath your feet.");
+            }
+
+            /* Success */
+            flag = TRUE;
+        }
+    }
+
+
+    /* Poor little object */
+    if (!flag) {
+
+        char i_name[80];
+
+        /* Describe */
+        objdes(i_name, i_ptr, FALSE, 0);
+
+        /* Message */
+        msg_format("The %s disappear%s.",
+                   i_name, ((i_ptr->number == 1) ? "s" : ""));
+    }
+}
+
+
+
+
+/*
+ * Hack -- instantiate a trap
+ *
+ * XXX XXX XXX This routine should be redone to reflect trap "level".
+ * That is, it does not make sense to have spiked pits at 50 feet.
+ * Actually, it is not this routine, but the "trap instantiation"
+ * code, which should also check for "trap doors" on quest levels.
+ */
+void pick_trap(int y, int x)
+{
+    int f;
+
+    cave_type *c_ptr = &cave[y][x];
+
+    /* Paranoia -- Verify terrain */
+    if ((c_ptr->feat & 0x3F) != 0x02) return;
+    
+    /* Pick a trap */
+    while (1) {
+
+        /* Hack -- pick a trap */
+        f = 0x10 + rand_int(16);
+
+        /* Hack -- no trap doors on quest levels */
+        if ((f == 0x10) && is_quest(dun_level)) continue;
+
+        /* Hack -- no trap doors on the deepest level */
+        if ((f == 0x10) && (dun_level >= MAX_DEPTH-1)) continue;
+
+        /* Done */
+        break;
+    }
+    
+    /* Activate the trap */
+    c_ptr->feat = ((c_ptr->feat & ~0x3F) | f);
+
+    /* Notice */
+    note_spot(y, x);
+
+    /* Redraw */
+    lite_spot(y, x);
+}
+
+
+
+
+/*
+ * Describe the charges on an item in the inventory.
+ */
+void inven_item_charges(int item)
+{
+    inven_type *i_ptr = &inventory[item];
+
+    /* Require staff/wand */
+    if ((i_ptr->tval != TV_STAFF) && (i_ptr->tval != TV_WAND)) return;
+
+    /* Require known item */
+    if (!inven_known_p(i_ptr)) return;
+
+    /* Multiple charges */
+    if (i_ptr->pval != 1) {
+
+        /* Print a message */
+        msg_format("You have %d charges remaining.", i_ptr->pval);
+    }
+
+    /* Single charge */
+    else {
+
+        /* Print a message */
+        msg_format("You have %d charge remaining.", i_ptr->pval);
+    }
+}
+
+
+/*
+ * Describe an item in the inventory.
+ */
+void inven_item_describe(int item)
+{
+    inven_type	*i_ptr = &inventory[item];
+
+    char	i_name[80];
+        
+    /* Get a description */
+    objdes(i_name, i_ptr, TRUE, 3);
+
+    /* Print a message */
+    msg_format("You have %s.", i_name);
+}
+
+
+/*
+ * Increase the "number" of an item in the inventory
+ */
+void inven_item_increase(int item, int num)
+{
+    inven_type *i_ptr = &inventory[item];
+
+    /* Apply */
+    num += i_ptr->number;
+
+    /* Bounds check */
+    if (num > 255) num = 255;
+    else if (num < 0) num = 0;
+
+    /* Un-apply */
+    num -= i_ptr->number;
+
+    /* Change the number and weight */
+    if (num) {
+
+        /* Add the number */
+        i_ptr->number += num;
+
+        /* Add the weight */
+        total_weight += (num * i_ptr->weight);
+
+        /* Redraw the choice window */
+        p_ptr->redraw |= (PR_CHOOSE);
+        
+        /* Recalculate bonuses */
+        p_ptr->update |= (PU_BONUS);
+
+        /* Recalculate mana XXX */
+        p_ptr->update |= (PU_MANA);
+
+        /* Combine the pack */
+        p_ptr->update |= (PU_COMBINE);
+    }
+}
+
+
+/*
+ * Erase an inventory slot if it has no more items
+ *
+ * We handle the "auto_reorder" option here to prevent
+ * annoying messages every time a slot becomes empty.
+ */
+void inven_item_optimize(int item)
+{
+    inven_type *i_ptr = &inventory[item];
+
+    /* Only optimize real items */
+    if (!i_ptr->k_idx) return;
+
+    /* Only optimize empty items */
+    if (i_ptr->number) return;
+
+    /* The item is in the pack */
+    if (item < INVEN_WIELD) {
+
+        /* One less item */
+        inven_cnt--;
+
+        /* Reorder the pack */
+        if (auto_reorder_pack) {
+
+            int i;
+
+            /* Slide everything down */
+            for (i = item; i < INVEN_PACK; i++) {
+
+                /* Structure copy */
+                inventory[i] = inventory[i+1];
+            }
+        
+            /* Erase the "final" slot */
+            invwipe(&inventory[i]);
+        }
+    
+        /* Just wipe the slot */
+        else {
+    
+            /* Erase the empty slot */
+            invwipe(&inventory[item]);
+
+            /* Reorder the pack later */
+            p_ptr->update |= (PU_REORDER);
+        }
+    }
+
+    /* The item is being wielded */
+    else {
+
+        /* One less item */
+        equip_cnt--;
+
+        /* Erase the empty slot */
+        invwipe(&inventory[item]);
+
+        /* Redraw equippy chars */
+        p_ptr->redraw |= (PR_EQUIPPY);
+
+        /* Recalculate bonuses */
+        p_ptr->update |= (PU_BONUS);
+
+        /* Recalculate torch */
+        p_ptr->update |= (PU_TORCH);
+
+        /* Recalculate mana XXX */
+        p_ptr->update |= (PU_MANA);
+    }
+
+    /* Redraw the choice window */
+    p_ptr->redraw |= (PR_CHOOSE);
+}
+
+
+/*
+ * Describe the charges on an item on the floor.
+ */
+void floor_item_charges(int item)
+{
+    inven_type *i_ptr = &i_list[item];
+
+    /* Require staff/wand */
+    if ((i_ptr->tval != TV_STAFF) && (i_ptr->tval != TV_WAND)) return;
+
+    /* Require known item */
+    if (!inven_known_p(i_ptr)) return;
+
+    /* Multiple charges */
+    if (i_ptr->pval != 1) {
+
+        /* Print a message */
+        msg_format("There are %d charges remaining.", i_ptr->pval);
+    }
+
+    /* Single charge */
+    else {
+
+        /* Print a message */
+        msg_format("There is %d charge remaining.", i_ptr->pval);
+    }
+}
+
+
+
+/*
+ * Describe an item in the inventory.
+ */
+void floor_item_describe(int item)
+{
+    inven_type	*i_ptr = &i_list[item];
+
+    char	i_name[80];
+
+    /* Get a description */
+    objdes(i_name, i_ptr, TRUE, 3);
+
+    /* Print a message */
+    msg_format("You see %s.", i_name);
+}
+
+
+/*
+ * Increase the "number" of an item on the floor
+ */
+void floor_item_increase(int item, int num)
+{
+    inven_type *i_ptr = &i_list[item];
+
+    /* Apply */
+    num += i_ptr->number;
+
+    /* Bounds check */
+    if (num > 255) num = 255;
+    else if (num < 0) num = 0;
+
+    /* Un-apply */
+    num -= i_ptr->number;
+    
+    /* Change the number */
+    i_ptr->number += num;
+}
+
+
+/*
+ * Optimize an item on the floor (destroy "empty" items)
+ */
+void floor_item_optimize(int item)
+{
+    inven_type *i_ptr = &i_list[item];
+
+    /* Paranoia -- be sure it exists */
+    if (!i_ptr->k_idx) return;
+
+    /* Only optimize empty items */
+    if (i_ptr->number) return;
+    
+    /* Delete it */
+    delete_object_idx(item);
+}
+
+
+
+
+
+/*
+ * Check if we have space for an item in the pack without overflow
+ */
+bool inven_carry_okay(inven_type *i_ptr)
+{
+    int i;
+
+    /* Empty slot? */
+    if (inven_cnt < INVEN_PACK) return (TRUE);
+
+    /* Similar slot? */
+    for (i = 0; i < INVEN_PACK; i++) {
+
+        /* Get that item */
+        inven_type *j_ptr = &inventory[i];
+
+        /* Check if the two items can be combined */
+        if (item_similar(j_ptr, i_ptr)) return (TRUE);
+    }
+
+    /* Nope */
+    return (FALSE);
+}
+
+
+/*
+ * Add an item to the players inventory, and return the slot used.
+ *
+ * If the new item can combine with an existing item in the inventory,
+ * it will do so (using "item_similar()" and "item_absorb()"), otherwise,
+ * the item will be placed into the first available empty slot, unless
+ * the "auto_reorder_pack" option is set, in which case the item will
+ * be inserted into a reasonable location, to prevent misleading
+ * about the reordering of the pack.
+ *
+ * This function can be used to "over-fill" the player's pack, but only
+ * once, and such an action must trigger the "overflow" code immediately.
+ * Note that when the pack is being "over-filled", the new item must be
+ * placed into the "overflow" slot, and the "overflow" must take place
+ * before the pack is reordered, but (optionally) after the pack is
+ * combined.  This may be tricky.  See "dungeon.c" for info.
+ */
+s16b inven_carry(inven_type *i_ptr)
+{
+    int         i, j, k;
+    int		n = -1;
+
+    inven_type	*j_ptr;
+
+
+    /* Check for combining */
+    for (j = 0; j < INVEN_PACK; j++) {
+
+        j_ptr = &inventory[j];
+
+        /* Skip empty items */
+        if (!j_ptr->k_idx) continue;
+
+        /* Hack -- track last item */
+        n = j;
+
+        /* Check if the two items can be combined */
+        if (item_similar(j_ptr, i_ptr)) {
+
+            /* Combine the items */
+            item_absorb(j_ptr, i_ptr);
+            
+            /* Increase the weight */
+            total_weight += (i_ptr->number * i_ptr->weight);
+
+            /* Redraw the choice window */
+            p_ptr->redraw |= (PR_CHOOSE);
+
+            /* Recalculate bonuses */
+            p_ptr->update |= (PU_BONUS);
+
+            /* Success */
+            return (j);
+        }
+    }
+
+
+    /* Paranoia */
+    if (inven_cnt > INVEN_PACK) return (-1);
+
+
+    /* Find an empty slot */
+    for (j = 0; j <= INVEN_PACK; j++) {
+
+        j_ptr = &inventory[j];
+
+        /* Use it if found */
+        if (!j_ptr->k_idx) break;
+    }
+
+    /* Use that slot */
+    i = j;
+
+
+    /* Hack -- pre-reorder the pack */
+    if (auto_reorder_pack && (i < INVEN_PACK)) {
+
+        s32b		i_value, j_value;
+
+        /* Get the "value" of the item */
+        i_value = item_value(i_ptr);
+
+        /* Scan every occupied slot */
+        for (j = 0; j < INVEN_PACK; j++) {
+
+            j_ptr = &inventory[j];
+
+            /* Use empty slots */
+            if (!j_ptr->k_idx) break;
+
+            /* Hack -- readable books always come first */
+            if ((i_ptr->tval == mp_ptr->spell_book) &&
+                (j_ptr->tval != mp_ptr->spell_book)) break;
+            if ((j_ptr->tval == mp_ptr->spell_book) &&
+                (i_ptr->tval != mp_ptr->spell_book)) continue;
+
+            /* Objects sort by decreasing type */
+            if (i_ptr->tval > j_ptr->tval) break;
+            if (i_ptr->tval < j_ptr->tval) continue;
+
+            /* Non-aware (flavored) items always come last */
+            if (!inven_aware_p(i_ptr)) continue;
+            if (!inven_aware_p(j_ptr)) break;
+
+            /* Objects sort by increasing sval */
+            if (i_ptr->sval < j_ptr->sval) break;
+            if (i_ptr->sval > j_ptr->sval) continue;
+
+            /* Unidentified objects always come last */
+            if (!inven_known_p(i_ptr)) continue;
+            if (!inven_known_p(j_ptr)) break;
+
+            /* Determine the "value" of the pack item */
+            j_value = item_value(j_ptr);
+
+            /* Objects sort by decreasing value */
+            if (i_value > j_value) break;
+            if (i_value < j_value) continue;
+        }
+
+        /* Use that slot */
+        i = j;
+
+        /* Structure slide (make room) */
+        for (k = n; k >= i; k--) {
+
+            /* Hack -- Slide the item */
+            inventory[k+1] = inventory[k];
+        }
+
+	/* Paranoia -- Wipe the new slot */
+        invwipe(&inventory[i]);
+    }
+
+
+    /* Structure copy to insert the new item */
+    inventory[i] = (*i_ptr);
+
+    /* Forget the old location */
+    inventory[i].iy = inventory[i].ix = 0;
+
+    /* Increase the weight, prepare to redraw */
+    total_weight += (i_ptr->number * i_ptr->weight);
+
+    /* Count the items */
+    inven_cnt++;
+
+    /* Redraw choice window */
+    p_ptr->redraw |= (PR_CHOOSE);
+
+    /* Recalculate bonuses */
+    p_ptr->update |= (PU_BONUS);
+
+    /* Reorder pack */
+    p_ptr->update |= (PU_REORDER);
+
+    /* Return the slot */
+    return (i);
+}
+
+
 
 

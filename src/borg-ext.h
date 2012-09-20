@@ -236,7 +236,6 @@ extern s16b my_num_blow;	/* Number of blows	*/
 extern s16b my_num_fire;	/* Number of shots	*/
 
 extern s16b my_cur_lite;	/* Radius of lite	*/
-extern s16b my_cur_view;	/* Radius of view	*/
 
 extern s16b my_speed;		/* Approximate speed	*/
 extern s16b my_other;		/* Approximate other	*/

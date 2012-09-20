@@ -1,6 +1,6 @@
 /* File: spells2.c */
 
-/* Purpose: player and creature spells, breaths, wands, scrolls, etc. */
+/* Purpose: Spell code (part 2) */
 
 /*
  * Copyright (c) 1989 James E. Wilson, Robert A. Koeneke
@@ -11,7 +11,6 @@
  */
 
 #include "angband.h"
-
 
 
 
@@ -68,147 +67,6 @@ void aggravate_monsters(int who)
     if (speed) msg_print("You feel a sudden stirring nearby!");
     else if (sleep) msg_print("You hear a sudden stirring in the distance!");
 }
-
-
-
-/*
- * Helper function -- return a "nearby" race for polymorphing
- */
-s16b poly_r_idx(int r_idx)
-{
-    monster_race *r_ptr = &r_info[r_idx];
-
-    int i, r, lev1, lev2;
-
-    /* Hack -- Uniques never polymorph */
-    if (r_ptr->flags1 & RF1_UNIQUE) return (r_idx);
-
-    /* Pick a (possibly new) non-unique race */
-    for (i = 0; i < 1000; i++) {
-
-        /* Allowable range of "levels" for resulting monster */
-        lev1 = r_ptr->level - ((randint(20)/randint(9))+1);
-        lev2 = r_ptr->level + ((randint(20)/randint(9))+1);
-
-        /* Increase monster depth */
-        monster_level = (dun_level + r_ptr->level) / 2 + 5;
-
-        /* Hack -- Pick a new race */
-        r = get_mon_num(monster_level);
-
-        /* Restore monster depth */
-        monster_level = dun_level;
-
-        /* Extract that monster */
-        r_ptr = &r_info[r];
-
-        /* Skip uniques */
-        if (r_ptr->flags1 & RF1_UNIQUE) continue;
-
-        /* Accept valid monsters */
-        if ((r_ptr->level < lev1) && (r_ptr->level > lev2)) continue;
-
-        /* Use that index */
-        r_idx = r;
-        
-        /* Done */
-        break;
-    }
-
-    /* Use the original */
-    return (r_idx);
-}
-
-
-/*
- * Teleport a monster, normally up to "dis" grids away.
- *
- * Attempt to move the monster at least "dis/2" grids away.
- *
- * But allow variation to prevent infinite loops.
- */
-void teleport_away(int m_idx, int dis)
-{
-    int			ny, nx, oy, ox, d, i, min;
-
-    bool		look = TRUE;
-
-    monster_type	*m_ptr = &m_list[m_idx];
-
-
-    /* Paranoia */
-    if (!m_ptr->r_idx) return;
-
-    /* Save the old location */
-    oy = m_ptr->fy;
-    ox = m_ptr->fx;
-
-    /* Minimum distance */
-    min = dis / 2;
-
-    /* Look until done */
-    while (look) {
-
-        /* Verify max distance */
-        if (dis > 200) dis = 200;
-
-        /* Try several locations */
-        for (i = 0; i < 500; i++) {
-
-            /* Pick a (possibly illegal) location */
-            while (1) {
-                ny = rand_spread(oy, dis);
-                nx = rand_spread(ox, dis);
-                d = distance(oy, ox, ny, nx);
-                if ((d >= min) && (d <= dis)) break;
-            }
-
-            /* Ignore illegal locations */
-            if (!in_bounds(ny, nx)) continue;
-
-            /* Require "empty" floor space */
-            if (!empty_grid_bold(ny, nx)) continue;
-
-            /* Hack -- no teleport onto glyph of warding */
-            if ((cave[ny][nx].feat & 0x3F) == 0x03) continue;
-        
-            /* No teleporting into vaults and such */
-            /* if (cave[ny][nx].info & CAVE_ICKY) continue; */
-
-            /* This grid looks good */
-            look = FALSE;
-
-            /* Stop looking */
-            break;
-        }
-
-        /* Increase the maximum distance */
-        dis = dis * 2;
-
-        /* Decrease the minimum distance */
-        min = min / 2;
-    }
-    
-    /* Update the new location */
-    cave[ny][nx].m_idx = m_idx;
-
-    /* Update the old location */
-    cave[oy][ox].m_idx = 0;
-
-    /* Move the monster */
-    m_ptr->fy = ny;
-    m_ptr->fx = nx;
-
-    /* Update the monster (new location) */
-    update_mon(m_idx, TRUE);
-
-    /* Redraw the old grid */
-    lite_spot(oy, ox);
-            
-    /* Redraw the new grid */
-    lite_spot(ny, nx);
-}
-
 
 
 
@@ -345,7 +203,6 @@ bool hp_player(int num)
 
     return (FALSE);
 }
-
 
 
 
@@ -822,117 +679,6 @@ static int enchant_table[16] = {
 
 
 /*
- * Dump a message describing a monster's reaction to damage
- *
- * Technically should attempt to treat "Beholder"'s as jelly's
- */
-void message_pain(int m_idx, int dam)
-{
-    long			oldhp, newhp, tmp;
-    int				percentage;
-
-    monster_type		*m_ptr = &m_list[m_idx];
-    monster_race		*r_ptr = &r_info[m_ptr->r_idx];
-
-    char			m_name[80];
-
-
-    /* Get the monster name */
-    monster_desc(m_name, m_ptr, 0);
-
-    /* Notice non-damage */
-    if (dam == 0) {
-        msg_format("%^s is unharmed.", m_name);
-        return;
-    }
-
-    /* Note -- subtle fix -CFT */
-    newhp = (long)(m_ptr->hp);
-    oldhp = newhp + (long)(dam);
-    tmp = (newhp * 100L) / oldhp;
-    percentage = (int)(tmp);
-
-
-    /* Jelly's, Mold's, Vortex's, Quthl's */
-    if (strchr("jmvQ", r_ptr->r_char)) {
-
-        if (percentage > 95)
-            msg_format("%^s barely notices.", m_name);
-        else if (percentage > 75)
-            msg_format("%^s flinches.", m_name);
-        else if (percentage > 50)
-            msg_format("%^s squelches.", m_name);
-        else if (percentage > 35)
-            msg_format("%^s quivers in pain.", m_name);
-        else if (percentage > 20)
-            msg_format("%^s writhes about.", m_name);
-        else if (percentage > 10)
-            msg_format("%^s writhes in agony.", m_name);
-        else
-            msg_format("%^s jerks limply.", m_name);
-    }
-
-    /* Dogs and Hounds */
-    else if (strchr("CZ", r_ptr->r_char)) {
-
-        if (percentage > 95)
-            msg_format("%^s shrugs off the attack.", m_name);
-        else if (percentage > 75)
-            msg_format("%^s snarls with pain.", m_name);
-        else if (percentage > 50)
-            msg_format("%^s yelps in pain.", m_name);
-        else if (percentage > 35)
-            msg_format("%^s howls in pain.", m_name);
-        else if (percentage > 20)
-            msg_format("%^s howls in agony.", m_name);
-        else if (percentage > 10)
-            msg_format("%^s writhes in agony.", m_name);
-        else
-            msg_format("%^s yelps feebly.", m_name);
-    }
-
-    /* One type of monsters (ignore,squeal,shriek) */
-    else if (strchr("FIKMRSXabclqrst", r_ptr->r_char)) {
-
-        if (percentage > 95)
-            msg_format("%^s ignores the attack.", m_name);
-        else if (percentage > 75)
-            msg_format("%^s grunts with pain.", m_name);
-        else if (percentage > 50)
-            msg_format("%^s squeals in pain.", m_name);
-        else if (percentage > 35)
-            msg_format("%^s shrieks in pain.", m_name);
-        else if (percentage > 20)
-            msg_format("%^s shrieks in agony.", m_name);
-        else if (percentage > 10)
-            msg_format("%^s writhes in agony.", m_name);
-        else
-            msg_format("%^s cries out feebly.", m_name);
-    }
-
-    /* Another type of monsters (shrug,cry,scream) */
-    else {
-
-        if (percentage > 95)
-            msg_format("%^s shrugs off the attack.", m_name);
-        else if (percentage > 75)
-            msg_format("%^s grunts with pain.", m_name);
-        else if (percentage > 50)
-            msg_format("%^s cries out in pain.", m_name);
-        else if (percentage > 35)
-            msg_format("%^s screams in pain.", m_name);
-        else if (percentage > 20)
-            msg_format("%^s screams in agony.", m_name);
-        else if (percentage > 10)
-            msg_format("%^s writhes in agony.", m_name);
-        else
-            msg_format("%^s cries out feebly.", m_name);
-    }
-}
-
-
-
-/*
  * Removes curses from items in inventory
  *
  * Note that Items which are "Perma-Cursed" (The One Ring,
@@ -1043,6 +789,8 @@ bool restore_level()
  * It is now a lot more efficient. -BEN-
  *
  * See also "identify_fully()".
+ *
+ * XXX XXX XXX Use the "show_file()" method, perhaps.
  */
 void self_knowledge()
 {
@@ -1395,36 +1143,6 @@ void self_knowledge()
     Term_load();
 }
 
-
-
-
-
-/*
- * Teleport the player one level up or down (random when legal)
- */
-void tele_level()
-{
-    if (!dun_level) {
-        msg_print("You sink through the floor.");
-        dun_level++;
-        new_level_flag = TRUE;
-    }
-    else if (is_quest(dun_level) || (dun_level >= MAX_DEPTH-1)) {
-        msg_print("You rise up through the ceiling.");
-        dun_level--;
-        new_level_flag = TRUE;
-    }
-    else if (rand_int(100) < 50) {
-        msg_print("You rise up through the ceiling.");
-        dun_level--;
-        new_level_flag = TRUE;
-    }
-    else {
-        msg_print("You sink through the floor.");
-        dun_level++;
-        new_level_flag = TRUE;
-    }
-}
 
 
 
@@ -2026,491 +1744,6 @@ void stair_creation()
 
 
 /*
- * Determine the "Activation" (if any) for an artifact
- * Return a string, or NULL for "no activation"
- */
-cptr item_activation(inven_type *i_ptr)
-{
-    u32b f1, f2, f3;
-
-    /* Extract the flags */
-    inven_flags(i_ptr, &f1, &f2, &f3);
-    
-    /* Require activation ability */
-    if (!(f3 & TR3_ACTIVATE)) return (NULL);
-
-    /* Some artifacts can be activated */
-    switch (i_ptr->name1) {
-
-        case ART_NARTHANC:
-            return "fire bolt (9d8) every 8+d8 turns";
-        case ART_NIMTHANC:
-            return "frost bolt (6d8) every 7+d7 turns";
-        case ART_DETHANC:
-            return "lightning bolt (4d8) every 6+d6 turns";
-        case ART_RILIA:
-            return "stinking cloud (12) every 4+d4 turns";
-        case ART_BELANGIL:
-            return "frost ball (48) every 5+d5 turns";
-        case ART_DAL:
-            return "remove fear and cure poison every 5 turns";
-        case ART_RINGIL:
-            return "frost ball (100) every 300 turns";
-        case ART_ANDURIL:
-            return "fire ball (72) every 400 turns";
-        case ART_FIRESTAR:
-            return "large fire ball (72) every 100 turns";
-        case ART_FEANOR:
-            return "haste self (20+d20 turns) every 200 turns";
-        case ART_THEODEN:
-            return "drain life (120) every 400 turns";
-        case ART_TURMIL:
-            return "drain life (90) every 70 turns";
-        case ART_CASPANION:
-            return "door and trap destruction every 10 turns";
-        case ART_AVAVIR:
-            return "word of recall every 200 turns";
-        case ART_TARATOL:
-            return "haste self (20+d20 turns) every 100+d100 turns";
-        case ART_ERIRIL:
-            return "identify every 10 turns";
-        case ART_OLORIN:
-            return "probing every 20 turns";
-        case ART_EONWE:
-            return "mass genocide every 1000 turns";
-        case ART_LOTHARANG:
-            return "cure wounds (4d7) every 3+d3 turns";
-        case ART_CUBRAGOL:
-            return "fire branding of bolts every 999 turns";
-        case ART_ARUNRUTH:
-            return "frost bolt (12d8) every 500 turns";
-        case ART_AEGLOS:
-            return "frost ball (100) every 500 turns";
-        case ART_OROME:
-            return "stone to mud every 5 turns";
-        case ART_SOULKEEPER:
-            return "heal (1000) every 888 turns";
-        case ART_BELEGENNON:
-            return "phase door every 2 turns";
-        case ART_CELEBORN:
-            return "genocide every 500 turns";
-        case ART_LUTHIEN:
-            return "restore life levels every 450 turns";
-        case ART_ULMO:
-            return "teleport away every 150 turns";
-        case ART_COLLUIN:
-            return "resistance (20+d20 turns) every 111 turns";
-        case ART_HOLCOLLETH:
-            return "Sleep II every 55 turns";
-        case ART_THINGOL:
-            return "recharge item I every 70 turns";
-        case ART_COLANNON:
-            return "teleport every 45 turns";
-        case ART_TOTILA:
-            return "confuse monster every 15 turns";
-        case ART_CAMMITHRIM:
-            return "magic missile (2d6) every 2 turns";
-        case ART_PAURHACH:
-            return "fire bolt (9d8) every 8+d8 turns";
-        case ART_PAURNIMMEN:
-            return "frost bolt (6d8) every 7+d7 turns";
-        case ART_PAURAEGEN:
-            return "lightning bolt (4d8) every 6+d6 turns";
-        case ART_PAURNEN:
-            return "acid bolt (5d8) every 5+d5 turns";
-        case ART_FINGOLFIN:
-            return "a magical arrow (150) every 90+d90 turns";
-        case ART_HOLHENNETH:
-            return "detection every 55+d55 turns";
-        case ART_GONDOR:
-            return "heal (500) every 500 turns";
-        case ART_RAZORBACK:
-            return "star ball (150) every 1000 turns";
-        case ART_BLADETURNER:
-            return "berserk rage, bless, and resistance every 400 turns";
-        case ART_GALADRIEL:
-            return "illumination every 10+d10 turns";
-        case ART_ELENDIL:
-            return "magic mapping every 50+d50 turns";
-        case ART_THRAIN:
-            return "clairvoyance every 100+d100 turns";
-        case ART_INGWE:
-            return "dispel evil (x5) every 300+d300 turns";
-        case ART_CARLAMMAS:
-            return "protection from evil every 225+d225 turns";
-        case ART_TULKAS:
-            return "haste self (75+d75 turns) every 150+d150 turns";
-        case ART_NARYA:
-            return "large fire ball (120) every 225+d225 turns";
-        case ART_NENYA:
-            return "large frost ball (200) every 325+d325 turns";
-        case ART_VILYA:
-            return "large lightning ball (250) every 425+d425 turns";
-        case ART_POWER:
-            return "bizarre things every 450+d450 turns";
-    }
-
-
-    /* Require dragon scale mail */
-    if (i_ptr->tval != TV_DRAG_ARMOR) return (NULL);
-
-    /* Branch on the sub-type */
-    switch (i_ptr->sval) {
-
-        case SV_DRAGON_BLUE:
-            return "breathe lightning (100) every 450+d450 turns";
-        case SV_DRAGON_WHITE:
-            return "breathe frost (110) every 450+d450 turns";
-        case SV_DRAGON_BLACK:
-            return "breathe acid (130) every 450+d450 turns";
-        case SV_DRAGON_GREEN:
-            return "breathe poison gas (150) every 450+d450 turns";
-        case SV_DRAGON_RED:
-            return "breathe fire (200) every 450+d450 turns";
-        case SV_DRAGON_MULTIHUED:
-            return "breathe multi-hued (250) every 225+d225 turns";
-        case SV_DRAGON_BRONZE:
-            return "breathe confusion (120) every 450+d450 turns";
-        case SV_DRAGON_GOLD:
-            return "breathe sound (130) every 450+d450 turns";
-        case SV_DRAGON_CHAOS:
-            return "breathe chaos/disenchant (220) every 300+d300 turns";
-        case SV_DRAGON_LAW:
-            return "breathe sound/shards (230) every 300+d300 turns";
-        case SV_DRAGON_BALANCE:
-            return "You breathe balance (250) every 300+d300 turns";
-        case SV_DRAGON_SHINING:
-            return "breathe light/darkness (200) every 300+d300 turns";
-        case SV_DRAGON_POWER:
-            return "breathe the elements (300) every 300+d300 turns";
-    }
-
-
-    /* Oops */
-    return NULL;
-}
-
-
-/*
- * Describe a "fully identified" item
- */
-bool identify_fully_aux(inven_type *i_ptr)
-{
-    int			i = 0, j, k;
-
-    u32b f1, f2, f3;
-
-    cptr		info[128];
-
-
-    /* Extract the flags */
-    inven_flags(i_ptr, &f1, &f2, &f3);
-        
-
-    /* Mega-Hack -- describe activation */
-    if (f3 & TR3_ACTIVATE) {
-        info[i++] = "It can be activated for...";
-        info[i++] = item_activation(i_ptr);
-        info[i++] = "...if it is being worn.";
-    }
-
-
-    /* Hack -- describe lite's */
-    if (i_ptr->tval == TV_LITE) {
-
-        if (artifact_p(i_ptr)) {
-            info[i++] = "It provides light (radius 3) forever.";
-        }
-        else if (i_ptr->sval == SV_LITE_LANTERN) {
-            info[i++] = "It provides light (radius 2) when fueled.";
-        }
-        else {
-            info[i++] = "It provides light (radius 1) when fueled.";
-        }
-    }
-
-
-    /* And then describe it fully */
-
-    if (f1 & TR1_STR) {
-        info[i++] = "It affects your strength.";
-    }
-    if (f1 & TR1_INT) {
-        info[i++] = "It affects your intelligence.";
-    }
-    if (f1 & TR1_WIS) {
-        info[i++] = "It affects your wisdom.";
-    }
-    if (f1 & TR1_DEX) {
-        info[i++] = "It affects your dexterity.";
-    }
-    if (f1 & TR1_CON) {
-        info[i++] = "It affects your constitution.";
-    }
-    if (f1 & TR1_CHR) {
-        info[i++] = "It affects your charisma.";
-    }
-
-    if (f1 & TR1_STEALTH) {
-        info[i++] = "It affects your stealth.";
-    }
-    if (f1 & TR1_SEARCH) {
-        info[i++] = "It affects your searching.";
-    }
-    if (f1 & TR1_INFRA) {
-        info[i++] = "It affects your infravision.";
-    }
-    if (f1 & TR1_TUNNEL) {
-        info[i++] = "It affects your ability to tunnel.";
-    }
-    if (f1 & TR1_SPEED) {
-        info[i++] = "It affects your speed.";
-    }
-    if (f1 & TR1_BLOWS) {
-        info[i++] = "It affects your attack speed.";
-    }
-
-    if (f1 & TR1_BRAND_ACID) {
-        info[i++] = "It does extra damage from acid.";
-    }
-    if (f1 & TR1_BRAND_ELEC) {
-        info[i++] = "It does extra damage from electricity.";
-    }
-    if (f1 & TR1_BRAND_FIRE) {
-        info[i++] = "It does extra damage from fire.";
-    }
-    if (f1 & TR1_BRAND_COLD) {
-        info[i++] = "It does extra damage from frost.";
-    }
-
-    if (f1 & TR1_IMPACT) {
-        info[i++] = "It can cause earthquakes.";
-    }
-
-    if (f1 & TR1_KILL_DRAGON) {
-        info[i++] = "It is a great bane of dragons.";
-    }
-    else if (f1 & TR1_SLAY_DRAGON) {
-        info[i++] = "It is especially deadly against dragons.";
-    }
-    if (f1 & TR1_SLAY_ORC) {
-        info[i++] = "It is especially deadly against orcs.";
-    }
-    if (f1 & TR1_SLAY_TROLL) {
-        info[i++] = "It is especially deadly against trolls.";
-    }
-    if (f1 & TR1_SLAY_GIANT) {
-        info[i++] = "It is especially deadly against giants.";
-    }
-    if (f1 & TR1_SLAY_DEMON) {
-        info[i++] = "It strikes at demons with holy wrath.";
-    }
-    if (f1 & TR1_SLAY_UNDEAD) {
-        info[i++] = "It strikes at undead with holy wrath.";
-    }
-    if (f1 & TR1_SLAY_EVIL) {
-        info[i++] = "It fights against evil with holy fury.";
-    }
-    if (f1 & TR1_SLAY_ANIMAL) {
-        info[i++] = "It is especially deadly against natural creatures.";
-    }
-
-    if (f2 & TR2_SUST_STR) {
-        info[i++] = "It sustains your strength.";
-    }
-    if (f2 & TR2_SUST_INT) {
-        info[i++] = "It sustains your intelligence.";
-    }
-    if (f2 & TR2_SUST_WIS) {
-        info[i++] = "It sustains your wisdom.";
-    }
-    if (f2 & TR2_SUST_DEX) {
-        info[i++] = "It sustains your dexterity.";
-    }
-    if (f2 & TR2_SUST_CON) {
-        info[i++] = "It sustains your constitution.";
-    }
-    if (f2 & TR2_SUST_CHR) {
-        info[i++] = "It sustains your charisma.";
-    }
-
-    if (f2 & TR2_IM_ACID) {
-        info[i++] = "It provides immunity to acid.";
-    }
-    if (f2 & TR2_IM_ELEC) {
-        info[i++] = "It provides immunity to electricity.";
-    }
-    if (f2 & TR2_IM_FIRE) {
-        info[i++] = "It provides immunity to fire.";
-    }
-    if (f2 & TR2_IM_COLD) {
-        info[i++] = "It provides immunity to cold.";
-    }
-
-    if (f2 & TR2_FREE_ACT) {
-        info[i++] = "It provides immunity to paralysis.";
-    }
-    if (f2 & TR2_HOLD_LIFE) {
-        info[i++] = "It provides resistance to life draining.";
-    }
-
-    if (f2 & TR2_RES_ACID) {
-        info[i++] = "It provides resistance to acid.";
-    }
-    if (f2 & TR2_RES_ELEC) {
-        info[i++] = "It provides resistance to electricity.";
-    }
-    if (f2 & TR2_RES_FIRE) {
-        info[i++] = "It provides resistance to fire.";
-    }
-    if (f2 & TR2_RES_COLD) {
-        info[i++] = "It provides resistance to cold.";
-    }
-    if (f2 & TR2_RES_POIS) {
-        info[i++] = "It provides resistance to poison.";
-    }
-
-    if (f2 & TR2_RES_LITE) {
-        info[i++] = "It provides resistance to light.";
-    }
-    if (f2 & TR2_RES_DARK) {
-        info[i++] = "It provides resistance to dark.";
-    }
-
-    if (f2 & TR2_RES_BLIND) {
-        info[i++] = "It provides resistance to blindness.";
-    }
-    if (f2 & TR2_RES_CONF) {
-        info[i++] = "It provides resistance to confusion.";
-    }
-    if (f2 & TR2_RES_SOUND) {
-        info[i++] = "It provides resistance to sound.";
-    }
-    if (f2 & TR2_RES_SHARDS) {
-        info[i++] = "It provides resistance to shards.";
-    }
-
-    if (f2 & TR2_RES_NETHER) {
-        info[i++] = "It provides resistance to nether.";
-    }
-    if (f2 & TR2_RES_NEXUS) {
-        info[i++] = "It provides resistance to nexus.";
-    }
-    if (f2 & TR2_RES_CHAOS) {
-        info[i++] = "It provides resistance to chaos.";
-    }
-    if (f2 & TR2_RES_DISEN) {
-        info[i++] = "It provides resistance to disenchantment.";
-    }
-
-    if (f3 & TR3_FEATHER) {
-        info[i++] = "It induces feather falling.";
-    }
-    if (f3 & TR3_LITE) {
-        info[i++] = "It provides permanent light.";
-    }
-    if (f3 & TR3_SEE_INVIS) {
-        info[i++] = "It allows you to see invisible monsters.";
-    }
-    if (f3 & TR3_TELEPATHY) {
-        info[i++] = "It gives telepathic powers.";
-    }
-    if (f3 & TR3_SLOW_DIGEST) {
-        info[i++] = "It slows your metabolism.";
-    }
-    if (f3 & TR3_REGEN) {
-        info[i++] = "It speeds your regenerative powers.";
-    }
-
-    if (f3 & TR3_XTRA_MIGHT) {
-        info[i++] = "It fires missiles with extra might.";
-    }
-    if (f3 & TR3_XTRA_SHOTS) {
-        info[i++] = "It fires missiles excessively fast.";
-    }
-
-    if (f3 & TR3_DRAIN_EXP) {
-        info[i++] = "It drains experience.";
-    }
-    if (f3 & TR3_TELEPORT) {
-        info[i++] = "It induces random teleportation.";
-    }
-    if (f3 & TR3_AGGRAVATE) {
-        info[i++] = "It aggravates nearby creatures.";
-    }
-
-    if (f3 & TR3_BLESSED) {
-        info[i++] = "It has been blessed by the gods.";
-    }
-
-    if (cursed_p(i_ptr)) {
-        if (f3 & TR3_PERMA_CURSE) {
-            info[i++] = "It is permanently cursed.";
-        }
-        else if (f3 & TR3_HEAVY_CURSE) {
-            info[i++] = "It is heavily cursed.";
-        }
-        else {
-            info[i++] = "It is cursed.";
-        }
-    }
-
-
-    if (f3 & TR3_IGNORE_ACID) {
-        info[i++] = "It cannot be harmed by acid.";
-    }
-    if (f3 & TR3_IGNORE_ELEC) {
-        info[i++] = "It cannot be harmed by electricity.";
-    }
-    if (f3 & TR3_IGNORE_FIRE) {
-        info[i++] = "It cannot be harmed by fire.";
-    }
-    if (f3 & TR3_IGNORE_COLD) {
-        info[i++] = "It cannot be harmed by cold.";
-    }
-
-
-    /* No special effects */
-    if (!i) return (FALSE);
-
-
-    /* Save the screen */
-    Term_save();
-
-    /* Erase the screen */
-    for (k = 1; k < 24; k++) prt("", k, 13);
-
-    /* Label the information */
-    prt("     Item Attributes:", 1, 15);
-
-    /* We will print on top of the map (column 13) */
-    for (k = 2, j = 0; j < i; j++) {
-
-        /* Show the info */
-        prt(info[j], k++, 15);
-
-        /* Every 20 entries (lines 2 to 21), start over */
-        if ((k == 22) && (j+1 < i)) {
-            prt("-- more --", k, 15);
-            inkey();
-            for ( ; k > 2; k--) prt("", k, 15);
-        }
-    }
-
-    /* Wait for it */
-    prt("[Press any key to continue]", k, 15);
-    inkey();
-
-    /* Restore the screen */
-    Term_load();
-
-    /* Gave knowledge */
-    return (TRUE);
-}
-
-
-
-/*
  * Hook to specify "weapon"
  */
 static bool item_tester_hook_weapon(inven_type *i_ptr)
@@ -2838,7 +2071,7 @@ bool identify_fully()
 
 
     /* Get an item (from equip or inven or floor) */
-    if (!get_item(&item, "Fully *identify* which item? ", TRUE, TRUE, TRUE)) {
+    if (!get_item(&item, "Identify which item? ", TRUE, TRUE, TRUE)) {
         if (item == -2) msg_print("You have nothing to identify.");
         return (FALSE);
     }
@@ -3188,10 +2421,13 @@ void destroy_area(int y1, int x1, int r, bool full)
     
 
     /* Mega-Hack -- Forget the view and lite */
-    p_ptr->update |= (PU_NOTE);
+    p_ptr->update |= (PU_UN_VIEW | PU_UN_LITE);
 
     /* Update stuff */
-    p_ptr->update |= (PU_VIEW | PU_LITE | PU_FLOW | PU_MONSTERS);
+    p_ptr->update |= (PU_VIEW | PU_LITE | PU_FLOW);
+    
+    /* Update the monsters */
+    p_ptr->update |= (PU_MONSTERS);
 
     /* Redraw stuff */
     p_ptr->redraw |= (PR_MAP);
@@ -3550,7 +2786,7 @@ void earthquake(int cy, int cx, int r)
 
 
     /* Mega-Hack -- Forget the view and lite */
-    p_ptr->update |= (PU_NOTE);
+    p_ptr->update |= (PU_UN_VIEW | PU_UN_LITE);
 
     /* Update stuff */
     p_ptr->update |= (PU_VIEW | PU_LITE | PU_FLOW);
@@ -3564,5 +2800,490 @@ void earthquake(int cy, int cx, int r)
     /* Redraw stuff */
     p_ptr->redraw |= (PR_MAP);
 }
+
+
+
+/*
+ * This routine clears the entire "temp" set.
+ *
+ * This routine will Perma-Lite all "temp" grids.
+ *
+ * This routine is used (only) by "lite_room()"
+ *
+ * Dark grids are illuminated.
+ *
+ * Also, process all affected monsters.
+ *
+ * SMART monsters always wake up when illuminated
+ * NORMAL monsters wake up 1/4 the time when illuminated
+ * STUPID monsters wake up 1/10 the time when illuminated
+ */
+static void cave_temp_room_lite(void)
+{
+    int i;
+
+    /* Clear them all */
+    for (i = 0; i < temp_n; i++) {
+
+        int y = temp_y[i];
+        int x = temp_x[i];
+
+        cave_type *c_ptr = &cave[y][x];
+        
+        /* No longer in the array */
+        c_ptr->feat &= ~CAVE_TEMP;
+
+        /* Update only non-CAVE_GLOW grids */
+        /* if (c_ptr->feat & CAVE_GLOW) continue; */
+
+        /* Perma-Lite */
+        c_ptr->feat |= CAVE_GLOW;
+
+        /* Process affected monsters */
+        if (c_ptr->m_idx) {
+
+            monster_type	*m_ptr = &m_list[c_ptr->m_idx];
+
+            monster_race	*r_ptr = &r_info[m_ptr->r_idx];
+
+            /* Update the monster */
+            update_mon(c_ptr->m_idx, FALSE);
+            
+            /* Sometimes monsters wake up */
+            if (m_ptr->csleep &&
+                (((r_ptr->flags2 & RF2_STUPID) && (rand_int(100) < 10)) ||
+                 (rand_int(100) < 25) ||
+                 (r_ptr->flags2 & RF2_SMART))) {
+
+                /* Wake up! */
+                m_ptr->csleep = 0;
+
+                /* Notice the "waking up" */
+                if (m_ptr->ml) {
+
+                    char m_name[80];
+
+                    /* Acquire the monster name */
+                    monster_desc(m_name, m_ptr, 0);
+
+                    /* Dump a message */
+                    msg_format("%^s wakes up.", m_name);
+                }
+            }
+        }
+
+        /* Note */
+        note_spot(y, x);
+
+        /* Redraw */
+        lite_spot(y, x);
+    }
+
+    /* None left */
+    temp_n = 0;
+}
+
+
+
+/*
+ * This routine clears the entire "temp" set.
+ *
+ * This routine will "darken" all "temp" grids.
+ *
+ * In addition, some of these grids will be "unmarked".
+ *
+ * This routine is used (only) by "unlite_room()"
+ *
+ * Also, process all affected monsters
+ */
+static void cave_temp_room_unlite(void)
+{
+    int i;
+
+    /* Clear them all */
+    for (i = 0; i < temp_n; i++) {
+
+        int y = temp_y[i];
+        int x = temp_x[i];
+
+        cave_type *c_ptr = &cave[y][x];
+
+        /* No longer in the array */
+        c_ptr->feat &= ~CAVE_TEMP;
+
+        /* Darken the grid */
+        c_ptr->feat &= ~CAVE_GLOW;
+
+        /* Hack -- Forget "boring" grids */
+        if ((c_ptr->feat & 0x3F) <= 0x02) {
+
+            /* Forget the grid */
+            c_ptr->feat &= ~CAVE_MARK;
+
+            /* Notice */
+            note_spot(y, x);
+        }
+
+        /* Process affected monsters */
+        if (c_ptr->m_idx) {
+
+            /* Update the monster */
+            update_mon(c_ptr->m_idx, FALSE);
+        }
+
+        /* Redraw */
+        lite_spot(y, x);
+    }
+
+    /* None left */
+    temp_n = 0;
+}
+
+
+
+
+/*
+ * Aux function -- see below
+ */
+static void cave_temp_room_aux(int y, int x)
+{
+    cave_type *c_ptr = &cave[y][x];
+
+    /* Avoid infinite recursion */
+    if (c_ptr->feat & CAVE_TEMP) return;
+
+    /* Do not "leave" the current room */
+    if (!(c_ptr->feat & CAVE_ROOM)) return;
+
+    /* Paranoia -- verify space */
+    if (temp_n == TEMP_MAX) return;
+
+    /* Mark the grid as "seen" */
+    c_ptr->feat |= CAVE_TEMP;
+
+    /* Add it to the "seen" set */
+    temp_y[temp_n] = y;
+    temp_x[temp_n] = x;
+    temp_n++;
+}
+
+
+
+
+/*
+ * Illuminate any room containing the given location.
+ */
+void lite_room(int y1, int x1)
+{
+    int i, x, y;
+
+    /* Add the initial grid */
+    cave_temp_room_aux(y1, x1);
+
+    /* While grids are in the queue, add their neighbors */
+    for (i = 0; i < temp_n; i++) {
+
+        x = temp_x[i], y = temp_y[i];
+
+        /* Walls get lit, but stop light */
+        if (!floor_grid_bold(y, x)) continue;
+
+        /* Spread adjacent */
+        cave_temp_room_aux(y + 1, x);
+        cave_temp_room_aux(y - 1, x);
+        cave_temp_room_aux(y, x + 1);
+        cave_temp_room_aux(y, x - 1);
+
+        /* Spread diagonal */
+        cave_temp_room_aux(y + 1, x + 1);
+        cave_temp_room_aux(y - 1, x - 1);
+        cave_temp_room_aux(y - 1, x + 1);
+        cave_temp_room_aux(y + 1, x - 1);
+    }
+
+    /* Now, lite them all up at once */
+    cave_temp_room_lite();
+}
+
+
+/*
+ * Darken all rooms containing the given location
+ */
+void unlite_room(int y1, int x1)
+{
+    int i, x, y;
+
+    /* Add the initial grid */
+    cave_temp_room_aux(y1, x1);
+
+    /* Spread, breadth first */
+    for (i = 0; i < temp_n; i++) {
+
+        x = temp_x[i], y = temp_y[i];
+
+        /* Walls get dark, but stop darkness */
+        if (!floor_grid_bold(y, x)) continue;
+
+        /* Spread adjacent */
+        cave_temp_room_aux(y + 1, x);
+        cave_temp_room_aux(y - 1, x);
+        cave_temp_room_aux(y, x + 1);
+        cave_temp_room_aux(y, x - 1);
+
+        /* Spread diagonal */
+        cave_temp_room_aux(y + 1, x + 1);
+        cave_temp_room_aux(y - 1, x - 1);
+        cave_temp_room_aux(y - 1, x + 1);
+        cave_temp_room_aux(y + 1, x - 1);
+    }
+
+    /* Now, darken them all at once */
+    cave_temp_room_unlite();
+}
+
+
+
+/*
+ * Hack -- call light around the player
+ */
+bool lite_area(int dam, int rad)
+{
+    /* Hack -- Message */
+    if (!p_ptr->blind) {
+        msg_print("You are surrounded by a white light.");
+    }
+
+    /* Hook into the "project()" function */
+    (void)project(0, rad, py, px, dam, GF_LITE_WEAK, PROJECT_GRID);
+
+    /* Lite up the room */
+    lite_room(py, px);
+
+    /* Assume seen */
+    return (TRUE);
+}
+
+
+/*
+ * Hack -- call darkness around the player
+ */
+bool unlite_area(int dam, int rad)
+{
+    /* Hack -- Message */
+    if (!p_ptr->blind) {
+        msg_print("Darkness surrounds you.");
+    }
+
+    /* Hook into the "project()" function */
+    (void)project(0, rad, py, px, dam, GF_DARK_WEAK, PROJECT_GRID);
+
+    /* Lite up the room */
+    unlite_room(py, px);
+
+    /* Assume seen */
+    return (TRUE);
+}
+
+
+
+/*
+ * Hack -- apply a "projection()" in a direction (or at the target)
+ */
+static bool project_hook(int typ, int dir, int dam, int flg)
+{
+    int tx, ty;
+
+    /* Pass through the target if needed */
+    flg |= (PROJECT_THRU);
+
+    /* Use the given direction */
+    tx = px + ddx[dir];
+    ty = py + ddy[dir];
+
+    /* Use an actual "target" */
+    if ((dir == 5) && target_okay()) {
+        tx = target_col;
+        ty = target_row;
+    }
+
+    /* Analyze the "dir" and the "target", do NOT explode */
+    return (project(0, 0, ty, tx, dam, typ, flg));
+}
+
+/*
+ * Cast a bolt spell
+ */
+bool fire_bolt(int typ, int dir, int dam)
+{
+    int flg = PROJECT_STOP;
+    return (project_hook(typ, dir, dam, flg));
+}
+
+/*
+ * Cast a beam spell
+ */
+bool fire_beam(int typ, int dir, int dam)
+{
+    /* Go until we have to stop, do "beam" damage to everyone */
+    /* Also, affect all grids (NOT objects) we pass through */
+    int flg = PROJECT_BEAM | PROJECT_GRID;
+    return (project_hook(typ, dir, dam, flg));
+}
+
+/*
+ * Cast a ball spell
+ */
+bool fire_ball(int typ, int dir, int dam, int rad)
+{
+    int tx, ty;
+
+    int flg = PROJECT_GRID | PROJECT_ITEM | PROJECT_STOP;
+
+    /* Use the given direction */
+    tx = px + 99 * ddx[dir];
+    ty = py + 99 * ddy[dir];
+
+    /* Use an actual "target" */
+    if ((dir == 5) && target_okay()) {
+        flg &= ~PROJECT_STOP;
+        tx = target_col;
+        ty = target_row;
+    }
+
+    /* Analyze the "dir" and the "target".  Hurt items on floor. */
+    return (project(0, rad, ty, tx, dam, typ, flg));
+}
+
+/*
+ * Cast a bolt spell, or rarely, a beam spell
+ */
+bool fire_bolt_or_beam(int prob, int typ, int dir, int dam)
+{
+    if (rand_int(100) < prob) {
+        return (fire_beam(typ, dir, dam));
+    }
+    else {
+        return (fire_bolt(typ, dir, dam));
+    }
+}
+
+
+/*
+ * Some of the old functions
+ */
+
+bool lite_line(int dir)
+{
+    return (fire_beam(GF_LITE_WEAK, dir, damroll(6, 8)));
+}
+
+bool drain_life(int dir, int dam)
+{
+    int flg = PROJECT_STOP;
+    return (project_hook(GF_OLD_DRAIN, dir, dam, flg));
+}
+
+bool wall_to_mud(int dir)
+{
+    int flg = PROJECT_BEAM | PROJECT_GRID | PROJECT_ITEM;
+    return (project_hook(GF_KILL_WALL, dir, 20 + randint(30), flg));
+}
+
+bool destroy_door(int dir)
+{
+    int flg = PROJECT_BEAM | PROJECT_GRID | PROJECT_ITEM;
+    return (project_hook(GF_KILL_DOOR, dir, 0, flg));
+}
+
+bool disarm_trap(int dir)
+{
+    int flg = PROJECT_BEAM | PROJECT_GRID | PROJECT_ITEM;
+    return (project_hook(GF_KILL_TRAP, dir, 0, flg));
+}
+
+bool heal_monster(int dir)
+{
+    int flg = PROJECT_STOP;
+    return (project_hook(GF_OLD_HEAL, dir, damroll(4, 6), flg));
+}
+
+bool speed_monster(int dir)
+{
+    int flg = PROJECT_STOP;
+    return (project_hook(GF_OLD_SPEED, dir, p_ptr->lev, flg));
+}
+
+bool slow_monster(int dir)
+{
+    int flg = PROJECT_STOP;
+    return (project_hook(GF_OLD_SLOW, dir, p_ptr->lev, flg));
+}
+
+bool sleep_monster(int dir)
+{
+    int flg = PROJECT_STOP;
+    return (project_hook(GF_OLD_SLEEP, dir, p_ptr->lev, flg));
+}
+
+bool confuse_monster(int dir, int plev)
+{
+    int flg = PROJECT_STOP;
+    return (project_hook(GF_OLD_CONF, dir, plev, flg));
+}
+
+bool fear_monster(int dir, int plev)
+{
+    int flg = PROJECT_STOP;
+    return (project_hook(GF_OLD_SCARE, dir, plev, flg));
+}
+
+bool poly_monster(int dir)
+{
+    int flg = PROJECT_BEAM;
+    return (project_hook(GF_OLD_POLY, dir, p_ptr->lev, flg));
+}
+
+bool clone_monster(int dir)
+{
+    int flg = PROJECT_STOP;
+    return (project_hook(GF_OLD_CLONE, dir, 0, flg));
+}
+
+bool teleport_monster(int dir)
+{
+    int flg = PROJECT_BEAM;
+    return (project_hook(GF_OLD_TPORT, dir, MAX_SIGHT * 5, flg));
+}
+
+
+
+/*
+ * Hooks -- affect adjacent grids (radius 1 ball attack)
+ */
+
+bool door_creation()
+{
+    int flg = PROJECT_GRID | PROJECT_ITEM | PROJECT_HIDE;
+    return (project(0, 1, py, px, 0, GF_MAKE_DOOR, flg));
+}
+
+bool trap_creation()
+{
+    int flg = PROJECT_GRID | PROJECT_ITEM | PROJECT_HIDE;
+    return (project(0, 1, py, px, 0, GF_MAKE_TRAP, flg));
+}
+
+bool destroy_doors_touch()
+{
+    int flg = PROJECT_GRID | PROJECT_ITEM | PROJECT_HIDE;
+    return (project(0, 1, py, px, 0, GF_KILL_DOOR, flg));
+}
+
+bool sleep_monsters_touch(void)
+{
+    int flg = PROJECT_HIDE;
+    return (project(0, 1, py, px, p_ptr->lev, GF_OLD_SLEEP, flg));
+}
+
 
 

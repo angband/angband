@@ -15,11 +15,6 @@
 
 
 /*
- * Interact with the Ben Borg
- */
-extern void borg_ben(void);
-
-/*
  * Initialize this file
  */
 extern void borg_ben_init(void);

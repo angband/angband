@@ -454,7 +454,7 @@ static errr Term_xtra_gcu_alive(int v)
         nl();
 
         /* Hack -- make sure the cursor is visible */
-        Term_xtra(TERM_XTRA_BEVIS, -999);
+        Term_xtra(TERM_XTRA_SHAPE, 1);
 
         /* Flush the curses buffer */
         (void)refresh();
@@ -528,7 +528,7 @@ static void Term_nuke_gcu(term *t)
     if (--active != 0) return;
 
     /* Hack -- make sure the cursor is visible */
-    Term_xtra(TERM_XTRA_BEVIS, -999);
+    Term_xtra(TERM_XTRA_SHAPE, 1);
 
 #ifdef SPECIAL_BSD
     /* This moves curses to bottom right corner */
@@ -683,14 +683,9 @@ static errr Term_xtra_gcu(int n, int v)
 
 #ifdef USE_CURS_SET
 
-        /* Make the cursor invisible */
-        case TERM_XTRA_INVIS:
-            curs_set(0);
-            return (0);
-
-        /* Make the cursor visible */
-        case TERM_XTRA_BEVIS:
-            curs_set(1);
+        /* Change the cursor visibility */
+        case TERM_XTRA_SHAPE:
+            curs_set(v);
             return (0);
 
 #endif
@@ -917,13 +912,20 @@ errr init_gcu(void)
     /*** Now prepare the term ***/
 
     /* Initialize the term */
-    term_init(t, 80, 24, 64);
+    term_init(t, 80, 24, 256);
 
-    /* Hack -- shutdown hook */
+    /* Avoid the bottom right corner */
+    t->icky_corner = TRUE;
+
+    /* Erase with "white space" */
+    t->attr_blank = TERM_WHITE;
+    t->char_blank = ' ';
+
+    /* Set some hooks */
     t->init_hook = Term_init_gcu;
     t->nuke_hook = Term_nuke_gcu;
 
-    /* Stick in some hooks */
+    /* Set some more hooks */
     t->text_hook = Term_text_gcu;
     t->wipe_hook = Term_wipe_gcu;
     t->curs_hook = Term_curs_gcu;

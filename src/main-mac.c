@@ -41,7 +41,12 @@
  *
  * Note that "init.c", "save-old.c", and "birth.c" should probably be
  * "unloaded" as soon as they have completed execution, to save space.
+ *
+ * XXX XXX XXX The first "ClipRect()" call crashes if the user closes
+ * all the windows, switches to another application, switches back,
+ * then re-opens the main window, for example, using "command-a".
  */
+
 
 /*
  * The Angband Color Set (0 to 15):
@@ -304,9 +309,15 @@ static WindowPtr active = NULL;
  * Some information for every "term" window
  */
 static term_data screen;
+#ifdef GRAPHIC_MIRROR
 static term_data mirror;
+#endif /* GRAPHIC_MIRROR */
+#ifdef GRAPHIC_RECALL
 static term_data recall;
+#endif /* GRAPHIC_RECALL */
+#ifdef GRAPHIC_CHOICE
 static term_data choice;
+#endif /* GRAPHIC_CHOICE */
 
 
 /*
@@ -609,37 +620,15 @@ static void mac_warning(cptr warning)
 
 /*
  * Hack -- redraw a term_data
+ *
+ * Note that "Term_redraw()" calls "TERM_XTRA_CLEAR"
  */
 static void term_data_redraw(term_data *td)
 {
     term *old = Term;
 
-    Rect r;
-
     /* Activate the term */
     Term_activate(&td->t);
-
-    /* No clipping */
-    ClipRect(&td->w->portRect);
-
-    /* Erase the window */
-    EraseRect(&td->w->portRect);
-
-    /* Activate the color if needed */
-    if (has_color) RGBForeColor(&mac_clr[TERM_WHITE]);
-
-    /* Frame the window in white */
-    MoveTo(0, 0);
-    LineTo(0, td->size_hgt-1);
-    LineTo(td->size_wid-1, td->size_hgt-1);
-    LineTo(td->size_wid-1, 0);
-
-    /* Clip to the new size */
-    r.left = td->w->portRect.left + td->size_ow1;
-    r.top = td->w->portRect.top + td->size_oh1;
-    r.right = td->w->portRect.right - td->size_ow2;
-    r.bottom = td->w->portRect.bottom - td->size_oh2;
-    ClipRect(&r);
 
     /* Redraw the contents */
     Term_redraw();
@@ -659,22 +648,6 @@ static void term_data_resize(term_data *td)
 {
     /* Actually resize the window */
     SizeWindow(td->w, td->size_wid, td->size_hgt, 0);
-
-#if 0
-
-    /* Erase the window */
-    SizeWindow(w, LoWord(newsize), HiWord(newsize), 1);
-
-    /* Clip to the window */
-    ClipRect(&td->w->portRect);
-
-    /* Erase the window */
-    EraseRect(&td->w->portRect);
-
-    /* This window needs to be redrawn */
-    InvalRect(&td->w->portRect);
-    
-#endif
 
     /* Redraw Contents */
     term_data_redraw(td);
@@ -723,6 +696,9 @@ static void Term_init_mac(term *t)
 
     /* Activate the window */
     activate(td->w);
+
+    /* Hack -- set "mapped" flag */
+    t->mapped_flag = td->mapped;
 
     /* Erase behind words */
     TextMode(srcCopy);
@@ -829,6 +805,15 @@ static errr Term_xtra_mac(int n, int v)
             /* Success */
             return (0);
 
+        /* Process random events */
+        case TERM_XTRA_BORED:
+
+            /* Process an event */
+            (void)CheckEvents(0);
+            
+            /* Success */
+            return (0);
+
         /* Process pending events */
         case TERM_XTRA_EVENT:
 
@@ -859,7 +844,7 @@ static errr Term_xtra_mac(int n, int v)
         /* Clear the screen */
         case TERM_XTRA_CLEAR:
 
-            /* No clipping */
+            /* No clipping XXX XXX XXX */
             ClipRect(&td->w->portRect);
 
             /* Erase the window */
@@ -995,9 +980,12 @@ static void term_data_link(term_data *td)
     /* Initialize the term */
     term_init(t, 80, 24, td->keys);
 
-    /* Prepare the template values */
+    /* Use a "software" cursor */
     t->soft_cursor = TRUE;
-    t->scan_events = TRUE;
+
+    /* Erase with "white space" */
+    t->attr_blank = TERM_WHITE;
+    t->char_blank = ' ';
 
     /* Prepare the init/nuke hooks */
     t->init_hook = Term_init_mac;
@@ -1236,6 +1224,8 @@ static void save_prefs()
 
     /*** The "mirror" info ***/
 
+#ifdef GRAPHIC_MIRROR
+
     td = &mirror;
 
     activate(td->w);
@@ -1255,8 +1245,12 @@ static void save_prefs()
     putshort(p.h);
     putshort(p.v);
 
+#endif /* GRAPHIC_MIRROR */
+
 
     /*** The "recall" info ***/
+
+#ifdef GRAPHIC_RECALL
 
     td = &recall;
 
@@ -1277,8 +1271,12 @@ static void save_prefs()
     putshort(p.h);
     putshort(p.v);
 
+#endif /* GRAPHIC_RECALL */
+
 
     /*** The "choice" info ***/
+
+#ifdef GRAPHIC_CHOICE
 
     td = &choice;
 
@@ -1298,6 +1296,8 @@ static void save_prefs()
     LocalToGlobal(&p);
     putshort(p.h);
     putshort(p.v);
+
+#endif /* GRAPHIC_CHOICE */
 
 
     activate(old_win);
@@ -1361,6 +1361,8 @@ static void load_prefs(void)
 
     /*** Mirror info ***/
 
+#ifdef GRAPHIC_MIRROR
+
     td = &mirror;
 
     td->mapped = getshort();
@@ -1381,8 +1383,12 @@ static void load_prefs(void)
 
     term_data_check_size(td);
 
+#endif /* GRAPHIC_MIRROR */
+
 
     /*** Recall info ***/
+
+#ifdef GRAPHIC_RECALL
 
     td = &recall;
 
@@ -1404,8 +1410,12 @@ static void load_prefs(void)
 
     term_data_check_size(td);
 
+#endif /* GRAPHIC_RECALL */
+
 
     /*** Choice info ***/
+
+#ifdef GRAPHIC_CHOICE
 
     td = &choice;
 
@@ -1426,6 +1436,9 @@ static void load_prefs(void)
     td->r.top = getshort();
 
     term_data_check_size(td);
+
+#endif /* GRAPHIC_CHOICE */
+
 }
 
 
@@ -1491,6 +1504,7 @@ static void init_windows()
     td->r.top = 9999;
     term_data_check_size(td);
 
+#ifdef GRAPHIC_MIRROR
 
     /* Mirror window */
     td = &mirror;
@@ -1501,7 +1515,7 @@ static void init_windows()
     td->size_oh2 = 2;
 
     /* Mirror (Monaco 12) */
-    td->mapped = FALSE;
+    td->mapped = TRUE;
     td->font_id = fid;
     td->font_size = 12;
     td->font_face = 0;
@@ -1517,6 +1531,9 @@ static void init_windows()
     td->r.top = 40;
     term_data_check_size(td);
 
+#endif /* GRAPHIC_MIRROR */
+
+#ifdef GRAPHIC_RECALL
 
     /* Recall window */
     td = &recall;
@@ -1543,6 +1560,9 @@ static void init_windows()
     td->r.top = 40;
     term_data_check_size(td);
 
+#endif /* GRAPHIC_RECALL */
+
+#ifdef GRAPHIC_CHOICE
 
     /* Choice window */
     td = &choice;
@@ -1569,6 +1589,7 @@ static void init_windows()
     td->r.top = 9999;
     term_data_check_size(td);
 
+#endif /* GRAPHIC_CHOICE */
 
     /* Assume failure */
     fff = NULL;
@@ -1633,18 +1654,23 @@ static void init_windows()
     }
 #endif
 
-
+#ifdef GRAPHIC_RECALL
     /* Link/Activate the Recall "term" */
     term_data_link(&recall);
     term_recall = &recall.t;
+#endif /* GRAPHIC_RECALL */
 
+#ifdef GRAPHIC_CHOICE
     /* Link/Activate the Choice "term" */
     term_data_link(&choice);
     term_choice = &choice.t;
+#endif /* GRAPHIC_CHOICE */
 
+#ifdef GRAPHIC_MIRROR
     /* Link/Activate the Mirror "term" */
     term_data_link(&mirror);
     term_mirror = &mirror.t;
+#endif /* GRAPHIC_MIRROR */
 
     /* Link/Activate the Screen "term" */
     term_data_link(&screen);
@@ -2027,9 +2053,15 @@ static void setup_menus()
 
     /* Extract the frontmost "term_data" */
     if (FrontWindow() == screen.w) td = &screen;
+#ifdef GRAPHIC_MIRROR
     if (FrontWindow() == mirror.w) td = &mirror;
+#endif /* GRAPHIC_MIRROR */
+#ifdef GRAPHIC_RECALL
     if (FrontWindow() == recall.w) td = &recall;
+#endif /* GRAPHIC_RECALL */
+#ifdef GRAPHIC_CHOICE
     if (FrontWindow() == choice.w) td = &choice;
+#endif /* GRAPHIC_CHOICE */
 
 
     /* File menu */
@@ -2176,14 +2208,27 @@ static void setup_menus()
     /* Item "Angband Window" */
     CheckItem(m, 1, screen.mapped);
 
+#ifdef GRAPHIC_MIRROR
+
     /* Item "Mirror Window" */
     CheckItem(m, 3, mirror.mapped);
+
+#endif /* GRAPHIC_MIRROR */
+
+#ifdef GRAPHIC_CHOICE
 
     /* Item "Choice Window" */
     CheckItem(m, 5, choice.mapped);
 
+#endif /* GRAPHIC_CHOICE */
+
+#ifdef GRAPHIC_RECALL
+
     /* Item "Recall Window" */
     CheckItem(m, 6, recall.mapped);
+
+#endif /* GRAPHIC_RECALL */
+
 }
 
 
@@ -2214,9 +2259,15 @@ static void menu(long mc)
 
     /* Activate the current "term" */
     if (FrontWindow() == screen.w) td = &screen;
+#ifdef GRAPHIC_MIRROR
     if (FrontWindow() == mirror.w) td = &mirror;
+#endif /* GRAPHIC_MIRROR */
+#ifdef GRAPHIC_RECALL
     if (FrontWindow() == recall.w) td = &recall;
+#endif /* GRAPHIC_RECALL */
+#ifdef GRAPHIC_CHOICE
     if (FrontWindow() == choice.w) td = &choice;
+#endif /* GRAPHIC_CHOICE */
 
 
     /* Branch on the menu */
@@ -2284,11 +2335,16 @@ static void menu(long mc)
                              /* Not Mapped */
                              screen.mapped = FALSE;
 
+                             /* Not Mapped XXX XXX XXX */
+                             screen.t.mapped_flag = FALSE;
+
                              /* Hide the window */
                              HideWindow(screen.w);
                          }
                     }
                     
+#ifdef GRAPHIC_MIRROR
+
                     if (td == &mirror)
                     {
                          /* Hide */
@@ -2297,11 +2353,18 @@ static void menu(long mc)
                              /* Not Mapped */
                              mirror.mapped = FALSE;
 
+                             /* Not Mapped XXX XXX XXX */
+                             mirror.t.mapped_flag = FALSE;
+
                              /* Hide the window */
                              HideWindow(mirror.w);
                          }
                     }
                     
+#endif /* GRAPHIC_MIRROR */
+
+#ifdef GRAPHIC_RECALL
+
                     if (td == &recall)
                     {
                          /* Hide */
@@ -2310,11 +2373,18 @@ static void menu(long mc)
                              /* Not Mapped */
                              recall.mapped = FALSE;
 
+                             /* Not Mapped XXX XXX XXX */
+                             recall.t.mapped_flag = FALSE;
+
                              /* Hide the window */
                              HideWindow(recall.w);
                          }
                     }
                     
+#endif /* GRAPHIC_RECALL */
+
+#ifdef GRAPHIC_CHOICE
+
                     if (td == &choice)
                     {
                          /* Hide */
@@ -2323,10 +2393,15 @@ static void menu(long mc)
                              /* Not Mapped */
                              choice.mapped = FALSE;
 
+                             /* Not Mapped XXX XXX XXX */
+                             choice.t.mapped_flag = FALSE;
+
                              /* Hide the window */
                              HideWindow(choice.w);
                          }
                     }
+
+#endif /* GRAPHIC_CHOICE */
 
                     break;
 
@@ -2546,62 +2621,74 @@ static void menu(long mc)
                     /* Mapped */
                     screen.mapped = TRUE;
 
+                    /* Mapped XXX XXX XXX */
+                    screen.t.mapped_flag = TRUE;
+                    
                     /* Show the window */
                     ShowWindow(screen.w);
 
                     /* Bring to the front */
                     SelectWindow(screen.w);
 
-                    /* Redraw the window */
-                    term_data_redraw(&screen);
-
                     break;
 
                 case 3:		/* Mirror window */
 
+#ifdef GRAPHIC_MIRROR
+
                     /* Mapped */
                     mirror.mapped = TRUE;
 
+                    /* Mapped XXX XXX XXX */
+                    mirror.t.mapped_flag = TRUE;
+                    
                     /* Show the window */
                     ShowWindow(mirror.w);
 
                     /* Bring to the front */
                     SelectWindow(mirror.w);
 
-                    /* Redraw the window */
-                    term_data_redraw(&mirror);
+#endif /* GRAPHIC_MIRROR */
 
                     break;
 
                 case 5:		/* Choice window */
 
+#ifdef GRAPHIC_CHOICE
+
                     /* Mapped */
                     choice.mapped = TRUE;
 
+                    /* Mapped XXX XXX XXX */
+                    choice.t.mapped_flag = TRUE;
+                    
                     /* Show the window */
                     ShowWindow(choice.w);
 
                     /* Bring to the front */
                     SelectWindow(choice.w);
 
-                    /* Redraw the window */
-                    term_data_redraw(&choice);
+#endif /* GRAPHIC_CHOICE */
 
                     break;
 
                 case 6:		/* Recall window */
 
+#ifdef GRAPHIC_RECALL
+
                     /* Mapped */
                     recall.mapped = TRUE;
 
+                    /* Mapped XXX XXX XXX */
+                    recall.t.mapped_flag = TRUE;
+                    
                     /* Show the window */
                     ShowWindow(recall.w);
 
                     /* Bring to the front */
                     SelectWindow(recall.w);
 
-                    /* Redraw the window */
-                    term_data_redraw(&recall);
+#endif /* GRAPHIC_RECALL */
 
                     break;
             }
@@ -2976,15 +3063,21 @@ static bool CheckEvents(bool wait)
 
             w = (WindowPtr)event.message;
 
-            /* Hack */
+            /* Hack XXX XXX XXX */
             BeginUpdate(w);
             EndUpdate(w);
 
             /* Redraw the window */
             if (w==screen.w) term_data_redraw(&screen);
+#ifdef GRAPHIC_MIRROR
             if (w==mirror.w) term_data_redraw(&mirror);
+#endif /* GRAPHIC_MIRROR */
+#ifdef GRAPHIC_RECALL
             if (w==recall.w) term_data_redraw(&recall);
+#endif /* GRAPHIC_RECALL */
+#ifdef GRAPHIC_CHOICE
             if (w==choice.w) term_data_redraw(&choice);
+#endif /* GRAPHIC_CHOICE */
 
             break;
 
@@ -3105,11 +3198,16 @@ static bool CheckEvents(bool wait)
                                  /* Not Mapped */
                                  screen.mapped = FALSE;
 
+                                 /* Not Mapped XXX XXX XXX */
+                                 screen.t.mapped_flag = FALSE;
+
                                  /* Hide the window */
                                  HideWindow(screen.w);
                              }
                         }
                         
+#ifdef GRAPHIC_MIRROR
+
                         if (w == mirror.w)
                         {
                              /* Hide */
@@ -3118,11 +3216,18 @@ static bool CheckEvents(bool wait)
                                  /* Not Mapped */
                                  mirror.mapped = FALSE;
 
+                                 /* Not Mapped XXX XXX XXX */
+                                 mirror.t.mapped_flag = FALSE;
+
                                  /* Hide the window */
                                  HideWindow(mirror.w);
                              }
                         }
                         
+#endif /* GRAPHIC_MIRROR */
+
+#ifdef GRAPHIC_RECALL
+
                         if (w == recall.w)
                         {
                              /* Hide */
@@ -3131,11 +3236,18 @@ static bool CheckEvents(bool wait)
                                  /* Not Mapped */
                                  recall.mapped = FALSE;
 
+                                 /* Not Mapped XXX XXX XXX */
+                                 recall.t.mapped_flag = FALSE;
+
                                  /* Hide the window */
                                  HideWindow(recall.w);
                              }
                         }
                         
+#endif /* GRAPHIC_RECALL */
+
+#ifdef GRAPHIC_CHOICE
+
                         if (w == choice.w)
                         {
                              /* Hide */
@@ -3144,10 +3256,16 @@ static bool CheckEvents(bool wait)
                                  /* Not Mapped */
                                  choice.mapped = FALSE;
 
+                                 /* Not Mapped XXX XXX XXX */
+                                 choice.t.mapped_flag = FALSE;
+
                                  /* Hide the window */
                                  HideWindow(choice.w);
                              }
                         }
+
+#endif /* GRAPHIC_CHOICE */
+
                     }
 
                     break;
@@ -3182,6 +3300,8 @@ static bool CheckEvents(bool wait)
                         term_data_resize(td);
                     }
 
+#ifdef GRAPHIC_MIRROR
+
                     if (w == mirror.w)
                     {
                         int x, y;
@@ -3209,6 +3329,10 @@ static bool CheckEvents(bool wait)
                         /* Resize the window */
                         term_data_resize(td);
                     }
+
+#endif /* GRAPHIC_MIRROR */
+
+#ifdef GRAPHIC_RECALL
 
                     if (w == recall.w)
                     {
@@ -3238,6 +3362,10 @@ static bool CheckEvents(bool wait)
                         term_data_resize(td);
                     }
 
+#endif /* GRAPHIC_RECALL */
+
+#ifdef GRAPHIC_CHOICE
+
                     if (w == choice.w)
                     {
                         int x, y;
@@ -3265,6 +3393,8 @@ static bool CheckEvents(bool wait)
                         /* Resize the window */
                         term_data_resize(td);
                     }
+
+#endif /* GRAPHIC_CHOICE */
 
                     break;
 

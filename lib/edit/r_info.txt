@@ -5823,7 +5823,7 @@ F:EVIL | IM_POIS |
 F:NO_CONF | NO_SLEEP | NO_FEAR
 S:1_IN_4 | 
 S:BO_ICEE | BO_WATE | BA_COLD | BA_WATE
-D:A towering water elemental, Waldern is master of all things liquid.
+D:A towering water elemental, Waldern is master of all things liquid. 
 D:Wave after wave drowns your frail body.
 
 N:423:Kavlax the Many-Headed
