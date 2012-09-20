@@ -4302,6 +4302,21 @@ void exit_game_panic(void)
 #include <signal.h>
 
 
+typedef void (*Signal_Handler_t)(int);
+
+/*
+ * Wrapper around signal() which it is safe to take the address
+ * of, in case signal itself is hidden by some some macro magic.
+ */
+static Signal_Handler_t wrap_signal(int sig, Signal_Handler_t handler)
+{
+	return signal(sig, handler);
+}
+
+/* Call this instead of calling signal() directly. */  
+Signal_Handler_t (*signal_aux)(int, Signal_Handler_t) = wrap_signal;
+
+
 /*
  * Handle signals -- suspend
  *
@@ -4310,7 +4325,7 @@ void exit_game_panic(void)
 static void handle_signal_suspend(int sig)
 {
 	/* Disable handler */
-	(void)signal(sig, SIG_IGN);
+	(void)(*signal_aux)(sig, SIG_IGN);
 
 #ifdef SIGSTOP
 
@@ -4335,7 +4350,7 @@ static void handle_signal_suspend(int sig)
 #endif
 
 	/* Restore handler */
-	(void)signal(sig, handle_signal_suspend);
+	(void)(*signal_aux)(sig, handle_signal_suspend);
 }
 
 
@@ -4356,7 +4371,7 @@ static void handle_signal_suspend(int sig)
 static void handle_signal_simple(int sig)
 {
 	/* Disable handler */
-	(void)signal(sig, SIG_IGN);
+	(void)(*signal_aux)(sig, SIG_IGN);
 
 
 	/* Nothing to save, just quit */
@@ -4426,7 +4441,7 @@ static void handle_signal_simple(int sig)
 	}
 
 	/* Restore handler */
-	(void)signal(sig, handle_signal_simple);
+	(void)(*signal_aux)(sig, handle_signal_simple);
 }
 
 
@@ -4436,7 +4451,7 @@ static void handle_signal_simple(int sig)
 static void handle_signal_abort(int sig)
 {
 	/* Disable handler */
-	(void)signal(sig, SIG_IGN);
+	(void)(*signal_aux)(sig, SIG_IGN);
 
 
 	/* Nothing to save, just quit */
@@ -4494,7 +4509,7 @@ void signals_ignore_tstp(void)
 {
 
 #ifdef SIGTSTP
-	(void)signal(SIGTSTP, SIG_IGN);
+	(void)(*signal_aux)(SIGTSTP, SIG_IGN);
 #endif
 
 }
@@ -4506,7 +4521,7 @@ void signals_handle_tstp(void)
 {
 
 #ifdef SIGTSTP
-	(void)signal(SIGTSTP, handle_signal_suspend);
+	(void)(*signal_aux)(SIGTSTP, handle_signal_suspend);
 #endif
 
 }
@@ -4519,62 +4534,62 @@ void signals_init(void)
 {
 
 #ifdef SIGHUP
-	(void)signal(SIGHUP, SIG_IGN);
+	(void)(*signal_aux)(SIGHUP, SIG_IGN);
 #endif
 
 
 #ifdef SIGTSTP
-	(void)signal(SIGTSTP, handle_signal_suspend);
+	(void)(*signal_aux)(SIGTSTP, handle_signal_suspend);
 #endif
 
 
 #ifdef SIGINT
-	(void)signal(SIGINT, handle_signal_simple);
+	(void)(*signal_aux)(SIGINT, handle_signal_simple);
 #endif
 
 #ifdef SIGQUIT
-	(void)signal(SIGQUIT, handle_signal_simple);
+	(void)(*signal_aux)(SIGQUIT, handle_signal_simple);
 #endif
 
 
 #ifdef SIGFPE
-	(void)signal(SIGFPE, handle_signal_abort);
+	(void)(*signal_aux)(SIGFPE, handle_signal_abort);
 #endif
 
 #ifdef SIGILL
-	(void)signal(SIGILL, handle_signal_abort);
+	(void)(*signal_aux)(SIGILL, handle_signal_abort);
 #endif
 
 #ifdef SIGTRAP
-	(void)signal(SIGTRAP, handle_signal_abort);
+	(void)(*signal_aux)(SIGTRAP, handle_signal_abort);
 #endif
 
 #ifdef SIGIOT
-	(void)signal(SIGIOT, handle_signal_abort);
+	(void)(*signal_aux)(SIGIOT, handle_signal_abort);
 #endif
 
 #ifdef SIGKILL
-	(void)signal(SIGKILL, handle_signal_abort);
+	(void)(*signal_aux)(SIGKILL, handle_signal_abort);
 #endif
 
 #ifdef SIGBUS
-	(void)signal(SIGBUS, handle_signal_abort);
+	(void)(*signal_aux)(SIGBUS, handle_signal_abort);
 #endif
 
 #ifdef SIGSEGV
-	(void)signal(SIGSEGV, handle_signal_abort);
+	(void)(*signal_aux)(SIGSEGV, handle_signal_abort);
 #endif
 
 #ifdef SIGTERM
-	(void)signal(SIGTERM, handle_signal_abort);
+	(void)(*signal_aux)(SIGTERM, handle_signal_abort);
 #endif
 
 #ifdef SIGPIPE
-	(void)signal(SIGPIPE, handle_signal_abort);
+	(void)(*signal_aux)(SIGPIPE, handle_signal_abort);
 #endif
 
 #ifdef SIGEMT
-	(void)signal(SIGEMT, handle_signal_abort);
+	(void)(*signal_aux)(SIGEMT, handle_signal_abort);
 #endif
 
 /*
@@ -4583,19 +4598,19 @@ void signals_init(void)
  * signal that the system will soon be out of memory.
  */
 #ifdef SIGDANGER
-	(void)signal(SIGDANGER, handle_signal_abort);
+	(void)(*signal_aux)(SIGDANGER, handle_signal_abort);
 #endif
 
 #ifdef SIGSYS
-	(void)signal(SIGSYS, handle_signal_abort);
+	(void)(*signal_aux)(SIGSYS, handle_signal_abort);
 #endif
 
 #ifdef SIGXCPU
-	(void)signal(SIGXCPU, handle_signal_abort);
+	(void)(*signal_aux)(SIGXCPU, handle_signal_abort);
 #endif
 
 #ifdef SIGPWR
-	(void)signal(SIGPWR, handle_signal_abort);
+	(void)(*signal_aux)(SIGPWR, handle_signal_abort);
 #endif
 
 }

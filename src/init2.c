@@ -1692,27 +1692,13 @@ static void note(cptr str)
 
 /*
  * Hack -- Explain a broken "lib" folder and quit (see below).
- *
- * XXX XXX XXX This function is "messy" because various things
- * may or may not be initialized, but the "plog()" and "quit()"
- * functions are "supposed" to work under any conditions.
  */
 static void init_angband_aux(cptr why)
 {
-	/* Why */
-	plog(why);
-
-	/* Explain */
-	plog("The 'lib' directory is probably missing or broken.");
-
-	/* More details */
-	plog("Perhaps the archive was not extracted correctly.");
-
-	/* Explain */
-	plog("See the 'README' file for more information.");
-
-	/* Quit with error */
-	quit("Fatal Error.");
+	quit_fmt("%s\n\n%s", why,
+	         "The 'lib' directory is probably missing or broken.\n"
+	         "Perhaps the archive was not extracted correctly.\n"
+	         "See the 'readme.txt' file for more information.");
 }
 
 

@@ -388,6 +388,9 @@ extern void display_scores(int from, int to);
 extern errr predict_score(void);
 extern void close_game(void);
 extern void exit_game_panic(void);
+#ifdef HANDLE_SIGNALS
+extern void (*(*signal_aux)(int, void (*)(int)))(int);
+#endif
 extern void signals_ignore_tstp(void);
 extern void signals_handle_tstp(void);
 extern void signals_init(void);

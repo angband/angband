@@ -1,7 +1,6 @@
 Welcome to the Angband Online Help System.
 
 Please choose one of the following online help files:
-
     (1) General Information        (general.txt)
     (2) Creating a Character       (birth.txt)
     (3) Exploring the Dungeon      (dungeon.txt)
@@ -28,3 +27,4 @@ Browser/help commands:
 ***** [8] version.txt
 ***** [9] spoiler.hlp
 ***** [0] user.hlp
+

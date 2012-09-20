@@ -8366,7 +8366,7 @@ S:TPORT | BLIND | SCARE | CAUSE_4 | BRAIN_SMASH |
 S:BA_MANA | BO_MANA | BA_FIRE | BA_NETH | 
 S:S_MONSTERS | S_HI_DEMON | S_HI_UNDEAD | S_KIN
 D:The greatest of all undead sorcerers, even the gods once feared him.  This
-D:ancient shadow of death wilts every living thing it passes.
+D: ancient shadow of death wilts every living thing it passes.
 
 ### Cerberus used to be here, but lost a fight with Carcharoth.   ###
 ### His arch-nemesis, Huan the Wolfhound, has come chasing after  ###

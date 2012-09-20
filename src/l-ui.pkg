@@ -124,22 +124,22 @@ typedef int errr;
 /*
  * Bit flags for the "p_ptr->window" variable (etc)
  */
-#define PW_INVEN		0x00000001L	/* Display inven/equip */
-#define PW_EQUIP		0x00000002L	/* Display equip/inven */
-#define PW_PLAYER_0		0x00000004L	/* Display player (basic) */
-#define PW_PLAYER_1		0x00000008L	/* Display player (extra) */
+#define PW_INVEN            0x00000001L /* Display inven/equip */
+#define PW_EQUIP            0x00000002L /* Display equip/inven */
+#define PW_PLAYER_0         0x00000004L /* Display player (basic) */
+#define PW_PLAYER_1         0x00000008L /* Display player (extra) */
 /* xxx */
 /* xxx */
-#define PW_MESSAGE		0x00000040L	/* Display messages */
-#define PW_OVERHEAD		0x00000080L	/* Display overhead view */
-#define PW_MONSTER		0x00000100L	/* Display monster recall */
-#define PW_OBJECT		0x00000200L	/* Display object recall */
+#define PW_MESSAGE          0x00000040L /* Display messages */
+#define PW_OVERHEAD         0x00000080L /* Display overhead view */
+#define PW_MONSTER          0x00000100L /* Display monster recall */
+#define PW_OBJECT           0x00000200L /* Display object recall */
 /* xxx */
-#define PW_SNAPSHOT		0x00000800L	/* Display snap-shot */
-/* xxx */
-/* xxx */
-#define PW_BORG_1		0x00004000L	/* Display borg messages */
-#define PW_BORG_2		0x00008000L	/* Display borg status */
+#define PW_SNAPSHOT         0x00000800L /* Display snap-shot */
+#define PW_SCRIPT_VARS      0x00001000L /* Display script variables */
+#define PW_SCRIPT_SOURCE    0x00002000L /* Display script source */
+#define PW_BORG_1           0x00004000L /* Display borg messages */
+#define PW_BORG_2           0x00008000L /* Display borg status */
 
 
 /***** Types *****/

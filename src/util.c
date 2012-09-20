@@ -161,7 +161,7 @@ errr user_home(char *buf, int len)
 
 
 /*
- * Most of the "file" routines for "ACORN" should be in "main-acn.c"
+ * Most of the "file" routines for "ACORN" should be in "main-ros.c"
  */
 
 
@@ -487,7 +487,7 @@ errr my_fputs(FILE *fff, cptr buf, size_t n)
 
 
 /*
- * Most of the "file" routines for "ACORN" should be in "main-acn.c"
+ * Most of the "file" routines for "ACORN" should be in "main-ros.c"
  *
  * Many of them can be rewritten now that only "fd_open()" and "fd_make()"
  * and "my_fopen()" should ever create files.

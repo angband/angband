@@ -1,14 +1,10 @@
 - Add support for gamma correction to the DOS version.
-- Move various information to external files (spells, items that can be
-  bought in stores).
+- Move various information to external files (for example items that can
+  be bought in stores).
 - Add player ghosts.
 - Equipment slots should be configurable for every player race.
 - Gender selection should be done after selecting the player race (for
   races with non-standard genders).
-- Add support for dungeon displays with sizes different than 66x22
-  (big-screen).  This requires changing the detection spells to a circular
-  area of effect.  Running should be interrupted when the player leaves
-  the area of the last trap detection spell ("disturb_panel").
 - Allow stacking of rods, wands, and staves with different charges.
 - Add a random name generator for player names.
 - Add support for automatically numbering characters ("Rocky IV").
@@ -43,7 +39,6 @@
   have minimal hardware requirements.
 - Adjust the Unix/Linux installation for full compliance with the
   Filesystem Hierarchy Standard.
-- Move the elemental damage types that are ignored by items to object.txt.
 - Make the filenames in src/ more meaningful.
 - Add reference counting for the "quarks" (inscriptions).
 - Add a compile-time option that prevents the player from saving pref-files,
@@ -52,13 +47,13 @@
 - Replace the maximize mode option with a "half-maximized" mode.
 - Properly integrate the transparency code into the game.
 - Add a command to display the 'time of day'.
-- Add the possibility to reset the recall depth when recalling.
 - Mimics should be true objects until the player steps next to them.
 - Throwing potions should cause the potions effect on the target.
 - Add race-specific starting equipment.
 - Change the spell list and remove or downgrade the GoI spell.
 - Extend the use of scripts for customization.
-- Create a script-debugger.
+- Improve the script-debugger.
 - Allow a restricted amount of functions to be used by the player
   for macros and add a better macro recorder.
-
+- Improve the savefile handling of the monster recall.
+- Assign graphical tiles to the new monsters and objects.

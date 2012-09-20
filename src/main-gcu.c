@@ -16,9 +16,6 @@
  * To use this file, you must define "USE_GCU" in the Makefile.
  *
  *
- * Hack -- note that "angband.h" is included AFTER the #ifdef test.
- * This was necessary because of annoying "curses.h" silliness.
- *
  * Note that this file is not "intended" to support non-Unix machines,
  * nor is it intended to support VMS or other bizarre setups.
  *
@@ -880,7 +877,7 @@ static errr Term_text_gcu(int x, int y, int n, byte a, cptr s)
 #endif
 
 		/* Draw a normal character */
-		waddch(td->win, s[i]);
+		waddch(td->win, (byte)s[i]);
 	}
 
 	/* Success */

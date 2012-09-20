@@ -1,6 +1,6 @@
 /*
 ** Lua binding: ui
-** Generated automatically by tolua 4.0a - angband on Sun Jan  6 15:39:39 2002.
+** Generated automatically by tolua 4.0a - angband on Sun Jan 27 16:18:18 2002.
 */
 
 #include "lua/tolua.h"
@@ -589,6 +589,8 @@ int tolua_ui_open (lua_State* tolua_S)
  tolua_constant(tolua_S,NULL,"PW_MONSTER",PW_MONSTER);
  tolua_constant(tolua_S,NULL,"PW_OBJECT",PW_OBJECT);
  tolua_constant(tolua_S,NULL,"PW_SNAPSHOT",PW_SNAPSHOT);
+ tolua_constant(tolua_S,NULL,"PW_SCRIPT_VARS",PW_SCRIPT_VARS);
+ tolua_constant(tolua_S,NULL,"PW_SCRIPT_SOURCE",PW_SCRIPT_SOURCE);
  tolua_constant(tolua_S,NULL,"PW_BORG_1",PW_BORG_1);
  tolua_constant(tolua_S,NULL,"PW_BORG_2",PW_BORG_2);
  tolua_function(tolua_S,NULL,"notice_stuff",toluaI_ui_notice_stuff00);
@@ -712,6 +714,8 @@ void tolua_ui_close (lua_State* tolua_S)
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"PW_MONSTER");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"PW_OBJECT");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"PW_SNAPSHOT");
+ lua_pushnil(tolua_S); lua_setglobal(tolua_S,"PW_SCRIPT_VARS");
+ lua_pushnil(tolua_S); lua_setglobal(tolua_S,"PW_SCRIPT_SOURCE");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"PW_BORG_1");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"PW_BORG_2");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"notice_stuff");

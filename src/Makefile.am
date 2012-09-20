@@ -55,10 +55,10 @@ l-spell.c: lua/tolua l-spell.pkg
 	lua/tolua -n spell -o l-spell.c l-spell.pkg
 
 EXTRA_angband_SOURCES = \
-  main-acn.c main-ami.c main-dos.c main-emx.c \
+  main-ros.c main-ami.c main-dos.c main-emx.c \
   main-ibm.c main-lsl.c main-mac.c main-sla.c main-vme.c \
   main-xxx.c \
-  Makefile.acn Makefile.ami Makefile.bcc Makefile.cyg \
+  Makefile.ros Makefile.ami Makefile.bcc Makefile.cyg \
   Makefile.dos Makefile.emx Makefile.gtk Makefile.ibm \
   Makefile.lcc Makefile.lsl Makefile.std Makefile.wat \
   Makefile.win \

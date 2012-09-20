@@ -1,6 +1,6 @@
 /*
 ** Lua binding: monster
-** Generated automatically by tolua 4.0a - angband on Sun Jan  6 15:39:04 2002.
+** Generated automatically by tolua 4.0a - angband on Sun Jan 27 16:17:44 2002.
 */
 
 #include "lua/tolua.h"
@@ -2079,6 +2079,7 @@ int tolua_monster_open (lua_State* tolua_S)
  tolua_constant(tolua_S,NULL,"RBE_EXP_20",RBE_EXP_20);
  tolua_constant(tolua_S,NULL,"RBE_EXP_40",RBE_EXP_40);
  tolua_constant(tolua_S,NULL,"RBE_EXP_80",RBE_EXP_80);
+ tolua_constant(tolua_S,NULL,"RBE_HALLU",RBE_HALLU);
  tolua_constant(tolua_S,NULL,"SM_OPP_ACID",SM_OPP_ACID);
  tolua_constant(tolua_S,NULL,"SM_OPP_ELEC",SM_OPP_ELEC);
  tolua_constant(tolua_S,NULL,"SM_OPP_FIRE",SM_OPP_FIRE);
@@ -2463,6 +2464,7 @@ void tolua_monster_close (lua_State* tolua_S)
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"RBE_EXP_20");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"RBE_EXP_40");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"RBE_EXP_80");
+ lua_pushnil(tolua_S); lua_setglobal(tolua_S,"RBE_HALLU");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"SM_OPP_ACID");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"SM_OPP_ELEC");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"SM_OPP_FIRE");

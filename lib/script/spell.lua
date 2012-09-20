@@ -285,7 +285,7 @@ function get_spell_index_hook(object, index)
 	end
 
 	-- Find the spell
-	local spell = book[index + 1]
+	spell = book[index + 1]
 
 	-- No spell at that index
 	if not spell then return -1 end

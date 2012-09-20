@@ -173,8 +173,8 @@ bool use_object(object_type *o_ptr, bool *ident)
 
 	if (status == 0)
 	{
-		*ident = tolua_getbool(L, 1, FALSE);
-		used_up = tolua_getbool(L, 2, FALSE);
+		*ident = tolua_getbool(L, -1, FALSE);
+		used_up = tolua_getbool(L, -2, FALSE);
 
 		/* Remove the results */
 		lua_pop(L, 2);
@@ -204,7 +204,7 @@ int get_spell_index(const object_type *o_ptr, int index)
 
 	if (status == 0)
 	{
-		spell = tolua_getnumber(L, 1, -1);
+		spell = tolua_getnumber(L, -1, -1);
 
 		/* Remove the result */
 		lua_pop(L, 1);
@@ -234,7 +234,7 @@ cptr get_spell_name(int tval, int index)
 	/* Call the function with 2 arguments and 1 result */
 	if (!lua_call(L, 2, 1))
 	{
-		name = tolua_getstring(L, 1, "");
+		name = tolua_getstring(L, -1, "");
 
 		/* Get a copy of the name */
 		strncpy(buffer, name, 80);
@@ -265,7 +265,7 @@ cptr get_spell_info(int tval, int index)
 	/* Call the function with 2 arguments and 1 result */
 	if (!lua_call(L, 2, 1))
 	{
-		info = tolua_getstring(L, 1, "");
+		info = tolua_getstring(L, -1, "");
 
 		/* Get a copy of the name */
 		strncpy(buffer, info, 80);
@@ -296,7 +296,7 @@ bool cast_spell(int tval, int index)
 	/* Call the function with 2 arguments and 1 result */
 	if (!lua_call(L, 2, 1))
 	{
-		done = tolua_getbool(L, 1, FALSE);
+		done = tolua_getbool(L, -1, FALSE);
 
 		/* Remove the result */
 		lua_pop(L, 1);
@@ -317,7 +317,7 @@ void describe_item_activation(const object_type *o_ptr)
 	/* Call the function with 1 arguments and 1 result */
 	if (!lua_call(L, 1, 1))
 	{
-		desc = tolua_getstring(L, 1, "");
+		desc = tolua_getstring(L, -1, "");
 
 		text_out(desc);
 

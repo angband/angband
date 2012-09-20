@@ -66,6 +66,7 @@ typedef int errr;
 #define RBE_EXP_20		26
 #define RBE_EXP_40		27
 #define RBE_EXP_80		28
+#define RBE_HALLU     29
 
 /*
  * Some bit-flags for the "smart" field of "monster_type".

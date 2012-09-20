@@ -1,5 +1,5 @@
 /*
- * File: main-acn.c
+ * File: main-ros.c
  * StrongED$Mode=C
  */
 
@@ -16,7 +16,7 @@
  */
 
 /*
- | Purpose: Support for Acorn RISC OS Angband (and variants based on 2.8.x)
+ | Purpose: Support for RISC OS Angband (and variants)
  |
  | Author: Musus Umbra <musus@argonet.co.uk>
  |
@@ -70,8 +70,6 @@
  |
  | The following symbols may be required, depending on the variant itself:
  | ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- |
- | OLD_RFREE	define if rfree() should return an errr instead of a vptr
  |
  | PDEADCHK				should expand to an expression that is true if the
  |						player is dead (eg. (p_ptr->is_dead) for Angband
@@ -176,6 +174,8 @@
 #else
 #  define DEFAULT_SMART_FILECACHE 0
 #endif
+
+#define MAX_TERM_DATA 8
 
 /*--------------------------------------------------------------------------*/
 
@@ -610,12 +610,8 @@ errr cached_fgets( FILE *fch, char *buffer, int max_len );
  | that z-virt.c provides.
  */
 static vptr g_malloc( huge size );
+static vptr g_free( vptr blk );
 
-#ifdef OLD_RFREE
-static errr g_free( vptr blk, huge size );
-#else
-static vptr g_free( vptr blk, huge size );
-#endif
 
 /*
  | These functions act as malloc/free, but (if possible) using memory
@@ -1154,7 +1150,7 @@ errr fd_close( int handle )
 
 
 /* Read some bytes from a file */
-errr fd_read( int handle, char *buf, size_t nbytes )
+errr fd_read( int handle, char *buf, huge nbytes )
 {
 	int unread;
 
@@ -1166,7 +1162,7 @@ errr fd_read( int handle, char *buf, size_t nbytes )
 
 
 /* Write some bytes to a file */
-errr fd_write( int handle, const char *buf, size_t nbytes )
+errr fd_write( int handle, const char *buf, huge nbytes )
 {
 	int unwritten;
 
@@ -1197,7 +1193,7 @@ errr fd_lock( int handle, int what )
 
 
 /* Get a temporary filename */
-static errr path_temp( char *buf, int max )
+errr path_temp( char *buf, int max )
 {
 
 	/*
@@ -1829,25 +1825,21 @@ static void init_save_window( void )
 }
 
 /*
- * Hack: can't use Str.h without defining HAS_STRICMP.  Rather than
- * require that the header files are altered we simply provide our
- * own strnicmp() function.
+ | Hack: can't use Str.h without defining HAS_STRICMP.  Rather than
+ | require that the header files are altered we simply provide our
+ | own strnicmp() function.
  */
-static int my_strnicmp(char *a, char *b, int n)
+static int my_strnicmp( char *a, char *b, int n )
 {
 	int i;
 
 	n--;
-
-	for (i = 0; i <= n; i++)
+	for ( i=0; i<=n; i++ )
 	{
-		if (tolower((byte)a[i]) != tolower((byte) b[i]))
-			return tolower((byte)a[i]) - tolower((byte)b[i]);
-		if (a[i] == '\0')
+		if ( tolower(b[i])!=tolower(a[i]) )
 			break;
 	}
-
-	return 0;
+	return tolower(b[i])-tolower(a[i]);
 }
 
 
@@ -5857,11 +5849,7 @@ static vptr g_malloc( huge size )
  | The 'len' is to be compatible with z-virt.c (we don't need/use it)
  | Returns NULL.
  */
-#ifdef OLD_RFREE
-static errr g_free( vptr blk, huge size )
-#else
-static vptr g_free( vptr blk, huge size )
-#endif
+static vptr g_free( vptr blk )
 {
 	os_error *e;
 	int s;
@@ -7746,6 +7734,7 @@ static void show_debug_info( void )
 
 
 #endif			/* __riscos */
+
 
 
 

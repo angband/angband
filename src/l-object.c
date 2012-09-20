@@ -1,6 +1,6 @@
 /*
 ** Lua binding: object
-** Generated automatically by tolua 4.0a - angband on Sun Jan  6 15:39:11 2002.
+** Generated automatically by tolua 4.0a - angband on Sun Jan 27 16:17:51 2002.
 */
 
 #include "lua/tolua.h"
@@ -1992,6 +1992,26 @@ static int toluaI_set_object_flavor_type_tval(lua_State* tolua_S)
  if (!tolua_istype(tolua_S,2,LUA_TNUMBER,0))
  TOLUA_ERR_ASSIGN;
   self->tval = ((byte)  tolua_getnumber(tolua_S,2,0));
+ return 0;
+}
+
+/* get function: sval of class  flavor_type */
+static int toluaI_get_object_flavor_type_sval(lua_State* tolua_S)
+{
+  flavor_type* self = (flavor_type*)  tolua_getusertype(tolua_S,1,0);
+ if (!self) TOLUA_ERR_SELF;
+ tolua_pushnumber(tolua_S,(long)self->sval);
+ return 1;
+}
+
+/* set function: sval of class  flavor_type */
+static int toluaI_set_object_flavor_type_sval(lua_State* tolua_S)
+{
+  flavor_type* self = (flavor_type*)  tolua_getusertype(tolua_S,1,0);
+ if (!self) TOLUA_ERR_SELF;
+ if (!tolua_istype(tolua_S,2,LUA_TNUMBER,0))
+ TOLUA_ERR_ASSIGN;
+  self->sval = ((byte)  tolua_getnumber(tolua_S,2,0));
  return 0;
 }
 
@@ -4186,6 +4206,7 @@ int tolua_object_open (lua_State* tolua_S)
  tolua_constant(tolua_S,NULL,"SV_AMMO_LIGHT",SV_AMMO_LIGHT);
  tolua_constant(tolua_S,NULL,"SV_AMMO_NORMAL",SV_AMMO_NORMAL);
  tolua_constant(tolua_S,NULL,"SV_AMMO_HEAVY",SV_AMMO_HEAVY);
+ tolua_constant(tolua_S,NULL,"SV_AMMO_SILVER",SV_AMMO_SILVER);
  tolua_constant(tolua_S,NULL,"SV_SLING",SV_SLING);
  tolua_constant(tolua_S,NULL,"SV_SHORT_BOW",SV_SHORT_BOW);
  tolua_constant(tolua_S,NULL,"SV_LONG_BOW",SV_LONG_BOW);
@@ -4197,6 +4218,7 @@ int tolua_object_open (lua_State* tolua_S)
  tolua_constant(tolua_S,NULL,"SV_PICK",SV_PICK);
  tolua_constant(tolua_S,NULL,"SV_ORCISH_PICK",SV_ORCISH_PICK);
  tolua_constant(tolua_S,NULL,"SV_DWARVEN_PICK",SV_DWARVEN_PICK);
+ tolua_constant(tolua_S,NULL,"SV_MATTOCK",SV_MATTOCK);
  tolua_constant(tolua_S,NULL,"SV_WHIP",SV_WHIP);
  tolua_constant(tolua_S,NULL,"SV_QUARTERSTAFF",SV_QUARTERSTAFF);
  tolua_constant(tolua_S,NULL,"SV_MACE",SV_MACE);
@@ -4301,6 +4323,7 @@ int tolua_object_open (lua_State* tolua_S)
  tolua_constant(tolua_S,NULL,"SV_LITE_GALADRIEL",SV_LITE_GALADRIEL);
  tolua_constant(tolua_S,NULL,"SV_LITE_ELENDIL",SV_LITE_ELENDIL);
  tolua_constant(tolua_S,NULL,"SV_LITE_THRAIN",SV_LITE_THRAIN);
+ tolua_constant(tolua_S,NULL,"SV_LITE_PALANTIR",SV_LITE_PALANTIR);
  tolua_constant(tolua_S,NULL,"SV_AMULET_DOOM",SV_AMULET_DOOM);
  tolua_constant(tolua_S,NULL,"SV_AMULET_TELEPORT",SV_AMULET_TELEPORT);
  tolua_constant(tolua_S,NULL,"SV_AMULET_ADORNMENT",SV_AMULET_ADORNMENT);
@@ -4756,6 +4779,9 @@ int tolua_object_open (lua_State* tolua_S)
  tolua_constant(tolua_S,NULL,"ACT_CONFUSE",ACT_CONFUSE);
  tolua_constant(tolua_S,NULL,"ACT_PROBE",ACT_PROBE);
  tolua_constant(tolua_S,NULL,"ACT_FIREBRAND",ACT_FIREBRAND);
+ tolua_constant(tolua_S,NULL,"ACT_STARLIGHT",ACT_STARLIGHT);
+ tolua_constant(tolua_S,NULL,"ACT_MANA_BOLT",ACT_MANA_BOLT);
+ tolua_constant(tolua_S,NULL,"ACT_BERSERKER",ACT_BERSERKER);
  tolua_constant(tolua_S,NULL,"ACT_MAX",ACT_MAX);
  tolua_cclass(tolua_S,"object_type","");
  tolua_tablevar(tolua_S,"object_type","k_idx",toluaI_get_object_object_type_k_idx,toluaI_set_object_object_type_k_idx);
@@ -4857,6 +4883,7 @@ int tolua_object_open (lua_State* tolua_S)
  tolua_cclass(tolua_S,"flavor_type","");
  tolua_tablevar(tolua_S,"flavor_type","text",toluaI_get_object_flavor_type_text,toluaI_set_object_flavor_type_text);
  tolua_tablevar(tolua_S,"flavor_type","tval",toluaI_get_object_flavor_type_tval,toluaI_set_object_flavor_type_tval);
+ tolua_tablevar(tolua_S,"flavor_type","sval",toluaI_get_object_flavor_type_sval,toluaI_set_object_flavor_type_sval);
  tolua_tablevar(tolua_S,"flavor_type","d_attr",toluaI_get_object_flavor_type_d_attr,toluaI_set_object_flavor_type_d_attr);
  tolua_tablevar(tolua_S,"flavor_type","d_char",toluaI_get_object_flavor_type_d_char,toluaI_set_object_flavor_type_d_char);
  tolua_tablevar(tolua_S,"flavor_type","x_attr",toluaI_get_object_flavor_type_x_attr,toluaI_set_object_flavor_type_x_attr);
@@ -5108,6 +5135,7 @@ void tolua_object_close (lua_State* tolua_S)
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"SV_AMMO_LIGHT");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"SV_AMMO_NORMAL");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"SV_AMMO_HEAVY");
+ lua_pushnil(tolua_S); lua_setglobal(tolua_S,"SV_AMMO_SILVER");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"SV_SLING");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"SV_SHORT_BOW");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"SV_LONG_BOW");
@@ -5119,6 +5147,7 @@ void tolua_object_close (lua_State* tolua_S)
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"SV_PICK");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"SV_ORCISH_PICK");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"SV_DWARVEN_PICK");
+ lua_pushnil(tolua_S); lua_setglobal(tolua_S,"SV_MATTOCK");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"SV_WHIP");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"SV_QUARTERSTAFF");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"SV_MACE");
@@ -5223,6 +5252,7 @@ void tolua_object_close (lua_State* tolua_S)
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"SV_LITE_GALADRIEL");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"SV_LITE_ELENDIL");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"SV_LITE_THRAIN");
+ lua_pushnil(tolua_S); lua_setglobal(tolua_S,"SV_LITE_PALANTIR");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"SV_AMULET_DOOM");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"SV_AMULET_TELEPORT");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"SV_AMULET_ADORNMENT");
@@ -5678,6 +5708,9 @@ void tolua_object_close (lua_State* tolua_S)
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"ACT_CONFUSE");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"ACT_PROBE");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"ACT_FIREBRAND");
+ lua_pushnil(tolua_S); lua_setglobal(tolua_S,"ACT_STARLIGHT");
+ lua_pushnil(tolua_S); lua_setglobal(tolua_S,"ACT_MANA_BOLT");
+ lua_pushnil(tolua_S); lua_setglobal(tolua_S,"ACT_BERSERKER");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"ACT_MAX");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"object_type");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"object_kind");

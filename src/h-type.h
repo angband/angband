@@ -87,11 +87,6 @@ typedef int errr;
 #define bool bool_hack
 
 
-/* Note that "signed char" is not always "defined" */
-/* So always use "s16b" to hold small signed values */
-/* A signed byte of memory */
-/* typedef signed char syte; */
-
 /* Note that unsigned values can cause math problems */
 /* An unsigned byte of memory */
 typedef unsigned char byte;

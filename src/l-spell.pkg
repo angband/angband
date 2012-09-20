@@ -184,6 +184,7 @@ extern bool sleep_monsters_touch(void);
 extern bool curse_armor(void);
 extern bool curse_weapon(void);
 extern void brand_weapon(void);
+extern bool brand_bolts(void);
 
 extern void map_area(void);
 extern void wiz_lite(void);

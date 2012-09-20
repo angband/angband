@@ -2970,7 +2970,6 @@ bool make_object(object_type *j_ptr, bool good, bool great)
 /*
  * XXX XXX XXX Do not use these hard-coded values.
  */
-#define OBJ_GOLD_LIST	480	/* First "gold" entry */
 #define MAX_GOLD	18	/* Number of "gold" entries */
 
 /*
@@ -2980,31 +2979,33 @@ bool make_object(object_type *j_ptr, bool good, bool great)
  */
 bool make_gold(object_type *j_ptr)
 {
-	int i;
-
+	int sval;
+	int k_idx;
 	s32b base;
 
 
 	/* Hack -- Pick a Treasure variety */
-	i = ((randint(object_level + 2) + 2) / 2) - 1;
+	sval = ((randint(object_level + 2) + 2) / 2);
 
 	/* Apply "extra" magic */
 	if (rand_int(GREAT_OBJ) == 0)
 	{
-		i += randint(object_level + 1);
+		sval += randint(object_level + 1);
 	}
 
 	/* Hack -- Creeping Coins only generate "themselves" */
-	if (coin_type) i = coin_type;
+	if (coin_type) sval = coin_type;
 
 	/* Do not create "illegal" Treasure Types */
-	if (i >= MAX_GOLD) i = MAX_GOLD - 1;
+	if (sval > MAX_GOLD) sval = MAX_GOLD;
 
+	k_idx = lookup_kind(TV_GOLD, sval);
+	
 	/* Prepare a gold object */
-	object_prep(j_ptr, OBJ_GOLD_LIST + i);
+	object_prep(j_ptr, k_idx);
 
 	/* Hack -- Base coin cost */
-	base = k_info[OBJ_GOLD_LIST+i].cost;
+	base = k_info[k_idx].cost;
 
 	/* Determine how much the treasure is "worth" */
 	j_ptr->pval = (base + (8L * randint(base)) + randint(8));

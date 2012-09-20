@@ -1798,18 +1798,18 @@ static int get_coin_type(const monster_race *r_ptr)
 	if (r_ptr->d_char == '$')
 	{
 		/* Look for textual clues */
-		if (strstr(name, " copper ")) return (2);
-		if (strstr(name, " silver ")) return (5);
-		if (strstr(name, " gold ")) return (10);
-		if (strstr(name, " mithril ")) return (16);
-		if (strstr(name, " adamantite ")) return (17);
+		if (strstr(name, " copper ")) return (3);
+		if (strstr(name, " silver ")) return (6);
+		if (strstr(name, " gold ")) return (11);
+		if (strstr(name, " mithril ")) return (17);
+		if (strstr(name, " adamantite ")) return (18);
 
 		/* Look for textual clues */
-		if (strstr(name, "Copper ")) return (2);
-		if (strstr(name, "Silver ")) return (5);
-		if (strstr(name, "Gold ")) return (10);
-		if (strstr(name, "Mithril ")) return (16);
-		if (strstr(name, "Adamantite ")) return (17);
+		if (strstr(name, "Copper ")) return (3);
+		if (strstr(name, "Silver ")) return (6);
+		if (strstr(name, "Gold ")) return (11);
+		if (strstr(name, "Mithril ")) return (17);
+		if (strstr(name, "Adamantite ")) return (18);
 	}
 
 	/* Assume nothing */

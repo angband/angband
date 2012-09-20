@@ -21,8 +21,8 @@
 # the visual modules for various types of IBM-PC computers,
 # must be compiled with special Makefiles, see elsewhere.
 #
-# Note that "main-acn.c", the visual module for Risc Acorn,
-# must be compiled with "Makefile.acn", see elsewhere.
+# Note that "main-ros.c", the visual module for RISC OS,
+# must be compiled with "Makefile.ros", see elsewhere.
 #
 # Note that "main-ami.c", the visual module for the Amiga,
 # must be compiled with "Makefile.ami", see elsewhere.
@@ -264,21 +264,21 @@ LIBS = -L/usr/X11R6/lib -lXaw -lXext -lSM -lICE -lXmu -lXt -lX11 -lncurses
 ##
 ## Variation -- Support Linux + SVGA library
 ##
-#CFLAGS = -Wall -O2 -fno-strength-reduce  -D"USE_LSL"
+#CFLAGS = -Wall -O2 -fno-strength-reduce -D"USE_LSL"
 #LIBS = -lz -lvgagl -lvga
 
 
 ##
 ## Variation -- Support Linux "vcs" module -- not tested for a while!
 ##
-#CFLAGS = -Wall -O2 -fno-strength-reduce  -D"USE_VCS"
+#CFLAGS = -Wall -O2 -fno-strength-reduce -D"USE_VCS"
 #LIBS =
 
 
 ##
-## Variation -- Support Unix/slang computers -- not tested for a while!
+## Variation -- Support S-Lang library
 ##
-#CFLAGS = -Wall -O2 -fno-strength-reduce  -D"USE_SLA" -I/usr/include/slang
+#CFLAGS = -Wall -O2 -fno-strength-reduce -D"USE_SLA" -I/usr/include/slang
 #LIBS = -lslang
 
 

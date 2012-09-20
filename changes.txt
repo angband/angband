@@ -1,4 +1,38 @@
-Changes in Angband 2.9.6 alpha:
+Changes in Angband 2.9.6 alpha3:
+- Switched to the latest autoconf and automake versions.
+- Replaced the old (Acorn) RISC OS code with a newer version.
+- Bounds-checking for detection spells and some wizard mode commands
+  was missing.  That could cause crashs when resizing the Terms.
+- The object recall window could sometimes show strange values for
+  spellbooks.
+- Added a missing space in the description of Vecna.
+- Added the missing brand_bolts() function for Cubragol's activation.
+ Changes by Hallvard B Furuseth:
+- Running 'angband --help' will now display basic usage info.
+- Various bugfixes to the S-Lang port.
+- Fixed some inconsistencies between l-*.pkg and defines.h/types.h.
+- Problems with the lib/ folder were not correctly reported when using
+  the (n)curses interface.
+- Fixed a minor problem with curses on machines with signed-chars.
+ Changes by Jonathan Ellis:
+- Fixed a minor typo "bane of demon" -> "bane of demons"
+- Crowns of might get no extra power.
+- Thorin no longer aggravates and doesn't provide 'resist confusion'.
+- Amulets of the Magi don't get resist blindness.
+- Removed acid brand from the Mattock of Nain and reduced the damage
+  to 2d8.
+
+Changes in Angband 2.9.6 alpha2:
+- The message display on the top line can now use a term-width of more
+  than 80 characters.
+- The player can now reset the recall depth when recalling from a
+  level above the deepest reached level.
+- Fixed a bug when trying to use prayers.
+- Fixed some problems with potions of speed and staffs of starlight,
+  remove curse, and speed.
+- Cleaned up the source code a bit.
+
+Changes in Angband 2.9.6 alpha1:
 - Added scripting support for player spells and object activations.
 - Added a debug display for call-stack and local variables of the scripts.
 - The following changes are from Hallvard B Furuseth's patches:

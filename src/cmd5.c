@@ -262,7 +262,7 @@ void display_koff(int k_idx)
 			spell = get_spell_index(i_ptr, i);
 
 			/* Collect this spell */
-			if (spell != -1) spells[num++] = spell;
+			if (spell >= 0) spells[num++] = spell;
 		}
 
 		/* Print spells */

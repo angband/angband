@@ -231,6 +231,7 @@ typedef int sint;
 #define SV_AMMO_LIGHT		0	/* pebbles */
 #define SV_AMMO_NORMAL		1	/* shots, arrows, bolts */
 #define SV_AMMO_HEAVY		2	/* seeker arrows and bolts */
+#define SV_AMMO_SILVER		3	/* silver arrows and bolts */
 
 /* The "sval" codes for TV_BOW (note information in "sval") */
 #define SV_SLING			2	/* (x2) */
@@ -246,6 +247,7 @@ typedef int sint;
 #define SV_PICK				4
 #define SV_ORCISH_PICK		5
 #define SV_DWARVEN_PICK		6
+#define SV_MATTOCK			7
 
 /* The "sval" values for TV_HAFTED */
 #define SV_WHIP					2	/* 1d6 */
@@ -374,6 +376,7 @@ typedef int sint;
 #define SV_LITE_GALADRIEL	4
 #define SV_LITE_ELENDIL		5
 #define SV_LITE_THRAIN		6
+#define SV_LITE_PALANTIR	7
 
 /* The "sval" codes for TV_AMULET */
 #define SV_AMULET_DOOM			0
@@ -925,8 +928,11 @@ typedef int sint;
 #define ACT_CONFUSE             44
 #define ACT_PROBE               45
 #define ACT_FIREBRAND           46
+#define ACT_STARLIGHT           47
+#define ACT_MANA_BOLT           48
+#define ACT_BERSERKER           49
 
-#define ACT_MAX                 47
+#define ACT_MAX                 50
 
 
 /***** Types *****/
@@ -1102,6 +1108,7 @@ struct flavor_type
 	u32b text;      /* Text (offset) */
 	
 	byte tval;      /* Associated object type */
+	byte sval;      /* Associated object sub-type */
 
 	byte d_attr;    /* Default flavor attribute */
 	char d_char;    /* Default flavor character */

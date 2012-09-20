@@ -807,7 +807,7 @@ void self_knowledge(void)
 		}
 		if (f1 & (TR1_KILL_DEMON))
 		{
-			info[i++] = "Your weapon is a great bane of demon.";
+			info[i++] = "Your weapon is a great bane of demons.";
 		}
 		if (f1 & (TR1_KILL_UNDEAD))
 		{
@@ -980,6 +980,8 @@ bool detect_traps(void)
 	{
 		for (x = p_ptr->wx; x < p_ptr->wx+SCREEN_WID; x++)
 		{
+			if (!in_bounds_fully(y, x)) continue;
+
 			/* Detect invisible traps */
 			if (cave_feat[y][x] == FEAT_INVIS)
 			{
@@ -1030,6 +1032,8 @@ bool detect_doors(void)
 	{
 		for (x = p_ptr->wx; x < p_ptr->wx+SCREEN_WID; x++)
 		{
+			if (!in_bounds_fully(y, x)) continue;
+
 			/* Detect secret doors */
 			if (cave_feat[y][x] == FEAT_SECRET)
 			{
@@ -1081,6 +1085,8 @@ bool detect_stairs(void)
 	{
 		for (x = p_ptr->wx; x < p_ptr->wx+SCREEN_WID; x++)
 		{
+			if (!in_bounds_fully(y, x)) continue;
+
 			/* Detect stairs */
 			if ((cave_feat[y][x] == FEAT_LESS) ||
 			    (cave_feat[y][x] == FEAT_MORE))
@@ -1123,6 +1129,8 @@ bool detect_treasure(void)
 	{
 		for (x = p_ptr->wx; x < p_ptr->wx+SCREEN_WID; x++)
 		{
+			if (!in_bounds_fully(y, x)) continue;
+
 			/* Notice embedded gold */
 			if ((cave_feat[y][x] == FEAT_MAGMA_H) ||
 			    (cave_feat[y][x] == FEAT_QUARTZ_H))

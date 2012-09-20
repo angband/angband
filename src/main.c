@@ -398,11 +398,13 @@ int main(int argc, char *argv[])
 	/* Process the command line arguments */
 	for (i = 1; args && (i < argc); i++)
 	{
+		cptr arg = argv[i];
+
 		/* Require proper options */
-		if (argv[i][0] != '-') goto usage;
+		if (*arg++ != '-') goto usage;
 
 		/* Analyze option */
-		switch (argv[i][1])
+		switch (*arg++)
 		{
 			case 'N':
 			case 'n':
@@ -456,38 +458,38 @@ int main(int argc, char *argv[])
 			case 'S':
 			case 's':
 			{
-				show_score = atoi(&argv[i][2]);
+				show_score = atoi(arg);
 				if (show_score <= 0) show_score = 10;
-				break;
+				continue;
 			}
 
 			case 'u':
 			case 'U':
 			{
-				if (!argv[i][2]) goto usage;
+				if (!*arg) goto usage;
 
 				/* Get the savefile name */
-				strncpy(op_ptr->full_name, &argv[i][2], 32);
+				strncpy(op_ptr->full_name, arg, 32);
 
 				/* Make sure it's terminated */
 				op_ptr->full_name[31] = '\0';
 
-				break;
+				continue;
 			}
 
 			case 'm':
 			case 'M':
 			{
-				if (!argv[i][2]) goto usage;
-				mstr = &argv[i][2];
-				break;
+				if (!*arg) goto usage;
+				mstr = arg;
+				continue;
 			}
 
 			case 'd':
 			case 'D':
 			{
-				change_path(&argv[i][2]);
-				break;
+				change_path(arg);
+				continue;
 			}
 
 			case '-':
@@ -520,6 +522,7 @@ int main(int argc, char *argv[])
 				quit(NULL);
 			}
 		}
+		if (*arg) goto usage;
 	}
 
 	/* Hack -- Forget standard args */

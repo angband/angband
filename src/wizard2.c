@@ -39,6 +39,8 @@ static void do_cmd_wiz_hack_ben(void)
 			{
 				byte a = TERM_RED;
 
+				if (!in_bounds_fully(y, x)) continue;
+
 				/* Display proper cost */
 				if (cave_cost[y][x] != i) continue;
 
@@ -1428,6 +1430,8 @@ static void do_cmd_wiz_query(void)
 		for (x = p_ptr->wx; x < p_ptr->wx + SCREEN_WID; x++)
 		{
 			byte a = TERM_RED;
+
+			if (!in_bounds_fully(y, x)) continue;
 
 			/* Given mask, show only those grids */
 			if (mask && !(cave_info[y][x] & mask)) continue;

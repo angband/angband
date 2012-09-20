@@ -21,7 +21,7 @@
 
 
 /*
- * Hack -- assist "main-acn.c" XXX XXX XXX
+ * Hack -- assist "main-ros.c" XXX XXX XXX
  */
 #ifdef ACORN
 # define O_RDONLY	0
