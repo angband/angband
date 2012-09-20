@@ -527,7 +527,7 @@ extern bool do_res_stat(int stat);
 extern bool do_inc_stat(int stat);
 extern void take_hit(int dam, cptr kb_str);
 extern bool inc_stat(int stat);
-extern bool dec_stat(int stat, int amount, int permanent);
+extern bool dec_stat(int stat, int amount, bool permanent);
 extern bool res_stat(int stat);
 extern bool restore_level(void);
 

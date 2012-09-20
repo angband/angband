@@ -1,8 +1,8 @@
 
 
-           **************************************************
-           **   Angband 3.0.3   **   The Pits of Angband   **
-           **************************************************
+              **************************************************
+              **   Angband 3.0.4   **   The Pits of Angband   **
+              **************************************************
 
            Based on Moria:   Copyright (c) 1985 Robert Alan Koeneke
                and Umoria:   Copyright (c) 1989 James E. Wilson
@@ -20,4 +20,3 @@
       Browse the Angband newsgroup at "news:rec.games.roguelike.angband"
     Read the online help files, especially "general.txt" and "version.txt"
    Angband is available for Unix, X11, DOS, Windows, Macintosh, Amiga, etc.
-

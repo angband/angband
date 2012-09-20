@@ -362,8 +362,6 @@ struct monster_race
  * Note that these fields are related to the "monster recall" and can
  * be scrapped if space becomes an issue, resulting in less "complete"
  * monster recall (no knowledge of spells, etc). XXX XXX XXX
- *
- * ToDo: The "r_" prefix is no longer needed and should be removed.
  */
 struct monster_lore
 {
@@ -586,14 +584,9 @@ struct owner_type
 {
 	u32b owner_name;	/* Name (offset) */
 
-	s16b max_cost;		/* Purse limit */
+	s32b max_cost;		/* Purse limit */
 
-	byte max_inflate;	/* Inflation (max) */
-	byte min_inflate;	/* Inflation (min) */
-
-	byte haggle_per;	/* Haggle unit */
-
-	byte insult_max;	/* Insult limit */
+	byte inflate;		/* Inflation */
 
 	byte owner_race;	/* Owner race */
 };
@@ -609,16 +602,15 @@ struct store_type
 {
 	byte owner;				/* Owner index */
 
-	s16b insult_cur;		/* Insult counter */
-
-	s16b good_buy;			/* Number of "good" buys */
-	s16b bad_buy;			/* Number of "bad" buys */
-
-	s32b store_open;		/* Closed until this turn */
-
 	byte stock_num;			/* Stock -- Number of entries */
 	s16b stock_size;		/* Stock -- Total Size of Array */
 	object_type *stock;		/* Stock -- Actual stock items */
+
+#ifndef USE_SCRIPT
+	s16b table_num;     /* Table -- Number of entries */
+	s16b table_size;    /* Table -- Total Size of Array */
+	s16b *table;        /* Table -- Legal item kinds */
+#endif /* USE_SCRIPT */
 };
 
 

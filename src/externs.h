@@ -11,13 +11,20 @@
 
 /*
  * Note that some files have their own header files
- * (z-virt.h, z-util.h, z-form.h, term.h, random.h)
+ * (z-virt.h, z-util.h, z-form.h, z-term.h, z-rand.h)
  */
 
 
 /*
  * Automatically generated "variable" declarations
  */
+
+extern int max_macrotrigger;
+extern cptr macro_template;
+extern cptr macro_modifier_chr;
+extern cptr macro_modifier_name[MAX_MACRO_MOD];
+extern cptr macro_trigger_name[MAX_MACRO_TRIGGER];
+extern cptr macro_trigger_keycode[2][MAX_MACRO_TRIGGER];
 
 /* tables.c */
 extern const s16b ddd[9];
@@ -26,10 +33,10 @@ extern const s16b ddy[10];
 extern const s16b ddx_ddd[9];
 extern const s16b ddy_ddd[9];
 extern const char hexsym[16];
-extern const byte adj_mag_study[];
-extern const byte adj_mag_mana[];
+extern const int adj_mag_study[];
+extern const int adj_mag_mana[];
 extern const byte adj_mag_fail[];
-extern const byte adj_mag_stat[];
+extern const int adj_mag_stat[];
 extern const byte adj_chr_gold[];
 extern const byte adj_int_dev[];
 extern const byte adj_wis_sav[];
@@ -46,7 +53,7 @@ extern const byte adj_str_blow[];
 extern const byte adj_dex_blow[];
 extern const byte adj_dex_safe[];
 extern const byte adj_con_fix[];
-extern const byte adj_con_mhp[];
+extern const int adj_con_mhp[];
 extern const byte blows_table[12][12];
 extern const byte extract_energy[200];
 extern const s32b player_exp[PY_MAX_LEVEL];
@@ -99,7 +106,7 @@ extern char summon_kin_type;
 extern s32b turn;
 extern s32b old_turn;
 extern bool use_sound;
-extern bool use_graphics;
+extern int use_graphics;
 extern bool use_bigtile;
 extern s16b signal_count;
 extern bool msg_flag;
@@ -231,7 +238,6 @@ extern FILE *text_out_file;
 extern void (*text_out_hook)(byte a, cptr str);
 extern int text_out_wrap;
 extern int text_out_indent;
-extern int highscore_fd;
 extern bool use_transparency;
 
 
@@ -247,8 +253,9 @@ extern int distance(int y1, int x1, int y2, int x2);
 extern bool los(int y1, int x1, int y2, int x2);
 extern bool no_lite(void);
 extern bool cave_valid_bold(int y, int x);
-extern bool feat_supports_lighting(byte feat);
+extern bool feat_supports_lighting(int feat);
 extern void map_info(int y, int x, byte *ap, char *cp, byte *tap, char *tcp);
+extern void map_info_default(int y, int x, byte *ap, char *cp);
 extern void move_cursor_relative(int y, int x);
 extern void print_rel(char c, byte a, int y, int x);
 extern void note_spot(int y, int x);
@@ -364,6 +371,7 @@ extern void do_cmd_activate(void);
 extern void play_game(bool new_game);
 
 /* files.c */
+extern void html_screenshot(cptr name);
 extern void safe_setuid_drop(void);
 extern void safe_setuid_grab(void);
 extern s16b tokenize(char *buf, s16b num, char **tokens);
@@ -371,8 +379,6 @@ extern errr process_pref_file_command(char *buf);
 extern errr process_pref_file(cptr name);
 extern errr check_time(void);
 extern errr check_time_init(void);
-extern errr check_load(void);
-extern errr check_load_init(void);
 extern void player_flags(u32b *f1, u32b *f2, u32b *f3);
 extern void display_player(int mode);
 extern errr file_character(cptr name, bool full);
@@ -382,9 +388,8 @@ extern void process_player_name(bool sf);
 extern void get_name(void);
 extern void do_cmd_suicide(void);
 extern void do_cmd_save_game(void);
-extern long total_points(void);
+extern void show_scores(void);
 extern void display_scores(int from, int to);
-extern errr predict_score(void);
 extern void close_game(void);
 extern void exit_game_panic(void);
 #ifdef HANDLE_SIGNALS
@@ -393,7 +398,6 @@ extern void (*(*signal_aux)(int, void (*)(int)))(int);
 extern void signals_ignore_tstp(void);
 extern void signals_handle_tstp(void);
 extern void signals_init(void);
-extern void display_scores_aux(int from, int to, int note, high_score *score);
 
 /* generate.c */
 extern void generate_cave(void);
@@ -427,6 +431,7 @@ extern void wipe_mon_list(void);
 extern s16b mon_pop(void);
 extern errr get_mon_num_prep(void);
 extern s16b get_mon_num(int level);
+extern void display_monlist(void);
 extern void monster_desc(char *desc, size_t max, const monster_type *m_ptr, int mode);
 extern void lore_do_probe(int m_idx);
 extern void lore_treasure(int m_idx, int num_item, int num_gold);
@@ -469,6 +474,7 @@ extern void display_inven(void);
 extern void display_equip(void);
 extern void show_inven(void);
 extern void show_equip(void);
+extern void show_floor(const int *floor_list, int floor_num);
 extern void toggle_inven_equip(void);
 extern bool get_item(int *cp, cptr pmt, cptr str, int mode);
 
@@ -488,6 +494,8 @@ extern void object_aware(object_type *o_ptr);
 extern void object_tried(object_type *o_ptr);
 extern bool is_blessed(const object_type *o_ptr);
 extern s32b object_value(const object_type *o_ptr);
+extern void distribute_charges(object_type *o_ptr, object_type *i_ptr, int amt);
+extern void reduce_charges(object_type *o_ptr, int amt);
 extern bool object_similar(const object_type *o_ptr, const object_type *j_ptr);
 extern void object_absorb(object_type *o_ptr, const object_type *j_ptr);
 extern s16b lookup_kind(int tval, int sval);
@@ -541,7 +549,7 @@ extern void elec_dam(int dam, cptr kb_str);
 extern void fire_dam(int dam, cptr kb_str);
 extern void cold_dam(int dam, cptr kb_str);
 extern bool inc_stat(int stat);
-extern bool dec_stat(int stat, int amount, int permanent);
+extern bool dec_stat(int stat, int amount, bool permanent);
 extern bool res_stat(int stat);
 extern bool apply_disenchant(int mode);
 extern bool project(int who, int rad, int y, int x, int dam, int typ, int flg);
@@ -657,6 +665,8 @@ extern void ascii_to_text(char *buf, size_t len, cptr str);
 extern int macro_find_exact(cptr pat);
 extern errr macro_add(cptr pat, cptr act);
 extern errr macro_init(void);
+extern errr macro_free(void);
+extern errr macro_trigger_free(void);
 extern void flush(void);
 extern void flush_fail(void);
 extern char inkey(void);
@@ -789,12 +799,6 @@ extern void repeat_check(void);
 #endif /* ALLOW_REPEAT */
 
 
-#ifdef ALLOW_EASY_FLOOR
-/* object1.c */
-extern void show_floor(const int *floor_list, int floor_num);
-#endif /* ALLOW_EASY_FLOOR */
-
-
 #ifdef GJW_RANDART
 /* randart.c */
 extern errr do_randart(u32b randart_seed, bool full);
@@ -805,6 +809,17 @@ extern errr do_randart(u32b randart_seed, bool full);
 extern char *riscosify_name(cptr path);
 #endif /* RISCOS */
 
+#if defined(MAC_MPW) || defined(MACH_O_CARBON)
+/* main-mac.c, or its derivatives */
+extern u32b _fcreator;
+extern u32b _ftype;
+# if defined(MAC_MPW) && defined(CARBON)
+extern void convert_pathname(char *path);
+# endif
+# if defined(MACH_O_CARBON)
+extern void fsetfileinfo(cptr path, u32b fcreator, u32b ftype);
+# endif
+#endif
 
 #ifdef ALLOW_DEBUG
 /* wizard2.c */

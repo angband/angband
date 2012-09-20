@@ -3458,7 +3458,7 @@ void generate_cave(void)
 		if (good_item_flag && !adult_preserve) feeling = 1;
 
 		/* It takes 1000 game turns for "feelings" to recharge */
-		if ((turn - old_turn) < 1000) feeling = 0;
+		if (((turn - old_turn) < 1000) && (old_turn > 1)) feeling = 0;
 
 		/* Hack -- no feeling in the town */
 		if (!p_ptr->depth) feeling = 0;

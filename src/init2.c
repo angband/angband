@@ -76,9 +76,9 @@ void init_file_paths(char *path)
 {
 	char *tail;
 
-#ifdef SET_UID
+#ifdef PRIVATE_USER_PATH
 	char buf[1024];
-#endif /* SET_UID */
+#endif /* PRIVATE_USER_PATH */
 
 	/*** Free everything ***/
 
@@ -135,10 +135,6 @@ void init_file_paths(char *path)
 	/*** Build the sub-directory names ***/
 
 	/* Build a path name */
-	strcpy(tail, "apex");
-	ANGBAND_DIR_APEX = string_make(path);
-
-	/* Build a path name */
 	strcpy(tail, "bone");
 	ANGBAND_DIR_BONE = string_make(path);
 
@@ -163,10 +159,6 @@ void init_file_paths(char *path)
 	ANGBAND_DIR_INFO = string_make(path);
 
 	/* Build a path name */
-	strcpy(tail, "save");
-	ANGBAND_DIR_SAVE = string_make(path);
-
-	/* Build a path name */
 	strcpy(tail, "pref");
 	ANGBAND_DIR_PREF = string_make(path);
 
@@ -185,6 +177,32 @@ void init_file_paths(char *path)
 	ANGBAND_DIR_USER = string_make(path);
 
 #endif /* PRIVATE_USER_PATH */
+
+#ifdef USE_PRIVATE_SAVE_PATH
+
+	/* Build the path to the user specific sub-directory */
+	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "scores");
+
+	/* Build a relative path name */
+	ANGBAND_DIR_APEX = string_make(buf);
+
+	/* Build the path to the user specific sub-directory */
+	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "save");
+
+	/* Build a relative path name */
+	ANGBAND_DIR_SAVE = string_make(buf);
+
+#else /* USE_PRIVATE_SAVE_PATH */
+
+	/* Build a path name */
+	strcpy(tail, "apex");
+	ANGBAND_DIR_APEX = string_make(path);
+
+	/* Build a path name */
+	strcpy(tail, "save");
+	ANGBAND_DIR_SAVE = string_make(path);
+
+#endif /* USE_PRIVATE_SAVE_PATH */
 
 	/* Build a path name */
 	strcpy(tail, "xtra");
@@ -511,13 +529,11 @@ static errr init_info(cptr filename, header *head)
 			/* Failure */
 			if (fd < 0)
 			{
-				char why[1024];
+				/* Complain */
+				plog_fmt("Cannot create the '%s' file!", buf);
 
-				/* Message */
-				strnfmt(why, sizeof(why), "Cannot create the '%s' file!", buf);
-
-				/* Crash and burn */
-				quit(why);
+				/* Continue */
+				return (0);
 			}
 		}
 
@@ -532,6 +548,16 @@ static errr init_info(cptr filename, header *head)
 
 		/* Drop permissions */
 		safe_setuid_drop();
+
+		/* Failure */
+		if (fd < 0)
+		{
+			/* Complain */
+			plog_fmt("Cannot write the '%s' file!", buf);
+
+			/* Continue */
+			return (0);
+		}
 
 		/* Dump to the file */
 		if (fd >= 0)
@@ -987,6 +1013,258 @@ static errr init_flavor_info(void)
 
 /*** Initialize others ***/
 
+#ifndef USE_SCRIPT
+
+#define STORE_CHOICES   32              /* Number of items to choose stock from */
+
+
+/*
+ * Hack -- Objects sold in the stores -- by tval/sval pair.
+ */
+static const byte store_table[MAX_STORES-2][STORE_CHOICES][2] =
+{
+	{
+		/* General Store */
+
+		{ TV_FOOD, SV_FOOD_RATION },
+		{ TV_FOOD, SV_FOOD_RATION },
+		{ TV_FOOD, SV_FOOD_RATION },
+		{ TV_FOOD, SV_FOOD_RATION },
+		{ TV_FOOD, SV_FOOD_RATION },
+		{ TV_FOOD, SV_FOOD_BISCUIT },
+		{ TV_FOOD, SV_FOOD_JERKY },
+		{ TV_FOOD, SV_FOOD_JERKY },
+
+		{ TV_FOOD, SV_FOOD_PINT_OF_WINE },
+		{ TV_FOOD, SV_FOOD_PINT_OF_ALE },
+		{ TV_LITE, SV_LITE_TORCH },
+		{ TV_LITE, SV_LITE_TORCH },
+		{ TV_LITE, SV_LITE_TORCH },
+		{ TV_LITE, SV_LITE_TORCH },
+		{ TV_LITE, SV_LITE_LANTERN },
+		{ TV_LITE, SV_LITE_LANTERN },
+
+		{ TV_FLASK, 0 },
+		{ TV_FLASK, 0 },
+		{ TV_FLASK, 0 },
+		{ TV_FLASK, 0 },
+		{ TV_FLASK, 0 },
+		{ TV_FLASK, 0 },
+		{ TV_SPIKE, 0 },
+		{ TV_SPIKE, 0 },
+
+		{ TV_SHOT, SV_AMMO_NORMAL },
+		{ TV_ARROW, SV_AMMO_NORMAL },
+		{ TV_BOLT, SV_AMMO_NORMAL },
+		{ TV_DIGGING, SV_SHOVEL },
+		{ TV_DIGGING, SV_PICK },
+		{ TV_CLOAK, SV_CLOAK },
+		{ TV_CLOAK, SV_CLOAK },
+		{ TV_CLOAK, SV_CLOAK }
+	},
+
+	{
+		/* Armoury */
+
+		{ TV_BOOTS, SV_PAIR_OF_SOFT_LEATHER_BOOTS },
+		{ TV_BOOTS, SV_PAIR_OF_SOFT_LEATHER_BOOTS },
+		{ TV_BOOTS, SV_PAIR_OF_HARD_LEATHER_BOOTS },
+		{ TV_BOOTS, SV_PAIR_OF_HARD_LEATHER_BOOTS },
+		{ TV_HELM, SV_HARD_LEATHER_CAP },
+		{ TV_HELM, SV_HARD_LEATHER_CAP },
+		{ TV_HELM, SV_METAL_CAP },
+		{ TV_HELM, SV_IRON_HELM },
+
+		{ TV_SOFT_ARMOR, SV_ROBE },
+		{ TV_SOFT_ARMOR, SV_ROBE },
+		{ TV_SOFT_ARMOR, SV_SOFT_LEATHER_ARMOR },
+		{ TV_SOFT_ARMOR, SV_SOFT_LEATHER_ARMOR },
+		{ TV_SOFT_ARMOR, SV_HARD_LEATHER_ARMOR },
+		{ TV_SOFT_ARMOR, SV_HARD_LEATHER_ARMOR },
+		{ TV_SOFT_ARMOR, SV_HARD_STUDDED_LEATHER },
+		{ TV_SOFT_ARMOR, SV_HARD_STUDDED_LEATHER },
+
+		{ TV_SOFT_ARMOR, SV_LEATHER_SCALE_MAIL },
+		{ TV_SOFT_ARMOR, SV_LEATHER_SCALE_MAIL },
+		{ TV_HARD_ARMOR, SV_METAL_SCALE_MAIL },
+		{ TV_HARD_ARMOR, SV_CHAIN_MAIL },
+		{ TV_HARD_ARMOR, SV_CHAIN_MAIL },
+		{ TV_HARD_ARMOR, SV_AUGMENTED_CHAIN_MAIL },
+		{ TV_HARD_ARMOR, SV_BAR_CHAIN_MAIL },
+		{ TV_HARD_ARMOR, SV_DOUBLE_CHAIN_MAIL },
+
+		{ TV_HARD_ARMOR, SV_METAL_BRIGANDINE_ARMOUR },
+		{ TV_GLOVES, SV_SET_OF_LEATHER_GLOVES },
+		{ TV_GLOVES, SV_SET_OF_LEATHER_GLOVES },
+		{ TV_GLOVES, SV_SET_OF_GAUNTLETS },
+		{ TV_SHIELD, SV_SMALL_LEATHER_SHIELD },
+		{ TV_SHIELD, SV_SMALL_LEATHER_SHIELD },
+		{ TV_SHIELD, SV_LARGE_LEATHER_SHIELD },
+		{ TV_SHIELD, SV_SMALL_METAL_SHIELD }
+	},
+
+	{
+		/* Weaponsmith */
+
+		{ TV_SWORD, SV_DAGGER },
+		{ TV_SWORD, SV_MAIN_GAUCHE },
+		{ TV_SWORD, SV_RAPIER },
+		{ TV_SWORD, SV_SMALL_SWORD },
+		{ TV_SWORD, SV_SHORT_SWORD },
+		{ TV_SWORD, SV_SABRE },
+		{ TV_SWORD, SV_CUTLASS },
+		{ TV_SWORD, SV_TULWAR },
+
+		{ TV_SWORD, SV_BROAD_SWORD },
+		{ TV_SWORD, SV_LONG_SWORD },
+		{ TV_SWORD, SV_SCIMITAR },
+		{ TV_SWORD, SV_KATANA },
+		{ TV_SWORD, SV_BASTARD_SWORD },
+		{ TV_POLEARM, SV_SPEAR },
+		{ TV_POLEARM, SV_AWL_PIKE },
+		{ TV_POLEARM, SV_TRIDENT },
+
+		{ TV_POLEARM, SV_PIKE },
+		{ TV_POLEARM, SV_BEAKED_AXE },
+		{ TV_POLEARM, SV_BROAD_AXE },
+		{ TV_POLEARM, SV_LANCE },
+		{ TV_POLEARM, SV_BATTLE_AXE },
+		{ TV_HAFTED, SV_WHIP },
+		{ TV_BOW, SV_SLING },
+		{ TV_BOW, SV_SHORT_BOW },
+
+		{ TV_BOW, SV_LONG_BOW },
+		{ TV_BOW, SV_LIGHT_XBOW },
+		{ TV_SHOT, SV_AMMO_NORMAL },
+		{ TV_SHOT, SV_AMMO_NORMAL },
+		{ TV_ARROW, SV_AMMO_NORMAL },
+		{ TV_ARROW, SV_AMMO_NORMAL },
+		{ TV_BOLT, SV_AMMO_NORMAL },
+		{ TV_BOLT, SV_AMMO_NORMAL },
+	},
+
+	{
+		/* Temple */
+
+		{ TV_HAFTED, SV_WHIP },
+		{ TV_HAFTED, SV_QUARTERSTAFF },
+		{ TV_HAFTED, SV_MACE },
+		{ TV_HAFTED, SV_MACE },
+		{ TV_HAFTED, SV_BALL_AND_CHAIN },
+		{ TV_HAFTED, SV_WAR_HAMMER },
+		{ TV_HAFTED, SV_LUCERN_HAMMER },
+		{ TV_HAFTED, SV_MORNING_STAR },
+
+		{ TV_HAFTED, SV_FLAIL },
+		{ TV_HAFTED, SV_FLAIL },
+		{ TV_HAFTED, SV_LEAD_FILLED_MACE },
+		{ TV_SCROLL, SV_SCROLL_REMOVE_CURSE },
+		{ TV_SCROLL, SV_SCROLL_BLESSING },
+		{ TV_SCROLL, SV_SCROLL_HOLY_CHANT },
+		{ TV_POTION, SV_POTION_BOLDNESS },
+		{ TV_POTION, SV_POTION_HEROISM },
+
+		{ TV_POTION, SV_POTION_CURE_LIGHT },
+		{ TV_POTION, SV_POTION_CURE_SERIOUS },
+		{ TV_POTION, SV_POTION_CURE_SERIOUS },
+		{ TV_POTION, SV_POTION_CURE_CRITICAL },
+		{ TV_POTION, SV_POTION_CURE_CRITICAL },
+		{ TV_POTION, SV_POTION_RESTORE_EXP },
+		{ TV_POTION, SV_POTION_RESTORE_EXP },
+		{ TV_POTION, SV_POTION_RESTORE_EXP },
+
+		{ TV_PRAYER_BOOK, 0 },
+		{ TV_PRAYER_BOOK, 0 },
+		{ TV_PRAYER_BOOK, 0 },
+		{ TV_PRAYER_BOOK, 1 },
+		{ TV_PRAYER_BOOK, 1 },
+		{ TV_PRAYER_BOOK, 2 },
+		{ TV_PRAYER_BOOK, 2 },
+		{ TV_PRAYER_BOOK, 3 }
+	},
+
+	{
+		/* Alchemy shop */
+
+		{ TV_SCROLL, SV_SCROLL_ENCHANT_WEAPON_TO_HIT },
+		{ TV_SCROLL, SV_SCROLL_ENCHANT_WEAPON_TO_DAM },
+		{ TV_SCROLL, SV_SCROLL_ENCHANT_ARMOR },
+		{ TV_SCROLL, SV_SCROLL_IDENTIFY },
+		{ TV_SCROLL, SV_SCROLL_IDENTIFY },
+		{ TV_SCROLL, SV_SCROLL_IDENTIFY },
+		{ TV_SCROLL, SV_SCROLL_IDENTIFY },
+		{ TV_SCROLL, SV_SCROLL_LIGHT },
+
+		{ TV_SCROLL, SV_SCROLL_PHASE_DOOR },
+		{ TV_SCROLL, SV_SCROLL_PHASE_DOOR },
+		{ TV_SCROLL, SV_SCROLL_PHASE_DOOR },
+		{ TV_SCROLL, SV_SCROLL_MONSTER_CONFUSION },
+		{ TV_SCROLL, SV_SCROLL_MAPPING },
+		{ TV_SCROLL, SV_SCROLL_DETECT_GOLD },
+		{ TV_SCROLL, SV_SCROLL_DETECT_ITEM },
+		{ TV_SCROLL, SV_SCROLL_DETECT_TRAP },
+
+		{ TV_SCROLL, SV_SCROLL_DETECT_DOOR },
+		{ TV_SCROLL, SV_SCROLL_DETECT_INVIS },
+		{ TV_SCROLL, SV_SCROLL_RECHARGING },
+		{ TV_SCROLL, SV_SCROLL_SATISFY_HUNGER },
+		{ TV_SCROLL, SV_SCROLL_WORD_OF_RECALL },
+		{ TV_SCROLL, SV_SCROLL_WORD_OF_RECALL },
+		{ TV_SCROLL, SV_SCROLL_WORD_OF_RECALL },
+		{ TV_SCROLL, SV_SCROLL_WORD_OF_RECALL },
+
+		{ TV_POTION, SV_POTION_RESIST_HEAT },
+		{ TV_POTION, SV_POTION_RESIST_COLD },
+		{ TV_POTION, SV_POTION_RES_STR },
+		{ TV_POTION, SV_POTION_RES_INT },
+		{ TV_POTION, SV_POTION_RES_WIS },
+		{ TV_POTION, SV_POTION_RES_DEX },
+		{ TV_POTION, SV_POTION_RES_CON },
+		{ TV_POTION, SV_POTION_RES_CHR }
+	},
+
+	{
+		/* Magic-User store */
+
+		{ TV_RING, SV_RING_SEARCHING },
+		{ TV_RING, SV_RING_FEATHER_FALL },
+		{ TV_RING, SV_RING_PROTECTION },
+		{ TV_AMULET, SV_AMULET_CHARISMA },
+		{ TV_AMULET, SV_AMULET_SLOW_DIGEST },
+		{ TV_AMULET, SV_AMULET_RESIST_ACID },
+		{ TV_WAND, SV_WAND_SLOW_MONSTER },
+		{ TV_WAND, SV_WAND_CONFUSE_MONSTER },
+
+		{ TV_WAND, SV_WAND_SLEEP_MONSTER },
+		{ TV_WAND, SV_WAND_MAGIC_MISSILE },
+		{ TV_WAND, SV_WAND_STINKING_CLOUD },
+		{ TV_WAND, SV_WAND_WONDER },
+		{ TV_STAFF, SV_STAFF_LITE },
+		{ TV_STAFF, SV_STAFF_MAPPING },
+		{ TV_STAFF, SV_STAFF_DETECT_TRAP },
+		{ TV_STAFF, SV_STAFF_DETECT_DOOR },
+
+		{ TV_STAFF, SV_STAFF_DETECT_GOLD },
+		{ TV_STAFF, SV_STAFF_DETECT_ITEM },
+		{ TV_STAFF, SV_STAFF_DETECT_INVIS },
+		{ TV_STAFF, SV_STAFF_DETECT_EVIL },
+		{ TV_STAFF, SV_STAFF_TELEPORTATION },
+		{ TV_STAFF, SV_STAFF_TELEPORTATION },
+		{ TV_STAFF, SV_STAFF_IDENTIFY },
+		{ TV_STAFF, SV_STAFF_IDENTIFY },
+
+		{ TV_MAGIC_BOOK, 0 },
+		{ TV_MAGIC_BOOK, 0 },
+		{ TV_MAGIC_BOOK, 0 },
+		{ TV_MAGIC_BOOK, 1 },
+		{ TV_MAGIC_BOOK, 1 },
+		{ TV_MAGIC_BOOK, 2 },
+		{ TV_MAGIC_BOOK, 2 },
+		{ TV_MAGIC_BOOK, 3 }
+	}
+};
+
+#endif /* USE_SCRIPT */
 
 /*
  * Initialize some other arrays
@@ -1081,6 +1359,11 @@ static errr init_other(void)
 	/* Fill in each store */
 	for (i = 0; i < MAX_STORES; i++)
 	{
+
+#ifndef USE_SCRIPT
+		int k;
+#endif /* USE_SCRIPT */
+
 		/* Get the store */
 		store_type *st_ptr = &store[i];
 
@@ -1089,6 +1372,45 @@ static errr init_other(void)
 
 		/* Allocate the stock */
 		C_MAKE(st_ptr->stock, st_ptr->stock_size, object_type);
+
+#ifndef USE_SCRIPT
+
+		/* No table for the black market or home */
+		if ((i == STORE_B_MARKET) || (i == STORE_HOME)) continue;
+
+		/* Assume full table */
+		st_ptr->table_size = STORE_CHOICES;
+
+		/* Allocate the stock */
+		C_MAKE(st_ptr->table, st_ptr->table_size, s16b);
+
+		/* Scan the choices */
+		for (k = 0; k < STORE_CHOICES; k++)
+		{
+			int k_idx;
+
+			/* Extract the tval/sval codes */
+			int tv = store_table[i][k][0];
+			int sv = store_table[i][k][1];
+
+			/* Look for it */
+			for (k_idx = 1; k_idx < z_info->k_max; k_idx++)
+			{
+				object_kind *k_ptr = &k_info[k_idx];
+
+				/* Found a match */
+				if ((k_ptr->tval == tv) && (k_ptr->sval == sv)) break;
+			}
+
+			/* Catch errors */
+			if (k_idx == z_info->k_max) continue;
+
+			/* Add that item index to the table */
+			st_ptr->table[st_ptr->table_num++] = k_idx;
+		}
+
+#endif /* USE_SCRIPT */
+
 	}
 
 
@@ -1654,30 +1976,17 @@ void init_angband(void)
 
 void cleanup_angband(void)
 {
-	int i, j;
+	int i;
 
 
 	/* Free the scripting support */
 	script_free();
 
 	/* Free the macros */
-	for (i = 0; i < macro__num; ++i)
-	{
-		string_free(macro__pat[i]);
-		string_free(macro__act[i]);
-	}
+	macro_free();
 
-	FREE((void*)macro__pat);
-	FREE((void*)macro__act);
-
-	/* Free the keymaps */
-	for (i = 0; i < KEYMAP_MODES; ++i)
-	{
-		for (j = 0; j < (int)N_ELEMENTS(keymap_act[i]); ++j)
-		{
-			string_free(keymap_act[i][j]);
-		}
-	}
+	/* Free the macro triggers */
+	macro_trigger_free();
 
 	/* Free the allocation tables */
 	FREE(alloc_ego_table);

@@ -154,6 +154,20 @@ static void create_user_dir(void)
 
 	/* Create the directory */
 	mkdir(subdirpath, 0700);
+
+#ifdef USE_PRIVATE_SAVE_PATH
+	/* Build the path to the scores sub-directory */
+	path_build(dirpath, sizeof(dirpath), subdirpath, "scores");
+
+	/* Create the directory */
+	mkdir(dirpath, 0700);
+
+	/* Build the path to the savefile sub-directory */
+	path_build(dirpath, sizeof(dirpath), subdirpath, "save");
+
+	/* Create the directory */
+	mkdir(dirpath, 0700);
+#endif /* USE_PRIVATE_SAVE_PATH */
 }
 
 #endif /* PRIVATE_USER_PATH */
@@ -375,11 +389,6 @@ int main(int argc, char *argv[])
 	/* Default permissions on files */
 	(void)umask(022);
 
-# ifdef SECURE
-	/* Authenticate */
-	Authenticate();
-# endif /* SECURE */
-
 #endif /* SET_UID */
 
 
@@ -439,12 +448,6 @@ int main(int argc, char *argv[])
 	if (check_time_init() || check_time())
 	{
 		quit("The gates to Angband are closed (bad time).");
-	}
-
-	/* Initialize the "load" checker */
-	if (check_load_init() || check_load())
-	{
-		quit("The gates to Angband are closed (bad load).");
 	}
 
 	/* Get the "user name" as a default player name */

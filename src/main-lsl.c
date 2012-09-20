@@ -578,7 +578,7 @@ static errr term_xtra_svgalib(int n, int v)
 	case TERM_XTRA_DELAY:
 		{
 			/* Delay for some milliseconds */
-			usleep(1000 * v);
+			if (v > 0) usleep(1000 * v);
 			return 0;
 		}
 	}

@@ -58,11 +58,11 @@ l-spell.c: lua/tolua l-spell.pkg
 EXTRA_angband_SOURCES = \
   main-ros.c main-ami.c main-dos.c main-emx.c \
   main-ibm.c main-lsl.c main-mac.c main-sla.c main-vme.c \
-  main-xxx.c \
+  main-xxx.c main-crb.c \
   Makefile.ros Makefile.ami Makefile.bcc Makefile.cyg \
   Makefile.dos Makefile.emx Makefile.gtk Makefile.ibm \
   Makefile.lcc Makefile.lsl Makefile.std Makefile.wat \
-  Makefile.win \
+  Makefile.win Makefile.mpw Makefile.osx \
   angband.rc angband.ico readdib.c readdib.h \
   maid-x11.c maid-x11.h \
   l-monst.pkg l-object.pkg l-player.pkg l-random.pkg l-ui.pkg \

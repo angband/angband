@@ -733,7 +733,7 @@ static errr Term_xtra_dos(int n, int v)
 		case TERM_XTRA_DELAY:
 		{
 			/* Delay if needed */
-			if (v > 0) delay(v);
+			if (v > 0) rest(v);
 
 			/* Success */
 			return (0);

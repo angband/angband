@@ -7,6 +7,66 @@
 #
 
 
+#
+# Macro Trigger configuration
+#
+# T:<trigger template>:<modifiers>:<modifier name1>:<modifier name2>:....
+# '&' in <trigger template> specifies location of modifier character.
+# '#' in <trigger template> specifies location of key code.
+#
+# If <trigger template> is null string, all trigger difinition will be cleared.
+
+T:&#:CSOX:control-:shift-:option-:command-
+
+# T:<trigger name>:<keycode>:<keycode with shiftkey>
+# '\' in <trigger name> is escape character.
+
+T:KP_Decimal:1
+T:KP_Multiply:3
+T:KP_Add:5
+T:KP_Clear:7
+T:KP_Divide:11
+T:KP_Enter:12
+T:KP_Subtract:14
+T:KP_Equal:17
+T:KP_0:18
+T:KP_1:19
+T:KP_2:20
+T:KP_3:21
+T:KP_4:22
+T:KP_5:23
+T:KP_6:24
+T:KP_7:25
+T:KP_8:27
+T:KP_9:28
+T:F1:58
+T:F2:56
+T:F3:35
+T:F4:54
+T:F5:32
+T:F6:33
+T:F7:34
+T:F8:36
+T:F9:37
+T:F10:45
+T:F11:39
+T:F12:47
+T:F13:41
+T:F14:43
+T:F15:49
+T:Help:50
+T:Home:51
+T:Page_Up:52
+T:Delete:53
+T:End:55
+T:Page_Down:57
+T:Left:59
+T:Right:60
+T:Down:61
+T:Up:62
+
+
+
 ##### Simple Macros #####
 
 

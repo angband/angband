@@ -91,27 +91,27 @@ noinst_PROGRAMS = tolua
 
 liblua_a_SOURCES = \
   lapi.c ldebug.c lmem.c lstrlib.c lvm.c \
-  tolua_lb.c lauxlib.c ldo.c lobject.c ltable.c \
-  lzio.c tolua_rg.c lbaselib.c lfunc.c lparser.c \
-  tolua_bd.c tolua_tm.c lcode.c lgc.c \
-  lstate.c ltm.c tolua_eh.c tolua_tt.c ldblib.c \
-  llex.c lstring.c lundump.c tolua_gp.c \
-  lapi.h lauxlib.h lcode.h ldebug.h ldo.h lfunc.h \
-  lgc.h llex.h llimits.h lmem.h lobject.h lopcodes.h \
-  lparser.h lstate.h lstring.h ltable.h ltm.h lua.h \
-  luadebug.h lualib.h lundump.h lvm.h lzio.h \
-  tolua.h tolua_eh.h tolua_rg.h tolua_tm.h \
-  tolua_tt.h
+  lauxlib.c ldo.c lobject.c ltable.c lzio.c \
+  lbaselib.c lfunc.c lparser.c lcode.c lgc.c \
+  lopcodes.c lstate.c ltm.c  ldblib.c llex.c \
+  lstring.c ldump.c lundump.c ltablib.c lapi.h \
+  lauxlib.h lcode.h ldebug.h ldo.h lfunc.h \
+  lgc.h llex.h llimits.h lmem.h lobject.h \
+  lopcodes.h lparser.h lstate.h lstring.h ltable.h \
+  ltm.h lua.h lualib.h lundump.h lvm.h \
+  lzio.h \
+  tolua_map.c tolua_is.c tolua_to.c tolua_push.c tolua_event.c \
+  tolua.h tolua_event.h
 
 
 tolua_SOURCES = \
-  tolua.c tolualua.c liolib.c
+  tolua.c liolib.c toluabind.c
 
 
 EXTRA_tolua_SOURCES = \
   array.lua basic.lua class.lua clean.lua code.lua \
   container.lua declaration.lua define.lua doit.lua \
-  enumerate.lua feature.lua function.lua lua2c.lua \
+  enumerate.lua feature.lua function.lua \
   module.lua operator.lua package.lua typedef.lua \
   variable.lua verbatim.lua
 
@@ -126,19 +126,19 @@ LIBRARIES = $(noinst_LIBRARIES)
 liblua_a_AR = $(AR) cru
 liblua_a_LIBADD =
 am_liblua_a_OBJECTS = lapi.$(OBJEXT) ldebug.$(OBJEXT) lmem.$(OBJEXT) \
-	lstrlib.$(OBJEXT) lvm.$(OBJEXT) tolua_lb.$(OBJEXT) \
-	lauxlib.$(OBJEXT) ldo.$(OBJEXT) lobject.$(OBJEXT) \
-	ltable.$(OBJEXT) lzio.$(OBJEXT) tolua_rg.$(OBJEXT) \
+	lstrlib.$(OBJEXT) lvm.$(OBJEXT) lauxlib.$(OBJEXT) ldo.$(OBJEXT) \
+	lobject.$(OBJEXT) ltable.$(OBJEXT) lzio.$(OBJEXT) \
 	lbaselib.$(OBJEXT) lfunc.$(OBJEXT) lparser.$(OBJEXT) \
-	tolua_bd.$(OBJEXT) tolua_tm.$(OBJEXT) lcode.$(OBJEXT) \
-	lgc.$(OBJEXT) lstate.$(OBJEXT) ltm.$(OBJEXT) tolua_eh.$(OBJEXT) \
-	tolua_tt.$(OBJEXT) ldblib.$(OBJEXT) llex.$(OBJEXT) \
-	lstring.$(OBJEXT) lundump.$(OBJEXT) tolua_gp.$(OBJEXT)
+	lcode.$(OBJEXT) lgc.$(OBJEXT) lopcodes.$(OBJEXT) \
+	lstate.$(OBJEXT) ltm.$(OBJEXT) ldblib.$(OBJEXT) llex.$(OBJEXT) \
+	lstring.$(OBJEXT) ldump.$(OBJEXT) lundump.$(OBJEXT) \
+	ltablib.$(OBJEXT) tolua_map.$(OBJEXT) tolua_is.$(OBJEXT) \
+	tolua_to.$(OBJEXT) tolua_push.$(OBJEXT) tolua_event.$(OBJEXT)
 liblua_a_OBJECTS = $(am_liblua_a_OBJECTS)
 noinst_PROGRAMS = tolua$(EXEEXT)
 PROGRAMS = $(noinst_PROGRAMS)
 
-am_tolua_OBJECTS = tolua.$(OBJEXT) tolualua.$(OBJEXT) liolib.$(OBJEXT)
+am_tolua_OBJECTS = tolua.$(OBJEXT) liolib.$(OBJEXT) toluabind.$(OBJEXT)
 tolua_OBJECTS = $(am_tolua_OBJECTS)
 tolua_DEPENDENCIES = liblua.a
 tolua_LDFLAGS =
@@ -153,19 +153,19 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/lapi.Po ./$(DEPDIR)/lauxlib.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/lbaselib.Po ./$(DEPDIR)/lcode.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/ldblib.Po ./$(DEPDIR)/ldebug.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/ldo.Po ./$(DEPDIR)/lfunc.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/lgc.Po ./$(DEPDIR)/liolib.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/llex.Po ./$(DEPDIR)/lmem.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/lobject.Po ./$(DEPDIR)/lparser.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/ldo.Po ./$(DEPDIR)/ldump.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/lfunc.Po ./$(DEPDIR)/lgc.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/liolib.Po ./$(DEPDIR)/llex.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/lmem.Po ./$(DEPDIR)/lobject.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/lopcodes.Po ./$(DEPDIR)/lparser.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/lstate.Po ./$(DEPDIR)/lstring.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/lstrlib.Po ./$(DEPDIR)/ltable.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/ltm.Po ./$(DEPDIR)/lundump.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/lvm.Po ./$(DEPDIR)/lzio.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/tolua.Po ./$(DEPDIR)/tolua_bd.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/tolua_eh.Po ./$(DEPDIR)/tolua_gp.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/tolua_lb.Po ./$(DEPDIR)/tolua_rg.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/tolua_tm.Po ./$(DEPDIR)/tolua_tt.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/tolualua.Po
+@AMDEP_TRUE@	./$(DEPDIR)/ltablib.Po ./$(DEPDIR)/ltm.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/lundump.Po ./$(DEPDIR)/lvm.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/lzio.Po ./$(DEPDIR)/tolua.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/tolua_event.Po ./$(DEPDIR)/tolua_is.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/tolua_map.Po ./$(DEPDIR)/tolua_push.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/tolua_to.Po ./$(DEPDIR)/toluabind.Po
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
@@ -214,30 +214,31 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ldblib.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ldebug.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ldo.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ldump.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lfunc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lgc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/liolib.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/llex.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lmem.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lobject.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lopcodes.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lparser.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lstate.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lstring.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lstrlib.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ltable.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ltablib.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ltm.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lundump.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lvm.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lzio.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tolua.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tolua_bd.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tolua_eh.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tolua_gp.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tolua_lb.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tolua_rg.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tolua_tm.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tolua_tt.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tolualua.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tolua_event.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tolua_is.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tolua_map.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tolua_push.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tolua_to.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/toluabind.Po@am__quote@
 
 distclean-depend:
 	-rm -rf ./$(DEPDIR)

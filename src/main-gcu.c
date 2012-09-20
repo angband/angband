@@ -69,10 +69,15 @@
 
 #undef term
 
+
+#ifdef HAVE_CAN_CHANGE_COLOR
+
 /*
  * Try redefining the colors at startup.
  */
 #define REDEFINE_COLORS
+
+#endif /* HAVE_CAN_CHANGE_COLOR */
 
 
 /*
@@ -527,6 +532,14 @@ static void Term_init_gcu(term *t)
 {
 	term_data *td = (term_data *)(t->data);
 
+#ifdef USE_GETCH
+	/*
+	 * This is necessary to keep the first call to getch()
+	 * from clearing the screen
+	 */
+	wrefresh(stdscr);
+#endif /* USE_GETCH */
+
 	/* Count init's, handle first */
 	if (active++ != 0) return;
 
@@ -770,7 +783,7 @@ static errr Term_xtra_gcu(int n, int v)
 
 		/* Delay */
 		case TERM_XTRA_DELAY:
-		usleep(1000 * v);
+		if (v > 0) usleep(1000 * v);
 		return (0);
 
 		/* React to events */
@@ -1061,17 +1074,17 @@ errr init_gcu(int argc, char **argv)
 		init_pair(6, COLOR_CYAN,    COLOR_BLACK);
 		init_pair(7, COLOR_BLACK,   COLOR_BLACK);
 
-		/* Prepare the "Angband Colors" -- Bright white is too bright */
+		/* Prepare the colors */
 		colortable[0] = (COLOR_PAIR(7) | A_NORMAL);	/* Black */
-		colortable[1] = (COLOR_PAIR(0) | A_NORMAL);	/* White */
-		colortable[2] = (COLOR_PAIR(6) | A_NORMAL);	/* Grey XXX */
+		colortable[1] = (COLOR_PAIR(0) | A_BRIGHT);	/* White */
+		colortable[2] = (COLOR_PAIR(0) | A_NORMAL);	/* Grey XXX */
 		colortable[3] = (COLOR_PAIR(1) | A_BRIGHT);	/* Orange XXX */
 		colortable[4] = (COLOR_PAIR(1) | A_NORMAL);	/* Red */
 		colortable[5] = (COLOR_PAIR(2) | A_NORMAL);	/* Green */
 		colortable[6] = (COLOR_PAIR(4) | A_NORMAL);	/* Blue */
 		colortable[7] = (COLOR_PAIR(3) | A_NORMAL);	/* Umber */
 		colortable[8] = (COLOR_PAIR(7) | A_BRIGHT);	/* Dark-grey XXX */
-		colortable[9] = (COLOR_PAIR(6) | A_BRIGHT);	/* Light-grey XXX */
+		colortable[9] = (COLOR_PAIR(0) | A_NORMAL);	/* Light-grey XXX */
 		colortable[10] = (COLOR_PAIR(5) | A_NORMAL);	/* Purple */
 		colortable[11] = (COLOR_PAIR(3) | A_BRIGHT);	/* Yellow */
 		colortable[12] = (COLOR_PAIR(5) | A_BRIGHT);	/* Light Red XXX */

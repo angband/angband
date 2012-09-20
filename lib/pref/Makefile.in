@@ -116,6 +116,7 @@ angband_files = \
   pref-gcu.prf \
   pref-mac.prf \
   pref-win.prf \
+  pref-dos.prf \
   pref-x11.prf \
   user.prf \
   user-mac.prf \

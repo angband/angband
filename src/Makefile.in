@@ -121,11 +121,11 @@ angband_SOURCES = \
 EXTRA_angband_SOURCES = \
   main-ros.c main-ami.c main-dos.c main-emx.c \
   main-ibm.c main-lsl.c main-mac.c main-sla.c main-vme.c \
-  main-xxx.c \
+  main-xxx.c main-crb.c \
   Makefile.ros Makefile.ami Makefile.bcc Makefile.cyg \
   Makefile.dos Makefile.emx Makefile.gtk Makefile.ibm \
   Makefile.lcc Makefile.lsl Makefile.std Makefile.wat \
-  Makefile.win \
+  Makefile.win Makefile.mpw Makefile.osx \
   angband.rc angband.ico readdib.c readdib.h \
   maid-x11.c maid-x11.h \
   l-monst.pkg l-object.pkg l-player.pkg l-random.pkg l-ui.pkg \
@@ -178,29 +178,29 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/l-spell.Po ./$(DEPDIR)/l-ui.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/load.Po ./$(DEPDIR)/maid-x11.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/main-ami.Po ./$(DEPDIR)/main-cap.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/main-dos.Po ./$(DEPDIR)/main-emx.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/main-gcu.Po ./$(DEPDIR)/main-gtk.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/main-ibm.Po ./$(DEPDIR)/main-lsl.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/main-mac.Po ./$(DEPDIR)/main-ros.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/main-sla.Po ./$(DEPDIR)/main-vcs.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/main-vme.Po ./$(DEPDIR)/main-win.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/main-x11.Po ./$(DEPDIR)/main-xaw.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/main-xpj.Po ./$(DEPDIR)/main-xxx.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/main.Po ./$(DEPDIR)/melee1.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/melee2.Po ./$(DEPDIR)/monster1.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/monster2.Po ./$(DEPDIR)/obj-info.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/object1.Po ./$(DEPDIR)/object2.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/randart.Po ./$(DEPDIR)/readdib.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/save.Po ./$(DEPDIR)/script.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/spells1.Po ./$(DEPDIR)/spells2.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/store.Po ./$(DEPDIR)/tables.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/use-obj.Po ./$(DEPDIR)/util.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/variable.Po ./$(DEPDIR)/wizard1.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/wizard2.Po ./$(DEPDIR)/x-spell.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/xtra1.Po ./$(DEPDIR)/xtra2.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/z-form.Po ./$(DEPDIR)/z-rand.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/z-term.Po ./$(DEPDIR)/z-util.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/z-virt.Po
+@AMDEP_TRUE@	./$(DEPDIR)/main-crb.Po ./$(DEPDIR)/main-dos.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/main-emx.Po ./$(DEPDIR)/main-gcu.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/main-gtk.Po ./$(DEPDIR)/main-ibm.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/main-lsl.Po ./$(DEPDIR)/main-mac.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/main-ros.Po ./$(DEPDIR)/main-sla.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/main-vcs.Po ./$(DEPDIR)/main-vme.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/main-win.Po ./$(DEPDIR)/main-x11.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/main-xaw.Po ./$(DEPDIR)/main-xpj.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/main-xxx.Po ./$(DEPDIR)/main.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/melee1.Po ./$(DEPDIR)/melee2.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/monster1.Po ./$(DEPDIR)/monster2.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/obj-info.Po ./$(DEPDIR)/object1.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/object2.Po ./$(DEPDIR)/randart.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/readdib.Po ./$(DEPDIR)/save.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/script.Po ./$(DEPDIR)/spells1.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/spells2.Po ./$(DEPDIR)/store.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/tables.Po ./$(DEPDIR)/use-obj.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/util.Po ./$(DEPDIR)/variable.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/wizard1.Po ./$(DEPDIR)/wizard2.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/x-spell.Po ./$(DEPDIR)/xtra1.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/xtra2.Po ./$(DEPDIR)/z-form.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/z-rand.Po ./$(DEPDIR)/z-term.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/z-util.Po ./$(DEPDIR)/z-virt.Po
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
@@ -237,7 +237,7 @@ stamp-h1: $(srcdir)/autoconf.h.in $(top_builddir)/config.status
 	@rm -f stamp-h1
 	cd $(top_builddir) && $(SHELL) ./config.status src/autoconf.h
 
-$(srcdir)/autoconf.h.in:  $(top_srcdir)/configure.in $(ACLOCAL_M4) $(top_srcdir)/acconfig.h
+$(srcdir)/autoconf.h.in:  $(top_srcdir)/configure.in $(ACLOCAL_M4) 
 	cd $(top_srcdir) && $(AUTOHEADER)
 	touch $(srcdir)/autoconf.h.in
 
@@ -301,6 +301,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/maid-x11.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main-ami.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main-cap.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main-crb.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main-dos.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main-emx.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main-gcu.Po@am__quote@

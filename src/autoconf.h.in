@@ -1,15 +1,10 @@
 /* src/autoconf.h.in.  Generated from configure.in by autoheader.  */
-#undef USE_GCU
-#undef USE_CAP
-#undef USE_NCURSES
-#undef USE_X11
-#undef USE_XAW
-#undef USE_XPJ
-#undef USE_GTK
-#undef WINDOWS
-#undef DEFAULT_PATH
-#undef HAVE_MKSTEMP
 
+/* Path to the game's lib directory */
+#undef DEFAULT_PATH
+
+/* Define to 1 if you have the `can_change_color' function. */
+#undef HAVE_CAN_CHANGE_COLOR
 
 /* Define to 1 if you don't have `vprintf' but do have `_doprnt.' */
 #undef HAVE_DOPRNT
@@ -122,8 +117,32 @@
 /* Define to 1 if your <sys/time.h> declares `struct tm'. */
 #undef TM_IN_SYS_TIME
 
+/* Use the libtermcap front-end */
+#undef USE_CAP
+
+/* Use the curses front-end */
+#undef USE_GCU
+
+/* Use the GTK front-end */
+#undef USE_GTK
+
+/* Use the ncurses library */
+#undef USE_NCURSES
+
+/* Use the X11 front-end */
+#undef USE_X11
+
+/* Use the Athena Widget set front-end */
+#undef USE_XAW
+
+/* Use the isometric X11 front-end */
+#undef USE_XPJ
+
 /* Version number of package */
 #undef VERSION
+
+/* Use the Windows front-end */
+#undef WINDOWS
 
 /* Define to 1 if the X Window System is missing or not being used. */
 #undef X_DISPLAY_MISSING

@@ -2,7 +2,7 @@
 -- Written by Waldemar Celes
 -- TeCGraf/PUC-Rio
 -- Jul 1998
--- $Id: module.lua,v 1.1 2001/10/27 19:35:29 angband Exp $
+-- $Id: module.lua,v 1.2 2003/08/10 11:43:31 rr9 Exp $
 
 -- This code is free software; you can redistribute it and/or modify it.
 -- The software provided hereunder is on an "as is" basis, and
@@ -16,24 +16,23 @@
 -- The following fields are stored:
 --    {i} = list of objects in the module.
 classModule = {
- _base = classContainer,
- type = 'module'
+ classtype = 'module'
 }
-settag(classModule,tolua_tag)
+classModule.__index = classModule
+setmetatable(classModule,classContainer)
 
 -- register module
 function classModule:register ()
- output(' tolua_module(tolua_S,"'..self.name..'");')
+ push(self)
+ output(' tolua_module(tolua_S,"'..self.name..'",',self:hasvar(),');')
+	output(' tolua_beginmodule(tolua_S,"'..self.name..'");')
  local i=1
  while self[i] do
   self[i]:register()
   i = i+1
  end
-end
-
--- unregister module
-function classModule:unregister ()
- output(' lua_pushnil(tolua_S); lua_setglobal(tolua_S,"'..self.name..'");') 
+	output(' tolua_endmodule(tolua_S);')
+	pop()
 end
 
 -- Print method
@@ -50,8 +49,7 @@ end
 
 -- Internal constructor
 function _Module (t)
- t._base = classModule
- settag(t,tolua_tag)
+ setmetatable(t,classModule)
  append(t)
  return t
 end

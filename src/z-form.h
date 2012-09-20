@@ -39,6 +39,9 @@ extern char *vformat(cptr fmt, va_list vp);
 /* Free the memory allocated for the format buffer */
 extern void vformat_kill(void);
 
+/* Append a formatted string to another string */
+extern void strnfcat(char *str, size_t max, size_t *end, cptr fmt, ...);
+
 /* Simple interface to "vformat()" */
 extern char *format(cptr fmt, ...);
 

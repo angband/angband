@@ -479,6 +479,100 @@ errr process_pref_file_command(char *buf)
 		}
 	}
 
+	/* set macro trigger names and a template */
+	/* Process "T:<trigger>:<keycode>:<shift-keycode>" */
+	/* Process "T:<template>:<modifier chr>:<modifier name>:..." */
+	else if (buf[0] == 'T')
+	{
+		int tok;
+
+		tok = tokenize(buf + 2, MAX_MACRO_MOD + 2, zz);
+
+		/* Trigger template */
+		if (tok >= 4)
+		{
+			int i;
+			int num;
+
+			/* Free existing macro triggers and trigger template */
+			macro_trigger_free();
+
+			/* Clear template done */
+			if (*zz[0] == '\0') return 0;
+
+			/* Count modifier-characters */
+			num = strlen(zz[1]);
+
+			/* One modifier-character per modifier */
+			if (num + 2 != tok) return 1;
+
+			/* Macro template */
+			macro_template = string_make(zz[0]);
+
+			/* Modifier chars */
+			macro_modifier_chr = string_make(zz[1]);
+
+			/* Modifier names */
+			for (i = 0; i < num; i++)
+			{
+				macro_modifier_name[i] = string_make(zz[2+i]);
+			}
+		}
+		/* Macro trigger */
+		else if (tok >= 2)
+		{
+			char *buf;
+			cptr s;
+			char *t;
+
+			if (max_macrotrigger >= MAX_MACRO_TRIGGER)
+			{
+				msg_print("Too many macro triggers!");
+				return 1;
+			}
+
+			/* Buffer for the trigger name */
+			C_MAKE(buf, strlen(zz[0]) + 1, char);
+
+			/* Simulate strcpy() and skip the '\' escape character */
+			s = zz[0];
+			t = buf;
+
+			while (*s)
+			{
+				if ('\\' == *s) s++;
+				*t++ = *s++;
+			}
+
+			/* Terminate the trigger name */
+			*t = '\0';
+
+			/* Store the trigger name */
+			macro_trigger_name[max_macrotrigger] = string_make(buf);
+
+			/* Free the buffer */
+			FREE(buf);
+
+			/* Normal keycode */
+			macro_trigger_keycode[0][max_macrotrigger] = string_make(zz[1]);
+
+			/* Special shifted keycode */
+			if (tok == 3)
+			{
+				macro_trigger_keycode[1][max_macrotrigger] = string_make(zz[2]);
+			}
+			/* Shifted keycode is the same as the normal keycode */
+			else
+			{
+				macro_trigger_keycode[1][max_macrotrigger] = string_make(zz[1]);
+			}
+
+			/* Count triggers */
+			max_macrotrigger++;
+		}
+
+		return 0;
+	}
 
 	/* Process "X:<str>" -- turn option off */
 	else if (buf[0] == 'X')
@@ -492,6 +586,9 @@ errr process_pref_file_command(char *buf)
 				return (0);
 			}
 		}
+
+		/* Ignore unknown options */
+		return (0);
 	}
 
 	/* Process "Y:<str>" -- turn option on */
@@ -506,6 +603,9 @@ errr process_pref_file_command(char *buf)
 				return (0);
 			}
 		}
+
+		/* Ignore unknown options */
+		return (0);
 	}
 
 
@@ -1039,137 +1139,6 @@ errr check_time_init(void)
 }
 
 
-
-#ifdef CHECK_LOAD
-
-#ifndef MAXHOSTNAMELEN
-# define MAXHOSTNAMELEN  64
-#endif
-
-typedef struct statstime statstime;
-
-struct statstime
-{
-	int cp_time[4];
-	int dk_xfer[4];
-	unsigned int        v_pgpgin;
-	unsigned int        v_pgpgout;
-	unsigned int        v_pswpin;
-	unsigned int        v_pswpout;
-	unsigned int        v_intr;
-	int if_ipackets;
-	int if_ierrors;
-	int if_opackets;
-	int if_oerrors;
-	int if_collisions;
-	unsigned int        v_swtch;
-	long avenrun[3];
-	struct timeval      boottime;
-	struct timeval      curtime;
-};
-
-/*
- * Maximal load (if any).
- */
-static int check_load_value = 0;
-
-#endif
-
-
-/*
- * Handle CHECK_LOAD
- */
-errr check_load(void)
-{
-
-#ifdef CHECK_LOAD
-
-	struct statstime    st;
-
-	/* Success if not checking */
-	if (!check_load_value) return (0);
-
-	/* Check the load */
-	if (0 == rstat("localhost", &st))
-	{
-		long val1 = (long)(st.avenrun[2]);
-		long val2 = (long)(check_load_value) * FSCALE;
-
-		/* Check for violation */
-		if (val1 >= val2) return (1);
-	}
-
-#endif
-
-	/* Success */
-	return (0);
-}
-
-
-/*
- * Initialize CHECK_LOAD
- */
-errr check_load_init(void)
-{
-
-#ifdef CHECK_LOAD
-
-	FILE *fp;
-
-	char buf[1024];
-
-	char temphost[MAXHOSTNAMELEN+1];
-	char thishost[MAXHOSTNAMELEN+1];
-
-
-	/* Build the filename */
-	path_build(buf, sizeof(buf), ANGBAND_DIR_FILE, "load.txt");
-
-	/* Open the "load" file */
-	fp = my_fopen(buf, "r");
-
-	/* No file, no restrictions */
-	if (!fp) return (0);
-
-	/* Default load */
-	check_load_value = 100;
-
-	/* Get the host name */
-	(void)gethostname(thishost, (sizeof thishost) - 1);
-
-	/* Parse it */
-	while (0 == my_fgets(fp, buf, sizeof(buf)))
-	{
-		int value;
-
-		/* Skip comments and blank lines */
-		if (!buf[0] || (buf[0] == '#')) continue;
-
-		/* Parse, or ignore */
-		if (sscanf(buf, "%s%d", temphost, &value) != 2) continue;
-
-		/* Skip other hosts */
-		if (!streq(temphost, thishost) &&
-		    !streq(temphost, "localhost")) continue;
-
-		/* Use that value */
-		check_load_value = value;
-
-		/* Done */
-		break;
-	}
-
-	/* Close the file */
-	my_fclose(fp);
-
-#endif /* CHECK_LOAD */
-
-	/* Success */
-	return (0);
-}
-
-
-
 /*
  * Returns a "rating" of x depending on y, and sets "attr" to the
  * corresponding "attribute".
@@ -1270,6 +1239,7 @@ static void display_player_xtra_info(void)
 	cptr desc;
 
 	char buf[160];
+	char depths[32];
 
 
 	/* Upper middle */
@@ -1353,6 +1323,25 @@ static void display_player_xtra_info(void)
 		Term_putstr(col+8, 13, -1, TERM_L_GREEN,
 		            format("%10s", "********"));
 	}
+
+
+	/* Maximum depth */
+	Term_putstr(col, 14, -1, TERM_WHITE, "MaxDepth");
+	if (!p_ptr->max_depth)
+	{
+		strcpy(depths, "Town");
+	}
+	else if (depth_in_feet)
+	{
+		sprintf(depths, "%d ft", p_ptr->max_depth * 50);
+	}
+	else
+	{
+		sprintf(depths, "Lev %d", p_ptr->max_depth);
+	}
+
+	Term_putstr(col+8, 14, -1, TERM_L_GREEN,
+	            format("%10s", depths));
 
 
 	/* Gold */
@@ -2162,6 +2151,61 @@ errr file_character(cptr name, bool full)
 		fprintf(fff, "%s\n", buf);
 	}
 
+	/* Skip a line */
+	fprintf(fff, "\n");
+
+	/* Display player */
+	display_player(1);
+
+	/* Dump part of the screen */
+	for (y = 11; y < 20; y++)
+	{
+		/* Dump each row */
+		for (x = 0; x < 39; x++)
+		{
+			/* Get the attr/char */
+			(void)(Term_what(x, y, &a, &c));
+
+			/* Dump it */
+			buf[x] = c;
+		}
+
+		/* Back up over spaces */
+		while ((x > 0) && (buf[x-1] == ' ')) --x;
+
+		/* Terminate */
+		buf[x] = '\0';
+
+		/* End the row */
+		fprintf(fff, "%s\n", buf);
+	}
+
+	/* Skip a line */
+	fprintf(fff, "\n");
+
+	/* Dump part of the screen */
+	for (y = 11; y < 20; y++)
+	{
+		/* Dump each row */
+		for (x = 0; x < 39; x++)
+		{
+			/* Get the attr/char */
+			(void)(Term_what(x + 40, y, &a, &c));
+
+			/* Dump it */
+			buf[x] = c;
+		}
+
+		/* Back up over spaces */
+		while ((x > 0) && (buf[x-1] == ' ')) --x;
+
+		/* Terminate */
+		buf[x] = '\0';
+
+		/* End the row */
+		fprintf(fff, "%s\n", buf);
+	}
+
 	/* Skip some lines */
 	fprintf(fff, "\n\n");
 
@@ -2275,7 +2319,7 @@ static void string_lower(char *buf)
 /*
  * Recursive file perusal.
  *
- * Return FALSE on "ESCAPE", otherwise TRUE.
+ * Return FALSE on "?", otherwise TRUE.
  *
  * Process various special text in the input file, including the "menu"
  * structures used by the "help file" system.
@@ -2342,7 +2386,7 @@ bool show_file(cptr name, cptr what, int line, int mode)
 	char lc_buf[1024];
 
 	/* Sub-menu information */
-	char hook[10][32];
+	char hook[26][32];
 
 	int wid, hgt;
 
@@ -2357,7 +2401,7 @@ bool show_file(cptr name, cptr what, int line, int mode)
 	strcpy(caption, "");
 
 	/* Wipe the hooks */
-	for (i = 0; i < 10; i++) hook[i][0] = '\0';
+	for (i = 0; i < 26; i++) hook[i][0] = '\0';
 
 	/* Get size */
 	Term_get_size(&wid, &hgt);
@@ -2445,17 +2489,18 @@ bool show_file(cptr name, cptr what, int line, int mode)
 			char b1 = '[', b2 = ']';
 
 			/* Notice "menu" requests */
-			if ((buf[6] == b1) && isdigit((unsigned char)buf[7]) &&
+			if ((buf[6] == b1) && isalpha((unsigned char)buf[7]) &&
 			    (buf[8] == b2) && (buf[9] == ' '))
 			{
 				/* This is a menu file */
 				menu = TRUE;
 
 				/* Extract the menu item */
-				k = D2I(buf[7]);
+				k = A2I(buf[7]);
 
-				/* Extract the menu item */
-				my_strcpy(hook[k], buf + 10, sizeof(hook[0]));
+				/* Store the menu item (if valid) */
+				if ((k >= 0) && (k < 26))
+					my_strcpy(hook[k], buf + 10, sizeof(hook[0]));
 			}
 			/* Notice "tag" requests */
 			else if (buf[6] == '<')
@@ -2494,8 +2539,9 @@ bool show_file(cptr name, cptr what, int line, int mode)
 		Term_clear();
 
 
-		/* Restart when necessary */
-		if (line >= size) line = 0;
+		/* Restrict the visible range */
+		if (line > (size - (hgt - 4))) line = size - (hgt - 4);
+		if (line < 0) line = 0;
 
 
 		/* Re-open the file if needed */
@@ -2592,8 +2638,8 @@ bool show_file(cptr name, cptr what, int line, int mode)
 
 
 		/* Show a general "title" */
-		prt(format("[%s %s, %s, Line %d/%d]", VERSION_NAME,
-		           VERSION_STRING, caption, line, size), 0, 0);
+		prt(format("[%s %s, %s, Line %d-%d/%d]", VERSION_NAME, VERSION_STRING,
+		           caption, line, line + hgt - 4, size), 0, 0);
 
 
 		/* Prompt -- menu screen */
@@ -2620,7 +2666,7 @@ bool show_file(cptr name, cptr what, int line, int mode)
 		/* Get a keypress */
 		ch = inkey();
 
-		/* Return to last screen */
+		/* Exit the help */
 		if (ch == '?') break;
 
 		/* Toggle case sensitive on/off */
@@ -2685,28 +2731,31 @@ bool show_file(cptr name, cptr what, int line, int mode)
 		}
 
 		/* Back up one line */
-		if (ch == '=')
+		if ((ch == '8') || (ch == '='))
 		{
 			line = line - 1;
-			if (line < 0) line = 0;
 		}
 
 		/* Back up one half page */
 		if (ch == '_')
 		{
 			line = line - ((hgt - 4) / 2);
-			if (line < 0) line = 0;
 		}
 
 		/* Back up one full page */
-		if (ch == '-')
+		if ((ch == '9') || (ch == '-'))
 		{
 			line = line - (hgt - 4);
-			if (line < 0) line = 0;
+		}
+
+		/* Back to the top */
+		if (ch == '7')
+		{
+			line = 0;
 		}
 
 		/* Advance one line */
-		if ((ch == '\n') || (ch == '\r'))
+		if ((ch == '2') || (ch == '\n') || (ch == '\r'))
 		{
 			line = line + 1;
 		}
@@ -2715,20 +2764,32 @@ bool show_file(cptr name, cptr what, int line, int mode)
 		if (ch == '+')
 		{
 			line = line + ((hgt - 4) / 2);
-			if (line < 0) line = 0;
 		}
 
 		/* Advance one full page */
-		if (ch == ' ')
+		if ((ch == '3') || (ch == ' '))
 		{
 			line = line + (hgt - 4);
 		}
 
-		/* Recurse on numbers */
-		if (menu && isdigit((unsigned char)ch) && hook[D2I(ch)][0])
+		/* Advance to the bottom */
+		if (ch == '1')
 		{
-			/* Recurse on that file */
-			if (!show_file(hook[D2I(ch)], NULL, 0, mode)) ch = ESCAPE;
+			line = size;
+		}
+
+		/* Recurse on letters */
+		if (menu && isalpha((unsigned char)ch))
+		{
+			/* Extract the requested menu item */
+			k = A2I(ch);
+
+			/* Verify the menu item */
+			if ((k >= 0) && (k <= 25) && hook[k][0])
+			{
+				/* Recurse on that file */
+				if (!show_file(hook[k], NULL, 0, mode)) ch = ESCAPE;
+			}
 		}
 
 		/* Exit on escape */
@@ -2739,7 +2800,7 @@ bool show_file(cptr name, cptr what, int line, int mode)
 	my_fclose(fff);
 
 	/* Done */
-	return (ch != ESCAPE);
+	return (ch != '?');
 }
 
 
@@ -2883,10 +2944,10 @@ void do_cmd_suicide(void)
 		char ch;
 
 		/* Verify */
-		if (!get_check("Do you really want to quit? ")) return;
+		if (!get_check("Do you really want to commit suicide? ")) return;
 
 		/* Special Verification for suicide */
-		prt("Please verify QUITTING by typing the '@' sign: ", 0, 0);
+		prt("Please verify SUICIDE by typing the '@' sign: ", 0, 0);
 		flush();
 		ch = inkey();
 		prt("", 0, 0);
@@ -3332,6 +3393,13 @@ static void death_examine(void)
 }
 
 
+
+/*
+ * The "highscore" file descriptor, if available.
+ */
+static int highscore_fd = -1;
+
+
 /*
  * Seek score 'i' in the highscore file
  */
@@ -3444,7 +3512,7 @@ static int highscore_add(const high_score *score)
  *
  * Mega-Hack -- allow "fake" entry at the given position.
  */
-void display_scores_aux(int from, int to, int note, high_score *score)
+static void display_scores_aux(int from, int to, int note, high_score *score)
 {
 	char ch;
 
@@ -3571,8 +3639,8 @@ void display_scores_aux(int from, int to, int note, high_score *score)
 
 			/* Another line of info */
 			strnfmt(out_val, sizeof(out_val),
-			        "               Killed by %s on %s %d",
-			        the_score.how, "dungeon level", cdun);
+			        "               Killed by %s on dungeon level %d",
+			        the_score.how, cdun);
 
 			/* Hack -- some people die in the town */
 			if (!cdun)
@@ -3597,7 +3665,7 @@ void display_scores_aux(int from, int to, int note, high_score *score)
 
 
 		/* Wait for response */
-		prt("[Press ESC to quit, any other key to continue.]", 23, 17);
+		prt("[Press ESC to exit, any other key to continue.]", 23, 17);
 		ch = inkey();
 		prt("", 23, 0);
 
@@ -3639,7 +3707,7 @@ void display_scores(int from, int to)
 	highscore_fd = -1;
 
 	/* Wait for response */
-	prt("[Press any key to quit.]", 23, 17);
+	prt("[Press any key to exit.]", 23, 17);
 	(void)inkey();
 	prt("", 23, 0);
 
@@ -3847,7 +3915,7 @@ static void top_twenty(void)
 /*
  * Predict the players location, and display it.
  */
-errr predict_score(void)
+static errr predict_score(void)
 {
 	int j;
 
@@ -3920,7 +3988,48 @@ errr predict_score(void)
 }
 
 
+void show_scores(void)
+{
+	char buf[1024];
 
+	/* Build the filename */
+	path_build(buf, sizeof(buf), ANGBAND_DIR_APEX, "scores.raw");
+
+	/* Open the binary high score file, for reading */
+	highscore_fd = fd_open(buf, O_RDONLY);
+
+	/* Paranoia -- No score file */
+	if (highscore_fd < 0)
+	{
+		msg_print("Score file unavailable.");
+	}
+	else
+	{
+		/* Save Screen */
+		screen_save();
+
+		/* Clear screen */
+		Term_clear();
+
+		/* Display the scores */
+		if (character_generated)
+			predict_score();
+		else
+			display_scores_aux(0, MAX_HISCORES, -1, NULL);
+
+		/* Shut the high score file */
+		(void)fd_close(highscore_fd);
+
+		/* Forget the high score fd */
+		highscore_fd = -1;
+
+		/* Load screen */
+		screen_load();
+
+		/* Hack - Flush it */
+		Term_fresh();
+	}
+}
 
 
 
@@ -4635,7 +4744,197 @@ void signals_init(void)
 {
 }
 
-
 #endif	/* HANDLE_SIGNALS */
 
 
+static void write_html_escape_char(FILE *htm, char c)
+{
+	switch (c)
+	{
+		case '<':
+			fprintf(htm, "&lt;");
+			break;
+		case '>':
+			fprintf(htm, "&gt;");
+			break;
+		case '&':
+			fprintf(htm, "&amp;");
+			break;
+		default:
+			fprintf(htm, "%c", c);
+			break;
+	}
+}
+
+
+/*
+ * Get the default (ASCII) tile for a given screen location
+ */
+static void get_default_tile(int row, int col, byte *a_def, char *c_def)
+{
+	byte a;
+	char c;
+
+	int wid, hgt;
+	int screen_wid, screen_hgt;
+
+	int x;
+	int y = row - ROW_MAP + p_ptr->wy;
+
+	/* Retrieve current screen size */
+	Term_get_size(&wid, &hgt);
+
+	/* Calculate the size of dungeon map area (ignoring bigscreen) */
+	screen_wid = wid - (COL_MAP + 1);
+	screen_hgt = hgt - (ROW_MAP + 1);
+
+	/* Get the tile from the screen */
+	a = Term->scr->a[row][col];
+	c = Term->scr->c[row][col];
+
+	/* Skip bigtile placeholders */
+	if (use_bigtile && (a == 255) && (c == -1))
+	{
+		/* Replace with "white space" */
+		a = TERM_WHITE;
+		c = ' ';
+	}
+	/* Convert the map display to the default characters */
+	else if (!character_icky &&
+	    ((col - COL_MAP) >= 0) && ((col - COL_MAP) < screen_wid) &&
+	    ((row - ROW_MAP) >= 0) && ((row - ROW_MAP) < screen_hgt))
+	{
+		/* Bigtile uses double-width tiles */
+		if (use_bigtile)
+			x = (col - COL_MAP) / 2 + p_ptr->wx;
+		else
+			x = col - COL_MAP + p_ptr->wx;
+
+		/* Convert dungeon map into default attr/chars */
+		if (in_bounds(y, x))
+		{
+			/* Retrieve default attr/char */
+			map_info_default(y, x, &a, &c);
+		}
+		else
+		{
+			/* "Out of bounds" is empty */
+			a = TERM_WHITE;
+			c = ' ';
+		}
+
+		if (c == '\0') c = ' ';
+	}
+
+	/* Filter out remaining graphics */
+	if (a & 0xf0)
+	{
+		/* Replace with "white space" */
+		a = TERM_WHITE;
+		c = ' ';
+	}
+
+	/* Return the default tile */
+	*a_def = a;
+	*c_def = c;
+}
+
+
+/* Take an html screenshot */
+void html_screenshot(cptr name)
+{
+	int y, x;
+	int wid, hgt;
+
+	byte a;
+	byte oa = TERM_WHITE;
+	char c = ' ';
+
+	FILE *htm;
+
+	char buf[1024];
+
+	/* Build the filename */
+	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, name);
+
+	/* File type is "TEXT" */
+	FILE_TYPE(FILE_TYPE_TEXT);
+
+	/* Append to the file */
+	htm = my_fopen(buf, "w");
+
+	/* Oops */
+	if (!htm)
+	{
+		plog_fmt("Cannot write the '%s' file!", buf);
+		return;
+	}
+
+	/* Retrieve current screen size */
+	Term_get_size(&wid, &hgt);
+
+	fprintf(htm, "<HTML>\n");
+	fprintf(htm, "<HEAD>\n");
+	fprintf(htm, "<META NAME=\"GENERATOR\" Content=\"%s %d.%d.%d\">\n",
+	             VERSION_NAME, VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
+	fprintf(htm, "<TITLE>%s</TITLE>\n", name);
+	fprintf(htm, "</HEAD>\n\n");
+	fprintf(htm, "<BODY TEXT=\"#FFFFFF\" BGCOLOR=\"#000000\">\n");
+	fprintf(htm, "<PRE><TT>\n");
+
+	/* Dump the screen */
+	for (y = 0; y < hgt; y++)
+	{
+		for (x = 0; x < wid; x++)
+		{
+			/* Get the ASCII tile */
+			get_default_tile(y, x, &a, &c);
+
+			/* Color change */
+			if (oa != a)
+			{
+				/* From the default white to another color */
+				if (oa == TERM_WHITE)
+				{
+					fprintf(htm, "<FONT COLOR=\"#%02X%02X%02X\">",
+					        angband_color_table[a][1],
+					        angband_color_table[a][2],
+					        angband_color_table[a][3]);
+				}
+				/* From another color to the default white */
+				else if (a == TERM_WHITE)
+				{
+					fprintf(htm, "</FONT>");
+				}
+				/* Change colors */
+				else
+				{
+					fprintf(htm, "</FONT><FONT COLOR=\"#%02X%02X%02X\">",
+					        angband_color_table[a][1],
+					        angband_color_table[a][2],
+					        angband_color_table[a][3]);
+				}
+
+				/* Remember the last color */
+				oa = a;
+			}
+
+			/* Write the character and escape special HTML characters */
+			write_html_escape_char(htm, c);
+		}
+
+		/* End the row */
+		fprintf(htm, "\n");
+	}
+
+	/* Close the last <font> tag if necessary */
+	if (a != TERM_WHITE) fprintf(htm, "</FONT>");
+
+	fprintf(htm, "</TT></PRE>\n");
+
+	fprintf(htm, "</BODY>\n");
+	fprintf(htm, "</HTML>\n");
+
+	/* Close it */
+	my_fclose(htm);
+}

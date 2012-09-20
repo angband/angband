@@ -2,7 +2,7 @@
 -- Written by Waldemar Celes
 -- TeCGraf/PUC-Rio
 -- Jul 1998
--- $Id: class.lua,v 1.1 2001/10/27 19:35:28 angband Exp $
+-- $Id: class.lua,v 1.2 2003/08/10 11:43:28 rr9 Exp $
 
 -- This code is free software; you can redistribute it and/or modify it.
 -- The software provided hereunder is on an "as is" basis, and
@@ -17,38 +17,69 @@
 --    base = class base, if any (only single inheritance is supported)
 --    {i}  = list of members
 classClass = {
- _base = classContainer,
- type = 'class',
+ classtype = 'class',
  name = '',
  base = '',
+	type = '',
+ btype = '',
+	ctype = '',
 }
-settag(classClass,tolua_tag)
+classClass.__index = classClass
+setmetatable(classClass,classContainer)
 
 
 -- register class
 function classClass:register ()
- output(' tolua_cclass(tolua_S,"'..self.name..'","'..self.base..'");')
+ push(self)
+	if _collect[self.type] then
+		output('#ifdef __cplusplus\n')
+		output(' tolua_cclass(tolua_S,"'..self.lname..'","'..self.type..'","'..self.btype..'",'.._collect[self.type]..');')
+		output('#else\n')
+		output(' tolua_cclass(tolua_S,"'..self.lname..'","'..self.type..'","'..self.btype..'",NULL);')
+		output('#endif\n')
+	else
+		output(' tolua_cclass(tolua_S,"'..self.lname..'","'..self.type..'","'..self.btype..'",NULL);')
+	end
+	output(' tolua_beginmodule(tolua_S,"'..self.lname..'");')
  local i=1
  while self[i] do
   self[i]:register()
   i = i+1
  end
+	output(' tolua_endmodule(tolua_S);')
+	pop()
 end
 
--- unregister class
-function classClass:unregister ()
- output(' lua_pushnil(tolua_S); lua_setglobal(tolua_S,"'..self.name..'");')
+-- return collection requirement
+function classClass:requirecollection (t)
+ push(self)
+	local r = false
+ local i=1
+ while self[i] do
+  r = self[i]:requirecollection(t) or r
+  i = i+1
+ end
+	pop()
+	-- only class that exports destructor can be appropriately collected 
+	if self._delete then
+  t[self.type] = "tolua_collect_" .. gsub(self.type,"::","_")
+		r = true
+	end
+ return r
 end
 
 -- output tags
-function classClass:decltag ()
- self.itype,self.tag = tagvar(self.name);
- self.citype,self.ctag = tagvar(self.name,'const');
+function classClass:decltype ()
+ push(self)
+	self.type = regtype(self.name)
+	self.btype = typevar(self.base)
+	self.ctype = 'const '..self.type
  local i=1
  while self[i] do
-  self[i]:decltag()
+  self[i]:decltype()
   i = i+1
  end
+	pop()
 end
 
 
@@ -57,6 +88,10 @@ function classClass:print (ident,close)
  print(ident.."Class{")
  print(ident.." name = '"..self.name.."',")
  print(ident.." base = '"..self.base.."';")
+ print(ident.." lname = '"..self.lname.."',")
+ print(ident.." type = '"..self.type.."',")
+ print(ident.." btype = '"..self.btype.."',")
+ print(ident.." ctype = '"..self.ctype.."',")
  local i=1
  while self[i] do
   self[i]:print(ident.." ",",")
@@ -67,8 +102,8 @@ end
 
 -- Internal constructor
 function _Class (t)
- t._base = classClass
- settag(t,tolua_tag)
+ setmetatable(t,classClass)
+ t:buildnames()
  append(t)
  return t
 end

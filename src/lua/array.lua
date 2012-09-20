@@ -2,7 +2,7 @@
 -- Written by Waldemar Celes
 -- TeCGraf/PUC-Rio
 -- Jul 1999
--- $Id: array.lua,v 1.1 2001/10/27 19:35:28 angband Exp $
+-- $Id: array.lua,v 1.2 2003/08/10 11:43:28 rr9 Exp $
 
 -- This code is free software; you can redistribute it and/or modify it.
 -- The software provided hereunder is on an "as is" basis, and
@@ -14,10 +14,9 @@
 -- Represents a extern array variable or a public member of a class.
 -- Stores all fields present in a declaration.
 classArray = {
- _base = classDeclaration,
 }
-
-settag(classArray,tolua_tag)
+classArray.__index = classArray
+setmetatable(classArray,classDeclaration)
 
 -- Print method
 function classArray:print (ident,close)
@@ -32,14 +31,20 @@ function classArray:print (ident,close)
  print(ident.."}"..close)
 end
 
+-- check if it is a variable
+function classArray:isvariable ()
+ return true
+end
+
+
 -- get variable value
 function classArray:getvalue (class,static)
  if class and static then
-  return class..'::'..self.name..'[toluaI_index]'
+  return class..'::'..self.name..'[tolua_index]'
  elseif class then
-  return 'self->'..self.name..'[toluaI_index]'
+  return 'self->'..self.name..'[tolua_index]'
  else
-  return self.name..'[toluaI_index]'
+  return self.name..'[tolua_index]'
  end
 end
 
@@ -53,17 +58,15 @@ function classArray:supcode ()
  else
   output("/* get function:",self.name," */")
  end
- self.cgetname = self:cfuncname("toluaI_get")
+ self.cgetname = self:cfuncname("tolua_get")
  output("static int",self.cgetname,"(lua_State* tolua_S)") 
  output("{")
-
- -- declare index
- output(' int toluaI_index;')
+ output(" int tolua_index;")
 
  -- declare self, if the case
  local _,_,static = strfind(self.mod,'^%s*(static)')
  if class and static==nil then
-  output(' ',class,'*','self;')
+  output(' ',self.parent.type,'*','self;')
   output(' lua_pushstring(tolua_S,".self");')
   output(' lua_rawget(tolua_S,1);')
   output(' self = ')
@@ -74,21 +77,29 @@ function classArray:supcode ()
  end
 
  -- check index
- output(' if (!tolua_istype(tolua_S,2,LUA_TNUMBER,0))')
- output('  tolua_error(tolua_S,"invalid type in array indexing.");')
- output(' toluaI_index = (int)tolua_getnumber(tolua_S,2,0)-1;')
- output(' if (toluaI_index<0 || toluaI_index>='..self.dim..')')
- output('  tolua_error(tolua_S,"array indexing out of range.");')
+	output('#ifndef TOLUA_RELEASE\n')
+	output(' {')
+	output('  tolua_Error tolua_err;')
+ output('  if (!tolua_isnumber(tolua_S,2,0,&tolua_err))')
+ output('   tolua_error(tolua_S,"#vinvalid type in array indexing.",&tolua_err);')
+	output(' }')
+	output('#endif\n')
+ output(' tolua_index = (int)tolua_tonumber(tolua_S,2,0)-1;')
+	output('#ifndef TOLUA_RELEASE\n')
+ output(' if (tolua_index<0 || tolua_index>='..self.dim..')')
+ output('  tolua_error(tolua_S,"array indexing out of range.",NULL);')
+	output('#endif\n')
 
  -- return value
  local t,ct = isbasic(self.type)
  if t then
   output(' tolua_push'..t..'(tolua_S,(',ct,')'..self:getvalue(class,static)..');')
  else
+		t = self.type
   if self.ptr == '&' or self.ptr == '' then
-   output(' tolua_pushusertype(tolua_S,(void*)&'..self:getvalue(class,static)..',',self.tag,');')
+   output(' tolua_pushusertype(tolua_S,(void*)&'..self:getvalue(class,static)..',"',t,'");')
   else
-   output(' tolua_pushusertype(tolua_S,(void*)'..self:getvalue(class,static)..',',self.tag,');')
+   output(' tolua_pushusertype(tolua_S,(void*)'..self:getvalue(class,static)..',"',t,'");')
   end
  end
  output(' return 1;')
@@ -96,18 +107,18 @@ function classArray:supcode ()
  output('\n')
 
  -- set function ------------------------------------------------
- if not strfind(self.mod,'const') then
+ if not strfind(self.type,'const') then
   if class then
    output("/* set function:",self.name," of class ",class," */")
   else
    output("/* set function:",self.name," */")
   end
-  self.csetname = self:cfuncname("toluaI_set")
+  self.csetname = self:cfuncname("tolua_set")
   output("static int",self.csetname,"(lua_State* tolua_S)")
   output("{")
 
   -- declare index
-  output(' int toluaI_index;')
+  output(' int tolua_index;')
 
   -- declare self, if the case
   local _,_,static = strfind(self.mod,'^%s*(static)')
@@ -123,22 +134,29 @@ function classArray:supcode ()
   end
  
   -- check index
-  output(' if (!tolua_istype(tolua_S,2,LUA_TNUMBER,0))')
-  output('  tolua_error(tolua_S,"invalid type in array indexing.");')
-  output(' toluaI_index = (int)tolua_getnumber(tolua_S,2,0)-1;')
-  output(' if (toluaI_index<0 || toluaI_index>='..self.dim..')')
-  output('  tolua_error(tolua_S,"array indexing out of range.");')
+	 output('#ifndef TOLUA_RELEASE\n')
+	 output(' {')
+	 output('  tolua_Error tolua_err;')
+  output('  if (!tolua_isnumber(tolua_S,2,0,&tolua_err))')
+  output('   tolua_error(tolua_S,"#vinvalid type in array indexing.",&tolua_err);')
+		output(' }')
+		output('#endif\n')
+  output(' tolua_index = (int)tolua_tonumber(tolua_S,2,0)-1;')
+	 output('#ifndef TOLUA_RELEASE\n')
+  output(' if (tolua_index<0 || tolua_index>='..self.dim..')')
+  output('  tolua_error(tolua_S,"array indexing out of range.",NULL);')
+		output('#endif\n')
 
   -- assign value
   local ptr = ''
   if self.ptr~='' then ptr = '*' end
   output(' ')
   if class and static then
-   output(class..'::'..self.name..'[toluaI_index]')
+   output(class..'::'..self.name..'[tolua_index]')
   elseif class then
-   output('self->'..self.name..'[toluaI_index]')
+   output('self->'..self.name..'[tolua_index]')
   else
-   output(self.name..'[toluaI_index]')
+   output(self.name..'[tolua_index]')
   end
   local t = isbasic(self.type)
   output(' = ')
@@ -151,9 +169,9 @@ function classArray:supcode ()
   local def = 0
   if self.def ~= '' then def = self.def end
   if t then
-   output('tolua_get'..t,'(tolua_S,3,',def,'));')
+   output('tolua_to'..t,'(tolua_S,3,',def,'));')
   else
-   output('tolua_getusertype(tolua_S,3,',def,'));')
+   output('tolua_tousertype(tolua_S,3,',def,'));')
   end
   output(' return 0;')
   output('}')
@@ -163,33 +181,16 @@ function classArray:supcode ()
 end
 
 function classArray:register ()
- local parent = self:inclass() or self:inmodule()
- if parent then
-  if self.csetname then
-   output(' tolua_tablearray(tolua_S,"'..parent..'","'..self.lname..'",'..self.cgetname..','..self.csetname..');')
-  else
-   output(' tolua_tablearray(tolua_S,"'..parent..'","'..self.lname..'",'..self.cgetname..',NULL);')
-  end
+ if self.csetname then
+  output(' tolua_array(tolua_S,"'..self.lname..'",'..self.cgetname..','..self.csetname..');')
  else
-  if self.csetname then
-   output(' tolua_globalarray(tolua_S,"'..self.lname..'",'..self.cgetname..','..self.csetname..');')
-  else
-   output(' tolua_globalarray(tolua_S,"'..self.lname..'",'..self.cgetname..',NULL);')
-  end
+  output(' tolua_array(tolua_S,"'..self.lname..'",'..self.cgetname..',NULL);')
  end
 end
 
-function classArray:unregister ()
- if self:inclass()==nil and self:inmodule()==nil then
-  output(' lua_pushnil(tolua_S); lua_setglobal(tolua_S,"'..self.lname..'");') 
- end
-end 
- 
-
 -- Internal constructor
 function _Array (t)
- t._base = classArray
- settag(t,tolua_tag)
+ setmetatable(t,classArray)
  append(t)
  return t
 end

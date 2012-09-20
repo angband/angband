@@ -1325,36 +1325,8 @@ void object_desc(char *buf, size_t max, const object_type *o_ptr, int pref, int 
 	/* No more details wanted */
 	if (mode < 2) goto object_desc_done;
 
-
-	/* Hack -- Wands and Staffs have charges */
-	if (known &&
-	    ((o_ptr->tval == TV_STAFF) ||
-	     (o_ptr->tval == TV_WAND)))
-	{
-		/* Dump " (N charges)" */
-		object_desc_chr_macro(t, ' ');
-		object_desc_chr_macro(t, p1);
-		object_desc_num_macro(t, o_ptr->pval);
-		object_desc_str_macro(t, " charge");
-		if (o_ptr->pval != 1)
-		{
-			object_desc_chr_macro(t, 's');
-		}
-		object_desc_chr_macro(t, p2);
-	}
-
-	/* Hack -- Rods have a "charging" indicator */
-	else if (known && (o_ptr->tval == TV_ROD))
-	{
-		/* Hack -- Dump " (charging)" if relevant */
-		if (o_ptr->pval)
-		{
-			object_desc_str_macro(t, " (charging)");
-		}
-	}
-
 	/* Hack -- Process Lanterns/Torches */
-	else if ((o_ptr->tval == TV_LITE) && (!artifact_p(o_ptr)))
+	if ((o_ptr->tval == TV_LITE) && (!artifact_p(o_ptr)))
 	{
 		/* Hack -- Turns of light for normal lites */
 		object_desc_str_macro(t, " (with ");
@@ -1455,9 +1427,59 @@ void object_desc(char *buf, size_t max, const object_type *o_ptr, int pref, int 
 		object_desc_chr_macro(t, p2);
 	}
 
+	/* Hack -- Wands and Staffs have charges */
+	if (known &&
+	    ((o_ptr->tval == TV_STAFF) ||
+	     (o_ptr->tval == TV_WAND)))
+	{
+		/* Dump " (N charges)" */
+		object_desc_chr_macro(t, ' ');
+		object_desc_chr_macro(t, p1);
+		object_desc_num_macro(t, o_ptr->pval);
+		object_desc_str_macro(t, " charge");
+		if (o_ptr->pval != 1)
+		{
+			object_desc_chr_macro(t, 's');
+		}
+		object_desc_chr_macro(t, p2);
+	}
+
+	/* Hack -- Rods have a "charging" indicator */
+	else if (known && (o_ptr->tval == TV_ROD))
+	{
+		/* Hack -- Dump " (# charging)" if relevant */
+		if (o_ptr->timeout > 0)
+		{
+			/* Stacks of rods display an exact count of charging rods. */
+			if (o_ptr->number > 1)
+			{
+				/* Paranoia */
+				if (k_ptr->pval == 0) k_ptr->pval = 1;
+
+				/* Find out how many rods are charging, by dividing
+				 * current timeout by each rod's maximum timeout.
+				 * Ensure that any remainder is rounded up.  Display
+				 * very discharged stacks as merely fully discharged.
+				 */
+				power = (o_ptr->timeout + (k_ptr->pval - 1)) / k_ptr->pval;
+
+				if (power > o_ptr->number) power = o_ptr->number;
+
+				/* Display prettily */
+				object_desc_str_macro(t, " (");
+				object_desc_num_macro(t, power);
+				object_desc_str_macro(t, " charging)");
+			}
+			else
+			{
+				/* Single rod */
+				object_desc_str_macro(t, " (charging)");
+			}
+		}
+	}
 
 	/* Indicate "charging" artifacts */
-	if (known && o_ptr->timeout)
+	else if (known && o_ptr->timeout)
 	{
 		/* Hack -- Dump " (charging)" if relevant */
 		object_desc_str_macro(t, " (charging)");
@@ -2341,8 +2363,6 @@ void show_equip(void)
 }
 
 
-#ifdef ALLOW_EASY_FLOOR
-
 /*
  * Display a list of the items on the floor at the given location.
  */
@@ -2443,9 +2463,6 @@ void show_floor(const int *floor_list, int floor_num)
 	/* Make a "shadow" below the list (only if needed) */
 	if (j && (j < 23)) prt("", j + 1, col ? col - 2 : col);
 }
-
-#endif /* ALLOW_EASY_FLOOR */
-
 
 
 /*
@@ -2875,15 +2892,11 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 			p_ptr->command_wrk = (USE_EQUIP);
 		}
 
-#ifdef ALLOW_EASY_FLOOR
-
 		/* Use floor if allowed */
 		else if (easy_floor)
 		{
 			p_ptr->command_wrk = (USE_FLOOR);
 		}
-
-#endif /* ALLOW_EASY_FLOOR */
 
 		/* Hack -- Use (empty) inventory */
 		else
@@ -3001,8 +3014,6 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 			if (allow_floor) strcat(out_val, " - for floor,");
 		}
 
-#ifdef ALLOW_EASY_FLOOR
-
 		/* Viewing floor */
 		else
 		{
@@ -3031,8 +3042,6 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 			/* Append */
 			else if (use_equip) strcat(out_val, " / for Equip,");
 		}
-
-#endif /* ALLOW_EASY_FLOOR */
 
 		/* Finish the prompt */
 		strcat(out_val, " ESC");
@@ -3127,8 +3136,6 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 					break;
 				}
 
-#ifdef ALLOW_EASY_FLOOR
-
 				if (easy_floor)
 				{
 					/* There is only one item */
@@ -3171,8 +3178,6 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 
 					break;
 				}
-
-#endif /* ALLOW_EASY_FLOOR */
 
 				/* Check each legal object */
 				for (i = 0; i < floor_num; ++i)
@@ -3266,8 +3271,6 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 					k = e1;
 				}
 
-#ifdef ALLOW_EASY_FLOOR
-
 				/* Choose "default" floor item */
 				else
 				{
@@ -3279,8 +3282,6 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 
 					k = 0 - floor_list[f1];
 				}
-
-#endif /* ALLOW_EASY_FLOOR */
 
 				/* Validate the item */
 				if (!get_item_okay(k))
@@ -3337,8 +3338,6 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 					}
 				}
 
-#ifdef ALLOW_EASY_FLOOR
-
 				/* Convert letter to floor index */
 				else
 				{
@@ -3353,8 +3352,6 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 					/* Special index */
 					k = 0 - floor_list[k];
 				}
-
-#endif /* ALLOW_EASY_FLOOR */
 
 				/* Validate the item */
 				if (!get_item_okay(k))

@@ -473,14 +473,12 @@ static bool do_cmd_disarm_chest(int y, int x, s16b o_idx)
 }
 
 
-#if defined(ALLOW_EASY_OPEN)
-
 /*
- * Return TRUE if the given feature is an open (or broken) door
+ * Return TRUE if the given feature is an open door
  */
 static bool is_open(int feat)
 {
-	return ((feat == FEAT_OPEN) || (feat == FEAT_BROKEN));
+	return (feat == FEAT_OPEN);
 }
 
 
@@ -604,8 +602,6 @@ static int coords_to_dir(int y, int x)
 {
 	return (motion_dir(p_ptr->py, p_ptr->px, y, x));
 }
-
-#endif /* ALLOW_EASY_OPEN */
 
 
 /*
@@ -745,7 +741,6 @@ void do_cmd_open(void)
 
 	bool more = FALSE;
 
-#ifdef ALLOW_EASY_OPEN
 
 	/* Easy Open */
 	if (easy_open)
@@ -764,8 +759,6 @@ void do_cmd_open(void)
 			p_ptr->command_dir = coords_to_dir(y, x);
 		}
 	}
-
-#endif /* ALLOW_EASY_OPEN */
 
 	/* Get a direction (or abort) */
 	if (!get_rep_dir(&dir)) return;
@@ -920,7 +913,6 @@ void do_cmd_close(void)
 
 	bool more = FALSE;
 
-#ifdef ALLOW_EASY_OPEN
 
 	/* Easy Close */
 	if (easy_open)
@@ -931,8 +923,6 @@ void do_cmd_close(void)
 			p_ptr->command_dir = coords_to_dir(y, x);
 		}
 	}
-
-#endif /* ALLOW_EASY_OPEN */
 
 	/* Get a direction (or abort) */
 	if (!get_rep_dir(&dir)) return;
@@ -1447,7 +1437,6 @@ void do_cmd_disarm(void)
 
 	bool more = FALSE;
 
-#ifdef ALLOW_EASY_OPEN
 
 	/* Easy Disarm */
 	if (easy_open)
@@ -1467,8 +1456,6 @@ void do_cmd_disarm(void)
 				p_ptr->command_dir = coords_to_dir(y, x);
 		}
 	}
-
-#endif /* ALLOW_EASY_OPEN */
 
 	/* Get a direction (or abort) */
 	if (!get_rep_dir(&dir)) return;
@@ -2010,6 +1997,12 @@ static bool do_cmd_walk_test(int y, int x)
 	/* Hack -- walking obtains knowledge XXX XXX */
 	if (!(cave_info[y][x] & (CAVE_MARK))) return (TRUE);
 
+	/* Allow attack on visible monsters */
+	if ((cave_m_idx[y][x] > 0) && (mon_list[cave_m_idx[y][x]].ml))
+	{
+		return TRUE;
+	}
+
 	/* Require open space */
 	if (!cave_floor_bold(y, x))
 	{
@@ -2023,13 +2016,8 @@ static bool do_cmd_walk_test(int y, int x)
 		/* Door */
 		else if (cave_feat[y][x] < FEAT_SECRET)
 		{
-
-#ifdef ALLOW_EASY_ALTER
-
 			/* Hack -- Handle "easy_alter" */
 			if (easy_alter) return (TRUE);
-
-#endif /* ALLOW_EASY_ALTER */
 
 			/* Message */
 			msg_print("There is a door in the way!");
@@ -2734,6 +2722,9 @@ void do_cmd_throw(void)
 
 	/* Obtain a local object */
 	object_copy(i_ptr, o_ptr);
+
+	/* Distribute the charges of rods/wands/staves between the stacks */
+	distribute_charges(o_ptr, i_ptr, 1);
 
 	/* Single object */
 	i_ptr->number = 1;

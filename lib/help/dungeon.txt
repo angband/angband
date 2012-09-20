@@ -128,25 +128,14 @@ Your character will begin his adventure with some basic supplies, and some
 extra gold with which to purchase more supplies at the town stores.
 
 You may enter any open store and haggle with the owner to buy or sell items
-of the appropriate type. The default mode in this game is "auto-haggle": 
-a price is agreed on by the player and the shopkeeper, dependent on the 
-price of the item, the player's charisma, the shopkeeper's "greed" factor 
-(the Black Market shopkeepers are always *VERY* greedy), and the races of 
-the player and shopkeeper. The player may get a better result by choosing 
-to haggle personally (using the options screen to change this): the price 
-given when auto-haggling is 10% worse than the best possible price that 
-can be achieved by manual haggling. However, there is no guarantee of 
-getting to the "best possible" or "final offer" price at all, or even close
-to it, and the store keepers can sometimes take a dim view of people who 
-try to haggle too hard - and throw such people out. This does not happen 
-in auto-haggle mode.
+of the appropriate type. The price that the shopkeeper requests is dependent
+on the price of the item, the player's charisma, the shopkeeper's "greed"
+factor (the Black Market shopkeepers are always *VERY* greedy), and the
+races of the player and shopkeeper.
 
 Once inside a store, you will see the name and race of the store owner, the
 name of the store, the maximum amount of cash that the store owner will pay
-for any one item, and the store inventory, listed along with the prices. If 
-auto-haggle is on, the price listed is the price you pay: if you are haggling 
-manually, the price listed is his starting offer, which you can haggle 
-downwards.
+for any one item, and the store inventory, listed along with the prices.
 
 You will also see an (incomplete) list of available commands.  Note that
 many of the commands which work in the dungeon work in the stores as well,

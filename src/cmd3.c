@@ -389,11 +389,13 @@ void do_cmd_drop(void)
 void do_cmd_destroy(void)
 {
 	int item, amt;
-	int old_number;
 
 	object_type *o_ptr;
 
-	char o_name[80];
+	object_type *i_ptr;
+	object_type object_type_body;
+
+	char o_name[120];
 
 	char out_val[160];
 
@@ -423,11 +425,25 @@ void do_cmd_destroy(void)
 	/* Allow user abort */
 	if (amt <= 0) return;
 
-	/* Describe the object */
-	old_number = o_ptr->number;
-	o_ptr->number = amt;
-	object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
-	o_ptr->number = old_number;
+	/* Get local object */
+	i_ptr = &object_type_body;
+
+	/* Obtain a local object */
+	object_copy(i_ptr, o_ptr);
+
+	if ((o_ptr->tval == TV_WAND) ||
+	    (o_ptr->tval == TV_STAFF) ||
+	    (o_ptr->tval == TV_ROD))
+	{
+		/* Calculate the amount of destroyed charges */
+		i_ptr->pval = o_ptr->pval * amt / o_ptr->number;
+	}
+
+	/* Set quantity */
+	i_ptr->number = amt;
+
+	/* Describe the destroyed object */
+	object_desc(o_name, sizeof(o_name), i_ptr, TRUE, 3);
 
 	/* Verify destruction */
 	if (verify_destroy)
@@ -478,6 +494,9 @@ void do_cmd_destroy(void)
 	/* Message */
 	msg_format("You destroy %s.", o_name);
 
+	/* Reduce the charges of rods/wands/staves */
+	reduce_charges(o_ptr, amt);
+
 	/* Eliminate the item (from the pack) */
 	if (item >= 0)
 	{
@@ -497,7 +516,7 @@ void do_cmd_destroy(void)
 
 
 /*
- * Observe an item which has been *identify*-ed
+ * Observe an item, displaying what is known about it
  */
 void do_cmd_observe(void)
 {
@@ -722,11 +741,44 @@ static void do_cmd_refill_lamp(void)
 		msg_print("Your lamp is full.");
 	}
 
-	/* Use fuel from a lantern */
+	/* Refilled from a latern */
 	if (o_ptr->sval == SV_LITE_LANTERN)
 	{
-		/* No more fuel */
-		o_ptr->pval = 0;
+		/* Unstack if necessary */
+		if (o_ptr->number > 1)
+		{
+			object_type *i_ptr;
+			object_type object_type_body;
+
+			/* Get local object */
+			i_ptr = &object_type_body;
+
+			/* Obtain a local object */
+			object_copy(i_ptr, o_ptr);
+
+			/* Modify quantity */
+			i_ptr->number = 1;
+
+			/* Remove fuel */
+			i_ptr->pval = 0;
+
+			/* Unstack the used item */
+			o_ptr->number--;
+			p_ptr->total_weight -= i_ptr->weight;
+
+			/* Carry or drop */
+			if (item >= 0)
+				item = inven_carry(i_ptr);
+			else
+				drop_near(i_ptr, 0, p_ptr->py, p_ptr->px);
+		}
+
+		/* Empty a single latern */
+		else
+		{
+			/* No more fuel */
+			o_ptr->pval = 0;
+		}
 
 		/* Combine / Reorder the pack (later) */
 		p_ptr->notice |= (PN_COMBINE | PN_REORDER);
@@ -735,20 +787,24 @@ static void do_cmd_refill_lamp(void)
 		p_ptr->window |= (PW_INVEN);
 	}
 
-	/* Decrease the item (from the pack) */
-	else if (item >= 0)
-	{
-		inven_item_increase(item, -1);
-		inven_item_describe(item);
-		inven_item_optimize(item);
-	}
-
-	/* Decrease the item (from the floor) */
+	/* Refilled from a flask */
 	else
 	{
-		floor_item_increase(0 - item, -1);
-		floor_item_describe(0 - item);
-		floor_item_optimize(0 - item);
+		/* Decrease the item (from the pack) */
+		if (item >= 0)
+		{
+			inven_item_increase(item, -1);
+			inven_item_describe(item);
+			inven_item_optimize(item);
+		}
+
+		/* Decrease the item (from the floor) */
+		else
+		{
+			floor_item_increase(0 - item, -1);
+			floor_item_describe(0 - item);
+			floor_item_optimize(0 - item);
+		}
 	}
 
 	/* Recalculate torch */

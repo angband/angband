@@ -114,28 +114,6 @@
 
 
 /*
- * OPTION: for the AFS distributed file system, define this to ensure that
- * the program is secure with respect to the setuid code.  This option has
- * not been tested (to the best of my knowledge).  This option may require
- * some weird tricks with "player_uid" and such involving "defines".
- * Note that this option used the AFS library routines Authenticate(),
- * bePlayer(), beGames() to enforce the proper priviledges.
- * You may need to turn "SAFE_SETUID" off to use this option.
- */
-/* #define SECURE */
-
-
-
-
-/*
- * OPTION: Verify savefile Checksums (Angband 2.7.0 and up)
- * This option can help prevent "corruption" of savefiles, and also
- * stop intentional modification by amateur users.
- */
-#define VERIFY_CHECKSUMS
-
-
-/*
  * OPTION: Forbid the use of "fiddled" savefiles.  As far as I can tell,
  * a fiddled savefile is one with an internal timestamp different from
  * the actual timestamp.  Thus, turning this option on forbids one from
@@ -225,22 +203,6 @@
  * OPTION: Allow repeating of last command.
  */
 #define ALLOW_REPEAT
-
-
-/*
- * OPTION: Allow open/disarm/close without direction.
- */
-#define ALLOW_EASY_OPEN
-
-/*
- * OPTION: Allow open/disarm doors/traps on motion.
- */
-#define ALLOW_EASY_ALTER
-
-/*
- * OPTION: Make floor stacks easy.
- */
-#define ALLOW_EASY_FLOOR
 
 
 /*
@@ -416,6 +378,15 @@
 
 
 /*
+ * OPTION: Create and use a hidden directory in the users home directory
+ * for storing save files and high-scores
+ */
+#ifdef PRIVATE_USER_PATH
+/* # define USE_PRIVATE_SAVE_PATH */
+#endif /* PRIVATE_USER_PATH */
+
+
+/*
  * On multiuser systems, add the "uid" to savefile names
  */
 #ifdef SET_UID
@@ -439,12 +410,6 @@
  * OPTION: Check the "time" against "lib/file/hours.txt"
  */
 /* #define CHECK_TIME */
-
-/*
- * OPTION: Check the "load" against "lib/file/load.txt"
- * This may require the 'rpcsvs' library
- */
-/* #define CHECK_LOAD */
 
 
 /*
@@ -491,6 +456,19 @@
 #define DEFAULT_X11_FONT_6		"5x8"
 #define DEFAULT_X11_FONT_7		"5x8"
 
+
+/*
+ * Hack -- Mach-O (native binary format of OS X) is basically a Un*x
+ * but has Mac OS/Windows-like user interface
+ */
+#ifdef MACH_O_CARBON
+# ifdef PRIVATE_USER_PATH
+#  undef PRIVATE_USER_PATH
+# endif
+# ifdef SAVEFILE_USE_UID
+#  undef SAVEFILE_USE_UID
+# endif
+#endif
 
 /*
  * Hack -- Special "ancient machine" versions

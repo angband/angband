@@ -548,7 +548,113 @@ s16b get_mon_num(int level)
 }
 
 
+/*
+ * Display visible monsters in a window
+ */
+void display_monlist(void)
+{
+	int idx, n;
+	int line = 0;
 
+	char *m_name;
+	char buf[80];
+
+	monster_type *m_ptr;
+	monster_race *r_ptr;
+
+	u16b *race_counts;
+
+
+	/* Allocate the array */
+	C_MAKE(race_counts, z_info->r_max, u16b);
+
+	/* Iterate over mon_list */
+	for (idx = 1; idx < mon_max; idx++)
+	{
+		m_ptr = &mon_list[idx];
+
+		/* Only visible monsters */
+		if (!m_ptr->ml) continue;
+
+		/* Bump the count for this race */
+		race_counts[m_ptr->r_idx]++;
+	}
+
+
+	/* Iterate over mon_list ( again :-/ ) */
+	for (idx = 1; idx < mon_max; idx++)
+	{
+		m_ptr = &mon_list[idx];
+
+		/* Only visible monsters */
+		if (!m_ptr->ml) continue;
+
+		/* Do each race only once */
+		if (!race_counts[m_ptr->r_idx]) continue;
+
+		/* Get monster race */
+		r_ptr = &r_info[m_ptr->r_idx];
+
+		/* Get the monster name */
+		m_name = r_name + r_ptr->name;
+
+		/* Obtain the length of the description */
+		n = strlen(m_name);
+
+		/* Display the entry itself */
+		Term_putstr(0, line, n, TERM_WHITE, m_name);
+
+		/* Append the "standard" attr/char info */
+		Term_addstr(-1, TERM_WHITE, " ('");
+		Term_addch(r_ptr->d_attr, r_ptr->d_char);
+		Term_addstr(-1, TERM_WHITE, "')");
+		n += 6;
+
+		/* Append the "optional" attr/char info */
+		Term_addstr(-1, TERM_WHITE, "/('");
+
+		Term_addch(r_ptr->x_attr, r_ptr->x_char);
+
+		if (use_bigtile)
+		{
+			if (r_ptr->x_attr & 0x80)
+				Term_addch(255, -1);
+			else
+				Term_addch(0, ' ');
+
+			n++;
+		}
+
+		Term_addstr(-1, TERM_WHITE, "'):");
+		n += 7;
+
+		/* Add race count */
+		sprintf(buf, "%d", race_counts[m_ptr->r_idx]);
+		Term_addch(TERM_WHITE, '[');
+		Term_addstr(strlen(buf), TERM_WHITE, buf);
+		Term_addch(TERM_WHITE, ']');
+		n += strlen(buf) + 2;
+
+		/* Don't do this race again */
+		race_counts[m_ptr->r_idx] = 0;
+
+		/* Erase the rest of the line */
+		Term_erase(n, line, 255);
+
+		/* Bump line counter */
+		line++;
+	}
+
+	/* Free the race counters */
+	FREE(race_counts);
+
+	/* Erase the rest of the window */
+	for (idx = line; idx < Term->hgt; idx++)
+	{
+		/* Erase the line */
+		Term_erase(0, idx, 255);
+	}
+}
 
 
 /*
@@ -1028,6 +1134,9 @@ void update_mon(int m_idx, bool full)
 
 			/* Disturb on appearance */
 			if (disturb_move) disturb(1, 0);
+
+			/* Window stuff */
+			p_ptr->window |= PW_MONLIST;
 		}
 	}
 
@@ -1048,6 +1157,9 @@ void update_mon(int m_idx, bool full)
 
 			/* Disturb on disappearance */
 			if (disturb_move) disturb(1, 0);
+
+			/* Window stuff */
+			p_ptr->window |= PW_MONLIST;
 		}
 	}
 

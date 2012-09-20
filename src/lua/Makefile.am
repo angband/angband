@@ -6,25 +6,25 @@ noinst_PROGRAMS = tolua
 
 liblua_a_SOURCES = \
   lapi.c ldebug.c lmem.c lstrlib.c lvm.c \
-  tolua_lb.c lauxlib.c ldo.c lobject.c ltable.c \
-  lzio.c tolua_rg.c lbaselib.c lfunc.c lparser.c \
-  tolua_bd.c tolua_tm.c lcode.c lgc.c \
-  lstate.c ltm.c tolua_eh.c tolua_tt.c ldblib.c \
-  llex.c lstring.c lundump.c tolua_gp.c \
-  lapi.h lauxlib.h lcode.h ldebug.h ldo.h lfunc.h \
-  lgc.h llex.h llimits.h lmem.h lobject.h lopcodes.h \
-  lparser.h lstate.h lstring.h ltable.h ltm.h lua.h \
-  luadebug.h lualib.h lundump.h lvm.h lzio.h \
-  tolua.h tolua_eh.h tolua_rg.h tolua_tm.h \
-  tolua_tt.h
+  lauxlib.c ldo.c lobject.c ltable.c lzio.c \
+  lbaselib.c lfunc.c lparser.c lcode.c lgc.c \
+  lopcodes.c lstate.c ltm.c  ldblib.c llex.c \
+  lstring.c ldump.c lundump.c ltablib.c lapi.h \
+  lauxlib.h lcode.h ldebug.h ldo.h lfunc.h \
+  lgc.h llex.h llimits.h lmem.h lobject.h \
+  lopcodes.h lparser.h lstate.h lstring.h ltable.h \
+  ltm.h lua.h lualib.h lundump.h lvm.h \
+  lzio.h \
+  tolua_map.c tolua_is.c tolua_to.c tolua_push.c tolua_event.c \
+  tolua.h tolua_event.h
 
 tolua_SOURCES = \
-  tolua.c tolualua.c liolib.c
+  tolua.c liolib.c toluabind.c
 
 EXTRA_tolua_SOURCES = \
   array.lua basic.lua class.lua clean.lua code.lua \
   container.lua declaration.lua define.lua doit.lua \
-  enumerate.lua feature.lua function.lua lua2c.lua \
+  enumerate.lua feature.lua function.lua \
   module.lua operator.lua package.lua typedef.lua \
   variable.lua verbatim.lua
 

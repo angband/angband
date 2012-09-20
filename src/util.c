@@ -34,10 +34,6 @@ int usleep(unsigned long usecs)
 #endif
 
 
-	/* Was: int readfds, writefds, exceptfds; */
-	/* Was: readfds = writefds = exceptfds = 0; */
-
-
 	/* Paranoia -- No excessive sleeping */
 	if (usecs > 4000000L) core("Illegal usleep() call");
 
@@ -210,7 +206,14 @@ errr path_parse(char *buf, size_t max, cptr file)
 errr path_parse(char *buf, size_t max, cptr file)
 {
 	/* Accept the filename */
-	strnfmt(buf, max, "%s", file);
+	my_strcpy(buf, file, max);
+
+# if defined(MAC_MPW) && defined(CARBON)
+
+	/* Fix it according to the current operating system */
+	convert_pathname(buf);
+
+# endif
 
 	/* Success */
 	return (0);
@@ -237,8 +240,8 @@ static errr path_temp(char *buf, size_t max)
 	/* Oops */
 	if (!s) return (-1);
 
-	/* Format to length */
-	strnfmt(buf, max, "%s", s);
+	/* Copy to buffer */
+	my_strcpy(buf, s, max);
 
 	/* Success */
 	return (0);
@@ -266,21 +269,21 @@ errr path_build(char *buf, size_t max, cptr path, cptr file)
 	if (file[0] == '~')
 	{
 		/* Use the file itself */
-		strnfmt(buf, max, "%s", file);
+		my_strcpy(buf, file, max);
 	}
 
 	/* Absolute file, on "normal" systems */
 	else if (prefix(file, PATH_SEP) && !streq(PATH_SEP, ""))
 	{
 		/* Use the file itself */
-		strnfmt(buf, max, "%s", file);
+		my_strcpy(buf, file, max);
 	}
 
 	/* No path given */
 	else if (!path[0])
 	{
 		/* Use the file itself */
-		strnfmt(buf, max, "%s", file);
+		my_strcpy(buf, file, max);
 	}
 
 	/* Path and File */
@@ -301,12 +304,23 @@ errr path_build(char *buf, size_t max, cptr path, cptr file)
 FILE *my_fopen(cptr file, cptr mode)
 {
 	char buf[1024];
+	FILE *fff;
 
 	/* Hack -- Try to parse the path */
 	if (path_parse(buf, sizeof(buf), file)) return (NULL);
 
 	/* Attempt to fopen the file anyway */
-	return (fopen(buf, mode));
+	fff = fopen(buf, mode);
+
+#if defined(MAC_MPW) || defined(MACH_O_CARBON)
+
+	/* Set file creator and type */
+	if (fff && strchr(mode, 'w')) fsetfileinfo(buf, _fcreator, _ftype);
+
+#endif
+
+	/* Return open file or NULL */
+	return (fff);
 }
 
 
@@ -368,56 +382,109 @@ FILE *my_fopen_temp(char *buf, size_t max)
  *
  * Process tabs, strip internal non-printables
  */
+#define TAB_COLUMNS   8
+
 errr my_fgets(FILE *fff, char *buf, size_t n)
 {
-	size_t i = 0;
+	u16b i = 0;
+	char *s = buf;
+	int len;
 
-	char *s;
 
-	char tmp[1024];
+	/* Paranoia */
+	if (n <= 0) return (1);
 
-	/* Read a line */
-	if (fgets(tmp, (int)sizeof(tmp), fff))
+	/* Enforce historical upper bound */
+	if (n > 1024) n = 1024;
+
+	/* Leave a byte for terminating null */
+	len = n - 1;
+
+	/* While there's room left in the buffer */
+	while (i < len)
 	{
-		/* Convert weirdness */
-		for (s = tmp; *s; s++)
+		int c;
+
+		/*
+		 * Read next character - stdio buffers I/O, so there's no
+		 * need to buffer it again using fgets.
+		 */
+		c = fgetc(fff);
+
+		/* End of file */
+		if (c == EOF)
 		{
-			/* Handle newline */
-			if (*s == '\n')
+			/* No characters read -- signal error */
+			if (i == 0) break;
+
+			/*
+			 * Be nice to DOS/Windows, where a last line of a file isn't
+			 * always \n terminated.
+			 */
+			*s = '\0';
+
+			/* Success */
+			return (0);
+		}
+
+#if defined(MACINTOSH) || defined(MACH_O_CARBON)
+
+		/*
+		 * Be nice to the Macintosh, where a file can have Mac or Unix
+		 * end of line, especially since the introduction of OS X.
+		 * MPW tools were also very tolerant to the Unix EOL.
+		 */
+		if (c == '\r') c = '\n';
+
+#endif /* MACINTOSH || MACH_O_CARBON */
+
+		/* End of line */
+		if (c == '\n')
+		{
+			/* Null terminate */
+			*s = '\0';
+
+			/* Success */
+			return (0);
+		}
+
+		/* Expand a tab into spaces */
+		if (c == '\t')
+		{
+			int tabstop;
+
+			/* Next tab stop */
+			tabstop = ((i + TAB_COLUMNS) / TAB_COLUMNS) * TAB_COLUMNS;
+
+			/* Bounds check */
+			if (tabstop >= len) break;
+
+			/* Convert it to spaces */
+			while (i < tabstop)
 			{
-				/* Terminate */
-				buf[i] = '\0';
+				/* Store space */
+				*s++ = ' ';
 
-				/* Success */
-				return (0);
+				/* Count */
+				i++;
 			}
+		}
 
-			/* Handle tabs */
-			else if (*s == '\t')
-			{
-				/* Hack -- require room */
-				if (i + 8 >= n) break;
+		/* Ignore non-printables */
+		else if (isprint(c))
+		{
+			/* Store character in the buffer */
+			*s++ = c;
 
-				/* Append 1-8 spaces */
-				do { buf[i++] = ' '; } while (i % 8);
-			}
-
-			/* Handle printables */
-			else if (isprint((unsigned char)*s))
-			{
-				/* Copy */
-				buf[i++] = *s;
-
-				/* Check length */
-				if (i >= n) break;
-			}
+			/* Count number of characters in the buffer */
+			i++;
 		}
 	}
 
-	/* Nothing */
+	/* Buffer overflow or EOF - return an empty string */
 	buf[0] = '\0';
 
-	/* Failure */
+	/* Error */
 	return (1);
 }
 
@@ -536,6 +603,7 @@ errr fd_copy(cptr file, cptr what)
 int fd_make(cptr file, int mode)
 {
 	char buf[1024];
+	int fd;
 
 	/* Hack -- Try to parse the path */
 	if (path_parse(buf, sizeof(buf), file)) return (-1);
@@ -543,15 +611,24 @@ int fd_make(cptr file, int mode)
 #if defined(MACINTOSH)
 
 	/* Create the file, fail if exists, write-only, binary */
-	return (open(buf, O_CREAT | O_EXCL | O_WRONLY | O_BINARY));
+	fd = open(buf, O_CREAT | O_EXCL | O_WRONLY | O_BINARY);
 
 #else
 
 	/* Create the file, fail if exists, write-only, binary */
-	return (open(buf, O_CREAT | O_EXCL | O_WRONLY | O_BINARY, mode));
+	fd = open(buf, O_CREAT | O_EXCL | O_WRONLY | O_BINARY, mode);
 
 #endif
 
+#if defined(MAC_MPW) || defined(MACH_O_CARBON)
+
+	/* Set file creator and type */
+	if (fd >= 0) fsetfileinfo(buf, _fcreator, _ftype);
+
+#endif
+
+	/* Return descriptor */
+	return (fd);
 }
 
 
@@ -754,7 +831,8 @@ errr fd_close(int fd)
 }
 
 
-#ifdef CHECK_MODIFICATION_TIME
+#if defined(CHECK_MODIFICATION_TIME) && !defined(MAC_MPW)
+
 # ifdef MACINTOSH
 #  include <stat.h>
 # else
@@ -824,6 +902,131 @@ static int dehex(char c)
 
 
 /*
+ * Transform macro trigger name ('\[alt-D]' etc..)
+ * into macro trigger key code ('^_O_64\r' or etc..)
+ */
+static size_t trigger_text_to_ascii(char *buf, size_t max, cptr *strptr)
+{
+	cptr str = *strptr;
+	bool mod_status[MAX_MACRO_MOD];
+
+	int i, len = 0;
+	int shiftstatus = 0;
+	cptr key_code;
+	
+	size_t current_len = strlen(buf);
+
+	/* No definition of trigger names */
+	if (macro_template == NULL) return 0;
+
+	/* Initialize modifier key status */	
+	for (i = 0; macro_modifier_chr[i]; i++)
+		mod_status[i] = FALSE;
+
+	str++;
+
+	/* Examine modifier keys */
+	while (1)
+	{
+		/* Look for modifier key name */
+		for (i = 0; macro_modifier_chr[i]; i++)
+		{
+			len = strlen(macro_modifier_name[i]);
+
+			if (!my_strnicmp(str, macro_modifier_name[i], len))
+				break;
+		}
+
+		/* None found? */
+		if (!macro_modifier_chr[i]) break;
+
+		/* Proceed */
+		str += len;
+
+		/* This modifier key is pressed */
+		mod_status[i] = TRUE;
+
+		/* Shift key might be going to change keycode */
+		if ('S' == macro_modifier_chr[i])
+			shiftstatus = 1;
+	}
+
+	/* Look for trigger name */
+	for (i = 0; i < max_macrotrigger; i++)
+	{
+		len = strlen(macro_trigger_name[i]);
+
+		/* Found it and it is ending with ']' */
+		if (!my_strnicmp(str, macro_trigger_name[i], len) && (']' == str[len]))
+			break;
+	}
+
+	/* Invalid trigger name? */
+	if (i == max_macrotrigger)
+	{
+		/*
+		 * If this invalid trigger name is ending with ']',
+		 * skip whole of it to avoid defining strange macro trigger
+		 */
+		str = strchr(str, ']');
+
+		if (str)
+		{
+			strnfcat(buf, max, &current_len, "\x1F\r");
+
+			*strptr = str; /* where **strptr == ']' */
+		}
+
+		return current_len;
+	}
+
+	/* Get keycode for this trigger name */
+	key_code = macro_trigger_keycode[shiftstatus][i];
+
+	/* Proceed */
+	str += len;
+
+	/* Begin with '^_' */
+	strnfcat(buf, max, &current_len, "\x1F");
+
+	/* Write key code style trigger using template */
+	for (i = 0; macro_template[i]; i++)
+	{
+		char ch = macro_template[i];
+		int j;
+
+		switch(ch)
+		{
+		case '&':
+			/* Modifier key character */
+			for (j = 0; macro_modifier_chr[j]; j++)
+			{
+				if (mod_status[j])
+					strnfcat(buf, max, &current_len, "%c", macro_modifier_chr[j]);
+			}
+			break;
+		case '#':
+			/* Key code */
+			strnfcat(buf, max, &current_len, "%s", key_code);
+			break;
+		default:
+			/* Fixed string */
+			strnfcat(buf, max, &current_len, "%c", ch);
+			break;
+		}
+	}
+
+	/* End with '\r' */
+	strnfcat(buf, max, &current_len, "\r");
+
+	/* Succeed */
+	*strptr = str; /* where **strptr == ']' */
+	
+	return current_len;
+}
+
+
+/*
  * Hack -- convert a printable string into real ascii
  *
  * This function will not work on non-ascii systems.
@@ -849,8 +1052,17 @@ void text_to_ascii(char *buf, size_t len, cptr str)
 			/* Paranoia */
 			if (!(*str)) break;
 
+			/* Macro Trigger */
+			if (*str == '[')
+			{
+				/* Terminate before appending the trigger */
+				*s = '\0';
+
+				s += trigger_text_to_ascii(buf, len, &str);
+			}
+
 			/* Hack -- simple way to specify Escape */
-			if (*str == 'e')
+			else if (*str == 'e')
 			{
 				*s++ = ESCAPE;
 			}
@@ -906,8 +1118,17 @@ void text_to_ascii(char *buf, size_t len, cptr str)
 			/* Hack -- Hex-mode */
 			else if (*str == 'x')
 			{
-				*s = 16 * dehex(*++str);
-				*s++ += dehex(*++str);
+				if (isxdigit((unsigned char)(*(str + 1))) &&
+				    isxdigit((unsigned char)(*(str + 2))))
+				{
+					*s = 16 * dehex(*++str);
+					*s++ += dehex(*++str);
+				}
+				else
+				{
+					/* HACK - Invalid hex number */
+					*s++ = '?';
+				}
 			}
 
 			/* Oops */
@@ -941,6 +1162,78 @@ void text_to_ascii(char *buf, size_t len, cptr str)
 
 	/* Terminate */
 	*s = '\0';
+}
+
+
+/*
+ * Transform macro trigger key code ('^_O_64\r' or etc..) 
+ * into macro trigger name ('\[alt-D]' etc..)
+ */
+static size_t trigger_ascii_to_text(char *buf, size_t max, cptr *strptr)
+{
+	cptr str = *strptr;
+	char key_code[100];
+	int i;
+	cptr tmp;
+	size_t current_len = strlen(buf);
+	
+
+	/* No definition of trigger names */
+	if (macro_template == NULL) return 0;
+
+	/* Trigger name will be written as '\[name]' */
+	strnfcat(buf, max, &current_len, "\\[");
+
+	/* Use template to read key-code style trigger */
+	for (i = 0; macro_template[i]; i++)
+	{
+		int j;
+		char ch = macro_template[i];
+
+		switch(ch)
+		{
+		case '&':
+			/* Read modifier */
+			while ((tmp = strchr(macro_modifier_chr, *str)))
+			{
+				j = (int)(tmp - macro_modifier_chr);
+				strnfcat(buf, max, &current_len, "%s", macro_modifier_name[j]);
+				str++;
+			}
+			break;
+		case '#':
+			/* Read key code */
+			for (j = 0; *str && (*str != '\r') && (j < sizeof(key_code) - 1); j++)
+				key_code[j] = *str++;
+			key_code[j] = '\0';
+			break;
+		default:
+			/* Skip fixed strings */
+			if (ch != *str) return 0;
+			str++;
+		}
+	}
+
+	/* Key code style triggers always end with '\r' */
+	if (*str++ != '\r') return 0;
+
+	/* Look for trigger name with given keycode (normal or shifted keycode) */
+	for (i = 0; i < max_macrotrigger; i++)
+	{
+		if (!my_stricmp(key_code, macro_trigger_keycode[0][i]) ||
+		    !my_stricmp(key_code, macro_trigger_keycode[1][i]))
+			break;
+	}
+
+	/* Not found? */
+	if (i == max_macrotrigger) return 0;
+
+	/* Write trigger name + "]" */
+	strnfcat(buf, max, &current_len, "%s]", macro_trigger_name[i]);
+
+	/* Succeed */
+	*strptr = str;
+	return current_len;
 }
 
 
@@ -1006,6 +1299,25 @@ void ascii_to_text(char *buf, size_t len, cptr str)
 		{
 			*s++ = '\\';
 			*s++ = '^';
+		}
+		/* Macro Trigger */
+		else if (i == 31)
+		{
+			size_t offset;
+
+			/* Terminate before appending the trigger */
+			*s = '\0';
+
+			offset = trigger_ascii_to_text(buf, len, &str);
+			
+			if (offset == 0)
+			{
+				/* No trigger found */
+				*s++ = '^';
+				*s++ = '_';
+			}
+			else
+				s += offset;
 		}
 		else if (i < 32)
 		{
@@ -1243,6 +1555,81 @@ errr macro_init(void)
 }
 
 
+/*
+ * Free the macro package
+ */
+errr macro_free(void)
+{
+	int i, j;
+
+	/* Free the macros */
+	for (i = 0; i < macro__num; ++i)
+	{
+		string_free(macro__pat[i]);
+		string_free(macro__act[i]);
+	}
+
+	FREE((void*)macro__pat);
+	FREE((void*)macro__act);
+
+	/* Free the keymaps */
+	for (i = 0; i < KEYMAP_MODES; ++i)
+	{
+		for (j = 0; j < (int)N_ELEMENTS(keymap_act[i]); ++j)
+		{
+			string_free(keymap_act[i][j]);
+			keymap_act[i][j] = NULL;
+		}
+	}
+
+	/* Success */
+	return (0);
+}
+
+
+/*
+ * Free the macro trigger package
+ */
+errr macro_trigger_free(void)
+{
+	int i;
+	int num;
+
+	if (macro_template != NULL)
+	{
+		/* Free the template */
+		string_free(macro_template);
+		macro_template = NULL;
+
+		/* Free the trigger names and keycodes */
+		for (i = 0; i < max_macrotrigger; i++)
+		{
+			string_free(macro_trigger_name[i]);
+
+			string_free(macro_trigger_keycode[0][i]);
+			string_free(macro_trigger_keycode[1][i]);
+		}
+
+		/* No more macro triggers */
+		max_macrotrigger = 0;
+
+		/* Count modifier-characters */
+		num = strlen(macro_modifier_chr);
+
+		/* Free modifier names */
+		for (i = 0; i < num; i++)
+		{
+			string_free(macro_modifier_name[i]);
+		}
+
+		/* Free modifier chars */
+		string_free(macro_modifier_chr);
+		macro_modifier_chr = NULL;
+	}
+
+	/* Success */
+	return (0);
+}
 
 
 /*
@@ -1767,7 +2154,16 @@ void bell(cptr reason)
 	Term_fresh();
 
 	/* Hack -- memorize the reason if possible */
-	if (character_generated && reason) message_add(reason, MSG_BELL);
+	if (character_generated && reason)
+	{
+		message_add(reason, MSG_BELL);
+
+		/* Window stuff */
+		p_ptr->window |= (PW_MESSAGE);
+
+		/* Force window redraw */
+		window_stuff();
+	}
 
 	/* Make a bell noise (if allowed) */
 	if (ring_bell) Term_xtra(TERM_XTRA_NOISE, 0);
@@ -2425,15 +2821,18 @@ static void msg_flush(int x)
 	/* Pause for response */
 	Term_putstr(x, 0, -1, a, "-more-");
 
-	/* Get an acceptable keypress */
-	while (1)
+	if (!auto_more)
 	{
-		char ch;
-		ch = inkey();
-		if (quick_messages) break;
-		if ((ch == ESCAPE) || (ch == ' ')) break;
-		if ((ch == '\n') || (ch == '\r')) break;
-		bell("Illegal response to a 'more' prompt!");
+		/* Get an acceptable keypress */
+		while (1)
+		{
+			char ch;
+			ch = inkey();
+			if (quick_messages) break;
+			if ((ch == ESCAPE) || (ch == ' ')) break;
+			if ((ch == '\n') || (ch == '\r')) break;
+			bell("Illegal response to a 'more' prompt!");
+		}
 	}
 
 	/* Clear the line */
@@ -2514,18 +2913,6 @@ static void msg_print_aux(u16b type, cptr msg)
 
 	/* Window stuff */
 	p_ptr->window |= (PW_MESSAGE);
-
-
-	/* Handle "auto_more" */
-	if (auto_more)
-	{
-		/* Force window update */
-		window_stuff();
-
-		/* Done */
-		return;
-	}
-
 
 	/* Copy it */
 	my_strcpy(buf, msg, sizeof(buf));
@@ -2900,7 +3287,8 @@ void text_out_to_screen(byte a, cptr str)
  * to an open text-file.
  *
  * Long lines will be wrapped at text_out_wrap, or at column 75 if that
- * is not set; or at a newline character.
+ * is not set; or at a newline character.  Note that punctuation can
+ * sometimes be placed one column beyond the wrap limit.
  *
  * You must be careful to end all file output with a newline character
  * to "flush" the stored line position.
@@ -2925,7 +3313,7 @@ void text_out_to_file(byte a, cptr str)
 		char ch;
 		int n = 0;
 		int len = wrap - pos;
-		int l_space = 0;
+		int l_space = -1;
 
 		/* If we are at the start of the line... */
 		if (pos == 0)
@@ -2951,12 +3339,17 @@ void text_out_to_file(byte a, cptr str)
 		}
 
 		/* If we have encountered no spaces */
-		if ((l_space == 0) && (n == len))
+		if ((l_space == -1) && (n == len))
 		{
 			/* If we are at the start of a new line */
 			if (pos == text_out_indent)
 			{
 				len = n;
+			}
+			/* HACK - Output punctuation at the end of the line */
+			else if ((s[0] == ' ') || (s[0] == ',') || (s[0] == '.'))
+			{
+				len = 1;
 			}
 			else
 			{
@@ -3569,8 +3962,9 @@ void request_command(bool shopping)
 		/* Apply keymap if not inside a keymap already */
 		if (act && !inkey_next)
 		{
-			/* Install the keymap (limited buffer size) */
-			strnfmt(request_command_buffer, 256, "%s", act);
+			/* Install the keymap */
+			my_strcpy(request_command_buffer, act,
+			          sizeof(request_command_buffer));
 
 			/* Start using the buffer */
 			inkey_next = request_command_buffer;

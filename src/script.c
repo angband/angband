@@ -11,7 +11,6 @@
 #include "lua/lualib.h"
 #include "lua/lauxlib.h"
 #include "lua/tolua.h"
-#include "lua/luadebug.h"
 
 
 /*
@@ -25,10 +24,7 @@ static int xxx_build_script_path(lua_State *L)
 	char buf[1024];
 	cptr filename;
 
-	if (!tolua_istype(L, 1, LUA_TSTRING,0))
-		tolua_error(L, "#vinvalid type in variable assignment.");
-
-	filename = tolua_getstring(L, 1, 0);
+	filename = luaL_checkstring(L, 1);
 
 	path_build(buf, sizeof(buf), ANGBAND_DIR_SCRIPT, filename);
 
@@ -44,16 +40,17 @@ static int xxx_object_desc(lua_State *L)
 	int pref, mode;
 	object_type *o_ptr;
 
-	if (!tolua_istype(L, 1, tolua_tag(L, "object_type"), 0))
+	/* Get the arguments */
+	o_ptr = tolua_tousertype(L, 1, 0);
+
+	if (!o_ptr)
 	{
-		tolua_error(L, "#ferror in function 'object_desc'.");
+		tolua_error(L, "#ferror in function 'object_desc'.", NULL);
 		return 0;
 	}
 
-	/* Get the arguments */
-	o_ptr = tolua_getusertype(L, 1, 0);
-	pref = (int)luaL_check_number(L, 2);
-	mode = (int)luaL_check_number(L, 3);
+	pref = (int)luaL_checknumber(L, 2);
+	mode = (int)luaL_checknumber(L, 3);
 
 	/* Get the description */
 	object_desc(buf, sizeof(buf), o_ptr, pref, mode);
@@ -70,10 +67,11 @@ static const struct luaL_reg anglib[] =
 {
 	{"build_script_path", xxx_build_script_path},
 	{"object_desc", xxx_object_desc},
+	{NULL, NULL},
 };
 
 
-#define luaL_check_bit(L, n)  ((long)luaL_check_number(L, n))
+#define luaL_check_bit(L, n)  ((long)luaL_checknumber(L, n))
 #define luaL_check_ubit(L, n) ((unsigned long)luaL_check_bit(L, n))
 
 static int int_not(lua_State* L)
@@ -146,6 +144,7 @@ static const struct luaL_reg bitlib[] =
 	{"lshift",  int_lshift},
 	{"rshift",  int_rshift},
 	{"arshift", int_arshift},
+	{NULL,      NULL}
 };
 
 
@@ -199,7 +198,7 @@ static bool call_hook(cptr hook, cptr fmt, cptr ret, ...)
 				num_args++;
 				break;
 			case 'b':
-				tolua_pushbool(L, va_arg(ap, int));
+				tolua_pushboolean(L, va_arg(ap, int));
 				num_args++;
 				break;
 			case 's':
@@ -207,7 +206,7 @@ static bool call_hook(cptr hook, cptr fmt, cptr ret, ...)
 				num_args++;
 				break;
 			case 'O':
-				tolua_pushusertype(L, va_arg(ap, object_type*), tolua_tag(L, "object_type"));
+				tolua_pushusertype(L, va_arg(ap, object_type*), "object_type");
 				num_args++;
 				break;
 			case '(':
@@ -220,8 +219,12 @@ static bool call_hook(cptr hook, cptr fmt, cptr ret, ...)
 	/* HACK - Count the return values */
 	num_res = strlen(ret);
 
+	lua_pushliteral(L, "_TRACEBACK");
+	lua_rawget(L, LUA_GLOBALSINDEX);  /* get traceback function */
+	lua_insert(L, 1);  /* put it under chunk and args */
+
 	/* Call the function */
-	if (lua_call(L, num_args + 1, num_res))
+	if (lua_pcall(L, num_args + 1, num_res, 1))
 	{
 		/* An error occured */
 		va_end(ap);
@@ -238,7 +241,7 @@ static bool call_hook(cptr hook, cptr fmt, cptr ret, ...)
 				int *tmp = va_arg(ap, int*);
 
 				if (lua_isnumber(L, -num_res + i))
-					*tmp = tolua_getnumber(L, -num_res + i, 0);
+					*tmp = tolua_tonumber(L, -num_res + i, 0);
 				break;
 			}
 			case 'l':
@@ -246,34 +249,35 @@ static bool call_hook(cptr hook, cptr fmt, cptr ret, ...)
 				long *tmp = va_arg(ap, long*);
 
 				if (lua_isnumber(L, -num_res + i))
-					*tmp = tolua_getnumber(L, -num_res + i, 0);
+					*tmp = tolua_tonumber(L, -num_res + i, 0);
 				break;
 			}
 			case 'b':
 			{
 				bool *tmp = va_arg(ap, bool*);
-				*tmp = tolua_getbool(L, -num_res + i, FALSE);
+				*tmp = tolua_toboolean(L, -num_res + i, FALSE);
 				break;
 			}
 			case 's':
 			{
 				cptr *tmp = va_arg(ap, cptr*);
 				if (lua_isstring(L, -num_res + i))
-					*tmp = tolua_getstring(L, -num_res + i, "");
+					*tmp = tolua_tostring(L, -num_res + i, "");
 				break;
 			}
 			case 'O':
 			{
+				tolua_Error tolua_err;
 				object_type **tmp = va_arg(ap, object_type**);
-				if (tolua_istype(L, -num_res + i, tolua_tag(L, "object_type"), 0))
-					*tmp = tolua_getuserdata(L, -num_res + i, NULL);
+				if (tolua_isusertype(L, -num_res + i, "object_type", 0, &tolua_err))
+					*tmp = tolua_touserdata(L, -num_res + i, NULL);
 				break;
 			}
 		}
 	}
 
-	/* Remove the results */
-	lua_pop(L, num_res);
+	/* Remove the results and the error handler */
+	lua_pop(L, num_res + 1);
 
 	va_end(ap);
 
@@ -464,6 +468,24 @@ void leave_level_hook(void)
 }
 
 
+void player_turn_hook(void)
+{
+	call_hook("player_turn", "", "");
+}
+
+
+void game_turn_hook(void)
+{
+	call_hook("game_turn", "", "");
+}
+
+
+void process_world_hook(void)
+{
+	call_hook("process_world", "", "");
+}
+
+
 bool process_command_hook(int command)
 {
 	int result = 0;
@@ -495,6 +517,22 @@ bool generate_level_hook(int level)
 
 	/* Return the result */
 	return (result != 0) ? TRUE : FALSE;
+}
+
+
+bool projection_hit_player(int who, int dam, int typ)
+{
+	bool result = FALSE;
+
+	if (!call_hook("projection_hit_player", "(d,d,d)", "b",
+	               who, dam, typ,
+	               &result))
+	{
+		/* Error */
+		return FALSE;
+	}
+
+	return (result);
 }
 
 
@@ -554,7 +592,7 @@ static void script_trace_start(void)
 {
 	if (!L) return;
 
-	lua_setlinehook(L, line_hook);
+	lua_sethook(L, line_hook, LUA_MASKLINE, 0);
 }
 
 
@@ -562,7 +600,7 @@ static void script_trace_stop(void)
 {
 	if (!L) return;
 
-	lua_setlinehook(L, NULL);
+	lua_sethook(L, line_hook, 0, 0);
 }
 
 
@@ -700,18 +738,19 @@ errr script_init(void)
 	char buf[1024];
 
 	/* Start the interpreter with default stack size */
-	L = lua_open(0);
+	L = lua_open();
 
 	/* Register the Lua base libraries */
-	lua_baselibopen(L);
-	lua_strlibopen(L);
-	lua_dblibopen(L);
+	luaopen_base(L);
+	luaopen_string(L);
+	luaopen_debug(L);
+	luaopen_table(L);
 
 	/* Register library with binary functions */
-	luaL_openl(L, bitlib);
+	luaL_openlib(L, "bitlib", bitlib, 0);
 
 	/* Register the Angband base library */
-	luaL_openl(L, anglib);
+	luaL_openlib(L, "angband", anglib, 0);
 
 	/* Register various Angband libraries */
 	tolua_player_open(L);
@@ -803,5 +842,234 @@ bool script_do_file(cptr filename)
 }
 
 
-#endif /* USE_SCRIPT */
+int get_store_choice(int store_num)
+{
+	return store[store_num].table[rand_int(store[store_num].table_num)];
+}
 
+
+/*
+ * Determine if the current store will purchase the given object
+ *
+ * Note that a shop-keeper must refuse to buy "worthless" objects
+ */
+bool store_will_buy(int store_num, const object_type *o_ptr)
+{
+	/* Hack -- The Home is simple */
+	if (store_num == STORE_HOME) return (TRUE);
+
+	/* Switch on the store */
+	switch (store_num)
+	{
+		/* General Store */
+		case STORE_GENERAL:
+		{
+			/* Analyze the type */
+			switch (o_ptr->tval)
+			{
+				case TV_FOOD:
+				case TV_LITE:
+				case TV_FLASK:
+				case TV_SPIKE:
+				case TV_SHOT:
+				case TV_ARROW:
+				case TV_BOLT:
+				case TV_DIGGING:
+				case TV_CLOAK:
+				break;
+				default:
+				return (FALSE);
+			}
+			break;
+		}
+
+		/* Armoury */
+		case STORE_ARMOR:
+		{
+			/* Analyze the type */
+			switch (o_ptr->tval)
+			{
+				case TV_BOOTS:
+				case TV_GLOVES:
+				case TV_CROWN:
+				case TV_HELM:
+				case TV_SHIELD:
+				case TV_CLOAK:
+				case TV_SOFT_ARMOR:
+				case TV_HARD_ARMOR:
+				case TV_DRAG_ARMOR:
+				break;
+				default:
+				return (FALSE);
+			}
+			break;
+		}
+
+		/* Weapon Shop */
+		case STORE_WEAPON:
+		{
+			/* Analyze the type */
+			switch (o_ptr->tval)
+			{
+				case TV_SHOT:
+				case TV_BOLT:
+				case TV_ARROW:
+				case TV_BOW:
+				case TV_DIGGING:
+				case TV_HAFTED:
+				case TV_POLEARM:
+				case TV_SWORD:
+				break;
+				default:
+				return (FALSE);
+			}
+			break;
+		}
+
+		/* Temple */
+		case STORE_TEMPLE:
+		{
+			/* Analyze the type */
+			switch (o_ptr->tval)
+			{
+				case TV_PRAYER_BOOK:
+				case TV_SCROLL:
+				case TV_POTION:
+				case TV_HAFTED:
+				break;
+				case TV_POLEARM:
+				case TV_SWORD:
+				{
+					/* Known blessed blades are accepted too */
+					if (is_blessed(o_ptr) && object_known_p(o_ptr)) break;
+				}
+				default:
+				return (FALSE);
+			}
+			break;
+		}
+
+		/* Alchemist */
+		case STORE_ALCHEMY:
+		{
+			/* Analyze the type */
+			switch (o_ptr->tval)
+			{
+				case TV_SCROLL:
+				case TV_POTION:
+				break;
+				default:
+				return (FALSE);
+			}
+			break;
+		}
+
+		/* Magic Shop */
+		case STORE_MAGIC:
+		{
+			/* Analyze the type */
+			switch (o_ptr->tval)
+			{
+				case TV_MAGIC_BOOK:
+				case TV_AMULET:
+				case TV_RING:
+				case TV_STAFF:
+				case TV_WAND:
+				case TV_ROD:
+				case TV_SCROLL:
+				case TV_POTION:
+				break;
+				default:
+				return (FALSE);
+			}
+			break;
+		}
+	}
+
+	/* Ignore "worthless" items XXX XXX XXX */
+	if (object_value(o_ptr) <= 0) return (FALSE);
+
+	/* Assume okay */
+	return (TRUE);
+}
+
+
+void player_birth_done_hook(void)
+{
+	object_type object_type_body;
+	object_type *i_ptr;
+
+	/* Get local object */
+	i_ptr = &object_type_body;
+
+	/* Hack -- Give the player some food */
+	object_prep(i_ptr, lookup_kind(TV_FOOD, SV_FOOD_RATION));
+	i_ptr->number = (byte)rand_range(3, 7);
+	object_aware(i_ptr);
+	object_known(i_ptr);
+	(void)inven_carry(i_ptr);
+
+
+	/* Get local object */
+	i_ptr = &object_type_body;
+
+	/* Hack -- Give the player some torches */
+	object_prep(i_ptr, lookup_kind(TV_LITE, SV_LITE_TORCH));
+	i_ptr->number = (byte)rand_range(3, 7);
+	i_ptr->pval = rand_range(3, 7) * 500;
+	object_aware(i_ptr);
+	object_known(i_ptr);
+	(void)inven_carry(i_ptr);
+}
+
+void player_calc_bonus_hook(void)
+{
+	/* Do nothing */
+}
+
+void start_game_hook(void)
+{
+	/* Do nothing */
+}
+
+void enter_level_hook(void)
+{
+	/* Do nothing */
+}
+
+void leave_level_hook(void)
+{
+	/* Do nothing */
+}
+
+void player_turn_hook(void)
+{
+	/* Do nothing */
+}
+
+void game_turn_hook(void)
+{
+	/* Do nothing */
+}
+
+void process_world_hook(void)
+{
+	/* Do nothing */
+}
+
+bool process_command_hook(int command)
+{
+	return FALSE;
+}
+
+bool generate_level_hook(int level)
+{
+	return FALSE;
+}
+
+bool projection_hit_player(int who, int dam, int typ)
+{
+	return FALSE;
+}
+
+#endif /* USE_SCRIPT */

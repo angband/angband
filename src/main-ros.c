@@ -1290,21 +1290,21 @@ errr path_build(char *buf, size_t max, cptr path, cptr file)
 	if (file[0] == '~')
 	{
 		/* Use the file itself */
-		strnfmt(buf, max, "%s", file);
+		my_strcpy(buf, file, max);
 	}
 
 	/* Absolute file, on "normal" systems */
 	else if (prefix(file, PATH_SEP) && !streq(PATH_SEP, ""))
 	{
 		/* Use the file itself */
-		strnfmt(buf, max, "%s", file);
+		my_strcpy(buf, file, max);
 	}
 
 	/* No path given */
 	else if (!path[0])
 	{
 		/* Use the file itself */
-		strnfmt(buf, max, "%s", file);
+		my_strcpy(buf, file, max);
 	}
 
 	/* Path and File */

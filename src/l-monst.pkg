@@ -215,9 +215,9 @@ typedef int errr;
 #define RF3_IM_POIS			0x00100000	/* Resist poison a lot */
 #define RF3_XXX5			0x00200000	/* Immune to (?) */
 #define RF3_RES_NETH		0x00400000	/* Resist nether a lot */
-#define RF3_RES_WATE		0x00800000	/* Resist water */
+#define RF3_IM_WATER		0x00800000	/* Immune to water */
 #define RF3_RES_PLAS		0x01000000	/* Resist plasma */
-#define RF3_RES_NEXU		0x02000000	/* Resist nexus */
+#define RF3_RES_NEXUS		0x02000000	/* Resist nexus */
 #define RF3_RES_DISE		0x04000000	/* Resist disenchantment */
 #define RF3_XXX6			0x08000000	/* Resist (?) */
 #define RF3_NO_FEAR			0x10000000	/* Cannot be scared */
@@ -446,6 +446,11 @@ struct monster_type
 extern s16b mon_max;
 extern s16b mon_cnt;
 
+/*
+ * Array[z_info->m_max] of dungeon monsters
+ */
+monster_type mon_list[z_info->m_max];
+
 
 /***** Functions *****/
 
@@ -469,7 +474,6 @@ extern void wipe_mon_list(void);
 extern s16b mon_pop(void);
 extern errr get_mon_num_prep(void);
 extern s16b get_mon_num(int level);
-extern void monster_desc(char *desc, size_t max, const monster_type *m_ptr, int mode);
 extern void lore_do_probe(int m_idx);
 extern void lore_treasure(int m_idx, int num_item, int num_gold);
 extern void update_mon(int m_idx, bool full);
@@ -489,3 +493,33 @@ extern void update_smart_learn(int m_idx, int what);
 extern void monster_death(int m_idx);
 extern bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note);
 
+$static int tolua_monster_desc(lua_State *L)
+${
+$	char buf[1024];
+$	int mode;
+$	monster_type *m_ptr;
+$
+$	/* Get the arguments */
+$	m_ptr = tolua_tousertype(L, 1, 0);
+$
+$	if (!m_ptr)
+$	{
+$		tolua_error(L, "#ferror in function 'monster_desc'.", NULL);
+$		return 0;
+$	}
+$
+$	mode = (int)luaL_check_number(L, 2);
+$
+$	/* Get the description */
+$	monster_desc(buf, sizeof(buf), m_ptr, mode);
+$
+$	/* Return the name */
+$	tolua_pushstring(L, buf);
+$
+$	/* One result */
+$	return 1;
+$}
+
+$<
+	tolua_function(tolua_S, "monster_desc", tolua_monster_desc);
+$>

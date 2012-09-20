@@ -2,7 +2,7 @@
 -- Written by Waldemar Celes
 -- TeCGraf/PUC-Rio
 -- Jul 1999
--- $Id: code.lua,v 1.1 2001/10/27 19:35:28 angband Exp $
+-- $Id: code.lua,v 1.2 2003/08/10 11:43:28 rr9 Exp $
 
 -- This code is free software; you can redistribute it and/or modify it.
 -- The software provided hereunder is on an "as is" basis, and
@@ -17,9 +17,9 @@
 --   text = text code
 classCode = {
  text = '',
- _base = classFeature,
 }
-settag(classCode,tolua_tag)
+classCode.__index = classCode
+setmetatable(classCode,classFeature)
 
 -- register code
 function classCode:register ()
@@ -35,7 +35,7 @@ function classCode:register ()
  local t={n=0}
  local b = gsub(s,'(.)',function (c) 
                          local e = '' 
-                         %t.n=%t.n+1 if %t.n==15 then %t.n=0 e='\n   ' end 
+                         t.n=t.n+1 if t.n==15 then t.n=0 e='\n   ' end 
                          return format('%3u,%s',strbyte(c),e) 
                         end
                )
@@ -56,8 +56,7 @@ end
 
 -- Internal constructor
 function _Code (t)
- t._base = classCode
- settag(t,tolua_tag)
+ setmetatable(t,classCode)
  append(t)
  return t
 end

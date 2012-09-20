@@ -2,7 +2,7 @@
 -- Written by Waldemar Celes
 -- TeCGraf/PUC-Rio
 -- Jul 1998
--- $Id: define.lua,v 1.1 2001/10/27 19:35:28 angband Exp $
+-- $Id: define.lua,v 1.2 2003/08/10 11:43:28 rr9 Exp $
 
 -- This code is free software; you can redistribute it and/or modify it.
 -- The software provided hereunder is on an "as is" basis, and
@@ -16,25 +16,13 @@
 --   name = constant name
 classDefine = {
  name = '',
- _base = classFeature,
 }
-settag(classDefine,tolua_tag)
+classDefine.__index = classDefine
+setmetatable(classDefine,classFeature)
 
 -- register define
 function classDefine:register ()
- local p = self:inmodule()
- if p then
-  output(' tolua_constant(tolua_S,"'..p..'","'..self.lname..'",'..self.name..');') 
- else
-  output(' tolua_constant(tolua_S,NULL,"'..self.lname..'",'..self.name..');') 
- end
-end
-
--- unregister define
-function classDefine:unregister ()
- if not self:inmodule() then
-  output(' lua_pushnil(tolua_S); lua_setglobal(tolua_S,"'..self.lname..'");') 
- end
+ output(' tolua_constant(tolua_S,"'..self.lname..'",'..self.name..');') 
 end
 
 -- Print method
@@ -48,8 +36,8 @@ end
 
 -- Internal constructor
 function _Define (t)
- t._base = classDefine
- settag(t,tolua_tag)
+ setmetatable(t,classDefine)
+ t:buildnames()
 
  if t.name == '' then
   error("#invalid define")
@@ -62,10 +50,8 @@ end
 -- Constructor
 -- Expects a string representing the constant name
 function Define (n)
- local t = split(n,'@')
- return _Define {
-  name = t[1],
-  lname = t[2] or t[1]
+ return _Define{
+  name = n
  }
 end
 

@@ -1,7 +1,7 @@
 
 
               **************************************************
-              **   Angband 3.0.3   **   The Pits of Angband   **
+              **   Angband 3.0.4   **   The Pits of Angband   **
               **************************************************
 
            Based on Moria:   Copyright (c) 1985 Robert Alan Koeneke
@@ -24,7 +24,7 @@
 
 === General Info ===
 
-This is the README file for Angband 3.0.3.
+This is the README file for Angband 3.0.4.
 
 Angband is a "graphical" dungeon adventure game using textual characters
 to represent the walls and floors of a dungeon and the inhabitants therein,
@@ -208,13 +208,6 @@ A missing file provides no restrictions, and an empty file will, by default,
 forbid the playing of the game from 8am-5pm on weekdays.  This file is only
 used on multi-user machines, and only if CHECK_TIME is defined, otherwise,
 there are no restrictions.
-
-The optional file 'load.txt' may be used to restrict the "load" which the game
-may impose on the system.  See 'files.c' for more details.  A missing file
-provides no restrictions, and an empty file will, by default, restrict the
-"current load" to a maximal value of 100*FSCALE.  This file is only used on
-multi-user machines, and only if CHECK_LOAD is defined, otherwise, there are
-no restrictions.
 
 These files should not be modified unless you know exactly what you are doing.
 

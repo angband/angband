@@ -118,7 +118,6 @@
 #define IDM_FILE_NEW			100
 #define IDM_FILE_OPEN			101
 #define IDM_FILE_SAVE			110
-#define IDM_FILE_SCORE			120
 #define IDM_FILE_EXIT			130
 
 #define IDM_WINDOW_VIS_0		200
@@ -509,15 +508,6 @@ static DIBINIT infGraph;
 static DIBINIT infMask;
 
 #endif /* USE_GRAPHICS */
-
-
-/*
- * Available graphic modes
- */
-#define GRAPHICS_NONE       0
-#define GRAPHICS_ORIGINAL   1
-#define GRAPHICS_ADAM_BOLT  2
-
 
 
 #ifdef USE_SOUND
@@ -1385,6 +1375,7 @@ static bool init_graphics(void)
 		char buf[1024];
 		int wid, hgt;
 		cptr name;
+		cptr mask = NULL;
 
 		if (arg_graphics == GRAPHICS_DAVID_GERVAIS)
 		{
@@ -1392,6 +1383,7 @@ static bool init_graphics(void)
 			hgt = 32;
 
 			name = "32x32.bmp";
+			mask = "mask32.bmp";
 
 			ANGBAND_GRAF = "david";
 
@@ -1403,6 +1395,7 @@ static bool init_graphics(void)
 			hgt = 16;
 
 			name = "16X16.BMP";
+			mask = "mask.bmp";
 
 			ANGBAND_GRAF = "new";
 
@@ -1431,10 +1424,10 @@ static bool init_graphics(void)
 		infGraph.CellWidth = wid;
 		infGraph.CellHeight = hgt;
 
-		if (arg_graphics == GRAPHICS_ADAM_BOLT)
+		if (mask)
 		{
 			/* Access the mask file */
-			path_build(buf, sizeof(buf), ANGBAND_DIR_XTRA_GRAF, "mask.bmp");
+			path_build(buf, sizeof(buf), ANGBAND_DIR_XTRA_GRAF, mask);
 
 			/* Load the bitmap or quit */
 			if (!ReadDIB(data[0].w, buf, &infMask))
@@ -2057,11 +2050,10 @@ static errr Term_xtra_win_sound(int v)
  */
 static int Term_xtra_win_delay(int v)
 {
-
 #ifdef WIN32
 
 	/* Sleep */
-	Sleep(v);
+	if (v > 0) Sleep(v);
 
 #else /* WIN32 */
 
@@ -2426,7 +2418,8 @@ static errr Term_pict_win(int x, int y, int n, const byte *ap, const char *cp, c
 	hdcSrc = CreateCompatibleDC(hdc);
 	hbmSrcOld = SelectObject(hdcSrc, infGraph.hBitmap);
 
-	if (arg_graphics == GRAPHICS_ADAM_BOLT)
+	if ((arg_graphics == GRAPHICS_ADAM_BOLT) ||
+	    (arg_graphics == GRAPHICS_DAVID_GERVAIS))
 	{
 		hdcMask = CreateCompatibleDC(hdc);
 		SelectObject(hdcMask, infMask.hBitmap);
@@ -2450,7 +2443,8 @@ static errr Term_pict_win(int x, int y, int n, const byte *ap, const char *cp, c
 		x1 = col * w1;
 		y1 = row * h1;
 
-		if (arg_graphics == GRAPHICS_ADAM_BOLT)
+		if ((arg_graphics == GRAPHICS_ADAM_BOLT) ||
+		    (arg_graphics == GRAPHICS_DAVID_GERVAIS))
 		{
 			x3 = (tcp[i] & 0x7F) * w1;
 			y3 = (tap[i] & 0x7F) * h1;
@@ -2513,7 +2507,8 @@ static errr Term_pict_win(int x, int y, int n, const byte *ap, const char *cp, c
 	SelectObject(hdcSrc, hbmSrcOld);
 	DeleteDC(hdcSrc);
 
-	if (arg_graphics == GRAPHICS_ADAM_BOLT)
+	if ((arg_graphics == GRAPHICS_ADAM_BOLT) ||
+	    (arg_graphics == GRAPHICS_DAVID_GERVAIS))
 	{
 		/* Release */
 		SelectObject(hdcMask, hbmSrcOld);
@@ -2918,8 +2913,6 @@ static void setup_menus(void)
 	               MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
 	EnableMenuItem(hm, IDM_FILE_EXIT,
 	               MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
-	EnableMenuItem(hm, IDM_FILE_SCORE,
-	               MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
 
 
 	/* No character available */
@@ -2943,12 +2936,6 @@ static void setup_menus(void)
 	{
 		/* Menu "File", Item "Exit" */
 		EnableMenuItem(hm, IDM_FILE_EXIT, MF_BYCOMMAND | MF_ENABLED);
-	}
-
-	if (initialized)
-	{
-		/* Menu "File", Item "Show Scores" */
-		EnableMenuItem(hm, IDM_FILE_SCORE, MF_BYCOMMAND | MF_ENABLED);
 	}
 
 
@@ -3258,8 +3245,8 @@ static void start_screensaver(void)
 	screensaver_inkey_hack_buffer[j++] = ESCAPE; /* Gender */
 	screensaver_inkey_hack_buffer[j++] = ESCAPE; /* Race */
 	screensaver_inkey_hack_buffer[j++] = ESCAPE; /* Class */
-	screensaver_inkey_hack_buffer[j++] = ESCAPE; /* Modify options */
-	screensaver_inkey_hack_buffer[j++] = ESCAPE; /* Reroll */
+	screensaver_inkey_hack_buffer[j++] = 'n'; /* Modify options */
+	screensaver_inkey_hack_buffer[j++] = '\r'; /* Reroll */
 
 	if (!file_exists)
 	{
@@ -3281,7 +3268,7 @@ static void start_screensaver(void)
 	screensaver_inkey_hack_buffer[j++] = '2'; /* Disturbance options */
 
 	/* Cursor down to "verify_special" */
-	for (i = 0; i < 13; i++)
+	for (i = 0; i < 10; i++)
 		screensaver_inkey_hack_buffer[j++] = '2';
 
 	screensaver_inkey_hack_buffer[j++] = 'n'; /* Switch off "verify_special" */
@@ -3441,64 +3428,6 @@ static void process_menus(WORD wCmd)
 				/* Paranoia */
 				plog("You may not do that right now.");
 			}
-			break;
-		}
-
-		/* Show scores */
-		case IDM_FILE_SCORE:
-		{
-			char buf[1024];
-
-			if (!initialized)
-			{
-				plog("You may not do that right now.");
-				break;
-			}
-
-			/* Build the filename */
-			path_build(buf, sizeof(buf), ANGBAND_DIR_APEX, "scores.raw");
-
-			/* Open the binary high score file, for reading */
-			highscore_fd = fd_open(buf, O_RDONLY);
-
-			/* Paranoia -- No score file */
-			if (highscore_fd < 0)
-			{
-				msg_print("Score file unavailable.");
-			}
-			else
-			{
-				/* Prevent various functions */
-				initialized = FALSE;
-
-				/* Save Screen */
-				screen_save();
-
-				/* Clear screen */
-				Term_clear();
-
-				/* Display the scores */
-				if (game_in_progress && character_generated)
-					predict_score();
-				else
-					display_scores_aux(0, MAX_HISCORES, -1, NULL);
-
-				/* Shut the high score file */
-				(void)fd_close(highscore_fd);
-
-				/* Forget the high score fd */
-				highscore_fd = -1;
-
-				/* Load screen */
-				screen_load();
-
-				/* Hack - Flush it */
-				Term_fresh();
-
-				/* We are ready again */
-				initialized = TRUE;
-			}
-
 			break;
 		}
 

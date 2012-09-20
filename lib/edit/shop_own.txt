@@ -11,89 +11,89 @@
 
 # Format:
 # N:store:owner idx:owner name
-# I:race idx:purse:maxgreed:mingreed:haggleper:tolerance
+# I:race idx:purse:greed
 
 
 # Version stamp (required)
 
-V:3.0.3
+V:3.0.4
 
 # General Store
 N:0:0:Bilbo the Friendly
-I:3:5000:175:108:4:12
+I:3:5000:108
 N:0:1:Rincewind the Chicken
-I:0:10000:175:108:4:12
+I:0:10000:108
 N:0:2:Snafu the Midget
-I:4:20000:170:107:5:15
+I:4:20000:107
 N:0:3:Lyar-el the Comely
-I:2:30000:165:107:6:18
+I:2:30000:107
 
 # Armoury
 N:1:0:Kon-Dar the Ugly
-I:6:5000:210:115:5:7
+I:6:5000:115
 N:1:1:Darg-Low the Grim
-I:0:10000:190:111:4:9
+I:0:10000:111
 N:1:2:Decado the Handsome
-I:8:25000:200:112:4:10
+I:8:25000:112
 N:1:3:Mauglin the Grumpy
-I:5:30000:200:112:4:5
+I:5:30000:112
 
 # Weapon Smith
 N:2:0:Ithyl-Mak the Beastly
-I:7:5000:210:115:6:6
+I:7:5000:115
 N:2:1:Arndal Beast-Slayer
-I:1:10000:185:110:5:9
+I:1:10000:110
 N:2:2:Tarl Beast-Master
-I:3:25000:190:115:5:7
+I:3:25000:115
 N:2:3:Oglign Dragon-Slayer
-I:5:30000:195:112:4:8
+I:5:30000:112
 
 # Temple
 N:3:0:Ludwig the Humble
-I:0:15000:175:109:6:15
+I:0:15000:109
 N:3:1:Gunnar the Paladin
-I:0:20000:185:110:5:23
+I:0:20000:110
 N:3:2:Delilah the Pure
-I:2:25000:180:107:6:20
+I:2:25000:107
 N:3:3:Bosk the Wise
-I:5:30000:185:109:5:15
+I:5:30000:109
 
 # Alchemist
 N:4:0:Mauser the Chemist
-I:1:10000:190:111:5:8
+I:1:10000:111
 N:4:1:Wizzle the Chaotic
-I:3:10000:190:110:6:8
+I:3:10000:110
 N:4:2:Ga-nat the Greedy
-I:4:15000:200:116:6:9
+I:4:15000:116
 N:4:3:Vella the Slender
-I:0:15000:220:111:4:9
+I:0:15000:111
 
 # Magic Shop
 N:5:0:Ariel the Sorceress
-I:1:15000:200:110:7:8
+I:1:15000:110
 N:5:1:Buggerby the Great
-I:4:20000:215:113:6:10
+I:4:20000:113
 N:5:2:Inglorian the Mage
-I:0:25000:200:110:7:10
+I:0:25000:110
 N:5:3:Luthien Starshine
-I:9:30000:175:110:5:11
+I:9:30000:110
 
 # Black Market
 N:6:0:Lo-Hak the Awful
-I:7:15000:250:150:10:5
+I:7:15000:150
 N:6:1:Histor the Goblin
-I:10:20000:250:150:10:5
+I:10:20000:150
 N:6:2:Durwin the Shifty
-I:6:25000:250:150:10:5
+I:6:25000:150
 N:6:3:Drago the Fair
-I:2:30000:250:150:10:5
+I:2:30000:150
 
 # Home
 N:7:0:Your home
-I:99:0:100:100:0:99
+I:99:0:100
 N:7:1:Your home
-I:99:0:100:100:0:99
+I:99:0:100
 N:7:2:Your home
-I:99:0:100:100:0:99
+I:99:0:100
 N:7:3:Your home
-I:99:0:100:100:0:99
+I:99:0:100

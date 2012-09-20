@@ -51,7 +51,7 @@
 
 # Version stamp (required)
 
-V:3.0.3
+V:3.0.4
 
 # 1 (unused)
 
@@ -389,6 +389,7 @@ W:0:4:0:1500
 C:5:5:0:0
 F:SHOW_MODS
 T:31:0:99
+D:They boost your to-hit and to-dam values.
 
 N:50:of Agility
 X:14:0
@@ -799,12 +800,16 @@ X:10:0
 W:0:1:0:1000
 C:15:5:0:0
 T:19:0:99
+D:It has no special abilities, but its to-hit value may be unusually
+D: high.
 
 N:105:of Power
 X:10:0
 W:0:1:0:1000
 C:5:15:0:0
 T:19:0:99
+D:It has no special abilities, but its to-dam value may be unusually
+D: high.
 
 N:106:of Lothlorien
 X:30:3
@@ -816,8 +821,8 @@ F:DEX | MIGHT | FREE_ACT | IGNORE_ACID | IGNORE_FIRE | HIDE_TYPE
 N:107:of the Haradrim
 X:30:0
 W:50:4:0:20000
-C:5:15:0:1
-T:19:23:24
+C:5:5:0:1
+T:19:23:23
 F:MIGHT | SHOTS | IGNORE_ACID | IGNORE_FIRE | HIDE_TYPE
 
 N:108:of Extra Might
@@ -922,7 +927,7 @@ C:10:10:0:0
 T:16:2:99
 T:17:2:99
 T:18:2:99
-F:SLAY_EVIL | SLAY_DEMON | SLAY_UNDEAD | BRAND_FIRE | BLESSED
+F:SLAY_EVIL | SLAY_DEMON | SLAY_UNDEAD
 F:IGNORE_FIRE | IGNORE_ACID
 
 N:121:of Venom
@@ -956,6 +961,8 @@ C:5:5:0:0
 T:16:0:99
 T:17:0:99
 T:18:0:99
+D:Ammunition of Wounding often has unusually high to-hit and to-dam
+D: values.
 
 N:125:of Backbiting
 X:0:0

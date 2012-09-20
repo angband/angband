@@ -15,7 +15,7 @@ function add_event_handler(event_type, handler)
 	end
 
 	-- Append the handler to the queue
-	tinsert(queue, handler)
+	table.insert(queue, 1, handler)
 end
 
 
@@ -24,9 +24,9 @@ function remove_event_handler(event_type, handler)
 	local queue = event_handlers[event_type]
 
 	if queue then
-		for i = getn(queue), 1, -1 do
+		for i = table.getn(queue), 1, -1 do
 			if queue[i] == handler then
-				tremove(queue, i)
+				table.remove(queue, i)
 				break
 			end
 		end
@@ -43,9 +43,8 @@ function notify_event_hook(event_type, arg1, arg2, arg3, arg4, arg5, arg6,
 	local queue = event_handlers[event_type]
 
 	if queue then
-		for i = 1, getn(queue) do
+		for i, handler in ipairs(queue) do
 			local result
-			local handler = queue[i]
 
 			-- HACK - Up to 10 results are handled.
 			local res1, res2, res3, res4, res5, res6, res7, res8, res9, res10 =
@@ -53,9 +52,25 @@ function notify_event_hook(event_type, arg1, arg2, arg3, arg4, arg5, arg6,
 			            arg7, arg8, arg9, arg10, arg)
 
 			-- Stop handling the event queue when we get a result
-			if res1 then
+			if res1 or res2 or res3 or res4 or res5 or res6 or res7 or res8 or res9 or res10 then
 				return res1, res2, res3, res4, res5, res6, res7, res8, res9, res10
 			end
 		end
+	end
+end
+
+
+-- Wait over several calls of an event handler
+--
+-- Waits for 'amount' number of event calls before resuming an
+-- event-handler coroutine.
+--
+-- Note: This function should only be called from coroutines!
+function event_wait(amount)
+	local x = 0
+
+	while x < amount do
+		x = x + 1
+		coroutine.yield()
 	end
 end

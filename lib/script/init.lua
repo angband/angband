@@ -4,21 +4,32 @@ _ALERT = function(text)
 	message_flush()
 end
 
--- Detect access to undefined global variables
-function safe_getglobal(x)
-	local v = rawget(globals(), x)
-
-	if v then
-		return v
-	else
-		error("undefined global variable " .. x)
-	end
+_TRACEBACK = function(text)
+	msg_print(text)
+	msg_print(debug.traceback())
+	message_flush()
 end
 
-settagmethod(tag(nil), "getglobal", safe_getglobal)
+-- Detect access to undefined global variables
+function safe_getglobal(table, key)
+	local v = rawget(table, key)
+	if v then return v end
 
-script_do_file(build_script_path("event.lua"))
-script_do_file(build_script_path("object.lua"))
-script_do_file(build_script_path("spell.lua"))
-script_do_file(build_script_path("store.lua"))
-script_do_file(build_script_path("birth.lua"))
+	if old_getglobal then
+		v = old_getglobal(table, key)
+		if v then return v end
+	end
+
+	print("undefined variable " .. key)
+end
+
+old_getglobal = getmetatable(getfenv(0))["__index"]
+getmetatable(getfenv(0))["__index"] = safe_getglobal
+
+-- Load the modules
+script_do_file(angband.build_script_path("event.lua"))
+script_do_file(angband.build_script_path("player.lua"))
+script_do_file(angband.build_script_path("object.lua"))
+script_do_file(angband.build_script_path("spell.lua"))
+script_do_file(angband.build_script_path("store.lua"))
+script_do_file(angband.build_script_path("birth.lua"))

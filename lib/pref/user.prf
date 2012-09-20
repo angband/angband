@@ -75,6 +75,9 @@
 ?:[EQU $RACE High-Elf]
 %:High-Elf.prf
 
+?:[EQU $RACE Kobold]
+%:Kobold.prf
+
 
 ##### Class Specific Subfiles #####
 

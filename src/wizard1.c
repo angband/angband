@@ -151,6 +151,9 @@ static void kind_info(char *buf, char *dam, char *wgt, int *lev, s32b *val, int 
 	/* Level */
 	(*lev) = k_ptr->level;
 
+	/* Make known */
+	i_ptr->ident |= (IDENT_KNOWN);
+	
 	/* Value */
 	(*val) = object_value(i_ptr);
 

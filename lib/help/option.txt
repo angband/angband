@@ -173,14 +173,6 @@ Automatically clear -more- prompts    [auto_more]
 
 === Game-play options ===
 
-***** <auto_haggle>
-Auto-haggle in stores    [auto_haggle]
-    Disable "haggling" in stores, resulting in a ten percent sales tax
-    on items which you would have otherwise been forced to haggle for.
-    When this option is on, all prices listed in stores will be the
-    actual price that you pay for an item, as opposed to the price
-    that the shop-keeper will suggest.
-
 ***** <auto_scum>
 Auto-scum for good levels    [auto_scum]
     This is a hack but allows you to force the generation of "good" levels

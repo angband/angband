@@ -252,24 +252,20 @@ Any time you are asked a question and there is already something under the
 cursor, pressing return will accept that choice.  You will then see a few
 messages describing the transaction, as always, hit space at each "-more-"
 prompt, and eventually you will be asked to make an offer for the flask of
-oil.  Since flasks of oil are so cheap, you will not be given the chance to
-haggle, but instead will simply be told how much you must pay.  Hit return
-to accept the price.  Many commands work inside the store, for example, use
-the "i" command to see your inventory, with the new flask of oil.  Note that
-your inventory is always kept sorted in a semi-logical order, so the indexes
-of some of the objects may change as your inventory changes.
+oil.  Hit return to accept the price.  Many commands work inside the store,
+for example, use the "i" command to see your inventory, with the new flask
+of oil.  Note that your inventory is always kept sorted in a semi-logical
+order, so the indexes of some of the objects may change as your inventory
+changes.
 
-Purchase another flask of oil, if possible.  Note that this time you were not
-asked to make an offer, because once you purchase something at the "optimal"
-price, it becomes "fixed" at that price, as indicated by the letter "F" after
-the price.  Purchase a few more flasks of oil, if possible, this time, when
-asked how many you want, press "3" plus return to buy three flasks at once.
-Flasks of oil are very important for low level characters, because not only
-can they be used to fuel a lantern (which gives more light than a torch), but
-also, they can be ignited and thrown at monsters from a distance.  So it is
-often a good idea to have a few extra flasks of oil.  Press escape to leave
-the store.  If you want, take time to visit the rest of the stores.  One of
-the buildings, marked with an "8", is your "home", and is not a real store.
+Purchase a few more flasks of oil, if possible, this time, when asked how
+many you want, press "3" plus return to buy three flasks at once.  Flasks of
+oil are very important for low level characters, because not only can they
+be used to fuel a lantern (which gives more light than a torch), but also,
+they can be ignited and thrown at monsters from a distance.  So it is often
+a good idea to have a few extra flasks of oil.  Press escape to leave the
+store.  If you want, take time to visit the rest of the stores.  One of the
+buildings, marked with an "8", is your "home", and is not a real store.
 
 Now move to the staircase, represented by the ">" symbol, and press ">", to
 go down the stairs.  At this point, you are in the dungeon.  Use the "l"

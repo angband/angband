@@ -875,6 +875,12 @@ static void wiz_quantity_item(object_type *o_ptr, bool carried)
 			p_ptr->total_weight += (tmp_int * o_ptr->weight);
 		}
 
+		/* Adjust charge for rods */
+		if (o_ptr->tval == TV_ROD)
+		{
+			o_ptr->pval = (o_ptr->pval / o_ptr->number) * tmp_int;
+		}
+
 		/* Accept modifications */
 		o_ptr->number = tmp_int;
 	}

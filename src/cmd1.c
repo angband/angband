@@ -560,14 +560,10 @@ void py_pickup(int pickup)
 
 	char o_name[80];
 
-#ifdef ALLOW_EASY_FLOOR
-
 	int last_o_idx = 0;
 
 	int can_pickup = 0;
 	int not_pickup = 0;
-
-#endif /* ALLOW_EASY_FLOOR */
 
 
 	/* Scan the pile of objects */
@@ -618,8 +614,6 @@ void py_pickup(int pickup)
 			continue;
 		}
 
-#ifdef ALLOW_EASY_FLOOR
-
 		/* Easy Floor */
 		if (easy_floor)
 		{
@@ -658,8 +652,6 @@ void py_pickup(int pickup)
 			continue;
 		}
 
-#endif /* ALLOW_EASY_FLOOR */
-
 		/* Describe the object */
 		if (!pickup)
 		{
@@ -689,8 +681,6 @@ void py_pickup(int pickup)
 		/* Pick up the object */
 		py_pickup_aux(this_o_idx);
 	}
-
-#ifdef ALLOW_EASY_FLOOR
 
 	/* Easy floor, objects left */
 	if (easy_floor && (can_pickup + not_pickup > 0))
@@ -768,9 +758,6 @@ void py_pickup(int pickup)
 			py_pickup_aux(0 - item);
 		}
 	}
-
-#endif /* ALLOW_EASY_FLOOR */
-
 }
 
 
@@ -1240,8 +1227,6 @@ void move_player(int dir, int jumping)
 		py_attack(y, x);
 	}
 
-#ifdef ALLOW_EASY_ALTER
-
 	/* Optionally alter known traps/doors on (non-jumping) movement */
 	else if (easy_alter && !jumping &&
 	         (cave_info[y][x] & (CAVE_MARK)) &&
@@ -1265,8 +1250,6 @@ void move_player(int dir, int jumping)
 		/* Alter */
 		do_cmd_alter();
 	}
-
-#endif /* ALLOW_EASY_ALTER */
 
 	/* Player can not walk through "walls" */
 	else if (!cave_floor_bold(y, x))

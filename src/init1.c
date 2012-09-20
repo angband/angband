@@ -228,9 +228,9 @@ static cptr r_info_flags3[] =
 	"IM_POIS",
 	"XXX5X3",
 	"RES_NETH",
-	"RES_WATE",
+	"IM_WATER",
 	"RES_PLAS",
-	"RES_NEXU",
+	"RES_NEXUS",
 	"RES_DISE",
 	"XXX6X3",
 	"NO_FEAR",
@@ -1626,6 +1626,21 @@ errr parse_a_info(char *buf, header *head)
 		a_ptr->time = time;
 		a_ptr->randtime = rand;
 	}
+
+	/* Process 'D' for "Description" */
+	else if (buf[0] == 'D')
+	{
+		/* There better be a current a_ptr */
+		if (!a_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
+
+		/* Get the text */
+		s = buf+2;
+
+		/* Store the text */
+		if (!add_text(&a_ptr->text, head, s))
+			return (PARSE_ERROR_OUT_OF_MEMORY);
+	}
+
 	else
 	{
 		/* Oops */
@@ -1819,6 +1834,21 @@ errr parse_e_info(char *buf, header *head)
 			s = t;
 		}
 	}
+
+	/* Process 'D' for "Description" */
+	else if (buf[0] == 'D')
+	{
+		/* There better be a current e_ptr */
+		if (!e_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
+
+		/* Get the text */
+		s = buf+2;
+
+		/* Store the text */
+		if (!add_text(&e_ptr->text, head, s))
+			return (PARSE_ERROR_OUT_OF_MEMORY);
+	}
+
 	else
 	{
 		/* Oops */
@@ -2937,22 +2967,19 @@ errr parse_b_info(char *buf, header *head)
 	/* Process 'I' for "Info" (one line only) */
 	else if (buf[0] == 'I')
 	{
-		int idx, gld, max, min, hgl, tol;
+		int idx, gld, inflate;
 
 		/* There better be a current ot_ptr */
 		if (!ot_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
 
 		/* Scan for the values */
-		if (6 != sscanf(buf+2, "%d:%d:%d:%d:%d:%d",
-			            &idx, &gld, &max, &min, &hgl, &tol)) return (PARSE_ERROR_GENERIC);
+		if (3 != sscanf(buf+2, "%d:%d:%d",
+			            &idx, &gld, &inflate)) return (PARSE_ERROR_GENERIC);
 
 		/* Save the values */
 		ot_ptr->owner_race = idx;
 		ot_ptr->max_cost = gld;
-		ot_ptr->max_inflate = max;
-		ot_ptr->min_inflate = min;
-		ot_ptr->haggle_per = hgl;
-		ot_ptr->insult_max = tol;
+		ot_ptr->inflate = inflate;
 	}
 	else
 	{

@@ -2,7 +2,8 @@
 -- Written by Waldemar Celes
 -- TeCGraf/PUC-Rio
 -- Jul 1998
--- $Id: basic.lua,v 1.1 2001/10/27 19:35:28 angband Exp $
+-- Last update: Apr 2003
+-- $Id: basic.lua,v 1.2 2003/08/10 11:43:28 rr9 Exp $
 
 -- This code is free software; you can redistribute it and/or modify it.
 -- The software provided hereunder is on an "as is" basis, and
@@ -19,113 +20,114 @@ _basic = {
  ['int'] = 'number',
  ['short'] = 'number',
  ['long'] = 'number',
- ['_cstring'] = 'string',
- ['_userdata'] = 'userdata',
- ['char*'] = 'string',
- ['void*'] = 'userdata',
- ['bool'] = 'bool',
- ['LUA_VALUE'] = 'value',
+ ['unsigned'] = 'number',
+ ['float'] = 'number',
+ ['double'] = 'number',
  ['byte'] = 'number',
  ['s16b'] = 'number',
  ['u16b'] = 'number',
  ['s32b'] = 'number',
  ['u32b'] = 'number',
-}
-
-_basic_tag = {
- ['void'] = '',
- ['char'] = 'LUA_TNUMBER',
- ['int'] = 'LUA_TNUMBER',
- ['short'] = 'LUA_TNUMBER',
- ['long'] = 'LUA_TNUMBER',
- ['_cstring'] = 'LUA_TSTRING',
- ['_userdata'] = 'LUA_TUSERDATA',
- ['char*'] = 'LUA_TSTRING',
- ['void*'] = 'LUA_TUSERDATA',
- ['bool'] = 'tolua_tag(tolua_S,"bool")',
- ['byte'] = 'LUA_TNUMBER',
- ['s16b'] = 'LUA_TNUMBER',
- ['u16b'] = 'LUA_TNUMBER',
- ['s32b'] = 'LUA_TNUMBER',
- ['u32b'] = 'LUA_TNUMBER',
+ ['_cstring'] = 'string',
+ ['_userdata'] = 'userdata',
+ ['char*'] = 'string',
+ ['void*'] = 'userdata',
+ ['bool'] = 'boolean',
+ ['lua_Object'] = 'value',
+ ['LUA_VALUE'] = 'value',    -- for compatibility with tolua 4.0
 }
 
 _basic_ctype = {
  number = "long",
  string = "const char*",
  userdata = "void*",
- bool = "int",
+ boolean = "bool",
 }
 
 -- List of user defined types
 -- Each type corresponds to a variable name that stores its tag value.
 _usertype = {}
 
--- Tag method to provide inheritance
-function tolua_index (t,f)
- if f == '_base' then  -- to avoid loop
-   return tolua_old_index(t,f)
- else
-  return t._base[f]
- end
+-- List of types that have to be collected
+_collect = {}
+
+
+-- List of auto renaming
+_renaming = {}
+function appendrenaming (s)
+ local b,e,old,new = strfind(s,"%s*(.-)%s*@%s*(.-)%s*$")
+	if not b then
+	 error("#Invalid renaming syntax; it should be of the form: pattern@pattern")
+	end
+	tinsert(_renaming,{old=old, new=new})
 end
 
-tolua_tag = newtag()
-tolua_old_index = settagmethod(tolua_tag,"index",tolua_index)
+function applyrenaming (s)
+	for i=1,getn(_renaming) do
+	 local m,n = gsub(s,_renaming[i].old,_renaming[i].new)
+		if n ~= 0 then
+		 return m
+		end
+	end
+	return nil
+end
 
 -- Error handler
-function tolua_error (s)
+function tolua_error (s,f)
  local out = _OUTPUT
  _OUTPUT = _STDERR
  if strsub(s,1,1) == '#' then
   write("\n** tolua: "..strsub(s,2)..".\n\n")
+  if _curr_code then
+   local _,_,s = strfind(_curr_code,"^%s*(.-\n)") -- extract first line
+   if s==nil then s = _curr_code end
+   s = gsub(s,"_userdata","void*") -- return with 'void*'
+   s = gsub(s,"_cstring","char*")  -- return with 'char*'
+   write("Code being processed:\n"..s.."\n")
+  end
  else
-  write("\n** tolua internal error: "..s..".\n\n")
+  print("\n** tolua internal error: "..f..s..".\n\n")
   return
- end
-
- if _curr_code then
-  local _,_,s = strfind(_curr_code,"^%s*(.-\n)") -- extract first line
-  if s==nil then s = _curr_code end
-  s = gsub(s,"_userdata","void*") -- return with 'void*'
-  s = gsub(s,"_cstring","char*")  -- return with 'char*'
-  write("Code being processed:\n"..s.."\n")
  end
  _OUTPUT = out
 end
 
-
-_ERRORMESSAGE = tolua_error
-
--- register an user defined type
-function regtype (t)
- if not istype(t) then
-  _usertype[t] = t
- end
- return t
+function warning (msg)
+ local out = _OUTPUT
+ _OUTPUT = _STDERR
+ write("\n** tolua warning: "..msg..".\n\n")
+ _OUTPUT = out
 end
 
--- return tag name
-function tagvar(type,const)
- if type == '' or type == 'void' then
-  return type,0
- else
-  local m,t = findtypedef(type)
-  if isbasic(t) then
-   return t, _basic_tag[t]
-  end
-  if strfind(m,'const') then const = 'const' end
-  regtype(t)
-  if const and const ~= '' then
-   t = 'const '..t
-  end
-  return t,'tolua_tag(tolua_S,"'..t..'")'
+-- register an user defined type: returns full type
+function regtype (t)
+ local ft = findtype(t)
+	if isbasic(t) then
+	 return t
+	end
+ if not ft then
+		return appendusertype(t)
  end
+end
+
+-- return type name: returns full type
+function typevar(type)
+ if type == '' or type == 'void' then
+  return type
+ else
+		local ft = findtype(type)
+  if ft then
+   return ft
+  end
+		_usertype[type] = type
+		return type
+	end
 end
 
 -- check if basic type
 function isbasic (type)
- local m,t = findtypedef(type)
+ local t = gsub(type,'const ','')
+ local m,t = applytypedef(t)
  local b = _basic[t]
  if b then
   return b,_basic_ctype[b]
@@ -133,18 +135,12 @@ function isbasic (type)
  return nil
 end
 
--- check if type
-function istype (t)
- return _basic[t] or _usertype[t] or istypedef(t)
-end
-
-
 -- split string using a token
 function split (s,t)
  local l = {n=0}
  local f = function (s)
-  %l.n = %l.n + 1
-  %l[%l.n] = s
+  l.n = l.n + 1
+  l[l.n] = s
  end
  local p = "%s*(.-)%s*"..t.."%s*"
  s = gsub(s,"^%s+","")
@@ -166,6 +162,26 @@ function concat (t,f,l)
   if i <= l then s = s..' ' end
  end
  return s
+end
+
+-- concatenate all parameters, following output rules
+function concatparam (line, ...)
+ local i=1
+ while i<=arg.n do
+  if _cont and not strfind(_cont,'[%(,"]') and 
+     strfind(arg[i],"^[%a_~]") then 
+	    line = line .. ' ' 
+  end
+  line = line .. arg[i]
+  if arg[i] ~= '' then
+   _cont = strsub(arg[i],-1,-1)
+  end
+  i = i+1
+ end
+ if strfind(arg[arg.n],"[%/%)%;%{%}]$") then 
+  _cont=nil line = line .. '\n'
+ end
+	return line
 end
 
 -- output line

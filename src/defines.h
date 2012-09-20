@@ -47,7 +47,7 @@
 /*
  * Current version string
  */
-#define VERSION_STRING	"3.0.3"
+#define VERSION_STRING	"3.0.4"
 
 
 /*
@@ -55,7 +55,7 @@
  */
 #define VERSION_MAJOR	3
 #define VERSION_MINOR	0
-#define VERSION_PATCH	3
+#define VERSION_PATCH	4
 #define VERSION_EXTRA	0
 
 
@@ -1638,7 +1638,7 @@
 #define PW_OVERHEAD         0x00000080L /* Display overhead view */
 #define PW_MONSTER          0x00000100L /* Display monster recall */
 #define PW_OBJECT           0x00000200L /* Display object recall */
-/* xxx */
+#define PW_MONLIST          0x00000400L /* Display monster list */
 #define PW_SNAPSHOT         0x00000800L /* Display snap-shot */
 #define PW_SCRIPT_VARS      0x00001000L /* Display script variables */
 #define PW_SCRIPT_SOURCE    0x00002000L /* Display script source */
@@ -1681,7 +1681,7 @@
  * Special object flags
  */
 #define IDENT_SENSE     0x01	/* Item has been "sensed" */
-#define IDENT_FIXED     0x02	/* Item has been "haggled" */
+/* XXX */
 #define IDENT_EMPTY     0x04	/* Item charges are known */
 #define IDENT_KNOWN     0x08	/* Item abilities are known */
 #define IDENT_STORE     0x10	/* Item is in the inventory of a store */
@@ -2062,9 +2062,9 @@
 #define RF3_IM_POIS			0x00100000	/* Resist poison a lot */
 #define RF3_XXX5			0x00200000	/* Immune to (?) */
 #define RF3_RES_NETH		0x00400000	/* Resist nether a lot */
-#define RF3_RES_WATE		0x00800000	/* Resist water */
+#define RF3_IM_WATER		0x00800000	/* Immune to water */
 #define RF3_RES_PLAS		0x01000000	/* Resist plasma */
-#define RF3_RES_NEXU		0x02000000	/* Resist nexus */
+#define RF3_RES_NEXUS		0x02000000	/* Resist nexus */
 #define RF3_RES_DISE		0x04000000	/* Resist disenchantment */
 #define RF3_XXX6			0x08000000	/* Resist (?) */
 #define RF3_NO_FEAR			0x10000000	/* Cannot be scared */
@@ -2410,7 +2410,7 @@
 #define OPT_verify_special			29
 #define OPT_allow_quantity			30
 /* xxx */
-#define OPT_auto_haggle				32
+/* xxx OPT_auto_haggle */
 #define OPT_auto_scum				33
 /* xxx testing_stack */
 /* xxx testing_carry */
@@ -2530,7 +2530,7 @@
 #define verify_special			op_ptr->opt[OPT_verify_special]
 #define allow_quantity			op_ptr->opt[OPT_allow_quantity]
 /* xxx */
-#define auto_haggle				op_ptr->opt[OPT_auto_haggle]
+/* auto_haggle */
 #define auto_scum				op_ptr->opt[OPT_auto_scum]
 /* xxx testing_stack */
 /* xxx testing_carry */
@@ -2677,6 +2677,25 @@
 	 (k_info[(T)->k_idx].x_char))
 
 
+/*
+ * Return the "attr" for a given item.
+ * Use "flavor" if available.
+ * Use default definitions.
+ */
+#define object_attr_default(T) \
+	((k_info[(T)->k_idx].flavor) ? \
+	 (flavor_info[k_info[(T)->k_idx].flavor].d_attr) : \
+	 (k_info[(T)->k_idx].d_attr))
+
+/*
+ * Return the "char" for a given item.
+ * Use "flavor" if available.
+ * Use default definitions.
+ */
+#define object_char_default(T) \
+	((k_info[(T)->k_idx].flavor) ? \
+	 (flavor_info[k_info[(T)->k_idx].flavor].d_char) : \
+	 (k_info[(T)->k_idx].d_char))
 
 
 /*
@@ -2849,17 +2868,6 @@
 
 
 
-/*
- * Hack -- Prepare to use the "Secure" routines
- */
-#if defined(SET_UID) && defined(SECURE)
-extern int PlayerUID;
-# define getuid() PlayerUID
-# define geteuid() PlayerUID
-#endif
-
-
-
 /*** Color constants ***/
 
 
@@ -2961,6 +2969,12 @@ extern int PlayerUID;
  */
 #define SOUND_MAX MSG_MAX
 
+
+/*
+ * Maximum number of macro trigger names
+ */
+#define MAX_MACRO_TRIGGER 200
+#define MAX_MACRO_MOD 12
 
 
 /*** Hack ***/

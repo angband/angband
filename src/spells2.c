@@ -1914,7 +1914,7 @@ bool ident_spell(void)
 	}
 
 
-	/* Identify it fully */
+	/* Identify it */
 	object_aware(o_ptr);
 	object_known(o_ptr);
 
@@ -1990,7 +1990,7 @@ bool identify_fully(void)
 	}
 
 
-	/* Identify it fully */
+	/* Identify it */
 	object_aware(o_ptr);
 	object_known(o_ptr);
 
@@ -2044,14 +2044,11 @@ bool identify_fully(void)
  */
 static bool item_tester_hook_recharge(const object_type *o_ptr)
 {
-	/* Recharge staffs */
+	/* Recharge staves */
 	if (o_ptr->tval == TV_STAFF) return (TRUE);
 
 	/* Recharge wands */
 	if (o_ptr->tval == TV_WAND) return (TRUE);
-
-	/* Hack -- Recharge rods */
-	if (o_ptr->tval == TV_ROD) return (TRUE);
 
 	/* Nope */
 	return (FALSE);
@@ -2059,7 +2056,7 @@ static bool item_tester_hook_recharge(const object_type *o_ptr)
 
 
 /*
- * Recharge a wand/staff/rod from the pack or on the floor.
+ * Recharge a wand or staff from the pack or on the floor.
  *
  * Mage -- Recharge I --> recharge(5)
  * Mage -- Recharge II --> recharge(40)
@@ -2079,7 +2076,7 @@ static bool item_tester_hook_recharge(const object_type *o_ptr)
  * Should probably not "destroy" over-charged items, unless we
  * "replace" them by, say, a broken stick or some such.  The only
  * reason this is okay is because "scrolls of recharging" appear
- * BEFORE all staffs/wands/rods in the inventory.  Note that the
+ * BEFORE all staves/wands in the inventory.  Note that the
  * new "auto_sort_pack" option would correctly handle replacing
  * the "broken" wand with any other item (i.e. a broken stick).
  *
@@ -2118,86 +2115,50 @@ bool recharge(int num)
 	/* Extract the object "level" */
 	lev = k_info[o_ptr->k_idx].level;
 
-	/* Recharge a rod */
-	if (o_ptr->tval == TV_ROD)
+	/* Recharge power */
+	i = (num + 100 - lev - (10 * o_ptr->pval)) / 15;
+
+	/* Back-fire XXX XXX XXX */
+	if ((i <= 1) || (rand_int(i) == 0))
 	{
-		/* Extract a recharge power */
-		i = (100 - lev + num) / 5;
+		/* Dangerous Hack -- Destroy the item */
+		msg_print("There is a bright flash of light.");
 
-		/* Back-fire */
-		if ((i <= 1) || (rand_int(i) == 0))
+		/* Reduce and describe inventory */
+		if (item >= 0)
 		{
-			/* Hack -- backfire */
-			msg_print("The recharge backfires, draining the rod further!");
-
-			/* Hack -- decharge the rod */
-			if (o_ptr->pval < 10000) o_ptr->pval = (o_ptr->pval + 100) * 2;
+			inven_item_increase(item, -999);
+			inven_item_describe(item);
+			inven_item_optimize(item);
 		}
 
-		/* Recharge */
+		/* Reduce and describe floor item */
 		else
 		{
-			/* Rechange amount */
-			t = (num * damroll(2, 4));
-
-			/* Recharge by that amount */
-			if (o_ptr->pval > t)
-			{
-				o_ptr->pval -= t;
-			}
-
-			/* Fully recharged */
-			else
-			{
-				o_ptr->pval = 0;
-			}
+			floor_item_increase(0 - item, -999);
+			floor_item_describe(0 - item);
+			floor_item_optimize(0 - item);
 		}
 	}
 
-	/* Recharge wand/staff */
+	/* Recharge */
 	else
 	{
-		/* Recharge power */
-		i = (num + 100 - lev - (10 * o_ptr->pval)) / 15;
+		/* Extract a "power" */
+		t = (num / (lev + 2)) + 1;
 
-		/* Back-fire XXX XXX XXX */
-		if ((i <= 1) || (rand_int(i) == 0))
+		/* Recharge based on the power */
+		if (t > 0) o_ptr->pval += 2 + randint(t);
+
+		/* *Identified* items keep the knowledge about the charges */
+		if (!(o_ptr->ident & IDENT_MENTAL))
 		{
-			/* Dangerous Hack -- Destroy the item */
-			msg_print("There is a bright flash of light.");
-
-			/* Reduce and describe inventory */
-			if (item >= 0)
-			{
-				inven_item_increase(item, -999);
-				inven_item_describe(item);
-				inven_item_optimize(item);
-			}
-
-			/* Reduce and describe floor item */
-			else
-			{
-				floor_item_increase(0 - item, -999);
-				floor_item_describe(0 - item);
-				floor_item_optimize(0 - item);
-			}
-		}
-
-		/* Recharge */
-		else
-		{
-			/* Extract a "power" */
-			t = (num / (lev + 2)) + 1;
-
-			/* Recharge based on the power */
-			if (t > 0) o_ptr->pval += 2 + randint(t);
-
-			/* Hack -- we no longer "know" the item */
+			/* We no longer "know" the item */
 			o_ptr->ident &= ~(IDENT_KNOWN);
-
-			/* Hack -- we no longer think the item is empty */
-			o_ptr->ident &= ~(IDENT_EMPTY);
 		}
+
+		/* We no longer think the item is empty */
+		o_ptr->ident &= ~(IDENT_EMPTY);
 	}
 
 	/* Combine / Reorder the pack (later) */
@@ -2389,11 +2350,10 @@ bool banishment(void)
 
 	char typ;
 
-	bool result = FALSE;
-
 
 	/* Mega-Hack -- Get a monster symbol */
-	(void)get_com("Choose a monster race (by symbol) to banish: ", &typ);
+	if (!get_com("Choose a monster race (by symbol) to banish: ", &typ))
+		return FALSE;
 
 	/* Delete the monsters of that "type" */
 	for (i = 1; i < mon_max; i++)
@@ -2415,12 +2375,10 @@ bool banishment(void)
 
 		/* Take some damage */
 		take_hit(randint(4), "the strain of casting Banishment");
-
-		/* Take note */
-		result = TRUE;
 	}
 
-	return (result);
+	/* Success */
+	return TRUE;
 }
 
 
@@ -2536,6 +2494,13 @@ void destroy_area(int y1, int x1, int r, bool full)
 
 	/* Unused parameter */
 	(void)full;
+
+	/* No effect in town */
+	if (!p_ptr->depth)
+	{
+		msg_print("The ground shakes for a moment.");
+		return;
+	}
 
 	/* Big area of affect */
 	for (y = (y1 - r); y <= (y1 + r); y++)
@@ -2671,6 +2636,12 @@ void earthquake(int cy, int cx, int r)
 
 	bool map[32][32];
 
+	/* No effect in town */
+	if (!p_ptr->depth)
+	{
+		msg_print("The ground shakes for a moment.");
+		return;
+	}
 
 	/* Paranoia -- Enforce maximum range */
 	if (r > 12) r = 12;
@@ -3730,6 +3701,12 @@ void brand_object(object_type *o_ptr, byte brand_type)
 
 		/* Brand the object */
 		o_ptr->name2 = brand_type;
+
+		/* Combine / Reorder the pack (later) */
+		p_ptr->notice |= (PN_COMBINE | PN_REORDER);
+
+		/* Window stuff */
+		p_ptr->window |= (PW_INVEN | PW_EQUIP);
 	
 		/* Enchant */
 		enchant(o_ptr, rand_int(3) + 4, ENCH_TOHIT | ENCH_TODAM);

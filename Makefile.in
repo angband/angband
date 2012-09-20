@@ -87,7 +87,7 @@ install_sh = @install_sh@
 
 AUTOMAKE_OPTIONS = foreign
 
-EXTRA_DIST = readme.txt changes.txt compile.txt acconfig.h
+EXTRA_DIST = readme.txt changes.txt compile.txt
 
 SUBDIRS = src lib
 subdir = .
@@ -101,9 +101,9 @@ RECURSIVE_TARGETS = info-recursive dvi-recursive install-info-recursive \
 	uninstall-info-recursive all-recursive install-data-recursive \
 	install-exec-recursive installdirs-recursive install-recursive \
 	uninstall-recursive check-recursive installcheck-recursive
-DIST_COMMON = AUTHORS COPYING Makefile.am Makefile.in THANKS TODO \
-	acconfig.h acinclude.m4 aclocal.m4 config.guess config.sub \
-	configure configure.in depcomp install-sh missing mkinstalldirs
+DIST_COMMON = AUTHORS COPYING ChangeLog Makefile.am Makefile.in THANKS \
+	TODO acinclude.m4 aclocal.m4 config.guess config.sub configure \
+	configure.in depcomp install-sh missing mkinstalldirs
 DIST_SUBDIRS = $(SUBDIRS)
 all: all-recursive
 

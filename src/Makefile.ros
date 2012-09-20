@@ -20,16 +20,17 @@ tolua = lua.tolua
 CCFLAGS = -Wall -depend !Depend -throwback
 LDFLAGS = -aif
 
-# Lua object files
-LUAOBJS = lua.lapi.o lua.ldebug.o lua.lmem.o lua.lstrlib.o lua.lvm.o \
-  lua.tolua_lb.o lua.lauxlib.o lua.ldo.o lua.lobject.o lua.ltable.o \
-  lua.lzio.o lua.tolua_rg.o lua.lbaselib.o lua.lfunc.o lua.lparser.o \
-  lua.tolua_bd.o lua.tolua_tm.o lua.lcode.o lua.lgc.o \
-  lua.lstate.o lua.ltm.o lua.tolua_eh.o lua.tolua_tt.o lua.ldblib.o \
-  lua.llex.o lua.lstring.o lua.lundump.o lua.tolua_gp.o
+LUAOBJS = \
+  lua.lapi.o lua.ldebug.o lua.lmem.o lua.lstrlib.o lua.lvm.o \
+  lua.lauxlib.o lua.ldo.o lua.lobject.o lua.ltable.o lua.lzio.o \
+  lua.lbaselib.o lua.lfunc.o lua.lparser.o lua.lcode.o lua.lgc.o \
+  lua.lopcodes.o lua.lstate.o lua.ltm.o  lua.ldblib.o lua.llex.o \
+  lua.lstring.o lua.ldump.o lua.lundump.o lua.ltablib.o \
+  lua.tolua_map.o lua.tolua_is.o lua.tolua_to.o lua.tolua_push.o \
+  lua.tolua_event.o
 
-# toLua object files
-TOLUAOBJS = lua.tolua.o lua.tolualua.o lua.liolib.o \
+TOLUAOBJS = \
+  lua.tolua.o lua.toluabind.o lua.liolib.o \
   $(LUAOBJS)
 
 # Lua package files:

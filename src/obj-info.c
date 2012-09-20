@@ -475,7 +475,11 @@ bool object_info_out(const object_type *o_ptr)
 	if (object_known_p(o_ptr) && (!(o_ptr->ident & IDENT_MENTAL)) &&
 	    ((o_ptr->xtra1) || artifact_p(o_ptr)))
 	{
-		text_out("It might have hidden powers.  ");
+		/* Hack -- Put this in a separate paragraph if screen dump */
+		if (something && text_out_hook == text_out_to_screen)
+			text_out("\n\n   ");
+
+		text_out("It might have hidden powers.");
 		something = TRUE;
 	}
 
@@ -486,12 +490,15 @@ bool object_info_out(const object_type *o_ptr)
 
 /*
  * Header for additional information when printing to screen.
+ *
+ * Return TRUE if an object description was displayed.
  */
-static void screen_out_head(const object_type *o_ptr)
+static bool screen_out_head(const object_type *o_ptr)
 {
 	char *o_name;
 	int name_size = Term->wid;
-	
+	bool has_description = FALSE;
+
 	/* Allocate memory to the size of the screen */
 	o_name = C_RNEW(name_size, char);
 
@@ -502,14 +509,37 @@ static void screen_out_head(const object_type *o_ptr)
 	text_out_c(TERM_YELLOW, format("%^s\n\n   ", o_name));
 
 	/* Free up the memory */
-	KILL(o_name);
+	FREE(o_name);
 
-	/* Display the object description */
-	if (k_info[o_ptr->k_idx].text)
+	/* Display the known artifact description */
+	if (!adult_rand_artifacts && o_ptr->name1 &&
+	    object_known_p(o_ptr) && a_info[o_ptr->name1].text)
 	{
-		text_out(k_text + k_info[o_ptr->k_idx].text);
-		text_out("\n\n");
+		text_out(a_text + a_info[o_ptr->name1].text);
+		text_out("\n\n   ");
+		has_description = TRUE;
 	}
+
+	/* Display the known object description */
+	else if (object_aware_p(o_ptr) || object_known_p(o_ptr))
+	{
+		if (k_info[o_ptr->k_idx].text)
+		{
+			text_out(k_text + k_info[o_ptr->k_idx].text);
+			text_out("\n\n   ");
+			has_description = TRUE;
+		}
+
+		/* Display an additional ego-item description */
+		if (o_ptr->name2 && object_known_p(o_ptr) && e_info[o_ptr->name2].text)
+		{
+			text_out(e_text + e_info[o_ptr->name2].text);
+			text_out("\n\n   ");
+			has_description = TRUE;
+		}
+	}
+
+	return (has_description);
 }
 
 
@@ -518,36 +548,58 @@ static void screen_out_head(const object_type *o_ptr)
  */
 void object_info_screen(const object_type *o_ptr)
 {
+	bool has_description, has_info;
+
 	/* Redirect output to the screen */
 	text_out_hook = text_out_to_screen;
 
-	/* Hack -- Browse books */
+	/* Save the screen */
+	screen_save();
+
+	has_description = screen_out_head(o_ptr);
+
+	object_info_out_flags = object_flags_known;
+
+	/* Dump the info */
+	has_info = object_info_out(o_ptr);
+
+	if (!object_known_p(o_ptr))
+	{
+		if (has_info)
+			text_out("\n\n   ");
+		text_out("This item has not been identified.");
+		has_info = TRUE;
+	}
+	else if (!has_description && !has_info)
+	{
+		text_out("This item does not seem to possess any special abilities.");
+	}
+
+	/* Descriptions end with "\n\n   ", other info does not */
+	if (has_description && !has_info)
+	{
+		/* Back up over the "   " at the beginning of the line */
+		int x, y;
+		Term_locate(&x, &y);
+		Term_gotoxy(0, y);
+	}
+	else
+	{
+		text_out("\n\n");
+	}
+
+	text_out_c(TERM_L_BLUE, "[Press any key to continue]\n");
+
+	/* Wait for input */
+	(void)inkey();
+
+	/* Load the screen */
+	screen_load();
+
+	/* Hack -- Browse book, then prompt for a command */
 	if (o_ptr->tval == cp_ptr->spell_book)
 	{
 		/* Call the aux function */
 		do_cmd_browse_aux(o_ptr);
 	}
-	else
-	{
-		/* Save the screen */
-		screen_save();
-
-		screen_out_head(o_ptr);
-
-		object_info_out_flags = object_flags_known;
-
-		/* Dump the info */
-		if (!object_info_out(o_ptr))
-			text_out("This item does not seem to possess any special abilities.  ");
-
-		text_out_c(TERM_L_BLUE, "\n\n[Press any key to continue]\n");
-
-		/* Wait for input */
-		(void)inkey();
-
-		/* Load the screen */
-		screen_load();
-	}
-
-	return;
 }

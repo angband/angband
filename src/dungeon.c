@@ -167,7 +167,7 @@ static void sense_inventory(void)
 		/* It has already been sensed, do not sense it again */
 		if (o_ptr->ident & (IDENT_SENSE)) continue;
 
-		/* It is fully known, no information needed */
+		/* It is known, no information needed */
 		if (object_known_p(o_ptr)) continue;
 
 		/* Occasional failure on inventory items */
@@ -365,30 +365,195 @@ static void regen_monsters(void)
 }
 
 
+/*
+ * If player has inscribed the object with "!!", let him know when it's
+ * recharged. -LM-
+ */
+static void recharged_notice(const object_type *o_ptr)
+{
+	char o_name[120];
+
+	cptr s;
+
+	/* No inscription */
+	if (!o_ptr->note) return;
+
+	/* Find a '!' */
+	s = strchr(quark_str(o_ptr->note), '!');
+
+	/* Process notification request */
+	while (s)
+	{
+		/* Find another '!' */
+		if (s[1] == '!')
+		{
+			/* Describe (briefly) */
+			object_desc(o_name, sizeof(o_name), o_ptr, FALSE, 0);
+
+			/* Notify the player */
+			if (o_ptr->number > 1)
+				msg_format("Your %s have recharged.", o_name);
+
+			/* Artifacts */
+			else if (o_ptr->name1)
+			{
+				msg_format("The %s has recharged.", o_name);
+			}
+
+			/* Single, non-artifact items */
+			else msg_format("Your %s has recharged.", o_name);
+
+			/* Done */
+			return;
+		}
+
+		/* Keep looking for '!'s */
+		s = strchr(s + 1, '!');
+	}
+}
+
+
+/*
+ * Recharge activatable objects in the player's equipment
+ * and rods in the inventory and on the ground.
+ */
+static void recharge_objects(void)
+{
+	int i;
+
+	int charged = 0;
+
+	object_type *o_ptr;
+	object_kind *k_ptr;
+
+
+	/* Process equipment */
+	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
+	{
+		/* Get the object */
+		o_ptr = &inventory[i];
+
+		/* Skip non-objects */
+		if (!o_ptr->k_idx) continue;
+
+		/* Recharge activatable objects */
+		if (o_ptr->timeout > 0)
+		{
+			/* Recharge */
+			o_ptr->timeout--;
+
+			/* Notice changes */
+			if (!(o_ptr->timeout)) charged++;
+
+			/* Message if item is recharged, if inscribed with "!!" */
+			if (!(o_ptr->timeout)) recharged_notice(o_ptr);
+		}
+	}
+
+	/* Notice changes */
+	if (charged)
+	{
+		/* Window stuff */
+		p_ptr->window |= (PW_EQUIP);
+	}
+
+	charged = 0;
+
+	/* Recharge rods */
+	for (i = 0; i < INVEN_PACK; i++)
+	{
+		o_ptr = &inventory[i];
+		k_ptr = &k_info[o_ptr->k_idx];
+
+		/* Skip non-objects */
+		if (!o_ptr->k_idx) continue;
+
+		/* Examine all charging rods */
+		if ((o_ptr->tval == TV_ROD) && (o_ptr->timeout))
+		{
+			/* Determine how many rods are charging */
+			int temp = (o_ptr->timeout + (k_ptr->pval - 1)) / k_ptr->pval;
+
+			if (temp > o_ptr->number) temp = o_ptr->number;
+
+			/* Decrease timeout by that number */
+			o_ptr->timeout -= temp;
+
+			/* Boundary control */
+			if (o_ptr->timeout < 0) o_ptr->timeout = 0;
+
+			/* Update if any rods are recharged */
+			if (temp > (o_ptr->timeout + (k_ptr->pval - 1)) / k_ptr->pval)
+			{
+				/* Update window */
+				charged++;
+
+				/* Message if whole stack is recharged, if inscribed with "!!" */
+				if (!(o_ptr->timeout)) recharged_notice(o_ptr);
+
+			}
+		}
+	}
+
+	/* Notice changes */
+	if (charged)
+	{
+		/* Combine pack */
+		p_ptr->notice |= (PN_COMBINE);
+
+		/* Window stuff */
+		p_ptr->window |= (PW_INVEN);
+	}
+
+
+	/*** Process Objects ***/
+
+	/* Process objects */
+	for (i = 1; i < o_max; i++)
+	{
+		/* Get the object */
+		o_ptr = &o_list[i];
+
+		/* Skip dead objects */
+		if (!o_ptr->k_idx) continue;
+
+		/* Recharge rods on the ground */
+		if ((o_ptr->tval == TV_ROD) && (o_ptr->timeout))
+		{
+			/* Charge it */
+			o_ptr->timeout -= o_ptr->number;
+
+			/* Boundary control */
+			if (o_ptr->timeout < 0) o_ptr->timeout = 0;
+		}
+	}
+}
+
 
 /*
  * Handle certain things once every 10 game turns
  */
 static void process_world(void)
 {
-	int i, j;
+	int i;
 
 	int regen_amount;
 
 	object_type *o_ptr;
 
 
-
 	/* Every 10 game turns */
 	if (turn % 10) return;
 
+	/* Event -- process world */
+	process_world_hook();
 
 	/*** Check the Time and Load ***/
 
 	if (!(turn % 1000))
 	{
 		/* Check time and load */
-		if ((0 != check_time()) || (0 != check_load()))
+		if (0 != check_time())
 		{
 			/* Warning */
 			if (closing_flag <= 2)
@@ -514,12 +679,14 @@ static void process_world(void)
 
 	/*** Damage over Time ***/
 
+#ifndef USE_SCRIPT
 	/* Take damage from poison */
 	if (p_ptr->poisoned)
 	{
 		/* Take damage */
 		take_hit(1, "poison");
 	}
+#endif /* USE_SCRIPT */
 
 	/* Take damage from cuts */
 	if (p_ptr->cut)
@@ -781,6 +948,7 @@ static void process_world(void)
 
 	/*** Poison and Stun and Cut ***/
 
+#ifndef USE_SCRIPT
 	/* Poison */
 	if (p_ptr->poisoned)
 	{
@@ -789,6 +957,7 @@ static void process_world(void)
 		/* Apply some healing */
 		(void)set_poisoned(p_ptr->poisoned - adjust);
 	}
+#endif /* USE_SCRIPT */
 
 	/* Stun */
 	if (p_ptr->stun)
@@ -874,80 +1043,11 @@ static void process_world(void)
 		}
 	}
 
-	/* Process equipment */
-	for (j = 0, i = INVEN_WIELD; i < INVEN_TOTAL; i++)
-	{
-		/* Get the object */
-		o_ptr = &inventory[i];
-
-		/* Skip non-objects */
-		if (!o_ptr->k_idx) continue;
-
-		/* Recharge activatable objects */
-		if (o_ptr->timeout > 0)
-		{
-			/* Recharge */
-			o_ptr->timeout--;
-
-			/* Notice changes */
-			if (!(o_ptr->timeout)) j++;
-		}
-	}
-
-	/* Notice changes */
-	if (j)
-	{
-		/* Window stuff */
-		p_ptr->window |= (PW_EQUIP);
-	}
-
-	/* Recharge rods */
-	for (j = 0, i = 0; i < INVEN_PACK; i++)
-	{
-		o_ptr = &inventory[i];
-
-		/* Skip non-objects */
-		if (!o_ptr->k_idx) continue;
-
-		/* Examine all charging rods */
-		if ((o_ptr->tval == TV_ROD) && (o_ptr->pval))
-		{
-			/* Charge it */
-			o_ptr->pval--;
-
-			/* Notice changes */
-			if (!(o_ptr->pval)) j++;
-		}
-	}
-
-	/* Notice changes */
-	if (j)
-	{
-		/* Combine pack */
-		p_ptr->notice |= (PN_COMBINE);
-
-		/* Window stuff */
-		p_ptr->window |= (PW_INVEN);
-	}
+	/* Recharge activatable objects and rods */
+	recharge_objects();
 
 	/* Feel the inventory */
 	sense_inventory();
-
-
-	/*** Process Objects ***/
-
-	/* Process objects */
-	for (i = 1; i < o_max; i++)
-	{
-		/* Get the object */
-		o_ptr = &o_list[i];
-
-		/* Skip dead objects */
-		if (!o_ptr->k_idx) continue;
-
-		/* Recharge rods on the ground */
-		if ((o_ptr->tval == TV_ROD) && (o_ptr->pval)) o_ptr->pval--;
-	}
 
 
 	/*** Involuntary Movement ***/
@@ -1395,14 +1495,22 @@ static void process_command(void)
 		/* Cast a spell */
 		case 'm':
 		{
-			do_cmd_cast();
+			if (cp_ptr->spell_book == TV_PRAYER_BOOK)
+				do_cmd_pray();
+			else
+				do_cmd_cast();
+
 			break;
 		}
 
 		/* Pray a prayer */
 		case 'p':
 		{
-			do_cmd_pray();
+			if (cp_ptr->spell_book == TV_MAGIC_BOOK)
+				do_cmd_cast();
+			else
+				do_cmd_pray();
+
 			break;
 		}
 
@@ -1806,6 +1914,8 @@ static void process_player(void)
 {
 	int i;
 
+	/* Event -- Player turn */
+	player_turn_hook();
 
 	/*** Check for interrupts ***/
 
@@ -1997,9 +2107,6 @@ static void process_player(void)
 
 				/* Redraw the state */
 				p_ptr->redraw |= (PR_STATE);
-
-				/* Redraw stuff */
-				/* redraw_stuff(); */
 			}
 		}
 
@@ -2300,7 +2407,7 @@ static void dungeon(void)
 	p_ptr->window |= (PW_INVEN | PW_EQUIP | PW_PLAYER_0 | PW_PLAYER_1);
 
 	/* Window stuff */
-	p_ptr->window |= (PW_MONSTER);
+	p_ptr->window |= (PW_MONSTER | PW_MONLIST);
 
 	/* Window stuff */
 	p_ptr->window |= (PW_OVERHEAD);
@@ -2392,6 +2499,8 @@ static void dungeon(void)
 			m_ptr->energy += extract_energy[m_ptr->mspeed];
 		}
 
+		/* Event -- game turn */
+		game_turn_hook();
 
 		/* Can the player move? */
 		while ((p_ptr->energy >= 100) && !p_ptr->leaving)

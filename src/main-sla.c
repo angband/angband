@@ -335,7 +335,7 @@ static errr Term_xtra_sla(int n, int v)
 
 		/* Delay */
 		case TERM_XTRA_DELAY:
-		usleep(1000 * v);
+		if (v > 0) usleep(1000 * v);
 		return (0);
 	}
 

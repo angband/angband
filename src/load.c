@@ -321,6 +321,33 @@ static errr rd_item(object_type *o_ptr)
 	if (k_ptr->cost <= 0) o_ptr->ident |= (IDENT_BROKEN);
 
 
+	/*
+	 * Ensure that rods and wands get the appropriate pvals,
+	 * and transfer rod charges to timeout.
+	 * this test should only be passed once, the first
+	 * time the file is open with ROD/WAND stacking code
+	 * It could change the timeout improperly if the PVAL (time a rod
+	 * takes to charge after use) is changed in object.txt.
+	 * But this is nothing a little resting won't solve.
+	 *
+	 * -JG-
+	 */
+	if ((o_ptr->tval == TV_ROD) &&
+	    (o_ptr->pval - (k_ptr->pval * o_ptr->number) != 0))
+	{
+		o_ptr->timeout = o_ptr->pval;
+		o_ptr->pval = k_ptr->pval * o_ptr->number;
+	}
+
+	if (older_than(3, 0, 4))
+	{
+		/* Recalculate charges of stacked wands and staves */
+		if ((o_ptr->tval == TV_WAND) || (o_ptr->tval == TV_STAFF))
+		{
+			o_ptr->pval = o_ptr->pval * o_ptr->number;
+		}
+	}
+
 	/* Repair non "wearable" items */
 	if (!wearable_p(o_ptr))
 	{
@@ -565,14 +592,15 @@ static errr rd_store(int n)
 
 	byte own, num;
 
+	/* XXX Old values */
+	strip_bytes(6);
 
 	/* Read the basic info */
-	rd_s32b(&st_ptr->store_open);
-	rd_s16b(&st_ptr->insult_cur);
 	rd_byte(&own);
 	rd_byte(&num);
-	rd_s16b(&st_ptr->good_buy);
-	rd_s16b(&st_ptr->bad_buy);
+
+	/* XXX Old values */
+	strip_bytes(4);
 
 	/* Paranoia */
 	if (own >= z_info->b_max)
@@ -1681,11 +1709,8 @@ static errr rd_savefile_new_aux(void)
 	u16b tmp16u;
 	u32b tmp32u;
 
-
-#ifdef VERIFY_CHECKSUMS
 	u32b n_x_check, n_v_check;
 	u32b o_x_check, o_v_check;
-#endif
 
 
 	/* Mention the savefile version */
@@ -1883,8 +1908,6 @@ static errr rd_savefile_new_aux(void)
 	}
 
 
-#ifdef VERIFY_CHECKSUMS
-
 	/* Save the checksum */
 	n_v_check = v_check;
 
@@ -1910,8 +1933,6 @@ static errr rd_savefile_new_aux(void)
 		note("Invalid encoded checksum");
 		return (-1);
 	}
-
-#endif
 
 
 	/* Hack -- no ghosts */

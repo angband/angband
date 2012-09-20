@@ -2993,13 +2993,14 @@ static bool get_moves(int m_idx, int mm[5])
 			if (flow_by_sound)
 			{
 				/* Adjust movement */
-				if (get_fear_moves_aux(m_idx, &y, &x)) done = TRUE;
+				get_fear_moves_aux(m_idx, &y, &x);
 			}
 		}
 
 #endif /* MONSTER_FLOW */
 #endif /* MONSTER_AI */
 
+		done = TRUE;
 	}
 
 

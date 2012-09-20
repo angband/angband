@@ -2,7 +2,7 @@
 -- Written by Waldemar Celes
 -- TeCGraf/PUC-Rio
 -- Jul 1998
--- $Id: function.lua,v 1.1 2001/10/27 19:35:29 angband Exp $
+-- $Id: function.lua,v 1.2 2003/08/10 11:43:28 rr9 Exp $
 
 -- This code is free software; you can redistribute it and/or modify it.
 -- The software provided hereunder is on an "as is" basis, and
@@ -18,6 +18,7 @@
 --  type = type
 --  ptr  = "*" or "&", if representing a pointer or a reference
 --  name = name
+--  lname = lua name
 --  args  = list of argument declarations
 --  const = if it is a method receiving a const "this".
 classFunction = {
@@ -27,16 +28,20 @@ classFunction = {
  name = '',
  args = {n=0},
  const = '',
- _base = classFeature,
 }
-settag(classFunction,tolua_tag)
+classFunction.__index = classFunction
+setmetatable(classFunction,classFeature)
 
 -- declare tags
-function classFunction:decltag ()
- self.itype,self.tag = tagvar(self.type,strfind(self.mod,'const'))
+function classFunction:decltype ()
+ self.type = typevar(self.type)
+ if strfind(self.mod,'const') then
+	 self.type = 'const '..self.type
+		self.mod = gsub(self.mod,'const%s*','')
+	end
  local i=1
  while self.args[i] do
-  self.args[i]:decltag()
+  self.args[i]:decltype()
   i = i+1
  end
 end
@@ -45,6 +50,7 @@ end
 -- Write binding function
 -- Outputs C/C++ binding function.
 function classFunction:supcode ()
+ local overload = strsub(self.cname,-2,-1) - 1  -- indicate overloaded func
  local nret = 0      -- number of returned values
  local class = self:inclass()
  local _,_,static = strfind(self.mod,'^%s*(static)')
@@ -58,16 +64,22 @@ function classFunction:supcode ()
  output("{")
 
  -- check types
+	if overload < 0 then
+	 output('#ifndef TOLUA_RELEASE\n')
+	end
+	output(' tolua_Error tolua_err;')
  output(' if (\n')
  -- check self
  local narg
  if class then narg=2 else narg=1 end
- if class and self.name~='new' and static==nil then
-  if self.const == 'const' then
-   output('     !tolua_istype(tolua_S,1,',self.parent.ctag,',0) ||\n') 
-  else
-   output('     !tolua_istype(tolua_S,1,',self.parent.tag,',0) ||\n') 
-  end
+ if class then
+	 local func = 'tolua_isusertype'
+		local type = self.parent.type
+	 if self.name=='new' or static~=nil then
+		 func = 'tolua_isusertable'
+			type = self.parent.type
+		end
+		output('     !'..func..'(tolua_S,1,"'..type..'",0,&tolua_err) ||\n') 
  end
  -- check args
  if self.args[1].type ~= 'void' then
@@ -81,17 +93,22 @@ function classFunction:supcode ()
   end
  end
  -- check end of list 
- output('     !tolua_isnoobj(tolua_S,'..narg..')\n )\n  goto tolua_lerror;')
+ output('     !tolua_isnoobj(tolua_S,'..narg..',&tolua_err)\n )')
+	output('  goto tolua_lerror;')
 
- output(' else\n {')
+ output(' else\n')
+	if overload < 0 then
+	 output('#endif\n')
+	end
+	output(' {')
  
  -- declare self, if the case
  local narg
  if class then narg=2 else narg=1 end
  if class and self.name~='new' and static==nil then
-  output(' ',self.const,class,'*','self = ')
-  output('(',self.const,class,'*) ')
-  output('tolua_getusertype(tolua_S,1,0);')
+  output(' ',self.const,self.parent.type,'*','self = ')
+  output('(',self.const,self.parent.type,'*) ')
+  output('tolua_tousertype(tolua_S,1,0);')
  elseif static then
   _,_,self.mod = strfind(self.mod,'^%s*static%s%s*(.*)')
  end
@@ -107,7 +124,9 @@ function classFunction:supcode ()
 
  -- check self
  if class and self.name~='new' and static==nil then 
-  output('  if (!self) tolua_error(tolua_S,"invalid \'self\' in function \''..self.name..'\'");');
+	 output('#ifndef TOLUA_RELEASE\n')
+  output('  if (!self) tolua_error(tolua_S,"invalid \'self\' in function \''..self.name..'\'",NULL);');
+	 output('#endif\n')
  end
 
  -- get array element values
@@ -125,17 +144,17 @@ function classFunction:supcode ()
  if class and self.name=='delete' then
   output('  delete self;')
  elseif class and self.name == 'operator&[]' then
-  output('  self->operator[](',self.args[1].name,') = ',self.args[2].name,';')
+  output('  self->operator[](',self.args[1].name,'-1) = ',self.args[2].name,';')
  else
   output('  {')
   if self.type ~= '' and self.type ~= 'void' then
-   output('  ',self.mod,self.type,self.ptr,'toluaI_ret = ')
+   output('  ',self.mod,self.type,self.ptr,'tolua_ret = ')
    output('(',self.mod,self.type,self.ptr,') ')
   else
    output('  ')
   end
   if class and self.name=='new' then
-   output('new',class,'(')
+   output('new',self.type,'(')
   elseif class and static then
    output(class..'::'..self.name,'(')
   elseif class then
@@ -154,29 +173,34 @@ function classFunction:supcode ()
    end
   end
      
-  output(');')
+  if class and self.name == 'operator[]' then
+   output('-1);')
+		else
+   output(');')
+		end
 
   -- return values
   if self.type ~= '' and self.type ~= 'void' then
    nret = nret + 1
    local t,ct = isbasic(self.type)
    if t then
-    output('   tolua_push'..t..'(tolua_S,(',ct,')toluaI_ret);')
+    output('   tolua_push'..t..'(tolua_S,(',ct,')tolua_ret);')
    else
+			 t = self.type
     if self.ptr == '' then
      output('   {')
      output('#ifdef __cplusplus\n')
-     output('    void* toluaI_clone = new',self.type,'(toluaI_ret);') 
+     output('    void* tolua_obj = new',t,'(tolua_ret);') 
+     output('    tolua_pushusertype(tolua_S,tolua_clone(tolua_S,tolua_obj,'.. (_collect[t] or 'NULL') ..'),"',t,'");')
      output('#else\n')
-     output('    void* toluaI_clone = tolua_copy(tolua_S,(void*)&toluaI_ret,sizeof(',self.type,'));')
+     output('    void* tolua_obj = tolua_copy(tolua_S,(void*)&tolua_ret,sizeof(',t,'));')
+     output('    tolua_pushusertype(tolua_S,tolua_clone(tolua_S,tolua_obj,NULL),"',t,'");')
      output('#endif\n')
-     output('    tolua_pushusertype(tolua_S,tolua_doclone(tolua_S,toluaI_clone,',self.tag,'),',self.tag,');')
      output('   }')
-     --output('   tolua_pushclone((void*)&toluaI_ret,sizeof(',self.type,'),',self.tag,');')
     elseif self.ptr == '&' then
-     output('   tolua_pushusertype(tolua_S,(void*)&toluaI_ret,',self.tag,');')
+     output('   tolua_pushusertype(tolua_S,(void*)&tolua_ret,"',t,'");')
     else
-     output('   tolua_pushusertype(tolua_S,(void*)toluaI_ret,',self.tag,');')
+     output('   tolua_pushusertype(tolua_S,(void*)tolua_ret,"',t,'");')
     end
    end
   end
@@ -212,36 +236,25 @@ function classFunction:supcode ()
  output(' return '..nret..';')
 
  -- call overloaded function or generate error
- output('tolua_lerror:\n')
- local overload = strsub(self.cname,-2,-1) - 1
- if overload >= 0 then
-  output(' return '..strsub(self.cname,1,-3)..format("%02d",overload)..'(tolua_S);')
- else
-  output(' tolua_error(tolua_S,"#ferror in function \''..self.lname..'\'.");')
+	if overload < 0 then
+	 output('#ifndef TOLUA_RELEASE\n')
+  output('tolua_lerror:\n')
+  output(' tolua_error(tolua_S,"#ferror in function \''..self.lname..'\'.",&tolua_err);')
   output(' return 0;')
+  output('#endif\n')
+	else
+  output('tolua_lerror:\n')
+  output(' return '..strsub(self.cname,1,-3)..format("%02d",overload)..'(tolua_S);')
  end
-
  output('}')
  output('\n')
 end
 
+
 -- register function
 function classFunction:register ()
- local parent = self:inclass() or self:inmodule()
- if parent then
-  output(' tolua_function(tolua_S,"'..parent..'","'..self.lname..'",'..self.cname..');')
- else
-  output(' tolua_function(tolua_S,NULL,"'..self.lname..'",'..self.cname..');')
- end
+ output(' tolua_function(tolua_S,"'..self.lname..'",'..self.cname..');')
 end
-
--- unregister function
-function classFunction:unregister ()
- if self:inclass()==nil and self:inmodule()==nil then
-  output(' lua_pushnil(tolua_S); lua_setglobal(tolua_S,"'..self.lname..'");')
- end
-end
-
 
 -- Print method
 function classFunction:print (ident,close)
@@ -250,6 +263,7 @@ function classFunction:print (ident,close)
  print(ident.." type = '"..self.type.."',")
  print(ident.." ptr  = '"..self.ptr.."',")
  print(ident.." name = '"..self.name.."',")
+ print(ident.." lname = '"..self.lname.."',")
  print(ident.." const = '"..self.const.."',")
  print(ident.." cname = '"..self.cname.."',")
  print(ident.." lname = '"..self.lname.."',")
@@ -263,6 +277,22 @@ function classFunction:print (ident,close)
  print(ident.."}"..close)
 end
 
+-- check if it returns a object by value
+function classFunction:requirecollection (t)
+	local r = false
+	if self.type ~= '' and not isbasic(self.type) and self.ptr=='' then
+		local type = gsub(self.type,"%s*const%s*","")
+	 t[type] = "tolua_collect_" .. gsub(type,"::","_")
+	 r = true
+	end
+	local i=1
+	while self.args[i] do
+		r = self.args[i]:requirecollection(t) or r
+		i = i+1
+	end
+	return r
+end
+
 -- determine lua function name overload
 function classFunction:overload ()
  return self.parent:overload(self.lname)
@@ -272,8 +302,8 @@ end
 
 -- Internal constructor
 function _Function (t)
- t._base = classFunction
- settag(t,tolua_tag)
+ setmetatable(t,classFunction)
+ --t:buildnames()
 
  if t.const ~= 'const' and t.const ~= '' then
   error("#invalid 'const' specification")
@@ -289,9 +319,10 @@ function _Function (t)
   elseif t.name == '~'..t.parent.name then
    t.name = 'delete'
    t.lname = 'delete'
+			t.parent._delete = true
   end
  end
- t.cname = t:cfuncname("toluaI")..t:overload(t)
+ t.cname = t:cfuncname("tolua")..t:overload(t)
  return t
 end
 

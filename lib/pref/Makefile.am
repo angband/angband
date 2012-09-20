@@ -31,6 +31,7 @@ angband_files = \
   pref-gcu.prf \
   pref-mac.prf \
   pref-win.prf \
+  pref-dos.prf \
   pref-x11.prf \
   user.prf \
   user-mac.prf \
@@ -47,4 +48,3 @@ angbanddir = @DEFAULT_PATH@pref
 angband_DATA = \
   $(angband_files)
 endif
-

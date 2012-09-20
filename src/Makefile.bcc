@@ -48,15 +48,15 @@ CCFLAGS= $(CCOPTS) $(DBGOPT)
 
 LUAOBJS = \
   lua\lapi.obj lua\ldebug.obj lua\lmem.obj lua\lstrlib.obj lua\lvm.obj \
-  lua\tolua_lb.obj lua\lauxlib.obj lua\ldo.obj lua\lobject.obj \
-  lua\ltable.obj lua\lzio.obj lua\tolua_rg.obj lua\lbaselib.obj \
-  lua\lfunc.obj lua\lparser.obj lua\tolua_bd.obj \
-  lua\tolua_tm.obj lua\lcode.obj lua\lgc.obj lua\lstate.obj \
-  lua\ltm.obj lua\tolua_eh.obj lua\tolua_tt.obj lua\ldblib.obj \
-  lua\llex.obj lua\lstring.obj lua\lundump.obj lua\tolua_gp.obj
+  lua\lauxlib.obj lua\ldo.obj lua\lobject.obj lua\ltable.obj lua\lzio.obj \
+  lua\lbaselib.obj lua\lfunc.obj lua\lparser.obj lua\lcode.obj lua\lgc.obj \
+  lua\lopcodes.obj lua\lstate.obj lua\ltm.obj  lua\ldblib.obj lua\llex.obj \
+  lua\lstring.obj lua\ldump.obj lua\lundump.obj lua\ltablib.obj \
+  lua\tolua_map.obj lua\tolua_is.obj lua\tolua_to.obj lua\tolua_push.obj \
+  lua\tolua_event.obj
 
 TOLUAOBJS = \
-  lua\tolua.obj lua\tolualua.obj lua\liolib.obj \
+  lua\tolua.obj lua\toluabind.obj lua\liolib.obj \
   $(LUAOBJS)
 
 OBJ = \

@@ -2,7 +2,7 @@
 -- Written by Waldemar Celes
 -- TeCGraf/PUC-Rio
 -- Jul 1998
--- $Id: operator.lua,v 1.1 2001/10/27 19:35:29 angband Exp $
+-- $Id: operator.lua,v 1.2 2003/08/10 11:43:31 rr9 Exp $
 
 -- This code is free software; you can redistribute it and/or modify it.
 -- The software provided hereunder is on an "as is" basis, and
@@ -16,18 +16,20 @@
 --  kind = set of character representing the operator (as it appers in C++ code)
 classOperator = {
  kind = '',
- _base = classFunction,
 }
-settag(classOperator,tolua_tag)
+classOperator.__index = classOperator
+setmetatable(classOperator,classFunction)
 
 -- table to transform operator kind into the appropriate tag method name
-_TM = {['+'] = 'operator_add',
-       ['-'] = 'operator_sub',
-       ['*'] = 'operator_mul',
-       ['/'] = 'operator_div',
-       ['<'] = 'operator_lt',
-       ['[]'] = 'operator_get',
-       ['&[]'] = 'operator_set',
+_TM = {['+'] = 'add',
+       ['-'] = 'sub',
+       ['*'] = 'mul',
+       ['/'] = 'div',
+       ['<'] = 'lt',
+       ['<='] = 'le',
+       ['=='] = 'eq',
+       ['[]'] = 'geti',
+       ['&[]'] = 'seti',
       }
        
 
@@ -54,8 +56,7 @@ end
 
 -- Internal constructor
 function _Operator (t)
- t._base = classOperator
- settag(t,tolua_tag)
+ setmetatable(t,classOperator)
 
  if t.const ~= 'const' and t.const ~= '' then
   error("#invalid 'const' specification")
@@ -66,16 +67,15 @@ function _Operator (t)
   error("#operator can only be defined as class member")
  end
 
- t.cname = t:cfuncname("toluaI")..t:overload(t)
- t.name = t.name..t.kind
+ t.name = t.name .. "_" .. _TM[t.kind]
+ t.cname = t:cfuncname("tolua")..t:overload(t)
+ t.name = "operator" .. t.kind  -- set appropriate calling name
  return t
 end
 
 -- Constructor
--- Expects three strings: one representing the function declaration,
--- another representing the argument list, and the third representing
--- the "const" or empty string.
 function Operator (d,k,a,c)
+	local ref = ''
  local t = split(strsub(a,2,strlen(a)-1),',') -- eliminate braces
  local i=1
  local l = {n=0}
@@ -85,11 +85,13 @@ function Operator (d,k,a,c)
   i = i+1
  end
  if k == '[]' then
+	 local _
+	 _, _, ref = strfind(d,'(&)')
   d = gsub(d,'&','')
  elseif k=='&[]' then
   l.n = l.n+1
   l[l.n] = Declaration(d,'var')
-  l[l.n].name = 'toluaI_value'
+  l[l.n].name = 'tolua_value'
  end
  local f = Declaration(d,'func')
  if k == '[]' and (l[1]==nil or isbasic(l[1].type)~='number') then
@@ -98,11 +100,11 @@ function Operator (d,k,a,c)
  f.args = l
  f.const = c
  f.kind = gsub(k,"%s","")
- f.lname = _TM[f.kind]
- if not f.lname then
+ if not _TM[f.kind] then
   error("tolua: no support for operator" .. f.kind)
  end
- if f.kind == '[]' and not strfind(f.mod,'const') then
+ f.lname = ".".._TM[f.kind]
+ if f.kind == '[]' and ref=='&' and f.const~='const' then
   Operator(d,'&'..k,a,c) 	-- create correspoding set operator
  end
  return _Operator(f)

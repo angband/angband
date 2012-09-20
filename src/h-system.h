@@ -47,7 +47,7 @@
 
 
 
-#ifdef MACINTOSH
+#if defined(MACINTOSH) && defined(__MWERKS__)
 # include <unix.h>
 #endif
 

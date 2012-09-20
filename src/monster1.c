@@ -726,6 +726,7 @@ static void describe_monster_abilities(int r_idx, const monster_lore *l_ptr)
 	if (l_ptr->flags3 & RF3_IM_FIRE) vp[vn++] = "fire";
 	if (l_ptr->flags3 & RF3_IM_COLD) vp[vn++] = "cold";
 	if (l_ptr->flags3 & RF3_IM_POIS) vp[vn++] = "poison";
+	if (l_ptr->flags3 & RF3_IM_WATER) vp[vn++] = "water";
 
 	/* Describe immunities */
 	if (vn)
@@ -752,11 +753,10 @@ static void describe_monster_abilities(int r_idx, const monster_lore *l_ptr)
 
 	/* Collect resistances */
 	vn = 0;
-	if (l_ptr->flags3 & RF3_RES_NETH) vp[vn++] = "nether";
-	if (l_ptr->flags3 & RF3_RES_WATE) vp[vn++] = "water";
-	if (l_ptr->flags3 & RF3_RES_PLAS) vp[vn++] = "plasma";
-	if (l_ptr->flags3 & RF3_RES_NEXU) vp[vn++] = "nexus";
-	if (l_ptr->flags3 & RF3_RES_DISE) vp[vn++] = "disenchantment";
+	if (l_ptr->flags3 & RF3_RES_NETH)  vp[vn++] = "nether";
+	if (l_ptr->flags3 & RF3_RES_PLAS)  vp[vn++] = "plasma";
+	if (l_ptr->flags3 & RF3_RES_NEXUS) vp[vn++] = "nexus";
+	if (l_ptr->flags3 & RF3_RES_DISE)  vp[vn++] = "disenchantment";
 
 	/* Describe resistances */
 	if (vn)

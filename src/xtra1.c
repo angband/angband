@@ -255,7 +255,7 @@ static void prt_equippy(void)
 		if (!o_ptr->k_idx)
 		{
 			c = ' ';
-			a = TERM_DARK;
+			a = TERM_WHITE;
 		}
 
 		/* Dump */
@@ -915,6 +915,40 @@ static void fix_inven(void)
 
 
 /*
+ * Hack -- display monsters in sub-windows
+ */
+static void fix_monlist(void)
+{
+	int j;
+
+	/* Scan windows */
+	for (j = 0; j < ANGBAND_TERM_MAX; j++)
+	{
+		term *old = Term;
+
+		/* No window */
+		if (!angband_term[j]) continue;
+
+		/* No relevant flags */
+		if (!(op_ptr->window_flag[j] & (PW_MONLIST))) continue;
+
+		/* Activate */
+		Term_activate(angband_term[j]);
+
+		/* Display visible monsters */
+		display_monlist();
+
+		/* Fresh */
+		Term_fresh();
+
+		/* Restore */
+		Term_activate(old);
+	}
+}
+
+
+
+/*
  * Hack -- display equipment in sub-windows
  */
 static void fix_equip(void)
@@ -1183,6 +1217,7 @@ static void calc_spells(void)
 {
 	int i, j, k, levels;
 	int num_allowed, num_known;
+	int percent_spells;
 
 	const magic_type *s_ptr;
 
@@ -1210,9 +1245,11 @@ static void calc_spells(void)
 	/* Hack -- no negative spells */
 	if (levels < 0) levels = 0;
 
-	/* Extract total allowed spells */
-	num_allowed = (adj_mag_study[p_ptr->stat_ind[cp_ptr->spell_stat]] *
-	               levels / 2);
+	/* Number of 1/100 spells per level */
+	percent_spells = adj_mag_study[p_ptr->stat_ind[cp_ptr->spell_stat]];
+
+	/* Extract total allowed spells (rounded up) */
+	num_allowed = (((percent_spells * levels) + 50) / 100);
 
 	/* Assume none known */
 	num_known = 0;
@@ -1406,7 +1443,7 @@ static void calc_mana(void)
 	if (levels < 0) levels = 0;
 
 	/* Extract total mana */
-	msp = adj_mag_mana[p_ptr->stat_ind[cp_ptr->spell_stat]] * levels / 2;
+	msp = (long)adj_mag_mana[p_ptr->stat_ind[cp_ptr->spell_stat]] * levels / 100;
 
 	/* Hack -- usually add one mana */
 	if (msp) msp++;
@@ -1532,13 +1569,14 @@ static void calc_mana(void)
  */
 static void calc_hitpoints(void)
 {
-	int bonus, mhp;
+	long bonus;
+	int mhp;
 
-	/* Un-inflate "half-hitpoint bonus per level" value */
-	bonus = ((int)(adj_con_mhp[p_ptr->stat_ind[A_CON]]) - 128);
+	/* Get "1/100th hitpoint bonus per level" value */
+	bonus = adj_con_mhp[p_ptr->stat_ind[A_CON]];
 
 	/* Calculate hitpoints */
-	mhp = p_ptr->player_hp[p_ptr->lev-1] + (bonus * p_ptr->lev / 2);
+	mhp = p_ptr->player_hp[p_ptr->lev-1] + (bonus * p_ptr->lev / 100);
 
 	/* Always have at least one hitpoint per level */
 	if (mhp < p_ptr->lev + 1) mhp = p_ptr->lev + 1;
@@ -2914,6 +2952,13 @@ void window_stuff(void)
 	{
 		p_ptr->window &= ~(PW_INVEN);
 		fix_inven();
+	}
+
+	/* Display monster list */
+	if (p_ptr->window & (PW_MONLIST))
+	{
+		p_ptr->window &= ~(PW_MONLIST);
+		fix_monlist();
 	}
 
 	/* Display equipment */

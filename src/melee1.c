@@ -481,6 +481,8 @@ bool make_attack_normal(int m_idx)
 
 				case RBE_UN_POWER:
 				{
+					int drained = 0;
+
 					/* Take damage */
 					take_hit(damage, ddesc);
 
@@ -496,22 +498,43 @@ bool make_attack_normal(int m_idx)
 						/* Skip non-objects */
 						if (!o_ptr->k_idx) continue;
 
-						/* Drain charged wands/staffs */
-						if (((o_ptr->tval == TV_STAFF) ||
-						     (o_ptr->tval == TV_WAND)) &&
-						    (o_ptr->pval > 0))
+						/* Drain charged wands/staves */
+						if ((o_ptr->tval == TV_STAFF) ||
+						    (o_ptr->tval == TV_WAND))
 						{
-							/* Calculate healed hitpoints */
-							int heal = rlev * o_ptr->pval * o_ptr->number;
+							/* Charged? */
+							if (o_ptr->pval)
+							{
+								drained = o_ptr->pval;
+
+								/* Uncharge */
+								o_ptr->pval = 0;
+							}
+						}
+
+						/* Drain rods */
+						else if (o_ptr->tval == TV_ROD)
+						{
+							/* (Partially) charged rods */
+							if (o_ptr->timeout < o_ptr->pval)
+							{
+								drained = (o_ptr->pval - o_ptr->timeout) / 30;
+
+								/* Uncharge */
+								o_ptr->timeout = o_ptr->pval;
+							}
+						}
+
+						if (drained)
+						{
+							int heal = rlev * drained;
+
+							msg_print("Energy drains from your pack!");
+
+							obvious = TRUE;
 
 							/* Don't heal more than max hp */
 							heal = MIN(heal, m_ptr->maxhp - m_ptr->hp);
-
-							/* Message */
-							msg_print("Energy drains from your pack!");
-
-							/* Obvious */
-							obvious = TRUE;
 
 							/* Heal */
 							m_ptr->hp += heal;
@@ -520,16 +543,13 @@ bool make_attack_normal(int m_idx)
 							if (p_ptr->health_who == m_idx)
 								p_ptr->redraw |= (PR_HEALTH);
 
-							/* Uncharge */
-							o_ptr->pval = 0;
-
 							/* Combine / Reorder the pack */
 							p_ptr->notice |= (PN_COMBINE | PN_REORDER);
 
 							/* Window stuff */
 							p_ptr->window |= (PW_INVEN);
 
-							/* Done */
+							/* Affect only a single inventory slot */
 							break;
 						}
 					}
@@ -650,6 +670,12 @@ bool make_attack_normal(int m_idx)
 
 						/* Modify number */
 						i_ptr->number = 1;
+
+						/* Hack -- If a rod, staff, or wand, allocate total
+						 * maximum timeouts or charges between those
+						 * stolen and those missed. -LM-
+						 */
+						distribute_charges(o_ptr, i_ptr, 1);
 
 						/* Carry the object */
 						(void)monster_carry(m_idx, i_ptr);

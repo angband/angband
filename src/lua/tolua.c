@@ -2,8 +2,8 @@
 ** Support code for Lua bindings.
 ** Written by Waldemar Celes
 ** TeCGraf/PUC-Rio
-** Jul 1998
-** $Id: tolua.c,v 1.4 2002/11/23 21:31:25 rr9 Exp $
+** Aug 2003
+** $Id: tolua.c,v 1.7 2003/11/13 21:07:36 rr9 Exp $
 */
 
 /* This code is free software; you can redistribute it and/or modify it. 
@@ -13,8 +13,10 @@
 */
 
 #include "tolua.h"
+
 #include "lua.h"
 #include "lualib.h"
+#include "lauxlib.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -44,7 +46,7 @@ static void version (void)
  fprintf(stderr, "%s (written by W. Celes)\n",TOLUA_VERSION);
 }
 
-static void setfield (lua_State* L, int table, const char* f, const char* v)
+static void setfield (lua_State* L, int table, char* f, char* v)
 {
  lua_pushstring(L,f);
  lua_pushstring(L,v);
@@ -60,10 +62,16 @@ static void error (char* o)
 
 int main (int argc, char* argv[])
 {
- lua_State* L = lua_open(0);
- lua_baselibopen(L);
- lua_iolibopen(L);
- lua_strlibopen(L);
+ lua_State* L = lua_open();
+	luaopen_base(L);
+	luaopen_io(L);
+	luaopen_string(L);
+	luaopen_table(L);
+#if 0
+	luaopen_math(L);
+#endif
+	luaopen_debug(L);
+
  lua_pushstring(L,TOLUA_VERSION); lua_setglobal(L,"TOLUA_VERSION");
 
  if (argc==1)
@@ -105,45 +113,26 @@ int main (int argc, char* argv[])
 
 #if 1
  {
-  int tolua_tolualua_open(lua_State* L);
-  tolua_tolualua_open(L);
+  int tolua_tolua_open (lua_State* L);
+  tolua_tolua_open(L);
  }
 #else
  {
-  int i;
   char* p;
   char  path[BUFSIZ];
-  char* files[] = {
-                   "basic.lua",
-                   "feature.lua",
-                   "verbatim.lua",
-                   "code.lua",
-                   "typedef.lua",
-                   "container.lua",
-                   "package.lua",
-                   "module.lua",
-                   "define.lua",
-                   "enumerate.lua",
-                   "declaration.lua",
-                   "variable.lua",
-                   "array.lua",
-                   "function.lua",
-                   "operator.lua",
-                   "class.lua",
-                   "clean.lua",
-                   "doit.lua",
-                   NULL
-                  };
+#ifdef MACINTOSH
+  strncpy(path, ":lua:", BUFSIZ);
+#else
   strcpy(path,argv[0]);
   p = strrchr(path,'/');
+  if (p==NULL) p = strrchr(path,'\\');
   p = (p==NULL) ? path : p+1;
-  for (i=0; files[i]; ++i)
-  {
-   sprintf(p,"%s",files[i]);
-   lua_dofile(L,path); 
-  }
+  sprintf(p,"%s","./");
+#endif
+  lua_pushstring(L,path); lua_setglobal(L,"path");
+		strcat(path,"all.lua");
+  lua_dofile(L,path);
  }
-
 #endif
  return 0;
 }

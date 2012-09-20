@@ -8,7 +8,8 @@ function equip_player_birth()
 
 	-- Hack - Get a dummy object
 	o_idx = o_pop()
-	object = o_list[o_idx]
+
+	object = o_list[o_idx + 1]
 
 	-- Create some food
 	object_prep(object, lookup_kind(TV_FOOD, SV_FOOD_RATION))

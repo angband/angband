@@ -257,15 +257,15 @@ store_table =
 
 function get_store_choice_hook(store_num)
 	local store = store_table[store_num + 1]
-	local choice = rand_int(getn(store))
+	local choice = rand_int(table.getn(store))
 	local item = store[choice + 1]
 	local tval, sval = item[1], item[2]
 
 	choice = lookup_kind(tval, sval)
 
 	if choice == 0 then
-		msg_print(format("Error in store_choice_hook(): can't find item (%d:%d).",
-                         tval, sval))
+		msg_print(string.format("Error in store_choice_hook(): can't find item (%d:%d).",
+                                tval, sval))
 	end
 
 	return choice
@@ -275,7 +275,7 @@ end
 function store_will_buy_hook(store_num, object)
 	-- Hack -- The Home is simple
 	if (store_num == STORE_HOME) then
-		return TRUE
+		return true
 	end
 
 	local tval = object.tval
@@ -293,7 +293,7 @@ function store_will_buy_hook(store_num, object)
 		   tval == TV_CLOAK then
 			-- accept
 		else
-			return FALSE
+			return false
 		end
 
 	-- Armoury
@@ -309,7 +309,7 @@ function store_will_buy_hook(store_num, object)
 		   tval == TV_DRAG_ARMOR then
 			-- accept
 		else
-			return FALSE
+			return false
 		end
 
 	-- Weapon Shop
@@ -324,7 +324,7 @@ function store_will_buy_hook(store_num, object)
 		   tval == TV_SWORD then
 			-- accept
 		else
-			return FALSE
+			return false
 		end
 
 	-- Temple
@@ -340,7 +340,7 @@ function store_will_buy_hook(store_num, object)
 		       (is_blessed(object) and object_known_p(object)) then
 			-- accept
 		else
-			return FALSE
+			return false
 		end
 
 	-- Alchemist
@@ -349,7 +349,7 @@ function store_will_buy_hook(store_num, object)
 		   tval == TV_POTION then
 			-- accept
 		else
-			return FALSE
+			return false
 		end
 
 	-- Magic Shop
@@ -364,17 +364,17 @@ function store_will_buy_hook(store_num, object)
 		   tval == TV_POTION then
 			-- accept
 		else
-			return FALSE
+			return false
 		end
 	end
 
 	-- Ignore "worthless" items
 	if object_value(object) <= 0 then
-		return FALSE
+		return false
 	end
 
 	-- Assume okay
-	return TRUE
+	return true
 end
 
 

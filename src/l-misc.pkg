@@ -5,14 +5,7 @@ typedef char* cptr;
 typedef int errr;
 
 
-/***** Constants *****/
-
-#define TRUE	1
-#define FALSE	0
-
-
 /***** Types *****/
-
 
 
 /***** Variables *****/

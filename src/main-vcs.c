@@ -234,7 +234,7 @@ static errr Term_xtra_vcs(int n, int v)
 		case TERM_XTRA_DELAY:
 		{
 			/* Delay for some milliseconds */
-			usleep(v * 1000);
+			if (v > 0) usleep(v * 1000);
 			return (0);
 		}
 

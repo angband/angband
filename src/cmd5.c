@@ -36,7 +36,7 @@ s16b spell_chance(int spell)
 	chance -= 3 * (p_ptr->lev - s_ptr->slevel);
 
 	/* Reduce failure rate by INT/WIS adjustment */
-	chance -= 3 * (adj_mag_stat[p_ptr->stat_ind[cp_ptr->spell_stat]] - 1);
+	chance -= adj_mag_stat[p_ptr->stat_ind[cp_ptr->spell_stat]];
 
 	/* Not enough mana to cast */
 	if (s_ptr->smana > p_ptr->csp)

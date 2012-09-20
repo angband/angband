@@ -84,7 +84,7 @@ s32b turn;				/* Current game turn */
 s32b old_turn;			/* Hack -- Level feeling counter */
 
 bool use_sound;			/* The "sound" mode is enabled */
-bool use_graphics;		/* The "graphics" mode is enabled */
+int use_graphics;		/* The "graphics" mode is enabled */
 bool use_bigtile = FALSE;
 
 s16b signal_count;		/* Hack -- Count interrupts */
@@ -184,6 +184,14 @@ char angband_term_name[ANGBAND_TERM_MAX][16] =
 	"Term-6",
 	"Term-7"
 };
+
+
+int max_macrotrigger = 0;
+cptr macro_template = NULL;
+cptr macro_modifier_chr;
+cptr macro_modifier_name[MAX_MACRO_MOD];
+cptr macro_trigger_name[MAX_MACRO_TRIGGER];
+cptr macro_trigger_keycode[2][MAX_MACRO_TRIGGER];
 
 
 /*
@@ -704,12 +712,6 @@ int text_out_wrap = 0;
  * Hack -- Indentation for the text when using text_out().
  */
 int text_out_indent = 0;
-
-
-/*
- * The "highscore" file descriptor, if available.
- */
-int highscore_fd = -1;
 
 
 /*

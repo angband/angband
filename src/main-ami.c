@@ -2337,13 +2337,13 @@ static BOOL process_bool(char *param)
 
 static void process_gfx(char *param)
 {
-	use_graphics = FALSE;
+	use_graphics = GRAPHICS_NONE;
 	if (*param == 'Y' || *param == 'y' || *param == '1' ||
 		 *param == 'T' || *param == 't')
-		use_graphics = TRUE;
+		use_graphics = GRAPHICS_ORIGINAL;
 	if (*param == 'E' || *param == 'e')
 	{
-		use_graphics = TRUE;
+		use_graphics = GRAPHICS_ADAM_BOLT;
 		screen_enhanced = TRUE;
 		ANGBAND_GRAF = "new";
 	}
@@ -2607,6 +2607,7 @@ static errr amiga_xtra( int n, int v )
 			return( 0 );
 
 		case TERM_XTRA_DELAY:
+			if (v <= 0) return (0);
 
 			v *= 1000;
 

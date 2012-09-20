@@ -56,6 +56,28 @@ int my_stricmp(const char *s1, const char *s2)
 
 
 /*
+ * Case insensitive comparison between the first n characters of two strings
+ */
+int my_strnicmp(cptr a, cptr b, int n)
+{
+	cptr s1, s2;
+	char z1, z2;
+
+	/* Scan the strings */
+	for (s1 = a, s2 = b; n > 0; s1++, s2++, n--)
+	{
+		z1 = toupper((unsigned char)*s1);
+		z2 = toupper((unsigned char)*s2);
+		if (z1 < z2) return (-1);
+		if (z1 > z2) return (1);
+		if (!z1) return (0);
+	}
+
+	return 0;
+}
+
+
+/*
  * The my_strcpy() function copies up to 'bufsize'-1 characters from 'src'
  * to 'buf' and NUL-terminates the result.  The 'buf' and 'src' strings may
  * not overlap.

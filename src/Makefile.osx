@@ -1,0 +1,264 @@
+# File: Makefile.osx
+
+# This is a (rather crude) Makefile for Mac OS X Carbon port of Angband.
+#
+# Based on Makefile.std, made separate because this port does not uses
+# main.c.
+
+# If you are able to construct "main-xxx.c" and/or "Makefile.xxx"
+# files for a currently unsupported system, please send them to
+# Robert Ruehlmann < rr9@thangorodrim.net > for inclusion in future
+# versions.
+#
+# This Makefile comes with "default" dependencies that may be obsolete.
+
+# Installing the Developer CD and you'll have this, as well as full
+# set of Mac OS programming documentation (HTML and PDF)
+CC = gcc
+
+# Some Developer CD tools we need - the standard installation location
+TOOLDIR = /Developer/Tools
+REZ = $(TOOLDIR)/Rez
+# DEREZ = $(TOOLDIR)/DeRez
+SETFILE = $(TOOLDIR)/SetFile
+
+LUAOBJS = \
+  lua/lapi.o lua/ldebug.o lua/lmem.o lua/lstrlib.o lua/lvm.o \
+  lua/lauxlib.o lua/ldo.o lua/lobject.o lua/ltable.o lua/lzio.o \
+  lua/lbaselib.o lua/lfunc.o lua/lparser.o lua/lcode.o lua/lgc.o \
+  lua/lopcodes.o lua/lstate.o lua/ltm.o  lua/ldblib.o lua/llex.o \
+  lua/lstring.o lua/ldump.o lua/lundump.o lua/ltablib.o \
+  lua/tolua_map.o lua/tolua_is.o lua/tolua_to.o lua/tolua_push.o \
+  lua/tolua_event.o
+
+TOLUAOBJS = \
+  lua/tolua.o lua/toluabind.o lua/liolib.o \
+  $(LUAOBJS)
+
+#
+# The "source" and "object" files.
+#
+
+SRCS = \
+  z-util.c z-virt.c z-form.c z-rand.c z-term.c \
+  variable.c tables.c util.c cave.c \
+  object1.c object2.c monster1.c monster2.c \
+  xtra1.c xtra2.c spells1.c spells2.c \
+  melee1.c melee2.c save.c files.c \
+  cmd1.c cmd2.c cmd3.c cmd4.c cmd5.c cmd6.c \
+  store.c birth.c load.c \
+  wizard1.c wizard2.c obj-info.c \
+  generate.c dungeon.c init1.c init2.c randart.c \
+  main-crb.c \
+  script.c use-obj.c x-spell.c \
+  l-monst.c l-object.c l-player.c l-random.c l-ui.c \
+  l-misc.c l-spell.c
+
+OBJS = \
+  z-util.o z-virt.o z-form.o z-rand.o z-term.o \
+  variable.o tables.o util.o cave.o \
+  object1.o object2.o monster1.o monster2.o \
+  xtra1.o xtra2.o spells1.o spells2.o \
+  melee1.o melee2.o save.o files.o \
+  cmd1.o cmd2.o cmd3.o cmd4.o cmd5.o cmd6.o \
+  store.o birth.o load.o \
+  wizard1.o wizard2.o obj-info.o \
+  generate.o dungeon.o init1.o init2.o randart.o \
+  main-crb.o \
+  script.o use-obj.o x-spell.o \
+  l-monst.o l-object.o l-player.o l-random.o l-ui.o \
+  l-misc.o l-spell.o \
+  $(LUAOBJS)
+
+CFLAGS = \
+	-Wall -O2 -fpascal-strings -DMACH_O_CARBON
+LIBS = -framework CoreFoundation -framework QuickTime -framework Carbon
+
+#
+# Default target.
+#
+all: install
+
+
+#
+# Install the game.
+#
+
+# Application bundle -- a directory looking like an ordinary application
+
+# Name of the game
+APPNAME = Angband.app
+# Bundle of the game (it must be a directory whose name ends in ".app")
+APPBNDL = ../$(APPNAME)
+
+# A bundle must have these subdirectories
+APPCONT = $(APPBNDL)/Contents
+APPBIN = $(APPCONT)/MacOS
+APPRES = $(APPCONT)/Resources
+
+# Auxiliary files. Please note that it still uses resouce fork based
+# resources for menus, dialogues and sounds, so that it isn't safe to use
+# utilities that doesn't understand them (virtually all Un*x commands) to
+# copy or archive the application.
+#
+# The graphics tiles have been moved out of the resource fork, but, again,
+# it isn't generally safe just to convert GIF or BMP files to PNG, because
+# the Mac OS takes dpi values stored in various images quite seriously.
+# Almost all tilesets for *band requires adjustment, with the sole exception
+# of 8x8.bmp for Vanilla.  Make sure setting dpi to 72, *not* preserving
+# the actual size of image.  When you have them ready, put them in the src
+# directory and "make install-tiles".
+ICONFILES = Angband.icns Save.icns Edit.icns Data.icns
+TILES = 8x8.png 16x16.png 32x32.png
+PLIST = Angband.xml
+RESSRCS = Angband.r
+# RESSRCS = Angband.r Sound.r
+RFLAGS = -i /Developer/Headers/FlatCarbon -d MACH_O_CARBON
+
+install: angband $(RESSRCS) $(ICONFILES) $(PLIST)
+	[ -d $(APPBNDL) ] || mkdir $(APPBNDL)
+	[ -d $(APPCONT) ] || mkdir $(APPCONT)
+	[ -d $(APPBIN) ] || mkdir $(APPBIN)
+	[ -d $(APPRES) ] || mkdir $(APPRES)
+	install -m 755 angband $(APPBIN)
+	install -m 644 $(ICONFILES) $(APPRES)
+	$(REZ) $(RFLAGS) -o $(APPRES)/angband.rsrc $(RESSRCS)
+	install -m 644 $(PLIST) $(APPCONT)/Info.plist
+	$(SETFILE) -a B $(APPBNDL)
+
+install-tiles: $(TILES)
+	install -m 644 $(TILES) $(APPRES)
+
+
+#
+# Build the "Angband" program
+#
+
+angband: $(OBJS)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o angband $(OBJS) $(LIBS)
+
+
+#
+# Clean up old junk
+#
+
+clean:
+	-rm -f *.o angband
+	-rm -f ./lua/*.o ./lua/tolua
+
+
+#
+# Generate dependencies automatically
+#
+
+depend:
+	makedepend -D__MAKEDEPEND__ $(SRCS)
+
+
+#
+# Lua stuff
+#
+
+lua/tolua: $(TOLUAOBJS)
+	$(CC) -o lua/tolua $(TOLUAOBJS) $(LDFLAGS) $(LIBS)
+
+
+#
+# Hack -- some file dependencies
+#
+
+HDRS = \
+  h-basic.h \
+  h-define.h h-type.h h-system.h h-config.h
+
+INCS = \
+  angband.h \
+  config.h defines.h types.h externs.h \
+  z-term.h z-rand.h z-util.h z-virt.h z-form.h $(HDRS)
+
+
+birth.o: birth.c $(INCS)
+cave.o: cave.c $(INCS)
+cmd1.o: cmd1.c $(INCS)
+cmd2.o: cmd2.c $(INCS)
+cmd3.o: cmd3.c $(INCS)
+cmd4.o: cmd4.c $(INCS)
+cmd5.o: cmd5.c $(INCS) script.h
+cmd6.o: cmd6.c $(INCS) script.h
+dungeon.o: dungeon.c $(INCS)
+files.o: files.c $(INCS)
+generate.o: generate.c $(INCS)
+init1.o: init1.c $(INCS) init.h
+init2.o: init2.c $(INCS) init.h script.h
+l-misc.o: l-misc.c $(INCS) lua/tolua.h
+l-monst.o: l-monst.c $(INCS) lua/tolua.h
+l-object.o: l-object.c $(INCS) lua/tolua.h
+l-player.o: l-player.c $(INCS) lua/tolua.h
+l-random.o: l-random.c $(INCS) lua/tolua.h
+l-spell.o: l-spell.c $(INCS) lua/tolua.h
+l-ui.o: l-ui.c $(INCS) lua/tolua.h
+load.o: load.c $(INCS)
+maid-x11.o: maid-x11.c $(INCS) maid-x11.h
+main-cap.o: main-cap.c $(INCS) main.h
+main-gcu.o: main-gcu.c $(INCS) main.h
+main-gtk.o: main-gtk.c $(INCS) main.h maid-x11.h
+main-lsl.o: main-lsl.c $(INCS) main.h
+main-sla.o: main-sla.c $(INCS) main.h
+main-vcs.o: main-vcs.c $(INCS) main.h
+main-x11.o: main-x11.c $(INCS) main.h maid-x11.h
+main-xaw.o: main-xaw.c $(INCS) main.h maid-x11.h
+main-xpj.o: main-xpj.c $(INCS) main.h maid-x11.h
+main.o: main.c $(INCS) main.h
+melee1.o: melee1.c $(INCS)
+melee2.o: melee2.c $(INCS)
+monster1.o: monster1.c $(INCS)
+monster2.o: monster2.c $(INCS)
+obj-info.o: obj-info.c $(INCS)
+object1.o: object1.c $(INCS)
+object2.o: object2.c $(INCS)
+randart.o: randart.c $(INCS) init.h
+save.o: save.c $(INCS)
+script.o: script.c $(INCS) script.h \
+		lua/lauxlib.h lua/lua.h lua/lualib.h lua/tolua.h
+spells1.o: spells1.c $(INCS)
+spells2.o: spells2.c $(INCS)
+store.o: store.c $(INCS)
+tables.o: tables.c $(INCS)
+use-obj.o: use-obj.c $(INCS)
+util.o: util.c $(INCS)
+variable.o: variable.c $(INCS)
+wizard1.o: wizard1.c $(INCS)
+wizard2.o: wizard2.c $(INCS) script.h
+x-spell.o: x-spell.c $(INCS)
+xtra1.o: xtra1.c $(INCS) script.h
+xtra2.o: xtra2.c $(INCS)
+z-form.o: z-form.c $(HDRS) z-form.h z-util.h z-virt.h
+z-rand.o: z-rand.c $(HDRS) z-rand.h
+z-term.o: z-term.c $(HDRS) z-term.h z-virt.h
+z-util.o: z-util.c $(HDRS) z-util.h
+z-virt.o: z-virt.c $(HDRS) z-virt.h z-util.h
+
+#
+# Build wrappers
+#
+
+l-monst.c: lua/tolua l-monst.pkg
+	lua/tolua -n monster -o l-monst.c l-monst.pkg
+
+l-object.c: lua/tolua l-object.pkg
+	lua/tolua -n object -o l-object.c l-object.pkg
+
+l-player.c: lua/tolua l-player.pkg
+	lua/tolua -n player -o l-player.c l-player.pkg
+
+l-random.c: lua/tolua l-random.pkg
+	lua/tolua -n random -o l-random.c l-random.pkg
+
+l-ui.c: lua/tolua l-ui.pkg
+	lua/tolua -n ui -o l-ui.c l-ui.pkg
+
+l-misc.c: lua/tolua l-misc.pkg
+	lua/tolua -n misc -o l-misc.c l-misc.pkg
+
+l-spell.c: lua/tolua l-spell.pkg
+	lua/tolua -n spell -o l-spell.c l-spell.pkg

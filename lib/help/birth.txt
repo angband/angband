@@ -21,7 +21,7 @@ You may start the entire process over at any time.
 Once you have accepted a character you will asked to provide a name for the
 character.  In general, the actual choice of a name is not important, but do
 keep in mind that it may have some effect on the game itself.  For example,
-on some machines, the chatacter name determines the filename that will be
+on some machines, the character name determines the filename that will be
 used to save the character to disk.  On others, the character name specifies
 special "pref" files.  And the character name is used on the high score list.
 
@@ -130,21 +130,24 @@ There are eleven different races that you can choose from in Angband.  Some
 races are restricted as to what profession they may be, and each race has
 its own adjustments to a character's stats and abilities. Most races also
 have intrinsic abilities.
- 
+
+***** <Human>
           Human
                The human is the base character.  All other races are com-
                pared to them.  Humans can choose any class and are average
                at everything.  Humans tend to go up levels faster than any
                other race because of their shorter life spans.  No racial
                adjustments or intrinsics occur to characters choosing human.
- 
+
+***** <Half-Elf>
           Half-Elf
                Half-elves tend to be smarter and faster than a human,  but
                not as wise or strong.  Half-elves are slightly better at magic,
                disarming, saving throws, stealth, bows and searching, but they
                are not as good at hand weapons.  Half-elves may choose any
                class and have their dexterity sustained.
- 
+
+***** <Elf>
           Elf
                Elves are better magicians then humans, but not as good at
                fighting.  They tend to be smarter and faster than either
@@ -154,7 +157,8 @@ have intrinsic abilities.
                Elves are creatures more of magic than religion, and may thus 
                not be priests or paladins: and they are resistant to attacks 
                involving bright light, and have their dexterity sustained.
- 
+
+***** <Hobbit>
           Hobbits
                Hobbits, or Halflings, are very good at bows, throwing,  and
                have good saving throws.  They also are very good at search-
@@ -165,7 +169,8 @@ have intrinsic abilities.
                creatures at a distance.  Hobbits may be warriors, rogues or
                rangers.  They have a strong hold on their life force, and  
                are thus intrinsically resistant to life draining.
- 
+
+***** <Gnome>
           Gnome
                Gnomes are smaller than dwarves but larger than halflings.
                They, like  the halflings, live in the earth in burrow-like
@@ -177,7 +182,8 @@ have intrinsic abilities.
                at a distance.  A gnome may choose between being a warrior,
                mage, priest, or rogue.  Gnomes are intrinsically protected
                against paralysis and some slowing effects.
- 
+
+***** <Dwarf>
           Dwarf
                Dwarves are the headstrong miners and fighters of legend.
                Since dungeons are the natural home of a dwarf, they are
@@ -192,7 +198,8 @@ have intrinsic abilities.
                good reason, screaming out challenges at imagined foes.  In
                other words, dwarves have a miserable stealth.  They can never
                be blinded. 
- 
+
+***** <Half-Orc>
           Half-Orc
                Half-Orcs make excellent warriors and decent priests, but
                are terrible at magic.  They are as bad as dwarves at stealth,
@@ -203,7 +210,8 @@ have intrinsic abilities.
                constitutions and lots of hit points.  Because of their
                preference to living underground to on the surface, half-orcs
                resist darkness attacks.
- 
+
+***** <Half-Troll>
           Half-Troll
                Half-Trolls are incredibly strong, and have more hit points
                than any other character race.  They are also very stupid and
@@ -214,7 +222,8 @@ have intrinsic abilities.
                their strength sustained, and they regenerate like other trolls.
                Unfortunately, this regeneration also requires them to eat more 
                food than other races.
- 
+
+***** <Dunadan>
           Dunadan
                Dunedain are a race of hardy men from the West.  This elder
                race surpasses human abilities in every field, especially
@@ -223,7 +232,8 @@ have intrinsic abilities.
                play all classes except the rogue, as Dunedain are too noble to 
                stoop to petty crime (when a Dunadan goes evil, he does it in 
                a much bigger way.)  Their constitution cannot be reduced.
- 
+
+***** <High-Elf>
           High-Elf
                High-Elves are descended from those among the Elves who heard 
                and answered the call from the Valar at the very beginning of 
@@ -240,6 +250,7 @@ have intrinsic abilities.
                (for the same reasons as Dunedain cannot be rogues) or paladins,
                but may be all other classes.
 
+***** <Kobold>
           Kobold
                Kobolds are a race of small dog-headed humanoids that dwell 
                underground.  They can see in the dark better than almost 
@@ -258,7 +269,8 @@ have intrinsic abilities.
           Once a race has been chosen, you will need to pick a class.  Some
           classes  will  not be available to certain races, for instance, a
           Half-Troll cannot become a Paladin.  
- 
+
+***** <Warrior>
           Warrior
                A Warrior is a hack-and-slash character, who solves most of
                his problems by cutting them to pieces, but will occasionally
@@ -266,7 +278,8 @@ have intrinsic abilities.
                are Strength and Constitution, and a good Dexterity can 
                really help at times.  A Warrior will be good at Fighting
                and Throwing/Bows, but bad at most other skills.
- 
+
+***** <Mage>
           Mage
                A Mage must live by his wits.  He cannot hope to simply hack
                his way through the dungeon, and so must therefore use his
@@ -278,7 +291,8 @@ have intrinsic abilities.
                him.  Intelligence and  Dexterity are his primary stats.
                There is no rule that says a mage cannot become a good
                fighter, but spells are his true realm.
- 
+
+***** <Priest>
           Priest
                A Priest is a character of holy devotion.  They explore the
                dungeon only to destroy the evil that lurks within, and if
@@ -293,7 +307,8 @@ have intrinsic abilities.
                the Church's strictures about shedding blood:  so they are 
                better off using blunt weapons such as maces.  Wisdom and 
                Charisma are the priest's primary stats.
- 
+
+***** <Rogue>
           Rogue
                A Rogue is a character that prefers to live by his cunning,
                but is capable of fighting his way out of a tight spot.  He
@@ -308,7 +323,8 @@ have intrinsic abilities.
                learn a few spells, but not the powerful offensive spells
                mages can use.  A rogue's primary stats are Dexterity and
                Intelligence.
- 
+
+***** <Ranger>
           Ranger
                A Ranger is a warrior/mage.  He is a good fighter, and the
                best of all the classes with a missile weapon such as a bow.
@@ -319,7 +335,8 @@ have intrinsic abilities.
                good stealth, good perception, good searching, a good saving
                throw,  and is good with magical devices.  His primary stats
                are Strength, Intelligence and Dexterity.
- 
+
+***** <Paladin>
           Paladin
                A Paladin is a warrior/priest.  He is a very  good  fighter,
                second  only to the warrior class, but not very good at mis-
@@ -535,7 +552,7 @@ level, adjusted for constitution) and an XP modifier of 20+20=40%.
   Dunadan       4       5       5       2       3      13      15      10
   High-Elf      4      20      20       3       3      14      10      25
   Kobold       10       5       0       4      15      15      -5      10
- 
+
              Disarm  Device   Save  Stealth  Search  Percep   Fight   Bows 
  
   Warrior    25(+10) 18(+7)  18(+10)  1(+0)  14(+0)   7(+0)  70(+45) 55(+45)

@@ -1323,7 +1323,7 @@ errr init_ibm(int argc, char **argv)
 			activate_color_complex();
 
 			/* Use graphics */
-			use_graphics = TRUE;
+			use_graphics = GRAPHICS_ORIGINAL;
 		}
 	}
 

@@ -11,6 +11,155 @@
 #include "angband.h"
 
 
+/*
+ *  Header and footer marker string for pref file dumps
+ */
+static cptr dump_seperator = "#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#";
+
+
+/*
+ * Remove old lines from pref files
+ */
+static void remove_old_dump(cptr orig_file, cptr mark)
+{
+	FILE *tmp_fff, *orig_fff;
+
+	char tmp_file[1024];
+	char buf[1024];
+	bool between_marks = FALSE;
+	bool changed = FALSE;
+	char expected_line[1024];
+
+	/* Open an old dump file in read-only mode */
+	orig_fff = my_fopen(orig_file, "r");
+
+	/* If original file does not exist, nothing to do */
+	if (!orig_fff) return;
+
+	/* Open a new temporary file */
+	tmp_fff = my_fopen_temp(tmp_file, sizeof(tmp_file));
+
+	if (!tmp_fff)
+	{
+	    msg_format("Failed to create temporary file %s.", tmp_file);
+	    msg_print(NULL);
+	    return;
+	}
+
+	strnfmt(expected_line, sizeof(expected_line),
+	        "%s begin %s", dump_seperator, mark);
+
+	/* Loop for every line */
+	while (TRUE)
+	{
+		/* Read a line */
+		if (my_fgets(orig_fff, buf, sizeof(buf)))
+		{
+			/* End of file but no end marker */
+			if (between_marks) changed = FALSE;
+
+			break;
+		}
+
+		/* Is this line a header/footer? */
+		if (strncmp(buf, dump_seperator, strlen(dump_seperator)) == 0)
+		{
+			/* Found the expected line? */
+			if (strcmp(buf, expected_line) == 0)
+			{
+				if (!between_marks)
+				{
+					/* Expect the footer next */
+					strnfmt(expected_line, sizeof(expected_line),
+					        "%s end %s", dump_seperator, mark);
+
+					between_marks = TRUE;
+
+					/* There are some changes */
+					changed = TRUE;
+				}
+				else
+				{
+					/* Expect a header next - XXX shouldn't happen */
+					strnfmt(expected_line, sizeof(expected_line),
+					        "%s begin %s", dump_seperator, mark);
+
+					between_marks = FALSE;
+
+					/* Next line */
+					continue;
+				}
+			}
+			/* Found a different line */
+			else
+			{
+				/* Expected a footer and got something different? */
+				if (between_marks)
+				{
+					/* Abort */
+					changed = FALSE;
+					break;
+				}
+			}
+		}
+
+		if (!between_marks)
+		{
+			/* Copy orginal line */
+			fprintf(tmp_fff, "%s\n", buf);
+		}
+	}
+
+	/* Close files */
+	my_fclose(orig_fff);
+	my_fclose(tmp_fff);
+
+	/* If there are changes, overwrite the original file with the new one */
+	if (changed)
+	{
+		/* Copy contents of temporary file */
+		tmp_fff = my_fopen(tmp_file, "r");
+		orig_fff = my_fopen(orig_file, "w");
+
+		while (!my_fgets(tmp_fff, buf, sizeof(buf)))
+		{
+			fprintf(orig_fff, "%s\n", buf);
+		}
+
+		my_fclose(orig_fff);
+		my_fclose(tmp_fff);
+	}
+
+	/* Kill the temporary file */
+	fd_kill(tmp_file);
+}
+
+
+/*
+ * Output the header of a pref-file dump
+ */
+static void pref_header(FILE *fff, cptr mark)
+{
+	/* Start of dump */
+	fprintf(fff, "%s begin %s\n", dump_seperator, mark);
+
+	fprintf(fff, "# *Warning!*  The lines below are an automatic dump.\n");
+	fprintf(fff, "# Don't edit them; changes will be deleted and replaced automatically.\n");
+}
+
+
+/*
+ * Output the footer of a pref-file dump
+ */
+static void pref_footer(FILE *fff, cptr mark)
+{
+	fprintf(fff, "# *Warning!*  The lines above are an automatic dump.\n");
+	fprintf(fff, "# Don't edit them; changes will be deleted and replaced automatically.\n");
+
+	/* End of dump */
+	fprintf(fff, "%s end %s\n", dump_seperator, mark);
+}
+
 
 /*
  * Hack -- redraw the screen
@@ -491,7 +640,7 @@ static void do_cmd_options_aux(int page, cptr info)
 	while (TRUE)
 	{
 		/* Prompt XXX XXX XXX */
-		strnfmt(buf, sizeof(buf), "%s (RET to advance, y/n to set, ESC to accept) ", info);
+		strnfmt(buf, sizeof(buf), "%s (RET to advance, y/n to set, ESC to accept, ? for help) ", info);
 		prt(buf, 0, 0);
 
 		/* Display the options */
@@ -761,11 +910,14 @@ static void do_cmd_options_win(void)
  */
 static errr option_dump(cptr fname)
 {
+	static cptr mark = "Options Dump";
+
 	int i, j;
 
 	FILE *fff;
 
 	char buf[1024];
+
 
 	/* Build the filename */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, fname);
@@ -773,12 +925,17 @@ static errr option_dump(cptr fname)
 	/* File type is "TEXT" */
 	FILE_TYPE(FILE_TYPE_TEXT);
 
+	/* Remove old options */
+	remove_old_dump(buf, mark);
+
 	/* Append to the file */
 	fff = my_fopen(buf, "a");
 
 	/* Failure */
 	if (!fff) return (-1);
 
+	/* Output header */
+	pref_header(fff, mark);
 
 	/* Skip some lines */
 	fprintf(fff, "\n\n");
@@ -839,6 +996,9 @@ static errr option_dump(cptr fname)
 			fprintf(fff, "\n");
 		}
 	}
+
+	/* Output footer */
+	pref_footer(fff, mark);
 
 	/* Close */
 	my_fclose(fff);
@@ -1054,6 +1214,8 @@ void do_cmd_options(void)
  */
 static errr macro_dump(cptr fname)
 {
+	static cptr mark = "Macro Dump";
+
 	int i;
 
 	FILE *fff;
@@ -1067,12 +1229,17 @@ static errr macro_dump(cptr fname)
 	/* File type is "TEXT" */
 	FILE_TYPE(FILE_TYPE_TEXT);
 
+	/* Remove old macros */
+	remove_old_dump(buf, mark);
+
 	/* Append to the file */
 	fff = my_fopen(buf, "a");
 
 	/* Failure */
 	if (!fff) return (-1);
 
+	/* Output header */
+	pref_header(fff, mark);
 
 	/* Skip some lines */
 	fprintf(fff, "\n\n");
@@ -1105,6 +1272,8 @@ static errr macro_dump(cptr fname)
 	/* Start dumping */
 	fprintf(fff, "\n\n\n\n");
 
+	/* Output footer */
+	pref_footer(fff, mark);
 
 	/* Close */
 	my_fclose(fff);
@@ -1210,6 +1379,8 @@ static void do_cmd_macro_aux_keymap(char *buf)
  */
 static errr keymap_dump(cptr fname)
 {
+	static cptr mark = "Keymap Dump";
+
 	int i;
 
 	FILE *fff;
@@ -1238,12 +1409,17 @@ static errr keymap_dump(cptr fname)
 	/* File type is "TEXT" */
 	FILE_TYPE(FILE_TYPE_TEXT);
 
+	/* Remove old keymaps */
+	remove_old_dump(buf, mark);
+
 	/* Append to the file */
 	fff = my_fopen(buf, "a");
 
 	/* Failure */
 	if (!fff) return (-1);
 
+	/* Output header */
+	pref_header(fff, mark);
 
 	/* Skip some lines */
 	fprintf(fff, "\n\n");
@@ -1286,6 +1462,8 @@ static errr keymap_dump(cptr fname)
 	/* Skip some lines */
 	fprintf(fff, "\n\n\n");
 
+	/* Output footer */
+	pref_footer(fff, mark);
 
 	/* Close */
 	my_fclose(fff);
@@ -1738,6 +1916,7 @@ void do_cmd_visuals(void)
 		/* Dump monster attr/chars */
 		else if (ch == '2')
 		{
+			static cptr mark = "Monster attr/chars";
 			char ftmp[80];
 
 			/* Prompt */
@@ -1755,12 +1934,17 @@ void do_cmd_visuals(void)
 			/* Build the filename */
 			path_build(buf, sizeof(buf), ANGBAND_DIR_USER, ftmp);
 
+			/* Remove old attr/chars */
+			remove_old_dump(buf, mark);
+
 			/* Append to the file */
 			fff = my_fopen(buf, "a");
 
 			/* Failure */
 			if (!fff) continue;
 
+			/* Output header */
+			pref_header(fff, mark);
 
 			/* Skip some lines */
 			fprintf(fff, "\n\n");
@@ -1787,6 +1971,9 @@ void do_cmd_visuals(void)
 			/* All done */
 			fprintf(fff, "\n\n\n\n");
 
+			/* Output footer */
+			pref_footer(fff, mark);
+
 			/* Close */
 			my_fclose(fff);
 
@@ -1797,6 +1984,7 @@ void do_cmd_visuals(void)
 		/* Dump object attr/chars */
 		else if (ch == '3')
 		{
+			static cptr mark = "Object attr/chars";
 			char ftmp[80];
 
 			/* Prompt */
@@ -1814,12 +2002,17 @@ void do_cmd_visuals(void)
 			/* Build the filename */
 			path_build(buf, sizeof(buf), ANGBAND_DIR_USER, ftmp);
 
+			/* Remove old attr/chars */
+			remove_old_dump(buf, mark);
+
 			/* Append to the file */
 			fff = my_fopen(buf, "a");
 
 			/* Failure */
 			if (!fff) continue;
 
+			/* Output header */
+			pref_header(fff, mark);
 
 			/* Skip some lines */
 			fprintf(fff, "\n\n");
@@ -1846,6 +2039,9 @@ void do_cmd_visuals(void)
 			/* All done */
 			fprintf(fff, "\n\n\n\n");
 
+			/* Output footer */
+			pref_footer(fff, mark);
+
 			/* Close */
 			my_fclose(fff);
 
@@ -1856,6 +2052,7 @@ void do_cmd_visuals(void)
 		/* Dump feature attr/chars */
 		else if (ch == '4')
 		{
+			static cptr mark = "Feature attr/chars";
 			char ftmp[80];
 
 			/* Prompt */
@@ -1873,12 +2070,17 @@ void do_cmd_visuals(void)
 			/* Build the filename */
 			path_build(buf, sizeof(buf), ANGBAND_DIR_USER, ftmp);
 
+			/* Remove old attr/chars */
+			remove_old_dump(buf, mark);
+
 			/* Append to the file */
 			fff = my_fopen(buf, "a");
 
 			/* Failure */
 			if (!fff) continue;
 
+			/* Output header */
+			pref_header(fff, mark);
 
 			/* Skip some lines */
 			fprintf(fff, "\n\n");
@@ -1905,6 +2107,9 @@ void do_cmd_visuals(void)
 			/* All done */
 			fprintf(fff, "\n\n\n\n");
 
+			/* Output footer */
+			pref_footer(fff, mark);
+
 			/* Close */
 			my_fclose(fff);
 
@@ -1915,6 +2120,7 @@ void do_cmd_visuals(void)
 		/* Dump flavor attr/chars */
 		else if (ch == '5')
 		{
+			static cptr mark = "Flavor attr/chars";
 			char ftmp[80];
 
 			/* Prompt */
@@ -1932,12 +2138,17 @@ void do_cmd_visuals(void)
 			/* Build the filename */
 			path_build(buf, sizeof(buf), ANGBAND_DIR_USER, ftmp);
 
+			/* Remove old attr/chars */
+			remove_old_dump(buf, mark);
+
 			/* Append to the file */
 			fff = my_fopen(buf, "a");
 
 			/* Failure */
 			if (!fff) continue;
 
+			/* Output header */
+			pref_header(fff, mark);
 
 			/* Skip some lines */
 			fprintf(fff, "\n\n");
@@ -1960,6 +2171,9 @@ void do_cmd_visuals(void)
 
 			/* All done */
 			fprintf(fff, "\n\n\n\n");
+
+			/* Output footer */
+			pref_footer(fff, mark);
 
 			/* Close */
 			my_fclose(fff);
@@ -2209,7 +2423,6 @@ void do_cmd_visuals(void)
 				            format("Default attr/char = %3d / %3d", da, dc));
 				Term_putstr(40, 19, -1, TERM_WHITE, "<< ? >>");
 				Term_putch(43, 19, da, dc);
-				Term_putch(43, 19, da, dc);
 
 				if (use_bigtile)
 				{
@@ -2349,6 +2562,7 @@ void do_cmd_colors(void)
 		/* Dump colors */
 		else if (ch == '2')
 		{
+			static cptr mark = "Colors";
 			char ftmp[80];
 
 			/* Prompt */
@@ -2366,12 +2580,17 @@ void do_cmd_colors(void)
 			/* Build the filename */
 			path_build(buf, sizeof(buf), ANGBAND_DIR_USER, ftmp);
 
+			/* Remove old colors */
+			remove_old_dump(buf, mark);
+
 			/* Append to the file */
 			fff = my_fopen(buf, "a");
 
 			/* Failure */
 			if (!fff) continue;
 
+			/* Output header */
+			pref_header(fff, mark);
 
 			/* Skip some lines */
 			fprintf(fff, "\n\n");
@@ -2405,6 +2624,9 @@ void do_cmd_colors(void)
 
 			/* All done */
 			fprintf(fff, "\n\n\n\n");
+
+			/* Output footer */
+			pref_footer(fff, mark);
 
 			/* Close */
 			my_fclose(fff);
@@ -2686,92 +2908,14 @@ void do_cmd_load_screen(void)
  */
 void do_cmd_save_screen(void)
 {
-	int y, x;
+	char tmp_val[256];
 
-	byte a = 0;
-	char c = ' ';
+	/* Ask for a file */
+	strcpy(tmp_val, "dump.html");
+	if (!get_string("File: ", tmp_val, sizeof(tmp_val))) return;
 
-	FILE *fff;
-
-	char buf[1024];
-
-
-	/* Build the filename */
-	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "dump.txt");
-
-	/* File type is "TEXT" */
-	FILE_TYPE(FILE_TYPE_TEXT);
-
-	/* Append to the file */
-	fff = my_fopen(buf, "w");
-
-	/* Oops */
-	if (!fff) return;
-
-
-	/* Save screen */
-	screen_save();
-
-
-	/* Dump the screen */
-	for (y = 0; y < 24; y++)
-	{
-		/* Dump each row */
-		for (x = 0; x < 79; x++)
-		{
-			/* Get the attr/char */
-			(void)(Term_what(x, y, &a, &c));
-
-			/* Dump it */
-			buf[x] = c;
-		}
-
-		/* Terminate */
-		buf[x] = '\0';
-
-		/* End the row */
-		fprintf(fff, "%s\n", buf);
-	}
-
-	/* Skip a line */
-	fprintf(fff, "\n");
-
-
-	/* Dump the screen */
-	for (y = 0; y < 24; y++)
-	{
-		/* Dump each row */
-		for (x = 0; x < 79; x++)
-		{
-			/* Get the attr/char */
-			(void)(Term_what(x, y, &a, &c));
-
-			/* Dump it */
-			buf[x] = hack[a&0x0F];
-		}
-
-		/* Terminate */
-		buf[x] = '\0';
-
-		/* End the row */
-		fprintf(fff, "%s\n", buf);
-	}
-
-	/* Skip a line */
-	fprintf(fff, "\n");
-
-
-	/* Close it */
-	my_fclose(fff);
-
-
-	/* Message */
-	msg_print("Screen dump saved.");
-	message_flush();
-
-
-	/* Load screen */
-	screen_load();
+	html_screenshot(tmp_val);
+	msg_print("Dump saved.");
 }
 
 
@@ -3050,6 +3194,77 @@ static void do_cmd_knowledge_objects(void)
 }
 
 
+
+/*
+ * Display kill counts
+ */
+static void do_cmd_knowledge_kills(void)
+{
+	int n, i;
+
+	FILE *fff;
+
+	char file_name[1024];
+
+	u16b *who;
+	u16b why = 4;
+
+
+	/* Temporary file */
+	fff = my_fopen_temp(file_name, sizeof(file_name));
+
+	/* Failure */
+	if (!fff) return;
+
+
+	/* Allocate the "who" array */
+	C_MAKE(who, z_info->r_max, u16b);
+
+	/* Collect matching monsters */
+	for (n = 0, i = 1; i < z_info->r_max - 1; i++)
+	{
+		monster_race *r_ptr = &r_info[i];
+		monster_lore *l_ptr = &l_list[i];
+
+		/* Require non-unique monsters */
+		if (r_ptr->flags1 & RF1_UNIQUE) continue;
+
+		/* Collect "appropriate" monsters */
+		if (l_ptr->pkills > 0) who[n++] = i;
+	}
+
+	/* Select the sort method */
+	ang_sort_comp = ang_sort_comp_hook;
+	ang_sort_swap = ang_sort_swap_hook;
+
+	/* Sort by kills (and level) */
+	ang_sort(who, &why, n);
+
+	/* Print the monsters (highest kill counts first) */
+	for (i = n - 1; i >= 0; i--)
+	{
+		monster_race *r_ptr = &r_info[who[i]];
+		monster_lore *l_ptr = &l_list[who[i]];
+
+		/* Print a message */
+		fprintf(fff, "     %-40s  %5d\n",
+		        (r_name + r_ptr->name), l_ptr->pkills);
+	}
+
+	/* Free the "who" array */
+	FREE(who);
+
+	/* Close the file */
+	my_fclose(fff);
+
+	/* Display the file contents */
+	show_file(file_name, "Kill counts", 0, 0);
+
+	/* Remove the file */
+	fd_kill(file_name);
+}
+
+
 /*
  * Interact with "knowledge"
  */
@@ -3079,9 +3294,11 @@ void do_cmd_knowledge(void)
 		prt("(1) Display known artifacts", 4, 5);
 		prt("(2) Display known uniques", 5, 5);
 		prt("(3) Display known objects", 6, 5);
+		prt("(4) Display hall of fame", 7, 5);
+		prt("(5) Display kill counts", 8, 5);
 
 		/* Prompt */
-		prt("Command: ", 8, 0);
+		prt("Command: ", 10, 0);
 
 		/* Prompt */
 		ch = inkey();
@@ -3092,22 +3309,31 @@ void do_cmd_knowledge(void)
 		/* Artifacts */
 		if (ch == '1')
 		{
-			/* Spawn */
 			do_cmd_knowledge_artifacts();
 		}
 
 		/* Uniques */
 		else if (ch == '2')
 		{
-			/* Spawn */
 			do_cmd_knowledge_uniques();
 		}
 
 		/* Objects */
 		else if (ch == '3')
 		{
-			/* Spawn */
 			do_cmd_knowledge_objects();
+		}
+
+		/* Scores */
+		else if (ch == '4')
+		{
+			show_scores();
+		}
+
+		/* Scores */
+		else if (ch == '5')
+		{
+			do_cmd_knowledge_kills();
 		}
 
 		/* Unknown option */

@@ -855,7 +855,7 @@ bool set_oppose_acid(int v)
 	/* Open */
 	if (v)
 	{
-		if (!p_ptr->oppose_acid)
+		if (!p_ptr->oppose_acid && !p_ptr->immune_acid)
 		{
 			msg_print("You feel resistant to acid!");
 			notice = TRUE;
@@ -865,7 +865,7 @@ bool set_oppose_acid(int v)
 	/* Shut */
 	else
 	{
-		if (p_ptr->oppose_acid)
+		if (p_ptr->oppose_acid && !p_ptr->immune_acid)
 		{
 			msg_print("You feel less resistant to acid.");
 			notice = TRUE;
@@ -902,7 +902,7 @@ bool set_oppose_elec(int v)
 	/* Open */
 	if (v)
 	{
-		if (!p_ptr->oppose_elec)
+		if (!p_ptr->oppose_elec && !p_ptr->immune_elec)
 		{
 			msg_print("You feel resistant to electricity!");
 			notice = TRUE;
@@ -912,7 +912,7 @@ bool set_oppose_elec(int v)
 	/* Shut */
 	else
 	{
-		if (p_ptr->oppose_elec)
+		if (p_ptr->oppose_elec && !p_ptr->immune_elec)
 		{
 			msg_print("You feel less resistant to electricity.");
 			notice = TRUE;
@@ -949,7 +949,7 @@ bool set_oppose_fire(int v)
 	/* Open */
 	if (v)
 	{
-		if (!p_ptr->oppose_fire)
+		if (!p_ptr->oppose_fire && !p_ptr->immune_fire)
 		{
 			msg_print("You feel resistant to fire!");
 			notice = TRUE;
@@ -959,7 +959,7 @@ bool set_oppose_fire(int v)
 	/* Shut */
 	else
 	{
-		if (p_ptr->oppose_fire)
+		if (p_ptr->oppose_fire && !p_ptr->immune_fire)
 		{
 			msg_print("You feel less resistant to fire.");
 			notice = TRUE;
@@ -996,7 +996,7 @@ bool set_oppose_cold(int v)
 	/* Open */
 	if (v)
 	{
-		if (!p_ptr->oppose_cold)
+		if (!p_ptr->oppose_cold && !p_ptr->immune_cold)
 		{
 			msg_print("You feel resistant to cold!");
 			notice = TRUE;
@@ -1006,7 +1006,7 @@ bool set_oppose_cold(int v)
 	/* Shut */
 	else
 	{
-		if (p_ptr->oppose_cold)
+		if (p_ptr->oppose_cold && !p_ptr->immune_cold)
 		{
 			msg_print("You feel less resistant to cold.");
 			notice = TRUE;
@@ -2031,6 +2031,9 @@ void monster_death(int m_idx)
 		lore_treasure(m_idx, dump_item, dump_gold);
 	}
 
+
+	/* Update monster list window */
+	p_ptr->window |= PW_MONLIST;
 
 	/* Only process "Quest Monsters" */
 	if (!(r_ptr->flags1 & (RF1_QUESTOR))) return;
@@ -3184,8 +3187,6 @@ static int target_set_interactive_aux(int y, int x, int mode, cptr info)
 				if (r_ptr->flags1 & (RF1_FEMALE)) s1 = "She is ";
 				else if (r_ptr->flags1 & (RF1_MALE)) s1 = "He is ";
 
-#if 1
-
 				/* Use a preposition */
 				s2 = "carrying ";
 
@@ -3235,8 +3236,6 @@ static int target_set_interactive_aux(int y, int x, int mode, cptr info)
 				/* Double break */
 				if (this_o_idx) break;
 
-#endif
-
 				/* Use a preposition */
 				s2 = "on ";
 			}
@@ -3245,8 +3244,6 @@ static int target_set_interactive_aux(int y, int x, int mode, cptr info)
 
 		/* Assume not floored */
 		floored = FALSE;
-
-#ifdef ALLOW_EASY_FLOOR
 
 		/* Scan all objects in the grid */
 		if (easy_floor)
@@ -3324,8 +3321,6 @@ static int target_set_interactive_aux(int y, int x, int mode, cptr info)
 				s2 = "on ";
 			}
 		}
-
-#endif /* ALLOW_EASY_FLOOR */
 
 		/* Scan all objects in the grid */
 		for (this_o_idx = cave_o_idx[y][x]; this_o_idx; this_o_idx = next_o_idx)
@@ -4101,5 +4096,3 @@ bool confuse_dir(int *dp)
 	/* Not confused */
 	return (FALSE);
 }
-
-

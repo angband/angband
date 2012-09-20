@@ -840,11 +840,11 @@ static void wr_store(const store_type *st_ptr)
 {
 	int j;
 
-	/* Save the "open" counter */
-	wr_u32b(st_ptr->store_open);
+	/* XXX Old value (<= Angband 3.0.3) */
+	wr_u32b(0L);
 
-	/* Save the "insults" */
-	wr_s16b(st_ptr->insult_cur);
+	/* XXX Old value (<= Angband 3.0.3) */
+	wr_s16b(0);
 
 	/* Save the current owner */
 	wr_byte(st_ptr->owner);
@@ -852,9 +852,9 @@ static void wr_store(const store_type *st_ptr)
 	/* Save the stock size */
 	wr_byte(st_ptr->stock_num);
 
-	/* Save the "haggle" info */
-	wr_s16b(st_ptr->good_buy);
-	wr_s16b(st_ptr->bad_buy);
+	/* XXX Old values (<= Angband 3.0.3) */
+	wr_s16b(0);
+	wr_s16b(0);
 
 	/* Save the stock */
 	for (j = 0; j < st_ptr->stock_num; j++)
@@ -1634,18 +1634,6 @@ bool save_player(void)
 	char safe[1024];
 
 
-#ifdef SET_UID
-
-# ifdef SECURE
-
-	/* Get "games" permissions */
-	beGames();
-
-# endif
-
-#endif
-
-
 	/* New savefile */
 	my_strcpy(safe, savefile, sizeof(safe));
 	strcat(safe, ".new");
@@ -1721,18 +1709,6 @@ bool save_player(void)
 		/* Success */
 		result = TRUE;
 	}
-
-
-#ifdef SET_UID
-
-# ifdef SECURE
-
-	/* Drop "games" permissions */
-	bePlayer();
-
-# endif /* SECURE */
-
-#endif /* SET_UID */
 
 
 	/* Return the result */

@@ -2,7 +2,7 @@
 
 angband_files = \
   birth.lua event.lua init.lua object.lua spell.lua store.lua \
-  test.lua trace.lua
+  test.lua trace.lua player.lua
 
 EXTRA_DIST = \
   $(angband_files)

@@ -183,8 +183,15 @@ static errr Term_text_gtk(int x, int y, int n, byte a, cptr s)
 
 static errr CheckEvent(bool wait)
 {
-	while (gtk_events_pending())
+	if (wait)
+	{
 		gtk_main_iteration();
+	}
+	else
+	{
+		while (gtk_events_pending())
+			gtk_main_iteration();
+	}
 
 	return (0);
 }
@@ -227,7 +234,9 @@ static errr Term_xtra_gtk(int n, int v)
 		case TERM_XTRA_CLEAR: return (Term_clear_gtk());
 
 		/* Delay for some milliseconds */
-		case TERM_XTRA_DELAY: usleep(1000 * v); return (0);
+		case TERM_XTRA_DELAY:
+			if (v > 0) usleep(1000 * v);
+			return (0);
 
 		/* React to changes */
 		case TERM_XTRA_REACT: return (0);
