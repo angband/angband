@@ -47,7 +47,7 @@
 /*
  * Current version string
  */
-#define VERSION_STRING	"2.9.5 alpha"
+#define VERSION_STRING	"2.9.6 alpha"
 
 
 /*
@@ -55,7 +55,7 @@
  */
 #define VERSION_MAJOR	2
 #define VERSION_MINOR	9
-#define VERSION_PATCH	5
+#define VERSION_PATCH	6
 #define VERSION_EXTRA	0
 
 
@@ -367,171 +367,6 @@
  * Maximum number of players spells
  */
 #define PY_MAX_SPELLS 64
-
-/* Magic for Beginners */
-#define SPELL_MAGIC_MISSILE             0
-#define SPELL_DETECT_MONSTERS           1
-#define SPELL_PHASE_DOOR                2
-#define SPELL_LIGHT_AREA                3
-#define SPELL_TREASURE_DETECTION        4
-#define SPELL_CURE_LIGHT_WOUNDS         5
-#define SPELL_OBJECT_DETECTION          6
-#define SPELL_FIND_TRAPS_DOORS          7
-#define SPELL_STINKING_CLOUD            8
-
-/* Conjurings and Tricks */
-#define SPELL_CONFUSE_MONSTER           9
-#define SPELL_LIGHTNING_BOLT           10
-#define SPELL_TRAP_DOOR_DESTRUCTION    11
-#define SPELL_SLEEP_I                  12
-#define SPELL_CURE_POISON              13
-#define SPELL_TELEPORT_SELF            14
-#define SPELL_SPEAR_OF_LIGHT           15
-#define SPELL_FROST_BOLT               16
-#define SPELL_TURN_STONE_TO_MUD        17
-
-/* Incantations and Illusions */
-#define SPELL_SATISFY_HUNGER           18
-#define SPELL_RECHARGE_ITEM_I          19
-#define SPELL_SLEEP_II                 20
-#define SPELL_POLYMORPH_OTHER          21
-#define SPELL_IDENTIFY                 22
-#define SPELL_SLEEP_III                23
-#define SPELL_FIRE_BOLT                24
-#define SPELL_SLOW_MONSTER             25
-
-/* Sorcery and Evocations */
-#define SPELL_FROST_BALL               26
-#define SPELL_RECHARGE_ITEM_II         27
-#define SPELL_TELEPORT_OTHER           28
-#define SPELL_HASTE_SELF               29
-#define SPELL_FIRE_BALL                30
-#define SPELL_WORD_OF_DESTRUCTION      31
-#define SPELL_GENOCIDE                 32
-
-/* Mordenkainen's Escapes */
-#define SPELL_DOOR_CREATION            33
-#define SPELL_STAIR_CREATION           34
-#define SPELL_TELEPORT_LEVEL           35
-#define SPELL_EARTHQUAKE               36
-#define SPELL_WORD_OF_RECALL           37
-
-/* Raal's Tome of Destruction */
-#define SPELL_ACID_BOLT                38
-#define SPELL_CLOUD_KILL               39
-#define SPELL_ACID_BALL                40
-#define SPELL_ICE_STORM                41
-#define SPELL_METEOR_SWARM             42
-#define SPELL_MANA_STORM               43
-
-/* Kelek's Grimoire of Power */
-#define SPELL_DETECT_EVIL              44
-#define SPELL_DETECT_ENCHANTMENT       45
-#define SPELL_RECHARGE_ITEM_III        46
-#define SPELL_GENOCIDE2                47
-#define SPELL_MASS_GENOCIDE            48
-
-/* Resistance of Scarabtarices */
-#define SPELL_RESIST_FIRE              49
-#define SPELL_RESIST_COLD              50
-#define SPELL_RESIST_ACID              51
-#define SPELL_RESIST_POISON            52
-#define SPELL_RESISTANCE               53
-
-/* Tenser's transformations */
-#define SPELL_HEROISM                  54
-#define SPELL_SHIELD                   55
-#define SPELL_BERSERKER                56
-#define SPELL_ESSENCE_OF_SPEED         57
-#define SPELL_GLOBE_OF_INVULNERABILITY 58
-
-/* Beginners Handbook */
-#define PRAYER_DETECT_EVIL              0
-#define PRAYER_CURE_LIGHT_WOUNDS        1
-#define PRAYER_BLESS                    2
-#define PRAYER_REMOVE_FEAR              3
-#define PRAYER_CALL_LIGHT               4
-#define PRAYER_FIND_TRAPS               5
-#define PRAYER_DETECT_DOORS_STAIRS      6
-#define PRAYER_SLOW_POISON              7
-
-/* Words of Wisdom */
-#define PRAYER_SCARE_MONSTER            8
-#define PRAYER_PORTAL                   9
-#define PRAYER_CURE_SERIOUS_WOUNDS     10
-#define PRAYER_CHANT                   11
-#define PRAYER_SANCTUARY               12
-#define PRAYER_SATISFY_HUNGER          13
-#define PRAYER_REMOVE_CURSE            14
-#define PRAYER_RESIST_HEAT_COLD        15
-
-/* Chants and Blessings */
-#define PRAYER_NEUTRALIZE_POISON       16
-#define PRAYER_ORB_OF_DRAINING         17
-#define PRAYER_CURE_CRITICAL_WOUNDS    18
-#define PRAYER_SENSE_INVISIBLE         19
-#define PRAYER_PROTECTION_FROM_EVIL    20
-#define PRAYER_EARTHQUAKE              21
-#define PRAYER_SENSE_SURROUNDINGS      22
-#define PRAYER_CURE_MORTAL_WOUNDS      23
-#define PRAYER_TURN_UNDEAD             24
-
-/* Exorcism and Dispelling */
-#define PRAYER_PRAYER                  25
-#define PRAYER_DISPEL_UNDEAD           26
-#define PRAYER_HEAL                    27
-#define PRAYER_DISPEL_EVIL             28
-#define PRAYER_GLYPH_OF_WARDING        29
-#define PRAYER_HOLY_WORD               30
-
-/* Godly Insights */
-#define PRAYER_DETECT_MONSTERS         31
-#define PRAYER_DETECTION               32
-#define PRAYER_PERCEPTION              33
-#define PRAYER_PROBING                 34
-#define PRAYER_CLAIRVOYANCE            35
-
-/* Purifications and Healing */
-#define PRAYER_CURE_SERIOUS_WOUNDS2    36
-#define PRAYER_CURE_MORTAL_WOUNDS2     37
-#define PRAYER_HEALING                 38
-#define PRAYER_RESTORATION             39
-#define PRAYER_REMEMBRANCE             40
-
-/* Wrath of God */
-#define PRAYER_DISPEL_UNDEAD2          41
-#define PRAYER_DISPEL_EVIL2            42
-#define PRAYER_BANISHMENT              43
-#define PRAYER_WORD_OF_DESTRUCTION     44
-#define PRAYER_ANNIHILATION            45
-
-/* Holy Infusions */
-#define PRAYER_UNBARRING_WAYS          46
-#define PRAYER_RECHARGING              47
-#define PRAYER_DISPEL_CURSE            48
-#define PRAYER_ENCHANT_WEAPON          49
-#define PRAYER_ENCHANT_ARMOUR          50
-#define PRAYER_ELEMENTAL_BRAND         51
-
-/* Ethereal openings */
-#define PRAYER_BLINK                   52
-#define PRAYER_TELEPORT_SELF           53
-#define PRAYER_TELEPORT_OTHER          54
-#define PRAYER_TELEPORT_LEVEL          55
-#define PRAYER_WORD_OF_RECALL          56
-#define PRAYER_ALTER_REALITY           57
-
-
-#define BOOK1(x) (((x) < 0) ? 0 : (x) < 32 ? (1L << (x)) : 0)
-#define BOOK2(x) (((x) < 0) ? 0 : (x) < 32 ? 0 : (1L << ((x) % 32)))
-
-#define BOOK(a, b, c, d, e, f, g, h, i) \
-{ \
-	(BOOK1(a) | BOOK1(b) | BOOK1(c) | BOOK1(d) | BOOK1(e) | \
-	 BOOK1(f) | BOOK1(g) | BOOK1(h) | BOOK1(i)), \
-	(BOOK2(a) | BOOK2(b) | BOOK2(c) | BOOK2(d) | BOOK2(e) | \
-	 BOOK2(f) | BOOK2(g) | BOOK2(h) | BOOK2(i)) \
-}
 
 
 /*
@@ -1779,8 +1614,8 @@
 #define PW_OBJECT           0x00000200L /* Display object recall */
 /* xxx */
 #define PW_SNAPSHOT         0x00000800L /* Display snap-shot */
-#define PW_SCRIPT_SOURCE    0x00001000L /* Display script source */
-#define PW_SCRIPT_VARS      0x00002000L /* Display script variables */
+#define PW_SCRIPT_VARS      0x00001000L /* Display script variables */
+#define PW_SCRIPT_SOURCE    0x00002000L /* Display script source */
 #define PW_BORG_1           0x00004000L /* Display borg messages */
 #define PW_BORG_2           0x00008000L /* Display borg status */
 
@@ -3184,3 +3019,9 @@ extern int PlayerUID;
  * HACK - define if the source contains the cleanup_angband() function.
  */
 #define HAS_CLEANUP
+
+
+/*
+ * Given an array, determine how many elements are in the array.
+ */
+#define N_ELEMENTS(a) (sizeof(a) / sizeof((a)[0]))

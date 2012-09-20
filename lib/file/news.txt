@@ -1,7 +1,7 @@
 
 
            ********************************************************
-           **   Angband 2.9.5 alpha   **   The Pits of Angband   **
+           **   Angband 2.9.6 alpha   **   The Pits of Angband   **
            ********************************************************
 
            Based on Moria:   Copyright (c) 1985 Robert Alan Koeneke

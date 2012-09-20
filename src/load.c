@@ -2013,7 +2013,7 @@ bool load_player(void)
 #endif /* VERIFY_TIMESTAMP */
 
 		/* Read the first four bytes */
-		if (fd_read(fd, (char*)(vvv), 4)) err = -1;
+		if (fd_read(fd, (char*)(vvv), sizeof(vvv))) err = -1;
 
 		/* What */
 		if (err) what = "Cannot read savefile";

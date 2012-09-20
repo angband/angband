@@ -1,6 +1,6 @@
 /*
 ** Lua binding: spell
-** Generated automatically by tolua 4.0a - angband on Tue Nov 20 21:40:23 2001.
+** Generated automatically by tolua 4.0a - angband on Sat Dec  8 18:10:56 2001.
 */
 
 #include "lua/tolua.h"
@@ -1796,6 +1796,25 @@ tolua_lerror:
  return 0;
 }
 
+/* function: brand_weapon */
+static int toluaI_spell_brand_weapon00(lua_State* tolua_S)
+{
+ if (
+ !tolua_isnoobj(tolua_S,1)
+ )
+ goto tolua_lerror;
+ else
+ {
+ {
+  brand_weapon();
+ }
+ }
+ return 0;
+tolua_lerror:
+ tolua_error(tolua_S,"#ferror in function 'brand_weapon'.");
+ return 0;
+}
+
 /* function: map_area */
 static int toluaI_spell_map_area00(lua_State* tolua_S)
 {
@@ -2012,6 +2031,7 @@ int tolua_spell_open (lua_State* tolua_S)
  tolua_function(tolua_S,NULL,"sleep_monsters_touch",toluaI_spell_sleep_monsters_touch00);
  tolua_function(tolua_S,NULL,"curse_armor",toluaI_spell_curse_armor00);
  tolua_function(tolua_S,NULL,"curse_weapon",toluaI_spell_curse_weapon00);
+ tolua_function(tolua_S,NULL,"brand_weapon",toluaI_spell_brand_weapon00);
  tolua_function(tolua_S,NULL,"map_area",toluaI_spell_map_area00);
  tolua_function(tolua_S,NULL,"wiz_lite",toluaI_spell_wiz_lite00);
  tolua_function(tolua_S,NULL,"wiz_dark",toluaI_spell_wiz_dark00);
@@ -2174,6 +2194,7 @@ void tolua_spell_close (lua_State* tolua_S)
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"sleep_monsters_touch");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"curse_armor");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"curse_weapon");
+ lua_pushnil(tolua_S); lua_setglobal(tolua_S,"brand_weapon");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"map_area");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"wiz_lite");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"wiz_dark");

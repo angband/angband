@@ -84,6 +84,34 @@ static int xxx_fire_beam(lua_State *L)
 }
 
 
+static int xxx_object_desc(lua_State *L)
+{
+	char buf[1024];
+	int pref, mode;
+	object_type *o_ptr;
+
+	if (!tolua_istype(L, 1, tolua_tag(L, "object_type"), 0))
+	{
+		tolua_error(L, "#ferror in function 'object_desc'.");
+		return 0;
+	}
+
+	/* Get the arguments */
+	o_ptr = tolua_getusertype(L, 1, 0);
+	pref = (int)luaL_check_number(L, 2);
+	mode = (int)luaL_check_number(L, 3);
+
+	/* Get the description */
+	object_desc(buf, o_ptr, pref, mode);
+
+	/* Return the name */
+	tolua_pushstring(L, buf);
+
+	/* One result */
+	return 1;
+}
+
+
 static const struct luaL_reg anglib[] =
 {
 	{"msg_print", xxx_msg_print},
@@ -91,6 +119,7 @@ static const struct luaL_reg anglib[] =
 	{"get_aim_dir", xxx_get_aim_dir},
 	{"fire_beam", xxx_fire_beam},
 	{"build_script_path", xxx_build_script_path},
+	{"object_desc", xxx_object_desc},
 };
 
 
@@ -161,6 +190,143 @@ bool use_object(object_type *o_ptr, bool *ident)
 }
 
 
+int get_spell_index(const object_type *o_ptr, int index)
+{
+	int status;
+	int spell;
+
+	lua_getglobal(L, "get_spell_index_hook");
+	tolua_pushusertype(L, (void*)o_ptr, tolua_tag(L, "object_type"));
+	lua_pushnumber(L, index);
+
+	/* Call the function with 2 arguments and 1 result */
+	status = lua_call(L, 2, 1);
+
+	if (status == 0)
+	{
+		spell = tolua_getnumber(L, 1, -1);
+
+		/* Remove the result */
+		lua_pop(L, 1);
+	}
+	else
+	{
+		/* Error */
+		spell = -1;
+	}
+
+	return (spell);
+}
+
+
+cptr get_spell_name(int tval, int index)
+{
+	static char buffer[80];
+	cptr name;
+
+	lua_getglobal(L, "get_spell_name_hook");
+	lua_pushnumber(L, tval);
+	lua_pushnumber(L, index);
+
+	/* Erase the buffer */
+	buffer[0] = '\0';
+
+	/* Call the function with 2 arguments and 1 result */
+	if (!lua_call(L, 2, 1))
+	{
+		name = tolua_getstring(L, 1, "");
+
+		/* Get a copy of the name */
+		strncpy(buffer, name, 80);
+
+		/* Make sure it's terminated */
+		buffer[79] = '\0';
+
+		/* Remove the result */
+		lua_pop(L, 1);
+	}
+
+	return (buffer);
+}
+
+
+cptr get_spell_info(int tval, int index)
+{
+	static char buffer[80];
+	cptr info;
+
+	lua_getglobal(L, "get_spell_info_hook");
+	lua_pushnumber(L, tval);
+	lua_pushnumber(L, index);
+
+	/* Erase the buffer */
+	buffer[0] = '\0';
+
+	/* Call the function with 2 arguments and 1 result */
+	if (!lua_call(L, 2, 1))
+	{
+		info = tolua_getstring(L, 1, "");
+
+		/* Get a copy of the name */
+		strncpy(buffer, info, 80);
+
+		/* Make sure it's terminated */
+		buffer[79] = '\0';
+
+		/* Remove the result */
+		lua_pop(L, 1);
+	}
+
+	return (buffer);
+}
+
+
+bool cast_spell(int tval, int index)
+{
+	static char buffer[80];
+	bool done = FALSE;
+
+	lua_getglobal(L, "cast_spell_hook");
+	lua_pushnumber(L, tval);
+	lua_pushnumber(L, index);
+
+	/* Erase the buffer */
+	buffer[0] = '\0';
+
+	/* Call the function with 2 arguments and 1 result */
+	if (!lua_call(L, 2, 1))
+	{
+		done = tolua_getbool(L, 1, FALSE);
+
+		/* Remove the result */
+		lua_pop(L, 1);
+	}
+
+	return (done);
+}
+
+
+void describe_item_activation(const object_type *o_ptr)
+{
+	cptr desc;
+
+	lua_getglobal(L, "describe_item_activation_hook");
+
+	tolua_pushusertype(L, (void*)o_ptr, tolua_tag(L, "object_type"));
+
+	/* Call the function with 1 arguments and 1 result */
+	if (!lua_call(L, 1, 1))
+	{
+		desc = tolua_getstring(L, 1, "");
+
+		text_out(desc);
+
+		/* Remove the result */
+		lua_pop(L, 1);
+	}
+}
+
+
 static void line_hook(lua_State *L, lua_Debug *ar)
 {
 	int j;
@@ -174,20 +340,39 @@ static void line_hook(lua_State *L, lua_Debug *ar)
 		if (!angband_term[j]) continue;
 
 		/* No relevant flags */
-		if (!(op_ptr->window_flag[j] & PW_SCRIPT_SOURCE)) continue;
+		if (op_ptr->window_flag[j] & PW_SCRIPT_SOURCE)
+		{
+			/* Activate */
+			Term_activate(angband_term[j]);
 
-		/* Activate */
-		Term_activate(angband_term[j]);
+			lua_getstack(L, 0, ar);
+			lua_getinfo(L, "S", ar);
+			show_file(ar->source + 1, ar->short_src, ar->currentline - 1, 1);
 
-		lua_getstack(L, 0, ar);
-		lua_getinfo(L, "S", ar);
-		show_file(ar->source + 1, ar->short_src, ar->currentline - 1, 1);
+			/* Fresh */
+			Term_fresh();
 
-		/* Fresh */
-		Term_fresh();
+			/* Restore */
+			Term_activate(old);
+		}
+		else if (op_ptr->window_flag[j] & PW_SCRIPT_VARS)
+		{
+			char buf[1024];
 
-		/* Restore */
-		Term_activate(old);
+			/* Activate */
+			Term_activate(angband_term[j]);
+
+			path_build(buf, 1024, ANGBAND_DIR_SCRIPT, "trace.lua");
+
+			/* Execute the file */
+			script_do_file(buf);
+
+			/* Fresh */
+			Term_fresh();
+
+			/* Restore */
+			Term_activate(old);
+		}
 	}
 }
 

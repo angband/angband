@@ -13,6 +13,8 @@
 
 #ifndef USE_SCRIPT
 
+#include "script.h"
+
 static bool eat_food(object_type *o_ptr, bool *ident)
 {
 	/* Analyze the food */
@@ -1856,6 +1858,669 @@ static bool zap_rod(object_type *o_ptr, bool *ident)
 }
 
 
+/*
+ * Activate a wielded object.  Wielded objects never stack.
+ * And even if they did, activatable objects never stack.
+ *
+ * Currently, only (some) artifacts, and Dragon Scale Mail, can be activated.
+ * But one could, for example, easily make an activatable "Ring of Plasma".
+ *
+ * Note that it always takes a turn to activate an artifact, even if
+ * the user hits "escape" at the "direction" prompt.
+ */
+static bool activate_object(object_type *o_ptr, bool *ident)
+{
+	int k, dir, i, chance;
+
+
+	/* Check the recharge */
+	if (o_ptr->timeout)
+	{
+		msg_print("It whines, glows and fades...");
+		return FALSE;
+	}
+
+	/* Activate the artifact */
+	message(MSG_ZAP, 0, "You activate it...");
+
+	/* Artifacts */
+	if (o_ptr->name1)
+	{
+		artifact_type *a_ptr = &a_info[o_ptr->name1];
+		char o_name[80];
+
+		/* Get the basic name of the object */
+		object_desc(o_name, o_ptr, FALSE, 0);
+
+		switch (a_ptr->activation)
+		{
+			case ACT_ILLUMINATION:
+			{
+				msg_format("The %s wells with clear light...", o_name);
+				lite_area(damroll(2, 15), 3);
+				break;
+			}
+
+			case ACT_MAGIC_MAP:
+			{
+				msg_format("The %s shines brightly...", o_name);
+				map_area();
+				break;
+			}
+
+			case ACT_CLAIRVOYANCE:
+			{
+				msg_format("The %s glows a deep green...", o_name);
+				wiz_lite();
+				(void)detect_traps();
+				(void)detect_doors();
+				(void)detect_stairs();
+				break;
+			}
+
+			case ACT_PROT_EVIL:
+			{
+				msg_format("The %s lets out a shrill wail...", o_name);
+				k = 3 * p_ptr->lev;
+				(void)set_protevil(p_ptr->protevil + randint(25) + k);
+				break;
+			}
+
+			case ACT_DISP_EVIL:
+			{
+				msg_format("The %s floods the area with goodness...", o_name);
+				dispel_evil(p_ptr->lev * 5);
+				break;
+			}
+
+			case ACT_HASTE2:
+			{
+				msg_format("The %s glows brightly...", o_name);
+				if (!p_ptr->fast)
+				{
+					(void)set_fast(randint(75) + 75);
+				}
+				else
+				{
+					(void)set_fast(p_ptr->fast + 5);
+				}
+				break;
+			}
+
+			case ACT_FIRE3:
+			{
+				msg_format("The %s glows deep red...", o_name);
+				if (!get_aim_dir(&dir)) return FALSE;
+				fire_ball(GF_FIRE, dir, 120, 3);
+				break;
+			}
+
+			case ACT_FROST5:
+			{
+				msg_format("The %s glows bright white...", o_name);
+				if (!get_aim_dir(&dir)) return FALSE;
+				fire_ball(GF_COLD, dir, 200, 3);
+				break;
+			}
+
+			case ACT_ELEC2:
+			{
+				msg_format("The %s glows deep blue...", o_name);
+				if (!get_aim_dir(&dir)) return FALSE;
+				fire_ball(GF_ELEC, dir, 250, 3);
+				break;
+			}
+
+			case ACT_BIZZARE:
+			{
+				msg_format("The %s glows intensely black...", o_name);
+				if (!get_aim_dir(&dir)) return FALSE;
+				ring_of_power(dir);
+				break;
+			}
+
+
+			case ACT_STAR_BALL:
+			{
+				msg_format("Your %s is surrounded by lightning...", o_name);
+				for (i = 0; i < 8; i++) fire_ball(GF_ELEC, ddd[i], 150, 3);
+				break;
+			}
+
+			case ACT_RAGE_BLESS_RESIST:
+			{
+				msg_format("Your %s glows many colours...", o_name);
+				(void)hp_player(30);
+				(void)set_afraid(0);
+				(void)set_shero(p_ptr->shero + randint(50) + 50);
+				(void)set_blessed(p_ptr->blessed + randint(50) + 50);
+				(void)set_oppose_acid(p_ptr->oppose_acid + randint(50) + 50);
+				(void)set_oppose_elec(p_ptr->oppose_elec + randint(50) + 50);
+				(void)set_oppose_fire(p_ptr->oppose_fire + randint(50) + 50);
+				(void)set_oppose_cold(p_ptr->oppose_cold + randint(50) + 50);
+				(void)set_oppose_pois(p_ptr->oppose_pois + randint(50) + 50);
+				break;
+			}
+
+			case ACT_HEAL2:
+			{
+				msg_format("Your %s glows a bright white...", o_name);
+				msg_print("You feel much better...");
+				(void)hp_player(1000);
+				(void)set_cut(0);
+				break;
+			}
+
+			case ACT_PHASE:
+			{
+				msg_format("Your %s twists space around you...", o_name);
+				teleport_player(10);
+				break;
+			}
+
+			case ACT_GENOCIDE:
+			{
+				msg_format("Your %s glows deep blue...", o_name);
+				(void)genocide();
+				break;
+			}
+
+			case ACT_TRAP_DOOR_DEST:
+			{
+				msg_format("Your %s glows bright red...", o_name);
+				destroy_doors_touch();
+				break;
+			}
+
+			case ACT_DETECT:
+			{
+				msg_format("Your %s glows bright white...", o_name);
+				msg_print("An image forms in your mind...");
+				detect_all();
+				break;
+			}
+
+			case ACT_HEAL1:
+			{
+				msg_format("Your %s glows deep blue...", o_name);
+				msg_print("You feel a warm tingling inside...");
+				(void)hp_player(500);
+				(void)set_cut(0);
+				break;
+			}
+
+			case ACT_RESIST:
+			{
+				msg_format("Your %s glows many colours...", o_name);
+				(void)set_oppose_acid(p_ptr->oppose_acid + randint(20) + 20);
+				(void)set_oppose_elec(p_ptr->oppose_elec + randint(20) + 20);
+				(void)set_oppose_fire(p_ptr->oppose_fire + randint(20) + 20);
+				(void)set_oppose_cold(p_ptr->oppose_cold + randint(20) + 20);
+				(void)set_oppose_pois(p_ptr->oppose_pois + randint(20) + 20);
+				break;
+			}
+
+			case ACT_SLEEP:
+			{
+				msg_format("Your %s glows deep blue...", o_name);
+				sleep_monsters_touch();
+				break;
+			}
+
+			case ACT_RECHARGE1:
+			{
+				msg_format("Your %s glows bright yellow...", o_name);
+				recharge(60);
+				break;
+			}
+
+			case ACT_TELEPORT:
+			{
+				msg_format("Your %s twists space around you...", o_name);
+				teleport_player(100);
+				break;
+			}
+
+			case ACT_RESTORE_LIFE:
+			{
+				msg_format("Your %s glows a deep red...", o_name);
+				restore_level();
+				break;
+			}
+
+			case ACT_MISSILE:
+			{
+				msg_format("Your %s glows extremely brightly...", o_name);
+				if (!get_aim_dir(&dir)) return FALSE;
+				fire_bolt(GF_MISSILE, dir, damroll(2, 6));
+				break;
+			}
+
+			case ACT_FIRE1:
+			{
+				msg_format("Your %s is covered in fire...", o_name);
+				if (!get_aim_dir(&dir)) return FALSE;
+				fire_bolt(GF_FIRE, dir, damroll(9, 8));
+				break;
+			}
+
+			case ACT_FROST1:
+			{
+				msg_format("Your %s is covered in frost...", o_name);
+				if (!get_aim_dir(&dir)) return FALSE;
+				fire_bolt(GF_COLD, dir, damroll(6, 8));
+				break;
+			}
+
+			case ACT_LIGHTNING_BOLT:
+			{
+				msg_format("Your %s is covered in sparks...", o_name);
+				if (!get_aim_dir(&dir)) return FALSE;
+				fire_bolt(GF_ELEC, dir, damroll(4, 8));
+				break;
+			}
+
+			case ACT_ACID1:
+			{
+				msg_format("Your %s is covered in acid...", o_name);
+				if (!get_aim_dir(&dir)) return FALSE;
+				fire_bolt(GF_ACID, dir, damroll(5, 8));
+				break;
+			}
+
+			case ACT_ARROW:
+			{
+				msg_format("Your %s grows magical spikes...", o_name);
+				if (!get_aim_dir(&dir)) return FALSE;
+				fire_bolt(GF_ARROW, dir, 150);
+				break;
+			}
+
+			case ACT_HASTE1:
+			{
+				msg_format("Your %s glows bright green...", o_name);
+				if (!p_ptr->fast)
+				{
+					(void)set_fast(randint(20) + 20);
+				}
+				else
+				{
+					(void)set_fast(p_ptr->fast + 5);
+				}
+				break;
+			}
+
+			case ACT_REM_FEAR_POIS:
+			{
+				msg_format("Your %s glows deep blue...", o_name);
+				(void)set_afraid(0);
+				(void)set_poisoned(0);
+				break;
+			}
+
+			case ACT_STINKING_CLOUD:
+			{
+				msg_format("Your %s throbs deep green...", o_name);
+				if (!get_aim_dir(&dir)) return FALSE;
+				fire_ball(GF_POIS, dir, 12, 3);
+				break;
+			}
+
+			case ACT_FROST2:
+			{
+				msg_format("Your %s is covered in frost...", o_name);
+				if (!get_aim_dir(&dir)) return FALSE;
+				fire_ball(GF_COLD, dir, 48, 2);
+				break;
+			}
+
+			case ACT_FROST4:
+			{
+				msg_format("Your %s glows a pale blue...", o_name);
+				if (!get_aim_dir(&dir)) return FALSE;
+				fire_bolt(GF_COLD, dir, damroll(12, 8));
+				break;
+			}
+
+			case ACT_FROST3:
+			{
+				msg_format("Your %s glows a intense blue...", o_name);
+				if (!get_aim_dir(&dir)) return FALSE;
+				fire_ball(GF_COLD, dir, 100, 2);
+				break;
+			}
+
+			case ACT_FIRE2:
+			{
+				msg_format("Your %s rages in fire...", o_name);
+				if (!get_aim_dir(&dir)) return FALSE;
+				fire_ball(GF_FIRE, dir, 72, 2);
+				break;
+			}
+
+			case ACT_DRAIN_LIFE2:
+			{
+				msg_format("Your %s glows black...", o_name);
+				if (!get_aim_dir(&dir)) return FALSE;
+				drain_life(dir, 120);
+				break;
+			}
+
+			case ACT_STONE_TO_MUD:
+			{
+				msg_format("Your %s pulsates...", o_name);
+				if (!get_aim_dir(&dir)) return FALSE;
+				wall_to_mud(dir);
+				break;
+			}
+
+			case ACT_MASS_GENOCIDE:
+			{
+				msg_format("Your %s lets out a long, shrill note...", o_name);
+				(void)mass_genocide();
+				break;
+			}
+
+			case ACT_CURE_WOUNDS:
+			{
+				msg_format("Your %s radiates deep purple...", o_name);
+				hp_player(damroll(4, 8));
+				(void)set_cut((p_ptr->cut / 2) - 50);
+				break;
+			}
+
+			case ACT_TELE_AWAY:
+			{
+				msg_format("Your %s glows deep red...", o_name);
+				if (!get_aim_dir(&dir)) return FALSE;
+				teleport_monster(dir);
+				break;
+			}
+
+			case ACT_WOR:
+			{
+				msg_format("Your %s glows soft white...", o_name);
+				set_recall();
+				break;
+			}
+
+			case ACT_CONFUSE:
+			{
+				msg_format("Your %s glows in scintillating colours...", o_name);
+				if (!get_aim_dir(&dir)) return FALSE;
+				confuse_monster(dir, 20);
+				break;
+			}
+
+			case ACT_IDENTIFY:
+			{
+				msg_format("Your %s glows yellow...", o_name);
+				if (!ident_spell()) return FALSE;
+				break;
+			}
+
+			case ACT_PROBE:
+			{
+				msg_format("Your %s glows brightly...", o_name);
+				probing();
+				break;
+			}
+
+			case ACT_DRAIN_LIFE1:
+			{
+				msg_format("Your %s glows white...", o_name);
+				if (!get_aim_dir(&dir)) return FALSE;
+				drain_life(dir, 90);
+				break;
+			}
+
+			case ACT_FIREBRAND:
+			{
+				msg_format("Your %s glows deep red...", o_name);
+				(void)brand_bolts();
+				break;
+			}
+
+			case ACT_STARLIGHT:
+			{
+				msg_format("Your %s glows with the light of a thousand stars...", o_name);
+				for (k = 0; k < 8; k++) strong_lite_line(ddd[k]);
+				break;
+			}
+
+			case ACT_MANA_BOLT:
+			{
+				msg_format("Your %s glows white...", o_name);
+				if (!get_aim_dir(&dir)) return FALSE;
+				fire_bolt(GF_MANA, dir, damroll(12, 8));
+				break;
+			}
+
+			case ACT_BERSERKER:
+			{
+				msg_format("Your %s glows in anger...", o_name);
+				set_shero(p_ptr->shero + randint(50) + 50);
+				break;
+			}
+		}
+
+		/* Set the recharge time */
+		if (a_ptr->randtime)
+			o_ptr->timeout = a_ptr->time + (byte)randint(a_ptr->randtime);
+		else
+			o_ptr->timeout = a_ptr->time;
+
+		/* Window stuff */
+		p_ptr->window |= (PW_INVEN | PW_EQUIP);
+
+		/* Done */
+		return FALSE;
+	}
+
+
+	/* Hack -- Dragon Scale Mail can be activated as well */
+	if (o_ptr->tval == TV_DRAG_ARMOR)
+	{
+		/* Get a direction for breathing (or abort) */
+		if (!get_aim_dir(&dir)) return FALSE;
+
+		/* Branch on the sub-type */
+		switch (o_ptr->sval)
+		{
+			case SV_DRAGON_BLUE:
+			{
+				msg_print("You breathe lightning.");
+				fire_ball(GF_ELEC, dir, 100, 2);
+				o_ptr->timeout = rand_int(450) + 450;
+				break;
+			}
+
+			case SV_DRAGON_WHITE:
+			{
+				msg_print("You breathe frost.");
+				fire_ball(GF_COLD, dir, 110, 2);
+				o_ptr->timeout = rand_int(450) + 450;
+				break;
+			}
+
+			case SV_DRAGON_BLACK:
+			{
+				msg_print("You breathe acid.");
+				fire_ball(GF_ACID, dir, 130, 2);
+				o_ptr->timeout = rand_int(450) + 450;
+				break;
+			}
+
+			case SV_DRAGON_GREEN:
+			{
+				msg_print("You breathe poison gas.");
+				fire_ball(GF_POIS, dir, 150, 2);
+				o_ptr->timeout = rand_int(450) + 450;
+				break;
+			}
+
+			case SV_DRAGON_RED:
+			{
+				msg_print("You breathe fire.");
+				fire_ball(GF_FIRE, dir, 200, 2);
+				o_ptr->timeout = rand_int(450) + 450;
+				break;
+			}
+
+			case SV_DRAGON_MULTIHUED:
+			{
+				chance = rand_int(5);
+				msg_format("You breathe %s.",
+				           ((chance == 1) ? "lightning" :
+				            ((chance == 2) ? "frost" :
+				             ((chance == 3) ? "acid" :
+				              ((chance == 4) ? "poison gas" : "fire")))));
+				fire_ball(((chance == 1) ? GF_ELEC :
+				           ((chance == 2) ? GF_COLD :
+				            ((chance == 3) ? GF_ACID :
+				             ((chance == 4) ? GF_POIS : GF_FIRE)))),
+				          dir, 250, 2);
+				o_ptr->timeout = rand_int(225) + 225;
+				break;
+			}
+
+			case SV_DRAGON_BRONZE:
+			{
+				msg_print("You breathe confusion.");
+				fire_ball(GF_CONFUSION, dir, 120, 2);
+				o_ptr->timeout = rand_int(450) + 450;
+				break;
+			}
+
+			case SV_DRAGON_GOLD:
+			{
+				msg_print("You breathe sound.");
+				fire_ball(GF_SOUND, dir, 130, 2);
+				o_ptr->timeout = rand_int(450) + 450;
+				break;
+			}
+
+			case SV_DRAGON_CHAOS:
+			{
+				chance = rand_int(2);
+				msg_format("You breathe %s.",
+				           ((chance == 1 ? "chaos" : "disenchantment")));
+				fire_ball((chance == 1 ? GF_CHAOS : GF_DISENCHANT),
+				          dir, 220, 2);
+				o_ptr->timeout = rand_int(300) + 300;
+				break;
+			}
+
+			case SV_DRAGON_LAW:
+			{
+				chance = rand_int(2);
+				msg_format("You breathe %s.",
+				           ((chance == 1 ? "sound" : "shards")));
+				fire_ball((chance == 1 ? GF_SOUND : GF_SHARD),
+				          dir, 230, 2);
+				o_ptr->timeout = rand_int(300) + 300;
+				break;
+			}
+
+			case SV_DRAGON_BALANCE:
+			{
+				chance = rand_int(4);
+				msg_format("You breathe %s.",
+				           ((chance == 1) ? "chaos" :
+				            ((chance == 2) ? "disenchantment" :
+				             ((chance == 3) ? "sound" : "shards"))));
+				fire_ball(((chance == 1) ? GF_CHAOS :
+				           ((chance == 2) ? GF_DISENCHANT :
+				            ((chance == 3) ? GF_SOUND : GF_SHARD))),
+				          dir, 250, 2);
+				o_ptr->timeout = rand_int(300) + 300;
+				break;
+			}
+
+			case SV_DRAGON_SHINING:
+			{
+				chance = rand_int(2);
+				msg_format("You breathe %s.",
+				           ((chance == 0 ? "light" : "darkness")));
+				fire_ball((chance == 0 ? GF_LITE : GF_DARK), dir, 200, 2);
+				o_ptr->timeout = rand_int(300) + 300;
+				break;
+			}
+
+			case SV_DRAGON_POWER:
+			{
+				msg_print("You breathe the elements.");
+				fire_ball(GF_MISSILE, dir, 300, 2);
+				o_ptr->timeout = rand_int(300) + 300;
+				break;
+			}
+		}
+
+		/* Window stuff */
+		p_ptr->window |= (PW_INVEN | PW_EQUIP);
+
+		/* Success */
+		return FALSE;
+	}
+
+	/* Hack -- some Rings can be activated for double resist and element ball */
+	if (o_ptr->tval == TV_RING)
+	{
+		/* Get a direction for firing (or abort) */
+		if (!get_aim_dir(&dir)) return FALSE;
+
+		/* Branch on the sub-type */
+		switch (o_ptr->sval)
+		{
+			case SV_RING_ACID:
+			{
+				msg_print("You feel resistant to acid.");
+				fire_ball(GF_ACID, dir, 70, 2);
+				set_oppose_acid(p_ptr->oppose_acid + randint(20) + 20);
+				o_ptr->timeout = rand_int(50) + 50;
+				break;
+			}
+
+			case SV_RING_FLAMES:
+			{
+				msg_print("You feel resistant to fire.");
+				fire_ball(GF_FIRE, dir, 80, 2);
+				set_oppose_fire(p_ptr->oppose_fire + randint(20) + 20);
+				o_ptr->timeout = rand_int(50) + 50;
+				break;
+			}
+
+			case SV_RING_ICE:
+			{
+				msg_print("You feel resistant to cold.");
+				fire_ball(GF_COLD, dir, 75, 2);
+				set_oppose_cold(p_ptr->oppose_cold + randint(20) + 20);
+				o_ptr->timeout = rand_int(50) + 50;
+				break;
+			}
+
+			case SV_RING_LIGHTNING:
+			{
+				msg_print("You feel resistant to electricity.");
+				fire_ball(GF_ELEC, dir, 85, 2);
+				set_oppose_elec(p_ptr->oppose_elec + randint(20) + 20);
+				o_ptr->timeout = rand_int(50) + 50;
+				break;
+			}
+		}
+
+		/* Window stuff */
+		p_ptr->window |= (PW_EQUIP);
+
+		/* Success */
+		return FALSE;
+	}
+
+	/* Mistake */
+	msg_print("Oops.  That object cannot be activated.");
+}
+
+
 bool use_object(object_type *o_ptr, bool *ident)
 {
 	bool used;
@@ -1898,9 +2563,187 @@ bool use_object(object_type *o_ptr, bool *ident)
 			used = zap_rod(o_ptr, ident);
 			break;
 		}
+
+		default:
+		{
+			used = activate_object(o_ptr, ident);
+			break;
+		}
 	}
 
 	return (used);
 }
+
+
+static cptr act_description[ACT_MAX] =
+{
+	"illumination",
+	"magic mapping",
+	"clairvoyance",
+	"protection from evil",
+	"dispel evil (x5)",
+	"heal (500)",
+	"heal (1000)",
+	"cure wounds (4d7)",
+	"haste self (20+d20 turns)",
+	"haste self (75+d75 turns)",
+	"fire bolt (9d8)",
+	"fire ball (72)",
+	"large fire ball (120)",
+	"frost bolt (6d8)",
+	"frost ball (48)",
+	"frost ball (100)",
+	"frost bolt (12d8)",
+	"large frost ball (200)",
+	"acid bolt (5d8)",
+	"recharge item I",
+	"sleep II",
+	"lightning bolt (4d8)",
+	"large lightning ball (250)",
+	"genocide",
+	"mass genocide",
+	"identify",
+	"drain life (90)",
+	"drain life (120)",
+	"bizarre things",
+	"star ball (150)",
+	"berserk rage, bless, and resistance",
+	"phase door",
+	"door and trap destruction",
+	"detection",
+	"resistance (20+d20 turns)",
+	"teleport",
+	"restore life levels",
+	"magic missile (2d6)",
+	"a magical arrow (150)",
+	"remove fear and cure poison",
+	"stinking cloud (12)",
+	"stone to mud",
+	"teleport away",
+	"word of recall",
+	"confuse monster",
+	"probing",
+	"fire branding of bolts",
+	"starlight (10d8)",
+	"mana bolt (12d8)",
+	"berserk rage (50+d50 turns)"
+};
+
+
+
+/*
+ * Determine the "Activation" (if any) for an artifact
+ */
+void describe_item_activation(const object_type *o_ptr)
+{
+	u32b f1, f2, f3;
+
+	/* Extract the flags */
+	object_flags(o_ptr, &f1, &f2, &f3);
+
+	/* Require activation ability */
+	if (!(f3 & TR3_ACTIVATE)) return;
+
+	/* Artifact activations */
+	if (o_ptr->name1)
+	{
+		artifact_type *a_ptr = &a_info[o_ptr->name1];
+
+		/* Paranoia */
+		if (a_ptr->activation >= ACT_MAX) return;
+
+		/* Some artifacts can be activated */
+		text_out(act_description[a_ptr->activation]);
+
+		/* Output the number of turns */
+		if (a_ptr->time && a_ptr->randtime)
+			text_out(format(" every %d+d%d turns", a_ptr->time, a_ptr->randtime));
+		else if (a_ptr->time)
+			text_out(format(" every %d turns", a_ptr->time));
+		else if (a_ptr->randtime)
+			text_out(format(" every d%d turns", a_ptr->randtime));
+
+		return;
+	}
+
+	/* Require dragon scale mail */
+	if (o_ptr->tval != TV_DRAG_ARMOR) return;
+
+	/* Branch on the sub-type */
+	switch (o_ptr->sval)
+	{
+		case SV_DRAGON_BLUE:
+		{
+			text_out("breathe lightning (100) every 450+d450 turns");
+			break;
+		}
+		case SV_DRAGON_WHITE:
+		{
+			text_out("breathe frost (110) every 450+d450 turns");
+			break;
+		}
+		case SV_DRAGON_BLACK:
+		{
+			text_out("breathe acid (130) every 450+d450 turns");
+			break;
+		}
+		case SV_DRAGON_GREEN:
+		{
+			text_out("breathe poison gas (150) every 450+d450 turns");
+			break;
+		}
+		case SV_DRAGON_RED:
+		{
+			text_out("breathe fire (200) every 450+d450 turns");
+			break;
+		}
+		case SV_DRAGON_MULTIHUED:
+		{
+			text_out("breathe multi-hued (250) every 225+d225 turns");
+			break;
+		}
+		case SV_DRAGON_BRONZE:
+		{
+			text_out("breathe confusion (120) every 450+d450 turns");
+			break;
+		}
+		case SV_DRAGON_GOLD:
+		{
+			text_out("breathe sound (130) every 450+d450 turns");
+			break;
+		}
+		case SV_DRAGON_CHAOS:
+		{
+			text_out("breathe chaos/disenchant (220) every 300+d300 turns");
+			break;
+		}
+		case SV_DRAGON_LAW:
+		{
+			text_out("breathe sound/shards (230) every 300+d300 turns");
+			break;
+		}
+		case SV_DRAGON_BALANCE:
+		{
+			text_out("breathe balance (250) every 300+d300 turns");
+			break;
+		}
+		case SV_DRAGON_SHINING:
+		{
+			text_out("breathe light/darkness (200) every 300+d300 turns");
+			break;
+		}
+		case SV_DRAGON_POWER:
+		{
+			text_out("breathe the elements (300) every 300+d300 turns");
+			break;
+		}
+	}
+}
+
+#else
+
+#ifdef MACINTOSH
+static int i = 0;
+#endif
 
 #endif /* USE_SCRIPT */

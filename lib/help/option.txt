@@ -112,13 +112,13 @@ Run past stairs    [run_ignore_stairs]
 Run through open doors    [run_ignore_doors]
     Ignore open doors when running.
 
-***** <run_cut>
-Run past known corners    [run_cut]
+***** <run_cut_corners>
+Run past known corners    [run_cut_corners]
     Cut sharply around "known" corners when running.  This will result in
     "faster" running, but may cause you to run into a "lurking" monster.
 
-***** <run_examine>
-Run into potential corners    [run_examine]
+***** <run_use_corners>
+Run into potential corners    [run_use_corners]
     Fully explore "potential corners" in hallways.
 
 ***** <disturb_move>

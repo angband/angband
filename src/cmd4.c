@@ -1242,7 +1242,7 @@ static errr keymap_dump(cptr fname)
 	fprintf(fff, "# Automatic keymap dump\n\n");
 
 	/* Dump them */
-	for (i = 0; i < 256; i++)
+	for (i = 0; i < (int)N_ELEMENTS(keymap_act[mode]); i++)
 	{
 		char key[2] = "?";
 
@@ -2027,9 +2027,9 @@ void do_cmd_visuals(void)
 				object_kind *k_ptr = &k_info[k];
 
 				byte da = (byte)(k_ptr->d_attr);
-				char dc = (byte)(k_ptr->d_char);
+				byte dc = (byte)(k_ptr->d_char);
 				byte ca = (byte)(k_ptr->x_attr);
-				char cc = (byte)(k_ptr->x_char);
+				byte cc = (byte)(k_ptr->x_char);
 
 				/* Label the object */
 				Term_putstr(5, 17, -1, TERM_WHITE,
@@ -2082,9 +2082,9 @@ void do_cmd_visuals(void)
 				feature_type *f_ptr = &f_info[f];
 
 				byte da = (byte)(f_ptr->d_attr);
-				char dc = (byte)(f_ptr->d_char);
+				byte dc = (byte)(f_ptr->d_char);
 				byte ca = (byte)(f_ptr->x_attr);
-				char cc = (byte)(f_ptr->x_char);
+				byte cc = (byte)(f_ptr->x_char);
 
 				/* Label the object */
 				Term_putstr(5, 17, -1, TERM_WHITE,
@@ -2137,9 +2137,9 @@ void do_cmd_visuals(void)
 				flavor_type *flavor_ptr = &flavor_info[f];
 
 				byte da = (byte)(flavor_ptr->d_attr);
-				char dc = (byte)(flavor_ptr->d_char);
+				byte dc = (byte)(flavor_ptr->d_char);
 				byte ca = (byte)(flavor_ptr->x_attr);
-				char cc = (byte)(flavor_ptr->x_char);
+				byte cc = (byte)(flavor_ptr->x_char);
 
 				/* Label the object */
 				Term_putstr(5, 17, -1, TERM_WHITE,
@@ -2552,7 +2552,7 @@ void do_cmd_load_screen(void)
 	for (y = 0; okay && (y < 24); y++)
 	{
 		/* Get a line of data */
-		if (my_fgets(fp, buf, 1024)) okay = FALSE;
+		if (my_fgets(fp, buf, sizeof(buf))) okay = FALSE;
 
 
 		/* Show each row */
@@ -2564,14 +2564,14 @@ void do_cmd_load_screen(void)
 	}
 
 	/* Get the blank line */
-	if (my_fgets(fp, buf, 1024)) okay = FALSE;
+	if (my_fgets(fp, buf, sizeof(buf))) okay = FALSE;
 
 
 	/* Dump the screen */
 	for (y = 0; okay && (y < 24); y++)
 	{
 		/* Get a line of data */
-		if (my_fgets(fp, buf, 1024)) okay = FALSE;
+		if (my_fgets(fp, buf, sizeof(buf))) okay = FALSE;
 
 		/* Dump each row */
 		for (x = 0; x < 79; x++)

@@ -385,10 +385,20 @@ typedef int sint;
 #define SV_AMULET_WISDOM		6
 #define SV_AMULET_CHARISMA		7
 #define SV_AMULET_THE_MAGI		8
-/* xxx */
+#define SV_AMULET_SUSTENANCE	9
 #define SV_AMULET_CARLAMMAS		10
 #define SV_AMULET_INGWE			11
 #define SV_AMULET_DWARVES		12
+#define SV_AMULET_ESP			13
+#define SV_AMULET_RESIST		14
+#define SV_AMULET_REGEN			15
+#define SV_AMULET_ELESSAR		16
+#define SV_AMULET_EVENSTAR		17
+#define SV_AMULET_DEVOTION		18
+#define SV_AMULET_WEAPONMASTERY	19
+#define SV_AMULET_TRICKERY		20
+#define SV_AMULET_INFRAVISION		21
+#define SV_AMULET_RESIST_LIGHTNING  22
 
 /* The sval codes for TV_RING */
 #define SV_RING_WOE				0
@@ -429,7 +439,7 @@ typedef int sint;
 #define SV_RING_NENYA			35
 #define SV_RING_VILYA			36
 #define SV_RING_POWER			37
-
+#define SV_RING_LIGHTNING		38
 
 /* The "sval" codes for TV_STAFF */
 #define SV_STAFF_DARKNESS		0
@@ -962,8 +972,6 @@ struct object_type
 
 	u16b note;			/* Inscription index */
 
-	byte inscrip;		/* INSCRIP_XXX constant */
-
 	s16b next_o_idx;	/* Next object in stack (if any) */
 
 	s16b held_m_idx;	/* Monster holding us (if any) */
@@ -1128,8 +1136,6 @@ extern void flavor_init(void);
 extern void reset_visuals(bool prefs);
 extern void object_flags(const object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3);
 extern void object_flags_known(const object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3);
-extern void object_desc(char *buf, const object_type *o_ptr, int pref, int mode);
-extern void object_desc_store(char *buf, const object_type *o_ptr, int pref, int mode);
 extern void identify_random_gen(const object_type *o_ptr);
 extern bool identify_fully_aux(const object_type *o_ptr);
 extern char index_to_label(int i);
@@ -1193,12 +1199,6 @@ extern s16b inven_takeoff(int item, int amt);
 extern void inven_drop(int item, int amt);
 extern void combine_pack(void);
 extern void reorder_pack(void);
-extern s16b spell_chance(int spell);
-extern bool spell_okay(int spell, bool known);
-extern void spell_info(char *p, int spell);
-extern void print_spells(const byte *spells, int num, int y, int x);
-extern void display_koff(int k_idx);
-
 
 extern bool object_aware_p(const object_type *o_ptr);
 extern bool object_tried_p(const object_type *o_ptr);

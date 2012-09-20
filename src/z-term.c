@@ -283,7 +283,7 @@ term *Term = NULL;
 /*
  * Nuke a term_win (see below)
  */
-static errr term_win_nuke(term_win *s, int w, int h)
+static errr term_win_nuke(term_win *s)
 {
 	/* Free the window access arrays */
 	KILL(s->a);
@@ -2335,7 +2335,7 @@ errr Term_resize(int w, int h)
 	FREE(hold_x2);
 
 	/* Nuke */
-	term_win_nuke(hold_old, Term->wid, Term->hgt);
+	term_win_nuke(hold_old);
 
 	/* Kill */
 	FREE(hold_old);
@@ -2345,7 +2345,7 @@ errr Term_resize(int w, int h)
 	if (Term->old->cy >= h) Term->old->cu = 1;
 
 	/* Nuke */
-	term_win_nuke(hold_scr, Term->wid, Term->hgt);
+	term_win_nuke(hold_scr);
 
 	/* Kill */
 	FREE(hold_scr);
@@ -2358,7 +2358,7 @@ errr Term_resize(int w, int h)
 	if (hold_mem)
 	{
 		/* Nuke */
-		term_win_nuke(hold_mem, Term->wid, Term->hgt);
+		term_win_nuke(hold_mem);
 
 		/* Kill */
 		FREE(hold_mem);
@@ -2372,7 +2372,7 @@ errr Term_resize(int w, int h)
 	if (hold_tmp)
 	{
 		/* Nuke */
-		term_win_nuke(hold_tmp, Term->wid, Term->hgt);
+		term_win_nuke(hold_tmp);
 
 		/* Kill */
 		FREE(hold_tmp);
@@ -2455,10 +2455,6 @@ errr Term_activate(term *t)
  */
 errr term_nuke(term *t)
 {
-	int w = t->wid;
-	int h = t->hgt;
-
-
 	/* Hack -- Call the special "nuke" hook */
 	if (t->active_flag)
 	{
@@ -2474,13 +2470,13 @@ errr term_nuke(term *t)
 
 
 	/* Nuke "displayed" */
-	term_win_nuke(t->old, w, h);
+	term_win_nuke(t->old);
 
 	/* Kill "displayed" */
 	KILL(t->old);
 
 	/* Nuke "requested" */
-	term_win_nuke(t->scr, w, h);
+	term_win_nuke(t->scr);
 
 	/* Kill "requested" */
 	KILL(t->scr);
@@ -2489,7 +2485,7 @@ errr term_nuke(term *t)
 	if (t->mem)
 	{
 		/* Nuke "memorized" */
-		term_win_nuke(t->mem, w, h);
+		term_win_nuke(t->mem);
 
 		/* Kill "memorized" */
 		KILL(t->mem);
@@ -2499,7 +2495,7 @@ errr term_nuke(term *t)
 	if (t->tmp)
 	{
 		/* Nuke "temporary" */
-		term_win_nuke(t->tmp, w, h);
+		term_win_nuke(t->tmp);
 
 		/* Kill "temporary" */
 		KILL(t->tmp);

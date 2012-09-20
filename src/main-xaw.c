@@ -345,9 +345,9 @@ AngbandClassRec angbandClassRec =
 	{
 		/* change_sensitive     */      XtInheritChangeSensitive,
 
-#ifndef OLDXAW
+#if XawVersion >= 7000000L
 		/* extension            */      NULL
-#endif /* OLDXAW */
+#endif /* XawVersion >= 7000000L */
 
 	},
 	/* Angband class fields initialization */
@@ -1091,13 +1091,11 @@ static void react_redraw(Widget widget,
  *
  * Also appears in "main-x11.c".
  */
-static void react_keypress(XKeyEvent *xev)
+static void react_keypress(XKeyEvent *ev)
 {
 	int i, n, mc, ms, mo, mx;
 
 	uint ks1;
-
-	XKeyEvent *ev = (XKeyEvent*)(xev);
 
 	KeySym ks;
 

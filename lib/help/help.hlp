@@ -13,6 +13,12 @@ Please choose one of the following online help files:
     (9) Spoiler Menu (if any)      (spoiler.hlp)
     (0) User Menu (if any)         (user.hlp)
 
+Browser/help commands:
+  #     go to line         %  go to file         ?  go to last file/main menu
+  SPACE advance 1 page     -  back up 1 page     /  search for text
+  RET   advance 1 line     =  back up 1 line     &  show (highlight) some text
+  +     advance 1/2 page   _  back up 1/2 page   !  toggle case sentitivity
+
 ***** [1] general.txt
 ***** [2] birth.txt
 ***** [3] dungeon.txt

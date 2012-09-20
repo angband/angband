@@ -310,7 +310,7 @@ static errr Term_xtra_sla(int n, int v)
 /*
  * Actually MOVE the hardware cursor
  */
-static errr Term_curs_sla(int x, int y, int z)
+static errr Term_curs_sla(int x, int y)
 {
 	/* Literally move the cursor */
 	SLsmg_gotorc(y, x);

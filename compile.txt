@@ -17,7 +17,7 @@ Step 1: Acquire.   Ftp to "clockwork.dementia.org/angband/Source"
                    Try "bin" and "mget angband*.tar.gz" and "y"
 Step 2: Extract.   Try "gunzip *.gz" then "tar -xvf *.tar"
 Step 3: Prepare.   Try "cd angband*/".
-Step 4: Configure. Try "./configure".
+Step 4: Configure. Try "./configure". Edit "src/config.h" if you wish.
 Step 5: Compile.   Try "make".
 Step 6: Install.   Try "make install".
 Step 7: Play...    Try "./angband".
@@ -32,6 +32,17 @@ files, and instructions about how to use them.  Some "extra archives" may
 be found at the ftp site (including "/angband/Macintosh/ext-mac.sit.bin"
 and "/angband/Windows/ext-win.zip"), but be sure that you get a version
 of the "extra archive" designed for your Angband version.
+
+About configure:
+    ./configure --help
+shows which options to use.  Other settings can be tuned like this:
+    env CC='cc' CPPFLAGS='-DUSE_HARDCODE' ./configure
+You can set CC (compiler), CPPFLAGS (preprocessor flags),
+CFLAGS (compiler flags), LDFLAGS (linker flags), and LIBS (libraries).
+Configure may modify all but CC.
+
+An alternative to configure is to edit src/h-config.h and a makefile,
+probably src/Makefile.std, and run "cd src; make -f Makefile.std".
 
 
 ----------------------------------------------------------------------

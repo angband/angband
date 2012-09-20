@@ -3632,3 +3632,173 @@ bool curse_weapon(void)
 	/* Notice */
 	return (TRUE);
 }
+
+
+/*
+ * Brand the current weapon
+ */
+void brand_weapon(void)
+{
+	object_type *o_ptr;
+
+	o_ptr = &inventory[INVEN_WIELD];
+
+	/* you can never modify artifacts / ego-items */
+	/* you can never modify broken / cursed items */
+	if ((o_ptr->k_idx) &&
+	    (!artifact_p(o_ptr)) && (!ego_item_p(o_ptr)) &&
+	    (!broken_p(o_ptr)) && (!cursed_p(o_ptr)))
+	{
+		cptr act;
+
+		char o_name[80];
+
+		if (rand_int(100) < 25)
+		{
+			act = "is covered in a fiery shield!";
+			o_ptr->name2 = EGO_BRAND_FIRE;
+		}
+		else
+		{
+			act = "glows deep, icy blue!";
+			o_ptr->name2 = EGO_BRAND_COLD;
+		}
+
+		object_desc(o_name, o_ptr, FALSE, 0);
+
+		msg_format("Your %s %s", o_name, act);
+
+		enchant(o_ptr, rand_int(3) + 4, ENCH_TOHIT | ENCH_TODAM);
+	}
+
+	else
+	{
+		if (flush_failure) flush();
+		msg_print("The Branding failed.");
+	}
+}
+
+
+/*
+ * Enchant some (non-magical) bolts
+ */
+bool brand_bolts(void)
+{
+	int item;
+	object_type *o_ptr;
+	cptr q, s;
+
+
+	/* Restrict choices to bolts */
+	item_tester_tval = TV_BOLT;
+
+	/* Get an item */
+	q = "Enchant which bolts? ";
+	s = "You have no bolts to brand.";
+	if (!get_item(&item, q, s, (USE_INVEN | USE_FLOOR))) return (FALSE);
+
+	/* Get the item (in the pack) */
+	if (item >= 0)
+	{
+		o_ptr = &inventory[item];
+	}
+
+	/* Get the item (on the floor) */
+	else
+	{
+		o_ptr = &o_list[0 - item];
+	}
+
+	/*
+	 * Don't enchant artifacts, ego-items, cursed or broken items
+	 */
+	if (artifact_p(o_ptr) || ego_item_p(o_ptr) ||
+	    cursed_p(o_ptr) || broken_p(o_ptr))
+	{
+		/* Flush */
+		if (flush_failure) flush();
+
+		/* Fail */
+		msg_print("The fiery enchantment failed.");
+
+		/* Notice */
+		return (TRUE);
+	}
+
+	/* Message */
+	msg_print("Your bolts are covered in a fiery aura!");
+
+	/* Ego-item */
+	o_ptr->name2 = EGO_FLAME;
+
+	/* Enchant */
+	enchant(o_ptr, rand_int(3) + 4, ENCH_TOHIT | ENCH_TODAM);
+
+	/* Notice */
+	return (TRUE);
+}
+
+
+/*
+ * Hack -- activate the ring of power
+ */
+void ring_of_power(int dir)
+{
+	/* Pick a random effect */
+	switch (randint(10))
+	{
+		case 1:
+		case 2:
+		{
+			/* Message */
+			msg_print("You are surrounded by a malignant aura.");
+
+			/* Decrease all stats (permanently) */
+			(void)dec_stat(A_STR, 50, TRUE);
+			(void)dec_stat(A_INT, 50, TRUE);
+			(void)dec_stat(A_WIS, 50, TRUE);
+			(void)dec_stat(A_DEX, 50, TRUE);
+			(void)dec_stat(A_CON, 50, TRUE);
+			(void)dec_stat(A_CHR, 50, TRUE);
+
+			/* Lose some experience (permanently) */
+			p_ptr->exp -= (p_ptr->exp / 4);
+			p_ptr->max_exp -= (p_ptr->exp / 4);
+			check_experience();
+
+			break;
+		}
+
+		case 3:
+		{
+			/* Message */
+			msg_print("You are surrounded by a powerful aura.");
+
+			/* Dispel monsters */
+			dispel_monsters(1000);
+
+			break;
+		}
+
+		case 4:
+		case 5:
+		case 6:
+		{
+			/* Mana Ball */
+			fire_ball(GF_MANA, dir, 300, 3);
+
+			break;
+		}
+
+		case 7:
+		case 8:
+		case 9:
+		case 10:
+		{
+			/* Mana Bolt */
+			fire_bolt(GF_MANA, dir, 250);
+
+			break;
+		}
+	}
+}

@@ -70,7 +70,7 @@
 
 
 
-/* Rest of the dependancies */
+/* Rest of the dependencies */
 
 #ifndef __MAKEDEPEND__
 #include <X11/Xlib.h>
@@ -1330,13 +1330,11 @@ static errr Infofnt_text_std(int x, int y, cptr str, int len)
  *
  * Also appears in "main-xaw.c".
  */
-static void react_keypress(XKeyEvent *xev)
+static void react_keypress(XKeyEvent *ev)
 {
 	int i, n, mc, ms, mo, mx;
 
 	uint ks1;
-
-	XKeyEvent *ev = (XKeyEvent*)(xev);
 
 	KeySym ks;
 
@@ -2858,7 +2856,7 @@ static XImage *ReadFONT(Display *dpy, char *Name, u16b size)
 	j = 16;
 
 	/* Process the file */
-	while (0 == my_fgets(fp, buf, 1024))
+	while (0 == my_fgets(fp, buf, sizeof(buf)))
 	{
 		/* Count lines */
 		num++;

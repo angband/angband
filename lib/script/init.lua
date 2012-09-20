@@ -4,4 +4,5 @@ _ALERT = function(text)
 end
 
 dofile(build_script_path("object.lua"))
+dofile(build_script_path("spell.lua"))
 

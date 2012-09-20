@@ -1,3 +1,23 @@
+Changes in Angband 2.9.6 alpha:
+- Added scripting support for player spells and object activations.
+- Added a debug display for call-stack and local variables of the scripts.
+- The following changes are from Hallvard B Furuseth's patches:
+- Fixed a possible integer overflow in the gamma correction code on
+  16 bit machines.
+- Various bugfixes and improvements in the SLang, XAW, VME, VCS, GCU,
+  XPJ, Acorn, and GTK frontends.
+- Updated help.hlp with a description of the browser keys.
+- Several changes to the autoconf support like better handling of
+  "--with-libpath=<path>", better detection of the Athena Widget set,
+  compiling GTK versions with "--enable-gtk", and the result of the
+  usleep() detection is now actually used.
+- Fixed a compatibility problem with 64 bit machines.
+- Corrected two wrong option names in the help files.
+- 'Interact with visuals' could display negative char numbers.
+- Examining a spellbook only browses it when the player can read the book.
+- Updated various Makefiles.
+- Removed some magic numbers in the source code.
+
 Changes in Angband 2.9.5 alpha:
 - Added support for object descriptions that are displayed when examining
   objects.

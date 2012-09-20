@@ -13,7 +13,7 @@
 
 # Version stamp (required)
 
-V:2.9.5
+V:2.9.6
 
 
 ##### Rings #####

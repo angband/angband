@@ -52,9 +52,12 @@
 #ifdef USE_GCU
 
 /*
- * Hack -- play games with "bool"
+ * Hack -- play games with "bool" and "term"
  */
 #undef bool
+
+/* Avoid 'struct term' name conflict with <curses.h> (via <term.h>) on AIX */
+#define term System_term
 
 /*
  * Include the proper "header" file
@@ -64,6 +67,8 @@
 #else
 # include <curses.h>
 #endif
+
+#undef term
 
 /*
  * Try redefining the colors at startup.

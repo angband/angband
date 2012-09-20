@@ -10,6 +10,7 @@
 
 #include "angband.h"
 
+#include "script.h"
 
 
 
@@ -1239,7 +1240,7 @@ static void calc_spells(void)
 
 			/* Message */
 			msg_format("You have forgotten the %s of %s.", p,
-			           spell_names[cp_ptr->spell_type][j]);
+			           get_spell_name(cp_ptr->spell_book, j));
 
 			/* One more can be learned */
 			p_ptr->new_spells++;
@@ -1289,7 +1290,7 @@ static void calc_spells(void)
 
 			/* Message */
 			msg_format("You have forgotten the %s of %s.", p,
-			           spell_names[cp_ptr->spell_type][j]);
+			           get_spell_name(cp_ptr->spell_book, j));
 
 			/* One more can be learned */
 			p_ptr->new_spells++;
@@ -1345,7 +1346,7 @@ static void calc_spells(void)
 
 			/* Message */
 			msg_format("You have remembered the %s of %s.",
-			           p, spell_names[cp_ptr->spell_type][j]);
+			           p, get_spell_name(cp_ptr->spell_book, j));
 
 			/* One less can be learned */
 			p_ptr->new_spells--;

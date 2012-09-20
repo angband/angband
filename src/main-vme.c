@@ -554,7 +554,8 @@ void InitConsole(void)
 	/* Test PSS */
 	system("desbuf");
 	system("query display (stack");
-	gets(pss);
+	pss[0] = '\0';
+	fgets(pss, sizeof(pss), stdin);
 	i=1;
 	if (pss[63]!='P') i=0;
 	if (pss[64]!='S') i=0;

@@ -2612,21 +2612,20 @@ errr parse_c_info(char *buf, header *head)
 	/* Process 'M' for "Magic Info" (one line only) */
 	else if (buf[0] == 'M')
 	{
-		int spell_book, spell_stat, spell_type, spell_first, spell_weight;
+		int spell_book, spell_stat, spell_first, spell_weight;
 
 		/* There better be a current pc_ptr */
 		if (!pc_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
 
 		/* Scan for the values */
-		if (5 != sscanf(buf+2, "%d:%d:%d:%d:%d",
-		                &spell_book, &spell_stat, &spell_type,
+		if (4 != sscanf(buf+2, "%d:%d:%d:%d",
+		                &spell_book, &spell_stat,
 		                &spell_first, &spell_weight))
 			return (PARSE_ERROR_GENERIC);
 
 		/* Save the values */
 		pc_ptr->spell_book = spell_book;
 		pc_ptr->spell_stat = spell_stat;
-		pc_ptr->spell_type = spell_type;
 		pc_ptr->spell_first = spell_first;
 		pc_ptr->spell_weight = spell_weight;
 	}

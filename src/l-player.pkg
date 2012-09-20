@@ -54,6 +54,18 @@ typedef int errr;
 #define PY_REGEN_MNBASE		524		/* Min amount mana regen*2^16 */
 
 
+#define CF_EXTRA_SHOT		0x00000001L	/* Extra shots */
+#define CF_BRAVERY_30		0x00000002L	/* Gains resist fear at plev 30 */
+#define CF_BLESS_WEAPON		0x00000004L	/* Requires blessed/hafted weapons */
+#define CF_CUMBER_GLOVE		0x00000008L	/* Gloves disturb spellcasting */
+#define CF_ZERO_FAIL		0x00000010L /* Fail rates can reach 0% */
+#define CF_BEAM				0x00000020L /* Higher chance of spells beaming */
+#define CF_CHOOSE_SPELLS	0x00000040L	/* Allow choice of spells */
+#define CF_PSEUDO_ID_HEAVY	0x00000080L /* Allow heavy pseudo-id */
+#define CF_PSEUDO_ID_IMPROV	0x00000100L /* Pseudo-id improves quicker with player-level */
+
+
+
 /***** Types *****/
 
 struct player_type
@@ -415,7 +427,6 @@ struct player_class
 
 	byte spell_book;	/* Tval of spell books (if any) */
 	u16b spell_stat;	/* Stat for spells (if any) */
-	byte spell_type;	/* Spell type (mage/priest) */
 	u16b spell_first;	/* Level of first spell */
 	u16b spell_weight;	/* Weight that hurts spells */
 

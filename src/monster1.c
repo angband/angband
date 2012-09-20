@@ -145,7 +145,7 @@ static void describe_monster_desc(int r_idx)
 		fd_seek(fd, pos);
 
 		/* Read a chunk of data */
-		fd_read(fd, buf, 2048);
+		fd_read(fd, buf, sizeof(buf));
 
 		/* Close it */
 		fd_close(fd);

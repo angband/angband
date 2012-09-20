@@ -1,6 +1,6 @@
 /*
 ** Lua binding: player
-** Generated automatically by tolua 4.0a - angband on Sun Nov 18 18:51:05 2001.
+** Generated automatically by tolua 4.0a - angband on Sat Dec  8 18:10:40 2001.
 */
 
 #include "lua/tolua.h"
@@ -5036,26 +5036,6 @@ static int toluaI_set_player_player_class_spell_stat(lua_State* tolua_S)
  return 0;
 }
 
-/* get function: spell_type of class  player_class */
-static int toluaI_get_player_player_class_spell_type(lua_State* tolua_S)
-{
-  player_class* self = (player_class*)  tolua_getusertype(tolua_S,1,0);
- if (!self) TOLUA_ERR_SELF;
- tolua_pushnumber(tolua_S,(long)self->spell_type);
- return 1;
-}
-
-/* set function: spell_type of class  player_class */
-static int toluaI_set_player_player_class_spell_type(lua_State* tolua_S)
-{
-  player_class* self = (player_class*)  tolua_getusertype(tolua_S,1,0);
- if (!self) TOLUA_ERR_SELF;
- if (!tolua_istype(tolua_S,2,LUA_TNUMBER,0))
- TOLUA_ERR_ASSIGN;
-  self->spell_type = ((byte)  tolua_getnumber(tolua_S,2,0));
- return 0;
-}
-
 /* get function: spell_first of class  player_class */
 static int toluaI_get_player_player_class_spell_first(lua_State* tolua_S)
 {
@@ -6344,6 +6324,15 @@ int tolua_player_open (lua_State* tolua_S)
  tolua_constant(tolua_S,NULL,"PY_REGEN_FAINT",PY_REGEN_FAINT);
  tolua_constant(tolua_S,NULL,"PY_REGEN_HPBASE",PY_REGEN_HPBASE);
  tolua_constant(tolua_S,NULL,"PY_REGEN_MNBASE",PY_REGEN_MNBASE);
+ tolua_constant(tolua_S,NULL,"CF_EXTRA_SHOT",CF_EXTRA_SHOT);
+ tolua_constant(tolua_S,NULL,"CF_BRAVERY_30",CF_BRAVERY_30);
+ tolua_constant(tolua_S,NULL,"CF_BLESS_WEAPON",CF_BLESS_WEAPON);
+ tolua_constant(tolua_S,NULL,"CF_CUMBER_GLOVE",CF_CUMBER_GLOVE);
+ tolua_constant(tolua_S,NULL,"CF_ZERO_FAIL",CF_ZERO_FAIL);
+ tolua_constant(tolua_S,NULL,"CF_BEAM",CF_BEAM);
+ tolua_constant(tolua_S,NULL,"CF_CHOOSE_SPELLS",CF_CHOOSE_SPELLS);
+ tolua_constant(tolua_S,NULL,"CF_PSEUDO_ID_HEAVY",CF_PSEUDO_ID_HEAVY);
+ tolua_constant(tolua_S,NULL,"CF_PSEUDO_ID_IMPROV",CF_PSEUDO_ID_IMPROV);
  tolua_cclass(tolua_S,"player_type","");
  tolua_tablevar(tolua_S,"player_type","py",toluaI_get_player_player_type_py,toluaI_set_player_player_type_py);
  tolua_tablevar(tolua_S,"player_type","px",toluaI_get_player_player_type_px,toluaI_set_player_player_type_px);
@@ -6591,7 +6580,6 @@ int tolua_player_open (lua_State* tolua_S)
  tolua_tablevar(tolua_S,"player_class","att_multiply",toluaI_get_player_player_class_att_multiply,toluaI_set_player_player_class_att_multiply);
  tolua_tablevar(tolua_S,"player_class","spell_book",toluaI_get_player_player_class_spell_book,toluaI_set_player_player_class_spell_book);
  tolua_tablevar(tolua_S,"player_class","spell_stat",toluaI_get_player_player_class_spell_stat,toluaI_set_player_player_class_spell_stat);
- tolua_tablevar(tolua_S,"player_class","spell_type",toluaI_get_player_player_class_spell_type,toluaI_set_player_player_class_spell_type);
  tolua_tablevar(tolua_S,"player_class","spell_first",toluaI_get_player_player_class_spell_first,toluaI_set_player_player_class_spell_first);
  tolua_tablevar(tolua_S,"player_class","spell_weight",toluaI_get_player_player_class_spell_weight,toluaI_set_player_player_class_spell_weight);
  tolua_tablevar(tolua_S,"player_class","sense_base",toluaI_get_player_player_class_sense_base,toluaI_set_player_player_class_sense_base);
@@ -6681,6 +6669,15 @@ void tolua_player_close (lua_State* tolua_S)
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"PY_REGEN_FAINT");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"PY_REGEN_HPBASE");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"PY_REGEN_MNBASE");
+ lua_pushnil(tolua_S); lua_setglobal(tolua_S,"CF_EXTRA_SHOT");
+ lua_pushnil(tolua_S); lua_setglobal(tolua_S,"CF_BRAVERY_30");
+ lua_pushnil(tolua_S); lua_setglobal(tolua_S,"CF_BLESS_WEAPON");
+ lua_pushnil(tolua_S); lua_setglobal(tolua_S,"CF_CUMBER_GLOVE");
+ lua_pushnil(tolua_S); lua_setglobal(tolua_S,"CF_ZERO_FAIL");
+ lua_pushnil(tolua_S); lua_setglobal(tolua_S,"CF_BEAM");
+ lua_pushnil(tolua_S); lua_setglobal(tolua_S,"CF_CHOOSE_SPELLS");
+ lua_pushnil(tolua_S); lua_setglobal(tolua_S,"CF_PSEUDO_ID_HEAVY");
+ lua_pushnil(tolua_S); lua_setglobal(tolua_S,"CF_PSEUDO_ID_IMPROV");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"player_type");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"player_sex");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"player_race");

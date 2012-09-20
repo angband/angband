@@ -182,3 +182,7 @@ extern bool get_check(cptr prompt);
 extern bool get_com(cptr prompt, char *command);
 */
 
+extern void text_out_to_screen @ text_out(byte a, cptr str);
+
+extern errr Term_clear(void);
+

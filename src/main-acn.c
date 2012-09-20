@@ -1154,7 +1154,7 @@ errr fd_close( int handle )
 
 
 /* Read some bytes from a file */
-errr fd_read( int handle, char *buf, huge nbytes )
+errr fd_read( int handle, char *buf, size_t nbytes )
 {
 	int unread;
 
@@ -1166,7 +1166,7 @@ errr fd_read( int handle, char *buf, huge nbytes )
 
 
 /* Write some bytes to a file */
-errr fd_write( int handle, const char *buf, huge nbytes )
+errr fd_write( int handle, const char *buf, size_t nbytes )
 {
 	int unwritten;
 
@@ -1829,21 +1829,25 @@ static void init_save_window( void )
 }
 
 /*
- | Hack: can't use Str.h without defining HAS_STRICMP.  Rather than
- | require that the header files are altered we simply provide our
- | own strnicmp() function.
+ * Hack: can't use Str.h without defining HAS_STRICMP.  Rather than
+ * require that the header files are altered we simply provide our
+ * own strnicmp() function.
  */
-static int my_strnicmp( char *a, char *b, int n )
+static int my_strnicmp(char *a, char *b, int n)
 {
 	int i;
 
 	n--;
-	for ( i=0; i<=n; i++ )
+
+	for (i = 0; i <= n; i++)
 	{
-		if ( tolower(b[i])!=tolower(a[i]) )
+		if (tolower((byte)a[i]) != tolower((byte) b[i]))
+			return tolower((byte)a[i]) - tolower((byte)b[i]);
+		if (a[i] == '\0')
 			break;
 	}
-	return tolower(b[i])-tolower(a[i]);
+
+	return 0;
 }
 
 

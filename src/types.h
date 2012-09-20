@@ -484,8 +484,6 @@ struct object_type
 
 	u16b note;			/* Inscription index */
 
-	byte inscrip;		/* INSCRIP_XXX constant */
-
 	s16b next_o_idx;	/* Next object in stack (if any) */
 
 	s16b held_m_idx;	/* Monster holding us (if any) */
@@ -634,13 +632,6 @@ struct store_type
 };
 
 
-
-
-
-/*
- * The "name" of spell 'N' is stored as spell_names[X][N],
- * where X is 0 for mage-spells and 1 for priest-spells.
- */
 struct magic_type
 {
 	byte slevel;		/* Required level (to learn) */
@@ -772,7 +763,6 @@ struct player_class
 
 	byte spell_book;	/* Tval of spell books (if any) */
 	u16b spell_stat;	/* Stat for spells (if any) */
-	byte spell_type;	/* Spell type (mage/priest) */
 	u16b spell_first;	/* Level of first spell */
 	u16b spell_weight;	/* Weight that hurts spells */
 

@@ -1483,13 +1483,11 @@ static term_data data[MAX_TERM_DATA];
  *
  * Also appears in "main-xaw.c".
  */
-static void react_keypress(XKeyEvent *xev)
+static void react_keypress(XKeyEvent *ev)
 {
 	int i, n, mc, ms, mo, mx;
 
 	uint ks1;
-
-	XKeyEvent *ev = (XKeyEvent*)(xev);
 
 	KeySym ks;
 

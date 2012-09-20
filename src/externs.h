@@ -51,8 +51,6 @@ extern const byte blows_table[12][12];
 extern const byte extract_energy[200];
 extern const s32b player_exp[PY_MAX_LEVEL];
 extern const player_sex sex_info[MAX_SEXES];
-extern const u32b spell_flags[2][9][2];
-extern cptr spell_names[2][PY_MAX_SPELLS];
 extern const byte chest_traps[64];
 extern cptr color_names[16];
 extern cptr stat_names[A_MAX];
@@ -516,7 +514,6 @@ extern void combine_pack(void);
 extern void reorder_pack(void);
 extern s16b spell_chance(int spell);
 extern bool spell_okay(int spell, bool known);
-extern void spell_info(char *p, int spell);
 extern void print_spells(const byte *spells, int num, int y, int x);
 extern void display_koff(int k_idx);
 
@@ -613,6 +610,9 @@ extern bool destroy_doors_touch(void);
 extern bool sleep_monsters_touch(void);
 extern bool curse_armor(void);
 extern bool curse_weapon(void);
+extern void brand_weapon(void);
+extern bool brand_bolts(void);
+extern void ring_of_power(int dir);
 
 /* store.c */
 extern void do_cmd_store(void);
@@ -626,8 +626,8 @@ extern errr path_build(char *buf, int max, cptr path, cptr file);
 extern FILE *my_fopen(cptr file, cptr mode);
 extern FILE *my_fopen_temp(char *buf, int max);
 extern errr my_fclose(FILE *fff);
-extern errr my_fgets(FILE *fff, char *buf, huge n);
-extern errr my_fputs(FILE *fff, cptr buf, huge n);
+extern errr my_fgets(FILE *fff, char *buf, size_t n);
+extern errr my_fputs(FILE *fff, cptr buf, size_t n);
 extern errr fd_kill(cptr file);
 extern errr fd_move(cptr file, cptr what);
 extern errr fd_copy(cptr file, cptr what);
@@ -635,8 +635,8 @@ extern int fd_make(cptr file, int mode);
 extern int fd_open(cptr file, int flags);
 extern errr fd_lock(int fd, int what);
 extern errr fd_seek(int fd, long n);
-extern errr fd_read(int fd, char *buf, huge n);
-extern errr fd_write(int fd, cptr buf, huge n);
+extern errr fd_read(int fd, char *buf, size_t n);
+extern errr fd_write(int fd, cptr buf, size_t n);
 extern errr fd_close(int fd);
 extern errr check_modification_date(int fd, cptr template_file);
 extern void text_to_ascii(char *buf, cptr str);
@@ -756,10 +756,10 @@ extern bool confuse_dir(int *dp);
  */
 
 #ifdef SET_UID
-# ifndef HAS_USLEEP
+# ifndef HAVE_USLEEP
 /* util.c */
 extern int usleep(huge usecs);
-# endif /* HAS_USLEEP */
+# endif /* HAVE_USLEEP */
 extern void user_name(char *buf, int id);
 extern errr user_home(char *buf, int len);
 #endif /* SET_UID */

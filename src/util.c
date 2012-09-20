@@ -14,7 +14,7 @@
 
 #ifdef SET_UID
 
-# ifndef HAS_USLEEP
+# ifndef HAVE_USLEEP
 
 /*
  * For those systems that don't have "usleep()" but need it.
@@ -57,7 +57,7 @@ int usleep(huge usecs)
 	return 0;
 }
 
-# endif
+# endif /* HAVE_USLEEP */
 
 
 /*
@@ -409,7 +409,7 @@ FILE *my_fopen_temp(char *buf, int max)
  *
  * Process tabs, strip internal non-printables
  */
-errr my_fgets(FILE *fff, char *buf, huge n)
+errr my_fgets(FILE *fff, char *buf, size_t n)
 {
 	huge i = 0;
 
@@ -470,7 +470,7 @@ errr my_fgets(FILE *fff, char *buf, huge n)
  *
  * Perhaps this function should handle internal weirdness.
  */
-errr my_fputs(FILE *fff, cptr buf, huge n)
+errr my_fputs(FILE *fff, cptr buf, size_t n)
 {
 	/* Unused paramter */
 	(void)n;
@@ -716,7 +716,7 @@ errr fd_seek(int fd, long n)
 /*
  * Hack -- attempt to read data from a file descriptor
  */
-errr fd_read(int fd, char *buf, huge n)
+errr fd_read(int fd, char *buf, size_t n)
 {
 	/* Verify the fd */
 	if (fd < 0) return (-1);
@@ -749,7 +749,7 @@ errr fd_read(int fd, char *buf, huge n)
 /*
  * Hack -- Attempt to write data to a file descriptor
  */
-errr fd_write(int fd, cptr buf, huge n)
+errr fd_write(int fd, cptr buf, size_t n)
 {
 	/* Verify the fd */
 	if (fd < 0) return (-1);
@@ -3897,7 +3897,7 @@ void build_gamma_table(int gamma)
 		 * value and diff have been scaled by 256
 		 */
 		n = 1;
-		value = 256 * 256;
+		value = 256L * 256L;
 		diff = ((long)gamma_helper[i]) * (gamma - 256);
 
 		while (diff)

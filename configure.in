@@ -7,7 +7,7 @@ AC_INIT(src/main.c)
 dnl write the resulting #defines into a header file
 AM_CONFIG_HEADER(src/autoconf.h)
 
-AM_INIT_AUTOMAKE(angband, 2.9.5-alpha)
+AM_INIT_AUTOMAKE(angband, 2.9.6-alpha)
 
 AC_ARG_WITH(setgid,
 [  --with-setgid=NAME      install angband as group NAME],
@@ -32,7 +32,11 @@ fi
 dnl overwrite the path with an user-specified value
 AC_ARG_WITH(libpath,
 [  --with-libpath=path     specify the path to the Angband lib folder],
-[game_datadir="$withval"])
+
+[case "/$withval" in
+  */) game_datadir="$withval"  ;;
+  *)  game_datadir="$withval/" ;;
+esac])
 
 AC_DEFINE_UNQUOTED(DEFAULT_PATH, "$game_datadir")
 DEFAULT_PATH="$game_datadir"
@@ -85,15 +89,48 @@ else
          -ltermcap)])
   fi
 
-  dnl Checks for header files.
-  AC_PATH_XTRA
+  dnl Check for GTK
+  if test "X${enable_gtk-no}" != Xno ; then
+    AC_DEFINE(USE_GTK)
+
+    AC_CACHE_CHECK(gtk-config --libs, ac_cv_gtk_libs,
+      [ac_cv_gtk_libs=`(  gtk-config --libs  ) 2>&5` || ac_cv_gtk_libs=""])
+    AC_CACHE_CHECK(gtk-config --cflags, ac_cv_gtk_cflags,
+      [ac_cv_gtk_cflags=`(gtk-config --cflags) 2>&5` || ac_cv_gtk_cflags="no"])
+    if test "X$ac_cv_gtk_libs" = X || test "X$ac_cv_gtk_cflags" = Xno; then
+      AC_MSG_ERROR([Could not find GTK.])
+    fi
+    CFLAGS="$ac_cv_gtk_cflags $CFLAGS"
+    LIBS="$ac_cv_gtk_libs $LIBS"
+
+    AC_CACHE_CHECK(for gtk_widget_show, ac_cv_lib_gtk_gtk_widget_show,
+      [AC_TRY_LINK([
+#include <gtk/gtk.h>
+#include <gdk/gdkkeysyms.h>
+#include <X11/Xlib.h>], [gtk_widget_show((GtkWidget *)0);],
+		   [ac_cv_lib_gtk_gtk_widget_show=yes],
+		   [AC_MSG_ERROR([Failed to link GTK.])])])
+  fi
+
+  if test "x${enable_gtk-no}" = xno ||
+     test "x${with_x+set}" != x ||
+     test "x$x_includes" != xNONE || test "x$x_libraries" != xNONE
+  then
+    dnl Checks for X window system.
+    AC_PATH_XTRA
+  fi
+
+  AC_ARG_ENABLE(gtk, [  --enable-gtk            enable the GTK X11 module])
+
+  if test "x${enable_gtk-no}" != xno || test "$no_x" != "yes"; then
+    ANGBAND_OBJS="maid-x11.o"
+    AC_SUBST(ANGBAND_OBJS)
+  fi
 
   if test "$no_x" != "yes"; then
     AC_DEFINE(USE_X11)
     AC_DEFINE(USE_XPJ)
     AC_DEFINE(USE_TRANSPARENCY)
-    ANGBAND_OBJS="maid-x11.o"
-    AC_SUBST(ANGBAND_OBJS)
 
     LIBS="-lX11 $X_EXTRA_LIBS $LIBS"
     CFLAGS="$CFLAGS $X_CFLAGS"
@@ -109,11 +146,22 @@ else
     x_more_libs="$X_PRE_LIBS -lXt"
     AC_CHECK_LIB(Xmu, main, x_more_libs="$X_PRE_LIBS -lXmu -lXt", , $x_more_libs)
     AC_CHECK_LIB(Xext, main, x_more_libs="-lXext $x_more_libs", , $x_more_libs)
-    AC_CHECK_LIB(Xaw, XawInitializeWidgetSet,
-                 [AC_DEFINE(USE_XAW)
-                  LIBS="-lXaw $x_more_libs $LIBS"],
-                 LIBS="$X_PRE_LIBS $LIBS",
-                 $x_more_libs)
+
+    dnl Note: Both Xaw libraries and includes may be in nostandard places.
+    ac_save_LIBS="$LIBS"
+    LIBS="-lXaw $x_more_libs $LIBS"
+    AC_CACHE_CHECK(for X11 Athena widget set, ac_cv_athena_widget,
+                   [AC_TRY_LINK([
+#include <X11/IntrinsicP.h>
+#include <X11/Xaw/SimpleP.h>
+#include <X11/Xaw/Simple.h>
+#include <X11/Xaw/XawInit.h>],  [XawInitializeWidgetSet();],
+                                [ac_cv_athena_widget=yes],
+                                [ac_cv_athena_widget=no])])
+    case "$ac_cv_athena_widget" in
+    yes) AC_DEFINE(USE_XAW) ;;
+    *)	  LIBS="$X_PRE_LIBS $ac_save_LIBS" ;;
+    esac
   fi
 fi
 

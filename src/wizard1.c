@@ -373,10 +373,6 @@ static void spoil_obj_desc(cptr fname)
  */
 #define MAX_LINE_LEN 75
 
-/*
- * Given an array, determine how many elements are in the array
- */
-#define N_ELEMENTS(a) (sizeof (a) / sizeof ((a)[0]))
 
 /*
  * The artifacts categorized by type
@@ -921,7 +917,7 @@ static void analyze_misc(const object_type *o_ptr, char *misc_desc)
 
 	sprintf(misc_desc, "Level %u, Rarity %u, %d.%d lbs, %ld Gold",
 	        a_ptr->level, a_ptr->rarity,
-	        a_ptr->weight / 10, a_ptr->weight % 10, a_ptr->cost);
+	        a_ptr->weight / 10, a_ptr->weight % 10, (long)a_ptr->cost);
 }
 
 

@@ -1,6 +1,6 @@
 /*
 ** Lua binding: object
-** Generated automatically by tolua 4.0a - angband on Sun Nov 18 18:50:48 2001.
+** Generated automatically by tolua 4.0a - angband on Sun Dec  9 19:44:08 2001.
 */
 
 #include "lua/tolua.h"
@@ -482,26 +482,6 @@ static int toluaI_set_object_object_type_note(lua_State* tolua_S)
  if (!tolua_istype(tolua_S,2,LUA_TNUMBER,0))
  TOLUA_ERR_ASSIGN;
   self->note = ((u16b)  tolua_getnumber(tolua_S,2,0));
- return 0;
-}
-
-/* get function: inscrip of class  object_type */
-static int toluaI_get_object_object_type_inscrip(lua_State* tolua_S)
-{
-  object_type* self = (object_type*)  tolua_getusertype(tolua_S,1,0);
- if (!self) TOLUA_ERR_SELF;
- tolua_pushnumber(tolua_S,(long)self->inscrip);
- return 1;
-}
-
-/* set function: inscrip of class  object_type */
-static int toluaI_set_object_object_type_inscrip(lua_State* tolua_S)
-{
-  object_type* self = (object_type*)  tolua_getusertype(tolua_S,1,0);
- if (!self) TOLUA_ERR_SELF;
- if (!tolua_istype(tolua_S,2,LUA_TNUMBER,0))
- TOLUA_ERR_ASSIGN;
-  self->inscrip = ((byte)  tolua_getnumber(tolua_S,2,0));
  return 0;
 }
 
@@ -2485,60 +2465,6 @@ tolua_lerror:
  return 0;
 }
 
-/* function: object_desc */
-static int toluaI_object_object_desc00(lua_State* tolua_S)
-{
- if (
- !tolua_istype(tolua_S,1,LUA_TSTRING,0) ||
- !tolua_istype(tolua_S,2,tolua_tag(tolua_S,"const object_type"),0) ||
- !tolua_istype(tolua_S,3,LUA_TNUMBER,0) ||
- !tolua_istype(tolua_S,4,LUA_TNUMBER,0) ||
- !tolua_isnoobj(tolua_S,5)
- )
- goto tolua_lerror;
- else
- {
-  char* buf = ((char*)  tolua_getstring(tolua_S,1,0));
-  const object_type* o_ptr = ((const object_type*)  tolua_getusertype(tolua_S,2,0));
-  int pref = ((int)  tolua_getnumber(tolua_S,3,0));
-  int mode = ((int)  tolua_getnumber(tolua_S,4,0));
- {
-  object_desc(buf,o_ptr,pref,mode);
- }
- }
- return 0;
-tolua_lerror:
- tolua_error(tolua_S,"#ferror in function 'object_desc'.");
- return 0;
-}
-
-/* function: object_desc_store */
-static int toluaI_object_object_desc_store00(lua_State* tolua_S)
-{
- if (
- !tolua_istype(tolua_S,1,LUA_TSTRING,0) ||
- !tolua_istype(tolua_S,2,tolua_tag(tolua_S,"const object_type"),0) ||
- !tolua_istype(tolua_S,3,LUA_TNUMBER,0) ||
- !tolua_istype(tolua_S,4,LUA_TNUMBER,0) ||
- !tolua_isnoobj(tolua_S,5)
- )
- goto tolua_lerror;
- else
- {
-  char* buf = ((char*)  tolua_getstring(tolua_S,1,0));
-  const object_type* o_ptr = ((const object_type*)  tolua_getusertype(tolua_S,2,0));
-  int pref = ((int)  tolua_getnumber(tolua_S,3,0));
-  int mode = ((int)  tolua_getnumber(tolua_S,4,0));
- {
-  object_desc_store(buf,o_ptr,pref,mode);
- }
- }
- return 0;
-tolua_lerror:
- tolua_error(tolua_S,"#ferror in function 'object_desc_store'.");
- return 0;
-}
-
 /* function: identify_random_gen */
 static int toluaI_object_identify_random_gen00(lua_State* tolua_S)
 {
@@ -3904,124 +3830,6 @@ tolua_lerror:
  return 0;
 }
 
-/* function: spell_chance */
-static int toluaI_object_spell_chance00(lua_State* tolua_S)
-{
- if (
- !tolua_istype(tolua_S,1,LUA_TNUMBER,0) ||
- !tolua_isnoobj(tolua_S,2)
- )
- goto tolua_lerror;
- else
- {
-  int spell = ((int)  tolua_getnumber(tolua_S,1,0));
- {
-  s16b toluaI_ret = (s16b)  spell_chance(spell);
- tolua_pushnumber(tolua_S,(long)toluaI_ret);
- }
- }
- return 1;
-tolua_lerror:
- tolua_error(tolua_S,"#ferror in function 'spell_chance'.");
- return 0;
-}
-
-/* function: spell_okay */
-static int toluaI_object_spell_okay00(lua_State* tolua_S)
-{
- if (
- !tolua_istype(tolua_S,1,LUA_TNUMBER,0) ||
- !tolua_istype(tolua_S,2,tolua_tag(tolua_S,"bool"),0) ||
- !tolua_isnoobj(tolua_S,3)
- )
- goto tolua_lerror;
- else
- {
-  int spell = ((int)  tolua_getnumber(tolua_S,1,0));
-  bool known = ((bool)  tolua_getbool(tolua_S,2,0));
- {
-  bool toluaI_ret = (bool)  spell_okay(spell,known);
- tolua_pushbool(tolua_S,(int)toluaI_ret);
- }
- }
- return 1;
-tolua_lerror:
- tolua_error(tolua_S,"#ferror in function 'spell_okay'.");
- return 0;
-}
-
-/* function: spell_info */
-static int toluaI_object_spell_info00(lua_State* tolua_S)
-{
- if (
- !tolua_istype(tolua_S,1,LUA_TSTRING,0) ||
- !tolua_istype(tolua_S,2,LUA_TNUMBER,0) ||
- !tolua_isnoobj(tolua_S,3)
- )
- goto tolua_lerror;
- else
- {
-  char* p = ((char*)  tolua_getstring(tolua_S,1,0));
-  int spell = ((int)  tolua_getnumber(tolua_S,2,0));
- {
-  spell_info(p,spell);
- }
- }
- return 0;
-tolua_lerror:
- tolua_error(tolua_S,"#ferror in function 'spell_info'.");
- return 0;
-}
-
-/* function: print_spells */
-static int toluaI_object_print_spells00(lua_State* tolua_S)
-{
- if (
- !tolua_istype(tolua_S,1,LUA_TNUMBER,0) ||
- !tolua_istype(tolua_S,2,LUA_TNUMBER,0) ||
- !tolua_istype(tolua_S,3,LUA_TNUMBER,0) ||
- !tolua_istype(tolua_S,4,LUA_TNUMBER,0) ||
- !tolua_isnoobj(tolua_S,5)
- )
- goto tolua_lerror;
- else
- {
-  const byte spells = ((const byte)  tolua_getnumber(tolua_S,1,0));
-  int num = ((int)  tolua_getnumber(tolua_S,2,0));
-  int y = ((int)  tolua_getnumber(tolua_S,3,0));
-  int x = ((int)  tolua_getnumber(tolua_S,4,0));
- {
-  print_spells(&spells,num,y,x);
- tolua_pushnumber(tolua_S,(long)spells);
- }
- }
- return 1;
-tolua_lerror:
- tolua_error(tolua_S,"#ferror in function 'print_spells'.");
- return 0;
-}
-
-/* function: display_koff */
-static int toluaI_object_display_koff00(lua_State* tolua_S)
-{
- if (
- !tolua_istype(tolua_S,1,LUA_TNUMBER,0) ||
- !tolua_isnoobj(tolua_S,2)
- )
- goto tolua_lerror;
- else
- {
-  int k_idx = ((int)  tolua_getnumber(tolua_S,1,0));
- {
-  display_koff(k_idx);
- }
- }
- return 0;
-tolua_lerror:
- tolua_error(tolua_S,"#ferror in function 'display_koff'.");
- return 0;
-}
-
 /* function: object_aware_p */
 static int toluaI_object_object_aware_p00(lua_State* tolua_S)
 {
@@ -4502,9 +4310,20 @@ int tolua_object_open (lua_State* tolua_S)
  tolua_constant(tolua_S,NULL,"SV_AMULET_WISDOM",SV_AMULET_WISDOM);
  tolua_constant(tolua_S,NULL,"SV_AMULET_CHARISMA",SV_AMULET_CHARISMA);
  tolua_constant(tolua_S,NULL,"SV_AMULET_THE_MAGI",SV_AMULET_THE_MAGI);
+ tolua_constant(tolua_S,NULL,"SV_AMULET_SUSTENANCE",SV_AMULET_SUSTENANCE);
  tolua_constant(tolua_S,NULL,"SV_AMULET_CARLAMMAS",SV_AMULET_CARLAMMAS);
  tolua_constant(tolua_S,NULL,"SV_AMULET_INGWE",SV_AMULET_INGWE);
  tolua_constant(tolua_S,NULL,"SV_AMULET_DWARVES",SV_AMULET_DWARVES);
+ tolua_constant(tolua_S,NULL,"SV_AMULET_ESP",SV_AMULET_ESP);
+ tolua_constant(tolua_S,NULL,"SV_AMULET_RESIST",SV_AMULET_RESIST);
+ tolua_constant(tolua_S,NULL,"SV_AMULET_REGEN",SV_AMULET_REGEN);
+ tolua_constant(tolua_S,NULL,"SV_AMULET_ELESSAR",SV_AMULET_ELESSAR);
+ tolua_constant(tolua_S,NULL,"SV_AMULET_EVENSTAR",SV_AMULET_EVENSTAR);
+ tolua_constant(tolua_S,NULL,"SV_AMULET_DEVOTION",SV_AMULET_DEVOTION);
+ tolua_constant(tolua_S,NULL,"SV_AMULET_WEAPONMASTERY",SV_AMULET_WEAPONMASTERY);
+ tolua_constant(tolua_S,NULL,"SV_AMULET_TRICKERY",SV_AMULET_TRICKERY);
+ tolua_constant(tolua_S,NULL,"SV_AMULET_INFRAVISION",SV_AMULET_INFRAVISION);
+ tolua_constant(tolua_S,NULL,"SV_AMULET_RESIST_LIGHTNING",SV_AMULET_RESIST_LIGHTNING);
  tolua_constant(tolua_S,NULL,"SV_RING_WOE",SV_RING_WOE);
  tolua_constant(tolua_S,NULL,"SV_RING_AGGRAVATION",SV_RING_AGGRAVATION);
  tolua_constant(tolua_S,NULL,"SV_RING_WEAKNESS",SV_RING_WEAKNESS);
@@ -4542,6 +4361,7 @@ int tolua_object_open (lua_State* tolua_S)
  tolua_constant(tolua_S,NULL,"SV_RING_NENYA",SV_RING_NENYA);
  tolua_constant(tolua_S,NULL,"SV_RING_VILYA",SV_RING_VILYA);
  tolua_constant(tolua_S,NULL,"SV_RING_POWER",SV_RING_POWER);
+ tolua_constant(tolua_S,NULL,"SV_RING_LIGHTNING",SV_RING_LIGHTNING);
  tolua_constant(tolua_S,NULL,"SV_STAFF_DARKNESS",SV_STAFF_DARKNESS);
  tolua_constant(tolua_S,NULL,"SV_STAFF_SLOWNESS",SV_STAFF_SLOWNESS);
  tolua_constant(tolua_S,NULL,"SV_STAFF_HASTE_MONSTERS",SV_STAFF_HASTE_MONSTERS);
@@ -4961,7 +4781,6 @@ int tolua_object_open (lua_State* tolua_S)
  tolua_tablevar(tolua_S,"object_type","ident",toluaI_get_object_object_type_ident,toluaI_set_object_object_type_ident);
  tolua_tablevar(tolua_S,"object_type","marked",toluaI_get_object_object_type_marked,toluaI_set_object_object_type_marked);
  tolua_tablevar(tolua_S,"object_type","note",toluaI_get_object_object_type_note,toluaI_set_object_object_type_note);
- tolua_tablevar(tolua_S,"object_type","inscrip",toluaI_get_object_object_type_inscrip,toluaI_set_object_object_type_inscrip);
  tolua_tablevar(tolua_S,"object_type","next_o_idx",toluaI_get_object_object_type_next_o_idx,toluaI_set_object_object_type_next_o_idx);
  tolua_tablevar(tolua_S,"object_type","held_m_idx",toluaI_get_object_object_type_held_m_idx,toluaI_set_object_object_type_held_m_idx);
  tolua_cclass(tolua_S,"object_kind","");
@@ -5061,8 +4880,6 @@ int tolua_object_open (lua_State* tolua_S)
  tolua_function(tolua_S,NULL,"reset_visuals",toluaI_object_reset_visuals00);
  tolua_function(tolua_S,NULL,"object_flags",toluaI_object_object_flags00);
  tolua_function(tolua_S,NULL,"object_flags_known",toluaI_object_object_flags_known00);
- tolua_function(tolua_S,NULL,"object_desc",toluaI_object_object_desc00);
- tolua_function(tolua_S,NULL,"object_desc_store",toluaI_object_object_desc_store00);
  tolua_function(tolua_S,NULL,"identify_random_gen",toluaI_object_identify_random_gen00);
  tolua_function(tolua_S,NULL,"identify_fully_aux",toluaI_object_identify_fully_aux00);
  tolua_function(tolua_S,NULL,"index_to_label",toluaI_object_index_to_label00);
@@ -5124,11 +4941,6 @@ int tolua_object_open (lua_State* tolua_S)
  tolua_function(tolua_S,NULL,"inven_drop",toluaI_object_inven_drop00);
  tolua_function(tolua_S,NULL,"combine_pack",toluaI_object_combine_pack00);
  tolua_function(tolua_S,NULL,"reorder_pack",toluaI_object_reorder_pack00);
- tolua_function(tolua_S,NULL,"spell_chance",toluaI_object_spell_chance00);
- tolua_function(tolua_S,NULL,"spell_okay",toluaI_object_spell_okay00);
- tolua_function(tolua_S,NULL,"spell_info",toluaI_object_spell_info00);
- tolua_function(tolua_S,NULL,"print_spells",toluaI_object_print_spells00);
- tolua_function(tolua_S,NULL,"display_koff",toluaI_object_display_koff00);
  tolua_function(tolua_S,NULL,"object_aware_p",toluaI_object_object_aware_p00);
  tolua_function(tolua_S,NULL,"object_tried_p",toluaI_object_object_tried_p00);
  tolua_function(tolua_S,NULL,"object_known_p",toluaI_object_object_known_p00);
@@ -5420,9 +5232,20 @@ void tolua_object_close (lua_State* tolua_S)
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"SV_AMULET_WISDOM");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"SV_AMULET_CHARISMA");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"SV_AMULET_THE_MAGI");
+ lua_pushnil(tolua_S); lua_setglobal(tolua_S,"SV_AMULET_SUSTENANCE");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"SV_AMULET_CARLAMMAS");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"SV_AMULET_INGWE");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"SV_AMULET_DWARVES");
+ lua_pushnil(tolua_S); lua_setglobal(tolua_S,"SV_AMULET_ESP");
+ lua_pushnil(tolua_S); lua_setglobal(tolua_S,"SV_AMULET_RESIST");
+ lua_pushnil(tolua_S); lua_setglobal(tolua_S,"SV_AMULET_REGEN");
+ lua_pushnil(tolua_S); lua_setglobal(tolua_S,"SV_AMULET_ELESSAR");
+ lua_pushnil(tolua_S); lua_setglobal(tolua_S,"SV_AMULET_EVENSTAR");
+ lua_pushnil(tolua_S); lua_setglobal(tolua_S,"SV_AMULET_DEVOTION");
+ lua_pushnil(tolua_S); lua_setglobal(tolua_S,"SV_AMULET_WEAPONMASTERY");
+ lua_pushnil(tolua_S); lua_setglobal(tolua_S,"SV_AMULET_TRICKERY");
+ lua_pushnil(tolua_S); lua_setglobal(tolua_S,"SV_AMULET_INFRAVISION");
+ lua_pushnil(tolua_S); lua_setglobal(tolua_S,"SV_AMULET_RESIST_LIGHTNING");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"SV_RING_WOE");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"SV_RING_AGGRAVATION");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"SV_RING_WEAKNESS");
@@ -5460,6 +5283,7 @@ void tolua_object_close (lua_State* tolua_S)
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"SV_RING_NENYA");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"SV_RING_VILYA");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"SV_RING_POWER");
+ lua_pushnil(tolua_S); lua_setglobal(tolua_S,"SV_RING_LIGHTNING");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"SV_STAFF_DARKNESS");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"SV_STAFF_SLOWNESS");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"SV_STAFF_HASTE_MONSTERS");
@@ -5899,8 +5723,6 @@ void tolua_object_close (lua_State* tolua_S)
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"reset_visuals");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"object_flags");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"object_flags_known");
- lua_pushnil(tolua_S); lua_setglobal(tolua_S,"object_desc");
- lua_pushnil(tolua_S); lua_setglobal(tolua_S,"object_desc_store");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"identify_random_gen");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"identify_fully_aux");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"index_to_label");
@@ -5962,11 +5784,6 @@ void tolua_object_close (lua_State* tolua_S)
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"inven_drop");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"combine_pack");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"reorder_pack");
- lua_pushnil(tolua_S); lua_setglobal(tolua_S,"spell_chance");
- lua_pushnil(tolua_S); lua_setglobal(tolua_S,"spell_okay");
- lua_pushnil(tolua_S); lua_setglobal(tolua_S,"spell_info");
- lua_pushnil(tolua_S); lua_setglobal(tolua_S,"print_spells");
- lua_pushnil(tolua_S); lua_setglobal(tolua_S,"display_koff");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"object_aware_p");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"object_tried_p");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"object_known_p");

@@ -636,8 +636,8 @@ static cptr names_list =
 #define sign(x)	((x) > 0 ? 1 : ((x) < 0 ? -1 : 0))
 
 
-static long lprobs[S_WORD+1][S_WORD+1][S_WORD+1];
-static long ltotal[S_WORD+1][S_WORD+1];
+static unsigned short lprobs[S_WORD+1][S_WORD+1][S_WORD+1];
+static unsigned short ltotal[S_WORD+1][S_WORD+1];
 
 /*
  * Cache the results of lookup_kind(), which is expensive and would
@@ -659,7 +659,7 @@ static void build_prob(cptr learn)
 	int c_prev, c_cur, c_next;
 
 	/* Build raw frequencies */
-	while (1)
+	do
 	{
 		c_prev = c_cur = S_WORD;
 
@@ -683,6 +683,7 @@ static void build_prob(cptr learn)
 		lprobs[c_prev][c_cur][E_WORD]++;
 		ltotal[c_prev][c_cur]++;
 	}
+	while (c_next != '\0');
 }
 
 

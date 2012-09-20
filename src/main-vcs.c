@@ -25,8 +25,8 @@
 static int fd_vcsa;
 static unsigned char *screen;
 
-static int s_width, s_height;
-static int cx, cy;
+static byte s_width, s_height;
+static byte cx, cy;
 
 
 typedef struct term_data
@@ -371,7 +371,7 @@ static void term_data_link(int i, int x0, int y0, int sx, int sy)
 }
 
 
-errr init_vcs(void)
+errr init_vcs(int argc, char** argv)
 {
 	int i;
 	unsigned char *c;
@@ -380,7 +380,7 @@ errr init_vcs(void)
 		char buf[256];
 		c = ttyname(0);
 
-		if (sscanf(c, "/dev/tty%i", &i) != 1)
+		if (c == NULL || sscanf(c, "/dev/tty%i", &i) != 1)
 		{
 			fprintf(stderr,"can't find my tty\n");
 			return 1;
@@ -410,6 +410,7 @@ errr init_vcs(void)
 	if (!screen)
 	{
 		fprintf(stderr, "vcsa: out of memory\n");
+		close(fd_vcsa);
 		return 1;
 	}
 

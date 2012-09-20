@@ -1333,10 +1333,10 @@ static errr init_alloc(void)
 	/*** Analyze object allocation info ***/
 
 	/* Clear the "aux" array */
-	(void)C_WIPE(&aux, MAX_DEPTH, s16b);
+	(void)C_WIPE(aux, MAX_DEPTH, s16b);
 
 	/* Clear the "num" array */
-	(void)C_WIPE(&num, MAX_DEPTH, s16b);
+	(void)C_WIPE(num, MAX_DEPTH, s16b);
 
 	/* Size of "alloc_kind_table" */
 	alloc_kind_size = 0;
@@ -1422,10 +1422,10 @@ static errr init_alloc(void)
 	/*** Analyze monster allocation info ***/
 
 	/* Clear the "aux" array */
-	(void)C_WIPE(&aux, MAX_DEPTH, s16b);
+	(void)C_WIPE(aux, MAX_DEPTH, s16b);
 
 	/* Clear the "num" array */
-	(void)C_WIPE(&num, MAX_DEPTH, s16b);
+	(void)C_WIPE(num, MAX_DEPTH, s16b);
 
 	/* Size of "alloc_race_table" */
 	alloc_race_size = 0;
@@ -1504,10 +1504,10 @@ static errr init_alloc(void)
 	/*** Analyze ego_item allocation info ***/
 
 	/* Clear the "aux" array */
-	(void)C_WIPE(&aux, MAX_DEPTH, s16b);
+	(void)C_WIPE(aux, MAX_DEPTH, s16b);
 
 	/* Clear the "num" array */
-	(void)C_WIPE(&num, MAX_DEPTH, s16b);
+	(void)C_WIPE(num, MAX_DEPTH, s16b);
 
 	/* Size of "alloc_ego_table" */
 	alloc_ego_size = 0;
@@ -1722,7 +1722,7 @@ void init_angband(void)
 		int i = 0;
 
 		/* Dump the file to the screen */
-		while (0 == my_fgets(fp, buf, 1024))
+		while (0 == my_fgets(fp, buf, sizeof(buf)))
 		{
 			/* Display and advance */
 			Term_putstr(0, i++, -1, TERM_WHITE, buf);
@@ -1876,7 +1876,7 @@ void cleanup_angband(void)
 	/* Free the keymaps */
 	for (i = 0; i < KEYMAP_MODES; ++i)
 	{
-		for (j = 0; j < 256; ++j)
+		for (j = 0; j < (int)N_ELEMENTS(keymap_act[i]); ++j)
 		{
 			string_free(keymap_act[i][j]);
 		}

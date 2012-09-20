@@ -23,7 +23,7 @@ angband_SOURCES = \
   store.c birth.c load.c \
   wizard1.c wizard2.c \
   main-cap.c main-gcu.c main-x11.c main-xaw.c main.c \
-  main-win.c main-xpj.c main-vcs.c \
+  main-win.c main-xpj.c main-vcs.c main-gtk.c \
   generate.c dungeon.c init1.c init2.c randart.c \
   angband.h config.h defines.h externs.h h-basic.h \
   h-config.h h-define.h h-system.h h-type.h init.h \
@@ -55,7 +55,7 @@ l-spell.c: lua/tolua l-spell.pkg
 	lua/tolua -n spell -o l-spell.c l-spell.pkg
 
 EXTRA_angband_SOURCES = \
-  main-acn.c main-ami.c main-dos.c main-emx.c main-gtk.c \
+  main-acn.c main-ami.c main-dos.c main-emx.c \
   main-ibm.c main-lsl.c main-mac.c main-sla.c main-vme.c \
   main-xxx.c \
   Makefile.acn Makefile.ami Makefile.bcc Makefile.cyg \

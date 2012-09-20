@@ -90,18 +90,20 @@ INCS = \
 #
 
 
-default:	angband
+default: angband
 
-install:	angband movebin cleanobjs
+install: angband movebin cleanobjs
 
 movebin:
 	mv -f angband.exe ../angband.exe
 
 cleanobjs:
 	rm -f $(EXOBJS)
+	rm -f $(TOLUAOBJS)
 
 cleanbin:
-	rm -f angband
+	rm -f angband.exe
+	rm -f lua/tolua.exe
 
 clean:	cleanobjs cleanbin
 
@@ -173,10 +175,10 @@ cmd3.o: cmd3.c $(INCS)
 cmd4.o: cmd4.c $(INCS)
 	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
 
-cmd5.o: cmd5.c $(INCS)
+cmd5.o: cmd5.c $(INCS) script.h
 	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
 
-cmd6.o: cmd6.c $(INCS)
+cmd6.o: cmd6.c $(INCS) script.h
 	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
 
 dungeon.o: dungeon.c $(INCS)
@@ -191,7 +193,28 @@ generate.o: generate.c $(INCS)
 init1.o: init1.c $(INCS) init.h
 	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
 
-init2.o: init2.c $(INCS) init.h
+init2.o: init2.c $(INCS) init.h script.h
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
+l-misc.o: l-misc.c $(INCS) lua/tolua.h
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
+l-monst.o: l-monst.c $(INCS) lua/tolua.h
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
+l-object.o: l-object.c $(INCS) lua/tolua.h
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
+l-player.o: l-player.c $(INCS) lua/tolua.h
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
+l-random.o: l-random.c $(INCS) lua/tolua.h
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
+l-spell.o: l-spell.c $(INCS) lua/tolua.h
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
+l-ui.o: l-ui.c $(INCS) lua/tolua.h
 	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
 
 load.o: load.c $(INCS)
@@ -221,7 +244,7 @@ object1.o: object1.c $(INCS)
 object2.o: object2.c $(INCS)
 	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
 
-randart.o: randart.c $(INCS)
+randart.o: randart.c $(INCS) init.h
 	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
 
 #
@@ -229,10 +252,14 @@ randart.o: randart.c $(INCS)
 # keyword used in readdib.c
 #
 
-readdib.o: readdib.c $(INCS) readdib.h
+readdib.o: readdib.c readdib.h
 	$(CC) $(CFLAGS) -DNEAR= $(INCDIRS) -c -o $@ $<
 
 save.o: save.c $(INCS)
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
+script.o: script.c $(INCS) script.h \
+		lua/lauxlib.h lua/lua.h lua/luadebug.h lua/lualib.h lua/tolua.h
 	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
 
 spells1.o: spells1.c $(INCS)
@@ -247,6 +274,9 @@ store.o: store.c $(INCS)
 tables.o: tables.c $(INCS)
 	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
 
+use-obj.o: use-obj.c $(INCS)
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
 util.o: util.c $(INCS)
 	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
 
@@ -256,10 +286,10 @@ variable.o: variable.c $(INCS)
 wizard1.o: wizard1.c $(INCS)
 	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
 
-wizard2.o: wizard2.c $(INCS)
+wizard2.o: wizard2.c $(INCS) script.h
 	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
 
-xtra1.o: xtra1.c $(INCS)
+xtra1.o: xtra1.c $(INCS) script.h
 	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
 
 xtra2.o: xtra2.c $(INCS)

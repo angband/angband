@@ -120,7 +120,7 @@ static errr wr_block(void)
 	fake[3] = (byte)(data_size >> 8);
 
 	/* Dump the head */
-	err = fd_write(data_fd, (cptr)&fake, 4);
+	err = fd_write(data_fd, (cptr)&fake, sizeof(fake));
 
 	/* Dump the actual data */
 	err = fd_write(data_fd, (cptr)data_head, data_size);
@@ -132,7 +132,7 @@ static errr wr_block(void)
 	fake[3] = 0;
 
 	/* Dump the tail */
-	err = fd_write(data_fd, (cptr)&fake, 4);
+	err = fd_write(data_fd, (cptr)&fake, sizeof(fake));
 
 	/* Hack -- reset */
 	data_next = data_head;
@@ -252,7 +252,7 @@ static errr wr_savefile(void)
 	fake[3] = (byte)(VERSION_EXTRA);
 
 	/* Dump the data */
-	err = fd_write(data_fd, (cptr)&fake, 4);
+	err = fd_write(data_fd, (cptr)&fake, sizeof(fake));
 
 
 	/* Make array XXX XXX XXX */
@@ -451,7 +451,7 @@ static errr rd_block(void)
 	byte fake[4];
 
 	/* Read the head data */
-	err = fd_read(data_fd, (char*)&fake, 4);
+	err = fd_read(data_fd, (char*)&fake, sizeof(fake));
 
 	/* Extract the type and size */
 	data_type = (fake[0] | ((u16b)fake[1] << 8));
@@ -464,7 +464,7 @@ static errr rd_block(void)
 	err = fd_read(data_fd, (char*)data_head, data_size);
 
 	/* Read the tail data */
-	err = fd_read(data_fd, (char*)&fake, 4);
+	err = fd_read(data_fd, (char*)&fake, sizeof(fake));
 
 	/* XXX XXX XXX Verify */
 
@@ -553,7 +553,7 @@ static errr rd_savefile(void)
 	if (data_fd < 0) return (1);
 
 	/* Strip the first four bytes (see below) */
-	if (fd_read(data_fd, (char*)(fake), 4)) return (1);
+	if (fd_read(data_fd, (char*)(fake), sizeof(fake))) return (1);
 
 
 	/* Make array XXX XXX XXX */

@@ -269,14 +269,15 @@
 
 
 /*
- * OPTION: Define "HAS_USLEEP" only if "usleep()" exists.
+ * OPTION: Define "HAVE_USLEEP" only if "usleep()" exists.
  *
  * Note that this is only relevant for "SET_UID" machines.
- * Note that new "SOLARIS" and "SGI" machines have "usleep()".
+ *
+ * (Set in autoconf.h when HAVE_CONFIG_H -- i.e. when configure is used.)
  */
-#ifdef SET_UID
+#if defined(SET_UID) && !defined(HAVE_CONFIG_H)
 # if !defined(HPUX) && !defined(ULTRIX) && !defined(ISC)
-#  define HAS_USLEEP
+#  define HAVE_USLEEP
 # endif
 #endif
 

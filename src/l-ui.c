@@ -1,6 +1,6 @@
 /*
 ** Lua binding: ui
-** Generated automatically by tolua 4.0a - angband on Sun Nov 18 18:51:17 2001.
+** Generated automatically by tolua 4.0a - angband on Sat Dec  8 18:10:53 2001.
 */
 
 #include "lua/tolua.h"
@@ -447,6 +447,49 @@ tolua_lerror:
  return 0;
 }
 
+/* function: text_out_to_screen */
+static int toluaI_ui_text_out00(lua_State* tolua_S)
+{
+ if (
+ !tolua_istype(tolua_S,1,LUA_TNUMBER,0) ||
+ !tolua_istype(tolua_S,2,LUA_TSTRING,0) ||
+ !tolua_isnoobj(tolua_S,3)
+ )
+ goto tolua_lerror;
+ else
+ {
+  byte a = ((byte)  tolua_getnumber(tolua_S,1,0));
+  cptr str = ((cptr)  tolua_getstring(tolua_S,2,0));
+ {
+  text_out_to_screen(a,str);
+ }
+ }
+ return 0;
+tolua_lerror:
+ tolua_error(tolua_S,"#ferror in function 'text_out'.");
+ return 0;
+}
+
+/* function: Term_clear */
+static int toluaI_ui_Term_clear00(lua_State* tolua_S)
+{
+ if (
+ !tolua_isnoobj(tolua_S,1)
+ )
+ goto tolua_lerror;
+ else
+ {
+ {
+  errr toluaI_ret = (errr)  Term_clear();
+ tolua_pushnumber(tolua_S,(long)toluaI_ret);
+ }
+ }
+ return 1;
+tolua_lerror:
+ tolua_error(tolua_S,"#ferror in function 'Term_clear'.");
+ return 0;
+}
+
 /* Open function */
 int tolua_ui_open (lua_State* tolua_S)
 {
@@ -568,6 +611,8 @@ int tolua_ui_open (lua_State* tolua_S)
  tolua_function(tolua_S,NULL,"clear_from",toluaI_ui_clear_from00);
  tolua_function(tolua_S,NULL,"pause_line",toluaI_ui_pause_line00);
  tolua_function(tolua_S,NULL,"request_command",toluaI_ui_request_command00);
+ tolua_function(tolua_S,NULL,"text_out",toluaI_ui_text_out00);
+ tolua_function(tolua_S,NULL,"Term_clear",toluaI_ui_Term_clear00);
  return 1;
 }
 /* Close function */
@@ -689,4 +734,6 @@ void tolua_ui_close (lua_State* tolua_S)
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"clear_from");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"pause_line");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"request_command");
+ lua_pushnil(tolua_S); lua_setglobal(tolua_S,"text_out");
+ lua_pushnil(tolua_S); lua_setglobal(tolua_S,"Term_clear");
 }

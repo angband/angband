@@ -67,7 +67,7 @@ PACKAGE = @PACKAGE@
 RANLIB = @RANLIB@
 VERSION = @VERSION@
 
-angband_files =    init.lua object.lua test.lua
+angband_files =    init.lua object.lua spell.lua test.lua trace.lua
 
 
 EXTRA_DIST =    $(angband_files)

@@ -256,6 +256,8 @@ u16b *view_g;
 
 /*
  * Arrays[TEMP_MAX] used for various things
+ *
+ * Note that temp_g shares memory with temp_x and temp_y.
  */
 sint temp_n = 0;
 u16b *temp_g;

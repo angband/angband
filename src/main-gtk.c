@@ -126,25 +126,38 @@ static errr Term_wipe_gtk(int x, int y, int n)
 
 
 /*
+ * Set foreground color
+ */
+static void set_foreground_color(term_data *td, byte a)
+{
+	static unsigned int failed = 0;
+
+	GdkColor color;
+
+	color.red   = angband_color_table[a][1] * 256;
+	color.green = angband_color_table[a][2] * 256;
+	color.blue  = angband_color_table[a][3] * 256;
+
+	g_assert(td->pixmap != NULL);
+	g_assert(td->drawing_area->window != 0);
+
+	if (gdk_colormap_alloc_color(gdk_colormap_get_system(), &color,
+								 FALSE, TRUE))
+		gdk_gc_set_foreground(td->gc, &color);
+	else if (!failed++)
+		g_print("Couldn't allocate color.\n");
+}
+
+
+/*
  * Draw some textual characters.
  */
 static errr Term_text_gtk(int x, int y, int n, byte a, cptr s)
 {
 	int i;
 	term_data *td = (term_data*)(Term->data);
-	GdkColor color;
-
-	color.red = angband_color_table[a][1] * 256;
-	color.green = angband_color_table[a][2] * 256;
-	color.blue = angband_color_table[a][3] * 256;
-
-	g_assert(td->pixmap != NULL);
-	g_assert(td->drawing_area->window != 0);
-
-	if (!gdk_colormap_alloc_color(gdk_colormap_get_system(), &color, TRUE, FALSE))
-		g_print("Couldn't allocate color.");
-
-	gdk_gc_set_foreground(td->gc, &color);
+	
+	set_foreground_color(td, a);
 
 	/* Clear the line */
 	Term_wipe_gtk(x, y, n);
@@ -227,20 +240,8 @@ static errr Term_curs_gtk(int x, int y)
 {
 	term_data *td = (term_data*)(Term->data);
 
-	GdkColor color;
-
-	color.red = angband_color_table[TERM_YELLOW][1] * 256;
-	color.green = angband_color_table[TERM_YELLOW][2] * 256;
-	color.blue = angband_color_table[TERM_YELLOW][3] * 256;
-
-	g_assert(td->pixmap != NULL);
-	g_assert(td->drawing_area->window != 0);
-
-	if (!gdk_colormap_alloc_color(gdk_colormap_get_system(), &color, TRUE, FALSE))
-		g_print("Couldn't allocate color.");
-
-	gdk_gc_set_foreground(td->gc, &color);
-
+	set_foreground_color(td, TERM_YELLOW);
+	
 	gdk_draw_rectangle(td->pixmap, td->gc, FALSE,
 	                   x * td->font_wid, y * td->font_hgt, td->font_wid - 1, td->font_hgt - 1);
 

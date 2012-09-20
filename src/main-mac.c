@@ -1987,7 +1987,7 @@ static int getshort(void)
 {
 	int x = 0;
 	char buf[256];
-	if (0 == my_fgets(fff, buf, 256)) x = atoi(buf);
+	if (0 == my_fgets(fff, buf, sizeof(buf))) x = atoi(buf);
 	return (x);
 }
 

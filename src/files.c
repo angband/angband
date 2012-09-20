@@ -806,7 +806,7 @@ static errr process_pref_file_aux(cptr name)
 
 
 	/* Process the file */
-	while (0 == my_fgets(fp, buf, 1024))
+	while (0 == my_fgets(fp, buf, sizeof(buf)))
 	{
 		/* Count lines */
 		line++;
@@ -1005,7 +1005,7 @@ errr check_time_init(void)
 	check_time_flag = TRUE;
 
 	/* Parse the file */
-	while (0 == my_fgets(fp, buf, 80))
+	while (0 == my_fgets(fp, buf, sizeof(buf)))
 	{
 		/* Skip comments and blank lines */
 		if (!buf[0] || (buf[0] == '#')) continue;
@@ -1026,7 +1026,7 @@ errr check_time_init(void)
 	/* Close it */
 	my_fclose(fp);
 
-#endif
+#endif /* CHECK_TIME */
 
 	/* Success */
 	return (0);
@@ -1132,7 +1132,7 @@ errr check_load_init(void)
 	(void)gethostname(thishost, (sizeof thishost) - 1);
 
 	/* Parse it */
-	while (0 == my_fgets(fp, buf, 1024))
+	while (0 == my_fgets(fp, buf, sizeof(buf)))
 	{
 		int value;
 
@@ -1156,7 +1156,7 @@ errr check_load_init(void)
 	/* Close the file */
 	my_fclose(fp);
 
-#endif
+#endif /* CHECK_LOAD */
 
 	/* Success */
 	return (0);
@@ -1361,8 +1361,8 @@ static void display_player_xtra_info(void)
 
 	/* Burden */
 	sprintf(buf, "%ld.%ld lbs",
-	        p_ptr->total_weight / 10,
-	        p_ptr->total_weight % 10);
+	        p_ptr->total_weight / 10L,
+	        p_ptr->total_weight % 10L);
 	Term_putstr(col, 17, -1, TERM_WHITE, "Burden");
 	Term_putstr(col+8, 17, -1, TERM_L_GREEN,
 	            format("%10s", buf));
@@ -2433,7 +2433,7 @@ bool show_file(cptr name, cptr what, int line, int mode)
 	while (TRUE)
 	{
 		/* Read a line or stop */
-		if (my_fgets(fff, buf, 1024)) break;
+		if (my_fgets(fff, buf, sizeof(buf))) break;
 
 		/* XXX Parse "menu" items */
 		if (prefix(buf, "***** "))
@@ -2515,7 +2515,7 @@ bool show_file(cptr name, cptr what, int line, int mode)
 		while (next < line)
 		{
 			/* Get a line */
-			if (my_fgets(fff, buf, 1024)) break;
+			if (my_fgets(fff, buf, sizeof(buf))) break;
 
 			/* Skip tags/links */
 			if (prefix(buf, "***** ")) continue;
@@ -2532,7 +2532,7 @@ bool show_file(cptr name, cptr what, int line, int mode)
 			if (!i) line = next;
 
 			/* Get a line of the file or stop */
-			if (my_fgets(fff, buf, 1024)) break;
+			if (my_fgets(fff, buf, sizeof(buf))) break;
 
 			/* Hack -- skip "special" lines */
 			if (prefix(buf, "***** ")) continue;
@@ -3095,7 +3095,7 @@ static void print_tomb(void)
 		int i = 0;
 
 		/* Dump the file to the screen */
-		while (0 == my_fgets(fp, buf, 1024))
+		while (0 == my_fgets(fp, buf, sizeof(buf)))
 		{
 			/* Display and advance */
 			put_str(buf, i++, 0);

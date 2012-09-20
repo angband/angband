@@ -1,5 +1,6 @@
 -- A very simple test-suite for Lua support in Angband
 
+if nil then
 function test_use_object_hook(test_tval, test_svals)
 	for test_sval, _ in test_svals do
 		local test_object = {tval = test_tval, sval = test_sval, pval = 1, k_idx = 1, ident = 0}
@@ -233,4 +234,8 @@ test_use_object_hook(TV_ROD, {
 		SV_ROD_ELEC_BALL,
 		SV_ROD_FIRE_BALL,
 		SV_ROD_COLD_BALL})
+end
 
+for i = 0, 64 do
+	cast_spell_hook(TV_PRAYER_BOOK, i)
+end
