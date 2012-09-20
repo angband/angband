@@ -4,7 +4,7 @@
 # This file defines special attr/char mappings for use in "graphics" mode
 # with Adam Bolt's 16x16 tiles.
 #
-# By Robert Ruehlmann < rr9@angband.org >
+# By Robert Ruehlmann < rr9@thangorodrim.net >
 #
 # See "lib/help/command.txt" and "src/files.c" for more information.
 #
@@ -1071,7 +1071,7 @@ K:198:0x83/0x9C
 # Scroll of *Acquirement*
 K:199:0x83/0x9C
 
-# Scroll of Mass Genocide
+# Scroll of Mass Banishment
 K:200:0x83/0x9C
 
 # Scroll of Detect Invisible
@@ -1089,7 +1089,7 @@ K:204:0x83/0x9C
 # Scroll of Recharging
 K:206:0x83/0x9C
 
-# Scroll of Genocide
+# Scroll of Banishment
 K:207:0x83/0x9C
 
 # Scroll of Darkness
@@ -1428,7 +1428,7 @@ K:321:0x87/0x92
 # Staff of Darkness
 K:322:0x87/0x92
 
-# Staff of Genocide
+# Staff of Banishment
 K:323:0x87/0x92
 
 # Staff of Power

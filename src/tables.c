@@ -1332,6 +1332,19 @@ cptr stat_names_reduced[A_MAX] =
 	"Str: ", "Int: ", "Wis: ", "Dex: ", "Con: ", "Chr: "
 };
 
+/*
+ * Full stat names
+ */
+cptr stat_names_full[A_MAX] =
+{
+	"strength",
+	"intellegence",
+	"wisdom",
+	"dexterity",
+	"constitution",
+	"charisma"
+};
+
 
 /*
  * Certain "screens" always use the main screen, including News, Birth,

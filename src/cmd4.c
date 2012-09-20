@@ -1997,11 +1997,27 @@ void do_cmd_visuals(void)
 				Term_putstr(40, 19, -1, TERM_WHITE, "<< ? >>");
 				Term_putch(43, 19, da, dc);
 
+				if (use_bigtile)
+				{
+					if (da & 0x80)
+						Term_putch(44, 19, 255, -1);
+					else
+						Term_putch(44, 19, 0, ' ');
+				}
+
 				/* Label the Current values */
 				Term_putstr(10, 20, -1, TERM_WHITE,
 				            format("Current attr/char = %3u / %3u", ca, cc));
 				Term_putstr(40, 20, -1, TERM_WHITE, "<< ? >>");
 				Term_putch(43, 20, ca, cc);
+
+				if (use_bigtile)
+				{
+					if (ca & 0x80)
+						Term_putch(44, 20, 255, -1);
+					else
+						Term_putch(44, 20, 0, ' ');
+				}
 
 				/* Prompt */
 				Term_putstr(0, 22, -1, TERM_WHITE,
@@ -2052,11 +2068,27 @@ void do_cmd_visuals(void)
 				Term_putstr(40, 19, -1, TERM_WHITE, "<< ? >>");
 				Term_putch(43, 19, da, dc);
 
+				if (use_bigtile)
+				{
+					if (da & 0x80)
+						Term_putch(44, 19, 255, -1);
+					else
+						Term_putch(44, 19, 0, ' ');
+				}
+
 				/* Label the Current values */
 				Term_putstr(10, 20, -1, TERM_WHITE,
 				            format("Current attr/char = %3d / %3d", ca, cc));
 				Term_putstr(40, 20, -1, TERM_WHITE, "<< ? >>");
 				Term_putch(43, 20, ca, cc);
+
+				if (use_bigtile)
+				{
+					if (ca & 0x80)
+						Term_putch(44, 20, 255, -1);
+					else
+						Term_putch(44, 20, 0, ' ');
+				}
 
 				/* Prompt */
 				Term_putstr(0, 22, -1, TERM_WHITE,
@@ -2107,11 +2139,27 @@ void do_cmd_visuals(void)
 				Term_putstr(40, 19, -1, TERM_WHITE, "<< ? >>");
 				Term_putch(43, 19, da, dc);
 
+				if (use_bigtile)
+				{
+					if (da & 0x80)
+						Term_putch(44, 19, 255, -1);
+					else
+						Term_putch(44, 19, 0, ' ');
+				}
+
 				/* Label the Current values */
 				Term_putstr(10, 20, -1, TERM_WHITE,
 				            format("Current attr/char = %3d / %3d", ca, cc));
 				Term_putstr(40, 20, -1, TERM_WHITE, "<< ? >>");
 				Term_putch(43, 20, ca, cc);
+
+				if (use_bigtile)
+				{
+					if (ca & 0x80)
+						Term_putch(44, 20, 255, -1);
+					else
+						Term_putch(44, 20, 0, ' ');
+				}
 
 				/* Prompt */
 				Term_putstr(0, 22, -1, TERM_WHITE,
@@ -2161,12 +2209,29 @@ void do_cmd_visuals(void)
 				            format("Default attr/char = %3d / %3d", da, dc));
 				Term_putstr(40, 19, -1, TERM_WHITE, "<< ? >>");
 				Term_putch(43, 19, da, dc);
+				Term_putch(43, 19, da, dc);
+
+				if (use_bigtile)
+				{
+					if (da & 0x80)
+						Term_putch(44, 19, 255, -1);
+					else
+						Term_putch(44, 19, 0, ' ');
+				}
 
 				/* Label the Current values */
 				Term_putstr(10, 20, -1, TERM_WHITE,
 				            format("Current attr/char = %3d / %3d", ca, cc));
 				Term_putstr(40, 20, -1, TERM_WHITE, "<< ? >>");
 				Term_putch(43, 20, ca, cc);
+
+				if (use_bigtile)
+				{
+					if (ca & 0x80)
+						Term_putch(44, 20, 255, -1);
+					else
+						Term_putch(44, 20, 0, ' ');
+				}
 
 				/* Prompt */
 				Term_putstr(0, 22, -1, TERM_WHITE,
@@ -2825,7 +2890,7 @@ static void do_cmd_knowledge_artifacts(void)
 			i_ptr->name1 = k;
 
 			/* Describe the artifact */
-			object_desc_store(o_name, sizeof(o_name), i_ptr, FALSE, 0);
+			object_desc_spoil(o_name, sizeof(o_name), i_ptr, FALSE, 0);
 		}
 
 		/* Hack -- Build the artifact name */
@@ -2967,7 +3032,7 @@ static void do_cmd_knowledge_objects(void)
 			object_prep(i_ptr, k);
 
 			/* Describe the object */
-			object_desc_store(o_name, sizeof(o_name), i_ptr, FALSE, 0);
+			object_desc_spoil(o_name, sizeof(o_name), i_ptr, FALSE, 0);
 
 			/* Print a message */
 			fprintf(fff, "     %s\n", o_name);

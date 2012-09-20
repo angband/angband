@@ -10,6 +10,7 @@
 
 #include "angband.h"
 
+#include "script.h"
 
 
 #define MAX_COMMENT_1	6
@@ -675,165 +676,12 @@ static bool store_check_num(const object_type *o_ptr)
 
 
 /*
- * Determine if a weapon is 'blessed'
- */
-static bool is_blessed(const object_type *o_ptr)
-{
-	u32b f1, f2, f3;
-
-	/* Get the flags */
-	object_flags(o_ptr, &f1, &f2, &f3);
-
-	/* Is the object blessed? */
-	return ((f3 & TR3_BLESSED) ? TRUE : FALSE);
-}
-
-
-/*
  * Determine if the current store will purchase the given object
- *
- * Note that a shop-keeper must refuse to buy "worthless" objects
  */
-static bool store_will_buy(const object_type *o_ptr)
+static bool store_will_buy_tester(const object_type *o_ptr)
 {
-	/* Hack -- The Home is simple */
-	if (store_num == STORE_HOME) return (TRUE);
-
-	/* Switch on the store */
-	switch (store_num)
-	{
-		/* General Store */
-		case STORE_GENERAL:
-		{
-			/* Analyze the type */
-			switch (o_ptr->tval)
-			{
-				case TV_FOOD:
-				case TV_LITE:
-				case TV_FLASK:
-				case TV_SPIKE:
-				case TV_SHOT:
-				case TV_ARROW:
-				case TV_BOLT:
-				case TV_DIGGING:
-				case TV_CLOAK:
-				break;
-				default:
-				return (FALSE);
-			}
-			break;
-		}
-
-		/* Armoury */
-		case STORE_ARMOR:
-		{
-			/* Analyze the type */
-			switch (o_ptr->tval)
-			{
-				case TV_BOOTS:
-				case TV_GLOVES:
-				case TV_CROWN:
-				case TV_HELM:
-				case TV_SHIELD:
-				case TV_CLOAK:
-				case TV_SOFT_ARMOR:
-				case TV_HARD_ARMOR:
-				case TV_DRAG_ARMOR:
-				break;
-				default:
-				return (FALSE);
-			}
-			break;
-		}
-
-		/* Weapon Shop */
-		case STORE_WEAPON:
-		{
-			/* Analyze the type */
-			switch (o_ptr->tval)
-			{
-				case TV_SHOT:
-				case TV_BOLT:
-				case TV_ARROW:
-				case TV_BOW:
-				case TV_DIGGING:
-				case TV_HAFTED:
-				case TV_POLEARM:
-				case TV_SWORD:
-				break;
-				default:
-				return (FALSE);
-			}
-			break;
-		}
-
-		/* Temple */
-		case STORE_TEMPLE:
-		{
-			/* Analyze the type */
-			switch (o_ptr->tval)
-			{
-				case TV_PRAYER_BOOK:
-				case TV_SCROLL:
-				case TV_POTION:
-				case TV_HAFTED:
-				break;
-				case TV_POLEARM:
-				case TV_SWORD:
-				{
-					/* Known blessed blades are accepted too */
-					if (is_blessed(o_ptr) && object_known_p(o_ptr)) break;
-				}
-				default:
-				return (FALSE);
-			}
-			break;
-		}
-
-		/* Alchemist */
-		case STORE_ALCHEMY:
-		{
-			/* Analyze the type */
-			switch (o_ptr->tval)
-			{
-				case TV_SCROLL:
-				case TV_POTION:
-				break;
-				default:
-				return (FALSE);
-			}
-			break;
-		}
-
-		/* Magic Shop */
-		case STORE_MAGIC:
-		{
-			/* Analyze the type */
-			switch (o_ptr->tval)
-			{
-				case TV_MAGIC_BOOK:
-				case TV_AMULET:
-				case TV_RING:
-				case TV_STAFF:
-				case TV_WAND:
-				case TV_ROD:
-				case TV_SCROLL:
-				case TV_POTION:
-				break;
-				default:
-				return (FALSE);
-			}
-			break;
-		}
-	}
-
-	/* Ignore "worthless" items XXX XXX XXX */
-	if (object_value(o_ptr) <= 0) return (FALSE);
-
-	/* Assume okay */
-	return (TRUE);
+	return store_will_buy(store_num, o_ptr);
 }
-
 
 
 /*
@@ -1147,7 +995,6 @@ static void store_delete(void)
 /*
  * Creates a random object and gives it to a store
  * This algorithm needs to be rethought.  A lot.
- * Currently, "normal" stores use a pre-built array.
  *
  * Note -- the "level" given to "obj_get_num()" is a "favored"
  * level, that is, there is a much higher chance of getting
@@ -1187,7 +1034,7 @@ static void store_create(void)
 		else
 		{
 			/* Hack -- Pick an object kind to sell */
-			k_idx = st_ptr->table[rand_int(st_ptr->table_num)];
+			k_idx = get_store_choice(store_num);
 
 			/* Hack -- fake level for apply_magic() */
 			level = rand_range(1, STORE_OBJ_LEVEL);
@@ -1214,6 +1061,9 @@ static void store_create(void)
 		/* The object is "known" */
 		object_known(i_ptr);
 
+		/* Item belongs to a store */
+		i_ptr->ident |= IDENT_STORE;
+
 		/* Mega-Hack -- no chests in stores */
 		if (i_ptr->tval == TV_CHEST) continue;
 
@@ -1225,9 +1075,6 @@ static void store_create(void)
 
 			/* Hack -- No "cheap" items */
 			if (object_value(i_ptr) < 10) continue;
-
-			/* No "worthless" items */
-			/* if (object_value(i_ptr) <= 0) continue; */
 		}
 
 		/* Prune normal stores */
@@ -1377,7 +1224,7 @@ static void display_entry(int item)
 		if (show_weights) maxwid -= 7;
 
 		/* Describe the object (fully) */
-		object_desc_store(o_name, sizeof(o_name), o_ptr, TRUE, 3);
+		object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
 		o_name[maxwid] = '\0';
 
 		/* Get inventory color */
@@ -1628,19 +1475,8 @@ static bool get_stock(int *com_val, cptr pmt)
 		/* Object */
 		o_ptr = &st_ptr->stock[item];
 
-		/* Home */
-		if (store_num == STORE_HOME)
-		{
-			/* Describe */
-			object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
-		}
-
-		/* Shop */
-		else
-		{
-			/* Describe */
-			object_desc_store(o_name, sizeof(o_name), o_ptr, TRUE, 3);
-		}
+		/* Describe */
+		object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
 
 		/* Prompt */
 		strnfmt(out_val, sizeof(out_val), "Try %s? ", o_name);
@@ -2378,7 +2214,7 @@ static void store_purchase(void)
 	if (store_num != STORE_HOME)
 	{
 		/* Describe the object (fully) */
-		object_desc_store(o_name, sizeof(o_name), i_ptr, TRUE, 3);
+		object_desc(o_name, sizeof(o_name), i_ptr, TRUE, 3);
 
 		/* Message */
 		msg_format("Buying %s (%c).",
@@ -2424,6 +2260,9 @@ static void store_purchase(void)
 
 				/* Clear the "fixed" flag from the object */
 				i_ptr->ident &= ~(IDENT_FIXED);
+
+				/* The object no longer belongs to the store */
+				i_ptr->ident &= ~(IDENT_STORE);
 
 				/* Describe the transaction */
 				object_desc(o_name, sizeof(o_name), i_ptr, TRUE, 3);
@@ -2528,18 +2367,6 @@ static void store_purchase(void)
 	/* Home is much easier */
 	else
 	{
-
-#if 0
-
-		/* Describe the object */
-		object_desc(o_name, sizeof(o_name), i_ptr, TRUE, 3);
-
-		/* Message */
-		msg_format("You pick up %s (%c).",
-		           o_name, store_to_label(item));
-
-#endif
-
 		/* Give it to the player */
 		item_new = inven_carry(i_ptr);
 
@@ -2616,7 +2443,7 @@ static void store_sell(void)
 		q = "Sell which item? ";
 
 		/* Only allow items the store will buy */
-		item_tester_hook = store_will_buy;
+		item_tester_hook = store_will_buy_tester;
 	}
 
 	/* Get an item */
@@ -2738,6 +2565,9 @@ static void store_sell(void)
 			/* Modify quantity */
 			i_ptr->number = amt;
 
+			/* The object belongs to the store now */
+			i_ptr->ident |= IDENT_STORE;
+
 			/* Get the "actual" value */
 			value = object_value(i_ptr) * i_ptr->number;
 
@@ -2758,11 +2588,6 @@ static void store_sell(void)
 
 			/* Handle stuff */
 			handle_stuff();
-
-#if 0
-			/* Take note if we add a new item */
-			n = st_ptr->stock_num;
-#endif
 
 			/* The store gets that (known) object */
 			item_pos = store_carry(i_ptr);
@@ -2790,11 +2615,6 @@ static void store_sell(void)
 		/* Handle stuff */
 		handle_stuff();
 
-#if 0
-		/* Take note if we add a new item */
-		n = st_ptr->stock_num;
-#endif
-
 		/* Let the home carry it */
 		item_pos = home_carry(i_ptr);
 
@@ -2815,7 +2635,6 @@ static void store_examine(void)
 {
 	int         item;
 	object_type *o_ptr;
-	char        o_name[80];
 	char        out_val[160];
 
 
@@ -2846,24 +2665,8 @@ static void store_examine(void)
 	/* Get the actual object */
 	o_ptr = &st_ptr->stock[item];
 
-	/* Description */
-	if (store_num == STORE_HOME)
-	{
-		object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
-	}
-	else
-	{
-		object_desc_store(o_name, sizeof(o_name), o_ptr, TRUE, 3);
-	}
-
-	/* Describe */
-	msg_format("Examining %s...", o_name);
-
 	/* Describe it fully */
-	if (!identify_fully_aux(o_ptr))
-		msg_print("You see nothing special.");
-
-	return;
+	object_info_screen(o_ptr);
 }
 
 
@@ -2989,17 +2792,6 @@ static void store_process_command(void)
 			do_cmd_takeoff();
 			break;
 		}
-
-#if 0
-
-		/* Drop an item */
-		case 'd':
-		{
-			do_cmd_drop();
-			break;
-		}
-
-#endif
 
 		/* Destroy an item */
 		case 'k':
@@ -3388,10 +3180,6 @@ void do_cmd_store(void)
 				/* Handle stuff */
 				handle_stuff();
 
-#if 0
-				/* Take note if we add a new item */
-				n = st_ptr->stock_num;
-#endif
 				/* Let the home carry it */
 				item_pos = home_carry(i_ptr);
 

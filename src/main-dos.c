@@ -14,8 +14,8 @@
  *
  * Adapted from "main-ibm.c".
  *
- * Author: Robert Ruehlmann (rr9@angband.org).
- * See "http://thangorodrim.angband.org/".
+ * Author: Robert Ruehlmann (rr9@thangorodrim.net).
+ * See "http://www.thangorodrim.net/".
  *
  * Initial framework (and some code) by Ben Harrison (benh@phial.com).
  *

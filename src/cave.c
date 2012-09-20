@@ -12,7 +12,7 @@
 
 /*
  * Support for Adam Bolt's tileset, lighting and transparency effects
- * by Robert Ruehlmann (rr9@angband.org)
+ * by Robert Ruehlmann (rr9@thangorodrim.net)
  */
 
 /*
@@ -404,8 +404,11 @@ static u16b image_random(void)
  */
 bool feat_supports_lighting(byte feat)
 {
-	if ((feat >= FEAT_TRAP_HEAD) && (feat <= FEAT_TRAP_TAIL))
+	if ((arg_graphics != GRAPHICS_DAVID_GERVAIS) &&
+	    (feat >= FEAT_TRAP_HEAD) && (feat <= FEAT_TRAP_TAIL))
+	{
 		return TRUE;
+	}
 
 	switch (feat)
 	{
@@ -617,8 +620,8 @@ void map_info(int y, int x, byte *ap, char *cp, byte *tap, char *tcp)
 
 	int floor_num = 0;
 
-	/* Hack -- Assume that "new" means "Adam Bolt Tiles" */
-	bool graf_new = (use_graphics && streq(ANGBAND_GRAF, "new"));
+	/* Hack -- the old tiles don't support the new lighting effects */
+	bool graf_new = (use_graphics && !streq(ANGBAND_GRAF, "old"));
 
 	/* Monster/Player */
 	m_idx = cave_m_idx[y][x];
@@ -666,7 +669,10 @@ void map_info(int y, int x, byte *ap, char *cp, byte *tap, char *tcp)
 						if (graf_new)
 						{
 							/* Use a brightly lit tile */
-							c += 2;
+							if (arg_graphics == GRAPHICS_DAVID_GERVAIS)
+								c -= 1;
+							else
+								c += 2;
 						}
 						else
 						{
@@ -807,7 +813,10 @@ void map_info(int y, int x, byte *ap, char *cp, byte *tap, char *tcp)
 					if (graf_new)
 					{
 						/* Use a brightly lit tile */
-						c += 2;
+						if (arg_graphics == GRAPHICS_DAVID_GERVAIS)
+							c -= 1;
+						else
+							c += 2;
 					}
 					else
 					{
@@ -1039,6 +1048,8 @@ void move_cursor_relative(int y, int x)
 	/* Location in window */
 	vx = kx + COL_MAP;
 
+	if (use_bigtile) vx += kx;
+
 	/* Go there */
 	(void)Term_gotoxy(vx, vy);
 }
@@ -1077,8 +1088,19 @@ void print_rel(char c, byte a, int y, int x)
 	/* Location in window */
 	vx = kx + COL_MAP;
 
+	if (use_bigtile) vx += kx;
+
 	/* Hack -- Queue it */
 	Term_queue_char(vx, vy, a, c, 0, 0);
+
+	if (use_bigtile)
+	{
+		/* Mega-Hack : Queue dummy char */
+		if (a & 0x80)
+			Term_queue_char(vx+1, vy, 255, -1, 0, 0);
+		else
+			Term_queue_char(vx+1, vy, TERM_WHITE, ' ', 0, 0);
+	}
 }
 
 
@@ -1174,7 +1196,7 @@ void lite_spot(int y, int x)
 	char c;
 	byte ta;
 	char tc;
-	
+
 	int ky, kx;
 	int vy, vx;
 
@@ -1196,11 +1218,24 @@ void lite_spot(int y, int x)
 	/* Location in window */
 	vx = kx + COL_MAP;
 
+	if (use_bigtile) vx += kx;
+
 	/* Hack -- redraw the grid */
 	map_info(y, x, &a, &c, &ta, &tc);
 
 	/* Hack -- Queue it */
 	Term_queue_char(vx, vy, a, c, ta, tc);
+
+	if (use_bigtile)
+	{
+		vx++;
+
+		/* Mega-Hack : Queue dummy char */
+		if (a & 0x80)
+			Term_queue_char(vx, vy, 255, -1, 0, 0);
+		else
+			Term_queue_char(vx, vy, TERM_WHITE, ' ', TERM_WHITE, ' ');
+	}
 }
 
 
@@ -1224,13 +1259,13 @@ void prt_map(void)
 	int ty, tx;
 
 	/* Assume screen */
-	ty = ROW_MAP + SCREEN_HGT;
-	tx = COL_MAP + SCREEN_WID;
+	ty = p_ptr->wy + SCREEN_HGT;
+	tx = p_ptr->wx + SCREEN_WID;
 
 	/* Dump the map */
-	for (y = p_ptr->wy, vy = ROW_MAP; vy < ty; vy++, y++)
+	for (y = p_ptr->wy, vy = ROW_MAP; y < ty; vy++, y++)
 	{
-		for (x = p_ptr->wx, vx = COL_MAP; vx < tx; vx++, x++)
+		for (x = p_ptr->wx, vx = COL_MAP; x < tx; vx++, x++)
 		{
 			/* Check bounds */
 			if (!in_bounds(y, x)) continue;
@@ -1240,6 +1275,17 @@ void prt_map(void)
 
 			/* Hack -- Queue it */
 			Term_queue_char(vx, vy, a, c, ta, tc);
+
+			if (use_bigtile)
+			{
+				vx++;
+
+				/* Mega-Hack : Queue dummy char */
+				if (a & 0x80)
+					Term_queue_char(vx, vy, 255, -1, 0, 0);
+				else
+					Term_queue_char(vx, vy, TERM_WHITE, ' ', TERM_WHITE, ' ');
+			}
 		}
 	}
 }
@@ -1324,13 +1370,6 @@ static byte priority(byte a, char c)
 	/* Default */
 	return (20);
 }
-
-
-/*
- * Maximum size of map.
- */
-#define MAP_HGT (DUNGEON_HGT / 3)
-#define MAP_WID (DUNGEON_WID / 3)
 
 
 /*
@@ -1447,6 +1486,9 @@ void display_map(int *cy, int *cx)
 			row = (y * map_hgt / dungeon_hgt);
 			col = (x * map_wid / dungeon_wid);
 
+			if (use_bigtile)
+				col = col & ~1;
+
 			/* Get the attr/char at that map location */
 			map_info(y, x, &ta, &tc, &ta, &tc);
 
@@ -1459,6 +1501,14 @@ void display_map(int *cy, int *cx)
 				/* Add the character */
 				Term_putch(col + 1, row + 1, ta, tc);
 
+				if (use_bigtile)
+				{
+					if (ta & 0x80)
+						Term_putch(col + 2, row + 1, 255, -1);
+					else
+						Term_putch(col + 2, row + 1, TERM_WHITE, ' ');
+				}
+
 				/* Save priority */
 				mp[row][col] = tp;
 			}
@@ -1470,6 +1520,8 @@ void display_map(int *cy, int *cx)
 	row = (py * map_hgt / dungeon_hgt);
 	col = (px * map_wid / dungeon_wid);
 
+	if (use_bigtile)
+		col = col & ~1;
 
 	/*** Make sure the player is visible ***/
 

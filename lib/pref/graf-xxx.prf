@@ -1079,7 +1079,7 @@ K:198:0x86/0x80
 # *Acquirement*
 K:199:0x86/0x82
 
-# Mass Genocide
+# Mass Banishment
 K:200:0x86/0x82
 
 # Detect Invisible
@@ -1097,7 +1097,7 @@ K:204:0x86/0x80
 # Recharging
 K:206:0x86/0x81
 
-# Genocide
+# Banishment
 K:207:0x86/0x81
 
 # Darkness
@@ -1436,7 +1436,7 @@ K:321:0x86/0x9A
 # Darkness
 K:322:0x86/0x99
 
-# Genocide
+# Banishment
 K:323:0x86/0x9B
 
 # Power

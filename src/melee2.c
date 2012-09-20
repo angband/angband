@@ -3737,12 +3737,6 @@ static void process_monster(int m_idx)
 					/* Door power */
 					k = ((cave_feat[ny][nx] - FEAT_DOOR_HEAD) & 0x07);
 
-#if 0
-					/* XXX XXX XXX Old test (pval 10 to 20) */
-					if (randint((m_ptr->hp + 1) * (50 + o_ptr->pval)) <
-					    40 * (m_ptr->hp - 10 - o_ptr->pval));
-#endif /* 0 */
-
 					/* Try to unlock it XXX XXX XXX */
 					if (rand_int(m_ptr->hp / 10) > k)
 					{
@@ -3762,12 +3756,6 @@ static void process_monster(int m_idx)
 
 				/* Door power */
 				k = ((cave_feat[ny][nx] - FEAT_DOOR_HEAD) & 0x07);
-
-#if 0
-				/* XXX XXX XXX Old test (pval 10 to 20) */
-				if (randint((m_ptr->hp + 1) * (50 + o_ptr->pval)) <
-				    40 * (m_ptr->hp - 10 - o_ptr->pval));
-#endif /* 0 */
 
 				/* Attempt to Bash XXX XXX XXX */
 				if (rand_int(m_ptr->hp / 10) > k)
@@ -4138,6 +4126,45 @@ static void process_monster(int m_idx)
 }
 
 
+#ifdef MONSTER_FLOW
+
+static bool monster_can_flow(int m_idx)
+{
+	/* Hack -- Monsters can "smell" the player from far away */
+	if (flow_by_sound)
+	{
+		monster_type *m_ptr = &mon_list[m_idx];
+		monster_race *r_ptr = &r_info[m_ptr->r_idx];
+
+		/* Monster location */
+		int fy = m_ptr->fy;
+		int fx = m_ptr->fx;
+
+		/* Check the flow (normal aaf is about 20) */
+		if ((cave_when[fy][fx] == cave_when[p_ptr->py][p_ptr->px]) &&
+		    (cave_cost[fy][fx] < MONSTER_FLOW_DEPTH) &&
+		    (cave_cost[fy][fx] < r_ptr->aaf))
+		{
+			return TRUE;
+		}
+	}
+
+	return FALSE;
+}
+
+#else /* MONSTER_FLOW */
+
+static bool monster_can_flow(int m_idx)
+{
+	/* Unused parameter */
+	(void)m_idx;
+
+	return FALSE;
+}
+
+#endif /* MONSTER_FLOW */
+
+
 
 
 /*
@@ -4167,7 +4194,6 @@ static void process_monster(int m_idx)
 void process_monsters(byte minimum_energy)
 {
 	int i;
-	int fy, fx;
 
 	monster_type *m_ptr;
 	monster_race *r_ptr;
@@ -4201,53 +4227,20 @@ void process_monsters(byte minimum_energy)
 		/* Get the race */
 		r_ptr = &r_info[m_ptr->r_idx];
 
-		/* Monsters can "sense" the player */
-		if (m_ptr->cdis <= r_ptr->aaf)
+		/*
+		 * Process the monster if the monster either:
+		 * - can "sense" the player
+		 * - is hurt
+		 * - can "see" the player (checked backwards)
+		 * - can "smell" the player from far away (flow)
+		 */
+		if ((m_ptr->cdis <= r_ptr->aaf) ||
+		    (m_ptr->hp < m_ptr->maxhp) ||
+		    player_has_los_bold(m_ptr->fy, m_ptr->fx) ||
+		    monster_can_flow(i))
 		{
 			/* Process the monster */
 			process_monster(i);
-
-			/* Continue */
-			continue;
 		}
-
-
-		/* Get the location */
-		fx = m_ptr->fx;
-		fy = m_ptr->fy;
-
-		/* Monsters can "see" the player (backwards) XXX XXX */
-		if (player_has_los_bold(fy, fx))
-		{
-			/* Process the monster */
-			process_monster(i);
-
-			/* Continue */
-			continue;
-		}
-
-#ifdef MONSTER_FLOW
-
-		/* Hack -- Monsters can "smell" the player from far away */
-		if (flow_by_sound)
-		{
-			int py = p_ptr->py;
-			int px = p_ptr->px;
-
-			/* Check the flow (normal aaf is about 20) */
-			if ((cave_when[fy][fx] == cave_when[py][px]) &&
-			    (cave_cost[fy][fx] < MONSTER_FLOW_DEPTH) &&
-			    (cave_cost[fy][fx] < r_ptr->aaf))
-			{
-				/* Process the monster */
-				process_monster(i);
-
-				/* Continue */
-				continue;
-			}
-		}
-
-#endif /* MONSTER_FLOW */
-
 	}
 }

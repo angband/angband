@@ -3,8 +3,8 @@
 This file was last updated for Angband 3.0.1.
 
 Make sure to read the newsgroup ("rec.games.roguelike.angband"), and to visit
-the Official Angband Home Page ("http://thangorodrim.angband.org") for the
-most up to date information about Angband.
+the Official Angband Home Page ("http://www.thangorodrim.net") for the most
+up to date information about Angband.
 
 Angband 3.0.1 has an incredibly complex history, and is the result of a
 lot of work by a lot of people, all of whom have contributed their time
@@ -94,7 +94,7 @@ After Angband 2.7.8 was released, Ben created a web site to keep track of
 all the changes made in each version (though a few may have been missed),
 and acquired the use of a new develoepement ftp server to supplement the
 official "mirror" server.  This web site is now permanently located at
-the Official Angband Home Page (http://thangorodrim.angband.org/).
+the Official Angband Home Page (http://www.thangorodrim.net/).
 Unfortunately, the next six versions were numbered Angband 2.7.9v1 to
 Angband 2.7.9v6, but really each were rather major updates.  Angband 2.8.0
 and 2.8.1 were released using a more normal version scheme.  Angband 2.8.2
@@ -155,7 +155,7 @@ or the addition of the other attack forms such as shards, sound, chaos,
 nexus and so on (even before Ben.) 
 
 
-The Official Angband Home Page ("http://thangorodrim.angband.org/") serves
+The Official Angband Home Page ("http://www.thangorodrim.net/") serves
 not only as the most up to date description of Angband, but also lists
 changes made between versions, and changes planned for upcoming versions,
 and lists various email addresses and web sites related to Angband.

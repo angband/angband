@@ -1,6 +1,5 @@
 - Add support for gamma correction to the DOS version.
-- Move various information to external files (for example items that can
-  be bought in stores).
+- Move various information to external files.
 - Add player ghosts.
 - Equipment slots should be configurable for every player race.
 - Gender selection should be done after selecting the player race (for
@@ -20,8 +19,6 @@
   Make sure that Angband doesn't use them.
 - Rewrite the debug-mode object flag display so that it doesn't require
   manual changes for every new flag.
-- Use sizeof(buffer) instead of using the numeric size. The compiler is
-  won't forget to update the number when the size of the buffer changes.
 - Fix the "vinfo_type" hack in cave.c.
 - Unify line of sight and projection paths.
 - Make sure that signed integers aren't bit-shifted.
@@ -49,3 +46,4 @@
   for macros and add a better macro recorder.
 - Improve the savefile handling of the monster recall.
 - Assign graphical tiles to the new monsters and objects.
+- Add new room types.

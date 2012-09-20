@@ -61,13 +61,6 @@ int usleep(unsigned long usecs)
 
 
 /*
- * Hack -- External functions
- */
-extern struct passwd *getpwuid();
-extern struct passwd *getpwnam();
-
-
-/*
  * Find a default user name from the system.
  */
 void user_name(char *buf, size_t len, int id)
@@ -126,15 +119,15 @@ void user_name(char *buf, size_t len, int id)
  */
 
 
-#ifdef ACORN
+#ifdef RISCOS
 
 
 /*
- * Most of the "file" routines for "ACORN" should be in "main-ros.c"
+ * Most of the "file" routines for "RISCOS" should be in "main-ros.c"
  */
 
 
-#else /* ACORN */
+#else /* RISCOS */
 
 
 #ifdef SET_UID
@@ -332,7 +325,7 @@ errr my_fclose(FILE *fff)
 	return (0);
 }
 
-#endif /* ACORN */
+#endif /* RISCOS */
 
 
 #ifdef HAVE_MKSTEMP
@@ -449,18 +442,18 @@ errr my_fputs(FILE *fff, cptr buf, size_t n)
 }
 
 
-#ifdef ACORN
+#ifdef RISCOS
 
 
 /*
- * Most of the "file" routines for "ACORN" should be in "main-ros.c"
+ * Most of the "file" routines for "RISCOS" should be in "main-ros.c"
  *
  * Many of them can be rewritten now that only "fd_open()" and "fd_make()"
  * and "my_fopen()" should ever create files.
  */
 
 
-#else /* ACORN */
+#else /* RISCOS */
 
 
 /*
@@ -804,7 +797,7 @@ errr check_modification_date(int fd, cptr template_file)
 
 #endif /* CHECK_MODIFICATION_TIME */
 
-#endif /* ACORN */
+#endif /* RISCOS */
 
 
 
@@ -1265,6 +1258,14 @@ void flush(void)
 	inkey_xtra = TRUE;
 }
 
+
+/*
+ * Flush all pending input if the flush_failure option is set.
+ */
+void flush_fail(void)
+{
+	if (flush_failure) flush();
+}
 
 
 /*
@@ -2898,101 +2899,117 @@ void text_out_to_screen(byte a, cptr str)
  * Hook function for text_out(). Make sure that text_out_file points
  * to an open text-file.
  *
- * Long lines will be wrapped on the last space before column 75,
- * directly at column 75 if the word is *very* long, or when
- * encountering a newline character.
+ * Long lines will be wrapped at text_out_wrap, or at column 75 if that
+ * is not set; or at a newline character.
  *
- * Buffers the last line till a wrap occurs.  Flush the buffer with
- * an explicit newline if necessary.
+ * You must be careful to end all file output with a newline character
+ * to "flush" the stored line position.
  */
-void text_out_to_file(byte attr, cptr str)
+void text_out_to_file(byte a, cptr str)
 {
-	int i;
-	cptr r;
+	/* Current position on the line */
+	static int pos = 0;
 
-	/* Line buffer */
-	static char roff_buf[256];
+	/* Wrap width */
+	int wrap = (text_out_wrap ? text_out_wrap : 75);
 
-	/* Current pointer into line roff_buf */
-	static char *roff_p = roff_buf;
+	/* Current location within "str" */
+	cptr s = str;
 
-	/* Last space saved into roff_buf */
-	static char *roff_s = NULL;
+	/* Unused parameter */
+	(void)a;
 
-	/* Indentation */
-	static int indent = 0;
-
-	/* Unused */
-	(void)attr;
-
-	/* Remember the indentation when starting a new line */
-	if (!roff_buf[0])
+	/* Process the string */
+	while (*s)
 	{
-		/* Count the leading spaces */
-		for (indent = 0; str[indent] == ' '; indent++)
-			; /* Do nothing */
-	}
+		char ch;
+		int n = 0;
+		int len = wrap - pos;
+		int l_space = 0;
 
-	/* Scan the given string, character at a time */
-	for (; *str; str++)
-	{
-		char ch = *str;
-		bool wrap = (ch == '\n');
-
-		/* Reset indentation after explicit wrap */
-		if (wrap) indent = 0;
-
-		if (!isprint((unsigned char)ch)) ch = ' ';
-
-		if (roff_p >= roff_buf + 75) wrap = TRUE;
-
-		if ((ch == ' ') && (roff_p + 2 >= roff_buf + 75)) wrap = TRUE;
-
-		/* Handle line-wrap */
-		if (wrap)
+		/* If we are at the start of the line... */
+		if (pos == 0)
 		{
-			/* Terminate the current line */
-			*roff_p = '\0';
-
-			r = roff_p;
-
-			/* Wrap the line on the last known space */
-			if (roff_s && (ch != ' '))
+			/* Output the indent */
+			for (n = 0; n < text_out_indent; n++)
 			{
-				*roff_s = '\0';
-				r = roff_s + 1;
+				fputc(' ', text_out_file);
+				pos++;
 			}
-
-			/* Output the line */
-			fprintf(text_out_file, "%s\n", roff_buf);
-
-			/* Reset the buffer */
-			roff_s = NULL;
-			roff_p = roff_buf;
-			roff_buf[0] = '\0';
-
-			/* Indent the following line */
-			if (indent)
-			{
-				for (i = indent; i > 0; i--)
-					*roff_p++ = ' ';
-			}
-
-			/* Copy the remaining line into the buffer */
-			while (*r) *roff_p++ = *r++;
-
-			/* Append the last character */
-			if (ch != ' ') *roff_p++ = ch;
-
-			continue;
 		}
 
-		/* Remember the last space character */
-		if (ch == ' ') roff_s = roff_p;
+		/* Find length of line up to next newline or end-of-string */
+		while ((n < len) && !((s[n] == '\n') || (s[n] == '\0')))
+		{
+			/* Mark the most recent space in the string */
+			if (s[n] == ' ') l_space = n;
 
-		/* Save the char */
-		*roff_p++ = ch;
+			/* Increment */
+			n++;
+		}
+
+		/* If we have encountered no spaces */
+		if ((l_space == 0) && (n == len))
+		{
+			/* If we are at the start of a new line */
+			if (pos == text_out_indent)
+			{
+				len = n;
+			}
+			else
+			{
+				/* Begin a new line */
+				fputc('\n', text_out_file);
+
+				/* Reset */
+				pos = 0;
+
+				continue;
+			}
+		}
+		else
+		{
+			/* Wrap at the newline */
+			if ((s[n] == '\n') || (s[n] == '\0')) len = n;
+
+			/* Wrap at the last space */
+			else len = l_space;
+		}
+
+		/* Write that line to file */
+		for (n = 0; n < len; n++)
+		{
+			/* Ensure the character is printable */
+			ch = (isprint(s[n]) ? s[n] : ' ');
+
+			/* Write out the character */
+			fputc(ch, text_out_file);
+
+			/* Increment */
+			pos++;
+		}
+
+		/* Move 's' past the stuff we've written */
+		s += len;
+
+		/* If we are at the end of the string, end */
+		if (*s == '\0') return;
+
+		/* Skip newlines */
+		if (*s == '\n') s++;
+
+		/* Begin a new line */
+		fputc('\n', text_out_file);
+
+		/* Reset */
+		pos = 0;
+
+		/* Skip whitespace */
+		while (*s == ' ') s++;
 	}
+
+	/* We are done */
+	return;
 }
 
 
@@ -3729,6 +3746,63 @@ int color_char_to_attr(char c)
 	}
 
 	return (-1);
+}
+
+
+/*
+ * Converts a string to a terminal color byte.
+ */
+int color_text_to_attr(cptr name)
+{
+	if (my_stricmp(name, "dark")       == 0) return (TERM_DARK);
+	if (my_stricmp(name, "white")      == 0) return (TERM_WHITE);
+	if (my_stricmp(name, "slate")      == 0) return (TERM_SLATE);
+	if (my_stricmp(name, "orange")     == 0) return (TERM_ORANGE);
+	if (my_stricmp(name, "red")        == 0) return (TERM_RED);
+	if (my_stricmp(name, "green")      == 0) return (TERM_GREEN);
+	if (my_stricmp(name, "blue")       == 0) return (TERM_BLUE);
+	if (my_stricmp(name, "umber")      == 0) return (TERM_UMBER);
+	if (my_stricmp(name, "violet")     == 0) return (TERM_VIOLET);
+	if (my_stricmp(name, "yellow")     == 0) return (TERM_YELLOW);
+	if (my_stricmp(name, "lightdark")  == 0) return (TERM_L_DARK);
+	if (my_stricmp(name, "lightwhite") == 0) return (TERM_L_WHITE);
+	if (my_stricmp(name, "lightred")   == 0) return (TERM_L_RED);
+	if (my_stricmp(name, "lightgreen") == 0) return (TERM_L_GREEN);
+	if (my_stricmp(name, "lightblue")  == 0) return (TERM_L_BLUE);
+	if (my_stricmp(name, "lightumber") == 0) return (TERM_L_UMBER);
+
+	/* Oops */
+	return (-1);
+}
+
+
+/*
+ * Extract a textual representation of an attribute
+ */
+cptr attr_to_text(byte a)
+{
+	switch (a)
+	{
+		case TERM_DARK:    return ("Dark");
+		case TERM_WHITE:   return ("White");
+		case TERM_SLATE:   return ("Slate");
+		case TERM_ORANGE:  return ("Orange");
+		case TERM_RED:     return ("Red");
+		case TERM_GREEN:   return ("Green");
+		case TERM_BLUE:    return ("Blue");
+		case TERM_UMBER:   return ("Umber");
+		case TERM_L_DARK:  return ("L.Dark");
+		case TERM_L_WHITE: return ("L.Slate");
+		case TERM_VIOLET:  return ("Violet");
+		case TERM_YELLOW:  return ("Yellow");
+		case TERM_L_RED:   return ("L.Red");
+		case TERM_L_GREEN: return ("L.Green");
+		case TERM_L_BLUE:  return ("L.Blue");
+		case TERM_L_UMBER: return ("L.Umber");
+	}
+
+	/* Oops */
+	return ("Icky");
 }
 
 

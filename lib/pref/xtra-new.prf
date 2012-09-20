@@ -3,7 +3,8 @@
 #
 # This file defines special attr/char mappings for use in "graphics" mode
 #
-# Edited for use with Adam Bolt's new graphics by Robert Ruehlmann < rr9@angband.org >
+# Edited for use with Adam Bolt's new graphics by Robert Ruehlmann
+# < rr9@thangorodrim.net >
 #
 # See "lib/help/command.txt" and "src/files.c" for more information.
 #

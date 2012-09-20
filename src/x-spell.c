@@ -72,9 +72,9 @@
 #define SPELL_ACID_BALL                 56
 #define SPELL_FIRE_BALL                 57
 #define SPELL_ICE_STORM                 58
-#define SPELL_GENOCIDE                  59
+#define SPELL_BANISHMENT                59
 #define SPELL_METEOR_SWARM              60
-#define SPELL_MASS_GENOCIDE             61
+#define SPELL_MASS_BANISHMENT           61
 #define SPELL_RIFT                      62
 #define SPELL_MANA_STORM                63
 
@@ -134,7 +134,7 @@
 /* Wrath of God */
 #define PRAYER_DISPEL_UNDEAD2          41
 #define PRAYER_DISPEL_EVIL2            42
-#define PRAYER_BANISHMENT              43
+#define PRAYER_BANISH_EVIL             43
 #define PRAYER_WORD_OF_DESTRUCTION     44
 #define PRAYER_ANNIHILATION            45
 
@@ -265,9 +265,9 @@ static const u32b spell_flags[2][10][2] =
 	BOOK(SPELL_EARTHQUAKE,
 	     SPELL_BEDLAM,
 	     SPELL_REND_SOUL,
-	     SPELL_GENOCIDE,
+	     SPELL_BANISHMENT,
 	     SPELL_WORD_OF_DESTRUCTION,
-	     SPELL_MASS_GENOCIDE,
+	     SPELL_MASS_BANISHMENT,
 	     SPELL_CHAOS_STRIKE,
 	     SPELL_MANA_STORM,
 	     -1),
@@ -349,7 +349,7 @@ static const u32b spell_flags[2][10][2] =
 			 -1),
 		BOOK(PRAYER_DISPEL_UNDEAD2,
 			 PRAYER_DISPEL_EVIL2,
-			 PRAYER_BANISHMENT,
+			 PRAYER_BANISH_EVIL,
 			 PRAYER_WORD_OF_DESTRUCTION,
 			 PRAYER_ANNIHILATION,
 			 -1,
@@ -427,9 +427,9 @@ static cptr spell_names[2][PY_MAX_SPELLS] =
 	  "Acid Ball",
 	  "Fire Ball",
 	  "Ice Storm",
-	  "Genocide",
+	  "Banishment",
 	  "Meteor Swarm",
-	  "Mass Genocide",
+	  "Mass Banishment",
 	  "Rift",
 	  "Mana Storm"
 	},
@@ -494,7 +494,7 @@ static cptr spell_names[2][PY_MAX_SPELLS] =
 		/* Wrath of God (sval 8) */
 		"Dispel Undead",
 		"Dispel Evil",
-		"Banishment",
+		"Banish Evil",
 		"Word of Destruction",
 		"Annihilation",
 
@@ -819,7 +819,7 @@ static void spell_wonder(int dir)
 	else if (die < 101) drain_life(dir, 100 + plev);
 	else if (die < 104) earthquake(py, px, 12);
 	else if (die < 106) destroy_area(py, px, 15, TRUE);
-	else if (die < 108) genocide();
+	else if (die < 108) banishment();
 	else if (die < 110) dispel_monsters(120);
 	else /* RARE */
 	{
@@ -1065,9 +1065,9 @@ static bool cast_mage_spell(int spell)
 			break;
 		}
 
-		case SPELL_GENOCIDE:
+		case SPELL_BANISHMENT:
 		{
-			(void)genocide();
+			(void)banishment();
 			break;
 		}
 
@@ -1168,9 +1168,9 @@ static bool cast_mage_spell(int spell)
 			break;
 		}
 
-		case SPELL_MASS_GENOCIDE:
+		case SPELL_MASS_BANISHMENT:
 		{
-			(void)mass_genocide();
+			(void)mass_banishment();
 			break;
 		}
 
@@ -1588,7 +1588,7 @@ static bool cast_priest_spell(int spell)
 			break;
 		}
 
-		case PRAYER_BANISHMENT:
+		case PRAYER_BANISH_EVIL:
 		{
 			if (banish_evil(100))
 			{

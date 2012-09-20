@@ -55,6 +55,7 @@ extern const byte chest_traps[64];
 extern cptr color_names[16];
 extern cptr stat_names[A_MAX];
 extern cptr stat_names_reduced[A_MAX];
+extern cptr stat_names_full[A_MAX];
 extern cptr window_flag_desc[32];
 extern cptr option_text[OPT_MAX];
 extern cptr option_desc[OPT_MAX];
@@ -99,6 +100,7 @@ extern s32b turn;
 extern s32b old_turn;
 extern bool use_sound;
 extern bool use_graphics;
+extern bool use_bigtile;
 extern s16b signal_count;
 extern bool msg_flag;
 extern bool inkey_base;
@@ -224,6 +226,7 @@ extern bool (*ang_sort_comp)(const void *u, const void *v, int a, int b);
 extern void (*ang_sort_swap)(void *u, void *v, int a, int b);
 extern bool (*get_mon_num_hook)(int r_idx);
 extern bool (*get_obj_num_hook)(int k_idx);
+extern void (*object_info_out_flags)(const object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3);
 extern FILE *text_out_file;
 extern void (*text_out_hook)(byte a, cptr str);
 extern int text_out_wrap;
@@ -412,6 +415,7 @@ extern void process_monsters(byte minimum_energy);
 
 /* monster1.c */
 extern void describe_monster(int r_idx, bool spoilers);
+extern void roff_top(int r_idx);
 extern void screen_roff(int r_idx);
 extern void display_roff(int r_idx);
 
@@ -440,16 +444,19 @@ extern bool multiply_monster(int m_idx);
 extern void message_pain(int m_idx, int dam);
 extern void update_smart_learn(int m_idx, int what);
 
+/* obj-info.c */
+extern bool object_info_out(const object_type *o_ptr);
+extern void object_info_screen(const object_type *o_ptr);
+
 /* object1.c */
 extern void flavor_init(void);
 extern void reset_visuals(bool prefs);
 extern void object_flags(const object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3);
 extern void object_flags_known(const object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3);
 extern void object_desc(char *buf, size_t max, const object_type *o_ptr, int pref, int mode);
-extern void object_desc_store(char *buf, size_t max, const object_type *o_ptr, int pref, int mode);
+extern void object_desc_spoil(char *buf, size_t max, const object_type *o_ptr, int pref, int mode);
 extern void describe_item_activation(const object_type *o_ptr);
 extern void identify_random_gen(const object_type *o_ptr);
-extern bool identify_fully_aux(const object_type *o_ptr);
 extern char index_to_label(int i);
 extern s16b label_to_inven(int c);
 extern s16b label_to_equip(int c);
@@ -479,6 +486,7 @@ extern s16b get_obj_num(int level);
 extern void object_known(object_type *o_ptr);
 extern void object_aware(object_type *o_ptr);
 extern void object_tried(object_type *o_ptr);
+extern bool is_blessed(const object_type *o_ptr);
 extern s32b object_value(const object_type *o_ptr);
 extern bool object_similar(const object_type *o_ptr, const object_type *j_ptr);
 extern void object_absorb(object_type *o_ptr, const object_type *j_ptr);
@@ -577,8 +585,8 @@ extern bool dispel_undead(int dam);
 extern bool dispel_evil(int dam);
 extern bool dispel_monsters(int dam);
 extern void aggravate_monsters(int who);
-extern bool genocide(void);
-extern bool mass_genocide(void);
+extern bool banishment(void);
+extern bool mass_banishment(void);
 extern bool probing(void);
 extern void destroy_area(int y1, int x1, int r, bool full);
 extern void earthquake(int cy, int cx, int r);
@@ -650,6 +658,7 @@ extern int macro_find_exact(cptr pat);
 extern errr macro_add(cptr pat, cptr act);
 extern errr macro_init(void);
 extern void flush(void);
+extern void flush_fail(void);
 extern char inkey(void);
 extern void bell(cptr reason);
 extern void sound(int val);
@@ -693,6 +702,8 @@ extern int damroll(int num, int sides);
 extern int maxroll(int num, int sides);
 extern bool is_a_vowel(int ch);
 extern int color_char_to_attr(char c);
+extern int color_text_to_attr(cptr name);
+extern cptr attr_to_text(byte a);
 
 #ifdef SUPPORT_GAMMA
 extern void build_gamma_table(int gamma);
@@ -789,7 +800,27 @@ extern void show_floor(const int *floor_list, int floor_num);
 extern errr do_randart(u32b randart_seed, bool full);
 #endif /* GJW_RANDART */
 
-#ifdef ACORN
+#ifdef RISCOS
 /* main-ros.c */
 extern char *riscosify_name(cptr path);
-#endif /* ACORN */
+#endif /* RISCOS */
+
+
+#ifdef ALLOW_DEBUG
+/* wizard2.c */
+extern void do_cmd_debug(void);
+#endif /* ALLOW_DEBUG */
+
+
+#ifdef ALLOW_BORG
+/* borg.h */
+extern void do_cmd_borg(void);
+#endif /* ALLOW_BORG */
+
+
+#ifdef ALLOW_SPOILERS
+
+/* wizard1.c */
+extern void do_cmd_spoilers(void);
+
+#endif /* ALLOW_SPOILERS */

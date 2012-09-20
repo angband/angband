@@ -32,14 +32,7 @@ static int xxx_build_script_path(lua_State *L)
 
 	path_build(buf, sizeof(buf), ANGBAND_DIR_SCRIPT, filename);
 
-#ifdef ACORN
-	{
-		char *realname = riscosify_name(buf);
-		tolua_pushstring(L, realname);
-	}
-#else /* ACORN */
 	tolua_pushstring(L, buf);
-#endif /* ACORN */
 
 	return 1;
 }
@@ -157,28 +150,148 @@ static const struct luaL_reg bitlib[] =
 
 
 /*
+ * Call a Lua event handler
+ *
+ * Calls a Lua event handler with the name 'hook',
+ * with arguments defined by the format string 'fmt',
+ * and return values as defined by the 'ret' format string.
+ * The next arguments to call_hook() are the arguments to
+ * be passed to the Lua event handler, followed by pointers
+ * to the expected return values.
+ *
+ * ToDo: explain the format strings ...
+ *
+ * The return value indicates if the hook was called
+ * successfully (TRUE) or if there was an error (FALSE).
+ *
+ * Note that string and object_type* return values have to be
+ * copied to a save place before the next call to Lua since
+ * they will be lost when garbage collection takes place.
+ * So store the values with string_make() or object_copy() into
+ * a save location if you need them afterwards.
+ */
+static bool call_hook(cptr hook, cptr fmt, cptr ret, ...)
+{
+	va_list ap;
+	int i = 0;
+	int num_args = 0;
+	int num_res;
+
+	va_start(ap, ret);
+
+	/* Select the global event handler */
+	lua_getglobal(L, "notify_event_hook");
+
+	/* Push the event name */
+	lua_pushstring(L, hook);
+
+	/* Push and count the arguments */
+	while (fmt[i])
+	{
+		switch (fmt[i++])
+		{
+			case 'd':
+				tolua_pushnumber(L, va_arg(ap, int));
+				num_args++;
+				break;
+			case 'l':
+				tolua_pushnumber(L, va_arg(ap, long));
+				num_args++;
+				break;
+			case 'b':
+				tolua_pushbool(L, va_arg(ap, int));
+				num_args++;
+				break;
+			case 's':
+				tolua_pushstring(L, va_arg(ap, cptr));
+				num_args++;
+				break;
+			case 'O':
+				tolua_pushusertype(L, va_arg(ap, object_type*), tolua_tag(L, "object_type"));
+				num_args++;
+				break;
+			case '(':
+			case ')':
+			case ',':
+				break;
+		}
+	}
+
+	/* HACK - Count the return values */
+	num_res = strlen(ret);
+
+	/* Call the function */
+	if (lua_call(L, num_args + 1, num_res))
+	{
+		/* An error occured */
+		va_end(ap);
+		return FALSE;
+	}
+
+	/* Get the return values */
+	for (i = 0; i < num_res; i++)
+	{
+		switch (ret[i])
+		{
+			case 'd':
+			{
+				int *tmp = va_arg(ap, int*);
+
+				if (lua_isnumber(L, -num_res + i))
+					*tmp = tolua_getnumber(L, -num_res + i, 0);
+				break;
+			}
+			case 'l':
+			{
+				long *tmp = va_arg(ap, long*);
+
+				if (lua_isnumber(L, -num_res + i))
+					*tmp = tolua_getnumber(L, -num_res + i, 0);
+				break;
+			}
+			case 'b':
+			{
+				bool *tmp = va_arg(ap, bool*);
+				*tmp = tolua_getbool(L, -num_res + i, FALSE);
+				break;
+			}
+			case 's':
+			{
+				cptr *tmp = va_arg(ap, cptr*);
+				if (lua_isstring(L, -num_res + i))
+					*tmp = tolua_getstring(L, -num_res + i, "");
+				break;
+			}
+			case 'O':
+			{
+				object_type **tmp = va_arg(ap, object_type**);
+				if (tolua_istype(L, -num_res + i, tolua_tag(L, "object_type"), 0))
+					*tmp = tolua_getuserdata(L, -num_res + i, NULL);
+				break;
+			}
+		}
+	}
+
+	/* Remove the results */
+	lua_pop(L, num_res);
+
+	va_end(ap);
+
+	/* Success */
+	return TRUE;
+}
+
+
+/*
  * Callback for using an object
  */
 bool use_object(object_type *o_ptr, bool *ident)
 {
-	bool used_up;
-	int status;
+	bool used_up = FALSE;
 
-	lua_getglobal(L, "use_object_hook");
-	tolua_pushusertype(L, (void*)o_ptr, tolua_tag(L, "object_type"));
-
-	/* Call the function with 1 argument and 2 results */
-	status = lua_call(L, 1, 2);
-
-	if (status == 0)
-	{
-		*ident = tolua_getbool(L, -2, FALSE);
-		used_up = tolua_getbool(L, -1, FALSE);
-
-		/* Remove the results */
-		lua_pop(L, 2);
-	}
-	else
+	if (!call_hook("use_object", "(O)", "bb",
+	               o_ptr,
+	               ident, &used_up))
 	{
 		/* Error */
 		*ident = FALSE;
@@ -191,27 +304,14 @@ bool use_object(object_type *o_ptr, bool *ident)
 
 int get_spell_index(const object_type *o_ptr, int index)
 {
-	int status;
-	int spell;
+	int spell = -1;
 
-	lua_getglobal(L, "get_spell_index_hook");
-	tolua_pushusertype(L, (void*)o_ptr, tolua_tag(L, "object_type"));
-	lua_pushnumber(L, index);
-
-	/* Call the function with 2 arguments and 1 result */
-	status = lua_call(L, 2, 1);
-
-	if (status == 0)
-	{
-		spell = tolua_getnumber(L, -1, -1);
-
-		/* Remove the result */
-		lua_pop(L, 1);
-	}
-	else
+	if (!call_hook("get_spell_index", "(O,d)", "d",
+	               o_ptr, index,
+	               &spell))
 	{
 		/* Error */
-		spell = -1;
+		return -1;
 	}
 
 	return (spell);
@@ -223,25 +323,21 @@ cptr get_spell_name(int tval, int index)
 	static char buffer[80];
 	cptr name;
 
-	lua_getglobal(L, "get_spell_name_hook");
-	lua_pushnumber(L, tval);
-	lua_pushnumber(L, index);
-
 	/* Erase the buffer */
 	buffer[0] = '\0';
 
-	/* Call the function with 2 arguments and 1 result */
-	if (!lua_call(L, 2, 1))
+	if (!call_hook("get_spell_name", "(d,d)", "s",
+	               tval, index,
+	               &name))
 	{
-		name = tolua_getstring(L, -1, "");
-
-		/* Get a copy of the name */
-		my_strcpy(buffer, name, sizeof(buffer));
-
-		/* Remove the result */
-		lua_pop(L, 1);
+		/* Error */
+		return "";
 	}
 
+	/* Get a copy of the name */
+	my_strcpy(buffer, name, sizeof(buffer));
+
+	/* Return the result */
 	return (buffer);
 }
 
@@ -251,68 +347,154 @@ cptr get_spell_info(int tval, int index)
 	static char buffer[80];
 	cptr info;
 
-	lua_getglobal(L, "get_spell_info_hook");
-	lua_pushnumber(L, tval);
-	lua_pushnumber(L, index);
-
 	/* Erase the buffer */
 	buffer[0] = '\0';
 
-	/* Call the function with 2 arguments and 1 result */
-	if (!lua_call(L, 2, 1))
+	if (!call_hook("get_spell_info", "(d,d)", "s",
+	               tval, index,
+	               &info))
 	{
-		info = tolua_getstring(L, -1, "");
-
-		/* Get a copy of the name */
-		my_strcpy(buffer, info, sizeof(buffer));
-
-		/* Remove the result */
-		lua_pop(L, 1);
+		/* Error */
+		return "";
 	}
 
+	/* Get a copy of the info */
+	my_strcpy(buffer, info, sizeof(buffer));
+
+	/* Return the result */
 	return (buffer);
 }
 
 
 bool cast_spell(int tval, int index)
 {
-	bool done = FALSE;
+	bool result = FALSE;
 
-	lua_getglobal(L, "cast_spell_hook");
-	lua_pushnumber(L, tval);
-	lua_pushnumber(L, index);
-
-	/* Call the function with 2 arguments and 1 result */
-	if (!lua_call(L, 2, 1))
+	if (!call_hook("cast_spell", "(d,d)", "b",
+	               tval, index,
+	               &result))
 	{
-		done = tolua_getbool(L, -1, FALSE);
-
-		/* Remove the result */
-		lua_pop(L, 1);
+		/* Error */
+		return FALSE;
 	}
 
-	return (done);
+	return (result);
 }
 
 
 void describe_item_activation(const object_type *o_ptr)
 {
-	cptr desc;
+	cptr desc = NULL;
 
-	lua_getglobal(L, "describe_item_activation_hook");
-
-	tolua_pushusertype(L, (void*)o_ptr, tolua_tag(L, "object_type"));
-
-	/* Call the function with 1 arguments and 1 result */
-	if (!lua_call(L, 1, 1))
+	if (call_hook("describe_item_activation", "(O)", "s",
+	              o_ptr,
+	              &desc))
 	{
-		desc = tolua_getstring(L, -1, "");
-
-		text_out(desc);
-
-		/* Remove the result */
-		lua_pop(L, 1);
+		if (desc) text_out(desc);
 	}
+}
+
+
+/*
+ * Get an object index for an item to put in stock
+ * at a selected store.
+ */
+int get_store_choice(int store_num)
+{
+	int choice = -1;
+
+	if (!call_hook("get_store_choice", "(d)", "d",
+	               store_num,
+	               &choice))
+	{
+		/* Error */
+		return -1;
+	}
+
+	return (choice);
+}
+
+
+/*
+ * Determine if a store will purchase the given object
+ */
+bool store_will_buy(int store_num, const object_type *o_ptr)
+{
+	bool result = FALSE;
+
+	if (!call_hook("store_will_buy", "(d,O)", "b",
+	               store_num, o_ptr,
+	               &result))
+	{
+		/* Error */
+		return FALSE;
+	}
+
+	return (result);
+}
+
+
+void player_birth_done_hook(void)
+{
+	call_hook("player_birth_done", "", "");
+}
+
+
+void player_calc_bonus_hook(void)
+{
+	call_hook("player_calc_bonus", "", "");
+}
+
+
+void start_game_hook(void)
+{
+	call_hook("start_game", "", "");
+}
+
+
+void enter_level_hook(void)
+{
+	call_hook("enter_level", "", "");
+}
+
+
+void leave_level_hook(void)
+{
+	call_hook("leave_level", "", "");
+}
+
+
+bool process_command_hook(int command)
+{
+	int result = 0;
+
+	if (!call_hook("process_command", "(d)", "d",
+	               command,
+	               &result))
+	{
+		/* Error */
+		return FALSE;
+	}
+
+	/* Return the result */
+	return (result != 0) ? TRUE : FALSE;
+}
+
+
+bool generate_level_hook(int level)
+{
+	int result = 0;
+
+	if (!call_hook("generate_level", "(d)", "d",
+	               level,
+	               &result))
+	{
+		/* Error */
+		return FALSE;
+	}
+
+	/* Return the result */
+	return (result != 0) ? TRUE : FALSE;
 }
 
 
@@ -577,14 +759,14 @@ bool script_do_file(cptr filename)
 {
 	if (!L) return FALSE;
 
-#ifdef ACORN
+#ifdef RISCOS
 	{
 		char *realname = riscosify_name(filename);
 		if (!lua_dofile(L, realname)) return TRUE;
 	}
-#else /* ACORN */
+#else /* RISCOS */
 	if (!lua_dofile(L, filename)) return TRUE;
-#endif /* ACORN */
+#endif /* RISCOS */
 
 	return FALSE;
 }

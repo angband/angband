@@ -457,6 +457,7 @@ extern bool make_attack_spell(int m_idx);
 extern void process_monsters(byte minimum_energy);
 
 /* monster1.c */
+extern void roff_top(int r_idx);
 extern void screen_roff(int r_idx);
 extern void display_roff(int r_idx);
 

@@ -187,3 +187,6 @@ extern bool get_com(cptr prompt, char *command);
 extern void text_out_to_screen @ text_out(byte a, cptr str);
 
 extern errr Term_clear(void);
+
+extern void flush(void);
+extern void flush_fail(void);

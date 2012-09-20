@@ -47,7 +47,7 @@
 /*
  * Current version string
  */
-#define VERSION_STRING	"3.0.1"
+#define VERSION_STRING	"3.0.2"
 
 
 /*
@@ -55,7 +55,7 @@
  */
 #define VERSION_MAJOR	3
 #define VERSION_MINOR	0
-#define VERSION_PATCH	1
+#define VERSION_PATCH	2
 #define VERSION_EXTRA	0
 
 
@@ -96,7 +96,7 @@
  * Number of grids in each panel (horizontally)
  * Must be a multiple of BLOCK_WID
  */
-#define PANEL_WID	33
+#define PANEL_WID	(use_bigtile ? 16 : 33)
 
 #define ROW_MAP			1
 #define COL_MAP			13
@@ -112,7 +112,7 @@
  * Number of grids in each screen (horizontally)
  * Must be a multiple of PANEL_WID (at least 2x)
  */
-#define SCREEN_WID	(Term->wid - COL_MAP - 1)
+#define SCREEN_WID	((Term->wid - COL_MAP - 1) / (use_bigtile ? 2 : 1))
 
 
 /*
@@ -254,7 +254,6 @@
  * Store constants
  */
 #define STORE_INVEN_MAX	24		/* Max number of discrete objs in inven */
-#define STORE_CHOICES	32		/* Number of items to choose stock from */
 #define STORE_OBJ_LEVEL	5		/* Magic Level for normal stores */
 #define STORE_TURNOVER	9		/* Normal shop turnover, per day */
 #define STORE_MIN_KEEP	6		/* Min slots to "always" keep full */
@@ -420,6 +419,14 @@
  */
 #define MAX_STACK_SIZE			100
 
+
+/*
+ * Maximum number of objects allowed in a single dungeon grid.
+ *
+ * The main-screen has a minimum size of 24 rows, so we can always
+ * display 23 objects + 1 header line.
+ */
+#define MAX_FLOOR_STACK			23
 
 
 /*
@@ -1178,7 +1185,7 @@
 #define SV_STAFF_DISPEL_EVIL	24
 #define SV_STAFF_POWER			25
 #define SV_STAFF_HOLINESS		26
-#define SV_STAFF_GENOCIDE		27
+#define SV_STAFF_BANISHMENT		27
 #define SV_STAFF_EARTHQUAKES	28
 #define SV_STAFF_DESTRUCTION	29
 
@@ -1291,8 +1298,8 @@
 #define SV_SCROLL_STAR_DESTRUCTION		41
 #define SV_SCROLL_DISPEL_UNDEAD			42
 /* xxx */
-#define SV_SCROLL_GENOCIDE				44
-#define SV_SCROLL_MASS_GENOCIDE			45
+#define SV_SCROLL_BANISHMENT			44
+#define SV_SCROLL_MASS_BANISHMENT		45
 #define SV_SCROLL_ACQUIREMENT			46
 #define SV_SCROLL_STAR_ACQUIREMENT		47
 
@@ -1671,16 +1678,16 @@
 
 
 /*
- * Special Object Flags
+ * Special object flags
  */
-#define IDENT_SENSE		0x01	/* Item has been "sensed" */
-#define IDENT_FIXED		0x02	/* Item has been "haggled" */
-#define IDENT_EMPTY		0x04	/* Item charges are known */
-#define IDENT_KNOWN		0x08	/* Item abilities are known */
-#define IDENT_RUMOUR	0x10	/* Item background is known */
-#define IDENT_MENTAL	0x20	/* Item information is known */
-#define IDENT_CURSED	0x40	/* Item is temporarily cursed */
-#define IDENT_BROKEN	0x80	/* Item is permanently worthless */
+#define IDENT_SENSE     0x01	/* Item has been "sensed" */
+#define IDENT_FIXED     0x02	/* Item has been "haggled" */
+#define IDENT_EMPTY     0x04	/* Item charges are known */
+#define IDENT_KNOWN     0x08	/* Item abilities are known */
+#define IDENT_STORE     0x10	/* Item is in the inventory of a store */
+#define IDENT_MENTAL    0x20	/* Item information is known */
+#define IDENT_CURSED    0x40	/* Item is temporarily cursed */
+#define IDENT_BROKEN    0x80	/* Item is permanently worthless */
 
 
 /*
@@ -2975,6 +2982,15 @@ extern int PlayerUID;
 
 
 /*
+ * Available graphic modes
+ */
+#define GRAPHICS_NONE           0
+#define GRAPHICS_ORIGINAL       1
+#define GRAPHICS_ADAM_BOLT      2
+#define GRAPHICS_DAVID_GERVAIS  3
+
+
+/*
  * List of commands that will be auto-repeated
  *
  * ToDo: This string should be user-configurable.
@@ -3008,8 +3024,8 @@ extern int PlayerUID;
 #define ACT_SLEEP               20
 #define ACT_LIGHTNING_BOLT      21
 #define ACT_ELEC2               22
-#define ACT_GENOCIDE            23
-#define ACT_MASS_GENOCIDE       24
+#define ACT_BANISHMENT          23
+#define ACT_MASS_BANISHMENT     24
 #define ACT_IDENTIFY            25
 #define ACT_DRAIN_LIFE1         26
 #define ACT_DRAIN_LIFE2         27

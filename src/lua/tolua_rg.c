@@ -3,7 +3,7 @@
 ** Written by Waldemar Celes
 ** TeCGraf/PUC-Rio
 ** Jul 1998
-** $Id: tolua_rg.c,v 1.1 2001/10/27 19:35:29 angband Exp $
+** $Id: tolua_rg.c,v 1.2 2002/11/23 21:31:25 rr9 Exp $
 */
 
 /* This code is free software; you can redistribute it and/or modify it. 
@@ -19,7 +19,7 @@
 #include "tolua_tm.h"
 #include "tolua_tt.h"
 
-void tolua_globalvar (lua_State* L, char* name, lua_CFunction get, lua_CFunction set)
+void tolua_globalvar (lua_State* L, const char* name, lua_CFunction get, lua_CFunction set)
 {
  lua_newtable(L);
  lua_pushstring(L,".get");
@@ -44,7 +44,7 @@ static int toluaI_const_global_array (lua_State* L)
 }
 
 
-void tolua_globalarray (lua_State* L,char* name, lua_CFunction get, lua_CFunction set)
+void tolua_globalarray (lua_State* L, const char* name, lua_CFunction get, lua_CFunction set)
 {
  int tag = lua_newtag(L);
  lua_newtable(L);
@@ -61,7 +61,7 @@ void tolua_globalarray (lua_State* L,char* name, lua_CFunction get, lua_CFunctio
 }
 
 void tolua_tablevar 
-(lua_State* L, char* table, char* name, lua_CFunction get, lua_CFunction set)
+(lua_State* L, const char* table, const char* name, lua_CFunction get, lua_CFunction set)
 {
  lua_getglobal(L,table);
 
@@ -118,7 +118,7 @@ static int toluaI_const_array (lua_State* L)
 }
 
 void tolua_tablearray
-(lua_State* L, char* table, char* name, lua_CFunction get, lua_CFunction set)
+(lua_State* L, const char* table, const char* name, lua_CFunction get, lua_CFunction set)
 {
  int tag = lua_newtag(L);
  lua_getglobal(L,table);
@@ -141,7 +141,7 @@ void tolua_tablearray
  tolua_tablevar(L,table,name,toluaI_get_array,NULL);
 }
 
-void tolua_module (lua_State* L, char* name)
+void tolua_module (lua_State* L, const char* name)
 {
  lua_getglobal(L,name);
  if (!lua_istable(L,-1))
@@ -161,7 +161,7 @@ void tolua_module (lua_State* L, char* name)
  lua_pop(L,1);
 }
 
-void tolua_cclass (lua_State* L, char* name, char* base)
+void tolua_cclass (lua_State* L, const char* name, const char* base)
 {
  int t;
  lua_newtable(L);
@@ -189,7 +189,7 @@ void tolua_cclass (lua_State* L, char* name, char* base)
 }
 
 
-void tolua_function (lua_State* L, char* parent, char* name, lua_CFunction func)
+void tolua_function (lua_State* L, const char* parent, const char* name, lua_CFunction func)
 {
  if (parent==NULL)
  {
@@ -206,7 +206,7 @@ void tolua_function (lua_State* L, char* parent, char* name, lua_CFunction func)
  }
 }
 
-void tolua_constant (lua_State* L, char* parent, char* name, long value)
+void tolua_constant (lua_State* L, char* parent, const char* name, long value)
 {
  if (parent==NULL)
  {
@@ -223,7 +223,7 @@ void tolua_constant (lua_State* L, char* parent, char* name, long value)
  }
 }
 
-void toluaI_setregistry (lua_State* L, char* field)
+void toluaI_setregistry (lua_State* L, const char* field)
 {
  lua_getregistry(L);
  lua_insert(L,-2);
@@ -233,7 +233,7 @@ void toluaI_setregistry (lua_State* L, char* field)
  lua_pop(L,1);
 }
 
-void toluaI_getregistry (lua_State* L, char* field)
+void toluaI_getregistry (lua_State* L, const char* field)
 {
  lua_getregistry(L);
  lua_pushstring(L,field);

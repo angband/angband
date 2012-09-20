@@ -641,16 +641,14 @@ void do_cmd_aim_wand(void)
  *
  * Unstack fully charged rods as needed.
  *
- * Hack -- rods of perception/genocide can be "cancelled"
+ * Hack -- rods of perception/banishment can be "cancelled"
  * All rods can be cancelled at the "Direction?" prompt
  */
 void do_cmd_zap_rod(void)
 {
 	int item;
 	bool ident;
-
 	object_type *o_ptr;
-
 	cptr q, s;
 
 
@@ -683,7 +681,7 @@ void do_cmd_zap_rod(void)
 	}
 
 	/* Zap the rod */
-	use_object(o_ptr, &ident);
+	if (!use_object(o_ptr, &ident)) return;
 
 	/* Combine / Reorder the pack (later) */
 	p_ptr->notice |= (PN_COMBINE | PN_REORDER);

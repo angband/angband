@@ -18,4 +18,7 @@ typedef struct {
 } DIBINIT;
 
 /* Read a DIB from a file */
-BOOL ReadDIB(HWND, LPSTR, DIBINIT *);
+extern BOOL ReadDIB(HWND, LPSTR, DIBINIT *);
+
+/* Free a DIB */
+extern void FreeDIB(DIBINIT *dib);

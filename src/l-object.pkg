@@ -477,7 +477,7 @@ typedef int errr;
 #define SV_STAFF_DISPEL_EVIL	24
 #define SV_STAFF_POWER			25
 #define SV_STAFF_HOLINESS		26
-#define SV_STAFF_GENOCIDE		27
+#define SV_STAFF_BANISHMENT		27
 #define SV_STAFF_EARTHQUAKES	28
 #define SV_STAFF_DESTRUCTION	29
 
@@ -590,8 +590,8 @@ typedef int errr;
 #define SV_SCROLL_STAR_DESTRUCTION		41
 #define SV_SCROLL_DISPEL_UNDEAD			42
 /* xxx */
-#define SV_SCROLL_GENOCIDE				44
-#define SV_SCROLL_MASS_GENOCIDE			45
+#define SV_SCROLL_BANISHMENT			44
+#define SV_SCROLL_MASS_BANISHMENT		45
 #define SV_SCROLL_ACQUIREMENT			46
 #define SV_SCROLL_STAR_ACQUIREMENT		47
 
@@ -721,16 +721,16 @@ typedef int errr;
 
 
 /*
- * Special Object Flags
+ * Special object flags
  */
-#define IDENT_SENSE		0x01	/* Item has been "sensed" */
-#define IDENT_FIXED		0x02	/* Item has been "haggled" */
-#define IDENT_EMPTY		0x04	/* Item charges are known */
-#define IDENT_KNOWN		0x08	/* Item abilities are known */
-#define IDENT_RUMOUR	0x10	/* Item background is known */
-#define IDENT_MENTAL	0x20	/* Item information is known */
-#define IDENT_CURSED	0x40	/* Item is temporarily cursed */
-#define IDENT_BROKEN	0x80	/* Item is permanently worthless */
+#define IDENT_SENSE     0x01	/* Item has been "sensed" */
+#define IDENT_FIXED     0x02	/* Item has been "haggled" */
+#define IDENT_EMPTY     0x04	/* Item charges are known */
+#define IDENT_KNOWN     0x08	/* Item abilities are known */
+#define IDENT_STORE     0x10	/* Item is in the inventory of a store */
+#define IDENT_MENTAL    0x20	/* Item information is known */
+#define IDENT_CURSED    0x40	/* Item is temporarily cursed */
+#define IDENT_BROKEN    0x80	/* Item is permanently worthless */
 
 
 /*
@@ -909,8 +909,8 @@ typedef int errr;
 #define ACT_SLEEP               20
 #define ACT_LIGHTNING_BOLT      21
 #define ACT_ELEC2               22
-#define ACT_GENOCIDE            23
-#define ACT_MASS_GENOCIDE       24
+#define ACT_BANISHMENT          23
+#define ACT_MASS_BANISHMENT     24
 #define ACT_IDENTIFY            25
 #define ACT_DRAIN_LIFE1         26
 #define ACT_DRAIN_LIFE2         27
@@ -1146,7 +1146,6 @@ extern char *flavor_text;
 extern void flavor_init(void);
 extern void reset_visuals(bool prefs);
 extern void identify_random_gen(const object_type *o_ptr);
-extern bool identify_fully_aux(const object_type *o_ptr);
 extern char index_to_label(int i);
 extern s16b label_to_inven(int c);
 extern s16b label_to_equip(int c);
@@ -1174,6 +1173,7 @@ extern s16b get_obj_num(int level);
 extern void object_known(object_type *o_ptr);
 extern void object_aware(object_type *o_ptr);
 extern void object_tried(object_type *o_ptr);
+extern bool is_blessed(const object_type *o_ptr);
 extern s32b object_value(const object_type *o_ptr);
 extern bool object_similar(const object_type *o_ptr, const object_type *j_ptr);
 extern void object_absorb(object_type *o_ptr, const object_type *j_ptr);
@@ -1219,3 +1219,5 @@ extern bool ego_item_p(const object_type *o_ptr);
 extern bool broken_p(const object_type *o_ptr);
 extern bool cursed_p(const object_type *o_ptr);
 
+extern bool object_info_out(const object_type *o_ptr);
+extern void object_info_screen(const object_type *o_ptr);

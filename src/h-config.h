@@ -115,11 +115,11 @@
 #endif
 
 /*
- * Extract the "ACORN" flag from the compiler
+ * Extract the "RISCOS" flag from the compiler
  */
 #ifdef __riscos
-# ifndef ACORN
-#  define ACORN
+# ifndef RISCOS
+#  define RISCOS
 # endif
 #endif
 
@@ -196,7 +196,7 @@
  */
 #if !defined(MACINTOSH) && !defined(WINDOWS) && \
     !defined(MSDOS) && !defined(USE_EMX) && \
-    !defined(AMIGA) && !defined(ACORN) && !defined(VM)
+    !defined(AMIGA) && !defined(RISCOS) && !defined(VM)
 # define SET_UID
 #endif
 
@@ -222,7 +222,7 @@
  * Every system seems to use its own symbol as a path separator.
  * Default to the standard Unix slash, but attempt to change this
  * for various other systems.  Note that any system that uses the
- * "period" as a separator (i.e. ACORN) will have to pretend that
+ * "period" as a separator (i.e. RISCOS) will have to pretend that
  * it uses the slash, and do its own mapping of period <-> slash.
  * Note that the VM system uses a "flat" directory, and thus uses
  * the empty string for "PATH_SEP".

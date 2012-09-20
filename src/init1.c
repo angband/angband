@@ -503,8 +503,8 @@ static cptr a_info_act[ACT_MAX] =
 	"SLEEP",
 	"LIGHTNING_BOLT",
 	"ELEC2",
-	"GENOCIDE",
-	"MASS_GENOCIDE",
+	"BANISHMENT",
+	"MASS_BANISHMENT",
 	"IDENTIFY",
 	"DRAIN_LIFE1",
 	"DRAIN_LIFE2",
@@ -1087,7 +1087,8 @@ errr parse_f_info(char *buf, header *head)
 	/* Process 'G' for "Graphics" (one line only) */
 	else if (buf[0] == 'G')
 	{
-		int tmp;
+		char d_char;
+		int d_attr;
 
 		/* There better be a current f_ptr */
 		if (!f_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
@@ -1097,15 +1098,30 @@ errr parse_f_info(char *buf, header *head)
 		if (!buf[3]) return (PARSE_ERROR_GENERIC);
 		if (!buf[4]) return (PARSE_ERROR_GENERIC);
 
-		/* Extract the attr */
-		tmp = color_char_to_attr(buf[4]);
+		/* Extract d_char */
+		d_char = buf[2];
+
+		/* If we have a longer string than expected ... */
+		if (buf[5])
+		{
+			/* Advance "buf" on by 4 */
+			buf += 4;
+
+			/* Extract the colour */
+			d_attr = color_text_to_attr(buf);
+		}
+		else
+		{
+			/* Extract the attr */
+			d_attr = color_char_to_attr(buf[4]);
+		}
 
 		/* Paranoia */
-		if (tmp < 0) return (PARSE_ERROR_GENERIC);
+		if (d_attr < 0) return (PARSE_ERROR_GENERIC);
 
 		/* Save the values */
-		f_ptr->d_attr = tmp;
-		f_ptr->d_char = buf[2];
+		f_ptr->d_attr = d_attr;
+		f_ptr->d_char = d_char;
 	}
 	else
 	{
@@ -1213,8 +1229,8 @@ errr parse_k_info(char *buf, header *head)
 	/* Process 'G' for "Graphics" (one line only) */
 	else if (buf[0] == 'G')
 	{
-		char sym;
-		int tmp;
+		char d_char;
+		int d_attr;
 
 		/* There better be a current k_ptr */
 		if (!k_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
@@ -1224,18 +1240,30 @@ errr parse_k_info(char *buf, header *head)
 		if (!buf[3]) return (PARSE_ERROR_GENERIC);
 		if (!buf[4]) return (PARSE_ERROR_GENERIC);
 
-		/* Extract the char */
-		sym = buf[2];
+		/* Extract d_char */
+		d_char = buf[2];
 
-		/* Extract the attr */
-		tmp = color_char_to_attr(buf[4]);
+		/* If we have a longer string than expected ... */
+		if (buf[5])
+		{
+			/* Advance "buf" on by 4 */
+			buf += 4;
+
+			/* Extract the colour */
+			d_attr = color_text_to_attr(buf);
+		}
+		else
+		{
+			/* Extract the attr */
+			d_attr = color_char_to_attr(buf[4]);
+		}
 
 		/* Paranoia */
-		if (tmp < 0) return (PARSE_ERROR_GENERIC);
+		if (d_attr < 0) return (PARSE_ERROR_GENERIC);
 
 		/* Save the values */
-		k_ptr->d_attr = tmp;
-		k_ptr->d_char = sym;
+		k_ptr->d_attr = d_attr;
+		k_ptr->d_char = d_char;
 	}
 
 	/* Process 'I' for "Info" (one line only) */
@@ -1913,8 +1941,8 @@ errr parse_r_info(char *buf, header *head)
 	/* Process 'G' for "Graphics" (one line only) */
 	else if (buf[0] == 'G')
 	{
-		char sym;
-		int tmp;
+		char d_char;
+		int d_attr;
 
 		/* There better be a current r_ptr */
 		if (!r_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
@@ -1924,18 +1952,30 @@ errr parse_r_info(char *buf, header *head)
 		if (!buf[3]) return (PARSE_ERROR_GENERIC);
 		if (!buf[4]) return (PARSE_ERROR_GENERIC);
 
-		/* Extract the char */
-		sym = buf[2];
+		/* Extract d_char */
+		d_char = buf[2];
 
-		/* Extract the attr */
-		tmp = color_char_to_attr(buf[4]);
+		/* If we have a longer string than expected ... */
+		if (buf[5])
+		{
+			/* Advance "buf" on by 4 */
+			buf += 4;
+
+			/* Extract the colour */
+			d_attr = color_text_to_attr(buf);
+		}
+		else
+		{
+			/* Extract the attr */
+			d_attr = color_char_to_attr(buf[4]);
+		}
 
 		/* Paranoia */
-		if (tmp < 0) return (PARSE_ERROR_GENERIC);
+		if (d_attr < 0) return (PARSE_ERROR_GENERIC);
 
 		/* Save the values */
-		r_ptr->d_attr = tmp;
-		r_ptr->d_char = sym;
+		r_ptr->d_attr = d_attr;
+		r_ptr->d_char = d_char;
 	}
 
 	/* Process 'I' for "Info" (one line only) */
@@ -2233,7 +2273,7 @@ errr parse_p_info(char *buf, header *head)
 	{
 		int adj;
 
-		/* There better be a current pc_ptr */
+		/* There better be a current pr_ptr */
 		if (!pr_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
 
 		/* Start the string */
@@ -3003,8 +3043,6 @@ errr parse_flavor_info(char *buf, header *head)
 {
 	int i;
 	
-	char *s;
-
 	/* Current entry */
 	static flavor_type *flavor_ptr;
 
@@ -3046,36 +3084,59 @@ errr parse_flavor_info(char *buf, header *head)
 			flavor_ptr->sval = (byte)sval;
 	}
 
-	/* Process 'F' for "Flavor" */
-	else if (buf[0] == 'F')
+	/* Process 'G' for "Graphics" */
+	else if (buf[0] == 'G')
 	{
-		int tmp;
+		char d_char;
+		int d_attr;
 
 		/* There better be a current flavor_ptr */
 		if (!flavor_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
 
 		/* Paranoia */
-		if (strlen(buf) < 5) return (PARSE_ERROR_GENERIC);
+		if (!buf[2]) return (PARSE_ERROR_GENERIC);
+		if (!buf[3]) return (PARSE_ERROR_GENERIC);
+		if (!buf[4]) return (PARSE_ERROR_GENERIC);
 
-		/* Extract the attr */
-		tmp = color_char_to_attr(buf[4]);
+		/* Extract d_char */
+		d_char = buf[2];
+
+		/* If we have a longer string than expected ... */
+		if (buf[5])
+		{
+			/* Advance "buf" on by 4 */
+			buf += 4;
+
+			/* Extract the colour */
+			d_attr = color_text_to_attr(buf);
+		}
+		else
+		{
+			/* Extract the attr */
+			d_attr = color_char_to_attr(buf[4]);
+		}
 
 		/* Paranoia */
-		if (tmp < 0) return (PARSE_ERROR_GENERIC);
+		if (d_attr < 0) return (PARSE_ERROR_GENERIC);
 
 		/* Save the values */
-		flavor_ptr->d_attr = tmp;
-		flavor_ptr->d_char = buf[2];
+		flavor_ptr->d_attr = d_attr;
+		flavor_ptr->d_char = d_char;
+	}
 
-		if (strlen(buf) > 5)
-		{
-			/* Get the text */
-			s = buf+6;
+	/* Process 'D' for "Description" */
+	else if (buf[0] == 'D')
+	{
+		/* There better be a current flavor_ptr */
+		if (!flavor_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
 
-			/* Store the text */
-			if (!add_text(&flavor_ptr->text, head, s))
-				return (PARSE_ERROR_OUT_OF_MEMORY);
-		}
+		/* Paranoia */
+		if (!buf[1]) return (PARSE_ERROR_GENERIC);
+		if (!buf[2]) return (PARSE_ERROR_GENERIC);
+
+		/* Store the text */
+		if (!add_text(&flavor_ptr->text, head, buf + 2))
+			return (PARSE_ERROR_OUT_OF_MEMORY);
 	}
 
 	else

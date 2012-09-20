@@ -65,7 +65,7 @@ and they are all still available (for now) at the ftp sites.  Angband 2.8.3
 is based on all previous versions, and incorporates bug fixes in addition to
 new features.
 
-See the Official Angband Home Page ("http://thangorodrim.angband.org/") for
+See the Official Angband Home Page ("http://www.thangorodrim.net/") for
 up to date information about the latest version of Angband, including a
 complete list of recent modifications and known bugs.
 
@@ -74,7 +74,7 @@ places, try "ftp://ftp.cis.ksu.edu/pub/Games/Angband/Angband-2.7.x" and
 the developer site at "ftp://clockwork.dementia.org/angband/".
 
 You can email compliments, complaints, suggestions, bug reports, and patches
-to me ("rr9@angband.org"), and you can post interesting experiences and
+to me ("rr9@thangorodrim.net"), and you can post interesting experiences and
 basic questions to the newsgroup ("rec.games.roguelike.angband").
 
 You may freely distribute the game, and its source, though you are bound

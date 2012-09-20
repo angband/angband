@@ -8,790 +8,1042 @@
 # unless you wish to risk possible system crashes and broken savefiles.
 # After modifying this file, delete the "lib/data/flavor.raw" file.
 
-# N:<index>:<tval>
-# F:<char>:<attr>:<text>
+# N:<index>:<tval>:<sval>
+# G:<char>:<attr>
+# D:<text>
 
 # Version stamp (required)
 
-V:3.0.1
+V:3.0.2
 
 
 ##### Rings #####
 
 # Fixed: The One Ring
 N:1:45:37
-F:=:y:Plain Gold
+G:=:y
+D:Plain Gold
 
 N:2:45
-F:=:g:Alexandrite
+G:=:g
+D:Alexandrite
 
 N:3:45
-F:=:v:Amethyst
+G:=:v
+D:Amethyst
 
 N:4:45
-F:=:B:Aquamarine
+G:=:B
+D:Aquamarine
 
 N:5:45
-F:=:B:Azurite
+G:=:B
+D:Azurite
 
 N:6:45
-F:=:G:Beryl
+G:=:G
+D:Beryl
 
 N:7:45
-F:=:r:Bloodstone
+G:=:r
+D:Bloodstone
 
 N:8:45
-F:=:w:Calcite
+G:=:w
+D:Calcite
 
 N:9:45
-F:=:r:Carnelian
+G:=:r
+D:Carnelian
 
 N:10:45
-F:=:s:Corundum
+G:=:s
+D:Corundum
 
 N:11:45
-F:=:w:Diamond
+G:=:w
+D:Diamond
 
 N:12:45
-F:=:g:Emerald
+G:=:g
+D:Emerald
 
 N:13:45
-F:=:G:Fluorite
+G:=:G
+D:Fluorite
 
 N:14:45
-F:=:r:Garnet
+G:=:r
+D:Garnet
 
 N:15:45
-F:=:W:Granite
+G:=:W
+D:Granite
 
 N:16:45
-F:=:G:Jade
+G:=:G
+D:Jade
 
 N:17:45
-F:=:u:Jasper
+G:=:u
+D:Jasper
 
 N:18:45
-F:=:b:Lapis Lazuli
+G:=:b
+D:Lapis Lazuli
 
 N:19:45
-F:=:g:Malachite
+G:=:g
+D:Malachite
 
 N:20:45
-F:=:w:Marble
+G:=:w
+D:Marble
 
 N:21:45
-F:=:W:Moonstone
+G:=:W
+D:Moonstone
 
 N:22:45
-F:=:R:Onyx
+G:=:R
+D:Onyx
 
 N:23:45
-F:=:W:Opal
+G:=:W
+D:Opal
 
 N:24:45
-F:=:w:Pearl
+G:=:w
+D:Pearl
 
 N:25:45
-F:=:W:Quartz
+G:=:W
+D:Quartz
 
 N:26:45
-F:=:W:Quartzite
+G:=:W
+D:Quartzite
 
 N:27:45
-F:=:R:Rhodonite
+G:=:R
+D:Rhodonite
 
 N:28:45
-F:=:r:Ruby
+G:=:r
+D:Ruby
 
 N:29:45
-F:=:b:Sapphire
+G:=:b
+D:Sapphire
 
 N:30:45
-F:=:y:Tiger Eye
+G:=:y
+D:Tiger Eye
 
 N:31:45
-F:=:y:Topaz
+G:=:y
+D:Topaz
 
 N:32:45
-F:=:B:Turquoise
+G:=:B
+D:Turquoise
 
 N:33:45
-F:=:U:Zircon
+G:=:U
+D:Zircon
 
 N:34:45
-F:=:w:Platinum
+G:=:w
+D:Platinum
 
 N:35:45
-F:=:U:Bronze
+G:=:U
+D:Bronze
 
 N:36:45
-F:=:y:Gold
+G:=:y
+D:Gold
 
 N:37:45
-F:=:D:Obsidian
+G:=:D
+D:Obsidian
 
 N:38:45
-F:=:W:Silver
+G:=:W
+D:Silver
 
 N:39:45
-F:=:u:Tortoise Shell
+G:=:u
+D:Tortoise Shell
 
 N:40:45
-F:=:B:Mithril
+G:=:B
+D:Mithril
 
 N:41:45
-F:=:D:Jet
+G:=:D
+D:Jet
 
 N:42:45
-F:=:y:Engagement
+G:=:y
+D:Engagement
 
 N:43:45
-F:=:G:Adamantite
+G:=:G
+D:Adamantite
 
 
 ##### Amulets #####
 
 N:44:40
-F:":y:Amber
+G:":y
+D:Amber
 
 N:45:40
-F:":U:Driftwood
+G:":U
+D:Driftwood
 
 N:46:40
-F:":w:Coral
+G:":w
+D:Coral
 
 N:47:40
-F:":W:Agate
+G:":W
+D:Agate
 
 N:48:40
-F:":w:Ivory
+G:":w
+D:Ivory
 
 N:49:40
-F:":D:Obsidian
+G:":D
+D:Obsidian
 
 N:50:40
-F:":w:Bone
+G:":w
+D:Bone
 
 N:51:40
-F:":U:Brass
+G:":U
+D:Brass
 
 N:52:40
-F:":U:Bronze
+G:":U
+D:Bronze
 
 N:53:40
-F:":s:Pewter
+G:":s
+D:Pewter
 
 N:54:40
-F:":u:Tortoise Shell
+G:":u
+D:Tortoise Shell
 
 N:55:40
-F:":y:Golden
+G:":y
+D:Golden
 
 N:56:40
-F:":B:Azure
+G:":B
+D:Azure
 
 N:57:40
-F:":w:Crystal
+G:":w
+D:Crystal
 
 N:58:40
-F:":W:Silver
+G:":W
+D:Silver
 
 N:59:40
-F:":U:Copper
+G:":U
+D:Copper
 
 N:60:40
-F:":u:Carved Oak
+G:":u
+D:Carved Oak
 
 N:61:40
-F:":W:Dragon Tooth
+G:":W
+D:Dragon Tooth
 
 N:62:40
-F:":r:Ruby
+G:":r
+D:Ruby
 
 N:63:40
-F:":B:Mithril
+G:":B
+D:Mithril
 
 N:64:40
-F:":G:Adamant
+G:":G
+D:Adamant
 
 N:65:40
-F:":s:Flint Stone
+G:":s
+D:Flint Stone
 
 N:66:40
-F:":B:Sea Shell
+G:":B
+D:Sea Shell
 
 N:67:40
-F:":W:Mother-of-Pearl
+G:":W
+D:Mother-of-Pearl
 
 
 ##### Staves #####
 
 N:68:55
-F:_:U:Aspen
+G:_:U
+D:Aspen
 
 N:69:55
-F:_:U:Balsa
+G:_:U
+D:Balsa
 
 N:70:55
-F:_:U:Banyan
+G:_:U
+D:Banyan
 
 N:71:55
-F:_:U:Birch
+G:_:U
+D:Birch
 
 N:72:55
-F:_:U:Cedar
+G:_:U
+D:Cedar
 
 N:73:55
-F:_:U:Cottonwood
+G:_:U
+D:Cottonwood
 
 N:74:55
-F:_:U:Cypress
+G:_:U
+D:Cypress
 
 N:75:55
-F:_:U:Dogwood
+G:_:U
+D:Dogwood
 
 N:76:55
-F:_:U:Elm
+G:_:U
+D:Elm
 
 N:77:55
-F:_:U:Eucalyptus
+G:_:U
+D:Eucalyptus
 
 N:78:55
-F:_:U:Hemlock
+G:_:U
+D:Hemlock
 
 N:79:55
-F:_:U:Hickory
+G:_:U
+D:Hickory
 
 N:80:55
-F:_:u:Ironwood
+G:_:u
+D:Ironwood
 
 N:81:55
-F:_:U:Locust
+G:_:U
+D:Locust
 
 N:82:55
-F:_:u:Mahogany
+G:_:u
+D:Mahogany
 
 N:83:55
-F:_:u:Maple
+G:_:u
+D:Maple
 
 N:84:55
-F:_:u:Mulberry
+G:_:u
+D:Mulberry
 
 N:85:55
-F:_:u:Oak
+G:_:u
+D:Oak
 
 N:86:55
-F:_:u:Pine
+G:_:u
+D:Pine
 
 N:87:55
-F:_:r:Redwood
+G:_:r
+D:Redwood
 
 N:88:55
-F:_:r:Rosewood
+G:_:r
+D:Rosewood
 
 N:89:55
-F:_:U:Spruce
+G:_:U
+D:Spruce
 
 N:90:55
-F:_:U:Sycamore
+G:_:U
+D:Sycamore
 
 N:91:55
-F:_:U:Teak
+G:_:U
+D:Teak
 
 N:92:55
-F:_:u:Walnut
+G:_:u
+D:Walnut
 
 N:93:55
-F:_:g:Mistletoe
+G:_:g
+D:Mistletoe
 
 N:94:55
-F:_:U:Hawthorn
+G:_:U
+D:Hawthorn
 
 N:95:55
-F:_:U:Bamboo
+G:_:U
+D:Bamboo
 
 N:96:55
-F:_:W:Silver
+G:_:W
+D:Silver
 
 N:97:55
-F:_:u:Runed
+G:_:u
+D:Runed
 
 N:98:55
-F:_:g:Golden
+G:_:y
+D:Golden
 
 N:99:55
-F:_:s:Ashen
+G:_:s
+D:Ashen
 
 N:100:55
-F:_:U:Gnarled
+G:_:U
+D:Gnarled
 
 N:101:55
-F:_:w:Ivory
+G:_:w
+D:Ivory
 
 N:102:55
-F:_:U:Willow
+G:_:U
+D:Willow
 
 
 ##### Wands #####
 
 N:103:65
-F:-:B:Aluminium
+G:-:B
+D:Aluminium
 
 N:104:65
-F:-:D:Cast Iron
+G:-:D
+D:Cast Iron
 
 N:105:65
-F:-:w:Chromium
+G:-:w
+D:Chromium
 
 N:106:65
-F:-:U:Copper
+G:-:U
+D:Copper
 
 N:107:65
-F:-:y:Gold
+G:-:y
+D:Gold
 
 N:108:65
-F:-:s:Iron
+G:-:s
+D:Iron
 
 N:109:65
-F:-:W:Magnesium
+G:-:W
+D:Magnesium
 
 N:110:65
-F:-:W:Molybdenum
+G:-:W
+D:Molybdenum
 
 N:111:65
-F:-:U:Nickel
+G:-:U
+D:Nickel
 
 N:112:65
-F:-:r:Rusty
+G:-:r
+D:Rusty
 
 N:113:65
-F:-:W:Silver
+G:-:W
+D:Silver
 
 N:114:65
-F:-:W:Steel
+G:-:W
+D:Steel
 
 N:115:65
-F:-:W:Tin
+G:-:W
+D:Tin
 
 N:116:65
-F:-:w:Titanium
+G:-:w
+D:Titanium
 
 N:117:65
-F:-:w:Tungsten
+G:-:w
+D:Tungsten
 
 N:118:65
-F:-:W:Zirconium
+G:-:W
+D:Zirconium
 
 N:119:65
-F:-:W:Zinc
+G:-:W
+D:Zinc
 
 N:120:65
-F:-:B:Aluminum-Plated
+G:-:B
+D:Aluminum-Plated
 
 N:121:65
-F:-:U:Copper-Plated
+G:-:U
+D:Copper-Plated
 
 N:122:65
-F:-:y:Gold-Plated
+G:-:y
+D:Gold-Plated
 
 N:123:65
-F:-:U:Nickel-Plated
+G:-:U
+D:Nickel-Plated
 
 N:124:65
-F:-:W:Silver-Plated
+G:-:W
+D:Silver-Plated
 
 N:125:65
-F:-:W:Steel-Plated
+G:-:W
+D:Steel-Plated
 
 N:126:65
-F:-:W:Tin-Plated
+G:-:W
+D:Tin-Plated
 
 N:127:65
-F:-:W:Zinc-Plated
+G:-:W
+D:Zinc-Plated
 
 N:128:65
-F:-:B:Mithril-Plated
+G:-:B
+D:Mithril-Plated
 
 N:129:65
-F:-:B:Mithril
+G:-:B
+D:Mithril
 
 N:130:65
-F:-:u:Runed
+G:-:u
+D:Runed
 
 N:131:65
-F:-:U:Bronze
+G:-:U
+D:Bronze
 
 N:132:65
-F:-:U:Brass
+G:-:U
+D:Brass
 
 N:133:65
-F:-:w:Platinum
+G:-:w
+D:Platinum
 
 N:134:65
-F:-:s:Lead
+G:-:s
+D:Lead
 
 N:135:65
-F:-:s:Lead-Plated
+G:-:s
+D:Lead-Plated
 
 N:136:65
-F:-:w:Ivory
+G:-:w
+D:Ivory
 
 N:137:65
-F:-:s:Pewter
+G:-:s
+D:Pewter
 
 
 ##### Rods #####
 
 N:138:66
-F:-:B:Aluminum
+G:-:B
+D:Aluminum
 
 N:139:66
-F:-:D:Cast Iron
+G:-:D
+D:Cast Iron
 
 N:140:66
-F:-:w:Chromium
+G:-:w
+D:Chromium
 
 N:141:66
-F:-:U:Copper
+G:-:U
+D:Copper
 
 N:142:66
-F:-:y:Gold
+G:-:y
+D:Gold
 
 N:143:66
-F:-:s:Iron
+G:-:s
+D:Iron
 
 N:144:66
-F:-:W:Magnesium
+G:-:W
+D:Magnesium
 
 N:145:66
-F:-:W:Molybdenum
+G:-:W
+D:Molybdenum
 
 N:146:66
-F:-:U:Nickel
+G:-:U
+D:Nickel
 
 N:147:66
-F:-:r:Rusty
+G:-:r
+D:Rusty
 
 N:148:66
-F:-:W:Silver
+G:-:W
+D:Silver
 
 N:149:66
-F:-:W:Steel
+G:-:W
+D:Steel
 
 N:150:66
-F:-:W:Tin
+G:-:W
+D:Tin
 
 N:151:66
-F:-:w:Titanium
+G:-:w
+D:Titanium
 
 N:152:66
-F:-:w:Tungsten
+G:-:w
+D:Tungsten
 
 N:153:66
-F:-:W:Zirconium
+G:-:W
+D:Zirconium
 
 N:154:66
-F:-:W:Zinc
+G:-:W
+D:Zinc
 
 N:155:66
-F:-:B:Aluminum-Plated
+G:-:B
+D:Aluminum-Plated
 
 N:156:66
-F:-:U:Copper-Plated
+G:-:U
+D:Copper-Plated
 
 N:157:66
-F:-:y:Gold-Plated
+G:-:y
+D:Gold-Plated
 
 N:158:66
-F:-:U:Nickel-Plated
+G:-:U
+D:Nickel-Plated
 
 N:159:66
-F:-:W:Silver-Plated
+G:-:W
+D:Silver-Plated
 
 N:160:66
-F:-:W:Steel-Plated
+G:-:W
+D:Steel-Plated
 
 N:161:66
-F:-:W:Tin-Plated
+G:-:W
+D:Tin-Plated
 
 N:162:66
-F:-:W:Zinc-Plated
+G:-:W
+D:Zinc-Plated
 
 N:163:66
-F:-:B:Mithril-Plated
+G:-:B
+D:Mithril-Plated
 
 N:164:66
-F:-:B:Mithril
+G:-:B
+D:Mithril
 
 N:165:66
-F:-:u:Runed
+G:-:u
+D:Runed
 
 N:166:66
-F:-:U:Bronze
+G:-:U
+D:Bronze
 
 N:167:66
-F:-:U:Brass
+G:-:U
+D:Brass
 
 N:168:66
-F:-:w:Platinum
+G:-:w
+D:Platinum
 
 N:169:66
-F:-:s:Lead
+G:-:s
+D:Lead
 
 N:170:66
-F:-:s:Lead-Plated
+G:-:s
+D:Lead-Plated
 
 N:171:66
-F:-:w:Ivory
+G:-:w
+D:Ivory
 
 N:172:66
-F:-:s:Pewter
+G:-:s
+D:Pewter
 
 
 ##### Mushrooms #####
 
 N:173:80
-F:,:b:Blue
+G:,:b
+D:Blue
 
 N:174:80
-F:,:D:Black
+G:,:D
+D:Black
 
 N:175:80
-F:,:D:Black Spotted
+G:,:D
+D:Black Spotted
 
 N:176:80
-F:,:u:Brown
+G:,:u
+D:Brown
 
 N:177:80
-F:,:b:Dark Blue
+G:,:b
+D:Dark Blue
 
 N:178:80
-F:,:g:Dark Green
+G:,:g
+D:Dark Green
 
 N:179:80
-F:,:r:Dark Red
+G:,:r
+D:Dark Red
 
 N:180:80
-F:,:y:Yellow
+G:,:y
+D:Yellow
 
 N:181:80
-F:,:W:Furry
+G:,:W
+D:Furry
 
 N:182:80
-F:,:g:Green
+G:,:g
+D:Green
 
 N:183:80
-F:,:s:Grey
+G:,:s
+D:Grey
 
 N:184:80
-F:,:B:Light Blue
+G:,:B
+D:Light Blue
 
 N:185:80
-F:,:G:Light Green
+G:,:G
+D:Light Green
 
 N:186:80
-F:,:v:Violet
+G:,:v
+D:Violet
 
 N:187:80
-F:,:r:Red
+G:,:r
+D:Red
 
 N:188:80
-F:,:s:Slimy
+G:,:s
+D:Slimy
 
 N:189:80
-F:,:U:Tan
+G:,:U
+D:Tan
 
 N:190:80
-F:,:w:White
+G:,:w
+D:White
 
 N:191:80
-F:,:w:White Spotted
+G:,:w
+D:White Spotted
 
 N:192:80
-F:,:u:Wrinkled
+G:,:u
+D:Wrinkled
 
 
 ##### Potions #####
 
 # Fixed: water
 N:193:75:0
-F:!:w:Clear
+G:!:w
+D:Clear
 
 # Fixed: apple juice
 N:194:75:1
-F:!:U:Light Brown
+G:!:U
+D:Light Brown
 
 # Fixed: slime mold juice
 N:195:75:2
-F:!:g:Icky Green
+G:!:g
+D:Icky Green
 
 N:196:75
-F:!:B:Azure
+G:!:B
+D:Azure
 
 N:197:75
-F:!:b:Blue
+G:!:b
+D:Blue
 
 N:198:75
-F:!:b:Blue Speckled
+G:!:b
+D:Blue Speckled
 
 N:199:75
-F:!:D:Black
+G:!:D
+D:Black
 
 N:200:75
-F:!:u:Brown
+G:!:u
+D:Brown
 
 N:201:75
-F:!:u:Brown Speckled
+G:!:u
+D:Brown Speckled
 
 N:202:75
-F:!:W:Bubbling
+G:!:W
+D:Bubbling
 
 N:203:75
-F:!:G:Chartreuse
+G:!:G
+D:Chartreuse
 
 N:204:75
-F:!:w:Cloudy
+G:!:w
+D:Cloudy
 
 N:205:75
-F:!:U:Copper Speckled
+G:!:U
+D:Copper Speckled
 
 N:206:75
-F:!:r:Crimson
+G:!:r
+D:Crimson
 
 N:207:75
-F:!:B:Cyan
+G:!:B
+D:Cyan
 
 N:208:75
-F:!:b:Dark Blue
+G:!:b
+D:Dark Blue
 
 N:209:75
-F:!:g:Dark Green
+G:!:g
+D:Dark Green
 
 N:210:75
-F:!:r:Dark Red
+G:!:r
+D:Dark Red
 
 N:211:75
-F:!:y:Gold Speckled
+G:!:y
+D:Gold Speckled
 
 N:212:75
-F:!:g:Green
+G:!:g
+D:Green
 
 N:213:75
-F:!:g:Green Speckled
+G:!:g
+D:Green Speckled
 
 N:214:75
-F:!:s:Grey
+G:!:s
+D:Grey
 
 N:215:75
-F:!:s:Grey Speckled
+G:!:s
+D:Grey Speckled
 
 N:216:75
-F:!:W:Hazy
+G:!:W
+D:Hazy
 
 N:217:75
-F:!:v:Indigo
+G:!:v
+D:Indigo
 
 N:218:75
-F:!:B:Light Blue
+G:!:B
+D:Light Blue
 
 N:219:75
-F:!:G:Light Green
+G:!:G
+D:Light Green
 
 N:220:75
-F:!:r:Magenta
+G:!:r
+D:Magenta
 
 N:221:75
-F:!:b:Metallic Blue
+G:!:b
+D:Metallic Blue
 
 N:222:75
-F:!:r:Metallic Red
+G:!:r
+D:Metallic Red
 
 N:223:75
-F:!:g:Metallic Green
+G:!:g
+D:Metallic Green
 
 N:224:75
-F:!:v:Metallic Purple
+G:!:v
+D:Metallic Purple
 
 N:225:75
-F:!:W:Misty
+G:!:W
+D:Misty
 
 N:226:75
-F:!:o:Orange
+G:!:o
+D:Orange
 
 N:227:75
-F:!:o:Orange Speckled
+G:!:o
+D:Orange Speckled
 
 N:228:75
-F:!:R:Pink
+G:!:R
+D:Pink
 
 N:229:75
-F:!:R:Pink Speckled
+G:!:R
+D:Pink Speckled
 
 N:230:75
-F:!:v:Puce
+G:!:v
+D:Puce
 
 N:231:75
-F:!:v:Purple
+G:!:v
+D:Purple
 
 N:232:75
-F:!:v:Purple Speckled
+G:!:v
+D:Purple Speckled
 
 N:233:75
-F:!:r:Red
+G:!:r
+D:Red
 
 N:234:75
-F:!:r:Red Speckled
+G:!:r
+D:Red Speckled
 
 N:235:75
-F:!:W:Silver Speckled
+G:!:W
+D:Silver Speckled
 
 N:236:75
-F:!:D:Smoky
+G:!:D
+D:Smoky
 
 N:237:75
-F:!:o:Tangerine
+G:!:o
+D:Tangerine
 
 N:238:75
-F:!:v:Violet
+G:!:v
+D:Violet
 
 N:239:75
-F:!:r:Vermilion
+G:!:r
+D:Vermilion
 
 N:240:75
-F:!:w:White
+G:!:w
+D:White
 
 N:241:75
-F:!:y:Yellow
+G:!:y
+D:Yellow
 
 N:242:75
-F:!:v:Violet Speckled
+G:!:v
+D:Violet Speckled
 
 N:243:75
-F:!:R:Pungent
+G:!:R
+D:Pungent
 
 N:244:75
-F:!:r:Clotted Red
+G:!:r
+D:Clotted Red
 
 N:245:75
-F:!:R:Viscous Pink
+G:!:R
+D:Viscous Pink
 
 N:246:75
-F:!:y:Oily Yellow
+G:!:y
+D:Oily Yellow
 
 N:247:75
-F:!:g:Gloopy Green
+G:!:g
+D:Gloopy Green
 
 N:248:75
-F:!:v:Shimmering
+G:!:v
+D:Shimmering
 
 N:249:75
-F:!:r:Coagulated Crimson
+G:!:r
+D:Coagulated Crimson
 
 N:250:75
-F:!:y:Yellow Speckled
+G:!:y
+D:Yellow Speckled
 
 N:251:75
-F:!:y:Gold
+G:!:y
+D:Gold
 
 
 ##### Scrolls #####
@@ -799,155 +1051,155 @@ F:!:y:Gold
 # Scroll names are generated from randomly combined syllables
 
 N:252:70
-F:?:w
+G:?:w
 
 N:253:70
-F:?:w
+G:?:w
 
 N:254:70
-F:?:w
+G:?:w
 
 N:255:70
-F:?:w
+G:?:w
 
 N:256:70
-F:?:w
+G:?:w
 
 N:257:70
-F:?:w
+G:?:w
 
 N:258:70
-F:?:w
+G:?:w
 
 N:259:70
-F:?:w
+G:?:w
 
 N:260:70
-F:?:w
+G:?:w
 
 N:261:70
-F:?:w
+G:?:w
 
 N:262:70
-F:?:w
+G:?:w
 
 N:263:70
-F:?:w
+G:?:w
 
 N:264:70
-F:?:w
+G:?:w
 
 N:265:70
-F:?:w
+G:?:w
 
 N:266:70
-F:?:w
+G:?:w
 
 N:267:70
-F:?:w
+G:?:w
 
 N:268:70
-F:?:w
+G:?:w
 
 N:269:70
-F:?:w
+G:?:w
 
 N:270:70
-F:?:w
+G:?:w
 
 N:271:70
-F:?:w
+G:?:w
 
 N:272:70
-F:?:w
+G:?:w
 
 N:273:70
-F:?:w
+G:?:w
 
 N:274:70
-F:?:w
+G:?:w
 
 N:275:70
-F:?:w
+G:?:w
 
 N:276:70
-F:?:w
+G:?:w
 
 N:277:70
-F:?:w
+G:?:w
 
 N:278:70
-F:?:w
+G:?:w
 
 N:279:70
-F:?:w
+G:?:w
 
 N:280:70
-F:?:w
+G:?:w
 
 N:281:70
-F:?:w
+G:?:w
 
 N:282:70
-F:?:w
+G:?:w
 
 N:283:70
-F:?:w
+G:?:w
 
 N:284:70
-F:?:w
+G:?:w
 
 N:285:70
-F:?:w
+G:?:w
 
 N:286:70
-F:?:w
+G:?:w
 
 N:287:70
-F:?:w
+G:?:w
 
 N:288:70
-F:?:w
+G:?:w
 
 N:289:70
-F:?:w
+G:?:w
 
 N:290:70
-F:?:w
+G:?:w
 
 N:291:70
-F:?:w
+G:?:w
 
 N:292:70
-F:?:w
+G:?:w
 
 N:293:70
-F:?:w
+G:?:w
 
 N:294:70
-F:?:w
+G:?:w
 
 N:295:70
-F:?:w
+G:?:w
 
 N:296:70
-F:?:w
+G:?:w
 
 N:297:70
-F:?:w
+G:?:w
 
 N:298:70
-F:?:w
+G:?:w
 
 N:299:70
-F:?:w
+G:?:w
 
 N:300:70
-F:?:w
+G:?:w
 
 N:301:70
-F:?:w
+G:?:w
 
 N:302:70
-F:?:w
+G:?:w
 

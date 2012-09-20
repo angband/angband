@@ -602,6 +602,12 @@ static errr rd_store(int n)
 			return (-1);
 		}
 
+		/* Pre-3.0.2 objects in store inventories need to be marked */
+		if (older_than(3, 0, 2))
+		{
+			if (n != STORE_HOME) i_ptr->ident |= IDENT_STORE;
+		}
+
 		/* Accept any valid items */
 		if (st_ptr->stock_num < STORE_INVEN_MAX)
 		{
@@ -1516,7 +1522,7 @@ static errr rd_dungeon(void)
 	rd_u16b(&limit);
 
 	/* Verify maximum */
-	if (limit >= z_info->o_max)
+	if (limit > z_info->o_max)
 	{
 		note(format("Too many (%d) object entries!", limit));
 		return (-1);
@@ -1584,7 +1590,7 @@ static errr rd_dungeon(void)
 	rd_u16b(&limit);
 
 	/* Hack -- verify */
-	if (limit >= z_info->m_max)
+	if (limit > z_info->m_max)
 	{
 		note(format("Too many (%d) monster entries!", limit));
 		return (-1);
@@ -1632,7 +1638,7 @@ static errr rd_dungeon(void)
 		if (!o_ptr->held_m_idx) continue;
 
 		/* Verify monster index */
-		if (o_ptr->held_m_idx >= z_info->m_max)
+		if (o_ptr->held_m_idx > z_info->m_max)
 		{
 			note("Invalid monster index");
 			return (-1);
@@ -2191,10 +2197,7 @@ bool load_player(void)
 		/* Player is dead */
 		if (p_ptr->is_dead)
 		{
-			/* Forget death */
-			p_ptr->is_dead = FALSE;
-
-			/* Cheat death */
+			/* Cheat death (unless the character retired) */
 			if (arg_wizard)
 			{
 				/* A character was loaded */
@@ -2203,6 +2206,9 @@ bool load_player(void)
 				/* Done */
 				return (TRUE);
 			}
+
+			/* Forget death */
+			p_ptr->is_dead = FALSE;
 
 			/* Count lives */
 			sf_lives++;

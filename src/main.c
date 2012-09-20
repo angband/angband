@@ -17,7 +17,7 @@
  */
 
 
-#if !defined(MACINTOSH) && !defined(WINDOWS) && !defined(ACORN)
+#if !defined(MACINTOSH) && !defined(WINDOWS) && !defined(RISCOS)
 
 #include "main.h"
 
@@ -502,7 +502,8 @@ int main(int argc, char *argv[])
 			case 'G':
 			case 'g':
 			{
-				arg_graphics = TRUE;
+				/* Default graphics tile */
+				arg_graphics = GRAPHICS_ADAM_BOLT;
 				break;
 			}
 
@@ -580,7 +581,7 @@ int main(int argc, char *argv[])
 				puts("  -m<sys>  use Module <sys>, where <sys> can be:");
 
 				/* Print the name and help for each available module */
-				for (i = 0; i < N_ELEMENTS(modules); i++)
+				for (i = 0; i < (int)N_ELEMENTS(modules); i++)
 				{
 					printf("     %s   %s\n",
 					       modules[i].name, modules[i].help);
@@ -609,7 +610,7 @@ int main(int argc, char *argv[])
 	quit_aux = quit_hook;
 
 	/* Try the modules in the order specified by modules[] */
-	for (i = 0; i < N_ELEMENTS(modules); i++)
+	for (i = 0; i < (int)N_ELEMENTS(modules); i++)
 	{
 		/* User requested a specific module? */
 		if (!mstr || (streq(mstr, modules[i].name)))
@@ -651,4 +652,4 @@ int main(int argc, char *argv[])
 	return (0);
 }
 
-#endif /* !defined(MACINTOSH) && !defined(WINDOWS) && !defined(ACORN) */
+#endif /* !defined(MACINTOSH) && !defined(WINDOWS) && !defined(RISCOS) */

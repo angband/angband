@@ -46,6 +46,7 @@ OBJS = \
   melee2.o \
   monster1.o \
   monster2.o \
+  obj-info.o \
   object1.o \
   object2.o \
   randart.o \
@@ -150,4 +151,3 @@ clean:
 cleanall: clean
 	del *.exe
 	del lua\*.exe
-

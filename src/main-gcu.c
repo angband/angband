@@ -834,7 +834,7 @@ static errr Term_text_gcu(int x, int y, int n, byte a, cptr s)
 {
 	term_data *td = (term_data *)(Term->data);
 
-	int i, pic;
+	int i;
 
 #ifdef A_COLOR
 	/* Set the color */
@@ -848,6 +848,8 @@ static errr Term_text_gcu(int x, int y, int n, byte a, cptr s)
 	for (i = 0; i < n; i++)
 	{
 #ifdef USE_GRAPHICS
+		int pic;
+
 		/* Special character */
 		if (use_graphics && (s[i] & 0x80))
 		{
@@ -881,7 +883,7 @@ static errr Term_text_gcu(int x, int y, int n, byte a, cptr s)
 			/* Next character */
 			continue;
 		}
-#endif
+#endif /* USE_GRAPHICS */
 
 		/* Draw a normal character */
 		waddch(td->win, (byte)s[i]);

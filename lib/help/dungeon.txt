@@ -433,7 +433,7 @@ Morgoth cannot be killed by some of the easier methods used on normal
 creatures.  Morgoth, like all other "Unique" monsters, will simply teleport
 away to another region of the level if you attempt to use a spell such as
 destruction is upon him.  Morgoth, like some other monsters, cannot be
-polymorphed, slept, charmed, or genocided.  Magical spells like Mana Storm 
+polymorphed, slept, charmed, or banished.  Magical spells like Mana Storm 
 and Orb of Draining are effective against him, as are some of the more
 powerful weapons, but he is difficult to kill and if allowed to escape for
 a time he will heal himself rapidly.

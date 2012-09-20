@@ -73,6 +73,10 @@ bugfixes
 Kusunose Toru
 Various bugfixes
 
+Andrew and Antony Sidwell:
+Colorname support in the lib/edit/*.txt files, and various utility
+functions, bugfixes, and patches
+
 The developers of the Lua scripting language and the 'tolua' wrapper
 generators for a nice scripting language that is not only easy to learn
 and use, but also incredibly small and fast!
@@ -83,7 +87,7 @@ the size of the Windows and DOS binaries.
 
 The Lua < http://www.lua.org > team from TeCGraf, the Computer Graphics
 Technology Group of PUC-Rio, including Luiz Henrique de Figueiredo, Waldemar
-Celes, and Roberto Ierusalimschy.  Lua is a ligh-weight programming language
+Celes, and Roberto Ierusalimschy.  Lua is a light-weight programming language
 that is used in Angband to script things like object use and spell effects.
 
 I hope I've remembered everyone who ought to be mentioned here. If your
@@ -91,4 +95,4 @@ name should be included, my apologies, and please tell me so I can correct
 the oversight!
 
 --
-Robert Ruehlmann < rr9@angband.org >
+Robert Ruehlmann < rr9@thangorodrim.net >

@@ -1,3 +1,65 @@
+Changes in Angband 3.0.2:
+- Limited the maximum size of floor stacks to 23, so that get_item() can
+  always display a list containing all objects.
+- Renamed 'genocide' to 'banishment' and 'mass genocide' to 'mass
+  banishment' since that name fits much better to the effect.  The priest's
+  'banishment' spell has been renamed to 'banish evil' to avoid confusion
+  and since that is what it actually does.
+- Replaced silver arrows and bolts with mithril ammo since slay evil was
+  too powerful.
+- Changed the color of seeker bolts to green since there are so many 'light
+  blue' ammo objects now.
+- 'Golden staves' had the wrong color. (John I'anson-Holton)
+- Improved indentation of the object descriptions in the character dump.
+  (Andrew Sidwell)
+- Destruction/Earthquake spells didn't properly destroy stacks of objects.
+  After saving and loading the game, parts of the stacks were restored.
+  (reported by Matthias Kurzke)
+- Zapping a stack of recharging rods would instantly recharge all but one
+  of them. (Tormod Haugen)
+- Fixed an error in the LCC Makefile.
+- Fixed an off-by-one error that prevented savefiles with the maximum
+  number of monsters or objects from loading correctly. (Takeshi Mogami)
+- Fixed an abuse that allowed the player to kill a monster with a ball
+  spell by staying out of sight and detection range of the monster while
+  the monster just patiently waited without ever getting a turn (reported
+  by Tormod Haugen).  Wounded monsters will now always get their turn, even
+  when out of range.
+- The Elfstone 'Elessar' and the Jewel 'Evenstar' have the INSTA_ART flag
+  now to make the APW-Borg happy.
+- Amulets of resistance are now fully known after identifying one for the
+  first time. (Dr. Andrew White)
+- The option for flushing of pending input when failing to cast a spell
+  didn't work.
+- Fixed several bugs in the scorefile handling that could lead to
+  duplicated entries for a single character. (reported by Hallvard Furuseth
+  and Mauro Scarpa)
+- Unified the code for object infos and artifact spoilers. (Andrew Sidwell)
+- Added event-handler code to call Lua functions when things happen	in the
+  game.
+- Allow multiple Lua event handlers per event.
+- Moved the generation of the player's fixed starting equipment (food and
+  torches) to a Lua event handler.
+- Which objects a store will buy and sell is now determined by a Lua
+  script.
+- Added various improvments to make finding errors in Lua code easier.
+- The lib/edit/*.txt files can now optionally contain the names of the
+  default object, monster, terrain, and flavor colors instead of just a
+  character specifying the Angband color code.
+- Changed the format of the flavor.txt file to make parsing easier.
+- Allow the use of the Angband version number in conditional statements of
+  the *.prf file format.
+- Added Takeshi Mogami's bigtile patch that allows tile-graphics to have
+  doubled width.
+- Added support for David Gervais' 32x32 tileset to the Windows, X11, and
+  XAW ports.  The tiles are available as a seperate download from:
+  ftp://clockwork.dementia.org/angband/Extra/32x32.zip
+  (Takeshi Mogami)
+- Improved the error message when a font can't be loaded in the X11 and
+  XPJ frontends.
+- Fixed a memory leak when switching between the various tilesets in the
+  Windows version.
+
 Changes in Angband 3.0.1:
 - Added support for creating ego-item light-sources in ego_item.txt.
 - Added bigscreen support to main-gcu.c. (pelpel)

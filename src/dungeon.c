@@ -10,6 +10,8 @@
 
 #include "angband.h"
 
+#include "script.h"
+
 
 /*
  * Return a "feeling" (or NULL) about an item.  Method 1 (Heavy).
@@ -1005,8 +1007,8 @@ static void process_world(void)
  */
 static bool enter_wizard_mode(void)
 {
-	/* Ask first time */
-	if (verify_special && !(p_ptr->noscore & 0x0002))
+	/* Ask first time - unless resurrecting a dead character */
+	if (verify_special && !(p_ptr->noscore & 0x0002) && !(p_ptr->is_dead))
 	{
 		/* Mention effects */
 		msg_print("You are about to enter 'wizard' mode for the very first time!");
@@ -1058,13 +1060,7 @@ static bool verify_debug_mode(void)
 	return (TRUE);
 }
 
-
-/*
- * Hack -- Declare the Debug Routines
- */
-extern void do_cmd_debug(void);
-
-#endif
+#endif /* ALLOW_DEBUG */
 
 
 
@@ -1097,13 +1093,7 @@ static bool verify_borg_mode(void)
 	return (TRUE);
 }
 
-
-/*
- * Hack -- Declare the Borg Routines
- */
-extern void do_cmd_borg(void);
-
-#endif
+#endif /* ALLOW_BORG */
 
 
 
@@ -1120,6 +1110,9 @@ static void process_command(void)
 	repeat_check();
 
 #endif /* ALLOW_REPEAT */
+
+	/* Event -- process command */
+	if (process_command_hook(p_ptr->command_cmd)) return;
 
 	/* Parse the command */
 	switch (p_ptr->command_cmd)
@@ -2724,6 +2717,16 @@ void play_game(bool new_game)
 	/* Hack -- Enforce "delayed death" */
 	if (p_ptr->chp < 0) p_ptr->is_dead = TRUE;
 
+	/* Call "start game" event handler */
+	if (new_game)
+	{
+		/* Event -- start game */
+		start_game_hook();
+
+		/* Event -- enter level */
+		enter_level_hook();
+	}
+
 	/* Process */
 	while (TRUE)
 	{
@@ -2835,8 +2838,14 @@ void play_game(bool new_game)
 		/* Handle "death" */
 		if (p_ptr->is_dead) break;
 
+		/* "Leaving level" event */
+		leave_level_hook();
+
 		/* Make a new level */
 		generate_cave();
+
+		/* "Entering level" event */
+		enter_level_hook();
 	}
 
 	/* Close stuff */

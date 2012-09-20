@@ -319,6 +319,7 @@ struct infofnt
 	cptr name;
 
 	s16b wid;
+	s16b twid;
 	s16b hgt;
 	s16b asc;
 
@@ -1232,6 +1233,11 @@ static errr Infofnt_prepare(XFontStruct *info)
 	ifnt->wid = cs->width;
 #endif
 
+	if (use_bigtile)
+		ifnt->twid = 2 * cs->width;
+	else
+		ifnt->twid = cs->width;
+
 	/* Success */
 	return (0);
 }
@@ -1458,7 +1464,7 @@ struct term_data
 	/* Tempory storage for overlaying tiles. */
 	XImage *TmpImage;
 
-#endif
+#endif /* USE_GRAPHICS */
 
 };
 
@@ -1921,9 +1927,7 @@ static errr Term_xtra_x11(int n, int v)
 
 
 /*
- * Draw the cursor as an inverted rectangle.
- *
- * Consider a rectangular outline like "main-mac.c".  XXX XXX
+ * Draw the cursor as a rectangular outline
  */
 static errr Term_curs_x11(int x, int y)
 {
@@ -1931,6 +1935,21 @@ static errr Term_curs_x11(int x, int y)
 			 x * Infofnt->wid + Infowin->ox,
 			 y * Infofnt->hgt + Infowin->oy,
 			 Infofnt->wid - 1, Infofnt->hgt - 1);
+
+	/* Success */
+	return (0);
+}
+
+
+/*
+ * Draw the double width cursor as a rectangular outline
+ */
+static errr Term_bigcurs_x11(int x, int y)
+{
+	XDrawRectangle(Metadpy->dpy, Infowin->win, xor->gc,
+			 x * Infofnt->wid + Infowin->ox,
+			 y * Infofnt->hgt + Infowin->oy,
+			 Infofnt->twid - 1, Infofnt->hgt - 1);
 
 	/* Success */
 	return (0);
@@ -1976,7 +1995,8 @@ static errr Term_text_x11(int x, int y, int n, byte a, cptr s)
  */
 static errr Term_pict_x11(int x, int y, int n, const byte *ap, const char *cp, const byte *tap, const char *tcp)
 {
-	int i, x1, y1;
+	int i;
+	int x1 = 0, y1 = 0;
 
 	byte a;
 	char c;
@@ -2003,35 +2023,38 @@ static errr Term_pict_x11(int x, int y, int n, const byte *ap, const char *cp, c
 		a = *ap++;
 		c = *cp++;
 
-		/* For extra speed - cache these values */
-		x1 = (c&0x7F) * td->fnt->wid;
-		y1 = (a&0x7F) * td->fnt->hgt;
-
 		ta = *tap++;
 		tc = *tcp++;
 
 		/* For extra speed - cache these values */
-		x2 = (tc&0x7F) * td->fnt->wid;
-		y2 = (ta&0x7F) * td->fnt->hgt;
+		x1 = (c & 0x7F) * td->fnt->twid;
+		y1 = (a & 0x7F) * td->fnt->hgt;
+
+		/* For extra speed - cache these values */
+		x2 = (tc & 0x7F) * td->fnt->twid;
+		y2 = (ta & 0x7F) * td->fnt->hgt;
 
 		/* Optimise the common case */
-		if ((x1 == x2) && (y1 == y2))
+		if (((x1 == x2) && (y1 == y2)) ||
+		    !(((byte)ta & 0x80) && ((byte)tc & 0x80)))
 		{
 			/* Draw object / terrain */
 			XPutImage(Metadpy->dpy, td->win->win,
-		  	        clr[0]->gc,
-		  	        td->tiles,
-		  	        x1, y1,
-		  	        x, y,
-		  	        td->fnt->wid, td->fnt->hgt);
+			          clr[0]->gc,
+			          td->tiles,
+			          x1, y1,
+			          x, y,
+			          td->fnt->twid, td->fnt->hgt);
 		}
 		else
 		{
+			/* Mega Hack^2 - assume the top left corner is "blank" */
+			if (arg_graphics == GRAPHICS_DAVID_GERVAIS)
+				blank = XGetPixel(td->tiles, 0, 0);
+			else
+				blank = XGetPixel(td->tiles, 0, td->fnt->hgt * 6);
 
-			/* Mega Hack^2 - assume the top left corner is "black" */
-			blank = XGetPixel(td->tiles, 0, td->fnt->hgt * 6);
-
-			for (k = 0; k < td->fnt->wid; k++)
+			for (k = 0; k < td->fnt->twid; k++)
 			{
 				for (l = 0; l < td->fnt->hgt; l++)
 				{
@@ -2040,6 +2063,9 @@ static errr Term_pict_x11(int x, int y, int n, const byte *ap, const char *cp, c
 					{
 						/* Output from the terrain */
 						pixel = XGetPixel(td->tiles, x2 + k, y2 + l);
+
+						if (pixel == blank)
+							pixel = 0L;
 					}
 
 					/* Store into the temp storage. */
@@ -2049,12 +2075,11 @@ static errr Term_pict_x11(int x, int y, int n, const byte *ap, const char *cp, c
 
 
 			/* Draw to screen */
-
 			XPutImage(Metadpy->dpy, td->win->win,
-		    	      clr[0]->gc,
-		     	     td->TmpImage,
-		     	     0, 0, x, y,
-		     	     td->fnt->wid, td->fnt->hgt);
+			          clr[0]->gc,
+			          td->TmpImage,
+			          0, 0, x, y,
+			          td->fnt->twid, td->fnt->hgt);
 		}
 
 		x += td->fnt->wid;
@@ -2151,7 +2176,7 @@ static errr term_data_init(term_data *td, int i)
 	/* Prepare the standard font */
 	MAKE(td->fnt, infofnt);
 	Infofnt_set(td->fnt);
-	Infofnt_init_data(font);
+	if (Infofnt_init_data(font)) quit_fmt("Couldn't load the requested font. (%s)", font);
 
 	/* Hack -- key buffer size */
 	num = ((i == 0) ? 1024 : 16);
@@ -2252,6 +2277,7 @@ static errr term_data_init(term_data *td, int i)
 	/* Hooks */
 	t->xtra_hook = Term_xtra_x11;
 	t->curs_hook = Term_curs_x11;
+	t->bigcurs_hook = Term_bigcurs_x11;
 	t->wipe_hook = Term_wipe_x11;
 	t->text_hook = Term_text_x11;
 
@@ -2269,6 +2295,7 @@ static errr term_data_init(term_data *td, int i)
 const char help_x11[] = "Basic X11, subopts -d<display> -n<windows>"
 #ifdef USE_GRAPHICS
                         " -s(moothRescale)"
+                        "\n           -b(Bigtile) -o(original) -a(AdamBolt) -g(David Gervais)"
 #endif
                         ;
 
@@ -2286,6 +2313,7 @@ errr init_x11(int argc, char **argv)
 
 #ifdef USE_GRAPHICS
 
+	cptr bitmap_file;
 	char filename[1024];
 
 	int pict_wid = 0;
@@ -2311,6 +2339,32 @@ errr init_x11(int argc, char **argv)
 			smoothRescaling = FALSE;
 			continue;
 		}
+
+		if (prefix(argv[i], "-o"))
+		{
+			arg_graphics = GRAPHICS_ORIGINAL;
+			continue;
+		}
+
+		if (prefix(argv[i], "-a"))
+		{
+			arg_graphics = GRAPHICS_ADAM_BOLT;
+			continue;
+		}
+
+		if (prefix(argv[i], "-g"))
+		{
+			smoothRescaling = FALSE;
+			arg_graphics = GRAPHICS_DAVID_GERVAIS;
+			continue;
+		}
+
+		if (prefix(argv[i], "-b"))
+		{
+			use_bigtile = TRUE;
+			continue;
+		}
+
 #endif /* USE_GRAPHICS */
 
 		if (prefix(argv[i], "-n"))
@@ -2391,39 +2445,62 @@ errr init_x11(int argc, char **argv)
 #ifdef USE_GRAPHICS
 
 	/* Try graphics */
-	if (arg_graphics)
+	switch (arg_graphics)
 	{
+	case GRAPHICS_ADAM_BOLT:
+		/* Use tile graphics of Adam Bolt */
+		bitmap_file = "16x16.bmp";
+
 		/* Try the "16x16.bmp" file */
-		path_build(filename, sizeof(filename), ANGBAND_DIR_XTRA, "graf/16x16.bmp");
+		path_build(filename, sizeof(filename), ANGBAND_DIR_XTRA, format("graf/%s", bitmap_file));
 
 		/* Use the "16x16.bmp" file if it exists */
 		if (0 == fd_close(fd_open(filename, O_RDONLY)))
 		{
 			/* Use graphics */
 			use_graphics = TRUE;
-
 			use_transparency = TRUE;
 
 			pict_wid = pict_hgt = 16;
 
 			ANGBAND_GRAF = "new";
+
+			break;
 		}
-		else
+		/* Fall through */
+
+	case GRAPHICS_ORIGINAL:
+		/* Use original tile graphics */
+		bitmap_file = "8x8.bmp";
+
+		/* Try the "8x8.bmp" file */
+		path_build(filename, sizeof(filename), ANGBAND_DIR_XTRA, format("graf/%s", bitmap_file));
+
+		/* Use the "8x8.bmp" file if it exists */
+		if (0 == fd_close(fd_open(filename, O_RDONLY)))
 		{
-			/* Try the "8x8.bmp" file */
-			path_build(filename, sizeof(filename), ANGBAND_DIR_XTRA, "graf/8x8.bmp");
+			/* Use graphics */
+			use_graphics = TRUE;
 
-			/* Use the "8x8.bmp" file if it exists */
-			if (0 == fd_close(fd_open(filename, O_RDONLY)))
-			{
-				/* Use graphics */
-				use_graphics = TRUE;
+			pict_wid = pict_hgt = 8;
 
-				pict_wid = pict_hgt = 8;
-
-				ANGBAND_GRAF = "old";
-			}
+			ANGBAND_GRAF = "old";
+			break;
 		}
+		break;
+
+	case GRAPHICS_DAVID_GERVAIS:
+		/* Use tile graphics of David Gervais */
+		bitmap_file = "32x32.bmp";
+
+		/* Use graphics */
+		use_graphics = TRUE;
+		use_transparency = TRUE;
+
+		pict_wid = pict_hgt = 32;
+
+		ANGBAND_GRAF = "david";
+		break;
 	}
 
 	/* Load graphics */
@@ -2433,29 +2510,67 @@ errr init_x11(int argc, char **argv)
 
 		XImage *tiles_raw;
 
-		/* Load the graphical tiles */
-		tiles_raw = ReadBMP(dpy, filename);
-
-		/* Initialize the windows */
+		/* Initialize */
 		for (i = 0; i < num_term; i++)
 		{
 			term_data *td = &data[i];
-
-			term *t = &td->t;
-
-			/* Graphics hook */
-			t->pict_hook = Term_pict_x11;
-
-			/* Use graphics sometimes */
-			t->higher_pict = TRUE;
-
-			/* Resize tiles */
-			td->tiles =
-			ResizeImage(dpy, tiles_raw,
-			            pict_wid, pict_hgt,
-			            td->fnt->wid, td->fnt->hgt);
+			td->tiles = NULL;
 		}
 
+		path_build(filename, sizeof(filename), ANGBAND_DIR_XTRA, format("graf/%s", bitmap_file));
+
+		/* Load the graphical tiles */
+		tiles_raw = ReadBMP(dpy, filename);
+
+		if (tiles_raw)
+		{
+			/* Initialize the windows */
+			for (i = 0; i < num_term; i++)
+			{
+				int j;
+				bool same = FALSE;
+
+				term_data *td = &data[i];
+				term_data *o_td = NULL;
+
+				term *t = &td->t;
+
+				/* Graphics hook */
+				t->pict_hook = Term_pict_x11;
+
+				/* Use graphics sometimes */
+				t->higher_pict = TRUE;
+
+				/* Look for another term with same font size */
+				for (j = 0; j < i; j++)
+				{
+					o_td = &data[j];
+
+					if ((td->fnt->twid == o_td->fnt->twid) && (td->fnt->hgt == o_td->fnt->hgt))
+					{
+						same = TRUE;
+						break;
+					}
+				}
+
+				if (!same)
+				{
+					/* Resize tiles */
+					td->tiles = ResizeImage(dpy, tiles_raw,
+					                        pict_wid, pict_hgt,
+					                        td->fnt->twid, td->fnt->hgt);
+				}
+				else
+				{
+					/* Use same graphics */
+					td->tiles = o_td->tiles;
+				}
+			}
+
+			/* Free tiles_raw */
+			FREE(tiles_raw);
+		}
+                        
 		/* Initialize the transparency masks */
 		for (i = 0; i < num_term; i++)
 		{
@@ -2470,18 +2585,16 @@ errr init_x11(int argc, char **argv)
 			ii = 1;
 			jj = (depth - 1) >> 2;
 			while (jj >>= 1) ii <<= 1;
-			total = td->fnt->wid * td->fnt->hgt * ii;
+			total = td->fnt->twid * td->fnt->hgt * ii;
 
 
 			TmpData = (char *)malloc(total);
 
 			td->TmpImage = XCreateImage(dpy,visual,depth,
 				ZPixmap, 0, TmpData,
-				td->fnt->wid, td->fnt->hgt, 32, 0);
+				td->fnt->twid, td->fnt->hgt, 32, 0);
 
 		}
-
-		/* Free tiles_raw? XXX XXX */
 	}
 
 #endif /* USE_GRAPHICS */

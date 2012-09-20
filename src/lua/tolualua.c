@@ -2975,4 +2975,5 @@ int tolua_tolualua_open (lua_State* tolua_S)
 /* Close function */
 void tolua_tolualua_close (lua_State* tolua_S)
 {
+	(void)tolua_S;
 }

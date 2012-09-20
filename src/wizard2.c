@@ -310,7 +310,8 @@ static void wiz_display_item(const object_type *o_ptr)
 	Term_clear();
 
 	/* Describe fully */
-	object_desc_store(buf, sizeof(buf), o_ptr, TRUE, 3);
+	object_desc_spoil(buf, sizeof(buf), o_ptr, TRUE, 3);
+
 	prt(buf, 2, j);
 
 	prt(format("kind = %-5d  level = %-4d  tval = %-5d  sval = %-5d",
@@ -689,7 +690,7 @@ static void wiz_statistics(object_type *o_ptr)
 	long i, matches, better, worse, other;
 
 	char ch;
-	char *quality;
+	cptr quality;
 
 	bool good, great;
 
@@ -1327,7 +1328,7 @@ static void do_cmd_wiz_zap(int d)
 {
 	int i;
 
-	/* Genocide everyone nearby */
+	/* Banish everyone nearby */
 	for (i = 1; i < mon_max; i++)
 	{
 		monster_type *m_ptr = &mon_list[i];
@@ -1455,17 +1456,6 @@ static void do_cmd_wiz_query(void)
 	/* Redraw map */
 	prt_map();
 }
-
-
-#ifdef ALLOW_SPOILERS
-
-/*
- * External function
- */
-extern void do_cmd_spoilers(void);
-
-#endif
-
 
 
 /*
@@ -1694,7 +1684,7 @@ void do_cmd_debug(void)
 			break;
 		}
 
-		/* Zap Monsters (Genocide) */
+		/* Zap Monsters (Banishment) */
 		case 'z':
 		{
 			if (p_ptr->command_arg <= 0) p_ptr->command_arg = MAX_SIGHT;

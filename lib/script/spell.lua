@@ -320,7 +320,7 @@ SPELL_WONDER = add_magic_spell
 			elseif (die < 106) then
 				destroy_area(player.py, player.px, 15, TRUE)
 			elseif (die < 108) then
-				genocide()
+				banishment()
 			elseif (die < 110) then
 				dispel_monsters(120)
 			else -- RARE
@@ -863,11 +863,11 @@ SPELL_ICE_STORM = add_magic_spell
 		end,
 }
 
-SPELL_GENOCIDE = add_magic_spell
+SPELL_BANISHMENT = add_magic_spell
 {
-	name = "Genocide",
+	name = "Banishment",
 	effect = function()
-			genocide()
+			banishment()
 			return TRUE
 		end,
 }
@@ -888,11 +888,11 @@ SPELL_METEOR_SWARM = add_magic_spell
 		end,
 }
 
-SPELL_MASS_GENOCIDE = add_magic_spell
+SPELL_MASS_BANISHMENT = add_magic_spell
 {
-	name = "Mass Genocide",
+	name = "Mass Banishment",
 	effect = function()
-			mass_genocide()
+			mass_banishment()
 			return TRUE
 		end,
 }
@@ -1016,9 +1016,9 @@ add_book(magic_spells, 8,
          {SPELL_EARTHQUAKE,
           SPELL_BEDLAM,
           SPELL_REND_SOUL,
-          SPELL_GENOCIDE,
+          SPELL_BANISHMENT,
           SPELL_WORD_OF_DESTRUCTION,
-          SPELL_MASS_GENOCIDE,
+          SPELL_MASS_BANISHMENT,
           SPELL_CHAOS_STRIKE,
           SPELL_MANA_STORM})
 
@@ -1531,9 +1531,9 @@ PRAYER_DISPEL_EVIL2 = add_prayer
 		end,
 }
 
-PRAYER_BANISHMENT = add_prayer
+PRAYER_BANISH_EVIL = add_prayer
 {
-	name = "Banishment",
+	name = "Banish Evil",
 	effect = function()
 			if banish_evil(100) then
 				msg_print("The power of your god banishes evil!")
@@ -1769,7 +1769,7 @@ add_book(prayers, 7,
 add_book(prayers, 8,
          {PRAYER_DISPEL_UNDEAD2,
           PRAYER_DISPEL_EVIL2,
-          PRAYER_BANISHMENT,
+          PRAYER_BANISH_EVIL,
           PRAYER_WORD_OF_DESTRUCTION,
           PRAYER_ANNIHILATION})
 
@@ -1796,3 +1796,10 @@ end
 function cast_spell_hook(tval, index)
 	return cast_spell(magic_schools[tval], index)
 end
+
+
+-- Add event handlers
+add_event_handler("get_spell_index", get_spell_index_hook)
+add_event_handler("get_spell_info", get_spell_info_hook)
+add_event_handler("get_spell_name", get_spell_name_hook)
+add_event_handler("cast_spell", cast_spell_hook)

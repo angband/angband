@@ -68,7 +68,7 @@
  * Additional code by Ross E Becker (beckerr@cis.ohio-state.edu),
  * and Chris R. Martin (crm7479@tam2000.tamu.edu).
  *
- * Additional code by Robert Ruehlmann <rr9@angband.org>.
+ * Additional code by Robert Ruehlmann <rr9@thangorodrim.net>.
  */
 
 #include "angband.h"
@@ -184,9 +184,11 @@
 #define IDM_WINDOW_D_HGT_6		276
 #define IDM_WINDOW_D_HGT_7		277
 
-#define IDM_OPTIONS_NO_GRAPHICS     400
-#define IDM_OPTIONS_OLD_GRAPHICS    401
-#define IDM_OPTIONS_NEW_GRAPHICS    402
+#define IDM_OPTIONS_GRAPHICS_NONE   400
+#define IDM_OPTIONS_GRAPHICS_OLD    401
+#define IDM_OPTIONS_GRAPHICS_ADAM   402
+#define IDM_OPTIONS_GRAPHICS_DAVID  403
+#define IDM_OPTIONS_BIGTILE         409
 #define IDM_OPTIONS_SOUND           410
 #define IDM_OPTIONS_LOW_PRIORITY    420
 #define IDM_OPTIONS_SAVER           430
@@ -1026,6 +1028,10 @@ static void save_prefs(void)
 	sprintf(buf, "%d", arg_graphics);
 	WritePrivateProfileString("Angband", "Graphics", buf, ini_file);
 
+	/* Save the "use_bigtile" flag */
+	strcpy(buf, use_bigtile ? "1" : "0");
+	WritePrivateProfileString("Angband", "Bigtile", buf, ini_file);
+
 	/* Save the "arg_sound" flag */
 	strcpy(buf, arg_sound ? "1" : "0");
 	WritePrivateProfileString("Angband", "Sound", buf, ini_file);
@@ -1091,6 +1097,9 @@ static void load_prefs(void)
 
 	/* Extract the "arg_graphics" flag */
 	arg_graphics = GetPrivateProfileInt("Angband", "Graphics", GRAPHICS_NONE, ini_file);
+
+	/* Extract the "use_bigtile" flag */
+	use_bigtile = GetPrivateProfileInt("Angband", "Bigtile", FALSE, ini_file);
 
 	/* Extract the "arg_sound" flag */
 	arg_sound = (GetPrivateProfileInt("Angband", "Sound", 0, ini_file) != 0);
@@ -1377,7 +1386,18 @@ static bool init_graphics(void)
 		int wid, hgt;
 		cptr name;
 
-		if (arg_graphics == GRAPHICS_ADAM_BOLT)
+		if (arg_graphics == GRAPHICS_DAVID_GERVAIS)
+		{
+			wid = 32;
+			hgt = 32;
+
+			name = "32x32.bmp";
+
+			ANGBAND_GRAF = "david";
+
+			use_transparency = FALSE;
+		}
+		else if (arg_graphics == GRAPHICS_ADAM_BOLT)
 		{
 			wid = 16;
 			hgt = 16;
@@ -1829,6 +1849,10 @@ static errr Term_xtra_win_react(void)
 		/* Switch off transparency */
 		use_transparency = FALSE;
 
+		/* Free the bitmap stuff */
+		FreeDIB(&infGraph);
+		FreeDIB(&infMask);
+
 		/* Initialize (if needed) */
 		if (arg_graphics && !init_graphics())
 		{
@@ -2172,6 +2196,48 @@ static errr Term_curs_win(int x, int y)
 /*
  * Low level graphics (Assumes valid input).
  *
+ * Draw a "cursor" at (x,y), using a "yellow box".
+ */
+static errr Term_bigcurs_win(int x, int y)
+{
+	term_data *td = (term_data*)(Term->data);
+
+	RECT rc;
+	HDC hdc;
+
+	int tile_wid, tile_hgt;
+
+	if (td->map_active)
+	{
+		/* Normal cursor in map window */
+		Term_curs_win(x, y);
+		return 0;
+	}
+	else
+	{
+		tile_wid = td->tile_wid;
+		tile_hgt = td->tile_hgt;
+	}
+
+	/* Frame the grid */
+	rc.left = x * tile_wid + td->size_ow1;
+	rc.right = rc.left + 2 * tile_wid;
+	rc.top = y * tile_hgt + td->size_oh1;
+	rc.bottom = rc.top + tile_hgt;
+
+	/* Cursor is done as a yellow "box" */
+	hdc = GetDC(td->w);
+	FrameRect(hdc, &rc, hbrYellow);
+	ReleaseDC(td->w, hdc);
+
+	/* Success */
+	return 0;
+}
+
+
+/*
+ * Low level graphics (Assumes valid input).
+ *
  * Erase a "block" of "n" characters starting at (x,y).
  */
 static errr Term_wipe_win(int x, int y, int n)
@@ -2311,7 +2377,7 @@ static errr Term_pict_win(int x, int y, int n, const byte *ap, const char *cp, c
 
 	int i;
 	int x1, y1, w1, h1;
-	int x2, y2, w2, h2;
+	int x2, y2, w2, h2, tw2;
 	int x3, y3;
 
 	HDC hdcMask;
@@ -2335,11 +2401,18 @@ static errr Term_pict_win(int x, int y, int n, const byte *ap, const char *cp, c
 	{
 		w2 = td->map_tile_wid;
 		h2 = td->map_tile_hgt;
+		tw2 = w2;
 	}
 	else
 	{
 		w2 = td->tile_wid;
 		h2 = td->tile_hgt;
+
+		/* big tile mode */
+		if (use_bigtile)
+			tw2 = 2 * w2;
+		else
+			tw2 = w2;
 	}
 
 	/* Location of window cell */
@@ -2383,16 +2456,16 @@ static errr Term_pict_win(int x, int y, int n, const byte *ap, const char *cp, c
 			y3 = (tap[i] & 0x7F) * h1;
 
 			/* Perfect size */
-			if ((w1 == w2) && (h1 == h2))
+			if ((w1 == tw2) && (h1 == h2))
 			{
 				/* Copy the terrain picture from the bitmap to the window */
-				BitBlt(hdc, x2, y2, w2, h2, hdcSrc, x3, y3, SRCCOPY);
+				BitBlt(hdc, x2, y2, tw2, h2, hdcSrc, x3, y3, SRCCOPY);
 
 				/* Mask out the tile */
-				BitBlt(hdc, x2, y2, w2, h2, hdcMask, x1, y1, SRCAND);
+				BitBlt(hdc, x2, y2, tw2, h2, hdcMask, x1, y1, SRCAND);
 
 				/* Draw the tile */
-				BitBlt(hdc, x2, y2, w2, h2, hdcSrc, x1, y1, SRCPAINT);
+				BitBlt(hdc, x2, y2, tw2, h2, hdcSrc, x1, y1, SRCPAINT);
 			}
 
 			/* Need to stretch */
@@ -2402,26 +2475,26 @@ static errr Term_pict_win(int x, int y, int n, const byte *ap, const char *cp, c
 				SetStretchBltMode(hdc, COLORONCOLOR);
 
 				/* Copy the terrain picture from the bitmap to the window */
-				StretchBlt(hdc, x2, y2, w2, h2, hdcSrc, x3, y3, w1, h1, SRCCOPY);
+				StretchBlt(hdc, x2, y2, tw2, h2, hdcSrc, x3, y3, w1, h1, SRCCOPY);
 
 				/* Only draw if terrain and overlay are different */
 				if ((x1 != x3) || (y1 != y3))
 				{
 					/* Mask out the tile */
-					StretchBlt(hdc, x2, y2, w2, h2, hdcMask, x1, y1, w1, h1, SRCAND);
+					StretchBlt(hdc, x2, y2, tw2, h2, hdcMask, x1, y1, w1, h1, SRCAND);
 
 					/* Draw the tile */
-					StretchBlt(hdc, x2, y2, w2, h2, hdcSrc, x1, y1, w1, h1, SRCPAINT);
+					StretchBlt(hdc, x2, y2, tw2, h2, hdcSrc, x1, y1, w1, h1, SRCPAINT);
 				}
 			}
 		}
 		else
 		{
 			/* Perfect size */
-			if ((w1 == w2) && (h1 == h2))
+			if ((w1 == tw2) && (h1 == h2))
 			{
 				/* Copy the picture from the bitmap to the window */
-				BitBlt(hdc, x2, y2, w2, h2, hdcSrc, x1, y1, SRCCOPY);
+				BitBlt(hdc, x2, y2, tw2, h2, hdcSrc, x1, y1, SRCCOPY);
 			}
 
 			/* Need to stretch */
@@ -2431,7 +2504,7 @@ static errr Term_pict_win(int x, int y, int n, const byte *ap, const char *cp, c
 				SetStretchBltMode(hdc, COLORONCOLOR);
 
 				/* Copy the picture from the bitmap to the window */
-				StretchBlt(hdc, x2, y2, w2, h2, hdcSrc, x1, y1, w1, h1, SRCCOPY);
+				StretchBlt(hdc, x2, y2, tw2, h2, hdcSrc, x1, y1, w1, h1, SRCCOPY);
 			}
 		}
 	}
@@ -2596,6 +2669,7 @@ static void term_data_link(term_data *td)
 	t->user_hook = Term_user_win;
 	t->xtra_hook = Term_xtra_win;
 	t->curs_hook = Term_curs_win;
+	t->bigcurs_hook = Term_bigcurs_win;
 	t->wipe_hook = Term_wipe_win;
 	t->text_hook = Term_text_win;
 	t->pict_hook = Term_pict_win;
@@ -2916,7 +2990,7 @@ static void setup_menus(void)
 		if (data[i].visible)
 		{
 			EnableMenuItem(hm, IDM_WINDOW_BIZ_0 + i,
-	    		           MF_BYCOMMAND | MF_ENABLED);
+			               MF_BYCOMMAND | MF_ENABLED);
 		}
 	}
 
@@ -2929,7 +3003,7 @@ static void setup_menus(void)
 		if (data[i].visible)
 		{
 			EnableMenuItem(hm, IDM_WINDOW_I_WID_0 + i,
-	    		           MF_BYCOMMAND | MF_ENABLED);
+			               MF_BYCOMMAND | MF_ENABLED);
 		}
 	}
 
@@ -2942,8 +3016,7 @@ static void setup_menus(void)
 		if (data[i].visible)
 		{
 			EnableMenuItem(hm, IDM_WINDOW_D_WID_0 + i,
-	    		           MF_BYCOMMAND | MF_ENABLED);
-
+			               MF_BYCOMMAND | MF_ENABLED);
 		}
 	}
 
@@ -2956,8 +3029,7 @@ static void setup_menus(void)
 		if (data[i].visible)
 		{
 			EnableMenuItem(hm, IDM_WINDOW_I_HGT_0 + i,
-	    		           MF_BYCOMMAND | MF_ENABLED);
-
+			               MF_BYCOMMAND | MF_ENABLED);
 		}
 	}
 
@@ -2970,17 +3042,20 @@ static void setup_menus(void)
 		if (data[i].visible)
 		{
 			EnableMenuItem(hm, IDM_WINDOW_D_HGT_0 + i,
-	    		           MF_BYCOMMAND | MF_ENABLED);
-
+			               MF_BYCOMMAND | MF_ENABLED);
 		}
 	}
 
 	/* Menu "Options", disable all */
-	EnableMenuItem(hm, IDM_OPTIONS_NO_GRAPHICS,
+	EnableMenuItem(hm, IDM_OPTIONS_GRAPHICS_NONE,
 	               MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
-	EnableMenuItem(hm, IDM_OPTIONS_OLD_GRAPHICS,
+	EnableMenuItem(hm, IDM_OPTIONS_GRAPHICS_OLD,
 	               MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
-	EnableMenuItem(hm, IDM_OPTIONS_NEW_GRAPHICS,
+	EnableMenuItem(hm, IDM_OPTIONS_GRAPHICS_ADAM,
+	               MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
+	EnableMenuItem(hm, IDM_OPTIONS_GRAPHICS_DAVID,
+	               MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
+	EnableMenuItem(hm, IDM_OPTIONS_BIGTILE,
 	               MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
 	EnableMenuItem(hm, IDM_OPTIONS_SOUND,
 	               MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
@@ -2997,12 +3072,17 @@ static void setup_menus(void)
 		               MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
 
 	/* Menu "Options", update all */
-	CheckMenuItem(hm, IDM_OPTIONS_NO_GRAPHICS,
+	CheckMenuItem(hm, IDM_OPTIONS_GRAPHICS_NONE,
 	              (arg_graphics == GRAPHICS_NONE ? MF_CHECKED : MF_UNCHECKED));
-	CheckMenuItem(hm, IDM_OPTIONS_OLD_GRAPHICS,
+	CheckMenuItem(hm, IDM_OPTIONS_GRAPHICS_OLD,
 	              (arg_graphics == GRAPHICS_ORIGINAL ? MF_CHECKED : MF_UNCHECKED));
-	CheckMenuItem(hm, IDM_OPTIONS_NEW_GRAPHICS,
+	CheckMenuItem(hm, IDM_OPTIONS_GRAPHICS_ADAM,
 	              (arg_graphics == GRAPHICS_ADAM_BOLT ? MF_CHECKED : MF_UNCHECKED));
+	CheckMenuItem(hm, IDM_OPTIONS_GRAPHICS_DAVID,
+	              (arg_graphics == GRAPHICS_DAVID_GERVAIS ? MF_CHECKED : MF_UNCHECKED));
+
+	CheckMenuItem(hm, IDM_OPTIONS_BIGTILE,
+	              (use_bigtile ? MF_CHECKED : MF_UNCHECKED));
 	CheckMenuItem(hm, IDM_OPTIONS_SOUND,
 	              (arg_sound ? MF_CHECKED : MF_UNCHECKED));
 #ifdef USE_SAVER
@@ -3017,11 +3097,11 @@ static void setup_menus(void)
 	if (inkey_flag && initialized)
 	{
 		/* Menu "Options", Item "Graphics" */
-		EnableMenuItem(hm, IDM_OPTIONS_NO_GRAPHICS, MF_ENABLED);
-		/* Menu "Options", Item "Graphics" */
-		EnableMenuItem(hm, IDM_OPTIONS_OLD_GRAPHICS, MF_ENABLED);
-		/* Menu "Options", Item "Graphics" */
-		EnableMenuItem(hm, IDM_OPTIONS_NEW_GRAPHICS, MF_ENABLED);
+		EnableMenuItem(hm, IDM_OPTIONS_GRAPHICS_NONE, MF_ENABLED);
+		EnableMenuItem(hm, IDM_OPTIONS_GRAPHICS_OLD, MF_ENABLED);
+		EnableMenuItem(hm, IDM_OPTIONS_GRAPHICS_ADAM, MF_ENABLED);
+		EnableMenuItem(hm, IDM_OPTIONS_GRAPHICS_DAVID, MF_ENABLED);
+		EnableMenuItem(hm, IDM_OPTIONS_BIGTILE, MF_ENABLED);
 	}
 #endif /* USE_GRAPHICS */
 
@@ -3631,7 +3711,7 @@ static void process_menus(WORD wCmd)
 			break;
 		}
 
-		case IDM_OPTIONS_NO_GRAPHICS:
+		case IDM_OPTIONS_GRAPHICS_NONE:
 		{
 			/* Paranoia */
 			if (!inkey_flag || !initialized)
@@ -3655,7 +3735,7 @@ static void process_menus(WORD wCmd)
 			break;
 		}
 
-		case IDM_OPTIONS_OLD_GRAPHICS:
+		case IDM_OPTIONS_GRAPHICS_OLD:
 		{
 			/* Paranoia */
 			if (!inkey_flag || !initialized)
@@ -3679,7 +3759,7 @@ static void process_menus(WORD wCmd)
 			break;
 		}
 
-		case IDM_OPTIONS_NEW_GRAPHICS:
+		case IDM_OPTIONS_GRAPHICS_ADAM:
 		{
 			/* Paranoia */
 			if (!inkey_flag || !initialized)
@@ -3699,6 +3779,48 @@ static void process_menus(WORD wCmd)
 				/* Hack -- Force redraw */
 				Term_key_push(KTRL('R'));
 			}
+
+			break;
+		}
+
+		case IDM_OPTIONS_GRAPHICS_DAVID:
+		{
+			/* Paranoia */
+			if (!inkey_flag || !initialized)
+			{
+				plog("You may not do that right now.");
+				break;
+			}
+
+			/* Toggle "arg_graphics" */
+			if (arg_graphics != GRAPHICS_DAVID_GERVAIS)
+			{
+				arg_graphics = GRAPHICS_DAVID_GERVAIS;
+
+				/* React to changes */
+				Term_xtra_win_react();
+
+				/* Hack -- Force redraw */
+				Term_key_push(KTRL('R'));
+			}
+
+			break;
+		}
+
+		case IDM_OPTIONS_BIGTILE:
+		{
+			/* Paranoia */
+			if (!inkey_flag || !initialized)
+			{
+				plog("You may not do that right now.");
+				break;
+			}
+
+			/* Toggle "use_bigtile" */
+			use_bigtile = !use_bigtile;
+
+			/* Mega-Hack : Redraw screen */
+			Term_key_push(KTRL('R'));
 
 			break;
 		}
@@ -4654,12 +4776,12 @@ static void hook_quit(cptr str)
 	if (!screensaver_active)
 #endif /* USE_SAVER */
 	{
-	   	/* Give a warning */
-   		if (str)
-	   	{
-   			MessageBox(data[0].w, str, "Error",
-   			           MB_ICONEXCLAMATION | MB_OK | MB_ICONSTOP);
-	   	}
+		/* Give a warning */
+		if (str)
+		{
+			MessageBox(data[0].w, str, "Error",
+			           MB_ICONEXCLAMATION | MB_OK | MB_ICONSTOP);
+		}
 
 		/* Save the preferences */
 		save_prefs();
@@ -4678,13 +4800,10 @@ static void hook_quit(cptr str)
 		term_nuke(&data[i].t);
 	}
 
-	/* Free the bitmap stuff */
 #ifdef USE_GRAPHICS
-	if (infGraph.hPalette) DeleteObject(infGraph.hPalette);
-	if (infGraph.hBitmap) DeleteObject(infGraph.hBitmap);
-	if (infMask.hPalette) DeleteObject(infMask.hPalette);
-	if (infMask.hBitmap) DeleteObject(infMask.hBitmap);
-
+	/* Free the bitmap stuff */
+	FreeDIB(&infGraph);
+	FreeDIB(&infMask);
 #endif /* USE_GRAPHICS */
 
 #ifdef USE_SOUND

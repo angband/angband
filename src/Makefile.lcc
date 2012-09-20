@@ -45,6 +45,7 @@ OBJS=\
 	randart.obj \
 	object2.obj \
 	object1.obj \
+	obj-info.obj \
 	monster2.obj \
 	monster1.obj \
 	melee2.obj \
@@ -70,7 +71,6 @@ OBJS=\
 	lparser.obj \
 	lobject.obj \
 	lmem.obj \
-	lmathlib.obj \
 	llex.obj \
 	lgc.obj \
 	lfunc.obj \
@@ -636,6 +636,32 @@ OBJECT1_C=\
 object1.obj: $(OBJECT1_C) $(SRCDIR)\object1.c
 	$(CC) -c $(CFLAGS) $(SRCDIR)\object1.c
 
+# Build OBJ-INFO.C
+OBJ-INFO_C=\
+	$(SRCDIR)\angband.h\
+	$(SRCDIR)\h-basic.h\
+	$(SRCDIR)\h-config.h\
+	$(SRCDIR)\h-system.h\
+	$(SRCDIR)\h-type.h\
+	$(SRCDIR)\h-define.h\
+	$(SRCDIR)\z-util.h\
+	$(SRCDIR)\h-basic.h\
+	$(SRCDIR)\z-virt.h\
+	$(SRCDIR)\h-basic.h\
+	$(SRCDIR)\z-form.h\
+	$(SRCDIR)\h-basic.h\
+	$(SRCDIR)\z-rand.h\
+	$(SRCDIR)\h-basic.h\
+	$(SRCDIR)\z-term.h\
+	$(SRCDIR)\h-basic.h\
+	$(SRCDIR)\config.h\
+	$(SRCDIR)\defines.h\
+	$(SRCDIR)\types.h\
+	$(SRCDIR)\externs.h\
+
+obj-info.obj: $(OBJ-INFO_C) $(SRCDIR)\obj-info.c
+	$(CC) -c $(CFLAGS) $(SRCDIR)\obj-info.c
+
 # Build MONSTER2.C
 MONSTER2_C=\
 	$(SRCDIR)\angband.h\
@@ -1152,17 +1178,6 @@ LMEM_C=\
 
 lmem.obj: $(LMEM_C) $(SRCDIR)\lua\lmem.c
 	$(CC) -c $(CFLAGS) $(SRCDIR)\lua\lmem.c
-
-# Build LMATHLIB.C
-LMATHLIB_C=\
-	$(SRCDIR)\lua\lua.h\
-	$(SRCDIR)\lua\lauxlib.h\
-	$(SRCDIR)\lua\lua.h\
-	$(SRCDIR)\lua\lualib.h\
-	$(SRCDIR)\lua\lua.h\
-
-lmathlib.obj: $(LMATHLIB_C) $(SRCDIR)\lua\lmathlib.c
-	$(CC) -c $(CFLAGS) $(SRCDIR)\lua\lmathlib.c
 
 # Build LLEX.C
 LLEX_C=\

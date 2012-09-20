@@ -80,7 +80,7 @@ SUFFIXES = .rc
 angband_LDADD = lua/liblua.a @ANGBAND_OBJS@
 angband_DEPENDENCIES = lua/liblua.a @ANGBAND_OBJS@
 
-angband_SOURCES =    z-util.c z-virt.c z-form.c z-rand.c z-term.c   variable.c tables.c util.c cave.c   object1.c object2.c monster1.c monster2.c   xtra1.c xtra2.c spells1.c spells2.c   melee1.c melee2.c save.c files.c   cmd1.c cmd2.c cmd3.c cmd4.c cmd5.c cmd6.c   store.c birth.c load.c   wizard1.c wizard2.c   main-cap.c main-gcu.c main-x11.c main-xaw.c main.c   main-win.c main-xpj.c main-vcs.c main-gtk.c   generate.c dungeon.c init1.c init2.c randart.c   angband.h config.h defines.h externs.h h-basic.h   h-config.h h-define.h h-system.h h-type.h init.h   types.h z-form.h z-rand.h z-term.h z-util.h   z-virt.h main.h   script.c script.h   l-monst.c l-object.c l-player.c l-random.c l-ui.c l-misc.c l-spell.c   use-obj.c x-spell.c
+angband_SOURCES =    z-util.c z-virt.c z-form.c z-rand.c z-term.c   variable.c tables.c util.c cave.c   object1.c object2.c monster1.c monster2.c   xtra1.c xtra2.c spells1.c spells2.c   melee1.c melee2.c save.c files.c   cmd1.c cmd2.c cmd3.c cmd4.c cmd5.c cmd6.c   store.c birth.c load.c   wizard1.c wizard2.c   main-cap.c main-gcu.c main-x11.c main-xaw.c main.c   main-win.c main-xpj.c main-vcs.c main-gtk.c   generate.c dungeon.c init1.c init2.c randart.c   angband.h config.h defines.h externs.h h-basic.h   h-config.h h-define.h h-system.h h-type.h init.h   types.h z-form.h z-rand.h z-term.h z-util.h   z-virt.h main.h   script.c script.h   l-monst.c l-object.c l-player.c l-random.c l-ui.c l-misc.c l-spell.c   use-obj.c x-spell.c   obj-info.c
 
 
 EXTRA_angband_SOURCES =    main-ros.c main-ami.c main-dos.c main-emx.c   main-ibm.c main-lsl.c main-mac.c main-sla.c main-vme.c   main-xxx.c   Makefile.ros Makefile.ami Makefile.bcc Makefile.cyg   Makefile.dos Makefile.emx Makefile.gtk Makefile.ibm   Makefile.lcc Makefile.lsl Makefile.std Makefile.wat   Makefile.win   angband.rc angband.ico readdib.c readdib.h   maid-x11.c maid-x11.h   l-monst.pkg l-object.pkg l-player.pkg l-random.pkg l-ui.pkg   l-misc.pkg l-spell.pkg
@@ -107,7 +107,7 @@ files.o cmd1.o cmd2.o cmd3.o cmd4.o cmd5.o cmd6.o store.o birth.o \
 load.o wizard1.o wizard2.o main-cap.o main-gcu.o main-x11.o main-xaw.o \
 main.o main-win.o main-xpj.o main-vcs.o main-gtk.o generate.o dungeon.o \
 init1.o init2.o randart.o script.o l-monst.o l-object.o l-player.o \
-l-random.o l-ui.o l-misc.o l-spell.o use-obj.o x-spell.o
+l-random.o l-ui.o l-misc.o l-spell.o use-obj.o x-spell.o obj-info.o
 angband_LDFLAGS = 
 CFLAGS = @CFLAGS@
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -326,34 +326,34 @@ distdir: $(DISTFILES)
 	done
 birth.o: birth.c angband.h h-basic.h autoconf.h h-config.h h-system.h \
 	h-type.h h-define.h z-util.h z-virt.h z-form.h z-rand.h \
-	z-term.h config.h defines.h types.h externs.h
+	z-term.h config.h defines.h types.h externs.h script.h
 borg1.o: borg1.c angband.h h-basic.h autoconf.h h-config.h h-system.h \
 	h-type.h h-define.h z-util.h z-virt.h z-form.h z-rand.h \
-	z-term.h config.h defines.h types.h externs.h borg.h
+	z-term.h config.h defines.h types.h externs.h
 borg2.o: borg2.c angband.h h-basic.h autoconf.h h-config.h h-system.h \
 	h-type.h h-define.h z-util.h z-virt.h z-form.h z-rand.h \
-	z-term.h config.h defines.h types.h externs.h borg.h
+	z-term.h config.h defines.h types.h externs.h
 borg3.o: borg3.c angband.h h-basic.h autoconf.h h-config.h h-system.h \
 	h-type.h h-define.h z-util.h z-virt.h z-form.h z-rand.h \
-	z-term.h config.h defines.h types.h externs.h borg.h script.h
+	z-term.h config.h defines.h types.h externs.h
 borg4.o: borg4.c angband.h h-basic.h autoconf.h h-config.h h-system.h \
 	h-type.h h-define.h z-util.h z-virt.h z-form.h z-rand.h \
-	z-term.h config.h defines.h types.h externs.h borg.h
+	z-term.h config.h defines.h types.h externs.h
 borg5.o: borg5.c angband.h h-basic.h autoconf.h h-config.h h-system.h \
 	h-type.h h-define.h z-util.h z-virt.h z-form.h z-rand.h \
-	z-term.h config.h defines.h types.h externs.h borg.h
+	z-term.h config.h defines.h types.h externs.h
 borg6.o: borg6.c angband.h h-basic.h autoconf.h h-config.h h-system.h \
 	h-type.h h-define.h z-util.h z-virt.h z-form.h z-rand.h \
-	z-term.h config.h defines.h types.h externs.h borg.h
+	z-term.h config.h defines.h types.h externs.h
 borg7.o: borg7.c angband.h h-basic.h autoconf.h h-config.h h-system.h \
 	h-type.h h-define.h z-util.h z-virt.h z-form.h z-rand.h \
-	z-term.h config.h defines.h types.h externs.h borg.h
+	z-term.h config.h defines.h types.h externs.h
 borg8.o: borg8.c angband.h h-basic.h autoconf.h h-config.h h-system.h \
 	h-type.h h-define.h z-util.h z-virt.h z-form.h z-rand.h \
-	z-term.h config.h defines.h types.h externs.h borg.h
+	z-term.h config.h defines.h types.h externs.h
 borg9.o: borg9.c angband.h h-basic.h autoconf.h h-config.h h-system.h \
 	h-type.h h-define.h z-util.h z-virt.h z-form.h z-rand.h \
-	z-term.h config.h defines.h types.h externs.h borg.h
+	z-term.h config.h defines.h types.h externs.h
 cave.o: cave.c angband.h h-basic.h autoconf.h h-config.h h-system.h \
 	h-type.h h-define.h z-util.h z-virt.h z-form.h z-rand.h \
 	z-term.h config.h defines.h types.h externs.h
@@ -377,11 +377,14 @@ cmd6.o: cmd6.c angband.h h-basic.h autoconf.h h-config.h h-system.h \
 	z-term.h config.h defines.h types.h externs.h script.h
 dungeon.o: dungeon.c angband.h h-basic.h autoconf.h h-config.h \
 	h-system.h h-type.h h-define.h z-util.h z-virt.h z-form.h \
-	z-rand.h z-term.h config.h defines.h types.h externs.h
+	z-rand.h z-term.h config.h defines.h types.h externs.h script.h
 files.o: files.c angband.h h-basic.h autoconf.h h-config.h h-system.h \
 	h-type.h h-define.h z-util.h z-virt.h z-form.h z-rand.h \
 	z-term.h config.h defines.h types.h externs.h
 generate.o: generate.c angband.h h-basic.h autoconf.h h-config.h \
+	h-system.h h-type.h h-define.h z-util.h z-virt.h z-form.h \
+	z-rand.h z-term.h config.h defines.h types.h externs.h script.h
+gui-term.o: gui-term.c angband.h h-basic.h autoconf.h h-config.h \
 	h-system.h h-type.h h-define.h z-util.h z-virt.h z-form.h \
 	z-rand.h z-term.h config.h defines.h types.h externs.h
 init1.o: init1.c angband.h h-basic.h autoconf.h h-config.h h-system.h \
@@ -392,7 +395,8 @@ init2.o: init2.c angband.h h-basic.h autoconf.h h-config.h h-system.h \
 	z-term.h config.h defines.h types.h externs.h init.h script.h
 l-misc.o: l-misc.c lua/tolua.h lua/lua.h angband.h h-basic.h autoconf.h \
 	h-config.h h-system.h h-type.h h-define.h z-util.h z-virt.h \
-	z-form.h z-rand.h z-term.h config.h defines.h types.h externs.h
+	z-form.h z-rand.h z-term.h config.h defines.h types.h externs.h \
+	script.h
 l-monst.o: l-monst.c lua/tolua.h lua/lua.h angband.h h-basic.h \
 	autoconf.h h-config.h h-system.h h-type.h h-define.h z-util.h \
 	z-virt.h z-form.h z-rand.h z-term.h config.h defines.h types.h \
@@ -465,6 +469,9 @@ monster1.o: monster1.c angband.h h-basic.h autoconf.h h-config.h \
 monster2.o: monster2.c angband.h h-basic.h autoconf.h h-config.h \
 	h-system.h h-type.h h-define.h z-util.h z-virt.h z-form.h \
 	z-rand.h z-term.h config.h defines.h types.h externs.h
+obj-info.o: obj-info.c angband.h h-basic.h autoconf.h h-config.h \
+	h-system.h h-type.h h-define.h z-util.h z-virt.h z-form.h \
+	z-rand.h z-term.h config.h defines.h types.h externs.h
 object1.o: object1.c angband.h h-basic.h autoconf.h h-config.h \
 	h-system.h h-type.h h-define.h z-util.h z-virt.h z-form.h \
 	z-rand.h z-term.h config.h defines.h types.h externs.h
@@ -489,7 +496,7 @@ spells2.o: spells2.c angband.h h-basic.h autoconf.h h-config.h \
 	z-rand.h z-term.h config.h defines.h types.h externs.h
 store.o: store.c angband.h h-basic.h autoconf.h h-config.h h-system.h \
 	h-type.h h-define.h z-util.h z-virt.h z-form.h z-rand.h \
-	z-term.h config.h defines.h types.h externs.h
+	z-term.h config.h defines.h types.h externs.h script.h
 tables.o: tables.c angband.h h-basic.h autoconf.h h-config.h h-system.h \
 	h-type.h h-define.h z-util.h z-virt.h z-form.h z-rand.h \
 	z-term.h config.h defines.h types.h externs.h

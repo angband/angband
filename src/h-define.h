@@ -23,7 +23,7 @@
 /*
  * Hack -- assist "main-ros.c" XXX XXX XXX
  */
-#ifdef ACORN
+#ifdef RISCOS
 # define O_RDONLY	0
 # define O_WRONLY	1
 # define O_RDWR		2

@@ -173,15 +173,24 @@ void delete_object_idx(int o_idx)
  */
 void delete_object(int y, int x)
 {
-	object_type *o_ptr;
+	s16b this_o_idx, next_o_idx = 0;
 
 
 	/* Paranoia */
 	if (!in_bounds(y, x)) return;
 
+
 	/* Scan all objects in the grid */
-	for (o_ptr = get_first_object(y, x); o_ptr; o_ptr = get_next_object(o_ptr))
+	for (this_o_idx = cave_o_idx[y][x]; this_o_idx; this_o_idx = next_o_idx)
 	{
+		object_type *o_ptr;
+
+		/* Get the object */
+		o_ptr = &o_list[this_o_idx];
+
+		/* Get the next object */
+		next_o_idx = o_ptr->next_o_idx;
+
 		/* Wipe the object */
 		object_wipe(o_ptr);
 
@@ -787,6 +796,21 @@ void object_tried(object_type *o_ptr)
 }
 
 
+/*
+ * Determine if a weapon is 'blessed'
+ */
+bool is_blessed(const object_type *o_ptr)
+{
+	u32b f1, f2, f3;
+
+	/* Get the flags */
+	object_flags(o_ptr, &f1, &f2, &f3);
+
+	/* Is the object blessed? */
+	return ((f3 & TR3_BLESSED) ? TRUE : FALSE);
+}
+
+
 
 /*
  * Return the "value" of an "unknown" item
@@ -1348,8 +1372,8 @@ void object_absorb(object_type *o_ptr, const object_type *j_ptr)
 	/* Hack -- Blend "known" status */
 	if (object_known_p(j_ptr)) object_known(o_ptr);
 
-	/* Hack -- Blend "rumour" status */
-	if (j_ptr->ident & (IDENT_RUMOUR)) o_ptr->ident |= (IDENT_RUMOUR);
+	/* Hack -- Blend store status */
+	if (j_ptr->ident & (IDENT_STORE)) o_ptr->ident |= (IDENT_STORE);
 
 	/* Hack -- Blend "mental" status */
 	if (j_ptr->ident & (IDENT_MENTAL)) o_ptr->ident |= (IDENT_MENTAL);
@@ -1543,7 +1567,7 @@ static void object_mention(const object_type *o_ptr)
 	char o_name[80];
 
 	/* Describe */
-	object_desc_store(o_name, sizeof(o_name), o_ptr, FALSE, 0);
+	object_desc_spoil(o_name, sizeof(o_name), o_ptr, FALSE, 0);
 
 	/* Artifact */
 	if (artifact_p(o_ptr))
@@ -1889,7 +1913,7 @@ static void charge_staff(object_type *o_ptr)
 		case SV_STAFF_DISPEL_EVIL:		o_ptr->pval = randint(3)  + 4; break;
 		case SV_STAFF_POWER:			o_ptr->pval = randint(3)  + 1; break;
 		case SV_STAFF_HOLINESS:			o_ptr->pval = randint(2)  + 2; break;
-		case SV_STAFF_GENOCIDE:			o_ptr->pval = randint(2)  + 1; break;
+		case SV_STAFF_BANISHMENT:		o_ptr->pval = randint(2)  + 1; break;
 		case SV_STAFF_EARTHQUAKES:		o_ptr->pval = randint(5)  + 3; break;
 		case SV_STAFF_DESTRUCTION:		o_ptr->pval = randint(3)  + 1; break;
 	}
@@ -3077,6 +3101,9 @@ s16b floor_carry(int y, int x, object_type *j_ptr)
 		n++;
 	}
 
+	/* The stack is already too large */
+	if (n > MAX_FLOOR_STACK) return (0);
+
 	/* Option -- disallow stacking */
 	if (adult_no_stacking && n) return (0);
 
@@ -3232,7 +3259,7 @@ void drop_near(object_type *j_ptr, int chance, int y, int x)
 			if (adult_no_stacking && (k > 1)) continue;
 			
 			/* Paranoia */
-			if (k > 99) continue;
+			if (k > MAX_FLOOR_STACK) continue;
 
 			/* Calculate score */
 			s = 1000 - (d + k * 5);

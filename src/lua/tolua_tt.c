@@ -3,7 +3,7 @@
 ** Written by Waldemar Celes
 ** TeCGraf/PUC-Rio
 ** Jul 1998
-** $Id: tolua_tt.c,v 1.1 2001/10/27 19:35:29 angband Exp $
+** $Id: tolua_tt.c,v 1.2 2002/11/23 21:31:25 rr9 Exp $
 */
 
 /* This code is free software; you can redistribute it and/or modify it. 
@@ -58,7 +58,7 @@ const char* toluaI_tt_getobjtype (lua_State* L, int lo)
   return gettype(L,lua_tag(L,lo));
 }
 
-int toluaI_tt_gettag (lua_State* L, char* type)
+int toluaI_tt_gettag (lua_State* L, const char* type)
 {
  int tag;
  toluaI_getregistry(L,"tolua_tbl_itag");
@@ -159,7 +159,7 @@ void toluaI_tt_init (lua_State* L)
 }
 
 
-void toluaI_tt_register (lua_State* L, int tag, char* type)
+void toluaI_tt_register (lua_State* L, int tag, const char* type)
 {
  toluaI_getregistry(L,"tolua_tbl_itype");
  lua_pushnumber(L,tag);
@@ -175,7 +175,7 @@ void toluaI_tt_register (lua_State* L, int tag, char* type)
 }
 
 
-void toluaI_tt_class (lua_State* L, int lo, char* derived, char* base)
+void toluaI_tt_class (lua_State* L, int lo, const char* derived, const char* base)
 {
  char* cderived = toluaI_tt_concat("const ",derived);
  int tag = toluaI_tt_gettag(L,derived);
@@ -208,7 +208,7 @@ char* toluaI_tt_concat (const char* s1, const char* s2)
  return strcat(strcpy(s,s1),s2);
 }
 
-void tolua_usertype (lua_State* L, char* type)
+void tolua_usertype (lua_State* L, const char* type)
 {
  /* check if type is already registered */
  toluaI_getregistry(L,"tolua_tbl_itag");

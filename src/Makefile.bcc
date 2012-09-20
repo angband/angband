@@ -75,6 +75,7 @@ OBJ = \
   l-monst.obj l-object.obj l-player.obj l-random.obj l-random.obj \
   l-ui.obj l-misc.obj l-spell.obj \
   use-obj.obj x-spell.obj \
+  obj-info.obj \
   $(LUAOBJS)
 
 

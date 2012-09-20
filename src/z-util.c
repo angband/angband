@@ -21,6 +21,41 @@ cptr argv0 = NULL;
 
 
 /*
+ * Case insensitive comparison between two strings
+ */
+int my_stricmp(const char *s1, const char *s2)
+{
+	char ch1 = 0;
+	char ch2 = 0;
+
+	/* Just loop */
+	while (TRUE)
+	{
+		/* We've reached the end of both strings simultaneously */
+		if ((*s1 == 0) && (*s2 == 0))
+		{
+			/* We're still here, so s1 and s2 are equal */
+			return (0);
+		}
+
+		ch1 = toupper(*s1);
+		ch2 = toupper(*s2);
+
+		/* If the characters don't match */
+		if (ch1 != ch2)
+		{
+			/* return the difference between them */
+			return ((int)(ch1 - ch2));
+		}
+
+		/* Step on through both strings */
+		s1++;
+		s2++;
+	}
+}
+
+
+/*
  * The my_strcpy() function copies up to 'bufsize'-1 characters from 'src'
  * to 'buf' and NUL-terminates the result.  The 'buf' and 'src' strings may
  * not overlap.
@@ -36,7 +71,7 @@ size_t my_strcpy(char *buf, const char *src, size_t bufsize)
 	size_t ret = len;
 
 	/* Paranoia */
-	if (bufsize <= 0) return ret;
+	if (bufsize == 0) return ret;
 
 	/* Truncate */
 	if (len >= bufsize) len = bufsize - 1;

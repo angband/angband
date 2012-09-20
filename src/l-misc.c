@@ -10,6 +10,7 @@ int tolua_misc_open (lua_State* tolua_S);
 void tolua_misc_close (lua_State* tolua_S);
 
 #include "angband.h"
+#include "script.h"
 
 /* function to register type */
 static void toluaI_reg_types (lua_State* tolua_S)
@@ -86,6 +87,28 @@ static int toluaI_get_misc_ddy_ddd(lua_State* tolua_S)
  return 1;
 }
 
+/* function: script_do_file */
+static int toluaI_misc_script_do_file00(lua_State* tolua_S)
+{
+ if (
+ !tolua_istype(tolua_S,1,LUA_TSTRING,0) ||
+ !tolua_isnoobj(tolua_S,2)
+ )
+ goto tolua_lerror;
+ else
+ {
+  cptr filename = ((cptr)  tolua_getstring(tolua_S,1,0));
+ {
+  bool toluaI_ret = (bool)  script_do_file(filename);
+ tolua_pushbool(tolua_S,(int)toluaI_ret);
+ }
+ }
+ return 1;
+tolua_lerror:
+ tolua_error(tolua_S,"#ferror in function 'script_do_file'.");
+ return 0;
+}
+
 /* Open function */
 int tolua_misc_open (lua_State* tolua_S)
 {
@@ -98,6 +121,7 @@ int tolua_misc_open (lua_State* tolua_S)
  tolua_globalarray(tolua_S,"ddy",toluaI_get_misc_ddy,NULL);
  tolua_globalarray(tolua_S,"ddx_ddd",toluaI_get_misc_ddx_ddd,NULL);
  tolua_globalarray(tolua_S,"ddy_ddd",toluaI_get_misc_ddy_ddd,NULL);
+ tolua_function(tolua_S,NULL,"script_do_file",toluaI_misc_script_do_file00);
  return 1;
 }
 /* Close function */
@@ -110,4 +134,5 @@ void tolua_misc_close (lua_State* tolua_S)
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"ddy");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"ddx_ddd");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"ddy_ddd");
+ lua_pushnil(tolua_S); lua_setglobal(tolua_S,"script_do_file");
 }

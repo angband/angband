@@ -1392,6 +1392,27 @@ tolua_lerror:
  return 0;
 }
 
+/* function: roff_top */
+static int toluaI_monster_roff_top00(lua_State* tolua_S)
+{
+ if (
+ !tolua_istype(tolua_S,1,LUA_TNUMBER,0) ||
+ !tolua_isnoobj(tolua_S,2)
+ )
+ goto tolua_lerror;
+ else
+ {
+  int r_idx = ((int)  tolua_getnumber(tolua_S,1,0));
+ {
+  roff_top(r_idx);
+ }
+ }
+ return 0;
+tolua_lerror:
+ tolua_error(tolua_S,"#ferror in function 'roff_top'.");
+ return 0;
+}
+
 /* function: screen_roff */
 static int toluaI_monster_screen_roff00(lua_State* tolua_S)
 {
@@ -2383,6 +2404,7 @@ int tolua_monster_open (lua_State* tolua_S)
  tolua_function(tolua_S,NULL,"make_attack_normal",toluaI_monster_make_attack_normal00);
  tolua_function(tolua_S,NULL,"make_attack_spell",toluaI_monster_make_attack_spell00);
  tolua_function(tolua_S,NULL,"process_monsters",toluaI_monster_process_monsters00);
+ tolua_function(tolua_S,NULL,"roff_top",toluaI_monster_roff_top00);
  tolua_function(tolua_S,NULL,"screen_roff",toluaI_monster_screen_roff00);
  tolua_function(tolua_S,NULL,"display_roff",toluaI_monster_display_roff00);
  tolua_function(tolua_S,NULL,"delete_monster_idx",toluaI_monster_delete_monster_idx00);
@@ -2709,6 +2731,7 @@ void tolua_monster_close (lua_State* tolua_S)
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"make_attack_normal");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"make_attack_spell");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"process_monsters");
+ lua_pushnil(tolua_S); lua_setglobal(tolua_S,"roff_top");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"screen_roff");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"display_roff");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"delete_monster_idx");

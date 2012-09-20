@@ -1,4 +1,5 @@
 $#include "angband.h"
+$#include "script.h"
 
 typedef char* cptr;
 typedef int errr;
@@ -25,3 +26,5 @@ extern const s16b ddy_ddd[9];
 
 /***** Functions *****/
 
+/* Execute a file with scripting code */
+extern bool script_do_file(cptr filename);

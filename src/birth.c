@@ -10,6 +10,8 @@
 
 #include "angband.h"
 
+#include "script.h"
+
 
 /*
  * Forward declare
@@ -528,28 +530,6 @@ static void player_outfit(void)
 	object_type *i_ptr;
 	object_type object_type_body;
 
-
-	/* Get local object */
-	i_ptr = &object_type_body;
-
-	/* Hack -- Give the player some food */
-	object_prep(i_ptr, lookup_kind(TV_FOOD, SV_FOOD_RATION));
-	i_ptr->number = (byte)rand_range(3, 7);
-	object_aware(i_ptr);
-	object_known(i_ptr);
-	(void)inven_carry(i_ptr);
-
-
-	/* Get local object */
-	i_ptr = &object_type_body;
-
-	/* Hack -- Give the player some torches */
-	object_prep(i_ptr, lookup_kind(TV_LITE, SV_LITE_TORCH));
-	i_ptr->number = (byte)rand_range(3, 7);
-	i_ptr->pval = rand_range(3, 7) * 500;
-	object_aware(i_ptr);
-	object_known(i_ptr);
-	(void)inven_carry(i_ptr);
 
 	/* Hack -- Give the player his equipment */
 	for (i = 0; i < MAX_START_ITEMS; i++)
@@ -1455,6 +1435,8 @@ void player_birth(void)
 	/* Hack -- outfit the player */
 	player_outfit();
 
+	/* Event -- player birth done */
+	player_birth_done_hook();
 
 	/* Shops */
 	for (n = 0; n < MAX_STORES; n++)

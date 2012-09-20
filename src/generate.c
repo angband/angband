@@ -10,6 +10,8 @@
 
 #include "angband.h"
 
+#include "script.h"
+
 
 /*
  * Note that Level generation is *not* an important bottleneck,
@@ -3423,20 +3425,23 @@ void generate_cave(void)
 		rating = 0;
 
 
-		/* Build the town */
-		if (!p_ptr->depth)
+		/* Event -- generate level */
+		if (!generate_level_hook(p_ptr->depth))
 		{
-			/* Make a town */
-			town_gen();
-		}
+			/* Build the town */
+			if (!p_ptr->depth)
+			{
+				/* Make a town */
+				town_gen();
+			}
 
-		/* Build a real level */
-		else
-		{
-			/* Make a dungeon */
-			cave_gen();
+			/* Build a real level */
+			else
+			{
+				/* Make a dungeon */
+				cave_gen();
+			}
 		}
-
 
 		/* Extract the feeling */
 		if (rating > 100) feeling = 2;

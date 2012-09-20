@@ -239,6 +239,8 @@ static void prt_equippy(void)
 
 	object_type *o_ptr;
 
+	/* No equippy chars in bigtile mode */
+	if (use_bigtile) return;
 
 	/* Dump equippy chars */
 	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
@@ -2504,6 +2506,9 @@ static void calc_bonuses(void)
 		/* Window stuff */
 		p_ptr->window |= (PW_PLAYER_0 | PW_PLAYER_1);
 	}
+
+	/* Event -- Calc bonus */
+	player_calc_bonus_hook();
 
 	/* Hack -- handle "xtra" mode */
 	if (character_xtra) return;

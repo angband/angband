@@ -3,7 +3,7 @@
 ** Written by Waldemar Celes
 ** TeCGraf/PUC-Rio
 ** Jul 1998
-** $Id: tolua_tm.h,v 1.1 2001/10/27 19:35:29 angband Exp $
+** $Id: tolua_tm.h,v 1.2 2002/11/23 21:31:25 rr9 Exp $
 */
 
 /* This code is free software; you can redistribute it and/or modify it.
@@ -20,7 +20,7 @@
 void toluaI_tm_init (lua_State* L);
 void toluaI_tm_global (lua_State* L, int lo);
 void toluaI_tm_module (lua_State* L, int lo);
-void toluaI_tm_class (lua_State* L, int lo, char* name);
+void toluaI_tm_class (lua_State* L, int lo, const char* name);
 void toluaI_tm_instance (lua_State* L, int tag, int lo);
 void toluaI_tm_linstance (lua_State* L, int tag, int lo);
 void toluaI_tm_using (lua_State* L, int module);

@@ -3,6 +3,7 @@
 angband_files = \
   flvr-xxx.prf \
   flvr-new.prf \
+  flvr-dvg.prf \
   font.prf \
   font-ami.prf \
   font-dos.prf \
@@ -13,6 +14,7 @@ angband_files = \
   font-xxx.prf \
   graf.prf \
   graf-ami.prf \
+  graf-dvg.prf \
   graf-gcu.prf \
   graf-ibm.prf \
   graf-lsl.prf \
@@ -33,6 +35,7 @@ angband_files = \
   user.prf \
   user-mac.prf \
   xtra-new.prf \
+  xtra-dvg.prf \
   xtra-xxx.prf
 
 EXTRA_DIST = \

@@ -600,8 +600,8 @@ static void PutRGBScan(XImage *Im, int x, int y, int w, int div,
  * vertical directions (eg. shrink horizontal, grow vertical).
  */
 static void ScaleIcon(XImage *ImIn, XImage *ImOut,
-    	    	      int x1, int y1, int x2, int y2,
-		      int ix, int iy, int ox, int oy)
+                      int x1, int y1, int x2, int y2,
+                      int ix, int iy, int ox, int oy)
 {
 	int div;
 	int xi, yi, si, sifrac, ci, cifrac, addWhole, addFrac;
@@ -644,13 +644,17 @@ static void ScaleIcon(XImage *ImIn, XImage *ImOut,
 		iy--;
 		oy--;
 		div *= oy;
+
 		/* get first row: */
 		GetScaledRow(ImIn, x1, y1, ix, ox, nextRed, nextGreen, nextBlue);
+
 		/* si and sifrac give the subsampling position: */
 		si = y1;
 		sifrac = 0;
+
 		/* getNextRow tells us, that we need the next row */
 		getNextRow = TRUE;
+
 		for (yi = 0; yi <= oy; yi++)
 		{
 			if (getNextRow)
@@ -661,6 +665,7 @@ static void ScaleIcon(XImage *ImIn, XImage *ImOut,
 					prevGreen[xi] = nextGreen[xi];
 					prevBlue[xi]  = nextBlue[xi];
 				}
+
 				if (yi < oy)
 				{
 					/* only get next row if in same icon */
@@ -697,31 +702,36 @@ static void ScaleIcon(XImage *ImIn, XImage *ImOut,
 			{
 				getNextRow = FALSE;
 			}
-
 		}
 	}
 	else
 	{
 		/* scaling by averaging (shrink) */
 		div *= iy;
+
 		/* height of a output row in input rows: */
 		addWhole = iy / oy;
 		addFrac = iy % oy;
+
 		/* start position of the first output row: */
 		si = y1;
 		sifrac = 0;
+
 		/* get first input row: */
 		GetScaledRow(ImIn, x1, y1, ix, ox, nextRed, nextGreen, nextBlue);
+
 		for (yi = 0; yi < oy; yi++)
 		{
 			/* find endpoint of the current output row: */
 			ci = si + addWhole;
 			cifrac = sifrac + addFrac;
+
 			if (cifrac >= oy)
 			{
 				ci++;
 				cifrac -= oy;
 			}
+
 			/* take fraction of current input row (starting segment): */
 			for (xi = 0; xi < ox; xi++)
 			{
@@ -729,12 +739,15 @@ static void ScaleIcon(XImage *ImIn, XImage *ImOut,
 				tempGreen[xi] = nextGreen[xi] * (oy - sifrac);
 				tempBlue[xi]  = nextBlue[xi]  * (oy - sifrac);
 			}
+
 			si++;
+
 			/* add values for whole pixels: */
 			while (si < ci)
 			{
 				GetScaledRow(ImIn, x1, si, ix, ox,
 				             nextRed, nextGreen, nextBlue);
+
 				for (xi = 0; xi < ox; xi++)
 				{
 					tempRed[xi]   += nextRed[xi]   * oy;
@@ -743,6 +756,7 @@ static void ScaleIcon(XImage *ImIn, XImage *ImOut,
 				}
 				si++;
 			}
+
 			/* add fraction of current input row (ending segment): */
 			if (yi < oy - 1)
 			{
@@ -750,13 +764,16 @@ static void ScaleIcon(XImage *ImIn, XImage *ImOut,
 				GetScaledRow(ImIn, x1, si, ix, ox,
 				             nextRed, nextGreen, nextBlue);
 			}
+
 			sifrac = cifrac;
+
 			for (xi = 0; xi < ox; xi++)
 			{
 				tempRed[xi]   += nextRed[xi]   * sifrac;
 				tempGreen[xi] += nextGreen[xi] * sifrac;
 				tempBlue[xi]  += nextBlue[xi]  * sifrac;
 			}
+
 			/* write row to output image: */
 			PutRGBScan(ImOut, x2, y2 + yi, ox, div,
 			           tempRed, tempGreen, tempBlue);
@@ -793,24 +810,29 @@ static XImage *ResizeImageSmooth(Display *dpy, XImage *Im,
 	/* compute values for decomposing pixel into color values: */
 	redMask = Im->red_mask;
 	redShift = 0;
+
 	while ((redMask & 1) == 0)
 	{
-	    redShift++;
-	    redMask >>= 1;
+		redShift++;
+		redMask >>= 1;
 	}
+
 	greenMask = Im->green_mask;
 	greenShift = 0;
+
 	while ((greenMask & 1) == 0)
 	{
-	    greenShift++;
-	    greenMask >>= 1;
+		greenShift++;
+		greenMask >>= 1;
 	}
+
 	blueMask = Im->blue_mask;
 	blueShift = 0;
+
 	while ((blueMask & 1) == 0)
 	{
-	    blueShift++;
-	    blueMask >>= 1;
+		blueShift++;
+		blueMask >>= 1;
 	}
 
 	/* scale each icon: */
@@ -845,9 +867,9 @@ XImage *ResizeImage(Display *dpy, XImage *Im,
 	char *Data;
 
 	if (smoothRescaling && (ix != ox || iy != oy) &&
-	    visual->class == TrueColor)
+	    (visual->class == TrueColor))
 	{
-	    return ResizeImageSmooth(dpy, Im, ix, iy, ox, oy);
+		return ResizeImageSmooth(dpy, Im, ix, iy, ox, oy);
 	}
 
 	width1 = Im->width;

@@ -1,7 +1,7 @@
 
 
               **************************************************
-              **   Angband 3.0.1   **   The Pits of Angband   **
+              **   Angband 3.0.2   **   The Pits of Angband   **
               **************************************************
 
            Based on Moria:   Copyright (c) 1985 Robert Alan Koeneke
@@ -15,8 +15,8 @@
 
                  Angband 2.9.0 - 3.0.x by Robert Ruehlmann
 
-        Send comments, bug reports, and patches, to "rr9@angband.org"
-       Visit the Angband Home Page at "http://thangorodrim.angband.org/"
+      Send comments, bug reports, and patches, to "rr9@thangorodrim.net"
+         Visit the Angband Home Page at "http://www.thangorodrim.net/"
       Browse the Angband newsgroup at "news:rec.games.roguelike.angband"
     Read the online help files, especially "general.txt" and "version.txt"
    Angband is available for Unix, X11, DOS, Windows, Macintosh, Amiga, etc.
@@ -24,7 +24,7 @@
 
 === General Info ===
 
-This is the README file for Angband 3.0.1.
+This is the README file for Angband 3.0.2.
 
 Angband is a "graphical" dungeon adventure game using textual characters
 to represent the walls and floors of a dungeon and the inhabitants therein,
@@ -32,13 +32,13 @@ in the vein of "rogue", "hack", "nethack", and "moria".
 
 There are some ascii "on line help" files in the "lib/help" directory.
 
-See the Official Angband Home Page "http://thangorodrim.angband.org/" for
+See the Official Angband Home Page "http://www.thangorodrim.net/" for
 a list (mostly complete) of what has changed in each recent version.
 
 See the various Angband ftp sites (including "clockwork.dementia.org" and
 "ftp.cis.ksu.edu") for the latest files, patches, and executables.
 
-Contact Robert Ruehlmann < rr9@angband.org > to report bugs. Use the
+Contact Robert Ruehlmann < rr9@thangorodrim.net > to report bugs. Use the
 newsgroup "rec.games.roguelike.angband" to ask general questions about the
 game, including compilation questions.
 

@@ -45,6 +45,7 @@ EXOBJS = \
 	melee2.o \
 	monster1.o \
 	monster2.o \
+	obj-info.o \
 	object1.o \
 	object2.o \
 	randart.o \
@@ -237,6 +238,9 @@ monster1.o: monster1.c $(INCS)
 	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
 
 monster2.o: monster2.c $(INCS)
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
+obj-info.o: obj-info.c $(INCS)
 	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
 
 object1.o: object1.c $(INCS)

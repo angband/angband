@@ -29,7 +29,8 @@ SRCS = \
   main-gtk.c maid-x11.c main.c \
   script.c use-obj.c x-spell.c \
   l-monst.c l-object.c l-player.c l-random.c l-ui.c \
-  l-misc.c l-spell.c
+  l-misc.c l-spell.c \
+  obj-info.c
 
 OBJS = \
   z-util.o z-virt.o z-form.o z-rand.o z-term.o \
@@ -45,6 +46,7 @@ OBJS = \
   script.o use-obj.o x-spell.o \
   l-monst.o l-object.o l-player.o l-random.o l-ui.o \
   l-misc.o l-spell.o \
+  obj-info.o \
   $(LUAOBJS)
 
 
@@ -150,6 +152,7 @@ melee1.o: melee1.c $(INCS)
 melee2.o: melee2.c $(INCS)
 monster1.o: monster1.c $(INCS)
 monster2.o: monster2.c $(INCS)
+obj-info.o: obj-info.c $(INCS)
 object1.o: object1.c $(INCS)
 object2.o: object2.c $(INCS)
 randart.o: randart.c $(INCS) init.h

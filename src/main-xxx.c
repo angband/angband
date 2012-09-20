@@ -56,7 +56,7 @@
  * When you complete a port to a new system, you should email any
  * newly created files, and any changes made to existing files,
  * including "h-config.h", "config.h", and any of the "Makefile"
- * files, to "rr9@angband.org" for inclusion in the next version.
+ * files, to "rr9@thangorodrim.net" for inclusion in the next version.
  *
  * Always choose a "three letter" naming scheme for "main-xxx.c"
  * and "Makefile.xxx" and such for consistency and simplicity.

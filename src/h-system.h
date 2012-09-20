@@ -56,7 +56,7 @@
 #endif
 
 #if !defined(MACINTOSH) && !defined(AMIGA) && \
-    !defined(ACORN) && !defined(VM) && !defined(__MWERKS__)
+    !defined(RISCOS) && !defined(VM) && !defined(__MWERKS__)
 # if defined(__TURBOC__) || defined(__WATCOMC__)
 #  include <mem.h>
 # else
@@ -65,7 +65,7 @@
 #endif
 
 
-#if !defined(NeXT) && !defined(ACORN)
+#if !defined(NeXT) && !defined(RISCOS)
 # include <fcntl.h>
 #endif
 

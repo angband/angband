@@ -390,30 +390,62 @@ static u16b bolt_pict(int y, int x, int ny, int nx, int typ)
 	byte a;
 	char c;
 
-	/* No motion (*) */
-	if ((ny == y) && (nx == x)) base = 0x30;
+	if (!(use_graphics && (arg_graphics == GRAPHICS_DAVID_GERVAIS)))
+	{
+		/* No motion (*) */
+		if ((ny == y) && (nx == x)) base = 0x30;
 
-	/* Vertical (|) */
-	else if (nx == x) base = 0x40;
+		/* Vertical (|) */
+		else if (nx == x) base = 0x40;
 
-	/* Horizontal (-) */
-	else if (ny == y) base = 0x50;
+		/* Horizontal (-) */
+		else if (ny == y) base = 0x50;
 
-	/* Diagonal (/) */
-	else if ((ny-y) == (x-nx)) base = 0x60;
+		/* Diagonal (/) */
+		else if ((ny-y) == (x-nx)) base = 0x60;
 
-	/* Diagonal (\) */
-	else if ((ny-y) == (nx-x)) base = 0x70;
+		/* Diagonal (\) */
+		else if ((ny-y) == (nx-x)) base = 0x70;
 
-	/* Weird (*) */
-	else base = 0x30;
+		/* Weird (*) */
+		else base = 0x30;
 
-	/* Basic spell color */
-	k = spell_color(typ);
+		/* Basic spell color */
+		k = spell_color(typ);
 
-	/* Obtain attr/char */
-	a = misc_to_attr[base+k];
-	c = misc_to_char[base+k];
+		/* Obtain attr/char */
+		a = misc_to_attr[base+k];
+		c = misc_to_char[base+k];
+	}
+	else
+	{
+		int add;
+
+		/* No motion (*) */
+		if ((ny == y) && (nx == x)) {base = 0x00; add = 0;}
+
+		/* Vertical (|) */
+		else if (nx == x) {base = 0x40; add = 0;}
+
+		/* Horizontal (-) */
+		else if (ny == y) {base = 0x40; add = 1;}
+
+		/* Diagonal (/) */
+		else if ((ny-y) == (x-nx)) {base = 0x40; add = 2;}
+
+		/* Diagonal (\) */
+		else if ((ny-y) == (nx-x)) {base = 0x40; add = 3;}
+
+		/* Weird (*) */
+		else {base = 0x00; add = 0;}
+
+		if (typ >= 0x40) k = 0;
+		else k = typ;
+
+		/* Obtain attr/char */
+		a = misc_to_attr[base+k];
+		c = misc_to_char[base+k] + add;
+	}
 
 	/* Create pict */
 	return (PICT(a,c));

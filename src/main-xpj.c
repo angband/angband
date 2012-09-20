@@ -1,4 +1,4 @@
-/* File: main-x11.c */
+/* File: main-xpj.c */
 
 /*
  * Copyright (c) 1997 Ben Harrison, and others
@@ -3054,7 +3054,7 @@ static errr term_data_init(term_data *td, int i)
 	/* Prepare the standard font */
 	MAKE(td->fnt, infofnt);
 	Infofnt_set(td->fnt);
-	Infofnt_init_data(font);
+	if (Infofnt_init_data(font)) quit_fmt("Couldn't load the requested font. (%s)", font);
 
 	/* Hack -- key buffer size */
 	num = ((i == 0) ? 1024 : 16);

@@ -3,7 +3,7 @@
 ** Written by Waldemar Celes
 ** TeCGraf/PUC-Rio
 ** Nov 200
-** $Id: tolua_rg.h,v 1.1 2001/10/27 19:35:29 angband Exp $
+** $Id: tolua_rg.h,v 1.2 2002/11/23 21:31:25 rr9 Exp $
 */
 
 /* This code is free software; you can redistribute it and/or modify it.
@@ -16,7 +16,7 @@
 #ifndef tolua_rg_h
 #define tolua_rg_h
 
-void toluaI_setregistry (lua_State* L, char* field);
-void toluaI_getregistry (lua_State* L, char* field);
+void toluaI_setregistry (lua_State* L, const char* field);
+void toluaI_getregistry (lua_State* L, const char* field);
 
 #endif

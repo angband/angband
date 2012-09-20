@@ -3,7 +3,7 @@
 ** Written by Waldemar Celes
 ** TeCGraf/PUC-Rio
 ** Jul 1998
-** $Id: tolua_gp.c,v 1.1 2001/10/27 19:35:29 angband Exp $
+** $Id: tolua_gp.c,v 1.2 2002/11/23 21:31:25 rr9 Exp $
 */
 
 /* This code is free software; you can redistribute it and/or modify it. 
@@ -106,7 +106,7 @@ int tolua_getfieldbool (lua_State* L, int lo, int index, int def)
  int v;
  lua_pushnumber(L,index);
  lua_gettable(L,lo);
- v = lua_isnil(L,-1) ? 0 : lua_tonumber(L,-1)!=0;
+ v = lua_isnil(L,-1) ? def : lua_tonumber(L,-1)!=0;
  lua_pop(L,1);
  return v;
 }

@@ -1049,8 +1049,8 @@ tolua_lerror:
  return 0;
 }
 
-/* function: genocide */
-static int toluaI_spell_genocide00(lua_State* tolua_S)
+/* function: banishment */
+static int toluaI_spell_banishment00(lua_State* tolua_S)
 {
  if (
  !tolua_isnoobj(tolua_S,1)
@@ -1059,18 +1059,18 @@ static int toluaI_spell_genocide00(lua_State* tolua_S)
  else
  {
  {
-  bool toluaI_ret = (bool)  genocide();
+  bool toluaI_ret = (bool)  banishment();
  tolua_pushbool(tolua_S,(int)toluaI_ret);
  }
  }
  return 1;
 tolua_lerror:
- tolua_error(tolua_S,"#ferror in function 'genocide'.");
+ tolua_error(tolua_S,"#ferror in function 'banishment'.");
  return 0;
 }
 
-/* function: mass_genocide */
-static int toluaI_spell_mass_genocide00(lua_State* tolua_S)
+/* function: mass_banishment */
+static int toluaI_spell_mass_banishment00(lua_State* tolua_S)
 {
  if (
  !tolua_isnoobj(tolua_S,1)
@@ -1079,13 +1079,13 @@ static int toluaI_spell_mass_genocide00(lua_State* tolua_S)
  else
  {
  {
-  bool toluaI_ret = (bool)  mass_genocide();
+  bool toluaI_ret = (bool)  mass_banishment();
  tolua_pushbool(tolua_S,(int)toluaI_ret);
  }
  }
  return 1;
 tolua_lerror:
- tolua_error(tolua_S,"#ferror in function 'mass_genocide'.");
+ tolua_error(tolua_S,"#ferror in function 'mass_banishment'.");
  return 0;
 }
 
@@ -2159,8 +2159,8 @@ int tolua_spell_open (lua_State* tolua_S)
  tolua_function(tolua_S,NULL,"dispel_evil",toluaI_spell_dispel_evil00);
  tolua_function(tolua_S,NULL,"dispel_monsters",toluaI_spell_dispel_monsters00);
  tolua_function(tolua_S,NULL,"aggravate_monsters",toluaI_spell_aggravate_monsters00);
- tolua_function(tolua_S,NULL,"genocide",toluaI_spell_genocide00);
- tolua_function(tolua_S,NULL,"mass_genocide",toluaI_spell_mass_genocide00);
+ tolua_function(tolua_S,NULL,"banishment",toluaI_spell_banishment00);
+ tolua_function(tolua_S,NULL,"mass_banishment",toluaI_spell_mass_banishment00);
  tolua_function(tolua_S,NULL,"probing",toluaI_spell_probing00);
  tolua_function(tolua_S,NULL,"destroy_area",toluaI_spell_destroy_area00);
  tolua_function(tolua_S,NULL,"earthquake",toluaI_spell_earthquake00);
@@ -2329,8 +2329,8 @@ void tolua_spell_close (lua_State* tolua_S)
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"dispel_evil");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"dispel_monsters");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"aggravate_monsters");
- lua_pushnil(tolua_S); lua_setglobal(tolua_S,"genocide");
- lua_pushnil(tolua_S); lua_setglobal(tolua_S,"mass_genocide");
+ lua_pushnil(tolua_S); lua_setglobal(tolua_S,"banishment");
+ lua_pushnil(tolua_S); lua_setglobal(tolua_S,"mass_banishment");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"probing");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"destroy_area");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"earthquake");

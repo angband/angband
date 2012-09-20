@@ -3999,7 +3999,8 @@ static void amiga_map(void)
 {
 	term_data *td = &data[0];
 	int i, j;
-	byte a, c, ta, tc;
+	byte a, ta;
+	char c, tc;
 	int cur_wid = DUNGEON_WID
 	int cur_hgt = DUNGEON_HGT;
 
@@ -4038,7 +4039,7 @@ static void amiga_map(void)
 			/* Get tile from cave table */
 			else
 			{
-				map_info(j, i, a, c, &ta, (char *)&tc);
+				map_info(j, i, &a, &c, &ta, &tc);
 			}
 
 			/* Ignore non-graphics */

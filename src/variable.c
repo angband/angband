@@ -85,6 +85,7 @@ s32b old_turn;			/* Hack -- Level feeling counter */
 
 bool use_sound;			/* The "sound" mode is enabled */
 bool use_graphics;		/* The "graphics" mode is enabled */
+bool use_bigtile = FALSE;
 
 s16b signal_count;		/* Hack -- Count interrupts */
 
@@ -676,6 +677,9 @@ bool (*get_mon_num_hook)(int r_idx);
 bool (*get_obj_num_hook)(int k_idx);
 
 
+void (*object_info_out_flags)(const object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3);
+
+
 /*
  * Hack - the destination file for text_out_to_file.
  */
@@ -692,14 +696,12 @@ void (*text_out_hook)(byte a, cptr str);
 /*
  * Hack -- Where to wrap the text when using text_out().  Use the default
  * value (for example the screen width) when 'text_out_wrap' is 0.
- *
  */
 int text_out_wrap = 0;
 
 
 /*
  * Hack -- Indentation for the text when using text_out().
- *
  */
 int text_out_indent = 0;
 

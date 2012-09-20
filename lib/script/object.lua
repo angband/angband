@@ -481,11 +481,11 @@ function read_scroll(object)
 		ident = TRUE
 	elseif object.sval == SV_SCROLL_DISPEL_UNDEAD then
 		if dispel_undead(60) then ident = TRUE end
-	elseif object.sval == SV_SCROLL_GENOCIDE then
-		genocide()
+	elseif object.sval == SV_SCROLL_BANISHMENT then
+		banishment()
 		ident = TRUE
-	elseif object.sval == SV_SCROLL_MASS_GENOCIDE then
-		mass_genocide()
+	elseif object.sval == SV_SCROLL_MASS_BANISHMENT then
+		mass_banishment()
 		ident = TRUE
 	elseif object.sval == SV_SCROLL_ACQUIREMENT then
 		acquirement(player.py, player.px, 1, TRUE)
@@ -609,8 +609,8 @@ function use_staff(object)
 		if hp_player(50) then ident = TRUE end
 		if set_stun(0) then ident = TRUE end
 		if set_cut(0) then ident = TRUE end
-	elseif object.sval == SV_STAFF_GENOCIDE then
-		genocide()
+	elseif object.sval == SV_STAFF_BANISHMENT then
+		banishment()
 		ident = TRUE
 	elseif object.sval == SV_STAFF_EARTHQUAKES then
 		earthquake(player.py, player.px, 10)
@@ -660,14 +660,14 @@ function aim_wand(object)
 
 	-- Roll for usage
 	if (chance < USE_DEVICE) or (randint(chance) < USE_DEVICE) then
-		if flush_failure then flush() end
+		flush_fail()
 		msg_print("You failed to use the wand properly.")
 		return FALSE, FALSE
 	end
 
 	-- The wand is already empty!
 	if object.pval <= 0 then
-		if flush_failure then flush() end
+		flush_fail()
 		msg_print("The wand has no charges left.")
 
 		object.ident = bOr(object.ident, IDENT_EMPTY)
@@ -779,6 +779,7 @@ end
 
 function zap_rod(object)
 	local ident = FALSE
+	local used_charge = TRUE
 
 	local dir
 
@@ -817,14 +818,14 @@ function zap_rod(object)
 
 	-- Roll for usage
 	if (chance < USE_DEVICE) or (randint(chance) < USE_DEVICE) then
-		if flush_failure then flush() end
+		flush_fail()
 		msg_print("You failed to use the rod properly.")
 		return FALSE, FALSE
 	end
 
 	-- Still charging
 	if object.pval > 0 then
-		if flush_failure then flush() end
+		flush_fail()
 		msg_print("The rod is still charging.")
 		return FALSE, FALSE
 	end
@@ -1038,9 +1039,9 @@ function activate_object(object)
 		elseif artifact.activation == ACT_PHASE then
 			msg_print(format("Your %s twists space around you...", o_name))
 			teleport_player(10)
-		elseif artifact.activation == ACT_GENOCIDE then
+		elseif artifact.activation == ACT_BANISHMENT then
 			msg_print(format("Your %s glows deep blue...", o_name))
-			genocide()
+			banishment()
 		elseif artifact.activation == ACT_TRAP_DOOR_DEST then
 			msg_print(format("Your %s glows bright red...", o_name))
 			destroy_doors_touch()
@@ -1148,9 +1149,9 @@ function activate_object(object)
 			success, dir = get_aim_dir()
 			if not success then return FALSE, FALSE end
 			wall_to_mud(dir)
-		elseif artifact.activation == ACT_MASS_GENOCIDE then
+		elseif artifact.activation == ACT_MASS_BANISHMENT then
 			msg_print(format("Your %s lets out a long, shrill note...", o_name))
-			mass_genocide()
+			mass_banishment()
 		elseif artifact.activation == ACT_CURE_WOUNDS then
 			msg_print(format("Your %s radiates deep purple...", o_name))
 			hp_player(damroll(4, 8))
@@ -1378,8 +1379,8 @@ function describe_item_activation_hook(object)
 			"sleep II",
 			"lightning bolt (4d8)",
 			"large lightning ball (250)",
-			"genocide",
-			"mass genocide",
+			"banishment",
+			"mass banishment",
 			"identify",
 			"drain life (90)",
 			"drain life (120)",
@@ -1462,3 +1463,7 @@ function describe_item_activation_hook(object)
 	return ""
 end
 
+
+-- Add event handlers
+add_event_handler("use_object", use_object_hook)
+add_event_handler("describe_item_activation", describe_item_activation_hook)

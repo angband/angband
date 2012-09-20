@@ -6286,7 +6286,7 @@ static void* g_malloc(size_t size)
 	}
 
 	if (log_g_malloc)
-		fprintf(stderr, "ralloc(%ld) == %p\n", size, c);
+		fprintf(stderr, "ralloc(%ld) == %p\n", (long)size, c);
 
 	return c;
 }

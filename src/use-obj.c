@@ -989,16 +989,16 @@ static bool read_scroll(object_type *o_ptr, bool *ident)
 			break;
 		}
 
-		case SV_SCROLL_GENOCIDE:
+		case SV_SCROLL_BANISHMENT:
 		{
-			(void)genocide();
+			(void)banishment();
 			*ident = TRUE;
 			break;
 		}
 
-		case SV_SCROLL_MASS_GENOCIDE:
+		case SV_SCROLL_MASS_BANISHMENT:
 		{
-			(void)mass_genocide();
+			(void)mass_banishment();
 			*ident = TRUE;
 			break;
 		}
@@ -1253,9 +1253,9 @@ static bool use_staff(object_type *o_ptr, bool *ident)
 			break;
 		}
 
-		case SV_STAFF_GENOCIDE:
+		case SV_STAFF_BANISHMENT:
 		{
-			(void)genocide();
+			(void)banishment();
 			*ident = TRUE;
 			break;
 		}
@@ -2018,10 +2018,10 @@ static bool activate_object(object_type *o_ptr, bool *ident)
 				break;
 			}
 
-			case ACT_GENOCIDE:
+			case ACT_BANISHMENT:
 			{
 				msg_format("Your %s glows deep blue...", o_name);
-				(void)genocide();
+				(void)banishment();
 				break;
 			}
 
@@ -2214,10 +2214,10 @@ static bool activate_object(object_type *o_ptr, bool *ident)
 				break;
 			}
 
-			case ACT_MASS_GENOCIDE:
+			case ACT_MASS_BANISHMENT:
 			{
 				msg_format("Your %s lets out a long, shrill note...", o_name);
-				(void)mass_genocide();
+				(void)mass_banishment();
 				break;
 			}
 
@@ -2599,8 +2599,8 @@ static cptr act_description[ACT_MAX] =
 	"sleep II",
 	"lightning bolt (4d8)",
 	"large lightning ball (250)",
-	"genocide",
-	"mass genocide",
+	"banishment",
+	"mass banishment",
 	"identify",
 	"drain life (90)",
 	"drain life (120)",

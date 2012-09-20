@@ -593,7 +593,7 @@ s16b get_mon_num(int level)
  * Useful Modes:
  *   0x00 --> Full nominative name ("the kobold") or "it"
  *   0x04 --> Full nominative name ("the kobold") or "something"
- *   0x80 --> Genocide resistance name ("the kobold")
+ *   0x80 --> Banishment resistance name ("the kobold")
  *   0x88 --> Killing name ("a kobold")
  *   0x22 --> Possessive, genderized if visable ("his") or "its"
  *   0x23 --> Reflexive, genderized if visable ("himself") or "itself"

@@ -760,6 +760,12 @@ static cptr process_pref_file_expr(char **sp, char *fp)
 			{
 				v = op_ptr->base_name;
 			}
+
+			/* Game version */
+			else if (streq(b+1, "VERSION"))
+			{
+				v = VERSION_STRING;
+			}
 		}
 
 		/* Constant */
@@ -1165,15 +1171,10 @@ errr check_load_init(void)
 
 
 /*
- * Hack -- pass color info around this file
+ * Returns a "rating" of x depending on y, and sets "attr" to the
+ * corresponding "attribute".
  */
-static byte likert_color = TERM_WHITE;
-
-
-/*
- * Returns a "rating" of x depending on y
- */
-static cptr likert(int x, int y)
+static cptr likert(int x, int y, byte *attr)
 {
 	/* Paranoia */
 	if (y <= 0) y = 1;
@@ -1181,7 +1182,7 @@ static cptr likert(int x, int y)
 	/* Negative value */
 	if (x < 0)
 	{
-		likert_color = TERM_RED;
+		*attr = TERM_RED;
 		return ("Very Bad");
 	}
 
@@ -1191,34 +1192,34 @@ static cptr likert(int x, int y)
 		case 0:
 		case 1:
 		{
-			likert_color = TERM_RED;
+			*attr = TERM_RED;
 			return ("Bad");
 		}
 		case 2:
 		{
-			likert_color = TERM_RED;
+			*attr = TERM_RED;
 			return ("Poor");
 		}
 		case 3:
 		case 4:
 		{
-			likert_color = TERM_YELLOW;
+			*attr = TERM_YELLOW;
 			return ("Fair");
 		}
 		case 5:
 		{
-			likert_color = TERM_YELLOW;
+			*attr = TERM_YELLOW;
 			return ("Good");
 		}
 		case 6:
 		{
-			likert_color = TERM_YELLOW;
+			*attr = TERM_YELLOW;
 			return ("Very Good");
 		}
 		case 7:
 		case 8:
 		{
-			likert_color = TERM_L_GREEN;
+			*attr = TERM_L_GREEN;
 			return ("Excellent");
 		}
 		case 9:
@@ -1227,7 +1228,7 @@ static cptr likert(int x, int y)
 		case 12:
 		case 13:
 		{
-			likert_color = TERM_L_GREEN;
+			*attr = TERM_L_GREEN;
 			return ("Superb");
 		}
 		case 14:
@@ -1235,12 +1236,12 @@ static cptr likert(int x, int y)
 		case 16:
 		case 17:
 		{
-			likert_color = TERM_L_GREEN;
+			*attr = TERM_L_GREEN;
 			return ("Heroic");
 		}
 		default:
 		{
-			likert_color = TERM_L_GREEN;
+			*attr = TERM_L_GREEN;
 			return ("Legendary");
 		}
 	}
@@ -1262,6 +1263,7 @@ static void display_player_xtra_info(void)
 	int tmp;
 	int xthn, xthb, xfos, xsrh;
 	int xdis, xdev, xsav, xstl;
+	byte likert_attr;
 
 	object_type *o_ptr;
 
@@ -1468,36 +1470,36 @@ static void display_player_xtra_info(void)
 
 
 	put_str("Saving Throw", 10, col);
-	desc = likert(xsav, 6);
-	c_put_str(likert_color, format("%9s", desc), 10, col+14);
+	desc = likert(xsav, 6, &likert_attr);
+	c_put_str(likert_attr, format("%9s", desc), 10, col+14);
 
 	put_str("Stealth", 11, col);
-	desc = likert(xstl, 1);
-	c_put_str(likert_color, format("%9s", desc), 11, col+14);
+	desc = likert(xstl, 1, &likert_attr);
+	c_put_str(likert_attr, format("%9s", desc), 11, col+14);
 
 	put_str("Fighting", 12, col);
-	desc = likert(xthn, 12);
-	c_put_str(likert_color, format("%9s", desc), 12, col+14);
+	desc = likert(xthn, 12, &likert_attr);
+	c_put_str(likert_attr, format("%9s", desc), 12, col+14);
 
 	put_str("Shooting", 13, col);
-	desc = likert(xthb, 12);
-	c_put_str(likert_color, format("%9s", desc), 13, col+14);
+	desc = likert(xthb, 12, &likert_attr);
+	c_put_str(likert_attr, format("%9s", desc), 13, col+14);
 
 	put_str("Disarming", 14, col);
-	desc = likert(xdis, 8);
-	c_put_str(likert_color, format("%9s", desc), 14, col+14);
+	desc = likert(xdis, 8, &likert_attr);
+	c_put_str(likert_attr, format("%9s", desc), 14, col+14);
 
 	put_str("Magic Device", 15, col);
-	desc = likert(xdev, 6);
-	c_put_str(likert_color, format("%9s", desc), 15, col+14);
+	desc = likert(xdev, 6, &likert_attr);
+	c_put_str(likert_attr, format("%9s", desc), 15, col+14);
 
 	put_str("Perception", 16, col);
-	desc = likert(xfos, 6);
-	c_put_str(likert_color, format("%9s", desc), 16, col+14);
+	desc = likert(xfos, 6, &likert_attr);
+	c_put_str(likert_attr, format("%9s", desc), 16, col+14);
 
 	put_str("Searching", 17, col);
-	desc = likert(xsrh, 6);
-	c_put_str(likert_color, format("%9s", desc), 17, col+14);
+	desc = likert(xsrh, 6, &likert_attr);
+	c_put_str(likert_attr, format("%9s", desc), 17, col+14);
 
 	/* Indent output by 1 character, and wrap at column 72 */
 	text_out_wrap = 72;
@@ -3304,8 +3306,6 @@ static void death_examine(void)
 
 	object_type *o_ptr;
 
-	char o_name[80];
-
 	cptr q, s;
 
 
@@ -3326,18 +3326,8 @@ static void death_examine(void)
 		/* Fully known */
 		o_ptr->ident |= (IDENT_MENTAL);
 
-		/* Description */
-		object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
-
 		/* Describe */
-		msg_format("Examining %s...", o_name);
-
-		/* Describe it fully */
-		if (!identify_fully_aux(o_ptr))
-		{
-			msg_print("You see nothing special.");
-			message_flush();
-		}
+		object_info_screen(o_ptr);
 	}
 }
 
@@ -4164,8 +4154,6 @@ static void close_game_aux(void)
 /*
  * Close up the current game (player may or may not be dead)
  *
- * This function is called only from "main.c" and "signals.c".
- *
  * Note that the savefile is not saved until the tombstone is
  * actually displayed and the player has a chance to examine
  * the inventory and such.  This allows cheating if the game
@@ -4388,8 +4376,12 @@ static void handle_signal_simple(int sig)
 		/* Mark the savefile */
 		strcpy(p_ptr->died_from, "Abortion");
 
-		/* Close stuff */
-		close_game();
+		/* HACK - Skip the tombscreen if it is already displayed */
+		if (score_idx == -1)
+		{
+			/* Close stuff */
+			close_game();
+		}
 
 		/* Quit */
 		quit("interrupt");

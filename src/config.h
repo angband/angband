@@ -409,7 +409,9 @@
  * for storing pref-files and character-dumps.
  */
 #ifdef SET_UID
-#define PRIVATE_USER_PATH "~/.angband"
+# ifndef PRIVATE_USER_PATH
+#  define PRIVATE_USER_PATH "~/.angband"
+# endif /* PRIVATE_USER_PATH */
 #endif /* SET_UID */
 
 
@@ -468,7 +470,7 @@
 /*
  * OPTION: Person to bother if something goes wrong.
  */
-#define MAINTAINER	"rr9@angband.org"
+#define MAINTAINER	"rr9@thangorodrim.net"
 
 
 /*

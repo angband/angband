@@ -2273,13 +2273,23 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note)
 bool modify_panel(int wy, int wx)
 {
 	/* Verify wy, adjust if needed */
-	if (p_ptr->depth == 0) wy = 0;
+	if (p_ptr->depth == 0)
+	{
+		if (wy > TOWN_HGT - SCREEN_HGT) wy = TOWN_HGT - SCREEN_HGT;
+		else if (wy < 0) wy = 0;
+	}
 	else if (wy > DUNGEON_HGT - SCREEN_HGT) wy = DUNGEON_HGT - SCREEN_HGT;
+
 	if (wy < 0) wy = 0;
 
 	/* Verify wx, adjust if needed */
-	if (p_ptr->depth == 0) wx = 0;
+	if (p_ptr->depth == 0)
+	{
+		if (wx > TOWN_WID - SCREEN_WID) wx = TOWN_WID - SCREEN_WID;
+		else if (wx < 0) wx = 0;
+	}
 	else if (wx > DUNGEON_WID - SCREEN_WID) wx = DUNGEON_WID - SCREEN_WID;
+
 	if (wx < 0) wx = 0;
 
 	/* React to changes */
@@ -3241,11 +3251,11 @@ static int target_set_interactive_aux(int y, int x, int mode, cptr info)
 		/* Scan all objects in the grid */
 		if (easy_floor)
 		{
-			int floor_list[24];
+			int floor_list[MAX_FLOOR_STACK];
 			int floor_num;
 
 			/* Scan for floor objects */
-			floor_num = scan_floor(floor_list, 24, y, x, 0x02);
+			floor_num = scan_floor(floor_list, MAX_FLOOR_STACK, y, x, 0x02);
 
 			/* Actual pile */
 			if (floor_num > 1)

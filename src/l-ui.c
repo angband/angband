@@ -514,6 +514,44 @@ tolua_lerror:
  return 0;
 }
 
+/* function: flush */
+static int toluaI_ui_flush00(lua_State* tolua_S)
+{
+ if (
+ !tolua_isnoobj(tolua_S,1)
+ )
+ goto tolua_lerror;
+ else
+ {
+ {
+  flush();
+ }
+ }
+ return 0;
+tolua_lerror:
+ tolua_error(tolua_S,"#ferror in function 'flush'.");
+ return 0;
+}
+
+/* function: flush_fail */
+static int toluaI_ui_flush_fail00(lua_State* tolua_S)
+{
+ if (
+ !tolua_isnoobj(tolua_S,1)
+ )
+ goto tolua_lerror;
+ else
+ {
+ {
+  flush_fail();
+ }
+ }
+ return 0;
+tolua_lerror:
+ tolua_error(tolua_S,"#ferror in function 'flush_fail'.");
+ return 0;
+}
+
 /* Open function */
 int tolua_ui_open (lua_State* tolua_S)
 {
@@ -641,6 +679,8 @@ int tolua_ui_open (lua_State* tolua_S)
  tolua_function(tolua_S,NULL,"get_aim_dir",toluaI_ui_get_aim_dir00);
  tolua_function(tolua_S,NULL,"text_out",toluaI_ui_text_out00);
  tolua_function(tolua_S,NULL,"Term_clear",toluaI_ui_Term_clear00);
+ tolua_function(tolua_S,NULL,"flush",toluaI_ui_flush00);
+ tolua_function(tolua_S,NULL,"flush_fail",toluaI_ui_flush_fail00);
  return 1;
 }
 /* Close function */
@@ -768,4 +808,6 @@ void tolua_ui_close (lua_State* tolua_S)
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"get_aim_dir");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"text_out");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"Term_clear");
+ lua_pushnil(tolua_S); lua_setglobal(tolua_S,"flush");
+ lua_pushnil(tolua_S); lua_setglobal(tolua_S,"flush_fail");
 }

@@ -3,7 +3,7 @@
 ** TeCGraf/PUC-Rio
 ** http://www.tecgraf.puc-rio.br/~celes/tolua
 ** Jul 1998
-** $Id: tolua.h,v 1.1 2001/10/27 19:35:29 angband Exp $
+** $Id: tolua.h,v 1.3 2002/12/06 22:30:56 rr9 Exp $
 */
 
 /* This code is free software; you can redistribute it and/or modify it.
@@ -21,10 +21,6 @@
 
 #include <stdlib.h>		/* NULL, malloc, free */
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include "lua.h"
 
 
@@ -35,7 +31,7 @@ void  tolua_using (lua_State* L, int module);
 void  tolua_class (lua_State* L, int derived, int base);
 void  tolua_instance (lua_State* L, int instance, int classobj);
 void  tolua_foreach (lua_State* L, int lo, int f);
-int   tolua_tag (lua_State* L, char* type);
+int   tolua_tag (lua_State* L, const char* type);
 const char* tolua_type (lua_State* L, int lo);
 int   tolua_base (lua_State* L, int lo);
 int   tolua_cast (lua_State* L, int lo, char* type);
@@ -50,16 +46,16 @@ void  tolua_takeownership (lua_State* L, int lo);
 /*#define TOLUA_NIL	(lua_pushnil(),lua_pop())*/
 
 /* Register functions */
-void tolua_globalvar (lua_State* L, char* name, lua_CFunction get, lua_CFunction set);
-void tolua_globalarray (lua_State* L, char* name, lua_CFunction get, lua_CFunction set);
-void tolua_module (lua_State* L, char* name);
-void tolua_cclass (lua_State* L, char* name, char* base);
-void tolua_function (lua_State* L, char* parent, char* name, lua_CFunction func);
-void tolua_constant (lua_State* L, char* parent, char* name, long value);
+void tolua_globalvar (lua_State* L, const char* name, lua_CFunction get, lua_CFunction set);
+void tolua_globalarray (lua_State* L, const char* name, lua_CFunction get, lua_CFunction set);
+void tolua_module (lua_State* L, const char* name);
+void tolua_cclass (lua_State* L, const char* name, const char* base);
+void tolua_function (lua_State* L, const char* parent, const char* name, lua_CFunction func);
+void tolua_constant (lua_State* L, char* parent, const char* name, long value);
 void tolua_tablevar
-(lua_State* L, char* table, char* name, lua_CFunction get, lua_CFunction set);
+(lua_State* L, const char* table, const char* name, lua_CFunction get, lua_CFunction set);
 void tolua_tablearray
-(lua_State* L, char* table, char* name, lua_CFunction get, lua_CFunction set);
+(lua_State* L, const char* table, const char* name, lua_CFunction get, lua_CFunction set);
 
 
 /* Get and push functions */
@@ -91,7 +87,7 @@ void tolua_pushfieldbool (lua_State* L, int lo, int index, int v);
 
 
 /* Type & tag manipulation */
-void tolua_usertype (lua_State* L, char* type);
+void tolua_usertype (lua_State* L, const char* type);
 #if 0
 void tolua_settag (lua_State* L, char* type, int* tag);
 #endif
@@ -105,7 +101,7 @@ void* tolua_doclone (lua_State* L, void* value, int tag);
 void* tolua_copy (lua_State* L, void* value, unsigned int size);
 
 /* Error handling */
-void tolua_error (lua_State* L, char* msg);
+void tolua_error (lua_State* L, const char* msg);
 
 /* Exported variables */
 extern int tolua_tag_nil;
@@ -114,10 +110,6 @@ extern int tolua_tag_string;
 extern int tolua_tag_userdata;
 extern int tolua_tag_table;
 extern int tolua_tag_function;
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif 
 

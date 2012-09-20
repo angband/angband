@@ -3,7 +3,7 @@
 ** Written by Waldemar Celes
 ** TeCGraf/PUC-Rio
 ** Jul 1998
-** $Id: tolua_lb.c,v 1.1 2001/10/27 19:35:29 angband Exp $
+** $Id: tolua_lb.c,v 1.2 2002/11/23 21:31:25 rr9 Exp $
 */
 
 /* This code is free software; you can redistribute it and/or modify it. 
@@ -112,7 +112,7 @@ const char* tolua_type (lua_State* L, int lo)
  return toluaI_tt_getobjtype(L,lo);
 }
 
-int tolua_tag (lua_State* L, char* type)
+int tolua_tag (lua_State* L, const char* type)
 {
  return toluaI_tt_gettag(L,type);
 }

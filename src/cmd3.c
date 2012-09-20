@@ -505,8 +505,6 @@ void do_cmd_observe(void)
 
 	object_type *o_ptr;
 
-	char o_name[80];
-
 	cptr q, s;
 
 
@@ -527,14 +525,8 @@ void do_cmd_observe(void)
 		o_ptr = &o_list[0 - item];
 	}
 
-	/* Description */
-	object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
-
 	/* Describe */
-	msg_format("Examining %s...", o_name);
-
-	/* Describe it fully */
-	if (!identify_fully_aux(o_ptr)) msg_print("You see nothing special.");
+	object_info_screen(o_ptr);
 }
 
 
@@ -579,7 +571,7 @@ void do_cmd_uninscribe(void)
 	/* Message */
 	msg_print("Inscription removed.");
 
-	/* Remove the incription */
+	/* Remove the inscription */
 	o_ptr->note = 0;
 
 	/* Combine the pack */
@@ -1230,58 +1222,10 @@ void ang_sort_swap_hook(void *u, void *v, int a, int b)
 }
 
 
-
-/*
- * Hack -- Display the "name" and "attr/chars" of a monster race
- */
-static void roff_top(int r_idx)
-{
-	monster_race *r_ptr = &r_info[r_idx];
-
-	byte a1, a2;
-	char c1, c2;
-
-
-	/* Get the chars */
-	c1 = r_ptr->d_char;
-	c2 = r_ptr->x_char;
-
-	/* Get the attrs */
-	a1 = r_ptr->d_attr;
-	a2 = r_ptr->x_attr;
-
-
-	/* Clear the top line */
-	Term_erase(0, 0, 255);
-
-	/* Reset the cursor */
-	Term_gotoxy(0, 0);
-
-	/* A title (use "The" for non-uniques) */
-	if (!(r_ptr->flags1 & (RF1_UNIQUE)))
-	{
-		Term_addstr(-1, TERM_WHITE, "The ");
-	}
-
-	/* Dump the name */
-	Term_addstr(-1, TERM_WHITE, (r_name + r_ptr->name));
-
-	/* Append the "standard" attr/char info */
-	Term_addstr(-1, TERM_WHITE, " ('");
-	Term_addch(a1, c1);
-	Term_addstr(-1, TERM_WHITE, "')");
-
-	/* Append the "optional" attr/char info */
-	Term_addstr(-1, TERM_WHITE, "/('");
-	Term_addch(a2, c2);
-	Term_addstr(-1, TERM_WHITE, "'):");
-}
-
-
 /*
  * Identify a character, allow recall of monsters
  *
- * Several "special" responses recall "mulitple" monsters:
+ * Several "special" responses recall "multiple" monsters:
  *   ^A (all monsters)
  *   ^U (all unique monsters)
  *   ^N (all non-unique monsters)
