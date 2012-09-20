@@ -1338,7 +1338,7 @@ cptr stat_names_reduced[A_MAX] =
 cptr stat_names_full[A_MAX] =
 {
 	"strength",
-	"intellegence",
+	"intelligence",
 	"wisdom",
 	"dexterity",
 	"constitution",

@@ -940,16 +940,16 @@ void set_recall(void)
 	/* Activate recall */
 	if (!p_ptr->word_recall)
 	{
-  	/* Reset recall depth */
-  	if ((p_ptr->depth > 0) && (p_ptr->depth != p_ptr->max_depth))
-  	{
-  		/*
-  		 * ToDo: Add a new player_type field "recall_depth"
-  		 * ToDo: Poll: Always reset recall depth?
-  		 */
-  		if (get_check("Reset recall depth? "))
-  			p_ptr->max_depth = p_ptr->depth;
-  	}
+		/* Reset recall depth */
+		if ((p_ptr->depth > 0) && (p_ptr->depth != p_ptr->max_depth))
+		{
+			/*
+			 * ToDo: Add a new player_type field "recall_depth"
+			 * ToDo: Poll: Always reset recall depth?
+			 */
+			 if (get_check("Reset recall depth? "))
+				p_ptr->max_depth = p_ptr->depth;
+		}
 
 		p_ptr->word_recall = rand_int(20) + 15;
 		msg_print("The air about you becomes charged...");

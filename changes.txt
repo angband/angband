@@ -1,3 +1,23 @@
+Changes in Angband 3.0.3:
+- Reduced the size of the 32x32 tiles bitmap.  The smaller bitmap should
+  fix the problem on older Windows versions (Windows 95 and 98) with
+  restrictions of the maximal bitmap size .
+  The tiles are available as a separate download from:
+  ftp://clockwork.dementia.org/angband/Extra/graf-32x32-302.zip
+- Fixed a bug in the text-output routines used for character dumps that
+  sometimes introduced bogus output. (reported by Pasi Vartiainen)
+- Fixed a wrong entry in the template for the X11 startup shell script.
+  ("Mynstral")
+- Fixed the display of *slays* in character dumps. (Matthias Kurzke)
+- The "It might have hidden powers." message will now displayed in the
+  character dumps.  This makes it easier to see if an artifact or ego-item
+  with random abilities has already been *identified*.
+- Curses on unidentified items are no longer revealed in character dumps or
+  in the output of the 'Inspect' command.
+- Fixed a typo - "intellegence". (Greg Stark)
+- Updated the DOS version to compile with the latest version of the Allegro
+  library.
+
 Changes in Angband 3.0.2:
 - Limited the maximum size of floor stacks to 23, so that get_item() can
   always display a list containing all objects.
@@ -52,7 +72,7 @@ Changes in Angband 3.0.2:
 - Added Takeshi Mogami's bigtile patch that allows tile-graphics to have
   doubled width.
 - Added support for David Gervais' 32x32 tileset to the Windows, X11, and
-  XAW ports.  The tiles are available as a seperate download from:
+  XAW ports.  The tiles are available as a separate download from:
   ftp://clockwork.dementia.org/angband/Extra/32x32.zip
   (Takeshi Mogami)
 - Improved the error message when a font can't be loaded in the X11 and

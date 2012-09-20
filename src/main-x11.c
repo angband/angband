@@ -59,7 +59,7 @@
  * setenv ANGBAND_X11_FONT_2 8x13
  * setenv ANGBAND_X11_AT_X_2 635
  * setenv ANGBAND_X11_AT_Y_2 182
- * setenv ANGBAND_X11_ROWS_3 23
+ * setenv ANGBAND_X11_ROWS_2 23
  *
  * # Equipment window
  * setenv ANGBAND_X11_FONT_3 8x13
@@ -1461,7 +1461,7 @@ struct term_data
 
 	XImage *tiles;
 
-	/* Tempory storage for overlaying tiles. */
+	/* Temporary storage for overlaying tiles. */
 	XImage *TmpImage;
 
 #endif /* USE_GRAPHICS */

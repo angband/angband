@@ -530,7 +530,7 @@ size_t vstrnfmt(char *buf, size_t max, cptr fmt, va_list vp)
 		}
 
 
-		/* Mega-Hack -- handle "capitilization" */
+		/* Mega-Hack -- handle "capitalization" */
 		if (do_xtra)
 		{
 			/* Now append "tmp" to "buf" */

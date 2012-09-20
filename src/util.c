@@ -2930,8 +2930,10 @@ void text_out_to_file(byte a, cptr str)
 		/* If we are at the start of the line... */
 		if (pos == 0)
 		{
+			int i;
+
 			/* Output the indent */
-			for (n = 0; n < text_out_indent; n++)
+			for (i = 0; i < text_out_indent; i++)
 			{
 				fputc(' ', text_out_file);
 				pos++;

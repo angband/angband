@@ -147,19 +147,22 @@ static bool describe_slay(const object_type *o_ptr, u32b f1)
 	if (f1 & (TR1_SLAY_GIANT))  slays[slcnt++] = "giants";
 
 	/* Dragon slay/execute */
-	if ((f1 & (TR1_KILL_DRAGON)) && !(f1 & (TR1_SLAY_DRAGON)))
+	if (f1 & TR1_KILL_DRAGON)
 		execs[excnt++] = "dragons";
-	else if (f1 & (TR1_SLAY_DRAGON)) slays[slcnt++] = "dragons";
+	else if (f1 & TR1_SLAY_DRAGON)
+		slays[slcnt++] = "dragons";
 
 	/* Demon slay/execute */
-	if ((f1 & (TR1_KILL_DEMON)) && !(f1 & (TR1_SLAY_DEMON)))
+	if (f1 & TR1_KILL_DEMON)
 		execs[excnt++] = "demons";
-	else if (f1 & (TR1_SLAY_DEMON))  slays[slcnt++] = "demons";
+	else if (f1 & TR1_SLAY_DEMON)
+		slays[slcnt++] = "demons";
 
 	/* Undead slay/execute */
-	if ((f1 & (TR1_KILL_UNDEAD)) && !(f1 & (TR1_KILL_UNDEAD)))
+	if (f1 & TR1_KILL_UNDEAD)
 		execs[excnt++] = "undead";
-	else if (f1 & (TR1_SLAY_UNDEAD)) slays[slcnt++] = "undead";
+	else if (f1 & TR1_SLAY_UNDEAD)
+		slays[slcnt++] = "undead";
 
 	if (f1 & (TR1_SLAY_EVIL)) slays[slcnt++] = "all evil creatures";
 
@@ -388,7 +391,7 @@ static bool describe_misc_magic(const object_type *o_ptr, u32b f3)
 	{
 		if (f3 & (TR3_PERMA_CURSE)) bad[bc++] = "is permanently cursed";
 		else if (f3 & (TR3_HEAVY_CURSE)) bad[bc++] = "is heavily cursed";
-		else bad[bc++] = "is cursed";
+		else if (object_known_p(o_ptr)) bad[bc++] = "is cursed";
 	}
 
 	/* Describe */
@@ -468,6 +471,14 @@ bool object_info_out(const object_type *o_ptr)
 	if (describe_activation(o_ptr, f3)) something = TRUE;
 	if (describe_ignores(o_ptr, f3)) something = TRUE;
 
+	/* Unknown extra powers (ego-item with random extras or artifact) */
+	if (object_known_p(o_ptr) && (!(o_ptr->ident & IDENT_MENTAL)) &&
+	    ((o_ptr->xtra1) || artifact_p(o_ptr)))
+	{
+		text_out("It might have hidden powers.  ");
+		something = TRUE;
+	}
+
 	/* We are done. */
 	return something;
 }
@@ -503,22 +514,6 @@ static void screen_out_head(const object_type *o_ptr)
 
 
 /*
- * Footer for additional information when printing to screen.
- */
-static void screen_out_foot(const object_type *o_ptr)
-{
-	/* Unknown extra powers (ego-item with random extras or artifact) */
-	if (object_known_p(o_ptr) && (!(o_ptr->ident & IDENT_MENTAL)) &&
-	    ((o_ptr->xtra1) || artifact_p(o_ptr)))
-	{
-		text_out("It might have hidden powers.  ");
-	}
-
-	text_out_c(TERM_L_BLUE, "\n\n[Press any key to continue]\n");
-}
-
-
-/*
  * Place an item description on the screen.
  */
 void object_info_screen(const object_type *o_ptr)
@@ -545,7 +540,7 @@ void object_info_screen(const object_type *o_ptr)
 		if (!object_info_out(o_ptr))
 			text_out("This item does not seem to possess any special abilities.  ");
 
-		screen_out_foot(o_ptr);
+		text_out_c(TERM_L_BLUE, "\n\n[Press any key to continue]\n");
 
 		/* Wait for input */
 		(void)inkey();
