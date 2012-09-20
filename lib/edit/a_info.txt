@@ -1,12 +1,12 @@
 # File: a_info.txt
 
 
-# This file is used to initialize the "lib/raw/a_info.raw" file, which is
+# This file is used to initialize the "lib/data/a_info.raw" file, which is
 # used to initialize the "artifact" information for the Angband game.
 
 # Do not modify this file unless you know exactly what you are doing,
 # unless you wish to risk possible system crashes and broken savefiles.
-# After modifying this file, delete the "lib/raw/a_info.raw" file.
+# After modifying this file, delete the "lib/data/a_info.raw" file.
 
 # The artifact indexes are defined in "defines.h", and must not be changed.
 
@@ -56,7 +56,7 @@
 
 # Version stamp (required)
 
-V:2.9.1
+V:2.9.2
 
 
 
@@ -1172,6 +1172,7 @@ P:0:5d3:8:8:10
 F:DEX | CHR | HIDE_TYPE | 
 F:BRAND_COLD | BRAND_FIRE | FREE_ACT | RES_FIRE | RES_COLD | 
 F:RES_LITE | LITE | SEE_INVIS | ACTIVATE | SHOW_MODS
+A:WOR:200:0
 
 
 # Artifact 110 is unused

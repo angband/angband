@@ -71,7 +71,7 @@ void do_cmd_redraw(void)
 
 
 	/* Redraw every window */
-	for (j = 0; j < 8; j++)
+	for (j = 0; j < ANGBAND_TERM_MAX; j++)
 	{
 		/* Dead window */
 		if (!angband_term[j]) continue;
@@ -165,7 +165,7 @@ void do_cmd_change_name(void)
 		}
 
 		/* Flush messages */
-		msg_print(NULL);
+		message_flush();
 	}
 
 	/* Load screen */
@@ -202,8 +202,8 @@ void do_cmd_messages(void)
 {
 	char ch;
 
-	int i, j, n;
-	uint q;
+	int i, j, n, q;
+	int wid, hgt;
 
 	char shower[80];
 	char finder[80];
@@ -225,6 +225,8 @@ void do_cmd_messages(void)
 	/* Start at leftmost edge */
 	q = 0;
 
+	/* Get size */
+	Term_get_size(&wid, &hgt);
 
 	/* Save screen */
 	screen_save();
@@ -235,17 +237,17 @@ void do_cmd_messages(void)
 		/* Clear screen */
 		Term_clear();
 
-		/* Dump up to 20 lines of messages */
-		for (j = 0; (j < 20) && (i + j < n); j++)
+		/* Dump messages */
+		for (j = 0; (j < hgt - 4) && (i + j < n); j++)
 		{
 			cptr msg = message_str((s16b)(i+j));
 			byte attr = message_color((s16b)(i+j));
 
 			/* Apply horizontal scroll */
-			msg = (strlen(msg) >= q) ? (msg + q) : "";
+			msg = ((int)strlen(msg) >= q) ? (msg + q) : "";
 
 			/* Dump the messages, bottom to top */
-			Term_putstr(0, 21-j, -1, attr, msg);
+			Term_putstr(0, hgt - 3 - j, -1, attr, msg);
 
 			/* Hilite "shower" */
 			if (shower[0])
@@ -258,7 +260,7 @@ void do_cmd_messages(void)
 					int len = strlen(shower);
 
 					/* Display the match */
-					Term_putstr(str-msg, 21-j, len, TERM_YELLOW, shower);
+					Term_putstr(str-msg, hgt - 3 - j, len, TERM_YELLOW, shower);
 
 					/* Advance */
 					str += len;
@@ -268,10 +270,10 @@ void do_cmd_messages(void)
 
 		/* Display header XXX XXX XXX */
 		prt(format("Message Recall (%d-%d of %d), Offset %d",
-		           i, i+j-1, n, q), 0, 0);
+		           i, i + j - 1, n, q), 0, 0);
 
 		/* Display prompt (not very informative) */
-		prt("[Press 'p' for older, 'n' for newer, ..., or ESCAPE]", 23, 0);
+		prt("[Press 'p' for older, 'n' for newer, ..., or ESCAPE]", hgt - 1, 0);
 
 		/* Get a command */
 		ch = inkey();
@@ -286,7 +288,7 @@ void do_cmd_messages(void)
 		if (ch == '4')
 		{
 			/* Scroll left */
-			q = (q >= 40) ? (q - 40) : 0;
+			q = (q >= wid / 2) ? (q - wid / 2) : 0;
 
 			/* Success */
 			continue;
@@ -296,7 +298,7 @@ void do_cmd_messages(void)
 		if (ch == '6')
 		{
 			/* Scroll right */
-			q = q + 40;
+			q = q + wid / 2;
 
 			/* Success */
 			continue;
@@ -306,7 +308,7 @@ void do_cmd_messages(void)
 		if (ch == '=')
 		{
 			/* Prompt */
-			prt("Show: ", 23, 0);
+			prt("Show: ", hgt - 1, 0);
 
 			/* Get a "shower" string, or continue */
 			if (!askfor_aux(shower, 80)) continue;
@@ -321,7 +323,7 @@ void do_cmd_messages(void)
 			s16b z;
 
 			/* Prompt */
-			prt("Find: ", 23, 0);
+			prt("Find: ", hgt - 1, 0);
 
 			/* Get a "finder" string, or continue */
 			if (!askfor_aux(finder, 80)) continue;
@@ -412,7 +414,7 @@ void do_cmd_pref(void)
 	if (!get_string("Pref: ", tmp, 80)) return;
 
 	/* Process that pref command */
-	(void)process_pref_file_aux(tmp);
+	(void)process_pref_file_command(tmp);
 }
 
 
@@ -569,6 +571,14 @@ static void do_cmd_options_aux(int page, cptr info)
 				break;
 			}
 
+			case '?':
+			{
+				sprintf(buf, "option.txt#%s", option_text[opt[k]]);
+				show_file(buf, NULL, 0, 0);
+				Term_clear();
+				break;
+			}
+
 			default:
 			{
 				bell("Illegal command for normal options!");
@@ -591,11 +601,11 @@ static void do_cmd_options_win(void)
 
 	char ch;
 
-	u32b old_flag[8];
+	u32b old_flag[ANGBAND_TERM_MAX];
 
 
 	/* Memorize old flags */
-	for (j = 0; j < 8; j++)
+	for (j = 0; j < ANGBAND_TERM_MAX; j++)
 	{
 		old_flag[j] = op_ptr->window_flag[j];
 	}
@@ -611,7 +621,7 @@ static void do_cmd_options_win(void)
 		prt("Window flags (<dir> to move, 't' to toggle, or ESC)", 0, 0);
 
 		/* Display the windows */
-		for (j = 0; j < 8; j++)
+		for (j = 0; j < ANGBAND_TERM_MAX; j++)
 		{
 			byte a = TERM_WHITE;
 
@@ -641,7 +651,7 @@ static void do_cmd_options_win(void)
 			Term_putstr(0, i + 5, -1, a, str);
 
 			/* Display the windows */
-			for (j = 0; j < 8; j++)
+			for (j = 0; j < ANGBAND_TERM_MAX; j++)
 			{
 				byte a = TERM_WHITE;
 
@@ -710,7 +720,7 @@ static void do_cmd_options_win(void)
 	}
 
 	/* Notice changes */
-	for (j = 0; j < 8; j++)
+	for (j = 0; j < ANGBAND_TERM_MAX; j++)
 	{
 		term *old = Term;
 
@@ -790,7 +800,7 @@ static errr option_dump(cptr fname)
 	}
 
 	/* Dump window flags */
-	for (i = 1; i < 8; i++)
+	for (i = 1; i < ANGBAND_TERM_MAX; i++)
 	{
 		/* Require a real window */
 		if (!angband_term[i]) continue;
@@ -850,7 +860,7 @@ void do_cmd_options(void)
 		Term_clear();
 
 		/* Why are we here */
-		prt("Angband options", 2, 0);
+		prt(format("%s options", VERSION_NAME), 2, 0);
 
 		/* Give some choices */
 		prt("(1) User Interface Options", 4, 5);
@@ -946,9 +956,6 @@ void do_cmd_options(void)
 			/* Ask for a file */
 			if (!askfor_aux(ftmp, 80)) continue;
 
-			/* Drop priv's */
-			safe_setuid_drop();
-
 			/* Dump the options */
 			if (option_dump(ftmp))
 			{
@@ -960,9 +967,6 @@ void do_cmd_options(void)
 				/* Success */
 				msg_print("Done.");
 			}
-
-			/* Grab priv's */
-			safe_setuid_grab();
 		}
 
 		/* Hack -- Base Delay Factor */
@@ -1016,7 +1020,7 @@ void do_cmd_options(void)
 		}
 
 		/* Flush messages */
-		msg_print(NULL);
+		message_flush();
 	}
 
 
@@ -1383,14 +1387,8 @@ void do_cmd_macros(void)
 			/* Ask for a file */
 			if (!askfor_aux(ftmp, 80)) continue;
 
-			/* Drop priv's */
-			safe_setuid_drop();
-
 			/* Dump the macros */
 			(void)macro_dump(ftmp);
-
-			/* Grab priv's */
-			safe_setuid_grab();
 
 			/* Prompt */
 			msg_print("Appended macros.");
@@ -1508,14 +1506,8 @@ void do_cmd_macros(void)
 			/* Ask for a file */
 			if (!askfor_aux(ftmp, 80)) continue;
 
-			/* Drop priv's */
-			safe_setuid_drop();
-
 			/* Dump the macros */
 			(void)keymap_dump(ftmp);
-
-			/* Grab priv's */
-			safe_setuid_grab();
 
 			/* Prompt */
 			msg_print("Appended keymaps.");
@@ -1652,7 +1644,7 @@ void do_cmd_macros(void)
 		}
 
 		/* Flush messages */
-		msg_print(NULL);
+		message_flush();
 	}
 
 
@@ -1746,14 +1738,8 @@ void do_cmd_visuals(void)
 			/* Build the filename */
 			path_build(buf, 1024, ANGBAND_DIR_USER, ftmp);
 
-			/* Drop priv's */
-			safe_setuid_drop();
-
 			/* Append to the file */
 			fff = my_fopen(buf, "a");
-
-			/* Grab priv's */
-			safe_setuid_grab();
 
 			/* Failure */
 			if (!fff) continue;
@@ -1811,14 +1797,8 @@ void do_cmd_visuals(void)
 			/* Build the filename */
 			path_build(buf, 1024, ANGBAND_DIR_USER, ftmp);
 
-			/* Drop priv's */
-			safe_setuid_drop();
-
 			/* Append to the file */
 			fff = my_fopen(buf, "a");
-
-			/* Grab priv's */
-			safe_setuid_grab();
 
 			/* Failure */
 			if (!fff) continue;
@@ -1876,14 +1856,8 @@ void do_cmd_visuals(void)
 			/* Build the filename */
 			path_build(buf, 1024, ANGBAND_DIR_USER, ftmp);
 
-			/* Drop priv's */
-			safe_setuid_drop();
-
 			/* Append to the file */
 			fff = my_fopen(buf, "a");
-
-			/* Grab priv's */
-			safe_setuid_grab();
 
 			/* Failure */
 			if (!fff) continue;
@@ -1935,9 +1909,9 @@ void do_cmd_visuals(void)
 				monster_race *r_ptr = &r_info[r];
 
 				byte da = (byte)(r_ptr->d_attr);
-				char dc = (byte)(r_ptr->d_char);
+				byte dc = (byte)(r_ptr->d_char);
 				byte ca = (byte)(r_ptr->x_attr);
-				char cc = (byte)(r_ptr->x_char);
+				byte cc = (byte)(r_ptr->x_char);
 
 				/* Label the object */
 				Term_putstr(5, 17, -1, TERM_WHITE,
@@ -2105,7 +2079,7 @@ void do_cmd_visuals(void)
 		}
 
 		/* Flush messages */
-		msg_print(NULL);
+		message_flush();
 	}
 
 
@@ -2151,7 +2125,7 @@ void do_cmd_colors(void)
 #ifdef ALLOW_COLORS
 		prt("(2) Dump colors", 5, 5);
 		prt("(3) Modify colors", 6, 5);
-#endif
+#endif /* ALLOW_COLORS */
 
 		/* Prompt */
 		prt("Command: ", 8, 0);
@@ -2199,14 +2173,8 @@ void do_cmd_colors(void)
 			/* Build the filename */
 			path_build(buf, 1024, ANGBAND_DIR_USER, ftmp);
 
-			/* Drop priv's */
-			safe_setuid_drop();
-
 			/* Append to the file */
 			fff = my_fopen(buf, "a");
-
-			/* Grab priv's */
-			safe_setuid_grab();
 
 			/* Failure */
 			if (!fff) continue;
@@ -2323,7 +2291,7 @@ void do_cmd_colors(void)
 			}
 		}
 
-#endif
+#endif /* ALLOW_COLORS */
 
 		/* Unknown option */
 		else
@@ -2332,7 +2300,7 @@ void do_cmd_colors(void)
 		}
 
 		/* Flush messages */
-		msg_print(NULL);
+		message_flush();
 	}
 
 
@@ -2368,8 +2336,8 @@ void do_cmd_note(void)
 void do_cmd_version(void)
 {
 	/* Silly message */
-	msg_format("You are playing Angband %d.%d.%d.  Type '?' for more info.",
-	           VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
+	msg_format("You are playing %s %s.  Type '?' for more info.",
+	           VERSION_NAME, VERSION_STRING);
 }
 
 
@@ -2420,7 +2388,7 @@ void do_cmd_feeling(void)
 /*
  * Encode the screen colors
  */
-static char hack[17] = "dwsorgbuDWvyRGBU";
+static const char hack[17] = "dwsorgbuDWvyRGBU";
 
 
 /*
@@ -2512,7 +2480,7 @@ void do_cmd_load_screen(void)
 
 	/* Message */
 	msg_print("Screen dump loaded.");
-	msg_print(NULL);
+	message_flush();
 
 
 	/* Load screen */
@@ -2541,14 +2509,8 @@ void do_cmd_save_screen(void)
 	/* File type is "TEXT" */
 	FILE_TYPE(FILE_TYPE_TEXT);
 
-	/* Hack -- drop permissions */
-	safe_setuid_drop();
-
 	/* Append to the file */
 	fff = my_fopen(buf, "w");
-
-	/* Hack -- grab permissions */
-	safe_setuid_grab();
 
 	/* Oops */
 	if (!fff) return;
@@ -2612,7 +2574,7 @@ void do_cmd_save_screen(void)
 
 	/* Message */
 	msg_print("Screen dump saved.");
-	msg_print(NULL);
+	message_flush();
 
 
 	/* Load screen */
@@ -2639,10 +2601,10 @@ static void do_cmd_knowledge_artifacts(void)
 
 
 	/* Temporary file */
-	if (path_temp(file_name, 1024)) return;
+	fff = my_fopen_temp(file_name, 1024);
 
-	/* Open a new file */
-	fff = my_fopen(file_name, "w");
+	/* Failure */
+	if (!fff) return;
 
 	/* Allocate the "okay" array */
 	C_MAKE(okay, z_info->a_max, bool);
@@ -2776,13 +2738,15 @@ static void do_cmd_knowledge_uniques(void)
 	char file_name[1024];
 	u16b why = 2;
 	u16b *who;
+	int killed = 0;
+	char header[80];
 
 
 	/* Temporary file */
-	if (path_temp(file_name, 1024)) return;
+	fff = my_fopen_temp(file_name, 1024);
 
-	/* Open a new file */
-	fff = my_fopen(file_name, "w");
+	/* Failure */
+	if (!fff) return;
 
 	/* Allocate the "who" array */
 	C_MAKE(who, z_info->r_max, u16b);
@@ -2817,6 +2781,8 @@ static void do_cmd_knowledge_uniques(void)
 		monster_race *r_ptr = &r_info[who[i]];
 		bool dead = (r_ptr->max_num == 0);
 
+		if (dead) killed++;
+
 		/* Print a message */
 		fprintf(fff, "     %s is %s\n",
 			    (r_name + r_ptr->name),
@@ -2829,8 +2795,11 @@ static void do_cmd_knowledge_uniques(void)
 	/* Close the file */
 	my_fclose(fff);
 
+	/* Construct header line */
+	sprintf(header, "Uniques: %d known, %d killed", n, killed);
+
 	/* Display the file contents */
-	show_file(file_name, "Known Uniques", 0, 0);
+	show_file(file_name, header, 0, 0);
 
 	/* Remove the file */
 	fd_kill(file_name);
@@ -2852,10 +2821,10 @@ static void do_cmd_knowledge_objects(void)
 
 
 	/* Temporary file */
-	if (path_temp(file_name, 1024)) return;
+	fff = my_fopen_temp(file_name, 1024);
 
-	/* Open a new file */
-	fff = my_fopen(file_name, "w");
+	/* Failure */
+	if (!fff) return;
 
 	/* Scan the object kinds */
 	for (k = 1; k < z_info->k_max; k++)
@@ -2963,12 +2932,10 @@ void do_cmd_knowledge(void)
 		}
 
 		/* Flush messages */
-		msg_print(NULL);
+		message_flush();
 	}
 
 
 	/* Load screen */
 	screen_load();
 }
-
-

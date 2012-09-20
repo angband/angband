@@ -223,6 +223,9 @@ C:1:'
 ?:[IOR [EQU $SYS gcu] [EQU $SYS lsl]]
 %:pref-gcu.prf
 
+?:[EQU $SYS gtk]
+%:pref-gtk.prf
+
 ?:[EQU $SYS ami]
 %:pref-ami.prf
 

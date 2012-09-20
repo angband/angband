@@ -598,7 +598,7 @@ s16b get_mon_num(int level)
  *   0x22 --> Possessive, genderized if visable ("his") or "its"
  *   0x23 --> Reflexive, genderized if visable ("himself") or "itself"
  */
-void monster_desc(char *desc, monster_type *m_ptr, int mode)
+void monster_desc(char *desc, const monster_type *m_ptr, int mode)
 {
 	cptr res;
 
@@ -1843,9 +1843,10 @@ bool alloc_monster(int dis, bool slp)
 	int px = p_ptr->px;
 
 	int y, x;
+	int	attempts_left = 10000;
 
 	/* Find a legal, distant, unoccupied, space */
-	while (1)
+	while (--attempts_left)
 	{
 		/* Pick a location */
 		y = rand_int(DUNGEON_HGT);
@@ -1856,6 +1857,16 @@ bool alloc_monster(int dis, bool slp)
 
 		/* Accept far away grids */
 		if (distance(y, x, py, px) > dis) break;
+	}
+
+	if (!attempts_left)
+	{
+		if (cheat_xtra || cheat_hear)
+		{
+			msg_print("Warning! Could not allocate a new monster.");
+		}
+
+		return FALSE;
 	}
 
 	/* Attempt to place the monster, allow groups */

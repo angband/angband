@@ -175,14 +175,14 @@ Toggle search mode (S) or Toggle search mode (#)
 --- Alter Commands ---
 
 Tunnel (T) or Tunnel (^T)
-        Tunneling or mining is a very useful art.  There are many kinds of
+        Tunnelling or mining is a very useful art.  There are many kinds of
         rock, with varying hardness, including permanent rock (permanent),
         granite (very hard), quartz veins (hard), magma veins (soft), and
         rubble (very soft).  Quartz and Magma veins may be displayed in a
         special way, and may sometimes contain treasure, in which case they
         will be displayed in a different way.  Rubble sometimes covers an
         object.  It is hard to tunnel unless you are wielding a heavy weapon
-        or a shovel or a pick.  Tunneling ability increases with strength
+        or a shovel or a pick.  Tunnelling ability increases with strength
         and weapon weight.  This command may take a count, is affected by
         the "always_repeat" option, requires a direction, and takes some
         energy.
@@ -259,8 +259,8 @@ Gain new spells or prayers (G)
         then you may choose to study that book.  If you are a mage, rogue, or
         ranger, you may actually choose which spell to study.  If you are a
         priest or paladin, your gods will choose a prayer for you.  There are
-        nine books of each type, some normally found only in the dungeon.
-        This command takes some energy.
+        nine books of each type, five of which are normally found only in the
+        dungeon. This command takes some energy.
 
 Cast a spell (m)
         To cast a spell, you must have previously learned the spell and
@@ -324,13 +324,27 @@ Inscribe an object ({)
         not automatically transferred to all similar objects.  Under certain
         circumstances, Angband will display "fake" inscriptions on certain
         objects ("cursed", "broken", "tried", "empty", "NN% off") when
-        appropriate.  These "fake" inscriptions are "covered up" by real
-        inscriptions, but will re-appear if the real inscription is removed.
+        appropriate.  These "fake" inscriptions remain all the time, even if 
+        the player chooses to add a "real" inscription on top of it later.
+
         In addition, Angband will occasionally place a "real" inscription on
         an object for you, normally as the result of your character getting
         a "feeling" about the item.  All characters will get "feelings" about
-        weapons and armor after carrying them for a while.  Warriors get the
-        most detailed feelings, and get them quicker than any other class.
+        weapons and armor after carrying them for a while.  Warriors (who 
+        understand weapons and armor best) get the most detailed feelings, 
+        and get them faster than other classes. Rogues (used to handling all 
+        sorts of stolen goods) are also very good, as are paladins (basically
+        warriors who are religious.) Rangers are not so well-versed in 
+        melee weapons, being normally people of the outdoors and the 
+        wilderness who prefer archery and camouflage to heavy metal armor and
+        weaponry, while priests and mages simply are not experienced enough 
+        in matters concerning melee to be able to tell much about an item - 
+        though a priest will realise the extent of his knowledge fairly 
+        quickly, as they are often called upon to fight for their faith and 
+        have learned a little from these experiences and divine insight.
+        Mages, frankly, haven't a clue. But then, they don't need it when 
+        they can learn the spell of Identify very early on in the game.
+
         An item labeled as "{empty}" was found to be out of charges, and an
         item labeled as "{tried}" is a "flavored" item which the character
         has used, but whose effects are unknown.  Certain inscriptions have
@@ -345,7 +359,7 @@ Uninscribe an object (})
 
 Activate an artifact (A)
         You have heard rumors of special weapons and armor deep in the
-        Pits, items that can let you breath fire like a dragon or light
+        Pits, items that can let you breathe fire like a dragon or light
         rooms with just a thought.  Should you ever be lucky enough to
         find such an item, this command will let you activate its special
         ability.  Special abilities can only be used if you are wearing or
@@ -395,7 +409,8 @@ Fire an item (f) or Fire an item (t)
         damage when thrown, but you're not sure which objects those
         are....  Note that flasks of oil will do a fairly large chunk
         of damage to a monster on impact, supposedly representing fire
-        damage, but it works against fire elementals too...  If you are
+        damage, but it works against fire elementals too - not that it's 
+        exactly worth it by that stage of dungeon exploration.  If you are
         wielding a missile launcher compatible with the object you are
         throwing, then you automatically use the launcher to fire the
         missile with much higher range, accuracy, and damage, then you

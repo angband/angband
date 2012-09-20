@@ -9,6 +9,11 @@
  * (kligys@scf.usc.edu).
  ****************************************************************************/
 
+/* Angband header files */
+#include "angband.h"
+
+#ifdef USE_LSL
+
 /* Standard C header files */
 #include <stdio.h>
 #include <stdlib.h>
@@ -18,9 +23,6 @@
 #include <vgagl.h>
 #include <vgakeyboard.h>
 #include <zlib.h>
-
-/* Angband header files */
-#include "angband.h"
 
 static cptr ANGBAND_DIR_XTRA_GRAF;
 
@@ -762,3 +764,5 @@ errr init_lsl(void)
 
 	return (0);
 }
+
+#endif /* USE_LSL */

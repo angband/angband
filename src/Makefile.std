@@ -1,4 +1,4 @@
-# File: Makefile
+# File: Makefile.std
 
 # This is not a very "nice" Makefile, but it usually works.
 
@@ -16,17 +16,15 @@
 # Note that "main-win.c", the visual module for Windows,
 # must be compiled in a special way, see elsewhere.
 #
-# Note that "main-ibm.c", "main-dos.c", "main-emx.c", and "main-286.c",
+# Note that "main-ibm.c", "main-dos.c", and "main-emx.c",
 # the visual modules for various types of IBM-PC computers,
 # must be compiled with special Makefiles, see elsewhere.
 #
 # Note that "main-acn.c", the visual module for Risc Acorn,
 # must be compiled with "Makefile.acn", see elsewhere.
 #
-# Note that "Makefile.w31" and "Makefile.wat" are slight variations
-# on "Makefile.win" and "Makefile.ibm", respectively, which allow
-# the use of the "main-win.c" and "main-ibm.c" files, respectively,
-# with special compilers.
+# Note that "main-ami.c", the visual module for the Amiga,
+# must be compiled with "Makefile.ami", see elsewhere.
 #
 # If you are able to construct "main-xxx.c" and/or "Makefile.xxx"
 # files for a currently unsupported system, please send them to

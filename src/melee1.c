@@ -79,11 +79,13 @@ static int check_hit(int power, int level)
 }
 
 
+#define MAX_DESC_INSULT 8
+
 
 /*
  * Hack -- possible "insult" messages
  */
-static cptr desc_insult[] =
+static cptr desc_insult[MAX_DESC_INSULT] =
 {
 	"insults you!",
 	"insults your mother!",
@@ -96,11 +98,13 @@ static cptr desc_insult[] =
 };
 
 
+#define MAX_DESC_MOAN 4
+
 
 /*
  * Hack -- possible "insult" messages
  */
-static cptr desc_moan[] =
+static cptr desc_moan[MAX_DESC_MOAN] =
 {
 	"seems sad about something.",
 	"asks if you have seen his dogs.",
@@ -392,13 +396,13 @@ bool make_attack_normal(int m_idx)
 
 				case RBM_INSULT:
 				{
-					act = desc_insult[rand_int(8)];
+					act = desc_insult[rand_int(MAX_DESC_INSULT)];
 					break;
 				}
 
 				case RBM_MOAN:
 				{
-					act = desc_moan[rand_int(4)];
+					act = desc_moan[rand_int(MAX_DESC_MOAN)];
 					break;
 				}
 
@@ -505,7 +509,7 @@ bool make_attack_normal(int m_idx)
 						/* Drain charged wands/staffs */
 						if (((o_ptr->tval == TV_STAFF) ||
 						     (o_ptr->tval == TV_WAND)) &&
-						    (o_ptr->pval))
+						    (o_ptr->pval > 0))
 						{
 							/* Message */
 							msg_print("Energy drains from your pack!");
@@ -1056,11 +1060,12 @@ bool make_attack_normal(int m_idx)
 					}
 					else
 					{
-						s32b d = damroll(20, 6) + (p_ptr->exp/100) * MON_DRAIN_LIFE;
+						s32b d = damroll(20, 6) + (p_ptr->exp / 100) * MON_DRAIN_LIFE;
+
 						if (p_ptr->hold_life)
 						{
 							msg_print("You feel your life slipping away!");
-							lose_exp(d/10);
+							lose_exp(d / 10);
 						}
 						else
 						{
@@ -1085,11 +1090,12 @@ bool make_attack_normal(int m_idx)
 					}
 					else
 					{
-						s32b d = damroll(40, 6) + (p_ptr->exp/100) * MON_DRAIN_LIFE;
+						s32b d = damroll(40, 6) + (p_ptr->exp / 100) * MON_DRAIN_LIFE;
+
 						if (p_ptr->hold_life)
 						{
 							msg_print("You feel your life slipping away!");
-							lose_exp(d/10);
+							lose_exp(d / 10);
 						}
 						else
 						{
@@ -1114,11 +1120,12 @@ bool make_attack_normal(int m_idx)
 					}
 					else
 					{
-						s32b d = damroll(80, 6) + (p_ptr->exp/100) * MON_DRAIN_LIFE;
+						s32b d = damroll(80, 6) + (p_ptr->exp / 100) * MON_DRAIN_LIFE;
+
 						if (p_ptr->hold_life)
 						{
 							msg_print("You feel your life slipping away!");
-							lose_exp(d/10);
+							lose_exp(d / 10);
 						}
 						else
 						{
@@ -1266,5 +1273,3 @@ bool make_attack_normal(int m_idx)
 	/* Assume we attacked */
 	return (TRUE);
 }
-
-

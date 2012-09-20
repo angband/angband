@@ -61,9 +61,9 @@ static term term_screen_body;
 /*
  * Hack -- see below
  */
-void init_pair (int index, char *foreground, char *background)
+void init_pair(int index, char *foreground, char *background)
 {
-	SLtt_set_color (index, "", foreground, background);
+	SLtt_set_color(index, "", foreground, background);
 }
 
 
@@ -96,7 +96,7 @@ void init_pair (int index, char *foreground, char *background)
 
 
 
-static char *color_terminals [] =
+static char *color_terminals[] =
 {
 #ifdef linux
 	"console",
@@ -151,9 +151,9 @@ int has_colors(void)
 	/* Setup bizarre colors */
 	else
 	{
-		SLtt_set_mono (A_BOLD,    NULL, SLTT_BOLD_MASK);
-		SLtt_set_mono (A_REVERSE, NULL, SLTT_REV_MASK);
-		SLtt_set_mono (A_BOLD|A_REVERSE, NULL, SLTT_BOLD_MASK | SLTT_REV_MASK);
+		SLtt_set_mono(A_BOLD,    NULL, SLTT_BOLD_MASK);
+		SLtt_set_mono(A_REVERSE, NULL, SLTT_REV_MASK);
+		SLtt_set_mono(A_BOLD|A_REVERSE, NULL, SLTT_BOLD_MASK | SLTT_REV_MASK);
 	}
 
 	return SLtt_Use_Ansi_Colors;
@@ -204,7 +204,7 @@ static void Term_init_sla(term *t)
 static errr Term_xtra_sla_event(int v)
 {
 	/* Do not wait unless requested */
-	if (!v && (SLang_input_pending (0) == 0)) return (1);
+	if (!v && (SLang_input_pending(0) == 0)) return (1);
 
 	/* Get and enqueue the key */
 	Term_keypress(SLang_getkey ());
@@ -313,7 +313,7 @@ static errr Term_xtra_sla(int n, int v)
 static errr Term_curs_sla(int x, int y, int z)
 {
 	/* Literally move the cursor */
-	SLsmg_gotorc (y, x);
+	SLsmg_gotorc(y, x);
 
 	/* Success */
 	return 0;
@@ -358,7 +358,7 @@ static errr Term_text_sla(int x, int y, int n, byte a, cptr s)
 
 
 /*
- * Prepare "SLang" for use by the file "term.c"
+ * Prepare "SLang" for use by the file "z-term.c"
  * Installs the "hook" functions defined above
  */
 errr init_sla(void)
@@ -375,7 +375,7 @@ errr init_sla(void)
 	if (err) quit("SLang initialization failed");
 
 	/* Get terminal info */
-	SLtt_get_terminfo ();
+	SLtt_get_terminfo();
 
 	/* Initialize some more */
 	if (SLsmg_init_smg() == 0)

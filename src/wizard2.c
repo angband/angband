@@ -368,7 +368,7 @@ typedef struct tval_desc
 /*
  * A list of tvals and their textual names
  */
-static tval_desc tvals[] =
+static const tval_desc tvals[] =
 {
 	{ TV_SWORD,             "Sword"                },
 	{ TV_POLEARM,           "Polearm"              },
@@ -748,7 +748,7 @@ static void wiz_statistics(object_type *o_ptr)
 		/* Let us know what we are doing */
 		msg_format("Creating a lot of %s items. Base level = %d.",
 		           quality, p_ptr->depth);
-		msg_print(NULL);
+		message_flush();
 
 		/* Set counters to zero */
 		matches = better = worse = other = 0;
@@ -832,7 +832,7 @@ static void wiz_statistics(object_type *o_ptr)
 
 		/* Final dump */
 		msg_format(q, i, matches, better, worse, other);
-		msg_print(NULL);
+		message_flush();
 	}
 
 
@@ -844,11 +844,11 @@ static void wiz_statistics(object_type *o_ptr)
 /*
  * Change the quantity of a the item
  */
-static void wiz_quantity_item(object_type *o_ptr)
+static void wiz_quantity_item(object_type *o_ptr, bool carried)
 {
 	int tmp_int;
 
-	char tmp_val[100];
+	char tmp_val[3];
 
 
 	/* Never duplicate artifacts */
@@ -867,6 +867,16 @@ static void wiz_quantity_item(object_type *o_ptr)
 		/* Paranoia */
 		if (tmp_int < 1) tmp_int = 1;
 		if (tmp_int > 99) tmp_int = 99;
+
+		/* Adjust total weight being carried */
+		if (carried)
+		{
+			/* Remove the weight of the old number of objects */
+			p_ptr->total_weight -= (o_ptr->number * o_ptr->weight);
+
+			/* Add the weight of the new number of objects */
+			p_ptr->total_weight += (tmp_int * o_ptr->weight);
+		}
 
 		/* Accept modifications */
 		o_ptr->number = tmp_int;
@@ -960,7 +970,8 @@ static void do_cmd_wiz_play(void)
 
 		if (ch == 'q' || ch == 'Q')
 		{
-			wiz_quantity_item(i_ptr);
+			bool carried = (item >= 0) ? TRUE : FALSE;
+			wiz_quantity_item(i_ptr, carried);
 		}
 	}
 
@@ -1441,7 +1452,7 @@ static void do_cmd_wiz_query(void)
 
 	/* Get keypress */
 	msg_print("Press any key.");
-	msg_print(NULL);
+	message_flush();
 
 	/* Redraw map */
 	prt_map();
@@ -1457,13 +1468,6 @@ static void do_cmd_wiz_query(void)
 extern void do_cmd_spoilers(void);
 
 #endif
-
-
-
-/*
- * Hack -- declare external function
- */
-extern void do_cmd_debug(void);
 
 
 
@@ -1574,7 +1578,8 @@ void do_cmd_debug(void)
 		/* Hitpoint rerating */
 		case 'h':
 		{
-			do_cmd_rerate(); break;
+			do_cmd_rerate();
+			break;
 		}
 
 		/* Identify */

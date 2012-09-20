@@ -1,19 +1,6 @@
-# This is a makefile for the Cygwin 2.01 Beta release which may
-# be downloaded by following the links from the url:
-# http://sourceware.cygnus.com/cygwin/download.html. The file
-# you want is full.exe which is roughly 14 Mb in size.
-#
-# In order for the makefile to work you must install Cygwin
-# into your chosen directory and make sure your path points to
-# the directory in which gcc.exe is located. This will usually
-# be: c:\cygnus\cygwin-b20\h-i586-cygwin32\bin.
-
-
-#
-# Cygwin install directory - change as appropriate
-#
-CYGDIR = c:/cygnus/cygwin-b20/h-i586-cygwin32
-
+# This is a makefile for the Cygwin tools which may
+# be downloaded by following the links from the URL:
+# http://sources.redhat.com/cygwin/
 
 #
 # Standard defines
@@ -21,10 +8,8 @@ CYGDIR = c:/cygnus/cygwin-b20/h-i586-cygwin32
 
 CC = gcc
 WRES = windres
-LIBDIRS = -L$(CYGDIR)/lib
-INCDIRS = -I$(CYGDIR)/i586-cygwin32/include/mingw32
-LIBS = -s -mno-cygwin -mwindows -e _mainCRTStartup -lwinmm
-CFLAGS = -Wall -pedantic -O2 -fno-strength-reduce
+LIBS = -s -mwindows -e _mainCRTStartup -lwinmm
+CFLAGS = -Wall -O2 -fno-strength-reduce -DUSE_TRANSPARENCY -DWINDOWS
 
 
 SRCS = \
@@ -42,7 +27,6 @@ SRCS = \
 	generate.c \
 	init1.c \
 	init2.c \
-	randart.c \
 	load1.c \
 	load2.c \
 	main-win.c \
@@ -52,6 +36,7 @@ SRCS = \
 	monster2.c \
 	object1.c \
 	object2.c \
+	randart.c \
 	readdib.c \
 	save.c \
 	spells1.c \
@@ -86,7 +71,6 @@ EXOBJS = \
 	generate.o \
 	init1.o \
 	init2.o \
-	randart.o \
 	load1.o \
 	load2.o \
 	main-win.o \
@@ -96,6 +80,7 @@ EXOBJS = \
 	monster2.o \
 	object1.o \
 	object2.o \
+	randart.o \
 	readdib.o \
 	save.o \
 	spells1.o \
@@ -214,13 +199,10 @@ files.o: files.c $(INCS)
 generate.o: generate.c $(INCS)
 	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
 
-init1.o: init1.c $(INCS)
+init1.o: init1.c $(INCS) init.h
 	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
 
-init2.o: init2.c $(INCS)
-	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
-
-randart.o: randart.c $(INCS)
+init2.o: init2.c $(INCS) init.h
 	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
 
 load1.o: load1.c $(INCS)
@@ -253,6 +235,8 @@ object1.o: object1.c $(INCS)
 object2.o: object2.c $(INCS)
 	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
 
+randart.o: randart.c $(INCS)
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
 
 #
 # Note the additional -DNEAR= flag to cope with the 'NEAR'

@@ -8,7 +8,7 @@
  * are included in all such copies.
  */
 
-/* Purpose: Visual Display Support for "term.c", for the IBM */
+/* Purpose: Visual Display Support for "z-term.c", for the IBM */
 
 
 /*

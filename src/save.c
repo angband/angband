@@ -377,7 +377,7 @@ static errr wr_savefile(void)
 	wr_u32b(spell_forgotten2);
 
 	/* Dump the ordered spells */
-	for (i = 0; i < 64; i++)
+	for (i = 0; i < PY_MAX_SPELLS; i++)
 	{
 		wr_byte(spell_order[i]);
 	}
@@ -685,7 +685,7 @@ static void wr_string(cptr str)
 /*
  * Write an "item" record
  */
-static void wr_item(object_type *o_ptr)
+static void wr_item(const object_type *o_ptr)
 {
 	wr_s16b(o_ptr->k_idx);
 
@@ -745,7 +745,7 @@ static void wr_item(object_type *o_ptr)
 /*
  * Write a "monster" record
  */
-static void wr_monster(monster_type *m_ptr)
+static void wr_monster(const monster_type *m_ptr)
 {
 	wr_s16b(m_ptr->r_idx);
 	wr_byte(m_ptr->fy);
@@ -836,7 +836,7 @@ static void wr_xtra(int k_idx)
 /*
  * Write a "store" record
  */
-static void wr_store(store_type *st_ptr)
+static void wr_store(const store_type *st_ptr)
 {
 	int j;
 
@@ -898,6 +898,8 @@ static void wr_options(void)
 
 	u32b flag[8];
 	u32b mask[8];
+	u32b window_flag[ANGBAND_TERM_MAX];
+	u32b window_mask[ANGBAND_TERM_MAX];
 
 
 	/*** Oops ***/
@@ -957,13 +959,13 @@ static void wr_options(void)
 	/*** Window options ***/
 
 	/* Reset */
-	for (i = 0; i < 8; i++)
+	for (i = 0; i < ANGBAND_TERM_MAX; i++)
 	{
 		/* Flags */
-		flag[i] = op_ptr->window_flag[i];
+		window_flag[i] = op_ptr->window_flag[i];
 
 		/* Mask */
-		mask[i] = 0L;
+		window_mask[i] = 0L;
 
 		/* Build the mask */
 		for (k = 0; k < 32; k++)
@@ -971,16 +973,16 @@ static void wr_options(void)
 			/* Set mask */
 			if (window_flag_desc[k])
 			{
-				mask[i] |= (1L << k);
+				window_mask[i] |= (1L << k);
 			}
 		}
 	}
 
 	/* Dump the flags */
-	for (i = 0; i < 8; i++) wr_u32b(flag[i]);
+	for (i = 0; i < ANGBAND_TERM_MAX; i++) wr_u32b(window_flag[i]);
 
 	/* Dump the masks */
-	for (i = 0; i < 8; i++) wr_u32b(mask[i]);
+	for (i = 0; i < ANGBAND_TERM_MAX; i++) wr_u32b(window_mask[i]);
 }
 
 
@@ -1439,7 +1441,7 @@ static bool wr_savefile_new(void)
 	wr_u32b(p_ptr->spell_forgotten2);
 
 	/* Dump the ordered spells */
-	for (i = 0; i < 64; i++)
+	for (i = 0; i < PY_MAX_SPELLS; i++)
 	{
 		wr_byte(p_ptr->spell_order[i]);
 	}
@@ -1503,7 +1505,7 @@ static bool wr_savefile_new(void)
  *
  * XXX XXX XXX Angband 2.8.0 will use "fd" instead of "fff" if possible
  */
-static bool save_player_aux(char *name)
+static bool save_player_aux(cptr name)
 {
 	bool ok = FALSE;
 
@@ -1520,8 +1522,14 @@ static bool save_player_aux(char *name)
 	FILE_TYPE(FILE_TYPE_SAVE);
 
 
+	/* Grab permissions */
+	safe_setuid_grab();
+
 	/* Create the savefile */
 	fd = fd_make(name, mode);
+
+	/* Drop permissions */
+	safe_setuid_drop();
 
 	/* File is okay */
 	if (fd >= 0)
@@ -1529,8 +1537,14 @@ static bool save_player_aux(char *name)
 		/* Close the "fd" */
 		fd_close(fd);
 
+		/* Grab permissions */
+		safe_setuid_grab();
+
 		/* Open the savefile */
 		fff = my_fopen(name, "wb");
+
+		/* Drop permissions */
+		safe_setuid_drop();
 
 		/* Successful open */
 		if (fff)
@@ -1542,8 +1556,14 @@ static bool save_player_aux(char *name)
 			if (my_fclose(fff)) ok = FALSE;
 		}
 
+		/* Grab permissions */
+		safe_setuid_grab();
+
 		/* Remove "broken" files */
 		if (!ok) fd_kill(name);
+
+		/* Drop permissions */
+		safe_setuid_drop();
 	}
 
 
@@ -1591,8 +1611,14 @@ bool save_player(void)
 	strcat(safe, "n");
 #endif /* VM */
 
+	/* Grab permissions */
+	safe_setuid_grab();
+
 	/* Remove it */
 	fd_kill(safe);
+
+	/* Drop permissions */
+	safe_setuid_drop();
 
 	/* Attempt to save the player */
 	if (save_player_aux(safe))
@@ -1609,6 +1635,9 @@ bool save_player(void)
 		strcat(temp, "o");
 #endif /* VM */
 
+		/* Grab permissions */
+		safe_setuid_grab();
+
 		/* Remove it */
 		fd_kill(temp);
 
@@ -1621,6 +1650,9 @@ bool save_player(void)
 		/* Remove preserved savefile */
 		fd_kill(temp);
 
+		/* Drop permissions */
+		safe_setuid_drop();
+
 		/* Hack -- Pretend the character was loaded */
 		character_loaded = TRUE;
 
@@ -1630,10 +1662,16 @@ bool save_player(void)
 		strcpy(temp, savefile);
 		strcat(temp, ".lok");
 
+		/* Grab permissions */
+		safe_setuid_grab();
+
 		/* Remove lock file */
 		fd_kill(temp);
 
-#endif
+		/* Drop permissions */
+		safe_setuid_drop();
+
+#endif /* VERIFY_SAVEFILE */
 
 		/* Success */
 		result = TRUE;
@@ -1647,9 +1685,9 @@ bool save_player(void)
 	/* Drop "games" permissions */
 	bePlayer();
 
-# endif
+# endif /* SECURE */
 
-#endif
+#endif /* SET_UID */
 
 
 	/* Return the result */
@@ -1691,7 +1729,7 @@ bool load_player(void)
 
 #ifdef VERIFY_TIMESTAMP
 	struct stat	statbuf;
-#endif
+#endif /* VERIFY_TIMESTAMP */
 
 	cptr what = "generic";
 
@@ -1706,23 +1744,28 @@ bool load_player(void)
 	/* Allow empty savefile name */
 	if (!savefile[0]) return (TRUE);
 
+	/* Grab permissions */
+	safe_setuid_grab();
 
-#if !defined(MACINTOSH) && !defined(WINDOWS) && !defined(VM)
+	/* Open the savefile */
+	fd = fd_open(savefile, O_RDONLY);
 
-	/* XXX XXX XXX Fix this */
+	/* Drop permissions */
+	safe_setuid_drop();
 
-	/* Verify the existance of the savefile */
-	if (access(savefile, 0) < 0)
+	/* No file */
+	if (fd < 0)
 	{
 		/* Give a message */
 		msg_print("Savefile does not exist.");
-		msg_print(NULL);
+		message_flush();
 
 		/* Allow this */
 		return (TRUE);
 	}
 
-#endif
+	/* Close the file */
+	fd_close(fd);
 
 
 #ifdef VERIFY_SAVEFILE
@@ -1738,8 +1781,14 @@ bool load_player(void)
 		strcpy(temp, savefile);
 		strcat(temp, ".lok");
 
+		/* Grab permissions */
+		safe_setuid_grab();
+
 		/* Check for lock */
 		fkk = my_fopen(temp, "r");
+
+		/* Drop permissions */
+		safe_setuid_drop();
 
 		/* Oops, lock exists */
 		if (fkk)
@@ -1749,14 +1798,20 @@ bool load_player(void)
 
 			/* Message */
 			msg_print("Savefile is currently in use.");
-			msg_print(NULL);
+			message_flush();
 
 			/* Oops */
 			return (FALSE);
 		}
 
+		/* Grab permissions */
+		safe_setuid_grab();
+
 		/* Create a lock file */
 		fkk = my_fopen(temp, "w");
+
+		/* Drop permissions */
+		safe_setuid_drop();
 
 		/* Dump a line of info */
 		fprintf(fkk, "Lock file for savefile '%s'\n", savefile);
@@ -1765,14 +1820,20 @@ bool load_player(void)
 		my_fclose(fkk);
 	}
 
-#endif
+#endif /* VERIFY_SAVEFILE */
 
 
 	/* Okay */
 	if (!err)
 	{
+		/* Grab permissions */
+		safe_setuid_grab();
+
 		/* Open the savefile */
 		fd = fd_open(savefile, O_RDONLY);
+
+		/* Drop permissions */
+		safe_setuid_drop();
 
 		/* No file */
 		if (fd < 0) err = -1;
@@ -1786,9 +1847,17 @@ bool load_player(void)
 	{
 
 #ifdef VERIFY_TIMESTAMP
+
+		/* Grab permissions */
+		safe_setuid_grab();
+
 		/* Get the timestamp */
 		(void)fstat(fd, &statbuf);
-#endif
+
+		/* Drop permissions */
+		safe_setuid_drop();
+
+#endif /* VERIFY_TIMESTAMP */
 
 		/* Read the first four bytes */
 		if (fd_read(fd, (char*)(vvv), 4)) err = -1;
@@ -1882,7 +1951,7 @@ bool load_player(void)
 			err = -1;
 		}
 	}
-#endif
+#endif /* VERIFY_TIMESTAMP */
 
 
 	/* Okay */
@@ -1896,7 +1965,7 @@ bool load_player(void)
 			/* Message */
 			msg_format("Converted a %d.%d.%d savefile.",
 			           sf_major, sf_minor, sf_patch);
-			msg_print(NULL);
+			message_flush();
 		}
 
 		/* Player is dead */
@@ -1951,17 +2020,23 @@ bool load_player(void)
 		strcpy(temp, savefile);
 		strcat(temp, ".lok");
 
+		/* Grab permissions */
+		safe_setuid_grab();
+
 		/* Remove lock */
 		fd_kill(temp);
+
+		/* Drop permissions */
+		safe_setuid_drop();
 	}
 
-#endif
+#endif /* VERIFY_SAVEFILE */
 
 
 	/* Message */
 	msg_format("Error (%s) reading %d.%d.%d savefile.",
 	           what, sf_major, sf_minor, sf_patch);
-	msg_print(NULL);
+	message_flush();
 
 	/* Oops */
 	return (FALSE);

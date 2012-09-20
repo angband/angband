@@ -56,7 +56,7 @@
  * When you complete a port to a new system, you should email any
  * newly created files, and any changes made to existing files,
  * including "h-config.h", "config.h", and any of the "Makefile"
- * files, to "benh@phial.com" for inclusion in the next version.
+ * files, to "rr9@angband.org" for inclusion in the next version.
  *
  * Always choose a "three letter" naming scheme for "main-xxx.c"
  * and "Makefile.xxx" and such for consistency and simplicity.
@@ -117,10 +117,10 @@ static term_data data[MAX_XXX_TERM];
 
 /*
  * Often, it is helpful to create an array of "color data" containing
- * a representation of the "angband_colors" array in some "local" form.
+ * a representation of the "angband_color_table" array in some "local" form.
  *
  * Often, the "Term_xtra(TERM_XTRA_REACT, 0)" hook is used to initialize
- * "color_data" from "angband_colors".  XXX XXX XXX
+ * "color_data" from "angband_color_table".  XXX XXX XXX
  */
 static local_color_data_type color_data[256];
 
@@ -135,7 +135,7 @@ static local_color_data_type color_data[256];
  * Init a new "term"
  *
  * This function should do whatever is necessary to prepare a new "term"
- * for use by the "term.c" package.  This may include clearing the window,
+ * for use by the "z-term.c" package.  This may include clearing the window,
  * preparing the cursor, setting the font/colors, etc.  Usually, this
  * function does nothing, and the "init_xxx()" function does it all.
  */
@@ -195,7 +195,7 @@ static errr Term_user_xxx(int n)
  * or by the application itself.
  *
  * The "action type" is specified by the first argument, which must be a
- * constant of the form "TERM_XTRA_*" as given in "term.h", and the second
+ * constant of the form "TERM_XTRA_*" as given in "z-term.h", and the second
  * argument specifies the "information" for that argument, if any, and will
  * vary according to the first argument.
  *
@@ -357,7 +357,7 @@ static errr Term_xtra_xxx(int n, int v)
 			 * React to global changes XXX XXX XXX
 			 *
 			 * For example, this action can be used to react to
-			 * changes in the global "angband_colors[256][4]" array.
+			 * changes in the global "angband_color_table[256][4]" array.
 			 *
 			 * This action is optional, but can be very useful for
 			 * handling "color changes" and the "arg_sound" and/or
@@ -440,7 +440,7 @@ static errr Term_xtra_xxx(int n, int v)
  *
  * You may assume "valid" input if the window is properly sized.
  *
- * You may use the "Term_grab(x, y, &a, &c)" function, if needed,
+ * You may use the "Term_what(x, y, &a, &c)" function, if needed,
  * to determine what attr/char should be "under" the new cursor,
  * for "inverting" purposes or whatever.
  */
@@ -577,63 +577,64 @@ static errr Term_pict_xxx(int x, int y, int n, const byte *ap, const char *cp)
 static void term_data_link(int i)
 {
 	term_data *td = &data[i];
+	term *t = &td->t;
 
 	/* Initialize the term */
-	term_init(td->t, 80, 24, 256);
+	term_init(t, 80, 24, 256);
 
 	/* Choose "soft" or "hard" cursor XXX XXX XXX */
 	/* A "soft" cursor must be explicitly "drawn" by the program */
 	/* while a "hard" cursor has some "physical" existance and is */
-	/* moved whenever text is drawn on the screen.  See "term.c". */
-	/* td->t->soft_cursor = TRUE; */
+	/* moved whenever text is drawn on the screen.  See "z-term.c". */
+	/* t->soft_cursor = TRUE; */
 
 	/* Avoid the "corner" of the window XXX XXX XXX */
-	/* td->t->icky_corner = TRUE; */
+	/* t->icky_corner = TRUE; */
 
 	/* Use "Term_pict()" for all attr/char pairs XXX XXX XXX */
 	/* See the "Term_pict_xxx()" function above. */
-	/* td->t->always_pict = TRUE; */
+	/* t->always_pict = TRUE; */
 
 	/* Use "Term_pict()" for some attr/char pairs XXX XXX XXX */
 	/* See the "Term_pict_xxx()" function above. */
-	/* td->t->higher_pict = TRUE; */
+	/* t->higher_pict = TRUE; */
 
 	/* Use "Term_text()" even for "black" text XXX XXX XXX */
 	/* See the "Term_text_xxx()" function above. */
-	/* td->t->always_text = TRUE; */
+	/* t->always_text = TRUE; */
 
 	/* Ignore the "TERM_XTRA_BORED" action XXX XXX XXX */
 	/* This may make things slightly more efficient. */
-	/* td->t->never_bored = TRUE; */
+	/* t->never_bored = TRUE; */
 
 	/* Ignore the "TERM_XTRA_FROSH" action XXX XXX XXX */
 	/* This may make things slightly more efficient. */
-	/* td->t->never_frosh = TRUE; */
+	/* t->never_frosh = TRUE; */
 
 	/* Erase with "white space" XXX XXX XXX */
-	/* td->t->attr_blank = TERM_WHITE; */
-	/* td->t->char_blank = ' '; */
+	/* t->attr_blank = TERM_WHITE; */
+	/* t->char_blank = ' '; */
 
 	/* Prepare the init/nuke hooks */
-	td->t->init_hook = Term_init_xxx;
-	td->t->nuke_hook = Term_nuke_xxx;
+	t->init_hook = Term_init_xxx;
+	t->nuke_hook = Term_nuke_xxx;
 
 	/* Prepare the template hooks */
-	td->t->user_hook = Term_user_xxx;
-	td->t->xtra_hook = Term_xtra_xxx;
-	td->t->curs_hook = Term_curs_xxx;
-	td->t->wipe_hook = Term_wipe_xxx;
-	td->t->text_hook = Term_text_xxx;
-	td->t->pict_hook = Term_pict_xxx;
+	t->user_hook = Term_user_xxx;
+	t->xtra_hook = Term_xtra_xxx;
+	t->curs_hook = Term_curs_xxx;
+	t->wipe_hook = Term_wipe_xxx;
+	t->text_hook = Term_text_xxx;
+	t->pict_hook = Term_pict_xxx;
 
 	/* Remember where we came from */
-	td->t->data = (vptr)(td);
+	t->data = (vptr)(td);
 
 	/* Activate it */
-	Term_activate(td->t);
+	Term_activate(t);
 
 	/* Global pointer */
-	ang_term[i] = td->t;
+	angband_term[i] = t;
 }
 
 
@@ -643,6 +644,8 @@ static void term_data_link(int i)
  */
 errr init_xxx(void)
 {
+	int i;
+
 	/* Initialize globals XXX XXX XXX */
 
 	/* Initialize "term_data" structures XXX XXX XXX */
@@ -728,7 +731,7 @@ int main(int argc, char *argv[])
 	/* Process command line arguments XXX XXX XXX */
 
 	/* Initialize the windows */
-	if (init_xxx()) quit("Oops!");
+	if (init_xxx() != 0) quit("Oops!");
 
 	/* XXX XXX XXX */
 	ANGBAND_SYS = "xxx";
@@ -750,5 +753,3 @@ int main(int argc, char *argv[])
 
 
 #endif /* USE_XXX */
-
-

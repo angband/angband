@@ -36,28 +36,27 @@ which will be mentioned as they come up.
 Each character has a few secondary attributes, height, weight, social class,
 and background history, which are randomly determined, but which are affected
 by the sex and race of the character.  In general, these attributes are only
-used to provide "flavor" to the character, to assist in the roll playing, but
+used to provide "flavor" to the character, to assist in the role playing, but
 they do have a few minor effects on the game.  For example, background history
-affects social class, which affects the amount of money the character will
-start with.
+affects social class, which affects the starting money. (Not a lot, in the case
+of some races: for instance, Half-Trolls are always going to be the scum of 
+society, even if their father was the Clan Chief.) 
 
 Each character also has six primary "stats", strength, intelligence, wisdom,
 dexterity, constitution, and charisma, which modify the abilities of the
 character in a variety of ways.  Every stat has a numerical value, ranging
 from a minimum of 3, up to a normal maximum of 18, and even higher, into
-the "percentile" range, represented as "18/01" through "18/100".  Actually,
-every stat can be raised even above 18/100 by magical means, up to a pure
-maximum of 18/220, which is represented as "18/***".  Traditionally, a
-percentile stat such as "18/50" has been though of as representing a value
-part way between 18 and 19, and this is one way to think of them.  However,
-often, the best way to view the "bonus" values after the "18/" is as "tenth"
-points, since it often takes the same magic to raise a stat from, say, 4 to 5,
-or 16 to 17, as it does from, say, 18/40 to 18/50.  The important thing to
-remember is that almost all internal calculations "ignore" the final digit
-of any "bonus", so that, for example, "18/40" and "18/49" are always have
-the same effects.  During character generation, each stat is rolled out as
-a number from 8 to 17, with a normal distribution, and is then immediately
-modified based on the race and class of the character.
+the "percentile" range, represented as "18/01" through "18/100": this is the
+maximum that can be achieved intrinsically, for any given stat. If the 
+character is started with the option of "maximize effect of race/class 
+bonuses" (from the Birth Options menu, and this is set as "on" by default), 
+the maximum figure of 18/100 is further adjusted by the adjustments for 
+race and class - for instance, a Half-Troll Warrior will max out at 18/190 
+strength, but only 18/40 intelligence, whereas a Hobbit Mage will be able 
+to reach 18/150 intelligence but only 18/30 strength. Equipment may add 
+bonuses or penalties to this, and raise the player's stats beyond the normal
+intrinsic limits: the stats may go as high as they like, with the right choice
+of equipment, but the effects of having higher stats largely stop at 18/200.
 
 Each character also has several primary "skills", disarming, magic devices,
 saving throws, stealth, searching ability, searching frequency, fighting skill,
@@ -85,13 +84,19 @@ in the town, and which can be obtained not only from selling items to the
 shops, but also by taking it from dead monsters and by finding it hidden in
 the dungeon.  Each character starts out with some gold, the amount of which
 is based on the characters social class (higher is better), charisma (higher
-is better), sex (female characters start with more gold), and other stats
-(less powerful characters start with more gold).  Each character also starts
-out with a few useful items, which may be kept, or sold to a shop-keeper for
-more gold.
+is better), and other stats (less powerful characters start with more gold).  
+Each character also starts out with a few useful items, which may be kept, 
+or sold to a shop-keeper for more gold. However, especially valuable items
+will never sell for the full price, as each shopkeeper has a maximum that 
+he is prepared to pay for any item. The more generous shopkeepers may buy 
+your items for up to 30,000 gold pieces: but some are really stingy, and 
+will pay no more than 5,000.
 
 Each character has an armor class, representing how well the character can
-avoid damage.  The armor class is affected by dexterity and the equipment.
+avoid damage.  The armor class is affected by dexterity and the equipment. 
+Armor class on equipment is always denoted in [square brackets], usually as 
+a figure of [X,+Y] where X is the intrinsic AC of the armor in question, and 
+Y is the magical bonus to armor class provided by that item.
 
 Each character has hit points, representing how much damage the character can
 sustain before he dies.  The maximum number of hit points is derived from your
@@ -104,6 +109,7 @@ Each character has spell points, or mana, which represents how many spells
 points is derived from your class, level, and intelligence (for spells) or
 wisdom (for prayers), and you can never have more spell points than the
 maximum.  Spell points may be regained by resting, or by magical means.
+Warriors never have any spell points.
 
 
 === Races ===
@@ -132,9 +138,10 @@ have intrinsic abilities.
                fighting.  They tend to be smarter and faster than either
                humans or half-elves and also have better wisdom.  Elves
                are better at searching, disarming, perception, stealth, bows,
-               and magic, but they are not as good at hand weapons.  Elves
-               may choose any class except Paladin.  They resist light
-               effects intrinsically.
+               and magic, but they are not as good at hand weapons.  Elves 
+               are creatures more of magic than religion, and may thus not 
+               be priests or paladins: and they are resistant to attacks 
+               involving bright light.
  
           Hobbits
                Hobbits, or Halflings, are very good at bows, throwing,  and
@@ -143,8 +150,8 @@ have intrinsic abilities.
                lent rogues, but prefer to be called burglars.  They will be
                much weaker than humans, and no good at melee fighting.
                Halflings have fair infravision, so they can detect warm
-               creatures at a distance.  Hobbits can choose between being a
-               warrior, mage, or rogue.  They have their dexterity sustained.
+               creatures at a distance.  Hobbits may be warriors, rogues or
+               mages.
  
           Gnome
                Gnomes are smaller than dwarves but larger than halflings.
@@ -161,8 +168,9 @@ have intrinsic abilities.
           Dwarf
                Dwarves are the headstrong miners and fighters of legend.
                Since dungeons are the natural home of a dwarf, they are
-               excellent choices for a warrior or priest.  Dwarves tend to
-               be stronger and tougher but slower and less intelligent than
+               excellent choices for a warrior or priest - or indeed, that
+               combination of the two, the paladin.  Dwarves tend to be
+               stronger and tougher but slower and less intelligent than
                humans.  Because they are so headstrong and are somewhat wise,
                they resist spells which are cast on them.  Dwarves also have
                very good infra-vision because they live underground.  They
@@ -200,15 +208,19 @@ have intrinsic abilities.
                play all classes.  Their constitution cannot be reduced.
  
           High-Elf
-               High-elves are a race of immortal beings dating from the
-               beginning of time.  Levels are even harder for them to gain 
-               than to Dunedain.  They are masters of all skills, and are
-               strong and intelligent, although their wisdom is sometimes
-               suspect.  They can play all classes except Paladin, and very
-               well at that.  High-elves begin their lives able to see the
-               unseen, and resist light effects just like regular elves.
- 
- 
+               High-Elves are descended from those among the Elves who heard 
+               and answered the call from the gods at the very beginning of 
+               time, before the sun and moon were made, and lived in the 
+               Blessed Realm for many thousands of years before returning to 
+               mortal lands. Because of this, they are far superior in terms 
+               of abilities when compared to their lesser Elven kindred, and 
+               are able to be priests as well as all the other classes that 
+               normal Elves can be. They can also see into the invisible
+               world of ghosts and wraiths. However, they find new experience
+               even harder to come by than Dunedain: and their wisdom is 
+               still a little suspect. And like normal Elves, they resist
+               attacks involving bright light.
+
 === Classes (outdated) ===
  
  
@@ -288,7 +300,8 @@ have intrinsic abilities.
                much in the way of abilities.  He is poor at  stealth,  per-
                ception,  searching,  and  magical devices.  He has a decent
                saving throw due to his divine alliance.  His primary  stats
-               are Strength and Charisma.
+               are Strength and Charisma,  although Wisdom is necessary for 
+               his spells.
  
 
 === Stats ===
@@ -298,7 +311,7 @@ have intrinsic abilities.
                combat.  A high strength can improve your chances of hitting
                as well as the amount of damage done with each hit.  Char-
                acters with low strengths may receive penalties.  Strength
-               is also useful in tunneling and in carrying heavy items.
+               is also useful in tunnelling and in carrying heavy items.
  
           Intelligence
                Intelligence affects the spellcasting abilities of mage-like
@@ -327,7 +340,9 @@ have intrinsic abilities.
                will increase his chances of hitting with any weapon and
                dodging blows from enemies.  Dexterity is also useful in
                picking locks, disarming traps, and protecting yourself from
-               some of the thieves that inhabit the dungeons.
+               some of the thieves that inhabit the dungeons. Indeed, if 
+               the character has a high enough dexterity, thieves will
+               never be successful in stealing from the player.
  
           Constitution
                Constitution is a character's ability to resist damage to his
@@ -339,8 +354,7 @@ have intrinsic abilities.
                Charisma represents a character's personality and physical
                appearance.  A character with a high charisma will receive
                better prices from store owners, whereas a character with a
-               very low charisma may be robbed blind.  A high charisma will
-               also mean more starting money for the character.
+               very low charisma may be robbed blind. 
  
 
 === Abilities (outdated) ===
@@ -421,15 +435,14 @@ have intrinsic abilities.
 
           Human         Yes      Yes      Yes      Yes      Yes      Yes
           Half-Elf      Yes      Yes      Yes      Yes      Yes      Yes
-          Elf           Yes      Yes      Yes      Yes      Yes      No
+          Elf           Yes      Yes      No       Yes      Yes      No
           Hobbit        Yes      Yes      No       Yes      No       No
           Gnome         Yes      Yes      Yes      Yes      No       No
-          Dwarf         Yes      No       Yes      No       No       No
+          Dwarf         Yes      No       Yes      No       No       Yes
           Half-Orc      Yes      No       Yes      Yes      No       No
           Half-Troll    Yes      No       Yes      No       No       No
           Dunadan       Yes      Yes      Yes      Yes      Yes      Yes
           High-Elf      Yes      Yes      Yes      Yes      Yes      No 
-
 
 
 === Miscellaneous (outdated) ===
@@ -437,14 +450,14 @@ have intrinsic abilities.
 
           Infra-vision
                Infra-vision is the ability to see heat sources. Since  most
-               of  the  dungeon is cool or cold, infra-vision will not allow
+               of the dungeon is cool or cold, infra-vision will not allow
                the player to see walls and objects.  Infra-vision will allow
                a  character  to see any warm-blooded creatures up to a cer-
                tain distance.  This ability works equally well with or with
-               out  a  light source.  The majority of Angband's creatures are
+               out a light source.  However, many of Angband's creatures are
                cold-blooded, and will not be detected unless lit  up  by  a
                light  source.  All non human races have innate  infra-vision
-               ability.  Human can gain infra-vision only if it is magically
+               ability.  Humans can gain infra-vision only if it is magically
                enhanced.
  
  

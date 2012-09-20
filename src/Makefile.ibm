@@ -13,15 +13,46 @@
 
 # Objects
 OBJS = \
-	main.o main-ibm.o \
-	generate.o dungeon.o init1.o init2.o randart.o \
-	store.o birth.o wizard1.o wizard2.o \
-	cmd1.o cmd2.o cmd3.o cmd4.o cmd5.o cmd6.o \
-	load1.o load2.o save.o files.o \
-	xtra1.o xtra2.o spells1.o spells2.o melee1.o melee2.o \
-	object1.o object2.o monster1.o monster2.o \
-	variable.o tables.o util.o cave.o \
-	z-term.o z-rand.o z-form.o z-virt.o z-util.o
+  main.o \
+  main-ibm.o \
+  birth.o \
+  cave.o \
+  cmd1.o \
+  cmd2.o \
+  cmd3.o \
+  cmd4.o \
+  cmd5.o \
+  cmd6.o \
+  dungeon.o \
+  files.o \
+  generate.o \
+  init1.o \
+  init2.o \
+  load1.o \
+  load2.o \
+  melee1.o \
+  melee2.o \
+  monster1.o \
+  monster2.o \
+  object1.o \
+  object2.o \
+  randart.o \
+  save.o \
+  spells1.o \
+  spells2.o \
+  store.o \
+  tables.o \
+  util.o \
+  variable.o \
+  wizard1.o \
+  wizard2.o \
+  xtra1.o \
+  xtra2.o \
+  z-term.o \
+  z-rand.o \
+  z-form.o \
+  z-virt.o \
+  z-util.o
 
 # Compiler
 CC = gcc
@@ -41,12 +72,10 @@ default: angband.exe
 	copy angband.exe ..
 	del angband.exe
 
-install: angband.exe makepref.exe gredit.exe
+install: angband.exe
 	copy angband.exe ..
-	copy makepref.exe ..
-	copy gredit.exe ..
 
-all: angband.exe makepref.exe gredit.exe
+all: angband.exe
 	@echo All done.  Use 'make install' to install.
 
 
@@ -56,12 +85,6 @@ all: angband.exe makepref.exe gredit.exe
 
 angband.exe: $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LIBS)
-
-makepref.exe: makepref.o
-	$(CC) $(CFLAGS) -o $@ makepref.o $(LIBS)
-
-gredit.exe: gredit.o
-	$(CC) $(CFLAGS) -o $@ gredit.o $(LIBS) -lgrx20
 
 
 #
@@ -78,7 +101,6 @@ gredit.exe: gredit.o
 
 clean:
 	del *.o
-	del *.bin
 
 cleanall: clean
 	del *.exe

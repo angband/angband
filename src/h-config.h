@@ -268,6 +268,7 @@
 #endif
 
 
+#ifdef OLD_CRUFT
 /*
  * OPTION: Hack -- Make sure "strchr()" and "strrchr()" will work
  */
@@ -277,6 +278,7 @@
 #  define strrchr(S,C) rindex((S),(C))
 # endif
 #endif
+#endif /* OLD_CRUFT */
 
 
 /*
@@ -293,11 +295,12 @@
 #endif
 
 
+#ifdef OLD_CRUFT
 /*
  * OPTION: Define "HAS_MEMSET" only if "memset()" exists.
  */
 #define HAS_MEMSET
-
+#endif /* OLD_CRUFT */
 
 /*
  * OPTION: Define "HAS_USLEEP" only if "usleep()" exists.

@@ -1,0 +1,48 @@
+- Add support for gamma correction to the DOS version.
+- Move various information to external files (player classes, spells,
+  items that can be bought in stores).
+- Add player ghosts.
+- Equipment slots should be configurable for every player race.
+- Gender selection should be done after selecting the player race (for
+  races with non-standard genders).
+- Add support for dungeon displays with sizes different than 66x22
+  (big-screen).  This requires changing the detection spells to a circular
+  area of effect.  Running should be interrupted when the player leaves
+  the area of the last trap detection spell ("disturb_panel").
+- Allow stacking of rods, wands, and staves with different charges.
+- Add a random name generator for player names.
+- Add support for automatically numbering characters ("Rocky IV").
+- Finish the GTK+ port, maybe write a qt version.
+- Improve the command-line option usage display.
+- Try to open the file handles for score and savefiles at startup and
+  then drop all permissions.
+- Improve the scorefile format.
+- Add color support to the show_file() function.
+- Find a better way for saving options than appending to *.prf files.
+- Allow multiple pvals per object.
+- Improve message compression "You tunnel into the granite wall. <5x>"
+- Split long lines in the message recall.
+- The ANSI-C standard reserves some prefixes for external names like "str".
+  Make sure that Angband doesn't use them.
+- Rewrite the debug-mode object flag display so that it doesn't require
+  manual changes for every new flag.
+- Move the "Greater vault", "Lesser vault" prefixes out of the v_info.txt
+  file.
+- Use sizeof(buffer) instead of using the numeric size. The compiler is
+  won't forget to update the number when the size of the buffer changes.
+- Write helper functions for accessing items on the floor so that handling
+  floor stacks is less cumbersome.
+- Fix the "vinfo_type" hack in cave.c.
+- Unify line of sight and projection paths.
+- Make sure that signed integers aren't bit-shifted.
+- Use enumerations instead of #defines when possible.
+- Move spaces at the end of lines in r_info.txt to the beginning of the
+  next line.
+- Add optional support for the metric system.
+- Add a main-net.c modules that sends/receives term-updates via TCP/IP.
+  This allows slim clients on machines where Angband isn't available.
+  The clients could be written in almost any programming language and
+  have minimal hardware requirements.
+- Adjust the Unix/Linux installation for full compliance with the
+  Filesystem Hierarchy Standard.
+

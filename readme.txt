@@ -1,7 +1,7 @@
 
 
               **************************************************
-              **   Angband 2.9.1   **   The Pits of Angband   **
+              **   Angband 2.9.2   **   The Pits of Angband   **
               **************************************************
 
            Based on Moria:   Copyright (c) 1985 Robert Alan Koeneke
@@ -13,7 +13,7 @@
 
                    Angband 2.7.0 - 2.8.5 by Ben Harrison
 
-                     Angband 2.9.1 by Robert Ruehlmann
+                 Angband 2.9.0 - 2.9.2 by Robert Ruehlmann
 
         Send comments, bug reports, and patches, to "rr9@angband.org"
        Visit the Angband Home Page at "http://thangorodrim.angband.org/"
@@ -24,7 +24,7 @@
 
 === General Info ===
 
-This is the README file for Angband 2.9.1 (4th July 2000).
+This is the README file for Angband 2.9.2 (9th November 2000).
 
 Angband is a "graphical" dungeon adventure game using textual characters
 to represent the walls and floors of a dungeon and the inhabitants therein,
@@ -35,7 +35,7 @@ There are some ascii "on line help" files in the "lib/help" directory.
 See the Official Angband Home Page "http://thangorodrim.angband.org/" for
 a list (mostly complete) of what has changed in each recent version.
 
-See the various Angband ftp sites (including "export.andrew.cmu.edu" and
+See the various Angband ftp sites (including "clockwork.dementia.org" and
 "ftp.cis.ksu.edu") for the latest files, patches, and executables.
 
 Contact Robert Ruehlmann < rr9@angband.org > to report any bugs or to make
@@ -57,7 +57,7 @@ archive is available, which contains everything you need to install and
 play Angband.  For other platforms, including most UNIX systems, you must
 compile the source code yourself.  Try the following non-trivial steps:
 
-Step 1: Acquire.  Ftp to "export.andrew.cmu.edu:/angband/Source"
+Step 1: Acquire.  Ftp to "clockwork.dementia.org:/angband/Source"
                   Try "bin" and "mget angband*.tar.gz" and "y"
 Step 2: Extract.  Try "gunzip *.gz" then "tar -xvf *.tar"
 Step 3: Prepare.  Try "cd angband*/src", then edit "Makefile"
@@ -261,7 +261,7 @@ The savefiles should be portable between systems, assuming that the
 appropriate renaming is perfomed.
 
 
-=== Directory "lib/user" ===
+=== Directory "lib/pref" ===
 
 The "lib/user" directory contains the "user pref files", if any.
 

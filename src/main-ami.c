@@ -1,64 +1,35 @@
 /*
 
-	:ts=3
+	File			: main-ami.c
 
-	File  			 : main-ami.c DEVELOPER VERSION!
+	Version			: 1.1 (3rd August 2000)
+	Angband			: 2.9.0
 
-	Version  		 : 1.004 (26 Aug 1998)
-	Angband  		 : 2.8.3/2.8.2/2.8.1
+	Purpose			: Amiga module for Angband with graphics and sound
 
-	Purpose  		 : Amiga module for Angband with graphics and sound
+	Author			: Mark Howson
+	Email			: Mark.Howson@nottingham.ac.uk
 
-	Author			 : Mark Howson
-	Email 			 : Mark.Howson@nottingham.ac.uk
+	Original Author		: Lars Haugseth
+	Email                   : larshau@ifi.uio.no
+	WWW			: http://www.ifi.uio.no/~larshau
 
-	Original Author : Lars Haugseth
-	Email 			 : larshau@ifi.uio.no
-	WWW				 : http://www.ifi.uio.no/~larshau
-
-	Tab size 		 : 3
-
-	Todo:
-
-		Window backgrounds. Started, but not ready yet.
-		Put menu tables outside this file so they can be modified?
-		Improve the new sound system, because it's a major hack now.
+	Current Form		: Bablos
+	Email			: angband@blueyonder.co.uk
+	WWW			: http://www.angband.pwp.blueyonder.co.uk
 */
 
-/************************************************************************/
-/* Please define the following to suit each variant:							*/
-/* 																							*/
-/* If variant is based upon Ang 281 : #define ANG281							*/
-/* If variant is based upon Ang 282 : #define ANG282							*/
-/* If variant is based upon Ang 283 : #define ANG283 *and*					*/
-/*												  #define ANG282  						*/
-/*																								*/
-/* Comment out all the unused ANG28x definitions!								*/
-/*																								*/
-/* This is the 'developer' version, which means I've aimed more for 		*/
-/* convenience than for elegance; this file will compile with variants	*/
-/* based upon 281, 282 or 283. Yes, it's a hack. Every so often I'll		*/
-/* release a 'nice' version which is around 30K smaller, but will be		*/
-/* targeted for the latest version of Angband									*/
-/************************************************************************/
+#include "angband.h"
+
+#ifdef USE_AMI
 
 /* What variant is this? Used in the highscore dump */
-#define VERSION "Zangband 2.2.2"
+#define VERSION "Angband 2.9.1"
 
 /* Main 'assign' needed. Kick2.0+ systems usually don't need it anyway */
-#define VERPATH "Zangband:"
+#define VERPATH "Angband:"
 
-//#define SANGBAND             /* Define if this is Sangband. */
-#define ZANGBAND                /* Define if this is Zangband. Zangband now has extra gfx */
-//#define KANGBAND				/* Define for Kang, used in Highscore handling */
-//#define GFXFUNCS             /* Define if we allow gfx debugging functions. */
 #define QUICKGFX                /* Define if we have 'optimap.s' and we'd like to use it */
-//#define DEBUG
-#define ANG283
-#define ANG282                  /* Based upon Angband 2.8.2 ? */
-//#define ANG281                /* Based upon Angband 2.8.1 ? */
-
-#include "angband.h"
 
 #undef byte					/* Prevents conflicts with dos.h */
 
@@ -101,6 +72,8 @@
 #	include "optimap.h"
 #endif
 
+#define MAX_TERM_DATA 8
+
 /* Maximum length a filename (including a path) can reach. Somewhat arbitary */
 #define MAX_PATH_LENGTH		160
 
@@ -140,10 +113,10 @@
 /* Colour to use for cursor */
 #define CURSOR_PEN 4
 
-// Max number of lines in a term (y)
+/* Max number of lines in a term (y) */
 #define MAX_TERM_VERT 24
 
-// Max number of chars in a term (x)
+/* Max number of chars in a term (x) */
 #define MAX_TERM_HORIZ 80
 
 /* Size of 8x8 tile image */
@@ -155,11 +128,6 @@
 #define AB_GFXW 512
 #define AB_GFXH 848
 #define AB_GFXB 8
-
-#ifdef ZANGBAND
-#  undef DF_GFXH
-#  define DF_GFXH 736
-#endif
 
 /* Size of current bitmap...initialise by load_gfx() */
 int GFXW, GFXH, GFXB;
@@ -274,44 +242,6 @@ typedef struct term_data
 }
 term_data;
 
-/* XXX XXX XXX Nasty */
-
-struct high_score
-{
-	char what[8];		/* Version info (string) */
-
-	char pts[10];		/* Total Score (number) */
-
-	char gold[10];		/* Total Gold (number) */
-
-	char turns[10];	/* Turns Taken (number) */
-
-	char day[10];		/* Time stamp (string) */
-
-	char who[16];		/* Player Name (string) */
-
-	char uid[8];		/* Player UID (number) */
-
-	char sex[2];		/* Player Sex (string) */
-	char p_r[3];		/* Player Race (number) */
-	char p_c[3];		/* Player Class (number) */
-
-	char cur_lev[4];		/* Current Player Level (number) */
-	char cur_dun[4];		/* Current Dungeon Level (number) */
-	char max_lev[4];		/* Max Player Level (number) */
-	char max_dun[4];		/* Max Dungeon Level (number) */
-
-#ifdef KANGBAND
-	char arena_number[4];	/* Arena level attained -KMW- */
-	char inside_special[4];   /* Did the player die in the arena? -KMW- */
-	char exit_bldg[4];	/* Can the player exit arena? Goal obtained? -KMW- */
-
-#endif
-
-	char how[32];		/* Method of death (string) */
-//	char pad[9];
-};
-
 /* Term data for all windows */
 static term_data data[ MAX_TERM_DATA ];
 
@@ -338,8 +268,8 @@ static char *term_short[] =
 	NULL
 };
 
-// Nasty Optimise hack : Writes directly to memory to speed things up.
-// Note lack of 'static' ; can be activated from main.c
+/* Nasty Optimise hack : Writes directly to memory to speed things up */
+/* Note lack of 'static' ; can be activated from main.c */
 
 bool nasty_optimise_gfx = FALSE;
 
@@ -458,7 +388,7 @@ static ULONG palette32[ 32 * 3 + 2 ];
 static UWORD palette4[ 32 ];
 
 /* Version string */
-static char ver[] = "$VER: " VERSION " (" __DATE__ ")";
+static char ver[] = "$VER: " VERSION " " __AMIGADATE__;
 
 struct AmiSound
 {
@@ -475,7 +405,7 @@ static char *sound_name_desc = NULL;
 static struct AmiSound *sound_data = NULL;
 static int sounds_needed = 0;
 
-// Ouch - hack
+/* Ouch - hack */
 static struct AmiSound *sound_ref[SOUND_MAX][8];
 
 static int channel_last[ 4 ] = { -1, -1, -1, -1 };
@@ -557,9 +487,6 @@ struct NewMenu post_item[] =
 	  { NM_ITEM, "R  Rest for a period", 0, 0, 0, MKC('R') },
 	  { NM_ITEM, "S  Toggle search mode", 0, 0, 0, MKC('S') },
 	  { NM_ITEM, "T  Dig a tunnel", 0, 0, 0, MKC('T') },
-#ifdef ZANGBAND
-	  { NM_ITEM, "U  Use racial power", 0, 0, 0, MKC('U') },
-#endif
 	  { NM_ITEM, "V  Version info", 0, 0, 0, MKC('V') },
 
 	{ NM_TITLE, "Cmd4", 0, 0, 0, 0 },
@@ -605,10 +532,6 @@ struct NewMenu post_item[] =
 	  { NM_ITEM, "Save Palette","s", 0, 0, (void *)MNU_SAVE_PALETTE },
 	  { NM_ITEM,  NM_BARLABEL, 0, 0, 0, 0 },
 	  { NM_ITEM, "Save highscores as ASCII", "h", 0, 0, (void *)MNU_EXPORT_HS },
-#ifdef GFXFUNCS
-	  { NM_ITEM, "Gfx mapper", "g", 0, 0, (void *)MNU_GFXMAP },
-#endif
-/*		 { NM_ITEM, "Merge highscore files", "f", 0, 0, (void *)MNU_MERGE_HS }, */
 
 	{ NM_TITLE, "Help", 0, 0, 0, 0 },
 	  { NM_ITEM, "General Information", 0, 0, 0, MHL('1') },
@@ -710,7 +633,6 @@ void amiga_user_name( char *buf, int id );
 void amiga_write_user_name( char *name );
 static int get_p_attr( void );
 static int get_p_char( void );
-void amiga_register(char *ourname);
 
 PROTO errr init_ami( void )
 {
@@ -808,13 +730,6 @@ PROTO errr init_ami( void )
 			data[ i ].use = FALSE;
       }
 	}
-//	if ( !use_pub )
-//	{
-//		/* Extra windows not allowed on custom screen */
-
-//      for (i = 1 ; i < MAX_TERM_DATA; i++)
-//			data[ i ].use = FALSE;
-//	}
 
 	/* Calculate window dimensions */
 
@@ -822,8 +737,6 @@ PROTO errr init_ami( void )
 	{
 		data[ i ].ww = data[ i ].fw * data[ i ].cols;
 		data[ i ].wh = data[ i ].fh * data[ i ].rows;
-//		data[ i ].wy = data[ i ].fh * data[ i ].wy;
-//		data[ i ].wx = data[ i ].fw * data[ i ].wx;
 	}
 
 	/* Find a nice screenmode */
@@ -832,8 +745,6 @@ PROTO errr init_ami( void )
 		scr_m = BestModeID(
 						BIDTAG_NominalWidth, ts->ww,
 						BIDTAG_NominalHeight, ts->wh,
-//						BIDTAG_DesiredWidth, ts->ww,
-//						BIDTAG_DesiredHeight, ts->wh,
 						BIDTAG_Depth, 4,
 						TAG_END );
 	}
@@ -964,7 +875,6 @@ PROTO errr init_ami( void )
 			if (data[i].use && tmp > maxh)
 				maxh = tmp;
 		}
-//      maxh += pubscr->WBorTop + pubscr->WBorBottom;
 
 		/* Check if the public screen is large enough */
 		if ( pw < maxw || ph < maxh )
@@ -1096,7 +1006,6 @@ PROTO errr init_ami( void )
 	SetFont( ts->wrp, ts->font );
 
 	/* Never use screen's rastport on public screen */
-//	if ( use_pub )
 		ts->rp = ts->wrp;
 
 	if (IFFBase && ts->bkgname)
@@ -1128,7 +1037,7 @@ PROTO errr init_ami( void )
 	if (screen_enhanced)
 		allocate_nearpens();
 
-	for ( i = MAX_TERM_DATA; i-- > 0 ; )
+	for ( i = MAX_TERM_DATA - 1; i >= 0 ; i--)
 	{
 		if ( data[ i ].use )
 			link_term( i );
@@ -1162,7 +1071,6 @@ PROTO errr init_ami( void )
 				if ( !size_gfx( &data[ i ] ) )
 				{
 					break;
-//					FAIL( "Out of memory while scaling graphics." );
 				}
 			}
 		}
@@ -1178,7 +1086,6 @@ PROTO errr init_ami( void )
 
 	if (pubscr)
 	{
-		//amiga_palette = FALSE;
 		if (nasty_optimise_gfx)
 			printf("Sorry, can't use quick graphics mode on public screens\n");
 		nasty_optimise_gfx = FALSE;
@@ -1261,7 +1168,6 @@ PROTO static int load_backpic(term_data *t, char *name)
 			free_bitmap( t->background );
 			t->background = bkg;
 
-//			free_bitmap(bkg);
 		}
 		IFFL_CloseIFF( iff );
 		return 0;
@@ -1273,7 +1179,7 @@ PROTO static int load_backpic(term_data *t, char *name)
 	}
 }
 
-// TRUE if ok
+/* TRUE if ok */
 PROTO static BOOL get_screenmode( char *modestr )
 {
 	LONG pen;
@@ -1296,14 +1202,14 @@ PROTO static BOOL get_screenmode( char *modestr )
 		if ( !pubscr )
 			pubscr = LockPubScreen( modestr );
 
-		// Failed?
+		/* Failed? */
 		if ( !pubscr )
 		{
 			printf( "Unable to get a lock on screen '%s'\n", modestr );
 			return FALSE;
 		}
 
-		// We got a lock now
+		/* We got a lock now */
 		publock = TRUE;
 
 		scr_m = -1;
@@ -1418,7 +1324,7 @@ PROTO void open_term( int n, bool doall )
 	if ( tt->win )
 		return;
 
-	// Initialise vertical prop gadget
+	/* Initialise vertical prop gadget */
 
 	if (tt->scroll)
 	{
@@ -1467,8 +1373,6 @@ PROTO void open_term( int n, bool doall )
 		tt->xgad.NextGadget   = NULL;
 	}
 
-//	printf("Window %d   x %d y %d w %d h %d\n",n,tt->wx,tt->wy,tt->ww,tt->wh);
-//	Delay(100);
 	if (( tt->win = OpenWindowTags( NULL,
 			WA_Left, tt->wx,
 			WA_Top, tt->wy,
@@ -1901,7 +1805,6 @@ PROTO int read_prefs( void )
 			td = &data[ k ];
 		else
 		{
-//			printf( "PREFS: Error in line '%s'\n", line );
 			continue;
 		}
 
@@ -2072,7 +1975,6 @@ PROTO int read_prefs( void )
 	}
 	else
 	{
-//		puts("Don't know whether to use a public or custom screen. Check prefs!");
 		modestr[0] = 0;
 	}
 	fclose( file );
@@ -2097,9 +1999,6 @@ PROTO static void process_gfx(char *param)
 	{
 		use_graphics = TRUE;
 		screen_enhanced = TRUE;
-#ifdef ZANGBAND
-		ANGBAND_GRAF = "new";
-#endif
 	}
 }
 
@@ -2352,9 +2251,6 @@ PROTO static errr amiga_xtra( int n, int v )
 
 			/* This is wrong, I think. Delay() does not have enough resolution
 				to do this sensibly.
-//         v = (v * 50) / 1000;
-//			if (v)
-//				Delay( v );
 			return (0);
 
 		/* Unknown request type */
@@ -2390,25 +2286,19 @@ PROTO static void process_msg(int i,ULONG iclass, UWORD icode, UWORD iqual, APTR
 		case IDCMP_GADGETUP:
 			if (((struct Gadget *)iaddr)->GadgetID == 0)
 			{
-				// maxbody * nh ) / max_term_vert
-				// vb * max term / maxbody
 				ud = (double)data[ i ].ygadinfo.VertPot / (double)0xFFFF;
 				ud *= (MAX_TERM_VERT - data[ i ].rows);
-//				if (data[i].rows >= MAX_TERM_VERT)
-//					puts("sdsdsdsj dhsjd shjd");
 				tmpa = modf(ud,&tmpb);
 				if (tmpa >= 0.5)
 					ud = ceil(ud);
 				else
 					ud = floor(ud);
-//				printf("%d %f\n",data[ i ].ygadinfo.VertPot,ud);
 				data[ i ].ypos = ud;
 
 				Term_activate(angband_term[i]);
             Term_redraw();
             Term_fresh();
 				Term_activate(old_term);
-//				do_cmd_redraw();
 			}
 			break;
 		case IDCMP_INACTIVEWINDOW:
@@ -2473,7 +2363,6 @@ PROTO static void process_msg(int i,ULONG iclass, UWORD icode, UWORD iqual, APTR
 				ULONG f;
             UWORD temp;
 
-				// maxbody * nh ) / max_term_vert
 				f = (ULONG)MAXBODY * nh;
 				f /= MAX_TERM_VERT;
 				temp = (UWORD)f;
@@ -2693,15 +2582,7 @@ PROTO int amiga_tomb( void )
 		scalbm = convbm;
 
 	/* King or Queen */
-#ifdef ANG282
-#ifdef SANGBAND
-	if (p_ptr->total_winner)
-#else
 	if (p_ptr->total_winner || (p_ptr->lev > PY_MAX_LEVEL))
-#endif
-#else
-	if (total_winner || (p_ptr->lev > PY_MAX_LEVEL))
-#endif
 	{
 		p = "Magnificent";
 	}
@@ -2709,30 +2590,16 @@ PROTO int amiga_tomb( void )
 	/* Normal */
 	else
 	{
-#ifdef SANGBAND
-		p =  mp_ptr->title;
-#else
 		p = player_title[p_ptr->pclass][(p_ptr->lev-1)/5];
-#endif
 	}
 
 	tomb_str( 3, " R.I.P." );
 
-#ifdef ANG282
 	tomb_str( 5, op_ptr->full_name );
-#else
-	tomb_str( 5, player_name );
-#endif
+
 	tomb_str( 6, "the" );
 
 	tomb_str( 7, (char *)p );
-
-/*	tomb_str( 9, (char *)cp_ptr->title ); */
-
-#ifndef SANGBAND
-	sprintf( tmp, "Level: %d", (int)p_ptr->lev );
-	tomb_str( 10, tmp );
-#endif
 
 	sprintf( tmp, "Exp: %ld", (long)p_ptr->exp );
 	tomb_str( 11, tmp );
@@ -2740,18 +2607,12 @@ PROTO int amiga_tomb( void )
 	sprintf( tmp, "AU: %ld", (long)p_ptr->au );
 	tomb_str( 12, tmp );
 
-#ifdef ANG282
 	sprintf( tmp, "Killed on Level %d", p_ptr->depth );
-#else
-	sprintf( tmp, "Killed on Level %d", dun_level );
-#endif
+
 	tomb_str( 13, tmp );
 
-#ifdef ANG282
 	sprintf( tmp, "by %s", p_ptr->died_from );
-#else
-	sprintf( tmp, "by %s", died_from );
-#endif
+
 	tomb_str( 14, tmp );
 
 	sprintf( tmp, "%-.24s", ctime(&ct));
@@ -2978,11 +2839,6 @@ PROTO void handle_menupick( int mnum )
 				case MNU_EXPORT_HS:
 					amiga_hs_to_ascii();
 					break;
-#ifdef GFXFUNCS
-				case MNU_GFXMAP:
-					amiga_gfxmap();
-					break;
-#endif
 				default:
 					printf("handle_menupick() : bad menu item %d\n",ud);
 					break;
@@ -3172,11 +3028,7 @@ PROTO static void cursor_anim( void )
 {
 	term_data *td = term_curs;
 	int x0, y0, x1, y1;
-#ifdef ANG282
 	int i = p_ptr->px,j = p_ptr->py;
-#else
-   int i = px, j = py;
-#endif
 
 	if ( !term_curs || td->iconified || !td->wrp)
 		return;
@@ -3303,11 +3155,6 @@ PROTO static int load_gfx( void )
 
 	MSG( 0, 0, "Loading graphics .." );
 
-//	if (screen_enhanced)
-//	{
-//		Close( file );
-//		return;
-//	}
 	/* Read mask data into bitmap */
 	p = ts->mskbm->Planes[ 0 ];
 	for ( row = 0; row < GFXH && !error; row++ )
@@ -3479,13 +3326,8 @@ PROTO static int size_gfx( term_data *td )
 	td->gfx_h = (GFXH / tileh) * td->fh;
 
 	/* Calculate map bitmap dimensions */
-#ifdef ANG282
 	td->mpt_w = td->ww / DUNGEON_WID;
 	td->mpt_h = td->wh / DUNGEON_HGT;
-#else
-	td->mpt_w = td->ww / MAX_WID;
-	td->mpt_h = td->wh / MAX_HGT;
-#endif
 	td->map_w = td->mpt_w * 32;
 	td->map_h = td->mpt_h * 32;
 
@@ -3668,7 +3510,7 @@ PROTO static int amiga_fail( char *msg )
 	}
 
 	/* Free term resources */
-	for ( i = MAX_TERM_DATA; i-- > 0; )
+	for ( i = MAX_TERM_DATA - 1; i >= 0; i--)
 		free_term( &data[ i ] );
 
 	/* Free obtained pens */
@@ -3736,18 +3578,6 @@ PROTO static int amiga_fail( char *msg )
 		IFFBase = NULL;
 	}
 
-//	if ( IntuitionBase )
-//	{
-//		CloseLibrary( IntuitionBase );
-//		IntuitionBase = NULL;
-//	}
-
-//	if (GfxBase)
-//	{
-//		CloseLibrary( GfxBase );
-//		GfxBase = NULL;
-//	}
-
 	return( -1 );
 }
 
@@ -3756,9 +3586,7 @@ PROTO static void amiga_map( void )
 	term_data *td = &data[ 0 ];
 	int i,j;
 	byte ta,tc;
-#ifdef ANG282
 	int cur_wid = DUNGEON_WID,cur_hgt = DUNGEON_HGT;
-#endif
 
 	/* Only in graphics mode, and not on Kickstart1.3 */
 	if ( !use_graphics || KICK13)
@@ -3803,18 +3631,8 @@ PROTO static void amiga_map( void )
 			/* Get frame tile */
 			if ( i==0 || i == cur_wid - 1 || j == 0 || j == cur_hgt - 1 )
 			{
-#ifdef ANG283
 				ta = f_info[ 63 ].x_attr;
 				tc = f_info[ 63 ].x_char;
-#else
-#ifdef ZANGBAND
-				ta = f_info[ 63 ].x_attr;
-				tc = f_info[ 63 ].x_char;
-#else
-				ta = f_info[ 63 ].z_attr;
-				tc = f_info[ 63 ].z_char;
-#endif
-#endif
 			}
 
 			/* Get tile from cave table */
@@ -4220,12 +4038,9 @@ PROTO static void play_sound( int v )
 		/* Just pick 1st sound available at the moment */
 		snd = sound_ref[v][vnum = 1 + rand_int( (int)sound_ref[v][0] )];
 
-//		printf("%d %d\n",vnum,(int)sound_ref[v][0] );
-
 		/* Channel number */
 		channel = snd->Channel;
 
-//		printf("channel %d\n");
 		/* Last sample played on channel */
 		old = channel_last[ channel ];
 
@@ -4629,7 +4444,6 @@ PROTO void amiga_makepath( char *name )
 		c = name[strlen(name) - 1];
 		if (c != '/' && c != ':')
 			strcat(name,"/");
-//		strcpy(name,"PROGDIR:/");
 		return;
 	}
 	if (f)
@@ -4770,9 +4584,6 @@ PROTO static void amiga_hs_to_ascii(void)
 	cdun = atoi(h.cur_dun);
 	mdun = atoi(h.max_dun);
 
-#ifdef KANGBAND
-	ia = atoi(h.inside_special);    /* -KMW- */
-#endif
 	/* Hack -- extract the gold and such */
 	for (user = h.uid; isspace(*user); user++) /* loop */;
 	for (when = h.day; isspace(*when); when++) /* loop */;
@@ -4780,21 +4591,10 @@ PROTO static void amiga_hs_to_ascii(void)
 	for (aged = h.turns; isspace(*aged); aged++) /* loop */;
 
 	/* Dump some info */
-#ifdef KANGBAND
 	sprintf(temp, "%3d.%9s  %s the %s %s, Level %d",
 	        i + 1, h.pts, h.who,
-	        p_info[pr].title, class_info[pc].title,
+	        p_name + p_info[pr].name, class_info[pc].title,
 	        clev);
-#else
-/*	sprintf(temp, "%3d.%9s  %s the %s %s",
-	        i + 1, h.pts, h.who,
-	        p_info[pr].title,magic_info[pc].title); */
-	sprintf(temp, "%3d.%9s  %s the %s %s, Level %d",
-	        i + 1, h.pts, h.who,
-	        p_info[pr].title, class_info[pc].title,
-	        clev);
-
-#endif
 
 	/* Dump the first line */
 	fprintf(d, "%s\n",temp);
@@ -4900,18 +4700,10 @@ PROTO void amiga_write_user_name( char *name )
 
 PROTO static int get_p_attr( void )
 {
-#ifdef ZANGBAND
-	return p_ptr->pclass + 36;
-#else
-#ifdef SANGBAND
-	int pc = 1,pr = p_ptr->prace;
-#else
 	int pc = p_ptr->pclass,pr = p_ptr->prace;
-#endif
 	pc = pc % 6;
 	pr = pr % 5;
 	return((( pc * 10 + pr) >> 5) + 12);
-#endif
 }
 
 /* -------------------------------------------------------------------- */
@@ -4924,77 +4716,10 @@ PROTO static int get_p_attr( void )
 
 PROTO static int get_p_char( void )
 {
-#ifdef ZANGBAND
-	return p_ptr->prace;
-#else
-#ifdef SANGBAND
-	int pc = 1,pr = p_ptr->prace;
-#else
 	int pc = p_ptr->pclass,pr = p_ptr->prace;
-#endif
 	pc = pc % 6;
 	pr = pr % 5;
 	return(( pc * 10 + pr) & 0x1f );
-#endif
 }
 
-PROTO void amiga_register(char *ourname)
-{
-	char tmp[500];
-	char buf[200];
-	char *p;
-	FILE *f;
-	BPTR templock;
-
-	if (KICK13)
-		return;
-
-	/* Add ENVARC: stuff */
-
-	if (templock = Lock("ENVARC:Angband",ACCESS_READ))
-		UnLock(templock);
-	else
-	{
-		templock = CreateDir("ENVARC:Angband");
-		if (templock)
-			UnLock(templock);
-		else
-			return;
-	}
-
-	if (getasn("ENVARC"))
-	{
-		f = fopen("ENVARC:Angband/AngMUI","r");
-		if (!f)
-		{
-			f = fopen("ENVARC:Angband/AngMUI","w");
-			if (!f)
-				return;
-		}
-		while (fgets(tmp,500,f))
-		{
-			int z = strlen(tmp) - 1;
-
-			if (tmp[z] == '\n')
-				tmp[z] = 0;
-
-			p = strstr(tmp,",");
-			if (p) *p = 0;
-			if (streq(tmp, VERSION))
-			{
-				fclose(f);
-				return;
-			}
-		}
-		fclose(f);
-		f = fopen("ENVARC:Angband/AngMUI","a");
-		if (f)
-		{
-			NameFromLock(GetProgramDir(),tmp,400);
-			GetProgramName(buf,200);
-			AddPart(tmp,buf,500);
-			fprintf(f,"%s,%s,%s,%d\n",VERSION,ourname,tmp,SOUND_MAX);
-			fclose(f);
-		}
-	}
-}
+#endif /* USE_AMI */

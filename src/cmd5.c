@@ -29,14 +29,14 @@ static int get_spell(int *sn, cptr prompt, int sval, bool known)
 	int spell;
 	int num = 0;
 
-	byte spells[64];
+	byte spells[PY_MAX_SPELLS];
 
 	bool verify;
 
 	bool flag, redraw, okay;
 	char choice;
 
-	magic_type *s_ptr;
+	const magic_type *s_ptr;
 
 	char out_val[160];
 
@@ -58,7 +58,7 @@ static int get_spell(int *sn, cptr prompt, int sval, bool known)
 #endif /* ALLOW_REPEAT */
 
 	/* Extract spells */
-	for (spell = 0; spell < 64; spell++)
+	for (spell = 0; spell < PY_MAX_SPELLS; spell++)
 	{
 		/* Check for this spell */
 		if ((spell < 32) ?
@@ -243,7 +243,7 @@ void do_cmd_browse(void)
 	int spell;
 	int num = 0;
 
-	byte spells[64];
+	byte spells[PY_MAX_SPELLS];
 
 	object_type *o_ptr;
 
@@ -307,7 +307,7 @@ void do_cmd_browse(void)
 
 
 	/* Extract spells */
-	for (spell = 0; spell < 64; spell++)
+	for (spell = 0; spell < PY_MAX_SPELLS; spell++)
 	{
 		/* Check for this spell */
 		if ((spell < 32) ?
@@ -434,7 +434,7 @@ void do_cmd_study(void)
 		int gift = -1;
 
 		/* Extract spells */
-		for (spell = 0; spell < 64; spell++)
+		for (spell = 0; spell < PY_MAX_SPELLS; spell++)
 		{
 			/* Check spells in the book */
 			if ((spell < 32) ?
@@ -481,7 +481,7 @@ void do_cmd_study(void)
 	}
 
 	/* Find the next open entry in "spell_order[]" */
-	for (i = 0; i < 64; i++)
+	for (i = 0; i < PY_MAX_SPELLS; i++)
 	{
 		/* Stop at the first empty space */
 		if (p_ptr->spell_order[i] == 99) break;
@@ -533,7 +533,7 @@ void do_cmd_cast(void)
 
 	object_type *o_ptr;
 
-	magic_type *s_ptr;
+	const magic_type *s_ptr;
 
 	cptr q, s;
 
@@ -609,6 +609,9 @@ void do_cmd_cast(void)
 		/* Warning */
 		msg_print("You do not have enough mana to cast this spell.");
 
+		/* Flush input */
+		flush();
+
 		/* Verify */
 		if (!get_check("Attempt it anyway? ")) return;
 	}
@@ -633,7 +636,7 @@ void do_cmd_cast(void)
 		/* Spells.  */
 		switch (spell)
 		{
-			case 0:
+			case SPELL_MAGIC_MISSILE:
 			{
 				if (!get_aim_dir(&dir)) return;
 				fire_bolt_or_beam(beam-10, GF_MISSILE, dir,
@@ -641,45 +644,45 @@ void do_cmd_cast(void)
 				break;
 			}
 
-			case 1:
+			case SPELL_DETECT_MONSTERS:
 			{
 				(void)detect_monsters_normal();
 				break;
 			}
 
-			case 2:
+			case SPELL_PHASE_DOOR:
 			{
 				teleport_player(10);
 				break;
 			}
 
-			case 3:
+			case SPELL_LIGHT_AREA:
 			{
 				(void)lite_area(damroll(2, (plev / 2)), (plev / 10) + 1);
 				break;
 			}
 
-			case 4:
+			case SPELL_TREASURE_DETECTION:
 			{
 				(void)detect_treasure();
 				(void)detect_objects_gold();
 				break;
 			}
 
-			case 5:
+			case SPELL_CURE_LIGHT_WOUNDS:
 			{
 				(void)hp_player(damroll(2, 8));
 				(void)set_cut(p_ptr->cut - 15);
 				break;
 			}
 
-			case 6:
+			case SPELL_OBJECT_DETECTION:
 			{
 				(void)detect_objects_normal();
 				break;
 			}
 
-			case 7:
+			case SPELL_FIND_TRAPS_DOORS:
 			{
 				(void)detect_traps();
 				(void)detect_doors();
@@ -687,7 +690,7 @@ void do_cmd_cast(void)
 				break;
 			}
 
-			case 8:
+			case SPELL_STINKING_CLOUD:
 			{
 				if (!get_aim_dir(&dir)) return;
 				fire_ball(GF_POIS, dir,
@@ -695,14 +698,14 @@ void do_cmd_cast(void)
 				break;
 			}
 
-			case 9:
+			case SPELL_CONFUSE_MONSTER:
 			{
 				if (!get_aim_dir(&dir)) return;
 				(void)confuse_monster(dir, plev);
 				break;
 			}
 
-			case 10:
+			case SPELL_LIGHTNING_BOLT:
 			{
 				if (!get_aim_dir(&dir)) return;
 				fire_bolt_or_beam(beam-10, GF_ELEC, dir,
@@ -710,32 +713,32 @@ void do_cmd_cast(void)
 				break;
 			}
 
-			case 11:
+			case SPELL_TRAP_DOOR_DESTRUCTION:
 			{
 				(void)destroy_doors_touch();
 				break;
 			}
 
-			case 12:
+			case SPELL_SLEEP_I:
 			{
 				if (!get_aim_dir(&dir)) return;
 				(void)sleep_monster(dir);
 				break;
 			}
 
-			case 13:
+			case SPELL_CURE_POISON:
 			{
 				(void)set_poisoned(0);
 				break;
 			}
 
-			case 14:
+			case SPELL_TELEPORT_SELF:
 			{
 				teleport_player(plev * 5);
 				break;
 			}
 
-			case 15:
+			case SPELL_SPEAR_OF_LIGHT:
 			{
 				if (!get_aim_dir(&dir)) return;
 				msg_print("A line of blue shimmering light appears.");
@@ -743,7 +746,7 @@ void do_cmd_cast(void)
 				break;
 			}
 
-			case 16:
+			case SPELL_FROST_BOLT:
 			{
 				if (!get_aim_dir(&dir)) return;
 				fire_bolt_or_beam(beam-10, GF_COLD, dir,
@@ -751,51 +754,51 @@ void do_cmd_cast(void)
 				break;
 			}
 
-			case 17:
+			case SPELL_TURN_STONE_TO_MUD:
 			{
 				if (!get_aim_dir(&dir)) return;
 				(void)wall_to_mud(dir);
 				break;
 			}
 
-			case 18:
+			case SPELL_SATISFY_HUNGER:
 			{
 				(void)set_food(PY_FOOD_MAX - 1);
 				break;
 			}
 
-			case 19:
+			case SPELL_RECHARGE_ITEM_I:
 			{
 				(void)recharge(5);
 				break;
 			}
 
-			case 20:
+			case SPELL_SLEEP_II:
 			{
 				(void)sleep_monsters_touch();
 				break;
 			}
 
-			case 21:
+			case SPELL_POLYMORPH_OTHER:
 			{
 				if (!get_aim_dir(&dir)) return;
 				(void)poly_monster(dir);
 				break;
 			}
 
-			case 22:
+			case SPELL_IDENTIFY:
 			{
 				(void)ident_spell();
 				break;
 			}
 
-			case 23:
+			case SPELL_SLEEP_III:
 			{
 				(void)sleep_monsters();
 				break;
 			}
 
-			case 24:
+			case SPELL_FIRE_BOLT:
 			{
 				if (!get_aim_dir(&dir)) return;
 				fire_bolt_or_beam(beam, GF_FIRE, dir,
@@ -803,14 +806,14 @@ void do_cmd_cast(void)
 				break;
 			}
 
-			case 25:
+			case SPELL_SLOW_MONSTER:
 			{
 				if (!get_aim_dir(&dir)) return;
 				(void)slow_monster(dir);
 				break;
 			}
 
-			case 26:
+			case SPELL_FROST_BALL:
 			{
 				if (!get_aim_dir(&dir)) return;
 				fire_ball(GF_COLD, dir,
@@ -818,20 +821,20 @@ void do_cmd_cast(void)
 				break;
 			}
 
-			case 27:
+			case SPELL_RECHARGE_ITEM_II:
 			{
 				(void)recharge(40);
 				break;
 			}
 
-			case 28:
+			case SPELL_TELEPORT_OTHER:
 			{
 				if (!get_aim_dir(&dir)) return;
 				(void)teleport_monster(dir);
 				break;
 			}
 
-			case 29:
+			case SPELL_HASTE_SELF:
 			{
 				if (!p_ptr->fast)
 				{
@@ -844,7 +847,7 @@ void do_cmd_cast(void)
 				break;
 			}
 
-			case 30:
+			case SPELL_FIRE_BALL:
 			{
 				if (!get_aim_dir(&dir)) return;
 				fire_ball(GF_FIRE, dir,
@@ -852,49 +855,49 @@ void do_cmd_cast(void)
 				break;
 			}
 
-			case 31:
+			case SPELL_WORD_OF_DESTRUCTION:
 			{
 				destroy_area(py, px, 15, TRUE);
 				break;
 			}
 
-			case 32:
+			case SPELL_GENOCIDE:
 			{
 				(void)genocide();
 				break;
 			}
 
-			case 33:
+			case SPELL_DOOR_CREATION:
 			{
 				(void)door_creation();
 				break;
 			}
 
-			case 34:
+			case SPELL_STAIR_CREATION:
 			{
 				(void)stair_creation();
 				break;
 			}
 
-			case 35:
+			case SPELL_TELEPORT_LEVEL:
 			{
 				(void)teleport_player_level();
 				break;
 			}
 
-			case 36:
+			case SPELL_EARTHQUAKE:
 			{
 				earthquake(py, px, 10);
 				break;
 			}
 
-			case 37:
+			case SPELL_WORD_OF_RECALL:
 			{
 				set_recall();
 				break;
 			}
 
-			case 38:
+			case SPELL_ACID_BOLT:
 			{
 				if (!get_aim_dir(&dir)) return;
 				fire_bolt_or_beam(beam, GF_ACID, dir,
@@ -902,7 +905,7 @@ void do_cmd_cast(void)
 				break;
 			}
 
-			case 39:
+			case SPELL_CLOUD_KILL:
 			{
 				if (!get_aim_dir(&dir)) return;
 				fire_ball(GF_POIS, dir,
@@ -910,7 +913,7 @@ void do_cmd_cast(void)
 				break;
 			}
 
-			case 40:
+			case SPELL_ACID_BALL:
 			{
 				if (!get_aim_dir(&dir)) return;
 				fire_ball(GF_ACID, dir,
@@ -918,7 +921,7 @@ void do_cmd_cast(void)
 				break;
 			}
 
-			case 41:
+			case SPELL_ICE_STORM:
 			{
 				if (!get_aim_dir(&dir)) return;
 				fire_ball(GF_COLD, dir,
@@ -926,7 +929,7 @@ void do_cmd_cast(void)
 				break;
 			}
 
-			case 42:
+			case SPELL_METEOR_SWARM:
 			{
 				if (!get_aim_dir(&dir)) return;
 				fire_ball(GF_METEOR, dir,
@@ -934,7 +937,7 @@ void do_cmd_cast(void)
 				break;
 			}
 
-			case 43:
+			case SPELL_MANA_STORM:
 			{
 				if (!get_aim_dir(&dir)) return;
 				fire_ball(GF_MANA, dir,
@@ -942,61 +945,61 @@ void do_cmd_cast(void)
 				break;
 			}
 
-			case 44:
+			case SPELL_DETECT_EVIL:
 			{
 				(void)detect_monsters_evil();
 				break;
 			}
 
-			case 45:
+			case SPELL_DETECT_ENCHANTMENT:
 			{
 				(void)detect_objects_magic();
 				break;
 			}
 
-			case 46:
+			case SPELL_RECHARGE_ITEM_III:
 			{
 				recharge(100);
 				break;
 			}
 
-			case 47:
+			case SPELL_GENOCIDE2:
 			{
 				(void)genocide();
 				break;
 			}
 
-			case 48:
+			case SPELL_MASS_GENOCIDE:
 			{
 				(void)mass_genocide();
 				break;
 			}
 
-			case 49:
+			case SPELL_RESIST_FIRE:
 			{
 				(void)set_oppose_fire(p_ptr->oppose_fire + randint(20) + 20);
 				break;
 			}
 
-			case 50:
+			case SPELL_RESIST_COLD:
 			{
 				(void)set_oppose_cold(p_ptr->oppose_cold + randint(20) + 20);
 				break;
 			}
 
-			case 51:
+			case SPELL_RESIST_ACID:
 			{
 				(void)set_oppose_acid(p_ptr->oppose_acid + randint(20) + 20);
 				break;
 			}
 
-			case 52:
+			case SPELL_RESIST_POISON:
 			{
 				(void)set_oppose_pois(p_ptr->oppose_pois + randint(20) + 20);
 				break;
 			}
 
-			case 53:
+			case SPELL_RESISTANCE:
 			{
 				int time = randint(20) + 20;
 				(void)set_oppose_acid(p_ptr->oppose_acid + time);
@@ -1007,7 +1010,7 @@ void do_cmd_cast(void)
 				break;
 			}
 
-			case 54:
+			case SPELL_HEROISM:
 			{
 				(void)hp_player(10);
 				(void)set_hero(p_ptr->hero + randint(25) + 25);
@@ -1015,13 +1018,13 @@ void do_cmd_cast(void)
 				break;
 			}
 
-			case 55:
+			case SPELL_SHIELD:
 			{
 				(void)set_shield(p_ptr->shield + randint(20) + 30);
 				break;
 			}
 
-			case 56:
+			case SPELL_BERSERKER:
 			{
 				(void)hp_player(30);
 				(void)set_shero(p_ptr->shero + randint(25) + 25);
@@ -1029,7 +1032,7 @@ void do_cmd_cast(void)
 				break;
 			}
 
-			case 57:
+			case SPELL_ESSENCE_OF_SPEED:
 			{
 				if (!p_ptr->fast)
 				{
@@ -1042,7 +1045,7 @@ void do_cmd_cast(void)
 				break;
 			}
 
-			case 58:
+			case SPELL_GLOBE_OF_INVULNERABILITY:
 			{
 				(void)set_invuln(p_ptr->invuln + randint(8) + 8);
 				break;
@@ -1179,7 +1182,7 @@ void do_cmd_pray(void)
 
 	object_type *o_ptr;
 
-	magic_type *s_ptr;
+	const magic_type *s_ptr;
 
 	cptr q, s;
 
@@ -1255,6 +1258,9 @@ void do_cmd_pray(void)
 		/* Warning */
 		msg_print("You do not have enough mana to recite this prayer.");
 
+		/* Flush input */
+		flush();
+
 		/* Verify */
 		if (!get_check("Attempt it anyway? ")) return;
 	}
@@ -1275,114 +1281,114 @@ void do_cmd_pray(void)
 	{
 		switch (spell)
 		{
-			case 0:
+			case PRAYER_DETECT_EVIL:
 			{
 				(void)detect_monsters_evil();
 				break;
 			}
 
-			case 1:
+			case PRAYER_CURE_LIGHT_WOUNDS:
 			{
 				(void)hp_player(damroll(2, 10));
 				(void)set_cut(p_ptr->cut - 10);
 				break;
 			}
 
-			case 2:
+			case PRAYER_BLESS:
 			{
 				(void)set_blessed(p_ptr->blessed + randint(12) + 12);
 				break;
 			}
 
-			case 3:
+			case PRAYER_REMOVE_FEAR:
 			{
 				(void)set_afraid(0);
 				break;
 			}
 
-			case 4:
+			case PRAYER_CALL_LIGHT:
 			{
 				(void)lite_area(damroll(2, (plev / 2)), (plev / 10) + 1);
 				break;
 			}
 
-			case 5:
+			case PRAYER_FIND_TRAPS:
 			{
 				(void)detect_traps();
 				break;
 			}
 
-			case 6:
+			case PRAYER_DETECT_DOORS_STAIRS:
 			{
 				(void)detect_doors();
 				(void)detect_stairs();
 				break;
 			}
 
-			case 7:
+			case PRAYER_SLOW_POISON:
 			{
 				(void)set_poisoned(p_ptr->poisoned / 2);
 				break;
 			}
 
-			case 8:
+			case PRAYER_SCARE_MONSTER:
 			{
 				if (!get_aim_dir(&dir)) return;
 				(void)fear_monster(dir, plev);
 				break;
 			}
 
-			case 9:
+			case PRAYER_PORTAL:
 			{
 				teleport_player(plev * 3);
 				break;
 			}
 
-			case 10:
+			case PRAYER_CURE_SERIOUS_WOUNDS:
 			{
 				(void)hp_player(damroll(4, 10));
 				(void)set_cut((p_ptr->cut / 2) - 20);
 				break;
 			}
 
-			case 11:
+			case PRAYER_CHANT:
 			{
 				(void)set_blessed(p_ptr->blessed + randint(24) + 24);
 				break;
 			}
 
-			case 12:
+			case PRAYER_SANCTUARY:
 			{
 				(void)sleep_monsters_touch();
 				break;
 			}
 
-			case 13:
+			case PRAYER_SATISFY_HUNGER:
 			{
 				(void)set_food(PY_FOOD_MAX - 1);
 				break;
 			}
 
-			case 14:
+			case PRAYER_REMOVE_CURSE:
 			{
 				remove_curse();
 				break;
 			}
 
-			case 15:
+			case PRAYER_RESIST_HEAT_COLD:
 			{
 				(void)set_oppose_fire(p_ptr->oppose_fire + randint(10) + 10);
 				(void)set_oppose_cold(p_ptr->oppose_cold + randint(10) + 10);
 				break;
 			}
 
-			case 16:
+			case PRAYER_NEUTRALIZE_POISON:
 			{
 				(void)set_poisoned(0);
 				break;
 			}
 
-			case 17:
+			case PRAYER_ORB_OF_DRAINING:
 			{
 				if (!get_aim_dir(&dir)) return;
 				fire_ball(GF_HOLY_ORB, dir,
@@ -1392,38 +1398,38 @@ void do_cmd_pray(void)
 				break;
 			}
 
-			case 18:
+			case PRAYER_CURE_CRITICAL_WOUNDS:
 			{
 				(void)hp_player(damroll(6, 10));
 				(void)set_cut(0);
 				break;
 			}
 
-			case 19:
+			case PRAYER_SENSE_INVISIBLE:
 			{
 				(void)set_tim_invis(p_ptr->tim_invis + randint(24) + 24);
 				break;
 			}
 
-			case 20:
+			case PRAYER_PROTECTION_FROM_EVIL:
 			{
 				(void)set_protevil(p_ptr->protevil + randint(25) + 3 * p_ptr->lev);
 				break;
 			}
 
-			case 21:
+			case PRAYER_EARTHQUAKE:
 			{
 				earthquake(py, px, 10);
 				break;
 			}
 
-			case 22:
+			case PRAYER_SENSE_SURROUNDINGS:
 			{
 				map_area();
 				break;
 			}
 
-			case 23:
+			case PRAYER_CURE_MORTAL_WOUNDS:
 			{
 				(void)hp_player(damroll(8, 10));
 				(void)set_stun(0);
@@ -1431,25 +1437,25 @@ void do_cmd_pray(void)
 				break;
 			}
 
-			case 24:
+			case PRAYER_TURN_UNDEAD:
 			{
 				(void)turn_undead();
 				break;
 			}
 
-			case 25:
+			case PRAYER_PRAYER:
 			{
 				(void)set_blessed(p_ptr->blessed + randint(48) + 48);
 				break;
 			}
 
-			case 26:
+			case PRAYER_DISPEL_UNDEAD:
 			{
 				(void)dispel_undead(randint(plev * 3));
 				break;
 			}
 
-			case 27:
+			case PRAYER_HEAL:
 			{
 				(void)hp_player(300);
 				(void)set_stun(0);
@@ -1457,19 +1463,19 @@ void do_cmd_pray(void)
 				break;
 			}
 
-			case 28:
+			case PRAYER_DISPEL_EVIL:
 			{
 				(void)dispel_evil(randint(plev * 3));
 				break;
 			}
 
-			case 29:
+			case PRAYER_GLYPH_OF_WARDING:
 			{
 				warding_glyph();
 				break;
 			}
 
-			case 30:
+			case PRAYER_HOLY_WORD:
 			{
 				(void)dispel_evil(randint(plev * 4));
 				(void)hp_player(1000);
@@ -1480,44 +1486,44 @@ void do_cmd_pray(void)
 				break;
 			}
 
-			case 31:
+			case PRAYER_DETECT_MONSTERS:
 			{
 				(void)detect_monsters_normal();
 				break;
 			}
 
-			case 32:
+			case PRAYER_DETECTION:
 			{
 				(void)detect_all();
 				break;
 			}
 
-			case 33:
+			case PRAYER_PERCEPTION:
 			{
 				(void)ident_spell();
 				break;
 			}
 
-			case 34:
+			case PRAYER_PROBING:
 			{
 				(void)probing();
 				break;
 			}
 
-			case 35:
+			case PRAYER_CLAIRVOYANCE:
 			{
 				wiz_lite();
 				break;
 			}
 
-			case 36:
+			case PRAYER_CURE_SERIOUS_WOUNDS2:
 			{
 				(void)hp_player(damroll(4, 10));
 				(void)set_cut(0);
 				break;
 			}
 
-			case 37:
+			case PRAYER_CURE_MORTAL_WOUNDS2:
 			{
 				(void)hp_player(damroll(8, 10));
 				(void)set_stun(0);
@@ -1525,7 +1531,7 @@ void do_cmd_pray(void)
 				break;
 			}
 
-			case 38:
+			case PRAYER_HEALING:
 			{
 				(void)hp_player(2000);
 				(void)set_stun(0);
@@ -1533,7 +1539,7 @@ void do_cmd_pray(void)
 				break;
 			}
 
-			case 39:
+			case PRAYER_RESTORATION:
 			{
 				(void)do_res_stat(A_STR);
 				(void)do_res_stat(A_INT);
@@ -1544,25 +1550,25 @@ void do_cmd_pray(void)
 				break;
 			}
 
-			case 40:
+			case PRAYER_REMEMBRANCE:
 			{
 				(void)restore_level();
 				break;
 			}
 
-			case 41:
+			case PRAYER_DISPEL_UNDEAD2:
 			{
 				(void)dispel_undead(randint(plev * 4));
 				break;
 			}
 
-			case 42:
+			case PRAYER_DISPEL_EVIL2:
 			{
 				(void)dispel_evil(randint(plev * 4));
 				break;
 			}
 
-			case 43:
+			case PRAYER_BANISHMENT:
 			{
 				if (banish_evil(100))
 				{
@@ -1571,87 +1577,87 @@ void do_cmd_pray(void)
 				break;
 			}
 
-			case 44:
+			case PRAYER_WORD_OF_DESTRUCTION:
 			{
 				destroy_area(py, px, 15, TRUE);
 				break;
 			}
 
-			case 45:
+			case PRAYER_ANNIHILATION:
 			{
 				if (!get_aim_dir(&dir)) return;
 				drain_life(dir, 200);
 				break;
 			}
 
-			case 46:
+			case PRAYER_UNBARRING_WAYS:
 			{
 				(void)destroy_doors_touch();
 				break;
 			}
 
-			case 47:
+			case PRAYER_RECHARGING:
 			{
 				(void)recharge(15);
 				break;
 			}
 
-			case 48:
+			case PRAYER_DISPEL_CURSE:
 			{
 				(void)remove_all_curse();
 				break;
 			}
 
-			case 49:
+			case PRAYER_ENCHANT_WEAPON:
 			{
 				(void)enchant_spell(rand_int(4) + 1, rand_int(4) + 1, 0);
 				break;
 			}
 
-			case 50:
+			case PRAYER_ENCHANT_ARMOUR:
 			{
 				(void)enchant_spell(0, 0, rand_int(3) + 2);
 				break;
 			}
 
-			case 51:
+			case PRAYER_ELEMENTAL_BRAND:
 			{
 				brand_weapon();
 				break;
 			}
 
-			case 52:
+			case PRAYER_BLINK:
 			{
 				teleport_player(10);
 				break;
 			}
 
-			case 53:
+			case PRAYER_TELEPORT_SELF:
 			{
 				teleport_player(plev * 8);
 				break;
 			}
 
-			case 54:
+			case PRAYER_TELEPORT_OTHER:
 			{
 				if (!get_aim_dir(&dir)) return;
 				(void)teleport_monster(dir);
 				break;
 			}
 
-			case 55:
+			case PRAYER_TELEPORT_LEVEL:
 			{
 				(void)teleport_player_level();
 				break;
 			}
 
-			case 56:
+			case PRAYER_WORD_OF_RECALL:
 			{
 				set_recall();
 				break;
 			}
 
-			case 57:
+			case PRAYER_ALTER_REALITY:
 			{
 				msg_print("The world changes!");
 

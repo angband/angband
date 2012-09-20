@@ -162,6 +162,8 @@ u32b Rand_mod(u32b m)
  *
  * Note that "m" must not be greater than 0x1000000, or division
  * by zero will result.
+ *
+ * ToDo: Check for m > 0x1000000.
  */
 u32b Rand_div(u32b m)
 {
@@ -339,3 +341,50 @@ s16b Rand_normal(int mean, int stand)
 }
 
 
+/*
+ * Extract a "random" number from 0 to m-1, using the "simple" RNG.
+ *
+ * This function should be used when generating random numbers in
+ * "external" program parts like the main-*.c files.  It preserves
+ * the current RNG state to prevent influences on game-play.
+ *
+ * Could also use rand() from <stdlib.h> directly. XXX XXX XXX
+ */
+u32b Rand_simple(u32b m)
+{
+	static bool initialized = FALSE;
+	static u32b simple_rand_value;
+
+	bool old_rand_quick;
+	u32b old_rand_value;
+
+
+	/* Save RNG state */
+	old_rand_quick = Rand_quick;
+	old_rand_value = Rand_value;
+
+	/* Use "simple" RNG */
+	Rand_quick = TRUE;
+
+	if (initialized)
+	{
+		/* Use old seed */
+		Rand_value = simple_rand_value;
+	}
+	else
+	{
+		/* Initialize with new seed */
+		Rand_value = time(NULL);
+		initialized = TRUE;
+	}
+
+	/* Get a random number */
+	simple_rand_value = rand_int(m);
+
+	/* Restore RNG state */
+	Rand_quick = old_rand_quick;
+	Rand_value = old_rand_value;
+
+	/* Use the value */
+	return (simple_rand_value);
+}

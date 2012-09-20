@@ -1,12 +1,12 @@
 === Version Information ===
 
-This file was last updated for Angband 2.9.0.
+This file was last updated for Angband 2.9.2.
 
 Make sure to read the newsgroup ("rec.games.roguelike.angband"), and to visit
 the Official Angband Home Page ("http://thangorodrim.angband.org") for the
 most up to date information about Angband.
 
-Angband 2.9.0 has an incredibly complex history, and is the result of a
+Angband 2.9.2 has an incredibly complex history, and is the result of a
 lot of work by a lot of people, all of whom have contributed their time
 and energy for free, being rewarded only by the pleasure of keeping alive
 one of the best freeware games available anywhere.
@@ -428,15 +428,17 @@ Umoria Version 5.2, patch level 1
 Angband Version 2.0   Alex Cutler, Andy Astrand, Sean Marsh, Geoff Hill, 
                       Charles Teague.
 
-Angband Version 2.4   : 05/09/93
+Angband Version 2.4   : 05/09/1993
 
-Angband Version 2.5   : 12/05/93 Charles Swiger
+Angband Version 2.5   : 12/05/1993 Charles Swiger
 
-Angband Version 2.6   : 09/04/94 Charles Swiger
+Angband Version 2.6   : 09/04/1994 Charles Swiger
 
-Angband Version 2.7   : 01/01/95  Ben Harrison
+Angband Version 2.7   : 01/01/1995 Ben Harrison
 
-Angband Version 2.8   : 01/01/97  Ben Harrison
+Angband Version 2.8   : 01/01/1997 Ben Harrison
+
+Angband Version 2.9   : 10th April 2000 Robert Ruehlmann
 
 
 
@@ -462,6 +464,6 @@ Ben Harrison, Steven Fuerst, Julian Lighton, Andrew Hill, Werner Baer,
 Tom Morton, "Cyric the Mad", Chris Kern, Tim Baker, Jurriaan Kalkman,
 Alexander Wilkins, Mauro Scarpa, John I'anson-Holton, "facade",
 Dennis van Es, Kenneth A. Strom, Wei-Hwa Huang, Nikodemus, Timo Pietilä,
-Greg Wooledge, Keldon Jones, Shayne Steele, Dr. Andrew White, Musus Umbra
-
+Greg Wooledge, Keldon Jones, Shayne Steele, Dr. Andrew White, Musus Umbra,
+Jonathan Ellis
 

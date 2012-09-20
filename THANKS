@@ -1,0 +1,75 @@
+Contributors:
+-------------
+
+Many thanks go to the following people who have contributed patches,
+bugfixes, and other stuff for Angband:
+
+Peter Berger, Andrew Hill, Werner Baer, Tom Morton, "Cyric the Mad",
+Chris Kern, Jurriaan Kalkman, Alexander Wilkins, Mauro Scarpa, "facade",
+Dennis van Es, Kenneth A. Strom, Wei-Hwa Huang, Nikodemus, Timo Pietilä,
+Shayne Steele, Dr. Andrew White, Chris Carr, Greg Flint, Christopher Jeris,
+Ian Parkhouse, "Warhammer", Scott Holder, Brent Ross, Kazuo Ito,
+Willem Siemelink, "Luthien", David J. Grabiner, Ilya Bely, "chungkuo",
+Kieron Dunbar, Timo Pietla, Hallvard B. Furuseth, George W. Harris
+
+Greg Wooledge < greg@wooledge.org >
+Basic autoconf support, random artifacts
+
+Tim Baker < dbaker@direct.ca >
+Made the "easy patch" and organized the patches for the Angband 2.8.5 beta
+
+Eytan Zweig < eytanzw@yahoo.com >
+Many bugreports, and patches
+
+Jonathan Ellis < jonathan@franz-liszt.freeserve.co.uk >
+Updated helpfiles
+
+John I'anson-Holton < jianson@milbank.com >
+Many bugfixes and patches
+
+Steven Fuerst < sfuerst@physics.usyd.edu.au >
+Improved X11/XAW code
+
+"Bablos" < angband@blueyonder.co.uk >
+Updated Amiga code
+
+Julian Lighton < jl8e@fragment.com >
+
+Chris Weisiger
+New Angband vaults
+
+Matthias Kurzke < mawende@gmx.net >
+Ego-item patch
+
+Ed Cogburn < ecogburn@greene.xtn.net >
+Close game patch
+
+Keldon Jones < keldon@umr.edu >
+Improved Monster AI
+
+Adam Bolt
+16x16 tiles
+
+Arcum Dagsson
+Configurable artifact activations
+
+"Prfnoff"
+Customizable player races, player history, shop owners, ...
+
+Mark Howson
+Improvements to the Amiga code
+
+Musus Umbra
+Improvements to the Acorn RISC OS code
+
+The UPX team (Markus Oberhumer and Laszlo Molnar)
+The UPX packer for executables < http://upx.tsx.org/ > is used to reduce
+the size of the Windows and DOS binaries.
+
+I hope I've remembered everyone who ought to be mentioned here. If your 
+name should be included, my apologies, and please tell me so I can correct 
+the oversight!
+
+-- 
+Robert Ruehlmann < rr9@angband.org >
+

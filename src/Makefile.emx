@@ -22,7 +22,7 @@
 #		  Needs 4OS2.
 #
 
-VERSION         = 290
+VERSION         = 292
 EXPORT          = angband-$(VERSION).os2.zip
 
 CC		= gcc

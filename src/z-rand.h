@@ -38,6 +38,24 @@
 #define rand_int(M) \
 	((s32b)(Rand_div(M)))
 
+
+/*
+ * Generates a random long integer X where 1<=X<=M.
+ *
+ * Note that the behaviour for M < 1 is undefined.
+ */
+#define randint(M) \
+	(rand_int(M) + 1)
+
+/*
+ * Generates a random long integer X where 1<=X<=M.
+ *
+ * Note that the behaviour for M < 1 is undefined.
+ */
+#define rand_die(M) \
+	(rand_int(M) + 1)
+
+
 /*
  * Generates a random long integer X where A<=X<=B
  * The integer X falls along a uniform distribution.
@@ -72,8 +90,7 @@ extern void Rand_state_init(u32b seed);
 extern u32b Rand_mod(u32b m);
 extern u32b Rand_div(u32b m);
 extern s16b Rand_normal(int mean, int stand);
+extern u32b Rand_simple(u32b m);
 
 
-#endif
-
-
+#endif /* INCLUDED_Z_RAND_H */

@@ -1,12 +1,12 @@
 # File: k_info.txt
 
 
-# This file is used to initialize the "lib/raw/k_info.raw" file, which is
+# This file is used to initialize the "lib/data/k_info.raw" file, which is
 # used to initialize the "object kind" information for the Angband game.
 
 # Do not modify this file unless you know exactly what you are doing,
 # unless you wish to risk possible system crashes and broken savefiles.
-# After modifying this file, delete the "lib/raw/k_info.raw" file.
+# After modifying this file, delete the "lib/data/k_info.raw" file.
 
 # Available slots (possibly out of date):
 #   29, 29, 90, 177, 178, 179, 182, 183, 195, 196, 205,
@@ -32,9 +32,9 @@
 # 'G' is for graphics - symbol and color. There are 16 colors, as
 # follows:
 
-# D - Black        w - White          s - Gray          o - Orange
+# D - Dark Gray    w - White          s - Gray          o - Orange
 # r - Red          g - Green          b - Blue          u - Brown
-# d - Dark Gray    W - Light Gray     v - Violet        y - Yellow
+# d - Black        W - Light Gray     v - Violet        y - Yellow
 # R - Light Red    G - Light Green    B - Light Blue    U - Light Brown
 
 # 'I' is for basic information. The tval is for the type of item, the
@@ -60,7 +60,7 @@
 
 # Version stamp (required)
 
-V:2.9.1
+V:2.9.2
 
 
 ##### Non-kind (contains the "pile" picture) #####

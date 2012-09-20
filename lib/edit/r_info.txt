@@ -1,12 +1,12 @@
 # File: r_info.txt
 
 
-# This file is used to initialize the "lib/raw/r_info.raw" file, which is
+# This file is used to initialize the "lib/data/r_info.raw" file, which is
 # used to initialize the "monster race" information for the Angband game.
 
 # Do not modify this file unless you know exactly what you are doing,
 # unless you wish to risk possible system crashes and broken savefiles.
-# After modifying this file, delete the "lib/raw/r_info.raw" file.
+# After modifying this file, delete the "lib/data/r_info.raw" file.
 
 # Currently, "unique" monsters are just "special" monster races, with
 # the requirement that only one monster of that race can exist at a time,
@@ -124,9 +124,9 @@
 # 'G' is for graphics - symbol and color. There are 16 colors, as
 # follows:
 
-# D - Black        w - White          s - Gray          o - Orange
+# D - Dark Gray    w - White          s - Gray          o - Orange
 # r - Red          g - Green          b - Blue          u - Brown
-# d - Dark Gray    W - Light Gray     v - Violet        y - Yellow
+# d - Black        W - Light Gray     v - Violet        y - Yellow
 # R - Light Red    G - Light Green    B - Light Blue    U - Light Brown
 
 # 'I' is for information - speed, health, vision in tens of feet,
@@ -156,7 +156,7 @@
 
 # Version stamp (required)
 
-V:2.9.1
+V:2.9.2
 
 
 ##### Non-race (contains the "player" picture) #####

@@ -67,10 +67,10 @@ something you are more comfortable with.
             $   Creeping Coins      ,   Mushroom Patch
             a   Giant Ant           A   Angelic being
             b   Giant Bat           B   Bird
-            c   Giant Centipede     C   Canine
+            c   Giant Centipede     C   Canine (Dog)
             d   Dragon              D   Ancient Dragon
             e   Floating Eye        E   Elemental
-            f   Feline              F   Dragon Fly
+            f   Feline (Cat)        F   Dragon Fly
             g   Golem               G   Ghost
             h   Humanoids           H   Hybrid
             i   Icky-Thing          I   Insect
@@ -80,12 +80,12 @@ something you are more comfortable with.
             m   Mold                M   Multi-Headed Hydra
             n   Naga                N   (unused)
             o   Orc                 O   Ogre
-            p   Human               P   Giant Human(oid)
-            q   Quadroped           Q   Quylthulg
+            p   Human "person"      P   Giant "person"
+            q   Quadruped           Q   Quylthulg (Pulsing Flesh Mound)
             r   Rodent              R   Reptile/Amphibian
             s   Skeleton            S   Spider/Scorpion/Tick
             t   Townsperson         T   Troll
-            u   Minor demon         U   Major demon
+            u   Minor Demon         U   Major Demon
             v   Vortex              V   Vampire
             w   Worm or Worm Mass   W   Wight/Wraith
             x   (unused)            X   Xorn/Xaren
@@ -111,7 +111,9 @@ annoyance, but not harmful.  Public drunks wander about the town singing,
 and are of no threat to anyone.  Sneaky rogues hang about watching for a
 likely victim to mug.  And finally, what town would be complete without a
 swarm of half drunk warriors, who take offense or become annoyed just for
-the fun of it.
+the fun of it. (There are assumed to be other people in the town, but they 
+are not represented on the screen as they do not interact with the player
+in any way.)
 
 Most of the townspeople should be avoided by the largest possible distance
 when you wander from store to store.  Fights will break out, though, so be
@@ -125,31 +127,26 @@ acquire treasure.
 Your character will begin his adventure with some basic supplies, and some
 extra gold with which to purchase more supplies at the town stores.
 
-You may enter any open store and barter with the owner for items you can
-afford.  When bartering, you enter prices you will pay (or accept) for some
-object.  You can either enter the absolute amount, or precede a number with
-a plus or minus sign to give a positive or negative increment on your
-previous offer.  But be warned that the owners can easily be insulted, and
-may even throw you out for a while if you insult them too often.  To enter
-a store, simply move onto the entrance, which is represented by a number
-from 1 to 8.
-
-If you consistently bargain well in a store, that is, you reach the final
-offer much more often than not, then the store owner will eventually
-recognize that you are a superb haggler, and will go directly to the final
-offer instead of haggling with you.  Items which cost less than 10 gold
-pieces do not count, as haggling well with these items is usually either
-very easy or almost impossible.  The more expensive the item is, the less
-likely the store owner is to assume that you are a good haggler.  Note that
-you may disable haggling with a software option, though this will inflict a
-10% "sales tax" on all purchases for which the store owner would have
-required you to haggle.
+You may enter any open store and haggle with the owner to buy or sell items
+of the appropriate type. The default mode in this game is "auto-haggle": 
+a price is agreed on by the player and the shopkeeper, dependent on the 
+price of the item, the player's charisma, the shopkeeper's "greed" factor 
+(the Black Market shopkeepers are always *VERY* greedy), and the races of 
+the player and shopkeeper. The player may get a better result by choosing 
+to haggle personally (using the options screen to change this): the price 
+given when auto-haggling is 10% worse than the best possible price that 
+can be achieved by manual haggling. However, there is no guarantee of 
+getting to the "best possible" or "final offer" price at all, or even close
+to it, and the store keepers can sometimes take a dim view of people who 
+try to haggle too hard - and throw such people out. This does not happen 
+in auto-haggle mode.
 
 Once inside a store, you will see the name and race of the store owner, the
 name of the store, the maximum amount of cash that the store owner will pay
-for any one item, and the store inventory, listed along with tentative
-prices, which will become "fixed" (at the "final offer") should you ever
-manage to haggle a store owner down to his final offer.
+for any one item, and the store inventory, listed along with the prices. If 
+auto-haggle is on, the price listed is the price you pay: if you are haggling 
+manually, the price listed is his starting offer, which you can haggle 
+downwards.
 
 You will also see an (incomplete) list of available commands.  Note that
 many of the commands which work in the dungeon work in the stores as well,
@@ -179,12 +176,15 @@ The General Store ("1")
 
 The Armoury ("2")
      The Armoury is where the town's armour is fashioned.  All sorts of
-     protective gear may be bought and sold here.
+     protective gear may be bought and sold here, though the owner will not 
+     stock anything better than bar chain mail unless it is sold to him
+     by the player.
 
 The Weaponsmith's Shop ("3")
      The Weaponsmith's Shop is where the town's weapons are fashioned.  Hand
      and missile weapons may be purchased and sold here, along with arrows,
-     bolts, and shots.
+     bolts, and shots. As with the armoury, not all weapon types will be 
+     stocked here, unless they are sold to the shop by the player first.
 
 The Temple ("4")
      The Temple deals in healing and restoration potions, as well as bless
@@ -252,8 +252,8 @@ The mines are full of objects just waiting to be picked up and used.  How
 did they get there?  Well, the main source for useful items are all the
 foolish adventurers that proceeded into the dungeon before you.  They get
 killed, and the helpful creatures scatter the various treasure throughout
-the dungeon.  Most cursed items are placed there by the joyful evil
-sorcerers, who enjoy a good joke when it gets you killed.
+the dungeon.  Many cursed items are placed there by evil sorcerers, who 
+enjoy a good joke. Especially when it gets the player killed.
 
 Only one object may occupy a given floor location, which may or may not also
 contain one creature.  Doors, rubble, traps, and staircases are considered
@@ -264,10 +264,10 @@ able to "stack" several items in the same grid.
 You pick up objects by moving on top of them.  You can carry up to 23
 different items in your backpack while wearing and wielding up to 12 others.
 Although you are limited to 23 different items, each item may actually be a
-"pile" of up to 99 similar items.  If you somehow manage to stuff 24 items
-into your pack, for example, by removing an item from your head while your
-pack is full, then your pack will "overflow" and the most recently added
-item will fall out and onto the ground.
+"pile" of up to 99 similar items.  If you "t"ake off an item, it will go 
+into your backpack if there is room: if there is no room in your backpack,
+it will drop onto the floor, so be careful when swapping one wielded weapon
+or worn piece of armor for another when your pack is full.
 
 You are, however, limited in the total amount of weight that you can carry.
 As you approach this value, you become slower, making it easier for monsters
@@ -287,7 +287,7 @@ these commands do not work if you are carrying the chest.
 
 One item in particular will be discussed here.  The scroll of "Word of
 Recall" can be found within the dungeon, or bought at the temple in town.
-It acts in two manners, depending upon  your current  location.  If read
+It acts in two manners, depending upon  your current location.  If read
 within the dungeon, it will teleport you back to town.  If read in town, it
 will teleport you back down to the deepest level of the dungeon which your
 character has previously been on.  This makes the scroll very useful for
@@ -309,28 +309,27 @@ identified yet will be inscribed with "tried".  Cursed objects are inscribed
 with "cursed".  Broken objects may be inscribed with "broken".  Also, any
 item which was purchased at a discount, implying that it is slightly
 "sub-standard", will be inscribed with the appropriate "discount", such as
-"25% off".  Note that these inscriptions are fake, and cannot be removed,
-though they can be covered up by a real inscription if you so desire.  Try
-"_" as a nice short one.
+"25% off".  Note that these inscriptions are fake, and cannot be removed.
 
 Also, occasionally you will notice that something in your inventory or
 equipment list seems to be magical.  High level characters are much more
 likely to notice this than beginning characters.  When you do notice this,
 the item in question will be inscribed with "good" or "cursed" as is
-relevant.  Priests acquire this ability far more readily than other
-character classes.
-
-Warriors, Rogues, and Paladins have a special method of "sensing" their
-inventory/equipment items, which tells them not only if an item is "good" or
-"cursed", but also if it is "average", and if it is "special" or "excellent",
-or "terrible" or "worthless".
+relevant. Warriors, paladins (both well acquainted with weapons and armor)
+and rogues (who have handled many powerful items in their time as stolen
+goods) are more sensitive, and can notice not just that an item is out of
+the ordinary, but just *how* extraordinary it is: they can notice an 
+"excellent" item (ego item), a "worthless" one (cursed ego item), a 
+"special" one (artifact) and a "terrible" one (cursed artifact). All 
+classes will know an item is "special" if it cannot be destroyed with the 
+"k" command (original keyset.)
 
 It is rumored that rings of power and extra rare spell books may be found
 deeper in the dungeon...
 
 And lastly, a final warning: not all objects are what they seem.  The line
-between tasty food and annoying mushroom is a fine one, and sometimes a
-potion will reach out and bite you...
+between tasty food and a poisonous mushroom is a fine one, and sometimes a
+chest full of treasure will grow teeth in its lid and bite your hand off...
 
 
 === Cursed Objects ===
@@ -345,7 +344,8 @@ are needed.
 If you wear or wield a cursed item, you will immediately feel deathly cold,
 and the item will be marked with the fake inscription "cursed".
 
-Skopkeepers will refuse to buy any item which is known to be cursed.
+Shopkeepers will refuse to buy any item which is known to be cursed, either 
+by having been identified or by being marked with the fake inscription.
 
 
 === Mining ===
@@ -353,7 +353,7 @@ Skopkeepers will refuse to buy any item which is known to be cursed.
 Much of the treasure within the dungeon can be found only by mining it out
 of the walls.  Many rich strikes exist within each level, but must be found
 and mined.  Quartz veins are the richest, yielding the most metals and gems,
-but magma veins will have some hordes hidden within.
+but magma veins will have some hoards hidden within.
 
 Mining is rather difficult without a pick or shovel.  Picks and shovels have
 an additional magical ability expressed as `(+#)'.  The higher the number,
@@ -441,12 +441,13 @@ If you should actually survive the attempt of killing Morgoth, you will
 receive the status of WINNER.  You may continue to explore, and may even
 save the game and play more later, but since you have defeated the toughest
 creature alive, there is really not much point.  Unless you wish to listen
-to the rumors of a powerful ring buried somewhere in the dungeon...
+to the rumors of a powerful ring buried somewhere in the dungeon, or a suit 
+of dragon scale mail that resists everything...
 
 When you are ready to retire, simply "commit suicide" (using the "Q" key)
 to have your character entered into the high score list as a winner.  Note
 that until you retire, you can still be killed, so you may want to retire
-before wandering into a hoard of death molds...
+before wandering into yet another horde of greater demons.
 
 
 === Upon Death and Dying ===

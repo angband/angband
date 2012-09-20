@@ -16,7 +16,7 @@
  */
 
 /*
- * Approximate Distance between two points.
+ * Approximate distance between two points.
  *
  * When either the X or Y component dwarfs the other component,
  * this function is almost perfect, and otherwise, it tends to
@@ -299,10 +299,7 @@ bool los(int y1, int x1, int y2, int x2)
  */
 bool no_lite(void)
 {
-	int py = p_ptr->py;
-	int px = p_ptr->px;
-
-	return (!player_can_see_bold(py, px));
+	return (!player_can_see_bold(p_ptr->py, p_ptr->px));
 }
 
 
@@ -1323,7 +1320,7 @@ void prt_map(void)
  *
  * Note that all "walls" always look like "secret doors" (see "map_info()").
  */
-static byte priority_table[][2] =
+static const byte priority_table[][2] =
 {
 	/* Dark */
 	{ FEAT_NONE, 2 },

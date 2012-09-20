@@ -562,6 +562,7 @@ uint vstrnfmt(char *buf, uint max, cptr fmt, va_list vp)
 			case 's':
 			{
 				cptr arg;
+				char arg2[1024];
 
 				/* Get the next argument */
 				arg = va_arg(vp, cptr);
@@ -569,8 +570,12 @@ uint vstrnfmt(char *buf, uint max, cptr fmt, va_list vp)
 				/* Hack -- convert NULL to EMPTY */
 				if (!arg) arg = "";
 
+				/* Prevent buffer overflows */
+				strncpy(arg2, arg, 1024);
+				arg2[1023] = '\0';
+
 				/* Format the argument */
-				sprintf(tmp, aux, arg);
+				sprintf(tmp, aux, arg2);
 
 				/* Done */
 				break;
@@ -643,15 +648,16 @@ uint vstrnfmt(char *buf, uint max, cptr fmt, va_list vp)
 }
 
 
+static char *format_buf = NULL;
+static huge format_len = 0;
+
+
 /*
  * Do a vstrnfmt (see above) into a (growable) static buffer.
  * This buffer is usable for very short term formatting of results.
  */
 char *vformat(cptr fmt, va_list vp)
 {
-	static char *format_buf = NULL;
-	static huge format_len = 0;
-
 	/* Initial allocation */
 	if (!format_buf)
 	{
@@ -683,6 +689,10 @@ char *vformat(cptr fmt, va_list vp)
 	return (format_buf);
 }
 
+void vformat_kill(void)
+{
+	C_KILL(format_buf, format_len, char);
+}
 
 
 /*

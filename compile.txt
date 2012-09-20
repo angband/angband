@@ -1,7 +1,7 @@
-Compiling Angband 2.9.1
-=======================
+Compiling Angband
+=================
 
-Last updated on 15th July 2000 by Robert Ruehlmann
+Last updated on 18th January 2001 by Robert Ruehlmann
 
 
 ----------------------------------------------------------------------
@@ -13,7 +13,7 @@ is available, which contains everything you need to install and play
 Angband.  For other platforms, including most UNIX systems, you must
 compile the source code yourself.  Try the following non-trivial steps:
 
-Step 1: Acquire.  Ftp to "export.andrew.cmu.edu:/angband/Source"
+Step 1: Acquire.  Ftp to "clockwork.dementia.org/angband/Source"
                   Try "bin" and "mget angband*.tar.gz" and "y"
 Step 2: Extract.  Try "gunzip *.gz" then "tar -xvf *.tar"
 Step 3: Prepare.  Try "cd angband*/src", then edit "Makefile"
@@ -31,7 +31,7 @@ appropriate "extra archive", which contains some extra platform specific
 files, and instructions about how to use them.  Some "extra archives" may
 be found at the ftp site (including "/angband/Macintosh/ext-mac.sit.bin"
 and "/angband/Windows/ext-win.zip"), but be sure that you get a version
-of the "extra archive" designed for Angband 2.9.1.
+of the "extra archive" designed for your Angband version.
 
 
 ----------------------------------------------------------------------
@@ -44,34 +44,40 @@ DOS + DJGPP
 	< http://www.delorie.com/djgpp/ >.  On the DJGPP-page go to the
 	Zip-Picker < http://www.delorie.com/djgpp/zip-picker.html >.
 	This page helps you decide which ZIP files you need to download
-	and will even try to find a ftp-site near you.  The only thing you
-	need to change on this page is under 'Extra Stuff/Toolkits'.
-	Select the Allegro-library < http://www.talula.demon.co.uk/allegro/ >
-	if you want graphics and sound support.  Get all files suggested and
-	follow the installation instructions.
+	and will even try to find a ftp-site near you.
+	If you want to have graphics and sound then you also need the
+	Allegro-library < http://www.talula.demon.co.uk/allegro/ >.
+	Get all files and follow the installation instructions.
 - Install the Angband source:
 	Get the source code archive and the untgz tool from:
-	"ftp://export.andrew.cmu.edu/angband/Tool/untgz.exe" or
-	"ftp://ftp.sunet.se/pub/games/Angband/Tool/untgz.exe".
-	Then extract the source with untgz ("untgz angban~1.tgz").
+	< ftp://clockwork.dementia.org/angband/Tool/untgz.exe >.
+	Then extract the source with untgz.
 - Install other required files:
 	Get the "extra archive" from
-	< ftp://export.andrew.cmu.edu/angband/DOS-386/ext-dos.zip > or
-	< ftp://ftp.sunet.se/pub/games/Angband/DOS-386/ext-dos.zip >.
-	Go to the angband-291 directory and unzip the ext-dos archive into it.
+	< ftp://clockwork.dementia.org/angband/DOS-386/ext-dos.zip >.
+	Go to the angband directory and unzip the ext-dos archive into it.
 	Then get the graphics archive from
-	< ftp://export.andrew.cmu.edu/angband/Extra/angband-graf.zip > or
-	< ftp://ftp.sunet.se/pub/games/Angband/Extra/angband-graf.zip >
+	< ftp://clockwork.dementia.org/angband/Extra/angband-graf.zip >
 	and unzip it into the lib/xtra/graf/ folder.
 - Select the makefile:
-	Go to the src-directory and rename 'makefile.dos' (or 'makefile.ibm'
+	Go to the src-directory and rename 'Makefile.dos' (or 'Makefile.ibm'
 	if you don't want graphics and sound and didn't download the Allegro
-	library) to 'makefile'.
+	library) to 'Makefile'.
 - Compile Angband:
 	Run "make install".  Angband should now be compiled and installed
 	into the Angband folder.
 - Run Angband:
 	Go back to the Angband folder and run Angband.exe.
+
+- Possible problems:
+	- Make exits with a 'Fatal: Command arguments too long' error message:
+	Such problems are usually caused by using the make.exe of another
+	compiler (like Borland C++ or cygwin).  DJGPP uses some clever tricks
+	to get around the limitations of the MS-DOS "126 characters are enough
+	for anybody" commandline that require a specific make tool.  So make
+	sure that DJGPP's make.exe is the first (or only) make.exe in your
+	path.  See also the DJGPP FAQ entries 16.4, 16.5, and 16.6 for further
+	details.
 
 
 ----------------------------------------------------------------------
@@ -81,26 +87,23 @@ Windows 95/98/NT/2000 + MS Visual C++ 5.0/6.0
 
 - Install the Angband source:
 	Get the source code and the untgz tool from:
-	"ftp://export.andrew.cmu.edu/angband/Tool/untgz32.exe" or
-	"ftp://ftp.sunet.se/pub/games/Angband/Tool/untgz32.exe".
-	Then extract the source with "untgz32 angband-291-src.tgz".
+	< ftp://clockwork.dementia.org/angband/Tool/untgz32.exe >.
+	Then extract the source with "untgz32 angband-292-src.tgz".
 - Install other required files:
 	Get the "extra archive" from
-	< ftp://export.andrew.cmu.edu/angband/Windows/ext-win.zip > or
-	< ftp://ftp.sunet.se/pub/games/Angband/Windows/ext-win.zip >.
-	Go to the angband-291 directory and unzip the ext-win archive into it.
+	< ftp://clockwork.dementia.org/angband/Windows/ext-win.zip >.
+	Go to the angband-292 directory and unzip the ext-win archive into it.
 	Again make sure the directory structure is preserved (use the -d
 	option in pkunzip).
 	Then get the graphics archive from
-	< ftp://export.andrew.cmu.edu/angband/Extra/angband-graf.zip > or
-	< ftp://ftp.sunet.se/pub/games/Angband/Extra/angband-graf.zip >
+	< ftp://clockwork.dementia.org/angband/Extra/angband-graf.zip >
 	and unzip it into the lib/xtra/graf/ folder.
 - Open the project-file:
 	Go to the src-folder and open the file "Angband.dsw".  That opens
 	Visual C++ already properly configured for compiling Angband.
 - Compile Angband:
 	Select "Build Angband.exe" in the Build menu.  Angband should now
-	be compiled and the Angband.exe will be placed into the "angband-291"
+	be compiled and the Angband.exe will be placed into the "angband-292"
 	directory.
 - Run Angband:
 	Go back to the Angband-folder and run the Angband.exe.
@@ -117,19 +120,16 @@ Windows 95/98/NT/2000 + Borland C++ 5.5 commandline tools
 	and follow the installation instructions.
 - Install the Angband source:
 	Get the source code and  the untgz tool from:
-	"ftp://export.andrew.cmu.edu/angband/Tool/untgz32.exe" or
-	"ftp://ftp.sunet.se/pub/games/Angband/Tool/untgz32.exe".
-	Then extract the source with "untgz32 angband-291-src.tgz".
+	< ftp://clockwork.dementia.org/angband/Tool/untgz32.exe >.
+	Then extract the source with "untgz32 angband-292-src.tgz".
 - Install other required files:
 	Get the "extra archive" from
-	< ftp://export.andrew.cmu.edu/angband/Windows/ext-win.zip > or
-	< ftp://ftp.sunet.se/pub/games/Angband/Windows/ext-win.zip >.
-	Go to the angband-291 directory and unzip the ext-win archive into it.
+	< ftp://clockwork.dementia.org/angband/Windows/ext-win.zip >.
+	Go to the angband-292 directory and unzip the ext-win archive into it.
 	Again make sure the directory structure is preserved (use the -d
 	option in pkunzip).
 	Then get the graphics archive from
-	< ftp://export.andrew.cmu.edu/angband/Extra/angband-graf.zip > or
-	< ftp://ftp.sunet.se/pub/games/Angband/Extra/angband-graf.zip >
+	< ftp://clockwork.dementia.org/angband/Extra/angband-graf.zip >
 	and unzip it into the lib/xtra/graf/ folder.
 - Compile Angband:
 	Open a commandline window and go to the src-directory.  Run
@@ -138,6 +138,40 @@ Windows 95/98/NT/2000 + Borland C++ 5.5 commandline tools
 - Run Angband:
 	Go back to the Angband-folder and run the Angband.exe.
 
+- Possible problems:
+	- Make exits with a "Command line too long" error message:
+	Try to add the -l option to the make command.  The make util
+	should have the "use long command lines" option enabled by
+	default, but some people reported that this is not always
+	the case.
+
+
+----------------------------------------------------------------------
+Windows 95/98/NT/2000 + Cygwin
+----------------------------------------------------------------------
+(written by Robert Ruehlmann < rr9@angband.org >)
+
+- Getting the free Cygwin compiler:
+	You can find the free Cygwin compiler at:
+	< http://sources.redhat.com/cygwin/ >.  It provides a shell
+	interface very similiar to a normal Unix/Linux shell with many
+	useful tools. Install it and start the shell.
+- Install the Angband source code
+	Extract the source code with "tar -xvzf angband-292-src.tgz".
+- Install other required files:
+	Get the "extra archive" from
+	< ftp://clockwork.dementia.org/angband/Windows/ext-win.zip >.
+	Go to the angband-292 directory and unzip the ext-win archive into it.
+	Then get the graphics archive from
+	< ftp://clockwork.dementia.org/angband/Extra/angband-graf.zip >
+	and unzip it into the lib/xtra/graf/ folder.
+- Compile Angband:
+	Go to the src-directory.  Run "make -f makefile.cyg install".
+	Angband should now be compiled and installed into the Angband folder.
+- Run Angband:
+	Go back to the Angband-folder and run the Angband.exe.
+
+
 
 ----------------------------------------------------------------------
 Linux + GCC
@@ -145,39 +179,14 @@ Linux + GCC
 (written by Robert Ruehlmann < rr9@angband.org >)
 
 - Install the Angband source:
-	Extract the source code with "tar -xvzf angband-291-src.tgz".
+	Extract the source code with "tar -xvzf angband-292-src.tgz".
 - Install the graphics files:
 	If you want to use graphics under X11 then get the archive from
-	< ftp://export.andrew.cmu.edu/angband/Extra/angband-graf.zip > or
-	< ftp://ftp.sunet.se/pub/games/Angband/Extra/angband-graf.zip >
+	< ftp://clockwork.dementia.org/angband/Extra/angband-graf.zip >
 	and unzip it into the lib/xtra/graf/ folder.
-- Prepare the makefile:
-	Go to the angband-291/src directory, rename Makefile.std to
-	Makefile.  The makefile is already configured properly to compile
-	a version with support for both console (using ncurses) and X11.
-	If this configuration doesn't work for you then you might have to
-	open the makefile with your favorite text-editor and select one
-	of the other variations for Linux.
-- Compiling Angband:
-	Run "make install".  Angband should now be compiled and installed
-	into the "angband-291" folder.  Go back to the angband-291
+- Compile Angband:
+	Run "./configure", "make", and "make install" in the Angband
 	directory.
-- Setting the proper access rights for a single user:
-	If you don't have root-access to the machine, or just want to
-	set up the game for multiple users then you just have to make
-	angband executable with "chmod u+x angband".
-	You can skip the next step.
-- Setting the proper access rights for multiple users:
-	To allow proper use of Angband on a Linux system with multiple
-	users, you must make the angband executable owned and setuid to
-	games.  Note that you need root-access to change the ownership of
-	files.  Use "chown games angband" and "chmod +xs angband".
- 	This makes the game executable for everyone, while turning on the
- 	"suid bit". That bit makes the game run as if it were user "games",
- 	so that the game has write access to savefiles and so on, but normal
- 	users don't.  Then use "chown -R games lib" to make all files in the
- 	lib-folder owned by the user games so that Angband can write
- 	savefiles, scores, and other files.
 - Run Angband:
-	"./angband" should start Angband.
+	Start Angband with "angband".
 

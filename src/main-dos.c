@@ -128,6 +128,8 @@ struct term_data
 
 	FONT *font;
 
+	bool uses_grx_font;
+
 #ifdef USE_GRAPHICS
 
 	BITMAP *tiles;
@@ -164,6 +166,13 @@ static term_data data[MAX_TERM_DATA];
 
 
 #ifdef USE_GRAPHICS
+
+/*
+ * Available graphic modes
+ */
+#define GRAPHICS_NONE       0
+#define GRAPHICS_ORIGINAL   1
+#define GRAPHICS_ADAM_BOLT  2
 
 /*
  * Are graphics already initialized ?
@@ -554,7 +563,7 @@ static void Term_xtra_dos_react(void)
 	/*
 	 * Initialize the window backgrounds
 	 */
-	for (i = 0; i < 8; i++)
+	for (i = 0; i < MAX_TERM_DATA; i++)
 	{
 		td = &data[i];
 
@@ -684,9 +693,9 @@ static errr Term_xtra_dos(int n, int v)
 			if (!use_sound) return (0);
 
 #ifdef USE_MOD_FILES
-			if (song_number && (midi_pos == -1) && !is_mod_playing())
+			if (song_number && (midi_pos < 0) && !is_mod_playing())
 #else /* USE_MOD_FILES */
-			if (song_number && (midi_pos == -1))
+			if (song_number && (midi_pos < 0))
 #endif /* USE_MOD_FILES */
 			{
 				if (song_number > 1)
@@ -694,7 +703,7 @@ static errr Term_xtra_dos(int n, int v)
 					/* Get a *new* song at random */
 					while (1)
 					{
-						n = randint(song_number);
+						n = Rand_simple(song_number) + 1;
 						if (n != current_song) break;
 					}
 					current_song = n;
@@ -958,7 +967,7 @@ static errr Term_user_dos(int n)
 
 				/* Prompt */
 				prt("Command: Screen Resolution", 1, 0);
-				prt("Restart Angband to get the new screenmode.", 3, 0);
+				prt(format("Restart %s to get the new screenmode.", VERSION_NAME), 3, 0);
 
 				/* Get a list of the available presets */
 				while (1)
@@ -981,7 +990,7 @@ static errr Term_user_dos(int n)
 				}
 
 				/* Get a new resolution */
-				prt(format("Screen Resolution : %d",resolution), 20, 0);
+				prt(format("Screen Resolution : %d", resolution), 20, 0);
 				k = inkey();
 				if (k == ESCAPE) break;
 				if (isdigit(k)) resolution = D2I(k);
@@ -1272,7 +1281,18 @@ static void Term_nuke_dos(term *t)
 	term_data *td = (term_data*)(t->data);
 
 	/* Free the terminal font */
-	if (td->font) destroy_font(td->font);
+	if (td->font)
+	{
+		if (td->uses_grx_font)
+		{
+			free(td->font->dat.dat_prop);
+			free(td->font);
+		}
+		else
+		{
+			destroy_font(td->font);
+		}
+	}
 
 #ifdef USE_GRAPHICS
 
@@ -1340,8 +1360,8 @@ static void dos_quit_hook(cptr str)
 {
 	int i;
 
-	/* Destroy sub-windows */
-	for (i = MAX_TERM_DATA - 1; i >= 1; i--)
+	/* Destroy windows */
+	for (i = MAX_TERM_DATA - 1; i >= 0; i--)
 	{
 		/* Unused */
 		if (!angband_term[i]) continue;
@@ -1646,7 +1666,7 @@ static bool init_windows(void)
 	num_windows = get_config_int(section, "num_windows", 1);
 
 	/* Paranoia */
-	if (num_windows > 8) num_windows = 8;
+	if (num_windows > MAX_TERM_DATA) num_windows = MAX_TERM_DATA;
 
 	/* Init the terms */
 	for (i = 0; i < num_windows; i++)
@@ -1690,6 +1710,8 @@ static bool init_windows(void)
 			{
 				quit_fmt("Error reading font file '%s'", filename);
 			}
+
+			td->uses_grx_font = TRUE;
 		}
 
 		/* Load a "*.dat" file */
@@ -1934,7 +1956,7 @@ static bool init_sound(void)
 		for (i = 1; i < SOUND_MAX; i++)
 		{
 			/* Get the sample names */
-			argv = get_config_argv(section, angband_sound_name[i], &sample_count[i]);
+			argv = get_config_argv(section, (char *)angband_sound_name[i], &sample_count[i]);
 
 			/* Limit the number of samples */
 			if (sample_count[i] > SAMPLE_MAX) sample_count[i] = SAMPLE_MAX;
@@ -1962,13 +1984,12 @@ static bool init_sound(void)
 		done = findfirst(format("%s/*.mid", xtra_music_dir), &f, FA_ARCH|FA_RDONLY);
 
 
-		while (!done && (song_number <= MAX_SONGS))
+		while (!done && (song_number < MAX_SONGS))
 		{
 			/* Add music files */
-			{
-				strcpy(music_files[song_number], f.ff_name);
-				song_number++;
-			}
+			strncpy(music_files[song_number], f.ff_name, 15);
+			music_files[song_number][15] = '\0';
+			song_number++;
 
 			done = findnext(&f);
 		}
@@ -2009,7 +2030,7 @@ static errr Term_xtra_dos_sound(int v)
 	if ((v < 0) || (v >= SOUND_MAX)) return (1);
 
 	/* Get a random sample from the available ones */
-	n = rand_int(sample_count[v]);
+	n = Rand_simple(sample_count[v]);
 
 	/* Play the sound, catch errors */
 	if (samples[v][n])
@@ -2087,10 +2108,10 @@ errr init_dos(void)
 	int screen_hgt;
 
 	/* Initialize the Allegro library (never fails) */
-	(void)allegro_init();
+	if (allegro_init()) return (-1);
 
 	/* Install timer support for music and sound */
-	install_timer();
+	if (install_timer()) return (-1);
 
 	/* Read config info from filename */
 	set_config_file("angdos.cfg");
@@ -2176,10 +2197,6 @@ errr init_dos(void)
 
 #endif /* USE_GRAPHICS */
 
-	/* Initialize the "complex" RNG for the midi-shuffle function */
-	Rand_quick = FALSE;
-	Rand_state_init(time(NULL));
-
 	/* Set the Angband colors/graphics/sound mode */
 	Term_xtra_dos_react();
 
@@ -2207,7 +2224,7 @@ errr init_dos(void)
 	     COLOR_OFFSET + TERM_YELLOW);
 
 	/* Activate the main term */
-	Term_activate(angband_term[0]);
+	Term_activate(term_screen);
 
 	/* Place the cursor */
 	Term_curs_dos(0, 0);
@@ -2224,4 +2241,3 @@ errr init_dos(void)
 }
 
 #endif /* USE_DOS */
-

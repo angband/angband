@@ -928,8 +928,15 @@ static errr term_data_init_gcu(term_data *td, int rows, int cols, int y, int x)
 }
 
 
+static void hook_quit(cptr str)
+{
+	/* Exit curses */
+	endwin();
+}
+
+
 /*
- * Prepare "curses" for use by the file "term.c"
+ * Prepare "curses" for use by the file "z-term.c"
  *
  * Installs the "hook" functions defined above, and then activates
  * the main screen "term", which clears the screen and such things.
@@ -953,6 +960,10 @@ errr init_gcu(int argc, char *argv[])
 	/* Initialize for other systems */
 	if (initscr() == (WINDOW*)ERR) return (-1);
 #endif
+
+	/* Activate hooks */
+	quit_aux = hook_quit;
+	core_aux = hook_quit;
 
 	/* Require standard size screen */
 	if ((LINES < 24) || (COLS < 80))

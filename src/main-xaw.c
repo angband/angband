@@ -870,7 +870,7 @@ static term_data data[MAX_TERM_DATA];
 /*
  * Current number of windows open
  */
-static int num_term = MAX_TERM_DATA;
+static int num_term = 1;
 
 /*
  * The names of the term_data's
@@ -1457,11 +1457,15 @@ errr init_xaw(int argc, char *argv[])
 			continue;
 		}
 
+#ifdef USE_GRAPHICS
+
 		if (prefix(argv[i], "-s"))
 		{
 			smoothRescaling = FALSE;
 			continue;
 		}
+
+#endif /* USE_GRAPHICS */
 
 		if (prefix(argv[i], "-n"))
 		{

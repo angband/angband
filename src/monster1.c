@@ -1259,10 +1259,10 @@ static void roff_aux(int r_idx)
 			case RBE_LOSE_CHR:	q = "reduce charisma"; break;
 			case RBE_LOSE_ALL:	q = "reduce all stats"; break;
 			case RBE_SHATTER:	q = "shatter"; break;
-			case RBE_EXP_10:	q = "lower experience (by 10d6+)"; break;
-			case RBE_EXP_20:	q = "lower experience (by 20d6+)"; break;
-			case RBE_EXP_40:	q = "lower experience (by 40d6+)"; break;
-			case RBE_EXP_80:	q = "lower experience (by 80d6+)"; break;
+			case RBE_EXP_10:	q = "lower experience"; break;
+			case RBE_EXP_20:	q = "lower experience"; break;
+			case RBE_EXP_40:	q = "lower experience"; break;
+			case RBE_EXP_80:	q = "lower experience"; break;
 		}
 
 
@@ -1405,7 +1405,7 @@ static void roff_top(int r_idx)
 void screen_roff(int r_idx)
 {
 	/* Flush messages */
-	msg_print(NULL);
+	message_flush();
 
 	/* Begin recall */
 	Term_erase(0, 1, 255);

@@ -796,7 +796,7 @@ static int initPipeTerm(term *t, char *name)
 }
 
 /*
- * Prepare "term.c" to use "USE_EMX" built-in video library
+ * Prepare "z-term.c" to use "USE_EMX" built-in video library
  */
 errr init_emx(void)
 {
@@ -1199,7 +1199,7 @@ void emx_init_term(term *t, void *main_instance, int n)
 }
 
 /*
- * Prepare "term.c" to use "USE_EMX" built-in faked video library
+ * Prepare "z-term.c" to use "USE_EMX" built-in faked video library
  */
 errr init_emx(void)
 {

@@ -9,6 +9,10 @@
  * This file simply includes other low level header files.
  */
 
+#ifdef HAVE_CONFIG_H
+#include "autoconf.h"
+#endif /* HAVE_CONFIG_H */
+
 /* System Configuration */
 #include "h-config.h"
 

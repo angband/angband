@@ -138,6 +138,8 @@
 
 #include "angband.h"
 
+#ifdef MACINTOSH
+
 #include <Types.h>
 #include <Gestalt.h>
 #include <QuickDraw.h>
@@ -324,6 +326,11 @@ static int game_in_progress = 0;
  */
 static WindowPtr active = NULL;
 
+
+/*
+ * Maximum number of terms
+ */
+#define MAX_TERM_DATA 8
 
 
 /*
@@ -1643,7 +1650,7 @@ static errr Term_xtra_mac(int n, int v)
 /*
  * Low level graphics (Assumes valid input).
  * Draw a "cursor" at (x,y), using a "yellow box".
- * We are allowed to use "Term_grab()" to determine
+ * We are allowed to use "Term_what()" to determine
  * the current screen contents (for inverting, etc).
  */
 static errr Term_curs_mac(int x, int y)
@@ -4680,4 +4687,4 @@ int main(void)
 	while (TRUE) CheckEvents(TRUE);
 }
 
-
+#endif /* MACINTOSH */

@@ -129,7 +129,7 @@ static void note(cptr msg)
 /*
  * Hack -- determine if an item is "wearable" (or a missile)
  */
-static bool wearable_p(object_type *o_ptr)
+static bool wearable_p(const object_type *o_ptr)
 {
 	/* Valid "tval" codes */
 	switch (o_ptr->tval)
@@ -261,7 +261,7 @@ static void strip_bytes(int n)
  * Owner Conversion -- pre-2.7.8 to 2.7.8
  * Shop is column, Owner is Row, see "tables.c"
  */
-static byte convert_owner[24] =
+static const byte convert_owner[24] =
 {
 	1, 3, 1, 0, 2, 3, 2, 0,
 	0, 1, 3, 1, 0, 1, 1, 0,
@@ -324,7 +324,7 @@ static s16b convert_slot(int old)
  * Note that this code relies on the fact that there are only 128 ego-items
  * and only 128 artifacts in the new system.
  */
-static byte convert_old_names[180] =
+static const byte convert_old_names[180] =
 {
 	0,						/* 0 = SN_NULL */
 	EGO_RESISTANCE,			/* 1 = SN_R */
@@ -514,7 +514,7 @@ static byte convert_old_names[180] =
  *
  * Note the hard-coded use of the new object kind indexes.  XXX XXX XXX
  */
-static s16b convert_old_kinds_normal[501] =
+static const s16b convert_old_kinds_normal[501] =
 {
 	15,			/* Move: Mushroom of poison */
 	1,			/* a Mushroom of Blindness */
@@ -1023,7 +1023,7 @@ static s16b convert_old_kinds_normal[501] =
 /*
  * Convert old kinds (501-512) into special artifacts
  */
-static byte convert_old_kinds_special[12] =
+static const byte convert_old_kinds_special[12] =
 {
 	ART_NARYA,		/* Old 501 */
 	ART_NENYA,		/* Old 502 */
@@ -1161,7 +1161,7 @@ static errr rd_item_old(object_type *o_ptr)
 	if (old_names >= 128)
 	{
 		/* Extract the artifact index */
-		o_ptr->name1 = (old_names - z_info->e_max);
+		o_ptr->name1 = (old_names - 128);
 	}
 
 	/* It is an ego-item (or a normal item) */
@@ -1535,7 +1535,7 @@ static errr rd_store_old(int n)
 /*
  * Hack -- array of old artifact index order
  */
-static byte old_art_order[] =
+static const byte old_art_order[] =
 {
 	ART_GROND,
 	ART_RINGIL,
@@ -2879,8 +2879,14 @@ errr rd_savefile_old(void)
 
 #ifdef ALLOW_OLD_SAVEFILES
 
+	/* Grab permissions */
+	safe_setuid_grab();
+
 	/* The savefile is a binary file */
 	fff = my_fopen(savefile, "rb");
+
+	/* Drop permissions */
+	safe_setuid_drop();
 
 	/* Paranoia */
 	if (!fff) return (-1);
@@ -2899,7 +2905,4 @@ errr rd_savefile_old(void)
 	/* Result */
 	return (err);
 }
-
-
-
 

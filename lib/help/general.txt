@@ -71,7 +71,7 @@ complete list of recent modifications and known bugs.
 
 You can obtain the latest source and pre-compiled executables from various
 places, try "ftp://ftp.cis.ksu.edu/pub/Games/Angband/Angband-2.7.x" and
-the developer site at "ftp://export.andrew.cmu.edu/angband".
+the developer site at "ftp://clockwork.dementia.org/angband/".
 
 You can email compliments, complaints, suggestions, bug reports, and patches
 to me ("rr9@angband.org"), and you can post interesting experiences and

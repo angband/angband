@@ -1153,25 +1153,6 @@ errr fd_close( int handle )
 
 
 
-int access( const char *path, int mode )
-{
-	char *real_path = riscosify_name(path);
-	int handle;
-
-	/* Try to open the file */
-	handle = myFile_Open( real_path, 0x4f );
-
-	/* Failed? */
-	if ( !handle ) { return -1; }
-
-	/* Close the file */
-	myFile_Close(handle);
-
-	/* Sucess */
-	return 0;
-}
-
-
 /* Read some bytes from a file */
 errr fd_read( int handle, char *buf, huge nbytes )
 {
@@ -1216,7 +1197,7 @@ errr fd_lock( int handle, int what )
 
 
 /* Get a temporary filename */
-errr path_temp( char *buf, int max )
+static errr path_temp( char *buf, int max )
 {
 
 	/*
@@ -1294,6 +1275,16 @@ errr path_build(char *buf, int max, cptr path, cptr file)
 
 	/* Success */
 	return (0);
+}
+
+
+FILE *my_fopen_temp(char *buf, int max)
+{
+	/* Generate a temporary filename */
+	if (path_temp(buf, max)) return (NULL);
+
+	/* Open the file */
+	return (my_fopen(buf, "w"));
 }
 
 

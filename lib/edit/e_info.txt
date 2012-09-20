@@ -1,12 +1,12 @@
 # File: e_info.txt
 
 
-# This file is used to initialize the "lib/raw/e_info.raw" file, which is
+# This file is used to initialize the "lib/data/e_info.raw" file, which is
 # used to initialize the "ego-item" information for the Angband game.
 
 # Do not modify this file unless you know exactly what you are doing,
 # unless you wish to risk possible system crashes and broken savefiles.
-# After modifying this file, delete the "lib/raw/e_info.raw" file.
+# After modifying this file, delete the "lib/data/e_info.raw" file.
 
 # The ego-item indexes are defined in "defines.h", and must not be changed.
 
@@ -60,7 +60,7 @@
 
 # Version stamp (required)
 
-V:2.9.1
+V:2.9.2
 
 
 ### Body Armor ###

@@ -12,7 +12,7 @@
 
 
 
-
+#ifdef OLD_CRUFT
 #ifndef HAS_MEMSET
 
 /*
@@ -28,8 +28,8 @@ char *memset(char *s, int c, huge n)
 	return (s);
 }
 
-#endif
-
+#endif /* HAS_MEMSET */
+#endif /* OLD_CRUFT */
 
 
 #ifndef HAS_STRICMP
@@ -123,8 +123,9 @@ void user_name(char *buf, int id)
 	/* Look up the user name */
 	if ((pw = getpwuid(id)))
 	{
-		strcpy(buf, pw->pw_name);
-		buf[16] = '\0';
+		/* Get the first 15 characters of the user name */
+		strncpy(buf, pw->pw_name, 16);
+		buf[15] = '\0';
 
 #ifdef CAPITALIZE_USER_NAME
 		/* Hack -- capitalize the user name */
@@ -138,9 +139,38 @@ void user_name(char *buf, int id)
 	strcpy(buf, "PLAYER");
 }
 
+
+/*
+ * Find the users home directory.
+ */
+errr user_home(char *buf, int len)
+{
+	char *homedir;
+	struct passwd *pw;
+
+	/* Get the "HOME" environment variable */
+	homedir = getenv("HOME");
+
+	if (!homedir)
+	{
+		/* Get the directory from the passwd structure */
+		pw = getpwuid(getuid());
+
+		if (pw) homedir = pw->pw_dir;
+
+		/* Paranoia */
+		if (!homedir) return (-1);
+	}
+
+	/* Store the users home directory */
+	strncpy(buf, homedir, len);
+	buf[len-1] = '\0';
+
+	/* Success */
+	return (0);
+}
+
 #endif /* SET_UID */
-
-
 
 
 /*
@@ -279,7 +309,7 @@ errr path_parse(char *buf, int max, cptr file)
  *
  * This filename is always in "system-specific" form.
  */
-errr path_temp(char *buf, int max)
+static errr path_temp(char *buf, int max)
 {
 	cptr s;
 
@@ -375,6 +405,38 @@ errr my_fclose(FILE *fff)
 	return (0);
 }
 
+
+#ifdef HAVE_MKSTEMP
+
+FILE *my_fopen_temp(char *buf, int max)
+{
+	int fd;
+
+	/* Prepare the buffer for mkstemp */
+	strncpy(buf, "/tmp/anXXXXXX", max);
+
+	/* Secure creation of a temporary file */
+	fd = mkstemp(buf);
+
+	/* Check the file-descriptor */
+	if (fd < 0) return (NULL);
+
+	/* Return a file stream */
+	return (fdopen(fd, "w"));
+}
+
+#else /* HAVE_MKSTEMP */
+
+FILE *my_fopen_temp(char *buf, int max)
+{
+	/* Generate a temporary filename */
+	if (path_temp(buf, max)) return (NULL);
+
+	/* Open the file */
+	return (my_fopen(buf, "w"));
+}
+
+#endif /* HAVE_MKSTEMP */
 
 #endif /* ACORN */
 
@@ -679,24 +741,6 @@ errr fd_seek(int fd, long n)
 
 	/* Failure */
 	if (p != n) return (1);
-
-	/* Success */
-	return (0);
-}
-
-
-/*
- * Hack -- attempt to truncate a file descriptor
- */
-errr fd_chop(int fd, huge n)
-{
-	/* Verify the fd */
-	if (fd < 0) return (-1);
-
-#if defined(SUNOS) || defined(ULTRIX) || defined(NeXT)
-	/* Truncate */
-	ftruncate(fd, n);
-#endif
 
 	/* Success */
 	return (0);
@@ -1511,9 +1555,9 @@ char (*inkey_hack)(int flush_first) = NULL;
  * any time.  These sub-commands could include commands to take a picture of
  * the current screen, to start/stop recording a macro action, etc.
  *
- * If "angband_term[0]" is not active, we will make it active during this
+ * If "term_screen" is not active, we will make it active during this
  * function, so that the various "main-xxx.c" files can assume that input
- * is only requested (via "Term_inkey()") when "angband_term[0]" is active.
+ * is only requested (via "Term_inkey()") when "term_screen" is active.
  *
  * Mega-Hack -- This function is used as the entry point for clearing the
  * "signal_count" variable, and of the "character_saved" variable.
@@ -1594,7 +1638,7 @@ char inkey(void)
 
 
 	/* Hack -- Activate main screen */
-	Term_activate(angband_term[0]);
+	Term_activate(term_screen);
 
 
 	/* Get a key */
@@ -1618,7 +1662,7 @@ char inkey(void)
 			Term_fresh();
 
 			/* Hack -- activate main screen */
-			Term_activate(angband_term[0]);
+			Term_activate(term_screen);
 
 			/* Mega-Hack -- reset saved flag */
 			character_saved = FALSE;
@@ -1802,6 +1846,11 @@ void sound(int val)
  * Some code uses "zero" to indicate the non-existance of a quark.
  *
  * Note that "quark zero" is NULL and should never be "dereferenced".
+ *
+ * ToDo: Add reference counting for quarks, so that unused quarks can
+ * be overwritten.
+ *
+ * ToDo: Automatically resize the array if necessary.
  */
 
 /*
@@ -2274,6 +2323,9 @@ static void msg_flush(int x)
 }
 
 
+static int message_column = 0;
+
+
 /*
  * Output a message to the top line of the screen.
  *
@@ -2301,7 +2353,6 @@ static void msg_flush(int x)
  */
 static void msg_print_aux(u16b type, cptr msg)
 {
-	static int p = 0;
 	int n;
 	char *t;
 	char buf[1024];
@@ -2309,22 +2360,22 @@ static void msg_print_aux(u16b type, cptr msg)
 
 
 	/* Hack -- Reset */
-	if (!msg_flag) p = 0;
+	if (!msg_flag) message_column = 0;
 
 	/* Message Length */
 	n = (msg ? strlen(msg) : 0);
 
 	/* Hack -- flush when requested or needed */
-	if (p && (!msg || ((p + n) > 72)))
+	if (message_column && (!msg || ((message_column + n) > 72)))
 	{
 		/* Flush */
-		msg_flush(p);
+		msg_flush(message_column);
 
 		/* Forget it */
 		msg_flag = FALSE;
 
 		/* Reset */
-		p = 0;
+		message_column = 0;
 	}
 
 
@@ -2407,13 +2458,13 @@ static void msg_print_aux(u16b type, cptr msg)
 	}
 
 	/* Display the tail of the message */
-	Term_putstr(p, 0, n, color, t);
+	Term_putstr(message_column, 0, n, color, t);
 
 	/* Remember the message */
 	msg_flag = TRUE;
 
 	/* Remember the position */
-	p += n + 1;
+	message_column += n + 1;
 
 	/* Optional refresh */
 	if (fresh_after) Term_fresh();
@@ -2491,6 +2542,29 @@ void message_format(u16b message_type, s16b extra, cptr fmt, ...)
 }
 
 
+/*
+ * Print the queued messages.
+ */
+void message_flush(void)
+{
+	/* Hack -- Reset */
+	if (!msg_flag) message_column = 0;
+
+	/* Flush when needed */
+	if (message_column)
+	{
+		/* Print pending messages */
+		msg_flush(message_column);
+
+		/* Forget it */
+		msg_flag = FALSE;
+
+		/* Reset */
+		message_column = 0;
+	}
+}
+
+
 
 /*
  * Hack -- prevent "accidents" in "screen_save()" or "screen_load()"
@@ -2506,7 +2580,7 @@ static int screen_depth = 0;
 void screen_save(void)
 {
 	/* Hack -- Flush messages */
-	msg_print(NULL);
+	message_flush();
 
 	/* Save the screen (if legal) */
 	if (screen_depth++ == 0) Term_save();
@@ -2524,7 +2598,7 @@ void screen_save(void)
 void screen_load(void)
 {
 	/* Hack -- Flush messages */
-	msg_print(NULL);
+	message_flush();
 
 	/* Load the screen (if legal) */
 	if (--screen_depth == 0) Term_load();
@@ -2845,7 +2919,7 @@ bool get_string(cptr prompt, char *buf, int len)
 	bool res;
 
 	/* Paranoia XXX XXX XXX */
-	msg_print(NULL);
+	message_flush();
 
 	/* Display prompt */
 	prt(prompt, 0, 0);
@@ -2953,7 +3027,7 @@ bool get_check(cptr prompt)
 	char buf[80];
 
 	/* Paranoia XXX XXX XXX */
-	msg_print(NULL);
+	message_flush();
 
 	/* Hack -- Build a "useful" prompt */
 	strnfmt(buf, 78, "%.70s[y/n] ", prompt);
@@ -2994,7 +3068,7 @@ bool get_com(cptr prompt, char *command)
 	char ch;
 
 	/* Paranoia XXX XXX XXX */
-	msg_print(NULL);
+	message_flush();
 
 	/* Display a prompt */
 	prt(prompt, 0, 0);
@@ -3095,7 +3169,7 @@ void request_command(bool shopping)
 		if (p_ptr->command_new)
 		{
 			/* Flush messages */
-			msg_print(NULL);
+			message_flush();
 
 			/* Use auto-command */
 			ch = (char)p_ptr->command_new;
@@ -3342,9 +3416,13 @@ uint damroll(uint num, uint sides)
 {
 	uint i, sum = 0;
 
+
+	/* HACK - rand_die(0) is undefined */
+	if (sides == 0) return (0);
+
 	for (i = 0; i < num; i++)
 	{
-		sum += (rand_int(sides) + 1);
+		sum += rand_die(sides);
 	}
 
 	return (sum);
@@ -3383,6 +3461,37 @@ bool is_a_vowel(int ch)
 	}
 
 	return (FALSE);
+}
+
+
+/*
+ * Convert a "color letter" into an "actual" color
+ * The colors are: dwsorgbuDWvyRGBU, as shown below
+ */
+int color_char_to_attr(char c)
+{
+	switch (c)
+	{
+		case 'd': return (TERM_DARK);
+		case 'w': return (TERM_WHITE);
+		case 's': return (TERM_SLATE);
+		case 'o': return (TERM_ORANGE);
+		case 'r': return (TERM_RED);
+		case 'g': return (TERM_GREEN);
+		case 'b': return (TERM_BLUE);
+		case 'u': return (TERM_UMBER);
+
+		case 'D': return (TERM_L_DARK);
+		case 'W': return (TERM_L_WHITE);
+		case 'v': return (TERM_VIOLET);
+		case 'y': return (TERM_YELLOW);
+		case 'R': return (TERM_L_RED);
+		case 'G': return (TERM_L_GREEN);
+		case 'B': return (TERM_L_BLUE);
+		case 'U': return (TERM_L_UMBER);
+	}
+
+	return (-1);
 }
 
 
@@ -3542,7 +3651,7 @@ void repeat_check(void)
 byte gamma_table[256];
 
 /* Table of ln(x / 256) * 256 for x going from 0 -> 255 */
-static s16b gamma_helper[256] =
+static const s16b gamma_helper[256] =
 {
 	0, -1420, -1242, -1138, -1065, -1007, -961, -921, -887, -857, -830,
 	-806, -783, -762, -744, -726, -710, -694, -679, -666, -652, -640,
