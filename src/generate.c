@@ -2306,7 +2306,7 @@ static void build_type7(int y0, int x0)
 	while (TRUE)
 	{
 		/* Get a random vault record */
-		v_ptr = &v_info[rand_int(MAX_V_IDX)];
+		v_ptr = &v_info[rand_int(z_info->v_max)];
 
 		/* Accept the first lesser vault */
 		if (v_ptr->typ == 7) break;
@@ -2342,7 +2342,7 @@ static void build_type8(int y0, int x0)
 	while (TRUE)
 	{
 		/* Get a random vault record */
-		v_ptr = &v_info[rand_int(MAX_V_IDX)];
+		v_ptr = &v_info[rand_int(z_info->v_max)];
 
 		/* Accept the first greater vault */
 		if (v_ptr->typ == 8) break;
@@ -3030,15 +3030,19 @@ static void cave_gen(void)
 	alloc_stairs(FEAT_LESS, rand_range(1, 2), 3);
 
 
-	/* Determine the character location */
-	new_player_spot();
-
-
 	/* Basic "amount" */
 	k = (p_ptr->depth / 3);
 	if (k > 10) k = 10;
 	if (k < 2) k = 2;
 
+	/* Put some rubble in corridors */
+	alloc_object(ALLOC_SET_CORR, ALLOC_TYP_RUBBLE, randint(k));
+
+	/* Place some traps in the dungeon */
+	alloc_object(ALLOC_SET_BOTH, ALLOC_TYP_TRAP, randint(k));
+
+	/* Determine the character location */
+	new_player_spot();
 
 	/* Pick a base number of monsters */
 	i = MIN_M_ALLOC_LEVEL + randint(8);
@@ -3053,7 +3057,7 @@ static void cave_gen(void)
 	if (is_quest(p_ptr->depth))
 	{
 		/* Ensure quest monsters */
-		for (i = 1; i < MAX_R_IDX; i++)
+		for (i = 1; i < z_info->r_max; i++)
 		{
 			monster_race *r_ptr = &r_info[i];
 
@@ -3079,12 +3083,6 @@ static void cave_gen(void)
 		}
 	}
 
-
-	/* Place some traps in the dungeon */
-	alloc_object(ALLOC_SET_BOTH, ALLOC_TYP_TRAP, randint(k));
-
-	/* Put some rubble in corridors */
-	alloc_object(ALLOC_SET_CORR, ALLOC_TYP_RUBBLE, randint(k));
 
 	/* Put some objects in rooms */
 	alloc_object(ALLOC_SET_ROOM, ALLOC_TYP_OBJECT, Rand_normal(DUN_AMT_ROOM, 3));
@@ -3471,7 +3469,7 @@ void generate_cave(void)
 
 
 		/* Prevent object over-flow */
-		if (o_max >= MAX_O_IDX)
+		if (o_max >= z_info->o_max)
 		{
 			/* Message */
 			why = "too many objects";
@@ -3481,7 +3479,7 @@ void generate_cave(void)
 		}
 
 		/* Prevent monster over-flow */
-		if (m_max >= MAX_M_IDX)
+		if (m_max >= z_info->m_max)
 		{
 			/* Message */
 			why = "too many monsters";

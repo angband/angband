@@ -49,7 +49,7 @@ SRCS = \
   cmd1.c cmd2.c cmd3.c cmd4.c cmd5.c cmd6.c \
   store.c birth.c load1.c load2.c \
   wizard1.c wizard2.c \
-  generate.c dungeon.c init1.c init2.c init3.c \
+  generate.c dungeon.c init1.c init2.c randart.c \
   main-cap.c main-gcu.c main-x11.c main-xaw.c main.c
 
 OBJS = \
@@ -61,7 +61,7 @@ OBJS = \
   cmd1.o cmd2.o cmd3.o cmd4.o cmd5.o cmd6.o \
   store.o birth.o load1.o load2.o \
   wizard1.o wizard2.o \
-  generate.o dungeon.o init1.o init2.o init3.o \
+  generate.o dungeon.o init1.o init2.o randart.o \
   main-cap.o main-gcu.o main-x11.o main-xaw.o main.o
 
 
@@ -156,7 +156,8 @@ CC = gcc
 ## Allows the use of Angband in the console using ncurses,
 ## as well as under X11.
 ##
-CFLAGS = -I/usr/X11R6/include -I/usr/include/ncurses -Wall -O2 -m486 \
+CFLAGS = -I/usr/X11R6/include -I/usr/include/ncurses -Wall \
+         -O2 -fno-strength-reduce \
          -D"USE_X11" -D"USE_GCU" -D"USE_NCURSES"
 LIBS = -L/usr/X11R6/lib -lXaw -lXext -lSM -lICE -lXmu -lXt -lX11 -lncurses
 
@@ -166,7 +167,7 @@ LIBS = -L/usr/X11R6/lib -lXaw -lXext -lSM -lICE -lXmu -lXt -lX11 -lncurses
 ##
 ## Allows the use of Angband in the console using curses.
 ##
-#CFLAGS = -Wall -O2 -m486 -pipe -D"USE_GCU"
+#CFLAGS = -Wall -O2 -fno-strength-reduce -pipe -D"USE_GCU"
 #LIBS = -lcurses
 
 
@@ -175,7 +176,7 @@ LIBS = -L/usr/X11R6/lib -lXaw -lXext -lSM -lICE -lXmu -lXt -lX11 -lncurses
 ##
 ## Allows the use of Angband in X11 using the Athena Widget set.
 ##
-#CFLAGS = -Wall -O2 -m486 -pipe -g -D"USE_XAW"
+#CFLAGS = -Wall -O2 -fno-strength-reduce -pipe -g -D"USE_XAW"
 #LIBS = -L/usr/X11R6/lib -lXaw -lXext -lSM -lICE -lXmu -lXt -lX11
 
 
@@ -183,7 +184,7 @@ LIBS = -L/usr/X11R6/lib -lXaw -lXext -lSM -lICE -lXmu -lXt -lX11 -lncurses
 ## Variation -- this might work better than the suggestion above
 ##
 #CFLAGS = -I/usr/include/ncurses \
-#         -Wall -O2 -fomit-frame-pointer \
+#         -Wall -O2 -fno-strength-reduce -fomit-frame-pointer \
 #         -D"USE_X11" -D"USE_GCU" \
 #         -D"USE_TPOSIX" -D"USE_CURS_SET"
 #LIBS = -lX11 -lncurses
@@ -292,7 +293,7 @@ files.o: files.c $(INCS)
 generate.o: generate.c $(INCS)
 init1.o: init1.c $(INCS)
 init2.o: init2.c $(INCS)
-init3.o: init3.c $(INCS)
+randart.o: randart.c $(INCS)
 load1.o: load1.c $(INCS)
 load2.o: load2.c $(INCS)
 main-cap.o: main-cap.c $(INCS)

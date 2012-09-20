@@ -1,0 +1,52 @@
+# File: g_info.txt
+
+
+# This file is used to initialize the "lib/data/g_info.raw" file, which is
+# used to initialize the "racial price adjustment" information for the
+# Angband game.
+
+# Do not modify this file unless you know exactly what you are doing,
+# unless you wish to risk possible system crashes and broken savefiles.
+# After modifying this file, delete the "lib/data/g_info.raw" file.
+
+
+# Format:
+# A:store adjustments
+
+
+# Version stamp (required)
+
+V:2.9.1
+
+
+# Hum,HfE,Elf,Hal,Gno,Dwa,HfO,HfT,Dun,HiE
+
+# Human
+A:100:105:105:110:113:115:120:125:100:105
+
+# Half-Elf
+A:110:100:100:105:110:120:125:130:110:100
+
+# Elf
+A:110:105:100:105:110:120:125:130:110:100
+
+# Halfling
+A:115:110:105: 95:105:110:115:130:115:105
+
+# Gnome
+A:115:115:110:105: 95:110:115:130:115:110
+
+# Dwarf
+A:115:120:120:110:110: 95:125:135:115:120
+
+# Half-Orc
+A:115:120:125:115:115:130:110:115:115:125
+
+# Half-Troll
+A:110:115:115:110:110:130:110:110:110:115
+
+# Dunedain
+A:100:105:105:110:113:115:120:125:100:105
+
+# High-Elf
+A:110:105:100:105:110:120:125:130:110:100

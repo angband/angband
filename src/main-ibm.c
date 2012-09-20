@@ -378,7 +378,7 @@ static void activate_color_complex(void)
 
 #endif /* 1 */
 
-};
+}
 
 
 /*
@@ -1140,7 +1140,8 @@ void enable_graphic_font(const char *font)
 {
 	__dpmi_regs dblock = {{0}};
 
-	unsigned seg, sel, i;
+	unsigned int seg, i;
+	int sel;
 
 	/*
 	 * Allocate a block of memory 4096 bytes big in `low memory' so a real
@@ -1176,7 +1177,7 @@ void enable_graphic_font(const char *font)
 
 	/* We're done with the low memory, free it */
 	__dpmi_free_dos_memory(sel);
-};
+}
 
 #endif /* USE_286 */
 

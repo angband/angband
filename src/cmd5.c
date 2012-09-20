@@ -26,7 +26,7 @@ static int get_spell(int *sn, cptr prompt, int sval, bool known)
 {
 	int i;
 
-	int spell = -1;
+	int spell;
 	int num = 0;
 
 	byte spells[64];
@@ -240,7 +240,7 @@ void do_cmd_browse(void)
 {
 	int item, sval;
 
-	int spell = -1;
+	int spell;
 	int num = 0;
 
 	byte spells[64];
@@ -488,14 +488,11 @@ void do_cmd_study(void)
 	}
 
 	/* Add the spell to the known list */
-	p_ptr->spell_order[i++] = spell;
+	p_ptr->spell_order[i] = spell;
 
 	/* Mention the result */
-	msg_format("You have learned the %s of %s.",
+	message_format(MSG_STUDY, 0, "You have learned the %s of %s.",
 	           p, spell_names[mp_ptr->spell_type][spell]);
-
-	/* Sound */
-	sound(SOUND_STUDY);
 
 	/* One less spell available */
 	p_ptr->new_spells--;
@@ -514,6 +511,9 @@ void do_cmd_study(void)
 
 	/* Redraw Study Status */
 	p_ptr->redraw |= (PR_STUDY);
+
+	/* Redraw object recall */
+	p_ptr->window |= (PW_OBJECT);
 }
 
 
@@ -998,11 +998,12 @@ void do_cmd_cast(void)
 
 			case 53:
 			{
-				(void)set_oppose_acid(p_ptr->oppose_acid + randint(20) + 20);
-				(void)set_oppose_elec(p_ptr->oppose_elec + randint(20) + 20);
-				(void)set_oppose_fire(p_ptr->oppose_fire + randint(20) + 20);
-				(void)set_oppose_cold(p_ptr->oppose_cold + randint(20) + 20);
-				(void)set_oppose_pois(p_ptr->oppose_pois + randint(20) + 20);
+				int time = randint(20) + 20;
+				(void)set_oppose_acid(p_ptr->oppose_acid + time);
+				(void)set_oppose_elec(p_ptr->oppose_elec + time);
+				(void)set_oppose_fire(p_ptr->oppose_fire + time);
+				(void)set_oppose_cold(p_ptr->oppose_cold + time);
+				(void)set_oppose_pois(p_ptr->oppose_pois + time);
 				break;
 			}
 
@@ -1067,6 +1068,9 @@ void do_cmd_cast(void)
 
 			/* Gain experience */
 			gain_exp(e * s_ptr->slevel);
+
+			/* Redraw object recall */
+			p_ptr->window |= (PW_OBJECT);
 		}
 	}
 
@@ -1131,7 +1135,7 @@ static void brand_weapon(void)
 	    (!artifact_p(o_ptr)) && (!ego_item_p(o_ptr)) &&
 	    (!broken_p(o_ptr)) && (!cursed_p(o_ptr)))
 	{
-		cptr act = NULL;
+		cptr act;
 
 		char o_name[80];
 
@@ -1140,7 +1144,6 @@ static void brand_weapon(void)
 			act = "is covered in a fiery shield!";
 			o_ptr->name2 = EGO_BRAND_FIRE;
 		}
-
 		else
 		{
 			act = "glows deep, icy blue!";
@@ -1678,6 +1681,9 @@ void do_cmd_pray(void)
 
 			/* Gain experience */
 			gain_exp(e * s_ptr->slevel);
+
+			/* Redraw object recall */
+			p_ptr->window |= (PW_OBJECT);
 		}
 	}
 

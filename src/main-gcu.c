@@ -37,7 +37,7 @@
  * This file will attempt to redefine the screen colors to conform to
  * standard Angband colors.  It will only do so if the terminal type
  * indicates that it can do so.  See the page:
- * 
+ *
  *     http://www.umr.edu/~keldon/ang-patch/ncurses_color.html
  *
  * for information on this.

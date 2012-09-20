@@ -88,7 +88,7 @@ s32b old_turn;			/* Hack -- Level feeling counter */
 bool use_sound;			/* The "sound" mode is enabled */
 bool use_graphics;		/* The "graphics" mode is enabled */
 
-s16b signal_count;		/* Hack -- Count interupts */
+s16b signal_count;		/* Hack -- Count interrupts */
 
 bool msg_flag;			/* Player has pending message */
 
@@ -205,6 +205,17 @@ u16b *message__ptr;
  */
 char *message__buf;
 
+/*
+ * The array[MESSAGE_MAX] of u16b for the types of messages
+ */
+u16b *message__type;
+
+
+/*
+ * Table of colors associated to message-types
+ */
+byte message__color[MSG_MAX];
+
 
 /*
  * The array[8] of window pointers
@@ -245,7 +256,7 @@ byte angband_color_table[256][4] =
 	{0x00, 0xC0, 0xC0, 0xC0},	/* TERM_L_WHITE */
 	{0x00, 0xFF, 0x00, 0xFF},	/* TERM_VIOLET */
 	{0x00, 0xFF, 0xFF, 0x00},	/* TERM_YELLOW */
-	{0x00, 0xFF, 0x00, 0x00},	/* TERM_L_RED */
+	{0x00, 0xFF, 0x40, 0x40},	/* TERM_L_RED */
 	{0x00, 0x00, 0xFF, 0x00},	/* TERM_L_GREEN */
 	{0x00, 0x00, 0xFF, 0xFF},	/* TERM_L_BLUE */
 	{0x00, 0xC0, 0x80, 0x40}	/* TERM_L_UMBER */
@@ -253,7 +264,7 @@ byte angband_color_table[256][4] =
 
 
 /*
- * Standard sound names (modifiable?)
+ * Standard sound (and message) names
  */
 char angband_sound_name[SOUND_MAX][16] =
 {
@@ -281,7 +292,11 @@ char angband_sound_name[SOUND_MAX][16] =
 	"dig",
 	"opendoor",
 	"shutdoor",
-	"tplevel"
+	"tplevel",
+	"bell",
+	"nothing_to_open",
+	"lockpick_fail",
+	"stairs",
 };
 
 
@@ -354,15 +369,23 @@ byte (*cave_when)[DUNGEON_WID];
 
 #endif	/* MONSTER_FLOW */
 
+
 /*
- * Array[MAX_O_IDX] of dungeon objects
+ * Array[z_info->o_max] of dungeon objects
  */
 object_type *o_list;
 
 /*
- * Array[MAX_M_IDX] of dungeon monsters
+ * Array[z_info->m_max] of dungeon monsters
  */
 monster_type *m_list;
+
+
+/*
+ * Array[z_info->r_max] of monster lore
+ */
+monster_lore *l_list;
+
 
 /*
  * Hack -- Array[MAX_Q_IDX] of quests
@@ -382,7 +405,7 @@ object_type *inventory;
 
 
 /*
- * The size of "alloc_kind_table" (at most MAX_K_IDX * 4)
+ * The size of "alloc_kind_table" (at most z_info->k_max * 4)
  */
 s16b alloc_kind_size;
 
@@ -393,7 +416,18 @@ alloc_entry *alloc_kind_table;
 
 
 /*
- * The size of "alloc_race_table" (at most MAX_R_IDX)
+ * The size of the "alloc_ego_table"
+ */
+s16b alloc_ego_size;
+
+/*
+ * The array[alloc_ego_size] of entries in the "ego allocator table"
+ */
+alloc_entry *alloc_ego_table;
+
+
+/*
+ * The size of "alloc_race_table" (at most z_info->r_max)
  */
 s16b alloc_race_size;
 
@@ -463,6 +497,12 @@ player_type *p_ptr = &player_type_body;
 
 
 /*
+ * Structure (not array) of size limits
+ */
+header *z_head;
+maxima *z_info;
+
+/*
  * The vault generation arrays
  */
 header *v_head;
@@ -509,6 +549,35 @@ header *r_head;
 monster_race *r_info;
 char *r_name;
 char *r_text;
+
+
+/*
+ * The player race arrays
+ */
+header *p_head;
+player_race *p_info;
+char *p_name;
+char *p_text;
+
+/*
+ * The player history arrays
+ */
+header *h_head;
+hist_type *h_info;
+char *h_text;
+
+/*
+ * The shop owner arrays
+ */
+header *b_head;
+owner_type *b_info;
+char *b_name;
+
+/*
+ * The racial price adjustment arrays
+ */
+header *g_head;
+byte *g_info;
 
 
 /*

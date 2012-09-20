@@ -888,6 +888,7 @@ static void rd_lore(int r_idx)
 	byte tmp8u;
 
 	monster_race *r_ptr = &r_info[r_idx];
+	monster_lore *l_ptr = &l_list[r_idx];
 
 
 	/* Pre-2.7.7 */
@@ -897,29 +898,29 @@ static void rd_lore(int r_idx)
 		strip_bytes(20);
 
 		/* Kills during this life */
-		rd_s16b(&r_ptr->r_pkills);
+		rd_s16b(&l_ptr->r_pkills);
 
 		/* Strip something */
 		strip_bytes(2);
 
 		/* Count observations of attacks */
-		rd_byte(&r_ptr->r_blows[0]);
-		rd_byte(&r_ptr->r_blows[1]);
-		rd_byte(&r_ptr->r_blows[2]);
-		rd_byte(&r_ptr->r_blows[3]);
+		rd_byte(&l_ptr->r_blows[0]);
+		rd_byte(&l_ptr->r_blows[1]);
+		rd_byte(&l_ptr->r_blows[2]);
+		rd_byte(&l_ptr->r_blows[3]);
 
 		/* Count some other stuff */
-		rd_byte(&r_ptr->r_wake);
-		rd_byte(&r_ptr->r_ignore);
+		rd_byte(&l_ptr->r_wake);
+		rd_byte(&l_ptr->r_ignore);
 
 		/* Strip something */
 		strip_bytes(2);
 
 		/* Count kills by player */
-		rd_s16b(&r_ptr->r_tkills);
+		rd_s16b(&l_ptr->r_tkills);
 
 		/* Count deaths of player */
-		rd_s16b(&r_ptr->r_deaths);
+		rd_s16b(&l_ptr->r_deaths);
 
 		/* Read the "Racial" monster limit per level */
 		rd_byte(&r_ptr->max_num);
@@ -928,47 +929,47 @@ static void rd_lore(int r_idx)
 		strip_bytes(1);
 
 		/* Hack -- guess at "sights" */
-		r_ptr->r_sights = MAX(r_ptr->r_tkills, r_ptr->r_deaths);
+		l_ptr->r_sights = MAX(l_ptr->r_tkills, l_ptr->r_deaths);
 	}
 
 	/* Current */
 	else
 	{
 		/* Count sights/deaths/kills */
-		rd_s16b(&r_ptr->r_sights);
-		rd_s16b(&r_ptr->r_deaths);
-		rd_s16b(&r_ptr->r_pkills);
-		rd_s16b(&r_ptr->r_tkills);
+		rd_s16b(&l_ptr->r_sights);
+		rd_s16b(&l_ptr->r_deaths);
+		rd_s16b(&l_ptr->r_pkills);
+		rd_s16b(&l_ptr->r_tkills);
 
 		/* Count wakes and ignores */
-		rd_byte(&r_ptr->r_wake);
-		rd_byte(&r_ptr->r_ignore);
+		rd_byte(&l_ptr->r_wake);
+		rd_byte(&l_ptr->r_ignore);
 
 		/* Extra stuff */
-		rd_byte(&r_ptr->r_xtra1);
-		rd_byte(&r_ptr->r_xtra2);
+		rd_byte(&l_ptr->r_xtra1);
+		rd_byte(&l_ptr->r_xtra2);
 
 		/* Count drops */
-		rd_byte(&r_ptr->r_drop_gold);
-		rd_byte(&r_ptr->r_drop_item);
+		rd_byte(&l_ptr->r_drop_gold);
+		rd_byte(&l_ptr->r_drop_item);
 
 		/* Count spells */
-		rd_byte(&r_ptr->r_cast_inate);
-		rd_byte(&r_ptr->r_cast_spell);
+		rd_byte(&l_ptr->r_cast_inate);
+		rd_byte(&l_ptr->r_cast_spell);
 
 		/* Count blows of each type */
-		rd_byte(&r_ptr->r_blows[0]);
-		rd_byte(&r_ptr->r_blows[1]);
-		rd_byte(&r_ptr->r_blows[2]);
-		rd_byte(&r_ptr->r_blows[3]);
+		rd_byte(&l_ptr->r_blows[0]);
+		rd_byte(&l_ptr->r_blows[1]);
+		rd_byte(&l_ptr->r_blows[2]);
+		rd_byte(&l_ptr->r_blows[3]);
 
 		/* Memorize flags */
-		rd_u32b(&r_ptr->r_flags1);
-		rd_u32b(&r_ptr->r_flags2);
-		rd_u32b(&r_ptr->r_flags3);
-		rd_u32b(&r_ptr->r_flags4);
-		rd_u32b(&r_ptr->r_flags5);
-		rd_u32b(&r_ptr->r_flags6);
+		rd_u32b(&l_ptr->r_flags1);
+		rd_u32b(&l_ptr->r_flags2);
+		rd_u32b(&l_ptr->r_flags3);
+		rd_u32b(&l_ptr->r_flags4);
+		rd_u32b(&l_ptr->r_flags5);
+		rd_u32b(&l_ptr->r_flags6);
 
 
 		/* Read the "Racial" monster limit per level */
@@ -981,12 +982,12 @@ static void rd_lore(int r_idx)
 	}
 
 	/* Repair the lore flags */
-	r_ptr->r_flags1 &= r_ptr->flags1;
-	r_ptr->r_flags2 &= r_ptr->flags2;
-	r_ptr->r_flags3 &= r_ptr->flags3;
-	r_ptr->r_flags4 &= r_ptr->flags4;
-	r_ptr->r_flags5 &= r_ptr->flags5;
-	r_ptr->r_flags6 &= r_ptr->flags6;
+	l_ptr->r_flags1 &= r_ptr->flags1;
+	l_ptr->r_flags2 &= r_ptr->flags2;
+	l_ptr->r_flags3 &= r_ptr->flags3;
+	l_ptr->r_flags4 &= r_ptr->flags4;
+	l_ptr->r_flags5 &= r_ptr->flags5;
+	l_ptr->r_flags6 &= r_ptr->flags6;
 }
 
 
@@ -1368,10 +1369,25 @@ static errr rd_extra(void)
 	/* Skip the flags */
 	strip_bytes(12);
 
-	/* Initialize random artifacts */
-	if (adult_rand_artifacts)
-	{
 
+	/* Hack -- the two "special seeds" */
+	rd_u32b(&seed_flavor);
+	rd_u32b(&seed_town);
+
+
+	/* Special stuff */
+	rd_u16b(&p_ptr->panic_save);
+	rd_u16b(&p_ptr->total_winner);
+	rd_u16b(&p_ptr->noscore);
+
+
+	/* Read "death" */
+	rd_byte(&tmp8u);
+	p_ptr->is_dead = tmp8u;
+
+	/* Initialize random artifacts */
+	if (adult_rand_artifacts && !(p_ptr->is_dead))
+	{
 #ifdef GJW_RANDART
 
 		/*
@@ -1402,22 +1418,6 @@ static errr rd_extra(void)
 #endif /* GJW_RANDART */
 
 	}
-
-
-	/* Hack -- the two "special seeds" */
-	rd_u32b(&seed_flavor);
-	rd_u32b(&seed_town);
-
-
-	/* Special stuff */
-	rd_u16b(&p_ptr->panic_save);
-	rd_u16b(&p_ptr->total_winner);
-	rd_u16b(&p_ptr->noscore);
-
-
-	/* Read "death" */
-	rd_byte(&tmp8u);
-	p_ptr->is_dead = tmp8u;
 
 	/* Read "feeling" */
 	rd_byte(&tmp8u);
@@ -1569,6 +1569,7 @@ static void rd_messages(void)
 {
 	int i;
 	char buf[128];
+	u16b tmp16u;
 
 	s16b num;
 
@@ -1581,8 +1582,14 @@ static void rd_messages(void)
 		/* Read the message */
 		rd_string(buf, 128);
 
+		/* Read the message type */
+		if (!older_than(2, 9, 1))
+			rd_u16b(&tmp16u);
+		else
+			tmp16u = MSG_GENERIC;
+
 		/* Save the message */
-		message_add(buf);
+		message_add(buf, tmp16u);
 	}
 }
 
@@ -2190,7 +2197,7 @@ static errr rd_dungeon_aux(s16b depth, s16b py, s16b px)
 		if (n_ptr->r_idx <= 0) continue;
 
 		/* Hack -- ignore "player ghosts" */
-		if (n_ptr->r_idx >= MAX_R_IDX-1) continue;
+		if (n_ptr->r_idx >= z_info->r_max-1) continue;
 
 
 		/* Place monster in dungeon */
@@ -2268,7 +2275,7 @@ static errr rd_dungeon(void)
 	if ((ymax != DUNGEON_HGT) || (xmax != DUNGEON_WID))
 	{
 		/* XXX XXX XXX */
-		note(format("Ignoring illegal dungeon size (%d,%d).", xmax, ymax));
+		note(format("Ignoring illegal dungeon size (%d,%d).", ymax, xmax));
 		return (0);
 	}
 
@@ -2276,7 +2283,7 @@ static errr rd_dungeon(void)
 	if ((px < 0) || (px >= DUNGEON_WID) ||
 	    (py < 0) || (py >= DUNGEON_HGT))
 	{
-		note(format("Ignoring illegal player location (%d,%d).", px, py));
+		note(format("Ignoring illegal player location (%d,%d).", py, px));
 		return (1);
 	}
 
@@ -2363,7 +2370,7 @@ static errr rd_dungeon(void)
 	rd_u16b(&limit);
 
 	/* Verify maximum */
-	if (limit >= MAX_O_IDX)
+	if (limit >= z_info->o_max)
 	{
 		note(format("Too many (%d) object entries!", limit));
 		return (151);
@@ -2426,7 +2433,7 @@ static errr rd_dungeon(void)
 	rd_u16b(&limit);
 
 	/* Hack -- verify */
-	if (limit >= MAX_M_IDX)
+	if (limit >= z_info->m_max)
 	{
 		note(format("Too many (%d) monster entries!", limit));
 		return (161);
@@ -2576,7 +2583,7 @@ static errr rd_savefile_new_aux(void)
 	rd_u16b(&tmp16u);
 
 	/* Incompatible save files */
-	if (tmp16u > MAX_R_IDX)
+	if (tmp16u > z_info->r_max)
 	{
 		note(format("Too many (%u) monster races!", tmp16u));
 		return (21);
@@ -2586,34 +2593,36 @@ static errr rd_savefile_new_aux(void)
 	for (i = 0; i < tmp16u; i++)
 	{
 		monster_race *r_ptr;
+		monster_lore *l_ptr;
 
 		/* Read the lore */
 		rd_lore(i);
 
 		/* Get the monster race */
 		r_ptr = &r_info[i];
+		l_ptr = &l_list[i];
 
 		/* XXX XXX Hack -- repair old savefiles */
 		if (older_than(2, 7, 6))
 		{
 			/* Assume no kills */
-			r_ptr->r_pkills = 0;
+			l_ptr->r_pkills = 0;
 
 			/* Hack -- no previous lives */
 			if (sf_lives == 0)
 			{
 				/* All kills by this life */
-				r_ptr->r_pkills = r_ptr->r_tkills;
+				l_ptr->r_pkills = l_ptr->r_tkills;
 			}
 
 			/* Hack -- handle uniques */
 			if (r_ptr->flags1 & (RF1_UNIQUE))
 			{
 				/* Assume no kills */
-				r_ptr->r_pkills = 0;
+				l_ptr->r_pkills = 0;
 
 				/* Handle dead uniques */
-				if (r_ptr->max_num == 0) r_ptr->r_pkills = 1;
+				if (r_ptr->max_num == 0) l_ptr->r_pkills = 1;
 			}
 		}
 	}
@@ -2624,7 +2633,7 @@ static errr rd_savefile_new_aux(void)
 	rd_u16b(&tmp16u);
 
 	/* Incompatible save files */
-	if (tmp16u > MAX_K_IDX)
+	if (tmp16u > z_info->k_max)
 	{
 		note(format("Too many (%u) object kinds!", tmp16u));
 		return (22);
@@ -2671,7 +2680,7 @@ static errr rd_savefile_new_aux(void)
 	rd_u16b(&tmp16u);
 
 	/* Incompatible save files */
-	if (tmp16u > MAX_A_IDX)
+	if (tmp16u > z_info->a_max)
 	{
 		note(format("Too many (%u) artifacts!", tmp16u));
 		return (24);
@@ -2698,7 +2707,7 @@ static errr rd_savefile_new_aux(void)
 	sp_ptr = &sex_info[p_ptr->psex];
 
 	/* Important -- Initialize the race/class */
-	rp_ptr = &race_info[p_ptr->prace];
+	rp_ptr = &p_info[p_ptr->prace];
 	cp_ptr = &class_info[p_ptr->pclass];
 
 	/* Important -- Initialize the magic */
@@ -2773,7 +2782,7 @@ static errr rd_savefile_new_aux(void)
 
 
 	/* Hack -- no ghosts */
-	r_info[MAX_R_IDX-1].max_num = 0;
+	r_info[z_info->r_max-1].max_num = 0;
 
 
 	/* Success */

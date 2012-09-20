@@ -1,7 +1,7 @@
 
 
               **************************************************
-              **   Angband 2.9.0   **   The Pits of Angband   **
+              **   Angband 2.9.1   **   The Pits of Angband   **
               **************************************************
 
            Based on Moria:   Copyright (c) 1985 Robert Alan Koeneke
@@ -13,7 +13,7 @@
 
                    Angband 2.7.0 - 2.8.5 by Ben Harrison
 
-                     Angband 2.9.0 by Robert Ruehlmann
+                     Angband 2.9.1 by Robert Ruehlmann
 
         Send comments, bug reports, and patches, to "rr9@angband.org"
        Visit the Angband Home Page at "http://thangorodrim.angband.org/"
@@ -24,7 +24,7 @@
 
 === General Info ===
 
-This is the README file for Angband 2.9.0 (27th March 2000).
+This is the README file for Angband 2.9.1 (4th July 2000).
 
 Angband is a "graphical" dungeon adventure game using textual characters
 to represent the walls and floors of a dungeon and the inhabitants therein,

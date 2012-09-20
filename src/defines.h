@@ -41,14 +41,14 @@
 /*
  * Current version string
  */
-#define VERSION_STRING	"2.9.0"
+#define VERSION_STRING	"2.9.1"
 
 /*
  * Current version numbers
  */
 #define VERSION_MAJOR	2
 #define VERSION_MINOR	9
-#define VERSION_PATCH	0
+#define VERSION_PATCH	1
 #define VERSION_EXTRA	0
 
 
@@ -117,10 +117,6 @@
  */
 #define MAX_STORES	8
 
-/*
- * Total number of owners per store (see "store.c", etc)
- */
-#define MAX_OWNERS	4
 
 /*
  * Store index definitions (see "store.c", etc)
@@ -139,33 +135,11 @@
  */
 #define MAX_SEXES            2
 
-/*
- * Maximum number of player "race" types (see "table.c", etc)
- */
-#define MAX_RACES           10
 
 /*
  * Maximum number of player "class" types (see "table.c", etc)
  */
 #define MAX_CLASS            6
-
-
-/*
- * Maximum array bounds for template based arrays
- */
-#define MAX_F_IDX	64	/* Max size for "f_info[]" */
-#define MAX_K_IDX	512	/* Max size for "k_info[]" */
-#define MAX_A_IDX	128	/* Max size for "a_info[]" */
-#define MAX_E_IDX	128	/* Max size for "e_info[]" */
-#define MAX_R_IDX	549	/* Max size for "r_info[]" */
-#define MAX_V_IDX	64	/* Max size for "v_info[]" */
-
-
-/*
- * Maximum array bounds for entity list arrays
- */
-#define MAX_O_IDX	256	/* Max size for "o_list[]" */
-#define MAX_M_IDX	512	/* Max size for "m_list[]" */
 
 
 /*
@@ -273,6 +247,13 @@
  * Lower values yield better objects more often.
  */
 #define GREAT_OBJ	20
+
+/*
+ * There is a 1/20 (5%) chance that ego-items with an inflated base-level are
+ * generated when an object is turned into an ego-item (see make_ego_item()
+ * in object2.c). As above, lower values yield better ego-items more often.
+ */
+#define GREAT_EGO	20
 
 /*
  * There is a 1/50 (2%) chance of inflating the requested monster_level
@@ -417,19 +398,6 @@
 #define SEX_FEMALE		0
 #define SEX_MALE		1
 
-/*
- * Player race constants (hard-coded by save-files, arrays, etc)
- */
-#define RACE_HUMAN		0
-#define RACE_HALF_ELF	1
-#define RACE_ELF		2
-#define RACE_HOBBIT		3
-#define RACE_GNOME		4
-#define RACE_DWARF		5
-#define RACE_HALF_ORC	6
-#define RACE_HALF_TROLL	7
-#define RACE_DUNADAN	8
-#define RACE_HIGH_ELF	9
 
 /*
  * Player class constants (hard-coded by save-files, arrays, etc)
@@ -1987,6 +1955,13 @@
 	 TR1_STEALTH | TR1_SEARCH | TR1_INFRA | TR1_TUNNEL | \
 	 TR1_SPEED | TR1_BLOWS | TR1_SHOTS | TR1_MIGHT)
 
+/*
+ * Flag set 3 -- mask for "ignore element" flags.
+ */
+#define TR3_IGNORE_MASK \
+	(TR3_IGNORE_ACID | TR3_IGNORE_ELEC | TR3_IGNORE_FIRE | \
+	 TR3_IGNORE_COLD )
+
 
 /*
  * Hack -- special "xtra" object flag info (type)
@@ -2939,6 +2914,39 @@ extern int PlayerUID;
 #define TERM_L_UMBER	15	/* 'U' */	/* 3,2,1 */
 
 
+#define MSG_GENERIC          0
+#define MSG_HIT              1
+#define MSG_MISS             2
+#define MSG_FLEE             3
+#define MSG_DROP             4
+#define MSG_KILL             5
+#define MSG_LEVEL            6
+#define MSG_DEATH            7
+#define MSG_STUDY            8
+#define MSG_TELEPORT         9
+#define MSG_SHOOT           10
+#define MSG_QUAFF           11
+#define MSG_ZAP             12
+#define MSG_WALK            13
+#define MSG_TPOTHER         14
+#define MSG_HITWALL         15
+#define MSG_EAT             16
+#define MSG_STORE1          17
+#define MSG_STORE2          18
+#define MSG_STORE3          19
+#define MSG_STORE4          20
+#define MSG_DIG             21
+#define MSG_OPENDOOR        22
+#define MSG_SHUTDOOR        23
+#define MSG_TPLEVEL         24
+#define MSG_BELL            25
+#define MSG_NOTHING_TO_OPEN 26
+#define MSG_LOCKPICK_FAIL   27
+#define MSG_STAIRS          28
+
+#define MSG_MAX             29
+
+
 /*** Sound constants ***/
 
 
@@ -2974,8 +2982,11 @@ extern int PlayerUID;
 
 /*
  * Mega-Hack -- maximum known sounds
+ *
+ * Should be the same as MSG_MAX for compatibility reasons.
  */
-#define SOUND_MAX 25
+#define SOUND_MAX MSG_MAX
+
 
 
 /*** Hack ***/
@@ -3002,3 +3013,90 @@ extern int PlayerUID;
 #define GRAPHICS_NONE       0
 #define GRAPHICS_ORIGINAL   1
 #define GRAPHICS_ADAM_BOLT  2
+
+
+/*
+ * r_info indices of the quest monsters
+ * (required for loading old savefiles)
+ */
+#define R_INFO_SAURON 546
+#define R_INFO_MORGOTH 547
+
+
+/*
+ * Parse errors
+ */
+#define PARSE_ERROR_GENERIC                  1
+#define PARSE_ERROR_OBSOLETE_FILE            2
+#define PARSE_ERROR_MISSING_RECORD_HEADER    3
+#define PARSE_ERROR_NON_SEQUENTIAL_RECORDS   4
+#define PARSE_ERROR_INVALID_FLAG             5
+#define PARSE_ERROR_UNDEFINED_DIRECTIVE      6
+#define PARSE_ERROR_OUT_OF_MEMORY            7
+#define PARSE_ERROR_OUT_OF_BOUNDS            8
+#define PARSE_ERROR_TOO_FEW_ARGUMENTS        9
+#define PARSE_ERROR_TOO_MANY_ARGUMENTS      10
+
+#define PARSE_ERROR_MAX                     11
+
+
+/*
+ * List of commands that will be auto-repeated
+ *
+ * ToDo: This string should be user-configurable.
+ */
+#define AUTO_REPEAT_COMMANDS "TBDoc+"
+
+
+/*
+ * Artifact activation index
+ */
+#define ACT_ILLUMINATION        0
+#define ACT_MAGIC_MAP           1
+#define ACT_CLAIRVOYANCE        2
+#define ACT_PROT_EVIL           3
+#define ACT_DISP_EVIL           4
+#define ACT_HEAL1               5
+#define ACT_HEAL2               6
+#define ACT_CURE_WOUNDS         7
+#define ACT_HASTE1              8
+#define ACT_HASTE2              9
+#define ACT_FIRE1               10
+#define ACT_FIRE2               11
+#define ACT_FIRE3               12
+#define ACT_FROST1              13
+#define ACT_FROST2              14
+#define ACT_FROST3              15
+#define ACT_FROST4              16
+#define ACT_FROST5              17
+#define ACT_ACID1               18
+#define ACT_RECHARGE1           19
+#define ACT_SLEEP               20
+#define ACT_LIGHTNING_BOLT      21
+#define ACT_ELEC2               22
+#define ACT_GENOCIDE            23
+#define ACT_MASS_GENOCIDE       24
+#define ACT_IDENTIFY            25
+#define ACT_DRAIN_LIFE1         26
+#define ACT_DRAIN_LIFE2         27
+#define ACT_BIZZARE             28
+#define ACT_STAR_BALL           29
+#define ACT_RAGE_BLESS_RESIST   30
+#define ACT_PHASE               31
+#define ACT_TRAP_DOOR_DEST      32
+#define ACT_DETECT              33
+#define ACT_RESIST              34
+#define ACT_TELEPORT            35
+#define ACT_RESTORE_LIFE        36
+#define ACT_MISSILE             37
+#define ACT_ARROW               38
+#define ACT_REM_FEAR_POIS       39
+#define ACT_STINKING_CLOUD      40
+#define ACT_STONE_TO_MUD        41
+#define ACT_TELE_AWAY           42
+#define ACT_WOR                 43
+#define ACT_CONFUSE             44
+#define ACT_PROBE               45
+#define ACT_FIREBRAND           46
+
+#define ACT_MAX                 47

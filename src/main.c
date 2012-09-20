@@ -639,16 +639,14 @@ int main(int argc, char *argv[])
 	/* Make sure we have a display! */
 	if (!done) quit("Unable to prepare any 'display module'!");
 
-
-	/* Hack -- If requested, display scores and quit */
-	if (show_score > 0) display_scores(0, show_score);
-
-
 	/* Catch nasty signals */
 	signals_init();
 
 	/* Initialize */
 	init_angband();
+
+	/* Hack -- If requested, display scores and quit */
+	if (show_score > 0) display_scores(0, show_score);
 
 	/* Wait for response */
 	pause_line(23);

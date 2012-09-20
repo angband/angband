@@ -1,19 +1,10 @@
-# File: Makefile.lsl
+# Smakefile
+#
+# Amiga SAS/C 6.50
 
-# Purpose: Makefile for Linux + SVGA library
+all: angband
 
-SRCS = \
-  z-util.c z-virt.c z-form.c z-rand.c z-term.c \
-  variable.c tables.c util.c cave.c \
-  object1.c object2.c monster1.c monster2.c \
-  xtra1.c xtra2.c spells1.c spells2.c \
-  melee1.c melee2.c save.c files.c \
-  cmd1.c cmd2.c cmd3.c cmd4.c cmd5.c cmd6.c \
-  store.c birth.c load1.c load2.c \
-  wizard1.c wizard2.c \
-  generate.c dungeon.c init1.c init2.c init3.c \
-  main-lsl.c main.c
-
+# Object files
 OBJS = \
   z-util.o z-virt.o z-form.o z-rand.o z-term.o \
   variable.o tables.o util.o cave.o \
@@ -23,57 +14,41 @@ OBJS = \
   cmd1.o cmd2.o cmd3.o cmd4.o cmd5.o cmd6.o \
   store.o birth.o load1.o load2.o \
   wizard1.o wizard2.o \
-  generate.o dungeon.o init1.o init2.o init3.o \
-  main-lsl.o main.o
+  generate.o dungeon.o init1.o init2.o randart.o \
+  main-ami.o sound-ami.o main.o
 
-CC = gcc
-
-CFLAGS = -Wall -D"USE_LSL"
-
-LIBS = -lz -lvgagl -lvga
-
-
-
-# 
-# Build the "Angband" program 
-# 
-angband: $(OBJS) 
-	$(CC) $(CFLAGS) -o testing $(OBJS) $(LDFLAGS) $(LIBS) 
-
-
-#
-# install Angband
-#
-install: angband
-	cp angband ..
-
-#
-# Clean up old junk
-#
-clean:
-	\rm *.o angband
-
-
-#
-# Generate dependencies automatically
-#
-depend:
-	makedepend -D__MAKEDEPEND__ $(SRCS)
-
-#
-# Hack -- some file dependencies
-#
+# Header files
 HDRS = \
   h-basic.h \
   h-define.h h-type.h h-system.h h-config.h
 
+# Include files
 INCS = \
   angband.h \
   config.h defines.h types.h externs.h \
   z-term.h z-rand.h z-util.h z-virt.h z-form.h $(HDRS)
 
+# Linking
+angband: $(OBJS)
+  echo Linking
+  slink QUIET WITH angband.lnk
 
+# Compiling
+.c.o:
+  echo Compiling $*.c
+  sc DEFINE AMIGA DEFINE USE_AMI $*
+
+# Dependencies
 birth.o: birth.c $(INCS)
+borg-aux.o: borg-aux.c $(INCS) borg-aux.h borg-ext.h
+borg-aux.o: borg-obj.h borg-map.h borg.h
+borg-ben.o: borg-ben.c $(INCS) borg-ben.h borg-aux.h borg-ext.h
+borg-ben.o: borg-obj.h borg-map.h borg.h
+borg-ext.o: borg-ext.c $(INCS) borg-ext.h
+borg-ext.o: borg-obj.h borg-map.h borg.h
+borg-obj.o: borg-obj.c $(INCS) borg-obj.h borg.h
+borg-map.o: borg-map.c $(INCS) borg-map.h borg.h
+borg.o: borg.c $(INCS) borg.h
 cave.o: cave.c $(INCS)
 cmd1.o: cmd1.c $(INCS)
 cmd2.o: cmd2.c $(INCS)
@@ -86,13 +61,10 @@ files.o: files.c $(INCS)
 generate.o: generate.c $(INCS)
 init1.o: init1.c $(INCS)
 init2.o: init2.c $(INCS)
-init3.o: init3.c $(INCS)
+randart.o: randart.c $(INCS)
 load1.o: load1.c $(INCS)
 load2.o: load2.c $(INCS)
-main-cap.o: main-cap.c $(INCS)
-main-gcu.o: main-gcu.c $(INCS)
-main-x11.o: main-x11.c $(INCS)
-main-xaw.o: main-xaw.c $(INCS)
+main-ami.o: main-ami.c $(INCS) sound-ami.h
 main.o: main.c $(INCS)
 melee1.o: melee1.c $(INCS)
 melee2.o: melee2.c $(INCS)
@@ -101,6 +73,7 @@ monster2.o: monster2.c $(INCS)
 object1.o: object1.c $(INCS)
 object2.o: object2.c $(INCS)
 save.o: save.c $(INCS)
+sound-ami.o: sound-ami.c sound-ami.h
 spells1.o: spells1.c $(INCS)
 spells2.o: spells2.c $(INCS)
 store.o: store.c $(INCS)

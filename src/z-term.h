@@ -297,6 +297,7 @@ extern errr Term_putstr(int x, int y, int n, byte a, cptr s);
 extern errr Term_erase(int x, int y, int n);
 extern errr Term_clear(void);
 extern errr Term_redraw(void);
+extern errr Term_redraw_section(int x1, int y1, int x2, int y2);
 
 extern errr Term_get_cursor(int *v);
 extern errr Term_get_size(int *w, int *h);

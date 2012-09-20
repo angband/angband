@@ -1161,7 +1161,7 @@ static errr rd_item_old(object_type *o_ptr)
 	if (old_names >= 128)
 	{
 		/* Extract the artifact index */
-		o_ptr->name1 = (old_names - MAX_E_IDX);
+		o_ptr->name1 = (old_names - z_info->e_max);
 	}
 
 	/* It is an ego-item (or a normal item) */
@@ -1449,20 +1449,20 @@ static errr rd_item_old(object_type *o_ptr)
  */
 static void rd_lore_old(int r_idx)
 {
-	monster_race *r_ptr = &r_info[r_idx];
+	monster_lore *l_ptr = &l_list[r_idx];
 
 	/* Forget old flags */
 	strip_bytes(16);
 
 	/* Read kills and deaths */
-	rd_s16b(&r_ptr->r_pkills);
-	rd_s16b(&r_ptr->r_deaths);
+	rd_s16b(&l_ptr->r_pkills);
+	rd_s16b(&l_ptr->r_deaths);
 
 	/* Forget old info */
 	strip_bytes(10);
 
 	/* Guess at "sights" */
-	r_ptr->r_sights = MAX(r_ptr->r_pkills, r_ptr->r_deaths);
+	l_ptr->r_sights = MAX(l_ptr->r_pkills, l_ptr->r_deaths);
 }
 
 
@@ -1852,7 +1852,7 @@ static void rd_messages_old(void)
 		rd_string(buf, 128);
 
 		/* Save (most of) the messages */
-		if (buf[0] && (i <= last_msg)) message_add(buf);
+		if (buf[0] && (i <= last_msg)) message_add(buf, MSG_GENERIC);
 	}
 }
 
@@ -1910,14 +1910,14 @@ static errr rd_dungeon_old(void)
 	/* Ignore illegal dungeons */
 	if ((ymax != DUNGEON_HGT) || (xmax != DUNGEON_WID))
 	{
-		note(format("Ignoring illegal dungeon size (%d,%d).", xmax, ymax));
+		note(format("Ignoring illegal dungeon size (%d,%d).", ymax, xmax));
 		return (0);
 	}
 
 	/* Ignore illegal dungeons */
 	if (!in_bounds(py, px))
 	{
-		note(format("Ignoring illegal player location (%d,%d).", px, py));
+		note(format("Ignoring illegal player location (%d,%d).", py, px));
 		return (1);
 	}
 
@@ -2392,7 +2392,7 @@ static errr rd_dungeon_old(void)
 		if (n_ptr->r_idx <= 0) continue;
 
 		/* Hack -- ignore "player ghosts" */
-		if (n_ptr->r_idx >= MAX_R_IDX-1) continue;
+		if (n_ptr->r_idx >= z_info->r_max-1) continue;
 
 
 		/* Invalid cave location */
@@ -2646,7 +2646,7 @@ static errr rd_savefile_old_aux(void)
 
 
 	/* Load the old "Uniques" flags */
-	for (i = 0; i < MAX_R_IDX; i++)
+	for (i = 0; i < z_info->r_max; i++)
 	{
 		monster_race *r_ptr = &r_info[i];
 
@@ -2674,7 +2674,7 @@ static errr rd_savefile_old_aux(void)
 		if (r_ptr->flags1 & (RF1_UNIQUE)) r_ptr->max_num = 1;
 
 		/* Hack -- No ghosts */
-		if (i == MAX_R_IDX-1) r_ptr->max_num = 0;
+		if (i == z_info->r_max-1) r_ptr->max_num = 0;
 
 		/* Note death */
 		if (tmp32u) r_ptr->max_num = 0;
@@ -2689,13 +2689,14 @@ static errr rd_savefile_old_aux(void)
 	while (1)
 	{
 		monster_race *r_ptr;
+		monster_lore *l_ptr;
 
 		/* Read some info, check for sentinal */
 		rd_u16b(&tmp16u);
 		if (tmp16u == 0xFFFF) break;
 
 		/* Incompatible save files */
-		if (tmp16u >= MAX_R_IDX)
+		if (tmp16u >= z_info->r_max)
 		{
 			note(format("Too many (%u) monster races!", tmp16u));
 			return (21);
@@ -2703,6 +2704,7 @@ static errr rd_savefile_old_aux(void)
 
 		/* Get the monster */
 		r_ptr = &r_info[tmp16u];
+		l_ptr = &l_list[tmp16u];
 
 		/* Extract the monster lore */
 		rd_lore_old(tmp16u);
@@ -2711,7 +2713,7 @@ static errr rd_savefile_old_aux(void)
 		if (r_ptr->flags1 & (RF1_UNIQUE))
 		{
 			/* Hack -- Note living uniques */
-			if (r_ptr->max_num != 0) r_ptr->r_pkills = 0;
+			if (r_ptr->max_num != 0) l_ptr->r_pkills = 0;
 		}
 	}
 	note("Loaded Monster Memory");
@@ -2730,7 +2732,7 @@ static errr rd_savefile_old_aux(void)
 	sp_ptr = &sex_info[p_ptr->psex];
 
 	/* Initialize the race/class */
-	rp_ptr = &race_info[p_ptr->prace];
+	rp_ptr = &p_info[p_ptr->prace];
 	cp_ptr = &class_info[p_ptr->pclass];
 
 	/* Initialize the magic */
@@ -2738,7 +2740,7 @@ static errr rd_savefile_old_aux(void)
 
 
 	/* Fake some "item awareness" */
-	for (i = 1; i < MAX_K_IDX; i++)
+	for (i = 1; i < z_info->k_max; i++)
 	{
 		object_kind *k_ptr = &k_info[i];
 
@@ -2826,21 +2828,21 @@ static errr rd_savefile_old_aux(void)
 
 
 	/* Hack -- no ghosts */
-	r_info[MAX_R_IDX-1].max_num = 0;
+	r_info[z_info->r_max-1].max_num = 0;
 
 
 	/* Hack -- reset morgoth */
-	r_info[MAX_R_IDX-2].max_num = 1;
+	r_info[R_INFO_MORGOTH].max_num = 1;
 
 	/* Hack -- reset sauron */
-	r_info[MAX_R_IDX-3].max_num = 1;
+	r_info[R_INFO_SAURON].max_num = 1;
 
 
 	/* Hack -- reset morgoth */
-	r_info[MAX_R_IDX-2].r_pkills = 0;
+	l_list[R_INFO_MORGOTH].r_pkills = 0;
 
 	/* Hack -- reset sauron */
-	r_info[MAX_R_IDX-3].r_pkills = 0;
+	l_list[R_INFO_SAURON].r_pkills = 0;
 
 
 	/* Add first quest */

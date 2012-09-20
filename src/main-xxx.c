@@ -98,17 +98,19 @@ struct term_data
  * game will currently use up to eight "term_data" structures if
  * they are available.
  *
+ * Actually, MAX_TERM_DATA is now defined as eight in 'defines.h'.
+ *
  * If only one "term_data" structure is supported, then a lot of
  * the things that would normally go into a "term_data" structure
  * could be made into global variables instead.
  */
-#define MAX_TERM_DATA 1
+#define MAX_XXX_TERM 1
 
 
 /*
  * An array of "term_data" structures, one for each "sub-window"
  */
-static term_data data[MAX_TERM_DATA];
+static term_data data[MAX_XXX_TERM];
 
 
 #if 0
@@ -648,7 +650,7 @@ errr init_xxx(void)
 	/* Initialize the "color_data" array XXX XXX XXX */
 
 	/* Create windows (backwards!) */
-	for (i = TERM_DATA_MAX - 1; i >= 0; i--)
+	for (i = MAX_XXX_TERM; i-- > 0; )
 	{
 		/* Link */
 		term_data_link(i);
@@ -735,7 +737,7 @@ int main(int argc, char *argv[])
 	init_stuff();
 
 	/* Initialize */
-	init_angband */
+	init_angband();
 
 	/* Allow auto-startup XXX XXX XXX */
 

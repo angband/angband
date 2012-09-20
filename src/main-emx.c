@@ -92,11 +92,11 @@
  *
  * 23 Jan 98   SWD      282     Hacked more on sub-windows.  Now links, with
  *                              warnings.  Seems to work.
- *  
+ *
  * 25 May 99   GDL      283     Moved pipe and PM related data into Term struct to avoid
  *					  term conflicts (redefintion, etc).  Some code cleanup.
  *
- * 02 Jun 99   GDL      283     Fixed handling of sub-windows so that they tell server 
+ * 02 Jun 99   GDL      283     Fixed handling of sub-windows so that they tell server
  *					  how big they are, avoiding sub-window display corruption.
  *
  */
@@ -146,7 +146,7 @@ static errr Term_text_emx(int x, int y, int n, unsigned char a, cptr s);
 static void Term_init_emx(term *t);
 static void Term_nuke_emx(term *t);
 
-/* 
+/*
  * the terms!  kind of useless for client.  Oh well.
  */
 
@@ -810,7 +810,7 @@ errr init_emx(void)
 	{
 		name = angband_term_name[i];
   		/* if client connect successful,  add term to list */
-		if (initPipeTerm(&emxterm[i], name)) 
+		if (initPipeTerm(&emxterm[i], name))
   			angband_term[i] = &emxterm[i];
 	}
 
@@ -941,7 +941,7 @@ int main(int argc, char **argv)
 	system(buf);
 
 	/* now position it */
- 	if (argc == 5) 
+ 	if (argc == 5)
 		moveClientWindow(x,y);
 
 	/* send screen length - ONLY time we write to this pipe. */
@@ -1010,7 +1010,7 @@ int main(int argc, char **argv)
 			case PIP_NUKE:
 			case EOF:
 			default:
-#if 0   			
+#if 0
 			printf("feof=%d ferror=%d.\n",feof(in),ferror(in));
 #endif
 			Term_nuke_emx(NULL);

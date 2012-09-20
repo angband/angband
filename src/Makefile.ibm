@@ -13,21 +13,21 @@
 
 # Objects
 OBJS = \
-  main.o main-ibm.o \
-  generate.o dungeon.o init1.o init2.o init3.o \
-  store.o birth.o wizard1.o wizard2.o \
-  cmd1.o cmd2.o cmd3.o cmd4.o cmd5.o cmd6.o \
-  load1.o load2.o save.o files.o \
-  xtra1.o xtra2.o spells1.o spells2.o melee1.o melee2.o \
-  object1.o object2.o monster1.o monster2.o \
-  variable.o tables.o util.o cave.o \
-  z-term.o z-rand.o z-form.o z-virt.o z-util.o
+	main.o main-ibm.o \
+	generate.o dungeon.o init1.o init2.o randart.o \
+	store.o birth.o wizard1.o wizard2.o \
+	cmd1.o cmd2.o cmd3.o cmd4.o cmd5.o cmd6.o \
+	load1.o load2.o save.o files.o \
+	xtra1.o xtra2.o spells1.o spells2.o melee1.o melee2.o \
+	object1.o object2.o monster1.o monster2.o \
+	variable.o tables.o util.o cave.o \
+	z-term.o z-rand.o z-form.o z-virt.o z-util.o
 
 # Compiler
 CC = gcc
 
 # Compiler flags
-CFLAGS = -Wall -O2 -s -DUSE_IBM
+CFLAGS = -Wall -pedantic -O2 -fno-strength-reduce -s -DUSE_IBM
 
 # Libraries
 LIBS = -lpc

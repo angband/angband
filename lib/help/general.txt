@@ -6,14 +6,15 @@ You can press Question Mark (?) to return to the previous help file.
 
 You can press Space to advance one page, Plus (+) to advance one half page,
 or Return to advance one line.  If you reach the end, you will jump to the
-start.  You can press Minus (-) to back up one page, Underscore (_) to back
-up one half page, or Equal (=) to back up one line.  If you reach the start,
+start.  You can press Minus (-) to back up one half page, Underscore (_) to
+back up one page, or Equal (=) to back up one line.  If you reach the start,
 you will stay there.  Advancing by one page is the only efficient method.
 
 You can press Pound (#) [or Percent (%)] to go to a specific line [or file].
 
 You can press Slash (/) [or Ampersand (&)] to search for [or hilite] a string
-(case sensitive).  Use "#" + "0" + Return + "/" + Return to restart a search.
+(case-insensitive by default, (!) toggles to case-sensitive).
+Use "#" + "0" + Return + "/" + Return to restart a search.
 
 Please continue to press Space to view the rest of this file...
 

@@ -39,5 +39,63 @@
 ?:[EQU $SYS acn]
 %:user-acn.prf
 
+
+##### Race Specific Subfiles #####
+
+?:[EQU $CLASS Human]
+%:Human.prf
+
+?:[EQU $CLASS Half-Elf]
+%:Half-Elf.prf
+
+?:[EQU $CLASS Elf]
+%:Elf.prf
+
+?:[EQU $CLASS Hobbit]
+%:Hobbit.prf
+
+?:[EQU $CLASS Gnome]
+%:Gnome.prf
+
+?:[EQU $CLASS Dwarf]
+%:Dwarf.prf
+
+?:[EQU $CLASS Half-Orc]
+%:Half-Orc.prf
+
+# "Half-Troll.prf" is too long for stupid 8.3 filenames,
+# so try to load the shortened filename too.
+?:[EQU $CLASS Half-Troll]
+%:Half-Troll.prf
+%:H-Troll.prf
+
+?:[EQU $CLASS Dunadan]
+%:Dunadan.prf
+
+?:[EQU $CLASS High-Elf]
+%:High-Elf.prf
+
+
+##### Class Specific Subfiles #####
+
+?:[EQU $CLASS Warrior]
+%:Warrior.prf
+
+?:[EQU $CLASS Mage]
+%:Mage.prf
+
+?:[EQU $CLASS Priest]
+%:Priest.prf
+
+?:[EQU $CLASS Rogue]
+%:Rogue.prf
+
+?:[EQU $CLASS Ranger]
+%:Ranger.prf
+
+?:[EQU $CLASS Paladin]
+%:Paladin.prf
+
+
 ?:1
 

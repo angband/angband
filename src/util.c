@@ -664,9 +664,9 @@ errr fd_lock(int fd, int what)
 /*
  * Hack -- attempt to seek on a file descriptor
  */
-errr fd_seek(int fd, huge n)
+errr fd_seek(int fd, long n)
 {
-	huge p;
+	long p;
 
 	/* Verify fd */
 	if (fd < 0) return (-1);
@@ -784,6 +784,49 @@ errr fd_close(int fd)
 	return (0);
 }
 
+
+#ifdef CHECK_MODIFICATION_TIME
+# ifdef MACINTOSH
+#  include <stat.h>
+# else
+#  include <sys/types.h>
+#  include <sys/stat.h>
+# endif /* MACINTOSH */
+
+
+errr check_modification_date(int fd, cptr template_file)
+{
+	char buf[1024];
+
+	struct stat txt_stat, raw_stat;
+
+	/* Build the filename */
+	path_build(buf, 1024, ANGBAND_DIR_EDIT, template_file);
+
+	/* Access stats on text file */
+	if (stat(buf, &txt_stat))
+	{
+		/* No text file - continue */
+	}
+
+	/* Access stats on raw file */
+	else if (fstat(fd, &raw_stat))
+	{
+		/* Error */
+		return (-1);
+	}
+
+	/* Ensure text file is not newer than raw file */
+	else if (txt_stat.st_mtime > raw_stat.st_mtime)
+	{
+		/* Reprocess text file */
+		return (-1);
+	}
+
+	return (0);
+}
+
+#endif /* CHECK_MODIFICATION_TIME */
 
 #endif /* ACORN */
 
@@ -1258,7 +1301,8 @@ static bool parse_under = FALSE;
  */
 static char inkey_aux(void)
 {
-	int k = 0, n, p = 0, w = 0;
+	int k, n;
+	int p = 0, w = 0;
 
 	char ch;
 
@@ -1719,7 +1763,7 @@ void bell(cptr reason)
 	Term_fresh();
 
 	/* Hack -- memorize the reason if possible */
-	if (character_generated && reason) message_add(reason);
+	if (character_generated && reason) message_add(reason, MSG_BELL);
 
 	/* Make a bell noise (if allowed) */
 	if (ring_bell) Term_xtra(TERM_XTRA_NOISE, 0);
@@ -1899,6 +1943,32 @@ cptr message_str(s16b age)
 }
 
 
+/*
+ * Recall the "type" of a saved message
+ */
+u16b message_type(s16b age)
+{
+	s16b x;
+
+	/* Forgotten messages have no special color */
+	if ((age < 0) || (age >= message_num())) return (TERM_WHITE);
+
+	/* Get the "logical" index */
+	x = (message__next + MESSAGE_MAX - (age + 1)) % MESSAGE_MAX;
+
+	/* Return the message type */
+	return (message__type[x]);
+}
+
+
+/*
+ * Recall the "color" of a saved message
+ */
+byte message_color(s16b age)
+{
+	return message__color[message_type(age)];
+}
+
 
 /*
  * Add a new message, with great efficiency
@@ -1914,7 +1984,7 @@ cptr message_str(s16b age)
  * We attempt to minimize the use of "string compare" operations in this
  * function, because they are expensive when used in mass quantities.
  */
-void message_add(cptr str)
+void message_add(cptr str, u16b type)
 {
 	int n, k, i, x, o;
 
@@ -1993,6 +2063,9 @@ void message_add(cptr str)
 
 		/* Assign the starting address */
 		message__ptr[x] = message__ptr[i];
+
+		/* Store the message type */
+		message__type[x] = type;
 
 		/* Success */
 		return;
@@ -2090,6 +2163,9 @@ void message_add(cptr str)
 
 	/* Advance the "head" pointer */
 	message__head += (n + 1);
+
+	/* Store the message type */
+	message__type[x] = type;
 }
 
 
@@ -2101,6 +2177,10 @@ errr message_init(void)
 	/* Message variables */
 	C_MAKE(message__ptr, MESSAGE_MAX, u16b);
 	C_MAKE(message__buf, MESSAGE_BUF, char);
+	C_MAKE(message__type, MESSAGE_MAX, u16b);
+
+	/* Init the message colors to white */
+	(void)C_BSET(message__color, TERM_WHITE, MSG_MAX, byte);
 
 	/* Hack -- No messages yet */
 	message__tail = MESSAGE_BUF;
@@ -2219,15 +2299,13 @@ static void msg_flush(int x)
  * Hack -- Note that "msg_print(NULL)" will clear the top line even if no
  * messages are pending.
  */
-void msg_print(cptr msg)
+static void msg_print_aux(u16b type, cptr msg)
 {
 	static int p = 0;
-
 	int n;
-
 	char *t;
-
 	char buf[1024];
+	byte color = TERM_WHITE;
 
 
 	/* Hack -- Reset */
@@ -2258,7 +2336,8 @@ void msg_print(cptr msg)
 
 
 	/* Memorize the message (if legal) */
-	if (character_generated) message_add(msg);
+	if (character_generated && !(p_ptr->is_dead))
+		message_add(msg, type);
 
 	/* Window stuff */
 	p_ptr->window |= (PW_MESSAGE);
@@ -2280,6 +2359,13 @@ void msg_print(cptr msg)
 
 	/* Analyze the buffer */
 	t = buf;
+
+	/* Get the color of the message (if legal) */
+	if (message__color)
+		color = message__color[type];
+
+	/* HACK -- no "black" messages */
+	if (color == TERM_DARK) color = TERM_WHITE;
 
 	/* Split message */
 	while (n > 72)
@@ -2305,7 +2391,7 @@ void msg_print(cptr msg)
 		t[split] = '\0';
 
 		/* Display part of the message */
-		Term_putstr(0, 0, split, TERM_WHITE, t);
+		Term_putstr(0, 0, split, color, t);
 
 		/* Flush it */
 		msg_flush(split + 1);
@@ -2321,7 +2407,7 @@ void msg_print(cptr msg)
 	}
 
 	/* Display the tail of the message */
-	Term_putstr(p, 0, n, TERM_WHITE, t);
+	Term_putstr(p, 0, n, color, t);
 
 	/* Remember the message */
 	msg_flag = TRUE;
@@ -2331,6 +2417,15 @@ void msg_print(cptr msg)
 
 	/* Optional refresh */
 	if (fresh_after) Term_fresh();
+}
+
+
+/*
+ * Print a message in the default color (white)
+ */
+void msg_print(cptr msg)
+{
+	msg_print_aux(MSG_GENERIC, msg);
 }
 
 
@@ -2353,7 +2448,46 @@ void msg_format(cptr fmt, ...)
 	va_end(vp);
 
 	/* Display */
-	msg_print(buf);
+	msg_print_aux(MSG_GENERIC, buf);
+}
+
+
+/*
+ * Display a message and play the associated sound.
+ *
+ * The "extra" parameter is currently unused.
+ */
+void message(u16b message_type, s16b extra, cptr message)
+{
+	sound(message_type);
+
+	msg_print_aux(message_type, message);
+}
+
+
+
+/*
+ * Display a formatted message and play the associated sound.
+ *
+ * The "extra" parameter is currently unused.
+ */
+void message_format(u16b message_type, s16b extra, cptr fmt, ...)
+{
+	va_list vp;
+
+	char buf[1024];
+
+	/* Begin the Varargs Stuff */
+	va_start(vp, fmt);
+
+	/* Format the args, save the length */
+	(void)vstrnfmt(buf, 1024, fmt, vp);
+
+	/* End the Varargs Stuff */
+	va_end(vp);
+
+	/* Display */
+	message(message_type, extra, buf);
 }
 
 
@@ -2886,10 +3020,9 @@ bool get_com(cptr prompt, char *command)
  */
 void pause_line(int row)
 {
-	char ch;
 	prt("", row, 0);
 	put_str("[Press any key to continue]", row, 23);
-	ch = inkey();
+	(void)inkey();
 	prt("", row, 0);
 }
 
@@ -3133,7 +3266,7 @@ void request_command(bool shopping)
 	if (always_repeat && (p_ptr->command_arg <= 0))
 	{
 		/* Hack -- auto repeat certain commands */
-		if (strchr("TBDoc+", p_ptr->command_cmd))
+		if (strchr(AUTO_REPEAT_COMMANDS, p_ptr->command_cmd))
 		{
 			/* Repeat 99 times */
 			p_ptr->command_arg = 99;
@@ -3402,3 +3535,104 @@ void repeat_check(void)
 
 #endif /* ALLOW_REPEAT */
 
+
+#ifdef SUPPORT_GAMMA
+
+/* Table of gamma values */
+byte gamma_table[256];
+
+/* Table of ln(x / 256) * 256 for x going from 0 -> 255 */
+static s16b gamma_helper[256] =
+{
+	0, -1420, -1242, -1138, -1065, -1007, -961, -921, -887, -857, -830,
+	-806, -783, -762, -744, -726, -710, -694, -679, -666, -652, -640,
+	-628, -617, -606, -596, -586, -576, -567, -577, -549, -541, -532,
+	-525, -517, -509, -502, -495, -488, -482, -475, -469, -463, -457,
+	-451, -455, -439, -434, -429, -423, -418, -413, -408, -403, -398,
+	-394, -389, -385, -380, -376, -371, -367, -363, -359, -355, -351,
+	-347, -343, -339, -336, -332, -328, -325, -321, -318, -314, -311,
+	-308, -304, -301, -298, -295, -291, -288, -285, -282, -279, -276,
+	-273, -271, -268, -265, -262, -259, -257, -254, -251, -248, -246,
+	-243, -241, -238, -236, -233, -231, -228, -226, -223, -221, -219,
+	-216, -214, -212, -209, -207, -205, -203, -200, -198, -196, -194,
+	-192, -190, -188, -186, -184, -182, -180, -178, -176, -174, -172,
+	-170, -168, -166, -164, -162, -160, -158, -156, -155, -153, -151,
+	-149, -147, -146, -144, -142, -140, -139, -137, -135, -134, -132,
+	-130, -128, -127, -125, -124, -122, -120, -119, -117, -116, -114,
+	-112, -111, -109, -108, -106, -105, -103, -102, -100, -99, -97, -96,
+	-95, -93, -92, -90, -89, -87, -86, -85, -83, -82, -80, -79, -78,
+	-76, -75, -74, -72, -71, -70, -68, -67, -66, -65, -63, -62, -61,
+	-59, -58, -57, -56, -54, -53, -52, -51, -50, -48, -47, -46, -45,
+	-44, -42, -41, -40, -39, -38, -37, -35, -34, -33, -32, -31, -30,
+	-29, -27, -26, -25, -24, -23, -22, -21, -20, -19, -18, -17, -16,
+	-14, -13, -12, -11, -10, -9, -8, -7, -6, -5, -4, -3, -2, -1
+};
+
+
+/*
+ * Build the gamma table so that floating point isn't needed.
+ *
+ * Note gamma goes from 0->256.  The old value of 100 is now 128.
+ */
+void build_gamma_table(int gamma)
+{
+	int i, n;
+
+	/*
+	 * value is the current sum.
+	 * diff is the new term to add to the series.
+	 */
+	long value, diff;
+
+	/* Hack - convergence is bad in these cases. */
+	gamma_table[0] = 0;
+	gamma_table[255] = 255;
+
+	for (i = 1; i < 255; i++)
+	{
+		/*
+		 * Initialise the Taylor series
+		 *
+		 * value and diff have been scaled by 256
+		 */
+		n = 1;
+		value = 256 * 256;
+		diff = ((long)gamma_helper[i]) * (gamma - 256);
+
+		while (diff)
+		{
+			value += diff;
+			n++;
+
+			/*
+			 * Use the following identiy to calculate the gamma table.
+			 * exp(x) = 1 + x + x^2/2 + x^3/(2*3) + x^4/(2*3*4) +...
+			 *
+			 * n is the current term number.
+			 *
+			 * The gamma_helper array contains a table of
+			 * ln(x/256) * 256
+			 * This is used because a^b = exp(b*ln(a))
+			 *
+			 * In this case:
+			 * a is i / 256
+			 * b is gamma.
+			 *
+			 * Note that everything is scaled by 256 for accuracy,
+			 * plus another factor of 256 for the final result to
+			 * be from 0-255.  Thus gamma_helper[] * gamma must be
+			 * divided by 256*256 each itteration, to get back to
+			 * the original power series.
+			 */
+			diff = (((diff / 256) * gamma_helper[i]) * (gamma - 256)) / (256 * n);
+		}
+
+		/*
+		 * Store the value in the table so that the
+		 * floating point pow function isn't needed.
+		 */
+		gamma_table[i] = ((long)(value / 256) * i) / 256;
+	}
+}
+
+#endif /* SUPPORT_GAMMA */

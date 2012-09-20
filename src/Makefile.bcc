@@ -38,8 +38,8 @@ EXE_FILE = angband.exe
 # Set any compiler options
 
 CCOPTS = -jb -j1 -Hc -tW -lGn -e$(EXE_FILE) -w- \
-  -D_WIN32_WINNT=0x0400 -DWINVER=0x0400 \
-  -DUSE_TRANSPARENCY
+	-D_WIN32_WINNT=0x0400 -DWINVER=0x0400 \
+	-DUSE_TRANSPARENCY
 
 # Compile flags:
 CPPFLAGS= $(CCOPTS) $(DBGOPT)
@@ -48,28 +48,29 @@ CPPFLAGS= $(CCOPTS) $(DBGOPT)
 ######################## Targets ##################################
 
 OBJ = \
-  z-util.obj z-virt.obj z-form.obj z-rand.obj z-term.obj \
-  variable.obj tables.obj util.obj cave.obj \
-  object1.obj object2.obj monster1.obj monster2.obj \
-  xtra1.obj xtra2.obj spells1.obj spells2.obj \
-  melee1.obj melee2.obj save.obj files.obj \
-  cmd1.obj cmd2.obj cmd3.obj cmd4.obj cmd5.obj cmd6.obj \
-  store.obj birth.obj load1.obj load2.obj \
-  wizard1.obj wizard2.obj \
-  generate.obj dungeon.obj init1.obj init2.obj init3.obj \
-  main-win.obj readdib.obj
+	main-win.obj readdib.obj \
+	birth.obj cave.obj cmd1.obj cmd2.obj \
+	cmd3.obj cmd4.obj cmd5.obj cmd6.obj \
+	dungeon.obj files.obj generate.obj init1.obj \
+	init2.obj randart.obj load1.obj load2.obj \
+	melee1.obj melee2.obj monster1.obj monster2.obj \
+	object1.obj object2.obj save.obj spells1.obj \
+	spells2.obj store.obj tables.obj util.obj \
+	variable.obj wizard1.obj wizard2.obj xtra1.obj \
+	xtra2.obj z-form.obj z-rand.obj z-term.obj \
+	z-util.obj z-virt.obj
 
 all : $(EXE_FILE)
 
 clean:
-   -@if exist *.obj del *.obj >nul
-   -@if exist *.exe del *.exe >nul
-   -@if exist *.res del *.res >nul
-   -@if exist *.tds del *.tds >nul
-   -@if exist *.ilc del *.ilc >nul
-   -@if exist *.ild del *.ild >nul
-   -@if exist *.ilf del *.ilf >nul
-   -@if exist *.ils del *.ils >nul
+	-@if exist *.obj del *.obj >nul
+	-@if exist *.exe del *.exe >nul
+	-@if exist *.res del *.res >nul
+	-@if exist *.tds del *.tds >nul
+	-@if exist *.ilc del *.ilc >nul
+	-@if exist *.ild del *.ild >nul
+	-@if exist *.ilf del *.ilf >nul
+	-@if exist *.ils del *.ils >nul
 
 install: $(EXE_FILE)
 	copy $(EXE_FILE) ..
@@ -84,11 +85,11 @@ angband.res: angband.rc
 
 ########################### Implicit Rules ########################
 .c.obj:
-    $(CPP) $(CPPFLAGS) -c {$? }
+	$(CPP) $(CPPFLAGS) -c {$? }
 
 .c.i:
-    $(CPP) $(CPPFLAGS) -c -Sr -Sd {$? }
+	$(CPP) $(CPPFLAGS) -c -Sr -Sd {$? }
 
 .obj.exe:
-    $(CPP) $(CPPFLAGS) $<
+	$(CPP) $(CPPFLAGS) $<
 

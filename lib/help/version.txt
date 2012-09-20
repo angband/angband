@@ -115,7 +115,6 @@ not only as the most up to date description of Angband, but also lists
 changes made between versions, and changes planned for upcoming versions,
 and lists various email addresses and web sites related to Angband.
 
-
 === Some of the changes between Angband 2.6.1 and Angband 2.7.8 ===
 
 It is very hard to pin down, along the way from 2.6.2 to 2.7.8, exactly
@@ -454,4 +453,15 @@ the current distribution, since parts of the source are still only
 available under the old Moria/Angband license.  Until all parts of
 Angband are distributed under the GPL the only valid license remains
 the original Moria/Angband license.
+
+
+=== Contributors (incomplete) ===
+
+Peter Berger, "Prfnoff", Arcum Dagsson, Ed Cogburn, Matthias Kurzke,
+Ben Harrison, Steven Fuerst, Julian Lighton, Andrew Hill, Werner Baer,
+Tom Morton, "Cyric the Mad", Chris Kern, Tim Baker, Jurriaan Kalkman,
+Alexander Wilkins, Mauro Scarpa, John I'anson-Holton, "facade",
+Dennis van Es, Kenneth A. Strom, Wei-Hwa Huang, Nikodemus, Timo Pietilä,
+Greg Wooledge, Keldon Jones, Shayne Steele, Dr. Andrew White, Musus Umbra
+
 

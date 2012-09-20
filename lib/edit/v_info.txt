@@ -10,10 +10,43 @@
 
 # Note that the "spacing" in the "description" lines is very important!
 
+# === Understanding v_info.txt ===
+
+# N:serial number:vault name
+# X:room type:rating:rows:columns
+# D:lines giving full layout of vault using symbols below
+
+# 'N' indicates the beginning of an entry. The serial number must
+# increase for each new vault.
+
+# 'X' is for extra information - room type, rating, rows, and
+# columns. Lesser vaults are room type 7 and have a maximum x-y size
+# of 33x22; greater vaults are room type 8 and have a maximum size of 66x44.
+
+# 'D' lines describe the layout of the vault. Lines must be padded
+# with spaces to fill the dimensions specified. Vaults are described
+# with the following symbols:
+
+#    % - outside of the vault, where corridors may be connected
+#    # - granite
+#    X - impenetrable rock
+#    * - treasure or trap
+#    + - secret door
+#    ^ - trap
+#    & - monster up to 5 levels out of depth (OOD)
+#    @ - monster up to 11 levels OOD
+#    9 - monster up to 9 levels OOD and treasure up to 7 levels OOD
+#    8 - monster up to 40 levels OOD and treasure up to 20 levels OOD
+#    , - monster up to 3 levels OOD and/or treasure up to 7 levels OOD
+
+# Use this to measure columns                                                                        1
+#          1         2         3         4         5         6         7         8         9         0
+# 1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
+
 
 # Version stamp (required)
 
-V:2.9.0
+V:2.9.1
 
 
 ### Simple Vaults (type 7) -- maximum size 44x22 ###
@@ -219,4 +252,480 @@ D:%.X^*X.,..,X,*&^*^X*.^*.,..&&&^X,..,.X.%
 D:%+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX+%
 D:%&+..^..^..^..^..^..^..^..^..^..^..^.+&%
 D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+N:14:Planet X
+X:7:10:13:15
+D:%%%%%%%%%%%%%%%
+D:%.............%
+D:%.XXXXX#XXXXX.%
+D:%.XXX,,,,,XXX.%
+D:%.X,XX,,,XX,X.%
+D:%.X,,XX9XX,,X.%
+D:%.#,,9###9,,#.%
+D:%.X,,XX9XX,,X.%
+D:%.X,XX,,,XX,X.%
+D:%.XXX,,,,,XXX.%
+D:%.XXXXX#XXXXX.%
+D:%.............%
+D:%%%%%%%%%%%%%%%
+
+
+N:15:LV (Turnabout)
+X:7:10:12:15
+D:###############
+D:#.............#
+D:#.###########.#
+D:#.#9##,,,,###.#
+D:#.###^^##,,##.#
+D:#.##&^^&##,,#.#
+D:#.###^^^^#,,#.#
+D:#.#,##,,##,,#.#
+D:#.#9,##^#@@##.#
+D:#.#####^#####.#
+D:#.............#
+D:###############
+
+
+N:16:Lesser Vault (Rooms)
+X:7:10:13:19
+D:%%%%%%%%%%%%%%%%%%%
+D:%.................%
+D:%.###############.%
+D:%.#^+,&&#*,*+&&&#.%
+D:%.#^#,,&#,@,#***#.%
+D:%.#^#9,,+*,*#,,,+.%
+D:%.#^#############.%
+D:%.#^#9,,+*,*#,,,+.%
+D:%.#^#,,&#,@,#***#.%
+D:%.#^+,&&#*,*+&&&#.%
+D:%.###############.%
+D:%.................%
+D:%%%%%%%%%%%%%%%%%%%
+
+
+N:17:Lesser Vault (Cross)
+X:7:10:13:20
+D:%%%%%%%%%%%%%%%%%%%%
+D:%########++########%
+D:%#*....*#..#*....*#%
+D:%#....&,#^^#,&....#%
+D:%#....,##..##,....#%
+D:%#+#####*..*#####+#%
+D:%#^^.....,,.....^^#%
+D:%#+#####*..*#####+#%
+D:%#....,##..##,....#%
+D:%#....&,#^^#,&....#%
+D:%#*....*#..#*....*#%
+D:%########++########%
+D:%%%%%%%%%%%%%%%%%%%%
+
+
+N:18:Lesser Vault (Central)
+X:7:12:10:12
+D:############
+D:#,#^^^^^^#,#
+D:##+######+##
+D:#^#^^,,^^#^#
+D:#^#^&@9&^#^#
+D:#^#^&9@&^#^#
+D:#^#^^,,^^#^#
+D:##+######+##
+D:#,#^^^^^^#,#
+D:############
+
+
+N:19:Lesser Vault (Camouflaged)
+X:7:10:9:12
+D:%%%%%%%%%%%%
+D:%XXXXXXXXXX%
+D:%#,,,,,,,,X%
+D:%XXXXXXXXXX%
+D:%X,,,,,,,,#%
+D:%XXXXXXXXXX%
+D:%#,,,,,,,,X%
+D:%XXXXXXXXXX%
+D:%%%%%%%%%%%%
+
+
+N:20:The I in the Storm
+X:8:40:25:41
+D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+D:%XXXXXXXXXXXXXXXXXXX#XXXXXXXXXXXXXXXXXXX%
+D:%X&&..^..#9X..^^^^^^^^^^^^^..X9#..^..&&X%
+D:%X&...#....X..XXXXXX^XXXXXX..X....#...&X%
+D:%X...&#..#.X9XX.@8XX^XX8@.XX9X.#..#&...X%
+D:%X..&9#....XXX...@X,,,X@...XXX....#9&..X%
+D:%X^####..#...XX..XX,.,XX..XX...#..####^X%
+D:%X........,#..XX^X,,.,,X^XX..#,........X%
+D:%X.......#.....^XX,...,XX^.....#.......X%
+D:%X........,#....X,,...,,X....#,........X%
+D:%X.......#.....XX.......XX.....#.......X%
+D:%X.#......,#..XX^.......^XX..#,......#.X%
+D:%X.9#....#....#^^...9...^^#....#....#9.X%
+D:%X.#......,#..XX^.......^XX..#,......#.X%
+D:%X.......#.....XX.......XX.....#.......X%
+D:%X........,#....X,,...,,X....#,........X%
+D:%X.......#.....^XX,...,XX^.....#.......X%
+D:%X........,#..XX^X,,.,,X^XX..#,........X%
+D:%X^####..#...XX..XX,.,XX..XX...#..####^X%
+D:%X..&9#....XXX...@X,,,X@...XXX....#9&..X%
+D:%X...&#..#.X9XX.@8XX^XX8@.XX9X.#..#&...X%
+D:%X&...#....X&&XXXXXX^XXXXXX&&X....#...&X%
+D:%X&&..^..#9X..^^^^^^^^^^^^^..X9#..^..&&X%
+D:%XXXXXXXXXXXXXXXXXXX#XXXXXXXXXXXXXXXXXXX%
+D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+N:21:The Bank From Hell
+X:8:30:20:31
+D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+D:%XXXXXXXXXXXXXX+XXXXXXXXXXXXXX%
+D:%X.&.&.&.&.&.#...#.&.&.&.&.&.X%
+D:%X.#.#.#.#.#.#...#.#.#.#.#.#.X%
+D:%X...........#...#...........X%
+D:%X##########+##+##+##########X%
+D:%X@........^^^^^^^^^........@X%
+D:%X@^^^.....^^^...^^^.....^^^@X%
+D:%X##+#######+#####+#######+##X%
+D:%X.^^^.#@..^^^...^^^..@#.^^^.X%
+D:%X#...##...............#.###.X%
+D:%X@...@#.&.&.&.&.&.&.&.#..@..X%
+D:%XXXXXXXXXXXXXXXXXXXXXXXXXXX+X%
+D:%X.+^*****X*******^+^******X.X%
+D:%X@X^....^X^......^X^.....*X@X%
+D:%X.X*****^+^*******X*******X.X%
+D:%X@XXXXXXXXXXXXXXXXXXXXXXXXX@X%
+D:%X.@.@.@.@.@.@.@.@.@.@.@.@.@.X%
+D:%XXXXXXXXXXXXXXXXXXXXXXXXXXXXX%
+D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+N:22:Snake Maze
+X:8:15:21:23
+D:%%%%%%%%%%%%%%%%%%%%%%%
+D:%.....................%
+D:%.XXXXXXXXX+XXXXXXXXX.%
+D:%.X9X9..XXX..X,,,9X9X.%
+D:%.X,XXX.^.XX.X,XXXX,X.%
+D:%.X,,,XXX..X.X,,,,X,X.%
+D:%.XXX,,,XX.X.XX*X,,,X.%
+D:%.X...X*X..X.XXXXXX.X.%
+D:%.X.XXXXX.XX.X.^.X..X.%
+D:%.X...^........X.X.XX.%
+D:%.X#XXXXXXXXXXXX...*X.%
+D:%.X&.........^&XX.XXX.%
+D:%.X.XXXXXXXXXX.XX,,,X.%
+D:%.X.X......^...*XXX,X.%
+D:%.X.X,XXXXXXXX&XX,,,X.%
+D:%.X.X,XX9,,,,X&9X,XXX.%
+D:%.X^X,,XXXXX.XXXX,X*X.%
+D:%.X.XX99XX**......^.X.%
+D:%.X+XXXXXXXXXXXXXXXXX.%
+D:%.....................%
+D:%%%%%%%%%%%%%%%%%%%%%%%
+
+
+N:23:Roundabouts One
+X:8:15:21:43
+D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+D:%#XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX%
+D:%X^^^^^^^^^^^^^^^^#&^^^&^^^^^^^^^^^^^&^,,X%
+D:%X^^^XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX&.,X%
+D:%X^.X+^&^..^^.....#&^^^&......^^....,XX&.X%
+D:%X.^X^&^XXXXXXXXXXXXXXXXXXXXXXXXXXX^,,X.^X%
+D:%X^.X&^XX,.^^......&^^^&#.....^^&^+X^^X^.X%
+D:%X.^X^^X,,.^^......&^^^&#.....^^.&^X^^X.^X%
+D:%X^.X^^X*^^XXXXXXXXXXXXXXXXXXXXX^^&X^^X^.X%
+D:%X.^X^^X*^X+^,,,,,,@#8X@9....*&XX^*X^^X.^X%
+D:%X^^X^^X^^X^&*^^^^^@XXX@^^^^^*&^X^^X^^X^^X%
+D:%X^.X^^X*^XX&*....9@X8#@,,,,,,^+X^*X^^X^.X%
+D:%X.^X^^X&^^XXXXXXXXXXXXXXXXXXXXX^^*X^^X.^X%
+D:%X^.X^^X^&.^^.....#&^^^&......^^.,,X^^X^.X%
+D:%X.^X^^X+^&^^.....#&^^^&......^^.,XX^&X.^X%
+D:%X^.X,,^XXXXXXXXXXXXXXXXXXXXXXXXXXX^&^X^.X%
+D:%X.&XX,....^^......&^^^&#.....^^..^&^+X.^X%
+D:%X,.&XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX^^^X%
+D:%X,,^&^^^^^^^^^^^^^&^^^&#^^^^^^^^^^^^^^^^X%
+D:%XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX#%
+D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+N:24:Roundabout Two
+X:8:25:25:40
+D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+D:%XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX%
+D:%#^X.^^+X@XX.+X^^^^^+.X...X8#@&*X*****X%
+D:%X^X.^XX@XX.XX^^^^^^X.X.X^XXX@.&+9....X%
+D:%X^X.XX&XX.XX^^^^^^^X.X.X^X8#@&*X99...X%
+D:%X^X.X^^X&.XXXXXXXXXX.X.X^XXXXXXXXXX++X%
+D:%X^X.X.*X&.X.......&..X.X^X........X^^X%
+D:%X^X&X.*X^^X.XXXXXXXXXX.X&X#XXXXXX.X^.X%
+D:%X^X.X..X^^X...@........X.X......X.X^^X%
+D:%X^X.X..X^^XXXXXXXXXXXXXX.XXXXXX.X.X.^X%
+D:%X^X.X..X^^X..,.....,....&X8#,*X.X.X^^X%
+D:%X^X&X,,X^^X^XXXXXXXXXXXXXX##,,X.X.X^.X%
+D:%X^+&X..+^^X^^^^^^^^^^^^^^^9...#.X.#^^X%
+D:%X^X&X,,X^^X^XXXXXXXXXXXXXX##,*X.X.X.^X%
+D:%X^X.X..X^^X..,.....,....&X8#,,X.X.X^^X%
+D:%X^X.X..X^^XXXXXXXXXXXXXX.XXXXXX.X.X^.X%
+D:%X^X.X..X^^X...@........X.X......X.X^^X%
+D:%X^X&X.*X^^X.XXXXXXXXXX.X&X#XXXXXX.X.^X%
+D:%X^X.X.*X&.X.......&..X.X^X........X^^X%
+D:%X^X.X^^X&.XXXXXXXXXX.X.X^XXXXXXXXXX++X%
+D:%X^X.XX&XX.XX^^^^^^^X.X.X^X8#@&*X99...X%
+D:%X^X.^XX@XX.XX^^^^^^X.X.X^XXX@.&+9....X%
+D:%#^X.^^+X@XX.+X^^^^^+.X...X8#@&*X*****X%
+D:%XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX%
+D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+N:25:Modified Greater Vault (Huge)
+X:8:45:17:39
+D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+D:%XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX%
+D:%#8#8#8#8#8#8#8#8#8#8#8#8#8#8#8#8#8#8X%
+D:%XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX#X%
+D:%X8#8#8#8#8#8#8#8#8#8#8#8#8#8#8#8#8X8X%
+D:%X#XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX#X#X%
+D:%X8X8#8#8#8#8#8#8#8#8#8#8#8#8#8#8X8X8X%
+D:%X#X#XXXXXXXXXXXXXXXXXXXXXXXXXXX#X#X#X%
+D:%X8X8X8#8#8#8#8#8#8#8#8#8#8#8#8#8X8X8X%
+D:%X#X#X#XXXXXXXXXXXXXXXXXXXXXXXXXXX#X#X%
+D:%X8X8X8#8#8#8#8#8#8#8#8#8#8#8#8#8#8X8X%
+D:%X#X#XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX#X%
+D:%X8X8#8#8#8#8#8#8#8#8#8#8#8#8#8#8#8#8X%
+D:%X#XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX%
+D:%X8#8#8#8#8#8#8#8#8#8#8#8#8#8#8#8#8#8#%
+D:%XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX%
+D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+N:26:Mirrored Quartet
+X:8:20:21:49
+D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+D:%XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX%
+D:%X89@@@XXX,,,,XXX....^^^^^^^....XXX,,,,XXX@@@98X%
+D:%X9@@#XX....XXX**....XXX#XXX....**XXX....XX#@@9X%
+D:%X@XXX&&&&XXX**....@XX&&@&&XX@....**XXX&&&&XXX@X%
+D:%XXX....XXX**......@X**...**X@......**XXX....XXX%
+D:%X@...XXX**.......XXXXX...XXXXX.......**XXX...@X%
+D:%X@.#XX**.......9XX888XX^XX888XX9.......**XX#.@X%
+D:%XXXX&&&&&&&&&&&9#,,,,,X^X,,,,,#9&&&&&&&&&&&XXXX%
+D:%XXXXXXXXXXXXXXXXXXXXXXX#XXXXXXXXXXXXXXXXXXXXXXX%
+D:%#,,,,,,,,,,,,,,,,,,,,,#8#,,,,,,,,,,,,,,,,,,,,,#%
+D:%XXXXXXXXXXXXXXXXXXXXXXX#XXXXXXXXXXXXXXXXXXXXXXX%
+D:%XXXX&&&&&&&&&&&9#,,,,,X^X,,,,,#9&&&&&&&&&&&XXXX%
+D:%X@.#XX**.......9XX888XX^XX888XX9.......**XX#.@X%
+D:%X@...XXX**.......XXXXX...XXXXX.......**XXX...@X%
+D:%XXX....XXX**......@X**...**X@......**XXX....XXX%
+D:%X@XXX&&&&XXX**....@XX&&@&&XX@....**XXX&&&&XXX@X%
+D:%X9@@#XX....XXX**....XXX#XXX....**XXX....XX#@@9X%
+D:%X89@@@XXX,,,,XXX**..^^^^^^^..**XXX,,,,XXX@@@98X%
+D:%XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX%
+D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+N:27:False Wall
+X:8:20:15:64
+D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+D:%X+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX+X%
+D:%X^+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^+^X%
+D:%X^XXXXXXXXXXXXXXXXXXXXXXXXXX+X##X+XXXXXXXXXXXXXXXXXXXXXXXXXX^X%
+D:%X^+@*&*@*&*@*&*@*&*@*&*@*&*@*X@@X*@*&*@*&*@*&*@*&*@*&*@*&*@+^X%
+D:%X^XXXXXXXXXXXXXXXXXXXXXXXXX+XX,,XX+XXXXXXXXXXXXXXXXXXXXXXXXX^X%
+D:%X^+&.@.&.@.&.@.&.@.&.@.&.@.&X*..*X&.@.&.@.&.@.&.@.&.@.&.@.&+^X%
+D:%X^XXXXXXXXXXXXXXXXXXXXXXXX+XX*..*XX+XXXXXXXXXXXXXXXXXXXXXXXX^X%
+D:%X^+,,,,,,,,,,,,,,,,,,,,,,,,X,,..,,X,,,,,,,,,,,,,,,,,,,,,,,,+^X%
+D:%X^XXXXXXXXXXXXXXXXXXXXXXX+XX##99##XX+XXXXXXXXXXXXXXXXXXXXXXX^X%
+D:%X^+&.@.&.@.&.@.&.@.&.@.&.@X..####..X@.&.@.&.@.&.@.&.@.&.@.&+^X%
+D:%X^XXXXXXXXXXXXXXXXXXXXXX+XX...##...XX+XXXXXXXXXXXXXXXXXXXXXX^X%
+D:%X^+*&*@*&*@*&*@*&*@*&*@*&X&@&@88&@&@X&*@*&*@*&*@*&*@*&*@*&*+^X%
+D:%XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX%
+D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+N:28:Greater Vault (Divisi)
+X:8:35:31:55
+D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+D:%.....................................................%
+D:%.#XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX#.%
+D:%.X,XX@@@&&,,,,,,,,,,,,,,,X8X,,,,,,,,,,,,,,,&&@@@XX,X.%
+D:%.X,,XXX@&&XXXXXXXXXXXXXX^X9X^XXXXXXXXXXXXXX&&@XXX,,X.%
+D:%.XX,,,XXX^^^XXX#8#8#8#8X^X@X^X8#8#8#8#XXX^^^XXX,,,XX.%
+D:%.XXXX,,,XXX^^^XXX######X^X&X^X######XXX^^^XXX,,,XXXX.%
+D:%.X@@XXX,,,XXX^^^XXX#8#8X^X,X^X8#8#XXX^^^XXX,,,XXX@@X.%
+D:%.X&&&&XXX,,,XXX^^^XX###X^X,X^X###XX^^^XXX,,,XXX&&&&X.%
+D:%.X^XX..#XXX,,,XXX^^^XXXX^X,X^XXXX^^^XXX,,,XXX#..XX^X.%
+D:%.X^.XXX#@@XXX,,,XXX^^^XX^X,X^XX^^^XXX,,,XXX@@#XXX.^X.%
+D:%.X^&&&XXX&&&XXX,,,XXX^^^^X,X^^^^XXX,,,XXX&&&XXX&&&^X.%
+D:%.X^XX&&&XXX^^^XXX,,,XXX^^X,X^^XXX,,,XXX^^^XXX&&&XX^X.%
+D:%.X,,XXX&@@XXX^^^XXX,,,XXX#,#XXX,,,XXX^^^XXX@@&XXX,,X.%
+D:%.X,,##XXX@##XXX^^^XXX,,,XX#XX,,,XXX^^^XXX##@XXX##,,X.%
+D:%.XXXX888XXX999XXX^^^###,#888#,###^^^XXX999XXX888XXXX.%
+D:%.X,,##XXX@##XXX^^^XXX,,,XX#XX,,,XXX^^^XXX##@XXX##,,X.%
+D:%.X,,XXX&@@XXX^^^XXX,,,XXX#,#XXX,,,XXX^^^XXX@@&XXX,,X.%
+D:%.X^XX&&&XXX^^^XXX,,,XXX^^X,X^^XXX,,,XXX^^^XXX&&&XX^X.%
+D:%.X^&&&XXX&&&XXX,,,XXX^^^^X,X^^^^XXX,,,XXX&&&XXX&&&^X.%
+D:%.X^.XXX#@@XXX,,,XXX^^^XX^X,X^XX^^^XXX,,,XXX@@#XXX.^X.%
+D:%.X^XX..#XXX,,,XXX^^^XXXX^X,X^XXXX^^^XXX,,,XXX#..XX^X.%
+D:%.X&&&&XXX,,,XXX^^^XX###X^X,X^X###XX^^^XXX,,,XXX&&&&X.%
+D:%.X@@XXX,,,XXX^^^XXX#8#8X^X,X^X8#8#XXX^^^XXX,,,XXX@@X.%
+D:%.XXXX,,,XXX^^^XXX######X^X&X^X######XXX^^^XXX,,,XXXX.%
+D:%.XX,,,XXX^^^XXX#8#8#8#8X^X@X^X8#8#8#8#XXX^^^XXX,,,XX.%
+D:%.X,,XXX@&&XXXXXXXXXXXXXX^X9X^XXXXXXXXXXXXXX&&@XXX,,X.%
+D:%.X,XX@@@&&,,,,,,,,,,,,,,,X8X,,,,,,,,,,,,,,,&&@@@XX,X.%
+D:%.#XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX#.%
+D:%.....................................................%
+D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+N:29:Curlicues One
+X:8:15:23:44
+D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+D:%XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX%
+D:%X^^^^^^^^^^^^^^^^^^^^^^^^^^^^^#8X^^^^^^^^X%
+D:%X.............XXXXXXXXXXXX^^^^XXX...**XX+X%
+D:%X..XXXXXXX^^^XX..........XX^^^^X...**XX&@X%
+D:%X.XX*....XX^^X..XXXXXXX...X^^^^X...*XX...X%
+D:%X.X9*.....X^^X.XX^^^^^XX..X^^^^X...*X,...X%
+D:%X.XX*@@@..X^^X.X9@...^^X..X^^^^X...*X,,,,X%
+D:%X..XXXXX..X^^X.XX@.......XX...XX&,&XX,...X%
+D:%X^^^^^^^^XX^^X..XXXXXXXXXX....X^^^^X&....X%
+D:%XXXXXXXXXX^^^X&*&*&*&,&,&,&,&XX^^^^X&..XXX%
+D:%#^^^^^^^^^^XXXXXXXXXXXXXXXXXX#^^^^^X@..#8X%
+D:%XXXXXXXXXX^^^X&*&*&*&,&,&,&,&XX^^^^X&..XXX%
+D:%X^^^^^^^^XX^^X..XXXXXXXXXX....X^^^^X&....X%
+D:%X..XXXXX..X^^X.XX@.......XX...XX&,&XX,...X%
+D:%X.XX*@@@..X^^X.X9@...^^X..X^^^^X...*X,,,,X%
+D:%X.X9*.....X^^X.XX^^^^^XX..X^^^^X...*X,...X%
+D:%X.XX*....XX^^X..XXXXXXX...X^^^^X...*XX...X%
+D:%X..XXXXXXX^^^XX..........XX^^^^X...**XX&@X%
+D:%X.............XXXXXXXXXXXX^^^^XXX...**XX+X%
+D:%X^^^^^^^^^^^^^^^^^^^^^^^^^^^^^#8X^^^^^^^^X%
+D:%XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX%
+D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+N:30:Bubbles
+X:8:35:25:41
+D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+D:%XXX#XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX%
+D:%X8X#X8XXX8XXX8XXX8XXX8XXX8XXX8XXX8XXX8X%
+D:%XX#.XX#.XX#.XX#.XX#.XX#.XX#.XX#.XX#.#XX%
+D:%XX.9.#.9.X.9.#.9.X.9.#.9.X.9.#.9.#.9.XX%
+D:%XXX.XXX.XXX.XXX.XXX.XXX.XXX.XXX.XXX.XXX%
+D:%X8XXX8X#X8X#X8X#X8X#X8X#X8X#X8X#X8X#X8X%
+D:%XX#.XX#.XX#.XX#.XX#.XX#.XX#.XX#.XX#.#XX%
+D:%XX.9.#.9.X.9.X.9.#.9.X.9.#.9.X.9.X.9..X%
+D:%XXX.XXX.XXX.XXX.XXX.XXX.XXX.XXX.XXX.XXX%
+D:%X8X#X8XXX8X#X8XXX8XXX8XXX8XXX8XXX8X#X8X%
+D:%XX#.XX#.XX#.XX#.XX#.XX#.XX#.XX#.XX#.#XX%
+D:%XX.9.X.9.#.9.X.9.#.9.#.9.#.9.#.9.X.9.XX%
+D:%XXX.XXX.XXX.XXX.XXX.XXX.XXX.XXX.XXX.XXX%
+D:%X8X#X8X#X8X#X8XXX8XXX8XXX8XXX8X#X8XXX8X%
+D:%XX#.XX#.XX#.XX#.XX#.XX#.XX#.XX#.XX#.#XX%
+D:%XX.9.#.9.X.9.#.9.#.9.#.9.#.9.#.9.X.9.XX%
+D:%XXX.XXX.XXX.XXX.XXX.XXX.XXX.XXX.XXX.XXX%
+D:%X8XXX8XXX8XXX8XXX8XXX8XXX8XXX8XXX8X#X8X%
+D:%XX#.XX#.XX#.XX#.XX#.XX#.XX#.XX#.XX#.#XX%
+D:%##.9.#.9.#.9.#.9.#.9.#.9.#.9.#.9.X.9.XX%
+D:%XX#.XX#.XX#.XX#.XX#.XX#.XX#.XX#.XX#.#XX%
+D:%X8XXX8XXX8XXX8XXX8XXX8XXX8XXX8XXX8XXX8X%
+D:%XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX%
+D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+N:31:Symmet
+X:8:20:23:29
+D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+D:%...........................%
+D:%....XXXXXXXXX+XXXXXXXXX....%
+D:%...XX,,.....^^^.....,,XX...%
+D:%..XX,,.XXXXXX+XXXXXX.,,XX..%
+D:%.XX,,.XX9&&&X@X&&&9XX.,,XX.%
+D:%.X,,.XX9,...X.X...,9XX.,,X.%
+D:%.X..XX8,,...X&X...,,8XX..X.%
+D:%.X.XX9,,,.^^X^X^^.,,,9XX.X.%
+D:%.X.X9,,,,.^.X^X.^.,,,,9X.X.%
+D:%.X^XXXXXXXXX+^+XXXXXXXXX^X.%
+D:%.+^+@....&^^^^^^^&....@+^+.%
+D:%.X^XXXXXXXXX+^+XXXXXXXXX^X.%
+D:%.X.X9,,,,.^.X^X.^.,,,,9X.X.%
+D:%.X.XX9,,,.^^X^X^^.,,,9XX.X.%
+D:%.X..XX8,,...X&X...,,8XX..X.%
+D:%.X,,.XX9,...X.X...,9XX.,,X.%
+D:%.XX,,.XX9&&&X@X&&&9XX.,,XX.%
+D:%..XX,,.XXXXXX+XXXXXX.,,XX..%
+D:%...XX,,.....^^^.....,,XX...%
+D:%....XXXXXXXXX+XXXXXXXXX....%
+D:%...........................%
+D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+N:32:Crown
+X:7:12:19:28
+D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+D:%..........................%
+D:%.....XXXXXXXXXXXXXXXX.....%
+D:%..XXXX^^^^+XXXX+^^^^XXXX..%
+D:%.XX^^^^X+XX,XX,XX+X^^^^XX.%
+D:%.X9X+XXX.X,,XX,,X.XXX+X9X.%
+D:%.XXX9X@@.X,,XX,,X.@@X9XXX.%
+D:%..X88X@@.X,,XX,,X.@@X88X..%
+D:%..XXXXXXXXX+XX+XXXXXXXXX..%
+D:%..........................%
+D:%..XXXXXXXXX+XX+XXXXXXXXX..%
+D:%..X88X@@.X,,XX,,X.@@X88X..%
+D:%.XXX9X@@.X,,XX,,X.@@X9XXX.%
+D:%.X9X+XXX.X,,XX,,X.XXX+X9X.%
+D:%.XX^^^^X+XX,XX,XX+X^^^^XX.%
+D:%..XXXX^^^^+XXXX+^^^^XXXX..%
+D:%.....XXXXXXXXXXXXXXXX.....%
+D:%..........................%
+D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+N:33:X^2
+X:7:8:13:15
+D:%%%%%%%%%%%%%%%
+D:%.............%
+D:%.#####.#####.%
+D:%.#9,,#.#,,9#.%
+D:%.##,,#+#,,##.%
+D:%..###^^^###..%
+D:%....+^*^+....%
+D:%..###^^^###..%
+D:%.##,,#+#,,##.%
+D:%.#9,,#.#,,9#.%
+D:%.#####.#####.%
+D:%.............%
+D:%%%%%%%%%%%%%%%
+
+
+N:34:V-vault
+X:8:25:23:48
+D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+D:%XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX%
+D:%X9...X...........&...XXXX..,.......,....X...9X%
+D:%XXX..X....,..*......X....X..............X..XXX%
+D:%X^^X..XX...........XX....XX....@......XX..X^^X%
+D:%X..XX..XX..@......XX...*..XX......&..XX..XX..X%
+D:%X...XX..XX.....,.XX........XX.......XX..XX...X%
+D:%X&...XX..XX.....XX..@.......XX,....XX..XX....X%
+D:%X.....XX..XX&..XX......*......XX..XX..XX.....X%
+D:%X.^....XX..XXXXX..&.........&..XXXX..XX....@.X%
+D:%X.......XX..XX..............*...XX..XX..&....X%
+D:%X........XX^^XX...&...XX...@...XX^^XX........X%
+D:%XXX..&...^XX..XX....XX&&XX....XX..XX^......XXX%
+D:%X9XX....^^.XX..XX..XX....XX..XX..XX.^^....XX9X%
+D:%X..XX..^^...XX..XXXX.,....XXXX..XX...^^..XX..X%
+D:%X...XX^^.....XX..XX...,&.,.XX..XX.....^^XX.&.X%
+D:%X....XX...@...XX..XX@....@XX..XX.*...&.XX....X%
+D:%X@..&.XX.......XX..XX,...XX..XX.......XX...@.X%
+D:%X......XX.....*.XX..XX88XX..XX...@...XX......X%
+D:%X,,..@..XX^.@....XX..XXXX..XX......^XX.@...,,X%
+D:%X,,......^X......*XX......XX*......X^......,,X%
+D:%XXXXXXXXXXXXXXXXXXXXXX##XXXXXXXXXXXXXXXXXXXXXX%
+D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

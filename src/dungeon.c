@@ -1027,6 +1027,9 @@ static void process_world(void)
 			/* Disturbing! */
 			disturb(0, 0);
 
+			/* Sound */
+			sound(MSG_TPLEVEL);
+
 			/* Determine the level */
 			if (p_ptr->depth)
 			{
@@ -1049,9 +1052,6 @@ static void process_world(void)
 				/* Leaving */
 				p_ptr->leaving = TRUE;
 			}
-
-			/* Sound */
-			sound(SOUND_TPLEVEL);
 		}
 	}
 }
@@ -1795,46 +1795,44 @@ static void process_player_aux(void)
 	/* Tracking a monster */
 	if (p_ptr->monster_race_idx)
 	{
-		monster_race *r_ptr;
-
-		/* Get the monster race */
-		r_ptr = &r_info[p_ptr->monster_race_idx];
+		/* Get the monster lore */
+		monster_lore *l_ptr = &l_list[p_ptr->monster_race_idx];
 
 		/* Check for change of any kind */
 		if ((old_monster_race_idx != p_ptr->monster_race_idx) ||
-		    (old_r_flags1 != r_ptr->r_flags1) ||
-		    (old_r_flags2 != r_ptr->r_flags2) ||
-		    (old_r_flags3 != r_ptr->r_flags3) ||
-		    (old_r_flags4 != r_ptr->r_flags4) ||
-		    (old_r_flags5 != r_ptr->r_flags5) ||
-		    (old_r_flags6 != r_ptr->r_flags6) ||
-		    (old_r_blows0 != r_ptr->r_blows[0]) ||
-		    (old_r_blows1 != r_ptr->r_blows[1]) ||
-		    (old_r_blows2 != r_ptr->r_blows[2]) ||
-		    (old_r_blows3 != r_ptr->r_blows[3]) ||
-		    (old_r_cast_inate != r_ptr->r_cast_inate) ||
-		    (old_r_cast_spell != r_ptr->r_cast_spell))
+		    (old_r_flags1 != l_ptr->r_flags1) ||
+		    (old_r_flags2 != l_ptr->r_flags2) ||
+		    (old_r_flags3 != l_ptr->r_flags3) ||
+		    (old_r_flags4 != l_ptr->r_flags4) ||
+		    (old_r_flags5 != l_ptr->r_flags5) ||
+		    (old_r_flags6 != l_ptr->r_flags6) ||
+		    (old_r_blows0 != l_ptr->r_blows[0]) ||
+		    (old_r_blows1 != l_ptr->r_blows[1]) ||
+		    (old_r_blows2 != l_ptr->r_blows[2]) ||
+		    (old_r_blows3 != l_ptr->r_blows[3]) ||
+		    (old_r_cast_inate != l_ptr->r_cast_inate) ||
+		    (old_r_cast_spell != l_ptr->r_cast_spell))
 		{
 			/* Memorize old race */
 			old_monster_race_idx = p_ptr->monster_race_idx;
 
 			/* Memorize flags */
-			old_r_flags1 = r_ptr->r_flags1;
-			old_r_flags2 = r_ptr->r_flags2;
-			old_r_flags3 = r_ptr->r_flags3;
-			old_r_flags4 = r_ptr->r_flags4;
-			old_r_flags5 = r_ptr->r_flags5;
-			old_r_flags6 = r_ptr->r_flags6;
+			old_r_flags1 = l_ptr->r_flags1;
+			old_r_flags2 = l_ptr->r_flags2;
+			old_r_flags3 = l_ptr->r_flags3;
+			old_r_flags4 = l_ptr->r_flags4;
+			old_r_flags5 = l_ptr->r_flags5;
+			old_r_flags6 = l_ptr->r_flags6;
 
 			/* Memorize blows */
-			old_r_blows0 = r_ptr->r_blows[0];
-			old_r_blows1 = r_ptr->r_blows[1];
-			old_r_blows2 = r_ptr->r_blows[2];
-			old_r_blows3 = r_ptr->r_blows[3];
+			old_r_blows0 = l_ptr->r_blows[0];
+			old_r_blows1 = l_ptr->r_blows[1];
+			old_r_blows2 = l_ptr->r_blows[2];
+			old_r_blows3 = l_ptr->r_blows[3];
 
 			/* Memorize castings */
-			old_r_cast_inate = r_ptr->r_cast_inate;
-			old_r_cast_spell = r_ptr->r_cast_spell;
+			old_r_cast_inate = l_ptr->r_cast_inate;
+			old_r_cast_spell = l_ptr->r_cast_spell;
 
 			/* Window stuff */
 			p_ptr->window |= (PW_MONSTER);
@@ -1869,18 +1867,7 @@ static void process_player(void)
 	int i;
 
 
-	/*** Apply energy ***/
-
-	/* Give the player some energy */
-	if (p_ptr->pspeed > 199) p_ptr->energy += 49;
-	else if (p_ptr->pspeed < 0) p_ptr->energy += 1;
-	else p_ptr->energy += extract_energy[p_ptr->pspeed];
-
-	/* No turn yet */
-	if (p_ptr->energy < 100) return;
-
-
-	/*** Check for interupts ***/
+	/*** Check for interrupts ***/
 
 	/* Complete resting */
 	if (p_ptr->resting < 0)
@@ -1942,8 +1929,8 @@ static void process_player(void)
 
 	/*** Handle actual user input ***/
 
-	/* Repeat until out of energy */
-	while (p_ptr->energy >= 100)
+	/* Repeat until energy is reduced */
+	do
 	{
 		/* Notice stuff (if needed) */
 		if (p_ptr->notice) notice_stuff();
@@ -2221,11 +2208,8 @@ static void process_player(void)
 				m_ptr->mflag &= ~(MFLAG_SHOW);
 			}
 		}
-
-
-		/* Handle "leaving" */
-		if (p_ptr->leaving) break;
 	}
+	while (!p_ptr->energy_use && !p_ptr->leaving);
 }
 
 
@@ -2238,6 +2222,9 @@ static void process_player(void)
  */
 static void dungeon(void)
 {
+	monster_type *m_ptr;
+	int i;
+
 	int py = p_ptr->py;
 	int px = p_ptr->px;
 
@@ -2432,21 +2419,51 @@ static void dungeon(void)
 	while (TRUE)
 	{
 		/* Hack -- Compact the monster list occasionally */
-		if (m_cnt + 32 > MAX_M_IDX) compact_monsters(64);
+		if (m_cnt + 32 > z_info->m_max) compact_monsters(64);
 
 		/* Hack -- Compress the monster list occasionally */
 		if (m_cnt + 32 < m_max) compact_monsters(0);
 
 
 		/* Hack -- Compact the object list occasionally */
-		if (o_cnt + 32 > MAX_O_IDX) compact_objects(64);
+		if (o_cnt + 32 > z_info->o_max) compact_objects(64);
 
 		/* Hack -- Compress the object list occasionally */
 		if (o_cnt + 32 < o_max) compact_objects(0);
 
 
-		/* Process the player */
-		process_player();
+		/*** Apply energy ***/
+
+		/* Give the player some energy */
+		p_ptr->energy += extract_energy[p_ptr->pspeed];
+
+		/* Give energy to all monsters */
+		for (i = m_max - 1; i >= 1; i--)
+		{
+			/* Access the monster */
+			m_ptr = &m_list[i];
+
+			/* Ignore "dead" monsters */
+			if (!m_ptr->r_idx) continue;
+
+			/* Give this monster some energy */
+			m_ptr->energy += extract_energy[m_ptr->mspeed];
+		}
+
+
+		/* Can the player move? */
+		while ((p_ptr->energy >= 100) && !p_ptr->leaving)
+		{
+			/* process monster with even more energy first */
+			process_monsters((byte)(p_ptr->energy + 1));
+
+			/* if still alive */
+			if (!p_ptr->leaving)
+			{
+				/* Process the player */
+				process_player();
+			}
+		}
 
 		/* Notice stuff */
 		if (p_ptr->notice) notice_stuff();
@@ -2471,7 +2488,7 @@ static void dungeon(void)
 
 
 		/* Process all of the monsters */
-		process_monsters();
+		process_monsters(100);
 
 		/* Notice stuff */
 		if (p_ptr->notice) notice_stuff();
@@ -2748,7 +2765,7 @@ void play_game(bool new_game)
 	p_ptr->window |= (PW_INVEN | PW_EQUIP | PW_PLAYER_0 | PW_PLAYER_1);
 
 	/* Window stuff */
-	p_ptr->window |= (PW_MONSTER);
+	p_ptr->window |= (PW_MONSTER | PW_MESSAGE);
 
 	/* Window stuff */
 	window_stuff();
@@ -2906,5 +2923,3 @@ void play_game(bool new_game)
 	/* Quit */
 	quit(NULL);
 }
-
-

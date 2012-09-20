@@ -176,19 +176,7 @@
 #endif
 
 
-#ifdef ANGBAND_LITE_MAC
-
-/*
- * Maximum number of windows
- */
-# define MAX_TERM_DATA 1
-
-#else /* ANGBAND_LITE_MAC */
-
-/*
- * Maximum number of windows
- */
-# define MAX_TERM_DATA 8
+#ifndef ANGBAND_LITE_MAC
 
 /*
  * Activate some special code
@@ -767,7 +755,7 @@ static void term_data_check_size(term_data *td)
 #else /* ANGBAND_LITE_MAC */
 
 	/* Handle graphics */
-	if (use_graphics && (td == &data[0]))
+	if (use_graphics && ((td == &data[0]) || (td == &data[6])))
 	{
 		td->t->always_pict = TRUE;
 	}
@@ -837,13 +825,18 @@ static void term_data_redraw(term_data *td)
  * Constants
  */
 
-#define kPictID					1001			/* Graf 'pict' resource */
+static int pictID = 1001;						/* 8x8 tiles; 16x16 tiles are 1002 */
+static int maskID = 1001;						/* 8x8 tiles; 16x16 tiles are 1003 */
 
-#define kGrafWidth				8				/* Graf Size (X) */
-#define kGrafHeight				8				/* Graf Size (Y) */
+static int grafWidth = 8;						/* Always equal to grafHeight */
+static int grafHeight = 8;						/* Either 8 or 16 */
 
-#define kPictCols				32				/* Number of Cols in Pict */
-#define kPictRows				32				/* Number of Rows in Pict */
+static int pictCols = 32;						/* Never changed */
+static int pictRows = 79;						/* 16x16 tiles are 70 rows */
+
+#define kMaxChannels 10
+
+static bool arg_transparency;					/* "Fake" arg for tile support */
 
 
 /*
@@ -860,9 +853,17 @@ typedef struct FrameRec FrameRec;
  */
 struct FrameRec
 {
-	GWorldPtr framePort;
-	PixMapHandle framePixHndl;
-	PixMapPtr framePix;
+	GWorldPtr 		framePort;
+	PixMapHandle 	framePixHndl;
+	PixMapPtr 		framePix;
+
+	GWorldPtr		maskPort;
+	PixMapHandle	maskPixHndl;
+	PixMapPtr		maskPix;
+
+	GWorldPtr		bufferPort;
+	PixMapHandle	bufferPixHndl;
+	PixMapPtr		bufferPix;
 };
 
 
@@ -884,6 +885,18 @@ static void BenSWLockFrame(FrameRec *srcFrameP)
 	HLockHi((Handle)pixMapH);
 	srcFrameP->framePixHndl = pixMapH;
 	srcFrameP->framePix = (PixMapPtr)StripAddress(*(Handle)pixMapH);
+
+	pixMapH = GetGWorldPixMap(srcFrameP->maskPort);
+	(void)LockPixels(pixMapH);
+	HLockHi((Handle)pixMapH);
+	srcFrameP->maskPixHndl = pixMapH;
+	srcFrameP->maskPix = (PixMapPtr)StripAddress(*(Handle)pixMapH);
+
+	pixMapH = GetGWorldPixMap(srcFrameP->bufferPort);
+	(void)LockPixels(pixMapH);
+	HLockHi((Handle)pixMapH);
+	srcFrameP->bufferPixHndl = pixMapH;
+	srcFrameP->bufferPix = (PixMapPtr)StripAddress(*(Handle)pixMapH);
 }
 
 
@@ -899,13 +912,32 @@ static void BenSWUnlockFrame(FrameRec *srcFrameP)
 	}
 
 	srcFrameP->framePix = NULL;
+
+	if (srcFrameP->maskPort != NULL)
+	{
+		HUnlock((Handle)srcFrameP->maskPixHndl);
+		UnlockPixels(srcFrameP->maskPixHndl);
+	}
+
+	srcFrameP->maskPix = NULL;
+
+	if (srcFrameP->bufferPort != NULL)
+	{
+		HUnlock((Handle)srcFrameP->bufferPixHndl);
+		UnlockPixels(srcFrameP->bufferPixHndl);
+	}
+
+	srcFrameP->bufferPix = NULL;
 }
 
 
 
 static OSErr BenSWCreateGWorldFromPict(
 	GWorldPtr *pictGWorld,
-	PicHandle pictH)
+	GWorldPtr *maskGWorld,
+	GWorldPtr *bufferGWorld,
+	PicHandle pictH,
+	PicHandle maskH)
 {
 	OSErr err;
 	GWorldPtr saveGWorld;
@@ -915,46 +947,129 @@ static OSErr BenSWCreateGWorldFromPict(
 	short depth;
 	GDHandle theGDH;
 
-	/* Reset */
-	*pictGWorld = NULL;
-
-	/* Get depth */
-	depth = data[0].pixelDepth;
-
-	/* Get GDH */
-	theGDH = data[0].theGDH;
-
-	/* Obtain size rectangle */
-	pictRect = (**pictH).picFrame;
-	OffsetRect(&pictRect, -pictRect.left, -pictRect.top);
-
-	/* Create a GWorld */
-	err = NewGWorld(&tempGWorld, depth, &pictRect, nil,
-					theGDH, noNewDevice);
-
-	/* Success */
-	if (err != noErr)
 	{
-		return (err);
+		tempGWorld = NULL;
+
+		/* Reset */
+		*pictGWorld = NULL;
+
+		/* Get depth */
+		depth = data[0].pixelDepth;
+
+		/* Get GDH */
+		theGDH = data[0].theGDH;
+
+		/* Obtain size rectangle */
+		pictRect = (**pictH).picFrame;
+		OffsetRect(&pictRect, -pictRect.left, -pictRect.top);
+
+		/* Create a GWorld */
+		err = NewGWorld(&tempGWorld, depth, &pictRect, nil,
+						theGDH, noNewDevice);
+
+		/* Success */
+		if (err != noErr)
+		{
+			return (err);
+		}
+
+		/* Save pointer */
+		*pictGWorld = tempGWorld;
+
+		/* Save GWorld */
+		GetGWorld(&saveGWorld, &saveGDevice);
+
+		/* Activate */
+		SetGWorld(tempGWorld, nil);
+
+		/* Dump the pict into the GWorld */
+		(void)LockPixels(GetGWorldPixMap(tempGWorld));
+		EraseRect(&pictRect);
+		DrawPicture(pictH, &pictRect);
+		UnlockPixels(GetGWorldPixMap(tempGWorld));
+
+		/* Restore GWorld */
+		SetGWorld(saveGWorld, saveGDevice);
 	}
 
-	/* Save pointer */
-	*pictGWorld = tempGWorld;
+	{
+		tempGWorld = NULL;
 
-	/* Save GWorld */
-	GetGWorld(&saveGWorld, &saveGDevice);
+		/* Reset */
+		*maskGWorld = NULL;
 
-	/* Activate */
-	SetGWorld(tempGWorld, nil);
+		/* Get depth */
+		depth = data[0].pixelDepth;
 
-	/* Dump the pict into the GWorld */
-	(void)LockPixels(GetGWorldPixMap(tempGWorld));
-	EraseRect(&pictRect);
-	DrawPicture(pictH, &pictRect);
-	UnlockPixels(GetGWorldPixMap(tempGWorld));
+		/* Get GDH */
+		theGDH = data[0].theGDH;
 
-	/* Restore GWorld */
-	SetGWorld(saveGWorld, saveGDevice);
+		/* Obtain size rectangle */
+		pictRect = (**maskH).picFrame;
+		OffsetRect(&pictRect, -pictRect.left, -pictRect.top);
+
+		/* Create a GWorld */
+		err = NewGWorld(&tempGWorld, depth, &pictRect, nil,
+						theGDH, noNewDevice);
+
+		/* Success */
+		if (err != noErr)
+		{
+			return (err);
+		}
+
+		/* Save pointer */
+		*maskGWorld = tempGWorld;
+
+		/* Save GWorld */
+		GetGWorld(&saveGWorld, &saveGDevice);
+
+		/* Activate */
+		SetGWorld(tempGWorld, nil);
+
+		/* Dump the mask into the GWorld */
+		(void)LockPixels(GetGWorldPixMap(tempGWorld));
+		EraseRect(&pictRect);
+		DrawPicture(maskH, &pictRect);
+		UnlockPixels(GetGWorldPixMap(tempGWorld));
+
+		/* Restore GWorld */
+		SetGWorld(saveGWorld, saveGDevice);
+	}
+
+	{
+		tempGWorld = NULL;
+
+		/* Reset */
+		*bufferGWorld = NULL;
+
+		/* Get depth */
+		depth = data[0].pixelDepth;
+
+		/* Get GDH */
+		theGDH = data[0].theGDH;
+
+		/* Obtain size rectangle */
+		pictRect.left = 0;
+		pictRect.right = SCREEN_WID * grafWidth;
+		pictRect.top = 0;
+		pictRect.bottom = SCREEN_HGT * grafHeight;
+
+		OffsetRect(&pictRect, -pictRect.left, -pictRect.top);
+
+		/* Create a GWorld */
+		err = NewGWorld(&tempGWorld, depth, &pictRect, nil,
+						theGDH, noNewDevice);
+
+		/* Success */
+		if (err != noErr)
+		{
+			return (err);
+		}
+
+		/* Save pointer */
+		*bufferGWorld = tempGWorld;
+	}
 
 	/* Success */
 	return (0);
@@ -969,8 +1084,11 @@ static errr globe_init(void)
 	OSErr err;
 
 	GWorldPtr tempPictGWorldP;
+	GWorldPtr tempPictMaskGWorldP;
+	GWorldPtr tempPictBufferGWorldP;
 
 	PicHandle newPictH;
+	PicHandle newMaskH;
 
 
 	/* Use window XXX XXX XXX */
@@ -978,19 +1096,25 @@ static errr globe_init(void)
 
 
 	/* Get the pict resource */
-	newPictH = GetPicture(kPictID);
+	newPictH = GetPicture(pictID);
+	newMaskH = GetPicture(maskID);
 
 	/* Analyze result */
-	err = (newPictH ? 0 : -1);
+	err = (newPictH ? 0 : -1) || (newMaskH ? 0 : -1);
 
 	/* Oops */
 	if (err == noErr)
 	{
 		/* Create GWorld */
-		err = BenSWCreateGWorldFromPict(&tempPictGWorldP, newPictH);
+		err = BenSWCreateGWorldFromPict(&tempPictGWorldP,
+		                                &tempPictMaskGWorldP,
+		                                &tempPictBufferGWorldP,
+		                                newPictH,
+		                                newMaskH);
 
 		/* Release resource */
 		ReleaseResource((Handle)newPictH);
+		ReleaseResource((Handle)newMaskH);
 
 		/* Error */
 		if (err == noErr)
@@ -1006,6 +1130,8 @@ static errr globe_init(void)
 			{
 				/* Save GWorld */
 				frameP->framePort = tempPictGWorldP;
+				frameP->maskPort = tempPictMaskGWorldP;
+				frameP->bufferPort = tempPictBufferGWorldP;
 
 				/* Lock it */
 				BenSWLockFrame(frameP);
@@ -1031,6 +1157,8 @@ static errr globe_nuke(void)
 
 		/* Dispose of the GWorld */
 		DisposeGWorld(frameP->framePort);
+		DisposeGWorld(frameP->maskPort);
+		DisposeGWorld(frameP->bufferPort);
 
 		/* Dispose of the memory */
 		DisposePtr((Ptr)frameP);
@@ -1237,8 +1365,37 @@ static errr Term_xtra_mac_react(void)
 		use_sound = arg_sound;
 	}
 
+	/* Handle transparency */
+	if (((td == &data[0]) || (td == &data[6])) && (use_transparency != arg_transparency))
+	{
+		globe_nuke();
+
+		if (globe_init() != 0)
+		{
+			plog("Cannot initialize graphics!");
+			arg_graphics = FALSE;
+			arg_transparency = FALSE;
+		}
+
+		/* Apply request */
+		use_transparency = arg_transparency;
+
+		/* Apply and Verify */
+		term_data_check_size(td);
+
+		/* Resize the window */
+		term_data_resize(td);
+
+		/* Reset visuals */
+#ifdef ZANGBAND
+		reset_visuals();
+#else /* ZANGBAND */
+		reset_visuals(TRUE);
+#endif /* ZANGBAND */
+	}
+
 	/* Handle graphics */
-	if ((td == &data[0]) && (use_graphics != arg_graphics))
+	if (((td == &data[0]) || (td == &data[6])) && (use_graphics != arg_graphics))
 	{
 		/* Initialize graphics */
 		if (!use_graphics && !frameP && (globe_init() != 0))
@@ -1330,7 +1487,48 @@ static errr Term_xtra_mac(int n, int v)
 				HLock(handle);
 
 				/* Play sound (wait for completion) */
-				SndPlay(nil, (SndListHandle)handle, false);
+				/*SndPlay(nil, (SndListHandle)handle, false);*/
+
+				{
+					static SndChannelPtr	mySndChannel[kMaxChannels];
+					static long				channelInit = 0;
+					long					kk;
+					OSErr					myErr = noErr;
+
+					if( !channelInit )
+					{
+						for( kk=0; kk < kMaxChannels; kk++ )
+						{
+						  /* Create sound channel for all sounds to play from */
+						  SndNewChannel( &mySndChannel[kk], sampledSynth, initMono, 0L );
+						}
+						channelInit = 1;
+					}
+
+					if( handle != nil )
+					{
+						SCStatus		status;
+						long			found;
+
+						for( kk=0,found=0; kk < kMaxChannels && !found; kk++ )
+						{
+							myErr = SndChannelStatus( mySndChannel[kk], sizeof(SCStatus), &status );
+							if( myErr == noErr && !status.scChannelBusy )
+							{
+								/* Play new sound ansynchronously */
+								SndPlay( mySndChannel[kk], (SndListHandle)handle, true );
+								found = 1;
+							}
+						}
+						/*
+						if( !found )
+						{
+
+							SndPlay( 0L, (SndListHandle)handle, false );
+						}
+						*/
+					}
+				}
 
 				/* Unlock and release */
 				HUnlock(handle);
@@ -1529,14 +1727,16 @@ static errr Term_text_mac(int x, int y, int n, byte a, const char *cp)
  *
  * Erase "n" characters starting at (x,y)
  */
+#ifdef USE_TRANSPARENCY
+static errr Term_pict_mac(int x, int y, int n, const byte *ap, const char *cp,
+                          const byte *tap, const char *tcp)
+#else /* USE_TRANSPARENCY */
 static errr Term_pict_mac(int x, int y, int n, const byte *ap, const char *cp)
+#endif /* USE_TRANSPARENCY */
 {
 	int i;
-
 	Rect r2;
-
 	term_data *td = (term_data*)(Term->data);
-
 
 	/* Destination rectangle */
 	r2.left = x * td->tile_wid + td->size_ow1;
@@ -1552,6 +1752,11 @@ static errr Term_pict_mac(int x, int y, int n, const byte *ap, const char *cp)
 		byte a = ap[i];
 		char c = cp[i];
 
+#ifdef USE_TRANSPARENCY
+		byte ta = tap[i];
+		char tc = tcp[i];
+#endif
+
 #ifdef ANGBAND_LITE_MAC
 
 		/* Nothing */
@@ -1559,31 +1764,60 @@ static errr Term_pict_mac(int x, int y, int n, const byte *ap, const char *cp)
 #else /* ANGBAND_LITE_MAC */
 
 		/* Graphics -- if Available and Needed */
-		if (use_graphics && (td == &data[0]) &&
+		if (use_graphics && ((td == &data[0]) || (td == &data[6])) &&
 		    ((byte)a & 0x80) && ((byte)c & 0x80))
 		{
-			int col, row;
+#ifdef USE_TRANSPARENCY
+			int t_col, t_row;
 
+			Rect r3;
+#endif /* USE_TRANSPARENCY */
+
+			int col, row;
 			Rect r1;
 
 			/* Row and Col */
-			row = ((byte)a & 0x7F) % kPictRows;
-			col = ((byte)c & 0x7F) % kPictCols;
+			row = ((byte)a & 0x7F) % pictRows;
+			col = ((byte)c & 0x7F) % pictCols;
 
 			/* Source rectangle */
-			r1.left = col * kGrafWidth;
-			r1.top = row * kGrafHeight;
-			r1.right = r1.left + kGrafWidth;
-			r1.bottom = r1.top + kGrafHeight;
+			r1.left = col * grafWidth;
+			r1.top = row * grafHeight;
+			r1.right = r1.left + grafWidth;
+			r1.bottom = r1.top + grafHeight;
+
+#ifdef USE_TRANSPARENCY
+			/* Row and Col */
+			t_row = ((byte)ta & 0x7F) % pictRows;
+			t_col = ((byte)tc & 0x7F) % pictCols;
+
+			/* Source rectangle */
+			r3.left = t_col * grafWidth;
+			r3.top = t_row * grafHeight;
+			r3.right = r3.left + grafWidth;
+			r3.bottom = r3.top + grafHeight;
+#endif /* USE_TRANSPARENCY */
 
 			/* Hardwire CopyBits */
 			BackColor(whiteColor);
 			ForeColor(blackColor);
 
+#ifdef USE_TRANSPARENCY
+			/* Draw the picture */
+			CopyBits((BitMap*)frameP->framePix,
+					 &(td->w->portBits),
+					 &r3, &r2, srcCopy, NULL);
+
+			CopyMask((BitMap*)frameP->framePix,
+			         (BitMap*)frameP->maskPix,
+			         &(td->w->portBits),
+			         &r1, &r1, &r2);
+#else /* USE_TRANSPARENCY */
 			/* Draw the picture */
 			CopyBits((BitMap*)frameP->framePix,
 					 &(td->w->portBits),
 					 &r1, &r2, srcCopy, NULL);
+#endif /* USE_TRANSPARENCY */
 
 			/* Restore colors */
 			BackColor(blackColor);
@@ -1931,7 +2165,7 @@ static void init_windows(void)
 	/*** Default values ***/
 
 	/* Initialize (backwards) */
-	for (i = MAX_TERM_DATA - 1; i >= 0; i--)
+	for (i = MAX_TERM_DATA; i-- > 0; )
 	{
 		int n;
 
@@ -2052,7 +2286,7 @@ static void init_windows(void)
 	td->mapped = TRUE;
 
 	/* Link (backwards, for stacking order) */
-	for (i = MAX_TERM_DATA - 1; i >= 0; i--)
+	for (i = MAX_TERM_DATA; i-- > 0; )
 	{
 		term_data_link(i);
 	}
@@ -2530,6 +2764,9 @@ static void init_menubar(void)
 	AppendMenu(m, "\p-");
 	AppendMenu(m, "\parg_fiddle");
 	AppendMenu(m, "\parg_wizard");
+	/* Next 2 lines for AB tile graphics */
+	AppendMenu(m, "\p-");
+	AppendMenu(m, "\parg_transparency");
 
 
 	/* Make the "TileWidth" menu */
@@ -2808,6 +3045,10 @@ static void setup_menus(void)
 	/* Item "arg_wizard" */
 	EnableItem(m, 5);
 	CheckItem(m, 5, arg_wizard);
+
+	/* Item "arg_transparency" */
+	EnableItem(m, 7);
+	CheckItem(m, 7, use_transparency);
 
 	/* Item "Hack" */
 	/* EnableItem(m, 9); */
@@ -3265,6 +3506,33 @@ static void menu(long mc)
 				case 5:
 				{
 					arg_wizard = !arg_wizard;
+					break;
+				}
+
+				case 7:
+				{
+					if (streq(ANGBAND_GRAF, "old"))
+					{
+						ANGBAND_GRAF = "new";
+						arg_transparency = true;
+						pictID = 1002;
+						maskID = 1003;
+						grafWidth = grafHeight = 16;
+						pictRows = 70;
+					}
+					else
+					{
+						ANGBAND_GRAF = "old";
+						arg_transparency = false;
+						pictID = 1001;
+						maskID = 1001;
+						grafWidth = grafHeight = 8;
+						pictRows = 79;
+					}
+
+					/* Hack -- Force redraw */
+					Term_key_push(KTRL('R'));
+
 					break;
 				}
 			}

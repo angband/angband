@@ -476,12 +476,17 @@ static void Term_xtra_dos_react(void)
 	 */
 	for (i = 0; i < 16; i++)
 	{
+		RGB color;
+
 		/* Extract desired values */
 		char rv = angband_color_table[i][1] >> 2;
 		char gv = angband_color_table[i][2] >> 2;
 		char bv = angband_color_table[i][3] >> 2;
 
-		RGB color = { rv,  gv,  bv  };
+		/* Set the colors */
+		color.r = rv;
+		color.g = gv;
+		color.b = bv;
 
 		set_color(COLOR_OFFSET + i, &color);
 	}
@@ -1120,7 +1125,7 @@ static errr Term_text_dos(int x, int y, int n, byte a, const char *cp)
 
 	int x1, y1;
 
-	char text[257];
+	unsigned char text[257];
 
 	/* Location */
 	x1 = x * td->tile_wid + td->x;

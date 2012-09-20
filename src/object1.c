@@ -582,7 +582,7 @@ void flavor_init(void)
 	Rand_quick = FALSE;
 
 	/* Analyze every object */
-	for (i = 1; i < MAX_K_IDX; i++)
+	for (i = 1; i < z_info->k_max; i++)
 	{
 		object_kind *k_ptr = &k_info[i];
 
@@ -599,6 +599,12 @@ void flavor_init(void)
 		k_ptr->easy_know = object_easy_know(i);
 	}
 }
+
+
+
+#ifdef ALLOW_BORG_GRAPHICS
+extern void init_translate_visuals(void);
+#endif /* ALLOW_BORG_GRAPHICS */
 
 
 /*
@@ -621,7 +627,7 @@ void reset_visuals(bool unused)
 
 
 	/* Extract default attr/char code for features */
-	for (i = 0; i < MAX_F_IDX; i++)
+	for (i = 0; i < z_info->f_max; i++)
 	{
 		feature_type *f_ptr = &f_info[i];
 
@@ -631,7 +637,7 @@ void reset_visuals(bool unused)
 	}
 
 	/* Extract default attr/char code for objects */
-	for (i = 0; i < MAX_K_IDX; i++)
+	for (i = 0; i < z_info->k_max; i++)
 	{
 		object_kind *k_ptr = &k_info[i];
 
@@ -641,7 +647,7 @@ void reset_visuals(bool unused)
 	}
 
 	/* Extract default attr/char code for monsters */
-	for (i = 0; i < MAX_R_IDX; i++)
+	for (i = 0; i < z_info->r_max; i++)
 	{
 		monster_race *r_ptr = &r_info[i];
 
@@ -672,8 +678,147 @@ void reset_visuals(bool unused)
 		/* Process "font.prf" */
 		process_pref_file("font.prf");
 	}
+
+#ifdef ALLOW_BORG_GRAPHICS
+	/* Initialize the translation table for the borg */
+	init_translate_visuals();
+#endif /* ALLOW_BORG_GRAPHICS */
 }
 
+
+/*
+ * Modes of object_flags_aux()
+ */
+#define OBJECT_FLAGS_FULL   1 /* Full info */
+#define OBJECT_FLAGS_KNOWN  2 /* Only flags known to the player */
+#define OBJECT_FLAGS_RANDOM 3 /* Only known random flags */
+
+
+/*
+ * Obtain the "flags" for an item
+ */
+static void object_flags_aux(int mode, object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3)
+{
+	object_kind *k_ptr;
+
+	if (mode != OBJECT_FLAGS_FULL)
+	{
+		/* Clear */
+		(*f1) = (*f2) = (*f3) = 0L;
+
+		/* Must be identified */
+		if (!object_known_p(o_ptr)) return;
+	}
+
+	if (mode != OBJECT_FLAGS_RANDOM)
+	{
+		k_ptr = &k_info[o_ptr->k_idx];
+
+		/* Base object */
+		(*f1) = k_ptr->flags1;
+		(*f2) = k_ptr->flags2;
+		(*f3) = k_ptr->flags3;
+
+		if (mode == OBJECT_FLAGS_FULL)
+		{
+			/* Artifact */
+			if (o_ptr->name1)
+			{
+				artifact_type *a_ptr = &a_info[o_ptr->name1];
+
+				(*f1) = a_ptr->flags1;
+				(*f2) = a_ptr->flags2;
+				(*f3) = a_ptr->flags3;
+			}
+		}
+
+		/* Ego-item */
+		if (o_ptr->name2)
+		{
+			ego_item_type *e_ptr = &e_info[o_ptr->name2];
+
+			(*f1) |= e_ptr->flags1;
+			(*f2) |= e_ptr->flags2;
+			(*f3) |= e_ptr->flags3;
+		}
+
+		if (mode == OBJECT_FLAGS_KNOWN)
+		{
+			/* Obvious artifact flags */
+			if (o_ptr->name1)
+			{
+				artifact_type *a_ptr = &a_info[o_ptr->name1];
+
+				/* Obvious flags (pval) */
+				(*f1) = (a_ptr->flags1 & (TR1_PVAL_MASK));
+
+				(*f3) = (a_ptr->flags3 & (TR3_IGNORE_MASK));
+			}
+		}
+	}
+
+	if (mode != OBJECT_FLAGS_FULL)
+	{
+		bool spoil = FALSE;
+
+#ifdef SPOIL_ARTIFACTS
+		/* Full knowledge for some artifacts */
+		if (artifact_p(o_ptr)) spoil = TRUE;
+#endif /* SPOIL_ARTIFACTS */
+
+#ifdef SPOIL_EGO_ITEMS
+		/* Full knowledge for some ego-items */
+		if (ego_item_p(o_ptr)) spoil = TRUE;
+#endif /* SPOIL_ARTIFACTS */
+
+		/* Need full knowledge or spoilers */
+		if (!spoil && !(o_ptr->ident & IDENT_MENTAL)) return;
+
+		/* Artifact */
+		if (o_ptr->name1)
+		{
+			artifact_type *a_ptr = &a_info[o_ptr->name1];
+
+			(*f1) = a_ptr->flags1;
+			(*f2) = a_ptr->flags2;
+			(*f3) = a_ptr->flags3;
+
+			if (mode == OBJECT_FLAGS_RANDOM)
+			{
+				/* Hack - remove 'ignore' flags */
+				(*f3) &= ~(TR3_IGNORE_MASK);
+			}
+		}
+
+		/* Full knowledge for *identified* objects */
+		if (!(o_ptr->ident & IDENT_MENTAL)) return;
+	}
+
+	/* Extra powers */
+	switch (o_ptr->xtra1)
+	{
+		case OBJECT_XTRA_TYPE_SUSTAIN:
+		{
+			/* OBJECT_XTRA_WHAT_SUSTAIN == 2 */
+			(*f2) |= (OBJECT_XTRA_BASE_SUSTAIN << o_ptr->xtra2);
+			break;
+		}
+
+		case OBJECT_XTRA_TYPE_RESIST:
+		{
+			/* OBJECT_XTRA_WHAT_RESIST == 2 */
+			(*f2) |= (OBJECT_XTRA_BASE_RESIST << o_ptr->xtra2);
+			break;
+		}
+
+		case OBJECT_XTRA_TYPE_POWER:
+		{
+			/* OBJECT_XTRA_WHAT_POWER == 3 */
+			(*f3) |= (OBJECT_XTRA_BASE_POWER << o_ptr->xtra2);
+			break;
+		}
+	}
+}
 
 
 
@@ -683,57 +828,7 @@ void reset_visuals(bool unused)
  */
 void object_flags(object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3)
 {
-	object_kind *k_ptr = &k_info[o_ptr->k_idx];
-
-	/* Base object */
-	(*f1) = k_ptr->flags1;
-	(*f2) = k_ptr->flags2;
-	(*f3) = k_ptr->flags3;
-
-	/* Artifact */
-	if (o_ptr->name1)
-	{
-		artifact_type *a_ptr = &a_info[o_ptr->name1];
-
-		(*f1) = a_ptr->flags1;
-		(*f2) = a_ptr->flags2;
-		(*f3) = a_ptr->flags3;
-	}
-
-	/* Ego-item */
-	if (o_ptr->name2)
-	{
-		ego_item_type *e_ptr = &e_info[o_ptr->name2];
-
-		(*f1) |= e_ptr->flags1;
-		(*f2) |= e_ptr->flags2;
-		(*f3) |= e_ptr->flags3;
-	}
-
-	/* Extra powers */
-	switch (o_ptr->xtra1)
-	{
-		case OBJECT_XTRA_TYPE_SUSTAIN:
-		{
-			/* OBJECT_XTRA_WHAT_SUSTAIN == 2 */
-			(*f2) |= (OBJECT_XTRA_BASE_SUSTAIN << o_ptr->xtra2);
-			break;
-		}
-
-		case OBJECT_XTRA_TYPE_RESIST:
-		{
-			/* OBJECT_XTRA_WHAT_RESIST == 2 */
-			(*f2) |= (OBJECT_XTRA_BASE_RESIST << o_ptr->xtra2);
-			break;
-		}
-
-		case OBJECT_XTRA_TYPE_POWER:
-		{
-			/* OBJECT_XTRA_WHAT_POWER == 3 */
-			(*f3) |= (OBJECT_XTRA_BASE_POWER << o_ptr->xtra2);
-			break;
-		}
-	}
+	object_flags_aux(OBJECT_FLAGS_FULL, o_ptr, f1, f2, f3);
 }
 
 
@@ -743,86 +838,8 @@ void object_flags(object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3)
  */
 void object_flags_known(object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3)
 {
-	bool spoil = FALSE;
-
-	object_kind *k_ptr = &k_info[o_ptr->k_idx];
-
-	/* Clear */
-	(*f1) = (*f2) = (*f3) = 0L;
-
-	/* Must be identified */
-	if (!object_known_p(o_ptr)) return;
-
-	/* Base object */
-	(*f1) = k_ptr->flags1;
-	(*f2) = k_ptr->flags2;
-	(*f3) = k_ptr->flags3;
-
-	/* Ego-item */
-	if (o_ptr->name2)
-	{
-		ego_item_type *e_ptr = &e_info[o_ptr->name2];
-
-		(*f1) |= e_ptr->flags1;
-		(*f2) |= e_ptr->flags2;
-		(*f3) |= e_ptr->flags3;
-	}
-
-#ifdef SPOIL_ARTIFACTS
-	/* Full knowledge for some artifacts */
-	if (artifact_p(o_ptr)) spoil = TRUE;
-#endif
-
-#ifdef SPOIL_EGO_ITEMS
-	/* Full knowledge for some ego-items */
-	if (ego_item_p(o_ptr)) spoil = TRUE;
-#endif
-
-	/* Need full knowledge or spoilers */
-	if (!spoil && !(o_ptr->ident & IDENT_MENTAL)) return;
-
-	/* Artifact */
-	if (o_ptr->name1)
-	{
-		artifact_type *a_ptr = &a_info[o_ptr->name1];
-
-		(*f1) = a_ptr->flags1;
-		(*f2) = a_ptr->flags2;
-		(*f3) = a_ptr->flags3;
-	}
-
-	/* Full knowledge for *identified* objects */
-	if (!(o_ptr->ident & IDENT_MENTAL)) return;
-
-	/* Extra powers */
-	switch (o_ptr->xtra1)
-	{
-		case OBJECT_XTRA_TYPE_SUSTAIN:
-		{
-			/* OBJECT_XTRA_WHAT_SUSTAIN == 2 */
-			(*f2) |= (OBJECT_XTRA_BASE_SUSTAIN << o_ptr->xtra2);
-			break;
-		}
-
-		case OBJECT_XTRA_TYPE_RESIST:
-		{
-			/* OBJECT_XTRA_WHAT_RESIST == 2 */
-			(*f2) |= (OBJECT_XTRA_BASE_RESIST << o_ptr->xtra2);
-			break;
-		}
-
-		case OBJECT_XTRA_TYPE_POWER:
-		{
-			/* OBJECT_XTRA_WHAT_POWER == 3 */
-			(*f3) |= (OBJECT_XTRA_BASE_POWER << o_ptr->xtra2);
-			break;
-		}
-	}
+	object_flags_aux(OBJECT_FLAGS_KNOWN, o_ptr, f1, f2, f3);
 }
-
-
-
-
 
 
 /*
@@ -925,14 +942,10 @@ void object_flags_known(object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3)
  * Note that the inscription will be clipped to keep the total description
  * under 79 chars (plus a terminator).
  *
- * This function does no bounds checking.  If object names are altered to
- * be longer than 79 characters, it will cause problems.  Of course, all
- * kinds of user interface code would break anyway, since they sometimes
- * assume that every object name can fit in an 80 (or even 77) character
- * display.  If SAFE_OBJECT_DESC is defined, this function will use a big
- * temporary array to create the description, and will then copy up to 79
- * characters from this array into the buffer, which will prevent crashes
- * (but not ugliness) if any object name uses more than 79 characters.
+ * This function uses a big temporary array to create the description,
+ * and then copies up to 79 characters from this array into the buffer,
+ * which will prevent crashes (but not ugliness) if any object name uses
+ * more than 79 characters.
  *
  * Note the use of "object_desc_int_macro()" and "object_desc_num_macro()"
  * and "object_desc_str_macro()" and "object_desc_chr_macro()" as extremely
@@ -1017,11 +1030,7 @@ void object_desc(char *buf, object_type *o_ptr, int pref, int mode)
 
 	char discount_buf[80];
 
-#ifdef SAFE_OBJECT_DESC
-
-	char tmp_buf[1024];
-
-#endif
+	char tmp_buf[128];
 
 	u32b f1, f2, f3;
 
@@ -1244,17 +1253,8 @@ void object_desc(char *buf, object_type *o_ptr, int pref, int mode)
 	}
 
 
-#ifdef SAFE_OBJECT_DESC
-
 	/* Start dumping the result */
 	t = b = tmp_buf;
-
-#else
-
-	/* Start dumping the result */
-	t = b = buf;
-
-#endif
 
 	/* Begin */
 	s = basenm;
@@ -1861,21 +1861,14 @@ void object_desc(char *buf, object_type *o_ptr, int pref, int mode)
 
 object_desc_done:
 
-#ifdef SAFE_OBJECT_DESC
-
-	/* Terminate */
-	tmp_buf[79] = '\0';
-
-	/* Reset */
-	t = buf;
-
-	/* Copy the string over */
-	object_desc_str_macro(t, tmp_buf);
-
-#endif /* SAFE_OBJECT_DESC */
-
 	/* Terminate */
 	*t = '\0';
+
+	/* Truncate the string to 80 chars */
+	tmp_buf[79] = '\0';
+
+	/* Copy the string over */
+	strcpy(buf, tmp_buf);
 }
 
 
@@ -1920,6 +1913,57 @@ void object_desc_store(char *buf, object_type *o_ptr, int pref, int mode)
 }
 
 
+static cptr act_description[ACT_MAX] =
+{
+	"illumination",
+	"magic mapping",
+	"clairvoyance",
+	"protection from evil",
+	"dispel evil (x5)",
+	"heal (500)",
+	"heal (1000)",
+	"cure wounds (4d7)",
+	"haste self (20+d20 turns)",
+	"haste self (75+d75 turns)",
+	"fire bolt (9d8)",
+	"fire ball (72)",
+	"large fire ball (120)",
+	"frost bolt (6d8)",
+	"frost ball (48)",
+	"frost ball (100)",
+	"frost bolt (12d8)",
+	"large frost ball (200)",
+	"acid bolt (5d8)",
+	"recharge item I",
+	"sleep II",
+	"lightning bolt (4d8)",
+	"large lightning ball (250)",
+	"genocide",
+	"mass genocide",
+	"identify",
+	"drain life (90)",
+	"drain life (120)",
+	"bizarre things",
+	"star ball (150)",
+	"berserk rage, bless, and resistance",
+	"phase door",
+	"door and trap destruction",
+	"detection",
+	"resistance (20+d20 turns)",
+	"teleport",
+	"restore life levels",
+	"magic missile (2d6)",
+	"a magical arrow (150)",
+	"remove fear and cure poison",
+	"stinking cloud (12)",
+	"stone to mud",
+	"teleport away",
+	"word of recall",
+	"confuse monster",
+	"probing",
+	"fire branding of bolts",
+};
+
 
 
 /*
@@ -1936,223 +1980,35 @@ cptr item_activation(object_type *o_ptr)
 	/* Require activation ability */
 	if (!(f3 & (TR3_ACTIVATE))) return (NULL);
 
-	/* Some artifacts can be activated */
-	switch (o_ptr->name1)
+	/* Artifact activations */
+	if (o_ptr->name1)
 	{
-		case ART_NARTHANC:
-		{
-			return "fire bolt (9d8) every 8+d8 turns";
-		}
-		case ART_NIMTHANC:
-		{
-			return "frost bolt (6d8) every 7+d7 turns";
-		}
-		case ART_DETHANC:
-		{
-			return "lightning bolt (4d8) every 6+d6 turns";
-		}
-		case ART_RILIA:
-		{
-			return "stinking cloud (12) every 4+d4 turns";
-		}
-		case ART_BELANGIL:
-		{
-			return "frost ball (48) every 5+d5 turns";
-		}
-		case ART_DAL:
-		{
-			return "remove fear and cure poison every 5 turns";
-		}
-		case ART_RINGIL:
-		{
-			return "frost ball (100) every 300 turns";
-		}
-		case ART_ANDURIL:
-		{
-			return "fire ball (72) every 400 turns";
-		}
-		case ART_FIRESTAR:
-		{
-			return "large fire ball (72) every 100 turns";
-		}
-		case ART_FEANOR:
-		{
-			return "haste self (20+d20 turns) every 200 turns";
-		}
-		case ART_THEODEN:
-		{
-			return "drain life (120) every 400 turns";
-		}
-		case ART_TURMIL:
-		{
-			return "drain life (90) every 70 turns";
-		}
-		case ART_CASPANION:
-		{
-			return "door and trap destruction every 10 turns";
-		}
-		case ART_AVAVIR:
-		{
-			return "word of recall every 200 turns";
-		}
-		case ART_TARATOL:
-		{
-			return "haste self (20+d20 turns) every 100+d100 turns";
-		}
-		case ART_ERIRIL:
-		{
-			return "identify every 10 turns";
-		}
-		case ART_OLORIN:
-		{
-			return "probing every 20 turns";
-		}
-		case ART_EONWE:
-		{
-			return "mass genocide every 1000 turns";
-		}
-		case ART_LOTHARANG:
-		{
-			return "cure wounds (4d7) every 3+d3 turns";
-		}
-		case ART_CUBRAGOL:
-		{
-			return "fire branding of bolts every 999 turns";
-		}
-		case ART_ARUNRUTH:
-		{
-			return "frost bolt (12d8) every 500 turns";
-		}
-		case ART_AEGLOS:
-		{
-			return "frost ball (100) every 500 turns";
-		}
-		case ART_OROME:
-		{
-			return "stone to mud every 5 turns";
-		}
-		case ART_SOULKEEPER:
-		{
-			return "heal (1000) every 888 turns";
-		}
-		case ART_BELEGENNON:
-		{
-			return "phase door every 2 turns";
-		}
-		case ART_CELEBORN:
-		{
-			return "genocide every 500 turns";
-		}
-		case ART_LUTHIEN:
-		{
-			return "restore life levels every 450 turns";
-		}
-		case ART_ULMO:
-		{
-			return "teleport away every 150 turns";
-		}
-		case ART_COLLUIN:
-		{
-			return "resistance (20+d20 turns) every 111 turns";
-		}
-		case ART_HOLCOLLETH:
-		{
-			return "Sleep II every 55 turns";
-		}
-		case ART_THINGOL:
-		{
-			return "recharge item I every 70 turns";
-		}
-		case ART_COLANNON:
-		{
-			return "teleport every 45 turns";
-		}
-		case ART_TOTILA:
-		{
-			return "confuse monster every 15 turns";
-		}
-		case ART_CAMMITHRIM:
-		{
-			return "magic missile (2d6) every 2 turns";
-		}
-		case ART_PAURHACH:
-		{
-			return "fire bolt (9d8) every 8+d8 turns";
-		}
-		case ART_PAURNIMMEN:
-		{
-			return "frost bolt (6d8) every 7+d7 turns";
-		}
-		case ART_PAURAEGEN:
-		{
-			return "lightning bolt (4d8) every 6+d6 turns";
-		}
-		case ART_PAURNEN:
-		{
-			return "acid bolt (5d8) every 5+d5 turns";
-		}
-		case ART_FINGOLFIN:
-		{
-			return "a magical arrow (150) every 90+d90 turns";
-		}
-		case ART_HOLHENNETH:
-		{
-			return "detection every 55+d55 turns";
-		}
-		case ART_GONDOR:
-		{
-			return "heal (500) every 500 turns";
-		}
-		case ART_RAZORBACK:
-		{
-			return "star ball (150) every 1000 turns";
-		}
-		case ART_BLADETURNER:
-		{
-			return "berserk rage, bless, and resistance every 400 turns";
-		}
-		case ART_GALADRIEL:
-		{
-			return "illumination every 10+d10 turns";
-		}
-		case ART_ELENDIL:
-		{
-			return "magic mapping every 50+d50 turns";
-		}
-		case ART_THRAIN:
-		{
-			return "clairvoyance every 100+d100 turns";
-		}
-		case ART_INGWE:
-		{
-			return "dispel evil (x5) every 300+d300 turns";
-		}
-		case ART_CARLAMMAS:
-		{
-			return "protection from evil every 225+d225 turns";
-		}
-		case ART_TULKAS:
-		{
-			return "haste self (75+d75 turns) every 150+d150 turns";
-		}
-		case ART_NARYA:
-		{
-			return "large fire ball (120) every 225+d225 turns";
-		}
-		case ART_NENYA:
-		{
-			return "large frost ball (200) every 325+d325 turns";
-		}
-		case ART_VILYA:
-		{
-			return "large lightning ball (250) every 425+d425 turns";
-		}
-		case ART_POWER:
-		{
-			return "bizarre things every 450+d450 turns";
-		}
-	}
+		artifact_type *a_ptr = &a_info[o_ptr->name1];
 
+#if 0
+		/*
+		 * ToDo: Put the recharge time back into the
+		 * artifact description.
+		 */
+		char turns[32];
+
+		/* Format the number of turns */
+		if (a_ptr->time && a_ptr->randtime)
+			sprintf(turns, " every %d+d%d turns",
+			        a_ptr->time, a_ptr->randtime);
+		else if (a_ptr->time)
+			sprintf(turns, " every %d turns", a_ptr->time);
+		else if (a_ptr->randtime)
+			sprintf(turns, " every d%d turns", a_ptr->randtime);
+#endif
+
+		/* Paranoia */
+		if (a_ptr->activation >= ACT_MAX)
+			return (NULL);
+
+		/* Some artifacts can be activated */
+		return (act_description[a_ptr->activation]);
+	}
 
 	/* Require dragon scale mail */
 	if (o_ptr->tval != TV_DRAG_ARMOR) return (NULL);
@@ -2221,19 +2077,26 @@ cptr item_activation(object_type *o_ptr)
 
 
 /*
- * Describe a "fully identified" item
+ * Fill an array with a description of the item flags.
+ *
+ * "info" must point to a cptr array that is big enough to store all
+ * descriptions.
+ *
+ * Returns the number of lines.
+ *
+ * ToDo: Check the len of the array to prevent buffer overflows
+ * (yes, this is paranoid).
+ *
+ * ToDo: Allow dynamic generation of strings.
  */
-bool identify_fully_aux(object_type *o_ptr)
+bool identify_fully_aux2(object_type *o_ptr, int mode, cptr *info, int len)
 {
-	int i = 0, j, k;
+	int i = 0;
 
 	u32b f1, f2, f3;
 
-	cptr info[128];
-
-
-	/* Extract the flags */
-	object_flags(o_ptr, &f1, &f2, &f3);
+	/* Extract the "known" and "random" flags */
+	object_flags_aux(mode, o_ptr, &f1, &f2, &f3);
 
 
 	/* Mega-Hack -- describe activation */
@@ -2564,7 +2427,7 @@ bool identify_fully_aux(object_type *o_ptr)
 		info[i++] = "It has been blessed by the gods.";
 	}
 
-	if (cursed_p(o_ptr))
+	if (object_known_p(o_ptr) && cursed_p(o_ptr))
 	{
 		if (f3 & (TR3_PERMA_CURSE))
 		{
@@ -2597,6 +2460,41 @@ bool identify_fully_aux(object_type *o_ptr)
 		info[i++] = "It cannot be harmed by cold.";
 	}
 
+	/* Unknown extra powers (ego-item with random extras or artifact) */
+	if (object_known_p(o_ptr) &&
+		(!(o_ptr->ident & IDENT_MENTAL)) &&
+	    ((o_ptr->xtra1) || artifact_p(o_ptr)))
+	{
+		info[i++] = "It has hidden powers.";
+	}
+
+
+	/* Return the number of lines */
+	return (i);
+}
+
+
+/*
+ * Describe an item's random attributes for "character dumps"
+ */
+int identify_random_gen(object_type *o_ptr, cptr *info, int len)
+{
+	/* Fill the list of descriptions and return the count */
+	return identify_fully_aux2(o_ptr, OBJECT_FLAGS_RANDOM, info, len);
+}
+
+
+/*
+ * Describe an item
+ */
+bool identify_fully_aux(object_type *o_ptr)
+{
+	int i, j, k;
+	cptr info[128];
+
+
+	/* Fill the list of descriptions */
+	i = identify_fully_aux2(o_ptr, OBJECT_FLAGS_KNOWN, info, 128);
 
 	/* No special effects */
 	if (!i) return (FALSE);
@@ -2991,7 +2889,7 @@ void display_inven(void)
 
 	object_type *o_ptr;
 
-	byte attr = TERM_WHITE;
+	byte attr;
 
 	char tmp_val[80];
 
@@ -3073,7 +2971,7 @@ void display_equip(void)
 {
 	register int i, n;
 	object_type *o_ptr;
-	byte attr = TERM_WHITE;
+	byte attr;
 
 	char tmp_val[80];
 
@@ -3466,7 +3364,7 @@ void show_floor(int *floor_list, int floor_num)
 		prt("", j + 1, col ? col - 2 : col);
 
 		/* Prepare an index --(-- */
-		sprintf(tmp_val, "%c)", index_to_label(j));
+		sprintf(tmp_val, "%c)", index_to_label(out_index[j]));
 
 		/* Clear the line with the (possibly indented) index */
 		put_str(tmp_val, j + 1, col);
@@ -3767,7 +3665,7 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 	int py = p_ptr->py;
 	int px = p_ptr->px;
 
-	char which = ' ';
+	char which;
 
 	int i, j, k;
 
@@ -3793,7 +3691,7 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 	char out_val[160];
 
 	int floor_list[24];
-	int floor_num = 0;
+	int floor_num;
 
 
 #ifdef ALLOW_REPEAT
@@ -4210,7 +4108,7 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 					break;
 				}
 
-#endif ALLOW_EASY_FLOOR
+#endif /* ALLOW_EASY_FLOOR */
 
 				/* Check each legal object */
 				for (i = 0; i < floor_num; ++i)

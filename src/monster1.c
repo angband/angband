@@ -41,7 +41,7 @@ static bool know_armour(int r_idx)
 
 	s32b level = r_ptr->level;
 
-	s32b kills = r_ptr->r_tkills;
+	s32b kills = l_list[r_idx].r_tkills;
 
 	/* Normal monsters */
 	if (kills > 304 / (4 + level)) return (TRUE);
@@ -68,7 +68,7 @@ static bool know_damage(int r_idx, int i)
 
 	s32b level = r_ptr->level;
 
-	s32b a = r_ptr->r_blows[i];
+	s32b a = l_list[r_idx].r_blows[i];
 
 	s32b d1 = r_ptr->blow[i].d_dice;
 	s32b d2 = r_ptr->blow[i].d_side;
@@ -104,6 +104,7 @@ static bool know_damage(int r_idx, int i)
 static void roff_aux(int r_idx)
 {
 	monster_race *r_ptr;
+	monster_lore *l_ptr;
 
 	bool old = FALSE;
 	bool sin = FALSE;
@@ -124,11 +125,12 @@ static void roff_aux(int r_idx)
 	u32b flags5;
 	u32b flags6;
 
-	int vn = 0;
+	int vn;
 	cptr vp[64];
 
 	monster_race save_mem;
 
+	long i, j;
 
 
 #if 0
@@ -150,6 +152,7 @@ static void roff_aux(int r_idx)
 
 	/* Get the race and lore */
 	r_ptr = &r_info[r_idx];
+	l_ptr = &l_list[r_idx];
 
 
 	/* Cheat -- know everything */
@@ -161,10 +164,10 @@ static void roff_aux(int r_idx)
 		COPY(&save_mem, r_ptr, monster_race);
 
 		/* Hack -- Maximal kills */
-		r_ptr->r_tkills = MAX_SHORT;
+		l_ptr->r_tkills = MAX_SHORT;
 
 		/* Hack -- Maximal info */
-		r_ptr->r_wake = r_ptr->r_ignore = MAX_UCHAR;
+		l_ptr->r_wake = l_ptr->r_ignore = MAX_UCHAR;
 
 		/* Observe "maximal" attacks */
 		for (m = 0; m < 4; m++)
@@ -173,12 +176,12 @@ static void roff_aux(int r_idx)
 			if (r_ptr->blow[m].effect || r_ptr->blow[m].method)
 			{
 				/* Hack -- maximal observations */
-				r_ptr->r_blows[m] = MAX_UCHAR;
+				l_ptr->r_blows[m] = MAX_UCHAR;
 			}
 		}
 
 		/* Hack -- maximal drops */
-		r_ptr->r_drop_gold = r_ptr->r_drop_item =
+		l_ptr->r_drop_gold = l_ptr->r_drop_item =
 		(((r_ptr->flags1 & (RF1_DROP_4D2)) ? 8 : 0) +
 		 ((r_ptr->flags1 & (RF1_DROP_3D2)) ? 6 : 0) +
 		 ((r_ptr->flags1 & (RF1_DROP_2D2)) ? 4 : 0) +
@@ -187,20 +190,20 @@ static void roff_aux(int r_idx)
 		 ((r_ptr->flags1 & (RF1_DROP_60))  ? 1 : 0));
 
 		/* Hack -- but only "valid" drops */
-		if (r_ptr->flags1 & (RF1_ONLY_GOLD)) r_ptr->r_drop_item = 0;
-		if (r_ptr->flags1 & (RF1_ONLY_ITEM)) r_ptr->r_drop_gold = 0;
+		if (r_ptr->flags1 & (RF1_ONLY_GOLD)) l_ptr->r_drop_item = 0;
+		if (r_ptr->flags1 & (RF1_ONLY_ITEM)) l_ptr->r_drop_gold = 0;
 
 		/* Hack -- observe many spells */
-		r_ptr->r_cast_inate = MAX_UCHAR;
-		r_ptr->r_cast_spell = MAX_UCHAR;
+		l_ptr->r_cast_inate = MAX_UCHAR;
+		l_ptr->r_cast_spell = MAX_UCHAR;
 
 		/* Hack -- know all the flags */
-		r_ptr->r_flags1 = r_ptr->flags1;
-		r_ptr->r_flags2 = r_ptr->flags2;
-		r_ptr->r_flags3 = r_ptr->flags3;
-		r_ptr->r_flags4 = r_ptr->flags4;
-		r_ptr->r_flags5 = r_ptr->flags5;
-		r_ptr->r_flags6 = r_ptr->flags6;
+		l_ptr->r_flags1 = r_ptr->flags1;
+		l_ptr->r_flags2 = r_ptr->flags2;
+		l_ptr->r_flags3 = r_ptr->flags3;
+		l_ptr->r_flags4 = r_ptr->flags4;
+		l_ptr->r_flags5 = r_ptr->flags5;
+		l_ptr->r_flags6 = r_ptr->flags6;
 	}
 
 
@@ -210,12 +213,12 @@ static void roff_aux(int r_idx)
 
 
 	/* Obtain a copy of the "known" flags */
-	flags1 = (r_ptr->flags1 & r_ptr->r_flags1);
-	flags2 = (r_ptr->flags2 & r_ptr->r_flags2);
-	flags3 = (r_ptr->flags3 & r_ptr->r_flags3);
-	flags4 = (r_ptr->flags4 & r_ptr->r_flags4);
-	flags5 = (r_ptr->flags5 & r_ptr->r_flags5);
-	flags6 = (r_ptr->flags6 & r_ptr->r_flags6);
+	flags1 = (r_ptr->flags1 & l_ptr->r_flags1);
+	flags2 = (r_ptr->flags2 & l_ptr->r_flags2);
+	flags3 = (r_ptr->flags3 & l_ptr->r_flags3);
+	flags4 = (r_ptr->flags4 & l_ptr->r_flags4);
+	flags5 = (r_ptr->flags5 & l_ptr->r_flags5);
+	flags6 = (r_ptr->flags6 & l_ptr->r_flags6);
 
 
 	/* Assume some "obvious" flags */
@@ -231,7 +234,7 @@ static void roff_aux(int r_idx)
 	if (r_ptr->flags1 & (RF1_ESCORTS)) flags1 |= (RF1_ESCORTS);
 
 	/* Killing a monster reveals some properties */
-	if (r_ptr->r_tkills)
+	if (l_ptr->r_tkills)
 	{
 		/* Know "race" flags */
 		if (r_ptr->flags3 & (RF3_ORC)) flags3 |= (RF3_ORC);
@@ -262,24 +265,24 @@ static void roff_aux(int r_idx)
 		bool dead = (r_ptr->max_num == 0) ? TRUE : FALSE;
 
 		/* We've been killed... */
-		if (r_ptr->r_deaths)
+		if (l_ptr->r_deaths)
 		{
 			/* Killed ancestors */
 			roff(format("%^s has slain %d of your ancestors",
-			            wd_he[msex], r_ptr->r_deaths));
+			            wd_he[msex], l_ptr->r_deaths));
 
 			/* But we've also killed it */
 			if (dead)
 			{
 				roff(format(", but you have avenged %s!  ",
-				            plural(r_ptr->r_deaths, "him", "them")));
+				            plural(l_ptr->r_deaths, "him", "them")));
 			}
 
 			/* Unavenged (ever) */
 			else
 			{
 				roff(format(", who %s unavenged.  ",
-				            plural(r_ptr->r_deaths, "remains", "remain")));
+				            plural(l_ptr->r_deaths, "remains", "remain")));
 			}
 		}
 
@@ -291,24 +294,24 @@ static void roff_aux(int r_idx)
 	}
 
 	/* Not unique, but killed us */
-	else if (r_ptr->r_deaths)
+	else if (l_ptr->r_deaths)
 	{
 		/* Dead ancestors */
 		roff(format("%d of your ancestors %s been killed by this creature, ",
-		            r_ptr->r_deaths, plural(r_ptr->r_deaths, "has", "have")));
+		            l_ptr->r_deaths, plural(l_ptr->r_deaths, "has", "have")));
 
 		/* Some kills this life */
-		if (r_ptr->r_pkills)
+		if (l_ptr->r_pkills)
 		{
 			roff(format("and you have exterminated at least %d of the creatures.  ",
-			            r_ptr->r_pkills));
+			            l_ptr->r_pkills));
 		}
 
 		/* Some kills past lives */
-		else if (r_ptr->r_tkills)
+		else if (l_ptr->r_tkills)
 		{
 			roff(format("and %s have exterminated at least %d of the creatures.  ",
-			            "your ancestors", r_ptr->r_tkills));
+			            "your ancestors", l_ptr->r_tkills));
 		}
 
 		/* No kills */
@@ -323,17 +326,17 @@ static void roff_aux(int r_idx)
 	else
 	{
 		/* Killed some this life */
-		if (r_ptr->r_pkills)
+		if (l_ptr->r_pkills)
 		{
 			roff(format("You have killed at least %d of these creatures.  ",
-			            r_ptr->r_pkills));
+			            l_ptr->r_pkills));
 		}
 
 		/* Killed some last life */
-		else if (r_ptr->r_tkills)
+		else if (l_ptr->r_tkills)
 		{
 			roff(format("Your ancestors have killed at least %d of these creatures.  ",
-			            r_ptr->r_tkills));
+			            l_ptr->r_tkills));
 		}
 
 		/* Killed none */
@@ -362,7 +365,7 @@ static void roff_aux(int r_idx)
 		/* Use file */
 		if (fd >= 0)
 		{
-			huge pos;
+			long pos;
 
 			/* Starting position */
 			pos = r_ptr->text;
@@ -378,7 +381,7 @@ static void roff_aux(int r_idx)
 			len = r_head->text_size - r_ptr->text;
 
 			/* Actual length */
-			for (i = r_idx+1; i < MAX_R_IDX; i++)
+			for (i = r_idx+1; i < z_info->r_max; i++)
 			{
 				/* Actual length */
 				if (r_info[i].text > r_ptr->text)
@@ -428,7 +431,7 @@ static void roff_aux(int r_idx)
 		roff(format("%^s lives in the town", wd_he[msex]));
 		old = TRUE;
 	}
-	else if (r_ptr->r_tkills)
+	else if (l_ptr->r_tkills)
 	{
 		if (depth_in_feet)
 		{
@@ -444,62 +447,58 @@ static void roff_aux(int r_idx)
 	}
 
 
-	/* Describe movement */
-	if (TRUE)
+	/* Introduction */
+	if (old)
 	{
-		/* Introduction */
-		if (old)
+		roff(", and ");
+	}
+	else
+	{
+		roff(format("%^s ", wd_he[msex]));
+		old = TRUE;
+	}
+	roff("moves");
+
+	/* Random-ness */
+	if ((flags1 & (RF1_RAND_50)) || (flags1 & (RF1_RAND_25)))
+	{
+		/* Adverb */
+		if ((flags1 & (RF1_RAND_50)) && (flags1 & (RF1_RAND_25)))
 		{
-			roff(", and ");
+			roff(" extremely");
 		}
-		else
+		else if (flags1 & (RF1_RAND_50))
 		{
-			roff(format("%^s ", wd_he[msex]));
-			old = TRUE;
+			roff(" somewhat");
 		}
-		roff("moves");
-
-		/* Random-ness */
-		if ((flags1 & (RF1_RAND_50)) || (flags1 & (RF1_RAND_25)))
+		else if (flags1 & (RF1_RAND_25))
 		{
-			/* Adverb */
-			if ((flags1 & (RF1_RAND_50)) && (flags1 & (RF1_RAND_25)))
-			{
-				roff(" extremely");
-			}
-			else if (flags1 & (RF1_RAND_50))
-			{
-				roff(" somewhat");
-			}
-			else if (flags1 & (RF1_RAND_25))
-			{
-				roff(" a bit");
-			}
-
-			/* Adjective */
-			roff(" erratically");
-
-			/* Hack -- Occasional conjunction */
-			if (r_ptr->speed != 110) roff(", and");
+			roff(" a bit");
 		}
 
-		/* Speed */
-		if (r_ptr->speed > 110)
-		{
-			if (r_ptr->speed > 130) roff(" incredibly");
-			else if (r_ptr->speed > 120) roff(" very");
-			roff(" quickly");
-		}
-		else if (r_ptr->speed < 110)
-		{
-			if (r_ptr->speed < 90) roff(" incredibly");
-			else if (r_ptr->speed < 100) roff(" very");
-			roff(" slowly");
-		}
-		else
-		{
-			roff(" at normal speed");
-		}
+		/* Adjective */
+		roff(" erratically");
+
+		/* Hack -- Occasional conjunction */
+		if (r_ptr->speed != 110) roff(", and");
+	}
+
+	/* Speed */
+	if (r_ptr->speed > 110)
+	{
+		if (r_ptr->speed > 130) roff(" incredibly");
+		else if (r_ptr->speed > 120) roff(" very");
+		roff(" quickly");
+	}
+	else if (r_ptr->speed < 110)
+	{
+		if (r_ptr->speed < 90) roff(" incredibly");
+		else if (r_ptr->speed < 100) roff(" very");
+		roff(" slowly");
+	}
+	else
+	{
+		roff(" at normal speed");
 	}
 
 	/* The code above includes "attack speed" */
@@ -529,7 +528,7 @@ static void roff_aux(int r_idx)
 
 
 	/* Describe experience if known */
-	if (r_ptr->r_tkills)
+	if (l_ptr->r_tkills)
 	{
 		/* Introduction */
 		if (flags1 & (RF1_UNIQUE))
@@ -554,41 +553,35 @@ static void roff_aux(int r_idx)
 		else if (flags3 & (RF3_ORC)) roff(" orc");
 		else roff(" creature");
 
-		/* Group some variables */
-		if (TRUE)
-		{
-			long i, j;
+		/* calculate the integer exp part */
+		i = (long)r_ptr->mexp * r_ptr->level / p_ptr->lev;
 
-			/* calculate the integer exp part */
-			i = (long)r_ptr->mexp * r_ptr->level / p_ptr->lev;
+		/* calculate the fractional exp part scaled by 100, */
+		/* must use long arithmetic to avoid overflow  */
+		j = ((((long)r_ptr->mexp * r_ptr->level % p_ptr->lev) *
+			  (long)1000 / p_ptr->lev + 5) / 10);
 
-			/* calculate the fractional exp part scaled by 100, */
-			/* must use long arithmetic to avoid overflow  */
-			j = ((((long)r_ptr->mexp * r_ptr->level % p_ptr->lev) *
-			      (long)1000 / p_ptr->lev + 5) / 10);
+		/* Mention the experience */
+		roff(format(" is worth %ld.%02ld point%s",
+			        (long)i, (long)j,
+			        (((i == 1) && (j == 0)) ? "" : "s")));
 
-			/* Mention the experience */
-			roff(format(" is worth %ld.%02ld point%s",
-			            (long)i, (long)j,
-			            (((i == 1) && (j == 0)) ? "" : "s")));
+		/* Take account of annoying English */
+		p = "th";
+		i = p_ptr->lev % 10;
+		if ((p_ptr->lev / 10) == 1) /* nothing */;
+		else if (i == 1) p = "st";
+		else if (i == 2) p = "nd";
+		else if (i == 3) p = "rd";
 
-			/* Take account of annoying English */
-			p = "th";
-			i = p_ptr->lev % 10;
-			if ((p_ptr->lev / 10) == 1) /* nothing */;
-			else if (i == 1) p = "st";
-			else if (i == 2) p = "nd";
-			else if (i == 3) p = "rd";
+		/* Take account of "leading vowels" in numbers */
+		q = "";
+		i = p_ptr->lev;
+		if ((i == 8) || (i == 11) || (i == 18)) q = "n";
 
-			/* Take account of "leading vowels" in numbers */
-			q = "";
-			i = p_ptr->lev;
-			if ((i == 8) || (i == 11) || (i == 18)) q = "n";
-
-			/* Mention the dependance on the player's level */
-			roff(format(" for a%s %lu%s level character.  ",
-			            q, (long)i, p));
-		}
+		/* Mention the dependance on the player's level */
+		roff(format(" for a%s %lu%s level character.  ",
+			        q, (long)i, p));
 	}
 
 
@@ -798,7 +791,7 @@ static void roff_aux(int r_idx)
 	if (breath || magic)
 	{
 		/* Total casting */
-		m = r_ptr->r_cast_inate + r_ptr->r_cast_spell;
+		m = l_ptr->r_cast_inate + l_ptr->r_cast_spell;
 
 		/* Average frequency */
 		n = (r_ptr->freq_inate + r_ptr->freq_spell) / 2;
@@ -1029,9 +1022,9 @@ static void roff_aux(int r_idx)
 
 
 	/* Do we know how aware it is? */
-	if ((((int)r_ptr->r_wake * (int)r_ptr->r_wake) > r_ptr->sleep) ||
-	    (r_ptr->r_ignore == MAX_UCHAR) ||
-	    ((r_ptr->sleep == 0) && (r_ptr->r_tkills >= 10)))
+	if ((((int)l_ptr->r_wake * (int)l_ptr->r_wake) > r_ptr->sleep) ||
+	    (l_ptr->r_ignore == MAX_UCHAR) ||
+	    ((r_ptr->sleep == 0) && (l_ptr->r_tkills >= 10)))
 	{
 		cptr act;
 
@@ -1086,7 +1079,7 @@ static void roff_aux(int r_idx)
 
 
 	/* Drops gold and/or items */
-	if (r_ptr->r_drop_gold || r_ptr->r_drop_item)
+	if (l_ptr->r_drop_gold || l_ptr->r_drop_item)
 	{
 		/* No "n" needed */
 		sin = FALSE;
@@ -1095,7 +1088,7 @@ static void roff_aux(int r_idx)
 		roff(format("%^s may carry", wd_he[msex]));
 
 		/* Count maximum drop */
-		n = MAX(r_ptr->r_drop_gold, r_ptr->r_drop_item);
+		n = MAX(l_ptr->r_drop_gold, l_ptr->r_drop_item);
 
 		/* One drop (may need an "n") */
 		if (n == 1)
@@ -1138,7 +1131,7 @@ static void roff_aux(int r_idx)
 
 
 		/* Objects */
-		if (r_ptr->r_drop_item)
+		if (l_ptr->r_drop_item)
 		{
 			/* Handle singular "an" */
 			if (sin) roff("n");
@@ -1154,7 +1147,7 @@ static void roff_aux(int r_idx)
 		}
 
 		/* Treasures */
-		if (r_ptr->r_drop_gold)
+		if (l_ptr->r_drop_gold)
 		{
 			/* Cancel prefix */
 			if (!p) sin = FALSE;
@@ -1181,7 +1174,7 @@ static void roff_aux(int r_idx)
 		if (!r_ptr->blow[m].method) continue;
 
 		/* Count known attacks */
-		if (r_ptr->r_blows[m]) n++;
+		if (l_ptr->r_blows[m]) n++;
 	}
 
 	/* Examine (and count) the actual attacks */
@@ -1193,7 +1186,7 @@ static void roff_aux(int r_idx)
 		if (!r_ptr->blow[m].method) continue;
 
 		/* Skip unknown attacks */
-		if (!r_ptr->r_blows[m]) continue;
+		if (!l_ptr->r_blows[m]) continue;
 
 
 		/* Extract the attack info */

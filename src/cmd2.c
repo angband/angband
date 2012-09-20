@@ -37,7 +37,7 @@ void do_cmd_go_up(void)
 	p_ptr->energy_use = 100;
 
 	/* Success */
-	msg_print("You enter a maze of up staircases.");
+	message(MSG_STAIRS, 0, "You enter a maze of up staircases.");
 
 	/* Create a way back */
 	p_ptr->create_down_stair = TRUE;
@@ -69,7 +69,7 @@ void do_cmd_go_down(void)
 	p_ptr->energy_use = 100;
 
 	/* Success */
-	msg_print("You enter a maze of down staircases.");
+	message(MSG_STAIRS, 0, "You enter a maze of down staircases.");
 
 	/* Create a way back */
 	p_ptr->create_up_stair = TRUE;
@@ -384,7 +384,7 @@ static bool do_cmd_open_chest(int y, int x, s16b o_idx)
 			/* We may continue repeating */
 			more = TRUE;
 			if (flush_failure) flush();
-			msg_print("You failed to pick the lock.");
+			message(MSG_LOCKPICK_FAIL, 0, "You failed to pick the lock.");
 		}
 	}
 
@@ -602,7 +602,7 @@ static bool do_cmd_open_test(int y, int x)
 	      (cave_feat[y][x] <= FEAT_DOOR_TAIL)))
 	{
 		/* Message */
-		msg_print("You see nothing there to open.");
+		message(MSG_NOTHING_TO_OPEN, 0, "You see nothing there to open.");
 
 		/* Nope */
 		return (FALSE);
@@ -661,16 +661,13 @@ static bool do_cmd_open_aux(int y, int x)
 		if (rand_int(100) < j)
 		{
 			/* Message */
-			msg_print("You have picked the lock.");
+			message(MSG_OPENDOOR, 0, "You have picked the lock.");
 
 			/* Open the door */
 			cave_set_feat(y, x, FEAT_OPEN);
 
 			/* Update the visuals */
 			p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
-
-			/* Sound */
-			sound(SOUND_OPENDOOR);
 
 			/* Experience */
 			gain_exp(1);
@@ -683,7 +680,7 @@ static bool do_cmd_open_aux(int y, int x)
 			if (flush_failure) flush();
 
 			/* Message */
-			msg_print("You failed to pick the lock.");
+			message(MSG_LOCKPICK_FAIL, 0, "You failed to pick the lock.");
 
 			/* We may keep trying */
 			more = TRUE;
@@ -700,7 +697,7 @@ static bool do_cmd_open_aux(int y, int x)
 		p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 
 		/* Sound */
-		sound(SOUND_OPENDOOR);
+		sound(MSG_OPENDOOR);
 	}
 
 	/* Result */
@@ -876,7 +873,7 @@ static bool do_cmd_close_aux(int y, int x)
 		p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 
 		/* Sound */
-		sound(SOUND_SHUTDOOR);
+		sound(MSG_SHUTDOOR);
 	}
 
 	/* Result */
@@ -1020,7 +1017,7 @@ static bool twall(int y, int x)
 	if (cave_floor_bold(y, x)) return (FALSE);
 
 	/* Sound */
-	sound(SOUND_DIG);
+	sound(MSG_DIG);
 
 	/* Forget the wall */
 	cave_info[y][x] &= ~(CAVE_MARK);
@@ -1058,7 +1055,7 @@ static bool do_cmd_tunnel_aux(int y, int x)
 
 
 	/* Sound XXX XXX XXX */
-	/* sound(SOUND_DIG); */
+	/* sound(MSG_DIG); */
 
 	/* Titanium */
 	if (cave_feat[y][x] >= FEAT_PERM_EXTRA)
@@ -1588,9 +1585,6 @@ static bool do_cmd_bash_aux(int y, int x)
 	/* Hack -- attempt to bash down the door */
 	if (rand_int(100) < temp)
 	{
-		/* Message */
-		msg_print("The door crashes open!");
-
 		/* Break down the door */
 		if (rand_int(100) < 50)
 		{
@@ -1603,8 +1597,8 @@ static bool do_cmd_bash_aux(int y, int x)
 			cave_set_feat(y, x, FEAT_OPEN);
 		}
 
-		/* Sound */
-		sound(SOUND_OPENDOOR);
+		/* Message */
+		message(MSG_OPENDOOR, 0, "The door crashes open!");
 
 		/* Update the visuals */
 		p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
@@ -1657,8 +1651,6 @@ void do_cmd_bash(void)
 
 	int y, x, dir;
 
-	bool more = FALSE;
-
 
 	/* Get a direction (or abort) */
 	if (!get_rep_dir(&dir)) return;
@@ -1705,20 +1697,18 @@ void do_cmd_bash(void)
 
 		/* Attack */
 		py_attack(y, x);
-
-		/* Done */
-		return;
 	}
 
 	/* Door */
 	else
 	{
 		/* Bash the door */
-		more = do_cmd_bash_aux(y, x);
+		if (!do_cmd_bash_aux(y, x))
+		{
+			/* Cancel repeat */
+			disturb(0, 0);
+		}
 	}
-
-	/* Cancel repeat unless told not to */
-	if (!more) disturb(0, 0);
 }
 
 
@@ -1799,14 +1789,14 @@ void do_cmd_alter(void)
 		/* Tunnel */
 		more = do_cmd_tunnel_aux(y, x);
 	}
-
+#if 0
 	/* Bash jammed doors */
 	else if (feat >= FEAT_DOOR_HEAD + 0x08)
 	{
 		/* Tunnel */
 		more = do_cmd_bash_aux(y, x);
 	}
-
+#endif /* 0 */
 	/* Open closed doors */
 	else if (feat >= FEAT_DOOR_HEAD)
 	{
@@ -2411,7 +2401,7 @@ void do_cmd_fire(void)
 
 	char o_name[80];
 
-	int path_n = 0;
+	int path_n;
 	u16b path_g[256];
 
 	cptr q, s;
@@ -2479,7 +2469,7 @@ void do_cmd_fire(void)
 
 
 	/* Sound */
-	sound(SOUND_SHOOT);
+	sound(MSG_SHOOT);
 
 
 	/* Describe the object */
@@ -2492,9 +2482,6 @@ void do_cmd_fire(void)
 
 	/* Use the proper number of shots */
 	thits = p_ptr->num_fire;
-
-	/* Use a base distance */
-	tdis = 10;
 
 	/* Base damage from thrown object plus launcher bonus */
 	tdam = damroll(i_ptr->dd, i_ptr->ds) + i_ptr->to_d + j_ptr->to_d;
@@ -2659,14 +2646,12 @@ void do_cmd_fire(void)
 					{
 						char m_name[80];
 
-						/* Sound */
-						sound(SOUND_FLEE);
-
 						/* Get the monster name (or "it") */
 						monster_desc(m_name, m_ptr, 0);
 
 						/* Message */
-						msg_format("%^s flees in terror!", m_name);
+						message_format(MSG_FLEE, m_ptr->r_idx,
+						               "%^s flees in terror!", m_name);
 					}
 				}
 			}
@@ -2716,7 +2701,7 @@ void do_cmd_throw(void)
 
 	char o_name[80];
 
-	int path_n = 0;
+	int path_n;
 	u16b path_g[256];
 
 	cptr q, s;
@@ -2942,14 +2927,12 @@ void do_cmd_throw(void)
 					{
 						char m_name[80];
 
-						/* Sound */
-						sound(SOUND_FLEE);
-
 						/* Get the monster name (or "it") */
 						monster_desc(m_name, m_ptr, 0);
 
 						/* Message */
-						msg_format("%^s flees in terror!", m_name);
+						message_format(MSG_FLEE, m_ptr->r_idx,
+						               "%^s flees in terror!", m_name);
 					}
 				}
 			}

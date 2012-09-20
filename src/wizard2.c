@@ -344,14 +344,14 @@ static void wiz_display_item(object_type *o_ptr)
 	prt_binary(f2, 23, j);
 
 	prt("+------------FLAGS3------------+", 10, j+32);
-	prt("        ehsi  st    iiiiadta  hp", 11, j+32);
-	prt("        aihnf ee    ggggcregb vr", 12, j+32);
-	prt("        sdose eld   nnnntalrl ym", 13, j+32);
-	prt("        yewta ieirmsrrrriieaeccc", 14, j+32);
-	prt("        ktmatlnpgeihaefcvnpvsuuu", 15, j+32);
-	prt("        nyoahivaeggoclioaeoasrrr", 16, j+32);
-	prt("        opdretitsehtierltxrtesss", 17, j+32);
-	prt("        westreshtntsdcedeptedeee", 18, j+32);
+	prt("s   ts h     tadiiii   aiehs  hp", 11, j+32);
+	prt("lf  eefo     egrgggg  bcnaih  vr", 12, j+32);
+	prt("we  lerl    ilgannnn  ltssdo  ym", 13, j+32);
+	prt("da reied    merirrrr  eityew ccc", 14, j+32);
+	prt("itlepnel    ppanaefc  svaktm uuu", 15, j+32);
+	prt("ghigavai    aoveclio  saanyo rrr", 16, j+32);
+	prt("seteticf    craxierl  etropd sss", 17, j+32);
+	prt("trenhste    tttpdced  detwes eee", 18, j+32);
 	prt_binary(f3, 19, j+32);
 }
 
@@ -500,7 +500,7 @@ static int wiz_create_itemtype(void)
 	Term_clear();
 
 	/* We have to search the whole itemlist. */
-	for (num = 0, i = 1; (num < 57) && (i < MAX_K_IDX); i++)
+	for (num = 0, i = 1; (num < 57) && (i < z_info->k_max); i++)
 	{
 		object_kind *k_ptr = &k_info[i];
 
@@ -616,10 +616,7 @@ static void wiz_reroll_item(object_type *o_ptr)
 
 		/* Ask wizard what to do. */
 		if (!get_com("[a]ccept, [n]ormal, [g]ood, [e]xcellent? ", &ch))
-		{
-			changed = FALSE;
 			break;
-		}
 
 		/* Create/change it! */
 		if (ch == 'A' || ch == 'a')
@@ -654,6 +651,12 @@ static void wiz_reroll_item(object_type *o_ptr)
 	/* Notice change */
 	if (changed)
 	{
+		/* Restore the position information */
+		i_ptr->iy = o_ptr->iy;
+		i_ptr->ix = o_ptr->ix;
+		i_ptr->next_o_idx = o_ptr->next_o_idx;
+		i_ptr->marked = o_ptr->marked;
+
 		/* Apply changes */
 		object_copy(o_ptr, i_ptr);
 
@@ -735,8 +738,10 @@ static void wiz_statistics(object_type *o_ptr)
 		}
 		else
 		{
+#if 0 /* unused */
 			good = FALSE;
 			great = FALSE;
+#endif /* unused */
 			break;
 		}
 
@@ -890,7 +895,7 @@ static void do_cmd_wiz_play(void)
 
 	cptr q, s;
 
-	bool changed;
+	bool changed = FALSE;
 
 
 	/* Get an item */
@@ -909,10 +914,6 @@ static void do_cmd_wiz_play(void)
 	{
 		o_ptr = &o_list[0 - item];
 	}
-
-
-	/* The item was not changed */
-	changed = FALSE;
 
 
 	/* Save screen */
@@ -934,10 +935,7 @@ static void do_cmd_wiz_play(void)
 
 		/* Get choice */
 		if (!get_com("[a]ccept [s]tatistics [r]eroll [t]weak [q]uantity? ", &ch))
-		{
-			changed = FALSE;
 			break;
-		}
 
 		if (ch == 'A' || ch == 'a')
 		{
@@ -1048,6 +1046,56 @@ static void wiz_create_item(void)
 
 
 /*
+ * Create the artifact with the specified number
+ */
+static void wiz_create_artifact(int a_idx)
+{
+	object_type *i_ptr;
+	object_type object_type_body;
+	int k_idx;
+
+	artifact_type *a_ptr = &a_info[a_idx];
+
+	/* Ignore "empty" artifacts */
+	if (!a_ptr->name) return;
+
+	/* Get local object */
+	i_ptr = &object_type_body;
+
+	/* Wipe the object */
+	object_wipe(i_ptr);
+
+	/* Acquire the "kind" index */
+	k_idx = lookup_kind(a_ptr->tval, a_ptr->sval);
+
+	/* Oops */
+	if (!k_idx) return;
+
+	/* Create the artifact */
+	object_prep(i_ptr, k_idx);
+
+	/* Save the name */
+	i_ptr->name1 = a_idx;
+
+	/* Extract the fields */
+	i_ptr->pval = a_ptr->pval;
+	i_ptr->ac = a_ptr->ac;
+	i_ptr->dd = a_ptr->dd;
+	i_ptr->ds = a_ptr->ds;
+	i_ptr->to_a = a_ptr->to_a;
+	i_ptr->to_h = a_ptr->to_h;
+	i_ptr->to_d = a_ptr->to_d;
+	i_ptr->weight = a_ptr->weight;
+
+	/* Drop the artifact from heaven */
+	drop_near(i_ptr, -1, p_ptr->py, p_ptr->px);
+
+	/* All done */
+	msg_print("Allocated.");
+}
+
+
+/*
  * Cure everything instantly
  */
 static void do_cmd_wiz_cure_all(void)
@@ -1146,7 +1194,7 @@ static void do_cmd_wiz_learn(void)
 	object_type object_type_body;
 
 	/* Scan every object */
-	for (i = 1; i < MAX_K_IDX; i++)
+	for (i = 1; i < z_info->k_max; i++)
 	{
 		object_kind *k_ptr = &k_info[i];
 
@@ -1245,7 +1293,7 @@ static void do_cmd_wiz_named(int r_idx, bool slp)
 
 	/* Paranoia */
 	if (!r_idx) return;
-	if (r_idx >= MAX_R_IDX-1) return;
+	if (r_idx >= z_info->r_max-1) return;
 
 	/* Try 10 times */
 	for (i = 0; i < 10; i++)
@@ -1484,6 +1532,13 @@ void do_cmd_debug(void)
 		case 'c':
 		{
 			wiz_create_item();
+			break;
+		}
+
+		/* Create an artifact */
+		case 'C':
+		{
+			wiz_create_artifact(p_ptr->command_arg);
 			break;
 		}
 

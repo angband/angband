@@ -1,3 +1,113 @@
+Changes in Angband 2.9.1v2:
+-Fixed a bug that allowed the player to gain info about unidentified
+ items.
+-Changed the default color definition of "light red" so that it doesn't
+ look so similiar to "red".
+-The gamma-correction code in the Windows version now works correctly.
+
+Changes in Angband 2.9.1:
+-Added color coded messages and more sound events.
+-Allowed the modification of the various *_info.txt limits without
+ recompiling.
+-The lib/data/*_info.raw files will be automatically rebuild when the
+ lib/edit/*_info.txt files are changed.
+-The monster spoilers and the list of known uniques sort the monsters now.
+-Made player races, player history, shop owners, and race-dependent price
+ adjustments customizable (Prfnoff).
+-Moved the monster recall information out of the monster race array making
+ room for a lot more monsters (Prfnoff).
+-Random item abilities of *identified* items are now displayed in
+ character dumps (Prfnoff).
+-Identify and *identify* spells only affect unidentified items now.
+-Added a "create artifact" wizard command.
+-Added optional, case-insensitive searches (can be toggled with the '!'
+ key).
+-Added an "examine/look at item" command to the stores.
+-The "examine item" command now shows all known properties of an item,
+ even if it is not *identified*.
+-Made artifact activations configurable in a_info.txt (Arcum Dagsson).
+-The last 15 messages are now added to the character dump (Prfnoff).
+-Reduced the number of option settings printed in character dumps.
+-Empty slots in the players inventory or home are no longer printed
+ in character dumps.
+-Added a character death menu (Prfnoff and Ed Cogburn).
+-Added the ego-item generation patch (Matthias Kurzke).
+-The date in the high-scores is now saved with four digit years.
+-The "brand bolts" activation of "Cubragol" now allows the user to select
+ which bolts to brand.
+-Added 21 new vaults (Chris Weisinger).
+-The Resistance spell sets the duration for all temporary resistances to
+ the same value now.
+-Fixed a bug that generated wrong item indices for the home in char-dumps.
+-The temple will now buy identified blessed blades.
+-Fixed a bug that allowed monsters to sometimes get double moves, even
+ if the player is faster.
+-Object and message recall are now correctly refreshed.
+-Fixed the wizard mode flag display.
+-The alter command ('+' and easy_open option) no longer tries to bash down
+ doors.
+-Fixed a bug that caused the effect of aggravate monsters scrolls to skip
+ one monster.
+-Fixed a bug in the easy-floor option that sometimes displayed wrong
+ labels.
+-Prices for identified armor with hit, damage, or armor penalities were
+ wrong.
+-Fixed a bug that allowed the player to recall into rubble.
+-Screen-dumps are now correctly loaded.
+-Fixed a bug in the random artifact generation that sometimes caused random
+ artifacts to change.
+-Fixed a bug that erased pseudo-id in shops even if the item was not sold.
+-Fixed a wrong message when the player gets killed by poisonous food.
+-Random artifact diggers are now in the spoilers.
+-Fixed a bug that messed up objects on the floor when modifying them in
+ debug mode.
+-The score-penalities are now correctly reset when starting a new
+ character.
+-Moved some sound-events so that they are played before the associated
+ message is printed.
+-Opening doors is now properly repeated when the easy_alter option is on.
+-Modified the monster AI for fleeing monsters a bit.
+-Fixed a bug that could cause crashes with very long object descriptions.
+-One highscore entry was sometimes not displayed when the current character
+ was part of the highscore list.
+-Dumping the options appends to the file now instead of overwriting it.
+-Modified the spell-tiles assignments for the 8x8 graphics.
+-The 16x16 tile for the Monadic Deva is now correctly displayed.
+-The 8x8 tiles for hobbit players are no longer displayed as human
+ warriors.
+-Fixed some bugs in the lighting code for 16x16 tiles.
+-Saving a character dump prints now a success (or failure) message.
+-Trying to destroy an already identified artifact no longer adds the
+ {special} inscription.
+-Small modification to the docs.
+-Added documentation for the *_info.txt file format.
+-Class and race specific *.prf files are now loaded automatically.
+-Added Ben's code-cleanups and his rewrite of the "panel" and "overhead
+ map" code.
+-Added a workaround for a bug in the optimizer of the GCC compiler.
+-Removed several compiler warnings.
+-Replaced the makefile.emx with the correct version.
+-Added a makefile for cygwin.
+-Fixed some problems when compiling Angband without the MONSTER_FLOW and/or
+ MONSTER_AI options.
+-Removed a bug that caused a wrong error message to be displayed when the
+ mask.bmp file in the Windows version was missing.
+-Added the IBM pseudo-graphics font.
+-Updated the pref files for Acorn and Mac.
+-Added Mark Howson's main-ami.c and Musus Umbra's main-acn.c with several
+ other Acorn support files.
+-Added newer main-mac.c and graf-mac.prf files that support 16x16 tiles
+ with transparency.
+-Closing the main-window of the Win32 version while it's minimized now
+ works correctly.
+-The Windows version now supports multiple samples per sound event.
+-Added a graphical map to the Windows version.
+-Added the newest X11 modules by Ben Harrison and Steven Fuerst.
+-The Windows version now lists the current character in the score display.
+-Turned on the compile time option that allows players to put an
+ .angband.prf file in their home directory.
+-Added gamma correction to the Windows version.
+
 Changes in Angband 2.9.0:
 - Chaos resistance no longer automatically grants confusion resistance.
   All normal items and standard artifacts with chaos resistance now

@@ -891,13 +891,13 @@ static void Term_fresh_row_both(int y, int x1, int x2)
 
 #ifdef USE_TRANSPARENCY
 
-		/* Hack -- Draw the special attr/char pair */
-		(void)((*Term->pict_hook)(x, y, 1, &na, &nc, &nta, &ntc));
+			/* Hack -- Draw the special attr/char pair */
+			(void)((*Term->pict_hook)(x, y, 1, &na, &nc, &nta, &ntc));
 
 #else /* USE_TRANSPARENCY */
 
-		/* Hack -- Draw the special attr/char pair */
-		(void)((*Term->pict_hook)(x, y, 1, &na, &nc));
+			/* Hack -- Draw the special attr/char pair */
+			(void)((*Term->pict_hook)(x, y, 1, &na, &nc));
 
 #endif /* USE_TRANSPARENCY */
 
@@ -1850,6 +1850,50 @@ errr Term_redraw(void)
 {
 	/* Force "total erase" */
 	Term->total_erase = TRUE;
+
+	/* Hack -- Refresh */
+	Term_fresh();
+
+	/* Success */
+	return (0);
+}
+
+
+/*
+ * Redraw part of a widow.
+ */
+errr Term_redraw_section(int x1, int y1, int x2, int y2)
+{
+	int i, j;
+
+	char *c_ptr;
+
+	/* Bounds checking */
+	if (y2 >= Term->hgt) y2 = Term->hgt - 1;
+	if (x2 >= Term->wid) x2 = Term->wid - 1;
+	if (y1 < 0) y1 = 0;
+	if (x1 < 0) x1 = 0;
+
+
+	/* Set y limits */
+	Term->y1 = y1;
+	Term->y2 = y2;
+
+	/* Set the x limits */
+	for (i = Term->y1; i <= Term->y2; i++)
+	{
+		Term->x1[i] = x1;
+		Term->x2[i] = x2;
+
+		c_ptr = Term->old->c[i];
+
+		/* Clear the section so it is redrawn */
+		for (j = x1; j <= x2; j++)
+		{
+			/* Hack - set the old character to "none" */
+			c_ptr[j] = 0;
+		}
+	}
 
 	/* Hack -- Refresh */
 	Term_fresh();

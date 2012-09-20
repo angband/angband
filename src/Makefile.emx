@@ -22,7 +22,7 @@
 #		  Needs 4OS2.
 #
 
-VERSION         = 279v5
+VERSION         = 290
 EXPORT          = angband-$(VERSION).os2.zip
 
 CC		= gcc
@@ -31,7 +31,7 @@ CFLAGS		= -MMD -O3 -DUSE_EMX -Zmt
 LFLAGS		= -lvideo 
 
 # Uncomment this if you have nice installed
-#NICE		= nice -i -n -30
+NICE		= nice -i -n -30
 
 ###################################################################################
 
@@ -59,17 +59,15 @@ export: ..\exp\$(EXPORT)
 ####################################################################################
 
 OBJS = \
-  z-util.o z-virt.o z-form.o z-rand.o z-term.o \
-  variable.o tables.o util.o cave.o \
-  object1.o object2.o monster1.o monster2.o \
-  xtra1.o xtra2.o spells1.o spells2.o spells3.o \
-  melee1.o melee2.o save.o files.o \
-  cmd1.o cmd2.o cmd3.o cmd4.o cmd5.o cmd6.o \
-  store.o birth.o load.o \
-  wizard1.o wizard2.o streams.o grid.o rooms.o \
-  generate.o dungeon.o init1.o init2.o init3.o \
-  bldg.o obj_kind.o effects.o mutation.o mspells1.o mspells2.o racial.o mind.o \
-  artifact.o flavor.o scores.o wild.o
+	z-util.o z-virt.o z-form.o z-rand.o z-term.o \
+	variable.o tables.o util.o cave.o \
+	object1.o object2.o monster1.o monster2.o \
+	xtra1.o xtra2.o spells1.o spells2.o \
+	melee1.o melee2.o save.o files.o \
+	cmd1.o cmd2.o cmd3.o cmd4.o cmd5.o cmd6.o \
+	store.o birth.o load1.o load2.o \
+	wizard1.o wizard2.o \
+	generate.o dungeon.o init1.o init2.o randart.o
 
 .c.o:
 	$(NICE) $(CC) $(CFLAGS) -c $*.c
@@ -158,29 +156,17 @@ EC=+@ echo
 ECF=>> ..\startwnd.cmd
 
 ..\startwnd.cmd: 
-	$(EC) /* rexx, sir */						> ..\startwnd.cmd
-	$(EC).								$(ECF)
-	$(EC) call RxFuncAdd 'SysLoadFuncs', 'RexxUtil', 'SysLoadFuncs'	$(ECF)
-	$(EC) call SysLoadFuncs						$(ECF)
-	$(EC).								$(ECF)
-	$(EC) /* This file starts up Angband and up to seven other views. The */	$(ECF)
-	$(EC) /* optional number behind the name sets the number of lines for */	$(ECF)
-	$(EC) /* that screen.  Choose contents for each via the game options. */	$(ECF)
-	$(EC).								$(ECF)
-	$(EC) say 'starting up terminals...'				$(ECF)
-	$(EC).								$(ECF)
-	$(EC) '@start /b /win /n aclient Term-1 23'			$(ECF)
-	$(EC) '@start /b /win /n aclient Term-2 10'			$(ECF)
-	$(EC) /*							$(ECF)
-	$(EC) '@start /b /win /n aclient Term-2'			$(ECF)
-	$(EC) '@start /b /win /n aclient Term-4'			$(ECF)
-	$(EC) '@start /b /win /n aclient Term-5'			$(ECF)
-	$(EC) '@start /b /win /n aclient Term-6'			$(ECF)
-	$(EC) '@start /b /win /n aclient Term-7'			$(ECF)
-	$(EC) */							$(ECF)
-	$(EC) call SysSleep(2)						$(ECF)
-	$(EC) '@angband 'ARG(1)						$(ECF)
-	$(EC) exit							$(ECF)
+	$(EC) @echo off                                             > ..\startwnd.cmd
+	$(EC) REM This file starts up Angband and up to seven other views. The $(ECF)
+	$(EC) REM optional number behind the name sets the number of lines for $(ECF)
+	$(EC) REM that screen.  Choose contents for each via the game options. $(ECF)
+	$(EC) REM                                                              $(ECF)
+	$(EC).                                                                 $(ECF)
+	$(EC) start /win /n aclient Term-1                                     $(ECF)
+	$(EC) start /win /n aclient Term-2 10                                  $(ECF)
+	$(EC) rem start /win /n aclient Term-3 24                              $(ECF)
+	$(EC) delay                                                            $(ECF)
+	$(EC) angband %1 %2 %3 %4 %5 %6 %7 %8 %9                               $(ECF)
 
 angband.exe: angband.a main.o main-emx.o main-epm.o
 	$(CC) -o angband.exe main.o main-emx.o angband.a $(LFLAGS) 

@@ -140,7 +140,14 @@ void do_cmd_change_name(void)
 			{
 				if (ftmp[0] && (ftmp[0] != ' '))
 				{
-					file_character(ftmp, FALSE);
+					if (file_character(ftmp, FALSE))
+					{
+						msg_print("Character dump failed!");
+					}
+					else
+					{
+						msg_print("Character dump successful.");
+					}
 				}
 			}
 		}
@@ -172,7 +179,7 @@ void do_cmd_change_name(void)
 void do_cmd_message_one(void)
 {
 	/* Recall one message XXX XXX XXX */
-	prt(format("> %s", message_str(0)), 0, 0);
+	c_prt(message_color(0), format( "> %s", message_str(0)), 0, 0);
 }
 
 
@@ -232,12 +239,13 @@ void do_cmd_messages(void)
 		for (j = 0; (j < 20) && (i + j < n); j++)
 		{
 			cptr msg = message_str((s16b)(i+j));
+			byte attr = message_color((s16b)(i+j));
 
 			/* Apply horizontal scroll */
 			msg = (strlen(msg) >= q) ? (msg + q) : "";
 
 			/* Dump the messages, bottom to top */
-			Term_putstr(0, 21-j, -1, TERM_WHITE, msg);
+			Term_putstr(0, 21-j, -1, attr, msg);
 
 			/* Hilite "shower" */
 			if (shower[0])
@@ -746,7 +754,7 @@ static errr option_dump(cptr fname)
 	FILE_TYPE(FILE_TYPE_TEXT);
 
 	/* Append to the file */
-	fff = my_fopen(buf, "w");
+	fff = my_fopen(buf, "a");
 
 	/* Failure */
 	if (!fff) return (-1);
@@ -1758,7 +1766,7 @@ void do_cmd_visuals(void)
 			fprintf(fff, "# Monster attr/char definitions\n\n");
 
 			/* Dump monsters */
-			for (i = 0; i < MAX_R_IDX; i++)
+			for (i = 0; i < z_info->r_max; i++)
 			{
 				monster_race *r_ptr = &r_info[i];
 
@@ -1823,7 +1831,7 @@ void do_cmd_visuals(void)
 			fprintf(fff, "# Object attr/char definitions\n\n");
 
 			/* Dump objects */
-			for (i = 0; i < MAX_K_IDX; i++)
+			for (i = 0; i < z_info->k_max; i++)
 			{
 				object_kind *k_ptr = &k_info[i];
 
@@ -1888,7 +1896,7 @@ void do_cmd_visuals(void)
 			fprintf(fff, "# Feature attr/char definitions\n\n");
 
 			/* Dump features */
-			for (i = 0; i < MAX_F_IDX; i++)
+			for (i = 0; i < z_info->f_max; i++)
 			{
 				feature_type *f_ptr = &f_info[i];
 
@@ -1959,8 +1967,8 @@ void do_cmd_visuals(void)
 				if (cx == ESCAPE) break;
 
 				/* Analyze */
-				if (cx == 'n') r = (r + MAX_R_IDX + 1) % MAX_R_IDX;
-				if (cx == 'N') r = (r + MAX_R_IDX - 1) % MAX_R_IDX;
+				if (cx == 'n') r = (r + z_info->r_max + 1) % z_info->r_max;
+				if (cx == 'N') r = (r + z_info->r_max - 1) % z_info->r_max;
 				if (cx == 'a') r_ptr->x_attr = (byte)(ca + 1);
 				if (cx == 'A') r_ptr->x_attr = (byte)(ca - 1);
 				if (cx == 'c') r_ptr->x_char = (byte)(cc + 1);
@@ -2014,8 +2022,8 @@ void do_cmd_visuals(void)
 				if (cx == ESCAPE) break;
 
 				/* Analyze */
-				if (cx == 'n') k = (k + MAX_K_IDX + 1) % MAX_K_IDX;
-				if (cx == 'N') k = (k + MAX_K_IDX - 1) % MAX_K_IDX;
+				if (cx == 'n') k = (k + z_info->k_max + 1) % z_info->k_max;
+				if (cx == 'N') k = (k + z_info->k_max - 1) % z_info->k_max;
 				if (cx == 'a') k_info[k].x_attr = (byte)(ca + 1);
 				if (cx == 'A') k_info[k].x_attr = (byte)(ca - 1);
 				if (cx == 'c') k_info[k].x_char = (byte)(cc + 1);
@@ -2069,8 +2077,8 @@ void do_cmd_visuals(void)
 				if (cx == ESCAPE) break;
 
 				/* Analyze */
-				if (cx == 'n') f = (f + MAX_F_IDX + 1) % MAX_F_IDX;
-				if (cx == 'N') f = (f + MAX_F_IDX - 1) % MAX_F_IDX;
+				if (cx == 'n') f = (f + z_info->f_max + 1) % z_info->f_max;
+				if (cx == 'N') f = (f + z_info->f_max - 1) % z_info->f_max;
 				if (cx == 'a') f_info[f].x_attr = (byte)(ca + 1);
 				if (cx == 'A') f_info[f].x_attr = (byte)(ca - 1);
 				if (cx == 'c') f_info[f].x_char = (byte)(cc + 1);
@@ -2417,6 +2425,10 @@ static char hack[17] = "dwsorgbuDWvyRGBU";
 
 /*
  * Hack -- load a screen dump from a file
+ *
+ * ToDo: Add support for loading/saving screen-dumps with graphics
+ * and pseudo-graphics.  Allow the player to specify the filename
+ * of the dump.
  */
 void do_cmd_load_screen(void)
 {
@@ -2427,7 +2439,7 @@ void do_cmd_load_screen(void)
 
 	bool okay = TRUE;
 
-	FILE *fff;
+	FILE *fp;
 
 	char buf[1024];
 
@@ -2435,11 +2447,11 @@ void do_cmd_load_screen(void)
 	/* Build the filename */
 	path_build(buf, 1024, ANGBAND_DIR_USER, "dump.txt");
 
-	/* Append to the file */
-	fff = my_fopen(buf, "r");
+	/* Open the file */
+	fp = my_fopen(buf, "r");
 
 	/* Oops */
-	if (!fff) return;
+	if (!fp) return;
 
 
 	/* Save screen */
@@ -2454,7 +2466,8 @@ void do_cmd_load_screen(void)
 	for (y = 0; okay && (y < 24); y++)
 	{
 		/* Get a line of data */
-		if (my_fgets(fff, buf, 1024)) okay = FALSE;
+		if (my_fgets(fp, buf, 1024)) okay = FALSE;
+
 
 		/* Show each row */
 		for (x = 0; x < 79; x++)
@@ -2465,14 +2478,14 @@ void do_cmd_load_screen(void)
 	}
 
 	/* Get the blank line */
-	if (my_fgets(fff, buf, 1024)) okay = FALSE;
+	if (my_fgets(fp, buf, 1024)) okay = FALSE;
 
 
 	/* Dump the screen */
 	for (y = 0; okay && (y < 24); y++)
 	{
 		/* Get a line of data */
-		if (my_fgets(fff, buf, 1024)) okay = FALSE;
+		if (my_fgets(fp, buf, 1024)) okay = FALSE;
 
 		/* Dump each row */
 		for (x = 0; x < 79; x++)
@@ -2490,18 +2503,11 @@ void do_cmd_load_screen(void)
 			/* Put the attr/char */
 			Term_draw(x, y, a, c);
 		}
-
-		/* End the row */
-		fprintf(fff, "\n");
 	}
 
 
-	/* Get the blank line */
-	if (my_fgets(fff, buf, 1024)) okay = FALSE;
-
-
 	/* Close it */
-	my_fclose(fff);
+	my_fclose(fp);
 
 
 	/* Message */
@@ -2629,7 +2635,7 @@ static void do_cmd_knowledge_artifacts(void)
 
 	char o_name[80];
 
-	bool okay[MAX_A_IDX];
+	bool *okay;
 
 
 	/* Temporary file */
@@ -2638,8 +2644,11 @@ static void do_cmd_knowledge_artifacts(void)
 	/* Open a new file */
 	fff = my_fopen(file_name, "w");
 
+	/* Allocate the "okay" array */
+	C_MAKE(okay, z_info->a_max, bool);
+
 	/* Scan the artifacts */
-	for (k = 0; k < MAX_A_IDX; k++)
+	for (k = 0; k < z_info->a_max; k++)
 	{
 		artifact_type *a_ptr = &a_info[k];
 
@@ -2705,7 +2714,7 @@ static void do_cmd_knowledge_artifacts(void)
 	}
 
 	/* Scan the artifacts */
-	for (k = 0; k < MAX_A_IDX; k++)
+	for (k = 0; k < z_info->a_max; k++)
 	{
 		artifact_type *a_ptr = &a_info[k];
 
@@ -2741,6 +2750,9 @@ static void do_cmd_knowledge_artifacts(void)
 		fprintf(fff, "     The %s\n", o_name);
 	}
 
+	/* Free the "okay" array */
+	C_KILL(okay, z_info->a_max, bool);
+
 	/* Close the file */
 	my_fclose(fff);
 
@@ -2759,11 +2771,11 @@ static void do_cmd_knowledge_artifacts(void)
  */
 static void do_cmd_knowledge_uniques(void)
 {
-	int k;
-
+	int i, n;
 	FILE *fff;
-
 	char file_name[1024];
+	u16b why = 2;
+	u16b *who;
 
 
 	/* Temporary file */
@@ -2772,26 +2784,47 @@ static void do_cmd_knowledge_uniques(void)
 	/* Open a new file */
 	fff = my_fopen(file_name, "w");
 
-	/* Scan the monster races */
-	for (k = 1; k < MAX_R_IDX-1; k++)
+	/* Allocate the "who" array */
+	C_MAKE(who, z_info->r_max, u16b);
+
+	/* Collect matching monsters */
+	for (i = 1, n = 0; i < z_info->r_max; i++)
 	{
-		monster_race *r_ptr = &r_info[k];
+		monster_race *r_ptr = &r_info[i];
+		monster_lore *l_ptr = &l_list[i];
 
-		/* Only print Uniques */
-		if (r_ptr->flags1 & (RF1_UNIQUE))
-		{
-			bool dead = (r_ptr->max_num == 0);
+		/* Require known monsters */
+		if (!cheat_know && !l_ptr->r_sights) continue;
 
-			/* Only display "known" uniques */
-			if (dead || cheat_know || r_ptr->r_sights)
-			{
-				/* Print a message */
-				fprintf(fff, "     %s is %s\n",
-				        (r_name + r_ptr->name),
-				        (dead ? "dead" : "alive"));
-			}
-		}
+		/* Require unique monsters */
+		if (!(r_ptr->flags1 & (RF1_UNIQUE))) continue;
+
+		/* Collect "appropriate" monsters */
+		who[n++] = i;
 	}
+
+	/* Select the sort method */
+	ang_sort_comp = ang_sort_comp_hook;
+	ang_sort_swap = ang_sort_swap_hook;
+
+	/* Sort the array by dungeon depth of monsters */
+	ang_sort(who, &why, n);
+
+
+	/* Print the monsters */
+	for (i = 0; i < n; i++)
+	{
+		monster_race *r_ptr = &r_info[who[i]];
+		bool dead = (r_ptr->max_num == 0);
+
+		/* Print a message */
+		fprintf(fff, "     %s is %s\n",
+			    (r_name + r_ptr->name),
+			    (dead ? "dead" : "alive"));
+	}
+
+	/* Free the "who" array */
+	C_KILL(who, z_info->r_max, u16b);
 
 	/* Close the file */
 	my_fclose(fff);
@@ -2825,7 +2858,7 @@ static void do_cmd_knowledge_objects(void)
 	fff = my_fopen(file_name, "w");
 
 	/* Scan the object kinds */
-	for (k = 1; k < MAX_K_IDX; k++)
+	for (k = 1; k < z_info->k_max; k++)
 	{
 		object_kind *k_ptr = &k_info[k];
 

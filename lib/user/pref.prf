@@ -55,6 +55,10 @@ C:0:^C
 A:w0
 C:0:X
 
+# Original keymap: Repeat last command
+A:^V
+C:0:n
+
 
 ##### Roguelike Keyset Mappings #####
 
@@ -201,6 +205,14 @@ C:1:^C
 # Hack -- Swap equipment
 A:w0
 C:1:X
+
+# Roguelike keymap: Repeat last command
+A:^V
+C:1:'
+
+
+# Message colors
+%:message.prf
 
 
 ##### System Specific Subfiles #####

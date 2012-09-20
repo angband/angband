@@ -12,10 +12,10 @@
 /*
  * This file helps Angband work with UNIX/X11 computers.
  *
- * To use this file, use "Makefile.xaw", which defines "USE_XAW".
+ * To use this file, compile with "USE_XAW" defined, and link against all
+ * the various "X11" libraries which may be needed.
  *
  * See also "main-x11.c".
- *
  *
  * The Angband widget is not as self-contained as it really should be.
  * Originally everything was output to a Pixmap which was later copied
@@ -23,32 +23,20 @@
  * create big performance problems for some really old X terminals (such
  * as 3/50's running Xkernel).
  *
- * The default colors used are based on the ones used in main-mac.c, with
- * the main difference being that they are gamma corrected for a gamma of
- * 1.6, since MacOS do gamma correction afterwards, but X uses raw colors.
- * The Gamma of most color screens are about 1.5 - 1.7.  Color 12 was later
- * changed a bit so that it didn't look as similar to color 3/4.
+ * None of the windows notice when they are resized.  XXX XXX XXX
  *
- * This file should really attempt to obey the "angband_colors" table,
- * even at initialization, since it is a better color specifier than the
- * stupid resources, and it must be initialized specially for the special
- * "use_graphics" code.  XXX XXX XXX
+ * Initial framework (and some code) by Ben Harrison (benh@phial.com).
  *
- * We should allow interactive color modifications.  XXX XXX XXX
+ * Most of this file is by Torbjorn Lindgren (tl@cd.chalmers.se).
  *
- *
- * Initial framework (and some code) by Ben Harrison (benh@phial,com).
- *
- * Most code by Torbjorn Lindgren (tl@cd.chalmers.se).
- *
- * Graphics support (the "XImage" functions) by Desvignes Sebastien
- * (desvigne@solar12.eerie.fr).
+ * Major modifications by Ben Harrison (benh@phial.com).
  */
 
 
-#ifdef USE_XAW
-
 #include "angband.h"
+
+
+#ifdef USE_XAW
 
 
 #ifndef __MAKEDEPEND__
@@ -69,215 +57,11 @@
 #endif /* __MAKEDEPEND__ */
 
 
-
-/**** Graphics Functions ****/
-
-
-#ifdef USE_GRAPHICS
-
-
 /*
- * Read a raw file. XXX XXX XXX
- *
- * Also appears in "main-x11.c".
+ * Include some helpful X11 code.
  */
-static XImage *ReadRaw(Display *disp, char Name[], int width, int height)
-{
-	FILE *f;
+#include "maid-x11.c"
 
-	XImage *Res = NULL;
-
-	char *Data;
-
-	int depth, i;
-
-
-	f = fopen(Name, "r");
-
-	if (f != NULL)
-	{
-		depth = 4;
-
-		Data = (char *)calloc(width * height * depth / 8, 1);
-
-		if (Data != NULL)
-		{
-			Res = XCreateImage(disp,
-			                   DefaultVisual(disp, DefaultScreen(disp)),
-			                   depth, XYPixmap, 0, Data,
-			                   width, height, 8, 0);
-
-			if (Res != NULL)
-			{
-				for (i=0; i<4; i++)
-				{
-					fread(Data+(3-i)*(width*height/8), width>>3, height, f);
-				}
-			}
-			else
-			{
-				free(Data);
-			}
-		}
-
-		fclose(f);
-	}
-
-	return Res;
-}
-
-
-/*
- * Remap colors. XXX XXX XXX
- *
- * Also appears in "main-x11.c".
- */
-static XImage *RemapColors(Display *disp, XImage *Im, unsigned long ColT[])
-{
-	XImage *Tmp = NULL;
-
-	char *Data;
-
-	int width, height, depth;
-
-	int x, y;
-
-
-	width = Im->width;
-	height = Im->height;
-
-	depth = DefaultDepth(disp, DefaultScreen(disp));
-
-	x = 1;
-	y = (depth-1) >> 2;
-
-	while (y>>=1) x<<=1;
-
-	Data = (char *)malloc(width * height * x);
-
-	if (Data != NULL)
-	{
-		Tmp = XCreateImage(disp,
-		                   DefaultVisual(disp, DefaultScreen(disp)),
-		                   depth, ZPixmap, 0, Data, width, height,
-		                   32, 0);
-
-		if (Tmp != NULL)
-		{
-			for (y=0; y<height; y++)
-			{
-				for (x=0; x<width; x++)
-				{
-					XPutPixel(Tmp, x, y, ColT[ 16 + XGetPixel(Im, x, y) ]);
-				}
-			}
-		}
-		else
-		{
-			free(Data);
-		}
-	}
-
-	return Tmp;
-}
-
-
-/*
- * Resize an image. XXX XXX XXX
- *
- * Also appears in "main-x11.c".
- */
-static XImage *ResizeImage(Display *disp, XImage *Im,
-                           int ix, int iy, int ox, int oy)
-{
-	int width1, height1, width2, height2;
-	int x1, x2, y1, y2, Tx, Ty;
-	int *px1, *px2, *dx1, *dx2;
-	int *py1, *py2, *dy1, *dy2;
-
-	XImage *Tmp;
-
-	char *Data;
-
-
-	width1 = Im->width;
-	height1 = Im->height;
-
-	width2 = ox * width1 / ix;
-	height2 = oy * height1 / iy;
-
-	Data = (char *)malloc(width2 * height2 * Im->bits_per_pixel / 8);
-
-	Tmp = XCreateImage(disp,
-	                   DefaultVisual(disp, DefaultScreen(disp)),
-	                   Im->depth, ZPixmap, 0, Data, width2, height2,
-	                   32, 0);
-
-	if (ix > ox)
-	{
-		px1 = &x1;
-		px2 = &x2;
-		dx1 = &ix;
-		dx2 = &ox;
-	}
-	else
-	{
-		px1 = &x2;
-		px2 = &x1;
-		dx1 = &ox;
-		dx2 = &ix;
-	}
-
-	if (iy > oy)
-	{
-		py1 = &y1;
-		py2 = &y2;
-		dy1 = &iy;
-		dy2 = &oy;
-	}
-	else
-	{
-		py1 = &y2;
-		py2 = &y1;
-		dy1 = &oy;
-		dy2 = &iy;
-	}
-
-	Ty = *dy1;
-
-	for (y1=0, y2=0; (y1 < height1) && (y2 < height2); )
-	{
-		Tx = *dx1;
-
-		for (x1=0, x2=0; (x1 < width1) && (x2 < width2); )
-		{
-			XPutPixel(Tmp, x2, y2, XGetPixel(Im, x1, y1));
-
-			(*px1)++;
-
-			Tx -= *dx2;
-			if (Tx < 0)
-			{
-				Tx += *dx1;
-				(*px2)++;
-			}
-		}
-
-		(*py1)++;
-
-		Ty -= *dy2;
-		if (Ty < 0)
-		{
-			Ty += *dy1;
-			(*py2)++;
-		}
-	}
-
-	return Tmp;
-}
-
-
-#endif /* USE_GRAPHICS */
 
 
 /**** Resources ****/
@@ -304,88 +88,12 @@ x                   Position           Position        0
 y                   Position           Position        0
 
 
-My own X Resources look like this (on a 1152x900 screen):
+The colors can be changed using the standard Angband user pref files,
+which can also be used to provide black text on a white background,
+by setting color zero to "#FFFFFF" and color one to "#000000", since
+the other colors are unused.
 
-angband*angband*font:                   12x24
-angband*angband*geometry:               +0+-20
-angband*recall*font:                    7x13
-angband*recall*geometry:                80x10+0+586
-angband*choice*font:                    7x13
-angband*choice*geometry:                -0-0
-
-It's also possible to change the colors using X Resources, the
-standard colors would look like:
-
-angband*color0:                         #000000
-angband*color1:                         #ffffff
-angband*color2:                         #a6a6a6
-angband*color3:                         #ff6302
-angband*color4:                         #ca0808
-angband*color5:                         #008e18
-angband*color6:                         #0000e3
-angband*color7:                         #814007
-angband*color8:                         #6b6b6b
-angband*color9:                         #d6d6d6
-angband*color10:                        #5100c2
-angband*color11:                        #fdf105
-angband*color12:                        #ff9259
-angband*color13:                        #26cf17
-angband*color14:                        #02b2f2
-angband*color15:                        #b28b48
-
-And the newer colors look like:
-
-angband*color0:                         #000000
-angband*color1:                         #ffffff
-angband*color2:                         #d7d7d7
-angband*color3:                         #ff9200
-angband*color4:                         #ff0000
-angband*color5:                         #00cd00
-angband*color6:                         #0000fe
-angband*color7:                         #c86400
-angband*color8:                         #a3a3a3
-angband*color9:                         #ebebeb
-angband*color10:                        #a500ff
-angband*color11:                        #fffd00
-angband*color12:                        #ff00bc
-angband*color13:                        #00ff00
-angband*color14:                        #00c8ff
-angband*color15:                        #ffcc80
-
-And the bitmap colors look like:
-
-xxxxx
-
-angband*color16:                        #000000
-angband*color17:                        #F0E0D0
-angband*color18:                        #808080
-angband*color19:                        #505050
-angband*color20:                        #E0B000
-angband*color21:                        #C0A070
-angband*color22:                        #806040
-angband*color23:                        #403020
-angband*color24:                        #00A0F0
-angband*color25:                        #0000F0
-angband*color26:                        #000070
-angband*color27:                        #F00000
-angband*color28:                        #800000
-angband*color29:                        #9000B0
-angband*color30:                        #006010
-angband*color31:                        #60F040
-
-
-Some older monochrome monitors have problem with white text on black
-background. The new code can handle the reverse situation if the user
-wants/needs this.
-
-The following X Resources gives black text on white background using
-Angband/Xaw. The other colors (2-15) isn't changed, since they're not
-used on a monochrome monitor.
-
-angband*color0: #ffffff
-angband*color1: #000000
-
- */
+*/
 
 
 /*
@@ -398,38 +106,6 @@ angband*color1: #000000
 #define XtNmaxRows          "maxRows"
 #define XtNmaxColumns       "maxColumns"
 #define XtNinternalBorder   "internalBorder"
-#define XtNcolor0           "color0"
-#define XtNcolor1           "color1"
-#define XtNcolor2           "color2"
-#define XtNcolor3           "color3"
-#define XtNcolor4           "color4"
-#define XtNcolor5           "color5"
-#define XtNcolor6           "color6"
-#define XtNcolor7           "color7"
-#define XtNcolor8           "color8"
-#define XtNcolor9           "color9"
-#define XtNcolor10          "color10"
-#define XtNcolor11          "color11"
-#define XtNcolor12          "color12"
-#define XtNcolor13          "color13"
-#define XtNcolor14          "color14"
-#define XtNcolor15          "color15"
-#define XtNcolor16          "color16"
-#define XtNcolor17          "color17"
-#define XtNcolor18          "color18"
-#define XtNcolor19          "color19"
-#define XtNcolor20          "color20"
-#define XtNcolor21          "color21"
-#define XtNcolor22          "color22"
-#define XtNcolor23          "color23"
-#define XtNcolor24          "color24"
-#define XtNcolor25          "color25"
-#define XtNcolor26          "color26"
-#define XtNcolor27          "color27"
-#define XtNcolor28          "color28"
-#define XtNcolor29          "color29"
-#define XtNcolor30          "color30"
-#define XtNcolor31          "color31"
 #define XtNredrawCallback   "redrawCallback"
 
 /*
@@ -472,13 +148,20 @@ struct AngbandPart
 	int max_columns;
 	int internal_border;
 	String font;
-	Pixel color[NUM_COLORS];
+
 	XtCallbackList redraw_callbacks;
 
 #ifdef USE_GRAPHICS
 
 	/* Tiles */
 	XImage *tiles;
+
+#ifdef USE_TRANSPARENCY
+
+	/* Tempory storage for overlaying tiles. */
+	XImage *TmpImage;
+
+#endif
 
 #endif /* USE_GRAPHICS */
 
@@ -488,7 +171,10 @@ struct AngbandPart
 	Dimension fontwidth;
 	Dimension fontascent;
 
-	/* Colors (includes "xor" color) */
+	/* Color info for GC's */
+	byte color[NUM_COLORS][4];
+
+	/* GC's (including "xor") */
 	GC gc[NUM_COLORS+1];
 };
 
@@ -537,129 +223,23 @@ struct AngbandClassRec
 static XtResource resources[] =
 {
 	{ XtNstartRows, XtCValue, XtRInt, sizeof(int),
-	offset(start_rows), XtRImmediate, (XtPointer) 24 },
+	  offset(start_rows), XtRImmediate, (XtPointer) 24 },
 	{ XtNstartColumns, XtCValue, XtRInt, sizeof(int),
-	offset(start_columns), XtRImmediate, (XtPointer) 80 },
+	  offset(start_columns), XtRImmediate, (XtPointer) 80 },
 	{ XtNminRows, XtCValue, XtRInt, sizeof(int),
-	offset(min_rows), XtRImmediate, (XtPointer) 1 },
+	  offset(min_rows), XtRImmediate, (XtPointer) 1 },
 	{ XtNminColumns, XtCValue, XtRInt, sizeof(int),
-	offset(min_columns), XtRImmediate, (XtPointer) 1 },
+	  offset(min_columns), XtRImmediate, (XtPointer) 1 },
 	{ XtNmaxRows, XtCValue, XtRInt, sizeof(int),
-	offset(max_rows), XtRImmediate, (XtPointer) 24 },
+	  offset(max_rows), XtRImmediate, (XtPointer) 24 },
 	{ XtNmaxColumns, XtCValue, XtRInt, sizeof(int),
-	offset(max_columns), XtRImmediate, (XtPointer) 80 },
+	  offset(max_columns), XtRImmediate, (XtPointer) 80 },
 	{ XtNinternalBorder, XtCValue, XtRInt, sizeof(int),
-	offset(internal_border), XtRImmediate, (XtPointer) 2 },
+	  offset(internal_border), XtRImmediate, (XtPointer) 2 },
 	{ XtNfont, XtCFont, XtRString, sizeof(char *),
-	offset(font), XtRString, "9x15" },
-
-#if 1
-
-	{ XtNcolor0, XtCColor, XtRPixel, sizeof(Pixel),
-	offset(color[0]), XtRString, "black" },
-	{ XtNcolor1, XtCColor, XtRPixel, sizeof(Pixel),
-	offset(color[1]), XtRString, "white" },
-	{ XtNcolor2, XtCColor, XtRPixel, sizeof(Pixel),
-	offset(color[2]), XtRString, "#d7d7d7" },
-	{ XtNcolor3, XtCColor, XtRPixel, sizeof(Pixel),
-	offset(color[3]), XtRString, "#ff9200" },
-	{ XtNcolor4, XtCColor, XtRPixel, sizeof(Pixel),
-	offset(color[4]), XtRString, "#ff0000" },
-	{ XtNcolor5, XtCColor, XtRPixel, sizeof(Pixel),
-	offset(color[5]), XtRString, "#00cd00" },
-	{ XtNcolor6, XtCColor, XtRPixel, sizeof(Pixel),
-	offset(color[6]), XtRString, "#0000fe" },
-	{ XtNcolor7, XtCColor, XtRPixel, sizeof(Pixel),
-	offset(color[7]), XtRString, "#c86400" },
-	{ XtNcolor8, XtCColor, XtRPixel, sizeof(Pixel),
-	offset(color[8]), XtRString, "#a3a3a3" },
-	{ XtNcolor9, XtCColor, XtRPixel, sizeof(Pixel),
-	offset(color[9]), XtRString, "#ebebeb" },
-	{ XtNcolor10, XtCColor, XtRPixel, sizeof(Pixel),
-	offset(color[10]), XtRString, "#a500ff" },
-	{ XtNcolor11, XtCColor, XtRPixel, sizeof(Pixel),
-	offset(color[11]), XtRString, "#fffd00" },
-	{ XtNcolor12, XtCColor, XtRPixel, sizeof(Pixel),
-	offset(color[12]), XtRString, "#ff00bc" },
-	{ XtNcolor13, XtCColor, XtRPixel, sizeof(Pixel),
-	offset(color[13]), XtRString, "#00ff00" },
-	{ XtNcolor14, XtCColor, XtRPixel, sizeof(Pixel),
-	offset(color[14]), XtRString, "#00c8ff" },
-	{ XtNcolor15, XtCColor, XtRPixel, sizeof(Pixel),
-	offset(color[15]), XtRString, "#ffcc80" },
-
-#else
-
-	{ XtNcolor0, XtCColor, XtRPixel, sizeof(Pixel),
-	offset(color[0]), XtRString, "black" },
-	{ XtNcolor1, XtCColor, XtRPixel, sizeof(Pixel),
-	offset(color[1]), XtRString, "white" },
-	{ XtNcolor2, XtCColor, XtRPixel, sizeof(Pixel),
-	offset(color[2]), XtRString, "#a6a6a6" },
-	{ XtNcolor3, XtCColor, XtRPixel, sizeof(Pixel),
-	offset(color[3]), XtRString, "#ff6302" },
-	{ XtNcolor4, XtCColor, XtRPixel, sizeof(Pixel),
-	offset(color[4]), XtRString, "#ca0808" },
-	{ XtNcolor5, XtCColor, XtRPixel, sizeof(Pixel),
-	offset(color[5]), XtRString, "#008e18" },
-	{ XtNcolor6, XtCColor, XtRPixel, sizeof(Pixel),
-	offset(color[6]), XtRString, "#0000e3" },
-	{ XtNcolor7, XtCColor, XtRPixel, sizeof(Pixel),
-	offset(color[7]), XtRString, "#814007" },
-	{ XtNcolor8, XtCColor, XtRPixel, sizeof(Pixel),
-	offset(color[8]), XtRString, "#6b6b6b" },
-	{ XtNcolor9, XtCColor, XtRPixel, sizeof(Pixel),
-	offset(color[9]), XtRString, "#d6d6d6" },
-	{ XtNcolor10, XtCColor, XtRPixel, sizeof(Pixel),
-	offset(color[10]), XtRString, "#5100c2" },
-	{ XtNcolor11, XtCColor, XtRPixel, sizeof(Pixel),
-	offset(color[11]), XtRString, "#fdf105" },
-	{ XtNcolor12, XtCColor, XtRPixel, sizeof(Pixel),
-	offset(color[12]), XtRString, "#ff9259" },
-	{ XtNcolor13, XtCColor, XtRPixel, sizeof(Pixel),
-	offset(color[13]), XtRString, "#26cf17" },
-	{ XtNcolor14, XtCColor, XtRPixel, sizeof(Pixel),
-	offset(color[14]), XtRString, "#02b2f2" },
-	{ XtNcolor15, XtCColor, XtRPixel, sizeof(Pixel),
-	offset(color[15]), XtRString, "#b28b48" },
-
-#endif
-
-	{ XtNcolor16, XtCColor, XtRPixel, sizeof(Pixel),
-	offset(color[16]), XtRString, "#000000" },
-	{ XtNcolor17, XtCColor, XtRPixel, sizeof(Pixel),
-	offset(color[17]), XtRString, "#F0E0D0" },
-	{ XtNcolor18, XtCColor, XtRPixel, sizeof(Pixel),
-	offset(color[18]), XtRString, "#808080" },
-	{ XtNcolor19, XtCColor, XtRPixel, sizeof(Pixel),
-	offset(color[19]), XtRString, "#505050" },
-	{ XtNcolor20, XtCColor, XtRPixel, sizeof(Pixel),
-	offset(color[20]), XtRString, "#E0B000" },
-	{ XtNcolor21, XtCColor, XtRPixel, sizeof(Pixel),
-	offset(color[21]), XtRString, "#C0A070" },
-	{ XtNcolor22, XtCColor, XtRPixel, sizeof(Pixel),
-	offset(color[22]), XtRString, "#806040" },
-	{ XtNcolor23, XtCColor, XtRPixel, sizeof(Pixel),
-	offset(color[23]), XtRString, "#403020" },
-	{ XtNcolor24, XtCColor, XtRPixel, sizeof(Pixel),
-	offset(color[24]), XtRString, "#00A0F0" },
-	{ XtNcolor25, XtCColor, XtRPixel, sizeof(Pixel),
-	offset(color[25]), XtRString, "#0000F0" },
-	{ XtNcolor26, XtCColor, XtRPixel, sizeof(Pixel),
-	offset(color[26]), XtRString, "#000070" },
-	{ XtNcolor27, XtCColor, XtRPixel, sizeof(Pixel),
-	offset(color[27]), XtRString, "#F00000" },
-	{ XtNcolor28, XtCColor, XtRPixel, sizeof(Pixel),
-	offset(color[28]), XtRString, "#800000" },
-	{ XtNcolor29, XtCColor, XtRPixel, sizeof(Pixel),
-	offset(color[29]), XtRString, "#9000B0" },
-	{ XtNcolor30, XtCColor, XtRPixel, sizeof(Pixel),
-	offset(color[30]), XtRString, "#006010" },
-	{ XtNcolor31, XtCColor, XtRPixel, sizeof(Pixel),
-	offset(color[31]), XtRString, "#60F040" },
-
+	  offset(font), XtRString, DEFAULT_X11_FONT },
 	{ XtNredrawCallback, XtCCallback, XtRCallback, sizeof(XtPointer),
-	offset(redraw_callbacks), XtRCallback, (XtPointer)NULL }
+	  offset(redraw_callbacks), XtRCallback, (XtPointer)NULL }
 };
 
 
@@ -763,7 +343,7 @@ WidgetClass angbandWidgetClass = (WidgetClass) &angbandClassRec;
  * Clear an area
  */
 static void AngbandClearArea(AngbandWidget widget,
-                             int x, int y, int w, int h, int color)
+                             int x, int y, int w, int h, int a)
 {
 	/* Figure out which area to clear */
 	y = y * widget->angband.fontheight + widget->angband.internal_border;
@@ -771,9 +351,10 @@ static void AngbandClearArea(AngbandWidget widget,
 
 	/* Clear the area */
 	XFillRectangle(XtDisplay(widget), XtWindow(widget),
-	               widget->angband.gc[color],
-	               x, y, widget->angband.fontwidth*w,
-	               widget->angband.fontheight*h);
+	               widget->angband.gc[a],
+	               x, y,
+	               widget->angband.fontwidth * w,
+	               widget->angband.fontheight * h);
 }
 
 
@@ -782,7 +363,7 @@ static void AngbandClearArea(AngbandWidget widget,
  * Output some text
  */
 static void AngbandOutputText(AngbandWidget widget, int x, int y,
-                              String txt, int len, int color)
+                              String txt, int len, int a)
 {
 	/* Do nothing if the string is null */
 	if (!txt || !*txt) return;
@@ -797,7 +378,7 @@ static void AngbandOutputText(AngbandWidget widget, int x, int y,
 
 	/* Place the string */
 	XDrawImageString(XtDisplay(widget), XtWindow(widget),
-	                 widget->angband.gc[color], x, y, txt, len);
+	                 widget->angband.gc[a], x, y, txt, len);
 }
 
 
@@ -806,13 +387,30 @@ static void AngbandOutputText(AngbandWidget widget, int x, int y,
 /*
  * Draw some graphical characters.
  */
+# ifdef USE_TRANSPARENCY
 static void AngbandOutputPict(AngbandWidget widget, int x, int y, int n,
-                              const byte *ap, const char *cp)
+ const byte *ap, const char *cp, const byte *tap, const char *tcp)
+# else /* USE_TRANSPARENCY */
+static void AngbandOutputPict(AngbandWidget widget, int x, int y, int n,
+ const byte *ap, const char *cp)
+# endif /* USE_TRANSPARENCY */
+
+
 {
-	int i;
+	int i, x1, y1;
 
 	byte a;
 	char c;
+
+#ifdef USE_TRANSPARENCY
+	byte ta;
+	char tc;
+
+	int x2, y2;
+	int k,l;
+
+	unsigned long pixel, blank;
+#endif /* USE_TRANSPARENCY */
 
 	/* Figure out where to place the text */
 	y = (y * widget->angband.fontheight + widget->angband.internal_border);
@@ -823,22 +421,88 @@ static void AngbandOutputPict(AngbandWidget widget, int x, int y, int n,
 		a = *ap++;
 		c = *cp++;
 
+		/* For extra speed - cache these values */
+		x1 = (c&0x7F) * widget->angband.fontwidth;
+		y1 = (a&0x7F) * widget->angband.fontheight;
+
+#ifdef USE_TRANSPARENCY
+
+		ta = *tap++;
+		tc = *tcp++;
+
+		/* For extra speed - cache these values */
+		x2 = (tc&0x7F) * widget->angband.fontwidth;
+		y2 = (ta&0x7F) * widget->angband.fontheight;
+
+		/* Optimise the common case */
+		if ((x1 == x2) && (y1 == y2))
+		{
+			/* Draw object / terrain */
+			XPutImage(XtDisplay(widget), XtWindow(widget),
+		  	        widget->angband.gc[0],
+		    	      widget->angband.tiles,
+		    	      x1, y1,
+		    	      x, y,
+		    	      widget->angband.fontwidth,
+		 	      widget->angband.fontheight);
+		}
+		else
+		{
+			/* Mega Hack^2 - assume the top left corner is "black" */
+			blank = XGetPixel(widget->angband.tiles,
+				 0, widget->angband.fontheight * 6);
+
+			for (k = 0; k < widget->angband.fontwidth; k++)
+			{
+				for (l = 0; l < widget->angband.fontheight; l++)
+				{
+					/* If mask set... */
+					if ((pixel = XGetPixel(widget->angband.tiles,
+						 x1 + k, y1 + l)) == blank)
+					{
+
+						/* Output from the terrain */
+						pixel = XGetPixel(widget->angband.tiles,
+							 x2 + k, y2 + l);
+					}
+
+					/* Store into the temp storage. */
+					XPutPixel(widget->angband.TmpImage,
+						 k, l, pixel);
+				}
+			}
+
+
+			/* Draw to screen */
+
+			/* Draw object / terrain */
+			XPutImage(XtDisplay(widget), XtWindow(widget),
+			          widget->angband.gc[0],
+			          widget->angband.TmpImage,
+			          0, 0,
+			          x, y,
+			          widget->angband.fontwidth,
+			          widget->angband.fontheight);
+		}
+
+#else /* USE_TRANSPARENCY */
+
+		/* Draw object / terrain */
 		XPutImage(XtDisplay(widget), XtWindow(widget),
-		          widget->angband.gc[17],
+		          widget->angband.gc[0],
 		          widget->angband.tiles,
-		          (c&0x7F) * widget->angband.fontwidth + 1,
-		          (a&0x7F) * widget->angband.fontheight + 1,
+		          x1, y1,
 		          x, y,
 		          widget->angband.fontwidth,
 		          widget->angband.fontheight);
+
+#endif /* USE_TRANSPARENCY */
 
 		x += widget->angband.fontwidth;
 	}
 }
 
 #endif /* USE_GRAPHICS */
-
-
 
 /*
  * Private procedures
@@ -854,58 +518,96 @@ static void AngbandOutputPict(AngbandWidget widget, int x, int y, int n,
  */
 static void Initialize(AngbandWidget request, AngbandWidget wnew)
 {
-	XGCValues gcv;
+	Display *dpy = XtDisplay(wnew);
+
 	int depth = DefaultDepthOfScreen(XtScreen((Widget) wnew));
+
+	XGCValues gcv;
 	TopLevelShellWidget parent =
 	(TopLevelShellWidget)XtParent((Widget) wnew);
-	int n;
+	int i;
+
+	/* Default background pixel */
+	unsigned long bg = create_pixel(dpy,
+	                                angband_color_table[0][1],
+	                                angband_color_table[0][2],
+	                                angband_color_table[0][3]);
+
+	/* Default foreground pixel */
+	unsigned long fg = create_pixel(dpy,
+	                                angband_color_table[1][1],
+	                                angband_color_table[1][2],
+	                                angband_color_table[1][3]);
 
 	/* Fix the background color */
-	wnew->core.background_pixel = wnew->angband.color[0];
+	wnew->core.background_pixel = bg;
 
 	/* Get some information about the font */
 	wnew->angband.fnt = getFont(wnew, wnew->angband.font, TRUE);
 	wnew->angband.fontheight = wnew->angband.fnt->ascent +
-	wnew->angband.fnt->descent;
+		wnew->angband.fnt->descent;
 	wnew->angband.fontwidth = wnew->angband.fnt->max_bounds.width;
 	wnew->angband.fontascent = wnew->angband.fnt->ascent;
 
 	/* Create and initialize the graphics contexts */ /* GXset? */
 	gcv.font = wnew->angband.fnt->fid;
 	gcv.graphics_exposures = FALSE;
-	gcv.background = wnew->angband.color[0];
-	for (n = 0; n < NUM_COLORS; n++)
+	gcv.background = bg;
+
+	for (i = 0; i < NUM_COLORS; i++)
 	{
-		if (depth == 1 && n >= 1)
+		unsigned long pixel;
+
+		/* Acquire Angband colors */
+		wnew->angband.color[i][0] = angband_color_table[i][0];
+		wnew->angband.color[i][1] = angband_color_table[i][1];
+		wnew->angband.color[i][2] = angband_color_table[i][2];
+		wnew->angband.color[i][3] = angband_color_table[i][3];
+
+		if (depth > 1)
 		{
-			gcv.foreground = wnew->angband.color[1];
+			/* Create pixel */
+			pixel = create_pixel(dpy,
+			                     wnew->angband.color[i][1],
+			                     wnew->angband.color[i][2],
+			                     wnew->angband.color[i][3]);
 		}
 		else
 		{
-			gcv.foreground = wnew->angband.color[n];
+			/* Use background or foreground */
+			pixel = ((i == 0) ? bg : fg);
 		}
 
-		wnew->angband.gc[n] = XtGetGC((Widget)wnew, GCFont | GCForeground |
-		                             GCBackground | GCGraphicsExposures,
-		                             &gcv);
+		gcv.foreground = pixel;
+
+		/* Copy */
+		gcv.function = 3;
+
+		wnew->angband.gc[i] = XtGetGC((Widget)wnew,
+		                              (GCFont | GCForeground | GCFunction |
+		                               GCBackground | GCGraphicsExposures),
+		                              &gcv);
 	}
 
 	/* Create a special GC for highlighting */
 	gcv.foreground = (BlackPixelOfScreen(XtScreen((Widget)wnew)) ^
 	                  WhitePixelOfScreen(XtScreen((Widget)wnew)));
+	gcv.background = 0;
+
 	gcv.function = GXxor;
-	wnew->angband.gc[COLOR_XOR] = XtGetGC((Widget)wnew, GCFunction |
-	                                      GCGraphicsExposures |
-	                                      GCForeground, &gcv);
+	wnew->angband.gc[COLOR_XOR] = XtGetGC((Widget)wnew,
+	                                      (GCFunction | GCForeground | GCBackground |
+	                                       GCGraphicsExposures),
+	                                      &gcv);
 
 	/* Calculate window geometry */
 	wnew->core.height = (wnew->angband.start_rows * wnew->angband.fontheight +
 	                     2 * wnew->angband.internal_border);
 	wnew->core.width = (wnew->angband.start_columns * wnew->angband.fontwidth +
-	                   2 * wnew->angband.internal_border);
+	                    2 * wnew->angband.internal_border);
 
-	/* We need to be able to resize the Widget if the user want's to
-	change font on the fly! */
+	/* We need to be able to resize the Widget if the user wants to */
+	/* change font on the fly! */
 	parent->shell.allow_shell_resize = TRUE;
 
 	/* Calculates all the size hints */
@@ -923,7 +625,7 @@ static void Destroy(AngbandWidget widget)
 	int n;
 
 	/* Free all GC's */
-	for (n = 0; n < NUM_COLORS+1; n++)
+	for (n = 0; n < NUM_COLORS + 1; n++)
 	{
 		XtReleaseGC((Widget)widget, widget->angband.gc[n]);
 	}
@@ -947,24 +649,31 @@ static void Redisplay(AngbandWidget widget, XEvent *event, Region region)
 
 
 /*
- * Font, colors and internal_border can be changed on the fly.
+ * Font and internal_border can be changed on the fly.
+ *
  * The entire widget is redrawn if any of those parameters change (all
  * can potentially have effects that spans the whole widget).
+ *
+ * Color changes are handled elsewhere.
+ *
+ * This function is very underspecified, in terms of how these changes can
+ * occur, and what is true about the various AngbandWidget's passed in.  It
+ * is very likely that this code no longer works.
  */
 static Boolean SetValues(AngbandWidget current, AngbandWidget request,
                          AngbandWidget wnew, ArgList args,
                          Cardinal *num_args)
 {
-	int depth = DefaultDepthOfScreen(XtScreen((Widget) wnew));
+	Display *dpy = XtDisplay(wnew);
+
 	Boolean font_changed = FALSE;
 	Boolean border_changed = FALSE;
-	Boolean color_changed = FALSE;
-	XGCValues gcv;
 	int height, width;
-	int n;
+	int i;
 
-	/* Changed font? */
-	if (current->angband.font != wnew->angband.font)
+
+	/* Handle font change */
+	if (wnew->angband.font != current->angband.font)
 	{
 		/* Check if the font exists */
 		wnew->angband.fnt = getFont(wnew, wnew->angband.font, FALSE);
@@ -974,70 +683,41 @@ static Boolean SetValues(AngbandWidget current, AngbandWidget request,
 		{
 			wnew->angband.fnt = current->angband.fnt;
 			wnew->angband.font = current->angband.font;
-			XtWarning("Couldn't find the request font!");
+			XtWarning("Couldn't find the requested font!");
 		}
 		else
 		{
 			font_changed = TRUE;
+
 			/* Free the old font */
 			XFreeFont(XtDisplay((Widget)wnew), current->angband.fnt);
 			/* Update font information */
 			wnew->angband.fontheight = wnew->angband.fnt->ascent +
-			wnew->angband.fnt->descent;
+				wnew->angband.fnt->descent;
 			wnew->angband.fontwidth = wnew->angband.fnt->max_bounds.width;
 			wnew->angband.fontascent = wnew->angband.fnt->ascent;
 		}
 	}
 
-	/* Check all colors, if one or more has changed the redo all GC's */
-	for (n = 0; n < NUM_COLORS; n++)
+	/* Handle font change */
+	if (font_changed)
 	{
-		if (current->angband.color[n] != wnew->angband.color[n])
+		/* Update all GC's */
+		for (i = 0; i < NUM_COLORS; i++)
 		{
-			color_changed = TRUE;
-		}
-	}
+			/* Steal the old GC */
+			wnew->angband.gc[i] = current->angband.gc[i];
+			current->angband.gc[i] = NULL;
 
-	/* Change all GC's if color or font has changed */
-	if (color_changed || font_changed)
-	{
-		gcv.font = wnew->angband.fnt->fid;
-		gcv.graphics_exposures = FALSE;
-		gcv.background = wnew->angband.color[0];
-
-		/* Do all GC's */
-		for (n = 0; n < NUM_COLORS; n++)
-		{
-			if (depth == 1 && n >= 1)
-			{
-				gcv.foreground = wnew->angband.color[1];
-			}
-			else
-			{
-				gcv.foreground = wnew->angband.color[n];
-			}
-
-			/* Release the old GC */
-			XtReleaseGC((Widget)current, current->angband.gc[n]);
-
-			/* Get the new GC */
-			wnew->angband.gc[n] = XtGetGC((Widget)wnew, GCFont | GCForeground |
-			                             GCBackground | GCGraphicsExposures,
-			                             &gcv);
+			/* Be sure the correct font is ready */
+			XSetFont(dpy, wnew->angband.gc[i], wnew->angband.fnt->fid);
 		}
 
-		/* Replace the old XOR/highlighting GC */
-		gcv.foreground = (BlackPixelOfScreen(XtScreen((Widget)wnew)) ^
-				  WhitePixelOfScreen(XtScreen((Widget)wnew)));
-		gcv.function = GXxor;
-		XtReleaseGC((Widget)current, current->angband.gc[COLOR_XOR]);
-		wnew->angband.gc[NUM_COLORS] = XtGetGC((Widget)wnew, GCFunction |
-		                                      GCGraphicsExposures |
-		                                      GCForeground, &gcv);
-
-		/* Fix the background color */
-		wnew->core.background_pixel = wnew->angband.color[0];
+		/* Steal the old GC */
+		wnew->angband.gc[NUM_COLORS] = current->angband.gc[NUM_COLORS];
+		current->angband.gc[NUM_COLORS] = NULL;
 	}
+
 
 	/* Check if internal border width has changed, used later */
 	if (current->angband.internal_border != wnew->angband.internal_border)
@@ -1046,8 +726,8 @@ static Boolean SetValues(AngbandWidget current, AngbandWidget request,
 	}
 
 
-	/* If the font or the internal border has changed, all geometry
-	has to be recalculated */
+	/* If the font or the internal border has changed, all geometry */
+	/* has to be recalculated */
 	if (font_changed || border_changed)
 	{
 		/* Change window size */
@@ -1073,7 +753,7 @@ static Boolean SetValues(AngbandWidget current, AngbandWidget request,
 	}
 
 	/* Tell it to redraw the widget if anything has changed */
-	return (font_changed || color_changed || border_changed);
+	return (font_changed || border_changed);
 }
 
 
@@ -1152,47 +832,6 @@ static XFontStruct *getFont(AngbandWidget widget,
 
 
 
-#ifndef IsModifierKey
-
-/*
- * Keysym macros, used on Keysyms to test for classes of symbols
- * These were stolen from one of the X11 header files
- *
- * Also appears in "main-x11.c".
- */
-
-#define IsKeypadKey(keysym) \
-  (((unsigned)(keysym) >= XK_KP_Space) && ((unsigned)(keysym) <= XK_KP_Equal))
-
-#define IsCursorKey(keysym) \
-  (((unsigned)(keysym) >= XK_Home)     && ((unsigned)(keysym) <  XK_Select))
-
-#define IsPFKey(keysym) \
-  (((unsigned)(keysym) >= XK_KP_F1)     && ((unsigned)(keysym) <= XK_KP_F4))
-
-#define IsFunctionKey(keysym) \
-  (((unsigned)(keysym) >= XK_F1)       && ((unsigned)(keysym) <= XK_F35))
-
-#define IsMiscFunctionKey(keysym) \
-  (((unsigned)(keysym) >= XK_Select)   && ((unsigned)(keysym) <  XK_KP_Space))
-
-#define IsModifierKey(keysym) \
-  (((unsigned)(keysym) >= XK_Shift_L)  && ((unsigned)(keysym) <= XK_Hyper_R))
-
-#endif /* IsModifierKey */
-
-
-/*
- * Checks if the keysym is a special key or a normal key
- * Assume that XK_MISCELLANY keysyms are special
- *
- * Also appears in "main-x11.c".
- */
-#define IsSpecialKey(keysym) \
-  ((unsigned)(keysym) >= 0xFF00)
-
-
-
 /*
  * Maximum number of windows
  */
@@ -1227,6 +866,11 @@ struct term_data
  */
 static term_data data[MAX_TERM_DATA];
 
+
+/*
+ * Current number of windows open
+ */
+static int num_term = MAX_TERM_DATA;
 
 /*
  * The names of the term_data's
@@ -1267,8 +911,8 @@ Arg defaultArgs[TERM_FALLBACKS] =
 	{ XtNstartColumns, 80},
 	{ XtNminRows,      1},
 	{ XtNminColumns,   1},
-	{ XtNmaxRows,      24},
-	{ XtNmaxColumns,   80}
+	{ XtNmaxRows,      256},
+	{ XtNmaxColumns,   256}
 };
 
 
@@ -1505,24 +1149,95 @@ errr CheckEvent(bool wait)
 
 
 /*
+ * Monstrous hack.
+ */
+static void Term_xtra_xaw_react_aux(term_data *td)
+{
+	AngbandWidget wnew = td->widget;
+
+	Display *dpy = XtDisplay((Widget) wnew);
+
+	int depth = DefaultDepthOfScreen(XtScreen((Widget) wnew));
+
+	int i;
+
+	/* See if any colors need to be changed */
+	for (i = 0; i < NUM_COLORS; i++)
+	{
+		if (depth > 1)
+		{
+			if ((wnew->angband.color[i][0] != angband_color_table[i][0]) ||
+			    (wnew->angband.color[i][1] != angband_color_table[i][1]) ||
+			    (wnew->angband.color[i][2] != angband_color_table[i][2]) ||
+			    (wnew->angband.color[i][3] != angband_color_table[i][3]))
+			{
+				unsigned long pixel;
+
+				/* Save new values */
+				wnew->angband.color[i][0] = angband_color_table[i][0];
+				wnew->angband.color[i][1] = angband_color_table[i][1];
+				wnew->angband.color[i][2] = angband_color_table[i][2];
+				wnew->angband.color[i][3] = angband_color_table[i][3];
+
+				/* Create pixel */
+				pixel = create_pixel(dpy,
+				                     wnew->angband.color[i][1],
+				                     wnew->angband.color[i][2],
+				                     wnew->angband.color[i][3]);
+
+
+				/* Change */
+				XSetForeground(dpy, wnew->angband.gc[i], pixel);
+			}
+		}
+	}
+}
+
+
+/*
+ * Monstrous hack.
+ */
+static errr Term_xtra_xaw_react(void)
+{
+	int i;
+
+	/* Initialize the windows */
+	for (i = 0; i < num_term; i++)
+	{
+		term_data *td = &data[i];
+
+		if (!td) break;
+
+		Term_xtra_xaw_react_aux(td);
+	}
+
+	return (0);
+}
+
+
+/*
  * Handle a "special request"
  */
 static errr Term_xtra_xaw(int n, int v)
 {
-	int i;
+	term_data *td = (term_data*)(Term->data);
+
+	Widget widget = (Widget)(td->widget);
+
+	Display *dpy = XtDisplay(widget);
 
 	/* Handle a subset of the legal requests */
 	switch (n)
 	{
 		/* Make a noise */
 		case TERM_XTRA_NOISE:
-		XBell(XtDisplay((Widget)data[0].widget), 100);
+		XBell(dpy, 100);
 		return (0);
 
 		/* Flush the output */
 		case TERM_XTRA_FRESH:
-		XFlush(XtDisplay((Widget)data[0].widget));
-		/* Nonblock event-check so the flushed events can be showed */
+		XFlush(dpy);
+		/* Allow flushed events to be showed */
 		CheckEvent(FALSE);
 		return (0);
 
@@ -1539,20 +1254,18 @@ static errr Term_xtra_xaw(int n, int v)
 		while (!CheckEvent(FALSE));
 		return (0);
 
+		/* Clear the window */
+		case TERM_XTRA_CLEAR:
+		XClearWindow(dpy, XtWindow(widget));
+		return (0);
+
 		/* Delay */
 		case TERM_XTRA_DELAY:
 		usleep(1000 * v);
 		return (0);
 
-		/* Clear the window */
-		case TERM_XTRA_CLEAR:
-		for (i = 0; i < MAX_TERM_DATA; i++)
-		{
-		    if (Term == &data[i].t)
-			XClearWindow(XtDisplay((Widget)data[i].widget),
-			             XtWindow((Widget)data[i].widget));
-		}
-		return (0);
+		case TERM_XTRA_REACT:
+		return (Term_xtra_xaw_react());
 	}
 
 	/* Unknown */
@@ -1579,6 +1292,8 @@ static errr Term_wipe_xaw(int x, int y, int n)
 
 /*
  * Draw the cursor, by hiliting with XOR
+ *
+ * Should perhaps use rectangle outline, ala "main-mac.c".  XXX XXX XXX
  */
 static errr Term_curs_xaw(int x, int y)
 {
@@ -1600,7 +1315,7 @@ static errr Term_text_xaw(int x, int y, int n, byte a, cptr s)
 	term_data *td = (term_data*)(Term->data);
 
 	/* Draw the text */
-	AngbandOutputText(td->widget, x, y, (String)s, n, (a & 0x0F));
+	AngbandOutputText(td->widget, x, y, (String)s, n, a);
 
 	/* Success */
 	return (0);
@@ -1612,12 +1327,21 @@ static errr Term_text_xaw(int x, int y, int n, byte a, cptr s)
 /*
  * Draw some graphical characters.
  */
+# ifdef USE_TRANSPARENCY
+static errr Term_pict_xaw(int x, int y, int n, const byte *ap, const char *cp,
+	const byte *tap, const char *tcp)
+# else /* USE_TRANSPARENCY */
 static errr Term_pict_xaw(int x, int y, int n, const byte *ap, const char *cp)
+# endif /* USE_TRANSPARENCY */
 {
 	term_data *td = (term_data*)(Term->data);
 
 	/* Draw the pictures */
+# ifdef USE_TRANSPARENCY
+	AngbandOutputPict(td->widget, x, y, n, ap, cp, tap, tcp);
+# else /* USE_TRANSPARENCY */
 	AngbandOutputPict(td->widget, x, y, n, ap, cp);
+# endif /* USE_TRANSPARENCY */
 
 	/* Success */
 	return (0);
@@ -1672,17 +1396,6 @@ static errr term_data_init(term_data *td, Widget topLevel,
 	t->wipe_hook = Term_wipe_xaw;
 	t->text_hook = Term_text_xaw;
 
-#ifdef USE_GRAPHICS
-
-	if (use_graphics)
-	{
-		t->pict_hook = Term_pict_xaw;
-
-		t->higher_pict = TRUE;
-	}
-
-#endif /* USE_GRAPHICS */
-
 	/* Save the data */
 	t->data = td;
 
@@ -1720,16 +1433,18 @@ errr init_xaw(int argc, char *argv[])
 
 	cptr dpy_name = "";
 
-	int num_term = MAX_TERM_DATA;
-
-	char buf[80];
-
 
 #ifdef USE_GRAPHICS
 
 	char filename[1024];
 
-	XImage *tiles_good = NULL;
+	int pict_wid = 0;
+	int pict_hgt = 0;
+
+#ifdef USE_TRANSPARENCY
+
+	char *TmpData;
+#endif /* USE_TRANSPARENCY */
 
 #endif /* USE_GRAPHICS */
 
@@ -1742,21 +1457,26 @@ errr init_xaw(int argc, char *argv[])
 			continue;
 		}
 
+		if (prefix(argv[i], "-s"))
+		{
+			smoothRescaling = FALSE;
+			continue;
+		}
+
 		if (prefix(argv[i], "-n"))
 		{
 			num_term = atoi(&argv[i][2]);
-
-			if (num_term < 1) num_term = 1;
 			if (num_term > MAX_TERM_DATA) num_term = MAX_TERM_DATA;
-
+			else if (num_term < 1) num_term = 1;
 			continue;
 		}
 
 		plog_fmt("Ignoring option: %s", argv[i]);
 	}
 
+
 	/* Attempt to open the local display */
-	dpy = XOpenDisplay("");
+	dpy = XOpenDisplay(dpy_name);
 
 	/* Failure -- assume no X11 available */
 	if (!dpy) return (-1);
@@ -1766,44 +1486,14 @@ errr init_xaw(int argc, char *argv[])
 
 
 #ifdef USE_XAW_LANG
+
 	/* Support locale processing */
 	XtSetLanguageProc(NULL, NULL, NULL);
+
 #endif /* USE_XAW_LANG */
 
 
-#ifdef USE_GRAPHICS
-
-	/* Try graphics */
-	if (arg_graphics)
-	{
-		/* Build the name of the "tiles.raw" file */
-		path_build(filename, 1024, ANGBAND_DIR_XTRA, "tiles.raw");
-
-		/* Use graphics if bitmap file exists */
-		if (0 == fd_close(fd_open(filename, O_RDONLY)))
-		{
-			/* Use graphics */
-			use_graphics = TRUE;
-		}
-	}
-
-#endif /* USE_GRAPHICS */
-
-
-	/* Load colors */
-	if (use_graphics)
-	{
-		/* Process "graf-x11.prf" XXX XXX XXX */
-		(void)process_pref_file("graf-x11.prf");
-	}
-	else
-	{
-		/* Process "font-x11.prf" XXX XXX XXX */
-		(void)process_pref_file("font-x11.prf");
-	}
-
-
-	/* Initialize the toolkit XXX XXX XXX */
+	/* Initialize the toolkit */
 	topLevel = XtAppInitialize(&appcon, "Angband", NULL, 0, &argc, argv,
 	                           fallback, NULL, 0);
 
@@ -1820,71 +1510,121 @@ errr init_xaw(int argc, char *argv[])
 		angband_term[i] = Term;
 	}
 
-
-#ifdef USE_GRAPHICS
-
-	/* Load graphics */
-	if (use_graphics)
-	{
-		term_data *td = &data[0];
-
-		Widget widget = (Widget)(td->widget);
-
-		unsigned long ColTable[256];
-
-		XImage *tiles_raw;
-
-		dpy = XtDisplay(widget);
-
-		/* Prepare color table */
-		for (i = 0; i < 256; ++i)
-		{
-			XGCValues xgcv;
-
-			XGetGCValues(dpy, td->widget->angband.gc[i],
-			             GCForeground, &xgcv);
-
-			ColTable[i] = xgcv.foreground;
-		}
-
-		/* Load the graphics XXX XXX XXX */
-		tiles_raw = ReadRaw(dpy, filename, 256, 256);
-		tiles_good = RemapColors(dpy, tiles_raw, ColTable);
-		XDestroyImage(tiles_raw);
-	}
-
-	/* Load graphics */
-	if (use_graphics)
-	{
-		/* Initialize the windows */
-		for (i = 0; i < num_term; i++)
-		{
-			term_data *td = &data[i];
-
-			Widget widget = (Widget)(td->widget);
-
-			dpy = XtDisplay(widget);
-
-			/* Resize tiles */
-			td->widget->angband.tiles =
-			(ResizeImage(dpy, tiles_good, 8, 8,
-			             td->widget->angband.fontwidth,
-			             td->widget->angband.fontheight));
-		}
-	}
-
-#endif /* USE_GRAPHICS */
-
-
 	/* Activate the "Angband" window screen */
 	Term_activate(&data[0].t);
 
 	/* Raise the "Angband" window */
 	term_raise(&data[0]);
 
+
+#ifdef USE_GRAPHICS
+
+	/* Try graphics */
+	if (arg_graphics)
+	{
+		/* Try the "16x16.bmp" file */
+		path_build(filename, 1024, ANGBAND_DIR_XTRA, "graf/16x16.bmp");
+
+		/* Use the "16x16.bmp" file if it exists */
+		if (0 == fd_close(fd_open(filename, O_RDONLY)))
+		{
+			/* Use graphics */
+			use_graphics = TRUE;
+
+			use_transparency = TRUE;
+
+			pict_wid = pict_hgt = 16;
+
+			ANGBAND_GRAF = "new";
+		}
+		else
+		{
+			/* Try the "8x8.bmp" file */
+			path_build(filename, 1024, ANGBAND_DIR_XTRA, "graf/8x8.bmp");
+
+			/* Use the "8x8.bmp" file if it exists */
+			if (0 == fd_close(fd_open(filename, O_RDONLY)))
+			{
+				/* Use graphics */
+				use_graphics = TRUE;
+
+				pict_wid = pict_hgt = 8;
+
+				ANGBAND_GRAF = "old";
+			}
+		}
+	}
+
+	/* Load graphics */
+	if (use_graphics)
+	{
+		/* Hack -- Get the Display */
+		term_data *td = &data[0];
+		Widget widget = (Widget)(td->widget);
+		Display *dpy = XtDisplay(widget);
+
+		XImage *tiles_raw;
+
+		/* Load the graphical tiles */
+		tiles_raw = ReadBMP(dpy, filename);
+
+		/* Initialize the windows */
+		for (i = 0; i < num_term; i++)
+		{
+			term_data *td = &data[i];
+
+			term *t = &td->t;
+
+			t->pict_hook = Term_pict_xaw;
+
+			t->higher_pict = TRUE;
+
+			/* Resize tiles */
+			td->widget->angband.tiles =
+			ResizeImage(dpy, tiles_raw,
+			            pict_wid, pict_hgt,
+			            td->widget->angband.fontwidth,
+			            td->widget->angband.fontheight);
+		}
+
+#ifdef USE_TRANSPARENCY
+		/* Initialize the transparency temp storage*/
+		for (i = 0; i < num_term; i++)
+		{
+			term_data *td = &data[i];
+			int ii, jj;
+			int depth = DefaultDepth(dpy, DefaultScreen(dpy));
+			Visual *visual = DefaultVisual(dpy, DefaultScreen(dpy));
+			int total;
+
+
+			/* Determine total bytes needed for image */
+			ii = 1;
+			jj = (depth - 1) >> 2;
+			while (jj >>= 1) ii <<= 1;
+			total = td->widget->angband.fontwidth *
+				 td->widget->angband.fontheight * ii;
+
+
+			TmpData = (char *)malloc(total);
+
+			td->widget->angband.TmpImage = XCreateImage(dpy,
+				visual,depth,
+				ZPixmap, 0, TmpData,
+				td->widget->angband.fontwidth,
+			        td->widget->angband.fontheight, 8, 0);
+
+		}
+#endif /* USE_TRANSPARENCY */
+
+
+		/* Free tiles_raw? XXX XXX */
+	}
+
+#endif /* USE_GRAPHICS */
+
 	/* Success */
 	return (0);
 }
 
 #endif /* USE_XAW */
-

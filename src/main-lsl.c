@@ -189,25 +189,25 @@ void *read_bmp_file(void)
 		/* 1bit non compressed */
 		ptr = pal;
 		fread(ptr, 1, 3, infile);
-		
+
 		if (iswindows)
 			fread(&dummy, 1, 1, infile);
-		
+
 		dummy = ptr[0];
 		ptr[0] = ptr[2] / 4;
 		ptr[1] /= 4;
 		ptr[2] = dummy / 4;
 		fread(ptr + 3, 1, 3, infile);
-		
+
 		if (iswindows)
 			fread(&dummy, 1, 1, infile);
-		
+
 		dummy = ptr[3];
 		ptr[3] = ptr[5] / 4;
 		ptr[4] /= 4;
 		ptr[5] = dummy / 4;
 		ptr = bmap;
-		
+
 		for (j = h - 1; j >= 0; j--)
 		{
 			for (i = 0, count = 0 ; i < (w >> 3); i++)
@@ -234,7 +234,7 @@ void *read_bmp_file(void)
 	case 4:
 		/* 4bit non compressed */
 		ptr = pal;
-		
+
 		for (i = 0; i < palsize; i++)
 		{
 			fread(ptr + 3 * i, 1, 3, infile);
@@ -672,7 +672,7 @@ static void term_init_svgalib(term *t)
 	gl_setcontextvgavirtual(VGAMODE);
 	buffer = gl_allocatecontext();
 	gl_getcontext(buffer);
-	
+
 	/* Load bitmap into virtual screen */
 	term_load_bitmap();
 

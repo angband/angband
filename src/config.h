@@ -255,12 +255,6 @@
 
 
 /*
- * OPTION: Allow scrolling while targetting.
- */
-#define ALLOW_SCROLL_TARGET
-
-
-/*
  * OPTION: Delay the loading of the "f_text" array until it is actually
  * needed, saving ~1K, since "feature" descriptions are unused.
  */
@@ -361,6 +355,18 @@
 
 
 /*
+ * OPTION: Gamma correct colours (with X11)
+ */
+#define SUPPORT_GAMMA
+
+
+/*
+ * OPTION: Check the modification time of *_info.raw files
+ */
+#define CHECK_MODIFICATION_TIME
+
+
+/*
  * OPTION: Enable the "smart_learn" and "smart_cheat" options.
  * They let monsters make more "intelligent" choices about attacks
  * (including spell attacks) based on their observations of the
@@ -376,7 +382,7 @@
 
 
 /*
- * OPTION: Allow the use of random artifacts (see "init3.c").
+ * OPTION: Allow the use of random artifacts (see "randart.c").
  */
 #define GJW_RANDART
 
@@ -461,7 +467,7 @@
  * WARNING - This may allow bypassing of some of the "security"
  * compilation options and may be a security risk!
  */
-/* #define ALLOW_PREF_IN_HOME */
+#define ALLOW_PREF_IN_HOME
 
 /*
  * OPTION: Check the "time" against "lib/file/hours.txt"
@@ -493,6 +499,7 @@
  * OPTION: Default font (when using X11).
  */
 #define DEFAULT_X11_FONT		"9x15"
+
 
 /*
  * OPTION: Default fonts (when using X11)

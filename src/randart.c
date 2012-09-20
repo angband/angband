@@ -1,4 +1,4 @@
-/* File: init3.c */
+/* File: randart.c */
 
 
 /*
@@ -14,12 +14,6 @@
 
 /*
  * Random artifact generator (randart) by Greg Wooledge.
- *
- * Taken directly from "randart.c" with no significant modifications,
- * though obviously at some point some stylistic modifications will be
- * desirable, in particular, involving the order of functions, the use
- * of spaces before function parens, the use of "do/while", and the lack
- * of "static" on various functions....  :-)
  *
  * Note that the direct use of malloc/free is a bad idea.  XXX XXX XXX
  *
@@ -643,34 +637,17 @@ static const char *names_list =
 #define sign(x)	((x) > 0 ? 1 : ((x) < 0 ? -1 : 0))
 
 
-static long lprobs[S_WORD+1][S_WORD+1][S_WORD+1];	/* global, hence init to 0 */
-static long ltotal[S_WORD+1][S_WORD+1];		/* global, hence init to 0 */
-
-/* Temporary space for names, while reading and randomizing them. */
-static char *names[MAX_A_IDX];
-static int nnames = 0;
+static long lprobs[S_WORD+1][S_WORD+1][S_WORD+1];
+static long ltotal[S_WORD+1][S_WORD+1];
 
 /*
  * Cache the results of lookup_kind(), which is expensive and would
  * otherwise be called much too often.
  */
-static s16b kinds[MAX_A_IDX];
+static s16b *kinds;
 
 /* Global just for convenience. */
 static int randart_verbose = 0;
-
-static int scramble(void);
-static int scramble_artifact(int a_idx);
-static void choose_item(int a_idx, u32b activates);
-static void add_ability(artifact_type *);
-static void remove_contradictory(artifact_type *);
-static void do_pval(artifact_type *);
-static void do_curse(artifact_type *);
-static s32b artifact_power(int a_idx, bool cannot_use_kind_cache);
-static int artifacts_acceptable(void);
-static int bow_multiplier(int sval);
-static char *my_strdup(const char *);
-
 
 static char *my_strdup(const char *s)
 {
@@ -698,6 +675,7 @@ static void build_prob(const char *learn)
 		{
 			c_next = *learn++;
 		} while (!isalpha(c_next) && (c_next != '\0'));
+
 		if (c_next == '\0') break;
 
 		do
@@ -790,9 +768,18 @@ static int init_names(void)
 	char *a_next;
 	int i;
 
+	/* Temporary space for names, while reading and randomizing them. */
+	char **names;
+	int nnames = 0;
+
+
 	build_prob(names_list);
 
-	for (i = 0; i < MAX_A_IDX; i++)
+	/* Allocate the "names" array */
+	/* ToDo: Make sure the memory is freed correctly in case of errors */
+	C_MAKE(names, z_info->a_max, char*);
+
+	for (i = 0; i < z_info->a_max; i++)
 	{
 		char *word = make_word();
 
@@ -829,20 +816,16 @@ static int init_names(void)
 	/* Convert our names array into an a_name structure for later use. */
 	name_size = 0;
 
-	for (i = 1; i < MAX_A_IDX; i++)
+	for (i = 1; i < z_info->a_max; i++)
 	{
 		name_size += strlen(names[i-1]) + 2;	/* skip first char */
 	}
 
-	if ((a_base = malloc(name_size)) == NULL)
-	{
-		msg_format("Memory allocation error");
-		return 1;
-	}
+	C_MAKE(a_base, name_size, char);
 
 	a_next = a_base + 1;	/* skip first char */
 
-	for (i = 1; i < MAX_A_IDX; i++)
+	for (i = 1; i < z_info->a_max; i++)
 	{
 		strcpy(a_next, names[i-1]);
 		if (a_info[i].tval > 0)		/* skip unused! */
@@ -858,173 +841,260 @@ static int init_names(void)
 		free(names[i]);
 	}
 
+	/* Free the "names" array */
+	C_KILL(names, z_info->a_max, char*);
+
 	a_name = a_base;
 
 	return 0;
 }
 
 
-static int scramble(void)
+/*
+ * Calculate the multiplier we'll get with a given bow type.  This is done
+ * differently in 2.8.2 than it was in 2.8.1.
+ */
+static int bow_multiplier(int sval)
 {
-	/* This outer loop is for post-processing.  If our artifact set
-	   fails to meet certain criteria, we start over. :-( */
-	do
+	switch (sval)
 	{
-		int a_idx;
-
-		/* Generate all the artifacts. */
-		for (a_idx = 1; a_idx < MAX_A_IDX; a_idx++)
-		{
-			scramble_artifact(a_idx);
-		}
-	} while (!artifacts_acceptable());	/* end of all artifacts */
+		case SV_SLING:
+		case SV_SHORT_BOW:
+			return 2;
+		case SV_LONG_BOW:
+		case SV_LIGHT_XBOW:
+			return 3;
+		case SV_HEAVY_XBOW:
+			return 4;
+		default:
+			msg_format("Illegal bow sval %s\n", sval);
+	}
 
 	return 0;
 }
 
 
 /*
- * Note the three special cases (One Ring, Grond, Morgoth).  Note also that if
- * an artifact has an activation, it must be preserved by artifact number,
- * since activations are hard-coded into the game.
+ * Evaluate the artifact's overall power level.
  */
-static int scramble_artifact(int a_idx)
+static s32b artifact_power(int a_idx, bool cannot_use_kind_cache)
 {
-	artifact_type *a_ptr = &a_info[a_idx];
-	u32b activates = a_ptr->flags3 & TR3_ACTIVATE;
-	s32b power;
-	int tries;
-	s32b ap;
-	bool curse_me = FALSE;
-	bool aggravate_me = FALSE;
+	const artifact_type *a_ptr = &a_info[a_idx];
+	s32b p = 0;
+	s16b k_idx;
+	object_kind *k_ptr = NULL;	/* silence the warning */
+	int immunities = 0;
 
-	/* Special cases -- don't randomize these! */
-	if (a_idx == ART_POWER || a_idx == ART_GROND ||
-	    a_idx == ART_MORGOTH)
-		return 0;
-
-	/* Skip unused artifacts, too! */
-	if (a_ptr->tval == 0) return 0;
-
-	/* Evaluate the original artifact to determine the power
-	   level. */
-	power = artifact_power(a_idx, TRUE);
-	if (power < 0) curse_me = TRUE;
-
-	if (randart_verbose)
-		msg_format("Artifact %d: power = %d", a_idx, power);
-
-	/* Really powerful items should aggravate. */
-	if (power > 100)
-	{
-		if (rand_int(100) < (power - 100) * 3)
-		{
-			aggravate_me = TRUE;
-		}
-	}
-
+	/* Start with a "power" rating derived from the base item's level. */
 	if (a_idx >= ART_MIN_NORMAL)
 	{
-		/* Normal artifact - choose a random base item type.  Not too
-		   powerful, so we'll have to add something to it.  Not too
-		   weak, for the opposite reason. */
-		int count = 0;
-		s32b ap2;
-		do
+		if (cannot_use_kind_cache)
+			k_idx = lookup_kind(a_ptr->tval, a_ptr->sval);
+		else
+			k_idx = kinds[a_idx];
+
+		if (k_idx)
 		{
-			choose_item(a_idx, activates);
-			ap2 = artifact_power(a_idx, FALSE);
-			count++;
-		} while ((count < MAX_TRIES) &&
-			   ((ap2 > (power * 8) / 10 + 1) ||
-			    (ap2 < (power / 10))));
-	}
-	else
-	{
-		/* Special artifact (light source, ring, or
-		   amulet).  Clear the following fields; leave
-		   the rest alone. */
-		a_ptr->pval = 0;
-		a_ptr->to_h = a_ptr->to_d = a_ptr->to_a = 0;
-		a_ptr->flags1 = a_ptr->flags2 = 0;
-		a_ptr->flags3 = (TR3_IGNORE_ACID |
-				 TR3_IGNORE_ELEC |
-				 TR3_IGNORE_FIRE |
-				 TR3_IGNORE_COLD);
+			k_ptr = &k_info[k_idx];
+			p = (k_ptr->level + 7) / 8;
+		}
+		/* Otherwise just forget it and use 0. ;-) */
 	}
 
-	/* First draft: add two abilities, then curse it three times. */
-	if (curse_me)
+	/* Evaluate certain abilities based on type of object. */
+	switch (a_ptr->tval)
 	{
-		add_ability(a_ptr);
-		add_ability(a_ptr);
-		do_curse(a_ptr);
-		do_curse(a_ptr);
-		do_curse(a_ptr);
-		remove_contradictory(a_ptr);
-		ap = artifact_power(a_idx, FALSE);
-	}
-	else
-	{
-		/* Select a random set of abilities which roughly matches the
-		   original's in terms of overall power/usefulness. */
-		for (tries = 0; tries < MAX_TRIES; tries++)
+		case TV_BOW:
 		{
-			artifact_type a_old;
+			int mult;
 
-			/* Copy artifact info temporarily. */
-			a_old = *a_ptr;
-			add_ability(a_ptr);
-			ap = artifact_power(a_idx, FALSE);
-			if (ap > (power * 11) / 10 + 1)
-			{	/* too powerful -- put it back */
-				*a_ptr = a_old;
-				continue;
-			}
-
-			else if (ap >= (power * 9) / 10)	/* just right */
+			p += (a_ptr->to_d + sign(a_ptr->to_d)) / 2;
+			mult = bow_multiplier(a_ptr->sval);
+			if (a_ptr->flags1 & TR1_MIGHT)
 			{
-				break;
+				if (a_ptr->pval > 3)
+				{
+					p += 20000;	/* inhibit */
+					mult = 1;	/* don't overflow */
+				}
+				else
+					mult += a_ptr->pval;
 			}
-
-			/* Stop if we're going negative, so we don't overload
-			   the artifact with great powers to compensate. */
-			else if ((ap < 0) && (ap < (-(power * 1)) / 10))
+			p *= mult;
+			if (a_ptr->flags1 & TR1_SHOTS)
 			{
-				break;
+				if (a_ptr->pval > 3)
+					p += 20000;	/* inhibit */
+				else if (a_ptr->pval > 0)
+					p *= (2 * a_ptr->pval);
 			}
-		}		/* end of power selection */
-
-		if (aggravate_me)
+			p += (a_ptr->to_h + 3 * sign(a_ptr->to_h)) / 4;
+			if (a_ptr->weight < k_ptr->weight) p++;
+			break;
+		}
+		case TV_DIGGING:
+		case TV_HAFTED:
+		case TV_POLEARM:
+		case TV_SWORD:
 		{
-			a_ptr->flags3 |= TR3_AGGRAVATE;
-			remove_contradictory(a_ptr);
-			ap = artifact_power(a_idx, FALSE);
+			p += (a_ptr->dd * a_ptr->ds + 1) / 2;
+			if (a_ptr->flags1 & TR1_SLAY_EVIL) p = (p * 3) / 2;
+			if (a_ptr->flags1 & TR1_KILL_DRAGON) p = (p * 3) / 2;
+			if (a_ptr->flags1 & TR1_SLAY_ANIMAL) p = (p * 4) / 3;
+			if (a_ptr->flags1 & TR1_SLAY_UNDEAD) p = (p * 4) / 3;
+			if (a_ptr->flags1 & TR1_SLAY_DRAGON) p = (p * 4) / 3;
+			if (a_ptr->flags1 & TR1_SLAY_DEMON) p = (p * 5) / 4;
+			if (a_ptr->flags1 & TR1_SLAY_TROLL) p = (p * 5) / 4;
+			if (a_ptr->flags1 & TR1_SLAY_ORC) p = (p * 5) / 4;
+			if (a_ptr->flags1 & TR1_SLAY_GIANT) p = (p * 6) / 5;
+
+			if (a_ptr->flags1 & TR1_BRAND_ACID) p = p * 2;
+			if (a_ptr->flags1 & TR1_BRAND_ELEC) p = (p * 3) / 2;
+			if (a_ptr->flags1 & TR1_BRAND_FIRE) p = (p * 4) / 3;
+			if (a_ptr->flags1 & TR1_BRAND_COLD) p = (p * 4) / 3;
+
+			p += (a_ptr->to_d + 2 * sign(a_ptr->to_d)) / 3;
+			if (a_ptr->to_d > 15) p += (a_ptr->to_d - 14) / 2;
+
+			if (a_ptr->flags1 & TR1_BLOWS)
+			{
+				if (a_ptr->pval > 3)
+					p += 20000;	/* inhibit */
+				else if (a_ptr->pval > 0)
+					p = (p * 6) / (4 - a_ptr->pval);
+			}
+
+			if ((a_ptr->flags1 & TR1_TUNNEL) &&
+			    (a_ptr->tval != TV_DIGGING))
+				p += a_ptr->pval * 3;
+
+			p += (a_ptr->to_h + 3 * sign(a_ptr->to_h)) / 4;
+
+			/* Remember, weight is in 0.1 lb. units. */
+			if (a_ptr->weight != k_ptr->weight)
+				p += (k_ptr->weight - a_ptr->weight) / 20;
+
+			break;
+		}
+		case TV_BOOTS:
+		case TV_GLOVES:
+		case TV_HELM:
+		case TV_CROWN:
+		case TV_SHIELD:
+		case TV_CLOAK:
+		case TV_SOFT_ARMOR:
+		case TV_HARD_ARMOR:
+		{
+			p += (a_ptr->ac + 4 * sign(a_ptr->ac)) / 5;
+			p += (a_ptr->to_h + sign(a_ptr->to_h)) / 2;
+			p += (a_ptr->to_d + sign(a_ptr->to_d)) / 2;
+			if (a_ptr->weight != k_ptr->weight)
+				p += (k_ptr->weight - a_ptr->weight) / 30;
+			break;
+		}
+		case TV_LITE:
+		{
+			p += 10;
+			break;
+		}
+		case TV_RING:
+		case TV_AMULET:
+		{
+			p += 20;
+			break;
 		}
 	}
 
-	a_ptr->cost = ap * (s32b)1000;
+	/* Other abilities are evaluated independent of the object type. */
+	p += (a_ptr->to_a + 3 * sign(a_ptr->to_a)) / 4;
+	if (a_ptr->to_a > 20) p += (a_ptr->to_a - 19) / 2;
+	if (a_ptr->to_a > 30) p += (a_ptr->to_a - 29) / 2;
+	if (a_ptr->to_a > 40) p += 20000;	/* inhibit */
 
-	if (a_ptr->cost < 0) a_ptr->cost = 0;
+	if (a_ptr->pval > 0)
+	{
+		if (a_ptr->flags1 & TR1_STR) p += a_ptr->pval * a_ptr->pval;
+		if (a_ptr->flags1 & TR1_INT) p += a_ptr->pval * a_ptr->pval;
+		if (a_ptr->flags1 & TR1_WIS) p += a_ptr->pval * a_ptr->pval;
+		if (a_ptr->flags1 & TR1_DEX) p += a_ptr->pval * a_ptr->pval;
+		if (a_ptr->flags1 & TR1_CON) p += a_ptr->pval * a_ptr->pval;
+		if (a_ptr->flags1 & TR1_STEALTH) p += a_ptr->pval * a_ptr->pval;
+	}
+	else if (a_ptr->pval < 0)	/* hack: don't give large negatives */
+	{
+		if (a_ptr->flags1 & TR1_STR) p += a_ptr->pval;
+		if (a_ptr->flags1 & TR1_INT) p += a_ptr->pval;
+		if (a_ptr->flags1 & TR1_WIS) p += a_ptr->pval;
+		if (a_ptr->flags1 & TR1_DEX) p += a_ptr->pval;
+		if (a_ptr->flags1 & TR1_CON) p += a_ptr->pval;
+		if (a_ptr->flags1 & TR1_STEALTH) p += a_ptr->pval;
+	}
+	if (a_ptr->flags1 & TR1_CHR) p += a_ptr->pval;
+	if (a_ptr->flags1 & TR1_INFRA) p += (a_ptr->pval + sign(a_ptr->pval)) / 2;
+	if (a_ptr->flags1 & TR1_SPEED) p += (a_ptr->pval * 3) / 2;
 
-#if 0
-	/* One last hack: if the artifact is very powerful, raise the rarity.
-	   This compensates for artifacts like (original) Bladeturner, which
-	   have low artifact rarities but came from extremely-rare base
-	   kinds. */
-	if ((ap > 0) && ((ap / 8) > a_ptr->rarity))
-		a_ptr->rarity = ap / 8;
-#endif /* 0 */
+	if (a_ptr->flags2 & TR2_SUST_STR) p += 6;
+	if (a_ptr->flags2 & TR2_SUST_INT) p += 4;
+	if (a_ptr->flags2 & TR2_SUST_WIS) p += 4;
+	if (a_ptr->flags2 & TR2_SUST_DEX) p += 4;
+	if (a_ptr->flags2 & TR2_SUST_CON) p += 4;
+	if (a_ptr->flags2 & TR2_SUST_CHR) p += 1;
+	if (a_ptr->flags2 & TR2_IM_ACID)
+	{
+		p += 20;
+		immunities++;
+	}
+	if (a_ptr->flags2 & TR2_IM_ELEC)
+	{
+		p += 24;
+		immunities++;
+	}
+	if (a_ptr->flags2 & TR2_IM_FIRE)
+	{
+		p += 36;
+		immunities++;
+	}
+	if (a_ptr->flags2 & TR2_IM_COLD)
+	{
+		p += 24;
+		immunities++;
+	}
+	if (immunities > 1) p += 16;
+	if (immunities > 2) p += 16;
+	if (immunities > 3) p += 20000;		/* inhibit */
+	if (a_ptr->flags3 & TR3_FREE_ACT) p += 8;
+	if (a_ptr->flags3 & TR3_HOLD_LIFE) p += 10;
+	if (a_ptr->flags2 & TR2_RES_ACID) p += 6;
+	if (a_ptr->flags2 & TR2_RES_ELEC) p += 6;
+	if (a_ptr->flags2 & TR2_RES_FIRE) p += 6;
+	if (a_ptr->flags2 & TR2_RES_COLD) p += 6;
+	if (a_ptr->flags2 & TR2_RES_POIS) p += 12;
+	if (a_ptr->flags2 & TR2_RES_LITE) p += 8;
+	if (a_ptr->flags2 & TR2_RES_DARK) p += 10;
+	if (a_ptr->flags2 & TR2_RES_BLIND) p += 10;
+	if (a_ptr->flags2 & TR2_RES_CONFU) p += 8;
+	if (a_ptr->flags2 & TR2_RES_SOUND) p += 10;
+	if (a_ptr->flags2 & TR2_RES_SHARD) p += 8;
+	if (a_ptr->flags2 & TR2_RES_NETHR) p += 12;
+	if (a_ptr->flags2 & TR2_RES_NEXUS) p += 10;
+	if (a_ptr->flags2 & TR2_RES_CHAOS) p += 12;
+	if (a_ptr->flags2 & TR2_RES_DISEN) p += 12;
 
-	if (activates) a_ptr->flags3 |= TR3_ACTIVATE;
-	if (a_idx < ART_MIN_NORMAL) a_ptr->flags3 |= TR3_INSTA_ART;
+	if (a_ptr->flags3 & TR3_FEATHER) p += 2;
+	if (a_ptr->flags3 & TR3_LITE) p += 2;
+	if (a_ptr->flags3 & TR3_SEE_INVIS) p += 8;
+	if (a_ptr->flags3 & TR3_TELEPATHY) p += 20;
+	if (a_ptr->flags3 & TR3_SLOW_DIGEST) p += 4;
+	if (a_ptr->flags3 & TR3_REGEN) p += 8;
+	if (a_ptr->flags3 & TR3_TELEPORT) p -= 20;
+	if (a_ptr->flags3 & TR3_DRAIN_EXP) p -= 16;
+	if (a_ptr->flags3 & TR3_AGGRAVATE) p -= 8;
+	if (a_ptr->flags3 & TR3_BLESSED) p += 4;
+	if (a_ptr->flags3 & TR3_LIGHT_CURSE) p -= 4;
+	if (a_ptr->flags3 & TR3_HEAVY_CURSE) p -= 20;
+/*	if (a_ptr->flags3 & TR3_PERMA_CURSE) p -= 40; */
 
-	/* Add TR3_HIDE_TYPE to all artifacts with nonzero pval because we're
-	   too lazy to find out which ones need it and which ones don't. */
-	if (a_ptr->pval)
-		a_ptr->flags3 |= TR3_HIDE_TYPE;
-
-	return 0;
+	return p;
 }
 
 
@@ -1032,7 +1102,7 @@ static int scramble_artifact(int a_idx)
  * Randomly select a base item type (tval,sval).  Assign the various fields
  * corresponding to that choice.
  */
-static void choose_item(int a_idx, u32b activates)
+static void choose_item(int a_idx)
 {
 	artifact_type *a_ptr = &a_info[a_idx];
 	int tval, sval;
@@ -1041,24 +1111,31 @@ static void choose_item(int a_idx, u32b activates)
 	s16b k_idx, r2;
 	byte target_level;
 
-	/* Look up the original artifact's base object kind to get level and
-	   rarity information to supplement the artifact level/rarity.  As a
-	   degenerate case consider Bladeturner, which has artifact lvl/rar
-	   of only 95/3, but which is based on an object with 110/64! */
+	/*
+	 * Look up the original artifact's base object kind to get level and
+	 * rarity information to supplement the artifact level/rarity.  As a
+	 * degenerate case consider Bladeturner, which has artifact lvl/rar
+	 * of only 95/3, but which is based on an object with 110/64!
+	 */
 	k_idx = lookup_kind(a_ptr->tval, a_ptr->sval);
 	k_ptr = &k_info[k_idx];
 	target_level = k_ptr->level;
 
-	/* Add base object kind's rarity to artifact rarity.  Later we will
-	   subtract the new object kind's rarity. */
+	/*
+	 * Add base object kind's rarity to artifact rarity.  Later we will
+	 * subtract the new object kind's rarity.
+	 */
 	a_ptr->rarity += k_ptr->chance[0];
 
-	/* Pick a category (tval) of weapon randomly.  Within each tval, roll
-	   an sval (specific item) based on the target level.  The number we
-	   roll should be a bell curve.  The mean and standard variation of the
-	   bell curve are based on the target level; the distribution of
-	   kinds versus the bell curve is hand-tweaked. :-( */
+	/*
+	 * Pick a category (tval) of weapon randomly.  Within each tval, roll
+	 * an sval (specific item) based on the target level.  The number we
+	 * roll should be a bell curve.  The mean and standard variation of the
+	 * bell curve are based on the target level; the distribution of
+	 * kinds versus the bell curve is hand-tweaked. :-(
+	 */
 	r = rand_int(100);
+
 	if (r < 5)
 	{
 		/* Create a missile weapon. */
@@ -1231,8 +1308,10 @@ static void choose_item(int a_idx, u32b activates)
 	k_ptr = &k_info[k_idx];
 	kinds[a_idx] = k_idx;
 
-	/* Subtract the new object kind's rarity (see above).  We can't
-	   blindly subtract, because a_ptr->rarity is a byte. */
+	/*
+	 * Subtract the new object kind's rarity (see above).  We can't
+	 * blindly subtract, because a_ptr->rarity is a byte.
+	 */
 	if (a_ptr->rarity <= k_ptr->chance[0])
 		a_ptr->rarity = 1;
 	else
@@ -1251,8 +1330,9 @@ static void choose_item(int a_idx, u32b activates)
 	a_ptr->flags1 = k_ptr->flags1;
 	a_ptr->flags2 = k_ptr->flags2;
 	a_ptr->flags3 = k_ptr->flags3;
-	a_ptr->flags3 |= (TR3_IGNORE_ACID | TR3_IGNORE_ELEC |
-			   TR3_IGNORE_FIRE | TR3_IGNORE_COLD);
+
+	/* Artifacts ignore everything */
+	a_ptr->flags3 |= TR3_IGNORE_MASK;
 
 	/* Assign basic stats to the artifact based on its artifact level. */
 	switch (a_ptr->tval)
@@ -1283,6 +1363,46 @@ static void choose_item(int a_idx, u32b activates)
 			}
 			break;
 	}
+}
+
+
+/*
+ * We've just added an ability which uses the pval bonus.  Make sure it's
+ * not zero.  If it's currently negative, leave it negative (heh heh).
+ */
+static void do_pval(artifact_type *a_ptr)
+{
+	if (a_ptr->pval == 0) a_ptr->pval = (s16b)(1 + rand_int(3));
+	else if (a_ptr->pval < 0)
+	{
+		if (rand_int(2) == 0) a_ptr->pval--;
+	}
+	else if (rand_int(3) > 0) a_ptr->pval++;
+}
+
+
+static void remove_contradictory(artifact_type *a_ptr)
+{
+	if (a_ptr->flags3 & TR3_AGGRAVATE) a_ptr->flags1 &= ~(TR1_STEALTH);
+	if (a_ptr->flags2 & TR2_IM_ACID) a_ptr->flags2 &= ~(TR2_RES_ACID);
+	if (a_ptr->flags2 & TR2_IM_ELEC) a_ptr->flags2 &= ~(TR2_RES_ELEC);
+	if (a_ptr->flags2 & TR2_IM_FIRE) a_ptr->flags2 &= ~(TR2_RES_FIRE);
+	if (a_ptr->flags2 & TR2_IM_COLD) a_ptr->flags2 &= ~(TR2_RES_COLD);
+
+	if (a_ptr->pval < 0)
+	{
+		if (a_ptr->flags1 & TR1_STR) a_ptr->flags2 &= ~(TR2_SUST_STR);
+		if (a_ptr->flags1 & TR1_INT) a_ptr->flags2 &= ~(TR2_SUST_INT);
+		if (a_ptr->flags1 & TR1_WIS) a_ptr->flags2 &= ~(TR2_SUST_WIS);
+		if (a_ptr->flags1 & TR1_DEX) a_ptr->flags2 &= ~(TR2_SUST_DEX);
+		if (a_ptr->flags1 & TR1_CON) a_ptr->flags2 &= ~(TR2_SUST_CON);
+		if (a_ptr->flags1 & TR1_CHR) a_ptr->flags2 &= ~(TR2_SUST_CHR);
+		a_ptr->flags1 &= ~(TR1_BLOWS);
+	}
+
+	if (a_ptr->flags3 & TR3_LIGHT_CURSE) a_ptr->flags3 &= ~(TR3_BLESSED);
+	if (a_ptr->flags1 & TR1_KILL_DRAGON) a_ptr->flags1 &= ~(TR1_SLAY_DRAGON);
+	if (a_ptr->flags3 & TR3_DRAIN_EXP) a_ptr->flags3 &= ~(TR3_HOLD_LIFE);
 }
 
 
@@ -1683,46 +1803,6 @@ static void add_ability(artifact_type *a_ptr)
 }
 
 
-static void remove_contradictory(artifact_type *a_ptr)
-{
-	if (a_ptr->flags3 & TR3_AGGRAVATE) a_ptr->flags1 &= ~(TR1_STEALTH);
-	if (a_ptr->flags2 & TR2_IM_ACID) a_ptr->flags2 &= ~(TR2_RES_ACID);
-	if (a_ptr->flags2 & TR2_IM_ELEC) a_ptr->flags2 &= ~(TR2_RES_ELEC);
-	if (a_ptr->flags2 & TR2_IM_FIRE) a_ptr->flags2 &= ~(TR2_RES_FIRE);
-	if (a_ptr->flags2 & TR2_IM_COLD) a_ptr->flags2 &= ~(TR2_RES_COLD);
-
-	if (a_ptr->pval < 0)
-	{
-		if (a_ptr->flags1 & TR1_STR) a_ptr->flags2 &= ~(TR2_SUST_STR);
-		if (a_ptr->flags1 & TR1_INT) a_ptr->flags2 &= ~(TR2_SUST_INT);
-		if (a_ptr->flags1 & TR1_WIS) a_ptr->flags2 &= ~(TR2_SUST_WIS);
-		if (a_ptr->flags1 & TR1_DEX) a_ptr->flags2 &= ~(TR2_SUST_DEX);
-		if (a_ptr->flags1 & TR1_CON) a_ptr->flags2 &= ~(TR2_SUST_CON);
-		if (a_ptr->flags1 & TR1_CHR) a_ptr->flags2 &= ~(TR2_SUST_CHR);
-		a_ptr->flags1 &= ~(TR1_BLOWS);
-	}
-
-	if (a_ptr->flags3 & TR3_LIGHT_CURSE) a_ptr->flags3 &= ~(TR3_BLESSED);
-	if (a_ptr->flags1 & TR1_KILL_DRAGON) a_ptr->flags1 &= ~(TR1_SLAY_DRAGON);
-	if (a_ptr->flags3 & TR3_DRAIN_EXP) a_ptr->flags3 &= ~(TR3_HOLD_LIFE);
-}
-
-
-/*
- * We've just added an ability which uses the pval bonus.  Make sure it's
- * not zero.  If it's currently negative, leave it negative (heh heh).
- */
-static void do_pval(artifact_type *a_ptr)
-{
-	if (a_ptr->pval == 0) a_ptr->pval = (s16b)(1 + rand_int(3));
-	else if (a_ptr->pval < 0)
-	{
-		if (rand_int(2) == 0) a_ptr->pval--;
-	}
-	else if (rand_int(3) > 0) a_ptr->pval++;
-}
-
-
 /*
  * Make it bad, or if it's already bad, make it worse!
  */
@@ -1756,226 +1836,151 @@ static void do_curse(artifact_type *a_ptr)
 
 
 /*
- * Evaluate the artifact's overall power level.
+ * Note the three special cases (One Ring, Grond, Morgoth).
  */
-static s32b artifact_power(int a_idx, bool cannot_use_kind_cache)
+static int scramble_artifact(int a_idx)
 {
-	const artifact_type *a_ptr = &a_info[a_idx];
-	s32b p = 0;
-	s16b k_idx;
-	object_kind *k_ptr = NULL;	/* silence the warning */
-	int immunities = 0;
+	artifact_type *a_ptr = &a_info[a_idx];
+	u32b activates = a_ptr->flags3 & TR3_ACTIVATE;
+	s32b power;
+	int tries;
+	s32b ap;
+	bool curse_me = FALSE;
+	bool aggravate_me = FALSE;
 
-	/* Start with a "power" rating derived from the base item's level. */
+	/* Special cases -- don't randomize these! */
+	if ((a_idx == ART_POWER) ||
+	    (a_idx == ART_GROND) ||
+	    (a_idx == ART_MORGOTH))
+		return 0;
+
+	/* Skip unused artifacts, too! */
+	if (a_ptr->tval == 0) return 0;
+
+	/* Evaluate the original artifact to determine the power level. */
+	power = artifact_power(a_idx, TRUE);
+	if (power < 0) curse_me = TRUE;
+
+	if (randart_verbose)
+		msg_format("Artifact %d: power = %d", a_idx, power);
+
+	/* Really powerful items should aggravate. */
+	if (power > 100)
+	{
+		if (rand_int(100) < (power - 100) * 3)
+			aggravate_me = TRUE;
+	}
+
 	if (a_idx >= ART_MIN_NORMAL)
 	{
-		if (cannot_use_kind_cache)
-			k_idx = lookup_kind(a_ptr->tval, a_ptr->sval);
-		else
-			k_idx = kinds[a_idx];
+		/*
+		 * Normal artifact - choose a random base item type.  Not too
+		 * powerful, so we'll have to add something to it.  Not too
+		 * weak, for the opposite reason.
+		 */
+		int count = 0;
+		s32b ap2;
 
-		if (k_idx)
+		do
 		{
-			k_ptr = &k_info[k_idx];
-			p = (k_ptr->level + 7) / 8;
-		}
-		/* Otherwise just forget it and use 0. ;-) */
+			choose_item(a_idx);
+			ap2 = artifact_power(a_idx, FALSE);
+			count++;
+		} while ((count < MAX_TRIES) &&
+			   ((ap2 > (power * 8) / 10 + 1) ||
+			    (ap2 < (power / 10))));
+	}
+	else
+	{
+		/* Special artifact (light source, ring, or
+		   amulet).  Clear the following fields; leave
+		   the rest alone. */
+		a_ptr->pval = 0;
+		a_ptr->to_h = a_ptr->to_d = a_ptr->to_a = 0;
+		a_ptr->flags1 = a_ptr->flags2 = 0;
+
+		/* Artifacts ignore everything */
+		a_ptr->flags3 = (TR3_IGNORE_MASK);
 	}
 
-	/* Evaluate certain abilities based on type of object. */
-	switch (a_ptr->tval)
+	/* First draft: add two abilities, then curse it three times. */
+	if (curse_me)
 	{
-		case TV_BOW:
+		add_ability(a_ptr);
+		add_ability(a_ptr);
+		do_curse(a_ptr);
+		do_curse(a_ptr);
+		do_curse(a_ptr);
+		remove_contradictory(a_ptr);
+		ap = artifact_power(a_idx, FALSE);
+	}
+	else
+	{
+		/*
+		 * Select a random set of abilities which roughly matches the
+		 * original's in terms of overall power/usefulness.
+		 */
+		for (tries = 0; tries < MAX_TRIES; tries++)
 		{
-			int mult;
+			artifact_type a_old;
 
-			p += (a_ptr->to_d + sign(a_ptr->to_d)) / 2;
-			mult = bow_multiplier(a_ptr->sval);
-			if (a_ptr->flags1 & TR1_MIGHT)
+			/* Copy artifact info temporarily. */
+			a_old = *a_ptr;
+			add_ability(a_ptr);
+			ap = artifact_power(a_idx, FALSE);
+			if (ap > (power * 11) / 10 + 1)
 			{
-				if (a_ptr->pval > 3)
-				{
-					p += 20000;	/* inhibit */
-					mult = 1;	/* don't overflow */
-				}
-				else
-					mult += a_ptr->pval;
-			}
-			p *= mult;
-			if (a_ptr->flags1 & TR1_SHOTS)
-			{
-				if (a_ptr->pval > 3)
-					p += 20000;	/* inhibit */
-				else if (a_ptr->pval > 0)
-					p *= (2 * a_ptr->pval);
-			}
-			p += (a_ptr->to_h + 3 * sign(a_ptr->to_h)) / 4;
-			if (a_ptr->weight < k_ptr->weight) p++;
-			break;
-		}
-		case TV_DIGGING:
-		case TV_HAFTED:
-		case TV_POLEARM:
-		case TV_SWORD:
-		{
-			p += (a_ptr->dd * a_ptr->ds + 1) / 2;
-			if (a_ptr->flags1 & TR1_SLAY_EVIL) p = (p * 3) / 2;
-			if (a_ptr->flags1 & TR1_KILL_DRAGON) p = (p * 3) / 2;
-			if (a_ptr->flags1 & TR1_SLAY_ANIMAL) p = (p * 4) / 3;
-			if (a_ptr->flags1 & TR1_SLAY_UNDEAD) p = (p * 4) / 3;
-			if (a_ptr->flags1 & TR1_SLAY_DRAGON) p = (p * 4) / 3;
-			if (a_ptr->flags1 & TR1_SLAY_DEMON) p = (p * 5) / 4;
-			if (a_ptr->flags1 & TR1_SLAY_TROLL) p = (p * 5) / 4;
-			if (a_ptr->flags1 & TR1_SLAY_ORC) p = (p * 5) / 4;
-			if (a_ptr->flags1 & TR1_SLAY_GIANT) p = (p * 6) / 5;
-
-			if (a_ptr->flags1 & TR1_BRAND_ACID) p = p * 2;
-			if (a_ptr->flags1 & TR1_BRAND_ELEC) p = (p * 3) / 2;
-			if (a_ptr->flags1 & TR1_BRAND_FIRE) p = (p * 4) / 3;
-			if (a_ptr->flags1 & TR1_BRAND_COLD) p = (p * 4) / 3;
-
-			p += (a_ptr->to_d + 2 * sign(a_ptr->to_d)) / 3;
-			if (a_ptr->to_d > 15) p += (a_ptr->to_d - 14) / 2;
-
-			if (a_ptr->flags1 & TR1_BLOWS)
-			{
-				if (a_ptr->pval > 3)
-					p += 20000;	/* inhibit */
-				else if (a_ptr->pval > 0)
-					p = (p * 6) / (4 - a_ptr->pval);
+				/* too powerful -- put it back */
+				*a_ptr = a_old;
+				continue;
 			}
 
-			if ((a_ptr->flags1 & TR1_TUNNEL) &&
-			    (a_ptr->tval != TV_DIGGING))
-				p += a_ptr->pval * 3;
+			else if (ap >= (power * 9) / 10)	/* just right */
+			{
+				break;
+			}
 
-			p += (a_ptr->to_h + 3 * sign(a_ptr->to_h)) / 4;
+			/* Stop if we're going negative, so we don't overload
+			   the artifact with great powers to compensate. */
+			else if ((ap < 0) && (ap < (-(power * 1)) / 10))
+			{
+				break;
+			}
+		}		/* end of power selection */
 
-			/* Remember, weight is in 0.1 lb. units. */
-			if (a_ptr->weight != k_ptr->weight)
-				p += (k_ptr->weight - a_ptr->weight) / 20;
-
-			break;
-		}
-		case TV_BOOTS:
-		case TV_GLOVES:
-		case TV_HELM:
-		case TV_CROWN:
-		case TV_SHIELD:
-		case TV_CLOAK:
-		case TV_SOFT_ARMOR:
-		case TV_HARD_ARMOR:
+		if (aggravate_me)
 		{
-			p += (a_ptr->ac + 4 * sign(a_ptr->ac)) / 5;
-			p += (a_ptr->to_h + sign(a_ptr->to_h)) / 2;
-			p += (a_ptr->to_d + sign(a_ptr->to_d)) / 2;
-			if (a_ptr->weight != k_ptr->weight)
-				p += (k_ptr->weight - a_ptr->weight) / 30;
-			break;
-		}
-		case TV_LITE:
-		{
-			p += 10;
-			break;
-		}
-		case TV_RING:
-		case TV_AMULET:
-		{
-			p += 20;
-			break;
+			a_ptr->flags3 |= TR3_AGGRAVATE;
+			remove_contradictory(a_ptr);
+			ap = artifact_power(a_idx, FALSE);
 		}
 	}
 
-	/* Other abilities are evaluated independent of the object type. */
-	p += (a_ptr->to_a + 3 * sign(a_ptr->to_a)) / 4;
-	if (a_ptr->to_a > 20) p += (a_ptr->to_a - 19) / 2;
-	if (a_ptr->to_a > 30) p += (a_ptr->to_a - 29) / 2;
-	if (a_ptr->to_a > 40) p += 20000;	/* inhibit */
+	a_ptr->cost = ap * (s32b)1000;
 
-	if (a_ptr->pval > 0)
-	{
-		if (a_ptr->flags1 & TR1_STR) p += a_ptr->pval * a_ptr->pval;
-		if (a_ptr->flags1 & TR1_INT) p += a_ptr->pval * a_ptr->pval;
-		if (a_ptr->flags1 & TR1_WIS) p += a_ptr->pval * a_ptr->pval;
-		if (a_ptr->flags1 & TR1_DEX) p += a_ptr->pval * a_ptr->pval;
-		if (a_ptr->flags1 & TR1_CON) p += a_ptr->pval * a_ptr->pval;
-		if (a_ptr->flags1 & TR1_STEALTH) p += a_ptr->pval * a_ptr->pval;
-	}
-	else if (a_ptr->pval < 0)	/* hack: don't give large negatives */
-	{
-		if (a_ptr->flags1 & TR1_STR) p += a_ptr->pval;
-		if (a_ptr->flags1 & TR1_INT) p += a_ptr->pval;
-		if (a_ptr->flags1 & TR1_WIS) p += a_ptr->pval;
-		if (a_ptr->flags1 & TR1_DEX) p += a_ptr->pval;
-		if (a_ptr->flags1 & TR1_CON) p += a_ptr->pval;
-		if (a_ptr->flags1 & TR1_STEALTH) p += a_ptr->pval;
-	}
-	if (a_ptr->flags1 & TR1_CHR) p += a_ptr->pval;
-	if (a_ptr->flags1 & TR1_INFRA) p += (a_ptr->pval + sign(a_ptr->pval)) / 2;
-	if (a_ptr->flags1 & TR1_SPEED) p += (a_ptr->pval * 3) / 2;
+	if (a_ptr->cost < 0) a_ptr->cost = 0;
 
-	if (a_ptr->flags2 & TR2_SUST_STR) p += 6;
-	if (a_ptr->flags2 & TR2_SUST_INT) p += 4;
-	if (a_ptr->flags2 & TR2_SUST_WIS) p += 4;
-	if (a_ptr->flags2 & TR2_SUST_DEX) p += 4;
-	if (a_ptr->flags2 & TR2_SUST_CON) p += 4;
-	if (a_ptr->flags2 & TR2_SUST_CHR) p += 1;
-	if (a_ptr->flags2 & TR2_IM_ACID)
-	{
-		p += 20;
-		immunities++;
-	}
-	if (a_ptr->flags2 & TR2_IM_ELEC)
-	{
-		p += 24;
-		immunities++;
-	}
-	if (a_ptr->flags2 & TR2_IM_FIRE)
-	{
-		p += 36;
-		immunities++;
-	}
-	if (a_ptr->flags2 & TR2_IM_COLD)
-	{
-		p += 24;
-		immunities++;
-	}
-	if (immunities > 1) p += 16;
-	if (immunities > 2) p += 16;
-	if (immunities > 3) p += 20000;		/* inhibit */
-	if (a_ptr->flags3 & TR3_FREE_ACT) p += 8;
-	if (a_ptr->flags3 & TR3_HOLD_LIFE) p += 10;
-	if (a_ptr->flags2 & TR2_RES_ACID) p += 6;
-	if (a_ptr->flags2 & TR2_RES_ELEC) p += 6;
-	if (a_ptr->flags2 & TR2_RES_FIRE) p += 6;
-	if (a_ptr->flags2 & TR2_RES_COLD) p += 6;
-	if (a_ptr->flags2 & TR2_RES_POIS) p += 12;
-	if (a_ptr->flags2 & TR2_RES_LITE) p += 8;
-	if (a_ptr->flags2 & TR2_RES_DARK) p += 10;
-	if (a_ptr->flags2 & TR2_RES_BLIND) p += 10;
-	if (a_ptr->flags2 & TR2_RES_CONFU) p += 8;
-	if (a_ptr->flags2 & TR2_RES_SOUND) p += 10;
-	if (a_ptr->flags2 & TR2_RES_SHARD) p += 8;
-	if (a_ptr->flags2 & TR2_RES_NETHR) p += 12;
-	if (a_ptr->flags2 & TR2_RES_NEXUS) p += 10;
-	if (a_ptr->flags2 & TR2_RES_CHAOS) p += 12;
-	if (a_ptr->flags2 & TR2_RES_DISEN) p += 12;
+#if 0
+	/* One last hack: if the artifact is very powerful, raise the rarity.
+	   This compensates for artifacts like (original) Bladeturner, which
+	   have low artifact rarities but came from extremely-rare base
+	   kinds. */
+	if ((ap > 0) && ((ap / 8) > a_ptr->rarity))
+		a_ptr->rarity = ap / 8;
+#endif /* 0 */
 
-	if (a_ptr->flags3 & TR3_FEATHER) p += 2;
-	if (a_ptr->flags3 & TR3_LITE) p += 2;
-	if (a_ptr->flags3 & TR3_SEE_INVIS) p += 8;
-	if (a_ptr->flags3 & TR3_TELEPATHY) p += 20;
-	if (a_ptr->flags3 & TR3_SLOW_DIGEST) p += 4;
-	if (a_ptr->flags3 & TR3_REGEN) p += 8;
-	if (a_ptr->flags3 & TR3_TELEPORT) p -= 20;
-	if (a_ptr->flags3 & TR3_DRAIN_EXP) p -= 16;
-	if (a_ptr->flags3 & TR3_AGGRAVATE) p -= 8;
-	if (a_ptr->flags3 & TR3_BLESSED) p += 4;
-	if (a_ptr->flags3 & TR3_LIGHT_CURSE) p -= 4;
-	if (a_ptr->flags3 & TR3_HEAVY_CURSE) p -= 20;
-/*	if (a_ptr->flags3 & TR3_PERMA_CURSE) p -= 40; */
+	/* Restore some flags */
+	if (activates) a_ptr->flags3 |= TR3_ACTIVATE;
+	if (a_idx < ART_MIN_NORMAL) a_ptr->flags3 |= TR3_INSTA_ART;
 
-	return p;
+	/*
+	 * Add TR3_HIDE_TYPE to all artifacts with nonzero pval because we're
+	 * too lazy to find out which ones need it and which ones don't.
+	 */
+	if (a_ptr->pval)
+		a_ptr->flags3 |= TR3_HIDE_TYPE;
+
+	return 0;
 }
 
 
@@ -1991,7 +1996,7 @@ static int artifacts_acceptable(void)
 	int gloves = 4, boots = 4;
 	int i;
 
-	for (i = ART_MIN_NORMAL; i < MAX_A_IDX; i++)
+	for (i = ART_MIN_NORMAL; i < z_info->a_max; i++)
 	{
 		switch (a_info[i].tval)
 		{
@@ -2050,25 +2055,20 @@ static int artifacts_acceptable(void)
 }
 
 
-/*
- * Calculate the multiplier we'll get with a given bow type.  This is done
- * differently in 2.8.2 than it was in 2.8.1.
- */
-static int bow_multiplier(int sval)
+static int scramble(void)
 {
-	switch (sval)
+	/* This outer loop is for post-processing.  If our artifact set
+	   fails to meet certain criteria, we start over. :-( */
+	do
 	{
-		case SV_SLING:
-		case SV_SHORT_BOW:
-			return 2;
-		case SV_LONG_BOW:
-		case SV_LIGHT_XBOW:
-			return 3;
-		case SV_HEAVY_XBOW:
-			return 4;
-		default:
-			msg_format("Illegal bow sval %s\n", sval);
-	}
+		int a_idx;
+
+		/* Generate all the artifacts. */
+		for (a_idx = 1; a_idx < z_info->a_max; a_idx++)
+		{
+			scramble_artifact(a_idx);
+		}
+	} while (!artifacts_acceptable());	/* end of all artifacts */
 
 	return 0;
 }
@@ -2076,11 +2076,11 @@ static int bow_multiplier(int sval)
 
 static int do_randart_aux(void)
 {
-	int rc;
+	int result;
 
-	if ((rc = init_names()) != 0) return rc;
+	if ((result = init_names()) != 0) return result;
 
-	if ((rc = scramble()) != 0) return rc;
+	if ((result = scramble()) != 0) return result;
 
 	return 0;
 }
@@ -2090,15 +2090,19 @@ int do_randart(u32b randart_seed)
 {
 	int rc;
 
-	/* Prepare to use the Angband "simple" RNG.  We want this to follow
-	   the precedents set by the town layout and object flavor code. */
+	/* Prepare to use the Angband "simple" RNG. */
 	Rand_value = randart_seed;
 	Rand_quick = TRUE;
 
+	/* Allocate the "kinds" array */
+	C_MAKE(kinds, z_info->a_max, s16b);
+
 	rc = do_randart_aux();
 
-	/* When done, resume use of the Angband "complex" RNG.  Right
-	   now this does nothing, but later it will be important! */
+	/* Free the "kinds" array */
+	C_FREE(kinds, z_info->a_max, s16b);
+
+	/* When done, resume use of the Angband "complex" RNG. */
 	Rand_quick = FALSE;
 
 	return rc;

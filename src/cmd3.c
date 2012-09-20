@@ -451,8 +451,9 @@ void do_cmd_destroy(void)
 		/* Remove special inscription, if any */
 		if (o_ptr->discount >= INSCRIP_NULL) o_ptr->discount = 0;
 
-		/* Sense the object if allowed */
-		if (o_ptr->discount == 0) o_ptr->discount = feel;
+		/* Sense the object if allowed, don't sense ID'ed stuff */
+		if ((o_ptr->discount == 0) && !object_known_p(o_ptr))
+			o_ptr->discount = feel;
 
 		/* The object has been "sensed" */
 		o_ptr->ident |= (IDENT_SENSE);
@@ -518,15 +519,6 @@ void do_cmd_observe(void)
 	{
 		o_ptr = &o_list[0 - item];
 	}
-
-
-	/* Require full knowledge */
-	if (!(o_ptr->ident & (IDENT_MENTAL)))
-	{
-		msg_print("You have no special knowledge about that item.");
-		return;
-	}
-
 
 	/* Description */
 	object_desc(o_name, o_ptr, TRUE, 3);
@@ -1162,7 +1154,7 @@ static cptr ident_info[] =
  * We use "u" to point to array of monster indexes,
  * and "v" to select the type of sorting to perform on "u".
  */
-static bool ang_sort_comp_hook(vptr u, vptr v, int a, int b)
+bool ang_sort_comp_hook(vptr u, vptr v, int a, int b)
 {
 	u16b *who = (u16b*)(u);
 
@@ -1178,8 +1170,8 @@ static bool ang_sort_comp_hook(vptr u, vptr v, int a, int b)
 	if (*why >= 4)
 	{
 		/* Extract player kills */
-		z1 = r_info[w1].r_pkills;
-		z2 = r_info[w2].r_pkills;
+		z1 = l_list[w1].r_pkills;
+		z2 = l_list[w2].r_pkills;
 
 		/* Compare player kills */
 		if (z1 < z2) return (TRUE);
@@ -1191,8 +1183,8 @@ static bool ang_sort_comp_hook(vptr u, vptr v, int a, int b)
 	if (*why >= 3)
 	{
 		/* Extract total kills */
-		z1 = r_info[w1].r_tkills;
-		z2 = r_info[w2].r_tkills;
+		z1 = l_list[w1].r_tkills;
+		z2 = l_list[w2].r_tkills;
 
 		/* Compare total kills */
 		if (z1 < z2) return (TRUE);
@@ -1237,7 +1229,7 @@ static bool ang_sort_comp_hook(vptr u, vptr v, int a, int b)
  * We use "u" to point to array of monster indexes,
  * and "v" to select the type of sorting to perform.
  */
-static void ang_sort_swap_hook(vptr u, vptr v, int a, int b)
+void ang_sort_swap_hook(vptr u, vptr v, int a, int b)
 {
 	u16b *who = (u16b*)(u);
 
@@ -1323,7 +1315,7 @@ void do_cmd_query_symbol(void)
 	bool recall = FALSE;
 
 	u16b why = 0;
-	u16b who[MAX_R_IDX];
+	u16b *who;
 
 
 	/* Get a character, or abort */
@@ -1364,13 +1356,17 @@ void do_cmd_query_symbol(void)
 	prt(buf, 0, 0);
 
 
+	/* Allocate the "who" array */
+	C_MAKE(who, z_info->r_max, u16b);
+
 	/* Collect matching monsters */
-	for (n = 0, i = 1; i < MAX_R_IDX-1; i++)
+	for (n = 0, i = 1; i < z_info->r_max - 1; i++)
 	{
 		monster_race *r_ptr = &r_info[i];
+		monster_lore *l_ptr = &l_list[i];
 
 		/* Nothing to recall */
-		if (!cheat_know && !r_ptr->r_sights) continue;
+		if (!cheat_know && !l_ptr->r_sights) continue;
 
 		/* Require non-unique monsters if needed */
 		if (norm && (r_ptr->flags1 & (RF1_UNIQUE))) continue;
@@ -1383,7 +1379,13 @@ void do_cmd_query_symbol(void)
 	}
 
 	/* Nothing to recall */
-	if (!n) return;
+	if (!n)
+	{
+		/* XXX XXX Free the "who" array */
+		C_KILL(who, z_info->r_max, u16b);
+
+		return;
+	}
 
 
 	/* Prompt */
@@ -1411,8 +1413,13 @@ void do_cmd_query_symbol(void)
 	}
 
 	/* Catch "escape" */
-	if (query != 'y') return;
+	if (query != 'y')
+	{
+		/* XXX XXX Free the "who" array */
+		C_KILL(who, z_info->r_max, u16b);
 
+		return;
+	}
 
 	/* Sort if needed */
 	if (why)
@@ -1507,6 +1514,7 @@ void do_cmd_query_symbol(void)
 
 	/* Re-display the identity */
 	prt(buf, 0, 0);
+
+	/* Free the "who" array */
+	C_KILL(who, z_info->r_max, u16b);
 }
-
-
