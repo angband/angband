@@ -12,7 +12,8 @@
  * This file is a big hack to make other files less of a hack.
  * This file has been rebuilt -- it may need a little more work.
  *
- * It is (very) unlikely that VMS will work without help.
+ * It is (very) unlikely that VMS will work without help, primarily
+ * because VMS does not use the "ASCII" character set.
  */
 
 
@@ -52,7 +53,7 @@
 # include <unix.h>
 #endif
 
-#if defined(WINDOWS) || defined(MSDOS)
+#if defined(WINDOWS) || defined(MSDOS) || defined(USE_EMX)
 # include <io.h>
 #endif
 
@@ -101,8 +102,9 @@
 #  include <string.h>
 # else
 #  include <strings.h>
-   extern char *strchr();
-   extern char *strstr();
+extern char *strstr();
+extern char *strchr();
+extern char *strrchr();
 # endif
 
 #else
@@ -114,7 +116,7 @@
 
 
 #if !defined(linux) && !defined(__MWERKS__) && !defined(ACORN)
-  extern long atol();
+extern long atol();
 #endif
 
 

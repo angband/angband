@@ -9,17 +9,15 @@
 
 # After modifying this file, delete the "lib/raw/r_info.raw" file.
 
-
 # Currently, "unique" monsters are just "special" monster races, with
 # the requirement that only one monster of that race can exist at a time,
 # and when it is killed, it can never again be generated.
 
-
 # ATTR_CLEAR monsters acquire their attr from the item/floor below them,
-# and use "white" for the recall window.  Cancelled by "use_graphics".
+# and use "white" for the recall window.  See "cave.c" for info.
 
 # ATTR_MULTI monsters have a "flickering" attr, and use "violet" for the
-# recall window.  Cancelled by "use_graphics".
+# recall window.  See "cave.c" for info.
 
 # CHAR_CLEAR monsters use special symbols (.) as given below,
 # and use those symbols for the recall window.  In theory, normally,
@@ -37,11 +35,9 @@
 # Note that currently both CHAR_CLEAR and CHAR_MULTI monsters are treated
 # as normal monsters that are just a little hard to see.
 
-
 # Note that the monster list underwent several changes for Angband 2.7.9,
 # including some monster name changes, some symbol redistributions, and
-# some color changes.  These changes were intended to either simplify life
-# for the player, or simplify the transition to Angband 2.8.0.
+# some color changes.
 
 # The Umber Hulk joined the Xorn/Xaren (X).  The ticks (t) joined the
 # spiders (S).  The townspeople (t) left the people (p).  The "Jabberwock"
@@ -84,7 +80,6 @@
 # which will require reorganization of the list.  Some new "player ghost"
 # unique monsters will probably be added at the same time.
 
-
 # Mushrooms look just like food (and use the "," symbol for both the recall
 # window and for normal display), Creeping coins look just like coins (and
 # use the "$" symbol for both the recall window and for normal display), and
@@ -107,13 +102,14 @@
 
 # There are still too many "p" monsters, perhaps they should be broken up.
 
-
 # As always, you can enforce any "visual picture" you want with a "pref file".
+
+# Note that monster zero is used for the "player" picture.
 
 
 # Version stamp (required)
 
-V:2.7.9
+V:2.8.0
 
 
 ##### The Player #####

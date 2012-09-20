@@ -10,14 +10,8 @@
 /*
  * A term_win is a "window" for a Term
  *
- *	- Window Size (max 255x255)
- *
  *	- Cursor Useless/Visible codes
  *	- Cursor Location (see "Useless")
- *
- *	- Min/Max modified rows
- *
- *	- Array[h] -- Min/Max modified cols (per row)
  *
  *	- Array[h] -- Access to the attribute array
  *	- Array[h] -- Access to the character array
@@ -27,39 +21,20 @@
  *
  * Note that the attr/char pair at (x,y) is a[y][x]/c[y][x]
  * and that the row of attr/chars at (0,y) is a[y]/c[y]
- *
- * Note that "y1<=y2" iff any changes have occured on the screen.
- * Note that "r1[y]<=r2[y]" iff any changes have occured in row "y".
- *
- * Note that this structure is "private" and should not be used
- * outside of this package.  Likewise, the special "old" and "scr"
- * fields of the "term" structure are likewise "private".
- *
- * Note that there is some redundancy and useless information since
- * the same type of structure is used for both the "old" and "scr"
- * fields of the "term" structure, though most of the sub-fields of
- * the "old" field are actually unused.
  */
 
 typedef struct term_win term_win;
 
-struct term_win {
+struct term_win
+{
+	bool cu, cv;
+	byte cx, cy;
 
-    byte w, h;
+	byte **a;
+	char **c;
 
-    bool cu, cv;
-    byte cx, cy;
-
-    byte y1, y2;
-
-    byte *x1;
-    byte *x2;
-
-    byte **a;
-    char **c;
-
-    byte *va;
-    char *vc;
+	byte *va;
+	char *vc;
 };
 
 
@@ -116,9 +91,23 @@ struct term_win {
  *
  *	- Keypress Queue -- pending keys
  *
- *	- Current screen image
  *
- *	- Desired screen image
+ *	- Window Width (max 255)
+ *	- Window Height (max 255)
+ *
+ *	- Minimum modified row
+ *	- Maximum modified row
+ *
+ *	- Minimum modified column (per row)
+ *	- Maximum modified column (per row)
+ *
+ *
+ *	- Displayed screen image
+ *	- Requested screen image
+ *
+ *	- Temporary screen image
+ *	- Memorized screen image
+ *
  *
  *	- Hook for init-ing the term
  *	- Hook for nuke-ing the term
@@ -138,50 +127,62 @@ struct term_win {
 
 typedef struct term term;
 
-struct term {
+struct term
+{
+	vptr user;
 
-    vptr user;
+	vptr data;
 
-    vptr data;
+	bool active_flag;
+	bool mapped_flag;
+	bool total_erase;
+	bool icky_corner;
+	bool soft_cursor;
+	bool always_pict;
+	bool higher_pict;
+	bool always_text;
+	bool never_bored;
+	bool never_frosh;
 
-    bool active_flag;
-    bool mapped_flag;
-    bool total_erase;
-    bool icky_corner;
-    bool soft_cursor;
-    bool always_pict;
-    bool higher_pict;
-    bool always_text;
-    bool never_bored;
-    bool never_frosh;
+	byte attr_blank;
+	char char_blank;
 
-    byte attr_blank;
-    char char_blank;
+	char *key_queue;
 
-    char *key_queue;
+	u16b key_head;
+	u16b key_tail;
+	u16b key_xtra;
+	u16b key_size;
 
-    u16b key_head;
-    u16b key_tail;
-    u16b key_xtra;
-    u16b key_size;
+	byte wid;
+	byte hgt;
 
-    term_win *old;
-    term_win *scr;
+	byte y1;
+	byte y2;
 
-    void (*init_hook)(term *t);
-    void (*nuke_hook)(term *t);
+	byte *x1;
+	byte *x2;
 
-    errr (*user_hook)(int n);
+	term_win *old;
+	term_win *scr;
 
-    errr (*xtra_hook)(int n, int v);
+	term_win *tmp;
+	term_win *mem;
 
-    errr (*curs_hook)(int x, int y);
+	void (*init_hook)(term *t);
+	void (*nuke_hook)(term *t);
 
-    errr (*wipe_hook)(int x, int y, int n);
+	errr (*user_hook)(int n);
 
-    errr (*pict_hook)(int x, int y, byte a, char c);
+	errr (*xtra_hook)(int n, int v);
 
-    errr (*text_hook)(int x, int y, int n, byte a, cptr s);
+	errr (*curs_hook)(int x, int y);
+
+	errr (*wipe_hook)(int x, int y, int n);
+
+	errr (*pict_hook)(int x, int y, byte a, char c);
+
+	errr (*text_hook)(int x, int y, int n, byte a, cptr s);
 };
 
 
@@ -191,14 +192,6 @@ struct term {
 
 
 /**** Available Constants ****/
-
-
-/*
- * Max recursion depth of "screen memory"
- *
- * Note that "unused" screens waste only 32 bytes each
- */
-#define MEM_SIZE 8
 
 
 /*
@@ -214,6 +207,7 @@ struct term {
  * The "TERM_XTRA_SOUND" action uses "v" for the index of a sound
  * The "TERM_XTRA_ALIVE" action uses "v" to "activate" (or "close")
  * The "TERM_XTRA_LEVEL" action uses "v" to "resume" (or "suspend")
+ * The "TERM_XTRA_DELAY" action uses "v" as a "millisecond" value
  *
  * The other actions do not need a "v" code, so "zero" is used.
  */
@@ -229,6 +223,7 @@ struct term {
 #define TERM_XTRA_REACT 10	/* React to global changes (optional) */
 #define TERM_XTRA_ALIVE 11	/* Change the "hard" level (optional) */
 #define TERM_XTRA_LEVEL 12	/* Change the "soft" level (optional) */
+#define TERM_XTRA_DELAY 13	/* Delay some milliseconds (optional) */
 
 
 /**** Available Variables ****/
@@ -249,11 +244,12 @@ extern errr Term_addch(byte a, char c);
 extern errr Term_addstr(int n, byte a, cptr s);
 extern errr Term_putch(int x, int y, byte a, char c);
 extern errr Term_putstr(int x, int y, int n, byte a, cptr s);
-extern errr Term_erase(int x, int y, int w, int h);
+extern errr Term_erase(int x, int y, int n);
 extern errr Term_clear(void);
 extern errr Term_redraw(void);
 
 extern errr Term_get_cursor(int *v);
+extern errr Term_get_size(int *w, int *h);
 extern errr Term_locate(int *x, int *y);
 extern errr Term_what(int x, int y, byte *a, char *c);
 
@@ -272,6 +268,6 @@ extern errr Term_activate(term *t);
 extern errr term_nuke(term *t);
 extern errr term_init(term *t, int w, int h, int k);
 
-#endif
 
+#endif
 

@@ -1,11 +1,11 @@
-This is the README file for Angband 2.7.9v6 (4/13/96)
+This is the README file for Angband 2.8.0 (10/12/96)
 
-Angband 2.7.9v6 is a minor revision of Angband 2.7.9v5, which fixes a few
-bugs, cleans up a few things, and optimizes the code some more.
+Angband 2.8.0 is a semi-stable official release incorporating all of the
+improvements added since Angband 2.7.8.  Any bugs found in Angband 2.8.0
+will be fixed in Angband 2.8.1, the next stable official release.
 
 See the Official Angband Home Page "http://www.voicenet.com/~benh/Angband/"
 for more information about exactly what has changed recently.
-
 
 === General information ===
 
@@ -50,18 +50,16 @@ savefiles.  Make sure you keep all your savefiles in the proper place,
 and if you load a savefile from the wrong place, note that the game
 may decide to re-save your savefile in the proper place when you quit.
 
-The Windows version is currently broken, but it is almost fixed.
-
 
 === Upgrading from older versions or other platforms ===
 
 If you have been playing Angband on a different platform, or with an older
-version of Angband, it may be possible to "upgrade" to Angband 2.7.9, keeping
+version of Angband, it may be possible to "upgrade" to Angband 2.8.0, keeping
 your old savefiles, high score list, and other files, instead of starting over.
 
-Angband 2.7.9 uses a platform independant file format for the binary files
+Angband 2.8.0 uses a platform independant file format for the binary files
 that store information about games in progress, known as "savefiles".  Also,
-Angband 2.7.9 is able to translate savefiles from any version of Angband from
+Angband 2.8.0 is able to translate savefiles from any version of Angband from
 Angband 2.5.1 on.  Unfortunately, pre-2.5.1 savefiles are not usable, since
 they used a system specific savefile format, and did not have an official
 definition, and sometimes include assumptions that are no longer valid.  To
@@ -72,32 +70,33 @@ or "NNN" where "UUU" is the userid of the player (on "multiuser" systems),
 and "NNN" is the name of the "character" in the savefile.  Note that only
 "multiuser" platforms use the "UUU.NNN" form, and the "period" is required.
 
-Angband 2.7.9 uses a platform independant (?) file format for the binary
+Angband 2.8.0 uses a platform independant (?) file format for the binary
 file used to store the high score list.  This file may be moved between
-platforms (if needed) or copied from older versions (Angband 2.7.? or later).
-Angband 2.7.9 uses a high score file called "scores.raw", which is kept in
+platforms (if needed) or copied from older versions (Angband 2.7.4 or later).
+Angband 2.8.0 uses a high score file called "scores.raw", which is kept in
 the "lib/apex" directory.  Older versions kept the "scores.raw" file in the
 "lib/data" directory, along with several other version specific files.
 
-Angband 2.7.9 uses a platform independant file format for the ascii files
+Angband 2.8.0 uses a platform independant file format for the ascii files
 used to store information about dead players, which is used to help create
 "player ghosts" in the dungeon.  If necessary, these files, which are kept
 in the "lib/bone" directory, may be copied from older versions, as long as
 you make sure that they are renamed as "bone.XXX" where XXX is the level on
 which the dead player died, and that every line in the file is "complete".
 It is also possible to delete the contents of the "lib/bone" directory at
-any time, which will prevent the creation of player ghosts.
+any time, which will prevent the creation of player ghosts.  Currently,
+these files are not actually used by the game.
 
-Angband 2.7.9 uses a set of ascii "configuration files" which are kept in the
+Angband 2.8.0 uses a set of ascii "configuration files" which are kept in the
 "lib/file" directory (see below).  Certain of these files may be taken from
 older versions, though most are optional for the most common configurations.
 
-Angband 2.7.9 uses a set of ascii "user pref files" which are kept in the
+Angband 2.8.0 uses a set of ascii "user pref files" which are kept in the
 "lib/user" directory.  Some of these files are usable on multiple platforms,
 but in general they are restricted to a single platform.  In general, "pref"
-files from older versions may be used with Angband 2.7.9, by moving them to
+files from older versions may be used with Angband 2.8.0, by moving them to
 the "lib/user" directory from the old "lib/pref" or "lib/pref-*" directories,
-but note that some important changes have been made in Angband 2.7.9, and, for
+but note that some important changes have been made in Angband 2.8.0, and, for
 example, old "pref" files which change the "attr/char" definitions of "terrain"
 features such as walls or doors must be changed to use the new methods.  Make
 sure to put comments in your "user pref files" describing the purpose and the
@@ -266,4 +265,3 @@ The "lib/xtra" directory contains special system files, if any.
 
 
 --- Ben ---
-

@@ -1,18 +1,11 @@
-# Makefile.ami
+# Smakefile
 #
-# Angband 2.7.9v4 makefile for Amiga with SAS/C 6.50
-#
-# NOTE: This file must be split into two separate files,
-#       called 'smakefile' and 'angband.lnk' as indicated
-#       by the lines below.
-#
-# 15/2-96, Lars Haugseth <larshau@ifi.uio.no>
-
----[smakefile]----------------------------------------------------------------
+# Amiga SAS/C 6.50
 
 all: angband
 
-angband: \
+# Object files
+OBJS = \
   z-util.o z-virt.o z-form.o z-rand.o z-term.o \
   variable.o tables.o util.o cave.o \
   object1.o object2.o monster1.o monster2.o \
@@ -22,32 +15,77 @@ angband: \
   store.o birth.o load1.o load2.o \
   wizard1.o wizard2.o \
   generate.o dungeon.o init1.o init2.o \
-  main-ami.o main.o
-    echo Linking
-    slink quiet with angband.lnk
+  main-ami.o sound-ami.o main.o
 
+# Header files
+HDRS = \
+  h-basic.h \
+  h-define.h h-type.h h-system.h h-config.h
+
+# Include files
+INCS = \
+  angband.h \
+  config.h defines.h types.h externs.h \
+  z-term.h z-rand.h z-util.h z-virt.h z-form.h $(HDRS)
+
+# Linking
+angband: $(OBJS)
+  echo Linking
+  slink QUIET WITH angband.lnk
+
+# Compiling
 .c.o:
-    echo Compiling $*.c
-    sc DEFINE AMIGA DEFINE USE_AMI $*
+  echo Compiling $*.c
+  sc DEFINE AMIGA DEFINE USE_AMI $*
 
----[angband.lnk]--------------------------------------------------------------
-
-FROM
-lib:c.o
-z-util.o z-virt.o z-form.o z-rand.o z-term.o
-variable.o tables.o util.o cave.o
-object1.o object2.o monster1.o monster2.o
-xtra1.o xtra2.o spells1.o spells2.o
-melee1.o melee2.o save.o files.o
-cmd1.o cmd2.o cmd3.o cmd4.o cmd5.o cmd6.o
-store.o birth.o load1.o load2.o
-wizard1.o wizard2.o
-generate.o dungeon.o init1.o init2.o
-main-acn.o main.o
-
-TO Angband:bin/Angband
-
-LIB LIB:scm.lib LIB:sc.lib
-
-NOICONS NODEBUG
+# Dependencies
+birth.o: birth.c $(INCS)
+borg-aux.o: borg-aux.c $(INCS) borg-aux.h borg-ext.h
+borg-aux.o: borg-obj.h borg-map.h borg.h
+borg-ben.o: borg-ben.c $(INCS) borg-ben.h borg-aux.h borg-ext.h
+borg-ben.o: borg-obj.h borg-map.h borg.h
+borg-ext.o: borg-ext.c $(INCS) borg-ext.h
+borg-ext.o: borg-obj.h borg-map.h borg.h
+borg-obj.o: borg-obj.c $(INCS) borg-obj.h borg.h
+borg-map.o: borg-map.c $(INCS) borg-map.h borg.h
+borg.o: borg.c $(INCS) borg.h
+cave.o: cave.c $(INCS)
+cmd1.o: cmd1.c $(INCS)
+cmd2.o: cmd2.c $(INCS)
+cmd3.o: cmd3.c $(INCS)
+cmd4.o: cmd4.c $(INCS)
+cmd5.o: cmd5.c $(INCS)
+cmd6.o: cmd6.c $(INCS)
+dungeon.o: dungeon.c $(INCS)
+files.o: files.c $(INCS)
+generate.o: generate.c $(INCS)
+init1.o: init1.c $(INCS)
+init2.o: init2.c $(INCS)
+load1.o: load1.c $(INCS)
+load2.o: load2.c $(INCS)
+main-ami.o: main-ami.c $(INCS) sound-ami.h
+main.o: main.c $(INCS)
+melee1.o: melee1.c $(INCS)
+melee2.o: melee2.c $(INCS)
+monster1.o: monster1.c $(INCS)
+monster2.o: monster2.c $(INCS)
+object1.o: object1.c $(INCS)
+object2.o: object2.c $(INCS)
+save.o: save.c $(INCS)
+sound-ami.o: sound-ami.c sound-ami.h
+spells1.o: spells1.c $(INCS)
+spells2.o: spells2.c $(INCS)
+store.o: store.c $(INCS)
+tables.o: tables.c $(INCS)
+util.o: util.c $(INCS)
+variable.o: variable.c $(INCS)
+wizard1.o: wizard1.c $(INCS)
+wizard2.o: wizard2.c $(INCS)
+xtra1.o: xtra1.c $(INCS)
+xtra2.o: xtra2.c $(INCS)
+z-form.o: z-form.c $(HDRS) z-form.h z-util.h z-virt.h
+z-rand.o: z-rand.c $(HDRS) z-rand.h
+z-term.o: z-term.c $(HDRS) z-term.h z-virt.h
+z-util.o: z-util.c $(HDRS) z-util.h
+z-virt.o: z-virt.c $(HDRS) z-virt.h z-util.h
 

@@ -198,7 +198,7 @@ changes (and bug fixes) can be found at the Official Angband Home Page.
     extreme optimizations
 
 
-=== Here is a posting from the original author ===
+=== A Posting from the Original Author ===
 
 From: koeneke@ionet.net (Robert Alan Koeneke)
 Newsgroups: rec.games.roguelike.angband,rec.games.roguelike.moria
@@ -319,7 +319,7 @@ Robert Alan Koeneke
 koeneke@ionet.net
 
 
-=== Here is some old information about previous versions ===
+=== Previous Versions (outdated) ===
 
 
                           VMS Moria Version 4.8

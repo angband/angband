@@ -16,12 +16,13 @@
 /*
  * Hack -- Link a copyright message into the executable
  */
-cptr copyright[5] = {
-    "Copyright (c) 1989 James E. Wilson, Robert A. Keoneke",
-    "",
-    "This software may be copied and distributed for educational, research,",
-    "and not for profit purposes provided that this copyright and statement",
-    "are included in all such copies."
+cptr copyright[5] =
+{
+	"Copyright (c) 1989 James E. Wilson, Robert A. Keoneke",
+	"",
+	"This software may be copied and distributed for educational, research,",
+	"and not for profit purposes provided that this copyright and statement",
+	"are included in all such copies."
 };
 
 
@@ -85,8 +86,6 @@ s16b command_new;		/* Command chaining from inven/equip view */
 
 s16b energy_use;		/* Energy use this turn */
 
-s16b choose_default;		/* Default contents of choice window */
-
 bool create_up_stair;		/* Auto-create "up stairs" */
 bool create_down_stair;		/* Auto-create "down stairs" */
 
@@ -125,6 +124,7 @@ bool inkey_scan;		/* See the "inkey()" function */
 bool inkey_flag;		/* See the "inkey()" function */
 
 s16b coin_type;			/* Hack -- force coin type */
+
 bool opening_chest;		/* Hack -- prevent chest generation */
 
 bool use_graphics;		/* Hack -- Assume no graphics mapping */
@@ -141,162 +141,147 @@ s16b inven_nxt;			/* Hack -- unused */
 s16b inven_cnt;			/* Number of items in inventory */
 s16b equip_cnt;			/* Number of items in equipment */
 
-s16b i_nxt = 1;			/* Object free scanner */
+s16b o_nxt = 1;			/* Object free scanner */
 s16b m_nxt = 1;			/* Monster free scanner */
 
-s16b i_max = 1;			/* Object heap size */
+s16b o_max = 1;			/* Object heap size */
 s16b m_max = 1;			/* Monster heap size */
 
-s16b i_top = 0;			/* Object top size */
+s16b o_top = 0;			/* Object top size */
 s16b m_top = 0;			/* Monster top size */
 
 
-/* Software options (set via the '=' command).  See "tables.c" */
+/*
+ * Software options (set via the '=' command).  See "tables.c"
+ */
 
-/* General options */
 
-bool rogue_like_commands;	/* Use the rogue-like keyset */
-bool quick_messages;		/* Clear "-more-" with any key */
-bool other_query_flag;		/* Prompt before various actions */
-bool carry_query_flag;		/* Prompt when picking up things */
-bool always_pickup;		/* Pick things up by default */
-bool always_throw;		/* Throw things without asking */
-bool always_repeat;		/* Auto-repeat some commands */
-bool use_old_target;		/* Use old target when possible */
+/* Option Set 1 -- User Interface */
 
-bool show_equip_label;		/* Shop labels in equipment list */
-bool depth_in_feet;		/* Display the depth in "feet" */
-bool notice_seams;		/* Highlight mineral seams */
+bool rogue_like_commands;	/* Rogue-like commands */
+bool quick_messages;		/* Activate quick messages */
+bool other_query_flag;		/* Prompt for various information */
+bool carry_query_flag;		/* Prompt before picking things up */
+bool use_old_target;		/* Use old target by default */
+bool always_pickup;			/* Pick things up by default */
+bool always_repeat;			/* Repeat obvious commands */
+bool depth_in_feet;			/* Show dungeon level in feet */
 
-bool use_color;			/* Use color if possible */
+bool stack_force_notes;		/* Merge inscriptions when stacking */
+bool stack_force_costs;		/* Merge discounts when stacking */
 
-bool compress_savefile;		/* Compress the savefile as possible */
+bool show_labels;			/* Show labels in object listings */
+bool show_weights;			/* Show weights in object listings */
+bool show_choices;			/* Show choices in certain sub-windows */
+bool show_details;			/* Show details in certain sub-windows */
 
-bool hilite_player;		/* Hilite the player */
-
-bool ring_bell;			/* Ring the bell */
-
-bool view_yellow_lite;		/* Use "yellow" for "torch lite" */
-bool view_bright_lite;		/* Use "bright" for (viewable) "perma-lite" */
+bool ring_bell;				/* Ring the bell (on errors, etc) */
+bool use_color;				/* Use color if possible (slow) */
 
 
 /* Option Set 2 -- Disturbance */
 
 bool find_ignore_stairs;	/* Run past stairs */
-bool find_ignore_doors;		/* Run through doors */
-bool find_cut;			/* Cut corners */
-bool find_examine;		/* Examine corners */
+bool find_ignore_doors;		/* Run through open doors */
+bool find_cut;				/* Run past known corners */
+bool find_examine;			/* Run into potential corners */
 
-bool disturb_near;		/* Disturbed by "local" motion */
-bool disturb_move;		/* Disturbed by monster movement */
-bool disturb_enter;		/* Disturbed by monster appearing */
-bool disturb_leave;		/* Disturbed by monster disappearing */
-
-bool disturb_panel;		/* Disturbed by map panel changing */
-bool disturb_other;		/* Disturbed by various things happening */
-
-bool flush_command;		/* Flush input before every command */
-bool flush_disturb;		/* Flush input on disturbance */
-bool flush_failure;		/* Flush input on any failure */
-
-bool fresh_before;		/* Flush output before normal commands */
-bool fresh_after;		/* Flush output after normal commands */
-bool fresh_message;		/* Flush output after all messages */
+bool disturb_move;			/* Disturb whenever any monster moves */
+bool disturb_near;			/* Disturb whenever viewable monster moves */
+bool disturb_panel;			/* Disturb whenever map panel changes */
+bool disturb_state;			/* Disturn whenever player state changes */
+bool disturb_minor;			/* Disturb whenever boring things happen */
+bool disturb_other;			/* Disturb whenever various things happen */
 
 bool alert_hitpoint;		/* Alert user to critical hitpoints */
-bool alert_failure;		/* Alert user to various failures */
+bool alert_failure;			/* Alert user to various failures */
 
 
-/* Gameplay options */
+/* Option Set 3 -- Game-Play */
 
-bool scum_always;		/* Auto-scum for good levels (always) */
-bool scum_sometimes;		/* Auto-scum for good levels (sometimes) */
+bool auto_haggle;			/* Auto-haggle in stores */
 
-bool dungeon_align;		/* Generate dungeons with align rooms */
-bool dungeon_stair;		/* Generate dungeons with connected stairs */
+bool auto_scum;				/* Auto-scum for good levels */
 
-bool view_perma_grids;		/* Map "remembers" perma-lit grids */
-bool view_torch_grids;		/* Map "remembers" torch-lit grids */
+bool stack_allow_items;		/* Allow weapons and armor to stack */
+bool stack_allow_wands;		/* Allow wands/staffs/rods to stack */
 
-bool flow_by_sound;		/* Monsters track new player location */
-bool flow_by_smell;		/* Monsters track old player location */
+bool expand_look;			/* Expand the power of the look command */
+bool expand_list;			/* Expand the power of the list commands */
 
-bool track_follow;		/* Monsters follow the player */
-bool track_target;		/* Monsters target the player */
+bool view_perma_grids;		/* Map remembers all perma-lit grids */
+bool view_torch_grids;		/* Map remembers all torch-lit grids */
 
-bool smart_learn;		/* Monsters learn from their mistakes */
-bool smart_cheat;		/* Monsters exploit player weaknesses */
+bool dungeon_align;			/* Generate dungeons with aligned rooms */
+bool dungeon_stair;			/* Generate dungeons with connected stairs */
 
-bool no_haggle_flag;		/* Cancel haggling */
-bool shuffle_owners;		/* Shuffle store owners occasionally */
+bool flow_by_sound;			/* Monsters track new player location */
+bool flow_by_smell;			/* Monsters track old player location */
 
-bool show_health_bar;		/* Show monster health bar */
+bool track_follow;			/* Monsters follow the player */
+bool track_target;			/* Monsters target the player */
 
-bool show_inven_weight;		/* Show weights in inven */
-bool show_equip_weight;		/* Show weights in equip */
-bool show_store_weight;		/* Show weights in store */
-
-bool stack_allow_items;		/* Allow weapons and armor and such to stack */
-bool stack_allow_wands;		/* Allow wands and staffs and rods to stack */
-bool stack_force_notes;		/* Force items with different notes to stack */
-bool stack_force_costs;		/* Force items with different costs to stack */
+bool smart_learn;			/* Monsters learn from their mistakes */
+bool smart_cheat;			/* Monsters exploit player weaknesses */
 
 
-/* Efficiency options */
+/* Option Set 4 -- Efficiency */
 
-bool view_reduce_lite;		/* Reduce lite radius when running */
-bool view_reduce_view;		/* Reduce view radius in town */
+bool view_reduce_lite;		/* Reduce lite-radius when running */
+bool view_reduce_view;		/* Reduce view-radius in town */
 
-bool optimize_display;		/* Optimize various things (visual display) */
-bool optimize_various;		/* Optimize various things (message recall) */
+bool avoid_abort;			/* Avoid checking for user abort */
+bool avoid_other;			/* Avoid processing special colors */
+
+bool flush_failure;			/* Flush input on any failure */
+bool flush_disturb;			/* Flush input on disturbance */
+bool flush_command;			/* Flush input before every command */
+
+bool fresh_before;			/* Flush output before normal commands */
+bool fresh_after;			/* Flush output after normal commands */
+bool fresh_message;			/* Flush output after all messages */
+
+bool compress_savefile;		/* Compress messages in savefiles */
+
+bool hilite_player;			/* Hilite the player with the cursor */
+
+bool view_yellow_lite;		/* Use special colors for torch-lit grids */
+bool view_bright_lite;		/* Use special colors for 'viewable' grids */
+
+bool view_granite_lite;		/* Use special colors for wall grids (slow) */
+bool view_special_lite;		/* Use special colors for floor grids (slow) */
 
 
-/* Special options */
+/* Option Set 99 -- Obsolete but needed for savefile parsing */
 
-bool use_mirror_debug;		/* Use "mirror" window -- debug messages */
-
-bool use_mirror_around;		/* Use "mirror" window -- auto-mapping */
-
-bool use_mirror_recent;		/* Use "mirror" window -- recent monsters */
-
-bool use_mirror_normal;		/* Use "mirror" window -- current stuff */
-bool use_mirror_choose;		/* Use "mirror" window -- show "choices" */
-bool use_mirror_spells;		/* Use "mirror" window -- show "spells" */
-
-bool use_recall_recent;		/* Use "recall" window -- recent monsters */
-
-bool use_choice_normal;		/* Use "choice" window -- current stuff */
-bool use_choice_choose;		/* Use "choice" window -- show "choices" */
-bool use_choice_spells;		/* Use "choice" window -- show "spells" */
-
-bool show_choose_info;		/* Show info in windows when "choosing" */
-bool show_choose_prompt;	/* Show prompt in windows when "choosing" */
-bool show_choose_weight;	/* Show weights in windows when "choosing" */
-bool show_choose_label;		/* Show labels in windows when "choosing"  */
-
-bool recall_show_desc;		/* Show monster descriptions when "recalling" */
-bool recall_show_kill;		/* Show monster kill info when "recalling" */
+bool old_mirror_debug;		/* Show debug messages in mirror window */
+bool old_mirror_around;		/* Show overhead map in mirror window */
+bool old_mirror_recent;		/* Show monster info in mirror window */
+bool old_mirror_normal;		/* Show inven/equip in mirror window */
+bool old_mirror_choose;		/* Show item choices in mirror window */
+bool old_mirror_spells;		/* Show spell choices in mirror window */
+bool old_recall_recent;		/* Show monster info in recall window */
+bool old_choice_normal;		/* Show inven/equip in choice window */
+bool old_choice_choose;		/* Show item choices in choice window */
+bool old_choice_spells;		/* Show spell choices in choice window */
 
 
 /* Cheating options */
 
-bool cheat_peek;		/* Cheat -- note object creation */
-bool cheat_hear;		/* Cheat -- note monster creation */
-bool cheat_room;		/* Cheat -- note dungeon creation */
-bool cheat_xtra;		/* Cheat -- note something else */
-bool cheat_know;		/* Cheat -- complete monster recall */
-bool cheat_live;		/* Cheat -- allow death avoidance */
+bool cheat_peek;		/* Peek into object creation */
+bool cheat_hear;		/* Peek into monster creation */
+bool cheat_room;		/* Peek into dungeon creation */
+bool cheat_xtra;		/* Peek into something else */
+bool cheat_know;		/* Know complete monster info */
+bool cheat_live;		/* Allow player to avoid death */
 
+
+/* Special options */
 
 s16b hitpoint_warn;		/* Hitpoint warning (0 to 9) */
 
-s16b delay_spd;			/* Delay factor (0 to 9) */
+s16b delay_factor;		/* Delay factor (0 to 9) */
 
-
-term *term_screen;		/* The screen window */
-term *term_mirror;		/* The mirror window */
-term *term_recall;		/* The recall window */
-term *term_choice;		/* The choice window */
 
 
 s16b feeling;			/* Most recent feeling */
@@ -309,9 +294,7 @@ bool new_level_flag;		/* Start a new level */
 bool closing_flag;		/* Dungeon is closing */
 
 
-/*
- * Dungeon size info
- */
+/* Dungeon size info */
 s16b max_panel_rows, max_panel_cols;
 s16b panel_row, panel_col;
 s16b panel_row_min, panel_row_max;
@@ -335,9 +318,7 @@ s16b recent_idx;
 
 
 
-/*
- * The player's UID and GID
- */
+/* User info */
 int player_uid = 0;
 int player_euid = 0;
 int player_egid = 0;
@@ -358,17 +339,23 @@ char history[4][60];
 char savefile[1024];
 
 
-/* Array of grids lit by player lite (see "cave.c") [LITE_MAX] */
+/*
+ * Array of grids lit by player lite (see "cave.c")
+ */
 s16b lite_n;
 byte lite_y[LITE_MAX];
 byte lite_x[LITE_MAX];
 
-/* Array of grids viewable to the player (see "cave.c") [VIEW_MAX] */
+/*
+ * Array of grids viewable to the player (see "cave.c")
+ */
 s16b view_n;
 byte view_y[VIEW_MAX];
 byte view_x[VIEW_MAX];
 
-/* Array of grids for use by various functions (see "cave.c") [TEMP_MAX] */
+/*
+ * Array of grids for use by various functions (see "cave.c")
+ */
 s16b temp_n;
 byte temp_y[TEMP_MAX];
 byte temp_x[TEMP_MAX];
@@ -443,9 +430,29 @@ char *message__buf;
 
 
 /*
+ * The array of normal options
+ */
+u32b option_flag[8];
+u32b option_mask[8];
+
+
+/*
+ * The array of window options
+ */
+u32b window_flag[8];
+u32b window_mask[8];
+
+
+/*
+ * The array of window pointers
+ */
+term *ang_term[8];
+
+
+/*
  * The array of indexes of "live" objects
  */
-s16b i_fast[MAX_I_IDX];
+s16b o_fast[MAX_O_IDX];
 
 /*
  * The array of indexes of "live" monsters
@@ -461,9 +468,9 @@ s16b m_fast[MAX_M_IDX];
 cave_type *cave[MAX_HGT];
 
 /*
- * The array of dungeon items [MAX_I_IDX]
+ * The array of dungeon items [MAX_O_IDX]
  */
-object_type *i_list;
+object_type *o_list;
 
 /*
  * The array of dungeon monsters [MAX_M_IDX]
@@ -488,47 +495,37 @@ object_type *inventory;
 
 
 /*
- * The size of the "kind allocator table"
+ * The size of "alloc_kind_table" (at most MAX_K_IDX * 4)
  */
 s16b alloc_kind_size;
 
 /*
- * The indexes into the "kind allocator table" by level [MAX_DEPTH]
+ * The entries in the "kind allocator table"
  */
-s16b *alloc_kind_index;
-
-/*
- * The "kind allocator table" [alloc_kind_size]
- */
-kind_entry *alloc_kind_table;
+alloc_entry *alloc_kind_table;
 
 
 /*
- * The size of the "race allocator table"
+ * The size of "alloc_race_table" (at most MAX_R_IDX)
  */
 s16b alloc_race_size;
 
 /*
- * The indexes into the "race allocator table" by level [MAX_DEPTH]
+ * The entries in the "race allocator table"
  */
-s16b *alloc_race_index;
-
-/*
- * The "race allocator table" [alloc_race_size]
- */
-race_entry *alloc_race_table;
+alloc_entry *alloc_race_table;
 
 
 /*
  * Specify attr/char pairs for inventory items (by tval)
- * XXX XXX XXX Note the implied maximum "tval" of 128
+ * Be sure to use "index & 0x7F" to avoid illegal access
  */
 byte tval_to_attr[128];
 char tval_to_char[128];
 
 /*
  * Simple keymap method, see "init.c" and "cmd6.c".
- * XXX XXX XXX Note the implied maximum "key" of 128
+ * Be sure to use "index & 0x7F" to avoid illegal access
  */
 byte keymap_cmds[128];
 byte keymap_dirs[128];
@@ -536,6 +533,7 @@ byte keymap_dirs[128];
 
 /*
  * Global table of color definitions
+ * Be sure to use "index & 0xFF" to avoid illegal access
  */
 byte color_table[256][4];
 
@@ -740,14 +738,14 @@ void (*ang_sort_swap)(vptr u, vptr v, int a, int b);
 
 
 /*
- * Hack -- function hook to check "validity" of given race
+ * Hack -- function hook to restrict "get_mon_num_prep()" function
  */
 bool (*get_mon_num_hook)(int r_idx);
 
 
 
 /*
- * Hack -- function hook to check "validity" of given kind
+ * Hack -- function hook to restrict "get_obj_num_prep()" function
  */
 bool (*get_obj_num_hook)(int k_idx);
 

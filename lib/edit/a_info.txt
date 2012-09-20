@@ -19,9 +19,9 @@
 # artifacts, are never created "accidentally".
 
 
-# Version stamp
+# Version stamp (required)
 
-V:2.7.9
+V:2.8.0
 
 
 

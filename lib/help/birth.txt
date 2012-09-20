@@ -208,7 +208,7 @@ have intrinsic abilities.
                unseen, and resist light effects just like regular elves.
  
  
-=== Here is some (old) information about the various Classes ===
+=== Classes (outdated) ===
  
  
           Once a race has been chosen, you will need to pick a class.  Some
@@ -221,7 +221,7 @@ have intrinsic abilities.
           Warrior
                A Warrior is a hack-and-slash character, who solves most  of
                his  problems  by cutting them to pieces, but will occasion-
-               ally fall back on the help of a magical device.   His  prime
+               ally fall back  on the help of a magical device.  His  prime
                stats  are  Strength  and Constitution, and a good Dexterity
                can really help at times.  A Warrior will be good at  Fight-
                ing and Throwing/Bows, but bad at most other skills.
@@ -229,12 +229,12 @@ have intrinsic abilities.
           Mage
                A Mage must live by his wits.  He cannot hope to simply hack
                his  way  through the dungeon, and so must therefore use his
-               magic to defeat, deceive, confuse, and escape.   A  mage  is
+               magic to defeat,  deceive, confuse, and escape.  A  mage  is
                not really complete without an assortment of magical devices
                to use in addition to his spells.  He can master the  higher
                level  magical  devices far easier than anyone else, and has
                the best saving throw to resist effects of  spells  cast  at
-               him.   Intelligence  and  Dexterity  are  his primary stats.
+               him.  Intelligence  and   Dexterity  are  his primary stats.
                There is no rule that says  a  mage  cannot  become  a  good
                fighter, but spells are his true realm.
  
@@ -248,7 +248,7 @@ have intrinsic abilities.
                ices, preferring to call them instruments of  god,  but  are
                not  as good as a mage in their use.  Priests have good sav-
                ing throws,  and  make  decent  fighters,  preferring  blunt
-               weapons  over  edged  ones.   Wisdom  and  Charisma  are the
+               weapons  over  edged  ones.  Wisdom  and  Charisma  are  the
                priest's primary stats.
  
           Rogue
@@ -290,7 +290,7 @@ have intrinsic abilities.
                are Strength and Charisma.
  
 
-=== Here is some information about the various Stats ===
+=== Stats ===
 
           Strength
                Strength is important in fighting with weapons and in melee
@@ -342,7 +342,7 @@ have intrinsic abilities.
                also mean more starting money for the character.
  
 
-=== Here is some (old) information about the various Abilities ===
+=== Abilities (outdated) ===
 
           Characters possess some different abilities which can  help  them
           to survive.  The starting abilities of a character are based upon
@@ -351,11 +351,11 @@ have intrinsic abilities.
  
           Fighting
                Fighting is the ability to hit and do damage with weapons or
-               fists.   Normally  a  character  gets a single blow from any
+               fists.  Normally  a  character  gets  a single blow from any
                weapon, but if his dexterity and strength are  high  enough,
                he  may  receive  more blows per round with lighter weapons.
                Strength and dexterity both modify the  ability  to  hit  an
-               opponent.   This skill increases with the level of the char-
+               opponent.  This skill increases  with the level of the char-
                acter.
  
           Shooting Ability
@@ -377,7 +377,7 @@ have intrinsic abilities.
                ity.
  
           Stealth
-               The ability to move silently about is very useful.   Charac-
+               The ability to move  silently about is very useful.  Charac-
                ters with good stealth can usually surprise their opponents,
                gaining the first blow.  Also, creatures may fail to  notice
                a  stealthy  character  entirely, allowing a player to avoid
@@ -387,14 +387,14 @@ have intrinsic abilities.
           Disarming
                Disarming is the  ability  to  remove  traps  (safely),  and
                includes  picking  locks  on  traps and doors.  A successful
-               disarming will gain the character some experience.   A  trap
+               disarming will gain the character  some experience.  A  trap
                must  be  found  before  it  can be disarmed.  Dexterity and
                intelligence both modify the ability  to  disarm,  and  this
                ability increases with the level of the character.
  
           Magical Devices
                Using a magical device such as  a  wand  or  staff  requires
-               experience  and  knowledge.   Spell  users such as magi  and
+               experience  and  knowledge.  Spell  users such as  magi  and
                priests are therefore much better at using a magical  device
                than say a warrior.  This skill is modified by intelligence,
                and increases with the level of the character.
@@ -414,7 +414,7 @@ have intrinsic abilities.
  
  
  
-=== Here are the legal combinations of Race and Class ===
+=== Combinations of Race and Class ===
  
                       Warrior   Mage    Priest    Rogue   Ranger   Paladin
  
@@ -431,7 +431,7 @@ have intrinsic abilities.
  
 
  
-=== Here is some (old) miscellaneous information ===
+=== Miscellaneous (outdated) ===
 
 
           Infra-vision
@@ -442,39 +442,39 @@ have intrinsic abilities.
                tain distance.  This ability works equally well with or with
                out  a  light source.  The majority of Angband's creatures are
                cold-blooded, and will not be detected unless lit  up  by  a
-               light  source.   All non human races have innate infra-vision
+               light  source.  All non human races have innate  infra-vision
                ability.  Human can gain infra-vision only if it is magically
                enhanced.
  
  
-=== Here are the (old) tables describing Stat Bonuses ===
+=== Stat Bonus Tables (outdated) ===
 
 Stat, hit dice, and experience points per level modifications due to race
 are listed in the following table.
  
-            STR  INT  WIS  DEX  CON  CHR  Hit Dice  Rqd Exp/level
-Human        0    0    0    0    0    0      10          +0%
-Half-Elf    -1   +1    0   +1   -1   +1       9         +10%
-Elf         -1   +2   +1   +1   -2   +1       8         +20%
-Hobbit      -2   +2   +1   +3   +2   +1       7         +10%
-Gnome       -1   +2    0   +2   +1   -2       8         +25%
-Dwarf       +2   -3   +2   -2   +2   -3      11         +20%
-Half-Orc    +2   -1    0    0   +1   -4      10         +10%
-Half-Troll  +4   -4   -2   -4   +3   -6      12         +20%
-Dunadan     +1   +2   +2   +2   +3   +2      10         +80%
-High-Elf    +1   +3   -1   +3   +1   +5      10        +100%
-
-              STR     INT     WIS     DEX     CON     CHR
-Warrior       +5      -2      -2      +2      +2      -1
-Mage          -5      +3       0      +1      -2      +1
-Priest        -1      -3      +3      -1       0      +2
-Rogue         +2      +1      -2      +3      +1      -1
-Ranger        +2      +2       0      +1      +1      +1
-Paladin       +3      -3      +1       0      +2      +2
+                       STR  INT  WIS  DEX  CON  CHR  Hit Dice  Rqd Exp/level
+           Human        0    0    0    0    0    0      10          +0%
+           Half-Elf    -1   +1    0   +1   -1   +1       9         +10%
+           Elf         -1   +2   +1   +1   -2   +1       8         +20%
+           Hobbit      -2   +2   +1   +3   +2   +1       7         +10%
+           Gnome       -1   +2    0   +2   +1   -2       8         +25%
+           Dwarf       +2   -3   +2   -2   +2   -3      11         +20%
+           Half-Orc    +2   -1    0    0   +1   -4      10         +10%
+           Half-Troll  +4   -4   -2   -4   +3   -6      12         +20%
+           Dunadan     +1   +2   +2   +2   +3   +2      10         +80%
+           High-Elf    +1   +3   -1   +3   +1   +5      10        +100%
+           
+                         STR     INT     WIS     DEX     CON     CHR
+           Warrior       +5      -2      -2      +2      +2      -1
+           Mage          -5      +3       0      +1      -2      +1
+           Priest        -1      -3      +3      -1       0      +2
+           Rogue         +2      +1      -2      +3      +1      -1
+           Ranger        +2      +2       0      +1      +1      +1
+           Paladin       +3      -3      +1       0      +2      +2
  
  
  
-=== Here are the (old) tables describing Abilities ===
+=== Ability Tables (outdated) ===
 
  
                       Disarm Search Stealth Percep Fight Bows Save Infra

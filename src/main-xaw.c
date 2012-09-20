@@ -26,6 +26,22 @@
 #endif /* __MAKEDEPEND__ */
 
 
+/*
+ * OPTION: Allow the use of a "Recall Window", if supported
+ */
+#define GRAPHIC_RECALL
+
+/*
+ * OPTION: Allow the use of a "Choice Window", if supported
+ */
+#define GRAPHIC_CHOICE
+
+/*
+ * OPTION: Allow the use of a "Mirror Window", if supported
+ */
+#define GRAPHIC_MIRROR
+
+
 /*****************************************************
  *
  * Resource description
@@ -34,25 +50,25 @@
 
 /* Resources:
 
- Name                Class              RepType         Default Value
- ----                -----              -------         -------------
- background          Background         Pixel           XtDefaultBackground
- border              BorderColor        Pixel           XtDefaultForeground
- borderWidth         BorderWidth        Dimension       1
- cursor              Cursor             Cursor          None
- cursorName          Cursor             String          NULL
- destroyCallback     Callback           Pointer         NULL
- height              Height             Dimension       0
- insensitiveBorder   Insensitive        Pixmap          Gray
- mappedWhenManaged   MappedWhenManaged  Boolean         True
- pointerColor        Foreground         Pixel           XtDefaultForeground
- pointerColorBackground Background      Pixel           XtDefaultBackground
- sensitive           Sensitive          Boolean         True
- width               Width              Dimension       0
- x                   Position           Position        0
- y                   Position           Position        0
+Name                Class              RepType         Default Value
+----                -----              -------         -------------
+background          Background         Pixel           XtDefaultBackground
+border              BorderColor        Pixel           XtDefaultForeground
+borderWidth         BorderWidth        Dimension       1
+cursor              Cursor             Cursor          None
+cursorName          Cursor             String          NULL
+destroyCallback     Callback           Pointer         NULL
+height              Height             Dimension       0
+insensitiveBorder   Insensitive        Pixmap          Gray
+mappedWhenManaged   MappedWhenManaged  Boolean         True
+pointerColor        Foreground         Pixel           XtDefaultForeground
+pointerColorBackground Background      Pixel           XtDefaultBackground
+sensitive           Sensitive          Boolean         True
+width               Width              Dimension       0
+x                   Position           Position        0
+y                   Position           Position        0
 
-*/
+ */
 
 /*
 
@@ -115,7 +131,7 @@ used on a monochrome monitor.
 angband*color0: #ffffff
 angband*color1: #000000
 
-*/
+ */
 
 /* New resource names */
 #define XtNstartRows        "startRows"
@@ -162,24 +178,24 @@ typedef struct AngbandClassRec *AngbandWidgetClass;
 
 typedef struct
 {
-    /* Settable resources */
-    int               start_rows;
-    int               start_columns;
-    int               min_rows;
-    int               min_columns;
-    int               max_rows;
-    int               max_columns;
-    int               internal_border;
-    String            font;
-    Pixel             color[NUM_COLORS];
-    XtCallbackList    redraw_callbacks;
+	/* Settable resources */
+	int               start_rows;
+	int               start_columns;
+	int               min_rows;
+	int               min_columns;
+	int               max_rows;
+	int               max_columns;
+	int               internal_border;
+	String            font;
+	Pixel             color[NUM_COLORS];
+	XtCallbackList    redraw_callbacks;
 
-    /* Private state */
-    XFontStruct       *fnt;
-    Dimension         fontheight;
-    Dimension         fontwidth;
-    Dimension         fontascent;
-    GC                gc[NUM_COLORS+1];  /* Includes a special 'xor' color */
+	/* Private state */
+	XFontStruct       *fnt;
+	Dimension         fontheight;
+	Dimension         fontwidth;
+	Dimension         fontascent;
+	GC                gc[NUM_COLORS+1];  /* Includes a special 'xor' color */
 
 } AngbandPart;
 
@@ -192,9 +208,9 @@ typedef struct AngbandRec AngbandRec;
 
 struct AngbandRec
 {
-    CorePart          core;
-    SimplePart        simple;
-    AngbandPart       angband;
+	CorePart          core;
+	SimplePart        simple;
+	AngbandPart       angband;
 };
 
 
@@ -206,7 +222,7 @@ typedef struct AngbandClassPart AngbandClassPart;
 
 struct AngbandClassPart
 {
-    int               dummy;
+	int               dummy;
 };
 
 
@@ -218,9 +234,9 @@ typedef struct AngbandClassRec AngbandClassRec;
 
 struct AngbandClassRec
 {
-    CoreClassPart     core_class;
-    SimpleClassPart   simple_class;
-    AngbandClassPart  angband_class;
+	CoreClassPart     core_class;
+	SimpleClassPart   simple_class;
+	AngbandClassPart  angband_class;
 };
 
 
@@ -252,90 +268,90 @@ struct AngbandClassRec
  */
 static XtResource resources[] =
 {
-    { XtNstartRows, XtCValue, XtRInt, sizeof(int),
-      offset(start_rows), XtRImmediate, (XtPointer) 24 },
-    { XtNstartColumns, XtCValue, XtRInt, sizeof(int),
-      offset(start_columns), XtRImmediate, (XtPointer) 80 },
-    { XtNminRows, XtCValue, XtRInt, sizeof(int),
-      offset(min_rows), XtRImmediate, (XtPointer) 1 },
-    { XtNminColumns, XtCValue, XtRInt, sizeof(int),
-      offset(min_columns), XtRImmediate, (XtPointer) 1 },
-    { XtNmaxRows, XtCValue, XtRInt, sizeof(int),
-      offset(max_rows), XtRImmediate, (XtPointer) 24 },
-    { XtNmaxColumns, XtCValue, XtRInt, sizeof(int),
-      offset(max_columns), XtRImmediate, (XtPointer) 80 },
-    { XtNinternalBorder, XtCValue, XtRInt, sizeof(int),
-      offset(internal_border), XtRImmediate, (XtPointer) 2 },
-    { XtNfont, XtCFont, XtRString, sizeof(char *),
-      offset(font), XtRString, "9x15" },
-    { XtNcolor0, XtCColor, XtRPixel, sizeof(Pixel),
-      offset(color[0]), XtRString, "black" },
-    { XtNcolor1, XtCColor, XtRPixel, sizeof(Pixel),
-      offset(color[1]), XtRString, "white" },
-    { XtNcolor2, XtCColor, XtRPixel, sizeof(Pixel),
-      offset(color[2]), XtRString, "#d7d7d7" },
-    { XtNcolor3, XtCColor, XtRPixel, sizeof(Pixel),
-      offset(color[3]), XtRString, "#ff9200" },
-    { XtNcolor4, XtCColor, XtRPixel, sizeof(Pixel),
-      offset(color[4]), XtRString, "#ff0000" },
-    { XtNcolor5, XtCColor, XtRPixel, sizeof(Pixel),
-      offset(color[5]), XtRString, "#00cd00" },
-    { XtNcolor6, XtCColor, XtRPixel, sizeof(Pixel),
-      offset(color[6]), XtRString, "#0000fe" },
-    { XtNcolor7, XtCColor, XtRPixel, sizeof(Pixel),
-      offset(color[7]), XtRString, "#c86400" },
-    { XtNcolor8, XtCColor, XtRPixel, sizeof(Pixel),
-      offset(color[8]), XtRString, "#a3a3a3" },
-    { XtNcolor9, XtCColor, XtRPixel, sizeof(Pixel),
-      offset(color[9]), XtRString, "#ebebeb" },
-    { XtNcolor10, XtCColor, XtRPixel, sizeof(Pixel),
-      offset(color[10]), XtRString, "#a500ff" },
-    { XtNcolor11, XtCColor, XtRPixel, sizeof(Pixel),
-      offset(color[11]), XtRString, "#fffd00" },
-    { XtNcolor12, XtCColor, XtRPixel, sizeof(Pixel),
-      offset(color[12]), XtRString, "#ff00bc" },
-    { XtNcolor13, XtCColor, XtRPixel, sizeof(Pixel),
-      offset(color[13]), XtRString, "#00ff00" },
-    { XtNcolor14, XtCColor, XtRPixel, sizeof(Pixel),
-      offset(color[14]), XtRString, "#00c8ff" },
-    { XtNcolor15, XtCColor, XtRPixel, sizeof(Pixel),
-      offset(color[15]), XtRString, "#ffcc80" },
+	{ XtNstartRows, XtCValue, XtRInt, sizeof(int),
+	offset(start_rows), XtRImmediate, (XtPointer) 24 },
+	{ XtNstartColumns, XtCValue, XtRInt, sizeof(int),
+	offset(start_columns), XtRImmediate, (XtPointer) 80 },
+	{ XtNminRows, XtCValue, XtRInt, sizeof(int),
+	offset(min_rows), XtRImmediate, (XtPointer) 1 },
+	{ XtNminColumns, XtCValue, XtRInt, sizeof(int),
+	offset(min_columns), XtRImmediate, (XtPointer) 1 },
+	{ XtNmaxRows, XtCValue, XtRInt, sizeof(int),
+	offset(max_rows), XtRImmediate, (XtPointer) 24 },
+	{ XtNmaxColumns, XtCValue, XtRInt, sizeof(int),
+	offset(max_columns), XtRImmediate, (XtPointer) 80 },
+	{ XtNinternalBorder, XtCValue, XtRInt, sizeof(int),
+	offset(internal_border), XtRImmediate, (XtPointer) 2 },
+	{ XtNfont, XtCFont, XtRString, sizeof(char *),
+	offset(font), XtRString, "9x15" },
+	{ XtNcolor0, XtCColor, XtRPixel, sizeof(Pixel),
+	offset(color[0]), XtRString, "black" },
+	{ XtNcolor1, XtCColor, XtRPixel, sizeof(Pixel),
+	offset(color[1]), XtRString, "white" },
+	{ XtNcolor2, XtCColor, XtRPixel, sizeof(Pixel),
+	offset(color[2]), XtRString, "#d7d7d7" },
+	{ XtNcolor3, XtCColor, XtRPixel, sizeof(Pixel),
+	offset(color[3]), XtRString, "#ff9200" },
+	{ XtNcolor4, XtCColor, XtRPixel, sizeof(Pixel),
+	offset(color[4]), XtRString, "#ff0000" },
+	{ XtNcolor5, XtCColor, XtRPixel, sizeof(Pixel),
+	offset(color[5]), XtRString, "#00cd00" },
+	{ XtNcolor6, XtCColor, XtRPixel, sizeof(Pixel),
+	offset(color[6]), XtRString, "#0000fe" },
+	{ XtNcolor7, XtCColor, XtRPixel, sizeof(Pixel),
+	offset(color[7]), XtRString, "#c86400" },
+	{ XtNcolor8, XtCColor, XtRPixel, sizeof(Pixel),
+	offset(color[8]), XtRString, "#a3a3a3" },
+	{ XtNcolor9, XtCColor, XtRPixel, sizeof(Pixel),
+	offset(color[9]), XtRString, "#ebebeb" },
+	{ XtNcolor10, XtCColor, XtRPixel, sizeof(Pixel),
+	offset(color[10]), XtRString, "#a500ff" },
+	{ XtNcolor11, XtCColor, XtRPixel, sizeof(Pixel),
+	offset(color[11]), XtRString, "#fffd00" },
+	{ XtNcolor12, XtCColor, XtRPixel, sizeof(Pixel),
+	offset(color[12]), XtRString, "#ff00bc" },
+	{ XtNcolor13, XtCColor, XtRPixel, sizeof(Pixel),
+	offset(color[13]), XtRString, "#00ff00" },
+	{ XtNcolor14, XtCColor, XtRPixel, sizeof(Pixel),
+	offset(color[14]), XtRString, "#00c8ff" },
+	{ XtNcolor15, XtCColor, XtRPixel, sizeof(Pixel),
+	offset(color[15]), XtRString, "#ffcc80" },
 
 #if 0
 
-    { XtNcolor2, XtCColor, XtRPixel, sizeof(Pixel),
-      offset(color[2]), XtRString, "#a6a6a6" },
-    { XtNcolor3, XtCColor, XtRPixel, sizeof(Pixel),
-      offset(color[3]), XtRString, "#ff6302" },
-    { XtNcolor4, XtCColor, XtRPixel, sizeof(Pixel),
-      offset(color[4]), XtRString, "#ca0808" },
-    { XtNcolor5, XtCColor, XtRPixel, sizeof(Pixel),
-      offset(color[5]), XtRString, "#008e18" },
-    { XtNcolor6, XtCColor, XtRPixel, sizeof(Pixel),
-      offset(color[6]), XtRString, "#0000e3" },
-    { XtNcolor7, XtCColor, XtRPixel, sizeof(Pixel),
-      offset(color[7]), XtRString, "#814007" },
-    { XtNcolor8, XtCColor, XtRPixel, sizeof(Pixel),
-      offset(color[8]), XtRString, "#6b6b6b" },
-    { XtNcolor9, XtCColor, XtRPixel, sizeof(Pixel),
-      offset(color[9]), XtRString, "#d6d6d6" },
-    { XtNcolor10, XtCColor, XtRPixel, sizeof(Pixel),
-      offset(color[10]), XtRString, "#5100c2" },
-    { XtNcolor11, XtCColor, XtRPixel, sizeof(Pixel),
-      offset(color[11]), XtRString, "#fdf105" },
-    { XtNcolor12, XtCColor, XtRPixel, sizeof(Pixel),
-      offset(color[12]), XtRString, "#ff9259" },
-    { XtNcolor13, XtCColor, XtRPixel, sizeof(Pixel),
-      offset(color[13]), XtRString, "#26cf17" },
-    { XtNcolor14, XtCColor, XtRPixel, sizeof(Pixel),
-      offset(color[14]), XtRString, "#02b2f2" },
-    { XtNcolor15, XtCColor, XtRPixel, sizeof(Pixel),
-      offset(color[15]), XtRString, "#b28b48" },
+	{ XtNcolor2, XtCColor, XtRPixel, sizeof(Pixel),
+	offset(color[2]), XtRString, "#a6a6a6" },
+	{ XtNcolor3, XtCColor, XtRPixel, sizeof(Pixel),
+	offset(color[3]), XtRString, "#ff6302" },
+	{ XtNcolor4, XtCColor, XtRPixel, sizeof(Pixel),
+	offset(color[4]), XtRString, "#ca0808" },
+	{ XtNcolor5, XtCColor, XtRPixel, sizeof(Pixel),
+	offset(color[5]), XtRString, "#008e18" },
+	{ XtNcolor6, XtCColor, XtRPixel, sizeof(Pixel),
+	offset(color[6]), XtRString, "#0000e3" },
+	{ XtNcolor7, XtCColor, XtRPixel, sizeof(Pixel),
+	offset(color[7]), XtRString, "#814007" },
+	{ XtNcolor8, XtCColor, XtRPixel, sizeof(Pixel),
+	offset(color[8]), XtRString, "#6b6b6b" },
+	{ XtNcolor9, XtCColor, XtRPixel, sizeof(Pixel),
+	offset(color[9]), XtRString, "#d6d6d6" },
+	{ XtNcolor10, XtCColor, XtRPixel, sizeof(Pixel),
+	offset(color[10]), XtRString, "#5100c2" },
+	{ XtNcolor11, XtCColor, XtRPixel, sizeof(Pixel),
+	offset(color[11]), XtRString, "#fdf105" },
+	{ XtNcolor12, XtCColor, XtRPixel, sizeof(Pixel),
+	offset(color[12]), XtRString, "#ff9259" },
+	{ XtNcolor13, XtCColor, XtRPixel, sizeof(Pixel),
+	offset(color[13]), XtRString, "#26cf17" },
+	{ XtNcolor14, XtCColor, XtRPixel, sizeof(Pixel),
+	offset(color[14]), XtRString, "#02b2f2" },
+	{ XtNcolor15, XtCColor, XtRPixel, sizeof(Pixel),
+	offset(color[15]), XtRString, "#b28b48" },
 
 #endif
 
-    { XtNredrawCallback, XtCCallback, XtRCallback, sizeof(XtPointer),
-      offset(redraw_callbacks), XtRCallback, (XtPointer)NULL }
+	{ XtNredrawCallback, XtCCallback, XtRCallback, sizeof(XtPointer),
+	offset(redraw_callbacks), XtRCallback, (XtPointer)NULL }
 };
 
 #undef offset
@@ -356,50 +372,50 @@ static XFontStruct *getFont(AngbandWidget widget,
 /* Class record constanst */
 AngbandClassRec angbandClassRec =
 {
-    {
-/* Core class fields initialization */
+	{
+		/* Core class fields initialization */
 #define superclass              (&simpleClassRec)
-        /* superclass           */      (WidgetClass) superclass,
-        /* class_name           */      "Angband",
-        /* widget_size          */      sizeof(AngbandRec),
-        /* class_initialize     */      NULL,
-        /* class_part_initialize*/      NULL,
-        /* class_inited         */      FALSE,
-        /* initialize           */      (XtInitProc) Initialize,
-        /* initialize_hook      */      NULL,
-        /* realize              */      XtInheritRealize,
-        /* actions              */      NULL,
-        /* num_actions          */      0,
-        /* resources            */      resources,
-        /* num_resources        */      XtNumber(resources),
-        /* xrm_class            */      NULLQUARK,
-        /* compress_motion      */      TRUE,
-        /* compress_exposure    */      XtExposeCompressMultiple,
-        /* compress_enterleave  */      TRUE,
-        /* visible_interest     */      FALSE,
-        /* destroy              */      (XtWidgetProc) Destroy,
-        /* resize               */      NULL,
-        /* expose               */      (XtExposeProc) Redisplay,
-        /* set_values           */      (XtSetValuesFunc) SetValues,
-        /* set_values_hook      */      NULL,
-        /* set_values_almost    */      XtInheritSetValuesAlmost,
-        /* get_values_hook      */      NULL,
-        /* accept_focus         */      NULL,
-        /* version              */      XtVersion,
-        /* callback_private     */      NULL,
-        /* tm_table             */      NULL,
-        /* query_geometry       */      NULL,
-        /* display_accelerator  */      XtInheritDisplayAccelerator,
-        /* extension            */      NULL
-    },
-/* Simple class fields initialization */
-    {
-        /* change_sensitive     */      XtInheritChangeSensitive
-    },
-/* Angband class fields initialization */
-    {
-        /* nothing              */      0
-    }
+		/* superclass           */      (WidgetClass) superclass,
+		/* class_name           */      "Angband",
+		/* widget_size          */      sizeof(AngbandRec),
+		/* class_initialize     */      NULL,
+		/* class_part_initialize*/      NULL,
+		/* class_inited         */      FALSE,
+		/* initialize           */      (XtInitProc) Initialize,
+		/* initialize_hook      */      NULL,
+		/* realize              */      XtInheritRealize,
+		/* actions              */      NULL,
+		/* num_actions          */      0,
+		/* resources            */      resources,
+		/* num_resources        */      XtNumber(resources),
+		/* xrm_class            */      NULLQUARK,
+		/* compress_motion      */      TRUE,
+		/* compress_exposure    */      XtExposeCompressMultiple,
+		/* compress_enterleave  */      TRUE,
+		/* visible_interest     */      FALSE,
+		/* destroy              */      (XtWidgetProc) Destroy,
+		/* resize               */      NULL,
+		/* expose               */      (XtExposeProc) Redisplay,
+		/* set_values           */      (XtSetValuesFunc) SetValues,
+		/* set_values_hook      */      NULL,
+		/* set_values_almost    */      XtInheritSetValuesAlmost,
+		/* get_values_hook      */      NULL,
+		/* accept_focus         */      NULL,
+		/* version              */      XtVersion,
+		/* callback_private     */      NULL,
+		/* tm_table             */      NULL,
+		/* query_geometry       */      NULL,
+		/* display_accelerator  */      XtInheritDisplayAccelerator,
+		/* extension            */      NULL
+	},
+	/* Simple class fields initialization */
+	{
+		/* change_sensitive     */      XtInheritChangeSensitive
+	},
+	/* Angband class fields initialization */
+	{
+		/* nothing              */      0
+	}
 };
 
 /* Class record pointer */
@@ -412,37 +428,36 @@ WidgetClass angbandWidgetClass = (WidgetClass) &angbandClassRec;
 static void AngbandOutputText(AngbandWidget widget, int x, int y,
                               String txt, int len, int color)
 {
+	/* Do nothing if the string is null */
+	if (!txt || !*txt)
+		return;
 
-    /* Do nothing if the string is null */
-    if (!txt || !*txt)
-        return;
+	/* Check the lenght, and fix it if it's below zero */
+	if (len < 0)
+		len = strlen(txt);
 
-    /* Check the lenght, and fix it if it's below zero */
-    if (len < 0)
-        len = strlen(txt);
+	/* Figure out where to place the text */
+	y = y * widget->angband.fontheight + widget->angband.fontascent +
+	widget->angband.internal_border;
+	x = x * widget->angband.fontwidth + widget->angband.internal_border;
 
-    /* Figure out where to place the text */
-    y = y * widget->angband.fontheight + widget->angband.fontascent +
-        widget->angband.internal_border;
-    x = x * widget->angband.fontwidth + widget->angband.internal_border;
-
-    /* Place the string */
-    XDrawImageString (XtDisplay(widget), XtWindow(widget),
-                      widget->angband.gc[color], x, y, txt, len);
+	/* Place the string */
+	XDrawImageString (XtDisplay(widget), XtWindow(widget),
+	                  widget->angband.gc[color], x, y, txt, len);
 }
 
 static void AngbandClearArea(AngbandWidget widget,
                              int x, int y, int w, int h, int color)
 {
-    /* Figure out which area to clear */
-    y = y * widget->angband.fontheight + widget->angband.internal_border;
-    x = x * widget->angband.fontwidth + widget->angband.internal_border;
+	/* Figure out which area to clear */
+	y = y * widget->angband.fontheight + widget->angband.internal_border;
+	x = x * widget->angband.fontwidth + widget->angband.internal_border;
 
-    /* Clear the area */
-    XFillRectangle(XtDisplay(widget), XtWindow(widget),
-                   widget->angband.gc[color],
-                   x, y, widget->angband.fontwidth*w,
-                   widget->angband.fontheight*h);
+	/* Clear the area */
+	XFillRectangle(XtDisplay(widget), XtWindow(widget),
+	               widget->angband.gc[color],
+	               x, y, widget->angband.fontwidth*w,
+	               widget->angband.fontheight*h);
 }
 
 /*
@@ -458,57 +473,57 @@ static void AngbandClearArea(AngbandWidget widget,
  */
 static void Initialize(AngbandWidget request, AngbandWidget new)
 {
-    XGCValues gcv;
-    int depth = DefaultDepthOfScreen(XtScreen((Widget) new));
-    TopLevelShellWidget parent =
-        (TopLevelShellWidget)XtParent((Widget) new);
-    int n;
+	XGCValues gcv;
+	int depth = DefaultDepthOfScreen(XtScreen((Widget) new));
+	TopLevelShellWidget parent =
+	(TopLevelShellWidget)XtParent((Widget) new);
+	int n;
 
-    /* Fix the background color */
-    new->core.background_pixel = new->angband.color[0];
+	/* Fix the background color */
+	new->core.background_pixel = new->angband.color[0];
 
-    /* Get some information about the font */
-    new->angband.fnt = getFont(new, new->angband.font, TRUE);
-    new->angband.fontheight = new->angband.fnt->ascent +
-                              new->angband.fnt->descent;
-    new->angband.fontwidth = new->angband.fnt->max_bounds.width;
-    new->angband.fontascent = new->angband.fnt->ascent;
+	/* Get some information about the font */
+	new->angband.fnt = getFont(new, new->angband.font, TRUE);
+	new->angband.fontheight = new->angband.fnt->ascent +
+	new->angband.fnt->descent;
+	new->angband.fontwidth = new->angband.fnt->max_bounds.width;
+	new->angband.fontascent = new->angband.fnt->ascent;
 
-    /* Create and initialize the graphics contexts */ /* GXset? */
-    gcv.font = new->angband.fnt->fid;
-    gcv.graphics_exposures = FALSE;
-    gcv.background = new->angband.color[0];
-    for (n = 0; n < NUM_COLORS; n++)
-    {
-        if (depth == 1 && n >= 1)
-            gcv.foreground = new->angband.color[1];
-        else
-            gcv.foreground = new->angband.color[n];
-        new->angband.gc[n] = XtGetGC((Widget)new, GCFont | GCForeground |
-                                     GCBackground | GCGraphicsExposures,
-                                     &gcv);
-    }
+	/* Create and initialize the graphics contexts */ /* GXset? */
+	gcv.font = new->angband.fnt->fid;
+	gcv.graphics_exposures = FALSE;
+	gcv.background = new->angband.color[0];
+	for (n = 0; n < NUM_COLORS; n++)
+	{
+		if (depth == 1 && n >= 1)
+			gcv.foreground = new->angband.color[1];
+		else
+			gcv.foreground = new->angband.color[n];
+		new->angband.gc[n] = XtGetGC((Widget)new, GCFont | GCForeground |
+		                             GCBackground | GCGraphicsExposures,
+		                             &gcv);
+	}
 
-    /* Create a special GC for highlighting */
-    gcv.foreground = BlackPixelOfScreen(XtScreen((Widget)new)) ^
-        WhitePixelOfScreen(XtScreen((Widget)new));
-    gcv.function = GXxor;
-    new->angband.gc[NUM_COLORS] = XtGetGC((Widget)new, GCFunction |
-                                          GCGraphicsExposures |
-                                          GCForeground, &gcv);
+	/* Create a special GC for highlighting */
+	gcv.foreground = BlackPixelOfScreen(XtScreen((Widget)new)) ^
+	WhitePixelOfScreen(XtScreen((Widget)new));
+	gcv.function = GXxor;
+	new->angband.gc[NUM_COLORS] = XtGetGC((Widget)new, GCFunction |
+	                                      GCGraphicsExposures |
+	                                      GCForeground, &gcv);
 
-    /* Calculate window geometry */
-    new->core.height = new->angband.start_rows * new->angband.fontheight +
-        2 * new->angband.internal_border;
-    new->core.width = new->angband.start_columns * new->angband.fontwidth +
-        2 * new->angband.internal_border;
+	/* Calculate window geometry */
+	new->core.height = new->angband.start_rows * new->angband.fontheight +
+	2 * new->angband.internal_border;
+	new->core.width = new->angband.start_columns * new->angband.fontwidth +
+	2 * new->angband.internal_border;
 
-    /* We need to be able to resize the Widget if the user want's to
-       change font on the fly! */
-    parent->shell.allow_shell_resize = TRUE;
+	/* We need to be able to resize the Widget if the user want's to
+	change font on the fly! */
+	parent->shell.allow_shell_resize = TRUE;
 
-    /* Calculates all the size hints */
-    calculateSizeHints(new);
+	/* Calculates all the size hints */
+	calculateSizeHints(new);
 }
 
 /*
@@ -518,14 +533,14 @@ static void Initialize(AngbandWidget request, AngbandWidget new)
  */
 static void Destroy(AngbandWidget widget)
 {
-    int n;
+	int n;
 
-    /* Free all GC's */
-    for (n = 0; n < NUM_COLORS+1; n++)
-        XtReleaseGC((Widget)widget, widget->angband.gc[n]);
+	/* Free all GC's */
+	for (n = 0; n < NUM_COLORS+1; n++)
+		XtReleaseGC((Widget)widget, widget->angband.gc[n]);
 
-    /* Free the font */
-    XFreeFont(XtDisplay((Widget)widget), widget->angband.fnt);
+	/* Free the font */
+	XFreeFont(XtDisplay((Widget)widget), widget->angband.fnt);
 }
 
 /*
@@ -534,8 +549,8 @@ static void Destroy(AngbandWidget widget)
  */
 static void Redisplay(AngbandWidget widget, XEvent *event, Region region)
 {
-    if (XtHasCallbacks((Widget)widget, XtNredrawCallback) == XtCallbackHasSome)
-        XtCallCallbacks((Widget)widget, XtNredrawCallback, NULL);
+	if (XtHasCallbacks((Widget)widget, XtNredrawCallback) == XtCallbackHasSome)
+		XtCallCallbacks((Widget)widget, XtNredrawCallback, NULL);
 }
 
 /*
@@ -547,112 +562,112 @@ static Boolean SetValues(AngbandWidget current, AngbandWidget request,
                          AngbandWidget new, ArgList args,
                          Cardinal *num_args)
 {
-    int depth = DefaultDepthOfScreen(XtScreen((Widget) new));
-    Boolean font_changed = FALSE;
-    Boolean border_changed = FALSE;
-    Boolean color_changed = FALSE;
-    XGCValues gcv;
-    int height, width;
-    int n;
+	int depth = DefaultDepthOfScreen(XtScreen((Widget) new));
+	Boolean font_changed = FALSE;
+	Boolean border_changed = FALSE;
+	Boolean color_changed = FALSE;
+	XGCValues gcv;
+	int height, width;
+	int n;
 
-    /* Changed font? */
-    if (current->angband.font != new->angband.font)
-    {
-        /* Check if the font exists */
-        new->angband.fnt = getFont(new, new->angband.font, FALSE);
+	/* Changed font? */
+	if (current->angband.font != new->angband.font)
+	{
+		/* Check if the font exists */
+		new->angband.fnt = getFont(new, new->angband.font, FALSE);
 
-        /* The font didn't exist */
-        if (new->angband.fnt == NULL)
-        {
-            new->angband.fnt = current->angband.fnt;
-            new->angband.font = current->angband.font;
-            XtWarning("Couldn't find the request font!");
-        }
-        else
-        {
-            font_changed = TRUE;
-            /* Free the old font */
-            XFreeFont(XtDisplay((Widget)new), current->angband.fnt);
-            /* Update font information */
-            new->angband.fontheight = new->angband.fnt->ascent +
-                new->angband.fnt->descent;
-            new->angband.fontwidth = new->angband.fnt->max_bounds.width;
-            new->angband.fontascent = new->angband.fnt->ascent;
-        }
-    }
+		/* The font didn't exist */
+		if (new->angband.fnt == NULL)
+		{
+			new->angband.fnt = current->angband.fnt;
+			new->angband.font = current->angband.font;
+			XtWarning("Couldn't find the request font!");
+		}
+		else
+		{
+			font_changed = TRUE;
+			/* Free the old font */
+			XFreeFont(XtDisplay((Widget)new), current->angband.fnt);
+			/* Update font information */
+			new->angband.fontheight = new->angband.fnt->ascent +
+			new->angband.fnt->descent;
+			new->angband.fontwidth = new->angband.fnt->max_bounds.width;
+			new->angband.fontascent = new->angband.fnt->ascent;
+		}
+	}
 
-    /* Check all colors, if one or more has changed the redo all GC's */
-    for (n = 0; n < NUM_COLORS; n++)
-        if (current->angband.color[n] != new->angband.color[n])
-            color_changed = TRUE;
+	/* Check all colors, if one or more has changed the redo all GC's */
+	for (n = 0; n < NUM_COLORS; n++)
+		if (current->angband.color[n] != new->angband.color[n])
+			color_changed = TRUE;
 
-    /* Change all GC's if color or font has changed */
-    if (color_changed || font_changed)
-    {
-        gcv.font = new->angband.fnt->fid;
-        gcv.graphics_exposures = FALSE;
-        gcv.background = new->angband.color[0];
+	/* Change all GC's if color or font has changed */
+	if (color_changed || font_changed)
+	{
+		gcv.font = new->angband.fnt->fid;
+		gcv.graphics_exposures = FALSE;
+		gcv.background = new->angband.color[0];
 
-        /* Do all GC's */
-        for (n = 0; n < NUM_COLORS; n++)
-        {
-            if (depth == 1 && n >= 1)
-                gcv.foreground = new->angband.color[1];
-            else
-                gcv.foreground = new->angband.color[n];
-            /* Release the old GC */
-            XtReleaseGC((Widget)current, current->angband.gc[n]);
-            /* Get the new GC */
-            new->angband.gc[n] = XtGetGC((Widget)new, GCFont | GCForeground |
-                                         GCBackground | GCGraphicsExposures,
-                                         &gcv);
-        }
+		/* Do all GC's */
+		for (n = 0; n < NUM_COLORS; n++)
+		{
+			if (depth == 1 && n >= 1)
+				gcv.foreground = new->angband.color[1];
+			else
+				gcv.foreground = new->angband.color[n];
+			/* Release the old GC */
+			XtReleaseGC((Widget)current, current->angband.gc[n]);
+			/* Get the new GC */
+			new->angband.gc[n] = XtGetGC((Widget)new, GCFont | GCForeground |
+			                             GCBackground | GCGraphicsExposures,
+			                             &gcv);
+		}
 
-        /* Replace the old XOR/highlighting GC */
-        gcv.foreground = BlackPixelOfScreen(XtScreen((Widget)new)) ^
-            WhitePixelOfScreen(XtScreen((Widget)new));
-        gcv.function = GXxor;
-        XtReleaseGC((Widget)current, current->angband.gc[NUM_COLORS]);
-        new->angband.gc[NUM_COLORS] = XtGetGC((Widget)new, GCFunction |
-                                              GCGraphicsExposures |
-                                              GCForeground, &gcv);
-        /* Fix the background color */
-        new->core.background_pixel = new->angband.color[0];
-    }
+		/* Replace the old XOR/highlighting GC */
+		gcv.foreground = BlackPixelOfScreen(XtScreen((Widget)new)) ^
+		WhitePixelOfScreen(XtScreen((Widget)new));
+		gcv.function = GXxor;
+		XtReleaseGC((Widget)current, current->angband.gc[NUM_COLORS]);
+		new->angband.gc[NUM_COLORS] = XtGetGC((Widget)new, GCFunction |
+		                                      GCGraphicsExposures |
+		                                      GCForeground, &gcv);
+		/* Fix the background color */
+		new->core.background_pixel = new->angband.color[0];
+	}
 
-    /* Check if internal border width has changed, used later */
-    if (current->angband.internal_border != new->angband.internal_border)
-        border_changed = TRUE;
+	/* Check if internal border width has changed, used later */
+	if (current->angband.internal_border != new->angband.internal_border)
+		border_changed = TRUE;
 
 
-    /* If the font or the internal border has changed, all geometry
-       has to be recalculated */
-    if (font_changed || border_changed)
-    {
-        /* Change window size */
-        height = (current->core.height - 2 * current->angband.internal_border) /
-            current->angband.fontheight * new->angband.fontheight +
-            2 * current->angband.internal_border;
-        width = (current->core.width -  2 * current->angband.internal_border) /
-            current->angband.fontwidth * new->angband.fontwidth +
-            2 * new->angband.internal_border;
+	/* If the font or the internal border has changed, all geometry
+	has to be recalculated */
+	if (font_changed || border_changed)
+	{
+		/* Change window size */
+		height = (current->core.height - 2 * current->angband.internal_border) /
+		current->angband.fontheight * new->angband.fontheight +
+		2 * current->angband.internal_border;
+		width = (current->core.width -  2 * current->angband.internal_border) /
+		current->angband.fontwidth * new->angband.fontwidth +
+		2 * new->angband.internal_border;
 
-        /* Get the new width */
-        if (XtMakeResizeRequest((Widget)new, width, height, NULL, NULL) ==
-            XtGeometryNo)
-        {
-            /* Not allowed */
-            XtWarning("Size change denied!");
-        }
-        else
-        {
-            /* Recalculate size hints */
-            calculateSizeHints(new);
-        }
-    }
+		/* Get the new width */
+		if (XtMakeResizeRequest((Widget)new, width, height, NULL, NULL) ==
+		    XtGeometryNo)
+		{
+			/* Not allowed */
+			XtWarning("Size change denied!");
+		}
+		else
+		{
+			/* Recalculate size hints */
+			calculateSizeHints(new);
+		}
+	}
 
-    /* Tell it to redraw the widget if anything has changed */
-    return (font_changed || color_changed || border_changed);
+	/* Tell it to redraw the widget if anything has changed */
+	return (font_changed || color_changed || border_changed);
 }
 
 /*
@@ -660,36 +675,36 @@ static Boolean SetValues(AngbandWidget current, AngbandWidget request,
  */
 static void calculateSizeHints(AngbandWidget new)
 {
-    TopLevelShellWidget parent =
-        (TopLevelShellWidget)XtParent((Widget) new);
+	TopLevelShellWidget parent =
+	(TopLevelShellWidget)XtParent((Widget) new);
 
-    /* Calculate minimum size */
-    parent->wm.size_hints.min_height =
-        new->angband.min_rows * new->angband.fontheight +
-        2 * new->angband.internal_border;
-    parent->wm.size_hints.min_width =
-        new->angband.min_columns * new->angband.fontwidth +
-        2 * new->angband.internal_border;
-    parent->wm.size_hints.flags |= PMinSize;
+	/* Calculate minimum size */
+	parent->wm.size_hints.min_height =
+	new->angband.min_rows * new->angband.fontheight +
+	2 * new->angband.internal_border;
+	parent->wm.size_hints.min_width =
+	new->angband.min_columns * new->angband.fontwidth +
+	2 * new->angband.internal_border;
+	parent->wm.size_hints.flags |= PMinSize;
 
-    /* Calculate maximum size */
-    parent->wm.size_hints.max_height =
-        new->angband.max_rows * new->angband.fontheight +
-        2 * new->angband.internal_border;
-    parent->wm.size_hints.max_width =
-        new->angband.max_columns * new->angband.fontwidth +
-        2 * new->angband.internal_border;
-    parent->wm.size_hints.flags |= PMaxSize;
+	/* Calculate maximum size */
+	parent->wm.size_hints.max_height =
+	new->angband.max_rows * new->angband.fontheight +
+	2 * new->angband.internal_border;
+	parent->wm.size_hints.max_width =
+	new->angband.max_columns * new->angband.fontwidth +
+	2 * new->angband.internal_border;
+	parent->wm.size_hints.flags |= PMaxSize;
 
-    /* Calculate increment size */
-    parent->wm.size_hints.height_inc = new->angband.fontheight;
-    parent->wm.size_hints.width_inc = new->angband.fontwidth;
-    parent->wm.size_hints.flags |= PResizeInc;
+	/* Calculate increment size */
+	parent->wm.size_hints.height_inc = new->angband.fontheight;
+	parent->wm.size_hints.width_inc = new->angband.fontwidth;
+	parent->wm.size_hints.flags |= PResizeInc;
 
-    /* Calculate base size */
-    parent->wm.base_height = 2 * new->angband.internal_border;
-    parent->wm.base_width = 2 * new->angband.internal_border;
-    parent->wm.size_hints.flags |= PBaseSize;
+	/* Calculate base size */
+	parent->wm.base_height = 2 * new->angband.internal_border;
+	parent->wm.base_width = 2 * new->angband.internal_border;
+	parent->wm.size_hints.flags |= PBaseSize;
 }
 
 /*
@@ -698,19 +713,19 @@ static void calculateSizeHints(AngbandWidget new)
 static XFontStruct *getFont(AngbandWidget widget,
                             String font, Boolean fallback)
 {
-  Display *dpy = XtDisplay((Widget) widget);
-  char buf[256];
-  XFontStruct *fnt = NULL;
+	Display *dpy = XtDisplay((Widget) widget);
+	char buf[256];
+	XFontStruct *fnt = NULL;
 
-  if (!(fnt = XLoadQueryFont(dpy,font)) && fallback)
-  {
-      sprintf(buf, "Can't find the font \"%s\", trying fixed\n", font);
-      XtWarning(buf);
-      if (!(fnt = XLoadQueryFont(dpy, "fixed")))
-          XtError("Can't fint the font \"fixed\"!, bailing out\n");
-  }
+	if (!(fnt = XLoadQueryFont(dpy, font)) && fallback)
+	{
+		sprintf(buf, "Can't find the font \"%s\", trying fixed\n", font);
+		XtWarning(buf);
+		if (!(fnt = XLoadQueryFont(dpy, "fixed")))
+			XtError("Can't fint the font \"fixed\"!, bailing out\n");
+	}
 
-  return fnt;
+	return fnt;
 }
 
 
@@ -763,9 +778,9 @@ typedef struct term_data term_data;
  */
 struct term_data
 {
-    term t;
+	term t;
 
-    AngbandWidget widget;
+	AngbandWidget widget;
 };
 
 
@@ -778,12 +793,12 @@ static term_data screen;
 
 static Arg angbandArgs[] =
 {
-    { XtNstartRows,    24},
-    { XtNstartColumns, 80},
-    { XtNminRows,      24},
-    { XtNminColumns,   80},
-    { XtNmaxRows,      24},
-    { XtNmaxColumns,   80}
+	{ XtNstartRows,    24},
+	{ XtNstartColumns, 80},
+	{ XtNminRows,      24},
+	{ XtNminColumns,   80},
+	{ XtNmaxRows,      24},
+	{ XtNmaxColumns,   80}
 };
 
 
@@ -797,12 +812,12 @@ static term_data mirror;
 
 Arg mirrorArgs[] =
 {
-    { XtNstartRows,    24},
-    { XtNstartColumns, 80},
-    { XtNminRows,      1},
-    { XtNminColumns,   1},
-    { XtNmaxRows,      24},
-    { XtNmaxColumns,   80}
+	{ XtNstartRows,    24},
+	{ XtNstartColumns, 80},
+	{ XtNminRows,      1},
+	{ XtNminColumns,   1},
+	{ XtNmaxRows,      24},
+	{ XtNmaxColumns,   80}
 };
 
 #endif /* GRAPHIC_MIRROR */
@@ -817,12 +832,12 @@ static term_data recall;
 
 Arg recallArgs[] =
 {
-    { XtNstartRows,    8},
-    { XtNstartColumns, 80},
-    { XtNminRows,      1},
-    { XtNminColumns,   1},
-    { XtNmaxRows,      24},
-    { XtNmaxColumns,   80}
+	{ XtNstartRows,    8},
+	{ XtNstartColumns, 80},
+	{ XtNminRows,      1},
+	{ XtNminColumns,   1},
+	{ XtNmaxRows,      24},
+	{ XtNmaxColumns,   80}
 };
 
 #endif /* GRAPHIC_RECALL */
@@ -837,12 +852,12 @@ static term_data choice;
 
 Arg choiceArgs[] =
 {
-    { XtNstartRows,    24},
-    { XtNstartColumns, 80},
-    { XtNminRows,      1},
-    { XtNminColumns,   1},
-    { XtNmaxRows,      24},
-    { XtNmaxColumns,   80}
+	{ XtNstartRows,    24},
+	{ XtNstartColumns, 80},
+	{ XtNminRows,      1},
+	{ XtNminColumns,   1},
+	{ XtNmaxRows,      24},
+	{ XtNmaxColumns,   80}
 };
 
 #endif /* GRAPHIC_CHOICE */
@@ -859,15 +874,15 @@ XtAppContext appcon;
  */
 static String fallback[] =
 {
-    "Angband.angband.iconName:            Angband",
-    "Angband.angband.title:               Angband",
-    "Angband.mirror.iconName:             Mirror",
-    "Angband.mirror.title:                Mirror",
-    "Angband.recall.iconName:             Recall",
-    "Angband.recall.title:                Recall",
-    "Angband.choice.iconName:             Choice",
-    "Angband.choice.title:                Choice",
-    NULL
+	"Angband.angband.iconName:            Angband",
+	"Angband.angband.title:               Angband",
+	"Angband.mirror.iconName:             Mirror",
+	"Angband.mirror.title:                Mirror",
+	"Angband.recall.iconName:             Recall",
+	"Angband.recall.title:                Recall",
+	"Angband.choice.iconName:             Choice",
+	"Angband.choice.title:                Choice",
+	NULL
 };
 
 
@@ -878,17 +893,17 @@ static String fallback[] =
 static void react_redraw(Widget widget,
                          XtPointer client_data, XtPointer call_data)
 {
-    term_data *old_td = (term_data*)(Term->data);
-    term_data *td = (term_data*)client_data;
+	term_data *old_td = (term_data*)(Term->data);
+	term_data *td = (term_data*)client_data;
 
-    /* Activate the proper Term */
-    Term_activate(&td->t);
+	/* Activate the proper Term */
+	Term_activate(&td->t);
 
-    /* Request a redraw */
-    Term_redraw();
+	/* Request a redraw */
+	Term_redraw();
 
-    /* Activate the old Term */
-    Term_activate(&old_td->t);
+	/* Activate the old Term */
+	Term_activate(&old_td->t);
 }
 
 /*
@@ -896,121 +911,121 @@ static void react_redraw(Widget widget,
  */
 static void react_keypress(XKeyEvent *ev)
 {
-    int i, n, mc, ms, mo, mx;
+	int i, n, mc, ms, mo, mx;
 
-    KeySym ks;
+	KeySym ks;
 
-    char buf[128];
-    char msg[128];
+	char buf[128];
+	char msg[128];
 
 
-    /* Check for "normal" keypresses */
-    n = XLookupString(ev, buf, 125, &ks, NULL);
+	/* Check for "normal" keypresses */
+	n = XLookupString(ev, buf, 125, &ks, NULL);
 
-    /* Terminate */
-    buf[n] = '\0';
+	/* Terminate */
+	buf[n] = '\0';
 
-    /* Extract four "modifier flags" */
-    mc = (ev->state & ControlMask) ? TRUE : FALSE;
-    ms = (ev->state & ShiftMask) ? TRUE : FALSE;
-    mo = (ev->state & Mod1Mask) ? TRUE : FALSE;
-    mx = (ev->state & Mod2Mask) ? TRUE : FALSE;
+	/* Extract four "modifier flags" */
+	mc = (ev->state & ControlMask) ? TRUE : FALSE;
+	ms = (ev->state & ShiftMask) ? TRUE : FALSE;
+	mo = (ev->state & Mod1Mask) ? TRUE : FALSE;
+	mx = (ev->state & Mod2Mask) ? TRUE : FALSE;
 
-    /* Hack -- Ignore "modifier keys" */
-    if (IsModifierKey(ks)) return;
+	/* Hack -- Ignore "modifier keys" */
+	if (IsModifierKey(ks)) return;
 
-    /* Normal keys with no modifiers */
-    if (n && !mo && !mx && !IsSpecialKey(ks))
-    {
-        /* Enqueue the normal key(s) */
-        for (i = 0; buf[i]; i++) Term_keypress(buf[i]);
+	/* Normal keys with no modifiers */
+	if (n && !mo && !mx && !IsSpecialKey(ks))
+	{
+		/* Enqueue the normal key(s) */
+		for (i = 0; buf[i]; i++) Term_keypress(buf[i]);
 
-        /* All done */
-        return;
-    }
+		/* All done */
+		return;
+	}
 
-    /* Handle a few standard keys */
-    switch (ks)
-    {
-        case XK_Escape:
-            Term_keypress(ESCAPE); return;
+	/* Handle a few standard keys */
+	switch (ks)
+	{
+		case XK_Escape:
+		Term_keypress(ESCAPE); return;
 
-        case XK_Return:
-            Term_keypress('\r'); return;
+		case XK_Return:
+		Term_keypress('\r'); return;
 
-        case XK_Tab:
-            Term_keypress('\t'); return;
+		case XK_Tab:
+		Term_keypress('\t'); return;
 
-        case XK_Delete:
-        case XK_BackSpace:
-            Term_keypress('\010'); return;
-    }
+		case XK_Delete:
+		case XK_BackSpace:
+		Term_keypress('\010'); return;
+	}
 
-    /* Hack -- Use the KeySym */
-    if (ks)
-    {
-        sprintf(msg, "%c%s%s%s%s_%lX%c", 31,
-                mc ? "N" : "", ms ? "S" : "",
-                mo ? "O" : "", mx ? "M" : "",
-                (unsigned long)(ks), 13);
-    }
+	/* Hack -- Use the KeySym */
+	if (ks)
+	{
+		sprintf(msg, "%c%s%s%s%s_%lX%c", 31,
+		        mc ? "N" : "", ms ? "S" : "",
+		        mo ? "O" : "", mx ? "M" : "",
+		        (unsigned long)(ks), 13);
+	}
 
-    /* Hack -- Use the Keycode */
-    else
-    {
-        sprintf(msg, "%c%s%s%s%sK_%X%c", 31,
-                mc ? "N" : "", ms ? "S" : "",
-                mo ? "O" : "", mx ? "M" : "",
-                ev->keycode, 13);
-    }
+	/* Hack -- Use the Keycode */
+	else
+	{
+		sprintf(msg, "%c%s%s%s%sK_%X%c", 31,
+		        mc ? "N" : "", ms ? "S" : "",
+		        mo ? "O" : "", mx ? "M" : "",
+		        ev->keycode, 13);
+	}
 
-    /* Enqueue the "fake" string */
-    for (i = 0; msg[i]; i++)
-        Term_keypress(msg[i]);
+	/* Enqueue the "fake" string */
+	for (i = 0; msg[i]; i++)
+		Term_keypress(msg[i]);
 
-    /* Hack -- dump an "extra" string */
-    if (n)
-    {
-        /* Start the "extra" string */
-        Term_keypress(28);
+	/* Hack -- dump an "extra" string */
+	if (n)
+	{
+		/* Start the "extra" string */
+		Term_keypress(28);
 
-        /* Enqueue the "real" string */
-        for (i = 0; buf[i]; i++)
-            Term_keypress(buf[i]);
+		/* Enqueue the "real" string */
+		for (i = 0; buf[i]; i++)
+			Term_keypress(buf[i]);
 
-        /* End the "extra" string */
-        Term_keypress(28);
-    }
+		/* End the "extra" string */
+		Term_keypress(28);
+	}
 }
 
 
 static void handle_event (Widget widget, XtPointer client_data, XEvent *event,
                           Boolean *continue_to_dispatch)
 {
-    term_data *old_td = (term_data*)(Term->data);
-    term_data *td = (term_data *)client_data;
+	term_data *old_td = (term_data*)(Term->data);
+	term_data *td = (term_data *)client_data;
 
-    /* Continue to process the event by default */
-    *continue_to_dispatch = TRUE;
+	/* Continue to process the event by default */
+	*continue_to_dispatch = TRUE;
 
-    /* Activate the Term */
-    Term_activate(&td->t);
+	/* Activate the Term */
+	Term_activate(&td->t);
 
-    switch (event->type)
-    {
-        case KeyPress:
-            react_keypress(&(event->xkey));
-            *continue_to_dispatch = FALSE; /* We took care of the event */
-            break;
+	switch (event->type)
+	{
+		case KeyPress:
+		react_keypress(&(event->xkey));
+		*continue_to_dispatch = FALSE; /* We took care of the event */
+		break;
 
-        default:
-            break;  /* Huh? Shouldn't happen! */
-    }
+		default:
+		break;  /* Huh? Shouldn't happen! */
+	}
 
-    /* Activate the old term */
-    Term_activate(&old_td->t);
+	/* Activate the old term */
+	Term_activate(&old_td->t);
 
-    return;
+	return;
 }
 
 
@@ -1019,20 +1034,20 @@ static void handle_event (Widget widget, XtPointer client_data, XEvent *event,
  */
 errr CheckEvent(bool wait)
 {
-    XEvent event;
+	XEvent event;
 
-    /* No events ready, and told to just check */
-    if (!wait && !XtAppPending(appcon)) return 1;
+	/* No events ready, and told to just check */
+	if (!wait && !XtAppPending(appcon)) return 1;
 
-    /* Process */
-    while (1)
-    {
-        XtAppNextEvent(appcon, &event);
-        XtDispatchEvent(&event);
-        if (!XtAppPending(appcon)) break;
-    }
+	/* Process */
+	while (1)
+	{
+		XtAppNextEvent(appcon, &event);
+		XtDispatchEvent(&event);
+		if (!XtAppPending(appcon)) break;
+	}
 
-    return (0);
+	return (0);
 }
 
 
@@ -1041,76 +1056,81 @@ errr CheckEvent(bool wait)
  */
 static errr Term_xtra_xaw(int n, int v)
 {
-    /* Handle a subset of the legal requests */
-    switch (n)
-    {
-        /* Make a noise */
-        case TERM_XTRA_NOISE:
-            XBell(XtDisplay((Widget)screen.widget), 100);
-            return (0);
+	/* Handle a subset of the legal requests */
+	switch (n)
+	{
+		/* Make a noise */
+		case TERM_XTRA_NOISE:
+		XBell(XtDisplay((Widget)screen.widget), 100);
+		return (0);
 
-        /* Flush the output */
-        case TERM_XTRA_FRESH:
-            XFlush(XtDisplay((Widget)screen.widget));
-            /* Nonblock event-check so the flushed events can be showed */
-            CheckEvent(FALSE);
-            return (0);
+		/* Flush the output */
+		case TERM_XTRA_FRESH:
+		XFlush(XtDisplay((Widget)screen.widget));
+		/* Nonblock event-check so the flushed events can be showed */
+		CheckEvent(FALSE);
+		return (0);
 
-        /* Process random events */
-        case TERM_XTRA_BORED:
-            return (CheckEvent(0));
+		/* Process random events */
+		case TERM_XTRA_BORED:
+		return (CheckEvent(0));
 
-        /* Process events */
-        case TERM_XTRA_EVENT:
-            return (CheckEvent(v));
+		/* Process events */
+		case TERM_XTRA_EVENT:
+		return (CheckEvent(v));
 
-        /* Flush events */
-        case TERM_XTRA_FLUSH:
-            while (!CheckEvent(FALSE));
-            return (0);
+		/* Flush events */
+		case TERM_XTRA_FLUSH:
+		while (!CheckEvent(FALSE));
+		return (0);
 
-        /* Clear the window */
-        case TERM_XTRA_CLEAR:
+		/* Delay */
+		case TERM_XTRA_DELAY:
+		usleep(1000 * v);
+		return (0);
 
-            /* Screen */
-            if ( Term == &screen.t )
-            {
-                XClearWindow(XtDisplay((Widget)screen.widget),
-                             XtWindow((Widget)screen.widget));
-            }
+		/* Clear the window */
+		case TERM_XTRA_CLEAR:
+
+		/* Screen */
+		if (Term == &screen.t)
+		{
+			XClearWindow(XtDisplay((Widget)screen.widget),
+			             XtWindow((Widget)screen.widget));
+		}
 
 #ifdef GRAPHIC_MIRROR
-            /* Mirror */
-            if ( Term == &mirror.t )
-            {
-                XClearWindow(XtDisplay((Widget)mirror.widget),
-                             XtWindow((Widget)mirror.widget));
-            }
+		/* Mirror */
+		if (Term == &mirror.t)
+		{
+			XClearWindow(XtDisplay((Widget)mirror.widget),
+			             XtWindow((Widget)mirror.widget));
+		}
 #endif /* GRAPHIC_MIRROR */
 
 #ifdef GRAPHIC_RECALL
-            /* Recall */
-            if ( Term == &recall.t )
-            {
-                XClearWindow(XtDisplay((Widget)recall.widget),
-                             XtWindow((Widget)recall.widget));
-            }
+		/* Recall */
+		if (Term == &recall.t)
+		{
+			XClearWindow(XtDisplay((Widget)recall.widget),
+			             XtWindow((Widget)recall.widget));
+		}
 #endif /* GRAPHIC_RECALL */
 
 #ifdef GRAPHIC_CHOICE
-            /* Choice */
-            if ( Term == &choice.t )
-            {
-                XClearWindow(XtDisplay((Widget)choice.widget),
-                             XtWindow((Widget)choice.widget));
-            }
+		/* Choice */
+		if (Term == &choice.t)
+		{
+			XClearWindow(XtDisplay((Widget)choice.widget),
+			             XtWindow((Widget)choice.widget));
+		}
 #endif /* GRAPHIC_CHOICE */
 
-            return(0);
-    }
+		return (0);
+	}
 
-    /* Unknown */
-    return (1);
+	/* Unknown */
+	return (1);
 }
 
 
@@ -1120,13 +1140,13 @@ static errr Term_xtra_xaw(int n, int v)
  */
 static errr Term_wipe_xaw(int x, int y, int n)
 {
-    term_data *td = (term_data*)(Term->data);
+	term_data *td = (term_data*)(Term->data);
 
-    /* Erase using color 0 */
-    AngbandClearArea(td->widget, x, y, n, 1, 0);
+	/* Erase using color 0 */
+	AngbandClearArea(td->widget, x, y, n, 1, 0);
 
-    /* Success */
-    return (0);
+	/* Success */
+	return (0);
 }
 
 
@@ -1136,13 +1156,13 @@ static errr Term_wipe_xaw(int x, int y, int n)
  */
 static errr Term_curs_xaw(int x, int y)
 {
-    term_data *td = (term_data*)(Term->data);
+	term_data *td = (term_data*)(Term->data);
 
-    /* Hilite the cursor character */
-    AngbandClearArea(td->widget, x, y, 1, 1, COLOR_XOR);
+	/* Hilite the cursor character */
+	AngbandClearArea(td->widget, x, y, 1, 1, COLOR_XOR);
 
-    /* Success */
-    return (0);
+	/* Success */
+	return (0);
 }
 
 
@@ -1151,13 +1171,13 @@ static errr Term_curs_xaw(int x, int y)
  */
 static errr Term_text_xaw(int x, int y, int n, byte a, cptr s)
 {
-    term_data *td = (term_data*)(Term->data);
+	term_data *td = (term_data*)(Term->data);
 
-    /* Draw the text */
-    AngbandOutputText(td->widget, x, y, (String)s, n, (a & 0x0F));
+	/* Draw the text */
+	AngbandOutputText(td->widget, x, y, (String)s, n, (a & 0x0F));
 
-    /* Success */
-    return (0);
+	/* Success */
+	return (0);
 }
 
 
@@ -1166,9 +1186,9 @@ static errr Term_text_xaw(int x, int y, int n, byte a, cptr s)
  */
 static void term_raise(term_data win)
 {
-    Widget widget = (Widget)win.widget;
+	Widget widget = (Widget)win.widget;
 
-    XRaiseWindow(XtDisplay(XtParent(widget)), XtWindow(XtParent(widget)));
+	XRaiseWindow(XtDisplay(XtParent(widget)), XtWindow(XtParent(widget)));
 }
 
 
@@ -1179,55 +1199,55 @@ static errr term_data_init(term_data *td, Widget topLevel,
                            int key_buf, String name,
                            ArgList widget_arg, Cardinal widget_arg_no)
 {
-    Widget parent;
-    term *t = &td->t;
+	Widget parent;
+	term *t = &td->t;
 
-    /* Create the shell widget */
-    parent = XtCreatePopupShell(name, topLevelShellWidgetClass, topLevel,
-                                NULL, 0);
+	/* Create the shell widget */
+	parent = XtCreatePopupShell(name, topLevelShellWidgetClass, topLevel,
+	                            NULL, 0);
 
-    /* Create the interior widget */
-    td->widget = (AngbandWidget)
-        XtCreateManagedWidget (name, angbandWidgetClass,
-                               parent, widget_arg, widget_arg_no);
+	/* Create the interior widget */
+	td->widget = (AngbandWidget)
+	XtCreateManagedWidget (name, angbandWidgetClass,
+	                       parent, widget_arg, widget_arg_no);
 
-    /* Initialize the term (full size) */
-    term_init(t, 80, 24, key_buf);
+	/* Initialize the term (full size) */
+	term_init(t, 80, 24, key_buf);
 
-    /* Use a "soft" cursor */
-    t->soft_cursor = TRUE;
+	/* Use a "soft" cursor */
+	t->soft_cursor = TRUE;
 
-    /* Erase with "white space" */
-    t->attr_blank = TERM_WHITE;
-    t->char_blank = ' ';
+	/* Erase with "white space" */
+	t->attr_blank = TERM_WHITE;
+	t->char_blank = ' ';
 
-    /* Hooks */
-    t->xtra_hook = Term_xtra_xaw;
-    t->curs_hook = Term_curs_xaw;
-    t->wipe_hook = Term_wipe_xaw;
-    t->text_hook = Term_text_xaw;
+	/* Hooks */
+	t->xtra_hook = Term_xtra_xaw;
+	t->curs_hook = Term_curs_xaw;
+	t->wipe_hook = Term_wipe_xaw;
+	t->text_hook = Term_text_xaw;
 
-    /* Save the data */
-    t->data = td;
+	/* Save the data */
+	t->data = td;
 
-    /* Register the keypress event handler */
-    XtAddEventHandler((Widget)td->widget, KeyPressMask,
-                      False, (XtEventHandler) handle_event, td);
+	/* Register the keypress event handler */
+	XtAddEventHandler((Widget)td->widget, KeyPressMask,
+	                  False, (XtEventHandler) handle_event, td);
 
-    /* Redraw callback */
-    XtAddCallback((Widget)td->widget, XtNredrawCallback,
-                  react_redraw, td);
+	/* Redraw callback */
+	XtAddCallback((Widget)td->widget, XtNredrawCallback,
+	              react_redraw, td);
 
-    /* Realize the widget */
-    XtRealizeWidget(parent);
+	/* Realize the widget */
+	XtRealizeWidget(parent);
 
-    /* Make it visible */
-    XtPopup(parent, XtGrabNone);
+	/* Make it visible */
+	XtPopup(parent, XtGrabNone);
 
-    /* Activate (important) */
-    Term_activate(t);
+	/* Activate (important) */
+	Term_activate(t);
 
-    return 0;
+	return 0;
 }
 
 
@@ -1241,75 +1261,75 @@ static errr term_data_init(term_data *td, Widget topLevel,
  */
 errr init_xaw(void)
 {
-    int argc;
-    char *argv[2];
-    Widget topLevel;
-    Display *dpy;
+	int argc;
+	char *argv[2];
+	Widget topLevel;
+	Display *dpy;
 
 
-    /* One fake argument */
-    argc = 1;
+	/* One fake argument */
+	argc = 1;
 
-    /* Save the program name */
-    argv[0] = argv0;
+	/* Save the program name */
+	argv[0] = argv0;
 
-    /* Terminate */
-    argv[1] = NULL;
+	/* Terminate */
+	argv[1] = NULL;
 
 
-    /* Attempt to open the local display */
-    dpy = XOpenDisplay("");
+	/* Attempt to open the local display */
+	dpy = XOpenDisplay("");
 
-    /* Failure -- assume no X11 available */
-    if (!dpy) return (-1);
+	/* Failure -- assume no X11 available */
+	if (!dpy) return (-1);
 
-    /* Close the local display */
-    XCloseDisplay(dpy);
+	/* Close the local display */
+	XCloseDisplay(dpy);
 
 
 #ifdef USE_XAW_LANG
-    /* Support locale processing */
-    XtSetLanguageProc(NULL, NULL, NULL);
+	/* Support locale processing */
+	XtSetLanguageProc(NULL, NULL, NULL);
 #endif
 
-    /* Initialize the toolkit */
-    topLevel = XtAppInitialize (&appcon, "Angband", NULL, 0, &argc, argv,
-                                fallback, NULL, 0);
+	/* Initialize the toolkit */
+	topLevel = XtAppInitialize (&appcon, "Angband", NULL, 0, &argc, argv,
+	                            fallback, NULL, 0);
 
-    /* Initialize the main window */
-    term_data_init (&screen, topLevel, 1024, "angband",
-                    angbandArgs, XtNumber(angbandArgs));
-    term_screen = Term;
+	/* Initialize the main window */
+	term_data_init (&screen, topLevel, 1024, "angband",
+	                angbandArgs, XtNumber(angbandArgs));
+	term_screen = Term;
 
 #ifdef GRAPHIC_MIRROR
-    /* Initialize the mirror window */
-    term_data_init (&mirror, topLevel, 16, "mirror",
-                    mirrorArgs, XtNumber(mirrorArgs));
-    term_mirror = Term;
+	/* Initialize the mirror window */
+	term_data_init (&mirror, topLevel, 16, "mirror",
+	                mirrorArgs, XtNumber(mirrorArgs));
+	term_mirror = Term;
 #endif /* GRAPHIC_MIRROR */
 
 #ifdef GRAPHIC_RECALL
-    /* Initialize the recall window */
-    term_data_init (&recall, topLevel, 16, "recall",
-                    recallArgs, XtNumber(recallArgs));
-    term_recall = Term;
+	/* Initialize the recall window */
+	term_data_init (&recall, topLevel, 16, "recall",
+	                recallArgs, XtNumber(recallArgs));
+	term_recall = Term;
 #endif /* GRAPHIC_RECALL */
 
 #ifdef GRAPHIC_CHOICE
-    /* Initialize the choice window */
-    term_data_init (&choice, topLevel, 16, "choice",
-                    choiceArgs, XtNumber(choiceArgs));
-    term_choice = Term;
+	/* Initialize the choice window */
+	term_data_init (&choice, topLevel, 16, "choice",
+	                choiceArgs, XtNumber(choiceArgs));
+	term_choice = Term;
 #endif /* GRAPHIC_CHOICE */
 
-    /* Activate the "Angband" window screen */
-    Term_activate(&screen.t);
+	/* Activate the "Angband" window screen */
+	Term_activate(&screen.t);
 
-    /* Raise the "Angband" window */
-    term_raise(screen);
+	/* Raise the "Angband" window */
+	term_raise(screen);
 
-    /* Success */
-    return (0);
+	/* Success */
+	return (0);
 }
 
 #endif

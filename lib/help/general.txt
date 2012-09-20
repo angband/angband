@@ -1,4 +1,4 @@
-=== Using the online help ===
+=== Using the Online Help ===
 
 You can press Escape at any time to leave the online help.
 
@@ -14,10 +14,10 @@ You can press Pound (#) to go to a specific line (defaults to line zero).
 
 You can press Percent (%) to go to a specific file (defaults to "help.hlp").
 
-You can press Slash (/) to search for a string.  This is a very primitive
-case sensitive search.  Slash plus return will search for the previous search
-string again.  The search does not wrap around at the end of the file, to
-search again from the top, use Pound + Zero + Return + Slash + Return.
+You can press Equals (=) to hilite lines containing a string (case sensitive).
+
+You can press Slash (/) to search for a string.  Use Slash + Return to continue
+a search.  Use Pound + Zero + Return + Slash + Return to restart a search.
 
 
 === General Information ===
@@ -38,9 +38,9 @@ one on available commands, before beginning any serious adventuring...
 
 
 
-=== A note from the maintainer ===
+=== A Note from the Maintainer ===
 
-Welcome to Angband 2.7.9.
+Welcome to Angband 2.7.9v6.
 
 My name is Ben Harrison, and I have been the maintainer of Angband since
 November, 1994, when the previous maintainer, Charles Swiger (who developed
@@ -66,24 +66,23 @@ Angband 2.7.8 was intended to be a nice, clean, stable version, so we
 can all give copies to our friends.  Unfortunately, it contained a few
 minor bugs.  The *enchant* armor/weapon scrolls were "swapped".  The
 game starts to look funny if too many objects accumulate on the floor.
-The "Q" command (commit suicide) does not work (switch to the original
-keyset and use the "^K" command if necessary, or try "\" + "ctrl-k").
-There have been reports that ball weapons can explode through walls.
-You may not be able to "correctly" load pre-2.7.0 savefiles.  Some
-dungeon levels (containing monster pits, lesser vaults, etc) may take
-minutes to generate.  Good drops can include cursed rings of speed.
+The "Q" command (commit suicide) does not work.  You may not be able
+to load older savefiles.  Some special dungeon levels may take a long
+time to generate.  Good drops can include cursed rings of speed.  But
+you can see that none of these are "fatal", so Angband 2.7.8 remains
+for now the most "official" version.
 
-Angband 2.7.9+ is intended to be a "stable" endpoint for the 2.7 series,
-in that whenever bugs are detected, they are repaired without changing
-anything else significant, providing a relatively unchanging, but still
-"up to date" version.  Angband 2.7.9v4 should be relatively final.
+Angband 2.7.9v1 through Angband 2.7.9v6 are intended as "transition" versions
+leading up to the release of Angband 2.8.0.  Angband 2.8.0 will include many
+extensive changes from Angband 2.7.8, see the web page for more information.
 
-Angband 2.7.9 cleaning up some internal code issues from Angband 2.7.8,
-and extending the functionality of some existing commands (such as target
-and look, which now handle directional motion).  It includes minor tweaks
-to various aspects of the program, most notably in the introduction of new
-symbols and colors for various monsters, and in the use of a more regular
-set of RGB values for the various color codes.
+Most of these changes have been completed, and include things like cleaning
+up some internal code issues, optimizing the code (again), extending the
+functionality of some existing commands (such as target and look, which now
+handle directional motion), tweaking various aspects of the program, most
+notably in the introduction of new symbols and colors for various monsters,
+and in the use of a more regular set of RGB values for the various color
+codes, etc.  Again, see the web page for a complete list.
 
 Angband 2.8.0 will introduce a version independant savefile format, along
 with a new terrain feature concept, and the ability to allow multiple objects
@@ -107,13 +106,17 @@ Unofficial Angband Home Page), for more up to date information.
 
 You may freely distribute the game, and its source, though you are bound
 not only by the existing copyright notice from 1984, but also whatever
-restrictions may be present on various other pieces of the code.
+restrictions may be present on various other pieces of the code, including
+the fact that any source written by me is technically automatically placed
+under copyright and may thus not be used for commercial purposes.
 
 The basic help files supplied with this game are more or less up to date,
 but when in doubt, the source (or the newsgroup) is the place to turn for
 advice.  Or attempt to figure it out by experimentation, this is sometimes
 the most fun.  In particular, see "commands.txt" for information on the
-available commands, some of which have been recently added or changed.
+available commands, some of which have been recently added or changed,
+and "options.txt", which describe how to customize several aspects of
+the game to suit your preferences.
 
 The documentation is very easy to modify and update, so you may want to
 check in to the ftp site occasionally to see if there are any new help
@@ -127,4 +130,4 @@ Remember to tell all your friends about how much you like Angband...
 
 Happy adventuring!
 
---- Ben ---
++++ Ben +++

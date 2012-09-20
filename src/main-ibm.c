@@ -238,22 +238,22 @@ static byte use_color_complex = FALSE;
  */
 static long ibm_color_complex[16] =
 {
-    0x000000L,          /* 0 0 0  Dark       */
-    0x3f3f3fL,          /* 4 4 4  White      */
-    0x232323L,          /* 2 2 2  Slate      */
-    0x00233fL,          /* 4 2 0  Orange     */
-    0x000035L,          /* 3 0 0  Red        */
-    0x112300L,          /* 0 2 1  Green      */
-    0x3f0000L,          /* 0 0 4  Blue       */
-    0x001123L,          /* 2 1 0  Umber      */
-    0x111111L,          /* 1 1 1  Lt. Dark   */
-    0x353535L,          /* 3 3 3  Lt. Slate  */
-    0x3f003fL,          /* 4 0 4  Purple     */
-    0x003f3fL,          /* 4 4 0  Yellow     */
-    0x00003fL,          /* 4 0 0  Lt. Red    */
-    0x003f00L,          /* 0 4 0  Lt. Green  */
-    0x3f3f00L,          /* 0 4 4  Lt. Blue   */
-    0x112335L           /* 3 2 1  Lt. Umber  */
+	0x000000L,          /* 0 0 0  Dark       */
+	0x3f3f3fL,          /* 4 4 4  White      */
+	0x232323L,          /* 2 2 2  Slate      */
+	0x00233fL,          /* 4 2 0  Orange     */
+	0x000035L,          /* 3 0 0  Red        */
+	0x112300L,          /* 0 2 1  Green      */
+	0x3f0000L,          /* 0 0 4  Blue       */
+	0x001123L,          /* 2 1 0  Umber      */
+	0x111111L,          /* 1 1 1  Lt. Dark   */
+	0x353535L,          /* 3 3 3  Lt. Slate  */
+	0x3f003fL,          /* 4 0 4  Purple     */
+	0x003f3fL,          /* 4 4 0  Yellow     */
+	0x00003fL,          /* 4 0 0  Lt. Red    */
+	0x003f00L,          /* 0 4 0  Lt. Green  */
+	0x3f3f00L,          /* 0 4 4  Lt. Blue   */
+	0x112335L           /* 3 2 1  Lt. Umber  */
 };
 
 
@@ -274,22 +274,22 @@ static long ibm_color_complex[16] =
  */
 static byte ibm_color_simple[16] =
 {
-    VID_BLACK,			/* Dark */
-    VID_WHITE,			/* White */
-    VID_CYAN,			/* Slate XXX */
-    VID_RED | VID_BRIGHT,	/* Orange XXX */
-    VID_RED,			/* Red */
-    VID_GREEN,			/* Green */
-    VID_BLUE,			/* Blue */
-    VID_YELLOW,			/* Umber XXX */
-    VID_BLACK | VID_BRIGHT,	/* Light Dark */
-    VID_CYAN | VID_BRIGHT,	/* Light Slate XXX */
-    VID_MAGENTA,		/* Violet */
-    VID_YELLOW | VID_BRIGHT,	/* Yellow */
-    VID_MAGENTA | VID_BRIGHT,	/* Light Red XXX */
-    VID_GREEN | VID_BRIGHT,	/* Light Green */
-    VID_BLUE | VID_BRIGHT,	/* Light Blue */
-    VID_YELLOW			/* Light Umber XXX */
+	VID_BLACK,			/* Dark */
+	VID_WHITE,			/* White */
+	VID_CYAN,			/* Slate XXX */
+	VID_RED | VID_BRIGHT,	/* Orange XXX */
+	VID_RED,			/* Red */
+	VID_GREEN,			/* Green */
+	VID_BLUE,			/* Blue */
+	VID_YELLOW,			/* Umber XXX */
+	VID_BLACK | VID_BRIGHT,	/* Light Dark */
+	VID_CYAN | VID_BRIGHT,	/* Light Slate XXX */
+	VID_MAGENTA,		/* Violet */
+	VID_YELLOW | VID_BRIGHT,	/* Yellow */
+	VID_MAGENTA | VID_BRIGHT,	/* Light Red XXX */
+	VID_GREEN | VID_BRIGHT,	/* Light Green */
+	VID_BLUE | VID_BRIGHT,	/* Light Blue */
+	VID_YELLOW			/* Light Umber XXX */
 };
 
 
@@ -323,78 +323,78 @@ static byte ibm_color_simple[16] =
  */
 static void activate_color_complex(void)
 {
-    int i;
+	int i;
 
 #if 1
 
-    /* Edit the EGA palette */
-    inportb(0x3da);
+	/* Edit the EGA palette */
+	inportb(0x3da);
 
-    /* Edit the colors */
-    for (i = 0; i < 16; i++)
-    {
-        /* Set color "i" */
-        outportb(0x3c0, i);
+	/* Edit the colors */
+	for (i = 0; i < 16; i++)
+	{
+		/* Set color "i" */
+		outportb(0x3c0, i);
 
-        /* To value "i" */
-        outportb(0x3c0, i);
-    };
+		/* To value "i" */
+		outportb(0x3c0, i);
+	};
 
-    /* Use that EGA palette */
-    outportb(0x3c0, 0x20);
+	/* Use that EGA palette */
+	outportb(0x3c0, 0x20);
 
-    /* Edit VGA palette, starting at color zero */
-    outportb(0x3c8, 0);
+	/* Edit VGA palette, starting at color zero */
+	outportb(0x3c8, 0);
 
-    /* Send the colors */
-    for (i = 0; i < 16; i++)
-    {
-        /* Send the red, green, blue components */
-        outportb(0x3c9, ((ibm_color_complex[i]) & 0xFF));
-        outportb(0x3c9, ((ibm_color_complex[i] >> 8) & 0xFF));
-        outportb(0x3c9, ((ibm_color_complex[i] >> 16) & 0xFF));
-    }
+	/* Send the colors */
+	for (i = 0; i < 16; i++)
+	{
+		/* Send the red, green, blue components */
+		outportb(0x3c9, ((ibm_color_complex[i]) & 0xFF));
+		outportb(0x3c9, ((ibm_color_complex[i] >> 8) & 0xFF));
+		outportb(0x3c9, ((ibm_color_complex[i] >> 16) & 0xFF));
+	}
 
 #else /* 1 */
 
-    /* Set the colors */
-    for (i = 0; i < 16; i++)
-    {
-        union REGS r;
+	/* Set the colors */
+	for (i = 0; i < 16; i++)
+	{
+		union REGS r;
 
-        /* Set EGA color */
-        r.h.ah = 0x10;
-        r.h.al = 0x00;
+		/* Set EGA color */
+		r.h.ah = 0x10;
+		r.h.al = 0x00;
 
-        /* Set color "i" */
-        r.h.bl = i;
+		/* Set color "i" */
+		r.h.bl = i;
 
-        /* To value "i" */
-        r.h.bh = i;
+		/* To value "i" */
+		r.h.bh = i;
 
-        /* Do it */
-        int86(0x10, &r, &r);
+		/* Do it */
+		int86(0x10, &r, &r);
 
-        /* Set VGA color */
-        r.h.ah = 0x10;
-        r.h.al = 0x10;
+		/* Set VGA color */
+		r.h.ah = 0x10;
+		r.h.al = 0x10;
 
-        /* Set color "i" */
-        r.h.bh = 0x00;
-        r.h.bl = i;
+		/* Set color "i" */
+		r.h.bh = 0x00;
+		r.h.bl = i;
 
-        /* Use this "green" value */
-        r.h.ch = ((ibm_color_complex[i] >> 8) & 0xFF);
+		/* Use this "green" value */
+		r.h.ch = ((ibm_color_complex[i] >> 8) & 0xFF);
 
-        /* Use this "blue" value */
-        r.h.cl = ((ibm_color_complex[i] >> 16) & 0xFF);
+		/* Use this "blue" value */
+		r.h.cl = ((ibm_color_complex[i] >> 16) & 0xFF);
 
-        /* Use this "red" value */
-        r.h.dh = ((ibm_color_complex[i]) & 0xFF);
+		/* Use this "red" value */
+		r.h.dh = ((ibm_color_complex[i]) & 0xFF);
 
-        /* Do it */
-        int86(0x10, &r, &r);
-    }
+		/* Do it */
+		int86(0x10, &r, &r);
+	}
 
 #endif /* 1 */
 
@@ -407,54 +407,54 @@ static void activate_color_complex(void)
  */
 static int Term_xtra_ibm_react(void)
 {
-    int i;
+	int i;
 
-    /* Complex method */
-    if (use_color_complex)
-    {
-        long rv, gv, bv, code;
+	/* Complex method */
+	if (use_color_complex)
+	{
+		long rv, gv, bv, code;
 
-        bool change = FALSE;
+		bool change = FALSE;
 
-        /* Save the default colors */
-        for (i = 0; i < 16; i++)
-        {
-            /* Extract desired values */
-            rv = color_table[i][1] >> 2;
-            gv = color_table[i][2] >> 2;
-            bv = color_table[i][3] >> 2;
+		/* Save the default colors */
+		for (i = 0; i < 16; i++)
+		{
+			/* Extract desired values */
+			rv = color_table[i][1] >> 2;
+			gv = color_table[i][2] >> 2;
+			bv = color_table[i][3] >> 2;
 
-            /* Extract a full color code */
-            code = ((rv) | (gv << 8) | (bv << 16));
+			/* Extract a full color code */
+			code = ((rv) | (gv << 8) | (bv << 16));
 
-            /* Activate changes */
-            if (ibm_color_complex[i] != code)
-            {
-                /* Note the change */
-                change = TRUE;
+			/* Activate changes */
+			if (ibm_color_complex[i] != code)
+			{
+				/* Note the change */
+				change = TRUE;
 
-                /* Apply the desired color */
-                ibm_color_complex[i] = code;
-            }
-        }
+				/* Apply the desired color */
+				ibm_color_complex[i] = code;
+			}
+		}
 
-        /* Activate the palette if needed */
-        if (change) activate_color_complex();
-    }
+		/* Activate the palette if needed */
+		if (change) activate_color_complex();
+	}
 
-    /* Simple method */
-    else
-    {
-        /* Save the default colors */
-        for (i = 0; i < 16; i++)
-        {
-            /* Simply accept the desired colors */
-            ibm_color_simple[i] = color_table[i][0];
-        }
-    }
+	/* Simple method */
+	else
+	{
+		/* Save the default colors */
+		for (i = 0; i < 16; i++)
+		{
+			/* Simply accept the desired colors */
+			ibm_color_simple[i] = color_table[i][0];
+		}
+	}
 
-    /* Success */
-    return (0);
+	/* Success */
+	return (0);
 }
 
 
@@ -464,36 +464,36 @@ static int Term_xtra_ibm_react(void)
  */
 static void curs_set(int v)
 {
-    /* If needed */
-    if (saved_cur_v != v)
-    {
-        union REGS r;
+	/* If needed */
+	if (saved_cur_v != v)
+	{
+		union REGS r;
 
-        /* Set cursor */
-        r.h.ah = 1;
+		/* Set cursor */
+		r.h.ah = 1;
 
-        /* Visible */
-        if (v)
-        {
-            /* Use the saved values */
-            r.h.ch = saved_cur_high;
-            r.h.cl = saved_cur_low;
-        }
+		/* Visible */
+		if (v)
+		{
+			/* Use the saved values */
+			r.h.ch = saved_cur_high;
+			r.h.cl = saved_cur_low;
+		}
 
-        /* Invisible */
-        else
-        {
-            /* Make it invisible */
-            r.h.ch = 0x20;
-            r.h.cl = 0x00;
-        }
+		/* Invisible */
+		else
+		{
+			/* Make it invisible */
+			r.h.ch = 0x20;
+			r.h.cl = 0x00;
+		}
 
-        /* Make the call */
-        int86(0x10, &r, &r);
+		/* Make the call */
+		int86(0x10, &r, &r);
 
-        /* Save the cursor state */
-        saved_cur_v = v;
-    }
+		/* Save the cursor state */
+		saved_cur_v = v;
+	}
 }
 
 
@@ -560,65 +560,65 @@ static void curs_set(int v)
  */
 static errr Term_xtra_ibm_event(int v)
 {
-    int i, k, s;
+	int i, k, s;
 
-    bool mc = FALSE;
-    bool ms = FALSE;
-    bool ma = FALSE;
-
-
-    /* Hack -- Check for a keypress */
-    if (!v && !bioskey(1)) return (1);
-
-    /* Wait for a keypress */
-    k = bioskey(0x10);
-
-    /* Access the "modifiers" */
-    i = bioskey(2);
-
-    /* Extract the "scan code" */
-    s = ((k >> 8) & 0xFF);
-
-    /* Extract the "ascii value" */
-    k = (k & 0xFF);
-
-    /* Process "normal" keys */
-    if ((s <= 58) || (s == 0xE0))
-    {
-        /* Enqueue it */
-        if (k) Term_keypress(k);
-
-        /* Success */
-        return (0);
-    }
-
-    /* Extract the modifier flags */
-    if (i & (1 << K_CTRL)) mc = TRUE;
-    if (i & (1 << K_LSHIFT)) ms = TRUE;
-    if (i & (1 << K_RSHIFT)) ms = TRUE;
-    if (i & (1 << K_ALT)) ma = TRUE;
+	bool mc = FALSE;
+	bool ms = FALSE;
+	bool ma = FALSE;
 
 
-    /* Begin a "macro trigger" */
-    Term_keypress(31);
+	/* Hack -- Check for a keypress */
+	if (!v && !bioskey(1)) return (1);
 
-    /* Hack -- Send the modifiers */
-    if (mc) Term_keypress('C');
-    if (ms) Term_keypress('S');
-    if (ma) Term_keypress('A');
+	/* Wait for a keypress */
+	k = bioskey(0x10);
 
-    /* Introduce the hexidecimal scan code */
-    Term_keypress('x');
+	/* Access the "modifiers" */
+	i = bioskey(2);
 
-    /* Encode the hexidecimal scan code */
-    Term_keypress(hexsym[s/16]);
-    Term_keypress(hexsym[s%16]);
+	/* Extract the "scan code" */
+	s = ((k >> 8) & 0xFF);
 
-    /* End the "macro trigger" */
-    Term_keypress(13);
+	/* Extract the "ascii value" */
+	k = (k & 0xFF);
 
-    /* Success */
-    return (0);
+	/* Process "normal" keys */
+	if ((s <= 58) || (s == 0xE0))
+	{
+		/* Enqueue it */
+		if (k) Term_keypress(k);
+
+		/* Success */
+		return (0);
+	}
+
+	/* Extract the modifier flags */
+	if (i & (1 << K_CTRL)) mc = TRUE;
+	if (i & (1 << K_LSHIFT)) ms = TRUE;
+	if (i & (1 << K_RSHIFT)) ms = TRUE;
+	if (i & (1 << K_ALT)) ma = TRUE;
+
+
+	/* Begin a "macro trigger" */
+	Term_keypress(31);
+
+	/* Hack -- Send the modifiers */
+	if (mc) Term_keypress('C');
+	if (ms) Term_keypress('S');
+	if (ma) Term_keypress('A');
+
+	/* Introduce the hexidecimal scan code */
+	Term_keypress('x');
+
+	/* Encode the hexidecimal scan code */
+	Term_keypress(hexsym[s/16]);
+	Term_keypress(hexsym[s%16]);
+
+	/* End the "macro trigger" */
+	Term_keypress(13);
+
+	/* Success */
+	return (0);
 }
 
 
@@ -629,79 +629,79 @@ static errr Term_xtra_ibm_event(int v)
  */
 static errr Term_xtra_ibm(int n, int v)
 {
-    int i;
+	int i;
 
-    /* Analyze the request */
-    switch (n)
-    {
-        /* Make a "bell" noise */
-        case TERM_XTRA_NOISE:
+	/* Analyze the request */
+	switch (n)
+	{
+		/* Make a "bell" noise */
+		case TERM_XTRA_NOISE:
 
-            /* Make a bell noise */
-            (void)write(1, "\007", 1);
+		/* Make a bell noise */
+		(void)write(1, "\007", 1);
 
-            /* Success */
-            return (0);
+		/* Success */
+		return (0);
 
-        /* Set the cursor shape */
-        case TERM_XTRA_SHAPE:
+		/* Set the cursor shape */
+		case TERM_XTRA_SHAPE:
 
-            /* Set cursor shape */
-            curs_set(v);
+		/* Set cursor shape */
+		curs_set(v);
 
-            /* Success */
-       	    return (0);
+		/* Success */
+		return (0);
 
 #ifdef USE_VIRTUAL
 
-        /* Flush one line of output */
-        case TERM_XTRA_FROSH:
+		/* Flush one line of output */
+		case TERM_XTRA_FROSH:
 
 # ifdef USE_WAT
 
-            /* Copy the virtual screen to the physical screen */
-            memcpy(PhysicalScreen + (v*160), VirtualScreen + (v*160), 160);
+		/* Copy the virtual screen to the physical screen */
+		memcpy(PhysicalScreen + (v*160), VirtualScreen + (v*160), 160);
 
 # else /* USE_WAT */
 
-            /* Apply the virtual screen to the physical screen */
-            ScreenUpdateLine(VirtualScreen + ((v*cols) << 1), v);
+		/* Apply the virtual screen to the physical screen */
+		ScreenUpdateLine(VirtualScreen + ((v*cols) << 1), v);
 
 # endif /* USE_WAT */
 
-            /* Success */
-            return (0);
+		/* Success */
+		return (0);
 
 #endif /* USE_VIRTUAL */
 
-        /* Clear the screen */
-        case TERM_XTRA_CLEAR:
+		/* Clear the screen */
+		case TERM_XTRA_CLEAR:
 
 #ifdef USE_CONIO
 
-            /* Clear the screen */
-            clrscr();
+		/* Clear the screen */
+		clrscr();
 
 #else /* USE_CONIO */
 
-            /* Clear each line (virtual or physical) */
-            for (i = 0; i < rows; i++)
-            {
-                /* Clear the line */
-                memcpy((VirtualScreen + ((i*cols) << 1)), wiper, (cols << 1));
-            }
+		/* Clear each line (virtual or physical) */
+		for (i = 0; i < rows; i++)
+		{
+			/* Clear the line */
+			memcpy((VirtualScreen + ((i*cols) << 1)), wiper, (cols << 1));
+		}
 
 # ifdef USE_VIRTUAL
 
 #  ifdef USE_WAT
 
-            /* Copy the virtual screen to the physical screen */
-            memcpy(PhysicalScreen, VirtualScreen, 25*80*2);
+		/* Copy the virtual screen to the physical screen */
+		memcpy(PhysicalScreen, VirtualScreen, 25*80*2);
 
 #  else /* USE_WAT */
 
-            /* Erase the physical screen */
-            ScreenClear();
+		/* Erase the physical screen */
+		ScreenClear();
 
 #  endif /* USE_WAT */
 
@@ -709,33 +709,42 @@ static errr Term_xtra_ibm(int n, int v)
 
 #endif /* USE_CONIO */
 
-            /* Success */
-            return (0);
+		/* Success */
+		return (0);
 
-        /* Process events */
-        case TERM_XTRA_EVENT:
+		/* Process events */
+		case TERM_XTRA_EVENT:
 
-            /* Process one event */
-            return (Term_xtra_ibm_event(v));
+		/* Process one event */
+		return (Term_xtra_ibm_event(v));
 
-        /* Flush events */
-        case TERM_XTRA_FLUSH:
+		/* Flush events */
+		case TERM_XTRA_FLUSH:
 
-            /* Strip events */
-            while (!Term_xtra_ibm_event(FALSE));
+		/* Strip events */
+		while (!Term_xtra_ibm_event(FALSE));
 
-            /* Success */
-            return (0);
+		/* Success */
+		return (0);
 
-        /* React to global changes */
-        case TERM_XTRA_REACT:
+		/* React to global changes */
+		case TERM_XTRA_REACT:
 
-            /* React to "color_table" changes */
-            return (Term_xtra_ibm_react());
-    }
+		/* React to "color_table" changes */
+		return (Term_xtra_ibm_react());
 
-    /* Unknown request */
-    return (1);
+		/* Delay for some milliseconds */
+		case TERM_XTRA_DELAY:
+
+		/* Delay if needed */
+		if (v > 0) delay(v);
+
+		/* Success */
+		return (0);
+	}
+
+	/* Unknown request */
+	return (1);
 }
 
 
@@ -752,32 +761,32 @@ static errr Term_curs_ibm(int x, int y)
 
 # ifdef USE_CONIO
 
-    /* Place the cursor */
-    gotoxy(x+1, y+1);
+	/* Place the cursor */
+	gotoxy(x+1, y+1);
 
 # else /* USE_CONIO */
 
-    union REGS r;
+	union REGS r;
 
-    r.h.ah = 2;
-    r.h.bh = 0;
-    r.h.dl = x;
-    r.h.dh = y;
+	r.h.ah = 2;
+	r.h.bh = 0;
+	r.h.dl = x;
+	r.h.dh = y;
 
-    /* Place the cursor */
-    int86(0x10, &r, &r);
+	/* Place the cursor */
+	int86(0x10, &r, &r);
 
 # endif /* USE_CONIO */
 
 #else /* USE_WAT */
 
-    /* Move the cursor */
-    ScreenSetCursor(y,x);
+	/* Move the cursor */
+	ScreenSetCursor(y, x);
 
 #endif /* USE_WAT */
 
-    /* Success */
-    return (0);
+	/* Success */
+	return (0);
 }
 
 
@@ -791,20 +800,20 @@ static errr Term_wipe_ibm(int x, int y, int n)
 
 #ifdef USE_CONIO
 
-    /* Wipe the region */
-    window(x+1,y+1,x+n,y+1);
-    clrscr();
-    window(1,1,cols,rows);
+	/* Wipe the region */
+	window(x+1, y+1, x+n, y+1);
+	clrscr();
+	window(1, 1, cols, rows);
 
 #else /* USE_CONIO */
 
-    /* Wipe part of the virtual (or physical) screen */
-    memcpy(VirtualScreen + ((cols*y + x)<<1), wiper, n<<1);
+	/* Wipe part of the virtual (or physical) screen */
+	memcpy(VirtualScreen + ((cols*y + x)<<1), wiper, n<<1);
 
 #endif /* USE_CONIO */
 
-    /* Success */
-    return (0);
+	/* Success */
+	return (0);
 }
 
 
@@ -816,51 +825,51 @@ static errr Term_wipe_ibm(int x, int y, int n)
  */
 static errr Term_text_ibm(int x, int y, int n, byte a, cptr s)
 {
-    register byte attr;
-    register byte *dest;
+	register byte attr;
+	register byte *dest;
 
 
-    /* Handle "complex" color */
-    if (use_color_complex)
-    {
-        /* Extract a color index */
-        attr = (a & 0x0F);
-    }
+	/* Handle "complex" color */
+	if (use_color_complex)
+	{
+		/* Extract a color index */
+		attr = (a & 0x0F);
+	}
 
-    /* Handle "simple" color */
-    else
-    {
-        /* Extract a color value */
-        attr = ibm_color_simple[a & 0x0F];
-    }
+	/* Handle "simple" color */
+	else
+	{
+		/* Extract a color value */
+		attr = ibm_color_simple[a & 0x0F];
+	}
 
 #ifdef USE_CONIO
 
-    /* Set the attribute */
-    textattr(attr);
+	/* Set the attribute */
+	textattr(attr);
 
-    /* Place the cursor */
-    gotoxy(x+1, y+1);
+	/* Place the cursor */
+	gotoxy(x+1, y+1);
 
-    /* Dump the text */
-    for ( ; *s; s++) putch(*s);
+	/* Dump the text */
+	for (; *s; s++) putch(*s);
 
 #else /* USE_CONIO */
 
-    /* Access the virtual (or physical) screen */
-    dest = VirtualScreen + (((cols * y) + x) << 1);
+	/* Access the virtual (or physical) screen */
+	dest = VirtualScreen + (((cols * y) + x) << 1);
 
-    /* Save the data */
-    while (*s)
-    {
-        *dest++ = *s++;
-        *dest++ = attr;
-    }
+	/* Save the data */
+	while (*s)
+	{
+		*dest++ = *s++;
+		*dest++ = attr;
+	}
 
 #endif /* USE_CONIO */
 
-    /* Success */
-    return (0);
+	/* Success */
+	return (0);
 }
 
 
@@ -869,7 +878,7 @@ static errr Term_text_ibm(int x, int y, int n, byte a, cptr s)
  */
 static void Term_init_ibm(term *t)
 {
-    /* XXX Nothing */
+	/* XXX Nothing */
 }
 
 
@@ -878,23 +887,23 @@ static void Term_init_ibm(term *t)
  */
 static void Term_nuke_ibm(term *t)
 {
-    union REGS r;
+	union REGS r;
 
-    /* Move the cursor to the bottom of the screen */
-    Term_curs_ibm(0, rows-1);
+	/* Move the cursor to the bottom of the screen */
+	Term_curs_ibm(0, rows-1);
 
 #ifdef USE_WAT
-    /* Restore the original video mode */
-    _setvideomode(_DEFAULTMODE);
+	/* Restore the original video mode */
+	_setvideomode(_DEFAULTMODE);
 #else
-    /* Restore the original video mode */
-    r.h.ah = 0x00;
-    r.h.al = 0x03;
-    int86(0x10, &r, &r);
+	/* Restore the original video mode */
+	r.h.ah = 0x00;
+	r.h.al = 0x03;
+	int86(0x10, &r, &r);
 #endif
 
-    /* Make the cursor visible */
-    curs_set(1);
+	/* Make the cursor visible */
+	curs_set(1);
 }
 
 
@@ -912,14 +921,15 @@ static void Term_nuke_ibm(term *t)
  */
 void enable_graphic_font(void *font)
 {
-   union REGPACK regs = {0};
+	union REGPACK regs =
+	{0};
 
-   regs.h.ah = 0x11;           /* Text font function */
-   regs.h.bh = 0x10;           /* Size of a character -- 16 bytes */
-   regs.h.cl = 0xFF;           /* Last character in font */
-   regs.x.es = FP_SEG(font);   /* Pointer to font */
-   regs.x.bp = FP_OFF(font);
-   intr(0x10, &regs);
+	regs.h.ah = 0x11;           /* Text font function */
+	regs.h.bh = 0x10;           /* Size of a character -- 16 bytes */
+	regs.h.cl = 0xFF;           /* Last character in font */
+	regs.x.es = FP_SEG(font);   /* Pointer to font */
+	regs.x.bp = FP_OFF(font);
+	intr(0x10, &regs);
 };
 
 #else /* USE_286 */
@@ -932,78 +942,85 @@ void enable_graphic_font(void *font)
  * header file).
  */
 
-typedef union {
-  struct {
-    unsigned long edi;
-    unsigned long esi;
-    unsigned long ebp;
-    unsigned long res;
-    unsigned long ebx;
-    unsigned long edx;
-    unsigned long ecx;
-    unsigned long eax;
-  } d;
-  struct {
-    unsigned short di, di_hi;
-    unsigned short si, si_hi;
-    unsigned short bp, bp_hi;
-    unsigned short res, res_hi;
-    unsigned short bx, bx_hi;
-    unsigned short dx, dx_hi;
-    unsigned short cx, cx_hi;
-    unsigned short ax, ax_hi;
-    unsigned short flags;
-    unsigned short es;
-    unsigned short ds;
-    unsigned short fs;
-    unsigned short gs;
-    unsigned short ip;
-    unsigned short cs;
-    unsigned short sp;
-    unsigned short ss;
-  } x;
-  struct {
-    unsigned char edi[4];
-    unsigned char esi[4];
-    unsigned char ebp[4];
-    unsigned char res[4];
-    unsigned char bl, bh, ebx_b2, ebx_b3;
-    unsigned char dl, dh, edx_b2, edx_b3;
-    unsigned char cl, ch, ecx_b2, ecx_b3;
-    unsigned char al, ah, eax_b2, eax_b3;
-  } h;
+typedef union
+{
+	struct
+	{
+		unsigned long edi;
+		unsigned long esi;
+		unsigned long ebp;
+		unsigned long res;
+		unsigned long ebx;
+		unsigned long edx;
+		unsigned long ecx;
+		unsigned long eax;
+	} d;
+	struct
+	{
+		unsigned short di, di_hi;
+		unsigned short si, si_hi;
+		unsigned short bp, bp_hi;
+		unsigned short res, res_hi;
+		unsigned short bx, bx_hi;
+		unsigned short dx, dx_hi;
+		unsigned short cx, cx_hi;
+		unsigned short ax, ax_hi;
+		unsigned short flags;
+		unsigned short es;
+		unsigned short ds;
+		unsigned short fs;
+		unsigned short gs;
+		unsigned short ip;
+		unsigned short cs;
+		unsigned short sp;
+		unsigned short ss;
+	} x;
+	struct
+	{
+		unsigned char edi[4];
+		unsigned char esi[4];
+		unsigned char ebp[4];
+		unsigned char res[4];
+		unsigned char bl, bh, ebx_b2, ebx_b3;
+		unsigned char dl, dh, edx_b2, edx_b3;
+		unsigned char cl, ch, ecx_b2, ecx_b3;
+		unsigned char al, ah, eax_b2, eax_b3;
+	} h;
 } __dpmi_regs;
 
 unsigned  __dpmi_allocate_dos_memory(int size, unsigned *selector)
 {
-    union REGPACK regs = {0};
+	union REGPACK regs =
+	{0};
 
-    regs.w.ax  = 0x100;   /* DPMI function -- allocate low memory */
-    regs.w.bx  = size;    /* Number of Paragraphs to allocate */
-    intr(0x31, &regs);    /* DPMI interface */
+	regs.w.ax  = 0x100;   /* DPMI function -- allocate low memory */
+	regs.w.bx  = size;    /* Number of Paragraphs to allocate */
+	intr(0x31, &regs);    /* DPMI interface */
 
-    *selector = regs.w.dx;
-    return(regs.w.ax);
+	*selector = regs.w.dx;
+	return (regs.w.ax);
 };
 
 void __dpmi_free_dos_memory(unsigned sel)
 {
-    union REGPACK regs = {0};
+	union REGPACK regs =
+	{0};
 
-    regs.w.ax  = 0x101;      /* DPMI function -- free low memory */
-    regs.x.edx = sel;        /* PM selector for memory block */
-    intr(0x31, &regs);       /* DPMI interface */
+	regs.w.ax  = 0x101;      /* DPMI function -- free low memory */
+	regs.x.edx = sel;        /* PM selector for memory block */
+	intr(0x31, &regs);       /* DPMI interface */
 };
 
 void __dpmi_int(int intno, __dpmi_regs *dblock)
 {
-    union REGPACK regs = {0};
+	union REGPACK regs =
+	{0};
 
-    regs.w.ax  = 0x300;           /* DPMI function -- real mode interrupt */
-    regs.h.bl  = intno;           /* interrupt 0x10 */
-    regs.x.edi = FP_OFF(dblock);  /* Pointer to dblock (offset and segment) */
-    regs.x.es  = FP_SEG(dblock);
-    intr(0x31, &regs);            /* DPMI interface */
+	regs.w.ax  = 0x300;           /* DPMI function -- real mode interrupt */
+	regs.h.bl  = intno;           /* interrupt 0x10 */
+	regs.x.edi = FP_OFF(dblock);  /* Pointer to dblock (offset and segment) */
+	regs.x.es  = FP_SEG(dblock);
+	intr(0x31, &regs);            /* DPMI interface */
 };
 
 unsigned short __dpmi_sel = 0x0000;
@@ -1035,44 +1052,46 @@ extern void _farnspokeb(unsigned long offset, unsigned char value);
  */
 void enable_graphic_font(const char *font)
 {
-    __dpmi_regs dblock = {{0}};
+	__dpmi_regs dblock =
+	{
+	{0}};
 
-    unsigned seg, sel, i;
+	unsigned seg, sel, i;
 
-    /*
-     * Allocate a block of memory 4096 bytes big in `low memory' so a real
-     * mode interrupt can access it.  Real mode pointer is returned as seg:0
-     * Protected mode pointer is sel:0.
-     */
-    seg = __dpmi_allocate_dos_memory(256,&sel);
+	/*
+	 * Allocate a block of memory 4096 bytes big in `low memory' so a real
+	 * mode interrupt can access it.  Real mode pointer is returned as seg:0
+	 * Protected mode pointer is sel:0.
+	 */
+	seg = __dpmi_allocate_dos_memory(256, &sel);
 
-    /* Copy the information into low memory buffer, by copying one byte at
-     * a time.  According to the info in <sys/farptr.h>, the functions
-     * _farsetsel() and _farnspokeb() will optimise away completely
-     */
-    _farsetsel(sel);               /* Set the selector to write to */
-    for (i = 0; i<4096; i++)
-    {
-        _farnspokeb(i,*font++);      /* Copy 1 byte into low (far) memory */
-    }
+	/* Copy the information into low memory buffer, by copying one byte at
+	 * a time.  According to the info in <sys/farptr.h>, the functions
+	 * _farsetsel() and _farnspokeb() will optimise away completely
+	 */
+	_farsetsel(sel);               /* Set the selector to write to */
+	for (i = 0; i<4096; i++)
+	{
+		_farnspokeb(i, *font++);      /* Copy 1 byte into low (far) memory */
+	}
 
-    /*
-     * Now we use DPMI as a jumper to call the real mode interrupt.  This
-     * is needed because loading `es' while in protected mode with a real
-     * mode pointer will cause an Protection Fault and calling the interrupt
-     * directly using the protected mode pointer will result in garbage
-     * being received by the interrupt routine
-     */
-    dblock.d.eax = 0x1100;         /* BIOS function -- set font */
-    dblock.d.ebx = 0x1000;         /* bh = size of a letter; bl = 0 (reserved) */
-    dblock.d.ecx = 0x00FF;         /* Last character in font */
-    dblock.x.es  = seg;            /* Pointer to font segment */
-    dblock.d.ebp = 0x0000;         /* Pointer to font offset */
+	/*
+	 * Now we use DPMI as a jumper to call the real mode interrupt.  This
+	 * is needed because loading `es' while in protected mode with a real
+	 * mode pointer will cause an Protection Fault and calling the interrupt
+	 * directly using the protected mode pointer will result in garbage
+	 * being received by the interrupt routine
+	 */
+	dblock.d.eax = 0x1100;         /* BIOS function -- set font */
+	dblock.d.ebx = 0x1000;         /* bh = size of a letter; bl = 0 (reserved) */
+	dblock.d.ecx = 0x00FF;         /* Last character in font */
+	dblock.x.es  = seg;            /* Pointer to font segment */
+	dblock.d.ebp = 0x0000;         /* Pointer to font offset */
 
-    __dpmi_int(0x10, &dblock);
+	__dpmi_int(0x10, &dblock);
 
-    /* We're done with the low memory, free it */
-    __dpmi_free_dos_memory(sel);
+	/* We're done with the low memory, free it */
+	__dpmi_free_dos_memory(sel);
 };
 
 #endif /* USE_286 */
@@ -1093,198 +1112,198 @@ void enable_graphic_font(const char *font)
  */
 errr init_ibm(void)
 {
-    int i;
-    int mode;
-    int rv, gv, bv;
-    bool want_graphics;
+	int i;
+	int mode;
+	int rv, gv, bv;
+	bool want_graphics;
 
-    term *t = &term_screen_body;
+	term *t = &term_screen_body;
 
-    union REGS r;
+	union REGS r;
 
-    /* Check for "Windows" */
-    if (getenv("windir"))
-    {
-       r.h.ah = 0x16;           /* Windows API Call -- Set device focus */
-       r.h.al = 0x8B;           /* Causes Dos boxes to become fullscreen */
-       r.h.bh = r.h.bl = 0x00;  /* 0x0000 = current Dos box */
-       int86(0x2F,&r,&r);       /* Call the Windows API */
-    };
+	/* Check for "Windows" */
+	if (getenv("windir"))
+	{
+		r.h.ah = 0x16;           /* Windows API Call -- Set device focus */
+		r.h.al = 0x8B;           /* Causes Dos boxes to become fullscreen */
+		r.h.bh = r.h.bl = 0x00;  /* 0x0000 = current Dos box */
+		int86(0x2F, &r, &r);       /* Call the Windows API */
+	};
 
 #ifdef USE_WAT
 
-    /* Set the video mode */
-    if (_setvideomode(_VRES16COLOR))
-    {
-       mode = 0x13;
-    }
+	/* Set the video mode */
+	if (_setvideomode(_VRES16COLOR))
+	{
+		mode = 0x13;
+	}
 
-    /* Wimpy monitor */
-    else
-    {
-       mode = 0x03;
-    }
+	/* Wimpy monitor */
+	else
+	{
+		mode = 0x03;
+	}
 
-    /* Force 25 line mode */
-    _setvideomode(_TEXTC80);
-    _settextrows(25);
+	/* Force 25 line mode */
+	_setvideomode(_TEXTC80);
+	_settextrows(25);
 
 #else /* USE_WAT */
 
-    /* Set video mode */
-    r.h.ah = 0x00;
-    r.h.al = 0x13; /* VGA only mode */
-    int86(0x10, &r, &r);
+	/* Set video mode */
+	r.h.ah = 0x00;
+	r.h.al = 0x13; /* VGA only mode */
+	int86(0x10, &r, &r);
 
-    /* Get video mode */
-    r.h.ah = 0x0F;
-    int86(0x10, &r, &r);
-    mode = r.h.al;
+	/* Get video mode */
+	r.h.ah = 0x0F;
+	int86(0x10, &r, &r);
+	mode = r.h.al;
 
-    /* Set video mode */
-    r.h.ah = 0x00;
-    r.h.al = 0x03; /* Color text mode */
-    int86(0x10, &r, &r);
+	/* Set video mode */
+	r.h.ah = 0x00;
+	r.h.al = 0x03; /* Color text mode */
+	int86(0x10, &r, &r);
 
 #endif /* USE_WAT */
 
-    /* Check video mode */
-    if (mode == 0x13)
-    {
-        /* Remember the mode */
-        use_color_complex = TRUE;
+	/* Check video mode */
+	if (mode == 0x13)
+	{
+		/* Remember the mode */
+		use_color_complex = TRUE;
 
-        /* Instantiate the color set */
-        activate_color_complex();
-    }
+		/* Instantiate the color set */
+		activate_color_complex();
+	}
 
-    /* Graphics request */
-    want_graphics = use_graphics;
+	/* Graphics request */
+	want_graphics = use_graphics;
 
-    /* No graphics */
-    use_graphics = FALSE;
+	/* No graphics */
+	use_graphics = FALSE;
 
 #ifdef USE_GRAPHICS
 
-    /* Try to activate bitmap graphics */
-    if (want_graphics && use_color_complex)
-    {
-        FILE *f;
+	/* Try to activate bitmap graphics */
+	if (want_graphics && use_color_complex)
+	{
+		FILE *f;
 
-        char buf[4096];
+		char buf[4096];
 
-        /* Access the font file */
-        sprintf(buf, "%s%s", ANGBAND_DIR_XTRA, "angband.fnt");
+		/* Build the filename */
+		path_build(buf, 1024, ANGBAND_DIR_XTRA, "angband.fnt");
 
-        /* Open the file */
-        f = fopen(buf, "rb");
+		/* Open the file */
+		f = fopen(buf, "rb");
 
-        /* Okay */
-        if (f)
-        {
-            /* Load the bitmap data */
-            if (fread(buf,1,4096,f) != 4096)
-            {
-                quit("Corrupt 'angband.fnt' file");
-            }
+		/* Okay */
+		if (f)
+		{
+			/* Load the bitmap data */
+			if (fread(buf, 1, 4096, f) != 4096)
+			{
+				quit("Corrupt 'angband.fnt' file");
+			}
 
-            /* Close the file */
-            fclose(f);
+			/* Close the file */
+			fclose(f);
 
-            /* Enable graphics */
-            enable_graphic_font(buf);
+			/* Enable graphics */
+			enable_graphic_font(buf);
 
-            /* Enable colors (again) */
-            activate_color_complex();
+			/* Enable colors (again) */
+			activate_color_complex();
 
-            /* Use graphics */
-            use_graphics = TRUE;
-        }
-    }
+			/* Use graphics */
+			use_graphics = TRUE;
+		}
+	}
 
 #endif
 
-    /* Initialize "color_table" */
-    for (i = 0; i < 16; i++)
-    {
-        /* Extract the "complex" codes */
-        rv = ((ibm_color_complex[i]) & 0xFF);
-        gv = ((ibm_color_complex[i] >> 8) & 0xFF);
-        bv = ((ibm_color_complex[i] >> 16) & 0xFF);
+	/* Initialize "color_table" */
+	for (i = 0; i < 16; i++)
+	{
+		/* Extract the "complex" codes */
+		rv = ((ibm_color_complex[i]) & 0xFF);
+		gv = ((ibm_color_complex[i] >> 8) & 0xFF);
+		bv = ((ibm_color_complex[i] >> 16) & 0xFF);
 
-        /* Save the "complex" codes */
-        color_table[i][0] = ibm_color_simple[i];
-        color_table[i][1] = ((rv << 2) | (rv >> 4));
-        color_table[i][2] = ((gv << 2) | (gv >> 4));
-        color_table[i][3] = ((bv << 2) | (bv >> 4));
-    }
+		/* Save the "complex" codes */
+		color_table[i][0] = ibm_color_simple[i];
+		color_table[i][1] = ((rv << 2) | (rv >> 4));
+		color_table[i][2] = ((gv << 2) | (gv >> 4));
+		color_table[i][3] = ((bv << 2) | (bv >> 4));
+	}
 
 
 #ifndef USE_CONIO
 
-    /* Build a "wiper line" */
-    for (i = 0; i < 80; i++)
-    {
-        /* Space */
-        wiper[2*i] = ' ';
+	/* Build a "wiper line" */
+	for (i = 0; i < 80; i++)
+	{
+		/* Space */
+		wiper[2*i] = ' ';
 
-        /* Black */
-	wiper[2*i+1] = 0;
-    }
+		/* Black */
+		wiper[2*i+1] = 0;
+	}
 
 #endif
 
 
 #ifdef USE_VIRTUAL
 
-    /* Make the virtual screen */
-    C_MAKE(VirtualScreen, rows * cols * 2, byte);
+	/* Make the virtual screen */
+	C_MAKE(VirtualScreen, rows * cols * 2, byte);
 
 #endif
 
 
-    /* Erase the screen */
-    Term_xtra_ibm(TERM_XTRA_CLEAR, 0);
+	/* Erase the screen */
+	Term_xtra_ibm(TERM_XTRA_CLEAR, 0);
 
 
-    /* Place the cursor */
-    Term_curs_ibm(0, 0);
+	/* Place the cursor */
+	Term_curs_ibm(0, 0);
 
 
-    /* Access the "default" cursor info */   
-    r.h.ah = 3;
-    r.h.bh = 0;
+	/* Access the "default" cursor info */
+	r.h.ah = 3;
+	r.h.bh = 0;
 
-    /* Make the call */
-    int86(0x10, &r, &r);
+	/* Make the call */
+	int86(0x10, &r, &r);
 
-    /* Extract the standard cursor info */
-    saved_cur_v = 1;
-    saved_cur_high = r.h.ch;
-    saved_cur_low = r.h.cl;
+	/* Extract the standard cursor info */
+	saved_cur_v = 1;
+	saved_cur_high = r.h.ch;
+	saved_cur_low = r.h.cl;
 
 
-    /* Initialize the term */
-    term_init(t, 80, 24, 256);
+	/* Initialize the term */
+	term_init(t, 80, 24, 256);
 
-    /* Prepare the init/nuke hooks */
-    t->init_hook = Term_init_ibm;
-    t->nuke_hook = Term_nuke_ibm;
+	/* Prepare the init/nuke hooks */
+	t->init_hook = Term_init_ibm;
+	t->nuke_hook = Term_nuke_ibm;
 
-    /* Connect the hooks */
-    t->xtra_hook = Term_xtra_ibm;
-    t->curs_hook = Term_curs_ibm;
-    t->wipe_hook = Term_wipe_ibm;
-    t->text_hook = Term_text_ibm;
+	/* Connect the hooks */
+	t->xtra_hook = Term_xtra_ibm;
+	t->curs_hook = Term_curs_ibm;
+	t->wipe_hook = Term_wipe_ibm;
+	t->text_hook = Term_text_ibm;
 
-    /* Save it */
-    term_screen = t;
+	/* Save it */
+	term_screen = t;
 
-    /* Activate it */
-    Term_activate(term_screen);
+	/* Activate it */
+	Term_activate(term_screen);
 
-    /* Success */
-    return 0;
+	/* Success */
+	return 0;
 }
 
 

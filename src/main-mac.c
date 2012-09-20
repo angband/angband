@@ -92,7 +92,9 @@
  *   MENU 130 = Edit menu (undo, -, cut, copy, paste, clear)
  *   MENU 131 = Font menu (bold, wide, -, monaco, courier, ...)
  *   MENU 132 = Size menu (9, 10, 11, 12, 13, 14, 15, 16, 17, 18)
- *   MENU 133 = Window menu (Angband, -, Mirror, -, Recall, Choice)
+ *   MENU 133 = Window menu (Angband, Mirror, Recall, Choice)
+ *   MENU 134 = Special menu (use_sound, use_graphics, use_xxx1, use_xxx2,
+ *                            arg_fiddle, arg_wizard, arg_xxx1, arg_xxx2)
  */
 
 /*
@@ -228,38 +230,39 @@ typedef struct term_data term_data;
  */
 struct term_data
 {
-    term		t;
+	term		*t;
 
-    Rect		r;
+	Rect		r;
 
-    cptr		s;
+	WindowPtr	w;
 
-    WindowPtr	w;
+	cptr		s;
 
-    int		fake;
+	bool		oops;
+	bool		fake;
 
-    int		keys;
+	s16b		keys;
 
-    int		rows;
-    int		cols;
+	s16b		rows;
+	s16b		cols;
 
-    int		size_wid;
-    int		size_hgt;
+	s16b		size_wid;
+	s16b		size_hgt;
 
-    int		size_ow1;
-    int		size_oh1;
-    int		size_ow2;
-    int		size_oh2;
+	s16b		size_ow1;
+	s16b		size_oh1;
+	s16b		size_ow2;
+	s16b		size_oh2;
 
-    int		mapped;
-    int		font_id;
-    int		font_size;
-    int		font_face;
+	s16b		mapped;
+	s16b		font_id;
+	s16b		font_size;
+	s16b		font_face;
 
-    int		font_wid;
-    int		font_hgt;
-    int		font_o_x;
-    int		font_o_y;
+	s16b		font_wid;
+	s16b		font_hgt;
+	s16b		font_o_x;
+	s16b		font_o_y;
 };
 
 
@@ -304,18 +307,15 @@ static WindowPtr active = NULL;
 
 
 /*
- * Some information for every "term" window
+ * Maximum number of windows
  */
-static term_data screen;
-#ifdef GRAPHIC_MIRROR
-static term_data mirror;
-#endif /* GRAPHIC_MIRROR */
-#ifdef GRAPHIC_RECALL
-static term_data recall;
-#endif /* GRAPHIC_RECALL */
-#ifdef GRAPHIC_CHOICE
-static term_data choice;
-#endif /* GRAPHIC_CHOICE */
+#define MAX_TERM_DATA 8
+
+/*
+ * An array of term_data's
+ */
+static term_data data[MAX_TERM_DATA];
+
 
 
 /*
@@ -330,22 +330,22 @@ static bool initialized = FALSE;
  */
 static RGBColor mac_clr[16] =
 {
-    {0,0,0},			/* TERM_DARK */
-    {65535,65535,65535},	/* TERM_WHITE */
-    {32768,32768,32768},        /* TERM_SLATE */
-    {65535,32768,0},		/* TERM_ORANGE */
-    {49152,0,0},		/* TERM_RED */
-    {0,32768,16384},		/* TERM_GREEN */
-    {0,0,65535},		/* TERM_BLUE */
-    {32768,16384,0},		/* TERM_UMBER */
-    {16384,16384,16384},	/* TERM_L_DARK */
-    {49152,49152,49152},	/* TERM_L_WHITE */
-    {65535,0,65535},		/* TERM_VIOLET */
-    {65535,65535,0},		/* TERM_YELLOW */
-    {65535,0,0},		/* TERM_L_RED */
-    {0,65535,0},		/* TERM_L_GREEN */
-    {0,65535,65535},		/* TERM_L_BLUE */
-    {49152,32768,16384}		/* TERM_L_UMBER */
+	{0, 0, 0},				/* TERM_DARK */
+	{65535, 65535, 65535},	/* TERM_WHITE */
+	{32768, 32768, 32768},	/* TERM_SLATE */
+	{65535, 32768, 0},		/* TERM_ORANGE */
+	{49152, 0, 0},			/* TERM_RED */
+	{0, 32768, 16384},		/* TERM_GREEN */
+	{0, 0, 65535},			/* TERM_BLUE */
+	{32768, 16384, 0},		/* TERM_UMBER */
+	{16384, 16384, 16384},	/* TERM_L_DARK */
+	{49152, 49152, 49152},	/* TERM_L_WHITE */
+	{65535, 0, 65535},		/* TERM_VIOLET */
+	{65535, 65535, 0},		/* TERM_YELLOW */
+	{65535, 0, 0},			/* TERM_L_RED */
+	{0, 65535, 0},			/* TERM_L_GREEN */
+	{0, 65535, 65535},		/* TERM_L_BLUE */
+	{49152, 32768, 16384}	/* TERM_L_UMBER */
 };
 
 
@@ -388,47 +388,47 @@ AEEventHandlerUPP AEH_Open_UPP;
  * Store this filename in 'buf' (make sure it is long enough)
  * Note that 'fname' looks to be a "pascal" string
  */
-static void refnum_to_name(char *buf,long refnum,short vrefnum,char *fname)
+static void refnum_to_name(char *buf, long refnum, short vrefnum, char *fname)
 {
-    DirInfo pb;
-    Str255 name;
-    int err;
-    int i, j;
+	DirInfo pb;
+	Str255 name;
+	int err;
+	int i, j;
 
-    char res[1000];
+	char res[1000];
 
-    i=999;
+	i=999;
 
-    res[i]=0; i--;
-    for (j=1; j<=fname[0]; j++)
-    {
-        res[i-fname[0]+j] = fname[j];
-    }
-    i-=fname[0];
+	res[i]=0; i--;
+	for (j=1; j<=fname[0]; j++)
+	{
+		res[i-fname[0]+j] = fname[j];
+	}
+	i-=fname[0];
 
-    pb.ioCompletion=NULL;
-    pb.ioNamePtr=name;
-    pb.ioVRefNum=vrefnum;
-    pb.ioDrParID=refnum;
-    pb.ioFDirIndex=-1;
+	pb.ioCompletion=NULL;
+	pb.ioNamePtr=name;
+	pb.ioVRefNum=vrefnum;
+	pb.ioDrParID=refnum;
+	pb.ioFDirIndex=-1;
 
-    while (1)
-    {
-        pb.ioDrDirID=pb.ioDrParID;
-        err = PBGetCatInfo((CInfoPBPtr)&pb,FALSE);
-        res[i] = ':'; i--;
-        for(j=1; j<=name[0]; j++)
-        {
-            res[i-name[0]+j] = name[j];
-        }
-        i -= name[0];
+	while (1)
+	{
+		pb.ioDrDirID=pb.ioDrParID;
+		err = PBGetCatInfo((CInfoPBPtr)&pb, FALSE);
+		res[i] = ':'; i--;
+		for (j=1; j<=name[0]; j++)
+		{
+			res[i-name[0]+j] = name[j];
+		}
+		i -= name[0];
 
-        if (pb.ioDrDirID == fsRtDirID) break;
-    }
+		if (pb.ioDrDirID == fsRtDirID) break;
+	}
 
-    /* Extract the result */
-    for (j = 0, i++; res[i]; j++, i++) buf[j] = res[i];
-    buf[j] = 0;
+	/* Extract the result */
+	for (j = 0, i++; res[i]; j++, i++) buf[j] = res[i];
+	buf[j] = 0;
 }
 
 
@@ -439,39 +439,39 @@ static void refnum_to_name(char *buf,long refnum,short vrefnum,char *fname)
  */
 static bool askfor_file(char *buf, int len)
 {
-    SFReply reply;
-    Str255 dflt;
-    Point topleft;
-    short vrefnum;
-    long drefnum,junk;
+	SFReply reply;
+	Str255 dflt;
+	Point topleft;
+	short vrefnum;
+	long drefnum, junk;
 
-    /* Default file name */
-    sprintf((char*)dflt + 1, "%s's description", buf);
-    dflt[0] = strlen((char*)dflt + 1);
+	/* Default file name */
+	sprintf((char*)dflt + 1, "%s's description", buf);
+	dflt[0] = strlen((char*)dflt + 1);
 
-    /* Ask for a file name */
-    topleft.h=(qd.screenBits.bounds.left+qd.screenBits.bounds.right)/2-344/2;
-    topleft.v=(2*qd.screenBits.bounds.top+qd.screenBits.bounds.bottom)/3-188/2;
-    SFPutFile(topleft,"\pSelect a filename:", dflt, NULL, &reply);
-    /* StandardPutFile("\pSelect a filename:", dflt, &reply); */
+	/* Ask for a file name */
+	topleft.h=(qd.screenBits.bounds.left+qd.screenBits.bounds.right)/2-344/2;
+	topleft.v=(2*qd.screenBits.bounds.top+qd.screenBits.bounds.bottom)/3-188/2;
+	SFPutFile(topleft, "\pSelect a filename:", dflt, NULL, &reply);
+	/* StandardPutFile("\pSelect a filename:", dflt, &reply); */
 
-    /* Process */
-    if (reply.good)
-    {
-        int fc;
+	/* Process */
+	if (reply.good)
+	{
+		int fc;
 
-        /* Get info */
-        GetWDInfo(reply.vRefNum, &vrefnum, &drefnum, &junk);
+		/* Get info */
+		GetWDInfo(reply.vRefNum, &vrefnum, &drefnum, &junk);
 
-        /* Extract the name */
-        refnum_to_name(buf, drefnum, vrefnum, (char*)reply.fName);
+		/* Extract the name */
+		refnum_to_name(buf, drefnum, vrefnum, (char*)reply.fName);
 
-        /* Success */
-        return (TRUE);
-    }
+		/* Success */
+		return (TRUE);
+	}
 
-    /* Failure */
-    return (FALSE);
+	/* Failure */
+	return (FALSE);
 }
 
 #endif
@@ -483,14 +483,14 @@ static bool askfor_file(char *buf, int len)
  */
 static void center_rect(Rect *r, Rect *s)
 {
-    int centerx = (s->left + s->right)/2;
-    int centery = (2*s->top + s->bottom)/3;
-    int dx = centerx - (r->right - r->left)/2 - r->left;
-    int dy = centery - (r->bottom - r->top)/2 - r->top;
-    r->left += dx;
-    r->right += dx;
-    r->top += dy;
-    r->bottom += dy;
+	int centerx = (s->left + s->right)/2;
+	int centery = (2*s->top + s->bottom)/3;
+	int dx = centerx - (r->right - r->left)/2 - r->left;
+	int dy = centery - (r->bottom - r->top)/2 - r->top;
+	r->left += dx;
+	r->right += dx;
+	r->top += dy;
+	r->bottom += dy;
 }
 
 
@@ -503,16 +503,16 @@ static void center_rect(Rect *r, Rect *s)
  */
 static void ptocstr(StringPtr src)
 {
-    int i;
+	int i;
 
-    /* Hack -- pointer */
-    char *s = (char*)(src);
+	/* Hack -- pointer */
+	char *s = (char*)(src);
 
-    /* Hack -- convert the string */
-    for (i = s[0]; i; i--, s++) s[0] = s[1];
+	/* Hack -- convert the string */
+	for (i = s[0]; i; i--, s++) s[0] = s[1];
 
-    /* Hack -- terminate the string */
-    s[0] = '\0';
+	/* Hack -- terminate the string */
+	s[0] = '\0';
 }
 
 
@@ -531,11 +531,11 @@ static void ptocstr(StringPtr src)
  */
 static void pstrcat(StringPtr dst, StringPtr src)
 {
-    /* copy string in */
-    BlockMove(src + 1, dst + *dst + 1, *src);
+	/* copy string in */
+	BlockMove(src + 1, dst + *dst + 1, *src);
 
-    /* adjust length byte */
-    *dst += *src;
+	/* adjust length byte */
+	*dst += *src;
 }
 
 /*
@@ -543,37 +543,37 @@ static void pstrcat(StringPtr dst, StringPtr src)
  */
 static void pstrinsert(StringPtr dst, StringPtr src)
 {
-    /* make room for new string */
-    BlockMove(dst + 1, dst + *src + 1, *dst);
+	/* make room for new string */
+	BlockMove(dst + 1, dst + *src + 1, *dst);
 
-    /* copy new string in */	
-    BlockMove(src + 1, dst + 1, *src);
+	/* copy new string in */
+	BlockMove(src + 1, dst + 1, *src);
 
-    /* adjust length byte */		
-    *dst += *src;
+	/* adjust length byte */
+	*dst += *src;
 }
 
 static void PathNameFromDirID(long dirID, short vRefNum, StringPtr fullPathName)
 {
-    CInfoPBRec	block;
-    Str255	directoryName;
-    OSErr	err;
+	CInfoPBRec	block;
+	Str255	directoryName;
+	OSErr	err;
 
-    fullPathName[0] = '\0';
+	fullPathName[0] = '\0';
 
-    block.dirInfo.ioDrParID = dirID;
-    block.dirInfo.ioNamePtr = directoryName;
+	block.dirInfo.ioDrParID = dirID;
+	block.dirInfo.ioNamePtr = directoryName;
 
-    while (1)
-    {
-        block.dirInfo.ioVRefNum = vRefNum;
-        block.dirInfo.ioFDirIndex = -1;
-        block.dirInfo.ioDrDirID = block.dirInfo.ioDrParID;
-        err = PBGetCatInfo(&block,FALSE);
-        pstrcat(directoryName, (StringPtr)"\p:");
-        pstrinsert(fullPathName, directoryName);
-        if (block.dirInfo.ioDrDirID == 2) break;
-    }
+	while (1)
+	{
+		block.dirInfo.ioVRefNum = vRefNum;
+		block.dirInfo.ioFDirIndex = -1;
+		block.dirInfo.ioDrDirID = block.dirInfo.ioDrParID;
+		err = PBGetCatInfo(&block, FALSE);
+		pstrcat(directoryName, (StringPtr)"\p:");
+		pstrinsert(fullPathName, directoryName);
+		if (block.dirInfo.ioDrDirID == 2) break;
+	}
 }
 
 #endif
@@ -585,15 +585,15 @@ static void PathNameFromDirID(long dirID, short vRefNum, StringPtr fullPathName)
  */
 static void activate(WindowPtr w)
 {
-    /* Activate */
-    if (active != w)
-    {
-        /* Activate */
-        if (w) SetPort(w);
+	/* Activate */
+	if (active != w)
+	{
+		/* Activate */
+		if (w) SetPort(w);
 
-        /* Remember */
-        active = w;
-    }
+		/* Remember */
+		active = w;
+	}
 }
 
 
@@ -602,22 +602,22 @@ static void activate(WindowPtr w)
  */
 static void mac_warning(cptr warning)
 {
-    Str255 text;
-    int len,i;
+	Str255 text;
+	int len, i;
 
-    /* Limit of 250 chars */
-    len = strlen(warning);
-    if (len > 250) len = 250;
+	/* Limit of 250 chars */
+	len = strlen(warning);
+	if (len > 250) len = 250;
 
-    /* Make a "Pascal" string */
-    text[0] = len;
-    for (i=0; i<len; i++) text[i+1] = warning[i];
+	/* Make a "Pascal" string */
+	text[0] = len;
+	for (i=0; i<len; i++) text[i+1] = warning[i];
 
-    /* Prepare the dialog box values */
-    ParamText(text, "\p", "\p", "\p");
+	/* Prepare the dialog box values */
+	ParamText(text, "\p", "\p", "\p");
 
-    /* Display the Alert, wait for Okay */
-    Alert(129,0L);
+	/* Display the Alert, wait for Okay */
+	Alert(129, 0L);
 }
 
 
@@ -634,19 +634,19 @@ static void mac_warning(cptr warning)
  */
 static void term_data_redraw(term_data *td)
 {
-    term *old = Term;
+	term *old = Term;
 
-    /* Activate the term */
-    Term_activate(&td->t);
+	/* Activate the term */
+	Term_activate(td->t);
 
-    /* Redraw the contents */
-    Term_redraw();
+	/* Redraw the contents */
+	Term_redraw();
 
-    /* Flush the output */
-    Term_fresh();
+	/* Flush the output */
+	Term_fresh();
 
-    /* Restore the old term */
-    Term_activate(old);
+	/* Restore the old term */
+	Term_activate(old);
 }
 
 
@@ -655,14 +655,14 @@ static void term_data_redraw(term_data *td)
  */
 static void term_data_resize(term_data *td)
 {
-    /* Actually resize the window */
-    SizeWindow(td->w, td->size_wid, td->size_hgt, 0);
+	/* Actually resize the window */
+	SizeWindow(td->w, td->size_wid, td->size_hgt, 0);
 
-    /* Redraw Contents */
-    term_data_redraw(td);
+	/* Redraw Contents */
+	term_data_redraw(td);
 
-    /* No need to redraw */
-    ValidRect(&td->w->portRect);
+	/* No need to redraw */
+	ValidRect(&td->w->portRect);
 }
 
 
@@ -685,66 +685,66 @@ static void term_data_resize(term_data *td)
  */
 static void Term_init_mac(term *t)
 {
-    term_data *td = (term_data*)(t->data);
+	term_data *td = (term_data*)(t->data);
 
-    Str255 title;
+	Str255 title;
 
-    /* Extract the title */
-    strcpy((char*)(title+1), td->s);
-    title[0] = strlen(td->s);
+	/* Extract the title */
+	strcpy((char*)(title+1), td->s);
+	title[0] = strlen(td->s);
 
-    /* Make the window */
-    if (has_color)
-    {
-        td->w = NewCWindow(0,&td->r,title,td->mapped,documentProc,(WindowPtr)-1,1,0L);
-    }
-    else
-    {
-        td->w = NewWindow(0,&td->r,title,td->mapped,documentProc,(WindowPtr)-1,1,0L);
-    }
+	/* Make the window */
+	if (has_color)
+	{
+		td->w = NewCWindow(0, &td->r, title, td->mapped, documentProc, (WindowPtr)-1, 1, 0L);
+	}
+	else
+	{
+		td->w = NewWindow(0, &td->r, title, td->mapped, documentProc, (WindowPtr)-1, 1, 0L);
+	}
 
-    /* Activate the window */
-    activate(td->w);
+	/* Activate the window */
+	activate(td->w);
 
-    /* Hack -- set "mapped" flag */
-    t->mapped_flag = td->mapped;
+	/* Hack -- set "mapped" flag */
+	t->mapped_flag = td->mapped;
 
-    /* Erase behind words */
-    TextMode(srcCopy);
+	/* Erase behind words */
+	TextMode(srcCopy);
 
-    /* Activate the font */
-    TextFont(td->font_id);
-    TextSize(td->font_size);
-    TextFace(td->font_face);
-
-
-    /* Prepare the colors (real colors) */
-    if (has_color)
-    {
-        RGBBackColor(&mac_clr[TERM_DARK]);
-        RGBForeColor(&mac_clr[TERM_WHITE]);
-    }
-
-    /* Prepare the colors (base colors) */
-    else
-    {
-        BackColor(blackColor);
-        ForeColor(whiteColor);
-    }
+	/* Activate the font */
+	TextFont(td->font_id);
+	TextSize(td->font_size);
+	TextFace(td->font_face);
 
 
-    /* Activate the color if needed */
-    if (has_color) RGBForeColor(&mac_clr[TERM_WHITE]);
+	/* Prepare the colors (real colors) */
+	if (has_color)
+	{
+		RGBBackColor(&mac_clr[TERM_DARK]);
+		RGBForeColor(&mac_clr[TERM_WHITE]);
+	}
+
+	/* Prepare the colors (base colors) */
+	else
+	{
+		BackColor(blackColor);
+		ForeColor(whiteColor);
+	}
 
 
-    /* Clip to the window */
-    ClipRect(&td->w->portRect);
+	/* Activate the color if needed */
+	if (has_color) RGBForeColor(&mac_clr[TERM_WHITE]);
 
-    /* Erase the window */
-    EraseRect(&td->w->portRect);
 
-    /* Invalidate the window */
-    InvalRect(&td->w->portRect);
+	/* Clip to the window */
+	ClipRect(&td->w->portRect);
+
+	/* Erase the window */
+	EraseRect(&td->w->portRect);
+
+	/* Invalidate the window */
+	InvalRect(&td->w->portRect);
 }
 
 
@@ -754,9 +754,10 @@ static void Term_init_mac(term *t)
  */
 static void Term_nuke_mac(term *t)
 {
-    #pragma unused (t)
 
-    /* XXX */
+#pragma unused (t)
+
+	/* XXX */
 }
 
 
@@ -766,30 +767,30 @@ static void Term_nuke_mac(term *t)
  */
 static errr Term_xtra_mac_react(void)
 {
-    int i;
+	int i;
 
-    /* Check colors */
-    if (has_color)
-    {
-        u16b rv, gv, bv;
+	/* Check colors */
+	if (has_color)
+	{
+		u16b rv, gv, bv;
 
-        /* Grab "color_table" */
-        for (i = 0; i < 16; i++)
-        {
-            /* Extract the R,G,B data */
-            rv = color_table[i][1];
-            gv = color_table[i][2];
-            bv = color_table[i][3];
+		/* Grab "color_table" */
+		for (i = 0; i < 16; i++)
+		{
+			/* Extract the R,G,B data */
+			rv = color_table[i][1];
+			gv = color_table[i][2];
+			bv = color_table[i][3];
 
-            /* Save the new R,G,B values */
-            mac_clr[i].red = (rv | (rv << 8));
-            mac_clr[i].green = (gv | (gv << 8));
-            mac_clr[i].blue = (bv | (bv << 8));
-        }
-    }
+			/* Save the new R,G,B values */
+			mac_clr[i].red = (rv | (rv << 8));
+			mac_clr[i].green = (gv | (gv << 8));
+			mac_clr[i].blue = (bv | (bv << 8));
+		}
+	}
 
-    /* Success */
-    return (0);
+	/* Success */
+	return (0);
 }
 
 
@@ -798,95 +799,118 @@ static errr Term_xtra_mac_react(void)
  */
 static errr Term_xtra_mac(int n, int v)
 {
-    term_data *td = (term_data*)(Term->data);
+	term_data *td = (term_data*)(Term->data);
 
-    Rect r;
+	Rect r;
 
-    /* Analyze */
-    switch (n)
-    {
-        /* Make a noise */
-        case TERM_XTRA_NOISE:
+	/* Analyze */
+	switch (n)
+	{
+		/* Make a noise */
+		case TERM_XTRA_NOISE:
+		{
+			/* Make a noise */
+			SysBeep(1);
 
-            /* Make a noise */
-            SysBeep(1);
+			/* Success */
+			return (0);
+		}
 
-            /* Success */
-            return (0);
+		/* Process random events */
+		case TERM_XTRA_BORED:
+		{
+			/* Process an event */
+			(void)CheckEvents(0);
 
-        /* Process random events */
-        case TERM_XTRA_BORED:
+			/* Success */
+			return (0);
+		}
 
-            /* Process an event */
-            (void)CheckEvents(0);
+		/* Process pending events */
+		case TERM_XTRA_EVENT:
+		{
+			/* Process an event */
+			(void)CheckEvents(v);
 
-            /* Success */
-            return (0);
+			/* Success */
+			return (0);
+		}
 
-        /* Process pending events */
-        case TERM_XTRA_EVENT:
+		/* Flush all pending events (if any) */
+		case TERM_XTRA_FLUSH:
+		{
+			/* Hack -- flush all events */
+			while (CheckEvents(TRUE)) /* loop */;
 
-            /* Process an event */
-            (void)CheckEvents(v);
+			/* Success */
+			return (0);
+		}
 
-            /* Success */
-            return (0);
+		/* Hack -- Change the "soft level" */
+		case TERM_XTRA_LEVEL:
+		{
+			/* Activate if requested */
+			if (v) activate(td->w);
 
-        /* Flush all pending events (if any) */
-        case TERM_XTRA_FLUSH:
+			/* Success */
+			return (0);
+		}
 
-            /* Hack -- flush all events */
-            while (CheckEvents(TRUE)) ;
+		/* Clear the screen */
+		case TERM_XTRA_CLEAR:
+		{
+			/* No clipping XXX XXX XXX */
+			ClipRect(&td->w->portRect);
 
-            /* Success */
-            return (0);
+			/* Erase the window */
+			EraseRect(&td->w->portRect);
 
-        /* Hack -- Change the "soft level" */
-        case TERM_XTRA_LEVEL:
+			/* Activate the color if needed */
+			if (has_color) RGBForeColor(&mac_clr[TERM_WHITE]);
 
-            /* Activate if requested */
-            if (v) activate(td->w);
+			/* Frame the window in white */
+			MoveTo(0, 0);
+			LineTo(0, td->size_hgt-1);
+			LineTo(td->size_wid-1, td->size_hgt-1);
+			LineTo(td->size_wid-1, 0);
 
-            /* Success */
-            return (0);
+			/* Clip to the new size */
+			r.left = td->w->portRect.left + td->size_ow1;
+			r.top = td->w->portRect.top + td->size_oh1;
+			r.right = td->w->portRect.right - td->size_ow2;
+			r.bottom = td->w->portRect.bottom - td->size_oh2;
+			ClipRect(&r);
 
-        /* Clear the screen */
-        case TERM_XTRA_CLEAR:
+			/* Success */
+			return (0);
+		}
 
-            /* No clipping XXX XXX XXX */
-            ClipRect(&td->w->portRect);
+		/* React to changes */
+		case TERM_XTRA_REACT:
+		{
+			/* React to changes */
+			return (Term_xtra_mac_react());
+		}
 
-            /* Erase the window */
-            EraseRect(&td->w->portRect);
+		/* Delay (milliseconds) */
+		case TERM_XTRA_DELAY:
+		{
+			/* If needed */
+			if (v > 0)
+			{
+				long m = TickCount() + (v * 60L) / 1000;
 
-            /* Activate the color if needed */
-            if (has_color) RGBForeColor(&mac_clr[TERM_WHITE]);
+				/* Wait for it */
+				while (TickCount() < m) /* loop */;
+			}
 
-            /* Frame the window in white */
-            MoveTo(0, 0);
-            LineTo(0, td->size_hgt-1);
-            LineTo(td->size_wid-1, td->size_hgt-1);
-            LineTo(td->size_wid-1, 0);
+			/* Success */
+			return (0);
+		}
+	}
 
-            /* Clip to the new size */
-            r.left = td->w->portRect.left + td->size_ow1;
-            r.top = td->w->portRect.top + td->size_oh1;
-            r.right = td->w->portRect.right - td->size_ow2;
-            r.bottom = td->w->portRect.bottom - td->size_oh2;
-            ClipRect(&r);
-
-            /* Success */
-            return (0);
-
-        /* React to changes */
-        case TERM_XTRA_REACT:
-
-            /* React to changes */
-            return (Term_xtra_mac_react());
-    }
-
-    /* Oops */
-    return (1);
+	/* Oops */
+	return (1);
 }
 
 
@@ -899,22 +923,22 @@ static errr Term_xtra_mac(int n, int v)
  */
 static errr Term_curs_mac(int x, int y)
 {
-    Rect r;
+	Rect r;
 
-    term_data *td = (term_data*)(Term->data);
+	term_data *td = (term_data*)(Term->data);
 
-    /* Activate the color if needed */
-    if (has_color) RGBForeColor(&mac_clr[TERM_YELLOW]);
+	/* Activate the color if needed */
+	if (has_color) RGBForeColor(&mac_clr[TERM_YELLOW]);
 
-    /* Frame the grid */
-    r.left = x * td->font_wid + td->size_ow1;
-    r.right = r.left + td->font_wid;
-    r.top = y * td->font_hgt + td->size_oh1;
-    r.bottom = r.top + td->font_hgt;
-    FrameRect(&r);
+	/* Frame the grid */
+	r.left = x * td->font_wid + td->size_ow1;
+	r.right = r.left + td->font_wid;
+	r.top = y * td->font_hgt + td->size_oh1;
+	r.bottom = r.top + td->font_hgt;
+	FrameRect(&r);
 
-    /* Success */
-    return (0);
+	/* Success */
+	return (0);
 }
 
 
@@ -925,19 +949,19 @@ static errr Term_curs_mac(int x, int y)
  */
 static errr Term_wipe_mac(int x, int y, int n)
 {
-    Rect r;
+	Rect r;
 
-    term_data *td = (term_data*)(Term->data);
+	term_data *td = (term_data*)(Term->data);
 
-    /* Erase the block of characters */
-    r.left = x * td->font_wid + td->size_ow1;
-    r.right = r.left + n * td->font_wid;
-    r.top = y * td->font_hgt + td->size_oh1;
-    r.bottom = r.top + td->font_hgt;
-    EraseRect(&r);
+	/* Erase the block of characters */
+	r.left = x * td->font_wid + td->size_ow1;
+	r.right = r.left + n * td->font_wid;
+	r.top = y * td->font_hgt + td->size_oh1;
+	r.bottom = r.top + td->font_hgt;
+	EraseRect(&r);
 
-    /* Success */
-    return (0);
+	/* Success */
+	return (0);
 }
 
 
@@ -950,28 +974,28 @@ static errr Term_wipe_mac(int x, int y, int n)
  */
 static errr Term_text_mac(int x, int y, int n, byte a, cptr s)
 {
-    int xp, yp;
+	int xp, yp;
 
-    term_data *td = (term_data*)(Term->data);
+	term_data *td = (term_data*)(Term->data);
 
-    /* Activate the color if needed */
-    if (has_color) RGBForeColor(&mac_clr[a & 0x0F]);
+	/* Activate the color if needed */
+	if (has_color) RGBForeColor(&mac_clr[a & 0x0F]);
 
-    /* Starting pixel */
-    xp = x * td->font_wid + td->font_o_x + td->size_ow1;
-    yp = y * td->font_hgt + td->font_o_y + td->size_oh1;
+	/* Starting pixel */
+	xp = x * td->font_wid + td->font_o_x + td->size_ow1;
+	yp = y * td->font_hgt + td->font_o_y + td->size_oh1;
 
-    /* Move to the correct location */
-    MoveTo(xp, yp);
+	/* Move to the correct location */
+	MoveTo(xp, yp);
 
-    /* Draw the character */
-    if (n == 1) DrawChar(*s);
+	/* Draw the character */
+	if (n == 1) DrawChar(*s);
 
-    /* Draw the string */
-    else DrawText(s, 0, n);
+	/* Draw the string */
+	else DrawText(s, 0, n);
 
-    /* Success */
-    return (0);
+	/* Success */
+	return (0);
 }
 
 
@@ -979,39 +1003,48 @@ static errr Term_text_mac(int x, int y, int n, byte a, cptr s)
 
 
 /*
- * Create and initialize a "term_data" given a title
+ * Create and initialize window number "i"
  */
-static void term_data_link(term_data *td)
+static void term_data_link(int i)
 {
-    term *t = &td->t;
+	term *old = Term;
 
+	term_data *td = &data[i];
 
-    /* Initialize the term */
-    term_init(t, 80, 24, td->keys);
+	/* Allocate */
+	MAKE(td->t, term);
 
-    /* Use a "software" cursor */
-    t->soft_cursor = TRUE;
+	/* Initialize the term */
+	term_init(td->t, td->cols, td->rows, td->keys);
 
-    /* Erase with "white space" */
-    t->attr_blank = TERM_WHITE;
-    t->char_blank = ' ';
+	/* Use a "software" cursor */
+	td->t->soft_cursor = TRUE;
 
-    /* Prepare the init/nuke hooks */
-    t->init_hook = Term_init_mac;
-    t->nuke_hook = Term_nuke_mac;
+	/* Erase with "white space" */
+	td->t->attr_blank = TERM_WHITE;
+	td->t->char_blank = ' ';
 
-    /* Prepare the template hooks */
-    t->xtra_hook = Term_xtra_mac;
-    t->curs_hook = Term_curs_mac;
-    t->wipe_hook = Term_wipe_mac;
-    t->text_hook = Term_text_mac;
+	/* Prepare the init/nuke hooks */
+	td->t->init_hook = Term_init_mac;
+	td->t->nuke_hook = Term_nuke_mac;
 
-    /* Remember where we came from */
-    t->data = (vptr)(td);
+	/* Prepare the function hooks */
+	td->t->xtra_hook = Term_xtra_mac;
+	td->t->curs_hook = Term_curs_mac;
+	td->t->wipe_hook = Term_wipe_mac;
+	td->t->text_hook = Term_text_mac;
 
+	/* Link the local structure */
+	td->t->data = (vptr)(td);
 
-    /* Activate it */
-    Term_activate(t);
+	/* Activate it */
+	Term_activate(td->t);
+
+	/* Global pointer */
+	ang_term[i] = td->t;
+
+	/* Activate old */
+	Term_activate(old);
 }
 
 
@@ -1031,36 +1064,36 @@ static void term_data_link(term_data *td)
  */
 static void SetupAppDir(void)
 {
-    FCBPBRec fcbBlock;
-    OSErr err = noErr;
-    char errString[100];
+	FCBPBRec fcbBlock;
+	OSErr err = noErr;
+	char errString[100];
 
-    /* Get the location of the Angband executable */
-    fcbBlock.ioCompletion = NULL;
-    fcbBlock.ioNamePtr = NULL;
-    fcbBlock.ioVRefNum = 0;
-    fcbBlock.ioRefNum = CurResFile();
-    fcbBlock.ioFCBIndx = 0;
-    err = PBGetFCBInfo(&fcbBlock, FALSE);
-    if (err != noErr)
-    {
-        sprintf(errString, "Fatal PBGetFCBInfo Error #%d.\r Exiting.", err);
-        mac_warning(errString);
-        ExitToShell();
-    }
+	/* Get the location of the Angband executable */
+	fcbBlock.ioCompletion = NULL;
+	fcbBlock.ioNamePtr = NULL;
+	fcbBlock.ioVRefNum = 0;
+	fcbBlock.ioRefNum = CurResFile();
+	fcbBlock.ioFCBIndx = 0;
+	err = PBGetFCBInfo(&fcbBlock, FALSE);
+	if (err != noErr)
+	{
+		sprintf(errString, "Fatal PBGetFCBInfo Error #%d.\r Exiting.", err);
+		mac_warning(errString);
+		ExitToShell();
+	}
 
-    /* Extract the Vol and Dir */
-    app_vol = fcbBlock.ioFCBVRefNum;
-    app_dir = fcbBlock.ioFCBParID;
+	/* Extract the Vol and Dir */
+	app_vol = fcbBlock.ioFCBVRefNum;
+	app_dir = fcbBlock.ioFCBParID;
 
-    /* Set the current working directory to that location */
-    err = HSetVol(NULL, app_vol, app_dir);
-    if (err != noErr)
-    {
-        sprintf(errString, "Fatal HSetVol Error #%d.\r Exiting.", err);
-        mac_warning(errString);
-        ExitToShell();
-    }
+	/* Set the current working directory to that location */
+	err = HSetVol(NULL, app_vol, app_dir);
+	if (err != noErr)
+	{
+		sprintf(errString, "Fatal HSetVol Error #%d.\r Exiting.", err);
+		mac_warning(errString);
+		ExitToShell();
+	}
 }
 
 
@@ -1071,51 +1104,51 @@ static void SetupAppDir(void)
  */
 static void term_data_check_font(term_data *td)
 {
-    Rect r;
-    WindowPtr tmpw;
-    FontInfo info;
+	Rect r;
+	WindowPtr tmpw;
+	FontInfo info;
 
-    WindowPtr old = active;
+	WindowPtr old = active;
 
-    /* Fake window */
-    r.left = r.right = r.top = r.bottom = 0;
-    tmpw = NewWindow(0, &r, "\p", false, documentProc, 0, 0, 0);
+	/* Fake window */
+	r.left = r.right = r.top = r.bottom = 0;
+	tmpw = NewWindow(0, &r, "\p", false, documentProc, 0, 0, 0);
 
-    /* Activate the "fake" window */
-    activate(tmpw);
+	/* Activate the "fake" window */
+	activate(tmpw);
 
-    /* Prepare the font */
-    TextFont(td->font_id);
-    TextSize(td->font_size);
-    TextFace(td->font_face);
+	/* Prepare the font */
+	TextFont(td->font_id);
+	TextSize(td->font_size);
+	TextFace(td->font_face);
 
-    /* Extract the font info */
-    GetFontInfo(&info);
+	/* Extract the font info */
+	GetFontInfo(&info);
 
-    /* Extract the font sizing values XXX XXX XXX */
-    td->font_wid = CharWidth('@'); /* info.widMax; */
-    td->font_hgt = info.ascent + info.descent;
-    td->font_o_x = 0;
-    td->font_o_y = info.ascent;
+	/* Extract the font sizing values XXX XXX XXX */
+	td->font_wid = CharWidth('@'); /* info.widMax; */
+	td->font_hgt = info.ascent + info.descent;
+	td->font_o_x = 0;
+	td->font_o_y = info.ascent;
 
-    /* Assume mono-spaced */
-    td->fake = FALSE;
+	/* Assume mono-spaced */
+	td->fake = FALSE;
 
-    /* Hack -- notice non-mono-space */
-    if (CharWidth('i') != td->font_wid) td->fake = TRUE;
-    if (CharWidth('1') != td->font_wid) td->fake = TRUE;
+	/* Hack -- notice non-mono-space */
+	if (CharWidth('i') != td->font_wid) td->fake = TRUE;
+	if (CharWidth('1') != td->font_wid) td->fake = TRUE;
 
-    /* Mega-Hack -- no width at all */
-    if (td->font_wid < 1) td->fake = TRUE;
+	/* Mega-Hack -- no width at all */
+	if (td->font_wid < 1) td->fake = TRUE;
 
-    /* Mega-Hack -- enforce some width */
-    if (td->font_wid < 1) td->font_wid = 8;
+	/* Mega-Hack -- enforce some width */
+	if (td->font_wid < 1) td->font_wid = 8;
 
-    /* Destroy the old window */
-    DisposeWindow(tmpw);
+	/* Destroy the old window */
+	DisposeWindow(tmpw);
 
-    /* Re-activate the old window */
-    activate(old);
+	/* Re-activate the old window */
+	activate(old);
 }
 
 
@@ -1124,37 +1157,41 @@ static void term_data_check_font(term_data *td)
  */
 static void term_data_check_size(term_data *td)
 {
-    /* Calculate full window size */
-    td->size_wid = td->cols * td->font_wid + td->size_ow1 + td->size_ow2;
-    td->size_hgt = td->rows * td->font_hgt + td->size_oh1 + td->size_oh2;
+	/* Minimal size */
+	if (td->cols < 1) td->cols = 1;
+	if (td->rows < 1) td->rows = 1;
 
-    /* Verify the top */
-    if (td->r.top > qd.screenBits.bounds.bottom - td->size_hgt)
-    {
-        td->r.top = qd.screenBits.bounds.bottom - td->size_hgt;
-    }
+	/* Calculate full window size */
+	td->size_wid = td->cols * td->font_wid + td->size_ow1 + td->size_ow2;
+	td->size_hgt = td->rows * td->font_hgt + td->size_oh1 + td->size_oh2;
 
-    /* Verify the top */
-    if (td->r.top < qd.screenBits.bounds.top + 30)
-    {
-        td->r.top = qd.screenBits.bounds.top + 30;
-    }
+	/* Verify the top */
+	if (td->r.top > qd.screenBits.bounds.bottom - td->size_hgt)
+	{
+		td->r.top = qd.screenBits.bounds.bottom - td->size_hgt;
+	}
 
-    /* Verify the left */
-    if (td->r.left > qd.screenBits.bounds.right - td->size_wid)
-    {
-        td->r.left = qd.screenBits.bounds.right - td->size_wid;
-    }
+	/* Verify the top */
+	if (td->r.top < qd.screenBits.bounds.top + 30)
+	{
+		td->r.top = qd.screenBits.bounds.top + 30;
+	}
 
-    /* Verify the left */
-    if (td->r.left < qd.screenBits.bounds.left)
-    {
-        td->r.left = qd.screenBits.bounds.left;
-    }
+	/* Verify the left */
+	if (td->r.left > qd.screenBits.bounds.right - td->size_wid)
+	{
+		td->r.left = qd.screenBits.bounds.right - td->size_wid;
+	}
 
-    /* Calculate bottom right corner */
-    td->r.right = td->r.left + td->size_wid;
-    td->r.bottom = td->r.top + td->size_hgt;
+	/* Verify the left */
+	if (td->r.left < qd.screenBits.bounds.left)
+	{
+		td->r.left = qd.screenBits.bounds.left;
+	}
+
+	/* Calculate bottom right corner */
+	td->r.right = td->r.left + td->size_wid;
+	td->r.bottom = td->r.top + td->size_hgt;
 }
 
 
@@ -1169,10 +1206,10 @@ static FILE *fff;
  */
 static int getshort(void)
 {
-    int x = 0;
-    char buf[256];
-    if (0 == my_fgets(fff, buf, 256)) x = atoi(buf);
-    return (x);
+	int x = 0;
+	char buf[256];
+	if (0 == my_fgets(fff, buf, 256)) x = atoi(buf);
+	return (x);
 }
 
 /*
@@ -1180,7 +1217,7 @@ static int getshort(void)
  */
 static void putshort(int x)
 {
-    fprintf(fff, "%d\n", x);
+	fprintf(fff, "%d\n", x);
 }
 
 
@@ -1188,126 +1225,39 @@ static void putshort(int x)
 /*
  * Write the "preference" data to the current "file"
  */
-static void save_prefs()
+static void save_prefs(void)
 {
-    Point p;
+	int i;
 
-    term_data *td;
-
-    WindowPtr old_win;
-
-    old_win = active;
+	term_data *td;
 
 
-    /*** The current version ***/
+	/*** The current version ***/
 
-    putshort(VERSION_MAJOR);
-    putshort(VERSION_MINOR);
-    putshort(VERSION_PATCH);
-    putshort(VERSION_EXTRA);
-
-
-    /*** The "screen" info ***/
-
-    td = &screen;
-
-    activate(td->w);
-
-    putshort(td->mapped);
-
-    putshort(td->font_id);
-    putshort(td->font_size);
-    putshort(td->font_face);
-
-    putshort(td->cols);
-    putshort(td->rows);
-
-    p.h = td->w->portRect.left;
-    p.v = td->w->portRect.top;
-    LocalToGlobal(&p);
-    putshort(p.h);
-    putshort(p.v);
+	putshort(VERSION_MAJOR);
+	putshort(VERSION_MINOR);
+	putshort(VERSION_PATCH);
+	putshort(VERSION_EXTRA);
 
 
-    /*** The "mirror" info ***/
+	/* Dump */
+	for (i = 0; i < MAX_TERM_DATA; i++)
+	{
+		/* Access */
+		td = &data[i];
 
-#ifdef GRAPHIC_MIRROR
+		putshort(td->mapped);
 
-    td = &mirror;
+		putshort(td->font_id);
+		putshort(td->font_size);
+		putshort(td->font_face);
 
-    activate(td->w);
+		putshort(td->cols);
+		putshort(td->rows);
 
-    putshort(td->mapped);
-
-    putshort(td->font_id);
-    putshort(td->font_size);
-    putshort(td->font_face);
-
-    putshort(td->cols);
-    putshort(td->rows);
-
-    p.h = td->w->portRect.left;
-    p.v = td->w->portRect.top;
-    LocalToGlobal(&p);
-    putshort(p.h);
-    putshort(p.v);
-
-#endif /* GRAPHIC_MIRROR */
-
-
-    /*** The "recall" info ***/
-
-#ifdef GRAPHIC_RECALL
-
-    td = &recall;
-
-    activate(td->w);
-
-    putshort(td->mapped);
-
-    putshort(td->font_id);
-    putshort(td->font_size);
-    putshort(td->font_face);
-
-    putshort(td->cols);
-    putshort(td->rows);
-
-    p.h = td->w->portRect.left;
-    p.v = td->w->portRect.top;
-    LocalToGlobal(&p);
-    putshort(p.h);
-    putshort(p.v);
-
-#endif /* GRAPHIC_RECALL */
-
-
-    /*** The "choice" info ***/
-
-#ifdef GRAPHIC_CHOICE
-
-    td = &choice;
-
-    activate(td->w);
-
-    putshort(td->mapped);
-
-    putshort(td->font_id);
-    putshort(td->font_size);
-    putshort(td->font_face);
-
-    putshort(td->cols);
-    putshort(td->rows);
-
-    p.h = td->w->portRect.left;
-    p.v = td->w->portRect.top;
-    LocalToGlobal(&p);
-    putshort(p.h);
-    putshort(p.v);
-
-#endif /* GRAPHIC_CHOICE */
-
-
-    activate(old_win);
+		putshort(td->r.left);
+		putshort(td->r.top);
+	}
 }
 
 
@@ -1319,120 +1269,56 @@ static void save_prefs()
  */
 static void load_prefs(void)
 {
-    int old_major, old_minor, old_patch, old_extra;
+	int i;
 
-    term_data *td;
+	int old_major, old_minor, old_patch, old_extra;
 
-
-    /*** Version information ***/
-
-    /* Preferences version */
-    old_major = getshort();
-    old_minor = getshort();
-    old_patch = getshort();
-    old_extra = getshort();
-
-    /* Hack -- Verify or ignore */
-    if ((old_major != VERSION_MAJOR) ||
-        (old_minor != VERSION_MINOR) ||
-        (old_patch != VERSION_PATCH) ||
-        (old_extra != VERSION_EXTRA))
-    {
-        /* Message */
-        mac_warning("Ignoring old preferences.");
-
-        /* Ignore */
-        return;
-    }
+	term_data *td;
 
 
-    /*** Screen info ***/
+	/*** Version information ***/
 
-    if (feof(fff)) return;
+	/* Preferences version */
+	old_major = getshort();
+	old_minor = getshort();
+	old_patch = getshort();
+	old_extra = getshort();
 
-    td = &screen;
+	/* Hack -- Verify or ignore */
+	if ((old_major != VERSION_MAJOR) ||
+	    (old_minor != VERSION_MINOR) ||
+	    (old_patch != VERSION_PATCH) ||
+	    (old_extra != VERSION_EXTRA))
+	{
+		/* Message */
+		mac_warning("Ignoring old preferences.");
 
-    td->mapped = getshort();
-
-    td->font_id = getshort();
-    td->font_size = getshort();
-    td->font_face = getshort();
-
-    td->cols = getshort();
-    td->rows = getshort();
-
-    td->r.left = getshort();
-    td->r.top = getshort();
-
-
-    /*** Mirror info ***/
-
-#ifdef GRAPHIC_MIRROR
-
-    if (feof(fff)) return;
-
-    td = &mirror;
-
-    td->mapped = getshort();
-
-    td->font_id = getshort();
-    td->font_size = getshort();
-    td->font_face = getshort();
-
-    td->cols = getshort();
-    td->rows = getshort();
-
-    td->r.left = getshort();
-    td->r.top = getshort();
-
-#endif /* GRAPHIC_MIRROR */
+		/* Ignore */
+		return;
+	}
 
 
-    /*** Recall info ***/
+	/* Windows */
+	for (i = 0; i < MAX_TERM_DATA; i++)
+	{
+		/* Access */
+		td = &data[i];
 
-#ifdef GRAPHIC_RECALL
+		td->mapped = getshort();
 
-    if (feof(fff)) return;
+		td->font_id = getshort();
+		td->font_size = getshort();
+		td->font_face = getshort();
 
-    td = &recall;
+		td->cols = getshort();
+		td->rows = getshort();
 
-    td->mapped = getshort();
+		td->r.left = getshort();
+		td->r.top = getshort();
 
-    td->font_id = getshort();
-    td->font_size = getshort();
-    td->font_face = getshort();
-
-    td->cols = getshort();
-    td->rows = getshort();
-
-    td->r.left = getshort();
-    td->r.top = getshort();
-
-#endif /* GRAPHIC_RECALL */
-
-
-    /*** Choice info ***/
-
-#ifdef GRAPHIC_CHOICE
-
-    if (feof(fff)) return;
-
-    td = &choice;
-
-    td->mapped = getshort();
-
-    td->font_id = getshort();
-    td->font_size = getshort();
-    td->font_face = getshort();
-
-    td->cols = getshort();
-    td->rows = getshort();
-
-    td->r.left = getshort();
-    td->r.top = getshort();
-
-#endif /* GRAPHIC_CHOICE */
-
+		/* Done */
+		if (feof(fff)) break;
+	}
 }
 
 
@@ -1443,44 +1329,44 @@ static void load_prefs(void)
  */
 static void term_data_hack(term_data *td)
 {
-    short fid;
+	short fid;
 
-    /* Default to Monaco font */
-    GetFNum("\pmonaco", &fid);
+	/* Default to Monaco font */
+	GetFNum("\pmonaco", &fid);
 
-    /* Wipe it */
-    WIPE(td, term_data);
+	/* Wipe it */
+	WIPE(td, term_data);
 
-    /* Default name */
-    td->s = "Window";
+	/* Default name */
+	td->s = "Window";
 
-    /* Default borders */
-    td->size_ow1 = 2;
-    td->size_ow2 = 2;
-    td->size_oh2 = 2;
+	/* Default borders */
+	td->size_ow1 = 2;
+	td->size_ow2 = 2;
+	td->size_oh2 = 2;
 
-    /* Default visibility */
-    td->mapped = TRUE;
+	/* Start hidden */
+	td->mapped = FALSE;
 
-    /* Default font */
-    td->font_id = fid;
+	/* Default font */
+	td->font_id = fid;
 
-    /* Default font size */
-    td->font_size = 12;
+	/* Default font size */
+	td->font_size = 12;
 
-    /* Default font face */
-    td->font_face = 0;
+	/* Default font face */
+	td->font_face = 0;
 
-    /* Default size */
-    td->rows = 24;
-    td->cols = 80;
+	/* Default size */
+	td->rows = 24;
+	td->cols = 80;
 
-    /* Default position */
-    td->r.left = 0;
-    td->r.top = 0;
+	/* Default position */
+	td->r.left = 10;
+	td->r.top = 40;
 
-    /* Minimal keys */
-    td->keys = 16;
+	/* Minimal keys */
+	td->keys = 16;
 }
 
 
@@ -1491,189 +1377,149 @@ static void term_data_hack(term_data *td)
  * but if this fails, for any reason, we will try the "SysEnvirons()"
  * method, which may work better with System 6.
  */
-static void init_windows()
+static void init_windows(void)
 {
-    term_data *td;
+	int i, b = 0;
 
-    SysEnvRec env;
-    short savev;
-    long saved;
+	term_data *td;
 
-    bool oops;
+	SysEnvRec env;
+	short savev;
+	long saved;
 
-
-    /* Screen window */
-    td = &screen;
-
-    /* Defaults */
-    term_data_hack(td);
-
-    /* Title it */
-    td->s = "Angband";
-
-    /* Bottom right */
-    td->r.left = 9999;
-    td->r.top = 9999;
-
-    /* Many keys */
-    td->keys = 1024;
-
-#ifdef GRAPHIC_MIRROR
-
-    /* Mirror window */
-    td = &mirror;
-
-    /* Defaults */
-    term_data_hack(td);
-
-    /* Title it */
-    td->s = "Mirror";
-
-    /* Top right */
-    td->r.left = 9999;
-    td->r.top = 40;
-
-#endif /* GRAPHIC_MIRROR */
-
-#ifdef GRAPHIC_RECALL
-
-    /* Recall window */
-    td = &recall;
-
-    /* Defaults */
-    term_data_hack(td);
-
-    /* Title it */
-    td->s = "Recall";
-
-    /* Top left */
-    td->r.left = 0;
-    td->r.top = 40;
-
-#endif /* GRAPHIC_RECALL */
-
-#ifdef GRAPHIC_CHOICE
-
-    /* Choice window */
-    td = &choice;
-
-    /* Defaults */
-    term_data_hack(td);
-
-    /* Title and borders */
-    td->s = "Choice";
-
-    /* Bottom left */
-    td->r.left = 0;
-    td->r.top = 9999;
-
-#endif /* GRAPHIC_CHOICE */
+	bool oops;
 
 
-    /* Assume failure */
-    oops = TRUE;
+	/*** Default values ***/
 
-    /* Assume failure */
-    fff = NULL;
+	/* Initialize (backwards) */
+	for (i = MAX_TERM_DATA - 1; i >= 0; i--)
+	{
+		/* Obtain */
+		td = &data[i];
+
+		/* Defaults */
+		term_data_hack(td);
+
+		/* Title it */
+		td->s = ang_term_name[i];
+
+		/* Tile the windows */
+		td->r.left += (b * 30);
+		td->r.top += (b * 30);
+
+		/* Tile */
+		b++;
+	}
+
+
+	/*** Load preferences ***/
+
+	/* Assume failure */
+	oops = TRUE;
+
+	/* Assume failure */
+	fff = NULL;
 
 #ifdef USE_FIND_FOLDER
 
-    /* System 7 */
-    if (has_seven)
-    {
-        OSErr	err;
-        short	vref;
-        long	dirID;
-        char	foo[128];
+	/* System 7 */
+	if (has_seven)
+	{
+		OSErr	err;
+		short	vref;
+		long	dirID;
+		char	foo[128];
 
-        /* Find the folder */
-        err = FindFolder(kOnSystemDisk, kPreferencesFolderType, kCreateFolder,
-                         &vref, &dirID);
+		/* Find the folder */
+		err = FindFolder(kOnSystemDisk, kPreferencesFolderType, kCreateFolder,
+		                 &vref, &dirID);
 
-        /* Success */
-        if (!err)
-        {
-            /* Extract a path name */
-            PathNameFromDirID(dirID, vref, (StringPtr)foo);
+		/* Success */
+		if (!err)
+		{
+			/* Extract a path name */
+			PathNameFromDirID(dirID, vref, (StringPtr)foo);
 
-            /* Convert the string */
-            ptocstr((StringPtr)foo);
+			/* Convert the string */
+			ptocstr((StringPtr)foo);
 
-            /* Append the preference file name */
-            strcat(foo, "Angband Preferences");
-	
-            /* Open the preference file */
-            fff = fopen(foo, "r");
-	
-            /* Success */
-            oops = FALSE;
-        }
-    }
+			/* Append the preference file name */
+			strcat(foo, "Angband Preferences");
+
+			/* Open the preference file */
+			fff = fopen(foo, "r");
+
+			/* Success */
+			oops = FALSE;
+		}
+	}
 
 #endif /* FIND_FOLDER */
 
-    /* Oops */
-    if (oops)
-    {
-        /* Save */
-        HGetVol(0, &savev, &saved);
+	/* Oops */
+	if (oops)
+	{
+		/* Save */
+		HGetVol(0, &savev, &saved);
 
-        /* Go to the "system" folder */
-        SysEnvirons(curSysEnvVers, &env);
-        SetVol(0, env.sysVRefNum);
+		/* Go to the "system" folder */
+		SysEnvirons(curSysEnvVers, &env);
+		SetVol(0, env.sysVRefNum);
 
-        /* Open the file */
-        fff = fopen(":Preferences:Angband Preferences", "r");
-        if (!fff) fff = fopen(":Angband Preferences", "r");
+		/* Open the file */
+		fff = fopen(":Preferences:Angband Preferences", "r");
+		if (!fff) fff = fopen(":Angband Preferences", "r");
 
-        /* Restore */
-        HSetVol(0, savev, saved);
-    }
+		/* Restore */
+		HSetVol(0, savev, saved);
+	}
 
-    /* Load preferences */
-    if (fff)
-    {
-        /* Load a real preference file */
-        load_prefs();
+	/* Load preferences */
+	if (fff)
+	{
+		/* Load a real preference file */
+		load_prefs();
 
-        /* Close the file */	
-        my_fclose(fff);
-    }
+		/* Close the file */
+		my_fclose(fff);
+	}
 
 
-#ifdef GRAPHIC_RECALL
-    /* Activate */
-    td = &recall;
-    term_data_check_font(td);
-    term_data_check_size(td);
-    term_data_link(td);
-    term_recall = &(td->t);
-#endif /* GRAPHIC_RECALL */
+	/*** Instantiate ***/
 
-#ifdef GRAPHIC_CHOICE
-    /* Activate */
-    td = &choice;
-    term_data_check_font(td);
-    term_data_check_size(td);
-    term_data_link(td);
-    term_choice = &(td->t);
-#endif /* GRAPHIC_CHOICE */
+	/* Main window */
+	td = &data[0];
 
-#ifdef GRAPHIC_MIRROR
-    /* Activate */
-    td = &mirror;
-    term_data_check_font(td);
-    term_data_check_size(td);
-    term_data_link(td);
-    term_mirror = &(td->t);
-#endif /* GRAPHIC_MIRROR */
+	/* Many keys */
+	td->keys = 1024;
 
-    /* Activate */
-    td = &screen;
-    term_data_check_font(td);
-    term_data_check_size(td);
-    term_data_link(td);
-    term_screen = &(td->t);
+	/* Start visible */
+	td->mapped = TRUE;
+
+	/* Link (backwards, for stacking order) */
+	for (i = MAX_TERM_DATA - 1; i >= 0; i--)
+	{
+		td = &data[i];
+
+		/* Check the font */
+		term_data_check_font(td);
+
+		/* Check the size */
+		term_data_check_size(td);
+
+		/* Require mapped */
+		if (!td->mapped) continue;
+
+		/* Link the term */
+		term_data_link(i);
+	}
+
+	/* Main window */
+	td = &data[0];
+
+	/* Main window */
+	Term_activate(td->t);
 }
 
 
@@ -1682,88 +1528,88 @@ static void init_windows()
  */
 static void save_pref_file(void)
 {
-    bool oops;
+	bool oops;
 
-    SysEnvRec env;
-    short savev;
-    long saved;
+	SysEnvRec env;
+	short savev;
+	long saved;
 
 
-    /* Assume failure */
-    oops = TRUE;
+	/* Assume failure */
+	oops = TRUE;
 
-    /* Assume failure */
-    fff = NULL;
+	/* Assume failure */
+	fff = NULL;
 
 #if defined(MACINTOSH) && !defined(applec)
-    /* Text file */
-    _ftype = 'TEXT';
+	/* Text file */
+	_ftype = 'TEXT';
 #endif
 
 
 #ifdef USE_FIND_FOLDER
 
-    /* System 7 */
-    if (has_seven)
-    {
-        OSErr	err;
-        short	vref;
-        long	dirID;
-        char	foo[128];
+	/* System 7 */
+	if (has_seven)
+	{
+		OSErr	err;
+		short	vref;
+		long	dirID;
+		char	foo[128];
 
-        /* Find the folder */
-        err = FindFolder(kOnSystemDisk, kPreferencesFolderType, kCreateFolder,
-                         &vref, &dirID);
+		/* Find the folder */
+		err = FindFolder(kOnSystemDisk, kPreferencesFolderType, kCreateFolder,
+		                 &vref, &dirID);
 
-        /* Success */
-        if (!err)
-        {
-            /* Extract a path name */
-            PathNameFromDirID(dirID, vref, (StringPtr)foo);
+		/* Success */
+		if (!err)
+		{
+			/* Extract a path name */
+			PathNameFromDirID(dirID, vref, (StringPtr)foo);
 
-            /* Convert the string */
-            ptocstr((StringPtr)foo);
+			/* Convert the string */
+			ptocstr((StringPtr)foo);
 
-            /* Append the preference file name */
-            strcat(foo, "Angband Preferences");
+			/* Append the preference file name */
+			strcat(foo, "Angband Preferences");
 
-            /* Open the preference file */
-            fff = fopen(foo, "w");
+			/* Open the preference file */
+			fff = fopen(foo, "w");
 
-            /* Success */
-            oops = FALSE;
-        }
-    }
+			/* Success */
+			oops = FALSE;
+		}
+	}
 
 #endif /* FIND_FOLDER */
 
-    /* Oops */
-    if (oops)
-    {
-        /* Save */
-        HGetVol(0, &savev, &saved);
+	/* Oops */
+	if (oops)
+	{
+		/* Save */
+		HGetVol(0, &savev, &saved);
 
-        /* Go to "system" folder */
-        SysEnvirons(curSysEnvVers, &env);
-        SetVol(0, env.sysVRefNum);
+		/* Go to "system" folder */
+		SysEnvirons(curSysEnvVers, &env);
+		SetVol(0, env.sysVRefNum);
 
-        /* Open the preference file */
-        fff = fopen(":Preferences:Angband Preferences", "w");
-        if (!fff) fff = fopen(":Angband Preferences", "w");
+		/* Open the preference file */
+		fff = fopen(":Preferences:Angband Preferences", "w");
+		if (!fff) fff = fopen(":Angband Preferences", "w");
 
-        /* Restore */
-        HSetVol(0, savev, saved);
-    }
+		/* Restore */
+		HSetVol(0, savev, saved);
+	}
 
-    /* Save preferences */
-    if (fff)
-    {
-        /* Write the preferences */
-        save_prefs();
+	/* Save preferences */
+	if (fff)
+	{
+		/* Write the preferences */
+		save_prefs();
 
-        /* Close it */
-        my_fclose(fff);
-    }
+		/* Close it */
+		my_fclose(fff);
+	}
 }
 
 
@@ -1773,98 +1619,98 @@ static void save_pref_file(void)
  *
  * Font menu creation from "Maarten Hazewinkel"
  */
-static void init_menubar()
+static void init_menubar(void)
 {
-    int i, n;
-    Rect r;
-    WindowPtr tmpw;
+	int i, n;
+	Rect r;
+	WindowPtr tmpw;
 
-    MenuHandle menu;
+	MenuHandle menu;
 
-    /* Show the "watch" cursor */
-    /* SetCursor(*(GetCursor(watchCursor))); */
+	/* Show the "watch" cursor */
+	/* SetCursor(*(GetCursor(watchCursor))); */
 
-    /* Get the menubar from the resource file */
-    SetMenuBar(GetNewMBar(128));
+	/* Get the menubar from the resource file */
+	SetMenuBar(GetNewMBar(128));
 
-    /* Get the "apple" menu */
-    menu = GetMenu(128);
+	/* Get the "apple" menu */
+	menu = GetMenu(128);
 
-    /* Oops */
-    if (!menu) quit(NULL);
+	/* Oops */
+	if (!menu) quit(NULL);
 
-    /* Add the DA's to the "apple" menu */
-    AddResMenu(menu, 'DRVR');
+	/* Add the DA's to the "apple" menu */
+	AddResMenu(menu, 'DRVR');
 
-    /* Insert the "apple" menu as the first menu */
-    InsertMenu(menu, 129);
+	/* Insert the "apple" menu as the first menu */
+	InsertMenu(menu, 129);
 
-    /* Get the "Font" menu */
-    menu = GetMenu(131);
+	/* Get the "Font" menu */
+	menu = GetMenu(131);
 
-    /* Oops */
-    if (!menu) quit(NULL);
+	/* Oops */
+	if (!menu) quit(NULL);
 
-    /* Add the fonts to the menu */
-    AddResMenu(menu, 'FONT');
+	/* Add the fonts to the menu */
+	AddResMenu(menu, 'FONT');
 
-    /* Fake window */
-    r.left = r.right = r.top = r.bottom = 0;
+	/* Fake window */
+	r.left = r.right = r.top = r.bottom = 0;
 
-    /* Make the fake window */
-    tmpw = NewWindow(0, &r, "\p", false, documentProc, 0, 0, 0);
+	/* Make the fake window */
+	tmpw = NewWindow(0, &r, "\p", false, documentProc, 0, 0, 0);
 
-    /* Activate the "fake" window */
-    SetPort(tmpw);
+	/* Activate the "fake" window */
+	SetPort(tmpw);
 
-    /* Default mode */
-    TextMode(0);
+	/* Default mode */
+	TextMode(0);
 
-    /* Default size */
-    TextSize(12);
+	/* Default size */
+	TextSize(12);
 
-    /* Size of menu */
-    n = CountMItems(menu);
+	/* Size of menu */
+	n = CountMItems(menu);
 
-    /* Scan the menu */
-    for (i = n; i >= 4; i--)
-    {
-        Str255 tmpName;
-        short fontNum;
+	/* Scan the menu */
+	for (i = n; i >= 4; i--)
+	{
+		Str255 tmpName;
+		short fontNum;
 
-        /* Acquire the font name XXX XXX XXX */
-        /* GetMenuItemText(menu, i, tmpName); */
-        GetItem(menu, i, tmpName);
+		/* Acquire the font name XXX XXX XXX */
+		/* GetMenuItemText(menu, i, tmpName); */
+		GetItem(menu, i, tmpName);
 
-        /* Acquire the font index */
-        GetFNum(tmpName, &fontNum);
+		/* Acquire the font index */
+		GetFNum(tmpName, &fontNum);
 
-        /* Apply the font index */
-        TextFont(fontNum);
+		/* Apply the font index */
+		TextFont(fontNum);
 
-        /* Remove non-mono-spaced fonts */
-        if ((CharWidth('i') != CharWidth('W')) || (CharWidth('W') == 0))
-        {
-            /* Delete the menu item XXX XXX XXX */
-            /* DeleteMenuItem(menu, i); */
-            DelMenuItem(menu, i);
-        }
-    }
+		/* Remove non-mono-spaced fonts */
+		if ((CharWidth('i') != CharWidth('W')) || (CharWidth('W') == 0))
+		{
+			/* Delete the menu item XXX XXX XXX */
+			/* DeleteMenuItem(menu, i); */
+			DelMenuItem(menu, i);
+		}
+	}
 
-    /* Destroy the old window */
-    DisposeWindow(tmpw);
+	/* Destroy the old window */
+	DisposeWindow(tmpw);
 
-    /* Hack -- look cute XXX XXX */
-    /* SetItemStyle(menu, 1, bold); */
+	/* Hack -- look cute XXX XXX */
+	/* SetItemStyle(menu, 1, bold); */
 
-    /* Hack -- look cute XXX XXX */
-    /* SetItemStyle(menu, 2, extend); */
+	/* Hack -- look cute XXX XXX */
+	/* SetItemStyle(menu, 2, extend); */
 
-    /* Update the menu bar */
-    DrawMenuBar();
-	
-    /* Reset the cursor */
-    /* SetCursor(&qd.arrow); */
+	/* Update the menu bar */
+	DrawMenuBar();
+
+	/* Reset the cursor */
+	/* SetCursor(&qd.arrow); */
 }
 
 
@@ -1873,44 +1719,44 @@ static void init_menubar()
  */
 static pascal Boolean ynfilter(DialogPtr dialog, EventRecord *event, short *ip)
 {
-    /* Parse key press events */
-    if (event->what == keyDown)
-    {
-        int i = 0;
-        char c;
+	/* Parse key press events */
+	if (event->what == keyDown)
+	{
+		int i = 0;
+		char c;
 
-        /* Extract the pressed key */
-        c = (event->message & charCodeMask);
+		/* Extract the pressed key */
+		c = (event->message & charCodeMask);
 
-        /* Accept "no" and <return> and <enter> */
-        if ((c=='n') || (c=='N') || (c==13) || (c==3)) i = 1;
+		/* Accept "no" and <return> and <enter> */
+		if ((c=='n') || (c=='N') || (c==13) || (c==3)) i = 1;
 
-        /* Accept "yes" */
-        else if ((c=='y') || (c=='Y')) i = 2;
+		/* Accept "yes" */
+		else if ((c=='y') || (c=='Y')) i = 2;
 
-        /* Handle "yes" or "no" */
-        if (i)
-        {
-            short type;
-            ControlHandle control;
-            Rect r;
+		/* Handle "yes" or "no" */
+		if (i)
+		{
+			short type;
+			ControlHandle control;
+			Rect r;
 
-            /* Get the button */
-            GetDItem(dialog, i, &type, (Handle*)&control, &r);
+			/* Get the button */
+			GetDItem(dialog, i, &type, (Handle*)&control, &r);
 
-            /* Blink button for 1/10 second */
-            HiliteControl(control,1);
-            delay(100);
-            HiliteControl(control,0);
+			/* Blink button for 1/10 second */
+			HiliteControl(control, 1);
+			Term_xtra(TERM_XTRA_DELAY, 100);
+			HiliteControl(control, 0);
 
-            /* Result */
-            *ip = i;
-            return(1);
-        }
-    }
+			/* Result */
+			*ip = i;
+			return (1);
+		}
+	}
 
-    /* Ignore */
-    return (0);
+	/* Ignore */
+	return (0);
 }
 
 
@@ -1919,20 +1765,20 @@ static pascal Boolean ynfilter(DialogPtr dialog, EventRecord *event, short *ip)
  */
 static void do_menu_file_new(void)
 {
-    /* Hack */
-    HiliteMenu(0);
+	/* Hack */
+	HiliteMenu(0);
 
-    /* Game is in progress */
-    game_in_progress = 1;
+	/* Game is in progress */
+	game_in_progress = 1;
 
-    /* Flush input */
-    flush();
+	/* Flush input */
+	flush();
 
-    /* Play a game */
-    play_game(TRUE);
+	/* Play a game */
+	play_game(TRUE);
 
-    /* Hack -- quit */
-    quit(NULL);
+	/* Hack -- quit */
+	quit(NULL);
 }
 
 
@@ -1941,97 +1787,97 @@ static void do_menu_file_new(void)
  */
 static void do_menu_file_open(bool all)
 {
-    int err;
-    short vrefnum;
-    long drefnum;
-    long junk;
-    DirInfo pb;
-    SFTypeList types;
-    SFReply reply;
-    Point topleft;
+	int err;
+	short vrefnum;
+	long drefnum;
+	long junk;
+	DirInfo pb;
+	SFTypeList types;
+	SFReply reply;
+	Point topleft;
 
 
-    /* XXX XXX XXX */
+	/* XXX XXX XXX */
 
-    /* vrefnum = GetSFCurVol(); */
-    vrefnum = -*((short*)0x214);
+	/* vrefnum = GetSFCurVol(); */
+	vrefnum = -*((short*)0x214);
 
-    /* drefnum = GetSFCurDir(); */
-    drefnum = *((long*)0x398);
+	/* drefnum = GetSFCurDir(); */
+	drefnum = *((long*)0x398);
 
-    /* Descend into "lib" folder */
-    pb.ioCompletion = NULL;
-    pb.ioNamePtr = "\plib";
-    pb.ioVRefNum = vrefnum;
-    pb.ioDrDirID = drefnum;
-    pb.ioFDirIndex = 0;
+	/* Descend into "lib" folder */
+	pb.ioCompletion = NULL;
+	pb.ioNamePtr = "\plib";
+	pb.ioVRefNum = vrefnum;
+	pb.ioDrDirID = drefnum;
+	pb.ioFDirIndex = 0;
 
-    /* Check for errors */
-    err = PBGetCatInfo((CInfoPBPtr)&pb,FALSE);
+	/* Check for errors */
+	err = PBGetCatInfo((CInfoPBPtr)&pb, FALSE);
 
-    /* Success */
-    if ((err == noErr) && (pb.ioFlAttrib & 0x10))
-    {
-        /* Descend into "lib/save" folder */
-        pb.ioCompletion = NULL;
-        pb.ioNamePtr = "\psave";
-        pb.ioVRefNum = vrefnum;
-        pb.ioDrDirID = pb.ioDrDirID;
-        pb.ioFDirIndex = 0;
+	/* Success */
+	if ((err == noErr) && (pb.ioFlAttrib & 0x10))
+	{
+		/* Descend into "lib/save" folder */
+		pb.ioCompletion = NULL;
+		pb.ioNamePtr = "\psave";
+		pb.ioVRefNum = vrefnum;
+		pb.ioDrDirID = pb.ioDrDirID;
+		pb.ioFDirIndex = 0;
 
-        /* Check for errors */
-        err = PBGetCatInfo((CInfoPBPtr)&pb,FALSE);
+		/* Check for errors */
+		err = PBGetCatInfo((CInfoPBPtr)&pb, FALSE);
 
-        /* Success */
-        if ((err == noErr) && (pb.ioFlAttrib & 0x10))
-        {
-            /* SetSFCurDir(pb.ioDrDirID); */
-            *((long*)0x398) = pb.ioDrDirID;
-        }
-    }
+		/* Success */
+		if ((err == noErr) && (pb.ioFlAttrib & 0x10))
+		{
+			/* SetSFCurDir(pb.ioDrDirID); */
+			*((long*)0x398) = pb.ioDrDirID;
+		}
+	}
 
-    /* Window location */
-    topleft.h = (qd.screenBits.bounds.left+qd.screenBits.bounds.right)/2-344/2;
-    topleft.v = (2*qd.screenBits.bounds.top+qd.screenBits.bounds.bottom)/3-188/2;
+	/* Window location */
+	topleft.h = (qd.screenBits.bounds.left+qd.screenBits.bounds.right)/2-344/2;
+	topleft.v = (2*qd.screenBits.bounds.top+qd.screenBits.bounds.bottom)/3-188/2;
 
-    /* Allow "all" files */
-    if (all)
-    {
-        /* Get any file */
-        SFGetFile(topleft, "\p", NULL, -1, types, NULL, &reply);
-    }
+	/* Allow "all" files */
+	if (all)
+	{
+		/* Get any file */
+		SFGetFile(topleft, "\p", NULL, -1, types, NULL, &reply);
+	}
 
-    /* Allow "save" files */
-    else
-    {
-        /* Legal types */
-        types[0] = 'SAVE';
+	/* Allow "save" files */
+	else
+	{
+		/* Legal types */
+		types[0] = 'SAVE';
 
-        /* Get a file */
-        SFGetFile(topleft, "\p", NULL, 1, types, NULL, &reply);
-    }
+		/* Get a file */
+		SFGetFile(topleft, "\p", NULL, 1, types, NULL, &reply);
+	}
 
-    /* Allow cancel */
-    if (!reply.good) return;
+	/* Allow cancel */
+	if (!reply.good) return;
 
-    /* Extract textual file name for save file */
-    GetWDInfo(reply.vRefNum, &vrefnum, &drefnum, &junk);
-    refnum_to_name(savefile, drefnum, vrefnum, (char*)reply.fName);
+	/* Extract textual file name for save file */
+	GetWDInfo(reply.vRefNum, &vrefnum, &drefnum, &junk);
+	refnum_to_name(savefile, drefnum, vrefnum, (char*)reply.fName);
 
-    /* Hack */
-    HiliteMenu(0);
+	/* Hack */
+	HiliteMenu(0);
 
-    /* Game is in progress */
-    game_in_progress = 1;
+	/* Game is in progress */
+	game_in_progress = 1;
 
-    /* Flush input */
-    flush();
+	/* Flush input */
+	flush();
 
-    /* Play a game */
-    play_game(FALSE);
+	/* Play a game */
+	play_game(FALSE);
 
-    /* Hack -- quit */
-    quit(NULL);
+	/* Hack -- quit */
+	quit(NULL);
 }
 
 
@@ -2042,196 +1888,206 @@ static void do_menu_file_open(bool all)
  *   Edit (130) = { Cut, Copy, Paste, Clear }   (?)
  *   Font (131) = { Bold, Extend, -, Monaco, Courier, ... }
  *   Size (132) = { 9, 10, ..., 18 }
- *   Window (133) = { Angband, -, Recall, Choice }
+ *   Window (133) = { Angband, Mirror, Recall, Choice }
+ *   Special (134) = { use_sound, use_graphics, use_xxx1, use_xxx2,
+ *                     arg_fiddle, arg_wizard, arg_xxx1, arg_xxx2 }
  */
-static void setup_menus()
+static void setup_menus(void)
 {
-    MenuHandle m;
-    int i;
-    short fnum, fsize;
-    Str255 s;
+	int i;
+	MenuHandle m;
+	short fnum, fsize;
+	Str255 s;
 
-    term_data *td = NULL;
-
-
-    /* Extract the frontmost "term_data" */
-    if (FrontWindow() == screen.w) td = &screen;
-#ifdef GRAPHIC_MIRROR
-    if (FrontWindow() == mirror.w) td = &mirror;
-#endif /* GRAPHIC_MIRROR */
-#ifdef GRAPHIC_RECALL
-    if (FrontWindow() == recall.w) td = &recall;
-#endif /* GRAPHIC_RECALL */
-#ifdef GRAPHIC_CHOICE
-    if (FrontWindow() == choice.w) td = &choice;
-#endif /* GRAPHIC_CHOICE */
+	term_data *td = NULL;
 
 
-    /* File menu */
-    m = GetMHandle(129);
+	/* Relevant "term_data" */
+	for (i = 0; i < MAX_TERM_DATA; i++)
+	{
+		/* Unused */
+		if (!data[i].t) continue;
 
-    /* Nothing is legal */
-    for (i = 1; i <= CountMItems(m); i++)
-    {
-        /* Disable everything */
-        DisableItem(m, i);
-    }
-
-    /* Enable "new"/"open..."/"import..." */
-    if (initialized && !game_in_progress)
-    {
-        EnableItem(m,1);
-        EnableItem(m,2);
-        EnableItem(m,3);
-    }
-
-    /* Enable "close" */
-    if (initialized)
-    {
-        EnableItem(m,4);
-    }
-
-    /* Enable "save" */
-    if (initialized && character_generated)
-    {
-        EnableItem(m,5);
-    }
-
-    /* Enable "exit"/"quit" */
-    if (TRUE)
-    {
-        EnableItem(m,7);
-        EnableItem(m,8);
-    }
+		/* Notice the matching window */
+		if (data[i].w == FrontWindow()) td = &data[i];
+	}
 
 
-    /* Edit menu */
-    m = GetMHandle(130);
+	/* File menu */
+	m = GetMHandle(129);
 
-    /* Nothing is legal */
-    for (i = 1; i <= CountMItems(m); i++)
-    {
-        /* Disable everything */
-        DisableItem(m, i);
-    }
+	/* Nothing is legal */
+	for (i = 1; i <= CountMItems(m); i++)
+	{
+		/* Disable everything */
+		DisableItem(m, i);
+	}
 
-    /* Enable "edit" options if "needed" */
-    if (!td)
-    {
-        EnableItem(m,1);
-        EnableItem(m,3);
-        EnableItem(m,4);
-        EnableItem(m,5);
-        EnableItem(m,6);
-    }
+	/* Enable "new"/"open..."/"import..." */
+	if (initialized && !game_in_progress)
+	{
+		EnableItem(m, 1);
+		EnableItem(m, 2);
+		EnableItem(m, 3);
+	}
 
+	/* Enable "close" */
+	if (initialized)
+	{
+		EnableItem(m, 4);
+	}
 
-    /* Font menu */
-    m = GetMHandle(131);
+	/* Enable "save" */
+	if (initialized && character_generated)
+	{
+		EnableItem(m, 5);
+	}
 
-    /* Nothing is legal (or checked) */
-    for (i = 1; i <= CountMItems(m); i++)
-    {
-        /* Disable everything */
-        DisableItem(m, i);
-
-        /* Un-Check everything */
-        CheckItem(m, i, FALSE);
-    }
-
-    /* Active window */
-    if (td)
-    {
-        /* Enable "bold" */
-        EnableItem(m, 1);
-
-        /* Enable "extend" */
-        EnableItem(m, 2);
-
-        /* Check the appropriate "bold-ness" */
-        if (td->font_face & bold) CheckItem(m, 1, TRUE);
-
-        /* Check the appropriate "wide-ness" */
-        if (td->font_face & extend) CheckItem(m, 2, TRUE);
-
-        /* Check the appropriate "Font" for the current window */
-        for (i = 4; i <= CountMItems(m); i++)
-        {
-            /* Enable it */
-            EnableItem(m, i);
-
-            /* Analyze font */
-            /* GetMenuItemText(m,i,s); */
-            GetItem(m,i,s);
-            GetFNum(s,&fnum);
-
-            /* Check active font */
-            if (td->font_id == fnum) CheckItem(m, i, TRUE);
-        }
-    }
+	/* Enable "exit"/"quit" */
+	if (TRUE)
+	{
+		EnableItem(m, 7);
+		EnableItem(m, 8);
+	}
 
 
-    /* Size menu */
-    m = GetMHandle(132);
+	/* Edit menu */
+	m = GetMHandle(130);
 
-    /* Nothing is legal (or checked) */
-    for (i = 1; i <= CountMItems(m); i++)
-    {
-        /* Disable everything */
-        DisableItem(m, i);
+	/* Nothing is legal */
+	for (i = 1; i <= CountMItems(m); i++)
+	{
+		/* Disable everything */
+		DisableItem(m, i);
+	}
 
-        /* Un-Check everything */
-        CheckItem(m, i, FALSE);
-    }
-
-    /* Active window */
-    if (td)
-    {
-        /* Process the "size" options */
-        for (i=1; i<=CountMItems(m); i++)
-        {
-            /* Analyze size */
-            /* GetMenuItemText(m,i,s); */
-            GetItem(m,i,s);
-            s[s[0]+1] = '\0';
-            fsize = atoi((char*)(s+1));
-
-            /* Enable the "real" sizes */
-            if (RealFont(td->font_id, fsize)) EnableItem(m,i);
-
-            /* Check the current size */
-            if (td->font_size == fsize) CheckItem(m, i, TRUE);
-        }
-    }
+	/* Enable "edit" options if "needed" */
+	if (!td)
+	{
+		EnableItem(m, 1);
+		EnableItem(m, 3);
+		EnableItem(m, 4);
+		EnableItem(m, 5);
+		EnableItem(m, 6);
+	}
 
 
-    /* Windows menu */
-    m = GetMHandle(133);
+	/* Font menu */
+	m = GetMHandle(131);
 
-    /* Item "Angband Window" */
-    CheckItem(m, 1, screen.mapped);
+	/* Nothing is legal (or checked) */
+	for (i = 1; i <= CountMItems(m); i++)
+	{
+		/* Disable everything */
+		DisableItem(m, i);
 
-#ifdef GRAPHIC_MIRROR
+		/* Un-Check everything */
+		CheckItem(m, i, FALSE);
+	}
 
-    /* Item "Mirror Window" */
-    CheckItem(m, 3, mirror.mapped);
+	/* Active window */
+	if (td)
+	{
+		/* Enable "bold" */
+		EnableItem(m, 1);
 
-#endif /* GRAPHIC_MIRROR */
+		/* Enable "extend" */
+		EnableItem(m, 2);
 
-#ifdef GRAPHIC_CHOICE
+		/* Check the appropriate "bold-ness" */
+		if (td->font_face & bold) CheckItem(m, 1, TRUE);
 
-    /* Item "Choice Window" */
-    CheckItem(m, 5, choice.mapped);
+		/* Check the appropriate "wide-ness" */
+		if (td->font_face & extend) CheckItem(m, 2, TRUE);
 
-#endif /* GRAPHIC_CHOICE */
+		/* Check the appropriate "Font" for the current window */
+		for (i = 4; i <= CountMItems(m); i++)
+		{
+			/* Enable it */
+			EnableItem(m, i);
 
-#ifdef GRAPHIC_RECALL
+			/* Analyze font */
+			/* GetMenuItemText(m,i,s); */
+			GetItem(m, i, s);
+			GetFNum(s, &fnum);
 
-    /* Item "Recall Window" */
-    CheckItem(m, 6, recall.mapped);
+			/* Check active font */
+			if (td->font_id == fnum) CheckItem(m, i, TRUE);
+		}
+	}
 
-#endif /* GRAPHIC_RECALL */
 
+	/* Size menu */
+	m = GetMHandle(132);
+
+	/* Nothing is legal (or checked) */
+	for (i = 1; i <= CountMItems(m); i++)
+	{
+		/* Disable everything */
+		DisableItem(m, i);
+
+		/* Un-Check everything */
+		CheckItem(m, i, FALSE);
+	}
+
+	/* Active window */
+	if (td)
+	{
+		/* Process the "size" options */
+		for (i=1; i<=CountMItems(m); i++)
+		{
+			/* Analyze size */
+			/* GetMenuItemText(m,i,s); */
+			GetItem(m, i, s);
+			s[s[0]+1] = '\0';
+			fsize = atoi((char*)(s+1));
+
+			/* Enable the "real" sizes */
+			if (RealFont(td->font_id, fsize)) EnableItem(m, i);
+
+			/* Check the current size */
+			if (td->font_size == fsize) CheckItem(m, i, TRUE);
+		}
+	}
+
+
+	/* Windows menu */
+	m = GetMHandle(133);
+
+	/* Check windows */
+	for (i = 0; i < MAX_TERM_DATA; i++)
+	{
+		/* Check if needed */
+		CheckItem(m, i + 1, data[i].mapped);
+	}
+
+
+	/* Special menu */
+	m = GetMHandle(134);
+
+	/* Item "use_sound" */
+	CheckItem(m, 1, use_sound);
+
+	/* Item "use_graphics" */
+	CheckItem(m, 2, use_graphics);
+
+	/* Item "use_xxx1" */
+	DisableItem(m, 3);
+
+	/* Item "use_xxx2" */
+	DisableItem(m, 4);
+
+	/* Item "arg_fiddle" */
+	CheckItem(m, 5, arg_fiddle);
+
+	/* Item "arg_wizard" */
+	CheckItem(m, 6, arg_wizard);
+
+	/* Item "arg_xxx1" */
+	DisableItem(m, 7);
+
+	/* Item "arg_xxx2" */
+	DisableItem(m, 8);
 }
 
 
@@ -2242,471 +2098,400 @@ static void setup_menus()
  */
 static void menu(long mc)
 {
-    int i;
-
-    int menuid, selection;
-
-    static unsigned char s[1000];
-
-    short fid;
-
-
-    term_data *td = NULL;
-
-    WindowPtr old_win;
-
-
-    /* Analyze the menu command */
-    menuid = HiWord(mc);
-    selection = LoWord(mc);
-
-    /* Activate the current "term" */
-    if (FrontWindow() == screen.w) td = &screen;
-#ifdef GRAPHIC_MIRROR
-    if (FrontWindow() == mirror.w) td = &mirror;
-#endif /* GRAPHIC_MIRROR */
-#ifdef GRAPHIC_RECALL
-    if (FrontWindow() == recall.w) td = &recall;
-#endif /* GRAPHIC_RECALL */
-#ifdef GRAPHIC_CHOICE
-    if (FrontWindow() == choice.w) td = &choice;
-#endif /* GRAPHIC_CHOICE */
-
-
-    /* Branch on the menu */
-    switch (menuid)
-    {
-        /* Apple Menu {About,-,...} */
-        case 128:
-
-            /* About Angband... */
-            if (selection==1)
-            {
-                DialogPtr dialog;
-                Rect r;
-                short item_hit;
-
-                dialog=GetNewDialog(128,0,(WindowPtr)-1);
-
-                r=dialog->portRect;
-                center_rect(&r,&qd.screenBits.bounds);
-                MoveWindow(dialog,r.left,r.top,1);
-                ShowWindow(dialog);
-                ModalDialog(0,&item_hit);
-                DisposDialog(dialog);
-                break;
-            }
-
-            /* Desk accessory */
-            /* GetMenuItemText(GetMHandle(128),selection,s); */
-            GetItem(GetMHandle(128),selection,s);
-            OpenDeskAcc(s);
-            break;
-
-        /* File Menu {New,Open,Import,Close,Save,-,Exit,Quit} */
-        case 129:
-
-            switch (selection)
-            {
-                case 1:		/* New */
-
-                    do_menu_file_new();
-
-                    break;
-
-                case 2:		/* Open... */
-
-                    do_menu_file_open(FALSE);
-
-                    break;
-
-
-                case 3:		/* Import... */
-
-                    do_menu_file_open(TRUE);
-
-                    break;
-
-
-                case 4: /* Close */
-
-                    if (td == &screen)
-                    {
-                         /* Hide */
-                         if (screen.mapped)
-                         {
-                             /* Not Mapped */
-                             screen.mapped = FALSE;
-
-                             /* Not Mapped XXX XXX XXX */
-                             screen.t.mapped_flag = FALSE;
-
-                             /* Hide the window */
-                             HideWindow(screen.w);
-                         }
-                    }
-
-#ifdef GRAPHIC_MIRROR
-
-                    if (td == &mirror)
-                    {
-                         /* Hide */
-                         if (mirror.mapped)
-                         {
-                             /* Not Mapped */
-                             mirror.mapped = FALSE;
-
-                             /* Not Mapped XXX XXX XXX */
-                             mirror.t.mapped_flag = FALSE;
-
-                             /* Hide the window */
-                             HideWindow(mirror.w);
-                         }
-                    }
-
-#endif /* GRAPHIC_MIRROR */
-
-#ifdef GRAPHIC_RECALL
-
-                    if (td == &recall)
-                    {
-                         /* Hide */
-                         if (recall.mapped)
-                         {
-                             /* Not Mapped */
-                             recall.mapped = FALSE;
-
-                             /* Not Mapped XXX XXX XXX */
-                             recall.t.mapped_flag = FALSE;
-
-                             /* Hide the window */
-                             HideWindow(recall.w);
-                         }
-                    }
-
-#endif /* GRAPHIC_RECALL */
-
-#ifdef GRAPHIC_CHOICE
-
-                    if (td == &choice)
-                    {
-                         /* Hide */
-                         if (choice.mapped)
-                         {
-                             /* Not Mapped */
-                             choice.mapped = FALSE;
-
-                             /* Not Mapped XXX XXX XXX */
-                             choice.t.mapped_flag = FALSE;
-
-                             /* Hide the window */
-                             HideWindow(choice.w);
-                         }
-                    }
-
-#endif /* GRAPHIC_CHOICE */
-
-                    break;
-
-                case 5: /* Save */
-
-                    /* Hack -- Forget messages */
-                    msg_flag = FALSE;
-
-                    /* Hack -- Save the game */
-                    do_cmd_save_game();
-
-                    break;
-
-                case 7:		/* Exit (without save) */
-
-                    /* Allow user to cancel "dangerous" exit */
-                    if (game_in_progress && character_generated)
-                    {
-                        AlertTHndl alert;
-                        short item_hit;
-
-                        /* Get the "alert" info */
-                        alert = (AlertTHndl)GetResource('ALRT',130);
-
-                        /* Center the "alert" rectangle */
-                        center_rect(&(*alert)->boundsRect,
-                                    &qd.screenBits.bounds);
-
-                        /* Display the Alert, get "No" or "Yes" */
-                        item_hit = Alert(130,ynfilterUPP);
-
-                        /* Require "yes" button */
-                        if (item_hit != 2) break;
-                    }
-
-                    /* Quit */
-                    quit(NULL);
-                    break;
-
-                case 8:		/* Quit (with save) */
-
-                    /* Save the game (if necessary) */
-                    if (game_in_progress && character_generated)
-                    {
-                        /* Hack -- Forget messages */
-                        msg_flag = FALSE;
-
-                        /* Save the game */
-                        do_cmd_save_game();
-                    }
-
-                    /* Quit */
-                    quit(NULL);
-                    break;
-            }
-            break;
-
-        /* Edit menu {Undo,-,Cut,Copy,Paste,Clear} */
-        case 130:
-
-            /* Unused */
-
-            break;
-
-        /* Font menu {Bold,Extend,-,...} */
-        case 131:
-
-            /* Require a window */
-            if (!td) break;
-
-            /* Memorize old */
-            old_win = active;
-
-            /* Activate */
-            activate(td->w);
-
-            /* Toggle the "bold" setting */
-            if (selection == 1)
-            {
-                /* Toggle the setting */
-                if (td->font_face & bold)
-                {
-                    td->font_face &= ~bold;
-                }
-                else
-                {
-                    td->font_face |= bold;
-                }
-
-                /* Instantiate the new text face */
-                TextFace(td->font_face);
-
-                /* Resize */
-                term_data_check_font(td);
-                term_data_check_size(td);
-
-                /* Resize the window */
-                term_data_resize(td);
-
-                break;
-            }
-
-            /* Toggle the "wide" setting */
-            if (selection == 2)
-            {		
-                /* Toggle the setting */
-                if (td->font_face & extend)
-                {
-                    td->font_face &= ~extend;
-                }
-                else
-                {
-                    td->font_face |= extend;
-                }
-
-                /* Instantiate the new text face */
-                TextFace(td->font_face);
-
-                /* Resize */
-                term_data_check_font(td);
-                term_data_check_size(td);
-
-                /* Resize the window */
-                term_data_resize(td);
-
-                break;
-            }
-
-            /* Get a new font name */
-            /* GetMenuItemText(GetMHandle(131), selection, s); */
-            GetItem(GetMHandle(131), selection, s);
-            GetFNum(s, &fid);
-
-            /* Save the new font id */
-            td->font_id = fid;
-
-            /* current size is bad for new font */
-            if (!RealFont(td->font_id, td->font_size))
-            {
-                /* find good size */
-                for (i=1; i<=18; i++)
-                {
-                    if (td->font_size - i >= 9)
-                    {
-                        if (RealFont(td->font_id, td->font_size - i))
-                        {
-                            td->font_size -= i;
-                            break;
-                        }
-                    }
-                    if (td->font_size + i <= 18)
-                    {
-                        if (RealFont(td->font_id, td->font_size + i))
-                        {
-                            td->font_size += i;
-                            break;
-                        }
-                    }
-                }
-
-                /* Default size if can't find a good size */
-                if (i==19) td->font_size = 9;
-            }
-
-            /* Instantiate new properties */
-            TextFont(td->font_id);
-            TextSize(td->font_size);
-            TextFace(td->font_face);
-
-            /* Adapt to the new size */
-            term_data_check_font(td);
-            term_data_check_size(td);
-
-            /* Resize the window */
-            term_data_resize(td);
-
-            /* Restore the window */
-            activate(old_win);
-
-            break;
-
-
-        /* Size menu {...} */
-        case 132:
-
-            if (!td) break;
-
-            /* Save old */
-            old_win = active;
-
-            /* Activate */
-            activate(td->w);
-
-            /* GetMenuItemText(GetMHandle(132), selection, s); */
-            GetItem(GetMHandle(132),selection,s);
-            s[s[0]+1]=0;
-            td->font_size = atoi((char*)(s+1));
-
-            /* Instantiate the new size */
-            TextSize(td->font_size);
-
-            /* React to the font */
-            term_data_check_font(td);
-            term_data_check_size(td);
-
-            /* Resize the window */
-            term_data_resize(td);
-
-            /* Restore */
-            activate(old_win);
-
-            break;
-
-        /* Window menu {Angband,-,Mirror,-,Recall,Choice} */
-        case 133:
-
-            switch (selection)
-            {
-                case 1:		/* Angband window */
-
-                    /* Mapped */
-                    screen.mapped = TRUE;
-
-                    /* Mapped XXX XXX XXX */
-                    screen.t.mapped_flag = TRUE;
-
-                    /* Show the window */
-                    ShowWindow(screen.w);
-
-                    /* Bring to the front */
-                    SelectWindow(screen.w);
-
-                    break;
-
-                case 3:		/* Mirror window */
-
-#ifdef GRAPHIC_MIRROR
-
-                    /* Mapped */
-                    mirror.mapped = TRUE;
-
-                    /* Mapped XXX XXX XXX */
-                    mirror.t.mapped_flag = TRUE;
-
-                    /* Show the window */
-                    ShowWindow(mirror.w);
-
-                    /* Bring to the front */
-                    SelectWindow(mirror.w);
-
-#endif /* GRAPHIC_MIRROR */
-
-                    break;
-
-                case 5:		/* Choice window */
-
-#ifdef GRAPHIC_CHOICE
-
-                    /* Mapped */
-                    choice.mapped = TRUE;
-
-                    /* Mapped XXX XXX XXX */
-                    choice.t.mapped_flag = TRUE;
-
-                    /* Show the window */
-                    ShowWindow(choice.w);
-
-                    /* Bring to the front */
-                    SelectWindow(choice.w);
-
-#endif /* GRAPHIC_CHOICE */
-
-                    break;
-
-                case 6:		/* Recall window */
-
-#ifdef GRAPHIC_RECALL
-
-                    /* Mapped */
-                    recall.mapped = TRUE;
-
-                    /* Mapped XXX XXX XXX */
-                    recall.t.mapped_flag = TRUE;
-
-                    /* Show the window */
-                    ShowWindow(recall.w);
-
-                    /* Bring to the front */
-                    SelectWindow(recall.w);
-
-#endif /* GRAPHIC_RECALL */
-
-                    break;
-            }
-    }
-
-
-    /* Clean the menu */
-    HiliteMenu(0);
+	int i;
+
+	int menuid, selection;
+
+	static unsigned char s[1000];
+
+	short fid;
+
+	term_data *td = NULL;
+
+	WindowPtr old_win;
+
+
+	/* Analyze the menu command */
+	menuid = HiWord(mc);
+	selection = LoWord(mc);
+
+
+	/* Find the window */
+	for (i = 0; i < MAX_TERM_DATA; i++)
+	{
+		/* Skip dead windows */
+		if (!data[i].t) continue;
+
+		/* Notice matches */
+		if (data[i].w == FrontWindow()) td = &data[i];
+	}
+
+
+	/* Branch on the menu */
+	switch (menuid)
+	{
+		/* Apple Menu {About,-,...} */
+		case 128:
+		{
+			/* About Angband... */
+			if (selection == 1)
+			{
+				DialogPtr dialog;
+				Rect r;
+				short item_hit;
+
+				dialog=GetNewDialog(128, 0, (WindowPtr)-1);
+
+				r=dialog->portRect;
+				center_rect(&r, &qd.screenBits.bounds);
+				MoveWindow(dialog, r.left, r.top, 1);
+				ShowWindow(dialog);
+				ModalDialog(0, &item_hit);
+				DisposDialog(dialog);
+				break;
+			}
+
+			/* Desk accessory */
+			/* GetMenuItemText(GetMHandle(128),selection,s); */
+			GetItem(GetMHandle(128), selection, s);
+			OpenDeskAcc(s);
+			break;
+		}
+
+		/* File Menu {New,Open,Import,Close,Save,-,Exit,Quit} */
+		case 129:
+		{
+			switch (selection)
+			{
+				case 1:		/* New */
+				{
+					do_menu_file_new();
+					break;
+				}
+
+				case 2:		/* Open... */
+				{
+					do_menu_file_open(FALSE);
+					break;
+				}
+
+				case 3:		/* Import... */
+				{
+					do_menu_file_open(TRUE);
+					break;
+				}
+
+				case 4:		/* Close */
+				{
+					/* No window */
+					if (!td) break;
+
+					/* Not Mapped */
+					td->mapped = FALSE;
+
+					/* Not Mapped */
+					td->t->mapped_flag = FALSE;
+
+					/* Hide the window */
+					HideWindow(td->w);
+
+					break;
+				}
+
+				case 5:		/* Save */
+				{
+					/* Hack -- Forget messages */
+					msg_flag = FALSE;
+
+					/* Hack -- Save the game */
+					do_cmd_save_game();
+
+					break;
+				}
+
+				case 7:		/* Exit (without save) */
+				{
+					/* Allow user to cancel "dangerous" exit */
+					if (game_in_progress && character_generated)
+					{
+						AlertTHndl alert;
+						short item_hit;
+
+						/* Get the "alert" info */
+						alert = (AlertTHndl)GetResource('ALRT', 130);
+
+						/* Center the "alert" rectangle */
+						center_rect(&(*alert)->boundsRect,
+						            &qd.screenBits.bounds);
+
+						/* Display the Alert, get "No" or "Yes" */
+						item_hit = Alert(130, ynfilterUPP);
+
+						/* Require "yes" button */
+						if (item_hit != 2) break;
+					}
+
+					/* Quit */
+					quit(NULL);
+					break;
+				}
+
+				case 8:		/* Quit (with save) */
+				{
+					/* Save the game (if necessary) */
+					if (game_in_progress && character_generated)
+					{
+						/* Hack -- Forget messages */
+						msg_flag = FALSE;
+
+						/* Save the game */
+						do_cmd_save_game();
+					}
+
+					/* Quit */
+					quit(NULL);
+					break;
+				}
+			}
+			break;
+		}
+
+		/* Edit menu {Undo,-,Cut,Copy,Paste,Clear} */
+		case 130:
+		{
+			/* Unused */
+			break;
+		}
+
+		/* Font menu {Bold,Extend,-,...} */
+		case 131:
+		{
+			/* Require a window */
+			if (!td) break;
+
+			/* Memorize old */
+			old_win = active;
+
+			/* Activate */
+			activate(td->w);
+
+			/* Toggle the "bold" setting */
+			if (selection == 1)
+			{
+				/* Toggle the setting */
+				if (td->font_face & bold)
+				{
+					td->font_face &= ~bold;
+				}
+				else
+				{
+					td->font_face |= bold;
+				}
+
+				/* Instantiate the new text face */
+				TextFace(td->font_face);
+
+				/* Resize */
+				term_data_check_font(td);
+				term_data_check_size(td);
+
+				/* Resize the window */
+				term_data_resize(td);
+
+				break;
+			}
+
+			/* Toggle the "wide" setting */
+			if (selection == 2)
+			{
+				/* Toggle the setting */
+				if (td->font_face & extend)
+				{
+					td->font_face &= ~extend;
+				}
+				else
+				{
+					td->font_face |= extend;
+				}
+
+				/* Instantiate the new text face */
+				TextFace(td->font_face);
+
+				/* Resize */
+				term_data_check_font(td);
+				term_data_check_size(td);
+
+				/* Resize the window */
+				term_data_resize(td);
+
+				break;
+			}
+
+			/* Get a new font name */
+			/* GetMenuItemText(GetMHandle(131), selection, s); */
+			GetItem(GetMHandle(131), selection, s);
+			GetFNum(s, &fid);
+
+			/* Save the new font id */
+			td->font_id = fid;
+
+			/* current size is bad for new font */
+			if (!RealFont(td->font_id, td->font_size))
+			{
+				/* find good size */
+				for (i=1; i<=18; i++)
+				{
+					if (td->font_size - i >= 9)
+					{
+						if (RealFont(td->font_id, td->font_size - i))
+						{
+							td->font_size -= i;
+							break;
+						}
+					}
+					if (td->font_size + i <= 18)
+					{
+						if (RealFont(td->font_id, td->font_size + i))
+						{
+							td->font_size += i;
+							break;
+						}
+					}
+				}
+
+				/* Default size if can't find a good size */
+				if (i==19) td->font_size = 9;
+			}
+
+			/* Instantiate new properties */
+			TextFont(td->font_id);
+			TextSize(td->font_size);
+			TextFace(td->font_face);
+
+			/* Adapt to the new size */
+			term_data_check_font(td);
+			term_data_check_size(td);
+
+			/* Resize the window */
+			term_data_resize(td);
+
+			/* Restore the window */
+			activate(old_win);
+
+			break;
+		}
+
+		/* Size menu {...} */
+		case 132:
+		{
+			if (!td) break;
+
+			/* Save old */
+			old_win = active;
+
+			/* Activate */
+			activate(td->w);
+
+			/* GetMenuItemText(GetMHandle(132), selection, s); */
+			GetItem(GetMHandle(132), selection, s);
+			s[s[0]+1]=0;
+			td->font_size = atoi((char*)(s+1));
+
+			/* Instantiate the new size */
+			TextSize(td->font_size);
+
+			/* React to the font */
+			term_data_check_font(td);
+			term_data_check_size(td);
+
+			/* Resize the window */
+			term_data_resize(td);
+
+			/* Restore */
+			activate(old_win);
+
+			break;
+		}
+
+		/* Window menu {Angband,Mirror,Recall,Choice,etc} */
+		case 133:
+		{
+			/* Parse */
+			i = selection - 1;
+
+			/* Check legality of choice */
+			if ((i < 0) || (i >= MAX_TERM_DATA)) break;
+
+			/* Obtain the window */
+			td = &data[i];
+
+			/* Allocate */
+			if (!td->t)
+			{
+				/* Mapped */
+				td->mapped = TRUE;
+
+				/* Link */	
+				term_data_link(i);
+			}
+
+			/* Show */
+			else
+			{
+				/* Mapped */
+				td->mapped = TRUE;
+
+				/* Mapped */
+				td->t->mapped_flag = TRUE;
+
+				/* Show the window */
+				ShowWindow(td->w);
+			}
+
+			/* Bring to the front */
+			SelectWindow(td->w);
+
+			break;
+		}
+
+		/* Special menu {u_s, u_g, u_1, u_2, a_f, a_w, a_1, a_2} */
+		case 134:
+		{
+			switch (selection)
+			{
+				case 1:
+				{
+					use_sound = !use_sound;
+					break;
+				}
+
+				case 2:
+				{
+					use_graphics = !use_graphics;
+					break;
+				}
+
+				case 5:
+				{
+					arg_fiddle = !arg_fiddle;
+					break;
+				}
+
+				case 6:
+				{
+					arg_wizard = !arg_wizard;
+					break;
+				}
+			}
+
+			break;
+		}
+	}
+
+
+	/* Clean the menu */
+	HiliteMenu(0);
 }
-
-
 
 
 #ifdef USE_SFL_CODE
@@ -2717,18 +2502,18 @@ static void menu(long mc)
  */
 static OSErr CheckRequiredAEParams(const AppleEvent *theAppleEvent)
 {
-    OSErr	aeError;
-    DescType	returnedType;
-    Size	actualSize;
-	
-    aeError = AEGetAttributePtr(theAppleEvent, keyMissedKeywordAttr, typeWildCard,
-                                &returnedType, NULL, 0, &actualSize);
+	OSErr	aeError;
+	DescType	returnedType;
+	Size	actualSize;
 
-    if (aeError == errAEDescNotFound) return (noErr);
+	aeError = AEGetAttributePtr(theAppleEvent, keyMissedKeywordAttr, typeWildCard,
+	                            &returnedType, NULL, 0, &actualSize);
 
-    if (aeError == noErr) return (errAEParamMissed);
+	if (aeError == errAEDescNotFound) return (noErr);
 
-    return (aeError);
+	if (aeError == noErr) return (errAEParamMissed);
+
+	return (aeError);
 }
 
 
@@ -2738,9 +2523,9 @@ static OSErr CheckRequiredAEParams(const AppleEvent *theAppleEvent)
 static pascal OSErr AEH_Start(const AppleEvent *theAppleEvent,
                               const AppleEvent *reply, long handlerRefCon)
 {
-    #pragma unused(reply, handlerRefCon)
+#pragma unused(reply, handlerRefCon)
 
-    return (CheckRequiredAEParams(theAppleEvent));
+	return (CheckRequiredAEParams(theAppleEvent));
 }
 
 
@@ -2750,13 +2535,13 @@ static pascal OSErr AEH_Start(const AppleEvent *theAppleEvent,
 static pascal OSErr AEH_Quit(const AppleEvent *theAppleEvent,
                              const AppleEvent *reply, long handlerRefCon)
 {
-    #pragma unused(reply, handlerRefCon)
+#pragma unused(reply, handlerRefCon)
 
-    /* Quit later */	
-    quit_when_ready = TRUE;
+	/* Quit later */
+	quit_when_ready = TRUE;
 
-    /* Check arguments */
-    return (CheckRequiredAEParams(theAppleEvent));
+	/* Check arguments */
+	return (CheckRequiredAEParams(theAppleEvent));
 }
 
 
@@ -2766,9 +2551,9 @@ static pascal OSErr AEH_Quit(const AppleEvent *theAppleEvent,
 static pascal OSErr AEH_Print(const AppleEvent *theAppleEvent,
                               const AppleEvent *reply, long handlerRefCon)
 {
-    #pragma unused(theAppleEvent, reply, handlerRefCon)
-	
-    return (errAEEventNotHandled);
+#pragma unused(theAppleEvent, reply, handlerRefCon)
+
+	return (errAEEventNotHandled);
 }
 
 
@@ -2789,55 +2574,55 @@ static pascal OSErr AEH_Print(const AppleEvent *theAppleEvent,
 static pascal OSErr AEH_Open(AppleEvent *theAppleEvent,
                              AppleEvent* reply, long handlerRefCon)
 {
-    FSSpec		myFSS;
-    AEDescList	docList;
-    OSErr		err;
-    Size		actualSize;
-    AEKeyword	keywd;
-    DescType	returnedType;
-    char		foo[128];
-    FInfo		myFileInfo;
+	FSSpec		myFSS;
+	AEDescList	docList;
+	OSErr		err;
+	Size		actualSize;
+	AEKeyword	keywd;
+	DescType	returnedType;
+	char		foo[128];
+	FInfo		myFileInfo;
 
-    /* Put the direct parameter (a descriptor list) into a docList */
-    err = AEGetParamDesc(theAppleEvent, keyDirectObject, typeAEList, &docList);
-    if (err) return err;
+	/* Put the direct parameter (a descriptor list) into a docList */
+	err = AEGetParamDesc(theAppleEvent, keyDirectObject, typeAEList, &docList);
+	if (err) return err;
 
-/*
- * We ignore the validity check, because we trust the FInder, and we only
- * allow one savefile to be opened, so we ignore the depth of the list.
- */
+	/*
+	 * We ignore the validity check, because we trust the FInder, and we only
+	 * allow one savefile to be opened, so we ignore the depth of the list.
+	 */
 
-    err = AEGetNthPtr(&docList, 1L, typeFSS, &keywd,
-		      &returnedType, (Ptr) &myFSS, sizeof(myFSS), &actualSize);
-    if (err) return err;
+	err = AEGetNthPtr(&docList, 1L, typeFSS, &keywd,
+	                  &returnedType, (Ptr) &myFSS, sizeof(myFSS), &actualSize);
+	if (err) return err;
 
-    /* Only needed to check savefile type below */
-    err = FSpGetFInfo(&myFSS, &myFileInfo);
-    if (err)
-    {
-	sprintf(foo, "Arg!  FSpGetFInfo failed with code %d", err);
-	mac_warning (foo);
-	return err;
-    }
+	/* Only needed to check savefile type below */
+	err = FSpGetFInfo(&myFSS, &myFileInfo);
+	if (err)
+	{
+		sprintf(foo, "Arg!  FSpGetFInfo failed with code %d", err);
+		mac_warning (foo);
+		return err;
+	}
 
-    /* Ignore non 'SAVE' files */
-    if (myFileInfo.fdType != 'SAVE') return noErr;
+	/* Ignore non 'SAVE' files */
+	if (myFileInfo.fdType != 'SAVE') return noErr;
 
-    /* XXX XXX XXX Extract a file name */
-    PathNameFromDirID(myFSS.parID, myFSS.vRefNum, (StringPtr)savefile);
-    pstrcat((StringPtr)savefile, (StringPtr)&myFSS.name);
+	/* XXX XXX XXX Extract a file name */
+	PathNameFromDirID(myFSS.parID, myFSS.vRefNum, (StringPtr)savefile);
+	pstrcat((StringPtr)savefile, (StringPtr)&myFSS.name);
 
-    /* Convert the string */
-    ptocstr((StringPtr)savefile);
+	/* Convert the string */
+	ptocstr((StringPtr)savefile);
 
-    /* Delay actual open */
-    open_when_ready = TRUE;
+	/* Delay actual open */
+	open_when_ready = TRUE;
 
-    /* Dispose */
-    err = AEDisposeDesc(&docList);
+	/* Dispose */
+	err = AEDisposeDesc(&docList);
 
-    /* Success */
-    return noErr;
+	/* Success */
+	return noErr;
 }
 
 
@@ -2846,29 +2631,29 @@ static pascal OSErr AEH_Open(AppleEvent *theAppleEvent,
  * we have completed our initialization process.  Personally, I tend to have
  * the opposite problem, in that the apple event is received even later.
  */
-static void check_for_save_file()
+static void check_for_save_file(void)
 {
-    /* Check the flag */
-    if (open_when_ready)
-    {
-        /* Forget */
-        open_when_ready = FALSE;
+	/* Check the flag */
+	if (open_when_ready)
+	{
+		/* Forget */
+		open_when_ready = FALSE;
 
-        /* Game is in progress */
-	game_in_progress = 1;
+		/* Game is in progress */
+		game_in_progress = 1;
 
-	/* Wait for it */
-	pause_line(23);
-	
-	/* Flush input */
-	flush();
-	
-	/* Play a game */
-	play_game(FALSE);
+		/* Wait for it */
+		pause_line(23);
 
-        /* Quit */
-        quit(NULL);
-    }
+		/* Flush input */
+		flush();
+
+		/* Play a game */
+		play_game(FALSE);
+
+		/* Quit */
+		quit(NULL);
+	}
 }
 
 
@@ -2884,66 +2669,66 @@ static void check_for_save_file()
  */
 static void check_for_save_file(void)
 {
-    int i;
-    short message, n;
-    AppFile fileinfo;
-    OSErr err;
-    short vrefnum;
-    long drefnum,junk;
+	int i;
+	short message, n;
+	AppFile fileinfo;
+	OSErr err;
+	short vrefnum;
+	long drefnum, junk;
 
-    /* Access startup info */
-    CountAppFiles(&message, &n);
+	/* Access startup info */
+	CountAppFiles(&message, &n);
 
-    /* Only open files */
-    if (message != appOpen) n = 0;
+	/* Only open files */
+	if (message != appOpen) n = 0;
 
-    /* Scan for a savefile */
-    for (i = 1; i <= n; i++)
-    {
-        /* Access the file */
-        GetAppFiles(i, &fileinfo);
+	/* Scan for a savefile */
+	for (i = 1; i <= n; i++)
+	{
+		/* Access the file */
+		GetAppFiles(i, &fileinfo);
 
-        /* Only handle savefiles */
-        if (fileinfo.fType != 'SAVE') continue;
+		/* Only handle savefiles */
+		if (fileinfo.fType != 'SAVE') continue;
 
-        /* Look at the file */
-        err = GetWDInfo(fileinfo.vRefNum, &vrefnum, &drefnum, &junk);
+		/* Look at the file */
+		err = GetWDInfo(fileinfo.vRefNum, &vrefnum, &drefnum, &junk);
 
-        /* Load it and play */
-        if (err == noErr)
-        {
-            /* Load "savefile" */
-            refnum_to_name(savefile, drefnum, vrefnum, (char*)fileinfo.fName);
+		/* Load it and play */
+		if (err == noErr)
+		{
+			/* Load "savefile" */
+			refnum_to_name(savefile, drefnum, vrefnum, (char*)fileinfo.fName);
 
-            /* Game is in progress */
-            game_in_progress = 1;
+			/* Game is in progress */
+			game_in_progress = 1;
 
-            /* Wait for it */
-            pause_line(23);
+			/* Wait for it */
+			pause_line(23);
 
-            /* Flush input */
-            flush();
+			/* Flush input */
+			flush();
 
-            /* Play a game */
-            play_game(FALSE);
+			/* Play a game */
+			play_game(FALSE);
 
-            /* Quit */
-            quit(NULL);
-        }
+			/* Quit */
+			quit(NULL);
+		}
 
-        /* Oops */
-        else
-        {
-            /* Warning */
-            mac_warning("Could not open save file");
-        }
+		/* Oops */
+		else
+		{
+			/* Warning */
+			mac_warning("Could not open save file");
+		}
 
-        /* Stop looking */
-        break;
-    }
+		/* Stop looking */
+		break;
+	}
 
-    /* Forget the files */
-    for (i = 1; i <= n; i++) ClrAppFiles(i);
+	/* Forget the files */
+	for (i = 1; i <= n; i++) ClrAppFiles(i);
 }
 
 #endif
@@ -3014,503 +2799,418 @@ static void check_for_save_file(void)
  */
 static bool CheckEvents(bool wait)
 {
-    EventRecord event;
+	EventRecord event;
 
-    WindowPtr w;
+	WindowPtr w;
 
-    Rect r;
+	Rect r;
 
-    long newsize;
+	long newsize;
 
-    int ch, ck;
+	int ch, ck;
 
-    int mc, ms, mo, mx;
+	int mc, ms, mo, mx;
 
-    huge curTicks;
+	int i;
 
-    static huge lastTicks = 0L;
+	term_data *td = NULL;
 
+	huge curTicks;
 
-    /* Access the clock */
-    curTicks = TickCount();
-
-    /* Hack -- Allow efficient checking for non-pending events */
-    if (!wait && (curTicks < lastTicks + EVENT_TICKS)) return (FALSE);
-
-    /* Timestamp last check */
-    lastTicks = curTicks;
-
-    /* Let the "system" run */
-    SystemTask();
-
-    /* Get an event (or null) */
-    GetNextEvent(everyEvent, &event);
-
-    /* Hack -- Nothing is ready yet */
-    if (event.what == nullEvent) return (FALSE);
+	static huge lastTicks = 0L;
 
 
-    /* Analyze the event */
-    switch (event.what)
-    {
+	/* Access the clock */
+	curTicks = TickCount();
+
+	/* Hack -- Allow efficient checking for non-pending events */
+	if (!wait && (curTicks < lastTicks + EVENT_TICKS)) return (FALSE);
+
+	/* Timestamp last check */
+	lastTicks = curTicks;
+
+	/* Let the "system" run */
+	SystemTask();
+
+	/* Get an event (or null) */
+	GetNextEvent(everyEvent, &event);
+
+	/* Hack -- Nothing is ready yet */
+	if (event.what == nullEvent) return (FALSE);
+
+
+	/* Analyze the event */
+	switch (event.what)
+	{
 
 #if 0
 
-        case activateEvt:
+		case activateEvt:
+		{
+			w = (WindowPtr)event.message;
 
-            w = (WindowPtr)event.message;
+			activate(w);
 
-            activate(w);
-
-            break;
+			break;
+		}
 
 #endif
 
-        case updateEvt:
-
-            w = (WindowPtr)event.message;
+		case updateEvt:
+		{
+			/* Extract the window */
+			w = (WindowPtr)event.message;
+
+			/* Find the window */
+			for (i = 0; i < MAX_TERM_DATA; i++)
+			{
+				/* Skip dead windows */
+				if (!data[i].t) continue;
+
+				/* Notice matches */
+				if (data[i].w == w) td = &data[i];
+			}
+
+			/* Hack XXX XXX XXX */
+			BeginUpdate(w);
+			EndUpdate(w);
+
+			/* Redraw the window */
+			if (td) term_data_redraw(td);
+
+			break;
+		}
+
+		case keyDown:
+		case autoKey:
+		{
+			/* Extract some modifiers */
+			mc = (event.modifiers & controlKey) ? TRUE : FALSE;
+			ms = (event.modifiers & shiftKey) ? TRUE : FALSE;
+			mo = (event.modifiers & optionKey) ? TRUE : FALSE;
+			mx = (event.modifiers & cmdKey) ? TRUE : FALSE;
+
+			/* Keypress: (only "valid" if ck < 96) */
+			ch = (event.message & charCodeMask) & 255;
+
+			/* Keycode: see table above */
+			ck = ((event.message & keyCodeMask) >> 8) & 255;
+
+			/* Command + "normal key" -> menu action */
+			if (mx && (ck < 64))
+			{
+				/* Hack -- Prepare the menus */
+				setup_menus();
+
+				/* Mega-Hack -- allow easy exit if nothing to save */
+				if (!character_generated && (ch=='Q' || ch=='q')) ch = 'e';
+
+				/* Run the Menu-Handler */
+				menu(MenuKey(ch));
+
+				/* Turn off the menus */
+				HiliteMenu(0);
+
+				/* Done */
+				break;
+			}
+
+
+			/* Hide the mouse pointer */
+			ObscureCursor();
+
+
+			/* Normal key -> simple keypress */
+			if (ck < 64)
+			{
+				/* Enqueue the keypress */
+				Term_keypress(ch);
+			}
+
+			/* Hack -- normal "keypad keys" -> special keypress */
+			else if (!mc && !ms && !mo && !mx && (ck < 96))
+			{
+				/* Hack -- "enter" is confused */
+				if (ck == 76) ch = '\n';
+
+				/* Send control-caret as a trigger */
+				Term_keypress(30);
+
+				/* Send the "ascii" keypress */
+				Term_keypress(ch);
+			}
+
+			/* Bizarre key -> encoded keypress */
+			else if (ck <= 127)
+			{
+				/* Hack -- introduce with control-underscore */
+				Term_keypress(31);
+
+				/* Send some modifier keys */
+				if (mc) Term_keypress('C');
+				if (ms) Term_keypress('S');
+				if (mo) Term_keypress('O');
+				if (mx) Term_keypress('X');
+
+				/* Hack -- Downshift and encode the keycode */
+				Term_keypress('0' + (ck - 64) / 10);
+				Term_keypress('0' + (ck - 64) % 10);
+
+				/* Hack -- Terminate the sequence */
+				Term_keypress(13);
+			}
+
+			break;
+		}
+
+		case mouseDown:
+		{
+			int code;
+
+			/* Analyze click location */
+			code = FindWindow(event.where, &w);
+
+			/* Find the window */
+			for (i = 0; i < MAX_TERM_DATA; i++)
+			{
+				/* Skip dead windows */
+				if (!data[i].t) continue;
+
+				/* Notice matches */
+				if (data[i].w == w) td = &data[i];
+			}
+
+			/* Analyze */
+			switch (code)
+			{
+				case inMenuBar:
+				{
+					setup_menus();
+					menu(MenuSelect(event.where));
+					HiliteMenu(0);
+					break;
+				}
+
+				case inSysWindow:
+				{
+					SystemClick(&event, w);
+					break;
+				}
 
-            /* Hack XXX XXX XXX */
-            BeginUpdate(w);
-            EndUpdate(w);
+				case inDrag:
+				{
+					Point p;
 
-            /* Redraw the window */
-            if (w==screen.w) term_data_redraw(&screen);
-#ifdef GRAPHIC_MIRROR
-            if (w==mirror.w) term_data_redraw(&mirror);
-#endif /* GRAPHIC_MIRROR */
-#ifdef GRAPHIC_RECALL
-            if (w==recall.w) term_data_redraw(&recall);
-#endif /* GRAPHIC_RECALL */
-#ifdef GRAPHIC_CHOICE
-            if (w==choice.w) term_data_redraw(&choice);
-#endif /* GRAPHIC_CHOICE */
+					WindowPtr old_win;
 
-            break;
+					r = qd.screenBits.bounds;
+					r.top += 20; /* GetMBarHeight() XXX XXX XXX */
+					InsetRect(&r, 4, 4);
+					DragWindow(w, event.where, &r);
 
-        case keyDown:
-        case autoKey:
+					/* Oops */
+					if (!td) break;
 
-            /* Extract some modifiers */
-            mc = (event.modifiers & controlKey) ? TRUE : FALSE;
-            ms = (event.modifiers & shiftKey) ? TRUE : FALSE;
-            mo = (event.modifiers & optionKey) ? TRUE : FALSE;
-            mx = (event.modifiers & cmdKey) ? TRUE : FALSE;
+					/* Save */
+					old_win = active;
 
-            /* Keypress: (only "valid" if ck < 96) */
-            ch = (event.message & charCodeMask) & 255;
+					/* Activate */
+					activate(td->w);
 
-            /* Keycode: see table above */
-            ck = ((event.message & keyCodeMask) >> 8) & 255;
+					/* Analyze */
+					p.h = td->w->portRect.left;
+					p.v = td->w->portRect.top;
+					LocalToGlobal(&p);
+					td->r.left = p.h;
+					td->r.top = p.v;
+
+					/* Restore */
+					activate(old_win);
+
+					/* Check size */
+					term_data_check_size(td);
+
+					break;
+				}
+
+				case inGoAway:
+				{
+					/* Oops */
+					if (!td) break;
+
+					/* Track the go-away box */
+					if (TrackGoAway(w, event.where))
+					{
+						/* Not Mapped */
+						td->mapped = FALSE;
+
+						/* Not Mapped */
+						td->t->mapped_flag = FALSE;
+
+						/* Hide the window */
+						HideWindow(td->w);
+					}
+
+					break;
+				}
+
+				case inGrow:
+				{
+					int x, y;
+
+					term *old = Term;
+
+					/* Oops */
+					if (!td) break;
+
+					/* Fake rectangle */
+					r.left = 20 * td->font_wid + td->size_ow1;
+					r.right = 80 * td->font_wid + td->size_ow1 + td->size_ow2 + 1;
+					r.top = 1 * td->font_hgt + td->size_oh1;
+					r.bottom = 24 * td->font_hgt + td->size_oh1 + td->size_oh2 + 1;
+
+					/* Grow the rectangle */
+					newsize = GrowWindow(w, event.where, &r);
+
+					/* Handle abort */
+					if (!newsize) break;
+
+					/* Extract the new size in pixels */
+					y = HiWord(newsize) - td->size_oh1 - td->size_oh2;
+					x = LoWord(newsize) - td->size_ow1 - td->size_ow2;
+
+					/* Extract a "close" approximation */
+					td->rows = y / td->font_hgt;
+					td->cols = x / td->font_wid;
+
+					/* React to the new size */
+					term_data_check_size(td);
+
+					/* Activate */
+					Term_activate(td->t);
+
+					/* Hack -- Resize the term */
+					Term_resize(td->cols, td->rows);
+
+					/* Resize the window */
+					term_data_resize(td);
+
+					/* Restore */
+					Term_activate(old);
+
+					break;
+				}
+
+				case inContent:
+				{
+					SelectWindow(w);
+
+					break;
+				}
+			}
+
+			break;
+		}
+
+		/* Disk Event -- From "Maarten Hazewinkel" */
+		case diskEvt:
+		{
+			/* check for error when mounting the disk */
+			if (HiWord(event.message) != noErr)
+			{
+				Point p =
+				{120, 120};
+
+				DILoad();
+				DIBadMount(p, event.message);
+				DIUnload();
+			}
+
+			break;
+		}
+
+		/* OS Event -- From "Maarten Hazewinkel" */
+		case osEvt:
+		{
+			switch ((event.message >> 24) & 0x000000FF)
+			{
+				case suspendResumeMessage:
+
+				/* Resuming: activate the front window */
+				if (event.message & resumeFlag)
+				{
+					SetPort(FrontWindow());
+					SetCursor(&qd.arrow);
+				}
+
+				/* Suspend: deactivate the front window */
+				else
+				{
+					/* Nothing */
+				}
+
+				break;
+			}
+
+			break;
+		}
 
-            /* Command + "normal key" -> menu action */	
-            if (mx && (ck < 64))
-            {
-                /* Hack -- Prepare the menus */
-                setup_menus();
-
-                /* Mega-Hack -- allow easy exit if nothing to save */
-                if (!character_generated && (ch=='Q' || ch=='q')) ch = 'e';
-
-                /* Run the Menu-Handler */
-                menu(MenuKey(ch));
-
-                /* Turn off the menus */
-                HiliteMenu(0);
-
-                /* Done */
-                break;
-            }
-
-
-            /* Hide the mouse pointer */
-            ObscureCursor();
-
-
-            /* Normal key -> simple keypress */
-            if (ck < 64)
-            {
-                /* Enqueue the keypress */
-                Term_keypress(ch);
-            }
-
-            /* Hack -- normal "keypad keys" -> special keypress */
-            else if (!mc && !ms && !mo && !mx && (ck < 96))
-            {
-                /* Hack -- "enter" is confused */
-                if (ck == 76) ch = '\n';
-
-                /* Send control-caret as a trigger */
-                Term_keypress(30);
-
-                /* Send the "ascii" keypress */
-                Term_keypress(ch);
-            }
-
-            /* Bizarre key -> encoded keypress */
-            else if (ck <= 127)
-            {
-                /* Hack -- introduce with control-underscore */
-                Term_keypress(31);
-
-                /* Send some modifier keys */
-                if (mc) Term_keypress('C');
-                if (ms) Term_keypress('S');
-                if (mo) Term_keypress('O');
-                if (mx) Term_keypress('X');
-
-                /* Hack -- Downshift and encode the keycode */
-                Term_keypress('0' + (ck - 64) / 10);
-                Term_keypress('0' + (ck - 64) % 10);
-
-                /* Hack -- Terminate the sequence */
-                Term_keypress(13);
-            }
-
-            break;
-
-        case mouseDown:
-
-            switch (FindWindow(event.where,&w))
-            {
-                case inMenuBar:
-
-                    setup_menus();
-                    menu(MenuSelect(event.where));
-                    HiliteMenu(0);
-                    break;
-
-                case inSysWindow:
-
-                    SystemClick(&event,w);
-                    break;
-
-                case inDrag:
-
-                    r = qd.screenBits.bounds;
-                    r.top += 20; /* GetMBarHeight() XXX XXX XXX */
-                    InsetRect(&r,4,4);
-                    DragWindow(w,event.where,&r);
-                    break;
-
-                case inGoAway:
-
-                    if (TrackGoAway(w,event.where))
-                    {
-                        if (w == screen.w)
-                        {
-                             /* Hide */
-                             if (screen.mapped)
-                             {
-                                 /* Not Mapped */
-                                 screen.mapped = FALSE;
-
-                                 /* Not Mapped XXX XXX XXX */
-                                 screen.t.mapped_flag = FALSE;
-
-                                 /* Hide the window */
-                                 HideWindow(screen.w);
-                             }
-                        }
-
-#ifdef GRAPHIC_MIRROR
-
-                        if (w == mirror.w)
-                        {
-                             /* Hide */
-                             if (mirror.mapped)
-                             {
-                                 /* Not Mapped */
-                                 mirror.mapped = FALSE;
-
-                                 /* Not Mapped XXX XXX XXX */
-                                 mirror.t.mapped_flag = FALSE;
-
-                                 /* Hide the window */
-                                 HideWindow(mirror.w);
-                             }
-                        }
-
-#endif /* GRAPHIC_MIRROR */
-
-#ifdef GRAPHIC_RECALL
-
-                        if (w == recall.w)
-                        {
-                             /* Hide */
-                             if (recall.mapped)
-                             {
-                                 /* Not Mapped */
-                                 recall.mapped = FALSE;
-
-                                 /* Not Mapped XXX XXX XXX */
-                                 recall.t.mapped_flag = FALSE;
-
-                                 /* Hide the window */
-                                 HideWindow(recall.w);
-                             }
-                        }
-
-#endif /* GRAPHIC_RECALL */
-
-#ifdef GRAPHIC_CHOICE
-
-                        if (w == choice.w)
-                        {
-                             /* Hide */
-                             if (choice.mapped)
-                             {
-                                 /* Not Mapped */
-                                 choice.mapped = FALSE;
-
-                                 /* Not Mapped XXX XXX XXX */
-                                 choice.t.mapped_flag = FALSE;
-
-                                 /* Hide the window */
-                                 HideWindow(choice.w);
-                             }
-                        }
-
-#endif /* GRAPHIC_CHOICE */
-
-                    }
-
-                    break;
-
-                case inGrow:
-
-                    if (w == screen.w)
-                    {
-                        int x, y;
-
-                        term_data *td = &screen;
-
-                        r.left = 20 * td->font_wid + td->size_ow1;
-                        r.right = 80 * td->font_wid + td->size_ow1 + td->size_ow2 + 1;
-                        r.top = 1 * td->font_hgt + td->size_oh1;
-                        r.bottom = 24 * td->font_hgt + td->size_oh1 + td->size_oh2 + 1;
-                        newsize = GrowWindow(w, event.where, &r);
-                        if (!newsize) break;
-
-                        /* Extract the new size in pixels */
-                        y = HiWord(newsize) - td->size_oh1 - td->size_oh2;
-                        x = LoWord(newsize) - td->size_ow1 - td->size_ow2;
-
-                        /* Extract a "close" approximation */
-                        td->rows = y / td->font_hgt;
-                        td->cols = x / td->font_wid;
-
-                        /* React to the new size */
-                        term_data_check_size(td);
-
-                        /* Resize the window */
-                        term_data_resize(td);
-                    }
-
-#ifdef GRAPHIC_MIRROR
-
-                    if (w == mirror.w)
-                    {
-                        int x, y;
-
-                        term_data *td = &mirror;
-
-                        r.left = 20 * td->font_wid + td->size_ow1;
-                        r.right = 80 * td->font_wid + td->size_ow1 + td->size_ow2 + 1;
-                        r.top = 1 * td->font_hgt + td->size_oh1;
-                        r.bottom = 24 * td->font_hgt + td->size_oh1 + td->size_oh2 + 1;
-                        newsize = GrowWindow(w, event.where, &r);
-                        if (!newsize) break;
-
-                        /* Extract the new size in pixels */
-                        y = HiWord(newsize) - td->size_oh1 - td->size_oh2;
-                        x = LoWord(newsize) - td->size_ow1 - td->size_ow2;
-
-                        /* Extract a "close" approximation */
-                        td->rows = y / td->font_hgt;
-                        td->cols = x / td->font_wid;
-
-                        /* React to the new size */
-                        term_data_check_size(td);
-
-                        /* Resize the window */
-                        term_data_resize(td);
-                    }
-
-#endif /* GRAPHIC_MIRROR */
-
-#ifdef GRAPHIC_RECALL
-
-                    if (w == recall.w)
-                    {
-                        int x, y;
-
-                        term_data *td = &recall;
-
-                        r.left = 20 * td->font_wid + td->size_ow1;
-                        r.right = 80 * td->font_wid + td->size_ow1 + td->size_ow2 + 1;
-                        r.top = 1 * td->font_hgt + td->size_oh1;
-                        r.bottom = 24 * td->font_hgt + td->size_oh1 + td->size_oh2 + 1;
-                        newsize = GrowWindow(w, event.where, &r);
-                        if (!newsize) break;
-
-                        /* Extract the new size in pixels */
-                        y = HiWord(newsize) - td->size_oh1 - td->size_oh2;
-                        x = LoWord(newsize) - td->size_ow1 - td->size_ow2;
-
-                        /* Extract a "close" approximation */
-                        td->rows = y / td->font_hgt;
-                        td->cols = x / td->font_wid;
-
-                        /* React to the new size */
-                        term_data_check_size(td);
-
-                        /* Resize the window */
-                        term_data_resize(td);
-                    }
-
-#endif /* GRAPHIC_RECALL */
-
-#ifdef GRAPHIC_CHOICE
-
-                    if (w == choice.w)
-                    {
-                        int x, y;
-
-                        term_data *td = &choice;
-
-                        r.left = 20 * td->font_wid + td->size_ow1;
-                        r.right = 80 * td->font_wid + td->size_ow1 + td->size_ow2 + 1;
-                        r.top = 1 * td->font_hgt + td->size_oh1;
-                        r.bottom = 24 * td->font_hgt + td->size_oh1 + td->size_oh2 + 1;
-                        newsize = GrowWindow(w, event.where, &r);
-                        if (!newsize) break;
-
-                        /* Extract the new size in pixels */
-                        y = HiWord(newsize) - td->size_oh1 - td->size_oh2;
-                        x = LoWord(newsize) - td->size_ow1 - td->size_ow2;
-
-                        /* Extract a "close" approximation */
-                        td->rows = y / td->font_hgt;
-                        td->cols = x / td->font_wid;
-
-                        /* React to the new size */
-                        term_data_check_size(td);
-
-                        /* Resize the window */
-                        term_data_resize(td);
-                    }
-
-#endif /* GRAPHIC_CHOICE */
-
-                    break;
-
-                case inContent:
-
-                    SelectWindow(w);
-
-                    break;
-                }
-
-                break;
-
-
-                /* Disk Event -- From "Maarten Hazewinkel" */
-                case diskEvt:
-
-                    /* check for error when mounting the disk */
-                    if (HiWord(event.message) != noErr)
-                    {
-                        Point p = {120, 120};
-
-                        DILoad();
-                        DIBadMount(p, event.message);
-                        DIUnload();
-                    }
-
-                    break;
-
-
-                /* OS Event -- From "Maarten Hazewinkel" */
-                case osEvt:
-
-                    switch ((event.message >> 24) & 0x000000FF)
-                    {
-                        case suspendResumeMessage:
-
-                            /* Resuming: activate the front window */
-                            if (event.message & resumeFlag)
-                            {
-                                SetPort(FrontWindow());
-                                SetCursor(&qd.arrow);
-                            }
-
-                            /* Suspend: deactivate the front window */
-                            else
-                            {
-                                /* Nothing */
-                            }
-
-                            break;
-                    }
-
-                    break;
-			
 #ifdef USE_SFL_CODE
 
-                /* From "Steve Linberg" and "Maarten Hazewinkel" */
-                case kHighLevelEvent:
+		/* From "Steve Linberg" and "Maarten Hazewinkel" */
+		case kHighLevelEvent:
+		{
+			/* Process apple events */
+			if (AEProcessAppleEvent(&event) != noErr)
+			{
+				plog("Error in Apple Event Handler!");
+			}
 
-                    /* Process apple events */
-                    if (AEProcessAppleEvent(&event) != noErr)
-                    {
-                        plog("Error in Apple Event Handler!");
-                    }
+			/* Hack -- handle "quit" event */
+			if (quit_when_ready)
+			{
+				/* Forget */
+				quit_when_ready = FALSE;
 
-                    /* Hack -- handle "quit" event */
-                    if (quit_when_ready)
-                    {
-                        /* Forget */
-                        quit_when_ready = FALSE;
+				/* Do the menu key */
+				menu(MenuKey('q'));
 
-                        /* Do the menu key */
-                        menu(MenuKey('q'));
+				/* Turn off the menus */
+				HiliteMenu(0);
+			}
 
-                        /* Turn off the menus */
-                        HiliteMenu(0);
-                    }
+			/* Check the flag XXX XXX XXX make a function for this */
+			if (open_when_ready && initialized && !game_in_progress)
+			{
+				/* Forget */
+				open_when_ready = FALSE;
 
-                    /* Check the flag XXX XXX XXX make a function for this */
-                    if (open_when_ready && initialized && !game_in_progress)
-                    {
-                        /* Forget */
-                        open_when_ready = FALSE;
+				/* Game is in progress */
+				game_in_progress = 1;
 
-                        /* Game is in progress */
-                        game_in_progress = 1;
+				/* Wait for it */
+				pause_line(23);
 
-                        /* Wait for it */
-                        pause_line(23);
-	
-                        /* Flush input */
-                        flush();
-	
-                        /* Play a game */
-                        play_game(FALSE);
+				/* Flush input */
+				flush();
 
-                        /* Quit */
-                        quit(NULL);
-                    }
+				/* Play a game */
+				play_game(FALSE);
 
-                    break;
+				/* Quit */
+				quit(NULL);
+			}
+
+			break;
+		}
 
 #endif
 
-    }
+	}
 
 
-    /* Something happened */
-    return (TRUE);
+	/* Something happened */
+	return (TRUE);
 }
 
 
@@ -3530,13 +3230,13 @@ static vptr lifeboat = NULL;
  */
 static errr hook_rnfree(vptr v, huge size)
 {
-    #pragma unused (size)
+#pragma unused (size)
 
-    /* Dispose */
-    DisposePtr(v);
+	/* Dispose */
+	DisposePtr(v);
 
-    /* Success */
-    return (0);
+	/* Success */
+	return (0);
 }
 
 /*
@@ -3544,8 +3244,8 @@ static errr hook_rnfree(vptr v, huge size)
  */
 static vptr hook_ralloc(huge size)
 {
-    /* Make a new pointer */
-    return (NewPtr(size));
+	/* Make a new pointer */
+	return (NewPtr(size));
 }
 
 /*
@@ -3553,28 +3253,28 @@ static vptr hook_ralloc(huge size)
  */
 static vptr hook_rpanic(huge size)
 {
-    #pragma unused (size)
+#pragma unused (size)
 
-    vptr mem = NULL;
+	vptr mem = NULL;
 
-    /* Free the lifeboat */
-    if (lifeboat)
-    {
-        /* Free the lifeboat */
-        DisposePtr(lifeboat);
+	/* Free the lifeboat */
+	if (lifeboat)
+	{
+		/* Free the lifeboat */
+		DisposePtr(lifeboat);
 
-        /* Forget the lifeboat */
-        lifeboat = NULL;
+		/* Forget the lifeboat */
+		lifeboat = NULL;
 
-        /* Mega-Hack -- Warning */
-        mac_warning("Running out of Memory!\rAbort this process now!");
+		/* Mega-Hack -- Warning */
+		mac_warning("Running out of Memory!\rAbort this process now!");
 
-        /* Mega-Hack -- Never leave this function */
-        while (TRUE) CheckEvents(TRUE);
-    }
+		/* Mega-Hack -- Never leave this function */
+		while (TRUE) CheckEvents(TRUE);
+	}
 
-    /* Mega-Hack -- Crash */
-    return (NULL);
+	/* Mega-Hack -- Crash */
+	return (NULL);
 }
 
 
@@ -3583,8 +3283,8 @@ static vptr hook_rpanic(huge size)
  */
 static void hook_plog(cptr str)
 {
-    /* Warning message */
-    mac_warning(str);
+	/* Warning message */
+	mac_warning(str);
 }
 
 /*
@@ -3592,14 +3292,14 @@ static void hook_plog(cptr str)
  */
 static void hook_quit(cptr str)
 {
-    /* Warning if needed */
-    if (str) mac_warning(str);
+	/* Warning if needed */
+	if (str) mac_warning(str);
 
-    /* Write a preference file */
-    save_pref_file();
+	/* Write a preference file */
+	save_pref_file();
 
-    /* All done */
-    ExitToShell();
+	/* All done */
+	ExitToShell();
 }
 
 /*
@@ -3607,35 +3307,20 @@ static void hook_quit(cptr str)
  */
 static void hook_core(cptr str)
 {
-    /* XXX Use the debugger */
-    /* DebugStr(str); */
+	/* XXX Use the debugger */
+	/* DebugStr(str); */
 
-    /* Warning */
-    if (str) mac_warning(str);
+	/* Warning */
+	if (str) mac_warning(str);
 
-    /* Warn, then save player */
-    mac_warning("Fatal error.\rI will now attempt to save and quit.");
+	/* Warn, then save player */
+	mac_warning("Fatal error.\rI will now attempt to save and quit.");
 
-    /* Attempt to save */
-    if (!save_player()) mac_warning("Warning -- save failed!");
+	/* Attempt to save */
+	if (!save_player()) mac_warning("Warning -- save failed!");
 
-    /* Quit */
-    quit(NULL);
-}
-
-
-
-/*** Required "Angband Functions" ***/
-
-/*
- * Hack -- Delay for "x" milliseconds (see "util.c")
- */
-void delay(int x)
-{
-    long m = TickCount() + (x * 60L) / 1000;
-
-    /* Wait for it */
-    while (TickCount() < m) ;
+	/* Quit */
+	quit(NULL);
 }
 
 
@@ -3659,90 +3344,92 @@ void delay(int x)
  */
 static void init_stuff(void)
 {
-    int i;
+	int i;
 
-    short vrefnum;
-    long drefnum;
-    long junk;
+	short vrefnum;
+	long drefnum;
+	long junk;
 
-    SFTypeList types;
-    SFReply reply;
+	SFTypeList types;
+	SFReply reply;
 
-    Rect r;
-    Point topleft;
+	Rect r;
+	Point topleft;
 
-    char path[1024];
-
-
-    /* Fake rectangle */
-    r.left = 0;
-    r.top = 0;
-    r.right = 344;
-    r.bottom = 188;
-
-    /* Center it */
-    center_rect(&r, &qd.screenBits.bounds);
-
-    /* Extract corner */
-    topleft.v = r.top;
-    topleft.h = r.left;
+	char path[1024];
 
 
-    /* Default to the "lib" folder with the application */
-    refnum_to_name(path, app_dir, app_vol, (char*)("\plib:"));
+	/* Fake rectangle */
+	r.left = 0;
+	r.top = 0;
+	r.right = 344;
+	r.bottom = 188;
+
+	/* Center it */
+	center_rect(&r, &qd.screenBits.bounds);
+
+	/* Extract corner */
+	topleft.v = r.top;
+	topleft.h = r.left;
 
 
-    /* Check until done */
-    while (1)
-    {
-        /* Prepare the paths */
-        init_file_paths(path);
+	/* Default to the "lib" folder with the application */
+	refnum_to_name(path, app_dir, app_vol, (char*)("\plib:"));
 
-        /* Check for "news.txt" */
-        strcpy(path, ANGBAND_DIR_FILE);
-        strcat(path, "news.txt");
 
-        /* Attempt to open and close that file */
-        if (0 == fd_close(fd_open(path, O_RDONLY))) break;
+	/* Check until done */
+	while (1)
+	{
+		/* Prepare the paths */
+		init_file_paths(path);
 
-        /* Warning */
-        plog("Warning -- Unable to locate the Angband 'lib' folder.");
+		/* Build the filename */
+		path_build(path, 1024, ANGBAND_DIR_FILE, "news.txt");
 
-        /* Warning */
-        plog("Please 'open' any file in any sub-folder of the 'lib' folder.");
+		/* Attempt to open and close that file */
+		if (0 == fd_close(fd_open(path, O_RDONLY))) break;
 
-        /* Allow "text" files */
-        types[0] = 'TEXT';
+		/* Warning */
+		plog_fmt("Unable to open the '%s' file.", path);
 
-        /* Allow "save" files */
-        types[1] = 'SAVE';
+		/* Warning */
+		plog("The Angband 'lib' folder is probably missing or misplaced.");
 
-        /* Allow "data" files */
-        types[2] = 'DATA';
+		/* Warning */
+		plog("Please 'open' any file in any sub-folder of the 'lib' folder.");
 
-        /* Get any file */
-        SFGetFile(topleft, "\p", NULL, 3, types, NULL, &reply);
+		/* Allow "text" files */
+		types[0] = 'TEXT';
 
-        /* Allow cancel */
-        if (!reply.good) quit(NULL);
+		/* Allow "save" files */
+		types[1] = 'SAVE';
 
-        /* Extract textual file name for given file */
-        GetWDInfo(reply.vRefNum, &vrefnum, &drefnum, &junk);
-        refnum_to_name(path, drefnum, vrefnum, (char*)reply.fName);
+		/* Allow "data" files */
+		types[2] = 'DATA';
 
-        /* Hack -- Remove the "filename" */
-        i = strlen(path) - 1;
-        while ((i > 0) && (path[i] != ':')) i--;
-        if (path[i] == ':') path[i+1] = '\0';
+		/* Get any file */
+		SFGetFile(topleft, "\p", NULL, 3, types, NULL, &reply);
 
-        /* Hack -- allow "lib" folders */
-        if (suffix(path, "lib:")) continue;
+		/* Allow cancel */
+		if (!reply.good) quit(NULL);
 
-        /* Hack -- Remove the "sub-folder" */
-        i = i - 1;
-        while ((i > 1) && (path[i] != ':')) i--;
-        if (path[i] == ':') path[i+1] = '\0';
-    }
+		/* Extract textual file name for given file */
+		GetWDInfo(reply.vRefNum, &vrefnum, &drefnum, &junk);
+		refnum_to_name(path, drefnum, vrefnum, (char*)reply.fName);
+
+		/* Hack -- Remove the "filename" */
+		i = strlen(path) - 1;
+		while ((i > 0) && (path[i] != ':')) i--;
+		if (path[i] == ':') path[i+1] = '\0';
+
+		/* Hack -- allow "lib" folders */
+		if (suffix(path, "lib:")) continue;
+
+		/* Hack -- Remove the "sub-folder" */
+		i = i - 1;
+		while ((i > 1) && (path[i] != ':')) i--;
+		if (path[i] == ':') path[i+1] = '\0';
+	}
 }
 
 
@@ -3751,182 +3438,182 @@ static void init_stuff(void)
  */
 void main(void)
 {
-    int i;
+	int i;
 
 
-    /* Increase stack space by 64K */
-    SetApplLimit(GetApplLimit() - 65536L);
+	/* Increase stack space by 64K */
+	SetApplLimit(GetApplLimit() - 65536L);
 
-    /* Stretch out the heap to full size */
-    MaxApplZone();
+	/* Stretch out the heap to full size */
+	MaxApplZone();
 
-    /* Set up the Macintosh */
-    InitGraf(&qd.thePort);
-    InitFonts();
-    InitWindows();
-    InitMenus();
-    /* TEInit(); */
-    InitDialogs(0);
-    InitCursor();
+	/* Set up the Macintosh */
+	InitGraf(&qd.thePort);
+	InitFonts();
+	InitWindows();
+	InitMenus();
+	/* TEInit(); */
+	InitDialogs(0);
+	InitCursor();
 
 
 #if defined(powerc) || defined(__powerc)
 
-    /* Assume many things */
-    has_seven = has_color = TRUE;
+	/* Assume many things */
+	has_seven = has_color = TRUE;
 
 #else
 
-    /* Block */
-    if (TRUE)
-    {
-	SysEnvRec env;
+	/* Block */
+	if (TRUE)
+	{
+		SysEnvRec env;
 
-        /* Check the environs */
-        if (SysEnvirons(1, &env) == noErr)
-        {
-            /* Check for Color Quickdraw */
-            if (env.hasColorQD) has_color = TRUE;
+		/* Check the environs */
+		if (SysEnvirons(1, &env) == noErr)
+		{
+			/* Check for Color Quickdraw */
+			if (env.hasColorQD) has_color = TRUE;
 
-            /* Check for System Seven Stuff */
-            if (env.systemVersion >= 0x0700) has_seven = TRUE;
-        }
-    }
+			/* Check for System Seven Stuff */
+			if (env.systemVersion >= 0x0700) has_seven = TRUE;
+		}
+	}
 
 #endif
 
 
 #ifdef USE_SFL_CODE
 
-    /* System 7 */
-    if (has_seven)
-    {
-        /* Obtain a "Universal Procedure Pointer" */
-        AEH_Start_UPP = NewAEEventHandlerProc(AEH_Start);
+	/* System 7 */
+	if (has_seven)
+	{
+		/* Obtain a "Universal Procedure Pointer" */
+		AEH_Start_UPP = NewAEEventHandlerProc(AEH_Start);
 
-        /* Install the hook (ignore error codes) */
-        AEInstallEventHandler(kCoreEventClass, kAEOpenApplication, AEH_Start_UPP,
-                              0L, FALSE);
+		/* Install the hook (ignore error codes) */
+		AEInstallEventHandler(kCoreEventClass, kAEOpenApplication, AEH_Start_UPP,
+		                      0L, FALSE);
 
-        /* Obtain a "Universal Procedure Pointer" */
-        AEH_Quit_UPP = NewAEEventHandlerProc(AEH_Quit);
+		/* Obtain a "Universal Procedure Pointer" */
+		AEH_Quit_UPP = NewAEEventHandlerProc(AEH_Quit);
 
-        /* Install the hook (ignore error codes) */
-        AEInstallEventHandler(kCoreEventClass, kAEQuitApplication, AEH_Quit_UPP,
-                              0L, FALSE);
+		/* Install the hook (ignore error codes) */
+		AEInstallEventHandler(kCoreEventClass, kAEQuitApplication, AEH_Quit_UPP,
+		                      0L, FALSE);
 
-        /* Obtain a "Universal Procedure Pointer" */
-        AEH_Print_UPP = NewAEEventHandlerProc(AEH_Print);
+		/* Obtain a "Universal Procedure Pointer" */
+		AEH_Print_UPP = NewAEEventHandlerProc(AEH_Print);
 
-        /* Install the hook (ignore error codes) */
-        AEInstallEventHandler(kCoreEventClass, kAEPrintDocuments, AEH_Print_UPP,
-                              0L, FALSE);
+		/* Install the hook (ignore error codes) */
+		AEInstallEventHandler(kCoreEventClass, kAEPrintDocuments, AEH_Print_UPP,
+		                      0L, FALSE);
 
-        /* Obtain a "Universal Procedure Pointer" */
-        AEH_Open_UPP = NewAEEventHandlerProc(AEH_Open);
+		/* Obtain a "Universal Procedure Pointer" */
+		AEH_Open_UPP = NewAEEventHandlerProc(AEH_Open);
 
-        /* Install the hook (ignore error codes) */
-        AEInstallEventHandler(kCoreEventClass, kAEOpenDocuments, AEH_Open_UPP,
-                              0L, FALSE);
-    }
+		/* Install the hook (ignore error codes) */
+		AEInstallEventHandler(kCoreEventClass, kAEOpenDocuments, AEH_Open_UPP,
+		                      0L, FALSE);
+	}
 
 #endif
 
 
-    /* Find the current application */
-    SetupAppDir();
+	/* Find the current application */
+	SetupAppDir();
 
 
 #if defined(MACINTOSH) && !defined(applec)
 
-    /* Mark ourself as the file creator */
-    _fcreator = 'A271';
+	/* Mark ourself as the file creator */
+	_fcreator = 'A271';
 
-    /* Default to saving a "text" file */
-    _ftype = 'TEXT';
+	/* Default to saving a "text" file */
+	_ftype = 'TEXT';
 
 #endif
 
 
 #if defined(__MWERKS__)
 
-    /* Obtian a "Universal Procedure Pointer" */
-    ynfilterUPP = NewModalFilterProc(ynfilter);
+	/* Obtian a "Universal Procedure Pointer" */
+	ynfilterUPP = NewModalFilterProc(ynfilter);
 
 #endif
 
 
-    /* Hook in some "z-virt.c" hooks */
-    rnfree_aux = hook_rnfree;
-    ralloc_aux = hook_ralloc;
-    rpanic_aux = hook_rpanic;
+	/* Hook in some "z-virt.c" hooks */
+	rnfree_aux = hook_rnfree;
+	ralloc_aux = hook_ralloc;
+	rpanic_aux = hook_rpanic;
 
-    /* Hooks in some "z-util.c" hooks */
-    plog_aux = hook_plog;
-    quit_aux = hook_quit;
-    core_aux = hook_core;
-
-
-    /* Prepare the menubar */
-    init_menubar();
-
-    /* Prepare the windows */
-    init_windows();
+	/* Hooks in some "z-util.c" hooks */
+	plog_aux = hook_plog;
+	quit_aux = hook_quit;
+	core_aux = hook_core;
 
 
-    /* Hack -- process all events */
-    while (CheckEvents(TRUE)) ;
+	/* Prepare the menubar */
+	init_menubar();
+
+	/* Prepare the windows */
+	init_windows();
 
 
-    /* Hack -- extract the "color_table" data */
-    for (i = 0; i < 16; i++)
-    {
-        /* Extract the R,G,B values */
-        color_table[i][1] = (mac_clr[i].red >> 8);
-        color_table[i][2] = (mac_clr[i].green >> 8);
-        color_table[i][3] = (mac_clr[i].blue >> 8);
-    }
+	/* Hack -- process all events */
+	while (CheckEvents(TRUE)) /* loop */;
 
 
-    /* Initialize some stuff */
-    init_stuff();
-
-    /* Display the "news" screen */
-    show_news();
-
-    /* Initialize some arrays */
-    init_some_arrays();
-
-    /* Hack -- assume wizard permissions */
-    can_be_wizard = TRUE;
-
-    /* Hack -- Use the "pref-mac.prf" file */
-    ANGBAND_SYS = "mac";
-
-    /* Mega-Hack -- Allocate a "lifeboat" */
-    lifeboat = NewPtr(16384);
+	/* Hack -- extract the "color_table" data */
+	for (i = 0; i < 16; i++)
+	{
+		/* Extract the R,G,B values */
+		color_table[i][1] = (mac_clr[i].red >> 8);
+		color_table[i][2] = (mac_clr[i].green >> 8);
+		color_table[i][3] = (mac_clr[i].blue >> 8);
+	}
 
 
-    /* Hack -- process all events */
-    while (CheckEvents(TRUE)) ;
+	/* Initialize some stuff */
+	init_stuff();
+
+	/* Display the "news" screen */
+	show_news();
+
+	/* Initialize some arrays */
+	init_some_arrays();
+
+	/* Hack -- assume wizard permissions */
+	can_be_wizard = TRUE;
+
+	/* Hack -- Use the "pref-mac.prf" file */
+	ANGBAND_SYS = "mac";
+
+	/* Mega-Hack -- Allocate a "lifeboat" */
+	lifeboat = NewPtr(16384);
 
 
-    /* We are now initialized */
-    initialized = TRUE;
+	/* Hack -- process all events */
+	while (CheckEvents(TRUE)) /* loop */;
 
 
-    /* Check for double-clicked save file */
-    check_for_save_file();
+	/* We are now initialized */
+	initialized = TRUE;
 
 
-    /* Prompt the user */
-    prt("[Choose 'New' or 'Open' from the 'File' menu]", 23, 15);
-
-    /* Flush the prompt */
-    Term_fresh();
+	/* Check for double-clicked save file */
+	check_for_save_file();
 
 
-    /* Hack -- Process Events Forever */
-    while (TRUE) CheckEvents(TRUE);
+	/* Prompt the user */
+	prt("[Choose 'New' or 'Open' from the 'File' menu]", 23, 15);
+
+	/* Flush the prompt */
+	Term_fresh();
+
+
+	/* Hack -- Process Events Forever */
+	while (TRUE) CheckEvents(TRUE);
 }
 

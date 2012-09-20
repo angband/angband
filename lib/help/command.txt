@@ -1,8 +1,6 @@
 === List of Commands ===
 
 
-1.  Introduction
-
     Angband commands are entered as an "underlying command" (a single key)
 plus a variety of optional or required arguments.  You may choose how the
 "keyboard keys" are mapped to the "underlying commands" by choosing one of
@@ -64,11 +62,9 @@ an "original" direction key (or a "roguelike" direction key if you are using
 the roguelike keyset), instead of using the "walk" command plus a direction.
 The roguelike keyset allows you to "run" or "tunnel" by simply holding the
 shift or control modifier key down while pressing a "roguelike" direction key,
-instead of using the "run" or "tunnel" command plus a direction.  The original
-(or roguelike) keyset allows you to use the "w" and "t" (or the "w" and "T")
-keys instead of the "[" and "]" keys to "wear/wield" or "take off" equipment.
-Both keysets allow the use of the "5" key to "stand still", which is often
-very convenient when using the original keyset.
+instead of using the "run" or "tunnel" command plus a direction.  Both keysets
+allow the use of the "5" key to "stand still", which is most convenient when
+using the original keyset.
 
     Note that on many systems, it is possible to define "macros" (or "command
 macros") to various keys, or key combinations, so that it is often possible to
@@ -78,7 +74,7 @@ the given direction, regardless of any keymap definitions, by using the fact
 that you can always, for example, use "\" + "." + "6", to specify "run east".
 
 
-2.  Original Keyset Command Summary (2.7.9)
+=== Original Keyset Command Summary (2.7.9) ===
 
  a  Aim a wand                           A  Activate an artifact
  b  Browse a book                        B  Bash a door
@@ -118,10 +114,10 @@ that you can always, for example, use "\" + "." + "6", to specify "run east".
  )  Dump screen dump                    ^J  (special - linefeed)
  {  Inscribe an object                  ^K  (unused)
  }  Uninscribe an object                ^L  (unused)
- [  Wear/Wield equipment                ^M  (special - return)
- ]  Take off equipment                  ^N  (unused)
+ [  (unused)                            ^M  (special - return)
+ ]  (unused)                            ^N  (unused)
  -  Walk (flip pickup)                  ^O  (unused)
- _  (unused)                            ^P  Show previous messages
+ _  Enter store                         ^P  Show previous messages
  +  Dig tunnel                          ^Q  (unused)
  =  Set options                         ^R  Redraw the screen
  ;  Walk (with pickup)                  ^S  Save and don't quit
@@ -138,7 +134,7 @@ that you can always, for example, use "\" + "." + "6", to specify "run east".
 
 
 
-3.  Roguelike Keyset Command Summary (2.7.9)
+===  Roguelike Keyset Command Summary (2.7.9) ===
 
  a  Zap a rod (Activate)                 A  Activate an artifact
  b  (walk - south west)                  B  (run - south west)
@@ -178,10 +174,10 @@ that you can always, for example, use "\" + "." + "6", to specify "run east".
  )  Dump screen dump                    ^J  (tunnel - south)
  {  Inscribe an object                  ^K  (tunnel - north)
  }  Uninscribe an object                ^L  (tunnel - east)
- [  Wear/Wield equipment                ^M  (tunnel - south)
- ]  Take off equipment                  ^N  (tunnel - south east)
+ [  (unused)                            ^M  (tunnel - south)
+ ]  (unused)                            ^N  (tunnel - south east)
  -  Walk (flip pickup)                  ^O  (unused)
- _  (unused)                            ^P  Show previous messages
+ _  Enter store                         ^P  Show previous messages
  +  Dig tunnel                          ^Q  (unused)
  =  Set options                         ^R  Redraw the screen
  ;  Walk (with pickup)                  ^S  Save and don't quit
@@ -198,7 +194,7 @@ that you can always, for example, use "\" + "." + "6", to specify "run east".
 
 
 
-4.  Special Keys
+=== Special Keys ===
  
         Certain special keys may be intercepted by the operating system or
 the host machine, causing unexpected results.  In general, these special keys
@@ -238,7 +234,7 @@ the displayed message) by pressing ESCAPE, SPACE, RETURN, LINEFEED, or by
 any keypress, if the "quick_messages" option is turned on.
  
 
-5.  Command Counts
+===  Command Counts ===
  
         Some commands can be executed a fixed number of times by preceding
 them with a count.  Counted commands will execute until the count expires,
@@ -264,7 +260,7 @@ with commands you normally want to repeat (open, disarm, tunnel, bash)
 by setting the "always_repeat" option.
  
  
-6.  Selection of Objects
+===  Selection of Objects ===
  
         Many commands will also prompt for a particular object to be used.
 For example, the command to read a scroll will ask you which of the
@@ -314,7 +310,7 @@ accident, and inscribing "!*" on an object will allow you to be very paranoid
 about the object.  Note that "selling" and "dropping" both use the "d" command.
 
 
-7.  User Pref Files
+===  User Pref Files ===
 
         Angband allows you to change various aspects of the game to suit
 your tastes.  You may define keymaps (changing the way Angband maps your
@@ -359,7 +355,7 @@ way than the user pref commands allow.  The commands include "Interact with
 macros" (@), "Interact with visuals" (%), and "Interact with colors" (&),
 described below.
 
-7.1.  User Pref Files (Macros)
+---  User Pref Files (Macros) ---
 
         The "Interact with macros" command allows you to define or remove
 "macros", which are mappings from a single logical keypress to a sequence
@@ -406,7 +402,7 @@ command macros rather than normal macros, though, for example, normal macros
 can be told to produce a leading sequence of keys starting with "\e\e\e\e",
 which will clear any "-more-" prompts or other silliness.
 
-7.2.  User Pref Files (Keymaps)
+--- User Pref Files (Keymaps) ---
 
         The "Interact with macros" command also allows you to define
 "keymaps", which are vaguely related to macros.  A keymap maps a single
@@ -415,9 +411,9 @@ uses keymaps internally to map both the original and the roguelike keysets
 to the underlying command set.  This means that when you are defining
 keymaps, the keypress you map a key to must be an underlying command, not
 a keypress from the original or roguelike keysets.  Note that the original
-keyset is almost identical to the underlying keyset, with the addition of
-a few keymaps, such as numerical directions to ";" + direction, "T" to "+",
-"5" to ",", "w" to "[", and "t" to "]".  See below for the full set of
+keyset is almost identical to the underlying keyset, except that "numbers"
+are mapped to "," or ";" plus a direction, "T" is mapped to "+", and a few
+control-keys are mapped to various things.  See below for the full set of
 underlying commands.  Normally, there is no reason to use a keymap, unless
 you want to prevent accidental use of certain commands, and you are afraid
 those commands might be contained in some macro action.  Also, you could
@@ -433,7 +429,7 @@ the "<map>" key, with optional direction "<dir>".  Note that both "<key>" and
 use of the "5" direction might be allowed to specify automatic use of the
 current target (if legal) with the given keymap.
 
-7.3.  User Pref Files (Visuals)
+---  User Pref Files (Visuals) ---
 
         You can use the "Interact with visuals" command to change various
 visual information, currently including the choice of what attr/char values
@@ -453,7 +449,7 @@ and your system supports the "use_graphics" flag.
         Note that this command can be abused in various ways, and if you
 must do so, remember that you are only cheating yourself.
 
-7.3.  User Pref Files (Colors)
+---  User Pref Files (Colors) ---
 
         The "Interact with colors" command allows you to change the actual
 internal values used to display various colors.  This command may or may
@@ -462,14 +458,14 @@ change the actual RGB values used to represent each of the 16 colors used
 by Angband, and perhaps even allow you to define new colors which are not
 currently used by Angband.
 
-7.4.  User Pref Files (Options)
+---  User Pref Files (Options) ---
 
         The "Interact with options" command allows you to turn options
 on or off.  You may turn options off or on using the user pref commands
 of the form "X:<option>" or "Y:<option>" respectively.
 
  
-8.  Command Descriptions
+===  Command Descriptions ===
 
         The following command descriptions are listed as the command name
 plus the "underlying command" key.  This is followed by the command name
@@ -484,7 +480,7 @@ which need a "quantity" will use the "repeat count" instead of asking for
 a quantity, allowing the use of "0d" for "drop all".  Commands which ask
 for a quantity will convert any "letters" into the maximal legal value.
 
-8.1.  Inventory Commands
+---  Inventory Commands ---
 
 Inventory list (i)
         Displays a list of objects being carried but not equipped.  You
@@ -522,24 +518,22 @@ Destroy an item (k) or Destroy an item (^D)
         If the selected pile contains multiple objects, you may specify
         a quantity.  You must always (currently) verify this command.
 
-Wear/Wield equipment ([)
+Wear/Wield equipment (w)
         To wear or wield an object in your inventory, use this command.
         Since only one object can be in each slot at a time, if you wear
         or wield an item into a slot which is already occupied, the old
         item will be first be taken off, and may in fact be dropped if
-        there is no room for it in your inventory.  You may also use the
-        "w" key (both keysets).
+        there is no room for it in your inventory.
 
-Take off equipment (])
+Take off equipment (t) or Take off equipment (T)
         Use this command to take off a piece of equipment and return it
         to your inventory.  Occasionally, you will run into a cursed item
         which cannot be removed.  These items normally penalize you in some
         way and cannot be taken off until the curse is removed.  If there
         is no room in your inventory for the item, your pack will overflow
-        and you will drop the item after taking it off.  You may also use
-        the "t" key (original keyset) or the "T" key (roguelike keyset).
+        and you will drop the item after taking it off.
 
-8.2.  Movement Commands
+---  Movement Commands ---
 
 Walk (with pickup) (;)
         Moves one step in the given direction.  The square you are moving
@@ -603,7 +597,7 @@ Go down staircase (>)
         the quest monster is killed.  Going down a staircase will take you
         to a new dungeon level.  See "Go Up Staircase" for more info.
 
-8.3.   Resting Commands
+---   Resting Commands ---
 
 Stay still (with pickup) (,) or Stay still (with pickup) (.)
         Stays in the same square for one move.  If you normally pick up
@@ -629,7 +623,7 @@ Rest (R)
         restored, or "&" to rest until you are fully "healed".  This command
         can take a count, which is used for the number of turns to rest.
 
-8.4.  Searching Commands
+---  Searching Commands ---
 
 Search (s)
         This command can be used to locate hidden traps and secret doors
@@ -650,7 +644,7 @@ Toggle search mode (S) or Toggle search mode (#)
         are disturbed.  You may also turn off search mode by entering the
         Search Mode command again.
 
-8.5.  Door, Chest, Trap, and Bash Commands
+---  Door, Chest, Trap, and Bash Commands ---
 
 Open a door or chest (o)
         To open an object such as a door or chest, you must use this
@@ -692,7 +686,7 @@ Disarm a trap or chest (D)
         can only disarm a trap after you have found it (usually with the
         Search command).  Disarm can take a count and requires a direction.
 
-8.6.  Spell and Prayer Commands
+---  Spell and Prayer Commands ---
 
 Browse a book (b) or Peruse a book (P)
         Only mages, rogues, and rangers can read magic books, and only
@@ -734,7 +728,7 @@ Pray a prayer (p)
         Since you must read the prayer from a book, you cannot be blind
         or confused while praying, and there must be some light present.
 
-8.7.  Object Manipulation Commands
+---  Object Manipulation Commands ---
 
 Eat some food (E)
         You must eat regularly to prevent starvation.  As you grow hungry,
@@ -788,7 +782,7 @@ Uninscribe an object (})
         This command removes the inscription on an object.  This command will
         have no effect on "fake" inscriptions added by the game itself.
 
-8.8.  Magical Object Commands
+---  Magical Object Commands ---
 
 Activate an artifact (A)
         You have heard rumors of special weapons and armor deep in the
@@ -824,7 +818,7 @@ Zap a rod (z) or Activate a rod (a)
         This command may require a direction (depending on the type of
         rod, and whether you are aware of its type) and can use a target.
 
-8.9.  Throwing and Missile Weapons
+---  Throwing and Missile Weapons ---
 
 Fire an item (f) or Fire an item (t)
         You may throw any object carried by your character.  Depending on
@@ -892,7 +886,7 @@ Targeting Mode (*)
         not stopped by interposed monsters if the ball is launched at a target.
         This command takes no time.
         
-8.10.  Looking Commands
+---  Looking Commands ---
 
 Full screen map (M)
         This command will show a map of the entire dungeon, reduced by a
@@ -929,7 +923,7 @@ Observe an item (I)
         This will tell you things about the special powers of the object.
         Currently, it only makes sense for artifacts and ego-items.
 
-8.11.  Message Commands
+--- Message Commands ---
 
 Repeat level feeling (^F)
         Repeats the feeling about the dungeon level that you got when you
@@ -944,7 +938,7 @@ Take notes (:)
         your message list (prefixed with "Note:").  This command takes
         no time.
 
-8.12.  Game Status Commands
+--- Game Status Commands ---
 
 Character Description (C)
         Brings up a full description of your character, including your
@@ -967,7 +961,7 @@ Check Uniques (|)
         Brings up a list of known unique monsters, plus their current
         status.  Once killed, unique monsters never show up again.
 
-8.13.  Saving and Exiting Commands
+--- Saving and Exiting Commands ---
 
 Save and Quit (Ctrl-X)
         To save your game so that you can return to it later, use this
@@ -985,7 +979,7 @@ Quit (commit suicide) (Q)
         make sure you really want to do this, and then asked to verify
         that choice.  Note that dead characters are dead forever.
 
-8.14.  User pref file commands
+--- User pref file commands ---
 
 Interact with options (=)
         Allow you to interact with options.  Note that using the "cheat"
@@ -1016,7 +1010,7 @@ Interact with the system (!)
         Allow the user to interact with the underlying visual system.
         This command is currently unused.
  
-8.15.  Help
+--- Help ---
 
 Help (?)
         Brings up the Angband on-line help system.  Note that the help
@@ -1054,7 +1048,7 @@ Game Version (V)
         For more information, see the "version.txt" help file.
 
 
-8.16.  Extra Commands
+--- Extra Commands ---
 
 Toggle Choice Window (^E) 
         Toggles the display in the choice window (if available) between

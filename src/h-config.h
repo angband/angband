@@ -21,48 +21,67 @@
 /*
  * OPTION: Compile on a Macintosh (see "A-mac-h" or "A-mac-pch")
  */
+#ifndef MACINTOSH
 /* #define MACINTOSH */
+#endif
 
 /*
  * OPTION: Compile on Windows (automatic)
  */
+#ifndef WINDOWS
 /* #define WINDOWS */
+#endif
 
 /*
  * OPTION: Compile on an IBM (automatic)
  */
+#ifndef MSDOS
 /* #define MSDOS */
+#endif
 
 /*
  * OPTION: Compile on a SYS III version of UNIX
  */
+#ifndef SYS_III
 /* #define SYS_III */
+#endif
 
 /*
  * OPTION: Compile on a SYS V version of UNIX (not Solaris)
  */
+#ifndef SYS_V
 /* #define SYS_V */
+#endif
 
 /*
  * OPTION: Compile on a HPUX version of UNIX
  */
+#ifndef HPUX
 /* #define HPUX */
+#endif
 
 /*
  * OPTION: Compile on an SGI running IRIX
  */
+#ifndef SGI
 /* #define SGI */
+#endif
 
 /*
  * OPTION: Compile on Solaris, treat it as System V
  */
+#ifndef SOLARIS
 /* #define SOLARIS */
+#endif
 
 /*
  * OPTION: Compile on an ultrix/4.2BSD/Dynix/etc. version of UNIX,
  * Do not define this if you are on any kind of SUN OS.
  */
+#ifndef ultrix
 /* #define ultrix */
+#endif
+
 
 
 /*
@@ -93,6 +112,15 @@
 #endif
 
 /*
+ * Extract the "SGI" flag from the compiler
+ */
+#ifdef sgi
+# ifndef SGI
+#  define SGI
+# endif
+#endif
+
+/*
  * Extract the "MSDOS" flag from the compiler
  */
 #ifdef __MSDOS__
@@ -111,6 +139,7 @@
 #  define WINDOWS
 # endif
 #endif
+
 
 
 /*
@@ -136,7 +165,7 @@
  * or for the "Atari" platform which is Unix-like, apparently
  */
 #if !defined(MACINTOSH) && !defined(WINDOWS) && \
-    !defined(MSDOS) && !defined(__EMX__) && \
+    !defined(MSDOS) && !defined(USE_EMX) && \
     !defined(AMIGA) && !defined(ACORN) && !defined(VM)
 # define SET_UID
 #endif
@@ -178,7 +207,7 @@
 # undef PATH_SEP
 # define PATH_SEP "\\"
 #endif
-#if defined(MSDOS) || defined(OS2) || defined(__EMX__)
+#if defined(MSDOS) || defined(OS2) || defined(USE_EMX)
 # undef PATH_SEP
 # define PATH_SEP "\\"
 #endif
@@ -197,11 +226,25 @@
 
 
 /*
- * OPTION: Hack -- Make sure "strchr" will work
+ * The Macintosh allows the use of a "file type" when creating a file
+ */
+#if defined(MACINTOSH) && !defined(applec)
+# define FILE_TYPE_TEXT 'TEXT'
+# define FILE_TYPE_DATA 'DATA'
+# define FILE_TYPE_SAVE 'SAVE'
+# define FILE_TYPE(X) (_ftype = (X))
+#else
+# define FILE_TYPE(X) ((void)0)
+#endif
+
+
+/*
+ * OPTION: Hack -- Make sure "strchr()" and "strrchr()" will work
  */
 #if defined(SYS_III) || defined(SYS_V) || defined(MSDOS)
 # if !defined(__TURBOC__) && !defined(__WATCOMC__)
 #  define strchr index
+#  define strrchr rindex
 # endif
 #endif
 

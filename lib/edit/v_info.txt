@@ -9,13 +9,12 @@
 
 # After modifying this file, delete the "lib/raw/v_info.raw" file.
 
-
 # Note that the "spacing" in the "description" lines is very important!
 
 
-# Version stamp
+# Version stamp (required)
 
-V:2.7.9
+V:2.8.0
 
 
 ### Simple Vaults (type 7) -- maximum size 44x22 ###

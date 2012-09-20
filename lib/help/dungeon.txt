@@ -1,9 +1,6 @@
 === The Dungeon ===
 
 
-Adventuring
------------
-  
 After you have created your character, you will begin your Angband adventure.
 Symbols appearing on your screen will represent the dungeon's walls, floor,
 objects, features, and creatures lurking about.  In order to direct your
@@ -11,8 +8,7 @@ character through his adventure, you will enter single character commands
 (see "commands.txt").
 
 
-Symbols On Your Map
--------------------
+=== Symbols On Your Map ===
 
 Symbols on your map can be broken down into three categories: Features of
 the dungeon such as walls, floor, doors, and traps; Objects which can be
@@ -70,7 +66,6 @@ something you are more comfortable with.
                              Monsters
  
             $   Creeping Coins      ,   Mushroom Patch
-    
             a   Giant Ant           A   Angelic being
             b   Giant Bat           B   Bird
             c   Giant Centipede     C   Canine
@@ -100,8 +95,7 @@ something you are more comfortable with.
 
 
 
-The Town Level
---------------
+=== The Town Level ===
 
 The town level is where you will begin your adventure.  The town consists of
 eight buildings each with an entrance, some townspeople, and a wall which
@@ -109,8 +103,7 @@ surrounds the town.  The first time you are in town it will be daytime, but
 note that the sun rises and falls (rather instantly) as time passes.
 
 
-Townspeople
------------
+=== Townspeople ===
 
 The town contains many different kinds of people.  There are the street
 urchins, young children who will mob an adventurer for money, and seem to
@@ -128,8 +121,7 @@ experience is awarded for killing the town inhabitants, though you may
 acquire treasure.
 
 
-Supplies
---------
+=== Supplies ===
 
 Your character will begin his adventure with some supplies already on him.
 Use the "Inventory" command ("i") to check what these supplies are.  It may
@@ -138,8 +130,7 @@ however, so be sure to enter each of the stores to see what they have for
 sale.
 
 
-Town Buildings
---------------
+=== Town Buildings ===
 
 You may enter any open store and barter with the owner for items you can
 afford.  When bartering, you enter prices you will pay (or accept) for some
@@ -156,7 +147,7 @@ recognize that you are a superb haggler, and will go directly to the final
 offer instead of haggling with you.  Items which cost less than 10 gold
 pieces do not count, as haggling well with these items is usually either
 very easy or almost impossible.  The more expensive the item is, the less
-likely the store owner is to assume that you are a good haggler.   Note that
+likely the store owner is to assume that you are a good haggler.  Note that
 you may disable haggling with a software option, though this will inflict a
 10% "sales tax" on all purchases for which the store owner would have
 required you to haggle.
@@ -221,8 +212,7 @@ Your Home ("8")
      cannot carry on your travels, or will need at a  later date.
 
 
-Within The Dungeon
-------------------
+=== Within The Dungeon ===
 
 Once your character is adequately supplied with food, light, armor, and
 weapons, he is ready to enter the dungeon.  Move on top of the `>' symbol
@@ -260,8 +250,7 @@ torches or flasks of oil, as appropriate.  There are rumours of objects of
 exceptional power which glow with their own never-ending light.
 
 
-Objects Found In The Dungeon
-----------------------------
+=== Objects Found In The Dungeon ===
 
 The mines are full of objects just waiting to be picked up and used.  How
 did they get there?  Well, the main source for useful items are all the
@@ -348,8 +337,7 @@ between tasty food and annoying mushroom is a fine one, and sometimes a
 potion will reach out and bite you...
 
 
-Cursed Objects
---------------
+=== Cursed Objects ===
 
 Some objects, mainly armor and weapons, have had curses laid upon them.
 These horrible objects will look like any other normal item, but will
@@ -364,8 +352,7 @@ wrong.  The item will also be inscribed "cursed".
 Skopkeepers will refuse to buy any known cursed item.
 
 
-Mining
-------
+=== Mining ===
 
 Much of the treasure within the dungeon can be found only by mining it out
 of the walls.  Many rich strikes exist within each level, but must be found
@@ -407,8 +394,7 @@ a digging implement or magical means to enter.  The same rumors imply that
 these rooms are guarded by incredibly powerful monsters, so beware!
 
 
-Staircases, Secret Doors, Passages, and Rooms
----------------------------------------------
+=== Staircases, Secret Doors, Passages, and Rooms ===
 
 Staircases are the manner in which you get deeper or climb out of the
 dungeon.  The symbols for the up and down staircases are the same as the
@@ -438,8 +424,7 @@ through.
 For historical reasons, secret doors are never locked.
 
 
-Winning The Game
-----------------
+=== Winning The Game ===
 
 Once your character has killed Sauron, who lives on level 99 (4950') in the 
 dungeon, a magical staircase will appear that will finally allow you to reach
@@ -470,8 +455,7 @@ retire, you can still be killed, so you may want to retire before wandering
 into a hoard of death molds...
 
 
-Upon Death and Dying
---------------------
+=== Upon Death and Dying ===
  
 If your character falls below 0 hit points, he has died and cannot be
 restored.  A tombstone showing information about your character will be
@@ -485,8 +469,7 @@ but the new player will find his monster memory containing all the experience
 of past incarnations.
 
 
-Help
-----
+=== Help ===
 
 The newsgroup "rec.games.roguelike.angband" is a good place to ask various
 questions about both game play and game design, and you can email bug

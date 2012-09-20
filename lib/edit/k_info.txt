@@ -9,9 +9,6 @@
 
 # After modifying this file, delete the "lib/raw/k_info.raw" file.
 
-
-# Note that major changes are planned for Angband 2.8.0
-
 # Available slots (?):
 #   29, 29, 90, 177, 178, 179, 182, 183, 195, 196, 205,
 #   268, 270, 293, 299, 350, 351, 399, 413, 414, 423-479
@@ -22,10 +19,12 @@
 # is violet, so all six violet objects can be made "multi-hued", though
 # this would be a heinous hack.  XXX XXX
 
+# Note that object zero is used for the "stack" picture (unused).
 
-# Version stamp
 
-V:2.7.9
+# Version stamp (required)
+
+V:2.8.0
 
 
 ##### Something special #####

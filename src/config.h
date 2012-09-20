@@ -348,16 +348,6 @@
 
 
 /*
- * OPTION: Allow the use of "color" in various places.  Disabling this
- * flag will remove some code, and auto-cast all colors to "White".
- * This will almost certainly speed up the program.  Note that there
- * is a software level flag as well ("use_color") which is almost as
- * good at speeding up the code.
- */
-#define USE_COLOR
-
-
-/*
  * OPTION: Allow the use of "sound" in various places.
  */
 #define USE_SOUND
@@ -418,7 +408,9 @@
  * actual location of the "lib" folder, for example, "/tmp/angband/lib/"
  * or "/usr/games/lib/angband/", or "/pkg/angband/lib".
  */
-#define DEFAULT_PATH "./lib/"
+#ifndef DEFAULT_PATH
+# define DEFAULT_PATH "./lib/"
+#endif
 
 
 /*
@@ -464,22 +456,6 @@
 #define CAPITALIZE_USER_NAME
 
 
-/*
- * OPTION: Allow the use of a "Recall Window", if supported
- */
-#define GRAPHIC_RECALL
-
-/*
- * OPTION: Allow the use of a "Choice Window", if supported
- */
-#define GRAPHIC_CHOICE
-
-/*
- * OPTION: Allow the use of a "Mirror Window", if supported
- */
-#define GRAPHIC_MIRROR
-
-
 
 /*
  * OPTION: Shimmer Multi-Hued monsters/objects
@@ -510,36 +486,25 @@
 
 
 /*
- * Hack -- Special "ancient DOS-286" version
+ * Hack -- Special "ancient machine" versions
  */
-#ifdef USE_286
-# define ANGBAND_LITE
-# undef DELAY_LOAD_R_TEXT
-# define DELAY_LOAD_R_TEXT
+#if defined(USE_286) || defined(ANGBAND_LITE_MAC)
+# ifndef ANGBAND_LITE
+#  define ANGBAND_LITE
+# endif
 #endif
-
-/*
- * Hack -- Special "ancient Macintosh" version
- */
-#ifdef ANGBAND_LITE_MAC
-# define ANGBAND_LITE
-# undef USE_COLOR
-# undef ALLOW_TEMPLATES
-#endif
-
 
 /*
  * OPTION: Attempt to minimize the size of the game
  */
+#ifndef ANGBAND_LITE
 /* #define ANGBAND_LITE */
+#endif
 
 /*
  * Hack -- React to the "ANGBAND_LITE" flag
  */
 #ifdef ANGBAND_LITE
-# undef GRAPHIC_RECALL
-# undef GRAPHIC_CHOICE
-# undef GRAPHIC_MIRROR
 # undef ALLOW_COLORS
 # undef ALLOW_VISUALS
 # undef ALLOW_MACROS
@@ -550,6 +515,9 @@
 # undef ALLOW_BORG
 # undef ALLOW_WIZARD
 # undef ALLOW_SPOILERS
+# undef ALLOW_TEMPLATES
+# undef DELAY_LOAD_R_TEXT
+# define DELAY_LOAD_R_TEXT
 #endif
 
 

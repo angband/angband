@@ -1,5 +1,4 @@
-Attacking and Being Attacked
-----------------------------
+=== Attacking and Being Attacked ===
  
 Attacking is simple in Angband.  If you move into a creature, you attack him.
 You can attack from a distance by firing a missile or by magical means such
@@ -35,8 +34,7 @@ and so lead to more misses; they also reduce the damage from a strike that
 actually occurs.
  
 
-Monster Memories
-----------------
+=== Monster Memories ===
 
 There are hundreds of different creatures in the pits of Angband, many of
 which have the same letter symbol and color on the screen.  The exact species
@@ -57,8 +55,7 @@ This memory can be passed on to a new character even after you die by means
 of a reduced save file.
  
 
-Your Weapon
------------
+=== Your Weapon ===
 
 Carrying a weapon in your backpack does you no good.  You must wield a weapon 
 before it can be used in a fight.  A secondary weapon can be kept by keeping
@@ -168,7 +165,7 @@ Weapon of Slay Undead
      the intelligent undead, for a single blow from this weapon will inflict
      three times the normal amount of damage.  This weapon also gives you the
      ability to see invisible creatures, which is especially useful against
-     undead, since many of them are normally invisible.   Some of these
+     undead, since many of them are normally invisible.  Some of these
      weapons have the additional ability to protect against the life-draining 
      attacks that many undead creatures possess.
 
@@ -205,8 +202,7 @@ Avenger) is much more powerful than many artifact weapons!
 For artifact weapons, see "rumors.hlp".
 
 
-Body and Shield Bashes
-----------------------
+=== Body and Shield Bashes ===
 
 Weight is the primary factor in being able to bash something, but strength
 plays a role too.  After bashing, a character may be off balance for several
@@ -223,8 +219,7 @@ opponent may get free hits on him.  This is a risky attack.  It is also a
 hack.  :-)
 
 
-Your Armor Class
------------------
+=== Your Armor Class ===
 
 Your armor class (or AC) is a number that describes the amount and the
 quality of armor being worn. Armor class will generally run from about 0 to

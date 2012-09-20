@@ -9,7 +9,6 @@
 
 # After modifying this file, delete the "lib/raw/e_info.raw" file.
 
-
 # The ego-item indexes are defined in "defines.h", and must not be changed.
 
 # Ego-items 1-63 are "armor", and 64-127 are "weapons"
@@ -21,9 +20,9 @@
 # such as with "Armor of Resistance" and "Shield of Resistance".
 
 
-# Version stamp
+# Version stamp (required)
 
-V:2.7.9
+V:2.8.0
 
 
 ### Body Armor ###
