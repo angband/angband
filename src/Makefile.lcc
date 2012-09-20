@@ -13,7 +13,7 @@ CC		=	$(LCC_PATH)\bin\lcc.exe
 RC		=	$(LCC_PATH)\bin\lrc.exe
 LIBS	=	$(LCC_PATH)\lib\winmm.lib
 INCS	=	$(LCC_PATH)\include
-CFLAGS	=	-I$(INCS) -DHAS_STRICMP -DUSE_TRANSPARENCY
+CFLAGS	=	-I$(INCS) -DHAS_STRICMP
 
 OBJS=\
 	z-virt.obj \

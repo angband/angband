@@ -1519,7 +1519,7 @@ cptr option_text[OPT_MAX] =
 	"birth_no_stores",			/* OPT_birth_no_stores */
 	"birth_no_artifacts",		/* OPT_birth_no_artifacts */
 	"birth_rand_artifacts",		/* OPT_birth_rand_artifacts */
-	NULL,						/* xxx */
+	"birth_no_stacking",		/* OPT_birth_no_stacking */
 	NULL,						/* xxx */
 	NULL,						/* xxx */
 	NULL,						/* xxx */
@@ -1783,7 +1783,7 @@ cptr option_desc[OPT_MAX] =
 	"Birth: Restrict the use of stores/home",	/* OPT_birth_no_stores */
 	"Birth: Restrict creation of artifacts",	/* OPT_birth_no_artifacts */
 	"Birth: Randomize some of the artifacts (beta)",	/* OPT_birth_rand_artifacts */
-	NULL,										/* xxx */
+	"Birth: Don't stack objects on the floor",	/* OPT_birth_no_stacking */
 	NULL,										/* xxx */
 	NULL,										/* xxx */
 	NULL,										/* xxx */
@@ -2047,7 +2047,7 @@ const bool option_norm[OPT_MAX] =
 	FALSE,		/* OPT_birth_no_stores */
 	FALSE,		/* OPT_birth_no_artifacts */
 	FALSE,		/* OPT_birth_rand_artifacts */
-	FALSE,		/* xxx */
+	FALSE,		/* OPT_birth_no_stacking */
 	FALSE,		/* xxx */
 	FALSE,		/* xxx */
 	FALSE,		/* xxx */
@@ -2313,7 +2313,7 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_birth_no_stores,
 		OPT_birth_no_artifacts,
 		OPT_birth_rand_artifacts,
-		255,
+		OPT_birth_no_stacking,
 		255,
 		255,
 		255,

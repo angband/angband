@@ -1,3 +1,48 @@
+Changes in Angband 2.9.7 alpha1:
+- Replaced the mage, rogue, and ranger spell-lists with the spell-list
+  from Greg Wooledge's GWAngband. This gives magic-users a much broader
+  range of attack-spells to choose from including chaos, nether, sound,
+  shards, and gravity effects.  Other big changes are the removal of
+  the 'Globe of Invulnerability' and the addition of 'Rune of
+  Protection'. The new spellbooks are more "themed" with 9 books
+  specialized on 'detection', 'teleportation', 'protection', ...
+  plus a beginner book containing a mix of spells similar to the good
+  old "Magic for Beginners".  The depths where the spellbooks are
+  common and the prices for spellbooks were changed accordingly.
+- ***** WARNING *****: All spells known by magic-users are discarded
+  when importing an old savefile, so that the player can choose freely
+  from the new spell-list.  Don't forget to relearn your spells before
+  trying to use them.  Macros/keymaps with old spells probably won't
+  work anymore - change them if necessary.
+- Standing on a glyph no longer protects the player from melee
+  attacks.
+- Increased the range of infravision granted by potions of
+  infravision to +5.
+- Added a display of the player's current equipment aka "equippy chars"
+  to the main screen.
+- Various prompts at player birth use 'Enter' instead of 'ESC' now.
+- Added message compression ("You tunnel into the granite wall. <5x>").
+- Added a no-item-stacking-on-floor birth-option.
+- Improved the layout of the store prompts a bit. (Hallvard B. Furuseth)
+- Unified parts of the weapon- and bolt-branding code und changed
+  the resulting messages.
+- Added new VisualC++ 6.0 project files provided by Peter Rowe.
+- Added helper functions for iterating over a stack of objects in
+  the dungeon and replaced some duplicated code parts.
+- Amulets of lightning resist didn't have the EASY_KNOW flag and
+  were offered for identification even after the player knew the
+  amulet type.
+- Indent item descriptions correctly when creating character-dumps.
+- Monsters draining large stacks of wands or staffs could get negative
+  hitpoints due to the overflow of a signed 16 bit variable.
+- Removed the USE_TRANSPARENCY #define and properly integrated the
+  transparency code into the z-term.c code.
+- The default number of windows for the GTK port is now 1 instead of 8.
+- Fixed a crash-bug on WinXP machines when reading the filenames of
+  sounds. (Werner Baer)
+- Fixed various problems in main-vcs.c. (Hallvard B. Furuseth)
+- Defined cursor keys for main-<cap,vcs,sla>.c. (Hallvard B. Furuseth).
+
 Changes in Angband 2.9.6 alpha4:
 - Added usage lines for the main-*.c files (Hallvard B Furuseth).
 - Fixed the problems with the 'repeat command' command.

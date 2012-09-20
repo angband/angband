@@ -38,7 +38,6 @@
 #undef USE_XPJ
 #undef USE_GTK
 #undef WINDOWS
-#undef USE_TRANSPARENCY
 #undef DEFAULT_PATH
 #undef HAVE_MKSTEMP
 

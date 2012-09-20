@@ -38,8 +38,7 @@ EXE_FILE = angband.exe
 # Set any compiler options
 
 CCOPTS = -Hc -tW -lGn -e$(EXE_FILE) -w- \
-	-D_WIN32_WINNT=0x0400 -DWINVER=0x0400 \
-	-DUSE_TRANSPARENCY
+	-D_WIN32_WINNT=0x0400 -DWINVER=0x0400
 
 # Compile flags:
 CCFLAGS= $(CCOPTS) $(DBGOPT)

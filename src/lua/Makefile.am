@@ -14,8 +14,8 @@ liblua_a_SOURCES = \
   lapi.h lauxlib.h lcode.h ldebug.h ldo.h lfunc.h \
   lgc.h llex.h llimits.h lmem.h lobject.h lopcodes.h \
   lparser.h lstate.h lstring.h ltable.h ltm.h lua.h \
-  luac.h luadebug.h lualib.h lundump.h lvm.h lzio.h \
-  print.h tolua.h tolua_eh.h tolua_rg.h tolua_tm.h \
+  luadebug.h lualib.h lundump.h lvm.h lzio.h \
+  tolua.h tolua_eh.h tolua_rg.h tolua_tm.h \
   tolua_tt.h
 
 tolua_SOURCES = \

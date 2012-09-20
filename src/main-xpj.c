@@ -43,10 +43,6 @@
 #error Must have USE_GRAPHICS compile-time flag on.
 #endif
 
-#ifndef USE_TRANSPARENCY
-#error Must have USE_TRANSPARENCY compile-time flag on.
-#endif
-
 /*
  * The tile size to use.  (Configure this if you want.)
  *

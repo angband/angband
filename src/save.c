@@ -767,6 +767,8 @@ static void wr_monster(const monster_type *m_ptr)
  */
 static void wr_lore(int r_idx)
 {
+	int i;
+
 	monster_race *r_ptr = &r_info[r_idx];
 	monster_lore *l_ptr = &l_list[r_idx];
 
@@ -793,10 +795,8 @@ static void wr_lore(int r_idx)
 	wr_byte(l_ptr->cast_spell);
 
 	/* Count blows of each type */
-	wr_byte(l_ptr->blows[0]);
-	wr_byte(l_ptr->blows[1]);
-	wr_byte(l_ptr->blows[2]);
-	wr_byte(l_ptr->blows[3]);
+	for (i = 0; i < MONSTER_BLOW_MAX; i++)
+		wr_byte(l_ptr->blows[i]);
 
 	/* Memorize flags */
 	wr_u32b(l_ptr->flags1);

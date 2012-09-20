@@ -865,7 +865,7 @@ static bool player_birth_aux_1(void)
 		ch = inkey();
 		if (ch == 'Q') quit(NULL);
 		if (ch == 'S') return (FALSE);
-		if (ch == ESCAPE) break;
+		if ((ch == '\r') || (ch == '\n')) break;
 		if (ch == 'y' || ch == 'n') break;
 		if (ch == '?') do_cmd_help();
 		else bell("Illegal answer!");
@@ -1027,7 +1027,7 @@ static bool player_birth_aux_2(void)
 
 
 		/* Prompt XXX XXX XXX */
-		sprintf(buf, "Total Cost %2d/48.  Use 2/8 to move, 4/6 to modify, ESC to accept.", cost);
+		sprintf(buf, "Total Cost %2d/48.  Use 2/8 to move, 4/6 to modify, 'Enter' to accept.", cost);
 		prt(buf, 0, 0);
 
 		/* Place cursor just after cost of current stat */
@@ -1043,7 +1043,7 @@ static bool player_birth_aux_2(void)
 		if (ch == 'S') return (FALSE);
 
 		/* Done */
-		if (ch == ESCAPE) break;
+		if ((ch == '\r') || (ch == '\n')) break;
 
 		/* Prev stat */
 		if (ch == '8')
@@ -1384,7 +1384,7 @@ static bool player_birth_aux_3(void)
 			Term_addch(TERM_WHITE, b1);
 			Term_addstr(-1, TERM_WHITE, "'r' to reroll");
 			if (prev) Term_addstr(-1, TERM_WHITE, ", 'p' for prev");
-			Term_addstr(-1, TERM_WHITE, ", or ESC to accept");
+			Term_addstr(-1, TERM_WHITE, ", or 'Enter' to accept");
 			Term_addch(TERM_WHITE, b2);
 
 			/* Prompt and get a command */
@@ -1396,8 +1396,8 @@ static bool player_birth_aux_3(void)
 			/* Start over */
 			if (ch == 'S') return (FALSE);
 
-			/* Escape accepts the roll */
-			if (ch == ESCAPE) break;
+			/* 'Enter' accepts the roll */
+			if ((ch == '\r') || (ch == '\n')) break;
 
 			/* Reroll this character */
 			if ((ch == ' ') || (ch == 'r')) break;
@@ -1421,7 +1421,7 @@ static bool player_birth_aux_3(void)
 		}
 
 		/* Are we done? */
-		if (ch == ESCAPE) break;
+		if ((ch == '\r') || (ch == '\n')) break;
 
 		/* Save this for the "previous" character */
 		save_prev_data();
@@ -1446,6 +1446,7 @@ static bool player_birth_aux_3(void)
 static bool player_birth_aux(void)
 {
 	char ch;
+	cptr prompt = "['Q' to suicide, 'S' to start over, or any other key to continue]";
 
 	/* Ask questions */
 	if (!player_birth_aux_1()) return (FALSE);
@@ -1471,7 +1472,7 @@ static bool player_birth_aux(void)
 	display_player(0);
 
 	/* Prompt for it */
-	prt("['Q' to suicide, 'S' to start over, or ESC to continue]", 23, 10);
+	prt(prompt, Term->hgt - 1, Term->wid / 2 - strlen(prompt) / 2);
 
 	/* Get a key */
 	ch = inkey();

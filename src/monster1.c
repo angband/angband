@@ -511,7 +511,7 @@ static void describe_monster_attack(int r_idx, const monster_lore *l_ptr)
 
 	
 	/* Count the number of "known" attacks */
-	for (n = 0, m = 0; m < 4; m++)
+	for (n = 0, m = 0; m < MONSTER_BLOW_MAX; m++)
 	{
 		/* Skip non-attacks */
 		if (!r_ptr->blow[m].method) continue;
@@ -521,7 +521,7 @@ static void describe_monster_attack(int r_idx, const monster_lore *l_ptr)
 	}
 
 	/* Examine (and count) the actual attacks */
-	for (r = 0, m = 0; m < 4; m++)
+	for (r = 0, m = 0; m < MONSTER_BLOW_MAX; m++)
 	{
 		int method, effect, d1, d2;
 
@@ -1273,7 +1273,7 @@ static void cheat_monster_lore(int r_idx, monster_lore *l_ptr)
 	l_ptr->wake = l_ptr->ignore = MAX_UCHAR;
 
 	/* Observe "maximal" attacks */
-	for (i = 0; i < 4; i++)
+	for (i = 0; i < MONSTER_BLOW_MAX; i++)
 	{
 		/* Examine "actual" blows */
 		if (r_ptr->blow[i].effect || r_ptr->blow[i].method)

@@ -1709,17 +1709,16 @@ errr parse_e_info(char *buf, header *head)
 	/* Process 'X' for "Xtra" (one line only) */
 	else if (buf[0] == 'X')
 	{
-		int slot, rating, xtra;
+		int rating, xtra;
 
 		/* There better be a current e_ptr */
 		if (!e_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
 
 		/* Scan for the values */
-		if (3 != sscanf(buf+2, "%d:%d:%d",
-			            &slot, &rating, &xtra)) return (PARSE_ERROR_GENERIC);
+		if (2 != sscanf(buf+2, "%d:%d", &rating, &xtra))
+			return (PARSE_ERROR_GENERIC);
 
 		/* Save the values */
-		e_ptr->slot = slot;
 		e_ptr->rating = rating;
 		e_ptr->xtra = xtra;
 	}
@@ -1741,11 +1740,11 @@ errr parse_e_info(char *buf, header *head)
 		e_ptr->min_sval[cur_t] = (byte)sval1;
 		e_ptr->max_sval[cur_t] = (byte)sval2;
 
-		/* increase counter for 'possible tval' index */
+		/* Increase counter for 'possible tval' index */
 		cur_t++;
 
-		/* only three T: lines allowed */
-		if (cur_t > 3) return (PARSE_ERROR_GENERIC);
+		/* Allow only a limited number of T: lines */
+		if (cur_t > EGO_TVALS_MAX) return (PARSE_ERROR_GENERIC);
 	}
 
 	/* Hack -- Process 'C' for "creation" */
@@ -1980,7 +1979,7 @@ errr parse_r_info(char *buf, header *head)
 		r_ptr->mexp = exp;
 	}
 
-	/* Process 'B' for "Blows" (up to four lines) */
+	/* Process 'B' for "Blows" */
 	else if (buf[0] == 'B')
 	{
 		int n1, n2;
@@ -1989,10 +1988,10 @@ errr parse_r_info(char *buf, header *head)
 		if (!r_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
 
 		/* Find the next empty blow slot (if any) */
-		for (i = 0; i < 4; i++) if (!r_ptr->blow[i].method) break;
+		for (i = 0; i < MONSTER_BLOW_MAX; i++) if (!r_ptr->blow[i].method) break;
 
 		/* Oops, no more slots */
-		if (i == 4) return (PARSE_ERROR_GENERIC);
+		if (i == MONSTER_BLOW_MAX) return (PARSE_ERROR_GENERIC);
 
 		/* Analyze the first field */
 		for (s = t = buf+2; *t && (*t != ':'); t++) /* loop */;

@@ -9,7 +9,7 @@
 CC = gcc
 WRES = windres
 LIBS = -s -mno-cygwin -mwindows -e _mainCRTStartup -lwinmm
-CFLAGS = -Wall -W -pedantic -mno-cygwin -O2 -fno-strength-reduce -DUSE_TRANSPARENCY -DWINDOWS
+CFLAGS = -Wall -W -pedantic -mno-cygwin -O2 -fno-strength-reduce -DWINDOWS
 
 LUALIBS = -s -mno-cygwin
 

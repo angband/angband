@@ -15,7 +15,6 @@
 - Add color support to the show_file() function.
 - Find a better way for saving options than appending to *.prf files.
 - Allow multiple pvals per object.
-- Add message compression "You tunnel into the granite wall. <5x>"
 - Split long lines in the message recall.
 - The ANSI-C standard reserves some prefixes for external names like "str".
   Make sure that Angband doesn't use them.
@@ -23,14 +22,10 @@
   manual changes for every new flag.
 - Use sizeof(buffer) instead of using the numeric size. The compiler is
   won't forget to update the number when the size of the buffer changes.
-- Write helper functions for accessing items on the floor so that handling
-  floor stacks is less cumbersome.
 - Fix the "vinfo_type" hack in cave.c.
 - Unify line of sight and projection paths.
 - Make sure that signed integers aren't bit-shifted.
 - Use enumerations instead of #defines when possible.
-- Move spaces at the end of description lines in monster.txt to the
-  beginning of the next line.
 - Add optional support for the metric system.
 - Add a main-net.c modules that sends/receives term-updates via TCP/IP.
   This allows slim clients on machines where Angband isn't available.
@@ -44,7 +39,6 @@
   character dumps, and screenshots.
 - "Panic saves" shouldn't overwrite normal savefiles.
 - Replace the maximize mode option with a "half-maximized" mode.
-- Properly integrate the transparency code into the game.
 - Add a command to display the 'time of day'.
 - Mimics should be true objects until the player steps next to them.
 - Throwing potions should cause the potions effect on the target.

@@ -75,7 +75,7 @@ CC = gcc
 
 # Compiler flags
 CFLAGS = -Wall -O2 -fno-strength-reduce -s -DUSE_DOS -DUSE_IBM \
--DUSE_BACKGROUND -DUSE_TRANSPARENCY
+-DUSE_BACKGROUND
 
 # Libraries
 LIBS = -lpc -lalleg

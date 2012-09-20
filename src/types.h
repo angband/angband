@@ -251,28 +251,26 @@ struct ego_item_type
 	u32b name;			/* Name (offset) */
 	u32b text;			/* Text (offset) */
 
-	byte slot;			/* Standard slot value */
-	byte rating;		/* Rating boost */
-
-	byte level;			/* Minimum level */
-	byte rarity;		/* Object rarity */
-
-	byte tval[3];		/* Legal tval */
-	byte min_sval[3];	/* Minimum legal sval */
-	byte max_sval[3];	/* Maximum legal tval */
-	byte xtra;			/* Extra Sustain/Resist/Power */
-
-	byte max_to_h;		/* Maximum to-hit bonus */
-	byte max_to_d;		/* Maximum to-dam bonus */
-	byte max_to_a;		/* Maximum to-ac bonus */
-
-	byte max_pval;		/* Maximum pval */
-
 	s32b cost;			/* Ego-item "cost" */
 
 	u32b flags1;		/* Ego-Item Flags, set 1 */
 	u32b flags2;		/* Ego-Item Flags, set 2 */
 	u32b flags3;		/* Ego-Item Flags, set 3 */
+
+	byte level;			/* Minimum level */
+	byte rarity;		/* Object rarity */
+	byte rating;		/* Level rating boost */
+
+	byte tval[EGO_TVALS_MAX]; /* Legal tval */
+	byte min_sval[EGO_TVALS_MAX];	/* Minimum legal sval */
+	byte max_sval[EGO_TVALS_MAX];	/* Maximum legal sval */
+
+	byte max_to_h;		/* Maximum to-hit bonus */
+	byte max_to_d;		/* Maximum to-dam bonus */
+	byte max_to_a;		/* Maximum to-ac bonus */
+	byte max_pval;		/* Maximum pval */
+
+	byte xtra;			/* Extra sustain/resist/power */
 };
 
 
@@ -342,7 +340,7 @@ struct monster_race
 	u32b flags5;			/* Flags 5 (normal spells) */
 	u32b flags6;			/* Flags 6 (special spells) */
 
-	monster_blow blow[4];	/* Up to four blows per round */
+	monster_blow blow[MONSTER_BLOW_MAX]; /* Up to four blows per round */
 
 	byte level;				/* Level of creature */
 	byte rarity;			/* Rarity of creature */
@@ -387,7 +385,7 @@ struct monster_lore
 	byte cast_innate;		/* Max number of innate spells seen */
 	byte cast_spell;		/* Max number of other spells seen */
 
-	byte blows[4];			/* Number of times each blow type was seen */
+	byte blows[MONSTER_BLOW_MAX]; /* Number of times each blow type was seen */
 
 	u32b flags1;			/* Observed racial flags */
 	u32b flags2;			/* Observed racial flags */

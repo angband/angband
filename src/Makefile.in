@@ -390,12 +390,6 @@ l-ui.o: l-ui.c lua/tolua.h lua/lua.h angband.h h-basic.h autoconf.h \
 load.o: load.c angband.h h-basic.h autoconf.h h-config.h h-system.h \
 	h-type.h h-define.h z-util.h z-virt.h z-form.h z-rand.h \
 	z-term.h config.h defines.h types.h externs.h
-load1.o: load1.c angband.h h-basic.h autoconf.h h-config.h h-system.h \
-	h-type.h h-define.h z-util.h z-virt.h z-form.h z-rand.h \
-	z-term.h config.h defines.h types.h externs.h
-load2.o: load2.c angband.h h-basic.h autoconf.h h-config.h h-system.h \
-	h-type.h h-define.h z-util.h z-virt.h z-form.h z-rand.h \
-	z-term.h config.h defines.h types.h externs.h
 maid-x11.o: maid-x11.c angband.h h-basic.h autoconf.h h-config.h \
 	h-system.h h-type.h h-define.h z-util.h z-virt.h z-form.h \
 	z-rand.h z-term.h config.h defines.h types.h externs.h \
@@ -495,9 +489,8 @@ z-form.o: z-form.c z-form.h h-basic.h autoconf.h h-config.h h-system.h \
 	h-type.h h-define.h z-util.h z-virt.h
 z-rand.o: z-rand.c z-rand.h h-basic.h autoconf.h h-config.h h-system.h \
 	h-type.h h-define.h
-z-term.o: z-term.c angband.h h-basic.h autoconf.h h-config.h h-system.h \
-	h-type.h h-define.h z-util.h z-virt.h z-form.h z-rand.h \
-	z-term.h config.h defines.h types.h externs.h
+z-term.o: z-term.c z-term.h h-basic.h autoconf.h h-config.h h-system.h \
+	h-type.h h-define.h z-virt.h
 z-util.o: z-util.c z-util.h h-basic.h autoconf.h h-config.h h-system.h \
 	h-type.h h-define.h
 z-virt.o: z-virt.c z-virt.h h-basic.h autoconf.h h-config.h h-system.h \

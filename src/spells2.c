@@ -3654,47 +3654,133 @@ bool curse_weapon(void)
 
 
 /*
- * Brand the current weapon
+ * Brand weapons (or ammo)
+ *
+ * Turns the (non-magical) object into an ego-item of 'brand_type'.
  */
-void brand_weapon(void)
+void brand_object(object_type *o_ptr, byte brand_type)
 {
-	object_type *o_ptr;
-
-	o_ptr = &inventory[INVEN_WIELD];
-
 	/* you can never modify artifacts / ego-items */
 	/* you can never modify broken / cursed items */
 	if ((o_ptr->k_idx) &&
 	    (!artifact_p(o_ptr)) && (!ego_item_p(o_ptr)) &&
 	    (!broken_p(o_ptr)) && (!cursed_p(o_ptr)))
 	{
-		cptr act;
-
+		cptr act = "magical";
 		char o_name[80];
-
-		if (rand_int(100) < 25)
-		{
-			act = "is covered in a fiery shield!";
-			o_ptr->name2 = EGO_BRAND_FIRE;
-		}
-		else
-		{
-			act = "glows deep, icy blue!";
-			o_ptr->name2 = EGO_BRAND_COLD;
-		}
 
 		object_desc(o_name, o_ptr, FALSE, 0);
 
-		msg_format("Your %s %s", o_name, act);
+		switch (brand_type)
+		{
+			case EGO_BRAND_FIRE: act = "fiery"; break;
+			case EGO_BRAND_COLD: act = "frosty"; break;
+			case EGO_BRAND_POIS: act = "sickly"; break;
+		}
 
+		/* Describe */
+		msg_format("A %s aura surrounds the %s.", act, o_name);
+
+		/* Brand the object */
+		o_ptr->name2 = brand_type;
+	
+		/* Enchant */
 		enchant(o_ptr, rand_int(3) + 4, ENCH_TOHIT | ENCH_TODAM);
 	}
-
 	else
 	{
 		if (flush_failure) flush();
 		msg_print("The Branding failed.");
 	}
+}
+
+
+/*
+ * Brand the current weapon
+ */
+void brand_weapon(void)
+{
+	object_type *o_ptr;
+	byte brand_type;
+
+	o_ptr = &inventory[INVEN_WIELD];
+
+	/* Select a brand */
+	if (rand_int(100) < 25)
+		brand_type = EGO_BRAND_FIRE;
+	else
+		brand_type = EGO_BRAND_COLD;
+
+	/* Brand the weapon */
+	brand_object(o_ptr, brand_type);
+}
+
+
+/*
+ * Hook to specify "ammo"
+ */
+static bool item_tester_hook_ammo(const object_type *o_ptr)
+{
+	switch (o_ptr->tval)
+	{
+		case TV_BOLT:
+		case TV_ARROW:
+		case TV_SHOT:
+		{
+			return (TRUE);
+		}
+	}
+
+	return (FALSE);
+}
+
+
+/*
+ * Brand some (non-magical) ammo
+ */
+bool brand_ammo(void)
+{
+	int item;
+	object_type *o_ptr;
+	cptr q, s;
+	int r;
+	byte brand_type;
+
+	/* Only accept ammo */
+	item_tester_hook = item_tester_hook_ammo;
+
+	/* Get an item */
+	q = "Brand which kind of ammunition? ";
+	s = "You have nothing to brand.";
+	if (!get_item(&item, q, s, (USE_EQUIP | USE_INVEN | USE_FLOOR))) return (FALSE);
+
+	/* Get the item (in the pack) */
+	if (item >= 0)
+	{
+		o_ptr = &inventory[item];
+	}
+
+	/* Get the item (on the floor) */
+	else
+	{
+		o_ptr = &o_list[0 - item];
+	}
+
+	r = rand_int(100);
+
+	/* Select the brand */
+	if (r < 33)
+		brand_type = EGO_BRAND_FIRE;
+	else if (r < 67)
+		brand_type = EGO_BRAND_COLD;
+	else
+		brand_type = EGO_BRAND_POIS;
+
+	/* Brand the ammo */
+	brand_object(o_ptr, brand_type);
+
+	/* Done */
+	return (TRUE);
 }
 
 
@@ -3712,7 +3798,7 @@ bool brand_bolts(void)
 	item_tester_tval = TV_BOLT;
 
 	/* Get an item */
-	q = "Enchant which bolts? ";
+	q = "Brand which bolts? ";
 	s = "You have no bolts to brand.";
 	if (!get_item(&item, q, s, (USE_INVEN | USE_FLOOR))) return (FALSE);
 
@@ -3728,32 +3814,10 @@ bool brand_bolts(void)
 		o_ptr = &o_list[0 - item];
 	}
 
-	/*
-	 * Don't enchant artifacts, ego-items, cursed or broken items
-	 */
-	if (artifact_p(o_ptr) || ego_item_p(o_ptr) ||
-	    cursed_p(o_ptr) || broken_p(o_ptr))
-	{
-		/* Flush */
-		if (flush_failure) flush();
+	/* Brand the bolts */
+	brand_object(o_ptr, EGO_FLAME);
 
-		/* Fail */
-		msg_print("The fiery enchantment failed.");
-
-		/* Notice */
-		return (TRUE);
-	}
-
-	/* Message */
-	msg_print("Your bolts are covered in a fiery aura!");
-
-	/* Ego-item */
-	o_ptr->name2 = EGO_FLAME;
-
-	/* Enchant */
-	enchant(o_ptr, rand_int(3) + 4, ENCH_TOHIT | ENCH_TODAM);
-
-	/* Notice */
+	/* Done */
 	return (TRUE);
 }
 

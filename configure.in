@@ -7,7 +7,7 @@ AC_INIT(src/main.c)
 dnl write the resulting #defines into a header file
 AM_CONFIG_HEADER(src/autoconf.h)
 
-AM_INIT_AUTOMAKE(angband, 2.9.6-alpha4)
+AM_INIT_AUTOMAKE(angband, 2.9.7-alpha1)
 
 AC_ARG_WITH(setgid,
 [  --with-setgid=NAME      install angband as group NAME],
@@ -59,7 +59,6 @@ AC_EXEEXT
 
 if test "$CYGWIN" = "yes"; then
   AC_DEFINE(WINDOWS)
-  AC_DEFINE(USE_TRANSPARENCY)
   LIBS="$LIBS -lwinmm"
   LDFLAGS="$LDFLAGS -s -mno-cygwin -mwindows -e _mainCRTStartup"
   CFLAGS="$CFLAGS -mno-cygwin"
@@ -131,7 +130,6 @@ else
   if test "$no_x" != "yes"; then
     AC_DEFINE(USE_X11)
     AC_DEFINE(USE_XPJ)
-    AC_DEFINE(USE_TRANSPARENCY)
 
     LIBS="-lX11 $X_EXTRA_LIBS $LIBS"
     CFLAGS="$CFLAGS $X_CFLAGS"

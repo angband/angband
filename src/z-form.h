@@ -33,9 +33,6 @@ extern uint vstrnfmt(char *buf, uint max, cptr fmt, va_list vp);
 /* Simple interface to "vstrnfmt()" */
 extern uint strnfmt(char *buf, uint max, cptr fmt, ...);
 
-/* Simple interface to "vstrnfmt()", assuming infinite length */
-extern uint strfmt(char *buf, cptr fmt, ...);
-
 /* Format arguments into a static resizing buffer */
 extern char *vformat(cptr fmt, va_list vp);
 

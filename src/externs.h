@@ -244,11 +244,7 @@ extern bool los(int y1, int x1, int y2, int x2);
 extern bool no_lite(void);
 extern bool cave_valid_bold(int y, int x);
 extern bool feat_supports_lighting(byte feat);
-#ifdef USE_TRANSPARENCY
 extern void map_info(int y, int x, byte *ap, char *cp, byte *tap, char *tcp);
-#else /* USE_TRANSPARENCY */
-extern void map_info(int y, int x, byte *ap, char *cp);
-#endif /* USE_TRANSPARENCY */
 extern void move_cursor_relative(int y, int x);
 extern void print_rel(char c, byte a, int y, int x);
 extern void note_spot(int y, int x);
@@ -476,6 +472,8 @@ extern void delete_object(int y, int x);
 extern void compact_objects(int size);
 extern void wipe_o_list(void);
 extern s16b o_pop(void);
+extern object_type* get_first_object(int y, int x);
+extern object_type* get_next_object(object_type *o_ptr);
 extern errr get_obj_num_prep(void);
 extern s16b get_obj_num(int level);
 extern void object_known(object_type *o_ptr);
@@ -613,7 +611,9 @@ extern bool destroy_doors_touch(void);
 extern bool sleep_monsters_touch(void);
 extern bool curse_armor(void);
 extern bool curse_weapon(void);
+extern void brand_object(object_type *o_ptr, byte brand_type);
 extern void brand_weapon(void);
+extern bool brand_ammo(void);
 extern bool brand_bolts(void);
 extern void ring_of_power(int dir);
 

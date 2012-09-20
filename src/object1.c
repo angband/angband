@@ -1627,7 +1627,7 @@ static bool identify_fully_aux2(const object_type *o_ptr, int mode)
 	/* Mega-Hack -- describe activation */
 	if (f3 & TR3_ACTIVATE)
 	{
-		text_out("It can be activated for ");
+		text_out("   It can be activated for ");
 		describe_item_activation(o_ptr);
 		text_out(" if it is being worn.\n");
 		known = TRUE;
@@ -1638,15 +1638,15 @@ static bool identify_fully_aux2(const object_type *o_ptr, int mode)
 	{
 		if (artifact_p(o_ptr))
 		{
-			text_out("It provides light (radius 3) forever.\n");
+			text_out("   It provides light (radius 3) forever.\n");
 		}
 		else if (o_ptr->sval == SV_LITE_LANTERN)
 		{
-			text_out("It provides light (radius 2) when fueled.\n");
+			text_out("   It provides light (radius 2) when fueled.\n");
 		}
 		else
 		{
-			text_out("It provides light (radius 1) when fueled.\n");
+			text_out("   It provides light (radius 1) when fueled.\n");
 		}
 
 		known = TRUE;
@@ -1657,379 +1657,379 @@ static bool identify_fully_aux2(const object_type *o_ptr, int mode)
 
 	if (f1 & (TR1_STR))
 	{
-		text_out("It affects your strength.\n");
+		text_out("   It affects your strength.\n");
 		known = TRUE;
 	}
 	if (f1 & (TR1_INT))
 	{
-		text_out("It affects your intelligence.\n");
+		text_out("   It affects your intelligence.\n");
 		known = TRUE;
 	}
 	if (f1 & (TR1_WIS))
 	{
-		text_out("It affects your wisdom.\n");
+		text_out("   It affects your wisdom.\n");
 		known = TRUE;
 	}
 	if (f1 & (TR1_DEX))
 	{
-		text_out("It affects your dexterity.\n");
+		text_out("   It affects your dexterity.\n");
 		known = TRUE;
 	}
 	if (f1 & (TR1_CON))
 	{
-		text_out("It affects your constitution.\n");
+		text_out("   It affects your constitution.\n");
 		known = TRUE;
 	}
 	if (f1 & (TR1_CHR))
 	{
-		text_out("It affects your charisma.\n");
+		text_out("   It affects your charisma.\n");
 		known = TRUE;
 	}
 
 	if (f1 & (TR1_STEALTH))
 	{
-		text_out("It affects your stealth.\n");
+		text_out("   It affects your stealth.\n");
 		known = TRUE;
 	}
 	if (f1 & (TR1_SEARCH))
 	{
-		text_out("It affects your searching.\n");
+		text_out("   It affects your searching.\n");
 		known = TRUE;
 	}
 	if (f1 & (TR1_INFRA))
 	{
-		text_out("It affects your infravision.\n");
+		text_out("   It affects your infravision.\n");
 		known = TRUE;
 	}
 	if (f1 & (TR1_TUNNEL))
 	{
-		text_out("It affects your ability to tunnel.\n");
+		text_out("   It affects your ability to tunnel.\n");
 		known = TRUE;
 	}
 	if (f1 & (TR1_SPEED))
 	{
-		text_out("It affects your speed.\n");
+		text_out("   It affects your speed.\n");
 		known = TRUE;
 	}
 	if (f1 & (TR1_BLOWS))
 	{
-		text_out("It affects your attack speed.\n");
+		text_out("   It affects your attack speed.\n");
 		known = TRUE;
 	}
 	if (f1 & (TR1_SHOTS))
 	{
-		text_out("It affects your shooting speed.\n");
+		text_out("   It affects your shooting speed.\n");
 		known = TRUE;
 	}
 	if (f1 & (TR1_MIGHT))
 	{
-		text_out("It affects your shooting power.\n");
+		text_out("   It affects your shooting power.\n");
 		known = TRUE;
 	}
 
 	if (f1 & (TR1_SLAY_ANIMAL))
 	{
-		text_out("It is especially deadly against natural creatures.\n");
+		text_out("   It is especially deadly against natural creatures.\n");
 		known = TRUE;
 	}
 	if (f1 & (TR1_SLAY_EVIL))
 	{
-		text_out("It fights against evil with holy fury.\n");
+		text_out("   It fights against evil with holy fury.\n");
 		known = TRUE;
 	}
 	if (f1 & (TR1_SLAY_UNDEAD))
 	{
-		text_out("It strikes at undead with holy wrath.\n");
+		text_out("   It strikes at undead with holy wrath.\n");
 		known = TRUE;
 	}
 	if (f1 & (TR1_SLAY_DEMON))
 	{
-		text_out("It strikes at demons with holy wrath.\n");
+		text_out("   It strikes at demons with holy wrath.\n");
 		known = TRUE;
 	}
 	if (f1 & (TR1_SLAY_ORC))
 	{
-		text_out("It is especially deadly against orcs.\n");
+		text_out("   It is especially deadly against orcs.\n");
 		known = TRUE;
 	}
 	if (f1 & (TR1_SLAY_TROLL))
 	{
-		text_out("It is especially deadly against trolls.\n");
+		text_out("   It is especially deadly against trolls.\n");
 		known = TRUE;
 	}
 	if (f1 & (TR1_SLAY_GIANT))
 	{
-		text_out("It is especially deadly against giants.\n");
+		text_out("   It is especially deadly against giants.\n");
 		known = TRUE;
 	}
 	if (f1 & (TR1_SLAY_DRAGON))
 	{
-		text_out("It is especially deadly against dragons.\n");
+		text_out("   It is especially deadly against dragons.\n");
 		known = TRUE;
 	}
 	if (f1 & (TR1_KILL_DRAGON))
 	{
-		text_out("It is a great bane of dragons.\n");
+		text_out("   It is a great bane of dragons.\n");
 		known = TRUE;
 	}
 	if (f1 & (TR1_KILL_DEMON))
 	{
-		text_out("It is a great bane of demons.\n");
+		text_out("   It is a great bane of demons.\n");
 		known = TRUE;
 	}
 	if (f1 & (TR1_KILL_UNDEAD))
 	{
-		text_out("It is a great bane of undeads.\n");
+		text_out("   It is a great bane of undeads.\n");
 		known = TRUE;
 	}
 	if (f1 & (TR1_BRAND_ACID))
 	{
-		text_out("It does extra damage from acid.\n");
+		text_out("   It does extra damage from acid.\n");
 		known = TRUE;
 	}
 	if (f1 & (TR1_BRAND_ELEC))
 	{
-		text_out("It does extra damage from electricity.\n");
+		text_out("   It does extra damage from electricity.\n");
 		known = TRUE;
 	}
 	if (f1 & (TR1_BRAND_FIRE))
 	{
-		text_out("It does extra damage from fire.\n");
+		text_out("   It does extra damage from fire.\n");
 		known = TRUE;
 	}
 	if (f1 & (TR1_BRAND_COLD))
 	{
-		text_out("It does extra damage from frost.\n");
+		text_out("   It does extra damage from frost.\n");
 		known = TRUE;
 	}
 	if (f1 & (TR1_BRAND_POIS))
 	{
-		text_out("It does extra damage from poison.\n");
+		text_out("   It does extra damage from poison.\n");
 		known = TRUE;
 	}
 
 	if (f2 & (TR2_SUST_STR))
 	{
-		text_out("It sustains your strength.\n");
+		text_out("   It sustains your strength.\n");
 		known = TRUE;
 	}
 	if (f2 & (TR2_SUST_INT))
 	{
-		text_out("It sustains your intelligence.\n");
+		text_out("   It sustains your intelligence.\n");
 		known = TRUE;
 	}
 	if (f2 & (TR2_SUST_WIS))
 	{
-		text_out("It sustains your wisdom.\n");
+		text_out("   It sustains your wisdom.\n");
 		known = TRUE;
 	}
 	if (f2 & (TR2_SUST_DEX))
 	{
-		text_out("It sustains your dexterity.\n");
+		text_out("   It sustains your dexterity.\n");
 		known = TRUE;
 	}
 	if (f2 & (TR2_SUST_CON))
 	{
-		text_out("It sustains your constitution.\n");
+		text_out("   It sustains your constitution.\n");
 		known = TRUE;
 	}
 	if (f2 & (TR2_SUST_CHR))
 	{
-		text_out("It sustains your charisma.\n");
+		text_out("   It sustains your charisma.\n");
 		known = TRUE;
 	}
 
 	if (f2 & (TR2_IM_ACID))
 	{
-		text_out("It provides immunity to acid.\n");
+		text_out("   It provides immunity to acid.\n");
 		known = TRUE;
 	}
 	else if (f2 & (TR2_RES_ACID))
 	{
-		text_out("It provides resistance to acid.\n");
+		text_out("   It provides resistance to acid.\n");
 		known = TRUE;
 	}
 
 	if (f2 & (TR2_IM_ELEC))
 	{
-		text_out("It provides immunity to electricity.\n");
+		text_out("   It provides immunity to electricity.\n");
 		known = TRUE;
 	}
 	else if (f2 & (TR2_RES_ELEC))
 	{
-		text_out("It provides resistance to electricity.\n");
+		text_out("   It provides resistance to electricity.\n");
 		known = TRUE;
 	}
 
 	if (f2 & (TR2_IM_FIRE))
 	{
-		text_out("It provides immunity to fire.\n");
+		text_out("   It provides immunity to fire.\n");
 		known = TRUE;
 	}
 	else if (f2 & (TR2_RES_FIRE))
 	{
-		text_out("It provides resistance to fire.\n");
+		text_out("   It provides resistance to fire.\n");
 		known = TRUE;
 	}
 
 	if (f2 & (TR2_IM_COLD))
 	{
-		text_out("It provides immunity to cold.\n");
+		text_out("   It provides immunity to cold.\n");
 		known = TRUE;
 	}
 	else if (f2 & (TR2_RES_COLD))
 	{
-		text_out("It provides resistance to cold.\n");
+		text_out("   It provides resistance to cold.\n");
 		known = TRUE;
 	}
 
 	if (f2 & (TR2_RES_POIS))
 	{
-		text_out("It provides resistance to poison.\n");
+		text_out("   It provides resistance to poison.\n");
 		known = TRUE;
 	}
 
 	if (f2 & (TR2_RES_FEAR))
 	{
-		text_out("It provides resistance to fear.\n");
+		text_out("   It provides resistance to fear.\n");
 		known = TRUE;
 	}
 
 	if (f2 & (TR2_RES_LITE))
 	{
-		text_out("It provides resistance to light.\n");
+		text_out("   It provides resistance to light.\n");
 		known = TRUE;
 	}
 
 	if (f2 & (TR2_RES_DARK))
 	{
-		text_out("It provides resistance to dark.\n");
+		text_out("   It provides resistance to dark.\n");
 		known = TRUE;
 	}
 
 	if (f2 & (TR2_RES_BLIND))
 	{
-		text_out("It provides resistance to blindness.\n");
+		text_out("   It provides resistance to blindness.\n");
 		known = TRUE;
 	}
 
 	if (f2 & (TR2_RES_CONFU))
 	{
-		text_out("It provides resistance to confusion.\n");
+		text_out("   It provides resistance to confusion.\n");
 		known = TRUE;
 	}
 
 	if (f2 & (TR2_RES_SOUND))
 	{
-		text_out("It provides resistance to sound.\n");
+		text_out("   It provides resistance to sound.\n");
 		known = TRUE;
 	}
 
 	if (f2 & (TR2_RES_SHARD))
 	{
-		text_out("It provides resistance to shards.\n");
+		text_out("   It provides resistance to shards.\n");
 		known = TRUE;
 	}
 
 	if (f2 & (TR2_RES_NEXUS))
 	{
-		text_out("It provides resistance to nexus.\n");
+		text_out("   It provides resistance to nexus.\n");
 		known = TRUE;
 	}
 
 	if (f2 & (TR2_RES_NETHR))
 	{
-		text_out("It provides resistance to nether.\n");
+		text_out("   It provides resistance to nether.\n");
 		known = TRUE;
 	}
 
 	if (f2 & (TR2_RES_CHAOS))
 	{
-		text_out("It provides resistance to chaos.\n");
+		text_out("   It provides resistance to chaos.\n");
 		known = TRUE;
 	}
 
 	if (f2 & (TR2_RES_DISEN))
 	{
-		text_out("It provides resistance to disenchantment.\n");
+		text_out("   It provides resistance to disenchantment.\n");
 		known = TRUE;
 	}
 
 	if (f3 & (TR3_SLOW_DIGEST))
 	{
-		text_out("It slows your metabolism.\n");
+		text_out("   It slows your metabolism.\n");
 		known = TRUE;
 	}
 
 	if (f3 & (TR3_FEATHER))
 	{
-		text_out("It induces feather falling.\n");
+		text_out("   It induces feather falling.\n");
 		known = TRUE;
 	}
 
 	if (f3 & (TR3_LITE))
 	{
-		text_out("It provides permanent light.\n");
+		text_out("   It provides permanent light.\n");
 		known = TRUE;
 	}
 
 	if (f3 & (TR3_REGEN))
 	{
-		text_out("It speeds your regenerative powers.\n");
+		text_out("   It speeds your regenerative powers.\n");
 		known = TRUE;
 	}
 
 	if (f3 & (TR3_TELEPATHY))
 	{
-		text_out("It gives telepathic powers.\n");
+		text_out("   It gives telepathic powers.\n");
 		known = TRUE;
 	}
 
 	if (f3 & (TR3_SEE_INVIS))
 	{
-		text_out("It allows you to see invisible monsters.\n");
+		text_out("   It allows you to see invisible monsters.\n");
 		known = TRUE;
 	}
 
 	if (f3 & (TR3_FREE_ACT))
 	{
-		text_out("It provides immunity to paralysis.\n");
+		text_out("   It provides immunity to paralysis.\n");
 		known = TRUE;
 	}
 
 	if (f3 & (TR3_HOLD_LIFE))
 	{
-		text_out("It provides resistance to life draining.\n");
+		text_out("   It provides resistance to life draining.\n");
 		known = TRUE;
 	}
 
 	if (f3 & (TR3_IMPACT))
 	{
-		text_out("It induces earthquakes.\n");
+		text_out("   It induces earthquakes.\n");
 		known = TRUE;
 	}
 
 	if (f3 & (TR3_TELEPORT))
 	{
-		text_out("It induces random teleportation.\n");
+		text_out("   It induces random teleportation.\n");
 		known = TRUE;
 	}
 
 	if (f3 & (TR3_AGGRAVATE))
 	{
-		text_out("It aggravates nearby creatures.\n");
+		text_out("   It aggravates nearby creatures.\n");
 		known = TRUE;
 	}
 
 	if (f3 & (TR3_DRAIN_EXP))
 	{
-		text_out("It drains experience.\n");
+		text_out("   It drains experience.\n");
 		known = TRUE;
 	}
 
 	if (f3 & (TR3_BLESSED))
 	{
-		text_out("It has been blessed by the gods.\n");
+		text_out("   It has been blessed by the gods.\n");
 		known = TRUE;
 	}
 
@@ -2037,15 +2037,15 @@ static bool identify_fully_aux2(const object_type *o_ptr, int mode)
 	{
 		if (f3 & (TR3_PERMA_CURSE))
 		{
-			text_out("It is permanently cursed.\n");
+			text_out("   It is permanently cursed.\n");
 		}
 		else if (f3 & (TR3_HEAVY_CURSE))
 		{
-			text_out("It is heavily cursed.\n");
+			text_out("   It is heavily cursed.\n");
 		}
 		else
 		{
-			text_out("It is cursed.\n");
+			text_out("   It is cursed.\n");
 		}
 		known = TRUE;
 	}
@@ -2053,29 +2053,29 @@ static bool identify_fully_aux2(const object_type *o_ptr, int mode)
 	if ((f3 & (TR3_IGNORE_ACID)) && (f3 & (TR3_IGNORE_ELEC)) &&
 	    (f3 & (TR3_IGNORE_FIRE)) && (f3 & (TR3_IGNORE_COLD)))
 	{
-		text_out("It cannot be harmed by the elements.\n");
+		text_out("   It cannot be harmed by the elements.\n");
 		known = TRUE;
 	}
 	else
 	{
 		if (f3 & (TR3_IGNORE_ACID))
 		{
-			text_out("It cannot be harmed by acid.\n");
+			text_out("   It cannot be harmed by acid.\n");
 			known = TRUE;
 		}
 		if (f3 & (TR3_IGNORE_ELEC))
 		{
-			text_out("It cannot be harmed by electricity.\n");
+			text_out("   It cannot be harmed by electricity.\n");
 			known = TRUE;
 		}
 		if (f3 & (TR3_IGNORE_FIRE))
 		{
-			text_out("It cannot be harmed by fire.\n");
+			text_out("   It cannot be harmed by fire.\n");
 			known = TRUE;
 		}
 		if (f3 & (TR3_IGNORE_COLD))
 		{
-			text_out("It cannot be harmed by cold.\n");
+			text_out("   It cannot be harmed by cold.\n");
 			known = TRUE;
 		}
 	}
@@ -2085,7 +2085,7 @@ static bool identify_fully_aux2(const object_type *o_ptr, int mode)
 		(!(o_ptr->ident & IDENT_MENTAL)) &&
 	    ((o_ptr->xtra1) || artifact_p(o_ptr)))
 	{
-		text_out("It might have hidden powers.\n");
+		text_out("   It might have hidden powers.\n");
 		known = TRUE;
 	}
 
@@ -2553,7 +2553,7 @@ void display_inven(void)
 		n = strlen(o_name);
 
 		/* Get inventory color */
-		attr = tval_to_attr[o_ptr->tval & 0x7F];
+		attr = tval_to_attr[o_ptr->tval % N_ELEMENTS(tval_to_attr)];
 
 		/* Display the entry itself */
 		Term_putstr(3, i, n, attr, o_name);
@@ -2623,7 +2623,7 @@ void display_equip(void)
 		n = strlen(o_name);
 
 		/* Get inventory color */
-		attr = tval_to_attr[o_ptr->tval & 0x7F];
+		attr = tval_to_attr[o_ptr->tval % N_ELEMENTS(tval_to_attr)];
 
 		/* Display the entry itself */
 		Term_putstr(3, i - INVEN_WIELD, n, attr, o_name);
@@ -2719,7 +2719,7 @@ void show_inven(void)
 		out_index[k] = i;
 
 		/* Get inventory color */
-		out_color[k] = tval_to_attr[o_ptr->tval & 0x7F];
+		out_color[k] = tval_to_attr[o_ptr->tval % N_ELEMENTS(tval_to_attr)];
 
 		/* Save the object description */
 		strcpy(out_desc[k], o_name);
@@ -2824,7 +2824,7 @@ void show_equip(void)
 		out_index[k] = i;
 
 		/* Get inventory color */
-		out_color[k] = tval_to_attr[o_ptr->tval & 0x7F];
+		out_color[k] = tval_to_attr[o_ptr->tval % N_ELEMENTS(tval_to_attr)];
 
 		/* Save the description */
 		strcpy(out_desc[k], o_name);
@@ -2946,7 +2946,7 @@ void show_floor(const int *floor_list, int floor_num)
 		out_index[k] = i;
 
 		/* Get inventory color */
-		out_color[k] = tval_to_attr[o_ptr->tval & 0x7F];
+		out_color[k] = tval_to_attr[o_ptr->tval % N_ELEMENTS(tval_to_attr)];
 
 		/* Save the object description */
 		strcpy(out_desc[k], o_name);

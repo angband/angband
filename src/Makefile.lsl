@@ -68,8 +68,8 @@ install: angband
 # Clean up old junk
 #
 clean:
-	\rm -f *.o angband
-	\rm -f ./lua/*.o ./lua/tolua
+	-rm -f *.o angband
+	-rm -f ./lua/*.o ./lua/tolua
 
 
 #

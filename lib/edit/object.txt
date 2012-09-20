@@ -65,18 +65,11 @@
 # ends or the beginning of the next line to prevent words from running
 # together.
 
-### New items added by JLE are:
-# 90: Mattock
-# 170: Amulet of Sustenance
-# 437: Mithril Shot
-# 438: Silver Arrow
-# 439: Silver Bolt
-# 513, 514: New artifact amulets
 
 
 # Version stamp (required)
 
-V:2.9.6
+V:2.9.7
 
 
 ##### Non-kind (contains the "pile" picture) #####
@@ -2506,15 +2499,15 @@ P:0:1d2:0:0:0
 
 ##### Basic Books #####
 
-N:330:[Magic for Beginners]
+N:330:[An Introduction to Spellcasting]
 G:?:R
 I:90:0:0
-W:5:0:30:25
+W:5:0:30:30
 A:5/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
 
-N:331:[Conjurings and Tricks]
+N:331:[The Art of Divination]
 G:?:R
 I:90:1:0
 W:10:0:30:100
@@ -2522,19 +2515,19 @@ A:10/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
 
-N:332:[Incantations and Illusions]
+N:332:[Elementary Evocations]
 G:?:R
 I:90:2:0
-W:20:0:30:400
-A:20/1
+W:15:0:30:200
+A:15/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
 
-N:333:[Sorcery and Evocations]
+N:333:[Applied Conjuration]
 G:?:R
 I:90:3:0
-W:30:0:30:800
-A:30/1
+W:20:0:30:300
+A:20/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
 
@@ -2663,8 +2656,15 @@ A:0/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
 
+##### Extra mage spell book #####
 
-
+N:350:[Anatomy and Physiology]
+G:?:R
+I:90:4:0
+W:25:0:30:1000
+A:25/1
+P:0:1d1:0:0:0
+F:EASY_KNOW
 
 ##### Here are the Rods #####
 
@@ -2889,47 +2889,47 @@ F:EASY_KNOW
 
 ##### Special Books (note resistances) #####
 
-N:379:[Resistance of Scarabtarices]
-G:?:r
-I:90:4:0
-W:40:0:30:5000
-A:40/1
-P:0:1d1:0:0:0
-F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
-F:EASY_KNOW
-
-N:380:[Mordenkainen's Escapes]
-G:?:r
-I:90:5:0
-W:50:0:30:10000
-A:50/1
-P:0:1d1:0:0:0
-F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
-F:EASY_KNOW
-
-N:381:[Kelek's Grimoire of Power]
-G:?:r
-I:90:6:0
-W:60:0:30:30000
-A:60/1
-P:0:1d1:0:0:0
-F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
-F:EASY_KNOW
-
-N:382:[Tenser's Transformations]
+N:379:[Ethereal Armor]
 G:?:r
 I:90:7:0
-W:80:0:30:50000
-A:80/2
+W:40:0:30:20000
+A:40/4
 P:0:1d1:0:0:0
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 F:EASY_KNOW
 
-N:383:[Raal's Tome of Destruction]
+N:380:[The Space-Time Continuum]
+G:?:r
+I:90:5:0
+W:30:0:30:5000
+A:30/3
+P:0:1d1:0:0:0
+F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+F:EASY_KNOW
+
+N:381:[Grimoire of Black Magic]
+G:?:r
+I:90:6:0
+W:35:0:30:8000
+A:35/6
+P:0:1d1:0:0:0
+F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+F:EASY_KNOW
+
+N:382:[Energy Transference]
 G:?:r
 I:90:8:0
-W:100:0:30:100000
-A:100/4
+W:60:0:30:40000
+A:60/4
+P:0:1d1:0:0:0
+F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+F:EASY_KNOW
+
+N:383:[Tome of Destruction]
+G:?:r
+I:90:9:0
+W:80:0:30:100000
+A:80/4
 P:0:1d1:0:0:0
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 F:EASY_KNOW
@@ -3329,7 +3329,7 @@ G:":d
 I:40:22:0
 W:10:0:3:300
 A:10/1
-F:RES_ELEC | IGNORE_ELEC
+F:RES_ELEC | IGNORE_ELEC | EASY_KNOW
 
 ### And a ring ###
 

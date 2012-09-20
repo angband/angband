@@ -283,7 +283,7 @@ function quaff_potion(object)
 			player.csp_frac = 0
 			msg_print("Your feel your head clear.")
 			player.redraw = bOr(player.redraw, PR_MANA)
-			player.window = bOr(player.window, bOr(PW_PLAYER_0, PW_PLAYER_1))
+			player.window = bOr(player.window, PW_PLAYER_0, PW_PLAYER_1)
 			ident = TRUE
 		end
 	elseif object.sval == SV_POTION_RESTORE_EXP then
@@ -579,7 +579,7 @@ function use_staff(object)
 			player.csp_frac = 0
 			msg_print("Your feel your head clear.")
 			player.redraw = bOr(player.redraw, PR_MANA)
-			player.window = bOr(player.window, bOr(PW_PLAYER_0, PW_PLAYER_1))
+			player.window = bOr(player.window, PW_PLAYER_0, PW_PLAYER_1)
 			ident = TRUE
 		end
 	elseif object.sval == SV_STAFF_SLEEP_MONSTERS then
@@ -671,7 +671,7 @@ function aim_wand(object)
 		msg_print("The wand has no charges left.")
 
 		object.ident = bOr(object.ident, IDENT_EMPTY)
-		player.notice = bOr(player.notice, bOr(PN_COMBINE, PN_REORDER))
+		player.notice = bOr(player.notice, PN_COMBINE, PN_REORDER)
 		player.window = bOr(player.window, PW_INVEN)
 
 		return FALSE, FALSE
@@ -1203,7 +1203,7 @@ function activate_object(object)
 		end
 
 		-- Window stuff
-		player.window = bOr(player.window, bOr(PW_INVEN, PW_EQUIP))
+		player.window = bOr(player.window, PW_INVEN, PW_EQUIP)
 
 		return FALSE, FALSE
 	end
@@ -1286,7 +1286,7 @@ function activate_object(object)
 		end
 
 		-- Window stuff
-		player.window = bOr(player.window, bOr(PW_INVEN, PW_EQUIP))
+		player.window = bOr(player.window, PW_INVEN, PW_EQUIP)
 
 		return FALSE, FALSE
 	end

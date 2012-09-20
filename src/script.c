@@ -123,37 +123,57 @@ static const struct luaL_reg anglib[] =
 };
 
 
-#define DYADIC(name, op) \
-    static int name(lua_State* L) { \
-        lua_pushnumber(L, luaL_check_int(L, 1) op luaL_check_int(L, 2)); \
+#define luaL_check_bit(L, n)  ((long)luaL_check_number(L, n))
+#define luaL_check_ubit(L, n) ((unsigned long)luaL_check_bit(L, n))
+
+#define TDYADIC(name, op, t1, t2) \
+	static int int_ ## name(lua_State* L) \
+	{ \
+		lua_pushnumber(L, \
+		luaL_check_ ## t1 ## bit(L, 1) op luaL_check_ ## t2 ## bit(L, 2)); \
 		return 1; \
-    }
+	}
+
+#define DYADIC(name, op) \
+	TDYADIC(name, op, , )
 
 #define MONADIC(name, op) \
-    static int name(lua_State* L) { \
-        lua_pushnumber(L, op luaL_check_int(L, 1)); \
+	static int int_ ## name(lua_State* L) \
+	{ \
+		lua_pushnumber(L, op luaL_check_bit(L, 1)); \
 		return 1; \
-    }
+	}
 
+#define VARIADIC(name, op) \
+	static int int_ ## name(lua_State *L) \
+	{ \
+		int n = lua_gettop(L), i; \
+		long w = luaL_check_bit(L, 1); \
+		for (i = 2; i <= n; i++) \
+			w op ## = luaL_check_bit(L, i); \
+		lua_pushnumber(L, w); \
+		return 1; \
+	}
 
-DYADIC(intMod,      % )
-DYADIC(intAnd,      & )
-DYADIC(intOr,       | )
-DYADIC(intXor,      ^ )
-DYADIC(intShiftl,   <<)
-DYADIC(intShiftr,   >>)
-MONADIC(intBitNot,  ~ )
+MONADIC(not,     ~)
+DYADIC(mod,      %)
+VARIADIC(and,    &)
+VARIADIC(or,     |)
+VARIADIC(xor,    ^)
+TDYADIC(lshift,  <<, , u)
+TDYADIC(rshift,  >>, u, u)
+TDYADIC(arshift, >>, , u)
 
-
-static const struct luaL_reg intMathLib[] =
+static const struct luaL_reg bitlib[] =
 {
-    {"mod",    intMod    },
-    {"bAnd",   intAnd    },
-    {"bOr",    intOr     },
-    {"bXor",   intXor    },
-    {"bNot",   intBitNot },
-    {"shiftl", intShiftl },
-    {"shiftr", intShiftr },
+	{"bNot",    int_not},
+	{"iMod",    int_mod},  /* "mod" already in Lua math library */
+	{"bAnd",    int_and},
+	{"bOr",     int_or},
+	{"bXor",    int_xor},
+	{"lshift",  int_lshift},
+	{"rshift",  int_rshift},
+	{"arshift", int_arshift},
 };
 
 
@@ -526,7 +546,7 @@ errr script_init(void)
 	lua_dblibopen(L);
 
 	/* Register library with binary functions */
-	luaL_openl(L, intMathLib);
+	luaL_openl(L, bitlib);
 
 	/* Register the Angband base library */
 	luaL_openl(L, anglib);

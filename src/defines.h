@@ -47,7 +47,7 @@
 /*
  * Current version string
  */
-#define VERSION_STRING	"2.9.6 alpha"
+#define VERSION_STRING	"2.9.7 alpha"
 
 
 /*
@@ -55,7 +55,7 @@
  */
 #define VERSION_MAJOR	2
 #define VERSION_MINOR	9
-#define VERSION_PATCH	6
+#define VERSION_PATCH	7
 #define VERSION_EXTRA	0
 
 
@@ -167,6 +167,12 @@
  * Maximum amount of starting equipment
  */
 #define MAX_START_ITEMS	4
+
+
+/*
+ * Number of tval/min-sval/max-sval slots per ego_item
+ */
+#define EGO_TVALS_MAX 3
 
 
 /*
@@ -456,6 +462,9 @@
 
 #define ROW_GOLD		6
 #define COL_GOLD		0	/* "AU xxxxxxxxx" */
+
+#define ROW_EQUIPPY		7
+#define COL_EQUIPPY		0	/* equippy chars */
 
 #define ROW_STAT		8
 #define COL_STAT		0	/* "xxx   xxxxxx" */
@@ -1401,6 +1410,8 @@
 /*** Monster blow constants ***/
 
 
+#define MONSTER_BLOW_MAX 4
+
 /*
  * New monster blow methods
  */
@@ -1579,7 +1590,7 @@
 #define PR_MANA			0x00000080L	/* Display Mana */
 #define PR_GOLD			0x00000100L	/* Display Gold */
 #define PR_DEPTH		0x00000200L	/* Display Depth */
-/* xxx */
+#define PR_EQUIPPY		0x00000400L	/* Display Equippy chars */
 #define PR_HEALTH		0x00000800L	/* Display Health Bar */
 #define PR_CUT			0x00001000L	/* Display Extra (Cut) */
 #define PR_STUN			0x00002000L	/* Display Extra (Stun) */
@@ -2433,14 +2444,15 @@
 /* xxx */
 /* xxx */
 /* xxx xxx */
-#define OPT_birth_point_based		(OPT_BIRTH+0)
-#define OPT_birth_auto_roller		(OPT_BIRTH+1)
-#define OPT_birth_maximize			(OPT_BIRTH+2)
-#define OPT_birth_preserve			(OPT_BIRTH+3)
-#define OPT_birth_ironman			(OPT_BIRTH+4)
-#define OPT_birth_no_stores			(OPT_BIRTH+5)
-#define OPT_birth_no_artifacts		(OPT_BIRTH+6)
-#define OPT_birth_rand_artifacts	(OPT_BIRTH+7)
+#define OPT_birth_point_based       (OPT_BIRTH+0)
+#define OPT_birth_auto_roller       (OPT_BIRTH+1)
+#define OPT_birth_maximize          (OPT_BIRTH+2)
+#define OPT_birth_preserve          (OPT_BIRTH+3)
+#define OPT_birth_ironman           (OPT_BIRTH+4)
+#define OPT_birth_no_stores         (OPT_BIRTH+5)
+#define OPT_birth_no_artifacts      (OPT_BIRTH+6)
+#define OPT_birth_rand_artifacts    (OPT_BIRTH+7)
+#define OPT_birth_no_stacking       (OPT_BIRTH+8)
 /* xxx xxx */
 #define OPT_cheat_peek				(OPT_CHEAT+0)
 #define OPT_cheat_hear				(OPT_CHEAT+1)
@@ -2559,6 +2571,7 @@
 #define birth_no_stores			op_ptr->opt[OPT_birth_no_stores]
 #define birth_no_artifacts		op_ptr->opt[OPT_birth_no_artifacts]
 #define birth_rand_artifacts	op_ptr->opt[OPT_birth_rand_artifacts]
+#define birth_no_stacking       op_ptr->opt[OPT_birth_no_stacking]
 /* xxx xxx */
 #define cheat_peek				op_ptr->opt[OPT_cheat_peek]
 #define cheat_hear				op_ptr->opt[OPT_cheat_hear]

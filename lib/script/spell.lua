@@ -1,79 +1,67 @@
--- Magic for Beginners
 SPELL_MAGIC_MISSILE = 0
 SPELL_DETECT_MONSTERS = 1
 SPELL_PHASE_DOOR = 2
 SPELL_LIGHT_AREA = 3
-SPELL_TREASURE_DETECTION = 4
+SPELL_FIND_TRAPS_DOORS = 4
 SPELL_CURE_LIGHT_WOUNDS = 5
-SPELL_OBJECT_DETECTION = 6
-SPELL_FIND_TRAPS_DOORS = 7
-SPELL_STINKING_CLOUD = 8
-
--- Conjurings and Tricks
-SPELL_CONFUSE_MONSTER = 9
-SPELL_LIGHTNING_BOLT = 10
-SPELL_TRAP_DOOR_DESTRUCTION = 11
-SPELL_SLEEP_I = 12
-SPELL_CURE_POISON = 13
-SPELL_TELEPORT_SELF = 14
-SPELL_SPEAR_OF_LIGHT = 15
+SPELL_TREASURE_DETECTION = 6
+SPELL_OBJECT_DETECTION = 7
+SPELL_IDENTIFY = 8
+SPELL_DETECT_INVISIBLE = 9
+SPELL_DETECT_ENCHANTMENT = 10
+SPELL_STINKING_CLOUD = 11
+SPELL_LIGHTNING_BOLT = 12
+SPELL_CONFUSE_MONSTER = 13
+SPELL_SLEEP_MONSTER = 14
+SPELL_WONDER = 15
 SPELL_FROST_BOLT = 16
-SPELL_TURN_STONE_TO_MUD = 17
-
--- Incantations and Illusions
-SPELL_SATISFY_HUNGER = 18
-SPELL_RECHARGE_ITEM_I = 19
-SPELL_SLEEP_II = 20
-SPELL_POLYMORPH_OTHER = 21
-SPELL_IDENTIFY = 22
-SPELL_SLEEP_III = 23
-SPELL_FIRE_BOLT = 24
-SPELL_SLOW_MONSTER = 25
-
--- Sorcery and Evocations
-SPELL_FROST_BALL = 26
-SPELL_RECHARGE_ITEM_II = 27
-SPELL_TELEPORT_OTHER = 28
+SPELL_ACID_BOLT = 17
+SPELL_FIRE_BOLT = 18
+SPELL_TRAP_DOOR_DESTRUCTION = 19
+SPELL_SPEAR_OF_LIGHT = 20
+SPELL_TURN_STONE_TO_MUD = 21
+SPELL_DOOR_CREATION = 22
+SPELL_EARTHQUAKE = 23
+SPELL_STAIR_CREATION = 24
+SPELL_CURE_POISON = 25
+SPELL_SATISFY_HUNGER = 26
+SPELL_HEROISM = 27
+SPELL_BERSERKER = 28
 SPELL_HASTE_SELF = 29
-SPELL_FIRE_BALL = 30
-SPELL_WORD_OF_DESTRUCTION = 31
-SPELL_GENOCIDE = 32
-
--- Mordenkainen's Escapes
-SPELL_DOOR_CREATION = 33
-SPELL_STAIR_CREATION = 34
-SPELL_TELEPORT_LEVEL = 35
-SPELL_EARTHQUAKE = 36
-SPELL_WORD_OF_RECALL = 37
-
--- Raal's Tome of Destruction
-SPELL_ACID_BOLT = 38
-SPELL_CLOUD_KILL = 39
-SPELL_ACID_BALL = 40
-SPELL_ICE_STORM = 41
-SPELL_METEOR_SWARM = 42
-SPELL_MANA_STORM = 43
-
--- Kelek's Grimoire of Power
-SPELL_DETECT_EVIL = 44
-SPELL_DETECT_ENCHANTMENT = 45
-SPELL_RECHARGE_ITEM_III = 46
-SPELL_GENOCIDE2 = 47
-SPELL_MASS_GENOCIDE = 48
-
--- Resistance of Scarabtarices
-SPELL_RESIST_FIRE = 49
-SPELL_RESIST_COLD = 50
-SPELL_RESIST_ACID = 51
-SPELL_RESIST_POISON = 52
-SPELL_RESISTANCE = 53
-
--- Tenser's transformations
-SPELL_HEROISM = 54
-SPELL_SHIELD = 55
-SPELL_BERSERKER = 56
-SPELL_ESSENCE_OF_SPEED = 57
-SPELL_GLOBE_OF_INVULNERABILITY = 58
+SPELL_TELEPORT_SELF = 30
+SPELL_SLOW_MONSTER = 31
+SPELL_TELEPORT_OTHER = 32
+SPELL_TELEPORT_LEVEL = 33
+SPELL_WORD_OF_RECALL = 34
+SPELL_POLYMORPH_OTHER = 35
+SPELL_SHOCK_WAVE = 36
+SPELL_EXPLOSION = 37
+SPELL_CLOUD_KILL = 38
+SPELL_MASS_SLEEP = 39
+SPELL_BEDLAM = 40
+SPELL_REND_SOUL = 41
+SPELL_WORD_OF_DESTRUCTION = 42
+SPELL_CHAOS_STRIKE = 43
+SPELL_RESIST_COLD = 44
+SPELL_RESIST_FIRE = 45
+SPELL_RESIST_POISON = 46
+SPELL_RESISTANCE = 47
+SPELL_SHIELD = 48
+SPELL_RUNE_OF_PROTECTION = 49
+SPELL_RECHARGE_ITEM_I = 50
+SPELL_ENCHANT_ARMOR = 51
+SPELL_ENCHANT_WEAPON = 52
+SPELL_RECHARGE_ITEM_II = 53 -- ToDo - replace one of the recharge spells
+SPELL_ELEMENTAL_BRAND = 54
+SPELL_FROST_BALL = 55
+SPELL_ACID_BALL = 56
+SPELL_FIRE_BALL = 57
+SPELL_ICE_STORM = 58
+SPELL_GENOCIDE = 59
+SPELL_METEOR_SWARM = 60
+SPELL_MASS_GENOCIDE = 61
+SPELL_RIFT = 62
+SPELL_MANA_STORM = 63
 
 -- Beginners Handbook
 PRAYER_DETECT_EVIL = 0
@@ -153,64 +141,85 @@ PRAYER_ALTER_REALITY = 57
 
 
 magic_books = {
+	-- An Introduction to Spellcasting
 	[0] = {SPELL_MAGIC_MISSILE,
 	       SPELL_DETECT_MONSTERS,
 	       SPELL_PHASE_DOOR,
 	       SPELL_LIGHT_AREA,
-	       SPELL_TREASURE_DETECTION,
-	       SPELL_CURE_LIGHT_WOUNDS,
-	       SPELL_OBJECT_DETECTION,
 	       SPELL_FIND_TRAPS_DOORS,
-	       SPELL_STINKING_CLOUD},
-	[1] = {SPELL_CONFUSE_MONSTER,
-	       SPELL_LIGHTNING_BOLT,
-	       SPELL_TRAP_DOOR_DESTRUCTION,
-	       SPELL_SLEEP_I,
-	       SPELL_CURE_POISON,
-	       SPELL_TELEPORT_SELF,
-	       SPELL_SPEAR_OF_LIGHT,
-	       SPELL_FROST_BOLT,
-	       SPELL_TURN_STONE_TO_MUD},
-	[2] = {SPELL_SATISFY_HUNGER,
-	       SPELL_RECHARGE_ITEM_I,
-	       SPELL_SLEEP_II,
-	       SPELL_POLYMORPH_OTHER,
+	       SPELL_CURE_LIGHT_WOUNDS},
+	-- The Art of Divination
+	[1] = {SPELL_DETECT_MONSTERS,
+	       SPELL_FIND_TRAPS_DOORS,
+	       SPELL_TREASURE_DETECTION,
+	       SPELL_OBJECT_DETECTION,
 	       SPELL_IDENTIFY,
-	       SPELL_SLEEP_III,
-	       SPELL_FIRE_BOLT,
-	       SPELL_SLOW_MONSTER},
-	[3] = {SPELL_FROST_BALL,
-	       SPELL_RECHARGE_ITEM_II,
-	       SPELL_TELEPORT_OTHER,
-	       SPELL_HASTE_SELF,
-	       SPELL_FIRE_BALL,
-	       SPELL_WORD_OF_DESTRUCTION,
-	       SPELL_GENOCIDE},
-	[4] = {SPELL_RESIST_FIRE,
-	       SPELL_RESIST_COLD,
-	       SPELL_RESIST_ACID,
-	       SPELL_RESIST_POISON,
-	       SPELL_RESISTANCE},
-	[5] = {SPELL_DOOR_CREATION,
-	       SPELL_STAIR_CREATION,
-	       SPELL_TELEPORT_LEVEL,
+	       SPELL_DETECT_INVISIBLE,
+	       SPELL_DETECT_ENCHANTMENT},
+	-- Elementary Evocations
+	[2] = {SPELL_MAGIC_MISSILE,
+	       SPELL_STINKING_CLOUD,
+	       SPELL_LIGHTNING_BOLT,
+	       SPELL_CONFUSE_MONSTER,
+	       SPELL_SLEEP_MONSTER,
+	       SPELL_WONDER,
+	       SPELL_FROST_BOLT,
+	       SPELL_ACID_BOLT,
+	       SPELL_FIRE_BOLT},
+	-- Applied Conjuration
+	[3] = {SPELL_LIGHT_AREA,
+	       SPELL_TRAP_DOOR_DESTRUCTION,
+	       SPELL_SPEAR_OF_LIGHT,
+	       SPELL_TURN_STONE_TO_MUD,
+	       SPELL_DOOR_CREATION,
 	       SPELL_EARTHQUAKE,
-	       SPELL_WORD_OF_RECALL},
-	[6] = {SPELL_DETECT_EVIL,
-	       SPELL_DETECT_ENCHANTMENT,
-	       SPELL_RECHARGE_ITEM_III,
-	       SPELL_GENOCIDE2,
-	       SPELL_MASS_GENOCIDE},
-	[7] = {SPELL_HEROISM,
-	       SPELL_SHIELD,
+	       SPELL_STAIR_CREATION},
+	-- Anatomy and Physiology
+	[4] = {SPELL_CURE_LIGHT_WOUNDS,
+	       SPELL_CURE_POISON,
+	       SPELL_SATISFY_HUNGER,
+	       SPELL_HEROISM,
 	       SPELL_BERSERKER,
-	       SPELL_ESSENCE_OF_SPEED,
-	       SPELL_GLOBE_OF_INVULNERABILITY},
-	[8] = {SPELL_ACID_BOLT,
+	       SPELL_HASTE_SELF},
+	-- The Space-Time Continuum
+	[5] = {SPELL_PHASE_DOOR,
+	       SPELL_TELEPORT_SELF,
+	       SPELL_SLOW_MONSTER,
+	       SPELL_TELEPORT_OTHER,
+	       SPELL_TELEPORT_LEVEL,
+	       SPELL_WORD_OF_RECALL},
+	-- Grimoire of Black Magic
+	[6] = {SPELL_POLYMORPH_OTHER,
+	       SPELL_SHOCK_WAVE,
+	       SPELL_EXPLOSION,
 	       SPELL_CLOUD_KILL,
+	       SPELL_MASS_SLEEP,
+	       SPELL_BEDLAM,
+	       SPELL_REND_SOUL,
+	       SPELL_WORD_OF_DESTRUCTION,
+	       SPELL_CHAOS_STRIKE},
+	-- Ethereal Armor
+	[7] = {SPELL_RESIST_COLD,
+	       SPELL_RESIST_FIRE,
+	       SPELL_RESIST_POISON,
+	       SPELL_RESISTANCE,
+	       SPELL_SHIELD,
+	       SPELL_RUNE_OF_PROTECTION},
+	-- Energy Transference
+	[8] = {SPELL_RECHARGE_ITEM_I,
+	       SPELL_ENCHANT_ARMOR,
+	       SPELL_ENCHANT_WEAPON,
+	       SPELL_RECHARGE_ITEM_II,
+	       SPELL_ELEMENTAL_BRAND},
+	-- Tome of Destruction
+	[9] = {SPELL_FROST_BALL,
 	       SPELL_ACID_BALL,
+	       SPELL_FIRE_BALL,
 	       SPELL_ICE_STORM,
+	       SPELL_GENOCIDE,
 	       SPELL_METEOR_SWARM,
+	       SPELL_MASS_GENOCIDE,
+	       SPELL_RIFT,
 	       SPELL_MANA_STORM}}
 
 prayer_books = {
@@ -299,61 +308,66 @@ magic_name = {
 	"Detect Monsters",
 	"Phase Door",
 	"Light Area",
-	"Treasure Detection",
-	"Cure Light Wounds",
-	"Object Detection",
 	"Find Hidden Traps/Doors",
-	"Stinking Cloud",
-	"Confuse Monster",
-	"Lightning Bolt",
-	"Trap/Door Destruction",
-	"Sleep I",
-	"Cure Poison",
-	"Teleport Self",
-	"Spear of Light",
-	"Frost Bolt",
-	"Turn Stone to Mud",
-	"Satisfy Hunger",
-	"Recharge Item I",
-	"Sleep II",
-	"Polymorph Other",
+	"Cure Light Wounds",
+	"Detect Treasure",
+	"Detect Objects",
 	"Identify",
-	"Sleep III",
-	"Fire Bolt",
-	"Slow Monster",
-	"Frost Ball",
-	"Recharge Item II",
-	"Teleport Other",
-	"Haste Self",
-	"Fire Ball",
-	"Word of Destruction",
-	"Genocide",
-	"Door Creation",
-	"Stair Creation",
-	"Teleport Level",
-	"Earthquake",
-	"Word of Recall",
-	"Acid Bolt",
-	"Cloud Kill",
-	"Acid Ball",
-	"Ice Storm",
-	"Meteor Swarm",
-	"Mana Storm",
-	"Detect Evil",
+	"Detect Invisible",
 	"Detect Enchantment",
-	"Recharge Item III",
-	"Genocide",
-	"Mass Genocide",
-	"Resist Fire",
+	"Stinking Cloud",
+	"Lightning Bolt",
+	"Confuse Monster",
+	"Sleep Monster",
+	"Wonder",
+	"Frost Bolt",
+	"Acid Bolt",
+	"Fire Bolt",
+	"Trap/Door Destruction",
+	"Spear of Light",
+	"Turn Stone to Mud",
+	"Door Creation",
+	"Earthquake",
+	"Stair Creation",
+	"Cure Poison",
+	"Satisfy Hunger",
+	"Heroism",
+	"Berserker",
+	"Haste Self",
+	"Teleport Self",
+	"Slow Monster",
+	"Teleport Other",
+	"Teleport Level",
+	"Word of Recall",
+	"Polymorph Other",
+	"Shock Wave",
+	"Explosion",
+	"Cloudkill",
+	"Mass Sleep",
+	"Bedlam",
+	"Rend Soul",
+	"Word of Destruction",
+	"Chaos Strike",
 	"Resist Cold",
-	"Resist Acid",
+	"Resist Fire",
 	"Resist Poison",
 	"Resistance",
-	"Heroism",
 	"Shield",
-	"Berserker",
-	"Essence of Speed",
-	"Globe of Invulnerability"}
+	"Rune of Protection",
+	"Lesser Recharging",
+	"Enchant Armor",
+	"Enchant Weapon",
+	"Greater Recharging",
+	"Elemental Brand",
+	"Frost Ball",
+	"Acid Ball",
+	"Fire Ball",
+	"Ice Storm",
+	"Genocide",
+	"Meteor Swarm",
+	"Mass Genocide",
+	"Rift",
+	"Mana Storm"}
 
 prayer_name = {
 	"Detect Evil",
@@ -448,53 +462,57 @@ function get_spell_info_hook(tval, index)
 		elseif index == SPELL_STINKING_CLOUD then
 			info = format(" dam %d", 10 + (plev / 2))
 		elseif index == SPELL_LIGHTNING_BOLT then
-			info = format(" dam %dd8", (3 + ((plev - 5) / 4)))
-		elseif index == SPELL_TELEPORT_SELF then
-			info = format(" range %d", plev * 5)
-		elseif index == SPELL_SPEAR_OF_LIGHT then
-			info = " dam 6d8"
+			info = format(" dam %dd6", (3 + ((plev - 5) / 6)))
 		elseif index == SPELL_FROST_BOLT then
 			info = format(" dam %dd8", (5 + ((plev - 5) / 4)))
+		elseif index == SPELL_ACID_BOLT then
+			info = format(" dam %dd8", (6 + ((plev - 5) / 4)))
 		elseif index == SPELL_FIRE_BOLT then
 			info = format(" dam %dd8", (8 + ((plev - 5) / 4)))
-		elseif index == SPELL_FROST_BALL then
-			info = format(" dam %d", 30 + plev)
-		elseif index == SPELL_HASTE_SELF then
+		elseif index == SPELL_SPEAR_OF_LIGHT then
+			info = " dam 6d8"
+		elseif index == SPELL_HEROISM then
+			info = " dur 25+d25"
+		elseif index == SPELL_BERSERKER then
+			info = " dur 25+d25"
+		elseif index == HASTE_SELF then
 			info = format(" dur %d+d20", plev)
-		elseif index == SPELL_FIRE_BALL then
-			info = format(" dam %d", 55 + plev)
-		elseif index == SPELL_ACID_BOLT then
-			info = format(" dam %dd8", (7 + ((plev - 5) / 4)))
+		elseif index == SPELL_TELEPORT_SELF then
+			info = format(" range %d", plev * 5)
+		elseif index == SPELL_SHOCK_WAVE then
+			info = format(" dam %d", 10 + plev)
+		elseif index == SPELL_EXPLOSION then
+			info = format(" dam %d", 20 + plev * 2)
 		elseif index == SPELL_CLOUD_KILL then
-			info = format(" dam %d", 50 + plev)
-		elseif index == SPELL_ACID_BALL then
-			info = format(" dam %d", 45 + plev)
-		elseif index == SPELL_ICE_STORM then
-			info = format(" dam %d", 75 + (plev * 3))
-		elseif index == SPELL_METEOR_SWARM then
-			info = format(" dam %d", 50 + (plev * 3))
-		elseif index == SPELL_MANA_STORM then
-			info = format(" dam %d", 300 + plev * 2)
-		elseif index == SPELL_RESIST_FIRE then
-			info = " dur 20+d20"
+			info = format(" dam %d", 40 + (plev / 2))
+		elseif index == SPELL_REND_SOUL then
+			info = format(" dam 11d%d", plev)
+		elseif index == SPELL_CHAOS_STRIKE then
+			info = format(" dam 13d%d", plev)
 		elseif index == SPELL_RESIST_COLD then
 			info = " dur 20+d20"
-		elseif index == SPELL_RESIST_ACID then
+		elseif index == SPELL_RESIST_FIRE then
 			info = " dur 20+d20"
 		elseif index == SPELL_RESIST_POISON then
 			info = " dur 20+d20"
 		elseif index == SPELL_RESISTANCE then
 			info = " dur 20+d20"
-		elseif index == SPELL_HEROISM then
-			info = " dur 25+d25"
 		elseif index == SPELL_SHIELD then
 			info = " dur 30+d20"
-		elseif index == SPELL_BERSERKER then
-			info = " dur 25+d25"
-		elseif index == SPELL_ESSENCE_OF_SPEED then
-			info = format(" dur %d+d30", 30 + plev)
-		elseif index == SPELL_GLOBE_OF_INVULNERABILITY then
-			info = " dur 8+d8"
+		elseif index == SPELL_FROST_BALL then
+			info = format(" dam %d", 30 + plev)
+		elseif index == SPELL_ACID_BALL then
+			info = format(" dam %d", 40 + plev)
+		elseif index == SPELL_FIRE_BALL then
+			info = format(" dam %d", 55 + plev)
+		elseif index == SPELL_ICE_STORM then
+			info = format(" dam %d", 75 + (plev * 3))
+		elseif index == SPELL_METEOR_SWARM then
+			info = format(" dam %d", 50 + (plev * 3)) -- ToDo
+		elseif index == SPELL_RIFT then
+			info = format(" dam 40+%dd7", plev)
+		elseif index == SPELL_MANA_STORM then
+			info = format(" dam %d", 300 + plev * 2)
 		end
 	elseif tval == TV_PRAYER_BOOK then
 		if index == PRAYER_CURE_LIGHT_WOUNDS then
@@ -558,20 +576,93 @@ function get_spell_info_hook(tval, index)
 end
 
 
+-- Chance of "beam" instead of "bolt"
+function beam_chance()
+	if bAnd(cp_ptr.flags, CF_BEAM) ~= 0 then
+		return player.lev
+	else
+		return player.lev / 2
+	end
+end
+
+
+function spell_wonder()
+	local success
+	local dir
+	local plev = player.lev
+	local die = randint(100) + plev / 5
+	local beam = beam_chance()
+
+	success, dir = get_aim_dir()
+	if not success then return FALSE end
+
+	if (die > 100) then
+		msg_print("You feel a surge of power!")
+	end
+				
+	if (die < 8) then
+		clone_monster(dir)
+	elseif (die < 14) then
+		speed_monster(dir)
+	elseif (die < 26) then
+		heal_monster(dir)
+	elseif (die < 31) then
+		poly_monster(dir)
+	elseif (die < 36) then
+		fire_bolt_or_beam(beam - 10, GF_MISSILE, dir,
+		                  damroll(3 + ((plev - 1) / 5), 4))
+	elseif (die < 41) then
+		confuse_monster(dir, plev)
+	elseif (die < 46) then
+		fire_ball(GF_POIS, dir, 20 + (plev / 2), 3)
+	elseif (die < 51) then
+		lite_line(dir)
+	elseif (die < 56) then
+		fire_beam(GF_ELEC, dir, damroll(3 + ((plev - 5) / 6), 6))
+	elseif (die < 61) then
+		fire_bolt_or_beam(beam-10, GF_COLD, dir,
+		                  damroll(5 + ((plev - 5) / 4), 8))
+	elseif (die < 66) then
+		fire_bolt_or_beam(beam, GF_ACID, dir,
+		                  damroll(6 + ((plev - 5) / 4), 8))
+	elseif (die < 71) then
+		fire_bolt_or_beam(beam, GF_FIRE, dir,
+		                  damroll(8 + ((plev - 5) / 4), 8))
+	elseif (die < 76) then
+		drain_life(dir, 75)
+	elseif (die < 81) then
+		fire_ball(GF_ELEC, dir, 30 + plev / 2, 2)
+	elseif (die < 86) then
+		fire_ball(GF_ACID, dir, 40 + plev, 2)
+	elseif (die < 91) then
+		fire_ball(GF_ICE, dir, 70 + plev, 3)
+	elseif (die < 96) then
+		fire_ball(GF_FIRE, dir, 80 + plev, 3)
+	elseif (die < 101) then
+		drain_life(dir, 100 + plev)
+	elseif (die < 104) then
+		earthquake(player.py, player.px, 12)
+	elseif (die < 106) then
+		destroy_area(player.py, player.px, 15, TRUE)
+	elseif (die < 108) then
+		genocide()
+	elseif (die < 110) then
+		dispel_monsters(120)
+	else -- RARE
+		dispel_monsters(150)
+		slow_monsters()
+		sleep_monsters()
+		hp_player(300)
+	end
+end
+
 function cast_spell(index)
 	local plev = player.lev
 
 	local success
 	local dir
 
-	-- Hack - chance of "beam" instead of "bolt"
-	local beam
-
-	if bAnd(cp_ptr.flags, CF_BEAM) ~= 0 then
-		beam = plev
-	else
-		beam = plev / 2
-	end
+	local beam = beam_chance()
 
 	if index == SPELL_MAGIC_MISSILE then
 		success, dir = get_aim_dir()
@@ -611,10 +702,10 @@ function cast_spell(index)
 		success, dir = get_aim_dir()
 		if not success then return FALSE end
 
-		fire_bolt_or_beam(beam-10, GF_ELEC, dir, damroll(3+((plev-5)/4), 8))
+		fire_bolt_or_beam(beam-10, GF_ELEC, dir, damroll(3+((plev-5)/6), 6))
 	elseif index == SPELL_TRAP_DOOR_DESTRUCTION then
 		destroy_doors_touch()
-	elseif index == SPELL_SLEEP_I then
+	elseif index == SPELL_SLEEP_MONSTER then
 		success, dir = get_aim_dir()
 		if not success then return FALSE end
 
@@ -642,9 +733,9 @@ function cast_spell(index)
 	elseif index == SPELL_SATISFY_HUNGER then
 		set_food(PY_FOOD_MAX - 1)
 	elseif index == SPELL_RECHARGE_ITEM_I then
-		recharge(5)
-	elseif index == SPELL_SLEEP_II then
-		sleep_monsters_touch()
+		recharge(2 + plev / 5)
+	elseif index == SPELL_WONDER then
+		spell_wonder()
 	elseif index == SPELL_POLYMORPH_OTHER then
 		success, dir = get_aim_dir()
 		if not success then return FALSE end
@@ -652,7 +743,7 @@ function cast_spell(index)
 		poly_monster(dir)
 	elseif index == SPELL_IDENTIFY then
 		ident_spell()
-	elseif index == SPELL_SLEEP_III then
+	elseif index == SPELL_MASS_SLEEP then
 		sleep_monsters()
 	elseif index == SPELL_FIRE_BOLT then
 		success, dir = get_aim_dir()
@@ -668,25 +759,24 @@ function cast_spell(index)
 		success, dir = get_aim_dir()
 		if not success then return FALSE end
 
-		fire_ball(GF_COLD, dir, 30 + (plev), 2)
+		fire_ball(GF_COLD, dir, 30 + plev, 2)
 	elseif index == SPELL_RECHARGE_ITEM_II then
-		recharge(40)
+		recharge(50 + plev)
 	elseif index == SPELL_TELEPORT_OTHER then
 		success, dir = get_aim_dir()
 		if not success then return FALSE end
 
 		teleport_monster(dir)
-	elseif index == SPELL_HASTE_SELF then
-		if player.fast == 0 then
-			set_fast(randint(20) + plev)
-		else
-			set_fast(player.fast + randint(5))
-		end
+	elseif index == SPELL_BEDLAM then
+		success, dir = get_aim_dir()
+		if not success then return FALSE end
+
+		fire_ball(GF_OLD_CONF, dir, plev, 4)
 	elseif index == SPELL_FIRE_BALL then
 		success, dir = get_aim_dir()
 		if not success then return FALSE end
 
-		fire_ball(GF_FIRE, dir, 55 + (plev), 2)
+		fire_ball(GF_FIRE, dir, 55 + plev, 2)
 	elseif index == SPELL_WORD_OF_DESTRUCTION then
 		destroy_area(player.py, player.px, 15, TRUE)
 	elseif index == SPELL_GENOCIDE then
@@ -705,48 +795,55 @@ function cast_spell(index)
 		success, dir = get_aim_dir()
 		if not success then return FALSE end
 
-		fire_bolt_or_beam(beam, GF_ACID, dir, damroll(7+((plev-5)/4), 8))
+		fire_bolt_or_beam(beam, GF_ACID, dir, damroll(6+((plev-5)/4), 8))
 	elseif index == SPELL_CLOUD_KILL then
 		success, dir = get_aim_dir()
 		if not success then return FALSE end
 
-		fire_ball(GF_POIS, dir, 50 + plev, 3)
+		fire_ball(GF_POIS, dir, 40 + (plev / 2), 3)
 	elseif index == SPELL_ACID_BALL then
 		success, dir = get_aim_dir()
 		if not success then return FALSE end
 
-		fire_ball(GF_ACID, dir, 45 + plev, 2)
+		fire_ball(GF_ACID, dir, 40 + plev, 2)
 	elseif index == SPELL_ICE_STORM then
 		success, dir = get_aim_dir()
 		if not success then return FALSE end
 
-		fire_ball(GF_COLD, dir, 75 + (plev * 3), 3)
+		fire_ball(GF_ICE, dir, 50 + (2 * plev), 3)
 	elseif index == SPELL_METEOR_SWARM then
 		success, dir = get_aim_dir()
 		if not success then return FALSE end
-
+		-- XXX ToDo XXX
 		fire_ball(GF_METEOR, dir, 50 + (plev * 3), 3)
 	elseif index == SPELL_MANA_STORM then
 		success, dir = get_aim_dir()
 		if not success then return FALSE end
 
 		fire_ball(GF_MANA, dir, 300 + (plev * 2), 3)
-	elseif index == SPELL_DETECT_EVIL then
-		detect_monsters_evil()
+	elseif index == SPELL_DETECT_INVISIBLE then
+		detect_monsters_invis()
 	elseif index == SPELL_DETECT_ENCHANTMENT then
 		detect_objects_magic()
-	elseif index == SPELL_RECHARGE_ITEM_III then
-		recharge(100)
-	elseif index == SPELL_GENOCIDE2 then
-		genocide()
+	elseif index == SPELL_SHOCK_WAVE then
+		success, dir = get_aim_dir()
+		if not success then return FALSE end
+
+		fire_ball(GF_SOUND, dir, 10 + plev, 2)
+	elseif index == SPELL_EXPLOSION then
+		success, dir = get_aim_dir()
+		if not success then return FALSE end
+
+		fire_ball(GF_SHARD, dir, 20 + (plev * 2), 2)
 	elseif index == SPELL_MASS_GENOCIDE then
 		mass_genocide()
 	elseif index == SPELL_RESIST_FIRE then
 		set_oppose_fire(player.oppose_fire + randint(20) + 20)
 	elseif index == SPELL_RESIST_COLD then
 		set_oppose_cold(player.oppose_cold + randint(20) + 20)
-	elseif index == SPELL_RESIST_ACID then
-		set_oppose_acid(player.oppose_acid + randint(20) + 20)
+	elseif index == SPELL_ELEMENTAL_BRAND then
+		-- ToDo: poison brand for rogues
+		brand_ammo()
 	elseif index == SPELL_RESIST_POISON then
 		set_oppose_pois(player.oppose_pois + randint(20) + 20)
 	elseif index == SPELL_RESISTANCE then
@@ -766,14 +863,33 @@ function cast_spell(index)
 		hp_player(30)
 		set_shero(player.shero + randint(25) + 25)
 		set_afraid(0)
-	elseif index == SPELL_ESSENCE_OF_SPEED then
+	elseif index == SPELL_HASTE_SELF then
 		if player.fast == 0 then
-			set_fast(randint(30) + 30 + plev)
+			set_fast(randint(20) + plev)
 		else
-			set_fast(player.fast + randint(10))
+			set_fast(player.fast + randint(5))
 		end
-	elseif index == SPELL_GLOBE_OF_INVULNERABILITY then
-		set_invuln(player.invuln + randint(8) + 8)
+	elseif index == SPELL_RIFT then
+		success, dir = get_aim_dir()
+		if not success then return FALSE end
+
+		fire_beam(GF_GRAVITY, dir, 40 + damroll(plev, 7))
+	elseif index == SPELL_REND_SOUL then
+		success, dir = get_aim_dir()
+		if not success then return FALSE end
+
+		fire_bolt_or_beam(beam / 4, GF_NETHER, dir, damroll(11, plev))
+	elseif index == SPELL_CHAOS_STRIKE then
+		success, dir = get_aim_dir()
+		if not success then return FALSE end
+
+		fire_bolt_or_beam(beam, GF_CHAOS, dir, damroll(13, plev))
+	elseif index == SPELL_RUNE_OF_PROTECTION then
+		warding_glyph()
+	elseif index == SPELL_ENCHANT_ARMOR then
+		enchant_spell(0, 0, rand_int(3) + plev / 20)
+	elseif index == SPELL_ENCHANT_WEAPON then
+		enchant_spell(rand_int(4) + plev / 20, rand_int(4) + plev/20, 0)
 	end
 
 	return TRUE
@@ -966,4 +1082,3 @@ function cast_spell_hook(tval, index)
 		error(format("unknown tval (%d) in function cast_spell_hook()", tval))
 	end
 end
-

@@ -100,8 +100,8 @@ OBJS = \
 ## change the compiler to "cc", or remove the "debugging" options, or
 ## remove the X11 or Curses support, etc, as desired.
 ##
-## With X11, XAW or GTK, you can add -D"USE_XPJ" -D"USE_TRANSPARENCY"
-## to CFLAGS to get the 3d-projection module "xpj".
+## With X11, XAW or GTK, you can add -D"USE_XPJ" to CFLAGS to get the
+## 3d-projection module "xpj".
 ##
 ## See also "config.h" and "h-config.h" for important information.
 ##
@@ -269,7 +269,7 @@ LIBS = -L/usr/X11R6/lib -lXaw -lXext -lSM -lICE -lXmu -lXt -lX11 -lncurses
 
 
 ##
-## Variation -- Support Linux "vcs" module -- not tested for a while!
+## Variation -- Support Linux "vcs" (Virtual Console memory) module
 ##
 #CFLAGS = -Wall -O2 -fno-strength-reduce -D"USE_VCS"
 #LIBS =
@@ -309,8 +309,8 @@ angband: $(OBJS)
 #
 
 clean:
-	\rm -f *.o angband
-	\rm -f ./lua/*.o ./lua/tolua
+	-rm -f *.o angband
+	-rm -f ./lua/*.o ./lua/tolua
 
 
 #

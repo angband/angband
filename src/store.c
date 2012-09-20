@@ -2727,6 +2727,8 @@ static void store_sell(void)
 			/* Window stuff */
 			p_ptr->window |= (PW_INVEN | PW_EQUIP | PW_PLAYER_0 | PW_PLAYER_1);
 
+			p_ptr->redraw |= (PR_EQUIPPY);
+
 			/* Get local object */
 			i_ptr = &object_type_body;
 
@@ -3297,12 +3299,12 @@ void do_cmd_store(void)
 		/* Browse if necessary */
 		if (st_ptr->stock_num > 12)
 		{
-			prt(" SPACE) Next page of stock", 23, 0);
+			prt(" SPACE) Next page of stock.", 23, 0);
 		}
 
 		/* Commands */
-		prt(" g) Get/Purchase an item.", 22, 31);
-		prt(" d) Drop/Sell an item.", 23, 31);
+		prt(" g) Get/Purchase an item.", 22, 29);
+		prt(" d) Drop/Sell an item.", 23, 29);
 
 		/* Add in the eXamine option */
 		if (rogue_like_commands)

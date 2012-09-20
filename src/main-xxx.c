@@ -543,7 +543,8 @@ static errr Term_text_xxx(int x, int y, int n, byte a, const char *cp)
  * This function is only used if one of the "higher_pict" and/or
  * "always_pict" flags are set.
  */
-static errr Term_pict_xxx(int x, int y, int n, const byte *ap, const char *cp)
+static errr Term_pict_xxx(int x, int y, int n, const byte *ap, const char *cp,
+                          const byte *tap, const char *tcp)
 {
 	term_data *td = (term_data*)(Term->data);
 

@@ -402,7 +402,7 @@ errr process_pref_file_command(char *buf)
 			j = (byte)strtol(zz[0], NULL, 0);
 			n1 = strtol(zz[1], NULL, 0);
 			n2 = strtol(zz[2], NULL, 0);
-			if ((j < 0) || (j >= 256)) return (1);
+			if ((j < 0) || (j >= (int)N_ELEMENTS(misc_to_attr))) return (1);
 			misc_to_attr[j] = n1;
 			misc_to_char[j] = n2;
 			return (0);
@@ -417,7 +417,7 @@ errr process_pref_file_command(char *buf)
 		{
 			j = (byte)strtol(zz[0], NULL, 0) % 128;
 			n1 = strtol(zz[1], NULL, 0);
-			if ((j < 0) || (j >= 128)) return (1);
+			if ((j < 0) || (j >= (int)N_ELEMENTS(tval_to_attr))) return (1);
 			if (n1) tval_to_attr[j] = n1;
 			return (0);
 		}
@@ -3285,7 +3285,7 @@ static void show_info(void)
 				object_desc(o_name, o_ptr, TRUE, 3);
 
 				/* Get the inventory color */
-				attr = tval_to_attr[o_ptr->tval & 0x7F];
+				attr = tval_to_attr[o_ptr->tval % N_ELEMENTS(tval_to_attr)];
 
 				/* Display the object */
 				c_put_str(attr, o_name, j+2, 7);

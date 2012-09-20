@@ -80,7 +80,7 @@ static const struct module modules[] =
 #endif /* USE_VME */
 
 #ifdef USE_VCS
-	{ "vcs", help_vcs, init_cvs },
+	{ "vcs", help_vcs, init_vcs },
 #endif /* USE_VCS */
 };
 

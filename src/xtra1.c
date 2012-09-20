@@ -227,6 +227,40 @@ static void prt_gold(void)
 }
 
 
+/*
+ * Equippy chars
+ */
+static void prt_equippy(void)
+{
+	int i;
+
+	byte a;
+	char c;
+
+	object_type *o_ptr;
+
+
+	/* Dump equippy chars */
+	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
+	{
+		/* Object */
+		o_ptr = &inventory[i];
+
+		a = object_attr(o_ptr);
+		c = object_char(o_ptr);
+
+		/* Clear the part of the screen */
+		if (!o_ptr->k_idx)
+		{
+			c = ' ';
+			a = TERM_DARK;
+		}
+
+		/* Dump */
+		Term_putch(COL_EQUIPPY + i - INVEN_WIELD, ROW_EQUIPPY, a, c);
+	}
+}
+
 
 /*
  * Prints current AC
@@ -803,6 +837,9 @@ static void prt_frame_basic(void)
 
 	/* Gold */
 	prt_gold();
+
+	/* Equippy chars */
+	prt_equippy();
 
 	/* Current depth */
 	prt_depth();
@@ -2164,7 +2201,7 @@ static void calc_bonuses(void)
 	/* Temporary infravision boost */
 	if (p_ptr->tim_infra)
 	{
-		p_ptr->see_infra++;
+		p_ptr->see_infra += 5;
 	}
 
 
@@ -2803,6 +2840,12 @@ void redraw_stuff(void)
 	{
 		p_ptr->redraw &= ~(PR_GOLD);
 		prt_gold();
+	}
+
+	if (p_ptr->redraw & (PR_EQUIPPY))
+	{
+		p_ptr->redraw &= ~(PR_EQUIPPY);
+		prt_equippy();
 	}
 
 	if (p_ptr->redraw & (PR_DEPTH))

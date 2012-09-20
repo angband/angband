@@ -1,6 +1,6 @@
 /*
 ** Lua binding: object
-** Generated automatically by tolua 4.0a - angband on Sun Feb 10 17:10:03 2002.
+** Generated automatically by tolua 4.0a - angband on Tue Mar 12 21:28:28 2002.
 */
 
 #include "lua/tolua.h"
@@ -1593,43 +1593,83 @@ static int toluaI_set_object_ego_item_type_text(lua_State* tolua_S)
  return 0;
 }
 
-/* get function: slot of class  ego_item_type */
-static int toluaI_get_object_ego_item_type_slot(lua_State* tolua_S)
+/* get function: cost of class  ego_item_type */
+static int toluaI_get_object_ego_item_type_cost(lua_State* tolua_S)
 {
   ego_item_type* self = (ego_item_type*)  tolua_getusertype(tolua_S,1,0);
  if (!self) TOLUA_ERR_SELF;
- tolua_pushnumber(tolua_S,(long)self->slot);
+ tolua_pushnumber(tolua_S,(long)self->cost);
  return 1;
 }
 
-/* set function: slot of class  ego_item_type */
-static int toluaI_set_object_ego_item_type_slot(lua_State* tolua_S)
+/* set function: cost of class  ego_item_type */
+static int toluaI_set_object_ego_item_type_cost(lua_State* tolua_S)
 {
   ego_item_type* self = (ego_item_type*)  tolua_getusertype(tolua_S,1,0);
  if (!self) TOLUA_ERR_SELF;
  if (!tolua_istype(tolua_S,2,LUA_TNUMBER,0))
  TOLUA_ERR_ASSIGN;
-  self->slot = ((byte)  tolua_getnumber(tolua_S,2,0));
+  self->cost = ((s32b)  tolua_getnumber(tolua_S,2,0));
  return 0;
 }
 
-/* get function: rating of class  ego_item_type */
-static int toluaI_get_object_ego_item_type_rating(lua_State* tolua_S)
+/* get function: flags1 of class  ego_item_type */
+static int toluaI_get_object_ego_item_type_flags1(lua_State* tolua_S)
 {
   ego_item_type* self = (ego_item_type*)  tolua_getusertype(tolua_S,1,0);
  if (!self) TOLUA_ERR_SELF;
- tolua_pushnumber(tolua_S,(long)self->rating);
+ tolua_pushnumber(tolua_S,(long)self->flags1);
  return 1;
 }
 
-/* set function: rating of class  ego_item_type */
-static int toluaI_set_object_ego_item_type_rating(lua_State* tolua_S)
+/* set function: flags1 of class  ego_item_type */
+static int toluaI_set_object_ego_item_type_flags1(lua_State* tolua_S)
 {
   ego_item_type* self = (ego_item_type*)  tolua_getusertype(tolua_S,1,0);
  if (!self) TOLUA_ERR_SELF;
  if (!tolua_istype(tolua_S,2,LUA_TNUMBER,0))
  TOLUA_ERR_ASSIGN;
-  self->rating = ((byte)  tolua_getnumber(tolua_S,2,0));
+  self->flags1 = ((u32b)  tolua_getnumber(tolua_S,2,0));
+ return 0;
+}
+
+/* get function: flags2 of class  ego_item_type */
+static int toluaI_get_object_ego_item_type_flags2(lua_State* tolua_S)
+{
+  ego_item_type* self = (ego_item_type*)  tolua_getusertype(tolua_S,1,0);
+ if (!self) TOLUA_ERR_SELF;
+ tolua_pushnumber(tolua_S,(long)self->flags2);
+ return 1;
+}
+
+/* set function: flags2 of class  ego_item_type */
+static int toluaI_set_object_ego_item_type_flags2(lua_State* tolua_S)
+{
+  ego_item_type* self = (ego_item_type*)  tolua_getusertype(tolua_S,1,0);
+ if (!self) TOLUA_ERR_SELF;
+ if (!tolua_istype(tolua_S,2,LUA_TNUMBER,0))
+ TOLUA_ERR_ASSIGN;
+  self->flags2 = ((u32b)  tolua_getnumber(tolua_S,2,0));
+ return 0;
+}
+
+/* get function: flags3 of class  ego_item_type */
+static int toluaI_get_object_ego_item_type_flags3(lua_State* tolua_S)
+{
+  ego_item_type* self = (ego_item_type*)  tolua_getusertype(tolua_S,1,0);
+ if (!self) TOLUA_ERR_SELF;
+ tolua_pushnumber(tolua_S,(long)self->flags3);
+ return 1;
+}
+
+/* set function: flags3 of class  ego_item_type */
+static int toluaI_set_object_ego_item_type_flags3(lua_State* tolua_S)
+{
+  ego_item_type* self = (ego_item_type*)  tolua_getusertype(tolua_S,1,0);
+ if (!self) TOLUA_ERR_SELF;
+ if (!tolua_istype(tolua_S,2,LUA_TNUMBER,0))
+ TOLUA_ERR_ASSIGN;
+  self->flags3 = ((u32b)  tolua_getnumber(tolua_S,2,0));
  return 0;
 }
 
@@ -1673,6 +1713,26 @@ static int toluaI_set_object_ego_item_type_rarity(lua_State* tolua_S)
  return 0;
 }
 
+/* get function: rating of class  ego_item_type */
+static int toluaI_get_object_ego_item_type_rating(lua_State* tolua_S)
+{
+  ego_item_type* self = (ego_item_type*)  tolua_getusertype(tolua_S,1,0);
+ if (!self) TOLUA_ERR_SELF;
+ tolua_pushnumber(tolua_S,(long)self->rating);
+ return 1;
+}
+
+/* set function: rating of class  ego_item_type */
+static int toluaI_set_object_ego_item_type_rating(lua_State* tolua_S)
+{
+  ego_item_type* self = (ego_item_type*)  tolua_getusertype(tolua_S,1,0);
+ if (!self) TOLUA_ERR_SELF;
+ if (!tolua_istype(tolua_S,2,LUA_TNUMBER,0))
+ TOLUA_ERR_ASSIGN;
+  self->rating = ((byte)  tolua_getnumber(tolua_S,2,0));
+ return 0;
+}
+
 /* get function: tval of class  ego_item_type */
 static int toluaI_get_object_ego_item_type_tval(lua_State* tolua_S)
 {
@@ -1684,7 +1744,7 @@ static int toluaI_get_object_ego_item_type_tval(lua_State* tolua_S)
  if (!tolua_istype(tolua_S,2,LUA_TNUMBER,0))
  tolua_error(tolua_S,"invalid type in array indexing.");
  toluaI_index = (int)tolua_getnumber(tolua_S,2,0)-1;
- if (toluaI_index<0 || toluaI_index>=3)
+ if (toluaI_index<0 || toluaI_index>=EGO_TVALS_MAX)
  tolua_error(tolua_S,"array indexing out of range.");
  tolua_pushnumber(tolua_S,(long)self->tval[toluaI_index]);
  return 1;
@@ -1701,7 +1761,7 @@ static int toluaI_set_object_ego_item_type_tval(lua_State* tolua_S)
  if (!tolua_istype(tolua_S,2,LUA_TNUMBER,0))
  tolua_error(tolua_S,"invalid type in array indexing.");
  toluaI_index = (int)tolua_getnumber(tolua_S,2,0)-1;
- if (toluaI_index<0 || toluaI_index>=3)
+ if (toluaI_index<0 || toluaI_index>=EGO_TVALS_MAX)
  tolua_error(tolua_S,"array indexing out of range.");
   self->tval[toluaI_index] = ((byte)  tolua_getnumber(tolua_S,3,0));
  return 0;
@@ -1718,7 +1778,7 @@ static int toluaI_get_object_ego_item_type_min_sval(lua_State* tolua_S)
  if (!tolua_istype(tolua_S,2,LUA_TNUMBER,0))
  tolua_error(tolua_S,"invalid type in array indexing.");
  toluaI_index = (int)tolua_getnumber(tolua_S,2,0)-1;
- if (toluaI_index<0 || toluaI_index>=3)
+ if (toluaI_index<0 || toluaI_index>=EGO_TVALS_MAX)
  tolua_error(tolua_S,"array indexing out of range.");
  tolua_pushnumber(tolua_S,(long)self->min_sval[toluaI_index]);
  return 1;
@@ -1735,7 +1795,7 @@ static int toluaI_set_object_ego_item_type_min_sval(lua_State* tolua_S)
  if (!tolua_istype(tolua_S,2,LUA_TNUMBER,0))
  tolua_error(tolua_S,"invalid type in array indexing.");
  toluaI_index = (int)tolua_getnumber(tolua_S,2,0)-1;
- if (toluaI_index<0 || toluaI_index>=3)
+ if (toluaI_index<0 || toluaI_index>=EGO_TVALS_MAX)
  tolua_error(tolua_S,"array indexing out of range.");
   self->min_sval[toluaI_index] = ((byte)  tolua_getnumber(tolua_S,3,0));
  return 0;
@@ -1752,7 +1812,7 @@ static int toluaI_get_object_ego_item_type_max_sval(lua_State* tolua_S)
  if (!tolua_istype(tolua_S,2,LUA_TNUMBER,0))
  tolua_error(tolua_S,"invalid type in array indexing.");
  toluaI_index = (int)tolua_getnumber(tolua_S,2,0)-1;
- if (toluaI_index<0 || toluaI_index>=3)
+ if (toluaI_index<0 || toluaI_index>=EGO_TVALS_MAX)
  tolua_error(tolua_S,"array indexing out of range.");
  tolua_pushnumber(tolua_S,(long)self->max_sval[toluaI_index]);
  return 1;
@@ -1769,29 +1829,9 @@ static int toluaI_set_object_ego_item_type_max_sval(lua_State* tolua_S)
  if (!tolua_istype(tolua_S,2,LUA_TNUMBER,0))
  tolua_error(tolua_S,"invalid type in array indexing.");
  toluaI_index = (int)tolua_getnumber(tolua_S,2,0)-1;
- if (toluaI_index<0 || toluaI_index>=3)
+ if (toluaI_index<0 || toluaI_index>=EGO_TVALS_MAX)
  tolua_error(tolua_S,"array indexing out of range.");
   self->max_sval[toluaI_index] = ((byte)  tolua_getnumber(tolua_S,3,0));
- return 0;
-}
-
-/* get function: xtra of class  ego_item_type */
-static int toluaI_get_object_ego_item_type_xtra(lua_State* tolua_S)
-{
-  ego_item_type* self = (ego_item_type*)  tolua_getusertype(tolua_S,1,0);
- if (!self) TOLUA_ERR_SELF;
- tolua_pushnumber(tolua_S,(long)self->xtra);
- return 1;
-}
-
-/* set function: xtra of class  ego_item_type */
-static int toluaI_set_object_ego_item_type_xtra(lua_State* tolua_S)
-{
-  ego_item_type* self = (ego_item_type*)  tolua_getusertype(tolua_S,1,0);
- if (!self) TOLUA_ERR_SELF;
- if (!tolua_istype(tolua_S,2,LUA_TNUMBER,0))
- TOLUA_ERR_ASSIGN;
-  self->xtra = ((byte)  tolua_getnumber(tolua_S,2,0));
  return 0;
 }
 
@@ -1875,83 +1915,23 @@ static int toluaI_set_object_ego_item_type_max_pval(lua_State* tolua_S)
  return 0;
 }
 
-/* get function: cost of class  ego_item_type */
-static int toluaI_get_object_ego_item_type_cost(lua_State* tolua_S)
+/* get function: xtra of class  ego_item_type */
+static int toluaI_get_object_ego_item_type_xtra(lua_State* tolua_S)
 {
   ego_item_type* self = (ego_item_type*)  tolua_getusertype(tolua_S,1,0);
  if (!self) TOLUA_ERR_SELF;
- tolua_pushnumber(tolua_S,(long)self->cost);
+ tolua_pushnumber(tolua_S,(long)self->xtra);
  return 1;
 }
 
-/* set function: cost of class  ego_item_type */
-static int toluaI_set_object_ego_item_type_cost(lua_State* tolua_S)
+/* set function: xtra of class  ego_item_type */
+static int toluaI_set_object_ego_item_type_xtra(lua_State* tolua_S)
 {
   ego_item_type* self = (ego_item_type*)  tolua_getusertype(tolua_S,1,0);
  if (!self) TOLUA_ERR_SELF;
  if (!tolua_istype(tolua_S,2,LUA_TNUMBER,0))
  TOLUA_ERR_ASSIGN;
-  self->cost = ((s32b)  tolua_getnumber(tolua_S,2,0));
- return 0;
-}
-
-/* get function: flags1 of class  ego_item_type */
-static int toluaI_get_object_ego_item_type_flags1(lua_State* tolua_S)
-{
-  ego_item_type* self = (ego_item_type*)  tolua_getusertype(tolua_S,1,0);
- if (!self) TOLUA_ERR_SELF;
- tolua_pushnumber(tolua_S,(long)self->flags1);
- return 1;
-}
-
-/* set function: flags1 of class  ego_item_type */
-static int toluaI_set_object_ego_item_type_flags1(lua_State* tolua_S)
-{
-  ego_item_type* self = (ego_item_type*)  tolua_getusertype(tolua_S,1,0);
- if (!self) TOLUA_ERR_SELF;
- if (!tolua_istype(tolua_S,2,LUA_TNUMBER,0))
- TOLUA_ERR_ASSIGN;
-  self->flags1 = ((u32b)  tolua_getnumber(tolua_S,2,0));
- return 0;
-}
-
-/* get function: flags2 of class  ego_item_type */
-static int toluaI_get_object_ego_item_type_flags2(lua_State* tolua_S)
-{
-  ego_item_type* self = (ego_item_type*)  tolua_getusertype(tolua_S,1,0);
- if (!self) TOLUA_ERR_SELF;
- tolua_pushnumber(tolua_S,(long)self->flags2);
- return 1;
-}
-
-/* set function: flags2 of class  ego_item_type */
-static int toluaI_set_object_ego_item_type_flags2(lua_State* tolua_S)
-{
-  ego_item_type* self = (ego_item_type*)  tolua_getusertype(tolua_S,1,0);
- if (!self) TOLUA_ERR_SELF;
- if (!tolua_istype(tolua_S,2,LUA_TNUMBER,0))
- TOLUA_ERR_ASSIGN;
-  self->flags2 = ((u32b)  tolua_getnumber(tolua_S,2,0));
- return 0;
-}
-
-/* get function: flags3 of class  ego_item_type */
-static int toluaI_get_object_ego_item_type_flags3(lua_State* tolua_S)
-{
-  ego_item_type* self = (ego_item_type*)  tolua_getusertype(tolua_S,1,0);
- if (!self) TOLUA_ERR_SELF;
- tolua_pushnumber(tolua_S,(long)self->flags3);
- return 1;
-}
-
-/* set function: flags3 of class  ego_item_type */
-static int toluaI_set_object_ego_item_type_flags3(lua_State* tolua_S)
-{
-  ego_item_type* self = (ego_item_type*)  tolua_getusertype(tolua_S,1,0);
- if (!self) TOLUA_ERR_SELF;
- if (!tolua_istype(tolua_S,2,LUA_TNUMBER,0))
- TOLUA_ERR_ASSIGN;
-  self->flags3 = ((u32b)  tolua_getnumber(tolua_S,2,0));
+  self->xtra = ((byte)  tolua_getnumber(tolua_S,2,0));
  return 0;
 }
 
@@ -4057,6 +4037,7 @@ int tolua_object_open (lua_State* tolua_S)
  tolua_constant(tolua_S,NULL,"ART_MORGOTH",ART_MORGOTH);
  tolua_constant(tolua_S,NULL,"ART_GROND",ART_GROND);
  tolua_constant(tolua_S,NULL,"ART_MIN_NORMAL",ART_MIN_NORMAL);
+ tolua_constant(tolua_S,NULL,"EGO_TVALS_MAX",EGO_TVALS_MAX);
  tolua_constant(tolua_S,NULL,"EGO_RESIST_ACID",EGO_RESIST_ACID);
  tolua_constant(tolua_S,NULL,"EGO_RESIST_ELEC",EGO_RESIST_ELEC);
  tolua_constant(tolua_S,NULL,"EGO_RESIST_FIRE",EGO_RESIST_FIRE);
@@ -4864,22 +4845,21 @@ int tolua_object_open (lua_State* tolua_S)
  tolua_cclass(tolua_S,"ego_item_type","");
  tolua_tablevar(tolua_S,"ego_item_type","name",toluaI_get_object_ego_item_type_name,toluaI_set_object_ego_item_type_name);
  tolua_tablevar(tolua_S,"ego_item_type","text",toluaI_get_object_ego_item_type_text,toluaI_set_object_ego_item_type_text);
- tolua_tablevar(tolua_S,"ego_item_type","slot",toluaI_get_object_ego_item_type_slot,toluaI_set_object_ego_item_type_slot);
- tolua_tablevar(tolua_S,"ego_item_type","rating",toluaI_get_object_ego_item_type_rating,toluaI_set_object_ego_item_type_rating);
- tolua_tablevar(tolua_S,"ego_item_type","level",toluaI_get_object_ego_item_type_level,toluaI_set_object_ego_item_type_level);
- tolua_tablevar(tolua_S,"ego_item_type","rarity",toluaI_get_object_ego_item_type_rarity,toluaI_set_object_ego_item_type_rarity);
- tolua_tablearray(tolua_S,"ego_item_type","tval",toluaI_get_object_ego_item_type_tval,toluaI_set_object_ego_item_type_tval);
- tolua_tablearray(tolua_S,"ego_item_type","min_sval",toluaI_get_object_ego_item_type_min_sval,toluaI_set_object_ego_item_type_min_sval);
- tolua_tablearray(tolua_S,"ego_item_type","max_sval",toluaI_get_object_ego_item_type_max_sval,toluaI_set_object_ego_item_type_max_sval);
- tolua_tablevar(tolua_S,"ego_item_type","xtra",toluaI_get_object_ego_item_type_xtra,toluaI_set_object_ego_item_type_xtra);
- tolua_tablevar(tolua_S,"ego_item_type","max_to_h",toluaI_get_object_ego_item_type_max_to_h,toluaI_set_object_ego_item_type_max_to_h);
- tolua_tablevar(tolua_S,"ego_item_type","max_to_d",toluaI_get_object_ego_item_type_max_to_d,toluaI_set_object_ego_item_type_max_to_d);
- tolua_tablevar(tolua_S,"ego_item_type","max_to_a",toluaI_get_object_ego_item_type_max_to_a,toluaI_set_object_ego_item_type_max_to_a);
- tolua_tablevar(tolua_S,"ego_item_type","max_pval",toluaI_get_object_ego_item_type_max_pval,toluaI_set_object_ego_item_type_max_pval);
  tolua_tablevar(tolua_S,"ego_item_type","cost",toluaI_get_object_ego_item_type_cost,toluaI_set_object_ego_item_type_cost);
  tolua_tablevar(tolua_S,"ego_item_type","flags1",toluaI_get_object_ego_item_type_flags1,toluaI_set_object_ego_item_type_flags1);
  tolua_tablevar(tolua_S,"ego_item_type","flags2",toluaI_get_object_ego_item_type_flags2,toluaI_set_object_ego_item_type_flags2);
  tolua_tablevar(tolua_S,"ego_item_type","flags3",toluaI_get_object_ego_item_type_flags3,toluaI_set_object_ego_item_type_flags3);
+ tolua_tablevar(tolua_S,"ego_item_type","level",toluaI_get_object_ego_item_type_level,toluaI_set_object_ego_item_type_level);
+ tolua_tablevar(tolua_S,"ego_item_type","rarity",toluaI_get_object_ego_item_type_rarity,toluaI_set_object_ego_item_type_rarity);
+ tolua_tablevar(tolua_S,"ego_item_type","rating",toluaI_get_object_ego_item_type_rating,toluaI_set_object_ego_item_type_rating);
+ tolua_tablearray(tolua_S,"ego_item_type","tval",toluaI_get_object_ego_item_type_tval,toluaI_set_object_ego_item_type_tval);
+ tolua_tablearray(tolua_S,"ego_item_type","min_sval",toluaI_get_object_ego_item_type_min_sval,toluaI_set_object_ego_item_type_min_sval);
+ tolua_tablearray(tolua_S,"ego_item_type","max_sval",toluaI_get_object_ego_item_type_max_sval,toluaI_set_object_ego_item_type_max_sval);
+ tolua_tablevar(tolua_S,"ego_item_type","max_to_h",toluaI_get_object_ego_item_type_max_to_h,toluaI_set_object_ego_item_type_max_to_h);
+ tolua_tablevar(tolua_S,"ego_item_type","max_to_d",toluaI_get_object_ego_item_type_max_to_d,toluaI_set_object_ego_item_type_max_to_d);
+ tolua_tablevar(tolua_S,"ego_item_type","max_to_a",toluaI_get_object_ego_item_type_max_to_a,toluaI_set_object_ego_item_type_max_to_a);
+ tolua_tablevar(tolua_S,"ego_item_type","max_pval",toluaI_get_object_ego_item_type_max_pval,toluaI_set_object_ego_item_type_max_pval);
+ tolua_tablevar(tolua_S,"ego_item_type","xtra",toluaI_get_object_ego_item_type_xtra,toluaI_set_object_ego_item_type_xtra);
  tolua_cclass(tolua_S,"flavor_type","");
  tolua_tablevar(tolua_S,"flavor_type","text",toluaI_get_object_flavor_type_text,toluaI_set_object_flavor_type_text);
  tolua_tablevar(tolua_S,"flavor_type","tval",toluaI_get_object_flavor_type_tval,toluaI_set_object_flavor_type_tval);
@@ -4986,6 +4966,7 @@ void tolua_object_close (lua_State* tolua_S)
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"ART_MORGOTH");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"ART_GROND");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"ART_MIN_NORMAL");
+ lua_pushnil(tolua_S); lua_setglobal(tolua_S,"EGO_TVALS_MAX");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"EGO_RESIST_ACID");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"EGO_RESIST_ELEC");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"EGO_RESIST_FIRE");

@@ -101,7 +101,7 @@ typedef int errr;
 #define PR_MANA			0x00000080L	/* Display Mana */
 #define PR_GOLD			0x00000100L	/* Display Gold */
 #define PR_DEPTH		0x00000200L	/* Display Depth */
-/* xxx */
+#define PR_EQUIPPY		0x00000400L	/* Display Equippy chars */
 #define PR_HEALTH		0x00000800L	/* Display Health Bar */
 #define PR_CUT			0x00001000L	/* Display Extra (Cut) */
 #define PR_STUN			0x00002000L	/* Display Extra (Stun) */
@@ -185,4 +185,3 @@ extern bool get_com(cptr prompt, char *command);
 extern void text_out_to_screen @ text_out(byte a, cptr str);
 
 extern errr Term_clear(void);
-

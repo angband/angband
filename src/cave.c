@@ -312,23 +312,14 @@ bool no_lite(void)
  */
 bool cave_valid_bold(int y, int x)
 {
-	s16b this_o_idx, next_o_idx = 0;
-
+	object_type *o_ptr;
 
 	/* Forbid perma-grids */
 	if (cave_perma_bold(y, x)) return (FALSE);
 
 	/* Check objects */
-	for (this_o_idx = cave_o_idx[y][x]; this_o_idx; this_o_idx = next_o_idx)
+	for (o_ptr = get_first_object(y, x); o_ptr; o_ptr = get_next_object(o_ptr))
 	{
-		object_type *o_ptr;
-
-		/* Get the object */
-		o_ptr = &o_list[this_o_idx];
-
-		/* Get the next object */
-		next_o_idx = o_ptr->next_o_idx;
-
 		/* Forbid artifact grids */
 		if (artifact_p(o_ptr)) return (FALSE);
 	}
@@ -609,11 +600,7 @@ bool feat_supports_lighting(byte feat)
  * tiles should be handled differently.  One possibility would be to
  * extend feature_type with attr/char definitions for the different states.
  */
-#ifdef USE_TRANSPARENCY
 void map_info(int y, int x, byte *ap, char *cp, byte *tap, char *tcp)
-#else /* USE_TRANSPARENCY */
-void map_info(int y, int x, byte *ap, char *cp)
-#endif /* USE_TRANSPARENCY */
 {
 	byte a;
 	char c;
@@ -622,8 +609,7 @@ void map_info(int y, int x, byte *ap, char *cp)
 	byte info;
 
 	feature_type *f_ptr;
-
-	s16b this_o_idx, next_o_idx = 0;
+	object_type *o_ptr;
 
 	s16b m_idx;
 
@@ -845,25 +831,13 @@ void map_info(int y, int x, byte *ap, char *cp)
 		}
 	}
 
-#ifdef USE_TRANSPARENCY
-
 	/* Save the terrain info for the transparency effects */
 	(*tap) = a;
 	(*tcp) = c;
 
-#endif /* USE_TRANSPARENCY */
-
 	/* Objects */
-	for (this_o_idx = cave_o_idx[y][x]; this_o_idx; this_o_idx = next_o_idx)
+	for (o_ptr = get_first_object(y, x); o_ptr; o_ptr = get_next_object(o_ptr))
 	{
-		object_type *o_ptr;
-
-		/* Get the object */
-		o_ptr = &o_list[this_o_idx];
-
-		/* Get the next object */
-		next_o_idx = o_ptr->next_o_idx;
-
 		/* Memorized objects */
 		if (o_ptr->marked)
 		{
@@ -1104,12 +1078,7 @@ void print_rel(char c, byte a, int y, int x)
 	vx = kx + COL_MAP;
 
 	/* Hack -- Queue it */
-#ifdef USE_TRANSPARENCY
 	Term_queue_char(vx, vy, a, c, 0, 0);
-#else /* USE_TRANSPARENCY */
-	Term_queue_char(vx, vy, a, c);
-#endif /* USE_TRANSPARENCY */
-
 }
 
 
@@ -1148,8 +1117,7 @@ void note_spot(int y, int x)
 {
 	byte info;
 
-	s16b this_o_idx, next_o_idx = 0;
-
+	object_type *o_ptr;
 
 	/* Get cave info */
 	info = cave_info[y][x];
@@ -1159,13 +1127,8 @@ void note_spot(int y, int x)
 
 
 	/* Hack -- memorize objects */
-	for (this_o_idx = cave_o_idx[y][x]; this_o_idx; this_o_idx = next_o_idx)
+	for (o_ptr = get_first_object(y, x); o_ptr; o_ptr = get_next_object(o_ptr))
 	{
-		object_type *o_ptr = &o_list[this_o_idx];
-
-		/* Get the next object */
-		next_o_idx = o_ptr->next_o_idx;
-
 		/* Memorize objects */
 		o_ptr->marked = TRUE;
 	}
@@ -1209,12 +1172,9 @@ void lite_spot(int y, int x)
 {
 	byte a;
 	char c;
-
-#ifdef USE_TRANSPARENCY
 	byte ta;
 	char tc;
-#endif /* USE_TRANSPARENCY */
-
+	
 	unsigned ky, kx;
 	unsigned vy, vx;
 
@@ -1236,24 +1196,11 @@ void lite_spot(int y, int x)
 	/* Location in window */
 	vx = kx + COL_MAP;
 
-#ifdef USE_TRANSPARENCY
-
 	/* Hack -- redraw the grid */
 	map_info(y, x, &a, &c, &ta, &tc);
 
 	/* Hack -- Queue it */
 	Term_queue_char(vx, vy, a, c, ta, tc);
-
-#else /* USE_TRANSPARENCY */
-
-	/* Hack -- redraw the grid */
-	map_info(y, x, &a, &c);
-
-	/* Hack -- Queue it */
-	Term_queue_char(vx, vy, a, c);
-
-#endif /* USE_TRANSPARENCY */
-
 }
 
 
@@ -1269,11 +1216,8 @@ void prt_map(void)
 {
 	byte a;
 	char c;
-
-#ifdef USE_TRANSPARENCY
 	byte ta;
 	char tc;
-#endif /* USE_TRANSPARENCY */
 
 	int y, x;
 	int vy, vx;
@@ -1291,24 +1235,11 @@ void prt_map(void)
 			/* Check bounds */
 			if (!in_bounds(y, x)) continue;
 
-#ifdef USE_TRANSPARENCY
-
 			/* Determine what is there */
 			map_info(y, x, &a, &c, &ta, &tc);
 
 			/* Hack -- Queue it */
 			Term_queue_char(vx, vy, a, c, ta, tc);
-
-#else /* USE_TRANSPARENCY */
-
-			/* Determine what is there */
-			map_info(y, x, &a, &c);
-
-			/* Hack -- Queue it */
-			Term_queue_char(vx, vy, a, c);
-
-#endif /* USE_TRANSPARENCY */
-
 		}
 	}
 }
@@ -1516,17 +1447,8 @@ void display_map(int *cy, int *cx)
 			row = (y * map_hgt / dungeon_hgt);
 			col = (x * map_wid / dungeon_wid);
 
-#ifdef USE_TRANSPARENCY
-
 			/* Get the attr/char at that map location */
 			map_info(y, x, &ta, &tc, &ta, &tc);
-
-#else /* USE_TRANSPARENCY */
-
-			/* Get the attr/char at that map location */
-			map_info(y, x, &ta, &tc);
-
-#endif /* USE_TRANSPARENCY */
 
 			/* Get the priority of that attr/char */
 			tp = priority(ta, tc);

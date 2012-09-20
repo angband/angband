@@ -537,6 +537,12 @@ Randomize some of the artifacts    [birth_rand_artifacts]
      them.  Note that savefiles with random artifacts are not guaranteed
      to be compatible between different Angband versions!
 
+***** <birth_no_stacking>
+Don't stack objects on the floor   [birth_no_stacking]
+     Items dropped on the floor will spread out instead of stacking.
+     Normal items will disappear if there is no empty grid within a radius
+     of three squares.
+
 
 === Cheating options ===
 

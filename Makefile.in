@@ -76,10 +76,10 @@ ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ./src/autoconf.h
 CONFIG_CLEAN_FILES = 
-DIST_COMMON =  AUTHORS COPYING Makefile.am Makefile.in THANKS TODO \
-acconfig.h acinclude.m4 aclocal.m4 config.guess config.sub configure \
-configure.in install-sh missing mkinstalldirs src/autoconf.h.in \
-src/stamp-h.in
+DIST_COMMON =  AUTHORS COPYING ChangeLog Makefile.am Makefile.in THANKS \
+TODO acconfig.h acinclude.m4 aclocal.m4 config.guess config.sub \
+configure configure.in install-sh missing mkinstalldirs \
+src/autoconf.h.in src/stamp-h.in
 
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)

@@ -1,6 +1,6 @@
 /*
 ** Lua binding: monster
-** Generated automatically by tolua 4.0a - angband on Sun Feb 10 17:09:56 2002.
+** Generated automatically by tolua 4.0a - angband on Tue Mar 12 21:28:19 2002.
 */
 
 #include "lua/tolua.h"
@@ -456,7 +456,7 @@ static int toluaI_get_monster_monster_race_blow(lua_State* tolua_S)
  if (!tolua_istype(tolua_S,2,LUA_TNUMBER,0))
  tolua_error(tolua_S,"invalid type in array indexing.");
  toluaI_index = (int)tolua_getnumber(tolua_S,2,0)-1;
- if (toluaI_index<0 || toluaI_index>=4)
+ if (toluaI_index<0 || toluaI_index>=MONSTER_BLOW_MAX)
  tolua_error(tolua_S,"array indexing out of range.");
  tolua_pushusertype(tolua_S,(void*)&self->blow[toluaI_index],tolua_tag(tolua_S,"monster_blow"));
  return 1;
@@ -473,7 +473,7 @@ static int toluaI_set_monster_monster_race_blow(lua_State* tolua_S)
  if (!tolua_istype(tolua_S,2,LUA_TNUMBER,0))
  tolua_error(tolua_S,"invalid type in array indexing.");
  toluaI_index = (int)tolua_getnumber(tolua_S,2,0)-1;
- if (toluaI_index<0 || toluaI_index>=4)
+ if (toluaI_index<0 || toluaI_index>=MONSTER_BLOW_MAX)
  tolua_error(tolua_S,"array indexing out of range.");
   self->blow[toluaI_index] = *((monster_blow*)  tolua_getusertype(tolua_S,3,0));
  return 0;
@@ -850,7 +850,7 @@ static int toluaI_get_monster_monster_lore_blows(lua_State* tolua_S)
  if (!tolua_istype(tolua_S,2,LUA_TNUMBER,0))
  tolua_error(tolua_S,"invalid type in array indexing.");
  toluaI_index = (int)tolua_getnumber(tolua_S,2,0)-1;
- if (toluaI_index<0 || toluaI_index>=4)
+ if (toluaI_index<0 || toluaI_index>=MONSTER_BLOW_MAX)
  tolua_error(tolua_S,"array indexing out of range.");
  tolua_pushnumber(tolua_S,(long)self->blows[toluaI_index]);
  return 1;
@@ -867,7 +867,7 @@ static int toluaI_set_monster_monster_lore_blows(lua_State* tolua_S)
  if (!tolua_istype(tolua_S,2,LUA_TNUMBER,0))
  tolua_error(tolua_S,"invalid type in array indexing.");
  toluaI_index = (int)tolua_getnumber(tolua_S,2,0)-1;
- if (toluaI_index<0 || toluaI_index>=4)
+ if (toluaI_index<0 || toluaI_index>=MONSTER_BLOW_MAX)
  tolua_error(tolua_S,"array indexing out of range.");
   self->blows[toluaI_index] = ((byte)  tolua_getnumber(tolua_S,3,0));
  return 0;

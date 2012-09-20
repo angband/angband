@@ -2012,6 +2012,11 @@ static char *message__buf;
  */
 static u16b *message__type;
 
+/*
+ * The array[MESSAGE_MAX] of u16b for the count of messages
+ */
+static u16b *message__count;
+
 
 /*
  * Table of colors associated to message-types
@@ -2020,12 +2025,21 @@ static byte message__color[MSG_MAX];
 
 
 /*
+ * Calculate the index of a message
+ */
+static s16b message_age2idx(s16b age)
+{
+	return ((message__next + MESSAGE_MAX - (age + 1)) % MESSAGE_MAX);
+}
+
+
+/*
  * How many messages are "available"?
  */
 s16b message_num(void)
 {
 	/* Determine how many messages are "available" */
-	return (message__next + MESSAGE_MAX - message__last) % MESSAGE_MAX;
+	return (message_age2idx(message__last - 1));
 }
 
 
@@ -2035,6 +2049,7 @@ s16b message_num(void)
  */
 cptr message_str(s16b age)
 {
+	static char buf[1024];
 	s16b x;
 	s16b o;
 	cptr s;
@@ -2043,13 +2058,20 @@ cptr message_str(s16b age)
 	if ((age < 0) || (age >= message_num())) return ("");
 
 	/* Get the "logical" index */
-	x = (message__next + MESSAGE_MAX - (age + 1)) % MESSAGE_MAX;
+	x = message_age2idx(age);
 
 	/* Get the "offset" for the message */
 	o = message__ptr[x];
 
 	/* Get the message text */
 	s = &message__buf[o];
+
+	/* HACK - Handle repeated messages */
+	if (message__count[x] > 1)
+	{
+		strnfmt(buf, 1024, "%s <%dx>", s, message__count[x]);
+		s = buf;
+	}
 
 	/* Return the message text */
 	return (s);
@@ -2070,7 +2092,7 @@ u16b message_type(s16b age)
 	if ((age < 0) || (age >= message_num())) return (MSG_GENERIC);
 
 	/* Get the "logical" index */
-	x = (message__next + MESSAGE_MAX - (age + 1)) % MESSAGE_MAX;
+	x = message_age2idx(age);
 
 	/* Return the message type */
 	return (message__type[x]);
@@ -2122,16 +2144,13 @@ errr message_color_define(u16b type, byte color)
  * We must not attempt to optimize using a message index or buffer space
  * which is "far away" from the most recent entries, or we will lose a lot
  * of messages when we "expire" the old message index and/or buffer space.
- *
- * We attempt to minimize the use of "string compare" operations in this
- * function, because they are expensive when used in mass quantities.
  */
 void message_add(cptr str, u16b type)
 {
 	int n, k, i, x, o;
 
 	cptr s;
-	cptr t;
+
 	cptr u;
 	char *v;
 
@@ -2149,6 +2168,27 @@ void message_add(cptr str, u16b type)
 
 
 	/*** Step 2 -- Attempt to optimize ***/
+
+	/* Get the "logical" last index */
+	x = message_age2idx(0);
+
+	/* Get the "offset" for the last message */
+	o = message__ptr[x];
+
+	/* Get the message text */
+	s = &message__buf[o];
+
+	/* Last message repeated? */
+	if (streq(str, s))
+	{
+		/* Increase the message count */
+		message__count[x]++;
+
+		/* Success */
+		return;
+	}
+
+	/*** Step 3 -- Attempt to optimize ***/
 
 	/* Limit number of messages to check */
 	k = message_num() / 4;
@@ -2184,11 +2224,8 @@ void message_add(cptr str, u16b type)
 		/* Get the old string */
 		old = &message__buf[o];
 
-		/* Inline 'streq(str, old)' */
-		for (s = str, t = old; (*s == *t) && *s; ++s, ++t) /* loop */ ;
-
 		/* Continue if not equal */
-		if (*s) continue;
+		if (!streq(str, old)) continue;
 
 		/* Get the next available message index */
 		x = message__next;
@@ -2209,12 +2246,14 @@ void message_add(cptr str, u16b type)
 		/* Store the message type */
 		message__type[x] = type;
 
+		/* Store the message count */
+		message__count[x] = 1;
+
 		/* Success */
 		return;
 	}
 
-
-	/*** Step 3 -- Ensure space before end of buffer ***/
+	/*** Step 4 -- Ensure space before end of buffer ***/
 
 	/* Kill messages, and wrap, if needed */
 	if (message__head + (n + 1) >= MESSAGE_BUF)
@@ -2247,7 +2286,7 @@ void message_add(cptr str, u16b type)
 	}
 
 
-	/*** Step 4 -- Ensure space for actual characters ***/
+	/*** Step 5 -- Ensure space for actual characters ***/
 
 	/* Kill messages, if needed */
 	if (message__head + (n + 1) > message__tail)
@@ -2277,7 +2316,7 @@ void message_add(cptr str, u16b type)
 	}
 
 
-	/*** Step 5 -- Grab a new message index ***/
+	/*** Step 6 -- Grab a new message index ***/
 
 	/* Get the next available message index */
 	x = message__next;
@@ -2293,7 +2332,7 @@ void message_add(cptr str, u16b type)
 	}
 
 
-	/*** Step 6 -- Insert the message text ***/
+	/*** Step 7 -- Insert the message text ***/
 
 	/* Assign the starting address */
 	message__ptr[x] = message__head;
@@ -2308,6 +2347,9 @@ void message_add(cptr str, u16b type)
 
 	/* Store the message type */
 	message__type[x] = type;
+
+	/* Store the message count */
+	message__count[x] = 1;
 }
 
 
@@ -2320,6 +2362,7 @@ errr messages_init(void)
 	C_MAKE(message__ptr, MESSAGE_MAX, u16b);
 	C_MAKE(message__buf, MESSAGE_BUF, char);
 	C_MAKE(message__type, MESSAGE_MAX, u16b);
+	C_MAKE(message__count, MESSAGE_MAX, u16b);
 
 	/* Init the message colors to white */
 	(void)C_BSET(message__color, TERM_WHITE, MSG_MAX, byte);
@@ -2341,6 +2384,7 @@ void messages_free(void)
 	FREE(message__ptr);
 	FREE(message__buf);
 	FREE(message__type);
+	FREE(message__count);
 }
 
 
@@ -2886,6 +2930,7 @@ void text_out_to_screen(byte a, cptr str)
  */
 void text_out_to_file(byte attr, cptr str)
 {
+	int i;
 	cptr r;
 
 	/* Line buffer */
@@ -2897,15 +2942,28 @@ void text_out_to_file(byte attr, cptr str)
 	/* Last space saved into roff_buf */
 	static char *roff_s = NULL;
 
+	/* Indentation */
+	static int indent = 0;
 
 	/* Unused */
 	(void)attr;
+
+	/* Remember the indentation when starting a new line */
+	if (!roff_buf[0])
+	{
+		/* Count the leading spaces */
+		for (indent = 0; str[indent] == ' '; indent++)
+			; /* Do nothing */
+	}
 
 	/* Scan the given string, character at a time */
 	for (; *str; str++)
 	{
 		char ch = *str;
 		bool wrap = (ch == '\n');
+
+		/* Reset indentation after explicit wrap */
+		if (wrap) indent = 0;
 
 		if (!isprint(ch)) ch = ' ';
 
@@ -2935,6 +2993,13 @@ void text_out_to_file(byte attr, cptr str)
 			roff_s = NULL;
 			roff_p = roff_buf;
 			roff_buf[0] = '\0';
+
+			/* Indent the following line */
+			if (indent)
+			{
+				for (i = indent; i > 0; i--)
+					*roff_p++ = ' ';
+			}
 
 			/* Copy the remaining line into the buffer */
 			while (*r) *roff_p++ = *r++;

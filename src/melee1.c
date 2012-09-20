@@ -126,7 +126,7 @@ bool make_attack_normal(int m_idx)
 
 	int ap_cnt;
 
-	int i, j, k, tmp, ac, rlev;
+	int i, k, tmp, ac, rlev;
 	int do_cut, do_stun;
 
 	s32b gold;
@@ -163,8 +163,8 @@ bool make_attack_normal(int m_idx)
 	/* Assume no blink */
 	blinked = FALSE;
 
-	/* Scan through all four blows */
-	for (ap_cnt = 0; ap_cnt < 4; ap_cnt++)
+	/* Scan through all blows */
+	for (ap_cnt = 0; ap_cnt < MONSTER_BLOW_MAX; ap_cnt++)
 	{
 		bool visible = FALSE;
 		bool obvious = FALSE;
@@ -512,6 +512,12 @@ bool make_attack_normal(int m_idx)
 						     (o_ptr->tval == TV_WAND)) &&
 						    (o_ptr->pval > 0))
 						{
+							/* Calculate healed hitpoints */
+							int heal = rlev * o_ptr->pval * o_ptr->number;
+
+							/* Don't heal more than max hp */
+							heal = MIN(heal, m_ptr->maxhp - m_ptr->hp);
+
 							/* Message */
 							msg_print("Energy drains from your pack!");
 
@@ -519,12 +525,11 @@ bool make_attack_normal(int m_idx)
 							obvious = TRUE;
 
 							/* Heal */
-							j = rlev;
-							m_ptr->hp += j * o_ptr->pval * o_ptr->number;
-							if (m_ptr->hp > m_ptr->maxhp) m_ptr->hp = m_ptr->maxhp;
+							m_ptr->hp += heal;
 
 							/* Redraw (later) if needed */
-							if (p_ptr->health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
+							if (p_ptr->health_who == m_idx)
+								p_ptr->redraw |= (PR_HEALTH);
 
 							/* Uncharge */
 							o_ptr->pval = 0;

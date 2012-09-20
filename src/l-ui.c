@@ -1,6 +1,6 @@
 /*
 ** Lua binding: ui
-** Generated automatically by tolua 4.0a - angband on Sun Feb 10 17:10:35 2002.
+** Generated automatically by tolua 4.0a - angband on Tue Mar 12 21:29:13 2002.
 */
 
 #include "lua/tolua.h"
@@ -566,6 +566,7 @@ int tolua_ui_open (lua_State* tolua_S)
  tolua_constant(tolua_S,NULL,"PR_MANA",PR_MANA);
  tolua_constant(tolua_S,NULL,"PR_GOLD",PR_GOLD);
  tolua_constant(tolua_S,NULL,"PR_DEPTH",PR_DEPTH);
+ tolua_constant(tolua_S,NULL,"PR_EQUIPPY",PR_EQUIPPY);
  tolua_constant(tolua_S,NULL,"PR_HEALTH",PR_HEALTH);
  tolua_constant(tolua_S,NULL,"PR_CUT",PR_CUT);
  tolua_constant(tolua_S,NULL,"PR_STUN",PR_STUN);
@@ -691,6 +692,7 @@ void tolua_ui_close (lua_State* tolua_S)
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"PR_MANA");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"PR_GOLD");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"PR_DEPTH");
+ lua_pushnil(tolua_S); lua_setglobal(tolua_S,"PR_EQUIPPY");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"PR_HEALTH");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"PR_CUT");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"PR_STUN");

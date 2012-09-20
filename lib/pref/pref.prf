@@ -220,7 +220,7 @@ C:1:'
 ?:[IOR [EQU $SYS xaw] [EQU $SYS x11] [EQU $SYS xpj]]
 %:pref-x11.prf
 
-?:[IOR [EQU $SYS gcu] [EQU $SYS lsl]]
+?:[IOR [EQU $SYS gcu] [EQU $SYS lsl] [EQU $SYS cap] [EQU $SYS vcs] [EQU $SYS sla]]
 %:pref-gcu.prf
 
 ?:[EQU $SYS gtk]
@@ -242,4 +242,3 @@ C:1:'
 %:pref-acn.prf
 
 ?:1
-

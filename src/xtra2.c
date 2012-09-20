@@ -2862,7 +2862,7 @@ static s16b target_pick(int y1, int x1, int dy, int dx)
  */
 static bool target_set_interactive_accept(int y, int x)
 {
-	s16b this_o_idx, next_o_idx = 0;
+	object_type *o_ptr;
 
 
 	/* Player grids are always interesting */
@@ -2883,16 +2883,8 @@ static bool target_set_interactive_accept(int y, int x)
 	}
 
 	/* Scan all objects in the grid */
-	for (this_o_idx = cave_o_idx[y][x]; this_o_idx; this_o_idx = next_o_idx)
+	for (o_ptr = get_first_object(y, x); o_ptr; o_ptr = get_next_object(o_ptr))
 	{
-		object_type *o_ptr;
-
-		/* Get the object */
-		o_ptr = &o_list[this_o_idx];
-
-		/* Get the next object */
-		next_o_idx = o_ptr->next_o_idx;
-
 		/* Memorized object */
 		if (o_ptr->marked) return (TRUE);
 	}

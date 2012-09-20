@@ -1717,6 +1717,9 @@ static void process_command(void)
  */
 static void process_player_aux(void)
 {
+	int i;
+	bool changed = FALSE;
+
 	static int old_monster_race_idx = 0;
 
 	static u32b	old_flags1 = 0L;
@@ -1726,10 +1729,7 @@ static void process_player_aux(void)
 	static u32b	old_flags5 = 0L;
 	static u32b	old_flags6 = 0L;
 
-	static byte	old_blows0 = 0;
-	static byte	old_blows1 = 0;
-	static byte	old_blows2 = 0;
-	static byte	old_blows3 = 0;
+	static byte old_blows[MONSTER_BLOW_MAX];
 
 	static byte	old_cast_innate = 0;
 	static byte	old_cast_spell = 0;
@@ -1741,18 +1741,24 @@ static void process_player_aux(void)
 		/* Get the monster lore */
 		monster_lore *l_ptr = &l_list[p_ptr->monster_race_idx];
 
+		for (i = 0; i < MONSTER_BLOW_MAX; i++)
+		{
+			if (old_blows[i] != l_ptr->blows[i])
+			{
+				changed = TRUE;
+				break;
+			}
+		}
+		
 		/* Check for change of any kind */
-		if ((old_monster_race_idx != p_ptr->monster_race_idx) ||
+		if (changed ||
+		    (old_monster_race_idx != p_ptr->monster_race_idx) ||
 		    (old_flags1 != l_ptr->flags1) ||
 		    (old_flags2 != l_ptr->flags2) ||
 		    (old_flags3 != l_ptr->flags3) ||
 		    (old_flags4 != l_ptr->flags4) ||
 		    (old_flags5 != l_ptr->flags5) ||
 		    (old_flags6 != l_ptr->flags6) ||
-		    (old_blows0 != l_ptr->blows[0]) ||
-		    (old_blows1 != l_ptr->blows[1]) ||
-		    (old_blows2 != l_ptr->blows[2]) ||
-		    (old_blows3 != l_ptr->blows[3]) ||
 		    (old_cast_innate != l_ptr->cast_innate) ||
 		    (old_cast_spell != l_ptr->cast_spell))
 		{
@@ -1768,10 +1774,8 @@ static void process_player_aux(void)
 			old_flags6 = l_ptr->flags6;
 
 			/* Memorize blows */
-			old_blows0 = l_ptr->blows[0];
-			old_blows1 = l_ptr->blows[1];
-			old_blows2 = l_ptr->blows[2];
-			old_blows3 = l_ptr->blows[3];
+			for (i = 0; i < MONSTER_BLOW_MAX; i++)
+				old_blows[i] = l_ptr->blows[i];
 
 			/* Memorize castings */
 			old_cast_innate = l_ptr->cast_innate;
@@ -2298,7 +2302,7 @@ static void dungeon(void)
 	p_ptr->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);
 
 	/* Redraw dungeon */
-	p_ptr->redraw |= (PR_BASIC | PR_EXTRA | PR_MAP);
+	p_ptr->redraw |= (PR_BASIC | PR_EXTRA | PR_MAP | PR_EQUIPPY);
 
 	/* Window stuff */
 	p_ptr->window |= (PW_INVEN | PW_EQUIP | PW_PLAYER_0 | PW_PLAYER_1);

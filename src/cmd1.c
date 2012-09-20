@@ -432,7 +432,7 @@ void search(void)
 
 	int y, x, chance;
 
-	s16b this_o_idx, next_o_idx = 0;
+	object_type *o_ptr;
 
 
 	/* Start with base search ability */
@@ -477,16 +477,8 @@ void search(void)
 				}
 
 				/* Scan all objects in the grid */
-				for (this_o_idx = cave_o_idx[y][x]; this_o_idx; this_o_idx = next_o_idx)
+				for (o_ptr = get_first_object(y, x); o_ptr; o_ptr = get_next_object(o_ptr))
 				{
-					object_type *o_ptr;
-
-					/* Get the object */
-					o_ptr = &o_list[this_o_idx];
-
-					/* Get the next object */
-					next_o_idx = o_ptr->next_o_idx;
-
 					/* Skip non-chests */
 					if (o_ptr->tval != TV_CHEST) continue;
 
@@ -1806,7 +1798,7 @@ static bool run_test(void)
 	/* Look at every newly adjacent square. */
 	for (i = -max; i <= max; i++)
 	{
-		s16b this_o_idx, next_o_idx = 0;
+		object_type *o_ptr;
 
 
 		/* New direction */
@@ -1827,16 +1819,8 @@ static bool run_test(void)
 		}
 
 		/* Visible objects abort running */
-		for (this_o_idx = cave_o_idx[row][col]; this_o_idx; this_o_idx = next_o_idx)
+		for (o_ptr = get_first_object(row, col); o_ptr; o_ptr = get_next_object(o_ptr))
 		{
-			object_type *o_ptr;
-
-			/* Get the object */
-			o_ptr = &o_list[this_o_idx];
-
-			/* Get the next object */
-			next_o_idx = o_ptr->next_o_idx;
-
 			/* Visible object */
 			if (o_ptr->marked) return (TRUE);
 		}

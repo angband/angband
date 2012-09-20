@@ -1734,12 +1734,8 @@ static errr Term_text_mac(int x, int y, int n, byte a, const char *cp)
  *
  * Erase "n" characters starting at (x,y)
  */
-#ifdef USE_TRANSPARENCY
 static errr Term_pict_mac(int x, int y, int n, const byte *ap, const char *cp,
                           const byte *tap, const char *tcp)
-#else /* USE_TRANSPARENCY */
-static errr Term_pict_mac(int x, int y, int n, const byte *ap, const char *cp)
-#endif /* USE_TRANSPARENCY */
 {
 	int i;
 	Rect r2;
@@ -1759,10 +1755,8 @@ static errr Term_pict_mac(int x, int y, int n, const byte *ap, const char *cp)
 		byte a = ap[i];
 		char c = cp[i];
 
-#ifdef USE_TRANSPARENCY
 		byte ta = tap[i];
 		char tc = tcp[i];
-#endif
 
 #ifdef ANGBAND_LITE_MAC
 
@@ -1774,12 +1768,8 @@ static errr Term_pict_mac(int x, int y, int n, const byte *ap, const char *cp)
 		if (use_graphics && ((td == &data[0]) || (td == &data[6])) &&
 		    ((byte)a & 0x80) && ((byte)c & 0x80))
 		{
-#ifdef USE_TRANSPARENCY
 			int t_col, t_row;
-
 			Rect r3;
-#endif /* USE_TRANSPARENCY */
-
 			int col, row;
 			Rect r1;
 
@@ -1793,7 +1783,6 @@ static errr Term_pict_mac(int x, int y, int n, const byte *ap, const char *cp)
 			r1.right = r1.left + grafWidth;
 			r1.bottom = r1.top + grafHeight;
 
-#ifdef USE_TRANSPARENCY
 			/* Row and Col */
 			t_row = ((byte)ta & 0x7F) % pictRows;
 			t_col = ((byte)tc & 0x7F) % pictCols;
@@ -1803,13 +1792,11 @@ static errr Term_pict_mac(int x, int y, int n, const byte *ap, const char *cp)
 			r3.top = t_row * grafHeight;
 			r3.right = r3.left + grafWidth;
 			r3.bottom = r3.top + grafHeight;
-#endif /* USE_TRANSPARENCY */
 
 			/* Hardwire CopyBits */
 			BackColor(whiteColor);
 			ForeColor(blackColor);
 
-#ifdef USE_TRANSPARENCY
 			/* Draw the picture */
 			CopyBits((BitMap*)frameP->framePix,
 					 &(td->w->portBits),
@@ -1819,12 +1806,6 @@ static errr Term_pict_mac(int x, int y, int n, const byte *ap, const char *cp)
 			         (BitMap*)frameP->maskPix,
 			         &(td->w->portBits),
 			         &r1, &r1, &r2);
-#else /* USE_TRANSPARENCY */
-			/* Draw the picture */
-			CopyBits((BitMap*)frameP->framePix,
-					 &(td->w->portBits),
-					 &r1, &r2, srcCopy, NULL);
-#endif /* USE_TRANSPARENCY */
 
 			/* Restore colors */
 			BackColor(blackColor);

@@ -722,32 +722,6 @@ uint strnfmt(char *buf, uint max, cptr fmt, ...)
 
 
 /*
- * Do a vstrnfmt (see above) into a buffer of unknown size.
- * Since the buffer size is unknown, the user better verify the args.
- */
-uint strfmt(char *buf, cptr fmt, ...)
-{
-	uint len;
-
-	va_list vp;
-
-	/* Begin the Varargs Stuff */
-	va_start(vp, fmt);
-
-	/* Build the string, assume 32K buffer */
-	len = vstrnfmt(buf, 32767, fmt, vp);
-
-	/* End the Varargs Stuff */
-	va_end(vp);
-
-	/* Return the number of bytes written */
-	return (len);
-}
-
-
-
-
-/*
  * Do a vstrnfmt() into (see above) into a (growable) static buffer.
  * This buffer is usable for very short term formatting of results.
  * Note that the buffer is (technically) writable, but only up to

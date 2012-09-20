@@ -3808,8 +3808,14 @@ static void process_monster(int m_idx)
 		}
 
 
-		/* Hack -- check for Glyph of Warding */
-		if (do_move && (cave_feat[ny][nx] == FEAT_GLYPH))
+		/*
+		 * Hack -- check for Glyph of Warding
+		 *
+		 * Monsters may attack the player, but not move onto a glyph.
+		 */
+		if (do_move &&
+		    (cave_feat[ny][nx] == FEAT_GLYPH) &&
+		    (cave_m_idx[ny][nx] == 0))
 		{
 			/* Assume no move allowed */
 			do_move = FALSE;
