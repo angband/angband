@@ -36,6 +36,7 @@
 
 #ifdef USE_XAW
 
+#include "main.h"
 
 #ifndef __MAKEDEPEND__
 #include <X11/Xlib.h>
@@ -1647,12 +1648,20 @@ static errr term_data_init(term_data *td, Widget topLevel,
 }
 
 
+const char help_xaw[] = "X11 Athena Widget, subopts -d<display> -n<windows>"
+#ifdef USE_GRAPHICS
+                        " -s(moothRescale)"
+#endif
+                        "\n           and standard X11 toolkit options"
+                        ;
+
+
 /*
  * Initialization function for an X Athena Widget module to Angband
  *
  * We should accept "-d<dpy>" requests in the "argv" array.  XXX XXX XXX
  */
-errr init_xaw(int argc, char *argv[])
+errr init_xaw(int argc, char **argv)
 {
 	int i;
 	Widget topLevel;

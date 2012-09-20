@@ -13,6 +13,8 @@
 
 #ifdef USE_GTK
 
+#include "main.h"
+
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 
@@ -712,6 +714,10 @@ static void init_gtk_window(term_data *td, int i)
 	                0, 0, 0, 0,
 					td->cols * td->font_wid, td->rows * td->font_hgt);
 }
+
+
+const char help_gtk[] =
+	"GTK for X11, subopts -n<windows> and standard GTK options";
 
 
 /*

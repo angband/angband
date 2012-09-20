@@ -427,7 +427,7 @@ errr process_pref_file_command(char *buf)
 	/* Process "A:<str>" -- save an "action" for later */
 	else if (buf[0] == 'A')
 	{
-		text_to_ascii(macro_buffer, buf+2);
+		text_to_ascii(macro_buffer, sizeof(macro_buffer), buf+2);
 		return (0);
 	}
 
@@ -435,7 +435,7 @@ errr process_pref_file_command(char *buf)
 	else if (buf[0] == 'P')
 	{
 		char tmp[1024];
-		text_to_ascii(tmp, buf+2);
+		text_to_ascii(tmp, sizeof(tmp), buf+2);
 		macro_add(tmp, macro_buffer);
 		return (0);
 	}
@@ -452,7 +452,7 @@ errr process_pref_file_command(char *buf)
 		mode = strtol(zz[0], NULL, 0);
 		if ((mode < 0) || (mode >= KEYMAP_MODES)) return (1);
 
-		text_to_ascii(tmp, zz[1]);
+		text_to_ascii(tmp, sizeof(tmp), zz[1]);
 		if (!tmp[0] || tmp[1]) return (1);
 		i = (byte)(tmp[0]);
 
@@ -3764,14 +3764,8 @@ static errr enter_score(void)
 	sprintf(the_score.turns, "%9lu", (long)turn);
 	the_score.turns[9] = '\0';
 
-#ifdef HIGHSCORE_DATE_HACK
-	/* Save the date in a hacked up form (9 chars) */
-	sprintf(the_score.day, "%-.6s %-.2s",
-	        ctime(&death_time) + 4, ctime(&death_time) + 22);
-#else
 	/* Save the date in standard encoded form (9 chars) */
 	strftime(the_score.day, 10, "@%Y%m%d", localtime(&death_time));
-#endif
 
 	/* Save the player name (15 chars) */
 	sprintf(the_score.who, "%-.15s", op_ptr->full_name);
@@ -4324,6 +4318,9 @@ Signal_Handler_t (*signal_aux)(int, Signal_Handler_t) = wrap_signal;
  */
 static void handle_signal_suspend(int sig)
 {
+	/* Protect errno from library calls in signal handler */
+	int save_errno = errno;
+
 	/* Disable handler */
 	(void)(*signal_aux)(sig, SIG_IGN);
 
@@ -4351,6 +4348,9 @@ static void handle_signal_suspend(int sig)
 
 	/* Restore handler */
 	(void)(*signal_aux)(sig, handle_signal_suspend);
+
+	/* Restore errno */
+	errno = save_errno;
 }
 
 
@@ -4370,6 +4370,9 @@ static void handle_signal_suspend(int sig)
  */
 static void handle_signal_simple(int sig)
 {
+	/* Protect errno from library calls in signal handler */
+	int save_errno = errno;
+
 	/* Disable handler */
 	(void)(*signal_aux)(sig, SIG_IGN);
 
@@ -4442,6 +4445,9 @@ static void handle_signal_simple(int sig)
 
 	/* Restore handler */
 	(void)(*signal_aux)(sig, handle_signal_simple);
+
+	/* Restore errno */
+	errno = save_errno;
 }
 
 

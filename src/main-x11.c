@@ -99,6 +99,7 @@
 
 #ifdef USE_X11
 
+#include "main.h"
 
 #ifndef __MAKEDEPEND__
 #include <X11/Xlib.h>
@@ -2289,10 +2290,17 @@ static errr term_data_init(term_data *td, int i)
 }
 
 
+const char help_x11[] = "Basic X11, subopts -d<display> -n<windows>"
+#ifdef USE_GRAPHICS
+                        " -s(moothRescale)"
+#endif
+                        ;
+
+
 /*
  * Initialization function for an "X11" module to Angband
  */
-errr init_x11(int argc, char *argv[])
+errr init_x11(int argc, char **argv)
 {
 	int i;
 

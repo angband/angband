@@ -11,18 +11,6 @@ INCS = \
   config.h defines.h types.h externs.h \
   z-term.h z-rand.h z-util.h z-virt.h z-form.h $(HDRS)
 
-SRCS = \
-  z-util.c z-virt.c z-form.c z-rand.c z-term.c \
-  variable.c tables.c util.c cave.c \
-  object1.c object2.c monster1.c monster2.c \
-  xtra1.c xtra2.c spells1.c spells2.c \
-  melee1.c melee2.c save.c files.c \
-  cmd1.c cmd2.c cmd3.c cmd4.c cmd5.c cmd6.c \
-  store.c birth.c load.c \
-  wizard1.c wizard2.c \
-  generate.c dungeon.c init1.c init2.c randart.c \
-  sound-ami.c main-ami.c main.c
-
 # Objects split into two parts to avoid 256 char limit.
 
 OBJS = \
@@ -37,17 +25,20 @@ OBJS2 = \
   store.o birth.o load.o \
   wizard1.o wizard2.o \
   generate.o dungeon.o init1.o init2.o randart.o \
-  sound-ami.o main-ami.o main.o optimap.o
+  script.o l-misc.o l-monst.o l-object.o \
+  l-player.o l-random.o l-spell.o l-ui.o \
+  sound-ami.o main-ami.o main.o
+
+LIBS = LIB sc:lib/reqtools.lib LIB sc:lib/scmnb.lib LIB sc:lib/sc.lib \
+  LIB sc:lib/amiga.lib LIB lua/lua.lib
 
 #
 
 CFLAGS = DEFINE AMIGA DEFINE USE_AMI
 
-all: Angband.gst Angband
+all: lua.lib Angband.gst Angband
+   @VersionWB TEXT COMFILE COMERASE QUIET Angband
    @echo Angband compiled...
-
-clean:
-   @-delete (*.o|*.bak|*.gst) QUIET
 
 Angband.gst : $(INCS)
    @echo "Building GST ..."
@@ -60,9 +51,15 @@ Angband: $(OBJS) $(OBJS2)
    @echo Linking...
    @echo >t:temp "LIB:c.o $(OBJS) "
    @echo >>t:temp " $(OBJS2) "
-   @echo >>t:temp "TO Angband LIB sc:lib/reqtools.lib LIB sc:lib/scmnb.lib LIB sc:lib/sc.lib LIB sc:lib/amiga.lib NOICONS STRIPDEBUG"
+   @echo >>t:temp "TO Angband $(LIBS) NOICONS STRIPDEBUG"
    @slink WITH t:temp QUIET
    @-delete t:temp
+
+lua.lib:
+	@execute <<
+cd lua
+smake
+<<
 
 clean:
    @-delete (*.o|*.bak|*.gst) QUIET
@@ -72,7 +69,12 @@ clean:
    @sc $(CFLAGS) $*
 
 optimap.o:
-   @copy Data:Compile/optimap.o optimap.o QUIET
+   @copy Data:Compile/optimap.o to optimap.o
+
+vers.h:
+   
+   @Data:Compile/bablosdate
+
 
 #
 # Hack -- some file dependencies
@@ -92,9 +94,10 @@ files.o: files.c $(INCS)
 generate.o: generate.c $(INCS)
 init1.o: init1.c $(INCS)
 init2.o: init2.c $(INCS)
-load.o: load.c $(INCS)
-main-ami.o: main-ami.c $(INCS)
-main.o: main.c $(INCS)
+load1.o: load1.c $(INCS)
+load2.o: load2.c $(INCS)
+main-ami.o: main-ami.c $(INCS) main.h vers.h
+main.o: main.c $(INCS) main.h
 melee1.o: melee1.c $(INCS)
 melee2.o: melee2.c $(INCS)
 monster1.o: monster1.c $(INCS)
@@ -118,3 +121,4 @@ z-rand.o: z-rand.c $(HDRS) z-rand.h
 z-term.o: z-term.c $(HDRS) z-term.h z-virt.h
 z-util.o: z-util.c $(HDRS) z-util.h
 z-virt.o: z-virt.c $(HDRS) z-virt.h z-util.h
+

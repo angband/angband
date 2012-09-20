@@ -7,7 +7,7 @@ AC_INIT(src/main.c)
 dnl write the resulting #defines into a header file
 AM_CONFIG_HEADER(src/autoconf.h)
 
-AM_INIT_AUTOMAKE(angband, 2.9.6-alpha3)
+AM_INIT_AUTOMAKE(angband, 2.9.6-alpha4)
 
 AC_ARG_WITH(setgid,
 [  --with-setgid=NAME      install angband as group NAME],
@@ -61,7 +61,8 @@ if test "$CYGWIN" = "yes"; then
   AC_DEFINE(WINDOWS)
   AC_DEFINE(USE_TRANSPARENCY)
   LIBS="$LIBS -lwinmm"
-  LDFLAGS="$LDFLAGS -s -mwindows -e _mainCRTStartup"
+  LDFLAGS="$LDFLAGS -s -mno-cygwin -mwindows -e _mainCRTStartup"
+  CFLAGS="$CFLAGS -mno-cygwin"
   AM_CONDITIONAL(CYGWIN, test "$CYGWIN" = "yes")
   ANGBAND_OBJS="readdib.o angband.res"
   AC_SUBST(ANGBAND_OBJS)

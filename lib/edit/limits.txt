@@ -30,7 +30,7 @@ M:E:128
 M:R:618
 
 # Maximum number of vaults
-M:V:55
+M:V:51
 
 # Maximum number of player races
 M:P:11

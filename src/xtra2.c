@@ -3846,11 +3846,11 @@ bool get_aim_dir(int *dp)
 		{
 			return (TRUE);
 		}
-	}
-	else
-	{
-		/* Invalid repeat - reset it */
-		repeat_clear();
+		else
+		{
+			/* Invalid repeat - reset it */
+			repeat_clear();
+		}
 	}
 
 #endif /* ALLOW_REPEAT */

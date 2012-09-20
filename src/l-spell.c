@@ -1,6 +1,6 @@
 /*
 ** Lua binding: spell
-** Generated automatically by tolua 4.0a - angband on Sun Jan 27 16:18:20 2002.
+** Generated automatically by tolua 4.0a - angband on Sun Feb 10 17:10:38 2002.
 */
 
 #include "lua/tolua.h"
@@ -1835,6 +1835,27 @@ tolua_lerror:
  return 0;
 }
 
+/* function: ring_of_power */
+static int toluaI_spell_ring_of_power00(lua_State* tolua_S)
+{
+ if (
+ !tolua_istype(tolua_S,1,LUA_TNUMBER,0) ||
+ !tolua_isnoobj(tolua_S,2)
+ )
+ goto tolua_lerror;
+ else
+ {
+  int dir = ((int)  tolua_getnumber(tolua_S,1,0));
+ {
+  ring_of_power(dir);
+ }
+ }
+ return 0;
+tolua_lerror:
+ tolua_error(tolua_S,"#ferror in function 'ring_of_power'.");
+ return 0;
+}
+
 /* function: map_area */
 static int toluaI_spell_map_area00(lua_State* tolua_S)
 {
@@ -2053,6 +2074,7 @@ int tolua_spell_open (lua_State* tolua_S)
  tolua_function(tolua_S,NULL,"curse_weapon",toluaI_spell_curse_weapon00);
  tolua_function(tolua_S,NULL,"brand_weapon",toluaI_spell_brand_weapon00);
  tolua_function(tolua_S,NULL,"brand_bolts",toluaI_spell_brand_bolts00);
+ tolua_function(tolua_S,NULL,"ring_of_power",toluaI_spell_ring_of_power00);
  tolua_function(tolua_S,NULL,"map_area",toluaI_spell_map_area00);
  tolua_function(tolua_S,NULL,"wiz_lite",toluaI_spell_wiz_lite00);
  tolua_function(tolua_S,NULL,"wiz_dark",toluaI_spell_wiz_dark00);
@@ -2217,6 +2239,7 @@ void tolua_spell_close (lua_State* tolua_S)
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"curse_weapon");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"brand_weapon");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"brand_bolts");
+ lua_pushnil(tolua_S); lua_setglobal(tolua_S,"ring_of_power");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"map_area");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"wiz_lite");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"wiz_dark");

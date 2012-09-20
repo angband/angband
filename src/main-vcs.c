@@ -18,6 +18,8 @@
 
 #ifdef USE_VCS
 
+#include "main.h"
+
 #include <sys/ioctl.h>
 #include <termios.h>
 
@@ -369,6 +371,9 @@ static void term_data_link(int i, int x0, int y0, int sx, int sy)
 	/* Global pointer */
 	angband_term[i] = t;
 }
+
+
+const char help_vcs[] = "Linux Virtual Console terminal";
 
 
 errr init_vcs(int argc, char** argv)

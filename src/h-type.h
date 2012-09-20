@@ -28,7 +28,7 @@
  * A real normally takes from 4 to 10 bytes
  * A vptr normally takes 4 (rarely 8) bytes
  *
- * Note that some files have already been included by "h-include.h"
+ * Note that some files have already been included by "h-system.h"
  * These include <stdio.h> and <sys/types>, which define some types
  * In particular, "bool", "byte", "uint", and "huge" may be defined
  * already, possibly using "typedefs" of various kinds, and possibly

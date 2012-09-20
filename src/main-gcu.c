@@ -48,6 +48,8 @@
 
 #ifdef USE_GCU
 
+#include "main.h"
+
 /*
  * Hack -- play games with "bool" and "term"
  */
@@ -511,6 +513,11 @@ static errr Term_xtra_gcu_alive(int v)
 }
 
 
+#ifdef USE_NCURSES
+const char help_gcu[] = "NCurses, for terminal console";
+#else /* USE_NCURSES */
+const char help_gcu[] = "Curses, for terminal console";
+#endif /* USE_NCURSES */
 
 
 /*
@@ -953,7 +960,7 @@ static void hook_quit(cptr str)
  *
  * Someone should really check the semantics of "initscr()"
  */
-errr init_gcu(int argc, char *argv[])
+errr init_gcu(int argc, char **argv)
 {
 	int i;
 

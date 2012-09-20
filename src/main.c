@@ -19,6 +19,71 @@
 
 #if !defined(MACINTOSH) && !defined(WINDOWS) && !defined(ACORN)
 
+#include "main.h"
+
+
+/*
+ * List of the available modules in the order they are tried.
+ */
+static const struct module modules[] =
+{
+#ifdef USE_GTK
+	{ "gtk", help_gtk, init_gtk },
+#endif /* USE_GTK */
+
+#ifdef USE_XAW
+	{ "xaw", help_xaw, init_xaw },
+#endif /* USE_XAW */
+
+#ifdef USE_X11
+	{ "x11", help_x11, init_x11 },
+#endif /* USE_X11 */
+
+#ifdef USE_XPJ
+	{ "xpj", help_xpj, init_xpj },
+#endif /* USE_XPJ */
+
+#ifdef USE_GCU
+	{ "gcu", help_gcu, init_gcu },
+#endif /* USE_GCU */
+
+#ifdef USE_CAP
+	{ "cap", help_cap, init_cap },
+#endif /* USE_CAP */
+
+#ifdef USE_DOS
+	{ "dos", help_dos, init_dos },
+#endif /* USE_DOS */
+
+#ifdef USE_IBM
+	{ "ibm", help_ibm, init_ibm },
+#endif /* USE_IBM */
+
+#ifdef USE_EMX
+	{ "emx", help_emx, init_emx },
+#endif /* USE_EMX */
+
+#ifdef USE_SLA
+	{ "sla", help_sla, init_sla },
+#endif /* USE_SLA */
+
+#ifdef USE_LSL
+	{ "lsl", help_lsl, init_lsl },
+#endif /* USE_LSL */
+
+#ifdef USE_AMI
+	{ "ami", help_ami, init_ami },
+#endif /* USE_AMI */
+
+#ifdef USE_VME
+	{ "vme", help_vme, init_vme },
+#endif /* USE_VME */
+
+#ifdef USE_VCS
+	{ "vcs", help_vcs, init_cvs },
+#endif /* USE_VCS */
+};
+
 
 /*
  * A hook for "quit()".
@@ -507,17 +572,24 @@ int main(int argc, char *argv[])
 				/* Dump usage information */
 				puts("Usage: angband [options] [-- subopts]");
 				puts("  -n       Start a new character");
-				puts("  -f       Request fiddle mode");
+				puts("  -f       Request fiddle (verbose) mode");
 				puts("  -w       Request wizard mode");
 				puts("  -v       Request sound mode");
 				puts("  -g       Request graphics mode");
-				puts("  -o       Request original keyset");
+				puts("  -o       Request original keyset (default)");
 				puts("  -r       Request rogue-like keyset");
-				puts("  -s<num>  Show <num> high scores");
+				puts("  -s<num>  Show <num> high scores (default: 10)");
 				puts("  -u<who>  Use your <who> savefile");
-				puts("  -m<sys>  Force 'main-<sys>.c' usage");
 				puts("  -d<def>  Define a 'lib' dir sub-path");
+				puts("  -m<sys>  use Module <sys>, where <sys> can be:");
 
+				/* Print the name and help for each available module */
+				for (i = 0; i < N_ELEMENTS(modules); i++)
+				{
+					printf("     %s   %s\n",
+					       modules[i].name, modules[i].help);
+				}
+				
 				/* Actually abort the process */
 				quit(NULL);
 			}
@@ -540,202 +612,20 @@ int main(int argc, char *argv[])
 	/* Install "quit" hook */
 	quit_aux = quit_hook;
 
-
-#ifdef USE_GTK
-	/* Attempt to use the "main-gtk.c" support */
-	if (!done && (!mstr || (streq(mstr, "gtk"))))
+	/* Try the modules in the order specified by modules[] */
+	for (i = 0; i < N_ELEMENTS(modules); i++)
 	{
-		extern errr init_gtk(int argc, char **argv);
-		if (0 == init_gtk(argc, argv))
+		/* User requested a specific module? */
+		if (!mstr || (streq(mstr, modules[i].name)))
 		{
-			ANGBAND_SYS = "gtk";
-			done = TRUE;
+			if (0 == modules[i].init(argc, argv))
+			{
+				ANGBAND_SYS = modules[i].name;
+				done = TRUE;
+				break;
+			}
 		}
 	}
-#endif /* USE_GTK */
-
-
-#ifdef USE_XAW
-	/* Attempt to use the "main-xaw.c" support */
-	if (!done && (!mstr || (streq(mstr, "xaw"))))
-	{
-		extern errr init_xaw(int argc, char** argv);
-		if (0 == init_xaw(argc, argv))
-		{
-			ANGBAND_SYS = "xaw";
-			done = TRUE;
-		}
-	}
-#endif /* USE_XAW */
-
-
-#ifdef USE_X11
-	/* Attempt to use the "main-x11.c" support */
-	if (!done && (!mstr || (streq(mstr, "x11"))))
-	{
-		extern errr init_x11(int argc, char** argv);
-		if (0 == init_x11(argc, argv))
-		{
-			ANGBAND_SYS = "x11";
-			done = TRUE;
-		}
-	}
-#endif /* USE_X11 */
-
-
-#ifdef USE_XPJ
-        /* Attempt to use the "main-xpj.c" support */
-        if (!done && (!mstr || (streq(mstr, "xpj"))))
-        {
-                extern errr init_xpj(int argc, char** argv);
-                if (0 == init_xpj(argc, argv))
-                {
-                        ANGBAND_SYS = "xpj";
-                        done = TRUE;
-                }
-        }
-#endif /* USE_XPJ */ 
-
-
-#ifdef USE_GCU
-	/* Attempt to use the "main-gcu.c" support */
-	if (!done && (!mstr || (streq(mstr, "gcu"))))
-	{
-		extern errr init_gcu(int argc, char** argv);
-		if (0 == init_gcu(argc, argv))
-		{
-			ANGBAND_SYS = "gcu";
-			done = TRUE;
-		}
-	}
-#endif /* USE_GCU */
-
-
-#ifdef USE_CAP
-	/* Attempt to use the "main-cap.c" support */
-	if (!done && (!mstr || (streq(mstr, "cap"))))
-	{
-		extern errr init_cap(int argc, char** argv);
-		if (0 == init_cap(argc, argv))
-		{
-			ANGBAND_SYS = "cap";
-			done = TRUE;
-		}
-	}
-#endif /* USE_CAP */
-
-
-#ifdef USE_DOS
-	/* Attempt to use the "main-dos.c" support */
-	if (!done && (!mstr || (streq(mstr, "dos"))))
-	{
-		extern errr init_dos(void);
-		if (0 == init_dos())
-		{
-			ANGBAND_SYS = "dos";
-			done = TRUE;
-		}
-	}
-#endif /* USE_DOS */
-
-
-#ifdef USE_IBM
-	/* Attempt to use the "main-ibm.c" support */
-	if (!done && (!mstr || (streq(mstr, "ibm"))))
-	{
-		extern errr init_ibm(void);
-		if (0 == init_ibm())
-		{
-			ANGBAND_SYS = "ibm";
-			done = TRUE;
-		}
-	}
-#endif /* USE_IBM */
-
-
-#ifdef USE_EMX
-	/* Attempt to use the "main-emx.c" support */
-	if (!done && (!mstr || (streq(mstr, "emx"))))
-	{
-		extern errr init_emx(void);
-		if (0 == init_emx())
-		{
-			ANGBAND_SYS = "emx";
-			done = TRUE;
-		}
-	}
-#endif /* USE_EMX */
-
-
-#ifdef USE_SLA
-	/* Attempt to use the "main-sla.c" support */
-	if (!done && (!mstr || (streq(mstr, "sla"))))
-	{
-		extern errr init_sla(void);
-		if (0 == init_sla())
-		{
-			ANGBAND_SYS = "sla";
-			done = TRUE;
-		}
-	}
-#endif /* USE_SLA */
-
-
-#ifdef USE_LSL
-	/* Attempt to use the "main-lsl.c" support */
-	if (!done && (!mstr || (streq(mstr, "lsl"))))
-	{
-		extern errr init_lsl(void);
-		if (0 == init_lsl())
-		{
-			ANGBAND_SYS = "lsl";
-			done = TRUE;
-		}
-	}
-#endif /* USE_LSL */
-
-
-#ifdef USE_AMI
-	/* Attempt to use the "main-ami.c" support */
-	if (!done && (!mstr || (streq(mstr, "ami"))))
-	{
-		extern errr init_ami(void);
-		if (0 == init_ami())
-		{
-			ANGBAND_SYS = "ami";
-			done = TRUE;
-		}
-	}
-#endif /* USE_AMI */
-
-
-#ifdef USE_VME
-	/* Attempt to use the "main-vme.c" support */
-	if (!done && (!mstr || (streq(mstr, "vme"))))
-	{
-		extern errr init_vme(void);
-		if (0 == init_vme())
-		{
-			ANGBAND_SYS = "vme";
-			done = TRUE;
-		}
-	}
-#endif /* USE_VME */
-
-
-#ifdef USE_VCS
-	/* Attempt to use the "main-vcs.c" support */
-	if (!done && (!mstr || (streq(mstr, "vcs"))))
-	{
-		extern errr init_vcs(int argc, char** argv);
-		if (0 == init_vcs(argc, argv))
-		{
-			ANGBAND_SYS = "vcs";
-			done = TRUE;
-		}
-	}
-#endif /* USE_VCS */
-
 
 	/* Make sure we have a display! */
 	if (!done) quit("Unable to prepare any 'display module'!");
@@ -766,4 +656,3 @@ int main(int argc, char *argv[])
 }
 
 #endif /* !defined(MACINTOSH) && !defined(WINDOWS) && !defined(ACORN) */
-

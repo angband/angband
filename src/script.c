@@ -173,8 +173,8 @@ bool use_object(object_type *o_ptr, bool *ident)
 
 	if (status == 0)
 	{
-		*ident = tolua_getbool(L, -1, FALSE);
-		used_up = tolua_getbool(L, -2, FALSE);
+		*ident = tolua_getbool(L, -2, FALSE);
+		used_up = tolua_getbool(L, -1, FALSE);
 
 		/* Remove the results */
 		lua_pop(L, 2);

@@ -438,21 +438,9 @@ static void strip_name(char *buf, int k_idx)
 
 
 /*
- * Hack -- title for each column
- *
- * This will not work with "EBCDIC", I would think.  XXX XXX XXX
- *
- * The third column head overlaps the first after 17 items are
- * listed.  XXX XXX XXX
- */
-static char head[3] =
-{ 'a', 'A', '0' };
-
-
-/*
  * Get an object kind for creation (or zero)
  *
- * List up to 57 choices in three columns
+ * List up to 60 choices in three columns
  */
 static int wiz_create_itemtype(void)
 {
@@ -464,6 +452,10 @@ static int wiz_create_itemtype(void)
 	char ch;
 
 	int choice[60];
+	static const char choice_name[] = ("abcdefghijklmnopqrst"
+	                                   "ABCDEFGHIJKLMNOPQRST"
+	                                   "0123456789:;<=>?@%&*");
+	const char *cp;
 
 	char buf[160];
 
@@ -472,11 +464,11 @@ static int wiz_create_itemtype(void)
 	Term_clear();
 
 	/* Print all tval's and their descriptions */
-	for (num = 0; (num < 57) && tvals[num].tval; num++)
+	for (num = 0; (num < 60) && tvals[num].tval; num++)
 	{
 		row = 2 + (num % 20);
 		col = 30 * (num / 20);
-		ch = head[num/20] + (num%20);
+		ch  = choice_name[num];
 		prt(format("[%c] %s", ch, tvals[num].desc), row, col);
 	}
 
@@ -488,9 +480,8 @@ static int wiz_create_itemtype(void)
 
 	/* Analyze choice */
 	num = -1;
-	if ((ch >= head[0]) && (ch < head[0] + 20)) num = ch - head[0];
-	if ((ch >= head[1]) && (ch < head[1] + 20)) num = ch - head[1] + 20;
-	if ((ch >= head[2]) && (ch < head[2] + 17)) num = ch - head[2] + 40;
+	if ((cp = strchr(choice_name, ch)) != NULL)
+		num = cp - choice_name;
 
 	/* Bail out if choice is illegal */
 	if ((num < 0) || (num >= max_num)) return (0);
@@ -506,7 +497,7 @@ static int wiz_create_itemtype(void)
 	Term_clear();
 
 	/* We have to search the whole itemlist. */
-	for (num = 0, i = 1; (num < 57) && (i < z_info->k_max); i++)
+	for (num = 0, i = 1; (num < 60) && (i < z_info->k_max); i++)
 	{
 		object_kind *k_ptr = &k_info[i];
 
@@ -519,7 +510,7 @@ static int wiz_create_itemtype(void)
 			/* Prepare it */
 			row = 2 + (num % 20);
 			col = 30 * (num / 20);
-			ch = head[num/20] + (num%20);
+			ch  = choice_name[num];
 
 			/* Get the "name" of object "i" */
 			strip_name(buf, i);
@@ -540,9 +531,8 @@ static int wiz_create_itemtype(void)
 
 	/* Analyze choice */
 	num = -1;
-	if ((ch >= head[0]) && (ch < head[0] + 20)) num = ch - head[0];
-	if ((ch >= head[1]) && (ch < head[1] + 20)) num = ch - head[1] + 20;
-	if ((ch >= head[2]) && (ch < head[2] + 17)) num = ch - head[2] + 40;
+	if ((cp = strchr(choice_name, ch)) != NULL)
+		num = cp - choice_name;
 
 	/* Bail out if choice is "illegal" */
 	if ((num < 0) || (num >= max_num)) return (0);

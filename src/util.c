@@ -871,18 +871,24 @@ static int dehex(char c)
  *
  * To be safe, "buf" should be at least as large as "str".
  */
-void text_to_ascii(char *buf, cptr str)
+void text_to_ascii(char *buf, int len, cptr str)
 {
 	char *s = buf;
 
 	/* Analyze the "ascii" string */
 	while (*str)
 	{
+		/* Check if the buffer is long enough */
+		if (s >= buf + len - 1) break;
+
 		/* Backslash codes */
 		if (*str == '\\')
 		{
 			/* Skip the backslash */
 			str++;
+
+			/* Paranoia */
+			if (!(*str)) break;
 
 			/* Hack -- simple way to specify Escape */
 			if (*str == 'e')
@@ -959,7 +965,12 @@ void text_to_ascii(char *buf, cptr str)
 		else if (*str == '^')
 		{
 			str++;
-			*s++ = (*str++ & 037);
+
+			if (*str)
+			{
+				*s++ = KTRL(*str);
+				str++;
+			}
 		}
 
 		/* Normal chars */
@@ -978,10 +989,8 @@ void text_to_ascii(char *buf, cptr str)
  * Hack -- convert a string into a printable form
  *
  * This function will not work on non-ascii systems.
- *
- * To be safe, "buf" should be at least four times as large as "str".
  */
-void ascii_to_text(char *buf, cptr str)
+void ascii_to_text(char *buf, int len, cptr str)
 {
 	char *s = buf;
 
@@ -989,6 +998,10 @@ void ascii_to_text(char *buf, cptr str)
 	while (*str)
 	{
 		byte i = (byte)(*str++);
+
+		/* Check if the buffer is long enough */
+		/* HACK - always assume worst case (hex-value + '\0') */
+		if (s >= buf + len - 5) break;
 
 		if (i == ESCAPE)
 		{
@@ -3407,7 +3420,7 @@ void request_command(bool shopping)
 				}
 
 				/* Actual numeric data */
-				else if (ch >= '0' && ch <= '9')
+				else if (isdigit(ch))
 				{
 					/* Stop count at 9999 */
 					if (p_ptr->command_arg >= 1000)

@@ -1026,9 +1026,6 @@ K:176:0x83/0x9C
 # Scroll of *Identify*
 K:177:0x83/0x9C
 
-# Scroll of Rumour
-K:178:0x83/0x9C
-
 # Scroll of Light
 K:181:0x83/0x9C
 
@@ -1716,6 +1713,9 @@ K:421:0x85/0x85
 # Potion of *Enlightenment*
 K:422:0x85/0x85
 
+# & Mithril Shot~
+K:437:0xB6:0x8F
+
 # copper
 K:480:0x83/0x91
 
@@ -1812,6 +1812,8 @@ K:510:0x84/0x94
 # The One Ring
 K:511:0x84/0x95
 
+# & Jewel~
+K:514:0x8E:0x9F
 
 
 ##### Monster attr/char definitions #####
@@ -3665,7 +3667,7 @@ R:606:0xBA/0x8C
 
 # greater mummy
 R:615:0xBA/0x91
- 
+
 # multi-hued hound
 R:616:0xB2/0x81
 

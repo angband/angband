@@ -31,8 +31,9 @@
 #define PARSE_ERROR_INVALID_SPELL_FREQ      12
 #define PARSE_ERROR_INVALID_ITEM_NUMBER     13
 #define PARSE_ERROR_TOO_MANY_ENTRIES        14
+#define PARSE_ERROR_VAULT_TOO_BIG           15
 
-#define PARSE_ERROR_MAX                     15
+#define PARSE_ERROR_MAX                     16
 
 
 typedef struct header header;

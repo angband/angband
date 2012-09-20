@@ -54,6 +54,7 @@
 
 #ifdef USE_IBM
 
+#include "main.h"
 
 /*
  * Use a "virtual" screen to "buffer" screen writes.
@@ -1194,6 +1195,8 @@ void enable_graphic_font(const char *font)
 #endif /* ALLOW_GRAPH */
 
 
+const char help_ibm[] = "IBM Visual Display Support";
+
 
 /*
  * Initialize the IBM "visual module"
@@ -1205,7 +1208,7 @@ void enable_graphic_font(const char *font)
  * into an 8 bit value, without losing much precision, by using the 2
  * most significant bits as the least significant bits in the new value.
  */
-errr init_ibm(void)
+errr init_ibm(int argc, char **argv)
 {
 	int i;
 	int mode;
@@ -1213,6 +1216,10 @@ errr init_ibm(void)
 	term *t = &term_screen_body;
 
 	union REGS r;
+
+	/* Unused parameters */
+	(void)argc;
+	(void)argv;
 
 	/* Check for "Windows" */
 	if (getenv("windir"))

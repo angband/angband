@@ -28,7 +28,7 @@ angband_SOURCES = \
   angband.h config.h defines.h externs.h h-basic.h \
   h-config.h h-define.h h-system.h h-type.h init.h \
   types.h z-form.h z-rand.h z-term.h z-util.h \
-  z-virt.h \
+  z-virt.h main.h \
   script.c script.h \
   l-monst.c l-object.c l-player.c l-random.c l-ui.c l-misc.c l-spell.c \
   use-obj.c

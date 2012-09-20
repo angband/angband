@@ -9,7 +9,6 @@
 - Add a random name generator for player names.
 - Add support for automatically numbering characters ("Rocky IV").
 - Finish the GTK+ port, maybe write a qt version.
-- Improve the command-line option usage display.
 - Open the file handles for score and savefiles at startup and then drop
   all permissions.
 - Improve the scorefile format.

@@ -114,11 +114,11 @@ init1.o: init1.c $(INCS)
 init2.o: init2.c $(INCS)
 randart.o: randart.c $(INCS)
 load.o: load.c $(INCS)
-main-cap.o: main-cap.c $(INCS)
-main-gcu.o: main-gcu.c $(INCS)
-main-x11.o: main-x11.c $(INCS)
-main-xaw.o: main-xaw.c $(INCS)
-main.o: main.c $(INCS)
+main-cap.o: main-cap.c $(INCS) main.h
+main-gcu.o: main-gcu.c $(INCS) main.h
+main-x11.o: main-x11.c $(INCS) main.h
+main-xaw.o: main-xaw.c $(INCS) main.h
+main.o: main.c $(INCS) main.h
 melee1.o: melee1.c $(INCS)
 melee2.o: melee2.c $(INCS)
 monster1.o: monster1.c $(INCS)

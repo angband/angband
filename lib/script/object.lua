@@ -1018,7 +1018,7 @@ function activate_object(object)
 			ring_of_power(dir)
 		elseif artifact.activation == ACT_STAR_BALL then
 			msg_print(format("Your %s is surrounded by lightning...", o_name))
-			for i = 0, 8 do fire_ball(GF_ELEC, ddd[i], 150, 3) end
+			for i = 1, 9 do fire_ball(GF_ELEC, ddd[i], 150, 3) end
 		elseif artifact.activation == ACT_RAGE_BLESS_RESIST then
 			msg_print(format("Your %s glows many colours...", o_name))
 			hp_player(30)
@@ -1184,7 +1184,7 @@ function activate_object(object)
 			brand_bolts()
 		elseif artifact.activation == ACT_STARLIGHT then
 			msg_print(format("Your %s glows with the light of a thousand stars...", o_name))
-			for i = 0, 8 do strong_lite_line(ddd[k]) end
+			for i = 1, 9 do strong_lite_line(ddd[k]) end
 		elseif artifact.activation == ACT_MANA_BOLT then
 			msg_print(format("Your %s glows white...", o_name))
 			success, dir = get_aim_dir()

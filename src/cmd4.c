@@ -1077,13 +1077,13 @@ static errr macro_dump(cptr fname)
 		fprintf(fff, "# Macro '%d'\n\n", i);
 
 		/* Extract the macro action */
-		ascii_to_text(buf, macro__act[i]);
+		ascii_to_text(buf, sizeof(buf), macro__act[i]);
 
 		/* Dump the macro action */
 		fprintf(fff, "A:%s\n", buf);
 
 		/* Extract the macro pattern */
-		ascii_to_text(buf, macro__pat[i]);
+		ascii_to_text(buf, sizeof(buf), macro__pat[i]);
 
 		/* Dump the macro pattern */
 		fprintf(fff, "P:%s\n", buf);
@@ -1154,7 +1154,7 @@ static void do_cmd_macro_aux(char *buf)
 
 
 	/* Convert the trigger */
-	ascii_to_text(tmp, buf);
+	ascii_to_text(tmp, sizeof(tmp), buf);
 
 	/* Hack -- display the trigger */
 	Term_addstr(-1, TERM_WHITE, tmp);
@@ -1182,7 +1182,7 @@ static void do_cmd_macro_aux_keymap(char *buf)
 
 
 	/* Convert to ascii */
-	ascii_to_text(tmp, buf);
+	ascii_to_text(tmp, sizeof(tmp), buf);
 
 	/* Hack -- display the trigger */
 	Term_addstr(-1, TERM_WHITE, tmp);
@@ -1255,7 +1255,7 @@ static errr keymap_dump(cptr fname)
 		if (!act) continue;
 
 		/* Encode the action */
-		ascii_to_text(buf, act);
+		ascii_to_text(buf, sizeof(buf), act);
 
 		/* Dump the keymap action */
 		fprintf(fff, "A:%s\n", buf);
@@ -1264,7 +1264,7 @@ static errr keymap_dump(cptr fname)
 		key[0] = i;
 
 		/* Encode the key */
-		ascii_to_text(buf, key);
+		ascii_to_text(buf, sizeof(buf), key);
 
 		/* Dump the keymap pattern */
 		fprintf(fff, "C:%d:%s\n", mode, buf);
@@ -1339,7 +1339,7 @@ void do_cmd_macros(void)
 		prt("Current action (if any) shown below:", 20, 0);
 
 		/* Analyze the current action */
-		ascii_to_text(tmp, macro_buffer);
+		ascii_to_text(tmp, sizeof(tmp), macro_buffer);
 
 		/* Display the current action */
 		prt(tmp, 22, 0);
@@ -1432,7 +1432,7 @@ void do_cmd_macros(void)
 				strcpy(macro_buffer, macro__act[k]);
 
 				/* Analyze the current action */
-				ascii_to_text(tmp, macro_buffer);
+				ascii_to_text(tmp, sizeof(tmp), macro_buffer);
 
 				/* Display the current action */
 				prt(tmp, 22, 0);
@@ -1461,13 +1461,13 @@ void do_cmd_macros(void)
 			prt("Action: ", 20, 0);
 
 			/* Convert to text */
-			ascii_to_text(tmp, macro_buffer);
+			ascii_to_text(tmp, sizeof(tmp), macro_buffer);
 
 			/* Get an encoded action */
 			if (askfor_aux(tmp, 80))
 			{
 				/* Convert to ascii */
-				text_to_ascii(macro_buffer, tmp);
+				text_to_ascii(macro_buffer, sizeof(macro_buffer), tmp);
 
 				/* Link the macro */
 				macro_add(pat, macro_buffer);
@@ -1551,7 +1551,7 @@ void do_cmd_macros(void)
 				strcpy(macro_buffer, act);
 
 				/* Analyze the current action */
-				ascii_to_text(tmp, macro_buffer);
+				ascii_to_text(tmp, sizeof(tmp), macro_buffer);
 
 				/* Display the current action */
 				prt(tmp, 22, 0);
@@ -1580,13 +1580,13 @@ void do_cmd_macros(void)
 			prt("Action: ", 20, 0);
 
 			/* Convert to text */
-			ascii_to_text(tmp, macro_buffer);
+			ascii_to_text(tmp, sizeof(tmp), macro_buffer);
 
 			/* Get an encoded action */
 			if (askfor_aux(tmp, 80))
 			{
 				/* Convert to ascii */
-				text_to_ascii(macro_buffer, tmp);
+				text_to_ascii(macro_buffer, sizeof(macro_buffer), tmp);
 
 				/* Free old keymap */
 				string_free(keymap_act[mode][(byte)(pat[0])]);
@@ -1631,13 +1631,13 @@ void do_cmd_macros(void)
 			Term_gotoxy(0, 22);
 
 			/* Analyze the current action */
-			ascii_to_text(tmp, macro_buffer);
+			ascii_to_text(tmp, sizeof(tmp), macro_buffer);
 
 			/* Get an encoded action */
 			if (askfor_aux(tmp, 80))
 			{
 				/* Extract an action */
-				text_to_ascii(macro_buffer, tmp);
+				text_to_ascii(macro_buffer, sizeof(macro_buffer), tmp);
 			}
 		}
 

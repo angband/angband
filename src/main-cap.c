@@ -36,6 +36,7 @@
 
 #ifdef USE_CAP
 
+#include "main.h"
 
 /*
  * Require a "system"
@@ -1007,18 +1008,17 @@ static void Term_nuke_cap(term *t)
 }
 
 
-
-
-
-
-
-
+#ifdef USE_HARDCODE
+const char help_cap[] = "VT100 terminal, for terminal console";
+#else /* USE_HARDCODE */
+const char help_cap[] = "Termcap, for terminal console";
+#endif /* USE_HARDCODE */
 
 
 /*
  * Prepare this file for Angband usage
  */
-errr init_cap(int argc, char *argv[])
+errr init_cap(int argc, char **argv)
 {
 	term *t = &term_screen_body;
 

@@ -185,8 +185,8 @@ extern bool curse_armor(void);
 extern bool curse_weapon(void);
 extern void brand_weapon(void);
 extern bool brand_bolts(void);
+extern void ring_of_power(int dir);
 
 extern void map_area(void);
 extern void wiz_lite(void);
 extern void wiz_dark(void);
-

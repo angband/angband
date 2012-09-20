@@ -453,7 +453,7 @@ static int get_spell(const object_type *o_ptr, cptr prompt, bool known)
 
 #ifdef ALLOW_REPEAT
 
-	repeat_push(result);
+	repeat_push(spell);
 
 #endif /* ALLOW_REPEAT */
 

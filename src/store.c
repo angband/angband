@@ -1579,11 +1579,11 @@ static bool get_stock(int *com_val, cptr pmt)
 			/* Success */
 			return (TRUE);
 		}
-	}
-	else
-	{
-		/* Invalid repeat - reset it */
-		repeat_clear();
+		else
+		{
+			/* Invalid repeat - reset it */
+			repeat_clear();
+		}
 	}
 
 #endif /* ALLOW_REPEAT */

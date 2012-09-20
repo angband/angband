@@ -177,7 +177,7 @@ angband.a: $(OBJS)
 aclient.exe: main-emx.c
 	$(NICE) $(CC) $(CFLAGS) -Wall -D__EMX__CLIENT__ -o aclient.exe main-emx.c -lvideo
 
-main-emx.o: main-emx.c
+main-emx.o: main-emx.c main.h
 	$(NICE) $(CC) $(CFLAGS) -Wall -c main-emx.c -o main-emx.o
 
 main-epm.o: main-emx.c

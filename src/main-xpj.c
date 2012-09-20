@@ -37,6 +37,7 @@
 
 #ifdef USE_XPJ
 
+#include "main.h"
 
 #ifndef USE_GRAPHICS
 #error Must have USE_GRAPHICS compile-time flag on.
@@ -3185,10 +3186,17 @@ static errr term_data_init(term_data *td, int i)
 }
 
 
+const char help_xpj[] = "X11 Projected View, subopts -d<display> -n<windows>"
+#ifdef USE_GRAPHICS
+                " -s(moothRescale)"
+#endif
+                ;
+
+
 /*
  * Initialization function for an "XPJ" module to Angband
  */
-errr init_xpj(int argc, char *argv[])
+errr init_xpj(int argc, char **argv)
 {
 	int i, j;
 

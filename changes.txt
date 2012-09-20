@@ -1,3 +1,23 @@
+Changes in Angband 2.9.6 alpha4:
+- Added usage lines for the main-*.c files (Hallvard B Furuseth).
+- Fixed the problems with the 'repeat command' command.
+- Added a check for the maximum vault size to the vault.txt parser.
+- Removed some vaults that were too big for Angband's vault placement
+  code.
+- Added tiles for some more objects.
+- Executables build with configure under Cygwin no longer require the
+  Cygwin DLL.
+- Removed the "Darwin" vault since it didn't fit to Angband's theme.
+- Fixed errors in some artifact activations.
+- Fixed a possible crashing bug with main-lsl.c in combination with
+  transparency support.
+- Added the latest Amiga code (Bablos).
+- The "used up"/"ident" results from using an object where exchanged
+  resulting in various bugs.
+- Moved the spaces in the monster descriptions to the beginning of the
+  next line.
+- Fixed various typos in the monster descriptions.
+
 Changes in Angband 2.9.6 alpha3:
 - Switched to the latest autoconf and automake versions.
 - Replaced the old (Acorn) RISC OS code with a newer version.

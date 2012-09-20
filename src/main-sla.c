@@ -26,6 +26,7 @@
 
 #ifdef USE_SLA
 
+#include "main.h"
 
 
 #include <slang.h>
@@ -395,16 +396,22 @@ static errr Term_text_sla(int x, int y, int n, byte a, cptr s)
 }
 
 
+const char help_sla[] = "S-Lang library, for terminal console";
+
+
 /*
  * Prepare "S-Lang" for use by the file "z-term.c"
  * Installs the "hook" functions defined above
  */
-errr init_sla(void)
+errr init_sla(int argc, char **argv)
 {
 	int err;
 
 	term *t = &term_screen_body;
 
+	/* Unused parameters */
+	(void)argc;
+	(void)argv;
 
 	/* Block signals, so signals cannot confuse the setup */
 	SLsig_block_signals();

@@ -143,9 +143,9 @@ l-random.o: l-random.c $(INCS) lua/tolua.h
 l-spell.o: l-spell.c $(INCS) lua/tolua.h
 l-ui.o: l-ui.c $(INCS) lua/tolua.h
 load.o: load.c $(INCS)
-maid-x11.o: maid-x11.c $(INCS) maid-x11.h
-main-gtk.o: main-gtk.c $(INCS) maid-x11.h
-main.o: main.c $(INCS)
+maid-x11.o: maid-x11.c $(INCS) main.h maid-x11.h
+main-gtk.o: main-gtk.c $(INCS) main.h maid-x11.h
+main.o: main.c $(INCS) main.h
 melee1.o: melee1.c $(INCS)
 melee2.o: melee2.c $(INCS)
 monster1.o: monster1.c $(INCS)

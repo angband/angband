@@ -72,6 +72,8 @@
 
 #ifdef USE_DOS
 
+#include "main.h"
+
 #include <allegro.h>
 
 #ifdef USE_MOD_FILES
@@ -311,7 +313,6 @@ static void term_data_link(term_data *td);
 static void dos_dump_screen(void);
 static void dos_quit_hook(cptr str);
 static bool init_windows(void);
-errr init_dos(void);
 #ifdef USE_SOUND
 static bool init_sound(void);
 static errr Term_xtra_dos_sound(int v);
@@ -2095,6 +2096,9 @@ static void play_song(void)
 #endif /* USE_SOUND */
 
 
+const char help_dos[] = "DOS module with graphics and sound support";
+
+
 /*
  * Attempt to initialize this file
  *
@@ -2108,7 +2112,7 @@ static void play_song(void)
  * We should attempt to "share" bitmaps (and fonts) between windows
  * with the same "tile" size.  XXX XXX XXX
  */
-errr init_dos(void)
+errr init_dos(int argc, char **argv)
 {
 	term_data *td;
 
@@ -2116,6 +2120,10 @@ errr init_dos(void)
 
 	int screen_wid;
 	int screen_hgt;
+
+	/* Unused parameters */
+	(void)argc;
+	(void)argv;
 
 	/* Initialize the Allegro library (never fails) */
 	if (allegro_init()) return (-1);
