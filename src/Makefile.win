@@ -1,0 +1,278 @@
+# File: Makefile.win
+
+
+
+.autodepend
+
+
+
+SRCS = \
+
+  arrays.c birth.c cave.c command.c \
+
+  creature.c death.c desc.c dungeon.c \
+
+  effects.c files.c generate.c help.c io.c magic.c \
+
+  main.c main-win.c\
+
+  misc1.c misc2.c misc3.c misc4.c \
+
+  moria1.c moria2.c moria3.c moria4.c \
+
+  random.c recall.c save.c signals.c \
+
+  spells1.c spells2.c store.c tables.c term.c \
+
+  util.c variable.c wizard.c \
+
+  z-form.c z-util.c z-virt.c
+
+
+
+
+
+OBJS = \
+
+  arrays.obj birth.obj cave.obj command.obj \
+
+  creature.obj death.obj desc.obj dungeon.obj \
+
+  effects.obj files.obj generate.obj help.obj io.obj \
+
+  magic.obj \
+
+  main.obj main-win.obj \
+
+  misc1.obj misc2.obj misc3.obj misc4.obj \
+
+  moria1.obj moria2.obj moria3.obj moria4.obj \
+
+  random.obj recall.obj save.obj signals.obj \
+
+  spells1.obj spells2.obj store.obj tables.obj term.obj \
+
+  util.obj variable.obj wizard.obj \
+
+  z-form.obj z-util.obj z-virt.obj
+
+
+
+FSS = \
+
+  command.fs creature.fs effects.fs misc4.fs moria3.fs spells1.fs \
+
+  spells2.fs store.fs wizard.fs
+
+
+
+CC = \apps\bc\bin\bcc.exe
+
+CFLAGS = +borlandc.cfg
+
+LINK = \apps\bc\bin\tlink.exe
+
+RC = \apps\bc\bin\rc.exe
+
+
+
+
+
+default: borlandc.cfg farstr.exe angband
+
+
+
+clean:
+
+	del *.obj
+
+	del *.fs
+
+	del *.fsh
+
+	del farstr.exe
+
+	del ..\*.map
+
+	del ..\angband.exe
+
+
+
+copyold:
+
+	mkdir oldc
+
+	copy command.c oldc\command.c
+
+	copy creature.c oldc\creature.c
+
+	copy effects.c oldc\effects.c
+
+	copy misc4.c oldc\misc4.c
+
+	copy moria3.c oldc\moria3.c
+
+	copy spells1.c oldc\spells1.c
+
+	copy spells2.c oldc\spells2.c
+
+	copy store.c oldc\store.c
+
+	copy wizard.c oldc\wizard.c
+
+
+
+prepwin: copyold $(FSS)
+
+	move command.fs command.c
+
+	move creature.fs creature.c
+
+	move effects.fs effects.c
+
+	move misc4.fs misc4.c
+
+	move moria3.fs moria3.c
+
+	move spells1.fs spells1.c
+
+	move spells2.fs spells2.c
+
+	move store.fs store.c
+
+	move wizard.fs wizard.c
+
+
+
+borlandc.cfg:
+
+	copy &&|
+
+-I\apps\bc\include
+
+-L\apps\bc\lib
+
+-3
+
+-ml
+
+-d
+
+-Ff=16
+
+-f-
+
+-WE
+
+-w+
+
+-G
+
+-O2
+
+-D__STDC__=1
+
+-zEDATA_FARSEG
+
+| borlandc.cfg
+
+
+
+.c.fs:
+
+	farstr.exe $<
+
+
+
+.c.obj:
+
+	$(CC) -c $(CFLAGS) $<
+
+
+
+farstr.exe: farstr\fsmain.c farstr\fsparse.c
+
+        $(CC) -mc -f- -I\apps\bc\include;farstr -L\apps\bc\lib -efarstr farstr\fsmain.c farstr\fsparse.c
+
+
+
+command.obj: command.fs
+
+	$(CC) -c $(CFLAGS) $?
+
+
+
+creature.obj: creature.fs
+
+	$(CC) -c $(CFLAGS) $?
+
+
+
+effects.obj: effects.fs
+
+	$(CC) -c $(CFLAGS) $?
+
+
+
+misc4.obj: misc4.fs
+
+	$(CC) -c $(CFLAGS) $?
+
+
+
+moria3.obj: moria3.fs
+
+	$(CC) -c $(CFLAGS) $?
+
+
+
+spells1.obj: spells1.fs
+
+	$(CC) -c $(CFLAGS) $?
+
+
+
+spells2.obj: spells2.fs
+
+	$(CC) -c $(CFLAGS) $?
+
+
+
+store.obj: store.fs
+
+	$(CC) -c $(CFLAGS) $?
+
+
+
+wizard.obj: wizard.fs
+
+	$(CC) -c $(CFLAGS) $?
+
+
+
+angband: $(OBJS) angband.res
+
+	$(LINK) @&&|
+
+/L\apps\bc\lib\ /Twe/P/d/x c0wl arrays birth cave+
+
+command creature death desc dungeon+
+
+effects files generate help io magic main main-win+
+
+misc1 misc2 misc3 misc4 moria1 moria2+
+
+moria3 moria4 random recall save+
+
+signals spells1 spells2 store tables term util+
+
+variable wizard z-form z-util+
+
+z-virt,..\angband.exe,..\angband.map,import cwl,angband.def
+
+|
+
+	$(RC) -t -v -31 angband.res ..\angband.exe
+
+
+

@@ -1,0 +1,10 @@
+#!/bin/csh
+
+# Convert every 8 leading spaces in the given files to a tab
+
+foreach x ($*)
+    \mv $x $x.bak
+    cat $x.bak | Tabber -e > $x
+end
+
+

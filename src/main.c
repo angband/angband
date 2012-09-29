@@ -1,1 +1,589 @@
-/* UNIX ANGBAND Version 5.0   main.c: initialization, main() function and main loop   Copyright (c) 1989 James E. Wilson, Robert A. Koeneke   This software may be copied and distributed for educational, research, and   not for profit purposes provided that this copyright and statement are   included in all such copies. *//* Original copyright message follows. *//* ANGBAND Version 4.8	COPYRIGHT (c) Robert Alan Koeneke		*//*									 *//*	 I lovingly dedicate this game to hackers and adventurers	 *//*	 everywhere...							 *//*									 *//*									 *//*	 Designer and Programmer : Robert Alan Koeneke			 *//*				   University of Oklahoma		 *//*									 *//*	 Assistant Programmers	 : Jimmey Wayne Todd			 *//*				   University of Oklahoma		 *//*									 *//*				   Gary D. McAdoo			 *//*				   University of Oklahoma		 *//*									 *//*	 UNIX Port		 : James E. Wilson			 *//*				   UC Berkeley				 *//*				   wilson@ernie.Berkeley.EDU		 *//*				   ucbvax!ucbernie!wilson		 *//*									 *//*	 MSDOS Port		 : Don Kneller				 *//*				   1349 - 10th ave			 *//*				   San Francisco, CA 94122		 *//*				   kneller@cgl.ucsf.EDU			 *//*				   ...ucbvax!ucsfcgl!kneller		 *//*				   kneller@ucsf-cgl.BITNET		 *//*									 *//*	 BRUCE ANGBAND		 : Christopher Stuart			 *//*				   Monash University			 *//*				   Melbourne, Victoria, AUSTRALIA	 *//*				   cjs@moncsbruce.oz			 *//*									 *//*	 ANGBAND may be copied and modified freely as long as the above	 *//*	 credits are retained.	No one who-so-ever may sell or market	 *//*	 this software in any form without the expressed written consent *//*	 of the author Robert Alan Koeneke.				 *//*									 */#include <stdio.h>#include "angband.h"#ifndef USG#include <time.h>#include <strings.h>#endif#ifdef ultrix#include <sys/stat.h>#endif#include <ctype.h>#ifndef ibm032#include <time.h>#endif#include "mac-io.h"#if defined(ultrix) || defined(USG)void perror();#endif#ifdef USGvoid exit();#endif/* Lets do all prototypes correctly.... -CWS */#ifndef NO_LINT_ARGS#ifdef __STDC__static int d_check(char *);#elsestatic int d_check();#endifstatic void init_m_level(void);static void init_t_level(void);static void char_inven_init(void);#endif#if (COST_ADJ != 100)static void price_adjust();#endifint unfelt    = TRUE;int be_nasty  = FALSE;int rating    = 0;int peek      = FALSE;int player_uid;int quests[MAX_QUESTS];creature_type ghost;/* Unique artifact weapon flags, even though some are in the wrong place!*/int32 GROND, RINGIL, AEGLOS, ARUNRUTH, MORMEGIL, ANGRIST, GURTHANG,  CALRIS, ANDURIL, STING, ORCRIST, GLAMDRING, DURIN, AULE, THUNDERFIST,  BLOODSPIKE, DOOMCALLER, NARTHANC, NIMTHANC, DETHANC, GILETTAR, RILIA,  BELANGIL, BALLI, LOTHARANG, FIRESTAR, ERIRIL, CUBRAGOL, BARD, COLLUIN,  HOLCOLLETH, TOTILA, PAIN, ELVAGIL, AGLARANG, EORLINGAS, BARUKKHELED,  WRATH, HARADEKKET, MUNDWINE, GONDRICAM, ZARCUTHRA, CARETH, FORASGIL,  CRISDURIAN, COLANNON, HITHLOMIR, THALKETTOTH, ARVEDUI, THRANDUIL, THENGEL,  HAMMERHAND, CELEBORN, THROR, MAEDHROS, OLORIN, ANGUIREL, OROME,  EONWE, THEODEN, ULMO, OSONDIR, TURMIL, TIL, DEATHWREAKER, AVAVIR, TARATOL;/* Unique artifact armor flags */int32 DOR_LOMIN, NENYA, NARYA, VILYA, BELEGENNON, FEANOR, ISILDUR, SOULKEEPER,FINGOLFIN, ANARION, POWER, PHIAL, BELEG, DAL, PAURHACH, PAURNIMMEN, PAURAEGEN,PAURNEN, CAMMITHRIM, CAMBELEG, INGWE, CARLAMMAS, HOLHENNETH, AEGLIN, CAMLOST,NIMLOTH, NAR, BERUTHIEL, GORLIM, ELENDIL, THORIN, CELEGORM, THRAIN,GONDOR, THINGOL, THORONGIL, LUTHIEN, TUOR, ROHAN, TULKAS, NECKLACE, BARAHIR,CASPANION, RAZORBACK, BLADETURNER;void enable_save(void);/* Initialize, restore, and get the ball rolling.	-RAK-	*/intunix_main(new_game)int new_game;{    int generate, i;    int result=FALSE, FIDDLE=FALSE;#ifndef __MINT__    FILE *fp;#endif    int force_rogue_like = FALSE;    int force_keys_to = FALSE;#ifndef __MINT__#ifndef MAXHOSTNAMELEN			/* may not be defined -b. eck */#define MAXHOSTNAMELEN  64#endif    char temphost[MAXHOSTNAMELEN+1], thishost[MAXHOSTNAMELEN+1], discard[120];#endif    char string[80];        /* default command set defined in config.h file */    rogue_like_commands = ROGUE_LIKE;        py.misc.name[0]='\0';    #ifndef MSDOS#ifndef SET_UID    (void) umask(0);#endif#endif    #ifdef SECURE    Authenticate();#endif    #ifdef NEW_FILEPATHS    /* This looks like a good spot to check for our files. - [cjh] */    get_file_paths();#endif        /* call this routine to grab a file pointer to the highscore file */    /* and prepare things to relinquish setuid privileges */    init_scorefile();    #if defined(SET_UID) && !defined(SECURE) && !defined(POSIX)/* POSIX does not allow non-root setuid(geteuid) calls, and you don't *//* need them because having an euid is sufficient to give you write   *//* access.  You shouldn't run setuid root anyway -- run setuid games  *//*							--pgb	      */    if (setuid(geteuid()) != 0) {	perror("Can't set permissions correctly!  Setuid call failed.\n");	exit(0);    }#endif    #ifdef ANNOY    if (player_uid == ANNOY)	be_nasty=TRUE;    else	be_nasty=FALSE;#else    be_nasty=FALSE;#endif    #if !defined(MSDOS) && !defined(__MINT__)    (void)gethostname(thishost, (sizeof thishost) - 1);	/* get host */    if ((fp=my_tfopen(ANGBAND_LOAD, "r")) == NULL) {	perror("Can't get load-check.\n");	exit(0);    }        do {	if (fscanf(fp, "%s%d", temphost, &LOAD) == EOF) {	    LOAD=100;	    break;	}	if (temphost[0]=='#')	    (void)fgets(discard, (sizeof discard)-1, fp); /* Comment */    } while (strcmp(temphost,thishost) && strcmp(temphost,"localhost"));    /* Until we've found ourselves */        fclose(fp);#endif        /* use curses */    init_curses();    #if 0    /* check for user interface option */    for (--argc, ++argv; argc > 0 && argv[0][0] == '-'; --argc, ++argv)	switch (argv[0][1]) {	  case 'A':	  case 'a':	    if (is_wizard(player_uid))		peek=TRUE;	    else goto usage;	    break;	  case 'N':	  case 'n':            new_game = TRUE;            py.misc.name[0] = '\0';            break;	  case 'O':	  case 'o':	    /* rogue_like_commands may be set in get_char(), so delay this	       until after read savefile if any */	    force_rogue_like = TRUE;	    force_keys_to = FALSE;	    break;	  case 'R':	  case 'r':	    force_rogue_like = TRUE;	    force_keys_to = TRUE;	    break;	  case 'S':	  case 's':	    init_curses();	    if (isdigit((int)argv[0][2]))		display_scores(0, atoi(&argv[0][2]));	    else		display_scores(0, 10);	    exit_game();	  case 'D':	  case 'd':	    if (!is_wizard(player_uid))		goto usage;	    if (isdigit((int)argv[0][2]))		delete_entry(atoi(&argv[0][2]));	    else		display_scores(0, 10);	    exit_game();	  case 'F':	  case 'f':	    if (is_wizard(player_uid) || to_be_wizard)		FIDDLE=TRUE;	    else		goto usage;	    break;	  case 'W':	  case 'w':	    if (is_wizard(player_uid))		to_be_wizard = TRUE;	    else		goto usage;#ifndef MSDOS	    if (isdigit((int)argv[0][2]))		player_uid = atoi(&argv[0][2]);#endif	    break;	  case 'u':	  case 'U':	    if (argv[0][2]) {		strcpy(py.misc.name, &argv[0][2]);		d_check(py.misc.name);		NO_SAVE=TRUE;	    } else {		goto usage;	    }	    break;	  default:	  usage:	    restore_term();	    if (is_wizard(player_uid)) {#ifdef MSDOS		puts("Usage: angband [-afnorw] [-s<num>] [-d<num>] <file>");#else		puts("Usage: angband [-afnor] [-s<num>] [-u<name>] [-w<uid>] [-d<num>]");#endif		puts("  a       Activate \"peek\" mode");		puts("  d<num>  Delete high score number <num>");		puts("  f       Enter \"fiddle\" mode");		puts("  n       Start a new character");		puts("  o       Use original command set");		puts("  r       Use the \"rogue-like\" command set");		puts("  s<num>  Show high scores.  Show <num> scores, or first 10");#ifdef MSDOS		puts("  w       Start in wizard mode");		puts(" <file>   Play with savefile named <file>");#else		puts("  w<num>  Start in wizard mode, as uid number <num>");		puts("  u<name> Play with character named <name>");#endif		puts("Each option must be listed separately (ie '-r -n', not '-rn')");	    }	    else {#ifdef MSDOS		puts("Usage: angband [-nor] [-s<num>] <file>");#else		puts("Usage: angband [-nor] [-s<num>] [-u<name>]");#endif		puts("  n       Start a new character");		puts("  o       Use original command set");		puts("  r       Use the \"rogue-like\" command set");		puts("  s<num>  Show high scores.  Show <num> scores, or first 10");#ifdef MSDOS		puts(" <file>   Play with savefile named <file>");#else		puts("  u<name> Play with character named <name>");#endif		puts("Each option must be listed separately (ie '-r -n', not '-rn')");	    }	    exit(1);	}#endif /* 0 */    /* catch those nasty signals */    /* must come after init_curses as some of the signal handlers use curses */    init_signals();    /* Check operating hours			*/    /* If not wizard  No_Control_Y	        */    /* read_times(); */    /* Some necessary initializations		*/    /* all made into constants or initialized in variables.c */#if (COST_ADJ != 100)    price_adjust();#endif    /* Grab a random seed from the clock          */    init_seeds();    /* Init monster and treasure levels for allocate */    init_m_level();    init_t_level();    /* Init the store inventories			*/    store_init();#ifndef MAC    /* On Mac, if -n is passed, no savefile is used */    /* If -n is not passed, the calling routine will know savefile name,       hence, this code is not necessary */#endif    /* (void) sprintf(savefile, "%s:%d%s", ANGBAND_SAV, player_uid, py.misc.name); */ /* This restoration of a saved character may get ONLY the monster memory. In    this case, get_char returns false. It may also resurrect a dead character    (if you are the wizard). In this case, it returns true, but also sets the    parameter "generate" to true, as it does not recover any cave details. */    if (FIDDLE) {	if (get_char(&generate))	    save_char();	exit_game();    }	if (!new_game)    	result = get_char(&generate);    /* enter wizard mode before showing the character display, but must wait       until after get_char in case it was just a resurrection */    if (to_be_wizard)	if (!enter_wiz_mode())	    exit_game();    if ((new_game == FALSE) && result) {	change_name();	/* could be restoring a dead character after a signal or HANGUP */	if (py.misc.chp < 0)	    death = TRUE;    } else {			/* Create character */	/* Unique Weapons, Armour and Rings */	GROND=0;	RINGIL=0;	AEGLOS=0;	ARUNRUTH=0;	MORMEGIL=0;	ANGRIST=0;	GURTHANG=0;	CALRIS=0;	ANDURIL=0;	STING=0;	ORCRIST=0;	GLAMDRING=0;	DURIN=0;	AULE=0;	THUNDERFIST=0;	BLOODSPIKE=0;	DOOMCALLER=0;	NARTHANC=0;	NIMTHANC=0;	DETHANC=0;	GILETTAR=0;	RILIA=0;	BELANGIL=0;	BALLI=0;	LOTHARANG=0;	FIRESTAR=0;	ERIRIL=0;	CUBRAGOL=0;	BARD=0;	COLLUIN=0;	HOLCOLLETH=0;	TOTILA=0;	PAIN=0;	ELVAGIL=0;	AGLARANG=0;	EORLINGAS=0;	BARUKKHELED=0;	WRATH=0;	HARADEKKET=0;	MUNDWINE=0;	GONDRICAM=0;	ZARCUTHRA=0;	CARETH=0;	FORASGIL=0;	CRISDURIAN=0;	COLANNON=0;	HITHLOMIR=0;	THALKETTOTH=0;	ARVEDUI=0;	THRANDUIL=0;	THENGEL=0;	HAMMERHAND=0;	CELEGORM=0;	THROR=0;	MAEDHROS=0;	OLORIN=0;	ANGUIREL=0;	OROME=0;	EONWE=0;	THEODEN=0;	ULMO=0;	OSONDIR=0;	TURMIL=0;	TIL=0;	DEATHWREAKER=0;	AVAVIR=0;	TARATOL=0;	DOR_LOMIN=0;	BELEGENNON=0;	FEANOR=0;	ISILDUR=0;	SOULKEEPER=0;	FINGOLFIN=0;	ANARION=0;	BELEG=0;	DAL=0;	PAURHACH=0;	PAURNIMMEN=0;	PAURAEGEN=0;	PAURNEN=0;	CAMMITHRIM=0;	CAMBELEG=0;	HOLHENNETH=0;	AEGLIN=0;	CAMLOST=0;	NIMLOTH=0;	NAR=0;	BERUTHIEL=0;	GORLIM=0;	THORIN=0;	CELEBORN=0;	GONDOR=0;	THINGOL=0;	THORONGIL=0;	LUTHIEN=0;	TUOR=0;	ROHAN=0;	CASPANION=0;	RAZORBACK=0;	BLADETURNER=0;	NARYA=0;	NENYA=0;	VILYA=0;	POWER=0;	PHIAL=0;	INGWE=0;	CARLAMMAS=0;	TULKAS=0;	NECKLACE=0;	BARAHIR=0;	ELENDIL=0;	THRAIN=0;	for (i=0; i<MAX_QUESTS; i++) quests[i]=0;	quests[SAURON_QUEST]=99;	/* Unique Monster Flags */	for (i=0; i<MAX_CREATURES; i++)	    u_list[i].exist=0, u_list[i].dead=0;	create_character();	store_maint();	/* if we're creating a new character, change the savefile name */    (void) sprintf(savefile, "%s:%s", ANGBAND_SAV, py.misc.name);	char_inven_init();	py.flags.food = 7500;	py.flags.food_digested = 2;        if (class[py.misc.pclass].spell == MAGE)	{			/* Magic realm   */	    clear_screen();	/* makes spell list easier to read */	    calc_spells(A_INT);	    calc_mana(A_INT);	}	else if (class[py.misc.pclass].spell == PRIEST)	{			/* Clerical realm*/	    calc_spells(A_WIS);	    clear_screen();	/* force out the 'learn prayer' message */	    calc_mana(A_WIS);	}	/* prevent ^c quit from entering score into scoreboard,	   and prevent signal from creating panic save until this point,	   all info needed for save file is now valid */	character_generated = 1;	generate = TRUE;    }    if (force_rogue_like)	rogue_like_commands = force_keys_to;    magic_init();    /* Begin the game				*/    clear_screen();    prt_stat_block();    if (generate)	generate_cave();		enable_save();		changeinven();	    /* Loop till dead, or exit			*/    while(!death)    {	dungeon();		/* Dungeon logic */#ifndef MAC	/* check for eof here, see inkey() in io.c */	/* eof can occur if the process gets a HANGUP signal */	if (eof_flag)	{	    (void) strcpy(died_from, "(end of input: saved)");	    if (!save_char())	    {		(void) strcpy(died_from, "unexpected eof");	    }	    /* should not reach here, by if we do, this guarantees exit */	    death = TRUE;	}#endif	good_item_flag = FALSE;	if (!death) generate_cave(); /* New level	*/    }    exit_game();		/* Character gets buried. */    /* should never reach here, but just in case */    return (0);}/* Init players with some belongings			-RAK-	*/static voidchar_inven_init(){    register int i, j;    inven_type inven_init;        /* this is needed for bash to work right, it can't hurt anyway */    for (i = 0; i < INVEN_ARRAY_SIZE; i++)	invcopy(&inventory[i], OBJ_NOTHING);    for (i = 0; i < 5; i++)    {	j = player_init[py.misc.pclass][i];	invcopy(&inven_init, j);	store_bought(&inven_init);	if (inven_init.tval == TV_SWORD || inven_init.tval == TV_HAFTED	    || inven_init.tval == TV_BOW)	    inven_init.ident |= ID_SHOW_HITDAM;	(void) inven_carry(&inven_init);    }    /* weird place for it, but why not? */    for (i = 0; i < 64; i++)	spell_order[i] = 99;}/* Initializes M_LEVEL array for use with PLACE_MONSTER	-RAK-	*/static voidinit_m_level(){    register int i, k;    for (i = 0; i <= MAX_MONS_LEVEL; i++)	m_level[i] = 0;    k = MAX_CREATURES - WIN_MON_TOT;    for (i = 0; i < k; i++)	m_level[c_list[i].level]++;    for (i = 1; i <= MAX_MONS_LEVEL; i++)	m_level[i] += m_level[i-1];}/* Initializes T_LEVEL array for use with PLACE_OBJECT	-RAK-	*/static voidinit_t_level(){    register int i, l;    int tmp[MAX_OBJ_LEVEL+1];    for (i = 0; i <= MAX_OBJ_LEVEL; i++)	t_level[i] = 0;    for (i = 0; i < MAX_DUNGEON_OBJ; i++)	t_level[object_list[i].level]++;    for (i = 1; i <= MAX_OBJ_LEVEL; i++)	t_level[i] += t_level[i-1];    /* now produce an array with object indexes sorted by level, by using       the info in t_level, this is an O(n) sort! */    /* this is not a stable sort, but that does not matter */    for (i = 0; i <= MAX_OBJ_LEVEL; i++)	tmp[i] = 1;    for (i = 0; i < MAX_DUNGEON_OBJ; i++)    {	l = object_list[i].level;	sorted_objects[t_level[l] - tmp[l]] = i;	tmp[l]++;    }}#if (COST_ADJ != 100)/* Adjust prices of objects				-RAK-	*/static voidprice_adjust(){    register int i;    /* round half-way cases up */    for (i = 0; i < MAX_OBJECTS; i++)	object_list[i].cost = ((object_list[i].cost * COST_ADJ) + 50) / 100;}#endifstatic intd_check(a)char *a;{    while (*a)	if (iscntrl(*a)) {	    msg_print("Yuch!  No control characters, Thank you!");	    exit_game();	} else a++;    return (0);}
+/* File: main.c */ 
+
+/* Purpose: initialization, main() function and main loop */
+
+/*
+ * Copyright (c) 1989 James E. Wilson, Robert A. Koeneke
+ *
+ * This software may be copied and distributed for educational, research, and
+ * not for profit purposes provided that this copyright and statement are
+ * included in all such copies.
+ */
+
+#include "angband.h"
+
+
+#if !defined(USG) || !defined(ibm032)
+# include <time.h>
+#endif
+
+#ifdef ultrix
+# include <sys/stat.h>
+#endif
+
+
+/*
+ * Hack -- Local "game mode" vars
+ */
+static int new_game = FALSE;
+static int fiddle = FALSE;
+static int force_rogue_like = FALSE;
+static int force_keys_to = FALSE;
+
+
+
+#if defined(MACINTOSH) || defined(_Windows)
+
+/*
+ * This is the Macintosh "hook" into "play_game()"
+ * See macintosh.c for actual "main()" function 
+ */
+
+void play_game_mac (int ng)
+{
+    /* No name (yet) */
+    strcpy(player_name, "");
+
+    /* Hack -- assume wizard permissions */
+    can_be_wizard = TRUE;
+
+    /* Hack -- extract a flag */
+    new_game = ng;
+
+    /* Play a game */
+    play_game();
+}
+
+#else /* MACINTOSH */
+
+/*
+ * Unix machines need to "check wizard permissions"
+ */
+static bool is_wizard(int uid)
+{
+    FILE *fp;
+    char  buf[100];
+
+    int   test = FALSE;
+
+    /* Open the wizard file */
+    fp = my_tfopen(ANGBAND_WIZ, "r");
+
+    /* No wizard file, so no wizards */
+    if (!fp) return (FALSE);
+
+    /* Scan the wizard file */
+    while (fgets(buf, sizeof(buf), fp)) {
+	if (buf[0] != '#') {
+	    if (sscanf(buf, "%d", &test)) {
+		if (test == uid) {
+		    test = TRUE;
+		    break;
+		}
+	    }
+	}
+    }
+
+    /* Close the file */
+    fclose(fp);
+
+    /* Return TRUE if found */
+    return (test);
+}
+
+
+/*
+ * Verify the name
+ */
+static bool name_okay(cptr s)
+{
+    cptr a;
+    
+    /* Cannot be too long */
+    if (strlen(s) > 15) {
+	plog_fmt("The name '%s' is too long for Angband", s);
+	return (FALSE);
+    }
+    
+    /* Cannot contain "icky" characters */
+    for (a = s; *a; a++) {
+
+	/* No control characters */
+	if (iscntrl(*a)) {
+	    plog_fmt("The name '%s' contains control characters", s);
+	    return (FALSE);
+	}
+    }
+
+    /* Acceptable */
+    return (TRUE);
+}
+
+
+
+/*
+ * A hook for "quit()".
+ * Close down, then fall back into "quit()".
+ */
+static void quit_hook(cptr s)
+{
+    /* Close the high score file */
+    nuke_scorefile();
+
+    /* Shut down the terminal */
+    Term_nuke();
+}
+
+
+/*
+ * Studly machines can actually parse command line args
+ */
+int main(int argc, char *argv[])
+{
+    bool done = FALSE;
+    
+    /* Dump score list (num lines)? */
+    int show_score = 0;
+
+    /* Remove score (which one)? */
+    int kill_score = 0;
+
+#ifndef __MINT__
+#ifdef CHECK_LOAD
+    FILE *fp;
+    char temphost[MAXHOSTNAMELEN+1];
+    char thishost[MAXHOSTNAMELEN+1];
+    char discard[120];
+#endif
+#endif
+
+
+    /* Save the "program name" */
+    argv0 = argv[0];
+    
+
+#ifndef SET_UID
+# if !defined(MSDOS) && !defined(__EMX__)
+    (void) umask(0);
+# endif
+#endif
+
+#ifdef SECURE
+    Authenticate();
+#endif
+
+    /* Get the file paths */
+    get_file_paths();
+
+    /* Prepare the "hiscore" file (while we have permission) */
+    init_scorefile();
+
+    /* Get the user id (?) */
+    player_uid = getuid();
+
+#if defined(SET_UID) && !defined(SECURE)
+    /* Set the user id or quit */
+    if (setuid(geteuid()) != 0) {
+	quit("setuid(): cannot set permissions correctly!");
+    }
+#endif
+
+    /* Check for "Wizard" permission */
+    can_be_wizard = is_wizard(player_uid);
+
+#ifdef CHECK_LOAD
+    (void)gethostname(thishost, (sizeof thishost) - 1);	/* get host */
+    fp = my_tfopen(ANGBAND_LOAD, "r");
+    if (!fp) quit("cannot get load-check!");
+
+    /* Find ourself */
+    while (1) {
+	if (fscanf(fp, "%s%d", temphost, &LOAD) == EOF) {
+	    LOAD=100;
+	    break;
+	}
+
+	/* Hack -- Discard comments */
+	if (temphost[0]=='#') {
+	    (void)fgets(discard, (sizeof discard)-1, fp);
+	    continue;
+	}
+
+	if (!strcmp(temphost,thishost) || !strcmp(temphost,"localhost")) break;
+    }
+
+    fclose(fp);
+#endif
+
+    /* Acquire the "user name" as a default player name */
+    user_name(player_name, player_uid);
+
+    /* check for user interface option */
+    for (--argc, ++argv; argc > 0 && argv[0][0] == '-'; --argc, ++argv) {
+	switch (argv[0][1]) {
+	  case 'A':
+	  case 'a':
+	    if (!can_be_wizard) goto usage;
+	    peek=TRUE;
+	    break;
+	  case 'N':
+	  case 'n':
+	    new_game = TRUE;
+	    break;
+	  case 'O':
+	  case 'o':
+	    /* rogue_like_commands may be set in load_player(), so delay this
+	       until after read savefile if any */
+	    force_rogue_like = TRUE;
+	    force_keys_to = FALSE;
+	    break;
+	  case 'R':
+	  case 'r':
+	    force_rogue_like = TRUE;
+	    force_keys_to = TRUE;
+	    break;
+	  case 'S':
+	  case 's':
+	    show_score = atoi(&argv[0][2]);
+	    if (show_score <= 0) show_score = 10;
+	  case 'D':
+	  case 'd':
+	    if (!can_be_wizard) goto usage;
+	    kill_score = atoi(&argv[0][2]);
+	    if (kill_score <= 0) show_score = 10;
+	  case 'F':
+	  case 'f':
+	    if (!can_be_wizard) goto usage;
+	    fiddle = to_be_wizard = TRUE;
+	    break;
+#ifdef SAVEFILE_USE_UID
+	  case 'P':
+	  case 'p':
+	    if (!can_be_wizard) goto usage;
+	    if (isdigit((int)argv[0][2])) {
+		player_uid = atoi(&argv[0][2]);
+		user_name(player_name, player_uid);
+	    }
+	    break;
+#endif
+	  case 'W':
+	  case 'w':
+	    if (!can_be_wizard) goto usage;
+	    to_be_wizard = TRUE;
+	    break;
+	  case 'u':
+	  case 'U':
+	    if (!argv[0][2]) goto usage;
+	    strcpy(player_name, &argv[0][2]);
+	    break;
+
+	  default:
+	  usage:
+
+	    /* Note -- the Term is NOT initialized */
+	    
+	    if (can_be_wizard) {
+		puts("Usage: angband [-afnorw] [-u<name>] [-s<num>] [-d<num>] [-p<uid>]");
+		puts("  a       Activate \"peek\" mode");
+		puts("  d<num>  Delete high score number <num>");
+		puts("  f       Enter \"fiddle\" mode");
+		puts("  n       Start a new character");
+		puts("  o       Use original command set");
+		puts("  p<num>  Pretend to have the player uid number <num>");
+		puts("  r       Use the \"rogue-like\" command set");
+		puts("  s<num>  Show high scores.  Show <num> scores, or first 10");
+		puts("  u<name> Play with your <name> savefile");
+		puts("  w       Start in wizard mode");
+		puts("Each option must be listed separately (ie '-r -n', not '-rn')");
+	    }
+	    else {
+		puts("Usage: angband [-nor] [-s<num>] [-u<name>]");
+		puts("  n       Start a new character");
+		puts("  o       Use original command set");
+		puts("  r       Use the \"rogue-like\" command set");
+		puts("  s<num>  Show high scores.  Show <num> scores, or first 10");
+		puts("  u<name> Play with your <name> savefile");
+		puts("Each option must be listed separately (ie '-r -n', not '-rn')");
+	    }
+
+	    /* Actually abort the process */
+	    quit(NULL);
+	}
+    }
+
+    /* Verify the "player name" */
+    if (!name_okay(player_name)) quit("bad player name");
+
+
+#ifdef USE_IBM
+    /* Attempt to use the "main-ibm.c" support */
+    if (!done) {
+	extern errr init_ibm(void);
+        if (0 == init_ibm()) done = TRUE;
+    }
+#endif
+
+#ifdef __EMX__
+    /* Attempt to use the "main-emx.c" support */
+    if (!done) {
+	extern errr init_emx(void);
+        if (0 == init_emx()) done = TRUE;
+    }
+#endif
+
+    /* XXX Default to "X11" if available -- should have a "command line choice" */
+
+#ifdef USE_X11
+    /* Attempt to use the "main-x11.c" support */
+    if (!done) {
+	extern errr init_x11(cptr, cptr);
+	/* Note that a "warning" will be produced if there is no */
+	/* Display to open.  This will annoy "curses" users, I assume. */
+        if (0 == init_x11("", USE_X11_FONT)) done = TRUE;
+    }
+#endif
+
+#ifdef USE_CURSES
+    /* Attempt to use the "main-cur.c" support */
+    if (!done) {
+	extern errr init_cur(void);
+	/* When "init_cur()" fails, it quits (?) */
+	if (0 == init_cur()) done = TRUE;
+    }
+#endif
+
+    /* Make sure we have a display! */
+    if (!done) quit("Unable to prepare any 'display module'!");
+
+
+#ifndef USE_COLOR
+    /* Turn off color */
+    use_color = FALSE;
+#endif
+
+
+    /* Set up the Terminal (using whatever was installed above) */
+    Term_init();
+
+    /* Tell "quit()" to call "Term_nuke()" */
+    quit_aux = quit_hook;
+    
+
+    /* Handle "delete score" requests */
+    if (kill_score > 0) {
+	delete_entry(kill_score);
+	quit(NULL);
+    }
+
+    /* Handle "score list" requests */
+    if (show_score > 0) {
+	display_scores(0, show_score);
+	quit(NULL);
+    }
+
+#ifdef SAVEFILE_USE_UID
+    /* Load the savefile name */
+    (void)sprintf(savefile, "%s%s%d%s",
+		  ANGBAND_DIR_SAVE, PATH_SEP, player_uid, player_name);
+#else
+    /* Load the savefile name */
+    (void)sprintf(savefile, "%s%s%s",
+		  ANGBAND_DIR_SAVE, PATH_SEP, player_name);
+#endif
+
+    /* catch those nasty signals (assumes "Term_init()") */
+    signals_init();
+
+    /* Check operating hours */
+    read_times();
+
+    /* Show news file */
+    show_news();
+
+    /* Label the task (can take a while) */
+    prt("[Initializing arrays...]", 23, 20);
+    Term_fresh();
+    init_some_arrays();
+    pause_line(23);
+
+    /* Call the main function */
+    play_game();
+
+    /* Exit (never gets here) */
+    return (0);
+}
+
+#endif /* MACINTOSH */
+
+
+
+
+/*
+ * Init players with some belongings
+ *
+ * Having an item makes the player "aware" of its purpose.
+ */
+static void player_outfit()
+{
+    register int i, j;
+    inven_type inven_init;
+    inven_type *i_ptr = &inven_init;
+
+
+    /* No items */
+    inven_ctr = equip_ctr = 0;
+
+    /* No weight */
+    inven_weight = 0;
+
+    /* Clear the inventory */
+    for (i = 0; i < INVEN_ARRAY_SIZE; i++) {
+	invcopy(&inventory[i], OBJ_NOTHING);
+    }
+
+
+    /* Give the player some food */
+    invcopy(i_ptr, OBJ_FOOD_RATION);
+    i_ptr->number = rand_range(3,7);
+    inven_aware(i_ptr);
+    known2(i_ptr);
+    (void)inven_carry(i_ptr);
+
+    /* Give the player some torches */
+    invcopy(i_ptr, OBJ_TORCH);
+    i_ptr->number = rand_range(3,7);
+    i_ptr->pval = rand_range(3,7) * 500;
+    known2(i_ptr);
+    (void)inven_carry(i_ptr);
+
+    /* Give the player three useful objects */
+    for (i = 0; i < 3; i++) {
+	j = player_init[p_ptr->pclass][i];
+	invcopy(i_ptr, j);
+	inven_aware(i_ptr);
+	known2(i_ptr);
+	(void)inven_carry(i_ptr);
+    }
+}
+
+
+/*
+ * Actually play a game
+ */
+void play_game()
+{
+    int generate;
+    int result = FALSE;
+
+    /* Hack -- turn off the cursor */
+    Term_hide_cursor();
+
+    /* Grab a random seed from the clock          */
+    init_seeds();
+
+    /* Load and re-save a player's character (only Unix) */
+    if (fiddle) {
+	if (load_player(&generate)) save_player();
+	quit(NULL);
+    }
+
+    /*
+     * This restoration of a saved character may get ONLY the monster memory.
+     * In this case, load_player returns false. It may also resurrect a dead
+     * character (if you are a wizard). In this case, it returns true, but
+     * also sets the parameter "generate" to true, as it does not recover
+     * any cave details.
+     */
+
+    /* If "restore game" requested, attempt to do so */
+    if (!new_game) result = load_player(&generate);
+
+    /* Enter wizard mode AFTER "resurrection" (if any) is complete */
+    if (to_be_wizard) {
+	/* Enter wizard mode or forget about it */
+	if (!enter_wiz_mode()) to_be_wizard = FALSE;
+    }
+
+    /* See above */
+    if (!new_game && result) {
+
+	/* Display character, allow name change */
+	change_name();
+
+	/* Hack -- delayed death induced by certain signals */
+	if (p_ptr->chp < 0) death = TRUE;
+    }
+
+    /* Create character */
+    else {
+
+	/* Roll up a new character */
+	player_birth();
+
+	/* Force "level generation" */
+	generate = TRUE;
+
+        /* Give him some stuff */
+        player_outfit();
+
+	/* Init the stores */
+	store_init();
+
+	/* Maintain the stores (three times) */
+	store_maint();
+	store_maint();
+	store_maint();
+    }
+
+    /* Reset "rogue_like_commands" */
+    if (force_rogue_like) {
+	rogue_like_commands = force_keys_to;
+    }
+
+    /* Prep the object descriptions */
+    flavor_init();
+
+    /* Begin the game */
+    clear_screen();
+    prt_stat_block();
+
+    /* Hack -- Flash a message */
+    if (generate) prt("Generating a new level...", 10, 20);
+
+    /* Flush it */
+    Term_fresh();
+
+    /* Make a level */
+    if (generate) generate_cave();
+
+    /* Character is now complete */
+    character_generated = 1;
+
+
+    /* Loop till dead, or exit			*/
+    while (!death) {
+
+	/* Process the level */
+	dungeon();
+
+	/* check for eof here, see inkey() in io.c */
+	/* eof can occur if the process gets a HANGUP signal */
+	if (eof_flag) {
+
+	    (void) strcpy(died_from, "(end of input: saved)");
+	    if (save_player()) quit(NULL);
+
+	    /* should not reach here, by if we do, this guarantees exit */
+	    (void) strcpy(died_from, "unexpected eof");
+	    death = TRUE;
+	}
+
+	/* Make the New level */
+	if (!death) generate_cave();
+    }
+
+    /* Display death, Save the game, and exit */
+    exit_game();
+}
+
+

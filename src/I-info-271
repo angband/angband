@@ -1,0 +1,53 @@
+===== Angband 2.7.1 ===== 1/18/95 =====
+
+I have just uploaded "Angband 2.7.1" to ftp.cis.ksu.edu.
+
+The following files were placed into /pub/upload:
+  angband-271-readme           <== This file
+  angband-271.tar.gz           <== The Unix version
+  angband-271-mac.sea.hqx      <== The Macintosh version
+  angband-271-mac-src.sea.hqx  <== The Macintosh "source"
+
+
+Note that the "lib" directory has changed slightly.  As always, be sure
+to thorw out any "*.raw" files in the "data" directory before using the
+new version.  Previous savefiles should still be compatible.
+
+
+Note that for the Macintosh, you may acquire EITHER the "executable" system
+(not very useful for developement) or the "full developement folder", which
+includes the source, the "lib" folder, and Think C 6.0 project/resource files.
+
+
+To compile for a standard Unix machine, extract the given "angband" directory,
+and move it to somewhere useful (the program assumes "/tmp" by default).  Go
+into the "src" directory, and modify "h-config.h" to reflect your "system"
+(no changes are necessary for most Sun machines), "config.h" to reflect your
+"game preferences" and "Makefile" to reflect your "compilation preferences".
+Then, type "make depend", and then "make".  Let me know what compilation
+problems present themselves, there will probably be some...
+
+To compile for use with X11, follow the instructions above, but first do
+"mv Makefile Makefile-cur; mv Makefile-x11 Makefile".
+
+
+To compile for a Macintosh (using Think C 6.0), acquire and extract the
+"Angband 2.7.1 Source" folder, open the "Angband" project, and choose
+"update project", followed by "build application".  Note that "Angband
+2.7.1" has a new preference file layout, as well as a new "bundle bits",
+so you may want to (at least temporarily) remove older versions from
+the hard drive.
+
+
+Anyone interested in "graphics modules" for various systems should
+contact me, I may be able to put you in touch with someone already
+working on the problem.  Take a look at "main-mac.c" for a "clean"
+way to adapt to a new "system".
+
+
+Send comments/patches to "benh@linc.cis.upenn.edu", or post to the
+"rec.games.rouguelike.angband" newsgroup.
+
+
+--- Ben Harrison (Jan 18, 1995, 7pm) == benh@linc.cis.upenn.edu ---
+

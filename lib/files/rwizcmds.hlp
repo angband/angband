@@ -1,1 +1,20 @@
-*  - Wizard light.!  - Rerate the characters hitpoints.:  - Map area.\  - Wizard Help.^A - Remove Curse and Cure all maladies.^D - Down/Up n levels.^E - Change character.^F - Delete monsters.^G - Allocate treasures.^V - Allocate quality treasures.^I - Identify.^^ - (HOME) Identify all objects upto a certain level.^O - Print random objects sample.^T - Teleport player.^W - Wizard password on/off.@  - Create any object *CAN CAUSE FATAL ERROR*+  - Gain experience.&  - Summon monster.~  - Save 'found' artifact names to a file%  - Self-knowledge
+=== Wizard Commands (these commands may change at any time) ===
+
+   \  - Wizard Help (this screen).
+   +  - Gain experience.
+   :  - Map area.
+   $  - Wizard light the level.
+   !  - Rerate the characters hitpoints.
+   %  - Self-knowledge. 
+   &  - Summon monster.
+   @  - Object Creation (CAREFUL!)
+ 
+  ^^ - Become "aware" of object effects.
+  ^A - Remove Curse and Cure all maladies.
+  ^D - Go to a given dungeon level.
+  ^E - Edit character.
+  ^G - Allocate treasure(s).
+  ^V - Make special treasure(s).
+  ^I - Identify something.
+  ^T - Teleport player.
+  ^W - Leave wizard mode

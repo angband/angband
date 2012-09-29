@@ -1,0 +1,19 @@
+=== See "main-win.c" and "angband.*" for more details ===
+
+Notes:
+
+1. I compiled it with Borland C++ v3.1 using command line compiler.
+
+2. Before running ANGBAND.EXE, the path to lib directory must be set
+in ANGBAND.INI which must be placed in the same directory as .EXE.
+It will crash otherwise, I need to fix it.
+
+3. There is a mysterious problem when the window is minimized.  You
+click on the icon, and it jumps around the screen.  I am out of ideas
+on what could cause this.  Maybe some messages are lost?  Fix?
+
+4. I also included lots of fonts (converted from X-windows BDF format)
+which should be placed in lib\data directory.  This is not really
+critical, the program will use 8x13 Courier otherwise.
+
+kligys@scf.usc.edu

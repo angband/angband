@@ -1,0 +1,204 @@
+FARSTR:  The automatic far string generator
+
+
+
+This is your dilemma:
+
+
+
+"I have a very large program which I must compile in LARGE model, because I
+
+have to link large model libraries, yet I am getting DGROUP EXCEEDS 64K
+
+error messages, because I have so many static strings.  What can I do?"
+
+
+
+This program may be your solution.
+
+
+
+FARSTR parses a .C/.CPP file, removes anything within double quotes (within
+
+parentheses or in a 'cout' statement), replaces it with a variable name
+
+(modulenameFarStrxx, where xx is some number), and puts the original string
+
+within comments.  A header file with the .FSH extension is created, which
+
+holds the original text now declared as far strings.  For safety's sake, the
+
+original .C or .CPP file is not destroyed; instead a new .FS file is created,
+
+which you should be able to copy into a file with a .C/.CPP extension and
+
+compile, with the burden of your static strings taken out of DGROUP.
+
+
+
+For power users:
+
+Note that far segment naming is used to force all far items into a common far
+
+data segment; otherwise the 'far' keyword would create a new segment for each
+
+far item.   This is done with the #pragma option -zEmodulename_FARSEG at the
+
+top of the .FSH file.  Ordinarily this shouldn't cause problems unless you
+
+have done your own far segment naming; in that case, take out whichever far
+
+segment naming comes second.  The far segment naming will also prevent you
+
+from having multiple automatic far segments for any single module.  This will 
+
+limit you to 64K of far data per module; if you have more, then put some large 
+
+data items in a separate .C module.
+
+
+
+Q: Why do I need this program?
+
+A: Static strings always go into DGROUP in large model, even if you have
+
+   automatic far data set.  The only way to take them out of DGROUP is to
+
+   have separate string (character array) variables declared as far.
+
+   Recompiling in huge model would usually take care of this, since each
+
+   module has its own data segment, but third-party libraries are often
+
+   available only in large model.
+
+
+
+Q: Will FARSTR handle such constructs as '"' and \", or nested comments?
+
+A: Yes.
+
+
+
+Q: I'm getting all these error messages, "Undefined symbol 'xxxFarStrxx'".
+
+   Help!
+
+A: FARSTR assumes that if the .FSH file already exists in the current
+
+   directory, you have run FARSTR on this module before, and so it doesn't
+
+   append '#include "xxxx.fsh"' onto the beginning of the new .FS file.
+
+   Just #include the .FSH file in your source, and you should be fine.
+
+
+
+Q: In the comments which are supposed to hold the original string, I
+
+   see things like 'Ce' or 'Cb' or 'CC', which I'm sure I didn't have
+
+   in the original string.  What's going on?
+
+A: The original string had characters in it which would be interpreted as
+
+   beginning or ending a comment.  We can't very well keep those characters
+
+   within our own comments holding your string; therefore, '/*' has been
+
+   replaced with 'Cb' (comment begin), '*/' has been replaced with 'Ce'
+
+   (comment end) and '//' has been replaced with 'CC' (double comment).
+
+
+
+Q: I ran FARSTR, and then of course I modified the program and included some
+
+   more static strings.  What should I do?
+
+A: You can safely run FARSTR again to make those strings far also.  If you
+
+   take out some statements that had been using far strings, FARSTR won't 
+
+   realize that parts of the .FSH file are no longer needed; you should take 
+
+   the corresponding strings out of the .FSH header file yourself if you want 
+
+   to save the space.
+
+
+
+Q: I ran FARSTR, and now I'm getting the message "Linker Table Limit Exceeded",
+
+   or the compiler runs out of memory or crashes.
+
+A: Check to make sure that #pragma option -zEmodulename_FARSEG
+
+   is at the beginning of each .FSH module, before the #include's, to put 
+
+   these far strings into segment named xxxxx.
+
+   
+
+   
+
+Q: I ran FARSTR on my file, and now it no longer compiles!
+
+A: Woops.  Send me CompuServe mail at 76701,46 (Richard Wesson)
+
+
+
+Notes:
+
+* No effort is made to match or merge duplicate strings.
+
+* At present, FARSTR makes the assumption that you'll be keeping your header
+
+  files and source files in the same directory.  Please run FARSTR from the
+
+  same directory as the source file it will be working on.
+
+* Don't use FARSTR except with large-model or compact-model programs.
+
+* Please try to take a quick look at the .FS file before copying it into
+
+  your .C file, to make sure that it has done what you want.
+
+* Don't modify the .FSH file carelessly;  FARSTR figures out how to number
+
+  its far string variables from the numbers that it finds in there.
+
+* If the module cannot compile without errors before FARSTR is run on it,
+
+  we won't be surprised if FARSTR produces very bizarre results.
+
+* FARSTR may not be very useful in .CPP files because for safety's sake
+
+  it refuses to deal with static strings not enclosed by parentheses,
+
+  avoiding an erroneous substitution like, "char b[]=myfileFarString90;"
+
+* We believe this program works as stated; however Borland cannot take
+
+  responsibility for any losses that may occur as a result of its use
+
+  or misuse.
+
+
+
+
+
+-- Bugfix 1/22/93:  Parentheses within strings that were not themselves in
+
+   parentheses could cause strange failures.  Example:
+
+   char *b= "("; char *a= "Hello";
+
+   would generate a far string something like ;char *a=
+
+   It shouldn't do this any more.
+
+   Also, cout << "Somestring"; will make Somestring into a far string now.
+
+
+

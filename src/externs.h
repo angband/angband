@@ -1,1 +1,1012 @@
-/* externs.h: declarations for global variables and initialized data   Copyright (c) 1989 James E. Wilson, Robert A. Koeneke   This software may be copied and distributed for educational, research, and   not for profit purposes provided that this copyright and statement are   included in all such copies. */#ifndef _EXTERNS_H_#define _EXTERNS_H_#include <stdio.h>#ifndef MSDOSextern int errno;#endifextern const char *copyright[5];extern int player_uid;extern int NO_SAVE;/* horrible hack: needed because compact_monster() can be called from deep   within creatures() via place_monster() and summon_monster() */extern int hack_monptr;extern int16 log_index;			/* Index to log file. -CJS- */extern vtype died_from;extern char* savefile;			/* The save file. -CJS- *//* These are options, set with set_options command -CJS- */extern int rogue_like_commands;extern int find_cut;			/* Cut corners on a run */extern int find_examine;		/* Check corners on a run */extern int find_prself;			/* Print yourself on a run (slower) */extern int find_bound;			/* Stop run when the map shifts */extern int prompt_carry_flag;	/* auto-pickupobjects */extern int always_throw;		/* Never confirm -Abby- */extern int show_weight_flag;	/* Display weights in inventory */extern int show_equip_weight_flag;	/* Display weights in equip list -CWS */extern int highlight_seams;		/* Highlight magma and quartz */extern int find_ignore_doors;	/* Run through open doors */extern int delay_spd;			/* 1-10 for delays */extern int hitpoint_warn;		/* Low hitpoint warning */extern int peek;				/* should we display additional msgs */extern int carry_query_flag;	/* ask whether to pick something up */extern int is_home;				/* are we in our home? */extern int in_store_flag;		/* Don't redisplay light in stores -DGK */extern int plain_descriptions;	/* don't add color to any obj -CWS */extern int no_haggle_flag;		/* does the player have to haggle? -CWS */extern int quick_messages;		/* do quick messages -CWS */extern int equippy_chars;		/* do equipment characters -CWS */extern int coin_type;			/* remember Creeping _xxx_ coin type -CWS */extern int opening_chest;		/* do not generate another chest -CWS */extern int ring_bell;		/* ring bell on error -Abby- */extern int shuffle_store_owners; /* can have store owners randomly change -CWS */extern int new_screen_layout;   /* Use the new screen layout -CWS */ /* Unique artifact weapon flags */extern int32 GROND, RINGIL, AEGLOS, ARUNRUTH, MORMEGIL, ANGRIST, GURTHANG,  CALRIS, ANDURIL, STING, ORCRIST, GLAMDRING, DURIN, AULE, THUNDERFIST,  BLOODSPIKE, DOOMCALLER, NARTHANC, NIMTHANC, DETHANC, GILETTAR, RILIA,  BELANGIL, BALLI, LOTHARANG, FIRESTAR, ERIRIL, CUBRAGOL, BARD, COLLUIN,  HOLCOLLETH, TOTILA, PAIN, ELVAGIL, AGLARANG, EORLINGAS, BARUKKHELED,  WRATH, HARADEKKET, MUNDWINE, GONDRICAM, ZARCUTHRA, CARETH, FORASGIL,  CRISDURIAN, COLANNON, HITHLOMIR, THALKETTOTH, ARVEDUI, THRANDUIL, THENGEL,  HAMMERHAND, CELEGORM, THROR, MAEDHROS, OLORIN, ANGUIREL, OROME,  EONWE, THEODEN, ULMO, OSONDIR, TURMIL, TIL, DEATHWREAKER, AVAVIR, TARATOL;/* Unique artifact armour flags */extern int32 DOR_LOMIN, NENYA, NARYA, VILYA, BELEGENNON, FEANOR, ISILDUR,SOULKEEPER, FINGOLFIN, ANARION, POWER, PHIAL, BELEG, DAL, PAURHACH,PAURNIMMEN, PAURAEGEN, PAURNEN, CAMMITHRIM, CAMBELEG, INGWE, CARLAMMAS,HOLHENNETH, AEGLIN, CAMLOST, NIMLOTH, NAR, BERUTHIEL, GORLIM, ELENDIL,THORIN, CELEBORN, THRAIN, GONDOR, THINGOL, THORONGIL, LUTHIEN, TUOR, ROHAN,TULKAS, NECKLACE, BARAHIR, CASPANION, RAZORBACK, BLADETURNER;/* Brand new extra effecient and kind way to add unique monsters... HOORAY!! */extern struct unique_mon u_list[MAX_CREATURES];extern int quests[MAX_QUESTS];/* global flags */extern int unfelt;extern int in_store_flag;		/* flag so equippy chars work right -DGK */extern int good_item_flag;		/* True if an artifact has been created... */extern int LOAD;extern int new_level_flag;		/* Next level when true  */extern int teleport_flag;		/* Handle teleport traps  */extern int eof_flag;			/* Used to handle eof/HANGUP */extern int player_light;		/* Player carrying light */extern int light_rad,old_rad;           /* Light radius */extern int find_flag;        	/* Used in MORIA	      */extern int free_turn_flag;		/* Used in MORIA	      */extern int weapon_heavy;		/* Flag if the weapon too heavy -CJS- */extern int pack_heavy;			/* Flag if the pack too heavy -CJS- */extern char doing_inven;		/* Track inventory commands */extern int screen_change;		/* Screen changes (used in inven_commands) */extern int be_nasty;extern int monster_is_afraid;	/* redo monster fear messages -CWS */extern int character_generated;	/* don't save score until char gen finished */extern int character_saved;		/* prevents save on kill after save_char() */extern int feeling;				/* level feeling */extern int highscore_fd;		/* High score file descriptor */extern int command_count;		/* Repetition of commands. -CJS- */extern int default_dir;			/* Use last direction in repeated commands */extern int16 noscore;			/* Don't score this game. -CJS- */extern int32u randes_seed;		/* For encoding colors */extern int32u town_seed;		/* Seed for town generation */extern char *old_state;			/* state array initialized by time -CWS */extern char *dummy_state;		/* dummy state array so that town/colors look                                 * the same -CWS */extern int16 dun_level;         /* Cur dungeon level   */extern int object_level;		/* used to generate objects -CWS */extern int16 missile_ctr;		/* Counter for missiles */extern int msg_flag;			/* Set with first msg  */extern vtype old_msg[MAX_SAVE_MSG];	/* Last messages -CJS- */extern int16 last_msg;			/* Where in the array is the last */extern int death;				/* True if died	      */extern int32 turn;				/* Cur turn of game    */extern int32 old_turn;			/* last turn feeling was felt */extern int wizard;				/* Wizard flag	      */extern int to_be_wizard;extern int16 panic_save;		/* this is true if playing from a panic save */extern int wait_for_more;extern char days[7][29];extern int closing_flag;		/* Used for closing   */extern int16 cur_height, cur_width;	/* Cur dungeon size    *//*  Following are calculated from max dungeon sizes		*/extern int16 max_panel_rows, max_panel_cols;extern int panel_row, panel_col;extern int panel_row_min, panel_row_max;extern int panel_col_min, panel_col_max;extern int panel_col_prt, panel_row_prt;#ifdef TARGET/* Targetting code, stolen from Morgul -CFT */extern int target_mode;extern int16u target_col;extern int16u target_row;extern int16u target_mon;#endif/*  Following are all floor definitions				*/#ifdef MACextern cave_type *cave[MAX_HEIGHT];#elseextern cave_type cave[MAX_HEIGHT][MAX_WIDTH];#endif/* Following are player variables				*/extern player_type py;extern const char *player_title[MAX_CLASS][MAX_PLAYER_LEVEL];extern race_type race[MAX_RACES];extern background_type background[MAX_BACKGROUND];extern int32u player_exp[MAX_PLAYER_LEVEL];extern int16u player_hp[MAX_PLAYER_LEVEL];extern int16 char_row;extern int16 char_col;#if 0 /* not used? */extern char *dsp_race[MAX_RACES]; /* Short strings for races. -CJS- */#endifextern int8u rgold_adj[MAX_RACES][MAX_RACES];extern class_type class[MAX_CLASS];extern int16 class_level_adj[MAX_CLASS][MAX_LEV_ADJ];/* Warriors don't have spells, so there is no entry for them. */extern spell_type magic_spell[MAX_CLASS-1][63];extern const char *spell_names[127];extern int32u spell_learned;	/* Bit field for spells learnt -CJS- */extern int32u spell_learned2;	/* Bit field for spells learnt -CJS- */extern int32u spell_worked;		/* Bit field for spells tried -CJS- */extern int32u spell_worked2;	/* Bit field for spells tried -CJS- */extern int32u spell_forgotten;	/* Bit field for spells forgotten -JEW- */extern int32u spell_forgotten2;	/* Bit field for spells forgotten -JEW- */extern int8u spell_order[64];	/* remember order that spells are learned in */extern int32u spellmasks[MAX_CLASS][2];/* used to check if player knows all spells knowable to him -CFT */extern int16u player_init[MAX_CLASS][5];extern int16 total_winner;/* Following are store definitions				*/extern owner_type owners[MAX_OWNERS];extern store_type store[MAX_STORES];extern int16u store_choice[MAX_STORES][STORE_CHOICES];extern int (*store_buy[MAX_STORES])(int);/* Following are treasure arrays	and variables			*/extern treasure_type *object_list;  /* [MAX_OBJECTS] */extern treasure_type object_list1[];extern treasure_type object_list2[];extern int8u object_ident[OBJECT_IDENT_SIZE];extern int16 t_level[MAX_OBJ_LEVEL+1];extern inven_type t_list[MAX_TALLOC];extern inven_type inventory[INVEN_ARRAY_SIZE];extern const char *special_names[SN_ARRAY_SIZE];extern int16 sorted_objects[MAX_DUNGEON_OBJ];extern int16 inven_ctr;			/* Total different obj's	*/extern int16 inven_weight;		/* Cur carried weight	*/extern int16 equip_ctr;			/* Cur equipment ctr	*/extern int16 tcptr;				/* Cur treasure heap ptr	*//* Following are creature arrays and variables			*/extern creature_type c_list[MAX_CREATURES];extern describe_mon_type *desc_list;   /* [MAX_CREATURES] */extern describe_mon_type desc_list1[];extern describe_mon_type desc_list2[];extern monster_type m_list[MAX_MALLOC];extern int16 m_level[MAX_MONS_LEVEL+1];extern m_attack_type monster_attacks[N_MONS_ATTS];extern recall_type c_recall[MAX_CREATURES];	/* Monster memories. -CJS- */extern monster_type blank_monster; /* Blank monster values	*/extern int16 mfptr;				   /* Cur free monster ptr	*/extern int16 mon_tot_mult;		   /* # of repro's of creature	*//* Following are arrays for descriptive pieces			*/extern const char *colors[MAX_COLORS];extern const char *mushrooms[MAX_MUSH];extern const char *woods[MAX_WOODS];extern const char *metals[MAX_METALS];extern const char *rocks[MAX_ROCKS];extern const char *amulets[MAX_AMULETS];extern const char *syllables[MAX_SYLLABLES];extern int8u colors_col[MAX_COLORS];extern int8u mushrooms_col[MAX_MUSH];extern int8u woods_col[MAX_WOODS];extern int8u metals_col[MAX_METALS];extern int8u rocks_col[MAX_ROCKS];extern int8u amulets_col[MAX_AMULETS];extern int8u blows_table[11][12];extern int16u normal_table[NORMAL_TABLE_SIZE];/* Initialized data which had to be moved from some other file *//* Since these get modified, macrsrc.c must be able to access them *//* Otherwise, game cannot be made restartable *//* dungeon.c */extern char last_command;		/* Memory of previous command. *//* moria1.c *//* Track if temporary light about player.  */extern int light_flag;#ifdef MSDOSextern int8u	floorsym, wallsym;extern int	ansi, saveprompt;extern char	moriatop[], moriasav[];#endif/* If you use NEW_FILEPATHS, we need these externs; if you use OLD_FILEPATHS *//* these are #define'd to something, so they aren't variables.         [cjh] */#ifdef NEW_FILEPATHSextern char *ANGBAND_TST;		/* was LIBDIR(test)					*/extern char *ANGBAND_HOU;		/* was LIBDIR(files/hours)			*/extern char *ANGBAND_MOR;		/* was LIBDIR(files/news)			*/extern char *ANGBAND_TOP;		/* was LIBDIR(files/newscores)		*/extern char *ANGBAND_BONES;		/* was LIBDIR(bones)				*/extern char *ANGBAND_HELP;		/* was LIBDIR(files/roglcmds.hlp)	*/extern char *ANGBAND_ORIG_HELP;	/* was LIBDIR(files/origcmds.hlp)	*/extern char *ANGBAND_WIZ_HELP;	/* was LIBDIR(files/rwizcmds.hlp)	*/extern char *ANGBAND_OWIZ_HELP;	/* was LIBDIR(files/owizcmds.hlp)	*/extern char *ANGBAND_WELCOME;	/* was LIBDIR(files/welcome.hlp)	*/extern char *ANGBAND_LOG;		/* was LIBDIR(files/ANGBAND.log)	*/extern char *ANGBAND_VER;		/* was LIBDIR(files/version.hlp)	*/extern char *ANGBAND_LOAD;		/* was LIBDIR(files/loadcheck)		*/extern char *ANGBAND_WIZ;		/* was LIBDIR(files/wizards)		*/extern char *ANGBAND_SAV;		/* was LIBDIR(save)					*/#endif /* NEW_FILEPATHS *//* function return values *//* only extern functions declared here, static functions declared inside   the file that defines them */#ifdef __STDC__/* bzero.c */int bzero (char *,int);/* create.c */void create_character(void);/* creature.c */void update_mon(int);int movement_rate(int);int multiply_monster(int, int, int, int);void creatures(int);/* death.c */void exit_game(void);void display_scores(int, int);void delete_entry(int);long total_points(void);int look_line(int);/* desc.c */int is_a_vowel(int);void magic_init(void);void known1(inven_type *);int known1_p(inven_type *);void known2(inven_type *);int known2_p(inven_type *);void clear_known2(inven_type *);void clear_empty(inven_type *);void store_bought(inven_type *);int store_bought_p(inven_type *);void sample(struct inven_type *);void identify(int *);void unmagic_name(inven_type *);void objdes(char *, struct inven_type *, int);void scribe_object(void);void add_inscribe(inven_type *, int);void inscribe(inven_type *, const char *);void invcopy(inven_type *, int);void desc_charges(int);void desc_remain(int);int16 object_offset(inven_type *);/* dungeon.c */void dungeon(void);int special_check(inven_type *);int is_quest(int);void rerate(void);/* eat.c */void eat(void);/* files.c */void init_scorefile(void);void init_files(void);void read_times(void);void helpfile(const char *);void print_objects(void);int file_character(char *);#ifdef NEW_FILEPATHSvoid get_file_paths( void );#endif/* generate.c */void generate_cave(void);/* help.c */void ident_char(void);/* io.c */#ifdef SIGTSTPint suspend(void);#endifvoid init_curses(void);void moriaterm(void);void put_buffer(const char *, int, int);void put_qio(void);void restore_term(void);void shell_out(void);char inkey(void);void flush(void);void erase_line(int, int);void clear_screen(void);void clear_from(int);void move_cursor_relative(int, int);void count_msg_print(const char *);void prt(const char *, int, int);void move_cursor(int, int);void msg_print(const char *);int get_check(const char *);int get_com(const char *, char *);int get_string(char *, int, int, int);void pause_line(int);void pause_exit(int, int);void save_screen(void);void restore_screen(void);void bell(void);void screen_map(void);void print(int, int, int);/* magic.c */void cast(void);/* main.c */int unix_main(int);/* misc1.c */void init_seeds(void);void set_seed(int32u);void reset_seed(void);int check_time(void);int randnor(int, int);int bit_pos(int32u *);void panel_bounds(void);int get_panel(int, int, int);int next_to_wall(int, int);int next_to_corr(int, int);int damroll(int, int);int pdamroll(int8u *);int los(int, int, int, int);unsigned char loc_symbol(int, int);int test_light(int, int);void prt_map(void);void add_food(int);int popm(void);int max_hp(int8u *);int place_monster(int, int, int, int);int place_win_monster(void);void place_group(int, int, int, int);int get_mons_num(int);void alloc_monster(int, int, int);int summon_monster(int * ,int *, int);int summon_undead(int *, int *);int summon_demon(int, int *, int *);int summon_dragon(int *, int *);int summon_wraith(int *, int *);int summon_reptile(int *, int *);int summon_spider(int *, int *);int summon_angel(int *, int *);int summon_ant(int *, int *);int summon_unique(int *, int *);int summon_jabberwock(int *, int *);int summon_gundead(int *, int *);int summon_ancientd(int *, int *);int summon_hound(int *, int *);int summon_jelly(int *, int *);int popt(void);void pusht(int);int magik(int);int m_bonus(int, int, int);void magic_treasure(int, int, int, int);void set_options(void);int compact_monsters(void);int next_to_walls(int, int);int get_nmons_num(int);int distance(int, int, int, int);/* misc2.c */void place_trap(int, int, int);void place_rubble(int, int);void place_gold(int, int);int get_obj_num(int,int);void place_object(int, int);void alloc_object(int (*)(int), int, int);void random_object(int, int, int);void cnv_stat(int, char *);void prt_stat(int);void prt_field(const char *, int, int);int stat_adj(int);int chr_adj(void);int con_adj(void);const char *title_string(void);void prt_title(void);void prt_level(void);void prt_cmana(void);void prt_mhp(void);void prt_chp(void);void prt_pac(void);void prt_gold(void);void prt_depth(void);void prt_hunger(void);void prt_blind(void);void prt_confused(void);void prt_afraid(void);void prt_poisoned(void);void prt_state(void);void prt_speed(void);void prt_study(void);void prt_winner(void);int16u modify_stat(int, int);void set_use_stat(int);int inc_stat(int);int dec_stat(int, int, int);int res_stat(int);void bst_stat(int, int);int tohit_adj(void);int toac_adj(void);int todis_adj(void);int todam_adj(void);void prt_stat_block(void);void draw_cave(void);void put_character(void);void put_stats(void);const char *likert(int, int);void put_misc1(void);void put_misc2(void);void put_misc3(void);void display_char(void);void get_name(void);void change_name(void);void inven_destroy(int);void take_one_item(struct inven_type *, struct inven_type *);void inven_drop(int, int);int inven_damage(int (*)(), int);int weight_limit(void);int inven_check_num(inven_type *);int inven_check_weight(struct inven_type *);void check_strength(void);int inven_carry(struct inven_type *);int spell_chance(int);void print_spells(int *, int, int, int);int get_spell(int *, int, int *, int *, const char *, int);void calc_spells(int);void gain_spells(void);void calc_mana(int);void prt_experience(void);void calc_hitpoints(void);void insert_str(char *, const char *, const char *);void insert_lnum(char *, const char *, int32, int);int enter_wiz_mode(void);int attack_blows(int, int *);int tot_dam(struct inven_type *, int, int);int critical_blow(int, int, int, int);int mmove(int, int *, int *);int player_saves(void);int find_range(int, int, int *, int *);void teleport(int);void check_view(void);void place_special(int, int, int32u);int place_ghost(void);void prt_cut(void);void prt_stun(void);void special_random_object(int, int, int);void cut_player(int);void stun_player(int);void prt_equippy_chars(void);void get_coin_type(creature_type *);/* monsters.c *//* moria1.c */void change_speed(int);void py_bonuses(struct inven_type *, int);void calc_bonuses(void);int show_inven(int, int, int, int, int (int));const char *describe_use(int);int show_equip(int, int);void takeoff(int, int);int verify(const char *, int);void inven_command(int);int get_item(int *, const char *, int, int, int (int));int no_light(void);int get_dir(const char *, int *);int get_alldir(const char *, int *);void move_rec(int, int, int, int);void light_room(int, int);void move_light(int, int, int, int);void disturb(int, int);void search_on(void);void search_off(void);void rest(void);void rest_off(void);int test_hit(int, int, int, int, int);void take_hit(int, const char *);void change_trap(int, int);void search(int, int, int);void find_init(int);void find_run(void);void end_find(void);void area_affect(int, int, int);int minus_ac(int32u);void corrode_gas(const char *);void poison_gas(int, const char *);void fire_dam(int, const char *);void cold_dam(int, const char *);void light_dam(int, const char *);void acid_dam(int, const char *);void darken_player(int, int);/* moria2.c */int cast_spell(const char * ,int, int *, int *);void delete_monster(int);void fix1_delete_monster(int);void fix2_delete_monster(int);int delete_object(int, int);int32u monster_death(int, int, int32u, int32u, int32u);int mon_take_hit(int, int, int);void move_char(int, int);void openobject(void);void closeobject(void);int twall(int, int, int, int);void tunnel(int);void disarm_trap(void);void look(void);void throw_object(void);void bash(void);void delete_unique(void);void carry(int, int, int);void check_unique(monster_type *);void target(void); /* target fns stolen from Morgul -CFT */int at_target(int, int); /* target fns stolen from Morgul -CFT */void mmove2(int *, int *, int, int, int, int);#ifdef MSDOS/* ms_misc.c */char *getlogin(void);unsigned int sleep(unsigned );void error(char *, ...);void warn(char *, ...);void msdos_init(void);void msdos_raw(void);void msdos_noraw(void);int bios_getch(void);int msdos_getch(void);void bios_clear(void);void msdos_intro(void);void bios_clear(void);#endif/* potions.c */void quaff(void);/* prayer.c */void pray(void);/* recall.c */int bool_roff_recall(int);int roff_recall(int);/* rnd.c is unused now -CWS *//* random.c */#if !(defined(linux) || defined(__osf__))long random(void);#if !(defined(__MINT__) || defined(__386BSD__) || defined(AMIGA) || defined(__bsdi__))void srandom(int);#endifchar *initstate(unsigned int, char *, int);char *setstate(char *);#endif/* rods.c */void activate_rod(void);/* save.c */int save_char(void);int _save_char(char *);int get_char(int *);/* scrolls.c */void read_scroll(void);/* sets.c */int set_room(int);int set_corr(int);int set_floor(int);int set_corrodes(inven_type *);int set_flammable(inven_type *);int set_frost_destroy(inven_type *);int set_acid_affect(inven_type *);int set_lightning_destroy(inven_type *);int set_null(inven_type *);int set_acid_destroy(inven_type *);int set_fire_destroy(inven_type *);int set_plasma_destroy(inven_type *);int set_meteor_destroy(inven_type *);int set_holy_destroy(inven_type *);int set_mana_destroy(inven_type *);int general_store(int);int armory(int);int weaponsmith(int);int temple(int);int alchemist(int);int magic_shop(int);int blackmarket(int);int home(int);/* signals.c */void nosignals(void);void signals(void);void init_signals(void);void ignore_signals(void);void default_signals(void);void restore_signals(void);/* spells.c */void monster_name(char *, struct monster_type *, struct creature_type *);void lower_monster_name(char *, struct monster_type *, struct creature_type *);int sleep_monsters1(int, int);int detect_treasure(void);int detect_object(void);int detect_trap(void);int detect_sdoor(void);int detect_invisible(void);int light_area(int, int, int, int);int unlight_area(int, int);void map_area(void);int ident_spell(void);int aggravate_monster(int);int trap_creation(void);int door_creation(void);void stair_creation(void);int td_destroy(void);int detect_monsters(void);void mon_light_dam(int, int, int);void light_line(int, int, int);void frost_line(int, int, int, int);void starlite(int, int);int disarm_all(int, int, int);void get_flags(int, int32u *, int32u *, int (**)());void fire_bolt(int, int, int, int, int);void fire_ball(int, int, int, int, int, int);void breath(int, int, int, int, char *, int);int recharge(int);int hp_monster(int, int, int, int);int drain_life(int, int, int, int);int speed_monster(int, int, int, int);int confuse_monster(int, int, int, int);int sleep_monster(int, int, int);int wall_to_mud(int, int, int);int td_destroy2(int, int, int);int poly_monster(int, int, int);int build_wall(int, int, int);int clone_monster(int, int, int);void teleport_away(int, int);void teleport_to(int, int);int teleport_monster(int, int, int);int mass_genocide(int);int genocide(int);int speed_monsters(int);int sleep_monsters2(void);int mass_poly(void);int detect_evil(void);int hp_player(int);int cure_confusion(void);int cure_blindness(void);int cure_poison(void);int remove_fear(void);void earthquake(void);int protect_evil(void);void create_food(void);int dispel_creature(int, int);int turn_undead(void);void warding_glyph(void);void lose_str(void);void lose_int(void);void lose_wis(void);void lose_dex(void);void lose_con(void);void lose_chr(void);void lose_exp(int32);int slow_poison(void);void bless(int);void detect_inv2(int);void destroy_area(int, int);int enchant(inven_type *, int, int8u);void elemental_brand(void);int remove_curse(void);int restore_level(void);void self_knowledge(void);int probing(void);int detection(void);void starball(int,int);void bolt(int, int, int, int, char *, monster_type *, int);int lose_all_info(void);void tele_level(void);void identify_pack(void);int fear_monster(int, int, int, int);int banish_creature(int32u, int);int remove_all_curse(void);void darken_room(int, int);void lite_spot(int, int);const char *pain_message(int, int);void line_spell(int, int, int, int, int);/* staffs.c */void use(void);/* store1.c */int32 item_value(struct inven_type *);int32 sell_price(int, int32 *, int32 *, struct inven_type *);int store_check_num(inven_type *, int);void store_carry(int, int *, struct inven_type *);void store_destroy(int, int, int);void store_init(void);void store_maint(void);int noneedtobargain(int, int32);void updatebargain(int, int32, int32);/* store2.c */void enter_store(int);/* treasur1.c *//* treasur2.c *//* undef.c */void init_files(void);int _new_log(void);#if defined(unix) || defined(AMIGA)/* unix.c */int check_input(int);#if 0int system_cmd(char *);#endifvoid user_name(char *, int);FILE *my_tfopen(const char *, const char *);int my_topen(const char *, int, int);#endif/* util.c */#ifdef NEEDS_STRICMPint my_stricmp(const char *, const char *);#endif#ifdef NEEDS_USLEEPint microsleep(unsigned long);#endif/* variable.c *//* wands.c */void aim(void);/* wizard.c */void wizard_light(int);void change_character(void);void wizard_create(void);void artifact_check(void);void artifact_check_no_file(void);void check_uniques(void);int is_wizard(int);#else/* create.c */void create_character();/* creature.c */void update_mon();int movement_rate();int multiply_monster();void creatures();/* death.c */void exit_game();void display_scores();void delete_entry();long total_points();int look_line();/* desc.c */int is_a_vowel();void magic_init();void known1();int known1_p();void known2();int known2_p();void clear_known2();void clear_empty();void store_bought();int store_bought_p();void sample();void identify();void unmagic_name();void objdes();void scribe_object();void add_inscribe(); void inscribe();void invcopy();void desc_charges();void desc_remain();int16 object_offset();/* dungeon.c */void dungeon();int special_check();int is_quest();void rerate();/* eat.c */void eat();/* files.c */void init_scorefile();void init_files();void read_times();void helpfile();void print_objects();int file_character();#ifdef NEW_FILEPATHSvoid get_file_paths();#endif/* generate.c */void generate_cave();/* help.c */void ident_char();/* io.c */#ifdef SIGTSTPint suspend();#endifvoid init_curses();void moriaterm();void put_buffer();void put_qio();void restore_term();void shell_out();char inkey();void flush();void erase_line();void clear_screen();void clear_from();void move_cursor_relative();void count_msg_print();void prt();void move_cursor();void msg_print();int get_check();int get_com();int get_string();void pause_line();void pause_exit();void save_screen();void restore_screen();void bell();void screen_map();void print();/* magic.c */void cast();/* main.c */int unix_main();/* misc1.c */void init_seeds();void set_seed();void reset_seed();int check_time();int randnor();int bit_pos();int next_to_walls();int next_to_corr();int damroll();int pdamroll();int los();unsigned char loc_symbol();int test_light();void prt_map();void add_food();int popm();int max_hp();int place_monster();int place_win_monster();int get_mons_num();void place_group();void alloc_monster();int summon_monster();int summon_undead();int popt();void pusht();int magik();int m_bonus();void magic_treasure();int distance();/* misc2.c */void place_trap();void place_rubble();void place_gold();int get_obj_num();void place_object();void alloc_object();void random_object();void cnv_stat();void prt_stat();void prt_field();int stat_adj();int chr_adj();int con_adj();char *title_string();void prt_title();void prt_level();void prt_cmana();void prt_mhp();void prt_chp();void prt_pac();void prt_gold();void prt_depth();void prt_hunger();void prt_blind();void prt_confused();void prt_afraid();void prt_poisoned();void prt_state();void prt_speed();void prt_study();void prt_winner();int16u modify_stat();void set_use_stat();int inc_stat();int dec_stat();int res_stat();void bst_stat();int tohit_adj();int toac_adj();int todis_adj();int todam_adj();void prt_stat_block();void draw_cave();void put_character();void put_stats();char *likert();void put_misc1();void put_misc2();void put_misc3();void display_char();void get_name();void change_name();void inven_destroy();void take_one_item();void inven_drop();int inven_damage();int weight_limit();int inven_check_num();int inven_check_weight();void check_strength();int inven_carry();int spell_chance();void print_spells();int get_spell();void calc_spells();void gain_spells();void calc_mana();void prt_experience();void calc_hitpoints();void insert_str();void insert_lnum();int enter_wiz_mode();int attack_blows();int tot_dam();int critical_blow();int mmove();int player_saves();int find_range();void teleport();void check_view();void place_special();int place_ghost();void prt_cut();void prt_stun();void special_random_object();void cut_player();void stun_player();extern void prt_equippy_chars();void get_coin_type();/* monsters.c *//* moria1.c */void change_speed();void py_bonuses();void calc_bonuses();int show_inven();char *describe_use();int show_equip();void takeoff();void check_strength();int verify();void inven_command();int get_item();void panel_bounds();int get_panel();int no_light();int get_dir();int get_alldir();void move_rec();void light_room();void move_light();void disturb();void search_on();void search_off();void rest();void rest_off();int test_hit();void take_hit();void change_trap();void search();void set_options();void find_init();void find_run();void end_find();void area_affect();int minus_ac();void corrode_gas();void poison_gas();void fire_dam();void cold_dam();void light_dam();void acid_dam();void lite_spot();void darken_player();/* moria2.c */int cast_spell();void delete_monster();void fix1_delete_monster();void fix2_delete_monster();int multiply_monster();int delete_object();int32u monster_death();int mon_take_hit();void move_char();void openobject();void closeobject();int twall();void tunnel();void disarm_trap();void look();void throw_object();void bash();void target();					/* target fns stolen from Morgul -CFT */int at_target();				/* target fns stolen from Morgul -CFT */void mmove2();					/* target fns stolen from Morgul -CFT */#ifdef MSDOS/* ms_misc.c */char *getlogin();unsigned int sleep();void error();void warn();void msdos_init();void msdos_raw();void msdos_noraw();int bios_getch();int msdos_getch();void bios_clear();void msdos_intro();void msdos_print_map();void bios_clear();#endif/* potions.c */void quaff();/* prayer.c */void pray();/* recall.c */int bool_roff_recall();int roff_recall();/* rnd.c is unused now -CWS *//* random.c */#if !(defined(linux) || defined(__osf__))long random();void srandom();char *initstate();char *setstate();#endif/* save.c */int save_char();int _save_char();int get_char();/* scrolls.c */void read_scroll();/* sets.c */int set_room();int set_corr();int set_floor();int set_corrodes();int set_flammable();int set_frost_destroy();int set_acid_affect();int set_lightning_destroy();int set_null();int set_acid_destroy();int set_fire_destroy();int set_plasma_destroy();int set_meteor_destroy();int set_holy_destroy();int set_mana_destroy();int general_store();int armory();int weaponsmith();int temple();int alchemist();int magic_shop();extern int (*store_buy[MAX_STORES])();/* signals.c */void nosignals();void signals();void init_signals();void ignore_signals();void default_signals();void restore_signals();/* spells.c */void monster_name();void lower_monster_name();int sleep_monsters1();int detect_treasure();int detect_object();int detect_trap();int detect_sdoor();int detect_invisible();int light_area();int unlight_area();void map_area();int ident_spell();int aggravate_monster();int trap_creation();int door_creation();int td_destroy();int detect_monsters();void light_line();void starlite();int disarm_all();void get_flags();void fire_bolt();void fire_ball();void breath();int recharge();int hp_monster();int drain_life();int speed_monster();int confuse_monster();int sleep_monster();int wall_to_mud();int td_destroy2();int poly_monster();int build_wall();int clone_monster();void teleport_away();void teleport_to();int teleport_monster();int mass_genocide();int genocide();int speed_monsters();int sleep_monsters2();int mass_poly();int detect_evil();int hp_player();int cure_confusion();int cure_blindness();int cure_poison();int remove_fear();void earthquake();int protect_evil();void create_food();int dispel_creature();int turn_undead();void warding_glyph();void lose_str();void lose_int();void lose_wis();void lose_dex();void lose_con();void lose_chr();void lose_exp();int slow_poison();void bless();void detect_inv2();void destroy_area();int enchant();int remove_curse();int restore_level();void self_knowledge();char *pain_message();void line_spell();/* staffs.c */void use();/* store1.c */int32 item_value();int32 sell_price();int store_check_num();void store_carry();void store_destroy();void store_init();void store_maint();int noneedtobargain();void updatebargain();/* store2.c */void enter_store();/* treasur1.c *//* treasur2.c *//* undef.c */void init_files();int _new_log();#ifdef unix/* unix.c */int check_input();#if 0int system_cmd();#endifvoid user_name();/* only declare this if stdio.h has been previously included, which will * be true if stdin is defined */#ifdef stdinFILE *my_tfopen();#endifint my_topen();#endif/* util.c */#ifdef NEEDS_STRICMPint my_stricmp();#endif#ifdef NEEDS_USLEEPint microsleep();#endif/* variable.c *//* wands.c */void aim();/* wizard.c */void wizard_light();void change_character();void wizard_create();void artifact_check();void artifact_check_no_file();void check_uniques();int is_wizard();#endif      /* __STDC__ *//* mac stuff added: */void initsavedefaults(void);void enablefilemenu(int);void delay(int d);int access(char *,int);int chmod(char *,int);int setmode(int,int);void link(char *,char *);int kbhit(void);int getch(void);#define lockf(x,y,z) 0void c_put_buffer(int16u *,int ,int);void c_put_buffer2(int8u, const char *, int, int);void c_prt(int8u, const char *, int, int);void c_print(int16u, int, int);int16u c_loc_symbol(int, int);int8u find_color(inven_type *i_ptr);int8u find_inven_color(inven_type *i_ptr);void changeinven(void);#endif /* _EXTERNS_H_ */
+/* File: externs.h */
+
+/* Purpose: macros, and extern's for functions and global variables */
+
+/*
+ * Copyright (c) 1989 James E. Wilson, Robert A. Koeneke
+ *
+ * This software may be copied and distributed for educational, research, and
+ * not for profit purposes provided that this copyright and statement are
+ * included in all such copies. 
+ */
+
+/*
+ * This file is not realy in very good shape.  What we SHOULD have
+ * is a correct list of available variables and functions.  What we
+ * actually have seems to work, but does not reflect the current state
+ * of the various files.
+ *
+ * We should NOT have both ANSI and non-ANSI versions in the same file.
+ * What we SHOULD have is a quick utility that converts ANSI to non-ANSI,
+ * and we should provide a version of the files on which this has been run.
+ */
+
+
+/*****************************************************************************/
+
+
+/*
+ * Here's some functions that've been macroized rather than being called
+ * from everywhere.  They're short enough so that inlining them will probably
+ * result in a smaller executable, and speed things up, to boot. -CWS
+ */
+
+
+/*
+ * Simple integer math functions
+ * Should just use the real ones.
+ */
+#define MY_MAX	MAX
+#define MY_MIN	MIN
+#define MY_ABS	ABS
+#define MY_POM	POM
+
+
+
+/*
+ * Determines if a map location is fully inside the outer walls
+ */
+#define in_bounds(y, x) \
+   ((((y) > 0) && ((x) > 0) && ((y) < cur_height-1) && ((x) < cur_width-1)) ? \
+    (TRUE) : (FALSE))
+
+/*
+ * Determines if a map location is on or inside the outer walls
+ */
+#define in_bounds2(y, x) \
+   ((((y) >= 0) && ((x) >= 0) && ((y) < cur_height) && ((x) < cur_width)) ? \
+    (TRUE) : (FALSE))
+
+/*
+ * Determines if a map location is currently "on screen" -RAK-
+ * Note that "panel_contains(y,x)" always implies "in_bounds2(y,x)".
+ */
+#define panel_contains(y, x) \
+  ((((y) >= panel_row_min) && ((y) <= panel_row_max) && \
+    ((x) >= panel_col_min) && ((x) <= panel_col_max)) ? (TRUE) : (FALSE))
+
+/*
+ * Determine if a given object is "wearable"
+ */
+#define wearable_p(T) \
+	(((T)->tval >= TV_MIN_WEAR) && ((T)->tval <= TV_MAX_WEAR))
+
+/*
+ * Only wearable items can be cursed.
+ */
+#define cursed_p(T) \
+	(wearable_p(T) && ((T)->flags3 & TR3_CURSED))
+
+/*
+ * Artifacts use the "name1" field
+ */
+#define artifact_p(T) \
+	((T)->name1 ? TRUE : FALSE)
+
+
+
+
+/**** Available macros ****/
+
+/*
+ * Generates a random long integer X where O<=X<M.
+ * For example, if M is 100, you get "percentile dice"
+ */
+#define rand_int(M) (random() % (M))
+
+/*
+ * Generates a random long integer X where A<=X<=B
+ * The integer X falls along a uniform distribution.
+ */
+#define rand_range(A,B) ((A) + (rand_int(1+(B)-(A))))
+
+
+/*
+ * Extension to the rand_int() macro from random.h
+ * Generate a random long integer X where 1<=X<=M
+ * Hack -- catch (and "optimize") M<=1
+ */
+#define randint(M) (((M) <= 1) ? (1) : (rand_int(M) + 1))
+
+/*
+ * Extension to the rand_range() macro from random.h
+ * Hack -- Like rand_range(), but catch (and "correct") B<A
+ */
+#define randrange(A,B) ((B<A) ? rand_range(B,A) : rand_range(A,B))
+
+
+
+
+/*****************************************************************************/
+
+
+/*
+ * Variable access to the version
+ */
+extern int cur_version_maj;
+extern int cur_version_min;
+extern int cur_patch_level;
+
+
+/*
+ * Not nearly as horrible a hack as we used to be.
+ * Needed because compact_monster() can be called from within
+ * process_monsters() via place_monster() and summon_monster() 
+ */
+extern int hack_m_idx;			/* The "current" monster, if any */
+
+extern int player_uid;			/* The player's uid, or zero */
+
+extern char player_name[32];		/* The player name */
+
+extern char history[4][60];		/* The player history */
+
+extern char savefile[1024];		/* The save file name */
+
+extern vtype died_from;			/* Cause of death */
+
+/* These are options, set with set_options command -CJS- */
+extern int rogue_like_commands;		/* Use "roguelike" commands */
+extern int carry_query_flag;		/* ask whether to pick something up */
+extern int prompt_carry_flag;		/* auto-pickup objects */
+extern int always_throw;		/* always throw */
+extern int always_repeat;		/* always repeat commands */
+extern int show_inven_weight;		/* Display weights in inventory */
+extern int show_equip_weight;		/* Display weights in equip list */
+extern int show_store_weight;		/* Display weights in stores */
+extern int notice_seams;		/* Highlight magma and quartz */
+extern int use_color;			/* Should we use color? */
+extern int new_screen_layout;		/* Use new screen layout */
+extern int depth_in_feet;		/* Display the depth in "feet" */
+extern int hilite_player;		/* Hilite the player */
+extern int ring_bell;			/* RIng bell on error */
+extern int find_cut;			/* Cut corners on a run */
+extern int find_examine;		/* Check corners on a run */
+extern int find_prself;			/* Print yourself on a run (slower) */
+extern int find_bound;			/* Stop run when the map shifts */
+extern int find_ignore_doors;		/* Run through open doors */
+extern int find_ignore_stairs;		/* Run past stairs */
+extern int disturb_near;		/* Disturbed by "local" motion */
+extern int disturb_move;		/* Disturbed by monster movement */
+extern int disturb_enter;		/* Disturbed by monster appearing */
+extern int disturb_leave;		/* Disturbed by monster disappearing */
+extern int plain_descriptions;		/* Don't add "flavors" to known items */
+extern int shuffle_owners;		/* shuffle store owners */
+extern int no_haggle_flag;		/* replace haggling with sales tax */
+extern int quick_messages;		/* do quick messages -CWS */
+extern int equippy_chars;		/* do equipment characters -CWS */
+extern int delay_spd;			/* 1-9 for delays, or zero */
+extern int hitpoint_warn;		/* Low hitpoint warning */
+
+extern int in_store_flag;		/* Currently in a store */
+extern int peek;			/* should we display additional msgs */
+extern int coin_type;			/* Hack -- creeping coin treasure */
+extern int opening_chest;		/* Hack -- chest treasure */
+
+extern int use_recall_win;	/* Use the "recall window" (if available) */
+extern int use_choice_win;	/* Use the "choice window" (if available) */
+
+extern int view_pre_compute;	/* Precompute the "view" */
+extern int view_reduce_xxxx;	/* Later */
+extern int view_reduce_view;	/* Reduce "view" radius if running */
+extern int view_reduce_lite;	/* Reduce torch lite if running */
+
+extern int view_yellow_lite;	/* Use "yellow" for "torch lite" */
+extern int view_bright_lite;	/* Use "bright" for "viewable lite" */
+extern int view_yellow_fast;	/* Optimize "yellow_lite" when running */
+extern int view_bright_fast;	/* Optimize "bright_lite" when running */
+
+extern int view_perma_grids;	/* Map remembers all Perma-Lit grids */
+extern int view_torch_grids;	/* Map remembers all Torch-Lit grids */
+
+extern int compress_savefile;	/* Compress the savefile as possible */
+
+/* Savefile info */
+extern int32u sf_xtra;		/* Operating system info */
+extern int32u sf_when;		/* Time when savefile created */
+extern int16u sf_lives;		/* Number of past lives with this file */
+extern int16u sf_saves;		/* Number of "saves" during this life */
+
+
+/*
+ * XXX Hack -- certain artifacts must be "permitted"...
+ */
+extern bool permit_grond;
+extern bool permit_morgoth;
+
+
+
+
+extern char days[7][29];
+
+/* The current dungeon level */
+/* Was: extern cave_type cave[MAX_HEIGHT][MAX_WIDTH]; */
+extern cave_type *cave[MAX_HEIGHT];
+
+
+/* global flags */
+extern int LOAD;
+extern int unfelt;
+extern int in_store_flag;		/* Notice when in stores */
+extern int good_item_flag;		/* Notice artifact created... */
+extern int new_level_flag;		/* Next level when true  */
+extern int teleport_flag;		/* Handle teleport traps  */
+extern int eof_flag;			/* Used to handle eof/HANGUP */
+extern int player_lite;			/* Player carrying light */
+extern int cur_lite,old_lite;           /* Light radius */
+extern int find_flag;			/* Used in MORIA	      */
+extern int free_turn_flag;		/* Used in MORIA	      */
+extern int weapon_heavy;		/* Flag if the weapon too heavy -CJS- */
+extern int pack_heavy;			/* Flag if the pack too heavy -CJS- */
+extern int cumber_armor;		/* Encumbered by armor */
+extern int cumber_glove;		/* Encumbered by gloves */
+extern char doing_inven;		/* Track inventory commands */
+extern int screen_change;		/* Notice disturbing of inventory */
+
+extern int character_generated;		/* Character generation complete */
+extern int character_saved;		/* Character has been saved. */
+extern int feeling;			/* level feeling */
+extern int rating;
+extern int peek;
+extern int create_up_stair;
+extern int create_down_stair;
+extern int command_cmd;			/* Current command */
+extern int command_old;			/* Last command */
+extern int command_esc;			/* Nothing yet */
+extern int command_arg;			/* Argument of current command */
+extern int command_rep;			/* Repetition of current command */
+extern int command_dir;			/* Direction of current command */
+
+extern int16 noscore;			/* Don't score this game. -CJS- */
+
+extern int32u randes_seed;		/* Hack -- consistent object colors */
+extern int32u town_seed;		/* Hack -- consistent town layout */
+
+
+extern int16 dun_level;			/* Cur dungeon level   */
+extern int16 object_level;		/* used to generate objects -CWS */
+extern int msg_flag;			/* Set with first msg  */
+extern int death;			/* True if died	      */
+extern int32u turn;			/* Current game turn */
+extern int32u old_turn;			/* Last turn dungeon() started */
+extern int wizard;			/* Is the player currently a Wizard? */
+extern int to_be_wizard;		/* Does the player want to be a wizard? */
+extern int can_be_wizard;		/* Can the player ever be a wizard? */
+extern int16 panic_save;		/* true if playing from a panic save */
+
+extern int wait_for_more;
+
+extern int closing_flag;		/* Used for closing   */
+
+
+
+extern int16 cur_height, cur_width;	/* Cur dungeon size    */
+
+/*  Following are calculated from max dungeon sizes		*/
+extern int16 max_panel_rows, max_panel_cols;
+extern int panel_row, panel_col;
+extern int panel_row_min, panel_row_max;
+extern int panel_col_min, panel_col_max;
+extern int panel_col_prt, panel_row_prt;
+
+#ifdef TARGET
+/* Targetting code, stolen from Morgul -CFT */
+extern int target_mode;
+extern int target_col;
+extern int target_row;
+extern int target_mon;
+#endif
+
+/* A pointer to the main player record */
+extern player_type *p_ptr;
+
+extern player_race race[MAX_RACES];
+extern player_class class[MAX_CLASS];
+extern player_background background[MAX_BACKGROUND];
+
+extern cptr player_title[MAX_CLASS][MAX_PLAYER_LEVEL];
+
+extern int32u player_exp[MAX_PLAYER_LEVEL];
+extern int16u player_hp[MAX_PLAYER_LEVEL];
+
+extern int16 char_row;
+extern int16 char_col;
+
+extern int16 class_level_adj[MAX_CLASS][MAX_LEV_ADJ];
+extern int16u player_init[MAX_CLASS][3];
+
+extern int16 total_winner;
+
+
+/*** Spell Information ***/
+
+/* Warriors don't have spells, so there is no entry for them. */
+extern spell_type magic_spell[MAX_CLASS-1][63];
+extern cptr spell_names[127];
+extern int32u spell_learned;	/* Bit field for spells learnt -CJS- */
+extern int32u spell_learned2;	/* Bit field for spells learnt -CJS- */
+extern int32u spell_worked;	/* Bit field for spells tried -CJS- */
+extern int32u spell_worked2;	/* Bit field for spells tried -CJS- */
+extern int32u spell_forgotten;	/* Bit field for spells forgotten -JEW- */
+extern int32u spell_forgotten2;	/* Bit field for spells forgotten -JEW- */
+extern int8u spell_order[64];	/* remember order that spells are learned in */
+extern int32u spellmasks[MAX_CLASS][2];	/* what spells can classes learn */
+
+
+/*** Store information ***/
+
+extern store_type store[MAX_STORES];
+
+
+/*** Miscellaneous Information ***/
+
+extern cptr ego_names[EGO_MAX];		/* Ego-tist Names */
+
+/* Writable ghost name */
+extern char ghost_name[128];
+
+/* # of repro's of creature	*/
+extern int16 mon_tot_mult;
+
+/* Attack table */
+extern monster_attack a_list[MAX_A_IDX];
+
+extern int8u blows_table[11][12];
+
+extern int16u normal_table[NORMAL_TABLE_SIZE];
+
+
+
+/*** Inventory ***/
+
+/* Inventory information */
+extern int16 inven_weight;		/* Total carried weight */
+extern int16 inven_ctr;			/* Number of obj's in inven */
+extern int16 equip_ctr;			/* Number of obj's in equip */
+
+/* Player inventory (inven+equip) */
+extern inven_type inventory[INVEN_ARRAY_SIZE];
+
+
+/*** Item Information ***/
+
+/* Treasure heap pointer (used with i_list) */
+extern int16 i_max;
+
+/* Actual array of all physical objects (on the ground) */
+/* Was: extern inven_type i_list[MAX_I_IDX]; */
+extern inven_type *i_list;
+
+/* The array of object types (parsed from "k_list" file) */
+/* Was: extern inven_kind k_list[MAX_K_IDX]; */
+extern inven_kind *k_list;
+
+/* The "xtra" array ("extra" object info) */
+extern inven_xtra *x_list;
+
+/* The "artifact" array ("very" good items) */
+extern inven_very v_list[ART_MAX];
+
+
+
+/*** Monster Information ***/
+
+/* Monster heap pointer (used with m_list) */
+extern int16 m_max;
+
+/* Actual array of physical monsters (in the dungeon) */
+/* Was: extern monster_type m_list[MAX_M_IDX]; */
+extern monster_type *m_list;
+
+/* The array of monster races (now initialized from a file) */
+/* Was: extern monster_race r_list[MAX_R_IDX]; */
+extern monster_race *r_list;
+
+/* Monster memories. -CJS- */
+/* Was: extern monster_lore l_list[MAX_R_IDX]; */
+extern monster_lore *l_list;
+
+/* Hack -- The "quests" */
+extern quest q_list[QUEST_MAX];
+
+
+/*
+ * Hooks for the choice functions
+ */
+extern void (*choice_fresh_hook)(void);
+extern void (*choice_clear_hook)(void);
+extern void (*choice_putstr_hook)(int x, int y, int n, byte a, cptr s);
+
+
+/*
+ * Hooks for the recall functions
+ */
+extern void (*recall_fresh_hook)(void);
+extern void (*recall_clear_hook)(void);
+extern void (*recall_putstr_hook)(int, int, int, byte, cptr);
+
+
+
+/*
+ * The FILEPATH's to various files, see "arrays.c"
+ */
+
+extern cptr ANGBAND_DIR_FILES;		/* Dir: ascii files  */
+extern cptr ANGBAND_DIR_BONES;		/* Dir: ascii bones files */
+extern cptr ANGBAND_DIR_SAVE;		/* Dir: binary save files */
+extern cptr ANGBAND_DIR_DATA;		/* Dir: system dependant files */
+
+extern cptr ANGBAND_NEWS;		/* News file */
+extern cptr ANGBAND_WELCOME;		/* Player generation help */
+extern cptr ANGBAND_VERSION;		/* Version information */
+
+extern cptr ANGBAND_WIZ;		/* Acceptable wizard uid's */
+extern cptr ANGBAND_HOURS;		/* Hours of operation */
+extern cptr ANGBAND_LOAD;		/* Load information */
+extern cptr ANGBAND_LOG;		/* Log file of some form */
+
+extern cptr ANGBAND_R_HELP;		/* Roguelike command help */
+extern cptr ANGBAND_O_HELP;		/* Original command help */
+extern cptr ANGBAND_RWIZ_HELP;		/* Roguelike Wiz-cmd help */
+extern cptr ANGBAND_OWIZ_HELP;		/* Original Wiz-cmd help */
+
+extern cptr ANGBAND_K_LIST;		/* Ascii item kind file */
+extern cptr ANGBAND_R_LIST;		/* Ascii monster race file */
+
+
+/*
+ * only extern functions declared here, static functions declared
+ * inside the file that defines them.  Duh...
+ */
+
+
+#ifdef __STDC__
+
+/* birth.c */
+void player_birth(void);
+
+/* creature.c */
+void update_mon(int);
+int movement_rate(int);
+int multiply_monster(int);
+void update_monsters(void);
+void process_monsters(void);
+
+/* death.c */
+void init_scorefile(void);
+void nuke_scorefile(void);
+void exit_game(void);
+void display_scores(int, int);
+void delete_entry(int);
+long total_points(void);
+int look_line(int);
+
+/* desc.c */
+void flavor_init(void);
+bool flavor_p(inven_type *);
+bool inven_aware_p(inven_type *);
+void inven_aware(inven_type *);
+bool inven_tried_p(inven_type *);
+void inven_tried(inven_type *);
+bool known2_p(inven_type *);
+void known2(inven_type *);
+char inven_char(inven_type *);
+byte inven_attr(inven_type *);
+void inscribe(inven_type *, cptr);
+void objdes(char *, inven_type *, int);
+void objdes_store(char *, inven_type *, int);
+void invcopy(inven_type *, int);
+void inven_item_charges(int);
+void inven_item_describe(int);
+
+/* command.c */
+void process_command(void);
+void request_command(void);
+
+/* dungeon.c */
+void dungeon(void);
+
+/* effects.c */
+void eat_food(void);
+void quaff_potion(void);
+void read_scroll(void);
+void aim_wand(void);
+void use_staff(void);
+void zap_rod(void);
+
+
+/* files.c */
+void read_times(void);
+void show_news(void);
+void helpfile(cptr);
+int file_character(cptr );
+int mac_file_character(void);
+
+/* generate.c */
+void generate_cave(void);
+
+/* help.c */
+void ident_char(void);
+
+/* cave.c */
+
+int los(int, int, int, int);
+int test_lite(int, int);
+int no_lite(void);
+
+bool player_has_los(int, int);
+bool player_can_see(int, int);
+
+void forget_lite(void);
+void update_lite(void);
+void forget_view(void);
+void update_view(void);
+
+void lite_room(int, int);
+void unlite_room(int, int);
+
+void move_cursor_relative(int, int);
+
+char inven_char(inven_type *i_ptr);
+byte inven_attr(inven_type *i_ptr);
+byte inven_attr_by_tval(inven_type *i_ptr);
+
+byte spell_color(int type);
+
+void mh_forget(void);
+void mh_cycle(void);
+void mh_print(char, byte, int, int, int);
+void mh_print_rel(char, byte, int, int, int);
+
+void map_info(int,int,int*,byte*,char*);
+
+void lite_spot(int, int);
+void lite_monster(monster_type*);
+
+void screen_map(void);
+
+
+/* io.c */
+
+void delay(int);
+
+void bell(void);
+
+void move_cursor(int, int);
+
+void flush(void);
+int  kbhit(void);
+char inkey(void);
+
+uint message_num(void);
+uint message_len(uint);
+cptr message_str(uint);
+void message_add(cptr, int);
+void message_new(cptr, int);
+
+void msg_more(int);
+void msg_print(cptr);
+void message(cptr, int);
+
+void erase_line(int, int);
+void clear_screen(void);
+void clear_from(int);
+
+void c_put_str(int8u, cptr, int, int);
+void put_str(cptr, int, int);
+
+void c_prt(int8u, cptr, int, int);
+void prt(cptr, int, int);
+
+void save_screen(void);
+void restore_screen(void);
+
+int get_check(cptr);
+int get_com(cptr, char *);
+int get_string(char *, int, int, int);
+int askfor(char *, int);
+void pause_line(int);
+
+
+/* magic.c */
+int door_creation(void);
+void stair_creation(void);
+void pray(void);
+void cast(void);
+
+/* arrays.c */
+void get_file_paths(void);
+void init_some_arrays(void);
+
+/* main.c */
+void play_game(void);
+void play_game_mac(int);
+
+/* misc1.c */
+void init_seeds(void);
+void set_seed(int32u);
+void reset_seed(void);
+int check_time(void);
+int randnor(int, int);
+int bit_pos(int32u *);
+void panel_bounds(void);
+int get_panel(int, int, int);
+int next_to_wall(int, int);
+int next_to_corr(int, int);
+int damroll(int, int);
+int pdamroll(int8u *);
+void prt_map(void);
+void add_food(int);
+
+/* misc2.c */
+void delete_monster_idx(int);
+void delete_monster(int, int);
+void tighten_m_list(void);
+void wipe_m_list(void);
+int m_pop(void);
+int max_hp(int8u *);
+int place_monster(int, int, int, int);
+int place_win_monster(void);
+void place_group(int, int, int, int);
+int get_mons_num(int);
+int poly_r_idx(int);
+void alloc_monster(int, int, int);
+int summon_monster(int * ,int *, int);
+int summon_undead(int *, int *);
+int summon_demon(int, int *, int *);
+int summon_dragon(int *, int *);
+int summon_wraith(int *, int *);
+int summon_reptile(int *, int *);
+int summon_spider(int *, int *);
+int summon_angel(int *, int *);
+int summon_ant(int *, int *);
+int summon_unique(int *, int *);
+int summon_jabberwock(int *, int *);
+int summon_gundead(int *, int *);
+int summon_ancientd(int *, int *);
+int summon_hound(int *, int *);
+int next_to_walls(int, int);
+int get_nmons_num(int);
+int distance(int, int, int, int);
+
+/* misc3.c */
+int i_pop(void);
+void delete_object_idx(int);
+void delete_object(int, int);
+void wipe_i_list(void);
+int magik(int);
+bool make_artifact(inven_type *);
+int m_bonus(int, int, int);
+void apply_magic(inven_type *, int, bool, bool, bool);
+bool clean_grid(int, int);
+bool floor_grid(int, int);
+bool valid_grid(int, int);
+void place_trap(int, int);
+void place_rubble(int, int);
+void place_gold(int, int);
+int get_obj_num(int,int);
+void place_object(int, int);
+void random_object(int, int, int);
+void cnv_stat(int, char *);
+void prt_stat(int);
+void prt_field(cptr, int, int);
+int stat_adj(int);
+int chr_adj(void);
+int con_adj(void);
+cptr title_string(void);
+void prt_title(void);
+void prt_level(void);
+void prt_cmana(void);
+void prt_mhp(void);
+void prt_chp(void);
+void prt_pac(void);
+void prt_gold(void);
+void prt_depth(void);
+void prt_hunger(void);
+void prt_blind(void);
+void prt_confused(void);
+void prt_afraid(void);
+void prt_poisoned(void);
+void prt_state(void);
+void prt_speed(void);
+void prt_study(void);
+void prt_winner(void);
+int16u modify_stat(int, int);
+void set_use_stat(int);
+int inc_stat(int);
+int dec_stat(int,int,int);
+int res_stat(int);
+void bst_stat(int, int);
+int tohit_adj(void);
+int toac_adj(void);
+int todis_adj(void);
+int todam_adj(void);
+void prt_stat_block(void);
+void draw_cave(void);
+void put_character(void);
+void put_stats(void);
+cptr likert(int, int);
+void put_misc1(void);
+void put_misc2(void);
+void put_misc3(void);
+void display_player(void);
+void get_name(void);
+void change_name(void);
+int item_similar(inven_type *, inven_type *);
+int combine(int);
+void combine_pack(void);
+void inven_item_increase(int, int);
+void inven_item_optimize(int);
+int inven_check_num(inven_type *);
+int inven_carry(inven_type *);
+int inven_damage(int (*)(), int);
+int weight_limit(void);
+int inven_check_weight(inven_type *);
+void check_strength(void);
+int spell_chance(int);
+void print_spells(int *, int, int, int);
+int get_spell(int *, int, int *, int *, cptr, int);
+void calc_spells(int);
+void gain_spells(void);
+void calc_mana(int);
+void prt_experience(void);
+void calc_hitpoints(void);
+bool insert_str(char *, cptr, cptr);
+int enter_wiz_mode(void);
+int attack_blows(int, int *);
+int tot_dam(inven_type *, int, int);
+int critical_blow(int, int, int, int);
+int mmove(int, int *, int *);
+int player_saves(void);
+int find_range(int, int, int *, int *);
+void teleport(int);
+void check_view(void);
+void place_good(int, int, bool);
+int place_ghost(void);
+void prt_cut(void);
+void prt_stun(void);
+void special_random_object(int, int, int);
+void cut_player(int);
+void stun_player(int);
+void prt_equippy_chars(void);
+int get_coin_type(monster_race *);
+
+/* moria1.c */
+void choice_again(void);
+void choice_clear(void);
+void choice_fresh(void);
+void choice_putstr(int x, int y, int n, byte a, cptr s);
+void move_rec(int, int, int, int);
+void change_speed(int);
+void py_bonuses(inven_type *, int);
+void calc_bonuses(void);
+int show_inven(int, int, int, int, int (int));
+int show_equip(int, int);
+int verify(cptr, int);
+void inven_command(int);
+int get_item(int *, cptr, int, int, int (int));
+int test_hit(int, int, int, int, int);
+void take_hit(int, cptr);
+void change_trap(int, int);
+void corrode_gas(cptr);
+void poison_gas(int, cptr);
+void fire_dam(int, cptr);
+void cold_dam(int, cptr);
+void elec_dam(int, cptr);
+void acid_dam(int, cptr);
+
+/* moria2.c */
+int is_quest(int);
+int ruin_stat(int);
+void hit_trap(int, int);
+int cast_spell(cptr ,int, int *, int *);
+void monster_death(monster_type *, bool, bool);
+bool mon_take_hit(int, int, bool);
+void py_attack(int, int);
+void shoot(int,int);
+void py_bash(int, int);
+
+/* moria3.c */
+int twall(int, int, int, int);
+void do_cmd_activate(void);
+void do_cmd_look(void);
+void do_cmd_locate(void);
+void do_cmd_view_map(void);
+void do_cmd_rest(void);
+void do_cmd_view_map(void);
+void do_cmd_open(void);
+void do_cmd_close(void);
+void do_cmd_tunnel(void);
+void do_cmd_disarm(void);
+void do_cmd_bash(void);
+void do_cmd_spike(void);
+void do_cmd_fire(void);
+void do_cmd_walk(int);
+void do_cmd_stay(int);
+void do_cmd_run(void);
+void do_cmd_search(void);
+void do_cmd_rest(void);
+void do_cmd_feeling(void);
+void scribe_object(void);
+void artifact_check(void);
+void check_uniques(void);
+
+/* moria4.c */
+int is_a_vowel(int);
+int index_to_label(int);
+int label_to_inven(int);
+int label_to_equip(int);
+cptr describe_use(int);
+cptr mention_use(int);
+void monster_desc(char *, monster_type*, int);
+int get_tag(int*,char);
+void target_update(void);
+int target_at(int, int);
+int target_okay(void);
+int target_set(void);
+void mmove2(int *, int *, int, int, int, int);
+void confuse_dir(int *, int);
+int get_a_dir(cptr, int *, int);
+int get_dir(cptr, int *);
+int get_dir_c(cptr, int *);
+void disturb(int, int);
+void search_on(void);
+void search_off(void);
+void search(int, int, int);
+void rest_off(void);
+void carry(int, int, int);
+void move_player(int, int);
+void find_step(void);
+void find_init(void);
+void end_find(void);
+
+#ifdef MSDOS
+/* ms_misc.c -- none of this exists :-( */
+char *getlogin(void);
+unsigned int sleep(unsigned );
+void error(char *, ...);
+void warn(char *, ...);
+void msdos_init(void);
+void msdos_raw(void);
+void msdos_noraw(void);
+int bios_getch(void);
+int msdos_getch(void);
+void bios_clear(void);
+void msdos_intro(void);
+void bios_clear(void);
+#endif
+
+/* recall.c */
+void recall_again(void);
+void recall_clear(void);
+void recall_fresh(void);
+void recall_putstr(int x, int y, int n, byte a, cptr s);
+void recall_set_width(int);
+int roff_recall(int);
+int bool_roff_recall(int);
+void lore_do_probe(monster_type *m_ptr);
+void lore_treasure(monster_type *m_ptr, int num_item, int num_gold);
+
+/* save.c */
+int save_player(void);
+int _save_player(char *);
+int load_player(int *);
+
+/* signals.c */
+void signals_ignore_tstp(void);
+void signals_handle_tstp(void);
+void signals_init(void);
+void ignore_signals(void);
+void default_signals(void);
+void restore_signals(void);
+
+/* spells.c */
+bool project(int, int, int, int, int, int, int);
+bool apply_disenchant(int);
+int sleep_monsters1(int, int);
+int detect_treasure(void);
+int detect_magic(void);
+int detect_object(void);
+int detect_trap(void);
+int detect_sdoor(void);
+int detect_invisible(void);
+int lite_area(int, int, int, int);
+int unlite_area(int, int);
+void map_area(void);
+bool ident_floor(void);
+int ident_spell(void);
+int aggravate_monster(int);
+int trap_creation(void);
+int door_creation(void);
+void stair_creation(void);
+int td_destroy(void);
+int detect_monsters(void);
+void lite_line(int, int, int);
+void starlite(int, int);
+int disarm_all(int, int, int);
+void bolt(int, int, int);
+void breath(int, int, int);
+void fire_bolt(int, int, int, int, int);
+void fire_ball(int, int, int, int, int, int);
+int recharge(int);
+int heal_monster(int, int, int);
+int drain_life(int, int, int, int);
+int speed_monster(int, int, int);
+int slow_monster(int, int, int);
+int confuse_monster(int, int, int, int);
+int sleep_monster(int, int, int);
+int wall_to_mud(int, int, int);
+int td_destroy2(int, int, int);
+int poly_monster(int, int, int);
+int build_wall(int, int, int);
+int clone_monster(int, int, int);
+void teleport_away(int, int);
+void teleport_to(int, int);
+int teleport_monster(int, int, int);
+int mass_genocide(int);
+int genocide(int);
+int speed_monsters(int);
+int sleep_monsters2(void);
+int mass_poly(void);
+int detect_evil(void);
+int hp_player(int);
+int cure_confusion(void);
+int cure_blindness(void);
+int cure_poison(void);
+int remove_fear(void);
+void earthquake(void);
+int protect_evil(void);
+void satisfy_hunger(void);
+int dispel_creature(int32u, int);
+int turn_undead(void);
+void warding_glyph(void);
+void lose_exp(int32);
+int slow_poison(void);
+void bless(int);
+void detect_inv2(int);
+void destroy_area(int, int);
+int enchant(inven_type *, int, int8u);
+void elemental_brand(void);
+int remove_curse(void);
+int restore_level(void);
+void self_knowledge(void);
+int probing(void);
+int detection(void);
+void starball(int,int);
+void spell_hit_monster(monster_type *, int, int *, int, int *, int *, int);
+void wiz_lite(void);
+void wiz_dark(void);
+int lose_all_info(void);
+void tele_level(void);
+void identify_pack(void);
+int fear_monster(int, int, int, int);
+int banish_creature(int32u, int);
+int remove_all_curse(void);
+cptr pain_message(int, int);
+int line_spell(int, int, int, int, int);
+
+/* store.c */
+int32 item_value(inven_type *i_ptr);
+void store_init(void);
+void store_maint(void);
+void store_shuffle(void);
+void enter_store(int);
+
+
+/* util.c */
+#ifndef HAS_USLEEP
+int usleep(unsigned long);
+#endif
+void user_name(char *buf, int id);
+int tilde(cptr file, char *exp);
+FILE *my_tfopen(cptr, cptr);
+int my_topen(cptr, int, int);
+
+
+/* wizard.c */
+int do_wiz_command(void);
+
+
+#endif      /* __STDC__ */
+
+

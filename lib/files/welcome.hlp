@@ -1,1 +1,16 @@
-                       Welcome to Angband!Your first task is to generate a character. You must specify a sex,a race and a class. Anytime before you have made these specifications,you can interrupt with control-C. You can also specify the race asoften as you like by entering '%' to the class request. This will alsoregenerate your attributes.If this is your first time playing, you may want to read the manual first.
+                       Welcome to Angband!
+
+Your first task is to generate a character. You must specify a race,
+a sex, and a class.  You may "Quit" with "Ctrl-C".
+
+Then, you will roll a character, using the "Autoroller" if desired.
+Your character has "stats" ranging from 3 to 18 (and above), which
+affect survival odds.  For the autoroller, enter stats "above" 18 by
+adding together the two parts of the stat (thus 18/50 -> 68).
+
+Then name your character, and enter the world of Angband...
+
+If this is your first time playing, you may want to read the manual first.
+If you cannot find the Manual, you can always try the source... :-)
+
+

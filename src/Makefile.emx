@@ -1,0 +1,43 @@
+# File: Makefile
+
+SRCS = \
+  arrays.c birth.c cave.c command.c \
+  creature.c death.c desc.c dungeon.c \
+  effects.c files.c generate.c help.c io.c \
+  magic.c main.c main-emx.c \
+  misc1.c misc2.c misc3.c misc4.c \
+  moria1.c moria2.c moria3.c moria4.c \
+  random.c recall.c save.c signals.c \
+  spells1.c spells2.c store.c tables.c term.c \
+  util.c variable.c wizard.c \
+  z-util.c z-virt.c z-form.c
+
+
+OBJS = \
+  arrays.o birth.o cave.o command.o \
+  creature.o death.o desc.o dungeon.o \
+  effects.o files.o generate.o help.o io.o \
+  magic.o main.o main-emx.o \
+  misc1.o misc2.o misc3.o misc4.o \
+  moria1.o moria2.o moria3.o moria4.o \
+  random.o recall.o save.o signals.o \
+  spells1.o spells2.o store.o tables.o term.o \
+  util.o variable.o wizard.o \
+  z-util.o z-virt.o z-form.o
+
+CC = gcc
+CFLAGS = -Wall -O2
+
+.c.o:
+	$(CC) $(CFLAGS) -c $*.c
+
+angband.exe: $(OBJS)
+	$(CC) $(CFLAGS)  -o angband.exe $(OBJS) -lvideo
+	+ move angband.exe ..
+	+ del ..\lib\data\*.raw
+
+depend:
+	makedepend -D__MAKEDEPEND__ $(SRCS)
+
+# DO NOT DELETE THIS LINE -- make depend depends on it.
+

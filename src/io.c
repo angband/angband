@@ -1,1 +1,946 @@
-/* * io.c: terminal I/O code, uses the curses package  * * Copyright (c) 1989 James E. Wilson, Robert A. Koeneke  * * This software may be copied and distributed for educational, research, and * not for profit purposes provided that this copyright and statement are * included in all such copies.  */#ifdef linux#include <bsd/sgtty.h>#endif#ifdef MSDOS#include <stdio.h>#include <process.h>#endif#include "angband.h"#if defined(NLS) && defined(lint)/* for AIX, don't let curses include the NL stuff */#undef NLS#endif#if !defined(GEMDOS)#else#define ATARIST_MWC#include "curses.h"#include <osbind.h>long                wgetch();char               *getenv();#endif#include <ctype.h>#include "mac-io.h"#if defined(SYS_V) && defined(lint)/* * for AIX, prevent hundreds of unnecessary lint errors, must define before * signal.h is included  */#define _h_IEEETRAPtypedef struct {    int stuff;} fpvmach;#endif#if defined(MSDOS)#if defined(ANSI)#include "ms_ansi.h"#endif#else				   /* not msdos */#if !defined(ATARIST_MWC) && !defined(MAC)#ifndef VMS#include <sys/ioctl.h>#endif#include <signal.h>#endif#endif#ifndef USG/* only needed for Berkeley UNIX */#include <sys/param.h>#include <sys/file.h>#include <sys/types.h>#endif#ifdef USG#ifndef ATARIST_MWC#include <string.h>#else#include "string.h"#endif /* !ATARIST_MWC */#if !defined(MAC) && !defined(MSDOS) && !defined(ATARIST_MWC) && !defined(__MINT__)#include <termio.h>#endif#else#ifndef VMS#include <strings.h>#include <sys/wait.h>#endif /* !VMS */#endif /* USG *//* ARGH!  This is driving me up the wall!  Brute force never hurt... [cjh] */#if defined(__MINT__) && !defined(_WAIT_H)#include <wait.h>#endif#if defined(SYS_V) && defined(lint)struct screen {    int                 dumb;};#endif/* * Fooling lint. Unfortunately, c defines all the TIO.	  -CJS- constants to * be long, and lint expects them to be int. Also, ioctl is sometimes called * with just two arguments. The following definition keeps lint happy. It may * need to be reset for different systems.	  */#ifndef MAC#ifdef lint#ifdef Pyramid/* Pyramid makes constants greater than 65535 into long! Gakk! -CJS- *//* ARGSUSED *//* VARARGS2 */static     Ioctl(i, l, p) long l;    char               *p;{    return 0;}#else/* ARGSUSED *//* VARARGS2 */static     Ioctl(i, l, p) char *p;{    return 0;}#endif#define ioctl	    Ioctl#endif#if !defined(USG) && defined(lint)/* * This use_value hack is for curses macros which return a value, but don't * shut up about it when you try to tell them (void).	  *//* only needed for Berkeley UNIX */int                 Use_value;#define use_value   Use_value +=#else#define use_value#endif#if defined(SYS_V) && defined(lint)/* * This use_value2 hack is for curses macros which use a conditional * expression, and which say null effect even if you cast to (void).  *//* only needed for SYS V */int                 Use_value2;#define use_value2  Use_value2 +=#else#define use_value2#endif#endif#ifndef MACchar *getenv();#endif#if !defined(MAC) && !defined(MSDOS) && !defined(ATARIST_MWC) && !defined(__MINT__)#ifdef USGstatic struct termio save_termio;#else#ifndef VMSstatic struct ltchars save_special_chars;static struct sgttyb save_ttyb;static struct tchars save_tchars;static int          save_local_chars;#endif#endif#endif#ifndef MACstatic int     curses_on = FALSE;static WINDOW *savescr;	   /* Spare window for saving the screen.				    * -CJS- */#endif#ifdef MAC/* Attributes of normal and hilighted characters */#define ATTR_NORMAL	attrNormal#define ATTR_HILITED	attrReversed#endif#ifndef MAC#ifdef SIGTSTP/* * suspend()							   -CJS- * Handle the stop and start signals. This ensures that the log is up to * date, and that the terminal is fully reset and restored.   */int suspend(){#ifdef USG/* * for USG systems with BSDisms that have SIGTSTP defined, but don't actually * implement it  */#else    struct sgttyb  tbuf;    struct ltchars lcbuf;    struct tchars  cbuf;    int            lbuf;    long           time();    py.misc.male |= 2;    (void)ioctl(0, TIOCGETP, (char *)&tbuf);    (void)ioctl(0, TIOCGETC, (char *)&cbuf);    (void)ioctl(0, TIOCGLTC, (char *)&lcbuf);    (void)ioctl(0, TIOCLGET, (char *)&lbuf);    restore_term();    (void)kill(0, SIGSTOP);    curses_on = TRUE;    (void)ioctl(0, TIOCSETP, (char *)&tbuf);    (void)ioctl(0, TIOCSETC, (char *)&cbuf);    (void)ioctl(0, TIOCSLTC, (char *)&lcbuf);    (void)ioctl(0, TIOCLSET, (char *)&lbuf);    (void)touchwin(curscr);    (void)wrefresh(curscr);    cbreak();    noecho();    py.misc.male &= ~2;#endif    return 0;}#endif#endif/* initializes curses routines */void init_curses()#ifdef MAC{/* Primary initialization is done in mac.c since game is restartable *//* Only need to clear the screen here */    Rect scrn;    scrn.left = scrn.top = 0;    scrn.right = SCRN_COLS;    scrn.bottom = SCRN_ROWS;    EraseScreen(&scrn);    UpdateScreen();}#else{    int i, y, x;#ifndef USG    (void)ioctl(0, TIOCGLTC, (char *)&save_special_chars);    (void)ioctl(0, TIOCGETP, (char *)&save_ttyb);    (void)ioctl(0, TIOCGETC, (char *)&save_tchars);    (void)ioctl(0, TIOCLGET, (char *)&save_local_chars);#else#if !defined(VMS) && !defined(MSDOS) && !defined(ATARIST_MWC) && !defined(__MINT__)    (void)ioctl(0, TCGETA, (char *)&save_termio);#endif#endif#ifdef ATARIST_MWC    WINDOW *newwin();    initscr();    if (ERR)#else#if defined(USG) && !defined(PC_CURSES)	/* PC curses returns ERR */    if (initscr() == NULL)#else    if (initscr() == ERR)#endif#endif    {	(void)printf("Error allocating screen in curses package.\n");	exit(1);    }    if (LINES < 24 || COLS < 80) { /* Check we have enough screen. -CJS- */	(void)printf(	  "Your screen is too small for Angband; you need at least 80x24.\n");	exit(1);    }#ifdef SIGTSTP#ifdef __MINT__    (void)signal(SIGTSTP, (__Sigfunc)suspend);#else    (void)signal(SIGTSTP, suspend);#endif#endif    if ((savescr = newwin(0, 0, 0, 0)) == NULL) {	(void)printf("Out of memory in starting up curses.\n");	exit_game();    }    (void)clear();    (void)refresh();    moriaterm();/* check tab settings, exit with error if they are not 8 spaces apart */#ifndef AMIGA#ifdef ATARIST_MWC    move(0, 0);#else    (void)move(0, 0);#endif    for (i = 1; i < 10; i++) {#ifdef ATARIST_MWC	addch('\t');#else	(void)addch('\t');#endif	getyx(stdscr, y, x);	if (y != 0 || x != i * 8)	    break;    }#if 0    if (i != 10) {	msg_print("Tabs must be set 8 spaces apart.");	exit_game();    }#endif#endif}#endif/* Set up the terminal into a suitable state for moria.	 -CJS- */void moriaterm()#ifdef MAC/* Nothing to do on Mac */{}#else{#if !defined(MSDOS) && !defined(ATARIST_MWC) && !defined(__MINT__)#ifdef USG    struct termio  tbuf;#else    struct ltchars lbuf;    struct tchars  buf;#endif#endif    curses_on = TRUE;#ifndef BSD4_3    use_value crmode();#else    use_value cbreak();#endif    use_value noecho();/* can not use nonl(), because some curses do not handle it correctly */#ifdef MSDOS    msdos_raw();#else#if !defined(ATARIST_MWC) && !defined(__MINT__)#ifdef USG    (void)ioctl(0, TCGETA, (char *)&tbuf);/* disable all of the normal special control characters */    tbuf.c_cc[VINTR] = (char)3;	   /* control-C */    tbuf.c_cc[VQUIT] = (char)-1;    tbuf.c_cc[VERASE] = (char)-1;    tbuf.c_cc[VKILL] = (char)-1;    tbuf.c_cc[VEOF] = (char)-1;/* don't know what these are for */    tbuf.c_cc[VEOL] = (char)-1;    tbuf.c_cc[VEOL2] = (char)-1;/* stuff needed when !icanon, i.e. cbreak/raw mode */    tbuf.c_cc[VMIN] = 1;	   /* Input should wait for at least 1 char */    tbuf.c_cc[VTIME] = 0;	   /* no matter how long that takes. */    (void)ioctl(0, TCSETA, (char *)&tbuf);#else#ifndef VMS/* * disable all of the special characters except the suspend char, interrupt * char, and the control flow start/stop characters  */    (void)ioctl(0, TIOCGLTC, (char *)&lbuf);    lbuf.t_suspc = (char)26;	   /* control-Z */    lbuf.t_dsuspc = (char)-1;    lbuf.t_rprntc = (char)-1;    lbuf.t_flushc = (char)-1;    lbuf.t_werasc = (char)-1;    lbuf.t_lnextc = (char)-1;    (void)ioctl(0, TIOCSLTC, (char *)&lbuf);    (void)ioctl(0, TIOCGETC, (char *)&buf);    buf.t_intrc = (char)3;	   /* control-C */    buf.t_quitc = (char)-1;    buf.t_startc = (char)17;	   /* control-Q */    buf.t_stopc = (char)19;	   /* control-S */    buf.t_eofc = (char)-1;    buf.t_brkc = (char)-1;    (void)ioctl(0, TIOCSETC, (char *)&buf);#endif#endif#endif#endif}#endif/* Dump IO to buffer					-RAK-	 */void put_buffer(out_str, row, col)const char *out_str;int         row, col;#ifdef MAC{/* The screen manager handles writes past the edge ok */    DSetScreenCursor(col, row);    DWriteScreenStringAttr((char*)out_str, ATTR_NORMAL);}#else{    vtype tmp_str;/* * truncate the string, to make sure that it won't go past right edge of * screen  */    if (col > 79)	col = 79;    (void)strncpy(tmp_str, out_str, 79 - col);    tmp_str[79 - col] = '\0';#ifndef ATARIST_MWC    if (mvaddstr(row, col, tmp_str) == ERR)#else    mvaddstr(row, col, out_str);    if (ERR)#endif    {	abort();    /* clear msg_flag to avoid problems with unflushed messages */	msg_flag = 0;	(void)sprintf(tmp_str, "error in put_buffer, row = %d col = %d\n",		      row, col);	prt(tmp_str, 0, 0);	bell();    /* wait so user can see error */	(void)sleep(2);    }}#endif/* Dump the IO buffer to terminal			-RAK-	 */void put_qio(){    screen_change = TRUE;	   /* Let inven_command know something has				    * changed. */    (void)refresh();}/* Put the terminal in the original mode.			   -CJS- */void restore_term()#ifdef MAC/* Nothing to do on Mac */{}#else{    if (!curses_on)	return;    put_qio();			   /* Dump any remaining buffer */#ifdef MSDOS    (void)sleep(2);		   /* And let it be read. */#endif#ifdef VMS    pause_line(15);#endif/* this moves curses to bottom right corner */    mvcur(curscr->_cury, curscr->_curx, LINES - 1, 0);#ifdef VMS    pause_line(15);#endif    endwin();			   /* exit curses */    (void)fflush(stdout);#ifdef MSDOS    msdos_noraw();    (void)clear();#endif/* restore the saved values of the special chars */#ifdef USG#if !defined(MSDOS) && !defined(ATARIST_MWC) && !defined(__MINT__)    (void)ioctl(0, TCSETA, (char *)&save_termio);#endif#else#ifndef VMS    (void)ioctl(0, TIOCSLTC, (char *)&save_special_chars);    (void)ioctl(0, TIOCSETP, (char *)&save_ttyb);    (void)ioctl(0, TIOCSETC, (char *)&save_tchars);    (void)ioctl(0, TIOCLSET, (char *)&save_local_chars);#endif#endif    curses_on = FALSE;}#endifvoid shell_out()#ifdef MAC{    alert_error("This command is not implemented on the Macintosh.");}#else{#ifdef USG#if !defined(MSDOS) && !defined(ATARIST_MWC) && !defined(__MINT__)    struct termio       tbuf;#endif#else    struct sgttyb       tbuf;    struct ltchars      lcbuf;    struct tchars       cbuf;    int                 lbuf;#endif#ifdef MSDOS    char               *comspec, key;#else#ifdef ATARIST_MWC    char                comstr[80];    char               *str;    extern char       **environ;#else    int                 val;    char               *str;#endif#endif    save_screen();/* clear screen and print 'exit' message */    clear_screen();#ifndef ATARIST_MWC    put_buffer("[Entering shell, type 'exit' to resume your game.]\n", 0, 0);#else    put_buffer("[Escaping to shell]\n", 0, 0);#endif    put_qio();#ifdef USG#if !defined(MSDOS) && !defined(ATARIST_MWC) && !defined(__MINT__)    (void)ioctl(0, TCGETA, (char *)&tbuf);#endif#else#ifndef VMS    (void)ioctl(0, TIOCGETP, (char *)&tbuf);    (void)ioctl(0, TIOCGETC, (char *)&cbuf);    (void)ioctl(0, TIOCGLTC, (char *)&lcbuf);    (void)ioctl(0, TIOCLGET, (char *)&lbuf);#endif#endif/* would call nl() here if could use nl()/nonl(), see moriaterm() */#ifndef BSD4_3    use_value           nocrmode();#else    use_value           nocbreak();#endif#ifdef MSDOS    use_value           msdos_noraw();#endif    use_value           echo();    ignore_signals();#ifdef MSDOS			   /* { */    if ((comspec = getenv("COMSPEC")) == NULL	|| spawnl(P_WAIT, comspec, comspec, (char *)NULL) < 0) {	clear_screen();		   /* BOSS key if shell failed */	put_buffer("M:\\> ", 0, 0);	do {	    key = inkey();	} while (key != '!');    }#else				   /* MSDOS }{ */#ifndef ATARIST_MWC    val = fork();    if (val == 0) {#endif	default_signals();#ifdef USG#if !defined(MSDOS) && !defined(ATARIST_MWC) && !defined(__MINT__)	(void)ioctl(0, TCSETA, (char *)&save_termio);#endif#else#ifndef VMS	(void)ioctl(0, TIOCSLTC, (char *)&save_special_chars);	(void)ioctl(0, TIOCSETP, (char *)&save_ttyb);	(void)ioctl(0, TIOCSETC, (char *)&save_tchars);	(void)ioctl(0, TIOCLSET, (char *)&save_local_chars);#endif#endif#ifndef MSDOS    /* close scoreboard descriptor */    /* it is not open on MSDOS machines */#if 0    /* this file is not open now, see init_file() in files.c */	(void)close(highscore_fd);#endif#endif	if ((str = getenv("SHELL")))#ifndef ATARIST_MWC	    (void)execl(str, str, (char *)0);#else	    system(str);#endif	else#ifndef ATARIST_MWC	    (void)execl("/bin/sh", "sh", (char *)0);#endif	msg_print("Cannot execute shell.");#ifndef ATARIST_MWC	exit(1);    }    if (val == -1) {	msg_print("Fork failed. Try again.");	return;    }#ifdef USG    (void)wait((int *)0);#else    (void)wait((union wait *) 0);#endif#endif				   /* ATARIST_MWC */#endif				   /* MSDOS } */    restore_signals();/* restore the cave to the screen */    restore_screen();#ifndef BSD4_3    use_value           crmode();#else    use_value           cbreak();#endif    use_value           noecho();/* would call nonl() here if could use nl()/nonl(), see moriaterm() */#ifdef MSDOS    msdos_raw();#endif/* disable all of the local special characters except the suspend char *//* have to disable ^Y for tunneling */#ifdef USG#if !defined(MSDOS) && !defined(ATARIST_MWC) && !defined(__MINT__)    (void)ioctl(0, TCSETA, (char *)&tbuf);#endif#else#ifndef VMS    (void)ioctl(0, TIOCSLTC, (char *)&lcbuf);    (void)ioctl(0, TIOCSETP, (char *)&tbuf);    (void)ioctl(0, TIOCSETC, (char *)&cbuf);    (void)ioctl(0, TIOCLSET, (char *)&lbuf);#endif#endif    (void)wrefresh(curscr);}#endif/* * Returns a single character input from the terminal.	This silently -CJS- * consumes ^R to redraw the screen and reset the terminal, so that this * operation can always be performed at any input prompt.  inkey() never * returns ^R.	  */char inkey()#ifdef MAC/* The Mac does not need ^R, so it just consumes it *//* This routine does nothing special with direction keys *//* Just returns their keypad ascii value (e.g. '0'-'9') *//* Compare with inkeydir() below */{    char ch;    int  dir;    int  shift_flag, ctrl_flag;    put_qio();    command_count = 0;    do {	macgetkey(&ch);    } while (ch == CTRL('R'));    dir = extractdir(ch, &shift_flag, &ctrl_flag);    if (dir != -1)	ch = '0' + dir;    return (ch);}#else{    int i;    put_qio();			   /* Dump IO buffer		 */    command_count = 0;		   /* Just to be safe -CJS- */    while (TRUE) {	i = getch();    /* some machines may not sign extend. */	if (i == EOF) {	    eof_flag++;	/*	 * avoid infinite loops while trying to call inkey() for a -more-	 * prompt. 	 */	    msg_flag = FALSE;	    (void)refresh();	    if (!character_generated || character_saved)		exit_game();	    disturb(1, 0);	    if (eof_flag > 100) {	    /* just in case, to make sure that the process eventually dies */		panic_save = 1;		(void)strcpy(died_from, "(end of input: panic saved)");		if (!save_char()) {		    (void)strcpy(died_from, "panic: unexpected eof");		    death = TRUE;		}		exit_game();	    }	    return ESCAPE;	}	if (i != CTRL('R'))	    return (char)i;	(void)wrefresh(curscr);	moriaterm();    }}#endif#ifdef MACchar inkeydir(void);char inkeydir()/* The Mac does not need ^R, so it just consumes it *//* This routine translates the direction keys in rogue-like mode *//* Compare with inkeydir() below */{    char        ch;    int         dir;    int         shift_flag, ctrl_flag;    static char tab[9] = {	'b', 'j', 'n',	'h', '.', 'l',	'y', 'k', 'u'    };    static char shifttab[9] = {	'B', 'J', 'N',	'H', '.', 'L',	'Y', 'K', 'U'    };    static char ctrltab[9] = {	CTRL('B'), CTRL('J'), CTRL('N'),	CTRL('H'), '.', CTRL('L'),	CTRL('Y'), CTRL('K'), CTRL('U')    };    put_qio();    command_count = 0;    do {	macgetkey(&ch);    } while (ch == CTRL('R'));    dir = extractdir(ch, &shift_flag, &ctrl_flag);    if (dir != -1) {	if (!rogue_like_commands) {	    ch = '0' + dir;	} else {	    if (ctrl_flag)		ch = ctrltab[dir - 1];	    else if (shift_flag)		ch = shifttab[dir - 1];	    else		ch = tab[dir - 1];	}    }    return (ch);}#endif/* Flush the buffer					-RAK-	 */void flush()#ifdef MAC{/* Removed put_qio() call.  Reduces flashing.  Doesn't seem to hurt. */    FlushScreenKeys();}#else{#ifdef MSDOS    while (kbhit())	(void)getch();#else/* * the code originally used ioctls, TIOCDRAIN, or TIOCGETP/TIOCSETP, or * TCGETA/TCSETAF, however this occasionally resulted in loss of output, the * happened especially often when rlogin from BSD to SYS_V machine, using * check_input makes the desired effect a bit clearer  *//* wierd things happen on EOF, don't try to flush input in that case */    if (!eof_flag)	while (check_input(0));#endif/* used to call put_qio() here to drain output, but it is not necessary */}#endif/* Clears given line of text				-RAK-	 */void erase_line(row, col)int row, col;#ifdef MAC{    Rect line;    if (row == MSG_LINE && msg_flag)	msg_print(NULL);    line.left = col;    line.top = row;    line.right = SCRN_COLS;    line.bottom = row + 1;    DEraseScreen(&line);}#else{    if (row == MSG_LINE && msg_flag)	msg_print(NULL);    (void)move(row, col);    clrtoeol();}#endif/* Clears screen */void clear_screen()#ifdef MAC{    Rect area;    if (msg_flag)	msg_print(NULL);    area.left = area.top = 0;    area.right = SCRN_COLS;    area.bottom = SCRN_ROWS;    DEraseScreen(&area);}#else{    if (msg_flag)	msg_print(NULL);    touchwin(stdscr);    (void)clear();    refresh();}#endifvoid clear_from(row)int row;#ifdef MAC{    Rect area;    area.left = 0;    area.top = row;    area.right = SCRN_COLS;    area.bottom = SCRN_ROWS;    DEraseScreen(&area);}#else{    (void)move(row, 0);    clrtobot();}#endif/* Outputs a char to a given interpolated y, x position	-RAK-	 *//* sign bit of a character used to indicate standout mode. -CJS */void print(ch, row, col)int ch, row, col;{    row -= panel_row_prt;	   /* Real co-ords convert to screen positions */    col -= panel_col_prt;#if 0    if (ch & 0x80)	standout();#endif	DSetScreenCursor(col, row);	DWriteScreenCharAttr((char)ch, ATTR_NORMAL);	#if 0    if (ch & 0x80)	standend();#endif}/* Moves the cursor to a given interpolated y, x position	-RAK-	 */void move_cursor_relative(row, col)int row, col;#ifdef MAC{    row -= panel_row_prt;	   /* Real co-ords convert to screen				    * positions */    col -= panel_col_prt;    DSetScreenCursor(col, row);}#else{    vtype tmp_str;    row -= panel_row_prt;	   /* Real co-ords convert to screen				    * positions */    col -= panel_col_prt;    if (move(row, col) == ERR) {	abort();    /* clear msg_flag to avoid problems with unflushed messages */	msg_flag = 0;	(void)sprintf(tmp_str,		      "error in move_cursor_relative, row = %d col = %d\n",		      row, col);	prt(tmp_str, 0, 0);	bell();    /* wait so user can see error */	(void)sleep(2);    }}#endif/* Print a message so as not to interrupt a counted command. -CJS- */void count_msg_print(p)const char *p;{    int i;    i = command_count;    msg_print(p);    command_count = i;}/* Outputs a line to a given y, x position		-RAK-	 */void prt(str_buff, row, col)const char *str_buff;int         row, col;#ifdef MAC{    Rect line;    if (row == MSG_LINE && msg_flag)	msg_print(NULL);    line.left = col;    line.top = row;    line.right = SCRN_COLS;    line.bottom = row + 1;    DEraseScreen(&line);    put_buffer(str_buff, row, col);}#else{    if (row == MSG_LINE && msg_flag)	msg_print(NULL);    (void)move(row, col);    clrtoeol();    put_buffer(str_buff, row, col);}#endif/* move cursor to a given y, x position */void move_cursor(row, col)int row, col;#ifdef MAC{    DSetScreenCursor(col, row);}#else{    (void)move(row, col);}#endif/* Outputs message to top line of screen				 *//* These messages are kept for later reference.	 */void msg_print(str_buff)const char *str_buff;{    char   in_char;    static len = 0;    if (msg_flag) {	if (str_buff && (len + strlen(str_buff)) > 72) {	/* ensure that the complete -more- message is visible. */	    if (len > 73)		len = 73;	    c_put_buffer2(MAC_LIGHTBLUE, " -more-", MSG_LINE, len);	/* let sigint handler know that we are waiting for a space */	    wait_for_more = 1;	    do {		in_char = inkey();	    } while ((in_char != ' ') && (in_char != ESCAPE) && (in_char != '\n') &&		     (in_char != '\r') && (!quick_messages));	    len = 0;	    wait_for_more = 0;	    (void)move(MSG_LINE, 0);	    clrtoeol();	/* Make the null string a special case.  -CJS- */	    if (str_buff) {		put_buffer(str_buff, MSG_LINE, 0);		command_count = 0;		last_msg++;		if (last_msg >= MAX_SAVE_MSG)		    last_msg = 0;		(void)strncpy(old_msg[last_msg], str_buff, VTYPESIZ);		old_msg[last_msg][VTYPESIZ - 1] = '\0';		len = strlen(str_buff) + 1;		msg_flag = TRUE;	    } else {		len = 0;		msg_flag = FALSE;	    }	} else {	    if (!str_buff) {		if (len > 73)		    len = 73;		c_put_buffer2(MAC_LIGHTBLUE, " -more-", MSG_LINE, len);	    /* let sigint handler know that we are waiting for a space */		wait_for_more = 1;		do {		    in_char = inkey();		} while ((in_char != ' ') && (in_char != ESCAPE)			 && (in_char != '\n') && (in_char != '\r') && (!quick_messages));		wait_for_more = 0;		len = 0;		(void)move(MSG_LINE, 0);		clrtoeol();		msg_flag = FALSE;	    } else {		put_buffer(str_buff, MSG_LINE, len);		len += strlen(str_buff) + 1;		command_count = 0;		last_msg++;		if (last_msg >= MAX_SAVE_MSG)		    last_msg = 0;		(void)strncpy(old_msg[last_msg], str_buff, VTYPESIZ);		old_msg[last_msg][VTYPESIZ - 1] = '\0';		msg_flag = TRUE;	    }	}    } else {	(void)move(MSG_LINE, 0);	clrtoeol();	if (str_buff) {	    put_buffer(str_buff, MSG_LINE, 0);	    command_count = 0;	    len = strlen(str_buff) + 1;	    last_msg++;	    if (last_msg >= MAX_SAVE_MSG)		last_msg = 0;	    (void)strncpy(old_msg[last_msg], str_buff, VTYPESIZ);	    old_msg[last_msg][VTYPESIZ - 1] = '\0';	    msg_flag = TRUE;	} else {	    msg_flag = FALSE;	    len = 0;	}    }}/* Used to verify a choice - user gets the chance to abort choice.  -CJS- */int get_check(prompt)const char *prompt;{    int res, y, x;    prt(prompt, 0, 0);#ifdef MAC    GetScreenCursor(&x, &y);#else    getyx(stdscr, y, x);#if defined(lint)/* prevent message 'warning: y is unused' */    x = y;#endif    res = y;#endif    if (x > 73)#ifdef ATARIST_MWC	move(0, 73);#else	(void)move(0, 73);#endif#ifdef MAC    DWriteScreenStringAttr(" [y/n]", ATTR_NORMAL);#else    (void)addstr(" [y/n]");#endif    do {	res = inkey();    }    while (res == ' ');    erase_line(0, 0);    if (res == 'Y' || res == 'y')	return TRUE;    else	return FALSE;}/* Prompts (optional) and returns ord value of input char	 *//* Function returns false if <ESCAPE> is input	 */int get_com(prompt, command)const char *prompt;char       *command;{    int res;    if (prompt)	prt(prompt, 0, 0);    *command = inkey();    if (*command == 0 || *command == ESCAPE)	res = FALSE;    else	res = TRUE;    erase_line(MSG_LINE, 0);    return (res);}#ifdef MAC/* Same as get_com(), but translates direction keys from keypad */int get_comdir(char *,char *);int get_comdir(prompt, command)char *prompt;char *command;{    int res;    if (prompt)	prt(prompt, 0, 0);    *command = inkeydir();    if (*command == 0 || *command == ESCAPE)	res = FALSE;    else	res = TRUE;    erase_line(MSG_LINE, 0);    return (res);}#endif/* Gets a string terminated by <RETURN>		 *//* Function returns false if <ESCAPE> is input	 */int get_string(in_str, row, column, slen)char *in_str;int   row, column, slen;{    register int start_col, end_col, i;    char        *p;    int          flag, aborted;    aborted = FALSE;    flag = FALSE;    (void)move(row, column);    for (i = slen; i > 0; i--)	(void)addch(' ');    (void)move(row, column);    start_col = column;    end_col = column + slen - 1;    if (end_col > 79) {	slen = 80 - column;	end_col = 79;    }    p = in_str;    do {	i = inkey();	switch (i) {	  case ESCAPE:	    aborted = TRUE;	    break;	  case CTRL('J'):	  case CTRL('M'):	    flag = TRUE;	    break;	  case DELETE:	  case CTRL('H'):	    if (column > start_col) {		column--;		put_buffer(" ", row, column);		move_cursor(row, column);		*--p = '\0';	    }	    break;	  default:	    if (!isprint(i) || column > end_col)		bell();	    else {#ifdef MAC		DSetScreenCursor(column, row);		DWriteScreenCharAttr((char)i, ATTR_NORMAL);#else		use_value2          mvaddch(row, column, (char)i);#endif		*p++ = i;		column++;	    }	    break;	}    }    while ((!flag) && (!aborted));    if (aborted)	return (FALSE);/* Remove trailing blanks	 */    while (p > in_str && p[-1] == ' ')	p--;    *p = '\0';    return (TRUE);}/* Pauses for user response before returning		-RAK-	 */void pause_line(prt_line)int prt_line;{    prt("[Press any key to continue.]", prt_line, 23);    (void)inkey();    erase_line(prt_line, 0);}/* Pauses for user response before returning		-RAK-	 *//* NOTE: Delay is for players trying to roll up "perfect"	 *//* characters.  Make them wait a bit.			 */void pause_exit(prt_line, delay)int prt_line, delay;{    char dummy;    prt("[Press any key to continue]", prt_line, 24);  /* ", or Q to exit." removed */    dummy = inkey();#if 0    if (dummy == 'Q') {	erase_line(prt_line, 0);#ifndef MSDOS			   /* PCs are slow enough as is  -dgk */	if (delay > 0)	    (void)sleep((unsigned)delay);#else    /* prevent message about delay unused */	dummy = delay;#endif#ifdef MAC	enablefilemenu(FALSE);	exit_game();	enablefilemenu(TRUE);#else	exit_game();#endif    }#endif    erase_line(prt_line, 0);}#ifdef MACvoid save_screen(){    mac_save_screen();}void restore_screen(){    mac_restore_screen();}#elsevoid save_screen(){    overwrite(stdscr, savescr);}void restore_screen(){    overwrite(savescr, stdscr);    touchwin(stdscr);}#endifvoid bell(){    put_qio();    if (ring_bell) /* -Abby- */#ifdef MAC    mac_beep();#else    (void)write(1, "\007", 1);#endif}/* definitions used by screen_map() *//* index into border character array */#define TL 0			   /* top left */#define TR 1#define BL 2#define BR 3#define HE 4			   /* horizontal edge */#define VE 5/* character set to use */#ifdef MSDOS# ifdef ANSI#   define CH(x)	(ansi ? screen_border[0][x] : screen_border[0][x])# else#   define CH(x)	(screen_border[0][x])# endif#else#   define CH(x)	(screen_border[0][x])#endif/* Display highest priority object in the RATIO by RATIO area */#define	RATIO 3void screen_map(){    register int i, j;    static int8u screen_border[2][6] = {    {'+', '+', '+', '+', '-', '|'},	/* normal chars */    {201, 187, 200, 188, 205, 186}	/* graphics chars */    };    int16u map[MAX_WIDTH / RATIO + 1];    int16u tmp;    int   priority[256];    int   row, orow, col, myrow = 0, mycol = 0;#ifndef MAC    char  prntscrnbuf[80];#endif    for (i = 0; i < 256; i++)	priority[i] = 0;    priority['<'] = 5;    priority['>'] = 5;    priority['@'] = 10;    priority['#'] = (-5);    priority['.'] = (-10);    priority['x'] = (-1);    priority['\''] = (-3);    priority[' '] = (-15);    save_screen();    clear_screen();#ifdef MAC    DSetScreenCursor(0, 0);    DWriteScreenCharAttr(CH(TL), ATTR_NORMAL);    for (i = 0; i < MAX_WIDTH / RATIO; i++)	DWriteScreenCharAttr(CH(HE), ATTR_NORMAL);    DWriteScreenCharAttr(CH(TR), ATTR_NORMAL);#else    use_value2          mvaddch(0, 0, CH(TL));    for (i = 0; i < MAX_WIDTH / RATIO; i++)	(void)addch(CH(HE));    (void)addch(CH(TR));#endif    orow = (-1);    map[MAX_WIDTH / RATIO] = '\0';    for (i = 0; i < MAX_HEIGHT; i++) {	row = i / RATIO;	if (row != orow) {	    if (orow >= 0) {#ifdef MAC		DSetScreenCursor(0, orow + 1);		DWriteScreenCharAttr(CH(VE), ATTR_NORMAL);		CWriteScreenString(map);		DWriteScreenCharAttr(CH(VE), ATTR_NORMAL);#else	    /* can not use mvprintw() on ibmpc, because PC-Curses is horribly	     * written, and mvprintw() causes the fp emulation library to be	     * linked with PC-Moria, makes the program 10K bigger 	     */		(void)sprintf(prntscrnbuf, "%c%s%c",			      CH(VE), map, CH(VE));		use_value2          mvaddstr(orow + 1, 0, prntscrnbuf);#endif	    }	    for (j = 0; j < MAX_WIDTH / RATIO; j++)		map[j] = CC(MAC_WHITE,' ');	    orow = row;	}	for (j = 0; j < MAX_WIDTH; j++) {	    col = j / RATIO;	    tmp = c_loc_symbol(i, j);	    if (priority[map[col]&0xFF] < priority[tmp&0xFF])		map[col] = tmp;	    if (map[col]&0xFF == '@') {		mycol = col + 1;   /* account for border */		myrow = row + 1;	    }	}    }    if (orow >= 0) {#ifdef MAC	DSetScreenCursor(0, orow + 1);	DWriteScreenCharAttr(CH(VE), ATTR_NORMAL);	CWriteScreenString(map);	DWriteScreenCharAttr(CH(VE), ATTR_NORMAL);#else	(void)sprintf(prntscrnbuf, "%c%s%c",		      CH(VE), map, CH(VE));	use_value2          mvaddstr(orow + 1, 0, prntscrnbuf);#endif    }#ifdef MAC    DSetScreenCursor(0, orow + 2);    DWriteScreenCharAttr(CH(BL), ATTR_NORMAL);    for (i = 0; i < MAX_WIDTH / RATIO; i++)	DWriteScreenCharAttr(CH(HE), ATTR_NORMAL);    DWriteScreenCharAttr(CH(BR), ATTR_NORMAL);#else    use_value2          mvaddch(orow + 2, 0, CH(BL));    for (i = 0; i < MAX_WIDTH / RATIO; i++)	(void)addch(CH(HE));    (void)addch(CH(BR));#endif#ifdef MAC    DSetScreenCursor(23, 23);    DWriteScreenStringAttr("Hit any key to continue", ATTR_NORMAL);    if (mycol > 0)	DSetScreenCursor(mycol, myrow);#else    use_value2          mvaddstr(23, 23, "Hit any key to continue");    if (mycol > 0)	(void)move(myrow, mycol);#endif    (void)inkey();    restore_screen();}
+/* File: io.c */
+
+/* Purpose: mid-level I/O (uses term.c) */
+
+/*
+ * Copyright (c) 1989 James E. Wilson, Robert A. Koeneke 
+ *
+ * This software may be copied and distributed for educational, research, and
+ * not for profit purposes provided that this copyright and statement are
+ * included in all such copies. 
+ */
+
+/*
+ * This file uses no "specifically Angband" knowledge.
+ * XXX So it should get its own header file, and include "term.h".
+ */
+
+
+#include "angband.h"
+
+
+#ifdef KEYMAP
+/* The "keymap" table -- initialized to all zeros */
+static char keymap_table[KEYMAP_MODES][KEYMAP_CHARS];
+#endif
+
+
+
+
+#ifdef MACINTOSH
+
+# include <Events.h>
+
+#else
+
+extern char *getenv();
+
+#endif
+
+
+
+#ifdef MACINTOSH
+
+/*
+ * Delay for "x" milliseconds
+ */
+void delay(int x)
+{
+    long t; t=TickCount(); while(TickCount()<t+(x*60)/1000);
+}
+
+#else
+
+#ifdef __EMX__
+
+void delay(int x)
+{
+    _sleep2(x);
+}
+
+#else
+
+#ifndef MSDOS
+
+/*
+ * Unix port for "delay"
+ */
+void delay(int x)
+{
+    /* Do it in micro-seconds */
+    usleep(1000 * x);
+}
+
+#endif	/* MSDOS */
+
+#endif	/* __EMX__ */
+
+#endif	/* MACINTOSH */
+
+
+
+/* 
+ * Flush the screen, make a noise
+ */
+void bell()
+{
+    /* Hack -- be sure everything is visible */
+    Term_fresh();
+
+    /* Make a bell noise (if allowed) */
+    if (ring_bell) Term_bell();
+}
+
+
+
+/*
+ * Move the cursor
+ */
+void move_cursor(int row, int col)
+{
+    Term_gotoxy(col, row);
+}
+
+
+
+
+/*
+ * Flush all input chars
+ */
+void flush(void)
+{
+    Term_flush();
+}
+
+
+
+/*
+ * Check for a keypress
+ * Hack -- First, refresh.
+ */
+int kbhit(void)
+{
+    Term_fresh();
+    return (Term_kbhit());
+}
+
+
+/*
+ * Get a keypress from the user.
+ * First, enforce a visible cursor and refresh.
+ * Hack -- convert "zero" to "Escape".
+ */
+char inkey(void)
+{
+    int i, okay;
+    okay = Term_show_cursor();
+    Term_fresh();
+    i = Term_inkey();
+    if (!okay) Term_hide_cursor();
+    return (i);
+}
+
+
+
+
+/*
+ * Get a "more" message (on the message line)
+ * Then erase the entire message line
+ * Leave the cursor on the message line.
+ */
+void msg_more(int x)
+{
+    /* Do NOT run out of space */
+    if (x > 72) x = 72;
+
+    /* Print a message */
+    Term_putstr(x, MSG_LINE, -1, COLOR_L_BLUE, " -more-");
+
+    /* Hack -- warn the signal stuff */
+    wait_for_more = 1;
+
+    /* Get an acceptable keypress */
+    while (1) {
+	int cmd = inkey();
+	if ((quick_messages) || (cmd == ESCAPE)) break;
+	if ((cmd == ' ') || (cmd == '\n') || (cmd == '\r')) break;
+	bell();
+    }
+
+    /* Hack -- turn off the signal stuff */
+    wait_for_more = 0;
+
+    /* Note -- Do *NOT* call erase_line() */
+    Term_erase(0, MSG_LINE, 80-1, MSG_LINE);
+}
+
+
+
+/*
+ * We save messages in the order they are "memorized", and only forget
+ * messages if we use all MESSAFE_BUF bytes of storage, or if we save
+ * more than MESSAGE_MAX messages.  We attempt to forget messages in a
+ * graceful manner.  The most recent message may be "appended" to, which
+ * may cause it to "move" (similar to realloc()).  Every message has an
+ * "age", which starts at "zero" and increases every time a new message
+ * is memorized.  Identical sequential messages share buffer memory.
+ */
+#define MESSAGE_MAX 500
+#define MESSAGE_BUF 5000
+
+/* The "age" of the oldest message */
+static uint message__age = 0;
+
+/* The "index" of the "current" message */
+static uint message__cur = 0;
+
+/* The "offset" of each message */
+static u16b message__ptr[MESSAGE_MAX];
+
+/* The "length" of each message */
+static u16b message__len[MESSAGE_MAX];
+
+/* The buffer to hold the text for all the messages */
+static char message__buf[MESSAGE_BUF];
+
+
+/*
+ * How many messages are available?
+ */
+uint message_num()
+{
+  /* Be sure to count the current message */
+  return (message__age + 1);
+}
+
+
+/*
+ * Convert an "age" into an "index"
+ */
+static uint message_ind(int age)
+{
+  int x = message__cur;
+  x = (x - age) % MESSAGE_MAX;
+  while (x < 0) x += MESSAGE_MAX;
+  return (x);
+}
+
+
+/*
+ * Recall the "length" of a saved message
+ */
+uint message_len(uint age)
+{
+  uint x;
+
+  /* Forgotten messages have no length */
+  if (age > message__age) return (0);
+
+  /* Access the message */
+  x = message_ind(age);
+
+  /* Return the length */
+  return (message__len[x]);
+}
+
+/*
+ * Recall the "text" of a saved message
+ */
+cptr message_str(uint age)
+{
+  uint x, o;
+  cptr s;
+
+  /* Forgotten messages have no text */
+  if (age > message__age) return ("");
+
+  /* Access the message */
+  x = message_ind(age);
+
+  /* Get the "offset" for the message */
+  o = message__ptr[x];
+
+  /* Access the message text */
+  s = &message__buf[o];
+
+  /* Return the message text */
+  return (s);
+}
+
+
+/*
+ * Append some text to the most recent message
+ *
+ * If "len" is negative, use the entire "msg",
+ * else use only the first "len" chars of "msg".
+ */
+void message_add(cptr msg, int len)
+{
+  int i;
+
+  uint x = message__cur;
+  uint o = message__ptr[x];
+  uint n = message__len[x];
+
+  /* Negative length -- use entire message */
+  if (len < 0) len = strlen(msg);
+
+  /* Be sure the message can fit! */
+  if (len + n + 2 >= MESSAGE_BUF) len = MESSAGE_BUF - (n + 2);
+
+  /* Sometimes, we run out of buffer space */
+  if (o + len + n + 1 >= MESSAGE_BUF) 
+  {
+    /* Forget the older messages */
+    for (i = message__age; i > 0; i--)
+    {
+      uint x2 = message_ind(i);
+      uint o2 = message__ptr[x2];
+      uint n2 = message__len[x2];
+
+      /* Stop on the first "safe" message */
+      if ((o2 + n2 < o) && (o2 > n + len + 1)) break;
+
+      /* Forget the over-written message */
+      message__age--;
+    }
+
+    /* Slide the pre-existing part of the message */
+    for (i = 0; i < n; i++)
+    {
+      message__buf[i] = message__buf[o + i];
+    }
+
+    /* Take note of the new message location */
+    message__ptr[x] = o = 0;
+  }
+
+  /* Forget the older messages */
+  for (i = message__age; i > 0; i--)
+  {
+    uint x2 = message_ind(i);
+    uint o2 = message__ptr[x2];
+    uint n2 = message__len[x2];
+
+    /* Stop on the first "safe" message */
+    if ((o2 + n2 < o) || (o2 > o + n + len + 1)) break;
+
+    /* Forget the over-written message */
+    message__age--;
+  }
+
+  /* Append the new part of the message */
+  for (i = 0; i < len; i++)
+  {
+    message__buf[o + n + i] = msg[i];
+  }
+
+  /* Terminate the message */
+  message__buf[o + n + len] = '\0';
+
+  /* Save the new length */
+  message__len[x] += len;
+}
+
+
+/*
+ * Create a new "current" message, with (optional) text
+ *
+ * First, attempt to "optimize" the "current" message, by allowing sequential
+ * messages to "share" suffix space if they match exactly.  See below...
+ */
+void message_new(cptr msg, int len)
+{
+  int age = message__age;
+
+  /* Access the "current" message */
+  int x = message__cur;
+  int o = message__ptr[x];
+  int n = message__len[x];
+
+  /* Access the "previous" message */
+  int x1 = message_ind(1);
+  int o1 = message__ptr[x1];
+  int n1 = message__len[x1];
+
+
+  /* Hack -- always append "something" */
+  if (!msg) len = 0;
+
+
+  /* Hack -- prevent first call to "message_new()" from making new message */
+  if (!age && !n) {
+
+      /* Append the message */
+      message_add(msg, len);
+
+      /* All done */
+      return;
+  }
+
+
+
+  /* Attempt to optimize (if it looks possible) */
+  if (age && n && n1 && (n <= n1)) {
+
+    cptr s, s1;
+
+    /* Access the current message text */
+    s = &message__buf[o];
+
+    /* Access the message text */
+    s1 = &message__buf[o1];
+
+    /* Check for actual "suffix sharing" */
+    if (streq(s, s1 + (n1 - n))) {
+
+      /* Let the messages "share suffixes" */
+      o = o1 + (n1 - n);
+
+      /* Save the optimized location */
+      message__ptr[x] = o;
+    }
+  }
+
+
+  /* Advance the index */
+  x = x + 1;
+
+  /* Wrap if needed */
+  if (x >= MESSAGE_MAX) x = 0;
+
+  /* Advance the offset (skip the nul) */
+  o = o + n + 1;
+
+  /* Wrap if necessary */
+  if (o >= MESSAGE_BUF) o = 0;
+
+  /* One more message */
+  message__age++;
+
+  /* Save the message index */
+  message__cur = x;
+
+  /* No message yet */
+  message__len[x] = 0;
+
+  /* Remember where it starts */
+  message__ptr[x] = o;
+
+
+  /* Append the message */
+  message_add(msg, len);
+}
+
+
+
+
+/*
+ * Output a message to top line of screen.
+ *
+ * These messages are kept for later reference (see above).
+ *
+ * Allow multiple short messages to "share" the top line.
+ *
+ * We intentionally erase and flush the line to provide "flicker".
+ *
+ * When "msg_flag" is set, it means "verify old messages"
+ * Note: msg_flag must be explicitly "unset" if desired
+ * Note that "msg_flag" affects other routines.  Icky.
+ */
+void msg_print(cptr msg)
+{
+    static len = 0;
+
+
+    /* Old messages need verification */
+    if (msg_flag) {
+
+	/* Special case: flush */
+	if (!msg) {
+
+	    /* Wait for it... */
+	    msg_more(len);
+
+	    /* Forget it */
+	    len = 0;
+	    msg_flag = FALSE;
+	}
+
+	/* We must start a new line */
+	else if ((len + strlen(msg)) > 72) {
+
+	    /* Wait for it */
+	    msg_more(len);
+
+	    /* Display the new message */
+	    Term_putstr(0, MSG_LINE, -1, COLOR_WHITE, msg);
+	    Term_fresh();
+
+	    /* Let other messages share the line */
+	    len = strlen(msg) + 1;
+	    msg_flag = TRUE;
+
+	    /* Memorize the message */
+	    message_new(msg, -1);
+	}
+
+	/* The message fits */
+	else {
+
+	    /* Display the new message */
+	    Term_putstr(len, MSG_LINE, -1, COLOR_WHITE, msg);
+	    Term_fresh();
+
+	    /* Let other messages share the line */
+	    len += strlen(msg) + 1;
+	    msg_flag = TRUE;
+
+	    /* Memorize the message */
+	    message_new(msg, -1);
+	}
+    }
+
+
+    /* Ignore old messages */
+    else {
+
+	/* Special case -- flush */
+	if (!msg) {
+
+	    /* Clear the line */
+	    Term_erase(0, MSG_LINE, 80-1, MSG_LINE);
+	    Term_fresh();
+
+	    /* Forget the message */
+	    len = 0;
+	    msg_flag = FALSE;
+	}
+
+	/* Display the message */
+	else {
+
+	    /* Clear the line */
+	    Term_erase(0, MSG_LINE, 80-1, MSG_LINE);
+	    Term_fresh();
+
+	    /* Display it */
+	    Term_putstr(0, MSG_LINE, -1, COLOR_WHITE, msg);
+	    Term_fresh();
+
+	    /* Let other messages share the line */
+	    len = strlen(msg) + 1;
+	    msg_flag = TRUE;
+
+	    /* Memorize it */
+	    message_new(msg, -1);
+	}
+    }
+}
+
+
+
+/*
+ * This function displays messages, using "msg_print()".
+ *
+ * This routine also takes a set of flags to determine what
+ * additional processing, if any, to apply to the message.
+ *
+ * Mode:
+ *   0x01 = Capitalize "msg" before using (restore when done).
+ *   0x02 = This is just a piece of the final message.
+ *   0x04 = Split the message into pieces if needed.
+ *
+ * Notes:
+ *   Since "buffer" over-rides "split", you must specify "split"
+ *   in the *final* piece of the message.  If this is unknown, you may
+ *   use "message(NULL,SPLIT)" to split and flush the stored message.
+ *
+ *   Capitalization only affects the actual "msg" parameter, so it
+ *   should usually only be requested for the *first* piece of a message.
+ *
+ *   There is a global flag "msg_flag" which may affect the results
+ *   of sending messages to "msg_print".
+ *
+ *   Combining the "capitalize" and "buffer" modes (into 0x03) is
+ *   very useful for dumping a monster name, followed by another
+ *   call to message() with the rest of the sentence, and no mode.
+ */
+void message(cptr msg, int mode)
+{
+    static int len = 0;
+    static char buf[512] = "";
+
+    /* Start on the first letter */
+    register cptr s = msg;
+
+    /* Splitter */
+    register char *t;
+
+    /* If this is just a piece, memorize it */
+    if (mode & 0x02) {
+
+	/* No message */
+	if (!s || !*s) return;
+
+	/* Capitalize it */
+	if ((mode & 0x01) && (islower(*s))) {
+	    buf[len++] = toupper(*s++);
+	}
+
+	/* Append the message */
+	while (*s) buf[len++] = *s++;
+
+	/* Terminate it (optional, just to be safe) */
+	buf[len] = '\0';
+
+	/* All done */
+	return;
+    }
+
+
+    /* Speed -- handle a very simple special case */
+    if (!len && !(mode & 0x01) && !(mode & 0x04)) {
+
+	/* Just dump it */
+	msg_print(msg);
+
+	/* All done */
+	return;
+    }
+
+
+
+    /* Append the current message if given */
+    if (s && *s) {
+
+	/* Capitalize it */
+	if ((mode & 0x01) && (islower(*s))) {
+	    buf[len++] = toupper(*s++);
+	}
+
+	/* Append the message */
+	while (*s) buf[len++] = *s++;
+
+	/* Terminate it */
+	buf[len] = '\0';
+    }
+
+
+    /* Now start using the "split" buffer */
+    t = buf;
+
+    /* Split if requested and required (72 or more chars) */
+    while ((mode & 0x04) && (len > 71)) {
+
+	int check, split;
+
+	/* Assume no split */
+	split = -1;
+
+	/* Find the (farthest) "useful" split point */
+	for (check = 40; check < 70; check++) {
+	    if (t[check] == ' ') split = check;
+	}
+
+	/* No split?  XXX Should split it anyway */
+	if (split < 0) break;
+
+	/* Split the message (and advance the split point) */
+	t[split++] = '\0';
+
+	/* Print the first part */
+	msg_print(t);
+
+	/* Prepare to recurse on the rest of "buf" */
+	t += split; len -= split;
+	
+	/* Hack -- indent subsequent lines two spaces */
+	*--t = ' '; len++;
+	*--t = ' '; len++;
+    }
+
+    /* Print the whole thing (or remains of the split) */
+    msg_print(t);
+
+    /* Forget the buffer */
+    len = 0; buf[0] = '\0';
+}
+
+
+
+/*
+ * Erase a line (flush msg_print first)
+ */
+void erase_line(int row, int col)
+{
+    if (msg_flag && (row == MSG_LINE)) msg_print(NULL);
+
+    Term_erase(col, row, 80-1, row);
+}
+
+/*
+ * Erase the screen (flush msg_print first)
+ */
+void clear_screen(void)
+{
+    if (msg_flag) msg_print(NULL);
+
+    Term_clear();
+}
+
+/*
+ * Clear part of the screen
+ */
+void clear_from(int row)
+{
+    if (msg_flag && (row <= MSG_LINE)) msg_print(NULL);
+
+    Term_erase(0, row, 80-1, 24-1);
+}
+
+
+
+
+/*
+ * Move to a given location, and without clearing the line,
+ * Print a string, using a color (never multi-hued)
+ */
+void c_put_str(int8u attr, cptr str, int row, int col)
+{
+    if (msg_flag && (row <= MSG_LINE)) msg_print(NULL);
+
+#ifdef USE_COLOR
+    if (!use_color) attr = COLOR_WHITE;
+#else
+    attr = COLOR_WHITE;
+#endif
+
+    Term_putstr(col, row, -1, attr, str);
+}
+
+void put_str(cptr str, int row, int col)
+{
+    c_put_str(COLOR_WHITE, str, row, col);
+}
+
+
+/*
+ * Clear a line at a given location, and, at the same location,
+ * Print a string, using a real attribute
+ * Hack -- Be sure to flush msg_print if necessary.
+ */
+void c_prt(int8u attr, cptr str, int row, int col)
+{
+    int x, y;
+
+#ifdef USE_COLOR
+    if (!use_color) attr = COLOR_WHITE;
+#else
+    attr = COLOR_WHITE;
+#endif
+
+    if (msg_flag && (row == MSG_LINE)) msg_print(NULL);
+
+    /* Position the cursor */
+    Term_gotoxy(col, row);
+
+    /* Dump the text */
+    Term_addstr(-1, attr, str);
+
+    /* Clear the rest of the line */
+    if ((Term_locate(&x, &y) == 0) && (y == row)) Term_erase(x, y, 80-1, y);
+}
+
+void prt(cptr str, int row, int col)
+{
+    c_prt(COLOR_WHITE, str, row, col);
+}
+
+
+
+
+
+/*
+ * Let the player verify a choice.  -CJS-
+ * Refuse to accept anything but y/n/Y/N/Escape
+ * Return TRUE on "yes", else FALSE
+ */
+int get_check(cptr prompt)
+{
+    int res, x;
+
+    /* Hack -- no prompt? */
+    if (!prompt) prompt = "Yes or no?";
+
+    /* Display the prompt (and clear the line) */
+    prt(prompt, 0, 0);
+
+    /* See how long the prompt is */
+    x = strlen(prompt) + 1;
+
+    /* Do NOT wrap */
+    if (x > 74) x = 74;
+
+    /* Ask the question */
+    Term_putstr(x, 0, -1, COLOR_WHITE, "[y/n]");
+
+    /* Get an acceptable answer */
+    while (1) {
+	res = inkey();
+	if (quick_messages) break;
+	if (res == ESCAPE) break;
+	if (strchr("YyNn", res)) break;
+	bell();
+    }
+
+    /* Erase the prompt */
+    erase_line(0, 0);
+
+    /* Extract the answer */
+    return (strchr("Yy", res) ? TRUE : FALSE);
+}
+
+
+/*
+ * Prompts (optional), then gets and stores a keypress
+ * Returns TRUE unless the character is "Escape"
+ */
+int get_com(cptr prompt, char *command)
+{
+    if (prompt) prt(prompt, 0, 0);
+
+    *command = inkey();
+
+    if (prompt) erase_line(MSG_LINE, 0);
+
+    return (*command != ESCAPE);
+}
+
+
+/*
+ * Gets a string terminated by <RETURN>, and return TRUE.
+ * Otherwise, erase the input, and return FALSE.
+ * Hack -- force legal col and len values
+ */
+int get_string(char *buf, int row, int col, int len)
+{
+    register int i, k, x1, x2;
+    int done;
+
+    if (msg_flag && (row <= MSG_LINE)) msg_print(NULL);
+
+    /* Paranoia -- check len */
+    if (len < 1) len = 1;
+
+    /* Paranoia -- check column */
+    if ((col < 0) || (col >= 80)) col = 0;
+
+    /* Find the box bounds */
+    x1 = col;
+    x2 = x1 + len - 1;
+    if (x2 >= 80) {
+	len = 80 - x1;
+	x2 = 80 - 1;
+    }
+
+    /* Erase the "answer box" and place the cursor */
+    Term_erase(x1, row, x2, row);
+
+    /* Assume no answer (yet) */
+    buf[0] = '\0';
+
+    /* Process input */    
+    for (k = 0, done = 0; !done; ) {
+	i = inkey();
+	switch (i) {
+	  case ESCAPE:
+	    buf[0] = '\0';
+	    Term_erase(x1, row, x2, row);
+	    return (FALSE);
+	  case CTRL('J'):
+	  case CTRL('M'):
+	    done = TRUE;
+	    break;
+	  case CTRL('H'):
+	  case DELETE:
+	    if (k > 0) {
+		buf[--k] = '\0';
+		Term_erase(x1 + k, row, x2, row);
+	    }
+	    break;
+	  default:
+	    if ((k < len) && (isprint(i))) {
+		Term_putch(x1 + k, row, COLOR_WHITE, i);
+		buf[k++] = i;
+	    }
+	    else {
+		bell();
+	    }
+	    break;
+	}
+    }
+
+    /* Remove trailing blanks */
+    while ((k > 0) && (buf[k-1] == ' ')) k--;
+
+    /* Terminate it */
+    buf[k] = '\0';
+
+    /* Return the result */
+    return (TRUE);
+}
+
+
+/*
+ * Ask for a string, at the current cursor location.
+ * Return "Was a legal answer entered?"
+ *
+ * Might be even better to give this routine a "prompt"
+ * and to ask the questions at (0,0) with the prompt...
+ */
+int askfor(char *buf, int len)
+{
+    int x, y;
+    Term_locate(&x, &y);
+    return (get_string(buf, y, x, len));
+}
+
+
+
+/*
+ * Pauses for user response before returning		-RAK-	 
+ */
+void pause_line(int prt_line)
+{
+    int i;
+    erase_line(prt_line, 0);
+    put_str("[Press any key to continue]", prt_line, 23);
+    i = inkey();
+    erase_line(prt_line, 0);
+}
+
+
+
+
+/*
+ * Save and restore the screen -- no flushing
+ */
+
+void save_screen()
+{
+    if (msg_flag) msg_print(NULL);
+
+    Term_save();
+}
+
+void restore_screen()
+{
+    if (msg_flag) msg_print(NULL);
+
+    Term_load();
+}
+
+
+
+
