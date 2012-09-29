@@ -1,7 +1,1 @@
-bzero (sp, len)
-char *sp;
-int  len;
-{
-   while (len--) 
-      *sp++ = '\0';
-}
+int bzero(char *,int);bzero (sp, len)char *sp;int  len;{   while (len--)       *sp++ = '\0';}

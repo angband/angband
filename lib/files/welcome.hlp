@@ -1,9 +1,1 @@
-                       Welcome to Moria!
-
-Your first task is to generate a character. You must specify a sex,
-a race and a class. Anytime before you have made these specifications,
-you can interrupt with control-C. You can also specify the race as
-often as you like by entering '%' to the class request. This will also
-regenerate your attributes.
-
-If this is your first time playing, you may want to read the manual first.
+                       Welcome to Angband!Your first task is to generate a character. You must specify a sex,a race and a class. Anytime before you have made these specifications,you can interrupt with control-C. You can also specify the race asoften as you like by entering '%' to the class request. This will alsoregenerate your attributes.If this is your first time playing, you may want to read the manual first.

@@ -1,377 +1,1 @@
-Angband 2.5 (beta), first release - 11/93
-
-new lighting
-fixed potion identification
-fixed missing attack for 'kicks you' (mystics)
-resist fear instrinsic added
-monster fear
-added autoroller from PC code
-CFT's new speed code
-mana penalty for armour based on weight (doesn't seem to change much), and
-       gloves of free action/dexterity don't cause the additional mana penalty
-print amount of gold stolen
-print object stolen
-artifacts likely to resist enchantment/disenchantment & other attacks
-monsters can pick up things (but not 'X' getting Slay 'X' weapons, etc)
-if blind then messages change - serious updating
-   -- also redo 2ndary effects, this was a pain in the butt
-fix up earthquake effects to not destroy artifacts & some other things
-the names of the Phial, Star, & Arkenstone change if not identified
-fixed up naming code a little, also renamed monster descriptions & fixed
-   miscellaneous spelling errors whenever I ran across them
-can check what artifacts have been generated while not wizard
-   -- for convenience only, if you don't like, don't use....
-add y/n to word of recall spells...
-fireball effects now have differing radii
-giant pits added
-vastly more sanity checking in level generation
-more sanity checking in compact_monsters & create/summon monsters...
-more uniques have appropriate escorts
-destroyed levels added
-player ghost/save bug fixed
-be a little nicer about out-of-depth monsters on the early levels....
-...and added moria 5.5 'sleeping dragon' code
-fixed up the artifacts a little (like being frost brand and not RC, etc)
-   added TR_BLESS_BLADE & TR_ATTACK_SPEED)  Ringil is still +1 speed, though.
-   added another resistance to one or two items ala Fangband
-Holy Avengers & Slay Evil weapons are BLESS_BLADE, Slay Undead are HOLD_LIFE.
-prayer penalty for priests not using blessed edged weapons
-cleaned up the display a little
-hopefully reset stats correctly when gaining or losing....
-better messages when an item gets destroyed
-minimum weight for multiple attack calc reduced from 5 to 3
-prevented free bashing from detecting an invisible monster
-added pseudo-probing when you look at the monster...
-fixed the "you seem to be missing a book" message
-fixed *enlightment* potion
-revamped enchantment code
-scrolls of aquirement and *aquirement* auto-indentify themselves when used
-rods immune to lightning
-can't create up staircases on town level
-add delay timing code so that bolts, etc can be seen
-dispelling things in sight prints their names and not it/and the converse
-tweaked self knowledge messages for clarity
-
-
-Angband 2.5.1 (12/15/93)
-
-fixed inventory bug w/ taking off equipped items
-fixed delay causing divide-by-zero crashes
-made word of recall a toggle, not yes/no, as that seems to be less aggravating
-maybe fixed redisplay on edge of maps
-fixed open/topen/fopen/tfopen which already exists on some systems
-fixed a possible problem with displaying monster injury status
-fixed a problem displaying the level feelings
-fixed dropping worthless items in your home (they silently disappeared)
-silently reconnect invisible monsters (*why* does this happen?)
-fixed light redisplay while in stores (thanks to DGK)
-adjusted code to stop allocating too high plusses on magical items and
-   too many bows of might/accuracy.
-fixed desc_monsters.c overrun causing crash when looking at ghosts
-added some bounds checking on reading options st 2.4 savefiles don't mess up
-readjusted magical plusses some more, made more things variable (such as AC + 
-   for Amulet of Magi, etc ad nauseaum), also caused prices to be more
-   responsive to the pluses on the items
-redid monster fear code so that some monsters are 'fearless': E's, g's, most
-   undead and demons except intelligent ones, and all immobile monsters
-added global variable monster_is_afraid so that fear messages only occur after
-   the player has gotten all of his swings; much nicer to look at
-monsters that heal themselves may 'regain their courage' when they cast heal
-PDSM no longer resists disenchantment or shards -- so watch out!  Note that
-   Bladeturner still resists everything, so it becomes a better choice.
-
-
-Angband 2.5.2 (12/20/93)
-CFT's revamped inven_carry, fixes book ordering for magic users
-included code for BSD's random() function, which offers a much better RNG;
-   please consult the file src/random.c for copyright and acknowledgements...
-fixed "killed by an arrow trap.." (doubled period) and "up staircase ." msgs
-went back and redid objdes() code to fix a whole bunch of punctuation errors,
-   including inscriptions, monster/item <--> spell interactions, etc; the
-   results should look better and probably work faster, too
-genderized the whole game, including massive changes to recall.c.  It makes the
-   program a little larger, but the descriptions are incredibly more cool
-resyncronized monsters.c with describe_mon.c, fixed some minor incongruities
-  as I came across them (such as immobile monsters 'being able to open doors')
-
-
-Angband 2.5.3 (1/10/94)
-fixed a typo giveing Bladeturner +305 to AC (thanks DGK)
-fixed misspelling David G. Kahane's initials in a few places (sorry DGK :)
-added support for HPUX thanks to Chris Ang@amd.com [cba]
-fixed some code that fails on K&R compilers, and reorganized the static 
-   prototypes so they'll do some good for non-ANSI compilers
-improved on the los/in_bounds code to make it faster
-tweaked the recall monster code some
-fixed 'screen too small for moria --> angband' message
-sped up the code some (by macroizing some stuff)
-switched description of "the Ring of Power" to "the One Ring"
-turned down the delays a little...
-worked around the 'infamous monster heal bug', when restoring savefiles
-fixed a few more monster descriptions (made worm mass descriptions consistant)
-fixed 'Set of Cestus' to 'Set of Cesti'
-reindented the whole set of source code; use 4-2 indenting & a 90 col editor
-reindentation has revealed some questionable syntax RE: '=&' vs '= &' which
-  may have caused some subtle bugs
-
-Angband 2.5.3 (1/12/94?) - beta testing begins
-added support for ultrix thanks to Eugene Hung@garnet.berkeley.edu
-fixed monsters running away due to '= -' versus '-='
-moved the gender code into the creature_list array and reordered the
-  descriptions so that desc_list[i] = c_list[i], this was a pain, but I caught
-  a few more inconsistancies doing so
-fixed up some of the library files
-Anduril is now "The Longsword 'Anduril'", thanks J.Kewley@fiveg.icl.co.uk
-added an option "plain_descriptions" so that items will be displayed without
-  their 'flavor' if that's what the user prefers
-fixed some bugs in the util.c for supporting microsleep on those machines that
-  need it
-modified object creation so that it makes objects at the average of the
-  dun_level and the creature's level....
-fixed possibly letting character go up and down stairs first 100 turns and get
-  feelings each time.....
-made see invisible never auto-detect, as this is not worth fixing right
-fixed keypad wizard commands (made 'em the save as the rogue wizard commands)
-added flag for haggling rather than a compile-time define....
-fixed a few more '= -' expressions
-fixed a bug in the wizard level identify code
-fixed Makefile bug ".o.c" versus ".c.o".... [eh]
-touched up a few artifacts (Beleg C. -> Belthronding), Sting vs. Weap of
-   Westernesse, made artifacts display a little more info (searching, infra)
-fixed a problem in the microsleep code with times of 0
-moved Master Mystics to dun_level 50...
-fixed unique deaths not being recalled if you can't see them when they die
-patched a few more non-ANSI-compiler problems, & min/max [cba]
-fixed teleporting leaving lighted area with wide-area light
-redid some of the object description code to give more informative messages
-  and to avoid some braindamage
-added option to display weight for equipment list (seperate from inven list)
-  because new descriptions can be longer and will overrun the available space
-fixed a possible lighting bug (casting light spell with light item), and made
-  unlighting a little more impressive...
-fixed overlong inscriptions (thanks grabiner@zariski.harvard.edu)
-made monsters resist damage from weapons a little better
-added compile define to let players see their score, fixed scorefile bug;
-  (thanks to Torbj|rn Lindgren <tl@cd.chalmers.se>)
-fixed minor misspellings
-tried to fix up some minor lighting errors; also touched up a monster or two
-fixed object descriptions displaying the p1 value inappropriately (+x)
-removed LINT_ARG define so that we always get function prototypes...
-Large kobolds resist poison too
-tweaked the Makefile some more (make clean does better now)
-removed need for -fwritable-strings [TL]
-added const char * declarations all over the place (very painful); note that
-   the player ghost violate the const char * of the monster list -- oh well
-fixed fleeing monsters trying to run through doors....
-made wide-area light light up "knight-move" (L's) squares
-made pits not activate the "special" message but vaults will....
-error in "if (t_ptr->name2 = SN_ATTACKS)" fixed (BIG thanks to jk@cs.man.ac.uk)
-improved HPUX support (thanks to Chris Ang@amd.com)
-
-Angband 2.5.4 (2/3/94) - final beta testing period
-fixed scrolls of darkness not blinding you for a round.
-fixed bug fix empty savefiles causing crashes
-tweaked more object descriptions
-objects with negative magical bonuses do the right things in the
-  self-knowledge code
-wiz mode ^A does "remove_all_curse"....
-maybe fixed a bug attempting to uncurse mega-cursed items
-cleaned up some other minor items
-fixed {mass} genocide not identifying itself always... (ty@vuokko.uta.fi)
-added support for Atari (thanks Chris Herborth@53iss6.waterloo.NCR.COM)
-artifact check now displays to screen [cba]
-added unique check [cba]
-fixed scorefile not existing bug yet again
-moved & documented ALLOW_ARTIFACT_CHECK compile option, which allows non
-  wizards to see the list of generated artifacts
-fixed more system function prototypes (in part, tl)
-fixed save-file byte order problem [tl]
-
-Angband 2.5.5 (2/7/94) - patchlevel bumped due to previous byte-order fix
-level feeling now saved in the save file
-now display home inventory at death or part of char description [ct/dgk]
-fixed level feeling being overwritten in save file
-fixed chests to generate treasure at the correct level [dbd]
-darkness breath and scrolls now blind you for a while (like light breath)
-everything that Slays Undead now is See Invisible
-made some SU weapons Hold Life, and some SE Blessed Blades
-fixed self_knowledge code wrt negative p1 values (again)
-Whips of Fire now have Resist Fire
-maybe fixed some more header file braindamage
-tried to fix a bug where stackable items could be placed over
-  your weapon, causing you to lose the weapon
-fixed a bug displaying (+0) digging implements
-made the low hitpoint warning more noticeable
-fix so that storebought chests don't give hellacious treasure (backwards
-  compatibility problem w/ old savefiles)
-reduced MAX_{T,M}ALLOC to 400 and 600 respectively to reduce memory
-  hogging for those systems which would appreciate this....
-fixed small display glitch while rolling [ch]
-fixed msgs when throwing items at monsters
-fixed Belthronding not getting a "special level" msg
-caused create food to fill you up and not create an item [cba]
-added equippy chars [dgk/cba]
-fixed item colors not being randomly shuffled for new characters [dk]
-changed Celefarn->Celegorm, touched up a few other artifact names
-
-Angband 2.5.6 (3/30/94) - squash a final set of bugs and upload to the net
-that bloody store price bug has probably been squashed
-rewrote the screen too small message (again)
-fixed taking off cursed items/error in objdes() bug [dbd]
-fixed some minor spelling problems
-added quick messages option
-attacks that destroy items choose which item more randomly
-fixed lighting while tunnelling [dbd]
-fixed some other lighting problems [dbd]
-incorporated patches for Linux (thanks to Peter Berger@lm.net [pb])
-fixed missing attack message for medusa squeeze
-added 'realclean' makefile target that deletes the executable in the current dir
-updated the documentation and library files
-fixed "hit to hit to burn" and "hit to bite to electrify" messages [dbd]
-fixed lighting more
-fixed drinking poison potion message when you resist poison
-added targetting ala the PC version [ch, ty]
-improved HPUX support again [cba]
-added '|' char which lets the player check the unique monsters killed
-reincorporate making savefiles endian independant (this got lost somehow) [ty]
-
-Angband 2.5.7 (4/1/94) 
-slightly upped Nether damage (so watch out...)
-fixed and documented equippy char patch [eh]
-added ALLOW_FIDDLING in config.h
-recomment config.h and the Makefile
-rewrote the documentation and other foo in the "lib" tree
-fixed '#endif TARGET'
-save equippy chars option state in the save file
-
-Angband 2.5.8 (4/22/94)
-added another shop price bug fix (thanks mpope@itd.dsto.gov.au [Michael Pope])
-Colluin now resists poison [jk]
-a few more artifact names got their display attributes tweaked
-played with bonuses of some cloaks [jk]
-artifact display lists now deal with the new artifact names (I missed a case
-  or two) more correctly
-a few more lighting gliches have been fixed [dbd]
-fixed the equippy chars not turning off correctly
-fixed a bug displaying scores after deleting old scores
-monsters that don't move get this remembered, plus some other minor neat
-  monster recall tweaks [dbd]
-monsters now cast slightly more intelligent spells [dgk]
-incorperated more fixes from UMoria 5.5 Changes, including:
-  'destroy traps' untraps & unlocks chests, not destroys them
-  eliminate search_flag for py.flags.status & PY_SEARCH
-  updated haggling routines for the 'sliding scale' for not haggling
-added *SUPERB* critical hit; it's unlikely that people will get many, though.
-critical hit messages now come after the "You hit <monster>." message
-
-Angband 2.5.9 (5/10/94)
-fixed another light bug [dbd]
-added new method for finding the library files [cjh]
-Cammithim now has free action to avoid mana penalty [jk]
-other minor artifact name fixing [jk]
-added a case insensitive string comp for deficient systems [hmj]
-fixed a bug in prt_stat [Colin_Spry@equinox.gen.nz]
-fixed typing problems with integer size for artifacts [cs]
-maybe fixed invisible monster bug [cs]
-
-=====================
-
-Angband 2.6 (begun 6/1/94) previous change involved savefile format change
-
-=====================
-
-Angband 2.6.0 (9/4/94) public beta release
-
-radical save-file cleanup, including: fixing invis. monster (as above),
-   saving old_turn, saving monster maxhp and fear, saving player fear,
-   additional space for flags
-NB: savefiles from 2.6 will not work with Angband 2.4/2.5!
-fixed a minor bug in monster recall displays
-fixed some minor problems in the scorefile routines
-   [js <surge@dilbert.cqs.washington.edu>]
-incorporated patches for OS/2 support [pb]
-cleaned up the code here and there
-fixed a bug generating treasure in vaults that resulted in slightly worse
-   treasure then intended [hmj <HMJ@IPG.PH.KCL.AC.UK>]
-adjusted the stores so that some shopkeepers have a higher amount of gold
-   available, and the Black Market makes much more reasonable offers
-roughly doubled demon ('&') hitpoints to make them more reasonable
-fixed a few other monster problems
-
-Incorporated 1.40 code from CFT:
-fixed nether bolt damage
-creatures that multiply don't do so if only seen via telepathy
-speed now burns up food less rapidly, since speed is less powerful
-cuts now behave better with odd constitution adjustments
-fixed clearing commands from get_com via Escape
-artifacts now don't waste a turn when Escaping from using them
-Cubragol's fiery enchantment now seeks out unenchanted bolts rather then
-   simply failing if the first bolt listed is enchanted
-...also, C's bolts now resist fire
-Totila now really does confuse monsters
-using spikes now decreases one's encumberance
-cleaned up the dungeon generation code some more
-fixed 'buried in rock' bug with escorts in vaults
-incorperated new bow & missile ammo code
-new lighting (again :-)
-wizards have the option to cheat death
-players still gain a little experience even after life draining
-tunnelling (stone to mud) will sometimes produce an object under rubble
-better object throwing code (many items won't disappear)
--------------
-monster recall indicates good / special treasures
-fixed a bug displaying inventory when you weren't carrying anything
-cleaned up how the scores are displayed some
-fixed a minor glich with the recall code (single spaces at the start
-   of a line)
-fixed a bug always generating "cloak [1,0]"
-fixed bugs with SECURE functioning under the Andrew File System
-fixed a bug with stat_type being trashed with prt_stat() and cnv_stat()
-added support for {Free,Net}BSD [pb]
-fixed a bug with multiple missile weapons' damage bonus accumulating
-  [randy@PICARD.TAMU.EDU (Randy Hutson)]
-fixed some minor problems with heavy weapons and BLESSED_BLADES [dbd]
-undid new lighting to avoid dbd's wrath :-)
-fix bug with '|' (see uniques) command  [ken wigle@niktow.canisius.edu (kw)]
-**fixed running with wide-area light bug (very cool!)
-fixed bugs with spellbooks [kw]
-incorperated new attacks/round table [cft]
-fixed messaging punctuation
-monsters now usually wake up when their rooms get lit...
-fixed _major_ bug with line_spell() overwriting the stack (!)
-adjusted magical bonuses a little more
-creeping 'xxx' coin monsters always generate 'xxx' treasure
-opening a chest will no longer generate chests in the treasure drop
-stairs on town level now are always lit
-non-wizards can only check artifacts if on town level
-added 'satisfy hunger' option (instead of 'create food')
-
-Angband 2.6.1 (9/18/94) public release
-
-fixed bug with '|' (show uniques) when in wizard mode
-adjusted player's number of attacks per round
-fixed a bug whereby a ghost could be generated (on a destroyed level) without
-   setting the 'special level' message
-added support for DEC OSF/1 (Alpha) [tl]
-fixed bug with names in dispel_creature
-   [hman@marina.dei.unipd.it (Heiko Herold) hh]
-added monster fear if player level >> monster level [hh]
-added identification of objects on floor via '-' [hh]
-*enlighnment* potions now detect traps, s. doors, treasure, etc.
-...the Arkenstone also detects s. doors and traps
-adjusted the monster picking up an item code to be smarter
-improved support for Solaris 2.x [tl]
-fixed some minor bugs with bounds checking
-   [ randall@theory.lcs.mit.edu (Keith H Randall) kr ]
-fixed const typing with my_stricmp [cb]
-fixed bug with unlocking/opening things being impossible [kw]
-  "    "  using multiple characters (the -n & -u options) [kw]
-  "    "  generating Olog-Hai and Uruk-Hai in vaults [kr]
-  "    "  reverting character stats when creating a char [kr]
-  "    "  displaying all artifacts with '~' [rh]
-  "    "  with special offer when it didn't change the price of item [rh]
-  "    "  using file descriptors under Linux [rh]
-many one-liners: Belthronding, Rohirrim, CURBRAGOL, chr_adj, todis_adj [jk]
-fixed bugs with blindness resistance [rh]
-fixed bug with Satisfy Hunger/Create Food names in spell books
-fixed prototype for my_stricmp [jk]
+Angband 2.5 (beta), first release - 11/93new lightingfixed potion identificationfixed missing attack for 'kicks you' (mystics)resist fear instrinsic addedmonster fearadded autoroller from PC codeCFT's new speed codemana penalty for armour based on weight (doesn't seem to change much), and       gloves of free action/dexterity don't cause the additional mana penaltyprint amount of gold stolenprint object stolenartifacts likely to resist enchantment/disenchantment & other attacksmonsters can pick up things (but not 'X' getting Slay 'X' weapons, etc)if blind then messages change - serious updating   -- also redo 2ndary effects, this was a pain in the buttfix up earthquake effects to not destroy artifacts & some other thingsthe names of the Phial, Star, & Arkenstone change if not identifiedfixed up naming code a little, also renamed monster descriptions & fixed   miscellaneous spelling errors whenever I ran across themcan check what artifacts have been generated while not wizard   -- for convenience only, if you don't like, don't use....add y/n to word of recall spells...fireball effects now have differing radiigiant pits addedvastly more sanity checking in level generationmore sanity checking in compact_monsters & create/summon monsters...more uniques have appropriate escortsdestroyed levels addedplayer ghost/save bug fixedbe a little nicer about out-of-depth monsters on the early levels.......and added moria 5.5 'sleeping dragon' codefixed up the artifacts a little (like being frost brand and not RC, etc)   added TR_BLESS_BLADE & TR_ATTACK_SPEED)  Ringil is still +1 speed, though.   added another resistance to one or two items ala FangbandHoly Avengers & Slay Evil weapons are BLESS_BLADE, Slay Undead are HOLD_LIFE.prayer penalty for priests not using blessed edged weaponscleaned up the display a littlehopefully reset stats correctly when gaining or losing....better messages when an item gets destroyedminimum weight for multiple attack calc reduced from 5 to 3prevented free bashing from detecting an invisible monsteradded pseudo-probing when you look at the monster...fixed the "you seem to be missing a book" messagefixed *enlightment* potionrevamped enchantment codescrolls of aquirement and *aquirement* auto-indentify themselves when usedrods immune to lightningcan't create up staircases on town leveladd delay timing code so that bolts, etc can be seendispelling things in sight prints their names and not it/and the conversetweaked self knowledge messages for clarityAngband 2.5.1 (12/15/93)fixed inventory bug w/ taking off equipped itemsfixed delay causing divide-by-zero crashesmade word of recall a toggle, not yes/no, as that seems to be less aggravatingmaybe fixed redisplay on edge of mapsfixed open/topen/fopen/tfopen which already exists on some systemsfixed a possible problem with displaying monster injury statusfixed a problem displaying the level feelingsfixed dropping worthless items in your home (they silently disappeared)silently reconnect invisible monsters (*why* does this happen?)fixed light redisplay while in stores (thanks to DGK)adjusted code to stop allocating too high plusses on magical items and   too many bows of might/accuracy.fixed desc_monsters.c overrun causing crash when looking at ghostsadded some bounds checking on reading options st 2.4 savefiles don't mess upreadjusted magical plusses some more, made more things variable (such as AC +    for Amulet of Magi, etc ad nauseaum), also caused prices to be more   responsive to the pluses on the itemsredid monster fear code so that some monsters are 'fearless': E's, g's, most   undead and demons except intelligent ones, and all immobile monstersadded global variable monster_is_afraid so that fear messages only occur after   the player has gotten all of his swings; much nicer to look atmonsters that heal themselves may 'regain their courage' when they cast healPDSM no longer resists disenchantment or shards -- so watch out!  Note that   Bladeturner still resists everything, so it becomes a better choice.Angband 2.5.2 (12/20/93)CFT's revamped inven_carry, fixes book ordering for magic usersincluded code for BSD's random() function, which offers a much better RNG;   please consult the file src/random.c for copyright and acknowledgements...fixed "killed by an arrow trap.." (doubled period) and "up staircase ." msgswent back and redid objdes() code to fix a whole bunch of punctuation errors,   including inscriptions, monster/item <--> spell interactions, etc; the   results should look better and probably work faster, toogenderized the whole game, including massive changes to recall.c.  It makes the   program a little larger, but the descriptions are incredibly more coolresyncronized monsters.c with describe_mon.c, fixed some minor incongruities  as I came across them (such as immobile monsters 'being able to open doors')Angband 2.5.3 (1/10/94)fixed a typo giveing Bladeturner +305 to AC (thanks DGK)fixed misspelling David G. Kahane's initials in a few places (sorry DGK :)added support for HPUX thanks to Chris Ang@amd.com [cba]fixed some code that fails on K&R compilers, and reorganized the static    prototypes so they'll do some good for non-ANSI compilersimproved on the los/in_bounds code to make it fastertweaked the recall monster code somefixed 'screen too small for moria --> angband' messagesped up the code some (by macroizing some stuff)switched description of "the Ring of Power" to "the One Ring"turned down the delays a little...worked around the 'infamous monster heal bug', when restoring savefilesfixed a few more monster descriptions (made worm mass descriptions consistant)fixed 'Set of Cestus' to 'Set of Cesti'reindented the whole set of source code; use 4-2 indenting & a 90 col editorreindentation has revealed some questionable syntax RE: '=&' vs '= &' which  may have caused some subtle bugsAngband 2.5.3 (1/12/94?) - beta testing beginsadded support for ultrix thanks to Eugene Hung@garnet.berkeley.edufixed monsters running away due to '= -' versus '-='moved the gender code into the creature_list array and reordered the  descriptions so that desc_list[i] = c_list[i], this was a pain, but I caught  a few more inconsistancies doing sofixed up some of the library filesAnduril is now "The Longsword 'Anduril'", thanks J.Kewley@fiveg.icl.co.ukadded an option "plain_descriptions" so that items will be displayed without  their 'flavor' if that's what the user prefersfixed some bugs in the util.c for supporting microsleep on those machines that  need itmodified object creation so that it makes objects at the average of the  dun_level and the creature's level....fixed possibly letting character go up and down stairs first 100 turns and get  feelings each time.....made see invisible never auto-detect, as this is not worth fixing rightfixed keypad wizard commands (made 'em the save as the rogue wizard commands)added flag for haggling rather than a compile-time define....fixed a few more '= -' expressionsfixed a bug in the wizard level identify codefixed Makefile bug ".o.c" versus ".c.o".... [eh]touched up a few artifacts (Beleg C. -> Belthronding), Sting vs. Weap of   Westernesse, made artifacts display a little more info (searching, infra)fixed a problem in the microsleep code with times of 0moved Master Mystics to dun_level 50...fixed unique deaths not being recalled if you can't see them when they diepatched a few more non-ANSI-compiler problems, & min/max [cba]fixed teleporting leaving lighted area with wide-area lightredid some of the object description code to give more informative messages  and to avoid some braindamageadded option to display weight for equipment list (seperate from inven list)  because new descriptions can be longer and will overrun the available spacefixed a possible lighting bug (casting light spell with light item), and made  unlighting a little more impressive...fixed overlong inscriptions (thanks grabiner@zariski.harvard.edu)made monsters resist damage from weapons a little betteradded compile define to let players see their score, fixed scorefile bug;  (thanks to Torbj|rn Lindgren <tl@cd.chalmers.se>)fixed minor misspellingstried to fix up some minor lighting errors; also touched up a monster or twofixed object descriptions displaying the p1 value inappropriately (+x)removed LINT_ARG define so that we always get function prototypes...Large kobolds resist poison tootweaked the Makefile some more (make clean does better now)removed need for -fwritable-strings [TL]added const char * declarations all over the place (very painful); note that   the player ghost violate the const char * of the monster list -- oh wellfixed fleeing monsters trying to run through doors....made wide-area light light up "knight-move" (L's) squaresmade pits not activate the "special" message but vaults will....error in "if (t_ptr->name2 = SN_ATTACKS)" fixed (BIG thanks to jk@cs.man.ac.uk)improved HPUX support (thanks to Chris Ang@amd.com)Angband 2.5.4 (2/3/94) - final beta testing periodfixed scrolls of darkness not blinding you for a round.fixed bug fix empty savefiles causing crashestweaked more object descriptionsobjects with negative magical bonuses do the right things in the  self-knowledge codewiz mode ^A does "remove_all_curse"....maybe fixed a bug attempting to uncurse mega-cursed itemscleaned up some other minor itemsfixed {mass} genocide not identifying itself always... (ty@vuokko.uta.fi)added support for Atari (thanks Chris Herborth@53iss6.waterloo.NCR.COM)artifact check now displays to screen [cba]added unique check [cba]fixed scorefile not existing bug yet againmoved & documented ALLOW_ARTIFACT_CHECK compile option, which allows non  wizards to see the list of generated artifactsfixed more system function prototypes (in part, tl)fixed save-file byte order problem [tl]Angband 2.5.5 (2/7/94) - patchlevel bumped due to previous byte-order fixlevel feeling now saved in the save filenow display home inventory at death or part of char description [ct/dgk]fixed level feeling being overwritten in save filefixed chests to generate treasure at the correct level [dbd]darkness breath and scrolls now blind you for a while (like light breath)everything that Slays Undead now is See Invisiblemade some SU weapons Hold Life, and some SE Blessed Bladesfixed self_knowledge code wrt negative p1 values (again)Whips of Fire now have Resist Firemaybe fixed some more header file braindamagetried to fix a bug where stackable items could be placed over  your weapon, causing you to lose the weaponfixed a bug displaying (+0) digging implementsmade the low hitpoint warning more noticeablefix so that storebought chests don't give hellacious treasure (backwards  compatibility problem w/ old savefiles)reduced MAX_{T,M}ALLOC to 400 and 600 respectively to reduce memory  hogging for those systems which would appreciate this....fixed small display glitch while rolling [ch]fixed msgs when throwing items at monstersfixed Belthronding not getting a "special level" msgcaused create food to fill you up and not create an item [cba]added equippy chars [dgk/cba]fixed item colors not being randomly shuffled for new characters [dk]changed Celefarn->Celegorm, touched up a few other artifact namesAngband 2.5.6 (3/30/94) - squash a final set of bugs and upload to the netthat bloody store price bug has probably been squashedrewrote the screen too small message (again)fixed taking off cursed items/error in objdes() bug [dbd]fixed some minor spelling problemsadded quick messages optionattacks that destroy items choose which item more randomlyfixed lighting while tunnelling [dbd]fixed some other lighting problems [dbd]incorporated patches for Linux (thanks to Peter Berger@lm.net [pb])fixed missing attack message for medusa squeezeadded 'realclean' makefile target that deletes the executable in the current dirupdated the documentation and library filesfixed "hit to hit to burn" and "hit to bite to electrify" messages [dbd]fixed lighting morefixed drinking poison potion message when you resist poisonadded targetting ala the PC version [ch, ty]improved HPUX support again [cba]added '|' char which lets the player check the unique monsters killedreincorporate making savefiles endian independant (this got lost somehow) [ty]Angband 2.5.7 (4/1/94) slightly upped Nether damage (so watch out...)fixed and documented equippy char patch [eh]added ALLOW_FIDDLING in config.hrecomment config.h and the Makefilerewrote the documentation and other foo in the "lib" treefixed '#endif TARGET'save equippy chars option state in the save fileAngband 2.5.8 (4/22/94)added another shop price bug fix (thanks mpope@itd.dsto.gov.au [Michael Pope])Colluin now resists poison [jk]a few more artifact names got their display attributes tweakedplayed with bonuses of some cloaks [jk]artifact display lists now deal with the new artifact names (I missed a case  or two) more correctlya few more lighting gliches have been fixed [dbd]fixed the equippy chars not turning off correctlyfixed a bug displaying scores after deleting old scoresmonsters that don't move get this remembered, plus some other minor neat  monster recall tweaks [dbd]monsters now cast slightly more intelligent spells [dgk]incorperated more fixes from UMoria 5.5 Changes, including:  'destroy traps' untraps & unlocks chests, not destroys them  eliminate search_flag for py.flags.status & PY_SEARCH  updated haggling routines for the 'sliding scale' for not hagglingadded *SUPERB* critical hit; it's unlikely that people will get many, though.critical hit messages now come after the "You hit <monster>." messageAngband 2.5.9 (5/10/94)fixed another light bug [dbd]added new method for finding the library files [cjh]Cammithim now has free action to avoid mana penalty [jk]other minor artifact name fixing [jk]added a case insensitive string comp for deficient systems [hmj]fixed a bug in prt_stat [Colin_Spry@equinox.gen.nz]fixed typing problems with integer size for artifacts [cs]maybe fixed invisible monster bug [cs]=====================Angband 2.6 (begun 6/1/94) previous change involved savefile format change=====================Angband 2.6.0 (9/4/94) public beta releaseradical save-file cleanup, including: fixing invis. monster (as above),   saving old_turn, saving monster maxhp and fear, saving player fear,   additional space for flagsNB: savefiles from 2.6 will not work with Angband 2.4/2.5!fixed a minor bug in monster recall displaysfixed some minor problems in the scorefile routines   [js <surge@dilbert.cqs.washington.edu>]incorporated patches for OS/2 support [pb]cleaned up the code here and therefixed a bug generating treasure in vaults that resulted in slightly worse   treasure then intended [hmj <HMJ@IPG.PH.KCL.AC.UK>]adjusted the stores so that some shopkeepers have a higher amount of gold   available, and the Black Market makes much more reasonable offersroughly doubled demon ('&') hitpoints to make them more reasonablefixed a few other monster problemsIncorporated 1.40 code from CFT:fixed nether bolt damagecreatures that multiply don't do so if only seen via telepathyspeed now burns up food less rapidly, since speed is less powerfulcuts now behave better with odd constitution adjustmentsfixed clearing commands from get_com via Escapeartifacts now don't waste a turn when Escaping from using themCubragol's fiery enchantment now seeks out unenchanted bolts rather then   simply failing if the first bolt listed is enchanted...also, C's bolts now resist fireTotila now really does confuse monstersusing spikes now decreases one's encumberancecleaned up the dungeon generation code some morefixed 'buried in rock' bug with escorts in vaultsincorperated new bow & missile ammo codenew lighting (again :-)wizards have the option to cheat deathplayers still gain a little experience even after life drainingtunnelling (stone to mud) will sometimes produce an object under rubblebetter object throwing code (many items won't disappear)-------------monster recall indicates good / special treasuresfixed a bug displaying inventory when you weren't carrying anythingcleaned up how the scores are displayed somefixed a minor glich with the recall code (single spaces at the start   of a line)fixed a bug always generating "cloak [1,0]"fixed bugs with SECURE functioning under the Andrew File Systemfixed a bug with stat_type being trashed with prt_stat() and cnv_stat()added support for {Free,Net}BSD [pb]fixed a bug with multiple missile weapons' damage bonus accumulating  [randy@PICARD.TAMU.EDU (Randy Hutson)]fixed some minor problems with heavy weapons and BLESSED_BLADES [dbd]undid new lighting to avoid dbd's wrath :-)fix bug with '|' (see uniques) command  [ken wigle@niktow.canisius.edu (kw)]fixed running with wide-area light bug (very cool!)fixed bugs with spellbooks [kw]incorperated new attacks/round table [cft]fixed messaging punctuationmonsters now usually wake up when their rooms get lit...fixed _major_ bug with line_spell() overwriting the stack (!)adjusted magical bonuses a little morecreeping 'xxx' coin monsters always generate 'xxx' treasureopening a chest will no longer generate chests in the treasure dropstairs on town level now are always litnon-wizards can only check artifacts if on town leveladded 'satisfy hunger' option (instead of 'create food')Angband 2.6.1 (9/18/94) public releasefixed bug with '|' (show uniques) when in wizard modeadjusted player's number of attacks per roundfixed a bug whereby a ghost could be generated (on a destroyed level) without   setting the 'special level' messageadded support for DEC OSF/1 (Alpha) [tl]fixed bug with names in dispel_creature   [hman@marina.dei.unipd.it (Heiko Herold) hh]added monster fear if player level >> monster level [hh]added identification of objects on floor via '-' [hh]*enlighnment* potions now detect traps, s. doors, treasure, etc....the Arkenstone also detects s. doors and trapsadjusted the monster picking up an item code to be smarterimproved support for Solaris 2.x [tl]fixed some minor bugs with bounds checking   [ randall@theory.lcs.mit.edu (Keith H Randall) kr ]fixed const typing with my_stricmp [cb]fixed bug with unlocking/opening things being impossible [kw]  "    "  using multiple characters (the -n & -u options) [kw]  "    "  generating Olog-Hai and Uruk-Hai in vaults [kr]  "    "  reverting character stats when creating a char [kr]  "    "  displaying all artifacts with '~' [rh]  "    "  with special offer when it didn't change the price of item [rh]  "    "  using file descriptors under Linux [rh]many one-liners: Belthronding, Rohirrim, CURBRAGOL, chr_adj, todis_adj [jk]fixed bugs with blindness resistance [rh]fixed bug with Satisfy Hunger/Create Food names in spell booksfixed prototype for my_stricmp [jk]Angband 2.6.2 (12/11/94) fixed typos with 'Quarterstraff', 'staisfy hunger', 'Beleg', monster genderadded support for DEC OSF/1, fixed my_stricmp declaration [tl]removed declaration for sprintf -- yell if this causes you problemsrenamed all calls to 'get_Yn' to 'get_check'renamed 'worm mass' to 'worm' to match its plural naturefixed bug when falling through a trap door into a spiked pit [jn]don't ask direction if not needed when opening/closing/disarming [jn]made header files idempotent, made all .c's include the global .h's, added   precompiled header support for NeXT (speed up my development)general Makefile cleanup and improvementifdef'ed out "Bill Cosby" messageadded support for systems lacking the bzero() callremoved GROSS_HACKadded support for SGI machines running IRIXfixed a bug with the prototyping of spell_hit_monster()display max mana [ Martian <abigail@xs4all.nl>, Abby ]added options for throw confirmation and disabling the bell [Abby]fixed possible bug restoring flag values [Abby]  "   bug initialize curses when printing out the usage message [jn]  "    "  with cursed gloves [jn]store inventories no longer get shuffled on save/restore on town level [jk]Soulkeeper, Gondor heal wounds, Bladeturner does a full Resistance spell [jk]updated docs for (HA), mentioned '~' and '|' keysfixed bug relighting after darknessrods and staves of curing now heal all ailments, not just the first one [rh]fixed problems with compatibility with pure K&R C compilersmade Mushrooms of Restoring 10 times less commonmade acid/corrosion attacks have a chance of reducing charisma if not RAfixed radius checking, updated wizard command listing, thrown_spell,   pain_message [kr]fix more problems with const declarations, prototyping, disenchantment   messages, blinding when RB, not lose mana when aborting genocide [rh]immobile monsters no longer run awayincorperated support for Amiga [cjmcgee1@unity.ncsu.edu (Christopher Mcgee)]character generation now shows stat-dependant bonusescan use space bar to browse in shops ala 'more'checking score, not throwing an item no longer take a turnadded some POSIX/BSDI compliance [pb]can no longer target '.' monsters, blindness resist & GF_DARK [kr]added some bounds-checking for m_bonus() so that crazy items won't be   created at (excessive) levels in wizard modeRangers again get multiple shots, but only a max of 3 per turn   (except that Crossbows now always only can produce one shot)fixed a bug checking view after stone-to-mud [dbd]now inform player of manaloss due to gloves/armor weight [rh]incorperated dbd's new "running w/ wide-area light fixes"all bows are no longer always excellent; Artifact bows are much harder to   generate [ desj@ccr-p.ida.org (David desJardins) dj]m_bonus bug fixed, wand of frost, store pricing update [dj]patches for aborting using up charges on staves, etc [rh]updated resistances code, made only normal spellbooks flammablevarious attacks now have a chance of damaging player's physical   characteristics (ie, STR, CON, DEX, CHA)fixed multiple Rings of Speed; check comments in moria1.c, line #100auto-rolling now exits after 10000 rounds if #define'd NICE to keep people   from rolling forever on shared machinesmultiple characters now work betterupdated wizard command set and documentation in LIBDIRcloning monsters now heals the cloned monster, and may speed it upfixed bugs displaying max mana
