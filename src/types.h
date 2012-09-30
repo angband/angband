@@ -120,6 +120,26 @@ typedef struct vault {
 
 
 /*
+ * Information about "room generation"
+ */
+typedef struct room_template {
+	struct room_template *next;
+	unsigned int tidx;
+	char *name;
+	char *text;
+
+	byte typ;			/* Room type */
+
+	byte rat;			/* Room rating */
+
+	byte hgt;			/* Room height */
+	byte wid;			/* Room width */
+	byte dor;           /* Random door options */
+	byte tval;			/* tval for objects in this room */
+} room_template_type;
+
+
+/*
  * An entry for the object/monster allocation functions
  *
  * Pass 1 is determined from allocation information

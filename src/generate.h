@@ -12,6 +12,7 @@ void place_secret_door(struct cave *c, int y, int x);
 void place_closed_door(struct cave *c, int y, int x);
 void place_random_door(struct cave *c, int y, int x);
 
+extern struct room_template *random_room_template(int typ);
 extern struct vault *random_vault(int typ);
 
 struct tunnel_profile {

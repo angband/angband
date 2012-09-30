@@ -524,6 +524,7 @@ monster_pain *pain_messages;
 
 struct player_race *races;
 struct player_class *classes;
+struct room_template *room_templates;
 struct vault *vaults;
 struct object_kind *objkinds;
 
