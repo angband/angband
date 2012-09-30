@@ -1493,9 +1493,9 @@ static void do_elemental_melee_attack(struct player *p, int damage, int ac, int 
 		case GF_COLD: msg("You are covered with frost!");
                	break;
 	}
-
-	/* Take the larger of physical or elemental damage */
-	physical_dam = adjust_dam_armor(damage, ac);
+	
+	/* Give the player a small bonus to ac for elemental attacks */
+	physical_dam = adjust_dam_armor(damage, ac + 50);
 	
 	/* Some attacks do no physical damage */
 	if (method == RBM_TOUCH  ||
@@ -1514,6 +1514,8 @@ static void do_elemental_melee_attack(struct player *p, int damage, int ac, int 
 	
 	elemental_dam = adjust_dam(p, which_element, damage, RANDOMISE, 
 		check_for_resist(p, which_element, p->state.flags, TRUE));
+		
+	/* Take the larger of physical or elemental damage */	
 	damage = (physical_dam > elemental_dam) ? physical_dam : elemental_dam;
 	
 	if (damage > 0) take_hit(p, damage, ddesc);
