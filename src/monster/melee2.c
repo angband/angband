@@ -1479,7 +1479,7 @@ static int adjust_dam_armor(int damage, int ac)
  * Helper function for make_attack_normal.
  * Do damage as the result of a melee attack that has an elemental aspect.
  */
-static void do_elemental_melee_attack(struct player *p, int damage, int ac, int which_element, char *ddesc)
+static void do_elemental_melee_attack(struct player *p, int damage, int ac, int which_element, char *ddesc, int method)
 {
 	int physical_dam, elemental_dam;
 
@@ -1495,8 +1495,23 @@ static void do_elemental_melee_attack(struct player *p, int damage, int ac, int 
 	}
 
 	/* Take the larger of physical or elemental damage */
-
 	physical_dam = adjust_dam_armor(damage, ac);
+	
+	/* Some attacks do no physical damage */
+	if (method == RBM_TOUCH  ||
+		method == RBM_ENGULF ||
+		method == RBM_DROOL  ||
+		method == RBM_SPIT   ||
+		method == RBM_CRAWL  ||
+		method == RBM_GAZE   ||
+		method == RBM_WAIL   ||
+		method == RBM_SPORE  ||
+		method == RBM_BEG    ||
+		method == RBM_INSULT ||
+		method == RBM_MOAN){
+		physical_dam = 0;
+	}
+	
 	elemental_dam = adjust_dam(p, which_element, damage, RANDOMISE, 
 		check_for_resist(p, which_element, p->state.flags, TRUE));
 	damage = (physical_dam > elemental_dam) ? physical_dam : elemental_dam;
@@ -1840,7 +1855,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 				case RBE_POISON:
 				{
 					do_elemental_melee_attack(p, damage, ac, GF_POIS,
-						ddesc);
+						ddesc, method);
 
 					/* Take "poison" effect */
 					if (player_inc_timed(p, TMD_POISONED, randint1(rlev) + 5, TRUE, TRUE))
@@ -2174,7 +2189,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 					obvious = TRUE;
 				
 					do_elemental_melee_attack(p, damage, ac, GF_ACID,
-						ddesc);
+						ddesc, method);
 
 					/* Learn about the player */
 					monster_learn_resists(m_ptr, p, GF_ACID);
@@ -2188,7 +2203,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 					obvious = TRUE;
 					
 					do_elemental_melee_attack(p, damage, ac, GF_ELEC,
-						ddesc);
+						ddesc, method);
 
 					/* Learn about the player */
 					monster_learn_resists(m_ptr, p, GF_ELEC);
@@ -2201,7 +2216,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 					/* Obvious */
 					obvious = TRUE;
 
-					do_elemental_melee_attack(p, damage, ac, GF_FIRE, ddesc);
+					do_elemental_melee_attack(p, damage, ac, GF_FIRE, ddesc, method);
 
 					/* Learn about the player */
 					monster_learn_resists(m_ptr, p, GF_FIRE);
@@ -2214,7 +2229,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 					/* Obvious */
 					obvious = TRUE;
 
-					do_elemental_melee_attack(p, damage, ac, GF_COLD, ddesc);
+					do_elemental_melee_attack(p, damage, ac, GF_COLD, ddesc, method);
 
 					/* Learn about the player */
 					monster_learn_resists(m_ptr, p, GF_COLD);
