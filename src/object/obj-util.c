@@ -2239,7 +2239,7 @@ void acquirement(int y1, int x1, int level, int num, bool great)
 		object_wipe(i_ptr);
 
 		/* Make a good (or great) object (if possible) */
-		if (!make_object(cave, i_ptr, level, TRUE, great, NULL)) continue;
+		if (!make_object(cave, i_ptr, level, TRUE, great, NULL, 0)) continue;
 
 		i_ptr->origin = ORIGIN_ACQUIRE;
 		i_ptr->origin_depth = p_ptr->depth;

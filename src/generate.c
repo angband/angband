@@ -525,7 +525,7 @@ static void place_random_stairs(struct cave *c, int y, int x)
 /**
  * Place a random object at (x, y).
  */
-void place_object(struct cave *c, int y, int x, int level, bool good, bool great, byte origin)
+void place_object(struct cave *c, int y, int x, int level, bool good, bool great, byte origin, int tval)
 {
 	s32b rating = 0;
 	object_type otype;
@@ -535,7 +535,7 @@ void place_object(struct cave *c, int y, int x, int level, bool good, bool great
 	if (!cave_canputitem(c, y, x)) return;
 
 	object_wipe(&otype);
-	if (!make_object(c, &otype, level, good, great, &rating)) return;
+	if (!make_object(c, &otype, level, good, great, &rating, tval)) return;
 
 	otype.origin = origin;
 	otype.origin_depth = c->depth;
@@ -745,9 +745,9 @@ static bool alloc_object(struct cave *c, int set, int typ, int depth, byte origi
 		case TYP_RUBBLE: place_rubble(c, y, x); break;
 		case TYP_TRAP: place_trap(c, y, x); break;
 		case TYP_GOLD: place_gold(c, y, x, depth, origin); break;
-		case TYP_OBJECT: place_object(c, y, x, depth, FALSE, FALSE, origin); break;
-		case TYP_GOOD: place_object(c, y, x, depth, TRUE, FALSE, origin); break;
-		case TYP_GREAT: place_object(c, y, x, depth, TRUE, TRUE, origin); break;
+		case TYP_OBJECT: place_object(c, y, x, depth, FALSE, FALSE, origin, 0); break;
+		case TYP_GOOD: place_object(c, y, x, depth, TRUE, FALSE, origin, 0); break;
+		case TYP_GREAT: place_object(c, y, x, depth, TRUE, TRUE, origin, 0); break;
 	}
 	return TRUE;
 }
@@ -822,7 +822,7 @@ static void vault_objects(struct cave *c, int y, int x, int depth, int num)
 
 			/* Place an item or gold */
 			if (randint0(100) < 75)
-				place_object(c, j, k, depth, FALSE, FALSE, ORIGIN_SPECIAL);
+				place_object(c, j, k, depth, FALSE, FALSE, ORIGIN_SPECIAL, 0);
 			else
 				place_gold(c, j, k, depth, ORIGIN_VAULT);
 
@@ -1264,7 +1264,7 @@ static bool build_crossed(struct cave *c, int y0, int x0)
 			generate_hole(c, y1b, x1a, y2b, x2a, FEAT_SECRET);
 
 			/* Place a treasure in the vault */
-			place_object(c, y0, x0, c->depth, FALSE, FALSE, ORIGIN_SPECIAL);
+			place_object(c, y0, x0, c->depth, FALSE, FALSE, ORIGIN_SPECIAL, 0);
 
 			/* Let's guard the treasure well */
 			vault_monsters(c, y0, x0, c->depth + 2, randint0(2) + 3);
@@ -1385,7 +1385,7 @@ static bool build_large(struct cave *c, int y0, int x0)
 
 			/* Object (80%) or Stairs (20%) */
 			if (randint0(100) < 80)
-				place_object(c, y0, x0, c->depth, FALSE, FALSE, ORIGIN_SPECIAL);
+				place_object(c, y0, x0, c->depth, FALSE, FALSE, ORIGIN_SPECIAL, 0);
 			else
 				place_random_stairs(c, y0, x0);
 
@@ -1431,10 +1431,10 @@ static bool build_large(struct cave *c, int y0, int x0)
 				/* Objects */
 				if (one_in_(3))
 					place_object(c, y0, x0 - 2, c->depth, FALSE, FALSE,
-						ORIGIN_SPECIAL);
+						ORIGIN_SPECIAL, 0);
 				if (one_in_(3))
 					place_object(c, y0, x0 + 2, c->depth, FALSE, FALSE,
-						ORIGIN_SPECIAL);
+						ORIGIN_SPECIAL, 0);
 			}
 
 			break;
@@ -1707,7 +1707,7 @@ static bool build_nest(struct cave *c, int y0, int x0)
 			/* Occasionally place an item, making it good 1/3 of the time */
 			if (randint0(100) < alloc_obj) 
 				place_object(c, y, x, c->depth + 10, one_in_(3), FALSE,
-					ORIGIN_PIT);
+					ORIGIN_PIT, 0);
 		}
 	}
 
@@ -1884,7 +1884,7 @@ static bool build_pit(struct cave *c, int y0, int x0)
 			/* Occasionally place an item, making it good 1/3 of the time */
 			if (randint0(100) < alloc_obj) 
 				place_object(c, y, x, c->depth + 10, one_in_(3), FALSE,
-					ORIGIN_PIT);
+					ORIGIN_PIT, 0);
 		}
 	}
 
@@ -1960,7 +1960,7 @@ static void build_room_template(struct cave *c, int y0, int x0, int ymax, int xm
 					/* Put something nice in this square
 					 * Object (80%) or Stairs (20%) */
 					if (randint0(100) < 80)
-						place_object(c, y, x, c->depth, FALSE, FALSE, ORIGIN_SPECIAL);
+						place_object(c, y, x, c->depth, FALSE, FALSE, ORIGIN_SPECIAL, 0);
 					else
 						place_random_stairs(c, y, x);
 
@@ -1994,7 +1994,7 @@ static void build_room_template(struct cave *c, int y0, int x0, int ymax, int xm
 				case '*': {
 				
 					/* Place an object of the template's specified tval */
-					place_object(c, y, x, c->depth, FALSE, FALSE, ORIGIN_SPECIAL);
+					place_object(c, y, x, c->depth, FALSE, FALSE, ORIGIN_SPECIAL, tval);
 					break;
 				}
 				case '1':
@@ -2106,7 +2106,7 @@ static void build_vault(struct cave *c, int y0, int x0, int ymax, int xmax, cons
 				case '*': {
 					/* Treasure or a trap */
 					if (randint0(100) < 75)
-						place_object(c, y, x, c->depth, FALSE, FALSE, ORIGIN_VAULT);
+						place_object(c, y, x, c->depth, FALSE, FALSE, ORIGIN_VAULT, 0);
 					else
 						place_trap(c, y, x);
 					break;
@@ -2142,7 +2142,7 @@ static void build_vault(struct cave *c, int y0, int x0, int ymax, int xmax, cons
 					pick_and_place_monster(c, y, x, c->depth + 9, TRUE, TRUE,
 						ORIGIN_DROP_VAULT);
 					place_object(c, y, x, c->depth + 7, TRUE, FALSE,
-						ORIGIN_VAULT);
+						ORIGIN_VAULT, 0);
 					break;
 				}
 
@@ -2151,7 +2151,7 @@ static void build_vault(struct cave *c, int y0, int x0, int ymax, int xmax, cons
 					pick_and_place_monster(c, y, x, c->depth + 40, TRUE, TRUE,
 						ORIGIN_DROP_VAULT);
 					place_object(c, y, x, c->depth + 20, TRUE, TRUE,
-						ORIGIN_VAULT);
+						ORIGIN_VAULT, 0);
 					break;
 				}
 
@@ -2162,7 +2162,7 @@ static void build_vault(struct cave *c, int y0, int x0, int ymax, int xmax, cons
 							ORIGIN_DROP_VAULT);
 					if (randint0(100) < 50)
 						place_object(c, y, x, c->depth + 7, FALSE, FALSE,
-							ORIGIN_VAULT);
+							ORIGIN_VAULT, 0);
 					break;
 				}
 			}

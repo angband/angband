@@ -1260,7 +1260,7 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 						obvious = TRUE;
 					}
 					place_object(cave, y, x, p_ptr->depth, FALSE, FALSE,
-						ORIGIN_RUBBLE);
+						ORIGIN_RUBBLE, 0);
 				}
 			}
 
