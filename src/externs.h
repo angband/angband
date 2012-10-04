@@ -95,6 +95,7 @@ extern monster_pain *pain_messages;
 extern struct player_race *races;
 extern struct player_class *classes;
 extern struct flavor *flavors;
+extern struct room_template *room_templates;
 extern struct vault *vaults;
 extern struct object_kind *objkinds;
 extern spell_type *s_info;
