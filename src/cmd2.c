@@ -707,7 +707,7 @@ static bool do_cmd_tunnel_aux(int y, int x)
 			if (randint0(100) < 10)	{
 				/* Create a simple object */
 				place_object(cave, y, x, p_ptr->depth, FALSE, FALSE,
-					ORIGIN_RUBBLE);
+					ORIGIN_RUBBLE, 0);
 
 				/* Observe the new object */
 				if (!squelch_item_ok(object_byid(cave->o_idx[y][x])) &&

@@ -1,0 +1,278 @@
+# File: room_template.txt
+
+
+# This file is used to initialize the "room template" information 
+# for the Angband game.
+
+# Do not modify this file unless you know exactly what you are doing,
+# unless you wish to risk possible system crashes and broken savefiles.
+
+# Note that the "spacing" in the "description" lines is very important!
+
+# === Understanding room_template.txt ===
+
+# N:serial number:room name
+# X:room type:rating:rows:columns:doors:tval
+# D:lines giving full layout of room using symbols below
+
+# 'N' indicates the beginning of an entry. The serial number must
+# increase for each new room.
+
+# 'X' is for extra information - room type, rating, rows, 
+# columns, doors, and tval.  Type and rating are not currently used.
+# Where doors is set to n, the generator will pick a number between 
+# 1 and n and place doors at squares marked with that number.  
+# Squares marked with other numbers will be generated as walls.  If 
+# the 1 to n range encompasses numbers not included in the D lines, 
+# there is a chance that no doors will be generated.
+# tval is used to make sure that the items in the room corresponding
+# to '*' are only of the given type.
+
+# 'D' lines describe the layout of the room. Lines must be padded
+# with spaces to fill the dimensions specified. Rooms are described
+# with the following symbols:
+
+#    % - outside of the room, where corridors may be connected
+#    # - granite
+#    + - fixed position door (always generated)
+#    1,2,3,4,5,6,7,8,9 - potential positions for random doors
+#    x - optional wall (generated 50% of the time)
+#    = - optional door (generated if optional walls are generated)
+#    ~ - a treasure or stairs, with guardian monsters and traps
+#    ! - place some monsters and treasures nearby
+#	 * - a treasure of the specified tval
+
+
+# Use this to measure columns      
+#          1         2         3   
+# 123456789012345678901234567890123
+
+# Version stamp (required)
+
+V:4.0
+
+### Templated rooms -- maximum size 33x11 ###
+
+N:1:Jail
+X:1:1:11:33:1:0
+D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+D:%...............................%
+D:#=##+###+###+###+###+###+###+##=#
+D:%.#...#...#...#...#...#...#...#.%
+D:%.#..!#...#...#...#.!.#...#...#.%
+D:%.#############################.%
+D:%.#...#...#.!.#...#...#...#!..#.%
+D:%.#...#...#...#...#...#...#...#.%
+D:%=##+###+###+###+###+###+###+##=#
+D:%...............................%
+D:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+N:2:Sixblock
+X:1:1:11:17:2:0
+D:%%%%%%%%%%%%%%%%%
+D:%...............%
+D:%.##+###+###+##.%
+D:%.#...#...#...#.%
+D:%.#..!#...#...#.%
+D:%.##1###1###1##.%
+D:%.#...#...#!..#.%
+D:%.#...#...#...#.%
+D:%.##+###+###+##.%
+D:%...............%
+D:%%%%%%%%%%%%%%%%%
+
+N:3:Box room
+X:1:1:11:17:4:0
+D:%%#%%%%%%%%%%%#%%
+D:%.=...........=.%
+D:#=######1######=#
+D:%.#...........#.%
+D:%.#....#2#....#.%
+D:%.3....4~3....4.%
+D:%.#....#1#....#.%
+D:%.#...........#.%
+D:#=######2######=#
+D:%.=...........=.%
+D:%%#%%%%%%%%%%%#%%
+
+N:4:Pyramid
+X:1:1:10:17:1:0
+D:       #%#       
+D:      ##.##      
+D:     ##...##     
+D:    ##.....##    
+D:   ##.......##   
+D:  ##...x=x...##  
+D: ##...xx!xx...## 
+D:##...xx...xx...##
+D:%...xx.....xx...%
+D:########%########
+
+N:5:Hex
+X:1:1:9:17:1:0
+D:   ###%%%%%###   
+D:  ##.........##  
+D: ##...xx=xx...## 
+D:##...xx...xx...##
+D:%...xx..!..xx...%
+D:##...xx...xx...##
+D: ##...xx=xx...## 
+D:  ##.........##  
+D:   ###%%%%%###   
+
+N:6:Zed
+X:1:1:11:15:1:0
+D:###############
+D:%.............#
+D:%.............#
+D:##########...##
+D:     ###...### 
+D:   ###...###   
+D: ###...###     
+D:##...##########
+D:#.............%
+D:#.............%
+D:###############
+
+N:7:Star
+X:1:1:10:13:1:0
+D:     #%#     
+D:    ##.##    
+D:   ##...##   
+D:####.....####
+D:%...........%
+D:##.........##
+D: ##.......###
+D:##....#....##
+D:#...##%##...#
+D:#####   #####
+
+N:8:Tower stack
+X:1:1:10:11:6:0
+D:#%#######%#
+D:%.1.....6.%
+D:%.2.....5.%
+D:%.###+###.%
+D:%.3..!..4.%
+D:%.4.....3.%
+D:%.###+###.%
+D:%.5.....2.%
+D:%.6.....1.%
+D:#%#######%#
+
+N:9:Double tower
+X:1:1:10:17:6:0
+D:#%#############%#
+D:%.1.....3.....5.%
+D:%.5.....6.....2.%
+D:%.###+#####+###.%
+D:%.2..!..1.....3.%
+D:%.4.....4..!..4.%
+D:%.###+#####+###.%
+D:%.3.....2.....6.%
+D:%.6.....5.....1.%
+D:#%#############%#
+
+N:10:3x3
+X:1:1:10:23:4:0
+D:#%###################%#
+D:%.1.....2.....1.....2.%
+D:%.#.....3.....4.....#.%
+D:%.###+#####+#####+###.%
+D:%.4..!..#.....#..!..3.%
+D:%.3.....#..!..#.....4.%
+D:%.###+#####+#####+###.%
+D:%.#.....4.....3.....#.%
+D:%.2.....1.....2.....1.%
+D:#%###################%#
+
+N:11:Fort
+X:1:1:11:17:4:0
+D:######%%%%%######
+D:#....#.....#....#
+D:#....###+###....#
+D:#...!+.....+!...#
+D:######.#1#.######
+D:%....+.4~2.+....%
+D:######.#3#.######
+D:#...!+.....+!...#
+D:#....###+###....#
+D:#....#.....#....#
+D:######%%%%%######
+
+N:12:U-bend
+X:1:1:10:15:1:0
+D:#%%%#     #%%%#
+D:%...#     #...%
+D:#...#     #...#
+D:#...#     #...#
+D:#...#     #...#
+D:#...##   ##...#
+D:##...#####...##
+D: ##.........## 
+D:  ##.......##  
+D:   #########   
+
+N:13:Spiral
+X:1:1:11:14:1:0
+D:#%############
+D:%.#........=.#
+D:%.#=########.#
+D:%.#.#....=.#.#
+D:%.#.#=####.#.#
+D:%.#.#.!.~#.#.#
+D:%.#.######+#.#
+D:%.#.=......#.#
+D:%.##########=#
+D:%.=..........#
+D:#%############
+
+N:14:Wineglass
+X:1:1:11:13:1:0
+D:#############
+D:%...........%
+D:%...!...!...%
+D:##.........##
+D: ###.....### 
+D:   ###.###   
+D:     #.#     
+D:     #.#     
+D:######.######
+D:%...........%
+D:#%%%%%%%%%%%#
+
+N:15:Diamond chamber
+X:1:1:11:13:2:0
+D:######%######
+D:#...##.##...#
+D:#..2#...#2..#
+D:#.##!...!##.#
+D:#1#.......#1#
+D:%.+.......+.%
+D:#1#.......#1#
+D:#.##!...!##.#
+D:#..2#...#2..#
+D:#...##.##...#
+D:######%######
+
+N:16:Library
+X:1:1:7:11:1:70
+D:%%%%%%%%%%%
+D:%.........%
+D:%.###.###.%
+D:%.***.***.%
+D:%.###.###.%
+D:%.........%
+D:%%%%%%%%%%%
+
+N:17:Larder
+X:1:1:9:9:4:80
+D:%%%%%%%%%
+D:%.......%
+D:%.##1##.%
+D:%.#***#.%
+D:%.4***2.%
+D:%.#***#.%
+D:%.##3##.%
+D:%.......%
+D:%%%%%%%%%

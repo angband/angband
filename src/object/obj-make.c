@@ -803,9 +803,66 @@ void free_obj_alloc(void)
 
 
 /*
- * Choose an object kind given a dungeon level to choose it for.
+ * Choose an object kind of a given tval given a dungeon level.
  */
-object_kind *get_obj_num(int level, bool good)
+static object_kind *get_obj_num_by_kind(int level, bool good, int tval)
+{
+	/* This is the base index into obj_alloc for this dlev */
+	size_t ind, item;
+	u32b value;
+	int total = 0;
+
+	/* Pick an object */
+	ind = level * z_info->k_max;
+
+	/* Get new total */
+	if (!good) {
+		for (item = 1; item < z_info->k_max; item++) {
+			if (objkind_byid(item)->tval == tval) {
+				total += obj_alloc[ind + item];
+			}
+		}
+	} else {
+		for (item = 1; item < z_info->k_max; item++) {
+			if (objkind_byid(item)->tval == tval) {
+				total += obj_alloc_great[ind + item];
+			}
+		}
+	}
+
+	/* No appropriate items of that tval */
+	if (!total) return NULL;
+	
+	value = randint0(total);
+	
+	if (!good) {
+		for (item = 1; item < z_info->k_max; item++) {
+			if (objkind_byid(item)->tval == tval) {
+				if (value < obj_alloc[ind + item]) break;
+				
+				value -= obj_alloc[ind + item];
+			}
+		}
+	} else {
+		for (item = 1; item < z_info->k_max; item++) {
+			if (objkind_byid(item)->tval == tval) {
+				if (value < obj_alloc_great[ind + item]) break;
+				
+				value -= obj_alloc_great[ind + item];
+			}
+		}
+	}	
+
+	/* Return the item index */
+	return objkind_byid(item);
+}
+
+/*
+ * Choose an object kind given a dungeon level to choose it for.
+ * If tval = 0, we can choose an object of any type.
+ * Otherwise we can only choose one of the given tval.
+ */
+object_kind *get_obj_num(int level, bool good, int tval)
 {
 	/* This is the base index into obj_alloc for this dlev */
 	size_t ind, item;
@@ -824,24 +881,30 @@ object_kind *get_obj_num(int level, bool good)
 
 	/* Pick an object */
 	ind = level * z_info->k_max;
+	
+	if(tval)
+		return get_obj_num_by_kind(level, good, tval);
+	
 
 	if (!good)
 	{
 		value = randint0(obj_total[level]);
 		for (item = 1; item < z_info->k_max; item++)
 		{
+			  
 			/* Found it */
 			if (value < obj_alloc[ind + item]) break;
 
 			/* Decrement */
 			value -= obj_alloc[ind + item];
+			
 		}
 	}
 	else
 	{
 		value = randint0(obj_total_great[level]);
 		for (item = 1; item < z_info->k_max; item++)
-		{
+		{	
 			/* Found it */
 			if (value < obj_alloc_great[ind + item]) break;
 
@@ -856,17 +919,21 @@ object_kind *get_obj_num(int level, bool good)
 }
 
 
-/*
- * Attempt to make an object (normal or good/great)
+/**
+ * Attempt to make an object
  *
- * This routine plays nasty games to generate the "special artifacts".
- * We assume that the given object has been "wiped". You can optionally
- * receive the object's value in value if you pass a non-null pointer.
+ * \param c is the current dungeon level.
+ * \param j_ptr is the object struct to be populated.
+ * \param lev is the creation level of the object (not necessarily == depth).
+ * \param good is whether the object is to be good
+ * \param great is whether the object is to be great
+ * \param value is the value to be returned to the calling function
+ * \param tval is the desired tval, or 0 if we allow any tval
  *
  * Returns the whether or not creation worked.
  */
 bool make_object(struct cave *c, object_type *j_ptr, int lev, bool good,
-	bool great, s32b *value)
+	bool great, s32b *value, int tval)
 {
 	int base;
 	object_kind *kind;
@@ -886,7 +953,7 @@ bool make_object(struct cave *c, object_type *j_ptr, int lev, bool good,
 	base = (good ? (lev + 10) : lev);
 
 	/* Get the object, prep it and apply magic */
-	kind = get_obj_num(base, good || great);
+	kind = get_obj_num(base, good || great, tval);
 	if (!kind) return FALSE;
 	object_prep(j_ptr, kind, lev, RANDOMISE);
 	apply_magic(j_ptr, lev, TRUE, good, great);
