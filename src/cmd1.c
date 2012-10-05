@@ -473,7 +473,7 @@ byte py_pickup(int pickup)
 	if (!cave->o_idx[py][px]) return objs_picked_up;
 
 	/* Tally objects that can be picked up.*/
-	floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), py, px, 0x01);
+	floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), py, px, 0x08);
 	for (i = 0; i < floor_num; i++)
 	{
 	    can_pickup += inven_carry_okay(object_byid(floor_list[i]));

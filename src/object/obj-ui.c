@@ -704,7 +704,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 
 
 	/* Scan all non-gold objects in the grid */
-	floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), py, px, 0x03);
+	floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), py, px, 0x0B);
 
 	/* Full floor */
 	f1 = 0;
