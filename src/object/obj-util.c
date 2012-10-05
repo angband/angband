@@ -684,8 +684,9 @@ static bool is_unknown(const object_type *o_ptr)
  *
  * Valid flags are any combination of the bits:
  *   0x01 -- Verify item tester
- *   0x02 -- Marked/visible items only
+ *   0x02 -- Marked items only
  *   0x04 -- Only the top item
+ *   0x08 -- Visible items only
  */
 int scan_floor(int *items, int max_size, int y, int x, int mode)
 {
@@ -715,8 +716,12 @@ int scan_floor(int *items, int max_size, int y, int x, int mode)
 		if ((mode & 0x01) && !item_tester_okay(o_ptr)) continue;
 
 		/* Marked */
-		if ((mode & 0x02)) {
+		if (mode & 0x02) {
 			if (!o_ptr->marked) continue;
+		}
+		
+		/* Visible */
+		if (mode & 0x08) {
 			if (!is_unknown(o_ptr) && squelch_item_ok(o_ptr)) continue;
 		}
 
@@ -3816,7 +3821,7 @@ void display_itemlist(void)
 	for (my = 0; my < dungeon_hgt; my++) {
 		for (mx = 0; mx < dungeon_wid; mx++) {
 			
-			num = scan_floor(floor_list, MAX_FLOOR_STACK, my, mx, 0x02);
+			num = scan_floor(floor_list, MAX_FLOOR_STACK, my, mx, 0x0A);
 
 			/* Iterate over all the items found on this square */
 			for (i = 0; i < num; i++) {
@@ -4279,7 +4284,7 @@ int scan_items(int *item_list, size_t item_list_max, int mode)
 	/* Scan all non-gold objects in the grid */
 	if (use_floor)
 	{
-		floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), p_ptr->py, p_ptr->px, 0x03);
+		floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), p_ptr->py, p_ptr->px, 0x0B);
 
 		for (i = 0; i < floor_num && item_list_num < item_list_max; i++)
 		{
