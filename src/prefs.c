@@ -864,13 +864,15 @@ static enum parser_error parse_prefs_b(struct parser *p)
 
 static enum parser_error parse_prefs_a(struct parser *p)
 {
-	const char *act;
+	const char *act = "";
 
 	struct prefs_data *d = parser_priv(p);
 	assert(d != NULL);
 	if (d->bypass) return PARSE_ERROR_NONE;
 
-	act = parser_getstr(p, "act");
+	if (parser_hasval(p, "act")) {
+		act = parser_getstr(p, "act");
+	}
 	keypress_from_text(d->keymap_buffer, N_ELEMENTS(d->keymap_buffer), act);
 
 	return PARSE_ERROR_NONE;
@@ -1022,7 +1024,7 @@ static struct parser *init_parse_prefs(bool user)
 		/* XXX should be split into two kinds of line */
 	parser_reg(p, "B uint idx str text", parse_prefs_b);
 		/* XXX idx should be {tval,sval} pair! */
-	parser_reg(p, "A str act", parse_prefs_a);
+	parser_reg(p, "A ?str act", parse_prefs_a);
 	parser_reg(p, "C int mode str key", parse_prefs_c);
 	parser_reg(p, "M int type sym attr", parse_prefs_m);
 	parser_reg(p, "V uint idx int k int r int g int b", parse_prefs_v);
