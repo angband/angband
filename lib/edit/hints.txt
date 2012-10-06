@@ -60,8 +60,8 @@ H:Buy at least one potion of cure light wounds before you enter the dungeon.
 H:If a potion or scroll is cheaper than a scroll of Identify, buy it to ID it.
 H:Acid can destroy your stuff - watch out for water hounds and water vortices.
 H:Never underestimate monsters you haven't fought before.
-H:Quivers can hold different types of ammo in one inventory slot (max. 99).
-H:If you have more than 99 items in your quiver, it will take up more slots.
+H:Quivers can hold different types of ammo in one inventory slot (max. 40).
+H:If you have more than 40 items in your quiver, it will take up more slots.
 H:Many items are bad, but few are cursed to the point of needing magic.
 H:A bigger weapon isn't always better - check your damage using 'I'nspect
 H:Can't keep track of all the information on the screen? Add extra windows.
