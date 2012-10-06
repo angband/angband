@@ -1584,8 +1584,9 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr,
 	/* Check against stacking limit - except in stores which absorb anyway */
 	if (!(mode & OSTACK_STORE) && (total >= MAX_STACK_SIZE)) return FALSE;
 
-	/* Unknown items cannot be stacked */
+	/* If either item is unknown, do not stack */
 	if (mode & OSTACK_LIST && o_ptr->marked == MARK_AWARE) return FALSE;
+	if (mode & OSTACK_LIST && j_ptr->marked == MARK_AWARE) return FALSE;
 
 	/* Hack -- identical items cannot be stacked */
 	if (o_ptr == j_ptr) return FALSE;
