@@ -2466,6 +2466,19 @@ static BOOL send_event(NSEvent *event)
             break;
         }
             
+        case NSLeftMouseDown:
+        {
+            NSPoint p = [event locationInWindow];
+            AngbandContext *angbandContext = Term->data;
+            const NSSize tileSize = angbandContext->tileSize;
+            /* Term_mousepress() expects the origin (0,0) at the upper left,
+             * while locationInWindow puts the origin at the lower left.
+             */
+            Term_mousepress(p.x/tileSize.width, 
+                angbandContext->rows - p.y/tileSize.height - 1, 1);
+            break;
+        }
+
         case NSApplicationDefined:
         {
             if ([event subtype] == AngbandEventWakeup)
