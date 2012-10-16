@@ -76,7 +76,8 @@ Harris, Ron Anderson, Ross E. Becker, Denis Eropkin, Torbjorn Lindgren,
 Lars Haugseth, Jon Taylor, Roland Jay Roberts, "Sergey", "cb", Michael 
 Pope, "hmj", Colin Spry, Ed Cogburn, "Yendor", Thomas Dedorson, "Ewert", 
 Rooslan S. Khayrov, Thapper, "Max Stats", "SSK", "ChodTheWacko", "Zaxx", 
-Jonas Lith, Jens Schou, "Lebannen", Daniel Santos, Edd Barrett (vext01)
+Jonas Lith, Jens Schou, "Lebannen", Daniel Santos, Edd Barrett (vext01),
+mtadd
 
 
 Greg Wooledge <greg at wooledge.org> 
