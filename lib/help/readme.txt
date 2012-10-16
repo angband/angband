@@ -2,8 +2,8 @@
 README for Angband 3.4
 ======================
 
-New Features in Angband 3.4.0
-=============================
+New Features in Angband 3.4.0/3.4.1
+===================================
 
 The new version of Angband has a lot of very interesting changes that we
 hope will bring great enjoyment to new players and veterans who haven't

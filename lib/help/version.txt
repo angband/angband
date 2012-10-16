@@ -2,7 +2,7 @@
 Version Information
 ===================
 
-The current version is 3.4.  Detailed information about this version and
+The current version is 3.4.1.  Detailed information about this version and
 previous versions can be found at http://rephial.org.  Also additional
 information can be found at the angband forums (http://angband.oook.cz)
 or the newsgroup (rec.games.roguelike.angband).  

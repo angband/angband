@@ -55,10 +55,10 @@ in the vein of
 and 
 .I moria.
 .B Angband 
-3.4.0 is an official stable release incorporating all the changes
+3.4.1 is an official stable release incorporating all the changes
 and improvements added since the last official stable release (
 .B Angband 
-3.3.0).
+3.3.2).
 .PP
 This version of
 .B Angband
