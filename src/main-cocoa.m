@@ -1596,7 +1596,8 @@ static errr Term_xtra_cocoa(int n, int v)
             
         case TERM_XTRA_FRESH:
         {
-            [angbandContext displayIfNeeded];
+            /* No-op -- see #1669 
+             * [angbandContext displayIfNeeded]; */
             break;
         }
             
