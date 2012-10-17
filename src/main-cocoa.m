@@ -2853,7 +2853,13 @@ static void initialize_file_paths(void)
     {
         return NSTerminateNow;
     }
-    else {
+    else if (! inkey_flag)
+    {
+        /* For compatibility with other ports, do not quit in this case */
+        return NSTerminateCancel;
+    }
+    else
+    {
         cmd_insert(CMD_QUIT);
         /* Post an escape event so that we can return from our get-key-event function */
         wakeup_event_loop();
