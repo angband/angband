@@ -2469,14 +2469,43 @@ static BOOL send_event(NSEvent *event)
             
         case NSLeftMouseDown:
         {
-            NSPoint p = [event locationInWindow];
-            AngbandContext *angbandContext = Term->data;
-            const NSSize tileSize = angbandContext->tileSize;
-            /* Term_mousepress() expects the origin (0,0) at the upper left,
-             * while locationInWindow puts the origin at the lower left.
+            /* Queue mouse presses if they occur in the map section
+             * of the main window.
              */
-            Term_mousepress(p.x/tileSize.width, 
-                angbandContext->rows - p.y/tileSize.height - 1, 1);
+
+            AngbandContext *angbandContext =
+                [[[event window] contentView] angbandContext];
+            AngbandContext *mainAngbandContext =
+                angband_term[0]->data;
+
+            if (mainAngbandContext->primaryWindow &&
+                [[event window] windowNumber] ==
+                [mainAngbandContext->primaryWindow windowNumber])
+            {
+                int cols, rows, x, y;
+                Term_get_size(&cols, &rows);
+
+                /* Term_mousepress() expects the origin (0,0) at the upper
+                 * left, while locationInWindow puts the origin at the lower
+                 * left.
+                 */
+                NSPoint p = [event locationInWindow];
+                NSSize tileSize = angbandContext->tileSize;
+                NSSize scaleFactor = [angbandContext scaleFactor];
+                x = p.x/(tileSize.width * scaleFactor.width);
+                y = rows - p.y/(tileSize.height * scaleFactor.height);
+                    
+                /* Sidebar plus border == thirteen characters;
+                 * top row and bottom row are reserved.
+                 */
+                if (x > 13 && x <= cols &&
+                    y > 1  && y <= rows - 1)
+                {
+                    Term_mousepress(x, y, 1);
+                }
+            }
+            /* Pass click through to permit focus change, resize, etc. */
+            [NSApp sendEvent:event];
             break;
         }
 
