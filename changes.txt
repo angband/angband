@@ -1,4 +1,5 @@
 Angband 3.4.1
+=============
 
 This is the changelog specific to changes for 3.4.1.  The much larger
 changelog for 3.4.0 is below.
@@ -18,7 +19,7 @@ cb3a780 Separate dragon scale mail from normal armor for squelch purposes
   #1678 Enable mouse-clicks in cocoa port
 
 Angband 3.4.0
-=================
+=============
 
 Welcome to the changelog for Angband 3.4. This file tracks the
 changes made since 3.3.0
