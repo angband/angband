@@ -10,6 +10,7 @@ Bugs fixed
   #1683 Pref-parsing bug (thanks AnonymousHero)
   #1687 Fix mis-grouping of know and fuzzy-detected items in item list
   #1669 Fix unnecessary term_refresh calls on OSX Lion (mtadd and myshkin)
+  #1695 Fix quit-crash on cocoa port
 c0452e3 Do not leak information in item recall window
 cf7b50b Fix Shockbolt tile loading in SDL
 
