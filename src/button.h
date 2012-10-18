@@ -15,5 +15,6 @@ void button_hook(button_add_f add, button_kill_f kill);
 void button_free(void);
 char button_get_key(int x, int y);
 size_t button_print(int row, int col);
+int button_get_length(void);
 
 #endif /* !BUTTON_H */

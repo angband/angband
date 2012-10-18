@@ -361,6 +361,10 @@ size_t button_print(int row, int col)
 	return button_length;
 }
 
+int button_get_length(void)
+{
+	return button_length;
+}
 
 #if 0
 typedef struct _button_mouse_2d
