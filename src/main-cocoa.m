@@ -16,6 +16,7 @@
  */
 
 #include "angband.h"
+#include "button.h"
 #include "cmds.h"
 #include "files.h"
 #include "init.h"
@@ -2496,10 +2497,13 @@ static BOOL send_event(NSEvent *event)
                 y = rows - p.y/(tileSize.height * scaleFactor.height);
                     
                 /* Sidebar plus border == thirteen characters;
-                 * top row and bottom row are reserved.
+                 * top row is reserved, and bottom row may have mouse buttons.
+                 * Coordinates run from (0,0) to (cols-1, rows-1).
                  */
-                if (x > 13 && x <= cols &&
-                    y > 1  && y <= rows - 1)
+                if ((x > 13 && x <= cols - 1 &&
+                     y > 0  && y <= rows - 2) ||
+                    (OPT(mouse_buttons) && y == rows - 1 && 
+                     x >= COL_MAP && x < COL_MAP + button_get_length()))
                 {
                     Term_mousepress(x, y, 1);
                 }
