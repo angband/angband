@@ -547,6 +547,7 @@ F:OPEN_DOOR
 F:FORCE_SLEEP
 S:1_IN_12
 S:CAUSE_1 | HEAL | SCARE
+drop:91:0:10:1:1
 D:He is tripping over his priestly robes.
 
 N:38:Apprentice
@@ -561,6 +562,7 @@ F:OPEN_DOOR
 F:FORCE_SLEEP
 S:1_IN_12
 S:BLIND | BLINK | CONF | MISSILE
+drop:90:0:10:1:1
 D:He is leaving behind a trail of dropped spell components.
 
 N:39:Yellow mushroom patch
@@ -890,6 +892,8 @@ B:HIT:HURT:1d8
 F:DROP_40
 S:1_IN_5
 S:CAUSE_1 | CONF | HEAL | MISSILE
+drop:90:0:15:1:1
+drop:91:0:15:1:1
 D:It is a kobold dressed in skins and gesturing wildly.
 
 ### Dungeon level 4 ###
@@ -915,6 +919,7 @@ F:OPEN_DOOR
 F:FORCE_SLEEP
 S:1_IN_9
 S:ARROW_1 | MISSILE
+drop:90:0:10:1:1
 D:An agile hunter, ready and relaxed.
 
 N:70:Gallant
@@ -930,6 +935,7 @@ F:OPEN_DOOR
 F:FORCE_SLEEP
 S:1_IN_9
 S:CAUSE_1 | SCARE
+drop:91:0:10:1:1
 D:An adventurer both devoutly religious and skillful in combat.
 
 N:71:Blue jelly
@@ -1619,6 +1625,8 @@ B:HIT:HURT:1d6
 F:DROP_60
 F:HURT_LIGHT
 F:FORCE_SLEEP
+drop:90:1:15:1:1
+drop:91:1:15:1:1
 S:1_IN_8
 S:BLINK | CAUSE_1 | MISSILE
 D:An orc dressed in skins who gestures wildly.
@@ -1816,6 +1824,8 @@ F:FORCE_SLEEP
 S:1_IN_5
 S:BLIND | CONF | DARKNESS | MISSILE
 S:BA_POIS
+drop:90:0:20:1:1
+drop:90:1:20:1:1
 D:A dark elven figure, dressed all in black, hurling spells at you.
 
 N:137:Orfax, Son of Boldor
@@ -2041,6 +2051,8 @@ S:1_IN_4
 S:BLINK | DARKNESS
 S:BO_COLD
 S:S_MONSTER
+drop:90:0:10:1:1
+drop:90:1:10:1:1
 D:A mage of short stature.
 
 ### Dungeon level 12 ###
@@ -2120,6 +2132,8 @@ S:1_IN_4
 S:BLIND | BLINK | SLOW | TPORT
 S:BA_POIS
 S:S_MONSTER
+drop:90:0:15:1:1
+drop:90:1:15:1:1
 D:A small humanoid that radiates some power.
 
 N:161:Priest
@@ -2136,6 +2150,8 @@ F:FORCE_SLEEP
 S:1_IN_3
 S:CAUSE_2 | HEAL | SCARE
 S:S_MONSTER
+drop:91:0:20:1:1
+drop:91:1:20:1:1
 D:A robed man, dedicated to his god.
 
 N:162:Dark elven priest
@@ -2151,6 +2167,8 @@ F:HURT_LIGHT
 F:FORCE_SLEEP
 S:1_IN_5
 S:BLIND | CAUSE_2 | CONF | DARKNESS | HEAL
+drop:91:0:15:1:1
+drop:91:0:15:1:1
 D:A dark elven figure, dressed all in black, chanting curses and waiting to
 D: deliver your soul to hell.
 
@@ -2327,6 +2345,8 @@ F:FORCE_SLEEP
 S:1_IN_3
 S:BLIND | BLINK | CONF | DARKNESS | HASTE | HOLD
 S:SLOW | TPORT
+drop:90:1:20:1:1
+drop:90:2:20:1:1
 D:A deceptive spell caster.
 
 N:177:Druid
@@ -2344,6 +2364,8 @@ S:1_IN_3
 S:BLIND | BLINK | HASTE | HOLD | SLOW
 S:BO_ELEC | BO_FIRE
 S:S_ANIMAL
+drop:91:0:15:1:1
+drop:91:1:15:1:1
 D:A priest devoted to Nature.
 
 N:178:Black orc
@@ -3254,6 +3276,8 @@ F:FORCE_SLEEP
 S:1_IN_5
 S:BLIND | CONF | DARKNESS | HASTE
 S:BO_COLD | BO_FIRE
+drop:90:1:10:1:1
+drop:90:2:10:1:1
 D:A dark elven figure in armour and radiating evil power.
 
 N:580:Ranger
@@ -3270,6 +3294,8 @@ S:1_IN_4
 S:ARROW_2 | BLINK | MISSILE
 S:BO_COLD | BO_ELEC
 S:S_ANIMAL
+drop:90:1:10:1:1
+drop:90:2:10:1:1
 D:A warrior who is at one with nature.  A master of both bow and sword, with
 D: minor spellcasting skills, and animals come to do his bidding.
 
@@ -3285,6 +3311,8 @@ F:DROP_1
 F:OPEN_DOOR | TAKE_ITEM
 S:1_IN_4
 S:BLIND | CAUSE_2 | HEAL | SCARE | SLOW
+drop:91:1:15:1:1
+drop:91:2:15:1:1
 D:A warrior for a holy cause.  Unfortunately, his god is not yours, and there is
 D: rivalry even between the various gods of Good, so he is your enemy.
 
@@ -3768,6 +3796,8 @@ F:FORCE_SLEEP
 S:1_IN_6
 S:CONF | DARKNESS | HEAL
 S:S_ANIMAL | S_MONSTER | S_SPIDER
+drop:91:1:15:1:1
+drop:91:2:15:1:1
 D:A powerful dark elf, with mighty nature-controlling enchantments.
 
 N:278:Stone troll
@@ -3846,6 +3876,8 @@ F:HURT_LIGHT | NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
 S:1_IN_5
 S:BLINK | CAUSE_1 | DARKNESS | MISSILE | SCARE
+drop:91:0:15:1:1
+drop:91:1:15:1:1
 D:A troll who is so bright he knows how to read.
 
 N:283:Giant grey ant
@@ -4095,6 +4127,8 @@ S:1_IN_4
 S:HEAL | HOLD | TRAPS
 S:BA_COLD
 S:S_MONSTER
+drop:90:2:15:1:1
+drop:90:3:15:1:1
 D:A hideous ogre wrapped in black sorcerous robes.
 
 N:298:Vampire
@@ -4158,6 +4192,8 @@ S:1_IN_5
 S:CAUSE_2 | HOLD | SCARE | TPORT | TRAPS
 S:BO_FIRE
 S:S_MONSTER
+drop:91:1:15:1:1
+drop:91:2:20:1:1
 D:It is an ogre wrapped in furs and covered in grotesque body paints.
 
 N:554:Shimmering mold
@@ -4203,6 +4239,8 @@ F:NO_CONF | NO_SLEEP | IM_POIS
 F:FORCE_SLEEP
 S:1_IN_4
 S:BLIND | DARKNESS | HEAL | MIND_BLAST
+drop:91:2:20:1:1
+drop:91:3:10:1:1
 D:A wraithly snake-like form with the torso of a beautiful woman, it is the most
 D: powerful of its kind.
 
@@ -4237,6 +4275,8 @@ F:OPEN_DOOR
 F:FORCE_SLEEP
 S:1_IN_8
 S:BLIND | CAUSE_3 | DARKNESS | SCARE
+drop:91:1:15:1:1
+drop:91:2:15:1:1
 D:He is a figure encased in deep black plate armour; he looks at you menacingly.
 
 N:304:Uldor the Accursed
@@ -4272,6 +4312,8 @@ S:1_IN_3
 S:BLIND | CONF | HASTE | TELE_TO | TPORT
 S:BO_COLD | BO_ELEC | BO_FIRE
 S:S_MONSTER
+drop:90:2:20:1:1
+drop:90:3:15:1:1
 D:A mage of some power - you can tell by the size of his hat.
 
 N:306:Mind flayer
@@ -4886,6 +4928,8 @@ F:FORCE_SLEEP
 S:1_IN_6
 S:HEAL
 S:S_ANIMAL | S_SPIDER
+drop:91:2:15:1:1
+drop:91:3:15:1:1
 D:An adept at unarmed combat, the mystic strikes with stunning power.  He can
 D: summon help from nature and is able to focus his power to ease any pain.
 
@@ -5756,6 +5800,8 @@ S:BLIND | CAUSE_3 | HASTE | HOLD | SCARE | TELE_TO
 S:TPORT
 S:BO_NETH
 S:S_UNDEAD
+drop:91:2:15:1:1
+drop:91:3:15:1:1
 D:A gaunt figure, clothed in black robes.
 
 N:392:Lorgan, Chief of the Easterlings
@@ -5795,6 +5841,8 @@ S:1_IN_2
 S:HOLD | TPORT
 S:BO_FIRE
 S:S_DEMON
+drop:90:2:15:1:1
+drop:90:3:15:1:1
 D:A figure twisted by evil standing in robes of deepest crimson.
 
 N:402:Mature red dragon
@@ -6087,6 +6135,8 @@ S:1_IN_5
 S:BLIND | CAUSE_3 | SCARE
 S:BO_NETH
 S:S_MONSTERS
+drop:91:2:15:1:1
+drop:91:3:15:1:1
 D:It is a humanoid figure dressed in armour of an ancient form.  From beneath
 D: its helmet, eyes glow a baleful red and seem to pierce you like lances of
 D: fire.
@@ -6488,6 +6538,8 @@ F:FORCE_SLEEP
 S:1_IN_2
 S:BLIND
 S:S_DRAGON
+drop:90:2:15:1:1
+drop:90:3:15:1:1
 D:This elusive female spellcaster has a special affinity for dragons, whom she
 D: rarely fights without.
 
@@ -6509,6 +6561,8 @@ S:BLIND | BLINK | CAUSE_3 | CONF | TELE_TO | TRAPS
 S:BA_COLD | BA_FIRE
 S:BO_ACID
 S:S_DRAGON | S_MONSTER | S_UNDEAD
+drop:90:2:15:1:1
+drop:90:3:30:1:1
 D:A human figure in robes, he moves with magically improved speed, and his hands
 D: are ablur with spell casting.
 
@@ -6642,6 +6696,8 @@ F:FORCE_SLEEP
 S:1_IN_2
 S:BLIND | CAUSE_3 | CAUSE_4 | HEAL | HOLD
 S:S_MONSTER | S_UNDEAD
+drop:91:2:15:1:1
+drop:91:3:30:1:1
 D:An evil priest, dressed all in black.  Deadly spells hit you at an alarming
 D: rate as his black spiked mace rains down blow after blow on your pitiful
 D: frame.
@@ -6729,6 +6785,8 @@ S:TELE_TO
 S:BA_COLD | BA_FIRE
 S:BO_ACID
 S:S_DEMON | S_MONSTER | S_UNDEAD
+drop:90:2:15:1:1
+drop:90:3:30:1:1
 D:A dark elven figure, dressed in deepest black.  Power seems to crackle from
 D: his slender frame.
 
@@ -6804,6 +6862,8 @@ S:ARROW_2 | ARROW_3 | ARROW_4 | BLINK | HASTE | MISSILE
 S:BA_COLD
 S:BO_ELEC | BO_FIRE
 S:S_ANIMAL
+drop:90:2:15:1:1
+drop:90:3:15:1:1
 D:A chieftain among the Rangers.  His understanding of nature gives him powerful
 D: elemental spells to use against you, in addition to his skills as an archer
 D: and a warrior.  Furthermore, he is a master of camouflage, so you will need
@@ -7012,6 +7072,8 @@ F:OPEN_DOOR | TAKE_ITEM
 F:NO_FEAR | NO_CONF | NO_SLEEP
 S:1_IN_4
 S:BLIND | CAUSE_3 | CAUSE_4 | HASTE | HEAL | SCARE
+drop:91:2:15:1:1
+drop:91:3:30:1:1
 # Knight templars summoning Ainu doesn't make much sense -JG
 D:It seems that the more devout the person, the more likely they are to cross
 D: the boundary between piety and sanctimoniousness.  And such is the case with
@@ -7536,6 +7598,8 @@ F:FORCE_SLEEP
 S:1_IN_3
 S:HEAL
 S:S_ANIMAL
+drop:91:2:15:1:1
+drop:91:3:15:1:1
 D:A lord of all that is natural, skilled in the mystic ways.  He is a master of
 D: martial arts and is at one with nature, able to summon help from the wild if
 D: need be.
@@ -7943,6 +8007,8 @@ F:FORCE_SLEEP
 S:1_IN_3
 S:HEAL | MIND_BLAST
 S:S_ANIMAL | S_HOUND | S_SPIDER
+drop:91:2:10:1:1
+drop:91:3:30:1:1
 D:He is one of the few true masters of the art, being extremely skillful in all
 D: forms of unarmed combat and controlling the world's natural creatures with
 D: disdainful ease.
