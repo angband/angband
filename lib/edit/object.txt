@@ -3309,64 +3309,64 @@ E:HASTE:100
 N:460:[Magic for Beginners]
 G:?:R
 I:90:0
-W:5:0:30:25
-A:50:5 to 100
+W:1:0:30:25
+A:50:1 to 100
 P:0:1d1:0:0:0
 F:EASY_KNOW
 
 N:461:[Conjurings and Tricks]
 G:?:R
 I:90:1
-W:10:0:30:100
-A:50:10 to 100
+W:5:0:30:100
+A:50:5 to 100
 P:0:1d1:0:0:0
 F:EASY_KNOW
 
 N:462:[Incantations and Illusions]
 G:?:R
 I:90:2
-W:20:0:30:400
-A:50:20 to 100
+W:10:0:30:400
+A:50:10 to 100
 P:0:1d1:0:0:0
 F:EASY_KNOW
 
 N:463:[Sorcery and Evocations]
 G:?:R
 I:90:3
-W:30:0:30:800
-A:50:30 to 100
+W:20:0:30:800
+A:50:20 to 100
 P:0:1d1:0:0:0
 F:EASY_KNOW
 
 N:464:[Beginners Handbook]
 G:?:G
 I:91:0
-W:5:0:30:25
-A:50:5 to 100
+W:1:0:30:25
+A:50:1 to 100
 P:0:1d1:0:0:0
 F:EASY_KNOW
 
 N:465:[Words of Wisdom]
 G:?:G
 I:91:1
-W:10:0:30:100
-A:50:10 to 100
+W:5:0:30:100
+A:50:5 to 100
 P:0:1d1:0:0:0
 F:EASY_KNOW
 
 N:466:[Chants and Blessings]
 G:?:G
 I:91:2
-W:20:0:30:400
-A:50:20 to 100
+W:10:0:30:400
+A:50:10 to 100
 P:0:1d1:0:0:0
 F:EASY_KNOW
 
 N:467:[Exorcism and Dispelling]
 G:?:G
 I:91:3
-W:30:0:30:800
-A:50:30 to 100
+W:20:0:30:800
+A:50:20 to 100
 P:0:1d1:0:0:0
 F:EASY_KNOW
 
