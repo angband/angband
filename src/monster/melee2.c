@@ -177,8 +177,9 @@ static int choose_attack_spell(struct monster *m_ptr, bitflag f[RSF_SIZE])
 	bool has_annoy, has_haste, has_heal;
 
 
-	/* Smart monsters restrict their spell choices. */
-	if (OPT(birth_ai_smart) && !rf_has(m_ptr->race->flags, RF_STUPID))
+    /* This used to be the birth_ai_smart option which
+     has been broken for a while and has been removed. */
+	if ((FALSE) && !rf_has(m_ptr->race->flags, RF_STUPID))
 	{
 		/* What have we got? */
 		has_escape = test_spells(f, RST_ESCAPE);
@@ -434,7 +435,7 @@ bool make_attack_spell(struct monster *m_ptr)
 		failrate += 20;
 
 	/* Stupid monsters will never fail (for jellies and such) */
-	if (OPT(birth_ai_smart) || rf_has(m_ptr->race->flags, RF_STUPID))
+	if (rf_has(m_ptr->race->flags, RF_STUPID))
 		failrate = 0;
 
 	/* Check for spell failure (innate attacks never fail) */
@@ -1115,7 +1116,7 @@ static bool get_moves(struct cave *c, struct monster *m_ptr, int mm[5])
 	if (!done && mon_will_run(m_ptr))
 	{
 		/* Try to find safe place */
-		if (!(OPT(birth_ai_smart) && find_safety(c, m_ptr, &y, &x)))
+		if (find_safety(c, m_ptr, &y, &x))
 		{
 			/* This is not a very "smart" method XXX XXX */
 			y = (-y);
@@ -3312,9 +3313,10 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 		if (do_turn) break;
 	}
 
-
+   
 	/* If we haven't done anything, try casting a spell again */
-	if (OPT(birth_ai_smart) && !do_turn && !do_move)
+    /* Another birth_ai_smart option */
+	if (FALSE && !do_turn && !do_move)
 		/* Cast spell */
 		if (make_attack_spell(m_ptr)) return;
 

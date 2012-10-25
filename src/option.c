@@ -72,8 +72,8 @@ const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_birth_ai_packs,
 		OPT_birth_ai_learn,
 		OPT_birth_ai_cheat,
-		OPT_birth_ai_smart,
-		OPT_birth_ironman,
+		OPT_birth_force_descend,
+		OPT_birth_no_recall,
 		OPT_birth_small_range,
 		OPT_birth_no_artifacts,
 		OPT_birth_no_stacking,
@@ -166,7 +166,7 @@ static const struct option options[OPT_MAX] =
 { NULL,                  NULL,                                          FALSE }, /* 49 */
 { "birth_maximize",      "Maximise effect of race/class bonuses",       TRUE },  /* 50 */
 { "birth_randarts",      "Randomise the artifacts (except a very few)", FALSE }, /* 51 */
-{ "birth_ironman",       "Restrict the use of stairs/recall",           FALSE }, /* 52 */
+{ "birth_no_recall",     "Word of Recall has no effect",                FALSE }, /* 52 */
 { "birth_small_range",   "Halve view and spell distances",              FALSE }, /* 53 */
 { "birth_no_artifacts",  "Restrict creation of artifacts",              FALSE }, /* 54 */
 { "birth_no_stacking",   "Don't stack objects on the floor",            FALSE }, /* 55 */
@@ -179,7 +179,7 @@ static const struct option options[OPT_MAX] =
 { "birth_ai_packs",      "Monsters act smarter in groups",              TRUE },  /* 62 */
 { "birth_ai_learn",      "Monsters learn from their mistakes",          FALSE }, /* 63 */
 { "birth_ai_cheat",      "Monsters exploit player's weaknesses",        FALSE }, /* 64 */
-{ "birth_ai_smart",      "Monsters behave more intelligently (broken)", FALSE }, /* 65 */
+{ "birth_force_descend", "Force player decent",                         FALSE }, /* 65 */
 { NULL,                  NULL,                                          FALSE }, /* 66 */
 { NULL,                  NULL,                                          FALSE }, /* 67 */
 { NULL,                  NULL,                                          FALSE }, /* 68 */

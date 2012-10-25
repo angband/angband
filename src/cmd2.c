@@ -45,7 +45,7 @@ void do_cmd_go_up(cmd_code code, cmd_arg args[])
 	}
 
 	/* Ironman */
-	if (OPT(birth_ironman))
+	if (OPT(birth_force_descend))
 	{
 		msg("Nothing happens!");
 		return;

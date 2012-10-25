@@ -420,7 +420,7 @@ bool restore_level(void)
 bool set_recall(void)
 {
 	/* Ironman */
-	if (OPT(birth_ironman) && !p_ptr->total_winner)
+	if (OPT(birth_no_recall) && !p_ptr->total_winner)
 	{
 		msg("Nothing happens.");
 		return FALSE;

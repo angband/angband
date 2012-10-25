@@ -397,7 +397,7 @@ void teleport_player_level(void)
 
 	if (is_quest(p_ptr->depth) || (p_ptr->depth >= MAX_DEPTH-1))
 	{
-		if (OPT(birth_ironman))
+		if (OPT(birth_force_descend))
 		{
 			msg("Nothing happens.");
 			return;
@@ -412,7 +412,7 @@ void teleport_player_level(void)
 		p_ptr->leaving = TRUE;
 	}
 
-	else if ((!p_ptr->depth) || (OPT(birth_ironman)))
+	else if ((!p_ptr->depth) || (OPT(birth_force_descend)))
 	{
 		msgt(MSG_TPLEVEL, "You sink through the floor.");
 
