@@ -394,6 +394,12 @@ void teleport_player_to(int ny, int nx)
  */
 void teleport_player_level(void)
 {
+    /* No forcing player down to quest levels if they can't leave */
+    if (is_quest(p_ptr->max_depth + 1) && OPT(birth_force_descend)){
+  
+        msg("Nothing happens.");
+        return;
+    }
 
 	if (is_quest(p_ptr->depth) || (p_ptr->depth >= MAX_DEPTH-1))
 	{
@@ -417,8 +423,12 @@ void teleport_player_level(void)
 		msgt(MSG_TPLEVEL, "You sink through the floor.");
 
 		/* New depth */
-		p_ptr->depth++;
-
+        if (OPT(birth_force_descend)){
+           p_ptr->depth = p_ptr->max_depth++;
+        }else{
+		   p_ptr->depth++;
+        }
+           
 		/* Leaving */
 		p_ptr->leaving = TRUE;
 	}

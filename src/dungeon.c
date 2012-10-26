@@ -808,6 +808,13 @@ static void process_world(struct cave *c)
 			else
 			{
 				msgt(MSG_TPLEVEL, "You feel yourself yanked downwards!");
+                
+                /* Force descent to a lower level if allowed */
+                if (OPT(birth_force_descend) && p_ptr->max_depth < MAX_DEPTH - 1
+                  && !is_quest(p_ptr->max_depth)){
+
+                    p_ptr->max_depth = p_ptr->max_depth + 1;
+                }
 
 				/* New depth - back to max depth or 1, whichever is deeper */
 				dungeon_change_level(p_ptr->max_depth < 1 ? 1: p_ptr->max_depth);

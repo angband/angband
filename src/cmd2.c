@@ -44,7 +44,7 @@ void do_cmd_go_up(cmd_code code, cmd_arg args[])
 		return;
 	}
 
-	/* Ironman */
+	/* force descend */
 	if (OPT(birth_force_descend))
 	{
 		msg("Nothing happens!");
@@ -77,6 +77,25 @@ void do_cmd_go_down(cmd_code code, cmd_arg args[])
 		msg("I see no down staircase here.");
 		return;
 	}
+    
+    /* Paranoia, no descent from MAX_DEPTH */
+    if (p_ptr->depth == MAX_DEPTH){
+        
+        msg("The dungeon does not appear to extend deeper");
+        return;
+    }
+    
+    /* Warn a force_descend player if they're going to a quest level */
+    if (OPT(birth_force_descend)){
+    
+        if(is_quest(p_ptr->max_depth + 1)  &&
+           !get_check("Are you sure you want to descend?")){
+              return;
+        }
+        
+        /* Descend one level deeper */
+        p_ptr->depth = p_ptr->max_depth;
+    }    
 
 	/* Hack -- take a turn */
 	p_ptr->energy_use = 100;

@@ -419,12 +419,29 @@ bool restore_level(void)
  */
 bool set_recall(void)
 {
-	/* Ironman */
+	/* No recall */
 	if (OPT(birth_no_recall) && !p_ptr->total_winner)
 	{
 		msg("Nothing happens.");
 		return FALSE;
 	}
+    
+    /* No recall from quest levels with force_descend */
+    if (OPT(birth_force_descend) && (is_quest(p_ptr->depth))){
+        
+        msg("Nothing happens.");
+        return;
+    }
+    
+    /* Warn the player if they're descending to an unrecallable level */
+    if (OPT(birth_force_descend) &&  !(p_ptr->depth)
+        && (is_quest(p_ptr->max_depth + 1))){
+    
+        if (!get_check("Are you sure you want to descend? ")){
+            msg("You prevent the recall from taking place.");
+            return;
+        }
+    }
 
 	/* Activate recall */
 	if (!p_ptr->word_recall)
