@@ -13,10 +13,10 @@ exe: $(EXE)
 CC = cl
 LINK = link
 RC = rc
-CFLAGS = /DWINDOWS /W3 /GF /GA /nologo
+CFLAGS = /DWINDOWS /W3 /GF /GA /nologo /D_CRT_SECURE_NO_WARNINGS
 LFLAGS = /nologo
 RCFLAGS =
-LIBS = Gdi32.lib User32.lib Comdlg32.lib Shell32.lib Winmm.lib
+LIBS = Gdi32.lib User32.lib Comdlg32.lib Shell32.lib Winmm.lib Msimg32.lib win/lib/libpng.lib win/lib/zlib.lib
 
 !if defined(RELEASE)
 CFLAGS = $(CFLAGS) /O2 /Os /Gs /I. /I..
@@ -28,7 +28,7 @@ LFLAGS = $(LFLAGS) /debug
 
 # files
 include Makefile.src
-OBJS = $(ANGFILES) $(ZFILES) main-win.o win\readdib.o
+OBJS = $(ANGFILES) $(ZFILES) $(WINMAINFILES)
 RES = win\angband.res
 
 
