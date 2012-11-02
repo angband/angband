@@ -52,7 +52,7 @@ endif
 
 CC = $(CROSS)gcc
 WRES = $(CROSS)windres
-WARNINGS = -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers
+WARNINGS = -Wall -Wextra -Wno-unused-parameter
 CFLAGS += $(WARNINGS) -std=c99 -Wdeclaration-after-statement -O2 -I.
 
 ifdef BUILD_ID
@@ -71,6 +71,11 @@ ifdef CYGWIN
 
   win/readpng.o: win/readpng.c win/readdib.h
 	$(CC) $(CFLAGS) -DNEAR= $(INCDIRS) -c -o $@ $<
+
+else
+
+  # Cygwin supplied compiler does not support this command
+  WARNINGS += -Wno-missing-field-initializers
 
 endif
 
