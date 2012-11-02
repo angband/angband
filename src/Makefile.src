@@ -68,7 +68,7 @@ WINMAINFILES = \
 
 X11MAINFILES = main-x11.o
 
-ANGFILES = \
+PRE_ANGFILES = \
 	attack.o \
 	birth.o \
 	button.o \
@@ -168,5 +168,5 @@ ANGFILES = \
 STATSMAINFILES = main-stats.o \
         stats/db.o
 
-buildid.o: $(ANGFILES)
-ANGFILES += buildid.o
+buildid.o: $(PRE_ANGFILES)
+ANGFILES = $(PRE_ANGFILES) buildid.o
