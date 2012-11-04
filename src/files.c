@@ -1851,8 +1851,6 @@ void close_game(void)
 
 static void write_html_escape_char(ang_file *fp, wchar_t c)
 {
-	//char mbseq[MB_CUR_MAX];
-
 	switch (c)
 	{
 		case L'<':
@@ -1867,8 +1865,11 @@ static void write_html_escape_char(ang_file *fp, wchar_t c)
 		default:
 			{
 				char *mbseq = (char*) mem_alloc(sizeof(char)*(MB_CUR_MAX+1));
-				wctomb(mbseq, c);
-				mbseq[MB_CUR_MAX] = '\0';
+				byte len;
+				len = wctomb(mbseq, c);
+				if (len > MB_CUR_MAX) 
+				    len = MB_CUR_MAX;
+				mbseq[len] = '\0';
 				file_putf(fp, "%s", mbseq);
 				mem_free(mbseq);
 				break;
