@@ -3017,6 +3017,7 @@ static errr sdl_BuildTileset(term_window *win)
 	if (!GfxSurface) return (1);
 
 	info = get_graphics_mode(use_graphics);
+	if (info->grafID == 0) return (1);
 
 	/* Calculate the number of tiles across & down*/
 	ta = GfxSurface->w / info->cell_width;
