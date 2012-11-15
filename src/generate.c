@@ -148,6 +148,8 @@ static bool alloc_object(struct cave *c, int set, int typ, int depth, byte origi
 #define MAX_ROOMS_ROW (DUNGEON_HGT / BLOCK_HGT)
 #define MAX_ROOMS_COL (DUNGEON_WID / BLOCK_WID)
 
+#define MAX_PIT 2 /* Maximum number of pits or nests allowed */
+
 /*
  * Bounds on some arrays used in the "dun_data" structure.
  * These bounds are checked, though usually this is a formality.
@@ -188,8 +190,8 @@ struct dun_data {
 	/* Array of which blocks are used */
 	bool room_map[MAX_ROOMS_ROW][MAX_ROOMS_COL];
 
-	/* Hack -- there is a pit/nest on this level */
-	bool crowded;
+	/* Number of pits/nests on the level */
+	int pit_num;
 };
 
 
@@ -214,7 +216,7 @@ static struct cave_profile town_profile = {
 };
 
 
-/* name function width height min-depth crowded? rarity %cutoff */
+/* name function width height min-depth pit? rarity %cutoff */
 static struct room_profile default_rooms[] = {
 	/* greater vaults only have rarity 1 but they have other checks */
 	{"greater vault", build_greater_vault, 4, 6, 10, FALSE, 0, 100},
@@ -2596,7 +2598,7 @@ static void try_door(struct cave *c, int y, int x)
 /**
  * Attempt to build a room of the given type at the given block
  *
- * Note that we restrict the number of "crowded" rooms to reduce
+ * Note that we restrict the number of pits/nests to reduce
  * the chance of overflowing the monster list during level creation.
  */
 static bool room_build(struct cave *c, int by0, int bx0, struct room_profile profile)
@@ -2614,8 +2616,10 @@ static bool room_build(struct cave *c, int by0, int bx0, struct room_profile pro
 	/* Enforce the room profile's minimum depth */
 	if (c->depth < profile.level) return FALSE;
 
-	/* Only allow one crowded room per level */
-	if (dun->crowded && profile.crowded) return FALSE;
+	/* Only allow at most two pit/nests room per level */
+	if ((dun->pit_num >= MAX_PIT) && (profile.pit)){
+        return FALSE;
+    }
 
 	/* Never run off the screen */
 	if (by1 < 0 || by2 >= dun->row_rooms) return FALSE;
@@ -2656,8 +2660,8 @@ static bool room_build(struct cave *c, int by0, int bx0, struct room_profile pro
 		}
 	}
 
-	/* Count "crowded" rooms */
-	if (profile.crowded) dun->crowded = TRUE;
+	/* Count pit/nests rooms */
+	if (profile.pit) dun->pit_num++;
 
 	/* Success */
 	return TRUE;
@@ -2684,6 +2688,7 @@ static void set_cave_dimensions(struct cave *c, int h, int w)
 #define DUN_AMT_ROOM 9 /* Number of objects for rooms */
 #define DUN_AMT_ITEM 3 /* Number of objects for rooms/corridors */
 #define DUN_AMT_GOLD 3 /* Amount of treasure for rooms/corridors */
+
 static bool default_gen(struct cave *c, struct player *p) {
 	int i, j, k, y, x, y1, x1;
 	int by, bx = 0, tby, tbx, key, rarity, built;
@@ -2729,8 +2734,8 @@ static bool default_gen(struct cave *c, struct player *p) {
 		for (bx = 0; bx < dun->col_rooms; bx++)
 			dun->room_map[by][bx] = blocks_tried[by][bx]  = FALSE;
 
-	/* No rooms yet, crowded or otherwise. */
-	dun->crowded = FALSE;
+	/* No rooms yet, pits or otherwise. */
+	dun->pit_num = 0;
 	dun->cent_n = 0;
 
 	/* Build some rooms */
