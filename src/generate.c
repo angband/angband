@@ -1717,12 +1717,13 @@ static bool build_nest(struct cave *c, int y0, int x0)
 	bool empty = FALSE;
 	int light = FALSE;
 	int pit_idx;
+    int size_vary = randint0(4);
 
 	/* Large room */
 	y1 = y0 - 4;
 	y2 = y0 + 4;
-	x1 = x0 - 11;
-	x2 = x0 + 11;
+	x1 = x0 - 5 - size_vary;
+	x2 = x0 + 5 + size_vary;
 
 	/* Generate new room */
 	generate_room(c, y1-1, x1-1, y2+1, x2+1, light);
@@ -1773,11 +1774,11 @@ static bool build_nest(struct cave *c, int y0, int x0)
 	ROOM_LOG("Monster nest (%s)", pit_info[pit_idx].name);
 
 	/* Increase the level rating */
-	c->mon_rating += (5 + pit_info[pit_idx].ave / 10);
+	c->mon_rating += (size_vary + pit_info[pit_idx].ave / 20);
 
 	/* Place some monsters */
-	for (y = y0 - 2; y <= y0 + 2; y++) {
-		for (x = x0 - 9; x <= x0 + 9; x++) {
+	for (y = y1; y <= y2; y++) {
+		for (x = x1; x <= x2; x++) {
 			/* Figure out what monster is being used, and place that monster */
 			monster_race *race = what[randint0(64)];
 			place_new_monster(c, y, x, race, FALSE, FALSE, ORIGIN_DROP_PIT);
@@ -1802,13 +1803,13 @@ static bool build_nest(struct cave *c, int y0, int x0)
  * The inside room in a monster pit appears as shown below, where the
  * actual monsters in each location depend on the type of the pit
  *
- *   #####################
- *   #0000000000000000000#
- *   #0112233455543322110#
- *   #0112233467643322110#
- *   #0112233455543322110#
- *   #0000000000000000000#
- *   #####################
+ *   #############
+ *   #11000000011#
+ *   #01234543210#
+ *   #01236763210#
+ *   #01234543210#
+ *   #11000000011#
+ *   #############
  *
  * Note that the monsters in the pit are chosen by using get_mon_num() to
  * request 16 "appropriate" monsters, sorting them by level, and using the
@@ -1835,8 +1836,8 @@ static bool build_pit(struct cave *c, int y0, int x0)
 	/* Large room */
 	y1 = y0 - 4;
 	y2 = y0 + 4;
-	x1 = x0 - 11;
-	x2 = x0 + 11;
+	x1 = x0 - 7;
+	x2 = x0 + 7;
 
 	/* Generate new room, outer walls and inner floor */
 	generate_room(c, y1-1, x1-1, y2+1, x2+1, light);
@@ -1904,40 +1905,47 @@ static bool build_pit(struct cave *c, int y0, int x0)
 		what[i] = what[i * 2];
 
 	/* Increase the level rating */
-	c->mon_rating += (5 + pit_info[pit_idx].ave / 10);
+	c->mon_rating += (3 + pit_info[pit_idx].ave / 20);
 
-	/* Top and bottom rows */
-	for (x = x0 - 9; x <= x0 + 9; x++) {
+	/* Top and bottom rows (middle) */
+	for (x = x0 - 3; x <= x0 + 3; x++) {
 		place_new_monster(c, y0 - 2, x, what[0], FALSE, FALSE, ORIGIN_DROP_PIT);
 		place_new_monster(c, y0 + 2, x, what[0], FALSE, FALSE, ORIGIN_DROP_PIT);
 	}
+    
+    /* Corners */
+    for (x = x0 - 5; x <= x0 - 4; x++) {
+		place_new_monster(c, y0 - 2, x, what[1], FALSE, FALSE, ORIGIN_DROP_PIT);
+		place_new_monster(c, y0 + 2, x, what[1], FALSE, FALSE, ORIGIN_DROP_PIT);
+	}
+    
+    for (x = x0 + 4; x <= x0 + 5; x++) {
+		place_new_monster(c, y0 - 2, x, what[1], FALSE, FALSE, ORIGIN_DROP_PIT);
+		place_new_monster(c, y0 + 2, x, what[1], FALSE, FALSE, ORIGIN_DROP_PIT);
+	}
+    
+    /* Corners */
 
 	/* Middle columns */
 	for (y = y0 - 1; y <= y0 + 1; y++) {
-		place_new_monster(c, y, x0 - 9, what[0], FALSE, FALSE, ORIGIN_DROP_PIT);
-		place_new_monster(c, y, x0 + 9, what[0], FALSE, FALSE, ORIGIN_DROP_PIT);
+		place_new_monster(c, y, x0 - 5, what[0], FALSE, FALSE, ORIGIN_DROP_PIT);
+		place_new_monster(c, y, x0 + 5, what[0], FALSE, FALSE, ORIGIN_DROP_PIT);
 
-		place_new_monster(c, y, x0 - 8, what[1], FALSE, FALSE, ORIGIN_DROP_PIT);
-		place_new_monster(c, y, x0 + 8, what[1], FALSE, FALSE, ORIGIN_DROP_PIT);
+		place_new_monster(c, y, x0 - 4, what[1], FALSE, FALSE, ORIGIN_DROP_PIT);
+		place_new_monster(c, y, x0 + 4, what[1], FALSE, FALSE, ORIGIN_DROP_PIT);
 
-		place_new_monster(c, y, x0 - 7, what[1], FALSE, FALSE, ORIGIN_DROP_PIT);
-		place_new_monster(c, y, x0 + 7, what[1], FALSE, FALSE, ORIGIN_DROP_PIT);
+		place_new_monster(c, y, x0 - 3, what[2], FALSE, FALSE, ORIGIN_DROP_PIT);
+		place_new_monster(c, y, x0 + 3, what[2], FALSE, FALSE, ORIGIN_DROP_PIT);
 
-		place_new_monster(c, y, x0 - 6, what[2], FALSE, FALSE, ORIGIN_DROP_PIT);
-		place_new_monster(c, y, x0 + 6, what[2], FALSE, FALSE, ORIGIN_DROP_PIT);
-
-		place_new_monster(c, y, x0 - 5, what[2], FALSE, FALSE, ORIGIN_DROP_PIT);
-		place_new_monster(c, y, x0 + 5, what[2], FALSE, FALSE, ORIGIN_DROP_PIT);
-
-		place_new_monster(c, y, x0 - 4, what[3], FALSE, FALSE, ORIGIN_DROP_PIT);
-		place_new_monster(c, y, x0 + 4, what[3], FALSE, FALSE, ORIGIN_DROP_PIT);
-
-		place_new_monster(c, y, x0 - 3, what[3], FALSE, FALSE, ORIGIN_DROP_PIT);
-		place_new_monster(c, y, x0 + 3, what[3], FALSE, FALSE, ORIGIN_DROP_PIT);
-
-		place_new_monster(c, y, x0 - 2, what[4], FALSE, FALSE, ORIGIN_DROP_PIT);
-		place_new_monster(c, y, x0 + 2, what[4], FALSE, FALSE, ORIGIN_DROP_PIT);
+		place_new_monster(c, y, x0 - 2, what[3], FALSE, FALSE, ORIGIN_DROP_PIT);
+		place_new_monster(c, y, x0 + 2, what[3], FALSE, FALSE, ORIGIN_DROP_PIT);
 	}
+    
+    /* Corners around the middle monster */
+    place_new_monster(c, y0 - 1, x0 - 1, what[4], FALSE, FALSE, ORIGIN_DROP_PIT);
+    place_new_monster(c, y0 - 1, x0 + 1, what[4], FALSE, FALSE, ORIGIN_DROP_PIT);
+    place_new_monster(c, y0 + 1, x0 - 1, what[4], FALSE, FALSE, ORIGIN_DROP_PIT);
+    place_new_monster(c, y0 + 1, x0 + 1, what[4], FALSE, FALSE, ORIGIN_DROP_PIT);
 
 	/* Above/Below the center monster */
 	for (x = x0 - 1; x <= x0 + 1; x++) {
