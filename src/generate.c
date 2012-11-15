@@ -217,19 +217,20 @@ static struct cave_profile town_profile = {
 /* name function width height min-depth crowded? rarity %cutoff */
 static struct room_profile default_rooms[] = {
 	/* greater vaults only have rarity 1 but they have other checks */
-	{"greater vault", build_greater_vault, 4, 6, 10, FALSE, 1, 100},
+	{"greater vault", build_greater_vault, 4, 6, 10, FALSE, 0, 100},
 
 	/* very rare rooms (rarity=2) */
-	{"medium vault", build_medium_vault, 2, 3, 5, FALSE, 2, 10},
-	{"lesser vault", build_lesser_vault, 2, 3, 5, FALSE, 2, 25},
-	{"monster pit", build_pit, 1, 3, 5, TRUE, 2, 40},
-	{"monster nest", build_nest, 1, 3, 5, TRUE, 2, 50},
+    {"monster pit", build_pit, 1, 3, 5, TRUE, 2, 8},
+	{"monster nest", build_nest, 1, 3, 5, TRUE, 2, 16},
+	{"medium vault", build_medium_vault, 2, 3, 30, FALSE, 2, 38},
+	{"lesser vault", build_lesser_vault, 2, 3, 20, FALSE, 2, 55},
+	
 
 	/* unusual rooms (rarity=1) */
-	{"large room", build_large, 1, 3, 3, FALSE, 1, 25},
-	{"crossed room", build_crossed, 1, 3, 3, FALSE, 1, 50},
-	{"circular room", build_circular, 2, 2, 1, FALSE, 1, 60},
-	{"overlap room", build_overlap, 1, 3, 1, FALSE, 1, 80},
+	{"large room", build_large, 1, 3, 3, FALSE, 1, 15},
+	{"crossed room", build_crossed, 1, 3, 3, FALSE, 1, 35},
+	{"circular room", build_circular, 2, 2, 1, FALSE, 1, 50},
+	{"overlap room", build_overlap, 1, 3, 1, FALSE, 1, 70},
 	{"room template", build_template, 1, 3, 1, FALSE, 1, 100},
 
 	/* normal rooms */
@@ -2762,7 +2763,7 @@ static bool default_gen(struct cave *c, struct player *p) {
 		i = 0;
 		rarity = 0;
 		while (i == rarity && i < dun->profile->max_rarity) {
-			if (randint0(dun_unusual) < c->depth) rarity++;
+			if (randint0(dun_unusual) < 50 + c->depth / 2) rarity++;
 			i++;
 		}
 
