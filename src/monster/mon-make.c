@@ -640,7 +640,7 @@ static bool mon_create_drop(struct monster *m_ptr, byte origin)
 	bool great, good, gold_ok, item_ok;
 	bool any = FALSE;
 
-	int number = 0, level, j;
+	int number = 0, level, j, monlevel;
 
 	object_type *i_ptr;
 	object_type object_type_body;
@@ -661,9 +661,16 @@ static bool mon_create_drop(struct monster *m_ptr, byte origin)
 	if (rf_has(m_ptr->race->flags, RF_DROP_2)) number += rand_range(1, 3);
 	if (rf_has(m_ptr->race->flags, RF_DROP_1)) number++;
 
+    /* Give added bonus for unique monters */
+    monlevel = m_ptr->race->level;
+    if (rf_has(m_ptr->race->flags, RF_UNIQUE)){
+        monlevel = MIN(monlevel + 15, monlevel * 2);
+    }
+    
 	/* Take the best of (average of monster level and current depth)
 	   and (monster level) - to reward fighting OOD monsters */
-	level = MAX((m_ptr->race->level + p_ptr->depth) / 2, m_ptr->race->level);
+	level = MAX((monlevel + p_ptr->depth) / 2, monlevel);
+    level = (level > 100) ? 100 : level;
 
 	/* Specified drops */
 	for (drop = m_ptr->race->drops; drop; drop = drop->next) {
