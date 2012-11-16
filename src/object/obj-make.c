@@ -663,10 +663,16 @@ s16b apply_magic(object_type *o_ptr, int lev, bool allow_artifacts,
 	/* This has changed over the years:
 	 * 3.0.0:   good = MIN(75, lev + 10);      great = MIN(20, lev / 2); 
 	 * 3.3.0:	good = (lev + 2) * 3;          great = MIN(lev / 4 + lev, 50);
-	 * The calculations below are somewhere between the two.		-AS-
+     * 3.4.0:   good = (2 * lev) + 5
+     * 3.4 was in between 3.0 and 3.3, 3.5 attempts to keep the same
+     * area under the curve as 3.4, but make the generation chances
+     * flatter.  This depresses good items overall since more items
+     * are created deeper. 
+     * This change is meant to go in conjunction with the changes
+     * to ego item allocation levels. (-fizzix)
 	 */
-	int good_chance = (2 * lev) + 5;
-	int great_chance = MIN(40, (lev * 3) / 4);
+	int good_chance = (33 + lev);
+	int great_chance = 30;
 
 	/* Roll for "good" */
 	if (good || (randint0(100) < good_chance)) {
