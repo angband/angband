@@ -90,7 +90,7 @@ V:3.4.0
 N:4:of Resist Acid
 X:16:0
 W:0:1:0:1000
-A:20:1 to 60
+A:100:1 to 30
 M:255:0:0
 T:36:0:99
 T:37:0:6
@@ -99,7 +99,7 @@ F:RES_ACID | IGNORE_ACID
 N:5:of Resist Lightning
 X:10:0
 W:0:1:0:400
-A:20:1 to 50
+A:100:1 to 30
 M:255:0:0
 T:36:0:99
 T:37:0:6
@@ -108,7 +108,7 @@ F:RES_ELEC | IGNORE_ELEC
 N:6:of Resist Fire
 X:14:0
 W:0:1:0:800
-A:20:1 to 40
+A:100:1 to 30
 M:255:0:0
 T:36:0:99
 T:37:0:6
@@ -117,7 +117,7 @@ F:RES_FIRE | IGNORE_FIRE
 N:7:of Resist Cold
 X:12:0
 W:0:1:0:600
-A:20:1 to 40
+A:100:1 to 30
 M:255:0:0
 T:36:0:99
 T:37:0:6
@@ -126,7 +126,7 @@ F:RES_COLD | IGNORE_COLD
 N:8:of Resistance
 X:20:0
 W:0:2:0:12500
-A:20:25 to 100
+A:50:10 to 100
 C:0:0:d10
 M:255:0:0
 T:36:0:99
@@ -137,7 +137,7 @@ F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 N:9:of Elvenkind
 X:25:2
 W:0:4:0:15000
-A:2:50 to 127
+A:10:30 to 127
 C:0:0:d10
 M:255:0:0
 T:36:0:99
@@ -161,7 +161,7 @@ F:AGGRAVATE | LIGHT_CURSE
 N:11:of Permanence
 X:30:2
 W:0:4:0:30000
-A:10:50 to 127
+A:10:30 to 127
 C:0:0:d20
 T:36:2:2
 F:SUST_STR | SUST_DEX | SUST_CON | SUST_INT | SUST_WIS | SUST_CHR
@@ -173,7 +173,7 @@ F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 N:12:(Dwarven)
 X:18:0
 W:0:4:0:5000
-A:5:40 to 127
+A:20:20 to 127
 C:0:0:d15
 M:255:0:0
 T:37:0:99
@@ -203,35 +203,35 @@ L:d2:1:CON
 N:16:of Resist Acid
 X:16:0
 W:0:1:0:1000
-A:20:1 to 60
+A:100:1 to 30
 T:34:0:99
 F:RES_ACID | IGNORE_ACID
 
 N:17:of Resist Lightning
 X:10:0
 W:0:1:0:400
-A:20:1 to 50
+A:100:1 to 30
 T:34:0:99
 F:RES_ELEC | IGNORE_ELEC
 
 N:18:of Resist Fire
 X:14:0
 W:0:1:0:800
-A:20:1 to 40
+A:100:1 to 30
 T:34:0:99
 F:RES_FIRE | IGNORE_FIRE
 
 N:19:of Resist Cold
 X:12:0
 W:0:1:0:600
-A:20:1 to 40
+A:100:1 to 30
 T:34:0:99
 F:RES_COLD | IGNORE_COLD
 
 N:20:of Resistance
 X:20:0
 W:0:2:0:12500
-A:20:25 to 100
+A:50:10 to 100
 C:0:0:d10
 T:34:0:99
 F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD
@@ -240,7 +240,7 @@ F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 N:21:of Elvenkind
 X:25:2
 W:0:4:0:18000
-A:2:50 to 127
+A:10:30 to 127
 C:0:0:d10
 T:34:0:99
 L:d2:0:STEALTH
@@ -250,7 +250,7 @@ F:IGNORE_ACID | IGNORE_FIRE | IGNORE_COLD | IGNORE_ELEC
 N:22:of Preservation
 X:25:2
 W:60:4:0:24000
-A:2:50 to 127
+A:5:40 to 127
 C:0:0:d20
 T:34:0:99
 F:RES_DISEN | SUST_STR | SUST_CON | SUST_DEX | HOLD_LIFE
@@ -270,7 +270,7 @@ F:AGGRAVATE | LIGHT_CURSE
 N:24:of Intelligence
 X:13:0
 W:0:2:0:500
-A:20:5 to 100
+A:100:1 to 40
 T:32:0:99
 F:SUST_INT
 L:d2:0:INT
@@ -278,7 +278,7 @@ L:d2:0:INT
 N:25:of Wisdom
 X:13:0
 W:0:2:0:500
-A:20:5 to 100
+A:100:1 to 40
 T:32:0:99
 F:SUST_WIS
 L:d2:0:WIS
@@ -286,7 +286,7 @@ L:d2:0:WIS
 N:26:of Beauty
 X:8:0
 W:0:2:0:1000
-A:20:1 to 40
+A:100:1 to 20
 T:32:0:99
 F:SUST_CHR
 L:d4:0:CHR
@@ -294,7 +294,7 @@ L:d4:0:CHR
 N:27:of the Magi
 X:15:3
 W:0:4:0:7500
-A:10:45 to 127
+A:20:20 to 127
 T:33:0:99
 F:SUST_INT
 F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD
@@ -304,7 +304,7 @@ L:d3:0:INT
 N:28:of Might
 X:19:0
 W:0:4:0:7500
-A:10:45 to 127
+A:10:40 to 127
 T:33:0:99
 F:SUST_STR | SUST_DEX | SUST_CON | FREE_ACT
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
@@ -316,7 +316,7 @@ L:d3:1:CON
 N:29:of Lordliness
 X:17:3
 W:0:2:0:7500
-A:20:45 to 100
+A:20:40 to 127
 T:33:0:99
 F:SUST_WIS | SUST_CHR | RES_FEAR
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
@@ -326,7 +326,7 @@ L:d2M3:1:CHR
 N:30:of Seeing
 X:8:0
 W:0:2:0:2000
-A:20:10 to 50
+A:50:10 to 60
 T:32:0:99
 F:RES_BLIND | SEE_INVIS
 L:d5:0:SEARCH
@@ -334,14 +334,14 @@ L:d5:0:SEARCH
 N:31:of Infravision
 X:11:0
 W:0:2:0:500
-A:20:10 to 50
+A:100:1 to 20
 T:32:0:99
 L:d5:0:INFRA
 
 N:32:of Light
 X:6:0
 W:0:2:0:1000
-A:20:45 to 70
+A:50:5 to 30
 T:33:0:99
 F:RES_LIGHT
 L:1:1:LIGHT
@@ -349,14 +349,14 @@ L:1:1:LIGHT
 N:33:of Telepathy
 X:20:0
 W:0:6:0:50000
-A:6:20 to 127
+A:10:40 to 127
 T:32:0:99
 F:TELEPATHY
 
 N:34:of Regeneration
 X:10:0
 W:0:4:0:1500
-A:10:1 to 100
+A:20:1 to 60
 T:32:0:99
 F:REGEN
 
@@ -370,14 +370,14 @@ F:TELEPORT | LIGHT_CURSE
 N:36:of Serenity
 X:20:0
 W:0:6:0:4000
-A:6:50 to 127
+A:15:20 to 127
 T:33:0:99
 F:RES_SOUND | RES_CONFU | RES_FEAR | RES_STUN
 
 N:37:of Night and Day
 X:18:0
 W:35:6:0:4000
-A:6:50 to 127
+A:15:10 to 80
 T:33:0:99
 F:RES_LIGHT | RES_DARK | SEE_INVIS | RES_BLIND | IGNORE_ACID
 L:1:1:LIGHT
@@ -404,7 +404,7 @@ L:d5:0:STR | DEX | CON
 N:40:of Protection
 X:10:0
 W:0:2:0:1500
-A:20:1 to 100
+A:30:1 to 40
 C:0:0:d10
 T:35:0:99
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD | RES_SHARD
@@ -412,14 +412,14 @@ F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD | RES_SHARD
 N:41:of Stealth
 X:10:0
 W:0:1:0:500
-A:20:1 to 55
+A:60:1 to 70
 T:35:0:99
 L:d3:0:STEALTH
 
 N:42:of Aman
 X:20:2
 W:0:6:0:4000
-A:6:30 to 127
+A:10:20 to 127
 C:0:0:d20
 T:35:0:99
 L:d3:0:STEALTH
@@ -428,7 +428,7 @@ F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 N:43:of the Magi
 X:15:3
 W:30:3:0:2000
-A:10:30 to 100
+A:10:30 to 127
 C:0:0:d4
 T:35:0:99
 F:SUST_INT | IGNORE_ACID
@@ -466,7 +466,7 @@ F:AGGRAVATE | LIGHT_CURSE
 N:48:of Free Action
 X:11:0
 W:0:4:0:1000
-A:20:1 to 60
+A:100:1 to 60
 T:31:0:99
 F:FREE_ACT
 
@@ -481,14 +481,14 @@ D:They boost your to-hit and to-dam values.
 N:50:of Agility
 X:14:0
 W:0:6:0:1000
-A:12:20 to 95
+A:10:20 to 50
 T:31:0:99
 L:d5:0:DEX
 
 N:51:of Power
 X:22:0
 W:0:6:0:2500
-A:12:30 to 127
+A:5:30 to 127
 C:d5:d5:0
 T:31:0:99
 F: | 
@@ -497,7 +497,7 @@ L:d5:0:STR
 N:52:of Thievery
 X:22:0
 W:40:12:0:5000
-A:8:40 to 127
+A:5:40 to 127
 C:d8:d3:0
 T:31:1:1
 T:31:5:5
@@ -509,7 +509,7 @@ N:53:of Combat
 X:22:0
 W:50:12:0:7000
 A:5:50 to 127
-C:d3:d8:0
+C:d5:d8:0
 T:31:2:4
 F: | AGGRAVATE | 
 L:d2:1:STR
@@ -536,7 +536,7 @@ L:d10:0:DEX
 N:56:of Slow Descent
 X:7:0
 W:0:5:0:250
-A:20:5 to 40
+A:100:1 to 15
 T:30:0:99
 F:FEATHER
 
@@ -551,21 +551,21 @@ L:d3:0:STEALTH
 N:58:of Free Action
 X:15:0
 W:0:8:0:1000
-A:16:10 to 100
+A:20:1 to 40
 F:FREE_ACT
 T:30:0:99
 
 N:59:of Speed
 X:25:0
 W:0:24:0:100000
-A:2:20 to 127
+A:3:20 to 127
 T:30:0:99
-L:d10:0:SPEED
+L:M10:0:SPEED
 
 N:60:of Stability
 X:20:0
 W:0:10:0:5000
-A:16:15 to 100
+A:10:15 to 100
 T:30:0:99
 F:RES_NEXUS | FEATHER
 
@@ -600,7 +600,7 @@ F:AGGRAVATE | LIGHT_CURSE |
 N:64:(Holy Avenger)
 X:30:1
 W:0:12:0:20000
-A:13:20 to 70
+A:10:15 to 127
 C:d6:d6:d4
 T:21:0:99
 T:22:0:99
@@ -612,7 +612,7 @@ F:SEE_INVIS | BLESSED | RES_FEAR
 N:65:(Defender)
 X:25:1
 W:0:12:0:15000
-A:12:20 to 80
+A:10:10 to 80
 C:d4:d4:d8
 T:21:0:99
 T:22:0:99
@@ -625,7 +625,7 @@ L:d4:0:STEALTH
 N:66:(Blessed)
 X:20:3
 W:0:10:0:5000
-A:19:1 to 60
+A:20:1 to 60
 T:21:0:99
 T:22:0:99
 T:23:0:99
@@ -635,7 +635,7 @@ L:d3:0:WIS
 N:67:of Gondolin
 X:30:3
 W:30:20:0:25000
-A:9:30 to 127
+A:10:20 to 127
 C:d7:d7:0
 T:21:0:99
 T:22:0:99
@@ -648,7 +648,7 @@ L:1:1:LIGHT
 N:68:of Westernesse
 X:20:0
 W:0:10:0:20000
-A:14:30 to 127
+A:10:10 to 70
 C:d5:d5:0
 T:21:0:99
 T:22:0:99
@@ -662,16 +662,17 @@ F:FREE_ACT | SEE_INVIS
 N:69:of Extra Attacks
 X:20:0
 W:0:10:0:10000
-A:15:30 to 127
+A:10:10 to 127
 T:21:0:99
 T:22:0:99
 T:23:0:99
 L:d2:0:BLOWS
 
+#Fury is not currently creatable
 N:70:of Fury
 X:30:0
 W:40:20:0:20000
-A:8:1 to 127
+A:2:50 to 127
 #T:21:12:99
 #T:22:10:99
 #T:23:16:99
@@ -688,7 +689,7 @@ L:d2:1:BLOWS
 N:72:of Acid
 X:20:0
 W:0:20:0:5000
-A:11:10 to 100
+A:30:1 to 60
 T:21:0:99
 T:22:0:99
 T:23:0:99
@@ -697,7 +698,7 @@ F:BRAND_ACID | RES_ACID | IGNORE_ACID
 N:73:of Lightning
 X:20:0
 W:0:15:0:4500
-A:10:10 to 100
+A:30:1 to 60
 T:21:0:99
 T:22:0:99
 T:23:0:99
@@ -706,7 +707,7 @@ F:BRAND_ELEC | RES_ELEC | IGNORE_ELEC
 N:74:of Flame
 X:15:0
 W:0:8:0:3500
-A:17:10 to 100
+A:40:1 to 50
 T:21:0:99
 T:22:0:99
 T:23:0:99
@@ -715,7 +716,7 @@ F:BRAND_FIRE | RES_FIRE | IGNORE_FIRE
 N:75:of Frost
 X:15:0
 W:0:8:0:3000
-A:16:10 to 100
+A:40:1 to 50
 T:21:0:99
 T:22:0:99
 T:23:0:99
@@ -724,7 +725,7 @@ F:BRAND_COLD | RES_COLD | IGNORE_COLD
 N:76:of Venom
 X:15:0
 W:0:8:0:4000
-A:18:10 to 100
+A:60:1 to 40
 T:21:0:99
 T:22:0:99
 T:23:0:99
@@ -741,7 +742,7 @@ F:BRAND_POIS
 N:80:of Slay Animal
 X:18:0
 W:0:6:0:3000
-A:20:1 to 19
+A:100:1 to 30
 T:21:0:99
 T:22:0:99
 T:23:0:99
@@ -750,7 +751,7 @@ F:SLAY_ANIMAL
 N:81:of Slay Evil
 X:18:0
 W:0:6:0:3000
-A:20:1 to 19
+A:60:1 to 40
 T:21:0:99
 T:22:0:99
 T:23:0:99
@@ -759,7 +760,7 @@ F:SLAY_EVIL
 N:82:of Slay Undead
 X:18:0
 W:0:6:0:3500
-A:20:4 to 31
+A:100:1 to 30
 T:21:0:18
 T:22:0:99
 T:23:0:99
@@ -768,7 +769,7 @@ F:SLAY_UNDEAD
 N:83:of Slay Demon
 X:14:0
 W:0:6:0:3500
-A:20:6 to 36
+A:100:1 to 30
 T:21:0:99
 T:22:0:99
 T:23:0:99
@@ -777,7 +778,7 @@ F:SLAY_DEMON
 N:84:of Slay Orc
 X:10:0
 W:0:6:0:2500
-A:20:5 to 14
+A:150:1 to 20
 T:21:0:99
 T:22:0:99
 T:23:0:99
@@ -786,7 +787,7 @@ F:SLAY_ORC
 N:85:of Slay Troll
 X:10:0
 W:0:6:0:2500
-A:20:16 to 35
+A:150:1 to 25
 T:21:0:99
 T:22:0:99
 T:23:0:99
@@ -795,7 +796,7 @@ F:SLAY_TROLL
 N:86:of Slay Giant
 X:14:0
 W:0:6:0:2500
-A:20:24 to 38
+A:60:1 to 30
 T:21:0:99
 T:22:0:99
 T:23:0:99
@@ -804,7 +805,7 @@ F:SLAY_GIANT
 N:87:of Slay Dragon
 X:18:0
 W:0:6:0:3500
-A:20:8 to 38
+A:100:1 to 30
 T:21:0:99
 T:22:0:99
 T:23:0:99
@@ -815,7 +816,7 @@ F:SLAY_DRAGON
 N:88:of *Slay Animal*
 X:20:0
 W:0:20:0:6000
-A:20:20 to 60
+A:40:1 to 45
 T:21:0:99
 T:22:0:99
 T:23:0:99
@@ -825,7 +826,7 @@ L:d2:0:INT
 N:89:of *Slay Evil*
 X:20:3
 W:0:20:0:5000
-A:20:20 to 60
+A:15:10 to 127
 T:21:0:99
 T:22:0:99
 T:23:0:99
@@ -835,7 +836,7 @@ L:d2:0:WIS
 N:90:of *Slay Undead*
 X:24:0
 W:0:20:0:8000
-A:20:32 to 77
+A:30:10 to 60
 T:21:0:18
 T:22:0:99
 T:23:0:99
@@ -845,7 +846,7 @@ L:d2:0:WIS
 N:91:of *Slay Demon*
 X:16:0
 W:0:20:0:8000
-A:20:37 to 77
+A:30:10 to 60
 T:21:0:99
 T:22:0:99
 T:23:0:99
@@ -855,7 +856,7 @@ L:d2:0:INT
 N:92:of *Slay Orc*
 X:14:0
 W:0:20:0:4000
-A:20:15 to 44
+A:60:1 to 40
 T:21:0:99
 T:22:0:99
 T:23:0:99
@@ -865,7 +866,7 @@ L:d2:0:DEX
 N:93:of *Slay Troll*
 X:14:0
 W:0:20:0:4000
-A:20:36 to 55
+A:60:1 to 45
 T:21:0:99
 T:22:0:99
 T:23:0:99
@@ -875,7 +876,7 @@ L:d2:0:STR
 N:94:of *Slay Giant*
 X:16:0
 W:0:20:0:4000
-A:20:39 to 66
+A:20:1 to 45
 T:21:0:99
 T:22:0:99
 T:23:0:99
@@ -885,7 +886,7 @@ L:d2:0:STR
 N:95:of *Slay Dragon*
 X:24:0
 W:0:20:0:8000
-A:20:39 to 88
+A:30:10 to 60
 T:21:0:99
 T:22:0:99
 T:23:0:99
@@ -906,21 +907,22 @@ L:d2:0:CON
 N:97:of Brightness
 X:10:0
 W:0:2:0:2000
-A:20:1 to 55
+A:50:1 to 30
 T:39:0:1
 L:1:1:LIGHT
 
 N:98:(Everburning)
 X:10:0
 W:0:3:0:2500
-A:12:10 to 100
+A:100:1 to 30
 T:39:1:1 (lanterns only)
 F:NO_FUEL
 
+#imported from S
 N:99:of True Sight
 X:10:0
-W:20:8:0:6000 (imported from S)
-A:4:20 to 127
+W:20:8:0:6000
+A:10:20 to 127
 T:39:1:1
 F:RES_BLIND | SEE_INVIS
 
@@ -930,7 +932,7 @@ F:RES_BLIND | SEE_INVIS
 N:100:of Digging
 X:4:0
 W:0:1:0:500
-A:20:1 to 65
+A:100:1 to 40
 T:20:0:99
 F:BRAND_ACID
 L:d4:1:TUNNEL
@@ -938,7 +940,7 @@ L:d4:1:TUNNEL
 N:101:of Earthquakes
 X:8:0
 W:20:4:0:3000
-A:5:20 to 127
+A:10:10 to 127
 C:d10:d10:0
 T:20:0:99
 L:d4:1:STR
@@ -965,7 +967,7 @@ F:HOLD_LIFE | DRAIN_EXP | SLAY_UNDEAD | BRAND_POIS
 N:104:of Accuracy
 X:10:0
 W:0:1:0:1000
-A:20:5 to 55
+A:100:5 to 70
 C:d15:d5:0
 M:15:255:0
 T:19:0:99
@@ -975,7 +977,7 @@ D: high.
 N:105:of Power
 X:10:0
 W:0:1:0:1000
-A:20:10 to 65
+A:100:5 to 70
 C:d5:d15:0
 M:255:15:0
 T:19:0:99
@@ -985,7 +987,7 @@ D: high.
 N:106:of Lothlórien
 X:30:3
 W:50:4:0:20000
-A:5:40 to 127
+A:5:20 to 127
 C:d10:d10:0
 T:19:12:13
 L:1+d2M2:2:DEX
@@ -995,7 +997,7 @@ F:FREE_ACT | IGNORE_ACID | IGNORE_FIRE |
 N:107:of the Haradrim
 X:30:0
 W:50:4:0:20000
-A:10:40 to 127
+A:5:20 to 127
 C:d5:d5:0
 T:19:23:23
 L:1:1:MIGHT | SHOTS
@@ -1004,7 +1006,7 @@ F:IGNORE_ACID | IGNORE_FIRE |
 N:108:of Extra Might
 X:20:0
 W:0:2:0:10000
-A:10:25 to 100
+A:20:15 to 100
 C:d5:d10:0
 T:19:0:99
 L:1:0:MIGHT
@@ -1012,7 +1014,7 @@ L:1:0:MIGHT
 N:109:of Extra Shots
 X:20:0
 W:0:2:0:10000
-A:10:25 to 100
+A:10:15 to 100
 C:d10:d5:0
 T:19:0:99
 L:1:0:SHOTS
@@ -1020,7 +1022,7 @@ L:1:0:SHOTS
 N:110:of Buckland
 X:25:0
 W:40:4:0:20000
-A:10:40 to 127
+A:5:20 to 127
 C:d8:d8:0
 T:19:2:2
 L:1+d2M2:2:DEX
@@ -1042,7 +1044,7 @@ F:LIGHT_CURSE | DRAIN_EXP | SEE_INVIS
 N:112:of Slay Animal
 X:10:0
 W:0:6:0:20
-A:12:1 to 60
+A:80:1 to 40
 T:16:0:99
 T:17:0:99
 T:18:0:99
@@ -1051,7 +1053,7 @@ F:SLAY_ANIMAL
 N:113:of Slay Evil
 X:10:0
 W:0:6:0:20
-A:12:1 to 60
+A:10:10 to 100
 T:16:0:99
 T:17:0:99
 T:18:0:99
@@ -1060,7 +1062,7 @@ F:SLAY_EVIL
 N:114:of Slay Undead
 X:10:0
 W:0:8:0:25
-A:8:4 to 77
+A:15:5 to 100
 T:16:0:99
 T:17:0:99
 T:18:0:99
@@ -1069,7 +1071,7 @@ F:SLAY_UNDEAD
 N:115:of Slay Demon
 X:10:0
 W:0:8:0:25
-A:8:6 to 77
+A:15:5 to 100
 T:16:0:99
 T:17:0:99
 T:18:0:99
@@ -1078,7 +1080,7 @@ F:SLAY_DEMON
 N:116:of Acid
 X:10:0
 W:0:10:0:50
-A:8:10 to 100
+A:5:10 to 100
 T:16:0:99
 T:17:0:99
 T:18:0:99
@@ -1087,7 +1089,7 @@ F:BRAND_ACID | IGNORE_ACID
 N:117:of Lightning
 X:10:0
 W:0:10:0:45
-A:8:10 to 100
+A:5:10 to 100
 T:16:0:99
 T:17:0:99
 T:18:0:99
@@ -1096,7 +1098,7 @@ F:BRAND_ELEC | IGNORE_ELEC
 N:118:of Slay Giant
 X:10:0
 W:0:8:0:25
-A:8:24 to 66
+A:5:5 to 60
 T:16:0:99
 T:17:0:99
 T:18:0:99
@@ -1105,7 +1107,7 @@ F:SLAY_GIANT
 N:119:of Slay Dragon
 X:10:0
 W:0:8:0:40
-A:8:8 to 88
+A:10:10 to 100
 T:16:0:99
 T:17:0:99
 T:18:0:99
@@ -1114,7 +1116,7 @@ F:SLAY_DRAGON
 N:120:of Holy Might
 X:20:0
 W:40:15:0:60
-A:8:40 to 127
+A:2:30 to 127
 C:d10:d10:0
 T:16:2:99
 T:17:2:99
@@ -1125,7 +1127,7 @@ F:IGNORE_FIRE | IGNORE_ACID
 N:121:of Venom
 X:10:0
 W:0:6:0:40
-A:12:10 to 100
+A:20:10 to 60
 T:16:0:99
 T:17:0:99
 T:18:0:99
@@ -1134,7 +1136,7 @@ F:BRAND_POIS
 N:122:of Flame
 X:10:0
 W:0:6:0:35
-A:12:10 to 100
+A:10:10 to 100
 T:16:0:99
 T:17:0:99
 T:18:0:99
@@ -1143,7 +1145,7 @@ F:BRAND_FIRE | IGNORE_FIRE
 N:123:of Frost
 X:10:0
 W:0:6:0:30
-A:12:10 to 100
+A:10:10 to 100
 T:16:0:99
 T:17:0:99
 T:18:0:99
@@ -1152,8 +1154,8 @@ F:BRAND_COLD | IGNORE_COLD
 N:124:of Wounding
 X:5:0
 W:0:4:0:20
-A:20:15 to 127
-C:d5:d5:0
+A:15:15 to 127
+C:3+d5:3+d5:0
 T:16:0:99
 T:17:0:99
 T:18:0:99
@@ -1194,7 +1196,7 @@ C:0:0:d10
 N:128:of Craftsmanship
 X:4:0
 W:0:2:0:500
-A:20:30 to 95
+A:60:20 to 95
 C:0:0:1d6M4
 M:0:0:4
 T:38:0:99
@@ -1203,7 +1205,7 @@ D:This armour is finely wrought, tough yet unencumbering.
 N:129:of Stealth
 X:16:0
 W:0:10:0:500
-A:8:40 to 100
+A:10:20 to 100
 M:255:0:0
 T:38:0:99
 L:d2:0:STEALTH
@@ -1211,7 +1213,7 @@ L:d2:0:STEALTH
 N:130:of Resistance
 X:10:0
 W:0:10:0:12500
-A:8:70 to 100
+A:5:40 to 100
 C:0:0:d10
 M:255:0:0
 T:38:7:29
@@ -1220,7 +1222,7 @@ F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD
 N:131:of Elvenkind
 X:25:2
 W:0:33:0:15000
-A:3:70 to 127
+A:3:50 to 127
 C:0:0:d10
 T:38:7:29
 L:d2:0:STEALTH
@@ -1241,7 +1243,7 @@ L:d2M3:1:INFRA
 N:133:of Speed
 X:25:0
 W:0:100:0:100000
-A:1:40 to 127
+A:2:40 to 127
 M:255:0:0
 T:38:0:99
 L:d5:0:SPEED

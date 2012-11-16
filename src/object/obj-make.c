@@ -163,14 +163,14 @@ static int get_new_attr(bitflag flags[OF_SIZE], bitflag newf[OF_SIZE])
  */
 static struct ego_item *ego_find_random(object_type *o_ptr, int level)
 {
-	int i, j;
+	int i, j, ood_chance;
 	long total = 0L;
 
 	/* XXX alloc_ego_table &c should be static to this file */
 	alloc_entry *table = alloc_ego_table;
 	ego_item_type *ego;
 
-	/* Go through all possible ego items and find oens which fit this item */
+	/* Go through all possible ego items and find ones which fit this item */
 	for (i = 0; i < alloc_ego_size; i++) {
 		/* Reset any previous probability of this type being picked */
 		table[i].prob3 = 0;
@@ -180,6 +180,15 @@ static struct ego_item *ego_find_random(object_type *o_ptr, int level)
 
 		/* Access the ego item */
 		ego = &e_info[table[i].index];
+        
+        /* enforce maximum */
+        if (level > ego->alloc_max) continue;
+        
+        /* roll for Out of Depth (ood) */
+        if (level < ego->alloc_min){
+            ood_chance = MAX(2, (ego->alloc_min - level) / 3);
+            if (!one_in_(ood_chance)) continue;
+        }
 
 		/* XXX Ignore cursed items for now */
 		if (cursed_p(ego->flags)) continue;
