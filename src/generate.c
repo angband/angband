@@ -3112,11 +3112,11 @@ static bool labyrinth_gen(struct cave *c, struct player *p) {
 		pick_and_place_distant_monster(c, loc(p->px, p->py), 0, TRUE, c->depth);
 
 	/* Put some objects/gold in the dungeon */
-	alloc_objects(c, SET_BOTH, TYP_OBJECT, Rand_normal(6, 3), c->depth,
+	alloc_objects(c, SET_BOTH, TYP_OBJECT, Rand_normal(k * 6, 2), c->depth,
 		ORIGIN_LABYRINTH);
-	alloc_objects(c, SET_BOTH, TYP_GOLD, Rand_normal(6, 3), c->depth,
+	alloc_objects(c, SET_BOTH, TYP_GOLD, Rand_normal(k * 3, 2), c->depth,
 		ORIGIN_LABYRINTH);
-	alloc_objects(c, SET_BOTH, TYP_GOOD, randint0(2), c->depth,
+	alloc_objects(c, SET_BOTH, TYP_GOOD, randint1(2), c->depth,
 		ORIGIN_LABYRINTH);
 
 	/* Unlit labyrinths will have some good items */
@@ -3596,9 +3596,9 @@ bool cavern_gen(struct cave *c, struct player *p) {
 			pick_and_place_distant_monster(c, loc(p->px, p->py), 0, TRUE, c->depth);
 	
 		/* Put some objects/gold in the dungeon */
-		alloc_objects(c, SET_BOTH, TYP_OBJECT, Rand_normal(2 * k / 3, 0), c->depth,
+		alloc_objects(c, SET_BOTH, TYP_OBJECT, Rand_normal(k, 2), c->depth + 5,
 			ORIGIN_CAVERN);
-		alloc_objects(c, SET_BOTH, TYP_GOLD, Rand_normal(k / 2, 0), c->depth,
+		alloc_objects(c, SET_BOTH, TYP_GOLD, Rand_normal(k / 2, 2), c->depth,
 			ORIGIN_CAVERN);
 		alloc_objects(c, SET_BOTH, TYP_GOOD, randint0(k / 4), c->depth,
 			ORIGIN_CAVERN);
