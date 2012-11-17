@@ -654,7 +654,7 @@ void object_prep(object_type *o_ptr, struct object_kind *k, int lev,
  * artifact.
  */
 s16b apply_magic(object_type *o_ptr, int lev, bool allow_artifacts,
-		bool good, bool great)
+		bool good, bool great, bool extra_roll)
 {
 	int i;
 	s16b power = 0;
@@ -690,8 +690,11 @@ s16b apply_magic(object_type *o_ptr, int lev, bool allow_artifacts,
 		/* Get one roll if excellent */
 		if (power >= 2) rolls = 1;
 
-		/* Get four rolls if forced great */
-		if (great) rolls = 4;
+		/* Get two rolls if forced great */
+		if (great) rolls = 2;
+        
+        /* Give some extra rolls for uniques and acq scrolls */
+        if (extra_roll) rolls += 2;
 
 		/* Roll for artifacts if allowed */
 		for (i = 0; i < rolls; i++)
@@ -1024,7 +1027,7 @@ object_kind *get_obj_num(int level, bool good, int tval)
  * Returns the whether or not creation worked.
  */
 bool make_object(struct cave *c, object_type *j_ptr, int lev, bool good,
-	bool great, s32b *value, int tval)
+	bool great, bool extra_roll, s32b *value, int tval)
 {
 	int base;
 	object_kind *kind;
@@ -1036,7 +1039,7 @@ bool make_object(struct cave *c, object_type *j_ptr, int lev, bool good,
 			return TRUE;
 		}
 
-		/* If we failed to make an artifact, the player gets a great item */
+		/* If we failed to make an artifact, the player gets a good item */
 		good = TRUE;
 	}
 
@@ -1047,7 +1050,7 @@ bool make_object(struct cave *c, object_type *j_ptr, int lev, bool good,
 	kind = get_obj_num(base, good || great, tval);
 	if (!kind) return FALSE;
 	object_prep(j_ptr, kind, lev, RANDOMISE);
-	apply_magic(j_ptr, lev, TRUE, good, great);
+	apply_magic(j_ptr, lev, TRUE, good, great, extra_roll);
 
 	/* Generate multiple items */
 	if (kind->gen_mult_prob >= randint1(100))

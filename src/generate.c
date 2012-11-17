@@ -620,7 +620,7 @@ void place_object(struct cave *c, int y, int x, int level, bool good, bool great
 	if (!cave_canputitem(c, y, x)) return;
 
 	object_wipe(&otype);
-	if (!make_object(c, &otype, level, good, great, &rating, tval)) return;
+	if (!make_object(c, &otype, level, good, great, FALSE, &rating, tval)) return;
 
 	otype.origin = origin;
 	otype.origin_depth = c->depth;

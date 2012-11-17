@@ -638,6 +638,7 @@ static bool mon_create_drop(struct monster *m_ptr, byte origin)
 	struct monster_drop *drop;
 
 	bool great, good, gold_ok, item_ok;
+    bool extra_roll = FALSE;
 	bool any = FALSE;
 
 	int number = 0, level, j, monlevel;
@@ -665,12 +666,13 @@ static bool mon_create_drop(struct monster *m_ptr, byte origin)
     monlevel = m_ptr->race->level;
     if (rf_has(m_ptr->race->flags, RF_UNIQUE)){
         monlevel = MIN(monlevel + 15, monlevel * 2);
+        extra_roll = TRUE;
     }
     
 	/* Take the best of (average of monster level and current depth)
 	   and (monster level) - to reward fighting OOD monsters */
 	level = MAX((monlevel + p_ptr->depth) / 2, monlevel);
-    level = (level > 100) ? 100 : level;
+    level = MIN(level, 100);
 
 	/* Specified drops */
 	for (drop = m_ptr->race->drops; drop; drop = drop->next) {
@@ -686,7 +688,7 @@ static bool mon_create_drop(struct monster *m_ptr, byte origin)
 			i_ptr->artifact->created = 1;
 		} else {
 			object_prep(i_ptr, drop->kind, level, RANDOMISE);
-			apply_magic(i_ptr, level, TRUE, good, great);
+			apply_magic(i_ptr, level, TRUE, good, great, extra_roll);
 		}
 
 		i_ptr->origin = origin;
@@ -705,7 +707,8 @@ static bool mon_create_drop(struct monster *m_ptr, byte origin)
 		if (gold_ok && (!item_ok || (randint0(100) < 50))) {
 			make_gold(i_ptr, level, SV_GOLD_ANY);
 		} else {
-			if (!make_object(cave, i_ptr, level, good, great, NULL, 0)) continue;
+			if (!make_object(cave, i_ptr, level, good,
+                great, extra_roll, NULL, 0)) continue;
 		}
 
 		i_ptr->origin = origin;
@@ -791,7 +794,7 @@ s16b place_monster(int y, int x, monster_type *mon, byte origin)
 			make_gold(i_ptr, p_ptr->depth, kind->sval);
 		} else {
 			object_prep(i_ptr, kind, m_ptr->race->level, RANDOMISE);
-			apply_magic(i_ptr, m_ptr->race->level, TRUE, FALSE, FALSE);
+			apply_magic(i_ptr, m_ptr->race->level, TRUE, FALSE, FALSE, FALSE);
 			i_ptr->number = 1;
 		}
 
