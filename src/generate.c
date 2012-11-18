@@ -233,7 +233,7 @@ static struct room_profile default_rooms[] = {
 	{"crossed room", build_crossed, 1, 3, 3, FALSE, 1, 35},
 	{"circular room", build_circular, 2, 2, 1, FALSE, 1, 50},
 	{"overlap room", build_overlap, 1, 3, 1, FALSE, 1, 70},
-	{"room template", build_template, 1, 3, 1, FALSE, 1, 100},
+	{"room template", build_template, 1, 3, 5, FALSE, 1, 100},
 
 	/* normal rooms */
 	{"simple room", build_simple, 1, 3, 1, FALSE, 0, 100}
