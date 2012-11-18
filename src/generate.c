@@ -219,7 +219,7 @@ static struct cave_profile town_profile = {
 /* name function width height min-depth pit? rarity %cutoff */
 static struct room_profile default_rooms[] = {
 	/* greater vaults only have rarity 1 but they have other checks */
-	{"greater vault", build_greater_vault, 4, 6, 10, FALSE, 0, 100},
+	{"greater vault", build_greater_vault, 4, 6, 35, FALSE, 0, 100},
 
 	/* very rare rooms (rarity=2) */
     {"monster pit", build_pit, 1, 3, 5, TRUE, 2, 8},
