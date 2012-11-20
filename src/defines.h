@@ -201,9 +201,9 @@
 
 
 /*
- * There is a 1/160 chance per round of creating a new monster
+ * There is a 1/500 chance per round of creating a new monster
  */
-#define MAX_M_ALLOC_CHANCE	160
+#define MAX_M_ALLOC_CHANCE	500
 
 /*
  * Normal levels get at least 14 monsters
