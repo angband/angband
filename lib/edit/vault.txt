@@ -522,6 +522,30 @@ D: %...XXXXXXXXX...XXXXXXXXX...%
 D:  %%%.........%%%.........%%%  
 D:     %%%%%%%%%   %%%%%%%%%     
 
+N:34:Pac-Man
+X:7:5:21:21
+D:#XXXXXXXXXXXXXXXXXXX#
+D:#X..&&&,..X..,&&&..X#
+D:#X9XX^XXX^X^XXX^XX9X#
+D:#X^....^&...&^....^X#
+D:#X.XX.X.XXXXX.X.XX.X#
+D:#X&..^X...X...X^..&X#
+D:#XXXX.XXX.X.XXX.XXXX#
+D:####X.X^*^@^*^X.X####
+D:%XXXX&X^XX+XX^X&XXXX%
+D:%^^^^&&^X888X^&&^^^^%
+D:%XXXX&X.XXXXX.X&XXXX%
+D:####X.X.*****.X.X####
+D:#XXXX.X.XXXXX.X.XXXX#
+D:#X*..^X...X...X^..*X#
+D:#X.XX.XXX.X.XXX.XX.X#
+D:#X9.X.^..&9&..^.X.9X#
+D:#XX.X.X.XXXXX.X.X.XX#
+D:#X....X...X...X....X#
+D:#X^XXXXXX^X^XXXXXX^X#
+D:#X.,&,&,.*^*.,&,&,.X#
+D:#XXXXXXXXXXXXXXXXXXX#
+
 ### Greater vaults (type 8) -- maximum size 66x44 ###
 
 N:40:huge
