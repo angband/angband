@@ -30,7 +30,7 @@
 # to hit (bows), to hit (throwing), digging.
 
 # 'X' is for extra info - max. hitpoints gained per level, experience
-# factor in percent, range of infravision in 10 feets, digging bonus.
+# factor in percent, range of infravision in 10 feet.
 
 # 'I' is for info - starting point of the player history, base age,
 # random age modifier.
