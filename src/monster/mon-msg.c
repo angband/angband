@@ -71,16 +71,16 @@ static const char *msg_repository[MAX_MON_MSG + 1] =
 	"look[s] slowed.",			/* MON_MSG_SLOWED */
 	"speed[s] up.",				/* MON_MSG_NOT_SLOWED */
 	"look[s] even faster!",		/* MON_MSG_MORE_HASTED */
-	"start[s|] moving faster.",	/* MON_MSG_HASTED */
-	"slows down.",				/* MON_MSG_NOT_HASTED */
+	"start[s] moving faster.",	/* MON_MSG_HASTED */
+	"slow[s] down.",				/* MON_MSG_NOT_HASTED */
 	"look[s] more terrified!",	/* MON_MSG_MORE_AFRAID */
 	"flee[s] in terror!",		/* MON_MSG_FLEE_IN_TERROR */
 	"[is|are] no longer afraid.",/* MON_MSG_NOT_AFRAID */
 	"~You hear [a|several] scream[|s] of agony!",/* MON_MSG_MORIA_DEATH */
-	"disintegrates!",		/* MON_MSG_DISENTEGRATES */
-	"freez[es] and shatter[s]!",  /* MON_MSG_FREEZE_SHATTER */
+	"disintegrate[s]!",		/* MON_MSG_DISENTEGRATES */
+	"freeze[s] and shatter[s]!",/* MON_MSG_FREEZE_SHATTER */
 	"lose[s] some mana!",		/* MON_MSG_MANA_DRAIN */
-	"looks briefly puzzled.",	/* MON_MSG_BRIEF_PUZZLE */
+	"look[s] briefly puzzled.",	/* MON_MSG_BRIEF_PUZZLE */
 	"maintain[s] the same shape.", /* MON_MSG_MAINTAIN_SHAPE */
 
 	/* From message_pain */
