@@ -189,6 +189,9 @@ static NSFont *default_font;
 /* Make the context aware that one of its views changed size */
 - (void)angbandViewDidScale:(AngbandView *)view;
 
+/* Handle becoming the main window */
+- (void)windowDidBecomeMain:(NSNotification *)notification;
+
 /* Order the context's primary window frontmost */
 - (void)orderFront;
 
@@ -199,7 +202,7 @@ static NSFont *default_font;
 - (BOOL)isOrderedIn;
 
 /* Return whether the context's primary window is key */
-- (BOOL)isKeyWindow;
+- (BOOL)isMainWindow;
 
 /* Invalidate the whole image */
 - (void)setNeedsDisplay:(BOOL)val;
@@ -1007,6 +1010,15 @@ static int compare_advances(const void *ap, const void *bp)
     }
 }
 
+- (void)windowDidBecomeMain:(NSNotification *)notification
+{
+    NSWindow *window = [notification object];
+    NSFontPanel *panel = [NSFontPanel sharedFontPanel];
+
+    if ([panel isVisible])
+        [panel setPanelFont:[[[window contentView] angbandContext] selectionFont] isMultiple:NO];
+}
+
 - (void)removeAngbandView:(AngbandView *)view
 {
     if ([angbandViews containsObject:view])
@@ -1083,9 +1095,9 @@ static NSMenuItem *superitem(NSMenuItem *self)
     return [[[angbandViews lastObject] window] isVisible];
 }
 
-- (BOOL)isKeyWindow
+- (BOOL)isMainWindow
 {
-    return [[[angbandViews lastObject] window] isKeyWindow];
+    return [[[angbandViews lastObject] window] isMainWindow];
 }
 
 - (void)orderOut
@@ -2508,6 +2520,7 @@ static BOOL send_event(NSEvent *event)
                     Term_mousepress(x, y, 1);
                 }
             }
+
             /* Pass click through to permit focus change, resize, etc. */
             [NSApp sendEvent:event];
             break;
@@ -2735,7 +2748,7 @@ static void initialize_file_paths(void)
 
     int i;
     for (i=0; i < ANGBAND_TERM_MAX; i++) {
-        if ([(id)angband_term[i]->data isKeyWindow]) {
+        if ([(id)angband_term[i]->data isMainWindow]) {
             termFont = [(id)angband_term[i]->data selectionFont];
             break;
         }
@@ -2747,19 +2760,22 @@ static void initialize_file_paths(void)
 
 - (void)changeFont:(id)sender
 {
-    int keyTerm;
-    for (keyTerm=0; keyTerm < ANGBAND_TERM_MAX; keyTerm++) {
-        if ([(id)angband_term[keyTerm]->data isKeyWindow]) {
+    int mainTerm;
+    for (mainTerm=0; mainTerm < ANGBAND_TERM_MAX; mainTerm++) {
+        if ([(id)angband_term[mainTerm]->data isMainWindow]) {
             break;
         }
     }
+
+    /* Bug #1709: Only change font for angband windows */
+    if (mainTerm == ANGBAND_TERM_MAX) return;
     
     NSFont *oldFont = default_font;
     NSFont *newFont = [sender convertFont:oldFont];
     if (! newFont) return; //paranoia
     
-    /* Store it as the default font if we changed the main window */
-    if (keyTerm == 0) {
+    /* Store as the default font if we changed the first term */
+    if (mainTerm == 0) {
         [newFont retain];
         [default_font release];
         default_font = newFont;
@@ -2768,15 +2784,15 @@ static void initialize_file_paths(void)
     /* Record it in the preferences */
     NSUserDefaults *defs = [NSUserDefaults angbandDefaults];
     [defs setValue:[newFont fontName] 
-        forKey:[NSString stringWithFormat:@"FontName-%d", keyTerm]];
+        forKey:[NSString stringWithFormat:@"FontName-%d", mainTerm]];
     [defs setFloat:[newFont pointSize]
-        forKey:[NSString stringWithFormat:@"FontSize-%d", keyTerm]];
+        forKey:[NSString stringWithFormat:@"FontSize-%d", mainTerm]];
     [defs synchronize];
     
     NSDisableScreenUpdates();
     
-    /* Update main window */
-    AngbandContext *angbandContext = angband_term[keyTerm]->data;
+    /* Update window */
+    AngbandContext *angbandContext = angband_term[mainTerm]->data;
     [(id)angbandContext setSelectionFont:newFont];
     [(id)angbandContext setScaleFactor:NSMakeSize(1,1)];
     
