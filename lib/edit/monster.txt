@@ -6293,10 +6293,9 @@ S:BLIND | HASTE | HEAL | MIND_BLAST | SCARE
 S:BO_FIRE
 S:S_MONSTERS
 D:A great Maia whose physical form looks overpowering next
-D: to your own frail body.
-
-D:One of the first children of Eru, human-like in form but god-like in power.
-D: The dungeon shakes with each of its steps toward you.
+D: to your own frail body. One of the first children of Eru,
+D: human-like in form but god-like in power. The dungeon
+D: shakes with each of its steps toward you.
 
 N:419:Nether wraith
 T:wraith
