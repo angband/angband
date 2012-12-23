@@ -112,11 +112,11 @@ byte chest_trap_type(const object_type *o_ptr)
 bool is_trapped_chest(const object_type *o_ptr)
 {
 	if (o_ptr->tval != TV_CHEST)
-		return false;
+		return FALSE;
 
 	/* Disarmed or opened chests are not trapped */
 	if (o_ptr->pval[DEFAULT_PVAL] <= 0)
-		return false;
+		return FALSE;
 
 	/* Some chests simply don't have traps */
 	return (chest_traps[o_ptr->pval[DEFAULT_PVAL]] != 0);
@@ -129,7 +129,7 @@ bool is_trapped_chest(const object_type *o_ptr)
 bool is_locked_chest(const object_type *o_ptr)
 {
 	if (o_ptr->tval != TV_CHEST)
-		return false;
+		return FALSE;
 
 	/* Disarmed or opened chests are not locked */
 	return (o_ptr->pval[DEFAULT_PVAL] > 0);
