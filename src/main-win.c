@@ -3729,9 +3729,12 @@ static void process_menus(WORD wCmd)
 			break;
 		}
 		case IDM_WINDOW_RESET: {
-			/* This feature is bugged and causes the game to crash in windows.  It's been disabled for the 3.4 release. */
-			plog("This feature is disabled for this version.");
-			break;
+			/* Paranoia */
+			if (!inkey_flag || !initialized)
+			{
+				plog("You may not do that right now.");
+				break;
+			}
 			
 			
 			if (MessageBox(NULL,
