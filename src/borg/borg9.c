@@ -28,8 +28,6 @@ bool borg_cheat_death;
 /*
  * This file implements the "Ben Borg", an "Automatic Angband Player".
  *
- * This version of the "Ben Borg" is designed for use with Angband 2.7.9v6.
- *
  * Use of the "Ben Borg" requires re-compilation with ALLOW_BORG defined,
  * and with the various "borg*.c" files linked into the executable.
  *
@@ -4280,7 +4278,7 @@ void init_borg_txt_file(void)
         /* Complain */
         msg("*****WARNING***** You do not have a proper BORG.TXT file!");
         msg("Make sure BORG.TXT is located in the \\user\\ subdirectory!");
-        msg(NULL);
+        message_flush();
         return;
     }
 
@@ -6317,7 +6315,7 @@ void do_cmd_borg(void)
 
             /* Get keypress */
             msg("Press any key.");
-            msg(NULL);
+            message_flush();
 
             /* Redraw map */
             prt_map();
@@ -6403,7 +6401,7 @@ void do_cmd_borg(void)
 
             /* Get keypress */
             msg("Press any key.");
-            msg(NULL);
+            message_flush();
 
             /* Redraw map */
             prt_map();
@@ -6469,7 +6467,7 @@ void do_cmd_borg(void)
 
             /* Get keypress */
             msg("(%d,%d of %d,%d) Avoidance value %d.", c_y, c_x, Term->offset_y / PANEL_HGT,Term->offset_x / PANEL_WID,avoidance);
-            msg(NULL);
+            message_flush();
 
             /* Redraw map */
             prt_map();
@@ -6490,7 +6488,7 @@ void do_cmd_borg(void)
                         /* Display */
                         print_rel('*', a, track_step_y[track_step_num-i], track_step_x[track_step_num-i]);
 			            msg("(-%d) Steps noted %d,%d", i,track_step_y[track_step_num-i], track_step_x[track_step_num-i]);
-						msg(NULL);
+						message_flush();
                         print_rel('*', TERM_ORANGE, track_step_y[track_step_num-i], track_step_x[track_step_num-i]);
                     }
             /* Redraw map */
@@ -6525,7 +6523,7 @@ void do_cmd_borg(void)
 
             /* Get keypress */
             msg("There are %d known monsters.", n);
-            msg(NULL);
+            message_flush();
 
             /* Redraw map */
             prt_map();
@@ -6560,7 +6558,7 @@ void do_cmd_borg(void)
 
             /* Get keypress */
             msg("There are %d known objects.", n);
-            msg(NULL);
+            message_flush();
 
             /* Redraw map */
             prt_map();
@@ -6597,7 +6595,7 @@ void do_cmd_borg(void)
 			}
 
             msg("Borg's Targetting Path");
-            msg(NULL);
+            message_flush();
 
 		    /* Determine "path" */
 		    n_x = p_ptr->px;
@@ -6611,7 +6609,7 @@ void do_cmd_borg(void)
 
 
             msg("Actual Targetting Path");
-            msg(NULL);
+            message_flush();
 
             /* Redraw map */
             prt_map();
@@ -6685,7 +6683,7 @@ void do_cmd_borg(void)
                 }
                 print_rel('*', TERM_YELLOW, borg_flow_y[0], borg_flow_x[0]);
                 msg("Probable Flow Path");
-                msg(NULL);
+                message_flush();
 
                 /* Redraw map */
                 prt_map();
@@ -6743,7 +6741,7 @@ void do_cmd_borg(void)
 
             /* Get keypress */
             msg("(%d,%d of %d,%d) Regional Fear.", c_y, c_x, Term->offset_y / PANEL_HGT,Term->offset_x / PANEL_WID);
-            msg(NULL);
+            message_flush();
 
             /* Redraw map */
             prt_map();
@@ -6790,7 +6788,7 @@ void do_cmd_borg(void)
 
             /* Get keypress */
             msg("(%d,%d of %d,%d) Monster Fear.", c_y, c_x, Term->offset_y / PANEL_HGT,Term->offset_x / PANEL_WID);
-            msg(NULL);
+            message_flush();
 
             /* Redraw map */
             prt_map();
@@ -6864,7 +6862,7 @@ void do_cmd_borg(void)
 
             /* Get keypress */
             msg("Borg has Projectable to these places.");
-            msg(NULL);
+            message_flush();
 
             /* Scan map */
             for (y = w_y; y < w_y + SCREEN_HGT; y++)
@@ -6881,7 +6879,7 @@ void do_cmd_borg(void)
                 }
             }
             msg("Borg has Projectable Dark to these places.");
-            msg(NULL);
+            message_flush();
 
             /* Scan map */
             for (y = w_y; y < w_y + SCREEN_HGT; y++)
@@ -6898,7 +6896,7 @@ void do_cmd_borg(void)
                 }
             }
             msg("Borg has LOS to these places.");
-            msg(NULL);
+            message_flush();
             /* Redraw map */
             prt_map();
             break;
@@ -7224,7 +7222,7 @@ void do_cmd_borg(void)
 
 			/* pause for study */
             msg("Borg believes: ");
-            msg(NULL);
+            message_flush();
 
 			/* Restore the screen */
             Term_load();
@@ -7284,7 +7282,7 @@ void do_cmd_borg(void)
 					/* Display */
                     print_rel('*', a, track_glyph_y[glyph_check], track_glyph_x[glyph_check]);
 					msg("Borg has Glyph (%d)noted.", glyph_check);
-		            msg(NULL);
+		            message_flush();
             }
 
             /* Get keypress */
