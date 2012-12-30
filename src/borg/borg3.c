@@ -1121,7 +1121,7 @@ static char **borg_sv_art_text;      /* Save textual prefixes for "artifacts" (i
  *
  * Returns "-1" if the item cannot (or should not) be wielded
  */
-int borg_wield_slot(borg_item *item)
+int borg_wield_slot(const borg_item *item)
 {
         switch (borg_class)
            {
