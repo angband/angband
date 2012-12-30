@@ -205,7 +205,7 @@ extern borg_magic borg_magics[9][9];    /* Spell info */
 /*
  * Determine which slot an item could be wielded into
  */
-extern int borg_wield_slot(borg_item *item);
+extern int borg_wield_slot(const borg_item *item);
 
 /*
  * Analyze an item, given a textual description

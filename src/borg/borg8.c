@@ -951,7 +951,7 @@ static bool borg_good_sell(borg_item *item, int who)
 	        case TV_LIGHT:
 
 				/* Never sell if not "known" */
-				if (!item->ident && !borg_item_icky(item) && (borg_skill[BI_MAXDEPTH] > 35)) return (FALSE);
+				if (!item->ident && borg_item_worth_id(item) && (borg_skill[BI_MAXDEPTH] > 35)) return (FALSE);
 
 				break;
 
@@ -971,7 +971,7 @@ static bool borg_good_sell(borg_item *item, int who)
 	        case TV_DRAG_ARMOR:
 
 	        /* Only sell "known" items (unless "icky") */
-	        if (!item->ident && !borg_item_icky(item)) return (FALSE);
+	        if (!item->ident && borg_item_worth_id(item)) return (FALSE);
 
 	        break;
 	    }

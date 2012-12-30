@@ -21,9 +21,9 @@
 
 
 /*
- * Determine if an item is "icky"
+ * Determine if an item is likely to be worthless
  */
-extern bool borg_item_icky(borg_item *item);
+extern bool borg_item_worth_id(const borg_item *item);
 
 /*
  * Various functions

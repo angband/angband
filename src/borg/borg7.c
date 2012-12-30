@@ -88,141 +88,47 @@ static s16b value_feeling[] =
 };
 
 
-
-
-/*
- * Determine if an item is "probably" worthless
- *
- * This (very heuristic) function is a total hack, designed only to prevent
- * a very specific annoying situation described below.
- *
- * Note that a "cautious" priest (or low level mage/ranger) will leave town
- * with a few identify scrolls, wander around dungeon level 1 for a few turns,
- * and use all of the scrolls on leather gloves and broken daggers, and must
- * then return to town for more scrolls.  This may repeat indefinitely.
- *
- * The problem is that some characters (priests, mages, rangers) never get an
- * "average" feeling about items, and have no way to keep track of how long
- * they have been holding a given item for, so they cannot even attempt to
- * gain knowledge from the lack of "good" or "cursed" feelings.  But they
- * cannot afford to just identify everything they find by using scrolls of
- * identify, because, in general, some items are, on average, "icky", and
- * not even worth the price of a new scroll of identify.
- *
- * Even worse, the current algorithm refuses to sell un-identified items, so
- * the poor character will throw out all his good stuff to make room for crap.
- *
- * This function simply examines the item and assumes that certain items are
- * "icky", which is probably a total hack.  Perhaps we could do something like
- * compare the item to the item we are currently wearing, or perhaps we could
- * analyze the expected value of the item, or guess at the likelihood that the
- * item might be a blessed, or something.
- *
+/**
+ * Work out if it's worth using ID on an item.  Also used in other places
+ * as a general litmus test for whether an item is worth keeping hold of
+ * while it's not ID'd.
  */
-bool borg_item_icky(borg_item *item)
+bool borg_item_worth_id(const borg_item *item)
 {
-    int slot;
+	/* Never ID average stuff */
+	if (strstr(item->note, "average"))
+		return FALSE;
 
+	/** Some stuff should always be ID'd... **/
+	switch (item->tval)
+	{
+		case TV_BOW: case TV_SHOT: case TV_ARROW: case TV_BOLT:
+		case TV_HAFTED: case TV_POLEARM: case TV_SWORD:
+		case TV_BOOTS: case TV_GLOVES: case TV_HELM:
+		case TV_CROWN: case TV_SHIELD: case TV_CLOAK:
+		case TV_SOFT_ARMOR: case TV_HARD_ARMOR: case TV_DRAG_ARMOR:
 
-    /* if its average, dump it if you want to.*/
-    if (strstr(item->note, "average")) return (TRUE);
+			/* Don't bother IDing unidentified items until they are pseudo'd */
+			if (!item->ident) return FALSE;
+	}
 
-    /* Mega-Hack -- allow "icky" items */
-    if (borg_class == CLASS_PRIEST ||
-        borg_class == CLASS_RANGER ||
-        borg_class == CLASS_MAGE ||
-        borg_skill[BI_CLEVEL] < 20)
-    {
-        /* things that are good/excelent/special */
-        if (strstr(item->note, "special") ||
-            strstr(item->note, "terrible") ||
-            strstr(item->note, "indestructible") ||
-            strstr(item->note, "excellent"))
-            /* not icky */
-            return (FALSE);
+	/* Not worth IDing magical items if we have better ego/artifact stuff */
+	if (strstr(item->note, "magical"))
+	{
+		int slot;
+		borg_item *inven_item;
+	
+		/* Obtain the slot of the suspect item */
+		slot = borg_wield_slot(item);
+		if (slot < 0) return FALSE;
+	
+		/* Obtain my equipped item in the slot */
+		inven_item = &borg_items[slot];	
+		if (inven_item->name2 || inven_item->name1) return FALSE;
+	}
 
-#if 0
-	 	/* Broken dagger/sword, Filthy rag */
-       if (((item->tval == TV_SWORD) && (item->sval == SV_BROKEN_DAGGER)) ||
-            ((item->tval == TV_SWORD) && (item->sval == SV_BROKEN_SWORD)) ||
-            ((item->tval == TV_SOFT_ARMOR) && (item->sval == SV_FILTHY_RAG)))
-        {
-            return (TRUE);
-        }
-#endif
-        /* Dagger */
-        if ((item->tval == TV_SWORD) && (item->sval == SV_DAGGER))
-        {
-            return (TRUE);
-        }
-
-        /* Sling (and I already got one) */
-        if ((item->tval == TV_BOW) && (item->sval == SV_SLING) &&
-        	borg_items[INVEN_BOW].tval == TV_BOW)
-        {
-            return (TRUE);
-        }
-
-        /* Cloak, (and I already got one)*/
-        if ((item->tval == TV_CLOAK) && (item->sval == SV_CLOAK) &&
-        	borg_items[INVEN_OUTER].tval == TV_CLOAK)
-        {
-            return (TRUE);
-        }
-
-        /* Robe (and I already got one)*/
-        if ((item->tval == TV_SOFT_ARMOR) && (item->sval == SV_ROBE) &&
-        	borg_items[INVEN_BODY].tval >= TV_SOFT_ARMOR)
-        {
-            return (TRUE);
-        }
-
-        /* Leather Gloves (and I already got one)*/
-        if ((item->tval == TV_GLOVES) &&
-            (item->sval == SV_SET_OF_LEATHER_GLOVES) &&
-        	borg_items[INVEN_HANDS].tval == TV_GLOVES)
-        {
-            return (TRUE);
-        }
-
-        /* Assume the item is not icky */
-        return (FALSE);
-    }
-
-    /* Process other classes which do get pseudo ID */
-        /* things that are good/excelent/special/no P-ID */
-        if  (strstr(item->note, "special") ||
-             strstr(item->note, "terrible") ||
-             strstr(item->note, "excellent") ||
-             strstr(item->note, "ego") ||
-             strstr(item->note, "splendid") ||
-             strstr(item->note, "indestructible") ||
-             !item->note )  /* no pseudo-id yet */
-             /* not icky */
-             return (FALSE);
-
-
-        /*** {magical} items in inven, But I have {excellent} in equip ***/
-
-        if (strstr(item->note, "magical"))
-        {
-            /* Obtain the slot of the suspect item */
-            slot = borg_wield_slot(item);
-
-			/* safety check incase slot = -1 */
-			if (slot < 0) return (FALSE);
-
-            /* Obtain my equipped item in the slot */
-            item = &borg_items[slot];
-
-            /* Is my item an ego or artifact? */
-            if (item->name2 || item->name1) return (TRUE);
-        }
-    /* Assume not icky, I should have extra ID for the item */
-    return (FALSE);
+	return TRUE;
 }
-
-
 
 
 /*
@@ -2395,8 +2301,8 @@ bool borg_crush_hole(void)
             }
         }
 
-        /* Hack -- try not to destroy "unknown" items (unless "icky") */
-        if (!item->ident && (value > 0) && !borg_item_icky(item))
+        /* Hack -- try not to destroy "unknown" items */
+        if (!item->ident && (value > 0) && borg_item_worth_id(item))
         {
             /* Reward "unknown" items */
             switch (item->tval)
@@ -2550,7 +2456,7 @@ bool borg_crush_slow(void)
         if (i == armour_swap) continue;
 
         /* Skip "good" unknown items (unless "icky") */
-        if (!item->ident && !borg_item_icky(item)) continue;
+        if (!item->ident && borg_item_worth_id(item)) continue;
 
 		/* Do not crush Boots, they could be SPEED */
 		if (item->tval == TV_BOOTS && !item->ident) continue;
@@ -2700,8 +2606,10 @@ bool borg_crush_slow(void)
  */
 bool borg_test_stuff(void)
 {
-    int i, b_i = -1;
-    s32b v, b_v = -1;
+    int i;
+    int b_i = -1, b_v = -1;
+    bool free_id = borg_spell_legal(2, 5) || borg_prayer_legal(5, 2) ||
+					borg_equips_artifact(EFF_IDENTIFY, INVEN_WIELD);
 
     /* don't ID stuff when you can't recover spent spell point immediately */
     if (((borg_skill[BI_CURSP] < 50 && borg_spell_legal(2, 5)) ||
@@ -2710,38 +2618,28 @@ bool borg_test_stuff(void)
         return (FALSE);
 
     /* No ID if in danger */
-    if (borg_danger(c_y,c_x,1, TRUE, FALSE) > 1) return (FALSE);
+    if (borg_danger(c_y, c_x, 1, TRUE, FALSE) > 1) return (FALSE);
 
     /* Look for an item to identify (equipment) */
     for (i = INVEN_WIELD; i < QUIVER_END; i++)
     {
+    	int v = 0;
         borg_item *item = &borg_items[i];
 
         /* Skip empty items */
         if (!item->iqty) continue;
-
-		/* Reset the value */
-		v = -1;
-
         if (item->fully_identified) continue;
         if (item->ident && item->needs_I) continue;
 
-		if (e_info[borg_items[INVEN_OUTER].name2].xtra == OBJECT_XTRA_TYPE_RESIST ||
-				e_info[borg_items[INVEN_OUTER].name2].xtra == OBJECT_XTRA_TYPE_POWER)
-	        {
-					v = item->value + 100000L;
-            }
-            if (item->name1)
-            {
-                switch (item->name1)
-                {
-                    /* we will id all artifacts */
-                    default:
-			        /* Get the value */
-					v = item->value + 150000L;
-                       break;
-                }
-            }
+		/* Preferentially ID egos and artifacts */
+		if (item->name1)
+			v = item->value + 150000L;
+
+		if (e_info[item->name2].xtra == OBJECT_XTRA_TYPE_RESIST ||
+				e_info[item->name2].xtra == OBJECT_XTRA_TYPE_POWER) {
+			v = item->value + 100000L;
+		}
+
 		/* Prioritize the ID */
         if (strstr(item->note, "magical")) v = item->value +1000L;
         else if (strstr(item->note, "excellent")) v = item->value + 20000L;
@@ -2752,6 +2650,9 @@ bool borg_test_stuff(void)
         else if (strstr(item->note, "indestructible")) v = item->value + 50000L;
         else if (strstr(item->note, "tried")) v = item->value + 2500L;
 
+        /* Ignore */
+        if (!v) continue;
+
 		/* Track the best */
         if (v <= b_v) continue;
 
@@ -2760,36 +2661,23 @@ bool borg_test_stuff(void)
 
     }
 
-
-
     /* Look for an item to identify (inventory) */
     for (i = 0; i < INVEN_MAX_PACK; i++)
     {
+    	int v = 0;
         borg_item *item = &borg_items[i];
 
-        /* Skip empty items */
+        /* Skip empty and ID'd items */
         if (!item->iqty) continue;
-
-        /* Assume nothing */
-        v = 0;
-
         if (item->fully_identified) continue;
         if (item->ident && !item->needs_I) continue;
 
-        if (item->name1)
-        {
-              switch (item->name1)
-              {
-                  /* check all artifacts */
-                  default:
-		        /* Get the value */
-				v = item->value + 150000L;
-                     break;
-              }
-        }
+		/* Preferentially ID artifacts */
+		if (item->name1)
+			v = item->value + 150000L;
 
         /* Identify "good" (and "terrible") items */
-        if (strstr(item->note, "magical")) v = item->value +1000L;
+        if (strstr(item->note, "magical")) v = item->value + 1000L;
         else if (strstr(item->note, "excellent")) v = item->value + 20000L;
         else if (strstr(item->note, "ego")) v = item->value + 20000L;
         else if (strstr(item->note, "splendid")) v = item->value + 20000L;
@@ -2797,6 +2685,7 @@ bool borg_test_stuff(void)
         else if (strstr(item->note, "terrible")) v = item->value + 50000L;
         else if (strstr(item->note, "indestructible")) v = item->value + 50000L;
         else if (strstr(item->note, "tried")) v = item->value + 2500L;
+		else if (free_id || borg_item_worth_id(item)) v = item->value;
 
         /* Hack -- reward "unaware" items */
         if (!item->kind)
@@ -2806,139 +2695,31 @@ bool borg_test_stuff(void)
             {
                 case TV_RING:
                 case TV_AMULET:
-
-                /* Hack -- reward depth */
-                v += (borg_skill[BI_MAXDEPTH] * 5000L);
-
-                break;
+	                v += (borg_skill[BI_MAXDEPTH] * 5000L);
+	                break;
 
                 case TV_ROD:
-
-                /* Hack -- reward depth */
-                v += (borg_skill[BI_MAXDEPTH] * 3000L);
-
-                break;
+	                v += (borg_skill[BI_MAXDEPTH] * 3000L);
+	                break;
 
                 case TV_WAND:
                 case TV_STAFF:
-
-                /* Hack -- reward depth */
-                v += (borg_skill[BI_MAXDEPTH] * 2000L);
-
-                break;
+					v += (borg_skill[BI_MAXDEPTH] * 2000L);
+					break;
 
                 case TV_POTION:
                 case TV_SCROLL:
+					/* Hack -- boring levels */
+					if (borg_skill[BI_MAXDEPTH] < 5) break;
 
-                /* Hack -- boring levels */
-                if (borg_skill[BI_MAXDEPTH] < 5) break;
-
-                /* Hack -- reward depth */
-                v += (borg_skill[BI_MAXDEPTH] * 500L);
-
-                break;
+					/* Hack -- reward depth */
+					v += (borg_skill[BI_MAXDEPTH] * 500L);
+					break;
 
                 case TV_FOOD:
-
-                /* Hack -- reward depth */
-                v += (borg_skill[BI_MAXDEPTH] * 10L);
-
-                break;
+					v += (borg_skill[BI_MAXDEPTH] * 10L);	
+					break;
             }
-        }
-
-        /* Analyze the type */
-        switch (item->tval)
-        {
-            case TV_CHEST:
-
-            /* Hack -- Always identify chests */
-            v = item->value;
-            break;
-
-            case TV_WAND:
-            case TV_STAFF:
-
-            /* Hack -- Always identify (get charges) */
-            v = item->value;
-            break;
-
-            case TV_RING:
-            case TV_AMULET:
-
-            /* Hack -- Always identify (get information) */
-            v = item->value;
-            break;
-
-            case TV_LIGHT:
-
-            /* Hack -- Always identify (get artifact info) */
-            v = item->value;
-            break;
-
-            case TV_SHOT:
-            case TV_ARROW:
-            case TV_BOLT:
-            case TV_BOW:
-            case TV_DIGGING:
-            case TV_HAFTED:
-            case TV_POLEARM:
-            case TV_SWORD:
-            case TV_BOOTS:
-            case TV_GLOVES:
-            case TV_HELM:
-            case TV_CROWN:
-            case TV_SHIELD:
-            case TV_CLOAK:
-            case TV_SOFT_ARMOR:
-            case TV_HARD_ARMOR:
-            case TV_DRAG_ARMOR:
-
-            /* Mega-Hack -- use identify spell/prayer */
-            if (borg_spell_legal(2, 5) || borg_prayer_legal(5, 2) ||
-                borg_equips_artifact(EFF_IDENTIFY, INVEN_WIELD))
-            {
-                v = item->value;
-            }
-
-			/* Certain items needs ID'ing if low level */
-			if (borg_skill[BI_CLEVEL] <= 5)
-			{
-                /* Mega-Hack -- ignore "icky" items */
-                if (!borg_item_icky(item)) v = item->value;
-			}
-
-            /* Mega-Hack -- mages get bored */
-            if ((borg_class == CLASS_MAGE) && (randint0(1000) < borg_skill[BI_CLEVEL]))
-            {
-
-                /* Mega-Hack -- ignore "icky" items */
-                if (!borg_item_icky(item)) v = item->value;
-            }
-
-            /* Mega-Hack -- rangers get bored */
-            if ((borg_class == CLASS_RANGER) && (randint0(3000) < borg_skill[BI_CLEVEL]))
-            {
-
-                /* Mega-Hack -- ignore "icky" items */
-                if (!borg_item_icky(item)) v = item->value;
-            }
-
-            /* Mega-Hack -- priests get bored */
-            if ((borg_class == CLASS_PRIEST) && (randint0(5000) < borg_skill[BI_CLEVEL]))
-            {
-
-                /* Mega-Hack -- ignore "icky" items */
-                if (!borg_item_icky(item)) v = item->value;
-            }
-
-            /* try to ID shovels */
-            if (item->tval == TV_DIGGING) v = item->value;
-
-            /* try to ID my ammo type to stack them up */
-            if (item->tval == my_ammo_tval && borg_skill[BI_CLEVEL] >= 15) v = item->value;
-
-            break;
         }
 
         /* Ignore */
@@ -2948,92 +2729,61 @@ bool borg_test_stuff(void)
         if (v <= b_v) continue;
 
         /* Track it */
-        b_i = i; b_v = v;
+        b_i = i;
+        b_v = v;
     }
+
 
     /* Found something */
     if (b_i >= 0)
     {
         borg_item *item = &borg_items[b_i];
 
-            /* Use a artifact or activatable item to Identify */
-	        if (borg_activate_artifact(EFF_IDENTIFY, INVEN_WIELD))
-	        {
-                /* Log -- may be cancelled */
-                borg_note(format("# Identifying %s.", item->desc));
+		/* Use an item to identify */
+		if (borg_activate_artifact(EFF_IDENTIFY, INVEN_WIELD) ||
+				borg_spell(2, 5) ||
+				borg_prayer(5, 2) ||
+				borg_zap_rod(SV_ROD_IDENTIFY) ||
+				borg_use_staff(SV_STAFF_IDENTIFY) ||
+				borg_read_scroll(SV_SCROLL_IDENTIFY))
+		{
+			/* Log -- may be cancelled */
+			borg_note(format("# Identifying %s.", item->desc));
 
-                /* Equipment */
-                if (b_i >= INVEN_WIELD)
-                {
+			/* Toggle if necessary */
+			if ((p_ptr->command_wrk == USE_INVEN && b_i >= INVEN_WIELD) ||
+					(p_ptr->command_wrk == USE_EQUIP && b_i < INVEN_WIELD))
+				borg_keypress('/');
 
-                    /* Select the item */
-                    borg_keypress(I2A(b_i - INVEN_WIELD));
+			/* Equipment */
+			if (b_i >= INVEN_WIELD)
+			{		
+				/* Select the item */
+				borg_keypress(I2A(b_i - INVEN_WIELD));
+		
+				/* HACK need to recheck stats if we id something on us. */
+				for (i = 0; i < 6; i++)
+				{
+					my_need_stat_check[i] = TRUE;
+					my_stat_max[i] = 0;
+				}
+			}
+		
+			/* Inventory */
+			else
+			{		
+				/* Select the item */
+				borg_keypress(I2A(b_i));
+			}
+		
+			borg_keypress(ESCAPE);
 
-                    /* HACK need to recheck stats if we id something on us. */
-                    for (i = 0; i < 6; i++)
-                    {
-                        my_need_stat_check[i] = TRUE;
-                        my_stat_max[i] = 0;
-                    }
-                }
-
-                /* Inventory */
-                else
-                {
-                    /* Select the inventory */
-                    borg_keypress('/');
-
-                    /* Select the item */
-                    borg_keypress(I2A(b_i));
-                }
-
-                borg_keypress(ESCAPE);
-                /* Success */
-                return (TRUE);
-            }
-
-            /* Use a Spell/Prayer/Rod/Staff/Scroll of Identify */
-            if (borg_spell(2, 5) ||
-                borg_prayer(5, 2) ||
-                borg_zap_rod(SV_ROD_IDENTIFY) ||
-                borg_use_staff(SV_STAFF_IDENTIFY) ||
-                borg_read_scroll(SV_SCROLL_IDENTIFY) )
-            {
-                /* Log -- may be cancelled */
-                borg_note(format("# Identifying %s.", item->desc));
-
-                /* Equipment */
-                if (b_i >= INVEN_WIELD)
-                {
-                    /* Select the equipment */
-                    borg_keypress('/');
-
-                    /* Select the item */
-                    borg_keypress(I2A(b_i - INVEN_WIELD));
-
-                    /* HACK need to recheck stats if we id something on us. */
-                    for (i = 0; i < 6; i++)
-                    {
-                        my_need_stat_check[i] = TRUE;
-                        my_stat_max[i] = 0;
-                    }
-                }
-
-                /* Inventory */
-                else
-                {
-                    /* Select the item */
-                    borg_keypress(I2A(b_i));
-                }
-
-                borg_keypress(ESCAPE);
-                /* Success */
-                return (TRUE);
-            }
+			return TRUE;
+		}
     }
 
     /* Nothing to do */
-    return (FALSE);
+    return FALSE;
 }
 
 /*
