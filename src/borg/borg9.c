@@ -4278,6 +4278,7 @@ void init_borg_txt_file(void)
         /* Complain */
         msg("*****WARNING***** You do not have a proper BORG.TXT file!");
         msg("Make sure BORG.TXT is located in the \\user\\ subdirectory!");
+		msg("Which is: %s", buf);
         message_flush();
         return;
     }
