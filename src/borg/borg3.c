@@ -1116,211 +1116,38 @@ static char **borg_sv_art_text;      /* Save textual prefixes for "artifacts" (i
 
 /*
  * Return the slot that items of the given type are wielded into
- *
- * Note that "rings" are tough because there are two slots
- *
- * Returns "-1" if the item cannot (or should not) be wielded
+ * XXX this just duplicates Angband's version and should use that instead
+ * 
+ * Returns "-1" if the item cannot be wielded
  */
 int borg_wield_slot(const borg_item *item)
 {
-        switch (borg_class)
-           {
-            case CLASS_WARRIOR:
-            {
-                if ((item->tval == TV_SWORD) ||
-                (item->tval == TV_POLEARM) ||
-                (item->tval == TV_HAFTED) ||
-                (item->tval == TV_DIGGING) ) return (INVEN_WIELD);
-
-                if ((item->tval == TV_DRAG_ARMOR) ||
-                (item->tval == TV_HARD_ARMOR) ||
-                (item->tval == TV_SOFT_ARMOR) ) return (INVEN_BODY);
-
-                if (item->tval == TV_SHIELD) return (INVEN_ARM);
-
-                if ((item->tval == TV_CROWN) ||
-                (item->tval == TV_HELM) ) return (INVEN_HEAD);
-
-                if (item->tval == TV_BOW) return (INVEN_BOW);
-
-                if (item->tval == TV_RING) return (INVEN_LEFT);
-
-                if (item->tval == TV_AMULET) return (INVEN_NECK);
-
-                if (item->tval == TV_LIGHT) return (INVEN_LIGHT);
-
-                if (item->tval == TV_CLOAK) return (INVEN_OUTER);
-
-                if (item->tval == TV_GLOVES) return (INVEN_HANDS);
-
-                if (item->tval == TV_BOOTS) return (INVEN_FEET);
-            }
-                break;
-
-            case CLASS_MAGE:
-            {
-                if ((item->tval == TV_SWORD) ||
-                (item->tval == TV_POLEARM) ||
-                (item->tval == TV_HAFTED) ||
-                (item->tval == TV_DIGGING) ) return (INVEN_WIELD);
-
-                if ((item->tval == TV_DRAG_ARMOR) ||
-                (item->tval == TV_HARD_ARMOR) ||
-                (item->tval == TV_SOFT_ARMOR) ) return (INVEN_BODY);
-
-                if (item->tval == TV_SHIELD) return (INVEN_ARM);
-
-                if ((item->tval == TV_CROWN) ||
-                (item->tval == TV_HELM) ) return (INVEN_HEAD);
-
-                if (item->tval == TV_BOW) return (INVEN_BOW);
-
-                if (item->tval == TV_RING) return (INVEN_LEFT);
-
-                if (item->tval == TV_AMULET) return (INVEN_NECK);
-
-                if (item->tval == TV_LIGHT) return (INVEN_LIGHT);
-
-                if (item->tval == TV_CLOAK) return (INVEN_OUTER);
-
-                if (item->tval == TV_GLOVES) return (INVEN_HANDS);
-
-                if (item->tval == TV_BOOTS) return (INVEN_FEET);
-            }
-                break;
-
-            case CLASS_PRIEST:
-            {
-                if ((item->tval == TV_SWORD) ||
-                (item->tval == TV_POLEARM) ||
-                (item->tval == TV_HAFTED) ||
-                (item->tval == TV_DIGGING) ) return (INVEN_WIELD);
-
-                if ((item->tval == TV_DRAG_ARMOR) ||
-                (item->tval == TV_HARD_ARMOR) ||
-                (item->tval == TV_SOFT_ARMOR) ) return (INVEN_BODY);
-
-                if (item->tval == TV_SHIELD) return (INVEN_ARM);
-
-                if ((item->tval == TV_CROWN) ||
-                (item->tval == TV_HELM) ) return (INVEN_HEAD);
-
-                if (item->tval == TV_BOW) return (INVEN_BOW);
-
-                if (item->tval == TV_RING) return (INVEN_LEFT);
-
-                if (item->tval == TV_AMULET) return (INVEN_NECK);
-
-                if (item->tval == TV_LIGHT) return (INVEN_LIGHT);
-
-                if (item->tval == TV_CLOAK) return (INVEN_OUTER);
-
-                if (item->tval == TV_GLOVES) return (INVEN_HANDS);
-
-                if (item->tval == TV_BOOTS) return (INVEN_FEET);
-            }
-                break;
-
-            case CLASS_ROGUE:
-            {
-                if ((item->tval == TV_SWORD) ||
-                (item->tval == TV_POLEARM) ||
-                (item->tval == TV_HAFTED) ||
-                (item->tval == TV_DIGGING) ) return (INVEN_WIELD);
-
-                if ((item->tval == TV_DRAG_ARMOR) ||
-                (item->tval == TV_HARD_ARMOR) ||
-                (item->tval == TV_SOFT_ARMOR) ) return (INVEN_BODY);
-
-                if (item->tval == TV_SHIELD) return (INVEN_ARM);
-
-                if ((item->tval == TV_CROWN) ||
-                (item->tval == TV_HELM) ) return (INVEN_HEAD);
-
-                if (item->tval == TV_BOW) return (INVEN_BOW);
-
-                if (item->tval == TV_RING) return (INVEN_LEFT);
-
-                if (item->tval == TV_AMULET) return (INVEN_NECK);
-
-                if (item->tval == TV_LIGHT) return (INVEN_LIGHT);
-
-                if (item->tval == TV_CLOAK) return (INVEN_OUTER);
-
-                if (item->tval == TV_GLOVES) return (INVEN_HANDS);
-
-                if (item->tval == TV_BOOTS) return (INVEN_FEET);
-            }
-                break;
-
-            case CLASS_PALADIN:
-            {
-                if ((item->tval == TV_SWORD) ||
-                (item->tval == TV_POLEARM) ||
-                (item->tval == TV_HAFTED) ||
-                (item->tval == TV_DIGGING) ) return (INVEN_WIELD);
-
-                if ((item->tval == TV_DRAG_ARMOR) ||
-                (item->tval == TV_HARD_ARMOR) ||
-                (item->tval == TV_SOFT_ARMOR) ) return (INVEN_BODY);
-
-                if (item->tval == TV_SHIELD) return (INVEN_ARM);
-
-                if ((item->tval == TV_CROWN) ||
-                (item->tval == TV_HELM) ) return (INVEN_HEAD);
-
-                if (item->tval == TV_BOW) return (INVEN_BOW);
-
-                if (item->tval == TV_RING) return (INVEN_LEFT);
-
-                if (item->tval == TV_AMULET) return (INVEN_NECK);
-
-                if (item->tval == TV_LIGHT) return (INVEN_LIGHT);
-
-                if (item->tval == TV_CLOAK) return (INVEN_OUTER);
-
-                if (item->tval == TV_GLOVES) return (INVEN_HANDS);
-
-                if (item->tval == TV_BOOTS) return (INVEN_FEET);
-            }
-                break;
-
-            case CLASS_RANGER:
-            {
-                if ((item->tval == TV_SWORD) ||
-                (item->tval == TV_POLEARM) ||
-                (item->tval == TV_HAFTED) ||
-                (item->tval == TV_DIGGING) ) return (INVEN_WIELD);
-
-                if ((item->tval == TV_DRAG_ARMOR) ||
-                (item->tval == TV_HARD_ARMOR) ||
-                (item->tval == TV_SOFT_ARMOR) ) return (INVEN_BODY);
-
-                if (item->tval == TV_SHIELD) return (INVEN_ARM);
-
-                if ((item->tval == TV_CROWN) ||
-                (item->tval == TV_HELM) ) return (INVEN_HEAD);
-
-                if (item->tval == TV_BOW) return (INVEN_BOW);
-
-                if (item->tval == TV_RING) return (INVEN_LEFT);
-
-                if (item->tval == TV_AMULET) return (INVEN_NECK);
-
-                if (item->tval == TV_LIGHT) return (INVEN_LIGHT);
-
-                if (item->tval == TV_CLOAK) return (INVEN_OUTER);
-
-                if (item->tval == TV_GLOVES) return (INVEN_HANDS);
-
-                if (item->tval == TV_BOOTS) return (INVEN_FEET);
-            }
-                break;
-
-        }
+	switch (item->tval) {
+		case TV_SWORD:
+		case TV_POLEARM:
+		case TV_HAFTED:
+		case TV_DIGGING: return INVEN_WIELD;
+		
+		case TV_DRAG_ARMOR:
+		case TV_HARD_ARMOR:
+		case TV_SOFT_ARMOR: return INVEN_BODY;
+		
+		case TV_SHIELD: return INVEN_ARM;
+		
+		case TV_CROWN:
+		case TV_HELM: return INVEN_HEAD;
+	
+		case TV_BOW: return INVEN_BOW;	
+		case TV_RING: return INVEN_LEFT;
+		case TV_AMULET: return INVEN_NECK;	
+		case TV_LIGHT: return INVEN_LIGHT;
+		case TV_CLOAK: return INVEN_OUTER;
+		case TV_GLOVES: return INVEN_HANDS;
+		case TV_BOOTS: return INVEN_FEET;
+	}
 
     /* No slot available */
-    return (-1);
+    return -1;
 }
 
 /*
@@ -1741,7 +1568,7 @@ void borg_item_analyze(borg_item *item, object_type *real_item, char *desc)
     strcpy(item->desc, desc);
 
     /* Advance to the "inscription" or end of string */
-    for (scan = item->desc; *scan && (*scan != c1); scan++) /* loop */;
+    for (scan = item->desc; *scan && (*scan != '{'); scan++) /* loop */;
 
     /* Save a pointer to the inscription */
     item->note = scan;
@@ -2292,7 +2119,7 @@ void borg_send_inscribe(int i, char *str)
     char *s;
 
     /* Label it */
-    borg_keypress(c1);
+    borg_keypress('{');
 
     /* Choose from inventory */
     if (i < INVEN_WIELD)

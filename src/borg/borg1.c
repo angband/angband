@@ -869,14 +869,6 @@ u16b borg_step = 0;     /* Step count (if any) */
 char borg_match[128] = "plain gold ring";  /* Search string */
 
 
-/*
- * Hack -- single character constants
- */
-
-const char p1 = '(', p2 = ')';
-const char c1 = '{', c2 = '}';
-const char b1 = '[', b2 = ']';
-
 
 /*
  * Hack -- the detection arrays

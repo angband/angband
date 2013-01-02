@@ -1420,12 +1420,6 @@ extern char borg_match[128];    /* Search string */
 extern FILE *borg_fff;      /* Log file */
 
 
-/*
- * Hack -- single character constants
- */
-
-extern const char p1, p2, c1, c2, b1, b2;
-
 
 /*
  * Hack -- the detection arrays

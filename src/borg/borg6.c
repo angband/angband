@@ -12623,7 +12623,10 @@ static int borg_defend_aux_lbeam(void)
         if (!hallway) return (0);
 
         /* Make sure I am not in too much danger */
-        if (borg_simulate && p1 > avoidance*3/4) return (0);
+		/* XXX '(' replaces previous use of global variable that was always
+		 * '('.  This is a BUG.  I however have no idea how to fix it bceause
+		 * I don't know the code well enough. -AS */
+        if (borg_simulate && '(' > avoidance*3/4) return (0);
 
         /* test the beam function */
         if (!borg_LIGHT_beam(TRUE)) return (0);
