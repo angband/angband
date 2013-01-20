@@ -21,10 +21,13 @@
 #include "cave.h"
 #include "math.h"
 #include "files.h"
+#include "game-event.h"
 #include "generate.h"
+#include "init.h"
 #include "monster/mon-make.h"
 #include "monster/mon-spell.h"
 #include "object/tvalsval.h"
+#include "parser.h"
 #include "trap.h"
 #include "z-queue.h"
 #include "z-type.h"
@@ -33,6 +36,7 @@
  * This is the global structure representing dungeon generation info.
  */
 static struct dun_data *dun;
+static struct room_template *room_templates;
 
 /**
  * This is a global array of positions in the cave we're currently
@@ -289,6 +293,86 @@ static struct cave_profile cave_profiles[NUM_CAVE_PROFILES] = {
 	}
 };
 
+/* Parsing functions for room_template.txt */
+static enum parser_error parse_room_n(struct parser *p) {
+	struct room_template *h = parser_priv(p);
+	struct room_template *t = mem_zalloc(sizeof *t);
+
+	t->tidx = parser_getuint(p, "index");
+	t->name = string_make(parser_getstr(p, "name"));
+	t->next = h;
+	parser_setpriv(p, t);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_room_x(struct parser *p) {
+	struct room_template *t = parser_priv(p);
+
+	if (!t)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	t->typ = parser_getuint(p, "type");
+	t->rat = parser_getint(p, "rating");
+	t->hgt = parser_getuint(p, "height");
+	t->wid = parser_getuint(p, "width");
+	t->dor = parser_getuint(p, "doors");
+	t->tval = parser_getuint(p, "tval");
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_room_d(struct parser *p) {
+	struct room_template *t = parser_priv(p);
+
+	if (!t)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	t->text = string_append(t->text, parser_getstr(p, "text"));
+	return PARSE_ERROR_NONE;
+}
+
+struct parser *init_parse_room(void) {
+	struct parser *p = parser_new();
+	parser_setpriv(p, NULL);
+	parser_reg(p, "V sym version", ignored);
+	parser_reg(p, "N uint index str name", parse_room_n);
+	parser_reg(p, "X uint type int rating uint height uint width uint doors uint tval", parse_room_x);
+	parser_reg(p, "D str text", parse_room_d);
+	return p;
+}
+
+static errr run_parse_room(struct parser *p) {
+	return parse_file(p, "room_template");
+}
+
+static errr finish_parse_room(struct parser *p) {
+	room_templates = parser_priv(p);
+	parser_destroy(p);
+	return 0;
+}
+
+static void cleanup_room(void)
+{
+	struct room_template *t, *next;
+	for (t = room_templates; t; t = next) {
+		next = t->next;
+		mem_free(t->name);
+		mem_free(t->text);
+		mem_free(t);
+	}
+}
+
+static struct file_parser room_parser = {
+	"room_template",
+	init_parse_room,
+	run_parse_room,
+	finish_parse_room,
+	cleanup_room
+};
+
+void run_room_parser(void) {
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (room templates)");
+	if (run_parser(&room_parser))
+		quit("Cannot initialize room templates");
+}
 
 /**
  * Shuffle an array using Knuth's shuffle.
@@ -3893,3 +3977,9 @@ void cave_generate(struct cave *c, struct player *p) {
 
 	c->created_at = turn;
 }
+
+struct init_module generate_module = {
+	.name = "generate",
+	.init = run_room_parser,
+	.cleanup = NULL
+};

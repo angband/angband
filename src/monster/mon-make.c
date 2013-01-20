@@ -18,6 +18,7 @@
 
 #include "angband.h"
 #include "history.h"
+#include "init.h"
 #include "target.h"
 #include "monster/mon-lore.h"
 #include "monster/mon-make.h"
@@ -26,6 +27,102 @@
 #include "object/tvalsval.h"
 
 s16b num_repro;
+
+static s16b alloc_race_size;
+static struct alloc_entry *alloc_race_table;
+
+void init_race_allocs(void) {
+	int i;
+	monster_race *r_ptr;
+	alloc_entry *table;
+	s16b num[MAX_DEPTH];
+	s16b aux[MAX_DEPTH];
+
+	/* Clear the "aux" array */
+	(void)C_WIPE(aux, MAX_DEPTH, s16b);
+
+	/* Clear the "num" array */
+	(void)C_WIPE(num, MAX_DEPTH, s16b);
+
+	/* Size of "alloc_race_table" */
+	alloc_race_size = 0;
+
+	/* Scan the monsters (not the ghost) */
+	for (i = 1; i < z_info->r_max - 1; i++)
+	{
+		/* Get the i'th race */
+		r_ptr = &r_info[i];
+
+		/* Legal monsters */
+		if (r_ptr->rarity)
+		{
+			/* Count the entries */
+			alloc_race_size++;
+
+			/* Group by level */
+			num[r_ptr->level]++;
+		}
+	}
+
+	/* Collect the level indexes */
+	for (i = 1; i < MAX_DEPTH; i++)
+	{
+		/* Group by level */
+		num[i] += num[i-1];
+	}
+
+	/* Paranoia */
+	if (!num[0]) quit("No town monsters!");
+
+
+	/*** Initialize monster allocation info ***/
+
+	/* Allocate the alloc_race_table */
+	alloc_race_table = C_ZNEW(alloc_race_size, alloc_entry);
+
+	/* Get the table entry */
+	table = alloc_race_table;
+
+	/* Scan the monsters (not the ghost) */
+	for (i = 1; i < z_info->r_max - 1; i++)
+	{
+		/* Get the i'th race */
+		r_ptr = &r_info[i];
+
+		/* Count valid pairs */
+		if (r_ptr->rarity)
+		{
+			int p, x, y, z;
+
+			/* Extract the base level */
+			x = r_ptr->level;
+
+			/* Extract the base probability */
+			p = (100 / r_ptr->rarity);
+
+			/* Skip entries preceding our locale */
+			y = (x > 0) ? num[x-1] : 0;
+
+			/* Skip previous entries at this locale */
+			z = y + aux[x];
+
+			/* Load the entry */
+			table[z].index = i;
+			table[z].level = x;
+			table[z].prob1 = p;
+			table[z].prob2 = p;
+			table[z].prob3 = p;
+
+			/* Another entry complete for this locale */
+			aux[x]++;
+		}
+	}
+
+}
+
+void cleanup_race_allocs(void) {
+	FREE(alloc_race_table);
+}
 
 /**
  * Deletes a monster by index.
@@ -1581,3 +1678,11 @@ bool mon_take_hit(struct monster *m_ptr, int dam, bool *fear, const char *note)
 	return (FALSE);
 }
 
+struct init_module mon_make_module;
+/*
+struct init_module mon_make_module = {
+	.name = "monster/mon-make",
+	.init = init_race_allocs,
+	.cleanup = cleanup_race_allocs
+};
+*/

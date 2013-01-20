@@ -17,6 +17,12 @@
 #include "z-rand.h"
 #include "parser.h"
 
+struct init_module {
+	const char *name;
+	void (*init)(void);
+	void (*cleanup)(void);
+};
+
 #ifdef TEST
 extern struct parser *init_parse_a(void);
 extern struct parser *init_parse_c(void);

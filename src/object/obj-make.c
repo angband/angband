@@ -18,6 +18,7 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "init.h"
 #include "object/tvalsval.h"
 #include "object/pval.h"
 #include "object/slays.h"
@@ -37,6 +38,98 @@
 
 /* Define a value for minima which will be ignored. */
 #define NO_MINIMUM 	255
+
+static s16b alloc_ego_size;
+static alloc_entry *alloc_ego_table;
+
+void init_ego_allocs(void) {
+	struct alloc_entry *table;
+	int i;
+	ego_item_type *e_ptr;
+	s16b num[MAX_DEPTH];
+	s16b aux[MAX_DEPTH];
+
+	/* Clear the "aux" array */
+	(void)C_WIPE(aux, MAX_DEPTH, s16b);
+
+	/* Clear the "num" array */
+	(void)C_WIPE(num, MAX_DEPTH, s16b);
+
+	/* Size of "alloc_ego_table" */
+	alloc_ego_size = 0;
+
+	/* Scan the ego items */
+	for (i = 1; i < z_info->e_max; i++)
+	{
+		/* Get the i'th ego item */
+		e_ptr = &e_info[i];
+
+		/* Legal items */
+		if (e_ptr->rarity)
+		{
+			/* Count the entries */
+			alloc_ego_size++;
+
+			/* Group by level */
+			num[e_ptr->level]++;
+		}
+	}
+
+	/* Collect the level indexes */
+	for (i = 1; i < MAX_DEPTH; i++)
+	{
+		/* Group by level */
+		num[i] += num[i-1];
+	}
+
+	/*** Initialize ego-item allocation info ***/
+
+	/* Allocate the alloc_ego_table */
+	alloc_ego_table = C_ZNEW(alloc_ego_size, alloc_entry);
+
+	/* Get the table entry */
+	table = alloc_ego_table;
+
+	/* Scan the ego-items */
+	for (i = 1; i < z_info->e_max; i++)
+	{
+		/* Get the i'th ego item */
+		e_ptr = &e_info[i];
+
+		/* Count valid pairs */
+		if (e_ptr->rarity)
+		{
+			int p, x, y, z;
+
+			/* Extract the base level */
+			x = e_ptr->level;
+
+			/* Extract the base probability */
+			p = (100 / e_ptr->rarity);
+
+			/* Skip entries preceding our locale */
+			y = (x > 0) ? num[x-1] : 0;
+
+			/* Skip previous entries at this locale */
+			z = y + aux[x];
+
+			/* Load the entry */
+			table[z].index = i;
+			table[z].level = x;
+			table[z].prob1 = p;
+			table[z].prob2 = p;
+			table[z].prob3 = p;
+
+			/* Another entry complete for this locale */
+			aux[x]++;
+		}
+	}
+
+}
+
+void cleanup_ego_allocs(void) {
+	FREE(alloc_ego_table);
+}
 
 /*** Make an ego item ***/
 
@@ -1021,3 +1114,9 @@ void make_gold(object_type *j_ptr, int lev, int coin_type)
 
 	j_ptr->pval[DEFAULT_PVAL] = value;
 }
+
+struct init_module obj_make_module = {
+	.name = "object/obj-make",
+	.init = init_ego_allocs,
+	.cleanup = cleanup_ego_allocs
+};

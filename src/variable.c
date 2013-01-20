@@ -428,28 +428,6 @@ int store_knowledge = STORE_NONE;
 const char *** name_sections;
 
 /*
- * The size of the "alloc_ego_table"
- */
-s16b alloc_ego_size;
-
-/*
- * The array[alloc_ego_size] of entries in the "ego allocator table"
- */
-alloc_entry *alloc_ego_table;
-
-
-/*
- * The size of "alloc_race_table" (at most z_info->r_max)
- */
-s16b alloc_race_size;
-
-/*
- * The array[alloc_race_size] of entries in the "race allocator table"
- */
-alloc_entry *alloc_race_table;
-
-
-/*
  * Specify attr/char pairs for visual special effects for project()
  */
 byte gf_to_attr[GF_MAX][BOLT_MAX];
@@ -520,7 +498,6 @@ monster_pain *pain_messages;
 
 struct player_race *races;
 struct player_class *classes;
-struct room_template *room_templates;
 struct vault *vaults;
 struct object_kind *objkinds;
 

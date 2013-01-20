@@ -27,7 +27,7 @@
 #include "history.h"
 #include "keymap.h"
 #include "init.h"
-#include "monster/init.h"
+#include "monster/mon-init.h"
 #include "monster/mon-msg.h"
 #include "monster/mon-util.h"
 #include "object/object.h"
@@ -1969,81 +1969,6 @@ struct file_parser v_parser = {
 	cleanup_v
 };
 
-/* Parsing functions for room_template.txt */
-static enum parser_error parse_room_n(struct parser *p) {
-	struct room_template *h = parser_priv(p);
-	struct room_template *t = mem_zalloc(sizeof *t);
-
-	t->tidx = parser_getuint(p, "index");
-	t->name = string_make(parser_getstr(p, "name"));
-	t->next = h;
-	parser_setpriv(p, t);
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_room_x(struct parser *p) {
-	struct room_template *t = parser_priv(p);
-
-	if (!t)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	t->typ = parser_getuint(p, "type");
-	t->rat = parser_getint(p, "rating");
-	t->hgt = parser_getuint(p, "height");
-	t->wid = parser_getuint(p, "width");
-	t->dor = parser_getuint(p, "doors");
-	t->tval = parser_getuint(p, "tval");
-
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_room_d(struct parser *p) {
-	struct room_template *t = parser_priv(p);
-
-	if (!t)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	t->text = string_append(t->text, parser_getstr(p, "text"));
-	return PARSE_ERROR_NONE;
-}
-
-struct parser *init_parse_room(void) {
-	struct parser *p = parser_new();
-	parser_setpriv(p, NULL);
-	parser_reg(p, "V sym version", ignored);
-	parser_reg(p, "N uint index str name", parse_room_n);
-	parser_reg(p, "X uint type int rating uint height uint width uint doors uint tval", parse_room_x);
-	parser_reg(p, "D str text", parse_room_d);
-	return p;
-}
-
-static errr run_parse_room(struct parser *p) {
-	return parse_file(p, "room_template");
-}
-
-static errr finish_parse_room(struct parser *p) {
-	room_templates = parser_priv(p);
-	parser_destroy(p);
-	return 0;
-}
-
-static void cleanup_room(void)
-{
-	struct room_template *t, *next;
-	for (t = room_templates; t; t = next) {
-		next = t->next;
-		mem_free(t->name);
-		mem_free(t->text);
-		mem_free(t);
-	}
-}
-
-struct file_parser room_parser = {
-	"room_template",
-	init_parse_room,
-	run_parse_room,
-	finish_parse_room,
-	cleanup_room
-};
-
 /* Parsing functions for p_hist.txt */
 static enum parser_error parse_h_n(struct parser *p) {
 	struct history_chart *oc = parser_priv(p);
@@ -2849,182 +2774,8 @@ static errr init_other(void)
  */
 static errr init_alloc(void)
 {
-	int i;
-
-	monster_race *r_ptr;
-
-	ego_item_type *e_ptr;
-
-	alloc_entry *table;
-
-	s16b num[MAX_DEPTH];
-
-	s16b aux[MAX_DEPTH];
-
-
 	/*** Initialize object allocation info ***/
 	init_obj_alloc();
-
-	/*** Analyze monster allocation info ***/
-
-	/* Clear the "aux" array */
-	(void)C_WIPE(aux, MAX_DEPTH, s16b);
-
-	/* Clear the "num" array */
-	(void)C_WIPE(num, MAX_DEPTH, s16b);
-
-	/* Size of "alloc_race_table" */
-	alloc_race_size = 0;
-
-	/* Scan the monsters (not the ghost) */
-	for (i = 1; i < z_info->r_max - 1; i++)
-	{
-		/* Get the i'th race */
-		r_ptr = &r_info[i];
-
-		/* Legal monsters */
-		if (r_ptr->rarity)
-		{
-			/* Count the entries */
-			alloc_race_size++;
-
-			/* Group by level */
-			num[r_ptr->level]++;
-		}
-	}
-
-	/* Collect the level indexes */
-	for (i = 1; i < MAX_DEPTH; i++)
-	{
-		/* Group by level */
-		num[i] += num[i-1];
-	}
-
-	/* Paranoia */
-	if (!num[0]) quit("No town monsters!");
-
-
-	/*** Initialize monster allocation info ***/
-
-	/* Allocate the alloc_race_table */
-	alloc_race_table = C_ZNEW(alloc_race_size, alloc_entry);
-
-	/* Get the table entry */
-	table = alloc_race_table;
-
-	/* Scan the monsters (not the ghost) */
-	for (i = 1; i < z_info->r_max - 1; i++)
-	{
-		/* Get the i'th race */
-		r_ptr = &r_info[i];
-
-		/* Count valid pairs */
-		if (r_ptr->rarity)
-		{
-			int p, x, y, z;
-
-			/* Extract the base level */
-			x = r_ptr->level;
-
-			/* Extract the base probability */
-			p = (100 / r_ptr->rarity);
-
-			/* Skip entries preceding our locale */
-			y = (x > 0) ? num[x-1] : 0;
-
-			/* Skip previous entries at this locale */
-			z = y + aux[x];
-
-			/* Load the entry */
-			table[z].index = i;
-			table[z].level = x;
-			table[z].prob1 = p;
-			table[z].prob2 = p;
-			table[z].prob3 = p;
-
-			/* Another entry complete for this locale */
-			aux[x]++;
-		}
-	}
-
-	/*** Analyze ego_item allocation info ***/
-
-	/* Clear the "aux" array */
-	(void)C_WIPE(aux, MAX_DEPTH, s16b);
-
-	/* Clear the "num" array */
-	(void)C_WIPE(num, MAX_DEPTH, s16b);
-
-	/* Size of "alloc_ego_table" */
-	alloc_ego_size = 0;
-
-	/* Scan the ego items */
-	for (i = 1; i < z_info->e_max; i++)
-	{
-		/* Get the i'th ego item */
-		e_ptr = &e_info[i];
-
-		/* Legal items */
-		if (e_ptr->rarity)
-		{
-			/* Count the entries */
-			alloc_ego_size++;
-
-			/* Group by level */
-			num[e_ptr->level]++;
-		}
-	}
-
-	/* Collect the level indexes */
-	for (i = 1; i < MAX_DEPTH; i++)
-	{
-		/* Group by level */
-		num[i] += num[i-1];
-	}
-
-	/*** Initialize ego-item allocation info ***/
-
-	/* Allocate the alloc_ego_table */
-	alloc_ego_table = C_ZNEW(alloc_ego_size, alloc_entry);
-
-	/* Get the table entry */
-	table = alloc_ego_table;
-
-	/* Scan the ego-items */
-	for (i = 1; i < z_info->e_max; i++)
-	{
-		/* Get the i'th ego item */
-		e_ptr = &e_info[i];
-
-		/* Count valid pairs */
-		if (e_ptr->rarity)
-		{
-			int p, x, y, z;
-
-			/* Extract the base level */
-			x = e_ptr->level;
-
-			/* Extract the base probability */
-			p = (100 / e_ptr->rarity);
-
-			/* Skip entries preceding our locale */
-			y = (x > 0) ? num[x-1] : 0;
-
-			/* Skip previous entries at this locale */
-			z = y + aux[x];
-
-			/* Load the entry */
-			table[z].index = i;
-			table[z].level = x;
-			table[z].prob1 = p;
-			table[z].prob2 = p;
-			table[z].prob3 = p;
-
-			/* Another entry complete for this locale */
-			aux[x]++;
-		}
-	}
-
 
 	/* Success */
 	return (0);
@@ -3079,10 +2830,6 @@ void init_arrays(void)
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (monster pits)");
 	if (run_parser(&pit_parser)) quit("Cannot initialize monster pits");
 	
-	/* Initialize room template info */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (room templates)");
-	if (run_parser(&room_parser)) quit("Cannot initialize room templates");
-
 	/* Initialize vault info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (vaults)");
 	if (run_parser(&v_parser)) quit("Cannot initialize vaults");
@@ -3127,6 +2874,17 @@ void init_arrays(void)
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (alloc)");
 	if (init_alloc()) quit("Cannot initialize alloc stuff");
 }
+
+extern struct init_module generate_module;
+extern struct init_module obj_make_module;
+extern struct init_module mon_make_module;
+
+struct init_module* modules[] = {
+	&generate_module,
+	&obj_make_module,
+	&mon_make_module,
+	NULL
+};
 
 /*
  * Hack -- main Angband initialization entry point
@@ -3177,11 +2935,14 @@ void init_arrays(void)
  */
 bool init_angband(void)
 {
+	int i;
+
 	event_signal(EVENT_ENTER_INIT);
 
-
-	/*** Initialize some arrays ***/
 	init_arrays();
+
+	for (i = 0; modules[i]->name; i++)
+		modules[i]->init();
 
 	/*** Load default user pref files ***/
 
@@ -3231,13 +2992,15 @@ bool init_angband(void)
 
 void cleanup_angband(void)
 {
+	int i;
+	for (i = 0; modules[i]->name; i++)
+		modules[i]->cleanup();
+
 	/* Free the macros */
 	keymap_free();
 
 	/* Free the allocation tables */
 	free_obj_alloc();
-	FREE(alloc_ego_table);
-	FREE(alloc_race_table);
 
 	event_remove_all_handlers();
 
