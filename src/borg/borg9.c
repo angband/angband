@@ -31,20 +31,13 @@ bool borg_cheat_death;
  * Use of the "Ben Borg" requires re-compilation with ALLOW_BORG defined,
  * and with the various "borg*.c" files linked into the executable.
  *
- * Note that you can only use the Borg if your character has been marked
- * as a "Borg User".  You can do this, if necessary, by responding "y"
- * when asked if you really want to use the Borg.  This will (normally)
- * result in your character being inelligible for the high score list.
- *
  * The "do_cmd_borg()" function, called when the user hits "^Z", allows
  * the user to interact with the Borg.  You do so by typing "Borg Commands",
  * including 'z' to activate (or re-activate), 'K' to show monsters, 'T' to
  * show objects, 'd' to toggle "demo mode", 'f' to open/shut the "log file",
  * 'i' to display internal flags, etc.  See "do_cmd_borg()" for more info.
  *
- * The first time you enter a Borg command, the Borg is initialized.  This
- * consists of three major steps, and requires at least 400K of free memory,
- * if the memory is not available, the game may abort.
+ * The first time you enter a Borg command:
  *
  * (1) The various "borg" modules are initialized.
  *
@@ -53,15 +46,6 @@ bool borg_cheat_death;
  *
  * (3) Some "historical" information (killed uniques, maximum dungeon depth)
  *     is "stolen" from the game.
- *
- * When the Ben Borg is "activated", it uses the "Term_inkey_hook" to steal
- * control from the user.  Later, if it detects any input from the real user,
- * it gracefully relinquishes control by clearing the "Term_inkey_hook" after
- * any pending key-sequences are complete.
- *
- * The Borg will abort if it detects any "errors", or if it detects any
- * "situations" such as "death", or if it detects any "panic" situations,
- * such as "imminent death", if the appropriate flags are set.
  *
  * The Ben Borg is only supposed to "know" what is visible on the screen,
  * which it learns by using the "term.c" screen access function "Term_what()",
@@ -74,38 +58,6 @@ bool borg_cheat_death;
  * control from the "Term_inkey()" and "Term_flush()" functions.  This
  * allows the Ben Borg to pretend to be a normal user.
  *
- * Note that if properly designed, the Ben Borg could be run as an external
- * process, which would actually examine the screen (or pseudo-terminal),
- * and send keypresses directly to the keyboard (or pseudo-terminal).  Thus
- * it should never access any "game variables", unless it is able to extract
- * those variables for itself by code duplication or complex interactions,
- * or, in certain situations, if those variables are not actually "required".
- *
- * Currently, the Ben Borg is a few steps away from being able to be run as
- * an external process, primarily in the "low level" details, such as knowing
- * when the game is ready for a keypress.  Also, the Ben Borg assumes that a
- * character has already been rolled, and maintains no state between saves,
- * which is partially offset by "cheating" to "acquire" the maximum dungeon
- * depth, without which equipment analysis will be faulty.
- *
- * The "theory" behind the Borg is that is should be able to run as a
- * separate process, playing Angband in a window just like a human, that
- * is, examining the screen for information, and sending keypresses to
- * the game.  The current Borg does not actually do this, because it would
- * be very slow and would not run except on Unix machines, but as far as
- * possible, I have attempted to make sure that the Borg *could* run that
- * way.  This involves "cheating" as little as possible, where "cheating"
- * means accessing information not available to a normal Angband player.
- * And whenever possible, this "cheating" should be optional, that is,
- * there should be software options to disable the cheating, and, if
- * necessary, to replace it with "complex" parsing of the screen.
- *
- * Thus, the Borg COULD be written as a separate process which runs Angband
- * in a pseudo-terminal and "examines" the "screen" and sends keypresses
- * directly (as with a terminal emulator), although it would then have
- * to explicitly "wait" to make sure that the game was completely done
- * sending information.
- *
  * The Borg is thus allowed to examine the screen directly (by efficient
  * direct access of the "Term->scr->a" and "Term->scr->c" arrays, which
  * could be replaced by calls to "Term_grab()"), and to access the cursor
@@ -113,14 +65,6 @@ bool borg_cheat_death;
  * and, as mentioned above, the Borg is allowed to send keypresses directly
  * to the game, and only when needed, using the "Term_inkey_hook" hook, and
  * uses the same hook to know when it should discard all pending keypresses.
- *
- * The Borg should not know when the game is ready for a keypress, and
- * should really do something nasty such as "pause" between turns for
- * some amount of time to ensure that the game is really waiting for
- * a keypress.
- *
- * Various other "cheats" (mostly optional) are described where they are
- * used, primarily in this file.
  *
  * Note that any "user input" will be ignored, and will cancel the Borg,
  * after the Borg has completed any key-sequences currently in progress.
@@ -136,14 +80,6 @@ bool borg_cheat_death;
  * 1000 on each new level, and we refuse to stay on any level longer than
  * 30000 turns, unless we are totally stuck, in which case we abort.
  *
- * Note that as of 2.7.9, the Borg can play any class, that is, he can make
- * "effective" use of at least a few spells/prayers, and is not "broken"
- * by low strength, blind-ness, hallucination, etc.  This does not, however,
- * mean that he plays all classes equally well, especially since he is so
- * dependant on a high strength for so many things.  The "demo" mode is useful
- * for many classes (especially Mage) since it allows the Borg to "die" a few
- * times, without being penalized.
- *
  * The Borg assumes that the "maximize" flag is off, and that the
  * "preserve" flag is on, since he cannot actually set those flags.
  * If the "maximize" flag is on, the Borg may not work correctly.
@@ -151,145 +87,8 @@ bool borg_cheat_death;
  */
 
 
-/*
- * We currently handle:
- *   Level changing (intentionally or accidentally)
- *   Embedded objects (gold) that must be extracted
- *   Ignore embedded objects if too "weak" to extract
- *   Traps (disarm), Doors (open/etc), Rubble (tunnel)
- *   Stores (enter via movement, exit via escape)
- *   Stores (limited commands, and different commands)
- *   Always deal with objects one at a time, not in piles
- *   Discard junk before trying to pick up more stuff
- *   Use "identify" to obtain knowledge and/or money
- *   Rely on "sensing" objects as much as possible
- *   Do not sell junk or worthless items to any shop
- *   Do not attempt to buy something without the cash
- *   Use the non-optimal stairs if stuck on a level
- *   Use "flow" code for all tasks for consistency
- *   Cancel all goals when major world changes occur
- *   Use the "danger" code to avoid potential death
- *   Use the "danger" code to avoid inconvenience
- *   Try to avoid danger (both actively and passively)
- *   Handle "Mace of Disruption", "Scythe of Slicing", etc
- *   Learn spells, and use them when appropriate
- *   Remember that studying prayers is slightly random
- *   Do not try to read scrolls when blind or confused
- *   Do not study/use spells/prayers when blind/confused
- *   Use spells/prayers at least once for the experience
- *   Attempt to heal when "confused", "blind", etc
- *   Attempt to fix "fear", "poison", "cuts", etc
- *   Analyze potential equipment in proper context
- *   Priests should avoid edged weapons (spell failure)
- *   Mages should avoid most gloves (lose mana)
- *   Non-warriors should avoid heavy armor (lose mana)
- *   Keep "best" ring on "tight" right finger in stores
- *   Remove items which do not contribute to total fitness
- *   Wear/Remove/Sell/Buy items in most optimal order
- *   Pursue optimal combination of available equipment
- *   Notice "failure" when using rods/staffs/artifacts
- *   Notice "failure" when attempting spells/prayers
- *   Attempt to correctly track terrain, objects, monsters
- *   Take account of "clear" and "multi-hued" monsters
- *   Take account of "flavored" (randomly colored) objects
- *   Handle similar objects/monsters (mushrooms, coins)
- *   Multi-hued/Clear monsters, and flavored objects
- *   Keep in mind that some monsters can move (quickly)
- *   Do not fire at monsters that may not actually exist
- *   Assume everything is an object until proven otherwise
- *   Parse messages to correct incorrect assumptions
- *   Search for secret doors after exploring the level
- *   React intelligently to changes in the wall structure
- *   Do not recalculate "flow" information unless required
- *   Collect monsters/objects/terrain not currently in view
- *   Keep in mind that word of recall is a delayed action
- *   Keep track of charging items (rods and artifacts)
- *   Be very careful not to access illegal locations!
- *   Do not rest next to dangerous (or immobile) monsters
- *   Recall into dungeon if prepared for resulting depth
- *   Do not attempt to destroy cursed ("terrible") artifacts
- *   Attempted destruction will yield "terrible" inscription
- *   Use "maximum" level and depth to prevent "thrashing"
- *   Use "maximum" hp's and sp's when checking "potentials"
- *   Attempt to recognize large groups of "disguised" monsters
- *   Beware of firing at a monster which is no longer present
- *   Stockpile items in the Home, and use those stockpiles
- *   Discounted spell-books (low level ones are ignored)
- *   Take items out of the home to sell them when no longer needed
- *   Trappers and Mimics (now treated as invisible monsters)
- *   Invisible monsters (induce "fear" of nearby regions)
- *   Fleeing monsters are "followed" down corridors and such
- *
- * We ignore:
- *   Long object descriptions may have clipped inscriptions
- *
- * We need to handle:
- *   Technically a room can have no exits, requiring digging
- *   Try to use a shovel/pick to help with tunnelling
- *   Conserve memory space (each grid byte costs about 15K)
- *   Conserve computation time (especially with the flow code)
- *   Becoming "afraid" (attacking takes a turn for no effect)
- *   Beware of firing missiles at a food ration under a mushroom
- *
- * We need to handle "loading" saved games:
- *   The "max_depth" value is lost if loaded in the town
- *   If we track "dead uniques" then this information is lost
- *   The "map" info, "flow" info, "tracking" info, etc is lost
- *   The contents of the shops (and the home) are lost
- *   We may be asked to "resume" a non-Borg character (icky)
- */
 
 
-/*
- * Currently, the Borg "cheats" in a few situations...
- *
- * Cheats that are significant, and possibly unavoidable:
- *   Knowledge of when we are being asked for a keypress.
- *   Note that this could be avoided by LONG timeouts/delays
- *
- * Cheats "required" by implementation, but not signifant:
- *   Direct access to the "screen image" (parsing screen)
- *   Direct access to the "keypress queue" (sending keys)
- *   Direct access to the "cursor visibility" (game state)
- *
- * Cheats that could be avoided by simple (ugly) code:
- *   Direct modification of the "current options"
- *
- * Cheats that could be avoided by duplicating code:
- *   Use of the tables in "tables.c"
- *   Use of the arrays initialized in "init.c"
- *
- * Cheats that the Borg would love:
- *   Immunity to hallucination, blindness, confusion
- *   Unique attr/char codes for every monster and object
- *   Removal of the "mimic" and "trapper" monsters
- *   Removal of the "mushroom" and "gold" monsters
- */
-
-
-/*
- * Stat advantages:
- *   High STR (attacks, to-dam, digging, weight limit)
- *   High DEX (attacks, to-hit, armor class)
- *   High CON (hitpoints, recovery)
- *   High WIS (better prayers, saving throws)
- *   High INT (better spells, disarming, device usage)
- *   High CHR (better item costs)
- *
- * Class advantages:
- *   Warrior (good fighting, sensing)
- *   Mage (good spells)
- *   Priest (good prayers, fighting)
- *   Ranger (some spells, fighting)
- *   Rogue (some spells, fighting, sensing)
- *   Paladin (prayers, fighting, sensing)
- *
- * Race advantages:
- *   Gnome (free action)
- *   Dwarf (resist blindness)
- *   High elf (see invisible)
- *   Non-human (infravision)
- */
 
 
 
