@@ -1328,125 +1328,14 @@ static void borg_parse_aux(char *msg, int len)
 
     }
 
-    /* A bug in the 280 game fails to inscribe {empty} on a staff-wand after
-     * being hit by amnesia (if the item had a sale inscription).
-     * So we will try to use the wand, see that it is empty then inscribe
-     * it ourselves.
-     */
-    if (strstr(msg, " has no charges."))
-    {
-        /* make the inscription */
-
-        /* not needed in 285,  the game bug was fixed. */
-        borg_keypress('{');
-        borg_keypress(I2A(zap_slot));
-
-        /* "you inscribe the " */
-        borg_keypress('e');
-        borg_keypress('m');
-        borg_keypress('p');
-        borg_keypress('t');
-        borg_keypress('y');
-        borg_keypress(KC_ENTER);
-
-        /* done */
-
-	}
     /* amnesia attacks, re-id wands, staves, equipment. */
     if (prefix(msg, "You feel your memories fade."))
     {
 		/* Set the borg flag */
 		borg_skill[BI_ISFORGET] = TRUE;
-
-#if 0 /* 309 modified the amnesia attack, we dont forget */
-        int i;
-
-        /* I was hit by amnesia, forget things */
-        /* forget equipment */
-        /* Look for an item to forget (equipment) */
-        for (i = INVEN_WIELD; i <= INVEN_FEET; i++)
-        {
-            borg_item *item = &borg_items[i];
-
-            /* Skip empty items */
-            if (!item->iqty) continue;
-
-            /* Skip known items */
-            if (item->fully_identified) continue;
-
-            /* skip certain easy know items */
-            if ((item->tval == TV_RING) &&
-                ((item->sval == SV_RING_FREE_ACTION) ||
-                 (item->sval == SV_RING_SEE_INVIS) ||
-                 (item->sval <= SV_RING_SUSTAIN_CHR))) continue;
-
-            /* skip already forgotten or non id'd items */
-            if (!item->ident) continue;
-
-            /* forget it */
-            item->ident = FALSE;
-
-            /* note the forgeting */
-            borg_note(format("Borg 'forgetting' qualities of %s",item->desc));
-
-        }
-
-        /* Look for an item to forget (inventory) */
-        for (i = 0; i <= INVEN_MAX_PACK; i++)
-        {
-            borg_item *item = &borg_items[i];
-
-            /* Skip empty items */
-            if (!item->iqty) continue;
-
-            /* skip certain easy know items */
-            if ((item->tval == TV_RING) &&
-                (of_has(item->flags, OF_EASY_KNOW)) continue;
-
-            if (item->fully_identified) continue;
-
-            switch (item->tval)
-            {
-                /* forget wands, staffs, weapons, armour */
-                case TV_WAND:
-                case TV_STAFF:
-                case TV_ROD:
-                case TV_RING:
-                case TV_AMULET:
-                case TV_LIGHT:
-                case TV_SHOT:
-                case TV_ARROW:
-                case TV_BOLT:
-                case TV_BOW:
-                case TV_DIGGING:
-                case TV_HAFTED:
-                case TV_POLEARM:
-                case TV_SWORD:
-                case TV_BOOTS:
-                case TV_GLOVES:
-                case TV_HELM:
-                case TV_CROWN:
-                case TV_SHIELD:
-                case TV_CLOAK:
-                case TV_SOFT_ARMOR:
-                case TV_HARD_ARMOR:
-                case TV_DRAG_ARMOR:
-                break;
-
-                default:
-                    continue;
-            }
-                /* forget it */
-                item->ident = FALSE;
-
-                /* note the forgetting */
-                borg_note(format("Borg 'forgetting' qualities of %s",item->desc));
-         }
-#endif /* Amnesia attack */
     }
     if (streq(msg, "Your memories come flooding back."))
     {
-
         borg_skill[BI_ISFORGET] = FALSE;
     }
 
