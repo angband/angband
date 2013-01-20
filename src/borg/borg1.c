@@ -1724,10 +1724,10 @@ errr borg_keypress(keycode_t k)
  */
 errr borg_keypresses(char *str)
 {
-    char *s;
+	char *s;
 
     /* Enqueue them */
-    for (s = str; *s; s++) borg_keypress(*s);
+	for (s = str; *s; s++) borg_keypress(*s);
 
     /* Success */
     return (0);
@@ -1782,11 +1782,9 @@ void borg_flush(void)
  */
 bool borg_tell(char *what)
 {
-    char *s;
-
     /* Hack -- self note */
     borg_keypress(':');
-    for (s = what; *s; s++) borg_keypress(*s);
+    borg_keypresses(what);
     borg_keypress(KC_ENTER);
 
     /* Success */
@@ -1800,8 +1798,6 @@ bool borg_tell(char *what)
  */
 bool borg_change_name(char *str)
 {
-    char *s;
-
     /* Cancel everything */
     borg_keypress(ESCAPE);
     borg_keypress(ESCAPE);
@@ -1813,7 +1809,7 @@ bool borg_change_name(char *str)
     borg_keypress('c');
 
     /* Enter the new name */
-    for (s = str; *s; s++) borg_keypress(*s);
+    borg_keypresses(str);
 
     /* End the name */
     borg_keypress(KC_ENTER);
@@ -1832,8 +1828,6 @@ bool borg_change_name(char *str)
  */
 bool borg_dump_character(char *str)
 {
-    char *s;
-
     /* Cancel everything */
     borg_keypress(ESCAPE);
     borg_keypress(ESCAPE);
@@ -1845,7 +1839,7 @@ bool borg_dump_character(char *str)
     borg_keypress('f');
 
     /* Enter the new name */
-    for (s = str; *s; s++) borg_keypress(*s);
+    borg_keypresses(str);
 
     /* End the file name */
     borg_keypress(KC_ENTER);
