@@ -312,14 +312,8 @@ void borg_log_death(void)
 	/* Build path to location of the definition file */
    path_build(buf, 1024, ANGBAND_DIR_USER, "borg-log.txt");
 
-   /* Hack -- drop permissions */
-   safe_setuid_drop();
-
    /* Append to the file */
    borg_log_file = file_open(buf, MODE_APPEND, FTYPE_TEXT);
-
-    /* Hack -- grab permissions */
-   safe_setuid_grab();
 
    /* Failure */
    if (!borg_log_file) return;
@@ -358,14 +352,8 @@ void borg_log_death_data(void)
 
    path_build(buf, 1024, ANGBAND_DIR_USER, "borg.dat");
 
-   /* Hack -- drop permissions */
-   safe_setuid_drop();
-
    /* Append to the file */
    borg_log_file = file_open(buf, MODE_APPEND, FTYPE_TEXT);
-
-    /* Hack -- grab permissions */
-   safe_setuid_grab();
 
    /* Failure */
    if (!borg_log_file) return;
@@ -4853,9 +4841,6 @@ void borg_write_map(bool ask)
 
     char o_name[80];
 
-    /* Hack -- drop permissions */
-    safe_setuid_drop();
-
     /* Process the player name */
     for (i = 0; op_ptr->full_name[i]; i++)
     {
@@ -4894,9 +4879,6 @@ void borg_write_map(bool ask)
         if (!borg_map_file) msg("Cannot open that file.");
     }
     else if (!ask) borg_map_file = file_open(buf2, MODE_WRITE, FTYPE_TEXT);
-
-    /* Hack -- grab permissions */
-    safe_setuid_grab();
 
    file_putf(borg_map_file, "%s the %s %s, Level %d/%d\n", op_ptr->full_name,
            p_ptr->race->name,
