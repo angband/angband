@@ -25,6 +25,8 @@
 #include "monster/mon-util.h"
 #include "object/tvalsval.h"
 
+s16b num_repro;
+
 /**
  * Deletes a monster by index.
  *

@@ -18,6 +18,7 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "dungeon.h"
 #include "history.h"
 #include "monster/mon-make.h"
 #include "monster/mon-spell.h"

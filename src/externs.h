@@ -51,13 +51,10 @@ extern s16b character_xtra;
 extern u32b seed_randart;
 extern u32b seed_flavor;
 extern u32b seed_town;
-extern s16b num_repro;
 extern s32b turn;
 extern int use_graphics;
-extern bool use_graphics_nice;
 extern s16b signal_count;
 extern bool msg_flag;
-extern bool inkey_xtra;
 extern u32b inkey_scan;
 extern bool inkey_flag;
 extern s16b o_max;
@@ -134,8 +131,6 @@ extern int text_out_pad;
 extern bool use_transparency;
 extern void (*sound_hook)(int);
 
-extern u16b daycount;
-
 /* util.c */
 extern struct keypress *inkey_next;
 
@@ -152,9 +147,6 @@ extern void move_player(int dir, bool disarm);
 /* cmd2.c */
 int count_feats(int *y, int *x, bool (*test)(struct cave *cave, int y, int x), bool under);
 int coords_to_dir(int y, int x);
-
-/* death.c */
-void death_screen(void);
 
 /* dungeon.c */
 extern void dungeon_change_level(int dlev);

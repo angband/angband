@@ -189,6 +189,8 @@ int roman_to_int(const char *roman)
 	return n;
 }
 
+static bool inkey_xtra;
+
 /*
  * Flush all pending input.
  *

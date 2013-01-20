@@ -64,18 +64,14 @@ u32b seed_randart;		/* Hack -- consistent random artifacts */
 u32b seed_flavor;		/* Hack -- consistent object colors */
 u32b seed_town;			/* Hack -- consistent town layout */
 
-s16b num_repro;			/* Current reproducer count */
-
 s32b turn;				/* Current game turn */
 
 int use_graphics;		/* The "graphics" mode is enabled */
-bool use_graphics_nice;	        /* The 'nice' "graphics" mode is enabled */
 
 s16b signal_count;		/* Hack -- Count interrupts */
 
 bool msg_flag;			/* Player has pending message */
 
-bool inkey_xtra;		/* See the "inkey()" function */
 u32b inkey_scan;		/* See the "inkey()" function */
 bool inkey_flag;		/* See the "inkey()" function */
 
@@ -652,9 +648,4 @@ void (*sound_hook)(int sound);
 /* Delay in centiseconds before moving to allow another keypress */
 /* Zero means normal instant movement. */
 u16b lazymove_delay = 0;
-
-
-/* Number of days passed on the current dungeon trip -
-  - used for determining store updates on return to town */
-u16b daycount = 0;
 

@@ -20,6 +20,7 @@
 #include "buildid.h"
 #include "cave.h"
 #include "cmds.h"
+#include "death.h"
 #include "files.h"
 #include "game-cmd.h"
 #include "history.h"

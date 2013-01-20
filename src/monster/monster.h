@@ -261,6 +261,8 @@ extern bool check_hit(struct player *p, int power, int level);
 extern void process_monsters(struct cave *c, byte min_energy);
 int mon_hp(const struct monster_race *r_ptr, aspect hp_aspect);
 
+s16b num_repro;
+
 #ifdef TEST
 extern bool (*testfn_make_attack_normal)(struct monster *m, struct player *p);
 #endif /* !TEST */
