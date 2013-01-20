@@ -4163,93 +4163,54 @@ void borg_cheat_inven(void)
  */
 void borg_cheat_store(void)
 {
-    int i;
-	int slot;
-    char buf[256];
 	int shop_num;
 
-	object_type *j_ptr;
+	/* Scan each store */
+	for (shop_num = 0; shop_num < MAX_STORES; shop_num++) {
+		int slot;
+		struct store *st_ptr = &stores[shop_num];
 
-	struct store *st_ptr;
-
-	/* scan each visited store */
-	for (shop_num = 0; shop_num < MAX_STORES;  shop_num ++)
-	{
-
-#if 0
-		/* Skip a shop that has not been visited */
-		if (!borg_shops[shop_num].when && shop_num != 7) continue;
-#endif
-		/* Access the current shop */
-		st_ptr = &stores[shop_num];
-
-		/* Clear the Inventory from memory */
-		for (i = 0; i < 24; i++)
-		{
-			/* Wipe the ware */
-			WIPE(&borg_shops[shop_num].ware[i], borg_item);
-		}
+		/* Clear the inventory from memory */
+		C_WIPE(&borg_shops[shop_num].ware, 24, borg_item);
 
 		/* Check each existing object in this store */
-		for (slot = 0; slot < 24; slot++)
-		{
-			/* Get the existing object */
-			j_ptr = &st_ptr->stock[slot];
-
-			/* Default to "nothing" */
-			buf[0] = '\0';
-
-			/* Describe it */
-			object_desc(buf, sizeof(buf), j_ptr, ODESC_FULL);
-
-			/* Skip Empty slots */
-			if (streq(buf,"(nothing)")) continue;
-
-			/* Copy the Description to the borg's memory */
-			strcpy(borg_shops[shop_num].ware[slot].desc, buf);
-
+		for (slot = 0; slot < 24; slot++) {
+			object_type *o_ptr = &st_ptr->stock[slot];
+			borg_item *b_item = &borg_shops[shop_num].ware[slot];
+			char buf[120];
+			
+			/* Describe the item */
+			object_desc(buf, sizeof buf, o_ptr, ODESC_FULL);
+			if (streq(buf, "(nothing)")) break;
+						
 			/* Analyze the item */
-			borg_item_analyze(&borg_shops[shop_num].ware[slot], &stores[shop_num].stock[slot], buf);
-
-			/*need to be able to analize the home inventory to see if it was */
+			borg_item_analyze(b_item, o_ptr, buf);
+			
+			/* Need to be able to analyse the home inventory to see if it was */
 			/* *fully ID*d. */
-			/* This is a BIG CHEAT!  It will be less of a cheat if code is put*/
-			/* in place to allow 'I' in stores. */
-			if (stores[shop_num].stock[slot].ident & IDENT_KNOWN)
-			{
-				/* XXX XXX XXX for now, always cheat to get info on items at */
-				/*   home. */
-				borg_object_star_id_aux( &borg_shops[shop_num].ware[slot],
-										 &stores[shop_num].stock[slot]);
-				borg_shops[shop_num].ware[slot].fully_identified = TRUE;
+			if (o_ptr->ident & IDENT_KNOWN) {
+				borg_object_star_id_aux(b_item, o_ptr);
+				b_item->fully_identified = TRUE;
 			}
 
-			/* hack -- see of store is selling food.  Needed for Money Scumming */
-			if (shop_num == 0 &&
-				borg_shops[shop_num].ware[slot].tval == TV_FOOD &&
-				borg_shops[shop_num].ware[slot].sval == SV_FOOD_RATION)
-			{
-				borg_food_onsale = borg_shops[shop_num].ware[slot].iqty;
-			}
+			/* Check if the general store has certain items */
+			if (shop_num == 0) {
+				/* Food -- needed for money scumming */
+				if (b_item->tval == TV_FOOD && b_item->sval == SV_FOOD_RATION)
+					borg_food_onsale = b_item->iqty;
 
-			/* hack -- see of store is selling our fuel. */
-			if (shop_num == 0 &&
-				borg_shops[shop_num].ware[slot].tval == TV_FLASK &&
-				borg_items[INVEN_LIGHT].sval == SV_LIGHT_LANTERN)
-			{
-				borg_fuel_onsale = borg_shops[shop_num].ware[slot].iqty;
-			}
+				/* Fuel for lanterns */
+				if (b_item->tval == TV_FLASK &&
+						borg_items[INVEN_LIGHT].sval == SV_LIGHT_LANTERN)
+					borg_fuel_onsale = b_item->iqty;
 
-			/* hack -- see of store is selling our fuel. */
-			if (shop_num == 0 &&
-				borg_shops[shop_num].ware[slot].tval == TV_LIGHT &&
-				borg_items[INVEN_LIGHT].sval == SV_LIGHT_TORCH)
-			{
-				borg_fuel_onsale = borg_shops[shop_num].ware[slot].iqty;
+				if (b_item->tval == TV_TORCH &&
+						borg_items[INVEN_LIGHT].sval == SV_LIGHT_TORCH)
+					borg_fuel_onsale = b_item->iqty;
 			}
 
 			/* Hack -- Save the declared cost */
-			borg_shops[shop_num].ware[slot].cost = borg_price_item(j_ptr, FALSE,1, shop_num);
+			b_item->cost = borg_price_item(o_ptr, FALSE, 1, shop_num);
 		}
 	}
 }
