@@ -238,11 +238,22 @@ void dump_objects(ang_file *fff)
 	for (i = 1; i < z_info->k_max; i++)
 	{
 		object_kind *k_ptr = &k_info[i];
-		const char *name = k_ptr->name;
+		char name[120] = "";
+		size_t j, k, len;
 
-		if (!name) continue;
-		if (name[0] == '&' && name[1] == ' ')
-			name += 2;
+		if (!k_ptr->name || !k_ptr->tval) continue;
+
+		/* Copy across the name, stripping modifiers & and ~) */
+		len = strlen(k_ptr->name);
+		for (j = 0, k = 0; j < len && k < sizeof name; j++) {
+			if (j == 0 && k_ptr->name[0] == '&' && k_ptr->name[1] == ' ')
+				j += 2;
+			if (k_ptr->name[j] == '~')
+				continue;
+
+			name[k++] = k_ptr->name[j];
+		}
+		name[k] = 0;
 
 		file_putf(fff, "K:%s:%s:%d:%d\n", tval_find_name(k_ptr->tval),
 				name, k_ptr->x_attr, k_ptr->x_char);
