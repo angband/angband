@@ -6017,6 +6017,11 @@ void do_cmd_borg(void)
 		    borg_berserk = (p_ptr->timed[TMD_SHERO] ? TRUE : FALSE);
 		    if (p_ptr->timed[TMD_SINVIS]) borg_see_inv = 10000;
 
+			if (lazymove_delay != 0) {
+				borg_note("# Turning off lazy movement controls");
+				lazymove_delay = 0;
+			}
+
             /* Message */
             borg_note("# Installing keypress hook");
 
