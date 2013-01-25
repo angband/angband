@@ -15347,83 +15347,75 @@ static bool borg_play_step(int y2, int x2)
         return (TRUE);
     }
 
-    /* Rubble, Treasure, Seams, Walls -- Tunnel or Melt */
-    if (ag->feat >= FEAT_SECRET && ag->feat <= FEAT_WALL_SOLID)
-    {
-        /* Not if hungry */
-        if (borg_skill[BI_ISHUNGRY]) return (FALSE);
+	/* Rubble, Treasure, Seams, Walls -- Tunnel or Melt */
+	if (ag->feat >= FEAT_SECRET && ag->feat <= FEAT_WALL_SOLID)
+	{
+		/* No digging when hungry */
+		if (borg_skill[BI_ISHUNGRY])
+			return FALSE;
 
-		/* Not when generally exploring */
-		if (goal == GOAL_DARK) return (FALSE);
+		/* Don't dig walls and seams when exploring (do dig rubble) */
+		if (ag->feat != FEAT_RUBBLE && goal == GOAL_DARK) return FALSE;
 
-        /* Mega-Hack -- allow "stone to mud" */
-        if (borg_spell(2, 2) ||
-			borg_activate_ring(SV_RING_DELVING) ||
-			borg_activate_artifact(EFF_STONE_TO_MUD, INVEN_WIELD))
-        {
-            borg_note("# Melting a wall/etc");
-            borg_keypress(I2D(dir));
-			/* Remove mineral veins from the list.
-			 * Its faster to clear all veins from the list
-			 * then rebuild the list.
-			 */
-			if (track_vein_num)
-			{
-				track_vein_num = 0;
-			}
-            return (TRUE);
-        }
+		/* Use Stone to Mud when available */
+		if (borg_spell(2, 2) ||
+				borg_activate_ring(SV_RING_DELVING) ||
+				borg_activate_artifact(EFF_STONE_TO_MUD, INVEN_WIELD)) {
+			borg_note("# Melting a wall/etc");
+			borg_keypress(I2D(dir));
 
-		/* Some borgs just cant dig it */
-		if (borg_items[weapon_swap].tval != TV_DIGGING && borg_items[INVEN_WIELD].tval != TV_DIGGING &&
-			((ag->feat >= FEAT_MAGMA && ag->feat <= FEAT_QUARTZ_H && borg_skill[BI_CLEVEL] <= 30) ||
-		    (ag->feat >= FEAT_WALL_EXTRA && ag->feat <= FEAT_WALL_SOLID && borg_skill[BI_CLEVEL] <= 40)))
-	    {
-			/* Clear the flow grids and do not dig */
-			goal = 0;
-			return (FALSE);
-		}
-
-        /* Mega-Hack -- prevent infinite loops */
-        if (randint0(500) <= 5 && !vault_on_level) return (FALSE);
-
-
-        /* Tunnel */
-        /* If I have a shovel then use it */
-        if (borg_items[weapon_swap].tval == TV_DIGGING &&
-            !(borg_items[INVEN_WIELD].cursed))
-        {
-            borg_note("# Swapping Digger");
-            borg_keypress(ESCAPE);
-            borg_keypress('w');
-            borg_keypress(I2A(weapon_swap));
-            borg_keypress(' ');
-            borg_keypress(' ');
-        }
-        borg_note("# Digging through wall/etc");
-        borg_keypress('0');
-        borg_keypress('9');
-        borg_keypress('9');
-        /* Some borgs will dig more */
-        if (borg_worships_gold)
-        {
-            borg_keypress('9');
-        }
-
-        borg_keypress(KC_ENTER);
-        borg_keypress('T');
-        borg_keypress(I2D(dir));
-		/* Remove mineral veins from the list.
-		 * Its faster to clear all veins from the list
-		 * then rebuild the list.
-		 */
-		if (track_vein_num)
-		{
+			/* Forget number of mineral veins to force rebuild of vein list */
 			track_vein_num = 0;
-		}
-        return (TRUE);
-    }
 
+			return TRUE;
+		}
+
+		/* If we don't have a digger, don't bother digging certain walls
+		 * (without sufficient character level) */
+		if (borg_items[weapon_swap].tval != TV_DIGGING &&
+				borg_items[INVEN_WIELD].tval != TV_DIGGING) {
+			int clev = 0;
+
+			if (ag->feat >= FEAT_MAGMA && ag->feat <= FEAT_QUARTZ_K)
+				clev = 30;
+			if ((ag->feat >= FEAT_WALL_EXTRA && ag->feat <= FEAT_WALL_SOLID) ||
+					ag->feat == FEAT_SECRET)
+				clev = 40;
+
+			if (borg_skill[BI_CLEVEL] <= clev) {
+				/* Clear flow grids */
+				goal = 0;
+				return FALSE;
+			}
+		}
+
+		/* Mega-Hack -- prevent infinite loops */
+		if (randint0(500) <= 5 && !vault_on_level)
+			return FALSE;
+
+		/* Switch to a digger if we have one */
+		if (borg_items[weapon_swap].tval == TV_DIGGING &&
+				!borg_items[INVEN_WIELD].cursed) {
+			borg_note("# Swapping Digger");
+			borg_keypress(ESCAPE);
+			borg_keypress('w');
+			borg_keypress(I2A(weapon_swap));
+			borg_keypress(' ');
+			borg_keypress(' ');
+		}
+
+		/* Dig */
+		borg_note("# Digging through wall/etc");
+		borg_keypress('T');
+		borg_keypress(I2D(dir));
+
+		/* Forget number of mineral veins to force rebuild of vein list */
+		/* XXX Maybe only do this if successful? */
+		track_vein_num = 0;
+
+		return TRUE;
+	}
+	
 
     /* Shops -- Enter */
     if ((ag->feat >= FEAT_SHOP_HEAD) && (ag->feat <= FEAT_SHOP_TAIL))
