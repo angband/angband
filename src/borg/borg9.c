@@ -5924,6 +5924,7 @@ void do_cmd_borg(void)
 
         /* Prompt for key */
         msg("Commands: ");
+		inkey();
 
         /* Restore the screen */
         Term_load();
