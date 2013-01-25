@@ -267,6 +267,137 @@ bool borg_use_things(void)
 }
 
 
+/*
+ * Check to see if the surrounding dungeon should be illuminated, and if
+ * it should, do it.
+ *
+ * Always case light when we have no torch.
+ *
+ * This is when resting to heal.  I don't want him teleporting into a room,
+ * resting to heal while there is a dragon sitting in a dark corner waiting
+ * to breathe on him.
+ *
+ * Returns TRUE if it did something, FALSE otherwise
+ */
+bool borg_check_LIGHT_only(void)
+{
+	/* Never in town, when blind or when hallucinating */
+	if (!borg_skill[BI_CDEPTH]) return (FALSE);
+	if (borg_skill[BI_ISBLIND] || borg_skill[BI_ISIMAGE]) return (FALSE);
+
+	/** Use wizard light sometimes **/
+
+	if (!when_wizard_LIGHT || (borg_t - when_wizard_LIGHT >= 1000)) {
+		if (borg_activate_artifact(EFF_CLAIRVOYANCE, INVEN_LIGHT) ||
+				borg_prayer_fail(5, 4, 40)) {
+			borg_note("# Wizard lighting the dungeon");
+			/* borg_react("SELF:wizard lite", "SELF:wizard lite"); */
+			when_wizard_LIGHT = borg_t;
+			return TRUE;
+		}
+	}
+
+	/** Work out if there's any reason to light */
+
+	/* Don't bother because we only just did it */
+	if (when_call_LIGHT != 0 && (borg_t - when_call_LIGHT) < 7)
+		return FALSE;
+
+	if (borg_skill[BI_CURLITE] == 1) {
+		int i;
+		int corners = 0;
+
+		/* Scan diagonal neighbors.
+		 *
+		 * 4 corners   3 corners    2 corners    1 corner    0 corners
+		 * ###         ##.  #..     ##.  #..     .#.         .#.  ... .#.
+		 * .@.         .@.  .@.     .@.  .@.     .@.         #@#  .@. .@.
+		 * ###         ###  ###     ##.  #..     ##.         .#.  ... .#.
+		 *
+		 * There's actually no way to tell which are rooms and which are
+		 * corridors from diagonals except 4 (always a corridor) and
+		 * 0 (always a room).  This is why we only use it for radius 1 light.
+		 */
+		for (i = 4; i < 8; i++) {
+			borg_grid *ag;
+	
+			/* Get location */
+			int x = c_x + ddx_ddd[i];
+			int y = c_y + ddy_ddd[i];
+			
+			/* Bounds check */
+			if (!in_bounds_fully(y, x)) continue;
+			
+			/* Get grid */
+			ag = &borg_grids[y][x];
+	
+			/* Location must be known */
+			if (ag->feat == FEAT_NONE) corners++;
+			
+			/* Location must be a wall/door */
+			if (!borg_cave_floor_grid(ag)) corners++;
+		}
+
+		/* This is quite an arbitrary cutoff */
+		if (corners > 2)
+			return FALSE;
+	} else if (borg_skill[BI_CURLITE] > 1) {
+		int x, y;
+		int floors = 0;
+
+		/*
+		 * Scan the surrounding 5x5 area for unlit tiles.
+		 *
+		 * Radius two light misses out the four corners but otherwise illumates
+		 * a 5x5 grid, which is 21 grids illumated incl player.
+		 *
+		 *  ...
+		 * .....
+		 * ..@..
+		 * .....
+		 *  ...
+		 */
+		for (y = c_y - 2; y <= c_y + 2; y++) {
+			for (x = c_x - 2; x <= c_x + 2; x++) {
+				borg_grid *ag;
+
+				/* Bounds check */
+				if (!in_bounds_fully(y, x)) continue;
+				
+				/* Get grid */
+				ag = &borg_grids[y][x];
+
+				/* Must be a floor grid lit by torchlight, not by magic */
+				if (borg_cave_floor_grid(ag) &&
+						(ag->info & BORG_LIGHT) &&
+						!(cave->info[y][x] & CAVE_GLOW)) {
+					floors++;
+				}
+			}
+		}
+
+		/* Don't bother unless there are enough unlit floors */
+		/* 11 is the empirical cutoff point for sensible behaviour here */
+		if (floors < 11) return FALSE;
+	}
+
+	/* Light it up! */
+	if (borg_activate_artifact(EFF_ILLUMINATION, INVEN_LIGHT) ||
+			borg_zap_rod(SV_ROD_ILLUMINATION) ||
+			borg_use_staff(SV_STAFF_LIGHT) ||
+			borg_read_scroll(SV_SCROLL_LIGHT) ||
+			borg_spell_fail(0, 3, 40) ||
+			borg_prayer_fail(0, 4, 40)) {
+		borg_note("# Illuminating the dungeon");
+		borg_react("SELF:lite", "SELF:lite");
+		when_call_LIGHT = borg_t;
+		Term_xtra(TERM_XTRA_DELAY, 1000);
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
 
 /*
  * Refuel, call lite, detect traps/doors/walls/evil, etc
@@ -276,48 +407,18 @@ bool borg_use_things(void)
  * Note that we detect traps/doors/walls/evil at least once in each
  * panel, as soon as possible after entering a new panel.
  *
- * Note that we call lite whenever the current grid is dark, and
- * all the grids touching the current grid diagonally are known
- * floors, which catches all rooms, including "checkerboard" rooms,
- * and only occasionally calls lite in corridors, and then only once.
- *
- * Note that we also sometimes call lite whenever we are using a
- * lantern or artifact lite, and when all of the grids in the box
- * of grids containing the maximal torch-lit region (the 5x5 or 7x7
- * region centered at the player) are non-glowing floor grids, and
- * when at least one of them is known to be "dark".  This catches
- * most of the "probable rooms" before the standard check succeeds.
- *
  * We use the special "SELF" messages to "borg_react()" to delay the
  * processing of "detection" and "call lite" until we know if it has
  * worked or not.
- *
- * The matching function borg_check_LIGHT_only is used only with resting
- * to heal.  I don't want him teleporting into a room, resting to heal while
- * there is a dragon sitting in a dark corner waiting to breathe on him.
- * So now he will check for lite.
- *
  */
 bool borg_check_LIGHT(void)
 {
-    int i, x, y;
-    int corners, floors;
-	int floor_goal=0;
-	byte feat;
-
     int q_x, q_y;
-
-    borg_grid *ag;
-
-
-    bool do_LIGHT;
 
     bool do_trap;
     bool do_door;
     bool do_wall;
     bool do_evil;
-
-    bool do_LIGHT_aux = FALSE;
 
     /* Never in town when mature (scary guy)*/
     if (borg_skill[BI_MAXCLEVEL] > 10 && !borg_skill[BI_CDEPTH]) return (FALSE);
@@ -404,7 +505,6 @@ bool borg_check_LIGHT(void)
 		do_trap = FALSE;
 		do_door = FALSE;
 		do_wall = FALSE;
-		do_LIGHT = FALSE;
 	}
 
 	/*** Do Things ***/
@@ -542,274 +642,8 @@ bool borg_check_LIGHT(void)
         }
     }
 
-    /* Never in town for the rest of this check */
-    if (!borg_skill[BI_CDEPTH]) return (FALSE);
-
-    /* Start */
-    do_LIGHT = FALSE;
-
-    /* Get central grid */
-    ag = &borg_grids[c_y][c_x];
-
-    corners = 0;
-    floors = 0;
-
-    /* Scan diagonal neighbors */
-    for (i = 4; i < 8; i++)
-    {
-        /* Get location */
-        x = c_x + ddx_ddd[i];
-        y = c_y + ddy_ddd[i];
-
-		/* Bounds check */
-        if (!in_bounds_fully(y,x)) continue;
-
-        /* Get grid */
-        ag = &borg_grids[y][x];
-
-        /* Location must be known */
-        if (ag->feat == FEAT_NONE) corners ++;
-
-        /* Location must not be a wall/door */
-        if (!borg_cave_floor_grid(ag)) corners ++;
-
-     }
-     /* Add them up */
-     if (corners <= 2) do_LIGHT = TRUE;
-
-    /* Hack are we in a dark room? */
-    if (do_LIGHT && (borg_skill[BI_CURLITE] >= 2) &&
-        (c_x >= borg_skill[BI_CURLITE]) && (c_x < AUTO_MAX_X - borg_skill[BI_CURLITE]) &&
-        (c_y >= borg_skill[BI_CURLITE]) && (c_y < AUTO_MAX_Y - borg_skill[BI_CURLITE]) &&
-        (randint0(100) < 90))
-    {
-		/*       #.#
-		 *       #.#
-		 *  ######@######
-		 *  #...........#
-		 *  #...........#
-		 *  #...........#
-		 *  #...........#
-		 *  #...........#
-		 *  #############
-		 */
-
-		/* Lantern */
-		if (borg_skill[BI_CURLITE] ==2) floor_goal = 11;
-
-		/* lantern and glowing items */
-		if (borg_skill[BI_CURLITE] == 3) floor_goal = 11;
-
-        floors = 0;
-        /* Scan the "local" grids (5x5) 2 same as lantern/torch grid*/
-        for (y = c_y - 2; y <= c_y + 2; y++)
-        {
-            /* Scan the "local" grids (5x5) */
-            for (x = c_x - 2; x <= c_x + 2; x++)
-            {
-
-				/* Bounds check */
-            	if (!in_bounds_fully(y,x)) continue;
-
-            	/* Get grid */
-                ag = &borg_grids[y][x];
-                feat = cave->feat[y][x]; /* Cheat this grid from game */
-
-                /* Location must be a lit floor */
-                if (ag->info & BORG_LIGHT) floors ++;
-
-                /* Location must not be glowing */
-                if (ag->info & BORG_GLOW ||
-                    feat == CAVE_GLOW) floors --;
-
-                /* Location must not be a wall/door */
-                if (!borg_cave_floor_grid(ag)) floors --;
-
-            }
-        }
-    }
-    /* add them up */
-    if (floors <= floor_goal) do_LIGHT = do_LIGHT_aux = FALSE;
-
-
-    /* Hack -- call lite */
-    if (do_LIGHT &&
-        (!when_call_LIGHT || (borg_t - when_call_LIGHT >= 7)))
-    {
-        /* Call light */
-        if (borg_activate_artifact(EFF_ILLUMINATION, INVEN_LIGHT) ||
-            borg_zap_rod(SV_ROD_ILLUMINATION) ||
-            borg_use_staff(SV_STAFF_LIGHT) ||
-            borg_read_scroll(SV_SCROLL_LIGHT) ||
-            borg_spell(0, 3) ||
-            borg_prayer(0, 4))
-        {
-            borg_note("# Illuminating the room");
-            borg_react("SELF:lite", "SELF:lite");
-
-            when_call_LIGHT = borg_t;
-
-            return (TRUE);
-        }
-    }
-
-
-    /* Hack -- Wizard Lite */
-    if (TRUE &&
-        (!when_wizard_LIGHT || (borg_t - when_wizard_LIGHT >= 1000)))
-    {
-        /* Wizard lite */
-        if (borg_activate_artifact(EFF_CLAIRVOYANCE, INVEN_LIGHT) ||
-            borg_prayer(5, 4))
-        {
-            borg_note("# Illuminating the dungeon");
-
-            /* borg_react("SELF:wizard lite", "SELF:wizard lite"); */
-
-            when_wizard_LIGHT = borg_t;
-
-            return (TRUE);
-        }
-    }
-
-
-    /* Oops */
-    return (FALSE);
-}
-bool borg_check_LIGHT_only(void)
-{
-    int i, x, y;
-    int corners, floors;
-
-    borg_grid *ag;
-
-
-    bool do_LIGHT;
-
-    bool do_LIGHT_aux = FALSE;
-
-
-    /* Never in town */
-    if (!borg_skill[BI_CDEPTH]) return (FALSE);
-
-    /* Never when blind or hallucinating */
-    if (borg_skill[BI_ISBLIND] || borg_skill[BI_ISIMAGE]) return (FALSE);
-
-    /* XXX XXX XXX Dark */
-
-
-    /* Start */
-    do_LIGHT = FALSE;
-
-    /* Get central grid */
-    ag = &borg_grids[c_y][c_x];
-
-    corners = 0;
-    floors = 0;
-
-    /* Scan diagonal neighbors */
-    for (i = 4; i < 8; i++)
-    {
-        /* Get location */
-        x = c_x + ddx_ddd[i];
-        y = c_y + ddy_ddd[i];
-
-		/* Bounds check */
-        if (!in_bounds_fully(y,x)) continue;
-
-        /* Get grid */
-        ag = &borg_grids[y][x];
-
-        /* Location must be known */
-        if (ag->feat == FEAT_NONE) corners ++;
-
-        /* Location must not be a wall/door */
-        if (!borg_cave_floor_grid(ag)) corners ++;
-
-     }
-     /* Add them up ..2*/
-     if (corners <= 2) do_LIGHT = TRUE;
-
-    /* Hack */
-    if (do_LIGHT && (borg_skill[BI_CURLITE] >= 2) &&
-        (c_x >= borg_skill[BI_CURLITE]) && (c_x < AUTO_MAX_X - borg_skill[BI_CURLITE]) &&
-        (c_y >= borg_skill[BI_CURLITE]) && (c_y < AUTO_MAX_Y - borg_skill[BI_CURLITE]) &&
-        (randint0(100) < 90))
-    {
-
-        floors = 0;
-        /* Scan the "local" grids (5x5) 2 same as torch grid*/
-        for (y = c_y - 2; y <= c_y + 2; y++)
-        {
-            /* Scan the "local" grids (5x5) */
-            for (x = c_x - 2; x <= c_x + 2; x++)
-            {
-				/* Bounds check */
-	            if (!in_bounds_fully(y,x)) continue;
-
-                /* Get grid */
-                ag = &borg_grids[y][x];
-
-                /* Location must be a lit floor */
-                if (ag->info & BORG_LIGHT) floors ++;
-
-                /* Location must not be glowing */
-                if (ag->info & BORG_GLOW) floors --;
-
-                /* Location must not be a wall/door */
-                if (!borg_cave_floor_grid(ag)) floors --;
-
-            }
-        }
-    }
-    /* add them up */
-    if (floors <= 11) do_LIGHT = do_LIGHT_aux = FALSE;
-
-    /* Hack -- call lite */
-    if (do_LIGHT &&
-        (!when_call_LIGHT || (borg_t - when_call_LIGHT >= 7)))
-    {
-        /* Call light */
-        if (borg_activate_artifact(EFF_ILLUMINATION, INVEN_LIGHT) ||
-            borg_zap_rod(SV_ROD_ILLUMINATION) ||
-            borg_use_staff(SV_STAFF_LIGHT) ||
-            borg_read_scroll(SV_SCROLL_LIGHT) ||
-            borg_spell_fail(0, 3, 40) ||
-            borg_prayer_fail(0, 4, 40))
-        {
-            borg_note("# Illuminating the room prior to resting");
-
-            borg_react("SELF:lite", "SELF:lite");
-
-            when_call_LIGHT = borg_t;
-
-            /* dont rest. call light instead */
-            return (TRUE);
-        }
-    }
-
-
-    /* Hack -- Wizard Lite */
-    if (TRUE &&
-        (!when_wizard_LIGHT || (borg_t - when_wizard_LIGHT >= 1000)))
-    {
-        /* Wizard lite */
-        if (borg_activate_artifact(EFF_CLAIRVOYANCE, INVEN_LIGHT) ||
-            borg_prayer_fail(5, 4, 40))
-        {
-            borg_note("# Illuminating the dungeon prior to resting");
-
-            /* borg_react("SELF:wizard lite", "SELF:wizard lite"); */
-
-            when_wizard_LIGHT = borg_t;
-
-            return (TRUE);
-        }
-    }
-
-
-    /* nothing to light up.  OK to rest. */
-    return (FALSE);
+	/* Do the actual illumination bit */
+	return borg_check_LIGHT_only();
 }
 
 
