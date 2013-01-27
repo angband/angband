@@ -90,7 +90,7 @@ void flag_message(int flag, char *name)
 /**
  * Determine whether a flagset includes any curse flags.
  */
-bool cursed_p(bitflag *f)
+bool cursed_p(const bitflag *f)
 {
 	bitflag f2[OF_SIZE];
 
