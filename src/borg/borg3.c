@@ -2071,7 +2071,7 @@ void borg_item_analyze(borg_item *item, object_type *real_item, char *desc)
 		item->name1 = 7;
 		item->name2 = 0;
 		/* correct activation and pval */
-		item->activation = EFF_CLAIRVOYANCE;
+		item->activation = EF_CLAIRVOYANCE;
 		item->pval = 2;
 	}
 
@@ -2084,7 +2084,7 @@ void borg_item_analyze(borg_item *item, object_type *real_item, char *desc)
 		item->name1 = 134;
 		item->name2 = 0;
 		/* correct activation and pval */
-		item->activation = EFF_BERSERKER;
+		item->activation = EF_BERSERKER;
 		item->pval = 2;
 	}
 #endif
@@ -2154,7 +2154,7 @@ void borg_item_analyze(borg_item *item, object_type *real_item, char *desc)
         else if (strstr(item->note, "cursed}"))
         {
             /* One Ring is not junk */
-            if (item->activation != EFF_BIZARRE)
+            if (item->activation != EF_BIZARRE)
             {
                 item->value = 0L;
             }
@@ -3132,9 +3132,9 @@ bool borg_activate_artifact(int activation, int location)
          * of the resists that go with the artifact.
          * Lights dont need *id* just regular id.
          */
-        if  ((op_ptr->opt[OPT_birth_randarts] || op_ptr->opt[OPT_birth_randarts]) && (item->activation != EFF_ILLUMINATION &&
-              item->activation != EFF_MAPPING &&
-              item->activation != EFF_CLAIRVOYANCE) &&
+        if  ((op_ptr->opt[OPT_birth_randarts] || op_ptr->opt[OPT_birth_randarts]) && (item->activation != EF_ILLUMINATION &&
+              item->activation != EF_MAPPING &&
+              item->activation != EF_CLAIRVOYANCE) &&
              (!item->fully_identified))
         {
             borg_note(format("# %s must be *ID*'d before activation.", item->desc));
@@ -3187,10 +3187,10 @@ bool borg_equips_artifact(int activation, int location)
 
         /* Check charge.  But not on certain ones  Wor, ID, phase, TELEPORT.*/
         /* this is to ensure that his borg_prep code is working ok */
-        if ((activation != EFF_RECALL &&
-             activation != EFF_IDENTIFY &&
-             activation != EFF_TELE_PHASE &&
-             activation != EFF_TELE_LONG) &&
+        if ((activation != EF_RECALL &&
+             activation != EF_IDENTIFY &&
+             activation != EF_TELE_PHASE &&
+             activation != EF_TELE_LONG) &&
            (item->timeout >= 1) ) continue;
 
         /*
@@ -3204,9 +3204,9 @@ bool borg_equips_artifact(int activation, int location)
          * of the resists that go with the artifact.
          * Lights dont need *id* just regular id.
          */
-        if  ((op_ptr->opt[OPT_birth_randarts] || op_ptr->opt[OPT_birth_randarts]) && (item->activation != EFF_ILLUMINATION &&
-              item->activation != EFF_MAPPING &&
-              item->activation != EFF_CLAIRVOYANCE) &&
+        if  ((op_ptr->opt[OPT_birth_randarts] || op_ptr->opt[OPT_birth_randarts]) && (item->activation != EF_ILLUMINATION &&
+              item->activation != EF_MAPPING &&
+              item->activation != EF_CLAIRVOYANCE) &&
              (!item->fully_identified))
         {
             borg_note(format("# %s must be *ID*'d before activation.", item->desc));

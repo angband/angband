@@ -141,7 +141,7 @@ bool borg_use_things(void)
     /* Quaff experience restoration potion */
     if (borg_skill[BI_ISFIXEXP] &&
        (borg_prayer(6,4) ||
-        borg_activate_artifact(EFF_RESTORE_LIFE, INVEN_OUTER) ||
+        borg_activate_artifact(EF_RESTORE_LIFE, INVEN_OUTER) ||
         borg_quaff_potion(SV_POTION_RESTORE_EXP)))
     {
         return (TRUE);
@@ -288,7 +288,7 @@ bool borg_check_LIGHT_only(void)
 	/** Use wizard light sometimes **/
 
 	if (!when_wizard_LIGHT || (borg_t - when_wizard_LIGHT >= 1000)) {
-		if (borg_activate_artifact(EFF_CLAIRVOYANCE, INVEN_LIGHT) ||
+		if (borg_activate_artifact(EF_CLAIRVOYANCE, INVEN_LIGHT) ||
 				borg_prayer_fail(5, 4, 40)) {
 			borg_note("# Wizard lighting the dungeon");
 			/* borg_react("SELF:wizard lite", "SELF:wizard lite"); */
@@ -382,7 +382,7 @@ bool borg_check_LIGHT_only(void)
 	}
 
 	/* Light it up! */
-	if (borg_activate_artifact(EFF_ILLUMINATION, INVEN_LIGHT) ||
+	if (borg_activate_artifact(EF_ILLUMINATION, INVEN_LIGHT) ||
 			borg_zap_rod(SV_ROD_ILLUMINATION) ||
 			borg_use_staff(SV_STAFF_LIGHT) ||
 			borg_read_scroll(SV_SCROLL_LIGHT) ||
@@ -519,7 +519,7 @@ bool borg_check_LIGHT(void)
 
 
         /* Check for traps and doors and evil*/
-        if (borg_activate_artifact(EFF_DETECT_ALL, INVEN_WIELD) ||
+        if (borg_activate_artifact(EF_DETECT_ALL, INVEN_WIELD) ||
             borg_zap_rod(SV_ROD_DETECTION) ||
             borg_prayer_fail(5, 1, 40))
         {
@@ -560,7 +560,7 @@ bool borg_check_LIGHT(void)
          borg_skill[BI_CDEPTH]) 	/* Never in town */
     {
         /* Check for traps and doors */
-        if (borg_activate_artifact(EFF_DETECT_ALL, INVEN_WIELD) ||
+        if (borg_activate_artifact(EF_DETECT_ALL, INVEN_WIELD) ||
             borg_spell_fail(0, 6, 40) ||
             borg_prayer_fail(0, 5, 40))
         {
@@ -582,7 +582,7 @@ bool borg_check_LIGHT(void)
          borg_skill[BI_CDEPTH]) 	/* Never in town */
     {
         /* Check for traps */
-        if (borg_activate_artifact(EFF_DETECT_TRAP, INVEN_WIELD) ||
+        if (borg_activate_artifact(EF_DETECT_TRAP, INVEN_WIELD) ||
         	borg_read_scroll(SV_SCROLL_DETECT_TRAP) ||
             borg_zap_rod(SV_ROD_DETECT_TRAP) ||
             borg_prayer_fail(0, 5, 40))
@@ -604,7 +604,7 @@ bool borg_check_LIGHT(void)
          borg_skill[BI_CDEPTH]) 	/* Never in town */
     {
         /* Check for traps */
-        if (borg_activate_artifact(EFF_DETECT_ALL, INVEN_WIELD) ||
+        if (borg_activate_artifact(EF_DETECT_ALL, INVEN_WIELD) ||
         	borg_read_scroll(SV_SCROLL_DETECT_DOOR) ||
             borg_zap_rod(SV_ROD_DETECT_DOOR) ||
             borg_prayer_fail(0, 5, 40))
@@ -626,7 +626,7 @@ bool borg_check_LIGHT(void)
          borg_skill[BI_CDEPTH]) 	/* Never in town */
     {
         /* Check for walls */
-        if (borg_activate_artifact(EFF_MAPPING, INVEN_LIGHT) ||
+        if (borg_activate_artifact(EF_MAPPING, INVEN_LIGHT) ||
             borg_read_scroll(SV_SCROLL_MAPPING) ||
             borg_use_staff(SV_STAFF_MAPPING) ||
             borg_zap_rod(SV_ROD_MAPPING) ||
@@ -1141,7 +1141,7 @@ static bool borg_brand_weapon(void)
 	if (b_i == -1) return (FALSE);
 
     /* Enchant it */
-    if (borg_activate_artifact(EFF_FIREBRAND, INVEN_BOW) ||
+    if (borg_activate_artifact(EF_FIREBRAND, INVEN_BOW) ||
         borg_spell_fail(7, 5, 65))
     {
 
@@ -1406,7 +1406,7 @@ bool borg_recharging(void)
             borg_read_scroll(SV_SCROLL_RECHARGING) ||
             borg_spell_fail(2, 1, 96) ||
             borg_prayer_fail(7, 1, 96) ||
-            borg_activate_artifact(EFF_RECHARGE, INVEN_OUTER))
+            borg_activate_artifact(EF_RECHARGE, INVEN_OUTER))
         {
             /* Message */
             borg_note(format("Recharging %s with current charge of %d", item->desc, item->pval));
@@ -2443,7 +2443,7 @@ bool borg_test_stuff(void)
     int i;
     int b_i = -1, b_v = -1;
     bool free_id = borg_spell_legal(2, 5) || borg_prayer_legal(5, 2) ||
-					borg_equips_artifact(EFF_IDENTIFY, INVEN_WIELD);
+					borg_equips_artifact(EF_IDENTIFY, INVEN_WIELD);
 
     /* don't ID stuff when you can't recover spent spell point immediately */
     if (((borg_skill[BI_CURSP] < 50 && borg_spell_legal(2, 5)) ||
@@ -2574,7 +2574,7 @@ bool borg_test_stuff(void)
         borg_item *item = &borg_items[b_i];
 
 		/* Use an item to identify */
-		if (borg_activate_artifact(EFF_IDENTIFY, INVEN_WIELD) ||
+		if (borg_activate_artifact(EF_IDENTIFY, INVEN_WIELD) ||
 				borg_spell(2, 5) ||
 				borg_prayer(5, 2) ||
 				borg_zap_rod(SV_ROD_IDENTIFY) ||
@@ -2660,7 +2660,7 @@ bool borg_swap_rings(void)
     /* Remove any naked loose ring */
     if (borg_items[INVEN_LEFT].iqty &&
         !borg_items[INVEN_RIGHT].iqty &&
-         borg_items[INVEN_LEFT].activation != EFF_BIZARRE)
+         borg_items[INVEN_LEFT].activation != EF_BIZARRE)
     {
         /* Log */
         borg_note("# Taking off naked loose ring.");
@@ -2681,7 +2681,7 @@ bool borg_swap_rings(void)
 
 
     /* Cannot remove the One Ring */
-    if (!borg_items[INVEN_RIGHT].activation == EFF_BIZARRE) return (FALSE);
+    if (!borg_items[INVEN_RIGHT].activation == EF_BIZARRE) return (FALSE);
 
 
     /*** Remove nasty "tight" rings ***/
@@ -2851,7 +2851,7 @@ bool borg_wear_rings(void)
         if (slot != INVEN_LEFT) continue;
 
         /* Occassionally evaluate swapping into the tight finger */
-        if (randint0(100) > 75 || item->activation == EFF_BIZARRE)
+        if (randint0(100) > 75 || item->activation == EF_BIZARRE)
         {
             slot = INVEN_RIGHT;
         }
@@ -2859,7 +2859,7 @@ bool borg_wear_rings(void)
         /* Need to be careful not to put the One Ring onto
          * the Left Hand
          */
-        if (item->activation == EFF_BIZARRE &&
+        if (item->activation == EF_BIZARRE &&
            (borg_items[INVEN_RIGHT].iqty))
             continue;
 
@@ -2888,7 +2888,7 @@ bool borg_wear_rings(void)
         p = borg_power();
 
 		/* the One Ring would be awsome */
-		if (item->activation == EFF_BIZARRE) p = my_power * 2;
+		if (item->activation == EF_BIZARRE) p = my_power * 2;
 
         /* Restore the old item (empty) */
         COPY(&borg_items[slot], &safe_items[slot], borg_item);
@@ -3527,7 +3527,7 @@ bool borg_wear_stuff(void)
 
         /* skip it if it has not been decursed, unless the One Ring */
         if ((item->cursed) &&
-            (item->activation != EFF_BIZARRE)) continue;
+            (item->activation != EF_BIZARRE)) continue;
 
     	/* Do not consider wearing this item if I worn it already this level,
     	 * I might be stuck in a loop.
@@ -3640,7 +3640,7 @@ bool borg_wear_stuff(void)
 	        /* Need to be careful not to put the One Ring onto
 	         * the Left Hand
 	         */
-	        if (item->activation == EFF_BIZARRE &&
+	        if (item->activation == EF_BIZARRE &&
 	        	!borg_items[INVEN_LEFT].tval)
 	            p = -99999;
 
@@ -3657,7 +3657,7 @@ bool borg_wear_stuff(void)
         } /* non-rings, non full */
 
 
-	if (randint0(100)==10 || item->activation == EFF_BIZARRE)
+	if (randint0(100)==10 || item->activation == EF_BIZARRE)
 	{
         /* ring, full hands */
         if (slot == INVEN_LEFT &&
@@ -3715,7 +3715,7 @@ bool borg_wear_stuff(void)
 			         * the Left Hand
 			         */
 			        if (ii == INVEN_LEFT &&
-			            item->activation == EFF_BIZARRE)
+			            item->activation == EF_BIZARRE)
 			            p = -99999;
 
                     /* Ignore "bad" swaps */

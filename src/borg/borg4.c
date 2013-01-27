@@ -849,7 +849,7 @@ static void borg_notice_aux1(void)
 		if (my_ammo_power >= 3)
 		{
 
-			if ((borg_equips_artifact(EFF_FIREBRAND, INVEN_BOW) ||
+			if ((borg_equips_artifact(EF_FIREBRAND, INVEN_BOW) ||
 				 borg_spell_legal_fail(7, 5, 65)) &&
 			  item->iqty >=5 &&
 			  /* Skip artifacts and ego-items */
@@ -1478,7 +1478,7 @@ static void borg_notice_aux2(void)
 			 */
 			if (my_ammo_power < 3) break;
 
-            if ((borg_equips_artifact(EFF_FIREBRAND, INVEN_BOW) ||
+            if ((borg_equips_artifact(EF_FIREBRAND, INVEN_BOW) ||
                  borg_spell_legal_fail(7, 5, 65)) &&
               item->iqty >=5 &&
               /* Skip artifacts and ego-items */
@@ -1553,7 +1553,7 @@ static void borg_notice_aux2(void)
 
     /* Handle "identify" -> infinite identifies */
     if (borg_spell_legal(2, 5) || borg_prayer_legal(5, 2) ||
-        borg_equips_artifact(EFF_IDENTIFY, INVEN_WIELD))
+        borg_equips_artifact(EF_IDENTIFY, INVEN_WIELD))
     {
         borg_skill[BI_AID] += 1000;
     }
@@ -1579,7 +1579,7 @@ static void borg_notice_aux2(void)
 
     /* Handle "detection" */
     if (borg_prayer_legal(5, 1) ||
-    borg_equips_artifact(EFF_DETECT_ALL, INVEN_HEAD))
+    borg_equips_artifact(EF_DETECT_ALL, INVEN_HEAD))
     {
         borg_skill[BI_ADETDOOR] = 1000;
         borg_skill[BI_ADETTRAP] = 1000;
@@ -1596,7 +1596,7 @@ static void borg_notice_aux2(void)
 
     /* Handle "magic mapping" */
     if (borg_prayer_legal(2, 6) ||
-    borg_equips_artifact(EFF_MAPPING, INVEN_LIGHT))
+    borg_equips_artifact(EF_MAPPING, INVEN_LIGHT))
     {
         borg_skill[BI_ADETDOOR] = 1000;
         borg_skill[BI_ADETTRAP] = 1000;
@@ -1605,8 +1605,8 @@ static void borg_notice_aux2(void)
 
     /* Handle "call lite" */
     if (borg_prayer_legal(0, 4) ||
-    	borg_equips_artifact(EFF_ILLUMINATION, INVEN_LIGHT) ||
-    	borg_equips_artifact(EFF_CLAIRVOYANCE, INVEN_LIGHT) ||
+    	borg_equips_artifact(EF_ILLUMINATION, INVEN_LIGHT) ||
+    	borg_equips_artifact(EF_CLAIRVOYANCE, INVEN_LIGHT) ||
     	borg_spell_legal(0, 3))
     {
         borg_skill[BI_ALITE] += 1000;
@@ -1614,7 +1614,7 @@ static void borg_notice_aux2(void)
 
     /* Handle "protection from evil" */
     if (borg_prayer_legal(2, 4) ||
-    borg_equips_artifact(EFF_PROTEVIL, INVEN_HEAD))
+    borg_equips_artifact(EF_PROTEVIL, INVEN_HEAD))
     {
         borg_skill[BI_APFE] += 1000;
     }
@@ -1643,7 +1643,7 @@ static void borg_notice_aux2(void)
     }
 
     /* Handle "Brand Weapon (bolts)" */
-    if (borg_equips_artifact(EFF_FIREBRAND, INVEN_BOW) ||
+    if (borg_equips_artifact(EF_FIREBRAND, INVEN_BOW) ||
         borg_spell_legal_fail(7, 5, 65))
     {
         amt_brand_weapon += 1000;
@@ -1659,7 +1659,7 @@ static void borg_notice_aux2(void)
 
     /* Handle Diggers (stone to mud) */
     if (borg_spell_legal_fail(2, 2, 40) ||
-    	borg_equips_artifact(EFF_STONE_TO_MUD, INVEN_WIELD) ||
+    	borg_equips_artifact(EF_STONE_TO_MUD, INVEN_WIELD) ||
 		borg_equips_ring(SV_RING_DELVING))
     {
         amt_digger += 1;
@@ -1671,7 +1671,7 @@ static void borg_notice_aux2(void)
     {
         borg_skill[BI_RECALL] += 1000;
     }
-	if (borg_equips_artifact(EFF_RECALL, INVEN_WIELD))
+	if (borg_equips_artifact(EF_RECALL, INVEN_WIELD))
 	{
 		borg_skill[BI_RECALL] += 1;
 	}
@@ -1688,7 +1688,7 @@ static void borg_notice_aux2(void)
     {
         borg_skill[BI_APHASE] += 1000;
     }
-	if (borg_equips_artifact(EFF_TELE_PHASE, INVEN_WIELD))
+	if (borg_equips_artifact(EF_TELE_PHASE, INVEN_WIELD))
 	{
 		borg_skill[BI_APHASE] += 1;
 	}
@@ -1700,7 +1700,7 @@ static void borg_notice_aux2(void)
     {
         borg_skill[BI_ATELEPORT] += 1000;
     }
-	if (borg_equips_artifact(EFF_TELE_LONG, INVEN_RIGHT))
+	if (borg_equips_artifact(EF_TELE_LONG, INVEN_RIGHT))
 	{
 		borg_skill[BI_AESCAPE] += 1;
         borg_skill[BI_ATELEPORT] += 1;
@@ -1720,22 +1720,22 @@ static void borg_notice_aux2(void)
 
     /* speed spells HASTE*/
     if ( borg_spell_legal( 3, 2 ) ||
-         borg_equips_artifact(EFF_HASTE1, INVEN_RIGHT) ||
-         borg_equips_artifact(EFF_HASTE2, INVEN_RIGHT))
+         borg_equips_artifact(EF_HASTE1, INVEN_RIGHT) ||
+         borg_equips_artifact(EF_HASTE2, INVEN_RIGHT))
     {
         borg_skill[BI_ASPEED] += 1000;
     }
 
     /* Handle "cure light wounds" */
-    if (borg_equips_artifact(EFF_CURE_SERIOUS, INVEN_WIELD))
+    if (borg_equips_artifact(EF_CURE_SERIOUS, INVEN_WIELD))
     {
         borg_skill[BI_ACSW] += 1000;
     }
 
 
     /* Handle "heal" */
-    if (borg_equips_artifact(EFF_HEAL1,INVEN_BODY) ||
-        borg_equips_artifact(EFF_HEAL2,INVEN_HEAD) ||
+    if (borg_equips_artifact(EF_HEAL1,INVEN_BODY) ||
+        borg_equips_artifact(EF_HEAL2,INVEN_HEAD) ||
         borg_prayer_legal(3, 2) ||
         borg_prayer_legal(6, 2))
     {
@@ -1743,20 +1743,20 @@ static void borg_notice_aux2(void)
     }
 
     /* Handle "fix exp" */
-    if (borg_equips_artifact(EFF_RESTORE_LIFE, INVEN_OUTER))
+    if (borg_equips_artifact(EF_RESTORE_LIFE, INVEN_OUTER))
     {
         amt_fix_exp += 1000;
     }
 
 	/* Handle "Remembrance" -- is just as good as Hold Life */
 	if (borg_prayer_legal(6, 4) ||
-	    borg_equips_artifact(EFF_RESTORE_LIFE, INVEN_WIELD))
+	    borg_equips_artifact(EF_RESTORE_LIFE, INVEN_WIELD))
 	{
 		borg_skill[BI_HLIFE] = TRUE;
 	}
 
     /* Handle "recharge" */
-    if (borg_equips_artifact(EFF_RECHARGE, INVEN_OUTER) ||
+    if (borg_equips_artifact(EF_RECHARGE, INVEN_OUTER) ||
         borg_spell_legal(7,4) ||
         borg_prayer_legal(7,1) ||
         borg_spell_legal(2, 1))
@@ -2382,7 +2382,7 @@ void borg_notice_armour_swap(void)
             !strstr(item->note, "special")) continue;
 
         /* One Ring is not a swap */
-        if (item->activation == EFF_BIZARRE) continue;
+        if (item->activation == EF_BIZARRE) continue;
 
         /* Clear all the swap weapon flags as I look at each one. */
         armour_swap_slay_animal = FALSE;
@@ -4681,43 +4681,43 @@ static s32b borg_power_aux1(void)
         {
         /* Artifact -- Narthanc- fire bolt 9d8*/
         /* Artifact -- Paurhach- fire bolt 9d8 */
-        case EFF_FIRE_BOLT:
+        case EF_FIRE_BOLT:
         value +=(500+(9*(8+1)/2));
         break;
 
         /* Artifact -- Nimthanc- frost bolt 6d8*/
         /* Artifact -- Paurnimmen- frost bolt 6d8 */
-        case EFF_COLD_BOLT:
+        case EF_COLD_BOLT:
         value +=(500+(6*(8+1)/2));
         break;
 
         /* Artifact -- Dethanc- electric bolt 4d8*/
         /* Artifact -- Pauraegen- lightning bolt 4d8 */
-        case EFF_ELEC_BOLT:
+        case EF_ELEC_BOLT:
         value +=(500+(4*(8+1)/2));
         break;
 
 
         /* Artifact -- Rilia- poison gas 12*/
-        case EFF_STINKING_CLOUD:
+        case EF_STINKING_CLOUD:
         value +=(500+(24));
         break;
 
         /* Artifact -- Belangil- frost ball 48*/
-        case EFF_COLD_BALL50:
+        case EF_COLD_BALL50:
         value +=(500+(96));
         break;
 
 
         /* Artifact -- Arunruth- frost bolt 12d8*/
-        case EFF_COLD_BOLT2:
+        case EF_COLD_BOLT2:
         value +=(500+(12*(8+1)/2));
         break;
 
 
         /* Artifact -- Ringil- frost ball 100*/
         /* Artifact -- Aeglos- frost ball 100*/
-        case EFF_COLD_BALL100:
+        case EF_COLD_BALL100:
         value +=(500+(200));
         /* extra boost for speed */
         if (!op_ptr->opt[OPT_birth_randarts] &&
@@ -4728,72 +4728,72 @@ static s32b borg_power_aux1(void)
 
         /* Artifact -- Anduril- fire ball 72*/
         /* Artifact -- Firestar- fire ball 72 */
-        case EFF_FIRE_BALL:
+        case EF_FIRE_BALL:
         value +=(500+(144));
         break;
 
 		/* Artifact -- NARYA- FIRE BALL 120 */
-        case EFF_FIRE_BALL2:
+        case EF_FIRE_BALL2:
         value +=(500+(240));
         break;
 
         /* Artifact -- Theoden- drain Life 120*/
-        case EFF_DRAIN_LIFE2:
+        case EF_DRAIN_LIFE2:
         value +=(500+120);
         break;
 
 
         /* Artifact -- Totila- confusion */
-        case EFF_CONFUSE2:
+        case EF_CONFUSE2:
         value +=(500+(200));
         break;
 
         /* Artifact -- TURMIL- drain life 90 */
-        case EFF_DRAIN_LIFE1:
+        case EF_DRAIN_LIFE1:
         value +=(500+90);
         break;
 
 
         /* Artifact -- Razorback- spikes 150 */
         /* Artifact -- FINGOLFIN- MISSILE 150 (bonus for TH TD)*/
-        case EFF_ARROW:
+        case EF_ARROW:
         value +=(500+(300));
         break;
 
 
         /* Artifact -- Cammithrim- Magic Missile 2d6 */
-        case EFF_MISSILE:
+        case EF_MISSILE:
         value +=(500+(2*(6+1)/2));
         break;
 
         /* Artifact -- PaurNEN- ACID bolt 5d8 */
-        case EFF_ACID_BOLT:
+        case EF_ACID_BOLT:
         value +=(500+(5*(8+1)/2));
         break;
 
         /* Artifact -- INGWE- DISPEL EVIL X5 */
-        case EFF_DISPEL_EVIL:
+        case EF_DISPEL_EVIL:
         value +=(500+(10 + (borg_skill[BI_CLEVEL]*5)/2));
         break;
 
 
         /* Artifact -- NENYA- COLD BALL 200 */
-        case EFF_COLD_BALL2:
+        case EF_COLD_BALL2:
         value +=(500+(400));
         break;
 
         /* Artifact -- VILYA- ELEC BALL 250 */
-        case EFF_ELEC_BALL2:
+        case EF_ELEC_BALL2:
         value +=(500+(500));
         break;
 
         /* Artifact -- POWER One Ring-*/
-        case EFF_BIZARRE:
+        case EF_BIZARRE:
         value +=(999999);
         break;
 
         /* Artifact -- Ulmo- tele way */
-        case EFF_TELE_OTHER:
+        case EF_TELE_OTHER:
         if (borg_class == CLASS_MAGE)
         {
             value +=500;
@@ -4803,7 +4803,7 @@ static s32b borg_power_aux1(void)
         break;
 
         /* Artifact -- Colluin - bladturner Resistance */
-        case EFF_RESIST_ALL:
+        case EF_RESIST_ALL:
         value +=(500+(150));
         /* extra bonus for the non spell guys */
         if (borg_class == CLASS_WARRIOR || borg_class == CLASS_ROGUE ||
@@ -4811,7 +4811,7 @@ static s32b borg_power_aux1(void)
         break;
 
         /* Artifact -- Holcolleth -- Sleep II */
-        case EFF_SLEEPII:
+        case EF_SLEEPII:
         if ((borg_class == CLASS_MAGE) || (borg_class == CLASS_PRIEST) )
         {
             value +=500;
@@ -4821,7 +4821,7 @@ static s32b borg_power_aux1(void)
         break;
 
         /* Artifact -- Thingol recharge */
-        case EFF_RECHARGE:
+        case EF_RECHARGE:
         if (borg_class == CLASS_MAGE)
         {
             value +=500;
@@ -4833,7 +4833,7 @@ static s32b borg_power_aux1(void)
         /* Artifact -- Holehenth detection */
 
         /* Artifact -- Dal fear and poison */
-        case EFF_REM_FEAR_POIS:
+        case EF_REM_FEAR_POIS:
         if (borg_class == CLASS_MAGE || borg_class == CLASS_PRIEST)
         {
             value +=500;
@@ -4849,7 +4849,7 @@ static s32b borg_power_aux1(void)
         /* Artifact -- Eriril id */
 
         /* Artifact -- Cubragol brand bolts, bonus for speed */
-        case EFF_FIREBRAND:
+        case EF_FIREBRAND:
         value +=(500+(300));
         /* extra boost for speed */
         if (!op_ptr->opt[OPT_birth_randarts] &&
@@ -4872,7 +4872,7 @@ static s32b borg_power_aux1(void)
         /* Artifact -- Phial */
 
         /* Artifact -- Star */
-        case EFF_MAPPING:
+        case EF_MAPPING:
         value +=(1200);
         break;
 
