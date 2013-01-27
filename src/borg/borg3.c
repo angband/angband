@@ -3095,7 +3095,9 @@ bool borg_equips_staff_fail(int sval)
 
 
 /*
- * Hack -- attempt to use the given artifact (by index)
+ * Attempt to use the given artifact
+ *
+ * XXX: location no longer used
  */
 bool borg_activate_artifact(int activation, int location)
 {
@@ -3107,19 +3109,14 @@ bool borg_activate_artifact(int activation, int location)
         borg_item *item = &borg_items[i];
 		artifact_type *a_ptr;
 
-		/* Skip non artifacts */
-        /* if (!artifact_p(item)) continue; */
-
 		/* Skip artifacts w/o activation */
-		/* TR2_activate was removed */
-		if (!(item->name1 && a_info[item->name1].effect) &&
-		    !(k_info[item->kind].effect)) continue;
+		if (!item->name1 ||
+				!a_info[item->name1].effect ||
+				!a_info[item->name1].effect != activation)
+			continue;
 
 		/* get the item */
 		a_ptr = &a_info[item->name1];
-
-		/* Skip wrong activation */
-		if (a_ptr->effect != activation) continue;
 
         /* Check charge */
         if (item->timeout) continue;
