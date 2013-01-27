@@ -210,7 +210,7 @@ extern int borg_wield_slot(const borg_item *item);
 /*
  * Analyze an item, given a textual description
  */
-extern void borg_item_analyze(borg_item *item, object_type *real_item, char *desc);
+extern void borg_item_analyze(borg_item *item, const object_type *real_item, char *desc);
 
 
 /* look for a *id*'d item */
