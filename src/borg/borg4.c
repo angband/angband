@@ -849,7 +849,7 @@ static void borg_notice_aux1(void)
 		if (my_ammo_power >= 3)
 		{
 
-			if ((borg_equips_artifact(EF_FIREBRAND, INVEN_BOW) ||
+			if ((borg_equips_artifact(EF_FIREBRAND) ||
 				 borg_spell_legal_fail(7, 5, 65)) &&
 			  item->iqty >=5 &&
 			  /* Skip artifacts and ego-items */
@@ -1478,7 +1478,7 @@ static void borg_notice_aux2(void)
 			 */
 			if (my_ammo_power < 3) break;
 
-            if ((borg_equips_artifact(EF_FIREBRAND, INVEN_BOW) ||
+            if ((borg_equips_artifact(EF_FIREBRAND) ||
                  borg_spell_legal_fail(7, 5, 65)) &&
               item->iqty >=5 &&
               /* Skip artifacts and ego-items */
@@ -1553,7 +1553,7 @@ static void borg_notice_aux2(void)
 
     /* Handle "identify" -> infinite identifies */
     if (borg_spell_legal(2, 5) || borg_prayer_legal(5, 2) ||
-        borg_equips_artifact(EF_IDENTIFY, INVEN_WIELD))
+        borg_equips_artifact(EF_IDENTIFY))
     {
         borg_skill[BI_AID] += 1000;
     }
@@ -1579,7 +1579,7 @@ static void borg_notice_aux2(void)
 
     /* Handle "detection" */
     if (borg_prayer_legal(5, 1) ||
-    borg_equips_artifact(EF_DETECT_ALL, INVEN_HEAD))
+    borg_equips_artifact(EF_DETECT_ALL))
     {
         borg_skill[BI_ADETDOOR] = 1000;
         borg_skill[BI_ADETTRAP] = 1000;
@@ -1596,7 +1596,7 @@ static void borg_notice_aux2(void)
 
     /* Handle "magic mapping" */
     if (borg_prayer_legal(2, 6) ||
-    borg_equips_artifact(EF_MAPPING, INVEN_LIGHT))
+    borg_equips_artifact(EF_MAPPING))
     {
         borg_skill[BI_ADETDOOR] = 1000;
         borg_skill[BI_ADETTRAP] = 1000;
@@ -1605,8 +1605,8 @@ static void borg_notice_aux2(void)
 
     /* Handle "call lite" */
     if (borg_prayer_legal(0, 4) ||
-    	borg_equips_artifact(EF_ILLUMINATION, INVEN_LIGHT) ||
-    	borg_equips_artifact(EF_CLAIRVOYANCE, INVEN_LIGHT) ||
+    	borg_equips_artifact(EF_ILLUMINATION) ||
+    	borg_equips_artifact(EF_CLAIRVOYANCE) ||
     	borg_spell_legal(0, 3))
     {
         borg_skill[BI_ALITE] += 1000;
@@ -1614,7 +1614,7 @@ static void borg_notice_aux2(void)
 
     /* Handle "protection from evil" */
     if (borg_prayer_legal(2, 4) ||
-    borg_equips_artifact(EF_PROTEVIL, INVEN_HEAD))
+    borg_equips_artifact(EF_PROTEVIL))
     {
         borg_skill[BI_APFE] += 1000;
     }
@@ -1643,7 +1643,7 @@ static void borg_notice_aux2(void)
     }
 
     /* Handle "Brand Weapon (bolts)" */
-    if (borg_equips_artifact(EF_FIREBRAND, INVEN_BOW) ||
+    if (borg_equips_artifact(EF_FIREBRAND) ||
         borg_spell_legal_fail(7, 5, 65))
     {
         amt_brand_weapon += 1000;
@@ -1659,7 +1659,7 @@ static void borg_notice_aux2(void)
 
     /* Handle Diggers (stone to mud) */
     if (borg_spell_legal_fail(2, 2, 40) ||
-    	borg_equips_artifact(EF_STONE_TO_MUD, INVEN_WIELD) ||
+    	borg_equips_artifact(EF_STONE_TO_MUD) ||
 		borg_equips_ring(SV_RING_DELVING))
     {
         amt_digger += 1;
@@ -1671,7 +1671,7 @@ static void borg_notice_aux2(void)
     {
         borg_skill[BI_RECALL] += 1000;
     }
-	if (borg_equips_artifact(EF_RECALL, INVEN_WIELD))
+	if (borg_equips_artifact(EF_RECALL))
 	{
 		borg_skill[BI_RECALL] += 1;
 	}
@@ -1688,7 +1688,7 @@ static void borg_notice_aux2(void)
     {
         borg_skill[BI_APHASE] += 1000;
     }
-	if (borg_equips_artifact(EF_TELE_PHASE, INVEN_WIELD))
+	if (borg_equips_artifact(EF_TELE_PHASE))
 	{
 		borg_skill[BI_APHASE] += 1;
 	}
@@ -1700,7 +1700,7 @@ static void borg_notice_aux2(void)
     {
         borg_skill[BI_ATELEPORT] += 1000;
     }
-	if (borg_equips_artifact(EF_TELE_LONG, INVEN_RIGHT))
+	if (borg_equips_artifact(EF_TELE_LONG))
 	{
 		borg_skill[BI_AESCAPE] += 1;
         borg_skill[BI_ATELEPORT] += 1;
@@ -1720,22 +1720,22 @@ static void borg_notice_aux2(void)
 
     /* speed spells HASTE*/
     if ( borg_spell_legal( 3, 2 ) ||
-         borg_equips_artifact(EF_HASTE1, INVEN_RIGHT) ||
-         borg_equips_artifact(EF_HASTE2, INVEN_RIGHT))
+         borg_equips_artifact(EF_HASTE1) ||
+         borg_equips_artifact(EF_HASTE2))
     {
         borg_skill[BI_ASPEED] += 1000;
     }
 
     /* Handle "cure light wounds" */
-    if (borg_equips_artifact(EF_CURE_SERIOUS, INVEN_WIELD))
+    if (borg_equips_artifact(EF_CURE_SERIOUS))
     {
         borg_skill[BI_ACSW] += 1000;
     }
 
 
     /* Handle "heal" */
-    if (borg_equips_artifact(EF_HEAL1,INVEN_BODY) ||
-        borg_equips_artifact(EF_HEAL2,INVEN_HEAD) ||
+    if (borg_equips_artifact(EF_HEAL1) ||
+        borg_equips_artifact(EF_HEAL2) ||
         borg_prayer_legal(3, 2) ||
         borg_prayer_legal(6, 2))
     {
@@ -1743,20 +1743,20 @@ static void borg_notice_aux2(void)
     }
 
     /* Handle "fix exp" */
-    if (borg_equips_artifact(EF_RESTORE_LIFE, INVEN_OUTER))
+    if (borg_equips_artifact(EF_RESTORE_LIFE))
     {
         amt_fix_exp += 1000;
     }
 
 	/* Handle "Remembrance" -- is just as good as Hold Life */
 	if (borg_prayer_legal(6, 4) ||
-	    borg_equips_artifact(EF_RESTORE_LIFE, INVEN_WIELD))
+	    borg_equips_artifact(EF_RESTORE_LIFE))
 	{
 		borg_skill[BI_HLIFE] = TRUE;
 	}
 
     /* Handle "recharge" */
-    if (borg_equips_artifact(EF_RECHARGE, INVEN_OUTER) ||
+    if (borg_equips_artifact(EF_RECHARGE) ||
         borg_spell_legal(7,4) ||
         borg_prayer_legal(7,1) ||
         borg_spell_legal(2, 1))

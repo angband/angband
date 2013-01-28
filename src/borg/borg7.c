@@ -141,7 +141,7 @@ bool borg_use_things(void)
     /* Quaff experience restoration potion */
     if (borg_skill[BI_ISFIXEXP] &&
        (borg_prayer(6,4) ||
-        borg_activate_artifact(EF_RESTORE_LIFE, INVEN_OUTER) ||
+        borg_activate_artifact(EF_RESTORE_LIFE) ||
         borg_quaff_potion(SV_POTION_RESTORE_EXP)))
     {
         return (TRUE);
@@ -288,7 +288,7 @@ bool borg_check_LIGHT_only(void)
 	/** Use wizard light sometimes **/
 
 	if (!when_wizard_LIGHT || (borg_t - when_wizard_LIGHT >= 1000)) {
-		if (borg_activate_artifact(EF_CLAIRVOYANCE, INVEN_LIGHT) ||
+		if (borg_activate_artifact(EF_CLAIRVOYANCE) ||
 				borg_prayer_fail(5, 4, 40)) {
 			borg_note("# Wizard lighting the dungeon");
 			/* borg_react("SELF:wizard lite", "SELF:wizard lite"); */
@@ -382,7 +382,7 @@ bool borg_check_LIGHT_only(void)
 	}
 
 	/* Light it up! */
-	if (borg_activate_artifact(EF_ILLUMINATION, INVEN_LIGHT) ||
+	if (borg_activate_artifact(EF_ILLUMINATION) ||
 			borg_zap_rod(SV_ROD_ILLUMINATION) ||
 			borg_use_staff(SV_STAFF_LIGHT) ||
 			borg_read_scroll(SV_SCROLL_LIGHT) ||
@@ -519,7 +519,7 @@ bool borg_check_LIGHT(void)
 
 
         /* Check for traps and doors and evil*/
-        if (borg_activate_artifact(EF_DETECT_ALL, INVEN_WIELD) ||
+        if (borg_activate_artifact(EF_DETECT_ALL) ||
             borg_zap_rod(SV_ROD_DETECTION) ||
             borg_prayer_fail(5, 1, 40))
         {
@@ -560,7 +560,7 @@ bool borg_check_LIGHT(void)
          borg_skill[BI_CDEPTH]) 	/* Never in town */
     {
         /* Check for traps and doors */
-        if (borg_activate_artifact(EF_DETECT_ALL, INVEN_WIELD) ||
+        if (borg_activate_artifact(EF_DETECT_ALL) ||
             borg_spell_fail(0, 6, 40) ||
             borg_prayer_fail(0, 5, 40))
         {
@@ -582,7 +582,7 @@ bool borg_check_LIGHT(void)
          borg_skill[BI_CDEPTH]) 	/* Never in town */
     {
         /* Check for traps */
-        if (borg_activate_artifact(EF_DETECT_TRAP, INVEN_WIELD) ||
+        if (borg_activate_artifact(EF_DETECT_TRAP) ||
         	borg_read_scroll(SV_SCROLL_DETECT_TRAP) ||
             borg_zap_rod(SV_ROD_DETECT_TRAP) ||
             borg_prayer_fail(0, 5, 40))
@@ -604,7 +604,7 @@ bool borg_check_LIGHT(void)
          borg_skill[BI_CDEPTH]) 	/* Never in town */
     {
         /* Check for traps */
-        if (borg_activate_artifact(EF_DETECT_ALL, INVEN_WIELD) ||
+        if (borg_activate_artifact(EF_DETECT_ALL) ||
         	borg_read_scroll(SV_SCROLL_DETECT_DOOR) ||
             borg_zap_rod(SV_ROD_DETECT_DOOR) ||
             borg_prayer_fail(0, 5, 40))
@@ -626,7 +626,7 @@ bool borg_check_LIGHT(void)
          borg_skill[BI_CDEPTH]) 	/* Never in town */
     {
         /* Check for walls */
-        if (borg_activate_artifact(EF_MAPPING, INVEN_LIGHT) ||
+        if (borg_activate_artifact(EF_MAPPING) ||
             borg_read_scroll(SV_SCROLL_MAPPING) ||
             borg_use_staff(SV_STAFF_MAPPING) ||
             borg_zap_rod(SV_ROD_MAPPING) ||
@@ -1141,7 +1141,7 @@ static bool borg_brand_weapon(void)
 	if (b_i == -1) return (FALSE);
 
     /* Enchant it */
-    if (borg_activate_artifact(EF_FIREBRAND, INVEN_BOW) ||
+    if (borg_activate_artifact(EF_FIREBRAND) ||
         borg_spell_fail(7, 5, 65))
     {
 
@@ -1406,7 +1406,7 @@ bool borg_recharging(void)
             borg_read_scroll(SV_SCROLL_RECHARGING) ||
             borg_spell_fail(2, 1, 96) ||
             borg_prayer_fail(7, 1, 96) ||
-            borg_activate_artifact(EF_RECHARGE, INVEN_OUTER))
+            borg_activate_artifact(EF_RECHARGE))
         {
             /* Message */
             borg_note(format("Recharging %s with current charge of %d", item->desc, item->pval));
@@ -2443,7 +2443,7 @@ bool borg_test_stuff(void)
     int i;
     int b_i = -1, b_v = -1;
     bool free_id = borg_spell_legal(2, 5) || borg_prayer_legal(5, 2) ||
-					borg_equips_artifact(EF_IDENTIFY, INVEN_WIELD);
+					borg_equips_artifact(EF_IDENTIFY);
 
     /* don't ID stuff when you can't recover spent spell point immediately */
     if (((borg_skill[BI_CURSP] < 50 && borg_spell_legal(2, 5)) ||
@@ -2574,7 +2574,7 @@ bool borg_test_stuff(void)
         borg_item *item = &borg_items[b_i];
 
 		/* Use an item to identify */
-		if (borg_activate_artifact(EF_IDENTIFY, INVEN_WIELD) ||
+		if (borg_activate_artifact(EF_IDENTIFY) ||
 				borg_spell(2, 5) ||
 				borg_prayer(5, 2) ||
 				borg_zap_rod(SV_ROD_IDENTIFY) ||

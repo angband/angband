@@ -2515,10 +2515,8 @@ bool borg_equips_staff_fail(int sval)
 
 /*
  * Attempt to use the given artifact
- *
- * XXX: location no longer used
  */
-bool borg_activate_artifact(int activation, int location)
+bool borg_activate_artifact(int activation)
 {
     int i;
 
@@ -2579,7 +2577,7 @@ bool borg_activate_artifact(int activation, int location)
 /*
  * Hack -- check and see if borg is wielding an artifact
  */
-bool borg_equips_artifact(int activation, int location)
+bool borg_equips_artifact(int activation)
 {
     int i;
 
