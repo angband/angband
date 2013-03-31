@@ -76,7 +76,6 @@ typedef struct player
 	s16b age;			/* Characters age */
 	s16b ht;			/* Height */
 	s16b wt;			/* Weight */
-	s16b sc;			/* Social Class */
 
 	s32b au;			/* Current Gold */
 
@@ -200,7 +199,6 @@ typedef struct player
 	s16b stat_birth[A_MAX]; /* Birth "natural" stat values */
 	s16b ht_birth;          /* Birth Height */
 	s16b wt_birth;          /* Birth Weight */
-	s16b sc_birth;		/* Birth social class */
 
 	/* Variable and calculatable player state */
 	player_state	state;
@@ -363,7 +361,6 @@ struct history_entry {
 	struct history_chart *succ;
 	int isucc;
 	int roll;
-	int bonus;
 	char *text;
 };
 

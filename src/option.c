@@ -39,7 +39,7 @@ const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_mouse_movement,
 		OPT_mouse_buttons,
 		OPT_use_sound,
-		OPT_NONE,
+		OPT_show_damage,
 		OPT_NONE,
 	},
 
@@ -116,7 +116,7 @@ static const struct option options[OPT_MAX] =
 {
 { "rogue_like_commands", "Use the roguelike command keyset",            FALSE }, /* 0 */
 { "use_sound",           "Use sound",                                   FALSE }, /* 1 */
-{ NULL,                  NULL,                                          FALSE }, /* 2 */
+{ "show_damage",         "Show damage player deals to monsters",        FALSE }, /* 2 */
 { "use_old_target",      "Use old target by default",                   FALSE }, /* 3 */
 { "pickup_always",       "Always pickup items",                         FALSE }, /* 4 */
 { "pickup_inven",        "Always pickup items matching inventory",      TRUE },  /* 5 */

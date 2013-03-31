@@ -126,7 +126,7 @@ extern bool remove_all_curse(void);
 extern bool restore_item(void);
 extern bool restore_level(void);
 extern bool lose_all_info(void);
-extern void set_recall(void);
+extern bool set_recall(void);
 extern bool detect_traps(bool aware);
 extern bool detect_doorstairs(bool aware);
 extern bool detect_treasure(bool aware, bool full);

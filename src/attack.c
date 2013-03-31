@@ -139,11 +139,26 @@ static int critical_norm(int weight, int plus, int dam, u32b *msg_type) {
 	}
 }
 
+/* A list of the different hit types and their associated special message */
+static const struct {
+	u32b msg;
+	const char *text;
+} melee_hit_types[] = {
+	{ MSG_MISS, NULL },
+	{ MSG_HIT, NULL },
+	{ MSG_HIT_GOOD, "It was a good hit!" },
+	{ MSG_HIT_GREAT, "It was a great hit!" },
+	{ MSG_HIT_SUPERB, "It was a superb hit!" },
+	{ MSG_HIT_HI_GREAT, "It was a *GREAT* hit!" },
+	{ MSG_HIT_HI_SUPERB, "It was a *SUPERB* hit!" },
+};
 
 /**
  * Attack the monster at the given location with a single blow.
  */
 static bool py_attack_real(int y, int x, bool *fear) {
+	size_t i;
+
 	/* Information about the target of the attack */
 	monster_type *m_ptr = cave_monster_at(cave, y, x);
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
@@ -231,28 +246,28 @@ static bool py_attack_real(int y, int x, bool *fear) {
 	/* Apply the player damage bonuses */
 	dmg += p_ptr->state.to_d;
 
-	/* No negative damage */
-	if (dmg <= 0) dmg = 0;
+	/* No negative damage; change verb if no damage done */
+	if (dmg <= 0) {
+		dmg = 0;
+		msg_type = MSG_MISS;
+		hit_verb = "fail to harm";
+	}
 
-	/* Tell the player what happened */
-	if (dmg <= 0)
-		msgt(MSG_MISS, "You fail to harm %s.", m_name);
-	else if (msg_type == MSG_HIT)
-		msgt(MSG_HIT, "You %s %s.", hit_verb, m_name);
-	else if (msg_type == MSG_HIT_GOOD)
-		msgt(MSG_HIT_GOOD, "You %s %s. %s", hit_verb, m_name, "It was a good hit!");
-	else if (msg_type == MSG_HIT_GREAT)
-		msgt(MSG_HIT_GREAT, "You %s %s. %s", hit_verb, m_name, "It was a great hit!");
-	else if (msg_type == MSG_HIT_SUPERB)
-		msgt(MSG_HIT_SUPERB, "You %s %s. %s", hit_verb, m_name, "It was a superb hit!");
-	else if (msg_type == MSG_HIT_HI_GREAT)
-		msgt(MSG_HIT_HI_GREAT, "You %s %s. %s", hit_verb, m_name, "It was a *GREAT* hit!");
-	else if (msg_type == MSG_HIT_HI_SUPERB)
-		msgt(MSG_HIT_HI_SUPERB, "You %s %s. %s", hit_verb, m_name, "It was a *SUPERB* hit!");
+	for (i = 0; i < N_ELEMENTS(melee_hit_types); i++) {
+		char *dmg_text = "";
 
-	/* Complex message */
-	if (p_ptr->wizard)
-		msg("You do %d (out of %d) damage.", dmg, m_ptr->hp);
+		if (msg_type != melee_hit_types[i].msg)
+			continue;
+
+		if (OPT(show_damage))
+			dmg_text = format(" (%d)", dmg);
+
+		if (melee_hit_types[i].text)
+			msgt(msg_type, "You %s %s%s. %s", hit_verb, m_name, dmg_text,
+					melee_hit_types[i].text);
+		else
+			msgt(msg_type, "You %s %s%s.", hit_verb, m_name, dmg_text);
+	}
 
 	/* Confusion attack */
 	if (p_ptr->confusing) {
@@ -316,6 +331,18 @@ void py_attack(int y, int x) {
 	}
 }
 
+
+/* A list of the different hit types and their associated special message */
+static const struct {
+	u32b msg;
+	const char *text;
+} ranged_hit_types[] = {
+	{ MSG_MISS, NULL },
+	{ MSG_SHOOT_HIT, NULL },
+	{ MSG_HIT_GOOD, "It was a good hit!" },
+	{ MSG_HIT_GREAT, "It was a great hit!" },
+	{ MSG_HIT_SUPERB, "It was a superb hit!" }
+};
 
 /**
  * This is a helper function used by do_cmd_throw and do_cmd_fire.
@@ -451,6 +478,7 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 			/* No negative damage; change verb if no damage done */
 			if (dmg <= 0) {
 				dmg = 0;
+				msg_type = MSG_MISS;
 				hit_verb = "fail to harm";
 			}
 		
@@ -458,27 +486,29 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 				/* Invisible monster */
 				msgt(MSG_SHOOT_HIT, "The %s finds a mark.", o_name);
 			} else {
-				/* Visible monster */
-				if (msg_type == MSG_SHOOT_HIT)
-					msgt(MSG_SHOOT_HIT, "The %s %s %s.", o_name, hit_verb, m_name);
-				else if (msg_type == MSG_HIT_GOOD) {
-					msgt(MSG_HIT_GOOD, "The %s %s %s. %s", o_name, hit_verb, m_name, "It was a good hit!");
-				} else if (msg_type == MSG_HIT_GREAT) {
-					msgt(MSG_HIT_GREAT, "The %s %s %s. %s", o_name, hit_verb, m_name,
-						 "It was a great hit!");
-				} else if (msg_type == MSG_HIT_SUPERB) {
-					msgt(MSG_HIT_SUPERB, "The %s %s %s. %s", o_name, hit_verb, m_name,
-						 "It was a superb hit!");
+				size_t i;
+
+				for (i = 0; i < N_ELEMENTS(ranged_hit_types); i++) {
+					char *dmg_text = "";
+
+					if (msg_type != ranged_hit_types[i].msg)
+						continue;
+
+					if (OPT(show_damage))
+						dmg_text = format(" (%d)", dmg);
+
+					if (ranged_hit_types[i].text)
+						msgt(msg_type, "Your %s %s %s%s. %s", o_name, hit_verb,
+								m_name, dmg_text, ranged_hit_types[i].text);
+					else
+						msgt(msg_type, "Your %s %s %s%s.", o_name, hit_verb,
+								m_name, dmg_text);
 				}
-		
+
 				/* Track this monster */
 				if (m_ptr->ml) monster_race_track(m_ptr->r_idx);
 				if (m_ptr->ml) health_track(p_ptr, m_ptr);
 			}
-		
-			/* Complex message */
-			if (p_ptr->wizard)
-				msg("You do %d (out of %d) damage.", dmg, m_ptr->hp);
 		
 			/* Hit the monster, check for death */
 			if (!mon_take_hit(m_ptr, dmg, &fear, note_dies)) {

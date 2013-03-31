@@ -1830,7 +1830,7 @@ void play_game(void)
 			 * remove. Very similar to do_cmd_wiz_cure_all(). */
 			if ((p_ptr->wizard || OPT(cheat_live)) && !get_check("Die? ")) {
 				/* Mark social class, reset age, if needed */
-				if (p_ptr->sc) p_ptr->sc = p_ptr->age = 0;
+				p_ptr->age = 0;
 
 				/* Increase age */
 				p_ptr->age++;

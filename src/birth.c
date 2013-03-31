@@ -106,7 +106,6 @@ static void save_roller_data(birther *player)
 	player->age = p_ptr->age;
 	player->wt = p_ptr->wt_birth;
 	player->ht = p_ptr->ht_birth;
-	player->sc = p_ptr->sc_birth;
 	player->au = p_ptr->au_birth;
 
 	/* Save the stats */
@@ -147,7 +146,6 @@ static void load_roller_data(birther *player, birther *prev_player)
 	p_ptr->age = player->age;
 	p_ptr->wt = p_ptr->wt_birth = player->wt;
 	p_ptr->ht = p_ptr->ht_birth = player->ht;
-	p_ptr->sc = p_ptr->sc_birth = player->sc;
 	p_ptr->au_birth = player->au;
 	p_ptr->au = STARTING_GOLD;
 
@@ -335,13 +333,11 @@ static void get_bonuses(void)
 /*
  * Get the racial history, and social class, using the "history charts".
  */
-char *get_history(struct history_chart *chart, s16b *sc)
+char *get_history(struct history_chart *chart)
 {
-	int roll, social_class;
+	int roll;
 	struct history_entry *entry;
 	char *res = NULL;
-
-	social_class = randint1(4);
 
 	while (chart) {
 		roll = randint1(100);
@@ -351,17 +347,9 @@ char *get_history(struct history_chart *chart, s16b *sc)
 		assert(entry);
 
 		res = string_append(res, entry->text);
-		social_class += entry->bonus - 50;
 		chart = entry->succ;
 	}
 
-	if (social_class > 75)
-		social_class = 75;
-	else if (social_class < 1)
-		social_class = 1;
-
-	if (sc)
-		*sc = social_class;
 	return res;
 }
 
@@ -947,8 +935,7 @@ void player_generate(struct player *p, const player_sex *s,
 	/* Roll for age/height/weight */
 	get_ahw(p);
 
-	p->history = get_history(p->race->history, &p->sc);
-	p->sc_birth = p->sc;
+	p->history = get_history(p->race->history);
 }
 
 
@@ -1116,8 +1103,7 @@ void player_birth(bool quickstart_allowed)
 
 			/* There's no real need to do this here, but it's tradition. */
 			get_ahw(p_ptr);
-			p_ptr->history = get_history(p_ptr->race->history, &p_ptr->sc);
-			p_ptr->sc_birth = p_ptr->sc;
+			p_ptr->history = get_history(p_ptr->race->history);
 
 			event_signal(EVENT_GOLD);
 			event_signal(EVENT_AC);
