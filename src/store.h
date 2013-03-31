@@ -8,8 +8,6 @@
 #define STORE_INVEN_MAX		24    /* Max number of discrete objs in inven */
 #define STORE_TURNS		1000  /* Number of turns between turnovers */
 #define STORE_SHUFFLE		25    /* 1/Chance (per day) of an owner changing */
-#define STORE_MIN_KEEP  6       /* Min slots to "always" keep full (>0) */
-#define STORE_MAX_KEEP  18      /* Max slots to "always" keep full (<STORE_INVEN_MAX) */
 
 /* List of store indices */
 enum
@@ -43,9 +41,19 @@ struct store {
 	s16b stock_size;		/* Stock -- Total Size of Array */
 	object_type *stock;		/* Stock -- Actual stock items */
 
-	unsigned int table_num;     /* Table -- Number of entries */
-	unsigned int table_size;    /* Table -- Total Size of Array */
-	object_kind **table;        /* Table -- Legal item kinds */
+	/* Always stock these items */
+	size_t always_size;
+	size_t always_num;
+	object_kind **always_table;
+
+	/* Select a number of these items to stock */
+	size_t normal_size;
+	size_t normal_num;
+	object_kind **normal_table;
+
+	int turnover;
+	int normal_stock_min;
+	int normal_stock_max;
 };
 
 void store_init(void);

@@ -1,131 +1,155 @@
-# Syntax
 #
-# S: store number : number of slots for this store
-# I: slots taken up by this item : textual tval : textual name
+# Syntax for this file:
+#
+# store: store number
+# turnover: turnover
+# slots: min : max						- number of 'normal' slots to keep stocked
+# normal: type name : item name			- for the normal stocking list
+# always: type name : item name			- for things to always stock
 #
 
-# V:3.4.0
+# General store
+store:1
+slots:0:0
+turnover:0
+always:cloak:Cloak
+always:food:Ration of Food
+always:light:Wooden Torch
+always:flask:Flask of Oil
+always:spike:Iron Spike
+always:digger:Shovel
+always:digger:Pick
 
 # Armoury
-S:2:33
-I:2:boots:Pair of Leather Sandals
-I:2:boots:Pair of Leather Boots
-I:1:boots:Pair of Iron Shod Boots
-I:2:helm:Hard Leather Cap
-I:1:helm:Metal Cap
-I:1:helm:Iron Helm
-I:2:soft armour:Robe
-I:4:soft armour:Soft Leather Armour
-I:2:soft armour:Studded Leather Armour
-I:2:soft armour:Hard Leather Armour
-I:2:soft armour:Leather Scale Mail
-I:1:hard armour:Metal Scale Mail
-I:1:hard armour:Chain Mail
-I:2:cloak:Cloak
-I:2:gloves:Set of Leather Gloves
-I:1:gloves:Set of Gauntlets
-I:2:shield:Wicker Shield
-I:1:shield:Small Metal Shield
-I:2:shield:Leather Shield
+store:2
+slots:6:18
+turnover:9
+normal:boots:Pair of Leather Sandals
+normal:boots:Pair of Leather Boots
+normal:boots:Pair of Iron Shod Boots
+normal:helm:Hard Leather Cap
+normal:helm:Metal Cap
+normal:helm:Iron Helm
+normal:soft armour:Robe
+normal:soft armour:Soft Leather Armour
+normal:soft armour:Studded Leather Armour
+normal:soft armour:Hard Leather Armour
+normal:soft armour:Leather Scale Mail
+normal:hard armour:Metal Scale Mail
+normal:hard armour:Chain Mail
+normal:gloves:Set of Leather Gloves
+normal:gloves:Set of Gauntlets
+normal:shield:Wicker Shield
+normal:shield:Small Metal Shield
+normal:shield:Leather Shield
 
 # Weaponsmith
-S:3:33
-I:1:sword:Dagger
-I:1:sword:Main Gauche
-I:1:sword:Rapier
-I:2:sword:Short Sword
-I:2:sword:Cutlass
-I:1:sword:Tulwar
-I:1:sword:Broad Sword
-I:1:sword:Long Sword
-I:1:sword:Scimitar
-I:1:sword:Katana
-I:1:sword:Bastard Sword
-I:1:polearm:Spear
-I:1:polearm:Awl-Pike
-I:1:polearm:Trident
-I:1:polearm:Pike
-I:1:polearm:Beaked Axe
-I:1:polearm:Broad Axe
-I:1:polearm:Battle Axe
-I:1:polearm:Lance
-I:1:polearm:Lucerne Hammer
-I:1:hafted:Whip
-I:1:bow:Sling
-I:1:bow:Short Bow
-I:1:bow:Long Bow
-I:1:bow:Light Crossbow
-I:2:shot:Iron Shot
-I:2:arrow:Arrow
-I:2:bolt:Bolt
+store:3
+slots:3:14
+turnover:9
+always:shot:Iron Shot
+always:arrow:Arrow
+always:bolt:Bolt
+normal:sword:Dagger
+normal:sword:Main Gauche
+normal:sword:Rapier
+normal:sword:Short Sword
+normal:sword:Cutlass
+normal:sword:Tulwar
+normal:sword:Broad Sword
+normal:sword:Long Sword
+normal:sword:Scimitar
+normal:sword:Katana
+normal:sword:Bastard Sword
+normal:polearm:Spear
+normal:polearm:Awl-Pike
+normal:polearm:Trident
+normal:polearm:Pike
+normal:polearm:Beaked Axe
+normal:polearm:Broad Axe
+normal:polearm:Battle Axe
+normal:polearm:Lance
+normal:polearm:Lucerne Hammer
+normal:hafted:Whip
+normal:bow:Sling
+normal:bow:Short Bow
+normal:bow:Long Bow
+normal:bow:Light Crossbow
 
 # Temple
-S:4:24
-I:1:hafted:Whip
-I:1:hafted:Quarterstaff
-I:2:hafted:Mace
-I:1:hafted:Ball-and-Chain
-I:1:hafted:War Hammer
-I:1:hafted:Morning Star
-I:2:hafted:Flail
-I:1:hafted:Lead-Filled Mace
-#I:1:scroll:Remove Curse
-I:1:scroll:Word of Recall
-I:1:scroll:Blessing
-I:1:scroll:Holy Chant
-I:1:scroll:Light
-I:1:potion:Boldness
-I:1:potion:Heroism
-I:3:prayer book:[Beginners Handbook]
-I:2:prayer book:[Words of Wisdom]
-I:2:prayer book:[Chants and Blessings]
-I:1:prayer book:[Exorcism and Dispelling]
+store:4
+slots:2:10
+turnover:9
+always:prayer book:[Beginners Handbook]
+always:prayer book:[Words of Wisdom]
+always:prayer book:[Chants and Blessings]
+always:prayer book:[Exorcism and Dispelling]
+normal:hafted:Whip
+normal:hafted:Quarterstaff
+normal:hafted:Mace
+normal:hafted:Ball-and-Chain
+normal:hafted:War Hammer
+normal:hafted:Morning Star
+normal:hafted:Flail
+normal:hafted:Lead-Filled Mace
+normal:scroll:Word of Recall
+normal:scroll:Blessing
+normal:scroll:Holy Chant
+normal:scroll:Light
+normal:potion:Boldness
+normal:potion:Heroism
 
 # Alchemist
-S:5:36
-I:4:scroll:Word of Recall
-I:4:scroll:Identify
-I:3:scroll:Phase Door
-I:1:scroll:Monster Confusion
-I:1:scroll:Magic Mapping
-I:1:scroll:Trap Detection
-I:1:scroll:Door/Stair Location
-I:1:scroll:Detect Invisible
-I:1:scroll:Recharging
-I:1:scroll:Satisfy Hunger
-I:2:potion:Boldness
-I:1:potion:Resist Heat
-I:1:potion:Resist Cold
-I:3:potion:Restore Life Levels
-I:1:potion:Neutralize Poison
-I:2:potion:Cure Light Wounds
-I:4:potion:Cure Serious Wounds
-I:4:potion:Cure Critical Wounds
+store:5
+slots:4:12
+turnover:9
+always:scroll:Word of Recall
+always:scroll:Phase Door
+normal:scroll:Identify
+normal:scroll:Monster Confusion
+normal:scroll:Magic Mapping
+normal:scroll:Trap Detection
+normal:scroll:Door/Stair Location
+normal:scroll:Detect Invisible
+normal:scroll:Recharging
+normal:scroll:Satisfy Hunger
+normal:potion:Boldness
+normal:potion:Resist Heat
+normal:potion:Resist Cold
+normal:potion:Restore Life Levels
+normal:potion:Neutralize Poison
+normal:potion:Cure Light Wounds
+normal:potion:Cure Serious Wounds
+normal:potion:Cure Critical Wounds
 
 # Magic-user's
-S:6:29
-I:1:ring:Searching
-I:1:ring:Feather Falling
-I:1:ring:Protection
-I:1:amulet:Charisma
-I:1:amulet:Slow Digestion
-I:1:amulet:Resist Acid
-#I:1:rod:Trap Location
-#I:1:rod:Door/Stair Location
-#I:2:rod:Treasure Location
-I:1:wand:Slow Monster
-I:1:wand:Confuse Monster
-I:1:wand:Sleep Monster
-I:1:wand:Magic Missile
-I:1:wand:Stinking Cloud
-I:1:wand:Wonder
-I:2:staff:Teleportation
-I:2:staff:Identify
-I:1:staff:Light
-I:1:staff:Mapping
-I:1:staff:Detect Invisible
-I:1:staff:Detect Evil
-I:3:magic book:[Magic for Beginners]
-I:2:magic book:[Conjurings and Tricks]
-I:2:magic book:[Incantations and Illusions]
-I:1:magic book:[Sorcery and Evocations]
+store:6
+slots:4:14
+turnover:9
+always:magic book:[Magic for Beginners]
+always:magic book:[Conjurings and Tricks]
+always:magic book:[Incantations and Illusions]
+always:magic book:[Sorcery and Evocations]
+normal:ring:Searching
+normal:ring:Feather Falling
+normal:ring:Protection
+normal:amulet:Charisma
+normal:amulet:Slow Digestion
+normal:amulet:Resist Acid
+normal:wand:Slow Monster
+normal:wand:Confuse Monster
+normal:wand:Sleep Monster
+normal:wand:Magic Missile
+normal:wand:Stinking Cloud
+normal:wand:Wonder
+normal:staff:Teleportation
+normal:staff:Identify
+normal:staff:Light
+normal:staff:Mapping
+normal:staff:Detect Invisible
+normal:staff:Detect Evil
+
+# Black Market - no stock given but we still need slot/turnover info
+store:7
+slots:6:18
+turnover:9

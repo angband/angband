@@ -511,6 +511,7 @@ errr parser_reg(struct parser *p, const char *fmt,
 	h->next = p->hooks;
 	h->func = func;
 	r = parse_specs(h, cfmt);
+	assert(r == 0);
 	if (r)
 	{
 		mem_free(h);

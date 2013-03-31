@@ -72,7 +72,6 @@ static unsigned int scr_places_y[LOC_MAX];
 
 
 /* Some local constants */
-#define STORE_TURNOVER  9       /* Normal shop turnover, per day */
 #define STORE_OBJ_LEVEL 5       /* Magic Level for normal stores */
 
 
@@ -171,31 +170,10 @@ static const char *comment_great[] =
 	"Wow.  I'm going to name my new villa in your honour."
 };
 
+
 /*
- * Staple definitions.
+ * Create a new store.
  */
-typedef enum { MAKE_SINGLE, MAKE_NORMAL, MAKE_MAX } create_mode;
-
-static struct staple_type
-{
-	int tval, sval;
-	create_mode mode;
-} staples[] =
-{
-	{ TV_FOOD, SV_FOOD_RATION, MAKE_NORMAL },
-	{ TV_LIGHT, SV_LIGHT_TORCH, MAKE_NORMAL },
-	{ TV_SCROLL, SV_SCROLL_WORD_OF_RECALL, MAKE_NORMAL },
-	{ TV_SCROLL, SV_SCROLL_PHASE_DOOR, MAKE_NORMAL },
-	{ TV_FLASK, 0, MAKE_NORMAL },
-	{ TV_SPIKE, 0, MAKE_NORMAL },
-	{ TV_SHOT, SV_AMMO_NORMAL, MAKE_MAX },
-	{ TV_ARROW, SV_AMMO_NORMAL, MAKE_MAX },
-	{ TV_BOLT, SV_AMMO_NORMAL, MAKE_MAX },
-	{ TV_DIGGING, SV_SHOVEL, MAKE_SINGLE },
-	{ TV_DIGGING, SV_PICK, MAKE_SINGLE },
-	{ TV_CLOAK, SV_CLOAK, MAKE_SINGLE }
-};
-
 static struct store *store_new(int idx) {
 	struct store *s = mem_zalloc(sizeof *s);
 	s->sidx = idx;
@@ -221,7 +199,8 @@ void free_stores(void)
 
 		/* Free the store inventory */
 		mem_free(store->stock);
-		mem_free(store->table);
+		mem_free(store->always_table);
+		mem_free(store->normal_table);
 
 		for (o = store->owners; o; o = next) {
 			next = o->next;
@@ -232,50 +211,115 @@ void free_stores(void)
 	mem_free(stores);
 }
 
-static enum parser_error parse_s(struct parser *p) {
+
+/*** Edit file parsing ***/
+
+/** store.txt **/
+
+static enum parser_error parse_store(struct parser *p) {
 	struct store *h = parser_priv(p);
 	struct store *s;
 	unsigned int idx = parser_getuint(p, "index") - 1;
-	unsigned int slots = parser_getuint(p, "slots");
 
-	if (idx < STORE_ARMOR || idx > STORE_MAGIC)
+	if (idx > STORE_B_MARKET)
 		return PARSE_ERROR_OUT_OF_BOUNDS;
 
 	s = store_new(parser_getuint(p, "index") - 1);
-	s->table = mem_zalloc(sizeof(*s->table) * slots);
-	s->table_size = slots;
 	s->next = h;
 	parser_setpriv(p, s);
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_i(struct parser *p) {
+static enum parser_error parse_slots(struct parser *p) {
 	struct store *s = parser_priv(p);
-	unsigned int slots = parser_getuint(p, "slots");
-	int tval = tval_find_idx(parser_getsym(p, "tval"));
-	int sval = lookup_sval(tval, parser_getsym(p, "sval"));
-	object_kind *kind = lookup_kind(tval, sval);
-
-	if (!kind)
-		return PARSE_ERROR_UNRECOGNISED_SVAL;
-
-	if (s->table_num + slots > s->table_size)
-		return PARSE_ERROR_TOO_MANY_ENTRIES;
-	while (slots--) {
-		s->table[s->table_num++] = kind;
-	}
-	/* XXX: get rid of this table_size/table_num/indexing thing. It's
-	 * stupid. Dynamically allocate. */
+	s->normal_stock_min = parser_getuint(p, "min");
+	s->normal_stock_max = parser_getuint(p, "max");
 	return PARSE_ERROR_NONE;
 }
 
-struct parser *store_parser_new(void) {
+static enum parser_error parse_turnover(struct parser *p) {
+	struct store *s = parser_priv(p);
+	s->turnover = parser_getuint(p, "turnover");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_normal(struct parser *p) {
+	struct store *s = parser_priv(p);
+	int tval = tval_find_idx(parser_getsym(p, "tval"));
+	int sval = lookup_sval(tval, parser_getsym(p, "sval"));
+
+	object_kind *kind = lookup_kind(tval, sval);
+	if (!kind)
+		return PARSE_ERROR_UNRECOGNISED_SVAL;
+
+	/* Expand if necessary */
+	if (!s->normal_num) {
+		s->normal_size = 16;
+		s->normal_table = mem_zalloc(s->normal_size * sizeof *s->normal_table);
+	} else if (s->normal_num >= s->normal_size) {
+		s->normal_size += 8; 
+		s->normal_table = mem_realloc(s->normal_table, s->normal_size * sizeof *s->normal_table);
+	}
+
+	s->normal_table[s->normal_num++] = kind;
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_always(struct parser *p) {
+	struct store *s = parser_priv(p);
+	int tval = tval_find_idx(parser_getsym(p, "tval"));
+	int sval = lookup_sval(tval, parser_getsym(p, "sval"));
+
+	object_kind *kind = lookup_kind(tval, sval);
+	if (!kind)
+		return PARSE_ERROR_UNRECOGNISED_SVAL;
+
+	/* Expand if necessary */
+	if (!s->always_num) {
+		s->always_size = 8;
+		s->always_table = mem_zalloc(s->always_size * sizeof *s->always_table);
+	} else if (s->always_num >= s->always_size) {
+		s->always_size += 8; 
+		s->always_table = mem_realloc(s->always_table, s->always_size * sizeof *s->always_table);
+	}
+
+	s->always_table[s->always_num++] = kind;
+
+	return PARSE_ERROR_NONE;
+}
+
+struct parser *init_parse_stores(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
-	parser_reg(p, "S uint index uint slots", parse_s);
-	parser_reg(p, "I uint slots sym tval sym sval", parse_i);
+	parser_reg(p, "store uint index", parse_store);
+	parser_reg(p, "slots uint min uint max", parse_slots);
+	parser_reg(p, "turnover uint turnover", parse_turnover);
+	parser_reg(p, "normal sym tval sym sval", parse_normal);
+	parser_reg(p, "always sym tval sym sval", parse_always);
 	return p;
 }
+
+static errr run_parse_stores(struct parser *p) {
+	return parse_file(p, "store");
+}
+
+static errr finish_parse_stores(struct parser *p) {
+	stores = parser_priv(p);
+	parser_destroy(p);
+	return 0;
+}
+
+static struct file_parser store_parser = {
+	"store",
+	init_parse_stores,
+	run_parse_stores,
+	finish_parse_stores,
+	NULL
+};
+
+
+/** shop_own.txt **/
 
 struct owner_parser_state {
 	struct store *stores;
@@ -326,6 +370,71 @@ struct parser *store_owner_parser_new(struct store *ss) {
 	parser_reg(p, "S uint maxcost str name", parse_own_s);
 	return p;
 }
+
+/*** Other init stuff ***/
+
+static struct store *add_builtin_stores(struct store *ss) {
+	struct store *s = store_new(STORE_HOME);
+	s->next = ss;
+	return s;
+}
+
+static void parse_owners(struct store *stores) {
+	struct parser *p = store_owner_parser_new(stores);
+	parse_file(p, "shop_own");
+	mem_free(parser_priv(p));
+	parser_destroy(p);
+}
+
+static struct store *flatten_stores(struct store *store_list) {
+	struct store *s;
+	struct store *stores = mem_zalloc(MAX_STORES * sizeof(*stores));
+
+	for (s = store_list; s; s = s->next) {
+		/* XXX bounds-check */
+		memcpy(&stores[s->sidx], s, sizeof(*s));
+	}
+
+	while (store_list) {
+		s = store_list->next;
+		/* No need to free the sub-allocated memory, as this is passed on
+		 * to the array of stores */
+		mem_free(store_list);
+		store_list = s;
+	}
+
+	return stores;
+}
+
+void store_init(void)
+{
+	struct store *store_list;
+
+	event_signal_string(EVENT_INITSTATUS, "Initialising stores...");
+	if (run_parser(&store_parser)) quit("Can't initialise stores");
+
+	store_list = add_builtin_stores(stores);
+	parse_owners(store_list);
+	stores = flatten_stores(store_list);
+}
+
+void store_reset(void) {
+	int i, j;
+	struct store *s;
+
+	for (i = 0; i < MAX_STORES; i++) {
+		s = &stores[i];
+		s->stock_num = 0;
+		store_shuffle(s);
+		for (j = 0; j < s->stock_size; j++)
+			object_wipe(&s->stock[j]);
+		if (i == STORE_HOME)
+			continue;
+		for (j = 0; j < 10; j++) store_maint(s);
+	}
+}
+
+
 
 /*
  * The greeting a shopkeeper gives the character says a lot about his
@@ -1024,9 +1133,9 @@ static int store_carry(struct store *store, object_type *o_ptr)
 			bool recharge = FALSE;
 
 			/* Recharge without fail if the store normally carries that type */
-			for (i = 0; i < store->table_num; i++)
+			for (i = 0; i < store->normal_num; i++)
 			{
-				if (store->table[i] == o_ptr->kind)
+				if (store->normal_table[i] == o_ptr->kind)
 					recharge = TRUE;
 			}
 
@@ -1232,7 +1341,43 @@ static void store_delete_index(struct store *store, int what)
 	store_item_optimize(store, what);
 }
 
+/**
+ * Find a given object kind in the store.
+ */
+static bool store_find_kind(struct store *s, object_kind *k) {
+	int slot;
 
+	assert(s);
+	assert(k);
+
+	/* Check if it's already in stock */
+	for (slot = 0; slot < s->stock_num; slot++) {
+		if (s->stock[slot].kind == k) {
+			return TRUE;
+		}
+	}
+
+	return FALSE;
+}
+
+/**
+ * Check if a given store index is an always-stocked item.
+ */
+static bool store_is_staple(struct store *s, int slot) {
+	object_kind *k = s->stock[slot].kind;
+	size_t i;
+
+	assert(s);
+	assert(k);
+
+	for (i = 0; i < s->always_num; i++) {
+		object_kind *l = s->always_table[i];
+		if (k == l)
+			return TRUE;
+	}
+
+	return FALSE;
+}
 
 /*
  * Delete a random object from store 'st', or, if it is a stack, perhaps only
@@ -1249,25 +1394,9 @@ static void store_delete_random(struct store *store)
 
 	/* Pick a random slot */
 	what = randint0(store->stock_num);
-
-	store_delete_index(store, what);
+	if (!store_is_staple(store, what))
+		store_delete_index(store, what);
 }
-
-
-
-/*
- * Delete a percentage of a store's inventory
- */
-static void store_prune(struct store *store, int chance_in_1000)
-{
-	int i;
-
-	for (i = 0; i < store->stock_num; i++) {
-		if (randint0(1000) < chance_in_1000)
-			store_delete_index(store, i);
-	}
-}
-
 
 
 /*
@@ -1322,10 +1451,7 @@ static bool black_market_ok(const object_type *o_ptr)
 static object_kind *store_get_choice(struct store *store)
 {
 	/* Choose a random entry from the store's table */
-	int r = randint0(store->table_num);
-
-	/* Return it */
-	return store->table[r];
+	return store->normal_table[randint0(store->normal_num)];
 }
 
 
@@ -1470,121 +1596,91 @@ static int store_create_item(struct store *store, object_kind *kind)
 
 
 /*
- * Create all staple items.
- */
-static void store_create_staples(void)
-{
-	struct store *store = &stores[STORE_GENERAL];
-	size_t i;
-
-	/* Make sure there's enough room for staples */
-	while (store->stock_num >= STORE_INVEN_MAX - N_ELEMENTS(staples))
-		store_delete_random(store);
-
-	/* Iterate through staples */
-	for (i = 0; i < N_ELEMENTS(staples); i++)
-	{
-		struct staple_type *staple = &staples[i];
-
-		/* Create the staple and combine it into the store inventory */
-		int idx = store_create_item(store,
-				lookup_kind(staple->tval, staple->sval));
-		object_type *o_ptr = &store->stock[idx];
-
-		assert(o_ptr);
-
-		/* Tweak the quantities */
-		switch (staple->mode)
-		{
-			case MAKE_SINGLE:
-				o_ptr->number = 1;
-				break;
-
-			case MAKE_NORMAL:
-				mass_produce(o_ptr);
-				break;
-
-			case MAKE_MAX:
-				o_ptr->number = MAX_STACK_SIZE - 1;
-				break;
-		}
-	}
-}
-
-
-
-/*
  * Maintain the inventory at the stores.
  */
-void store_maint(struct store *store)
+void store_maint(struct store *s)
 {
 	int j;
-	unsigned int stock;
-	int restock_attempts = 100000;
 
 	/* Ignore home */
-	if (store->sidx == STORE_HOME)
+	if (s->sidx == STORE_HOME)
 		return;
 
-	/* General Store gets special treatment */
-	if (store->sidx == STORE_GENERAL) {
-		/* Sell off 30% of the inventory */
-		store_prune(store, 300);
-		store_create_staples();
-		return;
-	}
-
-	/* Prune the black market */
-	if (store->sidx == STORE_B_MARKET)
-	{
-		/* Destroy crappy black market items */
-		for (j = store->stock_num - 1; j >= 0; j--)
-		{
-			object_type *o_ptr = &store->stock[j];
-
-			/* Destroy crappy items */
-			if (!black_market_ok(o_ptr))
-			{
-				/* Destroy the object */
-				store_item_increase(store, j, 0 - o_ptr->number);
-				store_item_optimize(store, j);
+	/* Destroy crappy black market items */
+	if (s->sidx == STORE_B_MARKET) {
+		for (j = s->stock_num - 1; j >= 0; j--) {
+			object_type *o_ptr = &s->stock[j];
+			if (!black_market_ok(o_ptr)) {
+				store_item_increase(s, j, 0 - o_ptr->number);
+				store_item_optimize(s, j);
 			}
 		}
 	}
 
-	/*** "Sell" various items */
+	/* Ensure staples are created */
+	if (s->always_num) {
+		size_t i;
+		for (i = 0; i < s->always_num; i++) {
+			object_kind *k = s->always_table[i];
 
-	/* Sell a few items */
-	stock = store->stock_num;
-	stock -= randint1(STORE_TURNOVER);
+			/* Check if it already has this item */
+			if (!store_find_kind(s, k)) {
+				/* Now create the item */
+				int slot = store_create_item(s, k);
+				struct object *o = &s->stock[slot];
+				o->number = MAX_STACK_SIZE - 1;
+			}
+		}
+	}
 
-	/* Keep stock between specified min and max slots */
-	if (stock > STORE_MAX_KEEP) stock = STORE_MAX_KEEP;
-	if (stock < STORE_MIN_KEEP) stock = STORE_MIN_KEEP;
+	/* Only turn over products if there is a turnover */
+	if (s->turnover) {
+		int restock_attempts = 100000;
+		int stock;
 
-	/* Destroy objects until only "j" slots are left */
-	while (store->stock_num > stock) store_delete_random(store);
+		/* Take into account that the min/max actual stock to hold is the
+		 * min/max normal stock + the always-there stock */
+		int min = s->normal_stock_min + s->always_num;
+		int max = s->normal_stock_max + s->always_num;
+
+		/** "Sell" various items **/
+
+		/* Sell a few items */
+		stock = s->stock_num;
+		stock -= randint1(s->turnover);
+
+		/* Keep stock between specified min and max slots */
+		if (stock > max) stock = max;
+		if (stock < min) stock = min;
+
+		/* Destroy objects until only "j" slots are left */
+		while (s->stock_num > stock)
+			store_delete_random(s);
 
 
-	/*** "Buy in" various items */
+		/** "Buy in" various items **/
 
-	/* Buy a few items */
-	stock = store->stock_num;
-	stock += randint1(STORE_TURNOVER);
+		/* Buy a few items */
+		stock = s->stock_num;
+		stock += randint1(s->turnover);
 
-	/* Keep stock between specified min and max slots */
-	if (stock > STORE_MAX_KEEP) stock = STORE_MAX_KEEP;
-	if (stock < STORE_MIN_KEEP) stock = STORE_MIN_KEEP;
+		/* Keep stock between specified min and max slots */
+		if (stock > max) stock = max;
+		if (stock < min) stock = min;
 
-	/* For the rest, we just choose items randomlyish */
-	/* The (huge) restock_attempts will only go to zero (otherwise
-	 * infinite loop) if stores don't have enough items they can stock! */
-	while (store->stock_num < stock && --restock_attempts)
-		store_create_random(store);
+		/* For the rest, we just choose items randomlyish */
+		/* The (huge) restock_attempts will only go to zero (otherwise
+		 * infinite loop) if stores don't have enough items they can stock! */
+		while (s->stock_num < stock && --restock_attempts)
+			store_create_random(s);
 
-	if (!restock_attempts)
-		quit_fmt("Unable to (re-)stock store %d. Please report this bug", store->sidx);
+
+		if (!restock_attempts)
+			quit_fmt("Unable to (re-)stock store %d. Please report this bug", s->sidx + 1);
+	}
 }
+
+/** Owner stuff **/
 
 struct owner *store_ownerbyidx(struct store *s, unsigned int idx) {
 	struct owner *o;
@@ -1607,84 +1703,6 @@ static struct owner *store_choose_owner(struct store *s) {
 
 	n = randint0(n);
 	return store_ownerbyidx(s, n);
-}
-
-static struct store *parse_stores(void) {
-	struct parser *p = store_parser_new();
-	struct store *ss;
-	/* XXX ignored */
-	parse_file(p, "store");
-	ss = parser_priv(p);
-	parser_destroy(p);
-	return ss;
-}
-
-static struct store *add_builtin_stores(struct store *ss) {
-	struct store *s0, *s1, *s2;
-
-	s0 = store_new(STORE_GENERAL);
-	s1 = store_new(STORE_B_MARKET);
-	s2 = store_new(STORE_HOME);
-
-	s0->next = ss;
-	s1->next = s0;
-	s2->next = s1;
-
-	return s2;
-}
-
-static void parse_owners(struct store *ss) {
-	struct parser *p = store_owner_parser_new(ss);
-	parse_file(p, "shop_own");
-	mem_free(parser_priv(p));
-	parser_destroy(p);
-}
-
-static struct store *flatten_stores(struct store *store_list) {
-	struct store *s;
-	struct store *ss = mem_zalloc(MAX_STORES * sizeof(*stores));
-
-	for (s = store_list; s; s = s->next) {
-		/* XXX bounds-check */
-		memcpy(&ss[s->sidx], s, sizeof(*s));
-	}
-
-	while (store_list) {
-		s = store_list->next;
-		/* No need to free the sub-allocated memory, as this is passed on
-		 * to the array of stores */
-		mem_free(store_list);
-		store_list = s;
-	}
-
-	return ss;
-}
-
-void store_init(void)
-{
-	struct store *store_list;
-
-	store_list = parse_stores();
-	store_list = add_builtin_stores(store_list);
-	parse_owners(store_list);
-	stores = flatten_stores(store_list);
-}
-
-void store_reset(void) {
-	int i, j;
-	struct store *s;
-
-	for (i = 0; i < MAX_STORES; i++) {
-		s = &stores[i];
-		s->stock_num = 0;
-		store_shuffle(s);
-		for (j = 0; j < s->stock_size; j++)
-			object_wipe(&s->stock[j]);
-		if (i == STORE_HOME)
-			continue;
-		for (j = 0; j < 10; j++)
-			store_maint(s);
-	}
 }
 
 /*
