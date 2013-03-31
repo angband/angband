@@ -3,7 +3,6 @@
 
 #include "h-basic.h"
 
-typedef struct data_panel data_panel;
 typedef struct type_union type_union;
 
 typedef enum type_val {
@@ -31,19 +30,6 @@ extern type_union c2u(char c);
 extern type_union s2u(const char *s);
 
 static const type_union END = { T_END, { 0 } };
-
-/* 
- * Helper classes for the display of typed data
-*/
-
-#define MAX_FMT		2
-struct data_panel
-{
-	byte color;
-	const char *label;
-	const char *fmt;	/* printf format argument */
-	type_union value[MAX_FMT];	/* (short) arugment list */
-};
 
 struct loc {
 	int x;

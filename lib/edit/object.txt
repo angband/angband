@@ -1435,7 +1435,7 @@ W:30:0:2:340
 A:50:30 to 100
 F:SEE_INVIS | EASY_KNOW
 
-N:227:Delving
+N:227:Digging
 G:=:d
 I:45:38
 W:0:0:2:800

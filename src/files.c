@@ -15,7 +15,6 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
-
 #include "angband.h"
 #include "buildid.h"
 #include "cave.h"
@@ -30,7 +29,71 @@
 #include "savefile.h"
 #include "ui-menu.h"
 
-#define MAX_PANEL 12
+
+/** Panel utilities **/
+
+/* Panel line type */
+struct panel_line {
+	byte attr;
+	const char *label;
+	char value[20];
+};
+
+/* Panel holder type */
+struct panel {
+	size_t len;
+	size_t max;
+	struct panel_line *lines;
+};
+
+/* Allocate some panel lines */
+static struct panel *panel_allocate(int n) {
+	struct panel *p = mem_zalloc(sizeof *p);
+
+	p->len = 0;
+	p->max = n;
+	p->lines = mem_zalloc(p->max * sizeof *p->lines);
+
+	return p;
+}
+
+/* Free up panel lines */
+static void panel_free(struct panel *p) {
+	assert(p);
+	mem_free(p->lines);
+	mem_free(p);
+}
+
+/* Add a new line to the panel */
+static void panel_line(struct panel *p, byte attr, const char *label,
+		const char *fmt, ...) {
+	size_t len;
+	va_list vp;
+
+	struct panel_line *pl;
+
+	/* Get the next panel line */
+	assert(p);
+	assert(p->len != p->max);
+	pl = &p->lines[p->len++];
+
+	/* Set the basics */
+	pl->attr = attr;
+	pl->label = label;
+
+	/* Set the value */
+	va_start(vp, fmt);
+	len = vstrnfmt(pl->value, sizeof pl->value, fmt, vp);
+	va_end(vp);
+}
+
+/* Add a spacer line in a panel */
+static void panel_space(struct panel *p) {
+	assert(p);
+	assert(p->len != p->max);
+	p->len++;
+};
+
 
 /*
  * Returns a "rating" of x depending on y, and sets "attr" to the
@@ -528,10 +591,10 @@ static void display_player_sust_info(void)
 
 
 
-static void display_panel(const data_panel *panel, int count, bool left_adj, const region *bounds)
+static void display_panel(const struct panel *p, bool left_adj,
+		const region *bounds)
 {
-	int i;
-	char buffer[50];
+	size_t i;
 	int col = bounds->col;
 	int row = bounds->row;
 	int w = bounds->width;
@@ -539,45 +602,34 @@ static void display_panel(const data_panel *panel, int count, bool left_adj, con
 
 	region_erase(bounds);
 
-	if (left_adj)
-	{
-		for (i = 0; i < count; i++)
-		{
-			int len = panel[i].label ? strlen(panel[i].label) : 0;
+	if (left_adj) {
+		for (i = 0; i < p->len; i++) {
+			struct panel_line *pl = &p->lines[i];
+
+			int len = pl->label ? strlen(pl->label) : 0;
 			if (offset < len) offset = len;
 		}
 		offset += 2;
 	}
 
-	for (i = 0; i < count; i++, row++)
-	{
+	for (i = 0; i < p->len; i++, row++) {
 		int len;
-		if (!panel[i].label) continue;
-		Term_putstr(col, row, strlen(panel[i].label), TERM_WHITE, panel[i].label);
+		struct panel_line *pl = &p->lines[i];
 
-		strnfmt(buffer, sizeof(buffer), panel[i].fmt, panel[i].value[0], panel[i].value[1]);
+		if (!pl->label)
+			continue;
 
-		len = strlen(buffer);
+		Term_putstr(col, row, strlen(pl->label), TERM_WHITE, pl->label);
+
+		len = strlen(pl->value);
 		len = len < w - offset ? len : w - offset - 1;
+
 		if (left_adj)
-			Term_putstr(col+offset, row, len, panel[i].color, buffer);
+			Term_putstr(col+offset, row, len, pl->attr, pl->value);
 		else
-			Term_putstr(col+w-len, row, len, panel[i].color, buffer);
+			Term_putstr(col+w-len, row, len, pl->attr, pl->value);
 	}
 }
-
-
-static const region boundaries [] =
-{
-	/* x   y     width, rows */
-	{ 0,   0,		0,		0 },
-	{ 1,   1,		40,		8 }, /* Name, Class, ... */
-	{ 1,   9,		22,		9 }, /* Cur Exp, Max Exp, ... */
-	{ 26,  9,		17,		9 }, /* AC, melee, ... */
-	{ 48,  9,		24,		8 }, /* skills */
-	{ 21,  2,		18,		5 }, /* Age, ht, wt, ... */
-};
-
 
 static const char *show_title(void)
 {
@@ -663,61 +715,6 @@ static byte max_color(int val, int max)
 	return val < max ? TERM_YELLOW : TERM_L_GREEN;
 }
 
-
-static const char *show_status(void)
-{
-	int sc = p_ptr->sc;
-	sc /= 10;
-
-	switch (sc)
-	{
-		case 0:
-		case 1:
-			return "Pariah";
-
-		case 2:
-			return "Outcast";
-
-		case 3:
-		case 4:
-			return "Unknown";
-
-		case 5:
-			return "Known";
-
-		case 6:
-		/* Maximum status by birth 75 = 7 */
-		case 7:
-			return "Liked";
-
-		case 8:
-			return "Well-liked";
-
-		case 9:
-		case 10:
-			return "Respected";
-
-		case 11:
-		case 12:
-			return "Role model";
-
-		case 13:
-			return "Feared";
-
-		case 14:
-		case 15:
-			return "Lordly";
-	}
-
-	return format("%d", sc);
-}
-
-/* data_panel array element initializer, for ansi compliance */
-#define P_I(col, lab, format, val1, val2) \
-	{ panel[i].color = col; panel[i].label = lab; panel[i].fmt = format; \
-	 panel[i].value[0] = val1; panel[i].value[1] = val2; \
-	 i++; }
-
 /* colours for table items */
 static const byte colour_table[] =
 {
@@ -726,176 +723,154 @@ static const byte colour_table[] =
 	TERM_L_BLUE
 };
 
-static int get_panel(int oid, data_panel *panel, size_t size)
-{
-	int ret = (s32b) size;
-	switch(oid)
-	{
-  case 1:
-  {
-	int i = 0;
-	assert( size >= (u32b) boundaries[1].page_rows);
-	ret = boundaries[1].page_rows;
-	P_I(TERM_L_BLUE, "Name",	"%y",	s2u(op_ptr->full_name), END  );
-	P_I(TERM_L_BLUE, "Sex",		"%y",	s2u(p_ptr->sex->title), END  );
-	P_I(TERM_L_BLUE, "Race",	"%y",	s2u(p_ptr->race->name), END  );
-	P_I(TERM_L_BLUE, "Class",	"%y",	s2u(p_ptr->class->name), END  );
-	P_I(TERM_L_BLUE, "Title",	"%y",	s2u(show_title()), END  );
-	P_I(TERM_L_BLUE, "HP",	"%y/%y",	i2u(p_ptr->chp), i2u(p_ptr->mhp)  );
-	P_I(TERM_L_BLUE, "SP",	"%y/%y",	i2u(p_ptr->csp), i2u(p_ptr->msp)  );
-	P_I(TERM_L_BLUE, "Level",	"%y",	i2u(p_ptr->lev), END  );
-	assert(i == boundaries[1].page_rows);
-	return ret;
-  }
-  case 2:
-  {
-	int i = 0;
-	assert( ret >= boundaries[2].page_rows);
-	ret = boundaries[2].page_rows;
-	P_I(max_color(p_ptr->lev, p_ptr->max_lev), "Level", "%y", i2u(p_ptr->lev), END  );
-	P_I(max_color(p_ptr->exp, p_ptr->max_exp), "Cur Exp", "%y", i2u(p_ptr->exp), END  );
-	P_I(TERM_L_GREEN, "Max Exp",	"%y",	i2u(p_ptr->max_exp), END  );
-	P_I(TERM_L_GREEN, "Adv Exp",	"%y",	s2u(show_adv_exp()), END  );
-	P_I(TERM_L_GREEN, "MaxDepth",	"%y",	s2u(show_depth()), END  );
-	P_I(TERM_L_GREEN, "Game Turns",	"%y",	i2u(turn), END  );
-	P_I(TERM_L_GREEN, "Standard Turns","%y", i2u(p_ptr->total_energy / 100), END  );
-	P_I(TERM_L_GREEN, "Resting Turns","%y",	i2u(p_ptr->resting_turn), END  );
-	P_I(TERM_L_GREEN, "Gold",		"%y",	i2u(p_ptr->au), END  );
-	assert(i == boundaries[2].page_rows);
-	return ret;
-  }
-  case 3:
-  {
-	int i = 0;
-	assert(ret >= boundaries[3].page_rows);
-	ret = boundaries[3].page_rows;
-	P_I(TERM_L_BLUE, "Armor", "[%y,%+y]",	i2u(p_ptr->state.dis_ac), i2u(p_ptr->state.dis_to_a)  );
-	P_I(TERM_L_BLUE, "Fight", "(%+y,%+y)",	i2u(p_ptr->state.dis_to_h), i2u(p_ptr->state.dis_to_d)  );
-	P_I(TERM_L_BLUE, "Melee", "%y",		s2u(show_melee_weapon(&p_ptr->inventory[INVEN_WIELD])), END  );
-	P_I(TERM_L_BLUE, "Shoot", "%y",		s2u(show_missile_weapon(&p_ptr->inventory[INVEN_BOW])), END  );
-	P_I(TERM_L_BLUE, "Blows", "%y.%y/turn",	i2u(p_ptr->state.num_blows / 100), i2u((p_ptr->state.num_blows / 10) % 10) );
-	P_I(TERM_L_BLUE, "Shots", "%y/turn",	i2u(p_ptr->state.num_shots), END  );
-	P_I(TERM_L_BLUE, "Infra", "%y ft",	i2u(p_ptr->state.see_infra * 10), END  );
-	P_I(TERM_L_BLUE, "Speed", "%y",		s2u(show_speed()), END );
-	P_I(TERM_L_BLUE, "Burden","%.1y lbs",	f2u(p_ptr->total_weight/10.0F), END  );
-	assert(i == boundaries[3].page_rows);
-	return ret;
-  }
-  case 4:
-  {
-	static struct {
-		const char *name;
-		int skill;
-		int div;
-	} skills[] =
-	{
-		{ "Saving Throw", SKILL_SAVE, 6 },
-		{ "Stealth", SKILL_STEALTH, 1 },
-		{ "Fighting", SKILL_TO_HIT_MELEE, 12 },
-		{ "Shooting", SKILL_TO_HIT_BOW, 12 },
-		{ "Disarming", SKILL_DISARM, 8 },
-		{ "Magic Device", SKILL_DEVICE, 6 },
-		{ "Perception", SKILL_SEARCH_FREQUENCY, 6 },
-		{ "Searching", SKILL_SEARCH, 6 }
-	};
-	int i;
-	assert(N_ELEMENTS(skills) == boundaries[4].page_rows);
-	ret = N_ELEMENTS(skills);
-	if ((u32b) ret > size) ret = size;
-	for (i = 0; i < ret; i++)
-	{
-		s16b skill = p_ptr->state.skills[skills[i].skill];
-		panel[i].color = TERM_L_BLUE;
-		panel[i].label = skills[i].name;
-		if (skills[i].skill == SKILL_SAVE ||
-				skills[i].skill == SKILL_SEARCH)
-		{
-			if (skill < 0) skill = 0;
-			if (skill > 100) skill = 100;
-			panel[i].fmt = "%y%%";
-			panel[i].value[0] = i2u(skill);
-			panel[i].color = colour_table[skill / 10];
-		}
-		else if (skills[i].skill == SKILL_DEVICE)
-		{
-			panel[i].fmt = "%y";
-			panel[i].value[0] = i2u(skill);
-			panel[i].color = colour_table[skill / 13];
-		}
-		else if (skills[i].skill == SKILL_SEARCH_FREQUENCY)
-		{
-			if (skill <= 0) skill = 1;
-			if (skill >= 50)
-			{
-				panel[i].fmt = "1 in 1";
-				panel[i].color = colour_table[10];
-			}
-			else
-			{
-				/* convert to % chance of searching */
-				skill = 50 - skill;
-				panel[i].fmt = "1 in %y";
-				panel[i].value[0] = i2u(skill);
-				panel[i].color =
-					colour_table[(100 - skill*2) / 10];
-			}
-		}
-		else if (skills[i].skill == SKILL_DISARM)
-		{
-			/* assume disarming a dungeon trap */
-			skill -= 5;
-			if (skill > 100) skill = 100;
-			if (skill < 2) skill = 2;
-			panel[i].fmt = "%y%%";
-			panel[i].value[0] = i2u(skill);
-			panel[i].color = colour_table[skill / 10];
-		}
-		else
-		{
-			panel[i].fmt = "%y";
-			panel[i].value[0] = s2u(likert(skill, skills[i].div, &panel[i].color));
-		}
-	}
-	return ret;
-  }
-  case 5:
-  {
-	int i = 0;
-	assert(ret >= boundaries[5].page_rows);
-	ret = boundaries[5].page_rows;
-	P_I(TERM_L_BLUE, "Age",			"%y",	i2u(p_ptr->age), END );
-	P_I(TERM_L_BLUE, "Height",		"%y",	i2u(p_ptr->ht), END  );
-	P_I(TERM_L_BLUE, "Weight",		"%y",	i2u(p_ptr->wt), END  );
-	P_I(TERM_L_BLUE, "Social",		"%y",	s2u(show_status()), END  );
-	P_I(TERM_L_BLUE, "Maximize",	"%y",	c2u(OPT(birth_maximize) ? 'Y' : 'N'), END);
-#if 0
-	/* Preserve mode deleted */
-	P_I(TERM_L_BLUE, "Preserve",	"%y",	c2u(birth_preserve ? 'Y' : 'N'), END);
-#endif
-	assert(i == boundaries[5].page_rows);
-	return ret;
-  }
- }
-	/* hopefully not reached */
-	return 0;
+
+static struct panel *get_panel_topleft(void) {
+	struct panel *p = panel_allocate(7);
+
+	panel_line(p, TERM_L_BLUE, "Name", "%s", op_ptr->full_name);
+	panel_line(p, TERM_L_BLUE, "Sex", "%s", p_ptr->sex->title);
+	panel_line(p, TERM_L_BLUE, "Race",	"%s", p_ptr->race->name);
+	panel_line(p, TERM_L_BLUE, "Class", "%s", p_ptr->class->name);
+	panel_line(p, TERM_L_BLUE, "Title", "%s", show_title());
+	panel_line(p, TERM_L_BLUE, "HP", "%d/%d", p_ptr->chp, p_ptr->mhp);
+	panel_line(p, TERM_L_BLUE, "SP", "%d/%d", p_ptr->csp, p_ptr->msp);
+
+	return p;
 }
+
+static struct panel *get_panel_midleft(void) {
+	struct panel *p = panel_allocate(9);
+
+	panel_line(p, max_color(p_ptr->lev, p_ptr->max_lev),
+			"Level", "%d", p_ptr->lev);
+	panel_line(p, max_color(p_ptr->exp, p_ptr->max_exp),
+			"Cur Exp", "%d", p_ptr->exp);
+	panel_line(p, TERM_L_GREEN, "Max Exp", "%d", p_ptr->max_exp);
+	panel_line(p, TERM_L_GREEN, "Adv Exp", "%s", show_adv_exp());
+	panel_space(p);
+	panel_line(p, TERM_L_GREEN, "Gold", "%d", p_ptr->au);
+	panel_line(p, TERM_L_GREEN, "Burden", "%.1f lbs",
+			p_ptr->total_weight / 10.0F);
+	panel_line(p, TERM_L_GREEN, "Speed", "%s", show_speed());
+	panel_line(p, TERM_L_GREEN, "Max Depth", "%s", show_depth());
+
+	return p;
+}
+
+static struct panel *get_panel_combat(void) {
+	struct panel *p = panel_allocate(9);
+	int bth;
+
+	/* AC */
+	panel_line(p, TERM_L_BLUE, "Armor", "[%d,%+d]",
+			p_ptr->state.dis_ac, p_ptr->state.dis_to_a);
+
+	/* Melee */
+	bth = (p_ptr->state.skills[SKILL_TO_HIT_MELEE] * 10) / BTH_PLUS_ADJ;
+
+	panel_space(p);
+	panel_line(p, TERM_L_BLUE, "Melee", "%s",
+			show_melee_weapon(&p_ptr->inventory[INVEN_WIELD]));
+	panel_line(p, TERM_L_BLUE, "Blows", "%d.%d/turn",
+			p_ptr->state.num_blows / 100, (p_ptr->state.num_blows / 10 % 10));
+	panel_line(p, TERM_L_BLUE, "Base to-hit", "%.1f", bth / 10.0);
+
+	/* Ranged */
+	bth = (p_ptr->state.skills[SKILL_TO_HIT_BOW] * 10) / BTH_PLUS_ADJ;
+
+	panel_space(p);
+	panel_line(p, TERM_L_BLUE, "Shoot", "%s",
+			show_missile_weapon(&p_ptr->inventory[INVEN_BOW]));
+	panel_line(p, TERM_L_BLUE, "Shots", "%d/turn", p_ptr->state.num_shots);
+	panel_line(p, TERM_L_BLUE, "Base to-hit", "%.1f", bth / 10.0);
+
+	return p;
+}
+
+static struct panel *get_panel_skills(void) {
+	struct panel *p = panel_allocate(7);
+
+	int skill;
+	byte attr;
+	const char *desc;
+
+#define BOUND(x, min, max)		MIN(max, MAX(min, x))
+
+	/* Saving throw */
+	skill = BOUND(p_ptr->state.skills[SKILL_SAVE], 0, 100);
+	panel_line(p, colour_table[skill / 10], "Saving Throw", "%d%%", skill);
+
+	/* Stealth */
+	desc = likert(p_ptr->state.skills[SKILL_STEALTH], 1, &attr);
+	panel_line(p, attr, "Stealth", "%s", desc);
+
+	/* Disarming: -5 because we assume we're disarming a dungeon trap */
+	skill = BOUND(p_ptr->state.skills[SKILL_DISARM] - 5, 2, 100);
+	panel_line(p, colour_table[skill / 10], "Saving Throw", "%d%%", skill);
+
+	/* Magic devices */
+	skill = p_ptr->state.skills[SKILL_DEVICE];
+	panel_line(p, colour_table[skill / 13], "Magic Devices", "%d", skill);
+
+	/* Search frequency */
+	skill = MAX(p_ptr->state.skills[SKILL_SEARCH_FREQUENCY], 1);
+	if (skill >= 50) {
+		panel_line(p, colour_table[10], "Perception", "1 in 1");
+	} else {
+		/* convert to chance of searching */
+		skill = 50 - skill;
+		panel_line(p, colour_table[(100 - skill*2) / 10],
+				"Perception", "1 in %d", skill);
+	}
+
+	/* Searching ability */
+	skill = BOUND(p_ptr->state.skills[SKILL_SEARCH], 0, 100);
+	panel_line(p, colour_table[skill / 10], "Searching", "%d%%", skill);
+
+	/* Infravision */
+	panel_line(p, TERM_L_GREEN, "Infravision", "%d ft",
+			p_ptr->state.see_infra * 10);
+
+	return p;
+}
+
+static struct panel *get_panel_misc(void) {
+	struct panel *p = panel_allocate(7);
+	byte attr = TERM_L_BLUE;
+
+	panel_line(p, attr, "Age", "%d", p_ptr->age);
+	panel_line(p, attr, "Height", "%d in", p_ptr->ht);
+	panel_line(p, attr, "Weight", "%d lbs", p_ptr->wt);
+	panel_line(p, attr, "Turns used:", "");
+	panel_line(p, attr, "Game", "%d", turn);
+	panel_line(p, attr, "Standard", "%d", p_ptr->total_energy / 100);
+	panel_line(p, attr, "Resting", "%d", p_ptr->resting_turn);
+
+	return p;
+}
+
+/* Panels for main character screen */
+static const struct {
+	region bounds;
+	bool align_left;
+	struct panel *(*panel)(void);
+} panels[] =
+{
+	/*   x  y wid rows */
+	{ {  1, 1, 40, 7 }, TRUE,  get_panel_topleft },	/* Name, Class, ... */
+	{ { 21, 1, 18, 3 }, FALSE, get_panel_misc },	/* Age, ht, wt, ... */
+	{ {  1, 9, 24, 9 }, FALSE, get_panel_midleft },	/* Cur Exp, Max Exp, ... */
+	{ { 29, 9, 19, 9 }, FALSE, get_panel_combat },
+	{ { 52, 9, 20, 8 }, FALSE, get_panel_skills },
+};
 
 void display_player_xtra_info(void)
 {
-	int i;
-	int panels [] = { 1, 2, 3, 4, 5};
-	bool left_adj [] = { 1, 0, 0, 0, 0 };
-	data_panel data[MAX_PANEL];
-
-	for (i = 0; i < (int)N_ELEMENTS(panels); i++)
-	{
-		int oid = panels[i];
-		int rows = get_panel(oid, data, N_ELEMENTS(data));
-
-		/* Hack:  Don't show 'Level' in the name, class ...  panel */
-		if (oid == 1) rows -= 1;
-
-		display_panel(data, rows, left_adj[i], &boundaries[oid]);
+	size_t i;
+	for (i = 0; i < N_ELEMENTS(panels); i++) {
+		struct panel *p = panels[i].panel();
+		display_panel(p, panels[i].align_left, &panels[i].bounds);
+		panel_free(p);
 	}
 
 	/* Indent output by 1 character, and wrap at column 72 */
@@ -934,10 +909,9 @@ void display_player(int mode)
 
 	if (mode)
 	{
-		data_panel data[MAX_PANEL];
-		int rows = get_panel(1, data, N_ELEMENTS(data));
-
-		display_panel(data, rows, 1, &boundaries[1]);
+		struct panel *p = panels[0].panel();
+		display_panel(p, panels[0].align_left, &panels[0].bounds);
+		panel_free(p);
 
 		/* Stat/Sustain flags */
 		display_player_sust_info();

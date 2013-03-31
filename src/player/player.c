@@ -118,11 +118,6 @@ static void adjust_level(struct player *p, bool verbose)
 			msgt(MSG_LEVEL, "Welcome to level %d.",	p->lev);
 		}
 
-		/* Add to social class */
-		p->sc += randint1(2);
-		if (p->sc > 150)
-			p->sc = 150;
-
 		do_res_stat(A_STR);
 		do_res_stat(A_INT);
 		do_res_stat(A_WIS);

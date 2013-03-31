@@ -1351,7 +1351,7 @@ int rd_player(void)
 
 	rd_s16b(&p_ptr->ht_birth);
 	rd_s16b(&p_ptr->wt_birth);
-	rd_s16b(&p_ptr->sc_birth);
+	strip_bytes(2);
 	rd_s32b(&p_ptr->au_birth);
 
 	strip_bytes(4);
@@ -1389,9 +1389,7 @@ int rd_player(void)
 	if (p_ptr->max_depth < 0) p_ptr->max_depth = 1;
 
 	/* More info */
-	strip_bytes(8);
-	rd_s16b(&p_ptr->sc);
-	p_ptr->sc_birth = p_ptr->sc;
+	strip_bytes(10);
 	rd_s16b(&p_ptr->deep_descent);
 
 	/* Read the flags */

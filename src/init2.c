@@ -1985,7 +1985,6 @@ static enum parser_error parse_h_n(struct parser *p) {
 
 	e->isucc = parser_getint(p, "next");
 	e->roll = parser_getint(p, "roll");
-	e->bonus = parser_getint(p, "bonus");
 
 	e->next = c->entries;
 	c->entries = e;
@@ -2006,7 +2005,7 @@ struct parser *init_parse_h(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 	parser_reg(p, "V sym version", ignored);
-	parser_reg(p, "N uint chart int next int roll int bonus", parse_h_n);
+	parser_reg(p, "N uint chart int next int roll", parse_h_n);
 	parser_reg(p, "D str text", parse_h_d);
 	return p;
 }
