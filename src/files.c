@@ -572,7 +572,7 @@ static const region boundaries [] =
 	{ 0,   0,		0,		0 },
 	{ 1,   1,		40,		8 }, /* Name, Class, ... */
 	{ 1,   9,		22,		9 }, /* Cur Exp, Max Exp, ... */
-	{ 26,  9,		17,		9 }, /* AC, melee, ... */
+	{ 27,  9,		17,		9 }, /* AC, melee, ... */
 	{ 48,  9,		24,		8 }, /* skills */
 	{ 21,  2,		18,		5 }, /* Age, ht, wt, ... */
 };
