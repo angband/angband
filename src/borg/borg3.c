@@ -1116,211 +1116,38 @@ static char **borg_sv_art_text;      /* Save textual prefixes for "artifacts" (i
 
 /*
  * Return the slot that items of the given type are wielded into
- *
- * Note that "rings" are tough because there are two slots
- *
- * Returns "-1" if the item cannot (or should not) be wielded
+ * XXX this just duplicates Angband's version and should use that instead
+ * 
+ * Returns "-1" if the item cannot be wielded
  */
 int borg_wield_slot(const borg_item *item)
 {
-        switch (borg_class)
-           {
-            case CLASS_WARRIOR:
-            {
-                if ((item->tval == TV_SWORD) ||
-                (item->tval == TV_POLEARM) ||
-                (item->tval == TV_HAFTED) ||
-                (item->tval == TV_DIGGING) ) return (INVEN_WIELD);
-
-                if ((item->tval == TV_DRAG_ARMOR) ||
-                (item->tval == TV_HARD_ARMOR) ||
-                (item->tval == TV_SOFT_ARMOR) ) return (INVEN_BODY);
-
-                if (item->tval == TV_SHIELD) return (INVEN_ARM);
-
-                if ((item->tval == TV_CROWN) ||
-                (item->tval == TV_HELM) ) return (INVEN_HEAD);
-
-                if (item->tval == TV_BOW) return (INVEN_BOW);
-
-                if (item->tval == TV_RING) return (INVEN_LEFT);
-
-                if (item->tval == TV_AMULET) return (INVEN_NECK);
-
-                if (item->tval == TV_LIGHT) return (INVEN_LIGHT);
-
-                if (item->tval == TV_CLOAK) return (INVEN_OUTER);
-
-                if (item->tval == TV_GLOVES) return (INVEN_HANDS);
-
-                if (item->tval == TV_BOOTS) return (INVEN_FEET);
-            }
-                break;
-
-            case CLASS_MAGE:
-            {
-                if ((item->tval == TV_SWORD) ||
-                (item->tval == TV_POLEARM) ||
-                (item->tval == TV_HAFTED) ||
-                (item->tval == TV_DIGGING) ) return (INVEN_WIELD);
-
-                if ((item->tval == TV_DRAG_ARMOR) ||
-                (item->tval == TV_HARD_ARMOR) ||
-                (item->tval == TV_SOFT_ARMOR) ) return (INVEN_BODY);
-
-                if (item->tval == TV_SHIELD) return (INVEN_ARM);
-
-                if ((item->tval == TV_CROWN) ||
-                (item->tval == TV_HELM) ) return (INVEN_HEAD);
-
-                if (item->tval == TV_BOW) return (INVEN_BOW);
-
-                if (item->tval == TV_RING) return (INVEN_LEFT);
-
-                if (item->tval == TV_AMULET) return (INVEN_NECK);
-
-                if (item->tval == TV_LIGHT) return (INVEN_LIGHT);
-
-                if (item->tval == TV_CLOAK) return (INVEN_OUTER);
-
-                if (item->tval == TV_GLOVES) return (INVEN_HANDS);
-
-                if (item->tval == TV_BOOTS) return (INVEN_FEET);
-            }
-                break;
-
-            case CLASS_PRIEST:
-            {
-                if ((item->tval == TV_SWORD) ||
-                (item->tval == TV_POLEARM) ||
-                (item->tval == TV_HAFTED) ||
-                (item->tval == TV_DIGGING) ) return (INVEN_WIELD);
-
-                if ((item->tval == TV_DRAG_ARMOR) ||
-                (item->tval == TV_HARD_ARMOR) ||
-                (item->tval == TV_SOFT_ARMOR) ) return (INVEN_BODY);
-
-                if (item->tval == TV_SHIELD) return (INVEN_ARM);
-
-                if ((item->tval == TV_CROWN) ||
-                (item->tval == TV_HELM) ) return (INVEN_HEAD);
-
-                if (item->tval == TV_BOW) return (INVEN_BOW);
-
-                if (item->tval == TV_RING) return (INVEN_LEFT);
-
-                if (item->tval == TV_AMULET) return (INVEN_NECK);
-
-                if (item->tval == TV_LIGHT) return (INVEN_LIGHT);
-
-                if (item->tval == TV_CLOAK) return (INVEN_OUTER);
-
-                if (item->tval == TV_GLOVES) return (INVEN_HANDS);
-
-                if (item->tval == TV_BOOTS) return (INVEN_FEET);
-            }
-                break;
-
-            case CLASS_ROGUE:
-            {
-                if ((item->tval == TV_SWORD) ||
-                (item->tval == TV_POLEARM) ||
-                (item->tval == TV_HAFTED) ||
-                (item->tval == TV_DIGGING) ) return (INVEN_WIELD);
-
-                if ((item->tval == TV_DRAG_ARMOR) ||
-                (item->tval == TV_HARD_ARMOR) ||
-                (item->tval == TV_SOFT_ARMOR) ) return (INVEN_BODY);
-
-                if (item->tval == TV_SHIELD) return (INVEN_ARM);
-
-                if ((item->tval == TV_CROWN) ||
-                (item->tval == TV_HELM) ) return (INVEN_HEAD);
-
-                if (item->tval == TV_BOW) return (INVEN_BOW);
-
-                if (item->tval == TV_RING) return (INVEN_LEFT);
-
-                if (item->tval == TV_AMULET) return (INVEN_NECK);
-
-                if (item->tval == TV_LIGHT) return (INVEN_LIGHT);
-
-                if (item->tval == TV_CLOAK) return (INVEN_OUTER);
-
-                if (item->tval == TV_GLOVES) return (INVEN_HANDS);
-
-                if (item->tval == TV_BOOTS) return (INVEN_FEET);
-            }
-                break;
-
-            case CLASS_PALADIN:
-            {
-                if ((item->tval == TV_SWORD) ||
-                (item->tval == TV_POLEARM) ||
-                (item->tval == TV_HAFTED) ||
-                (item->tval == TV_DIGGING) ) return (INVEN_WIELD);
-
-                if ((item->tval == TV_DRAG_ARMOR) ||
-                (item->tval == TV_HARD_ARMOR) ||
-                (item->tval == TV_SOFT_ARMOR) ) return (INVEN_BODY);
-
-                if (item->tval == TV_SHIELD) return (INVEN_ARM);
-
-                if ((item->tval == TV_CROWN) ||
-                (item->tval == TV_HELM) ) return (INVEN_HEAD);
-
-                if (item->tval == TV_BOW) return (INVEN_BOW);
-
-                if (item->tval == TV_RING) return (INVEN_LEFT);
-
-                if (item->tval == TV_AMULET) return (INVEN_NECK);
-
-                if (item->tval == TV_LIGHT) return (INVEN_LIGHT);
-
-                if (item->tval == TV_CLOAK) return (INVEN_OUTER);
-
-                if (item->tval == TV_GLOVES) return (INVEN_HANDS);
-
-                if (item->tval == TV_BOOTS) return (INVEN_FEET);
-            }
-                break;
-
-            case CLASS_RANGER:
-            {
-                if ((item->tval == TV_SWORD) ||
-                (item->tval == TV_POLEARM) ||
-                (item->tval == TV_HAFTED) ||
-                (item->tval == TV_DIGGING) ) return (INVEN_WIELD);
-
-                if ((item->tval == TV_DRAG_ARMOR) ||
-                (item->tval == TV_HARD_ARMOR) ||
-                (item->tval == TV_SOFT_ARMOR) ) return (INVEN_BODY);
-
-                if (item->tval == TV_SHIELD) return (INVEN_ARM);
-
-                if ((item->tval == TV_CROWN) ||
-                (item->tval == TV_HELM) ) return (INVEN_HEAD);
-
-                if (item->tval == TV_BOW) return (INVEN_BOW);
-
-                if (item->tval == TV_RING) return (INVEN_LEFT);
-
-                if (item->tval == TV_AMULET) return (INVEN_NECK);
-
-                if (item->tval == TV_LIGHT) return (INVEN_LIGHT);
-
-                if (item->tval == TV_CLOAK) return (INVEN_OUTER);
-
-                if (item->tval == TV_GLOVES) return (INVEN_HANDS);
-
-                if (item->tval == TV_BOOTS) return (INVEN_FEET);
-            }
-                break;
-
-        }
+	switch (item->tval) {
+		case TV_SWORD:
+		case TV_POLEARM:
+		case TV_HAFTED:
+		case TV_DIGGING: return INVEN_WIELD;
+		
+		case TV_DRAG_ARMOR:
+		case TV_HARD_ARMOR:
+		case TV_SOFT_ARMOR: return INVEN_BODY;
+		
+		case TV_SHIELD: return INVEN_ARM;
+		
+		case TV_CROWN:
+		case TV_HELM: return INVEN_HEAD;
+	
+		case TV_BOW: return INVEN_BOW;	
+		case TV_RING: return INVEN_LEFT;
+		case TV_AMULET: return INVEN_NECK;	
+		case TV_LIGHT: return INVEN_LIGHT;
+		case TV_CLOAK: return INVEN_OUTER;
+		case TV_GLOVES: return INVEN_HANDS;
+		case TV_BOOTS: return INVEN_FEET;
+	}
 
     /* No slot available */
-    return (-1);
+    return -1;
 }
 
 /*
@@ -1689,596 +1516,188 @@ static s32b borg_object_value_known(borg_item *item)
 
 
 /*
- * Analyze an item given a description and (optional) cost
+ * Analyze an item, also given its name
  *
- * From the description, extract the item identity, and the various
- * bonuses, plus the "aware" and "known" flags (in an encoded state).
- *
- * Note the use of a "prefix binary search" on the arrays of object
- * base names, and on the arrays of artifact/ego-item special names.
- *
- * A "prefix binary search" starts out just like a normal binary search,
- * in that it searches a sorted array of entries for a specific entry,
- * using a simple "less than or equal to" comparison.  When it finds
- * an entry, however, instead of simply checking for "equality" of the
- * entry to the key, it must check whether the key is a "prefix" of the
- * entry.  And if any entry can be a prefix of another entry, then it
- * must check whether the key is a "prefix" of any of the entries which
- * precede the "found" entry.  Technically, it only has to check the
- * preceding N entries, where N is the maximum distance between any two
- * entries sharing a "prefix" relation, but note that only in the case
- * of "failure" will the search need to check more than a few entries,
- * even if it scans all the way to the start of the list.
- *
- * We use the object kind to guess at the object weight and flags, and
- * then we use the artifact/ego-item information to update our guesses.
- *
- * We also guess at the value of the item, as given by "object_value()".
- *
- * Note that we will fail if the "description" was "partial", that is,
- * if it was "broken" by the display functions for any reason.  This
- * should only be an issue in "stores", which "chop" the description
- * to a length of about 60 characters, which may be "messy".  Luckily,
- * objects in stores never have important inscriptions, and we should
- * correctly handle objects with "bizarre" inscriptions, or even with
- * "broken" inscriptions, so we should be okay.
+ * This cheats all the information, and maybe is getting information
+ * that the player doesn't always get.  The best way to fix this is to
+ * refactor the main game code to get it to make a 'fake' object that
+ * contains only known info and copy from that.
  */
-void borg_item_analyze(borg_item *item, object_type *real_item, char *desc)
+void borg_item_analyze(borg_item *item, const object_type *real_item,
+		char *desc)
 {
-	bitflag f[OF_SIZE];
-	bitflag known_f[OF_SIZE];
-
-    char *scan;
-
-    /* Wipe the item */
-    WIPE(item, borg_item);
-
-	/* Extract the flags */
-	object_flags(real_item, f);
-	object_flags_known(real_item, known_f);
-
+	char *scan;
+	obj_pseudo_t pseudo;
+	
+	/* Wipe the item */
+	WIPE(item, borg_item);
+	
+	/* Non-item */
+	if (!real_item->kind || !real_item->number)
+		return;
+	
+	/* Extract data from the game */
+	object_flags_known(real_item, item->flags);
+	pseudo = object_pseudo(real_item);
+	
 	/* Save the item description */
-    strcpy(item->desc, desc);
-
-    /* Advance to the "inscription" or end of string */
-    for (scan = item->desc; *scan && (*scan != c1); scan++) /* loop */;
-
-    /* Save a pointer to the inscription */
-    item->note = scan;
-
-    /* Empty item */
-    if (!desc[0]) return;
-	if (strstr(desc, "(nothing)")) return;
-
-
-    /* Assume singular */
-    item->iqty = real_item->number;
-
-	/* empty item, leave here */
-	if (item->iqty == 0) return;
-
-	/* TVal and SVal */
+	my_strcpy(item->desc, desc, sizeof item->desc);
+	
+	/* Advance to the "inscription" or end of string and save */
+	for (scan = item->desc; *scan && (*scan != '{'); scan++) /* loop */;
+	item->note = scan;
+	
+	/* Get various info */
 	item->tval = real_item->tval;
-
-	/* This is only known on some items if not id'd/known */
 	item->sval = real_item->sval;
+	item->iqty = real_item->number;
+	item->weight = real_item->weight;
+	item->timeout = real_item->timeout;
+	item->ac = real_item->ac;
+	item->dd = real_item->dd;
+	item->ds = real_item->ds;
+	item->level = real_item->kind->level;
+	item->activation = real_item->kind->effect;
+	item->cursed = cursed_p(item->flags);
 
-	/* Some Sense but not necessarily real ID
-	 * some (Easy Know + Aware) items might sneak in here.
-	 */
-    item->aware = object_is_known(real_item);
-	if (!item->aware)
-	{
-		if (object_flavor_is_aware(real_item)) item->kind = real_item->kind->kidx;
-
-		/* item has some awareness */
-		if (item->kind) item->aware = TRUE;
+	/* Check ID status */
+	/* XXX surely the Borg doesn't need four bools per object to keep track
+	 * of all this?  fully_identified should always be !needs_I so that could
+	 * go for starters. */
+	if (object_is_known(real_item)) {
+		/* Fully ID'd */
+		item->aware = TRUE;
+		item->ident = TRUE;
+		item->fully_identified = TRUE;
+		item->needs_I = FALSE;
+	} else if (object_flavor_is_aware(real_item)) {
+		/* Object is flavoured and aware */
+		item->aware = TRUE;
+		item->needs_I = TRUE;
+	} else {
+		item->needs_I = TRUE;
 	}
-
-	/* Item has been ID'd (store, scroll, spell) */
-  	if ((real_item->ident & IDENT_KNOWN) ||
-		(real_item->ident & IDENT_ATTACK) ||
-		/*(real_item->ident & IDENT_FIRED)  || */
-		(real_item->ident & IDENT_DEFENCE) ||
-  	    (real_item->ident & IDENT_STORE) ||
-		(real_item->ident & IDENT_SENSE)) item->ident = TRUE;
-
-	/* Descriptions from PseudoID trump the IDENT_SENSE */
-	if (strstr(item->note, "magical") ||
-		strstr(item->note, "excellent") ||
-		strstr(item->note, "ego") ||
-		strstr(item->note, "splendid") ||
-		strstr(item->note, "special") ||
-		strstr(item->note, "terrible") ||
-		strstr(item->note, "indestructible")) item->ident = FALSE;
-
-	/* Item has been *ID*'d (store, scroll, spell) */
-  	if ((real_item->ident & IDENT_KNOWN) /*||
-  	    (real_item->ident & IDENT_MENTAL)*/) item->fully_identified = TRUE;
-
-    /* Kind index -- Only if partially ID*/
-    if (item->aware) item->kind = real_item->kind->kidx;
-
-	/* Some items do not need full ID */
-	if (real_item->tval == TV_SCROLL && item->kind) item->ident = TRUE;
-	if (item->kind && easy_know(real_item)) item->ident = TRUE;
-
-	/* power value -- Only if ID'd */
-  	if (item->ident) item->pval = real_item->pval[DEFAULT_PVAL];
-
-	/* does it have an activation or effect? */
-	item->activation = k_info[item->kind].effect;
 
 	/* Rods are considered pval 1 if charged */
-  	if (item->tval == TV_ROD)
-  	{
-		if (item->iqty == 1 && real_item->timeout) item->pval = 0;
-  		else
-		{
-			if (strstr(item->desc, "charging"))
-			{
-				char *s;
-				int number;
-
-				/* Assume all are charging */
-				item->pval = 0;
-
-				/* Find the first "(" */
-				for (s = desc; *s && (*s != '('); s++) /* loop */;
-
-				desc = s + 1;
-
-				if (isdigit(desc[0]))
-				{
-					char *ss;
-
-					/* Find the first space */
-					for (ss = desc; *ss && (*ss != ' '); ss++) /* loop */;
-
-					/* Paranoia -- Catch sillyness */
-					if (*ss != ' ')
-					{
-						number = item->iqty;
-					}
-					else
-					{
-						/* Extract a quantity */
-						number = atoi(desc);
-					}
-
-					/* Quantity more than number charging */
-					if (item->iqty > number)
-					{
-						item->pval = 1;
-					}
-				}
-			}
-  			else item->pval = 1;
+  	if (item->tval == TV_ROD) {
+  		/* XXX There should be an obj_rod_charging() function for this logic */
+  		/* This was ripped from object/obj-desc.c */
+		if (item->iqty == 1) {
+			item->pval = real_item->timeout ? 0 : 1;
+		} else {
+			int power;
+			int time_base = randcalc(real_item->kind->time, 0, MINIMISE);
+			if (!time_base) time_base = 1;
+			
+			/*
+			 * Find out how many rods are charging, by dividing
+			 * current timeout by each rod's maximum timeout.
+			 * Ensure that any remainder is rounded up.  Display
+			 * very discharged stacks as merely fully discharged.
+			 */
+			power = (real_item->timeout + (time_base - 1)) / time_base;
+			item->pval = (power < item->iqty) ? 1 : 0;
 		}
-	}
+	} else if (item->tval == TV_STAFF || item->tval == TV_WAND) {
+		/* Staffs & wands considered charged unless they are known empty */
 
-	/* Staves and Wands are considered charged unless
-	 * they are known to be empty or are {empty}
-	 */
-	if (item->tval == TV_STAFF || item->tval == TV_WAND)
-	{
-		/* assume good */
-		item->pval =1;
+		/* Assume good */
+		item->pval = 1;
 
 		/* if Known, get correct pval */
 		if (item->ident) item->pval = real_item->pval[DEFAULT_PVAL];
 
-		/* Gotta know charges */
-		/* if (!object_known_p(real_item)) item->pval = 0; */
-
 		/* if seen {empty} assume pval 0 */
 		if (real_item->ident & IDENT_EMPTY) item->pval = 0;
-		if (strstr(item->desc, "(0 charges)")) item->pval = 0;
 	}
 
-  	/* Weight of item */
-  	item->weight = real_item->weight;
+	/* Kind index -- Only if partially ID */
+	if (item->aware)
+		item->kind = real_item->kind->kidx;
 
-	/* Index known if ID'd */
-	if (item->ident && real_item->artifact)
-	{
-  		/* Artifact Index --Only known if ID'd*/
-  		item->name1 = real_item->artifact->aidx;
-	}
+	/* Notice various things if ID'd */
+	if (item->ident) {
+		if (real_item->artifact)
+			item->name1 = real_item->artifact->aidx;
 
-	if (item->ident && real_item->ego)
-	{
-  		/* Ego Index --Only known if ID'd*/
-  		item->name2 = real_item->ego->eidx;
-	}
+		if (real_item->ego) {
+			item->name2 = real_item->ego->eidx;
 
-	/* Timeout, must wait for recharge */
-  	item->timeout = real_item->timeout;
-
-    /* Modifiers -- Only known if ID'd */
-    if (item->ident)
-    {
-		item->to_h = real_item->to_h;/* Bonus to hit */
-    	item->to_d = real_item->to_d;/* Bonus to dam */
-    	item->to_a = real_item->to_a;/* Bonus to ac */
-	}
-
-	/* Attributes known */
-	item->ac = real_item->ac;    /* Armor class */
-    item->dd = real_item->dd;    /* Damage dice */
-    item->ds = real_item->ds;    /* Damage sides */
-
-    /* Level of item */
-    item->level = k_info[item->kind].level;
-
-    /* Extract the base flags -- Kind only given if 'able' */
-    of_copy(item->flags, known_f);
-
-    /* Base Cost -- Guess */
-
-    /* Known items */
-    if (item->ident)
-    {
-        /* Process various fields */
-        item->value = borg_object_value_known(item);
-    }
-    /* Aware items */
-    else if (item->aware)
-    {
-        /* Aware items can assume template cost */
-        item->value = k_info[item->kind].cost;
-    }
-
-	/* No known price on non-aware  item */
-    if (!item->aware && !item->value)
-    {
-        /* Guess at weight and cost */
-        switch (item->tval)
-        {
-			case TV_SKELETON:
-				item->value = 0L;
-				break;
-            case TV_FOOD:
-            {
-                item->value = 5L;
-                break;
-            }
-            case TV_POTION:
-            {
-                item->value = 20L;
-                break;
-            }
-            case TV_SCROLL:
-            {
-                item->value = 20L;
-                break;
-            }
-            case TV_STAFF:
-            {
-                item->value = 70L;
-                break;
-            }
-            case TV_WAND:
-            {
-                item->value = 50L;
-                break;
-            }
-            case TV_ROD:
-            {
-                item->value = 90L;
-                break;
-            }
-            case TV_RING:
-            {
-                item->value = 45L;
-                break;
-            }
-            case TV_AMULET:
-            {
-                item->value = 45L;
-                break;
-            }
-        }
-	}
-
-    /* Item is cursed */
-    if (item->ident)
-	{
-		item->cursed = cursed_p(real_item->flags);
-	}
-
-	/* Hack -- examine artifacts */
-    if (item->name1)
-    {
-        /* XXX XXX Hack -- fix "weird" artifacts */
-        if ((item->tval != a_info[item->name1].tval) ||
-            (item->sval != a_info[item->name1].sval))
-        {
-			object_kind *o_ptr;
-
-            /* Save the kind */
-            o_ptr = lookup_kind(item->tval, item->sval);
-			item->kind = o_ptr->kidx;
-
-            /* Save the tval/sval */
-            item->tval = k_info[item->kind].tval;
-            item->sval = k_info[item->kind].sval;
-        }
-
-        /* Extract the weight */
-        item->weight = a_info[item->name1].weight;
-
-    }
-
-
-    /* Hack -- examine ego-items */
-    if (item->name2)
-    {
-        /* XXX Extract the weight */
-
-    }
-
-    /* Special "discount" */
-/*     item->discount = real_item->discount */
-
-    /* Cursed indicators */
-    if (strstr(item->note, "cursed")) item->value = 0L;
-    else if (strstr(item->note, "{broken")) item->value = 0L;
-    else if (strstr(item->note, "{terrible")) item->value = 0L;
-    else if (strstr(item->note, "{worthless")) item->value = 0L;
-	else if (strstr(item->note, "{strange}")) item->value = 0L;
-
-
-    /* Ignore certain feelings */
-    /* "{average}" */
-    /* "{blessed}" */
-    /* "{magical}" */
-    /* "{excellent}" */
-    /* "{special}" */
-
-    /* Ignore special inscriptions */
-    /* "{empty}", "{tried}" */
-
-
-
-
-    /* Hack -- repair rings of damage */
-    if ((item->tval == TV_RING) && (item->sval == SV_RING_DAMAGE))
-    {
-        /* Bonus to dam, not pval */
-        item->to_d = item->pval;
-        item->pval = 0;
-    }
-
-    /* Hack -- repair rings of accuracy */
-    if ((item->tval == TV_RING) && (item->sval == SV_RING_ACCURACY))
-    {
-        /* Bonus to hit, not pval */
-        item->to_h = item->pval;
-        item->pval = 0;
-    }
-
-
-    /* XXX XXX XXX Repair various "ego-items" */
-
-#if 0
-	/* Repair the Planatir of Westerness. The borg thinks
-	 * it is an ego item.since it has an ego name (Westerness).
-	 */
-	if (item->kind == borg_lookup_kind(TV_LIGHT, SV_PLANATIR))
-	{
-		/* remove the name2 and replace it with correct name1 */
-		item->name1 = 7;
-		item->name2 = 0;
-		/* correct activation and pval */
-		item->activation = EFF_CLAIRVOYANCE;
-		item->pval = 2;
-	}
-
-	/* Repair the Shield of the Haradrim. The borg thinks
-	 * it is an ego item.since it has an ego name (Haradrim).
-	 */
-	if (item->kind == 129 && item->name2 == 107 && item->pval == 2)
-	{
-		/* remove the name2 and replace it with correct name1 */
-		item->name1 = 134;
-		item->name2 = 0;
-		/* correct activation and pval */
-		item->activation = EFF_BERSERKER;
-		item->pval = 2;
-	}
-#endif
-
-	/* Repair the Elvenkind items that are not Armour so that
-	 * the borg can correctly handle the high resists
-	 */
-	if (item->name2 == 61 || item->name2 == 21) item->name2 = 9;
-
-    /* Hack -- examine artifacts */
-    if (item->name1)
-    {
-        /* XXX XXX Hack -- fix "weird" artifacts */
-        if ((item->tval != a_info[item->name1].tval) ||
-            (item->sval != a_info[item->name1].sval))
-        {
-            /* Save the kind */
-            item->kind = borg_lookup_kind(item->tval, item->sval);
-
-            /* Save the tval/sval */
-            item->tval = k_info[item->kind].tval;
-            item->sval = k_info[item->kind].sval;
-        }
-
-        /* Extract the weight */
-        item->weight = a_info[item->name1].weight;
-
-     }
-
-
-    /* Known items */
-    if (item->ident)
-    {
-        /* Process various fields */
-        item->value = borg_object_value_known(item);
-		item->aware = TRUE;
-    }
-
-    /* Aware items */
-    else if (item->kind)
-    {
-        /* Aware items can assume template cost */
-        item->value = k_info[item->kind].cost;
-		item->aware = TRUE;
-    }
-	/* Non ID, assume some value */
-	else
-	{
-		item->value = 20L;
-		item->aware = FALSE;
-	}
-
-
-    /* Parse various "inscriptions" */
-    if (item->note[0])
-    {
-        /* Special "discount" */
-        if (streq(item->note, "{on sale}")) item->discount = 50;
-
-        /* Standard "discounts" */
-        else if (streq(item->note, "{25% off}")) item->discount = 25;
-        else if (streq(item->note, "{50% off}")) item->discount = 50;
-        else if (streq(item->note, "{75% off}")) item->discount = 75;
-        else if (streq(item->note, "{90% off}")) item->discount = 90;
-
-        /* Cursed indicators */
-        else if (strstr(item->note, "cursed}"))
-        {
-            /* One Ring is not junk */
-            if (item->activation != EFF_BIZARRE)
-            {
-                item->value = 0L;
-            }
-            item->cursed = TRUE;
-        }
-
-        else if (strstr(item->note, "broken")) item->value = 0L;
-        else if (strstr(item->note, "terrible")) item->value = 0L;
-        else if (strstr(item->note, "worthless")) item->value = 0L;
-
-        /* Ignore certain feelings */
-        /* "{average}" */
-        /* "{blessed}" */
-        /* "{magical}" */
-        /* "{excellent}" */
-        /* "{special}" */
-
-        /* Ignore special inscriptions */
-        /* "{empty}", "{tried}" */
-    }
-
-
-    /* Apply "discount" if any */
-    if (item->discount) item->value -= item->value * item->discount / 100;
-
-	/* Make sure any effect is known if not already known */
-	if (!item->activation)
-	{
-		item->activation = k_info[real_item->kind->kidx].effect;
-	}
-
-	/* Modifiers assumed if pseudoID.  This will allow him to trade his cloak +0 in for a cloak {magical} */
-    if (strstr(item->note, "magical") && !item->ident)
-	{
-		int slot = borg_wield_slot(item);
-
-		/* Minimally boost the value so we don't crush it */
-		item->value += 5;
-
-		/* Weapons are assumed to have at least +1/+1 */
-		if (slot == INVEN_WIELD || slot == INVEN_BOW)
-		{
-			item->to_h = 1;
-    		item->to_d = 1;
-
-			/* In Muchkin_mode, we want to make money so we want to wear stuff to ID it.
-			 * Have him believe that the item is high bonus so that he will replace his
-			 * current equipment.  There is a chance that the item is cursed and this will
-			 * adversely impact his survivability.  He is able to buy ?Remove Curse.
-			 */
-			if (borg_munchkin_mode)
-			{
-				item->to_h = 8;
-				item->to_d = 8;
-			}
-
+			/* Repair the Elvenkind items that are not armour so that
+			 * the borg can correctly handle the high resists */
+			if (item->name2 == 61 || item->name2 == 21) item->name2 = 9;
 		}
 
-		/* armors are assumed to have at least +1 */
-    	if (slot > INVEN_BOW)
-		{
-			item->to_a = 1;
-
-			if (borg_munchkin_mode)
-			{
-				item->to_a = 8;
-			}
-		}
-
+  		item->pval = real_item->pval[DEFAULT_PVAL];
+		item->value = borg_object_value_known(item);
+	} else if (item->aware) {
+		item->value = real_item->kind->cost;
+	} else {
+        /* Guess at cost */
+        switch (item->tval) {
+			case TV_FOOD:     item->value = 5L; break;
+			case TV_POTION:   item->value = 20L; break;
+			case TV_SCROLL:   item->value = 20L; break;
+			case TV_STAFF:    item->value = 70L; break;
+			case TV_WAND:     item->value = 50L; break;
+			case TV_ROD:      item->value = 90L; break;
+			case TV_RING:
+			case TV_AMULET:   item->value = 45L; break;
+			default:          item->value = 20L; break;
+        }
 	}
 
-	/* Fake modifiers assumed if pseudoID.  This will allow him to trade his cloak +0 in for a cloak {magical}
-	 * But if the cloak has been ID-though-use at Cloak [+4] {Special}, then he will be keeping the real +4
-	 * instead of the +5 given below
-	 */
-    if ((strstr(item->note, "ego") ||
-        strstr(item->note, "splendid") ||
-        strstr(item->note, "excellent") ||
-        strstr(item->note, "special"))  && !item->ident)
+	/* If it's not The One Ring, then it's worthless */
+	if (item->cursed && item->activation != EF_BIZARRE)
+		item->value = 0L;
+	/* "Strange" objects are also considered worthless */
+	else if (strstr(item->note, "strange"))
+		item->value = 0L;
 
-	{
+	/* Copy across attack plusses (or fake them) */
+	if (object_attack_plusses_are_visible(real_item)) {
+		item->to_h = real_item->to_h;
+		item->to_d = real_item->to_d;
+	} else if (pseudo == INSCRIP_SPLENDID || pseudo == INSCRIP_EXCELLENT ||
+			pseudo == INSCRIP_SPECIAL) {
 		int slot = borg_wield_slot(item);
 
 		/* Minimally boost the value so we don't crush it */
 		item->value += 25;
 
-		/* Weapons are assumed to have at least +1/+1 */
+		/* Weapons are assumed to have at least +5/+5 */
+		/* In munchkin_mode, we want to make money so we want to wear stuff
+		 * to ID it.  So make the borg believe that the item has a high bonus
+		 * to make it replace current equipment.  Sometimes this item might be
+		 * cursed but there's always ?Remove Curse. */
+    	if (slot == INVEN_WIELD || slot == INVEN_BOW)
+			item->to_h = item->to_d = borg_munchkin_mode ? 9 : 5;
+	} else if (pseudo == INSCRIP_MAGICAL) {
+		int slot = borg_wield_slot(item);
+
+		/* Lower value for worse item */
+		item->value += 5;
+
+		/* Assume +1 (or +8 with munchkin) */
 		if (slot == INVEN_WIELD || slot == INVEN_BOW)
-		{
-			item->to_h = 5;
-    		item->to_d = 5;
-
-			if (borg_munchkin_mode)
-			{
-				item->to_h = 9;
-				item->to_d = 9;
-			}
-		}
-
-		/* armors are assumed to have at least +1 */
-    	if (slot > INVEN_BOW)
-		{
-			item->to_a = 5;
-
-			if (borg_munchkin_mode)
-			{
-				item->to_a = 9;
-			}
-		}
-
+			item->to_h = item->to_d = borg_munchkin_mode ? 8 : 1;
 	}
 
-	/* Assume not fully Identified. */
-    item->needs_I = TRUE;
-    item->fully_identified = FALSE;
-
-	/* Unless its easy_know */
-	if (item->kind && easy_know(real_item))
-	{
-		item->needs_I = FALSE;
-		item->fully_identified = TRUE;
-
+	/* Copy across defence plusses (or fake them) */
+	if (object_defence_plusses_are_visible(real_item)) {
+		item->to_a = real_item->to_a;
+	} else if (pseudo == INSCRIP_SPLENDID || pseudo == INSCRIP_EXCELLENT ||
+			pseudo == INSCRIP_SPECIAL) {
+		/* Add some value and assume modifiers */
+		item->value += 25;
+		if (borg_wield_slot(item) > INVEN_BOW)
+			item->to_a = borg_munchkin_mode ? 9 : 5;
+	} else if (pseudo == INSCRIP_MAGICAL) {
+		/* Add less value and assume modifiers */
+		item->value += 5;
+		if (borg_wield_slot(item) > INVEN_BOW)
+			item->to_a = borg_munchkin_mode ? 8 : 1;
 	}
-
 }
 
 
@@ -2292,7 +1711,7 @@ void borg_send_inscribe(int i, char *str)
     char *s;
 
     /* Label it */
-    borg_keypress(c1);
+    borg_keypress('{');
 
     /* Choose from inventory */
     if (i < INVEN_WIELD)
@@ -3095,11 +2514,13 @@ bool borg_equips_staff_fail(int sval)
 
 
 /*
- * Hack -- attempt to use the given artifact (by index)
+ * Attempt to use the given artifact
  */
-bool borg_activate_artifact(int activation, int location)
+bool borg_activate_artifact(int activation)
 {
     int i;
+
+	assert(activation);
 
     /* Check the equipment */
     for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
@@ -3107,19 +2528,12 @@ bool borg_activate_artifact(int activation, int location)
         borg_item *item = &borg_items[i];
 		artifact_type *a_ptr;
 
-		/* Skip non artifacts */
-        /* if (!artifact_p(item)) continue; */
-
 		/* Skip artifacts w/o activation */
-		/* TR2_activate was removed */
-		if (!(item->name1 && a_info[item->name1].effect) &&
-		    !(k_info[item->kind].effect)) continue;
+		if (!item->name1 || a_info[item->name1].effect != activation)
+			continue;
 
 		/* get the item */
 		a_ptr = &a_info[item->name1];
-
-		/* Skip wrong activation */
-		if (a_ptr->effect != activation) continue;
 
         /* Check charge */
         if (item->timeout) continue;
@@ -3135,9 +2549,9 @@ bool borg_activate_artifact(int activation, int location)
          * of the resists that go with the artifact.
          * Lights dont need *id* just regular id.
          */
-        if  ((op_ptr->opt[OPT_birth_randarts] || op_ptr->opt[OPT_birth_randarts]) && (item->activation != EFF_ILLUMINATION &&
-              item->activation != EFF_MAPPING &&
-              item->activation != EFF_CLAIRVOYANCE) &&
+        if  ((op_ptr->opt[OPT_birth_randarts] || op_ptr->opt[OPT_birth_randarts]) && (item->activation != EF_ILLUMINATION &&
+              item->activation != EF_MAPPING &&
+              item->activation != EF_CLAIRVOYANCE) &&
              (!item->fully_identified))
         {
             borg_note(format("# %s must be *ID*'d before activation.", item->desc));
@@ -3163,7 +2577,7 @@ bool borg_activate_artifact(int activation, int location)
 /*
  * Hack -- check and see if borg is wielding an artifact
  */
-bool borg_equips_artifact(int activation, int location)
+bool borg_equips_artifact(int activation)
 {
     int i;
 
@@ -3190,10 +2604,10 @@ bool borg_equips_artifact(int activation, int location)
 
         /* Check charge.  But not on certain ones  Wor, ID, phase, TELEPORT.*/
         /* this is to ensure that his borg_prep code is working ok */
-        if ((activation != EFF_RECALL &&
-             activation != EFF_IDENTIFY &&
-             activation != EFF_TELE_PHASE &&
-             activation != EFF_TELE_LONG) &&
+        if ((activation != EF_RECALL &&
+             activation != EF_IDENTIFY &&
+             activation != EF_TELE_PHASE &&
+             activation != EF_TELE_LONG) &&
            (item->timeout >= 1) ) continue;
 
         /*
@@ -3207,9 +2621,9 @@ bool borg_equips_artifact(int activation, int location)
          * of the resists that go with the artifact.
          * Lights dont need *id* just regular id.
          */
-        if  ((op_ptr->opt[OPT_birth_randarts] || op_ptr->opt[OPT_birth_randarts]) && (item->activation != EFF_ILLUMINATION &&
-              item->activation != EFF_MAPPING &&
-              item->activation != EFF_CLAIRVOYANCE) &&
+        if  ((op_ptr->opt[OPT_birth_randarts] || op_ptr->opt[OPT_birth_randarts]) && (item->activation != EF_ILLUMINATION &&
+              item->activation != EF_MAPPING &&
+              item->activation != EF_CLAIRVOYANCE) &&
              (!item->fully_identified))
         {
             borg_note(format("# %s must be *ID*'d before activation.", item->desc));
@@ -4166,93 +3580,55 @@ void borg_cheat_inven(void)
  */
 void borg_cheat_store(void)
 {
-    int i;
-	int slot;
-    char buf[256];
 	int shop_num;
 
-	object_type *j_ptr;
+	/* Scan each store */
+	for (shop_num = 0; shop_num < MAX_STORES; shop_num++) {
+		int slot;
+		struct store *st_ptr = &stores[shop_num];
 
-	struct store *st_ptr;
-
-	/* scan each visited store */
-	for (shop_num = 0; shop_num < MAX_STORES;  shop_num ++)
-	{
-
-#if 0
-		/* Skip a shop that has not been visited */
-		if (!borg_shops[shop_num].when && shop_num != 7) continue;
-#endif
-		/* Access the current shop */
-		st_ptr = &stores[shop_num];
-
-		/* Clear the Inventory from memory */
-		for (i = 0; i < 24; i++)
-		{
-			/* Wipe the ware */
-			WIPE(&borg_shops[shop_num].ware[i], borg_item);
-		}
+		/* Clear the inventory from memory */
+		C_WIPE(&borg_shops[shop_num].ware, 24, borg_item);
 
 		/* Check each existing object in this store */
-		for (slot = 0; slot < 24; slot++)
-		{
-			/* Get the existing object */
-			j_ptr = &st_ptr->stock[slot];
-
-			/* Default to "nothing" */
-			buf[0] = '\0';
-
-			/* Describe it */
-			object_desc(buf, sizeof(buf), j_ptr, ODESC_FULL);
-
-			/* Skip Empty slots */
-			if (streq(buf,"(nothing)")) continue;
-
-			/* Copy the Description to the borg's memory */
-			strcpy(borg_shops[shop_num].ware[slot].desc, buf);
-
+		for (slot = 0; slot < 24; slot++) {
+			object_type *o_ptr = &st_ptr->stock[slot];
+			borg_item *b_item = &borg_shops[shop_num].ware[slot];
+			char buf[120];
+			
+			/* Describe the item */
+			object_desc(buf, sizeof buf, o_ptr, ODESC_FULL);
+			if (streq(buf, "(nothing)")) break;
+						
 			/* Analyze the item */
-			borg_item_analyze(&borg_shops[shop_num].ware[slot], &stores[shop_num].stock[slot], buf);
-
-			/*need to be able to analize the home inventory to see if it was */
+			borg_item_analyze(b_item, o_ptr, buf);
+			
+			/* Need to be able to analyse the home inventory to see if it was */
 			/* *fully ID*d. */
-			/* This is a BIG CHEAT!  It will be less of a cheat if code is put*/
-			/* in place to allow 'I' in stores. */
-			if (stores[shop_num].stock[slot].ident & IDENT_KNOWN)
-			{
-				/* XXX XXX XXX for now, always cheat to get info on items at */
-				/*   home. */
-				borg_object_star_id_aux( &borg_shops[shop_num].ware[slot],
-										 &stores[shop_num].stock[slot]);
-				borg_shops[shop_num].ware[slot].fully_identified = TRUE;
+			if (o_ptr->ident & IDENT_KNOWN) {
+				borg_object_star_id_aux(b_item, o_ptr);
+				b_item->fully_identified = TRUE;
 			}
 
-			/* hack -- see of store is selling food.  Needed for Money Scumming */
-			if (shop_num == 0 &&
-				borg_shops[shop_num].ware[slot].tval == TV_FOOD &&
-				borg_shops[shop_num].ware[slot].sval == SV_FOOD_RATION)
-			{
-				borg_food_onsale = borg_shops[shop_num].ware[slot].iqty;
-			}
+			/* Check if the general store has certain items */
+			if (shop_num == 0) {
+				/* Food -- needed for money scumming */
+				if (b_item->tval == TV_FOOD && b_item->sval == SV_FOOD_RATION)
+					borg_food_onsale = b_item->iqty;
 
-			/* hack -- see of store is selling our fuel. */
-			if (shop_num == 0 &&
-				borg_shops[shop_num].ware[slot].tval == TV_FLASK &&
-				borg_items[INVEN_LIGHT].sval == SV_LIGHT_LANTERN)
-			{
-				borg_fuel_onsale = borg_shops[shop_num].ware[slot].iqty;
-			}
+				/* Fuel for lanterns */
+				if (b_item->tval == TV_FLASK &&
+						borg_items[INVEN_LIGHT].sval == SV_LIGHT_LANTERN)
+					borg_fuel_onsale = b_item->iqty;
 
-			/* hack -- see of store is selling our fuel. */
-			if (shop_num == 0 &&
-				borg_shops[shop_num].ware[slot].tval == TV_LIGHT &&
-				borg_items[INVEN_LIGHT].sval == SV_LIGHT_TORCH)
-			{
-				borg_fuel_onsale = borg_shops[shop_num].ware[slot].iqty;
+				/* Fuel for lanterns */
+				if (b_item->tval == TV_LIGHT &&
+						borg_items[INVEN_LIGHT].sval == SV_LIGHT_TORCH)
+					borg_fuel_onsale = b_item->iqty;
 			}
 
 			/* Hack -- Save the declared cost */
-			borg_shops[shop_num].ware[slot].cost = borg_price_item(j_ptr, FALSE,1, shop_num);
+			b_item->cost = borg_price_item(o_ptr, FALSE, 1, shop_num);
 		}
 	}
 }
