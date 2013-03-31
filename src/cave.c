@@ -1211,9 +1211,9 @@ void prt_map(void)
 	tx = Term->offset_x + SCREEN_WID;
 
 	/* Dump the map */
-	for (y = Term->offset_y, vy = ROW_MAP; y < ty; vy++, y++)
+	for (y = Term->offset_y, vy = ROW_MAP; y < ty; vy+=tile_height, y++)
 	{
-		for (x = Term->offset_x, vx = COL_MAP; x < tx; vx++, x++)
+		for (x = Term->offset_x, vx = COL_MAP; x < tx; vx+=tile_width, x++)
 		{
 			/* Check bounds */
 			if (!in_bounds(y, x)) continue;
@@ -1228,17 +1228,8 @@ void prt_map(void)
 			if ((tile_width > 1) || (tile_height > 1))
 			{
 			        Term_big_queue_char(Term, vx, vy, a, c, TERM_WHITE, L' ');
-	      
-				if (tile_width > 1)
-				{
-				        vx += tile_width - 1;
-				}
 			}
 		}
-      
-		if (tile_height > 1)
-		        vy += tile_height - 1;
-      
 	}
 }
 
