@@ -574,7 +574,7 @@ static const region boundaries [] =
 	{ 1,   9,		22,		9 }, /* Cur Exp, Max Exp, ... */
 	{ 27,  9,		17,		9 }, /* AC, melee, ... */
 	{ 48,  9,		24,		8 }, /* skills */
-	{ 21,  2,		18,		5 }, /* Age, ht, wt, ... */
+	{ 21,  2,		18,		3 }, /* Age, ht, wt, ... */
 };
 
 
@@ -662,55 +662,6 @@ static byte max_color(int val, int max)
 	return val < max ? TERM_YELLOW : TERM_L_GREEN;
 }
 
-
-static const char *show_status(void)
-{
-	int sc = p_ptr->sc;
-	sc /= 10;
-
-	switch (sc)
-	{
-		case 0:
-		case 1:
-			return "Pariah";
-
-		case 2:
-			return "Outcast";
-
-		case 3:
-		case 4:
-			return "Unknown";
-
-		case 5:
-			return "Known";
-
-		case 6:
-		/* Maximum status by birth 75 = 7 */
-		case 7:
-			return "Liked";
-
-		case 8:
-			return "Well-liked";
-
-		case 9:
-		case 10:
-			return "Respected";
-
-		case 11:
-		case 12:
-			return "Role model";
-
-		case 13:
-			return "Feared";
-
-		case 14:
-		case 15:
-			return "Lordly";
-	}
-
-	return format("%d", sc);
-}
-
 /* data_panel array element initializer, for ansi compliance */
 #define P_I(col, lab, format, val1, val2) \
 	{ panel[i].color = col; panel[i].label = lab; panel[i].fmt = format; \
@@ -771,8 +722,8 @@ static int get_panel(int oid, data_panel *panel, size_t size)
 	P_I(TERM_L_BLUE, "Armor", "[%y,%+y]",	i2u(p_ptr->state.dis_ac), i2u(p_ptr->state.dis_to_a)  );
 	P_I(TERM_L_BLUE, "Fight", "(%+y,%+y)",	i2u(p_ptr->state.dis_to_h), i2u(p_ptr->state.dis_to_d)  );
 	P_I(TERM_L_BLUE, "Melee", "%y",		s2u(show_melee_weapon(&p_ptr->inventory[INVEN_WIELD])), END  );
-	P_I(TERM_L_BLUE, "Shoot", "%y",		s2u(show_missile_weapon(&p_ptr->inventory[INVEN_BOW])), END  );
 	P_I(TERM_L_BLUE, "Blows", "%y.%y/turn",	i2u(p_ptr->state.num_blows / 100), i2u((p_ptr->state.num_blows / 10) % 10) );
+	P_I(TERM_L_BLUE, "Shoot", "%y",		s2u(show_missile_weapon(&p_ptr->inventory[INVEN_BOW])), END  );
 	P_I(TERM_L_BLUE, "Shots", "%y/turn",	i2u(p_ptr->state.num_shots), END  );
 	P_I(TERM_L_BLUE, "Infra", "%y ft",	i2u(p_ptr->state.see_infra * 10), END  );
 	P_I(TERM_L_BLUE, "Speed", "%y",		s2u(show_speed()), END );
@@ -863,14 +814,8 @@ static int get_panel(int oid, data_panel *panel, size_t size)
 	assert(ret >= boundaries[5].page_rows);
 	ret = boundaries[5].page_rows;
 	P_I(TERM_L_BLUE, "Age",			"%y",	i2u(p_ptr->age), END );
-	P_I(TERM_L_BLUE, "Height",		"%y",	i2u(p_ptr->ht), END  );
-	P_I(TERM_L_BLUE, "Weight",		"%y",	i2u(p_ptr->wt), END  );
-	P_I(TERM_L_BLUE, "Social",		"%y",	s2u(show_status()), END  );
-	P_I(TERM_L_BLUE, "Maximize",	"%y",	c2u(OPT(birth_maximize) ? 'Y' : 'N'), END);
-#if 0
-	/* Preserve mode deleted */
-	P_I(TERM_L_BLUE, "Preserve",	"%y",	c2u(birth_preserve ? 'Y' : 'N'), END);
-#endif
+	P_I(TERM_L_BLUE, "Height",		"%y in",	i2u(p_ptr->ht), END);
+	P_I(TERM_L_BLUE, "Weight",		"%y lbs",	i2u(p_ptr->wt), END);
 	assert(i == boundaries[5].page_rows);
 	return ret;
   }
