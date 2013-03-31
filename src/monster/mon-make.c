@@ -1678,11 +1678,8 @@ bool mon_take_hit(struct monster *m_ptr, int dam, bool *fear, const char *note)
 	return (FALSE);
 }
 
-struct init_module mon_make_module;
-/*
 struct init_module mon_make_module = {
 	.name = "monster/mon-make",
 	.init = init_race_allocs,
 	.cleanup = cleanup_race_allocs
 };
-*/

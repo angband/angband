@@ -2941,7 +2941,7 @@ bool init_angband(void)
 
 	init_arrays();
 
-	for (i = 0; modules[i]->name; i++)
+	for (i = 0; modules[i]; i++)
 		modules[i]->init();
 
 	/*** Load default user pref files ***/
