@@ -704,7 +704,7 @@ static bool cast_mage_spell(int spell, int dir)
 
 		case SPELL_WORD_OF_RECALL:
 		{
-			set_recall();
+			return set_recall();
 			break;
 		}
 
@@ -1290,7 +1290,7 @@ static bool cast_priest_spell(int spell, int dir)
 
 		case PRAYER_WORD_OF_RECALL:
 		{
-			set_recall();
+			return set_recall();
 			break;
 		}
 
