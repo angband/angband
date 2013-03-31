@@ -2520,6 +2520,8 @@ bool borg_activate_artifact(int activation)
 {
     int i;
 
+	assert(activation);
+
     /* Check the equipment */
     for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
     {
@@ -2527,9 +2529,7 @@ bool borg_activate_artifact(int activation)
 		artifact_type *a_ptr;
 
 		/* Skip artifacts w/o activation */
-		if (!item->name1 ||
-				!a_info[item->name1].effect ||
-				!a_info[item->name1].effect != activation)
+		if (!item->name1 || a_info[item->name1].effect != activation)
 			continue;
 
 		/* get the item */
@@ -3619,6 +3619,11 @@ void borg_cheat_store(void)
 				/* Fuel for lanterns */
 				if (b_item->tval == TV_FLASK &&
 						borg_items[INVEN_LIGHT].sval == SV_LIGHT_LANTERN)
+					borg_fuel_onsale = b_item->iqty;
+
+				/* Fuel for lanterns */
+				if (b_item->tval == TV_LIGHT &&
+						borg_items[INVEN_LIGHT].sval == SV_LIGHT_TORCH)
 					borg_fuel_onsale = b_item->iqty;
 			}
 

@@ -391,7 +391,6 @@ bool borg_check_LIGHT_only(void)
 		borg_note("# Illuminating the dungeon");
 		borg_react("SELF:lite", "SELF:lite");
 		when_call_LIGHT = borg_t;
-		Term_xtra(TERM_XTRA_DELAY, 1000);
 		return TRUE;
 	}
 
