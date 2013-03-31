@@ -2259,36 +2259,38 @@ void do_cmd_buy(cmd_code code, cmd_arg args[])
 	/* Handle stuff */
 	handle_stuff(p_ptr);
 
-	/* Remove the bought objects from the store */
-	store_item_increase(store, item, -amt);
-	store_item_optimize(store, item);
+	/* Remove the bought objects from the store if it's not a staple */
+	if (!store_is_staple(store, item)) {
+		store_item_increase(store, item, -amt);
+		store_item_optimize(store, item);
 
-	/* Store is empty */
-	if (store->stock_num == 0)
-	{
-		int i;
-
-		/* Shuffle */
-		if (one_in_(STORE_SHUFFLE))
+		/* Store is empty */
+		if (store->stock_num == 0)
 		{
-			/* Message */
-			msg("The shopkeeper retires.");
+			int i;
 
-			/* Shuffle the store */
-			store_shuffle(store);
-			store_flags |= STORE_FRAME_CHANGE;
+			/* Shuffle */
+			if (one_in_(STORE_SHUFFLE))
+			{
+				/* Message */
+				msg("The shopkeeper retires.");
+
+				/* Shuffle the store */
+				store_shuffle(store);
+				store_flags |= STORE_FRAME_CHANGE;
+			}
+
+			/* Maintain */
+			else
+			{
+				/* Message */
+				msg("The shopkeeper brings out some new stock.");
+			}
+
+			/* New inventory */
+			for (i = 0; i < 10; ++i)
+				store_maint(store);
 		}
-
-		/* Maintain */
-		else
-		{
-			/* Message */
-			msg("The shopkeeper brings out some new stock.");
-		}
-
-		/* New inventory */
-		for (i = 0; i < 10; ++i)
-			store_maint(store);
 	}
 
 	event_signal(EVENT_INVENTORY);
