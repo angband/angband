@@ -130,7 +130,7 @@ struct object_flag {
 	
 
 /*** Functions ***/
-bool cursed_p(bitflag *f);
+bool cursed_p(const bitflag *f);
 void create_mask(bitflag *f, bool id, ...);
 void flag_message(int flag, char *name);
 s32b flag_power(int flag);
