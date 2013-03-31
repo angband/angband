@@ -47,11 +47,11 @@ struct panel {
 
 /* Allocate some panel lines */
 static struct panel *panel_allocate(int n) {
-	struct panel *p = mem_alloc(sizeof *p);
+	struct panel *p = mem_zalloc(sizeof *p);
 
 	p->len = 0;
 	p->max = n;
-	p->lines = mem_alloc(p->max * sizeof *p->lines);
+	p->lines = mem_zalloc(p->max * sizeof *p->lines);
 
 	return p;
 }
@@ -86,6 +86,12 @@ static void panel_line(struct panel *p, byte attr, const char *label,
 	va_end(vp);
 }
 
+/* Add a spacer line in a panel */
+static void panel_space(struct panel *p) {
+	assert(p);
+	assert(p->len != p->max);
+	p->len++;
+};
 
 
 /*
@@ -609,7 +615,7 @@ static void display_panel(const struct panel *p, bool left_adj,
 		int len;
 		struct panel_line *pl = &p->lines[i];
 
-		if (!pl->label[0])
+		if (!pl->label)
 			continue;
 
 		Term_putstr(col, row, strlen(pl->label), TERM_WHITE, pl->label);
@@ -740,40 +746,48 @@ static struct panel *get_panel_midleft(void) {
 			"Cur Exp", "%d", p_ptr->exp);
 	panel_line(p, TERM_L_GREEN, "Max Exp", "%d", p_ptr->max_exp);
 	panel_line(p, TERM_L_GREEN, "Adv Exp", "%s", show_adv_exp());
-	panel_line(p, TERM_L_GREEN, "MaxDepth", "%s", show_depth());
-	panel_line(p, TERM_L_GREEN, "Game Turns", "%d", turn);
-	panel_line(p, TERM_L_GREEN, "Standard Turns", "%d",
-			p_ptr->total_energy / 100);
-	panel_line(p, TERM_L_GREEN, "Resting Turns", "%d", p_ptr->resting_turn);
+	panel_space(p);
 	panel_line(p, TERM_L_GREEN, "Gold", "%d", p_ptr->au);
+	panel_line(p, TERM_L_GREEN, "Burden", "%.1f lbs",
+			p_ptr->total_weight / 10.0F);
+	panel_line(p, TERM_L_GREEN, "Speed", "%s", show_speed());
+	panel_line(p, TERM_L_GREEN, "Max Depth", "%s", show_depth());
 
 	return p;
 }
 
 static struct panel *get_panel_combat(void) {
 	struct panel *p = panel_allocate(9);
+	int bth;
 
+	/* AC */
 	panel_line(p, TERM_L_BLUE, "Armor", "[%d,%+d]",
 			p_ptr->state.dis_ac, p_ptr->state.dis_to_a);
-	panel_line(p, TERM_L_BLUE, "Fight", "(%+d,%+d)",
-			p_ptr->state.dis_to_h, p_ptr->state.dis_to_d);
+
+	/* Melee */
+	bth = (p_ptr->state.skills[SKILL_TO_HIT_MELEE] * 10) / BTH_PLUS_ADJ;
+
+	panel_space(p);
 	panel_line(p, TERM_L_BLUE, "Melee", "%s",
 			show_melee_weapon(&p_ptr->inventory[INVEN_WIELD]));
 	panel_line(p, TERM_L_BLUE, "Blows", "%d.%d/turn",
 			p_ptr->state.num_blows / 100, (p_ptr->state.num_blows / 10 % 10));
+	panel_line(p, TERM_L_BLUE, "Base to-hit", "%.1f", bth / 10.0);
+
+	/* Ranged */
+	bth = (p_ptr->state.skills[SKILL_TO_HIT_BOW] * 10) / BTH_PLUS_ADJ;
+
+	panel_space(p);
 	panel_line(p, TERM_L_BLUE, "Shoot", "%s",
 			show_missile_weapon(&p_ptr->inventory[INVEN_BOW]));
 	panel_line(p, TERM_L_BLUE, "Shots", "%d/turn", p_ptr->state.num_shots);
-	panel_line(p, TERM_L_BLUE, "Infra", "%d ft", p_ptr->state.see_infra * 10);
-	panel_line(p, TERM_L_BLUE, "Speed", "%s", show_speed());
-	panel_line(p, TERM_L_BLUE, "Burden", "%.1f lbs",
-			p_ptr->total_weight / 10.0F);
+	panel_line(p, TERM_L_BLUE, "Base to-hit", "%.1f", bth / 10.0);
 
 	return p;
 }
 
 static struct panel *get_panel_skills(void) {
-	struct panel *p = panel_allocate(8);
+	struct panel *p = panel_allocate(7);
 
 	int skill;
 	byte attr;
@@ -788,14 +802,6 @@ static struct panel *get_panel_skills(void) {
 	/* Stealth */
 	desc = likert(p_ptr->state.skills[SKILL_STEALTH], 1, &attr);
 	panel_line(p, attr, "Stealth", "%s", desc);
-
-	/* Fighting */
-	desc = likert(p_ptr->state.skills[SKILL_TO_HIT_MELEE], 12, &attr);
-	panel_line(p, attr, "Fighting", "%s", desc);
-
-	/* Shooting */
-	desc = likert(p_ptr->state.skills[SKILL_TO_HIT_BOW], 12, &attr);
-	panel_line(p, attr, "Shooting", "%s", desc);
 
 	/* Disarming: -5 because we assume we're disarming a dungeon trap */
 	skill = BOUND(p_ptr->state.skills[SKILL_DISARM] - 5, 2, 100);
@@ -820,15 +826,24 @@ static struct panel *get_panel_skills(void) {
 	skill = BOUND(p_ptr->state.skills[SKILL_SEARCH], 0, 100);
 	panel_line(p, colour_table[skill / 10], "Searching", "%d%%", skill);
 
+	/* Infravision */
+	panel_line(p, TERM_L_GREEN, "Infravision", "%d ft",
+			p_ptr->state.see_infra * 10);
+
 	return p;
 }
 
 static struct panel *get_panel_misc(void) {
-	struct panel *p = panel_allocate(3);
+	struct panel *p = panel_allocate(7);
+	byte attr = TERM_L_BLUE;
 
-	panel_line(p, TERM_L_BLUE, "Age", "%d", p_ptr->age);
-	panel_line(p, TERM_L_BLUE, "Height", "%d in", p_ptr->ht);
-	panel_line(p, TERM_L_BLUE, "Weight", "%d lbs", p_ptr->wt);
+	panel_line(p, attr, "Age", "%d", p_ptr->age);
+	panel_line(p, attr, "Height", "%d in", p_ptr->ht);
+	panel_line(p, attr, "Weight", "%d lbs", p_ptr->wt);
+	panel_line(p, attr, "Turns used:", "");
+	panel_line(p, attr, "Game", "%d", turn);
+	panel_line(p, attr, "Standard", "%d", p_ptr->total_energy / 100);
+	panel_line(p, attr, "Resting", "%d", p_ptr->resting_turn);
 
 	return p;
 }
@@ -841,11 +856,11 @@ static const struct {
 } panels[] =
 {
 	/*   x  y wid rows */
-	{ {  1, 1, 40, 7 }, TRUE, get_panel_topleft }, /* Name, Class, ... */
-	{ {  1, 9, 22, 9 }, FALSE, get_panel_midleft }, /* Cur Exp, Max Exp, ... */
-	{ { 27, 9, 17, 9 }, FALSE, get_panel_combat },
-	{ { 48, 9, 24, 8 }, FALSE, get_panel_skills },
-	{ { 21, 2, 18, 3 }, FALSE, get_panel_misc }, /* Age, ht, wt, ... */
+	{ {  1, 1, 40, 7 }, TRUE,  get_panel_topleft },	/* Name, Class, ... */
+	{ { 21, 1, 18, 3 }, FALSE, get_panel_misc },	/* Age, ht, wt, ... */
+	{ {  1, 9, 24, 9 }, FALSE, get_panel_midleft },	/* Cur Exp, Max Exp, ... */
+	{ { 29, 9, 19, 9 }, FALSE, get_panel_combat },
+	{ { 52, 9, 20, 8 }, FALSE, get_panel_skills },
 };
 
 void display_player_xtra_info(void)
