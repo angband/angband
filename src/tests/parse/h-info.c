@@ -28,7 +28,6 @@ int test_n0(void *state) {
 	eq(c->idx, 1);
 	ptreq(e->next, NULL);
 	ptreq(e->roll, 5);
-	ptreq(e->bonus, 2);
 	eq(e->isucc, 3);
 	ok;
 }

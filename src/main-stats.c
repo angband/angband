@@ -200,8 +200,7 @@ static void generate_player_for_stats()
 	p_ptr->age = 14;
 
 	/* Set social class and (null) history */
-	p_ptr->history = get_history(p_ptr->race->history, &p_ptr->sc);
-	p_ptr->sc_birth = p_ptr->sc;
+	p_ptr->history = get_history(p_ptr->race->history);
 }
 
 static void initialize_character(void)

@@ -25,37 +25,31 @@ int setup_tests(void **state) {
 	ea0.next = &ea1;
 	ea0.succ = &cb;
 	ea0.roll = 50;
-	ea0.bonus = 0;
 	ea0.text = "A0";
 
 	ea1.next = NULL;
 	ea1.succ = &cc;
 	ea1.roll = 100;
-	ea1.bonus = 0;
 	ea1.text = "A1";
 
 	eb0.next = &eb1;
 	eb0.succ = &cc;
 	eb0.roll = 50;
-	eb0.bonus = 0;
 	eb0.text = "B0";
 
 	eb1.next = NULL;
 	eb1.succ = NULL;
 	eb1.roll = 100;
-	eb1.bonus = 0;
 	eb1.text = "B1";
 
 	ec0.next = &ec1;
 	ec0.succ = NULL;
 	ec0.roll = 50;
-	ec0.bonus = 0;
 	ec0.text = "C0";
 
 	ec1.next = NULL;
 	ec1.succ = NULL;
 	ec1.roll = 100;
-	ec1.bonus = 0;
 	ec1.text = "C1";
 
 	return 0;
@@ -64,7 +58,7 @@ int setup_tests(void **state) {
 int test_0(void *state) {
 	int i;
 	for (i = 0; i < 100; i++) {
-		char *h = get_history(&ca, NULL);
+		char *h = get_history(&ca);
 		assert(h);
 		eq(h[0], 'A');
 		require(isdigit(h[1]));

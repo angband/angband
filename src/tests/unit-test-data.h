@@ -678,7 +678,6 @@ static struct player TEST_DATA test_player = {
 	.age = 12,
 	.ht = 40,
 	.wt = 80,
-	.sc = 100,
 	.au = 500,
 	.max_depth = 10,
 	.depth = 6,
