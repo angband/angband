@@ -132,25 +132,22 @@ void cleanup_race_allocs(void) {
 void delete_monster_idx(int m_idx)
 {
 	int x, y;
-
 	s16b this_o_idx, next_o_idx = 0;
-
 	monster_type *m_ptr;
-	monster_race *r_ptr;
 
 	assert(m_idx > 0);
+
 	m_ptr = cave_monster(cave, m_idx);
-	r_ptr = &r_info[m_ptr->r_idx];
 
 	/* Monster location */
 	y = m_ptr->fy;
 	x = m_ptr->fx;
 
 	/* Hack -- Reduce the racial counter */
-	r_ptr->cur_num--;
+	m_ptr->race->cur_num--;
 
 	/* Hack -- count the number of "reproducers" */
-	if (rf_has(r_ptr->flags, RF_MULTIPLY)) num_repro--;
+	if (rf_has(m_ptr->race->flags, RF_MULTIPLY)) num_repro--;
 
 	/* Hack -- remove target monster */
 	if (target_get_monster() == m_idx) target_set_monster(0);
@@ -317,13 +314,12 @@ void compact_monsters(int num_to_compact)
 		/* Check all the monsters */
 		for (m_idx = 1; m_idx < cave_monster_max(cave); m_idx++) {
 			monster_type *m_ptr = cave_monster(cave, m_idx);
-			const monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 			/* Skip "dead" monsters */
-			if (!m_ptr->r_idx) continue;
+			if (!m_ptr->race) continue;
 
 			/* High level monsters start out "immune" */
-			if (r_ptr->level > max_lev) continue;
+			if (m_ptr->race->level > max_lev) continue;
 
 			/* Ignore nearby monsters */
 			if ((min_dis > 0) && (m_ptr->cdis < min_dis)) continue;
@@ -332,10 +328,10 @@ void compact_monsters(int num_to_compact)
 			chance = 90;
 
 			/* Only compact "Quest" Monsters in emergencies */
-			if (rf_has(r_ptr->flags, RF_QUESTOR) && (iter < 1000)) chance = 100;
+			if (rf_has(m_ptr->race->flags, RF_QUESTOR) && (iter < 1000)) chance = 100;
 
 			/* Try not to compact Unique Monsters */
-			if (rf_has(r_ptr->flags, RF_UNIQUE)) chance = 99;
+			if (rf_has(m_ptr->race->flags, RF_UNIQUE)) chance = 99;
 
 			/* All monsters get a saving throw */
 			if (randint0(100) < chance) continue;
@@ -354,7 +350,7 @@ void compact_monsters(int num_to_compact)
 		monster_type *m_ptr = cave_monster(cave, m_idx);
 
 		/* Skip real monsters */
-		if (m_ptr->r_idx) continue;
+		if (m_ptr->race) continue;
 
 		/* Move last monster into open hole */
 		compact_monsters_aux(cave_monster_max(cave) - 1, m_idx);
@@ -383,13 +379,11 @@ void wipe_mon_list(struct cave *c, struct player *p)
 	{
 		monster_type *m_ptr = cave_monster(cave, m_idx);
 
-		monster_race *r_ptr = &r_info[m_ptr->r_idx];
-
 		/* Skip dead monsters */
-		if (!m_ptr->r_idx) continue;
+		if (!m_ptr->race) continue;
 
 		/* Hack -- Reduce the racial counter */
-		r_ptr->cur_num--;
+		m_ptr->race->cur_num--;
 
 		/* Monster is gone */
 		c->m_idx[m_ptr->fy][m_ptr->fx] = 0;
@@ -440,13 +434,10 @@ static s16b mon_pop(void)
 
 	/* Recycle dead monsters if we've run out of room */
 	for (m_idx = 1; m_idx < cave_monster_max(cave); m_idx++) {
-		monster_type *m_ptr;
-
-		/* Get the monster */
-		m_ptr = cave_monster(cave, m_idx);
+		monster_type *m_ptr = cave_monster(cave, m_idx);
 
 		/* Skip live monsters */
-		if (m_ptr->r_idx) continue;
+		if (m_ptr->race) continue;
 
 		/* Count monsters */
 		cave->mon_cnt++;
@@ -650,12 +641,9 @@ void player_place(struct cave *c, struct player *p, int y, int x)
  *
  * Returns TRUE if anything is created, FALSE if nothing is.
  */
-static bool mon_create_drop(int m_idx, byte origin)
+static bool mon_create_drop(struct monster *m_ptr, byte origin)
 {
 	struct monster_drop *drop;
-
-	monster_type *m_ptr;
-	monster_race *r_ptr;
 
 	bool great, good, gold_ok, item_ok;
 	bool any = FALSE;
@@ -665,30 +653,28 @@ static bool mon_create_drop(int m_idx, byte origin)
 	object_type *i_ptr;
 	object_type object_type_body;
 	
-	assert(m_idx > 0);
-	m_ptr = cave_monster(cave, m_idx);
-	r_ptr = &r_info[m_ptr->r_idx];
+	assert(m_ptr);
 
-	great = (rf_has(r_ptr->flags, RF_DROP_GREAT));
-	good = great || (rf_has(r_ptr->flags, RF_DROP_GOOD));
-	gold_ok = (!rf_has(r_ptr->flags, RF_ONLY_ITEM));
-	item_ok = (!rf_has(r_ptr->flags, RF_ONLY_GOLD));
+	great = (rf_has(m_ptr->race->flags, RF_DROP_GREAT));
+	good = great || (rf_has(m_ptr->race->flags, RF_DROP_GOOD));
+	gold_ok = (!rf_has(m_ptr->race->flags, RF_ONLY_ITEM));
+	item_ok = (!rf_has(m_ptr->race->flags, RF_ONLY_GOLD));
 
 	/* Determine how much we can drop */
-	if (rf_has(r_ptr->flags, RF_DROP_20) && randint0(100) < 20) number++;
-	if (rf_has(r_ptr->flags, RF_DROP_40) && randint0(100) < 40) number++;
-	if (rf_has(r_ptr->flags, RF_DROP_60) && randint0(100) < 60) number++;
-	if (rf_has(r_ptr->flags, RF_DROP_4)) number += rand_range(2, 6);
-	if (rf_has(r_ptr->flags, RF_DROP_3)) number += rand_range(2, 4);
-	if (rf_has(r_ptr->flags, RF_DROP_2)) number += rand_range(1, 3);
-	if (rf_has(r_ptr->flags, RF_DROP_1)) number++;
+	if (rf_has(m_ptr->race->flags, RF_DROP_20) && randint0(100) < 20) number++;
+	if (rf_has(m_ptr->race->flags, RF_DROP_40) && randint0(100) < 40) number++;
+	if (rf_has(m_ptr->race->flags, RF_DROP_60) && randint0(100) < 60) number++;
+	if (rf_has(m_ptr->race->flags, RF_DROP_4)) number += rand_range(2, 6);
+	if (rf_has(m_ptr->race->flags, RF_DROP_3)) number += rand_range(2, 4);
+	if (rf_has(m_ptr->race->flags, RF_DROP_2)) number += rand_range(1, 3);
+	if (rf_has(m_ptr->race->flags, RF_DROP_1)) number++;
 
 	/* Take the best of (average of monster level and current depth)
 	   and (monster level) - to reward fighting OOD monsters */
-	level = MAX((r_ptr->level + p_ptr->depth) / 2, r_ptr->level);
+	level = MAX((m_ptr->race->level + p_ptr->depth) / 2, m_ptr->race->level);
 
 	/* Specified drops */
-	for (drop = r_ptr->drops; drop; drop = drop->next) {
+	for (drop = m_ptr->race->drops; drop; drop = drop->next) {
 		if ((unsigned int)randint0(100) >= drop->percent_chance)
 			continue;
 
@@ -784,7 +770,7 @@ s16b place_monster(int y, int x, monster_type *n_ptr, byte origin)
 
 	/* Create the monster's drop, if any */
 	if (origin)
-		(void)mon_create_drop(m_idx, origin);
+		(void)mon_create_drop(m_pre, origin);
 
 	/* Make mimics start mimicking */
 	if (origin && m_ptr->race->mimic_kinds) {
@@ -1377,24 +1363,19 @@ static void build_quest_stairs(int y, int x)
  */
 void monster_death(struct monster *m_ptr, bool stats)
 {
-	int i, y, x;
+	int i;
 	int dump_item = 0;
 	int dump_gold = 0;
 	int total = 0;
 	s16b this_o_idx, next_o_idx = 0;
 
-	monster_race *r_ptr = &r_info[m_ptr->r_idx];
-
-	bool visible;
-
 	object_type *i_ptr;
 	object_type object_type_body;
 
-	visible = (m_ptr->ml || rf_has(r_ptr->flags, RF_UNIQUE));
+	bool visible = (m_ptr->ml || rf_has(m_ptr->race->flags, RF_UNIQUE));
 
-	/* Get the location */
-	y = m_ptr->fy;
-	x = m_ptr->fx;
+	int y = m_ptr->fy;
+	int x = m_ptr->fx;
 
 	/* Delete any mimicked objects */
 	if (m_ptr->mimicked_o_idx > 0)
@@ -1451,12 +1432,12 @@ void monster_death(struct monster *m_ptr, bool stats)
 	p_ptr->redraw |= PR_MONLIST;
 
 	/* Nothing else to do for non-"Quest Monsters" */
-	if (!rf_has(r_ptr->flags, RF_QUESTOR)) return;
+	if (!rf_has(m_ptr->race->flags, RF_QUESTOR)) return;
 
 	/* Mark quests as complete */
 	for (i = 0; i < MAX_Q_IDX; i++)	{
 		/* Note completed quests */
-		if (q_list[i].level == r_ptr->level) q_list[i].level = 0;
+		if (q_list[i].level == m_ptr->race->level) q_list[i].level = 0;
 
 		/* Count incomplete quests */
 		if (q_list[i].level) total++;
@@ -1494,13 +1475,9 @@ void monster_death(struct monster *m_ptr, bool stats)
  **/
 bool mon_take_hit(struct monster *m_ptr, int dam, bool *fear, const char *note)
 {
-	monster_race *r_ptr;
-	monster_lore *l_ptr;
-
 	s32b div, new_exp, new_exp_frac;
+	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
 
-	r_ptr = &r_info[m_ptr->r_idx];
-	l_ptr = &l_list[m_ptr->r_idx];
 
 	/* Redraw (later) if needed */
 	if (p_ptr->health_who == m_ptr) p_ptr->redraw |= (PR_HEALTH);
@@ -1524,8 +1501,8 @@ bool mon_take_hit(struct monster *m_ptr, int dam, bool *fear, const char *note)
 		int soundfx = MSG_KILL;
 
 		/* Play a special sound if the monster was unique */
-		if (rf_has(r_ptr->flags, RF_UNIQUE)) {
-			if (r_ptr->base == lookup_monster_base("Morgoth"))
+		if (rf_has(m_ptr->race->flags, RF_UNIQUE)) {
+			if (m_ptr->race->base == lookup_monster_base("Morgoth"))
 				soundfx = MSG_KILL_KING;
 			else
 				soundfx = MSG_KILL_UNIQUE;
@@ -1551,7 +1528,7 @@ bool mon_take_hit(struct monster *m_ptr, int dam, bool *fear, const char *note)
 			msgt(soundfx, "You have killed %s.", m_name);
 
 		/* Death by Physical attack -- non-living monster */
-		else if (monster_is_unusual(r_ptr))
+		else if (monster_is_unusual(m_ptr->race))
 			msgt(soundfx, "You have destroyed %s.", m_name);
 
 		/* Death by Physical attack -- living monster */
@@ -1562,10 +1539,10 @@ bool mon_take_hit(struct monster *m_ptr, int dam, bool *fear, const char *note)
 		div = p_ptr->lev;
 
 		/* Give some experience for the kill */
-		new_exp = ((long)r_ptr->mexp * r_ptr->level) / div;
+		new_exp = ((long)m_ptr->race->mexp * m_ptr->race->level) / div;
 
 		/* Handle fractional experience */
-		new_exp_frac = ((((long)r_ptr->mexp * r_ptr->level) % div)
+		new_exp_frac = ((((long)m_ptr->race->mexp * m_ptr->race->level) % div)
 		                * 0x10000L / div) + p_ptr->exp_frac;
 
 		/* Keep track of experience */
@@ -1577,9 +1554,9 @@ bool mon_take_hit(struct monster *m_ptr, int dam, bool *fear, const char *note)
 			p_ptr->exp_frac = (u16b)new_exp_frac;
 
 		/* When the player kills a Unique, it stays dead */
-		if (rf_has(r_ptr->flags, RF_UNIQUE)) {
+		if (rf_has(m_ptr->race->flags, RF_UNIQUE)) {
 			char unique_name[80];
-			r_ptr->max_num = 0;
+			m_ptr->race->max_num = 0;
 
 			/* 
 			 * This gets the correct name if we slay an invisible 
@@ -1600,7 +1577,7 @@ bool mon_take_hit(struct monster *m_ptr, int dam, bool *fear, const char *note)
 		monster_death(m_ptr, FALSE);
 
 		/* Recall even invisible uniques or winners */
-		if (m_ptr->ml || rf_has(r_ptr->flags, RF_UNIQUE)) {
+		if (m_ptr->ml || rf_has(m_ptr->race->flags, RF_UNIQUE)) {
 			/* Count kills this life */
 			if (l_ptr->pkills < MAX_SHORT) l_ptr->pkills++;
 
@@ -1644,7 +1621,7 @@ bool mon_take_hit(struct monster *m_ptr, int dam, bool *fear, const char *note)
 	}
 
 	/* Sometimes a monster gets scared by damage */
-	if (!m_ptr->m_timed[MON_TMD_FEAR] && !rf_has(r_ptr->flags, RF_NO_FEAR) &&
+	if (!m_ptr->m_timed[MON_TMD_FEAR] && !rf_has(m_ptr->race->flags, RF_NO_FEAR) &&
 		dam > 0) {
 		int percentage;
 
