@@ -488,26 +488,23 @@ void get_mon_num_prep(void)
  * table and picks a random monster. Returns the index of a monster in
  * `table`.
  */
-int get_mon_num_aux(long total, const alloc_entry *table)
+static monster_race *get_mon_race_aux(long total, const alloc_entry *table)
 {
 	int i;
-	
-	long value;
-	
+
 	/* Pick a monster */
-	value = randint0(total);
+	long value = randint0(total);
 
 	/* Find the monster */
-	for (i = 0; i < alloc_race_size; i++)
-	{
+	for (i = 0; i < alloc_race_size; i++) {
 		/* Found the entry */
 		if (value < table[i].prob3) break;
 
 		/* Decrement */
-		value = value - table[i].prob3;
+		value -= table[i].prob3;
 	}
 	
-	return i;
+	return &r_info[table[i].index];
 }
 
 /**
@@ -532,15 +529,13 @@ int get_mon_num_aux(long total, const alloc_entry *table)
  * Note that if no monsters are "appropriate", then this function will
  * fail, and return zero, but this should *almost* never happen.
  */
-s16b get_mon_num(int level)
+monster_race *get_mon_num(int level)
 {
-	int i, j, p;
-
-	int r_idx;
+	int i, p;
 
 	long total;
 
-	monster_race *r_ptr;
+	monster_race *race;
 
 	alloc_entry *table = alloc_race_table;
 
@@ -558,21 +553,20 @@ s16b get_mon_num(int level)
 		/* Default */
 		table[i].prob3 = 0;
 
-		/* Hack -- No town monsters in dungeon */
+		/* No town monsters in dungeon */
 		if ((level > 0) && (table[i].level <= 0)) continue;
 
 		/* Get the chosen monster */
-		r_idx = table[i].index;
-		r_ptr = &r_info[r_idx];
+		race = &r_info[table[i].index];
 
-		/* Hack -- "unique" monsters must be "unique" */
-		if (rf_has(r_ptr->flags, RF_UNIQUE) && 
-				r_ptr->cur_num >= r_ptr->max_num)
+		/* Only one copy of a a unique must be around at the same time */
+		if (rf_has(race->flags, RF_UNIQUE) && 
+				race->cur_num >= race->max_num)
 			continue;
 
-		/* Depth Monsters never appear out of depth */
-		if (rf_has(r_ptr->flags, RF_FORCE_DEPTH) && 
-				r_ptr->level > p_ptr->depth)
+		/* Some monsters never appear out of depth */
+		if (rf_has(race->flags, RF_FORCE_DEPTH) && 
+				race->level > p_ptr->depth)
 			continue;
 
 		/* Accept */
@@ -583,39 +577,37 @@ s16b get_mon_num(int level)
 	}
 
 	/* No legal monsters */
-	if (total <= 0) return (0);
+	if (total <= 0) return NULL;
 
 	/* Pick a monster */
-	i = get_mon_num_aux(total, table);
+	race = get_mon_race_aux(total, table);
 
 	/* Try for a "harder" monster once (50%) or twice (10%) */
 	p = randint0(100);
 	
 	if (p < 60) {
-		/* Save old */
-		j = i;
+		monster_race *old = race;
 
-		/* Pick a monster */
-		i = get_mon_num_aux(total, table);
+		/* Pick a new monster */
+		race = get_mon_race_aux(total, table);
 
 		/* Keep the deepest one */
-		if (table[i].level < table[j].level) i = j;
+		if (race->level < old->level) race = old;
 	}
 
 	/* Try for a "harder" monster twice (10%) */
 	if (p < 10) {
-		/* Save old */
-		j = i;
+		monster_race *old = race;
 
 		/* Pick a monster */
-		i = get_mon_num_aux(total, table);
+		race = get_mon_race_aux(total, table);
 
 		/* Keep the deepest one */
-		if (table[i].level < table[j].level) i = j;
+		if (race->level < old->level) race = old;
 	}
 
 	/* Result */
-	return (table[i].index);
+	return race;
 }
 
 
@@ -735,7 +727,7 @@ static bool mon_create_drop(struct monster *m_ptr, byte origin)
  *
  * Returns the m_idx of the newly copied monster, or 0 if the placement fails.
  */
-s16b place_monster(int y, int x, monster_type *n_ptr, byte origin)
+s16b place_monster(int y, int x, monster_type *mon, byte origin)
 {
 	s16b m_idx;
 	monster_type *m_ptr;
@@ -749,7 +741,7 @@ s16b place_monster(int y, int x, monster_type *n_ptr, byte origin)
 
 	/* Copy the monster */
 	m_ptr = cave_monster(cave, m_idx);
-	COPY(m_ptr, n_ptr, monster_type);
+	COPY(m_ptr, mon, monster_type);
 
 	/* Set the ID */
 	m_ptr->midx = m_idx;
@@ -770,7 +762,7 @@ s16b place_monster(int y, int x, monster_type *n_ptr, byte origin)
 
 	/* Create the monster's drop, if any */
 	if (origin)
-		(void)mon_create_drop(m_pre, origin);
+		(void)mon_create_drop(m_ptr, origin);
 
 	/* Make mimics start mimicking */
 	if (origin && m_ptr->race->mimic_kinds) {
@@ -813,23 +805,23 @@ s16b place_monster(int y, int x, monster_type *n_ptr, byte origin)
  * \param r_ptr is the race of the monster in question.
  * \param hp_aspect is the hp calc we want (min, max, avg, random).
  */
-int mon_hp(const struct monster_race *r_ptr, aspect hp_aspect)
+int mon_hp(const struct monster_race *race, aspect hp_aspect)
 {
-		int std_dev = (((r_ptr->avg_hp * 10) / 8) + 5) / 10;
+	int std_dev = (((race->avg_hp * 10) / 8) + 5) / 10;
 
-		if (r_ptr->avg_hp > 1) std_dev++;
+	if (race->avg_hp > 1) std_dev++;
 
-		switch (hp_aspect) {
-			case MINIMISE:
-				return (r_ptr->avg_hp - (4 * std_dev));
-			case MAXIMISE:
-			case EXTREMIFY:
-				return (r_ptr->avg_hp + (4 * std_dev));
-			case AVERAGE:
-				return r_ptr->avg_hp;
-			default:
-				return Rand_normal(r_ptr->avg_hp, std_dev);
-		}
+	switch (hp_aspect) {
+		case MINIMISE:
+			return (race->avg_hp - (4 * std_dev));
+		case MAXIMISE:
+		case EXTREMIFY:
+			return (race->avg_hp + (4 * std_dev));
+		case AVERAGE:
+			return race->avg_hp;
+		default:
+			return Rand_normal(race->avg_hp, std_dev);
+	}
 }
 
 
@@ -855,17 +847,16 @@ int mon_hp(const struct monster_race *r_ptr, aspect hp_aspect)
  * except for the savefile loading code, which calls place_monster()
  * directly.
  */
-static bool place_new_monster_one(int y, int x, monster_race *r_ptr, 
+static bool place_new_monster_one(int y, int x, monster_race *race, 
 		bool sleep, byte origin)
 {
 	int i;
 
-	monster_type *n_ptr;
-	monster_type monster_type_body;
-
-	const char *name;
+	struct monster *mon;
+	struct monster monster_body;
 
 	assert(in_bounds(y, x));
+	assert(race && race->name);
 
 	/* Require empty space */
 	if (!cave_empty_bold(y, x)) return (FALSE);
@@ -873,102 +864,97 @@ static bool place_new_monster_one(int y, int x, monster_race *r_ptr,
 	/* No creation on glyph of warding */
 	if (cave->feat[y][x] == FEAT_GLYPH) return (FALSE);
 
-	assert(r_ptr && r_ptr->name);
-	name = r_ptr->name;
-
 	/* "unique" monsters must be "unique" */
-	if (rf_has(r_ptr->flags, RF_UNIQUE) && r_ptr->cur_num >= r_ptr->max_num)
+	if (rf_has(race->flags, RF_UNIQUE) && race->cur_num >= race->max_num)
 		return (FALSE);
 
 	/* Depth monsters may NOT be created out of depth */
-	if (rf_has(r_ptr->flags, RF_FORCE_DEPTH) && p_ptr->depth < r_ptr->level)
+	if (rf_has(race->flags, RF_FORCE_DEPTH) && p_ptr->depth < race->level)
 		return (FALSE);
 
 	/* Add to level feeling */
-	cave->mon_rating += r_ptr->power / 20;
+	cave->mon_rating += race->power / 20;
 
 	/* Check out-of-depth-ness */
-	if (r_ptr->level > p_ptr->depth) {
-		if (rf_has(r_ptr->flags, RF_UNIQUE)) { /* OOD unique */
+	if (race->level > p_ptr->depth) {
+		if (rf_has(race->flags, RF_UNIQUE)) { /* OOD unique */
 			if (OPT(cheat_hear))
-				msg("Deep Unique (%s).", name);
+				msg("Deep unique (%s).", race->name);
 		} else { /* Normal monsters but OOD */
 			if (OPT(cheat_hear))
-				msg("Deep Monster (%s).", name);
+				msg("Deep monster (%s).", race->name);
 		}
 		/* Boost rating by power per 10 levels OOD */
-		cave->mon_rating += (r_ptr->level - p_ptr->depth) * r_ptr->power / 200;
+		cave->mon_rating += (race->level - p_ptr->depth) * race->power / 200;
 	}
 	/* Note uniques for cheaters */
-	else if (rf_has(r_ptr->flags, RF_UNIQUE) && OPT(cheat_hear))
-		msg("Unique (%s).", name);
+	else if (rf_has(race->flags, RF_UNIQUE) && OPT(cheat_hear))
+		msg("Unique (%s).", race->name);
 
 	/* Get local monster */
-	n_ptr = &monster_type_body;
+	mon = &monster_body;
 
 	/* Clean out the monster */
-	(void)WIPE(n_ptr, monster_type);
+	(void)WIPE(mon, monster_type);
 
 	/* Save the race */
-	n_ptr->race = r_ptr;
-	n_ptr->r_idx = r_ptr->ridx;
+	mon->race = race;
+	mon->r_idx = race->ridx;
 
 	/* Enforce sleeping if needed */
-	if (sleep && r_ptr->sleep) {
-		int val = r_ptr->sleep;
-		n_ptr->m_timed[MON_TMD_SLEEP] = ((val * 2) + randint1(val * 10));
+	if (sleep && race->sleep) {
+		int val = race->sleep;
+		mon->m_timed[MON_TMD_SLEEP] = ((val * 2) + randint1(val * 10));
 	}
 
 	/* Uniques get a fixed amount of HP */
-	if (rf_has(r_ptr->flags, RF_UNIQUE))
-		n_ptr->maxhp = r_ptr->avg_hp;
+	if (rf_has(race->flags, RF_UNIQUE))
+		mon->maxhp = race->avg_hp;
 	else {
-		n_ptr->maxhp = mon_hp(r_ptr, RANDOMISE);
-		n_ptr->maxhp = MAX(n_ptr->maxhp, 1);
+		mon->maxhp = mon_hp(race, RANDOMISE);
+		mon->maxhp = MAX(mon->maxhp, 1);
 	}
 
 	/* And start out fully healthy */
-	n_ptr->hp = n_ptr->maxhp;
+	mon->hp = mon->maxhp;
 
 	/* Extract the monster base speed */
-	n_ptr->mspeed = r_ptr->speed;
+	mon->mspeed = race->speed;
 
 	/* Hack -- small racial variety */
-	if (!rf_has(r_ptr->flags, RF_UNIQUE)) {
+	if (!rf_has(race->flags, RF_UNIQUE)) {
 		/* Allow some small variation per monster */
-		i = extract_energy[r_ptr->speed] / 10;
-		if (i) n_ptr->mspeed += rand_spread(0, i);
+		i = extract_energy[race->speed] / 10;
+		if (i) mon->mspeed += rand_spread(0, i);
 	}
 
 	/* Give a random starting energy */
-	n_ptr->energy = (byte)randint0(50);
+	mon->energy = (byte)randint0(50);
 
 	/* Force monster to wait for player */
-	if (rf_has(r_ptr->flags, RF_FORCE_SLEEP))
-		n_ptr->mflag |= (MFLAG_NICE);
+	if (rf_has(race->flags, RF_FORCE_SLEEP))
+		mon->mflag |= (MFLAG_NICE);
 
 	/* Radiate light? */
-	if (rf_has(r_ptr->flags, RF_HAS_LIGHT))
+	if (rf_has(race->flags, RF_HAS_LIGHT))
 		p_ptr->update |= PU_UPDATE_VIEW;
 	
 	/* Is this obviously a monster? (Mimics etc. aren't) */
-	if (rf_has(r_ptr->flags, RF_UNAWARE)) 
-		n_ptr->unaware = TRUE;
+	if (rf_has(race->flags, RF_UNAWARE)) 
+		mon->unaware = TRUE;
 	else
-		n_ptr->unaware = FALSE;
+		mon->unaware = FALSE;
 
 	/* Set the color if necessary */
-	if (rf_has(r_ptr->flags, RF_ATTR_RAND))
-		n_ptr->attr = randint1(BASIC_COLORS - 1);
+	if (rf_has(race->flags, RF_ATTR_RAND))
+		mon->attr = randint1(BASIC_COLORS - 1);
 
 	/* Place the monster in the dungeon */
-	if (!place_monster(y, x, n_ptr, origin))
+	if (!place_monster(y, x, mon, origin))
 		return (FALSE);
 
 	/* Success */
 	return (TRUE);
-	
-	
 }
 
 
@@ -981,27 +967,24 @@ static bool place_new_monster_one(int y, int x, monster_race *r_ptr,
  * Picks a monster group size. Used for monsters with the FRIENDS
  * flag and monsters with the ESCORT/ESCORTS flags.
  */
-static int group_size_1(const monster_race *r_ptr)
+static int group_size_1(const monster_race *race)
 {
-	int total, extra = 0;
+	int total;
 
-	assert(r_ptr);
+	assert(race && race->name);
 	
 	/* Pick a group size */
 	total = randint1(13);
 
 	/* Hard monsters, small groups */
-	if (r_ptr->level > p_ptr->depth)
-		extra = 0 - randint1(r_ptr->level - p_ptr->depth);
+	if (race->level > p_ptr->depth)
+		total += 0 - randint1(race->level - p_ptr->depth);
 
 	/* Easy monsters, large groups */
-	else if (r_ptr->level < p_ptr->depth)
-		extra = randint1(p_ptr->depth - r_ptr->level);
-
-	total += extra;
+	else if (race->level < p_ptr->depth)
+		total += randint1(p_ptr->depth - race->level);
 
 	if (total < 1) total = 1;
-
 	if (total > GROUP_MAX) total = GROUP_MAX;
 
 	return total;
@@ -1011,20 +994,16 @@ static int group_size_1(const monster_race *r_ptr)
  * Picks a monster group size. Used for monsters with the FRIEND
  * flag.
  */
-static int group_size_2(const monster_race *r_ptr)
+static int group_size_2(const monster_race *race)
 {
-	int total, extra = 0;
-
 	/* Start small */
-	total = 1;
+	int total = 1;
 
-	assert(r_ptr);
+	assert(race && race->name);
 
 	/* Easy monsters, large groups */
-	if (r_ptr->level < p_ptr->depth)
-		extra = randint1(2 * (p_ptr->depth - r_ptr->level));
-
-	total += extra;
+	if (race->level < p_ptr->depth)
+		total += randint1(2 * (p_ptr->depth - race->level));
 
 	if (total > GROUP_MAX) total = GROUP_MAX;
 
@@ -1092,35 +1071,33 @@ static bool place_new_monster_group(struct cave *c, int y, int x,
 /*
  * Hack -- help pick an escort type
  */
-static int place_monster_idx = 0;
+static monster_race *place_monster_race = NULL;
 
 /**
- * Hack -- helps pick an escort type. Requires place_monster_idx to be set.
+ * Hack -- helps pick an escort type. Requires place_monster_race to be set.
  * Returns TRUE if monster race `r_idx` is appropriate as an escort for
- * the monster of race place_monster_idx.
+ * the monster of race place_monster_race.
  */
 static bool place_monster_okay(int r_idx)
 {
-	monster_race *r_ptr;
-	monster_race *z_ptr;
+	monster_race *race2;
 
-	assert(place_monster_idx > 0);
-	r_ptr = &r_info[place_monster_idx];	
-	
+	assert(place_monster_race);	
 	assert(r_idx > 0);
-	z_ptr = &r_info[r_idx];
+
+	race2 = &r_info[r_idx];
 
 	/* Require identical monster template */
-	if (z_ptr->base != r_ptr->base) return (FALSE);
+	if (race2->base != place_monster_race->base) return (FALSE);
 
 	/* Skip more advanced monsters */
-	if (z_ptr->level > r_ptr->level) return (FALSE);
+	if (race2->level > place_monster_race->level) return (FALSE);
 
 	/* Skip unique monsters */
-	if (rf_has(z_ptr->flags, RF_UNIQUE)) return (FALSE);
+	if (rf_has(race2->flags, RF_UNIQUE)) return (FALSE);
 
 	/* Paranoia -- Skip identical monsters */
-	if (place_monster_idx == r_idx) return (FALSE);
+	if (place_monster_race == race2) return (FALSE);
 
 	/* Okay */
 	return (TRUE);
@@ -1146,42 +1123,38 @@ static bool place_monster_okay(int r_idx)
  * Note the use of the "monster allocation table" to restrict
  * the "get_mon_num()" function to "legal" escort types.
  */
-bool place_new_monster(struct cave *c, int y, int x, int r_idx, bool sleep,
+bool place_new_monster(struct cave *c, int y, int x, monster_race *race, bool sleep,
 	bool group_okay, byte origin)
 {
 	int i;
 
-	monster_race *r_ptr;
-
 	assert(c);
-	
-	assert(r_idx > 0);
-	r_ptr = &r_info[r_idx];
+	assert(race);
 	
 	/* Place one monster, or fail */
-	if (!place_new_monster_one(y, x, r_ptr, sleep, origin)) return (FALSE);
+	if (!place_new_monster_one(y, x, race, sleep, origin)) return (FALSE);
 
 	/* We're done unless the group flag is set */
 	if (!group_okay) return (TRUE);
 
 	/* Friends for certain monsters */
-	if (rf_has(r_ptr->flags, RF_FRIEND)) {
-		int total = group_size_2(r_ptr);
-		(void)place_new_monster_group(c, y, x, r_ptr, sleep, total, origin);
+	if (rf_has(race->flags, RF_FRIEND)) {
+		int total = group_size_2(race);
+		(void)place_new_monster_group(c, y, x, race, sleep, total, origin);
 	}
 
 	/* Friends for certain monsters */
-	if (rf_has(r_ptr->flags, RF_FRIENDS)) {
-		int total = group_size_1(r_ptr);
-		(void)place_new_monster_group(c, y, x, r_ptr, sleep, total, origin);
+	if (rf_has(race->flags, RF_FRIENDS)) {
+		int total = group_size_1(race);
+		(void)place_new_monster_group(c, y, x, race, sleep, total, origin);
 	}
 
 	/* Escorts for certain monsters */
-	if (rf_has(r_ptr->flags, RF_ESCORT)) {
+	if (rf_has(race->flags, RF_ESCORT)) {
 		/* Try to place several "escorts" */
 		for (i = 0; i < 50; i++) {
-			int nx, ny, z, d = 3;
-			monster_race *z_ptr;
+			int nx, ny, d = 3;
+			monster_race *race2;
 
 			/* Pick a location */
 			scatter(&ny, &nx, y, x, d, 0);
@@ -1190,7 +1163,7 @@ bool place_new_monster(struct cave *c, int y, int x, int r_idx, bool sleep,
 			if (!cave_empty_bold(ny, nx)) continue;
 
 			/* Set the escort index */
-			place_monster_idx = r_idx;
+			place_monster_race = race;
 
 			/* Set the escort hook */
 			get_mon_num_hook = place_monster_okay;
@@ -1199,7 +1172,7 @@ bool place_new_monster(struct cave *c, int y, int x, int r_idx, bool sleep,
 			get_mon_num_prep();
 
 			/* Pick a random race */
-			z = get_mon_num(r_ptr->level);
+			race2 = get_mon_num(race->level);
 
 			/* Remove restriction */
 			get_mon_num_hook = NULL;
@@ -1208,21 +1181,20 @@ bool place_new_monster(struct cave *c, int y, int x, int r_idx, bool sleep,
 			get_mon_num_prep();
 
 			/* Handle failure */
-			if (!z) break;
+			if (!race2) break;
 
 			/* Place a single escort */
-			z_ptr = &r_info[z];
-			(void)place_new_monster_one(ny, nx, z_ptr, sleep, origin);
+			(void)place_new_monster_one(ny, nx, race2, sleep, origin);
 
 			/* Place a "group" of escorts if needed */
-			if (rf_has(z_ptr->flags, RF_FRIEND)) {
-				int total = group_size_2(z_ptr);
-				(void)place_new_monster_group(c, ny, nx, z_ptr, sleep, total, origin);
+			if (rf_has(race2->flags, RF_FRIEND)) {
+				int total = group_size_2(race2);
+				(void)place_new_monster_group(c, ny, nx, race2, sleep, total, origin);
 			}
 			
-			if (rf_has(z_ptr->flags, RF_FRIENDS) || rf_has(r_ptr->flags, RF_ESCORTS)) {
-				int total = group_size_1(z_ptr);
-				(void)place_new_monster_group(c, ny, nx, z_ptr, sleep, total, origin);
+			if (rf_has(race2->flags, RF_FRIENDS) || rf_has(race->flags, RF_ESCORTS)) {
+				int total = group_size_1(race2);
+				(void)place_new_monster_group(c, ny, nx, race2, sleep, total, origin);
 			}
 		}
 	}
@@ -1250,16 +1222,12 @@ bool place_new_monster(struct cave *c, int y, int x, int r_idx, bool sleep,
 bool pick_and_place_monster(struct cave *c, int y, int x, int depth, bool sleep,
 	bool group_okay, byte origin)
 {
-	int r_idx;
-
 	/* Pick a monster race */
-	r_idx = get_mon_num(depth);
-
-	/* Handle failure */
-	if (!r_idx) return (FALSE);
+	monster_race *race = get_mon_num(depth);
+	if (!race) return (FALSE);
 
 	/* Attempt to place the monster */
-	return (place_new_monster(c, y, x, r_idx, sleep, group_okay, origin));
+	return (place_new_monster(c, y, x, race, sleep, group_okay, origin));
 }
 
 

@@ -1716,7 +1716,7 @@ static bool build_nest(struct cave *c, int y0, int x0)
 	int y, x, y1, x1, y2, x2;
 	int i;
 	int alloc_obj;
-	s16b what[64];
+	monster_race *what[64];
 	bool empty = FALSE;
 	int light = FALSE;
 	int pit_idx;
@@ -1785,8 +1785,8 @@ static bool build_nest(struct cave *c, int y0, int x0)
 	for (y = y0 - 2; y <= y0 + 2; y++) {
 		for (x = x0 - 9; x <= x0 + 9; x++) {
 			/* Figure out what monster is being used, and place that monster */
-			int r_idx = what[randint0(64)];
-			place_new_monster(c, y, x, r_idx, FALSE, FALSE, ORIGIN_DROP_PIT);
+			monster_race *race = what[randint0(64)];
+			place_new_monster(c, y, x, race, FALSE, FALSE, ORIGIN_DROP_PIT);
 
 			/* Occasionally place an item, making it good 1/3 of the time */
 			if (randint0(100) < alloc_obj) 
@@ -1832,7 +1832,7 @@ static bool build_nest(struct cave *c, int y0, int x0)
  */
 static bool build_pit(struct cave *c, int y0, int x0)
 {
-	int what[16];
+	monster_race *what[16];
 	int i, j, y, x, y1, x1, y2, x2;
 	bool empty = FALSE;
 	int light = FALSE;
@@ -1897,12 +1897,12 @@ static bool build_pit(struct cave *c, int y0, int x0)
 			int i1 = j;
 			int i2 = j + 1;
 
-			int p1 = r_info[what[i1]].level;
-			int p2 = r_info[what[i2]].level;
+			int p1 = what[i1]->level;
+			int p2 = what[i2]->level;
 
 			/* Bubble */
 			if (p1 > p2) {
-				int tmp = what[i1];
+				monster_race *tmp = what[i1];
 				what[i1] = what[i2];
 				what[i2] = tmp;
 			}
@@ -3949,7 +3949,7 @@ void cave_generate(struct cave *c, struct player *p) {
 	
 				/* Pick a location and place the monster */
 				find_empty(c, &y, &x);
-				place_new_monster(c, y, x, i, TRUE, TRUE, ORIGIN_DROP);
+				place_new_monster(c, y, x, r_ptr, TRUE, TRUE, ORIGIN_DROP);
 			}
 		}
 

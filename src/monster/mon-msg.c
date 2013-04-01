@@ -389,7 +389,7 @@ static void flush_monster_messages(bool delay)
 		}
 
 		/* Monster is marked as invisible */
-		if(mon_msg[i].mon_flags & 0x04) r_ptr = NULL;
+		if (mon_msg[i].mon_flags & 0x04) r_ptr = NULL;
 
 		/* Special message? */
 		action_only = (*action == '~');

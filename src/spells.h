@@ -90,7 +90,7 @@ enum
 /** Functions **/
 
 /* spells1.c */
-s16b poly_r_idx(int r_idx);
+monster_race *poly_r_idx(monster_race *race);
 void teleport_away(struct monster *m, int dis);
 void teleport_player(int dis);
 void teleport_player_to(int ny, int nx);

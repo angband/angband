@@ -146,46 +146,40 @@ void dedup_hates_flags(bitflag *f)
  *
  * Note that this function is one of the more "dangerous" ones...
  */
-s16b poly_r_idx(int r_idx)
+monster_race *poly_r_idx(monster_race *race)
 {
-	monster_race *r_ptr = &r_info[r_idx];
+	int i, lev1, lev2;
 
-	int i, r, lev1, lev2;
+	assert(race && race->name);
 
 	/* Paranoia -- Uniques never polymorph */
-	if (rf_has(r_ptr->flags, RF_UNIQUE)) return (r_idx);
+	if (rf_has(race->flags, RF_UNIQUE)) return (race);
 
 	/* Allowable range of "levels" for resulting monster */
-	lev1 = r_ptr->level - ((randint1(20)/randint1(9))+1);
-	lev2 = r_ptr->level + ((randint1(20)/randint1(9))+1);
+	lev1 = race->level - ((randint1(20)/randint1(9))+1);
+	lev2 = race->level + ((randint1(20)/randint1(9))+1);
 
 	/* Pick a (possibly new) non-unique race */
 	for (i = 0; i < 1000; i++)
 	{
 		/* Pick a new race, using a level calculation */
-		r = get_mon_num((p_ptr->depth + r_ptr->level) / 2 + 5);
+		race = get_mon_num((p_ptr->depth + race->level) / 2 + 5);
 
 		/* Handle failure */
-		if (!r) break;
-
-		/* Obtain race */
-		r_ptr = &r_info[r];
+		if (!race) break;
 
 		/* Ignore unique monsters */
-		if (rf_has(r_ptr->flags, RF_UNIQUE)) continue;
+		if (rf_has(race->flags, RF_UNIQUE)) continue;
 
 		/* Ignore monsters with incompatible levels */
-		if ((r_ptr->level < lev1) || (r_ptr->level > lev2)) continue;
-
-		/* Use that index */
-		r_idx = r;
+		if ((race->level < lev1) || (race->level > lev2)) continue;
 
 		/* Done */
 		break;
 	}
 
 	/* Result */
-	return (r_idx);
+	return race;
 }
 
 
@@ -2633,7 +2627,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 			else
 			{
 				/* Pick a "new" monster race */
-				tmp = poly_r_idx(m_ptr->r_idx);
+				r_ptr = poly_r_idx(m_ptr->race);
 
 				/* Handle polymorph */
 				if (tmp != m_ptr->r_idx)
@@ -2654,7 +2648,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 					delete_monster_idx(m_idx);
 
 					/* Create a new monster (no groups) */
-					(void)place_new_monster(cave, y, x, tmp, FALSE, FALSE,
+					(void)place_new_monster(cave, y, x, r_ptr, FALSE, FALSE,
 						ORIGIN_DROP_POLY);
 
 					/* Hack -- Assume success XXX XXX XXX */

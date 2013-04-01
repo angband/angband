@@ -351,7 +351,6 @@ void display_monlist(void)
 		monster_vis *v;
 
 		m_ptr = cave_monster(cave, ii);
-		r_ptr = &r_info[m_ptr->r_idx];
 
 		/* Only consider visible, known monsters */
 		if (!m_ptr->ml || m_ptr->unaware) continue;
@@ -361,7 +360,7 @@ void display_monlist(void)
 
 		/* Note each monster type and save its display attr (color) */
 		if (!v->count) type_count++;
-		if (!v->attr) v->attr = m_ptr->attr ? m_ptr->attr : r_ptr->x_attr;
+		if (!v->attr) v->attr = m_ptr->attr ? m_ptr->attr : m_ptr->race->x_attr;
 		
 		/* Check for LOS
 		 * Hack - we should use (m_ptr->mflag & (MFLAG_VIEW)) here,
@@ -656,19 +655,16 @@ void display_monlist(void)
  *   0x22 --> Possessive, genderized if visable ("his") or "its"
  *   0x23 --> Reflexive, genderized if visable ("himself") or "itself"
  */
-void monster_desc(char *desc, size_t max, const monster_type *m_ptr, int mode)
+void monster_desc(char *desc, size_t max, const struct monster *mon, int mode)
 {
 	const char *res;
-
-	monster_race *r_ptr = &r_info[m_ptr->r_idx];
-
-	const char *name = r_ptr->name;
-
 	bool seen, pron;
+
+	assert(mon);
 
 
 	/* Can we "see" it (forced, or not hidden + visible) */
-	seen = ((mode & (0x80)) || (!(mode & (0x40)) && m_ptr->ml));
+	seen = ((mode & (0x80)) || (!(mode & (0x40)) && mon->ml));
 
 	/* Sexed Pronouns (seen and forced, or unseen and allowed) */
 	pron = ((seen && (mode & (0x20))) || (!seen && (mode & (0x10))));
@@ -681,11 +677,11 @@ void monster_desc(char *desc, size_t max, const monster_type *m_ptr, int mode)
 		int kind = 0x00;
 
 		/* Extract the gender (if applicable) */
-		if (rf_has(r_ptr->flags, RF_FEMALE)) kind = 0x20;
-		else if (rf_has(r_ptr->flags, RF_MALE)) kind = 0x10;
+		if (rf_has(mon->race->flags, RF_FEMALE)) kind = 0x20;
+		else if (rf_has(mon->race->flags, RF_MALE)) kind = 0x10;
 
 		/* Ignore the gender (if desired) */
-		if (!m_ptr || !pron) kind = 0x00;
+		if (!mon || !pron) kind = 0x00;
 
 
 		/* Assume simple result */
@@ -734,8 +730,8 @@ void monster_desc(char *desc, size_t max, const monster_type *m_ptr, int mode)
 	else if ((mode & 0x02) && (mode & 0x01))
 	{
 		/* The monster is visible, so use its gender */
-		if (rf_has(r_ptr->flags, RF_FEMALE)) my_strcpy(desc, "herself", max);
-		else if (rf_has(r_ptr->flags, RF_MALE)) my_strcpy(desc, "himself", max);
+		if (rf_has(mon->race->flags, RF_FEMALE)) my_strcpy(desc, "herself", max);
+		else if (rf_has(mon->race->flags, RF_MALE)) my_strcpy(desc, "himself", max);
 		else my_strcpy(desc, "itself", max);
 	}
 
@@ -744,10 +740,10 @@ void monster_desc(char *desc, size_t max, const monster_type *m_ptr, int mode)
 	else
 	{
 		/* It could be a Unique */
-		if (rf_has(r_ptr->flags, RF_UNIQUE))
+		if (rf_has(mon->race->flags, RF_UNIQUE))
 		{
 			/* Start with the name (thus nominative and objective) */
-			my_strcpy(desc, name, max);
+			my_strcpy(desc, mon->race->name, max);
 		}
 
 		/* It could be an indefinite monster */
@@ -756,8 +752,8 @@ void monster_desc(char *desc, size_t max, const monster_type *m_ptr, int mode)
 			/* XXX Check plurality for "some" */
 
 			/* Indefinite monsters need an indefinite article */
-			my_strcpy(desc, is_a_vowel(name[0]) ? "an " : "a ", max);
-			my_strcat(desc, name, max);
+			my_strcpy(desc, is_a_vowel(mon->race->name[0]) ? "an " : "a ", max);
+			my_strcat(desc, mon->race->name, max);
 		}
 
 		/* It could be a normal, definite, monster */
@@ -765,7 +761,7 @@ void monster_desc(char *desc, size_t max, const monster_type *m_ptr, int mode)
 		{
 			/* Definite monsters need a definite article */
 			my_strcpy(desc, "the ", max);
-			my_strcat(desc, name, max);
+			my_strcat(desc, mon->race->name, max);
 		}
 
 		/* Handle the Possessive as a special afterthought */
@@ -778,7 +774,7 @@ void monster_desc(char *desc, size_t max, const monster_type *m_ptr, int mode)
 		}
 
 		/* Mention "offscreen" monsters XXX XXX */
-		if (!panel_contains(m_ptr->fy, m_ptr->fx))
+		if (!panel_contains(mon->fy, mon->fx))
 		{
 			/* Append special notation */
 			my_strcat(desc, " (offscreen)", max);
@@ -1346,11 +1342,11 @@ static bool summon_specific_okay(int r_idx)
  */
 int summon_specific(int y1, int x1, int lev, int type, int delay)
 {
-	int i, x = 0, y = 0, r_idx;
+	int i, x = 0, y = 0;
 	int temp = 1;
 
 	monster_type *m_ptr;
-	monster_race *r_ptr;
+	monster_race *race;
 
 	/* Look for a location, allow up to 4 squares away */
 	for (i = 0; i < 60; ++i)
@@ -1384,7 +1380,7 @@ int summon_specific(int y1, int x1, int lev, int type, int delay)
 	get_mon_num_prep();
 
 	/* Pick a monster, using the level calculation */
-	r_idx = get_mon_num((p_ptr->depth + lev) / 2 + 5);
+	race = get_mon_num((p_ptr->depth + lev) / 2 + 5);
 
 	/* Remove restriction */
 	get_mon_num_hook = NULL;
@@ -1393,31 +1389,30 @@ int summon_specific(int y1, int x1, int lev, int type, int delay)
 	get_mon_num_prep();
 
 	/* Handle failure */
-	if (!r_idx) return (0);
+	if (!race) return (0);
 
 	/* Attempt to place the monster (awake, don't allow groups) */
-	if (!place_new_monster(cave, y, x, r_idx, FALSE, FALSE, ORIGIN_DROP_SUMMON))
+	if (!place_new_monster(cave, y, x, race, FALSE, FALSE, ORIGIN_DROP_SUMMON))
 		return (0);
 
 	/* Success, return the level of the monster */
 	m_ptr = cave_monster_at(cave, y, x);
-	r_ptr = &r_info[m_ptr->r_idx];
-
+	
 	/* If delay, try to let the player act before the summoned monsters,
 	 * including slowing down faster monsters for one turn */
 	if (delay) {
 		m_ptr->energy = 0;
-		if (r_ptr->speed > p_ptr->state.speed)
+		if (m_ptr->race->speed > p_ptr->state.speed)
 			mon_inc_timed(m_ptr, MON_TMD_SLOW, 1,
 				MON_TMD_FLG_NOMESSAGE, FALSE);
 	}
 
 
 	/* Monsters that normally come with FRIENDS are weaker */
-	if (rf_has(r_ptr->flags, RF_FRIENDS))
+	if (rf_has(m_ptr->race->flags, RF_FRIENDS))
 		temp = 5;
 
-	return (r_ptr->level / temp);
+	return (m_ptr->race->level / temp);
 }
 
 /**
@@ -1444,7 +1439,7 @@ bool multiply_monster(const monster_type *m_ptr)
 		if (!cave_empty_bold(y, x)) continue;
 
 		/* Create a new monster (awake, no groups) */
-		result = place_new_monster(cave, y, x, m_ptr->r_idx, FALSE, FALSE,
+		result = place_new_monster(cave, y, x, m_ptr->race, FALSE, FALSE,
 			ORIGIN_DROP_BREED);
 
 		/* Done */
