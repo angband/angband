@@ -463,7 +463,7 @@ static s16b mon_pop(void)
  * satisfies certain conditions (such as belonging to a particular monster
  * family).
  */
-void get_mon_num_prep(void)
+void get_mon_num_prep(bool (*get_mon_num_hook)(int r_idx))
 {
 	int i;
 
@@ -1165,20 +1165,14 @@ bool place_new_monster(struct cave *c, int y, int x, monster_race *race, bool sl
 			/* Set the escort index */
 			place_monster_race = race;
 
-			/* Set the escort hook */
-			get_mon_num_hook = place_monster_okay;
-
 			/* Prepare allocation table */
-			get_mon_num_prep();
+			get_mon_num_prep(place_monster_okay);
 
 			/* Pick a random race */
 			race2 = get_mon_num(race->level);
 
-			/* Remove restriction */
-			get_mon_num_hook = NULL;
-
 			/* Prepare allocation table */
-			get_mon_num_prep();
+			get_mon_num_prep(NULL);
 
 			/* Handle failure */
 			if (!race2) break;

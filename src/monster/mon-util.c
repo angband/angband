@@ -1373,20 +1373,14 @@ int summon_specific(int y1, int x1, int lev, int type, int delay)
 	/* Save the "summon" type */
 	summon_specific_type = type;
 
-	/* Require "okay" monsters */
-	get_mon_num_hook = summon_specific_okay;
-
 	/* Prepare allocation table */
-	get_mon_num_prep();
+	get_mon_num_prep(summon_specific_okay);
 
 	/* Pick a monster, using the level calculation */
 	race = get_mon_num((p_ptr->depth + lev) / 2 + 5);
 
-	/* Remove restriction */
-	get_mon_num_hook = NULL;
-
 	/* Prepare allocation table */
-	get_mon_num_prep();
+	get_mon_num_prep(NULL);
 
 	/* Handle failure */
 	if (!race) return (0);

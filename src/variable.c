@@ -574,13 +574,6 @@ bool (*item_tester_hook)(const object_type*);
 
 
 /*
- * Hack -- function hook to restrict "get_mon_num_prep()" function
- */
-bool (*get_mon_num_hook)(int r_idx);
-
-
-
-/*
  * Hack - the destination file for text_out_to_file.
  */
 ang_file *text_out_file = NULL;

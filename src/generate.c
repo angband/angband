@@ -1684,7 +1684,6 @@ static int set_pit_type(int depth, int type)
 	}
 
 	pit_type = &pit_info[pit_idx];
-	get_mon_num_hook = mon_pit_hook;
         
 	return pit_idx;
 }
@@ -1699,10 +1698,9 @@ static int set_pit_type(int depth, int type)
  * The monsters are chosen from a set of 64 randomly selected monster races,
  * to allow the nest creation to fail instead of having "holes".
  *
- * Note the use of the "get_mon_num_prep()" function, and the special
- * "get_mon_num_hook()" restriction function, to prepare the "monster
- * allocation table" in such a way as to optimize the selection of
- * "appropriate" non-unique monsters for the nest.
+ * Note the use of the "get_mon_num_prep()" function to prepare the
+ * "monster allocation table" in such a way as to optimize the selection
+ * of "appropriate" non-unique monsters for the nest.
  *
  * The available monster nests are specified in edit/pit.txt.
  *
@@ -1748,14 +1746,14 @@ static bool build_nest(struct cave *c, int y0, int x0)
 	/* Open the inner room with a secret door */
 	generate_hole(c, y1-1, x1-1, y2+1, x2+1, FEAT_SECRET);
 
-	/* Set get_mon_num_hook */
+	/* Decide on the pit type */
 	pit_idx = set_pit_type(c->depth, 2);
 
 	/* Chance of objects on the floor */
 	alloc_obj = pit_info[pit_idx].obj_rarity;
 	
 	/* Prepare allocation table */
-	get_mon_num_prep();
+	get_mon_num_prep(mon_pit_hook);
 
 	/* Pick some monster types */
 	for (i = 0; i < 64; i++) {
@@ -1766,11 +1764,8 @@ static bool build_nest(struct cave *c, int y0, int x0)
 		if (!what[i]) empty = TRUE;
 	}
 
-	/* Remove restriction */
-	get_mon_num_hook = NULL;
-
 	/* Prepare allocation table */
-	get_mon_num_prep();
+	get_mon_num_prep(NULL);
 
 	/* Oops */
 	if (empty) return FALSE;
@@ -1820,8 +1815,7 @@ static bool build_nest(struct cave *c, int y0, int x0)
  * request 16 "appropriate" monsters, sorting them by level, and using the
  * "even" entries in this sorted list for the contents of the pit.
  *
- * Note the use of the get_mon_num_prep() function, and the special
- * get_mon_num_hook() restriction function, to prepare the monster allocation
+ * Note the use of get_mon_num_prep() to prepare the monster allocation
  * table in such a way as to optimize the selection of appropriate non-unique
  * monsters for the pit.
  *
@@ -1860,14 +1854,14 @@ static bool build_pit(struct cave *c, int y0, int x0)
 	draw_rectangle(c, y1-1, x1-1, y2+1, x2+1, FEAT_WALL_INNER);
 	generate_hole(c, y1-1, x1-1, y2+1, x2+1, FEAT_SECRET);
 
-	/* Set get_mon_num_hook */
+	/* Decide on the pit type */
 	pit_idx = set_pit_type(c->depth, 1);
 
 	/* Chance of objects on the floor */
 	alloc_obj = pit_info[pit_idx].obj_rarity;
 	
 	/* Prepare allocation table */
-	get_mon_num_prep();
+	get_mon_num_prep(mon_pit_hook);
 
 	/* Pick some monster types */
 	for (i = 0; i < 16; i++) {
@@ -1878,11 +1872,8 @@ static bool build_pit(struct cave *c, int y0, int x0)
 		if (!what[i]) empty = TRUE;
 	}
 
-	/* Remove restriction */
-	get_mon_num_hook = NULL;
-
 	/* Prepare allocation table */
-	get_mon_num_prep();
+	get_mon_num_prep(NULL);
 
 	/* Oops */
 	if (empty)
