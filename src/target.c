@@ -691,7 +691,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 				monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_IND2);
 
 				/* Hack -- track this monster race */
-				monster_race_track(m_ptr->r_idx);
+				monster_race_track(m_ptr->race);
 
 				/* Hack -- health bar for this monster */
 				health_track(p_ptr, m_ptr);
@@ -1091,7 +1091,7 @@ bool target_set_closest(int mode)
 	Term_fresh();
 
 	/* Set up target information */
-	monster_race_track(m_ptr->r_idx);
+	monster_race_track(m_ptr->race);
 	health_track(p_ptr, m_ptr);
 	target_set_monster(m_idx);
 
@@ -1381,7 +1381,7 @@ bool target_set_interactive(int mode, int x, int y)
 						if ((m_idx > 0) && target_able(m_idx)) {
 							monster_type *m_ptr = cave_monster(cave, m_idx);
 							/* Set up target information */
-							monster_race_track(m_ptr->r_idx);
+							monster_race_track(m_ptr->race);
 							health_track(p_ptr, m_ptr);
 							/*health_track(p_ptr, m_idx);*/
 							target_set_monster(m_idx);

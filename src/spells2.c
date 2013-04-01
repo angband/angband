@@ -890,8 +890,7 @@ bool detect_monsters_normal(bool aware)
 	for (i = 1; i < cave_monster_max(cave); i++)
 	{
 		monster_type *m_ptr = cave_monster(cave, i);
-		monster_race *r_ptr = &r_info[m_ptr->r_idx];
-
+		
 		/* Skip dead monsters */
 		if (!m_ptr->race) continue;
 
@@ -903,7 +902,7 @@ bool detect_monsters_normal(bool aware)
 		if (x < x1 || y < y1 || x > x2 || y > y2) continue;
 
 		/* Detect all non-invisible, obvious monsters */
-		if (!rf_has(r_ptr->flags, RF_INVISIBLE) && !m_ptr->unaware)
+		if (!rf_has(m_ptr->race->flags, RF_INVISIBLE) && !m_ptr->unaware)
 		{
 			/* Hack -- Detect the monster */
 			m_ptr->mflag |= (MFLAG_MARK | MFLAG_SHOW);
@@ -950,11 +949,10 @@ bool detect_monsters_invis(bool aware)
 	for (i = 1; i < cave_monster_max(cave); i++)
 	{
 		monster_type *m_ptr = cave_monster(cave, i);
-		monster_race *r_ptr = &r_info[m_ptr->r_idx];
 		monster_lore *l_ptr = &l_list[m_ptr->r_idx];
 
 		/* Skip dead monsters */
-		if (!m_ptr->r_idx) continue;
+		if (!m_ptr->race) continue;
 
 		/* Location */
 		y = m_ptr->fy;
@@ -964,7 +962,7 @@ bool detect_monsters_invis(bool aware)
 		if (x < x1 || y < y1 || x > x2 || y > y2) continue;
 
 		/* Detect invisible monsters */
-		if (rf_has(r_ptr->flags, RF_INVISIBLE))
+		if (rf_has(m_ptr->race->flags, RF_INVISIBLE))
 		{
 			/* Take note that they are invisible */
 			rf_on(l_ptr->flags, RF_INVISIBLE);
@@ -1021,11 +1019,10 @@ bool detect_monsters_evil(bool aware)
 	for (i = 1; i < cave_monster_max(cave); i++)
 	{
 		monster_type *m_ptr = cave_monster(cave, i);
-		monster_race *r_ptr = &r_info[m_ptr->r_idx];
 		monster_lore *l_ptr = &l_list[m_ptr->r_idx];
 
 		/* Skip dead monsters */
-		if (!m_ptr->r_idx) continue;
+		if (!m_ptr->race) continue;
 
 		/* Location */
 		y = m_ptr->fy;
@@ -1035,7 +1032,7 @@ bool detect_monsters_evil(bool aware)
 		if (x < x1 || y < y1 || x > x2 || y > y2) continue;
 
 		/* Detect evil monsters */
-		if (rf_has(r_ptr->flags, RF_EVIL))
+		if (rf_has(m_ptr->race->flags, RF_EVIL))
 		{
 			/* Take note that they are evil */
 			rf_on(l_ptr->flags, RF_EVIL);
@@ -1651,7 +1648,7 @@ bool project_los(int typ, int dam, bool obvious)
 		monster_type *m_ptr = cave_monster(cave, i);
 
 		/* Paranoia -- Skip dead monsters */
-		if (!m_ptr->r_idx) continue;
+		if (!m_ptr->race) continue;
 
 		/* Location */
 		y = m_ptr->fy;
@@ -1763,7 +1760,7 @@ void aggravate_monsters(struct monster *who)
 		monster_type *m_ptr = cave_monster(cave, i);
 
 		/* Paranoia -- Skip dead monsters */
-		if (!m_ptr->r_idx) continue;
+		if (!m_ptr->race) continue;
 
 		/* Skip aggravating monster (or player) */
 		if (m_ptr == who) continue;
@@ -1802,16 +1799,15 @@ bool banishment(void)
 	for (i = 1; i < cave_monster_max(cave); i++)
 	{
 		monster_type *m_ptr = cave_monster(cave, i);
-		monster_race *r_ptr = &r_info[m_ptr->r_idx];
-
+		
 		/* Paranoia -- Skip dead monsters */
-		if (!m_ptr->r_idx) continue;
+		if (!m_ptr->race) continue;
 
 		/* Hack -- Skip Unique Monsters */
-		if (rf_has(r_ptr->flags, RF_UNIQUE)) continue;
+		if (rf_has(m_ptr->race->flags, RF_UNIQUE)) continue;
 
 		/* Skip "wrong" monsters */
-		if (!char_matches_key(r_ptr->d_char, typ.code)) continue;
+		if (!char_matches_key(m_ptr->race->d_char, typ.code)) continue;
 
 		/* Delete the monster */
 		delete_monster_idx(i);
@@ -1846,13 +1842,12 @@ bool mass_banishment(void)
 	for (i = 1; i < cave_monster_max(cave); i++)
 	{
 		monster_type *m_ptr = cave_monster(cave, i);
-		monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 		/* Paranoia -- Skip dead monsters */
-		if (!m_ptr->r_idx) continue;
+		if (!m_ptr->race) continue;
 
 		/* Hack -- Skip unique monsters */
-		if (rf_has(r_ptr->flags, RF_UNIQUE)) continue;
+		if (rf_has(m_ptr->race->flags, RF_UNIQUE)) continue;
 
 		/* Skip distant monsters */
 		if (m_ptr->cdis > MAX_SIGHT) continue;
@@ -1894,7 +1889,7 @@ bool probing(void)
 		monster_type *m_ptr = cave_monster(cave, i);
 
 		/* Paranoia -- Skip dead monsters */
-		if (!m_ptr->r_idx) continue;
+		if (!m_ptr->race) continue;
 
 		/* Require line of sight */
 		if (!player_has_los_bold(m_ptr->fy, m_ptr->fx)) continue;
@@ -2258,10 +2253,9 @@ void earthquake(int cy, int cx, int r)
 			if (cave->m_idx[yy][xx] > 0)
 			{
 				monster_type *m_ptr = cave_monster_at(cave, yy, xx);
-				monster_race *r_ptr = &r_info[m_ptr->r_idx];
-
+				
 				/* Most monsters cannot co-exist with rock */
-				if (!flags_test(r_ptr->flags, RF_SIZE, RF_KILL_WALL, RF_PASS_WALL, FLAG_END))
+				if (!flags_test(m_ptr->race->flags, RF_SIZE, RF_KILL_WALL, RF_PASS_WALL, FLAG_END))
 				{
 					char m_name[80];
 
@@ -2269,7 +2263,7 @@ void earthquake(int cy, int cx, int r)
 					sn = 0;
 
 					/* Monster can move to escape the wall */
-					if (!rf_has(r_ptr->flags, RF_NEVER_MOVE))
+					if (!rf_has(m_ptr->race->flags, RF_NEVER_MOVE))
 					{
 						/* Look for safety */
 						for (i = 0; i < 8; i++)
@@ -2471,13 +2465,12 @@ static void cave_light(struct point_set *ps)
 			int chance = 25;
 
 			monster_type *m_ptr = cave_monster_at(cave, y, x);
-			monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 			/* Stupid monsters rarely wake up */
-			if (rf_has(r_ptr->flags, RF_STUPID)) chance = 10;
+			if (rf_has(m_ptr->race->flags, RF_STUPID)) chance = 10;
 
 			/* Smart monsters always wake up */
-			if (rf_has(r_ptr->flags, RF_SMART)) chance = 100;
+			if (rf_has(m_ptr->race->flags, RF_SMART)) chance = 100;
 
 			/* Sometimes monsters wake up */
 			if (m_ptr->m_timed[MON_TMD_SLEEP] && (randint0(100) < chance))

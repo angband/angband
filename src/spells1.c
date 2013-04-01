@@ -146,7 +146,7 @@ void dedup_hates_flags(bitflag *f)
  *
  * Note that this function is one of the more "dangerous" ones...
  */
-monster_race *poly_r_idx(monster_race *race)
+static monster_race *poly_race(monster_race *race)
 {
 	int i, lev1, lev2;
 
@@ -198,7 +198,7 @@ void teleport_away(struct monster *m_ptr, int dis)
 
 
 	/* Paranoia */
-	if (!m_ptr->r_idx) return;
+	if (!m_ptr->race) return;
 
 	/* Save the old location */
 	oy = m_ptr->fy;
@@ -1691,9 +1691,7 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ,
 static bool project_m(int who, int r, int y, int x, int dam, int typ,
 	bool obvious)
 {
-	int tmp;
 	monster_type *m_ptr;
-	monster_race *r_ptr;
 	monster_lore *l_ptr;
 	u16b flag = 0;
 
@@ -1759,7 +1757,6 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 
 	/* Obtain monster info */
 	m_ptr = cave_monster(cave, m_idx);
-	r_ptr = &r_info[m_ptr->r_idx];
 	l_ptr = &l_list[m_ptr->r_idx];
 	if (m_ptr->ml) seen = TRUE;
 
@@ -1776,11 +1773,8 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 
 
 	/* Some monsters get "destroyed" */
-	if (monster_is_unusual(r_ptr))
-	{
-		/* Special note at death */
+	if (monster_is_unusual(m_ptr->race))
 		note_dies = MON_MSG_DESTROYED;
-	}
 
 
 	/* Analyze the damage type */
@@ -1798,7 +1792,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 		{
 			if (seen) obvious = TRUE;
 			if (seen) rf_on(l_ptr->flags, RF_IM_ACID);
-			if (rf_has(r_ptr->flags, RF_IM_ACID))
+			if (rf_has(m_ptr->race->flags, RF_IM_ACID))
 			{
 				m_note = MON_MSG_RESIST_A_LOT;
 				dam /= 9;
@@ -1811,7 +1805,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 		{
 			if (seen) obvious = TRUE;
 			if (seen) rf_on(l_ptr->flags, RF_IM_ELEC);
-			if (rf_has(r_ptr->flags, RF_IM_ELEC))
+			if (rf_has(m_ptr->race->flags, RF_IM_ELEC))
 			{
 				m_note = MON_MSG_RESIST_A_LOT;
 				dam /= 9;
@@ -1828,12 +1822,12 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 				rf_on(l_ptr->flags, RF_IM_FIRE);
 				rf_on(l_ptr->flags, RF_HURT_FIRE);
 			}
-			if (rf_has(r_ptr->flags, RF_IM_FIRE))
+			if (rf_has(m_ptr->race->flags, RF_IM_FIRE))
 			{
 				m_note = MON_MSG_RESIST_A_LOT;
 				dam /= 9;
 			}
-			else if (rf_has(r_ptr->flags, RF_HURT_FIRE))
+			else if (rf_has(m_ptr->race->flags, RF_HURT_FIRE))
 			{
 				m_note = MON_MSG_CATCH_FIRE;
 				note_dies = MON_MSG_DISENTEGRATES;
@@ -1862,12 +1856,12 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 					do_stun = (randint1(15) + r + p_ptr->lev / 5) / (r + 1);
 			}
 
-			if (rf_has(r_ptr->flags, RF_IM_COLD))
+			if (rf_has(m_ptr->race->flags, RF_IM_COLD))
 			{
 				m_note = MON_MSG_RESIST_A_LOT;
 				dam /= 9;
 			}
-			else if (rf_has(r_ptr->flags, RF_HURT_COLD))
+			else if (rf_has(m_ptr->race->flags, RF_HURT_COLD))
 			{
 				m_note = MON_MSG_BADLY_FROZEN;
 				note_dies = MON_MSG_FREEZE_SHATTER;
@@ -1881,7 +1875,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 		{
 			if (seen) obvious = TRUE;
 			if (seen) rf_on(l_ptr->flags, RF_IM_POIS);
-			if (rf_has(r_ptr->flags, RF_IM_POIS))
+			if (rf_has(m_ptr->race->flags, RF_IM_POIS))
 			{
 				m_note = MON_MSG_RESIST_A_LOT;
 				dam /= 9;
@@ -1894,7 +1888,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 		{
 			if (seen) obvious = TRUE;
 			if (seen) rf_on(l_ptr->flags, RF_EVIL);
-			if (rf_has(r_ptr->flags, RF_EVIL))
+			if (rf_has(m_ptr->race->flags, RF_EVIL))
 			{
 				dam *= 2;
 				m_note = MON_MSG_HIT_HARD;
@@ -1914,7 +1908,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 		{
 			if (seen) obvious = TRUE;
 			if (seen) rf_on(l_ptr->flags, RF_RES_PLAS);
-			if (rf_has(r_ptr->flags, RF_RES_PLAS))
+			if (rf_has(m_ptr->race->flags, RF_RES_PLAS))
 			{
 				m_note = MON_MSG_RESIST;
 				dam *= 3; dam /= (randint1(6)+6);
@@ -1935,10 +1929,10 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 				rf_on(l_ptr->flags, RF_RES_NETH);
 
 				/* If it isn't undead, acquire extra knowledge */
-				if (!rf_has(r_ptr->flags, RF_UNDEAD))
+				if (!rf_has(m_ptr->race->flags, RF_UNDEAD))
 				{
 					/* Learn this creature breathes nether if true */
-					if (rsf_has(r_ptr->spell_flags, RSF_BR_NETH))
+					if (rsf_has(m_ptr->race->spell_flags, RSF_BR_NETH))
 					{
 						rsf_on(l_ptr->spell_flags, RSF_BR_NETH);
 					}
@@ -1951,18 +1945,18 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 				}
 			}
 
-			if (rf_has(r_ptr->flags, RF_UNDEAD))
+			if (rf_has(m_ptr->race->flags, RF_UNDEAD))
 			{
 				m_note = MON_MSG_IMMUNE;
 				dam = 0;
 			}
-			else if (rf_has(r_ptr->flags, RF_RES_NETH) ||
-			         rsf_has(r_ptr->spell_flags, RSF_BR_NETH))
+			else if (rf_has(m_ptr->race->flags, RF_RES_NETH) ||
+			         rsf_has(m_ptr->race->spell_flags, RSF_BR_NETH))
 			{
 				m_note = MON_MSG_RESIST;
 				dam *= 3; dam /= (randint1(6)+6);
 			}
-			else if (rf_has(r_ptr->flags, RF_EVIL))
+			else if (rf_has(m_ptr->race->flags, RF_EVIL))
 			{
 				dam /= 2;
 				m_note = MON_MSG_RESIST_SOMEWHAT;
@@ -1975,7 +1969,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 		{
 			if (seen) obvious = TRUE;
 			if (seen) rf_on(l_ptr->flags, RF_IM_WATER);
-			if (rf_has(r_ptr->flags, RF_IM_WATER))
+			if (rf_has(m_ptr->race->flags, RF_IM_WATER))
 			{
 				m_note = MON_MSG_IMMUNE;
 				dam = 0;
@@ -1996,7 +1990,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 			} else
 				do_conf = (5 + randint1(11) + r + p_ptr->lev / 5) / (r + 1);
 
-			if (rsf_has(r_ptr->spell_flags, RSF_BR_CHAO))
+			if (rsf_has(m_ptr->race->spell_flags, RSF_BR_CHAO))
 			{
 				/* Learn about breathers through resistance */
 				if (seen) rsf_on(l_ptr->spell_flags, RSF_BR_CHAO);
@@ -2011,7 +2005,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 		case GF_SHARD:
 		{
 			if (seen) obvious = TRUE;
-			if (rsf_has(r_ptr->spell_flags, RSF_BR_SHAR))
+			if (rsf_has(m_ptr->race->spell_flags, RSF_BR_SHAR))
 			{
 				/* Learn about breathers through resistance */
 				if (seen) rsf_on(l_ptr->spell_flags, RSF_BR_SHAR);
@@ -2033,7 +2027,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 			} else
 				do_stun = (10 + randint1(15) + r + p_ptr->lev / 5) / (r + 1);
 
-			if (rsf_has(r_ptr->spell_flags, RSF_BR_SOUN))
+			if (rsf_has(m_ptr->race->spell_flags, RSF_BR_SOUN))
 			{
 				/* Learn about breathers through resistance */
 				if (seen) rsf_on(l_ptr->spell_flags, RSF_BR_SOUN);
@@ -2049,7 +2043,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 		{
 			if (seen) obvious = TRUE;
 			if (seen) rf_on(l_ptr->flags, RF_RES_DISE);
-			if (rf_has(r_ptr->flags, RF_RES_DISE))
+			if (rf_has(m_ptr->race->flags, RF_RES_DISE))
 			{
 				m_note = MON_MSG_RESIST;
 				dam *= 3; dam /= (randint1(6)+6);
@@ -2062,7 +2056,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 		{
 			if (seen) obvious = TRUE;
 			if (seen) rf_on(l_ptr->flags, RF_RES_NEXUS);
-			if (rf_has(r_ptr->flags, RF_RES_NEXUS))
+			if (rf_has(m_ptr->race->flags, RF_RES_NEXUS))
 			{
 				m_note = MON_MSG_RESIST;
 				dam *= 3; dam /= (randint1(6)+6);
@@ -2081,7 +2075,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 			} else
 				do_stun = (randint1(15) + r + p_ptr->lev / 5) / (r + 1);
 
-			if (rsf_has(r_ptr->spell_flags, RSF_BR_WALL))
+			if (rsf_has(m_ptr->race->spell_flags, RSF_BR_WALL))
 			{
 				/* Learn about breathers through resistance */
 				if (seen) rsf_on(l_ptr->spell_flags, RSF_BR_WALL);
@@ -2096,7 +2090,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 		case GF_INERTIA:
 		{
 			if (seen) obvious = TRUE;
-			if (rsf_has(r_ptr->spell_flags, RSF_BR_INER))
+			if (rsf_has(m_ptr->race->spell_flags, RSF_BR_INER))
 			{
 				/* Learn about breathers through resistance */
 				if (seen) rsf_on(l_ptr->spell_flags, RSF_BR_INER);
@@ -2111,7 +2105,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 		case GF_TIME:
 		{
 			if (seen) obvious = TRUE;
-			if (rsf_has(r_ptr->spell_flags, RSF_BR_TIME))
+			if (rsf_has(m_ptr->race->spell_flags, RSF_BR_TIME))
 			{
 				/* Learn about breathers through resistance */
 				if (seen) rsf_on(l_ptr->spell_flags, RSF_BR_TIME);
@@ -2128,10 +2122,10 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 			if (seen) obvious = TRUE;
 
 			/* Higher level monsters can resist the teleportation better */
-			if (randint1(127) > r_ptr->level)
+			if (randint1(127) > m_ptr->race->level)
 				do_dist = 10;
 
-			if (rsf_has(r_ptr->spell_flags, RSF_BR_GRAV))
+			if (rsf_has(m_ptr->race->spell_flags, RSF_BR_GRAV))
 			{
 				/* Learn about breathers through resistance */
 				if (seen) rsf_on(l_ptr->spell_flags, RSF_BR_GRAV);
@@ -2166,7 +2160,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 				rf_on(l_ptr->flags, RF_UNDEAD);
 				rf_on(l_ptr->flags, RF_DEMON);
 			}
-			if (monster_is_nonliving(r_ptr))
+			if (monster_is_nonliving(m_ptr->race))
 			{
 				m_note = MON_MSG_UNAFFECTED;
 				obvious = FALSE;
@@ -2294,7 +2288,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 			if (seen) rf_on(l_ptr->flags, RF_HURT_LIGHT);
 
 			/* Hurt by light */
-			if (rf_has(r_ptr->flags, RF_HURT_LIGHT))
+			if (rf_has(m_ptr->race->flags, RF_HURT_LIGHT))
 			{
 				/* Special effect */
 				m_note = MON_MSG_CRINGE_LIGHT;
@@ -2318,7 +2312,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 			if (seen) obvious = TRUE;
 			if (seen) rf_on(l_ptr->flags, RF_HURT_LIGHT);
 
-			if (rsf_has(r_ptr->spell_flags, RSF_BR_LIGHT))
+			if (rsf_has(m_ptr->race->spell_flags, RSF_BR_LIGHT))
 			{
 				/* Learn about breathers through resistance */
 				if (seen) rsf_on(l_ptr->spell_flags, RSF_BR_LIGHT);
@@ -2326,7 +2320,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 				m_note = MON_MSG_RESIST;
 				dam *= 2; dam /= (randint1(6)+6);
 			}
-			else if (rf_has(r_ptr->flags, RF_HURT_LIGHT))
+			else if (rf_has(m_ptr->race->flags, RF_HURT_LIGHT))
 			{
 				m_note = MON_MSG_CRINGE_LIGHT;
 				note_dies = MON_MSG_SHRIVEL_LIGHT;
@@ -2340,7 +2334,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 		case GF_DARK:
 		{
 			if (seen) obvious = TRUE;
-			if (rsf_has(r_ptr->spell_flags, RSF_BR_DARK))
+			if (rsf_has(m_ptr->race->spell_flags, RSF_BR_DARK))
 			{
 				/* Learn about breathers through resistance */
 				if (seen) rsf_on(l_ptr->spell_flags, RSF_BR_DARK);
@@ -2359,7 +2353,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 			if (seen) rf_on(l_ptr->flags, RF_HURT_ROCK);
 
 			/* Hurt by rock remover */
-			if (rf_has(r_ptr->flags, RF_HURT_ROCK))
+			if (rf_has(m_ptr->race->flags, RF_HURT_ROCK))
 			{
 				/* Cute little message */
 				m_note = MON_MSG_LOSE_SKIN;
@@ -2383,7 +2377,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 			if (seen) rf_on(l_ptr->flags, RF_UNDEAD);
 
 			/* Only affect undead */
-			if (rf_has(r_ptr->flags, RF_UNDEAD))
+			if (rf_has(m_ptr->race->flags, RF_UNDEAD))
 			{
 				if (seen) obvious = TRUE;
 				do_dist = dam;
@@ -2408,7 +2402,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 			if (seen) rf_on(l_ptr->flags, RF_EVIL);
 
 			/* Only affect evil */
-			if (rf_has(r_ptr->flags, RF_EVIL))
+			if (rf_has(m_ptr->race->flags, RF_EVIL))
 			{
 				if (seen) obvious = TRUE;
 				do_dist = dam;
@@ -2446,7 +2440,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 		case GF_TURN_UNDEAD:
 		{
 			/* Only affect undead */
-			if (rf_has(r_ptr->flags, RF_UNDEAD))
+			if (rf_has(m_ptr->race->flags, RF_UNDEAD))
 			{
 				/* Obvious */
 				if (seen) obvious = TRUE;
@@ -2469,7 +2463,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 		case GF_TURN_EVIL:
 		{
 			/* Only affect evil */
-			if (rf_has(r_ptr->flags, RF_EVIL))
+			if (rf_has(m_ptr->race->flags, RF_EVIL))
 			{
 				/* Obvious */
 				if (seen) obvious = TRUE;
@@ -2506,7 +2500,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 			if (seen) rf_on(l_ptr->flags, RF_UNDEAD);
 
 			/* Only affect undead */
-			if (rf_has(r_ptr->flags, RF_UNDEAD))
+			if (rf_has(m_ptr->race->flags, RF_UNDEAD))
 			{
 				/* Obvious */
 				if (seen) obvious = TRUE;
@@ -2536,7 +2530,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 			if (seen) rf_on(l_ptr->flags, RF_EVIL);
 
 			/* Only affect evil */
-			if (rf_has(r_ptr->flags, RF_EVIL))
+			if (rf_has(m_ptr->race->flags, RF_EVIL))
 			{
 				/* Obvious */
 				if (seen) obvious = TRUE;
@@ -2593,7 +2587,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 
 
 	/* "Unique" monsters can only be "killed" by the player */
-	if (rf_has(r_ptr->flags, RF_UNIQUE))
+	if (rf_has(m_ptr->race->flags, RF_UNIQUE))
 	{
 		/* Uniques may only be killed by the player */
 		if ((who > 0) && (dam > m_ptr->hp)) dam = m_ptr->hp;
@@ -2614,23 +2608,25 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 		m_note = MON_MSG_UNAFFECTED;
 
 		/* Uniques cannot be polymorphed */
-		if (!rf_has(r_ptr->flags, RF_UNIQUE))
+		if (!rf_has(m_ptr->race->flags, RF_UNIQUE))
 		{
 			if (seen) obvious = TRUE;
 
 			/* Saving throws are allowed */
-			if (r_ptr->level > randint1(90) ||
-			    (typ == GF_OLD_POLY && r_ptr->level > randint1(MAX(1, do_poly - 10)) + 10))
+			if (m_ptr->race->level > randint1(90) ||
+			    (typ == GF_OLD_POLY && m_ptr->race->level > randint1(MAX(1, do_poly - 10)) + 10))
 			{
 				if (typ == GF_OLD_POLY) m_note = MON_MSG_MAINTAIN_SHAPE;
 			}
 			else
 			{
+				monster_race *old = m_ptr->race;
+
 				/* Pick a "new" monster race */
-				r_ptr = poly_r_idx(m_ptr->race);
+				m_ptr->race = poly_race(m_ptr->race);
 
 				/* Handle polymorph */
-				if (tmp != m_ptr->r_idx)
+				if (m_ptr->race != old)
 				{
 					/* Monster polymorphs */
 					m_note = MON_MSG_CHANGE;
@@ -2648,16 +2644,13 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 					delete_monster_idx(m_idx);
 
 					/* Create a new monster (no groups) */
-					(void)place_new_monster(cave, y, x, r_ptr, FALSE, FALSE,
+					(void)place_new_monster(cave, y, x, m_ptr->race, FALSE, FALSE,
 						ORIGIN_DROP_POLY);
 
 					/* Hack -- Assume success XXX XXX XXX */
 
 					/* Hack -- Get new monster */
 					m_ptr = cave_monster(cave, m_idx);
-
-					/* Hack -- Get new race */
-					r_ptr = &r_info[m_ptr->r_idx];
 				}
 			}
 		}
@@ -3434,7 +3427,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg)
 				monster_type *m_ptr = cave_monster_at(cave, y, x);
 
 				/* Hack -- auto-recall */
-				if (m_ptr->ml) monster_race_track(m_ptr->r_idx);
+				if (m_ptr->ml) monster_race_track(m_ptr->race);
 
 				/* Hack - auto-track */
 				if (m_ptr->ml) health_track(p_ptr, m_ptr);

@@ -202,10 +202,9 @@ static void regen_monsters(void)
 	{
 		/* Check the i'th monster */
 		monster_type *m_ptr = cave_monster(cave, i);
-		monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 		/* Skip dead monsters */
-		if (!m_ptr->r_idx) continue;
+		if (!m_ptr->race) continue;
 
 		/* Allow regeneration (if needed) */
 		if (m_ptr->hp < m_ptr->maxhp)
@@ -217,7 +216,7 @@ static void regen_monsters(void)
 			if (!frac) frac = 1;
 
 			/* Hack -- Some monsters regenerate quickly */
-			if (rf_has(r_ptr->flags, RF_REGENERATE)) frac *= 2;
+			if (rf_has(m_ptr->race->flags, RF_REGENERATE)) frac *= 2;
 
 			/* Hack -- Regenerate */
 			m_ptr->hp += frac;
@@ -1141,12 +1140,10 @@ static void process_player(void)
 			/* Shimmer multi-hued monsters */
 			for (i = 1; i < cave_monster_max(cave); i++)
 			{
-				struct monster_race *race;
 				struct monster *mon = cave_monster(cave, i);
-				if (!mon->r_idx)
+				if (!mon->race)
 					continue;
-				race = &r_info[mon->r_idx];
-				if (!rf_has(race->flags, RF_ATTR_MULTI))
+				if (!rf_has(mon->race->flags, RF_ATTR_MULTI))
 					continue;
 				cave_light_spot(cave, mon->fy, mon->fx);
 			}
@@ -1237,20 +1234,20 @@ static void do_animation(void)
 	{
 		byte attr;
 		monster_type *m_ptr = cave_monster(cave, i);
-		monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
-		if (!m_ptr || !m_ptr->ml)
+		if (!m_ptr || !m_ptr->race || !m_ptr->ml)
 			continue;
-		else if (rf_has(r_ptr->flags, RF_ATTR_MULTI))
+		else if (rf_has(m_ptr->race->flags, RF_ATTR_MULTI))
 			attr = randint1(BASIC_COLORS - 1);
-		else if (rf_has(r_ptr->flags, RF_ATTR_FLICKER))
-			attr = get_flicker(r_ptr->x_attr);
+		else if (rf_has(m_ptr->race->flags, RF_ATTR_FLICKER))
+			attr = get_flicker(m_ptr->race->x_attr);
 		else
 			continue;
 
 		m_ptr->attr = attr;
 		p_ptr->redraw |= (PR_MAP | PR_MONLIST);
 	}
+
 	flicker++;
 }
 
@@ -1527,11 +1524,9 @@ static void dungeon(struct cave *c)
 		{
 			int mspeed;
 			
-			/* Access the monster */
+			/* Access the monster (if alive) */
 			m_ptr = cave_monster(cave, i);
-
-			/* Ignore "dead" monsters */
-			if (!m_ptr->r_idx) continue;
+			if (!m_ptr->race) continue;
 
 			/* Calculate the net speed */
 			mspeed = m_ptr->mspeed;

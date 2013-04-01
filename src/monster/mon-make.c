@@ -1543,7 +1543,7 @@ bool mon_take_hit(struct monster *m_ptr, int dam, bool *fear, const char *note)
 			if (l_ptr->tkills < MAX_SHORT) l_ptr->tkills++;
 
 			/* Hack -- Auto-recall */
-			monster_race_track(m_ptr->r_idx);
+			monster_race_track(m_ptr->race);
 		}
 
 		/* Delete the monster */

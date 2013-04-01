@@ -6,6 +6,52 @@
 #include "history.h" /* history_add */
 #include "player/player.h"
 
+
+
+void health_track(struct player *p, struct monster *m_ptr)
+{
+	p->health_who = m_ptr;
+	p->redraw |= PR_HEALTH;
+}
+
+/*
+ * Hack -- track the given monster race
+ */
+void monster_race_track(monster_race *race)
+{
+	/* Save this monster ID */
+	p_ptr->monster_race_idx = race->ridx;
+
+	/* Window stuff */
+	p_ptr->redraw |= (PR_MONSTER);
+}
+
+
+
+/*
+ * Hack -- track the given object kind
+ */
+void track_object(int item)
+{
+	p_ptr->object_idx = item;
+	p_ptr->object_kind_idx = NO_OBJECT;
+	p_ptr->redraw |= (PR_OBJECT);
+}
+
+void track_object_kind(int k_idx)
+{
+	p_ptr->object_idx = NO_OBJECT;
+	p_ptr->object_kind_idx = k_idx;
+	p_ptr->redraw |= (PR_OBJECT);
+}
+
+bool tracked_object_is(int item)
+{
+	return (p_ptr->object_idx == item);
+}
+
+
+
 bool player_stat_inc(struct player *p, int stat)
 {
 	int v = p->stat_cur[stat];
