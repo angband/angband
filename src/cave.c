@@ -3904,7 +3904,8 @@ struct monster *cave_monster(struct cave *c, int idx) {
  * Get a monster on the current level by its position.
  */
 struct monster *cave_monster_at(struct cave *c, int y, int x) {
-	return cave_monster(cave, cave->m_idx[y][x]);
+	struct monster *mon = cave_monster(cave, cave->m_idx[y][x]);
+	return mon->race ? mon : NULL;
 }
 
 /**
