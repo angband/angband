@@ -2376,7 +2376,6 @@ int rd_monsters_6(void)
 		/* Read in record */
 		rd_s16b(&r_idx);
 		m_ptr->race = &r_info[r_idx];
-		m_ptr->r_idx = r_idx;
 		rd_byte(&m_ptr->fy);
 		rd_byte(&m_ptr->fx);
 		rd_s16b(&m_ptr->hp);

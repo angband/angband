@@ -616,7 +616,7 @@ static int borg_guess_race(byte a, wchar_t c, bool multi, int y, int x)
     m_ptr= cave_monster(cave, cave->m_idx[y][x]);
 
     /* Actual monsters */
-    return (m_ptr->r_idx);
+    return (m_ptr->race->ridx);
 
 #if 0
     /* If I cannot locate it, then use the old routine to id the monster */
@@ -3521,7 +3521,7 @@ static void borg_update_map(void)
 				{
 					monster_type *m_ptr = cave_monster(cave, g.m_idx);
 					wank->t_a = m_ptr->attr;
-					wank->t_c = r_info[m_ptr->r_idx].d_char;
+					wank->t_c = r_info[m_ptr->race->ridx].d_char;
 				}
 				else
 				{

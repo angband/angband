@@ -278,7 +278,7 @@ bool add_monster_message(const char *mon_name, struct monster *m_ptr,
 {
 	int i;
 	byte mon_flags = 0;
-	int r_idx = m_ptr->r_idx;
+	int r_idx = m_ptr->race->ridx;
 
 	assert(msg_code >= 0 && msg_code < MAX_MON_MSG);
 

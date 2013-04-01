@@ -19,6 +19,7 @@
 #include "angband.h"
 #include "monster/mon-lore.h"
 #include "monster/mon-spell.h"
+#include "monster/mon-util.h"
 #include "object/tvalsval.h"
 
 /*
@@ -2197,7 +2198,7 @@ void display_roff(const monster_race *r_ptr, const monster_lore *l_ptr)
  */
 void lore_do_probe(struct monster *m)
 {
-	monster_lore *l_ptr = &l_list[m->r_idx];
+	monster_lore *l_ptr = get_lore(m->race);
 	unsigned i;
 
 	/* Know various things */
@@ -2207,7 +2208,7 @@ void lore_do_probe(struct monster *m)
 		l_ptr->blows[i] = MAX_UCHAR;
 
 	/* Update monster recall window */
-	if (p_ptr->monster_race_idx == m->race->ridx)
+	if (p_ptr->monster_race == m->race)
 		p_ptr->redraw |= (PR_MONSTER);
 }
 
@@ -2227,7 +2228,7 @@ void lore_do_probe(struct monster *m)
  */
 void lore_treasure(struct monster *m_ptr, int num_item, int num_gold)
 {
-	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
+	monster_lore *l_ptr = get_lore(m_ptr->race);
 
 	assert(num_item >= 0);
 	assert(num_gold >= 0);
@@ -2243,7 +2244,7 @@ void lore_treasure(struct monster *m_ptr, int num_item, int num_gold)
 	rf_on(l_ptr->flags, RF_DROP_GREAT);
 
 	/* Update monster recall window */
-	if (p_ptr->monster_race_idx == m_ptr->r_idx)
+	if (p_ptr->monster_race == m_ptr->race)
 		p_ptr->redraw |= (PR_MONSTER);
 }
 

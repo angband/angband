@@ -46,6 +46,7 @@ wchar_t summon_kin_type;		/* Hack -- See summon_specific() */
 
 
 /** Functions **/
+monster_lore *get_lore(monster_race *race);
 int lookup_monster(const char *name);
 monster_base *lookup_monster_base(const char *name);
 bool match_monster_bases(const monster_base *base, ...);

@@ -1412,7 +1412,7 @@ static void do_cmd_wiz_zap(int d)
 		monster_type *m_ptr = cave_monster(cave, i);
 
 		/* Skip dead monsters */
-		if (!m_ptr->r_idx) continue;
+		if (!m_ptr->race) continue;
 
 		/* Skip distant monsters */
 		if (m_ptr->cdis > d) continue;

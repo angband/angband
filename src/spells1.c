@@ -1757,7 +1757,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 
 	/* Obtain monster info */
 	m_ptr = cave_monster(cave, m_idx);
-	l_ptr = &l_list[m_ptr->r_idx];
+	l_ptr = get_lore(m_ptr->race);
 	if (m_ptr->ml) seen = TRUE;
 
 
@@ -2793,7 +2793,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 
 
 	/* Update monster recall window */
-	if (p_ptr->monster_race_idx == m_ptr->r_idx)
+	if (p_ptr->monster_race == m_ptr->race)
 	{
 		/* Window stuff */
 		p_ptr->redraw |= (PR_MONSTER);

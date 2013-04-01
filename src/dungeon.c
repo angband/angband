@@ -860,7 +860,7 @@ static void process_player_aux(void)
 	int i;
 	bool changed = FALSE;
 
-	static int old_monster_race_idx = 0;
+	static monster_race *old_monster_race = 0;
 	static bitflag old_flags[RF_SIZE];
 	static bitflag old_spell_flags[RSF_SIZE];
 
@@ -870,10 +870,10 @@ static void process_player_aux(void)
 	static byte	old_cast_spell = 0;
 
 	/* Tracking a monster */
-	if (p_ptr->monster_race_idx)
+	if (p_ptr->monster_race)
 	{
 		/* Get the monster lore */
-		monster_lore *l_ptr = &l_list[p_ptr->monster_race_idx];
+		monster_lore *l_ptr = get_lore(p_ptr->monster_race);
 
 		for (i = 0; i < MONSTER_BLOW_MAX; i++)
 		{
@@ -886,14 +886,14 @@ static void process_player_aux(void)
 
 		/* Check for change of any kind */
 		if (changed ||
-		    (old_monster_race_idx != p_ptr->monster_race_idx) ||
+		    (old_monster_race != p_ptr->monster_race) ||
 		    !rf_is_equal(old_flags, l_ptr->flags) ||
 		    !rsf_is_equal(old_spell_flags, l_ptr->spell_flags) ||
 		    (old_cast_innate != l_ptr->cast_innate) ||
 		    (old_cast_spell != l_ptr->cast_spell))
 		{
 			/* Memorize old race */
-			old_monster_race_idx = p_ptr->monster_race_idx;
+			old_monster_race = p_ptr->monster_race;
 
 			/* Memorize flags */
 			rf_copy(old_flags, l_ptr->flags);
@@ -1713,7 +1713,7 @@ void play_game(void)
 
 	/* Initialize temporary fields sensibly */
 	p_ptr->object_idx = p_ptr->object_kind_idx = NO_OBJECT;
-	p_ptr->monster_race_idx = 0;
+	p_ptr->monster_race = NULL;
 
 	/* Normal machine (process player name) */
 	if (savefile[0])

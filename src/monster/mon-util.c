@@ -24,6 +24,17 @@
 #include "monster/mon-util.h"
 #include "squelch.h"
 
+
+/**
+ * Get the lore record for this monster race.
+ */
+monster_lore *get_lore(monster_race *race)
+{
+	assert(race);
+	return &l_list[race->ridx];
+}
+
+
 /**
  * Returns the r_idx of the monster with the given name. If no monster has
  * the exact name given, returns the r_idx of the first monster having the
@@ -356,7 +367,7 @@ void display_monlist(void)
 		if (!m_ptr->ml || m_ptr->unaware) continue;
 
 		/* Take a pointer to this monster visibility entry */
-		v = &list[m_ptr->r_idx];
+		v = &list[m_ptr->race->ridx];
 
 		/* Note each monster type and save its display attr (color) */
 		if (!v->count) type_count++;
@@ -863,7 +874,7 @@ void update_mon(struct monster *m_ptr, bool full)
 
 	assert(m_ptr != NULL);
 
-	l_ptr = &l_list[m_ptr->r_idx];
+	l_ptr = get_lore(m_ptr->race);
 	
 	fy = m_ptr->fy;
 	fx = m_ptr->fx;
@@ -1440,14 +1451,13 @@ bool multiply_monster(const monster_type *m_ptr)
  */
 void become_aware(struct monster *m_ptr)
 {
-	const monster_race *r_ptr = &r_info[m_ptr->r_idx];
-	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
+	monster_lore *l_ptr = get_lore(m_ptr->race);
 
 	if (m_ptr->unaware) {
 		m_ptr->unaware = FALSE;
 
 		/* Learn about mimicry */
-		if (rf_has(r_ptr->flags, RF_UNAWARE))
+		if (rf_has(m_ptr->race->flags, RF_UNAWARE))
 			rf_on(l_ptr->flags, RF_UNAWARE);
 
 		/* Delete any false items */
@@ -1463,7 +1473,7 @@ void become_aware(struct monster *m_ptr)
 			o_ptr->mimicking_m_idx = 0;
 
 			/* Give the object to the monster if appropriate */
-			if (rf_has(r_ptr->flags, RF_MIMIC_INV)) {
+			if (rf_has(m_ptr->race->flags, RF_MIMIC_INV)) {
 				object_type *i_ptr;
 				object_type object_type_body;
 				
@@ -1503,8 +1513,6 @@ bool is_mimicking(struct monster *m_ptr)
  */
 void update_smart_learn(struct monster *m, struct player *p, int flag)
 {
-	monster_race *r_ptr = &r_info[m->r_idx];
-
 	/* Sanity check */
 	if (!flag) return;
 
@@ -1515,10 +1523,10 @@ void update_smart_learn(struct monster *m, struct player *p, int flag)
 	if (!OPT(birth_ai_learn)) return;
 
 	/* Too stupid to learn anything */
-	if (rf_has(r_ptr->flags, RF_STUPID)) return;
+	if (rf_has(m->race->flags, RF_STUPID)) return;
 
 	/* Not intelligent, only learn sometimes */
-	if (!rf_has(r_ptr->flags, RF_SMART) && one_in_(2)) return;
+	if (!rf_has(m->race->flags, RF_SMART) && one_in_(2)) return;
 
 	/* Analyze the knowledge; fail very rarely */
 	if (check_state(p, flag, p->state.flags) && !one_in_(100))

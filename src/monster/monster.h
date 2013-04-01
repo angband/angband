@@ -222,7 +222,6 @@ typedef struct
 typedef struct monster
 {
 	struct monster_race *race;
-	s16b r_idx;			/* Monster race index */
 	int midx;
 
 	byte fy;			/* Y location on map */

@@ -595,7 +595,7 @@ int context_menu_cave(struct cave *cave, int y, int x, int adjacent, int mx, int
 		/* recall monster Info */
 		monster_type *m_ptr = cave_monster_at(cave, y, x);
 		if (m_ptr) {
-			monster_lore *lore = &l_list[m_ptr->r_idx];
+			monster_lore *lore = get_lore(m_ptr->race);
 
 			/* Save screen */
 			screen_save();

@@ -20,7 +20,7 @@ void health_track(struct player *p, struct monster *m_ptr)
 void monster_race_track(monster_race *race)
 {
 	/* Save this monster ID */
-	p_ptr->monster_race_idx = race->ridx;
+	p_ptr->monster_race = race;
 
 	/* Window stuff */
 	p_ptr->redraw |= (PR_MONSTER);

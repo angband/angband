@@ -949,7 +949,7 @@ bool detect_monsters_invis(bool aware)
 	for (i = 1; i < cave_monster_max(cave); i++)
 	{
 		monster_type *m_ptr = cave_monster(cave, i);
-		monster_lore *l_ptr = &l_list[m_ptr->r_idx];
+		monster_lore *l_ptr = get_lore(m_ptr->race);
 
 		/* Skip dead monsters */
 		if (!m_ptr->race) continue;
@@ -968,7 +968,7 @@ bool detect_monsters_invis(bool aware)
 			rf_on(l_ptr->flags, RF_INVISIBLE);
 
 			/* Update monster recall window */
-			if (p_ptr->monster_race_idx == m_ptr->r_idx)
+			if (p_ptr->monster_race == m_ptr->race)
 			{
 				/* Redraw stuff */
 				p_ptr->redraw |= (PR_MONSTER);
@@ -1019,7 +1019,7 @@ bool detect_monsters_evil(bool aware)
 	for (i = 1; i < cave_monster_max(cave); i++)
 	{
 		monster_type *m_ptr = cave_monster(cave, i);
-		monster_lore *l_ptr = &l_list[m_ptr->r_idx];
+		monster_lore *l_ptr = get_lore(m_ptr->race);
 
 		/* Skip dead monsters */
 		if (!m_ptr->race) continue;
@@ -1038,7 +1038,7 @@ bool detect_monsters_evil(bool aware)
 			rf_on(l_ptr->flags, RF_EVIL);
 
 			/* Update monster recall window */
-			if (p_ptr->monster_race_idx == m_ptr->r_idx)
+			if (p_ptr->monster_race == m_ptr->race)
 			{
 				/* Redraw stuff */
 				p_ptr->redraw |= (PR_MONSTER);

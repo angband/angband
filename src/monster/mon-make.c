@@ -684,7 +684,7 @@ static bool mon_create_drop(struct monster *m_ptr, byte origin)
 
 		i_ptr->origin = origin;
 		i_ptr->origin_depth = p_ptr->depth;
-		i_ptr->origin_xtra = m_ptr->r_idx;
+		i_ptr->origin_xtra = m_ptr->race->ridx;
 		i_ptr->number = randint0(drop->max - drop->min) + drop->min;
 		if (monster_carry(m_ptr, i_ptr))
 			any = TRUE;
@@ -703,7 +703,7 @@ static bool mon_create_drop(struct monster *m_ptr, byte origin)
 
 		i_ptr->origin = origin;
 		i_ptr->origin_depth = p_ptr->depth;
-		i_ptr->origin_xtra = m_ptr->r_idx;
+		i_ptr->origin_xtra = m_ptr->race->ridx;
 		if (monster_carry(m_ptr, i_ptr))
 			any = TRUE;
 	}
@@ -899,7 +899,6 @@ static bool place_new_monster_one(int y, int x, monster_race *race,
 
 	/* Save the race */
 	mon->race = race;
-	mon->r_idx = race->ridx;
 
 	/* Enforce sleeping if needed */
 	if (sleep && race->sleep) {
@@ -1434,7 +1433,7 @@ void monster_death(struct monster *m_ptr, bool stats)
 bool mon_take_hit(struct monster *m_ptr, int dam, bool *fear, const char *note)
 {
 	s32b div, new_exp, new_exp_frac;
-	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
+	monster_lore *l_ptr = get_lore(m_ptr->race);
 
 
 	/* Redraw (later) if needed */

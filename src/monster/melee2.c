@@ -353,7 +353,7 @@ bool make_attack_spell(struct monster *m_ptr)
 
 	bitflag f[RSF_SIZE];
 
-	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
+	monster_lore *l_ptr = get_lore(m_ptr->race);
 
 	char m_name[80], m_poss[80], ddesc[80];
 
@@ -1498,7 +1498,7 @@ static const char *desc_moan[MAX_DESC_MOAN] =
  */
 static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 {
-	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
+	monster_lore *l_ptr = get_lore(m_ptr->race);
 
 	int ap_cnt;
 
@@ -2739,7 +2739,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
  */
 static void process_monster(struct cave *c, struct monster *m_ptr)
 {
-	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
+	monster_lore *l_ptr = get_lore(m_ptr->race);
 
 	int i, d, oy, ox, ny, nx;
 

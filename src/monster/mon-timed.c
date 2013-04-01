@@ -70,7 +70,7 @@ static bool mon_resist_effect(const struct monster *mon, int ef_idx, int timer, 
 	assert(mon);
 
 	effect = &effects[ef_idx];
-	lore = &l_list[mon->r_idx];
+	lore = get_lore(mon->race);
 	
 	/* Hasting never fails */
 	if (ef_idx == MON_TMD_FAST) return (FALSE);
@@ -173,10 +173,9 @@ static bool mon_set_timed(monster_type *m_ptr, int ef_idx, int timer,
 	effect = &effects[ef_idx];
 
 	assert(m_ptr);
-	old_timer = m_ptr->m_timed[ef_idx];
+	assert(m_ptr->race);
 
-	/* Ignore dead monsters */
-	if (!m_ptr->r_idx) return FALSE;
+	old_timer = m_ptr->m_timed[ef_idx];
 
 	/* No change */
 	if (old_timer == timer) return FALSE;
