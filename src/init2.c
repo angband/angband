@@ -2585,13 +2585,13 @@ static enum parser_error parse_pit_s2(struct parser *p) {
 static enum parser_error parse_pit_e(struct parser *p) {
 	struct pit_profile *pit = parser_priv(p);
 	struct pit_forbidden_monster *monsters;
-	int r_idx = lookup_monster(parser_getsym(p, "race"));
+	monster_race *r = lookup_monster(parser_getsym(p, "race"));
 
 	if (!pit)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 
 	monsters = mem_zalloc(sizeof *monsters);
-	monsters->r_idx = r_idx;
+	monsters->race = r;
 	monsters->next = pit->forbidden_monsters;
 	pit->forbidden_monsters = monsters;
 	return PARSE_ERROR_NONE;

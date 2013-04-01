@@ -1618,7 +1618,7 @@ static bool mon_pit_hook(monster_race *r_ptr)
 	else if (pit_type->forbidden_monsters) {
 		struct pit_forbidden_monster *monster;
 		for (monster = pit_type->forbidden_monsters; monster; monster = monster->next) {
-			if (r_ptr->ridx == monster->r_idx)
+			if (r_ptr == monster->race)
 				return FALSE;
 		}
 	}

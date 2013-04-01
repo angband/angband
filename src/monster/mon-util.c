@@ -28,7 +28,7 @@
 /**
  * Get the lore record for this monster race.
  */
-monster_lore *get_lore(monster_race *race)
+monster_lore *get_lore(const monster_race *race)
 {
 	assert(race);
 	return &l_list[race->ridx];
@@ -36,33 +36,33 @@ monster_lore *get_lore(monster_race *race)
 
 
 /**
- * Returns the r_idx of the monster with the given name. If no monster has
- * the exact name given, returns the r_idx of the first monster having the
- * given name as a (case-insensitive) substring.
- *
- * Returns -1 if no match is found.
+ * Returns the monster with the given name. If no monster has the exact name
+ * given, returns the first monster with the given name as a (case-insensitive)
+ * substring.
  */
-int lookup_monster(const char *name)
+monster_race *lookup_monster(const char *name)
 {
 	int i;
-	int r_idx = -1;
+	monster_race *closest = NULL;
 	
 	/* Look for it */
 	for (i = 1; i < z_info->r_max; i++)
 	{
 		monster_race *r_ptr = &r_info[i];
+		if (!r_ptr->name)
+			continue;
 
 		/* Test for equality */
-		if (r_ptr->name && streq(name, r_ptr->name))
-			return i;
-		
+		if (streq(name, r_ptr->name))
+			return r_ptr;
+
 		/* Test for close matches */
-		if (r_ptr->name && my_stristr(r_ptr->name, name) && r_idx == -1)
-			r_idx = i;
+		if (!closest && my_stristr(r_ptr->name, name))
+			closest = r_ptr;
 	} 
 
 	/* Return our best match */
-	return r_idx;
+	return closest;
 }
 
 /**
