@@ -27,7 +27,7 @@ S:30000:Lyar-el the Comely (Elf)
 N:1
 S:5000:Kon-Dar the Ugly (Half-Orc)
 S:10000:Darg-Low the Grim (Human)
-S:25000:Decado the Handsome (Dundan)
+S:25000:Decado the Handsome (Dunadan)
 S:30000:Mauglin the Grumpy (Dwarf)
 
 # Weapon Smith
