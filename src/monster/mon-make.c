@@ -463,7 +463,7 @@ static s16b mon_pop(void)
  * satisfies certain conditions (such as belonging to a particular monster
  * family).
  */
-void get_mon_num_prep(bool (*get_mon_num_hook)(int r_idx))
+void get_mon_num_prep(bool (*get_mon_num_hook)(monster_race *race))
 {
 	int i;
 
@@ -472,7 +472,7 @@ void get_mon_num_prep(bool (*get_mon_num_hook)(int r_idx))
 		alloc_entry *entry = &alloc_race_table[i];
 
 		/* Accept monsters which pass the restriction, if any */
-		if (!get_mon_num_hook || (*get_mon_num_hook)(entry->index))
+		if (!get_mon_num_hook || (*get_mon_num_hook)(&r_info[entry->index]))
 			entry->prob2 = entry->prob1;
 
 		/* Do not use this monster */
@@ -1078,26 +1078,22 @@ static monster_race *place_monster_race = NULL;
  * Returns TRUE if monster race `r_idx` is appropriate as an escort for
  * the monster of race place_monster_race.
  */
-static bool place_monster_okay(int r_idx)
+static bool place_monster_okay(monster_race *race)
 {
-	monster_race *race2;
-
 	assert(place_monster_race);	
-	assert(r_idx > 0);
-
-	race2 = &r_info[r_idx];
+	assert(race);
 
 	/* Require identical monster template */
-	if (race2->base != place_monster_race->base) return (FALSE);
+	if (race->base != place_monster_race->base) return (FALSE);
 
 	/* Skip more advanced monsters */
-	if (race2->level > place_monster_race->level) return (FALSE);
+	if (race->level > place_monster_race->level) return (FALSE);
 
 	/* Skip unique monsters */
-	if (rf_has(race2->flags, RF_UNIQUE)) return (FALSE);
+	if (rf_has(race->flags, RF_UNIQUE)) return (FALSE);
 
 	/* Paranoia -- Skip identical monsters */
-	if (place_monster_race == race2) return (FALSE);
+	if (place_monster_race == race) return (FALSE);
 
 	/* Okay */
 	return (TRUE);

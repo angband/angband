@@ -1273,40 +1273,27 @@ static int summon_specific_type = 0;
  * summon_specific_type. Returns TRUE if the monster is eligible to
  * be summoned, FALSE otherwise. 
  */
-static bool summon_specific_okay(int r_idx)
+static bool summon_specific_okay(monster_race *race)
 {
-	const monster_race *r_ptr;
-	const bitflag *flags;
-	const struct monster_base *base;
-	
-	bool unique, scary;
-
-	assert(r_idx > 0);
-	r_ptr = &r_info[r_idx];
-
-	flags = r_ptr->flags;
-	base = r_ptr->base;
-	
-	unique = rf_has(flags, RF_UNIQUE);
-	scary = flags_test(flags, RF_SIZE, RF_UNIQUE, RF_FRIEND, RF_FRIENDS,
+	bool unique = rf_has(race->flags, RF_UNIQUE);
+	bool scary = flags_test(race->flags, RF_SIZE, RF_UNIQUE, RF_FRIEND, RF_FRIENDS,
 			RF_ESCORT, RF_ESCORTS, FLAG_END);
 
 	/* Check our requirements */
-	switch (summon_specific_type)
-	{
-		case S_ANIMAL: return !unique && rf_has(flags, RF_ANIMAL);
-		case S_SPIDER: return !unique && match_monster_bases(base, "spider", NULL);
-		case S_HOUND: return !unique && match_monster_bases(base, "canine", "zephyr hound", NULL);
-		case S_HYDRA: return !unique && match_monster_bases(base, "hydra", NULL);
-		case S_AINU: return !scary && match_monster_bases(base, "ainu", NULL);
-		case S_DEMON: return !scary && rf_has(flags, RF_DEMON);
-		case S_UNDEAD: return !scary && rf_has(flags, RF_UNDEAD);
-		case S_DRAGON: return !scary && rf_has(flags, RF_DRAGON);
-		case S_KIN: return !unique && r_ptr->d_char == summon_kin_type;
-		case S_HI_UNDEAD: return match_monster_bases(base, "lich", "vampire", "wraith", NULL);
-		case S_HI_DRAGON: return match_monster_bases(base, "ancient dragon", NULL);
-		case S_HI_DEMON: return match_monster_bases(base, "major demon", NULL);
-		case S_WRAITH: return unique && match_monster_bases(base, "wraith", NULL);
+	switch (summon_specific_type) {
+		case S_ANIMAL: return !unique && rf_has(race->flags, RF_ANIMAL);
+		case S_SPIDER: return !unique && match_monster_bases(race->base, "spider", NULL);
+		case S_HOUND: return !unique && match_monster_bases(race->base, "canine", "zephyr hound", NULL);
+		case S_HYDRA: return !unique && match_monster_bases(race->base, "hydra", NULL);
+		case S_AINU: return !scary && match_monster_bases(race->base, "ainu", NULL);
+		case S_DEMON: return !scary && rf_has(race->flags, RF_DEMON);
+		case S_UNDEAD: return !scary && rf_has(race->flags, RF_UNDEAD);
+		case S_DRAGON: return !scary && rf_has(race->flags, RF_DRAGON);
+		case S_KIN: return !unique && race->d_char == summon_kin_type;
+		case S_HI_UNDEAD: return match_monster_bases(race->base, "lich", "vampire", "wraith", NULL);
+		case S_HI_DRAGON: return match_monster_bases(race->base, "ancient dragon", NULL);
+		case S_HI_DEMON: return match_monster_bases(race->base, "major demon", NULL);
+		case S_WRAITH: return unique && match_monster_bases(race->base, "wraith", NULL);
 		case S_UNIQUE: return unique;
 		case S_MONSTER: return !scary;
 		case S_MONSTERS: return !unique;

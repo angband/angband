@@ -1597,13 +1597,12 @@ pit_profile *pit_type = NULL;
  *
  * Requires pit_type to be set.
  */
-static bool mon_pit_hook(int r_idx)
+static bool mon_pit_hook(monster_race *r_ptr)
 {
-	monster_race *r_ptr = &r_info[r_idx];
 	bool match_base = TRUE;
 	bool match_color = TRUE;
 
-	/* pit_type needs to be set */
+	assert(r_ptr);
 	assert(pit_type);
 
 	if (rf_has(r_ptr->flags, RF_UNIQUE))
@@ -1619,7 +1618,7 @@ static bool mon_pit_hook(int r_idx)
 	else if (pit_type->forbidden_monsters) {
 		struct pit_forbidden_monster *monster;
 		for (monster = pit_type->forbidden_monsters; monster; monster = monster->next) {
-			if (r_idx == monster->r_idx)
+			if (r_ptr->ridx == monster->r_idx)
 				return FALSE;
 		}
 	}
