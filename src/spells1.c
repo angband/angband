@@ -2799,7 +2799,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 	/* Verify this code XXX XXX XXX */
 
 	/* Update the monster */
-	if (!mon_died) update_mon(m_idx, FALSE);
+	if (!mon_died) update_mon(m_ptr, FALSE);
 
 	/* Redraw the monster grid */
 	cave_light_spot(cave, y, x);

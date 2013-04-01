@@ -850,10 +850,8 @@ void monster_desc(char *desc, size_t max, const monster_type *m_ptr, int mode)
  * "OPT(disturb_near)" (monster which is "easily" viewable moves in some
  * way).  Note that "moves" includes "appears" and "disappears".
  */
-void update_mon(int m_idx, bool full)
+void update_mon(struct monster *m_ptr, bool full)
 {
-	monster_type *m_ptr;
-	monster_race *r_ptr;
 	monster_lore *l_ptr;
 
 	int d;
@@ -867,9 +865,8 @@ void update_mon(int m_idx, bool full)
 	/* Seen by vision */
 	bool easy = FALSE;
 
-	assert(m_idx > 0);
-	m_ptr = cave_monster(cave, m_idx);
-	r_ptr = &r_info[m_ptr->r_idx];
+	assert(m_ptr != NULL);
+
 	l_ptr = &l_list[m_ptr->r_idx];
 	
 	fy = m_ptr->fy;
@@ -908,15 +905,15 @@ void update_mon(int m_idx, bool full)
 		/* Basic telepathy */
 		if (check_state(p_ptr, OF_TELEPATHY, p_ptr->state.flags)) {
 			/* Empty mind, no telepathy */
-			if (rf_has(r_ptr->flags, RF_EMPTY_MIND))
+			if (rf_has(m_ptr->race->flags, RF_EMPTY_MIND))
 			{
 				/* Nothing! */
 			}
 
 			/* Weird mind, occasional telepathy */
-			else if (rf_has(r_ptr->flags, RF_WEIRD_MIND)) {
+			else if (rf_has(m_ptr->race->flags, RF_WEIRD_MIND)) {
 				/* One in ten individuals are detectable */
-				if ((m_idx % 10) == 5) {
+				if ((m_ptr->midx % 10) == 5) {
 					/* Detectable */
 					flag = TRUE;
 
@@ -943,14 +940,14 @@ void update_mon(int m_idx, bool full)
 				rf_on(l_ptr->flags, RF_COLD_BLOOD);
 
 				/* Handle "warm blooded" monsters */
-				if (!rf_has(r_ptr->flags, RF_COLD_BLOOD)) {
+				if (!rf_has(m_ptr->race->flags, RF_COLD_BLOOD)) {
 					/* Easy to see */
 					easy = flag = TRUE;
 				}
 			}
 
 			/* See if the monster is emitting light */
-			/*if (rf_has(r_ptr->flags, RF_HAS_LIGHT)) easy = flag = TRUE;*/
+			/*if (rf_has(m_ptr->race->flags, RF_HAS_LIGHT)) easy = flag = TRUE;*/
 
 			/* Use "illumination" */
 			if (player_can_see_bold(fy, fx)) {
@@ -961,7 +958,7 @@ void update_mon(int m_idx, bool full)
 				rf_on(l_ptr->flags, RF_INVISIBLE);
 
 				/* Handle "invisible" monsters */
-				if (rf_has(r_ptr->flags, RF_INVISIBLE)) {
+				if (rf_has(m_ptr->race->flags, RF_INVISIBLE)) {
 					/* See invisible */
 					if (check_state(p_ptr, OF_SEE_INVIS, p_ptr->state.flags))
 					{
@@ -1090,11 +1087,9 @@ void update_monsters(bool full)
 	for (i = 1; i < cave_monster_max(cave); i++) {
 		monster_type *m_ptr = cave_monster(cave, i);
 
-		/* Skip dead monsters */
-		if (!m_ptr->r_idx) continue;
-
-		/* Update the monster */
-		update_mon(i, full);
+		/* Update the monster if alive */
+		if (m_ptr->race)
+			update_mon(m_ptr, full);
 	}
 }
 
@@ -1174,8 +1169,6 @@ void monster_swap(int y1, int x1, int y2, int x2)
 
 	monster_type *m_ptr;
 
-	monster_race *r_ptr;
-
 	/* Monsters */
 	m1 = cave->m_idx[y1][x1];
 	m2 = cave->m_idx[y2][x2];
@@ -1193,11 +1186,11 @@ void monster_swap(int y1, int x1, int y2, int x2)
 		m_ptr->fx = x2;
 
 		/* Update monster */
-		update_mon(m1, TRUE);
+		update_mon(m_ptr, TRUE);
 
 		/* Radiate light? */
-		r_ptr = &r_info[m_ptr->r_idx];
-		if (rf_has(r_ptr->flags, RF_HAS_LIGHT)) p_ptr->update |= PU_UPDATE_VIEW;
+		if (rf_has(m_ptr->race->flags, RF_HAS_LIGHT))
+			p_ptr->update |= PU_UPDATE_VIEW;
 
 		/* Redraw monster list */
 		p_ptr->redraw |= (PR_MONLIST);
@@ -1234,11 +1227,11 @@ void monster_swap(int y1, int x1, int y2, int x2)
 		m_ptr->fx = x1;
 
 		/* Update monster */
-		update_mon(m2, TRUE);
+		update_mon(m_ptr, TRUE);
 
 		/* Radiate light? */
-		r_ptr = &r_info[m_ptr->r_idx];
-		if (rf_has(r_ptr->flags, RF_HAS_LIGHT)) p_ptr->update |= PU_UPDATE_VIEW;
+		if (rf_has(m_ptr->race->flags, RF_HAS_LIGHT))
+			p_ptr->update |= PU_UPDATE_VIEW;
 
 		/* Redraw monster list */
 		p_ptr->redraw |= (PR_MONLIST);

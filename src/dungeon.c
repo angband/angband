@@ -1159,7 +1159,7 @@ static void process_player(void)
 				if (mon->mflag & MFLAG_MARK) {
 					if (!(mon->mflag & MFLAG_SHOW)) {
 						mon->mflag &= ~MFLAG_MARK;
-						update_mon(i, FALSE);
+						update_mon(mon, FALSE);
 					}
 				}
 			}

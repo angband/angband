@@ -893,7 +893,7 @@ bool detect_monsters_normal(bool aware)
 		monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 		/* Skip dead monsters */
-		if (!m_ptr->r_idx) continue;
+		if (!m_ptr->race) continue;
 
 		/* Location */
 		y = m_ptr->fy;
@@ -909,7 +909,7 @@ bool detect_monsters_normal(bool aware)
 			m_ptr->mflag |= (MFLAG_MARK | MFLAG_SHOW);
 
 			/* Update the monster */
-			update_mon(i, FALSE);
+			update_mon(m_ptr, FALSE);
 
 			/* Detect */
 			flag = TRUE;
@@ -980,7 +980,7 @@ bool detect_monsters_invis(bool aware)
 			m_ptr->mflag |= (MFLAG_MARK | MFLAG_SHOW);
 
 			/* Update the monster */
-			update_mon(i, FALSE);
+			update_mon(m_ptr, FALSE);
 
 			/* Detect */
 			flag = TRUE;
@@ -1051,7 +1051,7 @@ bool detect_monsters_evil(bool aware)
 			m_ptr->mflag |= (MFLAG_MARK | MFLAG_SHOW);
 
 			/* Update the monster */
-			update_mon(i, FALSE);
+			update_mon(m_ptr, FALSE);
 
 			/* Detect */
 			flag = TRUE;
@@ -1079,13 +1079,13 @@ bool detect_monsters_entire_level(void)
 		monster_type *m_ptr = cave_monster(cave, i);
 	
 		/* Skip dead monsters */
-		if (!m_ptr->r_idx) continue;
+		if (!m_ptr->race) continue;
 
 		/* Detect the monster */
 		m_ptr->mflag |= (MFLAG_MARK | MFLAG_SHOW);
 
 		/* Update the monster */
-		update_mon(i, FALSE);
+		update_mon(m_ptr, FALSE);
 		
 		detect = TRUE;
 	}

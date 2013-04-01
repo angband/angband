@@ -52,7 +52,7 @@ bool match_monster_bases(const monster_base *base, ...);
 void plural_aux(char *name, size_t max);
 void display_monlist(void);
 void monster_desc(char *desc, size_t max, const monster_type *m_ptr, int mode);
-void update_mon(int m_idx, bool full);
+void update_mon(struct monster *m_ptr, bool full);
 void update_monsters(bool full);
 s16b monster_carry(struct monster *m, object_type *j_ptr);
 void monster_swap(int y1, int x1, int y2, int x2);

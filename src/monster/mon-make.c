@@ -752,55 +752,50 @@ static bool mon_create_drop(int m_idx, byte origin)
 s16b place_monster(int y, int x, monster_type *n_ptr, byte origin)
 {
 	s16b m_idx;
-
 	monster_type *m_ptr;
-	monster_race *r_ptr;
 
 	assert(in_bounds(y, x));
-	assert(cave->m_idx[y][x] == 0);
+	assert(!cave_monster_at(cave, y, x));
 
 	/* Get a new record */
 	m_idx = mon_pop();
-
 	if (!m_idx) return 0;
-	n_ptr->midx = m_idx;
-
-	/* Notify cave of the new monster */
-	cave->m_idx[y][x] = m_idx;
 
 	/* Copy the monster */
 	m_ptr = cave_monster(cave, m_idx);
 	COPY(m_ptr, n_ptr, monster_type);
 
+	/* Set the ID */
+	m_ptr->midx = m_idx;
+
 	/* Set the location */
+	cave->m_idx[y][x] = m_ptr->midx;
 	m_ptr->fy = y;
 	m_ptr->fx = x;
+	assert(cave_monster_at(cave, y, x) == m_ptr);
 
-	update_mon(m_idx, TRUE);
-
-	/* Get the new race */
-	r_ptr = &r_info[m_ptr->r_idx];
+	update_mon(m_ptr, TRUE);
 
 	/* Hack -- Count the number of "reproducers" */
-	if (rf_has(r_ptr->flags, RF_MULTIPLY)) num_repro++;
+	if (rf_has(m_ptr->race->flags, RF_MULTIPLY)) num_repro++;
 
 	/* Count racial occurrences */
-	r_ptr->cur_num++;
+	m_ptr->race->cur_num++;
 
 	/* Create the monster's drop, if any */
 	if (origin)
 		(void)mon_create_drop(m_idx, origin);
 
 	/* Make mimics start mimicking */
-	if (origin && r_ptr->mimic_kinds) {
+	if (origin && m_ptr->race->mimic_kinds) {
 		object_type *i_ptr;
 		object_type object_type_body;
-		object_kind *kind = r_ptr->mimic_kinds->kind;
+		object_kind *kind = m_ptr->race->mimic_kinds->kind;
 		struct monster_mimic *mimic_kind;
 		int i = 1;
 		
 		/* Pick a random object kind to mimic */
-		for (mimic_kind = r_ptr->mimic_kinds; mimic_kind; 
+		for (mimic_kind = m_ptr->race->mimic_kinds; mimic_kind; 
 				mimic_kind = mimic_kind->next, i++) {
 			if (one_in_(i)) kind = mimic_kind->kind;
 		}
@@ -810,8 +805,8 @@ s16b place_monster(int y, int x, monster_type *n_ptr, byte origin)
 		if (kind->tval == TV_GOLD) {
 			make_gold(i_ptr, p_ptr->depth, kind->sval);
 		} else {
-			object_prep(i_ptr, kind, r_ptr->level, RANDOMISE);
-			apply_magic(i_ptr, r_ptr->level, TRUE, FALSE, FALSE);
+			object_prep(i_ptr, kind, m_ptr->race->level, RANDOMISE);
+			apply_magic(i_ptr, m_ptr->race->level, TRUE, FALSE, FALSE);
 			i_ptr->number = 1;
 		}
 
