@@ -303,7 +303,7 @@ void textui_obj_study(void)
 
 	item_tester_hook = obj_can_study;
 	if (!get_item(&item, "Study which book? ",
-			"You have no books that you can read.",
+			"You cannot learn any new spells from the books you have.",
 			CMD_STUDY_BOOK, (USE_INVEN | USE_FLOOR)))
 		return;
 
