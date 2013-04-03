@@ -1,0 +1,23 @@
+helptab = "class='selected'"
+<h2>Help</h2>
+
+<p>Here you can find the help files that come with the game (accessed using '?'), but in swish online format.  This help is up-to-date for <b>Angband 3.4.1</b>.
+
+<h3>Players' Guide</h3>
+<p>If you're looking for strategy and tactics for playing the game, have a look at the <a href="guide">Players' Guide</a> for lots of hints and tips.
+
+<h3>User manual</h3>
+<p>There's a user manual that comes with the game, which is more focussed on describing the game in exhaustive detail. Enjoy!
+
+<ul>
+<li><a href="general">General information</a>
+<li><a href="birth">Creating a character</a>
+<li><a href="dungeon">Exploring the dungeon</a>
+<li><a href="attack">Attacking monsters</a>
+<li><a href="playing">Playing the game</a>
+<li><a href="command">Command descriptions</a>
+<li><a href="option">Option descriptions</a>
+<li><a href="customize">Customising the game</a>
+<li><a href="version">Historic information</a>
+<li><a href="readme">README for Angband 3.4</a>
+</ul>
