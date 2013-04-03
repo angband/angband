@@ -59,7 +59,6 @@ h1 img { background: none; position: relative;  z-index: 2; }
 #header a { text-decoration: none; }
 #header a:hover { text-decoration: underline; }
 
-
 img { border: 0; }
 
 #content {
@@ -108,25 +107,6 @@ margin-bottom: 0; }
 /*** End front page **/
 
 
-
-
-
-.highlight_box {
-  border: 2px solid rgb(54, 89, 112); 
-  background: white;  
-  padding: 10px;
-  margin-bottom: 10px;
-}
-
-.copyright { font-size: 80%; }
-
-.preview { 
-  border: 2px solid rgb(54, 89, 112); 
-  padding: 0.5em 1em; 
-  background-image: url(/previewbg.png);
-  margin-bottom: 1em;
-}
-
 #releasesnav {
   float: right;
   margin-left: 20px;
@@ -146,38 +126,7 @@ margin-bottom: 0; }
   margin-left: 0; 
 }
 
-#wikinav { 
-  font-size: 80%;
-
-  float: right; 
-  width: 9.8em; 
-  margin-left: 20px; 
-  line-height: 1.3em;
-}
-
-#wikicontent { margin-right: 9.8em; }
-
-#wikicontent textarea { width: 100%; }
-
-.error { 
-  border-left: 4px solid red; 
-  padding-left: 8px;
-}
-
-.success { 
-  border-left: 4px solid green; 
-  padding-left: 8px;
-}
-
-ins
-{ background-color: #6DAF6D; text-decoration: none; }
-
-del
-{ background-color: #EF6868; text-decoration: none; }
-
-
 hr { border: 0; border-top: 1px solid rgb(54,89,112); margin: 0; }
-
 
 blockquote { 
   border: 1px solid rgb(54,89,112);
@@ -212,24 +161,12 @@ pre {
   background: #CBDAE1;
 }
 
-
 table { margin: 10px 0;
         border-collapse: collapse; border: 0;}
 
 td, th { padding: 5px; border: 1px solid rgb(54, 89, 112); }
 
 table.login td, table.login th { border: 0; padding: 2px; }
-
-
-a.extlink { 
-  background: url(/extlink.png) left center no-repeat;  
-  padding-left: 15px; margin-left: 1px;
-}
-
-#build_warnings { width: 50%; float: right;}
-#build_warnings ul { font-size: 90%; margin: 0; padding-left: 20px; }
-#build_warnings li { padding-left: 0; margin-left: 0; }
-#build_warnings h3 { margin-top: 0; }
 
 p + ul { margin-top: -5px; }
 li { margin-bottom: 3px; }
@@ -245,8 +182,6 @@ li > p { margin: 0px; padding-bottom: 5px; }
 /*.footnote_def { vertical-align: super; font-size: 70% }*/
 
 
-.wiki_warning { border: solid black 2px; background-color: rgb(255,0,0); margin-bottom: 12px; padding: 6px; }
-
 /* Modifications needed for smaller screens */
 @media all and (max-width: 720px) 
 {
@@ -254,7 +189,7 @@ li > p { margin: 0px; padding-bottom: 5px; }
 }
 
 @media all and (max-device-width: 480px) {
-  html, body {   font: 18px/22px "Palatino Linotype", serif; }
+  html, body { font: 18px/22px "Palatino Linotype", serif; }
   #intro { font-size: 22px; line-height: 28px; padding: 1em 0 0.2em 0; }
 }
 
