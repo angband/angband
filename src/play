@@ -4,13 +4,12 @@ playtab = "class='selected'"
 <h2>Download</h2>
 
 <ul>
-<li class="version">3.3.2
-<li><a href="/downloads/3.3/angband-v3.3.2-win.zip" onclick="pageTracker._trackPageview(this.pathname);">Windows</a></li>
-<li><a href="/downloads/3.3/Angband-v3.3.2-osx.dmg" onclick="pageTracker._trackPageview(this.pathname);">Mac OS X</a></li>
-<li><a href="/downloads/3.3/angband-v3.3.2.tar.gz" onclick="pageTracker._trackPageview(this.pathname);">Source</a></li>
-
+<li class="version">3.4.1
+<li><a href="/downloads/3.4/angband-v3.4.1-win.zip" onclick="pageTracker._trackPageview(this.pathname);">Windows</a></li>
+<li><a href="/downloads/3.4/Angband-v3.4.1-osx.dmg" onclick="pageTracker._trackPageview(this.pathname);">Mac OS X</a></li>
+<li><a href="https://play.google.com/store/apps/details?id=org.angdroid.angband">Android</a> <small>(at Google Play)</small></li>
+<li><a href="/downloads/3.4/angband-v3.4.1.tar.gz" onclick="pageTracker._trackPageview(this.pathname);">Source</a></li>
 </ul>
-
 </div>
 
 <div id="intro">
