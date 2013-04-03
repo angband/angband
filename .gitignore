@@ -11,7 +11,7 @@ lib/save/1000.*
 .cproject
 *.orig
 *.rej
-.gitignore
+*.app
 src/tests/bin/
 src/angband-master
 *.gcov
