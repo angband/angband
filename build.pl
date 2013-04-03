@@ -255,7 +255,6 @@ my $OUT;
 open($OUT, ">mappings") or die $!;
 print $OUT "url.rewrite-once  = (\n";
 # Output the "root" links
-print $OUT "\"^/\$\" => \"/play\",\n";
 print $OUT "\"^/release/\$\" => \"/release/$releases[0]->{filename}.html\",\n";
 print $OUT "\"^/wiki/\$\" => \"/wiki/Home.html\"\n";
 print $OUT ")\n";
