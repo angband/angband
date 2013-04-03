@@ -62,7 +62,13 @@ h1 img { background: none; position: relative;  z-index: 2; }
 
 img { border: 0; }
 
-#content { background: url(gradient-header.png) repeat-x; min-height: 450px;}
+#content {
+	background-color: rgb(221, 231, 235);
+	background-image: -webkit-linear-gradient(to bottom, rgb(221, 231, 235) 0%, rgb(186, 206, 215) 300px);
+	background-image: linear-gradient(to bottom, rgb(221, 231, 235) 0%, rgb(186, 206, 215) 300px);
+	min-height: 450px;
+}
+
 #content h2 { margin: 0; padding: 0; margin-bottom: 10px; }
 #content { padding: 1em 0; }
 
@@ -117,7 +123,7 @@ margin-bottom: 0; }
 .preview { 
   border: 2px solid rgb(54, 89, 112); 
   padding: 0.5em 1em; 
-  background-image: url(/previewbg.png);;
+  background-image: url(/previewbg.png);
   margin-bottom: 1em;
 }
 
