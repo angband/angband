@@ -1,7 +1,6 @@
-
-
 build:
 	./build.pl
+	cp -r static/* output/
 
 install:
 	./build.pl

@@ -1,0 +1,259 @@
+/* Force a vertical scrollbar */
+html { min-height: 100%; margin-bottom: 1px; overflow-y: scroll; }
+
+body { 
+  background: rgb(186, 206, 215); 
+  color: black; 
+  font: 16px/20px "Palatino Linotype", serif; 
+  margin: 0; padding: 0; 
+}
+
+h1 { 
+  margin: 0 0 1px 0; /* The line is four px up from the base of the image */
+  padding: 6px 0 0 0; /* Provide a bit of "white"space above the "horns" */
+  text-align: left; 
+  height: 65px; /* Same height as graphic */
+}
+
+/* Make sure that the 'g' hangs over the to of the navbar */
+h1 img { background: none; position: relative;  z-index: 2; }
+
+
+#nav { 
+  display: block;
+  padding: 0 0 2px 0; /* IE wants padding here as well as on the li elements */
+  margin: 0;
+  font-size: 110%; 
+  font-family: sans-serif; 
+}
+
+#dummy { clear: both; padding: 0; margin: 0; height: 0; }
+
+#nav li { 
+  display: block; 
+  position: relative;
+  z-index: 1;
+  float: right;
+  padding: 2px 1em; 
+  margin: 0 2px;
+}
+
+#nav li.selected { 
+  background: rgb(221, 231, 235); 
+  border-bottom: 2px solid rgb(221, 231, 235);
+/*  background-color: white; */
+  border-top: 2px solid rgb(54,89,112); 
+  border-left: 2px solid rgb(54,89,112); 
+  border-right: 2px solid rgb(54,89,112);
+  margin: -2px 0;
+}
+
+
+#header { 
+  padding-top: 3px;
+  border-bottom: 2px solid rgb(54, 89, 112); 
+/*  background: rgb(163, 189, 202); */
+  background: rgb(255, 255, 255);
+}
+
+#header a { text-decoration: none; }
+#header a:hover { text-decoration: underline; }
+
+
+img { border: 0; }
+
+#content { background: url(gradient-header.png) repeat-x; min-height: 450px;}
+#content h2 { margin: 0; padding: 0; margin-bottom: 10px; }
+#content { padding: 1em 0; }
+
+#editbar { padding: 6px 0; border-bottom: 2px solid rgb(54, 89, 112); }
+
+.container { padding: 0 30px; max-width: 860px; margin: 0 auto; }
+
+/*** Front page ***/
+
+#intro > * { padding-top: 0; margin-top: 0; }
+#intro { font-size: 20px; line-height: 24px; padding: 1em 0 0.2em 0; }
+
+#downloads { 
+  float: right; 
+  width: 270px; 
+  margin-left: 20px;
+
+  border: 2px solid rgb(54, 89, 112);
+  border-radius: 15px;
+  box-shadow: 10px 10px 15px #555;
+
+  background: url("download_bg.png") repeat-x white;
+  margin-bottom: 20px;
+}
+
+#downloads h2 { font-size: 30px; line-height: 40px; margin: 10px 0 0 90px; 
+margin-bottom: 0; }
+
+#downloads ul { list-style-type: none; display: block; padding: 0; margin: 0 0 12px 
+90px; float: left; }
+#downloads ul + ul { margin-left: 0; }
+#downloads li.version { font-weight: bold; margin-top: 20px; }
+
+#downloads .beta { font-size: 80%; }
+
+
+/*** End front page **/
+
+
+
+
+
+.highlight_box {
+  border: 2px solid rgb(54, 89, 112); 
+  background: white;  
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.copyright { font-size: 80%; }
+
+.preview { 
+  border: 2px solid rgb(54, 89, 112); 
+  padding: 0.5em 1em; 
+  background-image: url(/previewbg.png);;
+  margin-bottom: 1em;
+}
+
+#releasesnav {
+  float: right;
+  margin-left: 20px;
+  font-size: 80%;
+}
+
+#releasesnav ul { 
+  list-style-type: none; 
+  margin: 0; 
+  padding-left: 0; 
+}
+
+#releasesnav li { 
+  display: block;
+  text-align:center; 
+  padding-left: 0; 
+  margin-left: 0; 
+}
+
+#wikinav { 
+  font-size: 80%;
+
+  float: right; 
+  width: 9.8em; 
+  margin-left: 20px; 
+  line-height: 1.3em;
+}
+
+#wikicontent { margin-right: 9.8em; }
+
+#wikicontent textarea { width: 100%; }
+
+.error { 
+  border-left: 4px solid red; 
+  padding-left: 8px;
+}
+
+.success { 
+  border-left: 4px solid green; 
+  padding-left: 8px;
+}
+
+ins
+{ background-color: #6DAF6D; text-decoration: none; }
+
+del
+{ background-color: #EF6868; text-decoration: none; }
+
+
+hr { border: 0; border-top: 1px solid rgb(54,89,112); margin: 0; }
+
+
+blockquote { 
+  border: 1px solid rgb(54,89,112);
+  border-left-width: 10px; 
+
+  background: #CBDAE1;
+  padding: 0 10px;
+
+  margin: 0;
+}
+
+blockquote:first-child { font-size: 150%; }
+
+.quotesource { 
+  border: 1px solid rgb(54,89,112);
+  border-left-width: 10px; 
+  border-top: 0;
+
+  background: #CBDAE1;
+  padding-left: 10px; padding-right: 10px; 
+
+  text-align: right; 
+  margin-top: -5px; 
+  padding-bottom: 2px;
+}
+
+.quotesource:before { content: "-- "; }
+
+pre {
+  padding: 10px;
+  border: 1px dashed rgb(54,89,112);
+  background: #CBDAE1;
+}
+
+
+table { margin: 10px 0;
+        border-collapse: collapse; border: 0;}
+
+td, th { padding: 5px; border: 1px solid rgb(54, 89, 112); }
+
+table.login td, table.login th { border: 0; padding: 2px; }
+
+
+a.extlink { 
+  background: url(/extlink.png) left center no-repeat;  
+  padding-left: 15px; margin-left: 1px;
+}
+
+#build_warnings { width: 50%; float: right;}
+#build_warnings ul { font-size: 90%; margin: 0; padding-left: 20px; }
+#build_warnings li { padding-left: 0; margin-left: 0; }
+#build_warnings h3 { margin-top: 0; }
+
+p + ul { margin-top: -5px; }
+li { margin-bottom: 3px; }
+li > p { margin: 0px; padding-bottom: 5px; } 
+
+.footnote_ref { vertical-align: super; font-size: 70%; }
+.footnote { 
+  font-size: 80%; 
+  margin-top: 20px; 
+  border-top: 1px solid rgb(54, 89, 112);
+}
+.footnote + .footnote { border: 0; margin-top: 0; }
+/*.footnote_def { vertical-align: super; font-size: 70% }*/
+
+
+.wiki_warning { border: solid black 2px; background-color: rgb(255,0,0); margin-bottom: 12px; padding: 6px; }
+
+/* Modifications needed for smaller screens */
+@media all and (max-width: 720px) 
+{
+  h1 { height: 84px; }
+}
+
+@media all and (max-device-width: 480px) {
+  html, body {   font: 18px/22px "Palatino Linotype", serif; }
+  #intro { font-size: 22px; line-height: 28px; padding: 1em 0 0.2em 0; }
+}
+
+#releasesnav button {
+  text-decoration: underline;
+  border: 0;
+  background: #fff;
+}
