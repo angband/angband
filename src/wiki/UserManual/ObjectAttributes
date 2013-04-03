@@ -1,6 +1,0 @@
-<div id="wikinav"><div class="highlight_box"> Navigation:<br /><a href="http://rephial.org/wiki/Home">Home</a><br /><a href="http://rephial.org/wiki/IndexPage">IndexPage</a><br /></div></div>
-
-<div id="wikihead"><h2>UserManual/ObjectAttributes: Editing</h2></div>
-
-<div id="wikicontent"><form action="http://rephial.org/wiki/edit/UserManual/ObjectAttributes" id="edit" method="POST"><textarea cols="80" name="text" rows="40"></textarea><br /><label for="comment">Comment:</label><br /><input id="comment" maxlength="200" name="comment" size="65" type="text" value="" /><br /><p>You are not currently logged in as a user, this change will be anonymous.<input name="action" type="submit" value="Preview" /> <input name="action" type="submit" value="Store" /> <input name="revision" type="hidden" value="0" /></form></div>
-

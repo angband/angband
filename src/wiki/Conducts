@@ -1,6 +1,0 @@
-<div id="wikinav"><div class="highlight_box"> Navigation:<br /><a href="http://rephial.org/wiki/Home">Home</a><br /><a href="http://rephial.org/wiki/IndexPage">IndexPage</a><br /></div><div class="highlight_box"> This page:<br /><a href="http://rephial.org/wiki/xref/Conducts">Links to here</a><br />Last modified:<br />2008-02-25 at 21:50<br /></div></div>
-
-<div id="wikihead"><h2>Conducts</h2></div>
-
-<div id="wikicontent"><div class="page"><p>These are ideas for a &quot;conducts&quot; system in Angband, which tracks what actions you perform as interesting statistics in your character dump. These are useful for challenge games.<p>Track whether the player has:<ul><li>used up stairs<li>bought or sold to stores<li>used any artifacts<li>killed any townspeople<li>used WoR to return to the town<li>cast any spells, by spellbook and spell</ul><p>Also list:<ul><li>total kills<li>depth of first kill<li>number of uniques killed<li>number of visits to town<li>number of dungeon levels generated<li>turn / depth / xp of first time casting each spell<li>number of IDs used</ul><p>Feel free to add suggestions!</div></div>
-

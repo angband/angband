@@ -174,33 +174,6 @@ for my $release (@releases) {
 	$output_files->{"release"}->{$release->{'filename'}} = $release;
 }
 
-# The (archived) wiki pages.
-sub wiki_pages {
-    my ($dir, $sub_dir) = @_;
-    my $THISDIR;
-    my $branch = {};
-
-    opendir($THISDIR, $dir.$sub_dir) or die $!;	
-    while (my $file = readdir($THISDIR)) {
-        next if ($file =~ /^\./) ;
-        if (-d "$dir$sub_dir/$file") { 
-            $branch->{$file} = wiki_pages($dir.$sub_dir."/", "$file");
-        }
-	next unless (-f "$dir$sub_dir/$file");
-	
-	my %table = load_source("$dir$sub_dir/$file");
-	$table{"filename"}= "$sub_dir/$file";
-	%table = apply_template("wiki_template.html", %table);
-	%table = apply_template("template.html", %table);
-	$branch->{$file} = \%table;
-    }
-    closedir($THISDIR);
-
-    return $branch;
-}
-
-$output_files->{"wiki"} = wiki_pages("src/", "wiki");
-
 
 # We now have a filled "output_files" structure ready to go.
 sub write_files {
@@ -256,7 +229,6 @@ open($OUT, ">mappings") or die $!;
 print $OUT "url.rewrite-once  = (\n";
 # Output the "root" links
 print $OUT "\"^/release/\$\" => \"/release/$releases[0]->{filename}.html\",\n";
-print $OUT "\"^/wiki/\$\" => \"/wiki/Home.html\"\n";
 print $OUT ")\n";
 close $OUT;
 

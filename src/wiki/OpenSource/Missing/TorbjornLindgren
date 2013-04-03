@@ -1,6 +1,0 @@
-<div id="wikinav"><div class="highlight_box"> Navigation:<br /><a href="http://rephial.org/wiki/Home">Home</a><br /><a href="http://rephial.org/wiki/IndexPage">IndexPage</a><br /></div><div class="highlight_box"> This page:<br /><a href="http://rephial.org/wiki/xref/OpenSource/Missing/TorbjornLindgren">Links to here</a><br />Last modified:<br />2007-06-18 at 23:54<br /></div></div>
-
-<div id="wikihead"><h2><a href="http://rephial.org/wiki/OpenSource">OpenSource</a> &gt; <a href="http://rephial.org/wiki/OpenSource/Missing">Missing</a> &gt; TorbjornLindgren</h2></div>
-
-<div id="wikicontent"><div class="page"><p>NOT bjonaspero at hotmail.com<p>tl@funcom.com ?<p>torbjorn.lindgren@fceduc.umu.se - 2004<p><a href="http://www.umereg.se/mats/adr_bok.htm">http://www.umereg.se/mats/adr_bok.htm</a> -- now? (Dec 2006)<p>torbjorn.lindgren@tietoenator.com</div><hr /><div class="page"><p>Changes:<ul><li>Torbjorn Lindgren worked on &quot;main-xaw.c&quot; for Unix/Xaw.<li>added compile define to let players see their score, fixed scorefile bug<li>removed need for -fwritable-strings<li>fixed more system function prototypes<li>fixed save-file byte order problem<li>added support for DEC OSF/1 (Alpha)<li>improved support for Solaris 2.x</ul></div></div>
-

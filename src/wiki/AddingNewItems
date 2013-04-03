@@ -1,6 +1,0 @@
-<div id="wikinav"><div class="highlight_box"> Navigation:<br /><a href="http://rephial.org/wiki/Home">Home</a><br /><a href="http://rephial.org/wiki/IndexPage">IndexPage</a><br /></div><div class="highlight_box"> This page:<br /><a href="http://rephial.org/wiki/xref/AddingNewItems">Links to here</a><br />Last modified:<br />2009-04-09 at 13:27<br /></div></div>
-
-<div id="wikihead"><h2>AddingNewItems</h2></div>
-
-<div id="wikicontent"><div class="page"><p>A quick primer on how to add new items to Angband:<p>1. Add the item to objects.txt 2. Make sure limits.txt has the kinds limit set high enough<p>If you aren&#39;t adding a new tval, that&#39;s it. If you are adding a new tval:<p>1. Add the tval to tvalvals.h 2. Add the tval to the wizard menu in wizard.c 3. Add the tval to obj_desc_get_basename<p>That will get you basic item functionality. You&#39;ll probably want to do more hacking to get your item to work right, but this will get you up to &quot;junk item&quot; level.<p>Note that kinds are meant to be a 1:1 mapping from (tval, sval) pairs. So, don&#39;t rely on the game being able to distinguish between the same (tval, sval), even if they have different pvals, names, kinds, whatever.<p>Rumor has it that kinds will be phased out entirely.</div></div>
-
