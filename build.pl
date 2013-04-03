@@ -126,6 +126,22 @@ while (my $file = readdir(DIR)) {
 }
 closedir(DIR);
 
+# Then do the help files
+$dir = "src/help";
+$output_files->{"help"} = {};
+opendir(DIR, $dir) or die $!;	
+while (my $file = readdir(DIR)) {
+	next unless (-f "$dir/$file");
+
+	my $outfile = $file;
+	$outfile =~ s/\.html$//;
+
+	my %table = load_source("$dir/$file");
+	%table = apply_template("template.html", %table);
+	$output_files->{"help"}->{$outfile} = \%table;
+}
+closedir(DIR);
+
 # Then do the release pages
 $output_files->{"release"} = {};
 $dir = "src/releases";
