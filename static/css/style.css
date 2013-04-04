@@ -80,13 +80,32 @@ img { border: 0; }
 .front { font-family: 'Libre Baskerville'; }
 
 section { clear: both; margin-top: 2em; margin-bottom: 2em; }
-#intro, #resources { width: 580px; margin: 0 auto; }
 
-#intro { font-size: 24px; line-height: 32px; text-align: justify; }
+@media all {
+	#intro, #resources { width: 580px; margin: 0 auto; }
 
-.slot { width: 200px; float: left; }
-.slot img { border: 5px solid #000; border-radius: 5px; margin: 5px; }
-.slot p { font-size: 14px; line-height: 18px; margin: 0 10px; }
+	#intro { font-size: 24px; line-height: 32px; text-align: justify; }
+
+	.slot { width: 200px; float: left; }
+	.slot img { border: 5px solid #000; border-radius: 5px; margin: 5px; }
+	.slot p { font-size: 14px; line-height: 18px; margin: 0 10px; }
+}
+
+@media all and (max-width: 860px) {
+	.slots { width: 400px; margin: 0 auto; }
+
+	.slot + .slot + .slot { clear: both; margin-top: 1em; }
+	.slot + .slot + .slot + .slot { clear: none; }
+}
+
+@media all and (max-width: 650px) {
+	#intro, #resources { width: 100%; }
+}
+
+@media all and (max-width: 450px) {
+	.slots { width: 200px; margin: 0 auto; }
+	.slot { clear: both: margin: 1em auto; }
+}
 
 #downloads { text-align: center; }
 #downloads a { text-decoration: none; }
