@@ -102,16 +102,16 @@
         var win = {};
         win.href = box.href;
         win.onclick = box.onclick;
-        win.innerText = box_name.innerText;
+        win.textContent = box_name.textContent;
 
         // Replace box with our OS info
         box.href = os.href;
         box.onclick = os.onclick;
-        box_name.innerText = os.innerText;
+        box_name.textContent = os.textContent;
 
         // Replace info in 'also' with Windows
         os.href = win.href;
         os.onclick = win.onclick;
-        os.innerText = win.innerText;
+        os.textContent = win.textContent;
     }
 })();
