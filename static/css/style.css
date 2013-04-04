@@ -4,7 +4,7 @@ html { min-height: 100%; margin-bottom: 1px; overflow-y: scroll; }
 body { 
   background: rgb(186, 206, 215); 
   color: black; 
-  font: 16px/20px "Palatino Linotype", serif; 
+  font: 16px/22px Helvetica, Arial, sans-serif; 
   margin: 0; padding: 0; 
 }
 
@@ -73,39 +73,43 @@ img { border: 0; }
 
 #editbar { padding: 6px 0; border-bottom: 2px solid rgb(54, 89, 112); }
 
-.container { padding: 0 30px; max-width: 860px; margin: 0 auto; }
+.container { padding: 0 30px; max-width: 50em; margin: 0 auto; }
 
-/*** Front page ***/
+/** Front page **/
 
-#intro > * { padding-top: 0; margin-top: 0; }
-#intro { font-size: 20px; line-height: 24px; padding: 1em 0 0.2em 0; }
+.front { font-family: 'Libre Baskerville'; }
 
-#downloads { 
-  float: right; 
-  width: 270px; 
-  margin-left: 20px;
+section { clear: both; margin-top: 2em; margin-bottom: 2em; }
+#intro, #resources { width: 580px; margin: 0 auto; }
 
-  border: 2px solid rgb(54, 89, 112);
-  border-radius: 15px;
-  box-shadow: 10px 10px 15px #555;
+#intro { font-size: 24px; line-height: 32px; text-align: justify; }
 
-  background: url("download_bg.png") repeat-x white;
-  margin-bottom: 20px;
+.slot { width: 200px; float: left; }
+.slot img { border: 5px solid #000; border-radius: 5px; margin: 5px; }
+.slot p { font-size: 14px; line-height: 18px; margin: 0 10px; }
+
+#downloads { text-align: center; }
+#downloads a { text-decoration: none; }
+#downloads .other { font-size: 14px; }
+#downloads .other a { font-weight: bold; }
+
+#download {
+	display: block; margin: 0 auto; width: 10em; padding: 7px 0;
+	border: 1px solid black; border-radius: 5px;
+    font: 26px/20px Helvetica;
+	background-color: black; color: white;
+    box-shadow: 0 2px 4px 2px #aaa, inset 1px 1px 5px 1px #666;
 }
 
-#downloads h2 { font-size: 30px; line-height: 40px; margin: 10px 0 0 90px; 
-margin-bottom: 0; }
+#download:active { box-shadow: 0 2px 4px 2px #aaa, inset -1px -1px 5px 1px #999; }
+#download .sub { font-size: 16px; font-style: italic; }
 
-#downloads ul { list-style-type: none; display: block; padding: 0; margin: 0 0 12px 
-90px; float: left; }
-#downloads ul + ul { margin-left: 0; }
-#downloads li.version { font-weight: bold; margin-top: 20px; }
+#resources { margin-top: 3em; margin-bottom: 5em; }
 
-#downloads .beta { font-size: 80%; }
+#resources dt a { text-decoration: none; font-weight: bold; }
+#resources dd { margin-bottom: 1em; }
 
-
-/*** End front page **/
-
+/** Releases section **/
 
 #releasesnav {
   float: right;
@@ -125,6 +129,13 @@ margin-bottom: 0; }
   padding-left: 0; 
   margin-left: 0; 
 }
+
+#releasesnav button {
+  text-decoration: underline;
+  border: 0;
+  background: #fff;
+}
+
 
 hr { border: 0; border-top: 1px solid rgb(54,89,112); margin: 0; }
 
@@ -191,10 +202,4 @@ li > p { margin: 0px; padding-bottom: 5px; }
 @media all and (max-device-width: 480px) {
   html, body { font: 18px/22px "Palatino Linotype", serif; }
   #intro { font-size: 22px; line-height: 28px; padding: 1em 0 0.2em 0; }
-}
-
-#releasesnav button {
-  text-decoration: underline;
-  border: 0;
-  background: #fff;
 }
