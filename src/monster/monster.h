@@ -24,8 +24,8 @@
 #include "z-bitflag.h"
 #include "z-rand.h"
 #include "cave.h"
-#include "player/types.h"
 #include "monster/mon-timed.h"
+#include "object/obj-flag.h"
 
 /** Constants **/
 
@@ -222,7 +222,6 @@ typedef struct
 typedef struct monster
 {
 	struct monster_race *race;
-	s16b r_idx;			/* Monster race index */
 	int midx;
 
 	byte fy;			/* Y location on map */
@@ -260,6 +259,8 @@ typedef struct monster
 extern bool check_hit(struct player *p, int power, int level);
 extern void process_monsters(struct cave *c, byte min_energy);
 int mon_hp(const struct monster_race *r_ptr, aspect hp_aspect);
+extern bool make_attack_spell(struct monster *m);
+
 
 extern s16b num_repro;
 

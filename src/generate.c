@@ -1597,13 +1597,12 @@ pit_profile *pit_type = NULL;
  *
  * Requires pit_type to be set.
  */
-static bool mon_pit_hook(int r_idx)
+static bool mon_pit_hook(monster_race *r_ptr)
 {
-	monster_race *r_ptr = &r_info[r_idx];
 	bool match_base = TRUE;
 	bool match_color = TRUE;
 
-	/* pit_type needs to be set */
+	assert(r_ptr);
 	assert(pit_type);
 
 	if (rf_has(r_ptr->flags, RF_UNIQUE))
@@ -1619,7 +1618,7 @@ static bool mon_pit_hook(int r_idx)
 	else if (pit_type->forbidden_monsters) {
 		struct pit_forbidden_monster *monster;
 		for (monster = pit_type->forbidden_monsters; monster; monster = monster->next) {
-			if (r_idx == monster->r_idx)
+			if (r_ptr == monster->race)
 				return FALSE;
 		}
 	}
@@ -1684,7 +1683,6 @@ static int set_pit_type(int depth, int type)
 	}
 
 	pit_type = &pit_info[pit_idx];
-	get_mon_num_hook = mon_pit_hook;
         
 	return pit_idx;
 }
@@ -1699,10 +1697,9 @@ static int set_pit_type(int depth, int type)
  * The monsters are chosen from a set of 64 randomly selected monster races,
  * to allow the nest creation to fail instead of having "holes".
  *
- * Note the use of the "get_mon_num_prep()" function, and the special
- * "get_mon_num_hook()" restriction function, to prepare the "monster
- * allocation table" in such a way as to optimize the selection of
- * "appropriate" non-unique monsters for the nest.
+ * Note the use of the "get_mon_num_prep()" function to prepare the
+ * "monster allocation table" in such a way as to optimize the selection
+ * of "appropriate" non-unique monsters for the nest.
  *
  * The available monster nests are specified in edit/pit.txt.
  *
@@ -1716,7 +1713,7 @@ static bool build_nest(struct cave *c, int y0, int x0)
 	int y, x, y1, x1, y2, x2;
 	int i;
 	int alloc_obj;
-	s16b what[64];
+	monster_race *what[64];
 	bool empty = FALSE;
 	int light = FALSE;
 	int pit_idx;
@@ -1748,14 +1745,14 @@ static bool build_nest(struct cave *c, int y0, int x0)
 	/* Open the inner room with a secret door */
 	generate_hole(c, y1-1, x1-1, y2+1, x2+1, FEAT_SECRET);
 
-	/* Set get_mon_num_hook */
+	/* Decide on the pit type */
 	pit_idx = set_pit_type(c->depth, 2);
 
 	/* Chance of objects on the floor */
 	alloc_obj = pit_info[pit_idx].obj_rarity;
 	
 	/* Prepare allocation table */
-	get_mon_num_prep();
+	get_mon_num_prep(mon_pit_hook);
 
 	/* Pick some monster types */
 	for (i = 0; i < 64; i++) {
@@ -1766,11 +1763,8 @@ static bool build_nest(struct cave *c, int y0, int x0)
 		if (!what[i]) empty = TRUE;
 	}
 
-	/* Remove restriction */
-	get_mon_num_hook = NULL;
-
 	/* Prepare allocation table */
-	get_mon_num_prep();
+	get_mon_num_prep(NULL);
 
 	/* Oops */
 	if (empty) return FALSE;
@@ -1785,8 +1779,8 @@ static bool build_nest(struct cave *c, int y0, int x0)
 	for (y = y0 - 2; y <= y0 + 2; y++) {
 		for (x = x0 - 9; x <= x0 + 9; x++) {
 			/* Figure out what monster is being used, and place that monster */
-			int r_idx = what[randint0(64)];
-			place_new_monster(c, y, x, r_idx, FALSE, FALSE, ORIGIN_DROP_PIT);
+			monster_race *race = what[randint0(64)];
+			place_new_monster(c, y, x, race, FALSE, FALSE, ORIGIN_DROP_PIT);
 
 			/* Occasionally place an item, making it good 1/3 of the time */
 			if (randint0(100) < alloc_obj) 
@@ -1820,8 +1814,7 @@ static bool build_nest(struct cave *c, int y0, int x0)
  * request 16 "appropriate" monsters, sorting them by level, and using the
  * "even" entries in this sorted list for the contents of the pit.
  *
- * Note the use of the get_mon_num_prep() function, and the special
- * get_mon_num_hook() restriction function, to prepare the monster allocation
+ * Note the use of get_mon_num_prep() to prepare the monster allocation
  * table in such a way as to optimize the selection of appropriate non-unique
  * monsters for the pit.
  *
@@ -1832,7 +1825,7 @@ static bool build_nest(struct cave *c, int y0, int x0)
  */
 static bool build_pit(struct cave *c, int y0, int x0)
 {
-	int what[16];
+	monster_race *what[16];
 	int i, j, y, x, y1, x1, y2, x2;
 	bool empty = FALSE;
 	int light = FALSE;
@@ -1860,14 +1853,14 @@ static bool build_pit(struct cave *c, int y0, int x0)
 	draw_rectangle(c, y1-1, x1-1, y2+1, x2+1, FEAT_WALL_INNER);
 	generate_hole(c, y1-1, x1-1, y2+1, x2+1, FEAT_SECRET);
 
-	/* Set get_mon_num_hook */
+	/* Decide on the pit type */
 	pit_idx = set_pit_type(c->depth, 1);
 
 	/* Chance of objects on the floor */
 	alloc_obj = pit_info[pit_idx].obj_rarity;
 	
 	/* Prepare allocation table */
-	get_mon_num_prep();
+	get_mon_num_prep(mon_pit_hook);
 
 	/* Pick some monster types */
 	for (i = 0; i < 16; i++) {
@@ -1878,11 +1871,8 @@ static bool build_pit(struct cave *c, int y0, int x0)
 		if (!what[i]) empty = TRUE;
 	}
 
-	/* Remove restriction */
-	get_mon_num_hook = NULL;
-
 	/* Prepare allocation table */
-	get_mon_num_prep();
+	get_mon_num_prep(NULL);
 
 	/* Oops */
 	if (empty)
@@ -1897,12 +1887,12 @@ static bool build_pit(struct cave *c, int y0, int x0)
 			int i1 = j;
 			int i2 = j + 1;
 
-			int p1 = r_info[what[i1]].level;
-			int p2 = r_info[what[i2]].level;
+			int p1 = what[i1]->level;
+			int p2 = what[i2]->level;
 
 			/* Bubble */
 			if (p1 > p2) {
-				int tmp = what[i1];
+				monster_race *tmp = what[i1];
 				what[i1] = what[i2];
 				what[i2] = tmp;
 			}
@@ -3949,7 +3939,7 @@ void cave_generate(struct cave *c, struct player *p) {
 	
 				/* Pick a location and place the monster */
 				find_empty(c, &y, &x);
-				place_new_monster(c, y, x, i, TRUE, TRUE, ORIGIN_DROP);
+				place_new_monster(c, y, x, r_ptr, TRUE, TRUE, ORIGIN_DROP);
 			}
 		}
 

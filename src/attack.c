@@ -161,7 +161,6 @@ static bool py_attack_real(int y, int x, bool *fear) {
 
 	/* Information about the target of the attack */
 	monster_type *m_ptr = cave_monster_at(cave, y, x);
-	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 	char m_name[80];
 	bool stop = FALSE;
 
@@ -183,7 +182,7 @@ static bool py_attack_real(int y, int x, bool *fear) {
 	monster_desc(m_name, sizeof(m_name), m_ptr, 0);
 
 	/* Auto-Recall if possible and visible */
-	if (m_ptr->ml) monster_race_track(m_ptr->r_idx);
+	if (m_ptr->ml) monster_race_track(m_ptr->race);
 
 	/* Track a new monster */
 	if (m_ptr->ml) health_track(p_ptr, m_ptr);
@@ -198,7 +197,7 @@ static bool py_attack_real(int y, int x, bool *fear) {
 	mon_clear_timed(m_ptr, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, FALSE);
 
 	/* See if the player hit */
-	success = test_hit(chance, r_ptr->ac, m_ptr->ml);
+	success = test_hit(chance, m_ptr->race->ac, m_ptr->ml);
 
 	/* If a miss, skip this hit */
 	if (!success) {
@@ -452,12 +451,11 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 	/* Try the attack on the monster at (x, y) if any */
 	if (cave->m_idx[y][x] > 0) {
 		monster_type *m_ptr = cave_monster_at(cave, y, x);
-		monster_race *r_ptr = &r_info[m_ptr->r_idx];
 		int visible = m_ptr->ml;
 
 		bool fear = FALSE;
 		char m_name[80];
-		const char *note_dies = monster_is_unusual(r_ptr) ? " is destroyed." : " dies.";
+		const char *note_dies = monster_is_unusual(m_ptr->race) ? " is destroyed." : " dies.";
 
 		struct attack_result result = attack(o_ptr, y, x);
 		int dmg = result.dmg;
@@ -506,7 +504,7 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 				}
 
 				/* Track this monster */
-				if (m_ptr->ml) monster_race_track(m_ptr->r_idx);
+				if (m_ptr->ml) monster_race_track(m_ptr->race);
 				if (m_ptr->ml) health_track(p_ptr, m_ptr);
 			}
 		
@@ -551,8 +549,7 @@ static struct attack_result make_ranged_shot(object_type *o_ptr, int y, int x) {
 	object_type *j_ptr = &p_ptr->inventory[INVEN_BOW];
 
 	monster_type *m_ptr = cave_monster_at(cave, y, x);
-	monster_race *r_ptr = &r_info[m_ptr->r_idx];
-
+	
 	int bonus = p_ptr->state.to_h + o_ptr->to_h + j_ptr->to_h;
 	int chance = p_ptr->state.skills[SKILL_TO_HIT_BOW] + bonus * BTH_PLUS_ADJ;
 	int chance2 = chance - distance(p_ptr->py, p_ptr->px, y, x);
@@ -561,7 +558,7 @@ static struct attack_result make_ranged_shot(object_type *o_ptr, int y, int x) {
 	const struct slay *best_s_ptr = NULL;
 
 	/* Did we hit it (penalize distance travelled) */
-	if (!test_hit(chance2, r_ptr->ac, m_ptr->ml)) return result;
+	if (!test_hit(chance2, m_ptr->race->ac, m_ptr->ml)) return result;
 
 	result.success = TRUE;
 
@@ -593,8 +590,7 @@ static struct attack_result make_ranged_throw(object_type *o_ptr, int y, int x) 
 	struct attack_result result = {FALSE, 0, 0, "hit"};
 
 	monster_type *m_ptr = cave_monster_at(cave, y, x);
-	monster_race *r_ptr = &r_info[m_ptr->r_idx];
-
+	
 	int bonus = p_ptr->state.to_h + o_ptr->to_h;
 	int chance = p_ptr->state.skills[SKILL_TO_HIT_THROW] + bonus * BTH_PLUS_ADJ;
 	int chance2 = chance - distance(p_ptr->py, p_ptr->px, y, x);
@@ -603,7 +599,7 @@ static struct attack_result make_ranged_throw(object_type *o_ptr, int y, int x) 
 	const struct slay *best_s_ptr = NULL;
 
 	/* If we missed then we're done */
-	if (!test_hit(chance2, r_ptr->ac, m_ptr->ml)) return result;
+	if (!test_hit(chance2, m_ptr->race->ac, m_ptr->ml)) return result;
 
 	result.success = TRUE;
 

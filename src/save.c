@@ -786,7 +786,7 @@ void wr_monsters(void)
 	
 		const monster_type *m_ptr = cave_monster(cave, i);
 
-		wr_s16b(m_ptr->r_idx);
+		wr_s16b(m_ptr->race->ridx);
 		wr_byte(m_ptr->fy);
 		wr_byte(m_ptr->fx);
 		wr_s16b(m_ptr->hp);

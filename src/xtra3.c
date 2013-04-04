@@ -1198,19 +1198,13 @@ static void update_monster_subwindow(game_event_type type, game_event_data *data
 {
 	term *old = Term;
 	term *inv_term = user;
-	const monster_race *r_ptr;
-	const monster_lore *l_ptr;
 
 	/* Activate */
 	Term_activate(inv_term);
 
 	/* Display monster race info */
-	if (p_ptr->monster_race_idx)
-	{
-		r_ptr = &r_info[p_ptr->monster_race_idx];
-		l_ptr = &l_list[p_ptr->monster_race_idx];
-		display_roff(r_ptr, l_ptr);
-	}
+	if (p_ptr->monster_race)
+		display_roff(p_ptr->monster_race, get_lore(p_ptr->monster_race));
 
 	Term_fresh();
 	

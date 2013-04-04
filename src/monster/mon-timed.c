@@ -60,19 +60,17 @@ static mon_timed_effect effects[] =
  *
  * Also marks the lore for any appropriate resists.
  */
-static bool mon_resist_effect(const monster_type *m_ptr, int ef_idx, int timer, u16b flag)
+static bool mon_resist_effect(const struct monster *mon, int ef_idx, int timer, u16b flag)
 {
 	mon_timed_effect *effect;
 	int resist_chance;
-	const monster_race *r_ptr;
-	monster_lore *l_ptr;
+	monster_lore *lore;
 
 	assert(ef_idx >= 0 && ef_idx < MON_TMD_MAX);
-	effect = &effects[ef_idx];
+	assert(mon);
 
-	assert(m_ptr);
-	r_ptr = &r_info[m_ptr->r_idx];
-	l_ptr = &l_list[m_ptr->r_idx];
+	effect = &effects[ef_idx];
+	lore = get_lore(mon->race);
 	
 	/* Hasting never fails */
 	if (ef_idx == MON_TMD_FAST) return (FALSE);
@@ -81,27 +79,27 @@ static bool mon_resist_effect(const monster_type *m_ptr, int ef_idx, int timer, 
 	if (flag & MON_TMD_FLG_NOFAIL) return (FALSE);
 
 	/* A sleeping monster resists further sleeping */
-	if (ef_idx == MON_TMD_SLEEP && m_ptr->m_timed[ef_idx]) return (TRUE);
+	if (ef_idx == MON_TMD_SLEEP && mon->m_timed[ef_idx]) return (TRUE);
 
 	/* If the monster resists innately, learn about it */
-	if (rf_has(r_ptr->flags, effect->flag_resist)) {
-		if (m_ptr->ml)
-			rf_on(l_ptr->flags, effect->flag_resist);
+	if (rf_has(mon->race->flags, effect->flag_resist)) {
+		if (mon->ml)
+			rf_on(lore->flags, effect->flag_resist);
 
 		return (TRUE);
 	}
 
 	/* Monsters with specific breaths resist stunning*/
-	if (ef_idx == MON_TMD_STUN && (rsf_has(r_ptr->spell_flags, RSF_BR_SOUN) ||
-			rsf_has(r_ptr->spell_flags, RSF_BR_WALL)))
+	if (ef_idx == MON_TMD_STUN && (rsf_has(mon->race->spell_flags, RSF_BR_SOUN) ||
+			rsf_has(mon->race->spell_flags, RSF_BR_WALL)))
 	{
 		/* Add the lore */
-		if (m_ptr->ml)
+		if (mon->ml)
 		{
-			if (rsf_has(r_ptr->spell_flags, RSF_BR_SOUN))
-				rsf_on(l_ptr->spell_flags, RSF_BR_SOUN);
-			if (rsf_has(r_ptr->spell_flags, RSF_BR_WALL))
-				rsf_on(l_ptr->spell_flags, RSF_BR_WALL);
+			if (rsf_has(mon->race->spell_flags, RSF_BR_SOUN))
+				rsf_on(lore->spell_flags, RSF_BR_SOUN);
+			if (rsf_has(mon->race->spell_flags, RSF_BR_WALL))
+				rsf_on(lore->spell_flags, RSF_BR_WALL);
 		}
 
 		return (TRUE);
@@ -109,25 +107,25 @@ static bool mon_resist_effect(const monster_type *m_ptr, int ef_idx, int timer, 
 
 	/* Monsters with specific breaths resist confusion */
 	if ((ef_idx == MON_TMD_CONF) &&
-		((rsf_has(r_ptr->spell_flags, RSF_BR_CHAO)) ||
-		 (rsf_has(r_ptr->spell_flags, RSF_BR_CONF))) )
+		((rsf_has(mon->race->spell_flags, RSF_BR_CHAO)) ||
+		 (rsf_has(mon->race->spell_flags, RSF_BR_CONF))) )
 	{
 		/* Add the lore */
-		if (m_ptr->ml)
+		if (mon->ml)
 		{
-			if (rsf_has(r_ptr->spell_flags, RSF_BR_CHAO))
-				rsf_on(l_ptr->spell_flags, RSF_BR_CHAO);
-			if (rsf_has(r_ptr->spell_flags, RSF_BR_CONF))
-				rsf_on(l_ptr->spell_flags, RSF_BR_CONF);
+			if (rsf_has(mon->race->spell_flags, RSF_BR_CHAO))
+				rsf_on(lore->spell_flags, RSF_BR_CHAO);
+			if (rsf_has(mon->race->spell_flags, RSF_BR_CONF))
+				rsf_on(lore->spell_flags, RSF_BR_CONF);
 		}
 
 		return (TRUE);
 	}
 
 	/* Inertia breathers resist slowing */
-	if (ef_idx == MON_TMD_SLOW && rsf_has(r_ptr->spell_flags, RSF_BR_INER))
+	if (ef_idx == MON_TMD_SLOW && rsf_has(mon->race->spell_flags, RSF_BR_INER))
 	{
-		rsf_on(l_ptr->spell_flags, RSF_BR_INER);
+		rsf_on(lore->spell_flags, RSF_BR_INER);
 		return (TRUE);
 	}
 
@@ -136,14 +134,14 @@ static bool mon_resist_effect(const monster_type *m_ptr, int ef_idx, int timer, 
 		timer /= 25; /* Hack - sleep uses much bigger numbers */
 
 	if (flag & MON_TMD_MON_SOURCE)
-		resist_chance = r_ptr->level;
+		resist_chance = mon->race->level;
 	else
-		resist_chance = r_ptr->level + 40 - (timer / 2);
+		resist_chance = mon->race->level + 40 - (timer / 2);
 
 	if (randint0(100) < resist_chance) return (TRUE);
 
 	/* Uniques are doubly hard to affect */
-	if (rf_has(r_ptr->flags, RF_UNIQUE))
+	if (rf_has(mon->race->flags, RF_UNIQUE))
 		if (randint0(100) < resist_chance) return (TRUE);
 
 	return (FALSE);
@@ -175,10 +173,9 @@ static bool mon_set_timed(monster_type *m_ptr, int ef_idx, int timer,
 	effect = &effects[ef_idx];
 
 	assert(m_ptr);
-	old_timer = m_ptr->m_timed[ef_idx];
+	assert(m_ptr->race);
 
-	/* Ignore dead monsters */
-	if (!m_ptr->r_idx) return FALSE;
+	old_timer = m_ptr->m_timed[ef_idx];
 
 	/* No change */
 	if (old_timer == timer) return FALSE;

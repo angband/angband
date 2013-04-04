@@ -90,7 +90,7 @@ enum
 /** Functions **/
 
 /* spells1.c */
-s16b poly_r_idx(int r_idx);
+monster_race *poly_r_idx(monster_race *race);
 void teleport_away(struct monster *m, int dis);
 void teleport_player(int dis);
 void teleport_player_to(int ny, int nx);
@@ -151,7 +151,7 @@ extern bool turn_undead(bool aware);
 extern bool dispel_undead(int dam);
 extern bool dispel_evil(int dam);
 extern bool dispel_monsters(int dam);
-extern void aggravate_monsters(int who);
+extern void aggravate_monsters(struct monster *who);
 extern bool banishment(void);
 extern bool mass_banishment(void);
 extern bool probing(void);

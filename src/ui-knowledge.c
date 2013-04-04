@@ -23,6 +23,7 @@
 #include "history.h"
 #include "monster/mon-lore.h"
 #include "monster/monster.h"
+#include "monster/mon-util.h"
 #include "object/tvalsval.h"
 #include "squelch.h"
 #include "store.h"
@@ -1251,13 +1252,17 @@ static const char *race_name(int gid) { return monster_group[gid].name; }
 static void mon_lore(int oid)
 {
 	int r_idx;
-	const monster_race *r_ptr;
+	monster_race *r_ptr;
 	const monster_lore *l_ptr;
 
 	r_idx = default_join[oid].oid;
 
+	assert(r_idx);
+	r_ptr = &r_info[r_idx];
+	l_ptr = get_lore(r_ptr);
+
 	/* Update the monster recall window */
-	monster_race_track(r_idx);
+	monster_race_track(r_ptr);
 	handle_stuff(p_ptr);
 
 	/* Save the screen */
@@ -1267,9 +1272,6 @@ static void mon_lore(int oid)
 	text_out_hook = text_out_to_screen;
 
 	/* Recall monster */
-	assert(r_idx);
-	r_ptr = &r_info[r_idx];
-	l_ptr = &l_list[r_idx];
 	roff_top(r_ptr);
 	Term_gotoxy(0, 2);
 	describe_monster(r_ptr, l_ptr, FALSE);

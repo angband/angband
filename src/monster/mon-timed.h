@@ -19,7 +19,6 @@
 #ifndef MONSTER_TIMED_H
 #define MONSTER_TIMED_H
 
-#include "angband.h"
 
 /** Constants **/
 

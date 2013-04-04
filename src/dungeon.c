@@ -202,10 +202,9 @@ static void regen_monsters(void)
 	{
 		/* Check the i'th monster */
 		monster_type *m_ptr = cave_monster(cave, i);
-		monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 		/* Skip dead monsters */
-		if (!m_ptr->r_idx) continue;
+		if (!m_ptr->race) continue;
 
 		/* Allow regeneration (if needed) */
 		if (m_ptr->hp < m_ptr->maxhp)
@@ -217,7 +216,7 @@ static void regen_monsters(void)
 			if (!frac) frac = 1;
 
 			/* Hack -- Some monsters regenerate quickly */
-			if (rf_has(r_ptr->flags, RF_REGENERATE)) frac *= 2;
+			if (rf_has(m_ptr->race->flags, RF_REGENERATE)) frac *= 2;
 
 			/* Hack -- Regenerate */
 			m_ptr->hp += frac;
@@ -861,7 +860,7 @@ static void process_player_aux(void)
 	int i;
 	bool changed = FALSE;
 
-	static int old_monster_race_idx = 0;
+	static monster_race *old_monster_race = 0;
 	static bitflag old_flags[RF_SIZE];
 	static bitflag old_spell_flags[RSF_SIZE];
 
@@ -871,10 +870,10 @@ static void process_player_aux(void)
 	static byte	old_cast_spell = 0;
 
 	/* Tracking a monster */
-	if (p_ptr->monster_race_idx)
+	if (p_ptr->monster_race)
 	{
 		/* Get the monster lore */
-		monster_lore *l_ptr = &l_list[p_ptr->monster_race_idx];
+		monster_lore *l_ptr = get_lore(p_ptr->monster_race);
 
 		for (i = 0; i < MONSTER_BLOW_MAX; i++)
 		{
@@ -887,14 +886,14 @@ static void process_player_aux(void)
 
 		/* Check for change of any kind */
 		if (changed ||
-		    (old_monster_race_idx != p_ptr->monster_race_idx) ||
+		    (old_monster_race != p_ptr->monster_race) ||
 		    !rf_is_equal(old_flags, l_ptr->flags) ||
 		    !rsf_is_equal(old_spell_flags, l_ptr->spell_flags) ||
 		    (old_cast_innate != l_ptr->cast_innate) ||
 		    (old_cast_spell != l_ptr->cast_spell))
 		{
 			/* Memorize old race */
-			old_monster_race_idx = p_ptr->monster_race_idx;
+			old_monster_race = p_ptr->monster_race;
 
 			/* Memorize flags */
 			rf_copy(old_flags, l_ptr->flags);
@@ -1141,12 +1140,10 @@ static void process_player(void)
 			/* Shimmer multi-hued monsters */
 			for (i = 1; i < cave_monster_max(cave); i++)
 			{
-				struct monster_race *race;
 				struct monster *mon = cave_monster(cave, i);
-				if (!mon->r_idx)
+				if (!mon->race)
 					continue;
-				race = &r_info[mon->r_idx];
-				if (!rf_has(race->flags, RF_ATTR_MULTI))
+				if (!rf_has(mon->race->flags, RF_ATTR_MULTI))
 					continue;
 				cave_light_spot(cave, mon->fy, mon->fx);
 			}
@@ -1159,7 +1156,7 @@ static void process_player(void)
 				if (mon->mflag & MFLAG_MARK) {
 					if (!(mon->mflag & MFLAG_SHOW)) {
 						mon->mflag &= ~MFLAG_MARK;
-						update_mon(i, FALSE);
+						update_mon(mon, FALSE);
 					}
 				}
 			}
@@ -1237,20 +1234,20 @@ static void do_animation(void)
 	{
 		byte attr;
 		monster_type *m_ptr = cave_monster(cave, i);
-		monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
-		if (!m_ptr || !m_ptr->ml)
+		if (!m_ptr || !m_ptr->race || !m_ptr->ml)
 			continue;
-		else if (rf_has(r_ptr->flags, RF_ATTR_MULTI))
+		else if (rf_has(m_ptr->race->flags, RF_ATTR_MULTI))
 			attr = randint1(BASIC_COLORS - 1);
-		else if (rf_has(r_ptr->flags, RF_ATTR_FLICKER))
-			attr = get_flicker(r_ptr->x_attr);
+		else if (rf_has(m_ptr->race->flags, RF_ATTR_FLICKER))
+			attr = get_flicker(m_ptr->race->x_attr);
 		else
 			continue;
 
 		m_ptr->attr = attr;
 		p_ptr->redraw |= (PR_MAP | PR_MONLIST);
 	}
+
 	flicker++;
 }
 
@@ -1527,11 +1524,9 @@ static void dungeon(struct cave *c)
 		{
 			int mspeed;
 			
-			/* Access the monster */
+			/* Access the monster (if alive) */
 			m_ptr = cave_monster(cave, i);
-
-			/* Ignore "dead" monsters */
-			if (!m_ptr->r_idx) continue;
+			if (!m_ptr->race) continue;
 
 			/* Calculate the net speed */
 			mspeed = m_ptr->mspeed;
@@ -1718,7 +1713,7 @@ void play_game(void)
 
 	/* Initialize temporary fields sensibly */
 	p_ptr->object_idx = p_ptr->object_kind_idx = NO_OBJECT;
-	p_ptr->monster_race_idx = 0;
+	p_ptr->monster_race = NULL;
 
 	/* Normal machine (process player name) */
 	if (savefile[0])
