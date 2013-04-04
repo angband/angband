@@ -1,9 +1,7 @@
 <h2>Nightly builds</h2> 
  
-<p>This page lists the currently available nightly builds of the development version of Angband (for 
-Windows).  This is almost certainly a work in progress and may be unbalanced, broken, prone to crashes or 
-what have you, so try them very much at your own risk.</p> 
+<p>This page lists the currently available nightly builds of the development version of Angband.  This is almost certainly a work in progress and may be unbalanced, broken, prone to crashes or what have you, so try them very much at your own risk.</p> 
  
-<img src="/under-construction.gif" src="Under construction!" align="right">
+<img src="/img/under-construction.gif" align="centre" src="Under construction!" align="right">
  
 <iframe src="http://buildbot.rephial.org/builds/master/builds.html" width="400" height="600" scrolling="no" style="border: none;"></iframe>
