@@ -148,7 +148,7 @@ typedef struct player
 
 	struct monster *health_who;		/* Health bar trackee */
 
-	monster_race *monster_race;	/* Monster race trackee */
+	struct monster_race *monster_race;	/* Monster race trackee */
 
 	s16b object_idx;    /* Object trackee */
 	s16b object_kind_idx;	/* Object kind trackee */
