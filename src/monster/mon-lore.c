@@ -19,6 +19,7 @@
 #include "angband.h"
 #include "monster/mon-lore.h"
 #include "monster/mon-spell.h"
+#include "monster/mon-util.h"
 #include "object/tvalsval.h"
 
 /*
@@ -2195,27 +2196,19 @@ void display_roff(const monster_race *r_ptr, const monster_lore *l_ptr)
 /**
  * Learn about a monster (by "probing" it)
  */
-void lore_do_probe(int m_idx)
+void lore_do_probe(struct monster *m)
 {
-	const monster_type *m_ptr;
-	monster_race *r_ptr;
-	monster_lore *l_ptr;
-
+	monster_lore *l_ptr = get_lore(m->race);
 	unsigned i;
-	
-	assert(m_idx > 0);
-	m_ptr = cave_monster(cave, m_idx);
-	r_ptr = &r_info[m_ptr->r_idx];
-	l_ptr = &l_list[m_ptr->r_idx];
-	
+
 	/* Know various things */
 	rf_setall(l_ptr->flags);
-	rsf_copy(l_ptr->spell_flags, r_ptr->spell_flags);
+	rsf_copy(l_ptr->spell_flags, m->race->spell_flags);
 	for (i = 0; i < MONSTER_BLOW_MAX; i++)
 		l_ptr->blows[i] = MAX_UCHAR;
 
 	/* Update monster recall window */
-	if (p_ptr->monster_race_idx == m_ptr->r_idx)
+	if (p_ptr->monster_race == m->race)
 		p_ptr->redraw |= (PR_MONSTER);
 }
 
@@ -2235,7 +2228,7 @@ void lore_do_probe(int m_idx)
  */
 void lore_treasure(struct monster *m_ptr, int num_item, int num_gold)
 {
-	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
+	monster_lore *l_ptr = get_lore(m_ptr->race);
 
 	assert(num_item >= 0);
 	assert(num_gold >= 0);
@@ -2251,7 +2244,7 @@ void lore_treasure(struct monster *m_ptr, int num_item, int num_gold)
 	rf_on(l_ptr->flags, RF_DROP_GREAT);
 
 	/* Update monster recall window */
-	if (p_ptr->monster_race_idx == m_ptr->r_idx)
+	if (p_ptr->monster_race == m_ptr->race)
 		p_ptr->redraw |= (PR_MONSTER);
 }
 

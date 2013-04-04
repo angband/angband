@@ -590,7 +590,7 @@ void do_cmd_query_symbol(void)
 
 	u16b *who;
 
-	const monster_race *r_ptr;
+	monster_race *r_ptr;
 	const monster_lore *l_ptr;
 
 	/* Get a character, or abort */
@@ -713,7 +713,7 @@ void do_cmd_query_symbol(void)
 		l_ptr = &l_list[r_idx];
 
 		/* Hack -- Auto-recall */
-		monster_race_track(r_idx);
+		monster_race_track(r_ptr);
 
 		/* Hack -- Handle stuff */
 		handle_stuff(p_ptr);

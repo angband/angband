@@ -593,18 +593,15 @@ int context_menu_cave(struct cave *cave, int y, int x, int adjacent, int mx, int
 	} else
 	if (selected == 18) {
 		/* recall monster Info */
-		monster_race *r_ptr;
-		monster_lore *l_ptr;
 		monster_type *m_ptr = cave_monster_at(cave, y, x);
 		if (m_ptr) {
-			r_ptr = &r_info[m_ptr->r_idx];
-			l_ptr = &l_list[m_ptr->r_idx];
+			monster_lore *lore = get_lore(m_ptr->race);
 
 			/* Save screen */
 			screen_save();
 
 			/* Recall on screen */
-			screen_roff(r_ptr, l_ptr);
+			screen_roff(m_ptr->race, lore);
 
 			/* wait for a key or mouse press */
 			anykey();

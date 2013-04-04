@@ -7,6 +7,7 @@
 #include "object/obj-flag.h"
 #include "object/object.h"
 #include "player/types.h"
+#include "monster/monster.h"
 
 /* calcs.c */
 extern const byte adj_chr_gold[STAT_RANGE];
@@ -44,6 +45,12 @@ int weight_remaining(void);
 extern struct player_class *player_id2class(guid id);
 
 /* player.c */
+extern void health_track(struct player *p, struct monster *m_ptr);
+extern void monster_race_track(monster_race *race);
+extern void track_object(int item);
+extern void track_object_kind(int k_idx);
+extern bool tracked_object_is(int item);
+
 extern bool player_stat_inc(struct player *p, int stat);
 extern bool player_stat_dec(struct player *p, int stat, bool permanent);
 extern void player_exp_gain(struct player *p, s32b amount);

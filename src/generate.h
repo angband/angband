@@ -84,14 +84,14 @@ struct pit_color_profile {
 struct pit_forbidden_monster {
 	struct pit_forbidden_monster *next;
 	
-	int r_idx;
+	monster_race *race;
 };
 
 typedef struct pit_profile {
 	struct pit_profile *next;
 
 	int pit_idx; /* Index in pit_info */
-	const char* name;
+	const char *name;
 	int room_type; /* Is this a pit or a nest? */
 	int ave; /* Level where this pit is most common */
 	int rarity; /* How unusual this pit is */

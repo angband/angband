@@ -155,7 +155,7 @@ void message_pain(struct monster *m_ptr, int dam)
  * to this function
  */
 static char *get_mon_msg_action(byte msg_code, bool do_plural,
-		struct monster_race *race)
+		const struct monster_race *race)
 {
 	static char buf[200];
 	const char *action;
@@ -278,7 +278,6 @@ bool add_monster_message(const char *mon_name, struct monster *m_ptr,
 {
 	int i;
 	byte mon_flags = 0;
-	int r_idx = m_ptr->r_idx;
 
 	assert(msg_code >= 0 && msg_code < MAX_MON_MSG);
 
@@ -301,7 +300,7 @@ bool add_monster_message(const char *mon_name, struct monster *m_ptr,
 	for (i = 0; i < size_mon_msg; i++)
 	{
 		/* We found the race and the message code */
-		if ((mon_msg[i].mon_race == r_idx) &&
+		if ((mon_msg[i].race == m_ptr->race) &&
 			(mon_msg[i].mon_flags == mon_flags) &&
 			(mon_msg[i].msg_code == msg_code))
 		{
@@ -321,7 +320,7 @@ bool add_monster_message(const char *mon_name, struct monster *m_ptr,
 	if (size_mon_msg >= MAX_STORED_MON_MSG) return (FALSE);
 
 	/* Assign the message data to the free slot */
-	mon_msg[i].mon_race = r_idx;
+	mon_msg[i].race = m_ptr->race;
 	mon_msg[i].mon_flags = mon_flags;
 	mon_msg[i].msg_code = msg_code;
 	mon_msg[i].delay = delay;
@@ -351,8 +350,8 @@ bool add_monster_message(const char *mon_name, struct monster *m_ptr,
  */
 static void flush_monster_messages(bool delay)
 {
-	int i, r_idx, count;
 	const monster_race *r_ptr;
+	int i, count;
 	char buf[512];
 	char *action;
 	bool action_only;
@@ -371,25 +370,13 @@ static void flush_monster_messages(bool delay)
 		buf[0] = '\0';
 
 		/* Cache the race index */
-		r_idx = mon_msg[i].mon_race;
+		r_ptr = mon_msg[i].race;
 		   
 		/* Get the proper message action */
-		action = get_mon_msg_action(mon_msg[i].msg_code, (count > 1),
-			&r_info[r_idx]);
-
-		/* Is it a regular race? */
-		if (r_idx > 0) {
-		   /* Get the race */
-		   r_ptr = &r_info[r_idx];
-		}
-		/* It's the special mark for non-visible monsters */
-		else {
-		   /* No race */
-		   r_ptr = NULL;
-		}
+		action = get_mon_msg_action(mon_msg[i].msg_code, (count > 1), r_ptr);
 
 		/* Monster is marked as invisible */
-		if(mon_msg[i].mon_flags & 0x04) r_ptr = NULL;
+		if (mon_msg[i].mon_flags & 0x04) r_ptr = NULL;
 
 		/* Special message? */
 		action_only = (*action == '~');

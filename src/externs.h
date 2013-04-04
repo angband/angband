@@ -117,7 +117,6 @@ extern char *ANGBAND_DIR_XTRA_ICON;
 extern bool item_tester_full;
 extern byte item_tester_tval;
 extern bool (*item_tester_hook)(const object_type *);
-extern bool (*get_mon_num_hook)(int r_idx);
 extern ang_file *text_out_file;
 extern void (*text_out_hook)(byte a, const char *str);
 extern int text_out_wrap;
@@ -148,9 +147,6 @@ extern void dungeon_change_level(int dlev);
 extern void play_game(void);
 extern int value_check_aux1(const object_type *o_ptr);
 extern void idle_update(void);
-
-/* melee2.c */
-extern bool make_attack_spell(int m_idx);
 
 /* pathfind.c */
 extern bool findpath(int y, int x);

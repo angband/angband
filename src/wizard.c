@@ -1371,7 +1371,7 @@ static void do_cmd_wiz_summon(int num)
  *
  * This function is rather dangerous XXX XXX XXX
  */
-static void do_cmd_wiz_named(int r_idx, bool slp)
+static void do_cmd_wiz_named(monster_race *r, bool slp)
 {
 	int py = p_ptr->py;
 	int px = p_ptr->px;
@@ -1379,8 +1379,7 @@ static void do_cmd_wiz_named(int r_idx, bool slp)
 	int i, x, y;
 
 	/* Paranoia */
-	if (!r_idx) return;
-	if (r_idx >= z_info->r_max-1) return;
+	assert(r);
 
 	/* Try 10 times */
 	for (i = 0; i < 10; i++) {
@@ -1393,7 +1392,7 @@ static void do_cmd_wiz_named(int r_idx, bool slp)
 		if (!cave_empty_bold(y, x)) continue;
 
 		/* Place it (allow groups) */
-		if (place_new_monster(cave, y, x, r_idx, slp, TRUE, ORIGIN_DROP_WIZARD)) break;
+		if (place_new_monster(cave, y, x, r, slp, TRUE, ORIGIN_DROP_WIZARD)) break;
 	}
 }
 
@@ -1412,7 +1411,7 @@ static void do_cmd_wiz_zap(int d)
 		monster_type *m_ptr = cave_monster(cave, i);
 
 		/* Skip dead monsters */
-		if (!m_ptr->r_idx) continue;
+		if (!m_ptr->race) continue;
 
 		/* Skip distant monsters */
 		if (m_ptr->cdis > d) continue;
@@ -1791,11 +1790,11 @@ void do_cmd_debug(void)
 		/* Summon Named Monster */
 		case 'n':
 		{
-			s16b r_idx = 0; 
+			monster_race *r = NULL;
 
 			if (p_ptr->command_arg > 0)
 			{
-				r_idx = p_ptr->command_arg;
+				r = &r_info[p_ptr->command_arg];
 			}
 			else
 			{
@@ -1811,11 +1810,12 @@ void do_cmd_debug(void)
 				if (askfor_aux(name, sizeof(name), NULL))
 				{
 					/* See if a r_idx was entered */
-					r_idx = get_idx_from_name(name);
-					
-					/* If not, find the monster with that name */
-					if (r_idx < 1)
-						r_idx = lookup_monster(name); 
+					int r_idx = get_idx_from_name(name);
+					if (r_idx)
+						r = &r_info[r_idx];
+					else
+						/* If not, find the monster with that name */
+						r = lookup_monster(name); 
 					
 					p_ptr->redraw |= (PR_MAP | PR_MONLIST);
 
@@ -1824,8 +1824,8 @@ void do_cmd_debug(void)
 				}
 			}
 
-			if (r_idx > 0)
-				do_cmd_wiz_named(r_idx, TRUE);
+			if (r)
+				do_cmd_wiz_named(r, TRUE);
 			else
 				msg("No monster found.");
 			
@@ -1901,11 +1901,12 @@ void do_cmd_debug(void)
 					if (askfor_aux(name, sizeof(name), NULL))
 					{
 						/* See if a r_idx was entered */
-						r_idx = get_idx_from_name(name);
-						
-						/* If not, find the monster with that name */
-						if (r_idx < 1)
-							r_idx = lookup_monster(name); 
+						int r_idx = get_idx_from_name(name);
+						if (r_idx)
+							r_ptr = &r_info[r_idx];
+						else
+							/* If not, find the monster with that name */
+							r_ptr = lookup_monster(name); 
 					}
 					
 					/* Reload the screen */
@@ -1919,11 +1920,8 @@ void do_cmd_debug(void)
 			}
 
 			/* Did we find a valid monster? */
-			if (r_idx > 0)
-			{
-				r_ptr = &r_info[r_idx];
-				cheat_monster_lore(r_ptr, &l_list[r_idx]);
-			}
+			if (r_ptr)
+				cheat_monster_lore(r_ptr, get_lore(r_ptr));
 			else
 				msg("No monster found.");
 	
@@ -2034,10 +2032,11 @@ void do_cmd_debug(void)
 					{
 						/* See if a r_idx was entered */
 						r_idx = get_idx_from_name(name);
-						
-						/* If not, find the monster with that name */
-						if (r_idx < 1)
-							r_idx = lookup_monster(name); 
+						if (r_idx)
+							r_ptr = &r_info[r_idx];
+						else
+							/* If not, find the monster with that name */
+							r_ptr = lookup_monster(name); 
 					}
 					
 					/* Reload the screen */
@@ -2051,11 +2050,8 @@ void do_cmd_debug(void)
 			}
 
 			/* Did we find a valid monster? */
-			if (r_idx > 0)
-			{
-				r_ptr = &r_info[r_idx];
-				wipe_monster_lore(r_ptr, &l_list[r_idx]);
-			}
+			if (r_ptr)
+				wipe_monster_lore(r_ptr, get_lore(r_ptr));
 			else
 				msg("No monster found.");
 	

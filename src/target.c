@@ -52,14 +52,11 @@ s16b target_x, target_y;
 static void look_mon_desc(char *buf, size_t max, int m_idx)
 {
 	monster_type *m_ptr = cave_monster(cave, m_idx);
-	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 	bool living = TRUE;
 
-
 	/* Determine if the monster is "living" (vs "undead") */
-	if (monster_is_unusual(r_ptr)) living = FALSE;
-
+	if (monster_is_unusual(m_ptr->race)) living = FALSE;
 
 	/* Healthy monsters */
 	if (m_ptr->hp >= m_ptr->maxhp)
@@ -118,7 +115,7 @@ bool target_able(int m_idx)
 	m_ptr = cave_monster(cave, m_idx);
 
 	/* Monster must be alive */
-	if (!m_ptr->r_idx) return (FALSE);
+	if (!m_ptr->race) return (FALSE);
 
 	/* Monster must be visible */
 	if (!m_ptr->ml) return (FALSE);
@@ -611,9 +608,6 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 
 	char coords[20];
 
-	const monster_race *r_ptr;
-	const monster_lore *l_ptr;
-
 	/* Describe the square location */
 	coords_desc(coords, sizeof(coords), y, x);
 
@@ -674,8 +668,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 		if (cave->m_idx[y][x] > 0)
 		{
 			monster_type *m_ptr = cave_monster_at(cave, y, x);
-			r_ptr = &r_info[m_ptr->r_idx];
-			l_ptr = &l_list[m_ptr->r_idx];
+			const monster_lore *l_ptr = get_lore(m_ptr->race);
 
 			/* Visible */
 			if (m_ptr->ml && !m_ptr->unaware)
@@ -691,7 +684,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 				monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_IND2);
 
 				/* Hack -- track this monster race */
-				monster_race_track(m_ptr->r_idx);
+				monster_race_track(m_ptr->race);
 
 				/* Hack -- health bar for this monster */
 				health_track(p_ptr, m_ptr);
@@ -709,7 +702,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 						screen_save();
 
 						/* Recall on screen */
-						screen_roff(r_ptr, l_ptr);
+						screen_roff(m_ptr->race, l_ptr);
 
 						/* Command */
 						press = inkey_m();
@@ -776,8 +769,8 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 				}
 
 				/* Take account of gender */
-				if (rf_has(r_ptr->flags, RF_FEMALE)) s1 = "She is ";
-				else if (rf_has(r_ptr->flags, RF_MALE)) s1 = "He is ";
+				if (rf_has(m_ptr->race->flags, RF_FEMALE)) s1 = "She is ";
+				else if (rf_has(m_ptr->race->flags, RF_MALE)) s1 = "He is ";
 				else s1 = "It is ";
 
 				/* Use a verb */
@@ -1091,7 +1084,7 @@ bool target_set_closest(int mode)
 	Term_fresh();
 
 	/* Set up target information */
-	monster_race_track(m_ptr->r_idx);
+	monster_race_track(m_ptr->race);
 	health_track(p_ptr, m_ptr);
 	target_set_monster(m_idx);
 
@@ -1169,10 +1162,9 @@ static int draw_path(u16b path_n, u16b *path_g, wchar_t *c, byte *a, int y1, int
 		if (cave->m_idx[y][x] && cave_monster_at(cave, y, x)->ml) {
 			/* Visible monsters are red. */
 			monster_type *m_ptr = cave_monster_at(cave, y, x);
-			monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
-			/*mimics act as objects*/
-			if (rf_has(r_ptr->flags, RF_UNAWARE)) 
+			/* Mimics act as objects */
+			if (rf_has(m_ptr->race->flags, RF_UNAWARE)) 
 				colour = TERM_YELLOW;
 			else
 				colour = TERM_L_RED;
@@ -1381,7 +1373,7 @@ bool target_set_interactive(int mode, int x, int y)
 						if ((m_idx > 0) && target_able(m_idx)) {
 							monster_type *m_ptr = cave_monster(cave, m_idx);
 							/* Set up target information */
-							monster_race_track(m_ptr->r_idx);
+							monster_race_track(m_ptr->race);
 							health_track(p_ptr, m_ptr);
 							/*health_track(p_ptr, m_idx);*/
 							target_set_monster(m_idx);

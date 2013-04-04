@@ -9,7 +9,6 @@ int setup_tests(void **state) {
 	struct monster_race *r = &test_r_human;
 	struct monster *m = mem_zalloc(sizeof *m);
 	m->race = r;
-	m->r_idx = r->ridx;
 	r_info = r;
 	*state = m;
 

@@ -583,14 +583,13 @@ void grid_data_as_text(grid_data *g, byte *ap, wchar_t *cp, byte *tap, wchar_t *
 			hallucinatory_monster(&a, &c);
 		} else if (!is_mimicking(cave_monster(cave, g->m_idx)))	{
 			monster_type *m_ptr = cave_monster(cave, g->m_idx);
-			monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 			byte da;
 			wchar_t dc;
 
 			/* Desired attr & char */
-			da = r_ptr->x_attr;
-			dc = r_ptr->x_char;
+			da = m_ptr->race->x_attr;
+			dc = m_ptr->race->x_char;
 
 			/* Special attr/char codes */
 			if (da & 0x80) {
@@ -602,7 +601,7 @@ void grid_data_as_text(grid_data *g, byte *ap, wchar_t *cp, byte *tap, wchar_t *
 			}
 
 			/* Turn uniques purple if desired (violet, actually) */
-			else if (OPT(purple_uniques) && rf_has(r_ptr->flags, RF_UNIQUE)) {
+			else if (OPT(purple_uniques) && rf_has(m_ptr->race->flags, RF_UNIQUE)) {
 				/* Use (light) violet attr */
 				a = TERM_VIOLET;
 
@@ -611,9 +610,9 @@ void grid_data_as_text(grid_data *g, byte *ap, wchar_t *cp, byte *tap, wchar_t *
 			}
 
 			/* Multi-hued monster */
-			else if (rf_has(r_ptr->flags, RF_ATTR_MULTI) ||
-					 rf_has(r_ptr->flags, RF_ATTR_FLICKER) ||
-					 rf_has(r_ptr->flags, RF_ATTR_RAND)) {
+			else if (rf_has(m_ptr->race->flags, RF_ATTR_MULTI) ||
+					 rf_has(m_ptr->race->flags, RF_ATTR_FLICKER) ||
+					 rf_has(m_ptr->race->flags, RF_ATTR_RAND)) {
 				/* Multi-hued attr */
 				a = m_ptr->attr ? m_ptr->attr : da;
 				
@@ -622,15 +621,15 @@ void grid_data_as_text(grid_data *g, byte *ap, wchar_t *cp, byte *tap, wchar_t *
 			}
 			
 			/* Normal monster (not "clear" in any way) */
-			else if (!flags_test(r_ptr->flags, RF_SIZE,
+			else if (!flags_test(m_ptr->race->flags, RF_SIZE,
 				RF_ATTR_CLEAR, RF_CHAR_CLEAR, FLAG_END))
 			{
 				/* Use attr */
 				a = da;
 
 				/* Desired attr & char */
-				da = r_ptr->x_attr;
-				dc = r_ptr->x_char;
+				da = m_ptr->race->x_attr;
+				dc = m_ptr->race->x_char;
 				
 				/* Use char */
 				c = dc;
@@ -647,14 +646,14 @@ void grid_data_as_text(grid_data *g, byte *ap, wchar_t *cp, byte *tap, wchar_t *
 			}
 			
 			/* Normal char, Clear attr, monster */
-			else if (!rf_has(r_ptr->flags, RF_CHAR_CLEAR))
+			else if (!rf_has(m_ptr->race->flags, RF_CHAR_CLEAR))
 			{
 				/* Normal char */
 				c = dc;
 			}
 				
 			/* Normal attr, Clear char, monster */
-			else if (!rf_has(r_ptr->flags, RF_ATTR_CLEAR))
+			else if (!rf_has(m_ptr->race->flags, RF_ATTR_CLEAR))
 			{
 				/* Normal attr */
 				a = da;
@@ -2469,7 +2468,6 @@ void update_view(void)
 	{
 		/* Check the k'th monster */
 		monster_type *m_ptr = cave_monster(cave, k);
-		monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 		/* Access the location */
 		int fx = m_ptr->fx;
@@ -2478,10 +2476,10 @@ void update_view(void)
 		bool in_los = los(p_ptr->py, p_ptr->px, fy, fx);
 
 		/* Skip dead monsters */
-		if (!m_ptr->r_idx) continue;
+		if (!m_ptr->race) continue;
 
 		/* Skip monsters not carrying light */
-		if (!rf_has(r_ptr->flags, RF_HAS_LIGHT)) continue;
+		if (!rf_has(m_ptr->race->flags, RF_HAS_LIGHT)) continue;
 
 		/* Light a 3x3 box centered on the monster */
 		for (i = -1; i <= 1; i++)
@@ -3525,48 +3523,6 @@ void scatter(int *yp, int *xp, int y, int x, int d, int m)
 	(*xp) = nx;
 }
 
-/* XXX: this does not belong here */
-void health_track(struct player *p, struct monster *m_ptr)
-{
-	p->health_who = m_ptr;
-	p->redraw |= PR_HEALTH;
-}
-
-/*
- * Hack -- track the given monster race
- */
-void monster_race_track(int r_idx)
-{
-	/* Save this monster ID */
-	p_ptr->monster_race_idx = r_idx;
-
-	/* Window stuff */
-	p_ptr->redraw |= (PR_MONSTER);
-}
-
-
-
-/*
- * Hack -- track the given object kind
- */
-void track_object(int item)
-{
-	p_ptr->object_idx = item;
-	p_ptr->object_kind_idx = NO_OBJECT;
-	p_ptr->redraw |= (PR_OBJECT);
-}
-
-void track_object_kind(int k_idx)
-{
-	p_ptr->object_idx = NO_OBJECT;
-	p_ptr->object_kind_idx = k_idx;
-	p_ptr->redraw |= (PR_OBJECT);
-}
-
-bool tracked_object_is(int item)
-{
-	return (p_ptr->object_idx == item);
-}
 
 /*
  * Something has happened to disturb the player.
@@ -3948,7 +3904,8 @@ struct monster *cave_monster(struct cave *c, int idx) {
  * Get a monster on the current level by its position.
  */
 struct monster *cave_monster_at(struct cave *c, int y, int x) {
-	return cave_monster(cave, cave->m_idx[y][x]);
+	struct monster *mon = cave_monster(cave, cave->m_idx[y][x]);
+	return mon->race ? mon : NULL;
 }
 
 /**

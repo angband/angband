@@ -148,7 +148,7 @@ struct spell_effect {
 
 
 /** Functions **/
-void do_mon_spell(int spell, int m_idx, bool seen);
+void do_mon_spell(int spell, struct monster *m_ptr, bool seen);
 bool test_spells(bitflag *f, enum mon_spell_type type);
 void set_spells(bitflag *f, enum mon_spell_type type);
 int best_spell_power(const monster_race *r_ptr, int resist);
