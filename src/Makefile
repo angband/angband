@@ -28,7 +28,7 @@ win/angband.res: win/angband.rc
 	$(RC) $< -O coff -o $@
 
 angband.o: $(OBJECTS)
-	$(LD) -nostdlib -r -o $@ $(OBJECTS)
+	$(LD) -nostdlib -Wl,-r -o $@ $(OBJECTS)
 	@printf "%10s %-20s\n" LINK $@
 
 tests: angband.o

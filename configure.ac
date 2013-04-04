@@ -88,7 +88,7 @@ CFLAGS="$CFLAGS -DHAVE_CONFIG_H"
 CPPFLAGS="$CPPFLAGS -I." 
 
 if test "$GCC" = "yes"; then
-	CFLAGS="$CFLAGS -fno-strength-reduce -W -Wall -Wno-unused-parameter -pedantic"
+	CFLAGS="$CFLAGS -W -Wall -Wextra -Wno-unused-parameter -pedantic"
 	AC_MSG_CHECKING([if gcc supports -Wno-missing-field-initializers])
 	_gcc_cflags_save=$CFLAGS
 	CFLAGS="-Wno-missing-field-initializers"
