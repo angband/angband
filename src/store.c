@@ -3075,16 +3075,6 @@ static const menu_iter store_menu =
 	NULL
 };
 
-static const menu_iter store_know_menu =
-{
-	NULL,
-	NULL,
-	store_display_entry,
-	NULL,
-	NULL
-};
-
-
 /*
  * Display contents of a store from knowledge menu
  *

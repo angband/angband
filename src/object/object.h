@@ -522,7 +522,8 @@ typedef struct object
 	quark_t note; /* Inscription index */
 } object_type;
 
-typedef struct flavor {
+struct flavor
+{
 	char *text;
 	struct flavor *next;
 	unsigned int fidx;
@@ -535,7 +536,7 @@ typedef struct flavor {
 
 	byte x_attr;    /* Desired flavor attribute */
 	wchar_t x_char;    /* Desired flavor character */
-} flavor_type;
+};
 
 
 /*** Functions ***/

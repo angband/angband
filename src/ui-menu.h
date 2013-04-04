@@ -156,7 +156,7 @@ enum
 
 	/* no select events to be triggered */
 	MN_NO_ACTION = 0x20
-} menu_type_flags;
+};
 
 
 /* Base menu type */

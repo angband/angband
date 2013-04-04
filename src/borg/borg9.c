@@ -5422,7 +5422,6 @@ void borg_status(void)
    {
 	   attr = TERM_WHITE;
 	   Term_putstr(42, 7, -1, attr,format("Scumming: $%d                  ", borg_money_scum_amount));
-	   /* Term_putstr(42, 7, -1, attr,format("Scumming:$%d,%s                  ", borg_money_scum_amount, borg_money_scum_item)); */
    }
    attr = TERM_SLATE;
    Term_putstr(42, 8, -1, attr,"Maximal Depth:");

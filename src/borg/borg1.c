@@ -45,7 +45,6 @@ bool borg_scums_uniques;
 bool borg_kills_uniques;
 int borg_chest_fail_tolerance;
 s32b borg_money_scum_amount;
-char borg_money_scum_item;
 int borg_money_scum_who;
 int borg_money_scum_ware;
 bool borg_self_scum; 	/* borg scums on his own */
@@ -70,7 +69,6 @@ int *borg_has;
 int *borg_has_on;
 int *borg_artifact;
 int *borg_skill;
-int size_class;
 int size_depth;
 int size_obj;
 int *formula[1000];

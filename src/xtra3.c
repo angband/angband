@@ -1768,8 +1768,6 @@ static void see_floor_items(game_event_type type, game_event_data *data, void *u
 	}
 }
 
-extern game_event_handler ui_enter_birthscreen;
-
 /* ------------------------------------------------------------------------
  * Initialising
  * ------------------------------------------------------------------------ */
