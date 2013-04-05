@@ -110,6 +110,8 @@ static bool option_toggle_handle(menu_type *m, const ui_event *event,
 		} else if (event->key.code == 'n' || event->key.code == 'N') {
 			option_set(option_name(oid), FALSE);
 			next = TRUE;
+		} else if (event->key.code == 't' || event->key.code == 'T') {
+			option_set(option_name(oid), !op_ptr->opt[oid]);
 		} else if (event->key.code == '?') {
 			screen_save();
 			show_file(format("option.txt#%s", option_name(oid)), NULL, 0, 0);
@@ -1225,7 +1227,8 @@ static bool squelch_sval_menu_action(menu_type *m, const ui_event *event,
 {
 	const squelch_choice *choice = menu_priv(m);
 
-	if (event->type == EVT_SELECT)
+	if (event->type == EVT_SELECT ||
+			(event->type == EVT_KBRD && tolower(event->key.code) == 't'))
 	{
 		object_kind *kind = choice[oid].kind;
 
@@ -1339,6 +1342,7 @@ static bool sval_menu(int tval, const char *desc)
 	/* Run menu */
 	menu = menu_new(MN_SKIN_COLUMNS, &squelch_sval_menu);
 	menu_setpriv(menu, n_choices, choices);
+	menu->cmd_keys = "Tt";
 	menu_layout(menu, &area);
 	menu_select(menu, 0, FALSE);
 
