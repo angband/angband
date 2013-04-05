@@ -1603,8 +1603,6 @@ void do_cmd_debug(void)
 
 	struct keypress cmd;
 
-	const monster_race *r_ptr;
-
 
 	/* Get a "debug command" */
 	if (!get_com("Debug Command: ", &cmd)) return;
@@ -1863,7 +1861,8 @@ void do_cmd_debug(void)
 		/* Get full recall for a monster */
 		case 'r':
 		{
-			s16b r_idx = 0; 
+			s16b r_idx = 0;
+			const monster_race *r_ptr = NULL;
 
 			if (p_ptr->command_arg > 0)
 			{
@@ -1993,6 +1992,7 @@ void do_cmd_debug(void)
 		/* Wipe recall for a monster */
 		case 'W':
 		{
+			const monster_race *r_ptr = NULL;
 			s16b r_idx = 0; 
 
 			if (p_ptr->command_arg > 0)
