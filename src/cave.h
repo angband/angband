@@ -34,6 +34,9 @@ extern void disturb(struct player *p, int stop_search, int unused_flag);
 extern bool is_quest(int level);
 extern bool dtrap_edge(int y, int x);
 
+#define CAVE_INFO_Y	DUNGEON_HGT
+#define CAVE_INFO_X	256
+
 struct cave {
 	s32b created_at;
 	int depth;
@@ -112,6 +115,7 @@ extern bool cave_isvault(struct cave *c, int y, int x);
 extern bool cave_isroom(struct cave *c, int y, int x);
 extern bool cave_isrubble(struct cave *c, int y, int x);
 extern bool cave_isfeel(struct cave *c, int y, int x);
+extern bool cave_isview(struct cave *c, int y, int x);
 
 extern void cave_generate(struct cave *c, struct player *p);
 

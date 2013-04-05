@@ -2260,46 +2260,18 @@ errr vinfo_init(void)
  */
 void forget_view(void)
 {
-	int i, g;
+	int x, y;
 
-	int fast_view_n = view_n;
-	u16b *fast_view_g = view_g;
-
-	/* XXX: this is moronic. It's not 'fast'. */
-	byte *fast_cave_info = &cave->info[0][0];
-
-
-	/* None to forget */
-	if (!fast_view_n) return;
-
-	/* Clear them all */
-	for (i = 0; i < fast_view_n; i++)
-	{
-		int y, x;
-
-		/* Grid */
-		g = fast_view_g[i];
-
-		/* Location */
-		y = GRID_Y(g);
-		x = GRID_X(g);
-
-		/* Clear "CAVE_VIEW" and "CAVE_SEEN" flags */
-		fast_cave_info[g] &= ~(CAVE_VIEW | CAVE_SEEN);
-
-		/* Clear "CAVE_LIGHT" flag */
-		/* fast_cave->info[g] &= ~(CAVE_LIGHT); */
-
-		/* Redraw */
-		cave_light_spot(cave, y, x);
+	for (y = 0; y < CAVE_INFO_Y; y++) {
+		for (x = 0; x < CAVE_INFO_X; x++) {
+			if (!cave_isview(cave, y, x))
+				continue;
+			cave->info[y][x] &= ~(CAVE_VIEW | CAVE_SEEN);
+			cave_light_spot(cave, y, x);
+		}
 	}
 
-	/* None left */
-	fast_view_n = 0;
-
-
-	/* Save 'view_n' */
-	view_n = fast_view_n;
+	view_n = 0;
 }
 
 
@@ -3881,6 +3853,11 @@ bool cave_isroom(struct cave *c, int y, int x) {
  */
 bool cave_isfeel(struct cave *c, int y, int x){
 	return c->info2[y][x] & CAVE2_FEEL;
+}
+
+/* True if the cave square is viewable */
+bool cave_isview(struct cave *c, int y, int x) {
+	return c->info[y][x] & CAVE_VIEW;
 }
 
 /**
