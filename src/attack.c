@@ -483,7 +483,7 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 				/* Invisible monster */
 				msgt(MSG_SHOOT_HIT, "The %s finds a mark.", o_name);
 			} else {
-				for (i = 0; i < N_ELEMENTS(ranged_hit_types); i++) {
+				for (i = 0; i < (int)N_ELEMENTS(ranged_hit_types); i++) {
 					char *dmg_text = "";
 
 					if (msg_type != ranged_hit_types[i].msg)
