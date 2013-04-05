@@ -634,7 +634,7 @@ enum
  */
 #define CAVE_MARK		0x01 	/* memorized feature */
 #define CAVE_GLOW		0x02 	/* self-illuminating */
-#define CAVE_ICKY		0x04 	/* part of a vault */
+#define CAVE_VAULT		0x04 	/* part of a vault */
 #define CAVE_ROOM		0x08 	/* part of a room */
 #define CAVE_SEEN		0x10 	/* seen flag */
 #define CAVE_VIEW		0x20 	/* view flag */

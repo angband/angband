@@ -1969,7 +1969,7 @@ void destroy_area(int y1, int x1, int r, bool full)
 			if (k > r) continue;
 
 			/* Lose room and vault */
-			cave->info[y][x] &= ~(CAVE_ROOM | CAVE_ICKY);
+			cave->info[y][x] &= ~(CAVE_ROOM | CAVE_VAULT);
 
 			/* Lose light */
 			cave->info[y][x] &= ~(CAVE_GLOW);
@@ -2129,7 +2129,7 @@ void earthquake(int cy, int cx, int r)
 			if (distance(cy, cx, yy, xx) > r) continue;
 
 			/* Lose room and vault */
-			cave->info[yy][xx] &= ~(CAVE_ROOM | CAVE_ICKY);
+			cave->info[yy][xx] &= ~(CAVE_ROOM | CAVE_VAULT);
 
 			/* Lose light and knowledge */
 			cave->info[yy][xx] &= ~(CAVE_GLOW | CAVE_MARK);

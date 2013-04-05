@@ -1522,7 +1522,7 @@ void do_cmd_view_map(void)
  * which grids are part of "rooms", and thus which grids are affected by
  * "illumination" spells.  This flag does not have to be very fast.
  *
- * The "CAVE_ICKY" flag is saved in the savefile and is used to determine
+ * The "CAVE_VAULT" flag is saved in the savefile and is used to determine
  * which grids are part of "vaults", and thus which grids cannot serve as
  * the destinations of player teleportation.  This flag does not have to
  * be very fast.
@@ -3865,7 +3865,7 @@ bool cave_isstrongwall(struct cave *c, int y, int x) {
  * This doesn't say what kind of square it is, just that it is part of a vault.
  */
 bool cave_isvault(struct cave *c, int y, int x) {
-	return c->info[y][x] & CAVE_ICKY;
+	return c->info[y][x] & CAVE_VAULT;
 }
 
 /**

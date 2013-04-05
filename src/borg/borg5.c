@@ -894,7 +894,7 @@ static void borg_fear_grid(char *who, int y, int x, int k)  /* 8-8, this was uin
 	if (borg_morgoth_position || borg_as_position) return;
 
 	/* Do not add fear in a vault -- Cheating the cave info */
-	if (cave->info[y][x] & CAVE_ICKY) return;
+	if (cave_isvault(cave, y, x)) return;
 
 	/* Access the grid info */
 	ag = &borg_grids[y][x];
@@ -962,7 +962,7 @@ static void borg_fear_regional(char *who, int y, int x, int k, bool seen_guy) /*
     int x0, y0, x1, x2, y1, y2;
 
 	/* Do not add fear in a vault -- Cheating the cave info */
-  	if (cave->info[y][x] & CAVE_ICKY) return;
+  	if (cave_isvault(cave, y, x)) return;
 
     /* Messages */
     if (seen_guy)

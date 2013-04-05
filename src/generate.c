@@ -2188,7 +2188,7 @@ static void build_vault(struct cave *c, int y0, int x0, int ymax, int xmax, cons
 
 			/* Part of a vault */
 			c->info[y][x] |= CAVE_ROOM;
-			if (icky) c->info[y][x] |= CAVE_ICKY;
+			if (icky) c->info[y][x] |= CAVE_VAULT;
 		}
 	}
 
