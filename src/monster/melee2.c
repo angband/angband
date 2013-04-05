@@ -1503,7 +1503,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 
 
 	/* Get the monster name (or "it") */
-	monster_desc(m_name, sizeof(m_name), m_ptr, 0);
+	monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_CAPITAL);
 
 	/* Get the "died from" information (i.e. "a kobold") */
 	monster_desc(ddesc, sizeof(ddesc), m_ptr, MDESC_SHOW | MDESC_IND2);
@@ -2730,7 +2730,7 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 	char m_name[80];
 
 	/* Get the monster name */
-	monster_desc(m_name, sizeof(m_name), m_ptr, 0);
+	monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_CAPITAL);
 
 	/* Handle "sleep" */
 	if (m_ptr->m_timed[MON_TMD_SLEEP]) {
