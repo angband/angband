@@ -92,6 +92,4 @@ extern void sort(void *array, size_t nmemb, size_t smemb,
 int mean(int *nums, int size);
 int variance(int *nums, int size);
 
-#define noreturn __attribute__((noreturn))
-
 #endif /* INCLUDED_Z_UTIL_H */
