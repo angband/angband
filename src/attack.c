@@ -544,7 +544,7 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
  * Helper function used with ranged_helper by do_cmd_fire.
  */
 static struct attack_result make_ranged_shot(object_type *o_ptr, int y, int x) {
-	struct attack_result result = {FALSE, 0, 0, "hit"};
+	struct attack_result result = {FALSE, 0, 0, "hits"};
 
 	object_type *j_ptr = &p_ptr->inventory[INVEN_BOW];
 
@@ -587,7 +587,7 @@ static struct attack_result make_ranged_shot(object_type *o_ptr, int y, int x) {
  * Helper function used with ranged_helper by do_cmd_throw.
  */
 static struct attack_result make_ranged_throw(object_type *o_ptr, int y, int x) {
-	struct attack_result result = {FALSE, 0, 0, "hit"};
+	struct attack_result result = {FALSE, 0, 0, "hits"};
 
 	monster_type *m_ptr = cave_monster_at(cave, y, x);
 	

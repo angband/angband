@@ -2077,14 +2077,13 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 						/* Skip non-food objects */
 						if (o_ptr->tval != TV_FOOD) continue;
 
-						/* Get a description */
-						object_desc(o_name, sizeof(o_name), o_ptr,
-									ODESC_PREFIX | ODESC_BASE);
-
-						/* Message */
-						msg("%sour %s (%c) was eaten!",
-						           ((o_ptr->number > 1) ? "One of y" : "Y"),
-						           o_name, index_to_label(i));
+						if (o_ptr->number == 1) {
+							object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
+							msg("Your %s (%c) was eaten!", o_name, index_to_label(i));
+						} else {
+							object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_BASE);
+							msg("One of your %s (%c) was eaten!", o_name, index_to_label(i));
+						}
 
 						/* Steal the items */
 						inven_item_increase(i, -1);

@@ -598,7 +598,8 @@ void object_notice_attack_plusses(object_type *o_ptr)
 		char o_name[80];
 
 		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
-		msgt(MSG_PSEUDOID, "Your %s glows.", o_name);
+		msgt(MSG_PSEUDOID, "Your %s glow%s.",
+				o_name, ((o_ptr->number > 1) ? "" : "s"));
 	}
 
 	p_ptr->update |= (PU_BONUS);
