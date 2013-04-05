@@ -783,13 +783,12 @@ static void textui_process_click(ui_event e)
 
 	else if (e.mouse.button == 2)
 	{
-		int m_idx = cave->m_idx[y][x];
-		if (m_idx && target_able(m_idx)) {
-			monster_type *m_ptr = cave_monster(cave, m_idx);
+		struct monster *m = cave_monster_at(cave, y, x);
+		if (m && target_able(m)) {
 			/* Set up target information */
-			monster_race_track(m_ptr->race);
-			health_track(p_ptr, m_ptr);
-			target_set_monster(m_idx);
+			monster_race_track(m->race);
+			health_track(p_ptr, m);
+			target_set_monster(m);
 		} else {
 			target_set_location(y,x);
 		}
