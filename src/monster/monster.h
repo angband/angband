@@ -160,7 +160,7 @@ typedef struct monster_race
 	struct monster_blow blow[MONSTER_BLOW_MAX]; /* Up to four blows per round */
 
 	byte level;				/* Level of creature */
-	byte rarity;			/* Rarity of creature */
+	int rarity;			/* Rarity of creature */
 
 	byte d_attr;			/* Default monster attribute */
 	wchar_t d_char;			/* Default monster character */

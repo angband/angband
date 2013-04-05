@@ -460,9 +460,7 @@ void wr_squelch(void)
 
 void wr_misc(void)
 {
-
-	/* XXX Old random artifact version, remove after 3.3 */
-	wr_u32b(63);
+	wr_u32b(0L);
 
 	/* Random artifact seed */
 	wr_u32b(seed_randart);
@@ -519,15 +517,6 @@ void wr_player_spells(void)
 
 	for (i = 0; i < PY_MAX_SPELLS; i++)
 		wr_byte(p_ptr->spell_order[i]);
-}
-
-
-/*
- * We no longer save the random artifacts
- */
-void wr_randarts(void)
-{
-	return;
 }
 
 

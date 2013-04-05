@@ -720,7 +720,6 @@ static enum parser_error parse_a_w(struct parser *p) {
 	assert(a);
 
 	a->level = parser_getint(p, "level");
-	a->rarity = parser_getint(p, "rarity");
 	a->weight = parser_getint(p, "weight");
 	a->cost = parser_getint(p, "cost");
 	return PARSE_ERROR_NONE;

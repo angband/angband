@@ -312,7 +312,7 @@ typedef struct object_kind
 	byte d_attr;       /**< Default object attribute */
 	wchar_t d_char;       /**< Default object character */
 
-	byte alloc_prob;   /**< Allocation: commonness */
+	int alloc_prob;   /**< Allocation: commonness */
 	byte alloc_min;    /**< Highest normal dungeon level */
 	byte alloc_max;    /**< Lowest normal dungeon level */
 	byte level;        /**< Level (difficulty of activation) */
@@ -385,8 +385,8 @@ typedef struct artifact
 	bitflag pval_flags[MAX_PVALS][OF_SIZE];	/**< pval flags */
 
 	byte level;   /** Difficulty level for activation */
-	byte rarity;  /** Unused */
-	byte alloc_prob; /** Chance of being generated (i.e. rarity) */
+
+	int alloc_prob; /** Chance of being generated (i.e. rarity) */
 	byte alloc_min;  /** Minimum depth (can appear earlier) */
 	byte alloc_max;  /** Maximum depth (will NEVER appear deeper) */
 
@@ -398,7 +398,6 @@ typedef struct artifact
 	char *effect_msg;
 
 	random_value time;  /**< Recharge time (if appropriate) */
-
 } artifact_type;
 
 
@@ -422,7 +421,7 @@ typedef struct ego_item
 	byte level;		/* Minimum level */
 	byte rarity;		/* Object rarity */
 	byte rating;		/* Level rating boost */
-	byte alloc_prob; 	/** Chance of being generated (i.e. rarity) */
+	int alloc_prob; 	/** Chance of being generated (i.e. rarity) */
 	byte alloc_min;  	/** Minimum depth (can appear earlier) */
 	byte alloc_max;  	/** Maximum depth (will NEVER appear deeper) */
 

@@ -148,14 +148,12 @@ typedef struct room_template {
  */
 struct alloc_entry
 {
-	s16b index;		/* The actual index */
+	int index;		/* The actual index */
 
-	byte level;		/* Base dungeon level */
-	byte prob1;		/* Probability, pass 1 */
-	byte prob2;		/* Probability, pass 2 */
-	byte prob3;		/* Probability, pass 3 */
-
-	u16b total;		/* Unused for now */
+	int level;		/* Base dungeon level */
+	int prob1;		/* Probability, pass 1 */
+	int prob2;		/* Probability, pass 2 */
+	int prob3;		/* Probability, pass 3 */
 };
 
 
