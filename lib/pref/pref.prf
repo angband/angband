@@ -275,8 +275,8 @@ A:Q
 C:0:^C
 
 # Hack -- Swap equipment
-A:w0
-C:0:X
+A:w0\s\s
+C:0:x
 
 # Pickup an item (with autopickup)
 A:^Gg
@@ -351,8 +351,8 @@ A:Q
 C:1:^C
 
 # Hack -- Swap equipment
-A:w0
-C:1:X
+A:w0\s\s
+C:1:x
 
 # Pickup an item (with autopickup)
 A:^Gg
