@@ -73,7 +73,6 @@ int test_w0(void *state) {
 	a = parser_priv(state);
 	require(a);
 	eq(a->level, 3);
-	eq(a->rarity, 5);
 	eq(a->weight, 8);
 	eq(a->cost, 200);
 	ok;
