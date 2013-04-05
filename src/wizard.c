@@ -1861,12 +1861,11 @@ void do_cmd_debug(void)
 		/* Get full recall for a monster */
 		case 'r':
 		{
-			s16b r_idx = 0;
 			const monster_race *r_ptr = NULL;
 
 			if (p_ptr->command_arg > 0)
 			{
-				r_idx = p_ptr->command_arg;
+				r_ptr = &r_info[p_ptr->command_arg];
 			}
 			else
 			{

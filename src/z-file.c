@@ -25,10 +25,6 @@
 # include <direct.h>
 #endif
 
-#ifdef MACH_O_CARBON
-# include <Carbon/Carbon.h>
-#endif
-
 #ifdef HAVE_FCNTL_H
 # include <fcntl.h>
 #endif
@@ -114,7 +110,6 @@ static void path_parse(char *buf, size_t max, const char *file)
 }
 
 
-
 static void path_process(char *buf, size_t len, size_t *cur_len, const char *path)
 {
 #if defined(SET_UID) || defined(USE_PRIVATE_PATHS)
@@ -142,27 +137,8 @@ static void path_process(char *buf, size_t len, size_t *cur_len, const char *pat
 			username = user;
 		}
 
-#ifndef MACH_O_CARBON
-
 		/* Look up a user (or "current" user) */
 		pw = username[0] ? getpwnam(username) : getpwuid(getuid());
-
-#else /* MACH_O_CARBON */
-
-		{
-			/* On Macs getlogin() can incorrectly return root, so get the username via system frameworks */
-			CFStringRef cfusername = CSCopyUserName(TRUE);
-			CFIndex cfbufferlength = CFStringGetMaximumSizeForEncoding(CFStringGetLength(cfusername), kCFStringEncodingUTF8) + 1;
-			char *macusername = mem_alloc(cfbufferlength);
-			CFStringGetCString(cfusername, macusername, cfbufferlength, kCFStringEncodingUTF8);
-			CFRelease(cfusername);
-
-			/* Look up the user */
-			pw = getpwnam(macusername);
-			mem_free(macusername);
-		}
-#endif /* !MACH_O_CARBON */
-
 		if (!pw) return;
 
 		/* Copy across */
@@ -171,11 +147,9 @@ static void path_process(char *buf, size_t len, size_t *cur_len, const char *pat
 	}
 	else
 
-#endif
+#endif /* defined(SET_UID) || defined(USE_PRIVATE_PATHS) */
 
-	{
-		strnfcat(buf, len, cur_len, "%s", path);
-	}
+	strnfcat(buf, len, cur_len, "%s", path);
 }
 
 
@@ -904,3 +878,4 @@ void my_dclose(ang_dir *dir)
 
 #endif /* HAVE_DIRENT_H */
 #endif /* WINDOWS */
+

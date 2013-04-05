@@ -576,7 +576,7 @@ static void lookup_symbol(struct keypress sym, char *buf, size_t max)
  */
 void do_cmd_query_symbol(void)
 {
-	int i, n, r_idx;
+	int i, n;
 	char buf[128];
 
 	struct keypress sym;
@@ -705,7 +705,7 @@ void do_cmd_query_symbol(void)
 	while (1)
 	{
 		/* Extract a race */
-		r_idx = who[i];
+		int r_idx = who[i];
 		monster_race *r_ptr = &r_info[r_idx];
 		monster_lore *l_ptr = &l_list[r_idx];
 

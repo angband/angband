@@ -2686,7 +2686,7 @@ static void initialize_file_paths(void)
     BOOL isDir = NO;
     if (! [fm fileExistsAtPath:libString isDirectory:&isDir] || ! isDir)
     {
-        NSRunAlertPanel(@"Unable to find lib directory", @"Unable to find the lib directory at path %@.  Angband has to quit.", @"Nuts", nil, nil, libpath);
+        NSRunAlertPanel(@"Unable to find lib directory", @"Unable to find the lib directory at path %@.  Angband has to quit.", @"Nuts", nil, nil, libString);
         exit(0);
     }
     

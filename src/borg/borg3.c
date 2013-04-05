@@ -2526,14 +2526,10 @@ bool borg_activate_artifact(int activation)
     for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
     {
         borg_item *item = &borg_items[i];
-		artifact_type *a_ptr;
 
 		/* Skip artifacts w/o activation */
 		if (!item->name1 || a_info[item->name1].effect != activation)
 			continue;
-
-		/* get the item */
-		a_ptr = &a_info[item->name1];
 
         /* Check charge */
         if (item->timeout) continue;

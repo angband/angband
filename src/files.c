@@ -67,7 +67,6 @@ static void panel_free(struct panel *p) {
 /* Add a new line to the panel */
 static void panel_line(struct panel *p, byte attr, const char *label,
 		const char *fmt, ...) {
-	size_t len;
 	va_list vp;
 
 	struct panel_line *pl;
@@ -83,7 +82,7 @@ static void panel_line(struct panel *p, byte attr, const char *label,
 
 	/* Set the value */
 	va_start(vp, fmt);
-	len = vstrnfmt(pl->value, sizeof pl->value, fmt, vp);
+	vstrnfmt(pl->value, sizeof pl->value, fmt, vp);
 	va_end(vp);
 }
 
@@ -92,7 +91,7 @@ static void panel_space(struct panel *p) {
 	assert(p);
 	assert(p->len != p->max);
 	p->len++;
-};
+}
 
 
 /*
