@@ -670,7 +670,7 @@ static size_t obj_desc_aware(const object_type *o_ptr, char *buf, size_t max,
 size_t object_desc(char *buf, size_t max, const object_type *o_ptr, int mode)
 {
 	bool prefix = mode & ODESC_PREFIX;
-	bool spoil = (mode & ODESC_SPOIL);
+	bool spoil = mode & ODESC_SPOIL;
 	bool known;
 
 	size_t end = 0, i = 0;
@@ -689,7 +689,9 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr, int mode)
 	/*** Some things get really simple descriptions ***/
 
 	if (o_ptr->marked == MARK_AWARE) {
-		return strnfmt(buf, max, "an unknown item");
+		if (prefix)
+			return strnfmt(buf, max, "an unknown item");
+		return strnfmt(buf, max, "unknown item");
 	}
 
 	if (o_ptr->tval == TV_GOLD)

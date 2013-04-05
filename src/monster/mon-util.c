@@ -1469,7 +1469,7 @@ void become_aware(struct monster *m_ptr)
 		if (m_ptr->mimicked_o_idx > 0) {
 			object_type *o_ptr = object_byid(m_ptr->mimicked_o_idx);
 			char o_name[80];
-			object_desc(o_name, sizeof(o_name), o_ptr, ODESC_FULL);
+			object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
 
 			/* Print a message */
 			msg("The %s was really a monster!", o_name);
