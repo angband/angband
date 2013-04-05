@@ -79,12 +79,14 @@ img { border: 0; }
 
 .front { font-family: 'Libre Baskerville'; }
 
-section { clear: both; margin-top: 2em; margin-bottom: 2em; }
+section { clear: both; margin-bottom: 2em; }
 
 @media all {
-	#intro, #resources { width: 580px; margin: 0 auto; }
+  #intro { font-size: 24px; line-height: 32px; text-align: justify; margin-top: 0; margin-bottom: 1em; }
+  #intro p { margin-top: 0; }
+	#resources { width: 580px; margin: 0 auto; }
 
-	#intro { font-size: 24px; line-height: 32px; text-align: justify; }
+  #downloads p { margin-top: 0; }
 
 	.slot { width: 200px; float: left; }
 	.slot img { border: 5px solid #000; border-radius: 5px; margin: 5px; }
@@ -99,7 +101,7 @@ section { clear: both; margin-top: 2em; margin-bottom: 2em; }
 }
 
 @media all and (max-width: 650px) {
-	#intro, #resources { width: 100%; }
+	#resources { width: 100%; }
 }
 
 @media all and (max-width: 450px) {
