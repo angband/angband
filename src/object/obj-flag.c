@@ -140,10 +140,7 @@ void log_flags(bitflag *f, ang_file *log_file)
 }
 
 /**
- * Log the name of a flag to a file.
- *
- * \param flag is the flag to log.
- * \param log_file is ... oh come on how obvious does it need to be?
+ * Return the name of a flag.
  */
 const char *flag_name(int flag)
 {

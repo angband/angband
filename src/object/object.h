@@ -84,8 +84,7 @@ enum {
 /**
  * Modes for object_desc().
  */
-typedef enum
-{
+enum {
 	ODESC_BASE   = 0x00,   /*!< Only describe the base name */
 	ODESC_COMBAT = 0x01,   /*!< Also show combat bonuses */
 	ODESC_EXTRA  = 0x02,   /*!< Show charges/inscriptions/pvals */
@@ -100,7 +99,7 @@ typedef enum
 	ODESC_PREFIX = 0x40,   /* */
 
 	ODESC_CAPITAL = 0x80	/*!< Capitalise object name */
-} odesc_detail_t;
+};
 
 
 /**
@@ -602,7 +601,7 @@ void object_know_all_flags(object_type *o_ptr);
 void object_base_name(char *buf, size_t max, int tval, bool plural);
 void object_kind_name(char *buf, size_t max, const object_kind *kind, bool easy_know);
 size_t obj_desc_name_format(char *buf, size_t max, size_t end, const char *fmt, const char *modstr, bool pluralise);
-size_t object_desc(char *buf, size_t max, const object_type *o_ptr, odesc_detail_t mode);
+size_t object_desc(char *buf, size_t max, const object_type *o_ptr, int mode);
 
 /* obj-info.c */
 textblock *object_info(const object_type *o_ptr, oinfo_detail_t mode);

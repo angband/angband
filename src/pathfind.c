@@ -72,7 +72,8 @@ static void fill_terrain_info(void)
 
 bool findpath(int y, int x)
 {
-	int i, j, k, dir;
+	int i, j, k;
+	int dir = 10;
 	bool try_again;
 	int cur_distance;
 

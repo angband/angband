@@ -590,9 +590,6 @@ void do_cmd_query_symbol(void)
 
 	u16b *who;
 
-	monster_race *r_ptr;
-	const monster_lore *l_ptr;
-
 	/* Get a character, or abort */
 	if (!get_com("Enter character to be identified, or control+[ANU]: ", &sym))
 		return;
@@ -709,8 +706,8 @@ void do_cmd_query_symbol(void)
 	{
 		/* Extract a race */
 		r_idx = who[i];
-		r_ptr = &r_info[r_idx];
-		l_ptr = &l_list[r_idx];
+		monster_race *r_ptr = &r_info[r_idx];
+		monster_lore *l_ptr = &l_list[r_idx];
 
 		/* Hack -- Auto-recall */
 		monster_race_track(r_ptr);

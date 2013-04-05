@@ -23,6 +23,9 @@
 static u16b size_mon_hist = 0;
 static u16b size_mon_msg = 0;
 
+monster_race_message *mon_msg;
+monster_message_history *mon_message_hist;
+
 /*
  * The NULL-terminated array of string actions used to format stacked messages.
  * Singular and plural modifiers are encoded in the same string. Example:

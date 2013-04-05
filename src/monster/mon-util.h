@@ -42,7 +42,7 @@
 /** Structures **/
 
 /** Variables **/
-wchar_t summon_kin_type;		/* Hack -- See summon_specific() */
+extern wchar_t summon_kin_type;		/* Hack -- See summon_specific() */
 
 
 /** Functions **/

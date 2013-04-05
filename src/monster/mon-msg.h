@@ -115,8 +115,8 @@ typedef struct monster_message_history
 
 
 /** Variables **/
-monster_race_message *mon_msg;
-monster_message_history *mon_message_hist;
+extern monster_race_message *mon_msg;
+extern monster_message_history *mon_message_hist;
 
 /** Functions **/
 void message_pain(struct monster *m, int dam);

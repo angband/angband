@@ -312,8 +312,7 @@ size_t obj_desc_name_format(char *buf, size_t max, size_t end,
  * Format object o_ptr's name into 'buf'.
  */
 static size_t obj_desc_name(char *buf, size_t max, size_t end,
-		const object_type *o_ptr, bool prefix, odesc_detail_t mode,
-		bool spoil)
+		const object_type *o_ptr, bool prefix, int mode, bool spoil)
 {
 	bool known = object_is_known(o_ptr) || (o_ptr->ident & IDENT_STORE) || spoil;
 	bool aware = object_flavor_is_aware(o_ptr) || (o_ptr->ident & IDENT_STORE) || spoil;
@@ -371,10 +370,7 @@ static bool obj_desc_show_armor(const object_type *o_ptr)
 		case TV_SOFT_ARMOR:
 		case TV_HARD_ARMOR:
 		case TV_DRAG_ARMOR:
-		{
 			return TRUE;
-			break;
-		}
 	}
 
 	return FALSE;
@@ -671,8 +667,7 @@ static size_t obj_desc_aware(const object_type *o_ptr, char *buf, size_t max,
  *
  * \returns The number of bytes used of the buffer.
  */
-size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
-				   odesc_detail_t mode)
+size_t object_desc(char *buf, size_t max, const object_type *o_ptr, int mode)
 {
 	bool prefix = mode & ODESC_PREFIX;
 	bool spoil = (mode & ODESC_SPOIL);

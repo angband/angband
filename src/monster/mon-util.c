@@ -1276,6 +1276,11 @@ void monster_swap(int y1, int x1, int y2, int x2)
  */
 static int summon_specific_type = 0;
 
+/*
+ * Hack - the kin type for S_KIN
+ */
+wchar_t summon_kin_type;
+
 
 /**
  * Hack -- help decide if a monster race is "okay" to summon.

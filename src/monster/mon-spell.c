@@ -58,7 +58,7 @@ const struct spell_effect spell_effect_table[] =
  *
  * \param spell is the attack type
  * \param rlev is the monster level of the attacker
- * \param aspect is the damage calc required (min, avg, max, random)
+ * \param dam_aspect is the damage calc required (min, avg, max, random)
  */
 static int nonhp_dam(int spell, int rlev, aspect dam_aspect)
 {

@@ -273,6 +273,7 @@ term *Term = NULL;
 /* grumbles */
 int log_i = 0;
 int log_size = 0;
+struct keypress keylog[KEYLOG_SIZE];
 
 
 /*** Local routines ***/
