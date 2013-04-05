@@ -331,19 +331,19 @@ void (*quit_aux)(const char *) = NULL;
  * Otherwise, plog() 'str' and exit with an error code of -1.
  * But always use 'quit_aux', if set, before anything else.
  */
-void quit(const char *str)
+void noreturn quit(const char *str)
 {
 	/* Attempt to use the aux function */
 	if (quit_aux) (*quit_aux)(str);
 
 	/* Success */
-	if (!str) (void)(exit(EXIT_SUCCESS));
+	if (!str) exit(EXIT_SUCCESS);
 
 	/* Send the string to plog() */
 	plog(str);
 
 	/* Failure */
-	(void)(exit(EXIT_FAILURE));
+	exit(EXIT_FAILURE);
 }
 
 /* Arithmetic mean of the first 'size' entries of the array 'nums' */

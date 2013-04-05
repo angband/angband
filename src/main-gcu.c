@@ -353,7 +353,7 @@ static void Term_nuke_gcu(term *t) {
  * correct dimensions. Terminal layout: 0|2
  *                                      1|3
  */
-void get_gcu_term_size(int i, int *rows, int *cols, int *y, int *x) {
+static void get_gcu_term_size(int i, int *rows, int *cols, int *y, int *x) {
 	if (use_big_screen && i == 0) {
 		*rows = LINES;
 		*cols = COLS;
@@ -388,7 +388,7 @@ void get_gcu_term_size(int i, int *rows, int *cols, int *y, int *x) {
 /*
  * Query ncurses for new screen size and try to resize the GCU terms.
  */
-void do_gcu_resize(void) {
+static void do_gcu_resize(void) {
 	int i, rows, cols, y, x;
 	term *old_t = Term;
 	
@@ -555,11 +555,11 @@ static errr Term_xtra_gcu_event(int v) {
 	return (0);
 }
 
-int scale_color(int i, int j, int scale) {
+static int scale_color(int i, int j, int scale) {
 	return (angband_color_table[i][j] * (scale - 1) + 127) / 255;
 }
 
-int create_color(int i, int scale) {
+static int create_color(int i, int scale) {
 	int r = scale_color(i, 1, scale);
 	int g = scale_color(i, 2, scale);
 	int b = scale_color(i, 3, scale);

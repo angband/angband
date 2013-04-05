@@ -205,12 +205,6 @@ size_t path_build(char *buf, size_t len, const char *base, const char *leaf)
 
 /*** File-handling API ***/
 
-/* On Windows, fwrite() and fread() are broken. */
-#if defined(WINDOWS) || defined(SET_UID)
-# define HAVE_WRITE
-# define HAVE_READ
-#endif
-
 /* Some defines for compatibility between various build platforms */
 #ifndef S_IRUSR
 #define S_IRUSR S_IREAD
@@ -372,12 +366,14 @@ ang_file *file_open(const char *fname, file_mode mode, file_type ftype)
 			}
 			break;
 		}
-
-		case MODE_READ: f->fh = fopen(buf, "rb"); break;
-
-		case MODE_APPEND: f->fh = fopen(buf, "a+"); break;
-
-		default: f->fh = fopen(buf, "__");
+		case MODE_READ:
+			f->fh = fopen(buf, "rb");
+			break;
+		case MODE_APPEND:
+			f->fh = fopen(buf, "a+");
+			break;
+		default:
+			assert(0);
 	}
 
 	if (f->fh == NULL)
