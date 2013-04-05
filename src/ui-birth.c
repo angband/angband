@@ -204,8 +204,14 @@ static void birthmenu_display(menu_type *menu, int oid, bool cursor,
    only defining the display and handler parts). */
 static const menu_iter birth_iter = { NULL, NULL, birthmenu_display, NULL, NULL };
 
-static void skill_help(s16b skills[], int mhp, int exp, int infra)
+static void skill_help(const s16b r_skills[], const s16b c_skills[], int mhp, int exp, int infra)
 {
+	s16b skills[SKILL_MAX];
+	unsigned i;
+
+	for (i = 0; i < SKILL_MAX ; ++i)
+		skills[i] = (r_skills ? r_skills[i] : 0 ) + (c_skills ? c_skills[i] : 0);
+
 	text_out_e("Hit/Shoot/Throw: %+d/%+d/%+d\n", skills[SKILL_TO_HIT_MELEE], skills[SKILL_TO_HIT_BOW], skills[SKILL_TO_HIT_THROW]);
 	text_out_e("Hit die: %2d   XP mod: %d%%\n", mhp, exp);
 	text_out_e("Disarm: %+3d   Devices: %+3d\n", skills[SKILL_DISARM], skills[SKILL_DEVICE]);
@@ -288,7 +294,7 @@ static void race_help(int i, void *db, const region *l)
 	}
 	
 	text_out_e("\n");
-	skill_help(r->r_skills, r->r_mhp, r->r_exp, r->infra);
+	skill_help(r->r_skills, NULL, r->r_mhp, r->r_exp, r->infra);
 	text_out_e("\n");
 
 	for (k = 0; k < OF_MAX; k++)
@@ -322,6 +328,7 @@ static void class_help(int i, void *db, const region *l)
 	int j;
 	size_t k;
 	struct player_class *c = player_id2class(i);
+	const struct player_race *r = p_ptr->race;
 	int len = (A_MAX + 1) / 2;
 
 	int n_flags = 0;
@@ -341,15 +348,15 @@ static void class_help(int i, void *db, const region *l)
 		const char *name1 = stat_names_reduced[j];
 		const char *name2 = stat_names_reduced[j + len];
 
-		int adj1 = c->c_adj[j] + p_ptr->race->r_adj[j];
-		int adj2 = c->c_adj[j + len] + p_ptr->race->r_adj[j + len];
+		int adj1 = c->c_adj[j] + r->r_adj[j];
+		int adj2 = c->c_adj[j + len] + r->r_adj[j + len];
 
 		text_out_e("%s%+3d  %s%+3d\n", name1, adj1, name2, adj2);
 	}
 
 	text_out_e("\n");
 	
-	skill_help(c->c_skills, c->c_mhp, c->c_exp, -1);
+	skill_help(r->r_skills, c->c_skills, r->r_mhp + c->c_mhp, r->r_exp + c->c_exp, -1);
 
 	if (c->spell_book == TV_MAGIC_BOOK) {
 		text_out_e("\nLearns arcane magic");
