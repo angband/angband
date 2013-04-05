@@ -57,9 +57,7 @@ s32b price_item(const object_type *o_ptr, bool store_buying, int qty);
 
 extern struct owner *store_ownerbyidx(struct store *s, unsigned int idx);
 
-#ifdef TEST
 extern struct parser *store_parser_new(void);
 extern struct parser *store_owner_parser_new(struct store *stores);
-#endif
 
 #endif /* INCLUDED_STORE_H */

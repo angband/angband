@@ -192,7 +192,7 @@ static struct
 /*
  * Description of each feature group.
  */
-const char *feature_group_text[] =
+static const char *feature_group_text[] =
 {
 	"Floors",
 	"Traps",

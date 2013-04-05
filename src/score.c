@@ -87,7 +87,7 @@ static size_t highscore_read(high_score scores[], size_t sz)
 	C_WIPE(scores, sz, high_score);
 
 	path_build(fname, sizeof(fname), ANGBAND_DIR_APEX, "scores.raw");
-	scorefile = file_open(fname, MODE_READ, -1);
+	scorefile = file_open(fname, MODE_READ, FTYPE_TEXT);
 
 	if (!scorefile) return TRUE;
 

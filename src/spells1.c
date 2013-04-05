@@ -34,7 +34,7 @@
  * Details of the different projectable attack types in the game.
  * See src/spells.h for structure
  */
-const struct gf_type gf_table[] =
+static const struct gf_type gf_table[] =
 {
         #define GF(a, b, c, d, e, f, g, h, i, j, k, l, m) \
 			{ GF_##a, b, c, d, e, f, g, h, i, j, k, l, m },
@@ -110,7 +110,8 @@ bool check_side_immune(int type)
 /**
  * Update monster knowledge of player resists.
  *
- * \param m_idx is the monster who is learning
+ * \param m is the monster who is learning
+ * \param p is the player being learnt about
  * \param type is the GF_ type to which it's learning about the player's
  *    resistance (or lack of)
  */
@@ -891,8 +892,13 @@ int adjust_dam(struct player *p, int type, int dam, aspect dam_aspect, int resis
 		case MAXIMISE:
 			denom = randcalc(gf_ptr->denom, 0, MINIMISE);
 			break;
-		default:
+		case AVERAGE:
+		case EXTREMIFY:
+		case RANDOMISE:
 			denom = randcalc(gf_ptr->denom, 0, dam_aspect);
+			break;
+		default:
+			assert(0);
 	}
 
 	for (i = resist; i > 0; i--)

@@ -513,8 +513,12 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	bool was_aware = object_flavor_is_aware(o_ptr);
 	int dir = 5;
 	int px = p_ptr->px, py = p_ptr->py;
-	int snd, boost, level;
-	use_type use;
+	int snd = MSG_GENERIC, boost, level;
+	enum {
+		USE_TIMEOUT,
+		USE_CHARGE,
+		USE_SINGLE
+	} use = USE_SINGLE;
 	int items_allowed = 0;
 
 	/* Determine how this item is used. */

@@ -533,7 +533,7 @@ bool savefile_load(const char *path)
 	byte head[8];
 	bool ok = TRUE;
 
-	ang_file *f = file_open(path, MODE_READ, -1);
+	ang_file *f = file_open(path, MODE_READ, FTYPE_TEXT);
 	if (f) {
 		if (file_read(f, (char *) &head, 8) == 8 &&
 				memcmp(&head[0], savefile_magic, 4) == 0 &&

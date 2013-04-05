@@ -637,7 +637,7 @@ errr parse_file(struct parser *p, const char *filename) {
 	errr r = 0;
 
 	path_build(path, sizeof(path), ANGBAND_DIR_EDIT, format("%s.txt", filename));
-	fh = file_open(path, MODE_READ, -1);
+	fh = file_open(path, MODE_READ, FTYPE_TEXT);
 	if (!fh)
 		quit(format("Cannot open '%s.txt'", filename));
 	while (file_getl(fh, buf, sizeof(buf))) {

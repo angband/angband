@@ -129,7 +129,7 @@ struct item_selector
 };
 
 /** List of requirements for various commands' objects */
-struct item_selector item_selector[] =
+static struct item_selector item_selector[] =
 {
 	{ CMD_INSCRIBE, NULL, NULL, (USE_EQUIP | USE_INVEN | USE_FLOOR | IS_HARMLESS) },
 	{ CMD_UNINSCRIBE, NULL, obj_has_inscrip, (USE_EQUIP | USE_INVEN | USE_FLOOR) },

@@ -66,7 +66,7 @@ static void remove_old_dump(const char *cur_fname, const char *mark)
 
 
 	/* Open current file */
-	cur_file = file_open(cur_fname, MODE_READ, -1);
+	cur_file = file_open(cur_fname, MODE_READ, FTYPE_TEXT);
 	if (!cur_file) return;
 
 	/* Open new file */
@@ -1046,7 +1046,7 @@ static struct parser *init_parse_prefs(bool user)
 	return p;
 }
 
-errr finish_parse_prefs(struct parser *p)
+static errr finish_parse_prefs(struct parser *p)
 {
 	struct prefs_data *d = parser_priv(p);
 	int i;

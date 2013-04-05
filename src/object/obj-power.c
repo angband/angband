@@ -47,7 +47,6 @@
 #define BASE_AC_POWER            2 /* i.e. 1 */
 #define TO_AC_POWER              2 /* i.e. 1 */
 #define MAX_BLOWS                5
-#define INHIBIT_IMMUNITIES       4
 
 /**
  * Define a set of constants for dealing with launchers and ammo:

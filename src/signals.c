@@ -41,7 +41,7 @@ static Signal_Handler_t wrap_signal(int sig, Signal_Handler_t handler)
 }
 
 /* Call this instead of calling signal() directly. */  
-Signal_Handler_t (*signal_aux)(int, Signal_Handler_t) = wrap_signal;
+static Signal_Handler_t (*signal_aux)(int, Signal_Handler_t) = wrap_signal;
 
 
 /*

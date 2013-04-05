@@ -13,6 +13,16 @@ typedef void (*cmd_handler_fn)(cmd_code code, cmd_arg args[]);
 extern void cmd_init(void);
 unsigned char cmd_lookup_key(cmd_code cmd, int mode);
 cmd_code cmd_lookup(unsigned char key, int mode);
+extern int context_menu_command(int mx, int my);
+
+/* cmd-context.c */
+extern int context_menu_player(int mx, int my);
+extern int context_menu_cave(struct cave *c, int y, int x, int adjacent,
+                             int mx, int my);
+extern int context_menu_store(struct store *store, int oid, int mx, int my);
+extern int context_menu_store_item(struct store *store, int oid, int mx,
+                                   int my);
+extern int context_menu_object(const struct object *obj, int slot);
 
 /* cmd-obj.c */
 void do_cmd_uninscribe(cmd_code code, cmd_arg args[]);
@@ -62,6 +72,7 @@ void textui_cmd_suicide(void);
 void do_cmd_inven(void);
 void do_cmd_equip(void);
 void textui_cmd_destroy(void);
+extern void textui_cmd_destroy_menu(int item);
 void textui_cmd_toggle_ignore(void);
 void textui_obj_examine(void);
 void do_cmd_target(void);
@@ -110,18 +121,8 @@ extern void do_cmd_stash(cmd_code code, cmd_arg args[]);
 extern void do_cmd_buy(cmd_code code, cmd_arg args[]);
 extern void do_cmd_retrieve(cmd_code code, cmd_arg args[]);
 
-/* Types of item use */
-typedef enum
-{
-	USE_TIMEOUT,
-	USE_CHARGE,
-	USE_SINGLE
-} use_type;
-
 /* XXX */
 extern int cmp_monsters(const void *a, const void *b);
-
-
 
 /* ui-spell.c -- just for now */
 int get_spell(const object_type *o_ptr, const char *verb,

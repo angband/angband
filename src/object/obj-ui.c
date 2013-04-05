@@ -215,7 +215,7 @@ static void show_obj_list(int num_obj, int num_head, char labels[50][80],
  * off to show_obj_list() for display.  Mode flags documented in
  * object.h
  */
-void show_inven(olist_detail_t mode)
+void show_inven(int mode)
 {
 	int i, last_slot = -1;
 	int diff = weight_remaining();
@@ -283,7 +283,7 @@ void show_inven(olist_detail_t mode)
  * off to show_obj_list() for display.  Mode flags documented in
  * object.h
  */
-void show_equip(olist_detail_t mode)
+void show_equip(int mode)
 {
 	int i, last_slot = 0;
 
@@ -363,7 +363,7 @@ void show_equip(olist_detail_t mode)
  * off to show_obj_list() for display.  Mode flags documented in
  * object.h
  */
-void show_floor(const int *floor_list, int floor_num, olist_detail_t mode)
+void show_floor(const int *floor_list, int floor_num, int mode)
 {
 	int i;
 
@@ -637,7 +637,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 	bool is_harmless = ((mode & IS_HARMLESS) ? TRUE : FALSE);
 	bool quiver_tags = ((mode & QUIVER_TAGS) ? TRUE : FALSE);
 
-	olist_detail_t olist_mode = 0;
+	int olist_mode = 0;
 
 	bool allow_inven = FALSE;
 	bool allow_equip = FALSE;

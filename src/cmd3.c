@@ -29,72 +29,9 @@
 #include "ui-menu.h"
 #include "target.h"
 
-
-/*
- * Pick the context menu options appropiate for the item
- * bits (1<<(n-1)):
- *  1 - item can be examined
- *  2 - item can be wielded
- *  3 - item can be taken off
- *  4 - item can be inscribed
- *  5 - item can be uninscribed
- *  6 - item can be dropped
- *  7 - item can be picked up
- *  8 - item can be used (name,key are specific to item type)
- *  9 - item(book) can be browsed
- * 10 - item(book) can be studdied
- * 11 - item can be used to refill light source
- */
-int object_context_bits(const object_type *o_ptr, const int slot)
-{
-  int bits = 0;
-
-  if (o_ptr) {
-    bits |= 1;
-  } else {
-    return bits;
-  }
-  if ((slot > INVEN_WIELD) && obj_can_takeoff(o_ptr)) {
-    bits |= 4;
-  } else
-  if ((slot <= INVEN_WIELD) && obj_can_wear(o_ptr)) {
-    bits |= 2;
-  }
-  if (obj_has_inscrip(o_ptr)) {
-    bits |= 16;
-  } else
-  {
-    bits |= 8;
-  }
-  if (slot >= 0) {
-    bits |= 32;
-  } else
-  {
-    bits |= 64;
-  }
-  if (obj_is_useable(o_ptr)) {
-    bits |= 128;
-  }
-  if (obj_can_browse(o_ptr)) {
-    bits |= 256;
-    if (obj_can_cast_from(o_ptr)) {
-      bits |= 128;
-    }
-    if (obj_can_study(o_ptr)) {
-      bits |= 512;
-    }
-  }
-  if (obj_can_refill(o_ptr)) {
-    bits |= 1024;
-  }
-  return bits;
-}
-
 /*
  * Display inventory
  */
-int context_menu_object(const object_type *o_ptr, const int slot);
-
 void do_cmd_inven(void)
 {
 	int item;

@@ -1259,7 +1259,7 @@ bool show_file(const char *name, const char *what, int line, int mode)
 		my_strcpy(caption, what, sizeof(caption));
 
 		my_strcpy(path, name, sizeof(path));
-		fff = file_open(path, MODE_READ, -1);
+		fff = file_open(path, MODE_READ, FTYPE_TEXT);
 	}
 
 	/* Look in "help" */
@@ -1268,7 +1268,7 @@ bool show_file(const char *name, const char *what, int line, int mode)
 		strnfmt(caption, sizeof(caption), "Help file '%s'", name);
 
 		path_build(path, sizeof(path), ANGBAND_DIR_HELP, name);
-		fff = file_open(path, MODE_READ, -1);
+		fff = file_open(path, MODE_READ, FTYPE_TEXT);
 	}
 
 	/* Look in "info" */
@@ -1277,7 +1277,7 @@ bool show_file(const char *name, const char *what, int line, int mode)
 		strnfmt(caption, sizeof(caption), "Info file '%s'", name);
 
 		path_build(path, sizeof(path), ANGBAND_DIR_INFO, name);
-		fff = file_open(path, MODE_READ, -1);
+		fff = file_open(path, MODE_READ, FTYPE_TEXT);
 	}
 
 	/* Oops */
@@ -1372,7 +1372,7 @@ bool show_file(const char *name, const char *what, int line, int mode)
 			file_close(fff);
 
 			/* Hack -- Re-Open the file */
-			fff = file_open(path, MODE_READ, -1);
+			fff = file_open(path, MODE_READ, FTYPE_TEXT);
 			if (!fff) return (TRUE);
 
 			/* File has been restarted */

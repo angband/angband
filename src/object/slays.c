@@ -24,7 +24,7 @@
 /**
  * Info about slays (see src/slays.h for structure)
  */
-const struct slay slay_table[] =
+static const struct slay slay_table[] =
 {
 	#define SLAY(a, b, c, d, e, f, g, h, i, j) \
 		{ SL_##a, b, c, d, e, f, g, h, i, j},
@@ -95,9 +95,9 @@ const struct slay *random_slay(const bitflag mask[OF_SIZE])
  * count is the number of matches
  * \param flags is the flagset to analyse for matches
  * \param mask is the flagset against which to test
- * \param desc[] is the array of descriptions of matching slays - can be null
- * \param brand[] is the array of descriptions of brands - can be null
- * \param mult[] is the array of multipliers of those slays - can be null
+ * \param desc is the array of descriptions of matching slays - can be null
+ * \param brand is the array of descriptions of brands - can be null
+ * \param mult is the array of multipliers of those slays - can be null
  * \param dedup is whether or not to remove duplicates
  *
  * desc[], brand[] and mult[] must be >= SL_MAX in size

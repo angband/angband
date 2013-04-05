@@ -28,6 +28,7 @@
 #include "object/object.h"
 #include "spells.h"
 #include "squelch.h"
+#include "store.h"
 #include "target.h"
 #include "textui.h"
 #include "ui-menu.h"
@@ -268,7 +269,7 @@ static enum parser_error parse_i(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-testonly struct parser *store_parser_new(void) {
+struct parser *store_parser_new(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 	parser_reg(p, "S uint index uint slots", parse_s);
@@ -314,10 +315,10 @@ static enum parser_error parse_own_s(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-testonly struct parser *store_owner_parser_new(struct store *stores) {
+struct parser *store_owner_parser_new(struct store *ss) {
 	struct parser *p = parser_new();
 	struct owner_parser_state *s = mem_zalloc(sizeof *s);
-	s->stores = stores;
+	s->stores = ss;
 	s->cur = NULL;
 	parser_setpriv(p, s);
 	parser_reg(p, "V sym version", ignored);
@@ -1611,30 +1612,30 @@ static struct owner *store_choose_owner(struct store *s) {
 
 static struct store *parse_stores(void) {
 	struct parser *p = store_parser_new();
-	struct store *stores;
+	struct store *ss;
 	/* XXX ignored */
 	parse_file(p, "store");
-	stores = parser_priv(p);
+	ss = parser_priv(p);
 	parser_destroy(p);
-	return stores;
+	return ss;
 }
 
-static struct store *add_builtin_stores(struct store *stores) {
+static struct store *add_builtin_stores(struct store *ss) {
 	struct store *s0, *s1, *s2;
 
 	s0 = store_new(STORE_GENERAL);
 	s1 = store_new(STORE_B_MARKET);
 	s2 = store_new(STORE_HOME);
 
-	s0->next = stores;
+	s0->next = ss;
 	s1->next = s0;
 	s2->next = s1;
 
 	return s2;
 }
 
-static void parse_owners(struct store *stores) {
-	struct parser *p = store_owner_parser_new(stores);
+static void parse_owners(struct store *ss) {
+	struct parser *p = store_owner_parser_new(ss);
 	parse_file(p, "shop_own");
 	mem_free(parser_priv(p));
 	parser_destroy(p);
@@ -1642,11 +1643,11 @@ static void parse_owners(struct store *stores) {
 
 static struct store *flatten_stores(struct store *store_list) {
 	struct store *s;
-	struct store *stores = mem_zalloc(MAX_STORES * sizeof(*stores));
+	struct store *ss = mem_zalloc(MAX_STORES * sizeof(*stores));
 
 	for (s = store_list; s; s = s->next) {
 		/* XXX bounds-check */
-		memcpy(&stores[s->sidx], s, sizeof(*s));
+		memcpy(&ss[s->sidx], s, sizeof(*s));
 	}
 
 	while (store_list) {
@@ -1657,7 +1658,7 @@ static struct store *flatten_stores(struct store *store_list) {
 		store_list = s;
 	}
 
-	return stores;
+	return ss;
 }
 
 void store_init(void)
@@ -2425,7 +2426,6 @@ static bool store_purchase(int item)
 	/* Attempt to buy it */
 	if (store->sidx != STORE_HOME)
 	{
-		u32b price;
 		bool response;
 
 		/* Extract the price for the entire stack */
@@ -2918,9 +2918,6 @@ static int store_get_stock(menu_type *m, int oid)
 	return oid;
 }
 
-int context_menu_store(struct store *store, const int oid, int x, int y);
-int context_menu_store_item(struct store *store, const int oid, int x, int y);
-
 /*
  *
  */
@@ -2946,14 +2943,12 @@ static bool store_menu_handle(menu_type *m, const ui_event *event, int oid)
 			bool action = FALSE;
 			if ((event->mouse.y == 0) || (event->mouse.y == 1)) {
 				/* show the store context menu */
-				struct store *store = current_store();
 				context_menu_store(store,oid,event->mouse.x,event->mouse.y);
 				action = TRUE;
 			} else
 			/* if press is on a list item, so store item context */
 			if (event->mouse.y == 4+oid) {
 				/* click was on an item */
-				struct store *store = current_store();
 				context_menu_store_item(store,oid, event->mouse.x,event->mouse.y);
 				action = TRUE;
 			}

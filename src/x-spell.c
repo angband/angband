@@ -675,7 +675,6 @@ static bool cast_mage_spell(int spell, int dir)
 		case SPELL_BANISHMENT:
 		{
 			return banishment();
-			break;
 		}
 
 		case SPELL_DOOR_CREATION:
@@ -705,7 +704,6 @@ static bool cast_mage_spell(int spell, int dir)
 		case SPELL_WORD_OF_RECALL:
 		{
 			return set_recall();
-			break;
 		}
 
 		case SPELL_ACID_BOLT:
@@ -1291,7 +1289,6 @@ static bool cast_priest_spell(int spell, int dir)
 		case PRAYER_WORD_OF_RECALL:
 		{
 			return set_recall();
-			break;
 		}
 
 		case PRAYER_ALTER_REALITY:

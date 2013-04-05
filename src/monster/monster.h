@@ -264,8 +264,6 @@ extern bool make_attack_spell(struct monster *m);
 
 extern s16b num_repro;
 
-#ifdef TEST
 extern bool (*testfn_make_attack_normal)(struct monster *m, struct player *p);
-#endif /* !TEST */
 
 #endif /* !MONSTER_MONSTER_H */
