@@ -1391,17 +1391,15 @@ void monster_death_stats(int m_idx)
 	s16b this_o_idx, next_o_idx = 0;
 
 	monster_type *m_ptr;
-	monster_race *r_ptr;
 
 	bool uniq;
 
 	assert(m_idx > 0);
 	m_ptr = cave_monster(cave, m_idx);
-	r_ptr = &r_info[m_ptr->r_idx];
 
 	
 	/* Check if monster is UNIQUE */
-	uniq = rf_has(r_ptr->flags,RF_UNIQUE);
+	uniq = rf_has(m_ptr->race->flags,RF_UNIQUE);
 
 	/* Get the location */
 	y = m_ptr->fy;
@@ -1445,8 +1443,6 @@ void monster_death_stats(int m_idx)
 static bool stats_monster(monster_type *m_ptr, int i)
 {
 	static int lvl;
-	/* Get monster race */
-	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 		
 	/* get player depth */
 	lvl=p_ptr->depth;
@@ -1456,37 +1452,37 @@ static bool stats_monster(monster_type *m_ptr, int i)
 	mon_total[lvl] += addval;
 	
 	/* Increment unique count if appropriate */
-	if (rf_has(r_ptr->flags, RF_UNIQUE)){
+	if (rf_has(m_ptr->race->flags, RF_UNIQUE)){
 	
 		/* add to total */
 		uniq_total[lvl] += addval;
 	
 		/* kill the unique if we're in clearing mode */
-		if (clearing) r_ptr->max_num = 0;
+		if (clearing) m_ptr->race->max_num = 0;
 		
 		//debugging print that we killed it
 		//msg_format("Killed %s",r_ptr->name);
 	}	
 	
 	/* Is it mostly dangerous (10 levels ood or less?)*/
-	if ((r_ptr->level > p_ptr->depth) && 
-		(r_ptr->level <= p_ptr->depth+10)){
+	if ((m_ptr->race->level > p_ptr->depth) && 
+		(m_ptr->race->level <= p_ptr->depth+10)){
 		
 			mon_ood[lvl] += addval;
 			
 			/* Is it a unique */
-			if (rf_has(r_ptr->flags, RF_UNIQUE)) uniq_ood[lvl] += addval;
+			if (rf_has(m_ptr->race->flags, RF_UNIQUE)) uniq_ood[lvl] += addval;
 			
 		}
 		
 		
 	/* Is it deadly? */
-	if (r_ptr->level > p_ptr->depth + 10){
+	if (m_ptr->race->level > p_ptr->depth + 10){
 	
 		mon_deadly[lvl] += addval;
 	
 		/* Is it a unique? */
-		if (rf_has(r_ptr->flags, RF_UNIQUE)) uniq_deadly[lvl] += addval;
+		if (rf_has(m_ptr->race->flags, RF_UNIQUE)) uniq_deadly[lvl] += addval;
 						
 	}	
 	
@@ -2058,7 +2054,7 @@ static void scan_for_monsters(void)
 		monster_type *m_ptr = cave_monster(cave, i);
 		
 		/* Skip dead monsters */
-		if (!m_ptr->r_idx) continue;
+		if (!m_ptr->race) continue;
 		
 		stats_monster(m_ptr,i);
 	}
@@ -2111,9 +2107,9 @@ static void revive_uniques(void)
 	int i;
 	
 	for (i = 1; i < z_info->r_max - 1; i++){
-	
+
 		/* get the monster info */
-		 monster_race *r_ptr = &r_info[i];
+		monster_race *r_ptr = &r_info[i];
 
 		/* revive the unique monster */
 		if (rf_has(r_ptr->flags, RF_UNIQUE)) r_ptr->max_num = 1;
