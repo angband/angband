@@ -210,7 +210,7 @@ static bool describe_stats(textblock *tb, const object_type *o_ptr,
 		bitflag flags[MAX_PVALS][OF_SIZE], oinfo_detail_t mode)
 {
 	const char *descs[N_ELEMENTS(pval_flags)];
-	size_t count, i;
+	size_t count = 0, i;
 	bool full = mode & OINFO_FULL;
 	bool dummy = mode & OINFO_DUMMY;
 	bool search = FALSE;
@@ -1308,10 +1308,10 @@ static bool describe_ego(textblock *tb, const struct ego_item *ego)
 /*
  * Output object information
  */
-static textblock *object_info_out(const object_type *o_ptr, oinfo_detail_t mode)
+static textblock *object_info_out(const object_type *o_ptr, int mode)
 {
 	bitflag flags[OF_SIZE];
-	bitflag pval_flags[MAX_PVALS][OF_SIZE];
+	bitflag pv_flags[MAX_PVALS][OF_SIZE];
 	bool something = FALSE;
 	bool known = object_is_known(o_ptr);
 
@@ -1331,10 +1331,10 @@ static textblock *object_info_out(const object_type *o_ptr, oinfo_detail_t mode)
 	/* Grab the object flags */
 	if (full) {
 		object_flags(o_ptr, flags);
-		object_pval_flags(o_ptr, pval_flags);
+		object_pval_flags(o_ptr, pv_flags);
 	} else {
 		object_flags_known(o_ptr, flags);
-		object_pval_flags_known(o_ptr, pval_flags);
+		object_pval_flags_known(o_ptr, pv_flags);
 	}
 
 	if (subjective) describe_origin(tb, o_ptr);
@@ -1347,7 +1347,7 @@ static textblock *object_info_out(const object_type *o_ptr, oinfo_detail_t mode)
 	}
 
 	if (describe_curses(tb, o_ptr, flags)) something = TRUE;
-	if (describe_stats(tb, o_ptr, pval_flags, mode)) something = TRUE;
+	if (describe_stats(tb, o_ptr, pv_flags, mode)) something = TRUE;
 	if (describe_slays(tb, flags, o_ptr->tval)) something = TRUE;
 	if (describe_immune(tb, flags)) something = TRUE;
 	if (describe_ignores(tb, flags)) something = TRUE;

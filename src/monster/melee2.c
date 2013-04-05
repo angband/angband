@@ -19,6 +19,7 @@
 #include "angband.h"
 #include "attack.h"
 #include "cave.h"
+#include "monster/monster.h"
 #include "monster/mon-make.h"
 #include "monster/mon-spell.h"
 #include "monster/mon-timed.h"
@@ -2568,8 +2569,6 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 			/* Handle cut */
 			if (do_cut)
 			{
-				int k;
-
 				/* Critical hit (zero if non-critical) */
 				tmp = monster_critical(d_dice, d_side, damage);
 
@@ -2593,8 +2592,6 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 			/* Handle stun */
 			if (do_stun)
 			{
-				int k;
-
 				/* Critical hit (zero if non-critical) */
 				tmp = monster_critical(d_dice, d_side, damage);
 
@@ -2756,7 +2753,7 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 
 		/* Hack -- See if monster "notices" player */
 		if ((notice * notice * notice) <= p_ptr->state.noise) {
-			int d = 1;
+			d = 1;
 
 			/* Wake up faster near the player */
 			if (m_ptr->cdis < 50) d = (100 / m_ptr->cdis);
@@ -2807,7 +2804,7 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 		mon_dec_timed(m_ptr, MON_TMD_SLOW, 1, 0, FALSE);
 
 	if (m_ptr->m_timed[MON_TMD_STUN]) {
-		int d = 1;
+		d = 1;
 
 		/* Make a "saving throw" against stun */
 		if (randint0(5000) <= m_ptr->race->level * m_ptr->race->level)
@@ -2825,7 +2822,7 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 	}
 
 	if (m_ptr->m_timed[MON_TMD_CONF]) {
-		int d = randint1(m_ptr->race->level / 10 + 1);
+		d = randint1(m_ptr->race->level / 10 + 1);
 
 		/* Still confused */
 		if (m_ptr->m_timed[MON_TMD_CONF] > d)
@@ -2837,7 +2834,7 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 
 	if (m_ptr->m_timed[MON_TMD_FEAR]) {
 		/* Amount of "boldness" */
-		int d = randint1(m_ptr->race->level / 10 + 1);
+		d = randint1(m_ptr->race->level / 10 + 1);
 
 		if (m_ptr->m_timed[MON_TMD_FEAR] > d)
 			mon_dec_timed(m_ptr, MON_TMD_FEAR, d, MON_TMD_FLG_NOMESSAGE, FALSE);

@@ -17,6 +17,7 @@
  */
 
 #include "externs.h"
+#include "monster/mon-init.h"
 #include "monster/mon-msg.h"
 #include "monster/mon-power.h"
 #include "monster/mon-spell.h"
@@ -139,7 +140,7 @@ static enum parser_error parse_rb_d(struct parser *p) {
 }
 
 
-struct parser *init_parse_rb(void) {
+static struct parser *init_parse_rb(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 

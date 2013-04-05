@@ -92,7 +92,7 @@ static void wiz_gf_demo(void)
  * This is a nice utility function; it determines if a (NULL-terminated)
  * string consists of only digits (starting with a non-zero digit).
  */
-s16b get_idx_from_name(char *s)
+static s16b get_idx_from_name(char *s)
 {
 	char *endptr = NULL;
 	long l = strtol(s, &endptr, 10);
@@ -463,7 +463,7 @@ static void wiz_display_item(const object_type *o_ptr, bool all)
 static const region wiz_create_item_area = { 0, 0, 0, 0 };
 
 /** Object kind selection */
-void wiz_create_item_subdisplay(menu_type *m, int oid, bool cursor,
+static void wiz_create_item_subdisplay(menu_type *m, int oid, bool cursor,
 		int row, int col, int width)
 {
 	object_kind **choices = menu_priv(m);
@@ -473,7 +473,7 @@ void wiz_create_item_subdisplay(menu_type *m, int oid, bool cursor,
 	c_prt(curs_attrs[CURS_KNOWN][0 != cursor], buf, row, col);
 }
 
-bool wiz_create_item_subaction(menu_type *m, const ui_event *e, int oid)
+static bool wiz_create_item_subaction(menu_type *m, const ui_event *e, int oid)
 {
 	object_kind **choices = menu_priv(m);
 	object_kind *kind = choices[oid];
@@ -507,7 +507,7 @@ bool wiz_create_item_subaction(menu_type *m, const ui_event *e, int oid)
 	return FALSE;
 }
 
-menu_iter wiz_create_item_submenu =
+static menu_iter wiz_create_item_submenu =
 {
 	NULL,
 	NULL,

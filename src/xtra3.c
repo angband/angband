@@ -37,7 +37,7 @@
  * of the basic player events.  For convenience, these have been grouped 
  * in this list.
  */
-game_event_type player_events[] =
+static game_event_type player_events[] =
 {
 	EVENT_RACE_CLASS,
 	EVENT_PLAYERTITLE,
@@ -56,7 +56,7 @@ game_event_type player_events[] =
 	EVENT_DUNGEONLEVEL,
 };
 
-game_event_type statusline_events[] =
+static game_event_type statusline_events[] =
 {
 	EVENT_STUDYSTATUS,
 	EVENT_STATUS,
@@ -953,7 +953,7 @@ static size_t prt_buttons(int row, int col)
 /* Useful typedef */
 typedef size_t status_f(int row, int col);
 
-status_f *status_handlers[] =
+static status_f *status_handlers[] =
 { prt_buttons, prt_unignore, prt_recall, prt_state, prt_cut, prt_stun,
   prt_hunger, prt_study, prt_tmd, prt_dtrap };
 
@@ -1666,7 +1666,7 @@ static void show_splashscreen(game_event_type type, game_event_data *data, void 
 
 	/* Open the News file */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_FILE, "news.txt");
-	fp = file_open(buf, MODE_READ, -1);
+	fp = file_open(buf, MODE_READ, FTYPE_TEXT);
 
 	text_out_hook = text_out_to_screen;
 

@@ -19,6 +19,7 @@
 #include "angband.h"
 #include "button.h"
 #include "cmds.h"
+#include "files.h"
 #include "game-event.h"
 #include "randname.h"
 
@@ -1382,14 +1383,12 @@ bool askfor_aux_keypress(char *buf, size_t buflen, size_t *curs, size_t *len, st
 		{
 			*curs = 0;
 			return TRUE;
-			break;
 		}
 		
 		case KC_ENTER:
 		{
 			*curs = *len;
 			return TRUE;
-			break;
 		}
 		
 		case ARROW_LEFT:

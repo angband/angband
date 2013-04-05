@@ -1378,7 +1378,7 @@ static bool seen_tval(int tval)
 
 
 /* Extra options on the "item options" menu */
-struct
+static struct
 {
 	char tag;
 	const char *name;

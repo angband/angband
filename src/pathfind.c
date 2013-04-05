@@ -19,6 +19,7 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "pathfind.h"
 #include "squelch.h"
 
 /****** Pathfinding code ******/

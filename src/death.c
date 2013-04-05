@@ -18,6 +18,7 @@
 
 #include "angband.h"
 #include "cmds.h"
+#include "death.h"
 #include "files.h"
 #include "history.h"
 #include "savefile.h"
@@ -68,7 +69,7 @@ static void print_tomb(void)
 
 	/* Open the death file */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_FILE, "dead.txt");
-	fp = file_open(buf, MODE_READ, -1);
+	fp = file_open(buf, MODE_READ, FTYPE_TEXT);
 
 	if (fp)
 	{
@@ -153,7 +154,7 @@ static void display_winner(void)
 
 
 	path_build(buf, sizeof(buf), ANGBAND_DIR_FILE, "crown.txt");
-	fp = file_open(buf, MODE_READ, -1);
+	fp = file_open(buf, MODE_READ, FTYPE_TEXT);
 
 	Term_clear();
 	Term_get_size(&wid, &hgt);

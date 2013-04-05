@@ -42,7 +42,7 @@
 static s16b alloc_ego_size;
 static alloc_entry *alloc_ego_table;
 
-void init_ego_allocs(void) {
+static void init_ego_allocs(void) {
 	struct alloc_entry *table;
 	int i;
 	ego_item_type *e_ptr;
@@ -127,7 +127,7 @@ void init_ego_allocs(void) {
 
 }
 
-void cleanup_ego_allocs(void) {
+static void cleanup_ego_allocs(void) {
 	FREE(alloc_ego_table);
 }
 

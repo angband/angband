@@ -32,12 +32,12 @@
 #include "z-queue.h"
 #include "grafmode.h"
 
-struct object *o_list;
+static struct object *o_list;
 
 /*
  * Hold the titles of scrolls, 6 to 14 characters each, plus quotes.
  */
-char scroll_adj[MAX_TITLES][18];
+static char scroll_adj[MAX_TITLES][18];
 
 static void flavor_assign_fixed(void)
 {
@@ -417,7 +417,7 @@ bool wearable_p(const object_type *o_ptr)
 	return (FALSE);
 }
 
-int get_inscribed_ammo_slot(const object_type *o_ptr)
+static int get_inscribed_ammo_slot(const object_type *o_ptr)
 {
 	char *s;
 	if (!o_ptr->note) return 0;
@@ -431,7 +431,7 @@ int get_inscribed_ammo_slot(const object_type *o_ptr)
  * Used by wield_slot() to find an appopriate slot for ammo. See wield_slot()
  * for information on what this returns.
  */
-s16b wield_slot_ammo(const object_type *o_ptr)
+static s16b wield_slot_ammo(const object_type *o_ptr)
 {
 	s16b i, open = 0;
 
@@ -1746,7 +1746,7 @@ void object_absorb(object_type *o_ptr, const object_type *j_ptr)
 	if (o_ptr->tval == TV_WAND || o_ptr->tval == TV_STAFF ||
 			o_ptr->tval == TV_GOLD)
 	{
-		int total = o_ptr->pval[DEFAULT_PVAL] + j_ptr->pval[DEFAULT_PVAL];
+		total = o_ptr->pval[DEFAULT_PVAL] + j_ptr->pval[DEFAULT_PVAL];
 		o_ptr->pval[DEFAULT_PVAL] = total >= MAX_PVAL ? MAX_PVAL : total;
 	}
 
@@ -2369,7 +2369,7 @@ void save_quiver_size(struct player *p)
  *
  * \returns -1 if slot1 should come first, 1 if slot2 should come first, or 0.
  */
-int compare_ammo(int slot1, int slot2)
+static int compare_ammo(int slot1, int slot2)
 {
 	/* Right now there is no sorting criteria */
 	return 0;
@@ -2378,7 +2378,7 @@ int compare_ammo(int slot1, int slot2)
 /**
  * Swap ammunition between quiver slots (0-9).
  */
-void swap_quiver_slots(int slot1, int slot2)
+static void swap_quiver_slots(int slot1, int slot2)
 {
 	int i = slot1 + QUIVER_START;
 	int j = slot2 + QUIVER_START;
@@ -3745,7 +3745,7 @@ static int compare_items(const object_type *o1, const object_type *o2)
 /**
  * Helper to draw the Object Recall subwindow; this actually does the work.
  */
-void display_object_recall(object_type *o_ptr)
+static void display_object_recall(object_type *o_ptr)
 {
 	char header[120];
 

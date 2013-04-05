@@ -316,9 +316,9 @@ int damcalc(int num, int sides, aspect dam_aspect) {
 		case MINIMISE: return num;
 
 		case AVERAGE: return num * (sides + 1) / 2;
+		default:
+			assert(0);
 	}
-
-	return 0;
 }
 
 
@@ -425,9 +425,9 @@ s16b m_bonus_calc(int max, int level, aspect bonus_aspect) {
 		case MINIMISE:  return 0;
 
 		case AVERAGE:   return max * level / MAX_DEPTH;
+		default:
+			assert(0);
 	}
-
-	return 0;
 }
 
 

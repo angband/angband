@@ -634,8 +634,6 @@ static enum birth_stage menu_question(enum birth_stage current, menu_type *curre
 /* ------------------------------------------------------------------------
  * The rolling bit of the roller.
  * ------------------------------------------------------------------------ */
-#define ROLLERCOL 42
-
 static enum birth_stage roller_command(bool first_call)
 {
 	char prompt[80] = "";

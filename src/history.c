@@ -38,12 +38,6 @@ static size_t history_ctr;
 /* Current size of history list */
 static size_t history_size;
 
-
-#define LIMITLOW(a, b) if (a < b) a = b;
-#define LIMITHI(a, b) if (a > b) a = b;
-
-
-
 /*
  * Initialise an empty history list.
  */
@@ -153,7 +147,7 @@ bool history_lose_artifact(struct artifact *artifact)
  * Return TRUE on success.
  */
 bool history_add_full(u16b type, struct artifact *artifact, s16b dlev,
-		s16b clev, s32b turn, const char *text)
+		s16b clev, s32b turnno, const char *text)
 {
 	/* Allocate the history list if needed */
 	if (!history_list)
@@ -168,7 +162,7 @@ bool history_add_full(u16b type, struct artifact *artifact, s16b dlev,
 	history_list[history_ctr].dlev = dlev;
 	history_list[history_ctr].clev = clev;
 	history_list[history_ctr].a_idx = artifact ? artifact->aidx : 0;
-	history_list[history_ctr].turn = turn;
+	history_list[history_ctr].turn = turnno;
 	my_strcpy(history_list[history_ctr].event,
 	          text, sizeof(history_list[history_ctr].event));
 

@@ -26,7 +26,7 @@
  * Details of the different monster spells in the game.
  * See src/monster/monster.h for structure
  */
-const struct mon_spell mon_spell_table[] =
+static const struct mon_spell mon_spell_table[] =
 {
     #define RSF(a, b, c, d, e, f, g, h, i, j, k, l, m) \
 			{ RSF_##a, b, c, d, e, f, g, h, i, j, k, l, m },
@@ -41,7 +41,7 @@ const struct mon_spell mon_spell_table[] =
  * Details of the different side effects of spells.
  * See src/monster/monster.h for structure
  */
-const struct spell_effect spell_effect_table[] =
+static const struct spell_effect spell_effect_table[] =
 {
     #define RSE(a, b, c, d, e, f, g, h, i, j, k) \
 			{ RSE_##a, b, c, d, e, f, g, h, i, j, k },
@@ -298,7 +298,6 @@ static int summon_monster_aux(int flag, struct monster *m_ptr, int rlev, int sum
  * \param spell is the attack type
  * \param dam is the amount of damage caused by the attack
  * \param m_ptr is the attacking monster
- * \param rlev is its level
  * \param seen is whether @ can see it
  */
 static void do_side_effects(int spell, int dam, struct monster *m_ptr, bool seen)
@@ -592,14 +591,14 @@ void do_mon_spell(int spell, struct monster *m_ptr, bool seen)
  * Returns TRUE if any desired type is among the flagset
  *
  * \param f is the set of spell flags we're testing
- * \param type is the spell type(s) we're looking for
+ * \param types is the spell type(s) we're looking for
  */
-bool test_spells(bitflag *f, enum mon_spell_type type)
+bool test_spells(bitflag *f, int types)
 {
 	const struct mon_spell *rs_ptr;
 
 	for (rs_ptr = mon_spell_table; rs_ptr->index < RSF_MAX; rs_ptr++)
-		if (rsf_has(f, rs_ptr->index) && (rs_ptr->type & type))
+		if (rsf_has(f, rs_ptr->index) && (rs_ptr->type & types))
 			return TRUE;
 
 	return FALSE;
@@ -609,14 +608,14 @@ bool test_spells(bitflag *f, enum mon_spell_type type)
  * Set a spell bitflag to allow only a specific set of spell types.
  *
  * \param f is the set of spell flags we're pruning
- * \param type is the spell type(s) we're allowing
+ * \param types is the spell type(s) we're allowing
  */
-void set_spells(bitflag *f, enum mon_spell_type type)
+void set_spells(bitflag *f, int types)
 {
 	const struct mon_spell *rs_ptr;
 
 	for (rs_ptr = mon_spell_table; rs_ptr->index < RSF_MAX; rs_ptr++)
-		if (rsf_has(f, rs_ptr->index) && !(rs_ptr->type & type))
+		if (rsf_has(f, rs_ptr->index) && !(rs_ptr->type & types))
 			rsf_off(f, rs_ptr->index);
 
 	return;

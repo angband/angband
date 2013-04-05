@@ -1767,16 +1767,6 @@ void do_cmd_view_map(void)
  */
 #define VINFO_MAX_SLOPES 126
 
-
-/*
- * Mask of bits used in a single octant
- */
-#define VINFO_BITS_3 0x3FFFFFFF
-#define VINFO_BITS_2 0xFFFFFFFF
-#define VINFO_BITS_1 0xFFFFFFFF
-#define VINFO_BITS_0 0xFFFFFFFF
-
-
 /*
  * Forward declare
  */

@@ -34,13 +34,13 @@
 /*** File-wide variables ***/
 
 /* Is the target set? */
-bool target_set;
+static bool target_set;
 
 /* Current monster being tracked, or 0 */
-u16b target_who;
+static u16b target_who;
 
 /* Target location */
-s16b target_x, target_y;
+static s16b target_x, target_y;
 
 #define TS_INITIAL_SIZE	20
 

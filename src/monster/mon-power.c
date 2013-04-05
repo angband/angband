@@ -388,7 +388,7 @@ static long eval_hp_adjust(monster_race *r_ptr)
 
 }
 
-errr eval_r_power(struct monster_race *races)
+errr eval_r_power(struct monster_race *racelist)
 {
 	int i, j, iteration;
 	byte lvl;
@@ -418,7 +418,7 @@ for (iteration = 0; iteration < 3; iteration ++) {
 	for (i = 0; i < z_info->r_max; i++)	{
 
 		/* Point at the "info" */
-		r_ptr = &races[i];
+		r_ptr = &racelist[i];
 
 		/* Set the current level */
 		lvl = r_ptr->level;
@@ -600,7 +600,7 @@ for (iteration = 0; iteration < 3; iteration ++) {
 		int new_power;
 
 		/* Point at the "info" */
-		r_ptr = &races[i];
+		r_ptr = &racelist[i];
 
 		/* Extract level */
 		lvl = r_ptr->level;

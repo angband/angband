@@ -66,10 +66,8 @@ static void alloc_objects(struct cave *c, int set, int typ, int num, int depth, 
 static bool alloc_object(struct cave *c, int set, int typ, int depth, byte origin);
 
 #if  __STDC_VERSION__ < 199901L
-#define ROOM_DEBUG if (0) msg;
 #define ROOM_LOG  if (OPT(cheat_room)) msg
 #else
-#define ROOM_DEBUG(...) if (0) msg(__VA_ARGS__);
 #define ROOM_LOG(...) if (OPT(cheat_room)) msg(__VA_ARGS__);
 #endif
 
@@ -329,7 +327,7 @@ static enum parser_error parse_room_d(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-struct parser *init_parse_room(void) {
+static struct parser *init_parse_room(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 	parser_reg(p, "V sym version", ignored);
@@ -368,7 +366,7 @@ static struct file_parser room_parser = {
 	cleanup_room
 };
 
-void run_room_parser(void) {
+static void run_room_parser(void) {
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (room templates)");
 	if (run_parser(&room_parser))
 		quit("Cannot initialize room templates");
@@ -802,7 +800,7 @@ static void alloc_objects(struct cave *c, int set, int typ, int num, int depth, 
  */
 static bool alloc_object(struct cave *c, int set, int typ, int depth, byte origin)
 {
-	int x, y;
+	int x = 0, y = 0;
 	int tries = 0;
 	bool room;
 
@@ -1589,7 +1587,8 @@ static bool build_large(struct cave *c, int y0, int x0)
 
 
 /* Hook for which type of pit we are building */
-pit_profile *pit_type = NULL;
+/* TODO(elly): why is this file-static instead of an argument? */
+static pit_profile *pit_type = NULL;
 
 
 /**

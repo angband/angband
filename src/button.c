@@ -67,8 +67,8 @@ static int button_num;
 /*
  * Hooks for making and unmaking buttons
  */
-button_add_f button_add_hook;
-button_kill_f button_kill_hook;
+static button_add_f button_add_hook;
+static button_kill_f button_kill_hook;
 
 
 

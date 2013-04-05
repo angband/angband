@@ -207,7 +207,6 @@ static bool py_attack_real(int y, int x, bool *fear) {
 
 	/* Handle normal weapon */
 	if (o_ptr->kind) {
-		int i;
 		const struct slay *best_s_ptr = NULL;
 
 		hit_verb = "hit";
@@ -484,8 +483,6 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 				/* Invisible monster */
 				msgt(MSG_SHOOT_HIT, "The %s finds a mark.", o_name);
 			} else {
-				size_t i;
-
 				for (i = 0; i < N_ELEMENTS(ranged_hit_types); i++) {
 					char *dmg_text = "";
 

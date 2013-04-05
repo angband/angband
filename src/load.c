@@ -2216,20 +2216,20 @@ int rd_history(void)
 	rd_u32b(&tmp32u);
 	for (i = 0; i < tmp32u; i++)
 	{
-		s32b turn;
+		s32b turnno;
 		s16b dlev, clev;
 		u16b type;
 		byte art_name;
 		char text[80];
 		
 		rd_u16b(&type);
-		rd_s32b(&turn);
+		rd_s32b(&turnno);
 		rd_s16b(&dlev);
 		rd_s16b(&clev);
 		rd_byte(&art_name);
 		rd_string(text, sizeof(text));
 		
-		history_add_full(type, &a_info[art_name], dlev, clev, turn, text);
+		history_add_full(type, &a_info[art_name], dlev, clev, turnno, text);
 	}
 
 	return 0;

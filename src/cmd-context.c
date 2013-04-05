@@ -32,11 +32,7 @@
 #include "monster/mon-lore.h"
 #include "monster/mon-util.h"
 
-int context_menu_command(void);
-int context_menu_object(const object_type *o_ptr, const int slot);
-void textui_cmd_destroy_menu(int item);
-
-int context_menu_player_2(int mx, int my)
+static int context_menu_player_2(int mx, int my)
 {
 	menu_type *m;
 	region r;
@@ -123,7 +119,7 @@ int context_menu_player_2(int mx, int my)
 	} else
 	if (selected == 7) {
 		/* show the commands */
-		context_menu_command();
+		context_menu_command(mx, my);
 	} else
 	if (selected == 8) {
 		/* show options screen */
@@ -274,7 +270,7 @@ int context_menu_player(int mx, int my)
 	case 10:
 		{
 			/* show the commands */
-			context_menu_command();
+			context_menu_command(mx, my);
 		} break;
 	case 11:
 		{
@@ -347,7 +343,7 @@ int context_menu_player(int mx, int my)
 	return 1;
 }
 
-int context_menu_cave(struct cave *cave, int y, int x, int adjacent, int mx, int my)
+int context_menu_cave(struct cave *c, int y, int x, int adjacent, int mx, int my)
 {
 	menu_type *m;
 	region r;
@@ -363,7 +359,7 @@ int context_menu_cave(struct cave *cave, int y, int x, int adjacent, int mx, int
 	m->selections = labels;
 
 	menu_dynamic_add_label(m, "Look At", 'l', 1, labels);
-	if (cave->m_idx[y][x]) {
+	if (c->m_idx[y][x]) {
 		menu_dynamic_add_label(m, "Recall Info", '/', 18, labels);
 	}
 	menu_dynamic_add_label(m, "Use Item On", 'U', 2, labels);
@@ -371,12 +367,12 @@ int context_menu_cave(struct cave *cave, int y, int x, int adjacent, int mx, int
 		menu_dynamic_add_label(m, "Cast On", 'm', 3, labels);
 	}
 	if (adjacent) {
-		if (cave->m_idx[y][x]) {
+		if (c->m_idx[y][x]) {
 			menu_dynamic_add_label(m, "Attack", '+', 4, labels);
 		} else {
 			menu_dynamic_add_label(m, "Alter", '+', 4, labels);
 		}
-		if (cave->o_idx[y][x]) {
+		if (c->o_idx[y][x]) {
 			s16b o_idx = chest_check(y,x, CHEST_ANY);
 			if (o_idx) {
 				object_type *o_ptr = object_byid(o_idx);
@@ -394,20 +390,20 @@ int context_menu_cave(struct cave *cave, int y, int x, int adjacent, int mx, int
 				}
 			}
 		}
-		if (cave_istrap(cave, y, x)) {
+		if (cave_istrap(c, y, x)) {
 			menu_dynamic_add_label(m, "Disarm", 'D', 5, labels);
 			menu_dynamic_add_label(m, "Jump Onto", 'W', 6, labels);
 		}
-		if (cave_isopendoor(cave, y, x)) {
+		if (cave_isopendoor(c, y, x)) {
 			menu_dynamic_add_label(m, "Close", 'c', 7, labels);
 		} else
-		if (cave_iscloseddoor(cave, y, x)) {
+		if (cave_iscloseddoor(c, y, x)) {
 			menu_dynamic_add_label(m, "Open", 'o', 8, labels);
 			menu_dynamic_add_label(m, "Bash Open", 'B', 9, labels);
 			menu_dynamic_add_label(m, "Lock", 'D', 5, labels);
 			menu_dynamic_add_label(m, "Jam", 'j', 10, labels);
 		} else
-		if (cave_isdiggable(cave, y, x)) {
+		if (cave_isdiggable(c, y, x)) {
 			menu_dynamic_add_label(m, "Tunnel", 'T', 11, labels);
 		}
 		menu_dynamic_add_label(m, "Search", 's', 12, labels);
@@ -451,20 +447,20 @@ int context_menu_cave(struct cave *cave, int y, int x, int adjacent, int mx, int
 	if (p_ptr->timed[TMD_IMAGE]) {
 		prt("(Enter to select command, ESC to cancel) You see something strange:", 0, 0);
 	} else
-	if (cave->m_idx[y][x]) {
+	if (c->m_idx[y][x]) {
 		char m_name[80];
-		monster_type *m_ptr = cave_monster_at(cave, y, x);
+		monster_type *m_ptr = cave_monster_at(c, y, x);
 
 		/* Get the monster name ("a kobold") */
 		monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_IND2);
 
 		prt(format("(Enter to select command, ESC to cancel) You see %s:", m_name), 0, 0);
 	} else
-	if (cave->o_idx[y][x] && !squelch_item_ok(object_byid(cave->o_idx[y][x]))) {
+	if (c->o_idx[y][x] && !squelch_item_ok(object_byid(c->o_idx[y][x]))) {
 		char o_name[80];
 
 		/* Get the single object in the list */
-		object_type *o_ptr = object_byid(cave->o_idx[y][x]);
+		object_type *o_ptr = object_byid(c->o_idx[y][x]);
 
 		/* Obtain an object description */
 		object_desc(o_name, sizeof (o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
@@ -474,10 +470,10 @@ int context_menu_cave(struct cave *cave, int y, int x, int adjacent, int mx, int
 	{
 		/* Feature (apply mimic) */
 		const char *name;
-		int feat = f_info[cave->feat[y][x]].mimic;
+		int feat = f_info[c->feat[y][x]].mimic;
 
 		/* Require knowledge about grid, or ability to see grid */
-		if (!(cave->info[y][x] & (CAVE_MARK)) && !player_can_see_bold(y,x)) {
+		if (!(c->info[y][x] & (CAVE_MARK)) && !player_can_see_bold(y,x)) {
 			/* Forget feature */
 			feat = FEAT_NONE;
 		}
@@ -593,7 +589,7 @@ int context_menu_cave(struct cave *cave, int y, int x, int adjacent, int mx, int
 	} else
 	if (selected == 18) {
 		/* recall monster Info */
-		monster_type *m_ptr = cave_monster_at(cave, y, x);
+		monster_type *m_ptr = cave_monster_at(c, y, x);
 		if (m_ptr) {
 			monster_lore *lore = get_lore(m_ptr->race);
 

@@ -28,7 +28,7 @@
  * The "pval" of a chest determines the quality of its treasure
  * Note that disarming a trap on a chest also removes the lock.
  */
-const byte chest_traps[64] =
+static const byte chest_traps[64] =
 {
 	0,					/* 0 == empty */
 	(CHEST_POISON),

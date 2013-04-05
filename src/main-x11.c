@@ -398,41 +398,13 @@ struct term_data
 
 /**** Generic Macros ****/
 
-
-
-/* Set current metadpy (Metadpy) to 'M' */
-#define Metadpy_set(M) \
-	Metadpy = M
-
-
-/* Initialize 'M' using Display 'D' */
-#define Metadpy_init_dpy(D) \
-	Metadpy_init_2(D,cNULL)
-
 /* Initialize 'M' using a Display named 'N' */
 #define Metadpy_init_name(N) \
 	Metadpy_init_2((Display*)(NULL),N)
 
-/* Initialize 'M' using the standard Display */
-#define Metadpy_init() \
-	Metadpy_init_name("")
-
-
-/* Init an infowin by giving father as an (info_win*) (or NULL), and data */
-#define Infowin_init_dad(D,X,Y,W,H,B,FG,BG) \
-	Infowin_init_data(((D) ? ((D)->win) : (Window)(None)), \
-	                  X,Y,W,H,B,FG,BG)
-
-
 /* Init a top level infowin by pos,size,bord,Colors */
 #define Infowin_init_top(X,Y,W,H,B,FG,BG) \
 	Infowin_init_data(None,X,Y,W,H,B,FG,BG)
-
-
-/* Request a new standard window by giving Dad infowin and X,Y,W,H */
-#define Infowin_init_std(D,X,Y,W,H,B) \
-	Infowin_init_dad(D,X,Y,W,H,B,Metadpy->fg,Metadpy->bg)
-
 
 /* Set the current Infowin */
 #define Infowin_set(I) \
@@ -447,30 +419,12 @@ struct term_data
 #define Infoclr_init_ppo(F,B,O,M) \
 	Infoclr_init_data(F,B,O,M)
 
-#define Infoclr_init_cco(F,B,O,M) \
-	Infoclr_init_ppo(Infoclr_Pixell(F),Infoclr_Pixell(B),O,M)
-
 #define Infoclr_init_ppn(F,B,O,M) \
 	Infoclr_init_ppo(F,B,Infoclr_Opcode(O),M)
-
-#define Infoclr_init_ccn(F,B,O,M) \
-	Infoclr_init_cco(F,B,Infoclr_Opcode(O),M)
-
 
 /* Set the current infofnt */
 #define Infofnt_set(I) \
 	(Infofnt = (I))
-
-
-/* Errr: Expose Infowin */
-#define Infowin_expose() \
-	(!(Infowin->redraw = 1))
-
-/* Errr: Unxpose Infowin */
-#define Infowin_unexpose() \
-	(Infowin->redraw = 0)
-
-
 
 /**** Generic Globals ****/
 
@@ -600,7 +554,7 @@ static const char *get_default_font(int term_num)
 
 /* look up keyboard modifiers using the Xkb extension */
 
-unsigned int xkb_mask_modifier( XkbDescPtr xkb, const char *name )
+static unsigned int xkb_mask_modifier( XkbDescPtr xkb, const char *name )
 {
 	unsigned int mask=0;
 	
@@ -1624,7 +1578,7 @@ static term_data data[MAX_TERM_DATA];
  * Path to the X11 settings file
  */
 static const char *x11_prefs = "x11-settings.prf";
-char settings[1024];
+static char settings[1024];
 
 
 
@@ -2248,7 +2202,7 @@ static errr term_data_init(term_data *td, int i)
 	font = get_default_font(i);
 
 	/* Open the file */
-	fff = file_open(settings, MODE_READ, -1);
+	fff = file_open(settings, MODE_READ, FTYPE_TEXT);
 
 	/* File exists */
 	if (fff)
@@ -2670,7 +2624,7 @@ errr init_x11(int argc, char **argv)
 		(void)path_build(settings, sizeof(settings), ANGBAND_DIR_USER, "x11-settings.prf");
 
 		/* Open the file */
-		fff = file_open(settings, MODE_READ, -1);
+		fff = file_open(settings, MODE_READ, FTYPE_TEXT);
 
 		/* File exists */
 		if (fff)

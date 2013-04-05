@@ -660,7 +660,7 @@ void do_cmd_load_screen(void)
 
 	/* Build the filename */
 	path_build(buf, 1024, ANGBAND_DIR_USER, "dump.txt");
-	fp = file_open(buf, MODE_READ, -1);
+	fp = file_open(buf, MODE_READ, FTYPE_TEXT);
 	if (!fp) return;
 
 

@@ -17,6 +17,7 @@
  */
 
 #include "angband.h"
+#include "birth.h"
 #include "cmds.h"
 #include "files.h"
 #include "game-event.h"
@@ -1091,8 +1092,6 @@ void player_birth(bool quickstart_allowed)
 		}
 		else if (cmd->command == CMD_ROLL_STATS)
 		{
-			int i;
-
 			save_roller_data(&prev);
 
 			/* Get a new character */
@@ -1152,11 +1151,11 @@ void player_birth(bool quickstart_allowed)
 		/* Various not-specific-to-birth commands. */
 		else if (cmd->command == CMD_HELP)
 		{
-			char buf[80];
+			char filename[80];
 
-			strnfmt(buf, sizeof(buf), "birth.txt");
+			strnfmt(filename, sizeof(filename), "birth.txt");
 			screen_save();
-			show_file(buf, NULL, 0, 0);
+			show_file(filename, NULL, 0, 0);
 			screen_load();
 		}
 		else if (cmd->command == CMD_QUIT)

@@ -88,7 +88,7 @@ static struct parser *init_parse_grafmode(void) {
 	return p;
 }
 
-errr finish_parse_grafmode(struct parser *p) {
+static errr finish_parse_grafmode(struct parser *p) {
 	graphics_mode *mode, *n;
 	int max = 0;
 	int count = 0;
@@ -169,7 +169,7 @@ bool init_graphics_modes(const char *filename) {
 	/* Build the filename */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_XTRA_GRAF, filename);
 
-	f = file_open(buf, MODE_READ, -1);
+	f = file_open(buf, MODE_READ, FTYPE_TEXT);
 	if (!f) {
 		msg("Cannot open '%s'.", buf);
 		finish_parse_grafmode(NULL);

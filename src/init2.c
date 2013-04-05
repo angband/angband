@@ -421,7 +421,7 @@ static void cleanup_kb(void)
 	mem_free(kb_info);
 }
 
-struct file_parser kb_parser = {
+static struct file_parser kb_parser = {
 	"object_base",
 	init_parse_kb,
 	run_parse_kb,
@@ -668,7 +668,7 @@ static void cleanup_k(void)
 	mem_free(k_info);
 }
 
-struct file_parser k_parser = {
+static struct file_parser k_parser = {
 	"object",
 	init_parse_k,
 	run_parse_k,
@@ -896,7 +896,7 @@ static void cleanup_a(void)
 	mem_free(a_info);
 }
 
-struct file_parser a_parser = {
+static struct file_parser a_parser = {
 	"artifact",
 	init_parse_a,
 	run_parse_a,
@@ -986,7 +986,7 @@ static void cleanup_names(void)
 	mem_free(name_sections);
 }
 
-struct file_parser names_parser = {
+static struct file_parser names_parser = {
 	"names",
 	init_parse_names,
 	run_parse_names,
@@ -1187,7 +1187,7 @@ static void cleanup_f(void) {
 	mem_free(f_info);
 }
 
-struct file_parser f_parser = {
+static struct file_parser f_parser = {
 	"terrain",
 	init_parse_f,
 	run_parse_f,
@@ -1438,7 +1438,7 @@ static void cleanup_e(void)
 	free_slay_cache();
 }
 
-struct file_parser e_parser = {
+static struct file_parser e_parser = {
 	"ego_item",
 	init_parse_e,
 	run_parse_e,
@@ -1580,20 +1580,20 @@ static enum parser_error parse_p_y(struct parser *p) {
 
 static enum parser_error parse_p_c(struct parser *p) {
 	struct player_race *r = parser_priv(p);
-	char *classes;
+	char *classstr;
 	char *s;
 
 	if (!r)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	if (!parser_hasval(p, "classes"))
 		return PARSE_ERROR_NONE;
-	classes = string_make(parser_getstr(p, "classes"));
-	s = strtok(classes, " |");
+	classstr = string_make(parser_getstr(p, "classes"));
+	s = strtok(classstr, " |");
 	while (s) {
 		r->choice |= 1 << atoi(s);
 		s = strtok(NULL, " |");
 	}
-	mem_free(classes);
+	mem_free(classstr);
 	return PARSE_ERROR_NONE;
 }
 
@@ -1637,7 +1637,7 @@ static void cleanup_p(void)
 	}
 }
 
-struct file_parser p_parser = {
+static struct file_parser p_parser = {
 	"p_race",
 	init_parse_p,
 	run_parse_p,
@@ -1881,7 +1881,7 @@ static void cleanup_c(void)
 	}
 }
 
-struct file_parser c_parser = {
+static struct file_parser c_parser = {
 	"p_class",
 	init_parse_c,
 	run_parse_c,
@@ -1960,7 +1960,7 @@ static void cleanup_v(void)
 	}
 }
 
-struct file_parser v_parser = {
+static struct file_parser v_parser = {
 	"vault",
 	init_parse_v,
 	run_parse_v,
@@ -2067,7 +2067,7 @@ static void cleanup_h(void)
 	}
 }
 
-struct file_parser h_parser = {
+static struct file_parser h_parser = {
 	"p_hist",
 	init_parse_h,
 	run_parse_h,
@@ -2157,7 +2157,7 @@ static void cleanup_flavor(void)
 	}
 }
 
-struct file_parser flavor_parser = {
+static struct file_parser flavor_parser = {
 	"flavor",
 	init_parse_flavor,
 	run_parse_flavor,
@@ -2395,7 +2395,7 @@ static void cleanup_mp(void)
 	mem_free(pain_messages);
 }
 
-struct file_parser mp_parser = {
+static struct file_parser mp_parser = {
 	"pain messages",
 	init_parse_mp,
 	run_parse_mp,
@@ -2675,7 +2675,7 @@ static void cleanup_pits(void)
 	mem_free(pit_info);
 }
 
-struct file_parser pit_parser = {
+static struct file_parser pit_parser = {
 	"pits",
 	init_parse_pit,
 	run_parse_pit,
@@ -2877,7 +2877,7 @@ extern struct init_module generate_module;
 extern struct init_module obj_make_module;
 extern struct init_module mon_make_module;
 
-struct init_module* modules[] = {
+static struct init_module* modules[] = {
 	&generate_module,
 	&obj_make_module,
 	&mon_make_module,

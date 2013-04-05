@@ -31,7 +31,7 @@ s16b num_repro;
 static s16b alloc_race_size;
 static struct alloc_entry *alloc_race_table;
 
-void init_race_allocs(void) {
+static void init_race_allocs(void) {
 	int i;
 	monster_race *r_ptr;
 	alloc_entry *table;
@@ -120,7 +120,7 @@ void init_race_allocs(void) {
 
 }
 
-void cleanup_race_allocs(void) {
+static void cleanup_race_allocs(void) {
 	FREE(alloc_race_table);
 }
 
@@ -802,7 +802,7 @@ s16b place_monster(int y, int x, monster_type *mon, byte origin)
  * function has limits of +/- 4x std_dev. If that changes, this function
  * will become inaccurate.
  *
- * \param r_ptr is the race of the monster in question.
+ * \param race is the race of the monster in question.
  * \param hp_aspect is the hp calc we want (min, max, avg, random).
  */
 int mon_hp(const struct monster_race *race, aspect hp_aspect)
@@ -819,8 +819,10 @@ int mon_hp(const struct monster_race *race, aspect hp_aspect)
 			return (race->avg_hp + (4 * std_dev));
 		case AVERAGE:
 			return race->avg_hp;
-		default:
+		case RANDOMISE:
 			return Rand_normal(race->avg_hp, std_dev);
+		default:
+			assert(0);
 	}
 }
 

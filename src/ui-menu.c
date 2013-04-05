@@ -124,7 +124,7 @@ static void display_string(menu_type *m, int oid, bool cursor,
 }
 
 /* Virtual function table for displaying arrays of strings */
-const menu_iter menu_iter_strings =
+static const menu_iter menu_iter_strings =
 { 
 	NULL,              /* get_tag() */
 	NULL,              /* valid_row() */
@@ -132,9 +132,6 @@ const menu_iter menu_iter_strings =
 	NULL, 	           /* row_handler() */
 	NULL
 };
-
-
-
 
 /* ================== SKINS ============== */
 

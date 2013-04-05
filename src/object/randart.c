@@ -229,7 +229,7 @@ static s16b art_idx_high_resist[] =
 
 /* Initialize the data structures for learned probabilities */
 static s16b artprobs[ART_IDX_TOTAL];
-s16b *baseprobs;
+static s16b *baseprobs;
 static s16b art_bow_total = 0;
 static s16b art_melee_total = 0;
 static s16b art_boot_total = 0;
@@ -246,7 +246,7 @@ static s16b art_total = 0;
  * allocation of memory
  */
 static s16b art_freq[ART_IDX_TOTAL];  	/* artifact attributes */
-s16b *base_freq; 			/* base items */
+static s16b *base_freq; 			/* base items */
 
 /*
  * Mean start and increment values for to_hit, to_dam and AC.  Update these

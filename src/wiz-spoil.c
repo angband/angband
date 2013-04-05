@@ -465,7 +465,7 @@ static void spoil_artifact(const char *fname)
 		for (j = 1; j < z_info->a_max; ++j)
 		{
 			artifact_type *a_ptr = &a_info[j];
-			char buf[80];
+			char buf2[80];
 
 			/* We only want objects in the current group */
 			if (a_ptr->tval != group_artifact[i].tval) continue;
@@ -480,11 +480,11 @@ static void spoil_artifact(const char *fname)
 			if (!make_fake_artifact(i_ptr, a_ptr)) continue;
 
 			/* Grab artifact name */
-			object_desc(buf, sizeof(buf), i_ptr, ODESC_PREFIX |
+			object_desc(buf2, sizeof(buf2), i_ptr, ODESC_PREFIX |
 				ODESC_COMBAT | ODESC_EXTRA | ODESC_SPOIL);
 
 			/* Print name and underline */
-			spoiler_underline(buf, '-');
+			spoiler_underline(buf2, '-');
 
 			/* Write out the artifact description to the spoiler file */
 			object_info_spoil(fh, i_ptr, 80);
