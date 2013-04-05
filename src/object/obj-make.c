@@ -904,22 +904,15 @@ static object_kind *get_obj_num_by_kind(int level, bool good, int tval)
 	size_t ind, item;
 	u32b value;
 	int total = 0;
+	byte *objects = good ? obj_alloc_great : obj_alloc;
 
 	/* Pick an object */
 	ind = level * z_info->k_max;
 
 	/* Get new total */
-	if (!good) {
-		for (item = 1; item < z_info->k_max; item++) {
-			if (objkind_byid(item)->tval == tval) {
-				total += obj_alloc[ind + item];
-			}
-		}
-	} else {
-		for (item = 1; item < z_info->k_max; item++) {
-			if (objkind_byid(item)->tval == tval) {
-				total += obj_alloc_great[ind + item];
-			}
+	for (item = 1; item < z_info->k_max; item++) {
+		if (objkind_byid(item)->tval == tval) {
+			total += objects[ind + item];
 		}
 	}
 
@@ -928,23 +921,13 @@ static object_kind *get_obj_num_by_kind(int level, bool good, int tval)
 	
 	value = randint0(total);
 	
-	if (!good) {
-		for (item = 1; item < z_info->k_max; item++) {
-			if (objkind_byid(item)->tval == tval) {
-				if (value < obj_alloc[ind + item]) break;
-				
-				value -= obj_alloc[ind + item];
-			}
+	for (item = 1; item < z_info->k_max; item++) {
+		if (objkind_byid(item)->tval == tval) {
+			if (value < objects[ind + item]) break;
+
+			value -= objects[ind + item];
 		}
-	} else {
-		for (item = 1; item < z_info->k_max; item++) {
-			if (objkind_byid(item)->tval == tval) {
-				if (value < obj_alloc_great[ind + item]) break;
-				
-				value -= obj_alloc_great[ind + item];
-			}
-		}
-	}	
+	}
 
 	/* Return the item index */
 	return objkind_byid(item);
