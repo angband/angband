@@ -61,8 +61,10 @@ OSX_OBJS = main-cocoa.o
 
 
 $(EXE).o: $(OBJS)
-	$(LD) -r -arch x86_64 -o $@.x86_64 $(OBJS)
-	$(LD) -r -arch i386 -o $@.i386 $(OBJS)
+	@printf "%10s %-20s\n" LD $@.x86_64
+	@$(LD) -r -arch x86_64 -o $@.x86_64 $(OBJS)
+	@printf "%10s %-20s\n" LD $@.i386
+	@$(LD) -r -arch i386 -o $@.i386 $(OBJS)
 	lipo -arch x86_64 $@.x86_64 -arch i386 $@.i386 -create -output angband.o
 
 $(EXE): $(EXE).o $(OSX_OBJS)
@@ -85,10 +87,10 @@ clean:
 
 main-cocoa.o : main-cocoa.m
 	@printf "%10s %-20s (objective-c)\n" CC $<
-	$(CC) $(CFLAGS) $(OBJ_CFLAGS) -c -o $@ $<
+	@$(CC) $(CFLAGS) $(OBJ_CFLAGS) -c -o $@ $<
 %.o : %.c
 	@printf "%10s %-20s\n" CC $<
-	$(CC) $(JUST_C) $(CFLAGS) -c -o $@ $<
+	@$(CC) $(JUST_C) $(CFLAGS) -c -o $@ $<
 
 
 #
