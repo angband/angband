@@ -396,11 +396,6 @@ const char *angband_sound_name[MSG_MAX] =
 };
 
 /*
- * Arrays[TEMP_MAX] used for various things
- */
-u16b *temp_g;
-
-/*
  * Array[z_info->r_max] of monster lore
  */
 monster_lore *l_list;

@@ -2370,10 +2370,9 @@ void update_view(void)
 	int pg = GRID(py,px);
 
 	int i, j, k, g, o2;
+	int x, y;
 
 	int radius;
-
-	int temp_n = 0;
 
 	/* XXX: also moronic. Optimizers exist. */
 	byte *fast_cave_info = &cave->info[0][0];
@@ -2394,19 +2393,10 @@ void update_view(void)
 
 		/* Save "CAVE_SEEN" grids */
 		if (info & (CAVE_SEEN))
-		{
-			/* Set "CAVE_WASSEEN" flag */
-			info |= (CAVE_WASSEEN);
-
-			/* Save grid for later */
-			temp_g[temp_n++] = g;
-		}
+			info |= CAVE_WASSEEN;
 
 		/* Clear "CAVE_VIEW" and "CAVE_SEEN" flags */
 		info &= ~(CAVE_VIEW | CAVE_SEEN);
-
-		/* Clear "CAVE_LIGHT" flag */
-		/* info &= ~(CAVE_LIGHT); */
 
 		/* Save cave info */
 		fast_cave_info[g] = info;
@@ -2706,31 +2696,15 @@ void update_view(void)
 		}
 	}
 
-	/* Process "old" grids */
-	for (i = 0; i < temp_n; i++)
-	{
-		/* Grid */
-		g = temp_g[i];
-
-		/* Get grid info */
-		info = fast_cave_info[g];
-
-		/* Clear "CAVE_WASSEEN" flag */
-		info &= ~(CAVE_WASSEEN);
-
-		/* Save cave info */
-		fast_cave_info[g] = info;
-
-		/* Was "CAVE_SEEN", is now not "CAVE_SEEN" */
-		if (!(info & (CAVE_SEEN)))
-		{
-			int y, x;
-
-			/* Location */
-			y = GRID_Y(g);
-			x = GRID_X(g);
-
-			/* Redraw */
+	/* Clear out the CAVE_WASSEEN flag on all grids. If we find one that was
+	 * seen but is not now, redraw it. */
+	for (y = 0; y < CAVE_INFO_Y; y++) {
+		for (x = 0; x < CAVE_INFO_X; x++) {
+			if (!cave_wasseen(cave, y, x))
+				continue;
+			cave->info[y][x] &= ~CAVE_WASSEEN;
+			if (cave_isseen(cave, y, x))
+				continue;
 			cave_light_spot(cave, y, x);
 		}
 	}
@@ -3850,6 +3824,14 @@ bool cave_isfeel(struct cave *c, int y, int x){
 /* True if the cave square is viewable */
 bool cave_isview(struct cave *c, int y, int x) {
 	return c->info[y][x] & CAVE_VIEW;
+}
+
+bool cave_isseen(struct cave *c, int y, int x) {
+	return c->info[y][x] & CAVE_SEEN;
+}
+
+bool cave_wasseen(struct cave *c, int y, int x) {
+	return c->info[y][x] & CAVE_WASSEEN;
 }
 
 /**

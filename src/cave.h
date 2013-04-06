@@ -116,6 +116,8 @@ extern bool cave_isroom(struct cave *c, int y, int x);
 extern bool cave_isrubble(struct cave *c, int y, int x);
 extern bool cave_isfeel(struct cave *c, int y, int x);
 extern bool cave_isview(struct cave *c, int y, int x);
+extern bool cave_isseen(struct cave *c, int y, int x);
+extern bool cave_wasseen(struct cave *c, int y, int x);
 
 extern void cave_generate(struct cave *c, struct player *p);
 
