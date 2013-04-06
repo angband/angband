@@ -2855,65 +2855,25 @@ void cave_illuminate(struct cave *c, bool daytime)
 {
 	int y, x, i;
 
-
 	/* Apply light or darkness */
 	for (y = 0; y < c->height; y++)
-	{
 		for (x = 0; x < c->width; x++)
-		{
-			/* Interesting grids */
-			if (c->feat[y][x] > FEAT_INVIS)
-			{
-				/* Illuminate the grid */
-				c->info[y][x] |= (CAVE_GLOW);
-
-				/* Memorize the grid */
-				c->info[y][x] |= (CAVE_MARK);
-			}
-
-			/* Boring grids (light) */
-			else if (daytime)
-			{
-				/* Illuminate the grid */
-				c->info[y][x] |= (CAVE_GLOW);
-
-				/* Memorize grids */
-				c->info[y][x] |= (CAVE_MARK);
-			}
-
-			/* Boring grids (dark) */
+			/* Only interesting grids at night */
+			if (daytime || c->feat[y][x] > FEAT_INVIS)
+				c->info[y][x] |= CAVE_GLOW | CAVE_MARK;
 			else
-			{
-				/* Darken the grid */
-				c->info[y][x] &= ~(CAVE_GLOW);
-
-				/* Forget grids */
-				c->info[y][x] &= ~(CAVE_MARK);
-			}
-		}
-	}
+				c->info[y][x] &= ~(CAVE_GLOW | CAVE_MARK);
 
 
-	/* Handle shop doorways */
-	for (y = 0; y < c->height; y++)
-	{
-		for (x = 0; x < c->width; x++)
-		{
-			/* Track shop doorways */
-			if ((c->feat[y][x] >= FEAT_SHOP_HEAD) &&
-			    (c->feat[y][x] <= FEAT_SHOP_TAIL))
-			{
-				for (i = 0; i < 8; i++)
-				{
-					int yy = y + ddy_ddd[i];
-					int xx = x + ddx_ddd[i];
-
-					/* Illuminate the grid */
-					c->info[yy][xx] |= (CAVE_GLOW);
-
-					/* Memorize grids */
-					c->info[yy][xx] |= (CAVE_MARK);
-				}
+	/* Light shop doorways */
+	for (y = 0; y < c->height; y++) {
+		for (x = 0; x < c->width; x++) {
+			if (!cave_isshop(c, y, x))
+				continue;
+			for (i = 0; i < 8; i++) {
+				int yy = y + ddy_ddd[i];
+				int xx = x + ddx_ddd[i];
+				c->info[yy][xx] |= (CAVE_GLOW | CAVE_MARK);
 			}
 		}
 	}
@@ -3690,6 +3650,11 @@ bool cave_wasseen(struct cave *c, int y, int x) {
 
 bool cave_isglow(struct cave *c, int y, int x) {
 	return c->info[y][x] & CAVE_GLOW;
+}
+
+bool cave_isshop(struct cave *c, int y, int x) {
+	return c->feat[y][x] >= FEAT_SHOP_HEAD &&
+	       c->feat[y][x] <= FEAT_SHOP_TAIL;
 }
 
 /**
