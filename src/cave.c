@@ -25,8 +25,6 @@
 #include "squelch.h"
 #include "cmds.h"
 
-static int view_n;
-static u16b view_g[VIEW_MAX];
 static int  vinfo_grids;
 static int  vinfo_slopes;
 static u32b vinfo_bits_3;
@@ -2270,8 +2268,6 @@ void forget_view(void)
 			cave_light_spot(cave, y, x);
 		}
 	}
-
-	view_n = 0;
 }
 
 
@@ -2383,27 +2379,13 @@ void update_view(void)
 	/*** Step 0 -- Begin ***/
 
 	/* Save the old "view" grids for later */
-	for (i = 0; i < view_n; i++)
-	{
-		/* Grid */
-		g = view_g[i];
-
-		/* Get grid info */
-		info = fast_cave_info[g];
-
-		/* Save "CAVE_SEEN" grids */
-		if (info & (CAVE_SEEN))
-			info |= CAVE_WASSEEN;
-
-		/* Clear "CAVE_VIEW" and "CAVE_SEEN" flags */
-		info &= ~(CAVE_VIEW | CAVE_SEEN);
-
-		/* Save cave info */
-		fast_cave_info[g] = info;
+	for (y = 0; y < CAVE_INFO_Y; y++) {
+		for (x = 0; x < CAVE_INFO_X; x++) {
+			if (cave->info[y][x] & CAVE_SEEN)
+				cave->info[y][x] |= CAVE_WASSEEN;
+			cave->info[y][x] &= ~(CAVE_VIEW | CAVE_SEEN);
+		}
 	}
-
-	/* Reset the "view" array */
-	view_n = 0;
 
 	/* Extract "radius" value */
 	radius = p_ptr->cur_light;
@@ -2453,9 +2435,6 @@ void update_view(void)
 
 				/* Mark the square lit and seen */
 				fast_cave_info[g] |= (CAVE_VIEW | CAVE_SEEN);
-				
-				/* Save in array */
-				view_g[view_n++] = g;
 			}
 		}
 	}
@@ -2491,9 +2470,6 @@ void update_view(void)
 
 	/* Save cave info */
 	fast_cave_info[g] = info;
-
-	/* Save in array */
-	view_g[view_n++] = g;
 
 
 	/*** Step 2 -- octants ***/
@@ -2587,9 +2563,6 @@ void update_view(void)
 
 						/* Save cave info */
 						fast_cave_info[g] = info;
-
-						/* Save in array */
-						view_g[view_n++] = g;
 					}
 				}
 
@@ -2633,9 +2606,6 @@ void update_view(void)
 
 						/* Save cave info */
 						fast_cave_info[g] = info;
-
-						/* Save in array */
-						view_g[view_n++] = g;
 					}
 				}
 			}
@@ -2645,41 +2615,21 @@ void update_view(void)
 
 	/*** Step 3 -- Complete the algorithm ***/
 
-	/* Handle blindness */
-	if (p_ptr->timed[TMD_BLIND])
-	{
-		/* Process "new" grids */
-		for (i = 0; i < view_n; i++)
-		{
-			/* Grid */
-			g = view_g[i];
+	for (y = 0; y < CAVE_INFO_Y; y++)
+		for (x = 0; x < CAVE_INFO_X; x++)
+			if (p_ptr->timed[TMD_BLIND])
+				cave->info[y][x] &= ~CAVE_SEEN;
 
-			/* Grid cannot be "CAVE_SEEN" */
-			fast_cave_info[g] &= ~(CAVE_SEEN);
-		}
-	}
+	/* Find grids that were unseen and are now seen. */
+	for (y = 0; y < CAVE_INFO_Y; y++) {
+		for (x = 0; x < CAVE_INFO_X; x++) {
+			if (!cave_isseen(cave, y, x))
+				continue;
+			if (cave_wasseen(cave, y, x))
+				continue;
 
-	/* Process "new" grids */
-	for (i = 0; i < view_n; i++)
-	{
-		/* Grid */
-		g = view_g[i];
-
-		/* Get grid info */
-		info = fast_cave_info[g];
-
-		/* Was not "CAVE_SEEN", is now "CAVE_SEEN" */
-		if ((info & (CAVE_SEEN)) && !(info & (CAVE_WASSEEN)))
-		{
-			int y, x;
-
-			/* Location */
-			y = GRID_Y(g);
-			x = GRID_X(g);
-			
 			/* Handle feeling squares */
-			if (cave->info2[y][x] & CAVE2_FEEL)
-			{
+			if (cave_isfeel(cave, y, x)) {
 				cave->feeling_squares++;
 				
 				/* Erase the square so you can't 'resee' it */
@@ -2688,7 +2638,6 @@ void update_view(void)
 				/* Display feeling if necessary */
 				if (cave->feeling_squares == FEELING1)
 					display_feeling(TRUE);
-		
 			}
 			
 			cave_note_spot(cave, y, x);
