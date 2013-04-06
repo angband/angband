@@ -2054,10 +2054,6 @@ errr vinfo_init(void)
 	/* Set the variables for the grids, bits and slopes actually used */
 	vinfo_grids = (OPT(birth_small_range) ? 48 : 161);
 	vinfo_slopes = (OPT(birth_small_range) ? 36 : 126);
-	vinfo_bits_3 = (OPT(birth_small_range) ? 0x00000000 : 0x3FFFFFFF);
-	vinfo_bits_2 = (OPT(birth_small_range) ? 0x00000000 : 0xFFFFFFFF);
-	vinfo_bits_1 = (OPT(birth_small_range) ? 0x0000000F : 0xFFFFFFFF);
-	vinfo_bits_0 = (OPT(birth_small_range) ? 0xFFFFFFFF : 0xFFFFFFFF);
 
 	/* Make hack */
 	hack = ZNEW(vinfo_hack);
@@ -2228,20 +2224,6 @@ errr vinfo_init(void)
 		vinfo[e].d = ((y > x) ? (y + x/2) : (x + y/2));
 		vinfo[e].r = ((!y) ? x : (!x) ? y : (y == x) ? y : 0);
 	}
-
-
-	/* Verify maximal bits XXX XXX XXX */
-	if (((vinfo[1].bits_3 | vinfo[2].bits_3) != vinfo_bits_3)
-	    || ((vinfo[1].bits_2 | vinfo[2].bits_2) != vinfo_bits_2)
-	    || ((vinfo[1].bits_1 | vinfo[2].bits_1) != vinfo_bits_1)
-	    || ((vinfo[1].bits_0 | vinfo[2].bits_0) != vinfo_bits_0)) {
-	        quit_fmt("Incorrect bit masks: %x\n%x\n%x\n%x\n", 
-			 (vinfo[1].bits_3 | vinfo[2].bits_3),
-			 (vinfo[1].bits_2 | vinfo[2].bits_2),
-			 (vinfo[1].bits_1 | vinfo[2].bits_1),
-			 (vinfo[1].bits_0 | vinfo[2].bits_0));
-	}
-
 
 	/* Kill hack */
 	FREE(hack);
@@ -2496,66 +2478,14 @@ void update_view(struct cave *c, struct player *p)
 	if (radius > 0 || cave_isglow(c, py, px))
 		c->info[py][px] |= CAVE_SEEN;
 
-
-	/*** Step 2 -- octants ***/
-
-	/* Scan each octant */
-	for (o2 = 0; o2 < 8; o2++)
-	{
-		vinfo_type *vi;
-
-		/* Last added */
-		vinfo_type *last = &vinfo[0];
-
-		/* Grid queue */
-		int queue_head = 0;
-		int queue_tail = 0;
-		vinfo_type *queue[VINFO_MAX_GRIDS*2];
-
-		/* Slope bit vector */
-		u32b bits0 = vinfo_bits_0;
-		u32b bits1 = vinfo_bits_1;
-		u32b bits2 = vinfo_bits_2;
-		u32b bits3 = vinfo_bits_3;
-
-		/* Reset queue */
-		queue_head = queue_tail = 0;
-
-		/* Initial grids */
-		queue[queue_tail++] = &vinfo[1];
-		queue[queue_tail++] = &vinfo[2];
-
-		/* Process queue */
-		while (queue_head < queue_tail)
-		{
-			/* Dequeue next grid */
-			vi = queue[queue_head++];
-
-			/* If none of the bits are set, we are done. */
-			if (!(bits0 & vi->bits_0) && !(bits1 & vi->bits_1)
-			    && !(bits2 & vi->bits_2) && !(bits3 & vi->bits_3))
-				continue;
-
-			/* Extract grid value XXX XXX XXX */
-			g = pg + vi->grid[o2];
-
-			if (cave_iswall(c, GRID_Y(g), GRID_X(g))) {
-				bits0 &= ~(vi->bits_0);
-				bits1 &= ~(vi->bits_1);
-				bits2 &= ~(vi->bits_2);
-				bits3 &= ~(vi->bits_3);
-			} else {
-				if (last != vi->next_0)
-					queue[queue_tail++] = last = vi->next_0;
-				if (last != vi->next_1)
-					queue[queue_tail++] = last = vi->next_1;
-			}
-
-			become_viewable(c, GRID_Y(g), GRID_X(g),
-			                vi->d < radius, py, px);
+	/* View squares we have LOS to */
+	for (y = 0; y < CAVE_INFO_Y; y++) {
+		for (x = 0; x < CAVE_INFO_X; x++) {
+			int d = distance(py, px, y, x);
+			if (los(py, px, y, x))
+				become_viewable(c, y, x, d < radius, py, px);
 		}
 	}
-
 
 	/*** Step 3 -- Complete the algorithm ***/
 
