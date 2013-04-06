@@ -7,29 +7,100 @@ changes made since 3.4.0. References are to tickets at trac.rephial.org, or
 
 Bugs fixed
 ==========
+* Fix object visuals dumping bug reported at http://angband.oook.cz/forum/showthread.php?t=5864
+* Omit unnecessary UI updates during birth process.  Helps with refresh issues.  Closes #1669.
+* Correct comments for X: in p_race.txt.  Closes #1708.
+* Reformatted Greater Maia description.  Close #1691.
+* Clean up msg_repository[].  Closes #1690.
+* Re-enable autosave.  Closes #1699.
+* Fix article handling when a detected item that's really a mimic, but is displaying as a red star because the player hasn't had LOS with it yet, is found to be a mimic.  Closes #1676.
+* Fix up article handling in messages reported in forum posts.  Closes #1500.
+* Fix monster capitalisation typos.  Closes #1711.  Patch by mart0258.
+* Stop crashes when changing to ASCII in SDL.
+* Fix UTF8 in HTML screendumps.
+* Fix cursor in bigtile mode.
+* Fixed a crash bug where do_cmd_inven() and do_cmd_equip() permitted tracking nonexistent items.
+* Fix keymap pref-parsing bug (patch by AnonymousHero).  Closes #1683.
+* Fix typos in hints.txt and object.txt.
+* Fix up various bugs with the item list: stop it combining items the player doesn't know are the same (#1687), stop leaking information on unknown items.
+* Stop giving the player a menu for pickup if there is only 1 item they can see but other items that are squelched.
+* Assign 'O' as roguelike keyset equivalent of 'K' (unhide squelched items).  Closes #1679.
+* Make sure that both Enter and 't' can toggle options in all option submenus.  Closes #1501.
 
-
+OS X:
+* Fix for #1709: Use isMainWindow instead of isKeyWindow for detecting front-most window in main-cocoa, and don't try to change font for non-Angband windows. Also update the font selection panel when windows become main.
+* Fix for #1695: In the Cocoa port, Cmd-Q now does nothing when inkey_flag is false, e.g. when the inventory menu is up. This behavior is now consistent with the Windows port.
+* Finished the fix to #1669: remove call to displayIfNeeded from Cocoa TERM_XTRA_FRESH handler. (thanks to mtadd)
+* Further issues from #1678: corrected bounds for clickable region and added support for OPT(mouse_buttons).
 
 
 User interface
 ==============
-
-
+* Make the default macro for 'swap weapon' be assigned to 'x' instead of 'X'. Closes #860.
+* Make it so skills, hitdie and exp modifier when selecting a class on the birth screen are shown with racial adjustments, a la stat display.  Fixes #1705 (thanks danial.santos).
+* Improved error message for no available new spells to gain. Thanks to hboetes for pointing it out.
+* Redesign character sheet, changing the fighting and shooting skills scores into numbers comparable to to-hit scores, and rearranging all combat info to be together in the centre of the screen.  Also improve spacing.
+* Rename =Delving to =Digging for thematic consistency
+* Add option to show damage player does to monster in melee.
+* Add a prompt if you try to deactivate WoR, just in case.
+* Add Dragon Scale Mail category to squelch
+* Remove player social class
+* (OS X) Add mouseclick support for the Cocoa frontend.
 
 
 Gameplay changes
 ================
+* Rebalance object generation.  Flatten out chances of getting good and great items - means more good and great items early on, proportionally fewer later.
+* Rewrite ego allocation and rarities so that egos are more level-appropriate.
+* Monsters spawn a lot less frequently after level is created (chance per turn has gone from 1/160 to 1/500).
+* Reduce the size of monster escorts and groups.
+* Make uniques more likely to drop out-of-depth items, and reduce the number of chances DROP_GREAT drops get at being great to compensate.
+* Elvenkind now has level-dependent speed bonuses.
+* Give thematic spell-book drops to monsters.
+* Make town spellbooks available earlier in the dungeon (at dlev1 instead of dlev5).
+* Change monster elemental attacks so that they do some part of their damage using elemental damage and some of it using physical damage.  This means that the damage a monster attack gets calculated twice - once for if it was pure damage, one if it was elemental damage.  Whichever of the two is higher is the amount of damage dealt.  This meant that immunity won't reduce damage ridiculously low.
+* Give the player a bonus to damage absorption for physical elemental attacks (085574b82d649)
+* Some monster attacks no longer do physical damage (e.g. touch, spit, etc.) - they only do elemental damage.  (3fc86a0f84db)
+* Remove birth_ai_smart (broken).  Replace with birth_force_descend, which is like 'ironman lite' - you can only take down stairs.  You can still recall but down stairs from the town take you to your deepest level + 1.
+
+Level generation changes:
+* Add Nomad's new rooms, which make dungeons feel a lot more interesting.
+* Add pac-man vault (thanks to Nomad? XXX)
+* Rebalance frequencies and levels for different room types
+* Increase floor drops in caverns and labyrinths
+* Allow two nests or pits each level
+* Reduce pit size and make nest size variable
 
 
-
+Borg changes
+============
+* Clean up logic and fix bugs in borg_item_analyze().
+* Make borg room lighting behaviour a lot smarter.
+* The borg turns of 'lazy movement' if it's on because it can't cope with it.
+* Allow the borg to remove rubble it finds.
+* Fix up borg ID routines to reflect the fact the game doesn't have 'light' pseudo anymore, and to get less confused about equip/inven screen selection.
+* Lots of unused or defunct code has been removed (unused globals, copies of the main game's constants/tables).
+* Lots of other code has been cleaned up significantly (removing unused function arguments, repeated code, msg(NULL) -> message_flush()).
 
 
 Coding changes
 ==============
-
-
-
+* Stop the code indexing into the monster race array all the time, instead preferring to pass around monster_race *.  This has allowed significant simplifications throughout the code.
+* Support building with clang.
+* Add debug command to really hurt monsters ('H')
+* Fix loads of warnings and errors that clang and splint threw up.
+* Remove p_ptr->command_arg.
+* Change alloc_prob and rarities to an int instead of a byte.  Closes #1677.
+* Refactor and simplify get_obj_num_by_kind().  Patch by daniel.santos.  Closes #1707.
+* Refactor a load of duplicated code in mon-power.c.  Patch mostly by daniel.santos.  Closes #1706.
+* Remove Carbon-specific support for using '~' in paths on OS X to mean 'home directory' because Carbon is deprecated and it's unnecessary.
+* Get close to removing z-type.c
+* Factor out a lot of externs.h
+* As ever, more little bits of cleanup and removal of old unused code.
+* Allow item creation to be narrowed to one tval only.
 
 
 Documentation changes
 =====================
+* Add the player's guide (basic strategy and tactics) from the old wiki.  It's by no means complete but it is something at least.
+
