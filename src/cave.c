@@ -2358,6 +2358,19 @@ void forget_view(void)
  * special grids.  Because the actual number of required grids is bizarre,
  * we simply allocate twice as many as we would normally need.  XXX XXX XXX
  */
+static void mark_wasseen(struct cave *c) 
+{
+	int x, y;
+	/* Save the old "view" grids for later */
+	for (y = 0; y < CAVE_INFO_Y; y++) {
+		for (x = 0; x < CAVE_INFO_X; x++) {
+			if (c->info[y][x] & CAVE_SEEN)
+				c->info[y][x] |= CAVE_WASSEEN;
+			c->info[y][x] &= ~(CAVE_VIEW | CAVE_SEEN);
+		}
+	}
+}
+
 static void add_monster_lights(struct cave *c, struct loc from)
 {
 	int i, j, k;
@@ -2402,7 +2415,56 @@ static void add_monster_lights(struct cave *c, struct loc from)
 			}
 		}
 	}
+}
 
+static void update_one(struct cave *c, int y, int x, int blind)
+{
+	if (blind)
+		c->info[y][x] &= ~CAVE_SEEN;
+
+	/* Square went from unseen -> seen */
+	if (cave_isseen(c, y, x) && !cave_wasseen(c, y, x)) {
+		if (cave_isfeel(c, y, x)) {
+			c->feeling_squares++;
+			c->info2[y][x] &= ~CAVE2_FEEL;
+			if (c->feeling_squares == FEELING1)
+				display_feeling(TRUE);
+		}
+
+		cave_note_spot(c, y, x);
+		cave_light_spot(c, y, x);
+	}
+
+	/* Square went from seen -> unseen */
+	if (!cave_isseen(c, y, x) && cave_wasseen(c, y, x))
+		cave_light_spot(c, y, x);
+
+	c->info[y][x] &= ~CAVE_WASSEEN;
+}
+
+static void become_viewable(struct cave *c, int y, int x, int lit, int py, int px)
+{
+	int xc = x;
+	int yc = y;
+	if (cave_isview(c, y, x))
+		return;
+
+	c->info[y][x] |= CAVE_VIEW;
+
+	if (lit)
+		c->info[y][x] |= CAVE_SEEN;
+
+	if (cave_isglow(c, y, x)) {
+		if (cave_iswall(c, y, x)) {
+			/* For walls, move a bit towards the player.
+			 * TODO(elly): huh? why?
+			 */
+			xc = (x < px) ? (x + 1) : (x > px) ? (x - 1) : x;
+			yc = (y < py) ? (y + 1) : (y > py) ? (y - 1) : y;
+		}
+		if (cave_isglow(c, yc, xc))
+			c->info[y][x] |= CAVE_SEEN;
+	}
 }
 
 void update_view(void)
@@ -2419,17 +2481,7 @@ void update_view(void)
 
 	byte info;
 
-
-	/*** Step 0 -- Begin ***/
-
-	/* Save the old "view" grids for later */
-	for (y = 0; y < CAVE_INFO_Y; y++) {
-		for (x = 0; x < CAVE_INFO_X; x++) {
-			if (cave->info[y][x] & CAVE_SEEN)
-				cave->info[y][x] |= CAVE_WASSEEN;
-			cave->info[y][x] &= ~(CAVE_VIEW | CAVE_SEEN);
-		}
-	}
+	mark_wasseen(cave);
 
 	/* Extract "radius" value */
 	radius = p_ptr->cur_light;
@@ -2479,109 +2531,28 @@ void update_view(void)
 			/* Dequeue next grid */
 			p = queue[queue_head++];
 
-			/* Check bits */
-			if ((bits0 & (p->bits_0)) ||
-			    (bits1 & (p->bits_1)) ||
-			    (bits2 & (p->bits_2)) ||
-			    (bits3 & (p->bits_3)))
-			{
-				/* Extract grid value XXX XXX XXX */
-				g = pg + p->grid[o2];
+			/* If none of the bits are set, we are done. */
+			if (!(bits0 & p->bits_0) && !(bits1 & p->bits_1)
+			    && !(bits2 & p->bits_2) && !(bits3 & p->bits_3))
+				continue;
 
-				/* Get grid info */
-				info = cave->info[GRID_Y(g)][GRID_X(g)];
+			/* Extract grid value XXX XXX XXX */
+			g = pg + p->grid[o2];
 
-				/* Handle wall */
-				if (info & (CAVE_WALL))
-				{
-					/* Clear bits */
-					bits0 &= ~(p->bits_0);
-					bits1 &= ~(p->bits_1);
-					bits2 &= ~(p->bits_2);
-					bits3 &= ~(p->bits_3);
-
-					/* Newly viewable wall */
-					if (!(info & (CAVE_VIEW)))
-					{
-						/* Mark as viewable */
-						info |= (CAVE_VIEW);
-
-						/* Torch-lit grids */
-						if (p->d < radius)
-						{
-							/* Mark as "CAVE_SEEN" */
-							info |= (CAVE_SEEN);
-
-							/* Mark as "CAVE_LIGHT" */
-							/* info |= (CAVE_LIGHT); */
-						}
-
-						/* Perma-lit grids */
-						else if (info & (CAVE_GLOW))
-						{
-							int y = GRID_Y(g);
-							int x = GRID_X(g);
-
-							/* Hack -- move towards player */
-							int yy = (y < py) ? (y + 1) : (y > py) ? (y - 1) : y;
-							int xx = (x < px) ? (x + 1) : (x > px) ? (x - 1) : x;
-
-							/* Check for "simple" illumination */
-							if (cave->info[yy][xx] & (CAVE_GLOW))
-							{
-								/* Mark as seen */
-								info |= (CAVE_SEEN);
-							}
-						}
-
-						/* Save cave info */
-						cave->info[GRID_Y(g)][GRID_X(g)] = info;
-					}
-				}
-
-				/* Handle non-wall */
-				else
-				{
-					/* Enqueue child */
-					if (last != p->next_0)
-					{
-						queue[queue_tail++] = last = p->next_0;
-					}
-
-					/* Enqueue child */
-					if (last != p->next_1)
-					{
-						queue[queue_tail++] = last = p->next_1;
-					}
-
-					/* Newly viewable non-wall */
-					if (!(info & (CAVE_VIEW)))
-					{
-						/* Mark as "viewable" */
-						info |= (CAVE_VIEW);
-
-						/* Torch-lit grids */
-						if (p->d < radius)
-						{
-							/* Mark as "CAVE_SEEN" */
-							info |= (CAVE_SEEN);
-
-							/* Mark as "CAVE_LIGHT" */
-							/* info |= (CAVE_LIGHT); */
-						}
-
-						/* Perma-lit grids */
-						else if (info & (CAVE_GLOW))
-						{
-							/* Mark as "CAVE_SEEN" */
-							info |= (CAVE_SEEN);
-						}
-
-						/* Save cave info */
-						cave->info[GRID_Y(g)][GRID_X(g)] = info;
-					}
-				}
+			if (cave_iswall(cave, GRID_Y(g), GRID_X(g))) {
+				bits0 &= ~(p->bits_0);
+				bits1 &= ~(p->bits_1);
+				bits2 &= ~(p->bits_2);
+				bits3 &= ~(p->bits_3);
+			} else {
+				if (last != p->next_0)
+					queue[queue_tail++] = last = p->next_0;
+				if (last != p->next_1)
+					queue[queue_tail++] = last = p->next_1;
 			}
+
+			become_viewable(cave, GRID_Y(g), GRID_X(g),
+			                p->d < radius, py, px);
 		}
 	}
 
@@ -2590,46 +2561,7 @@ void update_view(void)
 
 	for (y = 0; y < CAVE_INFO_Y; y++)
 		for (x = 0; x < CAVE_INFO_X; x++)
-			if (p_ptr->timed[TMD_BLIND])
-				cave->info[y][x] &= ~CAVE_SEEN;
-
-	/* Find grids that were unseen and are now seen. */
-	for (y = 0; y < CAVE_INFO_Y; y++) {
-		for (x = 0; x < CAVE_INFO_X; x++) {
-			if (!cave_isseen(cave, y, x))
-				continue;
-			if (cave_wasseen(cave, y, x))
-				continue;
-
-			/* Handle feeling squares */
-			if (cave_isfeel(cave, y, x)) {
-				cave->feeling_squares++;
-				
-				/* Erase the square so you can't 'resee' it */
-				cave->info2[y][x] &= ~(CAVE2_FEEL);
-			
-				/* Display feeling if necessary */
-				if (cave->feeling_squares == FEELING1)
-					display_feeling(TRUE);
-			}
-			
-			cave_note_spot(cave, y, x);
-			cave_light_spot(cave, y, x);
-		}
-	}
-
-	/* Clear out the CAVE_WASSEEN flag on all grids. If we find one that was
-	 * seen but is not now, redraw it. */
-	for (y = 0; y < CAVE_INFO_Y; y++) {
-		for (x = 0; x < CAVE_INFO_X; x++) {
-			if (!cave_wasseen(cave, y, x))
-				continue;
-			cave->info[y][x] &= ~CAVE_WASSEEN;
-			if (cave_isseen(cave, y, x))
-				continue;
-			cave_light_spot(cave, y, x);
-		}
-	}
+			update_one(cave, y, x, p_ptr->timed[TMD_BLIND]);
 }
 
 
