@@ -48,7 +48,6 @@ extern void print_rel(wchar_t c, byte a, int y, int x);
 extern void prt_map(void);
 extern void display_map(int *cy, int *cx);
 extern void do_cmd_view_map(void);
-extern errr vinfo_init(void);
 extern void forget_view(struct cave *c);
 extern void update_view(struct cave *c, struct player *p);
 extern void map_area(void);
