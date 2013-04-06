@@ -79,3 +79,12 @@ int point_set_size(struct point_set *ps)
 {
 	return ps->n;
 }
+
+int point_set_contains(struct point_set *ps, int y, int x)
+{
+	int i;
+	for (i = 0; i < ps->n; i++)
+		if (ps->pts[i].x == x && ps->pts[i].y == y)
+			return 1;
+	return 0;
+}
