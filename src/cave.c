@@ -2373,11 +2373,7 @@ void update_view(void)
 
 	int radius;
 
-	int fast_view_n = view_n;
-	u16b *fast_view_g = view_g;
-
-	int fast_temp_n = 0;
-	u16b *fast_temp_g = temp_g;
+	int temp_n = 0;
 
 	/* XXX: also moronic. Optimizers exist. */
 	byte *fast_cave_info = &cave->info[0][0];
@@ -2388,10 +2384,10 @@ void update_view(void)
 	/*** Step 0 -- Begin ***/
 
 	/* Save the old "view" grids for later */
-	for (i = 0; i < fast_view_n; i++)
+	for (i = 0; i < view_n; i++)
 	{
 		/* Grid */
-		g = fast_view_g[i];
+		g = view_g[i];
 
 		/* Get grid info */
 		info = fast_cave_info[g];
@@ -2403,7 +2399,7 @@ void update_view(void)
 			info |= (CAVE_TEMP);
 
 			/* Save grid for later */
-			fast_temp_g[fast_temp_n++] = g;
+			temp_g[temp_n++] = g;
 		}
 
 		/* Clear "CAVE_VIEW" and "CAVE_SEEN" flags */
@@ -2417,7 +2413,7 @@ void update_view(void)
 	}
 
 	/* Reset the "view" array */
-	fast_view_n = 0;
+	view_n = 0;
 
 	/* Extract "radius" value */
 	radius = p_ptr->cur_light;
@@ -2469,7 +2465,7 @@ void update_view(void)
 				fast_cave_info[g] |= (CAVE_VIEW | CAVE_SEEN);
 				
 				/* Save in array */
-				fast_view_g[fast_view_n++] = g;
+				view_g[view_n++] = g;
 			}
 		}
 	}
@@ -2507,7 +2503,7 @@ void update_view(void)
 	fast_cave_info[g] = info;
 
 	/* Save in array */
-	fast_view_g[fast_view_n++] = g;
+	view_g[view_n++] = g;
 
 
 	/*** Step 2 -- octants ***/
@@ -2603,7 +2599,7 @@ void update_view(void)
 						fast_cave_info[g] = info;
 
 						/* Save in array */
-						fast_view_g[fast_view_n++] = g;
+						view_g[view_n++] = g;
 					}
 				}
 
@@ -2649,7 +2645,7 @@ void update_view(void)
 						fast_cave_info[g] = info;
 
 						/* Save in array */
-						fast_view_g[fast_view_n++] = g;
+						view_g[view_n++] = g;
 					}
 				}
 			}
@@ -2663,10 +2659,10 @@ void update_view(void)
 	if (p_ptr->timed[TMD_BLIND])
 	{
 		/* Process "new" grids */
-		for (i = 0; i < fast_view_n; i++)
+		for (i = 0; i < view_n; i++)
 		{
 			/* Grid */
-			g = fast_view_g[i];
+			g = view_g[i];
 
 			/* Grid cannot be "CAVE_SEEN" */
 			fast_cave_info[g] &= ~(CAVE_SEEN);
@@ -2674,10 +2670,10 @@ void update_view(void)
 	}
 
 	/* Process "new" grids */
-	for (i = 0; i < fast_view_n; i++)
+	for (i = 0; i < view_n; i++)
 	{
 		/* Grid */
-		g = fast_view_g[i];
+		g = view_g[i];
 
 		/* Get grid info */
 		info = fast_cave_info[g];
@@ -2711,10 +2707,10 @@ void update_view(void)
 	}
 
 	/* Process "old" grids */
-	for (i = 0; i < fast_temp_n; i++)
+	for (i = 0; i < temp_n; i++)
 	{
 		/* Grid */
-		g = fast_temp_g[i];
+		g = temp_g[i];
 
 		/* Get grid info */
 		info = fast_cave_info[g];
@@ -2738,10 +2734,6 @@ void update_view(void)
 			cave_light_spot(cave, y, x);
 		}
 	}
-
-
-	/* Save 'view_n' */
-	view_n = fast_view_n;
 }
 
 
