@@ -1978,6 +1978,14 @@ static void update_view_one(struct cave *c, int y, int x, int radius, int py, in
 	if (cave_iswall(c, y, x)) {
 		xc = (x < px) ? (x + 1) : (x > px) ? (x - 1) : x;
 		yc = (y < py) ? (y + 1) : (y > py) ? (y - 1) : y;
+		/* Check that the cell we're trying to steal LOS from isn't a
+		 * wall. If we don't do this, double-thickness walls will have
+		 * both sides visible.
+		 */
+		if (cave_iswall(c, yc, xc)) {
+			xc = x;
+			yc = y;
+		}
 	}
 
 
