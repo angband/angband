@@ -70,7 +70,7 @@ struct room_profile {
 	room_builder builder; /* Function used to build the room */
 	int height, width; /* Space required in blocks */
 	int level; /* Minimum dungeon level */
-	bool crowded; /* Whether this room is crowded or not */
+	bool pit; /* Whether this room is a pit/nest or not */
 	int rarity; /* How unusual this room is */
 	int cutoff; /* Upper limit of 1-100 random roll for room generation */
 };

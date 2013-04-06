@@ -87,7 +87,7 @@ extern const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER];
 
 #define OPT_birth_maximize          (OPT_BIRTH+0)
 #define OPT_birth_randarts          (OPT_BIRTH+1)
-#define OPT_birth_ironman           (OPT_BIRTH+2)
+#define OPT_birth_no_recall           (OPT_BIRTH+2)
 #define OPT_birth_small_range         (OPT_BIRTH+3)
 #define OPT_birth_no_artifacts      (OPT_BIRTH+4)
 #define OPT_birth_no_stacking       (OPT_BIRTH+5)
@@ -100,7 +100,7 @@ extern const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER];
 #define OPT_birth_ai_packs			(OPT_BIRTH+12)
 #define OPT_birth_ai_learn			(OPT_BIRTH+13)
 #define OPT_birth_ai_cheat			(OPT_BIRTH+14)
-#define OPT_birth_ai_smart			(OPT_BIRTH+15)
+#define OPT_birth_force_descend 	(OPT_BIRTH+15)
 
 
 #define OPT(opt_name)	op_ptr->opt[OPT_##opt_name]

@@ -177,8 +177,9 @@ static int choose_attack_spell(struct monster *m_ptr, bitflag f[RSF_SIZE])
 	bool has_annoy, has_haste, has_heal;
 
 
-	/* Smart monsters restrict their spell choices. */
-	if (OPT(birth_ai_smart) && !rf_has(m_ptr->race->flags, RF_STUPID))
+    /* This used to be the birth_ai_smart option which
+     has been broken for a while and has been removed. */
+	if ((FALSE) && !rf_has(m_ptr->race->flags, RF_STUPID))
 	{
 		/* What have we got? */
 		has_escape = test_spells(f, RST_ESCAPE);
@@ -434,7 +435,7 @@ bool make_attack_spell(struct monster *m_ptr)
 		failrate += 20;
 
 	/* Stupid monsters will never fail (for jellies and such) */
-	if (OPT(birth_ai_smart) || rf_has(m_ptr->race->flags, RF_STUPID))
+	if (rf_has(m_ptr->race->flags, RF_STUPID))
 		failrate = 0;
 
 	/* Check for spell failure (innate attacks never fail) */
@@ -1115,7 +1116,7 @@ static bool get_moves(struct cave *c, struct monster *m_ptr, int mm[5])
 	if (!done && mon_will_run(m_ptr))
 	{
 		/* Try to find safe place */
-		if (!(OPT(birth_ai_smart) && find_safety(c, m_ptr, &y, &x)))
+		if (find_safety(c, m_ptr, &y, &x))
 		{
 			/* This is not a very "smart" method XXX XXX */
 			y = (-y);
@@ -1431,7 +1432,6 @@ bool check_hit(struct player *p, int power, int level)
 
 #define MAX_DESC_INSULT 8
 
-
 /*
  * Hack -- possible "insult" messages
  */
@@ -1465,6 +1465,62 @@ static const char *desc_moan[MAX_DESC_MOAN] =
 	"asks if you have seen his dogs.",
 	"mumbles something about mushrooms."
 };
+
+/*
+ * Calculate how much damage remains after armor is taken into account
+ * (does for a physical attack what adjust_dam does for an elemental attack).
+ */
+static int adjust_dam_armor(int damage, int ac)
+{
+	return damage - (damage * ((ac < 240) ? ac : 240) / 400);
+}
+
+/*
+ * Helper function for make_attack_normal.
+ * Do damage as the result of a melee attack that has an elemental aspect.
+ */
+static void do_elemental_melee_attack(struct player *p, int damage, int ac, int which_element, char *ddesc, int method)
+{
+	int physical_dam, elemental_dam;
+
+       	switch (which_element) {
+		case GF_ACID: msg("You are covered in acid!");
+               	break;
+		case GF_ELEC: msg("You are struck by electricity!");
+               	break;
+		case GF_FIRE: msg("You are enveloped in flames!");
+               	break;
+		case GF_COLD: msg("You are covered with frost!");
+               	break;
+	}
+	
+	/* Give the player a small bonus to ac for elemental attacks */
+	physical_dam = adjust_dam_armor(damage, ac + 50);
+	
+	/* Some attacks do no physical damage */
+	if (method == RBM_TOUCH  ||
+		method == RBM_ENGULF ||
+		method == RBM_DROOL  ||
+		method == RBM_SPIT   ||
+		method == RBM_CRAWL  ||
+		method == RBM_GAZE   ||
+		method == RBM_WAIL   ||
+		method == RBM_SPORE  ||
+		method == RBM_BEG    ||
+		method == RBM_INSULT ||
+		method == RBM_MOAN){
+		physical_dam = 0;
+	}
+	
+	elemental_dam = adjust_dam(p, which_element, damage, RANDOMISE, 
+		check_for_resist(p, which_element, p->state.flags, TRUE));
+		
+	/* Take the larger of physical or elemental damage */	
+	damage = (physical_dam > elemental_dam) ? physical_dam : elemental_dam;
+	
+	if (damage > 0) take_hit(p, damage, ddesc);
+	if (elemental_dam > 0) inven_damage(p, which_element, MIN(elemental_dam * 5, 300));
+}
 
 /*
  * Attack the player via physical attacks.
@@ -1800,11 +1856,8 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 
 				case RBE_POISON:
 				{
-					damage = adjust_dam(p, GF_POIS, damage, RANDOMISE,
-						check_for_resist(p, GF_POIS, p->state.flags, TRUE));
-
-					/* Take damage */
-					take_hit(p, damage, ddesc);
+					do_elemental_melee_attack(p, damage, ac, GF_POIS,
+						ddesc, method);
 
 					/* Take "poison" effect */
 					if (player_inc_timed(p, TMD_POISONED, randint1(rlev) + 5, TRUE, TRUE))
@@ -2136,17 +2189,9 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 				{
 					/* Obvious */
 					obvious = TRUE;
-
-					/* Message */
-					msg("You are covered in acid!");
-
-					/* Special damage */
-					damage = adjust_dam(p, GF_ACID, damage, RANDOMISE, 
-						check_for_resist(p, GF_ACID, p->state.flags, TRUE));
-					if (damage) {
-						take_hit(p, damage, ddesc);
-						inven_damage(p, GF_ACID, MIN(damage * 5, 300));
-					}
+				
+					do_elemental_melee_attack(p, damage, ac, GF_ACID,
+						ddesc, method);
 
 					/* Learn about the player */
 					monster_learn_resists(m_ptr, p, GF_ACID);
@@ -2158,17 +2203,9 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 				{
 					/* Obvious */
 					obvious = TRUE;
-
-					/* Message */
-					msg("You are struck by electricity!");
-
-					/* Take damage (special) */
-					damage = adjust_dam(p, GF_ELEC, damage, RANDOMISE,
-						check_for_resist(p, GF_ELEC, p->state.flags, TRUE));
-					if (damage) {
-						take_hit(p, damage, ddesc);
-						inven_damage(p, GF_ELEC, MIN(damage * 5, 300));
-					}
+					
+					do_elemental_melee_attack(p, damage, ac, GF_ELEC,
+						ddesc, method);
 
 					/* Learn about the player */
 					monster_learn_resists(m_ptr, p, GF_ELEC);
@@ -2181,16 +2218,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 					/* Obvious */
 					obvious = TRUE;
 
-					/* Message */
-					msg("You are enveloped in flames!");
-
-					/* Take damage (special) */
-					damage = adjust_dam(p, GF_FIRE, damage, RANDOMISE,
-						check_for_resist(p, GF_FIRE, p->state.flags, TRUE));
-					if (damage) {
-						take_hit(p, damage, ddesc);
-						inven_damage(p, GF_FIRE, MIN(damage * 5, 300));
-					}
+					do_elemental_melee_attack(p, damage, ac, GF_FIRE, ddesc, method);
 
 					/* Learn about the player */
 					monster_learn_resists(m_ptr, p, GF_FIRE);
@@ -2203,16 +2231,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 					/* Obvious */
 					obvious = TRUE;
 
-					/* Message */
-					msg("You are covered with frost!");
-
-					/* Take damage (special) */
-					damage = adjust_dam(p, GF_COLD, damage, RANDOMISE,
-						check_for_resist(p, GF_COLD, p->state.flags, TRUE));
-					if (damage) {
-						take_hit(p, damage, ddesc);
-						inven_damage(p, GF_COLD, MIN(damage * 5, 300));
-					}
+					do_elemental_melee_attack(p, damage, ac, GF_COLD, ddesc, method);
 
 					/* Learn about the player */
 					monster_learn_resists(m_ptr, p, GF_COLD);
@@ -3312,9 +3331,10 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 		if (do_turn) break;
 	}
 
-
+   
 	/* If we haven't done anything, try casting a spell again */
-	if (OPT(birth_ai_smart) && !do_turn && !do_move)
+    /* Another birth_ai_smart option */
+	if (FALSE && !do_turn && !do_move)
 		/* Cast spell */
 		if (make_attack_spell(m_ptr)) return;
 
