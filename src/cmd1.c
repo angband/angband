@@ -80,7 +80,7 @@ bool search(bool verbose)
 			if (randint0(100) < chance)
 			{
 				/* Invisible trap */
-				if (cave->feat[y][x] == FEAT_INVIS)
+				if (cave_issecrettrap(cave, y, x))
 				{
 					found = TRUE;
 
@@ -95,7 +95,7 @@ bool search(bool verbose)
 				}
 
 				/* Secret door */
-				if (cave->feat[y][x] == FEAT_SECRET)
+				if (cave_issecretdoor(cave, y, x))
 				{
 					found = TRUE;
 
@@ -594,7 +594,7 @@ void move_player(int dir, bool disarm)
 		if (!(cave->info[y][x] & CAVE_MARK))
 		{
 			/* Rubble */
-			if (cave->feat[y][x] == FEAT_RUBBLE)
+			if (cave_isrubble(cave, y, x))
 			{
 				msgt(MSG_HITWALL, "You feel a pile of rubble blocking your way.");
 				cave->info[y][x] |= (CAVE_MARK);
@@ -602,7 +602,7 @@ void move_player(int dir, bool disarm)
 			}
 
 			/* Closed door */
-			else if (cave->feat[y][x] < FEAT_SECRET)
+			else if (cave_iscloseddoor(cave, y, x))
 			{
 				msgt(MSG_HITWALL, "You feel a door blocking your way.");
 				cave->info[y][x] |= (CAVE_MARK);
@@ -621,9 +621,9 @@ void move_player(int dir, bool disarm)
 		/* Mention known obstacles */
 		else
 		{
-			if (cave->feat[y][x] == FEAT_RUBBLE)
+			if (cave_isrubble(cave, y, x))
 				msgt(MSG_HITWALL, "There is a pile of rubble blocking your way.");
-			else if (cave->feat[y][x] < FEAT_SECRET)
+			else if (cave_iscloseddoor(cave, y, x))
 				msgt(MSG_HITWALL, "There is a door blocking your way.");
 			else
 				msgt(MSG_HITWALL, "There is a wall blocking your way.");
@@ -663,9 +663,7 @@ void move_player(int dir, bool disarm)
 			search(FALSE);
 
 		/* Handle "store doors" */
-		if ((cave->feat[p_ptr->py][p_ptr->px] >= FEAT_SHOP_HEAD) &&
-			(cave->feat[p_ptr->py][p_ptr->px] <= FEAT_SHOP_TAIL))
-		{
+		if (cave_isshop(cave, p_ptr->py, p_ptr->px)) {
 			/* Disturb */
 			disturb(p_ptr, 0, 0);
 			cmd_insert(CMD_ENTER_STORE);
@@ -680,7 +678,7 @@ void move_player(int dir, bool disarm)
 
 
 		/* Discover invisible traps */
-		if (cave->feat[y][x] == FEAT_INVIS)
+		if (cave_issecrettrap(cave, y, x))
 		{
 			/* Disturb */
 			disturb(p_ptr, 0, 0);

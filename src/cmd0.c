@@ -698,12 +698,10 @@ static void textui_process_click(ui_event e)
 			/* ctrl-click - use feature / use inventory item */
 			/* switch with default */
 			if (e.mouse.button == 1) {
-				if (cave->feat[p_ptr->py][p_ptr->px] == FEAT_LESS) {
+				if (cave_isupstairs(cave, p_ptr->py, p_ptr->px))
 					cmd_insert(CMD_GO_UP);
-				} else
-				if (cave->feat[p_ptr->py][p_ptr->px] == FEAT_MORE) {
+				else if (cave_isdownstairs(cave, p_ptr->py, p_ptr->px))
 					cmd_insert(CMD_GO_DOWN);
-				}
 			} else
 			if (e.mouse.button == 2) {
 				cmd_insert(CMD_USE_UNAIMED);

@@ -2007,7 +2007,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 			/* Remove trap */
 			cave->info[py][px] &= ~(CAVE_MARK);
-			cave_set_feat(cave, py, px, FEAT_FLOOR);
+			cave_destroy_trap(cave, py, px);
 
 			for (i = 0; i < num; i++)
 				(void)summon_specific(py, px, p_ptr->depth, 0, 1);
