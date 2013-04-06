@@ -163,14 +163,14 @@ static int get_new_attr(bitflag flags[OF_SIZE], bitflag newf[OF_SIZE])
  */
 static struct ego_item *ego_find_random(object_type *o_ptr, int level)
 {
-	int i, j;
+	int i, j, ood_chance;
 	long total = 0L;
 
 	/* XXX alloc_ego_table &c should be static to this file */
 	alloc_entry *table = alloc_ego_table;
 	ego_item_type *ego;
 
-	/* Go through all possible ego items and find oens which fit this item */
+	/* Go through all possible ego items and find ones which fit this item */
 	for (i = 0; i < alloc_ego_size; i++) {
 		/* Reset any previous probability of this type being picked */
 		table[i].prob3 = 0;
@@ -180,6 +180,15 @@ static struct ego_item *ego_find_random(object_type *o_ptr, int level)
 
 		/* Access the ego item */
 		ego = &e_info[table[i].index];
+        
+        /* enforce maximum */
+        if (level > ego->alloc_max) continue;
+        
+        /* roll for Out of Depth (ood) */
+        if (level < ego->alloc_min){
+            ood_chance = MAX(2, (ego->alloc_min - level) / 3);
+            if (!one_in_(ood_chance)) continue;
+        }
 
 		/* XXX Ignore cursed items for now */
 		if (cursed_p(ego->flags)) continue;
@@ -645,7 +654,7 @@ void object_prep(object_type *o_ptr, struct object_kind *k, int lev,
  * artifact.
  */
 s16b apply_magic(object_type *o_ptr, int lev, bool allow_artifacts,
-		bool good, bool great)
+		bool good, bool great, bool extra_roll)
 {
 	int i;
 	s16b power = 0;
@@ -654,10 +663,16 @@ s16b apply_magic(object_type *o_ptr, int lev, bool allow_artifacts,
 	/* This has changed over the years:
 	 * 3.0.0:   good = MIN(75, lev + 10);      great = MIN(20, lev / 2); 
 	 * 3.3.0:	good = (lev + 2) * 3;          great = MIN(lev / 4 + lev, 50);
-	 * The calculations below are somewhere between the two.		-AS-
+     * 3.4.0:   good = (2 * lev) + 5
+     * 3.4 was in between 3.0 and 3.3, 3.5 attempts to keep the same
+     * area under the curve as 3.4, but make the generation chances
+     * flatter.  This depresses good items overall since more items
+     * are created deeper. 
+     * This change is meant to go in conjunction with the changes
+     * to ego item allocation levels. (-fizzix)
 	 */
-	int good_chance = (2 * lev) + 5;
-	int great_chance = MIN(40, (lev * 3) / 4);
+	int good_chance = (33 + lev);
+	int great_chance = 30;
 
 	/* Roll for "good" */
 	if (good || (randint0(100) < good_chance)) {
@@ -675,8 +690,11 @@ s16b apply_magic(object_type *o_ptr, int lev, bool allow_artifacts,
 		/* Get one roll if excellent */
 		if (power >= 2) rolls = 1;
 
-		/* Get four rolls if forced great */
-		if (great) rolls = 4;
+		/* Get two rolls if forced great */
+		if (great) rolls = 2;
+        
+        /* Give some extra rolls for uniques and acq scrolls */
+        if (extra_roll) rolls += 2;
 
 		/* Roll for artifacts if allowed */
 		for (i = 0; i < rolls; i++)
@@ -1009,7 +1027,7 @@ object_kind *get_obj_num(int level, bool good, int tval)
  * Returns the whether or not creation worked.
  */
 bool make_object(struct cave *c, object_type *j_ptr, int lev, bool good,
-	bool great, s32b *value, int tval)
+	bool great, bool extra_roll, s32b *value, int tval)
 {
 	int base;
 	object_kind *kind;
@@ -1021,7 +1039,7 @@ bool make_object(struct cave *c, object_type *j_ptr, int lev, bool good,
 			return TRUE;
 		}
 
-		/* If we failed to make an artifact, the player gets a great item */
+		/* If we failed to make an artifact, the player gets a good item */
 		good = TRUE;
 	}
 
@@ -1032,7 +1050,7 @@ bool make_object(struct cave *c, object_type *j_ptr, int lev, bool good,
 	kind = get_obj_num(base, good || great, tval);
 	if (!kind) return FALSE;
 	object_prep(j_ptr, kind, lev, RANDOMISE);
-	apply_magic(j_ptr, lev, TRUE, good, great);
+	apply_magic(j_ptr, lev, TRUE, good, great, extra_roll);
 
 	/* Generate multiple items */
 	if (kind->gen_mult_prob >= randint1(100))

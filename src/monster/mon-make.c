@@ -638,9 +638,10 @@ static bool mon_create_drop(struct monster *m_ptr, byte origin)
 	struct monster_drop *drop;
 
 	bool great, good, gold_ok, item_ok;
+    bool extra_roll = FALSE;
 	bool any = FALSE;
 
-	int number = 0, level, j;
+	int number = 0, level, j, monlevel;
 
 	object_type *i_ptr;
 	object_type object_type_body;
@@ -661,9 +662,17 @@ static bool mon_create_drop(struct monster *m_ptr, byte origin)
 	if (rf_has(m_ptr->race->flags, RF_DROP_2)) number += rand_range(1, 3);
 	if (rf_has(m_ptr->race->flags, RF_DROP_1)) number++;
 
+    /* Give added bonus for unique monters */
+    monlevel = m_ptr->race->level;
+    if (rf_has(m_ptr->race->flags, RF_UNIQUE)){
+        monlevel = MIN(monlevel + 15, monlevel * 2);
+        extra_roll = TRUE;
+    }
+    
 	/* Take the best of (average of monster level and current depth)
 	   and (monster level) - to reward fighting OOD monsters */
-	level = MAX((m_ptr->race->level + p_ptr->depth) / 2, m_ptr->race->level);
+	level = MAX((monlevel + p_ptr->depth) / 2, monlevel);
+    level = MIN(level, 100);
 
 	/* Specified drops */
 	for (drop = m_ptr->race->drops; drop; drop = drop->next) {
@@ -679,7 +688,7 @@ static bool mon_create_drop(struct monster *m_ptr, byte origin)
 			i_ptr->artifact->created = 1;
 		} else {
 			object_prep(i_ptr, drop->kind, level, RANDOMISE);
-			apply_magic(i_ptr, level, TRUE, good, great);
+			apply_magic(i_ptr, level, TRUE, good, great, extra_roll);
 		}
 
 		i_ptr->origin = origin;
@@ -698,7 +707,8 @@ static bool mon_create_drop(struct monster *m_ptr, byte origin)
 		if (gold_ok && (!item_ok || (randint0(100) < 50))) {
 			make_gold(i_ptr, level, SV_GOLD_ANY);
 		} else {
-			if (!make_object(cave, i_ptr, level, good, great, NULL, 0)) continue;
+			if (!make_object(cave, i_ptr, level, good,
+                great, extra_roll, NULL, 0)) continue;
 		}
 
 		i_ptr->origin = origin;
@@ -784,7 +794,7 @@ s16b place_monster(int y, int x, monster_type *mon, byte origin)
 			make_gold(i_ptr, p_ptr->depth, kind->sval);
 		} else {
 			object_prep(i_ptr, kind, m_ptr->race->level, RANDOMISE);
-			apply_magic(i_ptr, m_ptr->race->level, TRUE, FALSE, FALSE);
+			apply_magic(i_ptr, m_ptr->race->level, TRUE, FALSE, FALSE, FALSE);
 			i_ptr->number = 1;
 		}
 
@@ -990,26 +1000,6 @@ static int group_size_1(const monster_race *race)
 
 	return total;
 }
-		
-/**
- * Picks a monster group size. Used for monsters with the FRIEND
- * flag.
- */
-static int group_size_2(const monster_race *race)
-{
-	/* Start small */
-	int total = 1;
-
-	assert(race && race->name);
-
-	/* Easy monsters, large groups */
-	if (race->level < p_ptr->depth)
-		total += randint1(2 * (p_ptr->depth - race->level));
-
-	if (total > GROUP_MAX) total = GROUP_MAX;
-
-	return total;
-}
 
 		
 /**
@@ -1136,7 +1126,7 @@ bool place_new_monster(struct cave *c, int y, int x, monster_race *race, bool sl
 
 	/* Friends for certain monsters */
 	if (rf_has(race->flags, RF_FRIEND)) {
-		int total = group_size_2(race);
+		int total = group_size_1(race);
 		(void)place_new_monster_group(c, y, x, race, sleep, total, origin);
 	}
 
@@ -1179,12 +1169,12 @@ bool place_new_monster(struct cave *c, int y, int x, monster_race *race, bool sl
 
 			/* Place a "group" of escorts if needed */
 			if (rf_has(race2->flags, RF_FRIEND)) {
-				int total = group_size_2(race2);
+				int total = randint1(GROUP_MAX / 3);
 				(void)place_new_monster_group(c, ny, nx, race2, sleep, total, origin);
 			}
 			
 			if (rf_has(race2->flags, RF_FRIENDS) || rf_has(race->flags, RF_ESCORTS)) {
-				int total = group_size_1(race2);
+				int total = randint1(GROUP_MAX / 2);
 				(void)place_new_monster_group(c, ny, nx, race2, sleep, total, origin);
 			}
 		}

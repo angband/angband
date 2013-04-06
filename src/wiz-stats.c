@@ -742,7 +742,7 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 					add_stats( slweap_total,  slweap_mon,  slweap_vault, vault, mon,number);
 			/* slay evil */
 			if (of_has(f,OF_SLAY_EVIL))
-				add_stats( slweap_total,  slweap_mon,  slweap_vault, vault, mon,number);
+				add_stats( evweap_total,  evweap_mon,  evweap_vault, vault, mon,number);
 			
 			/* kill flag */
 			if ((of_has(f,OF_KILL_DRAGON)) ||

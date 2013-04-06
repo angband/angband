@@ -492,7 +492,7 @@ static bool wiz_create_item_subaction(menu_type *m, const ui_event *e, int oid)
 	object_prep(i_ptr, kind, p_ptr->depth, RANDOMISE);
 
 	/* Apply magic (no messages, no artifacts) */
-	apply_magic(i_ptr, p_ptr->depth, FALSE, FALSE, FALSE);
+	apply_magic(i_ptr, p_ptr->depth, FALSE, FALSE, FALSE, FALSE);
 
 	/* Mark as cheat, and where created */
 	i_ptr->origin = ORIGIN_CHEAT;
@@ -721,21 +721,21 @@ static void wiz_reroll_item(object_type *o_ptr)
 		else if (ch.code == 'n' || ch.code == 'N')
 		{
 			object_prep(i_ptr, o_ptr->kind, p_ptr->depth, RANDOMISE);
-			apply_magic(i_ptr, p_ptr->depth, FALSE, FALSE, FALSE);
+			apply_magic(i_ptr, p_ptr->depth, FALSE, FALSE, FALSE, FALSE);
 		}
 
 		/* Apply good magic, but first clear object */
 		else if (ch.code == 'g' || ch.code == 'G')
 		{
 			object_prep(i_ptr, o_ptr->kind, p_ptr->depth, RANDOMISE);
-			apply_magic(i_ptr, p_ptr->depth, FALSE, TRUE, FALSE);
+			apply_magic(i_ptr, p_ptr->depth, FALSE, TRUE, FALSE, FALSE);
 		}
 
 		/* Apply great magic, but first clear object */
 		else if (ch.code == 'e' || ch.code == 'E')
 		{
 			object_prep(i_ptr, o_ptr->kind, p_ptr->depth, RANDOMISE);
-			apply_magic(i_ptr, p_ptr->depth, FALSE, TRUE, TRUE);
+			apply_magic(i_ptr, p_ptr->depth, FALSE, TRUE, TRUE, FALSE);
 		}
 	}
 
@@ -881,7 +881,7 @@ static void wiz_statistics(object_type *o_ptr, int level)
 			object_wipe(i_ptr);
 
 			/* Create an object */
-			make_object(cave, i_ptr, level, good, great, NULL, 0);
+			make_object(cave, i_ptr, level, good, great, FALSE, NULL, 0);
 
 			/* Allow multiple artifacts, because breaking the game is fine here */
 			if (o_ptr->artifact) o_ptr->artifact->created = FALSE;
@@ -1519,7 +1519,7 @@ static void wiz_test_kind(int tval)
 		object_prep(i_ptr, kind, p_ptr->depth, RANDOMISE);
 
 		/* Apply magic (no messages, no artifacts) */
-		apply_magic(i_ptr, p_ptr->depth, FALSE, FALSE, FALSE);
+		apply_magic(i_ptr, p_ptr->depth, FALSE, FALSE, FALSE, FALSE);
 
 		/* Mark as cheat, and where created */
 		i_ptr->origin = ORIGIN_CHEAT;
@@ -1747,6 +1747,13 @@ void do_cmd_debug(void)
 			do_cmd_rerate();
 			break;
 		}
+        
+        /* Hit all monsters in LOS */
+        case 'H':
+        {
+            dispel_monsters(10000);
+            break;
+        }
 
 		/* Identify */
 		case 'i':

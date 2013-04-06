@@ -543,7 +543,7 @@ static void process_world(struct cave *c)
 	if (one_in_(MAX_M_ALLOC_CHANCE))
 	{
 		/* Make a new monster */
-		(void)pick_and_place_distant_monster(cave, loc(p_ptr->px, p_ptr->py), MAX_SIGHT + 5, FALSE, p_ptr->depth);
+		(void)pick_and_place_distant_monster(cave, loc(p_ptr->px, p_ptr->py), MAX_SIGHT + 5, TRUE, p_ptr->depth);
 	}
 
 	/* Hack -- Check for creature regeneration */
@@ -808,6 +808,13 @@ static void process_world(struct cave *c)
 			else
 			{
 				msgt(MSG_TPLEVEL, "You feel yourself yanked downwards!");
+                
+                /* Force descent to a lower level if allowed */
+                if (OPT(birth_force_descend) && p_ptr->max_depth < MAX_DEPTH - 1
+                  && !is_quest(p_ptr->max_depth)){
+
+                    p_ptr->max_depth = p_ptr->max_depth + 1;
+                }
 
 				/* New depth - back to max depth or 1, whichever is deeper */
 				dungeon_change_level(p_ptr->max_depth < 1 ? 1: p_ptr->max_depth);
