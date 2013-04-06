@@ -2256,16 +2256,16 @@ errr vinfo_init(void)
 /*
  * Forget the "CAVE_VIEW" grids, redrawing as needed
  */
-void forget_view(void)
+void forget_view(struct cave *c)
 {
 	int x, y;
 
 	for (y = 0; y < CAVE_INFO_Y; y++) {
 		for (x = 0; x < CAVE_INFO_X; x++) {
-			if (!cave_isview(cave, y, x))
+			if (!cave_isview(c, y, x))
 				continue;
-			cave->info[y][x] &= ~(CAVE_VIEW | CAVE_SEEN);
-			cave_light_spot(cave, y, x);
+			c->info[y][x] &= ~(CAVE_VIEW | CAVE_SEEN);
+			cave_light_spot(c, y, x);
 		}
 	}
 }
@@ -2467,10 +2467,10 @@ static void become_viewable(struct cave *c, int y, int x, int lit, int py, int p
 	}
 }
 
-void update_view(void)
+void update_view(struct cave *c, struct player *p)
 {
-	int py = p_ptr->py;
-	int px = p_ptr->px;
+	int py = p->py;
+	int px = p->px;
 
 	int pg = GRID(py,px);
 
@@ -2481,20 +2481,20 @@ void update_view(void)
 
 	byte info;
 
-	mark_wasseen(cave);
+	mark_wasseen(c);
 
 	/* Extract "radius" value */
-	radius = p_ptr->cur_light;
+	radius = p->cur_light;
 
 	/* Handle real light */
 	if (radius > 0) ++radius;
 
-	add_monster_lights(cave, loc(p_ptr->px, p_ptr->py));
+	add_monster_lights(c, loc(p->px, p->py));
 
 	/* Assume we can view the player grid */
-	cave->info[py][px] |= CAVE_VIEW;
-	if (radius > 0 || cave_isglow(cave, py, px))
-		cave->info[py][px] |= CAVE_SEEN;
+	c->info[py][px] |= CAVE_VIEW;
+	if (radius > 0 || cave_isglow(c, py, px))
+		c->info[py][px] |= CAVE_SEEN;
 
 
 	/*** Step 2 -- octants ***/
@@ -2502,7 +2502,7 @@ void update_view(void)
 	/* Scan each octant */
 	for (o2 = 0; o2 < 8; o2++)
 	{
-		vinfo_type *p;
+		vinfo_type *vi;
 
 		/* Last added */
 		vinfo_type *last = &vinfo[0];
@@ -2529,30 +2529,30 @@ void update_view(void)
 		while (queue_head < queue_tail)
 		{
 			/* Dequeue next grid */
-			p = queue[queue_head++];
+			vi = queue[queue_head++];
 
 			/* If none of the bits are set, we are done. */
-			if (!(bits0 & p->bits_0) && !(bits1 & p->bits_1)
-			    && !(bits2 & p->bits_2) && !(bits3 & p->bits_3))
+			if (!(bits0 & vi->bits_0) && !(bits1 & vi->bits_1)
+			    && !(bits2 & vi->bits_2) && !(bits3 & vi->bits_3))
 				continue;
 
 			/* Extract grid value XXX XXX XXX */
-			g = pg + p->grid[o2];
+			g = pg + vi->grid[o2];
 
-			if (cave_iswall(cave, GRID_Y(g), GRID_X(g))) {
-				bits0 &= ~(p->bits_0);
-				bits1 &= ~(p->bits_1);
-				bits2 &= ~(p->bits_2);
-				bits3 &= ~(p->bits_3);
+			if (cave_iswall(c, GRID_Y(g), GRID_X(g))) {
+				bits0 &= ~(vi->bits_0);
+				bits1 &= ~(vi->bits_1);
+				bits2 &= ~(vi->bits_2);
+				bits3 &= ~(vi->bits_3);
 			} else {
-				if (last != p->next_0)
-					queue[queue_tail++] = last = p->next_0;
-				if (last != p->next_1)
-					queue[queue_tail++] = last = p->next_1;
+				if (last != vi->next_0)
+					queue[queue_tail++] = last = vi->next_0;
+				if (last != vi->next_1)
+					queue[queue_tail++] = last = vi->next_1;
 			}
 
-			become_viewable(cave, GRID_Y(g), GRID_X(g),
-			                p->d < radius, py, px);
+			become_viewable(c, GRID_Y(g), GRID_X(g),
+			                vi->d < radius, py, px);
 		}
 	}
 
@@ -2561,7 +2561,7 @@ void update_view(void)
 
 	for (y = 0; y < CAVE_INFO_Y; y++)
 		for (x = 0; x < CAVE_INFO_X; x++)
-			update_one(cave, y, x, p_ptr->timed[TMD_BLIND]);
+			update_one(c, y, x, p->timed[TMD_BLIND]);
 }
 
 

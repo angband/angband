@@ -1806,7 +1806,7 @@ void play_game(void)
 
 
 		/* Forget the view */
-		forget_view();
+		forget_view(cave);
 
 
 		/* Handle "quit and save" */
