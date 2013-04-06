@@ -426,22 +426,20 @@ bool set_recall(void)
 		return FALSE;
 	}
     
-    /* No recall from quest levels with force_descend */
-    if (OPT(birth_force_descend) && (is_quest(p_ptr->depth))){
-        
-        msg("Nothing happens.");
-        return;
-    }
-    
+	/* No recall from quest levels with force_descend */
+	if (OPT(birth_force_descend) && (is_quest(p_ptr->depth))) {
+		msg("Nothing happens.");
+		return TRUE;
+	}
+
     /* Warn the player if they're descending to an unrecallable level */
-    if (OPT(birth_force_descend) &&  !(p_ptr->depth)
-        && (is_quest(p_ptr->max_depth + 1))){
-    
-        if (!get_check("Are you sure you want to descend? ")){
-            msg("You prevent the recall from taking place.");
-            return;
-        }
-    }
+	if (OPT(birth_force_descend) && !(p_ptr->depth) &&
+			(is_quest(p_ptr->max_depth + 1))) {
+		if (!get_check("Are you sure you want to descend? ")) {
+			msg("You prevent the recall from taking place.");
+			return FALSE;
+		}
+	}
 
 	/* Activate recall */
 	if (!p_ptr->word_recall)
