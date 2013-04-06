@@ -299,9 +299,6 @@ bool los(int y1, int x1, int y2, int x2)
 	return (TRUE);
 }
 
-
-
-
 /*
  * Returns true if the player's grid is dark
  */
@@ -1958,6 +1955,36 @@ static void become_viewable(struct cave *c, int y, int x, int lit, int py, int p
 	}
 }
 
+static void update_view_one(struct cave *c, int y, int x, int radius, int py, int px)
+{
+	int xc = x;
+	int yc = y;
+
+	int d = distance(y, x, py, px);
+	int lit = d < radius;
+
+	if (d > MAX_SIGHT)
+		return;
+
+	/* Special case for wall lighting. If we are a wall and the square in
+	 * the direction of the player is in LOS, we are in LOS. This avoids
+	 * situations like:
+	 * #1#############
+	 * #............@#
+	 * ###############
+	 * where the wall cell marked '1' would not be lit because the LOS
+	 * algorithm runs into the adjacent wall cell.
+	 */
+	if (cave_iswall(c, y, x)) {
+		xc = (x < px) ? (x + 1) : (x > px) ? (x - 1) : x;
+		yc = (y < py) ? (y + 1) : (y > py) ? (y - 1) : y;
+	}
+
+
+	if (los(py, px, yc, xc))
+		become_viewable(c, y, x, lit, py, px);
+}
+
 void update_view(struct cave *c, struct player *p)
 {
 	int x, y;
@@ -1980,14 +2007,9 @@ void update_view(struct cave *c, struct player *p)
 		c->info[p->py][p->px] |= CAVE_SEEN;
 
 	/* View squares we have LOS to */
-	for (y = 0; y < CAVE_INFO_Y; y++) {
-		for (x = 0; x < CAVE_INFO_X; x++) {
-			int d = distance(p->py, p->px, y, x);
-			if (d <= MAX_SIGHT && los(p->py, p->px, y, x))
-				become_viewable(c, y, x, d < radius,
-				                p->py, p->px);
-		}
-	}
+	for (y = 0; y < CAVE_INFO_Y; y++)
+		for (x = 0; x < CAVE_INFO_X; x++)
+			update_view_one(cave, y, x, radius, p->py, p->px);
 
 	/*** Step 3 -- Complete the algorithm ***/
 
