@@ -2370,9 +2370,6 @@ void update_view(void)
 
 	int radius;
 
-	/* XXX: also moronic. Optimizers exist. */
-	byte *fast_cave_info = &cave->info[0][0];
-
 	byte info;
 
 
@@ -2434,42 +2431,16 @@ void update_view(void)
 				g = GRID(sy, sx);
 
 				/* Mark the square lit and seen */
-				fast_cave_info[g] |= (CAVE_VIEW | CAVE_SEEN);
+				cave->info[sy][sx] |= (CAVE_VIEW | CAVE_SEEN);
 			}
 		}
 	}
 
 
-	/*** Step 1 -- player grid ***/
-
-	/* Player grid */
-	g = pg;
-
-	/* Get grid info */
-	info = fast_cave_info[g];
-
-	/* Assume viewable */
-	info |= (CAVE_VIEW);
-
-	/* Torch-lit grid */
-	if (0 < radius)
-	{
-		/* Mark as "CAVE_SEEN" */
-		info |= (CAVE_SEEN);
-
-		/* Mark as "CAVE_LIGHT" */
-		/* info |= (CAVE_LIGHT); */
-	}
-
-	/* Perma-lit grid */
-	else if (info & (CAVE_GLOW))
-	{
-		/* Mark as "CAVE_SEEN" */
-		info |= (CAVE_SEEN);
-	}
-
-	/* Save cave info */
-	fast_cave_info[g] = info;
+	/* Assume we can view the player grid */
+	cave->info[py][px] |= CAVE_VIEW;
+	if (radius > 0 || cave_isglow(cave, py, px))
+		cave->info[py][px] |= CAVE_SEEN;
 
 
 	/*** Step 2 -- octants ***/
@@ -2516,7 +2487,7 @@ void update_view(void)
 				g = pg + p->grid[o2];
 
 				/* Get grid info */
-				info = fast_cave_info[g];
+				info = cave->info[GRID_Y(g)][GRID_X(g)];
 
 				/* Handle wall */
 				if (info & (CAVE_WALL))
@@ -2562,7 +2533,7 @@ void update_view(void)
 						}
 
 						/* Save cave info */
-						fast_cave_info[g] = info;
+						cave->info[GRID_Y(g)][GRID_X(g)] = info;
 					}
 				}
 
@@ -2605,7 +2576,7 @@ void update_view(void)
 						}
 
 						/* Save cave info */
-						fast_cave_info[g] = info;
+						cave->info[GRID_Y(g)][GRID_X(g)] = info;
 					}
 				}
 			}
@@ -3781,6 +3752,10 @@ bool cave_isseen(struct cave *c, int y, int x) {
 
 bool cave_wasseen(struct cave *c, int y, int x) {
 	return c->info[y][x] & CAVE_WASSEEN;
+}
+
+bool cave_isglow(struct cave *c, int y, int x) {
+	return c->info[y][x] & CAVE_GLOW;
 }
 
 /**
