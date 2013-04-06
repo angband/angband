@@ -638,7 +638,7 @@ enum
 #define CAVE_ROOM		0x08 	/* part of a room */
 #define CAVE_SEEN		0x10 	/* seen flag */
 #define CAVE_VIEW		0x20 	/* view flag */
-#define CAVE_TEMP		0x40 	/* temp flag */
+#define CAVE_WASSEEN		0x40 	/* previously seen (during update) */
 #define CAVE_WALL		0x80 	/* wall flag */
 
 #define CAVE2_DTRAP		0x01	/* trap detected grid */

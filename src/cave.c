@@ -1575,7 +1575,7 @@ void do_cmd_view_map(void)
  * and "update_view()" whenever the "CAVE_WALL" or "CAVE_GLOW" flags change
  * for a grid which has "CAVE_VIEW" set.  This flag must be very fast.
  *
- * The "CAVE_TEMP" flag is used for a variety of temporary purposes.  This
+ * The "CAVE_WASSEEN" flag is used for a variety of temporary purposes.  This
  * flag is used to determine if the "CAVE_SEEN" flag for a grid has changed
  * during the "update_view()" function.  This flag is used to "spread" light
  * or darkness through a room.  This flag is used by the "monster flow code".
@@ -2299,7 +2299,7 @@ void forget_view(void)
  * along the diagonal axes, so we check the bits corresponding to
  * the lines of sight near the major axes first.
  *
- * We use the "temp_g" array (and the "CAVE_TEMP" flag) to keep track of
+ * We use the "temp_g" array (and the "CAVE_WASSEEN" flag) to keep track of
  * which grids were previously marked "CAVE_SEEN", since only those grids
  * whose "CAVE_SEEN" value changes during this routine must be redrawn.
  *
@@ -2395,8 +2395,8 @@ void update_view(void)
 		/* Save "CAVE_SEEN" grids */
 		if (info & (CAVE_SEEN))
 		{
-			/* Set "CAVE_TEMP" flag */
-			info |= (CAVE_TEMP);
+			/* Set "CAVE_WASSEEN" flag */
+			info |= (CAVE_WASSEEN);
 
 			/* Save grid for later */
 			temp_g[temp_n++] = g;
@@ -2679,7 +2679,7 @@ void update_view(void)
 		info = fast_cave_info[g];
 
 		/* Was not "CAVE_SEEN", is now "CAVE_SEEN" */
-		if ((info & (CAVE_SEEN)) && !(info & (CAVE_TEMP)))
+		if ((info & (CAVE_SEEN)) && !(info & (CAVE_WASSEEN)))
 		{
 			int y, x;
 
@@ -2715,8 +2715,8 @@ void update_view(void)
 		/* Get grid info */
 		info = fast_cave_info[g];
 
-		/* Clear "CAVE_TEMP" flag */
-		info &= ~(CAVE_TEMP);
+		/* Clear "CAVE_WASSEEN" flag */
+		info &= ~(CAVE_WASSEEN);
 
 		/* Save cave info */
 		fast_cave_info[g] = info;
