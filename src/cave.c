@@ -1983,7 +1983,7 @@ void update_view(struct cave *c, struct player *p)
 	for (y = 0; y < CAVE_INFO_Y; y++) {
 		for (x = 0; x < CAVE_INFO_X; x++) {
 			int d = distance(p->py, p->px, y, x);
-			if (los(p->py, p->px, y, x))
+			if (d <= MAX_SIGHT && los(p->py, p->px, y, x))
 				become_viewable(c, y, x, d < radius,
 				                p->py, p->px);
 		}
