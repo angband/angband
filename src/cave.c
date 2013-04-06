@@ -173,7 +173,6 @@ bool los(int y1, int x1, int y2, int x2)
 	sx = (dx < 0) ? -1 : 1;
 	sy = (dy < 0) ? -1 : 1;
 
-
 	/* Vertical "knights" */
 	if (ax == 1)
 	{
@@ -191,7 +190,6 @@ bool los(int y1, int x1, int y2, int x2)
 			if (cave_floor_bold(y1, x1 + sx)) return (TRUE);
 		}
 	}
-
 
 	/* Calculate scale factor div 2 */
 	f2 = (ax * ay);
@@ -1976,8 +1974,16 @@ static void update_view_one(struct cave *c, int y, int x, int radius, int py, in
 	 * algorithm runs into the adjacent wall cell.
 	 */
 	if (cave_iswall(c, y, x)) {
+		int dx = x - px;
+		int dy = y - py;
+		int ax = ABS(dx);
+		int ay = ABS(dy);
+		int sx = dx > 0 ? 1 : -1;
+		int sy = dy > 0 ? 1 : -1;
+
 		xc = (x < px) ? (x + 1) : (x > px) ? (x - 1) : x;
 		yc = (y < py) ? (y + 1) : (y > py) ? (y - 1) : y;
+
 		/* Check that the cell we're trying to steal LOS from isn't a
 		 * wall. If we don't do this, double-thickness walls will have
 		 * both sides visible.
@@ -1985,6 +1991,22 @@ static void update_view_one(struct cave *c, int y, int x, int radius, int py, in
 		if (cave_iswall(c, yc, xc)) {
 			xc = x;
 			yc = y;
+		}
+
+		/* Check that we got here via the 'knight's move' rule. If so,
+		 * don't steal LOS. */
+		if (ax == 2 && ay == 1) {
+			if (  !cave_iswall(c, x + sx, y)
+			    && cave_iswall(c, x + sx, y + sy)) {
+				xc = x;
+				yc = y;
+			}
+		} else if (ax == 1 && ay == 2) {
+			if (  !cave_iswall(c, x, y + sy)
+			    && cave_iswall(c, x + sx, y + sy)) {
+				xc = x;
+				yc = y;
+			}
 		}
 	}
 
