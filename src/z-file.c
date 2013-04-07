@@ -61,7 +61,7 @@ int player_egid;
  */
 void safe_setuid_drop(void)
 {
-#ifdef SET_UID
+#ifdef SETGID
 # if defined(HAVE_SETRESGID)
 
 	if (setresgid(-1, getgid(), -1) != 0)
@@ -73,7 +73,7 @@ void safe_setuid_drop(void)
 		quit("setegid(): cannot drop permissions correctly!");
 
 # endif
-#endif /* SET_UID */
+#endif /* SETGID */
 }
 
 
@@ -82,7 +82,7 @@ void safe_setuid_drop(void)
  */
 void safe_setuid_grab(void)
 {
-#ifdef SET_UID
+#ifdef SETGID
 # if defined(HAVE_SETRESGID)
 
 	if (setresgid(-1, player_egid, -1) != 0)
@@ -94,7 +94,7 @@ void safe_setuid_grab(void)
 		quit("setegid(): cannot grab permissions correctly!");
 
 # endif
-#endif /* SET_UID */
+#endif /* SETGID */
 }
 
 
@@ -112,7 +112,7 @@ static void path_parse(char *buf, size_t max, const char *file)
 
 static void path_process(char *buf, size_t len, size_t *cur_len, const char *path)
 {
-#if defined(SET_UID) || defined(USE_PRIVATE_PATHS)
+#if defined(UNIX)
 
 	/* Home directory on Unixes */
 	if (path[0] == '~')
@@ -147,7 +147,7 @@ static void path_process(char *buf, size_t len, size_t *cur_len, const char *pat
 	}
 	else
 
-#endif /* defined(SET_UID) || defined(USE_PRIVATE_PATHS) */
+#endif /* defined(UNIX) */
 
 	strnfcat(buf, len, cur_len, "%s", path);
 }
@@ -182,7 +182,7 @@ size_t path_build(char *buf, size_t len, const char *base, const char *leaf)
 	 *   or there's no base path,
 	 * We use the leafname only.
 	 */
-#if defined(SET_UID) || defined(USE_PRIVATE_PATHS)
+#if defined(UNIX)
 	if ((!base || !base[0]) || prefix(leaf, PATH_SEP) || leaf[0] == '~')
 #else
 	if ((!base || !base[0]) || prefix(leaf, PATH_SEP))
@@ -415,7 +415,7 @@ bool file_close(ang_file *f)
  */
 void file_lock(ang_file *f)
 {
-#if defined(HAVE_FCNTL_H) && defined(SET_UID)
+#if defined(HAVE_FCNTL_H) && defined(UNIX)
 	struct flock lock;
 	lock.l_type = (f->mode == MODE_READ ? F_RDLCK : F_WRLCK);
 	lock.l_whence = SEEK_SET;
@@ -423,7 +423,7 @@ void file_lock(ang_file *f)
 	lock.l_len = 0;
 	lock.l_pid = 0;
 	fcntl(fileno(f->fh), F_SETLKW, &lock);
-#endif /* HAVE_FCNTL_H && SET_UID */
+#endif /* HAVE_FCNTL_H && UNIX */
 }
 
 /*
@@ -431,7 +431,7 @@ void file_lock(ang_file *f)
  */
 void file_unlock(ang_file *f)
 {
-#if defined(HAVE_FCNTL_H) && defined(SET_UID)
+#if defined(HAVE_FCNTL_H) && defined(UNIX)
 	struct flock lock;
 	lock.l_type = F_UNLCK;
 	lock.l_whence = SEEK_SET;
@@ -439,7 +439,7 @@ void file_unlock(ang_file *f)
 	lock.l_len = 0;
 	lock.l_pid = 0;
 	fcntl(fileno(f->fh), F_SETLK, &lock);
-#endif /* HAVE_FCNTL_H && SET_UID */
+#endif /* HAVE_FCNTL_H && UNIX */
 }
 
 

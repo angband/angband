@@ -24,7 +24,7 @@
 
 #include <signal.h>
 
-#ifdef SET_UID
+#ifdef UNIX
 # include <sys/types.h>
 #endif
 
