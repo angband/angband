@@ -352,7 +352,7 @@ C:1:^C
 
 # Hack -- Swap equipment
 A:w0\s\s
-C:1:x
+C:1:X
 
 # Pickup an item (with autopickup)
 A:^Gg
