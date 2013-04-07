@@ -305,13 +305,17 @@ int main(int argc, char *argv[])
 	argv0 = argv[0];
 
 
-#ifdef SETGID
+#ifdef UNIX
 
 	/* Default permissions on files */
 	(void)umask(022);
 
 	/* Get the user id */
 	player_uid = getuid();
+
+#endif /* UNIX */
+
+#ifdef SETGID
 
 	/* Save the effective GID for later recall */
 	player_egid = getegid();
