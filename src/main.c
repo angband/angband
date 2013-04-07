@@ -239,6 +239,84 @@ static void user_name(char *buf, size_t len, int id)
 
 #endif /* UNIX */
 
+
+/**
+ * List all savefiles this player can access.
+ */
+static void list_saves(void)
+{
+	char fname[256];
+	ang_dir *d = my_dopen(ANGBAND_DIR_SAVE);
+
+#ifdef SETGID
+	char uid[10];
+	strnfmt(uid, sizeof(uid), "%d.", player_uid);
+#endif
+
+	if (!d) quit_fmt("Can't open savefile directory");
+
+	printf("Savefiles you can use are:\n");
+
+	while (my_dread(d, fname, sizeof fname)) {
+#ifdef SETGID
+		/* Check that the savefile name begins with the user'd ID */
+		if (strncmp(fname, uid, strlen(uid)))
+			continue;
+#endif
+
+		printf("  %s\n", fname);
+	}
+
+	my_dclose(d);
+
+	printf("\nUse angband -u<name> to use savefile <name>.\n");
+}
+
+
+#ifndef SETGID
+
+/*
+ * Transition non-setgid installs away from using uid.name style savefile
+ * names.
+ */
+static void transition_savefile_names(void)
+{
+	char fname[256];
+	char uid[10];
+
+	ang_dir *d = my_dopen(ANGBAND_DIR_SAVE);
+	if (!d) quit_fmt("Can't open savefile directory");
+
+	strnfmt(uid, sizeof(uid), "%d.", player_uid);
+
+	while (my_dread(d, fname, sizeof fname)) {
+		char *newname = fname+strlen(uid);
+		char oldpath[1024];
+		char newpath[1024];
+
+		/* Check that the savefile name begins with the user'd ID */
+		if (strncmp(fname, uid, strlen(uid)) != 0)
+			continue;
+
+		/* Sanity check - can't rename "1000." to "" */
+		if (!newname[0])
+			continue;
+
+		/* Move the file */
+		path_build(oldpath, sizeof oldpath, ANGBAND_DIR_SAVE, fname);
+		path_build(newpath, sizeof newpath, ANGBAND_DIR_SAVE, newname);
+
+		printf("Moving %s to %s\n", oldpath, newpath);
+		file_move(oldpath, newpath);
+	}
+
+	my_dclose(d);
+}
+
+#endif /* SETGID */
+
+
+
 static bool new_game;
 
 /*
@@ -320,7 +398,7 @@ int main(int argc, char *argv[])
 	/* Save the effective GID for later recall */
 	player_egid = getegid();
 
-#endif /* SETGID */
+#endif /* UNIX */
 
 
 	/* Drop permissions */
@@ -329,7 +407,6 @@ int main(int argc, char *argv[])
 	/* Get the file paths */
 	/* paths may be overriden by -d options, so this has to occur *before* 
 	   processing command line args */
-
 	init_stuff();
 
 	/* Process the command line arguments */
@@ -343,6 +420,10 @@ int main(int argc, char *argv[])
 		/* Analyze option */
 		switch (*arg++)
 		{
+			case 'l':
+				list_saves();
+				exit(0);
+
 			case 'n':
 				new_game = TRUE;
 				break;
@@ -398,6 +479,7 @@ int main(int argc, char *argv[])
 			usage:
 				puts("Usage: angband [options] [-- subopts]");
 				puts("  -n             Start a new character (WARNING: overwrites default savefile without -u)");
+				puts("  -l             Lists all savefiles you can play");
 				puts("  -w             Resurrect dead character (marks savefile)");
 				puts("  -r             Rebalance monsters");
 				puts("  -g             Request graphics mode");
@@ -427,6 +509,11 @@ int main(int argc, char *argv[])
 		}
 		if (*arg) goto usage;
 	}
+
+#ifndef SETGID
+	/* Transition from 3.4 to 3.5 - rename savefiles with uid at the beginning */
+	transition_savefile_names();
+#endif
 
 	/* Hack -- Forget standard args */
 	if (args)

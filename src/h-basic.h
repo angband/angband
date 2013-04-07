@@ -63,6 +63,7 @@
  */
 #if !defined(WINDOWS) && !defined(GAMEBOY) && !defined(NDS)
 # define UNIX
+# define HAVE_DIRENT_H
 #endif
 
 /*
