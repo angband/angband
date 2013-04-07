@@ -3160,11 +3160,6 @@ bool cave_isglow(struct cave *c, int y, int x) {
 	return c->info[y][x] & CAVE_GLOW;
 }
 
-bool cave_isshop(struct cave *c, int y, int x) {
-	return c->feat[y][x] >= FEAT_SHOP_HEAD &&
-	       c->feat[y][x] <= FEAT_SHOP_TAIL;
-}
-
 /**
  * True if the feature is "boring".
  */
