@@ -44,10 +44,8 @@ void strip_bytes(int n);
 
 /* load.c */
 int rd_randomizer(void);
-int rd_options_1(void);
 int rd_options_2(void);
 int rd_messages(void);
-int rd_monster_memory_1(void);
 int rd_monster_memory_2(void);
 int rd_object_memory(void);
 int rd_quests(void);
