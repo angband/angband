@@ -155,23 +155,63 @@ static void init_stuff(void)
 }
 
 
+static const struct {
+	const char *name;
+	char **path;
+	bool setgid_ok;
+} change_path_values[] = {
+	{ "apex", &ANGBAND_DIR_APEX, TRUE },
+	{ "edit", &ANGBAND_DIR_EDIT, FALSE },
+	{ "file", &ANGBAND_DIR_FILE, FALSE },
+	{ "help", &ANGBAND_DIR_HELP, TRUE },
+	{ "info", &ANGBAND_DIR_INFO, TRUE },
+	{ "pref", &ANGBAND_DIR_PREF, TRUE },
+	{ "xtra", &ANGBAND_DIR_XTRA, TRUE },
+	{ "user", &ANGBAND_DIR_USER, TRUE },
+	{ "save", &ANGBAND_DIR_EDIT, FALSE },
+};
 
 /*
- * Handle a "-d<what>=<path>" option
+ * Handle a "-d<dir>=<path>" option.
  *
- * The "<what>" can be any string starting with the same letter as the
- * name of a subdirectory of the "lib" folder (i.e. "i" or "info").
+ * Sets any of angband's special directories to <path>.
  *
  * The "<path>" can be any legal path for the given system, and should
  * not end in any special path separator (i.e. "/tmp" or "~/.ang-info").
  */
 static void change_path(const char *info)
 {
-	if (!info || !info[0])
-		quit_fmt("Try '-d<path>'.", info);
+	char *info_copy = NULL;
+	char *path = NULL;
+	char *dir = NULL;
+	unsigned int i = 0;
+	char dirpath[512];
 
-	string_free(ANGBAND_DIR_USER);
-	ANGBAND_DIR_USER = string_make(info);
+	if (!info || !info[0])
+		quit_fmt("Try '-d<dir>=<path>'.", info);
+
+	info_copy = string_make(info);
+	path = strtok(info_copy, "=");
+	dir = strtok(NULL, "=");
+
+	for (i = 0; i < N_ELEMENTS(change_path_values); i++) {
+		if (my_stricmp(path, change_path_values[i].name) == 0) {
+#ifdef SETGID
+			if (!change_path_values[i].setgid_ok)
+				quit_fmt("Can't redefine path to %s dir on multiuser setup", path);
+#endif
+
+			string_free(*change_path_values[i].path);
+			*change_path_values[i].path = string_make(dir);
+
+			/* the directory may not exist and may need to be created. */
+			path_build(dirpath, sizeof(dirpath), dir, "");
+			if (!dir_create(dirpath)) quit_fmt("Cannot create '%s'", dirpath);
+			return;
+		}
+	}
+
+	quit_fmt("Unrecognised -d paramater %s", path);
 }
 
 
@@ -282,6 +322,11 @@ int main(int argc, char *argv[])
 	/* Drop permissions */
 	safe_setuid_drop();
 
+	/* Get the file paths */
+	/* paths may be overriden by -d options, so this has to occur *before* 
+	   processing command line args */
+
+	init_stuff();
 
 	/* Process the command line arguments */
 	for (i = 1; args && (i < argc); i++)
@@ -354,7 +399,14 @@ int main(int argc, char *argv[])
 				puts("  -g             Request graphics mode");
 				puts("  -x<opt>        Debug options; see -xhelp");
 				puts("  -u<who>        Use your <who> savefile");
-				puts("  -d<path>       Store pref files and screendumps in <path>");
+				puts("  -d<dir>=<path> Override a specific directory with <path>. <path> can be:");
+				for (i = 0; i < (int)N_ELEMENTS(change_path_values); i++) {
+#ifdef SETGID
+					if (!change_path_values[i].setgid_ok) continue;
+#endif
+					printf("    %s (default is %s)\n", change_path_values[i].name, *change_path_values[i].path);
+				}
+				puts("                 Multiple -d options are allowed.");
 				puts("  -s<mod>        Use sound module <sys>:");
 				for (i = 0; i < (int)N_ELEMENTS(sound_modules); i++)
 					printf("     %s   %s\n", sound_modules[i].name,
@@ -391,9 +443,6 @@ int main(int argc, char *argv[])
 		if (strcmp(nl_langinfo(CODESET), "UTF-8") != 0)
 			quit("Angband requires UTF-8 support");
 	}
-
-	/* Get the file paths */
-	init_stuff();
 
 	/* Try the modules in the order specified by modules[] */
 	for (i = 0; i < (int)N_ELEMENTS(modules); i++)
