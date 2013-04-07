@@ -3786,10 +3786,14 @@ bool cave_isupstairs(struct cave*c, int y, int x) {
 /**
  * True if cave is a down stair.
  */
-bool cave_isdownstairs(struct cave*c, int y, int x) {
+bool cave_isdownstairs(struct cave *c, int y, int x) {
     return c->feat[y][x] == FEAT_MORE;
 }
 
+bool cave_isshop(struct cave *c, int y, int x) {
+	return c->feat[y][x] >= FEAT_SHOP_HEAD
+	    && c->feat[y][x] <= FEAT_SHOP_TAIL;
+}
 
 /**
  * SQUARE BEHAVIOR PREDICATES
@@ -3922,3 +3926,57 @@ void upgrade_mineral(struct cave *c, int y, int x) {
 	}
 }
 
+void cave_jam_door(struct cave *c, int y, int x) {
+	if (cave_islockeddoor(c, y, x))
+		/* become a stuck door of the same strength */
+		c->feat[y][x] += 0x08;
+
+	if (c->feat[y][x] < FEAT_DOOR_TAIL)
+		c->feat[y][x]++;
+}
+
+int cave_can_jam_door(struct cave *c, int y, int x) {
+	return c->feat[y][x] < FEAT_DOOR_TAIL;
+}
+
+int cave_door_power(struct cave *c, int y, int x) {
+	return (c->feat[y][x] - FEAT_DOOR_HEAD) & 0x07;
+}
+
+void cave_open_door(struct cave *c, int y, int x) {
+	c->feat[y][x] = FEAT_OPEN;
+}
+
+void cave_smash_door(struct cave *c, int y, int x) {
+	c->feat[y][x] = FEAT_BROKEN;
+}
+
+void cave_destroy_trap(struct cave *c, int y, int x) {
+	/* XXX: FEAT_TRAP check? */
+	cave_set_feat(cave, y, x, FEAT_FLOOR);
+}
+
+void cave_lock_door(struct cave *c, int y, int x, int power) {
+	c->feat[y][x] = FEAT_DOOR_HEAD + power;
+}
+
+bool cave_hasgoldvein(struct cave *c, int y, int x) {
+	return c->feat[y][x] >= FEAT_MAGMA_H
+	    && c->feat[y][x] <= FEAT_QUARTZ_K;
+}
+
+void cave_tunnel_wall(struct cave *c, int y, int x) {
+	cave_set_feat(c, y, x, FEAT_FLOOR);
+}
+
+void cave_close_door(struct cave *c, int y, int x) {
+	cave_set_feat(c, y, x, FEAT_DOOR_HEAD);
+}
+
+bool cave_isbrokendoor(struct cave *c, int y, int x) {
+	return c->feat[y][x] == FEAT_BROKEN;
+}
+
+bool cave_isglyph(struct cave *c, int y, int x) {
+	return c->feat[y][x] == FEAT_GLYPH;
+}

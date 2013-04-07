@@ -87,11 +87,13 @@ extern bool cave_isperm(struct cave *c, int y, int x);
 extern bool cave_ismagma(struct cave *c, int y, int x);
 extern bool cave_isquartz(struct cave *c, int y, int x);
 extern bool cave_ismineral(struct cave *c, int y, int x);
+extern bool cave_hasgoldvein(struct cave *c, int y, int x);
 extern bool cave_issecretdoor(struct cave *c, int y, int x);
 extern bool cave_isopendoor(struct cave *c, int y, int x);
 extern bool cave_iscloseddoor(struct cave *c, int y, int x);
 extern bool cave_islockeddoor(struct cave *c, int y, int x);
 extern bool cave_isjammeddoor(struct cave *c, int y, int x);
+extern bool cave_isbrokendoor(struct cave *c, int y, int x);
 extern bool cave_isdoor(struct cave *c, int y, int x);
 extern bool cave_issecrettrap(struct cave *c, int y, int x);
 extern bool cave_isknowntrap(struct cave *c, int y, int x);
@@ -99,6 +101,8 @@ extern bool cave_istrap(struct cave *c, int y, int x);
 extern bool cave_isstairs(struct cave *c, int y, int x);
 extern bool cave_isupstairs(struct cave *c, int y, int x);
 extern bool cave_isdownstairs(struct cave *c, int y, int x);
+extern bool cave_isshop(struct cave *c, int y, int x);
+extern bool cave_isglyph(struct cave *c, int y, int x);
 
 /* BEHAVIOR PREDICATES */
 extern bool cave_isopen(struct cave *c, int y, int x);
@@ -124,5 +128,17 @@ extern int cave_monster_max(struct cave *c);
 extern int cave_monster_count(struct cave *c);
 
 void upgrade_mineral(struct cave *c, int y, int x);
+
+void cave_jam_door(struct cave *c, int y, int x);
+int cave_can_jam_door(struct cave *c, int y, int x);
+int cave_door_power(struct cave *c, int y, int x);
+void cave_open_door(struct cave *c, int y, int x);
+void cave_close_door(struct cave *c, int y, int x);
+void cave_smash_door(struct cave *c, int y, int x);
+void cave_lock_door(struct cave *c, int y, int x, int power);
+
+void cave_destroy_trap(struct cave *c, int y, int x);
+
+void cave_tunnel_wall(struct cave *c, int y, int x);
 
 #endif /* !CAVE_H */
