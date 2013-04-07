@@ -354,36 +354,8 @@ static bool target_set_interactive_accept(int y, int x)
 	}
 
 	/* Interesting memorized features */
-	if (cave->info[y][x] & (CAVE_MARK))
-	{
-		/* Notice glyphs */
-		if (cave->feat[y][x] == FEAT_GLYPH) return (TRUE);
-
-		/* Notice doors */
-		if (cave->feat[y][x] == FEAT_OPEN) return (TRUE);
-		if (cave->feat[y][x] == FEAT_BROKEN) return (TRUE);
-
-		/* Notice stairs */
-		if (cave->feat[y][x] == FEAT_LESS) return (TRUE);
-		if (cave->feat[y][x] == FEAT_MORE) return (TRUE);
-
-		/* Notice shops */
-		if ((cave->feat[y][x] >= FEAT_SHOP_HEAD) &&
-		    (cave->feat[y][x] <= FEAT_SHOP_TAIL)) return (TRUE);
-
-		/* Notice traps */
-		if (cave_isknowntrap(cave, y, x)) return TRUE;
-
-		/* Notice doors */
-		if (cave_iscloseddoor(cave, y, x)) return TRUE;
-
-		/* Notice rubble */
-		if (cave->feat[y][x] == FEAT_RUBBLE) return (TRUE);
-
-		/* Notice veins with treasure */
-		if (cave->feat[y][x] == FEAT_MAGMA_K) return (TRUE);
-		if (cave->feat[y][x] == FEAT_QUARTZ_K) return (TRUE);
-	}
+	if (cave->info[y][x] & (CAVE_MARK) && !cave_isboring(cave, y, x))
+		return (TRUE);
 
 	/* Nope */
 	return (FALSE);
@@ -995,7 +967,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 			s3 = (is_a_vowel(name[0])) ? "an " : "a ";
 
 			/* Hack -- special introduction for store doors */
-			if ((feat >= FEAT_SHOP_HEAD) && (feat <= FEAT_SHOP_TAIL))
+			if (feature_isshop(feat))
 			{
 				s3 = "the entrance to the ";
 			}
@@ -1174,7 +1146,7 @@ static int draw_path(u16b path_n, u16b *path_g, wchar_t *c, byte *a, int y1, int
 			/* Known objects are yellow. */
 			colour = TERM_YELLOW;
 
-		else if (!cave_floor_bold(y,x) &&
+		else if (!cave_ispassable(cave, y,x) &&
 				 ((cave->info[y][x] & (CAVE_MARK)) || player_can_see_bold(y,x)))
 			/* Known walls are blue. */
 			colour = TERM_BLUE;

@@ -585,7 +585,7 @@ void move_player(int dir, bool disarm)
 	}
 
 	/* Cannot walk through walls */
-	else if (!cave_floor_bold(y, x))
+	else if (!cave_ispassable(cave, y, x))
 	{
 		/* Disturb the player */
 		disturb(p_ptr, 0, 0);

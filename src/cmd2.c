@@ -549,7 +549,7 @@ static bool do_cmd_tunnel_test(int y, int x)
 	}
 
 	/* Must be a wall/door/etc */
-	if (cave_floor_bold(y, x))
+	if (cave_ispassable(cave, y, x))
 	{
 		/* Message */
 		msg("You see nothing there to tunnel.");
@@ -576,7 +576,7 @@ static bool do_cmd_tunnel_test(int y, int x)
 static bool twall(int y, int x)
 {
 	/* Paranoia -- Require a wall or door or some such */
-	if (cave_floor_bold(y, x)) return (FALSE);
+	if (cave_ispassable(cave, y, x)) return (FALSE);
 
 	/* Sound */
 	sound(MSG_DIG);
@@ -1454,7 +1454,7 @@ static bool do_cmd_walk_test(int y, int x)
 		return TRUE;
 
 	/* Require open space */
-	if (!cave_floor_bold(y, x))
+	if (!cave_ispassable(cave, y, x))
 	{
 		/* Rubble */
 		if (cave_isrubble(cave, y, x))
@@ -1608,8 +1608,7 @@ void do_cmd_hold(cmd_code code, cmd_arg args[])
 	do_autopickup();
 
 	/* Hack -- enter a store if we are on one */
-	if (cave_isshop(cave, p_ptr->py, p_ptr->px))
-	{
+	if (cave_isshop(cave, p_ptr->py, p_ptr->px)) {
 		/* Disturb */
 		disturb(p_ptr, 0, 0);
 

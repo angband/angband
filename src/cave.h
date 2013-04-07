@@ -88,6 +88,7 @@ extern bool cave_ismagma(struct cave *c, int y, int x);
 extern bool cave_isquartz(struct cave *c, int y, int x);
 extern bool cave_ismineral(struct cave *c, int y, int x);
 extern bool cave_hasgoldvein(struct cave *c, int y, int x);
+extern bool feat_is_treasure(int feat);
 extern bool cave_issecretdoor(struct cave *c, int y, int x);
 extern bool cave_isopendoor(struct cave *c, int y, int x);
 extern bool cave_iscloseddoor(struct cave *c, int y, int x);
@@ -96,13 +97,16 @@ extern bool cave_isjammeddoor(struct cave *c, int y, int x);
 extern bool cave_isbrokendoor(struct cave *c, int y, int x);
 extern bool cave_isdoor(struct cave *c, int y, int x);
 extern bool cave_issecrettrap(struct cave *c, int y, int x);
+extern bool feat_is_known_trap(int feat);
 extern bool cave_isknowntrap(struct cave *c, int y, int x);
 extern bool cave_istrap(struct cave *c, int y, int x);
+extern bool feature_isshop(int feat);
 extern bool cave_isstairs(struct cave *c, int y, int x);
 extern bool cave_isupstairs(struct cave *c, int y, int x);
 extern bool cave_isdownstairs(struct cave *c, int y, int x);
 extern bool cave_isshop(struct cave *c, int y, int x);
 extern bool cave_isglyph(struct cave *c, int y, int x);
+
 
 /* BEHAVIOR PREDICATES */
 extern bool cave_isopen(struct cave *c, int y, int x);
@@ -116,6 +120,8 @@ extern bool cave_isvault(struct cave *c, int y, int x);
 extern bool cave_isroom(struct cave *c, int y, int x);
 extern bool cave_isrubble(struct cave *c, int y, int x);
 extern bool cave_isfeel(struct cave *c, int y, int x);
+extern bool feat_isboring(feature_type *f_ptr);
+extern bool cave_isboring(struct cave *c, int y, int x);
 
 extern void cave_generate(struct cave *c, struct player *p);
 

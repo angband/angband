@@ -143,7 +143,7 @@ static bool summon_possible(int y1, int x1)
 			if (cave->feat[y][x] == FEAT_GLYPH) continue;
 
 			/* Require empty floor grid in line of sight */
-			if (cave_empty_bold(y, x) && los(y1, x1, y, x))
+			if (cave_isempty(cave, y, x) && los(y1, x1, y, x))
 			{
 				return (TRUE);
 			}
@@ -934,7 +934,7 @@ static bool find_safety(struct cave *c, struct monster *m_ptr, int *yp, int *xp)
 			if (!in_bounds_fully(y, x)) continue;
 
 			/* Skip locations in a wall */
-			if (!cave_floor_bold(y, x)) continue;
+			if (!cave_ispassable(cave, y, x)) continue;
 
 			/* Ignore grids very far from the player */
 			if (c->when[y][x] < c->when[py][px]) continue;
@@ -1020,7 +1020,7 @@ static bool find_hiding(struct monster *m_ptr, int *yp, int *xp)
 			if (!in_bounds_fully(y, x)) continue;
 
 			/* Skip occupied locations */
-			if (!cave_empty_bold(y, x)) continue;
+			if (!cave_isempty(cave, y, x)) continue;
 
 			/* Check for hidden, available grid */
 			if (!player_has_los_bold(y, x) && (clean_shot(fy, fx, y, x)))
@@ -1150,7 +1150,7 @@ static bool get_moves(struct cave *c, struct monster *m_ptr, int mm[5])
 				x2 = px + ddx_ddd[(tmp + i) & 7];
 				
 				/* Ignore filled grids */
-				if (!cave_empty_bold(y2, x2)) continue;
+				if (!cave_isempty(cave, y2, x2)) continue;
 				
 				/* Try to fill this hole */
 				break;
@@ -2967,7 +2967,7 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 		nx = ox + ddx[d];
 
 		/* Floor is open? */
-		if (cave_floor_bold(ny, nx))
+		if (cave_ispassable(cave, ny, nx))
 			/* Go ahead and move */
 			do_move = TRUE;
 
@@ -3176,7 +3176,7 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 			/* Move weaker monsters if they can swap places */
 			/* (not in a wall) */
 			int move_ok = (rf_has(m_ptr->race->flags, RF_MOVE_BODY) &&
-						   cave_floor_bold(m_ptr->fy, m_ptr->fx));
+						   cave_ispassable(cave, m_ptr->fy, m_ptr->fx));
 
 			/* Assume no movement */
 			do_move = FALSE;

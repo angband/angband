@@ -1050,6 +1050,7 @@ static enum parser_error parse_f_p(struct parser *p) {
 
 static const char *f_info_flags[] =
 {
+	"NONE",
 	"PWALK",
 	"PPASS",
 	"MWALK",
@@ -1067,23 +1068,6 @@ static const char *f_info_flags[] =
 	NULL
 };
 
-static errr grab_one_flag(u32b *flags, const char *names[], const char *what)
-{
-	int i;
-
-	/* Check flags */
-	for (i = 0; i < 32 && names[i]; i++)
-	{
-		if (streq(what, names[i]))
-		{
-			*flags |= (1L << i);
-			return (0);
-		}
-	}
-
-	return (-1);
-}
-
 static enum parser_error parse_f_f(struct parser *p) {
 	char *flags;
 	struct feature *f = parser_priv(p);
@@ -1098,8 +1082,9 @@ static enum parser_error parse_f_f(struct parser *p) {
 
 	s = strtok(flags, " |");
 	while (s) {
-		if (grab_one_flag(&f->flags, f_info_flags, s)) {
-			mem_free(s);
+		if (grab_flag(f->flags, FF_SIZE, f_info_flags, s)) {
+			mem_free(flags);
+			quit_fmt("bad f-flag: %s", s);
 			return PARSE_ERROR_INVALID_FLAG;
 		}
 		s = strtok(NULL, " |");
