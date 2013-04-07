@@ -964,10 +964,12 @@ bool detect_monsters_invis(bool aware)
 	for (i = 1; i < cave_monster_max(cave); i++)
 	{
 		monster_type *m_ptr = cave_monster(cave, i);
-		monster_lore *l_ptr = get_lore(m_ptr->race);
+		monster_lore *l_ptr;
 
 		/* Skip dead monsters */
 		if (!m_ptr->race) continue;
+		
+		l_ptr = get_lore(m_ptr->race);
 
 		/* Location */
 		y = m_ptr->fy;
@@ -1034,11 +1036,13 @@ bool detect_monsters_evil(bool aware)
 	for (i = 1; i < cave_monster_max(cave); i++)
 	{
 		monster_type *m_ptr = cave_monster(cave, i);
-		monster_lore *l_ptr = get_lore(m_ptr->race);
+		monster_lore *l_ptr;
 
 		/* Skip dead monsters */
 		if (!m_ptr->race) continue;
 
+		l_ptr = get_lore(m_ptr->race);
+		
 		/* Location */
 		y = m_ptr->fy;
 		x = m_ptr->fx;
