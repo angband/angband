@@ -177,7 +177,7 @@ static void change_path(const char *info)
 
 
 
-#ifdef SET_UID
+#ifdef UNIX
 
 /*
  * Find a default user name from the system.
@@ -197,7 +197,7 @@ static void user_name(char *buf, size_t len, int id)
 	my_strcap(buf);
 }
 
-#endif /* SET_UID */
+#endif /* UNIX */
 
 static bool new_game;
 
@@ -265,7 +265,7 @@ int main(int argc, char *argv[])
 	argv0 = argv[0];
 
 
-#ifdef SET_UID
+#ifdef SETGID
 
 	/* Default permissions on files */
 	(void)umask(022);
@@ -276,7 +276,7 @@ int main(int argc, char *argv[])
 	/* Save the effective GID for later recall */
 	player_egid = getegid();
 
-#endif /* SET_UID */
+#endif /* SETGID */
 
 
 	/* Drop permissions */
@@ -413,18 +413,16 @@ int main(int argc, char *argv[])
 	/* Make sure we have a display! */
 	if (!done) quit("Unable to prepare any 'display module'!");
 
-#ifdef SET_UID
+#ifdef UNIX
 
 	/* Get the "user name" as a default player name, unless set with -u switch */
 	if (!op_ptr->full_name[0])
-	{
 		user_name(op_ptr->full_name, sizeof(op_ptr->full_name), player_uid);
-	}
 
 	/* Create any missing directories */
 	create_needed_dirs();
 
-#endif /* SET_UID */
+#endif /* UNIX */
 
 	/* Process the player name */
 	process_player_name(TRUE);
