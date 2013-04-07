@@ -1683,13 +1683,6 @@ void process_player_name(bool sf)
 		op_ptr->base_name[i] = c;
 	}
 
-#if defined(WINDOWS)
-
-	/* Max length */
-	if (i > 8) i = 8;
-
-#endif
-
 	/* Terminate */
 	op_ptr->base_name[i] = '\0';
 
@@ -1705,7 +1698,7 @@ void process_player_name(bool sf)
 	{
 		char temp[128];
 
-#if defined(SET_UID)
+#if defined(SETGID)
 		/* Rename the savefile, using the player_uid and base_name */
 		strnfmt(temp, sizeof(temp), "%d.%s", player_uid, op_ptr->base_name);
 #else

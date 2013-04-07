@@ -1674,7 +1674,7 @@ void play_game(void)
 		/* Basic seed */
 		seed = (u32b)(time(NULL));
 
-#ifdef SET_UID
+#ifdef UNIX
 
 		/* Mutate the seed on Unix machines */
 		seed = ((seed >> 3) * (getpid() << 1));
