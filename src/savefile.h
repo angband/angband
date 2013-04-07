@@ -58,7 +58,6 @@ int rd_misc(void);
 int rd_misc_2(void);
 int rd_player_hp(void);
 int rd_player_spells(void);
-int rd_randarts_3(void);
 int rd_inventory_1(void);
 int rd_inventory_2(void);
 int rd_inventory_3(void);
@@ -76,8 +75,8 @@ int rd_objects_3(void);
 int rd_objects_4(void);
 int rd_objects_5(void);
 int rd_monsters_6(void);
-int rd_ghost(void);
 int rd_history(void);
+int rd_null(void);
 
 /* save.c */
 void wr_randomizer(void);

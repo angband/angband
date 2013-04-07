@@ -115,6 +115,8 @@ static const struct {
 
 /** Savefile loading functions */
 static const struct blockinfo loaders[] = {
+	{ "ghost", rd_null, 1 },
+	{ "randarts", rd_null, 3 },
 	{ "rng", rd_randomizer, 1 },
 	{ "options", rd_options_1, 1 },
 	{ "options", rd_options_2, 2 },
@@ -130,7 +132,6 @@ static const struct blockinfo loaders[] = {
 	{ "misc", rd_misc_2, 2},
 	{ "player hp", rd_player_hp, 1 },
 	{ "player spells", rd_player_spells, 1 },
-	{ "randarts", rd_randarts_3, 3 },
 	{ "inventory", rd_inventory_1, 1 },
 	{ "inventory", rd_inventory_2, 2 },
 	{ "inventory", rd_inventory_3, 3 },
@@ -148,7 +149,6 @@ static const struct blockinfo loaders[] = {
 	{ "objects", rd_objects_4, 4 },
 	{ "objects", rd_objects_5, 5 },	
 	{ "monsters", rd_monsters_6, 6 },
-	{ "ghost", rd_ghost, 1 },
 	{ "history", rd_history, 1 },
 };
 

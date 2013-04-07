@@ -1633,13 +1633,6 @@ int rd_player_spells(void)
 }
 
 
-/* We no longer store randarts in the savefile */
-int rd_randarts_3(void)
-{
-	return 0;
-}
-
-
 /**
  * Read the player inventory
  *
@@ -2186,26 +2179,6 @@ int rd_monsters_6(void)
 	return 0;
 }
 
-int rd_ghost(void)
-{
-	char buf[64];
-
-	/* Only if the player's alive */
-	if (p_ptr->is_dead)
-		return 0;	
-
-	/* XXX */
-	
-	/* Strip name */
-	rd_string(buf, 64);
-	
-	/* Strip old data */
-	strip_bytes(60);
-
-	return 0;
-}
-
-
 int rd_history(void)
 {
 	u32b tmp32u;
@@ -2232,5 +2205,12 @@ int rd_history(void)
 		history_add_full(type, &a_info[art_name], dlev, clev, turnno, text);
 	}
 
+	return 0;
+}
+
+/**
+ * For blocks that don't need loading anymore.
+ */
+int rd_null(void) {
 	return 0;
 }
