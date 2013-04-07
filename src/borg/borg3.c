@@ -88,7 +88,7 @@ static char *mold_syllable3[] =
  * plus "!" for entries that can soon be handled.
  */
 
-static byte borg_magic_method[2][9][9] =
+static uint8_t borg_magic_method[2][9][9] =
 {
     /*** Spells ***/
 
@@ -358,7 +358,7 @@ static byte borg_magic_method[2][9][9] =
  *
  * XXX XXX XXX Verify ratings.
  */
-static byte borg_magic_rating[2][9][9] =
+static uint8_t borg_magic_rating[2][9][9] =
 {
     /*** Spells ***/
 
@@ -607,7 +607,7 @@ static byte borg_magic_rating[2][9][9] =
 
 
 /* Cheat the game's index for spells */
-static byte borg_magic_index[2][9][9] =
+static uint8_t borg_magic_index[2][9][9] =
 {
     /*** Spells ***/
 
@@ -1095,14 +1095,14 @@ static char *borg_magic_name[2][9][9] =
  * Constant "item description parsers" (singles)
  */
 static int borg_single_size;        /* Number of "singles" */
-static s16b *borg_single_what;      /* Kind indexes for "singles" */
+static int16_t *borg_single_what;      /* Kind indexes for "singles" */
 static char **borg_single_text;      /* Textual prefixes for "singles" */
 
 /*
  * Constant "item description parsers" (plurals)
  */
 static int borg_plural_size;        /* Number of "plurals" */
-static s16b *borg_plural_what;      /* Kind index for "plurals" */
+static int16_t *borg_plural_what;      /* Kind index for "plurals" */
 static char **borg_plural_text;      /* Textual prefixes for "plurals" */
 static char **borg_sv_plural_text;   /* Save Textual prefixes for "plurals" (in kind order) */
 
@@ -1110,7 +1110,7 @@ static char **borg_sv_plural_text;   /* Save Textual prefixes for "plurals" (in 
  * Constant "item description parsers" (suffixes)
  */
 static int borg_artego_size;        /* Number of "artegos" */
-static s16b *borg_artego_what;      /* Indexes for "artegos" */
+static int16_t *borg_artego_what;      /* Indexes for "artegos" */
 static char **borg_artego_text;      /* Textual prefixes for "artegos" */
 static char **borg_sv_art_text;      /* Save textual prefixes for "artifacts" (in kind order) */
 
@@ -1322,9 +1322,9 @@ bool borg_object_star_id( void )
  * uses this function to guess at the "value" of an item, if it
  * was to be sold to a store, with perfect "charisma" modifiers.
  */
-static s32b borg_object_value_known(borg_item *item)
+static int32_t borg_object_value_known(borg_item *item)
 {
-    s32b value;
+    int32_t value;
 
 
     object_kind *k_ptr = &k_info[item->kind];
@@ -1925,7 +1925,7 @@ bool borg_eat_food(int sval)
   */
 bool borg_quaff_crit( bool no_check )
 {
-    static s16b when_last_quaff = 0;
+    static int16_t when_last_quaff = 0;
 
     if (no_check)
     {
@@ -3401,10 +3401,10 @@ static struct owner *store_owner(int st) {
  *
  * Hack -- the black market always charges twice as much as it should.
  */
-s32b borg_price_item(const object_type *o_ptr, bool store_buying, int qty, int this_store)
+int32_t borg_price_item(const object_type *o_ptr, bool store_buying, int qty, int this_store)
 {
 	int adjust;
-	s32b price;
+	int32_t price;
 	owner_type *ot_ptr;
 
 	if (this_store == STORE_NONE) return 0L;
@@ -3838,7 +3838,7 @@ void borg_init_3(void)
 
     int size;
 
-    s16b what[514];
+    int16_t what[514];
     char *text[514];
 
     char buf[256];
@@ -3914,7 +3914,7 @@ void borg_init_3(void)
 
     /* Allocate the "item parsing arrays" (plurals) */
     C_MAKE(borg_plural_text, borg_plural_size, char *);
-    C_MAKE(borg_plural_what, borg_plural_size, s16b);
+    C_MAKE(borg_plural_what, borg_plural_size, int16_t);
 
     /* Save the entries */
     for (i = 0; i < size; i++) borg_plural_text[i] = text[i];
@@ -4021,7 +4021,7 @@ void borg_init_3(void)
 
     /* Allocate the "item parsing arrays" (plurals) */
     C_MAKE(borg_single_text, borg_single_size, char *);
-    C_MAKE(borg_single_what, borg_single_size, s16b);
+    C_MAKE(borg_single_what, borg_single_size, int16_t);
 
     /* Save the entries */
     for (i = 0; i < size; i++) borg_single_text[i] = text[i];
@@ -4081,7 +4081,7 @@ void borg_init_3(void)
 
     /* Allocate the "item parsing arrays" (plurals) */
     C_MAKE(borg_artego_text, borg_artego_size, char *);
-    C_MAKE(borg_artego_what, borg_artego_size, s16b);
+    C_MAKE(borg_artego_what, borg_artego_size, int16_t);
 
     /* Save the entries */
     for (i = 0; i < size; i++) borg_artego_text[i] = text[i];

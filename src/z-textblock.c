@@ -31,7 +31,7 @@
 
 struct textblock {
 	wchar_t *text;
-	byte *attrs;
+	uint8_t *attrs;
 
 	size_t strlen;
 	size_t size;
@@ -62,7 +62,7 @@ void textblock_free(textblock *tb)
 	mem_free(tb);
 }
 
-static void textblock_vappend_c(textblock *tb, byte attr, const char *fmt,
+static void textblock_vappend_c(textblock *tb, uint8_t attr, const char *fmt,
 		va_list vp)
 {
 	size_t temp_len = TEXTBLOCK_LEN_INITIAL;
@@ -124,7 +124,7 @@ void textblock_append(textblock *tb, const char *fmt, ...)
 /**
  * Add coloured text to a text block, formatted.
  */
-void textblock_append_c(textblock *tb, byte attr, const char *fmt, ...)
+void textblock_append_c(textblock *tb, uint8_t attr, const char *fmt, ...)
 {
 	va_list vp;
 	va_start(vp, fmt);
@@ -146,7 +146,7 @@ const wchar_t *textblock_text(textblock *tb)
 /**
  * Return a pointer to the text attrs.
  */
-const byte *textblock_attrs(textblock *tb)
+const uint8_t *textblock_attrs(textblock *tb)
 {
 	return tb->attrs;
 }

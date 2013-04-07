@@ -62,19 +62,19 @@ static int o_c_y = -1;      /* Old location */
  * Hack -- message memory
  */
 
-static s16b borg_msg_len;
+static int16_t borg_msg_len;
 
-static s16b borg_msg_siz;
+static int16_t borg_msg_siz;
 
 static char *borg_msg_buf;
 
-static s16b borg_msg_num;
+static int16_t borg_msg_num;
 
-static s16b borg_msg_max;
+static int16_t borg_msg_max;
 
-static s16b *borg_msg_pos;
+static int16_t *borg_msg_pos;
 
-static s16b *borg_msg_use;
+static int16_t *borg_msg_use;
 
 
 /*
@@ -82,7 +82,7 @@ static s16b *borg_msg_use;
  */
 
 static int borg_unique_size;        /* Number of uniques */
-static s16b *borg_unique_what;      /* Indexes of uniques */
+static int16_t *borg_unique_what;      /* Indexes of uniques */
 static const char **borg_unique_text;      /* Names of uniques */
 
 /*
@@ -90,7 +90,7 @@ static const char **borg_unique_text;      /* Names of uniques */
  */
 
 static int borg_normal_size;        /* Number of normals */
-static s16b *borg_normal_what;      /* Indexes of normals */
+static int16_t *borg_normal_what;      /* Indexes of normals */
 static const char **borg_normal_text;      /* Names of normals */
 
 
@@ -103,10 +103,10 @@ typedef struct borg_wank borg_wank;
 
 struct borg_wank
 {
-    byte x;
-    byte y;
+    uint8_t x;
+    uint8_t y;
 
-    byte t_a;
+    uint8_t t_a;
     wchar_t t_c;
 
     bool is_take;
@@ -133,7 +133,7 @@ static borg_wank *borg_wanks;
  *
  * Hack -- we use "base level" instead of "allocation levels".
  */
-static struct object_kind *borg_guess_kind(byte a, wchar_t c,int y,int x)
+static struct object_kind *borg_guess_kind(uint8_t a, wchar_t c,int y,int x)
 {
     /* ok, this is an real cheat.  he ought to use the look command
      * in order to correctly id the object.  But I am passing that up for
@@ -439,7 +439,7 @@ static int borg_new_take(struct object_kind *kind, int y, int x)
 /*
  * Attempt to notice a changing "take"
  */
-static bool observe_take_diff(int y, int x, byte a, wchar_t c)
+static bool observe_take_diff(int y, int x, uint8_t a, wchar_t c)
 {
     int i;
     struct object_kind *kind;
@@ -475,7 +475,7 @@ static bool observe_take_diff(int y, int x, byte a, wchar_t c)
  * Note that, of course, objects are never supposed to move,
  * but we may want to take account of "falling" missiles later.
  */
-static bool observe_take_move(int y, int x, int d, byte a, wchar_t c)
+static bool observe_take_move(int y, int x, int d, uint8_t a, wchar_t c)
 {
     int i, z, ox, oy;
 
@@ -601,7 +601,7 @@ static bool observe_take_move(int y, int x, int d, byte a, wchar_t c)
  *
  * Hack -- try not to choose "unique" monsters, or we will flee a lot.
  */
-static int borg_guess_race(byte a, wchar_t c, bool multi, int y, int x)
+static int borg_guess_race(uint8_t a, wchar_t c, bool multi, int y, int x)
 {
     /*  ok, this is an real cheat.  he ought to use the look command
      * in order to correctly id the monster.  but i am passing that up for
@@ -1755,7 +1755,7 @@ static int borg_new_kill(int r_idx, int y, int x)
 /*
  * Attempt to notice a changing "kill"
  */
-static bool observe_kill_diff(int y, int x, byte a, wchar_t c)
+static bool observe_kill_diff(int y, int x, uint8_t a, wchar_t c)
 {
     int i, r_idx;
 
@@ -1792,7 +1792,7 @@ static bool observe_kill_diff(int y, int x, byte a, wchar_t c)
  * Assume that the monster moved at most 'd' grids.
  * If "flag" is TRUE, allow monster "conversion"
  */
-static bool observe_kill_move(int y, int x, int d, byte a, wchar_t c, bool flag)
+static bool observe_kill_move(int y, int x, int d, uint8_t a, wchar_t c, bool flag)
 {
     int i, z, ox, oy;
     int r_idx;
@@ -4330,7 +4330,7 @@ void borg_update(void)
         C_WIPE(borg_kills, 256, borg_kill);
 
         /* Hack -- Forget race counters */
-        C_WIPE(borg_race_count, z_info->r_max, s16b);
+        C_WIPE(borg_race_count, z_info->r_max, int16_t);
 
         /* Hack -- Rarely, a Unique can die off screen and the borg will miss it.
          * This check will cheat to see if uniques are dead.
@@ -5257,7 +5257,7 @@ void borg_init_5(void)
 
     int size;
 
-    s16b what[1024];
+    int16_t what[1024];
     const char *text[1024];
 
 
@@ -5279,10 +5279,10 @@ void borg_init_5(void)
     borg_msg_max = 256;
 
     /* Allocate array of positions */
-    C_MAKE(borg_msg_pos, borg_msg_max, s16b);
+    C_MAKE(borg_msg_pos, borg_msg_max, int16_t);
 
     /* Allocate array of use-types */
-    C_MAKE(borg_msg_use, borg_msg_max, s16b);
+    C_MAKE(borg_msg_use, borg_msg_max, int16_t);
 
 
     /*** Object/Monster tracking ***/
@@ -5330,7 +5330,7 @@ void borg_init_5(void)
 
     /* Allocate the arrays */
     C_MAKE(borg_unique_text, borg_unique_size, const char *);
-    C_MAKE(borg_unique_what, borg_unique_size, s16b);
+    C_MAKE(borg_unique_what, borg_unique_size, int16_t);
 
     /* Save the entries */
     for (i = 0; i < size; i++) borg_unique_text[i] = text[i];
@@ -5370,7 +5370,7 @@ void borg_init_5(void)
 
     /* Allocate the arrays */
     C_MAKE(borg_normal_text, borg_normal_size, const char *);
-    C_MAKE(borg_normal_what, borg_normal_size, s16b);
+    C_MAKE(borg_normal_what, borg_normal_size, int16_t);
 
     /* Save the entries */
     for (i = 0; i < size; i++) borg_normal_text[i] = text[i];

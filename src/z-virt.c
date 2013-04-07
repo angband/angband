@@ -23,11 +23,11 @@ unsigned int mem_flags = 0;
 #define SZ(uptr)	*((size_t *)((char *)(uptr) - sizeof(size_t)))
 
 /*
- * Allocate `len` bytes of memory.
+ * Allocate `len` uint8_ts of memory.
  *
  * Returns:
  *  - NULL if `len` == 0; or
- *  - a pointer to a block of memory of at least `len` bytes
+ *  - a pointer to a block of memory of at least `len` uint8_ts
  *
  * Doesn't return on out of memory.
  */
@@ -35,7 +35,7 @@ void *mem_alloc(size_t len)
 {
 	char *mem;
 
-	/* Allow allocation of "zero bytes" */
+	/* Allow allocation of "zero uint8_ts" */
 	if (len == 0) return (NULL);
 
 	mem = malloc(len + sizeof(size_t));
@@ -110,7 +110,7 @@ void string_free(char *str)
 
 char *string_append(char *s1, const char *s2)
 {
-	u32b len;
+	uint32_t len;
 	if (!s1 && !s2) {
 		return NULL;
 	} else if (s1 && !s2) {

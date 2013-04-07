@@ -195,7 +195,7 @@ static void birthmenu_display(menu_type *menu, int oid, bool cursor,
 {
 	struct birthmenu_data *data = menu->menu_data;
 
-	byte attr = curs_attrs[CURS_KNOWN][0 != cursor];
+	uint8_t attr = curs_attrs[CURS_KNOWN][0 != cursor];
 	c_put_str(attr, data->items[oid], row, col);
 }
 
@@ -204,9 +204,9 @@ static void birthmenu_display(menu_type *menu, int oid, bool cursor,
    only defining the display and handler parts). */
 static const menu_iter birth_iter = { NULL, NULL, birthmenu_display, NULL, NULL };
 
-static void skill_help(const s16b r_skills[], const s16b c_skills[], int mhp, int exp, int infra)
+static void skill_help(const int16_t r_skills[], const int16_t c_skills[], int mhp, int exp, int infra)
 {
-	s16b skills[SKILL_MAX];
+	int16_t skills[SKILL_MAX];
 	unsigned i;
 
 	for (i = 0; i < SKILL_MAX ; ++i)

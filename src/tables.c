@@ -22,25 +22,25 @@
 /*
  * Global array for looping through the "keypad directions".
  */
-const s16b ddd[9] =
+const int16_t ddd[9] =
 { 2, 8, 6, 4, 3, 1, 9, 7, 5 };
 
 /*
  * Global arrays for converting "keypad direction" into "offsets".
  */
-const s16b ddx[10] =
+const int16_t ddx[10] =
 { 0, -1, 0, 1, -1, 0, 1, -1, 0, 1 };
 
-const s16b ddy[10] =
+const int16_t ddy[10] =
 { 0, 1, 1, 1, 0, 0, 0, -1, -1, -1 };
 
 /*
  * Global arrays for optimizing "ddx[ddd[i]]" and "ddy[ddd[i]]".
  */
-const s16b ddx_ddd[9] =
+const int16_t ddx_ddd[9] =
 { 0, 0, 1, -1, 1, -1, 1, -1, 0 };
 
-const s16b ddy_ddd[9] =
+const int16_t ddy_ddd[9] =
 { 1, -1, 0, 0, 1, 1, -1, -1, 0 };
 
 /*
@@ -66,7 +66,7 @@ const s16b ddy_ddd[9] =
  * the (compiled out) small random energy boost code.  It may
  * also tend to cause more "clumping" at high speeds.
  */
-const byte extract_energy[200] =
+const uint8_t extract_energy[200] =
 {
 	/* Slow */     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
 	/* Slow */     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
@@ -99,7 +99,7 @@ const byte extract_energy[200] =
 /*
  * Base experience levels, may be adjusted up for race and/or class
  */
-const s32b player_exp[PY_MAX_LEVEL] =
+const int32_t player_exp[PY_MAX_LEVEL] =
 {
 	10,
 	25,

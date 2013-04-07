@@ -143,7 +143,7 @@
 #define NOATOM            /* Atom management */
 #define NOLANGUAGE        /* Character test routines */
 #define NOLSTRING         /* lstr* string management routines */
-#define NODBCS            /* Double-byte character set routines */
+#define NODBCS            /* Double-uint8_t character set routines */
 #define NOKEYBOARDINFO    /* Keyboard driver routines */
 #define NOCOLOR           /* COLOR_* color values */
 #define NODRAWTEXT        /* DrawText() and related definitions */
@@ -445,7 +445,7 @@ static COLORREF win_clr[MAX_COLORS];
  *
  * Note that many of the choices below suck, but so do crappy monitors.
  */
-static byte win_pal[MAX_COLORS] =
+static uint8_t win_pal[MAX_COLORS] =
 {
 	VID_BLACK,					/* Dark */
 	VID_WHITE,					/* White */
@@ -928,7 +928,7 @@ static void load_prefs(void)
  *
  * We save pointers to the tokens in "tokens", and return the number found.
  */
-static s16b tokenize_whitespace(char *buf, s16b num, char **tokens)
+static int16_t tokenize_whitespace(char *buf, int16_t num, char **tokens)
 {
 	int k = 0;
 
@@ -1587,8 +1587,8 @@ static void Term_nuke_win(term *t)
 #endif /* 0 */
 
 
-static errr Term_pict_win(int x, int y, int n, const byte *ap, const wchar_t *cp, const byte *tap, const wchar_t *tcp);
-static errr Term_pict_win_alpha(int x, int y, int n, const byte *ap, const wchar_t *cp, const byte *tap, const wchar_t *tcp);
+static errr Term_pict_win(int x, int y, int n, const uint8_t *ap, const wchar_t *cp, const uint8_t *tap, const wchar_t *tcp);
+static errr Term_pict_win_alpha(int x, int y, int n, const uint8_t *ap, const wchar_t *cp, const uint8_t *tap, const wchar_t *tcp);
 
 /*
  * React to global changes
@@ -1617,7 +1617,7 @@ static errr Term_xtra_win_react(void)
 	{
 		COLORREF code;
 
-		byte rv, gv, bv;
+		uint8_t rv, gv, bv;
 
 		bool change = FALSE;
 
@@ -2139,7 +2139,7 @@ static errr Term_wipe_win(int x, int y, int n)
  * what color it should be using to draw with, but perhaps simply changing
  * it every time is not too inefficient.  XXX XXX XXX
  */
-static errr Term_text_win(int x, int y, int n, byte a, const wchar_t *s)
+static errr Term_text_win(int x, int y, int n, uint8_t a, const wchar_t *s)
 {
 	term_data *td = (term_data*)(Term->data);
 	RECT rc;
@@ -2232,7 +2232,7 @@ static errr Term_text_win(int x, int y, int n, byte a, const wchar_t *s)
  *
  * If "graphics" is not available, we simply "wipe" the given grids.
  */
-static errr Term_pict_win(int x, int y, int n, const byte *ap, const wchar_t *cp, const byte *tap, const wchar_t *tcp)
+static errr Term_pict_win(int x, int y, int n, const uint8_t *ap, const wchar_t *cp, const uint8_t *tap, const wchar_t *tcp)
 {
 	term_data *td = (term_data*)(Term->data);
 
@@ -2290,7 +2290,7 @@ static errr Term_pict_win(int x, int y, int n, const byte *ap, const wchar_t *cp
 
 	/* Draw attr/char pairs */
 	for (i = n-1; i >= 0; i--, x2 -= w2) {
-		byte a = ap[i];
+		uint8_t a = ap[i];
 		wchar_t c = cp[i];
 
 		/* Extract picture */
@@ -2423,7 +2423,7 @@ size_t Term_mbstowcs_win(wchar_t *dest, const char *src, int n)
 #ifndef AC_SRC_ALPHA
 #define AC_SRC_ALPHA     0x01
 #endif
-static errr Term_pict_win_alpha(int x, int y, int n, const byte *ap, const wchar_t *cp, const byte *tap, const wchar_t *tcp)
+static errr Term_pict_win_alpha(int x, int y, int n, const uint8_t *ap, const wchar_t *cp, const uint8_t *tap, const wchar_t *tcp)
 {
 	term_data *td = (term_data*)(Term->data);
 
@@ -2477,7 +2477,7 @@ static errr Term_pict_win_alpha(int x, int y, int n, const byte *ap, const wchar
 	/* Draw attr/char pairs */
 	for (i = n-1; i >= 0; i--, x2 -= w2)
 	{
-		byte a = ap[i];
+		uint8_t a = ap[i];
 		wchar_t c = cp[i];
 
 		/* Extract picture */
@@ -2552,11 +2552,11 @@ static errr Term_pict_win_alpha(int x, int y, int n, const byte *ap, const wchar
 static void windows_map_aux(void)
 {
 	term_data *td = &data[0];
-	byte a;
+	uint8_t a;
 	wchar_t c;
 	int x, min_x, max_x;
 	int y, min_y, max_y;
-	byte ta;
+	uint8_t ta;
 	wchar_t tc;
 
 	td->map_tile_wid = (td->tile_wid * td->cols) / DUNGEON_WID;
@@ -5421,7 +5421,7 @@ int FAR PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrevInst,
 	/* Initialize the colors */
 	for (i = 0; i < MAX_COLORS; i++)
 	{
-		byte rv, gv, bv;
+		uint8_t rv, gv, bv;
 
 		/* Extract desired values */
 		rv = angband_color_table[i][1];

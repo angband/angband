@@ -101,9 +101,9 @@ enum mon_messages {
 typedef struct monster_race_message
 {
 	monster_race *race;	/* The race of the monster */
-	byte mon_flags;		/* Flags: 0x01 means hidden monster, 0x02 means offscreen monster */
+	uint8_t mon_flags;		/* Flags: 0x01 means hidden monster, 0x02 means offscreen monster */
  	int  msg_code;		/* The coded message */
-	byte mon_count;		/* How many monsters triggered this message */
+	uint8_t mon_count;		/* How many monsters triggered this message */
 	bool delay;			/* Should this message be put off to the end */
 } monster_race_message;
 

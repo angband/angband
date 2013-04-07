@@ -25,7 +25,7 @@
 /*
  * Stat Table (INT/WIS) -- Minimum failure rate (percentage)
  */
-const byte adj_mag_fail[STAT_RANGE] =
+const uint8_t adj_mag_fail[STAT_RANGE] =
 {
 	99	/* 3 */,
 	99	/* 4 */,
@@ -213,7 +213,7 @@ bool spell_okay_to_browse(int spell)
 /*
  * Returns chance of failure for a spell
  */
-s16b spell_chance(int spell)
+int16_t spell_chance(int spell)
 {
 	int chance, minfail;
 

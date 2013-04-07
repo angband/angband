@@ -80,7 +80,7 @@ static unsigned int scr_places_y[LOC_MAX];
 /** Variables to maintain state XXX ***/
 
 /* Flags for the display */
-static u16b store_flags;
+static uint16_t store_flags;
 
 
 
@@ -377,7 +377,7 @@ static void prt_welcome(const owner_type *ot_ptr)
  *
  * We paid "price", it was worth "value", and we thought it was worth "guess"
  */
-static void purchase_analyze(s32b price, s32b value, s32b guess)
+static void purchase_analyze(int32_t price, int32_t value, int32_t guess)
 {
 	/* Item was worthless, but we bought it */
 	if ((value <= 0) && (price > value))
@@ -582,10 +582,10 @@ static struct store *current_store(void)
  *
  * Hack -- the black market always charges twice as much as it should.
  */
-s32b price_item(const object_type *o_ptr, bool store_buying, int qty)
+int32_t price_item(const object_type *o_ptr, bool store_buying, int qty)
 {
 	int adjust;
-	s32b price;
+	int32_t price;
 	struct store *store = current_store();
 	owner_type *ot_ptr;
 
@@ -681,7 +681,7 @@ static int mass_roll(int times, int max)
 static void mass_produce(object_type *o_ptr)
 {
 	int size = 1;
-	s32b cost = object_value(o_ptr, 1, FALSE);
+	int32_t cost = object_value(o_ptr, 1, FALSE);
 
 	/* Analyze the type */
 	switch (o_ptr->tval)
@@ -879,7 +879,7 @@ static bool store_check_num(struct store *store, const object_type *o_ptr)
 static int home_carry(object_type *o_ptr)
 {
 	int i, slot;
-	u32b value, j_value;
+	uint32_t value, j_value;
 	object_type *j_ptr;
 
 	struct store *store = &stores[STORE_HOME];
@@ -975,7 +975,7 @@ static int store_carry(struct store *store, object_type *o_ptr)
 {
 	unsigned int i;
 	unsigned int slot;
-	u32b value, j_value;
+	uint32_t value, j_value;
 	object_type *j_ptr;
 
 	object_kind *kind = o_ptr->kind;
@@ -1793,12 +1793,12 @@ static void store_display_recalc(menu_type *m)
 static void store_display_entry(menu_type *menu, int oid, bool cursor, int row, int col, int width)
 {
 	object_type *o_ptr;
-	s32b x;
+	int32_t x;
 	int desc = ODESC_PREFIX;
 
 	char o_name[80];
 	char out_val[160];
-	byte colour;
+	uint8_t colour;
 
 	struct store *store = current_store();
 
@@ -2348,7 +2348,7 @@ static bool store_purchase(int item)
 
 	char o_name[80];
 
-	s32b price;
+	int32_t price;
 
 	struct store *store = current_store();
 
@@ -2373,7 +2373,7 @@ static bool store_purchase(int item)
 		price = price_item(o_ptr, FALSE, 1);
 
 		/* Check if the player can afford any at all */
-		if ((u32b)p_ptr->au < (u32b)price)
+		if ((uint32_t)p_ptr->au < (uint32_t)price)
 		{
 			/* Tell the user */
 			msg("You do not have enough gold for this item.");
@@ -2728,7 +2728,7 @@ static bool store_sell(void)
 	if (store->sidx != STORE_HOME)
 	{
 		/* Extract the value of the items */
-		u32b price = price_item(i_ptr, TRUE, amt);
+		uint32_t price = price_item(i_ptr, TRUE, amt);
 
 		screen_save();
 

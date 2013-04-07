@@ -217,7 +217,7 @@ void dump_monsters(ang_file *fff)
 	for (i = 0; i < z_info->r_max; i++)
 	{
 		monster_race *r_ptr = &r_info[i];
-		byte attr = r_ptr->x_attr;
+		uint8_t attr = r_ptr->x_attr;
 		wint_t chr = r_ptr->x_char;
 
 		/* Skip non-entries */
@@ -279,7 +279,7 @@ void dump_features(ang_file *fff)
 		file_putf(fff, "# Terrain: %s\n", f_ptr->name);
 		for (j = 0; j < FEAT_LIGHTING_MAX; j++)
 		{
-			byte attr = f_ptr->x_attr[j];
+			uint8_t attr = f_ptr->x_attr[j];
 			wint_t chr = f_ptr->x_char[j];
 
 			const char *light = NULL;
@@ -303,7 +303,7 @@ void dump_flavors(ang_file *fff)
 	struct flavor *f;
 
 	for (f = flavors; f; f = f->next) {
-		byte attr = f->x_attr;
+		uint8_t attr = f->x_attr;
 		wint_t chr = f->x_char;
 
 		file_putf(fff, "# Item flavor: %s\n", f->text);
@@ -397,7 +397,7 @@ struct prefs_data
 	struct keypress keymap_buffer[KEYMAP_ACTION_MAX];
 	bool user;
 	bool loaded_window_flag[ANGBAND_TERM_MAX];
-	u32b window_flags[ANGBAND_TERM_MAX];
+	uint32_t window_flags[ANGBAND_TERM_MAX];
 };
 
 
@@ -650,7 +650,7 @@ static enum parser_error parse_prefs_k(struct parser *p)
 	if (!kind)
 		return PARSE_ERROR_UNRECOGNISED_SVAL;
 
-	kind->x_attr = (byte)parser_getint(p, "attr");
+	kind->x_attr = (uint8_t)parser_getint(p, "attr");
 	kind->x_char = (wchar_t)parser_getint(p, "char");
 
 	return PARSE_ERROR_NONE;
@@ -670,7 +670,7 @@ static enum parser_error parse_prefs_r(struct parser *p)
 		return PARSE_ERROR_OUT_OF_BOUNDS;
 
 	monster = &r_info[idx];
-	monster->x_attr = (byte)parser_getint(p, "attr");
+	monster->x_attr = (uint8_t)parser_getint(p, "attr");
 	monster->x_char = (wchar_t)parser_getint(p, "char");
 
 	return PARSE_ERROR_NONE;
@@ -707,7 +707,7 @@ static enum parser_error parse_prefs_f(struct parser *p)
 	if (light_idx < FEAT_LIGHTING_MAX)
 	{
 		feature = &f_info[idx];
-		feature->x_attr[light_idx] = (byte)parser_getint(p, "attr");
+		feature->x_attr[light_idx] = (uint8_t)parser_getint(p, "attr");
 		feature->x_char[light_idx] = (wchar_t)parser_getint(p, "char");
 	}
 	else
@@ -715,7 +715,7 @@ static enum parser_error parse_prefs_f(struct parser *p)
 		for (light_idx = 0; light_idx < FEAT_LIGHTING_MAX; light_idx++)
 		{
 			feature = &f_info[idx];
-			feature->x_attr[light_idx] = (byte)parser_getint(p, "attr");
+			feature->x_attr[light_idx] = (uint8_t)parser_getint(p, "attr");
 			feature->x_char[light_idx] = (wchar_t)parser_getint(p, "char");
 		}
 	}
@@ -773,7 +773,7 @@ static enum parser_error parse_prefs_gf(struct parser *p)
 	for (i = 0; i < GF_MAX; i++) {
 		if (!types[i]) continue;
 
-		gf_to_attr[i][motion] = (byte)parser_getuint(p, "attr");
+		gf_to_attr[i][motion] = (uint8_t)parser_getuint(p, "attr");
 		gf_to_char[i][motion] = (wchar_t)parser_getuint(p, "char");
 	}
 
@@ -795,7 +795,7 @@ static enum parser_error parse_prefs_l(struct parser *p)
 			break;
 
 	if (flavor) {
-		flavor->x_attr = (byte)parser_getint(p, "attr");
+		flavor->x_attr = (uint8_t)parser_getint(p, "attr");
 		flavor->x_char = (wchar_t)parser_getint(p, "char");
 	}
 
@@ -815,7 +815,7 @@ static enum parser_error parse_prefs_e(struct parser *p)
 		return PARSE_ERROR_UNRECOGNISED_TVAL;
 
 	a = parser_getint(p, "attr");
-	if (a) tval_to_attr[tvi] = (byte) a;
+	if (a) tval_to_attr[tvi] = (uint8_t) a;
 
 	return PARSE_ERROR_NONE;
 }
@@ -931,7 +931,7 @@ static enum parser_error parse_prefs_m(struct parser *p)
 	if (a < 0)
 		return PARSE_ERROR_INVALID_COLOR;
 
-	message_color_define((u16b)type, (byte)a);
+	message_color_define((uint16_t)type, (uint8_t)a);
 
 	return PARSE_ERROR_NONE;
 }

@@ -33,7 +33,7 @@
 
 
 /*
- * Number of bytes to be read during each read operation
+ * Number of uint8_ts to be read during each read operation
  */
 #define MAXREAD  32768
 
@@ -42,7 +42,7 @@
  *
  * Reads data in steps of 32k till all the data has been read.
  *
- * Returns number of bytes requested, or zero if something went wrong.
+ * Returns number of uint8_ts requested, or zero if something went wrong.
  */
 static DWORD PASCAL lread(HFILE fh, VOID FAR *pv, DWORD ul)
 {

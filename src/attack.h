@@ -13,7 +13,7 @@ extern void py_attack(int y, int x);
 struct attack_result {
     bool success;
     int dmg;
-    u32b msg_type;
+    uint32_t msg_type;
     const char *hit_verb;
 };
 

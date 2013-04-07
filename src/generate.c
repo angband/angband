@@ -62,8 +62,8 @@ static bool build_lesser_vault(struct cave *c, int y0, int x0);
 static bool build_medium_vault(struct cave *c, int y0, int x0);
 static bool build_greater_vault(struct cave *c, int y0, int x0);
 
-static void alloc_objects(struct cave *c, int set, int typ, int num, int depth, byte origin);
-static bool alloc_object(struct cave *c, int set, int typ, int depth, byte origin);
+static void alloc_objects(struct cave *c, int set, int typ, int num, int depth, uint8_t origin);
+static bool alloc_object(struct cave *c, int set, int typ, int depth, uint8_t origin);
 
 #if  __STDC_VERSION__ < 199901L
 #define ROOM_LOG  if (OPT(cheat_room)) msg
@@ -610,9 +610,9 @@ static void place_random_stairs(struct cave *c, int y, int x)
 /**
  * Place a random object at (x, y).
  */
-void place_object(struct cave *c, int y, int x, int level, bool good, bool great, byte origin, int tval)
+void place_object(struct cave *c, int y, int x, int level, bool good, bool great, uint8_t origin, int tval)
 {
-	s32b rating = 0;
+	int32_t rating = 0;
 	object_type otype;
 
 	assert(cave_in_bounds(c, y, x));
@@ -644,7 +644,7 @@ void place_object(struct cave *c, int y, int x, int level, bool good, bool great
 /**
  * Place a random amount of gold at (x, y).
  */
-void place_gold(struct cave *c, int y, int x, int level, byte origin)
+void place_gold(struct cave *c, int y, int x, int level, uint8_t origin)
 {
 	object_type *i_ptr;
 	object_type object_type_body;
@@ -785,7 +785,7 @@ static void alloc_stairs(struct cave *c, int feat, int num, int walls)
  *
  * See alloc_object() for more information.
  */
-static void alloc_objects(struct cave *c, int set, int typ, int num, int depth, byte origin)
+static void alloc_objects(struct cave *c, int set, int typ, int num, int depth, uint8_t origin)
 {
 	int k, l = 0;
 	for (k = 0; k < num; k++) {
@@ -801,7 +801,7 @@ static void alloc_objects(struct cave *c, int set, int typ, int num, int depth, 
  * 'set' controls where the object is placed (corridor, room, either).
  * 'typ' conrols the kind of object (rubble, trap, gold, item).
  */
-static bool alloc_object(struct cave *c, int set, int typ, int depth, byte origin)
+static bool alloc_object(struct cave *c, int set, int typ, int depth, uint8_t origin)
 {
 	int x = 0, y = 0;
 	int tries = 0;
@@ -3824,7 +3824,7 @@ static void place_feeling(struct cave *c)
  */
 static int calc_obj_feeling(struct cave *c)
 {
-	u32b x;
+	uint32_t x;
 
 	/* Town gets no feeling */
 	if (c->depth == 0) return 0;
@@ -3854,7 +3854,7 @@ static int calc_obj_feeling(struct cave *c)
  */
 static int calc_mon_feeling(struct cave *c)
 {
-	u32b x;
+	uint32_t x;
 
 	/* Town gets no feeling */
 	if (c->depth == 0) return 0;

@@ -29,9 +29,9 @@
  */
 typedef struct
 {
-	u16b index;          /* Effect index */
+	uint16_t index;          /* Effect index */
 	bool aim;            /* Whether the effect requires aiming */
-	u16b power;	     /* Power rating for obj-power.c */
+	uint16_t power;	     /* Power rating for obj-power.c */
 	const char *desc;    /* Effect description */
 } info_entry;
 

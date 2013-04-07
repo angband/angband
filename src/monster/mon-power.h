@@ -22,7 +22,7 @@
 #include "monster/monster.h"
 
 /** Variables **/
-extern s32b tot_mon_power;
+extern int32_t tot_mon_power;
 
 /** Functions **/
 errr eval_r_power(struct monster_race *races);

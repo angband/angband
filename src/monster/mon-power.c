@@ -20,7 +20,7 @@
 #include "monster/mon-power.h"
 #include "monster/mon-spell.h"
 
-s32b tot_mon_power;
+int32_t tot_mon_power;
 
 static long eval_blow_effect(int effect, int atk_dam, int rlev)
 {
@@ -109,7 +109,7 @@ static long eval_blow_effect(int effect, int atk_dam, int rlev)
 	return (atk_dam);
 }
 
-static byte adj_energy(monster_race *r_ptr)
+static uint8_t adj_energy(monster_race *r_ptr)
 {
 	unsigned i = r_ptr->speed + (rsf_has(r_ptr->spell_flags, RSF_HASTE) ? 5 : 0);
 
@@ -391,7 +391,7 @@ static long eval_hp_adjust(monster_race *r_ptr)
 errr eval_r_power(struct monster_race *racelist)
 {
 	int i, j, iteration;
-	byte lvl;
+	uint8_t lvl;
 	long hp, av_hp, dam, av_dam, *power;
 	long tot_hp[MAX_DEPTH], tot_dam[MAX_DEPTH], mon_count[MAX_DEPTH];
 	monster_race *r_ptr = NULL;

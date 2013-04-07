@@ -80,13 +80,13 @@ typedef void   (*free_func)  OF((voidpf opaque, voidpf address));
 struct internal_state;
 
 typedef struct z_stream_s {
-    Bytef    *next_in;  /* next input byte */
-    uInt     avail_in;  /* number of bytes available at next_in */
-    uLong    total_in;  /* total nb of input bytes read so far */
+    Bytef    *next_in;  /* next input uint8_t */
+    uInt     avail_in;  /* number of uint8_ts available at next_in */
+    uLong    total_in;  /* total nb of input uint8_ts read so far */
 
-    Bytef    *next_out; /* next output byte should be put there */
+    Bytef    *next_out; /* next output uint8_t should be put there */
     uInt     avail_out; /* remaining free space at next_out */
-    uLong    total_out; /* total nb of bytes output so far */
+    uLong    total_out; /* total nb of uint8_ts output so far */
 
     char     *msg;      /* last error message, NULL if no error */
     struct internal_state FAR *state; /* not visible by applications */
@@ -142,9 +142,9 @@ typedef gz_header FAR *gz_headerp;
    thread safe.
 
    On 16-bit systems, the functions zalloc and zfree must be able to allocate
-   exactly 65536 bytes, but will not be required to allocate more than this
+   exactly 65536 uint8_ts, but will not be required to allocate more than this
    if the symbol MAXSEG_64K is defined (see zconf.h). WARNING: On MSDOS,
-   pointers returned by zalloc for objects of exactly 65536 bytes *must*
+   pointers returned by zalloc for objects of exactly 65536 uint8_ts *must*
    have their offset normalized to zero. The default allocation function
    provided by this library ensures this (see zutil.c). To reduce memory
    requirements and avoid any allocation of 64K objects, at the expense of
@@ -274,7 +274,7 @@ ZEXTERN int ZEXPORT deflate OF((z_streamp strm, int flush));
   maximize compression.
 
     If the parameter flush is set to Z_SYNC_FLUSH, all pending output is
-  flushed to the output buffer and the output is aligned on a byte boundary, so
+  flushed to the output buffer and the output is aligned on a uint8_t boundary, so
   that the decompressor can get all input data available so far. (In particular
   avail_in is zero after the call if enough output space has been provided
   before the call.)  Flushing may degrade compression for some compression
@@ -307,7 +307,7 @@ ZEXTERN int ZEXPORT deflate OF((z_streamp strm, int flush));
   Z_STREAM_END, then it must be called again as described above.
 
     deflate() sets strm->adler to the adler32 checksum of all input read
-  so far (that is, total_in bytes).
+  so far (that is, total_in uint8_ts).
 
     deflate() may update strm->data_type if it can make a good guess about
   the input data type (Z_BINARY or Z_TEXT). In doubt, the data is considered
@@ -400,10 +400,10 @@ ZEXTERN int ZEXPORT inflate OF((z_streamp strm, int flush));
 
     The Z_BLOCK option assists in appending to or combining deflate streams.
   Also to assist in this, on return inflate() will set strm->data_type to the
-  number of unused bits in the last byte taken from strm->next_in, plus 64
+  number of unused bits in the last uint8_t taken from strm->next_in, plus 64
   if inflate() is currently decoding the last block in the deflate stream,
   plus 128 if inflate() returned immediately after decoding an end-of-block
-  code or decoding the complete header up to just before the first byte of the
+  code or decoding the complete header up to just before the first uint8_t of the
   deflate stream. The end-of-block will not be indicated until all of the
   uncompressed data from that block has been written to strm->next_out.  The
   number of unused bits may in general be greater than seven, except when
@@ -431,7 +431,7 @@ ZEXTERN int ZEXPORT inflate OF((z_streamp strm, int flush));
   below), inflate sets strm->adler to the adler32 checksum of the dictionary
   chosen by the compressor and returns Z_NEED_DICT; otherwise it sets
   strm->adler to the adler32 checksum of all output produced so far (that is,
-  total_out bytes) and returns Z_OK, Z_STREAM_END or an error code as described
+  total_out uint8_ts) and returns Z_OK, Z_STREAM_END or an error code as described
   below. At the end of the stream, inflate() checks that its computed adler32
   checksum is equal to that saved by the compressor and returns Z_STREAM_END
   only if the checksum is correct.
@@ -539,13 +539,13 @@ ZEXTERN int ZEXPORT deflateSetDictionary OF((z_streamp strm,
                                              const Bytef *dictionary,
                                              uInt  dictLength));
 /*
-     Initializes the compression dictionary from the given byte sequence
+     Initializes the compression dictionary from the given uint8_t sequence
    without producing any compressed output. This function must be called
    immediately after deflateInit, deflateInit2 or deflateReset, before any
    call of deflate. The compressor and decompressor must use exactly the same
    dictionary (see inflateSetDictionary).
 
-     The dictionary should consist of strings (byte sequences) that are likely
+     The dictionary should consist of strings (uint8_t sequences) that are likely
    to be encountered later in the data to be compressed, with the most commonly
    used strings preferably put towards the end of the dictionary. Using a
    dictionary is most useful when the data to be compressed is short and can be
@@ -558,7 +558,7 @@ ZEXTERN int ZEXPORT deflateSetDictionary OF((z_streamp strm,
    deflate or deflate2. Thus the strings most likely to be useful should be
    put at the end of the dictionary, not at the front. In addition, the
    current implementation of deflate will use at most the window size minus
-   262 bytes of the provided dictionary.
+   262 uint8_ts of the provided dictionary.
 
      Upon return of this function, strm->adler is set to the adler32 value
    of the dictionary; the decompressor may later use this value to determine
@@ -645,7 +645,7 @@ ZEXTERN uLong ZEXPORT deflateBound OF((z_streamp strm,
                                        uLong sourceLen));
 /*
      deflateBound() returns an upper bound on the compressed size after
-   deflation of sourceLen bytes.  It must be called after deflateInit()
+   deflation of sourceLen uint8_ts.  It must be called after deflateInit()
    or deflateInit2().  This would be used to allocate an output buffer
    for deflation in a single pass, and so would be called before deflate().
 */
@@ -676,7 +676,7 @@ ZEXTERN int ZEXPORT deflateSetHeader OF((z_streamp strm,
    in the provided gz_header structure are written to the gzip header (xflag is
    ignored -- the extra flags are set according to the compression level).  The
    caller must assure that, if not Z_NULL, name and comment are terminated with
-   a zero byte, and that if extra is not Z_NULL, that extra_len bytes are
+   a zero uint8_t, and that if extra is not Z_NULL, that extra_len uint8_ts are
    available there.  If hcrc is true, a gzip header crc is included.  Note that
    the current versions of the command-line version of gzip (up through version
    1.3.x) do not support header crc's, and will report that it is a "multi-part
@@ -737,7 +737,7 @@ ZEXTERN int ZEXPORT inflateSetDictionary OF((z_streamp strm,
                                              const Bytef *dictionary,
                                              uInt  dictLength));
 /*
-     Initializes the decompression dictionary from the given uncompressed byte
+     Initializes the decompression dictionary from the given uncompressed uint8_t
    sequence. This function must be called immediately after a call of inflate,
    if that call returned Z_NEED_DICT. The dictionary chosen by the compressor
    can be determined from the adler32 value returned by that call of inflate.
@@ -802,7 +802,7 @@ ZEXTERN int ZEXPORT inflatePrime OF((z_streamp strm,
 /*
      This function inserts bits in the inflate input stream.  The intent is
   that this function is used to start inflating at a bit position in the
-  middle of a byte.  The provided bits will be used before any bytes are used
+  middle of a uint8_t.  The provided bits will be used before any uint8_ts are used
   from next_in.  This function should only be used with raw inflate, and
   should be used before the first inflate() call after inflateInit2() or
   inflateReset().  bits must be less than or equal to 16, and that many of the
@@ -828,7 +828,7 @@ ZEXTERN int ZEXPORT inflateGetHeader OF((z_streamp strm,
       The text, time, xflags, and os fields are filled in with the gzip header
    contents.  hcrc is set to true if there is a header CRC.  (The header CRC
    was valid if done is set to one.)  If extra is not Z_NULL, then extra_max
-   contains the maximum number of bytes to write to extra.  Once done is true,
+   contains the maximum number of uint8_ts to write to extra.  Once done is true,
    extra_len contains the actual extra field length, and extra contains the
    extra field, or that field truncated if extra_max is less than extra_len.
    If name is not Z_NULL, then up to name_max characters are written there,
@@ -863,7 +863,7 @@ ZEXTERN int ZEXPORT inflateBackInit OF((z_streamp strm, int windowBits,
    logarithm of the window size, in the range 8..15.  window is a caller
    supplied buffer of that size.  Except for special applications where it is
    assured that deflate was used with small window sizes, windowBits must be 15
-   and a 32K byte window must be supplied to be able to decompress general
+   and a 32K uint8_t window must be supplied to be able to decompress general
    deflate streams.
 
      See inflateBack() for the usage of these routines.
@@ -908,7 +908,7 @@ ZEXTERN int ZEXPORT inflateBack OF((z_streamp strm,
    uncompressed data, or until it encounters an error.  The function's
    parameters and return types are defined above in the in_func and out_func
    typedefs.  inflateBack() will call in(in_desc, &buf) which should return the
-   number of bytes of provided input, and a pointer to that input in buf.  If
+   number of uint8_ts of provided input, and a pointer to that input in buf.  If
    there is no input available, in() must return zero--buf is ignored in that
    case--and inflateBack() will return a buffer error.  inflateBack() will call
    out(out_desc, buf, len) to write the uncompressed data buf[0..len-1].  out()
@@ -1010,7 +1010,7 @@ ZEXTERN int ZEXPORT compress OF((Bytef *dest,   uLongf *destLen,
                                  const Bytef *source, uLong sourceLen));
 /*
      Compresses the source buffer into the destination buffer.  sourceLen is
-   the byte length of the source buffer. Upon entry, destLen is the total
+   the uint8_t length of the source buffer. Upon entry, destLen is the total
    size of the destination buffer, which must be at least the value returned
    by compressBound(sourceLen). Upon exit, destLen is the actual size of the
    compressed buffer.
@@ -1026,7 +1026,7 @@ ZEXTERN int ZEXPORT compress2 OF((Bytef *dest,   uLongf *destLen,
                                   int level));
 /*
      Compresses the source buffer into the destination buffer. The level
-   parameter has the same meaning as in deflateInit.  sourceLen is the byte
+   parameter has the same meaning as in deflateInit.  sourceLen is the uint8_t
    length of the source buffer. Upon entry, destLen is the total size of the
    destination buffer, which must be at least the value returned by
    compressBound(sourceLen). Upon exit, destLen is the actual size of the
@@ -1040,7 +1040,7 @@ ZEXTERN int ZEXPORT compress2 OF((Bytef *dest,   uLongf *destLen,
 ZEXTERN uLong ZEXPORT compressBound OF((uLong sourceLen));
 /*
      compressBound() returns an upper bound on the compressed size after
-   compress() or compress2() on sourceLen bytes.  It would be used before
+   compress() or compress2() on sourceLen uint8_ts.  It would be used before
    a compress() or compress2() call to allocate the destination buffer.
 */
 
@@ -1048,7 +1048,7 @@ ZEXTERN int ZEXPORT uncompress OF((Bytef *dest,   uLongf *destLen,
                                    const Bytef *source, uLong sourceLen));
 /*
      Decompresses the source buffer into the destination buffer.  sourceLen is
-   the byte length of the source buffer. Upon entry, destLen is the total
+   the uint8_t length of the source buffer. Upon entry, destLen is the total
    size of the destination buffer, which must be large enough to hold the
    entire uncompressed data. (The size of the uncompressed data must have
    been saved previously by the compressor and transmitted to the decompressor
@@ -1105,17 +1105,17 @@ ZEXTERN int ZEXPORT gzsetparams OF((gzFile file, int level, int strategy));
 
 ZEXTERN int ZEXPORT    gzread  OF((gzFile file, voidp buf, unsigned len));
 /*
-     Reads the given number of uncompressed bytes from the compressed file.
+     Reads the given number of uncompressed uint8_ts from the compressed file.
    If the input file was not in gzip format, gzread copies the given number
-   of bytes into the buffer.
-     gzread returns the number of uncompressed bytes actually read (0 for
+   of uint8_ts into the buffer.
+     gzread returns the number of uncompressed uint8_ts actually read (0 for
    end of file, -1 for error). */
 
 ZEXTERN int ZEXPORT    gzwrite OF((gzFile file,
                                    voidpc buf, unsigned len));
 /*
-     Writes the given number of uncompressed bytes into the compressed file.
-   gzwrite returns the number of uncompressed bytes actually written
+     Writes the given number of uncompressed uint8_ts into the compressed file.
+   gzwrite returns the number of uncompressed uint8_ts actually written
    (0 in case of error).
 */
 
@@ -1123,8 +1123,8 @@ ZEXTERN int ZEXPORTVA   gzprintf OF((gzFile file, const char *format, ...));
 /*
      Converts, formats, and writes the args to the compressed file under
    control of the format string, as in fprintf. gzprintf returns the number of
-   uncompressed bytes actually written (0 in case of error).  The number of
-   uncompressed bytes written is limited to 4095. The caller should assure that
+   uncompressed uint8_ts actually written (0 in case of error).  The number of
+   uncompressed uint8_ts written is limited to 4095. The caller should assure that
    this limit is not exceeded. If it is exceeded, then gzprintf() will return
    return an error (0) with nothing written. In this case, there may also be a
    buffer overflow with unpredictable consequences, which is possible only if
@@ -1141,7 +1141,7 @@ ZEXTERN int ZEXPORT gzputs OF((gzFile file, const char *s));
 
 ZEXTERN char * ZEXPORT gzgets OF((gzFile file, char *buf, int len));
 /*
-      Reads bytes from the compressed file until len-1 characters are read, or
+      Reads uint8_ts from the compressed file until len-1 characters are read, or
    a newline character is read and transferred to buf, or an end-of-file
    condition is encountered.  The string is then terminated with a null
    character.
@@ -1156,7 +1156,7 @@ ZEXTERN int ZEXPORT    gzputc OF((gzFile file, int c));
 
 ZEXTERN int ZEXPORT    gzgetc OF((gzFile file));
 /*
-      Reads one byte from the compressed file. gzgetc returns this byte
+      Reads one uint8_t from the compressed file. gzgetc returns this uint8_t
    or -1 in case of end of file or error.
 */
 
@@ -1184,7 +1184,7 @@ ZEXTERN z_off_t ZEXPORT    gzseek OF((gzFile file,
                                       z_off_t offset, int whence));
 /*
       Sets the starting position for the next gzread or gzwrite on the
-   given compressed file. The offset represents a number of bytes in the
+   given compressed file. The offset represents a number of uint8_ts in the
    uncompressed data stream. The whence parameter is defined as in lseek(2);
    the value SEEK_END is not supported.
      If the file is opened for reading, this function is emulated but can be
@@ -1192,7 +1192,7 @@ ZEXTERN z_off_t ZEXPORT    gzseek OF((gzFile file,
    supported; gzseek then compresses a sequence of zeroes up to the new
    starting position.
 
-      gzseek returns the resulting offset location as measured in bytes from
+      gzseek returns the resulting offset location as measured in uint8_ts from
    the beginning of the uncompressed stream, or -1 in case of error, in
    particular if the file is opened for writing and the new starting position
    would be before the current position.
@@ -1208,7 +1208,7 @@ ZEXTERN int ZEXPORT    gzrewind OF((gzFile file));
 ZEXTERN z_off_t ZEXPORT    gztell OF((gzFile file));
 /*
      Returns the starting position for the next gzread or gzwrite on the
-   given compressed file. This position represents a number of bytes in the
+   given compressed file. This position represents a number of uint8_ts in the
    uncompressed data stream.
 
    gztell(file) is equivalent to gzseek(file, 0L, SEEK_CUR)
@@ -1259,7 +1259,7 @@ ZEXTERN void ZEXPORT gzclearerr OF((gzFile file));
 
 ZEXTERN uLong ZEXPORT adler32 OF((uLong adler, const Bytef *buf, uInt len));
 /*
-     Update a running Adler-32 checksum with the bytes buf[0..len-1] and
+     Update a running Adler-32 checksum with the uint8_ts buf[0..len-1] and
    return the updated checksum. If buf is NULL, this function returns
    the required initial value for the checksum.
    An Adler-32 checksum is almost as reliable as a CRC32 but can be computed
@@ -1276,7 +1276,7 @@ ZEXTERN uLong ZEXPORT adler32 OF((uLong adler, const Bytef *buf, uInt len));
 ZEXTERN uLong ZEXPORT adler32_combine OF((uLong adler1, uLong adler2,
                                           z_off_t len2));
 /*
-     Combine two Adler-32 checksums into one.  For two sequences of bytes, seq1
+     Combine two Adler-32 checksums into one.  For two sequences of uint8_ts, seq1
    and seq2 with lengths len1 and len2, Adler-32 checksums were calculated for
    each, adler1 and adler2.  adler32_combine() returns the Adler-32 checksum of
    seq1 and seq2 concatenated, requiring only adler1, adler2, and len2.
@@ -1284,7 +1284,7 @@ ZEXTERN uLong ZEXPORT adler32_combine OF((uLong adler1, uLong adler2,
 
 ZEXTERN uLong ZEXPORT crc32   OF((uLong crc, const Bytef *buf, uInt len));
 /*
-     Update a running CRC-32 with the bytes buf[0..len-1] and return the
+     Update a running CRC-32 with the uint8_ts buf[0..len-1] and return the
    updated CRC-32. If buf is NULL, this function returns the required initial
    value for the for the crc. Pre- and post-conditioning (one's complement) is
    performed within this function so it shouldn't be done by the application.
@@ -1301,7 +1301,7 @@ ZEXTERN uLong ZEXPORT crc32   OF((uLong crc, const Bytef *buf, uInt len));
 ZEXTERN uLong ZEXPORT crc32_combine OF((uLong crc1, uLong crc2, z_off_t len2));
 
 /*
-     Combine two CRC-32 check values into one.  For two sequences of bytes,
+     Combine two CRC-32 check values into one.  For two sequences of uint8_ts,
    seq1 and seq2 with lengths len1 and len2, CRC-32 check values were
    calculated for each, crc1 and crc2.  crc32_combine() returns the CRC-32
    check value of seq1 and seq2 concatenated, requiring only crc1, crc2, and

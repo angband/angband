@@ -1388,7 +1388,7 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 void monster_death_stats(int m_idx)
 {
 	int y, x;
-	s16b this_o_idx, next_o_idx = 0;
+	int16_t this_o_idx, next_o_idx = 0;
 
 	monster_type *m_ptr;
 

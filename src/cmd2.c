@@ -330,7 +330,7 @@ void do_cmd_open(cmd_code code, cmd_arg args[])
 {
 	int y, x, dir;
 
-	s16b o_idx;
+	int16_t o_idx;
 
 	bool more = FALSE;
 
@@ -1009,7 +1009,7 @@ void do_cmd_disarm(cmd_code code, cmd_arg args[])
 {
 	int y, x, dir;
 
-	s16b o_idx;
+	int16_t o_idx;
 
 	bool more = FALSE;
 

@@ -27,8 +27,8 @@ static int number_distinct_items(int which)
 {
 	struct store *s = &stores[which];
 	unsigned int i;
-	u32b *kinds = mem_zalloc(sizeof(u32b) * s->table_num);
-	u32b kind;
+	uint32_t *kinds = mem_zalloc(sizeof(uint32_t) * s->table_num);
+	uint32_t kind;
 	int number_kinds = 0;
 
 	/* Loop over available stock entries, counting unique kinds */

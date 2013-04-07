@@ -82,7 +82,7 @@ static void do_cmd_pref_file_hack(long row);
 static void option_toggle_display(menu_type *m, int oid, bool cursor,
 		int row, int col, int width)
 {
-	byte attr = curs_attrs[CURS_KNOWN][cursor != 0];
+	uint8_t attr = curs_attrs[CURS_KNOWN][cursor != 0];
 	bool *options = menu_priv(m);
 
 	c_prt(attr, format("%-45s: %s  (%s)", option_desc(oid),
@@ -211,7 +211,7 @@ static void do_cmd_options_win(const char *name, int row)
 
 	ui_event ke;
 
-	u32b new_flags[ANGBAND_TERM_MAX];
+	uint32_t new_flags[ANGBAND_TERM_MAX];
 
 
 	/* Set new flags to the old values */
@@ -234,7 +234,7 @@ static void do_cmd_options_win(const char *name, int row)
 		/* Display the windows */
 		for (j = 0; j < ANGBAND_TERM_MAX; j++)
 		{
-			byte a = TERM_WHITE;
+			uint8_t a = TERM_WHITE;
 
 			const char *s = angband_term_name[j];
 
@@ -248,7 +248,7 @@ static void do_cmd_options_win(const char *name, int row)
 		/* Display the options */
 		for (i = 0; i < PW_MAX_FLAGS; i++)
 		{
-			byte a = TERM_WHITE;
+			uint8_t a = TERM_WHITE;
 
 			const char *str = window_flag_desc[i];
 
@@ -713,7 +713,7 @@ static void colors_modify(const char *title, int row)
 {
 	int i;
 
-	static byte a = 0;
+	static uint8_t a = 0;
 
 	/* Prompt */
 	prt("Command: Modify colors", 8, 0);
@@ -736,11 +736,11 @@ static void colors_modify(const char *title, int row)
 			Term_putstr(i*3, 20, -1, a, "##");
 
 			/* Exhibit character letter */
-			Term_putstr(i*3, 21, -1, (byte)i,
+			Term_putstr(i*3, 21, -1, (uint8_t)i,
 						format(" %c", color_table[i].index_char));
 
 			/* Exhibit all colors */
-			Term_putstr(i*3, 22, -1, (byte)i, format("%2d", i));
+			Term_putstr(i*3, 22, -1, (uint8_t)i, format("%2d", i));
 		}
 
 		/* Describe the color */
@@ -770,16 +770,16 @@ static void colors_modify(const char *title, int row)
 		if (cx.code == ESCAPE) break;
 
 		/* Analyze */
-		if (cx.code == 'n') a = (byte)(a + 1);
-		if (cx.code == 'N') a = (byte)(a - 1);
-		if (cx.code == 'k') angband_color_table[a][0] = (byte)(angband_color_table[a][0] + 1);
-		if (cx.code == 'K') angband_color_table[a][0] = (byte)(angband_color_table[a][0] - 1);
-		if (cx.code == 'r') angband_color_table[a][1] = (byte)(angband_color_table[a][1] + 1);
-		if (cx.code == 'R') angband_color_table[a][1] = (byte)(angband_color_table[a][1] - 1);
-		if (cx.code == 'g') angband_color_table[a][2] = (byte)(angband_color_table[a][2] + 1);
-		if (cx.code == 'G') angband_color_table[a][2] = (byte)(angband_color_table[a][2] - 1);
-		if (cx.code == 'b') angband_color_table[a][3] = (byte)(angband_color_table[a][3] + 1);
-		if (cx.code == 'B') angband_color_table[a][3] = (byte)(angband_color_table[a][3] - 1);
+		if (cx.code == 'n') a = (uint8_t)(a + 1);
+		if (cx.code == 'N') a = (uint8_t)(a - 1);
+		if (cx.code == 'k') angband_color_table[a][0] = (uint8_t)(angband_color_table[a][0] + 1);
+		if (cx.code == 'K') angband_color_table[a][0] = (uint8_t)(angband_color_table[a][0] - 1);
+		if (cx.code == 'r') angband_color_table[a][1] = (uint8_t)(angband_color_table[a][1] + 1);
+		if (cx.code == 'R') angband_color_table[a][1] = (uint8_t)(angband_color_table[a][1] - 1);
+		if (cx.code == 'g') angband_color_table[a][2] = (uint8_t)(angband_color_table[a][2] + 1);
+		if (cx.code == 'G') angband_color_table[a][2] = (uint8_t)(angband_color_table[a][2] - 1);
+		if (cx.code == 'b') angband_color_table[a][3] = (uint8_t)(angband_color_table[a][3] + 1);
+		if (cx.code == 'B') angband_color_table[a][3] = (uint8_t)(angband_color_table[a][3] - 1);
 
 		/* Hack -- react to changes */
 		Term_xtra(TERM_XTRA_REACT, 0);
@@ -881,7 +881,7 @@ static void do_cmd_delay(const char *name, int row)
 
 	/* Ask for a numeric value */
 	if (askfor_aux(tmp, sizeof(tmp), askfor_aux_numbers)) {
-		u16b val = (u16b) strtoul(tmp, NULL, 0);
+		uint16_t val = (uint16_t) strtoul(tmp, NULL, 0);
 		op_ptr->delay_factor = MIN(val, 255);
 	}
 
@@ -896,7 +896,7 @@ static void do_cmd_hp_warn(const char *name, int row)
 {
 	bool res;
 	char tmp[4] = "";
-	byte warn;
+	uint8_t warn;
 
 	strnfmt(tmp, sizeof(tmp), "%i", op_ptr->hitpoint_warn);
 
@@ -915,7 +915,7 @@ static void do_cmd_hp_warn(const char *name, int row)
 	/* Process input */
 	if (res)
 	{
-		warn = (byte) strtoul(tmp, NULL, 0);
+		warn = (uint8_t) strtoul(tmp, NULL, 0);
 		
 		/* Reset nonsensical warnings */
 		if (warn > 9)
@@ -953,7 +953,7 @@ static void do_cmd_lazymove_delay(const char *name, int row)
 	/* Process input */
 	if (res)
 	{
-		lazymove_delay = (u16b) strtoul(tmp, NULL, 0);
+		lazymove_delay = (uint16_t) strtoul(tmp, NULL, 0);
 	}
 
 	screen_load();
@@ -1096,10 +1096,10 @@ static void quality_display(menu_type *menu, int oid, bool cursor, int row, int 
 {
 	const char *name = quality_choices[oid].name;
 
-	byte level = squelch_level[oid];
+	uint8_t level = squelch_level[oid];
 	const char *level_name = quality_values[level].name;
 
-	byte attr = (cursor ? TERM_L_BLUE : TERM_WHITE);
+	uint8_t attr = (cursor ? TERM_L_BLUE : TERM_WHITE);
 
 
 	c_put_str(attr, format("%-20s : %s", name, level_name), row, col);
@@ -1112,7 +1112,7 @@ static void quality_display(menu_type *menu, int oid, bool cursor, int row, int 
 static void quality_subdisplay(menu_type *menu, int oid, bool cursor, int row, int col, int width)
 {
 	const char *name = quality_values[oid].name;
-	byte attr = (cursor ? TERM_L_BLUE : TERM_WHITE);
+	uint8_t attr = (cursor ? TERM_L_BLUE : TERM_WHITE);
 
 	c_put_str(attr, name, row, col);
 }
@@ -1206,7 +1206,7 @@ static void squelch_sval_menu_display(menu_type *menu, int oid, bool cursor,
 	object_kind *kind = choice[oid].kind;
 	bool aware = choice[oid].aware;
 
-	byte attr = curs_attrs[(int)aware][0 != cursor];
+	uint8_t attr = curs_attrs[(int)aware][0 != cursor];
 
 	/* Acquire the "name" of object "i" */
 	object_kind_name(buf, sizeof(buf), kind, aware);
@@ -1434,14 +1434,14 @@ static void display_options_item(menu_type *menu, int oid, bool cursor, int row,
 	if (line < N_ELEMENTS(sval_dependent))
 	{
 		bool known = seen_tval(sval_dependent[line].tval);
-		byte attr = curs_attrs[known ? CURS_KNOWN: CURS_UNKNOWN][(int)cursor];
+		uint8_t attr = curs_attrs[known ? CURS_KNOWN: CURS_UNKNOWN][(int)cursor];
 
 		c_prt(attr, sval_dependent[line].desc, row, col);
 	}
 	/* Second section - the "extra options" */
 	else
 	{
-		byte attr = curs_attrs[CURS_KNOWN][(int)cursor];
+		uint8_t attr = curs_attrs[CURS_KNOWN][(int)cursor];
 
 		line = line - N_ELEMENTS(sval_dependent) - 1;
 

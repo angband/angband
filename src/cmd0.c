@@ -196,7 +196,7 @@ static command_list cmds_all[] =
 /* Display an entry on a command menu */
 static void cmd_sub_entry(menu_type *menu, int oid, bool cursor, int row, int col, int width)
 {
-	byte attr = (cursor ? TERM_L_BLUE : TERM_WHITE);
+	uint8_t attr = (cursor ? TERM_L_BLUE : TERM_WHITE);
 	const struct cmd_info *commands = menu_priv(menu);
 
 	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
@@ -262,7 +262,7 @@ static bool cmd_list_action(menu_type *m, const ui_event *event, int oid)
 
 static void cmd_list_entry(menu_type *menu, int oid, bool cursor, int row, int col, int width)
 {
-	byte attr = (cursor ? TERM_L_BLUE : TERM_WHITE);
+	uint8_t attr = (cursor ? TERM_L_BLUE : TERM_WHITE);
 	Term_putstr(col, row, -1, attr, cmds_all[oid].name);
 }
 

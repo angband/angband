@@ -74,7 +74,7 @@ bool region_inside(const region *loc, const ui_event *key)
 
 /*** Text display ***/
 
-static void display_area(const wchar_t *text, const byte *attrs,
+static void display_area(const wchar_t *text, const uint8_t *attrs,
 		size_t *line_starts, size_t *line_lengths,
 		size_t n_lines,
 		region area, size_t line_from)

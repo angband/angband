@@ -116,7 +116,7 @@ enum mon_spell_type {
 
 /* Structure for monster spell types */
 struct mon_spell {
-    u16b index;             /* Numerical index (RSF_FOO) */
+    uint16_t index;             /* Numerical index (RSF_FOO) */
     int type;               /* Type bitflag */
     const char *desc;       /* Verbal description */
     int cap;                /* Damage cap */
@@ -133,8 +133,8 @@ struct mon_spell {
 
 /* Structure for side effects of spell attacks */
 struct spell_effect {
-    u16b index;             /* Numerical index (RAE_#) */
-    u16b method;            /* What RSF_ attack has this effect */
+    uint16_t index;             /* Numerical index (RAE_#) */
+    uint16_t method;            /* What RSF_ attack has this effect */
     int gf;                 /* What GF_ type has this effect */
     bool timed;             /* TRUE if timed, FALSE if permanent */
     int flag;               /* Effect flag */

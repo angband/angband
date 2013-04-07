@@ -21,7 +21,7 @@
 #include "ui-menu.h"
 
 /* Cursor colours */
-const byte curs_attrs[2][2] =
+const uint8_t curs_attrs[2][2] =
 {
 	{ TERM_SLATE, TERM_BLUE },      /* Greyed row */
 	{ TERM_WHITE, TERM_L_BLUE }     /* Valid row */
@@ -40,7 +40,7 @@ static bool is_valid_row(menu_type *menu, int cursor);
 
 
 /* Display an event, with possible preference overrides */
-static void display_action_aux(menu_action *act, byte color, int row, int col, int wid)
+static void display_action_aux(menu_action *act, uint8_t color, int row, int col, int wid)
 {
 	/* TODO: add preference support */
 	/* TODO: wizard mode should show more data */
@@ -76,7 +76,7 @@ static int menu_action_valid(menu_type *m, int oid)
 static void menu_action_display(menu_type *m, int oid, bool cursor, int row, int col, int width)
 {
 	menu_action *acts = menu_priv(m);
-	byte color = curs_attrs[!(acts[oid].flags & (MN_ACT_GRAYED))][0 != cursor];
+	uint8_t color = curs_attrs[!(acts[oid].flags & (MN_ACT_GRAYED))][0 != cursor];
 
 	display_action_aux(&acts[oid], color, row, col, width);
 }
@@ -119,7 +119,7 @@ static void display_string(menu_type *m, int oid, bool cursor,
 		int row, int col, int width)
 {
 	const char **items = menu_priv(m);
-	byte color = curs_attrs[CURS_KNOWN][0 != cursor];
+	uint8_t color = curs_attrs[CURS_KNOWN][0 != cursor];
 	Term_putstr(col, row, width, color, items[oid]);
 }
 
@@ -428,7 +428,7 @@ static void display_menu_row(menu_type *menu, int pos, int top,
 	if (sel)
 	{
 		/* TODO: CHECK FOR VALID */
-		byte color = curs_attrs[CURS_KNOWN][0 != (cursor)];
+		uint8_t color = curs_attrs[CURS_KNOWN][0 != (cursor)];
 		Term_putstr(col, row, 3, color, format("%c) ", sel));
 		col += 3;
 		width -= 3;
@@ -855,7 +855,7 @@ static void dynamic_display(menu_type *m, int oid, bool cursor,
 		int row, int col, int width)
 {
 	struct menu_entry *entry;
-	byte color = curs_attrs[CURS_KNOWN][0 != cursor];
+	uint8_t color = curs_attrs[CURS_KNOWN][0 != cursor];
 
 	for (entry = menu_priv(m); oid; oid--) {
 		entry = entry->next;

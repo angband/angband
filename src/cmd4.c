@@ -318,8 +318,8 @@ void do_cmd_messages(void)
 		{
 			const char *msg;
 			const char *str = message_str(i + j);
-			byte attr = message_color(i + j);
-			u16b count = message_count(i + j);
+			uint8_t attr = message_color(i + j);
+			uint16_t count = message_count(i + j);
 
 			if (count == 1)
 				msg = str;
@@ -434,7 +434,7 @@ void do_cmd_messages(void)
 		/* Find the next item */
 		if (ke.key.code == '-' && shower[0])
 		{
-			s16b z;
+			int16_t z;
 
 			/* Scan messages */
 			for (z = i + 1; z < n; z++)
@@ -577,8 +577,8 @@ static const char *mon_feeling_text[] =
 
 void display_feeling(bool obj_only)
 {
-	u16b obj_feeling = cave->feeling / 10;
-	u16b mon_feeling = cave->feeling - (10 * obj_feeling);
+	uint16_t obj_feeling = cave->feeling / 10;
+	uint16_t mon_feeling = cave->feeling - (10 * obj_feeling);
 	const char *join;
 
 	/* Don't show feelings for cold-hearted characters */
@@ -648,7 +648,7 @@ void do_cmd_load_screen(void)
 {
 	int i, y, x;
 
-	byte a = 0;
+	uint8_t a = 0;
 	wchar_t c = L' ';
 
 	bool okay = TRUE;
@@ -738,7 +738,7 @@ static void do_cmd_save_screen_text(void)
 {
 	int y, x;
 
-	byte a = 0;
+	uint8_t a = 0;
 	wchar_t c = L' ';
 
 	ang_file *fff;

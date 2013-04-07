@@ -69,7 +69,7 @@ static void remove_bad_spells(struct monster *m_ptr, bitflag f[RSF_SIZE])
 	bitflag f2[RSF_SIZE], ai_flags[OF_SIZE];
 
 	size_t i;	
-	u32b smart = 0L;
+	uint32_t smart = 0L;
 
 	/* Stupid monsters act randomly */
 	if (rf_has(m_ptr->race->flags, RF_STUPID)) return;
@@ -169,7 +169,7 @@ static bool summon_possible(int y1, int x1)
 static int choose_attack_spell(struct monster *m_ptr, bitflag f[RSF_SIZE])
 {
 	int num = 0;
-	byte spells[RSF_MAX];
+	uint8_t spells[RSF_MAX];
 
 	int i, py = p_ptr->py, px = p_ptr->px;
 
@@ -502,10 +502,10 @@ bool make_attack_spell(struct monster *m_ptr)
  */
 static int mon_will_run(struct monster *m_ptr)
 {
-	u16b p_lev, m_lev;
-	u16b p_chp, p_mhp;
-	u16b m_chp, m_mhp;
-	u32b p_val, m_val;
+	uint16_t p_lev, m_lev;
+	uint16_t p_chp, p_mhp;
+	uint16_t m_chp, m_mhp;
+	uint32_t p_val, m_val;
 
 	/* Keep monsters from running too far away */
 	if (m_ptr->cdis > MAX_SIGHT + 5) return (FALSE);
@@ -1363,8 +1363,8 @@ static bool get_moves(struct cave *c, struct monster *m_ptr, int mm[5])
  */
 static int compare_monsters(const struct monster *m_ptr, const struct monster *n_ptr)
 {
-	u32b mexp1 = m_ptr->race->mexp;
-	u32b mexp2 = n_ptr->race->mexp;
+	uint32_t mexp1 = m_ptr->race->mexp;
+	uint32_t mexp2 = n_ptr->race->mexp;
 
 	/* Compare */
 	if (mexp1 < mexp2) return (-1);
@@ -1534,7 +1534,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 	int i, k, tmp, ac, rlev;
 	int do_cut, do_stun;
 
-	s32b gold;
+	int32_t gold;
 
 	object_type *o_ptr;
 
@@ -2444,7 +2444,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 					}
 					else
 					{
-						s32b d = damroll(10, 6) + (p->exp/100) * MON_DRAIN_LIFE;
+						int32_t d = damroll(10, 6) + (p->exp/100) * MON_DRAIN_LIFE;
 						if (check_state(p, OF_HOLD_LIFE, p->state.flags))
 						{
 							msg("You feel your life slipping away!");
@@ -2475,7 +2475,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 					}
 					else
 					{
-						s32b d = damroll(20, 6) + (p->exp / 100) * MON_DRAIN_LIFE;
+						int32_t d = damroll(20, 6) + (p->exp / 100) * MON_DRAIN_LIFE;
 
 						if (check_state(p, OF_HOLD_LIFE, p->state.flags))
 						{
@@ -2506,7 +2506,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 					}
 					else
 					{
-						s32b d = damroll(40, 6) + (p->exp / 100) * MON_DRAIN_LIFE;
+						int32_t d = damroll(40, 6) + (p->exp / 100) * MON_DRAIN_LIFE;
 
 						if (check_state(p, OF_HOLD_LIFE, p->state.flags))
 						{
@@ -2537,7 +2537,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 					}
 					else
 					{
-						s32b d = damroll(80, 6) + (p->exp / 100) * MON_DRAIN_LIFE;
+						int32_t d = damroll(80, 6) + (p->exp / 100) * MON_DRAIN_LIFE;
 
 						if (check_state(p, OF_HOLD_LIFE, p->state.flags))
 						{
@@ -2749,7 +2749,7 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 
 	/* Handle "sleep" */
 	if (m_ptr->m_timed[MON_TMD_SLEEP]) {
-		u32b notice;
+		uint32_t notice;
 
 		/* Aggravation */
 		if (check_state(p_ptr, OF_AGGRAVATE, p_ptr->state.flags)) {
@@ -3216,7 +3216,7 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 
 		/* Creature has been allowed move */
 		if (do_move) {
-			s16b this_o_idx, next_o_idx = 0;
+			int16_t this_o_idx, next_o_idx = 0;
 
 			/* Learn about no lack of movement */
 			if (m_ptr->ml) rf_on(l_ptr->flags, RF_NEVER_MOVE);
@@ -3399,7 +3399,7 @@ static bool monster_can_flow(struct cave *c, struct monster *m_ptr)
  * Note the special "MFLAG_NICE" flag, which prevents "nasty" monsters from
  * using any of their spell attacks until the player gets a turn.
  */
-void process_monsters(struct cave *c, byte minimum_energy)
+void process_monsters(struct cave *c, uint8_t minimum_energy)
 {
 	int i;
 

@@ -299,11 +299,11 @@ static void get_mon_name(char *output_name, size_t max,
  */
 typedef struct
 {
-	u16b count;		/* total number of this type visible */
-	u16b asleep;		/* number asleep (not in LOS) */
-	u16b los;		/* number in LOS */
-	u16b los_asleep;	/* number asleep and in LOS */
-	byte attr; /* attr to use for drawing */
+	uint16_t count;		/* total number of this type visible */
+	uint16_t asleep;		/* number asleep (not in LOS) */
+	uint16_t los;		/* number in LOS */
+	uint16_t los_asleep;	/* number asleep and in LOS */
+	uint8_t attr; /* attr to use for drawing */
 } monster_vis; 
 
 /*
@@ -318,7 +318,7 @@ void display_monlist(void)
 	int cur_x;
 	unsigned total_count = 0, disp_count = 0, type_count = 0, los_count = 0;
 
-	byte attr;
+	uint8_t attr;
 
 	char m_name[80];
 	char buf[80];
@@ -329,7 +329,7 @@ void display_monlist(void)
 
 	monster_vis *list;
 
-	u16b *order;
+	uint16_t *order;
 
 	bool in_term = (Term != angband_term[0]);
 
@@ -414,7 +414,7 @@ void display_monlist(void)
 	}
 
 	/* Allocate the secondary array */
-	order = C_ZNEW(type_count, u16b);
+	order = C_ZNEW(type_count, uint16_t);
 
 	/* Sort, because we cannot rely on monster.txt being ordered */
 
@@ -1107,11 +1107,11 @@ void update_monsters(bool full)
  * Returns the o_idx of the new object, or 0 if the object is
  * not successfully added.
  */
-s16b monster_carry(struct monster *m_ptr, object_type *j_ptr)
+int16_t monster_carry(struct monster *m_ptr, object_type *j_ptr)
 {
-	s16b o_idx;
+	int16_t o_idx;
 
-	s16b this_o_idx, next_o_idx = 0;
+	int16_t this_o_idx, next_o_idx = 0;
 
 	/* Scan objects already being held for combination */
 	for (this_o_idx = m_ptr->hold_o_idx; this_o_idx; this_o_idx = next_o_idx) {

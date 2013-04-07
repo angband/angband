@@ -153,7 +153,7 @@ const char *flag_name(int flag)
  * \param flag is the flag in question.
  * \param slot is the wield_slot it's in.
  */
-s16b slot_mult(int flag, int slot)
+int16_t slot_mult(int flag, int slot)
 {
 	const struct object_flag *of_ptr = &object_flag_table[flag];
 
@@ -177,7 +177,7 @@ s16b slot_mult(int flag, int slot)
 /**
  * Return the base power rating for a flag.
  */
-s32b flag_power(int flag)
+int32_t flag_power(int flag)
 {
 	const struct object_flag *of_ptr = &object_flag_table[flag];
 

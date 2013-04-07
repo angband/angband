@@ -242,7 +242,7 @@ static void prt_equippy(int row, int col)
 {
 	int i;
 
-	byte a;
+	uint8_t a;
 	wchar_t c;
 
 	object_type *o_ptr;
@@ -287,7 +287,7 @@ static void prt_ac(int row, int col)
 static void prt_hp(int row, int col)
 {
 	char cur_hp[32], max_hp[32];
-	byte color = player_hp_attr(p_ptr);
+	uint8_t color = player_hp_attr(p_ptr);
 
 	put_str("HP ", row, col);
 
@@ -305,7 +305,7 @@ static void prt_hp(int row, int col)
 static void prt_sp(int row, int col)
 {
 	char cur_sp[32], max_sp[32];
-	byte color = player_sp_attr(p_ptr);
+	uint8_t color = player_sp_attr(p_ptr);
 
 	/* Do not show mana unless we have some */
 	if (!p_ptr->msp) return;
@@ -324,10 +324,10 @@ static void prt_sp(int row, int col)
 /*
  * Calculate the monster bar color separately, for ports.
  */
-byte monster_health_attr(void)
+uint8_t monster_health_attr(void)
 {
 	struct monster *mon = p_ptr->health_who;
-	byte attr;
+	uint8_t attr;
 
 	if (!mon) {
 		/* Not tracking */
@@ -386,7 +386,7 @@ byte monster_health_attr(void)
  */
 static void prt_health(int row, int col)
 {
-	byte attr = monster_health_attr();
+	uint8_t attr = monster_health_attr();
 	struct monster *mon = p_ptr->health_who;
 
 	/* Not tracking */
@@ -431,7 +431,7 @@ static void prt_speed(int row, int col)
 {
 	int i = p_ptr->state.speed;
 
-	byte attr = TERM_WHITE;
+	uint8_t attr = TERM_WHITE;
 	const char *type = NULL;
 	char buf[32] = "";
 
@@ -613,7 +613,7 @@ struct state_info
 	int value;
 	const char *str;
 	size_t len;
-	byte attr;
+	uint8_t attr;
 };
 
 /* TMD_CUT descriptions */
@@ -755,7 +755,7 @@ static size_t prt_hunger(int row, int col)
  */
 static size_t prt_state(int row, int col)
 {
-	byte attr = TERM_WHITE;
+	uint8_t attr = TERM_WHITE;
 
 	char text[16] = "";
 
@@ -861,7 +861,7 @@ static size_t prt_state(int row, int col)
  */
 static size_t prt_dtrap(int row, int col)
 {
-	byte info = cave->info2[p_ptr->py][p_ptr->px];
+	uint8_t info = cave->info2[p_ptr->py][p_ptr->px];
 
 	/* The player is in a trap-detected grid */
 	if (info & (CAVE2_DTRAP))
@@ -1006,7 +1006,7 @@ static void update_maps(game_event_type type, game_event_data *data, void *user)
 	else
 	{
 		grid_data g;
-		byte a, ta;
+		uint8_t a, ta;
 		wchar_t c, tc;
 		
 		int ky, kx;
@@ -1252,8 +1252,8 @@ static void update_messages_subwindow(game_event_type type, game_event_data *dat
 	/* Dump messages */
 	for (i = 0; i < h; i++)
 	{
-		byte color = message_color(i);
-		u16b count = message_count(i);
+		uint8_t color = message_color(i);
+		uint16_t count = message_count(i);
 		const char *str = message_str(i);
 
 		if (count == 1)
@@ -1424,7 +1424,7 @@ static void flush_subwindow(game_event_type type, game_event_data *data, void *u
 }
 
 
-static void subwindow_flag_changed(int win_idx, u32b flag, bool new_state)
+static void subwindow_flag_changed(int win_idx, uint32_t flag, bool new_state)
 {
 	void (*register_or_deregister)(game_event_type type, game_event_handler *fn, void *user);
 	void (*set_register_or_deregister)(game_event_type *type, size_t n_events, game_event_handler *fn, void *user);
@@ -1561,7 +1561,7 @@ static void subwindow_flag_changed(int win_idx, u32b flag, bool new_state)
  * has changed setting so that it can do any housekeeping to do with 
  * siaplying hte new thing or no longer displaying the old one.
  */
-static void subwindow_set_flags(int win_idx, u32b new_flags)
+static void subwindow_set_flags(int win_idx, uint32_t new_flags)
 {
 	term *old = Term;
 	int i;
@@ -1599,7 +1599,7 @@ static void subwindow_set_flags(int win_idx, u32b new_flags)
  * Called with an array of the new flags for all the subwindows, in order
  * to set them to the new values, with a chance to perform housekeeping.
  */
-void subwindows_set_flags(u32b *new_flags, size_t n_subwindows)
+void subwindows_set_flags(uint32_t *new_flags, size_t n_subwindows)
 {
 	size_t j;
 

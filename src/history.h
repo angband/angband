@@ -5,8 +5,8 @@
 
 void history_clear(void);
 size_t history_get_num(void);
-bool history_add_full(u16b type, struct artifact *artifact, s16b dlev, s16b clev, s32b turn, const char *text);
-bool history_add(const char *event, u16b type, struct artifact *art);
+bool history_add_full(uint16_t type, struct artifact *artifact, int16_t dlev, int16_t clev, int32_t turn, const char *text);
+bool history_add(const char *event, uint16_t type, struct artifact *art);
 bool history_add_artifact(struct artifact *art, bool known, bool found);
 void history_unmask_unknown(void);
 bool history_lose_artifact(struct artifact *art);

@@ -186,7 +186,7 @@ struct term_window
 	SDL_Surface *tiles;		/* The appropriately sized tiles for this window */
 	SDL_Surface *onebyone;		/* The appropriately sized tiles for this window */
 #endif	
-	byte Term_idx;			/* Index of term that relates to this */
+	uint8_t Term_idx;			/* Index of term that relates to this */
 	
 	int top;				/* Window Coordinates on the main screen */
 	int left;
@@ -2393,7 +2393,7 @@ static void sdl_HandleMouseEvent(SDL_Event *event)
  */
 static void sdl_keypress(SDL_keysym keysym)
 {
-	u16b key_code = keysym.unicode;
+	uint16_t key_code = keysym.unicode;
 	SDLKey key_sym = keysym.sym;
 
 	int ch = 0;
@@ -2406,7 +2406,7 @@ static void sdl_keypress(SDL_keysym keysym)
 	bool mg = (keysym.mod & KMOD_MODE) > 0;
 	bool kp = FALSE;
 
-	byte mods = (ma ? KC_MOD_ALT : 0) | (mm ? KC_MOD_META : 0);
+	uint8_t mods = (ma ? KC_MOD_ALT : 0) | (mm ? KC_MOD_META : 0);
 
 	/* Ignore if main term is not initialized */
 	if (!Term) return;
@@ -2891,7 +2891,7 @@ static errr Term_wipe_sdl(int col, int row, int n)
 /*
  * Draw some text to a window
  */
-static errr Term_text_sdl(int col, int row, int n, byte a, const wchar_t *s)
+static errr Term_text_sdl(int col, int row, int n, uint8_t a, const wchar_t *s)
 {
 	term_window *win = (term_window*)(Term->data);
 	SDL_Color colour = text_colours[a];
@@ -3099,8 +3099,8 @@ static errr sdl_BuildTileset(term_window *win)
  * XXX - This function _never_ seems to get called with n > 1 ?
  * This needs improvement...
  */
-static errr Term_pict_sdl(int col, int row, int n, const byte *ap, const wchar_t *cp,
-						  const byte *tap, const wchar_t *tcp)
+static errr Term_pict_sdl(int col, int row, int n, const uint8_t *ap, const wchar_t *cp,
+						  const uint8_t *tap, const wchar_t *tcp)
 {
 	
 #ifdef USE_GRAPHICS

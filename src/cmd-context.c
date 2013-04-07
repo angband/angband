@@ -373,7 +373,7 @@ int context_menu_cave(struct cave *c, int y, int x, int adjacent, int mx, int my
 			menu_dynamic_add_label(m, "Alter", '+', 4, labels);
 		}
 		if (c->o_idx[y][x]) {
-			s16b o_idx = chest_check(y,x, CHEST_ANY);
+			int16_t o_idx = chest_check(y,x, CHEST_ANY);
 			if (o_idx) {
 				object_type *o_ptr = object_byid(o_idx);
 				if (!squelch_item_ok(o_ptr)) {

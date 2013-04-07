@@ -34,7 +34,7 @@
 
 /* Panel line type */
 struct panel_line {
-	byte attr;
+	uint8_t attr;
 	const char *label;
 	char value[20];
 };
@@ -65,7 +65,7 @@ static void panel_free(struct panel *p) {
 }
 
 /* Add a new line to the panel */
-static void panel_line(struct panel *p, byte attr, const char *label,
+static void panel_line(struct panel *p, uint8_t attr, const char *label,
 		const char *fmt, ...) {
 	va_list vp;
 
@@ -98,7 +98,7 @@ static void panel_space(struct panel *p) {
  * Returns a "rating" of x depending on y, and sets "attr" to the
  * corresponding "attribute".
  */
-static const char *likert(int x, int y, byte *attr)
+static const char *likert(int x, int y, uint8_t *attr)
 {
 	/* Paranoia */
 	if (y <= 0) y = 1;
@@ -193,7 +193,7 @@ static void display_player_equippy(int y, int x)
 {
 	int i;
 
-	byte a;
+	uint8_t a;
 	wchar_t c;
 
 	object_type *o_ptr;
@@ -293,7 +293,7 @@ static void display_resistance_panel(const struct player_flag_record *resists,
 	Term_putstr(col, row++, RES_COLS, TERM_WHITE, "      abcdefghijkl@");
 	for (i = 0; i < size-3; i++, row++)
 	{
-		byte name_attr = TERM_WHITE;
+		uint8_t name_attr = TERM_WHITE;
 		Term_gotoxy(col+6, row);
 		/* repeated extraction of flags is inefficient but more natural */
 		for (j = INVEN_WIELD; j <= INVEN_TOTAL; j++)
@@ -301,7 +301,7 @@ static void display_resistance_panel(const struct player_flag_record *resists,
 			object_type *o_ptr = &p_ptr->inventory[j];
 			bitflag f[OF_SIZE];
 
-			byte attr = TERM_WHITE | (j % 2) * 8; /* alternating columns */
+			uint8_t attr = TERM_WHITE | (j % 2) * 8; /* alternating columns */
 			char sym = '.';
 
 			bool res, imm, vuln;
@@ -455,7 +455,7 @@ static void display_player_sust_info(void)
 	int stat_flags[A_MAX];
 	int sustain_flags[A_MAX];
 
-	byte a;
+	uint8_t a;
 	char c;
 
 
@@ -645,7 +645,7 @@ static const char *show_adv_exp(void)
 	if (p_ptr->lev < PY_MAX_LEVEL)
 	{
 		static char buffer[30];
-		s32b advance = (player_exp[p_ptr->lev - 1] * p_ptr->expfact / 100L);
+		int32_t advance = (player_exp[p_ptr->lev - 1] * p_ptr->expfact / 100L);
 		strnfmt(buffer, sizeof(buffer), "%d", advance);
 		return buffer;
 	}
@@ -709,13 +709,13 @@ static const char *show_missile_weapon(const object_type *o_ptr)
 	return buffer;
 }
 
-static byte max_color(int val, int max)
+static uint8_t max_color(int val, int max)
 {
 	return val < max ? TERM_YELLOW : TERM_L_GREEN;
 }
 
 /* colours for table items */
-static const byte colour_table[] =
+static const uint8_t colour_table[] =
 {
 	TERM_RED, TERM_RED, TERM_RED, TERM_L_RED, TERM_ORANGE,
 	TERM_YELLOW, TERM_YELLOW, TERM_GREEN, TERM_GREEN, TERM_L_GREEN,
@@ -790,7 +790,7 @@ static struct panel *get_panel_skills(void) {
 	struct panel *p = panel_allocate(7);
 
 	int skill;
-	byte attr;
+	uint8_t attr;
 	const char *desc;
 
 #define BOUND(x, min, max)		MIN(max, MAX(min, x))
@@ -835,7 +835,7 @@ static struct panel *get_panel_skills(void) {
 
 static struct panel *get_panel_misc(void) {
 	struct panel *p = panel_allocate(7);
-	byte attr = TERM_L_BLUE;
+	uint8_t attr = TERM_L_BLUE;
 
 	panel_line(p, attr, "Age", "%d", p_ptr->age);
 	panel_line(p, attr, "Height", "%d in", p_ptr->ht);
@@ -938,7 +938,7 @@ errr file_character(const char *path, bool full)
 {
 	int i, x, y;
 
-	byte a;
+	uint8_t a;
 	wchar_t c;
 
 	ang_file *fp;
@@ -1058,7 +1058,7 @@ errr file_character(const char *path, bool full)
 		file_putf(fp, "  [Last Messages]\n\n");
 		while (i-- > 0)
 		{
-			x_file_putf(fp, "> %s\n", message_str((s16b)i));
+			x_file_putf(fp, "> %s\n", message_str((int16_t)i));
 		}
 		x_file_putf(fp, "\nKilled by %s.\n\n", p_ptr->died_from);
 	}
@@ -1832,7 +1832,7 @@ static void write_html_escape_char(ang_file *fp, wchar_t c)
 		default:
 			{
 				char *mbseq = (char*) mem_alloc(sizeof(char)*(MB_CUR_MAX+1));
-				byte len;
+				uint8_t len;
 				len = wctomb(mbseq, c);
 				if (len > MB_CUR_MAX) 
 				    len = MB_CUR_MAX;
@@ -1851,8 +1851,8 @@ void html_screenshot(const char *name, int mode)
 	int y, x;
 	int wid, hgt;
 
-	byte a = TERM_WHITE;
-	byte oa = TERM_WHITE;
+	uint8_t a = TERM_WHITE;
+	uint8_t oa = TERM_WHITE;
 	wchar_t c = L' ';
 
 	const char *new_color_fmt = (mode == 0) ?

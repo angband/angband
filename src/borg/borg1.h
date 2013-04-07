@@ -394,9 +394,9 @@ struct borg_take
 
 	bool	orbed;		/* Orb of Draining cast on it */
 
-	byte    x, y;       /* Location */
+	uint8_t    x, y;       /* Location */
 
-    s16b    when;       /* When last seen */
+    int16_t    when;       /* When last seen */
 
 	int		value;		/* Estimated value of item */
 
@@ -414,7 +414,7 @@ typedef struct borg_kill borg_kill;
 
 struct borg_kill
 {
-    s16b    r_idx;      /* Race index */
+    int16_t    r_idx;      /* Race index */
 
     bool    known;      /* Verified race */
     bool    awake;      /* Probably awake */
@@ -428,21 +428,21 @@ struct borg_kill
     bool    seen;       /* Assigned motion */
     bool    used;       /* Assigned message */
 
-    byte    x, y;       /* Location */
+    uint8_t    x, y;       /* Location */
 
-    byte    ox, oy;     /* Old location */
+    uint8_t    ox, oy;     /* Old location */
 
-    byte    speed;      /* Estimated speed */
-    byte    moves;      /* Estimates moves */
-    byte    ranged_attack; /* qty of ranged attacks */
-    byte	spell[96];		/* spell flag for monster spells */
-    s16b    power;      /* Estimated hit-points */
-	s16b	injury;		/* Percent wounded */
-    s16b    other;      /* Estimated something */
-    s16b    level;      /* Monsters Level */
-	u32b	spell_flags[RF_MAX]; /* Monster race spell flags preloaded */
-    s16b    when;       /* When last seen */
-	s16b	m_idx;		/* Game's index */
+    uint8_t    speed;      /* Estimated speed */
+    uint8_t    moves;      /* Estimates moves */
+    uint8_t    ranged_attack; /* qty of ranged attacks */
+    uint8_t	spell[96];		/* spell flag for monster spells */
+    int16_t    power;      /* Estimated hit-points */
+	int16_t	injury;		/* Percent wounded */
+    int16_t    other;      /* Estimated something */
+    int16_t    level;      /* Monsters Level */
+	uint32_t	spell_flags[RF_MAX]; /* Monster race spell flags preloaded */
+    int16_t    when;       /* When last seen */
+	int16_t	m_idx;		/* Game's index */
 };
 
 
@@ -453,7 +453,7 @@ struct borg_kill
 typedef struct borg_grid borg_grid;
 
 /*
- * A grid in the dungeon.  Several bytes.
+ * A grid in the dungeon.  Several uint8_ts.
  *
  * There is a set of eight bit flags (see below) called "info".
  *
@@ -466,9 +466,9 @@ typedef struct borg_grid borg_grid;
  *
  * There is a monster index into the "monster tracking" array.
  *
- * There is a byte "hmmm" which is currently unused.
+ * There is a uint8_t "hmmm" which is currently unused.
  *
- * There is a byte "xtra" which tracks how much "searching" has been done
+ * There is a uint8_t "xtra" which tracks how much "searching" has been done
  * in the grid or in any grid next to the grid.
  *
  * To perform "navigation" from one place to another, the "flow" routines
@@ -484,15 +484,15 @@ typedef struct borg_grid borg_grid;
  */
 struct borg_grid
 {
-    byte feat;      /* Grid type */
-    byte info;      /* Grid flags */
+    uint8_t feat;      /* Grid type */
+    uint8_t info;      /* Grid flags */
 
-    byte take;      /* Object index */
-    byte kill;      /* Monster index */
+    uint8_t take;      /* Object index */
+    uint8_t kill;      /* Monster index */
 
-    byte hmmm;      /* Extra field (unused) */
+    uint8_t hmmm;      /* Extra field (unused) */
 
-    byte xtra;      /* Extra field (search count) */
+    uint8_t xtra;      /* Extra field (search count) */
 };
 
 
@@ -502,13 +502,13 @@ struct borg_grid
 typedef struct borg_data borg_data;
 
 /*
- * Hack -- one byte of info per grid
+ * Hack -- one uint8_t of info per grid
  *
  * We use a structure to encapsulate the data into a "typed" form.
  */
 struct borg_data
 {
-    byte data[AUTO_MAX_Y][AUTO_MAX_X];
+    uint8_t data[AUTO_MAX_Y][AUTO_MAX_X];
 };
 
 
@@ -562,10 +562,10 @@ extern int bought_item_nxt;
 
 extern char shop_orig[28];
 extern char shop_rogue[28];
-extern byte borg_nasties_num;
-extern byte borg_nasties_count[7];
+extern uint8_t borg_nasties_num;
+extern uint8_t borg_nasties_count[7];
 extern char borg_nasties[7];
-extern byte borg_nasties_limit[7];
+extern uint8_t borg_nasties_limit[7];
 
 /* options from the borg.txt file */
 extern int borg_respawn_race;
@@ -594,7 +594,7 @@ extern bool borg_slow_optimizehome;
 extern bool borg_scums_uniques;
 extern bool borg_kills_uniques;
 extern int borg_chest_fail_tolerance;
-extern s32b borg_money_scum_amount;
+extern int32_t borg_money_scum_amount;
 extern int borg_money_scum_who;
 extern int borg_money_scum_ware;
 extern bool borg_self_scum;
@@ -903,22 +903,22 @@ extern char borg_engine_date[];       /* last update */
 
 extern bool borg_rand_quick;        /* Save system setting */
 
-extern u32b borg_rand_value;        /* Save system setting */
+extern uint32_t borg_rand_value;        /* Save system setting */
 
-extern u32b borg_rand_local;        /* Save personal setting */
+extern uint32_t borg_rand_local;        /* Save personal setting */
 
 
 /*
  * Hack -- time variables
  */
 
-extern s16b borg_t;        /* Current "time" */
-extern s16b borg_t_morgoth;
-extern s16b need_see_inviso;        /* To tell me to cast it */
-extern s16b borg_see_inv;
+extern int16_t borg_t;        /* Current "time" */
+extern int16_t borg_t_morgoth;
+extern int16_t need_see_inviso;        /* To tell me to cast it */
+extern int16_t borg_see_inv;
 extern bool need_shift_panel;        /* to spot offscreeners */
-extern s16b when_shift_panel;
-extern s16b time_this_panel;        /* Current "time" for current panel*/
+extern int16_t when_shift_panel;
+extern int16_t time_this_panel;        /* Current "time" for current panel*/
 extern bool vault_on_level;     /* borg will search for a vault */
 extern int unique_on_level;
 extern bool scaryguy_on_level;
@@ -929,22 +929,22 @@ extern bool borg_as_position;		/* Sitting in an anti-summon corridor */
 extern bool borg_digging;			/* used in Anti-summon corridor */
 
 extern bool breeder_level;      /* Borg will shut doors */
-extern s16b old_depth;
-extern s16b borg_respawning;       /* to prevent certain crashes */
-extern s16b borg_no_retreat;
+extern int16_t old_depth;
+extern int16_t borg_respawning;       /* to prevent certain crashes */
+extern int16_t borg_no_retreat;
 
 /*
  * Hack -- Other time variables
  */
 
-extern s16b when_call_LIGHT; /* When we last did call light */
-extern s16b when_wizard_LIGHT;   /* When we last did wizard light */
+extern int16_t when_call_LIGHT; /* When we last did call light */
+extern int16_t when_wizard_LIGHT;   /* When we last did wizard light */
 
-extern s16b when_detect_traps;  /* When we last detected traps */
-extern s16b when_detect_doors;  /* When we last detected doors */
-extern s16b when_detect_walls;  /* When we last detected walls */
-extern s16b when_detect_evil;
-extern s16b when_last_kill_mult;   /* When a multiplier was last killed */
+extern int16_t when_detect_traps;  /* When we last detected traps */
+extern int16_t when_detect_doors;  /* When we last detected doors */
+extern int16_t when_detect_walls;  /* When we last detected walls */
+extern int16_t when_detect_evil;
+extern int16_t when_last_kill_mult;   /* When a multiplier was last killed */
 
 extern bool my_need_alter;     /* incase of walls/doors */
 extern bool my_no_alter;     /* incase of walls/doors */
@@ -955,7 +955,7 @@ extern bool borg_attempting_refresh_resist;  /* for the Resistance spell */
  * Some information
  */
 
-extern s16b goal;       /* Flowing (goal type) */
+extern int16_t goal;       /* Flowing (goal type) */
 
 extern bool goal_rising;    /* Currently returning to town */
 
@@ -973,16 +973,16 @@ extern bool goal_ignoring;  /* Currently ignoring monsters */
 extern int goal_recalling;  /* Currently waiting for recall, guessing turns left */
 extern bool goal_less;      /* return to, but dont use, the next up stairs */
 
-extern s16b borg_times_twitch; /* how often twitchy on this level */
-extern s16b borg_escapes; /* how often teleported on this level */
+extern int16_t borg_times_twitch; /* how often twitchy on this level */
+extern int16_t borg_escapes; /* how often teleported on this level */
 
 extern bool stair_less;     /* Use the next "up" staircase */
 extern bool stair_more;     /* Use the next "down" staircase */
 
-extern s32b borg_began;     /* When this level began */
-extern s32b borg_time_town; /* how long it has been since I was in town */
+extern int32_t borg_began;     /* When this level began */
+extern int32_t borg_time_town; /* how long it has been since I was in town */
 
-extern s16b avoidance;      /* Current danger thresh-hold */
+extern int16_t avoidance;      /* Current danger thresh-hold */
 
 extern bool borg_failure;   /* Notice failure */
 
@@ -994,8 +994,8 @@ extern bool borg_completed; /* Completed the level */
 extern bool borg_on_upstairs;      /* used when leaving a level */
 extern bool borg_on_dnstairs;      /* used when leaving a level */
 extern bool borg_needs_searching;  /* borg will search with each step */
-extern s16b borg_oldchp;		/* hit points last game turn */
-extern s16b borg_oldcsp;		/* mana points last game turn */
+extern int16_t borg_oldchp;		/* hit points last game turn */
+extern int16_t borg_oldcsp;		/* mana points last game turn */
 
 /* defence flags */
 extern bool borg_prot_from_evil;
@@ -1003,9 +1003,9 @@ extern bool borg_speed;
 extern bool borg_bless;
 extern bool borg_hero;
 extern bool borg_berserk;
-extern s16b borg_game_ratio;
-extern s16b borg_resistance;
-extern s16b borg_no_rest_prep; /* borg wont rest for a few turns */
+extern int16_t borg_game_ratio;
+extern int16_t borg_resistance;
+extern int16_t borg_no_rest_prep; /* borg wont rest for a few turns */
 extern bool borg_shield;
 extern bool borg_on_glyph; /* borg is standing on a glyph of warding */
 extern bool borg_create_door; /* borg is going to create doors */
@@ -1020,13 +1020,13 @@ extern bool borg_fear_mon_spell;
  * Shop goals
  */
 extern bool borg_in_shop;
-extern s16b goal_shop;      /* Next shop to visit */
-extern s16b goal_ware;      /* Next item to buy there */
-extern s16b goal_item;      /* Next item to sell there */
+extern int16_t goal_shop;      /* Next shop to visit */
+extern int16_t goal_ware;      /* Next item to buy there */
+extern int16_t goal_item;      /* Next item to sell there */
 extern int borg_food_onsale;      /* Are shops selling food? */
 extern int borg_fuel_onsale;      /* Are shops selling fuel? */
 extern bool borg_needs_quick_shopping; /* Needs to buy without browsing all shops */
-extern s16b borg_best_fit_item;   /* Item to be worn, not sold */
+extern int16_t borg_best_fit_item;   /* Item to be worn, not sold */
 extern int borg_best_item;
 
 /*
@@ -1055,20 +1055,20 @@ extern int bad_obj_cnt;
  * Some estimated state variables
  */
 
-extern s16b my_stat_max[6]; /* Current "maximal" stat values    */
-extern s16b my_stat_cur[6]; /* Current "natural" stat values    */
-extern s16b my_stat_use[6]; /* Current "resulting" stat values  */
-extern s16b my_stat_ind[6]; /* Current "additions" to stat values   */
+extern int16_t my_stat_max[6]; /* Current "maximal" stat values    */
+extern int16_t my_stat_cur[6]; /* Current "natural" stat values    */
+extern int16_t my_stat_use[6]; /* Current "resulting" stat values  */
+extern int16_t my_stat_ind[6]; /* Current "additions" to stat values   */
 extern bool my_need_stat_check[6];  /* do I need to check my stats */
 
-extern s16b my_stat_add[6];  /* aditions to stats */
+extern int16_t my_stat_add[6];  /* aditions to stats */
 
-extern s16b home_stat_add[6];
+extern int16_t home_stat_add[6];
 
 extern int  weapon_swap;   /* location of my swap weapon   */
-extern s32b weapon_swap_value;   /* value of my swap weapon   */
+extern int32_t weapon_swap_value;   /* value of my swap weapon   */
 extern int  armour_swap;   /* location of my swap weapon   */
-extern s32b armour_swap_value;   /* value of my swap weapon   */
+extern int32_t armour_swap_value;   /* value of my swap weapon   */
 
 /* a 3 state boolean */
 /*-1 = not cursed, no help needed for it */
@@ -1081,267 +1081,267 @@ extern int decurse_armour_swap;  /* my swap is great, except its cursed */
 extern int enchant_armour_swap_to_a;  /* my swap is great, except its cursed */
 extern bool borg_wearing_cursed;
 
-extern s16b weapon_swap_digger;
-extern byte  weapon_swap_slay_animal;
-extern byte  weapon_swap_slay_evil;
-extern byte  weapon_swap_slay_undead;
-extern byte  weapon_swap_slay_demon;
-extern byte  weapon_swap_slay_orc;
-extern byte  weapon_swap_slay_troll;
-extern byte  weapon_swap_slay_giant;
-extern byte  weapon_swap_slay_dragon;
-extern byte  weapon_swap_kill_undead;
-extern byte  weapon_swap_kill_demon;
-extern byte  weapon_swap_kill_dragon;
-extern byte  weapon_swap_impact;
-extern byte  weapon_swap_brand_acid;
-extern byte  weapon_swap_brand_elec;
-extern byte  weapon_swap_brand_fire;
-extern byte  weapon_swap_brand_cold;
-extern byte  weapon_swap_brand_pois;
-extern byte  weapon_swap_see_infra;
-extern byte  weapon_swap_slow_digest;
-extern byte  weapon_swap_aggravate;
-extern byte  weapon_swap_teleport;
-extern byte  weapon_swap_regenerate;
-extern byte  weapon_swap_telepathy;
-extern byte  weapon_swap_LIGHT;
-extern byte  weapon_swap_see_invis;
-extern byte  weapon_swap_ffall;
-extern byte  weapon_swap_free_act;
-extern byte  weapon_swap_hold_life;
-extern byte  weapon_swap_immune_fire;
-extern byte  weapon_swap_immune_acid;
-extern byte  weapon_swap_immune_cold;
-extern byte  weapon_swap_immune_elec;
-extern byte  weapon_swap_resist_acid;
-extern byte  weapon_swap_resist_elec;
-extern byte  weapon_swap_resist_fire;
-extern byte  weapon_swap_resist_cold;
-extern byte  weapon_swap_resist_pois;
-extern byte  weapon_swap_resist_conf;
-extern byte  weapon_swap_resist_sound;
-extern byte  weapon_swap_resist_LIGHT;
-extern byte  weapon_swap_resist_dark;
-extern byte  weapon_swap_resist_chaos;
-extern byte  weapon_swap_resist_disen;
-extern byte  weapon_swap_resist_shard;
-extern byte  weapon_swap_resist_nexus;
-extern byte  weapon_swap_resist_blind;
-extern byte  weapon_swap_resist_neth;
-extern byte  weapon_swap_resist_fear;
-extern byte  armour_swap_slay_animal;
-extern byte  armour_swap_slay_evil;
-extern byte  armour_swap_slay_undead;
-extern byte  armour_swap_slay_demon;
-extern byte  armour_swap_slay_orc;
-extern byte  armour_swap_slay_troll;
-extern byte  armour_swap_slay_giant;
-extern byte  armour_swap_slay_dragon;
-extern byte  armour_swap_kill_undead;
-extern byte  armour_swap_kill_demon;
-extern byte  armour_swap_kill_dragon;
-extern byte  armour_swap_impact;
-extern byte  armour_swap_brand_acid;
-extern byte  armour_swap_brand_elec;
-extern byte  armour_swap_brand_fire;
-extern byte  armour_swap_brand_cold;
-extern byte  armour_swap_brand_pois;
-extern byte  armour_swap_see_infra;
-extern byte  armour_swap_slow_digest;
-extern byte  armour_swap_aggravate;
-extern byte  armour_swap_teleport;
-extern byte  armour_swap_regenerate;
-extern byte  armour_swap_telepathy;
-extern byte  armour_swap_LIGHT;
-extern byte  armour_swap_see_invis;
-extern byte  armour_swap_ffall;
-extern byte  armour_swap_free_act;
-extern byte  armour_swap_hold_life;
-extern byte  armour_swap_immune_fire;
-extern byte  armour_swap_immune_acid;
-extern byte  armour_swap_immune_cold;
-extern byte  armour_swap_immune_elec;
-extern byte  armour_swap_resist_acid;
-extern byte  armour_swap_resist_elec;
-extern byte  armour_swap_resist_fire;
-extern byte  armour_swap_resist_cold;
-extern byte  armour_swap_resist_pois;
-extern byte  armour_swap_resist_conf;
-extern byte  armour_swap_resist_sound;
-extern byte  armour_swap_resist_LIGHT;
-extern byte  armour_swap_resist_dark;
-extern byte  armour_swap_resist_chaos;
-extern byte  armour_swap_resist_disen;
-extern byte  armour_swap_resist_shard;
-extern byte  armour_swap_resist_nexus;
-extern byte  armour_swap_resist_blind;
-extern byte  armour_swap_resist_neth;
-extern byte  armour_swap_resist_fear;
+extern int16_t weapon_swap_digger;
+extern uint8_t  weapon_swap_slay_animal;
+extern uint8_t  weapon_swap_slay_evil;
+extern uint8_t  weapon_swap_slay_undead;
+extern uint8_t  weapon_swap_slay_demon;
+extern uint8_t  weapon_swap_slay_orc;
+extern uint8_t  weapon_swap_slay_troll;
+extern uint8_t  weapon_swap_slay_giant;
+extern uint8_t  weapon_swap_slay_dragon;
+extern uint8_t  weapon_swap_kill_undead;
+extern uint8_t  weapon_swap_kill_demon;
+extern uint8_t  weapon_swap_kill_dragon;
+extern uint8_t  weapon_swap_impact;
+extern uint8_t  weapon_swap_brand_acid;
+extern uint8_t  weapon_swap_brand_elec;
+extern uint8_t  weapon_swap_brand_fire;
+extern uint8_t  weapon_swap_brand_cold;
+extern uint8_t  weapon_swap_brand_pois;
+extern uint8_t  weapon_swap_see_infra;
+extern uint8_t  weapon_swap_slow_digest;
+extern uint8_t  weapon_swap_aggravate;
+extern uint8_t  weapon_swap_teleport;
+extern uint8_t  weapon_swap_regenerate;
+extern uint8_t  weapon_swap_telepathy;
+extern uint8_t  weapon_swap_LIGHT;
+extern uint8_t  weapon_swap_see_invis;
+extern uint8_t  weapon_swap_ffall;
+extern uint8_t  weapon_swap_free_act;
+extern uint8_t  weapon_swap_hold_life;
+extern uint8_t  weapon_swap_immune_fire;
+extern uint8_t  weapon_swap_immune_acid;
+extern uint8_t  weapon_swap_immune_cold;
+extern uint8_t  weapon_swap_immune_elec;
+extern uint8_t  weapon_swap_resist_acid;
+extern uint8_t  weapon_swap_resist_elec;
+extern uint8_t  weapon_swap_resist_fire;
+extern uint8_t  weapon_swap_resist_cold;
+extern uint8_t  weapon_swap_resist_pois;
+extern uint8_t  weapon_swap_resist_conf;
+extern uint8_t  weapon_swap_resist_sound;
+extern uint8_t  weapon_swap_resist_LIGHT;
+extern uint8_t  weapon_swap_resist_dark;
+extern uint8_t  weapon_swap_resist_chaos;
+extern uint8_t  weapon_swap_resist_disen;
+extern uint8_t  weapon_swap_resist_shard;
+extern uint8_t  weapon_swap_resist_nexus;
+extern uint8_t  weapon_swap_resist_blind;
+extern uint8_t  weapon_swap_resist_neth;
+extern uint8_t  weapon_swap_resist_fear;
+extern uint8_t  armour_swap_slay_animal;
+extern uint8_t  armour_swap_slay_evil;
+extern uint8_t  armour_swap_slay_undead;
+extern uint8_t  armour_swap_slay_demon;
+extern uint8_t  armour_swap_slay_orc;
+extern uint8_t  armour_swap_slay_troll;
+extern uint8_t  armour_swap_slay_giant;
+extern uint8_t  armour_swap_slay_dragon;
+extern uint8_t  armour_swap_kill_undead;
+extern uint8_t  armour_swap_kill_demon;
+extern uint8_t  armour_swap_kill_dragon;
+extern uint8_t  armour_swap_impact;
+extern uint8_t  armour_swap_brand_acid;
+extern uint8_t  armour_swap_brand_elec;
+extern uint8_t  armour_swap_brand_fire;
+extern uint8_t  armour_swap_brand_cold;
+extern uint8_t  armour_swap_brand_pois;
+extern uint8_t  armour_swap_see_infra;
+extern uint8_t  armour_swap_slow_digest;
+extern uint8_t  armour_swap_aggravate;
+extern uint8_t  armour_swap_teleport;
+extern uint8_t  armour_swap_regenerate;
+extern uint8_t  armour_swap_telepathy;
+extern uint8_t  armour_swap_LIGHT;
+extern uint8_t  armour_swap_see_invis;
+extern uint8_t  armour_swap_ffall;
+extern uint8_t  armour_swap_free_act;
+extern uint8_t  armour_swap_hold_life;
+extern uint8_t  armour_swap_immune_fire;
+extern uint8_t  armour_swap_immune_acid;
+extern uint8_t  armour_swap_immune_cold;
+extern uint8_t  armour_swap_immune_elec;
+extern uint8_t  armour_swap_resist_acid;
+extern uint8_t  armour_swap_resist_elec;
+extern uint8_t  armour_swap_resist_fire;
+extern uint8_t  armour_swap_resist_cold;
+extern uint8_t  armour_swap_resist_pois;
+extern uint8_t  armour_swap_resist_conf;
+extern uint8_t  armour_swap_resist_sound;
+extern uint8_t  armour_swap_resist_LIGHT;
+extern uint8_t  armour_swap_resist_dark;
+extern uint8_t  armour_swap_resist_chaos;
+extern uint8_t  armour_swap_resist_disen;
+extern uint8_t  armour_swap_resist_shard;
+extern uint8_t  armour_swap_resist_nexus;
+extern uint8_t  armour_swap_resist_blind;
+extern uint8_t  armour_swap_resist_neth;
+extern uint8_t  armour_swap_resist_fear;
 
-extern byte my_ammo_tval;   /* Ammo -- "tval"   */
-extern byte my_ammo_sides;  /* Ammo -- "sides"  */
-extern s16b my_ammo_power;  /* Shooting multipler   */
+extern uint8_t my_ammo_tval;   /* Ammo -- "tval"   */
+extern uint8_t my_ammo_sides;  /* Ammo -- "sides"  */
+extern int16_t my_ammo_power;  /* Shooting multipler   */
 
-extern s16b my_need_enchant_to_a;   /* Need some enchantment */
-extern s16b my_need_enchant_to_h;   /* Need some enchantment */
-extern s16b my_need_enchant_to_d;   /* Need some enchantment */
-extern s16b my_need_brand_weapon;  /* brand bolts */
-extern s16b my_need_id;			/* need to buy ID for an inventory item */
+extern int16_t my_need_enchant_to_a;   /* Need some enchantment */
+extern int16_t my_need_enchant_to_h;   /* Need some enchantment */
+extern int16_t my_need_enchant_to_d;   /* Need some enchantment */
+extern int16_t my_need_brand_weapon;  /* brand bolts */
+extern int16_t my_need_id;			/* need to buy ID for an inventory item */
 
 
 /*
  * Hack -- basic "power"
  */
 
-extern s32b my_power;
+extern int32_t my_power;
 
 
 /*
  * Various "amounts" (for the player)
  */
 
-extern s16b amt_food_lowcal;
-extern s16b amt_food_hical;
+extern int16_t amt_food_lowcal;
+extern int16_t amt_food_hical;
 
-extern s16b amt_slow_poison;
-extern s16b amt_cure_confusion;
-extern s16b amt_cure_blind;
+extern int16_t amt_slow_poison;
+extern int16_t amt_cure_confusion;
+extern int16_t amt_cure_blind;
 
-extern s16b amt_cool_staff;  /* holiness-power staff */
-extern s16b amt_cool_wand;	/* # of charges */
-extern s16b amt_book[9];
+extern int16_t amt_cool_staff;  /* holiness-power staff */
+extern int16_t amt_cool_wand;	/* # of charges */
+extern int16_t amt_book[9];
 
-extern s16b amt_add_stat[6];
-extern s16b amt_inc_stat[6];
-extern s16b amt_fix_stat[7];
+extern int16_t amt_add_stat[6];
+extern int16_t amt_inc_stat[6];
+extern int16_t amt_fix_stat[7];
 
-extern s16b amt_fix_exp;
+extern int16_t amt_fix_exp;
 
-extern s16b amt_enchant_to_a;
-extern s16b amt_enchant_to_d;
-extern s16b amt_enchant_to_h;
-extern s16b amt_brand_weapon;  /* cubragol and bolts */
-extern s16b amt_enchant_weapon;
-extern s16b amt_enchant_armor;
-extern s16b amt_digger;
-extern s16b amt_ego;
+extern int16_t amt_enchant_to_a;
+extern int16_t amt_enchant_to_d;
+extern int16_t amt_enchant_to_h;
+extern int16_t amt_brand_weapon;  /* cubragol and bolts */
+extern int16_t amt_enchant_weapon;
+extern int16_t amt_enchant_armor;
+extern int16_t amt_digger;
+extern int16_t amt_ego;
 
 /*
  * Various "amounts" (for the home)
  */
 
-extern s16b num_food;
-extern s16b num_fuel;
-extern s16b num_mold;
-extern s16b num_ident;
-extern s16b num_recall;
-extern s16b num_phase;
-extern s16b num_escape;
-extern s16b num_tele_staves;
-extern s16b num_teleport;
-extern s16b num_berserk;
-extern s16b num_teleport_level;
-extern s16b num_recharge;
+extern int16_t num_food;
+extern int16_t num_fuel;
+extern int16_t num_mold;
+extern int16_t num_ident;
+extern int16_t num_recall;
+extern int16_t num_phase;
+extern int16_t num_escape;
+extern int16_t num_tele_staves;
+extern int16_t num_teleport;
+extern int16_t num_berserk;
+extern int16_t num_teleport_level;
+extern int16_t num_recharge;
 
-extern s16b num_cure_critical;
-extern s16b num_cure_serious;
+extern int16_t num_cure_critical;
+extern int16_t num_cure_serious;
 
-extern s16b num_pot_rheat;
-extern s16b num_pot_rcold;
+extern int16_t num_pot_rheat;
+extern int16_t num_pot_rcold;
 
-extern s16b num_missile;
+extern int16_t num_missile;
 
-extern s16b num_book[9];
+extern int16_t num_book[9];
 
-extern s16b num_fix_stat[7];
+extern int16_t num_fix_stat[7];
 
-extern s16b num_fix_exp;
-extern s16b num_mana;
-extern s16b num_heal;
-extern s16b num_heal_true;
-extern s16b num_ezheal;
-extern s16b num_ezheal_true;
-extern s16b num_life;
-extern s16b num_life_true;
-extern s16b num_pfe;
-extern s16b num_glyph;
-extern s16b num_speed;
-extern s16b num_detonate;
-extern s16b num_mush_second_sight;		/* esp */
-extern s16b num_mush_fast_recovery;		/* cure stun, cut, pois, blind */
-extern s16b num_mush_restoring;			/* Restore All */
-extern s16b num_mush_cure_mind;			/* Cure confustion, Halluc, fear, tmp resist Conf */
-extern s16b num_mush_emergency;			/* Hallucinate, Oppose Fire, Oppose Cold, Heal 200 */
-extern s16b num_mush_terror;			/* Terror --give +5 speed boost */
-extern s16b num_mush_stoneskin;			/* StoneSkin */
-extern s16b num_mush_debility;			/* Mana Restore, temp loss of a stat (str/con) */
-extern s16b num_mush_sprinting;			/* Sprinting (speed +10) */
-extern s16b num_mush_purging;			/* Purging --Makes hungry, restore Str/Con, Cure Pois */
+extern int16_t num_fix_exp;
+extern int16_t num_mana;
+extern int16_t num_heal;
+extern int16_t num_heal_true;
+extern int16_t num_ezheal;
+extern int16_t num_ezheal_true;
+extern int16_t num_life;
+extern int16_t num_life_true;
+extern int16_t num_pfe;
+extern int16_t num_glyph;
+extern int16_t num_speed;
+extern int16_t num_detonate;
+extern int16_t num_mush_second_sight;		/* esp */
+extern int16_t num_mush_fast_recovery;		/* cure stun, cut, pois, blind */
+extern int16_t num_mush_restoring;			/* Restore All */
+extern int16_t num_mush_cure_mind;			/* Cure confustion, Halluc, fear, tmp resist Conf */
+extern int16_t num_mush_emergency;			/* Hallucinate, Oppose Fire, Oppose Cold, Heal 200 */
+extern int16_t num_mush_terror;			/* Terror --give +5 speed boost */
+extern int16_t num_mush_stoneskin;			/* StoneSkin */
+extern int16_t num_mush_debility;			/* Mana Restore, temp loss of a stat (str/con) */
+extern int16_t num_mush_sprinting;			/* Sprinting (speed +10) */
+extern int16_t num_mush_purging;			/* Purging --Makes hungry, restore Str/Con, Cure Pois */
 
-extern s16b num_enchant_to_a;
-extern s16b num_enchant_to_d;
-extern s16b num_enchant_to_h;
-extern s16b num_brand_weapon;  /*  crubragol and bolts */
-extern s16b num_genocide;
-extern s16b num_mass_genocide;
+extern int16_t num_enchant_to_a;
+extern int16_t num_enchant_to_d;
+extern int16_t num_enchant_to_h;
+extern int16_t num_brand_weapon;  /*  crubragol and bolts */
+extern int16_t num_genocide;
+extern int16_t num_mass_genocide;
 
-extern s16b num_artifact;
-extern s16b num_ego;
+extern int16_t num_artifact;
+extern int16_t num_ego;
 
-extern s16b home_slot_free;
-extern s16b home_damage;
-extern s16b num_duplicate_items;
-extern s16b num_slow_digest;
-extern s16b num_regenerate;
-extern s16b num_telepathy;
-extern s16b num_LIGHT;
-extern s16b num_see_inv;
+extern int16_t home_slot_free;
+extern int16_t home_damage;
+extern int16_t num_duplicate_items;
+extern int16_t num_slow_digest;
+extern int16_t num_regenerate;
+extern int16_t num_telepathy;
+extern int16_t num_LIGHT;
+extern int16_t num_see_inv;
 
-extern s16b num_invisible; /**/
+extern int16_t num_invisible; /**/
 
-extern s16b num_ffall;
-extern s16b num_free_act;
-extern s16b num_hold_life;
-extern s16b num_immune_acid;
-extern s16b num_immune_elec;
-extern s16b num_immune_fire;
-extern s16b num_immune_cold;
-extern s16b num_resist_acid;
-extern s16b num_resist_elec;
-extern s16b num_resist_fire;
-extern s16b num_resist_cold;
-extern s16b num_resist_pois;
-extern s16b num_resist_conf;
-extern s16b num_resist_sound;
-extern s16b num_resist_LIGHT;
-extern s16b num_resist_dark;
-extern s16b num_resist_chaos;
-extern s16b num_resist_disen;
-extern s16b num_resist_shard;
-extern s16b num_resist_nexus;
-extern s16b num_resist_blind;
-extern s16b num_resist_neth;
-extern s16b num_sustain_str;
-extern s16b num_sustain_int;
-extern s16b num_sustain_wis;
-extern s16b num_sustain_dex;
-extern s16b num_sustain_con;
-extern s16b num_sustain_all;
+extern int16_t num_ffall;
+extern int16_t num_free_act;
+extern int16_t num_hold_life;
+extern int16_t num_immune_acid;
+extern int16_t num_immune_elec;
+extern int16_t num_immune_fire;
+extern int16_t num_immune_cold;
+extern int16_t num_resist_acid;
+extern int16_t num_resist_elec;
+extern int16_t num_resist_fire;
+extern int16_t num_resist_cold;
+extern int16_t num_resist_pois;
+extern int16_t num_resist_conf;
+extern int16_t num_resist_sound;
+extern int16_t num_resist_LIGHT;
+extern int16_t num_resist_dark;
+extern int16_t num_resist_chaos;
+extern int16_t num_resist_disen;
+extern int16_t num_resist_shard;
+extern int16_t num_resist_nexus;
+extern int16_t num_resist_blind;
+extern int16_t num_resist_neth;
+extern int16_t num_sustain_str;
+extern int16_t num_sustain_int;
+extern int16_t num_sustain_wis;
+extern int16_t num_sustain_dex;
+extern int16_t num_sustain_con;
+extern int16_t num_sustain_all;
 
-extern s16b num_speed;
-extern s16b num_edged_weapon;
-extern s16b num_bad_gloves;
-extern s16b num_weapons;
-extern s16b num_bow;
-extern s16b num_rings;
-extern s16b num_neck;
-extern s16b num_armor;
-extern s16b num_cloaks;
-extern s16b num_shields;
-extern s16b num_hats;
-extern s16b num_gloves;
-extern s16b num_boots;
+extern int16_t num_speed;
+extern int16_t num_edged_weapon;
+extern int16_t num_bad_gloves;
+extern int16_t num_weapons;
+extern int16_t num_bow;
+extern int16_t num_rings;
+extern int16_t num_neck;
+extern int16_t num_armor;
+extern int16_t num_cloaks;
+extern int16_t num_shields;
+extern int16_t num_hats;
+extern int16_t num_gloves;
+extern int16_t num_boots;
 
 /*
  * Deal with knowing which uniques are alive
@@ -1360,7 +1360,7 @@ extern int borg_feeling;    /* Current level "feeling" */
  * Hack -- current shop index
  */
 
-extern s16b shop_num;       /* Current shop index */
+extern int16_t shop_num;       /* Current shop index */
 
 
 
@@ -1368,9 +1368,9 @@ extern s16b shop_num;       /* Current shop index */
  * State variables extracted from the screen
  */
 
-extern s32b borg_exp;       /* Current experience */
+extern int32_t borg_exp;       /* Current experience */
 
-extern s32b borg_gold;      /* Current gold */
+extern int32_t borg_gold;      /* Current gold */
 
 extern int borg_stat[6];    /* Current stats */
 
@@ -1405,7 +1405,7 @@ extern void mmove2(int *y, int *x, int y1, int x1, int y2, int x2);
 /*
  * Number of turns to step for (zero means forever)
  */
-extern u16b borg_step;      /* Step count (if any) */
+extern uint16_t borg_step;      /* Step count (if any) */
 
 
 /*
@@ -1445,8 +1445,8 @@ extern int *track_shop_y;
  * Track "stairs up"
  */
 
-extern s16b track_less_num;
-extern s16b track_less_size;
+extern int16_t track_less_num;
+extern int16_t track_less_size;
 extern int *track_less_x;
 extern int *track_less_y;
 
@@ -1455,16 +1455,16 @@ extern int *track_less_y;
  * Track "stairs down"
  */
 
-extern s16b track_more_num;
-extern s16b track_more_size;
+extern int16_t track_more_num;
+extern int16_t track_more_size;
 extern int *track_more_x;
 extern int *track_more_y;
 
 /*
  * Track glyphs
  */
-extern s16b track_glyph_num;
-extern s16b track_glyph_size;
+extern int16_t track_glyph_num;
+extern int16_t track_glyph_size;
 extern int *track_glyph_x;
 extern int *track_glyph_y;
 
@@ -1473,35 +1473,35 @@ extern bool borg_needs_new_sea;
 /*
  * Track the items worn to avoid loops
  */
-extern s16b track_worn_num;
-extern s16b track_worn_size;
-extern s16b track_worn_time;
-extern byte *track_worn_name1;
+extern int16_t track_worn_num;
+extern int16_t track_worn_size;
+extern int16_t track_worn_time;
+extern uint8_t *track_worn_name1;
 
-extern const s16b borg_ddx_ddd[24];
-extern const s16b borg_ddy_ddd[24];
+extern const int16_t borg_ddx_ddd[24];
+extern const int16_t borg_ddy_ddd[24];
 
 /*
  * Track steps
  */
-extern s16b track_step_num;
-extern s16b track_step_size;
+extern int16_t track_step_num;
+extern int16_t track_step_size;
 extern int *track_step_x;
 extern int *track_step_y;
 
 /*
  * Track closed doors
  */
-extern s16b track_door_num;
-extern s16b track_door_size;
+extern int16_t track_door_num;
+extern int16_t track_door_size;
 extern int *track_door_x;
 extern int *track_door_y;
 
 /*
  * Track closed doors which started closed
  */
-extern s16b track_closed_num;
-extern s16b track_closed_size;
+extern int16_t track_closed_num;
+extern int16_t track_closed_size;
 extern int *track_closed_x;
 extern int *track_closed_y;
 
@@ -1509,8 +1509,8 @@ extern int *track_closed_y;
  * Track the mineral veins with treasure
  *
  */
-extern s16b track_vein_num;
-extern s16b track_vein_size;
+extern int16_t track_vein_num;
+extern int16_t track_vein_size;
 extern int *track_vein_x;
 extern int *track_vein_y;
 
@@ -1518,9 +1518,9 @@ extern int *track_vein_y;
  * The object list.  This list is used to "track" objects.
  */
 
-extern s16b borg_takes_cnt;
+extern int16_t borg_takes_cnt;
 
-extern s16b borg_takes_nxt;
+extern int16_t borg_takes_nxt;
 
 extern borg_take *borg_takes;
 
@@ -1529,9 +1529,9 @@ extern borg_take *borg_takes;
  * The monster list.  This list is used to "track" monsters.
  */
 
-extern s16b borg_kills_cnt;
-extern s16b borg_kills_summoner;   /* index of a summoning guy */
-extern s16b borg_kills_nxt;
+extern int16_t borg_kills_cnt;
+extern int16_t borg_kills_summoner;   /* index of a summoning guy */
+extern int16_t borg_kills_nxt;
 
 extern borg_kill *borg_kills;
 
@@ -1545,22 +1545,22 @@ extern int borg_ready_morgoth;
  * Hack -- extra fear per "region"
  */
 
-extern u16b borg_fear_region[6][18];
-extern u16b borg_fear_monsters[AUTO_MAX_Y][AUTO_MAX_X];
+extern uint16_t borg_fear_region[6][18];
+extern uint16_t borg_fear_monsters[AUTO_MAX_Y][AUTO_MAX_X];
 
 
 /*
  * Hack -- count racial appearances per level
  */
 
-extern s16b *borg_race_count;
+extern int16_t *borg_race_count;
 
 
 /*
  * Hack -- count racial kills (for uniques)
  */
 
-extern s16b *borg_race_death;
+extern int16_t *borg_race_death;
 
 
 /*
@@ -1573,63 +1573,63 @@ extern borg_grid *borg_grids[AUTO_MAX_Y];   /* Current "grid list" */
  * Maintain a set of grids (liteable grids)
  */
 
-extern s16b borg_LIGHT_n;
-extern byte borg_LIGHT_y[AUTO_LIGHT_MAX];
-extern byte borg_LIGHT_x[AUTO_LIGHT_MAX];
+extern int16_t borg_LIGHT_n;
+extern uint8_t borg_LIGHT_y[AUTO_LIGHT_MAX];
+extern uint8_t borg_LIGHT_x[AUTO_LIGHT_MAX];
 
 /*
  * Maintain a set of glow grids (liteable grids)
  */
 
-extern s16b borg_glow_n;
-extern byte borg_glow_y[AUTO_LIGHT_MAX];
-extern byte borg_glow_x[AUTO_LIGHT_MAX];
+extern int16_t borg_glow_n;
+extern uint8_t borg_glow_y[AUTO_LIGHT_MAX];
+extern uint8_t borg_glow_x[AUTO_LIGHT_MAX];
 
 
 /*
  * Maintain a set of grids (viewable grids)
  */
 
-extern s16b borg_view_n;
-extern byte borg_view_y[AUTO_VIEW_MAX];
-extern byte borg_view_x[AUTO_VIEW_MAX];
+extern int16_t borg_view_n;
+extern uint8_t borg_view_y[AUTO_VIEW_MAX];
+extern uint8_t borg_view_x[AUTO_VIEW_MAX];
 
 
 /*
  * Maintain a set of grids (scanning arrays)
  */
 
-extern s16b borg_temp_n;
-extern byte borg_temp_y[AUTO_TEMP_MAX];
-extern byte borg_temp_x[AUTO_TEMP_MAX];
+extern int16_t borg_temp_n;
+extern uint8_t borg_temp_y[AUTO_TEMP_MAX];
+extern uint8_t borg_temp_x[AUTO_TEMP_MAX];
 
 /*
  * Maintain a temporary set of grids
  * Used to store lit grid info
  */
-extern s16b borg_temp_lit_n;
-extern byte borg_temp_lit_x[AUTO_TEMP_MAX];
-extern byte borg_temp_lit_y[AUTO_TEMP_MAX];
+extern int16_t borg_temp_lit_n;
+extern uint8_t borg_temp_lit_x[AUTO_TEMP_MAX];
+extern uint8_t borg_temp_lit_y[AUTO_TEMP_MAX];
 
 /*
  * Maintain a set of special grids used for Teleport Other
  */
-extern s16b borg_tp_other_n;
-extern byte borg_tp_other_x[255];
-extern byte borg_tp_other_y[255];
+extern int16_t borg_tp_other_n;
+extern uint8_t borg_tp_other_x[255];
+extern uint8_t borg_tp_other_y[255];
 extern int borg_tp_other_index[255];
 
-extern byte offset_y;
-extern byte offset_x;
+extern uint8_t offset_y;
+extern uint8_t offset_x;
 
 
 /*
  * Maintain a set of grids (flow calculations)
  */
 
-extern s16b borg_flow_n;
-extern byte borg_flow_y[AUTO_FLOW_MAX];
-extern byte borg_flow_x[AUTO_FLOW_MAX];
+extern int16_t borg_flow_n;
+extern uint8_t borg_flow_y[AUTO_FLOW_MAX];
+extern uint8_t borg_flow_x[AUTO_FLOW_MAX];
 
 
 /*
@@ -1679,13 +1679,13 @@ extern bool borg_do_frame;      /* Acquire "frame" info */
 
 extern bool borg_do_spell;      /* Acquire "spell" info */
 
-extern byte borg_do_spell_aux;      /* Hack -- book for "borg_do_spell" */
+extern uint8_t borg_do_spell_aux;      /* Hack -- book for "borg_do_spell" */
 
 extern bool borg_do_browse;     /* Acquire "store" info */
 
-extern byte borg_do_browse_what;    /* Hack -- store for "borg_do_browse" */
+extern uint8_t borg_do_browse_what;    /* Hack -- store for "borg_do_browse" */
 
-extern byte borg_do_browse_more;    /* Hack -- pages for "borg_do_browse" */
+extern uint8_t borg_do_browse_more;    /* Hack -- pages for "borg_do_browse" */
 
 
 /*
@@ -1735,12 +1735,12 @@ extern void borg_flush(void);
 /*
  * Obtain some text from the screen (single character)
  */
-extern errr borg_what_char(int x, int y, byte *a, wchar_t *c);
+extern errr borg_what_char(int x, int y, uint8_t *a, wchar_t *c);
 
 /*
  * Obtain some text from the screen (multiple characters)
  */
-extern errr borg_what_text(int x, int y, int n, byte *a, char *s);
+extern errr borg_what_text(int x, int y, int n, uint8_t *a, char *s);
 
 
 /*

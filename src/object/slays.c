@@ -250,7 +250,7 @@ void react_to_slay(bitflag *obj_flags, bitflag *mon_flags)
  * 
  * \param index is the set of slay flags to look for
  */
-s32b check_slay_cache(bitflag *index)
+int32_t check_slay_cache(bitflag *index)
 {
 	int i;
 
@@ -267,7 +267,7 @@ s32b check_slay_cache(bitflag *index)
  * \param index is the set of slay flags whose value we are adding
  * \param value is the value of the slay flags in index
  */
-bool fill_slay_cache(bitflag *index, s32b value)
+bool fill_slay_cache(bitflag *index, int32_t value)
 {
 	int i;
 

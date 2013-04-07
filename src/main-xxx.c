@@ -475,7 +475,7 @@ static errr Term_wipe_xxx(int x, int y, int n)
  * the "always_text" flag is set, if this flag is not set, all the
  * "black" text will be handled by the "Term_wipe_xxx()" hook.
  */
-static errr Term_text_xxx(int x, int y, int n, byte a, const char *cp)
+static errr Term_text_xxx(int x, int y, int n, uint8_t a, const char *cp)
 {
 	term_data *td = (term_data*)(Term->data);
 
@@ -512,8 +512,8 @@ static errr Term_text_xxx(int x, int y, int n, byte a, const char *cp)
  * This function is only used if one of the "higher_pict" and/or
  * "always_pict" flags are set.
  */
-static errr Term_pict_xxx(int x, int y, int n, const byte *ap, const char *cp,
-                          const byte *tap, const char *tcp)
+static errr Term_pict_xxx(int x, int y, int n, const uint8_t *ap, const char *cp,
+                          const uint8_t *tap, const char *tcp)
 {
 	term_data *td = (term_data*)(Term->data);
 

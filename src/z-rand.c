@@ -22,8 +22,8 @@
 /**
  * This file provides a pseudo-random number generator.
  *
- * This code provides both a "quick" random number generator (4 bytes of
- * state), and a "complex" random number generator (128 + 4 bytes of state).
+ * This code provides both a "quick" random number generator (4 uint8_ts of
+ * state), and a "complex" random number generator (128 + 4 uint8_ts of state).
  *
  * The complex RNG (used for most game entropy) is provided by the WELL102a
  * algorithm, used with permission. See below for copyright information
@@ -50,12 +50,12 @@
 #define MAT0NEG(t, v) (v ^ (v << (-(t))))
 #define Identity(v) (v)
 
-u32b state_i = 0;
-u32b STATE[RAND_DEG] = {0, 0, 0, 0, 0, 0, 0, 0,
+uint32_t state_i = 0;
+uint32_t STATE[RAND_DEG] = {0, 0, 0, 0, 0, 0, 0, 0,
 						0, 0, 0, 0, 0, 0, 0, 0,
 						0, 0, 0, 0, 0, 0, 0, 0,
 						0, 0, 0, 0, 0, 0, 0, 0};
-u32b z0, z1, z2;
+uint32_t z0, z1, z2;
 
 #define V0    STATE[state_i]
 #define VM1   STATE[(state_i + M1) & 0x0000001fU]
@@ -65,7 +65,7 @@ u32b z0, z1, z2;
 #define newV0 STATE[(state_i + 31) & 0x0000001fU]
 #define newV1 STATE[state_i]
 
-static u32b WELLRNG1024a (void){
+static uint32_t WELLRNG1024a (void){
 	z0      = VRm1;
 	z1      = Identity(V0) ^ MAT0POS (8, VM1);
 	z2      = MAT0NEG (-19, VM2) ^ MAT0NEG(-14,VM3);
@@ -90,15 +90,15 @@ bool Rand_quick = TRUE;
 /**
  * The current "seed" of the simple RNG.
  */
-u32b Rand_value;
+uint32_t Rand_value;
 
 static bool rand_fixed = FALSE;
-static u32b rand_fixval = 0;
+static uint32_t rand_fixval = 0;
 
 /**
  * Initialize the complex RNG using a new seed.
  */
-void Rand_state_init(u32b seed) {
+void Rand_state_init(uint32_t seed) {
 	int i, j;
 
 	/* Seed the table */
@@ -133,8 +133,8 @@ void Rand_state_init(u32b seed) {
  * This method has no bias, and is much less affected by patterns in the "low"
  * bits of the underlying RNG's. However, it is potentially non-terminating.
  */
-u32b Rand_div(u32b m) {
-	u32b r, n;
+uint32_t Rand_div(uint32_t m) {
+	uint32_t r, n;
 
 	/* Division by zero will result if m is larger than 0x10000000 */
 	assert(m <= 0x10000000);
@@ -193,7 +193,7 @@ u32b Rand_div(u32b m) {
 /**
  * The normal distribution table for the "Rand_normal()" function (below)
  */
-static s16b Rand_normal_table[RANDNOR_NUM] = {
+static int16_t Rand_normal_table[RANDNOR_NUM] = {
 	206,   613,   1022,  1430,  1838,  2245,  2652,  3058,
 	3463,  3867,  4271,  4673,  5075,  5475,  5874,  6271,
 	6667,  7061,  7454,  7845,  8234,  8621,  9006,  9389,
@@ -251,18 +251,18 @@ static s16b Rand_normal_table[RANDNOR_NUM] = {
  *
  * Note that the binary search takes up to 16 quick iterations.
  */
-s16b Rand_normal(int mean, int stand) {
-	s16b tmp, offset;
+int16_t Rand_normal(int mean, int stand) {
+	int16_t tmp, offset;
 
 	// foo
-	s16b low = 0;
-	s16b high = RANDNOR_NUM;
+	int16_t low = 0;
+	int16_t high = RANDNOR_NUM;
 
 	/* Paranoia */
 	if (stand < 1) return (mean);
 
 	/* Roll for probability */
-	tmp = (s16b)randint0(32768);
+	tmp = (int16_t)randint0(32768);
 
 	/* Binary Search */
 	while (low < high) {
@@ -277,7 +277,7 @@ s16b Rand_normal(int mean, int stand) {
 	}
 
 	/* Convert the index into an offset */
-	offset = (s16b)((long)stand * (long)low / RANDNOR_STD);
+	offset = (int16_t)((long)stand * (long)low / RANDNOR_STD);
 
 	/* One half should be negative */
 	if (one_in_(2)) return (mean - offset);
@@ -332,7 +332,7 @@ int rand_range(int A, int B) {
 	if (A == B) return A;
 	assert(A < B);
 
-	return A + (s32b)Rand_div(1 + B - A);
+	return A + (int32_t)Rand_div(1 + B - A);
 }
 
 
@@ -387,7 +387,7 @@ static int simulate_division(int dividend, int divisor) {
  * 120    0.03  0.11  0.31  0.46  1.31  2.48  4.60  7.78 11.67 25.53 45.72
  * 128    0.02  0.01  0.13  0.33  0.83  1.41  3.24  6.17  9.57 14.22 64.07
  */
-s16b m_bonus(int max, int level) {
+int16_t m_bonus(int max, int level) {
 	int bonus, stand, value;
 
 	/* Make sure level is reasonable */
@@ -415,7 +415,7 @@ s16b m_bonus(int max, int level) {
 /**
  * Calculation helper function for m_bonus
  */
-s16b m_bonus_calc(int max, int level, aspect bonus_aspect) {
+int16_t m_bonus_calc(int max, int level, aspect bonus_aspect) {
 	switch (bonus_aspect) {
 		case EXTREMIFY:
 		case MAXIMISE:  return max;
@@ -467,7 +467,7 @@ bool randcalc_varies(random_value v) {
 	return randcalc(v, 0, MINIMISE) != randcalc(v, 0, MAXIMISE);
 }
 
-void rand_fix(u32b val) {
+void rand_fix(uint32_t val) {
 	rand_fixed = TRUE;
 	rand_fixval = val;
 }
@@ -478,7 +478,7 @@ int getpid(void);
  * Another simple RNG that does not use any of the above state
  * (so can be used without disturbing the game's RNG state)
  */
-u32b Rand_simple(u32b m) {
+uint32_t Rand_simple(uint32_t m) {
 	static time_t seed;
 	time_t v;
 	v = time(NULL);

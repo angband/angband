@@ -36,7 +36,7 @@
 #include "spells.h"
 #include "target.h"
 
-u16b daycount = 0;
+uint16_t daycount = 0;
 
 /*
  * Change dungeon level - e.g. by going up stairs or with WoR.
@@ -99,7 +99,7 @@ void dungeon_change_level(int dlev)
  */
 static void regenhp(int percent)
 {
-	s32b new_chp, new_chp_frac;
+	int32_t new_chp, new_chp_frac;
 	int old_chp;
 
 	/* Save the old hitpoints */
@@ -107,19 +107,19 @@ static void regenhp(int percent)
 
 	/* Extract the new hitpoints */
 	new_chp = ((long)p_ptr->mhp) * percent + PY_REGEN_HPBASE;
-	p_ptr->chp += (s16b)(new_chp >> 16);   /* div 65536 */
+	p_ptr->chp += (int16_t)(new_chp >> 16);   /* div 65536 */
 
 	/* check for overflow */
 	if ((p_ptr->chp < 0) && (old_chp > 0)) p_ptr->chp = MAX_SHORT;
 	new_chp_frac = (new_chp & 0xFFFF) + p_ptr->chp_frac;	/* mod 65536 */
 	if (new_chp_frac >= 0x10000L)
 	{
-		p_ptr->chp_frac = (u16b)(new_chp_frac - 0x10000L);
+		p_ptr->chp_frac = (uint16_t)(new_chp_frac - 0x10000L);
 		p_ptr->chp++;
 	}
 	else
 	{
-		p_ptr->chp_frac = (u16b)new_chp_frac;
+		p_ptr->chp_frac = (uint16_t)new_chp_frac;
 	}
 
 	/* Fully healed */
@@ -145,12 +145,12 @@ static void regenhp(int percent)
  */
 static void regenmana(int percent)
 {
-	s32b new_mana, new_mana_frac;
+	int32_t new_mana, new_mana_frac;
 	int old_csp;
 
 	old_csp = p_ptr->csp;
 	new_mana = ((long)p_ptr->msp) * percent + PY_REGEN_MNBASE;
-	p_ptr->csp += (s16b)(new_mana >> 16);	/* div 65536 */
+	p_ptr->csp += (int16_t)(new_mana >> 16);	/* div 65536 */
 	/* check for overflow */
 	if ((p_ptr->csp < 0) && (old_csp > 0))
 	{
@@ -159,12 +159,12 @@ static void regenmana(int percent)
 	new_mana_frac = (new_mana & 0xFFFF) + p_ptr->csp_frac;	/* mod 65536 */
 	if (new_mana_frac >= 0x10000L)
 	{
-		p_ptr->csp_frac = (u16b)(new_mana_frac - 0x10000L);
+		p_ptr->csp_frac = (uint16_t)(new_mana_frac - 0x10000L);
 		p_ptr->csp++;
 	}
 	else
 	{
-		p_ptr->csp_frac = (u16b)new_mana_frac;
+		p_ptr->csp_frac = (uint16_t)new_mana_frac;
 	}
 
 	/* Must set frac to zero even if equal */
@@ -763,7 +763,7 @@ static void process_world(struct cave *c)
 	if (check_state(p_ptr, OF_DRAIN_EXP, p_ptr->state.flags))
 	{
 		if ((p_ptr->exp > 0) && one_in_(10)) {
-			s32b d = damroll(10, 6) + (p_ptr->exp/100) * MON_DRAIN_LIFE;
+			int32_t d = damroll(10, 6) + (p_ptr->exp/100) * MON_DRAIN_LIFE;
 			player_exp_lose(p_ptr, d / 10, FALSE);
 		}
 
@@ -872,10 +872,10 @@ static void process_player_aux(void)
 	static bitflag old_flags[RF_SIZE];
 	static bitflag old_spell_flags[RSF_SIZE];
 
-	static byte old_blows[MONSTER_BLOW_MAX];
+	static uint8_t old_blows[MONSTER_BLOW_MAX];
 
-	static byte	old_cast_innate = 0;
-	static byte	old_cast_spell = 0;
+	static uint8_t	old_cast_innate = 0;
+	static uint8_t	old_cast_spell = 0;
 
 	/* Tracking a monster */
 	if (p_ptr->monster_race)
@@ -908,7 +908,7 @@ static void process_player_aux(void)
 			rsf_copy(old_spell_flags, l_ptr->spell_flags);
 
 			/* Memorize blows */
-			memmove(old_blows, l_ptr->blows, sizeof(byte)*MONSTER_BLOW_MAX);
+			memmove(old_blows, l_ptr->blows, sizeof(uint8_t)*MONSTER_BLOW_MAX);
 
 			/* Memorize castings */
 			old_cast_innate = l_ptr->cast_innate;
@@ -1188,8 +1188,8 @@ static void process_player(void)
 	if (p_ptr->notice) notice_stuff(p_ptr);
 }
 
-static byte flicker = 0;
-static byte color_flicker[MAX_COLORS][3] = 
+static uint8_t flicker = 0;
+static uint8_t color_flicker[MAX_COLORS][3] = 
 {
 	{TERM_DARK, TERM_L_DARK, TERM_L_RED},
 	{TERM_WHITE, TERM_L_WHITE, TERM_L_BLUE},
@@ -1221,7 +1221,7 @@ static byte color_flicker[MAX_COLORS][3] =
 	{TERM_DEEP_L_BLUE, TERM_L_BLUE, TERM_BLUE},
 };
 
-static byte get_flicker(byte a)
+static uint8_t get_flicker(uint8_t a)
 {
 	switch(flicker % 3)
 	{
@@ -1240,7 +1240,7 @@ static void do_animation(void)
 
 	for (i = 1; i < cave_monster_max(cave); i++)
 	{
-		byte attr;
+		uint8_t attr;
 		monster_type *m_ptr = cave_monster(cave, i);
 
 		if (!m_ptr || !m_ptr->race || !m_ptr->ml)
@@ -1451,7 +1451,7 @@ static void dungeon(struct cave *c)
     		do_animation(); 
 
 			/* process monster with even more energy first */
-			process_monsters(c, (byte)(p_ptr->energy + 1));
+			process_monsters(c, (uint8_t)(p_ptr->energy + 1));
 
 			/* if still alive */
 			if (!p_ptr->leaving)
@@ -1597,7 +1597,7 @@ static void process_some_user_pref_files(void)
  */
 void play_game(void)
 {
-	u32b window_flag[ANGBAND_TERM_MAX];
+	uint32_t window_flag[ANGBAND_TERM_MAX];
 	/* Initialize */
 	bool new_game = init_angband();
 
@@ -1624,7 +1624,7 @@ void play_game(void)
 	op_ptr->hitpoint_warn = 3;
 
 	/* initialize window options that will be overridden by the savefile */
-	memset(window_flag, 0, sizeof(u32b)*ANGBAND_TERM_MAX);
+	memset(window_flag, 0, sizeof(uint32_t)*ANGBAND_TERM_MAX);
 	if (ANGBAND_TERM_MAX > 1) window_flag[1] = (PW_MESSAGE);
 	if (ANGBAND_TERM_MAX > 2) window_flag[2] = (PW_INVEN);
 	if (ANGBAND_TERM_MAX > 3) window_flag[3] = (PW_MONLIST);
@@ -1669,10 +1669,10 @@ void play_game(void)
 	/* Init RNG */
 	if (Rand_quick)
 	{
-		u32b seed;
+		uint32_t seed;
 
 		/* Basic seed */
-		seed = (u32b)(time(NULL));
+		seed = (uint32_t)(time(NULL));
 
 #ifdef UNIX
 

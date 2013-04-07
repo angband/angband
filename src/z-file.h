@@ -33,7 +33,7 @@ void safe_setuid_drop(void);
 
 /**
  * Concatenates "leaf" onto the end of "base", using system-specific path
- * separators, and places the result in buf[], truncated to "len" bytes.
+ * separators, and places the result in buf[], truncated to "len" uint8_ts.
  *
  * On Unixes, deals with the tilde as representing home directories.
  */
@@ -180,19 +180,19 @@ bool x_file_putf(ang_file *f, const char *fmt, ...);
 /** Byte-based IO */
 
 /**
- * Skip 'bytes' bytes.
+ * Skip 'uint8_ts' uint8_ts.
  * \returns TRUE if successful, FALSE otherwise.
  */
-bool file_skip(ang_file *f, int bytes);
+bool file_skip(ang_file *f, int uint8_ts);
 
 /**
- * Reads n bytes from file 'f' into buffer 'buf'.
- * \returns Number of bytes read; -1 on error
+ * Reads n uint8_ts from file 'f' into buffer 'buf'.
+ * \returns Number of uint8_ts read; -1 on error
  */
 int file_read(ang_file *f, char *buf, size_t n);
 
 /**
- * Write the first `n` bytes following the pointer `buf` to the file represented
+ * Write the first `n` uint8_ts following the pointer `buf` to the file represented
  * by `f`.  Do not mix with calls to file_writec().
  *
  * Returns TRUE if successful, FALSE otherwise.
@@ -200,19 +200,19 @@ int file_read(ang_file *f, char *buf, size_t n);
 bool file_write(ang_file *f, const char *buf, size_t n);
 
 /**
- * Read a byte from the file represented by `f` and place it at the location
+ * Read a uint8_t from the file represented by `f` and place it at the location
  * specified by 'b'.
  *
  * Returns TRUE if successful, FALSE otherwise.
  */
-bool file_readc(ang_file *f, byte *b);
+bool file_readc(ang_file *f, uint8_t *b);
 
 /**
- * Write the byte `b` to the file represented by `f`.
+ * Write the uint8_t `b` to the file represented by `f`.
  *
  * Returns TRUE if successful, FALSE otherwise.
  */
-bool file_writec(ang_file *f, byte b);
+bool file_writec(ang_file *f, uint8_t b);
 
 
 

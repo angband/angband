@@ -34,7 +34,7 @@ enum
  * Slay type.  Used for the table of brands/slays and their effects.
  */
 struct slay {
-	u16b index;					/* Numerical index */
+	uint16_t index;					/* Numerical index */
 	int object_flag;			/* Object flag for the slay */
 	int monster_flag;			/* Which monster flag(s) make it vulnerable */
 	int resist_flag;			/* Which monster flag(s) make it resist */
@@ -52,7 +52,7 @@ struct slay {
  */
 struct flag_cache {
         bitflag flags[OF_SIZE];   	/* Combination of slays and brands */
-        s32b value;            		/* Value of this combination */
+        int32_t value;            		/* Value of this combination */
 };
 
 
@@ -66,8 +66,8 @@ void improve_attack_modifier(object_type *o_ptr, const monster_type
 	*m_ptr, const struct slay **best_s_ptr, bool lore, bool known_only);
 void react_to_slay(bitflag *obj_flags, bitflag *mon_flags);
 errr create_slay_cache(struct ego_item *items);
-s32b check_slay_cache(bitflag *index);
-bool fill_slay_cache(bitflag *index, s32b value);
+int32_t check_slay_cache(bitflag *index);
+bool fill_slay_cache(bitflag *index, int32_t value);
 void free_slay_cache(void);
 
 #endif /* INCLUDED_SLAYS_H */

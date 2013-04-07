@@ -9,21 +9,21 @@
  *
  * Be careful when creating data structures; most of these are designed
  * to be serialised to file, so be careful to use exact-size data types
- * (like u32b and s32b) and not just "int"s.
+ * (like uint32_t and int32_t) and not just "int"s.
  */
 
 #include "z-term.h"
 
 /**** Available Types ****/
 
-/** An array of 256 bytes */
-typedef byte byte_256[256];
+/** An array of 256 uint8_ts */
+typedef uint8_t uint8_t_256[256];
 
-/** An array of DUNGEON_WID bytes */
-typedef byte byte_wid[DUNGEON_WID];
+/** An array of DUNGEON_WID uint8_ts */
+typedef uint8_t uint8_t_wid[DUNGEON_WID];
 
-/** An array of DUNGEON_WID s16b's */
-typedef s16b s16b_wid[DUNGEON_WID];
+/** An array of DUNGEON_WID int16_t's */
+typedef int16_t int16_t_wid[DUNGEON_WID];
 
 
 
@@ -54,17 +54,17 @@ typedef struct color_type color_type;
  */
 typedef struct maxima
 {
-	u16b f_max;       /**< Maximum number of terrain features */
-	u16b k_max;       /**< Maximum number of object base kinds */
-	u16b a_max;       /**< Maximum number of artifact kinds */
-	u16b e_max;       /**< Maximum number of ego-item kinds */
-	u16b r_max;       /**< Maximum number of monster races */
-	u16b mp_max;	  /**< Maximum number of monster pain message sets */
-	u16b s_max;       /**< Maximum number of magic spells */
-	u16b pit_max;	  /**< Maximum number of monster pit types */
+	uint16_t f_max;       /**< Maximum number of terrain features */
+	uint16_t k_max;       /**< Maximum number of object base kinds */
+	uint16_t a_max;       /**< Maximum number of artifact kinds */
+	uint16_t e_max;       /**< Maximum number of ego-item kinds */
+	uint16_t r_max;       /**< Maximum number of monster races */
+	uint16_t mp_max;	  /**< Maximum number of monster pain message sets */
+	uint16_t s_max;       /**< Maximum number of magic spells */
+	uint16_t pit_max;	  /**< Maximum number of monster pit types */
 
-	u16b o_max;       /**< Maximum number of objects on a given level */
-	u16b m_max;       /**< Maximum number of monsters on a given level */
+	uint16_t o_max;       /**< Maximum number of objects on a given level */
+	uint16_t m_max;       /**< Maximum number of monsters on a given level */
 } maxima;
 
 
@@ -81,21 +81,21 @@ typedef struct feature
 
 	struct feature *next;
 
-	byte mimic;    /**< Feature to mimic */
-	byte priority; /**< Display priority */
+	uint8_t mimic;    /**< Feature to mimic */
+	uint8_t priority; /**< Display priority */
 
-	byte locked;   /**< How locked is it? */
-	byte jammed;   /**< How jammed is it? */
-	byte shopnum;  /**< Which shop does it take you to? */
-	byte dig;      /**< How hard is it to dig through? */
+	uint8_t locked;   /**< How locked is it? */
+	uint8_t jammed;   /**< How jammed is it? */
+	uint8_t shopnum;  /**< Which shop does it take you to? */
+	uint8_t dig;      /**< How hard is it to dig through? */
 
-	u32b effect;   /**< Effect on entry to grid */
+	uint32_t effect;   /**< Effect on entry to grid */
 	bitflag flags[FF_SIZE];    /**< Terrain flags */
 
-	byte d_attr;   /**< Default feature attribute */
+	uint8_t d_attr;   /**< Default feature attribute */
 	wchar_t d_char;   /**< Default feature character */
 
-	byte x_attr[3];   /**< Desired feature attribute (set by user/pref file) */
+	uint8_t x_attr[3];   /**< Desired feature attribute (set by user/pref file) */
 	wchar_t x_char[3];   /**< Desired feature character (set by user/pref file) */
 } feature_type;
 
@@ -110,12 +110,12 @@ typedef struct vault {
 	char *name;
 	char *text;
 
-	byte typ;			/* Vault type */
+	uint8_t typ;			/* Vault type */
 
-	byte rat;			/* Vault rating */
+	uint8_t rat;			/* Vault rating */
 
-	byte hgt;			/* Vault height */
-	byte wid;			/* Vault width */
+	uint8_t hgt;			/* Vault height */
+	uint8_t wid;			/* Vault width */
 } vault_type;
 
 
@@ -128,14 +128,14 @@ typedef struct room_template {
 	char *name;
 	char *text;
 
-	byte typ;			/* Room type */
+	uint8_t typ;			/* Room type */
 
-	byte rat;			/* Room rating */
+	uint8_t rat;			/* Room rating */
 
-	byte hgt;			/* Room height */
-	byte wid;			/* Room width */
-	byte dor;           /* Random door options */
-	byte tval;			/* tval for objects in this room */
+	uint8_t hgt;			/* Room height */
+	uint8_t wid;			/* Room width */
+	uint8_t dor;           /* Random door options */
+	uint8_t tval;			/* tval for objects in this room */
 } room_template_type;
 
 
@@ -171,7 +171,7 @@ struct alloc_entry
  */
 struct quest
 {
-	byte level;		/* Dungeon level */
+	uint8_t level;		/* Dungeon level */
 	int r_idx;		/* Monster race */
 
 	int cur_num;	/* Number killed (unused) */
@@ -188,12 +188,12 @@ struct spell {
 	char *name;
 	char *text;
 
-	byte realm;			/* 0 = mage; 1 = priest */
-	byte tval;			/* Item type for book this spell is in */
-	byte sval;			/* Item sub-type for book (= book number) */
-	byte snum;			/* Position of spell within book */
+	uint8_t realm;			/* 0 = mage; 1 = priest */
+	uint8_t tval;			/* Item type for book this spell is in */
+	uint8_t sval;			/* Item sub-type for book (= book number) */
+	uint8_t snum;			/* Position of spell within book */
 
-	byte spell_index;	/* Index into player_magic array */
+	uint8_t spell_index;	/* Index into player_magic array */
 };
 
 
@@ -202,17 +202,17 @@ struct spell {
  */
 typedef struct
 {
-	byte tval;
+	uint8_t tval;
 	const char *name;
 } grouper;
 
 struct history_info
 {
-	u16b type;			/* Kind of history item */
-	s16b dlev;			/* Dungeon level when this item was recorded */
-	s16b clev;			/* Character level when this item was recorded */
-	byte a_idx;			/* Artifact this item relates to */
-	s32b turn;			/* Turn this item was recorded on */
+	uint16_t type;			/* Kind of history item */
+	int16_t dlev;			/* Dungeon level when this item was recorded */
+	int16_t clev;			/* Character level when this item was recorded */
+	uint8_t a_idx;			/* Artifact this item relates to */
+	int32_t turn;			/* Turn this item was recorded on */
 	char event[80];	/* The text of the item */
 };
 
@@ -226,8 +226,8 @@ enum grid_light_level
 
 typedef struct
 {
-	u32b m_idx;		/* Monster index */
-	u32b f_idx;		/* Feature index */
+	uint32_t m_idx;		/* Monster index */
+	uint32_t f_idx;		/* Feature index */
 	struct object_kind *first_kind;	/* The "kind" of the first item on the grid */
 	bool multiple_objects;	/* Is there more than one item there? */
 	bool unseen_object;	/* Is there an unaware object there? */
@@ -248,7 +248,7 @@ struct color_type
 {
 	char index_char;            /* Character index:  'r' = red, etc. */
 	char name[32];              /* Color name */
-	byte color_translate[MAX_ATTR];       /* Index for various in-game translations */
+	uint8_t color_translate[MAX_ATTR];       /* Index for various in-game translations */
 };
 
 /*

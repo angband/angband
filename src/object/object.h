@@ -46,7 +46,7 @@ enum {
 };
 
 #define ORIGIN_SIZE FLAG_SIZE(ORIGIN_MAX)
-#define ORIGIN_BYTES 4 /* savefile bytes - room for 32 origin types */
+#define ORIGIN_BYTES 4 /* savefile uint8_ts - room for 32 origin types */
 
 
 /**
@@ -288,40 +288,40 @@ typedef struct object_kind
 	object_base *base;
 
 	struct object_kind *next;
-	u32b kidx;
+	uint32_t kidx;
 
-	byte tval;         /**< General object type (see TV_ macros) */
-	byte sval;         /**< Object sub-type (see SV_ macros) */
+	uint8_t tval;         /**< General object type (see TV_ macros) */
+	uint8_t sval;         /**< Object sub-type (see SV_ macros) */
 	random_value pval[MAX_PVALS]; /**< Power for any flags which need it */
-	byte num_pvals;	   /**< Number of pvals in use on this item */
+	uint8_t num_pvals;	   /**< Number of pvals in use on this item */
 
 	random_value to_h; /**< Bonus to hit */
 	random_value to_d; /**< Bonus to damage */
 	random_value to_a; /**< Bonus to armor */
-	s16b ac;           /**< Base armor */
+	int16_t ac;           /**< Base armor */
 
-	byte dd;           /**< Damage dice */
-	byte ds;           /**< Damage sides */
-	s16b weight;       /**< Weight, in 1/10lbs */
+	uint8_t dd;           /**< Damage dice */
+	uint8_t ds;           /**< Damage sides */
+	int16_t weight;       /**< Weight, in 1/10lbs */
 
-	s32b cost;         /**< Object base cost */
+	int32_t cost;         /**< Object base cost */
 
 	bitflag flags[OF_SIZE];			/**< Flags */
 	bitflag pval_flags[MAX_PVALS][OF_SIZE];	/**< pval flags */
 
-	byte d_attr;       /**< Default object attribute */
+	uint8_t d_attr;       /**< Default object attribute */
 	wchar_t d_char;       /**< Default object character */
 
 	int alloc_prob;   /**< Allocation: commonness */
-	byte alloc_min;    /**< Highest normal dungeon level */
-	byte alloc_max;    /**< Lowest normal dungeon level */
-	byte level;        /**< Level (difficulty of activation) */
+	uint8_t alloc_min;    /**< Highest normal dungeon level */
+	uint8_t alloc_max;    /**< Lowest normal dungeon level */
+	uint8_t level;        /**< Level (difficulty of activation) */
 
-	u16b effect;         /**< Effect this item produces (effects.c) */
+	uint16_t effect;         /**< Effect this item produces (effects.c) */
 	random_value time;   /**< Recharge time (rods/activation) */
 	random_value charge; /**< Number of charges (staves/wands) */
 
-	byte gen_mult_prob;      /**< Probability of generating more than one */
+	uint8_t gen_mult_prob;      /**< Probability of generating more than one */
 	random_value stack_size; /**< Number to generate */
 
 	struct flavor *flavor;         /**< Special object flavor (or zero) */
@@ -329,7 +329,7 @@ typedef struct object_kind
 
 	/** Game-dependent **/
 
-	byte x_attr;   /**< Desired object attribute (set by user/pref file) */
+	uint8_t x_attr;   /**< Desired object attribute (set by user/pref file) */
 	wchar_t x_char;   /**< Desired object character (set by user/pref file) */
 
 	/** Also saved in savefile **/
@@ -339,7 +339,7 @@ typedef struct object_kind
 	bool aware;    /**< Set if player is aware of the kind's effects */
 	bool tried;    /**< Set if kind has been tried */
 
-	byte squelch;  /**< Squelch settings */
+	uint8_t squelch;  /**< Squelch settings */
 	bool everseen; /**< Set if kind has ever been seen (to despoilify squelch menus) */
 
 	struct spell *spells;
@@ -360,41 +360,41 @@ typedef struct artifact
 	char *name;
 	char *text;
 
-	u32b aidx;
+	uint32_t aidx;
 
 	struct artifact *next;
 
-	byte tval;    /**< General artifact type (see TV_ macros) */
-	byte sval;    /**< Artifact sub-type (see SV_ macros) */
-	s16b pval[MAX_PVALS];    /**< Power for any flags which need it */
-	byte num_pvals;/**< Number of pvals in use on this item */
+	uint8_t tval;    /**< General artifact type (see TV_ macros) */
+	uint8_t sval;    /**< Artifact sub-type (see SV_ macros) */
+	int16_t pval[MAX_PVALS];    /**< Power for any flags which need it */
+	uint8_t num_pvals;/**< Number of pvals in use on this item */
 
-	s16b to_h;    /**< Bonus to hit */
-	s16b to_d;    /**< Bonus to damage */
-	s16b to_a;    /**< Bonus to armor */
-	s16b ac;      /**< Base armor */
+	int16_t to_h;    /**< Bonus to hit */
+	int16_t to_d;    /**< Bonus to damage */
+	int16_t to_a;    /**< Bonus to armor */
+	int16_t ac;      /**< Base armor */
 
-	byte dd;      /**< Base damage dice */
-	byte ds;      /**< Base damage sides */
+	uint8_t dd;      /**< Base damage dice */
+	uint8_t ds;      /**< Base damage sides */
 
-	s16b weight;  /**< Weight in 1/10lbs */
+	int16_t weight;  /**< Weight in 1/10lbs */
 
-	s32b cost;    /**< Artifact (pseudo-)worth */
+	int32_t cost;    /**< Artifact (pseudo-)worth */
 
 	bitflag flags[OF_SIZE];		/**< Flags */
 	bitflag pval_flags[MAX_PVALS][OF_SIZE];	/**< pval flags */
 
-	byte level;   /** Difficulty level for activation */
+	uint8_t level;   /** Difficulty level for activation */
 
 	int alloc_prob; /** Chance of being generated (i.e. rarity) */
-	byte alloc_min;  /** Minimum depth (can appear earlier) */
-	byte alloc_max;  /** Maximum depth (will NEVER appear deeper) */
+	uint8_t alloc_min;  /** Minimum depth (can appear earlier) */
+	uint8_t alloc_max;  /** Maximum depth (will NEVER appear deeper) */
 
 	bool created;	/**< Whether this artifact has been created */
 	bool seen;	/**< Whether this artifact has been seen this game */
 	bool everseen;	/**< Whether this artifact has ever been seen  */
 
-	u16b effect;     /**< Artifact activation (see effects.c) */
+	uint16_t effect;     /**< Artifact activation (see effects.c) */
 	char *effect_msg;
 
 	random_value time;  /**< Recharge time (if appropriate) */
@@ -411,36 +411,36 @@ typedef struct ego_item
 	char *name;
 	char *text;
 
-	u32b eidx;
+	uint32_t eidx;
 
-	s32b cost;			/* Ego-item "cost" */
+	int32_t cost;			/* Ego-item "cost" */
 
 	bitflag flags[OF_SIZE];		/**< Flags */
 	bitflag pval_flags[MAX_PVALS][OF_SIZE];	/**< pval flags */
 
-	byte level;		/* Minimum level */
-	byte rarity;		/* Object rarity */
-	byte rating;		/* Level rating boost */
+	uint8_t level;		/* Minimum level */
+	uint8_t rarity;		/* Object rarity */
+	uint8_t rating;		/* Level rating boost */
 	int alloc_prob; 	/** Chance of being generated (i.e. rarity) */
-	byte alloc_min;  	/** Minimum depth (can appear earlier) */
-	byte alloc_max;  	/** Maximum depth (will NEVER appear deeper) */
+	uint8_t alloc_min;  	/** Minimum depth (can appear earlier) */
+	uint8_t alloc_max;  	/** Maximum depth (will NEVER appear deeper) */
 
-	byte tval[EGO_TVALS_MAX]; 	/* Legal tval */
-	byte min_sval[EGO_TVALS_MAX];	/* Minimum legal sval */
-	byte max_sval[EGO_TVALS_MAX];	/* Maximum legal sval */
+	uint8_t tval[EGO_TVALS_MAX]; 	/* Legal tval */
+	uint8_t min_sval[EGO_TVALS_MAX];	/* Minimum legal sval */
+	uint8_t max_sval[EGO_TVALS_MAX];	/* Maximum legal sval */
 
 	random_value to_h;     		/* Extra to-hit bonus */
 	random_value to_d; 		/* Extra to-dam bonus */
 	random_value to_a; 		/* Extra to-ac bonus */
 	random_value pval[MAX_PVALS]; 	/* Extra pval bonus */
-	byte num_pvals;			/* Number of pvals used */
+	uint8_t num_pvals;			/* Number of pvals used */
 
-	byte min_to_h;			/* Minimum to-hit value */
-	byte min_to_d;			/* Minimum to-dam value */
-	byte min_to_a;			/* Minimum to-ac value */
-	byte min_pval[MAX_PVALS];	/* Minimum pval */
+	uint8_t min_to_h;			/* Minimum to-hit value */
+	uint8_t min_to_d;			/* Minimum to-dam value */
+	uint8_t min_to_a;			/* Minimum to-ac value */
+	uint8_t min_pval[MAX_PVALS];	/* Minimum pval */
 
-	byte xtra;			/* Extra sustain/resist/power */
+	uint8_t xtra;			/* Extra sustain/resist/power */
 
 	bool everseen;			/* Do not spoil squelch menus */
 } ego_item_type;
@@ -480,42 +480,42 @@ typedef struct object
 	struct ego_item *ego;
 	struct artifact *artifact;
 
-	byte iy;			/* Y-position on map, or zero */
-	byte ix;			/* X-position on map, or zero */
+	uint8_t iy;			/* Y-position on map, or zero */
+	uint8_t ix;			/* X-position on map, or zero */
 
-	byte tval;			/* Item type (from kind) */
-	byte sval;			/* Item sub-type (from kind) */
+	uint8_t tval;			/* Item type (from kind) */
+	uint8_t sval;			/* Item sub-type (from kind) */
 
-	s16b pval[MAX_PVALS];		/* Item extra-parameter */
-	byte num_pvals;			/* Number of pvals in use */
+	int16_t pval[MAX_PVALS];		/* Item extra-parameter */
+	uint8_t num_pvals;			/* Number of pvals in use */
 
-	s16b weight;			/* Item weight */
+	int16_t weight;			/* Item weight */
 
 	bitflag flags[OF_SIZE];		/**< Flags */
 	bitflag known_flags[OF_SIZE];	/**< Player-known flags */
 	bitflag pval_flags[MAX_PVALS][OF_SIZE];	/**< pval flags */
-	u16b ident;			/* Special flags */
+	uint16_t ident;			/* Special flags */
 
-	s16b ac;			/* Normal AC */
-	s16b to_a;			/* Plusses to AC */
-	s16b to_h;			/* Plusses to hit */
-	s16b to_d;			/* Plusses to damage */
+	int16_t ac;			/* Normal AC */
+	int16_t to_a;			/* Plusses to AC */
+	int16_t to_h;			/* Plusses to hit */
+	int16_t to_d;			/* Plusses to damage */
 
-	byte dd, ds;		/* Damage dice/sides */
+	uint8_t dd, ds;		/* Damage dice/sides */
 
-	s16b timeout;		/* Timeout Counter */
+	int16_t timeout;		/* Timeout Counter */
 
-	byte number;		/* Number of items */
-	byte marked;		/* Object is marked */
-	byte ignore;		/* Object is ignored */
+	uint8_t number;		/* Number of items */
+	uint8_t marked;		/* Object is marked */
+	uint8_t ignore;		/* Object is ignored */
 
-	s16b next_o_idx;	/* Next object in stack (if any) */
-	s16b held_m_idx;	/* Monster holding us (if any) */
-	s16b mimicking_m_idx; /* Monster mimicking us (if any) */
+	int16_t next_o_idx;	/* Next object in stack (if any) */
+	int16_t held_m_idx;	/* Monster holding us (if any) */
+	int16_t mimicking_m_idx; /* Monster mimicking us (if any) */
 
-	byte origin;        /* How this item was found */
-	byte origin_depth;  /* What depth the item was found at */
-	u16b origin_xtra;   /* Extra information about origin */
+	uint8_t origin;        /* How this item was found */
+	uint8_t origin_depth;  /* What depth the item was found at */
+	uint16_t origin_xtra;   /* Extra information about origin */
 
 	quark_t note; /* Inscription index */
 } object_type;
@@ -526,13 +526,13 @@ struct flavor
 	struct flavor *next;
 	unsigned int fidx;
 
-	byte tval;      /* Associated object type */
-	byte sval;      /* Associated object sub-type */
+	uint8_t tval;      /* Associated object type */
+	uint8_t sval;      /* Associated object sub-type */
 
-	byte d_attr;    /* Default flavor attribute */
+	uint8_t d_attr;    /* Default flavor attribute */
 	wchar_t d_char;    /* Default flavor character */
 
-	byte x_attr;    /* Desired flavor attribute */
+	uint8_t x_attr;    /* Desired flavor attribute */
 	wchar_t x_char;    /* Desired flavor character */
 };
 
@@ -540,17 +540,17 @@ struct flavor
 /*** Functions ***/
 
 /* chest.c */
-byte chest_trap_type(const object_type *o_ptr);
+uint8_t chest_trap_type(const object_type *o_ptr);
 bool is_trapped_chest(const object_type *o_ptr);
 bool is_locked_chest(const object_type *o_ptr);
 void unlock_chest(object_type *o_ptr);
-s16b chest_check(int y, int x, enum chest_query check_type);
+int16_t chest_check(int y, int x, enum chest_query check_type);
 int count_chests(int *y, int *x, enum chest_query check_type);
-bool do_cmd_open_chest(int y, int x, s16b o_idx);
-bool do_cmd_disarm_chest(int y, int x, s16b o_idx);
+bool do_cmd_open_chest(int y, int x, int16_t o_idx);
+bool do_cmd_disarm_chest(int y, int x, int16_t o_idx);
 
 /* identify.c */
-extern s32b object_last_wield;
+extern int32_t object_last_wield;
 
 bool object_is_known(const object_type *o_ptr);
 bool object_is_known_artifact(const object_type *o_ptr);
@@ -613,8 +613,8 @@ void free_obj_alloc(void);
 bool init_obj_alloc(void);
 object_kind *get_obj_num(int level, bool good, int tval);
 void object_prep(object_type *o_ptr, struct object_kind *kind, int lev, aspect rand_aspect);
-s16b apply_magic(object_type *o_ptr, int lev, bool okay, bool good, bool great, bool extra_roll);
-bool make_object(struct cave *c, object_type *j_ptr, int lev, bool good, bool great, bool extra_roll, s32b *value, int tval);
+int16_t apply_magic(object_type *o_ptr, int lev, bool okay, bool good, bool great, bool extra_roll);
+bool make_object(struct cave *c, object_type *j_ptr, int lev, bool good, bool great, bool extra_roll, int32_t *value, int tval);
 void make_gold(object_type *j_ptr, int lev, int coin_type);
 void copy_artifact_data(object_type *o_ptr, const artifact_type *a_ptr);
 void ego_apply_magic(object_type *o_ptr, int level);
@@ -635,10 +635,10 @@ void reset_visuals(bool load_prefs);
 void object_flags(const object_type *o_ptr, bitflag flags[OF_SIZE]);
 void object_flags_known(const object_type *o_ptr, bitflag flags[OF_SIZE]);
 char index_to_label(int i);
-s16b label_to_inven(int c);
-s16b label_to_equip(int c);
+int16_t label_to_inven(int c);
+int16_t label_to_equip(int c);
 bool wearable_p(const object_type *o_ptr);
-s16b wield_slot(const object_type *o_ptr);
+int16_t wield_slot(const object_type *o_ptr);
 bool slot_can_wield_item(int slot, const object_type *o_ptr);
 const char *mention_use(int slot);
 const char *describe_use(int i);
@@ -649,12 +649,12 @@ void delete_object_idx(int o_idx);
 void delete_object(int y, int x);
 void compact_objects(int size);
 void wipe_o_list(struct cave *c);
-s16b o_pop(void);
+int16_t o_pop(void);
 object_type *get_first_object(int y, int x);
 object_type *get_next_object(const object_type *o_ptr);
 bool is_blessed(const object_type *o_ptr);
-s32b object_value(const object_type *o_ptr, int qty, int verbose);
-s32b object_value_real(const object_type *o_ptr, int qty, int verbose,
+int32_t object_value(const object_type *o_ptr, int qty, int verbose);
+int32_t object_value_real(const object_type *o_ptr, int qty, int verbose,
     bool known);
 bool object_similar(const object_type *o_ptr, const object_type *j_ptr,
 	object_stack_t mode);
@@ -663,7 +663,7 @@ void object_wipe(object_type *o_ptr);
 void object_copy(object_type *o_ptr, const object_type *j_ptr);
 void object_copy_amt(object_type *dst, object_type *src, int amt);
 void object_split(struct object *dest, struct object *src, int amt);
-s16b floor_carry(struct cave *c, int y, int x, object_type *j_ptr);
+int16_t floor_carry(struct cave *c, int y, int x, object_type *j_ptr);
 void drop_near(struct cave *c, object_type *j_ptr, int chance, int y, int x,
 	bool verbose);
 void push_object(int y, int x);
@@ -679,7 +679,7 @@ void floor_item_increase(int item, int num);
 void floor_item_optimize(int item);
 bool inven_carry_okay(const object_type *o_ptr);
 bool inven_stack_okay(const object_type *o_ptr);
-s16b inven_takeoff(int item, int amt);
+int16_t inven_takeoff(int item, int amt);
 void inven_drop(int item, int amt);
 void combine_pack(void);
 void reorder_pack(void);
@@ -721,26 +721,26 @@ bool obj_has_inscrip(const object_type *o_ptr);
 bool obj_is_useable(const object_type *o_ptr);
 bool obj_is_used_aimed(const object_type *o_ptr);
 bool obj_is_used_unaimed(const object_type *o_ptr);
-u16b object_effect(const object_type *o_ptr);
+uint16_t object_effect(const object_type *o_ptr);
 object_type *object_from_item_idx(int item);
 bool obj_needs_aim(object_type *o_ptr);
 bool get_item_okay(int item);
 int scan_items(int *item_list, size_t item_list_max, int mode);
 bool item_is_available(int item, bool (*tester)(const object_type *), int mode);
 extern void display_itemlist(void);
-extern void display_object_idx_recall(s16b o_idx);
-extern void display_object_kind_recall(s16b k_idx);
+extern void display_object_idx_recall(int16_t o_idx);
+extern void display_object_kind_recall(int16_t k_idx);
 
 bool pack_is_full(void);
 bool pack_is_overfull(void);
 void pack_overflow(void);
 
-extern struct object *object_byid(s16b oidx);
+extern struct object *object_byid(int16_t oidx);
 extern void objects_init(void);
 extern void objects_destroy(void);
 
 /* obj-power.c and randart.c */
-s32b object_power(const object_type *o_ptr, int verbose, ang_file *log_file, bool known);
+int32_t object_power(const object_type *o_ptr, int verbose, ang_file *log_file, bool known);
 char *artifact_gen_name(struct artifact *a, const char ***wordlist);
 
 #endif /* !INCLUDED_OBJECT_H */

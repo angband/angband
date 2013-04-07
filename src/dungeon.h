@@ -1,6 +1,6 @@
 #ifndef DUNGEON_H
 #define DUNGEON_H
 
-extern u16b daycount;
+extern uint16_t daycount;
 
 #endif /* !DUNGEON_H */

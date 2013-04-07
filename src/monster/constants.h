@@ -82,7 +82,7 @@ enum
 };
 
 #define RF_SIZE                FLAG_SIZE(RF_MAX)
-#define RF_BYTES	  		   32 /* savefile bytes, i.e. 256 flags */
+#define RF_BYTES	  		   32 /* savefile uint8_ts, i.e. 256 flags */
 
 #define rf_has(f, flag)        flag_has_dbg(f, RF_SIZE, flag, #f, #flag)
 #define rf_next(f, flag)       flag_next(f, RF_SIZE, flag)

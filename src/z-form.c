@@ -24,7 +24,7 @@
  * In general, the following routines take a "buffer", a "max length",
  * a "format string", and some "arguments", and use the format string
  * and the arguments to create a (terminated) string in the buffer
- * (using only the first "max length" bytes), and return the "length"
+ * (using only the first "max length" uint8_ts), and return the "length"
  * of the resulting string, not including the (mandatory) terminator.
  *
  * The format strings allow the basic "sprintf()" format sequences, though
@@ -130,14 +130,14 @@
 /*
  * Basic "vararg" format function.
  *
- * This function takes a buffer, a max byte count, a format string, and
+ * This function takes a buffer, a max uint8_t count, a format string, and
  * a va_list of arguments to the format string, and uses the format string
  * and the arguments to create a string to the buffer.  The string is
  * derived from the format string and the arguments in the manner of the
  * "sprintf()" function, but with some extra "format" commands.  Note that
- * this function will never use more than the given number of bytes in the
+ * this function will never use more than the given number of uint8_ts in the
  * buffer, preventing messy invalid memory references.  This function then
- * returns the total number of non-null bytes written into the buffer.
+ * returns the total number of non-null uint8_ts written into the buffer.
  *
  * Method: Let "str" be the (unlimited) created string, and let "len" be the
  * smaller of "max-1" and "strlen(str)".  We copy the first "len" chars of
@@ -694,7 +694,7 @@ size_t strnfmt(char *buf, size_t max, const char *fmt, ...)
 	/* End the Varargs Stuff */
 	va_end(vp);
 
-	/* Return the number of bytes written */
+	/* Return the number of uint8_ts written */
 	return (len);
 }
 

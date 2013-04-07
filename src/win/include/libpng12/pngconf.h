@@ -478,7 +478,7 @@
  * on the compile line, then pick and choose which ones to define without
  * having to edit this file. It is safe to use the *TRANSFORMS_NOT_SUPPORTED
  * if you only want to have a png-compliant reader/writer but don't need
- * any of the extra transformations.  This saves about 80 kbytes in a
+ * any of the extra transformations.  This saves about 80 kuint8_ts in a
  * typical installation of the library. (PNG_NO_* form added in version
  * 1.0.1c, for consistency)
  */
@@ -1132,7 +1132,7 @@ typedef unsigned long png_uint_32;
 typedef long png_int_32;
 typedef unsigned short png_uint_16;
 typedef short png_int_16;
-typedef unsigned char png_byte;
+typedef unsigned char png_uint8_t;
 
 /* This is usually size_t.  It is typedef'ed just in case you need it to
    change (I'm not sure if you will or not, so I thought I'd be safe) */
@@ -1209,7 +1209,7 @@ typedef png_int_32 png_fixed_point;
 
 /* Add typedefs for pointers */
 typedef void            FAR * png_voidp;
-typedef png_byte        FAR * png_bytep;
+typedef png_uint8_t        FAR * png_uint8_tp;
 typedef png_uint_32     FAR * png_uint_32p;
 typedef png_int_32      FAR * png_int_32p;
 typedef png_uint_16     FAR * png_uint_16p;
@@ -1231,7 +1231,7 @@ typedef double          FAR * png_doublep;
 #endif
 
 /* Pointers to pointers; i.e. arrays */
-typedef png_byte        FAR * FAR * png_bytepp;
+typedef png_uint8_t        FAR * FAR * png_uint8_tpp;
 typedef png_uint_32     FAR * FAR * png_uint_32pp;
 typedef png_int_32      FAR * FAR * png_int_32pp;
 typedef png_uint_16     FAR * FAR * png_uint_16pp;

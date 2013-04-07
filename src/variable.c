@@ -56,27 +56,27 @@ bool character_generated;	/* The character exists */
 bool character_dungeon;		/* The character has a dungeon */
 bool character_saved;		/* The character was just saved to a savefile */
 
-s16b character_icky;		/* Depth of the game in special mode */
-s16b character_xtra;		/* Depth of the game in startup mode */
+int16_t character_icky;		/* Depth of the game in special mode */
+int16_t character_xtra;		/* Depth of the game in startup mode */
 
-u32b seed_randart;		/* Hack -- consistent random artifacts */
+uint32_t seed_randart;		/* Hack -- consistent random artifacts */
 
-u32b seed_flavor;		/* Hack -- consistent object colors */
-u32b seed_town;			/* Hack -- consistent town layout */
+uint32_t seed_flavor;		/* Hack -- consistent object colors */
+uint32_t seed_town;			/* Hack -- consistent town layout */
 
-s32b turn;				/* Current game turn */
+int32_t turn;				/* Current game turn */
 
 int use_graphics;		/* The "graphics" mode is enabled */
 
-s16b signal_count;		/* Hack -- Count interrupts */
+int16_t signal_count;		/* Hack -- Count interrupts */
 
 bool msg_flag;			/* Player has pending message */
 
-u32b inkey_scan;		/* See the "inkey()" function */
+uint32_t inkey_scan;		/* See the "inkey()" function */
 bool inkey_flag;		/* See the "inkey()" function */
 
-s16b o_max = 1;			/* Number of allocated objects */
-s16b o_cnt = 0;			/* Number of live objects */
+int16_t o_max = 1;			/* Number of allocated objects */
+int16_t o_cnt = 0;			/* Number of live objects */
 
 /*
  * Buffer to hold the current savefile name
@@ -109,7 +109,7 @@ char angband_term_name[ANGBAND_TERM_MAX][16] =
 /*
  * Global table of color definitions (mostly zeros)
  */
-byte angband_color_table[MAX_COLORS][4] =
+uint8_t angband_color_table[MAX_COLORS][4] =
 {
 	{0x00, 0x00, 0x00, 0x00}, /* 0  TERM_DARK */
 	{0x00, 0xff, 0xff, 0xff}, /* 1  TERM_WHITE */
@@ -425,7 +425,7 @@ const char *** name_sections;
 /*
  * Specify attr/char pairs for visual special effects for project()
  */
-byte gf_to_attr[GF_MAX][BOLT_MAX];
+uint8_t gf_to_attr[GF_MAX][BOLT_MAX];
 wchar_t gf_to_char[GF_MAX][BOLT_MAX];
 
 
@@ -433,7 +433,7 @@ wchar_t gf_to_char[GF_MAX][BOLT_MAX];
  * Specify color for inventory item text display (by tval)
  * Be sure to use "index & 0x7F" to avoid illegal access
  */
-byte tval_to_attr[128];
+uint8_t tval_to_attr[128];
 
 
 
@@ -557,7 +557,7 @@ bool item_tester_full;
  * Here is a "pseudo-hook" used during calls to "get_item()" and
  * "show_inven()" and "show_equip()", and the choice window routines.
  */
-byte item_tester_tval;
+uint8_t item_tester_tval;
 
 
 /*
@@ -578,7 +578,7 @@ ang_file *text_out_file = NULL;
  * Hack -- function hook to output (colored) text to the
  * screen or to a file.
  */
-void (*text_out_hook)(byte a, const char *str);
+void (*text_out_hook)(uint8_t a, const char *str);
 
 
 /*
@@ -612,5 +612,5 @@ void (*sound_hook)(int sound);
 
 /* Delay in centiseconds before moving to allow another keypress */
 /* Zero means normal instant movement. */
-u16b lazymove_delay = 0;
+uint16_t lazymove_delay = 0;
 

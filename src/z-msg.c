@@ -23,14 +23,14 @@ typedef struct _message_t
 	char *str;
 	struct _message_t *newer;
 	struct _message_t *older;
-	u16b type;
-	u16b count;
+	uint16_t type;
+	uint16_t count;
 } message_t;
 
 typedef struct _msgcolor_t
 {
-	u16b type;
-	byte color;
+	uint16_t type;
+	uint8_t color;
 	struct _msgcolor_t *next;
 } msgcolor_t;
 
@@ -39,8 +39,8 @@ typedef struct _msgqueue_t
 	message_t *head;
 	message_t *tail;
 	msgcolor_t *colors;
-	u32b count;
-	u32b max;
+	uint32_t count;
+	uint32_t max;
 } msgqueue_t;
 
 static msgqueue_t *messages = NULL;
@@ -78,14 +78,14 @@ void messages_free(void)
 	FREE(messages);
 }
 
-u16b messages_num(void)
+uint16_t messages_num(void)
 {
 	return messages->count;
 }
 
 /* Functions for individual messages */
 
-void message_add(const char *str, u16b type)
+void message_add(const char *str, uint16_t type)
 {
 	message_t *m;
 
@@ -124,7 +124,7 @@ void message_add(const char *str, u16b type)
 	}
 }
 
-static message_t *message_get(u16b age)
+static message_t *message_get(uint16_t age)
 {
 	message_t *m = messages->head;
 
@@ -135,25 +135,25 @@ static message_t *message_get(u16b age)
 }
 
 
-const char *message_str(u16b age)
+const char *message_str(uint16_t age)
 {
 	message_t *m = message_get(age);
 	return (m ? m->str : "");
 }
 
-u16b message_count(u16b age)
+uint16_t message_count(uint16_t age)
 {
 	message_t *m = message_get(age);
 	return (m ? m->count : 0);
 }
 
-u16b message_type(u16b age)
+uint16_t message_type(uint16_t age)
 {
 	message_t *m = message_get(age);
 	return (m ? m->type : 0);
 }
 
-byte message_color(u16b age)
+uint8_t message_color(uint16_t age)
 {
 	message_t *m = message_get(age);
 	return (m ? message_type_color(m->type) : TERM_WHITE);
@@ -162,7 +162,7 @@ byte message_color(u16b age)
 
 /* Message-color functions */
 
-void message_color_define(u16b type, byte color)
+void message_color_define(uint16_t type, uint8_t color)
 {
 	msgcolor_t *mc;
 
@@ -188,10 +188,10 @@ void message_color_define(u16b type, byte color)
 	mc->next->color = color;
 }
 
-byte message_type_color(u16b type)
+uint8_t message_type_color(uint16_t type)
 {
 	msgcolor_t *mc;
-	byte color = TERM_WHITE;
+	uint8_t color = TERM_WHITE;
 
 	if (messages)
 	{

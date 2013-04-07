@@ -370,7 +370,7 @@ int button_get_length(void)
 typedef struct _button_mouse_2d
 {
   struct _button_mouse *next;
-  byte id;
+  uint8_t id;
 	wchar_t label[MAX_MOUSE_LABEL]; /*!< Label on the button */
 	int left;                    /*!< Column containing the left edge of the button */
 	int right;                   /*!< Column containing the right edge of the button */
@@ -378,47 +378,47 @@ typedef struct _button_mouse_2d
 	int bottom;                  /*!< Row containing the right edge of the button */
 	ui_event_type type;          /*!< Is the event generated a key or mouse press */
 	keycode_t code;              /*!< Keypress corresponding to the button */
-  byte mods;                   /*!< modifiers sent with the press */
-  byte list;                   /*!< button list to switch to on press */
+  uint8_t mods;                   /*!< modifiers sent with the press */
+  uint8_t list;                   /*!< button list to switch to on press */
 } button_mouse2;
 /* if type is mouse, it is stored in a global, to be used at the location of
  * next non button mouse press. */
 typedef struct _button_list
 {
   struct _button_list *next;
-  byte id;
-  byte prev_list;
-  byte count;
+  uint8_t id;
+  uint8_t prev_list;
+  uint8_t count;
   btye flags; /* if previous list is not removed from screen, if button miss goes back to previous list */
   button_mouse *list;
 } button_list;
 
 extern int button_platform_draw;
 
-int button_add(byte list, button_mouse *src);
-int button_add_key(byte list, byte id, keycode_t code, byte mods, wchar_t *label);
-int button_add_mouse(byte list, byte id, byte button, byte mods, wchar_t *label);
-int button_add_event(byte list, byte id, ui_event *event, wchar_t *label);
+int button_add(uint8_t list, button_mouse *src);
+int button_add_key(uint8_t list, uint8_t id, keycode_t code, uint8_t mods, wchar_t *label);
+int button_add_mouse(uint8_t list, uint8_t id, uint8_t button, uint8_t mods, wchar_t *label);
+int button_add_event(uint8_t list, uint8_t id, ui_event *event, wchar_t *label);
 
-int button_set_delayed(byte list, byte id, bool delayed);
-int button_set_size(byte list, byte id, int width, int height);
-int button_set_pos(byte list, byte id, int y, int x);
-int button_set_label(byte list, byte id, wchar_t *label);
+int button_set_delayed(uint8_t list, uint8_t id, bool delayed);
+int button_set_size(uint8_t list, uint8_t id, int width, int height);
+int button_set_pos(uint8_t list, uint8_t id, int y, int x);
+int button_set_label(uint8_t list, uint8_t id, wchar_t *label);
 
-int button_set_event(byte list, byte id, ui_event *event);
-int button_get_event(byte list, byte id, ui_event *event);
+int button_set_event(uint8_t list, uint8_t id, ui_event *event);
+int button_get_event(uint8_t list, uint8_t id, ui_event *event);
 int button_get_event(int x, int y, ui_event *event);
 int button_get_event(button_mouse2 *button, ui_event *event);
 
 
-int button_show(byte list, byte id);
-int button_hide(byte list, byte id);
+int button_show(uint8_t list, uint8_t id);
+int button_hide(uint8_t list, uint8_t id);
 
-int button_list_push(byte list);
-byte button_list_pop(byte list);
+int button_list_push(uint8_t list);
+uint8_t button_list_pop(uint8_t list);
 
-int button_kill(byte list, byte id);
-int button_kill_list(byte list);
+int button_kill(uint8_t list, uint8_t id);
+int button_kill_list(uint8_t list);
 void button_kill_all(void);
 
 void button_init(button_add_f add, button_kill_f kill);
@@ -426,7 +426,7 @@ void button_set_hooks(button_add_f add, button_kill_f kill);
 void button_free(void);
 
 button_mouse2 *button_get(int x, int y);
-byte button_get_current_list_id(void);
+uint8_t button_get_current_list_id(void);
 
 size_t button_print(int row, int col);
 
@@ -434,7 +434,7 @@ size_t button_print(int row, int col);
       //  ui_event *delayed_event;
       //  button_list *active_list;
       //  button * last_button;
-      //  byte button_list_id;
+      //  uint8_t button_list_id;
       // global button lists:
       //  initial
       //  main

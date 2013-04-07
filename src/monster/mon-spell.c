@@ -306,7 +306,7 @@ static void do_side_effects(int spell, int dam, struct monster *m_ptr, bool seen
 	const struct mon_spell *rs_ptr = &mon_spell_table[spell];
 
 	int i, choice[99], dur = 0, j = 0, count = 0;
-	s32b d = 0;
+	int32_t d = 0;
 
 	bool sustain = FALSE, perma = FALSE, chosen[RSE_MAX] = { 0 };
 

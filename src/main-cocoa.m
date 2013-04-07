@@ -145,7 +145,7 @@ static NSFont *default_font;
     
     /* To address subpixel rendering overdraw problems, we cache all the characters and attributes we're told to draw */
     wchar_t *charOverdrawCache;
-    byte *attrOverdrawCache;
+    uint8_t *attrOverdrawCache;
 }
 
 - (void)drawRect:(NSRect)rect inView:(NSView *)view;
@@ -516,7 +516,7 @@ static int compare_advances(const void *ap, const void *bp)
     
     // make a bitmap context as an example for our layer
     CGColorSpaceRef cs = CGColorSpaceCreateDeviceRGB();
-    CGContextRef exampleCtx = CGBitmapContextCreate(NULL, 1, 1, 8 /* bits per component */, 48 /* bytesPerRow */, cs, kCGImageAlphaNoneSkipFirst | kCGBitmapByteOrder32Host);
+    CGContextRef exampleCtx = CGBitmapContextCreate(NULL, 1, 1, 8 /* bits per component */, 48 /* uint8_tsPerRow */, cs, kCGImageAlphaNoneSkipFirst | kCGBitmapByteOrder32Host);
     CGColorSpaceRelease(cs);
     angbandLayer = CGLayerCreateWithContext(exampleCtx, *(CGSize *)&size, NULL);
     CFRelease(exampleCtx);
@@ -1218,7 +1218,7 @@ Boolean open_when_ready = FALSE;
 /* Sets an Angband color at a given index */
 static void set_color_for_index(int idx)
 {
-    u16b rv, gv, bv;
+    uint16_t rv, gv, bv;
     
     /* Extract the R,G,B data */
     rv = angband_color_table[idx][1];
@@ -1703,8 +1703,8 @@ static void draw_image_tile(CGImageRef image, NSRect srcRect, NSRect dstRect, NS
     CGImageRelease(subimage);
 }
 
-static errr Term_pict_cocoa(int x, int y, int n, const byte *ap,
-                            const wchar_t *cp, const byte *tap,
+static errr Term_pict_cocoa(int x, int y, int n, const uint8_t *ap,
+                            const wchar_t *cp, const uint8_t *tap,
                             const wchar_t *tcp)
 {
     
@@ -1736,10 +1736,10 @@ static errr Term_pict_cocoa(int x, int y, int n, const byte *ap,
     for (i = 0; i < n; i++)
     {
         
-        byte a = *ap++;
+        uint8_t a = *ap++;
         wchar_t c = *cp++;
         
-        byte ta = *tap++;
+        uint8_t ta = *tap++;
         wchar_t tc = *tcp++;
         
         
@@ -1751,8 +1751,8 @@ static errr Term_pict_cocoa(int x, int y, int n, const byte *ap,
             
 
             /* Primary Row and Col */
-            row = ((byte)a & 0x7F) % pict_rows;
-            col = ((byte)c & 0x7F) % pict_cols;
+            row = ((uint8_t)a & 0x7F) % pict_rows;
+            col = ((uint8_t)c & 0x7F) % pict_cols;
             
             NSRect sourceRect;
             sourceRect.origin.x = col * graf_width;
@@ -1761,8 +1761,8 @@ static errr Term_pict_cocoa(int x, int y, int n, const byte *ap,
             sourceRect.size.height = graf_height;
             
             /* Terrain Row and Col */
-            t_row = ((byte)ta & 0x7F) % pict_rows;
-            t_col = ((byte)tc & 0x7F) % pict_cols;
+            t_row = ((uint8_t)ta & 0x7F) % pict_rows;
+            t_col = ((uint8_t)tc & 0x7F) % pict_cols;
             
             NSRect terrainRect;
             terrainRect.origin.x = t_col * graf_width;
@@ -1798,7 +1798,7 @@ static errr Term_pict_cocoa(int x, int y, int n, const byte *ap,
  *
  * Draw several ("n") chars, with an attr, at a given location.
  */
-static errr Term_text_cocoa(int x, int y, int n, byte a, const wchar_t *cp)
+static errr Term_text_cocoa(int x, int y, int n, uint8_t a, const wchar_t *cp)
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     
@@ -1870,7 +1870,7 @@ static errr Term_text_cocoa(int x, int y, int n, byte a, const wchar_t *cp)
                 // Redraw text if we have any
                 if (previouslyDrawnVal != 0)
                 {
-                    byte color = angbandContext->attrOverdrawCache[y * angbandContext->cols + overdrawX]; 
+                    uint8_t color = angbandContext->attrOverdrawCache[y * angbandContext->cols + overdrawX]; 
                     
                     set_color_for_index(color);
                     [angbandContext drawWChar:previouslyDrawnVal inRect:overdrawRect];
@@ -1945,7 +1945,7 @@ static size_t Term_mbcs_cocoa(wchar_t *dest, const char *src, int n)
                             ((unsigned char)src[i+3] & 0x3f);
             i += 3;
         } else {
-            /* Found an invalid multibyte sequence */
+            /* Found an invalid multiuint8_t sequence */
             return (size_t)-1;
         }
         count++;
@@ -2465,7 +2465,7 @@ static BOOL send_event(NSEvent *event)
                 
                 /* Enqueue the keypress */
 #ifdef KC_MOD_ALT
-                byte mods = 0;
+                uint8_t mods = 0;
                 if (mo) mods |= KC_MOD_ALT;
                 if (mx) mods |= KC_MOD_META;
                 if (mc && MODS_INCLUDE_CONTROL(ch)) mods |= KC_MOD_CONTROL;
@@ -2592,7 +2592,7 @@ static void update_term_visibility(void)
     
     /* Make a mask of window flags that matter */
     size_t i;
-    u32b significantWindowFlagMask = 0;
+    uint32_t significantWindowFlagMask = 0;
     for (i=0; i < CHAR_BIT * sizeof significantWindowFlagMask; i++) {
         if (window_flag_desc[i])
         {
@@ -2659,7 +2659,7 @@ static void cocoa_file_open_hook(const char *path, file_type ftype)
     NSString *pathString = [NSString stringWithUTF8String:path];
     if (pathString)
     {   
-        u32b mac_type = 'TEXT';
+        uint32_t mac_type = 'TEXT';
         if (ftype == FTYPE_RAW)
             mac_type = 'DATA';
         else if (ftype == FTYPE_SAVE)

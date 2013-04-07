@@ -44,7 +44,7 @@ static struct history_chart *histories;
 /*
  * This file is used to initialize various variables and arrays for the
  * Angband game.  Note the use of "fd_read()" and "fd_write()" to bypass
- * the common limitation of "read()" and "write()" to only 32767 bytes
+ * the common limitation of "read()" and "write()" to only 32767 uint8_ts
  * at a time.
  *
  * Several of the arrays for Angband are built from "template" files in
@@ -69,7 +69,7 @@ static const char *effect_list[] = {
 	#undef EFFECT
 };
 
-static u32b grab_one_effect(const char *what) {
+static uint32_t grab_one_effect(const char *what) {
 	size_t i;
 
 	/* Scan activations */

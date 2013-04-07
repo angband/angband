@@ -57,7 +57,7 @@ static void flavor_assign_fixed(void)
 }
 
 
-static void flavor_assign_random(byte tval)
+static void flavor_assign_random(uint8_t tval)
 {
 	int i;
 	int flavor_count = 0;
@@ -341,7 +341,7 @@ char index_to_label(int i)
  *
  * Return "-1" if the label does not indicate a real item.
  */
-s16b label_to_inven(int c)
+int16_t label_to_inven(int c)
 {
 	int i;
 
@@ -364,7 +364,7 @@ s16b label_to_inven(int c)
  *
  * Return "-1" if the label does not indicate a real item.
  */
-s16b label_to_equip(int c)
+int16_t label_to_equip(int c)
 {
 	int i;
 
@@ -431,9 +431,9 @@ static int get_inscribed_ammo_slot(const object_type *o_ptr)
  * Used by wield_slot() to find an appopriate slot for ammo. See wield_slot()
  * for information on what this returns.
  */
-static s16b wield_slot_ammo(const object_type *o_ptr)
+static int16_t wield_slot_ammo(const object_type *o_ptr)
 {
-	s16b i, open = 0;
+	int16_t i, open = 0;
 
 	/* If the ammo is inscribed with a slot number, we'll try to put it in */
 	/* that slot, if possible. */
@@ -469,7 +469,7 @@ static s16b wield_slot_ammo(const object_type *o_ptr)
  * will try to a return a stackable slot first (only for ammo), then an open
  * slot if possible, and finally a used (but valid) slot if necessary.
  */
-s16b wield_slot(const object_type *o_ptr)
+int16_t wield_slot(const object_type *o_ptr)
 {
 	/* Slot for equipment */
 	switch (o_ptr->tval)
@@ -745,9 +745,9 @@ void excise_object_idx(int o_idx)
 {
 	object_type *j_ptr;
 
-	s16b this_o_idx, next_o_idx = 0;
+	int16_t this_o_idx, next_o_idx = 0;
 
-	s16b prev_o_idx = 0;
+	int16_t prev_o_idx = 0;
 
 
 	/* Object */
@@ -917,7 +917,7 @@ void delete_object_idx(int o_idx)
  */
 void delete_object(int y, int x)
 {
-	s16b this_o_idx, next_o_idx = 0;
+	int16_t this_o_idx, next_o_idx = 0;
 
 	/* Paranoia */
 	if (!in_bounds(y, x)) return;
@@ -1277,7 +1277,7 @@ void wipe_o_list(struct cave *c)
  * This routine should almost never fail, but in case it does,
  * we must be sure to handle "failure" of this routine.
  */
-s16b o_pop(void)
+int16_t o_pop(void)
 {
 	int i;
 
@@ -1327,7 +1327,7 @@ s16b o_pop(void)
  */
 object_type *get_first_object(int y, int x)
 {
-	s16b o_idx = cave->o_idx[y][x];
+	int16_t o_idx = cave->o_idx[y][x];
 
 	if (o_idx)
 		return object_byid(o_idx);
@@ -1371,7 +1371,7 @@ bool is_blessed(const object_type *o_ptr)
  * Return the "value" of an "unknown" item
  * Make a guess at the value of non-aware items
  */
-static s32b object_value_base(const object_type *o_ptr)
+static int32_t object_value_base(const object_type *o_ptr)
 {
 	/* Use template cost for aware objects */
 	if (object_flavor_is_aware(o_ptr) || o_ptr->ident & IDENT_STORE)
@@ -1409,12 +1409,12 @@ static s32b object_value_base(const object_type *o_ptr)
  * are priced according to their power rating. All ammo, and normal (non-ego)
  * torches are scaled down by AMMO_RESCALER to reflect their impermanence.
  */
-s32b object_value_real(const object_type *o_ptr, int qty, int verbose,
+int32_t object_value_real(const object_type *o_ptr, int qty, int verbose,
 	bool known)
 {
-	s32b value, total_value;
+	int32_t value, total_value;
 
-	s32b power;
+	int32_t power;
 	int a = 1;
 	int b = 5;
 	static file_mode pricing_mode = MODE_WRITE;
@@ -1520,9 +1520,9 @@ s32b object_value_real(const object_type *o_ptr, int qty, int verbose,
  *
  * Note that discounted items stay discounted forever.
  */
-s32b object_value(const object_type *o_ptr, int qty, int verbose)
+int32_t object_value(const object_type *o_ptr, int qty, int verbose)
 {
-	s32b value;
+	int32_t value;
 
 
 	if (object_is_known(o_ptr))
@@ -1864,10 +1864,10 @@ void object_split(struct object *dest, struct object *src, int amt)
  * Find and return the index to the oldest object on the given grid marked as
  * "squelch".
  */
-static s16b floor_get_idx_oldest_squelched(int y, int x)
+static int16_t floor_get_idx_oldest_squelched(int y, int x)
 {
-	s16b squelch_idx = 0;
-	s16b this_o_idx;
+	int16_t squelch_idx = 0;
+	int16_t this_o_idx;
 
 	object_type *o_ptr = NULL;
 
@@ -1887,13 +1887,13 @@ static s16b floor_get_idx_oldest_squelched(int y, int x)
 /*
  * Let the floor carry an object, deleting old squelched items if necessary
  */
-s16b floor_carry(struct cave *c, int y, int x, object_type *j_ptr)
+int16_t floor_carry(struct cave *c, int y, int x, object_type *j_ptr)
 {
 	int n = 0;
 
-	s16b o_idx;
+	int16_t o_idx;
 
-	s16b this_o_idx, next_o_idx = 0;
+	int16_t this_o_idx, next_o_idx = 0;
 
 
 	/* Scan objects in that grid for combination */
@@ -1925,7 +1925,7 @@ s16b floor_carry(struct cave *c, int y, int x, object_type *j_ptr)
 	if (n >= MAX_FLOOR_STACK)
 	{
 		/* Squelch the oldest squelched object */
-		s16b squelch_idx = floor_get_idx_oldest_squelched(y, x);
+		int16_t squelch_idx = floor_get_idx_oldest_squelched(y, x);
 
 		if (squelch_idx)
 			delete_object_idx(squelch_idx);
@@ -2748,7 +2748,7 @@ bool inven_stack_okay(const object_type *o_ptr)
  * Note that this code must remove any location/stack information
  * from the object once it is placed into the inventory.
  */
-extern s16b inven_carry(struct player *p, struct object *o)
+extern int16_t inven_carry(struct player *p, struct object *o)
 {
 	int i, j, k;
 	int n = -1;
@@ -2808,7 +2808,7 @@ extern s16b inven_carry(struct player *p, struct object *o)
 	/* Reorder the pack */
 	if (i < INVEN_MAX_PACK)
 	{
-		s32b o_value, j_value;
+		int32_t o_value, j_value;
 
 		/* Get the "value" of the item */
 		o_value = o->kind->cost;
@@ -2924,7 +2924,7 @@ extern s16b inven_carry(struct player *p, struct object *o)
  *
  * Return the inventory slot into which the item is placed.
  */
-s16b inven_takeoff(int item, int amt)
+int16_t inven_takeoff(int item, int amt)
 {
 	int slot;
 
@@ -3185,8 +3185,8 @@ void reorder_pack(void)
 {
 	int i, j, k;
 
-	s32b o_value;
-	s32b j_value;
+	int32_t o_value;
+	int32_t j_value;
 
 	object_type *o_ptr;
 	object_type *j_ptr;
@@ -3759,7 +3759,7 @@ static void display_object_recall(object_type *o_ptr)
  * This draws the Object Recall subwindow when displaying a particular object
  * (e.g. a helmet in the backpack, or a scroll on the ground)
  */
-void display_object_idx_recall(s16b item)
+void display_object_idx_recall(int16_t item)
 {
 	object_type *o_ptr = object_from_item_idx(item);
 	display_object_recall(o_ptr);
@@ -3770,7 +3770,7 @@ void display_object_idx_recall(s16b item)
  * This draws the Object Recall subwindow when displaying a recalled item kind
  * (e.g. a generic ring of acid or a generic blade of chaos)
  */
-void display_object_kind_recall(s16b k_idx)
+void display_object_kind_recall(int16_t k_idx)
 {
 	object_type object = { 0 };
 	object_prep(&object, &k_info[k_idx], 0, EXTREMIFY);
@@ -3790,7 +3790,7 @@ void display_itemlist(void)
 	int line = 1, x = 0;
 	int cur_x;
 	unsigned i, num, disp_count = 0;
-	byte a;
+	uint8_t a;
 	wchar_t c;
 
 	object_type *types[MAX_ITEMLIST];
@@ -3801,7 +3801,7 @@ void display_itemlist(void)
 	int dungeon_hgt = p_ptr->depth == 0 ? TOWN_HGT : DUNGEON_HGT;
 	int dungeon_wid = p_ptr->depth == 0 ? TOWN_WID : DUNGEON_WID;
 
-	byte attr;
+	uint8_t attr;
 	char buf[80];
 
 	int floor_list[MAX_FLOOR_STACK];
@@ -4190,7 +4190,7 @@ bool obj_is_used_unaimed(const object_type *o_ptr)
 /*
  * Return an object's effect.
  */
-u16b object_effect(const object_type *o_ptr)
+uint16_t object_effect(const object_type *o_ptr)
 {
 	if (o_ptr->artifact)
 		return o_ptr->artifact->effect;
@@ -4388,7 +4388,7 @@ void pack_overflow(void)
 	if (p_ptr->redraw) redraw_stuff(p_ptr);
 }
 
-struct object *object_byid(s16b oidx)
+struct object *object_byid(int16_t oidx)
 {
 	assert(oidx >= 0);
 	assert(oidx <= z_info->o_max);

@@ -30,7 +30,7 @@ typedef struct owner {
 	unsigned int oidx;
 	struct owner *next;
 	char *name;
-	s32b max_cost;
+	int32_t max_cost;
 } owner_type;
 
 struct store {
@@ -39,8 +39,8 @@ struct store {
 	struct owner *owner;
 	unsigned int sidx;
 
-	byte stock_num;			/* Stock -- Number of entries */
-	s16b stock_size;		/* Stock -- Total Size of Array */
+	uint8_t stock_num;			/* Stock -- Number of entries */
+	int16_t stock_size;		/* Stock -- Total Size of Array */
 	object_type *stock;		/* Stock -- Actual stock items */
 
 	unsigned int table_num;     /* Table -- Number of entries */
@@ -53,7 +53,7 @@ void free_stores(void);
 void store_reset(void);
 void store_shuffle(struct store *store);
 void store_maint(struct store *store);
-s32b price_item(const object_type *o_ptr, bool store_buying, int qty);
+int32_t price_item(const object_type *o_ptr, bool store_buying, int qty);
 
 extern struct owner *store_ownerbyidx(struct store *s, unsigned int idx);
 

@@ -26,7 +26,7 @@ typedef struct {
   int message_begin;
   int message_end;
   int message_increase;
-  u32b flag_resist;
+  uint32_t flag_resist;
   int max_timer;
 } mon_timed_effect;
 
@@ -60,7 +60,7 @@ static mon_timed_effect effects[] =
  *
  * Also marks the lore for any appropriate resists.
  */
-static bool mon_resist_effect(const struct monster *mon, int ef_idx, int timer, u16b flag)
+static bool mon_resist_effect(const struct monster *mon, int ef_idx, int timer, uint16_t flag)
 {
 	mon_timed_effect *effect;
 	int resist_chance;
@@ -161,7 +161,7 @@ static bool mon_resist_effect(const struct monster *mon, int ef_idx, int timer, 
  * Return FALSE if the monster was unaffected.
  */
 static bool mon_set_timed(monster_type *m_ptr, int ef_idx, int timer,
-	u16b flag, bool id)
+	uint16_t flag, bool id)
 {
 	mon_timed_effect *effect;
 
@@ -229,7 +229,7 @@ static bool mon_set_timed(monster_type *m_ptr, int ef_idx, int timer,
  *
  * Returns TRUE if the monster's timer changed.
  */
-bool mon_inc_timed(struct monster *m_ptr, int ef_idx, int timer, u16b flag, bool id)
+bool mon_inc_timed(struct monster *m_ptr, int ef_idx, int timer, uint16_t flag, bool id)
 {
 	mon_timed_effect *effect;
 
@@ -264,7 +264,7 @@ bool mon_inc_timed(struct monster *m_ptr, int ef_idx, int timer, u16b flag, bool
  *
  * Returns TRUE if the monster's timer changed.
  */
-bool mon_dec_timed(struct monster *m_ptr, int ef_idx, int timer, u16b flag, bool id)
+bool mon_dec_timed(struct monster *m_ptr, int ef_idx, int timer, uint16_t flag, bool id)
 {
 	assert(ef_idx >= 0 && ef_idx < MON_TMD_MAX);
 	assert(timer > 0);
@@ -285,7 +285,7 @@ bool mon_dec_timed(struct monster *m_ptr, int ef_idx, int timer, u16b flag, bool
  *
  * Returns TRUE if the monster's timer was changed.
  */
-bool mon_clear_timed(struct monster *m_ptr, int ef_idx, u16b flag, bool id)
+bool mon_clear_timed(struct monster *m_ptr, int ef_idx, uint16_t flag, bool id)
 {
 	assert(ef_idx >= 0 && ef_idx < MON_TMD_MAX);
 

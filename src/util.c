@@ -611,7 +611,7 @@ void sound(int val)
  */
 static void msg_flush(int x)
 {
-	byte a = TERM_L_BLUE;
+	uint8_t a = TERM_L_BLUE;
 
 	/* Pause for response */
 	Term_putstr(x, 0, -1, a, "-more-");
@@ -652,12 +652,12 @@ static int message_column = 0;
  * Hack -- Note that "msg("%s", NULL)" will clear the top line even if no
  * messages are pending.
  */
-static void msg_print_aux(u16b type, const char *msg)
+static void msg_print_aux(uint16_t type, const char *msg)
 {
 	int n;
 	char *t;
 	char buf[1024];
-	byte color;
+	uint8_t color;
 	int w, h;
 
 	if (!Term)
@@ -862,7 +862,7 @@ void screen_load(void)
  * At the given location, using the given attribute, if allowed,
  * add the given string.  Do not clear the line.
  */
-void c_put_str(byte attr, const char *str, int row, int col)
+void c_put_str(uint8_t attr, const char *str, int row, int col)
 {
 	/* Position cursor, Dump the attr/text */
 	Term_putstr(col, row, -1, attr, str);
@@ -884,7 +884,7 @@ void put_str(const char *str, int row, int col)
  * Display a string on the screen using an attribute, and clear
  * to the end of the line.
  */
-void c_prt(byte attr, const char *str, int row, int col)
+void c_prt(uint8_t attr, const char *str, int row, int col)
 {
 	/* Clear line, position cursor */
 	Term_erase(col, row, 255);
@@ -918,7 +918,7 @@ void prt(const char *str, int row, int col)
  * This function will correctly handle any width up to the maximum legal
  * value of 256, though it works best for a standard 80 character width.
  */
-void text_out_to_screen(byte a, const char *str)
+void text_out_to_screen(uint8_t a, const char *str)
 {
 	int x, y;
 
@@ -973,7 +973,7 @@ void text_out_to_screen(byte a, const char *str)
 		{
 			int i, n = 0;
 
-			byte av[256];
+			uint8_t av[256];
 			wchar_t cv[256];
 
 			/* Wrap word */
@@ -1042,7 +1042,7 @@ void text_out_to_screen(byte a, const char *str)
  * You must be careful to end all file output with a newline character
  * to "flush" the stored line position.
  */
-void text_out_to_file(byte a, const char *str)
+void text_out_to_file(uint8_t a, const char *str)
 {
 	const char *s;
 	char buf[1024];
@@ -1186,7 +1186,7 @@ void text_out(const char *fmt, ...)
  * Output text to the screen (in color) or to a file depending on the
  * selected hook.
  */
-void text_out_c(byte a, const char *fmt, ...)
+void text_out_c(uint8_t a, const char *fmt, ...)
 {
 	char buf[1024];
 	va_list vp;
@@ -1518,7 +1518,7 @@ bool askfor_aux(char *buf, size_t len, bool (*keypress_h)(char *, size_t, size_t
 	int y, x;
 
 	size_t k = 0;		/* Cursor position */
-	size_t nul = 0;		/* Position of the null byte in the string */
+	size_t nul = 0;		/* Position of the null uint8_t in the string */
 
 	struct keypress ch = { 0 };
 
@@ -1544,7 +1544,7 @@ bool askfor_aux(char *buf, size_t len, bool (*keypress_h)(char *, size_t, size_t
 	/* Truncate the default entry */
 	buf[len-1] = '\0';
 
-	/* Get the position of the null byte */
+	/* Get the position of the null uint8_t */
 	nul = strlen(buf);
 
 	/* Display the default answer */
@@ -1677,7 +1677,7 @@ bool get_string(const char *prompt, char *buf, size_t len)
 /*
  * Request a "quantity" from the user
  */
-s16b get_quantity(const char *prompt, int max)
+int16_t get_quantity(const char *prompt, int max)
 {
 	int amt = 1;
 
@@ -1991,7 +1991,7 @@ int color_char_to_attr(char c)
 
 
 /*
- * Converts a string to a terminal color byte.
+ * Converts a string to a terminal color uint8_t.
  */
 int color_text_to_attr(const char *name)
 {
@@ -2010,7 +2010,7 @@ int color_text_to_attr(const char *name)
 /*
  * Extract a textual representation of an attribute
  */
-const char *attr_to_text(byte a)
+const char *attr_to_text(uint8_t a)
 {
 	if (a < BASIC_COLORS)
 		return (color_table[a].name);
@@ -2067,10 +2067,10 @@ bool char_matches_key(wchar_t c, keycode_t key)
  */
 
 /* Table of gamma values */
-byte gamma_table[256];
+uint8_t gamma_table[256];
 
 /* Table of ln(x / 256) * 256 for x going from 0 -> 255 */
-static const s16b gamma_helper[256] =
+static const int16_t gamma_helper[256] =
 {
 	0, -1420, -1242, -1138, -1065, -1007, -961, -921, -887, -857, -830,
 	-806, -783, -762, -744, -726, -710, -694, -679, -666, -652, -640,
@@ -2159,7 +2159,7 @@ void build_gamma_table(int gamma)
 		 * Store the value in the table so that the
 		 * floating point pow function isn't needed.
 		 */
-		gamma_table[i] = (byte)(((long)(value / 256) * i) / 256);
+		gamma_table[i] = (uint8_t)(((long)(value / 256) * i) / 256);
 	}
 }
 

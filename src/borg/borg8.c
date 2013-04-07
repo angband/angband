@@ -19,9 +19,9 @@ extern bool borg_clock_over;
 #endif /* bablos */
 
 
-byte *test;
-byte *best;
-s32b *b_home_power;
+uint8_t *test;
+uint8_t *best;
+int32_t *b_home_power;
 
 
 /* money Scumming is a type of town scumming for money */
@@ -383,7 +383,7 @@ static void borg_think_home_sell_aux2_slow(  int n, int start_i )
     /* All done */
     if (n == STORE_INVEN_MAX)
     {
-        s32b home_power;
+        int32_t home_power;
 
         /* Examine the home  */
         borg_notice_home(NULL, FALSE);
@@ -513,7 +513,7 @@ static void borg_think_home_sell_aux2_fast(  int n, int start_i )
 {
     borg_item *item;
     borg_item *item2;
-    s32b home_power;
+    int32_t home_power;
     int i, k, p;
     bool skip_it = FALSE;
 
@@ -641,8 +641,8 @@ static void borg_think_home_sell_aux2_fast(  int n, int start_i )
 static void borg_think_home_sell_aux3( )
 {
     int     i;
-    s32b    borg_empty_home_power;
-    s32b    power;
+    int32_t    borg_empty_home_power;
+    int32_t    power;
 
     /* get the starting power */
     borg_notice(TRUE);
@@ -710,12 +710,12 @@ static bool borg_think_home_sell_aux( bool save_best )
 {
     int icky = STORE_INVEN_MAX - 1;
 
-    s32b home_power = -1L;
+    int32_t home_power = -1L;
 
     int p, i = -1;
 
-    byte test_a[STORE_INVEN_MAX];
-    byte best_a[STORE_INVEN_MAX];
+    uint8_t test_a[STORE_INVEN_MAX];
+    uint8_t best_a[STORE_INVEN_MAX];
 
     /* if the best is being saved (see borg_think_shop_grab_aux) */
     /* !FIX THIS NEEDS TO BE COMMENTED BETTER */
@@ -767,7 +767,7 @@ static bool borg_think_home_sell_aux( bool save_best )
     /* swap quantities (this should be all that is different) */
     for (i = 0; i < INVEN_MAX_PACK; i++)
     {
-        byte save_qty;
+        uint8_t save_qty;
         if (i==weapon_swap && weapon_swap !=0) continue;
         if (i==armour_swap && armour_swap !=0) continue;
 
@@ -1127,9 +1127,9 @@ static bool borg_think_shop_sell_aux(void)
     int k, b_k = -1;
     int i, b_i = -1;
     int qty = 1;
-    s32b p, b_p = 0L;
-    s32b c = 0L;
-    s32b b_c = 30001L;
+    int32_t p, b_p = 0L;
+    int32_t c = 0L;
+    int32_t b_c = 30001L;
 
     bool fix = FALSE;
 
@@ -1429,8 +1429,8 @@ static bool borg_think_shop_buy_aux(void)
 
     int k, b_k = -1;
     int n, b_n = -1;
-    s32b p, b_p = 0L;
-    s32b c, b_c = 0L;
+    int32_t p, b_p = 0L;
+    int32_t c, b_c = 0L;
 
     bool fix = FALSE;
 
@@ -1640,9 +1640,9 @@ static bool borg_think_home_buy_aux(void)
     int stack;
     int qty=1;
     int n, b_n = -1;
-    s32b p, b_p = 0L;
-    s32b p_left = 0;
-    s32b p_right = 0;
+    int32_t p, b_p = 0L;
+    int32_t p_left = 0;
+    int32_t p_right = 0;
 
     bool fix = FALSE;
 	bool skip_it = FALSE;
@@ -1894,9 +1894,9 @@ static bool borg_think_shop_grab_aux(void)
     int n, b_n = -1;
     int qty=1;
 
-    s32b s, b_s = 0L;
-    s32b c, b_c = 0L;
-    s32b borg_empty_home_power;
+    int32_t s, b_s = 0L;
+    int32_t c, b_c = 0L;
+    int32_t borg_empty_home_power;
 
 
     /* Dont do this if Sauron is dead */
@@ -2011,7 +2011,7 @@ static bool borg_think_shop_grab_aux(void)
 static bool borg_think_home_grab_aux(void)
 {
     int p, n, b_n = -1;
-    s32b s, b_s = 0L;
+    int32_t s, b_s = 0L;
     int qty=1;
 	bool skip_it = FALSE;
 
@@ -2100,11 +2100,11 @@ static bool borg_think_home_buy_swap_weapon(void)
 
     int slot;
     int old_weapon_swap;
-    s32b old_weapon_swap_value;
+    int32_t old_weapon_swap_value;
     int old_armour_swap;
-    s32b old_armour_swap_value;
+    int32_t old_armour_swap_value;
     int n, b_n = -1;
-    s32b p, b_p = 0L;
+    int32_t p, b_p = 0L;
 
     bool fix = FALSE;
 
@@ -2221,12 +2221,12 @@ static bool borg_think_home_buy_swap_armour(void)
     int hole;
 
     int n, b_n = -1;
-    s32b p, b_p = 0L;
+    int32_t p, b_p = 0L;
     bool fix = FALSE;
     int old_weapon_swap;
-    s32b old_weapon_swap_value;
+    int32_t old_weapon_swap_value;
     int old_armour_swap;
-    s32b old_armour_swap_value;
+    int32_t old_armour_swap_value;
 
 
 
@@ -2966,7 +2966,7 @@ bool borg_think_stair_scum(bool from_town)
 
 	borg_grid *ag = &borg_grids[c_y][c_x];
 
-    byte feat = cave->feat[c_y][c_x];
+    uint8_t feat = cave->feat[c_y][c_x];
 
 	enum borg_need need;
 
@@ -3206,7 +3206,7 @@ bool borg_think_dungeon_lunal(void)
 
 	borg_grid *ag = &borg_grids[c_y][c_x];
 
-    byte feat = cave->feat[c_y][c_x];
+    uint8_t feat = cave->feat[c_y][c_x];
 
     enum borg_need need;
 
@@ -3589,7 +3589,7 @@ bool borg_think_dungeon_munchkin(void)
 
 	borg_grid *ag = &borg_grids[c_y][c_x];
 
-    byte feat = cave->feat[c_y][c_x];
+    uint8_t feat = cave->feat[c_y][c_x];
 
     enum borg_need need;
 

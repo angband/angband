@@ -336,7 +336,7 @@ bool cave_valid_bold(int y, int x)
 /*
  * Hack -- Hallucinatory monster
  */
-static void hallucinatory_monster(byte *a, wchar_t *c)
+static void hallucinatory_monster(uint8_t *a, wchar_t *c)
 {
 	while (1)
 	{
@@ -357,7 +357,7 @@ static void hallucinatory_monster(byte *a, wchar_t *c)
 /*
  * Hack -- Hallucinatory object
  */
-static void hallucinatory_object(byte *a, wchar_t *c)
+static void hallucinatory_object(uint8_t *a, wchar_t *c)
 {
 	
 	while (1)
@@ -394,7 +394,7 @@ static void hallucinatory_object(byte *a, wchar_t *c)
  * that e.g. the lighter version of yellow becomes white in a 16 color term, but
  * light yellow in a full colour term.
  */
-byte get_color(byte a, int attr, int n)
+uint8_t get_color(uint8_t a, int attr, int n)
 {
 	/* Accept any graphical attr (high bit set) */
 	if (a & (0x80)) return (a);
@@ -434,10 +434,10 @@ bool dtrap_edge(int y, int x)
 /**
  * Apply text lighting effects
  */
-static void grid_get_attr(grid_data *g, byte *a)
+static void grid_get_attr(grid_data *g, uint8_t *a)
 {
 	/* Save the high-bit, since it's used for attr inversion. */
-	byte a0 = *a & 0x80;
+	uint8_t a0 = *a & 0x80;
 
 	/* We will never tint traps or treasure */
 	if (feat_is_known_trap(g->f_idx) || feat_is_treasure(g->f_idx)) return;
@@ -502,11 +502,11 @@ static void grid_get_attr(grid_data *g, byte *a)
  * This will probably be done outside of the current text->graphics mappings
  * though.
  */
-void grid_data_as_text(grid_data *g, byte *ap, wchar_t *cp, byte *tap, wchar_t *tcp)
+void grid_data_as_text(grid_data *g, uint8_t *ap, wchar_t *cp, uint8_t *tap, wchar_t *tcp)
 {
 	feature_type *f_ptr = &f_info[g->f_idx];
 
-	byte a = f_ptr->x_attr[g->lighting];
+	uint8_t a = f_ptr->x_attr[g->lighting];
 	wchar_t c = f_ptr->x_char[g->lighting];
 
 	/* Check for trap detection boundaries */
@@ -561,7 +561,7 @@ void grid_data_as_text(grid_data *g, byte *ap, wchar_t *cp, byte *tap, wchar_t *
 		} else if (!is_mimicking(cave_monster(cave, g->m_idx)))	{
 			monster_type *m_ptr = cave_monster(cave, g->m_idx);
 
-			byte da;
+			uint8_t da;
 			wchar_t dc;
 
 			/* Desired attr & char */
@@ -758,7 +758,7 @@ void grid_data_as_text(grid_data *g, byte *ap, wchar_t *cp, byte *tap, wchar_t *
 void map_info(unsigned y, unsigned x, grid_data *g)
 {
 	object_type *o_ptr;
-	byte info;
+	uint8_t info;
 
 	assert(x < DUNGEON_WID);
 	assert(y < DUNGEON_HGT);
@@ -951,7 +951,7 @@ void move_cursor_relative(int y, int x)
  *
  * Note the use of "Term_queue_char()" for efficiency.
  */
-static void print_rel_map(wchar_t c, byte a, int y, int x)
+static void print_rel_map(wchar_t c, uint8_t a, int y, int x)
 {
 	int ky, kx;
 
@@ -1011,7 +1011,7 @@ static void print_rel_map(wchar_t c, byte a, int y, int x)
  *
  * The main screen will always be at least 24x80 in size.
  */
-void print_rel(wchar_t c, byte a, int y, int x)
+void print_rel(wchar_t c, uint8_t a, int y, int x)
 {
 	int ky, kx;
 	int vy, vx;
@@ -1108,9 +1108,9 @@ void cave_light_spot(struct cave *c, int y, int x)
 
 static void prt_map_aux(void)
 {
-	byte a;
+	uint8_t a;
 	wchar_t c;
-	byte ta;
+	uint8_t ta;
 	wchar_t tc;
 	grid_data g;
 
@@ -1169,9 +1169,9 @@ static void prt_map_aux(void)
  */
 void prt_map(void)
 {
-	byte a;
+	uint8_t a;
 	wchar_t c;
-	byte ta;
+	uint8_t ta;
 	wchar_t tc;
 	grid_data g;
 
@@ -1237,13 +1237,13 @@ void display_map(int *cy, int *cx)
 	int x, y;
 	grid_data g;
 
-	byte ta;
+	uint8_t ta;
 	wchar_t tc;
 
-	byte tp;
+	uint8_t tp;
 
 	/* Large array on the stack */
-	byte mp[DUNGEON_HGT][DUNGEON_WID];
+	uint8_t mp[DUNGEON_HGT][DUNGEON_WID];
 
 	monster_race *r_ptr = &r_info[0];
 
@@ -1353,7 +1353,7 @@ void display_map(int *cy, int *cx)
 void do_cmd_view_map(void)
 {
 	int cy, cx;
-	byte w, h;
+	uint8_t w, h;
 	const char *prompt = "Hit any key to continue";
 	if (Term->view_map_hook) {
 		(*(Term->view_map_hook))(Term);
@@ -1482,14 +1482,14 @@ void do_cmd_view_map(void)
  * use of shifting instead of multiplication.
  *
  * Several pieces of information about each cave grid are stored in the
- * "cave->info" array, which is a special two dimensional array of bytes,
+ * "cave->info" array, which is a special two dimensional array of uint8_ts,
  * one for each cave grid, each containing eight separate "flags" which
  * describe some property of the cave grid.  These flags can be checked and
  * modified extremely quickly, especially when special idioms are used to
  * force the compiler to keep a local register pointing to the base of the
  * array.  Special location offset macros can be used to minimize the number
  * of computations which must be performed at runtime.  Note that using a
- * byte for each flag set may be slightly more efficient than using a larger
+ * uint8_t for each flag set may be slightly more efficient than using a larger
  * unit, so if another flag (or two) is needed later, and it must be fast,
  * then the two existing flags which do not have to be fast should be moved
  * out into some other data structure and the new flags should take their
@@ -2121,8 +2121,8 @@ void cave_update_flow(struct cave *c)
 	int flow_tail = 0;
 	int flow_head = 0;
 
-	byte flow_y[FLOW_MAX];
-	byte flow_x[FLOW_MAX];
+	uint8_t flow_y[FLOW_MAX];
+	uint8_t flow_x[FLOW_MAX];
 
 
 	/*** Cycle the flow ***/
@@ -2432,7 +2432,7 @@ bool cave_in_bounds_fully(struct cave *c, int y, int x)
  * This algorithm is similar to, but slightly different from, the one used
  * by "update_view_los()", and very different from the one used by "los()".
  */
-int project_path(u16b *gp, int range, int y1, int x1, int y2, int x2, int flg)
+int project_path(uint16_t *gp, int range, int y1, int x1, int y2, int x2, int flg)
 {
 	int y, x;
 
@@ -2675,7 +2675,7 @@ bool projectable(int y1, int x1, int y2, int x2, int flg)
 	int y, x;
 
 	int grid_n = 0;
-	u16b grid_g[512];
+	uint16_t grid_g[512];
 
 	/* Check the projection path */
 	grid_n = project_path(grid_g, MAX_RANGE, y1, x1, y2, x2, flg);
@@ -2803,13 +2803,13 @@ struct cave *cave = NULL;
 
 struct cave *cave_new(void) {
 	struct cave *c = mem_zalloc(sizeof *c);
-	c->info = C_ZNEW(DUNGEON_HGT, byte_256);
-	c->info2 = C_ZNEW(DUNGEON_HGT, byte_256);
-	c->feat = C_ZNEW(DUNGEON_HGT, byte_wid);
-	c->cost = C_ZNEW(DUNGEON_HGT, byte_wid);
-	c->when = C_ZNEW(DUNGEON_HGT, byte_wid);
-	c->m_idx = C_ZNEW(DUNGEON_HGT, s16b_wid);
-	c->o_idx = C_ZNEW(DUNGEON_HGT, s16b_wid);
+	c->info = C_ZNEW(DUNGEON_HGT, uint8_t_256);
+	c->info2 = C_ZNEW(DUNGEON_HGT, uint8_t_256);
+	c->feat = C_ZNEW(DUNGEON_HGT, uint8_t_wid);
+	c->cost = C_ZNEW(DUNGEON_HGT, uint8_t_wid);
+	c->when = C_ZNEW(DUNGEON_HGT, uint8_t_wid);
+	c->m_idx = C_ZNEW(DUNGEON_HGT, int16_t_wid);
+	c->o_idx = C_ZNEW(DUNGEON_HGT, int16_t_wid);
 
 	c->monsters = C_ZNEW(z_info->m_max, struct monster);
 	c->mon_max = 1;

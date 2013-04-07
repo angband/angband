@@ -269,7 +269,7 @@ static void death_info(const char *title, int row)
 			/* Show 12 items */
 			for (j = 0; (j < 12) && (i < st_ptr->stock_num); j++, i++)
 			{
-				byte attr;
+				uint8_t attr;
 
 				char o_name[80];
 				char tmp_val[80];

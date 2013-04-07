@@ -224,23 +224,23 @@ struct term_data
 
 	char title[255];    /* Window title. */
 
-	s16b mapped;    /* Active state. */
+	int16_t mapped;    /* Active state. */
 
-	s16b rows;        /* rows in picture */
-	s16b cols;        /* columns in picture. */
+	int16_t rows;        /* rows in picture */
+	int16_t cols;        /* columns in picture. */
 
 	char font_name[200]; /* Name of font for storage. */
 	ATSUFontID font_id;
 	float font_size;    /* Scaled ATSU font size. */
 
-	u16b font_wid;
-	u16b font_hgt;
+	uint16_t font_wid;
+	uint16_t font_hgt;
 
-	u16b tile_wid;
-	u16b tile_hgt;
+	uint16_t tile_wid;
+	uint16_t tile_hgt;
 
-	s16b size_wid;    /* Window size in x. */
-	s16b size_hgt;    /* Window size in y. */
+	int16_t size_wid;    /* Window size in x. */
+	int16_t size_hgt;    /* Window size in y. */
 };
 
 struct GlyphInfo
@@ -253,8 +253,8 @@ struct GlyphInfo
 	ATSUStyle style;
 	ATSUTextLayout layout;
 	float font_wid;  /* max character advance. */
-	s32b ascent;
-	s32b descent;
+	int32_t ascent;
+	int32_t descent;
 	bool monospace;
 	float offsets[256][3];
 	float heights[256][3];
@@ -401,7 +401,7 @@ static OSErr path_to_spec(const char *path, FSSpec *spec)
 	FSRef ref;
 
 	/* Convert pathname to FSRef ... */
-	err = FSPathMakeRef((byte*) path, &ref, NULL);
+	err = FSPathMakeRef((uint8_t*) path, &ref, NULL);
 	if (err != noErr) return (err);
 
 	/* ... then FSRef to FSSpec */
@@ -426,7 +426,7 @@ static OSErr spec_to_path(const FSSpec *spec, char *buf, size_t size)
 	if (err != noErr) return (err);
 
 	/* ... then FSRef to pathname */
-	err = FSRefMakePath(&ref, (byte*)buf, size);
+	err = FSRefMakePath(&ref, (uint8_t*)buf, size);
 
 	/* Inform caller of success or failure */
 	return (err);
@@ -438,7 +438,7 @@ static OSErr spec_to_path(const FSSpec *spec, char *buf, size_t size)
  * Set creator and filetype of a file specified by POSIX-style pathname.
  * Returns 0 on success, -1 in case of errors.
  */
-static void fsetfileinfo(const char *pathname, u32b fcreator, u32b ftype)
+static void fsetfileinfo(const char *pathname, uint32_t fcreator, uint32_t ftype)
 {
 	OSErr err;
 	FSSpec spec;
@@ -461,7 +461,7 @@ static void fsetfileinfo(const char *pathname, u32b fcreator, u32b ftype)
 
 static void osx_file_open_hook(const char *path, file_type ftype)
 {
-	u32b mac_type = 'TEXT';
+	uint32_t mac_type = 'TEXT';
 		
 	if (ftype == FTYPE_RAW)
 		mac_type = 'DATA';
@@ -1028,13 +1028,13 @@ static CGImageRef GetTileImage(int row, int col, bool has_alpha)
 
 	size_t tile_wid = td->tile_wid * tile_width;
 	size_t tile_hgt = td->tile_hgt * tile_height;
-	size_t nbytes = (tile_hgt * tile_wid) * 4;
-	void *data = calloc(1, nbytes);
+	size_t nuint8_ts = (tile_hgt * tile_wid) * 4;
+	void *data = calloc(1, nuint8_ts);
 
 	CGContextRef map;
 	map = CGBitmapContextCreate(data, tile_wid, tile_hgt,
 								8,
-								nbytes / tile_hgt,
+								nuint8_ts / tile_hgt,
 								CGColorSpaceCreateDeviceRGB(),
 								kCGImageAlphaPremultipliedLast);
 
@@ -1049,7 +1049,7 @@ static CGImageRef GetTileImage(int row, int col, bool has_alpha)
 	DrawSubimage(map, dst_r, frame.image, src_r);
 
 	CGDataProviderRef prov;
-	prov = CGDataProviderCreateWithData (NULL, data, nbytes, NULL);
+	prov = CGDataProviderCreateWithData (NULL, data, nuint8_ts, NULL);
 
 	CGImageAlphaInfo alphaInfo = kCGImageAlphaPremultipliedLast;
 	size_t pixelBits = 4 * 8;
@@ -1076,7 +1076,7 @@ static CGImageRef GetTileImage(int row, int col, bool has_alpha)
 	return timg; 
 }
 
-static void DrawTile(int x, int y, byte a, wchar_t c, byte ta, wchar_t tc)
+static void DrawTile(int x, int y, uint8_t a, wchar_t c, uint8_t ta, wchar_t tc)
 {
 	term_data *td = (term_data*) Term->data;
 
@@ -1124,31 +1124,31 @@ static void ShowTextAt(int x, int y, int color, int n, const wchar_t *text )
 	UInt8 text_mb[MB_LEN_MAX * 255];
 	wcsncpy(src, text, n);
 	src[n] = L'\0';
-        size_t text_bytes = 0;
+        size_t text_uint8_ts = 0;
  
         /* Copied from FAangband - thanks to nck_m! */
         for (i = 0; i < n; i++) {
             if ((src[i] & 0x7f) == src[i])
-                text_mb[text_bytes++] = (UInt8) src[i];
+                text_mb[text_uint8_ts++] = (UInt8) src[i];
             else if ((src[i] & 0x7ff) == src[i]){
-                text_mb[text_bytes++] = (UInt8) 0xc0 + (src[i] >> 6);
-                text_mb[text_bytes++] = (UInt8) 0x80 + (src[i] & 0x3f);
+                text_mb[text_uint8_ts++] = (UInt8) 0xc0 + (src[i] >> 6);
+                text_mb[text_uint8_ts++] = (UInt8) 0x80 + (src[i] & 0x3f);
             } else if ((src[i] & 0xffff) == src[i]) {
-                text_mb[text_bytes++] = (UInt8) 0xe0 + (src[i] >> 12);
-                text_mb[text_bytes++] = (UInt8) 0x80 + ((src[i] >> 6) & 0x3f);
-                text_mb[text_bytes++] = (UInt8) 0x80 + (src[i] & 0x3f);
+                text_mb[text_uint8_ts++] = (UInt8) 0xe0 + (src[i] >> 12);
+                text_mb[text_uint8_ts++] = (UInt8) 0x80 + ((src[i] >> 6) & 0x3f);
+                text_mb[text_uint8_ts++] = (UInt8) 0x80 + (src[i] & 0x3f);
             } else {
-                text_mb[text_bytes++] = (UInt8) 0xf0 + (src[i] >> 18);
-                text_mb[text_bytes++] = (UInt8) 0x80 + ((src[i] >> 12) & 0x3f);
-                text_mb[text_bytes++] = (UInt8) 0x80 + ((src[i] >> 6) & 0x3f);
-                text_mb[text_bytes++] = (UInt8) 0x80 + (src[i] & 0x3f);
+                text_mb[text_uint8_ts++] = (UInt8) 0xf0 + (src[i] >> 18);
+                text_mb[text_uint8_ts++] = (UInt8) 0x80 + ((src[i] >> 12) & 0x3f);
+                text_mb[text_uint8_ts++] = (UInt8) 0x80 + ((src[i] >> 6) & 0x3f);
+                text_mb[text_uint8_ts++] = (UInt8) 0x80 + (src[i] & 0x3f);
             }
         }
 
-	text_mb[text_bytes] = '\0';
+	text_mb[text_uint8_ts] = '\0';
 
 	CFStringRef text_str = CFStringCreateWithBytes(
-		kCFAllocatorDefault, text_mb, text_bytes,
+		kCFAllocatorDefault, text_mb, text_uint8_ts,
 		kCFStringEncodingUTF8, false);
 	assert(text_str != NULL);
 	CTFontRef font = CTFontCreateWithGraphicsFont(
@@ -1719,7 +1719,7 @@ static errr Term_curs_mac(int x, int y)
 
 	/* Temporarily set stroke color to yellow */
 	wchar_t c;
-	byte a = TERM_YELLOW;
+	uint8_t a = TERM_YELLOW;
 	CGContextSetRGBStrokeColor(focus.ctx, focus.color_info[a][0],
 							focus.color_info[a][1], focus.color_info[a][2], 1);
 
@@ -1802,7 +1802,7 @@ static errr Term_wipe_mac(int x, int y, int n)
  *
  * Draw several ("n") chars, with an attr, at a given location.
  */
-static errr Term_text_mac(int x, int y, int n, byte a, const wchar_t *cp)
+static errr Term_text_mac(int x, int y, int n, uint8_t a, const wchar_t *cp)
 {
 	if(!focus.ctx) activate(focus.active);
 
@@ -1813,8 +1813,8 @@ static errr Term_text_mac(int x, int y, int n, byte a, const wchar_t *cp)
 	return (0);
 }
 
-static errr Term_pict_mac(int x, int y, int n, const byte *ap,
-			const wchar_t *cp, const byte *tap, 
+static errr Term_pict_mac(int x, int y, int n, const uint8_t *ap,
+			const wchar_t *cp, const uint8_t *tap, 
 			const wchar_t *tcp)
 {
 	if(!focus.ctx) activate(focus.active);
@@ -1822,9 +1822,9 @@ static errr Term_pict_mac(int x, int y, int n, const byte *ap,
 	/* Scan the input */
 	for (int i = 0; i < n; i++)
 	{
-		byte a = *ap++;
+		uint8_t a = *ap++;
 		wchar_t c = *cp++;
-		byte ta = *tap++;
+		uint8_t ta = *tap++;
 		wchar_t tc = *tcp++;
 
 		/* Hack -- a filler for tiles */
@@ -1894,7 +1894,7 @@ static size_t Term_mbcs_mac(wchar_t *dest, const char *src, int n)
                             ((unsigned char)src[i+3] & 0x3f);
             i += 3;
         } else {
-            /* Found an invalid multibyte sequence */
+            /* Found an invalid multiuint8_t sequence */
             return (size_t)-1;
         }
         count++;
@@ -1973,7 +1973,7 @@ static void term_data_link(int i)
 /*
  * (Carbon, Bundle)
  * Return a POSIX pathname of the lib directory, or NULL if it can't be
- * located.  Caller must supply a buffer along with its size in bytes,
+ * located.  Caller must supply a buffer along with its size in uint8_ts,
  * where returned pathname will be stored.
  */
 static char *locate_lib(char *buf, size_t size)
@@ -1988,7 +1988,7 @@ static char *locate_lib(char *buf, size_t size)
 	if (!main_url) return (NULL);
 
 	/* Get the URL in the file system's native string representation */
-	success = CFURLGetFileSystemRepresentation(main_url, TRUE, (byte*)buf, size);
+	success = CFURLGetFileSystemRepresentation(main_url, TRUE, (uint8_t*)buf, size);
 
 	/* Free the url */
 	CFRelease(main_url);
@@ -2440,7 +2440,7 @@ static void init_aboutdialogcontent()
 	
 	/* Set the application name from the constants set in defines.h */
 	char *applicationName = format("%s", buildid);
-	CFStringRef cfstr_applicationName = CFStringCreateWithBytes(NULL, (byte *)applicationName,
+	CFStringRef cfstr_applicationName = CFStringCreateWithBytes(NULL, (uint8_t *)applicationName,
 										strlen(applicationName), kCFStringEncodingASCII, false);
 	HIViewFindByID(HIViewGetRoot(aboutDialog), aboutDialogName, &aboutDialogViewRef);
 	SetControlData(aboutDialogViewRef, kControlEntireControl, kControlStaticTextCFStringTag, sizeof(cfstr_applicationName), &cfstr_applicationName);
@@ -2448,7 +2448,7 @@ static void init_aboutdialogcontent()
 	
 	/* Set the application copyright as set up in variable.c */
 	HIViewFindByID(HIViewGetRoot(aboutDialog), aboutDialogCopyright, &aboutDialogViewRef);
-	CFStringRef cfstr_applicationCopyright = CFStringCreateWithBytes(NULL, (byte *)copyright,
+	CFStringRef cfstr_applicationCopyright = CFStringCreateWithBytes(NULL, (uint8_t *)copyright,
 										strlen(copyright), kCFStringEncodingASCII, false);
 	SetControlData(aboutDialogViewRef, kControlEntireControl, kControlStaticTextCFStringTag, sizeof(cfstr_applicationCopyright), &cfstr_applicationCopyright);
 	CFRelease(cfstr_applicationCopyright);
@@ -2654,7 +2654,7 @@ static void init_menubar(void)
 			char buf[15];
 			/* Tile size */
 			strnfmt((char*)buf, 15, "%d", i);
-			CFStringRef cfstr = CFStringCreateWithBytes ( NULL, (byte*) buf,
+			CFStringRef cfstr = CFStringCreateWithBytes ( NULL, (uint8_t*) buf,
 									strlen(buf), kCFStringEncodingASCII, false);
 			AppendMenuItemTextWithCFString(m, cfstr, 0, j, NULL);
 			SetMenuItemRefCon(m, i-MIN_FONT+1, i);
@@ -2814,7 +2814,7 @@ static void updateRecentItems(char *savefile)
 	CFDataRef recentFileData;
 
 	/* Convert the save path to an FSRef, then an Alias, and convert to data ready for storage */
-	err = FSPathMakeRef((byte *)savefile, &recentFileRef, NULL);
+	err = FSPathMakeRef((uint8_t *)savefile, &recentFileRef, NULL);
 	if (err != noErr) return;
 	err = FSNewAlias(NULL, &recentFileRef, &recentFileAlias);
 	if (err != noErr) return;
@@ -2836,7 +2836,7 @@ static void updateRecentItems(char *savefile)
 		 * anyway, and this allows network shares or removeable drives to come back later */
 		err = FSResolveAlias(NULL, recentFileAlias, &recentFileRef, &updateAlias);
 		if (err != noErr) continue;
-		err = FSRefMakePath(&recentFileRef, (byte *)recentFilePath, 1024);
+		err = FSRefMakePath(&recentFileRef, (uint8_t *)recentFilePath, 1024);
 		if (err != noErr) continue;
 
 		/* Remove the item from the array if the paths match */
@@ -2895,7 +2895,7 @@ static OSStatus OpenRecentCommand(EventHandlerCallRef inCallRef,
 		CFDataGetBytes(recentFileData, CFRangeMake(0, CFDataGetLength(recentFileData)), (UInt8 *) *recentFileAlias);
 		err = FSResolveAlias(NULL, recentFileAlias, &recentFileRef, &updateAlias);
 		if (err != noErr) return eventNotHandledErr;
-		err = FSRefMakePath(&recentFileRef, (byte *)savefile, 1024);
+		err = FSRefMakePath(&recentFileRef, (uint8_t *)savefile, 1024);
 		if (err != noErr) return eventNotHandledErr;
 		
 		cmd.command = CMD_LOADFILE;
@@ -3627,7 +3627,7 @@ static OSStatus KeyboardCommand ( EventHandlerCallRef inCallRef,
 	bool mo = (evt_mods & optionKey) ? TRUE : FALSE;
 	bool mx = (evt_mods & cmdKey) ? TRUE : FALSE;
 	bool kp = FALSE;
-	byte mods = (mo ? KC_MOD_ALT : 0) | (mx ? KC_MOD_META : 0);
+	uint8_t mods = (mo ? KC_MOD_ALT : 0) | (mx ? KC_MOD_META : 0);
 
 	keycode_t ch = 0;
 

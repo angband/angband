@@ -101,7 +101,7 @@ static struct set {
  * We go up to +24 here - anything higher is inhibited
  * N.B. Not all stats count equally towards this total
  */
-static s16b ability_power[25] =
+static int16_t ability_power[25] =
 	{0, 0, 0, 0, 0, 0, 0, 2, 4, 6, 8,
 	12, 16, 20, 24, 30, 36, 42, 48, 56, 64,
 	74, 84, 96, 110};
@@ -109,11 +109,11 @@ static s16b ability_power[25] =
 /**
  * Calculate the rating for a given slay combination
  */
-static s32b slay_power(const object_type *o_ptr, int verbose, ang_file*
+static int32_t slay_power(const object_type *o_ptr, int verbose, ang_file*
 	log_file, bool known)
 {
 	bitflag s_index[OF_SIZE], f[OF_SIZE], f2[OF_SIZE];
-	u32b sv = 0;
+	uint32_t sv = 0;
 	int i, j;
 	int mult;
 	const struct slay *best_s_ptr = NULL;
@@ -127,7 +127,7 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file*
 	else
 		object_flags_known(o_ptr, f);
 
-	/* Combine the slay bytes into an index value, return if there are none */
+	/* Combine the slay uint8_ts into an index value, return if there are none */
 	of_copy(s_index, f);
 	create_mask(f2, FALSE, OFT_SLAY, OFT_KILL, OFT_BRAND, OFT_MAX);
 
@@ -213,10 +213,10 @@ static int bow_multiplier(int sval)
 /*
  * Evaluate the object's overall power level.
  */
-s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
+int32_t object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 	bool known)
 {
-	s32b p = 0, q = 0, slay_pwr = 0, dice_pwr = 0;
+	int32_t p = 0, q = 0, slay_pwr = 0, dice_pwr = 0;
 	unsigned int i, j;
 	int extra_stat_bonus = 0, mult = 1, num_slays = 0, k = 1;
 	bitflag flags[OF_SIZE], mask[OF_SIZE];
