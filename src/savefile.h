@@ -79,6 +79,7 @@ int rd_history(void);
 int rd_null(void);
 
 /* save.c */
+void wr_description(void);
 void wr_randomizer(void);
 void wr_options(void);
 void wr_messages(void);

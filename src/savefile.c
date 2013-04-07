@@ -92,6 +92,7 @@ static const struct {
 	void (*save)(void);
 	u32b version;	
 } savers[] = {
+	{ "description", wr_description, 1 },
 	{ "rng", wr_randomizer, 1 },
 	{ "options", wr_options, 2 },
 	{ "messages", wr_messages, 1 },
@@ -115,6 +116,7 @@ static const struct {
 
 /** Savefile loading functions */
 static const struct blockinfo loaders[] = {
+	{ "description", rd_null, 1 },
 	{ "ghost", rd_null, 1 },
 	{ "randarts", rd_null, 3 },
 	{ "rng", rd_randomizer, 1 },
