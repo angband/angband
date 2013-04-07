@@ -15,6 +15,10 @@ bool savefile_load(const char *path);
  */
 bool savefile_save(const char *path);
 
+/**
+ * Try to get a description for this savefile.
+ */
+const char *savefile_get_description(const char *path);
 
 
 /*** Ignore these ***/

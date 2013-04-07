@@ -467,7 +467,7 @@ static bool check_header(ang_file *f) {
 }
 
 /* Get the next block header from the savefile */
-errr next_blockheader(ang_file *f, struct blockheader *b) {
+static errr next_blockheader(ang_file *f, struct blockheader *b) {
 	byte savefile_head[SAVEFILE_HEAD_SIZE];
 	size_t len;
 
@@ -476,7 +476,6 @@ errr next_blockheader(ang_file *f, struct blockheader *b) {
 		return 1;
 
 	if (len != SAVEFILE_HEAD_SIZE || savefile_head[15] != 0) {
-		note("Savefile is corrupted -- block header mangled.");
 		return -1;
 	}
 
@@ -498,7 +497,7 @@ errr next_blockheader(ang_file *f, struct blockheader *b) {
 }
 
 /* Find the right loader for this block, return it */
-loader_t find_loader(struct blockheader *b, const struct blockinfo *loaders) {
+static loader_t find_loader(struct blockheader *b, const struct blockinfo *loaders) {
 	size_t i = 0;
 
 	/* Find the right loader */
@@ -513,28 +512,26 @@ loader_t find_loader(struct blockheader *b, const struct blockinfo *loaders) {
 }
 
 /* Load a given block with the given loader */
-bool load_block(ang_file *f, struct blockheader *b, loader_t loader) {
+static bool load_block(ang_file *f, struct blockheader *b, loader_t loader) {
 	/* Allocate space for the buffer */
 	buffer = mem_alloc(b->size);
 	buffer_pos = 0;
 	buffer_check = 0;
 
 	buffer_size = file_read(f, (char *) buffer, b->size);
-	if (buffer_size != b->size) {
-		note("Savefile is corrupted -- block too short.");
-		mem_free(buffer);
-		return FALSE;
-	}
-
-	/* Try loading */
-	if (loader() != 0) {
-		note("Savefile is corrupted.");
+	if (buffer_size != b->size ||
+			loader() != 0) {
 		mem_free(buffer);
 		return FALSE;
 	}
 
 	mem_free(buffer);
 	return TRUE;
+}
+
+/* Skip a block */
+static void skip_block(ang_file *f, struct blockheader *b) {
+	file_skip(f, b->size);
 }
 
 /* Try to load a savefile */
@@ -556,15 +553,60 @@ static bool try_load(ang_file *f, const struct blockinfo *loaders) {
 			return FALSE;
 		}
 
-		if (!load_block(f, &b, loader))
+		if (!load_block(f, &b, loader)) {
+			note(format("Savefile corrupted - Couldn't load block %s", b.name));
 			return FALSE;
+		}
+	}
+
+	if (err == -1) {
+		note("Savefile is corrupted -- block header mangled.");
+		return FALSE;
 	}
 
 	/* XXX Reset cause of death */
 	if (p_ptr->chp >= 0)
 		my_strcpy(p_ptr->died_from, "(alive and well)", sizeof(p_ptr->died_from));
 
-	return err == -1 ? FALSE : TRUE;
+	return TRUE;
+}
+
+/* XXX this isn't nice but it'll have to do */
+static char savefile_desc[120];
+
+static int get_desc(void) {
+	rd_string(savefile_desc, sizeof savefile_desc);
+	return 0;
+}
+
+/**
+ * Try to get the 'description' block from a savefile.  Fail gracefully.
+ */
+const char *savefile_get_description(const char *path) {
+	errr err;
+	struct blockheader b;
+
+	ang_file *f = file_open(path, MODE_READ, FTYPE_TEXT);
+	if (!f) return NULL;
+
+	/* Blank the description */
+	savefile_desc[0] = 0;
+
+	if (!check_header(f)) {
+		my_strcpy(savefile_desc, "Invalid savefile", sizeof savefile_desc);
+	} else {
+		while ((err = next_blockheader(f, &b)) == 0) {
+			if (!streq(b.name, "description")) {
+				skip_block(f, &b);
+				continue;
+			}
+			load_block(f, &b, get_desc);
+			break;
+		}
+	}
+
+	file_close(f);
+	return savefile_desc;
 }
 
 
