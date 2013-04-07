@@ -703,22 +703,43 @@ enum
 
 enum
 {
-	FF_PWALK        = 0x00000001,
-	FF_PPASS        = 0x00000002,
-	FF_MWALK        = 0x00000004,
-	FF_MPASS        = 0x00000008,
-	FF_LOOK         = 0x00000010,
-	FF_DIG          = 0x00000020,
-	FF_DOOR         = 0x00000040,
-	FF_EXIT_UP      = 0x00000080,
-	FF_EXIT_DOWN    = 0x00000100,
-	FF_PERM         = 0x00000200,
-	FF_TRAP         = 0x00000400,
-	FF_SHOP         = 0x00000800,
-	FF_HIDDEN       = 0x00001000,
-	FF_BORING       = 0x00002000
+	FF_NONE,
+	FF_PWALK,
+	FF_PPASS,
+	FF_MWALK,
+	FF_MPASS,
+	FF_LOOK,
+	FF_DIG,
+	FF_DOOR,
+	FF_EXIT_UP,
+	FF_EXIT_DOWN,
+	FF_PERM,
+	FF_TRAP,
+	FF_SHOP,
+	FF_HIDDEN,
+	FF_BORING,
+	FF_MAX
 };
 
+#define FF_SIZE               FLAG_SIZE(FF_MAX)
+
+#define ff_has(f, flag)        flag_has_dbg(f, FF_SIZE, flag, #f, #flag)
+#define ff_next(f, flag)       flag_next(f, FF_SIZE, flag)
+#define ff_is_empty(f)         flag_is_empty(f, FF_SIZE)
+#define ff_is_full(f)          flag_is_full(f, FF_SIZE)
+#define ff_is_inter(f1, f2)    flag_is_inter(f1, f2, FF_SIZE)
+#define ff_is_subset(f1, f2)   flag_is_subset(f1, f2, FF_SIZE)
+#define ff_is_equal(f1, f2)    flag_is_equal(f1, f2, FF_SIZE)
+#define ff_on(f, flag)         flag_on_dbg(f, FF_SIZE, flag, #f, #flag)
+#define ff_off(f, flag)        flag_off(f, FF_SIZE, flag)
+#define ff_wipe(f)             flag_wipe(f, FF_SIZE)
+#define ff_setall(f)           flag_setall(f, FF_SIZE)
+#define ff_negate(f)           flag_negate(f, FF_SIZE)
+#define ff_copy(f1, f2)        flag_copy(f1, f2, FF_SIZE)
+#define ff_union(f1, f2)       flag_union(f1, f2, FF_SIZE)
+#define ff_comp_union(f1, f2)  flag_comp_union(f1, f2, FF_SIZE)
+#define ff_inter(f1, f2)       flag_inter(f1, f2, FF_SIZE)
+#define ff_diff(f1, f2)        flag_diff(f1, f2, FF_SIZE)
 
 /*** Macro Definitions ***/
 
@@ -774,63 +795,6 @@ enum
 #define in_bounds_fully(Y,X) \
 	(((Y) > 0) && ((Y) < DUNGEON_HGT-1) && \
 	 ((X) > 0) && ((X) < DUNGEON_WID-1))
-
-/*
- * Determine if a "legal" grid is a "floor" grid
- *
- * Line 1 -- forbid doors, rubble, seams, walls
- *
- * Note the use of the new "CAVE_WALL" flag.
- */
-#define cave_floor_bold(Y,X) \
-	(!(cave->info[Y][X] & (CAVE_WALL)))
-
-/*
- * Determine if a "legal" grid is a "clean" floor grid
- *
- * Line 1 -- forbid non-floors
- * Line 2 -- forbid normal objects
- */
-#define cave_clean_bold(Y,X) \
-	((cave->feat[Y][X] == FEAT_FLOOR) && \
-	 (cave->o_idx[Y][X] == 0))
-
-/*
- * Determine if a "legal" grid is an "empty" floor grid
- *
- * Line 1 -- forbid doors, rubble, seams, walls
- * Line 2 -- forbid player/monsters
- */
-#define cave_empty_bold(Y,X) \
-	(cave_floor_bold(Y,X) && \
-	 (cave->m_idx[Y][X] == 0))
-
-/*
- * Determine if a "legal" grid is an "naked" floor grid
- *
- * Line 1 -- forbid non-floors
- * Line 2 -- forbid normal objects
- * Line 3 -- forbid player/monsters
- */
-#define cave_naked_bold(Y,X) \
-	((cave->feat[Y][X] == FEAT_FLOOR) && \
-	 (cave->o_idx[Y][X] == 0) && \
-	 (cave->m_idx[Y][X] == 0))
-
-
-/*
- * Determine if a "legal" grid is "permanent"
- *
- * Line 1 -- perma-walls
- * Line 2-3 -- stairs
- * Line 4-5 -- shop doors
- */
-#define cave_perma_bold(Y,X) \
-	((cave->feat[Y][X] >= FEAT_PERM_EXTRA) || \
-	 ((cave->feat[Y][X] == FEAT_LESS) || \
-	  (cave->feat[Y][X] == FEAT_MORE)) || \
-	 ((cave->feat[Y][X] >= FEAT_SHOP_HEAD) && \
-	  (cave->feat[Y][X] <= FEAT_SHOP_TAIL)))
 
 
 /*

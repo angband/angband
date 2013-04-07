@@ -419,7 +419,7 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 		int nx = GRID_X(path_g[i]);
 
 		/* Hack -- Stop before hitting walls */
-		if (!cave_floor_bold(ny, nx)) break;
+		if (!cave_ispassable(cave, ny, nx)) break;
 
 		/* Advance */
 		x = nx;

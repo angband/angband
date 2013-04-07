@@ -445,7 +445,7 @@ N:48:secret door
 G:#:w
 P:10
 M:56
-F:HIDDEN
+F:HIDDEN | BORING
 
 # 0x31 --> pile of rubble
 
@@ -460,7 +460,7 @@ X:0:0:0:1
 N:50:magma vein
 G:%:s
 P:12
-F:DIG
+F:DIG | BORING
 X:0:0:0:2
 
 # 0x33 --> quartz vein
@@ -468,7 +468,7 @@ X:0:0:0:2
 N:51:quartz vein
 G:%:w
 P:11
-F:DIG
+F:DIG | BORING
 X:0:0:0:3
 
 # 0x34 --> magma vein + treasure
@@ -477,7 +477,7 @@ N:52:magma vein
 G:%:s
 P:12
 M:50
-F:DIG
+F:DIG | BORING
 X:0:0:0:2
 
 # 0x35 --> quartz vein + treasure
@@ -486,7 +486,7 @@ N:53:quartz vein
 G:%:w
 P:11
 M:51
-F:DIG
+F:DIG | BORING
 X:0:0:0:3
 
 # 0x36 --> magma vein + known treasure
@@ -510,7 +510,7 @@ X:0:0:0:3
 N:56:granite wall
 G:#:w
 P:10
-F:DIG
+F:DIG | BORING
 X:0:0:0:4
 
 # 0x39 --> granite wall -- inner
@@ -519,7 +519,7 @@ N:57:granite wall
 G:#:w
 P:10
 M:56
-F:DIG
+F:DIG | BORING
 X:0:0:0:4
 
 # 0x3A --> granite wall -- outer
@@ -528,7 +528,7 @@ N:58:granite wall
 G:#:w
 P:10
 M:56
-F:DIG
+F:DIG | BORING
 X:0:0:0:4
 
 # 0x3B --> granite wall -- solid
@@ -537,7 +537,7 @@ N:59:granite wall
 G:#:w
 P:10
 M:56
-F:DIG
+F:DIG | BORING
 X:0:0:0:4
 
 # 0x3C --> permanent wall -- basic (perm)
@@ -545,7 +545,7 @@ X:0:0:0:4
 N:60:permanent wall
 G:#:u
 P:10
-F:PERM
+F:PERM | BORING
 
 # 0x3D --> permanent wall -- inner (perm)
 
@@ -553,7 +553,7 @@ N:61:permanent wall
 G:#:u
 P:10
 M:60
-F:PERM
+F:PERM | BORING
 
 # 0x3E --> permanent wall -- outer (perm)
 
@@ -561,7 +561,7 @@ N:62:permanent wall
 G:#:u
 P:10
 M:60
-F:PERM
+F:PERM | BORING
 
 # 0x3F --> permanent wall -- solid (perm)
 
@@ -569,7 +569,7 @@ N:63:permanent wall
 G:#:u
 P:10
 M:60
-F:PERM
+F:PERM | BORING
 
 # holder for trap detected border floor tile
 N:64:open floor
@@ -581,7 +581,7 @@ F:PWALK | PPASS | MWALK | MPASS | LOOK | BORING
 N:65:granite wall
 G:#:G
 P:10
-F:DIG
+F:DIG | BORING
 X:0:0:0:4
 
 

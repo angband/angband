@@ -133,7 +133,7 @@ static void do_cmd_wiz_hack_ben(void)
 				/* Display player/floors/walls */
 				if ((y == py) && (x == px))
 					print_rel(L'@', a, y, x);
-				else if (cave_floor_bold(y, x))
+				else if (cave_ispassable(cave, y, x))
 					print_rel(L'*', a, y, x);
 				else
 					print_rel(L'#', a, y, x);
@@ -1386,7 +1386,7 @@ static void do_cmd_wiz_named(monster_race *r, bool slp)
 		scatter(&y, &x, py, px, d, 0);
 
 		/* Require empty grids */
-		if (!cave_empty_bold(y, x)) continue;
+		if (!cave_isempty(cave, y, x)) continue;
 
 		/* Place it (allow groups) */
 		if (place_new_monster(cave, y, x, r, slp, TRUE, ORIGIN_DROP_WIZARD)) break;
@@ -1478,12 +1478,12 @@ static void do_cmd_wiz_query(void)
 			if (!mask && (cave->info[y][x] & (CAVE_MARK))) continue;
 
 			/* Color */
-			if (cave_floor_bold(y, x)) a = TERM_YELLOW;
+			if (cave_ispassable(cave, y, x)) a = TERM_YELLOW;
 
 			/* Display player/floors/walls */
 			if ((y == py) && (x == px))
 				print_rel(L'@', a, y, x);
-			else if (cave_floor_bold(y, x))
+			else if (cave_ispassable(cave, y, x))
 				print_rel(L'*', a, y, x);
 			else
 				print_rel(L'#', a, y, x);
@@ -1932,7 +1932,7 @@ void do_cmd_debug(void)
 		/* Create a trap */
 		case 'T':
 		{
-			if (cave->feat[p_ptr->py][p_ptr->px] != FEAT_FLOOR) 
+			if (!cave_isfloor(cave, p_ptr->py, p_ptr->px))
 				msg("You can't place a trap there!");
 			else if (p_ptr->depth == 0)
 				msg("You can't place a trap in the town!");
