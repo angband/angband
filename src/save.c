@@ -26,6 +26,28 @@
 #include "savefile.h"
 #include "squelch.h"
 
+
+/*
+ * Write a description of the character
+ */
+void wr_description(void)
+{
+	char buf[1024];
+
+	if (p_ptr->is_dead)
+		strnfmt(buf, sizeof buf, "%s, dead (%s)", op_ptr->full_name, p_ptr->died_from);
+	else
+		strnfmt(buf, sizeof buf, "%s, L%d %s %s, at DL%d",
+				op_ptr->full_name,
+				p_ptr->lev,
+				p_ptr->race->name,
+				p_ptr->class->name,
+				p_ptr->depth);
+
+	wr_string(buf);
+}
+
+
 /*
  * Write an "item" record
  */

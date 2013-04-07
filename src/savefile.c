@@ -71,12 +71,28 @@
 static const byte savefile_magic[4] = { 83, 97, 118, 101 };
 static const byte savefile_name[4] = "VNLA";
 
+/* Some useful types */
+typedef int (*loader_t)(void);
+
+struct blockheader {
+	char name[16];
+	u32b version;
+	u32b size;
+};
+
+struct blockinfo {
+	char name[16];
+	loader_t loader;
+	u32b version;
+};
+
 /** Savefile saving functions */
 static const struct {
 	char name[16];
 	void (*save)(void);
 	u32b version;	
 } savers[] = {
+	{ "description", wr_description, 1 },
 	{ "rng", wr_randomizer, 1 },
 	{ "options", wr_options, 2 },
 	{ "messages", wr_messages, 1 },
@@ -99,16 +115,13 @@ static const struct {
 };
 
 /** Savefile loading functions */
-static const struct {
-	char name[16];
-	int (*load)(void);
-	u32b version;
-} loaders[] = {
+static const struct blockinfo loaders[] = {
+	{ "description", rd_null, 1 },
+	{ "ghost", rd_null, 1 },
+	{ "randarts", rd_null, 3 },
 	{ "rng", rd_randomizer, 1 },
-	{ "options", rd_options_1, 1 },
 	{ "options", rd_options_2, 2 },
 	{ "messages", rd_messages, 1 },
-	{ "monster memory", rd_monster_memory_1, 1 },
 	{ "monster memory", rd_monster_memory_2, 2 },
 	{ "object memory", rd_object_memory, 1 },
 	{ "quests", rd_quests, 1 },
@@ -119,7 +132,6 @@ static const struct {
 	{ "misc", rd_misc_2, 2},
 	{ "player hp", rd_player_hp, 1 },
 	{ "player spells", rd_player_spells, 1 },
-	{ "randarts", rd_randarts_3, 3 },
 	{ "inventory", rd_inventory_1, 1 },
 	{ "inventory", rd_inventory_2, 2 },
 	{ "inventory", rd_inventory_3, 3 },
@@ -137,7 +149,6 @@ static const struct {
 	{ "objects", rd_objects_4, 4 },
 	{ "objects", rd_objects_5, 5 },	
 	{ "monsters", rd_monsters_6, 6 },
-	{ "ghost", rd_ghost, 1 },
 	{ "history", rd_history, 1 },
 };
 
@@ -441,87 +452,161 @@ bool savefile_save(const char *path)
 
 
 
-/*** Savefiel loading functions ***/
+/*** Savefile loading functions ***/
 
-static bool try_load(ang_file *f)
-{
+/* Check the savefile header file clearly inicates that it's a savefile */
+static bool check_header(ang_file *f) {
+	byte head[8];
+
+	if (file_read(f, (char *) &head, 8) == 8 &&
+			memcmp(&head[0], savefile_magic, 4) == 0 &&
+			memcmp(&head[4], savefile_name, 4) == 0)
+		return TRUE;
+
+	return FALSE;
+}
+
+/* Get the next block header from the savefile */
+static errr next_blockheader(ang_file *f, struct blockheader *b) {
 	byte savefile_head[SAVEFILE_HEAD_SIZE];
-	u32b block_version, block_size;
-	char *block_name;
+	size_t len;
 
-	while (TRUE)
-	{
-		size_t i;
-		int (*loader)(void) = NULL;
+	len = file_read(f, (char *)savefile_head, SAVEFILE_HEAD_SIZE);
+	if (len == 0) /* no more blocks */
+		return 1;
 
-		/* Load in the next header */
-		size_t size = file_read(f, (char *)savefile_head, SAVEFILE_HEAD_SIZE);
-		if (!size)
-			break;
-
-		if (size != SAVEFILE_HEAD_SIZE || savefile_head[15] != 0) {
-			note("Savefile is corrupted -- block header mangled.");
-			return FALSE;
-		}
+	if (len != SAVEFILE_HEAD_SIZE || savefile_head[15] != 0) {
+		return -1;
+	}
 
 #define RECONSTRUCT_U32B(from) \
-		((u32b) savefile_head[from]) | \
-		((u32b) savefile_head[from+1] << 8) | \
-		((u32b) savefile_head[from+2] << 16) | \
-		((u32b) savefile_head[from+3] << 24);
+	((u32b) savefile_head[from]) | \
+	((u32b) savefile_head[from+1] << 8) | \
+	((u32b) savefile_head[from+2] << 16) | \
+	((u32b) savefile_head[from+3] << 24);
 
-		block_name = (char *) savefile_head;
-		block_version = RECONSTRUCT_U32B(16);
-		block_size = RECONSTRUCT_U32B(20);
+	my_strcpy(b->name, (char *)&savefile_head, sizeof b->name);
+	b->version = RECONSTRUCT_U32B(16);
+	b->size = RECONSTRUCT_U32B(20);
 
-		/* pad to 4 bytes */
-		if (block_size % 4)
-			block_size += 4 - (block_size % 4);
+	/* pad to 4 bytes */
+	if (b->size % 4)
+		b->size += 4 - (b->size % 4);
 
-		/* Find the right loader */
-		for (i = 0; i < N_ELEMENTS(loaders); i++) {
-			if (streq(block_name, loaders[i].name) &&
-					block_version == loaders[i].version) {
-				loader = loaders[i].load;
-			}
-		}
+	return 0;
+}
 
-		if (!loader) {
-			/* No loader found */
-			note("Savefile too old.  Try importing it into an older Angband first.");
-			return FALSE;
-		}
+/* Find the right loader for this block, return it */
+static loader_t find_loader(struct blockheader *b, const struct blockinfo *loaders) {
+	size_t i = 0;
 
-		/* Allocate space for the buffer */
-		buffer = mem_alloc(block_size);
-		buffer_pos = 0;
-		buffer_check = 0;
+	/* Find the right loader */
+	for (i = 0; loaders[i].name[0]; i++) {
+		if (!streq(b->name, loaders[i].name)) continue;
+		if (b->version != loaders[i].version) continue;
 
-		buffer_size = file_read(f, (char *) buffer, block_size);
-		if (buffer_size != block_size) {
-			note("Savefile is corrupted -- not enough bytes.");
-			mem_free(buffer);
-			return FALSE;
-		}
+		return loaders[i].loader;
+	} 
 
-		/* Try loading */
-		if (loader() != 0) {
-			note("Savefile is corrupted.");
-			mem_free(buffer);
-			return FALSE;
-		}
+	return NULL;
+}
 
+/* Load a given block with the given loader */
+static bool load_block(ang_file *f, struct blockheader *b, loader_t loader) {
+	/* Allocate space for the buffer */
+	buffer = mem_alloc(b->size);
+	buffer_pos = 0;
+	buffer_check = 0;
+
+	buffer_size = file_read(f, (char *) buffer, b->size);
+	if (buffer_size != b->size ||
+			loader() != 0) {
 		mem_free(buffer);
+		return FALSE;
 	}
 
-	/* Still alive */
-	if (p_ptr->chp >= 0)
-	{
-		/* Reset cause of death */
-		my_strcpy(p_ptr->died_from, "(alive and well)", sizeof(p_ptr->died_from));
+	mem_free(buffer);
+	return TRUE;
+}
+
+/* Skip a block */
+static void skip_block(ang_file *f, struct blockheader *b) {
+	file_skip(f, b->size);
+}
+
+/* Try to load a savefile */
+static bool try_load(ang_file *f, const struct blockinfo *loaders) {
+	struct blockheader b;
+	errr err;
+
+	if (!check_header(f)) {
+		note("Savefile is corrupted -- incorrect file header.");
+		return FALSE;
 	}
+
+	/* Get the next block header */
+	while ((err = next_blockheader(f, &b)) == 0) {
+		loader_t loader = find_loader(&b, loaders);
+		if (!loader) {
+			note("Savefile block can't be read.");
+			note("Maybe try and load the savefile in an earlier version of Angband.");
+			return FALSE;
+		}
+
+		if (!load_block(f, &b, loader)) {
+			note(format("Savefile corrupted - Couldn't load block %s", b.name));
+			return FALSE;
+		}
+	}
+
+	if (err == -1) {
+		note("Savefile is corrupted -- block header mangled.");
+		return FALSE;
+	}
+
+	/* XXX Reset cause of death */
+	if (p_ptr->chp >= 0)
+		my_strcpy(p_ptr->died_from, "(alive and well)", sizeof(p_ptr->died_from));
 
 	return TRUE;
+}
+
+/* XXX this isn't nice but it'll have to do */
+static char savefile_desc[120];
+
+static int get_desc(void) {
+	rd_string(savefile_desc, sizeof savefile_desc);
+	return 0;
+}
+
+/**
+ * Try to get the 'description' block from a savefile.  Fail gracefully.
+ */
+const char *savefile_get_description(const char *path) {
+	errr err;
+	struct blockheader b;
+
+	ang_file *f = file_open(path, MODE_READ, FTYPE_TEXT);
+	if (!f) return NULL;
+
+	/* Blank the description */
+	savefile_desc[0] = 0;
+
+	if (!check_header(f)) {
+		my_strcpy(savefile_desc, "Invalid savefile", sizeof savefile_desc);
+	} else {
+		while ((err = next_blockheader(f, &b)) == 0) {
+			if (!streq(b.name, "description")) {
+				skip_block(f, &b);
+				continue;
+			}
+			load_block(f, &b, get_desc);
+			break;
+		}
+	}
+
+	file_close(f);
+	return savefile_desc;
 }
 
 
@@ -530,28 +615,15 @@ static bool try_load(ang_file *f)
  */
 bool savefile_load(const char *path)
 {
-	byte head[8];
-	bool ok = TRUE;
-
+	bool ok;
 	ang_file *f = file_open(path, MODE_READ, FTYPE_TEXT);
-	if (f) {
-		if (file_read(f, (char *) &head, 8) == 8 &&
-				memcmp(&head[0], savefile_magic, 4) == 0 &&
-				memcmp(&head[4], savefile_name, 4) == 0) {
-			if (!try_load(f)) {
-				ok = FALSE;
-				note("Failed loading savefile.");
-			}
-		} else {
-			ok = FALSE;
-			note("Savefile is corrupted -- incorrect file header.");
-		}
-
-		file_close(f);
-	} else {
-		ok = FALSE;
+	if (!f) {
 		note("Couldn't open savefile.");
+		return FALSE;
 	}
+
+	ok = try_load(f, loaders);
+	file_close(f);
 
 	return ok;
 }

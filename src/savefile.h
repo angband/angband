@@ -15,6 +15,10 @@ bool savefile_load(const char *path);
  */
 bool savefile_save(const char *path);
 
+/**
+ * Try to get a description for this savefile.
+ */
+const char *savefile_get_description(const char *path);
 
 
 /*** Ignore these ***/
@@ -44,10 +48,8 @@ void strip_bytes(int n);
 
 /* load.c */
 int rd_randomizer(void);
-int rd_options_1(void);
 int rd_options_2(void);
 int rd_messages(void);
-int rd_monster_memory_1(void);
 int rd_monster_memory_2(void);
 int rd_object_memory(void);
 int rd_quests(void);
@@ -58,7 +60,6 @@ int rd_misc(void);
 int rd_misc_2(void);
 int rd_player_hp(void);
 int rd_player_spells(void);
-int rd_randarts_3(void);
 int rd_inventory_1(void);
 int rd_inventory_2(void);
 int rd_inventory_3(void);
@@ -76,10 +77,11 @@ int rd_objects_3(void);
 int rd_objects_4(void);
 int rd_objects_5(void);
 int rd_monsters_6(void);
-int rd_ghost(void);
 int rd_history(void);
+int rd_null(void);
 
 /* save.c */
+void wr_description(void);
 void wr_randomizer(void);
 void wr_options(void);
 void wr_messages(void);
