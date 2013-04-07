@@ -1455,10 +1455,10 @@ static void do_cmd_wiz_query(void)
 		case 'm': mask |= (CAVE_MARK); break;
 		case 'g': mask |= (CAVE_GLOW); break;
 		case 'r': mask |= (CAVE_ROOM); break;
-		case 'i': mask |= (CAVE_ICKY); break;
+		case 'i': mask |= (CAVE_VAULT); break;
 		case 's': mask |= (CAVE_SEEN); break;
 		case 'v': mask |= (CAVE_VIEW); break;
-		case 't': mask |= (CAVE_TEMP); break;
+		case 't': mask |= (CAVE_WASSEEN); break;
 		case 'w': mask |= (CAVE_WALL); break;
 	}
 

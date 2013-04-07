@@ -1575,7 +1575,7 @@ bool borg_shoot_scoot_safe(int emergency, int turns, int b_p)
 
 	/* Cheat the floor grid */
 	/* Not if in a vault since it throws us out of the vault */
-	if (cave->info[c_y][c_x] & (CAVE_ICKY)) return (FALSE);
+	if (cave_isvault(cave, c_y, c_x)) return (FALSE);
 
 	/*** Need Missiles or cheap spells ***/
 
@@ -3929,7 +3929,7 @@ bool borg_caution(void)
           (borg_surround && p != 0)) &&
         !borg_morgoth_position && (borg_t - borg_t_antisummon >= 50) &&
 		!borg_skill[BI_ISCONFUSED] &&
-		!(cave->info[c_y][c_x] & CAVE_ICKY) &&
+		!cave_isvault(cave, c_y, c_x) &&
 		borg_skill[BI_CURHP] < 500)
    {
         int d, b_d = -1;
@@ -4160,7 +4160,7 @@ bool borg_caution(void)
 	 */
     if (((p > (avoidance *4/10) && !nasty && !borg_no_retreat) || (borg_surround && p != 0)) &&
         !borg_morgoth_position && (borg_t - borg_t_antisummon >= 50) && !borg_skill[BI_ISCONFUSED] &&
-		!(cave->info[c_y][c_x] & CAVE_ICKY) &&
+		!cave_isvault(cave, c_y, c_x) &&
 		borg_skill[BI_CURHP] < 500)
     {
         int i = -1, b_i = -1;

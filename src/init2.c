@@ -2692,9 +2692,6 @@ static errr init_other(void)
 
 	/*** Prepare grid arrays ***/
 
-	/* Array of grids */
-	temp_g = C_ZNEW(TEMP_MAX, u16b);
-
 	cave = cave_new();
 
 	/* Array of stacked monster messages */
@@ -3001,9 +2998,6 @@ void cleanup_angband(void)
 	/* Free the lore, monster, and object lists */
 	FREE(l_list);
 	objects_destroy();
-
-	/* Free the temp array */
-	FREE(temp_g);
 
 	cave_free(cave);
 

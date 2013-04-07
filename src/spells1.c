@@ -236,7 +236,7 @@ void teleport_away(struct monster *m_ptr, int dis)
 			if (cave->feat[ny][nx] == FEAT_GLYPH) continue;
 
 			/* No teleporting into vaults and such */
-			/* if (cave->info[ny][nx] & (CAVE_ICKY)) continue; */
+			/* if (cave->info[ny][nx] & cave_isvault(cave, ny, nx)) continue; */
 
 			/* This grid looks good */
 			look = FALSE;
@@ -308,7 +308,7 @@ void teleport_player(int dis)
 			if (!cave_isempty(cave, y, x)) continue;
 
 			/* No teleporting into vaults and such */
-			if (cave->info[y][x] & (CAVE_ICKY)) continue;
+			if (cave_isvault(cave, y, x)) continue;
 
 			/* This grid looks good */
 			look = FALSE;

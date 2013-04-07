@@ -1739,9 +1739,6 @@ void play_game(void)
 	/* Flush the message */
 	Term_fresh();
 
-	/* Prepare "vinfo" array**/
-	(void)vinfo_init();
-
 	/* Flavor the objects */
 	flavor_init();
 
@@ -1813,7 +1810,7 @@ void play_game(void)
 
 
 		/* Forget the view */
-		forget_view();
+		forget_view(cave);
 
 
 		/* Handle "quit and save" */

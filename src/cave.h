@@ -10,30 +10,6 @@
 struct player;
 struct monster;
 
-extern int distance(int y1, int x1, int y2, int x2);
-extern bool los(int y1, int x1, int y2, int x2);
-extern bool no_light(void);
-extern bool cave_valid_bold(int y, int x);
-extern byte get_color(byte a, int attr, int n);
-extern void map_info(unsigned x, unsigned y, grid_data *g);
-extern void move_cursor_relative(int y, int x);
-extern void print_rel(wchar_t c, byte a, int y, int x);
-extern void prt_map(void);
-extern void display_map(int *cy, int *cx);
-extern void do_cmd_view_map(void);
-extern errr vinfo_init(void);
-extern void forget_view(void);
-extern void update_view(void);
-extern void map_area(void);
-extern void wiz_light(bool full);
-extern void wiz_dark(void);
-extern int project_path(u16b *gp, int range, int y1, int x1, int y2, int x2, int flg);
-extern bool projectable(int y1, int x1, int y2, int x2, int flg);
-extern void scatter(int *yp, int *xp, int y, int x, int d, int m);
-extern void disturb(struct player *p, int stop_search, int unused_flag);
-extern bool is_quest(int level);
-extern bool dtrap_edge(int y, int x);
-
 struct cave {
 	s32b created_at;
 	int depth;
@@ -60,6 +36,32 @@ struct cave {
 	int mon_max;
 	int mon_cnt;
 };
+
+extern int distance(int y1, int x1, int y2, int x2);
+extern bool los(int y1, int x1, int y2, int x2);
+extern bool no_light(void);
+extern bool cave_valid_bold(int y, int x);
+extern byte get_color(byte a, int attr, int n);
+extern void map_info(unsigned x, unsigned y, grid_data *g);
+extern void move_cursor_relative(int y, int x);
+extern void print_rel(wchar_t c, byte a, int y, int x);
+extern void prt_map(void);
+extern void display_map(int *cy, int *cx);
+extern void do_cmd_view_map(void);
+extern void forget_view(struct cave *c);
+extern void update_view(struct cave *c, struct player *p);
+extern void map_area(void);
+extern void wiz_light(bool full);
+extern void wiz_dark(void);
+extern int project_path(u16b *gp, int range, int y1, int x1, int y2, int x2, int flg);
+extern bool projectable(int y1, int x1, int y2, int x2, int flg);
+extern void scatter(int *yp, int *xp, int y, int x, int d, int m);
+extern void disturb(struct player *p, int stop_search, int unused_flag);
+extern bool is_quest(int level);
+extern bool dtrap_edge(int y, int x);
+
+#define CAVE_INFO_Y	DUNGEON_HGT
+#define CAVE_INFO_X	256
 
 /* XXX: temporary while I refactor */
 extern struct cave *cave;
@@ -107,7 +109,6 @@ extern bool cave_isdownstairs(struct cave *c, int y, int x);
 extern bool cave_isshop(struct cave *c, int y, int x);
 extern bool cave_isglyph(struct cave *c, int y, int x);
 
-
 /* BEHAVIOR PREDICATES */
 extern bool cave_isopen(struct cave *c, int y, int x);
 extern bool cave_isempty(struct cave *c, int y, int x);
@@ -122,6 +123,10 @@ extern bool cave_isrubble(struct cave *c, int y, int x);
 extern bool cave_isfeel(struct cave *c, int y, int x);
 extern bool feat_isboring(feature_type *f_ptr);
 extern bool cave_isboring(struct cave *c, int y, int x);
+extern bool cave_isview(struct cave *c, int y, int x);
+extern bool cave_isseen(struct cave *c, int y, int x);
+extern bool cave_wasseen(struct cave *c, int y, int x);
+extern bool cave_isglow(struct cave *c, int y, int x);
 
 extern void cave_generate(struct cave *c, struct player *p);
 

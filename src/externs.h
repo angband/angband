@@ -65,7 +65,6 @@ extern char angband_term_name[ANGBAND_TERM_MAX][16];
 extern byte angband_color_table[MAX_COLORS][4];
 extern color_type color_table[MAX_COLORS];
 extern const char *angband_sound_name[MSG_MAX];
-extern u16b *temp_g;
 extern maxima *z_info;
 extern monster_lore *l_list;
 extern quest *q_list;

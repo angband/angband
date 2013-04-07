@@ -579,7 +579,7 @@ void wr_stores(void)
 /*
  * The cave grid flags that get saved in the savefile
  */
-#define IMPORTANT_FLAGS (CAVE_MARK | CAVE_GLOW | CAVE_ICKY | CAVE_ROOM)
+#define IMPORTANT_FLAGS (CAVE_MARK | CAVE_GLOW | CAVE_VAULT | CAVE_ROOM)
 
 
 /*

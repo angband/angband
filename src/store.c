@@ -3124,7 +3124,7 @@ void do_cmd_store(cmd_code code, cmd_arg args[])
 	event_signal(EVENT_ENTER_STORE);
 
 	/* Forget the view */
-	forget_view();
+	forget_view(cave);
 
 
 	/*** Display ***/

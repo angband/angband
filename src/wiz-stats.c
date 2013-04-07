@@ -566,7 +566,7 @@ static void add_stats(double total[MAX_LVL], double mondrop[MAX_LVL], double inv
 static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool uniq)
 {
 	
-	bool vault = (cave->info[y][x] & (CAVE_ICKY));
+	bool vault = cave_isvault(cave, y, x);
 	bitflag f[OF_SIZE];
 	int effect;
 	int number = o_ptr->number;
@@ -2596,7 +2596,7 @@ void disconnect_stats(void)
 				}
 				
 				/* Ignore vaults as they are often disconnected */
-				if (cave->info[y][x] & (CAVE_ICKY)) continue;
+				if (cave_isvault(cave, y, x)) continue;
 				
 				/* We have a disconnected area */
 				has_dsc = TRUE;

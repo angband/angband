@@ -2294,13 +2294,13 @@ void update_stuff(struct player *p)
 	if (p->update & (PU_FORGET_VIEW))
 	{
 		p->update &= ~(PU_FORGET_VIEW);
-		forget_view();
+		forget_view(cave);
 	}
 
 	if (p->update & (PU_UPDATE_VIEW))
 	{
 		p->update &= ~(PU_UPDATE_VIEW);
-		update_view();
+		update_view(cave, p);
 	}
 
 
