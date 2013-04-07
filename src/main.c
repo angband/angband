@@ -19,6 +19,7 @@
 #include "angband.h"
 #include "files.h"
 #include "init.h"
+#include "savefile.h"
 
 /* locale junk */
 #include "locale.h"
@@ -258,13 +259,22 @@ static void list_saves(void)
 	printf("Savefiles you can use are:\n");
 
 	while (my_dread(d, fname, sizeof fname)) {
+		char path[1024];
+		const char *desc;
+
 #ifdef SETGID
 		/* Check that the savefile name begins with the user'd ID */
 		if (strncmp(fname, uid, strlen(uid)))
 			continue;
 #endif
 
-		printf("  %s\n", fname);
+		path_build(path, sizeof path, ANGBAND_DIR_SAVE, fname);
+		desc = savefile_get_description(path);
+
+		if (desc)
+			printf(" %-15s  %s\n", fname, desc);
+		else
+			printf(" %-15s\n", fname);
 	}
 
 	my_dclose(d);
