@@ -448,9 +448,9 @@ void file_unlock(ang_file *f)
 /*
  * Seek to location 'pos' in file 'f'.
  */
-bool file_seek(ang_file *f, u32b pos)
+bool file_skip(ang_file *f, int bytes)
 {
-	return (fseek(f->fh, pos, SEEK_SET) == 0);
+	return (fseek(f->fh, bytes, SEEK_CUR) == 0);
 }
 
 /*
