@@ -48,9 +48,9 @@ enum {
 
 
 /** Functions **/
-bool mon_inc_timed(struct monster *m_ptr, int ef_idx, int timer, u16b flag, bool id);
-bool mon_dec_timed(struct monster *m_ptr, int ef_idx, int timer, u16b flag, bool id);
-bool mon_clear_timed(struct monster *m_ptr, int ef_idx, u16b flag, bool id);
+bool mon_inc_timed(struct monster *m_ptr, int ef_idx, int timer, uint16_t flag, bool id);
+bool mon_dec_timed(struct monster *m_ptr, int ef_idx, int timer, uint16_t flag, bool id);
+bool mon_clear_timed(struct monster *m_ptr, int ef_idx, uint16_t flag, bool id);
 
 
 #endif /* MONSTER_TIMED_H */

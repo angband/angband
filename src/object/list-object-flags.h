@@ -3,7 +3,7 @@
  * Purpose: object flags for all objects
  *
  * Changing flag order will break savefiles. There is a hard-coded limit of
- * 256 flags, due to 32 bytes of storage for item flags in the savefile. Flags
+ * 256 flags, due to 32 uint8_ts of storage for item flags in the savefile. Flags
  * below start from 0 on line 21, so a flag's sequence number is its line
  * number minus 21.
  *

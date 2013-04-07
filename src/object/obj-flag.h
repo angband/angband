@@ -69,7 +69,7 @@ enum object_flag_id {
 };
 
 #define OF_SIZE                	FLAG_SIZE(OF_MAX)
-#define OF_BYTES           		32  /* savefile bytes, i.e. 256 flags */
+#define OF_BYTES           		32  /* savefile uint8_ts, i.e. 256 flags */
 
 #define of_has(f, flag)        	flag_has_dbg(f, OF_SIZE, flag, #f, #flag)
 #define of_next(f, flag)       	flag_next(f, OF_SIZE, flag)
@@ -107,24 +107,24 @@ enum object_flag_id {
  * The object flag structure
  */
 struct object_flag {
-	u16b index;				/* the OF_ index */
+	uint16_t index;				/* the OF_ index */
 	bool pval;				/* is it granular (TRUE) or binary (FALSE) */
-	u16b timed;				/* the corresponding TMD_ flag */
-	u16b id;				/* how is it identified */
-	u16b type;				/* OFT_ category */
-	s16b power;				/* base power rating */
-	s16b pval_mult;			/* pval weight rating */
-	s16b weapon;			/* power mult for melee weapon */
-	s16b bow;				/* power mult for launcher */
-	s16b ring;				/* etc. ... */
-	s16b amulet;
-	s16b light;
-	s16b body;
-	s16b cloak;
-	s16b shield;
-	s16b hat;
-	s16b gloves;
-	s16b boots;
+	uint16_t timed;				/* the corresponding TMD_ flag */
+	uint16_t id;				/* how is it identified */
+	uint16_t type;				/* OFT_ category */
+	int16_t power;				/* base power rating */
+	int16_t pval_mult;			/* pval weight rating */
+	int16_t weapon;			/* power mult for melee weapon */
+	int16_t bow;				/* power mult for launcher */
+	int16_t ring;				/* etc. ... */
+	int16_t amulet;
+	int16_t light;
+	int16_t body;
+	int16_t cloak;
+	int16_t shield;
+	int16_t hat;
+	int16_t gloves;
+	int16_t boots;
 	const char *message;	/* id message */
 };
 	
@@ -133,10 +133,10 @@ struct object_flag {
 bool cursed_p(const bitflag *f);
 void create_mask(bitflag *f, bool id, ...);
 void flag_message(int flag, char *name);
-s32b flag_power(int flag);
+int32_t flag_power(int flag);
 void log_flags(bitflag *f, ang_file *log_file);
 const char *flag_name(int flag);
-s16b slot_mult(int flag, int slot);
+int16_t slot_mult(int flag, int slot);
 bool flag_uses_pval(int flag);
 int obj_flag_type(int flag);
 int pval_mult(int flag);

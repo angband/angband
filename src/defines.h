@@ -328,7 +328,7 @@
 
 
 /*
- * An item's pval (for charges, amount of gold, etc) is limited to s16b
+ * An item's pval (for charges, amount of gold, etc) is limited to int16_t
  */
 #define MAX_PVAL  32767
 
@@ -845,7 +845,7 @@ enum
 #define NOSCORE_DEBUG		0x0008
 #define NOSCORE_BORG		0x0010
 
-#define SCAN_INSTANT ((u32b) -1)
+#define SCAN_INSTANT ((uint32_t) -1)
 #define SCAN_OFF 0
 #define SCAN_MACRO 45
 

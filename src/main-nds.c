@@ -46,10 +46,10 @@ u16* tiles_bin;// = (u16*)0x06020400;
 #define NDS_CMD_LENGTH		16     // max. 15 keys/button + null terminator
 
 //[mappable]*2^[mods] things to map commands to, [cmd_length] chars per command
-byte nds_btn_cmds[NDS_NUM_MAPPABLE << NDS_NUM_MODIFIER][NDS_CMD_LENGTH];
+uint8_t nds_btn_cmds[NDS_NUM_MAPPABLE << NDS_NUM_MODIFIER][NDS_CMD_LENGTH];
 
 /* make sure there's something there to start with - NRM */
-byte btn_defaults[] = 
+uint8_t btn_defaults[] = 
   {
     'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l',
     'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'z'};
@@ -80,11 +80,11 @@ s16 nds_buttons_to_btnid(u16 kd, u16 kh) {
 //NRM #define TILE_WIDTH		iflags.wc_tile_width
 //NRM #define TILE_HEIGHT		iflags.wc_tile_height
 //NRM #define TILE_FILE		iflags.wc_tile_file
-u16b TILE_WIDTH;
-u16b TILE_HEIGHT;
+uint16_t TILE_WIDTH;
+uint16_t TILE_HEIGHT;
 char *TILE_FILE;
-u16b NDS_SCREEN_COLS;
-u16b NDS_SCREEN_ROWS;
+uint16_t NDS_SCREEN_COLS;
+uint16_t NDS_SCREEN_ROWS;
 #define c1(a,i)		(RGB15((a[i]>>3),(a[i+1]>>3),(a[i+2]>>3)))
 #define c2(a,i)		(RGB15((a[i+2]>>3),(a[i+1]>>3),(a[i]>>3)))
 #define TILE_BUFFER_SIZE		(TILE_WIDTH*TILE_HEIGHT*(total_tiles_used+1)*2)
@@ -128,8 +128,8 @@ struct term_data
 {
   term t;
   
-  byte rows;
-  byte cols;
+  uint8_t rows;
+  uint8_t cols;
   
   int tile_height;
   int tile_width; 
@@ -160,7 +160,7 @@ static term_data data[MAX_TERM_DATA];
  * Colour data
  */
 
-u16b color_data[] = {
+uint16_t color_data[] = {
 	RGB15(  0,  0,  0), 		/* TERM_DARK */
 	RGB15( 31, 31, 31), 		/* TERM_WHITE */
 	RGB15( 15, 15, 15), 		/* TERM_SLATE */
@@ -245,7 +245,7 @@ static void handle_touch(int x, int y, int button, bool press)
 
 static bool shift = false, ctrl = false, alt = false, caps = false;
 
-u16b kbd_mod_code(u16 ret) 
+uint16_t kbd_mod_code(u16 ret) 
 {
   if (ret & K_MODIFIER) return ret;
   if (caps && !shift) 
@@ -269,14 +269,14 @@ u16b kbd_mod_code(u16 ret)
   return ret;
 }
 
-void kbd_set_color_from_pos(u16b r, u16b k, byte color) 
+void kbd_set_color_from_pos(uint16_t r, uint16_t k, uint8_t color) 
 {
-  u16b ii, xx = 0, jj;
-  u16b *map[] = { 
-    (u16b*)(BG_MAP_RAM_SUB(8)+3*32*2), 
-    (u16b*)(BG_MAP_RAM_SUB(9)+3*32*2), 
-    (u16b*)(BG_MAP_RAM_SUB(10)+3*32*2),
-    (u16b*)(BG_MAP_RAM_SUB(11)+3*32*2) 
+  uint16_t ii, xx = 0, jj;
+  uint16_t *map[] = { 
+    (uint16_t*)(BG_MAP_RAM_SUB(8)+3*32*2), 
+    (uint16_t*)(BG_MAP_RAM_SUB(9)+3*32*2), 
+    (uint16_t*)(BG_MAP_RAM_SUB(10)+3*32*2),
+    (uint16_t*)(BG_MAP_RAM_SUB(11)+3*32*2) 
   };
   for (ii = 0; ii < k; ii++) 
     {
@@ -294,9 +294,9 @@ void kbd_set_color_from_pos(u16b r, u16b k, byte color)
   }
 }
 
-void kbd_set_color_from_code(u16b code, byte color) 
+void kbd_set_color_from_code(uint16_t code, uint8_t color) 
 {
-  u16b r,k;
+  uint16_t r,k;
   for (r = 0; r < 5; r++) 
     {
       for (k = 0; kbdrows[r][k].width != 0; k++) 
@@ -315,11 +315,11 @@ void kbd_set_map() {
   
 }
 
-u16b kbd_xy2key(byte x, byte y) 
+uint16_t kbd_xy2key(uint8_t x, uint8_t y) 
 {
   if (x >= 104 && x < 152 && y >=24 && y < 72) 
     {	// on arrow-pad
-      byte kx = (x-104)/16, ky = (y-24)/16;
+      uint8_t kx = (x-104)/16, ky = (y-24)/16;
       return (kx + (2 - ky) * 3 + 1 + '0')/* | (shift ? K_SHIFTED_MOVE : 0)*/;
     
     }
@@ -341,13 +341,13 @@ u16b kbd_xy2key(byte x, byte y)
       }
       
     }
-  s16b ox = x - 8, oy = y-104;
+  int16_t ox = x - 8, oy = y-104;
   if (ox < 0 || ox >= 240) return 0;
   if (oy < 0 || oy >= 80) return 0;
-  u16b row = oy / 16;
+  uint16_t row = oy / 16;
   int i;
   for (i = 0; ox > 0; ox -= kbdrows[row][i++].width);
-  u16b ret = kbdrows[row][i-1].code;
+  uint16_t ret = kbdrows[row][i-1].code;
   return kbd_mod_code(ret);
 }
 
@@ -401,21 +401,21 @@ void kbd_togglemod(int which, int how)
 
 // clear this to prevent alt-b, f5, and f6 from having their special effects
 // it's cleared during getlin, yn_function, etc
-byte process_special_keystrokes = 1;
+uint8_t process_special_keystrokes = 1;
 
 // run this every frame
 // returns a key code if one has been typed, else returns 0
 // assumes scankeys() was already called this frame (in real vblank handler)
-byte kbd_vblank() 
+uint8_t kbd_vblank() 
 {
   // frames the stylus has been held down for
-  static u16b touched = 0;
+  static uint16_t touched = 0;
   // coordinates from each frame, the median is used to get the keycode
-  static s16b xarr[3],yarr[3];
+  static int16_t xarr[3],yarr[3];
   // the keycode of the last key pressed, so it can be un-highlighted
-  static u16b last_code;
+  static uint16_t last_code;
   // the keycode of the currently pressed key, is usu. returned
-  u16b keycode;
+  uint16_t keycode;
   
   // if screen is being touched...
   if (keysHeld() & KEY_TOUCH) {
@@ -451,7 +451,7 @@ byte kbd_vblank()
       // also, not setting to zero prevents the keysHeld() thing
       //  from starting the process over and getting 3 more samples
       
-      u16b i, tmp, the_x=0, the_y=0;
+      uint16_t i, tmp, the_x=0, the_y=0;
       
       // x/yarr now contains 3 values from each of the 3 frames
       // take the median of each array and put into the_x/y
@@ -482,7 +482,7 @@ byte kbd_vblank()
       else the_y = yarr[1];
       
       // get the keycode that corresponds to this key
-      u16b keycode = kbd_xy2key(the_x, the_y);
+      uint16_t keycode = kbd_xy2key(the_x, the_y);
       
       // if it's not a modifier, highlight it
       if (keycode && !(keycode & K_MODIFIER)) 
@@ -535,11 +535,11 @@ byte kbd_vblank()
 }
 
 
-void nds_check_buttons(u16b kd, u16b kh) 
+void nds_check_buttons(uint16_t kd, uint16_t kh) 
 {
-  s16b btn = nds_buttons_to_btnid(kd,kh);
+  int16_t btn = nds_buttons_to_btnid(kd,kh);
   if (btn == -1) return;
-  byte *cmd = &nds_btn_cmds[btn][0];
+  uint8_t *cmd = &nds_btn_cmds[btn][0];
   while (*cmd != 0) {
     put_key_event(*(cmd++));
   }
@@ -548,10 +548,10 @@ void nds_check_buttons(u16b kd, u16b kh)
 /*
  * All event handling 
  */
-u16b *ebuf = (u16b*)(&BG_GFX[256*192]);
+uint16_t *ebuf = (uint16_t*)(&BG_GFX[256*192]);
 // store the queue just past mainscreen display data
-u16b ebuf_read = 0, ebuf_write = 0;
-byte nds_updated = 0;	// windows that have been updated and should be redrawn
+uint16_t ebuf_read = 0, ebuf_write = 0;
+uint8_t nds_updated = 0;	// windows that have been updated and should be redrawn
 
 bool has_event() {
   return ((ebuf[ebuf_read] & EVENT_SET) || (ebuf_read < ebuf_write));
@@ -559,9 +559,9 @@ bool has_event() {
   // just in case...
 }
 
-u16b get_event() {
+uint16_t get_event() {
   if (!has_event()) return 0;
-  u16b r = ebuf[ebuf_read];
+  uint16_t r = ebuf[ebuf_read];
   ebuf[ebuf_read] = 0;
   ebuf_read++;
   if (ebuf_read > ebuf_write) 
@@ -573,15 +573,15 @@ u16b get_event() {
   return r;
 }
 
-void put_key_event(byte c) 
+void put_key_event(uint8_t c) 
 {
   ebuf[ebuf_write++] = EVENT_SET | (u16)c;
   if (ebuf_write >= MAX_EBUF) ebuf_write = 0;
 }
 
-void put_mouse_event(byte x, byte y) 
+void put_mouse_event(uint8_t x, uint8_t y) 
 {
-  ebuf[ebuf_write++] = EVENT_SET | MEVENT_FLAG | (u16b)x | (((u16b)y) << 7);
+  ebuf[ebuf_write++] = EVENT_SET | MEVENT_FLAG | (uint16_t)x | (((uint16_t)y) << 7);
   if (ebuf_write >= MAX_EBUF) ebuf_write = 0;
 }
 
@@ -591,18 +591,18 @@ void do_vblank() {
   // ---------------------------
   //  Handle the arrow buttons
   scanKeys();
-  u32b kd = keysDown();
-  u32b kh = keysHeld();
+  uint32_t kd = keysDown();
+  uint32_t kh = keysHeld();
   // order of keys: Right, Left, Up, Down
   // map keys to dirs, depends on order of keys in nds/input.h
   //  and order of directions in ndir & sdir in decl.c
   //const s8 k2d[] = {	// indexes into ndir/sdir, 10 = end of string = '\0'
   // 10, 4, 0, 10, 2, 3, 1, 10, 6, 5, 7	// no working combinations >= 11
   //};
-  const byte k2d[] = {'6','4','8','2','3','7','9','1'  };
+  const uint8_t k2d[] = {'6','4','8','2','3','7','9','1'  };
   // only do stuff if a key was pressed last frame
   if (kd & (KEY_RIGHT | KEY_LEFT | KEY_UP | KEY_DOWN)) {
-    u16b dirs_down = 0;
+    uint16_t dirs_down = 0;
     int i;
     if (kh & KEY_LEFT) dirs_down++;
     if (kh & KEY_RIGHT) dirs_down++;
@@ -637,7 +637,7 @@ void do_vblank() {
   
   // ---------------------------
   //  Check for typing on the touchscreen kbd
-  byte keycode = kbd_vblank();
+  uint8_t keycode = kbd_vblank();
   if ((keycode & 0x7F) != 0) {	// it's an actual keystroke, return it
     put_key_event(keycode & 0xFF);
     //Term_keypress(keycode & 0xFF);
@@ -668,7 +668,7 @@ void do_vblank() {
  */
 static errr CheckEvents(bool wait)
 {
-  u16b e = 0;
+  uint16_t e = 0;
 
   do_vblank();
 
@@ -694,8 +694,8 @@ static errr CheckEvents(bool wait)
     Term_keypress(EVENT_C(e));
 
 #if 0
-  u32b kd, kh;
-  const byte k2d[] = {'6','4','8','2','3','7','9','1'  };
+  uint32_t kd, kh;
+  const uint8_t k2d[] = {'6','4','8','2','3','7','9','1'  };
 
   /* Check the event queue */
   swiWaitForVBlank();
@@ -717,7 +717,7 @@ static errr CheckEvents(bool wait)
       /* Arrow keys */
       if (kd & (KEY_RIGHT | KEY_LEFT | KEY_UP | KEY_DOWN)) 
 	{
-	  u16b dirs_down = 0;
+	  uint16_t dirs_down = 0;
 	  int i;
 	  if (kh & KEY_LEFT) dirs_down++;
 	  if (kh & KEY_RIGHT) dirs_down++;
@@ -800,8 +800,8 @@ static errr Term_xtra_nds(int n, int v)
 	 * Clear the entire window 
 	 */
 	int x, y;
-	u32b vram_offset;
-	u16b *fb = BG_GFX;
+	uint32_t vram_offset;
+	uint16_t *fb = BG_GFX;
 
 	for (y = 0; y < 24; y++)
 	  {
@@ -814,7 +814,7 @@ static errr Term_xtra_nds(int n, int v)
 		//    chardata = btm_font_bin;
 		//  }
 	
-		byte xx,yy;
+		uint8_t xx,yy;
 		for (yy=0;yy<8;yy++)
 		  for (xx=0;xx<3;xx++) 
 		    fb[yy*256+xx+vram_offset] = 0;
@@ -965,8 +965,8 @@ static errr Term_xtra_nds(int n, int v)
 static errr Term_curs_nds(int x, int y)
 {
   //term_data *td = (term_data*)(Term->data);
-  u32b vram_offset = (y - 1) * TILE_HEIGHT * 256 + x * TILE_WIDTH + 8 * 256;
-  byte xx, yy;
+  uint32_t vram_offset = (y - 1) * TILE_HEIGHT * 256 + x * TILE_WIDTH + 8 * 256;
+  uint8_t xx, yy;
   for (xx = 0; xx < TILE_WIDTH; xx++) 
     {
       BG_GFX[xx + vram_offset] 
@@ -988,36 +988,36 @@ static errr Term_curs_nds(int x, int y)
 }
 
 
-void draw_char(byte x, byte y, char c) 
+void draw_char(uint8_t x, uint8_t y, char c) 
 {
-  u32b vram_offset = (y & 0x1F) * 8 * 256 + x * 3, tile_offset = c * 24;
-  u16b* fb = BG_GFX;
-  const u16b* chardata = top_font_bin;
+  uint32_t vram_offset = (y & 0x1F) * 8 * 256 + x * 3, tile_offset = c * 24;
+  uint16_t* fb = BG_GFX;
+  const uint16_t* chardata = top_font_bin;
   if (y & 32) 
     {
       fb = &BG_GFX_SUB[16 * 1024];
       chardata = btm_font_bin;
     }
-  byte xx, yy;
+  uint8_t xx, yy;
   for (yy = 0; yy < 8; yy++)
     for (xx = 0; xx < 3; xx++) 
       fb[yy * 256 + xx + vram_offset] 
 	= chardata[yy * 3 + xx + tile_offset] | BIT(15);
 }
 
-void draw_color_char(byte x, byte y, char c, byte clr) 
+void draw_color_char(uint8_t x, uint8_t y, char c, uint8_t clr) 
 {
-  u32b vram_offset = (y & 0x1F) * 8 * 256 + x * 3, tile_offset = c * 24;
-  u16b* fb = BG_GFX;
-  const u16b* chardata = top_font_bin;
+  uint32_t vram_offset = (y & 0x1F) * 8 * 256 + x * 3, tile_offset = c * 24;
+  uint16_t* fb = BG_GFX;
+  const uint16_t* chardata = top_font_bin;
   if (y & 32) 
     {
       fb = &BG_GFX_SUB[16*1024];
       chardata = btm_font_bin;
     }
-  byte xx, yy;
-  u16b val;
-  u16b fgc = color_data[clr & 0xF];//, bgc = color_data[(clr & 0xFF) >> 4];
+  uint8_t xx, yy;
+  uint16_t val;
+  uint16_t fgc = color_data[clr & 0xF];//, bgc = color_data[(clr & 0xFF) >> 4];
   for (yy = 0; yy < 8; yy++) 
     {
       for (xx = 0;xx < 3; xx++) 
@@ -1082,7 +1082,7 @@ static errr Term_wipe_nds(int x, int y, int n)
  * the "always_text" flag is set, if this flag is not set, all the
  * "black" text will be handled by the "Term_wipe_xxx()" hook.
  */
-static errr Term_text_nds(int x, int y, int n, byte a, const char *cp)
+static errr Term_text_nds(int x, int y, int n, uint8_t a, const char *cp)
 {
   //term_data *td = (term_data*)(Term->data);
   int i;
@@ -1108,12 +1108,12 @@ static errr Term_text_nds(int x, int y, int n, byte a, const char *cp)
 }
 
 
-void draw_tile(byte x, byte y, u16b tile) {
-  u32b vram_offset = (y & 0x7F) * TILE_HEIGHT * 256 + x * TILE_WIDTH + 
+void draw_tile(uint8_t x, uint8_t y, uint16_t tile) {
+  uint32_t vram_offset = (y & 0x7F) * TILE_HEIGHT * 256 + x * TILE_WIDTH + 
     8 * 256, 
     tile_offset = (tile & 0x7FFF) * TILE_WIDTH * TILE_HEIGHT;
-  u16b* fb = BG_GFX;
-  byte xx, yy;
+  uint16_t* fb = BG_GFX;
+  uint8_t xx, yy;
   for (yy = 0; yy < TILE_HEIGHT; yy++)
     for (xx = 0; xx < TILE_WIDTH; xx++) 
       fb[yy * 256 + xx + vram_offset] = 
@@ -1146,10 +1146,10 @@ void draw_tile(byte x, byte y, u16b tile) {
  * This function is only used if one of the "higher_pict" and/or
  * "always_pict" flags are set.
  */
-static errr Term_pict_nds(int x, int y, int n, const byte *ap, const char *cp)
+static errr Term_pict_nds(int x, int y, int n, const uint8_t *ap, const char *cp)
 {
 	term_data *td = (term_data*)(Term->data);
-	u16b tile_number = DEF_TILES_PER_ROW * (*ap - 0x80) + (*cp - 0x80); 
+	uint16_t tile_number = DEF_TILES_PER_ROW * (*ap - 0x80) + (*cp - 0x80); 
 	/* XXX XXX XXX */
 
 	int i;
@@ -1310,8 +1310,8 @@ void nds_init_fonts() {
   // the font is now compiled in as ds_subfont for error reporting purposes
   // ds_subfont contains the bgr version
   //subfont_bgr_bin = &ds_subfont[0];
-  u16b i;
-  u16b t,t2;
+  uint16_t i;
+  uint16_t t,t2;
   for (i=0;i<8*3*256;i++) {
     t = ds_subfont[i];
     t2 = t & 0x8000;
@@ -1328,8 +1328,8 @@ void nds_init_fonts() {
 // if you are calling this function, not much should be happening after
 // since it clobbers the font pointers
 void nds_fatal_err(const char* msg) {
-  static byte x = 2, y = 1;
-  byte i = 0;
+  static uint8_t x = 2, y = 1;
+  uint8_t i = 0;
   //top_font_bin = btm_font_bin = &ds_subfont[0];
   //	x = 2;
   //	y = 1;
@@ -1344,11 +1344,11 @@ void nds_fatal_err(const char* msg) {
 }
 
 //NRM should be replaced with open and read from z-file.c
-bool nds_load_file(const char* name, u16b* dest, u32b len) {
+bool nds_load_file(const char* name, uint16_t* dest, uint32_t len) {
   FILE* f = fopen(name,"r");
   if (f == NULL) return false;
-  u16b readbuf[1024];
-  u32b i,l,wi=0;
+  uint16_t readbuf[1024];
+  uint32_t i,l,wi=0;
   if (len == 0) len = 0xffffffff;	// max possible len
   for (i=0;i<1024;i++) readbuf[i] = 0;
   while ((l=fread(readbuf,2,1024,f)) > 0 && wi*2 < len) {
@@ -1369,14 +1369,14 @@ bool nds_load_kbd() {
       //	"subfont_rgb.bin","subfont_bgr.bin",
       "kbd.bin","kbd.pal","kbd.map",
     };
-  const u16b* dests[] = 
+  const uint16_t* dests[] = 
     {
       //	subfont_rgb_bin, subfont_bgr_bin,
-      (u16b*)BG_TILE_RAM_SUB(0), BG_PALETTE_SUB, (u16*)BG_MAP_RAM_SUB(8),
+      (uint16_t*)BG_TILE_RAM_SUB(0), BG_PALETTE_SUB, (u16*)BG_MAP_RAM_SUB(8),
     };
   
   char buf[64] = "\0";
-  u16b i;
+  uint16_t i;
   for (i = 0; i < NUM_FILES; i++) {
     if (!nds_load_file(files[i], dests[i], 0)) 
       {
@@ -1391,7 +1391,7 @@ bool nds_load_kbd() {
 }
 
 void kbd_init() {
-  u16b i;
+  uint16_t i;
   for (i = 0; i < 16; i++) 
     {
       BG_PALETTE_SUB[i+16] = BG_PALETTE_SUB[i] ^ 0x7FFF;
@@ -1399,7 +1399,7 @@ void kbd_init() {
 }
 
 void nds_init_buttons() {
-  u16b i, j;
+  uint16_t i, j;
   for (i = 0; i < (NDS_NUM_MAPPABLE << NDS_NUM_MODIFIER); i++) 
     {
      for (j = 0; j < NDS_CMD_LENGTH; j++) 
@@ -1457,7 +1457,7 @@ void on_irq() {
 
 void nds_raw_print(const char* str) 
 {
-  static u16b x=0,y=32;
+  static uint16_t x=0,y=32;
   while (*str) 
     {
       draw_char(x,y,(u8)(*(str++)));
@@ -1473,7 +1473,7 @@ void nds_raw_print(const char* str)
   fflush(0);
 }
 
-bool nds_load_tile_bmp(const char *name, u16b *dest, u32b len) 
+bool nds_load_tile_bmp(const char *name, uint16_t *dest, uint32_t len) 
 {
   //NRM#define h	iflags.wc_tile_height
   //NRM#define w	iflags.wc_tile_width
@@ -1482,14 +1482,14 @@ bool nds_load_tile_bmp(const char *name, u16b *dest, u32b len)
   // bmpxy2off works ONLY inside nds_load_tile_bmp!
 #define bmpxy2off(x,y)	(((y-(y%h))*iw+(y%h))*w + x*h)
   FILE* f = fopen(name,"r");
-  u32b writeidx = 0;
-  u32b i,j,l;
-  s16b y;
-  u32b off;
-  s32b iw2, ih2;
-  u16b iw = 0, ih = 0;
+  uint32_t writeidx = 0;
+  uint32_t i,j,l;
+  int16_t y;
+  uint32_t off;
+  int32_t iw2, ih2;
+  uint16_t iw = 0, ih = 0;
   //s32 ty;
-  u16b depth;
+  uint16_t depth;
   char buf[10];
   //if (f) nds_raw_print("File OK");
   //else nds_raw_print("No file opened");
@@ -1518,7 +1518,7 @@ bool nds_load_tile_bmp(const char *name, u16b *dest, u32b len)
   fseek(f,off,SEEK_SET);
   
   //NRM u8 temp[3];
-  byte temp[1];
+  uint8_t temp[1];
   while (y >= 0) 
     {
       for (i = 0; i < iw; i++) 
@@ -1545,9 +1545,9 @@ bool nds_load_tile_bmp(const char *name, u16b *dest, u32b len)
 #undef w
 } 
 
-bool nds_load_tile_file(char* name, u16b* dest, u32b len) {
+bool nds_load_tile_file(char* name, uint16_t* dest, uint32_t len) {
   char ext[4];
-  u16b slen = strlen(name);
+  uint16_t slen = strlen(name);
   strcpy(ext, name + slen - 3);
   nds_raw_print(name + len - 3);
   if (strcmpi(ext, "bmp") == 0) 
@@ -1573,7 +1573,7 @@ bool nds_load_tiles()
     {
       if (TILE_WIDTH == 0) TILE_WIDTH = DEF_TILE_WIDTH;
       if (TILE_HEIGHT == 0) TILE_HEIGHT = DEF_TILE_HEIGHT;
-      tiles_bin = (u16b*)malloc(TILE_BUFFER_SIZE);
+      tiles_bin = (uint16_t*)malloc(TILE_BUFFER_SIZE);
       if (!nds_load_tile_file(TILE_FILE, tiles_bin, TILE_BUFFER_SIZE) ) 
 	{
 	  died1 = errno;
@@ -1586,7 +1586,7 @@ bool nds_load_tiles()
     }
   TILE_WIDTH = DEF_TILE_WIDTH;
   TILE_HEIGHT = DEF_TILE_HEIGHT;
-  tiles_bin = (u16b*)malloc(TILE_BUFFER_SIZE);
+  tiles_bin = (uint16_t*)malloc(TILE_BUFFER_SIZE);
   if (!nds_load_tile_file(DEF_TILE_FILE, tiles_bin, TILE_BUFFER_SIZE) ) 
     {
       died2 = errno;
@@ -1654,7 +1654,7 @@ static void hook_quit(const char *str)
 
 
 void nds_exit(int code) {
-  u16b i;
+  uint16_t i;
   for (i = 0; i < 60; i++) {
     nds_updated = 0xFF;
     do_vblank();	// wait 1 sec.
@@ -1716,7 +1716,7 @@ int main(int argc, char *argv[])
   nds_init_fonts();
   
   //nds_raw_print("testing raw_print...\n");
-  //draw_char(10,10,(byte)'N');
+  //draw_char(10,10,(uint8_t)'N');
   swiWaitForVBlank();
   swiWaitForVBlank();
   swiWaitForVBlank();

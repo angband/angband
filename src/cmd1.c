@@ -156,11 +156,11 @@ static void py_pickup_gold(void)
 	int py = p_ptr->py;
 	int px = p_ptr->px;
 
-	s32b total_gold = 0L;
-	byte *treasure;
+	int32_t total_gold = 0L;
+	uint8_t *treasure;
 
-	s16b this_o_idx = 0;
-	s16b next_o_idx = 0;
+	int16_t this_o_idx = 0;
+	int16_t next_o_idx = 0;
 
 	object_type *o_ptr;
 
@@ -168,7 +168,7 @@ static void py_pickup_gold(void)
 	bool verbal = FALSE;
 
 	/* Allocate an array of ordinary gold objects */
-	treasure = C_ZNEW(SV_GOLD_MAX, byte);
+	treasure = C_ZNEW(SV_GOLD_MAX, uint8_t);
 
 
 	/* Pick up all the ordinary gold objects */
@@ -192,7 +192,7 @@ static void py_pickup_gold(void)
 			verbal = TRUE;
 
 		/* Increment total value */
-		total_gold += (s32b)o_ptr->pval[DEFAULT_PVAL];
+		total_gold += (int32_t)o_ptr->pval[DEFAULT_PVAL];
 
 		/* Delete the gold */
 		delete_object_idx(this_o_idx);
@@ -352,12 +352,12 @@ int do_autopickup(void)
 	int py = p_ptr->py;
 	int px = p_ptr->px;
 
-	s16b this_o_idx, next_o_idx = 0;
+	int16_t this_o_idx, next_o_idx = 0;
 
 	object_type *o_ptr;
 
 	/* Objects picked up.  Used to determine time cost of command. */
-	byte objs_picked_up = 0;
+	uint8_t objs_picked_up = 0;
 
 	size_t floor_num = 0;
 	int floor_list[MAX_FLOOR_STACK + 1];
@@ -447,12 +447,12 @@ int do_autopickup(void)
  * Note the lack of chance for the character to be disturbed by unmarked
  * objects.  They are truly "unknown".
  */
-byte py_pickup(int pickup)
+uint8_t py_pickup(int pickup)
 {
 	int py = p_ptr->py;
 	int px = p_ptr->px;
 
-	s16b this_o_idx = 0;
+	int16_t this_o_idx = 0;
 
 	size_t floor_num = 0;
 	int floor_list[MAX_FLOOR_STACK + 1];
@@ -464,7 +464,7 @@ byte py_pickup(int pickup)
 	bool domsg = TRUE;
 
 	/* Objects picked up.  Used to determine time cost of command. */
-	byte objs_picked_up = 0;
+	uint8_t objs_picked_up = 0;
 
 	/* Always pickup gold, effortlessly */
 	py_pickup_gold();

@@ -42,7 +42,7 @@ extern void borg_sort_aux(void* u, void* v, int p, int q);
 extern void borg_sort(void* u, void* v, int n);
 
 /*
- * A structure holding information about an object.  120 bytes.
+ * A structure holding information about an object.  120 uint8_ts.
  *
  * The "iqty" is zero if the object is "missing"
  * The "kind" is zero if the object is "unaware" (or missing)
@@ -56,7 +56,7 @@ struct borg_item
 
     char *note;      /* Pointer to tail of 'desc' */
 
-    u32b kind;      /* Kind index */
+    uint32_t kind;      /* Kind index */
 
     bool ident;      /* True if item is identified */
 	bool aware;		/* Player is aware of the effects */
@@ -67,34 +67,34 @@ struct borg_item
 
     bool xxxx;      /* Unused */
 
-    byte tval;      /* Item type */
-    byte sval;      /* Item sub-type */
-    s16b pval;      /* Item extra-info */
+    uint8_t tval;      /* Item type */
+    uint8_t sval;      /* Item sub-type */
+    int16_t pval;      /* Item extra-info */
 
-    byte discount;  /* Discount */
+    uint8_t discount;  /* Discount */
 
-    byte iqty;      /* Number of items */
+    uint8_t iqty;      /* Number of items */
 
-    s16b weight;    /* Probable weight */
+    int16_t weight;    /* Probable weight */
 
-    byte name1;     /* Artifact index (if any) */
-    byte name2;     /* Ego-item index (if any) */
-	u16b activation; /* Artifact activation and effects*/
+    uint8_t name1;     /* Artifact index (if any) */
+    uint8_t name2;     /* Ego-item index (if any) */
+	uint16_t activation; /* Artifact activation and effects*/
 
-    s16b timeout;   /* Timeout counter */
+    int16_t timeout;   /* Timeout counter */
 
-    s16b to_h;      /* Bonus to hit */
-    s16b to_d;      /* Bonus to dam */
-    s16b to_a;      /* Bonus to ac */
-    s16b ac;        /* Armor class */
-    byte dd;        /* Damage dice */
-    byte ds;        /* Damage sides */
+    int16_t to_h;      /* Bonus to hit */
+    int16_t to_d;      /* Bonus to dam */
+    int16_t to_a;      /* Bonus to ac */
+    int16_t ac;        /* Armor class */
+    uint8_t dd;        /* Damage dice */
+    uint8_t ds;        /* Damage sides */
 
-    byte level;     /* Level  */
+    uint8_t level;     /* Level  */
 
-    s32b cost;      /* Cost (in stores) */
+    int32_t cost;      /* Cost (in stores) */
 
-    s32b value;     /* Value (estimated) */
+    int32_t value;     /* Value (estimated) */
 
     bool cursed;    /* Item is cursed */
 	bitflag flags[OF_SIZE];		/**< Flags */
@@ -106,12 +106,12 @@ struct borg_item
  */
 struct borg_shop
 {
-/*    s16b when; */      /* Time stamp */
+/*    int16_t when; */      /* Time stamp */
 
-    s16b xtra;      /* Something unused */
+    int16_t xtra;      /* Something unused */
 
-    s16b page;      /* Current page */
-    s16b more;      /* Number of pages */
+    int16_t page;      /* Current page */
+    int16_t more;      /* Number of pages */
 
     borg_item ware[24]; /* Store contents */
 };
@@ -155,21 +155,21 @@ struct borg_magic
 {
     char *name;      /* Textual name */
 
-    byte status;    /* Status (see above) */
+    uint8_t status;    /* Status (see above) */
 
-    byte method;    /* Method (see above) */
+    uint8_t method;    /* Method (see above) */
 
-    byte rating;    /* Usefulness */
+    uint8_t rating;    /* Usefulness */
 
-    byte level;     /* Required level */
+    uint8_t level;     /* Required level */
 
-    byte power;     /* Required power */
+    uint8_t power;     /* Required power */
 
-    byte sfail;     /* Minimum chance of failure */
+    uint8_t sfail;     /* Minimum chance of failure */
 
-    byte cheat;     /* Actual "spell index" (or 99) */
+    uint8_t cheat;     /* Actual "spell index" (or 99) */
 
-    s32b times;     /* Times this spell was cast */
+    int32_t times;     /* Times this spell was cast */
 };
 
 

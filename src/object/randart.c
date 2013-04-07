@@ -180,35 +180,35 @@
 #define ART_IDX_HIGH_RESIST_COUNT 13
 
 /* Arrays of indices by item type, used in frequency generation */
-static s16b art_idx_bow[] =
+static int16_t art_idx_bow[] =
 	{ART_IDX_BOW_SHOTS, ART_IDX_BOW_MIGHT, ART_IDX_BOW_BRAND, ART_IDX_BOW_SLAY};
-static s16b art_idx_weapon[] =
+static int16_t art_idx_weapon[] =
 	{ART_IDX_WEAPON_HIT, ART_IDX_WEAPON_DAM, ART_IDX_WEAPON_AGGR};
-static s16b art_idx_nonweapon[] =
+static int16_t art_idx_nonweapon[] =
 	{ART_IDX_NONWEAPON_HIT, ART_IDX_NONWEAPON_DAM, ART_IDX_NONWEAPON_HIT_DAM,
 	ART_IDX_NONWEAPON_AGGR, ART_IDX_NONWEAPON_BRAND, ART_IDX_NONWEAPON_SLAY,
 	ART_IDX_NONWEAPON_BLOWS, ART_IDX_NONWEAPON_SHOTS};
-static s16b art_idx_melee[] =
+static int16_t art_idx_melee[] =
 	{ART_IDX_MELEE_BLESS, ART_IDX_MELEE_SINV, ART_IDX_MELEE_BRAND, ART_IDX_MELEE_SLAY,
 	ART_IDX_MELEE_BLOWS, ART_IDX_MELEE_AC, ART_IDX_MELEE_DICE,
 	ART_IDX_MELEE_WEIGHT, ART_IDX_MELEE_TUNN};
-static s16b art_idx_allarmor[] =
+static int16_t art_idx_allarmor[] =
 	{ART_IDX_ALLARMOR_WEIGHT};
-static s16b art_idx_boot[] =
+static int16_t art_idx_boot[] =
 	{ART_IDX_BOOT_AC, ART_IDX_BOOT_FEATHER, ART_IDX_BOOT_STEALTH, ART_IDX_BOOT_SPEED};
-static s16b art_idx_glove[] =
+static int16_t art_idx_glove[] =
 	{ART_IDX_GLOVE_AC, ART_IDX_GLOVE_FA, ART_IDX_GLOVE_DEX};
-static s16b art_idx_headgear[] =
+static int16_t art_idx_headgear[] =
 	{ART_IDX_HELM_AC, ART_IDX_HELM_RBLIND, ART_IDX_HELM_ESP, ART_IDX_HELM_SINV,
 	ART_IDX_HELM_WIS, ART_IDX_HELM_INT};
-static s16b art_idx_shield[] =
+static int16_t art_idx_shield[] =
 	{ART_IDX_SHIELD_AC, ART_IDX_SHIELD_LRES};
-static s16b art_idx_cloak[] =
+static int16_t art_idx_cloak[] =
 	{ART_IDX_CLOAK_AC, ART_IDX_CLOAK_STEALTH};
-static s16b art_idx_armor[] =
+static int16_t art_idx_armor[] =
 	{ART_IDX_ARMOR_AC, ART_IDX_ARMOR_STEALTH, ART_IDX_ARMOR_HLIFE, ART_IDX_ARMOR_CON,
 	ART_IDX_ARMOR_LRES, ART_IDX_ARMOR_ALLRES, ART_IDX_ARMOR_HRES};
-static s16b art_idx_gen[] =
+static int16_t art_idx_gen[] =
 	{ART_IDX_GEN_STAT, ART_IDX_GEN_SUST, ART_IDX_GEN_STEALTH,
 	ART_IDX_GEN_SEARCH, ART_IDX_GEN_INFRA, ART_IDX_GEN_SPEED,
 	ART_IDX_GEN_IMMUNE, ART_IDX_GEN_FA, ART_IDX_GEN_HLIFE,
@@ -220,7 +220,7 @@ static s16b art_idx_gen[] =
 	ART_IDX_GEN_RNEXUS, ART_IDX_GEN_RNETHER, ART_IDX_GEN_RCHAOS,
 	ART_IDX_GEN_RDISEN, ART_IDX_GEN_AC, ART_IDX_GEN_TUNN,
 	ART_IDX_GEN_ACTIV, ART_IDX_GEN_PSTUN};
-static s16b art_idx_high_resist[] =
+static int16_t art_idx_high_resist[] =
 	{ART_IDX_GEN_RPOIS, ART_IDX_GEN_RFEAR,
 	ART_IDX_GEN_RLIGHT, ART_IDX_GEN_RDARK, ART_IDX_GEN_RBLIND,
 	ART_IDX_GEN_RCONF, ART_IDX_GEN_RSOUND, ART_IDX_GEN_RSHARD,
@@ -228,36 +228,36 @@ static s16b art_idx_high_resist[] =
 	ART_IDX_GEN_RDISEN, ART_IDX_GEN_PSTUN};
 
 /* Initialize the data structures for learned probabilities */
-static s16b artprobs[ART_IDX_TOTAL];
-static s16b *baseprobs;
-static s16b art_bow_total = 0;
-static s16b art_melee_total = 0;
-static s16b art_boot_total = 0;
-static s16b art_glove_total = 0;
-static s16b art_headgear_total = 0;
-static s16b art_shield_total = 0;
-static s16b art_cloak_total = 0;
-static s16b art_armor_total = 0;
-static s16b art_other_total = 0;
-static s16b art_total = 0;
+static int16_t artprobs[ART_IDX_TOTAL];
+static int16_t *baseprobs;
+static int16_t art_bow_total = 0;
+static int16_t art_melee_total = 0;
+static int16_t art_boot_total = 0;
+static int16_t art_glove_total = 0;
+static int16_t art_headgear_total = 0;
+static int16_t art_shield_total = 0;
+static int16_t art_cloak_total = 0;
+static int16_t art_armor_total = 0;
+static int16_t art_other_total = 0;
+static int16_t art_total = 0;
 
 /*
  * Working arrays for holding frequency values - global to avoid repeated
  * allocation of memory
  */
-static s16b art_freq[ART_IDX_TOTAL];  	/* artifact attributes */
-static s16b *base_freq; 			/* base items */
+static int16_t art_freq[ART_IDX_TOTAL];  	/* artifact attributes */
+static int16_t *base_freq; 			/* base items */
 
 /*
  * Mean start and increment values for to_hit, to_dam and AC.  Update these
  * if the algorithm changes.  They are used in frequency generation.
  */
-static s16b mean_hit_increment = 4;
-static s16b mean_dam_increment = 4;
-static s16b mean_hit_startval = 10;
-static s16b mean_dam_startval = 10;
-static s16b mean_ac_startval = 15;
-static s16b mean_ac_increment = 5;
+static int16_t mean_hit_increment = 4;
+static int16_t mean_dam_increment = 4;
+static int16_t mean_hit_startval = 10;
+static int16_t mean_dam_startval = 10;
+static int16_t mean_ac_startval = 15;
+static int16_t mean_ac_increment = 5;
 
 /*
  * Pointer for logging file
@@ -267,26 +267,26 @@ static ang_file *log_file = NULL;
 /*
  * Store the original artifact power ratings
  */
-static s32b *base_power;
-static s16b max_power;
-static s16b min_power;
-static s16b avg_power;
-static s16b var_power;
+static int32_t *base_power;
+static int16_t max_power;
+static int16_t min_power;
+static int16_t avg_power;
+static int16_t var_power;
 
 /*
  * Store the original base item levels
  */
-static byte *base_item_level;
+static uint8_t *base_item_level;
 
 /*
  * Store the original base item rarities
  */
-static byte *base_item_prob;
+static uint8_t *base_item_prob;
 
 /*
  * Store the original artifact rarities
  */
-static byte *base_art_alloc;
+static uint8_t *base_art_alloc;
 
 /* Global just for convenience. */
 static int verbose = 1;
@@ -352,7 +352,7 @@ static errr init_names(void)
  * Return the artifact power, by generating a "fake" object based on the
  * artifact, and calling the common object_power function
  */
-static s32b artifact_power(int a_idx)
+static int32_t artifact_power(int a_idx)
 {
 	object_type obj;
 	char buf[256];
@@ -466,7 +466,7 @@ static object_kind *choose_item(int a_idx)
 	artifact_type *a_ptr = &a_info[a_idx];
 	int tval = 0, sval = 0, i = 0;
 	object_kind *k_ptr;
-	s16b r;
+	int16_t r;
 	bitflag f[OF_SIZE];
 
 	/*
@@ -536,9 +536,9 @@ static object_kind *choose_item(int a_idx)
 		case TV_HAFTED:
 		case TV_SWORD:
 		case TV_POLEARM:
-			a_ptr->to_h += (s16b)(mean_hit_startval / 2 +
+			a_ptr->to_h += (int16_t)(mean_hit_startval / 2 +
 			                      randint0(mean_hit_startval) );
-			a_ptr->to_d += (s16b)(mean_dam_startval / 2 +
+			a_ptr->to_d += (int16_t)(mean_dam_startval / 2 +
 			                      randint0(mean_dam_startval) );
 			file_putf(log_file, "Assigned basic stats, to_hit: %d, to_dam: %d\n", a_ptr->to_h, a_ptr->to_d);
 			break;
@@ -552,7 +552,7 @@ static object_kind *choose_item(int a_idx)
 		case TV_HARD_ARMOR:
 		case TV_DRAG_ARMOR:
 			/* CR: adjusted this to work with parsing logic */
-			a_ptr->to_a += (s16b)(mean_ac_startval / 2 +
+			a_ptr->to_a += (int16_t)(mean_ac_startval / 2 +
 			                      randint0(mean_ac_startval) );
 			file_putf(log_file, "Assigned basic stats, AC bonus: %d\n", a_ptr->to_a);
 			break;
@@ -581,11 +581,11 @@ static void do_pval(artifact_type *a_ptr)
 		/* Blows, might, shots handled separately */
 		if (factor > 1)
 		{
-			a_ptr->pval[DEFAULT_PVAL] = (s16b)randint1(2);
+			a_ptr->pval[DEFAULT_PVAL] = (int16_t)randint1(2);
 			/* Give it a shot at +3 */
 			if (INHIBIT_STRONG) a_ptr->pval[DEFAULT_PVAL] = 3;
 		}
-		else a_ptr->pval[DEFAULT_PVAL] = (s16b)randint1(4);
+		else a_ptr->pval[DEFAULT_PVAL] = (int16_t)randint1(4);
 		file_putf(log_file, "Assigned initial pval, value is: %d\n", a_ptr->pval[DEFAULT_PVAL]);
 	}
 	else if (a_ptr->pval[DEFAULT_PVAL] < 0)
@@ -705,7 +705,7 @@ static void parse_frequencies(void)
 	int i, j;
 	const artifact_type *a_ptr;
 	object_kind *k_ptr;
-	s32b m, temp, temp2;
+	int32_t m, temp, temp2;
 	bitflag mask[OF_SIZE];
 
 	file_putf(log_file, "\n****** BEGINNING GENERATION OF FREQUENCIES\n\n");
@@ -1807,7 +1807,7 @@ static bool add_first_pval_flag(artifact_type *a_ptr, int flag)
 
 	if (a_ptr->pval[DEFAULT_PVAL] == 0)
 	{
-		a_ptr->pval[DEFAULT_PVAL] = (s16b)randint1(4);
+		a_ptr->pval[DEFAULT_PVAL] = (int16_t)randint1(4);
 		file_putf(log_file, "Adding ability: %s (first time) (now %+d)\n", flag_name(flag), a_ptr->pval[DEFAULT_PVAL]);
 
 		return TRUE;
@@ -1969,7 +1969,7 @@ static void add_slay(artifact_type *a_ptr, bool brand)
 static void add_damage_dice(artifact_type *a_ptr)
 {
 	/* CR 2001-09-02: changed this to increments 1 or 2 only */
-	a_ptr->dd += (byte)randint1(2);
+	a_ptr->dd += (uint8_t)randint1(2);
 /*	if (a_ptr->dd > 9)
 		a_ptr->dd = 9; */
 	file_putf(log_file, "Adding ability: extra damage dice (now %d dice)\n", a_ptr->dd);
@@ -1994,7 +1994,7 @@ static void add_to_hit(artifact_type *a_ptr, int fixed, int random)
 			return;
 		}
 	}
-	a_ptr->to_h += (s16b)(fixed + randint0(random));
+	a_ptr->to_h += (int16_t)(fixed + randint0(random));
 	file_putf(log_file, "Adding ability: extra to_h (now %+d)\n", a_ptr->to_h);
 }
 
@@ -2017,7 +2017,7 @@ static void add_to_dam(artifact_type *a_ptr, int fixed, int random)
 			return;
 		}
 	}
-	a_ptr->to_d += (s16b)(fixed + randint0(random));
+	a_ptr->to_d += (int16_t)(fixed + randint0(random));
 	file_putf(log_file, "Adding ability: extra to_dam (now %+d)\n", a_ptr->to_d);
 }
 
@@ -2040,7 +2040,7 @@ static void add_to_AC(artifact_type *a_ptr, int fixed, int random)
 			return;
 		}
 	}
-	a_ptr->to_a += (s16b)(fixed + randint0(random));
+	a_ptr->to_a += (int16_t)(fixed + randint0(random));
 	file_putf(log_file, "Adding ability: AC bonus (new bonus is %+d)\n", a_ptr->to_a);
 }
 
@@ -2089,7 +2089,7 @@ static void add_immunity(artifact_type *a_ptr)
 }
 
 /* Add an activation (called only if artifact does not yet have one) */
-static void add_activation(artifact_type *a_ptr, s32b target_power)
+static void add_activation(artifact_type *a_ptr, int32_t target_power)
 {
 	int i, x, p, max_effect = 0;
 	int count = 0;
@@ -2141,10 +2141,10 @@ static void add_activation(artifact_type *a_ptr, s32b target_power)
  * The resulting frequency table is cumulative for ease of use in the
  * weighted randomization algorithm.
  */
-static void build_freq_table(artifact_type *a_ptr, s16b *freq)
+static void build_freq_table(artifact_type *a_ptr, int16_t *freq)
 {
 	int i,j;
-	s16b f_temp[ART_IDX_TOTAL];
+	int16_t f_temp[ART_IDX_TOTAL];
 
 	/* First, set everything to zero */
 	for (i = 0; i < ART_IDX_TOTAL; i++)
@@ -2281,7 +2281,7 @@ static void build_freq_table(artifact_type *a_ptr, s16b *freq)
  * representing the index of the ability chosen.
  */
 
-static int choose_ability (s16b *freq_table)
+static int choose_ability (int16_t *freq_table)
 {
 	int r, ability;
 
@@ -2310,7 +2310,7 @@ static int choose_ability (s16b *freq_table)
  * been done already.
  */
 
-static void add_ability_aux(artifact_type *a_ptr, int r, s32b target_power)
+static void add_ability_aux(artifact_type *a_ptr, int r, int32_t target_power)
 {
 	switch(r)
 	{
@@ -2563,7 +2563,7 @@ static void add_ability_aux(artifact_type *a_ptr, int r, s32b target_power)
 /*
  * Randomly select an extra ability to be added to the artifact in question.
  */
-static void add_ability(artifact_type *a_ptr, s32b target_power)
+static void add_ability(artifact_type *a_ptr, int32_t target_power)
 {
 	int r;
 
@@ -2589,7 +2589,7 @@ static void add_ability(artifact_type *a_ptr, s32b target_power)
  * abilities and attempting to add each in turn.  An artifact only gets one
  * chance at each of these up front (if applicable).
  */
-static void try_supercharge(artifact_type *a_ptr, s32b target_power)
+static void try_supercharge(artifact_type *a_ptr, int32_t target_power)
 {
 	/* Huge damage dice or max blows - melee weapon only */
 	if (a_ptr->tval == TV_DIGGING || a_ptr->tval == TV_HAFTED ||
@@ -2717,10 +2717,10 @@ static void scramble_artifact(int a_idx)
 	artifact_type *a_ptr = &a_info[a_idx];
 	artifact_type a_old;
 	object_kind *k_ptr;
-	s32b power;
+	int32_t power;
 	int tries = 0;
-	byte alloc_old, base_alloc_old, alloc_new;
-	s32b ap = 0;
+	uint8_t alloc_old, base_alloc_old, alloc_new;
+	int32_t ap = 0;
 	bool curse_me = FALSE;
 	bool success = FALSE;
 	int i;
@@ -2768,7 +2768,7 @@ static void scramble_artifact(int a_idx)
 		 * more than 20 below the target power
 		 */
 		int count = 0;
-		s32b ap2;
+		int32_t ap2;
 
 		/* Capture the rarity of the original base item and artifact */
 		alloc_old = base_art_alloc[a_idx];
@@ -3133,7 +3133,7 @@ static errr do_randart_aux(bool full)
  * The full flag toggles between just randomizing the names and
  * complete randomization of the artifacts.
  */
-errr do_randart(u32b randart_seed, bool full)
+errr do_randart(uint32_t randart_seed, bool full)
 {
 	errr err;
 
@@ -3145,12 +3145,12 @@ errr do_randart(u32b randart_seed, bool full)
 	if (full)
 	{
 		/* Allocate the various "original powers" arrays */
-		base_power = C_ZNEW(z_info->a_max, s32b);
-		base_item_level = C_ZNEW(z_info->a_max, byte);
-		base_item_prob = C_ZNEW(z_info->a_max, byte);
-		base_art_alloc = C_ZNEW(z_info->a_max, byte);
-		baseprobs = C_ZNEW(z_info->k_max, s16b);
-		base_freq = C_ZNEW(z_info->k_max, s16b);
+		base_power = C_ZNEW(z_info->a_max, int32_t);
+		base_item_level = C_ZNEW(z_info->a_max, uint8_t);
+		base_item_prob = C_ZNEW(z_info->a_max, uint8_t);
+		base_art_alloc = C_ZNEW(z_info->a_max, uint8_t);
+		baseprobs = C_ZNEW(z_info->k_max, int16_t);
+		base_freq = C_ZNEW(z_info->k_max, int16_t);
 
 		/* Open the log file for writing */
 		if (verbose)

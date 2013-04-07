@@ -146,8 +146,8 @@ bool history_lose_artifact(struct artifact *artifact)
  *
  * Return TRUE on success.
  */
-bool history_add_full(u16b type, struct artifact *artifact, s16b dlev,
-		s16b clev, s32b turnno, const char *text)
+bool history_add_full(uint16_t type, struct artifact *artifact, int16_t dlev,
+		int16_t clev, int32_t turnno, const char *text)
 {
 	/* Allocate the history list if needed */
 	if (!history_list)
@@ -179,7 +179,7 @@ bool history_add_full(u16b type, struct artifact *artifact, s16b dlev,
  *
  * Returne TRUE on success.
  */
-bool history_add(const char *event, u16b type, struct artifact *artifact)
+bool history_add(const char *event, uint16_t type, struct artifact *artifact)
 {
 	return history_add_full(type, artifact, p_ptr->depth, p_ptr->lev, turn, event);
 }
@@ -242,7 +242,7 @@ bool history_add_artifact(struct artifact *artifact, bool known, bool found)
 
 	char o_name[80];
 	char buf[80];
-	u16b type;
+	uint16_t type;
 
 	assert(artifact);
 

@@ -40,7 +40,7 @@ int test_colour(void *state) {
 	textblock *tb = textblock_new();
 
 	const char text[] = "two";
-	const byte attrs[] = { TERM_L_GREEN, TERM_L_GREEN, TERM_L_GREEN };	
+	const uint8_t attrs[] = { TERM_L_GREEN, TERM_L_GREEN, TERM_L_GREEN };	
 
 	textblock_append_c(tb, TERM_L_GREEN, text);
 

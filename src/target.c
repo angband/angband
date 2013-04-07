@@ -37,10 +37,10 @@
 static bool target_set;
 
 /* Current monster being tracked, or 0 */
-static u16b target_who;
+static uint16_t target_who;
 
 /* Target location */
-static s16b target_x, target_y;
+static int16_t target_x, target_y;
 
 #define TS_INITIAL_SIZE	20
 
@@ -272,7 +272,7 @@ static int cmp_distance(const void *a, const void *b)
 /*
  * Hack -- help "select" a location (see below)
  */
-static s16b target_pick(int y1, int x1, int dy, int dx, struct point_set *targets)
+static int16_t target_pick(int y1, int x1, int dy, int dx, struct point_set *targets)
 {
 	int i, v;
 
@@ -562,7 +562,7 @@ static void target_display_help(bool monster, bool free)
 //static struct keypress target_set_interactive_aux(int y, int x, int mode)
 static ui_event target_set_interactive_aux(int y, int x, int mode)
 {
-	s16b this_o_idx = 0, next_o_idx = 0;
+	int16_t this_o_idx = 0, next_o_idx = 0;
 
 	const char *s1, *s2, *s3;
 
@@ -1090,7 +1090,7 @@ bool target_set_closest(int mode)
  * The first two result from information being lost from the dungeon arrays,
  * which requires changes elsewhere
  */
-static int draw_path(u16b path_n, u16b *path_g, wchar_t *c, byte *a, int y1, int x1)
+static int draw_path(uint16_t path_n, uint16_t *path_g, wchar_t *c, uint8_t *a, int y1, int x1)
 {
 	int i;
 	bool on_screen;
@@ -1105,7 +1105,7 @@ static int draw_path(u16b path_n, u16b *path_g, wchar_t *c, byte *a, int y1, int
 
 	/* Draw the path. */
 	for (i = 0; i < path_n; i++) {
-		byte colour;
+		uint8_t colour;
 
 		/* Find the co-ordinates on the level. */
 		int y = GRID_Y(path_g[i]);
@@ -1170,7 +1170,7 @@ static int draw_path(u16b path_n, u16b *path_g, wchar_t *c, byte *a, int y1, int
  * Load the attr/char at each point along "path" which is on screen from
  * "a" and "c". This was saved in draw_path().
  */
-static void load_path(u16b path_n, u16b *path_g, wchar_t *c, byte *a) {
+static void load_path(uint16_t path_n, uint16_t *path_g, wchar_t *c, uint8_t *a) {
 	int i;
 	for (i = 0; i < path_n; i++) {
 		int y = GRID_Y(path_g[i]);
@@ -1238,7 +1238,7 @@ bool target_set_interactive(int mode, int x, int y)
 	int px = p_ptr->px;
 
 	int path_n;
-	u16b path_g[256];
+	uint16_t path_g[256];
 
 	int i, d, m, t, bd;
 	int wid, hgt, help_prompt_loc;
@@ -1252,7 +1252,7 @@ bool target_set_interactive(int mode, int x, int y)
 
 	/* These are used for displaying the path to the target */
 	wchar_t path_char[MAX_RANGE_LGE];
-	byte path_attr[MAX_RANGE_LGE];
+	uint8_t path_attr[MAX_RANGE_LGE];
 	struct point_set *targets;
 
 	/* If we haven't been given an initial location, start on the
@@ -1829,7 +1829,7 @@ bool target_set_interactive(int mode, int x, int y)
  * Both `col` and `row` must point somewhere, and on function termination,
  * contain the X and Y locations respectively.
  */
-void target_get(s16b *col, s16b *row)
+void target_get(int16_t *col, int16_t *row)
 {
 	assert(col);
 	assert(row);
@@ -1842,7 +1842,7 @@ void target_get(s16b *col, s16b *row)
 /**
  * Returns the currently targeted monster index.
  */
-s16b target_get_monster(void)
+int16_t target_get_monster(void)
 {
 	return target_who;
 }

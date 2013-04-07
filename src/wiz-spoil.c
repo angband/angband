@@ -133,7 +133,7 @@ static const grouper group_item[] =
 static void kind_info(char *buf, size_t buf_len,
                       char *dam, size_t dam_len,
                       char *wgt, size_t wgt_len,
-                      int *lev, s32b *val, int k)
+                      int *lev, int32_t *val, int k)
 {
 	object_kind *k_ptr;
 
@@ -236,7 +236,7 @@ static void spoil_obj_desc(const char *fname)
 {
 	int i, k, s, t, n = 0;
 
-	u16b who[200];
+	uint16_t who[200];
 
 	char buf[1024];
 
@@ -282,8 +282,8 @@ static void spoil_obj_desc(const char *fname)
 					int e1;
 					int e2;
 
-					s32b t1;
-					s32b t2;
+					int32_t t1;
+					int32_t t2;
 
 					kind_info(NULL, 0, NULL, 0, NULL, 0, &e1, &t1, who[i1]);
 					kind_info(NULL, 0, NULL, 0, NULL, 0, &e2, &t2, who[i2]);
@@ -301,7 +301,7 @@ static void spoil_obj_desc(const char *fname)
 			for (s = 0; s < n; s++)
 			{
 				int e;
-				s32b v;
+				int32_t v;
 
 				/* Describe the kind */
 				kind_info(buf, sizeof(buf), dam, sizeof(dam), wgt, sizeof(wgt), &e, &v, who[s]);
@@ -539,7 +539,7 @@ static void spoil_mon_desc(const char *fname)
 	char hp[80];
 	char exp[80];
 
-	u16b *who;
+	uint16_t *who;
 
 	/* Build the filename */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, fname);
@@ -563,7 +563,7 @@ static void spoil_mon_desc(const char *fname)
 	        "----", "---", "---", "---", "--", "--", "-----------");
 
 	/* Allocate the "who" array */
-	who = C_ZNEW(z_info->r_max, u16b);
+	who = C_ZNEW(z_info->r_max, uint16_t);
 
 	/* Scan the monsters (except the ghost) */
 	for (i = 1; i < z_info->r_max - 1; i++)
@@ -571,7 +571,7 @@ static void spoil_mon_desc(const char *fname)
 		monster_race *r_ptr = &r_info[i];
 
 		/* Use that monster */
-		if (r_ptr->name) who[n++] = (u16b)i;
+		if (r_ptr->name) who[n++] = (uint16_t)i;
 	}
 
 	/* Sort the array by dungeon depth of monsters */
@@ -662,7 +662,7 @@ static void spoil_mon_info(const char *fname)
 {
 	char buf[1024];
 	int i, n;
-	u16b *who;
+	uint16_t *who;
 	int count = 0;
 
 
@@ -686,7 +686,7 @@ static void spoil_mon_info(const char *fname)
 	text_out("------------------------------------------\n\n");
 
 	/* Allocate the "who" array */
-	who = C_ZNEW(z_info->r_max, u16b);
+	who = C_ZNEW(z_info->r_max, uint16_t);
 
 	/* Scan the monsters */
 	for (i = 1; i < z_info->r_max; i++)
@@ -694,7 +694,7 @@ static void spoil_mon_info(const char *fname)
 		monster_race *r_ptr = &r_info[i];
 
 		/* Use that monster */
-		if (r_ptr->name) who[count++] = (u16b)i;
+		if (r_ptr->name) who[count++] = (uint16_t)i;
 	}
 
 	sort(who, count, sizeof(*who), cmp_monsters);

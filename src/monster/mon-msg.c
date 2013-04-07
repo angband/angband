@@ -20,8 +20,8 @@
 #include "monster/mon-msg.h"
 #include "monster/mon-util.h"
 
-static u16b size_mon_hist = 0;
-static u16b size_mon_msg = 0;
+static uint16_t size_mon_hist = 0;
+static uint16_t size_mon_msg = 0;
 
 monster_race_message *mon_msg;
 monster_message_history *mon_message_hist;
@@ -157,15 +157,15 @@ void message_pain(struct monster *m_ptr, int dam)
  * The contents of the returned value will change with the next call
  * to this function
  */
-static char *get_mon_msg_action(byte msg_code, bool do_plural,
+static char *get_mon_msg_action(uint8_t msg_code, bool do_plural,
 		const struct monster_race *race)
 {
 	static char buf[200];
 	const char *action;
-	u16b n = 0;
+	uint16_t n = 0;
 
 	/* Regular text */
-	byte flag = 0;
+	uint8_t flag = 0;
 
 	assert(msg_code < MAX_MON_MSG);
 	action = msg_repository[msg_code];
@@ -280,7 +280,7 @@ bool add_monster_message(const char *mon_name, struct monster *m_ptr,
 		int msg_code, bool delay)
 {
 	int i;
-	byte mon_flags = 0;
+	uint8_t mon_flags = 0;
 
 	assert(msg_code >= 0 && msg_code < MAX_MON_MSG);
 

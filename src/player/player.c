@@ -182,7 +182,7 @@ static void adjust_level(struct player *p, bool verbose)
 	handle_stuff(p);
 }
 
-void player_exp_gain(struct player *p, s32b amount)
+void player_exp_gain(struct player *p, int32_t amount)
 {
 	p->exp += amount;
 	if (p->exp < p->max_exp)
@@ -190,7 +190,7 @@ void player_exp_gain(struct player *p, s32b amount)
 	adjust_level(p, TRUE);
 }
 
-void player_exp_lose(struct player *p, s32b amount, bool permanent)
+void player_exp_lose(struct player *p, int32_t amount, bool permanent)
 {
 	if (p->exp < amount)
 		amount = p->exp;
@@ -200,9 +200,9 @@ void player_exp_lose(struct player *p, s32b amount, bool permanent)
 	adjust_level(p, TRUE);
 }
 
-byte player_hp_attr(struct player *p)
+uint8_t player_hp_attr(struct player *p)
 {
-	byte attr;
+	uint8_t attr;
 	
 	if (p->chp >= p->mhp)
 		attr = TERM_L_GREEN;
@@ -214,9 +214,9 @@ byte player_hp_attr(struct player *p)
 	return attr;
 }
 
-byte player_sp_attr(struct player *p)
+uint8_t player_sp_attr(struct player *p)
 {
-	byte attr;
+	uint8_t attr;
 	
 	if (p->csp >= p->msp)
 		attr = TERM_L_GREEN;

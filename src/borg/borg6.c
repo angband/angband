@@ -203,7 +203,7 @@ static void borg_flow_clear(void)
  * We fill in the "cost" field of every grid that the player can
  * "reach" with the number of steps needed to reach that grid,
  * if the grid is "reachable", and otherwise, with "255", which
- * is the largest possible value that can be stored in a byte.
+ * is the largest possible value that can be stored in a uint8_t.
  *
  * Thus, certain grids which are actually "reachable" but only by
  * a path which is at least 255 steps in length will thus appear
@@ -15844,10 +15844,10 @@ bool borg_flow_stair_more(int why, bool sneak, bool brave)
  * Hack -- Glyph creating
  */
 
-static byte glyph_x;
-static byte glyph_y;
-static byte glyph_y_center = 0;
-static byte glyph_x_center = 0;
+static uint8_t glyph_x;
+static uint8_t glyph_y;
+static uint8_t glyph_y_center = 0;
+static uint8_t glyph_x_center = 0;
 
 /*
  * Prepare to flow towards a location and create a
@@ -19470,8 +19470,8 @@ bool borg_flow_dark(bool neer)
  * Hack -- spastic searching
  */
 
-static byte spastic_x;
-static byte spastic_y;
+static uint8_t spastic_x;
+static uint8_t spastic_y;
 
 
 

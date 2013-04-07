@@ -39,18 +39,18 @@ typedef struct term_win term_win;
 struct term_win
 {
 	bool cu, cv;
-	byte cx, cy;
+	uint8_t cx, cy;
 
-	byte **a;
+	uint8_t **a;
 	wchar_t **c;
 
-	byte *va;
+	uint8_t *va;
 	wchar_t *vc;
 
-	byte **ta;
+	uint8_t **ta;
 	wchar_t **tc;
 
-	byte *vta;
+	uint8_t *vta;
 	wchar_t *vtc;
 
 	term_win *next;
@@ -182,30 +182,30 @@ struct term
 	bool never_bored;
 	bool never_frosh;
 
-	byte attr_blank;
+	uint8_t attr_blank;
 	wchar_t char_blank;
 
 	bool complex_input;
 
 	ui_event *key_queue;
 
-	u16b key_head;
-	u16b key_tail;
-	u16b key_xtra;
-	u16b key_size;
+	uint16_t key_head;
+	uint16_t key_tail;
+	uint16_t key_xtra;
+	uint16_t key_size;
 
-	byte wid;
-	byte hgt;
+	uint8_t wid;
+	uint8_t hgt;
 
-	byte y1;
-	byte y2;
+	uint8_t y1;
+	uint8_t y2;
 
-	byte *x1;
-	byte *x2;
+	uint8_t *x1;
+	uint8_t *x2;
 
 	/* Offsets used by the map subwindows */
-	byte offset_x;
-	byte offset_y;
+	uint8_t offset_x;
+	uint8_t offset_y;
 
 	term_win *old;
 	term_win *scr;
@@ -214,7 +214,7 @@ struct term
 	term_win *mem;
 
 	/* Number of times saved */
-	byte saved;
+	uint8_t saved;
 
 	void (*init_hook)(term *t);
 	void (*nuke_hook)(term *t);
@@ -227,9 +227,9 @@ struct term
 
 	errr (*wipe_hook)(int x, int y, int n);
 
-	errr (*text_hook)(int x, int y, int n, byte a, const wchar_t *s);
+	errr (*text_hook)(int x, int y, int n, uint8_t a, const wchar_t *s);
 
-	errr (*pict_hook)(int x, int y, int n, const byte *ap, const wchar_t *cp, const byte *tap, const wchar_t *tcp);
+	errr (*pict_hook)(int x, int y, int n, const uint8_t *ap, const wchar_t *cp, const uint8_t *tap, const wchar_t *tcp);
 
 	size_t (*mbcs_hook)(wchar_t *dest, const char *src, int n);
 
@@ -346,8 +346,8 @@ extern struct keypress keylog[KEYLOG_SIZE];
 /**** Available Variables ****/
 
 extern term *Term;
-extern byte tile_width;
-extern byte tile_height;
+extern uint8_t tile_width;
+extern uint8_t tile_height;
 extern bool bigcurs;
 extern bool smlcurs;
 
@@ -356,19 +356,19 @@ extern bool smlcurs;
 extern errr Term_xtra(int n, int v);
 extern size_t Term_mbstowcs(wchar_t *dest, const char *src, int n);
 
-extern void Term_queue_char(term *t, int x, int y, byte a, wchar_t c, byte ta, wchar_t tc);
-extern void Term_big_queue_char(term *t, int x, int y, byte a, wchar_t c, byte a1, wchar_t c1);
-extern void Term_queue_chars(int x, int y, int n, byte a, const wchar_t *s);
+extern void Term_queue_char(term *t, int x, int y, uint8_t a, wchar_t c, uint8_t ta, wchar_t tc);
+extern void Term_big_queue_char(term *t, int x, int y, uint8_t a, wchar_t c, uint8_t a1, wchar_t c1);
+extern void Term_queue_chars(int x, int y, int n, uint8_t a, const wchar_t *s);
 
 extern errr Term_fresh(void);
 extern errr Term_set_cursor(bool v);
 extern errr Term_gotoxy(int x, int y);
-extern errr Term_draw(int x, int y, byte a, wchar_t c);
-extern errr Term_addch(byte a, wchar_t c);
-extern errr Term_addstr(int n, byte a, const char *s);
-extern errr Term_putch(int x, int y, byte a, wchar_t c);
-extern void Term_big_putch(int x, int y, byte a, wchar_t c);
-extern errr Term_putstr(int x, int y, int n, byte a, const char *s);
+extern errr Term_draw(int x, int y, uint8_t a, wchar_t c);
+extern errr Term_addch(uint8_t a, wchar_t c);
+extern errr Term_addstr(int n, uint8_t a, const char *s);
+extern errr Term_putch(int x, int y, uint8_t a, wchar_t c);
+extern void Term_big_putch(int x, int y, uint8_t a, wchar_t c);
+extern errr Term_putstr(int x, int y, int n, uint8_t a, const char *s);
 extern errr Term_erase(int x, int y, int n);
 extern errr Term_clear(void);
 extern errr Term_redraw(void);
@@ -378,11 +378,11 @@ extern errr Term_mark(int x, int y);
 extern errr Term_get_cursor(bool *v);
 extern errr Term_get_size(int *w, int *h);
 extern errr Term_locate(int *x, int *y);
-extern errr Term_what(int x, int y, byte *a, wchar_t *c);
+extern errr Term_what(int x, int y, uint8_t *a, wchar_t *c);
 
 extern errr Term_flush(void);
 extern errr Term_mousepress(int x, int y, char button);
-extern errr Term_keypress(keycode_t k, byte mods);
+extern errr Term_keypress(keycode_t k, uint8_t mods);
 extern errr Term_key_push(int k);
 extern errr Term_event_push(const ui_event *ke);
 extern errr Term_inkey(ui_event *ch, bool wait, bool take);

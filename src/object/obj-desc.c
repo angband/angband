@@ -665,7 +665,7 @@ static size_t obj_desc_aware(const object_type *o_ptr, char *buf, size_t max,
  * Setting 'prefix' to TRUE prepends a 'the', 'a' or the number in the stack,
  * respectively.
  *
- * \returns The number of bytes used of the buffer.
+ * \returns The number of uint8_ts used of the buffer.
  */
 size_t object_desc(char *buf, size_t max, const object_type *o_ptr, int mode)
 {

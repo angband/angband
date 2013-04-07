@@ -134,7 +134,7 @@ int stats_db_bind_ints(sqlite3_stmt *sql_stmt, int num_cols, int offset, ...) {
 
 	va_start(vp, offset);
 	for (col = offset + 1; col <= offset + num_cols; col++) {
-		u32b value = va_arg(vp, u32b);
+		uint32_t value = va_arg(vp, uint32_t);
 		err = sqlite3_bind_int(sql_stmt, col, value);
 		if (err) return err;
 	}
@@ -183,8 +183,8 @@ int stats_db_bind_rv(sqlite3_stmt *sql_stmt, int col, random_value rv) {
  *     types are blob, double, int, int64, text, text16, and value.
  *     Routines attempt unit conversion where appropriate. Use 
  *     sqlite3_column_type() to determine the datatype code of a column,
- *     and sqlite3_column_bytes() or sqlite3_column_bytes16() to determikne
- *     the number of bytes in a blob or string.
+ *     and sqlite3_column_uint8_ts() or sqlite3_column_uint8_ts16() to determikne
+ *     the number of uint8_ts in a blob or string.
  *
  * int sqlite3_reset(sqlite3_stmt *)
  *     Reset the given statement to its initial state, so that it may be

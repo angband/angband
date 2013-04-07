@@ -6,8 +6,8 @@
 void ensure_connectedness(struct cave *c);
 
 void place_object(struct cave *c, int y, int x, int level, bool good,
-	bool great, byte origin, int tval);
-void place_gold(struct cave *c, int y, int x, int level, byte origin);
+	bool great, uint8_t origin, int tval);
+void place_gold(struct cave *c, int y, int x, int level, uint8_t origin);
 void place_secret_door(struct cave *c, int y, int x);
 void place_closed_door(struct cave *c, int y, int x);
 void place_random_door(struct cave *c, int y, int x);
@@ -78,7 +78,7 @@ struct room_profile {
 struct pit_color_profile {
 	struct pit_color_profile *next;
 
-	byte color;
+	uint8_t color;
 };
 
 struct pit_forbidden_monster {

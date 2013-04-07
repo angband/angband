@@ -27,22 +27,22 @@ const char *savefile_get_description(const char *path);
 void note(const char *msg);
 
 /* Writing bits */
-void wr_byte(byte v);
-void wr_u16b(u16b v);
-void wr_s16b(s16b v);
-void wr_u32b(u32b v);
-void wr_s32b(s32b v);
+void wr_uint8_t(uint8_t v);
+void wr_uint16_t(uint16_t v);
+void wr_int16_t(int16_t v);
+void wr_uint32_t(uint32_t v);
+void wr_int32_t(int32_t v);
 void wr_string(const char *str);
-void pad_bytes(int n);
+void pad_uint8_ts(int n);
 
 /* Reading bits */
-void rd_byte(byte *ip);
-void rd_u16b(u16b *ip);
-void rd_s16b(s16b *ip);
-void rd_u32b(u32b *ip);
-void rd_s32b(s32b *ip);
+void rd_uint8_t(uint8_t *ip);
+void rd_uint16_t(uint16_t *ip);
+void rd_int16_t(int16_t *ip);
+void rd_uint32_t(uint32_t *ip);
+void rd_int32_t(int32_t *ip);
 void rd_string(char *str, int max);
-void strip_bytes(int n);
+void strip_uint8_ts(int n);
 
 
 

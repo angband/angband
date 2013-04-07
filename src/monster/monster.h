@@ -51,10 +51,10 @@ enum
  *	- Damage Sides
  */
 struct monster_blow {
-	byte method;
-	byte effect;
-	byte d_dice;
-	byte d_side;
+	uint8_t method;
+	uint8_t effect;
+	uint8_t d_dice;
+	uint8_t d_side;
 };
 
 /*
@@ -130,20 +130,20 @@ typedef struct monster_race
 
 	struct monster_base *base;
 	
-	u16b avg_hp;				/* Average HP for this creature */
+	uint16_t avg_hp;				/* Average HP for this creature */
 
-	s16b ac;				/* Armour Class */
+	int16_t ac;				/* Armour Class */
 
-	s16b sleep;				/* Inactive counter (base) */
-	byte aaf;				/* Area affect radius (1-100) */
-	byte speed;				/* Speed (normally 110) */
+	int16_t sleep;				/* Inactive counter (base) */
+	uint8_t aaf;				/* Area affect radius (1-100) */
+	uint8_t speed;				/* Speed (normally 110) */
 
-	s32b mexp;				/* Exp value for kill */
+	int32_t mexp;				/* Exp value for kill */
 
 	long power;				/* Monster power */
 	long scaled_power;		/* Monster power scaled by level */
 
-	s16b highest_threat;	/* Monster highest threat */
+	int16_t highest_threat;	/* Monster highest threat */
 	
 	/*AMF:DEBUG*/			/**/
 	long melee_dam;			/**/
@@ -151,25 +151,25 @@ typedef struct monster_race
 	long hp;				/**/
 	/*END AMF:DEBUG*/		/**/
 
-	byte freq_innate;		/* Innate spell frequency */
-	byte freq_spell;		/* Other spell frequency */
+	uint8_t freq_innate;		/* Innate spell frequency */
+	uint8_t freq_spell;		/* Other spell frequency */
 
 	bitflag flags[RF_SIZE];         /* Flags */
 	bitflag spell_flags[RSF_SIZE];  /* Spell flags */
 
 	struct monster_blow blow[MONSTER_BLOW_MAX]; /* Up to four blows per round */
 
-	byte level;				/* Level of creature */
+	uint8_t level;				/* Level of creature */
 	int rarity;			/* Rarity of creature */
 
-	byte d_attr;			/* Default monster attribute */
+	uint8_t d_attr;			/* Default monster attribute */
 	wchar_t d_char;			/* Default monster character */
 
-	byte x_attr;			/* Desired monster attribute */
+	uint8_t x_attr;			/* Desired monster attribute */
 	wchar_t x_char;			/* Desired monster character */
 
-	byte max_num;			/* Maximum population allowed per level */
-	byte cur_num;			/* Monster population on current level */
+	uint8_t max_num;			/* Maximum population allowed per level */
+	uint8_t cur_num;			/* Monster population on current level */
 
 	struct monster_drop *drops;
 	
@@ -186,22 +186,22 @@ typedef struct monster_race
  */
 typedef struct
 {
-	s16b sights;			/* Count sightings of this monster */
-	s16b deaths;			/* Count deaths from this monster */
+	int16_t sights;			/* Count sightings of this monster */
+	int16_t deaths;			/* Count deaths from this monster */
 
-	s16b pkills;			/* Count monsters killed in this life */
-	s16b tkills;			/* Count monsters killed in all lives */
+	int16_t pkills;			/* Count monsters killed in this life */
+	int16_t tkills;			/* Count monsters killed in all lives */
 
-	byte wake;				/* Number of times woken up (?) */
-	byte ignore;			/* Number of times ignored (?) */
+	uint8_t wake;				/* Number of times woken up (?) */
+	uint8_t ignore;			/* Number of times ignored (?) */
 
-	byte drop_gold;			/* Max number of gold dropped at once */
-	byte drop_item;			/* Max number of item dropped at once */
+	uint8_t drop_gold;			/* Max number of gold dropped at once */
+	uint8_t drop_item;			/* Max number of item dropped at once */
 
-	byte cast_innate;		/* Max number of innate spells seen */
-	byte cast_spell;		/* Max number of other spells seen */
+	uint8_t cast_innate;		/* Max number of innate spells seen */
+	uint8_t cast_spell;		/* Max number of other spells seen */
 
-	byte blows[MONSTER_BLOW_MAX]; /* Number of times each blow type was seen */
+	uint8_t blows[MONSTER_BLOW_MAX]; /* Number of times each blow type was seen */
 
 	bitflag flags[RF_SIZE]; /* Observed racial flags - a 1 indicates
 	                         * the flag (or lack thereof) is known to
@@ -224,31 +224,31 @@ typedef struct monster
 	struct monster_race *race;
 	int midx;
 
-	byte fy;			/* Y location on map */
-	byte fx;			/* X location on map */
+	uint8_t fy;			/* Y location on map */
+	uint8_t fx;			/* X location on map */
 
-	s16b hp;			/* Current Hit points */
-	s16b maxhp;			/* Max Hit points */
+	int16_t hp;			/* Current Hit points */
+	int16_t maxhp;			/* Max Hit points */
 
-	s16b m_timed[MON_TMD_MAX]; /* Timed monster status effects */
+	int16_t m_timed[MON_TMD_MAX]; /* Timed monster status effects */
 
-	byte mspeed;		/* Monster "speed" */
-	byte energy;		/* Monster "energy" */
+	uint8_t mspeed;		/* Monster "speed" */
+	uint8_t energy;		/* Monster "energy" */
 
-	byte cdis;			/* Current dis from player */
+	uint8_t cdis;			/* Current dis from player */
 
-	byte mflag;			/* Extra monster flags */
+	uint8_t mflag;			/* Extra monster flags */
 
 	bool ml;			/* Monster is "visible" */
 	bool unaware;		/* Player doesn't know this is a monster */
 	
-	s16b mimicked_o_idx; /* Object this monster is mimicking */
+	int16_t mimicked_o_idx; /* Object this monster is mimicking */
 
-	s16b hold_o_idx;	/* Object being held (if any) */
+	int16_t hold_o_idx;	/* Object being held (if any) */
 
-	byte attr;  		/* attr last used for drawing monster */
+	uint8_t attr;  		/* attr last used for drawing monster */
 
-	u32b smart;			/* Field for "adult_ai_learn" */
+	uint32_t smart;			/* Field for "adult_ai_learn" */
 
 	bitflag known_pflags[OF_SIZE]; /* Known player flags */
 } monster_type;
@@ -257,12 +257,12 @@ typedef struct monster
 
 /* melee2.c */
 extern bool check_hit(struct player *p, int power, int level);
-extern void process_monsters(struct cave *c, byte min_energy);
+extern void process_monsters(struct cave *c, uint8_t min_energy);
 int mon_hp(const struct monster_race *r_ptr, aspect hp_aspect);
 extern bool make_attack_spell(struct monster *m);
 
 
-extern s16b num_repro;
+extern int16_t num_repro;
 
 extern bool (*testfn_make_attack_normal)(struct monster *m, struct player *p);
 

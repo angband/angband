@@ -28,7 +28,7 @@
  * The "pval" of a chest determines the quality of its treasure
  * Note that disarming a trap on a chest also removes the lock.
  */
-static const byte chest_traps[64] =
+static const uint8_t chest_traps[64] =
 {
 	0,					/* 0 == empty */
 	(CHEST_POISON),
@@ -96,9 +96,9 @@ static const byte chest_traps[64] =
 	(CHEST_EXPLODE | CHEST_SUMMON),
 };
 
-byte chest_trap_type(const object_type *o_ptr)
+uint8_t chest_trap_type(const object_type *o_ptr)
 {
-	s16b trap_value = o_ptr->pval[DEFAULT_PVAL];
+	int16_t trap_value = o_ptr->pval[DEFAULT_PVAL];
 
 	if (trap_value >= 0)
 		return chest_traps[trap_value];
@@ -146,9 +146,9 @@ void unlock_chest(object_type *o_ptr)
 /*
  * Determine if a grid contains a chest matching the query type
  */
-s16b chest_check(int y, int x, enum chest_query check_type)
+int16_t chest_check(int y, int x, enum chest_query check_type)
 {
-	s16b this_o_idx, next_o_idx = 0;
+	int16_t this_o_idx, next_o_idx = 0;
 
 
 	/* Scan all objects in the grid */
@@ -232,7 +232,7 @@ int count_chests(int *y, int *x, enum chest_query check_type)
  * and Steel chests contain 6 items.  The "value" of the items in a
  * chest is based on the level on which the chest is generated.
  */
-static void chest_death(int y, int x, s16b o_idx)
+static void chest_death(int y, int x, int16_t o_idx)
 {
 	int number, value;
 
@@ -302,7 +302,7 @@ static void chest_death(int y, int x, s16b o_idx)
  * Exploding chest destroys contents (and traps).
  * Note that the chest itself is never destroyed.
  */
-static void chest_trap(int y, int x, s16b o_idx)
+static void chest_trap(int y, int x, int16_t o_idx)
 {
 	int i, trap;
 
@@ -375,7 +375,7 @@ static void chest_trap(int y, int x, s16b o_idx)
  *
  * Returns TRUE if repeated commands may continue
  */
-bool do_cmd_open_chest(int y, int x, s16b o_idx)
+bool do_cmd_open_chest(int y, int x, int16_t o_idx)
 {
 	int i, j;
 
@@ -463,7 +463,7 @@ bool do_cmd_open_chest(int y, int x, s16b o_idx)
  *
  * Returns TRUE if repeated commands may continue
  */
-bool do_cmd_disarm_chest(int y, int x, s16b o_idx)
+bool do_cmd_disarm_chest(int y, int x, int16_t o_idx)
 {
 	int i, j;
 

@@ -10,27 +10,27 @@
 #include "monster/monster.h"
 
 /* calcs.c */
-extern const byte adj_chr_gold[STAT_RANGE];
-extern const byte adj_str_blow[STAT_RANGE];
-extern const byte adj_dex_safe[STAT_RANGE];
-extern const byte adj_con_fix[STAT_RANGE];
-extern const byte adj_str_hold[STAT_RANGE];
+extern const uint8_t adj_chr_gold[STAT_RANGE];
+extern const uint8_t adj_str_blow[STAT_RANGE];
+extern const uint8_t adj_dex_safe[STAT_RANGE];
+extern const uint8_t adj_con_fix[STAT_RANGE];
+extern const uint8_t adj_str_hold[STAT_RANGE];
 #ifdef ALLOW_BORG
-extern const byte adj_int_dev[STAT_RANGE];
-extern const byte adj_wis_sav[STAT_RANGE];
-extern const byte adj_dex_dis[STAT_RANGE];
-extern const byte adj_int_dis[STAT_RANGE];
-extern const byte adj_dex_ta[STAT_RANGE];
-extern const byte adj_str_td[STAT_RANGE];
-extern const byte adj_dex_th[STAT_RANGE];
-extern const byte adj_str_th[STAT_RANGE];
-extern const byte adj_str_wgt[STAT_RANGE];
-extern const byte adj_str_dig[STAT_RANGE];
-extern const byte adj_dex_blow[STAT_RANGE];
+extern const uint8_t adj_int_dev[STAT_RANGE];
+extern const uint8_t adj_wis_sav[STAT_RANGE];
+extern const uint8_t adj_dex_dis[STAT_RANGE];
+extern const uint8_t adj_int_dis[STAT_RANGE];
+extern const uint8_t adj_dex_ta[STAT_RANGE];
+extern const uint8_t adj_str_td[STAT_RANGE];
+extern const uint8_t adj_dex_th[STAT_RANGE];
+extern const uint8_t adj_str_th[STAT_RANGE];
+extern const uint8_t adj_str_wgt[STAT_RANGE];
+extern const uint8_t adj_str_dig[STAT_RANGE];
+extern const uint8_t adj_dex_blow[STAT_RANGE];
 extern const int adj_con_mhp[STAT_RANGE];
 extern const int adj_mag_study[STAT_RANGE];
 extern const int adj_mag_mana[STAT_RANGE];
-extern const byte blows_table[12][12];
+extern const uint8_t blows_table[12][12];
 #endif
 
 void calc_bonuses(object_type inventory[], player_state *state, bool id_only);
@@ -53,18 +53,18 @@ extern bool tracked_object_is(int item);
 
 extern bool player_stat_inc(struct player *p, int stat);
 extern bool player_stat_dec(struct player *p, int stat, bool permanent);
-extern void player_exp_gain(struct player *p, s32b amount);
-extern void player_exp_lose(struct player *p, s32b amount, bool permanent);
+extern void player_exp_gain(struct player *p, int32_t amount);
+extern void player_exp_lose(struct player *p, int32_t amount, bool permanent);
 
-extern byte player_hp_attr(struct player *p);
-extern byte player_sp_attr(struct player *p);
+extern uint8_t player_hp_attr(struct player *p);
+extern uint8_t player_sp_attr(struct player *p);
 
 /* race.c */
 extern struct player_race *player_id2race(guid id);
 
 /* spell.c */
 #ifdef ALLOW_BORG
-extern const byte adj_mag_fail[STAT_RANGE];
+extern const uint8_t adj_mag_fail[STAT_RANGE];
 extern const int adj_mag_stat[STAT_RANGE];
 #endif
 int spell_collect_from_book(const object_type *o_ptr, int *spells);
@@ -74,7 +74,7 @@ bool spell_okay_to_cast(int spell);
 bool spell_okay_to_study(int spell);
 bool spell_okay_to_browse(int spell);
 bool spell_in_book(int spell, int book);
-s16b spell_chance(int spell);
+int16_t spell_chance(int spell);
 void spell_learn(int spell);
 bool spell_cast(int spell, int dir);
 
@@ -86,7 +86,7 @@ bool player_clear_timed(struct player *p, int idx, bool notify);
 bool player_set_food(struct player *p, int v);
 
 /* util.c */
-s16b modify_stat_value(int value, int amount);
+int16_t modify_stat_value(int value, int amount);
 bool player_can_cast(void);
 bool player_can_cast_msg(void);
 bool player_can_study(void);

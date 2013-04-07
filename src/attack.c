@@ -81,7 +81,7 @@ bool test_hit(int chance, int ac, int vis) {
  *
  * Factor in item weight, total plusses, and player level.
  */
-static int critical_shot(int weight, int plus, int dam, u32b *msg_type) {
+static int critical_shot(int weight, int plus, int dam, uint32_t *msg_type) {
 	int chance = weight + (p_ptr->state.to_h + plus) * 4 + p_ptr->lev * 2;
 	int power = weight + randint1(500);
 
@@ -109,7 +109,7 @@ static int critical_shot(int weight, int plus, int dam, u32b *msg_type) {
  *
  * Factor in weapon weight, total plusses, player level.
  */
-static int critical_norm(int weight, int plus, int dam, u32b *msg_type) {
+static int critical_norm(int weight, int plus, int dam, uint32_t *msg_type) {
 	int chance = weight + (p_ptr->state.to_h + plus) * 5 + p_ptr->lev * 3;
 	int power = weight + randint1(650);
 
@@ -141,7 +141,7 @@ static int critical_norm(int weight, int plus, int dam, u32b *msg_type) {
 
 /* A list of the different hit types and their associated special message */
 static const struct {
-	u32b msg;
+	uint32_t msg;
 	const char *text;
 } melee_hit_types[] = {
 	{ MSG_MISS, NULL },
@@ -176,7 +176,7 @@ static bool py_attack_real(int y, int x, bool *fear) {
 	/* Default to punching for one damage */
 	const char *hit_verb = "punch";
 	int dmg = 1;
-	u32b msg_type = MSG_HIT;
+	uint32_t msg_type = MSG_HIT;
 
 	/* Extract monster name (or "it") */
 	monster_desc(m_name, sizeof(m_name), m_ptr, 0);
@@ -332,7 +332,7 @@ void py_attack(int y, int x) {
 
 /* A list of the different hit types and their associated special message */
 static const struct {
-	u32b msg;
+	uint32_t msg;
 	const char *text;
 } ranged_hit_types[] = {
 	{ MSG_MISS, NULL },
@@ -354,7 +354,7 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 	object_type *o_ptr = object_from_item_idx(item);
 
 	int i, j;
-	byte missile_attr = object_attr(o_ptr);
+	uint8_t missile_attr = object_attr(o_ptr);
 	wchar_t missile_char;
 
 	object_type object_type_body;
@@ -363,7 +363,7 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 	char o_name[80];
 
 	int path_n;
-	u16b path_g[256];
+	uint16_t path_g[256];
 
 	int msec = op_ptr->delay_factor;
 
@@ -372,8 +372,8 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 	int y = p_ptr->py;
 
 	/* Predict the "target" location */
-	s16b ty = y + 99 * ddy[dir];
-	s16b tx = x + 99 * ddx[dir];
+	int16_t ty = y + 99 * ddy[dir];
+	int16_t tx = x + 99 * ddx[dir];
 
 	bool hit_target = FALSE;
 
@@ -458,7 +458,7 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 
 		struct attack_result result = attack(o_ptr, y, x);
 		int dmg = result.dmg;
-		u32b msg_type = result.msg_type;
+		uint32_t msg_type = result.msg_type;
 		const char *hit_verb = result.hit_verb;
 
 		if (result.success) {

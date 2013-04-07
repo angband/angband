@@ -75,18 +75,18 @@ typedef struct birther /*lovely*/ birther; /*sometimes we think she's a dream*/
  */
 struct birther
 {
-	byte sex;
+	uint8_t sex;
 	const struct player_race *race;
 	const struct player_class *class;
 
-	s16b age;
-	s16b wt;
-	s16b ht;
-	s16b sc;
+	int16_t age;
+	int16_t wt;
+	int16_t ht;
+	int16_t sc;
 
-	s32b au;
+	int32_t au;
 
-	s16b stat[A_MAX];
+	int16_t stat[A_MAX];
 
 	char *history;
 };
@@ -551,7 +551,7 @@ static void player_outfit(struct player *p)
 
 		/* Prepare the item */
 		object_prep(i_ptr, si->kind, 0, MINIMISE);
-		i_ptr->number = (byte)rand_range(si->min, si->max);
+		i_ptr->number = (uint8_t)rand_range(si->min, si->max);
 		i_ptr->origin = ORIGIN_BIRTH;
 
 		object_flavor_aware(i_ptr);

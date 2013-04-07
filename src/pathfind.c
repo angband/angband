@@ -388,14 +388,14 @@ int pathfind_direction_to(struct loc from, struct loc to)
 /*
  * Hack -- allow quick "cycling" through the legal directions
  */
-static const byte cycle[] =
+static const uint8_t cycle[] =
 { 1, 2, 3, 6, 9, 8, 7, 4, 1, 2, 3, 6, 9, 8, 7, 4, 1 };
 
 
 /*
  * Hack -- map each direction into the "middle" of the "cycle[]" array
  */
-static const byte chome[] =
+static const uint8_t chome[] =
 { 0, 8, 9, 10, 7, 0, 11, 6, 5, 4 };
 
 

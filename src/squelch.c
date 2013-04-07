@@ -99,7 +99,7 @@ quality_name_struct quality_values[SQUELCH_MAX] =
 	{ SQUELCH_ALL,				"non-artifact" },
 };
 
-byte squelch_level[TYPE_MAX];
+uint8_t squelch_level[TYPE_MAX];
 const size_t squelch_size = TYPE_MAX;
 
 
@@ -123,7 +123,7 @@ void squelch_birth_init(void)
 	for (i = 0; i < z_info->k_max; i++)
 		k_info[i].squelch = FALSE;
 
-	/* Clear the squelch bytes */
+	/* Clear the squelch uint8_ts */
 	for (i = 0; i < TYPE_MAX; i++)
 		squelch_level[i] = SQUELCH_NONE;
 }
@@ -165,7 +165,7 @@ int apply_autoinscription(object_type *o_ptr)
 }
 
 
-int remove_autoinscription(s16b kind)
+int remove_autoinscription(int16_t kind)
 {
 	struct object_kind *k = objkind_byid(kind);
 	if (!k || !k->note)
@@ -175,7 +175,7 @@ int remove_autoinscription(s16b kind)
 }
 
 
-int add_autoinscription(s16b kind, const char *inscription)
+int add_autoinscription(int16_t kind, const char *inscription)
 {
 	struct object_kind *k = objkind_byid(kind);
 	if (!k)
@@ -191,7 +191,7 @@ void autoinscribe_ground(void)
 {
 	int py = p_ptr->py;
 	int px = p_ptr->px;
-	s16b this_o_idx, next_o_idx = 0;
+	int16_t this_o_idx, next_o_idx = 0;
 
 	/* Scan the pile of objects */
 	for (this_o_idx = cave->o_idx[py][px]; this_o_idx; this_o_idx = next_o_idx)
@@ -295,9 +295,9 @@ static int is_object_good(const object_type *o_ptr)
  * The main point is when the value is undetermined given current info,
  * return the maximum possible value.
  */
-byte squelch_level_of(const object_type *o_ptr)
+uint8_t squelch_level_of(const object_type *o_ptr)
 {
-	byte value = 0;
+	uint8_t value = 0;
 	bitflag f[OF_SIZE], f2[OF_SIZE];
 	int i;
 
@@ -453,7 +453,7 @@ void kind_squelch_when_unaware(object_kind *k_ptr)
  */
 bool squelch_item_ok(const object_type *o_ptr)
 {
-	byte type;
+	uint8_t type;
 
 	if (p_ptr->unignoring)
 		return FALSE;
@@ -494,7 +494,7 @@ bool squelch_item_ok(const object_type *o_ptr)
  */
 bool object_is_squelched(const object_type *o_ptr)
 {
-	byte type;
+	uint8_t type;
 
 	/* Do squelch individual objects that marked ignore */
 	if (o_ptr->ignore)

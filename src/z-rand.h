@@ -37,7 +37,7 @@ typedef enum {
  *
  * The integer X falls along a uniform distribution.
  */
-#define randint0(M) ((s32b) Rand_div(M))
+#define randint0(M) ((int32_t) Rand_div(M))
 
 
 /**
@@ -45,7 +45,7 @@ typedef enum {
  *
  * The integer X falls along a uniform distribution.
  */
-#define randint1(M) ((s32b) Rand_div(M) + 1)
+#define randint1(M) ((int32_t) Rand_div(M) + 1)
 
 /**
  * Generate a random signed long integer X where "A - D <= X <= A + D" holds.
@@ -68,42 +68,42 @@ extern bool Rand_quick;
 /**
  * The state used by the "quick" RNG.
  */
-extern u32b Rand_value;
+extern uint32_t Rand_value;
 
 /**
  * The state used by the "complex" RNG.
  */
-extern u32b state_i;
-extern u32b STATE[RAND_DEG];
-extern u32b z0;
-extern u32b z1;
-extern u32b z2;
+extern uint32_t state_i;
+extern uint32_t STATE[RAND_DEG];
+extern uint32_t z0;
+extern uint32_t z1;
+extern uint32_t z2;
 
 
 /**
  * Initialise the RNG state with the given seed.
  */
-void Rand_state_init(u32b seed);
+void Rand_state_init(uint32_t seed);
 
 /**
  * Generates a random unsigned long integer X where "0 <= X < M" holds.
  *
  * The integer X falls along a uniform distribution.
  */
-u32b Rand_div(u32b m);
+uint32_t Rand_div(uint32_t m);
 
 /**
  * Generate a signed random integer within `stand` standard deviations of
  * `mean`, following a normal distribution.
  */
-s16b Rand_normal(int mean, int stand);
+int16_t Rand_normal(int mean, int stand);
 
 /**
  * Generate a semi-random number from 0 to m-1, in a way that doesn't affect
  * gameplay.  This is intended for use by external program parts like the
  * main-*.c files.
  */
-u32b Rand_simple(u32b m);
+uint32_t Rand_simple(uint32_t m);
 
 /**
  * Emulate a number `num` of dice rolls of dice with `sides` sides.
@@ -127,12 +127,12 @@ int rand_range(int A, int B);
  * Function used to determine enchantment bonuses, see function header for
  * a more complete description.
  */
-s16b m_bonus(int max, int level);
+int16_t m_bonus(int max, int level);
 
 /**
  * Calculation helper function for m_bonus.
  */
-s16b m_bonus_calc(int max, int level, aspect bonus_aspect);
+int16_t m_bonus_calc(int max, int level, aspect bonus_aspect);
 
 /**
  * Calculation helper function for random_value structs.
@@ -149,6 +149,6 @@ bool randcalc_valid(random_value v, int test);
  */
 bool randcalc_varies(random_value v);
 
-extern void rand_fix(u32b val);
+extern void rand_fix(uint32_t val);
 
 #endif /* INCLUDED_Z_RAND_H */

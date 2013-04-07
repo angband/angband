@@ -28,7 +28,7 @@
 #include "squelch.h"
 
 /** Time last item was wielded */
-s32b object_last_wield;
+int32_t object_last_wield;
 
 /*** Knowledge accessor functions ***/
 
@@ -263,7 +263,7 @@ bool object_high_resist_is_possible(const object_type *o_ptr)
  *
  * \returns whether o_ptr->ident changed
  */
-static bool object_add_ident_flags(object_type *o_ptr, u32b flags)
+static bool object_add_ident_flags(object_type *o_ptr, uint32_t flags)
 {
 	if ((o_ptr->ident & flags) != flags)
 	{

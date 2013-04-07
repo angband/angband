@@ -39,7 +39,7 @@ static void gf_display(menu_type *m, int type, bool cursor,
 {
 	size_t i;
 
-	byte attr = curs_attrs[CURS_KNOWN][(int)cursor];
+	uint8_t attr = curs_attrs[CURS_KNOWN][(int)cursor];
 	const char *gf_name = gf_idx_to_name(type);
 
 	if (type % 2)
@@ -92,11 +92,11 @@ static void wiz_gf_demo(void)
  * This is a nice utility function; it determines if a (NULL-terminated)
  * string consists of only digits (starting with a non-zero digit).
  */
-static s16b get_idx_from_name(char *s)
+static int16_t get_idx_from_name(char *s)
 {
 	char *endptr = NULL;
 	long l = strtol(s, &endptr, 10);
-	return *endptr == '\0' ? (s16b)l : 0;
+	return *endptr == '\0' ? (int16_t)l : 0;
 }
 
 /*
@@ -119,7 +119,7 @@ static void do_cmd_wiz_hack_ben(void)
 		{
 			for (x = Term->offset_x; x < Term->offset_x + SCREEN_WID; x++)
 			{
-				byte a = TERM_RED;
+				uint8_t a = TERM_RED;
 
 				if (!in_bounds_fully(y, x)) continue;
 
@@ -223,7 +223,7 @@ static void do_cmd_keylog(void) {
  */
 static void do_cmd_wiz_bamf(void)
 {
-	s16b x, y;
+	int16_t x, y;
 
 	/* Must have a target */
 	if (!target_okay()) return;
@@ -1434,7 +1434,7 @@ static void do_cmd_wiz_query(void)
 
 	struct keypress cmd;
 
-	u16b mask = 0x00;
+	uint16_t mask = 0x00;
 
 
 	/* Get a "debug command" */
@@ -1467,7 +1467,7 @@ static void do_cmd_wiz_query(void)
 	{
 		for (x = Term->offset_x; x < Term->offset_x + SCREEN_WID; x++)
 		{
-			byte a = TERM_RED;
+			uint8_t a = TERM_RED;
 
 			if (!in_bounds_fully(y, x)) continue;
 
@@ -1982,7 +1982,7 @@ void do_cmd_debug(void)
 		case 'W':
 		{
 			const monster_race *r_ptr = NULL;
-			s16b r_idx = 0; 
+			int16_t r_idx = 0; 
 
 			struct keypress sym;
 			char *prompt =

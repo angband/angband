@@ -188,7 +188,7 @@ void messages_free(void);
 /**
  * Return the current number of messages stored.
  */
-u16b messages_num(void);	
+uint16_t messages_num(void);	
 
 
 /** Individual message handling **/
@@ -201,7 +201,7 @@ u16b messages_num(void);
  * it, in which case the "count" of the message will be increased instead.
  * This count can be fetched using the message_count() function.
  */
-void message_add(const char *str, u16b type);
+void message_add(const char *str, uint16_t type);
 
 
 /**
@@ -211,7 +211,7 @@ void message_add(const char *str, u16b type);
  * Returns the empty string if the no messages of the age specified are
  * available.
  */
-const char *message_str(u16b age);
+const char *message_str(uint16_t age);
 
 /**
  * Returns the number of times the message of age `age` was saved. The age of
@@ -221,7 +221,7 @@ const char *message_str(u16b age);
  * with the message "The orc sets your hair on fire.", then the text will only
  * have one age (age = 0), but will have a count of 5.
  */
-u16b message_count(u16b age);
+uint16_t message_count(uint16_t age);
 
 /**
  * Returns the type of the message of age `age`.  The age of the most recently
@@ -229,14 +229,14 @@ u16b message_count(u16b age);
  *
  * The type is one of the MSG_ constants, defined above.
  */
-u16b message_type(u16b age);
+uint16_t message_type(uint16_t age);
 
 /**
  * Returns the display colour of the message memorised `age` messages ago.
  * (i.e. age = 0 represents the last memorised message, age = 1 is the one
  * before that, etc).
  */
-byte message_color(u16b age);
+uint8_t message_color(uint16_t age);
 
 
 /** Message type changes **/
@@ -244,12 +244,12 @@ byte message_color(u16b age);
 /**
  * Returns the colour for the message type `type`.
  */ 
-byte message_type_color(u16b type);
+uint8_t message_type_color(uint16_t type);
 
 /**
  * Defines the color `color` for the message type `type`.
  */
-void message_color_define(u16b type, byte color);
+void message_color_define(uint16_t type, uint8_t color);
 
 
 #endif /* !INCLUDED_Z_MSG_H */

@@ -1267,7 +1267,7 @@ static const int enchant_table[16] =
  *
  * \returns true if the bonus was increased
  */
-static bool enchant_score(s16b *score, bool is_artifact)
+static bool enchant_score(int16_t *score, bool is_artifact)
 {
 	int chance;
 
@@ -1321,7 +1321,7 @@ static bool enchant_curse(object_type *o_ptr, bool is_artifact)
  *
  * \returns true if a bonus was increased or a curse was broken
  */
-static bool enchant2(object_type *o_ptr, s16b *score)
+static bool enchant2(object_type *o_ptr, int16_t *score)
 {
 	bool result = FALSE;
 	bool is_artifact = o_ptr->artifact ? TRUE : FALSE;
@@ -2673,7 +2673,7 @@ bool fire_ball(int typ, int dir, int dam, int rad)
 	int py = p_ptr->py;
 	int px = p_ptr->px;
 
-	s16b ty, tx;
+	int16_t ty, tx;
 
 	int flg = PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
 
@@ -2707,7 +2707,7 @@ bool fire_swarm(int num, int typ, int dir, int dam, int rad)
 	int py = p_ptr->py;
 	int px = p_ptr->px;
 
-	s16b ty, tx;
+	int16_t ty, tx;
 
 	int flg = PROJECT_THRU | PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
 
@@ -2737,7 +2737,7 @@ static bool project_hook(int typ, int dir, int dam, int flg)
 	int py = p_ptr->py;
 	int px = p_ptr->px;
 
-	s16b ty, tx;
+	int16_t ty, tx;
 
 	/* Pass through the target if needed */
 	flg |= (PROJECT_THRU);
@@ -3286,7 +3286,7 @@ void do_ident_item(int item, object_type *o_ptr)
 {
 	char o_name[80];
 
-	u32b msg_type = 0;
+	uint32_t msg_type = 0;
 	int i;
 	bool bad = TRUE;
 

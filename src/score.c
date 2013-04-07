@@ -26,7 +26,7 @@
 
 
 /*
- * Semi-Portable High Score List Entry (128 bytes)
+ * Semi-Portable High Score List Entry (128 uint8_ts)
  *
  * All fields listed below are null terminated ascii strings.
  *
@@ -283,7 +283,7 @@ static void display_scores_aux(const high_score scores[], int from, int to, int 
 		{
 			const high_score *score = &scores[j];
 
-			byte attr;
+			uint8_t attr;
 
 			int clev, mlev, cdun, mdun;
 			const char *user, *gold, *when, *aged;

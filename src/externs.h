@@ -23,13 +23,13 @@ extern bool screensaver;
 #endif /* ALLOW_BORG */
 
 /* tables.c */
-extern const s16b ddd[9];
-extern const s16b ddx[10];
-extern const s16b ddy[10];
-extern const s16b ddx_ddd[9];
-extern const s16b ddy_ddd[9];
-extern const byte extract_energy[200];
-extern const s32b player_exp[PY_MAX_LEVEL];
+extern const int16_t ddd[9];
+extern const int16_t ddx[10];
+extern const int16_t ddy[10];
+extern const int16_t ddx_ddd[9];
+extern const int16_t ddy_ddd[9];
+extern const uint8_t extract_energy[200];
+extern const int32_t player_exp[PY_MAX_LEVEL];
 extern const player_sex sex_info[MAX_SEXES];
 extern const char *stat_names[A_MAX];
 extern const char *stat_names_reduced[A_MAX];
@@ -46,23 +46,23 @@ extern bool character_generated;
 extern bool character_existed;
 extern bool character_dungeon;
 extern bool character_saved;
-extern s16b character_icky;
-extern s16b character_xtra;
-extern u32b seed_randart;
-extern u32b seed_flavor;
-extern u32b seed_town;
-extern s32b turn;
+extern int16_t character_icky;
+extern int16_t character_xtra;
+extern uint32_t seed_randart;
+extern uint32_t seed_flavor;
+extern uint32_t seed_town;
+extern int32_t turn;
 extern int use_graphics;
-extern s16b signal_count;
+extern int16_t signal_count;
 extern bool msg_flag;
-extern u32b inkey_scan;
+extern uint32_t inkey_scan;
 extern bool inkey_flag;
-extern s16b o_max;
-extern s16b o_cnt;
+extern int16_t o_max;
+extern int16_t o_cnt;
 extern char savefile[1024];
 extern term *angband_term[ANGBAND_TERM_MAX];
 extern char angband_term_name[ANGBAND_TERM_MAX][16];
-extern byte angband_color_table[MAX_COLORS][4];
+extern uint8_t angband_color_table[MAX_COLORS][4];
 extern color_type color_table[MAX_COLORS];
 extern const char *angband_sound_name[MSG_MAX];
 extern maxima *z_info;
@@ -71,9 +71,9 @@ extern quest *q_list;
 extern struct store *stores;
 extern int store_knowledge;
 extern const char *** name_sections;
-extern byte gf_to_attr[GF_MAX][BOLT_MAX];
+extern uint8_t gf_to_attr[GF_MAX][BOLT_MAX];
 extern wchar_t gf_to_char[GF_MAX][BOLT_MAX];
-extern byte tval_to_attr[128];
+extern uint8_t tval_to_attr[128];
 extern player_other *op_ptr;
 extern player_type *p_ptr;
 extern feature_type *f_info;
@@ -114,10 +114,10 @@ extern char *ANGBAND_DIR_XTRA_SOUND;
 extern char *ANGBAND_DIR_XTRA_ICON;
 
 extern bool item_tester_full;
-extern byte item_tester_tval;
+extern uint8_t item_tester_tval;
 extern bool (*item_tester_hook)(const object_type *);
 extern ang_file *text_out_file;
-extern void (*text_out_hook)(byte a, const char *str);
+extern void (*text_out_hook)(uint8_t a, const char *str);
 extern int text_out_wrap;
 extern int text_out_indent;
 extern int text_out_pad;
@@ -134,7 +134,7 @@ extern void player_birth(bool quickstart_allowed);
 
 /* cmd1.c */
 extern bool search(bool verbose);
-extern byte py_pickup(int pickup);
+extern uint8_t py_pickup(int pickup);
 extern void move_player(int dir, bool disarm);
 
 /* cmd2.c */
@@ -152,7 +152,7 @@ extern bool findpath(int y, int x);
 extern void run_step(int dir);
 
 /* randart.c */
-extern errr do_randart(u32b randart_seed, bool full);
+extern errr do_randart(uint32_t randart_seed, bool full);
 
 /* score.c */
 extern void enter_score(time_t *death_time);
@@ -185,36 +185,36 @@ extern void msgt(unsigned int type, const char *fmt, ...);
 extern void message_flush(void);
 extern void screen_save(void);
 extern void screen_load(void);
-extern void c_put_str(byte attr, const char *str, int row, int col);
+extern void c_put_str(uint8_t attr, const char *str, int row, int col);
 extern void put_str(const char *str, int row, int col);
-extern void c_prt(byte attr, const char *str, int row, int col);
+extern void c_prt(uint8_t attr, const char *str, int row, int col);
 extern void prt(const char *str, int row, int col);
-extern void text_out_to_file(byte attr, const char *str);
-extern void text_out_to_screen(byte a, const char *str);
+extern void text_out_to_file(uint8_t attr, const char *str);
+extern void text_out_to_screen(uint8_t a, const char *str);
 extern void text_out(const char *fmt, ...);
-extern void text_out_c(byte a, const char *fmt, ...);
+extern void text_out_c(uint8_t a, const char *fmt, ...);
 extern void text_out_e(const char *fmt, ...);
 extern void clear_from(int row);
 extern bool askfor_aux_keypress(char *buf, size_t buflen, size_t *curs, size_t *len, struct keypress keypress, bool firsttime);
 extern bool askfor_aux(char *buf, size_t len, bool (*keypress_h)(char *, size_t, size_t *, size_t *, struct keypress, bool));
 extern bool get_string(const char *prompt, char *buf, size_t len);
-extern s16b get_quantity(const char *prompt, int max);
+extern int16_t get_quantity(const char *prompt, int max);
 extern char get_char(const char *prompt, const char *options, size_t len, char fallback);
 extern bool get_check(const char *prompt);
 extern bool (*get_file)(const char *suggested_name, char *path, size_t len);
 extern bool get_com(const char *prompt, struct keypress *command);
 extern bool get_com_ex(const char *prompt, ui_event *command);
-extern void grid_data_as_text(grid_data *g, byte *ap, wchar_t *cp, byte *tap, wchar_t *tcp);
+extern void grid_data_as_text(grid_data *g, uint8_t *ap, wchar_t *cp, uint8_t *tap, wchar_t *tcp);
 extern void pause_line(struct term *term);
 extern bool is_a_vowel(int ch);
 extern int color_char_to_attr(char c);
 extern int color_text_to_attr(const char *name);
-extern const char *attr_to_text(byte a);
+extern const char *attr_to_text(uint8_t a);
 extern bool char_matches_key(wchar_t c, keycode_t key);
 
 #ifdef SUPPORT_GAMMA
 extern void build_gamma_table(int gamma);
-extern byte gamma_table[256];
+extern uint8_t gamma_table[256];
 #endif /* SUPPORT_GAMMA */
 
 /* xtra2.c */
@@ -228,10 +228,10 @@ int target_dir(struct keypress ch);
 bool get_rep_dir(int *aim);
 
 /* xtra3.c */
-byte monster_health_attr(void);
+uint8_t monster_health_attr(void);
 void cnv_stat(int val, char *out_val, size_t out_len);
 void toggle_inven_equip(void);
-void subwindows_set_flags(u32b *new_flags, size_t n_subwindows);
+void subwindows_set_flags(uint32_t *new_flags, size_t n_subwindows);
 char* random_hint(void);
 
 /* wiz-spoil.c */
@@ -245,7 +245,7 @@ extern void do_cmd_borg(void);
 #endif /* ALLOW_BORG */
 
 
-extern u16b lazymove_delay;
+extern uint16_t lazymove_delay;
 
 
 #endif /* !INCLUDED_EXTERNS_H */

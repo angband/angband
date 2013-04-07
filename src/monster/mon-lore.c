@@ -48,7 +48,7 @@ static const char *wd_his[3] = { "its", "his", "her" };
  * Prints `num` elements from `list` using color attribute `attr`, and joins
  * them with the given conjunction ("and" or "or"). 
  */
-static void output_list(const char *list[], int num, byte attr,
+static void output_list(const char *list[], int num, uint8_t attr,
 		const char *conjunction)
 {
 	int i;
@@ -104,7 +104,7 @@ static void output_list_dam(const char *list[], int num, int col[],
  * The elements of the list are printed using the given color attribute.
  */
 static void output_desc_list(enum monster_sex msex, const char *intro, 
-		const char *list[], int num, byte attr)
+		const char *list[], int num, uint8_t attr)
 {
 	assert(num >= 0);
 
@@ -469,8 +469,8 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
  */
 static bool know_armour(const monster_race *r_ptr, const monster_lore *l_ptr)
 {
-	s32b level;
-	s32b kills;
+	int32_t level;
+	int32_t kills;
 
 	assert(r_ptr && l_ptr);
 
@@ -499,7 +499,7 @@ static bool know_armour(const monster_race *r_ptr, const monster_lore *l_ptr)
 static bool know_damage(const monster_race *r_ptr, const monster_lore *l_ptr, 
 		int blow_num)
 {
-	s32b level, attacks, d1, d2, max_damage;
+	int32_t level, attacks, d1, d2, max_damage;
 	
 	assert(r_ptr && l_ptr);
 
@@ -1828,7 +1828,7 @@ static void describe_monster_movement(const monster_race *r_ptr,
 	}
 	else
 	{
-		byte colour = (r_ptr->level > p_ptr->max_depth) ? TERM_RED : TERM_L_BLUE;
+		uint8_t colour = (r_ptr->level > p_ptr->max_depth) ? TERM_RED : TERM_L_BLUE;
 
 		if (rf_has(f, RF_FORCE_DEPTH))
 			text_out(" is found ");
@@ -2091,7 +2091,7 @@ void describe_monster(const monster_race *r_ptr, const monster_lore *l_ptr, bool
  */
 void roff_top(const monster_race *r_ptr)
 {
-	byte a1, a2;
+	uint8_t a1, a2;
 	wchar_t c1, c2;
 
 	assert(r_ptr);

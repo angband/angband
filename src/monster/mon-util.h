@@ -55,7 +55,7 @@ void display_monlist(void);
 void monster_desc(char *desc, size_t max, const monster_type *m_ptr, int mode);
 void update_mon(struct monster *m_ptr, bool full);
 void update_monsters(bool full);
-s16b monster_carry(struct monster *m, object_type *j_ptr);
+int16_t monster_carry(struct monster *m, object_type *j_ptr);
 void monster_swap(int y1, int x1, int y2, int x2);
 int summon_specific(int y1, int x1, int lev, int type, int delay);
 bool multiply_monster(const struct monster *m);

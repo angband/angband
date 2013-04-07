@@ -264,7 +264,7 @@ struct metadpy
  *	- The width, height of the window
  *	- The border width of this window
  *
- *	- Byte: 1st Extra byte
+ *	- Byte: 1st Extra uint8_t
  *
  *	- Bit Flag: This window is currently Mapped
  *	- Bit Flag: This window needs to be redrawn
@@ -282,14 +282,14 @@ struct infowin
 	Window win;
 	long mask;
 
-	s16b ox, oy;
+	int16_t ox, oy;
 
-	s16b x, y;
-	s16b x_save, y_save;
-	s16b w, h;
-	u16b b;
+	int16_t x, y;
+	int16_t x_save, y_save;
+	int16_t w, h;
+	uint16_t b;
 
-	byte byte1;
+	uint8_t uint8_t1;
 
 	unsigned int mapped:1;
 	unsigned int redraw:1;
@@ -356,12 +356,12 @@ struct infofnt
 
 	const char *name;
 
-	s16b wid;
-	s16b twid;
-	s16b hgt;
-	s16b asc;
+	int16_t wid;
+	int16_t twid;
+	int16_t hgt;
+	int16_t asc;
 
-	byte off;
+	uint8_t off;
 
 	unsigned int mono:1;
 	unsigned int nuke:1;
@@ -462,7 +462,7 @@ static int gamma_val = 0;
 /*
  * Hack -- Convert an RGB value to an X11 Pixel, or die.
  */
-static u32b create_pixel(Display *dpy, byte red, byte green, byte blue)
+static uint32_t create_pixel(Display *dpy, uint8_t red, uint8_t green, uint8_t blue)
 {
 	Colormap cmap = DefaultColormapOfScreen(DefaultScreenOfDisplay(dpy));
 
@@ -1560,7 +1560,7 @@ static infoclr *xor;
 /*
  * Color info (unused, red, green, blue).
  */
-static byte color_table_x11[MAX_COLORS][4];
+static uint8_t color_table_x11[MAX_COLORS][4];
 
 
 /*
@@ -1608,7 +1608,7 @@ static void react_keypress(XKeyEvent *ev)
 	int mx = (ev->state & m->super_mask) ? TRUE : FALSE;
 	int kp = FALSE;
 
-	byte mods = (mo ? KC_MOD_ALT : 0) | (mx ? KC_MOD_META : 0);
+	uint8_t mods = (mo ? KC_MOD_ALT : 0) | (mx ? KC_MOD_META : 0);
 
 	/* Check for "normal" keypresses */
 	n = XLookupString(ev, buf, 125, &ks, NULL);
@@ -2071,7 +2071,7 @@ static errr Term_wipe_x11(int x, int y, int n)
 /*
  * Draw some textual characters.
  */
-static errr Term_text_x11(int x, int y, int n, byte a, const wchar_t *s)
+static errr Term_text_x11(int x, int y, int n, uint8_t a, const wchar_t *s)
 {
 	/* Draw the text */
 	Infoclr_set(clr[a]);

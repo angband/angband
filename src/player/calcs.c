@@ -31,7 +31,7 @@
 /*
  * Stat Table (CHR) -- payment percentages
  */
-const byte adj_chr_gold[STAT_RANGE] =
+const uint8_t adj_chr_gold[STAT_RANGE] =
 {
 	143	/* 3 */,
 	137	/* 4 */,
@@ -76,7 +76,7 @@ const byte adj_chr_gold[STAT_RANGE] =
 /*
  * Stat Table (INT) -- Magic devices
  */
-const byte adj_int_dev[STAT_RANGE] =
+const uint8_t adj_int_dev[STAT_RANGE] =
 {
 	0	/* 3 */,
 	0	/* 4 */,
@@ -121,7 +121,7 @@ const byte adj_int_dev[STAT_RANGE] =
 /*
  * Stat Table (WIS) -- Saving throw
  */
-const byte adj_wis_sav[STAT_RANGE] =
+const uint8_t adj_wis_sav[STAT_RANGE] =
 {
 	0	/* 3 */,
 	0	/* 4 */,
@@ -167,7 +167,7 @@ const byte adj_wis_sav[STAT_RANGE] =
 /*
  * Stat Table (DEX) -- disarming
  */
-const byte adj_dex_dis[STAT_RANGE] =
+const uint8_t adj_dex_dis[STAT_RANGE] =
 {
 	0	/* 3 */,
 	0	/* 4 */,
@@ -213,7 +213,7 @@ const byte adj_dex_dis[STAT_RANGE] =
 /*
  * Stat Table (INT) -- disarming
  */
-const byte adj_int_dis[STAT_RANGE] =
+const uint8_t adj_int_dis[STAT_RANGE] =
 {
 	0	/* 3 */,
 	0	/* 4 */,
@@ -258,7 +258,7 @@ const byte adj_int_dis[STAT_RANGE] =
 /*
  * Stat Table (DEX) -- bonus to ac (plus 128)
  */
-const byte adj_dex_ta[STAT_RANGE] =
+const uint8_t adj_dex_ta[STAT_RANGE] =
 {
 	128 + -4	/* 3 */,
 	128 + -3	/* 4 */,
@@ -303,7 +303,7 @@ const byte adj_dex_ta[STAT_RANGE] =
 /*
  * Stat Table (STR) -- bonus to dam (plus 128)
  */
-const byte adj_str_td[STAT_RANGE] =
+const uint8_t adj_str_td[STAT_RANGE] =
 {
 	128 + -2	/* 3 */,
 	128 + -2	/* 4 */,
@@ -349,7 +349,7 @@ const byte adj_str_td[STAT_RANGE] =
 /*
  * Stat Table (DEX) -- bonus to hit (plus 128)
  */
-const byte adj_dex_th[STAT_RANGE] =
+const uint8_t adj_dex_th[STAT_RANGE] =
 {
 	128 + -3	/* 3 */,
 	128 + -2	/* 4 */,
@@ -395,7 +395,7 @@ const byte adj_dex_th[STAT_RANGE] =
 /*
  * Stat Table (STR) -- bonus to hit (plus 128)
  */
-const byte adj_str_th[STAT_RANGE] =
+const uint8_t adj_str_th[STAT_RANGE] =
 {
 	128 + -3	/* 3 */,
 	128 + -2	/* 4 */,
@@ -441,7 +441,7 @@ const byte adj_str_th[STAT_RANGE] =
 /*
  * Stat Table (STR) -- weight limit in deca-pounds
  */
-const byte adj_str_wgt[STAT_RANGE] =
+const uint8_t adj_str_wgt[STAT_RANGE] =
 {
 	5	/* 3 */,
 	6	/* 4 */,
@@ -487,7 +487,7 @@ const byte adj_str_wgt[STAT_RANGE] =
 /*
  * Stat Table (STR) -- weapon weight limit in pounds
  */
-const byte adj_str_hold[STAT_RANGE] =
+const uint8_t adj_str_hold[STAT_RANGE] =
 {
 	4	/* 3 */,
 	5	/* 4 */,
@@ -533,7 +533,7 @@ const byte adj_str_hold[STAT_RANGE] =
 /*
  * Stat Table (STR) -- digging value
  */
-const byte adj_str_dig[STAT_RANGE] =
+const uint8_t adj_str_dig[STAT_RANGE] =
 {
 	0	/* 3 */,
 	0	/* 4 */,
@@ -579,7 +579,7 @@ const byte adj_str_dig[STAT_RANGE] =
 /*
  * Stat Table (STR) -- help index into the "blow" table
  */
-const byte adj_str_blow[STAT_RANGE] =
+const uint8_t adj_str_blow[STAT_RANGE] =
 {
 	3	/* 3 */,
 	4	/* 4 */,
@@ -625,7 +625,7 @@ const byte adj_str_blow[STAT_RANGE] =
 /*
  * Stat Table (DEX) -- index into the "blow" table
  */
-const byte adj_dex_blow[STAT_RANGE] =
+const uint8_t adj_dex_blow[STAT_RANGE] =
 {
 	0	/* 3 */,
 	0	/* 4 */,
@@ -671,7 +671,7 @@ const byte adj_dex_blow[STAT_RANGE] =
 /*
  * Stat Table (DEX) -- chance of avoiding "theft" and "falling"
  */
-const byte adj_dex_safe[STAT_RANGE] =
+const uint8_t adj_dex_safe[STAT_RANGE] =
 {
 	0	/* 3 */,
 	1	/* 4 */,
@@ -717,7 +717,7 @@ const byte adj_dex_safe[STAT_RANGE] =
 /*
  * Stat Table (CON) -- base regeneration rate
  */
-const byte adj_con_fix[STAT_RANGE] =
+const uint8_t adj_con_fix[STAT_RANGE] =
 {
 	0	/* 3 */,
 	0	/* 4 */,
@@ -920,7 +920,7 @@ const int adj_mag_mana[STAT_RANGE] =
  * The player gets blows/round equal to 100/this number, up to a maximum of
  * "num" blows/round, plus any "bonus" blows/round.
  */
-const byte blows_table[12][12] =
+const uint8_t blows_table[12][12] =
 {
 	/* P */
    /* D:   0,   1,   2,   3,   4,   5,   6,   7,   8,   9,   10,  11+ */
@@ -980,7 +980,7 @@ static void calc_spells(void)
 
 	const magic_type *s_ptr;
 
-	s16b old_spells;
+	int16_t old_spells;
 
 	const char *p = ((p_ptr->class->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
 
@@ -1358,8 +1358,8 @@ static void calc_torch(void)
 {
 	int i;
 
-	s16b old_light = p_ptr->cur_light;
-	s16b new_light = 0;
+	int16_t old_light = p_ptr->cur_light;
+	int16_t new_light = 0;
 
 	/* Ascertain lightness if in the town */
 	if (!p_ptr->depth && ((turn % (10L * TOWN_DAWN)) < ((10L * TOWN_DAWN) / 2))) {
@@ -2342,7 +2342,7 @@ void update_stuff(struct player *p)
 
 struct flag_event_trigger
 {
-	u32b flag;
+	uint32_t flag;
 	game_event_type event;
 };
 

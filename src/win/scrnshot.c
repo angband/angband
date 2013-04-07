@@ -37,13 +37,13 @@ BOOL SaveWindow_PNG(HWND hWnd, LPSTR lpFileName)
 {
 	png_structp png_ptr;
 	png_infop info_ptr;
-	png_bytep *row_pointers = NULL;
+	png_uint8_tp *row_pointers = NULL;
 
 	BOOL noerror = TRUE;
 
-	png_byte color_type;
-	png_byte bit_depth;
-	png_byte channels;
+	png_uint8_t color_type;
+	png_uint8_t bit_depth;
+	png_uint8_t channels;
 
 	int x, y;
 
@@ -117,7 +117,7 @@ BOOL SaveWindow_PNG(HWND hWnd, LPSTR lpFileName)
 	/* copy the allocate the memory libpng can access */
 	if (noerror) {
 		/* setup error handling for read */
-		row_pointers = (png_bytep*) malloc(sizeof(png_bytep)*height);
+		row_pointers = (png_uint8_tp*) malloc(sizeof(png_uint8_tp)*height);
 		if (!row_pointers)
 		{
 			//plog_fmt("Failed to alloc temporary memory for PNG data.");
@@ -126,7 +126,7 @@ BOOL SaveWindow_PNG(HWND hWnd, LPSTR lpFileName)
 		if (noerror) {
 			for (y = 0; y < height; ++y)
 			{
-				row_pointers[y] = (png_bytep) malloc(sizeof(png_bytep)*width*channels);
+				row_pointers[y] = (png_uint8_tp) malloc(sizeof(png_uint8_tp)*width*channels);
 				if (!row_pointers[y])
 				{
 					//plog_fmt("Failed to alloc temporary memory for PNG data.");
@@ -140,7 +140,7 @@ BOOL SaveWindow_PNG(HWND hWnd, LPSTR lpFileName)
 	/* copy the data to it */
 	if (noerror) {
 		COLORREF bgr;
-		byte b[3], *data;
+		uint8_t b[3], *data;
 		HDC hDC, hdcWnd;
     		HBITMAP hbmScreen, hbmOld;
 

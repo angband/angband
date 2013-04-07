@@ -488,7 +488,7 @@ const char *gf_idx_to_name(int type)
 /*
  * Return a color to use for the bolt/ball spells
  */
-static byte spell_color(int type)
+static uint8_t spell_color(int type)
 {
 	/* Analyze */
 	switch (type)
@@ -536,7 +536,7 @@ static byte spell_color(int type)
  *
  * If the distance is not "one", we (may) return "*".
  */
-static void bolt_pict(int y, int x, int ny, int nx, int typ, byte *a, wchar_t *c)
+static void bolt_pict(int y, int x, int ny, int nx, int typ, uint8_t *a, wchar_t *c)
 {
 	int motion;
 
@@ -1413,7 +1413,7 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 static bool project_o(int who, int r, int y, int x, int dam, int typ,
 	bool obvious)
 {
-	s16b this_o_idx, next_o_idx = 0;
+	int16_t this_o_idx, next_o_idx = 0;
 
 	bitflag f[OF_SIZE];
 
@@ -1709,7 +1709,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 {
 	monster_type *m_ptr;
 	monster_lore *l_ptr;
-	u16b flag = 0;
+	uint16_t flag = 0;
 
 	/* Is the monster "seen"? */
 	bool seen = FALSE;
@@ -1757,7 +1757,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 	int m_note = MON_MSG_NONE;
 
 	/* Assume a default death */
-	byte note_dies = MON_MSG_DIE;
+	uint8_t note_dies = MON_MSG_DIE;
 
 
 	/* Walls protect monsters */
@@ -3075,16 +3075,16 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg)
 	int path_n = 0;
 
 	/* Actual grids in the "path" */
-	u16b path_g[512];
+	uint16_t path_g[512];
 
 	/* Number of grids in the "blast area" (including the "beam" path) */
 	int grids = 0;
 
 	/* Coordinates of the affected grids */
-	byte gx[256], gy[256];
+	uint8_t gx[256], gy[256];
 
 	/* Encoded "radius" info (see above) */
-	byte gm[16];
+	uint8_t gm[16];
 
 
 	/* Hack -- Jump to target */
@@ -3188,7 +3188,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg)
 			/* Only do visuals if the player can "see" the bolt */
 			if (player_has_los_bold(y, x))
 			{
-				byte a;
+				uint8_t a;
 				wchar_t c;
 
 				/* Obtain the bolt pict */
@@ -3298,7 +3298,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg)
 				/* Only do visuals if the player can "see" the blast */
 				if (player_has_los_bold(y, x))
 				{
-					byte a;
+					uint8_t a;
 					wchar_t c;
 
 					drawn = TRUE;

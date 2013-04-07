@@ -36,7 +36,7 @@ typedef struct
   const char *on_end;
   const char *on_increase;
   const char *on_decrease;
-  u32b flag_redraw, flag_update;
+  uint32_t flag_redraw, flag_update;
   int msg;
   int resist;
 } timed_effect;

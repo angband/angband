@@ -467,12 +467,12 @@ static errr Term_xtra_gcu_event(int v) {
 	/* This might be a bad idea, but...
 	 *
 	 * Here we try to second-guess ncurses. In some cases, keypad() mode will
-	 * fail to translate multi-byte escape sequences into things like number-
+	 * fail to translate multi-uint8_t escape sequences into things like number-
 	 * pad actions, function keys, etc. So we can hardcode a small list of some
 	 * of the most common sequences here, just in case.
 	 *
 	 * Notice that we turn nodelay() on. This means, that we won't accidentally
-	 * interpret sequences as valid unless all the bytes are immediately
+	 * interpret sequences as valid unless all the uint8_ts are immediately
 	 * available; this seems like an acceptable risk to fix problems associated
 	 * with various terminal emulators (I'm looking at you PuTTY).
 	 */
@@ -709,7 +709,7 @@ static errr Term_wipe_gcu(int x, int y, int n) {
 /*
  * Place some text on the screen using an attribute
  */
-static errr Term_text_gcu(int x, int y, int n, byte a, const wchar_t *s) {
+static errr Term_text_gcu(int x, int y, int n, uint8_t a, const wchar_t *s) {
 	term_data *td = (term_data *)(Term->data);
 
 #ifdef A_COLOR

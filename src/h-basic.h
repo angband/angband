@@ -135,9 +135,9 @@
 /*
  * errr is an error code
  *
- * A "byte" is an unsigned byte of memory.
- * s16b/u16b are exactly 2 bytes (where possible)
- * s32b/u32b are exactly 4 bytes (where possible)
+ * A "uint8_t" is an unsigned uint8_t of memory.
+ * int16_t/uint16_t are exactly 2 uint8_ts (where possible)
+ * int32_t/uint32_t are exactly 4 uint8_ts (where possible)
  */
 
 /* C++ defines its own bool type, so we hack around it */
@@ -183,37 +183,26 @@ typedef int errr;
   /* Use guaranteed-size types */
   #include <stdint.h>
 
-  typedef uint8_t byte;
-
-  typedef uint16_t u16b;
-  typedef int16_t s16b;
-
-  typedef uint32_t u32b;
-  typedef int32_t s32b;
-
-  typedef uint64_t u64b;
-  typedef int64_t s64b;
-
 #define MAX_UCHAR		UINT8_MAX
 #define MAX_SHORT		INT16_MAX
 
 #else /* HAVE_STDINT_H */
 
   /* Try hacks instead (not guaranteed to work) */
-  typedef unsigned char byte;
-  typedef signed short s16b;
-  typedef unsigned short u16b;
+  typedef unsigned char uint8_t;
+  typedef signed short int16_t;
+  typedef unsigned short uint16_t;
 
 #define MAX_UCHAR		UCHAR_MAX
 #define MAX_SHORT		32767
 
   /* Detect >32-bit longs */
   #if (UINT_MAX == 0xFFFFFFFFUL) && (ULONG_MAX > 0xFFFFFFFFUL)
-    typedef signed int s32b;
-    typedef unsigned int u32b;
+    typedef signed int int32_t;
+    typedef unsigned int uint32_t;
   #else
-    typedef signed long s32b;
-    typedef unsigned long u32b;
+    typedef signed long int32_t;
+    typedef unsigned long uint32_t;
   #endif
 
 #endif /* HAVE_STDINT_H */

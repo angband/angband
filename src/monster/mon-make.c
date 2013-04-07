@@ -26,23 +26,23 @@
 #include "monster/mon-util.h"
 #include "object/tvalsval.h"
 
-s16b num_repro;
+int16_t num_repro;
 
-static s16b alloc_race_size;
+static int16_t alloc_race_size;
 static struct alloc_entry *alloc_race_table;
 
 static void init_race_allocs(void) {
 	int i;
 	monster_race *r_ptr;
 	alloc_entry *table;
-	s16b num[MAX_DEPTH];
-	s16b aux[MAX_DEPTH];
+	int16_t num[MAX_DEPTH];
+	int16_t aux[MAX_DEPTH];
 
 	/* Clear the "aux" array */
-	(void)C_WIPE(aux, MAX_DEPTH, s16b);
+	(void)C_WIPE(aux, MAX_DEPTH, int16_t);
 
 	/* Clear the "num" array */
-	(void)C_WIPE(num, MAX_DEPTH, s16b);
+	(void)C_WIPE(num, MAX_DEPTH, int16_t);
 
 	/* Size of "alloc_race_table" */
 	alloc_race_size = 0;
@@ -132,7 +132,7 @@ static void cleanup_race_allocs(void) {
 void delete_monster_idx(int m_idx)
 {
 	int x, y;
-	s16b this_o_idx, next_o_idx = 0;
+	int16_t this_o_idx, next_o_idx = 0;
 	monster_type *m_ptr;
 
 	assert(m_idx > 0);
@@ -219,7 +219,7 @@ static void compact_monsters_aux(int i1, int i2)
 
 	monster_type *m_ptr;
 
-	s16b this_o_idx, next_o_idx = 0;
+	int16_t this_o_idx, next_o_idx = 0;
 
 	/* Do nothing */
 	if (i1 == i2) return;
@@ -414,7 +414,7 @@ void wipe_mon_list(struct cave *c, struct player *p)
  * This routine should almost never fail, but it *can* happen.
  * The calling code must check for and handle a 0 return.
  */
-static s16b mon_pop(void)
+static int16_t mon_pop(void)
 {
 	int m_idx;
 
@@ -633,7 +633,7 @@ void player_place(struct cave *c, struct player *p, int y, int x)
  *
  * Returns TRUE if anything is created, FALSE if nothing is.
  */
-static bool mon_create_drop(struct monster *m_ptr, byte origin)
+static bool mon_create_drop(struct monster *m_ptr, uint8_t origin)
 {
 	struct monster_drop *drop;
 
@@ -737,9 +737,9 @@ static bool mon_create_drop(struct monster *m_ptr, byte origin)
  *
  * Returns the m_idx of the newly copied monster, or 0 if the placement fails.
  */
-s16b place_monster(int y, int x, monster_type *mon, byte origin)
+int16_t place_monster(int y, int x, monster_type *mon, uint8_t origin)
 {
-	s16b m_idx;
+	int16_t m_idx;
 	monster_type *m_ptr;
 
 	assert(in_bounds(y, x));
@@ -860,7 +860,7 @@ int mon_hp(const struct monster_race *race, aspect hp_aspect)
  * directly.
  */
 static bool place_new_monster_one(int y, int x, monster_race *race, 
-		bool sleep, byte origin)
+		bool sleep, uint8_t origin)
 {
 	int i;
 
@@ -940,7 +940,7 @@ static bool place_new_monster_one(int y, int x, monster_race *race,
 	}
 
 	/* Give a random starting energy */
-	mon->energy = (byte)randint0(50);
+	mon->energy = (uint8_t)randint0(50);
 
 	/* Force monster to wait for player */
 	if (rf_has(race->flags, RF_FORCE_SLEEP))
@@ -1013,15 +1013,15 @@ static int group_size_1(const monster_race *race)
  * ORIGIN_DROP_PIT, etc.) 
  */
 static bool place_new_monster_group(struct cave *c, int y, int x, 
-		monster_race *r_ptr, bool sleep, int total, byte origin)
+		monster_race *r_ptr, bool sleep, int total, uint8_t origin)
 {
 	int n, i;
 
 	int hack_n;
 
 	/* x and y coordinates of the placed monsters */
-	byte hack_y[GROUP_MAX];
-	byte hack_x[GROUP_MAX];
+	uint8_t hack_y[GROUP_MAX];
+	uint8_t hack_x[GROUP_MAX];
 
 	assert(r_ptr);
 	
@@ -1111,7 +1111,7 @@ static bool place_monster_okay(monster_race *race)
  * the "get_mon_num()" function to "legal" escort types.
  */
 bool place_new_monster(struct cave *c, int y, int x, monster_race *race, bool sleep,
-	bool group_okay, byte origin)
+	bool group_okay, uint8_t origin)
 {
 	int i;
 
@@ -1201,7 +1201,7 @@ bool place_new_monster(struct cave *c, int y, int x, monster_race *race, bool sl
  * Returns TRUE if we successfully place a monster.
  */
 bool pick_and_place_monster(struct cave *c, int y, int x, int depth, bool sleep,
-	bool group_okay, byte origin)
+	bool group_okay, uint8_t origin)
 {
 	/* Pick a monster race */
 	monster_race *race = get_mon_num(depth);
@@ -1316,7 +1316,7 @@ void monster_death(struct monster *m_ptr, bool stats)
 	int dump_item = 0;
 	int dump_gold = 0;
 	int total = 0;
-	s16b this_o_idx, next_o_idx = 0;
+	int16_t this_o_idx, next_o_idx = 0;
 
 	object_type *i_ptr;
 	object_type object_type_body;
@@ -1424,7 +1424,7 @@ void monster_death(struct monster *m_ptr, bool stats)
  **/
 bool mon_take_hit(struct monster *m_ptr, int dam, bool *fear, const char *note)
 {
-	s32b div, new_exp, new_exp_frac;
+	int32_t div, new_exp, new_exp_frac;
 	monster_lore *l_ptr = get_lore(m_ptr->race);
 
 
@@ -1497,10 +1497,10 @@ bool mon_take_hit(struct monster *m_ptr, int dam, bool *fear, const char *note)
 		/* Keep track of experience */
 		if (new_exp_frac >= 0x10000L) {
 			new_exp++;
-			p_ptr->exp_frac = (u16b)(new_exp_frac - 0x10000L);
+			p_ptr->exp_frac = (uint16_t)(new_exp_frac - 0x10000L);
 		}
 		else
-			p_ptr->exp_frac = (u16b)new_exp_frac;
+			p_ptr->exp_frac = (uint16_t)new_exp_frac;
 
 		/* When the player kills a Unique, it stays dead */
 		if (rf_has(m_ptr->race->flags, RF_UNIQUE)) {

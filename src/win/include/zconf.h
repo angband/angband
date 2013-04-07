@@ -83,7 +83,7 @@
 
 /*
  * Compile with -DMAXSEG_64K if the alloc function cannot allocate more
- * than 64k bytes at a time (needed on systems with 16-bit int).
+ * than 64k uint8_ts at a time (needed on systems with 16-bit int).
  */
 #ifdef SYS16BIT
 #  define MAXSEG_64K
@@ -148,16 +148,16 @@
 #  define MAX_WBITS   15 /* 32K LZ77 window */
 #endif
 
-/* The memory requirements for deflate are (in bytes):
+/* The memory requirements for deflate are (in uint8_ts):
             (1 << (windowBits+2)) +  (1 << (memLevel+9))
  that is: 128K for windowBits=15  +  128K for memLevel = 8  (default values)
- plus a few kilobytes for small objects. For example, if you want to reduce
+ plus a few kilouint8_ts for small objects. For example, if you want to reduce
  the default memory requirements from 256K to 128K, compile with
      make CFLAGS="-O -DMAX_WBITS=14 -DMAX_MEM_LEVEL=7"
  Of course this will generally degrade compression (there's no free lunch).
 
-   The memory requirements for inflate are (in bytes) 1 << windowBits
- that is, 32K for windowBits=15 (default value) plus a few kilobytes
+   The memory requirements for inflate are (in uint8_ts) 1 << windowBits
+ that is, 32K for windowBits=15 (default value) plus a few kilouint8_ts
  for small objects.
 */
 
@@ -312,7 +312,7 @@ typedef uLong FAR uLongf;
 #  endif
 #endif
 
-/* MVS linker does not support external names larger than 8 bytes */
+/* MVS linker does not support external names larger than 8 uint8_ts */
 #if defined(__MVS__)
 #   pragma map(deflateInit_,"DEIN")
 #   pragma map(deflateInit2_,"DEIN2")

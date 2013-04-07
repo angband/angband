@@ -12,10 +12,10 @@ textblock *textblock_new(void);
 void textblock_free(textblock *tb);
 
 void textblock_append(textblock *tb, const char *fmt, ...);
-void textblock_append_c(textblock *tb, byte attr, const char *fmt, ...);
+void textblock_append_c(textblock *tb, uint8_t attr, const char *fmt, ...);
 
 const wchar_t *textblock_text(textblock *tb);
-const byte *textblock_attrs(textblock *tb);
+const uint8_t *textblock_attrs(textblock *tb);
 
 size_t textblock_calculate_lines(textblock *tb, size_t **line_starts, size_t **line_lengths, size_t width);
 

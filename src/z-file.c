@@ -448,35 +448,35 @@ void file_unlock(ang_file *f)
 /*
  * Seek to location 'pos' in file 'f'.
  */
-bool file_skip(ang_file *f, int bytes)
+bool file_skip(ang_file *f, int uint8_ts)
 {
-	return (fseek(f->fh, bytes, SEEK_CUR) == 0);
+	return (fseek(f->fh, uint8_ts, SEEK_CUR) == 0);
 }
 
 /*
  * Read a single, 8-bit character from file 'f'.
  */
-bool file_readc(ang_file *f, byte *b)
+bool file_readc(ang_file *f, uint8_t *b)
 {
 	int i = fgetc(f->fh);
 
 	if (i == EOF)
 		return FALSE;
 
-	*b = (byte)i;
+	*b = (uint8_t)i;
 	return TRUE;
 }
 
 /*
  * Write a single, 8-bit character 'b' to file 'f'.
  */
-bool file_writec(ang_file *f, byte b)
+bool file_writec(ang_file *f, uint8_t b)
 {
 	return file_write(f, (const char *)&b, 1);
 }
 
 /*
- * Read 'n' bytes from file 'f' into array 'buf'.
+ * Read 'n' uint8_ts from file 'f' into array 'buf'.
  */
 int file_read(ang_file *f, char *buf, size_t n)
 {
@@ -489,7 +489,7 @@ int file_read(ang_file *f, char *buf, size_t n)
 }
 
 /*
- * Append 'n' bytes of array 'buf' to file 'f'.
+ * Append 'n' uint8_ts of array 'buf' to file 'f'.
  */
 bool file_write(ang_file *f, const char *buf, size_t n)
 {
@@ -499,7 +499,7 @@ bool file_write(ang_file *f, const char *buf, size_t n)
 /** Line-based IO **/
 
 /*
- * Read a line of text from file 'f' into buffer 'buf' of size 'n' bytes.
+ * Read a line of text from file 'f' into buffer 'buf' of size 'n' uint8_ts.
  *
  * Support both \r\n and \n as line endings, but not the outdated \r that used
  * to be used on Macs.  Replace non-printables with '?', and \ts with ' '.
@@ -509,10 +509,10 @@ bool file_write(ang_file *f, const char *buf, size_t n)
 bool file_getl(ang_file *f, char *buf, size_t len)
 {
 	bool seen_cr = FALSE;
-	byte b;
+	uint8_t b;
 	size_t i = 0;
 
-	/* Leave a byte for the terminating 0 */
+	/* Leave a uint8_t for the terminating 0 */
 	size_t max_len = len - 1;
 
 	while (i < max_len)

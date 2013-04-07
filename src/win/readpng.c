@@ -45,8 +45,8 @@
 BOOL ReadDIB2_PNG(HWND hWnd, LPSTR lpFileName, DIBINIT *pInfo, DIBINIT *pMask, BOOL premultiply) {
 	png_structp png_ptr;
 	png_infop info_ptr;
-	byte header[8];
-	png_bytep *row_pointers;
+	uint8_t header[8];
+	png_uint8_tp *row_pointers;
 	
 	BOOL noerror = TRUE;
 	
@@ -55,8 +55,8 @@ BOOL ReadDIB2_PNG(HWND hWnd, LPSTR lpFileName, DIBINIT *pInfo, DIBINIT *pMask, B
 	BITMAPINFO bi, biSrc;
 	HDC hDC;
 	
-	png_byte color_type;
-	png_byte bit_depth;
+	png_uint8_t color_type;
+	png_uint8_t bit_depth;
 	int width, height;
 	int y, number_of_passes;
 
@@ -97,7 +97,7 @@ BOOL ReadDIB2_PNG(HWND hWnd, LPSTR lpFileName, DIBINIT *pInfo, DIBINIT *pMask, B
 	
 	/* setup error handling for init */
 	png_init_io(png_ptr, fp);
-	png_set_sig_bytes(png_ptr, 8);
+	png_set_sig_uint8_ts(png_ptr, 8);
 	
 	png_read_info(png_ptr, info_ptr);
 	
@@ -141,10 +141,10 @@ BOOL ReadDIB2_PNG(HWND hWnd, LPSTR lpFileName, DIBINIT *pInfo, DIBINIT *pMask, B
 	/* after these requests, the data should always be RGB or ARGB */
 
 	/* initialize row_pointers */
-	row_pointers = (png_bytep*) malloc(sizeof(png_bytep) * height);
+	row_pointers = (png_uint8_tp*) malloc(sizeof(png_uint8_tp) * height);
 	if (!row_pointers) return FALSE;
 	for (y = 0; y < height; ++y) {
-		row_pointers[y] = (png_bytep) malloc(png_get_rowbytes(png_ptr, info_ptr));
+		row_pointers[y] = (png_uint8_tp) malloc(png_get_rowuint8_ts(png_ptr, info_ptr));
 		if (!row_pointers[y]) return FALSE;
 	}
 
@@ -157,8 +157,8 @@ BOOL ReadDIB2_PNG(HWND hWnd, LPSTR lpFileName, DIBINIT *pInfo, DIBINIT *pMask, B
 	/* pre multiply the image colors by the alhpa if thats what we want */
 	if (premultiply && (color_type == PNG_COLOR_TYPE_RGB_ALPHA)) {
 		int x;
-		png_byte r,g,b,a;
-		png_bytep row;
+		png_uint8_t r,g,b,a;
+		png_uint8_tp row;
 		/* process the file */
 		for (y = 0; y < height; ++y) {
 			row = row_pointers[y];
@@ -183,9 +183,9 @@ BOOL ReadDIB2_PNG(HWND hWnd, LPSTR lpFileName, DIBINIT *pInfo, DIBINIT *pMask, B
 					bf = ((float)b) / 255.f;
 					af = ((float)a) / 255.f;
         
-					r = (png_byte)(rf*af*255.f);
-					g = (png_byte)(gf*af*255.f);
-					b = (png_byte)(bf*af*255.f);
+					r = (png_uint8_t)(rf*af*255.f);
+					g = (png_uint8_t)(gf*af*255.f);
+					b = (png_uint8_t)(bf*af*255.f);
         
 					*(row + x*4 + 0) = r;
 					*(row + x*4 + 1) = g;
@@ -276,7 +276,7 @@ BOOL ReadDIB2_PNG(HWND hWnd, LPSTR lpFileName, DIBINIT *pInfo, DIBINIT *pMask, B
 	
 	if (pMask && (color_type == PNG_COLOR_TYPE_RGB_ALPHA))
 	{
-		byte *pBits, v;
+		uint8_t *pBits, v;
 		int x;
 		DWORD *srcrow;
 		HBITMAP hBitmap2 = NULL;
@@ -288,7 +288,7 @@ BOOL ReadDIB2_PNG(HWND hWnd, LPSTR lpFileName, DIBINIT *pInfo, DIBINIT *pMask, B
 		RealizePalette(hDC);
 		
 		/* allocate the storage space */
-		pBits = (byte*)malloc(sizeof(byte)*width*height*3);
+		pBits = (uint8_t*)malloc(sizeof(uint8_t)*width*height*3);
 		if (!pBits)
 		{
 			noerror = FALSE;
@@ -299,14 +299,14 @@ BOOL ReadDIB2_PNG(HWND hWnd, LPSTR lpFileName, DIBINIT *pInfo, DIBINIT *pMask, B
 			for (y = 0; y < height; ++y) {
 				srcrow = (DWORD*)row_pointers[y];
 				for (x = 0; x < width; ++x) {
-					/* get the alpha byte from the source */
+					/* get the alpha uint8_t from the source */
 					v = (*((DWORD*)srcrow + x)>>24);
 					v = 255 - v;
 					if (v==255) 
 					{
 						have_alpha = TRUE;
 					}
-					/* write the alpha byte to the three colors of the storage space */
+					/* write the alpha uint8_t to the three colors of the storage space */
 					*(pBits + (y*width*3) + (x*3)) = v;
 					*(pBits + (y*width*3) + (x*3)+1) = v;
 					*(pBits + (y*width*3) + (x*3)+2) = v;

@@ -42,13 +42,13 @@ typedef struct {
 #define MAX_WINDOWS		8	// if you change this, you must also change the size
 							// of nds_updated in this file and ds_winhelp.c
 extern nds_nhwindow wins[MAX_WINDOWS];
-// only need WIN_TEXT for windows 3-7 = 0x014000 bytes
+// only need WIN_TEXT for windows 3-7 = 0x014000 uint8_ts
 // WIN_TEXT(0) = 0x06874000 - 0x06878000, WIN_TEXT(3) = 0x06880000 - 0x06884000,
 // WIN_TEXT(7) = 0x06890000 - 0x06894000
 // memory used is vram banks E & F
 #define WIN_TEXT(w)			((u16*)(0x06874000 + (0x4000 * (w))))
 */
-#define MAX_EBUF 		512		// max of 512 events in queue = 1024 bytes
+#define MAX_EBUF 		512		// max of 512 events in queue = 1024 uint8_ts
 #define MEVENT_FLAG			(1<<15)
 #define EVENT_SET			(1<<14)
 #define EVENT_X(e)			((u8)((e) & 0x7F))

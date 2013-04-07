@@ -25,7 +25,7 @@
 #include "defines.h"
 
 /* The basic datatype of bitflags */
-typedef byte bitflag;
+typedef uint8_t bitflag;
 #define FLAG_WIDTH        (sizeof(bitflag)*8)
 
 /* Enum flag value of the first valid flag in a set

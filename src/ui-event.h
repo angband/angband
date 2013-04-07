@@ -133,7 +133,7 @@ typedef enum
 /**
  * Type capable of holding any input key we might want to use.
  */
-typedef u32b keycode_t;
+typedef uint32_t keycode_t;
 
 
 /**
@@ -142,7 +142,7 @@ typedef u32b keycode_t;
 struct keypress {
 	ui_event_type type;
 	keycode_t code;
-	byte mods;
+	uint8_t mods;
 };
 
 /**
@@ -150,10 +150,10 @@ struct keypress {
  */
 struct mouseclick {
 	ui_event_type type;
-	byte x;
-	byte y;
-	byte button;
-	byte mods;
+	uint8_t x;
+	uint8_t y;
+	uint8_t button;
+	uint8_t mods;
 };
 
 /**

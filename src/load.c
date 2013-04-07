@@ -49,85 +49,85 @@ static struct ego_item *lookup_ego(int idx)
  */
 static int rd_item_5(object_type *o_ptr)
 {
-	byte tmp8u;
-	u16b tmp16u;
+	uint8_t tmp8u;
+	uint16_t tmp16u;
 
-	byte ego_idx;
-	byte art_idx;
+	uint8_t ego_idx;
+	uint8_t art_idx;
 
 	size_t i, j;
 
 	char buf[128];
 
-	byte ver = 1;
+	uint8_t ver = 1;
 
-	rd_u16b(&tmp16u);
-	rd_byte(&ver);
+	rd_uint16_t(&tmp16u);
+	rd_uint8_t(&ver);
 	assert(tmp16u == 0xffff);
 
-	strip_bytes(2);
+	strip_uint8_ts(2);
 
 	/* Location */
-	rd_byte(&o_ptr->iy);
-	rd_byte(&o_ptr->ix);
+	rd_uint8_t(&o_ptr->iy);
+	rd_uint8_t(&o_ptr->ix);
 
 	/* Type/Subtype */
-	rd_byte(&o_ptr->tval);
-	rd_byte(&o_ptr->sval);
+	rd_uint8_t(&o_ptr->tval);
+	rd_uint8_t(&o_ptr->sval);
 	for (i = 0; i < MAX_PVALS; i++) {
-		rd_s16b(&o_ptr->pval[i]);
+		rd_int16_t(&o_ptr->pval[i]);
 	}
-	rd_byte(&o_ptr->num_pvals);
+	rd_uint8_t(&o_ptr->num_pvals);
 
 	/* Pseudo-ID bit */
-	rd_byte(&tmp8u);
+	rd_uint8_t(&tmp8u);
 
-	rd_byte(&o_ptr->number);
-	rd_s16b(&o_ptr->weight);
+	rd_uint8_t(&o_ptr->number);
+	rd_int16_t(&o_ptr->weight);
 
-	rd_byte(&art_idx);
-	rd_byte(&ego_idx);
+	rd_uint8_t(&art_idx);
+	rd_uint8_t(&ego_idx);
 
-	rd_s16b(&o_ptr->timeout);
+	rd_int16_t(&o_ptr->timeout);
 
-	rd_s16b(&o_ptr->to_h);
-	rd_s16b(&o_ptr->to_d);
-	rd_s16b(&o_ptr->to_a);
+	rd_int16_t(&o_ptr->to_h);
+	rd_int16_t(&o_ptr->to_d);
+	rd_int16_t(&o_ptr->to_a);
 
-	rd_s16b(&o_ptr->ac);
+	rd_int16_t(&o_ptr->ac);
 
-	rd_byte(&o_ptr->dd);
-	rd_byte(&o_ptr->ds);
+	rd_uint8_t(&o_ptr->dd);
+	rd_uint8_t(&o_ptr->ds);
 
-	rd_u16b(&o_ptr->ident);
+	rd_uint16_t(&o_ptr->ident);
 
-	rd_byte(&o_ptr->marked);
+	rd_uint8_t(&o_ptr->marked);
 
-	rd_byte(&o_ptr->origin);
-	rd_byte(&o_ptr->origin_depth);
-	rd_u16b(&o_ptr->origin_xtra);
-	rd_byte(&o_ptr->ignore);
+	rd_uint8_t(&o_ptr->origin);
+	rd_uint8_t(&o_ptr->origin_depth);
+	rd_uint16_t(&o_ptr->origin_xtra);
+	rd_uint8_t(&o_ptr->ignore);
 
 	for (i = 0; i < OF_BYTES && i < OF_SIZE; i++)
-		rd_byte(&o_ptr->flags[i]);
-	if (i < OF_BYTES) strip_bytes(OF_BYTES - i);
+		rd_uint8_t(&o_ptr->flags[i]);
+	if (i < OF_BYTES) strip_uint8_ts(OF_BYTES - i);
 
 	of_wipe(o_ptr->known_flags);
 
 	for (i = 0; i < OF_BYTES && i < OF_SIZE; i++)
-		rd_byte(&o_ptr->known_flags[i]);
-	if (i < OF_BYTES) strip_bytes(OF_BYTES - i);
+		rd_uint8_t(&o_ptr->known_flags[i]);
+	if (i < OF_BYTES) strip_uint8_ts(OF_BYTES - i);
 
 	for (j = 0; j < MAX_PVALS; j++) {
 		for (i = 0; i < OF_BYTES && i < OF_SIZE; i++)
-			rd_byte(&o_ptr->pval_flags[j][i]);
-		if (i < OF_BYTES) strip_bytes(OF_BYTES - i);
+			rd_uint8_t(&o_ptr->pval_flags[j][i]);
+		if (i < OF_BYTES) strip_uint8_ts(OF_BYTES - i);
 	}
 
 	/* Monster holding object */
-	rd_s16b(&o_ptr->held_m_idx);
+	rd_int16_t(&o_ptr->held_m_idx);
 
-	rd_s16b(&o_ptr->mimicking_m_idx);
+	rd_int16_t(&o_ptr->mimicking_m_idx);
 
 	/* Save the inscription */
 	rd_string(buf, sizeof(buf));
@@ -158,84 +158,84 @@ static int rd_item_5(object_type *o_ptr)
  */
 static int rd_item_4(object_type *o_ptr)
 {
-	byte tmp8u;
-	u16b tmp16u;
+	uint8_t tmp8u;
+	uint16_t tmp16u;
 
-	byte ego_idx;
-	byte art_idx;
+	uint8_t ego_idx;
+	uint8_t art_idx;
 
 	size_t i, j;
 
 	char buf[128];
 
-	byte ver = 1;
+	uint8_t ver = 1;
 
-	rd_u16b(&tmp16u);
-	rd_byte(&ver);
+	rd_uint16_t(&tmp16u);
+	rd_uint8_t(&ver);
 	assert(tmp16u == 0xffff);
 
-	strip_bytes(2);
+	strip_uint8_ts(2);
 
 	/* Location */
-	rd_byte(&o_ptr->iy);
-	rd_byte(&o_ptr->ix);
+	rd_uint8_t(&o_ptr->iy);
+	rd_uint8_t(&o_ptr->ix);
 
 	/* Type/Subtype */
-	rd_byte(&o_ptr->tval);
-	rd_byte(&o_ptr->sval);
+	rd_uint8_t(&o_ptr->tval);
+	rd_uint8_t(&o_ptr->sval);
 	for (i = 0; i < MAX_PVALS; i++) {
-		rd_s16b(&o_ptr->pval[i]);
+		rd_int16_t(&o_ptr->pval[i]);
 	}
-	rd_byte(&o_ptr->num_pvals);
+	rd_uint8_t(&o_ptr->num_pvals);
 
 	/* Pseudo-ID bit */
-	rd_byte(&tmp8u);
+	rd_uint8_t(&tmp8u);
 
-	rd_byte(&o_ptr->number);
-	rd_s16b(&o_ptr->weight);
+	rd_uint8_t(&o_ptr->number);
+	rd_int16_t(&o_ptr->weight);
 
-	rd_byte(&art_idx);
-	rd_byte(&ego_idx);
+	rd_uint8_t(&art_idx);
+	rd_uint8_t(&ego_idx);
 
-	rd_s16b(&o_ptr->timeout);
+	rd_int16_t(&o_ptr->timeout);
 
-	rd_s16b(&o_ptr->to_h);
-	rd_s16b(&o_ptr->to_d);
-	rd_s16b(&o_ptr->to_a);
+	rd_int16_t(&o_ptr->to_h);
+	rd_int16_t(&o_ptr->to_d);
+	rd_int16_t(&o_ptr->to_a);
 
-	rd_s16b(&o_ptr->ac);
+	rd_int16_t(&o_ptr->ac);
 
-	rd_byte(&o_ptr->dd);
-	rd_byte(&o_ptr->ds);
+	rd_uint8_t(&o_ptr->dd);
+	rd_uint8_t(&o_ptr->ds);
 
-	rd_u16b(&o_ptr->ident);
+	rd_uint16_t(&o_ptr->ident);
 
-	rd_byte(&o_ptr->marked);
+	rd_uint8_t(&o_ptr->marked);
 
-	rd_byte(&o_ptr->origin);
-	rd_byte(&o_ptr->origin_depth);
-	rd_u16b(&o_ptr->origin_xtra);
+	rd_uint8_t(&o_ptr->origin);
+	rd_uint8_t(&o_ptr->origin_depth);
+	rd_uint16_t(&o_ptr->origin_xtra);
 
 	for (i = 0; i < OF_BYTES && i < OF_SIZE; i++)
-		rd_byte(&o_ptr->flags[i]);
-	if (i < OF_BYTES) strip_bytes(OF_BYTES - i);
+		rd_uint8_t(&o_ptr->flags[i]);
+	if (i < OF_BYTES) strip_uint8_ts(OF_BYTES - i);
 
 	of_wipe(o_ptr->known_flags);
 
 	for (i = 0; i < OF_BYTES && i < OF_SIZE; i++)
-		rd_byte(&o_ptr->known_flags[i]);
-	if (i < OF_BYTES) strip_bytes(OF_BYTES - i);
+		rd_uint8_t(&o_ptr->known_flags[i]);
+	if (i < OF_BYTES) strip_uint8_ts(OF_BYTES - i);
 
 	for (j = 0; j < MAX_PVALS; j++) {
 		for (i = 0; i < OF_BYTES && i < OF_SIZE; i++)
-			rd_byte(&o_ptr->pval_flags[j][i]);
-		if (i < OF_BYTES) strip_bytes(OF_BYTES - i);
+			rd_uint8_t(&o_ptr->pval_flags[j][i]);
+		if (i < OF_BYTES) strip_uint8_ts(OF_BYTES - i);
 	}
 
 	/* Monster holding object */
-	rd_s16b(&o_ptr->held_m_idx);
+	rd_int16_t(&o_ptr->held_m_idx);
 
-	rd_s16b(&o_ptr->mimicking_m_idx);
+	rd_int16_t(&o_ptr->mimicking_m_idx);
 
 	/* Save the inscription */
 	rd_string(buf, sizeof(buf));
@@ -266,84 +266,84 @@ static int rd_item_4(object_type *o_ptr)
  */
 static int rd_item_3(object_type *o_ptr)
 {
-	byte old_dd;
-	byte old_ds;
-	byte tmp8u;
-	u16b tmp16u;
+	uint8_t old_dd;
+	uint8_t old_ds;
+	uint8_t tmp8u;
+	uint16_t tmp16u;
 
-	byte ego_idx;
-	byte art_idx;
+	uint8_t ego_idx;
+	uint8_t art_idx;
 
 	size_t i, j;
 
 	char buf[128];
 
-	byte ver = 1;
+	uint8_t ver = 1;
 
-	rd_u16b(&tmp16u);
-	rd_byte(&ver);
+	rd_uint16_t(&tmp16u);
+	rd_uint8_t(&ver);
 	assert(tmp16u == 0xffff);
 
-	strip_bytes(2);
+	strip_uint8_ts(2);
 
 	/* Location */
-	rd_byte(&o_ptr->iy);
-	rd_byte(&o_ptr->ix);
+	rd_uint8_t(&o_ptr->iy);
+	rd_uint8_t(&o_ptr->ix);
 
 	/* Type/Subtype */
-	rd_byte(&o_ptr->tval);
-	rd_byte(&o_ptr->sval);
+	rd_uint8_t(&o_ptr->tval);
+	rd_uint8_t(&o_ptr->sval);
 	for (i = 0; i < MAX_PVALS; i++) {
-		rd_s16b(&o_ptr->pval[i]);
+		rd_int16_t(&o_ptr->pval[i]);
 	}
-	rd_byte(&o_ptr->num_pvals);
+	rd_uint8_t(&o_ptr->num_pvals);
 
 	/* Pseudo-ID bit */
-	rd_byte(&tmp8u);
+	rd_uint8_t(&tmp8u);
 
-	rd_byte(&o_ptr->number);
-	rd_s16b(&o_ptr->weight);
+	rd_uint8_t(&o_ptr->number);
+	rd_int16_t(&o_ptr->weight);
 
-	rd_byte(&art_idx);
-	rd_byte(&ego_idx);
+	rd_uint8_t(&art_idx);
+	rd_uint8_t(&ego_idx);
 
-	rd_s16b(&o_ptr->timeout);
+	rd_int16_t(&o_ptr->timeout);
 
-	rd_s16b(&o_ptr->to_h);
-	rd_s16b(&o_ptr->to_d);
-	rd_s16b(&o_ptr->to_a);
+	rd_int16_t(&o_ptr->to_h);
+	rd_int16_t(&o_ptr->to_d);
+	rd_int16_t(&o_ptr->to_a);
 
-	rd_s16b(&o_ptr->ac);
+	rd_int16_t(&o_ptr->ac);
 
-	rd_byte(&old_dd);
-	rd_byte(&old_ds);
+	rd_uint8_t(&old_dd);
+	rd_uint8_t(&old_ds);
 
-	rd_u16b(&o_ptr->ident);
+	rd_uint16_t(&o_ptr->ident);
 
-	rd_byte(&o_ptr->marked);
+	rd_uint8_t(&o_ptr->marked);
 
-	rd_byte(&o_ptr->origin);
-	rd_byte(&o_ptr->origin_depth);
-	rd_u16b(&o_ptr->origin_xtra);
+	rd_uint8_t(&o_ptr->origin);
+	rd_uint8_t(&o_ptr->origin_depth);
+	rd_uint16_t(&o_ptr->origin_xtra);
 
 	for (i = 0; i < OF_BYTES && i < OF_SIZE; i++)
-		rd_byte(&o_ptr->flags[i]);
-	if (i < OF_BYTES) strip_bytes(OF_BYTES - i);
+		rd_uint8_t(&o_ptr->flags[i]);
+	if (i < OF_BYTES) strip_uint8_ts(OF_BYTES - i);
 
 	of_wipe(o_ptr->known_flags);
 
 	for (i = 0; i < OF_BYTES && i < OF_SIZE; i++)
-		rd_byte(&o_ptr->known_flags[i]);
-	if (i < OF_BYTES) strip_bytes(OF_BYTES - i);
+		rd_uint8_t(&o_ptr->known_flags[i]);
+	if (i < OF_BYTES) strip_uint8_ts(OF_BYTES - i);
 
 	for (j = 0; j < MAX_PVALS; j++) {
 		for (i = 0; i < OF_BYTES && i < OF_SIZE; i++)
-			rd_byte(&o_ptr->pval_flags[j][i]);
-		if (i < OF_BYTES) strip_bytes(OF_BYTES - i);
+			rd_uint8_t(&o_ptr->pval_flags[j][i]);
+		if (i < OF_BYTES) strip_uint8_ts(OF_BYTES - i);
 	}
 
 	/* Monster holding object */
-	rd_s16b(&o_ptr->held_m_idx);
+	rd_int16_t(&o_ptr->held_m_idx);
 	
 	/* Save the inscription */
 	rd_string(buf, sizeof(buf));
@@ -434,84 +434,84 @@ static int rd_item_3(object_type *o_ptr)
  */
 static int rd_item_2(object_type *o_ptr)
 {
-	byte old_dd;
-	byte old_ds;
-	byte tmp8u;
-	u16b tmp16u;
+	uint8_t old_dd;
+	uint8_t old_ds;
+	uint8_t tmp8u;
+	uint16_t tmp16u;
 
-	byte ego_idx;
-	byte art_idx;
+	uint8_t ego_idx;
+	uint8_t art_idx;
 
 	size_t i, j;
 
 	char buf[128];
 
-	byte ver = 1;
+	uint8_t ver = 1;
 
-	rd_u16b(&tmp16u);
-	rd_byte(&ver);
+	rd_uint16_t(&tmp16u);
+	rd_uint8_t(&ver);
 	assert(tmp16u == 0xffff);
 
-	strip_bytes(2);
+	strip_uint8_ts(2);
 
 	/* Location */
-	rd_byte(&o_ptr->iy);
-	rd_byte(&o_ptr->ix);
+	rd_uint8_t(&o_ptr->iy);
+	rd_uint8_t(&o_ptr->ix);
 
 	/* Type/Subtype */
-	rd_byte(&o_ptr->tval);
-	rd_byte(&o_ptr->sval);
+	rd_uint8_t(&o_ptr->tval);
+	rd_uint8_t(&o_ptr->sval);
 	for (i = 0; i < MAX_PVALS; i++) {
-		rd_s16b(&o_ptr->pval[i]);
+		rd_int16_t(&o_ptr->pval[i]);
 	}
-	rd_byte(&o_ptr->num_pvals);
+	rd_uint8_t(&o_ptr->num_pvals);
 
 	/* Pseudo-ID bit */
-	rd_byte(&tmp8u);
+	rd_uint8_t(&tmp8u);
 
-	rd_byte(&o_ptr->number);
-	rd_s16b(&o_ptr->weight);
+	rd_uint8_t(&o_ptr->number);
+	rd_int16_t(&o_ptr->weight);
 
-	rd_byte(&art_idx);
-	rd_byte(&ego_idx);
+	rd_uint8_t(&art_idx);
+	rd_uint8_t(&ego_idx);
 
-	rd_s16b(&o_ptr->timeout);
+	rd_int16_t(&o_ptr->timeout);
 
-	rd_s16b(&o_ptr->to_h);
-	rd_s16b(&o_ptr->to_d);
-	rd_s16b(&o_ptr->to_a);
+	rd_int16_t(&o_ptr->to_h);
+	rd_int16_t(&o_ptr->to_d);
+	rd_int16_t(&o_ptr->to_a);
 
-	rd_s16b(&o_ptr->ac);
+	rd_int16_t(&o_ptr->ac);
 
-	rd_byte(&old_dd);
-	rd_byte(&old_ds);
+	rd_uint8_t(&old_dd);
+	rd_uint8_t(&old_ds);
 
-	rd_u16b(&o_ptr->ident);
+	rd_uint16_t(&o_ptr->ident);
 
-	rd_byte(&o_ptr->marked);
+	rd_uint8_t(&o_ptr->marked);
 
-	rd_byte(&o_ptr->origin);
-	rd_byte(&o_ptr->origin_depth);
-	rd_u16b(&o_ptr->origin_xtra);
+	rd_uint8_t(&o_ptr->origin);
+	rd_uint8_t(&o_ptr->origin_depth);
+	rd_uint16_t(&o_ptr->origin_xtra);
 
 	for (i = 0; i < OF_BYTES && i < OF_SIZE; i++)
-		rd_byte(&o_ptr->flags[i]);
-	if (i < OF_BYTES) strip_bytes(OF_BYTES - i);
+		rd_uint8_t(&o_ptr->flags[i]);
+	if (i < OF_BYTES) strip_uint8_ts(OF_BYTES - i);
 
 	of_wipe(o_ptr->known_flags);
 
 	for (i = 0; i < OF_BYTES && i < OF_SIZE; i++)
-		rd_byte(&o_ptr->known_flags[i]);
-	if (i < OF_BYTES) strip_bytes(OF_BYTES - i);
+		rd_uint8_t(&o_ptr->known_flags[i]);
+	if (i < OF_BYTES) strip_uint8_ts(OF_BYTES - i);
 
 	for (j = 0; j < MAX_PVALS; j++) {
 		for (i = 0; i < OF_BYTES && i < OF_SIZE; i++)
-			rd_byte(&o_ptr->pval_flags[j][i]);
-		if (i < OF_BYTES) strip_bytes(OF_BYTES - i);
+			rd_uint8_t(&o_ptr->pval_flags[j][i]);
+		if (i < OF_BYTES) strip_uint8_ts(OF_BYTES - i);
 	}
 
 	/* Monster holding object */
-	rd_s16b(&o_ptr->held_m_idx);
+	rd_int16_t(&o_ptr->held_m_idx);
 
 	/* Save the inscription */
 	rd_string(buf, sizeof(buf));
@@ -590,35 +590,35 @@ static int rd_item_2(object_type *o_ptr)
  */
 static int rd_item_1(object_type *o_ptr)
 {
-	byte old_dd;
-	byte old_ds;
-	byte tmp8u;
-	u16b tmp16u;
+	uint8_t old_dd;
+	uint8_t old_ds;
+	uint8_t tmp8u;
+	uint16_t tmp16u;
 
-	byte art_idx;
-	byte ego_idx;
+	uint8_t art_idx;
+	uint8_t ego_idx;
 
 	size_t i;
 
 	char buf[128];
 
-	byte ver = 1;
+	uint8_t ver = 1;
 
-	rd_u16b(&tmp16u);
-	rd_byte(&ver);
+	rd_uint16_t(&tmp16u);
+	rd_uint8_t(&ver);
 	assert(tmp16u == 0xffff);
 
 
-	strip_bytes(2);
+	strip_uint8_ts(2);
 
 	/* Location */
-	rd_byte(&o_ptr->iy);
-	rd_byte(&o_ptr->ix);
+	rd_uint8_t(&o_ptr->iy);
+	rd_uint8_t(&o_ptr->ix);
 
 	/* Type/Subtype */
-	rd_byte(&o_ptr->tval);
-	rd_byte(&o_ptr->sval);
-	rd_s16b(&o_ptr->pval[DEFAULT_PVAL]);
+	rd_uint8_t(&o_ptr->tval);
+	rd_uint8_t(&o_ptr->sval);
+	rd_int16_t(&o_ptr->pval[DEFAULT_PVAL]);
 
 	if (o_ptr->pval[DEFAULT_PVAL])
 		o_ptr->num_pvals = 1;
@@ -626,48 +626,48 @@ static int rd_item_1(object_type *o_ptr)
 		o_ptr->num_pvals = 0;
 
 	/* Pseudo-ID bit */
-	rd_byte(&tmp8u);
+	rd_uint8_t(&tmp8u);
 
-	rd_byte(&o_ptr->number);
-	rd_s16b(&o_ptr->weight);
+	rd_uint8_t(&o_ptr->number);
+	rd_int16_t(&o_ptr->weight);
 
-	rd_byte(&art_idx);
-	rd_byte(&ego_idx);
+	rd_uint8_t(&art_idx);
+	rd_uint8_t(&ego_idx);
 
-	rd_s16b(&o_ptr->timeout);
+	rd_int16_t(&o_ptr->timeout);
 
-	rd_s16b(&o_ptr->to_h);
-	rd_s16b(&o_ptr->to_d);
-	rd_s16b(&o_ptr->to_a);
+	rd_int16_t(&o_ptr->to_h);
+	rd_int16_t(&o_ptr->to_d);
+	rd_int16_t(&o_ptr->to_a);
 
-	rd_s16b(&o_ptr->ac);
+	rd_int16_t(&o_ptr->ac);
 
-	rd_byte(&old_dd);
-	rd_byte(&old_ds);
+	rd_uint8_t(&old_dd);
+	rd_uint8_t(&old_ds);
 
-	rd_u16b(&o_ptr->ident);
+	rd_uint16_t(&o_ptr->ident);
 
-	rd_byte(&o_ptr->marked);
+	rd_uint8_t(&o_ptr->marked);
 
-	rd_byte(&o_ptr->origin);
-	rd_byte(&o_ptr->origin_depth);
-	rd_u16b(&o_ptr->origin_xtra);
+	rd_uint8_t(&o_ptr->origin);
+	rd_uint8_t(&o_ptr->origin_depth);
+	rd_uint16_t(&o_ptr->origin_xtra);
 
 	/* Hack - XXX - MarbleDice - Maximum saveable flags = 96 */
 	for (i = 0; i < 12 && i < OF_SIZE; i++)
-		rd_byte(&o_ptr->flags[i]);
-	if (i < 12) strip_bytes(12 - i);
+		rd_uint8_t(&o_ptr->flags[i]);
+	if (i < 12) strip_uint8_ts(12 - i);
 
 	of_wipe(o_ptr->known_flags);
 
 	/* Hack - XXX - MarbleDice - Maximum saveable flags = 96 */
 	for (i = 0; i < 12 && i < OF_SIZE; i++)
-		rd_byte(&o_ptr->known_flags[i]);
-	if (i < 12) strip_bytes(12 - i);
+		rd_uint8_t(&o_ptr->known_flags[i]);
+	if (i < 12) strip_uint8_ts(12 - i);
 
 
 	/* Monster holding object */
-	rd_s16b(&o_ptr->held_m_idx);
+	rd_int16_t(&o_ptr->held_m_idx);
 
 	rd_string(buf, sizeof(buf));
 
@@ -746,36 +746,36 @@ static int rd_item_1(object_type *o_ptr)
 /**
  * Read RNG state
  *
- * There were originally 64 bytes of randomizer saved. Now we only need
- * 32 + 5 bytes saved, so we'll read an extra 27 bytes at the end which won't
+ * There were originally 64 uint8_ts of randomizer saved. Now we only need
+ * 32 + 5 uint8_ts saved, so we'll read an extra 27 uint8_ts at the end which won't
  * be used.
  */
 int rd_randomizer(void)
 {
 	int i;
-	u32b noop;
+	uint32_t noop;
 
 	/* current value for the simple RNG */
-	rd_u32b(&Rand_value);
+	rd_uint32_t(&Rand_value);
 
 	/* state index */
-	rd_u32b(&state_i);
+	rd_uint32_t(&state_i);
 
 	/* for safety, make sure state_i < RAND_DEG */
 	state_i = state_i % RAND_DEG;
     
 	/* RNG variables */
-	rd_u32b(&z0);
-	rd_u32b(&z1);
-	rd_u32b(&z2);
+	rd_uint32_t(&z0);
+	rd_uint32_t(&z1);
+	rd_uint32_t(&z2);
     
 	/* RNG state */
 	for (i = 0; i < RAND_DEG; i++)
-		rd_u32b(&STATE[i]);
+		rd_uint32_t(&STATE[i]);
 
 	/* NULL padding */
 	for (i = 0; i < 59 - RAND_DEG; i++)
-		rd_u32b(&noop);
+		rd_uint32_t(&noop);
 
 	Rand_quick = FALSE;
 
@@ -790,49 +790,49 @@ int rd_options_2(void)
 {
 	int i, n;
 
-	byte b;
+	uint8_t b;
 
-	u16b tmp16u;
+	uint16_t tmp16u;
 
-	u32b window_flag[ANGBAND_TERM_MAX];
-	u32b window_mask[ANGBAND_TERM_MAX];
+	uint32_t window_flag[ANGBAND_TERM_MAX];
+	uint32_t window_mask[ANGBAND_TERM_MAX];
 
 
 	/*** Special info */
 
 	/* Read "delay_factor" */
-	rd_byte(&b);
+	rd_uint8_t(&b);
 	op_ptr->delay_factor = b;
 
 	/* Read "hitpoint_warn" */
-	rd_byte(&b);
+	rd_uint8_t(&b);
 	op_ptr->hitpoint_warn = b;
 
 	/* Read lazy movement delay */
-	rd_u16b(&tmp16u);
+	rd_uint16_t(&tmp16u);
 	lazymove_delay = (tmp16u < 1000) ? tmp16u : 0;
 
 
 	/*** Normal Options ***/
 
 	while (1) {
-		byte value;
+		uint8_t value;
 		char name[20];
 		rd_string(name, sizeof name);
 
 		if (!name[0])
 			break;
 
-		rd_byte(&value);
+		rd_uint8_t(&value);
 		option_set(name, !!value);
 	}
 
 	/*** Window Options ***/
 
 	for (n = 0; n < ANGBAND_TERM_MAX; n++)
-		rd_u32b(&window_flag[n]);
+		rd_uint32_t(&window_flag[n]);
 	for (n = 0; n < ANGBAND_TERM_MAX; n++)
-		rd_u32b(&window_mask[n]);
+		rd_uint32_t(&window_mask[n]);
 
 	/* Analyze the options */
 	for (n = 0; n < ANGBAND_TERM_MAX; n++)
@@ -865,12 +865,12 @@ int rd_messages(void)
 {
 	int i;
 	char buf[128];
-	u16b tmp16u;
+	uint16_t tmp16u;
 	
-	s16b num;
+	int16_t num;
 	
 	/* Total */
-	rd_s16b(&num);
+	rd_int16_t(&num);
 	
 	/* Read the messages */
 	for (i = 0; i < num; i++)
@@ -879,7 +879,7 @@ int rd_messages(void)
 		rd_string(buf, sizeof(buf));
 		
 		/* Read the message type */
-		rd_u16b(&tmp16u);
+		rd_uint16_t(&tmp16u);
 
 		/* Save the message */
 		message_add(buf, tmp16u);
@@ -892,10 +892,10 @@ int rd_messages(void)
 int rd_monster_memory_2(void)
 {
 	int r_idx;
-	u16b tmp16u;
+	uint16_t tmp16u;
 	
 	/* Monster Memory */
-	rd_u16b(&tmp16u);
+	rd_uint16_t(&tmp16u);
 	
 	/* Incompatible save files */
 	if (tmp16u > z_info->r_max)
@@ -914,41 +914,41 @@ int rd_monster_memory_2(void)
 
 
 		/* Count sights/deaths/kills */
-		rd_s16b(&l_ptr->sights);
-		rd_s16b(&l_ptr->deaths);
-		rd_s16b(&l_ptr->pkills);
-		rd_s16b(&l_ptr->tkills);
+		rd_int16_t(&l_ptr->sights);
+		rd_int16_t(&l_ptr->deaths);
+		rd_int16_t(&l_ptr->pkills);
+		rd_int16_t(&l_ptr->tkills);
 
 		/* Count wakes and ignores */
-		rd_byte(&l_ptr->wake);
-		rd_byte(&l_ptr->ignore);
+		rd_uint8_t(&l_ptr->wake);
+		rd_uint8_t(&l_ptr->ignore);
 
 		/* Count drops */
-		rd_byte(&l_ptr->drop_gold);
-		rd_byte(&l_ptr->drop_item);
+		rd_uint8_t(&l_ptr->drop_gold);
+		rd_uint8_t(&l_ptr->drop_item);
 
 		/* Count spells */
-		rd_byte(&l_ptr->cast_innate);
-		rd_byte(&l_ptr->cast_spell);
+		rd_uint8_t(&l_ptr->cast_innate);
+		rd_uint8_t(&l_ptr->cast_spell);
 
 		/* Count blows of each type */
 		for (i = 0; i < MONSTER_BLOW_MAX; i++)
-			rd_byte(&l_ptr->blows[i]);
+			rd_uint8_t(&l_ptr->blows[i]);
 
 		/* Memorize flags */
 		for (i = 0; i < RF_BYTES && i < RF_SIZE; i++)
-			rd_byte(&l_ptr->flags[i]);
-		if (i < RF_BYTES) strip_bytes(RF_BYTES - i);
+			rd_uint8_t(&l_ptr->flags[i]);
+		if (i < RF_BYTES) strip_uint8_ts(RF_BYTES - i);
 
 		for (i = 0; i < RF_BYTES && i < RSF_SIZE; i++)
-			rd_byte(&l_ptr->spell_flags[i]);
-		if (i < RF_BYTES) strip_bytes(RF_BYTES - i);
+			rd_uint8_t(&l_ptr->spell_flags[i]);
+		if (i < RF_BYTES) strip_uint8_ts(RF_BYTES - i);
 
 		/* Read the "Racial" monster limit per level */
-		rd_byte(&r_ptr->max_num);
+		rd_uint8_t(&r_ptr->max_num);
 
 		/* XXX */
-		strip_bytes(3);
+		strip_uint8_ts(3);
 
 		/* Repair the spell lore flags */
 		rsf_inter(l_ptr->spell_flags, r_ptr->spell_flags);
@@ -961,10 +961,10 @@ int rd_monster_memory_2(void)
 int rd_object_memory(void)
 {
 	int i;
-	u16b tmp16u;
+	uint16_t tmp16u;
 	
 	/* Object Memory */
-	rd_u16b(&tmp16u);
+	rd_uint16_t(&tmp16u);
 	
 	/* Incompatible save files */
 	if (tmp16u > z_info->k_max)
@@ -976,10 +976,10 @@ int rd_object_memory(void)
 	/* Read the object memory */
 	for (i = 0; i < tmp16u; i++)
 	{
-		byte tmp8u;
+		uint8_t tmp8u;
 		object_kind *k_ptr = &k_info[i];
 		
-		rd_byte(&tmp8u);
+		rd_uint8_t(&tmp8u);
 		
 		k_ptr->aware = (tmp8u & 0x01) ? TRUE : FALSE;
 		k_ptr->tried = (tmp8u & 0x02) ? TRUE : FALSE;
@@ -996,10 +996,10 @@ int rd_object_memory(void)
 int rd_quests(void)
 {
 	int i;
-	u16b tmp16u;
+	uint16_t tmp16u;
 	
 	/* Load the Quests */
-	rd_u16b(&tmp16u);
+	rd_uint16_t(&tmp16u);
 	
 	/* Incompatible save files */
 	if (tmp16u > MAX_Q_IDX)
@@ -1011,13 +1011,13 @@ int rd_quests(void)
 	/* Load the Quests */
 	for (i = 0; i < tmp16u; i++)
 	{
-		byte tmp8u;
+		uint8_t tmp8u;
 		
-		rd_byte(&tmp8u);
+		rd_uint8_t(&tmp8u);
 		q_list[i].level = tmp8u;
-		rd_byte(&tmp8u);
-		rd_byte(&tmp8u);
-		rd_byte(&tmp8u);
+		rd_uint8_t(&tmp8u);
+		rd_uint8_t(&tmp8u);
+		rd_uint8_t(&tmp8u);
 	}
 	
 	return 0;
@@ -1027,10 +1027,10 @@ int rd_quests(void)
 int rd_artifacts(void)
 {
 	int i;
-	u16b tmp16u;
+	uint16_t tmp16u;
 	
 	/* Load the Artifacts */
-	rd_u16b(&tmp16u);
+	rd_uint16_t(&tmp16u);
 	
 	/* Incompatible save files */
 	if (tmp16u > z_info->a_max)
@@ -1042,15 +1042,15 @@ int rd_artifacts(void)
 	/* Read the artifact flags */
 	for (i = 0; i < tmp16u; i++)
 	{
-		byte tmp8u;
+		uint8_t tmp8u;
 		
-		rd_byte(&tmp8u);
+		rd_uint8_t(&tmp8u);
 		a_info[i].created = tmp8u;
-		rd_byte(&tmp8u);
+		rd_uint8_t(&tmp8u);
 		a_info[i].seen = tmp8u;
-		rd_byte(&tmp8u);
+		rd_uint8_t(&tmp8u);
 		a_info[i].everseen = tmp8u;
-		rd_byte(&tmp8u);
+		rd_uint8_t(&tmp8u);
 	}
 
 	return 0;
@@ -1063,7 +1063,7 @@ int rd_artifacts(void)
 int rd_player(void)
 {
 	int i;
-	byte num;
+	uint8_t num;
 
 	rd_string(op_ptr->full_name, sizeof(op_ptr->full_name));
 	rd_string(p_ptr->died_from, 80);
@@ -1071,7 +1071,7 @@ int rd_player(void)
 	rd_string(p_ptr->history, 250);
 
 	/* Player race */
-	rd_byte(&num);
+	rd_uint8_t(&num);
 	p_ptr->race = player_id2race(num);
 
 	/* Verify player race */
@@ -1081,7 +1081,7 @@ int rd_player(void)
 	}
 
 	/* Player class */
-	rd_byte(&num);
+	rd_uint8_t(&num);
 	p_ptr->class = player_id2class(num);
 
 	if (!p_ptr->class) {
@@ -1090,40 +1090,40 @@ int rd_player(void)
 	}
 
 	/* Player gender */
-	rd_byte(&p_ptr->psex);
+	rd_uint8_t(&p_ptr->psex);
 	p_ptr->sex = &sex_info[p_ptr->psex];
 
 	/* Numeric name suffix */
-	rd_byte(&op_ptr->name_suffix);
+	rd_uint8_t(&op_ptr->name_suffix);
 
 	/* Special Race/Class info */
-	rd_byte(&p_ptr->hitdie);
-	rd_byte(&p_ptr->expfact);
+	rd_uint8_t(&p_ptr->hitdie);
+	rd_uint8_t(&p_ptr->expfact);
 
 	/* Age/Height/Weight */
-	rd_s16b(&p_ptr->age);
-	rd_s16b(&p_ptr->ht);
-	rd_s16b(&p_ptr->wt);
+	rd_int16_t(&p_ptr->age);
+	rd_int16_t(&p_ptr->ht);
+	rd_int16_t(&p_ptr->wt);
 
 	/* Read the stat info */
-	for (i = 0; i < A_MAX; i++) rd_s16b(&p_ptr->stat_max[i]);
-	for (i = 0; i < A_MAX; i++) rd_s16b(&p_ptr->stat_cur[i]);
-	for (i = 0; i < A_MAX; i++) rd_s16b(&p_ptr->stat_birth[i]);
+	for (i = 0; i < A_MAX; i++) rd_int16_t(&p_ptr->stat_max[i]);
+	for (i = 0; i < A_MAX; i++) rd_int16_t(&p_ptr->stat_cur[i]);
+	for (i = 0; i < A_MAX; i++) rd_int16_t(&p_ptr->stat_birth[i]);
 
-	rd_s16b(&p_ptr->ht_birth);
-	rd_s16b(&p_ptr->wt_birth);
-	strip_bytes(2);
-	rd_s32b(&p_ptr->au_birth);
+	rd_int16_t(&p_ptr->ht_birth);
+	rd_int16_t(&p_ptr->wt_birth);
+	strip_uint8_ts(2);
+	rd_int32_t(&p_ptr->au_birth);
 
-	strip_bytes(4);
+	strip_uint8_ts(4);
 
-	rd_s32b(&p_ptr->au);
+	rd_int32_t(&p_ptr->au);
 
-	rd_s32b(&p_ptr->max_exp);
-	rd_s32b(&p_ptr->exp);
-	rd_u16b(&p_ptr->exp_frac);
+	rd_int32_t(&p_ptr->max_exp);
+	rd_int32_t(&p_ptr->exp);
+	rd_uint16_t(&p_ptr->exp_frac);
 
-	rd_s16b(&p_ptr->lev);
+	rd_int16_t(&p_ptr->lev);
 
 	/* Verify player level */
 	if ((p_ptr->lev < 1) || (p_ptr->lev > PY_MAX_LEVEL))
@@ -1132,16 +1132,16 @@ int rd_player(void)
 		return (-1);
 	}
 
-	rd_s16b(&p_ptr->mhp);
-	rd_s16b(&p_ptr->chp);
-	rd_u16b(&p_ptr->chp_frac);
+	rd_int16_t(&p_ptr->mhp);
+	rd_int16_t(&p_ptr->chp);
+	rd_uint16_t(&p_ptr->chp_frac);
 
-	rd_s16b(&p_ptr->msp);
-	rd_s16b(&p_ptr->csp);
-	rd_u16b(&p_ptr->csp_frac);
+	rd_int16_t(&p_ptr->msp);
+	rd_int16_t(&p_ptr->csp);
+	rd_uint16_t(&p_ptr->csp_frac);
 
-	rd_s16b(&p_ptr->max_lev);
-	rd_s16b(&p_ptr->max_depth);
+	rd_int16_t(&p_ptr->max_lev);
+	rd_int16_t(&p_ptr->max_depth);
 
 	/* Hack -- Repair maximum player level */
 	if (p_ptr->max_lev < p_ptr->lev) p_ptr->max_lev = p_ptr->lev;
@@ -1150,48 +1150,48 @@ int rd_player(void)
 	if (p_ptr->max_depth < 0) p_ptr->max_depth = 1;
 
 	/* More info */
-	strip_bytes(10);
-	rd_s16b(&p_ptr->deep_descent);
+	strip_uint8_ts(10);
+	rd_int16_t(&p_ptr->deep_descent);
 
 	/* Read the flags */
-	rd_s16b(&p_ptr->food);
-	rd_s16b(&p_ptr->energy);
-	rd_s16b(&p_ptr->word_recall);
-	rd_s16b(&p_ptr->state.see_infra);
-	rd_byte(&p_ptr->confusing);
-	rd_byte(&p_ptr->searching);
+	rd_int16_t(&p_ptr->food);
+	rd_int16_t(&p_ptr->energy);
+	rd_int16_t(&p_ptr->word_recall);
+	rd_int16_t(&p_ptr->state.see_infra);
+	rd_uint8_t(&p_ptr->confusing);
+	rd_uint8_t(&p_ptr->searching);
 
 	/* Find the number of timed effects */
-	rd_byte(&num);
+	rd_uint8_t(&num);
 
 	if (num <= TMD_MAX)
 	{
 		/* Read all the effects */
 		for (i = 0; i < num; i++)
-			rd_s16b(&p_ptr->timed[i]);
+			rd_int16_t(&p_ptr->timed[i]);
 
 		/* Initialize any entries not read */
 		if (num < TMD_MAX)
-			C_WIPE(p_ptr->timed + num, TMD_MAX - num, s16b);
+			C_WIPE(p_ptr->timed + num, TMD_MAX - num, int16_t);
 	}
 	else
 	{
 		/* Probably in trouble anyway */
 		for (i = 0; i < TMD_MAX; i++)
-			rd_s16b(&p_ptr->timed[i]);
+			rd_int16_t(&p_ptr->timed[i]);
 
 		/* Discard unused entries */
-		strip_bytes(2 * (num - TMD_MAX));
+		strip_uint8_ts(2 * (num - TMD_MAX));
 		note("Discarded unsupported timed effects");
 	}
 
 	/* Total energy used so far */
-	rd_u32b(&p_ptr->total_energy);
+	rd_uint32_t(&p_ptr->total_energy);
 	/* # of turns spent resting */
-	rd_u32b(&p_ptr->resting_turn);
+	rd_uint32_t(&p_ptr->resting_turn);
 
 	/* Future use */
-	strip_bytes(32);
+	strip_uint8_ts(32);
 
 	return 0;
 }
@@ -1203,50 +1203,50 @@ int rd_player(void)
 int rd_squelch(void)
 {
 	size_t i;
-	byte tmp8u = 24;
-	u16b file_e_max;
-	u16b inscriptions;
+	uint8_t tmp8u = 24;
+	uint16_t file_e_max;
+	uint16_t inscriptions;
 	
-	/* Read how many squelch bytes we have */
-	rd_byte(&tmp8u);
+	/* Read how many squelch uint8_ts we have */
+	rd_uint8_t(&tmp8u);
 	
 	/* Check against current number */
 	if (tmp8u != squelch_size)
 	{
-		strip_bytes(tmp8u);
+		strip_uint8_ts(tmp8u);
 	}
 	else
 	{
 		for (i = 0; i < squelch_size; i++)
-			rd_byte(&squelch_level[i]);
+			rd_uint8_t(&squelch_level[i]);
 	}
 		
 	/* Read the number of saved ego-item */
-	rd_u16b(&file_e_max);
+	rd_uint16_t(&file_e_max);
 		
 	for (i = 0; i < file_e_max; i++)
 	{
 		if (i < z_info->e_max)
 		{
-			byte flags;
+			uint8_t flags;
 			
 			/* Read and extract the flag */
-			rd_byte(&flags);
+			rd_uint8_t(&flags);
 			e_info[i].everseen |= (flags & 0x02);
 		}
 	}
 	
 	/* Read the current number of auto-inscriptions */
-	rd_u16b(&inscriptions);
+	rd_uint16_t(&inscriptions);
 	
 	/* Read the autoinscriptions array */
 	for (i = 0; i < inscriptions; i++)
 	{
 		char tmp[80];
-		s16b kidx;
+		int16_t kidx;
 		struct object_kind *k;
 		
-		rd_s16b(&kidx);
+		rd_int16_t(&kidx);
 		k = objkind_byid(kidx);
 		if (!k)
 			quit_fmt("objkind_byid(%d) failed", kidx);
@@ -1260,85 +1260,85 @@ int rd_squelch(void)
 
 int rd_misc(void)
 {
-	byte tmp8u;
+	uint8_t tmp8u;
 	
 	/* Read the randart version */
-	strip_bytes(4);
+	strip_uint8_ts(4);
 
 	/* Read the randart seed */
-	rd_u32b(&seed_randart);
+	rd_uint32_t(&seed_randart);
 
 	/* Skip the flags */
-	strip_bytes(12);
+	strip_uint8_ts(12);
 
 
 	/* Hack -- the two "special seeds" */
-	rd_u32b(&seed_flavor);
-	rd_u32b(&seed_town);
+	rd_uint32_t(&seed_flavor);
+	rd_uint32_t(&seed_town);
 
 
 	/* Special stuff */
-	rd_u16b(&p_ptr->panic_save);
-	rd_u16b(&p_ptr->total_winner);
-	rd_u16b(&p_ptr->noscore);
+	rd_uint16_t(&p_ptr->panic_save);
+	rd_uint16_t(&p_ptr->total_winner);
+	rd_uint16_t(&p_ptr->noscore);
 
 
 	/* Read "death" */
-	rd_byte(&tmp8u);
+	rd_uint8_t(&tmp8u);
 	p_ptr->is_dead = tmp8u;
 
 	/* Read "feeling" */
-	rd_byte(&tmp8u);
+	rd_uint8_t(&tmp8u);
 	cave->feeling = tmp8u;
 
-	rd_s32b(&cave->created_at);
+	rd_int32_t(&cave->created_at);
 
 	/* Current turn */
-	rd_s32b(&turn);
+	rd_int32_t(&turn);
 
 	return 0;
 }
 
 int rd_misc_2(void)
 {
-	byte tmp8u;
-	u16b tmp16u;
+	uint8_t tmp8u;
+	uint16_t tmp16u;
 	
 	/* Read the randart version */
-	strip_bytes(4);
+	strip_uint8_ts(4);
 
 	/* Read the randart seed */
-	rd_u32b(&seed_randart);
+	rd_uint32_t(&seed_randart);
 
 	/* Skip the flags */
-	strip_bytes(12);
+	strip_uint8_ts(12);
 
 
 	/* Hack -- the two "special seeds" */
-	rd_u32b(&seed_flavor);
-	rd_u32b(&seed_town);
+	rd_uint32_t(&seed_flavor);
+	rd_uint32_t(&seed_town);
 
 
 	/* Special stuff */
-	rd_u16b(&p_ptr->panic_save);
-	rd_u16b(&p_ptr->total_winner);
-	rd_u16b(&p_ptr->noscore);
+	rd_uint16_t(&p_ptr->panic_save);
+	rd_uint16_t(&p_ptr->total_winner);
+	rd_uint16_t(&p_ptr->noscore);
 
 
 	/* Read "death" */
-	rd_byte(&tmp8u);
+	rd_uint8_t(&tmp8u);
 	p_ptr->is_dead = tmp8u;
 
 	/* Read "feeling" */
-	rd_byte(&tmp8u);
+	rd_uint8_t(&tmp8u);
 	cave->feeling = tmp8u;
-	rd_u16b(&tmp16u);
+	rd_uint16_t(&tmp16u);
 	cave->feeling_squares = tmp16u;
 
-	rd_s32b(&cave->created_at);
+	rd_int32_t(&cave->created_at);
 
 	/* Current turn */
-	rd_s32b(&turn);
+	rd_int32_t(&turn);
 
 	return 0;
 }
@@ -1346,10 +1346,10 @@ int rd_misc_2(void)
 int rd_player_hp(void)
 {
 	int i;
-	u16b tmp16u;
+	uint16_t tmp16u;
 
 	/* Read the player_hp array */
-	rd_u16b(&tmp16u);
+	rd_uint16_t(&tmp16u);
 
 	/* Incompatible save files */
 	if (tmp16u > PY_MAX_LEVEL)
@@ -1360,7 +1360,7 @@ int rd_player_hp(void)
 
 	/* Read the player_hp array */
 	for (i = 0; i < tmp16u; i++)
-		rd_s16b(&p_ptr->player_hp[i]);
+		rd_int16_t(&p_ptr->player_hp[i]);
 
 	return 0;
 }
@@ -1369,12 +1369,12 @@ int rd_player_hp(void)
 int rd_player_spells(void)
 {
 	int i;
-	u16b tmp16u;
+	uint16_t tmp16u;
 	
 	int cnt;
 	
 	/* Read the number of spells */
-	rd_u16b(&tmp16u);
+	rd_uint16_t(&tmp16u);
 	if (tmp16u > PY_MAX_SPELLS)
 	{
 		note(format("Too many player spells (%d).", tmp16u));
@@ -1383,11 +1383,11 @@ int rd_player_spells(void)
 	
 	/* Read the spell flags */
 	for (i = 0; i < tmp16u; i++)
-		rd_byte(&p_ptr->spell_flags[i]);
+		rd_uint8_t(&p_ptr->spell_flags[i]);
 	
 	/* Read the spell order */
 	for (i = 0, cnt = 0; i < tmp16u; i++, cnt++)
-		rd_byte(&p_ptr->spell_order[cnt]);
+		rd_uint8_t(&p_ptr->spell_order[cnt]);
 	
 	/* Success */
 	return (0);
@@ -1409,10 +1409,10 @@ static int rd_inventory(rd_item_t rd_item_version)
 	/* Read until done */
 	while (1)
 	{
-		u16b n;
+		uint16_t n;
 
 		/* Get the next item index */
-		rd_u16b(&n);
+		rd_uint16_t(&n);
 
 		/* Nope, we reached the end */
 		if (n == 0xFFFF) break;
@@ -1496,26 +1496,26 @@ int rd_inventory_1(void) { return rd_inventory(rd_item_1); } /* remove post-3.3 
 static int rd_stores(rd_item_t rd_item_version)
 {
 	int i;
-	u16b tmp16u;
+	uint16_t tmp16u;
 	
 	/* Read the stores */
-	rd_u16b(&tmp16u);
+	rd_uint16_t(&tmp16u);
 	for (i = 0; i < tmp16u; i++)
 	{
 		struct store *st_ptr = &stores[i];
 
 		int j;		
-		byte own, num;
+		uint8_t own, num;
 		
 		/* XXX */
-		strip_bytes(6);
+		strip_uint8_ts(6);
 		
 		/* Read the basic info */
-		rd_byte(&own);
-		rd_byte(&num);
+		rd_uint8_t(&own);
+		rd_uint8_t(&num);
 		
 		/* XXX */
-		strip_bytes(4);
+		strip_uint8_ts(4);
 		
 		/* XXX: refactor into store.c */
 		st_ptr->owner = store_ownerbyidx(st_ptr, own);
@@ -1588,13 +1588,13 @@ int rd_dungeon(void)
 {
 	int i, y, x;
 
-	s16b depth;
-	s16b py, px;
-	s16b ymax, xmax;
+	int16_t depth;
+	int16_t py, px;
+	int16_t ymax, xmax;
 
-	byte count;
-	byte tmp8u;
-	u16b tmp16u;
+	uint8_t count;
+	uint8_t tmp8u;
+	uint16_t tmp16u;
 
 	/* Only if the player's alive */
 	if (p_ptr->is_dead)
@@ -1603,14 +1603,14 @@ int rd_dungeon(void)
 	/*** Basic info ***/
 
 	/* Header info */
-	rd_s16b(&depth);
-	rd_u16b(&daycount);
-	rd_s16b(&py);
-	rd_s16b(&px);
-	rd_s16b(&ymax);
-	rd_s16b(&xmax);
-	rd_u16b(&tmp16u);
-	rd_u16b(&tmp16u);
+	rd_int16_t(&depth);
+	rd_uint16_t(&daycount);
+	rd_int16_t(&py);
+	rd_int16_t(&px);
+	rd_int16_t(&ymax);
+	rd_int16_t(&xmax);
+	rd_uint16_t(&tmp16u);
+	rd_uint16_t(&tmp16u);
 
 
 	/* Ignore illegal dungeons */
@@ -1638,8 +1638,8 @@ int rd_dungeon(void)
 	for (x = y = 0; y < DUNGEON_HGT; )
 	{
 		/* Grab RLE info */
-		rd_byte(&count);
-		rd_byte(&tmp8u);
+		rd_uint8_t(&count);
+		rd_uint8_t(&tmp8u);
 
 		/* Apply the RLE info */
 		for (i = count; i > 0; i--)
@@ -1663,8 +1663,8 @@ int rd_dungeon(void)
 	for (x = y = 0; y < DUNGEON_HGT; )
 	{
 		/* Grab RLE info */
-		rd_byte(&count);
-		rd_byte(&tmp8u);
+		rd_uint8_t(&count);
+		rd_uint8_t(&tmp8u);
 
 		/* Apply the RLE info */
 		for (i = count; i > 0; i--)
@@ -1691,8 +1691,8 @@ int rd_dungeon(void)
 	for (x = y = 0; y < DUNGEON_HGT; )
 	{
 		/* Grab RLE info */
-		rd_byte(&count);
-		rd_byte(&tmp8u);
+		rd_uint8_t(&count);
+		rd_uint8_t(&tmp8u);
 
 		/* Apply the RLE info */
 		for (i = count; i > 0; i--)
@@ -1740,14 +1740,14 @@ int rd_dungeon(void)
 static int rd_objects(rd_item_t rd_item_version)
 {
 	int i;
-	u16b limit;
+	uint16_t limit;
 
 	/* Only if the player's alive */
 	if (p_ptr->is_dead)
 		return 0;
 
 	/* Read the item count */
-	rd_u16b(&limit);
+	rd_uint16_t(&limit);
 
 	/* Verify maximum */
 	if (limit > z_info->o_max)
@@ -1762,7 +1762,7 @@ static int rd_objects(rd_item_t rd_item_version)
 		object_type *i_ptr;
 		object_type object_type_body;
 
-		s16b o_idx;
+		int16_t o_idx;
 		object_type *o_ptr;
 
 
@@ -1830,14 +1830,14 @@ int rd_monsters_6(void)
 {
 	int i;
 	size_t j;
-	u16b limit;
+	uint16_t limit;
 
 	/* Only if the player's alive */
 	if (p_ptr->is_dead)
 		return 0;
 	
 	/* Read the monster count */
-	rd_u16b(&limit);
+	rd_uint16_t(&limit);
 
 	/* Hack -- verify */
 	if (limit > z_info->m_max)
@@ -1851,38 +1851,38 @@ int rd_monsters_6(void)
 	{
 		monster_type *m_ptr;
 		monster_type monster_type_body;
-		s16b r_idx;
+		int16_t r_idx;
 		
-		byte flags;
-		byte tmp8u;
+		uint8_t flags;
+		uint8_t tmp8u;
 
 		/* Get local monster */
 		m_ptr = &monster_type_body;
 		WIPE(m_ptr, monster_type);
 
 		/* Read in record */
-		rd_s16b(&r_idx);
+		rd_int16_t(&r_idx);
 		m_ptr->race = &r_info[r_idx];
-		rd_byte(&m_ptr->fy);
-		rd_byte(&m_ptr->fx);
-		rd_s16b(&m_ptr->hp);
-		rd_s16b(&m_ptr->maxhp);
-		rd_byte(&m_ptr->mspeed);
-		rd_byte(&m_ptr->energy);
-		rd_byte(&tmp8u);
+		rd_uint8_t(&m_ptr->fy);
+		rd_uint8_t(&m_ptr->fx);
+		rd_int16_t(&m_ptr->hp);
+		rd_int16_t(&m_ptr->maxhp);
+		rd_uint8_t(&m_ptr->mspeed);
+		rd_uint8_t(&m_ptr->energy);
+		rd_uint8_t(&tmp8u);
 
 		for (j = 0; j < tmp8u; j++)
-			rd_s16b(&m_ptr->m_timed[j]);
+			rd_int16_t(&m_ptr->m_timed[j]);
 
 		/* Read and extract the flag */
-		rd_byte(&flags);
+		rd_uint8_t(&flags);
 		m_ptr->unaware = (flags & 0x01) ? TRUE : FALSE;
 	
 		for (j = 0; j < OF_BYTES && j < OF_SIZE; j++)
-			rd_byte(&m_ptr->known_pflags[j]);
-		if (j < OF_BYTES) strip_bytes(OF_BYTES - j);
+			rd_uint8_t(&m_ptr->known_pflags[j]);
+		if (j < OF_BYTES) strip_uint8_ts(OF_BYTES - j);
 		
-		strip_bytes(1);
+		strip_uint8_ts(1);
 
 		/* Place monster in dungeon */
 		if (place_monster(m_ptr->fy, m_ptr->fx, m_ptr, 0) != i)
@@ -1942,25 +1942,25 @@ int rd_monsters_6(void)
 
 int rd_history(void)
 {
-	u32b tmp32u;
+	uint32_t tmp32u;
 	size_t i;
 	
 	history_clear();
 	
-	rd_u32b(&tmp32u);
+	rd_uint32_t(&tmp32u);
 	for (i = 0; i < tmp32u; i++)
 	{
-		s32b turnno;
-		s16b dlev, clev;
-		u16b type;
-		byte art_name;
+		int32_t turnno;
+		int16_t dlev, clev;
+		uint16_t type;
+		uint8_t art_name;
 		char text[80];
 		
-		rd_u16b(&type);
-		rd_s32b(&turnno);
-		rd_s16b(&dlev);
-		rd_s16b(&clev);
-		rd_byte(&art_name);
+		rd_uint16_t(&type);
+		rd_int32_t(&turnno);
+		rd_int16_t(&dlev);
+		rd_int16_t(&clev);
+		rd_uint8_t(&art_name);
 		rd_string(text, sizeof(text));
 		
 		history_add_full(type, &a_info[art_name], dlev, clev, turnno, text);

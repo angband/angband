@@ -39,21 +39,21 @@
 /* Define a value for minima which will be ignored. */
 #define NO_MINIMUM 	255
 
-static s16b alloc_ego_size;
+static int16_t alloc_ego_size;
 static alloc_entry *alloc_ego_table;
 
 static void init_ego_allocs(void) {
 	struct alloc_entry *table;
 	int i;
 	ego_item_type *e_ptr;
-	s16b num[MAX_DEPTH];
-	s16b aux[MAX_DEPTH];
+	int16_t num[MAX_DEPTH];
+	int16_t aux[MAX_DEPTH];
 
 	/* Clear the "aux" array */
-	(void)C_WIPE(aux, MAX_DEPTH, s16b);
+	(void)C_WIPE(aux, MAX_DEPTH, int16_t);
 
 	/* Clear the "num" array */
-	(void)C_WIPE(num, MAX_DEPTH, s16b);
+	(void)C_WIPE(num, MAX_DEPTH, int16_t);
 
 	/* Size of "alloc_ego_table" */
 	alloc_ego_size = 0;
@@ -653,11 +653,11 @@ void object_prep(object_type *o_ptr, struct object_kind *k, int lev,
  * Returns 0 if a normal object, 1 if a good object, 2 if an ego item, 3 if an
  * artifact.
  */
-s16b apply_magic(object_type *o_ptr, int lev, bool allow_artifacts,
+int16_t apply_magic(object_type *o_ptr, int lev, bool allow_artifacts,
 		bool good, bool great, bool extra_roll)
 {
 	int i;
-	s16b power = 0;
+	int16_t power = 0;
 
 	/* Chance of being `good` and `great` */
 	/* This has changed over the years:
@@ -748,7 +748,7 @@ s16b apply_magic(object_type *o_ptr, int lev, bool allow_artifacts,
 
 			/* Never exceed "difficulty" of 55 to 59 */
 			if (o_ptr->pval[DEFAULT_PVAL] > 55)
-				o_ptr->pval[DEFAULT_PVAL] = (s16b)(55 + randint0(5));
+				o_ptr->pval[DEFAULT_PVAL] = (int16_t)(55 + randint0(5));
 
 			break;
 	}
@@ -841,11 +841,11 @@ static bool kind_is_good(const object_kind *kind)
 
 
 /** Arrays holding an index of objects to generate for a given level */
-static u32b obj_total[MAX_DEPTH];
-static byte *obj_alloc;
+static uint32_t obj_total[MAX_DEPTH];
+static uint8_t *obj_alloc;
 
-static u32b obj_total_great[MAX_DEPTH];
-static byte *obj_alloc_great;
+static uint32_t obj_total_great[MAX_DEPTH];
+static uint8_t *obj_alloc_great;
 
 /* Don't worry about probabilities for anything past dlev100 */
 #define MAX_O_DEPTH		100
@@ -863,12 +863,12 @@ bool init_obj_alloc(void)
 	FREE(obj_alloc);
 
 	/* Allocate and wipe */
-	obj_alloc = C_ZNEW((MAX_O_DEPTH + 1) * k_max, byte);
-	obj_alloc_great = C_ZNEW((MAX_O_DEPTH + 1) * k_max, byte);
+	obj_alloc = C_ZNEW((MAX_O_DEPTH + 1) * k_max, uint8_t);
+	obj_alloc_great = C_ZNEW((MAX_O_DEPTH + 1) * k_max, uint8_t);
 
 	/* Wipe the totals */
-	C_WIPE(obj_total, MAX_O_DEPTH + 1, u32b);
-	C_WIPE(obj_total_great, MAX_O_DEPTH + 1, u32b);
+	C_WIPE(obj_total, MAX_O_DEPTH + 1, uint32_t);
+	C_WIPE(obj_total_great, MAX_O_DEPTH + 1, uint32_t);
 
 
 	/* Init allocation data */
@@ -920,9 +920,9 @@ static object_kind *get_obj_num_by_kind(int level, bool good, int tval)
 {
 	/* This is the base index into obj_alloc for this dlev */
 	size_t ind, item;
-	u32b value;
+	uint32_t value;
 	int total = 0;
-	byte *objects = good ? obj_alloc_great : obj_alloc;
+	uint8_t *objects = good ? obj_alloc_great : obj_alloc;
 
 	/* Pick an object */
 	ind = level * z_info->k_max;
@@ -960,7 +960,7 @@ object_kind *get_obj_num(int level, bool good, int tval)
 {
 	/* This is the base index into obj_alloc for this dlev */
 	size_t ind, item;
-	u32b value;
+	uint32_t value;
 
 	/* Occasional level boost */
 	if ((level > 0) && one_in_(GREAT_OBJ))
@@ -1027,7 +1027,7 @@ object_kind *get_obj_num(int level, bool good, int tval)
  * Returns the whether or not creation worked.
  */
 bool make_object(struct cave *c, object_type *j_ptr, int lev, bool good,
-	bool great, bool extra_roll, s32b *value, int tval)
+	bool great, bool extra_roll, int32_t *value, int tval)
 {
 	int base;
 	object_kind *kind;
@@ -1085,9 +1085,9 @@ void make_gold(object_type *j_ptr, int lev, int coin_type)
 
 	/* This average is 20 at dlev0, 105 at dlev40, 220 at dlev100. */
 	/* Follows the formula: y=2x+20 */
-	s32b avg = 2*lev + 20;
-	s32b spread = lev + 10;
-	s32b value = rand_spread(avg, spread);
+	int32_t avg = 2*lev + 20;
+	int32_t spread = lev + 10;
+	int32_t value = rand_spread(avg, spread);
 
 	/* Increase the range to infinite, moving the average to 110% */
 	while (one_in_(100) && value * 10 <= MAX_SHORT)
@@ -1109,7 +1109,7 @@ void make_gold(object_type *j_ptr, int lev, int coin_type)
 	if (OPT(birth_no_selling) && p_ptr->depth)
 		value = value * MIN(5, p_ptr->depth);
 
-	/* Cap gold at max short (or alternatively make pvals s32b) */
+	/* Cap gold at max short (or alternatively make pvals int32_t) */
 	if (value > MAX_SHORT)
 		value = MAX_SHORT;
 
