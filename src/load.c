@@ -858,172 +858,6 @@ int rd_options_2(void)
 	return 0;
 }
 
-
-static const struct {
-	int num;
-	const char *text;
-} num_to_text[] = {
-	{ 0, "rogue_like_commands" },
-	{ 2, "use_sound" },
-	{ 4, "use_old_target" },
-	{ 5, "pickup_always" },
-	{ 6, "pickup_inven" },
-	{ 15, "show_flavors" },
-	{ 20, "disturb_move" },
-	{ 21, "disturb_near" },
-	{ 22, "disturb_detect" },
-	{ 23, "disturb_state" },
-	{ 60, "view_yellow_light" },
-	{ 64, "easy_open" },
-	{ 66, "animate_flicker" },
-	{ 68, "center_player" },
-	{ 69, "purple_uniques" },
-	{ 71, "auto_more" },
-	{ 74, "hp_changes_color" },
-	{ 77, "mouse_movement" },
-	{ 78, "mouse_buttons" },
-	{ 79, "notify_recharge" },
-	{ 161, "cheat_hear" },
-	{ 162, "cheat_room" },
-	{ 163, "cheat_xtra" },
-	{ 164, "cheat_know" },
-	{ 165, "cheat_live" },
-	{ 192, "birth_maximize" },
-	{ 193, "birth_randarts" },
-	{ 195, "birth_no_recall" },
-	{ 196, "birth_small_range" },
-	{ 197, "birth_no_artifacts" },
-	{ 198, "birth_no_stacking" },
-	{ 199, "birth_no_preserve" },
-	{ 200, "birth_no_stairs" },
-	{ 201, "birth_no_feelings" },
-	{ 202, "birth_no_selling" },
-	{ 205, "birth_ai_sound" },
-	{ 206, "birth_ai_smell" },
-	{ 207, "birth_ai_packs" },
-	{ 208, "birth_ai_learn" },
-	{ 209, "birth_ai_cheat" },
-	{ 210, "birth_force_descend" },
-	{ 225, "score_hear" },
-	{ 226, "score_room" },
-	{ 227, "score_xtra" },
-	{ 228, "score_know" },
-	{ 229, "score_live" },
-};
-
-static const char *lookup_option(int opt)
-{
-	size_t i;
-	for (i = 0; i < N_ELEMENTS(num_to_text); i++) {
-		if (num_to_text[i].num == opt)
-			return num_to_text[i].text;
-	}
-
-	return NULL;
-}
-
-
-/*
- * Read options
- *
- * XXX Remove this for the next release after 3.2.
- */
-int rd_options_1(void)
-{
-	int i, n;
-
-	byte b;
-
-	u16b tmp16u;
-
-	u32b flag[8];
-	u32b mask[8];
-
-	u32b window_flag[ANGBAND_TERM_MAX];
-	u32b window_mask[ANGBAND_TERM_MAX];
-
-
-	/*** Oops ***/
-
-	/* Ignore old options */
-	strip_bytes(16);
-
-
-	/*** Special info */
-
-	/* Read "delay_factor" */
-	rd_byte(&b);
-	op_ptr->delay_factor = b;
-
-	/* Read "hitpoint_warn" */
-	rd_byte(&b);
-	op_ptr->hitpoint_warn = b;
-
-	/* Read lazy movement delay */
-	rd_u16b(&tmp16u);
-	lazymove_delay = (tmp16u < 1000) ? tmp16u : 0;
-
-
-	/*** Normal Options ***/
-
-	/* Read the option flags */
-	for (n = 0; n < 8; n++) rd_u32b(&flag[n]);
-
-	/* Read the option masks */
-	for (n = 0; n < 8; n++) rd_u32b(&mask[n]);
-
-	/* Analyze the options */
-	/* 256 is the old OPT_MAX */
-	for (i = 0; i < 256; i++)
-	{
-		int os = i / 32;
-		int ob = i % 32;
-
-		/* Process saved entries */
-		if (mask[os] & (1L << ob))
-		{
-			const char *name = lookup_option(i);
-			if (name)
-				option_set(name, flag[os] & (1L << ob) ? TRUE : FALSE);
-		}
-	}
-
-	/*** Window Options ***/
-
-	/* Read the window flags */
-	for (n = 0; n < ANGBAND_TERM_MAX; n++)
-		rd_u32b(&window_flag[n]);
-
-	/* Read the window masks */
-	for (n = 0; n < ANGBAND_TERM_MAX; n++)
-		rd_u32b(&window_mask[n]);
-
-	/* Analyze the options */
-	for (n = 0; n < ANGBAND_TERM_MAX; n++)
-	{
-		/* Analyze the options */
-		for (i = 0; i < 32; i++)
-		{
-			/* Process valid flags */
-			if (window_flag_desc[i])
-			{
-				/* Blank invalid flags */
-				if (!(window_mask[n] & (1L << i)))
-				{
-					window_flag[n] &= ~(1L << i);
-				}
-			}
-		}
-	}
-
-	/* Set up the subwindows */
-	subwindows_set_flags(window_flag, ANGBAND_TERM_MAX);
-
-	return 0;
-}
-
-
-
 /*
  * Read the saved messages
  */
@@ -1109,79 +943,6 @@ int rd_monster_memory_2(void)
 		for (i = 0; i < RF_BYTES && i < RSF_SIZE; i++)
 			rd_byte(&l_ptr->spell_flags[i]);
 		if (i < RF_BYTES) strip_bytes(RF_BYTES - i);
-
-		/* Read the "Racial" monster limit per level */
-		rd_byte(&r_ptr->max_num);
-
-		/* XXX */
-		strip_bytes(3);
-
-		/* Repair the spell lore flags */
-		rsf_inter(l_ptr->spell_flags, r_ptr->spell_flags);
-	}
-	
-	return 0;
-}
-
-/* Read monster memory - remove after 3.3 */
-int rd_monster_memory_1(void)
-{
-	int r_idx;
-	u16b tmp16u;
-	
-	/* Monster Memory */
-	rd_u16b(&tmp16u);
-	
-	/* Incompatible save files */
-	if (tmp16u > z_info->r_max)
-	{
-		note(format("Too many (%u) monster races!", tmp16u));
-		return (-1);
-	}
-	
-	/* Read the available records */
-	for (r_idx = 0; r_idx < tmp16u; r_idx++)
-	{
-		size_t i;
-
-		monster_race *r_ptr = &r_info[r_idx];
-		monster_lore *l_ptr = &l_list[r_idx];
-
-
-		/* Count sights/deaths/kills */
-		rd_s16b(&l_ptr->sights);
-		rd_s16b(&l_ptr->deaths);
-		rd_s16b(&l_ptr->pkills);
-		rd_s16b(&l_ptr->tkills);
-
-		/* Count wakes and ignores */
-		rd_byte(&l_ptr->wake);
-		rd_byte(&l_ptr->ignore);
-
-		/* Count drops */
-		rd_byte(&l_ptr->drop_gold);
-		rd_byte(&l_ptr->drop_item);
-
-		/* Count spells */
-		rd_byte(&l_ptr->cast_innate);
-		rd_byte(&l_ptr->cast_spell);
-
-		/* Count blows of each type */
-		for (i = 0; i < MONSTER_BLOW_MAX; i++)
-			rd_byte(&l_ptr->blows[i]);
-
-		/* Memorize flags */
-
-		/* Hack - XXX - MarbleDice - Maximum saveable flags = 96 */
-		for (i = 0; i < 12 && i < RF_SIZE; i++)
-			rd_byte(&l_ptr->flags[i]);
-		if (i < 12) strip_bytes(12 - i);
-
-		/* Hack - XXX - MarbleDice - Maximum saveable flags = 96 */
-		for (i = 0; i < 12 && i < RSF_SIZE; i++)
-			rd_byte(&l_ptr->spell_flags[i]);
-		if (i < 12) strip_bytes(12 - i);
-
 
 		/* Read the "Racial" monster limit per level */
 		rd_byte(&r_ptr->max_num);
@@ -1630,13 +1391,6 @@ int rd_player_spells(void)
 	
 	/* Success */
 	return (0);
-}
-
-
-/* We no longer store randarts in the savefile */
-int rd_randarts_3(void)
-{
-	return 0;
 }
 
 
@@ -2186,26 +1940,6 @@ int rd_monsters_6(void)
 	return 0;
 }
 
-int rd_ghost(void)
-{
-	char buf[64];
-
-	/* Only if the player's alive */
-	if (p_ptr->is_dead)
-		return 0;	
-
-	/* XXX */
-	
-	/* Strip name */
-	rd_string(buf, 64);
-	
-	/* Strip old data */
-	strip_bytes(60);
-
-	return 0;
-}
-
-
 int rd_history(void)
 {
 	u32b tmp32u;
@@ -2232,5 +1966,12 @@ int rd_history(void)
 		history_add_full(type, &a_info[art_name], dlev, clev, turnno, text);
 	}
 
+	return 0;
+}
+
+/**
+ * For blocks that don't need loading anymore.
+ */
+int rd_null(void) {
 	return 0;
 }
