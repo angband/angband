@@ -1143,10 +1143,6 @@ void player_birth(bool quickstart_allowed)
 					  sizeof(op_ptr->full_name));
 
 			string_free((void *) cmd->arg[0].string);
-
-			/* Don't change savefile name.  If the UI
-			   wants it changed, they can do it. XXX (Good idea?) */
-			process_player_name(FALSE);
 		}
 		/* Various not-specific-to-birth commands. */
 		else if (cmd->command == CMD_HELP)

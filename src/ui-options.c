@@ -1,4 +1,4 @@
-/*
+/* 
  * File: ui-options.c
  * Purpose: Text UI options handling code (everything accessible from '=')
  *
@@ -43,7 +43,7 @@ static void dump_pref_file(void (*dump)(ang_file *), const char *title, int row)
 	prt("File: ", row + 2, 0);
 	
 	/* Default filename */
-	strnfmt(ftmp, sizeof ftmp, "%s.prf", op_ptr->base_name);
+	strnfmt(ftmp, sizeof ftmp, "%s.prf", player_safe_name(p_ptr));
 	
 	/* Get a filename */
 	if (askfor_aux(ftmp, sizeof ftmp, NULL))
@@ -982,7 +982,7 @@ static void do_cmd_pref_file_hack(long row)
 	prt("File: ", row + 2, 0);
 
 	/* Default filename */
-	strnfmt(ftmp, sizeof ftmp, "%s.prf", op_ptr->base_name);
+	strnfmt(ftmp, sizeof ftmp, "%s.prf", player_safe_name(p_ptr));
 
 	/* Ask for a file (or cancel) */
 	if (askfor_aux(ftmp, sizeof ftmp, NULL))

@@ -376,7 +376,6 @@ struct history_chart {
 typedef struct
 {
 	char full_name[32];		/* Full name */
-	char base_name[32];		/* Base name */
 	
 	bool opt[OPT_MAX];		/* Options */
 	

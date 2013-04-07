@@ -186,15 +186,11 @@ void do_cmd_change_name(void)
 				case 'c': {
 					char namebuf[32] = "";
 
+					/* Set player name */
 					if (get_name(namebuf, sizeof namebuf))
-					{
-						/* Set player name */
 						my_strcpy(op_ptr->full_name, namebuf,
 								  sizeof(op_ptr->full_name));
 
-						/* Don't change savefile name. */
-						process_player_name(FALSE);
-					}
 					break;
 				}
 
@@ -202,7 +198,7 @@ void do_cmd_change_name(void)
 					char buf[1024];
 					char fname[80];
 
-					strnfmt(fname, sizeof fname, "%s.txt", op_ptr->base_name);
+					strnfmt(fname, sizeof fname, "%s.txt", player_safe_name(p_ptr));
 
 					if (get_file(fname, buf, sizeof buf))
 					{
