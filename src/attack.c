@@ -252,7 +252,7 @@ static bool py_attack_real(int y, int x, bool *fear) {
 	}
 
 	for (i = 0; i < N_ELEMENTS(melee_hit_types); i++) {
-		char *dmg_text = "";
+		const char *dmg_text = "";
 
 		if (msg_type != melee_hit_types[i].msg)
 			continue;
@@ -484,7 +484,7 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 				msgt(MSG_SHOOT_HIT, "The %s finds a mark.", o_name);
 			} else {
 				for (i = 0; i < (int)N_ELEMENTS(ranged_hit_types); i++) {
-					char *dmg_text = "";
+					const char *dmg_text = "";
 
 					if (msg_type != ranged_hit_types[i].msg)
 						continue;

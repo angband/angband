@@ -114,6 +114,7 @@ extern bool cave_isopen(struct cave *c, int y, int x);
 extern bool cave_isempty(struct cave *c, int y, int x);
 extern bool cave_canputitem(struct cave *c, int y, int x);
 extern bool cave_isdiggable(struct cave *c, int y, int x);
+extern bool feat_ispassable(feature_type *f_ptr);
 extern bool cave_ispassable(struct cave *c, int y, int x);
 extern bool cave_iswall(struct cave *c, int y, int x);
 extern bool cave_isstrongwall(struct cave *c, int y, int x);

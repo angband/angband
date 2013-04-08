@@ -875,7 +875,7 @@ enum
 };
 
 extern int *formula[1000];
-extern char *prefix_pref[];
+extern const char *prefix_pref[];
 
 /*
  * Hack -- optional cheating flags
@@ -1266,7 +1266,6 @@ extern s16b num_life;
 extern s16b num_life_true;
 extern s16b num_pfe;
 extern s16b num_glyph;
-extern s16b num_speed;
 extern s16b num_detonate;
 extern s16b num_mush_second_sight;		/* esp */
 extern s16b num_mush_fast_recovery;		/* cure stun, cut, pois, blind */
@@ -1719,7 +1718,7 @@ extern errr borg_keypress(keycode_t k);
 /*
  * Queue several keypresses
  */
-extern errr borg_keypresses(char *str);
+extern errr borg_keypresses(const char *str);
 
 /*
  * Dequeue a keypress
@@ -1757,7 +1756,7 @@ extern void borg_note(char *what);
 /*
  * Abort the Borg, noting the reason
  */
-extern void borg_oops(char *what);
+extern void borg_oops(const char *what);
 
 
 /*
@@ -1802,7 +1801,7 @@ extern char *borg_prt_formula(int *formula);
 /*
  * Print the string for an item
  */
-extern char *borg_prt_item(int item);
+extern const char *borg_prt_item(int item);
 
 /*
  * Initialize this file

@@ -8940,7 +8940,7 @@ int borg_danger(int y, int x, int c, bool average, bool full_damage)
  * Note that we ignore "restock" issues for the first several turns
  * on each level, to prevent repeated "level bouncing".
  */
-char *borg_restock(int depth)
+const char *borg_restock(int depth)
 {
 
     /* We are now looking at our preparedness */
@@ -9064,18 +9064,18 @@ char *borg_restock(int depth)
 /*
  * Determine if the Borg meets the "minimum" requirements for a level
  */
-static char *borg_prepared_aux(int depth)
+static const char *borg_prepared_aux(int depth)
 {
     if ( -1 == borg_ready_morgoth)
         borg_ready_morgoth = 0;
     if (borg_skill[BI_KING])
         {
             borg_ready_morgoth = 1;
-            return ((char *)NULL);
+            return (NULL);
         }
 
     /* Always ready for the town */
-    if (!depth) return ((char *)NULL);
+    if (!depth) return (NULL);
 
 
     /*** Essential Items for Level 1 ***/
@@ -9497,9 +9497,9 @@ static char borg_prepared_buffer[MAX_REASON];
  * This now returns a string with the reason you are not prepared.
  *
  */
-char *borg_prepared(int depth)
+const char *borg_prepared(int depth)
 {
-    char *reason;
+    const char *reason;
 
     /* Town and First level */
     if (depth == 1) return ((char *)NULL);

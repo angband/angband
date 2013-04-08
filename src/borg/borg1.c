@@ -73,7 +73,7 @@ int size_depth;
 int size_obj;
 int *formula[1000];
 
-char *prefix_pref[] =
+const char *prefix_pref[] =
 {
 /* personal attributes */
     "_STR",
@@ -316,7 +316,6 @@ int successful_target = 0;
 int sold_item_tval[10];
 int sold_item_sval[10];
 int sold_item_pval[10];
-int sold_item_store[10];
 int sold_item_store[10];
 int sold_item_num = -1;
 int sold_item_nxt = 0;
@@ -792,7 +791,6 @@ s16b num_sustain_dex;
 s16b num_sustain_con;
 s16b num_sustain_all;
 
-s16b num_speed;
 s16b num_edged_weapon;
 s16b num_bad_gloves;
 s16b num_weapons;
@@ -1657,7 +1655,7 @@ void borg_note(char *what)
 /*
  * Abort the Borg, noting the reason
  */
-void borg_oops(char *what)
+void borg_oops(const char *what)
 {
     /* Stop processing */
     borg_active = FALSE;
@@ -1712,9 +1710,9 @@ errr borg_keypress(keycode_t k)
 /*
  * Add a keypress to the "queue" (fake event)
  */
-errr borg_keypresses(char *str)
+errr borg_keypresses(const char *str)
 {
-	char *s;
+	const char *s;
 
     /* Enqueue them */
 	for (s = str; *s; s++) borg_keypress(*s);

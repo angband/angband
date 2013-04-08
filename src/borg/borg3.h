@@ -153,7 +153,7 @@ typedef struct borg_magic borg_magic;
  */
 struct borg_magic
 {
-    char *name;      /* Textual name */
+    const char *name;      /* Textual name */
 
     byte status;    /* Status (see above) */
 
