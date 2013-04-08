@@ -371,6 +371,27 @@ static bool try_save(ang_file *file)
 	return TRUE;
 }
 
+/*
+ * Set the savefile name.
+ */
+void savefile_set_name(const char *fname)
+{
+	char path[128];
+
+#if defined(SETGID)
+	/* Rename the savefile, using the player_uid and base_name */
+	strnfmt(path, sizeof(path), "%d.%s", player_uid, fname);
+#else
+	/* Rename the savefile, using the base name */
+	strnfmt(path, sizeof(path), "%s", fname);
+#endif
+
+	/* Save the path */
+	path_build(savefile, sizeof(savefile), ANGBAND_DIR_SAVE, path);
+}
+
+
+
 
 /*
  * Attempt to save the player in a savefile

@@ -11,7 +11,6 @@ extern void display_player_xtra_info(void);
 extern errr file_character(const char *name, bool full);
 extern bool show_file(const char *name, const char *what, int line, int mode);
 extern void do_cmd_help(void);
-extern void process_player_name(bool sf);
 extern bool get_name(char *buf, size_t buflen);
 extern void save_game(void);
 extern void close_game(void);

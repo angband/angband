@@ -59,6 +59,8 @@ extern void player_exp_lose(struct player *p, s32b amount, bool permanent);
 extern byte player_hp_attr(struct player *p);
 extern byte player_sp_attr(struct player *p);
 
+extern const char *player_safe_name(struct player *p);
+
 /* race.c */
 extern struct player_race *player_id2race(guid id);
 

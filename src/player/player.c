@@ -5,6 +5,7 @@
 #include "externs.h" /* player_exp */
 #include "history.h" /* history_add */
 #include "player/player.h"
+#include "z-util.h" /* my_strcpy */
 
 
 
@@ -226,4 +227,33 @@ byte player_sp_attr(struct player *p)
 		attr = TERM_RED;
 	
 	return attr;
+}
+
+/**
+ * Return a version of the player's name safe for use in filesystems.
+ */
+const char *player_safe_name(struct player *p)
+{
+	static char buf[40];
+
+	int i;
+	for (i = 0; op_ptr->full_name[i]; i++) {
+		char c = op_ptr->full_name[i];
+
+		/* Convert all non-alphanumeric symbols */
+		if (!isalpha((unsigned char)c) && !isdigit((unsigned char)c))
+			c = '_';
+
+		/* Build "base_name" */
+		buf[i] = c;
+	}
+
+	/* Terminate */
+	buf[i] = '\0';
+
+	/* Require a "base" name */
+	if (!buf[0])
+		my_strcpy(buf, "PLAYER", sizeof buf);
+
+	return buf;
 }

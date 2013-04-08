@@ -6,14 +6,19 @@
 /*** Savefile API ***/
 
 /**
- * Load the savefile given.  Returns TRUE on succcess, FALSE otherwise.
+ * Set the filename of the savefile.
  */
-bool savefile_load(const char *path);
+void savefile_set_name(const char *fname);
 
 /**
  * Save to the given location.  Returns TRUE on success, FALSE otherwise.
  */
 bool savefile_save(const char *path);
+
+/**
+ * Load the savefile given.  Returns TRUE on succcess, FALSE otherwise.
+ */
+bool savefile_load(const char *path);
 
 /**
  * Try to get a description for this savefile.
