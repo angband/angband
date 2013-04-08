@@ -2126,41 +2126,7 @@ static s16b stat_use[6];
 
 static int adjust_stat_borg(int value, int amount, int borg_roll)
 {
-    /* Negative amounts or maximize mode */
-    if ((amount < 0) || op_ptr->opt[OPT_birth_maximize])
-    {
-        return (modify_stat_value(value, amount));
-    }
-
-    /* Special hack */
-    else
-    {
-        int i;
-
-        /* Apply reward */
-        for (i = 0; i < amount; i++)
-        {
-            if (value < 18)
-            {
-                value++;
-            }
-            else if (value < 18+70)
-            {
-                value += ((borg_roll ? 15 : randint1(15)) + 5);
-            }
-            else if (value < 18+90)
-            {
-                value += ((borg_roll ? 6 : randint1(6)) + 2);
-            }
-            else if (value < 18+100)
-            {
-                value++;
-            }
-        }
-    }
-
-    /* Return the result */
-    return (value);
+	return (modify_stat_value(value, amount));
 }
 
 static void get_stats_borg_aux(void)
@@ -2201,24 +2167,11 @@ static void get_stats_borg_aux(void)
         bonus = p_ptr->race->r_adj[i] + p_ptr->class->c_adj[i];
 
         /* Variable stat maxes */
-        if (op_ptr->opt[OPT_birth_maximize])
-        {
-            /* Start fully healed */
-            p_ptr->stat_cur[i] = p_ptr->stat_max[i];
+        /* Start fully healed */
+        p_ptr->stat_cur[i] = p_ptr->stat_max[i];
 
-            /* Efficiency -- Apply the racial/class bonuses */
-            stat_use[i] = modify_stat_value(p_ptr->stat_max[i], bonus);
-        }
-
-        /* Fixed stat maxes */
-        else
-        {
-            /* Apply the bonus to the stat (somewhat randomly) */
-            stat_use[i] = adjust_stat_borg(p_ptr->stat_max[i], bonus, FALSE);
-
-            /* Save the resulting stat maximum */
-            p_ptr->stat_cur[i] = p_ptr->stat_max[i] = stat_use[i];
-        }
+        /* Efficiency -- Apply the racial/class bonuses */
+        stat_use[i] = modify_stat_value(p_ptr->stat_max[i], bonus);
     }
 }
 /*

@@ -1667,12 +1667,8 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 		/* Extract modifier */
 		add = state->stat_add[i];
 
-		/* Maximize mode */
-		if (OPT(birth_maximize))
-		{
-			/* Modify the stats for race/class */
-			add += (p_ptr->race->r_adj[i] + p_ptr->class->c_adj[i]);
-		}
+		/* Modify the stats for race/class */
+		add += (p_ptr->race->r_adj[i] + p_ptr->class->c_adj[i]);
 
 		/* Extract the new "stat_top" value for the stat */
 		top = modify_stat_value(p_ptr->stat_max[i], add);

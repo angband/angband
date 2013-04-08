@@ -402,11 +402,9 @@ static void borg_notice_aux1(void)
 
         add = my_stat_add[i];
 
-        if (op_ptr->opt[OPT_birth_maximize])
-        {
-            /* Modify the stats for race/class */
-            add += (p_ptr->race->r_adj[i] + p_ptr->class->c_adj[i]);
-        }
+        /* Modify the stats for race/class */
+        add += (p_ptr->race->r_adj[i] + p_ptr->class->c_adj[i]);
+
         /* Extract the new "use_stat" value for the stat */
         use = modify_stat_value(my_stat_cur[i], add);
 
@@ -1771,28 +1769,22 @@ static void borg_notice_aux2(void)
         borg_skill[BI_AFUEL] += 1000;
 
     /* No need to *buy* stat increase potions */
-    if (my_stat_cur[A_STR] >= (18+100) + 10 * op_ptr->opt[OPT_birth_maximize] *
-        (p_ptr->race->r_adj[A_STR] + p_ptr->class->c_adj[A_STR]))
+    if (my_stat_cur[A_STR] >= (18+100) + 10 * (p_ptr->race->r_adj[A_STR] + p_ptr->class->c_adj[A_STR]))
         amt_add_stat[A_STR] += 1000;
 
-    if (my_stat_cur[A_INT] >= (18+100) + 10 * op_ptr->opt[OPT_birth_maximize] *
-        (p_ptr->race->r_adj[A_INT] + p_ptr->class->c_adj[A_INT]))
+    if (my_stat_cur[A_INT] >= (18+100) + 10 * (p_ptr->race->r_adj[A_INT] + p_ptr->class->c_adj[A_INT]))
          amt_add_stat[A_INT] += 1000;
 
-    if (my_stat_cur[A_WIS] >= (18+100) + 10 * op_ptr->opt[OPT_birth_maximize] *
-        (p_ptr->race->r_adj[A_WIS] + p_ptr->class->c_adj[A_WIS]))
+    if (my_stat_cur[A_WIS] >= (18+100) + 10 * (p_ptr->race->r_adj[A_WIS] + p_ptr->class->c_adj[A_WIS]))
         amt_add_stat[A_WIS] += 1000;
 
-    if (my_stat_cur[A_DEX] >= (18+100) + 10 * op_ptr->opt[OPT_birth_maximize] *
-        (p_ptr->race->r_adj[A_DEX] + p_ptr->class->c_adj[A_DEX]))
+    if (my_stat_cur[A_DEX] >= (18+100) + 10 * (p_ptr->race->r_adj[A_DEX] + p_ptr->class->c_adj[A_DEX]))
          amt_add_stat[A_DEX] += 1000;
 
-    if (my_stat_cur[A_CON] >= (18+100) + 10 * op_ptr->opt[OPT_birth_maximize] *
-        (p_ptr->race->r_adj[A_CON] + p_ptr->class->c_adj[A_CON]))
+    if (my_stat_cur[A_CON] >= (18+100) + 10 * (p_ptr->race->r_adj[A_CON] + p_ptr->class->c_adj[A_CON]))
         amt_add_stat[A_CON] += 1000;
 
-    if (my_stat_cur[A_CHR] >= (18+100) + 10 * op_ptr->opt[OPT_birth_maximize] *
-        (p_ptr->race->r_adj[A_CHR] + p_ptr->class->c_adj[A_CHR]))
+    if (my_stat_cur[A_CHR] >= (18+100) + 10 * (p_ptr->race->r_adj[A_CHR] + p_ptr->class->c_adj[A_CHR]))
          amt_add_stat[A_CHR] += 1000;
 
     /* No need to *buy* stat repair potions */

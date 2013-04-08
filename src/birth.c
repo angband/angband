@@ -165,55 +165,6 @@ static void load_roller_data(birther *player, birther *prev_player)
 
 
 /*
- * Adjust a stat by an amount.
- *
- * This just uses "modify_stat_value()" unless "maximize" mode is false,
- * and a positive bonus is being applied, in which case, a special hack
- * is used.
- */
-static int adjust_stat(int value, int amount)
-{
-	/* Negative amounts or maximize mode */
-	if ((amount < 0) || OPT(birth_maximize))
-	{
-		return (modify_stat_value(value, amount));
-	}
-
-	/* Special hack */
-	else
-	{
-		int i;
-
-		/* Apply reward */
-		for (i = 0; i < amount; i++)
-		{
-			if (value < 18)
-			{
-				value++;
-			}
-			else if (value < 18+70)
-			{
-				value += randint1(15) + 5;
-			}
-			else if (value < 18+90)
-			{
-				value += randint1(6) + 2;
-			}
-			else if (value < 18+100)
-			{
-				value++;
-			}
-		}
-	}
-
-	/* Return the result */
-	return (value);
-}
-
-
-
-
-/*
  * Roll for a characters stats
  *
  * For efficiency, we include a chunk of "calc_bonuses()".
@@ -257,24 +208,12 @@ static void get_stats(int stat_use[A_MAX])
 		bonus = p_ptr->race->r_adj[i] + p_ptr->class->c_adj[i];
 
 		/* Variable stat maxes */
-		if (OPT(birth_maximize))
-		{
-			/* Start fully healed */
-			p_ptr->stat_cur[i] = p_ptr->stat_max[i];
 
-			/* Efficiency -- Apply the racial/class bonuses */
-			stat_use[i] = modify_stat_value(p_ptr->stat_max[i], bonus);
-		}
+		/* Start fully healed */
+		p_ptr->stat_cur[i] = p_ptr->stat_max[i];
 
-		/* Fixed stat maxes */
-		else
-		{
-			/* Apply the bonus to the stat (somewhat randomly) */
-			stat_use[i] = adjust_stat(p_ptr->stat_max[i], bonus);
-
-			/* Save the resulting stat maximum */
-			p_ptr->stat_cur[i] = p_ptr->stat_max[i] = stat_use[i];
-		}
+		/* Efficiency -- Apply the racial/class bonuses */
+		stat_use[i] = modify_stat_value(p_ptr->stat_max[i], bonus);
 
 		p_ptr->stat_birth[i] = p_ptr->stat_max[i];
 	}
@@ -585,29 +524,10 @@ static void recalculate_stats(int *stats, int points_left)
 {
 	int i;
 
-	/* Process stats */
+	/* Variable stat maxes */
 	for (i = 0; i < A_MAX; i++)
-	{
-		/* Variable stat maxes */
-		if (OPT(birth_maximize))
-		{
-			/* Reset stats */
-			p_ptr->stat_cur[i] = p_ptr->stat_max[i] =
+		p_ptr->stat_cur[i] = p_ptr->stat_max[i] =
 				p_ptr->stat_birth[i] = stats[i];
-		}
-
-		/* Fixed stat maxes */
-		else
-		{
-			/* Obtain a "bonus" for "race" and "class" */
-			int bonus = p_ptr->race->r_adj[i] + p_ptr->class->c_adj[i];
-
-			/* Apply the racial/class bonuses */
-			p_ptr->stat_cur[i] = p_ptr->stat_max[i] = 
-				p_ptr->stat_birth[i] =
-				modify_stat_value(stats[i], bonus);
-		}
-	}
 
 	/* Gold is inversely proportional to cost */
 	p_ptr->au_birth = STARTING_GOLD + (50 * points_left);

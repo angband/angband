@@ -85,7 +85,7 @@ extern const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER];
 #define OPT_score_know				(OPT_SCORE+4)
 #define OPT_score_live				(OPT_SCORE+5)
 
-#define OPT_birth_maximize          (OPT_BIRTH+0)
+/* #define OPT_birth_maximize          (OPT_BIRTH+0) */
 #define OPT_birth_randarts          (OPT_BIRTH+1)
 #define OPT_birth_no_recall           (OPT_BIRTH+2)
 #define OPT_birth_small_range         (OPT_BIRTH+3)

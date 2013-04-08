@@ -65,7 +65,6 @@ const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 
 	/* Birth/Difficulty */
 	{
-		OPT_birth_maximize,
 		OPT_birth_randarts,
 		OPT_birth_keep_randarts,
 		OPT_birth_ai_smell,
@@ -81,6 +80,7 @@ const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_birth_no_stairs,
 		OPT_birth_no_feelings,
 		OPT_birth_no_selling,
+		OPT_NONE,
 	},
 
 	/* Cheat */
@@ -164,7 +164,7 @@ static const struct option options[OPT_MAX] =
 { NULL,                  NULL,                                          FALSE }, /* 47 */
 { NULL,                  NULL,                                          FALSE }, /* 48 */
 { NULL,                  NULL,                                          FALSE }, /* 49 */
-{ "birth_maximize",      "Maximise effect of race/class bonuses",       TRUE },  /* 50 */
+{ NULL,                  NULL,                                          FALSE }, /* 50 */
 { "birth_randarts",      "Randomise the artifacts (except a very few)", FALSE }, /* 51 */
 { "birth_no_recall",     "Word of Recall has no effect",                FALSE }, /* 52 */
 { "birth_small_range",   "Halve view and spell distances",              FALSE }, /* 53 */
