@@ -6,7 +6,6 @@
 #include "z-textblock.h"
 #include "z-quark.h"
 #include "z-bitflag.h"
-#include "object/obj-flag.h"
 #include "game-cmd.h"
 #include "cave.h"
 

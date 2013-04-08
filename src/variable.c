@@ -475,6 +475,11 @@ object_kind *k_info;
 object_base *kb_info;
 
 /*
+ * The artifact arrays
+ */
+artifact_type *a_info;
+
+/*
  * The ego-item arrays
  */
 ego_item_type *e_info;

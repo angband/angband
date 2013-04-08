@@ -23,7 +23,6 @@
 #include "game-event.h"
 #include "game-cmd.h"
 #include "history.h"
-#include "object/artifact.h"
 #include "object/inventory.h"
 #include "object/tvalsval.h"
 #include "object/object.h"
@@ -410,9 +409,7 @@ void player_init(struct player *p)
 	/* Start with no artifacts made yet */
 	for (i = 0; z_info && i < z_info->a_max; i++)
 	{
-		artifact_type *a_ptr = artifacts_get(artifacts, i);
-		if (!a_ptr)
-			continue;
+		artifact_type *a_ptr = &a_info[i];
 		a_ptr->created = FALSE;
 		a_ptr->seen = FALSE;
 	}

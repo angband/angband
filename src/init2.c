@@ -30,7 +30,6 @@
 #include "monster/mon-init.h"
 #include "monster/mon-msg.h"
 #include "monster/mon-util.h"
-#include "object/artifact.h"
 #include "object/object.h"
 #include "object/slays.h"
 #include "object/tvalsval.h"
@@ -859,8 +858,6 @@ static errr run_parse_a(struct parser *p) {
 static errr finish_parse_a(struct parser *p) {
 	struct artifact *a;
 
-	artifacts = artifacts_new();
-
 	/* scan the list for the max id */
 	z_info->a_max = 0;
 	a = parser_priv(p);
@@ -871,8 +868,17 @@ static errr finish_parse_a(struct parser *p) {
 	}
 
 	/* allocate the direct access list and copy the data to it */
-	for (a = parser_priv(p); a; a = a->next)
-		artifacts_add(artifacts, a);
+	a_info = mem_zalloc((z_info->a_max+1) * sizeof(*a));
+	for (a = parser_priv(p); a; a = n) {
+		memcpy(&a_info[a->aidx], a, sizeof(*a));
+		n = a->next;
+		if (n)
+			a_info[a->aidx].next = &a_info[n->aidx];
+		else
+			a_info[a->aidx].next = NULL;
+
+		mem_free(a);
+	}
 	z_info->a_max += 1;
 
 	parser_destroy(p);
@@ -881,7 +887,13 @@ static errr finish_parse_a(struct parser *p) {
 
 static void cleanup_a(void)
 {
-
+	int idx;
+	for (idx = 0; idx < z_info->a_max; idx++) {
+		string_free(a_info[idx].name);
+		mem_free(a_info[idx].effect_msg);
+		mem_free(a_info[idx].text);
+	}
+	mem_free(a_info);
 }
 
 static struct file_parser a_parser = {

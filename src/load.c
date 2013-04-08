@@ -22,7 +22,6 @@
 #include "history.h"
 #include "monster/mon-make.h"
 #include "monster/mon-spell.h"
-#include "object/artifact.h"
 #include "object/tvalsval.h"
 #include "savefile.h"
 #include "squelch.h"
@@ -145,7 +144,7 @@ static int rd_item_5(object_type *o_ptr)
 	if (art_idx >= z_info->a_max)
 		return -1;
 	if (art_idx > 0)
-		o_ptr->artifact = artifacts_get(artifacts, art_idx);
+		o_ptr->artifact = &a_info[art_idx];
 
 	/* Success */
 	return (0);
@@ -253,7 +252,7 @@ static int rd_item_4(object_type *o_ptr)
 	if (art_idx >= z_info->a_max)
 		return -1;
 	if (art_idx > 0)
-		o_ptr->artifact = artifacts_get(artifacts, art_idx);
+		o_ptr->artifact = &a_info[art_idx];
 
 	/* Success */
 	return (0);
@@ -361,7 +360,7 @@ static int rd_item_3(object_type *o_ptr)
 	if (art_idx >= z_info->a_max)
 		return -1;
 	if (art_idx > 0)
-		o_ptr->artifact = artifacts_get(artifacts, art_idx);
+		o_ptr->artifact = &a_info[art_idx];
 
 	/* Repair non "wearable" items */
 	if (!wearable_p(o_ptr))
@@ -529,7 +528,7 @@ static int rd_item_2(object_type *o_ptr)
 	if (art_idx >= z_info->a_max)
 		return -1;
 	if (art_idx > 0)
-		o_ptr->artifact = artifacts_get(artifacts, art_idx);
+		o_ptr->artifact = &a_info[art_idx];
 
 	/* Repair non "wearable" items */
 	if (!wearable_p(o_ptr))
@@ -685,7 +684,7 @@ static int rd_item_1(object_type *o_ptr)
 	if (art_idx >= z_info->a_max)
 		return -1;
 	if (art_idx > 0)
-		o_ptr->artifact = artifacts_get(artifacts, art_idx);
+		o_ptr->artifact = &a_info[art_idx];
 
 	/* Repair non "wearable" items */
 	if (!wearable_p(o_ptr))
@@ -1044,21 +1043,13 @@ int rd_artifacts(void)
 	for (i = 0; i < tmp16u; i++)
 	{
 		byte tmp8u;
-		struct artifact *a = artifacts_get(artifacts, i);
-
-		if (!a) {
-			rd_byte(&tmp8u);
-			rd_byte(&tmp8u);
-			rd_byte(&tmp8u);
-			continue;
-		}
 		
 		rd_byte(&tmp8u);
-		a->created = tmp8u;
+		a_info[i].created = tmp8u;
 		rd_byte(&tmp8u);
-		a->seen = tmp8u;
+		a_info[i].seen = tmp8u;
 		rd_byte(&tmp8u);
-		a->everseen = tmp8u;
+		a_info[i].everseen = tmp8u;
 		rd_byte(&tmp8u);
 	}
 
@@ -1972,7 +1963,7 @@ int rd_history(void)
 		rd_byte(&art_name);
 		rd_string(text, sizeof(text));
 		
-		history_add_full(type, artifacts_get(artifacts, art_name), dlev, clev, turnno, text);
+		history_add_full(type, &a_info[art_name], dlev, clev, turnno, text);
 	}
 
 	return 0;

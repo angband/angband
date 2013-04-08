@@ -3,7 +3,6 @@
 /* Purpose: Object and Spell routines for the Borg -BEN- */
 
 #include "angband.h"
-#include "object/artifact.h"
 #include "object/tvalsval.h"
 #include "cave.h"
 
@@ -1279,7 +1278,7 @@ bool borg_object_star_id( void )
                     borg_keypresses("Disn");
                 }
 				/* TR2_activate was removed */
-				if ((item->name1 && artifacts_get(artifacts, item->name1)->effect) ||
+				if ((item->name1 && a_info[item->name1].effect) ||
 				    (k_info[item->kind].effect))
 				{
                     borg_keypresses("Actv");
@@ -1340,7 +1339,7 @@ static s32b borg_object_value_known(borg_item *item)
     /* Hack -- use artifact base costs */
     if (item->name1)
     {
-        artifact_type *a_ptr = artifacts_get(artifacts, item->name1);
+        artifact_type *a_ptr = &a_info[item->name1];
 
         /* Worthless artifacts */
         if (!a_ptr->cost) return (0L);
@@ -2529,8 +2528,8 @@ bool borg_activate_artifact(int activation)
         borg_item *item = &borg_items[i];
 
 		/* Skip artifacts w/o activation */
-	if (!item->name1 || artifacts_get(artifacts, item->name1)->effect != activation)
-		continue;
+		if (!item->name1 || a_info[item->name1].effect != activation)
+			continue;
 
         /* Check charge */
         if (item->timeout) continue;
@@ -2588,11 +2587,11 @@ bool borg_equips_artifact(int activation)
         /* if (!artifact_p(item)) continue; */
 
 		/* get the item */
-		a_ptr = artifacts_get(artifacts, item->name1);
+		a_ptr = &a_info[item->name1];
 
 		/* Skip artifacts w/o activation */
 		/* TR2_activate was removed */
-		if (!artifacts_get(artifacts, item->name1)->effect &&
+		if (!a_info[item->name1].effect &&
 		    !k_info[item->kind].effect) continue;
 
 
@@ -3962,7 +3961,7 @@ void borg_init_3(void)
     {
         object_type hack;
 
-        artifact_type *a_ptr = artifacts_get(artifacts, i);
+        artifact_type *a_ptr = &a_info[i];
 
         char *name = (a_ptr->name);
 
@@ -4037,7 +4036,7 @@ void borg_init_3(void)
     /* Collect the "artifact names" */
     for (k = 1; k < z_info->a_max; k++)
     {
-        artifact_type *a_ptr = artifacts_get(artifacts, k);
+        artifact_type *a_ptr = &a_info[k];
 
         /* Skip non-items */
         if (!a_ptr->name) continue;
