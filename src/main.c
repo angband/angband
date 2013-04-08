@@ -169,7 +169,7 @@ static const struct {
 	{ "pref", &ANGBAND_DIR_PREF, TRUE },
 	{ "xtra", &ANGBAND_DIR_XTRA, TRUE },
 	{ "user", &ANGBAND_DIR_USER, TRUE },
-	{ "save", &ANGBAND_DIR_EDIT, FALSE },
+	{ "save", &ANGBAND_DIR_SAVE, FALSE },
 };
 
 /*
@@ -453,12 +453,27 @@ int main(int argc, char *argv[])
 				if (*arg) arg_graphics = atoi(arg);
 				break;
 
-			case 'u':
-				if (!*arg) goto usage;
+			case 'u': {
 
-				/* Get the savefile name */
-				my_strcpy(op_ptr->full_name, arg, sizeof(op_ptr->full_name));
+				if (!*arg) goto usage;
+				my_strcpy(op_ptr->full_name, arg, sizeof op_ptr->full_name);
+
+				/* The difference here is because on setgid we have to be
+				 * careful to only let the player have savefiles stored in
+				 * the central save directory.  Sanitising input using
+				 * player_safe_name() removes anything like that.
+				 *
+				 * But if the player is running with per-user saves, they
+				 * can do whatever the hell they want.
+				 */
+#ifdef SETGID
+				savefile_set_name(player_safe_name(p_ptr));
+#else
+				savefile_set_name(arg);
+#endif /* SETGID */
+
 				continue;
+			}
 
 			case 'm':
 				if (!*arg) goto usage;
@@ -566,16 +581,17 @@ int main(int argc, char *argv[])
 #ifdef UNIX
 
 	/* Get the "user name" as a default player name, unless set with -u switch */
-	if (!op_ptr->full_name[0])
+	if (!op_ptr->full_name[0]) {
 		user_name(op_ptr->full_name, sizeof(op_ptr->full_name), player_uid);
+
+		/* Set the savefile to load */
+		savefile_set_name(player_safe_name(p_ptr));
+	}
 
 	/* Create any missing directories */
 	create_needed_dirs();
 
 #endif /* UNIX */
-
-	/* Process the player name */
-	process_player_name(TRUE);
 
 	/* Try the modules in the order specified by sound_modules[] */
 	for (i = 0; i < (int)N_ELEMENTS(sound_modules); i++)

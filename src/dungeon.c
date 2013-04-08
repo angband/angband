@@ -1561,7 +1561,7 @@ static void process_some_user_pref_files(void)
 	(void)process_pref_file("user.prf", TRUE, TRUE);
 
 	/* Get the "PLAYER.prf" filename */
-	(void)strnfmt(buf, sizeof(buf), "%s.prf", op_ptr->base_name, TRUE);
+	(void)strnfmt(buf, sizeof(buf), "%s.prf", player_safe_name(p_ptr), TRUE);
 
 	/* Process the "PLAYER.prf" file */
 	(void)process_pref_file(buf, TRUE, TRUE);
@@ -1586,9 +1586,8 @@ static void process_some_user_pref_files(void)
  * character, then a new game will be started.
  *
  * Several platforms (Windows, Macintosh, Amiga) start brand new games
- * with "savefile" and "op_ptr->base_name" both empty, and initialize
- * them later based on the player name.  To prevent weirdness, we must
- * initialize "op_ptr->base_name" to "PLAYER" if it is empty.
+ * with "savefile" empty, and initialize it later based on the player
+ * name.
  *
  * Note that we load the RNG state from savefiles (2.8.0 or later) and
  * so we only initialize it if we were unable to load it.  The loading
@@ -1661,10 +1660,6 @@ void play_game(void)
 		character_dungeon = FALSE;
 	}
 
-	/* Hack -- Default base_name */
-	if (!op_ptr->base_name[0])
-		my_strcpy(op_ptr->base_name, "PLAYER", sizeof(op_ptr->base_name));
-
 
 	/* Init RNG */
 	if (Rand_quick)
@@ -1719,13 +1714,9 @@ void play_game(void)
 	p_ptr->object_idx = p_ptr->object_kind_idx = NO_OBJECT;
 	p_ptr->monster_race = NULL;
 
-	/* Normal machine (process player name) */
-	if (savefile[0])
-		process_player_name(FALSE);
-
-	/* Weird machine (process player name, pick savefile name) */
-	else
-		process_player_name(TRUE);
+	/* Set the savefile name if it's not already set */
+	if (!savefile[0])
+		savefile_set_name(player_safe_name(p_ptr));
 
 	/* Stop the player being quite so dead */
 	p_ptr->is_dead = FALSE;
