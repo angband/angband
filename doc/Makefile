@@ -8,6 +8,8 @@ RST2LATEX := rst2latex
 PDFLATEX := pdflatex
 MAKEINDEX := makeindex
 
+DOC = manual.html manual.pdf
+
 SECTIONS := general birth playing attack dungeon customize option command \
             debug ../../thanks version readme
 
@@ -51,3 +53,4 @@ manual.pdf: manual.tex
 		${COMPILE_FAILED}; \
 	fi
 
+install: manual.html

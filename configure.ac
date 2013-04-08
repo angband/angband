@@ -115,7 +115,7 @@ if test "x$with_private_dirs" != "x"; then
 	AC_DEFINE(USE_PRIVATE_PATHS, 1, [Define to use private save and score paths.])
 fi
 
-# Only change bindir  it's the configure-supplied default, which handily doesn't expand exec_prefix
+# Only change bindir if it's the configure-supplied default, which handily doesn't expand exec_prefix
 if test "x$bindir" = "x\${exec_prefix}/bin"; then
   bindir=${exec_prefix}/games
 fi
@@ -131,6 +131,7 @@ case "/$configpath" in
 	*)  MY_EXPAND_DIR(configdir, "$configpath/") ;;
 esac
 
+
 if test "x$with_no_install" != "x"; then
 	libpath="${PWD}/lib/"
 	bindir=".."
@@ -144,6 +145,20 @@ case "/$libpath" in
 esac
 
 if test "x$with_no_install" != "x"; then
+	docdir="${PWD}/doc/"
+else
+	# Only change docdir if it's the configure-supplied default, which handily doesn't expand prefix
+	if test "x$docdir" = "x\${datarootdir}/doc/\${PACKAGE_TARNAME}"; then
+		docdir=${datarootdir}/doc/${PACKAGE}
+	fi
+fi
+
+case "/$docdir" in
+ 	*/) MY_EXPAND_DIR(docdatadir, "$docdir")  ;;
+	*)  MY_EXPAND_DIR(docdatadir, "$docdir/") ;;
+esac
+
+if test "x$with_no_install" != "x"; then
 	varpath="${PWD}/lib/"
 else
 	varpath="${localstatedir}/games/${PACKAGE}/"
@@ -154,9 +169,11 @@ case "/$varpath" in
 	*)  MY_EXPAND_DIR(vardatadir, "$varpath/") ;;
 esac
 
+
 AC_SUBST([configdir])
 AC_SUBST([libdatadir])
 AC_SUBST([vardatadir])
+AC_SUBST([docdatadir])
 
 AC_DEFINE_UNQUOTED([DEFAULT_CONFIG_PATH], "${configdir}", [Path to the game's configuration data])
 AC_DEFINE_UNQUOTED([DEFAULT_LIB_PATH], "${libdatadir}", [Path to the game's lib directory])
@@ -362,6 +379,7 @@ echo "  Install path:                           ${displayedprefix}"
 echo "  binary path:                            ${bindir}"
 echo "  config path:                            ${configdir}"
 echo "  lib path:                               ${libdatadir}"
+echo "  doc path:                               ${docdatadir}"
 echo "  var path:                               ${displayedvardatadir}"
 
 if test "x$wsetgid" = "xyes"; then

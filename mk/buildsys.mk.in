@@ -478,6 +478,19 @@ install: ${SHARED_LIB} ${STATIC_LIB} ${STATIC_PIC_LIB} ${PLUGIN} ${PROG} install
 		fi \
 	done
 
+	for i in ${DOC}; do \
+		${INSTALL_STATUS}; \
+		if [ -f $$i ]; then \
+			if ${MKDIR_P} $$(dirname ${DESTDIR}${docdatadir}/$$i) && ${INSTALL} -m 644 $$i ${DESTDIR}${docdatadir}/$$i; then \
+				${INSTALL_OK}; \
+			else \
+				${INSTALL_FAILED}; \
+			fi \
+		else \
+			${INSTALL_SKIP}; \
+		fi \
+	done
+
 	for i in ${PROG}; do \
 		${INSTALL_STATUS}; \
 		if ${MKDIR_P} ${DESTDIR}${bindir} && ${INSTALL} -m 755 $$i ${DESTDIR}${bindir}/$$i; then \
@@ -663,6 +676,7 @@ LINK_FAILED = err=$$?; printf "@TERM_EL@@TERM_SETAF1@Failed to link @TERM_BOLD@$
 INSTALL_STATUS = printf "@TERM_EL@@TERM_SETAF3@Installing @TERM_BOLD@$$i@TERM_SGR0@@TERM_SETAF3@...@TERM_SGR0@\r"
 INSTALL_OK = printf "@TERM_EL@@TERM_SETAF2@Successfully installed @TERM_BOLD@$$i@TERM_SGR0@@TERM_SETAF2@.@TERM_SGR0@\n"
 INSTALL_FAILED = err=$$?; printf "@TERM_EL@@TERM_SETAF1@Failed to install @TERM_BOLD@$$i@TERM_SGR0@@TERM_SETAF1@!@TERM_SGR0@\n"; exit $$err
+INSTALL_SKIP = printf "Skipping $$i\n"
 DELETE_OK = printf "@TERM_EL@@TERM_SETAF4@Deleted @TERM_BOLD@$$i@TERM_SGR0@@TERM_SETAF4@.@TERM_SGR0@\n"
 DELETE_FAILED = err=$$?; printf "@TERM_EL@@TERM_SETAF1@Failed to delete @TERM_BOLD@$$i@TERM_SGR0@@TERM_SETAF1@!@TERM_SGR0@\n"; exit $$err
 

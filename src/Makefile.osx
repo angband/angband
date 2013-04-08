@@ -184,6 +184,7 @@ dist: install
 	@rm -rf disttemp*
 	mkdir -p disttemp/Docs
 	cp ../changes.txt ../copying.txt ../faq.txt ../readme.txt disttemp/Docs
+	-cp ../doc/manual.html ../doc/manual.pdf disttemp/Docs
 	cp -R -p "$(APPBNDL)" disttemp
 	SetFile -a B disttemp/$(APPNAME)
 
