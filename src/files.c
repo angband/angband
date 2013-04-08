@@ -1124,19 +1124,29 @@ errr file_character(const char *path, bool full)
 	file_putf(fp, "  [Options]\n\n");
 
 	/* Dump options */
-	for (i = OPT_BIRTH; i < OPT_BIRTH + N_OPTS_BIRTH; i++)
-	{
-		if (option_name(i))
-		{
-			file_putf(fp, "%-45s: %s (%s)\n",
-			        option_desc(i),
-			        op_ptr->opt[i] ? "yes" : "no ",
-			        option_name(i));
+	for (i = 0; i < OPT_PAGE_MAX - 1; i++) {
+		int j;
+		const char *title;
+		switch (i) {
+			case 0: title = "Interface"; break;
+			case 1: title = "Warning"; break;
+			case 2: title = "Birth"; break;
 		}
-	}
 
-	/* Skip some lines */
-	file_putf(fp, "\n\n");
+		file_putf(fp, "  [%s]\n\n", title);
+		for (j = 0; j < OPT_PAGE_PER; j++) {
+			int opt = option_page[i][j];
+			if (!option_name(opt)) continue;
+
+			file_putf(fp, "%-45s: %s (%s)\n",
+			        option_desc(opt),
+			        op_ptr->opt[opt] ? "yes" : "no ",
+			        option_name(opt));
+		}
+
+		/* Skip some lines */
+		file_putf(fp, "\n");
+	}
 
 	file_close(fp);
 
