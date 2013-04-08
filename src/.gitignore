@@ -3,3 +3,5 @@
 autoconf.h
 autoconf.h.in
 angband
+config
+*.o.*
