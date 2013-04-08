@@ -856,7 +856,7 @@ static errr run_parse_a(struct parser *p) {
 }
 
 static errr finish_parse_a(struct parser *p) {
-	struct artifact *a;
+	struct artifact *a, *n;
 
 	/* scan the list for the max id */
 	z_info->a_max = 0;
