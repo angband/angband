@@ -169,7 +169,7 @@ static const struct {
 	{ "pref", &ANGBAND_DIR_PREF, TRUE },
 	{ "xtra", &ANGBAND_DIR_XTRA, TRUE },
 	{ "user", &ANGBAND_DIR_USER, TRUE },
-	{ "save", &ANGBAND_DIR_EDIT, FALSE },
+	{ "save", &ANGBAND_DIR_SAVE, FALSE },
 };
 
 /*
