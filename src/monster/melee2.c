@@ -624,9 +624,6 @@ static bool get_moves_aux(struct cave *c, struct monster *m_ptr, int *yp, int *x
 	{
 		/* The player has never been near the monster grid */
 		if (c->when[y1][x1] == 0) return (FALSE);
-
-		/* The monster is not allowed to track the player */
-		if (!OPT(birth_ai_smell)) return (FALSE);
 	}
 
 	/* Monster is too far away to notice the player */
