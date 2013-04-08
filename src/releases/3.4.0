@@ -1,0 +1,158 @@
+markdown = "true"
+Downloads
+=========
+ - [Source code][1]
+ - [Windows][2]
+ - [OS X][3] (10.5+)
+
+[1]:http://rephial.org/downloads/3.4/angband-v3.4.0.tar.gz "Source tarball, 18M"
+[2]:http://rephial.org/downloads/3.4/angband-v3.4.0-win.zip "Windows port, 16M zip file"
+[3]:http://rephial.org/downloads/3.4/Angband-v3.4.0-osx.dmg "Max OS X port, 17M .dmg file"
+
+Background
+==========
+Angband 3.4.0 was released on 14th September 2012, almost a year after the previous version.  Over the previous year, there was extensive discussion about the game having become much easier compared to 2.9.0, or even 3.0.9, and this resulted in a drive to make the game harder.  However, this was not the sole focus of this release and there were many other large changes too:
+
+* A new 64x64 tile set (by Shockbolt)
+* Many new monster pits and nests
+* Fuzzy detection of objects
+* Upgrade to UTF-8
+* Angels replaced with Ainu
+* Removal of all weakly cursed items
+* Torches now radius 1 light
+* Changes to monster summoning
+* Deep descent scrolls became more dangerous
+* New OS X frontend using Cocoa
+
+After this release, the pace of change in the game dropped dramatically.  This is partly because of the birth of two competing projects: v4, an offshoot of V, and Pyrel, an attempt at rewriting Angband in Python.  Both of these were being contributed to by the same development team that had formed around Angband, and as a result Angband development dropped off after this release, with the previously regular changes in 'nightly' builds being reduced to a trickle at best.
+
+Changelist
+==========
+
+Bugs fixed
+----------
+* Fix opening chests in stacks (Noz)
+* Fix saving and loading so that savefile.{old|new} are ignored
+* Fix loading of graphics pref files in non-graphics mode (Blubaron)
+* Prevent spoiler calls messing with everseen info
+* Stop the hidden level-feeling tiles being displayed by accident
+* Ensure that devices IDd on unseen monsters provide feedback
+* Prevent excessive durations of monster timed effects
+* Increase MAX_ITEMLIST to cope with new ignore/squelch approach
+* Correct logic error in randart slay frequency calculation
+* Mimics behave consistently when hit by friendly fire
+* Remove pvals properly if they end up at zero (thanks PowerWyrm)
+* Stop scrolls of light segfaulting on BSD (thanks vext01)
+* Make sure that turning off randarts at birth works properly
+* Fix randarts (blows/shots supercharge, RES_STUN)
+* Use the displayed damage dice for damage calculation
+* Avoid div/0 crash in project_m for stun attacks
+* Make to-hit values IDd by shooting (thanks artes)
+* Avoid pricing errors for negative pvals (thanks PowerWyrm)
+* Remove ghost pvals on randarts
+* Initialise random name tables properly
+* Fix buggy refilling behavior
+* Partial fix to allow pick-up in darkness
+* Refresh screen after opening chests
+* Make pref file writing work with setgid installs
+* Save progress towards level feelings
+* Fix buggy earthquake logic
+* Make Heroism and Berserk spells grant boldness, like the potions
+* Avoid crash on leaving level while hallucinating (thanks PowerWyrm)
+* Prevent crash when 'r'ecalling the Everburning ego
+* Correct door fiddling/bashing messages for visible monsters
+* Fix summon_specific so it fails properly
+* Avoid crash with "reset layout" option
+* Avoid crash when clicking squelch menu 
+
+User interface
+--------------
+* Describe each HATES_ flag only if IGNORE_ flag is not present
+* Improve the warning message for !-incribed items
+* Darken the "Study" message when current books have no new spells
+* Remove HIDE_TYPE
+* Make "purple uniques" display correctly
+* Nomad's updated tiles
+* Make shift+keypad work in the GTK port (thanks to Daniel Santos)
+* Save squelch status of items
+* Blubaron's improved tile support (graphics.txt)
+* New Cocoa front-end for Macs (thanks ridiculous_fish)
+* Blubaron's improved mouse support (Windows/SDL)
+* Remove randarts "restarting generation" messages
+* Display what monsters are known not to resist (thanks David3x3x3)
+* Many more fixes and enhancements from Blubaron
+* Add Shockbolt's 64x64 tileset
+* Even more improvements from Blubaron
+* Add Andrew White's borg
+* Nick's UTF8 glyph picker
+* Fix GCU port to recognise backspace and del as distinct keys
+* Blubaron's default layout for Windows
+* Blubaron's store UI improvement
+
+Gameplay changes
+----------------
+* Trap detection now detects traps on chests (thanks artes)
+* Prevent instadeaths from IDing summon scrolls/staves by use
+* Make enchant/disenchant more consistent
+* Objects on the floor no longer prevent trap creation
+* DRAIN_EXP now drains xp in proportion to total xp (thanks artes)
+* OF_LIGHT is now a pval flag
+* All items pseudo on pickup from after cl20
+* Rebalance stealth and monster detection (thanks Jens & fizzix)
+* Revisit stacks of consumables (thanks Jens)
+* Rebalance to-hit vs. AC (take two, thanks Jens)
+* Ensure that PDSM can't get the Resistance ego
+* Move to fuzzy detection for objects not in LOS
+* fizzix's summoning changes
+* et seq. CunningGabe's improvements to pits
+* fizzix's animal toughening tweaks
+* Angels replaced by Ainu (thanks to Jeff Greene)
+* Increase max penalty on =Mouse, remove dam&AC mods on =Dog
+* CunningGabe's mimic updates
+* Various difficulty tweaks:
+  - reduce MAX_STACK_SIZE to 40
+  - make DSM slightly rarer/deeper
+  - make stuff more expensive to buy
+  - reduce drops from apprentices/cutpurses
+  - prevent Deep Descent and Teleport Level being sold in stacks
+* takkaria's lighting changes (torches radius 1, Phial radius 2)
+* fizzix's birth changes (fewer birth points, fairer class bonuses)
+* artes's changes to monsters with poison resistance
+* Make failed special artifacts good instead of great
+* Remove DROP_GOOD from all non-uniques
+* Make Deep Descent a timed effect (like recall) and drop 250'
+* Allow PASS_WALL monsters to revert to normal pathing near permarock
+* Make object feelings react more to single great objects
+* Make artifacts give a minimum feeling of "worthwhile"
+* Reduce good/great chances for item generation
+* Destruction effects no longer destroy stairs
+* Nick's small_device option for reduce range and sight
+* Remove all remove curse items and spells (except *remove curse*)
+
+Coding changes
+--------------
+* Switch over to UTF-8 (thanks Noz)
+* Add desktop entries to source and buildsystem (Noz)
+* Split describe_combat (thanks artes)
+* Change S_IREAD and S_IWRITE for Android compatibility
+* Remove the now-redundant SHOW_MODS flag
+* Aerdan's updates to buildsys
+* CunningGabe's cleanup of monster code
+* Update wiz-stats
+* Remove most of limits.txt
+* pkg_deb script now excludes non-DFSG wav files
+* Replaced many indices with pointers in function calls (ongoing)
+* Remove all uses of %^s and use my_strcap() instead
+* Enable MinGW to use the buildsys, and other improvements (Noz)
+* Various improvements to Carbon and Cocoa ports (myshkin)
+
+Documentation changes
+---------------------
+* Convert in-game docs to RST (thanks fph)
+* Document the "wipe recall" wizmode command
+* Instructions for compiling on various platforms
+
+Thanks to:
+==========
+
+Aerdan, blubaron, buzzkill, CunningGabe, david3x3x3, Derakon, d_m, elly, fizzix magnate, myshkin, Nick, noz, Shockbolt, and takkaria
