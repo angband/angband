@@ -278,7 +278,7 @@ static void reset_artifacts(void)
 	}
 
 	for (i = 0; i < z_info->a_max; i++)
-		a_info[i].created = FALSE;
+		artifacts_get(artifacts, i)->created = FALSE;
 
 }
 
@@ -431,7 +431,7 @@ static int stats_dump_artifacts(void)
 
 	for (idx = 0; idx < z_info->a_max; idx++)
 	{
-		artifact_type *a_ptr = &a_info[idx];
+		struct artifact *a_ptr = artifacts_get(artifacts, idx);
 
 		if (!a_ptr->name) continue;
 
@@ -1595,9 +1595,10 @@ static errr run_stats(void)
 		a_info_save = mem_zalloc(z_info->a_max * sizeof(artifact_type));
 		for (i = 0; i < z_info->a_max; i++)
 		{
-			if (!a_info[i].name) continue;
+			struct artifact *a = artifacts_get(artifacts, i);
+			if (!a) continue;
 
-			memcpy(&a_info_save[i], &a_info[i], sizeof(artifact_type));
+			memcpy(&a_info_save[i], a, sizeof(artifact_type));
 		}
 	}
 
@@ -1619,7 +1620,8 @@ static errr run_stats(void)
 		{
 			for (i = 0; i < z_info->a_max; i++)
 			{
-				memcpy(&a_info[i], &a_info_save[i], sizeof(artifact_type));
+				struct artifact *a = artifacts_get(artifacts, i);
+				memcpy(a, &a_info_save[i], sizeof(artifact_type));
 			}
 		}
 

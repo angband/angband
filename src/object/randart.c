@@ -17,6 +17,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
+#include "object/artifact.h"
 #include "object/slays.h"
 #include "object/tvalsval.h"
 #include "object/pval.h"
@@ -322,7 +323,7 @@ static errr init_names(void)
 	{
 		char desc[128] = "Based on ";
 
-		a = &a_info[i];
+		a = artifacts_get(artifacts, i);
 		if (!a->tval || !a->sval || !a->name) continue;
 
 		if (prefix(a->name, "of Power"))
@@ -360,7 +361,7 @@ static s32b artifact_power(int a_idx)
 	file_putf(log_file, "********** ENTERING EVAL POWER ********\n");
 	file_putf(log_file, "Artifact index is %d\n", a_idx);
 
-	if (!make_fake_artifact(&obj, &a_info[a_idx]))
+	if (!make_fake_artifact(&obj, artifacts_get(artifacts, a_idx)))
 		return 0;
 
 	object_desc(buf, 256*sizeof(char), &obj, ODESC_PREFIX | ODESC_FULL | ODESC_SPOIL);
@@ -401,7 +402,7 @@ static void store_base_power (void)
 			j--;
 
 		if (!base_power[i]) continue;
-		a_ptr = &a_info[i];
+		a_ptr = artifacts_get(artifacts, i);
 		k_ptr = lookup_kind(a_ptr->tval, a_ptr->sval);
 		base_item_level[i] = k_ptr->level;
 		base_item_prob[i] = k_ptr->alloc_prob;
@@ -418,7 +419,7 @@ static void store_base_power (void)
 	/* ToDo: replace this with full combination tracking */
 	for (i = 0; i < z_info->a_max; i++)
 	{
-		switch (a_info[i].tval)
+		switch (artifacts_get(artifacts, i)->tval)
 		{
 		case TV_SWORD:
 		case TV_POLEARM:
@@ -463,7 +464,7 @@ static void store_base_power (void)
  */
 static object_kind *choose_item(int a_idx)
 {
-	artifact_type *a_ptr = &a_info[a_idx];
+	artifact_type *a_ptr = artifacts_get(artifacts, a_idx);
 	int tval = 0, sval = 0, i = 0;
 	object_kind *k_ptr;
 	s16b r;
@@ -730,7 +731,7 @@ static void parse_frequencies(void)
 	{
 		file_putf(log_file, "Current artifact index is %d\n", i);
 
-		a_ptr = &a_info[i];
+		a_ptr = artifacts_get(artifacts, i);
 
 		/* Special cases -- don't parse these! */
 		if ((i == ART_POWER) ||
@@ -2714,7 +2715,7 @@ static void do_curse(artifact_type *a_ptr)
  */
 static void scramble_artifact(int a_idx)
 {
-	artifact_type *a_ptr = &a_info[a_idx];
+	artifact_type *a_ptr = artifacts_get(artifacts, a_idx);
 	artifact_type a_old;
 	object_kind *k_ptr;
 	s32b power;
@@ -3020,7 +3021,7 @@ static bool artifacts_acceptable(void)
 
 	for (i = ART_MIN_NORMAL; i < z_info->a_max; i++)
 	{
-		switch (a_info[i].tval)
+		switch (artifacts_get(artifacts, i)->tval)
 		{
 			case TV_SWORD:
 				swords--; break;

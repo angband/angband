@@ -24,6 +24,7 @@
 #include "monster/mon-make.h"
 #include "monster/mon-util.h"
 #include "monster/monster.h"
+#include "object/artifact.h"
 #include "object/tvalsval.h"
 #include "ui-event.h"
 #include "ui-menu.h"
@@ -652,7 +653,7 @@ static void wiz_tweak_item(object_type *o_ptr)
 	if (!get_string(p, tmp_val, 6)) return;
 	val = atoi(tmp_val);
 	if (val) {
-		o_ptr->artifact = &a_info[val];
+		o_ptr->artifact = artifacts_get(artifacts, val);
 		copy_artifact_data(o_ptr, o_ptr->artifact);
 	} else
 		o_ptr->artifact = 0;
@@ -1134,7 +1135,7 @@ static void wiz_create_artifact(int a_idx)
 	object_type object_type_body;
 	object_kind *kind;
 
-	artifact_type *a_ptr = &a_info[a_idx];
+	artifact_type *a_ptr = artifacts_get(artifacts, a_idx);
 
 	/* Ignore "empty" artifacts */
 	if (!a_ptr->name) return;

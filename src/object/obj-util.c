@@ -23,6 +23,7 @@
 #include "generate.h"
 #include "history.h"
 #include "monster/mon-make.h"
+#include "object/artifact.h"
 #include "object/inventory.h"
 #include "object/tvalsval.h"
 #include "prefs.h"
@@ -3603,7 +3604,7 @@ int lookup_artifact_name(const char *name)
 	/* Look for it */
 	for (i = 1; i < z_info->a_max; i++)
 	{
-		artifact_type *a_ptr = &a_info[i];
+		artifact_type *a_ptr = artifacts_get(artifacts, i);
 
 		/* Test for equality */
 		if (a_ptr->name && streq(name, a_ptr->name))
