@@ -857,7 +857,7 @@ static errr run_parse_a(struct parser *p) {
 }
 
 static errr finish_parse_a(struct parser *p) {
-	struct artifact *a, *n;
+	struct artifact *a;
 
 	artifacts = artifacts_new();
 
