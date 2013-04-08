@@ -22,6 +22,7 @@
 #include "history.h"
 #include "monster/mon-make.h"
 #include "monster/monster.h"
+#include "object/artifact.h"
 #include "option.h"
 #include "savefile.h"
 #include "squelch.h"
@@ -343,11 +344,19 @@ void wr_artifacts(void)
 	wr_u16b(tmp16u);
 	for (i = 0; i < tmp16u; i++)
 	{
-		artifact_type *a_ptr = &a_info[i];
-		wr_byte(a_ptr->created);
-		wr_byte(a_ptr->seen);
-		wr_byte(a_ptr->everseen);
-		wr_byte(0);
+		artifact_type *a_ptr = artifacts_get(artifacts, i);
+		if (!a_ptr) {
+			/* don't leave a hole at i == 0 */
+			wr_byte(0);
+			wr_byte(0);
+			wr_byte(0);
+			wr_byte(0);
+		} else {
+			wr_byte(a_ptr->created);
+			wr_byte(a_ptr->seen);
+			wr_byte(a_ptr->everseen);
+			wr_byte(0);
+		}
 	}
 }
 

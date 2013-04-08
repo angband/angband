@@ -21,6 +21,7 @@
 #include "cmds.h"
 #include "monster/mon-lore.h"
 #include "monster/monster.h"
+#include "object/artifact.h"
 #include "object/tvalsval.h"
 #include "ui-menu.h"
 #include "wizard.h"
@@ -464,7 +465,7 @@ static void spoil_artifact(const char *fname)
 		/* Now search through all of the artifacts */
 		for (j = 1; j < z_info->a_max; ++j)
 		{
-			artifact_type *a_ptr = &a_info[j];
+			artifact_type *a_ptr = artifacts_get(artifacts, j);
 			char buf2[80];
 
 			/* We only want objects in the current group */

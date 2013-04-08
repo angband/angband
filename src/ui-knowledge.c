@@ -24,6 +24,7 @@
 #include "monster/mon-lore.h"
 #include "monster/monster.h"
 #include "monster/mon-util.h"
+#include "object/artifact.h"
 #include "object/tvalsval.h"
 #include "squelch.h"
 #include "store.h"
@@ -1404,7 +1405,7 @@ static void get_artifact_display_name(char *o_name, size_t namelen, int a_idx)
 	object_type object_type_body = { 0 };
 	object_type *o_ptr = &object_type_body;
 
-	make_fake_artifact(o_ptr, &a_info[a_idx]);
+	make_fake_artifact(o_ptr, artifacts_get(artifacts, a_idx));
 	object_desc(o_name, namelen, o_ptr,
 			ODESC_PREFIX | ODESC_BASE | ODESC_SPOIL);
 }
@@ -1464,14 +1465,14 @@ static void desc_art_fake(int a_idx)
 	textblock *tb;
 	region area = { 0, 0, 0, 0 };
 
-	o_ptr = find_artifact(&a_info[a_idx]);
+	o_ptr = find_artifact(artifacts_get(artifacts, a_idx));
 
 	/* If it's been lost, make a fake artifact for it */
 	if (!o_ptr)
 	{
 		o_ptr = &object_type_body;
 
-		make_fake_artifact(o_ptr, &a_info[a_idx]);
+		make_fake_artifact(o_ptr, artifacts_get(artifacts, a_idx));
 		o_ptr->ident |= IDENT_NAME;
 
 		/* Check the history entry, to see if it was fully known before it
@@ -1498,8 +1499,8 @@ static void desc_art_fake(int a_idx)
 
 static int a_cmp_tval(const void *a, const void *b)
 {
-	const artifact_type *a_a = &a_info[*(const int *)a];
-	const artifact_type *a_b = &a_info[*(const int *)b];
+	const artifact_type *a_a = artifacts_get(artifacts, *(const int *)a);
+	const artifact_type *a_b = artifacts_get(artifacts, *(const int *)b);
 
 	/* group by */
 	int ta = obj_group_order[a_a->tval];
@@ -1514,24 +1515,27 @@ static int a_cmp_tval(const void *a, const void *b)
 }
 
 static const char *kind_name(int gid) { return object_text_order[gid].name; }
-static int art2gid(int oid) { return obj_group_order[a_info[oid].tval]; }
+static int art2gid(int oid) {
+	return obj_group_order[artifacts_get(artifacts, oid)->tval];
+}
 
 /* Check if the given artifact idx is something we should "Know" about */
 static bool artifact_is_known(int a_idx)
 {
 	object_type *o_ptr;
+	struct artifact *a = artifacts_get(artifacts, a_idx);
 
-	if (!a_info[a_idx].name)
+	if (!a || !a->name)
 		return FALSE;
 
 	if (p_ptr->wizard)
 		return TRUE;
 
-	if (!a_info[a_idx].created)
+	if (!a->created)
 		return FALSE;
 
 	/* Check all objects to see if it exists but hasn't been IDed */
-	o_ptr = find_artifact(&a_info[a_idx]);
+	o_ptr = find_artifact(a);
 	if (o_ptr && !object_is_known_artifact(o_ptr))
 		return FALSE;
 
@@ -1541,23 +1545,23 @@ static bool artifact_is_known(int a_idx)
 
 /* If 'artifacts' is NULL, it counts the number of known artifacts, otherwise
    it collects the list of known artifacts into 'artifacts' as well. */
-static int collect_known_artifacts(int *artifacts, size_t artifacts_len)
+static int collect_known_artifacts(int *_artifacts, size_t artifacts_len)
 {
 	int a_count = 0;
 	int j;
 
-	if (artifacts)
+	if (_artifacts)
 		assert(artifacts_len >= z_info->a_max);
 
 	for (j = 0; j < z_info->a_max; j++)
 	{
 		/* Artifact doesn't exist */
-		if (!a_info[j].name) continue;
+		if (!artifacts_get(artifacts, j)) continue;
 
 		if (OPT(cheat_xtra) || artifact_is_known(j))
 		{
-			if (artifacts)
-				artifacts[a_count++] = j;
+			if (_artifacts)
+				_artifacts[a_count++] = j;
 			else
 				a_count++;
 		}
@@ -1696,11 +1700,9 @@ static int get_artifact_from_kind(object_kind *kind)
 	/* Look for the corresponding artifact */
 	for (i = 0; i < z_info->a_max; i++)
 	{
-		if (kind->tval == a_info[i].tval &&
-		    kind->sval == a_info[i].sval)
-		{
+		struct artifact *a = artifacts_get(artifacts, i);
+		if (kind->tval == a->tval && kind->sval == a->sval)
 			break;
-		}
 	}
 
         assert(i < z_info->a_max);

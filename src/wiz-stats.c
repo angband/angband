@@ -2088,12 +2088,10 @@ static void uncreate_artifacts(void)
 	
 	/* Loop through artifacts */
 	for (i = 0; z_info && i < z_info->a_max; i++){
-	
-		artifact_type *a_ptr = &a_info[i];
+		struct artifact *a = artifacts_get(artifacts, i);
 		
 		/* uncreate */
-		a_ptr->created = FALSE;
-		
+		a->created = FALSE;
 	}
 }
 

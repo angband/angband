@@ -19,6 +19,7 @@
 #include "angband.h"
 #include "cave.h"
 #include "init.h"
+#include "object/artifact.h"
 #include "object/tvalsval.h"
 #include "object/pval.h"
 #include "object/slays.h"
@@ -390,7 +391,7 @@ static bool make_artifact_special(object_type *o_ptr, int level)
 
 	/* Check the special artifacts */
 	for (i = 0; i < ART_MIN_NORMAL; ++i) {
-		artifact_type *a_ptr = &a_info[i];
+		artifact_type *a_ptr = artifacts_get(artifacts, i);
 
 		/* Skip "empty" artifacts */
 		if (!a_ptr->name) continue;
@@ -488,7 +489,7 @@ static bool make_artifact(object_type *o_ptr)
 
 	/* Check the artifact list (skip the "specials") */
 	for (i = ART_MIN_NORMAL; !o_ptr->artifact && i < z_info->a_max; i++) {
-		a_ptr = &a_info[i];
+		a_ptr = artifacts_get(artifacts, i);
 
 		/* Skip "empty" items */
 		if (!a_ptr->name) continue;

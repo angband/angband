@@ -23,6 +23,7 @@
 #include "monster/mon-spell.h"
 #include "monster/mon-util.h"
 #include "monster/monster.h"
+#include "object/artifact.h"
 #include "parser.h"
 #include "z-util.h"
 #include "z-virt.h"
@@ -466,7 +467,7 @@ static enum parser_error parse_r_drop_artifact(struct parser *p) {
 	art = lookup_artifact_name(parser_getstr(p, "name"));
 	if (art < 0)
 		return PARSE_ERROR_GENERIC;
-	a = &a_info[art];
+	a = artifacts_get(artifacts, art);
 
 	d = mem_zalloc(sizeof *d);
 	d->artifact = a;
