@@ -36,13 +36,14 @@ HEADERS = \
 	z-quark.h \
 	z-queue.h \
 	z-rand.h \
+	z-set.h \
 	z-term.h \
 	z-type.h \
 	z-util.h \
 	z-virt.h
 
 ZFILES = z-bitflag.o z-file.o z-form.o z-msg.o z-quark.o z-queue.o z-rand.o \
-	z-term.o z-type.o z-util.o z-virt.o z-textblock.o
+	z-set.o z-term.o z-type.o z-util.o z-virt.o z-textblock.o
 
 # MAINFILES is defined by autotools (or manually) to be combinations of these
 
