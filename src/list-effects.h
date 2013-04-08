@@ -227,6 +227,10 @@ EFFECT(DRINK_RUIN,     FALSE,  0,	"inflicts 10d10 points of damage and decreases
 EFFECT(DRINK_DETONATE, FALSE,  0,	"inflicts 50d20 points of damage, severe cuts, and stunning")
 EFFECT(FOOD_GOOD,      FALSE,  0,	NULL)
 EFFECT(FOOD_WAYBREAD,  FALSE,  4,	"restores 4d8 hit points and neutralizes poison")
+EFFECT(FOOD_CRUNCH,    FALSE,  0,   NULL)
+EFFECT(FOOD_WHISKY,    FALSE,  0,   NULL)
+EFFECT(FOOD_WINE,      FALSE,  0,   "makes you fearless and foolhardy, but less co-ordinated")
+
 EFFECT(SHROOM_EMERGENCY, FALSE, 7,	"grants temporary resistance to fire and cold, cures 200HP, but also makes you hallucinate wildly")
 EFFECT(SHROOM_TERROR,    FALSE, 5,	"speeds up you temporarily but also makes you mortally afraid")
 EFFECT(SHROOM_STONE,     FALSE, 5,	"turns your skin to stone briefly, which grants an extra 40AC but slows you down")

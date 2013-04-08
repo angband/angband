@@ -197,9 +197,32 @@ L:7500
 D:Food of the elves is always good; their waybread is no exception.  These
 D: thin cakes are wrapped in leaves and keep their tastiness for months.
 
-# 13
-# 14
-# 15
+N:13:& Hard Biscuit~
+G:,:U
+I:80:4
+W:0:0:2:1
+F:EASY_KNOW
+E:FOOD_CRUNCH
+L:500
+D:A filling if tooth-breaking biscuit made mostly of rye.
+
+N:14:& Flask~ of Whisky
+G:,:y
+I:80:5
+W:0:0:5:1
+F:EASY_KNOW
+E:FOOD_WHISKY
+L:250
+D:It raises your spirits.
+
+N:15:& Pint~ of Fine Wine
+G:,:r
+I:80:0
+W:0:0:10:2
+F:EASY_KNOW 
+E:FOOD_WINE
+L:250
+D:A fine way to wash down some otherwise unappetising rations.
 
 ### The shrooms, an interesting collection ###
 

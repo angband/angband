@@ -10,8 +10,8 @@
 
 # General store
 store:1
-slots:0:0
-turnover:0
+slots:0:4
+turnover:2
 always:cloak:Cloak
 always:food:Ration of Food
 always:light:Wooden Torch
@@ -19,6 +19,15 @@ always:flask:Flask of Oil
 always:spike:Iron Spike
 always:digger:Shovel
 always:digger:Pick
+always:shot:Iron Shot
+always:arrow:Arrow
+always:bolt:Bolt
+
+normal:food:Pint of Fine Wine
+normal:food:Slime Mold
+normal:food:Stoneskin
+normal:food:Flask of Whisky
+normal:food:Hard Biscuit
 
 # Armoury
 store:2
@@ -47,9 +56,9 @@ normal:shield:Leather Shield
 store:3
 slots:3:14
 turnover:9
-always:shot:Iron Shot
-always:arrow:Arrow
-always:bolt:Bolt
+normal:shot:Iron Shot
+normal:arrow:Arrow
+normal:bolt:Bolt
 normal:sword:Dagger
 normal:sword:Main Gauche
 normal:sword:Rapier
@@ -78,12 +87,13 @@ normal:bow:Light Crossbow
 
 # Temple
 store:4
-slots:2:10
+slots:6:14
 turnover:9
 always:prayer book:[Beginners Handbook]
 always:prayer book:[Words of Wisdom]
 always:prayer book:[Chants and Blessings]
 always:prayer book:[Exorcism and Dispelling]
+always:potion:Cure Light Wounds
 normal:hafted:Whip
 normal:hafted:Quarterstaff
 normal:hafted:Mace
@@ -92,16 +102,18 @@ normal:hafted:War Hammer
 normal:hafted:Morning Star
 normal:hafted:Flail
 normal:hafted:Lead-Filled Mace
-normal:scroll:Word of Recall
 normal:scroll:Blessing
 normal:scroll:Holy Chant
 normal:scroll:Light
 normal:potion:Boldness
 normal:potion:Heroism
+normal:potion:Neutralize Poison
+normal:potion:Cure Serious Wounds
+normal:potion:Cure Critical Wounds
 
 # Alchemist
 store:5
-slots:4:12
+slots:6:10
 turnover:9
 always:scroll:Word of Recall
 always:scroll:Phase Door
@@ -114,13 +126,11 @@ normal:scroll:Detect Invisible
 normal:scroll:Recharging
 normal:scroll:Satisfy Hunger
 normal:potion:Boldness
+normal:potion:Berserk Strength
 normal:potion:Resist Heat
 normal:potion:Resist Cold
 normal:potion:Restore Life Levels
-normal:potion:Neutralize Poison
-normal:potion:Cure Light Wounds
-normal:potion:Cure Serious Wounds
-normal:potion:Cure Critical Wounds
+normal:potion:Infravision
 
 # Magic-user's
 store:6

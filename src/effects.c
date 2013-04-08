@@ -1712,6 +1712,31 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			return TRUE;
 		}
 
+		case EF_FOOD_CRUNCH:
+		{
+			if (one_in_(2))
+				msg("It's crunchy.");
+			else
+				msg("It nearly breaks your tooth!");
+			*ident = TRUE;
+			return TRUE;
+		}
+
+		case EF_FOOD_WHISKY:
+		{
+			msg("That tastes great!");
+			(void)player_inc_timed(p_ptr, TMD_CONFUSED, randint0(5), TRUE, TRUE);
+			*ident = TRUE;
+			return TRUE;
+		}
+
+		case EF_FOOD_WINE:
+		{
+			msg("That tastes great!  A fine vintage.");
+			player_set_timed(p_ptr, TMD_BOLD, rand_spread(100, 20), TRUE);
+			*ident = TRUE;
+		}
+
 		case EF_SHROOM_EMERGENCY:
 		{
 			(void)player_set_timed(p_ptr, TMD_IMAGE, rand_spread(250, 50), TRUE);
@@ -1837,8 +1862,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 				int msg_sound;
 				const char *msg;
 				int typ;
-			} mh[] =
-			{
+			} mh[] = {
 				{ MSG_BR_ELEC,  "lightning",  GF_ELEC },
 				{ MSG_BR_FROST, "frost",      GF_COLD },
 				{ MSG_BR_ACID,  "acid",       GF_ACID },
