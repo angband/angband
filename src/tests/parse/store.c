@@ -5,7 +5,7 @@
 #include "store.h"
 
 int setup_tests(void **state) {
-	*state = store_parser_new();
+	*state = init_parse_stores();
 	return !*state;
 }
 
@@ -14,34 +14,46 @@ int teardown_tests(void *state) {
 	return 0;
 }
 
-int test_s0(void *state) {
-	enum parser_error r = parser_parse(state, "S:2:33");
+int test_store0(void *state) {
+	enum parser_error r = parser_parse(state, "store:1");
 	struct store *s;
 
 	eq(r, PARSE_ERROR_NONE);
 	s = parser_priv(state);
 	require(s);
-	eq(s->sidx, 1);
-	eq(s->table_size, 33);
+	eq(s->sidx, 0);
+	ok;
+}
+
+int test_slots0(void *state) {
+	enum parser_error r = parser_parse(state, "slots:2:33");
+	struct store *s;
+
+	eq(r, PARSE_ERROR_NONE);
+	s = parser_priv(state);
+	require(s);
+	eq(s->normal_stock_min, 2);
+	eq(s->normal_stock_max, 33);
 	ok;
 }
 
 /* Causes segfault: lookup_name() requires z_info/k_info */
 int test_i0(void *state) {
-	enum parser_error r = parser_parse(state, "I:2:3:5");
+	enum parser_error r = parser_parse(state, "normal:3:5");
 	struct store *s;
 
 	eq(r, PARSE_ERROR_NONE);
 	s = parser_priv(state);
 	require(s);
-	require(s->table[0]);
-	require(s->table[1]);
+	require(s->normal_table[0]);
+	require(s->normal_table[1]);
 	ok;
 }
 
 const char *suite_name = "parse/store";
 struct test tests[] = {
-	{ "s0", test_s0 },
+	{ "store0", test_store0 },
+	{ "slots0", test_slots0 },
 /*	{ "i0", test_i0 }, */
 	{ NULL, NULL }
 };
