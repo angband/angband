@@ -95,7 +95,7 @@ A:40:5 to 100
 P:0:1d1:0:0:0
 F:NO_FUEL
 F:INSTA_ART
-L:2:LIGHT
+L:3:LIGHT
 E:ILLUMINATION:10+d10
 M:The {kind} well{s} with clear light...
 D:A small crystal phial containing the light of Eärendil's Star.  
