@@ -149,37 +149,33 @@ void dedup_hates_flags(bitflag *f)
  */
 static monster_race *poly_race(monster_race *race)
 {
-	int i, lev1, lev2;
+	int i, minlvl, maxlvl, goal;
 
 	assert(race && race->name);
 
-	/* Paranoia -- Uniques never polymorph */
-	if (rf_has(race->flags, RF_UNIQUE)) return (race);
+	/* Uniques never polymorph */
+	if (rf_has(race->flags, RF_UNIQUE)) return race;
 
 	/* Allowable range of "levels" for resulting monster */
-	lev1 = race->level - ((randint1(20)/randint1(9))+1);
-	lev2 = race->level + ((randint1(20)/randint1(9))+1);
+	goal = (p_ptr->depth + race->level) / 2 + 5;
+	minlvl = MIN(race->level - 10, (race->level * 3) / 4);
+	maxlvl = MAX(race->level + 10, (race->level * 5) / 4);
 
-	/* Pick a (possibly new) non-unique race */
-	for (i = 0; i < 1000; i++)
-	{
-		/* Pick a new race, using a level calculation */
-		race = get_mon_num((p_ptr->depth + race->level) / 2 + 5);
+	/* Small chance to allow something really strong */
+	if (one_in_(100)) maxlvl = 100;
 
-		/* Handle failure */
-		if (!race) break;
+	/* Try to pick a new, non-unique race within our level range */
+	for (i = 0; i < 1000; i++) {
+		monster_race *new_race = get_mon_num(goal);
 
-		/* Ignore unique monsters */
-		if (rf_has(race->flags, RF_UNIQUE)) continue;
+		if (!new_race || new_race == race) continue;
+		if (rf_has(new_race->flags, RF_UNIQUE)) continue;
+		if (new_race->level < minlvl || new_race->level > maxlvl) continue;
 
-		/* Ignore monsters with incompatible levels */
-		if ((race->level < lev1) || (race->level > lev2)) continue;
-
-		/* Done */
-		break;
+		return new_race;
 	}
 
-	/* Result */
+	/* If we get here, we weren't able to find a new race. */
 	return race;
 }
 
@@ -2618,55 +2614,40 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 	}
 
 	/* Handle polymorph */
-	else if (do_poly)
-	{
+	else if (do_poly) {
 		/* Default -- assume no polymorph */
 		m_note = MON_MSG_UNAFFECTED;
 
 		/* Uniques cannot be polymorphed */
-		if (!rf_has(m_ptr->race->flags, RF_UNIQUE))
-		{
+		if (!rf_has(m_ptr->race->flags, RF_UNIQUE)) {
+
+			int savelvl = typ == GF_OLD_POLY ?
+				randint1(MAX(1, do_poly - 10)) + 10 :
+				randint1(90);
+
 			if (seen) obvious = TRUE;
 
 			/* Saving throws are allowed */
-			if (m_ptr->race->level > randint1(90) ||
-			    (typ == GF_OLD_POLY && m_ptr->race->level > randint1(MAX(1, do_poly - 10)) + 10))
-			{
+			if (m_ptr->race->level > savelvl) {
 				if (typ == GF_OLD_POLY) m_note = MON_MSG_MAINTAIN_SHAPE;
-			}
-			else
-			{
+			} else {
 				monster_race *old = m_ptr->race;
-
-				/* Pick a "new" monster race */
-				m_ptr->race = poly_race(m_ptr->race);
+				monster_race *new = poly_race(old);
 
 				/* Handle polymorph */
-				if (m_ptr->race != old)
-				{
-					/* Monster polymorphs */
+				if (new != old) {
+					/* Report the polymorph before changing the monster */
 					m_note = MON_MSG_CHANGE;
-
-					/* Add the message now before changing the monster race */
 					add_monster_message(m_name, m_ptr, m_note, FALSE);
-
-					/* No more messages */
 					m_note = MON_MSG_NONE;
 
-					/* Turn off the damage */
+					/* Reset damage */
 					dam = 0;
 
-					/* "Kill" the "old" monster */
+					/* Delete the old monster, and return a new one */
 					delete_monster_idx(m_idx);
-
-					/* Create a new monster (no groups) */
-					(void)place_new_monster(cave, y, x, m_ptr->race, FALSE, FALSE,
-						ORIGIN_DROP_POLY);
-
-					/* Hack -- Assume success XXX XXX XXX */
-
-					/* Hack -- Get new monster */
-					m_ptr = cave_monster(cave, m_idx);
+					place_new_monster(cave, y, x, new, FALSE, FALSE, ORIGIN_DROP_POLY);
+					m_ptr = cave_monster_at(cave, y, x);
 				}
 			}
 		}
