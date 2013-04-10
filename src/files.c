@@ -805,7 +805,7 @@ static struct panel *get_panel_skills(void) {
 
 	/* Disarming: -5 because we assume we're disarming a dungeon trap */
 	skill = BOUND(p_ptr->state.skills[SKILL_DISARM] - 5, 2, 100);
-	panel_line(p, colour_table[skill / 10], "Saving Throw", "%d%%", skill);
+	panel_line(p, colour_table[skill / 10], "Disarming", "%d%%", skill);
 
 	/* Magic devices */
 	skill = p_ptr->state.skills[SKILL_DEVICE];
