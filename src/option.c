@@ -38,8 +38,8 @@ const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_show_damage,
 		OPT_view_yellow_light,
 		OPT_animate_flicker,
-		OPT_NONE,
-		OPT_NONE,
+		OPT_solid_walls,
+		OPT_hybrid_walls,
 		OPT_NONE,
 	},
 
@@ -126,8 +126,8 @@ static const struct option options[OPT_MAX] =
 { "disturb_near",        "Disturb whenever viewable monster moves",     TRUE },  /* 8 */
 { "disturb_detect",      "Disturb whenever leaving trap detected area", TRUE },  /* 9 */
 { "disturb_state",       "Disturb whenever player state changes",       TRUE },  /* 10 */
-{ NULL,                  NULL,                                          FALSE }, /* 11 */
-{ NULL,                  NULL,                                          FALSE }, /* 12 */
+{"solid_walls",          "Show walls as solid blocks",                  FALSE},  /* 11 */
+{"hybrid_walls",         "Show walls with shaded background",           FALSE},  /* 12 */
 { "view_yellow_light",   "Color: Illuminate torchlight in yellow",      FALSE }, /* 13 */
 { "easy_open",           "Open/disarm/close without direction",         TRUE },  /* 14 */
 { "animate_flicker",     "Color: Shimmer multi-colored things",         FALSE }, /* 15 */

@@ -2139,7 +2139,7 @@ static errr Term_wipe_win(int x, int y, int n)
  * what color it should be using to draw with, but perhaps simply changing
  * it every time is not too inefficient.  XXX XXX XXX
  */
-static errr Term_text_win(int x, int y, int n, byte a, const wchar_t *s)
+static errr Term_text_win(int x, int y, int n, int a, const wchar_t *s)
 {
 	term_data *td = (term_data*)(Term->data);
 	RECT rc;
@@ -2160,15 +2160,34 @@ static errr Term_text_win(int x, int y, int n, byte a, const wchar_t *s)
 	/* Foreground color */
 	if (colors16)
 	{
-		SetTextColor(hdc, PALETTEINDEX(win_pal[a]));
+		SetTextColor(hdc, PALETTEINDEX(win_pal[a % MAX_COLORS]));
 	}
-	else if (paletted)
+	else 
 	{
-		SetTextColor(hdc, win_clr[a & (BASIC_COLORS-1)]);
-	}
-	else
-	{
-		SetTextColor(hdc, win_clr[a]);
+	       if (paletted)
+	       { 
+		   SetTextColor(hdc, win_clr[(a % MAX_COLORS) & 0x1F]);
+	       }
+	       else
+	       {
+		       SetTextColor(hdc, win_clr[a % MAX_COLORS]);
+	       }
+	       /* Determine the background colour - from Sil */
+		switch (a / MAX_COLORS)
+		{
+			case BG_BLACK:
+				/* Default Background */
+				SetBkColor(hdc, win_clr[0]);
+				break;
+			case BG_SAME:
+				/* Background same as foreground*/
+				SetBkColor(hdc, win_clr[a % MAX_COLORS]);
+				break;
+			case BG_DARK:
+				/* Highlight Background */
+				SetBkColor(hdc, win_clr[TERM_SHADE]);
+				break;
+		}
 	}
 
 	/* Use the font */
@@ -2552,7 +2571,7 @@ static errr Term_pict_win_alpha(int x, int y, int n, const byte *ap, const wchar
 static void windows_map_aux(void)
 {
 	term_data *td = &data[0];
-	byte a;
+	int a;
 	wchar_t c;
 	int x, min_x, max_x;
 	int y, min_y, max_y;

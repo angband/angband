@@ -1420,16 +1420,16 @@ errr borg_what_text(int x, int y, int n, byte *a, char *s)
     int i;
     wchar_t screen_str[1024];
 
-    byte t_a;
+    int t_a;
     wchar_t t_c;
 
-    byte *aa;
+    int *aa;
     wchar_t *cc;
 
 	int w, h;
 
     /* Current attribute */
-    byte d_a = 0;
+    int d_a = 0;
 
     /* Max length to scan for */
     int m = ABS(n);
