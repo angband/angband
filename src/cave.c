@@ -436,9 +436,8 @@ bool dtrap_edge(int y, int x)
  */
 static void grid_get_attr(grid_data *g, int *a)
 {
-        feature_type *f_ptr = &f_info[g->f_idx];
+	feature_type *f_ptr = &f_info[g->f_idx];
 	wchar_t c = f_ptr->d_char;
-
 
 	/* Save the high-bit, since it's used for attr inversion. */
 	int a0 = *a & 0x80;
@@ -452,21 +451,17 @@ static void grid_get_attr(grid_data *g, int *a)
 		return;
 	}
 
-	/* If the square isn't white we won't apply any other lighting effects. */
-	if ((*a & 0x7F) != TERM_WHITE) {
-	        /* Hybrid or block walls */
-	        if (use_graphics == GRAPHICS_NONE) {
-		        if (OPT(hybrid_walls) && ((c == '#') || (c == '%')))
-			{
-			        *a = *a + (MAX_COLORS * BG_DARK);
-			}
-			else if (OPT(solid_walls) && ((c == '#') || (c == '%')))
-			{
-			        *a = *a + (MAX_COLORS * BG_SAME);
-			}
-		}
-		return;
+	/* Hybrid or block walls */
+	if (use_graphics == GRAPHICS_NONE && feat_is_wall(g->f_idx)) {
+		if (OPT(hybrid_walls))
+			*a = *a + (MAX_COLORS * BG_DARK);
+		else if (OPT(solid_walls))
+			*a = *a + (MAX_COLORS * BG_SAME);
 	}
+
+	/* If the square isn't white we won't apply any other lighting effects. */
+	if ((*a & 0x7F) != TERM_WHITE)
+		return;
 
 	/* If it's a floor tile then we'll tint based on lighting. */
 	if (g->f_idx == FEAT_FLOOR) {
@@ -3025,6 +3020,14 @@ bool cave_issecrettrap(struct cave *c, int y, int x) {
  */
 bool feat_is_known_trap(int feat) {
 	return feat >= FEAT_TRAP_HEAD && feat <= FEAT_TRAP_TAIL;
+}
+
+/**
+ * True is the feature is a solid wall (not rubble).
+ */
+bool feat_is_wall(int feat) {
+	return feat >= FEAT_SECRET && feat <= FEAT_PERM_SOLID &&
+			feat != FEAT_RUBBLE;
 }
 
 /**
