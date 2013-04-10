@@ -1172,18 +1172,18 @@ static void ShowTextAt(int x, int y, int color, int n, const wchar_t *text )
 
 	CGRect r;
 	if(use_graphics || !use_overwrite_hack) {
-		r = (CGRect) {{x*td->tile_wid, y*td->tile_hgt},
-											{n*td->tile_wid, td->tile_hgt}};
+		r = (CGRect) { {x*td->tile_wid, y*td->tile_hgt},
+				{n*td->tile_wid, td->tile_hgt} };
 		switch (color / MAX_COLORS) {
-		case BG_BLACK:
-		        term_data_color(COLOR_BLACK);
-			break;
-		case BG_SAME:
-		        term_data_color(color % MAX_COLORS);
-			break;
-		case BG_DARK:
-		        term_data_color(TERM_SHADE);
-			break;
+			case BG_BLACK:
+				term_data_color(COLOR_BLACK);
+				break;
+			case BG_SAME:
+				term_data_color(color % MAX_COLORS);
+				break;
+			case BG_DARK:
+				term_data_color(TERM_SHADE);
+				break;
 		}
 		CGContextFillRect(focus.ctx, r);
 	}

@@ -2164,15 +2164,12 @@ static errr Term_text_win(int x, int y, int n, int a, const wchar_t *s)
 	}
 	else 
 	{
-	       if (paletted)
-	       { 
-		   SetTextColor(hdc, win_clr[(a % MAX_COLORS) & 0x1F]);
-	       }
-	       else
-	       {
-		       SetTextColor(hdc, win_clr[a % MAX_COLORS]);
-	       }
-	       /* Determine the background colour - from Sil */
+		if (paletted)
+			SetTextColor(hdc, win_clr[(a % MAX_COLORS) & 0x1F]);
+		else
+			SetTextColor(hdc, win_clr[a % MAX_COLORS]);
+
+		/* Determine the background colour - from Sil */
 		switch (a / MAX_COLORS)
 		{
 			case BG_BLACK:
