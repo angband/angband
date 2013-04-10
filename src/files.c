@@ -1126,7 +1126,7 @@ errr file_character(const char *path, bool full)
 	/* Dump options */
 	for (i = 0; i < OPT_PAGE_MAX - 1; i++) {
 		int j;
-		const char *title;
+		const char *title = "";
 		switch (i) {
 			case 0: title = "Interface"; break;
 			case 1: title = "Warning"; break;
