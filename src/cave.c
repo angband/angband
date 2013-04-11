@@ -3069,6 +3069,10 @@ bool cave_isshop(struct cave *c, int y, int x) {
 	return feature_isshop(c->feat[y][x]);
 }
 
+int cave_shopnum(struct cave *c, int y, int x) {
+	return c->feat[y][x] - FEAT_SHOP_HEAD;
+}
+
 /**
  * SQUARE BEHAVIOR PREDICATES
  *
@@ -3376,7 +3380,6 @@ bool cave_hassecretvein(struct cave *c, int y, int x) {
 }
 
 bool cave_noticeable(struct cave *c, int y, int x) {
-	int f = c->feat[y][x];
 	if (cave_isfloor(c, y, x))
 		return FALSE;
 	if (cave_issecrettrap(c, y, x) || cave_issecretdoor(c, y, x))

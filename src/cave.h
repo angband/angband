@@ -176,4 +176,6 @@ void cave_show_vein(struct cave *c, int y, int x);
 void cave_destroy(struct cave *c, int y, int x);
 void cave_earthquake(struct cave *c, int y, int x);
 
+int cave_shopnum(struct cave *c, int y, int x);
+
 #endif /* !CAVE_H */
