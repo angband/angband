@@ -1937,7 +1937,7 @@ void do_cmd_debug(void)
 			else if (p_ptr->depth == 0)
 				msg("You can't place a trap in the town!");
 			else
-				cave_set_feat(cave, p_ptr->py, p_ptr->px, FEAT_INVIS);
+				cave_add_trap(cave, p_ptr->py, p_ptr->px);
 			break;
 		}
 
