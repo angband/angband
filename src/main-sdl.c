@@ -3157,8 +3157,8 @@ static errr sdl_BuildTileset(term_window *win)
  * XXX - This function _never_ seems to get called with n > 1 ?
  * This needs improvement...
  */
-static errr Term_pict_sdl(int col, int row, int n, const byte *ap, const wchar_t *cp,
-						  const byte *tap, const wchar_t *tcp)
+static errr Term_pict_sdl(int col, int row, int n, const int *ap, const wchar_t *cp,
+						  const int *tap, const wchar_t *tcp)
 {
 	
 #ifdef USE_GRAPHICS

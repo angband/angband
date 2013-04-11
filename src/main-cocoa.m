@@ -1703,8 +1703,8 @@ static void draw_image_tile(CGImageRef image, NSRect srcRect, NSRect dstRect, NS
     CGImageRelease(subimage);
 }
 
-static errr Term_pict_cocoa(int x, int y, int n, const byte *ap,
-                            const wchar_t *cp, const byte *tap,
+static errr Term_pict_cocoa(int x, int y, int n, const int *ap,
+                            const wchar_t *cp, const int *tap,
                             const wchar_t *tcp)
 {
     
@@ -1848,12 +1848,8 @@ static errr Term_text_cocoa(int x, int y, int n, int a, const wchar_t *cp)
     case BG_DARK:
 	    set_color_for_index(TERM_SHADE);
 	    break;
-    case BG_TRAP:
-	    set_color_for_index(TERM_SH_GREEN);
-	    break;
     }
     
-    [[NSColor blackColor] set];
     NSRect rectToClear = charRect;
     rectToClear.size.width = tileWidth * n;
     NSRectFill(crack_rect(rectToClear, scaleFactor, leftPushOptions | rightPushOptions));
