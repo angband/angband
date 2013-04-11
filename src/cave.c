@@ -436,59 +436,48 @@ bool dtrap_edge(int y, int x)
  */
 static void grid_get_attr(grid_data *g, int *a)
 {
-	feature_type *f_ptr = &f_info[g->f_idx];
-	wchar_t c = f_ptr->d_char;
-
-	/* Save the high-bit, since it's used for attr inversion. */
+	/* Save the high-bit, since it's used for attr inversion in GCU */
 	int a0 = *a & 0x80;
 
 	/* We will never tint traps or treasure */
-	if (feat_is_known_trap(g->f_idx) || feat_is_treasure(g->f_idx)) return;
+	if (feat_is_known_trap(g->f_idx)) return;
 
-	/* Tint the trap detection edge green. */
-	if (g->trapborder) {
-		*a = a0 | (g->in_view ? TERM_L_GREEN : TERM_GREEN);
-		return;
+	/* Remove the high bit so we can add it back again at the end */
+	*a = (*a & 0x7F);
+
+	/* Never play with fg colours for treasure */
+	if (!feat_is_treasure(g->f_idx)) {
+
+		/* Tint trap detection borders */
+		if (g->trapborder)
+			*a = (g->in_view ? TERM_L_GREEN : TERM_GREEN);
+
+		/* Only apply lighting effects when the attr is white --
+		 * this is to stop e.g. doors going grey when out of LOS */
+		if (*a == TERM_WHITE) {
+			/* If it's a floor tile then we'll tint based on lighting. */
+			if (g->f_idx == FEAT_FLOOR)
+				switch (g->lighting) {
+					case FEAT_LIGHTING_BRIGHT: *a = TERM_YELLOW; break;
+					case FEAT_LIGHTING_DARK: *a = TERM_L_DARK; break;
+					default: break;
+				}
+
+			/* If it's another kind of tile, only tint when unlit. */
+			else if (g->f_idx > FEAT_INVIS && g->lighting == FEAT_LIGHTING_DARK)
+				*a = TERM_SLATE;
+		}
 	}
 
-	/* Hybrid or block walls */
-	if (use_graphics == GRAPHICS_NONE && feat_is_wall(g->f_idx)) {
+	/* Hybrid or block walls -- for GCU, then for everyone else */
+	if (a0) {
+		*a = a0 | *a;
+	} else if (use_graphics == GRAPHICS_NONE && feat_is_wall(g->f_idx)) {
 		if (OPT(hybrid_walls))
 			*a = *a + (MAX_COLORS * BG_DARK);
 		else if (OPT(solid_walls))
 			*a = *a + (MAX_COLORS * BG_SAME);
 	}
-
-	/* If the square isn't white we won't apply any other lighting effects. */
-	if ((*a & 0x7F) != TERM_WHITE)
-		return;
-
-	/* If it's a floor tile then we'll tint based on lighting. */
-	if (g->f_idx == FEAT_FLOOR) {
-		switch (g->lighting) {
-			case FEAT_LIGHTING_BRIGHT: *a = a0 | TERM_YELLOW; break;
-			case FEAT_LIGHTING_DARK: *a = a0 | TERM_L_DARK; break;
-			default: break;
-		}
-		return;
-	}
-
-	/* If it's another kind of tile, only tint when unlit. */
-	if (g->f_idx > FEAT_INVIS && g->lighting == FEAT_LIGHTING_DARK)
-		*a = a0 | TERM_SLATE;
-
-	/* Hybrid or block walls */
-	if (use_graphics == GRAPHICS_NONE) {
-	        if (OPT(hybrid_walls) && ((c == '#') || (c == '%')))
-		{
-		        *a = *a + (MAX_COLORS * BG_DARK);
-		}
-		else if (OPT(solid_walls) && ((c == '#') || (c == '%')))
-		{
-		        *a = *a + (MAX_COLORS * BG_SAME);
-		}
-	}
-
 }
 
 
