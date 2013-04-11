@@ -447,7 +447,7 @@ static infofnt *Infofnt = (infofnt*)(NULL);
 /*
  * Actual color table
  */
-static infoclr *clr[MAX_COLORS];
+static infoclr *clr[MAX_COLORS * BG_MAX];
 
 
 
@@ -2071,7 +2071,7 @@ static errr Term_wipe_x11(int x, int y, int n)
 /*
  * Draw some textual characters.
  */
-static errr Term_text_x11(int x, int y, int n, byte a, const wchar_t *s)
+static errr Term_text_x11(int x, int y, int n, int a, const wchar_t *s)
 {
 	/* Draw the text */
 	Infoclr_set(clr[a]);
@@ -2673,7 +2673,7 @@ errr init_x11(int argc, char **argv)
 
 
 	/* Prepare normal colors */
-	for (i = 0; i < 256; ++i)
+	for (i = 0; i < MAX_COLORS * BG_MAX; ++i)
 	{
 		Pixell pixel;
 
@@ -2682,26 +2682,57 @@ errr init_x11(int argc, char **argv)
 		Infoclr_set(clr[i]);
 
 		/* Acquire Angband colors */
-		color_table_x11[i][0] = angband_color_table[i][0];
-		color_table_x11[i][1] = angband_color_table[i][1];
-		color_table_x11[i][2] = angband_color_table[i][2];
-		color_table_x11[i][3] = angband_color_table[i][3];
+		color_table_x11[i % MAX_COLORS][0] = angband_color_table[i % MAX_COLORS][0];
+		color_table_x11[i % MAX_COLORS][1] = angband_color_table[i % MAX_COLORS][1];
+		color_table_x11[i % MAX_COLORS][2] = angband_color_table[i % MAX_COLORS][2];
+		color_table_x11[i % MAX_COLORS][3] = angband_color_table[i % MAX_COLORS][3];
 
 		/* Default to monochrome */
 		pixel = ((i == 0) ? Metadpy->bg : Metadpy->fg);
 
-		/* Handle color */
+		/* Handle color 
+		   This block of code has added support for background colours
+                   (from Sil) */
+
 		if (Metadpy->color)
 		{
+			Pixell backpixel;
 			/* Create pixel */
 			pixel = create_pixel(Metadpy->dpy,
-					     color_table_x11[i][1],
-					     color_table_x11[i][2],
-					     color_table_x11[i][3]);
+					     color_table_x11[i % MAX_COLORS][1],
+					     color_table_x11[i % MAX_COLORS][2],
+					     color_table_x11[i % MAX_COLORS][3]);
+			switch (i / MAX_COLORS)
+			{
+				case BG_BLACK:
+					/* Default Background */
+					Infoclr_init_ppn(pixel, Metadpy->bg, "cpy", 0);
+					break;
+				case BG_SAME:
+					/* Background same as foreground*/
+					backpixel = create_pixel(Metadpy->dpy,
+											 color_table_x11[i % MAX_COLORS][1],
+											 color_table_x11[i % MAX_COLORS][2],
+											 color_table_x11[i % MAX_COLORS][3]);
+					Infoclr_init_ppn(pixel, backpixel, "cpy", 0);
+					break;
+				case BG_DARK:
+					/* Highlight Background */
+					backpixel = create_pixel(Metadpy->dpy,
+											 color_table_x11[TERM_SHADE][1],
+											 color_table_x11[TERM_SHADE][2],
+											 color_table_x11[TERM_SHADE][3]);
+					Infoclr_init_ppn(pixel, backpixel, "cpy", 0);
+					break;
+			}
 		}
 
-		/* Initialize the color */
-		Infoclr_init_ppn(pixel, Metadpy->bg, "cpy", 0);
+		/* Handle monochrome */
+		else
+		{
+		    /* Initialize the color */
+		    Infoclr_init_ppn(pixel, Metadpy->bg, "cpy", 0);
+		}
 	}
 
 

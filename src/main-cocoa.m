@@ -145,7 +145,7 @@ static NSFont *default_font;
     
     /* To address subpixel rendering overdraw problems, we cache all the characters and attributes we're told to draw */
     wchar_t *charOverdrawCache;
-    byte *attrOverdrawCache;
+    int *attrOverdrawCache;
 }
 
 - (void)drawRect:(NSRect)rect inView:(NSView *)view;
@@ -1703,8 +1703,8 @@ static void draw_image_tile(CGImageRef image, NSRect srcRect, NSRect dstRect, NS
     CGImageRelease(subimage);
 }
 
-static errr Term_pict_cocoa(int x, int y, int n, const byte *ap,
-                            const wchar_t *cp, const byte *tap,
+static errr Term_pict_cocoa(int x, int y, int n, const int *ap,
+                            const wchar_t *cp, const int *tap,
                             const wchar_t *tcp)
 {
     
@@ -1798,7 +1798,7 @@ static errr Term_pict_cocoa(int x, int y, int n, const byte *ap,
  *
  * Draw several ("n") chars, with an attr, at a given location.
  */
-static errr Term_text_cocoa(int x, int y, int n, byte a, const wchar_t *cp)
+static errr Term_text_cocoa(int x, int y, int n, int a, const wchar_t *cp)
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     
@@ -1838,7 +1838,18 @@ static errr Term_text_cocoa(int x, int y, int n, byte a, const wchar_t *cp)
     leftPushOptions &= ~ PUSH_RIGHT;
     rightPushOptions &= ~ PUSH_LEFT;
     
-    [[NSColor blackColor] set];
+    switch (a / MAX_COLORS) {
+    case BG_BLACK:
+	    [[NSColor blackColor] set];
+	    break;
+    case BG_SAME:
+	    set_color_for_index(a % MAX_COLORS);
+	    break;
+    case BG_DARK:
+	    set_color_for_index(TERM_SHADE);
+	    break;
+    }
+    
     NSRect rectToClear = charRect;
     rectToClear.size.width = tileWidth * n;
     NSRectFill(crack_rect(rectToClear, scaleFactor, leftPushOptions | rightPushOptions));
@@ -1856,6 +1867,7 @@ static errr Term_text_cocoa(int x, int y, int n, byte a, const wchar_t *cp)
         if (overdrawX >= 0 && (size_t)overdrawX < angbandContext->cols)
         {
             wchar_t previouslyDrawnVal = angbandContext->charOverdrawCache[y * angbandContext->cols + overdrawX];
+	    int previouslyDrawnAttr = angbandContext->attrOverdrawCache[y * angbandContext->cols + overdrawX];
             // Don't overdraw if it's not text
             if (previouslyDrawnVal != NO_OVERDRAW)
             {
@@ -1863,7 +1875,17 @@ static errr Term_text_cocoa(int x, int y, int n, byte a, const wchar_t *cp)
                 NSRect expandedRect = crack_rect(overdrawRect, scaleFactor, push_options(overdrawX, y));
                 
                 // Make sure we redisplay it
-                [[NSColor blackColor] set];
+		switch (previouslyDrawnAttr / MAX_COLORS) {
+		case BG_BLACK:
+		    [[NSColor blackColor] set];
+		    break;
+		case BG_SAME:
+		    set_color_for_index(previouslyDrawnAttr % MAX_COLORS);
+		    break;
+		case BG_DARK:
+		    set_color_for_index(TERM_SHADE);
+		    break;
+		}
                 NSRectFill(expandedRect);
                 redisplayRect = NSUnionRect(redisplayRect, expandedRect);
                 
@@ -1880,7 +1902,7 @@ static errr Term_text_cocoa(int x, int y, int n, byte a, const wchar_t *cp)
     }
     
     /* Set the color */
-    set_color_for_index(a);
+    set_color_for_index(a % MAX_COLORS);
     
     /* Draw each */
     NSRect rectToDraw = charRect;

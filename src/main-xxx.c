@@ -475,7 +475,7 @@ static errr Term_wipe_xxx(int x, int y, int n)
  * the "always_text" flag is set, if this flag is not set, all the
  * "black" text will be handled by the "Term_wipe_xxx()" hook.
  */
-static errr Term_text_xxx(int x, int y, int n, byte a, const char *cp)
+static errr Term_text_xxx(int x, int y, int n, int a, const char *cp)
 {
 	term_data *td = (term_data*)(Term->data);
 

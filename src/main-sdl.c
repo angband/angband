@@ -508,6 +508,46 @@ static errr sdl_FontCreate(sdl_Font *font, const char *fontname, SDL_Surface *su
 
 
 /*
+ * Draw some text onto a surface, allowing shaded backgrounds
+ * The surface is first checked to see if it is compatible with
+ * this font, if it isn't the the font will be 're-precalculated'
+ *
+ * You can, I suppose, use one font on many surfaces, but it is
+ * definitely not recommended. One font per surface is good enough.
+ */
+static errr sdl_mapFontDraw(sdl_Font *font, SDL_Surface *surface, SDL_Color colour,
+			 SDL_Color bg, int x, int y, int n , const char *s)
+{
+	Uint8 bpp = surface->format->BytesPerPixel;
+	Uint16 pitch = surface->pitch;
+
+	SDL_Rect rc;
+	SDL_Surface *text;
+
+	if ((bpp != font->bpp) || (pitch != font->pitch))
+		sdl_FontCreate(font, font->name, surface);
+	
+	/* Lock the window surface (if necessary) */
+	if (SDL_MUSTLOCK(surface))
+	{
+		if (SDL_LockSurface(surface) < 0) return (-1);
+	}
+
+	RECT(x, y, n * font->width, font->height, &rc);
+	text = TTF_RenderUTF8_Shaded(font->sdl_font, s, colour, bg);
+	if (text) {
+	    SDL_BlitSurface(text, NULL, surface, &rc);
+	    SDL_FreeSurface(text);
+	}
+	
+	/* Unlock the surface */
+	if (SDL_MUSTLOCK(surface)) SDL_UnlockSurface(surface);
+	
+	/* Success */
+	return (0);
+}
+
+/*
  * Draw some text onto a surface
  * The surface is first checked to see if it is compatible with
  * this font, if it isn't the the font will be 're-precalculated'
@@ -2891,10 +2931,11 @@ static errr Term_wipe_sdl(int col, int row, int n)
 /*
  * Draw some text to a window
  */
-static errr Term_text_sdl(int col, int row, int n, byte a, const wchar_t *s)
+static errr Term_text_sdl(int col, int row, int n, int a, const wchar_t *s)
 {
 	term_window *win = (term_window*)(Term->data);
-	SDL_Color colour = text_colours[a];
+	SDL_Color colour = text_colours[a % MAX_COLORS];
+	SDL_Color bg = text_colours[TERM_DARK];
 	int x = col * win->tile_wid;
 	int y = row * win->tile_hgt;
 	wchar_t src[255];
@@ -2917,8 +2958,25 @@ static errr Term_text_sdl(int col, int row, int n, byte a, const wchar_t *s)
 	/* Convert to UTF-8 for display */
 	len = wcstombs(mbstr, src, n * MB_LEN_MAX);
 	mbstr[len] = '\0';
+
+	/* Handle background */
+	switch (a / MAX_COLORS)
+	{
+	case BG_BLACK:
+	    /* Default Background */
+	    break;
+	case BG_SAME:
+	    /* Background same as foreground*/
+	    bg = colour;
+	    break;
+	case BG_DARK:
+	    /* Highlight Background */
+	    bg = text_colours[TERM_SHADE];
+	    break;
+	}
+
 	/* Draw it */
-	return (sdl_FontDraw(&win->font, win->surface, colour, x, y, n, mbstr));
+	return (sdl_mapFontDraw(&win->font, win->surface, colour, bg, x, y, n, mbstr));
 }
 
 #ifdef USE_GRAPHICS
@@ -3099,8 +3157,8 @@ static errr sdl_BuildTileset(term_window *win)
  * XXX - This function _never_ seems to get called with n > 1 ?
  * This needs improvement...
  */
-static errr Term_pict_sdl(int col, int row, int n, const byte *ap, const wchar_t *cp,
-						  const byte *tap, const wchar_t *tcp)
+static errr Term_pict_sdl(int col, int row, int n, const int *ap, const wchar_t *cp,
+						  const int *tap, const wchar_t *tcp)
 {
 	
 #ifdef USE_GRAPHICS

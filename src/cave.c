@@ -336,7 +336,7 @@ bool cave_valid_bold(int y, int x)
 /*
  * Hack -- Hallucinatory monster
  */
-static void hallucinatory_monster(byte *a, wchar_t *c)
+static void hallucinatory_monster(int *a, wchar_t *c)
 {
 	while (1)
 	{
@@ -357,7 +357,7 @@ static void hallucinatory_monster(byte *a, wchar_t *c)
 /*
  * Hack -- Hallucinatory object
  */
-static void hallucinatory_object(byte *a, wchar_t *c)
+static void hallucinatory_object(int *a, wchar_t *c)
 {
 	
 	while (1)
@@ -434,10 +434,14 @@ bool dtrap_edge(int y, int x)
 /**
  * Apply text lighting effects
  */
-static void grid_get_attr(grid_data *g, byte *a)
+static void grid_get_attr(grid_data *g, int *a)
 {
+        feature_type *f_ptr = &f_info[g->f_idx];
+	wchar_t c = f_ptr->d_char;
+
+
 	/* Save the high-bit, since it's used for attr inversion. */
-	byte a0 = *a & 0x80;
+	int a0 = *a & 0x80;
 
 	/* We will never tint traps or treasure */
 	if (feat_is_known_trap(g->f_idx) || feat_is_treasure(g->f_idx)) return;
@@ -449,7 +453,20 @@ static void grid_get_attr(grid_data *g, byte *a)
 	}
 
 	/* If the square isn't white we won't apply any other lighting effects. */
-	if ((*a & 0x7F) != TERM_WHITE) return;
+	if ((*a & 0x7F) != TERM_WHITE) {
+	        /* Hybrid or block walls */
+	        if (use_graphics == GRAPHICS_NONE) {
+		        if (OPT(hybrid_walls) && ((c == '#') || (c == '%')))
+			{
+			        *a = *a + (MAX_COLORS * BG_DARK);
+			}
+			else if (OPT(solid_walls) && ((c == '#') || (c == '%')))
+			{
+			        *a = *a + (MAX_COLORS * BG_SAME);
+			}
+		}
+		return;
+	}
 
 	/* If it's a floor tile then we'll tint based on lighting. */
 	if (g->f_idx == FEAT_FLOOR) {
@@ -464,6 +481,19 @@ static void grid_get_attr(grid_data *g, byte *a)
 	/* If it's another kind of tile, only tint when unlit. */
 	if (g->f_idx > FEAT_INVIS && g->lighting == FEAT_LIGHTING_DARK)
 		*a = a0 | TERM_SLATE;
+
+	/* Hybrid or block walls */
+	if (use_graphics == GRAPHICS_NONE) {
+	        if (OPT(hybrid_walls) && ((c == '#') || (c == '%')))
+		{
+		        *a = *a + (MAX_COLORS * BG_DARK);
+		}
+		else if (OPT(solid_walls) && ((c == '#') || (c == '%')))
+		{
+		        *a = *a + (MAX_COLORS * BG_SAME);
+		}
+	}
+
 }
 
 
@@ -502,11 +532,11 @@ static void grid_get_attr(grid_data *g, byte *a)
  * This will probably be done outside of the current text->graphics mappings
  * though.
  */
-void grid_data_as_text(grid_data *g, byte *ap, wchar_t *cp, byte *tap, wchar_t *tcp)
+void grid_data_as_text(grid_data *g, int *ap, wchar_t *cp, byte *tap, wchar_t *tcp)
 {
 	feature_type *f_ptr = &f_info[g->f_idx];
 
-	byte a = f_ptr->x_attr[g->lighting];
+	int a = f_ptr->x_attr[g->lighting];
 	wchar_t c = f_ptr->x_char[g->lighting];
 
 	/* Check for trap detection boundaries */
@@ -1108,7 +1138,7 @@ void cave_light_spot(struct cave *c, int y, int x)
 
 static void prt_map_aux(void)
 {
-	byte a;
+	int a;
 	wchar_t c;
 	byte ta;
 	wchar_t tc;
@@ -1169,7 +1199,7 @@ static void prt_map_aux(void)
  */
 void prt_map(void)
 {
-	byte a;
+	int a;
 	wchar_t c;
 	byte ta;
 	wchar_t tc;
@@ -1237,6 +1267,7 @@ void display_map(int *cy, int *cx)
 	int x, y;
 	grid_data g;
 
+	int a;
 	byte ta;
 	wchar_t tc;
 
@@ -1263,6 +1294,7 @@ void display_map(int *cy, int *cx)
 
 
 	/* Nothing here */
+	a = TERM_WHITE;
 	ta = TERM_WHITE;
 	tc = L' ';
 
@@ -1304,7 +1336,7 @@ void display_map(int *cy, int *cx)
 			{
 				/* Hack - make every grid on the map lit */
 				g.lighting = FEAT_LIGHTING_LIT; /*FEAT_LIGHTING_BRIGHT;*/
-				grid_data_as_text(&g, &ta, &tc, &ta, &tc);
+				grid_data_as_text(&g, &a, &tc, &ta, &tc);
 
 				/* Add the character */
 				Term_putch(col + 1, row + 1, ta, tc);
