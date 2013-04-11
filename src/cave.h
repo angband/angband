@@ -130,9 +130,16 @@ extern bool cave_isseen(struct cave *c, int y, int x);
 extern bool cave_wasseen(struct cave *c, int y, int x);
 extern bool cave_isglow(struct cave *c, int y, int x);
 extern bool cave_iswarded(struct cave *c, int y, int x);
+extern bool cave_canward(struct cave *c, int y, int x);
+
+extern bool cave_seemslikewall(struct cave *c, int y, int x);
+/* interesting to memorize when mapping */
+extern bool cave_isinteresting(struct cave *c, int y, int x);
 
 /* Feature placers */
 extern void cave_add_trap(struct cave *c, int y, int x);
+extern void cave_add_ward(struct cave *c, int y, int x);
+extern void cave_add_stairs(struct cave *c, int y, int x, int depth);
 
 extern void cave_generate(struct cave *c, struct player *p);
 
@@ -159,5 +166,11 @@ void cave_show_trap(struct cave *c, int y, int x, int type);
 void cave_destroy_trap(struct cave *c, int y, int x);
 
 void cave_tunnel_wall(struct cave *c, int y, int x);
+
+void cave_show_vein(struct cave *c, int y, int x);
+
+/* destroy this cell, as destruction spell */
+void cave_destroy(struct cave *c, int y, int x);
+void cave_earthquake(struct cave *c, int y, int x);
 
 #endif /* !CAVE_H */

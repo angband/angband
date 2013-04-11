@@ -111,14 +111,14 @@ bool warding_glyph(void)
 	int py = p_ptr->py;
 	int px = p_ptr->px;
 
-	if (cave->feat[py][px] != FEAT_FLOOR)
+	if (!cave_canward(cave, py, px))
 	{
 		msg("There is no clear floor on which to cast the spell.");
 		return FALSE;
 	}
 
 	/* Create a glyph */
-	cave_set_feat(cave, py, px, FEAT_GLYPH);
+	cave_add_ward(cave, py, px);
 	return TRUE;
 }
 
@@ -514,12 +514,12 @@ void map_area(void)
 		for (x = x1; x < x2; x++)
 		{
 			/* All non-walls are "checked" */
-			if (cave->feat[y][x] < FEAT_SECRET)
+			if (!cave_seemslikewall(cave, y, x))
 			{
 				if (!in_bounds_fully(y, x)) continue;
 
 				/* Memorize normal features */
-				if (cave->feat[y][x] > FEAT_INVIS)
+				if (cave_isinteresting(cave, y, x))
 				{
 					/* Memorize the object */
 					cave->info[y][x] |= (CAVE_MARK);
@@ -533,7 +533,7 @@ void map_area(void)
 					int xx = x + ddx_ddd[i];
 
 					/* Memorize walls (etc) */
-					if (cave->feat[yy][xx] >= FEAT_SECRET)
+					if (cave_seemslikewall(cave, yy, xx))
 					{
 						/* Memorize the walls */
 						cave->info[yy][xx] |= (CAVE_MARK);
@@ -579,7 +579,7 @@ bool detect_traps(bool aware)
 			if (!in_bounds_fully(y, x)) continue;
 
 			/* Detect invisible traps */
-			if (cave->feat[y][x] == FEAT_INVIS)
+			if (cave_issecrettrap(cave, y, x))
 			{
 				/* Pick a trap */
 				pick_trap(y, x);
@@ -686,14 +686,11 @@ bool detect_doorstairs(bool aware)
 			if (!in_bounds_fully(y, x)) continue;
 
 			/* Detect secret doors */
-			if (cave->feat[y][x] == FEAT_SECRET)
+			if (cave_issecretdoor(cave, y, x))
 				place_closed_door(cave, y, x);
 
 			/* Detect doors */
-			if (((cave->feat[y][x] >= FEAT_DOOR_HEAD) &&
-			     (cave->feat[y][x] <= FEAT_DOOR_TAIL)) ||
-			    ((cave->feat[y][x] == FEAT_OPEN) ||
-			     (cave->feat[y][x] == FEAT_BROKEN)))
+			if (cave_isdoor(cave, y, x))
 			{
 				/* Hack -- Memorize */
 				cave->info[y][x] |= (CAVE_MARK);
@@ -706,8 +703,7 @@ bool detect_doorstairs(bool aware)
 			}
 
 			/* Detect stairs */
-			if ((cave->feat[y][x] == FEAT_LESS) ||
-			    (cave->feat[y][x] == FEAT_MORE))
+			if (cave_isstairs(cave, y, x))
 			{
 				/* Hack -- Memorize */
 				cave->info[y][x] |= (CAVE_MARK);
@@ -761,15 +757,10 @@ bool detect_treasure(bool aware, bool full)
 		for (x = x1; x < x2; x++) {
 			if (!in_bounds_fully(y, x)) continue;
 
-			/* Notice embedded gold */
-			if ((cave->feat[y][x] == FEAT_MAGMA_H) ||
-				    (cave->feat[y][x] == FEAT_QUARTZ_H))
-				/* Expose the gold */
-				cave->feat[y][x] += 0x02;
+			cave_show_vein(cave, y, x);
 
 			/* Magma/Quartz + Known Gold */
-			if ((cave->feat[y][x] == FEAT_MAGMA_K) ||
-			    (cave->feat[y][x] == FEAT_QUARTZ_K)) {
+			if (cave_hasgoldvein(cave, y, x)) {
 				/* Hack -- Memorize */
 				cave->info[y][x] |= (CAVE_MARK);
 
@@ -853,16 +844,10 @@ bool detect_close_buried_treasure(void)
 			if (!in_bounds_fully(y, x)) continue;
 
 			/* Notice embedded gold */
-			if ((cave->feat[y][x] == FEAT_MAGMA_H) ||
-			    (cave->feat[y][x] == FEAT_QUARTZ_H))
-			{
-				/* Expose the gold */
-				cave->feat[y][x] += 0x02;
-			}
+			cave_show_vein(cave, y, x);
 
 			/* Magma/Quartz + Known Gold */
-			if ((cave->feat[y][x] == FEAT_MAGMA_K) ||
-			    (cave->feat[y][x] == FEAT_QUARTZ_K))
+			if (cave_hasgoldvein(cave, y, x))
 			{
 				/* Hack -- Memorize */
 				cave->info[y][x] |= (CAVE_MARK);
@@ -1144,7 +1129,7 @@ void stair_creation(void)
 	int px = p_ptr->px;
 
 	/* Only allow stairs to be created on empty floor */
-	if (cave->feat[py][px] != FEAT_FLOOR)
+	if (!cave_isfloor(cave, py, px))
 	{
 		msg("There is no empty floor here.");
 		return;
@@ -1152,24 +1137,8 @@ void stair_creation(void)
 
 	/* Push objects off the grid */
 	if (cave->o_idx[py][px]) push_object(py, px);
-	
-	/* Create a staircase */
-	if (!p_ptr->depth)
-	{
-		cave_set_feat(cave, py, px, FEAT_MORE);
-	}
-	else if (is_quest(p_ptr->depth) || (p_ptr->depth >= MAX_DEPTH-1))
-	{
-		cave_set_feat(cave, py, px, FEAT_LESS);
-	}
-	else if (randint0(100) < 50)
-	{
-		cave_set_feat(cave, py, px, FEAT_MORE);
-	}
-	else
-	{
-		cave_set_feat(cave, py, px, FEAT_LESS);
-	}
+
+	cave_add_stairs(cave, py, px, p_ptr->depth);
 }
 
 
@@ -1958,7 +1927,7 @@ bool probing(void)
  */
 void destroy_area(int y1, int x1, int r, bool full)
 {
-	int y, x, k, t;
+	int y, x, k;
 
 	bool flag = FALSE;
 
@@ -2020,37 +1989,9 @@ void destroy_area(int y1, int x1, int r, bool full)
 			/* Destroy any grid that isn't a permament wall */
 			if (!cave_isperm(cave, y, x))
 			{
-				int feat = FEAT_FLOOR;
-
 				/* Delete objects */
 				delete_object(y, x);
-
-				/* Wall (or floor) type */
-				t = randint0(200);
-
-				/* Granite */
-				if (t < 20)
-				{
-					/* Create granite wall */
-					feat = FEAT_WALL_EXTRA;
-				}
-
-				/* Quartz */
-				else if (t < 70)
-				{
-					/* Create quartz vein */
-					feat = FEAT_QUARTZ;
-				}
-
-				/* Magma */
-				else if (t < 100)
-				{
-					/* Create magma vein */
-					feat = FEAT_MAGMA;
-				}
-
-				/* Change the feature */
-				cave_set_feat(cave, y, x, feat);
+				cave_destroy(cave, y, x);
 			}
 		}
 	}
@@ -2295,7 +2236,8 @@ void earthquake(int cy, int cx, int r)
 							if (!cave_isempty(cave, y, x)) continue;
 
 							/* Hack -- no safety on glyph of warding */
-							if (cave->feat[y][x] == FEAT_GLYPH) continue;
+							if (cave_iswarded(cave, y, x))
+								continue;
 
 							/* Important -- Skip "quake" grids */
 							if (map[16+y-cy][16+x-cx]) continue;
@@ -2382,39 +2324,8 @@ void earthquake(int cy, int cx, int r)
 			/* Destroy location (if valid) */
 			else if (cave_valid_bold(yy, xx))
 			{
-				int feat = FEAT_FLOOR;
-
-				bool floor = cave_ispassable(cave, yy, xx);
-
-				/* Delete objects */
 				delete_object(yy, xx);
-
-				/* Wall (or floor) type */
-				t = (floor ? randint0(100) : 200);
-
-				/* Granite */
-				if (t < 20)
-				{
-					/* Create granite wall */
-					feat = FEAT_WALL_EXTRA;
-				}
-
-				/* Quartz */
-				else if (t < 70)
-				{
-					/* Create quartz vein */
-					feat = FEAT_QUARTZ;
-				}
-
-				/* Magma */
-				else if (t < 100)
-				{
-					/* Create magma vein */
-					feat = FEAT_MAGMA;
-				}
-
-				/* Change the feature */
-				cave_set_feat(cave, yy, xx, feat);
+				cave_earthquake(cave, yy, xx);
 			}
 		}
 	}
@@ -2523,11 +2434,8 @@ static void cave_unlight(struct point_set *ps)
 		cave->info[y][x] &= ~(CAVE_GLOW);
 
 		/* Hack -- Forget "boring" grids */
-		if (cave->feat[y][x] <= FEAT_INVIS)
-		{
-			/* Forget the grid */
+		if (!cave_isinteresting(cave, y, x))
 			cave->info[y][x] &= ~(CAVE_MARK);
-		}
 	}
 
 	/* Fully update the visuals */

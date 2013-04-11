@@ -2993,8 +2993,9 @@ bool cave_isjammeddoor(struct cave *c, int y, int x) {
  */
 bool cave_isdoor(struct cave *c, int y, int x) {
 	return (cave_isopendoor(c, y, x) ||
-			cave_issecretdoor(c, y, x) ||
-			cave_iscloseddoor(cave, y, x));
+		cave_issecretdoor(c, y, x) ||
+		cave_iscloseddoor(c, y, x) ||
+		cave_isbrokendoor(c, y, x));
 }
 
 /**
@@ -3302,5 +3303,70 @@ void cave_add_trap(struct cave *c, int y, int x) {
 }
 
 bool cave_iswarded(struct cave *c, int y, int x) {
-	return cave->feat[y][x] == FEAT_GLYPH;
+	return c->feat[y][x] == FEAT_GLYPH;
+}
+
+void cave_add_ward(struct cave *c, int y, int x) {
+	cave_set_feat(c, y, x, FEAT_GLYPH);
+}
+
+bool cave_canward(struct cave *c, int y, int x) {
+	return cave_isfloor(c, y, x);
+}
+
+bool cave_seemslikewall(struct cave *c, int y, int x) {
+	return c->feat[y][x] >= FEAT_SECRET;
+}
+
+bool cave_isinteresting(struct cave *c, int y, int x) {
+	int f = c->feat[y][x];
+	return f != FEAT_FLOOR && f != FEAT_INVIS;
+}
+
+void cave_show_vein(struct cave *c, int y, int x) {
+	if (c->feat[y][x] == FEAT_MAGMA_H)
+		cave_set_feat(c, y, x, FEAT_MAGMA_K);
+	else if (c->feat[y][x] == FEAT_QUARTZ_H)
+		cave_set_feat(c, y, x, FEAT_QUARTZ_K);
+}
+
+void cave_add_stairs(struct cave *c, int y, int x, int depth) {
+	int down = randint0(100) < 50;
+	if (depth == 0)
+		down = 1;
+	else if (is_quest(depth) || depth >= MAX_DEPTH - 1)
+		down = 0;
+	cave_set_feat(c, y, x, down ? FEAT_MORE : FEAT_LESS);
+}
+
+void cave_destroy(struct cave *c, int y, int x) {
+	int feat = FEAT_FLOOR;
+	int r = randint0(200);
+
+	if (r < 20)
+		feat = FEAT_WALL_EXTRA;
+	else if (r < 70)
+		feat = FEAT_QUARTZ;
+	else if (r < 100)
+		feat = FEAT_MAGMA;
+
+	cave_set_feat(cave, y, x, feat);
+}
+
+void cave_earthquake(struct cave *c, int y, int x) {
+	int t = randint0(100);
+	int f;
+
+	if (!cave_ispassable(c, y, x)) {
+		cave_set_feat(c, y, x, FEAT_FLOOR);
+		return;
+	}
+
+	if (t < 20)
+		f = FEAT_WALL_EXTRA;
+	else if (t < 70)
+		f = FEAT_QUARTZ;
+	else
+		f = FEAT_MAGMA;
+	cave_set_feat(c, y, x, f);
 }
