@@ -644,7 +644,7 @@ void do_cmd_load_screen(void)
 {
 	int i, y, x;
 
-	byte a = 0;
+	int a = 0;
 	wchar_t c = L' ';
 
 	bool okay = TRUE;
@@ -734,7 +734,7 @@ static void do_cmd_save_screen_text(void)
 {
 	int y, x;
 
-	byte a = 0;
+	int a = 0;
 	wchar_t c = L' ';
 
 	ang_file *fff;

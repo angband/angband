@@ -299,7 +299,7 @@ static long mac_os_version;
 
 /* Out-of-band color identifiers */
 /* True black (TERM_BLACK may be altered) */
-#define COLOR_BLACK        (256)
+#define COLOR_BLACK        (255)
 /* No current color */
 #define COLOR_INVALID    (-1)
 
@@ -1172,9 +1172,19 @@ static void ShowTextAt(int x, int y, int color, int n, const wchar_t *text )
 
 	CGRect r;
 	if(use_graphics || !use_overwrite_hack) {
-		r = (CGRect) {{x*td->tile_wid, y*td->tile_hgt},
-											{n*td->tile_wid, td->tile_hgt}};
-		term_data_color(COLOR_BLACK);
+		r = (CGRect) { {x*td->tile_wid, y*td->tile_hgt},
+				{n*td->tile_wid, td->tile_hgt} };
+		switch (color / MAX_COLORS) {
+			case BG_BLACK:
+				term_data_color(COLOR_BLACK);
+				break;
+			case BG_SAME:
+				term_data_color(color % MAX_COLORS);
+				break;
+			case BG_DARK:
+				term_data_color(TERM_SHADE);
+				break;
+		}
 		CGContextFillRect(focus.ctx, r);
 	}
 
@@ -1183,7 +1193,7 @@ static void ShowTextAt(int x, int y, int color, int n, const wchar_t *text )
 		CGContextClipToRect(focus.ctx, r);
 	}
 
-	term_data_color(color);
+	term_data_color(color % MAX_COLORS);
 	/* Monospace; use preset text spacing when tiling is wider than text */
 	if(n == 1 || info->monospace) {
 		CGContextShowGlyphsAtPoint(focus.ctx, 
@@ -1802,7 +1812,7 @@ static errr Term_wipe_mac(int x, int y, int n)
  *
  * Draw several ("n") chars, with an attr, at a given location.
  */
-static errr Term_text_mac(int x, int y, int n, byte a, const wchar_t *cp)
+static errr Term_text_mac(int x, int y, int n, int a, const wchar_t *cp)
 {
 	if(!focus.ctx) activate(focus.active);
 

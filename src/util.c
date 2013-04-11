@@ -973,7 +973,7 @@ void text_out_to_screen(byte a, const char *str)
 		{
 			int i, n = 0;
 
-			byte av[256];
+			int av[256];
 			wchar_t cv[256];
 
 			/* Wrap word */

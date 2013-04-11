@@ -41,16 +41,16 @@ struct term_win
 	bool cu, cv;
 	byte cx, cy;
 
-	byte **a;
+	int **a;
 	wchar_t **c;
 
-	byte *va;
+	int *va;
 	wchar_t *vc;
 
-	byte **ta;
+	int **ta;
 	wchar_t **tc;
 
-	byte *vta;
+	int *vta;
 	wchar_t *vtc;
 
 	term_win *next;
@@ -182,7 +182,7 @@ struct term
 	bool never_bored;
 	bool never_frosh;
 
-	byte attr_blank;
+	int attr_blank;
 	wchar_t char_blank;
 
 	bool complex_input;
@@ -227,9 +227,9 @@ struct term
 
 	errr (*wipe_hook)(int x, int y, int n);
 
-	errr (*text_hook)(int x, int y, int n, byte a, const wchar_t *s);
+	errr (*text_hook)(int x, int y, int n, int a, const wchar_t *s);
 
-	errr (*pict_hook)(int x, int y, int n, const byte *ap, const wchar_t *cp, const byte *tap, const wchar_t *tcp);
+	errr (*pict_hook)(int x, int y, int n, const int *ap, const wchar_t *cp, const int *tap, const wchar_t *tcp);
 
 	size_t (*mbcs_hook)(wchar_t *dest, const char *src, int n);
 
@@ -312,6 +312,7 @@ struct term
 #define TERM_MUSTARD     25    /* M */
 #define TERM_BLUE_SLATE  26    /* z */
 #define TERM_DEEP_L_BLUE 27    /* Z */
+#define TERM_SHADE       28    /* for shaded backgrounds */
 
 /* The following allow color 'translations' to support environments with a limited color depth
  * as well as translate colours to alternates for e.g. menu highlighting. */
@@ -332,7 +333,11 @@ struct term
  * Maximum number of colours, and number of "basic" Angband colours
  */ 
 #define MAX_COLORS        256
-#define BASIC_COLORS    28
+#define BASIC_COLORS    29
+#define BG_BLACK 0	/* The set number for the black-background glyphs */
+#define BG_SAME  1	/* The set number for the same-background glyphs */
+#define BG_DARK  2	/* The set number for the dark-background glyphs */
+#define BG_MAX   3	/* The max number of backgrounds */
 
 
 
@@ -356,19 +361,19 @@ extern bool smlcurs;
 extern errr Term_xtra(int n, int v);
 extern size_t Term_mbstowcs(wchar_t *dest, const char *src, int n);
 
-extern void Term_queue_char(term *t, int x, int y, byte a, wchar_t c, byte ta, wchar_t tc);
-extern void Term_big_queue_char(term *t, int x, int y, byte a, wchar_t c, byte a1, wchar_t c1);
-extern void Term_queue_chars(int x, int y, int n, byte a, const wchar_t *s);
+extern void Term_queue_char(term *t, int x, int y, int a, wchar_t c, int ta, wchar_t tc);
+extern void Term_big_queue_char(term *t, int x, int y, int a, wchar_t c, int a1, wchar_t c1);
+extern void Term_queue_chars(int x, int y, int n, int a, const wchar_t *s);
 
 extern errr Term_fresh(void);
 extern errr Term_set_cursor(bool v);
 extern errr Term_gotoxy(int x, int y);
-extern errr Term_draw(int x, int y, byte a, wchar_t c);
-extern errr Term_addch(byte a, wchar_t c);
-extern errr Term_addstr(int n, byte a, const char *s);
-extern errr Term_putch(int x, int y, byte a, wchar_t c);
-extern void Term_big_putch(int x, int y, byte a, wchar_t c);
-extern errr Term_putstr(int x, int y, int n, byte a, const char *s);
+extern errr Term_draw(int x, int y, int a, wchar_t c);
+extern errr Term_addch(int a, wchar_t c);
+extern errr Term_addstr(int n, int a, const char *s);
+extern errr Term_putch(int x, int y, int a, wchar_t c);
+extern void Term_big_putch(int x, int y, int a, wchar_t c);
+extern errr Term_putstr(int x, int y, int n, int a, const char *s);
 extern errr Term_erase(int x, int y, int n);
 extern errr Term_clear(void);
 extern errr Term_redraw(void);
@@ -378,7 +383,7 @@ extern errr Term_mark(int x, int y);
 extern errr Term_get_cursor(bool *v);
 extern errr Term_get_size(int *w, int *h);
 extern errr Term_locate(int *x, int *y);
-extern errr Term_what(int x, int y, byte *a, wchar_t *c);
+extern errr Term_what(int x, int y, int *a, wchar_t *c);
 
 extern errr Term_flush(void);
 extern errr Term_mousepress(int x, int y, char button);

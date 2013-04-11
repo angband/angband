@@ -709,7 +709,7 @@ static errr Term_wipe_gcu(int x, int y, int n) {
 /*
  * Place some text on the screen using an attribute
  */
-static errr Term_text_gcu(int x, int y, int n, byte a, const wchar_t *s) {
+static errr Term_text_gcu(int x, int y, int n, int a, const wchar_t *s) {
 	term_data *td = (term_data *)(Term->data);
 
 #ifdef A_COLOR
