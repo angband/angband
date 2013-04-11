@@ -3291,3 +3291,12 @@ bool cave_isbrokendoor(struct cave *c, int y, int x) {
 bool cave_isglyph(struct cave *c, int y, int x) {
 	return c->feat[y][x] == FEAT_GLYPH;
 }
+
+void cave_show_trap(struct cave *c, int y, int x, int type) {
+	assert(cave_issecrettrap(c, y, x));
+	c->feat[y][x] = FEAT_TRAP_HEAD + type;
+}
+
+void cave_add_trap(struct cave *c, int y, int x) {
+	cave_set_feat(c, y, x, FEAT_INVIS);
+}

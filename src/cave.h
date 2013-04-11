@@ -130,6 +130,9 @@ extern bool cave_isseen(struct cave *c, int y, int x);
 extern bool cave_wasseen(struct cave *c, int y, int x);
 extern bool cave_isglow(struct cave *c, int y, int x);
 
+/* Feature placers */
+extern void cave_add_trap(struct cave *c, int y, int x);
+
 extern void cave_generate(struct cave *c, struct player *p);
 
 extern bool cave_in_bounds(struct cave *c, int y, int x);
@@ -142,6 +145,7 @@ extern int cave_monster_count(struct cave *c);
 
 void upgrade_mineral(struct cave *c, int y, int x);
 
+/* Feature modifiers */
 void cave_jam_door(struct cave *c, int y, int x);
 int cave_can_jam_door(struct cave *c, int y, int x);
 int cave_door_power(struct cave *c, int y, int x);
@@ -150,6 +154,7 @@ void cave_close_door(struct cave *c, int y, int x);
 void cave_smash_door(struct cave *c, int y, int x);
 void cave_lock_door(struct cave *c, int y, int x, int power);
 
+void cave_show_trap(struct cave *c, int y, int x, int type);
 void cave_destroy_trap(struct cave *c, int y, int x);
 
 void cave_tunnel_wall(struct cave *c, int y, int x);

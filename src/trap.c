@@ -67,29 +67,30 @@ void pick_trap(int y, int x)
 	};
 
 	/* Paranoia */
-	if (cave->feat[y][x] != FEAT_INVIS) return;
+	if (!cave_issecrettrap(cave, y, x))
+		return;
 
 	/* Pick a trap */
 	while (1)
 	{
 		/* Hack -- pick a trap */
-		feat = FEAT_TRAP_HEAD + randint0(16);
+		feat = randint0(16);
 
 		/* Check against minimum depth */
-		if (min_level[feat - FEAT_TRAP_HEAD] > p_ptr->depth) continue;
+		if (min_level[feat] > p_ptr->depth) continue;
 
 		/* Hack -- no trap doors on quest levels */
-		if ((feat == FEAT_TRAP_HEAD + 0x00) && is_quest(p_ptr->depth)) continue;
+		if ((feat == 0x00) && is_quest(p_ptr->depth)) continue;
 
 		/* Hack -- no trap doors on the deepest level */
-		if ((feat == FEAT_TRAP_HEAD + 0x00) && (p_ptr->depth >= MAX_DEPTH-1)) continue;
+		if ((feat == 0x00) && (p_ptr->depth >= MAX_DEPTH-1)) continue;
 
 		/* Done */
 		break;
 	}
 
 	/* Activate the trap */
-	cave_set_feat(cave, y, x, feat);
+	cave_show_trap(cave, y, x, feat);
 }
 
 /* Places a trap. All traps are untyped until discovered. */
@@ -98,8 +99,7 @@ void place_trap(struct cave *c, int y, int x)
 	assert(cave_in_bounds(c, y, x));
 	assert(cave_isempty(c, y, x));
 
-	/* Place an invisible trap */
-	cave_set_feat(c, y, x, FEAT_INVIS);
+	cave_add_trap(c, y, x);
 }
 
 /* Create a trap during play. All traps are untyped until discovered. */
@@ -108,8 +108,7 @@ void create_trap(struct cave *c, int y, int x)
 	assert(cave_in_bounds(c, y, x));
 	assert(cave_isempty(cave, y, x));
 
-	/* Place an invisible trap */
-	cave_set_feat(c, y, x, FEAT_INVIS);
+	cave_add_trap(c, y, x);
 }
 
 /*
