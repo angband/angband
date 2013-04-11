@@ -3370,3 +3370,21 @@ void cave_earthquake(struct cave *c, int y, int x) {
 		f = FEAT_MAGMA;
 	cave_set_feat(c, y, x, f);
 }
+
+bool cave_hassecretvein(struct cave *c, int y, int x) {
+	return c->feat[y][x] == FEAT_MAGMA_H || c->feat[y][x] == FEAT_QUARTZ_H;
+}
+
+bool cave_noticeable(struct cave *c, int y, int x) {
+	int f = c->feat[y][x];
+	if (cave_isfloor(c, y, x))
+		return FALSE;
+	if (cave_issecrettrap(c, y, x) || cave_issecretdoor(c, y, x))
+		return FALSE;
+	if (cave_ismagma(c, y, x) || cave_isquartz(c, y, x))
+		if (!cave_hasgoldvein(c, y, x) || cave_hassecretvein(c, y, x))
+			return FALSE;
+	if (cave_seemslikewall(c, y, x))
+		return FALSE;
+	return TRUE;
+}

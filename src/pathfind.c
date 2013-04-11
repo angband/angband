@@ -412,7 +412,8 @@ static int see_wall(int dir, int y, int x)
 	if (!in_bounds(y, x)) return (FALSE);
 
 	/* Non-wall grids are not known walls */
-	if (cave->feat[y][x] < FEAT_SECRET) return (FALSE);
+	if (!cave_seemslikewall(cave, y, x))
+		return FALSE;
 
 	/* Unknown walls are not known walls */
 	if (!(cave->info[y][x] & (CAVE_MARK))) return (FALSE);
@@ -603,45 +604,7 @@ static bool run_test(void)
 		/* Check memorized grids */
 		if (cave->info[row][col] & (CAVE_MARK))
 		{
-			bool notice = TRUE;
-
-			/* Examine the terrain */
-			switch (cave->feat[row][col])
-			{
-				/* Floors */
-				case FEAT_FLOOR:
-
-				/* Invis traps */
-				case FEAT_INVIS:
-
-				/* Secret doors */
-				case FEAT_SECRET:
-
-				/* Normal veins */
-				case FEAT_MAGMA:
-				case FEAT_QUARTZ:
-
-				/* Hidden treasure */
-				case FEAT_MAGMA_H:
-				case FEAT_QUARTZ_H:
-
-				/* Walls */
-				case FEAT_WALL_EXTRA:
-				case FEAT_WALL_INNER:
-				case FEAT_WALL_OUTER:
-				case FEAT_WALL_SOLID:
-				case FEAT_PERM_EXTRA:
-				case FEAT_PERM_INNER:
-				case FEAT_PERM_OUTER:
-				case FEAT_PERM_SOLID:
-				{
-					/* Ignore */
-					notice = FALSE;
-
-					/* Done */
-					break;
-				}
-			}
+			bool notice = cave_noticeable(cave, row, col);
 
 			/* Interesting feature */
 			if (notice) return (TRUE);

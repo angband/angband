@@ -89,6 +89,7 @@ extern bool cave_isperm(struct cave *c, int y, int x);
 extern bool cave_ismagma(struct cave *c, int y, int x);
 extern bool cave_isquartz(struct cave *c, int y, int x);
 extern bool cave_ismineral(struct cave *c, int y, int x);
+extern bool cave_hassecretvein(struct cave *c, int y, int x);
 extern bool cave_hasgoldvein(struct cave *c, int y, int x);
 extern bool feat_is_treasure(int feat);
 extern bool cave_issecretdoor(struct cave *c, int y, int x);
@@ -135,6 +136,8 @@ extern bool cave_canward(struct cave *c, int y, int x);
 extern bool cave_seemslikewall(struct cave *c, int y, int x);
 /* interesting to memorize when mapping */
 extern bool cave_isinteresting(struct cave *c, int y, int x);
+/* noticeable when running */
+extern bool cave_noticeable(struct cave *c, int y, int x);
 
 /* Feature placers */
 extern void cave_add_trap(struct cave *c, int y, int x);
