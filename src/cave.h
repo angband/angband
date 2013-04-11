@@ -129,6 +129,7 @@ extern bool cave_isview(struct cave *c, int y, int x);
 extern bool cave_isseen(struct cave *c, int y, int x);
 extern bool cave_wasseen(struct cave *c, int y, int x);
 extern bool cave_isglow(struct cave *c, int y, int x);
+extern bool cave_iswarded(struct cave *c, int y, int x);
 
 /* Feature placers */
 extern void cave_add_trap(struct cave *c, int y, int x);

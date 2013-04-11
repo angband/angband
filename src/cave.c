@@ -3300,3 +3300,7 @@ void cave_show_trap(struct cave *c, int y, int x, int type) {
 void cave_add_trap(struct cave *c, int y, int x) {
 	cave_set_feat(c, y, x, FEAT_INVIS);
 }
+
+bool cave_iswarded(struct cave *c, int y, int x) {
+	return cave->feat[y][x] == FEAT_GLYPH;
+}

@@ -1364,7 +1364,7 @@ int summon_specific(int y1, int x1, int lev, int type, int delay)
 		if (!cave_isempty(cave, y, x)) continue;
 
 		/* Hack -- no summon on glyph of warding */
-		if (cave->feat[y][x] == FEAT_GLYPH) continue;
+		if (cave_iswarded(cave, y, x)) continue;
 
 		/* Okay */
 		break;

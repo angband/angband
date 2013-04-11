@@ -585,7 +585,7 @@ static bool twall(int y, int x)
 	cave->info[y][x] &= ~(CAVE_MARK);
 
 	/* Remove the feature */
-	cave_set_feat(cave, y, x, FEAT_FLOOR);
+	cave_tunnel_wall(cave, y, x);
 
 	/* Update the visuals */
 	p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
