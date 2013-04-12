@@ -282,7 +282,7 @@ static errr term_wipe_test(int x, int y, int n) {
 	return 0;
 }
 
-static errr term_text_test(int x, int y, int n, byte a, const wchar_t *s) {
+static errr term_text_test(int x, int y, int n, int a, const wchar_t *s) {
 	if (verbose) {
 		char str[256];
 		wcstombs(str, s, 256);
