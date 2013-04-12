@@ -831,9 +831,10 @@ int mon_hp(const struct monster_race *race, aspect hp_aspect)
 			return race->avg_hp;
 		case RANDOMISE:
 			return Rand_normal(race->avg_hp, std_dev);
-		default:
-			assert(0);
 	}
+
+	assert(0 && "Should never reach here");
+	return 0;
 }
 
 
