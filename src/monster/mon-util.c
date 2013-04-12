@@ -129,12 +129,12 @@ void plural_aux(char *name, size_t max)
 
 		if (dummy[i - 1] == 's')
 		{
-			strcpy (&(dummy[i]), "es");
+			strcpy(&(dummy[i]), "es");
 			i++;
 		}
 		else
 		{
-			strcpy (&(dummy[i]), "s");
+			strcpy(&(dummy[i]), "s");
 		}
 
 		strcpy(&(dummy[i + 1]), aider);
@@ -143,58 +143,58 @@ void plural_aux(char *name, size_t max)
 	else if ((strstr(name, "coins")) || (strstr(name, "gems")))
 	{
 		char dummy[80];
-		strcpy (dummy, "Piles of c");
-		my_strcat (dummy, &(name[1]), sizeof(dummy));
-		my_strcpy (name, dummy, max);
+		strcpy(dummy, "Piles of c");
+		my_strcat(dummy, &(name[1]), sizeof(dummy));
+		my_strcpy(name, dummy, max);
 		return;
 	}
 
 	else if (strstr(name, "Greater Servant of"))
 	{
 		char dummy[80];
-		strcpy (dummy, "Greater Servants of ");
-		my_strcat (dummy, &(name[1]), sizeof(dummy));
-		my_strcpy (name, dummy, max);
+		strcpy(dummy, "Greater Servants of ");
+		my_strcat(dummy, &(name[1]), sizeof(dummy));
+		my_strcpy(name, dummy, max);
 		return;
 	}
 	else if (strstr(name, "Lesser Servant of"))
 	{
 		char dummy[80];
-		strcpy (dummy, "Greater Servants of ");
-		my_strcat (dummy, &(name[1]), sizeof(dummy));
-		my_strcpy (name, dummy, max);
+		strcpy(dummy, "Greater Servants of ");
+		my_strcat(dummy, &(name[1]), sizeof(dummy));
+		my_strcpy(name, dummy, max);
 		return;
 	}
 	else if (strstr(name, "Servant of"))
 	{
 		char dummy[80];
-		strcpy (dummy, "Servants of ");
-		my_strcat (dummy, &(name[1]), sizeof(dummy));
-		my_strcpy (name, dummy, max);
+		strcpy(dummy, "Servants of ");
+		my_strcat(dummy, &(name[1]), sizeof(dummy));
+		my_strcpy(name, dummy, max);
 		return;
 	}
 	else if (strstr(name, "Great Wyrm"))
 	{
 		char dummy[80];
-		strcpy (dummy, "Great Wyrms ");
-		my_strcat (dummy, &(name[1]), sizeof(dummy));
-		my_strcpy (name, dummy, max);
+		strcpy(dummy, "Great Wyrms ");
+		my_strcat(dummy, &(name[1]), sizeof(dummy));
+		my_strcpy(name, dummy, max);
 		return;
 	}
 	else if (strstr(name, "Spawn of"))
 	{
 		char dummy[80];
-		strcpy (dummy, "Spawn of ");
-		my_strcat (dummy, &(name[1]), sizeof(dummy));
-		my_strcpy (name, dummy, max);
+		strcpy(dummy, "Spawn of ");
+		my_strcat(dummy, &(name[1]), sizeof(dummy));
+		my_strcpy(name, dummy, max);
 		return;
 	}
 	else if (strstr(name, "Descendant of"))
 	{
 		char dummy[80];
-		strcpy (dummy, "Descendant of ");
-		my_strcat (dummy, &(name[1]), sizeof(dummy));
-		my_strcpy (name, dummy, max);
+		strcpy(dummy, "Descendant of ");
+		my_strcat(dummy, &(name[1]), sizeof(dummy));
+		my_strcpy(name, dummy, max);
 		return;
 	}
 	else if ((strstr(name, "Manes")) || (name[name_len-1] == 'u') || (strstr(name, "Yeti")) ||
@@ -209,56 +209,56 @@ void plural_aux(char *name, size_t max)
 	}
 	else if (streq(&(name[name_len - 4]), "ouse"))
 	{
-		strcpy (&(name[name_len - 4]), "ice");
+		strcpy(&(name[name_len - 4]), "ice");
 	}
 	else if (streq(&(name[name_len - 4]), "lung"))
 	{
-		strcpy (&(name[name_len - 4]), "lungen");
+		strcpy(&(name[name_len - 4]), "lungen");
 	}
 	else if (streq(&(name[name_len - 3]), "sus"))
 	{
-		strcpy (&(name[name_len - 3]), "si");
+		strcpy(&(name[name_len - 3]), "si");
 	}
 	else if (streq(&(name[name_len - 4]), "star"))
 	{
-		strcpy (&(name[name_len - 4]), "stari");
+		strcpy(&(name[name_len - 4]), "stari");
 	}
 	else if (streq(&(name[name_len - 3]), "aia"))
 	{
-		strcpy (&(name[name_len - 3]), "aiar");
+		strcpy(&(name[name_len - 3]), "aiar");
 	}
 	else if (streq(&(name[name_len - 3]), "inu"))
 	{
-		strcpy (&(name[name_len - 3]), "inur");
+		strcpy(&(name[name_len - 3]), "inur");
 	}
 	else if (streq(&(name[name_len - 5]), "culus"))
 	{
-		strcpy (&(name[name_len - 5]), "culi");
+		strcpy(&(name[name_len - 5]), "culi");
 	}
 	else if (streq(&(name[name_len - 4]), "sman"))
 	{
-		strcpy (&(name[name_len - 4]), "smen");
+		strcpy(&(name[name_len - 4]), "smen");
 	}
 	else if (streq(&(name[name_len - 4]), "lman"))
 	{
-		strcpy (&(name[name_len - 4]), "lmen");
+		strcpy(&(name[name_len - 4]), "lmen");
 	}
 	else if (streq(&(name[name_len - 2]), "ex"))
 	{
-		strcpy (&(name[name_len - 2]), "ices");
+		strcpy(&(name[name_len - 2]), "ices");
 	}
 	else if ((name[name_len - 1] == 'f') && (!streq(&(name[name_len - 2]), "ff")))
 	{
-		strcpy (&(name[name_len - 1]), "ves");
+		strcpy(&(name[name_len - 1]), "ves");
 	}
 	else if (((streq(&(name[name_len - 2]), "ch")) || (name[name_len - 1] == 's')) &&
 			(!streq(&(name[name_len - 5]), "iarch")))
 	{
-		strcpy (&(name[name_len]), "es");
+		strcpy(&(name[name_len]), "es");
 	}
 	else
 	{
-		strcpy (&(name[name_len]), "s");
+		strcpy(&(name[name_len]), "s");
 	}
 }
 
