@@ -86,6 +86,7 @@
 #include "files.h"
 #include "grafmode.h"
 #include "win/win-menu.h"
+#include "savefile.h" /* savefile_set_name() */
 
 /* Make sure the winver allows the AlphaBlend function */
 #if (WINVER < 0x0500)
@@ -2572,7 +2573,7 @@ static void windows_map_aux(void)
 	wchar_t c;
 	int x, min_x, max_x;
 	int y, min_y, max_y;
-	byte ta;
+	int ta;
 	wchar_t tc;
 
 	td->map_tile_wid = (td->tile_wid * td->cols) / DUNGEON_WID;
