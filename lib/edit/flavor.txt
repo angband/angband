@@ -26,1025 +26,1025 @@ V:3.0.11
 ##### Rings #####
 
 # Fixed: the One Ring
-N:1:45:55
+N:1:ring:55
 G:=:Yellow
 D:Plain Gold
 
-N:2:45
+N:2:ring
 G:=:Green
 D:Alexandrite
 
-N:3:45
+N:3:ring
 G:=:Violet
 D:Amethyst
 
-N:4:45
+N:4:ring
 G:=:Light Blue
 D:Aquamarine
 
-N:5:45
+N:5:ring
 G:=:Light Blue
 D:Azurite
 
-N:6:45
+N:6:ring
 G:=:Light Green
 D:Beryl
 
-N:7:45
+N:7:ring
 G:=:Red
 D:Bloodstone
 
-N:8:45
+N:8:ring
 G:=:White
 D:Calcite
 
-N:9:45
+N:9:ring
 G:=:Red
 D:Carnelian
 
-N:10:45
+N:10:ring
 G:=:Slate
 D:Corundum
 
-N:11:45
+N:11:ring
 G:=:White
 D:Diamond
 
-N:12:45
+N:12:ring
 G:=:Green
 D:Emerald
 
-N:13:45
+N:13:ring
 G:=:Light Green
 D:Fluorite
 
-N:14:45
+N:14:ring
 G:=:Red
 D:Garnet
 
-N:15:45
+N:15:ring
 G:=:Light Slate
 D:Granite
 
-N:16:45
+N:16:ring
 G:=:Light Green
 D:Jade
 
-N:17:45
+N:17:ring
 G:=:Umber
 D:Jasper
 
-N:18:45
+N:18:ring
 G:=:Blue
 D:Lapis Lazuli
 
-N:19:45
+N:19:ring
 G:=:Green
 D:Malachite
 
-N:20:45
+N:20:ring
 G:=:White
 D:Marble
 
-N:21:45
+N:21:ring
 G:=:Light Slate
 D:Moonstone
 
-N:22:45
+N:22:ring
 G:=:Light Red
 D:Onyx
 
-N:23:45
+N:23:ring
 G:=:Light Slate
 D:Opal
 
-N:24:45
+N:24:ring
 G:=:White
 D:Pearl
 
-N:25:45
+N:25:ring
 G:=:Light Slate
 D:Quartz
 
-N:26:45
+N:26:ring
 G:=:Light Slate
 D:Quartzite
 
-N:27:45
+N:27:ring
 G:=:Light Red
 D:Rhodonite
 
-N:28:45
+N:28:ring
 G:=:Red
 D:Ruby
 
-N:29:45
+N:29:ring
 G:=:Blue
 D:Sapphire
 
-N:30:45
+N:30:ring
 G:=:Yellow
 D:Tiger Eye
 
-N:31:45
+N:31:ring
 G:=:Yellow
 D:Topaz
 
-N:32:45
+N:32:ring
 G:=:Light Blue
 D:Turquoise
 
-N:33:45
+N:33:ring
 G:=:Light Umber
 D:Zircon
 
-N:34:45
+N:34:ring
 G:=:White
 D:Platinum
 
-N:35:45
+N:35:ring
 G:=:Light Umber
 D:Bronze
 
-N:36:45
+N:36:ring
 G:=:Yellow
 D:Gold
 
-N:37:45
+N:37:ring
 G:=:Light Dark
 D:Obsidian
 
-N:38:45
+N:38:ring
 G:=:Light Slate
 D:Silver
 
-N:39:45
+N:39:ring
 G:=:Umber
 D:Tortoise Shell
 
-N:40:45
+N:40:ring
 G:=:Light Blue
 D:Mithril
 
-N:41:45
+N:41:ring
 G:=:Light Dark
 D:Jet
 
-N:42:45
+N:42:ring
 G:=:Yellow
 D:Engagement
 
-N:43:45
+N:43:ring
 G:=:Light Green
 D:Adamantite
 
 
 ##### Amulets #####
 
-N:44:40
+N:44:amulet
 G:":Yellow
 D:Amber
 
-N:45:40
+N:45:amulet
 G:":Light Umber
 D:Driftwood
 
-N:46:40
+N:46:amulet
 G:":White
 D:Coral
 
-N:47:40
+N:47:amulet
 G:":Light Slate
 D:Agate
 
-N:48:40
+N:48:amulet
 G:":White
 D:Ivory
 
-N:49:40
+N:49:amulet
 G:":Light Dark
 D:Obsidian
 
-N:50:40
+N:50:amulet
 G:":White
 D:Bone
 
-N:51:40
+N:51:amulet
 G:":Light Umber
 D:Brass
 
-N:52:40
+N:52:amulet
 G:":Light Umber
 D:Bronze
 
-N:53:40
+N:53:amulet
 G:":Slate
 D:Pewter
 
-N:54:40
+N:54:amulet
 G:":Umber
 D:Tortoise Shell
 
-N:55:40
+N:55:amulet
 G:":Yellow
 D:Golden
 
-N:56:40
+N:56:amulet
 G:":Light Blue
 D:Azure
 
-N:57:40
+N:57:amulet
 G:":White
 D:Crystal
 
-N:58:40
+N:58:amulet
 G:":Light Slate
 D:Silver
 
-N:59:40
+N:59:amulet
 G:":Light Umber
 D:Copper
 
-N:60:40
+N:60:amulet
 G:":Umber
 D:Carved Oak
 
-N:61:40
+N:61:amulet
 G:":Light Slate
 D:Dragon Tooth
 
-N:62:40
+N:62:amulet
 G:":Red
 D:Ruby
 
-N:63:40
+N:63:amulet
 G:":Light Blue
 D:Mithril
 
-N:64:40
+N:64:amulet
 G:":Light Green
 D:Adamant
 
-N:65:40
+N:65:amulet
 G:":Slate
 D:Flint Stone
 
-N:66:40
+N:66:amulet
 G:":Light Blue
 D:Sea Shell
 
-N:67:40
+N:67:amulet
 G:":Light Slate
 D:Mother-of-Pearl
 
 
 ##### Staves #####
 
-N:68:55
+N:68:staff
 G:_:Light Umber
 D:Aspen
 
-N:69:55
+N:69:staff
 G:_:Light Umber
 D:Balsa
 
-N:70:55
+N:70:staff
 G:_:Light Umber
 D:Banyan
 
-N:71:55
+N:71:staff
 G:_:Light Umber
 D:Birch
 
-N:72:55
+N:72:staff
 G:_:Light Umber
 D:Cedar
 
-N:73:55
+N:73:staff
 G:_:Light Umber
 D:Cottonwood
 
-N:74:55
+N:74:staff
 G:_:Light Umber
 D:Cypress
 
-N:75:55
+N:75:staff
 G:_:Light Umber
 D:Dogwood
 
-N:76:55
+N:76:staff
 G:_:Light Umber
 D:Elm
 
-N:77:55
+N:77:staff
 G:_:Light Umber
 D:Eucalyptus
 
-N:78:55
+N:78:staff
 G:_:Light Umber
 D:Hemlock
 
-N:79:55
+N:79:staff
 G:_:Light Umber
 D:Hickory
 
-N:80:55
+N:80:staff
 G:_:Umber
 D:Ironwood
 
-N:81:55
+N:81:staff
 G:_:Light Umber
 D:Locust
 
-N:82:55
+N:82:staff
 G:_:Umber
 D:Mahogany
 
-N:83:55
+N:83:staff
 G:_:Umber
 D:Maple
 
-N:84:55
+N:84:staff
 G:_:Umber
 D:Mulberry
 
-N:85:55
+N:85:staff
 G:_:Umber
 D:Oak
 
-N:86:55
+N:86:staff
 G:_:Umber
 D:Pine
 
-N:87:55
+N:87:staff
 G:_:Red
 D:Redwood
 
-N:88:55
+N:88:staff
 G:_:Red
 D:Rosewood
 
-N:89:55
+N:89:staff
 G:_:Light Umber
 D:Spruce
 
-N:90:55
+N:90:staff
 G:_:Light Umber
 D:Sycamore
 
-N:91:55
+N:91:staff
 G:_:Light Umber
 D:Teak
 
-N:92:55
+N:92:staff
 G:_:Umber
 D:Walnut
 
-N:93:55
+N:93:staff
 G:_:Green
 D:Mistletoe
 
-N:94:55
+N:94:staff
 G:_:Light Umber
 D:Hawthorn
 
-N:95:55
+N:95:staff
 G:_:Light Umber
 D:Bamboo
 
-N:96:55
+N:96:staff
 G:_:Light Slate
 D:Silver
 
-N:97:55
+N:97:staff
 G:_:Umber
 D:Runed
 
-N:98:55
+N:98:staff
 G:_:Yellow
 D:Golden
 
-N:99:55
+N:99:staff
 G:_:Slate
 D:Ashen
 
-N:100:55
+N:100:staff
 G:_:Light Umber
 D:Gnarled
 
-N:101:55
+N:101:staff
 G:_:White
 D:Ivory
 
-N:102:55
+N:102:staff
 G:_:Light Umber
 D:Willow
 
 
 ##### Wands #####
 
-N:103:65
+N:103:wand
 G:-:Light Blue
 D:Aluminium
 
-N:104:65
+N:104:wand
 G:-:Light Dark
 D:Cast Iron
 
-N:105:65
+N:105:wand
 G:-:White
 D:Chromium
 
-N:106:65
+N:106:wand
 G:-:Light Umber
 D:Copper
 
-N:107:65
+N:107:wand
 G:-:Yellow
 D:Gold
 
-N:108:65
+N:108:wand
 G:-:Slate
 D:Iron
 
-N:109:65
+N:109:wand
 G:-:Light Slate
 D:Magnesium
 
-N:110:65
+N:110:wand
 G:-:Light Slate
 D:Molybdenum
 
-N:111:65
+N:111:wand
 G:-:Light Umber
 D:Nickel
 
-N:112:65
+N:112:wand
 G:-:Red
 D:Rusty
 
-N:113:65
+N:113:wand
 G:-:Light Slate
 D:Silver
 
-N:114:65
+N:114:wand
 G:-:Light Slate
 D:Steel
 
-N:115:65
+N:115:wand
 G:-:Light Slate
 D:Tin
 
-N:116:65
+N:116:wand
 G:-:White
 D:Titanium
 
-N:117:65
+N:117:wand
 G:-:White
 D:Tungsten
 
-N:118:65
+N:118:wand
 G:-:Light Slate
 D:Zirconium
 
-N:119:65
+N:119:wand
 G:-:Light Slate
 D:Zinc
 
-N:120:65
+N:120:wand
 G:-:Light Blue
 D:Aluminum-Plated
 
-N:121:65
+N:121:wand
 G:-:Light Umber
 D:Copper-Plated
 
-N:122:65
+N:122:wand
 G:-:Yellow
 D:Gold-Plated
 
-N:123:65
+N:123:wand
 G:-:Light Umber
 D:Nickel-Plated
 
-N:124:65
+N:124:wand
 G:-:Light Slate
 D:Silver-Plated
 
-N:125:65
+N:125:wand
 G:-:Light Slate
 D:Steel-Plated
 
-N:126:65
+N:126:wand
 G:-:Light Slate
 D:Tin-Plated
 
-N:127:65
+N:127:wand
 G:-:Light Slate
 D:Zinc-Plated
 
-N:128:65
+N:128:wand
 G:-:Light Blue
 D:Mithril-Plated
 
-N:129:65
+N:129:wand
 G:-:Light Blue
 D:Mithril
 
-N:130:65
+N:130:wand
 G:-:Umber
 D:Runed
 
-N:131:65
+N:131:wand
 G:-:Light Umber
 D:Bronze
 
-N:132:65
+N:132:wand
 G:-:Light Umber
 D:Brass
 
-N:133:65
+N:133:wand
 G:-:White
 D:Platinum
 
-N:134:65
+N:134:wand
 G:-:Slate
 D:Lead
 
-N:135:65
+N:135:wand
 G:-:Slate
 D:Lead-Plated
 
-N:136:65
+N:136:wand
 G:-:White
 D:Ivory
 
-N:137:65
+N:137:wand
 G:-:Slate
 D:Pewter
 
 
 ##### Rods #####
 
-N:138:66
+N:138:rod
 G:-:Light Blue
 D:Aluminum
 
-N:139:66
+N:139:rod
 G:-:Light Dark
 D:Cast Iron
 
-N:140:66
+N:140:rod
 G:-:White
 D:Chromium
 
-N:141:66
+N:141:rod
 G:-:Light Umber
 D:Copper
 
-N:142:66
+N:142:rod
 G:-:Yellow
 D:Gold
 
-N:143:66
+N:143:rod
 G:-:Slate
 D:Iron
 
-N:144:66
+N:144:rod
 G:-:Light Slate
 D:Magnesium
 
-N:145:66
+N:145:rod
 G:-:Light Slate
 D:Molybdenum
 
-N:146:66
+N:146:rod
 G:-:Light Umber
 D:Nickel
 
-N:147:66
+N:147:rod
 G:-:Red
 D:Rusty
 
-N:148:66
+N:148:rod
 G:-:Light Slate
 D:Silver
 
-N:149:66
+N:149:rod
 G:-:Light Slate
 D:Steel
 
-N:150:66
+N:150:rod
 G:-:Light Slate
 D:Tin
 
-N:151:66
+N:151:rod
 G:-:White
 D:Titanium
 
-N:152:66
+N:152:rod
 G:-:White
 D:Tungsten
 
-N:153:66
+N:153:rod
 G:-:Light Slate
 D:Zirconium
 
-N:154:66
+N:154:rod
 G:-:Light Slate
 D:Zinc
 
-N:155:66
+N:155:rod
 G:-:Light Blue
 D:Aluminum-Plated
 
-N:156:66
+N:156:rod
 G:-:Light Umber
 D:Copper-Plated
 
-N:157:66
+N:157:rod
 G:-:Yellow
 D:Gold-Plated
 
-N:158:66
+N:158:rod
 G:-:Light Umber
 D:Nickel-Plated
 
-N:159:66
+N:159:rod
 G:-:Light Slate
 D:Silver-Plated
 
-N:160:66
+N:160:rod
 G:-:Light Slate
 D:Steel-Plated
 
-N:161:66
+N:161:rod
 G:-:Light Slate
 D:Tin-Plated
 
-N:162:66
+N:162:rod
 G:-:Light Slate
 D:Zinc-Plated
 
-N:163:66
+N:163:rod
 G:-:Light Blue
 D:Mithril-Plated
 
-N:164:66
+N:164:rod
 G:-:Light Blue
 D:Mithril
 
-N:165:66
+N:165:rod
 G:-:Umber
 D:Runed
 
-N:166:66
+N:166:rod
 G:-:Light Umber
 D:Bronze
 
-N:167:66
+N:167:rod
 G:-:Light Umber
 D:Brass
 
-N:168:66
+N:168:rod
 G:-:White
 D:Platinum
 
-N:169:66
+N:169:rod
 G:-:Slate
 D:Lead
 
-N:170:66
+N:170:rod
 G:-:Slate
 D:Lead-Plated
 
-N:171:66
+N:171:rod
 G:-:White
 D:Ivory
 
-N:172:66
+N:172:rod
 G:-:Slate
 D:Pewter
 
 
 ##### Mushrooms #####
 
-N:173:80
+N:173:food
 G:,:Blue
 D:Blue
 
-N:174:80
+N:174:food
 G:,:Light Dark
 D:Black
 
-N:175:80
+N:175:food
 G:,:Light Dark
 D:Black Spotted
 
-N:176:80
+N:176:food
 G:,:Umber
 D:Brown
 
-N:177:80
+N:177:food
 G:,:Blue
 D:Dark Blue
 
-N:178:80
+N:178:food
 G:,:Green
 D:Dark Green
 
-N:179:80
+N:179:food
 G:,:Red
 D:Dark Red
 
-N:180:80
+N:180:food
 G:,:Yellow
 D:Yellow
 
-N:181:80
+N:181:food
 G:,:Light Slate
 D:Furry
 
-N:182:80
+N:182:food
 G:,:Green
 D:Green
 
-N:183:80
+N:183:food
 G:,:Slate
 D:Grey
 
-N:184:80
+N:184:food
 G:,:Light Blue
 D:Light Blue
 
-N:185:80
+N:185:food
 G:,:Light Green
 D:Light Green
 
-N:186:80
+N:186:food
 G:,:Violet
 D:Violet
 
-N:187:80
+N:187:food
 G:,:Red
 D:Red
 
-N:188:80
+N:188:food
 G:,:Slate
 D:Slimy
 
-N:189:80
+N:189:food
 G:,:Light Umber
 D:Tan
 
-N:190:80
+N:190:food
 G:,:White
 D:White
 
-N:191:80
+N:191:food
 G:,:White
 D:White Spotted
 
-N:192:80
+N:192:food
 G:,:Umber
 D:Wrinkled
 
 
 ##### Potions #####
 
-N:193:75
+N:193:potion
 G:!:White
 D:Clear
 
-N:194:75
+N:194:potion
 G:!:Light Umber
 D:Light Brown
 
-N:195:75
+N:195:potion
 G:!:Green
 D:Icky Green
 
-N:196:75
+N:196:potion
 G:!:Light Blue
 D:Azure
 
-N:197:75
+N:197:potion
 G:!:Blue
 D:Blue
 
-N:198:75
+N:198:potion
 G:!:Blue
 D:Blue Speckled
 
-N:199:75
+N:199:potion
 G:!:Light Dark
 D:Black
 
-N:200:75
+N:200:potion
 G:!:Umber
 D:Brown
 
-N:201:75
+N:201:potion
 G:!:Umber
 D:Brown Speckled
 
-N:202:75
+N:202:potion
 G:!:Light Slate
 D:Bubbling
 
-N:203:75
+N:203:potion
 G:!:Light Green
 D:Chartreuse
 
-N:204:75
+N:204:potion
 G:!:White
 D:Cloudy
 
-N:205:75
+N:205:potion
 G:!:Light Umber
 D:Copper Speckled
 
-N:206:75
+N:206:potion
 G:!:Red
 D:Crimson
 
-N:207:75
+N:207:potion
 G:!:Light Blue
 D:Cyan
 
-N:208:75
+N:208:potion
 G:!:Blue
 D:Dark Blue
 
-N:209:75
+N:209:potion
 G:!:Green
 D:Dark Green
 
-N:210:75
+N:210:potion
 G:!:Red
 D:Dark Red
 
-N:211:75
+N:211:potion
 G:!:Yellow
 D:Gold Speckled
 
-N:212:75
+N:212:potion
 G:!:Green
 D:Green
 
-N:213:75
+N:213:potion
 G:!:Green
 D:Green Speckled
 
-N:214:75
+N:214:potion
 G:!:Slate
 D:Grey
 
-N:215:75
+N:215:potion
 G:!:Slate
 D:Grey Speckled
 
-N:216:75
+N:216:potion
 G:!:Light Slate
 D:Hazy
 
-N:217:75
+N:217:potion
 G:!:Violet
 D:Indigo
 
-N:218:75
+N:218:potion
 G:!:Light Blue
 D:Light Blue
 
-N:219:75
+N:219:potion
 G:!:Light Green
 D:Light Green
 
-N:220:75
+N:220:potion
 G:!:Red
 D:Magenta
 
-N:221:75
+N:221:potion
 G:!:Blue
 D:Metallic Blue
 
-N:222:75
+N:222:potion
 G:!:Red
 D:Metallic Red
 
-N:223:75
+N:223:potion
 G:!:Green
 D:Metallic Green
 
-N:224:75
+N:224:potion
 G:!:Violet
 D:Metallic Purple
 
-N:225:75
+N:225:potion
 G:!:Light Slate
 D:Misty
 
-N:226:75
+N:226:potion
 G:!:Orange
 D:Orange
 
-N:227:75
+N:227:potion
 G:!:Orange
 D:Orange Speckled
 
-N:228:75
+N:228:potion
 G:!:Light Red
 D:Pink
 
-N:229:75
+N:229:potion
 G:!:Light Red
 D:Pink Speckled
 
-N:230:75
+N:230:potion
 G:!:Violet
 D:Puce
 
-N:231:75
+N:231:potion
 G:!:Violet
 D:Purple
 
-N:232:75
+N:232:potion
 G:!:Violet
 D:Purple Speckled
 
-N:233:75
+N:233:potion
 G:!:Red
 D:Red
 
-N:234:75
+N:234:potion
 G:!:Red
 D:Red Speckled
 
-N:235:75
+N:235:potion
 G:!:Light Slate
 D:Silver Speckled
 
-N:236:75
+N:236:potion
 G:!:Light Dark
 D:Smoky
 
-N:237:75
+N:237:potion
 G:!:Orange
 D:Tangerine
 
-N:238:75
+N:238:potion
 G:!:Violet
 D:Violet
 
-N:239:75
+N:239:potion
 G:!:Red
 D:Vermilion
 
-N:240:75
+N:240:potion
 G:!:White
 D:White
 
-N:241:75
+N:241:potion
 G:!:Yellow
 D:Yellow
 
-N:242:75
+N:242:potion
 G:!:Violet
 D:Violet Speckled
 
-N:243:75
+N:243:potion
 G:!:Light Red
 D:Pungent
 
-N:244:75
+N:244:potion
 G:!:Red
 D:Clotted Red
 
-N:245:75
+N:245:potion
 G:!:Light Red
 D:Viscous Pink
 
-N:246:75
+N:246:potion
 G:!:Yellow
 D:Oily Yellow
 
-N:247:75
+N:247:potion
 G:!:Green
 D:Gloopy Green
 
-N:248:75
+N:248:potion
 G:!:Violet
 D:Shimmering
 
-N:249:75
+N:249:potion
 G:!:Red
 D:Coagulated Crimson
 
-N:250:75
+N:250:potion
 G:!:Yellow
 D:Yellow Speckled
 
-N:251:75
+N:251:potion
 G:!:Yellow
 D:Gold
 
@@ -1053,155 +1053,155 @@ D:Gold
 
 # Scroll names are generated from randomly combined syllables
 
-N:252:70
+N:252:scroll
 G:?:White
 
-N:253:70
+N:253:scroll
 G:?:White
 
-N:254:70
+N:254:scroll
 G:?:White
 
-N:255:70
+N:255:scroll
 G:?:White
 
-N:256:70
+N:256:scroll
 G:?:White
 
-N:257:70
+N:257:scroll
 G:?:White
 
-N:258:70
+N:258:scroll
 G:?:White
 
-N:259:70
+N:259:scroll
 G:?:White
 
-N:260:70
+N:260:scroll
 G:?:White
 
-N:261:70
+N:261:scroll
 G:?:White
 
-N:262:70
+N:262:scroll
 G:?:White
 
-N:263:70
+N:263:scroll
 G:?:White
 
-N:264:70
+N:264:scroll
 G:?:White
 
-N:265:70
+N:265:scroll
 G:?:White
 
-N:266:70
+N:266:scroll
 G:?:White
 
-N:267:70
+N:267:scroll
 G:?:White
 
-N:268:70
+N:268:scroll
 G:?:White
 
-N:269:70
+N:269:scroll
 G:?:White
 
-N:270:70
+N:270:scroll
 G:?:White
 
-N:271:70
+N:271:scroll
 G:?:White
 
-N:272:70
+N:272:scroll
 G:?:White
 
-N:273:70
+N:273:scroll
 G:?:White
 
-N:274:70
+N:274:scroll
 G:?:White
 
-N:275:70
+N:275:scroll
 G:?:White
 
-N:276:70
+N:276:scroll
 G:?:White
 
-N:277:70
+N:277:scroll
 G:?:White
 
-N:278:70
+N:278:scroll
 G:?:White
 
-N:279:70
+N:279:scroll
 G:?:White
 
-N:280:70
+N:280:scroll
 G:?:White
 
-N:281:70
+N:281:scroll
 G:?:White
 
-N:282:70
+N:282:scroll
 G:?:White
 
-N:283:70
+N:283:scroll
 G:?:White
 
-N:284:70
+N:284:scroll
 G:?:White
 
-N:285:70
+N:285:scroll
 G:?:White
 
-N:286:70
+N:286:scroll
 G:?:White
 
-N:287:70
+N:287:scroll
 G:?:White
 
-N:288:70
+N:288:scroll
 G:?:White
 
-N:289:70
+N:289:scroll
 G:?:White
 
-N:290:70
+N:290:scroll
 G:?:White
 
-N:291:70
+N:291:scroll
 G:?:White
 
-N:292:70
+N:292:scroll
 G:?:White
 
-N:293:70
+N:293:scroll
 G:?:White
 
-N:294:70
+N:294:scroll
 G:?:White
 
-N:295:70
+N:295:scroll
 G:?:White
 
-N:296:70
+N:296:scroll
 G:?:White
 
-N:297:70
+N:297:scroll
 G:?:White
 
-N:298:70
+N:298:scroll
 G:?:White
 
-N:299:70
+N:299:scroll
 G:?:White
 
-N:300:70
+N:300:scroll
 G:?:White
 
-N:301:70
+N:301:scroll
 G:?:White
 
-N:302:70
+N:302:scroll
 G:?:White
