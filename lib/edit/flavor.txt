@@ -1,14 +1,12 @@
 # File: flavor.txt
 
-
 # This file is used to initialize the "flavor" information for the Angband game.
-
 # Do not modify this file unless you know exactly what you are doing,
 # unless you wish to risk possible system crashes and broken savefiles.
 
-# N:<index>:<tval>:<sval>
-# G:<char>:<attr>
-# D:<text>
+# kind:<tval>:<char>
+# flavor:<index>:<attr>:<text>
+# fixed:<index>:<sval>:<attr>:<text>
 
 # To see how many items are in here vs. those required by the number of
 # objects in object.txt, the following bash script may be useful:
@@ -18,1190 +16,348 @@
 #    echo "tval $i: in object, $X, in flavor, $Y"
 #  done
 
-# Version stamp (required)
-
-V:3.0.11
-
-
 ##### Rings #####
 
+kind:ring:=
+
 # Fixed: the One Ring
-N:1:ring:55
-G:=:Yellow
-D:Plain Gold
+fixed:1:55:Yellow:Plain Gold
 
-N:2:ring
-G:=:Green
-D:Alexandrite
-
-N:3:ring
-G:=:Violet
-D:Amethyst
-
-N:4:ring
-G:=:Light Blue
-D:Aquamarine
-
-N:5:ring
-G:=:Light Blue
-D:Azurite
-
-N:6:ring
-G:=:Light Green
-D:Beryl
-
-N:7:ring
-G:=:Red
-D:Bloodstone
-
-N:8:ring
-G:=:White
-D:Calcite
-
-N:9:ring
-G:=:Red
-D:Carnelian
-
-N:10:ring
-G:=:Slate
-D:Corundum
-
-N:11:ring
-G:=:White
-D:Diamond
-
-N:12:ring
-G:=:Green
-D:Emerald
-
-N:13:ring
-G:=:Light Green
-D:Fluorite
-
-N:14:ring
-G:=:Red
-D:Garnet
-
-N:15:ring
-G:=:Light Slate
-D:Granite
-
-N:16:ring
-G:=:Light Green
-D:Jade
-
-N:17:ring
-G:=:Umber
-D:Jasper
-
-N:18:ring
-G:=:Blue
-D:Lapis Lazuli
-
-N:19:ring
-G:=:Green
-D:Malachite
-
-N:20:ring
-G:=:White
-D:Marble
-
-N:21:ring
-G:=:Light Slate
-D:Moonstone
-
-N:22:ring
-G:=:Light Red
-D:Onyx
-
-N:23:ring
-G:=:Light Slate
-D:Opal
-
-N:24:ring
-G:=:White
-D:Pearl
-
-N:25:ring
-G:=:Light Slate
-D:Quartz
-
-N:26:ring
-G:=:Light Slate
-D:Quartzite
-
-N:27:ring
-G:=:Light Red
-D:Rhodonite
-
-N:28:ring
-G:=:Red
-D:Ruby
-
-N:29:ring
-G:=:Blue
-D:Sapphire
-
-N:30:ring
-G:=:Yellow
-D:Tiger Eye
-
-N:31:ring
-G:=:Yellow
-D:Topaz
-
-N:32:ring
-G:=:Light Blue
-D:Turquoise
-
-N:33:ring
-G:=:Light Umber
-D:Zircon
-
-N:34:ring
-G:=:White
-D:Platinum
-
-N:35:ring
-G:=:Light Umber
-D:Bronze
-
-N:36:ring
-G:=:Yellow
-D:Gold
-
-N:37:ring
-G:=:Light Dark
-D:Obsidian
-
-N:38:ring
-G:=:Light Slate
-D:Silver
-
-N:39:ring
-G:=:Umber
-D:Tortoise Shell
-
-N:40:ring
-G:=:Light Blue
-D:Mithril
-
-N:41:ring
-G:=:Light Dark
-D:Jet
-
-N:42:ring
-G:=:Yellow
-D:Engagement
-
-N:43:ring
-G:=:Light Green
-D:Adamantite
-
+flavor:2:Green:Alexandrite
+flavor:3:Violet:Amethyst
+flavor:4:Light Blue:Aquamarine
+flavor:5:Light Blue:Azurite
+flavor:6:Light Green:Beryl
+flavor:7:Red:Bloodstone
+flavor:8:White:Calcite
+flavor:9:Red:Carnelian
+flavor:10:Slate:Corundum
+flavor:11:White:Diamond
+flavor:12:Green:Emerald
+flavor:13:Light Green:Fluorite
+flavor:14:Red:Garnet
+flavor:15:Light Slate:Granite
+flavor:16:Light Green:Jade
+flavor:17:Umber:Jasper
+flavor:18:Blue:Lapis Lazuli
+flavor:19:Green:Malachite
+flavor:20:White:Marble
+flavor:21:Light Slate:Moonstone
+flavor:22:Light Red:Onyx
+flavor:23:Light Slate:Opal
+flavor:24:White:Pearl
+flavor:25:Light Slate:Quartz
+flavor:26:Light Slate:Quartzite
+flavor:27:Light Red:Rhodonite
+flavor:28:Red:Ruby
+flavor:29:Blue:Sapphire
+flavor:30:Yellow:Tiger Eye
+flavor:31:Yellow:Topaz
+flavor:32:Light Blue:Turquoise
+flavor:33:Light Umber:Zircon
+flavor:34:White:Platinum
+flavor:35:Light Umber:Bronze
+flavor:36:Yellow:Gold
+flavor:37:Light Dark:Obsidian
+flavor:38:Light Slate:Silver
+flavor:39:Umber:Tortoise Shell
+flavor:40:Light Blue:Mithril
+flavor:41:Light Dark:Jet
+flavor:42:Yellow:Engagement
+flavor:43:Light Green:Adamantite
 
 ##### Amulets #####
 
-N:44:amulet
-G:":Yellow
-D:Amber
+kind:amulet:"
 
-N:45:amulet
-G:":Light Umber
-D:Driftwood
-
-N:46:amulet
-G:":White
-D:Coral
-
-N:47:amulet
-G:":Light Slate
-D:Agate
-
-N:48:amulet
-G:":White
-D:Ivory
-
-N:49:amulet
-G:":Light Dark
-D:Obsidian
-
-N:50:amulet
-G:":White
-D:Bone
-
-N:51:amulet
-G:":Light Umber
-D:Brass
-
-N:52:amulet
-G:":Light Umber
-D:Bronze
-
-N:53:amulet
-G:":Slate
-D:Pewter
-
-N:54:amulet
-G:":Umber
-D:Tortoise Shell
-
-N:55:amulet
-G:":Yellow
-D:Golden
-
-N:56:amulet
-G:":Light Blue
-D:Azure
-
-N:57:amulet
-G:":White
-D:Crystal
-
-N:58:amulet
-G:":Light Slate
-D:Silver
-
-N:59:amulet
-G:":Light Umber
-D:Copper
-
-N:60:amulet
-G:":Umber
-D:Carved Oak
-
-N:61:amulet
-G:":Light Slate
-D:Dragon Tooth
-
-N:62:amulet
-G:":Red
-D:Ruby
-
-N:63:amulet
-G:":Light Blue
-D:Mithril
-
-N:64:amulet
-G:":Light Green
-D:Adamant
-
-N:65:amulet
-G:":Slate
-D:Flint Stone
-
-N:66:amulet
-G:":Light Blue
-D:Sea Shell
-
-N:67:amulet
-G:":Light Slate
-D:Mother-of-Pearl
-
+flavor:44:Yellow:Amber
+flavor:45:Light Umber:Driftwood
+flavor:46:White:Coral
+flavor:47:Light Slate:Agate
+flavor:48:White:Ivory
+flavor:49:Light Dark:Obsidian
+flavor:50:White:Bone
+flavor:51:Light Umber:Brass
+flavor:52:Light Umber:Bronze
+flavor:53:Slate:Pewter
+flavor:54:Umber:Tortoise Shell
+flavor:55:Yellow:Golden
+flavor:56:Light Blue:Azure
+flavor:57:White:Crystal
+flavor:58:Light Slate:Silver
+flavor:59:Light Umber:Copper
+flavor:60:Umber:Carved Oak
+flavor:61:Light Slate:Dragon Tooth
+flavor:62:Red:Ruby
+flavor:63:Light Blue:Mithril
+flavor:64:Light Green:Adamant
+flavor:65:Slate:Flint Stone
+flavor:66:Light Blue:Sea Shell
+flavor:67:Light Slate:Mother-of-Pearl
 
 ##### Staves #####
 
-N:68:staff
-G:_:Light Umber
-D:Aspen
+kind:staff:_
 
-N:69:staff
-G:_:Light Umber
-D:Balsa
-
-N:70:staff
-G:_:Light Umber
-D:Banyan
-
-N:71:staff
-G:_:Light Umber
-D:Birch
-
-N:72:staff
-G:_:Light Umber
-D:Cedar
-
-N:73:staff
-G:_:Light Umber
-D:Cottonwood
-
-N:74:staff
-G:_:Light Umber
-D:Cypress
-
-N:75:staff
-G:_:Light Umber
-D:Dogwood
-
-N:76:staff
-G:_:Light Umber
-D:Elm
-
-N:77:staff
-G:_:Light Umber
-D:Eucalyptus
-
-N:78:staff
-G:_:Light Umber
-D:Hemlock
-
-N:79:staff
-G:_:Light Umber
-D:Hickory
-
-N:80:staff
-G:_:Umber
-D:Ironwood
-
-N:81:staff
-G:_:Light Umber
-D:Locust
-
-N:82:staff
-G:_:Umber
-D:Mahogany
-
-N:83:staff
-G:_:Umber
-D:Maple
-
-N:84:staff
-G:_:Umber
-D:Mulberry
-
-N:85:staff
-G:_:Umber
-D:Oak
-
-N:86:staff
-G:_:Umber
-D:Pine
-
-N:87:staff
-G:_:Red
-D:Redwood
-
-N:88:staff
-G:_:Red
-D:Rosewood
-
-N:89:staff
-G:_:Light Umber
-D:Spruce
-
-N:90:staff
-G:_:Light Umber
-D:Sycamore
-
-N:91:staff
-G:_:Light Umber
-D:Teak
-
-N:92:staff
-G:_:Umber
-D:Walnut
-
-N:93:staff
-G:_:Green
-D:Mistletoe
-
-N:94:staff
-G:_:Light Umber
-D:Hawthorn
-
-N:95:staff
-G:_:Light Umber
-D:Bamboo
-
-N:96:staff
-G:_:Light Slate
-D:Silver
-
-N:97:staff
-G:_:Umber
-D:Runed
-
-N:98:staff
-G:_:Yellow
-D:Golden
-
-N:99:staff
-G:_:Slate
-D:Ashen
-
-N:100:staff
-G:_:Light Umber
-D:Gnarled
-
-N:101:staff
-G:_:White
-D:Ivory
-
-N:102:staff
-G:_:Light Umber
-D:Willow
-
+flavor:68:Light Umber:Aspen
+flavor:69:Light Umber:Balsa
+flavor:70:Light Umber:Banyan
+flavor:71:Light Umber:Birch
+flavor:72:Light Umber:Cedar
+flavor:73:Light Umber:Cottonwood
+flavor:74:Light Umber:Cypress
+flavor:75:Light Umber:Dogwood
+flavor:76:Light Umber:Elm
+flavor:77:Light Umber:Eucalyptus
+flavor:78:Light Umber:Hemlock
+flavor:79:Light Umber:Hickory
+flavor:80:Umber:Ironwood
+flavor:81:Light Umber:Locust
+flavor:82:Umber:Mahogany
+flavor:83:Umber:Maple
+flavor:84:Umber:Mulberry
+flavor:85:Umber:Oak
+flavor:86:Umber:Pine
+flavor:87:Red:Redwood
+flavor:88:Red:Rosewood
+flavor:89:Light Umber:Spruce
+flavor:90:Light Umber:Sycamore
+flavor:91:Light Umber:Teak
+flavor:92:Umber:Walnut
+flavor:93:Green:Mistletoe
+flavor:94:Light Umber:Hawthorn
+flavor:95:Light Umber:Bamboo
+flavor:96:Light Slate:Silver
+flavor:97:Umber:Runed
+flavor:98:Yellow:Golden
+flavor:99:Slate:Ashen
+flavor:100:Light Umber:Gnarled
+flavor:101:White:Ivory
+flavor:102:Light Umber:Willow
 
 ##### Wands #####
 
-N:103:wand
-G:-:Light Blue
-D:Aluminium
+kind:wand:-
 
-N:104:wand
-G:-:Light Dark
-D:Cast Iron
-
-N:105:wand
-G:-:White
-D:Chromium
-
-N:106:wand
-G:-:Light Umber
-D:Copper
-
-N:107:wand
-G:-:Yellow
-D:Gold
-
-N:108:wand
-G:-:Slate
-D:Iron
-
-N:109:wand
-G:-:Light Slate
-D:Magnesium
-
-N:110:wand
-G:-:Light Slate
-D:Molybdenum
-
-N:111:wand
-G:-:Light Umber
-D:Nickel
-
-N:112:wand
-G:-:Red
-D:Rusty
-
-N:113:wand
-G:-:Light Slate
-D:Silver
-
-N:114:wand
-G:-:Light Slate
-D:Steel
-
-N:115:wand
-G:-:Light Slate
-D:Tin
-
-N:116:wand
-G:-:White
-D:Titanium
-
-N:117:wand
-G:-:White
-D:Tungsten
-
-N:118:wand
-G:-:Light Slate
-D:Zirconium
-
-N:119:wand
-G:-:Light Slate
-D:Zinc
-
-N:120:wand
-G:-:Light Blue
-D:Aluminum-Plated
-
-N:121:wand
-G:-:Light Umber
-D:Copper-Plated
-
-N:122:wand
-G:-:Yellow
-D:Gold-Plated
-
-N:123:wand
-G:-:Light Umber
-D:Nickel-Plated
-
-N:124:wand
-G:-:Light Slate
-D:Silver-Plated
-
-N:125:wand
-G:-:Light Slate
-D:Steel-Plated
-
-N:126:wand
-G:-:Light Slate
-D:Tin-Plated
-
-N:127:wand
-G:-:Light Slate
-D:Zinc-Plated
-
-N:128:wand
-G:-:Light Blue
-D:Mithril-Plated
-
-N:129:wand
-G:-:Light Blue
-D:Mithril
-
-N:130:wand
-G:-:Umber
-D:Runed
-
-N:131:wand
-G:-:Light Umber
-D:Bronze
-
-N:132:wand
-G:-:Light Umber
-D:Brass
-
-N:133:wand
-G:-:White
-D:Platinum
-
-N:134:wand
-G:-:Slate
-D:Lead
-
-N:135:wand
-G:-:Slate
-D:Lead-Plated
-
-N:136:wand
-G:-:White
-D:Ivory
-
-N:137:wand
-G:-:Slate
-D:Pewter
-
+flavor:103:Light Blue:Aluminium
+flavor:104:Light Dark:Cast Iron
+flavor:105:White:Chromium
+flavor:106:Light Umber:Copper
+flavor:107:Yellow:Gold
+flavor:108:Slate:Iron
+flavor:109:Light Slate:Magnesium
+flavor:110:Light Slate:Molybdenum
+flavor:111:Light Umber:Nickel
+flavor:112:Red:Rusty
+flavor:113:Light Slate:Silver
+flavor:114:Light Slate:Steel
+flavor:115:Light Slate:Tin
+flavor:116:White:Titanium
+flavor:117:White:Tungsten
+flavor:118:Light Slate:Zirconium
+flavor:119:Light Slate:Zinc
+flavor:120:Light Blue:Aluminum-Plated
+flavor:121:Light Umber:Copper-Plated
+flavor:122:Yellow:Gold-Plated
+flavor:123:Light Umber:Nickel-Plated
+flavor:124:Light Slate:Silver-Plated
+flavor:125:Light Slate:Steel-Plated
+flavor:126:Light Slate:Tin-Plated
+flavor:127:Light Slate:Zinc-Plated
+flavor:128:Light Blue:Mithril-Plated
+flavor:129:Light Blue:Mithril
+flavor:130:Umber:Runed
+flavor:131:Light Umber:Bronze
+flavor:132:Light Umber:Brass
+flavor:133:White:Platinum
+flavor:134:Slate:Lead
+flavor:135:Slate:Lead-Plated
+flavor:136:White:Ivory
+flavor:137:Slate:Pewter
 
 ##### Rods #####
 
-N:138:rod
-G:-:Light Blue
-D:Aluminum
+kind:rod:-
 
-N:139:rod
-G:-:Light Dark
-D:Cast Iron
-
-N:140:rod
-G:-:White
-D:Chromium
-
-N:141:rod
-G:-:Light Umber
-D:Copper
-
-N:142:rod
-G:-:Yellow
-D:Gold
-
-N:143:rod
-G:-:Slate
-D:Iron
-
-N:144:rod
-G:-:Light Slate
-D:Magnesium
-
-N:145:rod
-G:-:Light Slate
-D:Molybdenum
-
-N:146:rod
-G:-:Light Umber
-D:Nickel
-
-N:147:rod
-G:-:Red
-D:Rusty
-
-N:148:rod
-G:-:Light Slate
-D:Silver
-
-N:149:rod
-G:-:Light Slate
-D:Steel
-
-N:150:rod
-G:-:Light Slate
-D:Tin
-
-N:151:rod
-G:-:White
-D:Titanium
-
-N:152:rod
-G:-:White
-D:Tungsten
-
-N:153:rod
-G:-:Light Slate
-D:Zirconium
-
-N:154:rod
-G:-:Light Slate
-D:Zinc
-
-N:155:rod
-G:-:Light Blue
-D:Aluminum-Plated
-
-N:156:rod
-G:-:Light Umber
-D:Copper-Plated
-
-N:157:rod
-G:-:Yellow
-D:Gold-Plated
-
-N:158:rod
-G:-:Light Umber
-D:Nickel-Plated
-
-N:159:rod
-G:-:Light Slate
-D:Silver-Plated
-
-N:160:rod
-G:-:Light Slate
-D:Steel-Plated
-
-N:161:rod
-G:-:Light Slate
-D:Tin-Plated
-
-N:162:rod
-G:-:Light Slate
-D:Zinc-Plated
-
-N:163:rod
-G:-:Light Blue
-D:Mithril-Plated
-
-N:164:rod
-G:-:Light Blue
-D:Mithril
-
-N:165:rod
-G:-:Umber
-D:Runed
-
-N:166:rod
-G:-:Light Umber
-D:Bronze
-
-N:167:rod
-G:-:Light Umber
-D:Brass
-
-N:168:rod
-G:-:White
-D:Platinum
-
-N:169:rod
-G:-:Slate
-D:Lead
-
-N:170:rod
-G:-:Slate
-D:Lead-Plated
-
-N:171:rod
-G:-:White
-D:Ivory
-
-N:172:rod
-G:-:Slate
-D:Pewter
-
+flavor:138:Light Blue:Aluminum
+flavor:139:Light Dark:Cast Iron
+flavor:140:White:Chromium
+flavor:141:Light Umber:Copper
+flavor:142:Yellow:Gold
+flavor:143:Slate:Iron
+flavor:144:Light Slate:Magnesium
+flavor:145:Light Slate:Molybdenum
+flavor:146:Light Umber:Nickel
+flavor:147:Red:Rusty
+flavor:148:Light Slate:Silver
+flavor:149:Light Slate:Steel
+flavor:150:Light Slate:Tin
+flavor:151:White:Titanium
+flavor:152:White:Tungsten
+flavor:153:Light Slate:Zirconium
+flavor:154:Light Slate:Zinc
+flavor:155:Light Blue:Aluminum-Plated
+flavor:156:Light Umber:Copper-Plated
+flavor:157:Yellow:Gold-Plated
+flavor:158:Light Umber:Nickel-Plated
+flavor:159:Light Slate:Silver-Plated
+flavor:160:Light Slate:Steel-Plated
+flavor:161:Light Slate:Tin-Plated
+flavor:162:Light Slate:Zinc-Plated
+flavor:163:Light Blue:Mithril-Plated
+flavor:164:Light Blue:Mithril
+flavor:165:Umber:Runed
+flavor:166:Light Umber:Bronze
+flavor:167:Light Umber:Brass
+flavor:168:White:Platinum
+flavor:169:Slate:Lead
+flavor:170:Slate:Lead-Plated
+flavor:171:White:Ivory
+flavor:172:Slate:Pewter
 
 ##### Mushrooms #####
 
-N:173:food
-G:,:Blue
-D:Blue
+kind:food:,
 
-N:174:food
-G:,:Light Dark
-D:Black
-
-N:175:food
-G:,:Light Dark
-D:Black Spotted
-
-N:176:food
-G:,:Umber
-D:Brown
-
-N:177:food
-G:,:Blue
-D:Dark Blue
-
-N:178:food
-G:,:Green
-D:Dark Green
-
-N:179:food
-G:,:Red
-D:Dark Red
-
-N:180:food
-G:,:Yellow
-D:Yellow
-
-N:181:food
-G:,:Light Slate
-D:Furry
-
-N:182:food
-G:,:Green
-D:Green
-
-N:183:food
-G:,:Slate
-D:Grey
-
-N:184:food
-G:,:Light Blue
-D:Light Blue
-
-N:185:food
-G:,:Light Green
-D:Light Green
-
-N:186:food
-G:,:Violet
-D:Violet
-
-N:187:food
-G:,:Red
-D:Red
-
-N:188:food
-G:,:Slate
-D:Slimy
-
-N:189:food
-G:,:Light Umber
-D:Tan
-
-N:190:food
-G:,:White
-D:White
-
-N:191:food
-G:,:White
-D:White Spotted
-
-N:192:food
-G:,:Umber
-D:Wrinkled
-
+flavor:173:Blue:Blue
+flavor:174:Light Dark:Black
+flavor:175:Light Dark:Black Spotted
+flavor:176:Umber:Brown
+flavor:177:Blue:Dark Blue
+flavor:178:Green:Dark Green
+flavor:179:Red:Dark Red
+flavor:180:Yellow:Yellow
+flavor:181:Light Slate:Furry
+flavor:182:Green:Green
+flavor:183:Slate:Grey
+flavor:184:Light Blue:Light Blue
+flavor:185:Light Green:Light Green
+flavor:186:Violet:Violet
+flavor:187:Red:Red
+flavor:188:Slate:Slimy
+flavor:189:Light Umber:Tan
+flavor:190:White:White
+flavor:191:White:White Spotted
+flavor:192:Umber:Wrinkled
 
 ##### Potions #####
 
-N:193:potion
-G:!:White
-D:Clear
+kind:potion:!
 
-N:194:potion
-G:!:Light Umber
-D:Light Brown
-
-N:195:potion
-G:!:Green
-D:Icky Green
-
-N:196:potion
-G:!:Light Blue
-D:Azure
-
-N:197:potion
-G:!:Blue
-D:Blue
-
-N:198:potion
-G:!:Blue
-D:Blue Speckled
-
-N:199:potion
-G:!:Light Dark
-D:Black
-
-N:200:potion
-G:!:Umber
-D:Brown
-
-N:201:potion
-G:!:Umber
-D:Brown Speckled
-
-N:202:potion
-G:!:Light Slate
-D:Bubbling
-
-N:203:potion
-G:!:Light Green
-D:Chartreuse
-
-N:204:potion
-G:!:White
-D:Cloudy
-
-N:205:potion
-G:!:Light Umber
-D:Copper Speckled
-
-N:206:potion
-G:!:Red
-D:Crimson
-
-N:207:potion
-G:!:Light Blue
-D:Cyan
-
-N:208:potion
-G:!:Blue
-D:Dark Blue
-
-N:209:potion
-G:!:Green
-D:Dark Green
-
-N:210:potion
-G:!:Red
-D:Dark Red
-
-N:211:potion
-G:!:Yellow
-D:Gold Speckled
-
-N:212:potion
-G:!:Green
-D:Green
-
-N:213:potion
-G:!:Green
-D:Green Speckled
-
-N:214:potion
-G:!:Slate
-D:Grey
-
-N:215:potion
-G:!:Slate
-D:Grey Speckled
-
-N:216:potion
-G:!:Light Slate
-D:Hazy
-
-N:217:potion
-G:!:Violet
-D:Indigo
-
-N:218:potion
-G:!:Light Blue
-D:Light Blue
-
-N:219:potion
-G:!:Light Green
-D:Light Green
-
-N:220:potion
-G:!:Red
-D:Magenta
-
-N:221:potion
-G:!:Blue
-D:Metallic Blue
-
-N:222:potion
-G:!:Red
-D:Metallic Red
-
-N:223:potion
-G:!:Green
-D:Metallic Green
-
-N:224:potion
-G:!:Violet
-D:Metallic Purple
-
-N:225:potion
-G:!:Light Slate
-D:Misty
-
-N:226:potion
-G:!:Orange
-D:Orange
-
-N:227:potion
-G:!:Orange
-D:Orange Speckled
-
-N:228:potion
-G:!:Light Red
-D:Pink
-
-N:229:potion
-G:!:Light Red
-D:Pink Speckled
-
-N:230:potion
-G:!:Violet
-D:Puce
-
-N:231:potion
-G:!:Violet
-D:Purple
-
-N:232:potion
-G:!:Violet
-D:Purple Speckled
-
-N:233:potion
-G:!:Red
-D:Red
-
-N:234:potion
-G:!:Red
-D:Red Speckled
-
-N:235:potion
-G:!:Light Slate
-D:Silver Speckled
-
-N:236:potion
-G:!:Light Dark
-D:Smoky
-
-N:237:potion
-G:!:Orange
-D:Tangerine
-
-N:238:potion
-G:!:Violet
-D:Violet
-
-N:239:potion
-G:!:Red
-D:Vermilion
-
-N:240:potion
-G:!:White
-D:White
-
-N:241:potion
-G:!:Yellow
-D:Yellow
-
-N:242:potion
-G:!:Violet
-D:Violet Speckled
-
-N:243:potion
-G:!:Light Red
-D:Pungent
-
-N:244:potion
-G:!:Red
-D:Clotted Red
-
-N:245:potion
-G:!:Light Red
-D:Viscous Pink
-
-N:246:potion
-G:!:Yellow
-D:Oily Yellow
-
-N:247:potion
-G:!:Green
-D:Gloopy Green
-
-N:248:potion
-G:!:Violet
-D:Shimmering
-
-N:249:potion
-G:!:Red
-D:Coagulated Crimson
-
-N:250:potion
-G:!:Yellow
-D:Yellow Speckled
-
-N:251:potion
-G:!:Yellow
-D:Gold
-
+flavor:193:White:Clear
+flavor:194:Light Umber:Light Brown
+flavor:195:Green:Icky Green
+flavor:196:Light Blue:Azure
+flavor:197:Blue:Blue
+flavor:198:Blue:Blue Speckled
+flavor:199:Light Dark:Black
+flavor:200:Umber:Brown
+flavor:201:Umber:Brown Speckled
+flavor:202:Light Slate:Bubbling
+flavor:203:Light Green:Chartreuse
+flavor:204:White:Cloudy
+flavor:205:Light Umber:Copper Speckled
+flavor:206:Red:Crimson
+flavor:207:Light Blue:Cyan
+flavor:208:Blue:Dark Blue
+flavor:209:Green:Dark Green
+flavor:210:Red:Dark Red
+flavor:211:Yellow:Gold Speckled
+flavor:212:Green:Green
+flavor:213:Green:Green Speckled
+flavor:214:Slate:Grey
+flavor:215:Slate:Grey Speckled
+flavor:216:Light Slate:Hazy
+flavor:217:Violet:Indigo
+flavor:218:Light Blue:Light Blue
+flavor:219:Light Green:Light Green
+flavor:220:Red:Magenta
+flavor:221:Blue:Metallic Blue
+flavor:222:Red:Metallic Red
+flavor:223:Green:Metallic Green
+flavor:224:Violet:Metallic Purple
+flavor:225:Light Slate:Misty
+flavor:226:Orange:Orange
+flavor:227:Orange:Orange Speckled
+flavor:228:Light Red:Pink
+flavor:229:Light Red:Pink Speckled
+flavor:230:Violet:Puce
+flavor:231:Violet:Purple
+flavor:232:Violet:Purple Speckled
+flavor:233:Red:Red
+flavor:234:Red:Red Speckled
+flavor:235:Light Slate:Silver Speckled
+flavor:236:Light Dark:Smoky
+flavor:237:Orange:Tangerine
+flavor:238:Violet:Violet
+flavor:239:Red:Vermilion
+flavor:240:White:White
+flavor:241:Yellow:Yellow
+flavor:242:Violet:Violet Speckled
+flavor:243:Light Red:Pungent
+flavor:244:Red:Clotted Red
+flavor:245:Light Red:Viscous Pink
+flavor:246:Yellow:Oily Yellow
+flavor:247:Green:Gloopy Green
+flavor:248:Violet:Shimmering
+flavor:249:Red:Coagulated Crimson
+flavor:250:Yellow:Yellow Speckled
+flavor:251:Yellow:Gold
 
 ##### Scrolls #####
 
 # Scroll names are generated from randomly combined syllables
 
-N:252:scroll
-G:?:White
+kind:scroll:?
 
-N:253:scroll
-G:?:White
-
-N:254:scroll
-G:?:White
-
-N:255:scroll
-G:?:White
-
-N:256:scroll
-G:?:White
-
-N:257:scroll
-G:?:White
-
-N:258:scroll
-G:?:White
-
-N:259:scroll
-G:?:White
-
-N:260:scroll
-G:?:White
-
-N:261:scroll
-G:?:White
-
-N:262:scroll
-G:?:White
-
-N:263:scroll
-G:?:White
-
-N:264:scroll
-G:?:White
-
-N:265:scroll
-G:?:White
-
-N:266:scroll
-G:?:White
-
-N:267:scroll
-G:?:White
-
-N:268:scroll
-G:?:White
-
-N:269:scroll
-G:?:White
-
-N:270:scroll
-G:?:White
-
-N:271:scroll
-G:?:White
-
-N:272:scroll
-G:?:White
-
-N:273:scroll
-G:?:White
-
-N:274:scroll
-G:?:White
-
-N:275:scroll
-G:?:White
-
-N:276:scroll
-G:?:White
-
-N:277:scroll
-G:?:White
-
-N:278:scroll
-G:?:White
-
-N:279:scroll
-G:?:White
-
-N:280:scroll
-G:?:White
-
-N:281:scroll
-G:?:White
-
-N:282:scroll
-G:?:White
-
-N:283:scroll
-G:?:White
-
-N:284:scroll
-G:?:White
-
-N:285:scroll
-G:?:White
-
-N:286:scroll
-G:?:White
-
-N:287:scroll
-G:?:White
-
-N:288:scroll
-G:?:White
-
-N:289:scroll
-G:?:White
-
-N:290:scroll
-G:?:White
-
-N:291:scroll
-G:?:White
-
-N:292:scroll
-G:?:White
-
-N:293:scroll
-G:?:White
-
-N:294:scroll
-G:?:White
-
-N:295:scroll
-G:?:White
-
-N:296:scroll
-G:?:White
-
-N:297:scroll
-G:?:White
-
-N:298:scroll
-G:?:White
-
-N:299:scroll
-G:?:White
-
-N:300:scroll
-G:?:White
-
-N:301:scroll
-G:?:White
-
-N:302:scroll
-G:?:White
+flavor:252:White
+flavor:253:White
+flavor:254:White
+flavor:255:White
+flavor:256:White
+flavor:257:White
+flavor:258:White
+flavor:259:White
+flavor:260:White
+flavor:261:White
+flavor:262:White
+flavor:263:White
+flavor:264:White
+flavor:265:White
+flavor:266:White
+flavor:267:White
+flavor:268:White
+flavor:269:White
+flavor:270:White
+flavor:271:White
+flavor:272:White
+flavor:273:White
+flavor:274:White
+flavor:275:White
+flavor:276:White
+flavor:277:White
+flavor:278:White
+flavor:279:White
+flavor:280:White
+flavor:281:White
+flavor:282:White
+flavor:283:White
+flavor:284:White
+flavor:285:White
+flavor:286:White
+flavor:287:White
+flavor:288:White
+flavor:289:White
+flavor:290:White
+flavor:291:White
+flavor:292:White
+flavor:293:White
+flavor:294:White
+flavor:295:White
+flavor:296:White
+flavor:297:White
+flavor:298:White
+flavor:299:White
+flavor:300:White
+flavor:301:White
+flavor:302:White

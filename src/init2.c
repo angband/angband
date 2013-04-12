@@ -2061,59 +2061,62 @@ static struct file_parser h_parser = {
 };
 
 /* Parsing functions for flavor.txt */
-static enum parser_error parse_flavor_n(struct parser *p) {
+static wchar_t flavor_glyph;
+static unsigned int flavor_tval;
+
+static enum parser_error parse_flavor_flavor(struct parser *p) {
 	struct flavor *h = parser_priv(p);
 	struct flavor *f = mem_zalloc(sizeof *f);
 
+	const char *attr;
+	int d_attr;
+
 	f->next = h;
+
 	f->fidx = parser_getuint(p, "index");
-	f->tval = tval_find_idx(parser_getsym(p, "tval"));
-	/* assert(f->tval); */
+	f->tval = flavor_tval;
+	f->d_char = flavor_glyph;
+
 	if (parser_hasval(p, "sval"))
 		f->sval = lookup_sval(f->tval, parser_getsym(p, "sval"));
 	else
 		f->sval = SV_UNKNOWN;
-	parser_setpriv(p, f);
-	return PARSE_ERROR_NONE;
-}
 
-static enum parser_error parse_flavor_g(struct parser *p) {
-	struct flavor *f = parser_priv(p);
-	int d_attr;
-	const char *attr;
-
-	if (!f)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-
-	f->d_char = parser_getchar(p, "glyph");
 	attr = parser_getsym(p, "attr");
-	if (strlen(attr) == 1) {
+	if (strlen(attr) == 1)
 		d_attr = color_char_to_attr(attr[0]);
-	} else {
+	else
 		d_attr = color_text_to_attr(attr);
-	}
+
 	if (d_attr < 0)
 		return PARSE_ERROR_GENERIC;
 	f->d_attr = d_attr;
+
+	if (parser_hasval(p, "desc"))
+		f->text = string_append(f->text, parser_getstr(p, "desc"));
+
+	parser_setpriv(p, f);
+
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_flavor_d(struct parser *p) {
-	struct flavor *f = parser_priv(p);
+static enum parser_error parse_flavor_kind(struct parser *p) {
+	flavor_glyph = parser_getchar(p, "glyph");
+	flavor_tval = tval_find_idx(parser_getsym(p, "tval"));
+	if (!flavor_tval)
+		return PARSE_ERROR_GENERIC;
 
-	if (!f)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	f->text = string_append(f->text, parser_getstr(p, "desc"));
 	return PARSE_ERROR_NONE;
 }
 
 struct parser *init_parse_flavor(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
-	parser_reg(p, "V sym version", ignored);
-	parser_reg(p, "N uint index sym tval ?sym sval", parse_flavor_n);
-	parser_reg(p, "G char glyph sym attr", parse_flavor_g);
-	parser_reg(p, "D str desc", parse_flavor_d);
+
+	parser_reg(p, "kind sym tval char glyph", parse_flavor_kind);
+	parser_reg(p, "flavor uint index sym attr ?str desc", parse_flavor_flavor);
+	parser_reg(p, "fixed uint index sym sval sym attr ?str desc", parse_flavor_flavor);
+
 	return p;
 }
 
