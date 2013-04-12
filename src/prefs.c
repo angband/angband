@@ -274,7 +274,7 @@ void dump_features(ang_file *fff)
 		if (!f_ptr->name) continue;
 
 		/* Skip mimic entries -- except invisible trap */
-		if ((f_ptr->mimic != i) && (i != FEAT_INVIS)) continue;
+		if (f_ptr->mimic != i) continue;
 
 		file_putf(fff, "# Terrain: %s\n", f_ptr->name);
 		for (j = 0; j < FEAT_LIGHTING_MAX; j++)
