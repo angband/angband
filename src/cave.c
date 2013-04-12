@@ -3285,6 +3285,10 @@ void cave_tunnel_wall(struct cave *c, int y, int x) {
 	cave_set_feat(c, y, x, FEAT_FLOOR);
 }
 
+void cave_destroy_wall(struct cave *c, int y, int x) {
+	cave_set_feat(c, y, x, FEAT_FLOOR);
+}
+
 void cave_close_door(struct cave *c, int y, int x) {
 	cave_set_feat(c, y, x, FEAT_DOOR_HEAD);
 }
@@ -3390,4 +3394,38 @@ bool cave_noticeable(struct cave *c, int y, int x) {
 	if (cave_seemslikewall(c, y, x))
 		return FALSE;
 	return TRUE;
+}
+
+const char *cave_apparent_name(struct cave *c, struct player *p, int y, int x) {
+	int f = f_info[c->feat[y][x]].mimic;
+
+	if (!(c->info[y][x] & CAVE_MARK) && !player_can_see_bold(y, x))
+		f = FEAT_NONE;
+
+	if (f == FEAT_NONE)
+		return "unknown_grid";
+	/* XXX: why? FEAT_INVIS already mimics FEAT_FLOOR */
+	if (f == FEAT_INVIS)
+		f = FEAT_FLOOR;
+
+	return f_info[f].name;
+}
+
+void cave_unlock_door(struct cave *c, int y, int x) {
+	assert(cave_islockeddoor(c, y, x));
+	c->feat[y][x] = FEAT_DOOR_HEAD;
+}
+
+void cave_destroy_door(struct cave *c, int y, int x) {
+	assert(cave_isdoor(c, y, x));
+	c->feat[y][x] = FEAT_FLOOR;
+}
+
+void cave_destroy_rubble(struct cave *c, int y, int x) {
+	assert(cave_isrubble(c, y, x));
+	c->feat[y][x] = FEAT_FLOOR;
+}
+
+void cave_add_door(struct cave *c, int y, int x, bool closed) {
+	cave_set_feat(c, y, x, closed ? FEAT_DOOR_HEAD : FEAT_OPEN);
 }

@@ -229,7 +229,7 @@ void teleport_away(struct monster *m_ptr, int dis)
 			if (!cave_isempty(cave, ny, nx)) continue;
 
 			/* Hack -- no teleport onto glyph of warding */
-			if (cave->feat[ny][nx] == FEAT_GLYPH) continue;
+			if (cave_iswarded(cave, ny, nx)) continue;
 
 			/* No teleporting into vaults and such */
 			/* if (cave->info[ny][nx] & cave_isvault(cave, ny, nx)) continue; */
@@ -1123,15 +1123,14 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 				cave->info[y][x] &= ~(CAVE_MARK);
 
 				/* Destroy the trap */
-				cave_set_feat(cave, y, x, FEAT_FLOOR);
+				cave_destroy_trap(cave, y, x);
 			}
 
 			/* Locked doors are unlocked */
-			else if ((cave->feat[y][x] >= FEAT_DOOR_HEAD + 0x01) &&
-			          (cave->feat[y][x] <= FEAT_DOOR_HEAD + 0x07))
+			else if (cave_islockeddoor(cave, y, x))
 			{
 				/* Unlock the door */
-				cave_set_feat(cave, y, x, FEAT_DOOR_HEAD + 0x00);
+				cave_unlock_door(cave, y, x);
 
 				/* Check line of sound */
 				if (player_has_los_bold(y, x))
@@ -1148,10 +1147,7 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 		case GF_KILL_DOOR:
 		{
 			/* Destroy all doors and traps */
-			if (cave_istrap(cave, y, x) ||
-					cave_isopendoor(cave, y, x) ||
-					cave->feat[y][x] == FEAT_BROKEN ||
-					cave_isdoor(cave, y, x))
+			if (cave_istrap(cave, y, x) || cave_isdoor(cave, y, x))
 			{
 				/* Check line of sight */
 				if (player_has_los_bold(y, x))
@@ -1161,8 +1157,7 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 					obvious = TRUE;
 
 					/* Visibility change */
-					if ((cave->feat[y][x] >= FEAT_DOOR_HEAD) &&
-					    (cave->feat[y][x] <= FEAT_DOOR_TAIL))
+					if (cave_isdoor(cave, y, x))
 					{
 						/* Update the visuals */
 						p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
@@ -1173,7 +1168,10 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 				cave->info[y][x] &= ~(CAVE_MARK);
 
 				/* Destroy the feature */
-				cave_set_feat(cave, y, x, FEAT_FLOOR);
+				if (cave_isdoor(cave, y, x))
+					cave_destroy_door(cave, y, x);
+				else
+					cave_destroy_trap(cave, y, x);
 			}
 
 			break;
@@ -1186,10 +1184,10 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 			if (cave_ispassable(cave, y, x)) break;
 
 			/* Permanent walls */
-			if (cave->feat[y][x] >= FEAT_PERM_EXTRA) break;
+			if (cave_isperm(cave, y, x)) break;
 
 			/* Granite */
-			if (cave->feat[y][x] >= FEAT_WALL_EXTRA)
+			if (cave_iswall(cave, y, x) && !cave_hasgoldvein(cave, y, x))
 			{
 				/* Message */
 				if (cave->info[y][x] & (CAVE_MARK))
@@ -1202,11 +1200,11 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 				cave->info[y][x] &= ~(CAVE_MARK);
 
 				/* Destroy the wall */
-				cave_set_feat(cave, y, x, FEAT_FLOOR);
+				cave_destroy_wall(cave, y, x);
 			}
 
 			/* Quartz / Magma with treasure */
-			else if (cave->feat[y][x] >= FEAT_MAGMA_H)
+			else if (cave_iswall(cave, y, x) && cave_hasgoldvein(cave, y, x))
 			{
 				/* Message */
 				if (cave->info[y][x] & (CAVE_MARK))
@@ -1220,14 +1218,14 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 				cave->info[y][x] &= ~(CAVE_MARK);
 
 				/* Destroy the wall */
-				cave_set_feat(cave, y, x, FEAT_FLOOR);
+				cave_destroy_wall(cave, y, x);
 
 				/* Place some gold */
 				place_gold(cave, y, x, p_ptr->depth, ORIGIN_FLOOR);
 			}
 
 			/* Quartz / Magma */
-			else if (cave->feat[y][x] >= FEAT_MAGMA)
+			else if (cave_ismagma(cave, y, x) || cave_isquartz(cave, y, x))
 			{
 				/* Message */
 				if (cave->info[y][x] & (CAVE_MARK))
@@ -1240,11 +1238,11 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 				cave->info[y][x] &= ~(CAVE_MARK);
 
 				/* Destroy the wall */
-				cave_set_feat(cave, y, x, FEAT_FLOOR);
+				cave_destroy_wall(cave, y, x);
 			}
 
 			/* Rubble */
-			else if (cave->feat[y][x] == FEAT_RUBBLE)
+			else if (cave_isrubble(cave, y, x))
 			{
 				/* Message */
 				if (cave->info[y][x] & (CAVE_MARK))
@@ -1257,7 +1255,7 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 				cave->info[y][x] &= ~(CAVE_MARK);
 
 				/* Destroy the rubble */
-				cave_set_feat(cave, y, x, FEAT_FLOOR);
+				cave_destroy_rubble(cave, y, x);
 
 				/* Hack -- place an object */
 				if (randint0(100) < 10){
@@ -1271,7 +1269,7 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 			}
 
 			/* Destroy doors (and secret doors) */
-			else /* if (cave->feat[y][x] >= FEAT_DOOR_HEAD) */
+			else if (cave_isdoor(cave, y, x))
 			{
 				/* Hack -- special message */
 				if (cave->info[y][x] & (CAVE_MARK))
@@ -1284,7 +1282,7 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 				cave->info[y][x] &= ~(CAVE_MARK);
 
 				/* Destroy the feature */
-				cave_set_feat(cave, y, x, FEAT_FLOOR);
+				cave_destroy_door(cave, y, x);
 			}
 
 			/* Update the visuals */
@@ -1303,13 +1301,13 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 			if (cave->m_idx[y][x]) break;
 			
 			/* Require a floor grid */
-			if (!(cave->feat[y][x] == FEAT_FLOOR)) break;
+			if (!cave_isfloor(cave, y, x)) break;
 			
 			/* Push objects off the grid */
 			if (cave->o_idx[y][x]) push_object(y,x);
 
 			/* Create closed door */
-			cave_set_feat(cave, y, x, FEAT_DOOR_HEAD + 0x00);
+			cave_add_door(cave, y, x, TRUE);
 
 			/* Observe */
 			if (cave->info[y][x] & (CAVE_MARK)) obvious = TRUE;
@@ -1365,7 +1363,7 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 				cave->info[y][x] &= ~(CAVE_GLOW);
 
 				/* Hack -- Forget "boring" grids */
-				if (cave->feat[y][x] <= FEAT_INVIS)
+				if (!cave_isinteresting(cave, y, x))
 					cave->info[y][x] &= ~(CAVE_MARK);
 			}
 

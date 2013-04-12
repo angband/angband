@@ -158,10 +158,9 @@ int context_menu_player(int mx, int my)
 		menu_dynamic_add_label(m, "Cast", 'm', 2, labels);
 	}
 	/* if player is on stairs add option to use them */
-	if (cave->feat[p_ptr->py][p_ptr->px] == FEAT_LESS) {
+	if (cave_isupstairs(cave, p_ptr->py, p_ptr->px)) {
 		menu_dynamic_add_label(m, "Go Up", '<', 11, labels);
-	} else
-	if (cave->feat[p_ptr->py][p_ptr->px] == FEAT_MORE) {
+	} else if (cave_isdownstairs(cave, p_ptr->py, p_ptr->px)) {
 		menu_dynamic_add_label(m, "Go Down", '>', 12, labels);
 	}
 	menu_dynamic_add_label(m, "Search", 's', 3, labels);
@@ -469,24 +468,10 @@ int context_menu_cave(struct cave *c, int y, int x, int adjacent, int mx, int my
 	} else
 	{
 		/* Feature (apply mimic) */
-		const char *name;
-		int feat = f_info[c->feat[y][x]].mimic;
-
-		/* Require knowledge about grid, or ability to see grid */
-		if (!(c->info[y][x] & (CAVE_MARK)) && !player_can_see_bold(y,x)) {
-			/* Forget feature */
-			feat = FEAT_NONE;
-		}
-
-		/* Terrain feature if needed */
-		name = f_info[feat].name;
-
-		/* Hack -- handle unknown grids */
-		if (feat == FEAT_NONE) name = "unknown_grid";
-		if (feat == FEAT_INVIS) name = f_info[FEAT_FLOOR].name;
+		const char *name = cave_apparent_name(c, p_ptr, y, x);
 
 		/* Hack -- special introduction for store doors */
-		if (feature_isshop(feat)) {
+		if (cave_isshop(cave, y, x)) {
 			prt(format("(Enter to select command, ESC to cancel) You see the entrance to the %s:", name), 0, 0);
 		} else {
 			prt(format("(Enter to select command, ESC to cancel) You see %s %s:",

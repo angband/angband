@@ -143,6 +143,7 @@ extern bool cave_noticeable(struct cave *c, int y, int x);
 extern void cave_add_trap(struct cave *c, int y, int x);
 extern void cave_add_ward(struct cave *c, int y, int x);
 extern void cave_add_stairs(struct cave *c, int y, int x, int depth);
+extern void cave_add_door(struct cave *c, int y, int x, bool closed);
 
 extern void cave_generate(struct cave *c, struct player *p);
 
@@ -164,11 +165,14 @@ void cave_open_door(struct cave *c, int y, int x);
 void cave_close_door(struct cave *c, int y, int x);
 void cave_smash_door(struct cave *c, int y, int x);
 void cave_lock_door(struct cave *c, int y, int x, int power);
+void cave_unlock_door(struct cave *c, int y, int x);
+void cave_destroy_door(struct cave *c, int y, int x);
 
 void cave_show_trap(struct cave *c, int y, int x, int type);
 void cave_destroy_trap(struct cave *c, int y, int x);
 
 void cave_tunnel_wall(struct cave *c, int y, int x);
+void cave_destroy_wall(struct cave *c, int y, int x);
 
 void cave_show_vein(struct cave *c, int y, int x);
 
@@ -177,5 +181,8 @@ void cave_destroy(struct cave *c, int y, int x);
 void cave_earthquake(struct cave *c, int y, int x);
 
 int cave_shopnum(struct cave *c, int y, int x);
+const char *cave_apparent_name(struct cave *c, struct player *p, int y, int x);
+
+void cave_destroy_rubble(struct cave *c, int y, int x);
 
 #endif /* !CAVE_H */
