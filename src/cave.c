@@ -516,7 +516,7 @@ static void grid_get_attr(grid_data *g, int *a)
  * This will probably be done outside of the current text->graphics mappings
  * though.
  */
-void grid_data_as_text(grid_data *g, int *ap, wchar_t *cp, byte *tap, wchar_t *tcp)
+void grid_data_as_text(grid_data *g, int *ap, wchar_t *cp, int *tap, wchar_t *tcp)
 {
 	feature_type *f_ptr = &f_info[g->f_idx];
 
@@ -1122,10 +1122,8 @@ void cave_light_spot(struct cave *c, int y, int x)
 
 static void prt_map_aux(void)
 {
-	int a;
-	wchar_t c;
-	byte ta;
-	wchar_t tc;
+	int a, ta;
+	wchar_t c, tc;
 	grid_data g;
 
 	int y, x;
@@ -1183,10 +1181,8 @@ static void prt_map_aux(void)
  */
 void prt_map(void)
 {
-	int a;
-	wchar_t c;
-	byte ta;
-	wchar_t tc;
+	int a, ta;
+	wchar_t c, tc;
 	grid_data g;
 
 	int y, x;
@@ -1251,8 +1247,7 @@ void display_map(int *cy, int *cx)
 	int x, y;
 	grid_data g;
 
-	int a;
-	byte ta;
+	int a, ta;
 	wchar_t tc;
 
 	byte tp;
