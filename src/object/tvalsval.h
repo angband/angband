@@ -348,7 +348,7 @@ enum sval_gold /* tval 100 */
 /*
  * Special "sval" limit -- first "normal" food
  */
-#define SV_FOOD_MIN_SHROOM   5
+#define SV_FOOD_MIN_SHROOM   6
 
 /*
  * Special "sval" limit -- first "large" chest
