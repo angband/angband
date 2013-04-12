@@ -36,6 +36,7 @@ struct store {
 	struct owner *owners;
 	struct owner *owner;
 	unsigned int sidx;
+	const char *name;
 
 	byte stock_num;			/* Stock -- Number of entries */
 	s16b stock_size;		/* Stock -- Total Size of Array */

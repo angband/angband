@@ -9,7 +9,7 @@
 #
 
 # General store
-store:1
+store:1:General Store
 slots:0:4
 turnover:2
 always:cloak:Cloak
@@ -30,7 +30,7 @@ normal:food:Flask of Whisky
 normal:food:Hard Biscuit
 
 # Armoury
-store:2
+store:2:Armoury
 slots:6:18
 turnover:9
 normal:boots:Pair of Leather Sandals
@@ -53,7 +53,7 @@ normal:shield:Small Metal Shield
 normal:shield:Leather Shield
 
 # Weaponsmith
-store:3
+store:3:Weaponsmith
 slots:3:14
 turnover:9
 normal:shot:Iron Shot
@@ -86,7 +86,7 @@ normal:bow:Long Bow
 normal:bow:Light Crossbow
 
 # Temple
-store:4
+store:4:Temple
 slots:6:14
 turnover:9
 always:prayer book:[Beginners Handbook]
@@ -112,7 +112,7 @@ normal:potion:Cure Serious Wounds
 normal:potion:Cure Critical Wounds
 
 # Alchemist
-store:5
+store:5:Alchemist
 slots:6:10
 turnover:9
 always:scroll:Word of Recall
@@ -133,7 +133,7 @@ normal:potion:Restore Life Levels
 normal:potion:Infravision
 
 # Magic-user's
-store:6
+store:6:Magic Shop
 slots:4:14
 turnover:9
 always:magic book:[Magic for Beginners]
@@ -160,6 +160,6 @@ normal:staff:Detect Invisible
 normal:staff:Detect Evil
 
 # Black Market - no stock given but we still need slot/turnover info
-store:7
+store:7:Black Market
 slots:6:18
 turnover:9

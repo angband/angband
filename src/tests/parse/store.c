@@ -15,13 +15,14 @@ int teardown_tests(void *state) {
 }
 
 int test_store0(void *state) {
-	enum parser_error r = parser_parse(state, "store:1");
+	enum parser_error r = parser_parse(state, "store:1:foobar");
 	struct store *s;
 
 	eq(r, PARSE_ERROR_NONE);
 	s = parser_priv(state);
 	require(s);
 	eq(s->sidx, 0);
+	streq(s->name, "foobar");
 	ok;
 }
 

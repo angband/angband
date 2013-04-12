@@ -225,6 +225,7 @@ static enum parser_error parse_store(struct parser *p) {
 		return PARSE_ERROR_OUT_OF_BOUNDS;
 
 	s = store_new(parser_getuint(p, "index") - 1);
+	s->name = string_make(parser_getstr(p, "name"));
 	s->next = h;
 	parser_setpriv(p, s);
 	return PARSE_ERROR_NONE;
@@ -292,7 +293,7 @@ static enum parser_error parse_always(struct parser *p) {
 struct parser *init_parse_stores(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
-	parser_reg(p, "store uint index", parse_store);
+	parser_reg(p, "store uint index str name", parse_store);
 	parser_reg(p, "slots uint min uint max", parse_slots);
 	parser_reg(p, "turnover uint turnover", parse_turnover);
 	parser_reg(p, "normal sym tval sym sval", parse_normal);
@@ -1888,7 +1889,7 @@ static void store_display_frame(void)
 	/* Normal stores */
 	else
 	{
-		const char *store_name = f_info[FEAT_SHOP_HEAD + store->sidx].name;
+		const char *store_name = store->name;
 		const char *owner_name = ot_ptr->name;
 
 		/* Put the owner name */
