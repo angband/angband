@@ -1424,7 +1424,7 @@ static void display_artifact(int col, int row, bool cursor, int oid)
 
 static object_type *find_artifact(struct artifact *artifact)
 {
-	int i, j;
+	int i;
 	struct store *s;
 
 	/* Look for the artifact, either in inventory, store or the object list */

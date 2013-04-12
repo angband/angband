@@ -69,6 +69,7 @@ extern struct cave *cave;
 extern struct cave *cave_new(void);
 extern void cave_free(struct cave *c);
 
+extern struct feature *cave_feat(struct cave *c, int y, int x);
 extern void cave_set_feat(struct cave *c, int y, int x, int feat);
 extern void cave_note_spot(struct cave *c, int y, int x);
 extern void cave_light_spot(struct cave *c, int y, int x);
@@ -145,6 +146,8 @@ extern void cave_add_ward(struct cave *c, int y, int x);
 extern void cave_add_stairs(struct cave *c, int y, int x, int depth);
 extern void cave_add_door(struct cave *c, int y, int x, bool closed);
 
+extern void cave_remove_ward(struct cave *c, int y, int x);
+
 extern void cave_generate(struct cave *c, struct player *p);
 
 extern bool cave_in_bounds(struct cave *c, int y, int x);
@@ -159,6 +162,7 @@ void upgrade_mineral(struct cave *c, int y, int x);
 
 /* Feature modifiers */
 void cave_jam_door(struct cave *c, int y, int x);
+void cave_unjam_door(struct cave *c, int y, int x);
 int cave_can_jam_door(struct cave *c, int y, int x);
 int cave_door_power(struct cave *c, int y, int x);
 void cave_open_door(struct cave *c, int y, int x);
@@ -184,5 +188,7 @@ int cave_shopnum(struct cave *c, int y, int x);
 const char *cave_apparent_name(struct cave *c, struct player *p, int y, int x);
 
 void cave_destroy_rubble(struct cave *c, int y, int x);
+
+void cave_force_floor(struct cave *c, int y, int x);
 
 #endif /* !CAVE_H */

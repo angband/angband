@@ -874,7 +874,7 @@ static bool place_new_monster_one(int y, int x, monster_race *race,
 	if (!cave_isempty(cave, y, x)) return (FALSE);
 
 	/* No creation on glyph of warding */
-	if (cave->feat[y][x] == FEAT_GLYPH) return (FALSE);
+	if (cave_iswarded(cave, y, x)) return FALSE;
 
 	/* "unique" monsters must be "unique" */
 	if (rf_has(race->flags, RF_UNIQUE) && race->cur_num >= race->max_num)
@@ -1286,7 +1286,8 @@ static void build_quest_stairs(int y, int x)
 	msg("A magical staircase appears...");
 
 	/* Create stairs down */
-	cave_set_feat(cave, y, x, FEAT_MORE);
+	/* XXX: fake depth = 0 to always produce downstairs */
+	cave_add_stairs(cave, y, x, 0);
 
 	/* Update the visuals */
 	p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);

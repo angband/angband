@@ -568,8 +568,6 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 
 	bool boring;
 
-	int feat;
-
 	int floor_list[MAX_FLOOR_STACK];
 	int floor_num;
 

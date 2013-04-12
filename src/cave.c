@@ -2377,6 +2377,15 @@ void cave_illuminate(struct cave *c, bool daytime)
 	p_ptr->redraw |= (PR_MAP | PR_MONLIST | PR_ITEMLIST);
 }
 
+struct feature *cave_feat(struct cave *c, int y, int x)
+{
+	assert(c);
+	assert(y >= 0 && y < DUNGEON_HGT);
+	assert(x >= 0 && x < DUNGEON_WID);
+
+	return &f_info[cave->feat[y][x]];
+}
+
 void cave_set_feat(struct cave *c, int y, int x, int feat)
 {
 	assert(c);
@@ -3251,6 +3260,11 @@ void cave_jam_door(struct cave *c, int y, int x) {
 		c->feat[y][x]++;
 }
 
+void cave_unjam_door(struct cave *c, int y, int x) {
+	if (c->feat[y][x] > FEAT_DOOR_HEAD + 0x08)
+		c->feat[y][x]--;
+}
+
 int cave_can_jam_door(struct cave *c, int y, int x) {
 	return c->feat[y][x] < FEAT_DOOR_TAIL;
 }
@@ -3316,6 +3330,11 @@ bool cave_iswarded(struct cave *c, int y, int x) {
 
 void cave_add_ward(struct cave *c, int y, int x) {
 	cave_set_feat(c, y, x, FEAT_GLYPH);
+}
+
+void cave_remove_ward(struct cave *c, int y, int x) {
+	assert(cave_iswarded(c, y, x));
+	cave_set_feat(c, y, x, FEAT_FLOOR);
 }
 
 bool cave_canward(struct cave *c, int y, int x) {
@@ -3428,4 +3447,8 @@ void cave_destroy_rubble(struct cave *c, int y, int x) {
 
 void cave_add_door(struct cave *c, int y, int x, bool closed) {
 	cave_set_feat(c, y, x, closed ? FEAT_DOOR_HEAD : FEAT_OPEN);
+}
+
+void cave_force_floor(struct cave *c, int y, int x) {
+	cave_set_feat(c, y, x, FEAT_FLOOR);
 }

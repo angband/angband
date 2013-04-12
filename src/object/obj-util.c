@@ -2192,7 +2192,7 @@ void drop_near(struct cave *c, object_type *j_ptr, int chance, int y, int x, boo
 void push_object(int y, int x)
 {
 	/* Save the original terrain feature */
-	int feat_old = cave->feat[y][x];
+	struct feature *feat_old = cave_feat(cave, y, x);
 
 	object_type *o_ptr;
    
@@ -2203,7 +2203,8 @@ void push_object(int y, int x)
 		q_push_ptr(queue, o_ptr);
 
 	/* Set feature to an open door */
-	cave_set_feat(cave, y, x, FEAT_OPEN);
+	cave_force_floor(cave, y, x);
+	cave_add_door(cave, y, x, FALSE);
 	
 	/* Drop objects back onto the floor */
 	while (q_len(queue) > 0)
@@ -2219,7 +2220,7 @@ void push_object(int y, int x)
 	delete_object(y, x);
 	
 	/* Reset cave feature */
-	cave_set_feat(cave, y, x, feat_old);
+	cave_set_feat(cave, y, x, feat_old->fidx);
 	
 	q_free(queue);
 }

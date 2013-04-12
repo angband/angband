@@ -140,7 +140,7 @@ static bool summon_possible(int y1, int x1)
 			if (distance(y1, x1, y, x) > 2) continue;
 
 			/* Hack: no summon on glyph of warding */
-			if (cave->feat[y][x] == FEAT_GLYPH) continue;
+			if (cave_iswarded(cave, y, x)) continue;
 
 			/* Require empty floor grid in line of sight */
 			if (cave_isempty(cave, y, x) && los(y1, x1, y, x))
@@ -568,7 +568,6 @@ static bool near_permwall(const monster_type *m_ptr, struct cave *c)
 		for (x = (mx - 2); x <= (mx + 2); x++)
 		{
             if (!cave_in_bounds_fully(c, y, x)) continue;
-            /* vault walls are always FEAT_PERM_INNER */
             if (cave_isperm(c, y, x)) return TRUE;
 		}
 	}
@@ -1090,10 +1089,11 @@ static bool get_moves(struct cave *c, struct monster *m_ptr, int mm[5])
 		/* Count empty grids next to player */
 		for (i = 0; i < 8; i++)
 		{
+			int ry = py + ddy_ddd[i];
+			int rx = px + ddx_ddd[i];
 			/* Check grid around the player for room interior (room walls count)
 			   or other empty space */
-			if ((cave->feat[py + ddy_ddd[i]][px + ddx_ddd[i]] <= FEAT_MORE) ||
-				(cave->info[py + ddy_ddd[i]][px + ddx_ddd[i]] & (CAVE_ROOM)))
+			if (cave_ispassable(cave, ry, rx) || cave_isroom(cave, ry, rx))
 			{
 				/* One more open grid */
 				open++;
@@ -2969,7 +2969,7 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 			do_move = TRUE;
 
 		/* Permanent wall in the way */
-		else if (cave->feat[ny][nx] >= FEAT_PERM_EXTRA)
+		else if (cave_iswall(cave, ny, nx) && cave_isperm(cave, ny, nx))
 		{
 			/* Nothing */
 		}
@@ -2997,15 +2997,15 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 				cave->info[ny][nx] &= ~(CAVE_MARK);
 
 				/* Notice */
-				cave_set_feat(c, ny, nx, FEAT_FLOOR);
+				cave_destroy_wall(c, ny, nx);
 
 				/* Note changes to viewable region */
 				if (player_has_los_bold(ny, nx)) do_view = TRUE;
 
 			/* Handle doors and secret doors */
-			} else if (((cave->feat[ny][nx] >= FEAT_DOOR_HEAD) &&
-						 (cave->feat[ny][nx] <= FEAT_DOOR_TAIL)) ||
-						(cave->feat[ny][nx] == FEAT_SECRET)) {
+			} else if (cave_iscloseddoor(cave, ny, nx)
+			        || cave_islockeddoor(cave, ny, nx)
+			        || cave_issecretdoor(cave, ny, nx)) {
 				bool may_bash = TRUE;
 
 				/* Take a turn */
@@ -3020,8 +3020,8 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 				/* Creature can open doors. */
 				if (rf_has(m_ptr->race->flags, RF_OPEN_DOOR))	{
 					/* Closed doors and secret doors */
-					if ((cave->feat[ny][nx] == FEAT_DOOR_HEAD) ||
-							 (cave->feat[ny][nx] == FEAT_SECRET)) {
+					if (cave_iscloseddoor(cave, ny, nx)
+					 || cave_issecretdoor(cave, ny, nx)) {
 						/* The door is open */
 						did_open_door = TRUE;
 
@@ -3029,11 +3029,8 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 						may_bash = FALSE;
 
 					/* Locked doors (not jammed) */
-					} else if (cave->feat[ny][nx] < FEAT_DOOR_HEAD + 0x08) {
-						int k;
-
-						/* Door power */
-						k = ((cave->feat[ny][nx] - FEAT_DOOR_HEAD) & 0x07);
+					} else if (cave_islockeddoor(cave, ny, nx)) {
+						int k = cave_door_power(cave, ny, nx);
 
 						/* Try to unlock it */
 						if (randint0(m_ptr->hp / 10) > k) {
@@ -3054,10 +3051,7 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 
 				/* Stuck doors -- attempt to bash them down if allowed */
 				if (may_bash && rf_has(m_ptr->race->flags, RF_BASH_DOOR))	{
-					int k;
-
-					/* Door power */
-					k = ((cave->feat[ny][nx] - FEAT_DOOR_HEAD) & 0x07);
+					int k = cave_door_power(cave, ny, nx);
 
 					/* Attempt to bash */
 					if (randint0(m_ptr->hp / 10) > k) {
@@ -3068,10 +3062,10 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 							msg("Something slams against a door.");
 
 						/* Reduce the power of the door by one */
-						cave_set_feat(c, ny, nx, cave->feat[ny][nx] - 1);
+						cave_unjam_door(c, ny, nx);
 
 						/* If the door is no longer jammed */
-						if (cave->feat[ny][nx] < FEAT_DOOR_HEAD + 0x09)	{
+						if (!cave_isjammeddoor(cave, ny, nx)) {
 							msg("You hear a door burst open!");
 
 							/* Disturb (sometimes) */
@@ -3091,11 +3085,11 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 			if (did_open_door || did_bash_door)	{
 				/* Break down the door */
 				if (did_bash_door && (randint0(100) < 50))
-					cave_set_feat(c, ny, nx, FEAT_BROKEN);
+					cave_smash_door(c, ny, nx);
 
 				/* Open the door */
 				else
-					cave_set_feat(c, ny, nx, FEAT_OPEN);
+					cave_open_door(c, ny, nx);
 
 				/* Handle viewable doors */
 				if (player_has_los_bold(ny, nx))
@@ -3105,7 +3099,7 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 
 
 		/* Hack -- check for Glyph of Warding */
-		if (do_move && (cave->feat[ny][nx] == FEAT_GLYPH)) {
+		if (do_move && cave_iswarded(cave, ny, nx)) {
 			/* Assume no move allowed */
 			do_move = FALSE;
 
@@ -3119,7 +3113,7 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 				cave->info[ny][nx] &= ~CAVE_MARK;
 
 				/* Break the rune */
-				cave_set_feat(c, ny, nx, FEAT_FLOOR);
+				cave_remove_ward(c, ny, nx);
 
 				/* Allow movement */
 				do_move = TRUE;

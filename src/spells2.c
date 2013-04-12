@@ -2044,7 +2044,7 @@ void earthquake(int cy, int cx, int r)
 	int py = p_ptr->py;
 	int px = p_ptr->px;
 
-	int i, t, y, x, yy, xx, dy, dx;
+	int i, y, x, yy, xx, dy, dx;
 
 	int damage = 0;
 
