@@ -484,50 +484,6 @@ static bool first_find(int fl[TRIES_SIZE])
 	return TRUE;
 }
 
-
-void drop_on_square(object_type *j_ptr, int y, int x, bool verbose)
-{
-	//int i, k, n, d, s;
-
-	int by, bx;
-	//int dy, dx;
-	//int ty, tx;
-
-	// object_type *o_ptr;
-
-	char o_name[80];
-
-	//bool flag = FALSE;
-
-	bool plural = FALSE;
-	
-	assert(j_ptr->kind);
-
-	/* Default */
-	by = y;
-	bx = x;
-	
-	/* Set floor to empty */
-	cave_set_feat(cave,y,x,FEAT_FLOOR);
-
-			
-			
-	/* Give it to the floor */
-	if (!floor_carry(cave, by, bx, j_ptr)){
-	
-		/* Message */
-		msg("The %s disappear%s.", o_name, PLURAL(plural));
-
-		/* Debug */
-		if (p_ptr->wizard) msg("Breakage (too many objects).");
-
-		if (j_ptr->artifact) j_ptr->artifact->created = FALSE;
-
-		/* Failure */
-		return;
-	}
-}
-
 /*
  * Add values to each category of statistics based 
  */
@@ -2412,7 +2368,7 @@ void calc_cave_distances(void)
 				if (cave_dist[ty][tx] >= 0) continue;
 				
 				/* Is it a wall? */
-				if (cave->feat[ty][tx] > FEAT_RUBBLE) continue;
+				if (cave_iswall(cave, ty, tx)) continue;
 				
 				/* Add the new location */
 				d_y_new[d_new_max] = ty;
@@ -2577,13 +2533,13 @@ void disconnect_stats(void)
 			for (x = 1; x < DUNGEON_WID - 1; x++){
 			
 				/* don't care about walls */
-				if (cave->feat[y][x] > FEAT_RUBBLE) continue;
+				if (cave_iswall(cave, y, x)) continue;
 				
 				/* Can we get there? */
 				if (cave_dist[y][x] >= 0){
 				
 					/* Is it a  down stairs? */
-					if ((cave->feat[y][x] == FEAT_MORE)){
+					if (cave_isdownstairs(cave, y, x)) {
 
 						has_dsc_from_stairs = FALSE;
 					

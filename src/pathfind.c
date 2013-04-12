@@ -714,8 +714,7 @@ static bool run_test(void)
 			/* Unknown grid or non-wall */
 			/* Was: cave_ispassable(cave, row, col) */
 			if (!(cave->info[row][col] & (CAVE_MARK)) ||
-			    (cave->feat[row][col] < FEAT_SECRET))
-			{
+			    (cave_ispassable(cave, row, col))) {
 				/* Looking to break right */
 				if (p_ptr->run_break_right)
 				{
@@ -745,8 +744,7 @@ static bool run_test(void)
 			/* Unknown grid or non-wall */
 			/* Was: cave_ispassable(cave, row, col) */
 			if (!(cave->info[row][col] & (CAVE_MARK)) ||
-			    (cave->feat[row][col] < FEAT_SECRET))
-			{
+			    (cave_ispassable(cave, row, col))) {
 				/* Looking to break left */
 				if (p_ptr->run_break_left)
 				{

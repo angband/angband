@@ -580,6 +580,8 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 
 	char coords[20];
 
+	const char *name;
+
 	/* Describe the square location */
 	coords_desc(coords, sizeof(coords), y, x);
 
@@ -941,33 +943,21 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 		/* Double break */
 		if (this_o_idx) break;
 
-
-		/* Feature (apply "mimic") */
-		feat = f_info[cave->feat[y][x]].mimic;
-
-		/* Require knowledge about grid, or ability to see grid */
-		if (!(cave->info[y][x] & (CAVE_MARK)) && !player_can_see_bold(y,x))
-		{
-			/* Forget feature */
-			feat = FEAT_NONE;
-		}
+		name = cave_apparent_name(cave, p_ptr, y, x);
 
 		/* Terrain feature if needed */
-		if (boring || (feat > FEAT_INVIS))
+		if (boring || cave_isinteresting(cave, y, x))
 		{
-			const char *name = f_info[feat].name;
-
 			/* Hack -- handle unknown grids */
-			if (feat == FEAT_NONE) name = "unknown grid";
 
 			/* Pick a prefix */
-			if (*s2 && (feat >= FEAT_DOOR_HEAD)) s2 = "in ";
+			if (*s2 && cave_isdoor(cave, y, x)) s2 = "in ";
 
 			/* Pick proper indefinite article */
 			s3 = (is_a_vowel(name[0])) ? "an " : "a ";
 
 			/* Hack -- special introduction for store doors */
-			if (feature_isshop(feat))
+			if (cave_isshop(cave, y, x))
 			{
 				s3 = "the entrance to the ";
 			}

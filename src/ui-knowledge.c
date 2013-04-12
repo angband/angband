@@ -1425,6 +1425,7 @@ static void display_artifact(int col, int row, bool cursor, int oid)
 static object_type *find_artifact(struct artifact *artifact)
 {
 	int i, j;
+	struct store *s;
 
 	/* Look for the artifact, either in inventory, store or the object list */
 	for (i = 0; i < z_info->o_max; i++)
@@ -1439,14 +1440,10 @@ static object_type *find_artifact(struct artifact *artifact)
 			return &p_ptr->inventory[i];
 	}
 
-	for (j = 1; j < (FEAT_SHOP_TAIL - FEAT_SHOP_HEAD + 1); j++)
-	{
-		for (i = 0; i < stores[j].stock_size; i++)
-		{
-			if (stores[j].stock[i].artifact == artifact)
-				return &stores[j].stock[i];
-		}
-	}
+	for (s = stores; s; s = s->next)
+		for (i = 0; i < s->stock_size; i++)
+			if (s->stock[i].artifact == artifact)
+				return &s->stock[i];
 
 	return NULL;
 }
