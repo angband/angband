@@ -1856,14 +1856,11 @@ static bool get_file_text(const char *suggested_name, char *path, size_t len)
 	path_build(path, len, ANGBAND_DIR_USER, buf);
 
 	/* Check if it already exists */
-	if (file_exists(buf))
-	{
-		char buf2[160];
-		strnfmt(buf2, sizeof(buf2), "Replace existing file %s?", buf);
+	if (file_exists(buf) && !get_check("Replace existing file? "))
+		return FALSE;
 
-		if (get_check(buf2) == FALSE)
-			return FALSE;
-	}
+	/* Tell the user where it's saved to. */
+	msg("Saving as %s.", path);
 
 	return TRUE;
 }
