@@ -461,14 +461,15 @@ static void fsetfileinfo(const char *pathname, u32b fcreator, u32b ftype)
 
 static void osx_file_open_hook(const char *path, file_type ftype)
 {
-	u32b mac_type = 'TEXT';
+	u32b mac_type = 0;
 		
 	if (ftype == FTYPE_RAW)
 		mac_type = 'DATA';
 	else if (ftype == FTYPE_SAVE)
 		mac_type = 'SAVE';
-		
-	fsetfileinfo(path, 'A271', mac_type);
+
+	if (mac_type)
+		fsetfileinfo(path, 'A271', mac_type);
 }
 
 
