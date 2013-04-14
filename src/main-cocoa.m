@@ -329,6 +329,7 @@ static void play_sound(int event);
 static void update_term_visibility(void);
 static BOOL check_events(int wait);
 static void cocoa_file_open_hook(const char *path, file_type ftype);
+static bool cocoa_get_file(const char *suggested_name, char *path, size_t len);
 static BOOL send_event(NSEvent *event);
 static void record_current_savefile(void);
 
@@ -890,7 +891,10 @@ static int compare_advances(const void *ap, const void *bp)
     
 	/* Hook in to the file_open routine */
 	file_open_hook = cocoa_file_open_hook;
-    
+
+    /* Hook into file saving dialogue routine */
+    get_file = cocoa_get_file;
+
     // initialize file paths
     initialize_file_paths();
 
@@ -2691,6 +2695,22 @@ static void cocoa_file_open_hook(const char *path, file_type ftype)
         [[NSFileManager defaultManager] setAttributes:attrs ofItemAtPath:pathString error:NULL];
     }
     [pool drain];
+}
+
+/* A platform-native file save dialogue box, e.g. for saving character dumps */
+static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
+{
+    NSSavePanel *panel = [NSSavePanel savePanel];
+    NSString *directory = [NSString stringWithCString:ANGBAND_DIR_USER encoding:NSASCIIStringEncoding];
+    NSString *filename = [NSString stringWithCString:suggested_name encoding:NSASCIIStringEncoding];
+
+    if ([panel runModalForDirectory:directory file:filename] == NSOKButton) {
+        const char *p = [[[panel URL] path] UTF8String];
+        my_strcpy(path, p, len);
+        return TRUE;
+    }
+
+    return FALSE;
 }
 
 /*** Main program ***/

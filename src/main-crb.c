@@ -3031,6 +3031,21 @@ static errr crb_get_cmd(cmd_context context, bool wait)
 		return textui_get_cmd(context, wait);
 }
 
+static bool crb_get_file(const char *suggested_name, char *path, size_t len)
+{
+	NSSavePanel *panel = [NSSavePanel savePanel];
+	NSString *directory = [NSString stringWithCString:ANGBAND_DIR_USER encoding:NSASCIIStringEncoding];
+	NSString *filename = [NSString stringWithCString:suggested_name encoding:NSASCIIStringEncoding];
+
+	if ([panel runModalForDirectory:directory file:filename] == NSOKButton) {
+		const char *p = [[[panel URL] path] UTF8String];
+		my_strcpy(path, p, len);
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
 static OSStatus QuitCommand(EventHandlerCallRef inCallRef,
 							EventRef inEvent, void *inUserData )
 {
@@ -4154,6 +4169,7 @@ int main(void)
 
 	/* Set command hook */ 
 	cmd_get_hook = crb_get_cmd; 
+	get_file = crb_get_file;
 
 	/* Set up the display handlers and things. */
 	init_display();
