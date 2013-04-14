@@ -282,7 +282,6 @@ static bool do_cmd_open_aux(int y, int x)
 			cave_open_door(cave, y, x);
 
 			/* Update the visuals */
-			cave_light_spot(cave, y, x);
 			p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 
 			/* Experience */
@@ -310,7 +309,6 @@ static bool do_cmd_open_aux(int y, int x)
 		cave_open_door(cave, y, x);
 
 		/* Update the visuals */
-		cave_light_spot(cave, y, x);
 		p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 
 		/* Sound */
@@ -465,7 +463,6 @@ static bool do_cmd_close_aux(int y, int x)
 	{
 		/* Close the door */
 		cave_close_door(cave, y, x);
-		cave_light_spot(cave, y, x);
 
 		/* Update the visuals */
 		p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);

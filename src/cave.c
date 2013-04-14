@@ -3270,10 +3270,12 @@ int cave_door_power(struct cave *c, int y, int x) {
 
 void cave_open_door(struct cave *c, int y, int x) {
 	c->feat[y][x] = FEAT_OPEN;
+	cave_light_spot(c, y, x);
 }
 
 void cave_smash_door(struct cave *c, int y, int x) {
 	c->feat[y][x] = FEAT_BROKEN;
+	cave_light_spot(c, y, x);
 }
 
 void cave_destroy_trap(struct cave *c, int y, int x) {
@@ -3283,6 +3285,7 @@ void cave_destroy_trap(struct cave *c, int y, int x) {
 
 void cave_lock_door(struct cave *c, int y, int x, int power) {
 	c->feat[y][x] = FEAT_DOOR_HEAD + power;
+	cave_light_spot(c, y, x);
 }
 
 bool cave_hasgoldvein(struct cave *c, int y, int x) {
