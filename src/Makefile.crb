@@ -173,7 +173,7 @@ install: $(EXE) $(ICONFILES) $(PLIST) $(LIBFILES)
 
 	# 'optionally' install sound and graphics tiles, if present
 	-cp $(TILES) $(APPRES)/lib/xtra/graf
-	-cp ../lib/xtra/sound/*.wav $(APPRES)/lib/xtra/sound
+	-cp ../lib/xtra/sound/*.mp3 $(APPRES)/lib/xtra/sound
 	-cp ../lib/xtra/sound/sound.cfg $(APPRES)/lib/xtra/sound
 
 	install -m 755 $(EXE) $(APPBIN)

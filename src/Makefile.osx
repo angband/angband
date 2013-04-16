@@ -156,7 +156,7 @@ install: $(EXE) $(ICONFILES) $(PLIST) $(LIBFILES)
 	# so we can just recursively copy that directory.
 	-cp ../lib/xtra/graf/graphics.txt $(APPRES)/lib/xtra/graf
 	-cp ../lib/xtra/graf/*.png $(APPRES)/
-	-cp ../lib/xtra/sound/*.wav $(APPRES)/lib/xtra/sound
+	-cp ../lib/xtra/sound/*.mp3 $(APPRES)/lib/xtra/sound
 	-cp ../lib/xtra/sound/sound.cfg $(APPRES)/lib/xtra/sound
 
 	install -m 755 $(EXE) $(APPBIN)

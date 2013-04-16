@@ -73,7 +73,7 @@ cp ../lib/xtra/graf/*.png lib/xtra/graf
 cp ../lib/xtra/graf/graphics.txt lib/xtra/graf
 
 cp ../lib/xtra/sound/sound.cfg lib/xtra/sound
-cp ../lib/xtra/sound/*.wav lib/xtra/sound
+cp ../lib/xtra/sound/*.mp3 lib/xtra/sound
 
 cd ..
 zip -9 -r $OUT $DIR
