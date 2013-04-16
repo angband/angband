@@ -31,9 +31,6 @@
 ?:[EQU $SYS gcu]
 %:font-gcu.prf
 
-?:[EQU $SYS mac]
-%:font-mac.prf
-
 ?:[EQU $SYS win]
 %:font-win.prf
 

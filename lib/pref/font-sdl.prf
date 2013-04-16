@@ -16,16 +16,3 @@
 
 # Floors (white : centered dot)
 F:1:all:1:7
-
-# Magma (slate : solid block)
-#F:50:all:2:127
-
-# Quartz (light slate : solid block)
-#F:51:all:9:127
-
-# Granite walls (white : solid block)
-#F:56:all:1:127
-
-# Permanent rock (dark red : solid block)
-#F:60:all:4:127
-
