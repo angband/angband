@@ -29,9 +29,9 @@ DATA = sound.cfg \
 	id_ego_yeah.mp3			plc_miss_swish.mp3		pls_bell_mute.mp3 \
 	id_ego_yeah2.mp3		plm_aim_wand.mp3		pls_bell_sustain.mp3 \
 	id_ego_yes.mp3			plm_bang_ceramic.mp3		pls_breathe_in.mp3 \
-	id_good_hey.mp3			plm_bang_dumpster.mp3		pls_man_argoh.mp3 \ 
-	id_good_hey2.mp3		plm_bang_metal.mp3		pls_man_gulp_new.mp3 \ 
-	id_good_hmm.mp3			plm_book_pageturn.mp3		pls_man_oooh.mp3 \ 
+	id_good_hey.mp3			plm_bang_dumpster.mp3		pls_man_argoh.mp3 \
+	id_good_hey2.mp3		plm_bang_metal.mp3		pls_man_gulp_new.mp3 \
+	id_good_hmm.mp3			plm_book_pageturn.mp3		pls_man_oooh.mp3 \
 	id_good_huh.mp3			plm_bottle_clinks.mp3		pls_man_scream2.mp3 \
 	id_good_ooh.mp3			plm_break_canister.mp3		pls_man_sigh.mp3 \
 	id_good_ooo.mp3			plm_break_glass.mp3		pls_man_sniff.mp3 \
@@ -46,7 +46,7 @@ DATA = sound.cfg \
 	mco_bite_long.mp3		plm_chest_latch.mp3		pls_tone_elec.mp3 \
 	mco_bite_munch.mp3		plm_chest_unlatch.mp3		pls_tone_goblet.mp3 \
 	mco_bite_regular.mp3		plm_chimes_jangle.mp3		pls_tone_guiro.mp3 \
-	mco_bite_short.mp3		plm_click_dry.mp3		pls_tone_headstock.mp3 \ 
+	mco_bite_short.mp3		plm_click_dry.mp3		pls_tone_headstock.mp3 \
 	mco_bite_small.mp3		plm_click_switch.mp3			pls_tone_scrape.mp3 \
 	mco_bite_soft.mp3		plm_click_switch2.mp3		pls_tone_stick.mp3 \
 	mco_card_shuffle.mp3		plm_click_switch3.mp3		sto_bell_desk.mp3 \
@@ -54,8 +54,8 @@ DATA = sound.cfg \
 	mco_ceramic_trill.mp3		plm_close_hatch.mp3		sto_bell_dingaling.mp3 \
 	mco_click_vibra.mp3		plm_coins_dump.mp3		sto_bell_jingles.mp3 \
 	mco_creature_choking.mp3	plm_coins_light.mp3		sto_bell_register1.mp3 \
-	mco_creature_groan.mp3		plm_coins_pour.mp3		sto_bell_register2.mp3 \ 
-	mco_creature_yelp.mp3		plm_coins_shake.mp3		sto_bell_ringing.mp3 \ 
+	mco_creature_groan.mp3		plm_coins_pour.mp3		sto_bell_register2.mp3 \
+	mco_creature_yelp.mp3		plm_coins_shake.mp3		sto_bell_ringing.mp3 \
 	mco_cuica_rubbing.mp3		plm_cork_pop.mp3		sto_bell_shop.mp3 \
 	mco_dino_low.mp3		plm_cork_squeak.mp3		sto_coins_countertop.mp3 \
 	mco_dino_slur.mp3		plm_door_bolt.mp3		sto_man_haha.mp3 \
