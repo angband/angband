@@ -1998,14 +1998,14 @@ static void update_view_one(struct cave *c, int y, int x, int radius, int py, in
 		/* Check that we got here via the 'knight's move' rule. If so,
 		 * don't steal LOS. */
 		if (ax == 2 && ay == 1) {
-			if (  !cave_iswall(c, x + sx, y)
-			    && cave_iswall(c, x + sx, y + sy)) {
+			if (  !cave_iswall(c, y, x + sx)
+			    && cave_iswall(c, y + sy, x + sx)) {
 				xc = x;
 				yc = y;
 			}
 		} else if (ax == 1 && ay == 2) {
-			if (  !cave_iswall(c, x, y + sy)
-			    && cave_iswall(c, x + sx, y + sy)) {
+			if (  !cave_iswall(c, y + sy, x)
+			    && cave_iswall(c, y + sy, x + sx)) {
 				xc = x;
 				yc = y;
 			}
