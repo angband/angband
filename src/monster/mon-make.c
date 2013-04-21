@@ -975,33 +975,6 @@ static bool place_new_monster_one(int y, int x, monster_race *race,
  */
 #define GROUP_MAX	25
 
-/**
- * Picks a monster group size. Used for monsters with the FRIENDS
- * flag and monsters with the ESCORT/ESCORTS flags.
- */
-static int group_size_1(const monster_race *race)
-{
-	int total;
-
-	assert(race && race->name);
-	
-	/* Pick a group size */
-	total = randint1(13);
-
-	/* Hard monsters, small groups */
-	if (race->level > p_ptr->depth)
-		total += 0 - randint1(race->level - p_ptr->depth);
-
-	/* Easy monsters, large groups */
-	else if (race->level < p_ptr->depth)
-		total += randint1(p_ptr->depth - race->level);
-
-	if (total < 1) total = 1;
-	if (total > GROUP_MAX) total = GROUP_MAX;
-
-	return total;
-}
-
 		
 /**
  * Attempts to place a group of monsters of race `r_idx` around
@@ -1060,38 +1033,6 @@ static bool place_new_monster_group(struct cave *c, int y, int x,
 }
 
 
-/*
- * Hack -- help pick an escort type
- */
-static monster_race *place_monster_race = NULL;
-
-/**
- * Hack -- helps pick an escort type. Requires place_monster_race to be set.
- * Returns TRUE if monster race `r_idx` is appropriate as an escort for
- * the monster of race place_monster_race.
- */
-static bool place_monster_okay(monster_race *race)
-{
-	assert(place_monster_race);	
-	assert(race);
-
-	/* Require identical monster template */
-	if (race->base != place_monster_race->base) return (FALSE);
-
-	/* Skip more advanced monsters */
-	if (race->level > place_monster_race->level) return (FALSE);
-
-	/* Skip unique monsters */
-	if (rf_has(race->flags, RF_UNIQUE)) return (FALSE);
-
-	/* Paranoia -- Skip identical monsters */
-	if (place_monster_race == race) return (FALSE);
-
-	/* Okay */
-	return (TRUE);
-}
-
-
 /**
  * Attempts to place a monster of the given race at the given location.
  *
@@ -1114,8 +1055,8 @@ static bool place_monster_okay(monster_race *race)
 bool place_new_monster(struct cave *c, int y, int x, monster_race *race, bool sleep,
 	bool group_okay, byte origin)
 {
-	int i;
-
+	struct monster_friend *friend;
+	
 	assert(c);
 	assert(race);
 	
@@ -1125,60 +1066,18 @@ bool place_new_monster(struct cave *c, int y, int x, monster_race *race, bool sl
 	/* We're done unless the group flag is set */
 	if (!group_okay) return (TRUE);
 
-	/* Friends for certain monsters */
-	if (rf_has(race->flags, RF_FRIEND)) {
-		int total = group_size_1(race);
-		(void)place_new_monster_group(c, y, x, race, sleep, total, origin);
-	}
-
-	/* Friends for certain monsters */
-	if (rf_has(race->flags, RF_FRIENDS)) {
-		int total = group_size_1(race);
-		(void)place_new_monster_group(c, y, x, race, sleep, total, origin);
-	}
-
-	/* Escorts for certain monsters */
-	if (rf_has(race->flags, RF_ESCORT)) {
-		/* Try to place several "escorts" */
-		for (i = 0; i < 50; i++) {
-			int nx, ny, d = 3;
-			monster_race *race2;
-
-			/* Pick a location */
-			scatter(&ny, &nx, y, x, d, 0);
-
-			/* Require empty grids */
-			if (!cave_isempty(cave, ny, nx)) continue;
-
-			/* Set the escort index */
-			place_monster_race = race;
-
-			/* Prepare allocation table */
-			get_mon_num_prep(place_monster_okay);
-
-			/* Pick a random race */
-			race2 = get_mon_num(race->level);
-
-			/* Prepare allocation table */
-			get_mon_num_prep(NULL);
-
-			/* Handle failure */
-			if (!race2) break;
-
-			/* Place a single escort */
-			(void)place_new_monster_one(ny, nx, race2, sleep, origin);
-
-			/* Place a "group" of escorts if needed */
-			if (rf_has(race2->flags, RF_FRIEND)) {
-				int total = randint1(GROUP_MAX / 3);
-				(void)place_new_monster_group(c, ny, nx, race2, sleep, total, origin);
-			}
+	/* Go through friends flags */
+	for (friend = race->friends; friend; friend = friend->next) {
+		if ((unsigned int)randint0(100) >= friend->percent_chance)
+			continue;
 			
-			if (rf_has(race2->flags, RF_FRIENDS) || rf_has(race->flags, RF_ESCORTS)) {
-				int total = randint1(GROUP_MAX / 2);
-				(void)place_new_monster_group(c, ny, nx, race2, sleep, total, origin);
-			}
-		}
+		/* Get the chosen monster */
+		monster_race *friend_race = &r_info[friend->friend_index];
+		
+		/* Calculate the number of monsters to place */
+		int total = damroll(friend->number_dice, friend->number_side);
+		
+		(void)place_new_monster_group(c, y, x, friend_race, sleep, total, origin);
 	}
 
 	/* Success */
