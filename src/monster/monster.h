@@ -96,6 +96,14 @@ struct monster_drop {
 	unsigned int max;
 };
 
+struct monster_friend {
+    struct monster_friend *next;
+    unsigned int friend_index;
+    unsigned int percent_chance;
+    unsigned int number_dice;
+    unsigned int number_side;
+};    
+
 struct monster_mimic {
 	struct monster_mimic *next;
 	struct object_kind *kind;
@@ -172,6 +180,8 @@ typedef struct monster_race
 	byte cur_num;			/* Monster population on current level */
 
 	struct monster_drop *drops;
+    
+    struct monster_friend *friends;
 	
 	struct monster_mimic *mimic_kinds;
 } monster_race;
