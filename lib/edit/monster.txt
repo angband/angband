@@ -172,8 +172,9 @@ I:110:3:4:1:40
 W:0:2:0:0
 B:BEG
 B:TOUCH:EAT_GOLD
-F:MALE | FRIENDS
+F:MALE
 F:RAND_25 | OPEN_DOOR | TAKE_ITEM
+friends:2:100:3d5
 D:He looks squalid and thoroughly revolting.
 
 N:2:Scrawny cat
