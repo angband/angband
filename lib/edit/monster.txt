@@ -174,7 +174,7 @@ B:BEG
 B:TOUCH:EAT_GOLD
 F:MALE
 F:RAND_25 | OPEN_DOOR | TAKE_ITEM
-friends:2:100:3d5
+friends:100:3d5:Scrawny cat
 D:He looks squalid and thoroughly revolting.
 
 N:2:Scrawny cat
