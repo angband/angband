@@ -295,7 +295,7 @@ static void transition_savefile_names(void)
 	char uid[10];
 
 	ang_dir *d = my_dopen(ANGBAND_DIR_SAVE);
-	if (!d) quit_fmt("Can't open savefile directory");
+	if (!d) return;
 
 	strnfmt(uid, sizeof(uid), "%d.", player_uid);
 
