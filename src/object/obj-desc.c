@@ -46,7 +46,7 @@ void object_kind_name(char *buf, size_t max, const object_kind *kind, bool easy_
 	/* If not aware, use flavor */
 	if (!easy_know && !kind->aware && kind->flavor)
 	{
-		if (kind->tval == TV_FOOD && kind->sval > SV_FOOD_MIN_SHROOM)
+		if (kind->tval == TV_FOOD && kind->sval >= SV_FOOD_MIN_SHROOM)
 		{
 			strnfmt(buf, max, "%s Mushroom", kind->flavor->text);
 		}
@@ -62,7 +62,7 @@ void object_kind_name(char *buf, size_t max, const object_kind *kind, bool easy_
 	{
 		char *t;
 
-		if (kind->tval == TV_FOOD && kind->sval > SV_FOOD_MIN_SHROOM)
+		if (kind->tval == TV_FOOD && kind->sval >= SV_FOOD_MIN_SHROOM)
 		{
 			my_strcpy(buf, "Mushroom of ", max);
 			max -= strlen(buf);
@@ -173,7 +173,7 @@ static const char *obj_desc_get_basename(const object_type *o_ptr, bool aware)
 			return "& Holy Book~ of Prayers #";
 
 		case TV_FOOD:
-			if (o_ptr->sval > SV_FOOD_MIN_SHROOM)
+			if (o_ptr->sval >= SV_FOOD_MIN_SHROOM)
 				return (show_flavor ? "& # Mushroom~" : "& Mushroom~");
 			else
 				return o_ptr->kind->name;
