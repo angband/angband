@@ -319,7 +319,9 @@ K:flask:Flask of oil:0x8A:0x9A
 K:food:Ration of Food:0x8B:0x82
 K:food:Slime Mold:0x8A:0x9F
 K:food:Piece of Elvish Waybread:0x8B:0x80
-
+K:food:Hard Biscuit:0x8B:0x82
+K:food:Flask of Whisky:0x8A:0x95
+K:food:Pint of Fine Wine:0x8A:0x96
 
 ### The shrooms, an interesting collection ###
 # Graphics are sourced from flavor entries in flvr-xxx.prf

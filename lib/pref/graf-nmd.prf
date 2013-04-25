@@ -201,6 +201,9 @@ K:spike:Iron Spike:0x89:0x94
 K:food:Ration of Food:0x89:0x88
 K:food:Slime Mold:0x89:0x89
 K:food:Piece of Elvish Waybread:0x89:0x8A
+K:food:Hard Biscuit:0x89:0x88
+K:food:Flask of Whisky:0x89:0x83
+K:food:Pint of Fine Wine:0x89:0x83
 
 
 ### The shrooms, an interesting collection ###
