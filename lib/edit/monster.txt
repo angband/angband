@@ -109,6 +109,13 @@
 # 'drop-artifact' lines force a specific artifact to drop on death. Setting this
 # on a non-UNIQUE monster is dangerous.
 
+# friends lines specify options for what monsters can appear with other monsters
+# on creation.  The format is.
+# friends:Chance of friend appearing:number in xdy format:name of friend
+# note that number is throttled depending on the dungeon level with only half 
+# appearing at depth and the full complement 5 levels deeper.  All town friends
+# will be divided by two.
+
 # 'mimic' lines give item types that this monster may mimic. Each of the objects
 # has an equal chance of being mimicked.
 
