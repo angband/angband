@@ -1045,12 +1045,6 @@ static bool place_new_monster_group(struct cave *c, int y, int x,
  *
  * `origin` is the item origin to use for any monster drops (e.g. ORIGIN_DROP,
  * ORIGIN_DROP_PIT, etc.) 
- *
- * Note the "bizarre" use of non-recursion to prevent annoying output
- * when running a code profiler.
- *
- * Note the use of the "monster allocation table" to restrict
- * the "get_mon_num()" function to "legal" escort types.
  */
 bool place_new_monster(struct cave *c, int y, int x, monster_race *race, bool sleep,
 	bool group_okay, byte origin)
@@ -1069,6 +1063,7 @@ bool place_new_monster(struct cave *c, int y, int x, monster_race *race, bool sl
 	/* Go through friends flags */
 	for (friend = race->friends; friend; friend = friend->next) {
 		monster_race *friend_race;
+		int level_difference, extra_chance;
 		if ((unsigned int)randint0(100) >= friend->percent_chance)
 			continue;
 			
@@ -1078,6 +1073,24 @@ bool place_new_monster(struct cave *c, int y, int x, monster_race *race, bool sl
 		/* Calculate the number of monsters to place */
 		int total = damroll(friend->number_dice, friend->number_side);
 		
+		/* Find the difference between current dungeon depth and monster level */
+		level_difference = c->depth - friend_race->level + 5;
+		
+		/* More than 4 levels OoD, no groups allowed */
+		if (level_difference <= 0) continue;
+		
+		/* Reduce group size within 5 levels of natural depth*/
+		if (level_difference < 10){
+			extra_chance = (total * level_difference) % 10;
+			total = total * level_difference / 10;
+			
+			/* Instead of flooring the group value, we use the decimal place
+			   as a chance of an extra monster */
+			if (randint0(10) > extra_chance){
+				total += 1;
+			}
+		}
+			
 		(void)place_new_monster_group(c, y, x, friend_race, sleep, total, origin);
 	}
 
