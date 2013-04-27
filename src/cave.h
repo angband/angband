@@ -55,7 +55,7 @@ extern void wiz_light(bool full);
 extern void wiz_dark(void);
 extern int project_path(u16b *gp, int range, int y1, int x1, int y2, int x2, int flg);
 extern bool projectable(int y1, int x1, int y2, int x2, int flg);
-extern void scatter(int *yp, int *xp, int y, int x, int d, int m);
+extern void scatter(int *yp, int *xp, int y, int x, int d, bool need_los);
 extern void disturb(struct player *p, int stop_search, int unused_flag);
 extern bool is_quest(int level);
 extern bool dtrap_edge(int y, int x);

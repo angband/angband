@@ -1032,6 +1032,8 @@ static bool place_new_monster_group(struct cave *c, int y, int x,
 	return (TRUE);
 }
 
+/* Maximum distance from center for a group of monsters */
+#define GROUP_DISTANCE 5 
 
 /**
  * Attempts to place a monster of the given race at the given location.
@@ -1063,7 +1065,7 @@ bool place_new_monster(struct cave *c, int y, int x, monster_race *race, bool sl
 	/* Go through friends flags */
 	for (friend = race->friends; friend; friend = friend->next) {
 		monster_race *friend_race;
-		int level_difference, extra_chance;
+		int total, level_difference, extra_chance, nx, ny;
 		if ((unsigned int)randint0(100) >= friend->percent_chance)
 			continue;
 			
@@ -1071,10 +1073,10 @@ bool place_new_monster(struct cave *c, int y, int x, monster_race *race, bool sl
 		friend_race = lookup_monster(friend->friend_name);
 		
 		/* Calculate the number of monsters to place */
-		int total = damroll(friend->number_dice, friend->number_side);
+		total = damroll(friend->number_dice, friend->number_side);
 		
 		/* Find the difference between current dungeon depth and monster level */
-		level_difference = c->depth - friend_race->level + 5;
+		level_difference = p_ptr->depth - friend_race->level + 5;
 		
 		/* More than 4 levels OoD, no groups allowed */
 		if (level_difference <= 0) continue;
@@ -1090,8 +1092,26 @@ bool place_new_monster(struct cave *c, int y, int x, monster_race *race, bool sl
 				total += 1;
 			}
 		}
-			
-		(void)place_new_monster_group(c, y, x, friend_race, sleep, total, origin);
+		
+		/* No monsters in this group */
+		if (total <= 0) continue;
+		
+		/* Handle friends same as original monster */
+		if (race->ridx == friend_race->ridx){
+			place_new_monster_group(c, y, x, race, sleep, total, origin);
+		}
+		
+		/* Find a nearby place to put the other groups */
+		for (int j = 0; j < 50; j++){
+			scatter(&ny, &nx, y, x, GROUP_DISTANCE, FALSE);
+			if (cave_isopen(cave, ny, nx)) break;
+		}
+		
+		/* Place the monsters */
+		place_new_monster_one(ny, nx, friend_race, sleep, origin);
+		if (total > 1){
+			place_new_monster_group(c, ny, nx, friend_race, sleep, total, origin);
+		}
 	}
 
 	/* Success */
@@ -1187,7 +1207,7 @@ static void build_quest_stairs(int y, int x)
 		int d = 1;
 
 		/* Pick a location */
-		scatter(&ny, &nx, y, x, d, 0);
+		scatter(&ny, &nx, y, x, d, FALSE);
 
 		/* Stagger */
 		y = ny; x = nx;

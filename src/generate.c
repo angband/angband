@@ -960,7 +960,7 @@ static void vault_monsters(struct cave *c, int y1, int x1, int depth, int num)
 			int d = 1;
 
 			/* Pick a nearby location */
-			scatter(&y, &x, y1, x1, d, 0);
+			scatter(&y, &x, y1, x1, d, TRUE);
 
 			/* Require "empty" floor grids */
 			if (!cave_isempty(cave, y, x)) continue;
