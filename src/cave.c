@@ -1748,8 +1748,8 @@ void forget_view(struct cave *c)
 {
 	int x, y;
 
-	for (y = 0; y < CAVE_INFO_Y; y++) {
-		for (x = 0; x < CAVE_INFO_X; x++) {
+	for (y = 0; y < c->height; y++) {
+		for (x = 0; x < c->width; x++) {
 			if (!cave_isview(c, y, x))
 				continue;
 			c->info[y][x] &= ~(CAVE_VIEW | CAVE_SEEN);
@@ -1850,8 +1850,8 @@ static void mark_wasseen(struct cave *c)
 {
 	int x, y;
 	/* Save the old "view" grids for later */
-	for (y = 0; y < CAVE_INFO_Y; y++) {
-		for (x = 0; x < CAVE_INFO_X; x++) {
+	for (y = 0; y < c->height; y++) {
+		for (x = 0; x < c->width; x++) {
 			if (c->info[y][x] & CAVE_SEEN)
 				c->info[y][x] |= CAVE_WASSEEN;
 			c->info[y][x] &= ~(CAVE_VIEW | CAVE_SEEN);
@@ -1998,14 +1998,14 @@ static void update_view_one(struct cave *c, int y, int x, int radius, int py, in
 		/* Check that we got here via the 'knight's move' rule. If so,
 		 * don't steal LOS. */
 		if (ax == 2 && ay == 1) {
-			if (  !cave_iswall(c, y, x + sx)
-			    && cave_iswall(c, y + sy, x + sx)) {
+			if (  !cave_iswall(c, y, x - sx)
+			    && cave_iswall(c, y - sy, x - sx)) {
 				xc = x;
 				yc = y;
 			}
 		} else if (ax == 1 && ay == 2) {
-			if (  !cave_iswall(c, y + sy, x)
-			    && cave_iswall(c, y + sy, x + sx)) {
+			if (  !cave_iswall(c, y - sy, x)
+			    && cave_iswall(c, y - sy, x - sx)) {
 				xc = x;
 				yc = y;
 			}
@@ -2039,14 +2039,14 @@ void update_view(struct cave *c, struct player *p)
 		c->info[p->py][p->px] |= CAVE_SEEN;
 
 	/* View squares we have LOS to */
-	for (y = 0; y < CAVE_INFO_Y; y++)
-		for (x = 0; x < CAVE_INFO_X; x++)
+	for (y = 0; y < c->height; y++)
+		for (x = 0; x < c->width; x++)
 			update_view_one(cave, y, x, radius, p->py, p->px);
 
 	/*** Step 3 -- Complete the algorithm ***/
 
-	for (y = 0; y < CAVE_INFO_Y; y++)
-		for (x = 0; x < CAVE_INFO_X; x++)
+	for (y = 0; y < c->height; y++)
+		for (x = 0; x < c->width; x++)
 			update_one(c, y, x, p->timed[TMD_BLIND]);
 }
 
@@ -3130,6 +3130,7 @@ bool feat_ispassable(feature_type *f_ptr) {
  * This function is the logical negation of cave_iswall().
  */
 bool cave_ispassable(struct cave *c, int y, int x) {
+	assert(cave_in_bounds(c, y, x));
 	return feat_ispassable(&f_info[c->feat[y][x]]);
 }
 
@@ -3139,6 +3140,7 @@ bool cave_ispassable(struct cave *c, int y, int x) {
  * This function is the logical negation of cave_ispassable().
  */
 bool cave_iswall(struct cave *c, int y, int x) {
+	assert(cave_in_bounds(c, y, x));
 	return c->info[y][x] & CAVE_WALL;
 }
 
@@ -3149,6 +3151,7 @@ bool cave_iswall(struct cave *c, int y, int x) {
  * secret doors and rubble.
  */
 bool cave_isstrongwall(struct cave *c, int y, int x) {
+	assert(cave_in_bounds(c, y, x));
 	return cave_ismineral(c, y, x) || cave_isperm(c, y, x);
 }
 
@@ -3158,6 +3161,7 @@ bool cave_isstrongwall(struct cave *c, int y, int x) {
  * This doesn't say what kind of square it is, just that it is part of a vault.
  */
 bool cave_isvault(struct cave *c, int y, int x) {
+	assert(cave_in_bounds(c, y, x));
 	return c->info[y][x] & CAVE_VAULT;
 }
 
@@ -3165,6 +3169,7 @@ bool cave_isvault(struct cave *c, int y, int x) {
  * True if the square is part of a room.
  */
 bool cave_isroom(struct cave *c, int y, int x) {
+	assert(cave_in_bounds(c, y, x));
 	return c->info[y][x] & CAVE_ROOM;
 
 }
@@ -3173,23 +3178,28 @@ bool cave_isroom(struct cave *c, int y, int x) {
  * True if cave square is a feeling trigger square 
  */
 bool cave_isfeel(struct cave *c, int y, int x) {
+	assert(cave_in_bounds(c, y, x));
 	return c->info2[y][x] & CAVE2_FEEL;
 }
 
 /* True if the cave square is viewable */
 bool cave_isview(struct cave *c, int y, int x) {
+	assert(cave_in_bounds(c, y, x));
 	return c->info[y][x] & CAVE_VIEW;
 }
 
 bool cave_isseen(struct cave *c, int y, int x) {
+	assert(cave_in_bounds(c, y, x));
 	return c->info[y][x] & CAVE_SEEN;
 }
 
 bool cave_wasseen(struct cave *c, int y, int x) {
+	assert(cave_in_bounds(c, y, x));
 	return c->info[y][x] & CAVE_WASSEEN;
 }
 
 bool cave_isglow(struct cave *c, int y, int x) {
+	assert(cave_in_bounds(c, y, x));
 	return c->info[y][x] & CAVE_GLOW;
 }
 
@@ -3204,6 +3214,7 @@ bool feat_isboring(feature_type *f_ptr) {
  * True if the cave square is "boring".
  */
 bool cave_isboring(struct cave *c, int y, int x) {
+	assert(cave_in_bounds(c, y, x));
 	return feat_isboring(&f_info[c->feat[y][x]]);
 }
 

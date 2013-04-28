@@ -60,9 +60,6 @@ extern void disturb(struct player *p, int stop_search, int unused_flag);
 extern bool is_quest(int level);
 extern bool dtrap_edge(int y, int x);
 
-#define CAVE_INFO_Y	DUNGEON_HGT
-#define CAVE_INFO_X	256
-
 /* XXX: temporary while I refactor */
 extern struct cave *cave;
 
