@@ -1068,9 +1068,14 @@ bool place_new_monster(struct cave *c, int y, int x, monster_race *race, bool sl
 		int total, level_difference, extra_chance, nx, ny;
 		if ((unsigned int)randint0(100) >= friend->percent_chance)
 			continue;
-			
-		/* Get the chosen monster */
-		friend_race = lookup_monster(friend->friend_name);
+		
+		/* Check if we're the same otherwise look it up */
+		if (streq(friend->friend_name, "Same")){
+			friend_race = race;
+		} else {		
+			/* Get the chosen monster */
+			friend_race = lookup_monster(friend->friend_name);
+		}
 		
 		/* Calculate the number of monsters to place */
 		total = damroll(friend->number_dice, friend->number_side);
