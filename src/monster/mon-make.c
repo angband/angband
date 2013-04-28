@@ -1066,6 +1066,7 @@ bool place_new_monster(struct cave *c, int y, int x, monster_race *race, bool sl
 	for (friend = race->friends; friend; friend = friend->next) {
 		monster_race *friend_race;
 		int total, level_difference, extra_chance, nx, ny;
+		bool is_unique;
 		if ((unsigned int)randint0(100) >= friend->percent_chance)
 			continue;
 		
@@ -1083,11 +1084,19 @@ bool place_new_monster(struct cave *c, int y, int x, monster_race *race, bool sl
 		/* Find the difference between current dungeon depth and monster level */
 		level_difference = p_ptr->depth - friend_race->level + 5;
 		
+		/* Handle unique monsters */
+		is_unique = rf_has(friend_race->flags, RF_UNIQUE);
+		
+		/* Make sure the unique hasn't been killed alread */
+		if (is_unique){
+			total = friend_race->cur_num < friend_race->max_num ? 1 : 0;
+		}
+		
 		/* More than 4 levels OoD, no groups allowed */
-		if (level_difference <= 0) continue;
+		if (level_difference <= 0 && !is_unique) continue;
 		
 		/* Reduce group size within 5 levels of natural depth*/
-		if (level_difference < 10){
+		if (level_difference < 10 && !is_unique){
 			extra_chance = (total * level_difference) % 10;
 			total = total * level_difference / 10;
 			
