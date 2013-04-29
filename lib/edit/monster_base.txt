@@ -415,7 +415,7 @@ D:Yeti
 N:zephyr hound
 G:Z
 M:3
-F:ANIMAL | FRIENDS
+F:ANIMAL
 D:Zephyr Hound
 
 N:zombie
