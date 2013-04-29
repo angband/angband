@@ -180,7 +180,7 @@ static const struct option options[OPT_MAX] =
 { "birth_ai_packs",      "Monsters act smarter in groups",              TRUE },  /* 62 */
 { "birth_ai_learn",      "Monsters learn from their mistakes",          FALSE }, /* 63 */
 { "birth_ai_cheat",      "Monsters exploit player's weaknesses",        FALSE }, /* 64 */
-{ "birth_force_descend", "Force player decent",                         FALSE }, /* 65 */
+{ "birth_force_descend", "Force player descent",                        FALSE }, /* 65 */
 { NULL,                  NULL,                                          FALSE }, /* 66 */
 { NULL,                  NULL,                                          FALSE }, /* 67 */
 { NULL,                  NULL,                                          FALSE }, /* 68 */
