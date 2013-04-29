@@ -462,29 +462,11 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 
 /**
  * Determine if the player knows the AC of the given monster.
- * 
- * In order for the player to know the AC of a monster, the number of total
- * kills (this life + all past lives) must be high enough. For high-level 
- * monsters, fewer kills are needed. Uniques also require far fewer kills.
  */
 static bool know_armour(const monster_race *r_ptr, const monster_lore *l_ptr)
 {
-	s32b level;
-	s32b kills;
-
-	assert(r_ptr && l_ptr);
-
-	level = r_ptr->level;
-	kills = l_ptr->tkills;
-
-	if (kills > 304 / (4 + level)) 
-		return (TRUE);
-	else if (rf_has(r_ptr->flags, RF_UNIQUE) && 
-			kills > 304 / (38 + (5 * level) / 4))
-		return (TRUE);
-	else
-		return (FALSE);
-
+	assert(l_ptr);
+	return l_ptr->tkills > 0;
 }
 
 
