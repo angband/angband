@@ -1838,9 +1838,6 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 	/* Apply "encumbrance" from weight */
 	if (j > i / 2) state->speed -= ((j - (i / 2)) / (i / 10));
 
-	/* Bloating slows the player down (a little) */
-	if (p_ptr->food >= PY_FOOD_MAX) state->speed -= 10;
-
 	/* Searching slows the player down */
 	if (p_ptr->searching) state->speed -= 10;
 

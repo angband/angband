@@ -644,7 +644,6 @@ static const struct state_info hunger_data[] =
 	{ PY_FOOD_ALERT, S("Hungry"),   TERM_YELLOW },
 	{ PY_FOOD_FULL,  S(""),         TERM_L_GREEN },
 	{ PY_FOOD_MAX,   S("Full"),     TERM_L_GREEN },
-	{ PY_FOOD_UPPER, S("Gorged"),   TERM_GREEN },
 };
 
 /* For the various TMD_* effects */

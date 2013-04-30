@@ -240,8 +240,7 @@
 /*
  * Player "food" crucial values
  */
-#define PY_FOOD_UPPER   20000   /* Upper limit on food counter */
-#define PY_FOOD_MAX	15000	/* Food value (Bloated) */
+#define PY_FOOD_MAX 	17000	/* Food value (Bloated) */
 #define PY_FOOD_FULL	10000	/* Food value (Normal) */
 #define PY_FOOD_ALERT	2000	/* Food value (Hungry) */
 #define PY_FOOD_WEAK	1000	/* Food value (Weak) */
