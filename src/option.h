@@ -67,7 +67,7 @@ extern const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER];
 #define OPT_solid_walls   		11
 #define OPT_hybrid_walls   		12
 #define OPT_view_yellow_light		13
-#define OPT_easy_open 				14
+/* XXX 14 */
 #define OPT_animate_flicker         15
 #define OPT_center_player			16
 #define OPT_purple_uniques			17

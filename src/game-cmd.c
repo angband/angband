@@ -451,8 +451,8 @@ void process_command(cmd_context ctx, bool no_request)
 
 			case CMD_OPEN:
 			{
-				if (OPT(easy_open) && (!cmd->arg_present[0] ||
-						cmd->arg[0].direction == DIR_UNKNOWN))
+				if (!cmd->arg_present[0] ||
+						cmd->arg[0].direction == DIR_UNKNOWN)
 				{
 					int y, x;
 					int n_closed_doors, n_locked_chests;
@@ -469,8 +469,8 @@ void process_command(cmd_context ctx, bool no_request)
 
 			case CMD_CLOSE:
 			{
-				if (OPT(easy_open) && (!cmd->arg_present[0] ||
-						cmd->arg[0].direction == DIR_UNKNOWN))
+				if (!cmd->arg_present[0] ||
+						cmd->arg[0].direction == DIR_UNKNOWN)
 				{
 					int y, x;
 			
@@ -484,8 +484,8 @@ void process_command(cmd_context ctx, bool no_request)
 
 			case CMD_DISARM:
 			{
-				if (OPT(easy_open) && (!cmd->arg_present[0] ||
-						cmd->arg[0].direction == DIR_UNKNOWN))
+				if (!cmd->arg_present[0] ||
+						cmd->arg[0].direction == DIR_UNKNOWN)
 				{
 					int y, x;
 					int n_visible_traps, n_trapped_chests;
