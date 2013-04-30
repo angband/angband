@@ -675,38 +675,6 @@ static const char *show_speed(void)
 	return buffer;
 }
 
-static const char *show_melee_weapon(const object_type *o_ptr)
-{
-	static char buffer[12];
-	int hit = p_ptr->state.dis_to_h;
-	int dam = p_ptr->state.dis_to_d;
-
-	if (object_attack_plusses_are_visible(o_ptr))
-	{
-		hit += o_ptr->to_h;
-		dam += o_ptr->to_d;
-	}
-
-	strnfmt(buffer, sizeof(buffer), "(%+d,%+d)", hit, dam);
-	return buffer;
-}
-
-static const char *show_missile_weapon(const object_type *o_ptr)
-{
-	static char buffer[12];
-	int hit = p_ptr->state.dis_to_h;
-	int dam = 0;
-
-	if (object_attack_plusses_are_visible(o_ptr))
-	{
-		hit += o_ptr->to_h;
-		dam += o_ptr->to_d;
-	}
-
-	strnfmt(buffer, sizeof(buffer), "(%+d,%+d)", hit, dam);
-	return buffer;
-}
-
 static byte max_color(int val, int max)
 {
 	return val < max ? TERM_YELLOW : TERM_L_GREEN;
@@ -756,30 +724,35 @@ static struct panel *get_panel_midleft(void) {
 
 static struct panel *get_panel_combat(void) {
 	struct panel *p = panel_allocate(9);
-	int bth;
+	struct object *obj;
+	int bth, dam, hit;
 
 	/* AC */
 	panel_line(p, TERM_L_BLUE, "Armor", "[%d,%+d]",
 			p_ptr->state.dis_ac, p_ptr->state.dis_to_a);
 
 	/* Melee */
+	obj = &p_ptr->inventory[INVEN_WIELD];
 	bth = (p_ptr->state.skills[SKILL_TO_HIT_MELEE] * 10) / BTH_PLUS_ADJ;
+	dam = p_ptr->state.dis_to_d + (object_attack_plusses_are_visible(obj) ? obj->to_d : 0);
+	hit = p_ptr->state.dis_to_h + (object_attack_plusses_are_visible(obj) ? obj->to_h : 0);
 
 	panel_space(p);
-	panel_line(p, TERM_L_BLUE, "Melee", "%s",
-			show_melee_weapon(&p_ptr->inventory[INVEN_WIELD]));
+	panel_line(p, TERM_L_BLUE, "Melee", "%dd%d,%+d", obj->dd, obj->ds, dam);
+	panel_line(p, TERM_L_BLUE, "To-hit", "%d,%+d", bth / 10, hit);
 	panel_line(p, TERM_L_BLUE, "Blows", "%d.%d/turn",
 			p_ptr->state.num_blows / 100, (p_ptr->state.num_blows / 10 % 10));
-	panel_line(p, TERM_L_BLUE, "Base to-hit", "%.1f", bth / 10.0);
 
 	/* Ranged */
+	obj = &p_ptr->inventory[INVEN_BOW];
 	bth = (p_ptr->state.skills[SKILL_TO_HIT_BOW] * 10) / BTH_PLUS_ADJ;
+	hit = p_ptr->state.dis_to_h + (object_attack_plusses_are_visible(obj) ? obj->to_h : 0);
+	dam = object_attack_plusses_are_visible(obj) ? obj->to_d : 0;
 
 	panel_space(p);
-	panel_line(p, TERM_L_BLUE, "Shoot", "%s",
-			show_missile_weapon(&p_ptr->inventory[INVEN_BOW]));
+	panel_line(p, TERM_L_BLUE, "Shoot to-dam", "%+d", dam);
+	panel_line(p, TERM_L_BLUE, "To-hit", "%d,%+d", bth / 10, hit);
 	panel_line(p, TERM_L_BLUE, "Shots", "%d/turn", p_ptr->state.num_shots);
-	panel_line(p, TERM_L_BLUE, "Base to-hit", "%.1f", bth / 10.0);
 
 	return p;
 }
