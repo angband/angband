@@ -60,10 +60,10 @@ extern const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER];
 #define OPT_pickup_always			4
 #define OPT_pickup_inven			5
 #define OPT_show_flavors			6
-#define OPT_disturb_move			7
+/* XXX 7 */
 #define OPT_disturb_near			8
-#define OPT_disturb_detect			9
-#define OPT_disturb_state			10
+/* XXX 9 */
+/* XXX 10 */
 #define OPT_solid_walls   		11
 #define OPT_hybrid_walls   		12
 #define OPT_view_yellow_light		13

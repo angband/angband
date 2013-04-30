@@ -853,7 +853,6 @@ void monster_desc(char *desc, size_t max, const struct monster *mon, int mode)
  * or viewed directly, but old targets will remain set.  XXX XXX
  *
  * The player can choose to be disturbed by several things, including
- * "OPT(disturb_move)" (monster which is viewable moves in some way), and
  * "OPT(disturb_near)" (monster which is "easily" viewable moves in some
  * way).  Note that "moves" includes "appears" and "disappears".
  */
@@ -1013,10 +1012,6 @@ void update_mon(struct monster *m_ptr, bool full)
 			if (l_ptr->sights < MAX_SHORT)
 				l_ptr->sights++;
 
-			/* Disturb on appearance */
-			if (OPT(disturb_move))
-				disturb(p_ptr, 1, 0);
-
 			/* Window stuff */
 			p_ptr->redraw |= PR_MONLIST;
 		}
@@ -1038,9 +1033,6 @@ void update_mon(struct monster *m_ptr, bool full)
 
 				/* Update health bar as needed */
 				if (p_ptr->health_who == m_ptr) p_ptr->redraw |= (PR_HEALTH);
-
-				/* Disturb on disappearance */
-				if (OPT(disturb_move)) disturb(p_ptr, 1, 0);
 
 				/* Window stuff */
 				p_ptr->redraw |= PR_MONLIST;

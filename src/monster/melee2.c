@@ -3219,9 +3219,7 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 			monster_swap(oy, ox, ny, nx);
 
 			/* Possible disturb */
-			if (m_ptr->ml && (OPT(disturb_move) ||
-					((m_ptr->mflag & (MFLAG_VIEW)) && OPT(disturb_near))))
-				/* Disturb */
+			if (m_ptr->ml && (m_ptr->mflag & MFLAG_VIEW) && OPT(disturb_near))
 				disturb(p_ptr, 0, 0);
 
 			/* Scan all objects in the grid */

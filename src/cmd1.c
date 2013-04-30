@@ -642,8 +642,7 @@ void move_player(int dir, bool disarm)
 			p_ptr->redraw |= (PR_DTRAP);
 
 		/* Disturb player if the player is about to leave the area */
-		if (OPT(disturb_detect) && p_ptr->running && 
-			!p_ptr->running_firststep && old_dtrap && !new_dtrap)
+		if (p_ptr->running && !p_ptr->running_firststep && old_dtrap && !new_dtrap)
 		{
 			disturb(p_ptr, 0, 0);
 			return;

@@ -48,10 +48,7 @@ const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 	{
 		OPT_hp_changes_color,
 		OPT_purple_uniques,
-		OPT_disturb_move,
 		OPT_disturb_near,
-		OPT_disturb_detect,
-		OPT_disturb_state,
 		OPT_auto_more,
 		OPT_notify_recharge,
 		OPT_NONE,
@@ -122,10 +119,10 @@ static const struct option options[OPT_MAX] =
 { "pickup_always",       "Always pickup items",                         FALSE }, /* 4 */
 { "pickup_inven",        "Always pickup items matching inventory",      TRUE },  /* 5 */
 { "show_flavors",        "Show flavors in object descriptions",         FALSE }, /* 6 */
-{ "disturb_move",        "Disturb whenever any monster moves",          FALSE }, /* 7 */
+{ NULL,                  NULL,                                          FALSE }, /* 7 */
 { "disturb_near",        "Disturb whenever viewable monster moves",     TRUE },  /* 8 */
-{ "disturb_detect",      "Disturb whenever leaving trap detected area", TRUE },  /* 9 */
-{ "disturb_state",       "Disturb whenever player state changes",       TRUE },  /* 10 */
+{ NULL,                  NULL,                                          FALSE }, /* 9 */
+{ NULL,                  NULL,                                          FALSE }, /* 10 */
 { "solid_walls",         "Show walls as solid blocks",                  FALSE }, /* 11 */
 { "hybrid_walls",        "Show walls with shaded background",           FALSE }, /* 12 */
 { "view_yellow_light",   "Color: Illuminate torchlight in yellow",      FALSE }, /* 13 */
