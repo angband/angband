@@ -254,7 +254,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			if (player_clear_timed(p_ptr, TMD_AFRAID, TRUE)) *ident = TRUE;
 			if (player_clear_timed(p_ptr, TMD_IMAGE, TRUE)) *ident = TRUE;
 			if (!of_has(p_ptr->state.flags, OF_RES_CONFU) &&
-				player_inc_timed(p_ptr, TMD_OPP_CONF, damroll(4, 10), TRUE, TRUE))
+				player_inc_timed(p_ptr, TMD_OPP_CONF, 12 + damroll(6, 10), TRUE, TRUE))
 			    	*ident = TRUE;
 
 			if (*ident) msg("Your feel your head clear.");
@@ -601,7 +601,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		case EF_TMD_ESP:
 		{
 			if (player_clear_timed(p_ptr, TMD_BLIND, TRUE)) *ident = TRUE;
-			if (player_inc_timed(p_ptr, TMD_TELEPATHY, 12 + damroll(6, 6), TRUE, TRUE))
+			if (player_inc_timed(p_ptr, TMD_TELEPATHY, 24 + damroll(9, 9), TRUE, TRUE))
 				*ident = TRUE;
 			return TRUE;
 		}
