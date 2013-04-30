@@ -135,7 +135,7 @@ static const struct option options[OPT_MAX] =
 { "purple_uniques",      "Color: Show unique monsters in purple",       FALSE }, /* 17 */
 { NULL,                  NULL,                                          FALSE }, /* 18 */
 { "auto_more",           "Automatically clear '-more-' prompts",        FALSE }, /* 19 */
-{ "hp_changes_color",    "Color: Player color indicates % hit points",  FALSE }, /* 20 */
+{ "hp_changes_color",    "Color: Player color indicates % hit points",  TRUE },  /* 20 */
 { "mouse_movement",      "Allow mouse clicks to move the player",       TRUE },  /* 21 */
 { "mouse_buttons",       "Show mouse status line buttons",              FALSE }, /* 22 */
 { "notify_recharge",     "Notify on object recharge",                   FALSE }, /* 23 */
