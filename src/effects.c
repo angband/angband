@@ -249,17 +249,21 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 		case EF_CURE_MIND:
 		{
+			if (player_restore_mana(p_ptr, 10)) *ident = TRUE;
 			if (player_clear_timed(p_ptr, TMD_CONFUSED, TRUE)) *ident = TRUE;
 			if (player_clear_timed(p_ptr, TMD_AFRAID, TRUE)) *ident = TRUE;
 			if (player_clear_timed(p_ptr, TMD_IMAGE, TRUE)) *ident = TRUE;
 			if (!of_has(p_ptr->state.flags, OF_RES_CONFU) &&
 				player_inc_timed(p_ptr, TMD_OPP_CONF, damroll(4, 10), TRUE, TRUE))
 			    	*ident = TRUE;
+
+			if (*ident) msg("Your feel your head clear.");
 			return TRUE;
 		}
 
 		case EF_CURE_BODY:
 		{
+			if (hp_player(30)) *ident = TRUE;
 			if (player_clear_timed(p_ptr, TMD_STUN, TRUE)) *ident = TRUE;
 			if (player_clear_timed(p_ptr, TMD_CUT, TRUE)) *ident = TRUE;
 			if (player_clear_timed(p_ptr, TMD_POISONED, TRUE)) *ident = TRUE;
