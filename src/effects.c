@@ -1816,7 +1816,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 		case EF_DRAGON_BLUE:
 		{
-			dam = 100 * (100 + boost) / 100;
+			dam = 150 * (100 + boost) / 100;
 			msgt(MSG_BR_ELEC, "You breathe lightning.");
 			fire_ball(GF_ELEC, dir, dam, 2);
 			return TRUE;
@@ -1862,7 +1862,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 		case EF_DRAGON_BRONZE:
 		{
-			dam = 120 * (100 + boost) / 100;
+			dam = 150 * (100 + boost) / 100;
 			msgt(MSG_BR_CONF, "You breathe confusion.");
 			fire_ball(GF_CONFU, dir, dam, 2);
 			return TRUE;
@@ -1870,7 +1870,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 		case EF_DRAGON_GOLD:
 		{
-			dam = 130 * (100 + boost) / 100;
+			dam = 150 * (100 + boost) / 100;
 			msgt(MSG_BR_SOUND, "You breathe sound.");
 			fire_ball(GF_SOUND, dir, dam, 2);
 			return TRUE;
