@@ -161,7 +161,7 @@ F:INSTA_ART
 E:DISPEL_EVIL:50+d50
 M:The {kind} flood{s} the area with goodness...
 L:3:INT | WIS
-L:4:CHR | INFRA
+L:4:INFRA
 D:The ancient heirloom of Ingwë, high lord of the Vanyar, against whom 
 D:nothing of evil could stand.
 
@@ -212,7 +212,7 @@ W:50:25:2:65000
 A:4:50 to 100
 F:RES_POIS | RES_DARK
 F:INSTA_ART
-L:1:STR | INT | WIS | DEX | CON | CHR | STEALTH
+L:1:STR | INT | WIS | DEX | CON | STEALTH
 D:Twinned serpents with eyes of emerald meet beneath a crown of flowers to 
 D:form this ring, an ancient treasure of Isildur's house.
 
@@ -245,7 +245,7 @@ F:IM_FIRE | RES_FIRE | RES_FEAR
 F:INSTA_ART
 E:PROTEVIL:200+4d50
 M:{name} glows deep red...
-L:1:STR | INT | WIS | DEX | CON | CHR
+L:1:STR | INT | WIS | DEX | CON
 L:5:SPEED
 D:The Ring of Fire, made of gold and set with a ruby that glows like flame.  
 D:Narya is one of the three Rings of Power created by Celebrimbor and hidden 
@@ -266,7 +266,7 @@ F:IM_COLD | RES_COLD | RES_BLIND | TELEPATHY |
 F:INSTA_ART
 E:RESTORE_LIFE:200+2d50
 M:{name} glows bright white...
-L:2:STR | INT | WIS | DEX | CON | CHR
+L:2:STR | INT | WIS | DEX | CON
 L:5:SPEED
 D:The Ring of Adamant, made of mithril with a pure white stone as 
 D:centerpiece.  Nenya is one of the three Rings of Power created by 
@@ -287,7 +287,7 @@ F:IM_ELEC | RES_ELEC | RES_POIS | RES_DARK |
 F:INSTA_ART
 E:HEAL2:200+2d50
 M:{name} glows deep blue...
-L:3:STR | INT | WIS | DEX | CON | CHR
+L:3:STR | INT | WIS | DEX | CON
 L:5:SPEED
 D:The Ring of Sapphire, made of gold with a brilliant blue gem that shines 
 D:like stars.  It glitters untouchable despite all that Morgoth ever wrought.
@@ -309,11 +309,11 @@ F:IM_FIRE | IM_COLD | IM_ELEC | IM_ACID
 F:RES_FIRE | RES_COLD | RES_ELEC | RES_ACID | RES_DARK
 F:RES_DISEN | RES_POIS | RES_NETHR
 F:SUST_STR | SUST_DEX | SUST_CON | 
-F:SUST_INT | SUST_WIS | SUST_CHR | 
+F:SUST_INT | SUST_WIS |
 F:INSTA_ART
 E:BIZARRE:200+9d50
 M:{name} glows intensely black...
-L:5:STR | INT | WIS | DEX | CON | CHR | SPEED
+L:5:STR | INT | WIS | DEX | CON | SPEED
 D:"One Ring to rule them all, One Ring to find them, One Ring to bring 
 D:them all and in the darkness bind them."  Made of massive gold, and 
 D:inscribed with hidden runes in the foul speech of Mordor, Isildur's Bane 
@@ -332,7 +332,7 @@ F:RES_FEAR | RES_FIRE | RES_POIS |
 F:INSTA_ART
 E:HEAL1:200
 M:You feel a warm tingling inside...
-L:2:STR | WIS | CHR | SPEED
+L:2:STR | WIS | SPEED
 D:A green stone, imbued with the power of Elvendom and the light of the Sun.
 D:  Those who gaze through it see the aged and infirm as young again, and its 
 D:wearer brings healing after victory in battle.
@@ -472,7 +472,6 @@ F:RES_DISEN
 E:BANISHMENT:500
 M:Your {kind} glow{s} deep blue...
 L:3:STR
-L:4:CHR
 D:A shimmering suit of true-silver, forged long ago by dwarven smiths of 
 D:legend. It gleams with purest white as you gaze upon it, and mighty are 
 D:its powers to protect and banish.
@@ -484,7 +483,7 @@ W:20:3:220:32000
 A:30:20 to 75
 P:40:1d4:-2:0:15
 F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD | RES_SHARD | RES_NEXUS
-L:2:STR | CHR
+L:2:STR
 D:A hauberk, leggings, and sleeves of interlocking steel rings, well padded 
 D:with leather.  You feel as strong and tall as Arvedui, last king of Arnor, 
 D:as you put it on.
@@ -550,10 +549,10 @@ W:70:4:80:65000
 A:25:70 to 127
 P:20:1d3:0:0:20
 F:RES_ELEC | RES_ACID | RES_DISEN | RES_DARK | 
-F:SUST_WIS | SUST_DEX | SUST_CHR
+F:SUST_WIS | SUST_DEX
 E:STARLIGHT2:100
 M:Your {kind} glow{s} with the light of a thousand stars...
-L:5:WIS | CHR
+L:5:WIS
 L:1:LIGHT
 D:The legendary shield of Ereinion Gil-galad, who fought his way to the 
 D:gates of the Dark Tower, and with whom came light even to Gorgoroth.
@@ -591,7 +590,7 @@ W:40:9:120:160000
 A:11:40 to 100
 P:12:1d3:0:0:20
 F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD | SUST_STR | SUST_INT | 
-F:SUST_WIS | SUST_DEX | SUST_CON | SUST_CHR
+F:SUST_WIS | SUST_DEX | SUST_CON
 D:The great metal-bound shield of Elendil's younger son Anárion, whom 
 D:even Sauron could not corrupt.
 
@@ -604,7 +603,7 @@ W:55:12:20:45000
 A:8:55 to 100
 P:3:1d1:0:0:18
 F:RES_FIRE | RES_ACID | RES_DISEN | RES_SHARD
-L:3:CHR | SEARCH
+L:3:SEARCH
 L:2:INT | DEX
 D:A metal cap forged by the greatest Noldorin smith of the Second Age, 
 D:this helm serves equally well in battle or at the forge, and its 
@@ -621,7 +620,7 @@ F:RES_LIGHT | RES_DARK | RES_CONFU | RES_NEXUS | RES_NETHR |
 F:SEE_INVIS | TELEPATHY | RES_FEAR | 
 F:LIGHT_CURSE | HEAVY_CURSE | PERMA_CURSE | 
 F:INSTA_ART
-L:125:STR | INT | WIS | DEX | CON | CHR | INFRA
+L:125:STR | INT | WIS | DEX | CON | INFRA
 L:1:LIGHT
 D:Containing much of the power of he who once was mightiest among the Ainur, 
 D:this plain iron crown has mounted upon it the two remaining Silmarils, 
@@ -658,7 +657,7 @@ W:10:2:20:22000
 A:18:10 to 100
 P:3:1d1:0:0:12
 F:RES_CONFU | 
-L:3:WIS | CHR
+L:3:WIS
 D:A ridged helmet made of steel and embossed with scenes of valor in fine-
 D:engraved silver.  It grants the wearer nobility and understanding.
 
@@ -717,7 +716,6 @@ F:RES_FEAR |
 F:SEE_INVIS | FREE_ACT | AGGRAVATE | LIGHT_CURSE | HEAVY_CURSE
 L:-5:SEARCH
 L:-3:INT | WIS
-L:5:CHR
 D:A headpiece, gaudy and barbaric, that betrayed a warrior when he most 
 D:needed succor.
 
@@ -749,7 +747,7 @@ F:SEE_INVIS | FREE_ACT |
 F:RES_SHARD | RES_STUN | RES_COLD | 
 F:RES_LIGHT | RES_DARK | RES_BLIND
 # A:ANALYZE:50
-L:3:INT | CHR | SEARCH
+L:3:INT | SEARCH
 L:2:DEX
 L:1:LIGHT
 D:A massive golden crown, set with wondrous jewels of thought and warding, 
@@ -793,7 +791,7 @@ P:1:0d0:0:0:18
 F:FREE_ACT | RES_ACID | RES_FIRE | RES_COLD
 E:RECHARGE:70
 M:Your {kind} glow{s} bright yellow...
-L:3:DEX | CHR
+L:3:DEX
 D:A translucent cloak of pearly grey with glowing, energized Elven runes 
 D:showing calm and clear as moonlight on still water.
 
@@ -830,7 +828,7 @@ P:6:0d0:0:0:20
 F:RES_ACID | RES_FIRE | RES_COLD
 E:RESTORE_LIFE:250
 M:Your {kind} glow{s} a deep red...
-L:4:INT | WIS | CHR
+L:4:INT | WIS
 L:3:STEALTH
 L:2:SPEED
 D:The opaque midnight folds of this cloak, inlaid with a multitude of tiny 
@@ -1200,7 +1198,7 @@ F:KILL_DRAGON | SLAY_ANIMAL | SLAY_EVIL | BRAND_FIRE |
 F:SLAY_UNDEAD | SLAY_DEMON | SLAY_TROLL | SLAY_GIANT | SLAY_ORC | 
 F:RES_FIRE | RES_CHAOS | FREE_ACT | SEE_INVIS | AGGRAVATE | 
 L:4:STR
-L:2:CHR | INFRA
+L:2:INFRA
 D:Runes dark and deadly stand stark against the naked steel of this awesome 
 D:weapon, and you feel a wrathful power of slaying and rending as you 
 D:slowly approach.
@@ -1315,7 +1313,7 @@ W:1:2:130:30000
 A:50:10 to 50
 P:0:2d5:12:12:0
 F:SLAY_TROLL | SLAY_ORC | FEATHER | SEE_INVIS | 
-L:2:DEX | CHR | STEALTH
+L:2:DEX | STEALTH
 D:The "Singing Blade", whose wearer can slay Orcs and Trolls in the hidden 
 D:and secret places of the earth.
 
@@ -1445,7 +1443,6 @@ F:BLESSED
 F:BRAND_FIRE | SLAY_UNDEAD | SLAY_GIANT | RES_FIRE | RES_SOUND | 
 F:FEATHER | SEE_INVIS | 
 L:3:STR | WIS
-L:2:CHR
 D:Lordly and tall did Osondir stand against the wrath of giants, and 
 D:clear-eyed in barrows fell, wielding a halberd glowing ruby red.
 
@@ -1551,7 +1548,7 @@ F:SEE_INVIS |
 F:BLESSED | 
 E:LOSKILL:1000
 M:Your {kind} let{s} out a long, shrill note...
-L:2:STR | INT | WIS | DEX | CON | CHR
+L:2:STR | INT | WIS | DEX | CON 
 D:The axe of Eönwë, leader of the Hosts of the West in the War of 
 D:Wrath, strikes with icy wrath at the undead, disperses hosts of 
 D:evil at a word, and grants Maia-like powers of body and mind.
@@ -1652,7 +1649,7 @@ F:BRAND_COLD | BRAND_FIRE | FREE_ACT | RES_FIRE | RES_COLD |
 F:RES_LIGHT | SEE_INVIS | 
 E:RECALL:200
 M:{name} pulses a soft white.
-L:3:DEX | CHR | SPEED
+L:3:DEX | SPEED
 L:1:LIGHT
 D:Holding elemental powers whose struggles turn this weapon red and purest 
 D:white, this shining reaper bears within it a power of going forth and 
@@ -1812,7 +1809,6 @@ F:HOLD_LIFE | RES_FIRE | RES_NETHR | SEE_INVIS |
 E:PROBING:20
 M:{name} glows brightly...
 L:4:INT | WIS
-L:2:CHR
 D:A staff tall and sturdy, borne of old by Gandalf.  Rough-hewn runes that 
 D:invoke the element of Earth stand bold upon its gnarled surface, and no 
 D:creature who lives in the shadow of mountains can withstand the blows it 
@@ -2044,7 +2040,7 @@ A:3:30 to 127
 P:0:4d4:12:16:0
 F:SLAY_EVIL | KILL_UNDEAD | SLAY_GIANT | SLAY_ANIMAL | 
 F:RES_NETHR | RES_FEAR | RES_DARK | RES_COLD
-L:4:STR | CHR
+L:4:STR
 L:2:STEALTH
 D:The blade of the legendary Shieldmaiden of Rohan, who slew the foul 
 D:steed of the Morgul-lord before striking down the mighty Witch-king 
