@@ -396,13 +396,11 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 		melee_colors[RBE_LOSE_DEX] = TERM_ORANGE;
 	if (!check_state(p_ptr, OF_SUST_CON, st.flags))
 		melee_colors[RBE_LOSE_CON] = TERM_ORANGE;
-	if (!check_state(p_ptr, OF_SUST_CHR, st.flags))
-		melee_colors[RBE_LOSE_CHR] = TERM_ORANGE;
 
 	/* Drain all gets a red warning */
 	if (!check_state(p_ptr, OF_SUST_STR, st.flags) || !check_state(p_ptr, OF_SUST_INT, st.flags) ||
 			!check_state(p_ptr, OF_SUST_WIS, st.flags) || !check_state(p_ptr, OF_SUST_DEX, st.flags) ||
-			!check_state(p_ptr, OF_SUST_CON, st.flags) || !check_state(p_ptr, OF_SUST_CHR, st.flags))
+			!check_state(p_ptr, OF_SUST_CON, st.flags))
 		melee_colors[RBE_LOSE_ALL] = TERM_L_RED;
 
 	/* Hold life isn't 100% effective */
@@ -1305,7 +1303,6 @@ static void describe_monster_attack(const monster_race *r_ptr,
 			case RBE_LOSE_WIS:  effect_str = "reduce wisdom"; break;
 			case RBE_LOSE_DEX:  effect_str = "reduce dexterity"; break;
 			case RBE_LOSE_CON:  effect_str = "reduce constitution"; break;
-			case RBE_LOSE_CHR:  effect_str = "reduce charisma"; break;
 			case RBE_LOSE_ALL:  effect_str = "reduce all stats"; break;
 			case RBE_SHATTER:   effect_str = "shatter"; break;
 			case RBE_EXP_10:    effect_str = "lower experience"; break;

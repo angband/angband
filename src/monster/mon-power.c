@@ -31,7 +31,6 @@ static long eval_blow_effect(int effect, int atk_dam, int rlev)
 		case RBE_EAT_ITEM:
 		case RBE_EAT_FOOD:
 		case RBE_EAT_LIGHT:
-		case RBE_LOSE_CHR:
 		{
 			atk_dam += 5;
 			break;

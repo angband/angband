@@ -10,7 +10,6 @@
 #include "monster/monster.h"
 
 /* calcs.c */
-extern const byte adj_chr_gold[STAT_RANGE];
 extern const byte adj_str_blow[STAT_RANGE];
 extern const byte adj_dex_safe[STAT_RANGE];
 extern const byte adj_con_fix[STAT_RANGE];

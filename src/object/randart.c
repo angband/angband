@@ -623,7 +623,6 @@ static void remove_contradictory(artifact_type *a_ptr)
 		if (of_has(a_ptr->flags, OF_WIS)) of_off(a_ptr->flags, OF_SUST_WIS);
 		if (of_has(a_ptr->flags, OF_DEX)) of_off(a_ptr->flags, OF_SUST_DEX);
 		if (of_has(a_ptr->flags, OF_CON)) of_off(a_ptr->flags, OF_SUST_CON);
-		if (of_has(a_ptr->flags, OF_CHR)) of_off(a_ptr->flags, OF_SUST_CHR);
 		of_off(a_ptr->flags, OF_BLOWS);
 	}
 
@@ -1107,7 +1106,7 @@ static void parse_frequencies(void)
 		 */
 
 		if (flags_test(a_ptr->flags, OF_SIZE, OF_STR, OF_INT, OF_WIS,
-		                     OF_DEX, OF_CON, OF_CHR, FLAG_END))
+		                     OF_DEX, OF_CON, FLAG_END))
 		{
 			/* Stat bonus case.  Add up the number of individual
 			   bonuses */
@@ -1117,7 +1116,6 @@ static void parse_frequencies(void)
 			if (of_has(a_ptr->flags, OF_WIS)) temp++;
 			if (of_has(a_ptr->flags, OF_DEX)) temp++;
 			if (of_has(a_ptr->flags, OF_CON)) temp++;
-			if (of_has(a_ptr->flags, OF_CHR)) temp++;
 
 			/* Handle a few special cases separately. */
 			if((a_ptr->tval == TV_HELM || a_ptr->tval == TV_CROWN) &&
@@ -1176,7 +1174,7 @@ static void parse_frequencies(void)
 
 		if (flags_test(a_ptr->flags, OF_SIZE, OF_SUST_STR, OF_SUST_INT,
 		                     OF_SUST_WIS, OF_SUST_DEX, OF_SUST_CON,
-		                     OF_SUST_CHR, FLAG_END))
+		                     FLAG_END))
 		{
 			/* Now do sustains, in a similar manner */
 			temp = 0;
@@ -1185,7 +1183,6 @@ static void parse_frequencies(void)
 			if (of_has(a_ptr->flags, OF_SUST_WIS)) temp++;
 			if (of_has(a_ptr->flags, OF_SUST_DEX)) temp++;
 			if (of_has(a_ptr->flags, OF_SUST_CON)) temp++;
-			if (of_has(a_ptr->flags, OF_SUST_CHR)) temp++;
 			file_putf(log_file, "Adding %d for stat sustains.\n", temp);
 
 			(artprobs[ART_IDX_GEN_SUST]) += temp;
@@ -1837,19 +1834,18 @@ static void add_stat(artifact_type *a_ptr)
 
 	/* Hack: break out if all stats are raised to avoid an infinite loop */
 	if (flags_test_all(a_ptr->flags, OF_SIZE, OF_STR, OF_INT, OF_WIS,
-	                         OF_DEX, OF_CON, OF_CHR, FLAG_END))
+	                         OF_DEX, OF_CON, FLAG_END))
 			return;
 
 	/* Make sure we add one that hasn't been added yet */
 	while (!success)
 	{
-		r = randint0(6);
+		r = randint0(5);
 		if (r == 0) success = add_fixed_pval_flag(a_ptr, OF_STR);
 		else if (r == 1) success = add_fixed_pval_flag(a_ptr, OF_INT);
 		else if (r == 2) success = add_fixed_pval_flag(a_ptr, OF_WIS);
 		else if (r == 3) success = add_fixed_pval_flag(a_ptr, OF_DEX);
 		else if (r == 4) success = add_fixed_pval_flag(a_ptr, OF_CON);
-		else if (r == 5) success = add_fixed_pval_flag(a_ptr, OF_CHR);
 	}
 }
 
@@ -1860,18 +1856,17 @@ static void add_sustain(artifact_type *a_ptr)
 
 	/* Hack: break out if all stats are sustained to avoid an infinite loop */
 	if (flags_test_all(a_ptr->flags, OF_SIZE, OF_SUST_STR, OF_SUST_INT,
-	    OF_SUST_WIS, OF_SUST_DEX, OF_SUST_CON, OF_SUST_CHR, FLAG_END))
+	    OF_SUST_WIS, OF_SUST_DEX, OF_SUST_CON, FLAG_END))
 			return;
 
 	while (!success)
 	{
-		r = randint0(6);
+		r = randint0(5);
 		if (r == 0) success = add_flag(a_ptr, OF_SUST_STR);
 		else if (r == 1) success = add_flag(a_ptr, OF_SUST_INT);
 		else if (r == 2) success = add_flag(a_ptr, OF_SUST_WIS);
 		else if (r == 3) success = add_flag(a_ptr, OF_SUST_DEX);
 		else if (r == 4) success = add_flag(a_ptr, OF_SUST_CON);
-		else if (r == 5) success = add_flag(a_ptr, OF_SUST_CHR);
 	}
 }
 

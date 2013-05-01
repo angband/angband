@@ -115,13 +115,12 @@ static void drain_stats(int num, bool sustain, bool perma)
 	const char *act = NULL;
 
 	for (i = 0; i < num; i++) {
-		switch (randint1(6)) {
+		switch (randint1(5)) {
 			case 1: k = A_STR; act = "strong"; break;
 			case 2: k = A_INT; act = "bright"; break;
 			case 3: k = A_WIS; act = "wise"; break;
 			case 4: k = A_DEX; act = "agile"; break;
 			case 5: k = A_CON; act = "hale"; break;
-			case 6: k = A_CHR; act = "beautiful"; break;
 		}
 
 		if (sustain)

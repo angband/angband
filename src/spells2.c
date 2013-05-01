@@ -201,10 +201,6 @@ bool do_dec_stat(int stat, bool perma)
 			if (check_state(p_ptr, OF_SUST_CON, p_ptr->state.flags)) sust = TRUE;
 			wieldeds_notice_flag(p_ptr, OF_SUST_CON);
 			break;
-		case A_CHR:
-			if (check_state(p_ptr, OF_SUST_CHR, p_ptr->state.flags)) sust = TRUE;
-			wieldeds_notice_flag(p_ptr, OF_SUST_CHR);
-			break;
 	}
 
 	/* Sustain */
@@ -3140,7 +3136,6 @@ void ring_of_power(int dir)
 			player_stat_dec(p_ptr, A_WIS, TRUE);
 			player_stat_dec(p_ptr, A_DEX, TRUE);
 			player_stat_dec(p_ptr, A_CON, TRUE);
-			player_stat_dec(p_ptr, A_CHR, TRUE);
 
 			/* Lose some experience (permanently) */
 			player_exp_lose(p_ptr, p_ptr->exp / 4, TRUE);

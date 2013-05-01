@@ -1407,7 +1407,6 @@ static s32b borg_object_value_known(borg_item *item)
             if (of_has(item->flags, OF_WIS)) value += (item->pval * 200L);
             if (of_has(item->flags, OF_DEX)) value += (item->pval * 200L);
             if (of_has(item->flags, OF_CON)) value += (item->pval * 200L);
-            if (of_has(item->flags, OF_CHR)) value += (item->pval * 200L);
 
             /* Give credit for stealth and searching */
             if (of_has(item->flags, OF_STEALTH)) value += (item->pval * 100L);
@@ -3425,7 +3424,7 @@ s32b borg_price_item(const object_type *o_ptr, bool store_buying, int qty, int t
 	if (this_store == STORE_B_MARKET)
 		adjust = 150;
 	else
-		adjust = adj_chr_gold[p_ptr->state.stat_ind[A_CHR]];
+		adjust = 100;
 
 
 	/* Shop is buying */

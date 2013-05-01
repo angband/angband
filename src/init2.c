@@ -1452,7 +1452,6 @@ static enum parser_error parse_p_s(struct parser *p) {
 	r->r_adj[A_CON] = parser_getint(p, "con");
 	r->r_adj[A_INT] = parser_getint(p, "int");
 	r->r_adj[A_WIS] = parser_getint(p, "wis");
-	r->r_adj[A_CHR] = parser_getint(p, "chr");
 	return PARSE_ERROR_NONE;
 }
 
@@ -1587,7 +1586,7 @@ struct parser *init_parse_p(void) {
 	parser_setpriv(p, NULL);
 	parser_reg(p, "V sym version", ignored);
 	parser_reg(p, "N uint index str name", parse_p_n);
-	parser_reg(p, "S int str int int int wis int dex int con int chr", parse_p_s);
+	parser_reg(p, "S int str int int int wis int dex int con", parse_p_s);
 	parser_reg(p, "R int dis int dev int sav int stl int srh int fos int thm int thb int throw int dig", parse_p_r);
 	parser_reg(p, "X int mhp int exp int infra", parse_p_x);
 	parser_reg(p, "I uint hist int b-age int m-age", parse_p_i);
@@ -1652,7 +1651,6 @@ static enum parser_error parse_c_s(struct parser *p) {
 	c->c_adj[A_WIS] = parser_getint(p, "wis");
 	c->c_adj[A_DEX] = parser_getint(p, "dex");
 	c->c_adj[A_CON] = parser_getint(p, "con");
-	c->c_adj[A_CHR] = parser_getint(p, "chr");
 	return PARSE_ERROR_NONE;
 }
 
@@ -1819,7 +1817,7 @@ struct parser *init_parse_c(void) {
 	parser_setpriv(p, NULL);
 	parser_reg(p, "V sym version", ignored);
 	parser_reg(p, "N uint index str name", parse_c_n);
-	parser_reg(p, "S int str int int int wis int dex int con int chr", parse_c_s);
+	parser_reg(p, "S int str int int int wis int dex int con", parse_c_s);
 	parser_reg(p, "C int dis int dev int sav int stl int srh int fos int thm int thb int throw int dig", parse_c_c);
 	parser_reg(p, "X int dis int dev int sav int stl int srh int fos int thm int thb int throw int dig", parse_c_x);
 	parser_reg(p, "I int mhp int exp int sense-base int sense-div", parse_c_i);

@@ -5301,10 +5301,6 @@ void borg_status(void)
    else attr = TERM_SLATE;
    Term_putstr(21, 5, -1, attr, "CON");
 
-   if (borg_skill[BI_SCHR]) attr = TERM_WHITE;
-   else attr = TERM_SLATE;
-   Term_putstr(21, 6, -1, attr, "CHR");
-
 
    /* Temporary effects */
    Term_putstr(28, 0, -1, TERM_WHITE, "Temp Effects");

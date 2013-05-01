@@ -86,7 +86,6 @@ static const flag_type pval_flags[] =
 	{ OF_WIS,     "wisdom" },
 	{ OF_DEX,     "dexterity" },
 	{ OF_CON,     "constitution" },
-	{ OF_CHR,     "charisma" },
 	{ OF_STEALTH, "stealth" },
 	{ OF_INFRA,   "infravision" },
 	{ OF_TUNNEL,  "tunneling" },
@@ -160,7 +159,6 @@ static const flag_type sustain_flags[] =
 	{ OF_SUST_WIS, "wisdom" },
 	{ OF_SUST_DEX, "dexterity" },
 	{ OF_SUST_CON, "constitution" },
-	{ OF_SUST_CHR, "charisma" },
 };
 
 static const flag_type misc_flags[] =

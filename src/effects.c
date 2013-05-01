@@ -405,7 +405,6 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		case EF_GAIN_WIS:
 		case EF_GAIN_DEX:
 		case EF_GAIN_CON:
-		case EF_GAIN_CHR:
 		{
 			int stat = effect - EF_GAIN_STR;
 			if (do_inc_stat(stat)) *ident = TRUE;
@@ -419,7 +418,6 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			if (do_inc_stat(A_WIS)) *ident = TRUE;
 			if (do_inc_stat(A_DEX)) *ident = TRUE;
 			if (do_inc_stat(A_CON)) *ident = TRUE;
-			if (do_inc_stat(A_CHR)) *ident = TRUE;
 			return TRUE;
 		}
 
@@ -516,7 +514,6 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		case EF_LOSE_WIS:
 		case EF_LOSE_DEX:
 		case EF_LOSE_CON:
-		case EF_LOSE_CHR:
 		{
 			int stat = effect - EF_LOSE_STR;
 
@@ -541,7 +538,6 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		case EF_RESTORE_WIS:
 		case EF_RESTORE_DEX:
 		case EF_RESTORE_CON:
-		case EF_RESTORE_CHR:
 		{
 			int stat = effect - EF_RESTORE_STR;
 			if (do_res_stat(stat)) *ident = TRUE;
@@ -565,7 +561,6 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			if (do_res_stat(A_WIS)) *ident = TRUE;
 			if (do_res_stat(A_DEX)) *ident = TRUE;
 			if (do_res_stat(A_CON)) *ident = TRUE;
-			if (do_res_stat(A_CHR)) *ident = TRUE;
 
 			/* Recalculate max. hitpoints */
 			update_stuff(p_ptr);
@@ -584,7 +579,6 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			if (do_res_stat(A_WIS)) *ident = TRUE;
 			if (do_res_stat(A_DEX)) *ident = TRUE;
 			if (do_res_stat(A_CON)) *ident = TRUE;
-			if (do_res_stat(A_CHR)) *ident = TRUE;
 			return TRUE;
 		}
 
@@ -596,7 +590,6 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			if (do_res_stat(A_WIS)) *ident = TRUE;
 			if (do_res_stat(A_DEX)) *ident = TRUE;
 			if (do_res_stat(A_CON)) *ident = TRUE;
-			if (do_res_stat(A_CHR)) *ident = TRUE;
 			return TRUE;
 		}
 
@@ -1670,7 +1663,6 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			player_stat_dec(p_ptr, A_WIS, TRUE);
 			player_stat_dec(p_ptr, A_CON, TRUE);
 			player_stat_dec(p_ptr, A_STR, TRUE);
-			player_stat_dec(p_ptr, A_CHR, TRUE);
 			player_stat_dec(p_ptr, A_INT, TRUE);
 			*ident = TRUE;
 			return TRUE;

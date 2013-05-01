@@ -1191,7 +1191,6 @@ static void do_cmd_wiz_cure_all(void)
 	(void)res_stat(A_WIS);
 	(void)res_stat(A_CON);
 	(void)res_stat(A_DEX);
-	(void)res_stat(A_CHR);
 
 	/* Restore the level */
 	(void)restore_level();

@@ -1615,7 +1615,6 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 			case RBE_LOSE_CON:  power =  0; break;
 			case RBE_LOSE_INT:  power =  0; break;
 			case RBE_LOSE_WIS:  power =  0; break;
-			case RBE_LOSE_CHR:  power =  0; break;
 			case RBE_LOSE_ALL:  power =  0; break;
 			case RBE_SHATTER:   power = 60; break;
 		}
@@ -2362,17 +2361,6 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 					break;
 				}
 
-				case RBE_LOSE_CHR:
-				{
-					/* Take damage */
-					take_hit(p, damage, ddesc);
-
-					/* Damage (stat) */
-					if (do_dec_stat(A_CHR, FALSE)) obvious = TRUE;
-
-					break;
-				}
-
 				case RBE_LOSE_ALL:
 				{
 					/* Take damage */
@@ -2384,7 +2372,6 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 					if (do_dec_stat(A_CON, FALSE)) obvious = TRUE;
 					if (do_dec_stat(A_INT, FALSE)) obvious = TRUE;
 					if (do_dec_stat(A_WIS, FALSE)) obvious = TRUE;
-					if (do_dec_stat(A_CHR, FALSE)) obvious = TRUE;
 
 					break;
 				}
