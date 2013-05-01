@@ -3790,32 +3790,29 @@ static void place_feeling(struct cave *c)
 	int y,x,i,j;
 	int tries = 500;
 	
-	for (i = 0; i < FEELING_TOTAL; i++){
-		for(j = 0; j < tries; j++){
-			
+	for (i = 0; i < FEELING_TOTAL; i++) {
+		for (j = 0; j < tries; j++) {
 			/* Pick a random dungeon coordinate */
-			y = randint0(DUNGEON_HGT);
-			x = randint0(DUNGEON_WID);
-			
+			y = randint0(c->height);
+			x = randint0(c->width);
+
 			/* Check to see if it is not a wall */
-			if (cave_iswall(c,y,x))
+			if (cave_iswall(c, y, x))
 				continue;
-				
+
 			/* Check to see if it is already marked */
-			if (cave_isfeel(c,y,x))
+			if (cave_isfeel(c, y, x))
 				continue;
-				
+
 			/* Set the cave square appropriately */
 			c->info2[y][x] |= CAVE2_FEEL;
 			
 			break;
-		
 		}
 	}
 
 	/* Reset number of feeling squares */
 	c->feeling_squares = 0;
-	
 }
 
 
@@ -3956,8 +3953,9 @@ void cave_generate(struct cave *c, struct player *p) {
 			}
 		}
 
-		/* Place dungeon squares to trigger feeling */
-		place_feeling(c);
+		/* Place dungeon squares to trigger feeling (not in town) */
+		if (p_ptr->depth)
+			place_feeling(c);
 		
 		c->feeling = calc_obj_feeling(c) + calc_mon_feeling(c);
 
