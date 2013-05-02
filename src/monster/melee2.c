@@ -134,7 +134,7 @@ static bool summon_possible(int y1, int x1)
 		for (x = x1 - 2; x <= x1 + 2; x++)
 		{
 			/* Ignore illegal locations */
-			if (!in_bounds(y, x)) continue;
+			if (!cave_in_bounds(cave, y, x)) continue;
 
 			/* Only check a circular area */
 			if (distance(y1, x1, y, x) > 2) continue;
@@ -927,7 +927,7 @@ static bool find_safety(struct cave *c, struct monster *m_ptr, int *yp, int *xp)
 			x = fx + dx;
 
 			/* Skip illegal locations */
-			if (!in_bounds_fully(y, x)) continue;
+			if (!cave_in_bounds_fully(cave, y, x)) continue;
 
 			/* Skip locations in a wall */
 			if (!cave_ispassable(cave, y, x)) continue;
@@ -1013,7 +1013,7 @@ static bool find_hiding(struct monster *m_ptr, int *yp, int *xp)
 			x = fx + dx;
 
 			/* Skip illegal locations */
-			if (!in_bounds_fully(y, x)) continue;
+			if (!cave_in_bounds_fully(cave, y, x)) continue;
 
 			/* Skip occupied locations */
 			if (!cave_isempty(cave, y, x)) continue;

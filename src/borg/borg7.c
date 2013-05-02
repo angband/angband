@@ -326,7 +326,7 @@ bool borg_check_LIGHT_only(void)
 			int y = c_y + ddy_ddd[i];
 			
 			/* Bounds check */
-			if (!in_bounds_fully(y, x)) continue;
+			if (!cave_in_bounds_fully(cave, y, x)) continue;
 			
 			/* Get grid */
 			ag = &borg_grids[y][x];
@@ -362,7 +362,7 @@ bool borg_check_LIGHT_only(void)
 				borg_grid *ag;
 
 				/* Bounds check */
-				if (!in_bounds_fully(y, x)) continue;
+				if (!cave_in_bounds_fully(cave, y, x)) continue;
 				
 				/* Get grid */
 				ag = &borg_grids[y][x];

@@ -177,7 +177,7 @@ int count_feats(int *y, int *x, bool (*test)(struct cave *cave, int y, int x), b
 		xx = p_ptr->px + ddx_ddd[d];
 
 		/* Paranoia */
-		if (!in_bounds_fully(yy, xx)) continue;
+		if (!cave_in_bounds_fully(cave, yy, xx)) continue;
 
 		/* Must have knowledge */
 		if (!(cave->info[yy][xx] & (CAVE_MARK))) continue;

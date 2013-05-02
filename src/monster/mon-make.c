@@ -202,7 +202,7 @@ void delete_monster_idx(int m_idx)
  */
 void delete_monster(int y, int x)
 {
-	assert(in_bounds(y, x));
+	assert(cave_in_bounds(cave, y, x));
 
 	/* Delete the monster (if any) */
 	if (cave->m_idx[y][x] > 0)
@@ -742,7 +742,7 @@ s16b place_monster(int y, int x, monster_type *mon, byte origin)
 	s16b m_idx;
 	monster_type *m_ptr;
 
-	assert(in_bounds(y, x));
+	assert(cave_in_bounds(cave, y, x));
 	assert(!cave_monster_at(cave, y, x));
 
 	/* Get a new record */
@@ -868,7 +868,7 @@ static bool place_new_monster_one(int y, int x, monster_race *race,
 	struct monster *mon;
 	struct monster monster_body;
 
-	assert(in_bounds(y, x));
+	assert(cave_in_bounds(cave, y, x));
 	assert(race && race->name);
 
 	/* Require empty space */

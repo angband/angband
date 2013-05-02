@@ -209,7 +209,7 @@ void target_set_monster(int m_idx)
 void target_set_location(int y, int x)
 {
 	/* Legal target */
-	if (in_bounds_fully(y, x))
+	if (cave_in_bounds_fully(cave, y, x))
 	{
 		/* Save target info */
 		target_set = TRUE;
@@ -375,7 +375,7 @@ static struct point_set *target_set_interactive_prepare(int mode)
 		for (x = Term->offset_x; x < Term->offset_x + SCREEN_WID; x++)
 		{
 			/* Check bounds */
-			if (!in_bounds_fully(y, x)) continue;
+			if (!cave_in_bounds_fully(cave, y, x)) continue;
 
 			/* Require "interesting" contents */
 			if (!target_set_interactive_accept(y, x)) continue;

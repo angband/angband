@@ -223,7 +223,7 @@ void teleport_away(struct monster *m_ptr, int dis)
 			}
 
 			/* Ignore illegal locations */
-			if (!in_bounds_fully(ny, nx)) continue;
+			if (!cave_in_bounds_fully(cave, ny, nx)) continue;
 
 			/* Require "empty" floor space */
 			if (!cave_isempty(cave, ny, nx)) continue;
@@ -298,7 +298,7 @@ void teleport_player(int dis)
 			}
 
 			/* Ignore illegal locations */
-			if (!in_bounds_fully(y, x)) continue;
+			if (!cave_in_bounds_fully(cave, y, x)) continue;
 
 			/* Require "naked" floor space */
 			if (!cave_isempty(cave, y, x)) continue;
@@ -359,7 +359,7 @@ void teleport_player_to(int ny, int nx)
 		{
 			y = rand_spread(ny, dis);
 			x = rand_spread(nx, dis);
-			if (in_bounds_fully(y, x)) break;
+			if (cave_in_bounds_fully(cave, y, x)) break;
 		}
 
 		/* Accept "naked" floor grids */
@@ -3237,7 +3237,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg)
 			for (x = x2 - dist; x <= x2 + dist; x++)
 			{
 				/* Ignore "illegal" locations */
-				if (!in_bounds(y, x)) continue;
+				if (!cave_in_bounds(cave, y, x)) continue;
 
 				/* Enforce a "circular" explosion */
 				if (distance(y2, x2, y, x) != dist) continue;

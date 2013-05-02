@@ -681,7 +681,7 @@ static void textui_process_click(ui_event e)
 	x = KEY_GRID_X(e);
 
 	/* Check for a valid location */
-	if (!in_bounds_fully(y, x)) return;
+	if (!cave_in_bounds_fully(cave, y, x)) return;
 
 	/* XXX show context menu here */
 	if ((p_ptr->py == y) && (p_ptr->px == x)) {

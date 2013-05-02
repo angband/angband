@@ -336,7 +336,7 @@ static void borg_flow_spread(int depth, bool optimize, bool avoid, bool tunnelin
 
 
             /* only on legal grids */
-            if (!in_bounds_fully(y,x)) continue;
+            if (!cave_in_bounds_fully(cave, y,x)) continue;
 
             /* Skip "reached" grids */
             if (borg_data_cost->data[y][x] <= n) continue;
@@ -357,7 +357,7 @@ static void borg_flow_spread(int depth, bool optimize, bool avoid, bool tunnelin
 
 
 					/* only on legal grids */
-					if (!in_bounds_fully(yy,xx)) continue;
+					if (!cave_in_bounds_fully(cave, yy,xx)) continue;
 
 					/* Make sure no monster is on this grid, which is
 					 * adjacent to the grid on which, I am thinking about stepping.
@@ -826,7 +826,7 @@ static bool borg_surrounded(void)
         borg_grid *ag = &borg_grids[y][x];
 
 		/* Bound check */
-		if (!in_bounds_fully(y,x)) continue;
+		if (!cave_in_bounds_fully(cave, y,x)) continue;
 
         /* Skip walls/doors */
         if (!borg_cave_floor_grid(ag)) non_safe_grids ++;
@@ -3867,7 +3867,7 @@ bool borg_caution(void)
 				y = c_y + ddy_ddd[i];
 
 				/* check for bounds */
-				if (!in_bounds(y,x)) continue;
+				if (!cave_in_bounds(cave, y,x)) continue;
 
 				/* Monster there ? */
 				if (!borg_grids[y][x].kill) continue;
@@ -6133,7 +6133,7 @@ static int borg_launch_bolt_aux(int y, int x, int rad, int dam, int typ, int max
     for (dist = 0; dist < max; dist++)
     {
         /* Bounds Check */
-		if (!in_bounds_fully(y2, x2)) break;
+		if (!cave_in_bounds_fully(cave, y2, x2)) break;
 
 		/* Get the grid of the targetted monster */
         ag = &borg_grids[y2][x2];
@@ -6358,7 +6358,7 @@ static int borg_launch_bolt_aux(int y, int x, int rad, int dam, int typ, int max
 		{
 
 			/* Bounds check */
-			if (!in_bounds(ry, rx)) continue;
+			if (!cave_in_bounds(cave, ry, rx)) continue;
 
 			/* Get the grid */
 			ag = &borg_grids[ry][rx];
@@ -6505,7 +6505,7 @@ static int borg_launch_bolt(int rad, int dam, int typ, int max, int ammo_locatio
 				n = 0;
 
 				/* Bounds check */
-				if (!in_bounds(y,x)) continue;
+				if (!cave_in_bounds(cave, y,x)) continue;
 
 				/* Remember how far away the monster is */
 				d = distance(c_y, c_x, borg_temp_y[i], borg_temp_x[i]);
@@ -14281,7 +14281,7 @@ bool borg_check_rest(int y, int x)
 			for (ii=-1; ii < 1; ii++)
 			{
 				/* check bounds */
-				if (!in_bounds_fully(c_y+i,c_x+ii)) continue;
+				if (!cave_in_bounds_fully(cave, c_y+i,c_x+ii)) continue;
 
 				if (borg_grids[c_y+i][c_x+ii].feat ==FEAT_PERM_INNER) borg_in_vault = TRUE;
 			}
@@ -15112,7 +15112,7 @@ static bool borg_play_step(int y2, int x2)
 						int yy = take->y + borg_ddy_ddd[i];
 
 						/* Check the grid for a take */
-						if(!in_bounds_fully(yy,xx)) continue;
+						if(!cave_in_bounds_fully(cave, yy,xx)) continue;
 						ag2 = &borg_grids[yy][xx];
 						if (ag2->take)
 						{
@@ -16221,7 +16221,7 @@ bool borg_flow_vault(int nearness)
 	           	b_y = y + ddy_ddd[i];
 
 				/* Bounds check */
-	            if (!in_bounds_fully(b_y, b_x)) continue;
+	            if (!cave_in_bounds_fully(cave, b_y, b_x)) continue;
 
 	           	/* Access the grid */
 	           	ag = &borg_grids[b_y][b_x];
@@ -16312,7 +16312,7 @@ bool borg_excavate_vault(int range)
 	           	b_y = y + ddy_ddd[i];
 
 				/* Bounds check */
-	            if (!in_bounds_fully(b_y, b_x)) continue;
+	            if (!cave_in_bounds_fully(cave, b_y, b_x)) continue;
 
 	           	ag = &borg_grids[b_y][b_x];
 
@@ -16815,7 +16815,7 @@ bool borg_flow_kill_corridor_1(bool viewable)
 			m_x = c_x + o_x + nx[i];
 
 			/* avoid screen edgeds */
-			if (!in_bounds_fully(m_y, m_x))
+			if (!cave_in_bounds_fully(cave, m_y, m_x))
 			{
 				continue;
 			}
@@ -16871,7 +16871,7 @@ bool borg_flow_kill_corridor_1(bool viewable)
 			m_x = c_x + o_x + sx[i];
 
 			/* avoid screen edgeds */
-			if (!in_bounds_fully(m_y, m_x)) continue;
+			if (!cave_in_bounds_fully(cave, m_y, m_x)) continue;
 
 			/* grid the grid */
 			ag = &borg_grids[m_y][m_x];
@@ -16925,7 +16925,7 @@ bool borg_flow_kill_corridor_1(bool viewable)
 			m_x = c_x + o_x + ex[i];
 
 			/* avoid screen edgeds */
-			if (!in_bounds_fully(m_y, m_x)) continue;
+			if (!cave_in_bounds_fully(cave, m_y, m_x)) continue;
 
 			/* grid the grid */
 			ag = &borg_grids[m_y][m_x];
@@ -16980,7 +16980,7 @@ bool borg_flow_kill_corridor_1(bool viewable)
 			m_x = c_x + o_x + wx[i];
 
 			/* avoid screen edgeds */
-			if (!in_bounds_fully(m_y, m_x)) continue;
+			if (!cave_in_bounds_fully(cave, m_y, m_x)) continue;
 
 			/* grid the grid */
 			ag = &borg_grids[m_y][m_x];
@@ -17312,7 +17312,7 @@ bool borg_flow_recover(bool viewable, int dist)
 		for (x = c_x -25; x < c_x + 25; x++)
 		{
 			/* Stay in bounds */
-			if (!in_bounds(y,x)) continue;
+			if (!cave_in_bounds(cave, y,x)) continue;
 
 			/* Skip my own grid */
 			if (y == c_y && x == c_x) continue;
@@ -17529,7 +17529,7 @@ bool borg_flow_kill(bool viewable, int nearness)
             {
                 for (hall_y = -1; hall_y <= 1; hall_y++)
                 {
-					if (!in_bounds_fully(hall_y + y,hall_x + x)) continue;
+					if (!cave_in_bounds_fully(cave, hall_y + y,hall_x + x)) continue;
                     ag = &borg_grids[hall_y + y][hall_x + x];
 
                     /* track walls */

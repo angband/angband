@@ -409,7 +409,7 @@ static int see_wall(int dir, int y, int x)
 	x += ddx[dir];
 
 	/* Illegal grids are not known walls XXX XXX XXX */
-	if (!in_bounds(y, x)) return (FALSE);
+	if (!cave_in_bounds(cave, y, x)) return (FALSE);
 
 	/* Non-wall grids are not known walls */
 	if (!cave_seemslikewall(cave, y, x))

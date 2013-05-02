@@ -2362,7 +2362,7 @@ void calc_cave_distances(void)
 				ty = oy + ddy_ddd[d];
 				tx = ox + ddx_ddd[d];
 				
-				if (!(in_bounds_fully(ty,tx))) continue;
+				if (!(cave_in_bounds_fully(cave, ty,tx))) continue;
 				
 				/* Have we been here before? */
 				if (cave_dist[ty][tx] >= 0) continue;

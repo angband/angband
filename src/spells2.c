@@ -516,7 +516,7 @@ void map_area(void)
 			/* All non-walls are "checked" */
 			if (!cave_seemslikewall(cave, y, x))
 			{
-				if (!in_bounds_fully(y, x)) continue;
+				if (!cave_in_bounds_fully(cave, y, x)) continue;
 
 				/* Memorize normal features */
 				if (cave_isinteresting(cave, y, x))
@@ -576,7 +576,7 @@ bool detect_traps(bool aware)
 	{
 		for (x = x1; x < x2; x++)
 		{
-			if (!in_bounds_fully(y, x)) continue;
+			if (!cave_in_bounds_fully(cave, y, x)) continue;
 
 			/* Detect invisible traps */
 			if (cave_issecrettrap(cave, y, x))
@@ -625,7 +625,7 @@ bool detect_traps(bool aware)
 	{
 		for (x = x1 - 1; x < x2 + 1; x++)
 		{
-			if (!in_bounds_fully(y, x)) continue;
+			if (!cave_in_bounds_fully(cave, y, x)) continue;
 
 			/* see if this grid is on the edge */
 			if (dtrap_edge(y, x)) {
@@ -683,7 +683,7 @@ bool detect_doorstairs(bool aware)
 	{
 		for (x = x1; x < x2; x++)
 		{
-			if (!in_bounds_fully(y, x)) continue;
+			if (!cave_in_bounds_fully(cave, y, x)) continue;
 
 			/* Detect secret doors */
 			if (cave_issecretdoor(cave, y, x))
@@ -755,7 +755,7 @@ bool detect_treasure(bool aware, bool full)
 	/* Scan the dungeon */
 	for (y = y1; y < y2; y++) {
 		for (x = x1; x < x2; x++) {
-			if (!in_bounds_fully(y, x)) continue;
+			if (!cave_in_bounds_fully(cave, y, x)) continue;
 
 			cave_show_vein(cave, y, x);
 
@@ -841,7 +841,7 @@ bool detect_close_buried_treasure(void)
 	{
 		for (x = x1; x < x2; x++)
 		{
-			if (!in_bounds_fully(y, x)) continue;
+			if (!cave_in_bounds_fully(cave, y, x)) continue;
 
 			/* Notice embedded gold */
 			cave_show_vein(cave, y, x);
@@ -1948,7 +1948,7 @@ void destroy_area(int y1, int x1, int r, bool full)
 		for (x = (x1 - r); x <= (x1 + r); x++)
 		{
 			/* Skip illegal grids */
-			if (!in_bounds_fully(y, x)) continue;
+			if (!cave_in_bounds_fully(cave, y, x)) continue;
 			
 			/* Extract the distance */
 			k = distance(y1, x1, y, x);
@@ -2083,7 +2083,7 @@ void earthquake(int cy, int cx, int r)
 			xx = cx + dx;
 
 			/* Skip illegal grids */
-			if (!in_bounds_fully(yy, xx)) continue;
+			if (!cave_in_bounds_fully(cave, yy, xx)) continue;
 
 			/* Skip distant grids */
 			if (distance(cy, cx, yy, xx) > r) continue;
@@ -2313,7 +2313,7 @@ void earthquake(int cy, int cx, int r)
 			xx = cx + dx;
 
 			/* ignore invalid grids */
-			if (!in_bounds_fully(yy, xx)) continue;
+			if (!cave_in_bounds_fully(cave, yy, xx)) continue;
 
 			/* Note unaffected grids for light changes, etc. */
 			if (!map[16+yy-cy][16+xx-cx])

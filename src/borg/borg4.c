@@ -8596,7 +8596,7 @@ int borg_danger_aux(int y, int x, int c, int i, bool average, bool full_damage)
 			x_temp = x9 + ddx_ddd[ii];
 
 			/* Check for legality */
-			if (!in_bounds_fully(y_temp,x_temp)) continue;
+			if (!cave_in_bounds_fully(cave, y_temp,x_temp)) continue;
 
 			/* Cannot occupy another monster's grid */
 			if (borg_grids[y_temp][x_temp].kill) continue;
@@ -8709,7 +8709,7 @@ int borg_danger_aux(int y, int x, int c, int i, bool average, bool full_damage)
 			x_temp = x9 + ddx_ddd[ii];
 
 			/* Check for legality */
-			if (!in_bounds_fully(y_temp,x_temp)) continue;
+			if (!cave_in_bounds_fully(cave, y_temp,x_temp)) continue;
 
 			/* Cannot occupy another monster's grid */
 			if (borg_grids[y_temp][x_temp].kill) continue;
