@@ -1113,7 +1113,7 @@ static bool get_moves(struct cave *c, struct monster *m_ptr, int mm[5])
 	if (!done && mon_will_run(m_ptr))
 	{
 		/* Try to find safe place */
-		if (find_safety(c, m_ptr, &y, &x))
+		if (!find_safety(c, m_ptr, &y, &x))
 		{
 			/* This is not a very "smart" method XXX XXX */
 			y = (-y);
