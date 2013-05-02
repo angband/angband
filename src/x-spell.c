@@ -1235,7 +1235,7 @@ static bool cast_priest_spell(int spell, int dir)
 
 		case PRAYER_RECHARGING:
 		{
-			return recharge(15);
+			return recharge(20 + plev);
 		}
 		
         /* Dispel Curse has been removed in 3.4 until curses are redone 
