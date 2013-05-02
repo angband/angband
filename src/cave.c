@@ -3280,13 +3280,11 @@ int cave_door_power(struct cave *c, int y, int x) {
 }
 
 void cave_open_door(struct cave *c, int y, int x) {
-	c->feat[y][x] = FEAT_OPEN;
-	cave_light_spot(c, y, x);
+	cave_set_feat(c, y, x, FEAT_OPEN);
 }
 
 void cave_smash_door(struct cave *c, int y, int x) {
-	c->feat[y][x] = FEAT_BROKEN;
-	cave_light_spot(c, y, x);
+	cave_set_feat(c, y, x, FEAT_BROKEN);
 }
 
 void cave_destroy_trap(struct cave *c, int y, int x) {
@@ -3295,8 +3293,7 @@ void cave_destroy_trap(struct cave *c, int y, int x) {
 }
 
 void cave_lock_door(struct cave *c, int y, int x, int power) {
-	c->feat[y][x] = FEAT_DOOR_HEAD + power;
-	cave_light_spot(c, y, x);
+	cave_set_feat(x, y, x, FEAT_DOOR_HEAD + power);
 }
 
 bool cave_hasgoldvein(struct cave *c, int y, int x) {
@@ -3432,26 +3429,23 @@ const char *cave_apparent_name(struct cave *c, struct player *p, int y, int x) {
 
 	if (f == FEAT_NONE)
 		return "unknown_grid";
-	/* XXX: why? FEAT_INVIS already mimics FEAT_FLOOR */
-	if (f == FEAT_INVIS)
-		f = FEAT_FLOOR;
 
 	return f_info[f].name;
 }
 
 void cave_unlock_door(struct cave *c, int y, int x) {
 	assert(cave_islockeddoor(c, y, x));
-	c->feat[y][x] = FEAT_DOOR_HEAD;
+	cave_set_feat(c, y, x, FEAT_DOOR_HEAD);
 }
 
 void cave_destroy_door(struct cave *c, int y, int x) {
 	assert(cave_isdoor(c, y, x));
-	c->feat[y][x] = FEAT_FLOOR;
+	cave_set_feat(c, y, x, FEAT_FLOOR);
 }
 
 void cave_destroy_rubble(struct cave *c, int y, int x) {
 	assert(cave_isrubble(c, y, x));
-	c->feat[y][x] = FEAT_FLOOR;
+	cave_set_feat(c, y, x, FEAT_FLOOR);
 }
 
 void cave_add_door(struct cave *c, int y, int x, bool closed) {
