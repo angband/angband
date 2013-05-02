@@ -1083,9 +1083,8 @@ void make_gold(object_type *j_ptr, int lev, int coin_type)
 {
 	int sval;
 
-	/* This average is 20 at dlev0, 105 at dlev40, 220 at dlev100. */
-	/* Follows the formula: y=2x+20 */
-	s32b avg = 2*lev + 20;
+	/* This average is 20 at dlev0, 100 at dlev40, 220 at dlev100. */
+	s32b avg = (18 * lev)/10 + 18;
 	s32b spread = lev + 10;
 	s32b value = rand_spread(avg, spread);
 
