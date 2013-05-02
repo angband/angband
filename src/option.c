@@ -209,23 +209,31 @@ static bool option_is_score(int opt) { return opt >= OPT_SCORE && opt < (OPT_SCO
 static bool option_is_cheat(int opt) { return opt >= OPT_CHEAT && opt < (OPT_CHEAT + N_OPTS_CHEAT); }
 
 /* Setup functions */
-bool option_set(const char *name, bool on)
+bool option_set(const char *name, int val)
 {
 	size_t opt;
-	for (opt = 0; opt < OPT_MAX; opt++)
-	{
+
+	/* Try normal options first */
+	for (opt = 0; opt < OPT_MAX; opt++) {
 		if (!options[opt].name || !streq(options[opt].name, name))
 			continue;
 
-		op_ptr->opt[opt] = on;
-		if (on && option_is_cheat(opt)) {
+		op_ptr->opt[opt] = val ? TRUE : FALSE;
+		if (val && option_is_cheat(opt))
 			op_ptr->opt[opt + (OPT_SCORE - OPT_CHEAT)] = TRUE;
-		}
 
 		return TRUE;
 	}
 
-	return FALSE;
+	if (streq(name, "hp_warn_factor")) {
+		op_ptr->hitpoint_warn = val;
+	} else if (streq(name, "delay_factor")) {
+		op_ptr->delay_factor = val;
+	} else {
+		return FALSE;
+	}
+
+	return TRUE;
 }
 
 void option_set_defaults(void)
@@ -233,4 +241,59 @@ void option_set_defaults(void)
 	size_t opt;
 	for (opt = 0; opt < OPT_MAX; opt++)
 		op_ptr->opt[opt] = options[opt].normal;
+
+	/* 40ms for the delay factor */
+	op_ptr->delay_factor = 40;
+
+	/* 30% of HP */
+	op_ptr->hitpoint_warn = 3;
+}
+
+
+/*
+ * Write all current options to a user preference file.
+ */
+void option_dump(ang_file *f)
+{
+	int i, j;
+
+	file_putf(f, "# Options\n");
+
+	/* Dump options (skip cheat, score) */
+	for (i = 0; i < OPT_CHEAT; i++) {
+		const char *name = option_name(i);
+		if (name)
+			file_putf(f, "%c:%s\n", op_ptr->opt[i] ? 'Y' : 'X', name);
+	}
+
+	file_putf(f, "O:hp_warn_factor:%d\n", op_ptr->hitpoint_warn);
+	file_putf(f, "O:delay_factor:%d\n", op_ptr->delay_factor);
+	file_putf(f, "\n");
+
+	/* Dump window flags */
+	for (i = 1; i < ANGBAND_TERM_MAX; i++)
+	{
+		/* Require a real window */
+		if (!angband_term[i]) continue;
+
+		/* Check each flag */
+		for (j = 0; j < (int)N_ELEMENTS(window_flag_desc); j++)
+		{
+			/* Require a real flag */
+			if (!window_flag_desc[j]) continue;
+
+			/* Comment */
+			file_putf(f, "# Window '%s', Flag '%s'\n",
+				angband_term_name[i], window_flag_desc[j]);
+
+			/* Dump the flag */
+			if (op_ptr->window_flag[i] & (1L << j))
+				file_putf(f, "W:%d:%d:1\n", i, j);
+			else
+				file_putf(f, "W:%d:%d:0\n", i, j);
+
+			/* Skip a line */
+			file_putf(f, "\n");
+		}
+	}
 }

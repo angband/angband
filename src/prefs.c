@@ -42,6 +42,7 @@ static void remove_old_dump(const char *cur_fname, const char *mark)
 {
 	bool between_marks = FALSE;
 	bool changed = FALSE;
+	bool skip_one = FALSE;
 
 	char buf[1024];
 
@@ -82,22 +83,20 @@ static void remove_old_dump(const char *cur_fname, const char *mark)
 	{
 		/* If we find the start line, turn on */
 		if (!strcmp(buf, start_line))
-		{
 			between_marks = TRUE;
-		}
 
 		/* If we find the finish line, turn off */
 		else if (!strcmp(buf, end_line))
 		{
 			between_marks = FALSE;
+			skip_one = TRUE;
 			changed = TRUE;
 		}
 
-		if (!between_marks)
-		{
-			/* Copy orginal line */
+		if (!between_marks && !skip_one)
 			file_putf(new_file, "%s\n", buf);
-		}
+
+		skip_one = FALSE;
 	}
 
 	/* Close files */
@@ -148,65 +147,6 @@ static void pref_footer(ang_file *fff, const char *mark)
 	/* End of dump */
 	file_putf(fff, "%s end %s\n", dump_separator, mark);
 }
-
-
-/*
- * Write all current options to a user preference file.
- */
-void option_dump(ang_file *fff)
-{
-	int i, j;
-
-	/* Dump options (skip cheat, adult, score) */
-	for (i = 0; i < OPT_CHEAT; i++)
-	{
-		const char *name = option_name(i);
-		if (!name) continue;
-
-		/* Comment */
-		file_putf(fff, "# Option '%s'\n", option_desc(i));
-
-		/* Dump the option */
-		if (op_ptr->opt[i])
-			file_putf(fff, "Y:%s\n", name);
-		else
-			file_putf(fff, "X:%s\n", name);
-
-		/* Skip a line */
-		file_putf(fff, "\n");
-	}
-
-	/* Dump window flags */
-	for (i = 1; i < ANGBAND_TERM_MAX; i++)
-	{
-		/* Require a real window */
-		if (!angband_term[i]) continue;
-
-		/* Check each flag */
-		for (j = 0; j < (int)N_ELEMENTS(window_flag_desc); j++)
-		{
-			/* Require a real flag */
-			if (!window_flag_desc[j]) continue;
-
-			/* Comment */
-			file_putf(fff, "# Window '%s', Flag '%s'\n",
-				angband_term_name[i], window_flag_desc[j]);
-
-			/* Dump the flag */
-			if (op_ptr->window_flag[i] & (1L << j))
-				file_putf(fff, "W:%d:%d:1\n", i, j);
-			else
-				file_putf(fff, "W:%d:%d:0\n", i, j);
-
-			/* Skip a line */
-			file_putf(fff, "\n");
-		}
-	}
-
-	keymap_dump(fff);
-}
-
-
 
 
 /* Dump monsters */
@@ -993,7 +933,6 @@ static enum parser_error parse_prefs_x(struct parser *p)
 	assert(d != NULL);
 	if (d->bypass) return PARSE_ERROR_NONE;
 
-	/* XXX check for valid option */
 	option_set(parser_getstr(p, "option"), FALSE);
 
 	return PARSE_ERROR_NONE;
@@ -1006,6 +945,17 @@ static enum parser_error parse_prefs_y(struct parser *p)
 	if (d->bypass) return PARSE_ERROR_NONE;
 
 	option_set(parser_getstr(p, "option"), TRUE);
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_prefs_o(struct parser *p)
+{
+	struct prefs_data *d = parser_priv(p);
+	assert(d != NULL);
+	if (d->bypass) return PARSE_ERROR_NONE;
+
+	option_set(parser_getsym(p, "name"), parser_getuint(p, "value"));
 
 	return PARSE_ERROR_NONE;
 }
@@ -1042,6 +992,7 @@ static struct parser *init_parse_prefs(bool user)
 	parser_reg(p, "W int window uint flag uint value", parse_prefs_w);
 	parser_reg(p, "X str option", parse_prefs_x);
 	parser_reg(p, "Y str option", parse_prefs_y);
+	parser_reg(p, "O sym name uint value", parse_prefs_o);
 
 	return p;
 }

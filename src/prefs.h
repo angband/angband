@@ -5,7 +5,7 @@
 
 void autoinsc_dump(ang_file *fff);
 void squelch_dump(ang_file *fff);
-void option_dump(ang_file *fff);
+void dump_options_and_keymaps(ang_file *fff);
 void dump_monsters(ang_file *fff);
 void dump_objects(ang_file *fff);
 void dump_features(ang_file *fff);

@@ -10,11 +10,13 @@ const char *option_name(int opt);
 const char *option_desc(int opt);
 
 /** Set an an option, return TRUE if successful */
-bool option_set(const char *opt, bool on);
+bool option_set(const char *opt, int val);
 
 /** Reset options to defaults */
 void option_set_defaults(void);
 
+/** Write options to file */
+void option_dump(ang_file *f);
 
 /*** Option display definitions ***/
 

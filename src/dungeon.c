@@ -1619,9 +1619,6 @@ void play_game(void)
 	/* Hack -- Turn off the cursor */
 	(void)Term_set_cursor(FALSE);
 
-	/* set a default warning level that will be overridden by the savefile */
-	op_ptr->hitpoint_warn = 3;
-
 	/* initialize window options that will be overridden by the savefile */
 	memset(window_flag, 0, sizeof(u32b)*ANGBAND_TERM_MAX);
 	if (ANGBAND_TERM_MAX > 1) window_flag[1] = (PW_MESSAGE);

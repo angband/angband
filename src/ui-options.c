@@ -1009,9 +1009,13 @@ static void do_cmd_pref_file_hack(long row)
 /*
  * Write options to a file.
  */
-static void do_dump_options(const char *title, int row)
-{
-	dump_pref_file(option_dump, "Dump options", 20);
+void dump_options_and_keymaps(ang_file *f) {
+	option_dump(f);
+	keymap_dump(f);
+}
+
+static void do_dump_options(const char *title, int row) {
+	dump_pref_file(dump_options_and_keymaps, "Dump options", 20);
 }
 
 /*
