@@ -3326,7 +3326,7 @@ bool cave_isglyph(struct cave *c, int y, int x) {
 
 void cave_show_trap(struct cave *c, int y, int x, int type) {
 	assert(cave_issecrettrap(c, y, x));
-	c->feat[y][x] = FEAT_TRAP_HEAD + type;
+	cave_set_feat(c, y, x, FEAT_TRAP_HEAD + type);
 }
 
 void cave_add_trap(struct cave *c, int y, int x) {
