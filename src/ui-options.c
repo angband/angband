@@ -28,37 +28,48 @@
 
 
 
-
-static void dump_pref_file(void (*dump)(ang_file *), const char *title, int row)
-{
+/**
+ * Prompt the user for a filename to save the pref file to.
+ */
+static bool get_pref_path(const char *what, int row, char *buf, size_t max) {
 	char ftmp[80];
-	char buf[1024];
+	bool ok;
 
 	screen_save();
 
 	/* Prompt */
-	prt(format("%s to a pref file", title), row, 0);
-	
-	/* Prompt */
+	prt(format("%s to a pref file", what), row, 0);
 	prt("File: ", row + 2, 0);
-	
+
 	/* Default filename */
 	strnfmt(ftmp, sizeof ftmp, "%s.prf", player_safe_name(p_ptr));
 	
 	/* Get a filename */
-	if (askfor_aux(ftmp, sizeof ftmp, NULL))
-	{
-		/* Build the filename */
-		path_build(buf, sizeof(buf), ANGBAND_DIR_USER, ftmp);
-	
-		prt("", 0, 0);
-		if (prefs_save(buf, dump, title))
-			msg("Dumped %s", strstr(title, " ") + 1);
-		else
-			msg("Failed");
-	}
-
+	ok = askfor_aux(ftmp, sizeof ftmp, NULL);
 	screen_load();
+
+	/* Build the filename */
+	if (ok)
+		path_build(buf, max, ANGBAND_DIR_USER, ftmp);
+
+	return ok;
+}
+
+
+static void dump_pref_file(void (*dump)(ang_file *), const char *title, int row) {
+	char buf[1024];
+
+	/* Get filename from user */
+	if (!get_pref_path(title, row, buf, sizeof(buf)))
+		return;
+
+	/* Try to save */
+	if (prefs_save(buf, dump, title))
+		msg("Saved %s.", strstr(title, " ") + 1);
+	else
+		msg("Failed to save %s.", strstr(title, " ") + 1);
+
+	message_flush();
 
 	return;
 }
@@ -567,7 +578,7 @@ static menu_type *keymap_menu;
 static menu_action keymap_actions[] =
 {
 	{ 0, 0, "Load a user pref file",    ui_keymap_pref_load },
-	{ 0, 0, "Append keymaps to a file", ui_keymap_pref_append },
+	{ 0, 0, "Save keymaps to file",     ui_keymap_pref_append },
 	{ 0, 0, "Query a keymap",           ui_keymap_query },
 	{ 0, 0, "Create a keymap",          ui_keymap_create },
 	{ 0, 0, "Remove a keymap",          ui_keymap_remove },
@@ -646,10 +657,10 @@ static menu_action visual_menu_items [] =
 {
 	{ 0, 0, "Load a user pref file",   visuals_pref_load },
 #ifdef ALLOW_VISUALS
-	{ 0, 0, "Dump monster attr/chars", visuals_dump_monsters },
-	{ 0, 0, "Dump object attr/chars",  visuals_dump_objects },
-	{ 0, 0, "Dump feature attr/chars", visuals_dump_features },
-	{ 0, 0, "Dump flavor attr/chars",  visuals_dump_flavors },
+	{ 0, 0, "Save monster attr/chars", visuals_dump_monsters },
+	{ 0, 0, "Save object attr/chars",  visuals_dump_objects },
+	{ 0, 0, "Save feature attr/chars", visuals_dump_features },
+	{ 0, 0, "Save flavor attr/chars",  visuals_dump_flavors },
 #endif /* ALLOW_VISUALS */
 	{ 0, 0, "Reset visuals",           visuals_reset },
 };
@@ -1009,14 +1020,24 @@ static void do_cmd_pref_file_hack(long row)
 /*
  * Write options to a file.
  */
-void dump_options_and_keymaps(ang_file *f) {
-	option_dump(f);
-	keymap_dump(f);
+static void do_dump_options(const char *title, int row) {
+	char buf[1024];
+
+	/* Get filename from user */
+	if (!get_pref_path("Dump options", 20, buf, sizeof(buf)))
+		return;
+
+	if (prefs_save(buf, option_dump, "Dump options") &&
+			prefs_save(buf, keymap_dump, "Dump keymaps"))
+		msg("Saved options and keymaps.");
+	else
+		msg("Failed to save options and keymaps.");
+
+	message_flush();
+
+	return;
 }
 
-static void do_dump_options(const char *title, int row) {
-	dump_pref_file(dump_options_and_keymaps, "Dump options", 20);
-}
 
 /*
  * Load a pref file.
@@ -1025,9 +1046,6 @@ static void options_load_pref_file(const char *n, int row)
 {
 	do_cmd_pref_file_hack(20);
 }
-
-
-
 
 
 
@@ -1527,7 +1545,7 @@ static menu_action option_actions[] =
 	{ 0, 'h', "Set hitpoint warning", do_cmd_hp_warn },
 	{ 0, 'i', "Set movement delay", do_cmd_lazymove_delay },
 	{ 0, 'l', "Load a user pref file", options_load_pref_file },
-	{ 0, 'o', "Save options", do_dump_options }, 
+	{ 0, 'o', "Save keymaps and options", do_dump_options }, 
 	{0, 0, 0, 0}, /* Interact with */	
 	{ 0, 'm', "Interact with keymaps (advanced)", do_cmd_keymaps },
 	{ 0, 'v', "Interact with visuals (advanced)", do_cmd_visuals },

@@ -306,12 +306,11 @@ bool prefs_save(const char *path, void (*dump)(ang_file *), const char *title)
 
 	/* Append the header */
 	pref_header(fff, title);
-	file_putf(fff, "\n\n");
-	file_putf(fff, "# %s definitions\n\n", strstr(title, " "));
+	file_putf(fff, "\n");
 
 	dump(fff);
 
-	file_putf(fff, "\n\n\n");
+	file_putf(fff, "\n");
 	pref_footer(fff, title);
 	file_close(fff);
 
