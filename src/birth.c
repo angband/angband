@@ -917,19 +917,11 @@ void player_birth(bool quickstart_allowed)
 	if (quickstart_allowed)
 		save_roller_data(&quickstart_prev);
 	else
-	{
-		p_ptr->psex = 0;
-		/* XXX default race/class */
-		p_ptr->class = classes;
-		p_ptr->race = races;
-		player_generate(p_ptr, NULL, NULL, NULL);
-	}
+		player_generate(p_ptr, &sex_info[p_ptr->psex], player_id2race(0), player_id2class(0));
 
 	/* Handle incrementing name suffix */
 	buf = find_roman_suffix_start(op_ptr->full_name);
-
-	if (buf)
-	{
+	if (buf) {
 		/* Try to increment the roman suffix */
 		success = int_to_roman((roman_to_int(buf) + 1), buf,
 			(sizeof(op_ptr->full_name) - (buf -
