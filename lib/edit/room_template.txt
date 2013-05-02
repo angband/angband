@@ -38,10 +38,10 @@
 #    1,2,3,4,5,6,7,8,9 - potential positions for random doors
 #    x - optional wall (generated 50% of the time)
 #    = - optional door (generated if optional walls are generated)
+#    - - optional door (generated if optial walls are NOT generated, otherwise rock)
 #    ~ - a treasure or stairs, with guardian monsters and traps
 #    ! - place some monsters and treasures nearby
 #	 * - a treasure of the specified tval
-
 
 # Use this to measure columns      
 #          1         2         3   
@@ -308,3 +308,17 @@ D:%...*##*...%
 D:%...####...%
 D:#.....!....#
 D:#####%%#####
+
+N:21:Divisions
+X:1:1:11:19:1:0
+D:##########%########
+D:#.!......#........#
+D:#........+........#
+D:#....#########...!#
+D:%....-xxxxxxx-....#
+D:###+##xxxxxxx##+###
+D:#....-xxxxxxx-....%
+D:#....#########....#
+D:#!.......+........#
+D:#........#......!.#
+D:########%##########

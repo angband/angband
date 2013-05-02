@@ -2018,7 +2018,7 @@ static void build_room_template(struct cave *c, int y0, int x0, int ymax, int xm
 			/* Debugging assertion */
 			assert(cave_isempty(c, y, x));
 
-			/* Analyze the grid */
+ 			/* Analyze the grid */
 			switch (*t) {
 				case '%': cave_set_feat(c, y, x, FEAT_WALL_OUTER); break;
 				case '#': cave_set_feat(c, y, x, FEAT_WALL_SOLID); break;
@@ -2037,6 +2037,15 @@ static void build_room_template(struct cave *c, int y0, int x0, int ymax, int xm
 
 					if (rndwalls)
 						place_secret_door(c, y, x);
+					break;
+				}
+				case '-': {
+					/* If optional walls are not generated, put a door in this square */
+					if (!rndwalls)
+						place_secret_door(c, y, x);
+					else
+						cave_set_feat(c, y, x, FEAT_WALL_SOLID);
+
 					break;
 				}
 				case '~': {
