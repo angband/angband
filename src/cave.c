@@ -3293,7 +3293,7 @@ void cave_destroy_trap(struct cave *c, int y, int x) {
 }
 
 void cave_lock_door(struct cave *c, int y, int x, int power) {
-	cave_set_feat(x, y, x, FEAT_DOOR_HEAD + power);
+	cave_set_feat(c, y, x, FEAT_DOOR_HEAD + power);
 }
 
 bool cave_hasgoldvein(struct cave *c, int y, int x) {
