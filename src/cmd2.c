@@ -38,15 +38,13 @@
 void do_cmd_go_up(cmd_code code, cmd_arg args[])
 {
 	/* Verify stairs */
-	if (!cave_isupstairs(cave, p_ptr->py, p_ptr->px))
-	{
+	if (!cave_isupstairs(cave, p_ptr->py, p_ptr->px)) {
 		msg("I see no up staircase here.");
 		return;
 	}
 
-	/* force descend */
-	if (OPT(birth_force_descend))
-	{
+	/* Force descend */
+	if (OPT(birth_force_descend)) {
 		msg("Nothing happens!");
 		return;
 	}
@@ -71,31 +69,28 @@ void do_cmd_go_up(cmd_code code, cmd_arg args[])
  */
 void do_cmd_go_down(cmd_code code, cmd_arg args[])
 {
+	int descend_to = p_ptr->depth + 1;
+
 	/* Verify stairs */
-	if (!cave_isdownstairs(cave, p_ptr->py, p_ptr->px))
-	{
+	if (!cave_isdownstairs(cave, p_ptr->py, p_ptr->px)) {
 		msg("I see no down staircase here.");
 		return;
 	}
-    
-    /* Paranoia, no descent from MAX_DEPTH */
-    if (p_ptr->depth == MAX_DEPTH){
-        
-        msg("The dungeon does not appear to extend deeper");
-        return;
-    }
-    
-    /* Warn a force_descend player if they're going to a quest level */
-    if (OPT(birth_force_descend)){
-    
-        if(is_quest(p_ptr->max_depth + 1)  &&
-           !get_check("Are you sure you want to descend?")){
-              return;
-        }
-        
-        /* Descend one level deeper */
-        p_ptr->depth = p_ptr->max_depth;
-    }    
+
+	/* Paranoia, no descent from MAX_DEPTH-1 */
+	if (p_ptr->depth == MAX_DEPTH-1) {
+		msg("The dungeon does not appear to extend deeper");
+		return;
+	}
+
+	/* Warn a force_descend player if they're going to a quest level */
+	if (OPT(birth_force_descend)) {
+		if (is_quest(p_ptr->max_depth + 1) && !get_check("Are you sure you want to descend?"))
+			return;
+
+		/* Don't overshoot */
+		descend_to = MIN(p_ptr->max_depth + 1, MAX_DEPTH-1);
+	}
 
 	/* Hack -- take a turn */
 	p_ptr->energy_use = 100;
@@ -108,7 +103,7 @@ void do_cmd_go_down(cmd_code code, cmd_arg args[])
 	p_ptr->create_down_stair = FALSE;
 
 	/* Change level */
-	dungeon_change_level(p_ptr->depth + 1);
+	dungeon_change_level(descend_to);
 }
 
 
