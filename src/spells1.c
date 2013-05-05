@@ -390,65 +390,41 @@ void teleport_player_to(int ny, int nx)
  */
 void teleport_player_level(void)
 {
-    /* No forcing player down to quest levels if they can't leave */
-    if (is_quest(p_ptr->max_depth + 1) && OPT(birth_force_descend)){
-  
-        msg("Nothing happens.");
-        return;
-    }
+	bool up = TRUE, down = TRUE;
 
+	/* No going up with force_descend or in the town */
+	if (OPT(birth_force_descend) || !p_ptr->depth)
+		up = FALSE;
+
+	/* No forcing player down to quest levels if they can't leave */
+	if (!up && is_quest(p_ptr->max_depth + 1))
+		down = FALSE;
+
+	/* Can't leave quest levels or go down deeper than the dungeon */
 	if (is_quest(p_ptr->depth) || (p_ptr->depth >= MAX_DEPTH-1))
-	{
+		down = FALSE;
+
+	/* Determine up/down if not already done */
+	if (up && down) {
+		if (randint0(100) < 50)
+			up = FALSE;
+		else
+			down = FALSE;
+	}
+
+	/* Now actually do the level change */
+	if (up) {
+		msgt(MSG_TPLEVEL, "You rise up through the ceiling.");
+		dungeon_change_level(p_ptr->depth + 1);
+	} else if (down) {
+		msgt(MSG_TPLEVEL, "You sink through the floor.");
+
 		if (OPT(birth_force_descend))
-		{
-			msg("Nothing happens.");
-			return;
-		}
-
-		msgt(MSG_TPLEVEL, "You rise up through the ceiling.");
-
-		/* New depth */
-		p_ptr->depth--;
-
-		/* Leaving */
-		p_ptr->leaving = TRUE;
-	}
-
-	else if ((!p_ptr->depth) || (OPT(birth_force_descend)))
-	{
-		msgt(MSG_TPLEVEL, "You sink through the floor.");
-
-		/* New depth */
-        if (OPT(birth_force_descend)){
-           p_ptr->depth = p_ptr->max_depth++;
-        }else{
-		   p_ptr->depth++;
-        }
-           
-		/* Leaving */
-		p_ptr->leaving = TRUE;
-	}
-
-	else if (randint0(100) < 50)
-	{
-		msgt(MSG_TPLEVEL, "You rise up through the ceiling.");
-
-		/* New depth */
-		p_ptr->depth--;
-
-		/* Leaving */
-		p_ptr->leaving = TRUE;
-	}
-
-	else
-	{
-		msgt(MSG_TPLEVEL, "You sink through the floor.");
-
-		/* New depth */
-		p_ptr->depth++;
-
-		/* Leaving */
-		p_ptr->leaving = TRUE;
+			dungeon_change_level(p_ptr->max_depth + 1);
+		else
+			dungeon_change_level(p_ptr->depth + 1);
+	} else {
+		msg("Nothing happens.");
 	}
 }
 
