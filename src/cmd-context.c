@@ -398,9 +398,7 @@ int context_menu_cave(struct cave *c, int y, int x, int adjacent, int mx, int my
 		} else
 		if (cave_iscloseddoor(c, y, x)) {
 			menu_dynamic_add_label(m, "Open", 'o', 8, labels);
-			menu_dynamic_add_label(m, "Bash Open", 'B', 9, labels);
 			menu_dynamic_add_label(m, "Lock", 'D', 5, labels);
-			menu_dynamic_add_label(m, "Jam", 'j', 10, labels);
 		} else
 		if (cave_isdiggable(c, y, x)) {
 			menu_dynamic_add_label(m, "Tunnel", 'T', 11, labels);
@@ -526,16 +524,6 @@ int context_menu_cave(struct cave *c, int y, int x, int adjacent, int mx, int my
 	if (selected == 8) {
 		/* open a door or chest */
 		cmd_insert(CMD_OPEN);
-		cmd_set_arg_direction(cmd_get_top(), 0, coords_to_dir(y,x));
-	} else
-	if (selected == 9) {
-		/* bash a door */
-		cmd_insert(CMD_BASH);
-		cmd_set_arg_direction(cmd_get_top(), 0, coords_to_dir(y,x));
-	} else
-	if (selected == 10) {
-		/* jam a door */
-		cmd_insert(CMD_JAM);
 		cmd_set_arg_direction(cmd_get_top(), 0, coords_to_dir(y,x));
 	} else
 	if (selected == 11) {

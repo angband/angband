@@ -480,8 +480,7 @@ static object_kind *choose_item(int a_idx)
 	 * the whole special/flavour issue was sorted out (see ticket #1014)
 	 * Note that Carlammas and Barahir have the same sval as Grond/Morgoth
 	 */
-	while (tval == 0 || tval == TV_SKELETON || tval == TV_BOTTLE ||
-		tval == TV_JUNK || tval == TV_SPIKE || tval == TV_CHEST ||
+	while (tval == 0 || tval == TV_CHEST ||
 		tval == TV_SHOT || tval == TV_ARROW || tval == TV_BOLT ||
 		tval == TV_STAFF || tval == TV_WAND || tval == TV_ROD ||
 		tval == TV_SCROLL || tval == TV_POTION || tval == TV_FLASK ||

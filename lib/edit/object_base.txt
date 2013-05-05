@@ -6,9 +6,6 @@
 
 D:B:10
 
-N:spike:Spike~
-B:25
-
 N:chest:Chest~
 F:HATES_ACID | HATES_FIRE
 

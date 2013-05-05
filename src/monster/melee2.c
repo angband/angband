@@ -2994,9 +2994,7 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 
 			/* Handle doors and secret doors */
 			} else if (cave_iscloseddoor(cave, ny, nx)
-			        || cave_islockeddoor(cave, ny, nx)
 			        || cave_issecretdoor(cave, ny, nx)) {
-				bool may_bash = TRUE;
 
 				/* Take a turn */
 				do_turn = TRUE;
@@ -3008,17 +3006,9 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 				}
 
 				/* Creature can open doors. */
-				if (rf_has(m_ptr->race->flags, RF_OPEN_DOOR))	{
-					/* Closed doors and secret doors */
-					if (cave_iscloseddoor(cave, ny, nx)
-					 || cave_issecretdoor(cave, ny, nx)) {
-						/* The door is open */
-						did_open_door = TRUE;
-
-						/* Do not bash the door */
-						may_bash = FALSE;
-
-					/* Locked doors (not jammed) */
+				if (rf_has(m_ptr->race->flags, RF_OPEN_DOOR)) {
+					if (cave_iscloseddoor(cave, ny, nx) || cave_issecretdoor(cave, ny, nx)) {
+						cave_open_door(c, ny, nx);
 					} else if (cave_islockeddoor(cave, ny, nx)) {
 						int k = cave_door_power(cave, ny, nx);
 
@@ -3033,57 +3023,38 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 							/* Reduce the power of the door by one */
 							cave_set_feat(c, ny, nx, cave->feat[ny][nx] - 1);
 
-							/* Do not bash the door */
-							may_bash = FALSE;
+							/* Handle viewable doors */
+							if (player_has_los_bold(ny, nx))
+								do_view = TRUE;
 						}
 					}
 				}
 
 				/* Stuck doors -- attempt to bash them down if allowed */
-				if (may_bash && rf_has(m_ptr->race->flags, RF_BASH_DOOR))	{
+				else if (rf_has(m_ptr->race->flags, RF_BASH_DOOR)) {
 					int k = cave_door_power(cave, ny, nx);
 
+					/* Print a message */
+					if (m_ptr->ml)
+						msg("%s slams against the door.", m_name);
+					else
+						msg("Something slams against a door.");
+
 					/* Attempt to bash */
-					if (randint0(m_ptr->hp / 10) > k) {
-						/* Print a message */
-						if (m_ptr->ml)
-							msg("%s slams against the door.", m_name);
-						else
-							msg("Something slams against a door.");
+					if (randint0(m_ptr->hp / 10) > k && one_in_(2)) {
+						cave_smash_door(c, ny, nx);
+						msg("You hear a door burst open!");
 
-						/* Reduce the power of the door by one */
-						cave_unjam_door(c, ny, nx);
+						/* Handle viewable doors */
+						if (player_has_los_bold(ny, nx))
+							do_view = TRUE;
 
-						/* If the door is no longer jammed */
-						if (!cave_isjammeddoor(cave, ny, nx)) {
-							msg("You hear a door burst open!");
+						disturb(p_ptr, 0, 0);
 
-							/* Disturb (sometimes) */
-							disturb(p_ptr, 0, 0);
-
-							/* The door was bashed open */
-							did_bash_door = TRUE;
-
-							/* Hack -- fall into doorway */
-							do_move = TRUE;
-						}
+						/* Fall into doorway */
+						do_move = TRUE;
 					}
 				}
-			}
-
-			/* Deal with doors in the way */
-			if (did_open_door || did_bash_door)	{
-				/* Break down the door */
-				if (did_bash_door && (randint0(100) < 50))
-					cave_smash_door(c, ny, nx);
-
-				/* Open the door */
-				else
-					cave_open_door(c, ny, nx);
-
-				/* Handle viewable doors */
-				if (player_has_los_bold(ny, nx))
-					do_view = TRUE;
 			}
 		}
 

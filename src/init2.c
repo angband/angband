@@ -1100,7 +1100,6 @@ static enum parser_error parse_f_x(struct parser *p) {
 	if (!f)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	f->locked = parser_getint(p, "locked");
-	f->jammed = parser_getint(p, "jammed");
 	f->shopnum = parser_getint(p, "shopnum");
 	f->dig = parser_getint(p, "dig");
 	return PARSE_ERROR_NONE;
@@ -1126,7 +1125,7 @@ struct parser *init_parse_f(void) {
 	parser_reg(p, "M uint index", parse_f_m);
 	parser_reg(p, "P uint priority", parse_f_p);
 	parser_reg(p, "F ?str flags", parse_f_f);
-	parser_reg(p, "X int locked int jammed int shopnum int dig", parse_f_x);
+	parser_reg(p, "X int locked int unused int shopnum int dig", parse_f_x);
 	parser_reg(p, "E str effect", parse_f_e);
 	return p;
 }

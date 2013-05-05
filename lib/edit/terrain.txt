@@ -19,7 +19,7 @@
 # M : feature to mimic
 # P : display priority on mini-map
 # F : terrain flags
-# X : lockedness : jammedness : shop number : digging
+# X : lockedness : unused : shop number : digging
 # E : effect on entry
 
 # N' indicates the beginning of an entry. The serial number must
@@ -367,6 +367,7 @@ M:32
 F:DOOR
 X:7:0:0:0
 
+## rm post 3.5
 # 0x2x --> jammed door (power 0)
 
 N:40:jammed door

@@ -64,9 +64,7 @@ static const grouper object_text_order[] =
 	{TV_DRAG_ARMOR,		"Dragon Scale Mail" },
 	{TV_HARD_ARMOR,		"Hard Armor"	},
 	{TV_SOFT_ARMOR,		"Soft Armor"	},
-	{TV_SPIKE,			"Spike"			},
 	{TV_DIGGING,		"Digger"		},
-	{TV_JUNK,			"Junk"			},
 	{0,					NULL			}
 };
 

@@ -16,7 +16,6 @@ always:cloak:Cloak
 always:food:Ration of Food
 always:light:Wooden Torch
 always:flask:Flask of Oil
-always:spike:Iron Spike
 always:digger:Shovel
 always:digger:Pick
 always:shot:Iron Shot

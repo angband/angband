@@ -316,7 +316,6 @@ static int borg_min_item_quantity(borg_item *item)
     /* Only allow some types */
     switch (item->tval)
     {
-    case TV_SPIKE:
     case TV_SHOT:
     case TV_ARROW:
     case TV_BOLT:

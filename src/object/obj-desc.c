@@ -119,10 +119,6 @@ static const char *obj_desc_get_basename(const object_type *o_ptr, bool aware)
 	/* Analyze the object */
 	switch (o_ptr->tval)
 	{
-		case TV_SKELETON:
-		case TV_BOTTLE:
-		case TV_JUNK:
-		case TV_SPIKE:
 		case TV_FLASK:
 		case TV_CHEST:
 		case TV_SHOT:

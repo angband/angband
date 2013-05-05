@@ -77,9 +77,7 @@ static const struct command_info game_cmds[] =
 	{ CMD_TUNNEL, "tunnel", { arg_DIRECTION }, do_cmd_tunnel, TRUE, 99 },
 	{ CMD_HOLD, "stay still", { arg_NONE }, do_cmd_hold, TRUE, 0 },
 	{ CMD_DISARM, "disarm", { arg_DIRECTION }, do_cmd_disarm, TRUE, 99 },
-	{ CMD_BASH, "bash", { arg_DIRECTION }, do_cmd_bash, TRUE, 99 },
 	{ CMD_ALTER, "alter", { arg_DIRECTION }, do_cmd_alter, TRUE, 99 },
-	{ CMD_JAM, "jam", { arg_DIRECTION }, do_cmd_spike, FALSE, 0 },
 	{ CMD_REST, "rest", { arg_CHOICE }, do_cmd_rest, FALSE, 0 },
 	{ CMD_PATHFIND, "walk", { arg_POINT }, do_cmd_pathfind, FALSE, 0 },
 	{ CMD_PICKUP, "pickup", { arg_ITEM }, do_cmd_pickup, FALSE, 0 },
@@ -504,9 +502,7 @@ void process_command(cmd_context ctx, bool no_request)
 			case CMD_WALK:
 			case CMD_RUN:
 			case CMD_JUMP:
-			case CMD_BASH:
 			case CMD_ALTER:
-			case CMD_JAM:
 			{
 			get_dir:
 
