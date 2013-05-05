@@ -15246,19 +15246,6 @@ static bool borg_play_step(int y2, int x2)
 				return (TRUE);
 			}
 
-			/* Bash */
-			borg_note("# Bashing a door");
-			borg_keypress('B');
-			borg_keypress(I2D(dir));
-
-			/* Remove this closed door from the list.
-			* Its faster to clear all doors from the list
-			* then rebuild the list.
-			*/
-			if (track_closed_num)
-			{
-				track_closed_num = 0;
-			}
 			return (TRUE);
 		}
 
@@ -15291,64 +15278,6 @@ static bool borg_play_step(int y2, int x2)
     }
 
 
-
-    /* Jammed Doors -- Bash or destroy */
-    if ((ag->feat >= FEAT_DOOR_HEAD + 0x08) && (ag->feat <= FEAT_DOOR_TAIL))
-    {
-        /* Paranoia XXX XXX XXX */
-        if (!randint0(100)) return (FALSE);
-
-        /* Not if hungry */
-        if (borg_skill[BI_ISHUNGRY]) return (FALSE);
-
-        /* Mega-Hack -- allow "destroy doors" */
-        if (borg_prayer(7, 0))
-        {
-            borg_note("# Unbarring ways");
-            return (TRUE);
-        }
-
-        /* Mega-Hack -- allow "destroy doors" */
-        if (borg_spell(1, 2))
-        {
-            borg_note("# Destroying doors");
-            return (TRUE);
-        }
-
-        /* Mega-Hack -- allow "stone to mud" */
-        if (borg_spell(2, 2) ||
-			borg_activate_ring(SV_RING_DELVING) ||
-			borg_activate_artifact(EF_STONE_TO_MUD))
-        {
-            borg_note("# Melting a door");
-            borg_keypress(I2D(dir));
-
-	        /* Remove this closed door from the list.
-	         * Its faster to clear all doors from the list
-	         * then rebuild the list.
-	         */
-	        if (track_closed_num)
-	        {
-				track_closed_num = 0;
-			}
-            return (TRUE);
-        }
-
-        /* Bash */
-        borg_note("# Bashing a door");
-        borg_keypress('B');
-        borg_keypress(I2D(dir));
-
-        /* Remove this closed door from the list.
-         * Its faster to clear all doors from the list
-         * then rebuild the list.
-         */
-        if (track_closed_num)
-        {
-			track_closed_num = 0;
-		}
-        return (TRUE);
-    }
 
 	/* Rubble, Treasure, Seams, Walls -- Tunnel or Melt */
 	if (ag->feat >= FEAT_SECRET && ag->feat <= FEAT_WALL_SOLID)

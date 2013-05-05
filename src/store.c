@@ -526,7 +526,7 @@ static bool store_will_buy(struct store *store, const object_type *o_ptr)
 		{
 			/* Accept lights (inc. oil), spikes and food */
 			if (o_ptr->tval == TV_LIGHT || o_ptr->tval == TV_FOOD ||
-					o_ptr->tval == TV_FLASK || o_ptr->tval == TV_SPIKE) break;
+					o_ptr->tval == TV_FLASK) break;
 			else return FALSE;
 		}
 
@@ -842,7 +842,6 @@ static void mass_produce(object_type *o_ptr)
 			break;
 		}
 
-		case TV_SPIKE:
 		case TV_SHOT:
 		case TV_ARROW:
 		case TV_BOLT:
@@ -1297,7 +1296,6 @@ static void store_delete_index(struct store *store, int what)
 		/* Special behaviour for arrows, bolts &tc. */
 		switch (o_ptr->tval)
 		{
-			case TV_SPIKE:
 			case TV_SHOT:
 			case TV_ARROW:
 			case TV_BOLT:

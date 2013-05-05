@@ -94,7 +94,6 @@ extern bool cave_issecretdoor(struct cave *c, int y, int x);
 extern bool cave_isopendoor(struct cave *c, int y, int x);
 extern bool cave_iscloseddoor(struct cave *c, int y, int x);
 extern bool cave_islockeddoor(struct cave *c, int y, int x);
-extern bool cave_isjammeddoor(struct cave *c, int y, int x);
 extern bool cave_isbrokendoor(struct cave *c, int y, int x);
 extern bool cave_isdoor(struct cave *c, int y, int x);
 extern bool cave_issecrettrap(struct cave *c, int y, int x);
@@ -158,9 +157,6 @@ extern int cave_monster_count(struct cave *c);
 void upgrade_mineral(struct cave *c, int y, int x);
 
 /* Feature modifiers */
-void cave_jam_door(struct cave *c, int y, int x);
-void cave_unjam_door(struct cave *c, int y, int x);
-int cave_can_jam_door(struct cave *c, int y, int x);
 int cave_door_power(struct cave *c, int y, int x);
 void cave_open_door(struct cave *c, int y, int x);
 void cave_close_door(struct cave *c, int y, int x);

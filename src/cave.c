@@ -2983,14 +2983,6 @@ bool cave_islockeddoor(struct cave *c, int y, int x) {
 }
 
 /**
- * True if the square is a closed, jammed door.
- */
-bool cave_isjammeddoor(struct cave *c, int y, int x) {
-	int feat = c->feat[y][x];
-	return feat >= FEAT_DOOR_HEAD + 0x08 && feat <= FEAT_DOOR_TAIL;
-}
-
-/**
  * True if the square is a door.
  *
  * This includes open, closed, and hidden doors.
@@ -3255,24 +3247,6 @@ void upgrade_mineral(struct cave *c, int y, int x) {
 		case FEAT_MAGMA: cave_set_feat(c, y, x, FEAT_MAGMA_K); break;
 		case FEAT_QUARTZ: cave_set_feat(c, y, x, FEAT_QUARTZ_K); break;
 	}
-}
-
-void cave_jam_door(struct cave *c, int y, int x) {
-	if (cave_islockeddoor(c, y, x))
-		/* become a stuck door of the same strength */
-		c->feat[y][x] += 0x08;
-
-	if (c->feat[y][x] < FEAT_DOOR_TAIL)
-		c->feat[y][x]++;
-}
-
-void cave_unjam_door(struct cave *c, int y, int x) {
-	if (c->feat[y][x] > FEAT_DOOR_HEAD + 0x08)
-		c->feat[y][x]--;
-}
-
-int cave_can_jam_door(struct cave *c, int y, int x) {
-	return c->feat[y][x] < FEAT_DOOR_TAIL;
 }
 
 int cave_door_power(struct cave *c, int y, int x) {

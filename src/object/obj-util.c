@@ -3527,10 +3527,6 @@ struct object_kind *objkind_byid(int kidx) {
  */
 static const grouper tval_names[] =
 {
-	{ TV_SKELETON,    "skeleton" },
-	{ TV_BOTTLE,      "bottle" },
-	{ TV_JUNK,        "junk" },
-	{ TV_SPIKE,       "spike" },
 	{ TV_CHEST,       "chest" },
 	{ TV_SHOT,        "shot" },
 	{ TV_ARROW,       "arrow" },

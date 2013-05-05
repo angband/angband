@@ -70,8 +70,6 @@ typedef enum cmd_code
 	CMD_TUNNEL,
 	CMD_OPEN,
 	CMD_CLOSE,
-	CMD_JAM,
-	CMD_BASH,
 	CMD_RUN,
 	CMD_HOLD,
 	CMD_ENTER_STORE,
