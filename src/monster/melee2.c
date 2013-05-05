@@ -68,7 +68,6 @@ static void remove_bad_spells(struct monster *m_ptr, bitflag f[RSF_SIZE])
 {
 	bitflag f2[RSF_SIZE], ai_flags[OF_SIZE];
 
-	size_t i;	
 	u32b smart = 0L;
 
 	/* Stupid monsters act randomly */
@@ -97,14 +96,6 @@ static void remove_bad_spells(struct monster *m_ptr, bitflag f[RSF_SIZE])
 		/* Use the memorized flags */
 		smart = m_ptr->smart;
 		of_copy(ai_flags, m_ptr->known_pflags);
-	}
-
-	/* Cheat if requested */
-	if (OPT(birth_ai_cheat)) {
-		for (i = 0; i < OF_MAX; i++)
-			if (check_state(p_ptr, i, p_ptr->state.flags))
-				of_on(ai_flags, i);
-		if (!p_ptr->msp) smart |= SM_IMM_MANA;
 	}
 
 	/* Cancel out certain flags based on knowledge */
@@ -1080,8 +1071,7 @@ static bool get_moves(struct cave *c, struct monster *m_ptr, int mm[5])
 
 
 	/* Normal animal packs try to get the player out of corridors. */
-	if (OPT(birth_ai_packs) &&
-	    rf_has(m_ptr->race->flags, RF_FRIENDS) && rf_has(m_ptr->race->flags, RF_ANIMAL) &&
+	if (rf_has(m_ptr->race->flags, RF_FRIENDS) && rf_has(m_ptr->race->flags, RF_ANIMAL) &&
 	    !flags_test(m_ptr->race->flags, RF_SIZE, RF_PASS_WALL, RF_KILL_WALL, FLAG_END))
 	{
 		int i, open = 0;
@@ -1131,7 +1121,7 @@ static bool get_moves(struct cave *c, struct monster *m_ptr, int mm[5])
 
 
 	/* Monster groups try to surround the player */
-	if (!done && OPT(birth_ai_packs) && rf_has(m_ptr->race->flags, RF_FRIENDS))
+	if (!done && rf_has(m_ptr->race->flags, RF_FRIENDS))
 	{
 		int i;
 

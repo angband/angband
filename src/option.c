@@ -65,9 +65,7 @@ const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 	{
 		OPT_birth_randarts,
 		OPT_birth_keep_randarts,
-		OPT_birth_ai_packs,
 		OPT_birth_ai_learn,
-		OPT_birth_ai_cheat,
 		OPT_birth_force_descend,
 		OPT_birth_no_recall,
 		OPT_birth_small_range,
@@ -77,6 +75,8 @@ const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_birth_no_stairs,
 		OPT_birth_no_feelings,
 		OPT_birth_no_selling,
+		OPT_NONE,
+		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,
 	},
@@ -174,9 +174,9 @@ static const struct option options[OPT_MAX] =
 { "birth_no_selling",    "Items always sell for 0 gold",                FALSE }, /* 59 */
 { "birth_keep_randarts", "Use previous set of randarts",                TRUE },  /* 60 */
 { NULL,                  NULL,                                          FALSE }, /* 61 */
-{ "birth_ai_packs",      "Monsters act smarter in groups",              TRUE },  /* 62 */
+{ NULL,                  NULL,                                          FALSE }, /* 62 */
 { "birth_ai_learn",      "Monsters learn from their mistakes",          FALSE }, /* 63 */
-{ "birth_ai_cheat",      "Monsters exploit player's weaknesses",        FALSE }, /* 64 */
+{ NULL,                  NULL,                                          FALSE }, /* 64 */
 { "birth_force_descend", "Force player descent",                        FALSE }, /* 65 */
 { NULL,                  NULL,                                          FALSE }, /* 66 */
 { NULL,                  NULL,                                          FALSE }, /* 67 */
