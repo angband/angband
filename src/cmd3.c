@@ -38,6 +38,11 @@ void do_cmd_inven(void)
 	int ret = 3;
 	int diff = weight_remaining();
 
+	if (!p_ptr->inventory[0].kind) {
+		msg("You have nothing in your inventory.");
+		return;
+	}
+
 	/* Hack -- Start in "inventory" mode */
 	p_ptr->command_wrk = (USE_INVEN);
 
