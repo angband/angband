@@ -168,6 +168,21 @@ void dump_monsters(ang_file *fff)
 	}
 }
 
+static void get_pref_name(char *buf, size_t max, const char *name) {
+	size_t j, k;
+	/* Copy across the name, stripping modifiers & and ~) */
+	size_t len = strlen(name);
+	for (j = 0, k = 0; j < len && k < max; j++) {
+		if (j == 0 && name[0] == '&' && name[1] == ' ')
+			j += 2;
+		if (name[j] == '~')
+			continue;
+
+		buf[k++] = name[j];
+	}
+	buf[k] = 0;
+}
+
 /* Dump objects */
 void dump_objects(ang_file *fff)
 {
@@ -179,24 +194,28 @@ void dump_objects(ang_file *fff)
 	{
 		object_kind *k_ptr = &k_info[i];
 		char name[120] = "";
-		size_t j, k, len;
 
 		if (!k_ptr->name || !k_ptr->tval) continue;
 
-		/* Copy across the name, stripping modifiers & and ~) */
-		len = strlen(k_ptr->name);
-		for (j = 0, k = 0; j < len && k < sizeof name; j++) {
-			if (j == 0 && k_ptr->name[0] == '&' && k_ptr->name[1] == ' ')
-				j += 2;
-			if (k_ptr->name[j] == '~')
-				continue;
-
-			name[k++] = k_ptr->name[j];
-		}
-		name[k] = 0;
-
+		get_pref_name(name, sizeof name, k_ptr->name);
 		file_putf(fff, "K:%s:%s:%d:%d\n", tval_find_name(k_ptr->tval),
 				name, k_ptr->x_attr, k_ptr->x_char);
+	}
+}
+
+void dump_autoinscriptions(ang_file *f) {
+	int i;
+	for (i = 1; i < z_info->k_max; i++) {
+		struct object_kind *k = &k_info[i];
+		char name[120];
+		const char *note;
+
+		if (!k->name || !k->tval) continue;
+		note = get_autoinscription(k);
+		if (note) {
+			get_pref_name(name, sizeof name, k->name);
+			file_putf(f, "inscribe:%s:%s:%s\n", tval_find_name(k->tval), name, note);
+		}
 	}
 }
 
@@ -795,19 +814,28 @@ static enum parser_error parse_prefs_q(struct parser *p)
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_prefs_b(struct parser *p)
+static enum parser_error parse_prefs_inscribe(struct parser *p)
 {
-	int idx;
+	int tvi, svi;
+	object_kind *kind;
 
 	struct prefs_data *d = parser_priv(p);
 	assert(d != NULL);
 	if (d->bypass) return PARSE_ERROR_NONE;
 
-	idx = parser_getuint(p, "idx");
-	if (idx > z_info->k_max)
-		return PARSE_ERROR_OUT_OF_BOUNDS;
+	tvi = tval_find_idx(parser_getsym(p, "tval"));
+	if (tvi < 0)
+		return PARSE_ERROR_UNRECOGNISED_TVAL;
 
-	add_autoinscription(idx, parser_getstr(p, "text"));
+	svi = lookup_sval(tvi, parser_getsym(p, "sval"));
+	if (svi < 0)
+		return PARSE_ERROR_UNRECOGNISED_SVAL;
+
+	kind = lookup_kind(tvi, svi);
+	if (!kind)
+		return PARSE_ERROR_UNRECOGNISED_SVAL;
+
+	add_autoinscription(kind->kidx, parser_getstr(p, "text"));
 
 	return PARSE_ERROR_NONE;
 }
@@ -982,8 +1010,7 @@ static struct parser *init_parse_prefs(bool user)
 	parser_reg(p, "E sym tval int attr", parse_prefs_e);
 	parser_reg(p, "Q sym idx sym n ?sym sval ?sym flag", parse_prefs_q);
 		/* XXX should be split into two kinds of line */
-	parser_reg(p, "B uint idx str text", parse_prefs_b);
-		/* XXX idx should be {tval,sval} pair! */
+	parser_reg(p, "inscribe sym tval sym sval str text", parse_prefs_inscribe);
 	parser_reg(p, "A ?str act", parse_prefs_a);
 	parser_reg(p, "C int mode str key", parse_prefs_c);
 	parser_reg(p, "M int type sym attr", parse_prefs_m);

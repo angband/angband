@@ -1039,6 +1039,11 @@ static void do_dump_options(const char *title, int row) {
 }
 
 
+static void do_dump_autoinsc(const char *title, int row)
+{
+	(void)dump_pref_file(dump_autoinscriptions, "Dump autoinscriptions", 13);
+}
+
 /*
  * Load a pref file.
  */
@@ -1534,25 +1539,26 @@ void do_cmd_options_item(const char *title, int row)
 static menu_type *option_menu;
 static menu_action option_actions[] = 
 {
-	{ 0, 'a', "Interface and display options", option_toggle_menu },
-	{ 0, 'e', "Warning and disturbance options", option_toggle_menu },
-	{ 0, 'f', "Birth (difficulty) options", option_toggle_menu },
-	{ 0, 'g', "Cheat options", option_toggle_menu },
-	{0, 0, 0, 0}, /* Load and append */
-	{ 0, 'w', "Subwindow display settings", do_cmd_options_win },
-	{ 0, 's', "Item squelch settings", do_cmd_options_item },
-	{ 0, 'd', "Set base delay factor", do_cmd_delay },
+	{ 0, 'a', "Display options", option_toggle_menu },
+	{ 0, 'b', "Warning and disturbance options", option_toggle_menu },
+	{ 0, 'c', "Birth (difficulty) options", option_toggle_menu },
+	{ 0, 'd', "Cheat options", option_toggle_menu },
+	{ 0, 'e', "Subwindow setup", do_cmd_options_win },
+	{ 0, 'f', "Item ignoring setup", do_cmd_options_item },
+	{ 0 },
+	{ 0, 'g', "Set base delay factor", do_cmd_delay },
 	{ 0, 'h', "Set hitpoint warning", do_cmd_hp_warn },
 	{ 0, 'i', "Set movement delay", do_cmd_lazymove_delay },
+	{ 0 },
 	{ 0, 'l', "Load a user pref file", options_load_pref_file },
-	{ 0, 'o', "Save keymaps and options", do_dump_options }, 
-	{0, 0, 0, 0}, /* Interact with */	
-	{ 0, 'm', "Interact with keymaps (advanced)", do_cmd_keymaps },
-	{ 0, 'v', "Interact with visuals (advanced)", do_cmd_visuals },
-
+	{ 0, 's', "Save keymaps and options", do_dump_options },
+	{ 0, 'S', "Save autoinscriptions", do_dump_autoinsc },
+	{ 0 },
+	{ 0, 'k', "Edit keymaps (advanced)", do_cmd_keymaps },
 #ifdef ALLOW_COLORS
-	{ 0, 'c', "Interact with colours (advanced)", do_cmd_colors },
+	{ 0, 'c', "Edit colours (advanced)", do_cmd_colors },
 #endif /* ALLOW_COLORS */
+	{ 0, 'v', "Save visuals (advanced)", do_cmd_visuals },
 };
 
 
