@@ -108,7 +108,11 @@ typedef struct term_data {
 } term_data;
 
 /* Max number of windows on screen */
-#define MAX_TERM_DATA 4
+#define MAX_TERM_DATA 6
+
+/* Minimum main term size */
+#define MIN_TERM0_LINES 24
+#define MIN_TERM0_COLS 80
 
 /* Information about our windows */
 static term_data data[MAX_TERM_DATA];
@@ -137,9 +141,9 @@ static int can_use_color = FALSE;
 static int colortable[BASIC_COLORS];
 
 /* Screen info: use one big Term 0, or other subwindows? */
-static bool use_big_screen = FALSE;
 static bool bold_extended = FALSE;
 static bool ascii_walls = FALSE;
+static int term_count = 4;
 
 /*
  * Background color we should draw with; either BLACK or DEFAULT
@@ -276,7 +280,18 @@ static errr Term_xtra_gcu_alive(int v) {
 	return 0;
 }
 
-const char help_gcu[] = "Text mode, subopts -b(ig screen) -a(scii) -B(old)";
+const char help_gcu[] = "Text mode, subopts\n              -a     Use ASCII walls\n              -b     Big screen (equivalent to -n1)\n              -B     Use brighter bold characters\n              -nN    Use N terminals (up to 6)";
+
+/*
+ * Usage:
+ *
+ * angband -mgcu -- [-a] [-b] [-B] [-nN]
+ *
+ *   -a      Use ASCII walls
+ *   -b      Big screen (equivalent to -n1)
+ *   -B      Use brighter bold characters
+ *   -nN     Use N terminals (up to 6)
+ */
 
 /*
  * Init the "curses" system
@@ -354,33 +369,184 @@ static void Term_nuke_gcu(term *t) {
  *                                      1|3
  */
 static void get_gcu_term_size(int i, int *rows, int *cols, int *y, int *x) {
-	if (use_big_screen && i == 0) {
-		*rows = LINES;
-		*cols = COLS;
-		*y = *x = 0;
-	} else if (use_big_screen) {
-		*rows = *cols = *y = *x = 0;
-	} else if (i == 0) {
-		*rows = 24;
-		*cols = 80;
-		*y = *x = 0;
-	} else if (i == 1) {
-		*rows = LINES - 25;
-		*cols = 80;
-		*y = 25;
-		*x = 0;
-	} else if (i == 2) {
-		*rows = 24;
-		*cols = COLS - 81;
-		*y = 0;
-		*x = 81;
-	} else if (i == 3) {
-		*rows = LINES - 25;
-		*cols = COLS - 81;
-		*y = 25;
-		*x = 81;
-	} else {
-		*rows = *cols = *y = *x = 0;
+	bool is_wide = (10 * LINES < 3 * COLS);
+	int term_rows = 1;
+	int term_cols = 1;
+
+	assert(i < term_count);
+
+	/* For sufficiently small windows, we can only use one term.
+	 * Each additional row/column of terms requires at least two lines. 
+	 * The 3rd, 7th, 13th, etc. term adds to the short dimension, while
+	 * the 2nd, 5th, 10th, etc. term adds to the long dimension.
+	 */
+	if (is_wide) {
+		while (term_rows*(term_rows + 1) < term_count) term_rows++;
+		while (term_cols*term_cols < term_count) term_cols++;
+	} else { /* !is_wide */ 
+		while (term_rows*term_rows < term_count) term_rows++;
+		while (term_cols*(term_cols + 1) < term_count) term_cols++;
+	}
+
+	if (term_count == 1 ||
+		LINES < MIN_TERM0_LINES + 2 * (term_rows - 1) ||
+		COLS  < MIN_TERM0_COLS + 2 * (term_cols - 1)) {
+		if (i == 0)	{
+			*rows = LINES;
+			*cols = COLS;
+			*x = *y = 0;
+		} else {
+			*rows = *cols = *y = *x = 0;
+		}
+		return;
+	}
+	switch (term_count) {
+		/* Terminal layout: 1 to the right or below 0, depending on 
+		 * aspect ratio
+		 * Main term should be at least 80x24
+		 * If there's room, give extra space to main term
+		 */
+		case 2:
+			if (is_wide) {
+				*rows = LINES;
+				*y = 0;
+				if (i == 0)	{
+					*cols = MAX(MIN_TERM0_COLS, COLS - MIN_TERM0_COLS - 1);
+					*x = 0;
+				} else { /* i == 1 */
+					*cols = MIN(MIN_TERM0_COLS, COLS - MIN_TERM0_COLS - 1);
+					*x = COLS - *cols;
+				}
+			} else {
+				*cols = COLS;
+				*x = 0;
+				if (i == 0)	{
+					*rows = MAX(MIN_TERM0_LINES, LINES - MIN_TERM0_LINES - 1);
+					*y = 0;
+				} else { /* i == 1 */
+					*rows = MIN(MIN_TERM0_LINES, LINES - MIN_TERM0_LINES - 1);
+					*y = LINES - *rows;
+				}
+			}
+			break;
+		/* Terminal layout: 0|2
+		 *                  1|3
+		 * Main term should be at least 80x24.
+		 * If there's room, give extra space to main term.
+		 */
+		case 3: case 4:
+			switch (i) {
+				case 0: case 1:
+					*cols = MAX(MIN_TERM0_COLS, COLS  - MIN_TERM0_COLS - 1);
+					*x = 0;
+					break;
+				case 2: case 3:
+					*cols = MIN(MIN_TERM0_COLS, COLS  - MIN_TERM0_COLS - 1);
+					*x = COLS  - *cols;
+					break;
+				default:
+					*cols = *x = 0;
+			}
+			switch (i) {
+				case 0: case 2:
+					*rows = MAX(MIN_TERM0_LINES, LINES - MIN_TERM0_LINES - 1);
+					*y = 0;
+					break;
+				case 1: case 3:
+					*rows = MIN(MIN_TERM0_LINES, LINES - MIN_TERM0_LINES - 1);
+					*y = LINES - *rows;
+					break;
+				default:
+					*rows = *y = 0;
+			}
+			break;
+		/* Terminal layout: 0|1|2 or 0|3, depending on aspect ratio
+		 *                  3|4|5    1|4
+		 *                           2|5
+		 * Main term should be at least 80x24.
+		 * Prioritize bottom terms getting 24 or right terms getting 80
+		 * over middle terms, once middle terms have >= 5 rows or 40 columns.
+		 * If there's room, give extra space to main term.
+		 */
+		case 5: case 6:
+			if (is_wide) {
+				switch (i) {
+					case 0: case 1: case 2:
+						*rows = MAX(MIN_TERM0_LINES, LINES - MIN_TERM0_LINES - 1);
+						*y = 0;
+						break;
+					case 3: case 4: case 5:
+						*rows = MIN(MIN_TERM0_LINES, LINES - MIN_TERM0_LINES - 1);
+						*y = LINES - *rows;
+						break;
+					default:
+						*rows = *y = 0;
+				}
+				switch (i) {
+					case 0: case 3:
+						*cols = MAX(MIN_TERM0_COLS, COLS - 2*MIN_TERM0_COLS - 2);
+						*x = 0;
+						break;
+					case 1: case 4:
+						if (COLS <= 2 * MIN_TERM0_COLS + 42) {
+						    *cols = MIN(40, (COLS - MIN_TERM0_COLS - 2) / 2);
+						} else {
+						    *cols = MIN(MIN_TERM0_COLS, COLS - 2*MIN_TERM0_COLS - 2);
+						}
+						*x = 1 + MAX(MIN_TERM0_COLS, COLS - 2*MIN_TERM0_COLS - 2);
+						break;
+					case 2: case 5:
+						if (COLS <= MIN_TERM0_COLS + 82) {
+						    *cols = (COLS - MIN_TERM0_COLS - 1) / 2;
+						} else {
+						    *cols = MIN(MIN_TERM0_COLS, COLS - MIN_TERM0_COLS - 42); 
+						}
+						*x = COLS - *cols;
+						break;
+					default:
+						*cols = *x = 0;
+				}
+			} else { /* !is_wide */
+				switch (i) {
+					case 0: case 1: case 2:
+						*cols = MAX(MIN_TERM0_COLS, COLS - MIN_TERM0_COLS - 1);
+						*x = 0;
+						break;
+					case 3: case 4: case 5:
+						*cols = MIN(MIN_TERM0_COLS, COLS - MIN_TERM0_COLS - 1);
+						*x = COLS - *cols;
+						break;
+					default:
+						*cols = *x = 0;
+				}
+				switch (i) {
+					case 0: case 3:
+						*rows = MAX(MIN_TERM0_LINES, LINES - 2*MIN_TERM0_LINES - 2);
+						*y = 0;
+						break;
+					case 1: case 4:
+						if (LINES <= 2 * MIN_TERM0_LINES + 7) {
+						    *rows = MIN(40, (LINES - MIN_TERM0_LINES - 2) / 2);
+						} else {
+						    *rows = MIN(MIN_TERM0_LINES, LINES - 2*MIN_TERM0_LINES - 2);
+						}
+						*y = 1 + MAX(MIN_TERM0_LINES, LINES - 2*MIN_TERM0_LINES - 2);
+						break;
+					case 2: case 5:
+						if (LINES <= MIN_TERM0_LINES + 12) {
+						    *rows = (LINES - MIN_TERM0_LINES - 1) / 2;
+						} else {
+						    *rows = MIN(MIN_TERM0_LINES, LINES - MIN_TERM0_LINES - 7); 
+						}
+						*y = LINES - *rows;
+						break;
+					default:
+						*rows = *y = 0;
+				}
+			}
+			break;
+		default:
+			*rows = *cols = *y = *x = 0;
 	}
 }
 
@@ -392,10 +558,7 @@ static void do_gcu_resize(void) {
 	int i, rows, cols, y, x;
 	term *old_t = Term;
 	
-	for (i = 0; i < MAX_TERM_DATA; i++) {
-		/* If we're using a big screen, we only care about Term-0 */
-		if (use_big_screen && i > 0) break;
-		
+	for (i = 0; i < term_count; i++) {
 		/* Activate the current Term */
 		Term_activate(&data[i].t);
 
@@ -804,11 +967,15 @@ errr init_gcu(int argc, char **argv) {
 	/* Parse args */
 	for (i = 1; i < argc; i++) {
 		if (prefix(argv[i], "-b")) {
-			use_big_screen = TRUE;
+			term_count = 1;
 		} else if (prefix(argv[i], "-B")) {
 			bold_extended = TRUE;
 		} else if (prefix(argv[i], "-a")) {
 			ascii_walls = TRUE;
+		} else if (prefix(argv[i], "-n")) {
+			term_count = atoi(&argv[i][2]);
+			if (term_count > MAX_TERM_DATA) term_count = MAX_TERM_DATA;
+			else if (term_count < 1) term_count = 1;
 		} else {
 			plog_fmt("Ignoring option: %s", argv[i]);
 		}
@@ -829,7 +996,7 @@ errr init_gcu(int argc, char **argv) {
 	quit_aux = hook_quit;
 
 	/* Require standard size screen */
-	if (LINES < 24 || COLS < 80)
+	if (LINES < MIN_TERM0_LINES || COLS < MIN_TERM0_COLS) 
 		quit("Angband needs at least an 80x24 'curses' screen");
 
 #ifdef A_COLOR
@@ -902,9 +1069,7 @@ errr init_gcu(int argc, char **argv) {
 	keymap_game_prepare();
 
 	/* Now prepare the term(s) */
-	for (i = 0; i < MAX_TERM_DATA; i++) {
-		if (use_big_screen && i > 0) break;
-
+	for (i = 0; i < term_count; i++) {
 		/* Get the terminal dimensions; if the user asked for a big screen
 		 * then we'll put the whole screen in term 0; otherwise we'll divide
 		 * it amongst the available terms */
