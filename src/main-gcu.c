@@ -427,80 +427,49 @@ static void get_gcu_term_size(int i, int *rows, int *cols, int *y, int *x) {
 	bool is_wide = (10 * LINES < 3 * COLS);
 	int term_rows = 1;
 	int term_cols = 1;
+	int term_row_index = 0;
+	int term_col_index = 0;
 
 	assert(i < term_count);
 
 	/* For sufficiently small windows, we can only use one term.
-	 * Each additional row/column of terms requires at least two lines. 
-	 * The 3rd, 7th, 13th, etc. term adds to the short dimension, while
-	 * the 2nd, 5th, 10th, etc. term adds to the long dimension.
+	 * Each additional row/column of terms requires at least two lines
+	 * for the separators. If everything is as square as possible, 
+	 * the 3rd, 7th, 13th, etc. terms add to the short dimension, while
+	 * the 2nd, 5th, 10th, etc. terms add to the long dimension.
+	 * However, three terms are the special case of 1x3 or 3x1.
 	 */
 	if (is_wide) {
 		while (term_rows*(term_rows + 1) < term_count) term_rows++;
 		while (term_cols*term_cols < term_count) term_cols++;
+		if (term_count == 3) {
+			term_rows = 1;
+			term_cols = 3;
+		}
+		term_col_index = i % term_cols;
+		term_row_index = (int)(i / term_cols);
 	} else { /* !is_wide */ 
 		while (term_rows*term_rows < term_count) term_rows++;
 		while (term_cols*(term_cols + 1) < term_count) term_cols++;
+		if (term_count == 3) {
+			term_rows = 3;
+			term_cols = 1;
+		}
+		term_col_index = (int)(i / term_rows);
+		term_row_index = i % term_rows;
 	}
 
-	if (term_count == 1 ||
-		LINES < MIN_TERM0_LINES + 2 * (term_rows - 1) ||
-		COLS  < MIN_TERM0_COLS + 2 * (term_cols - 1)) {
-		if (i == 0)	{
-			*rows = LINES;
-			*cols = COLS;
-			*x = *y = 0;
-		} else {
+	if (LINES < MIN_TERM0_LINES + 2 * (term_rows - 1) ||
+		COLS < MIN_TERM0_COLS + 2 * (term_cols - 1)) {
+		term_rows = term_cols = term_count = 1;
+		if (i != 0) {
 			*rows = *cols = *y = *x = 0;
 		}
-		return;
+		term_col_index = term_row_index = 0;
 	}
-	switch (term_count) {
-		/* Terminal layout: 1 to the right or below 0, depending on 
-		 * aspect ratio
-		 * Main term should be at least 80x24
-		 * If there's room, give extra space to main term
-		 */
-		case 2:
-			if (is_wide) {
-				*rows = LINES;
-				*y = 0;
-				balance_dimension(cols, x, i, 2, COLS, MIN_TERM0_COLS, COMFY_SUBTERM_COLS);
-			} else {
-				*cols = COLS;
-				*x = 0;
-				balance_dimension(rows, y, i, 2, LINES, MIN_TERM0_LINES, COMFY_SUBTERM_LINES);
-			}
-			break;
-		/* Terminal layout: 0|2
-		 *                  1|3
-		 * Main term should be at least 80x24.
-		 * If there's room, give extra space to main term.
-		 */
-		case 3: case 4:
-			balance_dimension(cols, x, (int)(i / 2), 2, COLS, MIN_TERM0_COLS, COMFY_SUBTERM_COLS);
-			balance_dimension(rows, y, i % 2, 2, LINES, MIN_TERM0_LINES, COMFY_SUBTERM_LINES);
-			break;
-		/* Terminal layout: 0|1|2 or 0|3, depending on aspect ratio
-		 *                  3|4|5    1|4
-		 *                           2|5
-		 * Main term should be at least 80x24.
-		 * Prioritize bottom terms getting 24 or right terms getting 80
-		 * over middle terms, once middle terms have >= 5 rows or 40 columns.
-		 * If there's room, give extra space to main term.
-		 */
-		case 5: case 6:
-			if (is_wide) {
-				balance_dimension(rows, y, (int)(i / 3), 2, LINES, MIN_TERM0_LINES, COMFY_SUBTERM_LINES);
-				balance_dimension(cols, x, i % 3, 3, COLS, MIN_TERM0_COLS, COMFY_SUBTERM_COLS);
-			} else { /* !is_wide */
-				balance_dimension(rows, y, i % 3, 3, LINES, MIN_TERM0_LINES, COMFY_SUBTERM_LINES);
-				balance_dimension(cols, x, (int)(i / 3), 2, COLS, MIN_TERM0_COLS, COMFY_SUBTERM_COLS);
-			}
-			break;
-		default:
-			*rows = *cols = *y = *x = 0;
-	}
+		
+	balance_dimension(cols, x, term_col_index, term_cols, COLS, MIN_TERM0_COLS, COMFY_SUBTERM_COLS);
+	balance_dimension(rows, y, term_row_index, term_rows, LINES, MIN_TERM0_LINES, COMFY_SUBTERM_LINES);
 }
 
 
