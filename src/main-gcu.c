@@ -114,6 +114,10 @@ typedef struct term_data {
 #define MIN_TERM0_LINES 24
 #define MIN_TERM0_COLS 80
 
+/* Comfortable subterm size */
+#define COMFY_SUBTERM_LINES 5
+#define COMFY_SUBTERM_COLS 40
+
 /* Information about our windows */
 static term_data data[MAX_TERM_DATA];
 
@@ -362,11 +366,62 @@ static void Term_nuke_gcu(term *t) {
 	keymap_norm();
 }
 
+/*
+ * Helper function for get_gcu_term_size:
+ * Given inputs, populates size and start (rows and y, or cols and x)
+ * with correct values for a group (column or row) of terms.
+ *   term_group_index: the placement of the group, e.g.
+ *     top row is 0
+ *   term_group_count: the number of groups in this dimension (2 or 3)
+ *   window_size:      the number of grids the window has in this dimension
+ *   min_term0_size:   the minimum main term size in this dimension 
+ *     (80 or 24), also the maximum subterm size
+ *   comfy_subterm_size: in balancing among three groups, we first give the
+ *     main term its minimum, and then allocate evenly between the other
+ *     two subterms until they are both comfy_subterm_size, at which point
+ *     we grow the outer subterm until it reaches min_term0_size. (The
+ *     middle subterm then grows until min_term0_size, and any further
+ *     window space goes to the main term.)
+ */
+static void balance_dimension(int *size, int *start, int term_group_index,
+	int term_group_count, int window_size, int min_term0_size,
+	int comfy_subterm_size) {
+	/* Convenience variable for clarity.
+	 * Note that it is also the number of separator rows/columns */
+	int subterm_group_count = term_group_count - 1;
+
+	if (term_group_index == 0) { 
+		/* main term */
+		*size = MAX(min_term0_size, window_size - subterm_group_count*(min_term0_size + 1)); 
+		*start = 0;
+	} else if (term_group_index == term_group_count - 1) { 
+		/* outer or only subterm */
+		if (window_size <= min_term0_size + subterm_group_count*(comfy_subterm_size + 1)) { 
+			/* Not enough room for min term0 and all subterms comfy.
+			 * Note that we round up here and down for the middle subterm*/
+			*size = (window_size - min_term0_size - subterm_group_count) / subterm_group_count;
+			if (window_size > min_term0_size + subterm_group_count + *size * subterm_group_count)
+				(*size)++;
+		} else {
+			*size = MIN(min_term0_size, window_size - min_term0_size - comfy_subterm_size - subterm_group_count);
+		}
+		*start = window_size - *size;
+	} else {
+		/* middle subterm */
+		if (window_size <= subterm_group_count*(min_term0_size + 1) + comfy_subterm_size) {
+			/* Outer subterm(s) not yet full-sized, thus at most comfy */
+			*size = MIN(comfy_subterm_size, (window_size - min_term0_size - subterm_group_count) / subterm_group_count);
+		} else {
+			*size = MIN(min_term0_size, window_size - subterm_group_count*(min_term0_size + 1));
+		}
+		*start = 1 + MAX(min_term0_size, window_size - subterm_group_count*(min_term0_size + 1));
+	}
+}
 
 /*
  * For a given term number (i) set the upper left corner (x, y) and the
- * correct dimensions. Terminal layout: 0|2
- *                                      1|3
+ * correct dimensions. Remember to leave one row and column between
+ * subterms.
  */
 static void get_gcu_term_size(int i, int *rows, int *cols, int *y, int *x) {
 	bool is_wide = (10 * LINES < 3 * COLS);
@@ -410,23 +465,11 @@ static void get_gcu_term_size(int i, int *rows, int *cols, int *y, int *x) {
 			if (is_wide) {
 				*rows = LINES;
 				*y = 0;
-				if (i == 0)	{
-					*cols = MAX(MIN_TERM0_COLS, COLS - MIN_TERM0_COLS - 1);
-					*x = 0;
-				} else { /* i == 1 */
-					*cols = MIN(MIN_TERM0_COLS, COLS - MIN_TERM0_COLS - 1);
-					*x = COLS - *cols;
-				}
+				balance_dimension(cols, x, i, 2, COLS, MIN_TERM0_COLS, COMFY_SUBTERM_COLS);
 			} else {
 				*cols = COLS;
 				*x = 0;
-				if (i == 0)	{
-					*rows = MAX(MIN_TERM0_LINES, LINES - MIN_TERM0_LINES - 1);
-					*y = 0;
-				} else { /* i == 1 */
-					*rows = MIN(MIN_TERM0_LINES, LINES - MIN_TERM0_LINES - 1);
-					*y = LINES - *rows;
-				}
+				balance_dimension(rows, y, i, 2, LINES, MIN_TERM0_LINES, COMFY_SUBTERM_LINES);
 			}
 			break;
 		/* Terminal layout: 0|2
@@ -435,30 +478,8 @@ static void get_gcu_term_size(int i, int *rows, int *cols, int *y, int *x) {
 		 * If there's room, give extra space to main term.
 		 */
 		case 3: case 4:
-			switch (i) {
-				case 0: case 1:
-					*cols = MAX(MIN_TERM0_COLS, COLS  - MIN_TERM0_COLS - 1);
-					*x = 0;
-					break;
-				case 2: case 3:
-					*cols = MIN(MIN_TERM0_COLS, COLS  - MIN_TERM0_COLS - 1);
-					*x = COLS  - *cols;
-					break;
-				default:
-					*cols = *x = 0;
-			}
-			switch (i) {
-				case 0: case 2:
-					*rows = MAX(MIN_TERM0_LINES, LINES - MIN_TERM0_LINES - 1);
-					*y = 0;
-					break;
-				case 1: case 3:
-					*rows = MIN(MIN_TERM0_LINES, LINES - MIN_TERM0_LINES - 1);
-					*y = LINES - *rows;
-					break;
-				default:
-					*rows = *y = 0;
-			}
+			balance_dimension(cols, x, (int)(i / 2), 2, COLS, MIN_TERM0_COLS, COMFY_SUBTERM_COLS);
+			balance_dimension(rows, y, i % 2, 2, LINES, MIN_TERM0_LINES, COMFY_SUBTERM_LINES);
 			break;
 		/* Terminal layout: 0|1|2 or 0|3, depending on aspect ratio
 		 *                  3|4|5    1|4
@@ -470,79 +491,11 @@ static void get_gcu_term_size(int i, int *rows, int *cols, int *y, int *x) {
 		 */
 		case 5: case 6:
 			if (is_wide) {
-				switch (i) {
-					case 0: case 1: case 2:
-						*rows = MAX(MIN_TERM0_LINES, LINES - MIN_TERM0_LINES - 1);
-						*y = 0;
-						break;
-					case 3: case 4: case 5:
-						*rows = MIN(MIN_TERM0_LINES, LINES - MIN_TERM0_LINES - 1);
-						*y = LINES - *rows;
-						break;
-					default:
-						*rows = *y = 0;
-				}
-				switch (i) {
-					case 0: case 3:
-						*cols = MAX(MIN_TERM0_COLS, COLS - 2*MIN_TERM0_COLS - 2);
-						*x = 0;
-						break;
-					case 1: case 4:
-						if (COLS <= 2 * MIN_TERM0_COLS + 42) {
-						    *cols = MIN(40, (COLS - MIN_TERM0_COLS - 2) / 2);
-						} else {
-						    *cols = MIN(MIN_TERM0_COLS, COLS - 2*MIN_TERM0_COLS - 2);
-						}
-						*x = 1 + MAX(MIN_TERM0_COLS, COLS - 2*MIN_TERM0_COLS - 2);
-						break;
-					case 2: case 5:
-						if (COLS <= MIN_TERM0_COLS + 82) {
-						    *cols = (COLS - MIN_TERM0_COLS - 1) / 2;
-						} else {
-						    *cols = MIN(MIN_TERM0_COLS, COLS - MIN_TERM0_COLS - 42); 
-						}
-						*x = COLS - *cols;
-						break;
-					default:
-						*cols = *x = 0;
-				}
+				balance_dimension(rows, y, (int)(i / 3), 2, LINES, MIN_TERM0_LINES, COMFY_SUBTERM_LINES);
+				balance_dimension(cols, x, i % 3, 3, COLS, MIN_TERM0_COLS, COMFY_SUBTERM_COLS);
 			} else { /* !is_wide */
-				switch (i) {
-					case 0: case 1: case 2:
-						*cols = MAX(MIN_TERM0_COLS, COLS - MIN_TERM0_COLS - 1);
-						*x = 0;
-						break;
-					case 3: case 4: case 5:
-						*cols = MIN(MIN_TERM0_COLS, COLS - MIN_TERM0_COLS - 1);
-						*x = COLS - *cols;
-						break;
-					default:
-						*cols = *x = 0;
-				}
-				switch (i) {
-					case 0: case 3:
-						*rows = MAX(MIN_TERM0_LINES, LINES - 2*MIN_TERM0_LINES - 2);
-						*y = 0;
-						break;
-					case 1: case 4:
-						if (LINES <= 2 * MIN_TERM0_LINES + 7) {
-						    *rows = MIN(40, (LINES - MIN_TERM0_LINES - 2) / 2);
-						} else {
-						    *rows = MIN(MIN_TERM0_LINES, LINES - 2*MIN_TERM0_LINES - 2);
-						}
-						*y = 1 + MAX(MIN_TERM0_LINES, LINES - 2*MIN_TERM0_LINES - 2);
-						break;
-					case 2: case 5:
-						if (LINES <= MIN_TERM0_LINES + 12) {
-						    *rows = (LINES - MIN_TERM0_LINES - 1) / 2;
-						} else {
-						    *rows = MIN(MIN_TERM0_LINES, LINES - MIN_TERM0_LINES - 7); 
-						}
-						*y = LINES - *rows;
-						break;
-					default:
-						*rows = *y = 0;
-				}
+				balance_dimension(rows, y, i % 3, 3, LINES, MIN_TERM0_LINES, COMFY_SUBTERM_LINES);
+				balance_dimension(cols, x, (int)(i / 3), 2, COLS, MIN_TERM0_COLS, COMFY_SUBTERM_COLS);
 			}
 			break;
 		default:
