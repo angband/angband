@@ -436,7 +436,7 @@ static void prt_speed(int row, int col)
 	char buf[32] = "";
 
 	/* Hack -- Visually "undo" the Search Mode Slowdown */
-	if (p_ptr->searching) i += 10;
+	if (p_ptr->searching) i += 2;
 
 	/* Fast */
 	if (i > 110)

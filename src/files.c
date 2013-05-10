@@ -669,7 +669,7 @@ static const char *show_speed(void)
 	int tmp = p_ptr->state.speed;
 	if (p_ptr->timed[TMD_FAST]) tmp -= 10;
 	if (p_ptr->timed[TMD_SLOW]) tmp += 10;
-	if (p_ptr->searching) tmp += 10;
+	if (p_ptr->searching) tmp += 2;
 	if (tmp == 110) return "Normal";
 	strnfmt(buffer, sizeof(buffer), "%d", tmp - 110);
 	return buffer;
@@ -821,7 +821,7 @@ static struct panel *get_panel_skills(void) {
 	}
 
 	/* Searching ability */
-	skill = BOUND(p_ptr->state.skills[SKILL_SEARCH], 0, 100);
+	skill = MAX(p_ptr->state.skills[SKILL_SEARCH], 0);
 	panel_line(p, colour_table[skill / 10], "Searching", "%d%%", skill);
 
 	/* Infravision */
