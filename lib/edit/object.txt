@@ -1255,7 +1255,6 @@ G:=:d
 I:45:11
 W:30:0:2:500
 #A:10:30 to 100
-F:SUST_CHR | EASY_KNOW
 
 
 ### Resistance rings ###
