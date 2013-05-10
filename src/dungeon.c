@@ -1697,7 +1697,8 @@ void play_game(void)
 		do_randart(seed_randart, TRUE);
 
 	/* Initialize temporary fields sensibly */
-	p_ptr->object_idx = p_ptr->object_kind_idx = NO_OBJECT;
+	p_ptr->object_idx = NO_OBJECT;
+	p_ptr->object_kind = NULL;
 	p_ptr->monster_race = NULL;
 
 	/* Set the savefile name if it's not already set */

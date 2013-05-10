@@ -48,7 +48,7 @@ extern struct player_class *player_id2class(guid id);
 extern void health_track(struct player *p, struct monster *m_ptr);
 extern void monster_race_track(monster_race *race);
 extern void track_object(int item);
-extern void track_object_kind(int k_idx);
+extern void track_object_kind(struct object_kind *kind);
 extern bool tracked_object_is(int item);
 
 extern bool player_stat_inc(struct player *p, int stat);
