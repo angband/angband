@@ -55,7 +55,6 @@ EFFECT(INTELLECT,      FALSE, 25,	"raises your intelligence at the expense of a 
 EFFECT(CONTEMPLATION,  FALSE, 25,	"raises your wisdom at the expense of a random attribute")
 EFFECT(TOUGHNESS,      FALSE, 30,	"raises your constitution at the expense of a random attribute")
 EFFECT(NIMBLENESS,     FALSE, 25,	"raises your dexterity at the expense of a random attribute")
-EFFECT(PLEASING,       FALSE,  5,	"raises your charisma at the expense of a random attribute")
 EFFECT(LOSE_STR,       FALSE,  0,	"reduces your strength with damage 5d5")
 EFFECT(LOSE_INT,       FALSE,  0,	"reduces your intelligence with damage 5d5")
 EFFECT(LOSE_WIS,       FALSE,  0,	"reduces your wisdom with damage 5d5")

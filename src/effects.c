@@ -495,20 +495,6 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			return TRUE;
 		}
 
-		case EF_PLEASING:
-		{
-			/* Pick a random stat to decrease other than charisma */
-			int stat = randint0(A_MAX-1);
-
-			if (do_dec_stat(stat, TRUE))
-			{
-				do_inc_stat(A_CHR);
-				*ident = TRUE;
-			}
-
-			return TRUE;
-		}
-
 		case EF_LOSE_STR:
 		case EF_LOSE_INT:
 		case EF_LOSE_WIS:
