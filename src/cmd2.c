@@ -737,9 +737,6 @@ static bool do_cmd_tunnel_aux(int y, int x)
 			/* We may continue tunelling */
 			msg("You tunnel into the granite wall.");
 			more = TRUE;
-
-			/* Occasional Search XXX XXX */
-			if (randint0(100) < 25) search(FALSE);
 		}
 	}
 
