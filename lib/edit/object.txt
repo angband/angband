@@ -1247,11 +1247,7 @@ W:30:0:2:600
 A:20:30 to 100
 F:SUST_STR | SUST_INT | SUST_WIS | EASY_KNOW
 
-N:200:Sustain Charisma
-G:=:d
-I:45:11
-W:30:0:2:500
-#A:10:30 to 100
+### 200, sval 11
 
 
 ### Resistance rings ###
@@ -1263,19 +1259,19 @@ W:40:0:2:16000
 A:50:40 to 100
 F:RES_POIS | EASY_KNOW
 
-N:202:Resist Fire
+N:202:Resist Fire and Cold
 G:=:d
 I:45:13
 W:10:0:2:250
 A:50:10 to 50
-F:RES_FIRE | IGNORE_FIRE | EASY_KNOW
+F:RES_FIRE | RES_COLD | IGNORE_COLD | IGNORE_FIRE | EASY_KNOW
 
-N:203:Resist Cold
+## rm post 3.5
+N:203:Resist Cold and Fire
 G:=:d
 I:45:14
 W:10:0:2:250
-A:50:10 to 50
-F:RES_COLD | IGNORE_COLD | EASY_KNOW
+F:RES_FIRE | RES_COLD | IGNORE_COLD | IGNORE_FIRE | EASY_KNOW
 
 ### 204, sval 15
 
@@ -1290,20 +1286,13 @@ F:RES_LIGHT
 L:1+M5:SEARCH
 L:1:LIGHT
 
-# Waiting for un_light to be implemented
-#N:206:Dark
-#G:=:d
-#I:45:17
-#W:0:0:2:400
-#A:100:25 to 100
-#F:RES_DARK | UN_LIGHT
-#L:1+M5:SEARCH
+### 206, sval 17
 
 N:207:Flames
 G:=:d
 I:45:18
 W:50:0:2:500
-A:20:50 to 100
+A:20:20 to 100
 P:0:0d0:0:0:5+d5M10
 F:RES_FIRE | IGNORE_FIRE
 E:RING_FLAMES:50+d50
@@ -1312,7 +1301,7 @@ N:208:Acid
 G:=:d
 I:45:19
 W:50:0:2:500
-A:20:50 to 100
+A:20:20 to 100
 P:0:0d0:0:0:5+d5M10
 F:RES_ACID | IGNORE_ACID
 E:RING_ACID:50+d50
@@ -1321,7 +1310,7 @@ N:209:Ice
 G:=:d
 I:45:20
 W:50:0:2:500
-A:20:50 to 100
+A:20:20 to 100
 P:0:0d0:0:0:5+d5M10
 F:RES_COLD | IGNORE_COLD
 E:RING_ICE:50+d50
@@ -1330,7 +1319,7 @@ N:210:Lightning
 G:=:d
 I:45:21
 W:50:0:2:500
-A:20:50 to 100
+A:20:20 to 100
 P:0:0d0:0:0:5+d5M10
 F:RES_ELEC | IGNORE_ELEC
 E:RING_LIGHTNING:50+d50
@@ -1378,7 +1367,7 @@ N:216:Teleportation
 G:=:d
 I:45:27
 W:5:0:2:1000
-A:20:5 to 50
+A:20:10 to 50
 F:TELEPORT | EASY_KNOW
 L:2:SPEED
 
@@ -1409,7 +1398,7 @@ N:220:the Mouse
 G:=:d
 I:45:31
 W:30:0:2:100
-A:50:5 to 50
+A:50:10 to 50
 P:0:0d0:0:-3d5:0
 L:d4:DEX
 L:d4:STEALTH
@@ -1418,7 +1407,7 @@ N:221:the Dog
 G:=:d
 I:45:32
 W:0:0:2:100
-A:50:5 to 50
+A:50:10 to 50
 F:RES_FEAR
 L:-2:STEALTH
 
@@ -1430,14 +1419,14 @@ N:223:Slow Digestion
 G:=:d
 I:45:34
 W:5:0:2:250
-A:30:5 to 50
+A:30:10 to 50
 F:SLOW_DIGEST | EASY_KNOW
 
 N:224:Feather Falling
 G:=:d
 I:45:35
 W:5:0:2:200
-A:20:5 to 50
+A:20:10 to 50
 F:FEATHER | EASY_KNOW
 
 N:225:Free Action
