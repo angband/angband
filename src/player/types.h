@@ -151,7 +151,7 @@ typedef struct player
 	struct monster_race *monster_race;	/* Monster race trackee */
 
 	s16b object_idx;    /* Object trackee */
-	s16b object_kind_idx;	/* Object kind trackee */
+	struct object_kind *object_kind;	/* Object kind trackee */
 
 	s16b energy_use;		/* Energy use this turn */
 

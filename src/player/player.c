@@ -35,14 +35,14 @@ void monster_race_track(monster_race *race)
 void track_object(int item)
 {
 	p_ptr->object_idx = item;
-	p_ptr->object_kind_idx = NO_OBJECT;
+	p_ptr->object_kind = NULL;
 	p_ptr->redraw |= (PR_OBJECT);
 }
 
-void track_object_kind(int k_idx)
+void track_object_kind(struct object_kind *kind)
 {
 	p_ptr->object_idx = NO_OBJECT;
-	p_ptr->object_kind_idx = k_idx;
+	p_ptr->object_kind = kind;
 	p_ptr->redraw |= (PR_OBJECT);
 }
 

@@ -150,7 +150,7 @@ void delete_monster_idx(int m_idx)
 	if (rf_has(m_ptr->race->flags, RF_MULTIPLY)) num_repro--;
 
 	/* Hack -- remove target monster */
-	if (target_get_monster() == m_idx) target_set_monster(0);
+	if (target_get_monster() == m_ptr) target_set_monster(NULL);
 
 	/* Hack -- remove tracked monster */
 	if (p_ptr->health_who == m_ptr) health_track(p_ptr, NULL);
@@ -262,8 +262,8 @@ static void compact_monsters_aux(int i1, int i2)
 	}
 
 	/* Hack -- Update the target */
-	if (target_get_monster() == i1)
-		target_set_monster(i2);
+	if (target_get_monster() == m_ptr)
+		target_set_monster(cave_monster(cave, i2));
 
 	/* Hack -- Update the health bar */
 	if (p_ptr->health_who == m_ptr)

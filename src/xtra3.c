@@ -1222,8 +1222,8 @@ static void update_object_subwindow(game_event_type type, game_event_data *data,
 	
 	if (p_ptr->object_idx != NO_OBJECT)
 		display_object_idx_recall(p_ptr->object_idx);
-	else if(p_ptr->object_kind_idx != NO_OBJECT)
-		display_object_kind_recall(p_ptr->object_kind_idx);
+	else if (p_ptr->object_kind)
+		display_object_kind_recall(p_ptr->object_kind);
 	Term_fresh();
 	
 	/* Restore */
