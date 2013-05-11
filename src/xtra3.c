@@ -490,7 +490,6 @@ static void prt_dex(int row, int col) { prt_stat(A_DEX, row, col); }
 static void prt_wis(int row, int col) { prt_stat(A_WIS, row, col); }
 static void prt_int(int row, int col) { prt_stat(A_INT, row, col); }
 static void prt_con(int row, int col) { prt_stat(A_CON, row, col); }
-static void prt_chr(int row, int col) { prt_stat(A_CHR, row, col); }
 static void prt_race(int row, int col) { prt_field(p_ptr->race->name, row, col); }
 static void prt_class(int row, int col) { prt_field(p_ptr->class->name, row, col); }
 
@@ -517,7 +516,6 @@ static const struct side_handler_t
 	{ prt_wis,      4, EVENT_STATS },
 	{ prt_dex,      3, EVENT_STATS },
 	{ prt_con,      2, EVENT_STATS },
-	{ prt_chr,      1, EVENT_STATS },
 	{ NULL,        15, 0 },
 	{ prt_ac,       7, EVENT_AC },
 	{ prt_hp,       8, EVENT_HP },

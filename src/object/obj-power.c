@@ -408,9 +408,9 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 			file_putf(log_file, "Adding power for %s, total is %d\n", flag_name(i), p);
 		}
 
-		/* Track combinations of flag types - note we ignore SUST_CHR */
+		/* Track combinations of flag types */
 		for (j = 0; j < N_ELEMENTS(sets); j++)
-			if ((sets[j].type == obj_flag_type(i)) && (i != OF_SUST_CHR))
+			if (sets[j].type == obj_flag_type(i))
 				sets[j].count++;
 	}
 

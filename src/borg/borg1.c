@@ -23,7 +23,6 @@ int borg_respawn_int;
 int borg_respawn_wis;
 int borg_respawn_dex;
 int borg_respawn_con;
-int borg_respawn_chr;
 int borg_dump_level;
 int borg_save_death;
 bool borg_respawn_winners;
@@ -81,19 +80,16 @@ const char *prefix_pref[] =
     "_WIS",
     "_DEX",
     "_CON",
-    "_CHR",
     "_CSTR",
     "_CINT",
     "_CWIS",
     "_CDEX",
     "_CCON",
-    "_CCHR",
     "_SSTR",
     "_SINT",
     "_SWIS",
     "_SDEX",
     "_SCON",
-    "_SCHR",
     "_LIGHT",
     "_CURHP",
     "_MAXHP",
@@ -202,7 +198,6 @@ const char *prefix_pref[] =
     "_ISFIXWIS",
     "_ISFIXDEX",
     "_ISFIXCON",
-    "_ISFIXCHR",
     "_ISFIXALL",
 
 /* some combat stuff */

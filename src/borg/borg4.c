@@ -188,7 +188,6 @@ static void borg_notice_aux1(void)
     if (rf_has(f, OF_SUST_WIS)) borg_skill[BI_SWIS] = TRUE;
     if (rf_has(f, OF_SUST_DEX)) borg_skill[BI_SDEX] = TRUE;
     if (rf_has(f, OF_SUST_CON)) borg_skill[BI_SCON] = TRUE;
-    if (rf_has(f, OF_SUST_CHR)) borg_skill[BI_SCHR] = TRUE;
 
 	/* I am pretty sure the CF_flags will be caught by the
 	 * code above when the player flags are checked
@@ -223,7 +222,6 @@ static void borg_notice_aux1(void)
         if (of_has(item->flags, OF_WIS)) my_stat_add[A_WIS] += item->pval;
         if (of_has(item->flags, OF_DEX)) my_stat_add[A_DEX] += item->pval;
         if (of_has(item->flags, OF_CON)) my_stat_add[A_CON] += item->pval;
-        if (of_has(item->flags, OF_CHR)) my_stat_add[A_CHR] += item->pval;
 
         /* various slays */
         if (of_has(item->flags, OF_SLAY_ANIMAL)) borg_skill[BI_WS_ANIMAL] = TRUE;
@@ -363,7 +361,6 @@ static void borg_notice_aux1(void)
         if (of_has(item->flags, OF_SUST_WIS)) borg_skill[BI_SWIS] = TRUE;
         if (of_has(item->flags, OF_SUST_DEX)) borg_skill[BI_SDEX] = TRUE;
         if (of_has(item->flags, OF_SUST_CON)) borg_skill[BI_SCON] = TRUE;
-        if (of_has(item->flags, OF_SUST_CHR)) borg_skill[BI_SCHR] = TRUE;
 
 
         /* Hack -- Net-zero The borg will miss read acid damaged items such as
@@ -937,13 +934,11 @@ static void borg_notice_aux2(void)
     amt_add_stat[A_WIS] = 0;
     amt_add_stat[A_DEX] = 0;
     amt_add_stat[A_CON] = 0;
-    amt_add_stat[A_CHR] = 0;
     amt_fix_stat[A_STR] = 0;
     amt_fix_stat[A_INT] = 0;
     amt_fix_stat[A_WIS] = 0;
     amt_fix_stat[A_DEX] = 0;
     amt_fix_stat[A_CON] = 0;
-    amt_fix_stat[A_CHR] = 0;
     amt_fix_stat[6] = 0;
 
     amt_fix_exp = 0;
@@ -1030,7 +1025,6 @@ static void borg_notice_aux2(void)
 						amt_fix_stat[A_WIS] += item->iqty;
 						amt_fix_stat[A_DEX] += item->iqty;
 						amt_fix_stat[A_CON] += item->iqty;
-						amt_fix_stat[A_CHR] += item->iqty;
 						amt_fix_stat[6]     += item->iqty;
 					}
                     break;
@@ -1117,16 +1111,12 @@ static void borg_notice_aux2(void)
                 case SV_POTION_INC_CON:
                 amt_inc_stat[A_CON] += item->iqty;
                 break;
-                case SV_POTION_INC_CHR:
-                amt_inc_stat[A_CHR] += item->iqty;
-                break;
                 case SV_POTION_INC_ALL:
                 amt_inc_stat[A_STR] += item->iqty;
                 amt_inc_stat[A_INT] += item->iqty;
                 amt_inc_stat[A_WIS] += item->iqty;
                 amt_inc_stat[A_DEX] += item->iqty;
                 amt_inc_stat[A_CON] += item->iqty;
-                amt_inc_stat[A_CHR] += item->iqty;
                 break;
 
                 case SV_POTION_RES_STR:
@@ -1143,9 +1133,6 @@ static void borg_notice_aux2(void)
                 break;
                 case SV_POTION_RES_CON:
                 amt_fix_stat[A_CON] += item->iqty;
-                break;
-                case SV_POTION_RES_CHR:
-                amt_fix_stat[A_CHR] += item->iqty;
                 break;
                 case SV_POTION_RESTORE_EXP:
                 amt_fix_exp += item->iqty;
@@ -1784,16 +1771,12 @@ static void borg_notice_aux2(void)
     if (my_stat_cur[A_CON] >= (18+100) + 10 * (p_ptr->race->r_adj[A_CON] + p_ptr->class->c_adj[A_CON]))
         amt_add_stat[A_CON] += 1000;
 
-    if (my_stat_cur[A_CHR] >= (18+100) + 10 * (p_ptr->race->r_adj[A_CHR] + p_ptr->class->c_adj[A_CHR]))
-         amt_add_stat[A_CHR] += 1000;
-
     /* No need to *buy* stat repair potions */
     if (!borg_skill[BI_ISFIXSTR]) amt_fix_stat[A_STR] += 1000;
     if (!borg_skill[BI_ISFIXINT]) amt_fix_stat[A_INT] += 1000;
     if (!borg_skill[BI_ISFIXWIS]) amt_fix_stat[A_WIS] += 1000;
     if (!borg_skill[BI_ISFIXDEX]) amt_fix_stat[A_DEX] += 1000;
     if (!borg_skill[BI_ISFIXCON]) amt_fix_stat[A_CON] += 1000;
-    if (!borg_skill[BI_ISFIXCHR]) amt_fix_stat[A_CHR] += 1000;
 
 
     /* No need for experience repair */
@@ -3007,7 +2990,6 @@ static void borg_notice_home_aux1(borg_item *in_item, bool no_items)
     home_stat_add[A_WIS] = 0;
     home_stat_add[A_DEX] = 0;
     home_stat_add[A_CON] = 0;
-    home_stat_add[A_CHR] = 0;
 
     num_weapons = 0;
 
@@ -3069,7 +3051,6 @@ static void borg_notice_home_aux1(borg_item *in_item, bool no_items)
     num_fix_stat[A_WIS] = 0;
     num_fix_stat[A_DEX] = 0;
     num_fix_stat[A_CON] = 0;
-    num_fix_stat[A_CHR] = 0;
     num_fix_stat[6] = 0;
 
     /* Reset enchantment */
@@ -3258,11 +3239,6 @@ static void borg_notice_home_aux2(borg_item *in_item, bool no_items)
         {
             if (item->tval != TV_RING || item->pval > 3)
                 home_stat_add[A_CON] += item->pval * item->iqty;
-        }
-        if (of_has(item->flags, OF_CHR))
-        {
-            if (item->tval != TV_RING || item->pval > 3)
-                home_stat_add[A_CHR] += item->pval * item->iqty;
         }
 
         /* count up bonus to speed */
@@ -3539,7 +3515,6 @@ static void borg_notice_home_aux2(borg_item *in_item, bool no_items)
                 num_fix_stat[A_WIS] += item->iqty;
                 num_fix_stat[A_DEX] += item->iqty;
                 num_fix_stat[A_CON] += item->iqty;
-                num_fix_stat[A_CHR] += item->iqty;
                 num_fix_stat[6]     += item->iqty;
                 break;
 
@@ -3612,10 +3587,6 @@ static void borg_notice_home_aux2(borg_item *in_item, bool no_items)
 
                 case SV_POTION_RES_CON:
                 num_fix_stat[A_CON] += item->iqty;
-                break;
-
-                case SV_POTION_RES_CHR:
-                num_fix_stat[A_CHR] += item->iqty;
                 break;
 
                 case SV_POTION_RESTORE_EXP:
@@ -3847,7 +3818,6 @@ static void borg_notice_home_aux2(borg_item *in_item, bool no_items)
     if (borg_skill[BI_SWIS]) num_fix_stat[A_WIS] += 1000;
     if (borg_skill[BI_SDEX]) num_fix_stat[A_DEX] += 1000;
     if (borg_skill[BI_SCON]) num_fix_stat[A_CON] += 1000;
-    if (borg_skill[BI_SCHR]) num_fix_stat[A_CHR] += 1000;
 
     /* Extract the player flags */
     player_flags(f);
@@ -4309,11 +4279,6 @@ static s32b borg_power_aux1(void)
         }
 
     }
-
-
-    /* Hack -- Reward charisma bonus up to level 25 */
-    if (borg_skill[BI_CLEVEL] < 25)
-        value += (my_stat_ind[A_CHR] * 2L);
 
 
 
@@ -5467,7 +5432,6 @@ static s32b borg_power_aux2(void)
         if (amt_add_stat[A_WIS]) value += 50000;
     if (amt_add_stat[A_DEX]) value += 50000;
     if (amt_add_stat[A_CON]) value += 50000;
-    if (amt_add_stat[A_CHR]) value += 10000;
 
     /* Hack -- Reward stat potions */
     if (amt_inc_stat[A_STR] && my_stat_cur[A_STR] < (18+100)) value += 550000;
@@ -5479,7 +5443,6 @@ static s32b borg_power_aux2(void)
         if (amt_inc_stat[A_WIS] && my_stat_cur[A_WIS] < (18+100)) value += 575000;
     if (amt_inc_stat[A_DEX] && my_stat_cur[A_DEX] < (18+100)) value += 550000;
     if (amt_inc_stat[A_CON] && my_stat_cur[A_CON] < (18+100)) value += 550000;
-    if (amt_inc_stat[A_CHR] && my_stat_cur[A_CHR] < (18+100)) value += 510000;
 
     /* Hack -- Reward fix stat */
     if (amt_fix_stat[A_STR]) value += 10000;
@@ -5487,7 +5450,6 @@ static s32b borg_power_aux2(void)
     if (amt_fix_stat[A_WIS]) value += 10000;
     if (amt_fix_stat[A_DEX]) value += 10000;
     if (amt_fix_stat[A_CON]) value += 10000;
-    if (amt_fix_stat[A_CHR]) value += 10000;
 
     /* Reward Remove Curse */
     if (borg_wearing_cursed)
@@ -5590,13 +5552,11 @@ static s32b borg_power_aux2(void)
 			  (item->sval == SV_POTION_RES_WIS && borg_skill[BI_ISFIXWIS]) ||
 			  (item->sval == SV_POTION_RES_DEX && borg_skill[BI_ISFIXDEX]) ||
 			  (item->sval == SV_POTION_RES_CON && borg_skill[BI_ISFIXCON]) ||
-			  (item->sval == SV_POTION_RES_CHR && borg_skill[BI_ISFIXCHR]) ||
 			  item->sval == SV_POTION_INC_STR ||
 			  item->sval == SV_POTION_INC_INT ||
 			  item->sval == SV_POTION_INC_WIS ||
 			  item->sval == SV_POTION_INC_DEX ||
 			  item->sval == SV_POTION_INC_CON ||
-			  item->sval == SV_POTION_INC_CHR ||
 			  item->sval == SV_POTION_INC_ALL))))
 		{
 			/* No encumbrance penalty for purchasing these items */
@@ -6592,16 +6552,6 @@ static int borg_danger_aux1(int i, bool full_damage)
             /* extra scary for pray'er */
             if (p_ptr->class->spell_book == TV_PRAYER_BOOK)
                 z += 50;
-            if ((pfe) && !borg_attacking)
-                z /= 2;
-            break;
-
-            case RBE_LOSE_CHR:
-            z = (d_dice * d_side);
-            if (borg_skill[BI_SCHR]) break;
-            if (borg_stat[A_CHR] <= 3) break;
-            if (borg_prayer_legal(6, 3)) break;
-            z += 5;
             if ((pfe) && !borg_attacking)
                 z /= 2;
             break;

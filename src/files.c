@@ -471,13 +471,11 @@ static void display_player_sust_info(void)
 	stat_flags[A_WIS] = OF_WIS;
 	stat_flags[A_DEX] = OF_DEX;
 	stat_flags[A_CON] = OF_CON;
-	stat_flags[A_CHR] = OF_CHR;
 	sustain_flags[A_STR] = OF_SUST_STR;
 	sustain_flags[A_INT] = OF_SUST_INT;
 	sustain_flags[A_WIS] = OF_SUST_WIS;
 	sustain_flags[A_DEX] = OF_SUST_DEX;
 	sustain_flags[A_CON] = OF_SUST_CON;
-	sustain_flags[A_CHR] = OF_SUST_CHR;
 
 	/* Header */
 	c_put_str(TERM_WHITE, "abcdefghijkl@", row-1, col);

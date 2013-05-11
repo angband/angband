@@ -376,6 +376,7 @@ void wr_player(void)
 	wr_s16b(p_ptr->wt);
 
 	/* Dump the stats (maximum and current and birth) */
+	wr_byte(A_MAX);
 	for (i = 0; i < A_MAX; ++i) wr_s16b(p_ptr->stat_max[i]);
 	for (i = 0; i < A_MAX; ++i) wr_s16b(p_ptr->stat_cur[i]);
 	for (i = 0; i < A_MAX; ++i) wr_s16b(p_ptr->stat_birth[i]);

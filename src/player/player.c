@@ -170,7 +170,6 @@ static void adjust_level(struct player *p, bool verbose)
 		do_res_stat(A_WIS);
 		do_res_stat(A_DEX);
 		do_res_stat(A_CON);
-		do_res_stat(A_CHR);
 	}
 
 	while ((p->max_lev < PY_MAX_LEVEL) &&
