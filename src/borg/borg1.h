@@ -87,7 +87,6 @@
 #define SV_POTION_INC_WIS			3
 #define SV_POTION_INC_DEX			4
 #define SV_POTION_INC_CON			5
-#define SV_POTION_INC_CHR			6
 #define SV_POTION_INC_ALL			7
 #define SV_POTION_INC_EXP			8
 #define SV_POTION_CURE_LIGHT		9
@@ -103,7 +102,6 @@
 #define SV_POTION_RES_WIS			19
 #define SV_POTION_RES_DEX			20
 #define SV_POTION_RES_CON			21
-#define SV_POTION_RES_CHR			22
 #define SV_POTION_RESTORE_EXP		23 /* Restore Level */
 #define SV_POTION_INC_STR2			24 /* Brawn, gain Str lose 1 other */
 #define SV_POTION_INC_INT2			25 /* Intellect, gain Str lose 1 other */
@@ -575,7 +573,6 @@ extern int borg_respawn_int;
 extern int borg_respawn_wis;
 extern int borg_respawn_dex;
 extern int borg_respawn_con;
-extern int borg_respawn_chr;
 extern int borg_dump_level;
 extern int borg_save_death;
 extern bool borg_respawn_winners;
@@ -652,19 +649,16 @@ enum
     BI_WIS,
     BI_DEX,
     BI_CON,
-    BI_CHR,
     BI_CSTR,
     BI_CINT,
     BI_CWIS,
     BI_CDEX,
     BI_CCON,
-    BI_CCHR,
     BI_SSTR,
     BI_SINT,
     BI_SWIS,
     BI_SDEX,
     BI_SCON,
-    BI_SCHR,
     BI_LIGHT,
     BI_CURHP,
     BI_MAXHP,
@@ -770,7 +764,6 @@ enum
     BI_ISFIXWIS,
     BI_ISFIXDEX,
     BI_ISFIXCON,
-    BI_ISFIXCHR,
     BI_ISFIXALL,
 
     BI_ARMOR,

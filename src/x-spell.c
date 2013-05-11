@@ -1184,7 +1184,6 @@ static bool cast_priest_spell(int spell, int dir)
 			(void)do_res_stat(A_WIS);
 			(void)do_res_stat(A_DEX);
 			(void)do_res_stat(A_CON);
-			(void)do_res_stat(A_CHR);
 			break;
 		}
 

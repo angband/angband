@@ -847,7 +847,6 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 			/*stat gain*/
 			switch(effect){
 			
-				/* skip CHR */
 				case EF_GAIN_STR:
 				case EF_GAIN_INT:
 				case EF_GAIN_WIS:
@@ -1497,8 +1496,7 @@ static void print_heading(void)
 	file_putf(stats_log," Armor:     Low resist armor may have more than one basic resist (acid, \n");
 	file_putf(stats_log,"		     elec, fire, cold) but not all. \n");
 	file_putf(stats_log," Books:     Prayer and Magic books have the same probability. \n");
-	file_putf(stats_log," Potions:   Stat gain potions do not include CHR.  Aug counts \n");
-	file_putf(stats_log,"			 as 5 potions, *enlight* as 2.  Healing potions are \n");
+	file_putf(stats_log," Potions:   Aug counts as 5 potions, *enlight* as 2.  Healing potions are \n");
 	file_putf(stats_log,"			 only *Healing* and Life\n");
 	file_putf(stats_log," Scrolls:   Endgame scrolls include *Dest*, Rune, MBan and Ban \n");
 	file_putf(stats_log,"    		 *Acq* counts as two Acq scrolls");

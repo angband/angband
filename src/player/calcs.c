@@ -29,51 +29,6 @@
 #include "squelch.h"
 
 /*
- * Stat Table (CHR) -- payment percentages
- */
-const byte adj_chr_gold[STAT_RANGE] =
-{
-	143	/* 3 */,
-	137	/* 4 */,
-	134	/* 5 */,
-	132	/* 6 */,
-	129	/* 7 */,
-	127	/* 8 */,
-	123	/* 9 */,
-	122	/* 10 */,
-	121	/* 11 */,
-	118	/* 12 */,
-	116	/* 13 */,
-	113	/* 14 */,
-	113	/* 15 */,
-	112	/* 16 */,
-	111	/* 17 */,
-	110	/* 18/00-18/09 */,
-	108	/* 18/10-18/19 */,
-	107	/* 18/20-18/29 */,
-	106	/* 18/30-18/39 */,
-	105	/* 18/40-18/49 */,
-	104	/* 18/50-18/59 */,
-	103	/* 18/60-18/69 */,
-	102	/* 18/70-18/79 */,
-	101	/* 18/80-18/89 */,
-	100	/* 18/90-18/99 */,
-	99	/* 18/100-18/109 */,
-	97	/* 18/110-18/119 */,
-	96	/* 18/120-18/129 */,
-	95	/* 18/130-18/139 */,
-	94	/* 18/140-18/149 */,
-	93	/* 18/150-18/159 */,
-	92	/* 18/160-18/169 */,
-	91	/* 18/170-18/179 */,
-	90	/* 18/180-18/189 */,
-	90	/* 18/190-18/199 */,
-	90	/* 18/200-18/209 */,
-	90	/* 18/210-18/219 */,
-	90	/* 18/220+ */
-};
-
-/*
  * Stat Table (INT) -- Magic devices
  */
 const byte adj_int_dev[STAT_RANGE] =
@@ -1575,8 +1530,6 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 			o_ptr->pval[which_pval(o_ptr, OF_DEX)];
 		if (of_has(f, OF_CON)) state->stat_add[A_CON] +=
 			o_ptr->pval[which_pval(o_ptr, OF_CON)];
-		if (of_has(f, OF_CHR)) state->stat_add[A_CHR] +=
-			o_ptr->pval[which_pval(o_ptr, OF_CHR)];
 
 		/* Affect stealth */
 		if (of_has(f, OF_STEALTH)) state->skills[SKILL_STEALTH] +=

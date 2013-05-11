@@ -808,9 +808,6 @@ void object_notice_on_wield(object_type *o_ptr)
 	if (of_has(f, OF_CON))
 		msg("You feel %s!", o_ptr->pval[which_pval(o_ptr,
 			OF_CON)] > 0 ? "healthier" : "sicklier");
-	if (of_has(f, OF_CHR))
-		msg("You feel %s!", o_ptr->pval[which_pval(o_ptr,
-			OF_CHR)] > 0 ? "cuter" : "uglier");
 	if (of_has(f, OF_SPEED))
 		msg("You feel strangely %s.", o_ptr->pval[which_pval(o_ptr,
 			OF_SPEED)] > 0 ? "quick" : "sluggish");

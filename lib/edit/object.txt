@@ -1252,7 +1252,6 @@ G:=:d
 I:45:11
 W:30:0:2:500
 #A:10:30 to 100
-F:SUST_CHR | EASY_KNOW
 
 
 ### Resistance rings ###
@@ -1477,13 +1476,11 @@ A:50:20 to 90
 F:SUST_WIS | 
 L:1+M5:WIS
 
+# remove post-3.5
 N:231:Charisma
 G:":d
 I:40:2
 W:30:0:3:500
-A:20:10 to 40
-F:SUST_CHR | 
-L:1+M5:CHR
 
 ### Resistances ###
 
@@ -1516,7 +1513,7 @@ G:":d
 I:40:6
 W:60:0:3:20000
 A:10:60 to 100
-F:SUST_STR | SUST_INT | SUST_WIS | SUST_DEX | SUST_CON | SUST_CHR | 
+F:SUST_STR | SUST_INT | SUST_WIS | SUST_DEX | SUST_CON |
 F:HOLD_LIFE | SLOW_DIGEST | EASY_KNOW | 
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 
@@ -1545,9 +1542,8 @@ I:40:9
 W:70:0:3:30000
 A:10:70 to 100
 F:RES_DARK | RES_LIGHT | RES_FIRE | HOLD_LIFE | 
-F:SUST_WIS | SUST_CHR | 
+F:SUST_WIS | 
 L:1+M3:WIS
-L:d6:CHR
 L:1:LIGHT
 
 N:239:Weaponmastery
@@ -2089,14 +2085,12 @@ M:10:2
 F:EASY_KNOW
 E:GAIN_CON
 
+# remove post-3.5
 N:315:Charisma
 G:!:d
 I:75:6
 W:20:0:4:1000
-A:30:15 to 100
-M:10:2
 F:EASY_KNOW
-E:GAIN_CHR
 
 N:316:Augmentation
 G:!:d

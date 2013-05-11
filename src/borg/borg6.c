@@ -14565,7 +14565,6 @@ bool borg_recover(void)
          borg_skill[BI_ISFIXWIS] ||
          borg_skill[BI_ISFIXDEX] ||
          borg_skill[BI_ISFIXCON] ||
-         borg_skill[BI_ISFIXCHR] ||
          borg_skill[BI_ISFIXALL]) &&
         borg_prayer(6, 3))
         {

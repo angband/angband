@@ -388,7 +388,6 @@ enum
 	A_WIS,
 	A_DEX,
 	A_CON,
-	A_CHR,
 
 	A_MAX
 };
