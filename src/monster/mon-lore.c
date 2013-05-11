@@ -462,64 +462,13 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 
 /**
  * Determine if the player knows the AC of the given monster.
- * 
- * In order for the player to know the AC of a monster, the number of total
- * kills (this life + all past lives) must be high enough. For high-level 
- * monsters, fewer kills are needed. Uniques also require far fewer kills.
  */
 static bool know_armour(const monster_race *r_ptr, const monster_lore *l_ptr)
 {
-	s32b level;
-	s32b kills;
-
-	assert(r_ptr && l_ptr);
-
-	level = r_ptr->level;
-	kills = l_ptr->tkills;
-
-	if (kills > 304 / (4 + level)) 
-		return (TRUE);
-	else if (rf_has(r_ptr->flags, RF_UNIQUE) && 
-			kills > 304 / (38 + (5 * level) / 4))
-		return (TRUE);
-	else
-		return (FALSE);
-
+	assert(l_ptr);
+	return l_ptr->tkills > 0;
 }
 
-
-/**
- * Determine if the player knows the damage of the given attack.
- *
- * In order for the player to know how much damage an attack does, the monster
- * must use the attack against the player enough times. Fewer attacks are
- * necessary for higher-level monsters and fewer still for unique monsters.
- * More attacks are necessary for blows that deal a lot of damage.
- */
-static bool know_damage(const monster_race *r_ptr, const monster_lore *l_ptr, 
-		int blow_num)
-{
-	s32b level, attacks, d1, d2, max_damage;
-	
-	assert(r_ptr && l_ptr);
-
-	level = r_ptr->level;
-
-	attacks = l_ptr->blows[blow_num];
-
-	d1 = r_ptr->blow[blow_num].d_dice;
-	d2 = r_ptr->blow[blow_num].d_side;
-	max_damage = d1 * d2;
-
-	if ((4 + level) * attacks >= 80 * max_damage)
-		return (TRUE);
-	else if (rf_has(r_ptr->flags, RF_UNIQUE) && 
-			(4 + level) * (2 * attacks) > 80 * max_damage)
-		return (TRUE);
-	else
-		return (FALSE);
-
-}
 
 /**
  * Prints the flavour text of a monster.
@@ -1333,7 +1282,7 @@ static void describe_monster_attack(const monster_race *r_ptr,
 			text_out_c(colors[effect], "%s", effect_str);
 
 			/* Describe damage (if known) */
-			if (d1 && d2 && know_damage(r_ptr, l_ptr, m)) {
+			if (d1 && d2) {
 				text_out(" with damage ");
 				text_out_c(TERM_L_GREEN, "%dd%d", d1, d2);
 			}
