@@ -108,7 +108,15 @@ typedef struct term_data {
 } term_data;
 
 /* Max number of windows on screen */
-#define MAX_TERM_DATA 4
+#define MAX_TERM_DATA 6
+
+/* Minimum main term size */
+#define MIN_TERM0_LINES 24
+#define MIN_TERM0_COLS 80
+
+/* Comfortable subterm size */
+#define COMFY_SUBTERM_LINES 5
+#define COMFY_SUBTERM_COLS 40
 
 /* Information about our windows */
 static term_data data[MAX_TERM_DATA];
@@ -137,9 +145,9 @@ static int can_use_color = FALSE;
 static int colortable[BASIC_COLORS];
 
 /* Screen info: use one big Term 0, or other subwindows? */
-static bool use_big_screen = FALSE;
 static bool bold_extended = FALSE;
 static bool ascii_walls = FALSE;
+static int term_count = 4;
 
 /*
  * Background color we should draw with; either BLACK or DEFAULT
@@ -276,7 +284,18 @@ static errr Term_xtra_gcu_alive(int v) {
 	return 0;
 }
 
-const char help_gcu[] = "Text mode, subopts -b(ig screen) -a(scii) -B(old)";
+const char help_gcu[] = "Text mode, subopts\n              -a     Use ASCII walls\n              -b     Big screen (equivalent to -n1)\n              -B     Use brighter bold characters\n              -nN    Use N terminals (up to 6)";
+
+/*
+ * Usage:
+ *
+ * angband -mgcu -- [-a] [-b] [-B] [-nN]
+ *
+ *   -a      Use ASCII walls
+ *   -b      Big screen (equivalent to -n1)
+ *   -B      Use brighter bold characters
+ *   -nN     Use N terminals (up to 6)
+ */
 
 /*
  * Init the "curses" system
@@ -347,41 +366,110 @@ static void Term_nuke_gcu(term *t) {
 	keymap_norm();
 }
 
+/*
+ * Helper function for get_gcu_term_size:
+ * Given inputs, populates size and start (rows and y, or cols and x)
+ * with correct values for a group (column or row) of terms.
+ *   term_group_index: the placement of the group, e.g.
+ *     top row is 0
+ *   term_group_count: the number of groups in this dimension (2 or 3)
+ *   window_size:      the number of grids the window has in this dimension
+ *   min_term0_size:   the minimum main term size in this dimension 
+ *     (80 or 24), also the maximum subterm size
+ *   comfy_subterm_size: in balancing among three groups, we first give the
+ *     main term its minimum, and then allocate evenly between the other
+ *     two subterms until they are both comfy_subterm_size, at which point
+ *     we grow the outer subterm until it reaches min_term0_size. (The
+ *     middle subterm then grows until min_term0_size, and any further
+ *     window space goes to the main term.)
+ */
+static void balance_dimension(int *size, int *start, int term_group_index,
+	int term_group_count, int window_size, int min_term0_size,
+	int comfy_subterm_size) {
+	/* Convenience variable for clarity.
+	 * Note that it is also the number of separator rows/columns */
+	int subterm_group_count = term_group_count - 1;
+
+	if (term_group_index == 0) { 
+		/* main term */
+		*size = MAX(min_term0_size, window_size - subterm_group_count*(min_term0_size + 1)); 
+		*start = 0;
+	} else if (term_group_index == term_group_count - 1) { 
+		/* outer or only subterm */
+		if (window_size <= min_term0_size + subterm_group_count*(comfy_subterm_size + 1)) { 
+			/* Not enough room for min term0 and all subterms comfy.
+			 * Note that we round up here and down for the middle subterm*/
+			*size = (window_size - min_term0_size - subterm_group_count) / subterm_group_count;
+			if (window_size > min_term0_size + subterm_group_count + *size * subterm_group_count)
+				(*size)++;
+		} else {
+			*size = MIN(min_term0_size, window_size - min_term0_size - comfy_subterm_size - subterm_group_count);
+		}
+		*start = window_size - *size;
+	} else {
+		/* middle subterm */
+		if (window_size <= subterm_group_count*(min_term0_size + 1) + comfy_subterm_size) {
+			/* Outer subterm(s) not yet full-sized, thus at most comfy */
+			*size = MIN(comfy_subterm_size, (window_size - min_term0_size - subterm_group_count) / subterm_group_count);
+		} else {
+			*size = MIN(min_term0_size, window_size - subterm_group_count*(min_term0_size + 1));
+		}
+		*start = 1 + MAX(min_term0_size, window_size - subterm_group_count*(min_term0_size + 1));
+	}
+}
 
 /*
  * For a given term number (i) set the upper left corner (x, y) and the
- * correct dimensions. Terminal layout: 0|2
- *                                      1|3
+ * correct dimensions. Remember to leave one row and column between
+ * subterms.
  */
 static void get_gcu_term_size(int i, int *rows, int *cols, int *y, int *x) {
-	if (use_big_screen && i == 0) {
-		*rows = LINES;
-		*cols = COLS;
-		*y = *x = 0;
-	} else if (use_big_screen) {
-		*rows = *cols = *y = *x = 0;
-	} else if (i == 0) {
-		*rows = 24;
-		*cols = 80;
-		*y = *x = 0;
-	} else if (i == 1) {
-		*rows = LINES - 25;
-		*cols = 80;
-		*y = 25;
-		*x = 0;
-	} else if (i == 2) {
-		*rows = 24;
-		*cols = COLS - 81;
-		*y = 0;
-		*x = 81;
-	} else if (i == 3) {
-		*rows = LINES - 25;
-		*cols = COLS - 81;
-		*y = 25;
-		*x = 81;
-	} else {
-		*rows = *cols = *y = *x = 0;
+	bool is_wide = (10 * LINES < 3 * COLS);
+	int term_rows = 1;
+	int term_cols = 1;
+	int term_row_index = 0;
+	int term_col_index = 0;
+
+	assert(i < term_count);
+
+	/* For sufficiently small windows, we can only use one term.
+	 * Each additional row/column of terms requires at least two lines
+	 * for the separators. If everything is as square as possible, 
+	 * the 3rd, 7th, 13th, etc. terms add to the short dimension, while
+	 * the 2nd, 5th, 10th, etc. terms add to the long dimension.
+	 * However, three terms are the special case of 1x3 or 3x1.
+	 */
+	if (is_wide) {
+		while (term_rows*(term_rows + 1) < term_count) term_rows++;
+		while (term_cols*term_cols < term_count) term_cols++;
+		if (term_count == 3) {
+			term_rows = 1;
+			term_cols = 3;
+		}
+		term_col_index = i % term_cols;
+		term_row_index = (int)(i / term_cols);
+	} else { /* !is_wide */ 
+		while (term_rows*term_rows < term_count) term_rows++;
+		while (term_cols*(term_cols + 1) < term_count) term_cols++;
+		if (term_count == 3) {
+			term_rows = 3;
+			term_cols = 1;
+		}
+		term_col_index = (int)(i / term_rows);
+		term_row_index = i % term_rows;
 	}
+
+	if (LINES < MIN_TERM0_LINES + 2 * (term_rows - 1) ||
+		COLS < MIN_TERM0_COLS + 2 * (term_cols - 1)) {
+		term_rows = term_cols = term_count = 1;
+		if (i != 0) {
+			*rows = *cols = *y = *x = 0;
+		}
+		term_col_index = term_row_index = 0;
+	}
+		
+	balance_dimension(cols, x, term_col_index, term_cols, COLS, MIN_TERM0_COLS, COMFY_SUBTERM_COLS);
+	balance_dimension(rows, y, term_row_index, term_rows, LINES, MIN_TERM0_LINES, COMFY_SUBTERM_LINES);
 }
 
 
@@ -392,10 +480,7 @@ static void do_gcu_resize(void) {
 	int i, rows, cols, y, x;
 	term *old_t = Term;
 	
-	for (i = 0; i < MAX_TERM_DATA; i++) {
-		/* If we're using a big screen, we only care about Term-0 */
-		if (use_big_screen && i > 0) break;
-		
+	for (i = 0; i < term_count; i++) {
 		/* Activate the current Term */
 		Term_activate(&data[i].t);
 
@@ -804,11 +889,15 @@ errr init_gcu(int argc, char **argv) {
 	/* Parse args */
 	for (i = 1; i < argc; i++) {
 		if (prefix(argv[i], "-b")) {
-			use_big_screen = TRUE;
+			term_count = 1;
 		} else if (prefix(argv[i], "-B")) {
 			bold_extended = TRUE;
 		} else if (prefix(argv[i], "-a")) {
 			ascii_walls = TRUE;
+		} else if (prefix(argv[i], "-n")) {
+			term_count = atoi(&argv[i][2]);
+			if (term_count > MAX_TERM_DATA) term_count = MAX_TERM_DATA;
+			else if (term_count < 1) term_count = 1;
 		} else {
 			plog_fmt("Ignoring option: %s", argv[i]);
 		}
@@ -829,7 +918,7 @@ errr init_gcu(int argc, char **argv) {
 	quit_aux = hook_quit;
 
 	/* Require standard size screen */
-	if (LINES < 24 || COLS < 80)
+	if (LINES < MIN_TERM0_LINES || COLS < MIN_TERM0_COLS) 
 		quit("Angband needs at least an 80x24 'curses' screen");
 
 #ifdef A_COLOR
@@ -902,9 +991,7 @@ errr init_gcu(int argc, char **argv) {
 	keymap_game_prepare();
 
 	/* Now prepare the term(s) */
-	for (i = 0; i < MAX_TERM_DATA; i++) {
-		if (use_big_screen && i > 0) break;
-
+	for (i = 0; i < term_count; i++) {
 		/* Get the terminal dimensions; if the user asked for a big screen
 		 * then we'll put the whole screen in term 0; otherwise we'll divide
 		 * it amongst the available terms */
