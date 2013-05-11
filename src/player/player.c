@@ -228,6 +228,20 @@ byte player_sp_attr(struct player *p)
 	return attr;
 }
 
+bool player_restore_mana(struct player *p, int amt) {
+	int old_csp = p->csp;
+
+	p->csp += amt;
+	if (p->csp > p->msp) {
+		p->csp = p->msp;
+	}
+	p->redraw |= PR_MANA;
+
+	msg("You feel some of your energies returning.");
+
+	return p->csp != old_csp;
+}
+
 /**
  * Return a version of the player's name safe for use in filesystems.
  */

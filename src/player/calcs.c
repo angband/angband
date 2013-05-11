@@ -1747,7 +1747,7 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 		p_ptr->timed[TMD_AFRAID] = p_ptr->timed[TMD_TERROR];
 
 	if (p_ptr->timed[TMD_TERROR])
-		state->speed += 5;
+		state->speed += 10;
 
 	/* Fear can come from item flags too */
 	if (check_state(p_ptr, OF_AFRAID, p_ptr->state.flags))
