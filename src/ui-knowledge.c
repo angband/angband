@@ -1772,7 +1772,7 @@ static void desc_obj_fake(int k_idx)
 	}
 
 	/* Update the object recall window */
-	track_object_kind(k_idx);
+	track_object_kind(kind);
 	handle_stuff(p_ptr);
 
 	/* Wipe the object */

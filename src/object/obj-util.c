@@ -3767,11 +3767,11 @@ void display_object_idx_recall(s16b item)
  * This draws the Object Recall subwindow when displaying a recalled item kind
  * (e.g. a generic ring of acid or a generic blade of chaos)
  */
-void display_object_kind_recall(s16b k_idx)
+void display_object_kind_recall(struct object_kind *kind)
 {
 	object_type object = { 0 };
-	object_prep(&object, &k_info[k_idx], 0, EXTREMIFY);
-	if (k_info[k_idx].aware)
+	object_prep(&object, kind, 0, EXTREMIFY);
+	if (kind->aware)
 		object.ident |= IDENT_STORE;
 
 	display_object_recall(&object);
