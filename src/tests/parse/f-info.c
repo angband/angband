@@ -81,7 +81,8 @@ int test_x0(void *state) {
 	f = parser_priv(state);
 	require(f);
 	eq(f->locked, 3);
-	eq(f->jammed, 5);
+	/* eq(f->jammed, 5); 
+	 * as of 85b1ff6, the jammed field is unused */
 	eq(f->shopnum, 9);
 	eq(f->dig, 2);
 	ok;

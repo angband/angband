@@ -151,13 +151,13 @@ bool player_set_timed(struct player *p, int idx, int v, bool notify)
 	else if (idx == TMD_CUT) return set_cut(p, v);
 
 	/* Don't mention effects which already match the player state. */
-	if (idx == TMD_OPP_ACID && check_state(p_ptr, OF_IM_ACID, p->state.flags))
+	if (idx == TMD_OPP_ACID && check_state(p, OF_IM_ACID, p->state.flags))
 		notify = FALSE;
-	else if (idx == TMD_OPP_ELEC && check_state(p_ptr, OF_IM_ELEC, p->state.flags))
+	else if (idx == TMD_OPP_ELEC && check_state(p, OF_IM_ELEC, p->state.flags))
 		notify = FALSE;
-	else if (idx == TMD_OPP_FIRE && check_state(p_ptr, OF_IM_FIRE, p->state.flags))
+	else if (idx == TMD_OPP_FIRE && check_state(p, OF_IM_FIRE, p->state.flags))
 		notify = FALSE;
-	else if (idx == TMD_OPP_COLD && check_state(p_ptr, OF_IM_COLD, p->state.flags))
+	else if (idx == TMD_OPP_COLD && check_state(p, OF_IM_COLD, p->state.flags))
 		notify = FALSE;
 	else if (idx == TMD_OPP_CONF && of_has(p->state.flags, OF_RES_CONFU))
 		notify = FALSE;
@@ -201,7 +201,7 @@ bool player_set_timed(struct player *p, int idx, int v, bool notify)
 	if (!notify) return FALSE;
 
 	/* Disturb */
-	disturb(p_ptr, 0, 0);
+	disturb(p, 0, 0);
 
 	/* Update the visuals, as appropriate. */
 	p->update |= effect->flag_update;
