@@ -2713,9 +2713,6 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 	bool do_move;
 	bool do_view;
 
-	bool did_open_door;
-	bool did_bash_door;
-
 	char m_name[80];
 
 	/* Get the monster name */
@@ -2926,10 +2923,6 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 	do_turn = FALSE;
 	do_move = FALSE;
 	do_view = FALSE;
-
-	/* Assume nothing */
-	did_open_door = FALSE;
-	did_bash_door = FALSE;
 
 	/* Process moves */
 	for (i = 0; i < 5; i++)	{
