@@ -31,7 +31,7 @@ int test_n0(void *state) {
 }
 
 int test_s0(void *state) {
-	enum parser_error r = parser_parse(state, "S:3:-3:2:-2:1:-1");
+	enum parser_error r = parser_parse(state, "S:3:-3:2:-2:1");
 	struct player_class *c;
 
 	eq(r, PARSE_ERROR_NONE);
@@ -42,7 +42,6 @@ int test_s0(void *state) {
 	eq(c->c_adj[A_WIS], 2);
 	eq(c->c_adj[A_DEX], -2);
 	eq(c->c_adj[A_CON], 1);
-	eq(c->c_adj[A_CHR], -1);
 	ok;
 }
 
