@@ -284,13 +284,18 @@ static void race_help(int i, void *db, const region *l)
 
 	for (j = 0; j < len; j++)
 	{  
-		const char *name1 = stat_names_reduced[j];
-		const char *name2 = stat_names_reduced[j + len];
+		const char *name = stat_names_reduced[j];
+		int adj = r->r_adj[j];
 
-		int adj1 = r->r_adj[j];
-		int adj2 = r->r_adj[j + len];
+		text_out_e("%s%+3d", name, adj);
 
-		text_out_e("%s%+3d  %s%+3d\n", name1, adj1, name2, adj2);
+		if (j*2 + 1 < A_MAX) {
+			name = stat_names_reduced[j + len];
+			adj = r->r_adj[j + len];
+			text_out_e("  %s%+3d", name, adj);
+		}
+
+		text_out("\n");
 	}
 	
 	text_out_e("\n");
@@ -345,13 +350,18 @@ static void class_help(int i, void *db, const region *l)
 
 	for (j = 0; j < len; j++)
 	{  
-		const char *name1 = stat_names_reduced[j];
-		const char *name2 = stat_names_reduced[j + len];
+		const char *name = stat_names_reduced[j];
+		int adj = c->c_adj[j] + r->r_adj[j];
 
-		int adj1 = c->c_adj[j] + r->r_adj[j];
-		int adj2 = c->c_adj[j + len] + r->r_adj[j + len];
+		text_out_e("%s%+3d", name, adj);
 
-		text_out_e("%s%+3d  %s%+3d\n", name1, adj1, name2, adj2);
+		if (j*2 + 1 < A_MAX) {
+			name = stat_names_reduced[j + len];
+			adj = c->c_adj[j + len] + r->r_adj[j + len];
+			text_out_e("  %s%+3d", name, adj);
+		}
+
+		text_out("\n");
 	}
 
 	text_out_e("\n");
