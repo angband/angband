@@ -737,9 +737,6 @@ static bool do_cmd_tunnel_aux(int y, int x)
 			/* We may continue tunelling */
 			msg("You tunnel into the granite wall.");
 			more = TRUE;
-
-			/* Occasional Search XXX XXX */
-			if (randint0(100) < 25) search(FALSE);
 		}
 	}
 
@@ -1288,17 +1285,7 @@ void do_cmd_hold(cmd_code code, cmd_arg args[])
 	p_ptr->energy_use = 100;
 
 	/* Spontaneous Searching */
-	if ((p_ptr->state.skills[SKILL_SEARCH_FREQUENCY] >= 50) ||
-	    one_in_(50 - p_ptr->state.skills[SKILL_SEARCH_FREQUENCY]))
-	{
-		search(FALSE);
-	}
-
-	/* Continuous Searching */
-	if (p_ptr->searching)
-	{
-		search(FALSE);
-	}
+	search(FALSE);
 
 	/* Pick things up, not using extra energy */
 	do_autopickup();
