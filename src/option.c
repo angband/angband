@@ -75,7 +75,7 @@ const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_birth_no_stairs,
 		OPT_birth_no_feelings,
 		OPT_birth_no_selling,
-		OPT_NONE,
+		OPT_birth_start_kit,
 		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,
@@ -173,7 +173,7 @@ static const struct option options[OPT_MAX] =
 { "birth_no_feelings",   "Don't show level feelings",                   FALSE }, /* 58 */
 { "birth_no_selling",    "Items always sell for 0 gold",                TRUE }, /* 59 */
 { "birth_keep_randarts", "Use previous set of randarts",                TRUE },  /* 60 */
-{ NULL,                  NULL,                                          FALSE }, /* 61 */
+{ "birth_start_kit",     "Start with a kit of useful gear",             TRUE }, /* 61 */
 { NULL,                  NULL,                                          FALSE }, /* 62 */
 { "birth_ai_learn",      "Monsters learn from their mistakes",          FALSE }, /* 63 */
 { NULL,                  NULL,                                          FALSE }, /* 64 */

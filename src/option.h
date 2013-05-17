@@ -100,7 +100,7 @@ extern const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER];
 #define OPT_birth_no_feelings	    (OPT_BIRTH+8)
 #define OPT_birth_no_selling 	    (OPT_BIRTH+9)
 #define OPT_birth_keep_randarts		(OPT_BIRTH+10)
-/* #define OPT_birth_ai_smell			(OPT_BIRTH+11) */
+#define OPT_birth_start_kit			(OPT_BIRTH+11)
 /* #define OPT_birth_ai_packs			(OPT_BIRTH+12) */
 #define OPT_birth_ai_learn			(OPT_BIRTH+13)
 /* #define OPT_birth_ai_cheat			(OPT_BIRTH+14) */

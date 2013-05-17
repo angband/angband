@@ -1083,7 +1083,7 @@ void player_birth(bool quickstart_allowed)
 	get_money();
 
 	/* Outfit the player, if they can sell the stuff */
-	if (!OPT(birth_no_selling)) player_outfit(p_ptr);
+	if (OPT(birth_start_kit)) player_outfit(p_ptr);
 
 	/* Initialise the stores */
 	store_reset();
