@@ -154,7 +154,6 @@ K:0:2:0x88:0xC0
 
 ##### Various Stuff #####
 
-K:spike:Iron Spike:0x87:0x98
 K:light:Wooden Torch:0x87:0x9A
 K:light:Lantern:0x87:0x99
 K:flask:Flask of oil:0x87:0x97
@@ -452,19 +451,6 @@ K:chest:Small iron chest:0x87:0x82
 K:chest:Large iron chest:0x87:0x83
 K:chest:Small steel chest:0x87:0x84
 K:chest:Large steel chest:0x87:0x85
-
-##### Junk #####
-
-K:bottle:Empty Bottle:0x87:0x96
-K:junk:Shard of Pottery:0x87:0xA2
-K:junk:Broken Stick:0x87:0xAA
-K:skeleton:Broken Skull:0x87:0xAB
-K:skeleton:Broken Bone:0x87:0xAC
-K:skeleton:Canine Skeleton:0x87:0xB1
-K:skeleton:Rodent Skeleton:0x87:0xB2
-K:skeleton:Human Skeleton:0x87:0xAD
-K:skeleton:Dwarf Skeleton:0x87:0xAF
-K:skeleton:Elf Skeleton:0x87:0xAE
 
 ##### Dragon Scale Mail #####
 

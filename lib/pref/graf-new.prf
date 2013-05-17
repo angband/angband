@@ -285,7 +285,6 @@ K:0:0:182:147
 
 ##### Various Stuff #####
 
-K:spike:Iron Spike:0x8E:0x89
 K:light:Wooden Torch:0x8E:0x8B
 K:light:Lantern:0x8E:0x8A
 K:flask:Flask of oil:0x8E:0x88
@@ -642,22 +641,6 @@ K:chest:Large iron chest:0x84:0x9C
 K:chest:Small steel chest:0x84:0x9D
 K:chest:Large steel chest:0x84:0x9E
 K:chest:Ruined chest:0x84:0x9F
-
-
-
-
-##### Junk #####
-
-K:bottle:Empty Bottle:0x8E:0x87
-K:junk:Shard of Pottery:0x8E:0x92
-K:junk:Broken Stick:0x8E:0x93
-K:skeleton:Broken Skull:0x8E:0x94
-K:skeleton:Broken Bone:0x8E:0x95
-K:skeleton:Canine Skeleton:0x8E:0x9A
-K:skeleton:Rodent Skeleton:0x8E:0x9B
-K:skeleton:Human Skeleton:0x8E:0x96
-K:skeleton:Dwarf Skeleton:0x8E:0x98
-K:skeleton:Elf Skeleton:0x8E:0x97
 
 
 
