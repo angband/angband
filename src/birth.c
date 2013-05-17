@@ -487,10 +487,18 @@ static void player_outfit(struct player *p)
 	{
 		/* Get local object */
 		struct object *i_ptr = &object_type_body;
+		int num = rand_range(si->min, si->max);
+
+		/* Without start_kit, only start with 1 food and 1 light */
+		if (!OPT(birth_start_kit)) {
+			if (si->kind->tval != TV_FOOD && si->kind->tval != TV_LIGHT)
+				continue;
+			num = 1;
+		}
 
 		/* Prepare the item */
 		object_prep(i_ptr, si->kind, 0, MINIMISE);
-		i_ptr->number = (byte)rand_range(si->min, si->max);
+		i_ptr->number = num;
 		i_ptr->origin = ORIGIN_BIRTH;
 
 		object_flavor_aware(i_ptr);
@@ -1083,7 +1091,7 @@ void player_birth(bool quickstart_allowed)
 	get_money();
 
 	/* Outfit the player, if they can sell the stuff */
-	if (OPT(birth_start_kit)) player_outfit(p_ptr);
+	player_outfit(p_ptr);
 
 	/* Initialise the stores */
 	store_reset();
