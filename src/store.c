@@ -221,7 +221,7 @@ static enum parser_error parse_store(struct parser *p) {
 	struct store *s;
 	unsigned int idx = parser_getuint(p, "index") - 1;
 
-	if (idx > STORE_B_MARKET)
+	if (idx > STORE_HOME)
 		return PARSE_ERROR_OUT_OF_BOUNDS;
 
 	s = store_new(parser_getuint(p, "index") - 1);
@@ -290,10 +290,29 @@ static enum parser_error parse_always(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_owner(struct parser *p) {
+	struct store *s = parser_priv(p);
+	unsigned int maxcost = parser_getuint(p, "purse");
+	char *name = string_make(parser_getstr(p, "name"));
+	struct owner *o;
+
+	if (!s)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	o = mem_zalloc(sizeof *o);
+	o->oidx = (s->owners ? s->owners->oidx + 1 : 0);
+	o->next = s->owners;
+	o->name = name;
+	o->max_cost = maxcost;
+	s->owners = o;
+	return PARSE_ERROR_NONE;
+}
+
 struct parser *init_parse_stores(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 	parser_reg(p, "store uint index str name", parse_store);
+	parser_reg(p, "owner uint purse str name", parse_owner);
 	parser_reg(p, "slots uint min uint max", parse_slots);
 	parser_reg(p, "turnover uint turnover", parse_turnover);
 	parser_reg(p, "normal sym tval sym sval", parse_normal);
@@ -320,72 +339,7 @@ static struct file_parser store_parser = {
 };
 
 
-/** shop_own.txt **/
-
-struct owner_parser_state {
-	struct store *stores;
-	struct store *cur;
-};
-
-static enum parser_error parse_own_n(struct parser *p) {
-	struct owner_parser_state *s = parser_priv(p);
-	unsigned int index = parser_getuint(p, "index");
-	struct store *st;
-
-	for (st = s->stores; st; st = st->next) {
-		if (st->sidx == index) {
-			s->cur = st;
-			break;
-		}
-	}
-
-	return st ? PARSE_ERROR_NONE : PARSE_ERROR_OUT_OF_BOUNDS;
-}
-
-static enum parser_error parse_own_s(struct parser *p) {
-	struct owner_parser_state *s = parser_priv(p);
-	unsigned int maxcost = parser_getuint(p, "maxcost");
-	char *name = string_make(parser_getstr(p, "name"));
-	struct owner *o;
-
-	if (!s->cur)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-
-	o = mem_zalloc(sizeof *o);
-	o->oidx = (s->cur->owners ? s->cur->owners->oidx + 1 : 0);
-	o->next = s->cur->owners;
-	o->name = name;
-	o->max_cost = maxcost;
-	s->cur->owners = o;
-	return PARSE_ERROR_NONE;
-}
-
-struct parser *store_owner_parser_new(struct store *ss) {
-	struct parser *p = parser_new();
-	struct owner_parser_state *s = mem_zalloc(sizeof *s);
-	s->stores = ss;
-	s->cur = NULL;
-	parser_setpriv(p, s);
-	parser_reg(p, "V sym version", ignored);
-	parser_reg(p, "N uint index", parse_own_n);
-	parser_reg(p, "S uint maxcost str name", parse_own_s);
-	return p;
-}
-
 /*** Other init stuff ***/
-
-static struct store *add_builtin_stores(struct store *ss) {
-	struct store *s = store_new(STORE_HOME);
-	s->next = ss;
-	return s;
-}
-
-static void parse_owners(struct store *stores) {
-	struct parser *p = store_owner_parser_new(stores);
-	parse_file(p, "shop_own");
-	mem_free(parser_priv(p));
-	parser_destroy(p);
-}
 
 static struct store *flatten_stores(struct store *store_list) {
 	struct store *s;
@@ -409,14 +363,9 @@ static struct store *flatten_stores(struct store *store_list) {
 
 void store_init(void)
 {
-	struct store *store_list;
-
 	event_signal_string(EVENT_INITSTATUS, "Initialising stores...");
 	if (run_parser(&store_parser)) quit("Can't initialise stores");
-
-	store_list = add_builtin_stores(stores);
-	parse_owners(store_list);
-	stores = flatten_stores(store_list);
+	stores = flatten_stores(stores);
 }
 
 void store_reset(void) {
