@@ -171,7 +171,7 @@ static const struct option options[OPT_MAX] =
 { "birth_no_preserve",   "Lose artifacts when leaving level",           FALSE }, /* 56 */
 { "birth_no_stairs",     "Don't generate connected stairs",             FALSE }, /* 57 */
 { "birth_no_feelings",   "Don't show level feelings",                   FALSE }, /* 58 */
-{ "birth_no_selling",    "Items always sell for 0 gold",                FALSE }, /* 59 */
+{ "birth_no_selling",    "Items always sell for 0 gold",                TRUE }, /* 59 */
 { "birth_keep_randarts", "Use previous set of randarts",                TRUE },  /* 60 */
 { NULL,                  NULL,                                          FALSE }, /* 61 */
 { NULL,                  NULL,                                          FALSE }, /* 62 */
