@@ -894,8 +894,11 @@ void delete_object_idx(int o_idx)
 		
 		/* Clear the mimicry */
 		m_ptr->mimicked_o_idx = 0;
-		
+		m_ptr->aware = TRUE;		
+
+#if 0 /* Hack - just make the mimic obviously a mimic instead of deleting it */
 		delete_monster_idx(j_ptr->mimicking_m_idx);
+#endif
 	}
 
 	/* Wipe the object */

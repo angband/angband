@@ -38,6 +38,17 @@ int test_slots0(void *state) {
 	ok;
 }
 
+int test_owner0(void *state) {
+	enum parser_error r = parser_parse(state, "owner:5000:Foo");
+	struct store *s;
+
+	eq(r, PARSE_ERROR_NONE);
+	s = parser_priv(state);
+	eq(s->owners->max_cost, 5000);
+	require(streq(s->owners->name, "Foo"));
+	ok;
+}
+
 /* Causes segfault: lookup_name() requires z_info/k_info */
 int test_i0(void *state) {
 	enum parser_error r = parser_parse(state, "normal:3:5");
@@ -55,6 +66,7 @@ const char *suite_name = "parse/store";
 struct test tests[] = {
 	{ "store0", test_store0 },
 	{ "slots0", test_slots0 },
+	{ "owner0", test_owner0 },
 /*	{ "i0", test_i0 }, */
 	{ NULL, NULL }
 };
