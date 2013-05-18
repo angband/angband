@@ -3405,9 +3405,9 @@ S:BO_COLD | BO_FIRE
 drop:90:1:5:1:1
 drop:90:2:5:1:1
 friends:80:1d3:Dark elf
-friends:70:1d2:Dark elf warrior
-friends:50:1d1:Dark elf mage
-friends:50:1d1:Dark elf priest
+friends:70:1d2:Dark elven warrior
+friends:50:1d1:Dark elven mage
+friends:50:1d1:Dark elven priest
 D:A dark elven figure in armour and radiating evil power.
 
 N:580:Ranger
@@ -5012,7 +5012,7 @@ friends:100:3d3:Black ogre
 friends:100:3d3:Cave ogre
 friends:80:1d2:Ogre mage
 friends:80:1d2:Ogre shaman
-friends:50:1d2:Ogre chieftan
+friends:50:1d2:Ogre chieftain
 D:An ogre renowned for acts of surpassing cruelty, Lokkak quickly became the
 D: leader of a large band of violent ogres.
 
@@ -7208,7 +7208,7 @@ F:MOVE_BODY | TAKE_ITEM
 F:IM_COLD
 S:1_IN_7
 S:BOULDER
-friends:60:2d3:Half troll
+friends:60:2d3:Half-troll
 friends:60:2d3:Cave troll
 friends:40:2d3:Olog
 friends:30:1d2:Eldrak
@@ -9792,7 +9792,7 @@ S:1_IN_3
 S:BR_ACID | BR_COLD | BR_ELEC | BR_FIRE | BR_POIS
 S:S_HI_DRAGON | S_KIN
 friends:100:1d1:Kavlax the Many-Headed
-friends:100:1d1:Scatha the Wyom
+friends:100:1d1:Scatha the Worm
 friends:100:1d1:Itangast the Fire Drake
 friends:100:1d1:Smaug the Golden
 friends:100:1d1:Glaurung, Father of the Dragons
@@ -9945,7 +9945,7 @@ S:BO_MANA
 S:S_HI_DEMON | S_HI_UNDEAD | S_KIN | S_MONSTERS
 friends:50:1d3:Greater mummy
 friends:50:1d3:Skeleton ettin
-friends:50:1d3:Nightmare
+friends:50:1d3:Night mare
 friends:30:1d2:Dreadlord
 friends:40:1d2:Archlich
 friends:30:1d2:Nightwing
