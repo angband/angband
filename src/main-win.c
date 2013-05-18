@@ -4574,6 +4574,20 @@ static LRESULT FAR PASCAL AngbandWndProc(HWND hWnd, UINT uMsg,
 
 		case WM_QUIT:
 		{
+			if (game_in_progress && character_generated)
+			{
+				if (!inkey_flag)
+				{
+					plog("Please exit any open menus before closing the game.");
+					return 0;
+				}
+
+				/* Hack -- Forget messages */
+				msg_flag = FALSE;
+
+				/* Save the game */
+				save_game();
+			}
 			quit(NULL);
 			return 0;
 		}
