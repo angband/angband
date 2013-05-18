@@ -4475,12 +4475,12 @@ static LRESULT FAR PASCAL AngbandWndProc(HWND hWnd, UINT uMsg,
 
 			if (game_in_progress) {
 				Term_keypress(ch, mods);
-			} else if (mods & KC_MOD_CONTROL) {
+			} else {
 				/* Handle keyboard shortcuts pre-game */
 				switch (ch) {
-					case 'N': process_menus(IDM_FILE_NEW); break;
-					case 'O': process_menus(IDM_FILE_OPEN); break;
-					case 'X': process_menus(IDM_FILE_EXIT); break;
+					case KTRL('N'): process_menus(IDM_FILE_NEW); break;
+					case KTRL('O'): process_menus(IDM_FILE_OPEN); break;
+					case KTRL('X'): process_menus(IDM_FILE_EXIT); break;
 				}
 			}
 
