@@ -1136,7 +1136,6 @@ bool place_new_monster(struct cave *c, int y, int x, monster_race *race, bool sl
 {
 	struct monster_friends *friends;
 	struct monster_friends_base *friends_base;
-	monster_race *friends_race;
 	int total;
 	
 	assert(c);
@@ -1150,41 +1149,29 @@ bool place_new_monster(struct cave *c, int y, int x, monster_race *race, bool sl
 
 	/* Go through friends flags */
 	for (friends = race->friends; friends; friends = friends->next) {
-		
 		if ((unsigned int)randint0(100) >= friends->percent_chance)
 			continue;
-		
-		/* Check if we're the same otherwise look it up */
-		if (streq(friends->friends_name, "Same")){
-			friends_race = race;
-		} else {		
-			/* Get the chosen monster */
-			friends_race = lookup_monster(friends->friends_name);
-		}
 		
 		/* Calculate the base number of monsters to place */
 		total = damroll(friends->number_dice, friends->number_side);
 		
-		place_friends(c, y, x, race, friends_race, total, sleep, origin);
+		place_friends(c, y, x, race, friends->race, total, sleep, origin);
 		
 	}
 
 	/* Go through the friends_base flags */
 	for (friends_base = race->friends_base; friends_base; 
 			friends_base = friends_base->next){
-		monster_base *base;
-		
+		monster_race *friends_race;
+
 		/* Check if we pass chance for the monster appearing */
 		if ((unsigned int)randint0(100) >= friends_base->percent_chance)
 			continue;
 			
 		total = damroll(friends_base->number_dice, friends_base->number_side);
-			
-		/* Find the monster_base */
-		base = lookup_monster_base(friends_base->base_name);
 
 		/* Set the escort index base*/
-		place_monster_base = base;
+		place_monster_base = friends_base->base;
 
 		/* Prepare allocation table */
 		get_mon_num_prep(place_monster_base_okay);
@@ -1200,6 +1187,7 @@ bool place_new_monster(struct cave *c, int y, int x, monster_race *race, bool sl
 
 		place_friends(c, y, x, race, friends_race, total, sleep, origin);
 	}
+
 	/* Success */
 	return (TRUE);
 }

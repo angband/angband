@@ -98,7 +98,8 @@ struct monster_drop {
 
 struct monster_friends {
 	struct monster_friends *next;
-	char *friends_name;
+	char *name;
+	struct monster_race *race;
 	unsigned int percent_chance;
 	unsigned int number_dice;
 	unsigned int number_side;
@@ -106,7 +107,7 @@ struct monster_friends {
 
 struct monster_friends_base {
 	struct monster_friends_base *next;
-	char *base_name;
+	struct monster_base *base;
 	unsigned int percent_chance;
 	unsigned int number_dice;
 	unsigned int number_side;
