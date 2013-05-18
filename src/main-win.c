@@ -4449,6 +4449,17 @@ static LRESULT FAR PASCAL AngbandWndProc(HWND hWnd, UINT uMsg,
 			/*        wParam, lParam, vsc, vk, extended_key); */
 			/* fflush(stdout); */
 
+			if (!game_in_progress) {
+				/* Handle keyboard shortcuts pre-game */
+				switch (wParam) {
+					case KTRL('N'): process_menus(IDM_FILE_NEW); break;
+					case KTRL('O'): process_menus(IDM_FILE_OPEN); break;
+					case KTRL('X'): process_menus(IDM_FILE_EXIT); break;
+					default: return TRUE;
+				}
+				return FALSE;
+			}
+
 			// We don't want to translate some keys to their ascii values
 			// so we have to intercept them here.
 			switch (vk)
@@ -4472,17 +4483,7 @@ static LRESULT FAR PASCAL AngbandWndProc(HWND hWnd, UINT uMsg,
 			}
 
 			mods = extract_modifiers(ch, kp);
-
-			if (game_in_progress) {
-				Term_keypress(ch, mods);
-			} else {
-				/* Handle keyboard shortcuts pre-game */
-				switch (ch) {
-					case KTRL('N'): process_menus(IDM_FILE_NEW); break;
-					case KTRL('O'): process_menus(IDM_FILE_OPEN); break;
-					case KTRL('X'): process_menus(IDM_FILE_EXIT); break;
-				}
-			}
+			Term_keypress(ch, mods);
 
 			return 0;
 		}
