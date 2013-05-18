@@ -166,7 +166,6 @@ always:magic book:[Sorcery and Evocations]
 normal:ring:Searching
 normal:ring:Feather Falling
 normal:ring:Protection
-normal:amulet:Charisma
 normal:amulet:Slow Digestion
 normal:amulet:Resist Acid
 normal:wand:Slow Monster
