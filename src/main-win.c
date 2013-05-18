@@ -4562,42 +4562,40 @@ static LRESULT FAR PASCAL AngbandWndProc(HWND hWnd, UINT uMsg,
 			return 0;
 		}
 
-		case WM_CLOSE:
-		{
-			if (game_in_progress && character_generated)
-			{
-				if (!inkey_flag)
-				{
-					plog("You may not do that right now.");
-					return 0;
+#ifndef WM_QUERYENDSESSION
+#define WM_QUERYENDSESSION 0x0011
+#endif
+
+		case WM_QUERYENDSESSION:
+		case WM_QUIT: {
+			if (game_in_progress && character_generated) {
+				if (uMsg == WM_QUERYENDSESSION && !inkey_flag) {
+					plog("Please exit any open menus before closing the game.");
+					return FALSE;
 				}
 
-				/* Hack -- Forget messages */
 				msg_flag = FALSE;
-
-				/* Save the game */
 				save_game();
 			}
+
 			quit(NULL);
-			return 0;
+			return TRUE;
 		}
 
-		case WM_QUIT:
+
+		case WM_CLOSE:
 		{
-			if (game_in_progress && character_generated)
-			{
-				if (!inkey_flag)
-				{
+			if (game_in_progress && character_generated) {
+				if (!inkey_flag) {
 					plog("Please exit any open menus before closing the game.");
 					return 0;
 				}
 
 				/* Hack -- Forget messages */
 				msg_flag = FALSE;
-
-				/* Save the game */
 				save_game();
 			}
+
 			quit(NULL);
 			return 0;
 		}
