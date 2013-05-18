@@ -4438,7 +4438,6 @@ static LRESULT FAR PASCAL AngbandWndProc(HWND hWnd, UINT uMsg,
 		case WM_KEYDOWN:
 		{
 			return handle_keydown(wParam, lParam);
-			break;
 		}
 
 		case WM_CHAR:
@@ -4471,8 +4470,19 @@ static LRESULT FAR PASCAL AngbandWndProc(HWND hWnd, UINT uMsg,
 					Term_keypress(wParam, 0);
 					return 0;
 			}
+
 			mods = extract_modifiers(ch, kp);
-			Term_keypress(ch, mods);
+
+			if (game_in_progress) {
+				Term_keypress(ch, mods);
+			} else if (mods & KC_MOD_CONTROL) {
+				/* Handle keyboard shortcuts pre-game */
+				switch (ch) {
+					case 'N': process_menus(IDM_FILE_NEW); break;
+					case 'O': process_menus(IDM_FILE_OPEN); break;
+					case 'X': process_menus(IDM_FILE_EXIT); break;
+				}
+			}
 
 			return 0;
 		}
