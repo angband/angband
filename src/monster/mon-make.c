@@ -1035,6 +1035,89 @@ static bool place_new_monster_group(struct cave *c, int y, int x,
 /* Maximum distance from center for a group of monsters */
 #define GROUP_DISTANCE 5 
 
+static monster_base *place_monster_base = NULL;
+
+/* Predicate function for get_mon_num_prep)
+ * Check to see if the monster race has the same base as
+ * place_monter_base.
+ */
+static bool place_monster_base_okay(monster_race *race)
+{
+	assert(place_monster_base);
+	assert(race);
+	
+	/* Check if it matches */
+	if (race->base != place_monster_base) return FALSE;
+	
+	/* No uniques */
+	if (rf_has(race->flags, RF_UNIQUE)) return FALSE;
+	
+	return TRUE;
+}
+
+/** 
+ * Helper function to place monsters that appear as friends or escorts
+ */
+ bool place_friends(struct cave *c, int y, int x, monster_race *race, 
+		monster_race *friends_race, int total, bool sleep, byte origin)
+ {
+	int level_difference, extra_chance, nx, ny;
+	bool is_unique, success = TRUE;
+	
+	/* Find the difference between current dungeon depth and monster level */
+	level_difference = p_ptr->depth - friends_race->level + 5;
+	
+	/* Handle unique monsters */
+	is_unique = rf_has(friends_race->flags, RF_UNIQUE);
+	
+	/* Make sure the unique hasn't been killed already */
+	if (is_unique){
+		total = friends_race->cur_num < friends_race->max_num ? 1 : 0;
+	}
+	
+	/* More than 4 levels OoD, no groups allowed */
+	if (level_difference <= 0 && !is_unique){
+		return FALSE;
+	}
+	
+	/* Reduce group size within 5 levels of natural depth*/
+	if (level_difference < 10 && !is_unique){
+		extra_chance = (total * level_difference) % 10;
+		total = total * level_difference / 10;
+		
+		/* Instead of flooring the group value, we use the decimal place
+		   as a chance of an extra monster */
+		if (randint0(10) > extra_chance){
+			total += 1;
+		}
+	}
+	
+	/* No monsters in this group */
+	if (total <= 0){
+		return FALSE;
+	}
+	
+	/* Handle friends same as original monster */
+	if (race->ridx == friends_race->ridx){
+		place_new_monster_group(c, y, x, race, sleep, total, origin);
+	}
+	
+	/* Find a nearby place to put the other groups */
+	for (int j = 0; j < 50; j++){
+		scatter(&ny, &nx, y, x, GROUP_DISTANCE, FALSE);
+		if (cave_isopen(cave, ny, nx)) break;
+	}
+		
+	/* Place the monsters */
+	success = place_new_monster_one(ny, nx, friends_race, sleep, origin);
+	if (total > 1){
+		success = place_new_monster_group(c, ny, nx, friends_race, sleep, total, origin);
+	}
+	
+	return success;
+	
+}
+	
 /**
  * Attempts to place a monster of the given race at the given location.
  *
@@ -1051,7 +1134,10 @@ static bool place_new_monster_group(struct cave *c, int y, int x,
 bool place_new_monster(struct cave *c, int y, int x, monster_race *race, bool sleep,
 	bool group_okay, byte origin)
 {
-	struct monster_friend *friend;
+	struct monster_friends *friends;
+	struct monster_friends_base *friends_base;
+	monster_race *friends_race;
+	int total;
 	
 	assert(c);
 	assert(race);
@@ -1063,74 +1149,61 @@ bool place_new_monster(struct cave *c, int y, int x, monster_race *race, bool sl
 	if (!group_okay) return (TRUE);
 
 	/* Go through friends flags */
-	for (friend = race->friends; friend; friend = friend->next) {
-		monster_race *friend_race;
-		int total, level_difference, extra_chance, nx, ny;
-		bool is_unique;
-		if ((unsigned int)randint0(100) >= friend->percent_chance)
+	for (friends = race->friends; friends; friends = friends->next) {
+		
+		if ((unsigned int)randint0(100) >= friends->percent_chance)
 			continue;
 		
 		/* Check if we're the same otherwise look it up */
-		if (streq(friend->friend_name, "Same")){
-			friend_race = race;
+		if (streq(friends->friends_name, "Same")){
+			friends_race = race;
 		} else {		
 			/* Get the chosen monster */
-			friend_race = lookup_monster(friend->friend_name);
+			friends_race = lookup_monster(friends->friends_name);
 		}
 		
-		/* Calculate the number of monsters to place */
-		total = damroll(friend->number_dice, friend->number_side);
+		/* Calculate the base number of monsters to place */
+		total = damroll(friends->number_dice, friends->number_side);
 		
-		/* Find the difference between current dungeon depth and monster level */
-		level_difference = p_ptr->depth - friend_race->level + 5;
+		place_friends(c, y, x, race, friends_race, total, sleep, origin);
 		
-		/* Handle unique monsters */
-		is_unique = rf_has(friend_race->flags, RF_UNIQUE);
-		
-		/* Make sure the unique hasn't been killed alread */
-		if (is_unique){
-			total = friend_race->cur_num < friend_race->max_num ? 1 : 0;
-		}
-		
-		/* More than 4 levels OoD, no groups allowed */
-		if (level_difference <= 0 && !is_unique) continue;
-		
-		/* Reduce group size within 5 levels of natural depth*/
-		if (level_difference < 10 && !is_unique){
-			extra_chance = (total * level_difference) % 10;
-			total = total * level_difference / 10;
-			
-			/* Instead of flooring the group value, we use the decimal place
-			   as a chance of an extra monster */
-			if (randint0(10) > extra_chance){
-				total += 1;
-			}
-		}
-		
-		/* No monsters in this group */
-		if (total <= 0) continue;
-		
-		/* Handle friends same as original monster */
-		if (race->ridx == friend_race->ridx){
-			place_new_monster_group(c, y, x, race, sleep, total, origin);
-		}
-		
-		/* Find a nearby place to put the other groups */
-		for (int j = 0; j < 50; j++){
-			scatter(&ny, &nx, y, x, GROUP_DISTANCE, FALSE);
-			if (cave_isopen(cave, ny, nx)) break;
-		}
-		
-		/* Place the monsters */
-		place_new_monster_one(ny, nx, friend_race, sleep, origin);
-		if (total > 1){
-			place_new_monster_group(c, ny, nx, friend_race, sleep, total, origin);
-		}
 	}
 
+	/* Go through the friends_base flags */
+	for (friends_base = race->friends_base; friends_base; 
+			friends_base = friends_base->next){
+		monster_base *base;
+		
+		/* Check if we pass chance for the monster appearing */
+		if ((unsigned int)randint0(100) >= friends_base->percent_chance)
+			continue;
+			
+		total = damroll(friends_base->number_dice, friends_base->number_side);
+			
+		/* Find the monster_base */
+		base = lookup_monster_base(friends_base->base_name);
+
+		/* Set the escort index base*/
+		place_monster_base = base;
+
+		/* Prepare allocation table */
+		get_mon_num_prep(place_monster_base_okay);
+
+		/* Pick a random race */
+		friends_race = get_mon_num(race->level);
+
+		/* Reset allocation table */
+		get_mon_num_prep(NULL);
+
+		/* Handle failure */
+		if (!friends_race) break;
+
+		place_friends(c, y, x, race, friends_race, total, sleep, origin);
+	}
 	/* Success */
 	return (TRUE);
 }
+
 
 /**
  * Picks a monster race, makes a new monster of that race, then attempts to 

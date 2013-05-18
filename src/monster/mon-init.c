@@ -478,9 +478,9 @@ static enum parser_error parse_r_drop_artifact(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_r_friend(struct parser *p) {
+static enum parser_error parse_r_friends(struct parser *p) {
 	struct monster_race *r = parser_priv(p);
-	struct monster_friend *f;
+	struct monster_friends *f;
 	struct random number;
 	
 	if (!r)
@@ -490,12 +490,31 @@ static enum parser_error parse_r_friend(struct parser *p) {
 	f->number_dice = number.dice;
 	f->number_side = number.sides;
 	f->percent_chance = parser_getuint(p, "chance");
-	f->friend_name = string_make(parser_getstr(p, "name"));
+	f->friends_name = string_make(parser_getstr(p, "name"));
 	f->next = r->friends;
 	r->friends = f;
 	
 	return PARSE_ERROR_NONE;
 }			
+
+static enum parser_error parse_r_friends_base(struct parser *p) {
+	struct monster_race *r = parser_priv(p);
+	struct monster_friends_base *f;
+	struct random number;
+	
+	if (!r)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	f = mem_zalloc(sizeof *f);
+	number = parser_getrand(p, "number");
+	f->number_dice = number.dice;
+	f->number_side = number.sides;
+	f->percent_chance = parser_getuint(p, "chance");
+	f->base_name = string_make(parser_getstr(p, "name"));
+	f->next = r->friends_base;
+	r->friends_base = f;
+	
+	return PARSE_ERROR_NONE;
+}		
 
 static enum parser_error parse_r_mimic(struct parser *p) {
 	struct monster_race *r = parser_priv(p);
@@ -540,7 +559,8 @@ struct parser *init_parse_r(void) {
 	parser_reg(p, "S str spells", parse_r_s);
 	parser_reg(p, "drop sym tval sym sval uint chance uint min uint max", parse_r_drop);
 	parser_reg(p, "drop-artifact str name", parse_r_drop_artifact);
-	parser_reg(p, "friends uint chance rand number str name", parse_r_friend);
+	parser_reg(p, "friends uint chance rand number str name", parse_r_friends);
+	parser_reg(p, "friends-base uint chance rand number str name", parse_r_friends_base);
 	parser_reg(p, "mimic sym tval sym sval", parse_r_mimic);
 	return p;
 }
@@ -590,7 +610,8 @@ static void cleanup_r(void)
 	for (ridx = 0; ridx < z_info->r_max; ridx++) {
 		struct monster_race *r = &r_info[ridx];
 		struct monster_drop *d, *dn;
-		struct monster_friend *f, *fn;
+		struct monster_friends *f, *fn;
+		struct monster_friends_base *fb, *fbn;
 		struct monster_mimic *m, *mn;
 
 		d = r->drops;
@@ -605,6 +626,12 @@ static void cleanup_r(void)
 			mem_free(f);
 			f = fn;
 		}
+		while (fb) {
+		fb = r->friends_base;
+			fbn = fb->next;
+			mem_free(fb);
+			fb = fbn;
+		}		
 		m = r->mimic_kinds;
 		while (m) {
 			mn = m->next;

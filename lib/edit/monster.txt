@@ -924,6 +924,8 @@ S:1_IN_5
 S:CAUSE_1 | CONF | HEAL | MISSILE
 drop:90:0:5:1:1
 drop:91:0:5:1:1
+friends-base:30:1d2:kobold
+friends-base:70:1d2:kobold
 D:It is a kobold dressed in skins and gesturing wildly.
 
 ### Dungeon level 4 ###
@@ -1042,6 +1044,8 @@ B:HIT:HURT:1d9
 F:DROP_40
 S:1_IN_5
 S:ARROW_2
+friends-base:30:1d2:kobold
+friends-base:70:1d2:kobold
 D:It is an ugly dog-headed humanoid wielding a bow.
 
 N:548:Silver mouse
@@ -1075,6 +1079,7 @@ B:HIT:HURT:1d8
 B:HIT:HURT:1d8
 F:UNIQUE | MALE
 F:DROP_2 | DROP_GOOD | ONLY_ITEM
+friends:80:1d7:Scruffy looking hobbit
 D:He is a sturdy hobbit who is renowned for his unusual strength and vigour.  He
 D: can prove a troublesome opponent.
 
@@ -1130,6 +1135,8 @@ I:110:65:20:48:70
 W:5:1:0:25
 B:HIT:HURT:1d10
 F:DROP_60
+friends-base:50:1d2:kobold
+friends-base:30:1d2:kobold
 D:It is a man-sized figure with the all too recognizable face of a kobold.
 
 N:83:Skeleton kobold
@@ -1283,6 +1290,7 @@ W:6:1:0:15
 B:HIT:HURT:1d8
 F:DROP_20
 F:HURT_LIGHT
+friends:30:1d3:Crow
 friends:100:2d9:Same
 D:He is one of the many weaker 'slave' orcs, often mistakenly known as a goblin.
 
@@ -1594,6 +1602,7 @@ I:110:65:20:48:70
 W:8:1:0:25
 B:HIT:HURT:1d10
 F:DROP_20
+friends:30:1d8:Crow
 friends:50:1d8:Wolf
 friends:100:2d6:Same
 D:He is a hardy well-weathered survivor.
@@ -2053,7 +2062,7 @@ F:DROP_1
 F:OPEN_DOOR | TAKE_ITEM
 friends:50:1d2:Illusionist
 friends:50:1d2:Priest
-friends:50:1d2:Swordsman
+friends:50:1d2:Easterling warrior
 friends:50:1d2:Same
 D:He is eyeing your backpack.
 
@@ -2182,6 +2191,7 @@ F:IM_COLD | IM_ELEC | IM_FIRE | IM_POIS
 friends:50:4d4:Snaga
 friends:80:2d7:Warg
 friends:100:5d4:Hill orc
+friends:100:1d1:Bullroarer the Hobbit
 friends:100:1d1:Grishnákh, the Hill Orc
 D:A leader of a band of raiding orcs, he picks on hobbits.
 
@@ -2220,7 +2230,7 @@ drop:91:0:8:1:1
 drop:91:1:8:1:1
 friends:50:1d2:Brigand
 friends:50:1d2:Illusionist
-friends:50:1d2:Swordsman
+friends:50:1d2:Easterling warrior
 friends:50:1d2:Same
 D:A robed man, dedicated to his god.
 
@@ -2302,7 +2312,7 @@ S:1_IN_15
 S:SCARE | TPORT
 D:A ghostly apparition that shrieks horribly.
 
-N:168:Swordsman
+N:168:Easterling warrior
 T:person
 C:u
 I:110:54:20:51:70
@@ -2394,7 +2404,8 @@ I:110:65:20:49:50
 W:13:2:0:50
 B:HIT:HURT:2d8
 F:DROP_40
-friends:100:4d4:Same
+friends-base:100:2d4:orc
+friends:100:2d4:Same
 D:A hideous, smallish giant that is often found near or with orcs.
 
 N:175:Creeping mithril coins
@@ -2426,7 +2437,7 @@ drop:90:1:8:1:1
 drop:90:2:8:1:1
 friends:50:1d2:Brigand
 friends:50:1d2:Priest
-friends:50:1d2:Swordsman
+friends:50:1d2:Easterling warrior
 friends:50:1d2:Same
 D:A deceptive spell caster.
 
@@ -2827,6 +2838,7 @@ B:HIT:HURT:3d5
 F:UNIQUE | MALE | EVIL | HAS_LIGHT
 F:DROP_60 | DROP_GOOD | ONLY_ITEM
 F:OPEN_DOOR | TAKE_ITEM
+friends:60:1d3:Easterling warrior
 D:A short and swarthy Easterling.
 
 N:212:Quasit
@@ -3002,12 +3014,9 @@ S:1_IN_9
 S:ARROW_2
 friends:50:1d5:Wolf
 friends:50:1d5:Warg
-friends:50:1d5:Snaga
-friends:50:1d5:Hill orc
-friends:50:1d5:Cave orc
-friends:50:1d5:Black orc
-friends:50:1d5:Half-orc
-friends:50:1d5:Uruk
+friends-base:50:1d5:orc
+friends-base:50:1d5:orc
+friends-base:50:1d5:orc
 D:An armoured orc with an air of authority.
 
 N:220:Fire spirit
@@ -3395,6 +3404,10 @@ S:BLIND | CONF | DARKNESS | HASTE
 S:BO_COLD | BO_FIRE
 drop:90:1:5:1:1
 drop:90:2:5:1:1
+friends:80:1d3:Dark elf
+friends:70:1d2:Dark elf warrior
+friends:50:1d1:Dark elf mage
+friends:50:1d1:Dark elf priest
 D:A dark elven figure in armour and radiating evil power.
 
 N:580:Ranger
@@ -3413,7 +3426,7 @@ S:BO_COLD | BO_ELEC
 S:S_ANIMAL
 drop:90:1:5:1:1
 drop:90:2:5:1:1
-friends:50:1d1:Hardened warrior
+friends:50:1d1:Easterling champion
 friends:50:1d1:Master rogue
 friends:50:1d2:Illusionist
 friends:50:1d2:Priest
@@ -3435,7 +3448,7 @@ S:1_IN_4
 S:BLIND | CAUSE_2 | HEAL | SCARE | SLOW
 drop:91:1:5:1:1
 drop:91:2:5:1:1
-friends:50:1d1:Hardened warrior
+friends:50:1d1:Easterling champion
 friends:50:1d1:Master rogue
 friends:50:1d2:Illusionist
 friends:50:1d2:Priest
@@ -3642,7 +3655,7 @@ S:1_IN_11
 S:DRAIN_MANA
 D:It is a strangely moving puddle.
 
-N:261:Hardened warrior
+N:261:Easterling champion
 T:person
 C:u
 I:110:90:20:60:60
@@ -3687,7 +3700,7 @@ B:HIT:EAT_GOLD:4d4
 F:MALE | EVIL
 F:DROP_2
 F:OPEN_DOOR | TAKE_ITEM
-friends:50:1d1:Hardened warrior
+friends:50:1d1:Easterling champion
 friends:50:1d1:Ranger
 friends:50:1d1:Mage
 friends:50:1d1:Paladin
@@ -4057,6 +4070,7 @@ B:HIT:HURT:4d6
 F:UNIQUE | MALE | EVIL | HAS_LIGHT
 F:DROP_60 | DROP_GOOD | ONLY_ITEM
 F:OPEN_DOOR | TAKE_ITEM
+friends:60:2d3:Easterling champion
 friends:100:1d1:Ulfast, Son of Ulfang
 D:A short and swarthy Easterling.
 
@@ -4490,11 +4504,7 @@ S:BO_COLD | BO_ELEC | BO_FIRE
 S:S_MONSTER
 drop:90:2:10:1:1
 drop:90:3:7:1:1
-friends:50:1d1:Master rogue
-friends:50:1d1:Ranger
-friends:50:1d1:Paladin
-friends:50:1d1:Black knight
-friends:50:1d1:Ninja
+friends-base:100:1d1:golem
 D:A mage of some power - you can tell by the size of his hat.
 
 N:306:Mind flayer
@@ -4530,11 +4540,9 @@ S:1_IN_5
 S:BLIND | BLINK | CONF | SCARE | TELE_AWAY | TELE_LEVEL
 S:TELE_TO | TPORT
 S:S_KIN
-friends:50:2d4:Manes
-friends:50:2d4:Lemure
-friends:50:1d3:Tengu
-friends:50:1d3:Homunculus
-friends:50:1d3:Quasit
+friends-base:50:1d3:minor demon
+friends-base:50:1d3:minor demon
+friends-base:50:1d3:minor demon
 friends:100:2d4:Imp
 D:An intensely irritating git of a monster.
 
@@ -5152,6 +5160,7 @@ S:HEAL
 S:S_ANIMAL | S_SPIDER
 drop:91:2:10:1:1
 drop:91:3:5:1:1
+friends-base:50:2d4:spider
 D:An adept at unarmed combat, the mystic strikes with stunning power.  He can
 D: summon help from nature and is able to focus his power to ease any pain.
 
@@ -5468,6 +5477,7 @@ F:OPEN_DOOR | TAKE_ITEM
 S:1_IN_10
 S:S_KIN
 friends:60:1d3:Mûmak
+friends:100:3d3:Easterling champion
 friends:100:1d1:Ulfast, Son of Ulfang
 friends:100:1d1:Ulwarth, Son of Ulfang
 D:A short and swarthy Easterling dressed in black.  He and his three sons once
@@ -5489,6 +5499,7 @@ F:IM_POIS
 S:1_IN_4
 S:BLIND | BLINK | CAUSE_3 | DRAIN_MANA | HOLD
 S:SCARE | SLOW | TELE_AWAY | TELE_TO
+friends-base:70:1d3:skeleton
 D:It is a skeletal form dressed in robes.  It radiates vastly evil power.
 
 N:358:Giant grey scorpion
@@ -6059,6 +6070,7 @@ S:BO_NETH
 S:S_UNDEAD
 drop:91:2:8:1:1
 drop:91:3:8:1:1
+friends-base:80:1d3:skeleton
 D:A gaunt figure, clothed in black robes.
 
 N:392:Lorgan, Chief of the Easterlings
@@ -6079,6 +6091,8 @@ F:FORCE_SLEEP
 S:1_IN_4
 S:TELE_TO
 S:S_MONSTERS
+friends:50:1d3:Mûmak
+friends:100:2d5:Easterling champion
 D:A mighty warrior from the east, Lorgan hates everything that he cannot
 D: control.
 
@@ -6100,6 +6114,8 @@ S:BO_FIRE
 S:S_DEMON
 drop:90:2:8:1:1
 drop:90:3:8:1:1
+friends-base:50:1d3:minor demon
+friends:100:1d1:Quasit
 D:A figure twisted by evil standing in robes of deepest crimson.
 
 N:402:Mature red dragon
@@ -6412,6 +6428,7 @@ S:BO_NETH
 S:S_MONSTERS
 drop:91:2:8:1:1
 drop:91:3:8:1:1
+friends:50:1d1:Imp
 D:It is a humanoid figure dressed in armour of an ancient form.  From beneath
 D: its helmet, eyes glow a baleful red and seem to pierce you like lances of
 D: fire.
@@ -6478,6 +6495,7 @@ F:IM_POIS
 S:1_IN_6
 S:CAUSE_3 | HOLD | SCARE
 S:BO_NETH
+friends-base:50:1d3:wraith
 D:Your life force is torn from your body as this powerful unearthly being
 D: approaches.
 
@@ -6818,6 +6836,8 @@ S:BLIND
 S:S_DRAGON
 drop:90:2:8:1:1
 drop:90:3:8:1:1
+friends-base:30:1d1:dragon
+friends-base:60:1d1:dragon
 D:This elusive female spellcaster has a special affinity for dragons, whom she
 D: rarely fights without.
 
@@ -7100,6 +7120,8 @@ S:1_IN_3
 S:BLIND | BLINK | CAUSE_3 | CAUSE_4 | CONF
 S:DRAIN_MANA | HOLD | SCARE | TELE_TO
 S:S_UNDEAD
+friends-base:80:1d3:zombie
+friends-base:80:1d3:skeleton
 D:A skeletal form wrapped in robes.  Powerful magic crackles along its bony
 D: fingers.
 
@@ -7207,6 +7229,7 @@ F:DROP_4
 S:1_IN_7
 S:BLIND | BRAIN_SMASH | CAUSE_3 | CAUSE_4 | DARKNESS | DRAIN_MANA
 S:BO_NETH
+friends:40:1d4:Vampire
 D:A foul wind chills your bones as this ghastly figure approaches.
 
 #N:460:Dread
@@ -7918,6 +7941,7 @@ S:HEAL
 S:S_ANIMAL
 drop:91:2:8:1:1
 drop:91:3:8:1:1
+friends:50:2d4:spider
 D:A lord of all that is natural, skilled in the mystic ways.  He is a master of
 D: martial arts and is at one with nature, able to summon help from the wild if
 D: need be.
@@ -8138,6 +8162,7 @@ S:1_IN_5
 S:BRAIN_SMASH | CAUSE_3 | CAUSE_4 | DARKNESS | DRAIN_MANA
 S:BO_NETH
 S:S_UNDEAD
+friends-base:30:1d3:ghost
 D:A terrible robed undead figure, this creature has existed in its unlife for
 D: many centuries by stealing the life of others.  It can summon the very shades
 D: of its victims from beyond the grave to come enslaved to its aid.
@@ -8332,6 +8357,7 @@ S:HEAL | MIND_BLAST
 S:S_ANIMAL | S_HOUND | S_SPIDER
 drop:91:2:5:1:1
 drop:91:3:15:1:1
+friends:80:3d5:spider
 D:He is one of the few true masters of the art, being extremely skillful in all
 D: forms of unarmed combat and controlling the world's natural creatures with
 D: disdainful ease.
@@ -8524,6 +8550,7 @@ S:SCARE | TELE_AWAY | TPORT | TRAPS
 S:BA_ACID | BA_COLD | BA_FIRE | BA_WATE
 S:BO_ICEE
 S:S_ANIMAL | S_DEMON | S_HI_DRAGON | S_MONSTERS | S_UNDEAD
+friends:100:1d1:Wormtongue, Agent of Saruman
 D:Originally known as the White, Saruman fell prey to Sauron's wiles.  He seeks
 D: to emulate him and breeds orcs and trolls to fight for him.  He searches
 D: forever for the One Ring, to become a mighty Sorcerer-King of the world.
@@ -8644,6 +8671,7 @@ S:BLIND | BLINK | BRAIN_SMASH | CONF | DRAIN_MANA | HOLD
 S:TELE_TO | TPORT
 S:BA_NETH
 S:S_UNDEAD
+friends:50:2d3:Dread
 D:It is a massive form of animated death, its colour deeper than black.  It
 D: drinks in light, and space around it is twisted and torn by the weight of its
 D: evil.  It is unlife and it knows nothing but the stealing of souls and the
@@ -8817,6 +8845,8 @@ S:BLINK | CAUSE_4 | DRAIN_MANA | FORGET | HEAL
 S:HOLD | SCARE | TELE_TO | TPORT
 S:BA_NETH
 S:S_DEMON | S_HI_UNDEAD
+friends-base:80:2d3:zombie
+friends-base:80:2d3:skeleton
 D:A lich who has reached its ultimate evolutionary stage: a completely
 D: immaterial state.
 

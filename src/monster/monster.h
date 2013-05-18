@@ -96,13 +96,21 @@ struct monster_drop {
 	unsigned int max;
 };
 
-struct monster_friend {
-    struct monster_friend *next;
-    char *friend_name;
-    unsigned int percent_chance;
-    unsigned int number_dice;
-    unsigned int number_side;
-};    
+struct monster_friends {
+	struct monster_friends *next;
+	char *friends_name;
+	unsigned int percent_chance;
+	unsigned int number_dice;
+	unsigned int number_side;
+};
+
+struct monster_friends_base {
+	struct monster_friends_base *next;
+	char *base_name;
+	unsigned int percent_chance;
+	unsigned int number_dice;
+	unsigned int number_side;
+};
 
 struct monster_mimic {
 	struct monster_mimic *next;
@@ -181,8 +189,10 @@ typedef struct monster_race
 
 	struct monster_drop *drops;
     
-    struct monster_friend *friends;
+    struct monster_friends *friends;
 	
+    struct monster_friends_base *friends_base;
+    
 	struct monster_mimic *mimic_kinds;
 } monster_race;
 
