@@ -105,7 +105,7 @@ enum
 /* Some flags are obvious */
 #define RF_OBVIOUS_MASK \
 	RF_UNIQUE, RF_QUESTOR, RF_MALE, RF_FEMALE, \
-	RF_FRIEND, RF_FRIENDS, RF_ESCORT, RF_ESCORTS
+	RF_GROUP_AI
 
 /* "race" flags */
 #define RF_RACE_MASK \

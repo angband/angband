@@ -680,10 +680,6 @@ static int borg_guess_race(byte a, wchar_t c, bool multi, int y, int x)
         /* Penalize "depth miss" */
         s = s - ABS(r_ptr->level - borg_skill[BI_CDEPTH]);
 
-
-        /* Hack -- Reward group monsters */
-        if (r_ptr->flags1 & (RF1_FRIEND | RF1_FRIENDS)) s = s + 5;
-
         /* Hack -- Reward multiplying monsters */
         if (rf_has(r_ptr->flags, RF_MULTIPLY)) s = s + 10;
 

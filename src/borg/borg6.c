@@ -1645,7 +1645,7 @@ bool borg_shoot_scoot_safe(int emergency, int turns, int b_p)
 			 * list in borg_launch_damage_one()
 			 */
     		else if ((borg_danger_aux(kill->y,kill->x,1,i, TRUE, FALSE) > avoidance * 3/10) ||
-    		    ((rf_has(r_ptr->flags, RF_FRIENDS)) /* monster has friends*/ &&
+    		    ((r_ptr->friends || r_ptr->friends_base) /* monster has friends*/ &&
         	 	 kill->level >= borg_skill[BI_CLEVEL] - 5 /* close levels */) ||
         		(kill->ranged_attack /* monster has a ranged attack */) ||
         		(rf_has(r_ptr->flags, RF_UNIQUE)) ||
@@ -5847,7 +5847,7 @@ int borg_launch_damage_one(int i, int dam, int typ, int ammo_location)
             if (rf_has(r_ptr->flags, RF_UNIQUE))
             {
                 /* Banish ones with escorts */
-                if (rf_has(r_ptr->flags, RF_ESCORT))
+                if (r_ptr->friends || r_ptr->friends_base)
                 {
                     dam = 0;
                 }
@@ -5874,7 +5874,7 @@ int borg_launch_damage_one(int i, int dam, int typ, int ammo_location)
     /* use Missiles on certain types of monsters */
     if ((borg_skill[BI_CDEPTH] >= 1) &&
          (borg_danger_aux(kill->y,kill->x,1,i, TRUE, TRUE) > avoidance * 2/10 ||
-          (rf_has(r_ptr->flags, RF_FRIENDS) /* monster has friends*/ &&
+          ((r_ptr->friends || r_ptr->friends_base) /* monster has friends*/ &&
            kill->level >= borg_skill[BI_CLEVEL] - 5 /* close levels */) ||
           kill->ranged_attack /* monster has a ranged attack */ ||
           rf_has(r_ptr->flags, RF_UNIQUE) ||
@@ -17522,7 +17522,7 @@ bool borg_flow_kill(bool viewable, int nearness)
         }
 
         /* Hack -- Avoid getting surrounded */
-        if (borg_in_hall && (rf_has(r_info[kill->r_idx].flags, RF_FRIENDS)))
+        if (borg_in_hall && (rf_has(r_info[kill->r_idx].flags, RF_GROUP_AI)))
         {
             /* check to see if monster is in a hall, */
             for (hall_x = -1; hall_x <= 1; hall_x++)

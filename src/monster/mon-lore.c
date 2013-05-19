@@ -1556,14 +1556,15 @@ static void describe_monster_abilities(const monster_race *r_ptr,
 		text_out(" feet.  ");
 	}
 
-	/* Describe escorts */
-	if (flags_test(f, RF_SIZE, RF_ESCORT, RF_ESCORTS, FLAG_END))
-		text_out("%s usually appears with escorts.  ", wd_he[msex]);
-
 	/* Describe friends */
-	else if (flags_test(f, RF_SIZE, RF_FRIEND, RF_FRIENDS, FLAG_END))
-		text_out("%s usually appears in groups.  ", wd_he[msex]);
-}
+	if (r_ptr->friends || r_ptr->friends_base){
+		text_out("%s may appear with other monsters", wd_he[msex]);
+		if (rf_has(f, RF_GROUP_AI))
+			text_out(" and hunts in packs");
+		text_out(".  ");
+	}
+		
+}	
 
 
 /**

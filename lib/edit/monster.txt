@@ -461,6 +461,7 @@ C:U
 I:110:3:10:3:10
 W:1:1:0:1
 B:BITE:HURT:1d1
+F:GROUP_AI
 friends:100:2d7:Same
 D:It is a yapping snarling dog, dangerous when in a pack.
 
@@ -715,6 +716,7 @@ I:120:7:8:19:80
 W:2:1:0:7
 B:BITE:HURT:1d4
 F:ANIMAL | WEIRD_MIND
+F:GROUP_AI
 friends:100:2d8:Same
 D:It is a black spider that moves in fits and starts.
 
@@ -1362,7 +1364,7 @@ W:7:3:0:15
 B:BITE:HURT:1d3
 B:STING:POISON:1d4
 F:ANIMAL | WEIRD_MIND
-F:IM_POIS
+F:IM_POIS | GROUP_AI
 friends:100:2d7:Same
 D:It scuttles towards you.
 
@@ -2029,6 +2031,7 @@ I:120:21:30:45:10
 W:10:1:0:30
 B:BITE:HURT:1d6
 F:RAND_25 | BASH_DOOR
+F:GROUP_AI
 friends:100:2d10:Same
 D:It howls and snaps at you.
 
@@ -2146,7 +2149,7 @@ W:12:1:0:30
 B:BITE:HURT:1d3
 B:BITE:HURT:1d4
 F:RAND_25 | BASH_DOOR
-F:IM_COLD
+F:IM_COLD | GROUP_AI
 friends:100:2d7:Same
 D:A large and muscled wolf from the northern wastes.  Its breath is cold and icy
 D: and its fur coated in frost.
@@ -2552,7 +2555,7 @@ C:s
 I:120:36:20:30:10
 W:14:2:0:40
 B:BITE:HURT:1d8
-F:EVIL
+F:EVIL | GROUP_AI
 F:RAND_25 | BASH_DOOR
 friends:100:2d7:Same
 D:It is a large wolf with eyes full of cunning.
@@ -2715,7 +2718,7 @@ B:BITE:HURT:1d8
 B:BITE:POISON:1d6
 B:BITE:POISON:1d6
 F:EVIL | ANIMAL | WEIRD_MIND
-F:IM_POIS
+F:IM_POIS | GROUP_AI
 friends:100:2d7:Same
 D:A strong and powerful spider from Mirkwood forest.  Cunning and evil, it seeks
 D: to taste your juicy insides.
@@ -2894,6 +2897,7 @@ B:CLAW:HURT:1d4
 B:CLAW:HURT:1d4
 S:1_IN_8
 S:SHRIEK
+F:GROUP_AI
 friends:100:3d3:Same
 D:A type of crow, specially bred by the forces of evil as spies; their
 D: rudimentary intelligence guided by an evil mind has tracked you down, and now
@@ -3111,7 +3115,7 @@ C:B
 I:120:36:20:24:10
 W:18:2:0:50
 B:BITE:HURT:1d8
-F:RAND_25 | BASH_DOOR
+F:RAND_25 | BASH_DOOR | GROUP_AI
 S:1_IN_4
 S:BLINK | TELE_TO
 friends:100:2d7:Same
@@ -3253,7 +3257,7 @@ B:BITE:HURT:1d8
 B:BITE:POISON:1d6
 B:BITE:POISON:1d6
 F:ANIMAL | WEIRD_MIND
-F:IM_POIS
+F:IM_POIS | GROUP_AI
 S:1_IN_5
 S:BLINK | TELE_TO
 friends:100:2d7:Same
@@ -4830,7 +4834,7 @@ I:110:36:10:75:10
 W:30:2:0:80
 B:BITE:ELEC:5d5
 F:RAND_25
-F:IM_ELEC
+F:IM_ELEC | GROUP_AI
 friends:100:4d4:Same
 D:It is a giant ant that crackles with energy.
 
@@ -4841,7 +4845,7 @@ I:120:67:10:60:20
 W:30:3:0:90
 B:BITE:HURT:2d12
 B:BITE:HURT:2d12
-F:RAND_25 | KILL_BODY
+F:RAND_25 | KILL_BODY | GROUP_AI
 friends:100:4d4:Same
 D:An armoured form moving with purpose.  Powerful on its own, flee when hordes
 D: of them march.
@@ -5675,7 +5679,7 @@ B:BITE:FIRE:3d12
 B:BITE:FIRE:3d12
 F:EVIL | HAS_LIGHT
 F:RAND_25 | BASH_DOOR | MOVE_BODY
-F:IM_FIRE
+F:IM_FIRE | GROUP_AI
 F:FORCE_SLEEP
 S:1_IN_5
 S:BR_FIRE
@@ -5811,7 +5815,7 @@ B:BITE:FIRE:3d12
 B:BITE:FIRE:3d12
 F:HAS_LIGHT
 F:KILL_BODY
-F:IM_FIRE
+F:IM_FIRE | GROUP_AI
 friends:100:4d4:Same
 D:A giant ant covered in shaggy fur.  Its powerful jaws glow with heat.
 
@@ -6262,7 +6266,7 @@ F:UNIQUE | FEMALE
 F:DROP_2 | DROP_GOOD | ONLY_ITEM
 F:OPEN_DOOR
 F:NO_CONF | NO_SLEEP
-F:FORCE_SLEEP
+F:FORCE_SLEEP | GROUP_AI
 S:1_IN_2
 S:S_KIN
 friends:100:2d6:Soldier ant
@@ -6558,7 +6562,7 @@ B:CLAW:POISON:2d8
 B:BITE:POISON:2d6
 B:BITE:POISON:2d6
 F:EVIL | ANIMAL | SMART
-F:OPEN_DOOR
+F:OPEN_DOOR | GROUP_AI
 F:HURT_LIGHT | IM_POIS
 F:FORCE_SLEEP
 S:1_IN_6
