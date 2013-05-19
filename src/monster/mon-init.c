@@ -478,6 +478,46 @@ static enum parser_error parse_r_drop_artifact(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_r_friends(struct parser *p) {
+	struct monster_race *r = parser_priv(p);
+	struct monster_friends *f;
+	struct random number;
+	
+	if (!r)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	f = mem_zalloc(sizeof *f);
+	number = parser_getrand(p, "number");
+	f->number_dice = number.dice;
+	f->number_side = number.sides;
+	f->percent_chance = parser_getuint(p, "chance");
+	f->name = string_make(parser_getstr(p, "name"));
+	f->next = r->friends;
+	r->friends = f;
+	
+	return PARSE_ERROR_NONE;
+}			
+
+static enum parser_error parse_r_friends_base(struct parser *p) {
+	struct monster_race *r = parser_priv(p);
+	struct monster_friends_base *f;
+	struct random number;
+	
+	if (!r)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	f = mem_zalloc(sizeof *f);
+	number = parser_getrand(p, "number");
+	f->number_dice = number.dice;
+	f->number_side = number.sides;
+	f->percent_chance = parser_getuint(p, "chance");
+	f->base = lookup_monster_base(parser_getstr(p, "name"));
+	if (!f->base) return PARSE_ERROR_UNRECOGNISED_TVAL;
+
+	f->next = r->friends_base;
+	r->friends_base = f;
+	
+	return PARSE_ERROR_NONE;
+}		
+
 static enum parser_error parse_r_mimic(struct parser *p) {
 	struct monster_race *r = parser_priv(p);
 	struct monster_mimic *m;
@@ -521,6 +561,8 @@ struct parser *init_parse_r(void) {
 	parser_reg(p, "S str spells", parse_r_s);
 	parser_reg(p, "drop sym tval sym sval uint chance uint min uint max", parse_r_drop);
 	parser_reg(p, "drop-artifact str name", parse_r_drop_artifact);
+	parser_reg(p, "friends uint chance rand number str name", parse_r_friends);
+	parser_reg(p, "friends-base uint chance rand number str name", parse_r_friends_base);
 	parser_reg(p, "mimic sym tval sym sval", parse_r_mimic);
 	return p;
 }
@@ -531,6 +573,7 @@ static errr run_parse_r(struct parser *p) {
 
 static errr finish_parse_r(struct parser *p) {
 	struct monster_race *r, *n;
+	size_t i;
 
 	/* scan the list for the max id */
 	z_info->r_max -= 1;
@@ -557,6 +600,25 @@ static errr finish_parse_r(struct parser *p) {
 		mem_free(r);
 	}
 	z_info->r_max += 1;
+
+	/* convert friend names into race pointers */
+	for (i = 0; i < z_info->r_max; i++) {
+		struct monster_race *r = &r_info[i];
+		struct monster_friends *f;
+		for (f = r->friends; f; f = f->next) {
+			if (!my_stricmp(f->name, "same"))
+				f->race = r;
+			else
+				f->race = lookup_monster(f->name);
+
+			if (!f->race)
+				quit_fmt("Monster '%s' has friend '%s' but I couldn't find any monster of that name",
+						r->name, f->name);
+
+			string_free(f->name);
+		}
+	}
+
 	eval_r_power(r_info);
 
 	parser_destroy(p);
@@ -570,6 +632,8 @@ static void cleanup_r(void)
 	for (ridx = 0; ridx < z_info->r_max; ridx++) {
 		struct monster_race *r = &r_info[ridx];
 		struct monster_drop *d, *dn;
+		struct monster_friends *f, *fn;
+		struct monster_friends_base *fb, *fbn;
 		struct monster_mimic *m, *mn;
 
 		d = r->drops;
@@ -578,6 +642,18 @@ static void cleanup_r(void)
 			mem_free(d);
 			d = dn;
 		}
+		f = r->friends;
+		while (f) {
+			fn = f->next;
+			mem_free(f);
+			f = fn;
+		}
+		while (fb) {
+		fb = r->friends_base;
+			fbn = fb->next;
+			mem_free(fb);
+			fb = fbn;
+		}		
 		m = r->mimic_kinds;
 		while (m) {
 			mn = m->next;

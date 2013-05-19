@@ -270,11 +270,12 @@ static long eval_max_dam(monster_race *r_ptr)
 		r_ptr->highest_threat = (r_ptr->highest_threat * adj_energy(r_ptr)) / 5;
 
 	/*
-	 * Adjust threat for friends.
+	 * Adjust threat for friends, this can be improved, but is probably good enough for now.
 	 */
-	if (rf_has(r_ptr->flags, RF_FRIENDS))
+	if (r_ptr->friends)
 		r_ptr->highest_threat *= 2;
-	else if (rf_has(r_ptr->flags, RF_FRIEND))
+	else if (r_ptr->friends_base)
+		/* Friends base is weaker, because they are <= monster level */
 		r_ptr->highest_threat = r_ptr->highest_threat * 3 / 2;
 		
 	/*but deep in a minimum*/
@@ -501,19 +502,17 @@ for (iteration = 0; iteration < 3; iteration ++) {
 		/* Define the power rating */
 		power[i] = hp * dam;
 
-		/* Adjust for group monsters.  Average in-level group size is 5 */
+		/* Adjust for group monsters, using somewhat arbitrary 
+		multipliers for now */
 		if (!rf_has(r_ptr->flags, RF_UNIQUE)) {
-			if (rf_has(r_ptr->flags, RF_FRIEND))
-				power[i] *= 2;
-			else if (rf_has(r_ptr->flags, RF_FRIENDS))
-				power[i] *= 5;
+			if (r_ptr->friends)
+				power[i] *= 3;
 		}
 	
 		/* Adjust for escorts */
-		if (rf_has(r_ptr->flags, RF_ESCORTS))
-			power[i] *= 3;
-		if (rf_has(r_ptr->flags, RF_ESCORT) && !rf_has(r_ptr->flags, RF_ESCORTS))
+		if (r_ptr->friends_base) 
 			power[i] *= 2;
+
 
 		/* Adjust for multiplying monsters. This is modified by the speed,
 		 * as fast multipliers are much worse than slow ones. We also adjust for
@@ -563,10 +562,8 @@ for (iteration = 0; iteration < 3; iteration ++) {
 			 * so that the averages don't get thrown off
 			 */
 
-			if (rf_has(r_ptr->flags, RF_FRIEND))
-				count = 20;
-			else if (rf_has(r_ptr->flags, RF_FRIENDS))
-				count = 50;
+			if (r_ptr->friends || r_ptr->friends_base)
+				count = 15;
 
 			if (rf_has(r_ptr->flags, RF_MULTIPLY)) {
 				if (flags_test(r_ptr->flags, RF_SIZE, RF_KILL_WALL, RF_PASS_WALL, FLAG_END))

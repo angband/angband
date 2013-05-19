@@ -1071,7 +1071,7 @@ static bool get_moves(struct cave *c, struct monster *m_ptr, int mm[5])
 
 
 	/* Normal animal packs try to get the player out of corridors. */
-	if (rf_has(m_ptr->race->flags, RF_FRIENDS) && rf_has(m_ptr->race->flags, RF_ANIMAL) &&
+	if (rf_has(m_ptr->race->flags, RF_GROUP_AI) &&
 	    !flags_test(m_ptr->race->flags, RF_SIZE, RF_PASS_WALL, RF_KILL_WALL, FLAG_END))
 	{
 		int i, open = 0;
@@ -1121,7 +1121,7 @@ static bool get_moves(struct cave *c, struct monster *m_ptr, int mm[5])
 
 
 	/* Monster groups try to surround the player */
-	if (!done && rf_has(m_ptr->race->flags, RF_FRIENDS))
+	if (!done && rf_has(m_ptr->race->flags, RF_GROUP_AI))
 	{
 		int i;
 

@@ -1284,8 +1284,7 @@ wchar_t summon_kin_type;
 static bool summon_specific_okay(monster_race *race)
 {
 	bool unique = rf_has(race->flags, RF_UNIQUE);
-	bool scary = flags_test(race->flags, RF_SIZE, RF_UNIQUE, RF_FRIEND, RF_FRIENDS,
-			RF_ESCORT, RF_ESCORTS, FLAG_END);
+	bool scary = flags_test(race->flags, RF_SIZE, RF_UNIQUE, FLAG_END);
 
 	/* Check our requirements */
 	switch (summon_specific_type) {
@@ -1338,7 +1337,6 @@ static bool summon_specific_okay(monster_race *race)
 int summon_specific(int y1, int x1, int lev, int type, int delay)
 {
 	int i, x = 0, y = 0;
-	int temp = 1;
 
 	monster_type *m_ptr;
 	monster_race *race;
@@ -1350,7 +1348,7 @@ int summon_specific(int y1, int x1, int lev, int type, int delay)
 		int d = (i / 15) + 1;
 
 		/* Pick a location */
-		scatter(&y, &x, y1, x1, d, 0);
+		scatter(&y, &x, y1, x1, d, TRUE);
 
 		/* Require "empty" floor grid */
 		if (!cave_isempty(cave, y, x)) continue;
@@ -1396,12 +1394,7 @@ int summon_specific(int y1, int x1, int lev, int type, int delay)
 				MON_TMD_FLG_NOMESSAGE, FALSE);
 	}
 
-
-	/* Monsters that normally come with FRIENDS are weaker */
-	if (rf_has(m_ptr->race->flags, RF_FRIENDS))
-		temp = 5;
-
-	return (m_ptr->race->level / temp);
+	return (m_ptr->race->level);
 }
 
 /**
@@ -1422,7 +1415,7 @@ bool multiply_monster(const monster_type *m_ptr)
 		int d = 1;
 
 		/* Pick a location */
-		scatter(&y, &x, m_ptr->fy, m_ptr->fx, d, 0);
+		scatter(&y, &x, m_ptr->fy, m_ptr->fx, d, TRUE);
 
 		/* Require an "empty" floor grid */
 		if (!cave_isempty(cave, y, x)) continue;

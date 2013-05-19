@@ -2728,15 +2728,12 @@ bool projectable(int y1, int x1, int y2, int x2, int flg)
  * This function is often called from inside a loop which searches for
  * locations while increasing the "d" distance.
  *
- * Currently the "m" parameter is unused.
+ * need_los determines whether line of sight is needed
  */
-void scatter(int *yp, int *xp, int y, int x, int d, int m)
+void scatter(int *yp, int *xp, int y, int x, int d, bool need_los)
 {
 	int nx, ny;
 
-
-	/* Unused parameter */
-	(void)m;
 
 	/* Pick a location */
 	while (TRUE)
@@ -2750,9 +2747,12 @@ void scatter(int *yp, int *xp, int y, int x, int d, int m)
 
 		/* Ignore "excessively distant" locations */
 		if ((d > 1) && (distance(y, x, ny, nx) > d)) continue;
+		
+		/* Don't need los */
+		if (!need_los) break;
 
-		/* Require "line of sight" */
-		if (los(y, x, ny, nx)) break;
+		/* Require "line of sight" if set */
+		if (need_los && (los(y, x, ny, nx))) break;
 	}
 
 	/* Save the location */

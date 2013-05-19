@@ -8421,7 +8421,7 @@ int borg_danger_aux(int y, int x, int c, int i, bool average, bool full_damage)
     }
 
     /* Friends yeild some trouble when I am weak */
-    if ((rf_has(r_ptr->flags, RF_FRIENDS) || rf_has(r_ptr->flags, RF_ESCORTS)) &&
+    if ((r_ptr->friends || r_ptr->friends_base) &&
         (borg_skill[BI_CLEVEL] < 20))
     {
         if (borg_skill[BI_CLEVEL] < 15)
@@ -8714,7 +8714,7 @@ int borg_danger_aux(int y, int x, int c, int i, bool average, bool full_damage)
         }
 
         /* Friends yeild some trouble when I am weak */
-        if ((rf_has(r_ptr->flags, RF_FRIENDS) || rf_has(r_ptr->flags, RF_ESCORTS)) &&
+        if ((r_ptr->friends || r_ptr->friends_base) &&
             (borg_skill[BI_CLEVEL] < 20))
         {
             v2 = v2 + (v2 *12/10);

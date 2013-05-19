@@ -109,6 +109,15 @@
 # 'drop-artifact' lines force a specific artifact to drop on death. Setting this
 # on a non-UNIQUE monster is dangerous.
 
+# friends lines specify options for what monsters can appear with other monsters
+# on creation.  The format is.
+# friends:Chance of friend appearing:number in xdy format:name of friend
+# note that number is throttled depending on the dungeon level with only half 
+# appearing at depth and the full complement 5 levels deeper.  All town friends
+# will be divided by two.
+# The code places monsters from bottom up and will not place it if it can't find
+# room.  For best results, places the most important friends at the bottom.
+
 # 'mimic' lines give item types that this monster may mimic. Each of the objects
 # has an equal chance of being mimicked.
 
@@ -172,8 +181,11 @@ I:110:3:4:1:40
 W:0:2:0:0
 B:BEG
 B:TOUCH:EAT_GOLD
-F:MALE | FRIENDS
+F:MALE
 F:RAND_25 | OPEN_DOOR | TAKE_ITEM
+friends:50:2d1:Scrawny cat
+friends:50:2d1:Scruffy little dog
+friends:100:3d4:Same
 D:He looks squalid and thoroughly revolting.
 
 N:2:Scrawny cat
@@ -288,6 +300,7 @@ B:HIT:HURT:1d3
 F:MALE | HAS_LIGHT
 F:DROP_40 | ONLY_GOLD
 F:RAND_50 | OPEN_DOOR | BASH_DOOR | TAKE_ITEM
+friends:30:2d2:Filthy street urchin
 D:The typical ponce around town, with purse jingling, and looking for more
 D: amulets of adornment to buy.
 
@@ -448,7 +461,8 @@ C:U
 I:110:3:10:3:10
 W:1:1:0:1
 B:BITE:HURT:1d1
-F:FRIENDS
+F:GROUP_AI
+friends:100:2d7:Same
 D:It is a yapping snarling dog, dangerous when in a pack.
 
 N:30:Soldier ant
@@ -518,9 +532,13 @@ I:110:23:20:24:80
 W:2:1:0:6
 B:HIT:HURT:1d7
 B:HIT:HURT:1d7
-F:MALE | HAS_LIGHT | FRIEND
+F:MALE | HAS_LIGHT
 F:DROP_60
 F:OPEN_DOOR
+friends:60:1d4:Cutpurse
+friends:60:1d4:Acolyte
+friends:60:1d4:Apprentice
+friends:60:1d4:Same
 D:An inexperienced but tough warrior.
 
 N:36:Cutpurse
@@ -530,9 +548,13 @@ I:110:20:20:18:10
 W:2:1:0:6
 B:HIT:HURT:1d6
 B:TOUCH:EAT_GOLD
-F:MALE | EVIL | FRIEND
+F:MALE | EVIL
 F:DROP_40
 F:OPEN_DOOR | TAKE_ITEM
+friends:60:1d4:Soldier
+friends:60:1d4:Acolyte
+friends:60:1d4:Apprentice
+friends:60:1d4:Same
 D:A rather shifty individual.
 
 N:37:Acolyte
@@ -541,13 +563,17 @@ C:g
 I:110:18:20:15:80
 W:2:1:0:6
 B:HIT:HURT:1d5
-F:MALE | HAS_LIGHT | FRIEND
+F:MALE | HAS_LIGHT
 F:DROP_40
 F:OPEN_DOOR
 F:FORCE_SLEEP
 S:1_IN_12
 S:CAUSE_1 | HEAL | SCARE
 drop:91:0:5:1:1
+friends:60:1d4:Soldier
+friends:60:1d4:Cutpurse
+friends:60:1d4:Apprentice
+friends:60:1d4:Same
 D:He is tripping over his priestly robes.
 
 N:38:Apprentice
@@ -556,13 +582,17 @@ C:r
 I:110:15:20:9:15
 W:2:1:0:6
 B:HIT:HURT:1d4
-F:MALE | HAS_LIGHT | FRIEND
+F:MALE | HAS_LIGHT
 F:DROP_40
 F:OPEN_DOOR
 F:FORCE_SLEEP
 S:1_IN_12
 S:BLIND | BLINK | CONF | MISSILE
 drop:90:0:5:1:1
+friends:60:1d4:Soldier
+friends:60:1d4:Cutpurse
+friends:60:1d4:Acolyte
+friends:60:1d4:Same
 D:He is leaving behind a trail of dropped spell components.
 
 N:39:Yellow mushroom patch
@@ -685,7 +715,9 @@ C:p
 I:120:7:8:19:80
 W:2:1:0:7
 B:BITE:HURT:1d4
-F:ANIMAL | WEIRD_MIND | FRIENDS
+F:ANIMAL | WEIRD_MIND
+F:GROUP_AI
+friends:100:2d8:Same
 D:It is a black spider that moves in fits and starts.
 
 N:51:Wild cat
@@ -894,6 +926,8 @@ S:1_IN_5
 S:CAUSE_1 | CONF | HEAL | MISSILE
 drop:90:0:5:1:1
 drop:91:0:5:1:1
+friends-base:30:1d2:kobold
+friends-base:70:1d2:kobold
 D:It is a kobold dressed in skins and gesturing wildly.
 
 ### Dungeon level 4 ###
@@ -913,13 +947,19 @@ I:110:27:20:12:50
 W:4:1:0:18
 B:HIT:HURT:1d5
 B:HIT:HURT:1d5
-F:MALE | HAS_LIGHT | FRIEND
+F:MALE | HAS_LIGHT
 F:DROP_60
 F:OPEN_DOOR
 F:FORCE_SLEEP
 S:1_IN_9
 S:ARROW_1 | MISSILE
 drop:90:0:3:1:1
+friends:60:1d4:Gallant
+friends:60:1d4:Soldier
+friends:60:1d4:Apprentice
+friends:60:1d4:Acolyte
+friends:60:1d4:Cutpurse
+friends:60:1d4:Same
 D:An agile hunter, ready and relaxed.
 
 N:70:Gallant
@@ -929,13 +969,19 @@ I:110:27:20:24:100
 W:4:1:0:18
 B:HIT:HURT:1d7
 B:HIT:HURT:1d7
-F:MALE | HAS_LIGHT | FRIEND
+F:MALE | HAS_LIGHT
 F:DROP_60
 F:OPEN_DOOR
 F:FORCE_SLEEP
 S:1_IN_9
 S:CAUSE_1 | SCARE
 drop:91:0:3:1:1
+friends:60:1d4:Scout
+friends:60:1d4:Soldier
+friends:60:1d4:Apprentice
+friends:60:1d4:Acolyte
+friends:60:1d4:Cutpurse
+friends:60:1d4:Same
 D:An adventurer both devoutly religious and skillful in combat.
 
 N:71:Blue jelly
@@ -1000,6 +1046,8 @@ B:HIT:HURT:1d9
 F:DROP_40
 S:1_IN_5
 S:ARROW_2
+friends-base:30:1d2:kobold
+friends-base:70:1d2:kobold
 D:It is an ugly dog-headed humanoid wielding a bow.
 
 N:548:Silver mouse
@@ -1033,6 +1081,7 @@ B:HIT:HURT:1d8
 B:HIT:HURT:1d8
 F:UNIQUE | MALE
 F:DROP_2 | DROP_GOOD | ONLY_ITEM
+friends:80:1d7:Scruffy looking hobbit
 D:He is a sturdy hobbit who is renowned for his unusual strength and vigour.  He
 D: can prove a troublesome opponent.
 
@@ -1088,6 +1137,8 @@ I:110:65:20:48:70
 W:5:1:0:25
 B:HIT:HURT:1d10
 F:DROP_60
+friends-base:50:1d2:kobold
+friends-base:30:1d2:kobold
 D:It is a man-sized figure with the all too recognizable face of a kobold.
 
 N:83:Skeleton kobold
@@ -1239,9 +1290,10 @@ C:U
 I:110:36:20:48:70
 W:6:1:0:15
 B:HIT:HURT:1d8
-F:FRIENDS
 F:DROP_20
 F:HURT_LIGHT
+friends:30:1d3:Crow
+friends:100:2d9:Same
 D:He is one of the many weaker 'slave' orcs, often mistakenly known as a goblin.
 
 N:97:Rattlesnake
@@ -1298,9 +1350,10 @@ C:G
 I:110:55:20:48:70
 W:7:1:0:20
 B:HIT:HURT:1d8
-F:FRIENDS
 F:DROP_20
 F:HURT_LIGHT
+friends:50:1d8:Snaga
+friends:100:2d6:Same
 D:He is often found in huge numbers in deep caves.
 
 N:99:Wood spider
@@ -1310,8 +1363,9 @@ I:120:11:8:19:80
 W:7:3:0:15
 B:BITE:HURT:1d3
 B:STING:POISON:1d4
-F:ANIMAL | WEIRD_MIND | FRIENDS
-F:IM_POIS
+F:ANIMAL | WEIRD_MIND
+F:IM_POIS | GROUP_AI
+friends:100:2d7:Same
 D:It scuttles towards you.
 
 N:100:Manes
@@ -1320,9 +1374,9 @@ C:u
 I:110:36:20:48:80
 W:7:2:0:16
 B:HIT:HURT:1d8
-F:FRIENDS
 F:OPEN_DOOR | BASH_DOOR
 F:NO_FEAR
+friends:100:2d7:Same
 D:It is a minor but aggressive demon.
 
 N:101:Bloodshot eye
@@ -1436,8 +1490,13 @@ W:7:3:0:100
 B:HIT:HURT:1d10
 B:HIT:HURT:1d10
 B:HIT:HURT:1d10
-F:UNIQUE | MALE |ESCORT | ESCORTS
+F:UNIQUE | MALE
 F:DROP_1 | DROP_GOOD | ONLY_ITEM
+friends:100:1d10:Small kobold
+friends:100:1d10:Kobold
+friends:100:1d3:Kobold shaman
+friends:100:1d5:Kobold archer
+friends:100:1d5:Large kobold
 D:Strong and powerful, for a kobold.
 
 ### Dungeon level 8 ###
@@ -1471,8 +1530,10 @@ B:HIT:HURT:1d10
 B:HIT:HURT:1d10
 B:HIT:HURT:1d9
 B:HIT:HURT:1d9
-F:UNIQUE | ESCORT
+F:UNIQUE 
 F:DROP_1 | DROP_GOOD | ONLY_ITEM
+friends:80:2d7:Wolf
+friends:100:5d4:Snaga
 D:A captain of a regiment of weaker orcs, Lagduf keeps his troop in order with
 D: displays of excessive violence.
 
@@ -1531,9 +1592,9 @@ C:U
 I:110:65:20:48:80
 W:8:3:0:16
 B:HIT:HURT:1d8
-F:FRIENDS
 F:OPEN_DOOR | BASH_DOOR
 F:NO_FEAR
+friends:100:2d7:Same
 D:It is the larval form of a major demon.
 
 N:120:Hill orc
@@ -1542,8 +1603,10 @@ C:u
 I:110:65:20:48:70
 W:8:1:0:25
 B:HIT:HURT:1d10
-F:FRIENDS
 F:DROP_20
+friends:30:1d8:Crow
+friends:50:1d8:Wolf
+friends:100:2d6:Same
 D:He is a hardy well-weathered survivor.
 
 N:121:Bandit
@@ -1837,13 +1900,15 @@ B:HIT:HURT:1d9
 B:HIT:HURT:1d8
 B:INSULT
 B:INSULT
-F:UNIQUE | MALE | EVIL | SMART | ESCORT
-F:ESCORTS
+F:UNIQUE | MALE | EVIL | SMART
 F:DROP_1 | DROP_GOOD | ONLY_ITEM
 F:FORCE_SLEEP
 S:1_IN_4
 S:BLINK | CONF | HEAL | SLOW | TELE_TO
 S:S_MONSTER
+friends:100:2d5:Brown yeek
+friends:100:2d5:Blue yeek
+friends:50:1d3:Master yeek
 D:He's just like his daddy!  He knows mighty spells, but fortunately he is a
 D: yeek.
 
@@ -1879,8 +1944,11 @@ B:HIT:HURT:1d12
 B:HIT:HURT:1d10
 B:HIT:HURT:1d12
 B:HIT:HURT:1d10
-F:UNIQUE | ESCORT
+F:UNIQUE
 F:DROP_1 | DROP_GOOD | ONLY_ITEM
+friends:50:2d5:Snaga
+friends:80:2d7:Wolf
+friends:100:5d4:Hill orc
 D:He is a cunning and devious orc with a chaotic nature.
 
 N:141:Giant white tick
@@ -1962,8 +2030,9 @@ C:u
 I:120:21:30:45:10
 W:10:1:0:30
 B:BITE:HURT:1d6
-F:FRIENDS
 F:RAND_25 | BASH_DOOR
+F:GROUP_AI
+friends:100:2d10:Same
 D:It howls and snaps at you.
 
 N:148:Giant fruit fly
@@ -1994,6 +2063,10 @@ B:TOUCH:EAT_ITEM
 F:MALE | EVIL
 F:DROP_1
 F:OPEN_DOOR | TAKE_ITEM
+friends:50:1d2:Illusionist
+friends:50:1d2:Priest
+friends:50:1d2:Easterling warrior
+friends:50:1d2:Same
 D:He is eyeing your backpack.
 
 ### Dungeon level 11 ###
@@ -2044,7 +2117,7 @@ C:r
 I:110:32:18:30:20
 W:11:2:0:38
 B:HIT:HURT:1d5
-F:MALE | EVIL | FRIEND
+F:MALE | EVIL
 F:DROP_60
 F:FORCE_SLEEP
 S:1_IN_4
@@ -2053,6 +2126,7 @@ S:BO_COLD
 S:S_MONSTER
 drop:90:0:5:1:1
 drop:90:1:5:1:1
+friends:100:4d4:Same
 D:A mage of short stature.
 
 ### Dungeon level 12 ###
@@ -2074,9 +2148,9 @@ I:120:28:30:45:15
 W:12:1:0:30
 B:BITE:HURT:1d3
 B:BITE:HURT:1d4
-F:FRIENDS
 F:RAND_25 | BASH_DOOR
-F:IM_COLD
+F:IM_COLD | GROUP_AI
+friends:100:2d7:Same
 D:A large and muscled wolf from the northern wastes.  Its breath is cold and icy
 D: and its fur coated in frost.
 
@@ -2114,9 +2188,14 @@ B:HIT:HURT:1d12
 B:HIT:HURT:1d12
 B:HIT:HURT:1d10
 B:HIT:HURT:1d10
-F:UNIQUE | ESCORT
+F:UNIQUE
 F:DROP_2 | DROP_GOOD | ONLY_ITEM
 F:IM_COLD | IM_ELEC | IM_FIRE | IM_POIS
+friends:50:4d4:Snaga
+friends:80:2d7:Warg
+friends:100:5d4:Hill orc
+friends:100:1d1:Bullroarer the Hobbit
+friends:100:1d1:Grishnákh, the Hill Orc
 D:A leader of a band of raiding orcs, he picks on hobbits.
 
 N:160:Master yeek
@@ -2152,6 +2231,10 @@ S:CAUSE_2 | HEAL | SCARE
 S:S_MONSTER
 drop:91:0:8:1:1
 drop:91:1:8:1:1
+friends:50:1d2:Brigand
+friends:50:1d2:Illusionist
+friends:50:1d2:Easterling warrior
+friends:50:1d2:Same
 D:A robed man, dedicated to his god.
 
 N:162:Dark elven priest
@@ -2232,7 +2315,7 @@ S:1_IN_15
 S:SCARE | TPORT
 D:A ghostly apparition that shrieks horribly.
 
-N:168:Swordsman
+N:168:Easterling warrior
 T:person
 C:u
 I:110:54:20:51:70
@@ -2242,6 +2325,10 @@ B:HIT:HURT:3d5
 F:MALE | HAS_LIGHT
 F:DROP_1
 F:OPEN_DOOR
+friends:50:1d2:Brigand
+friends:50:1d2:Priest
+friends:50:1d2:Illusionist
+friends:50:1d2:Same
 D:A warrior of considerable skill.
 
 N:169:Stegocentipede
@@ -2301,13 +2388,16 @@ W:13:3:0:200
 B:HIT:HURT:1d9
 B:HIT:HURT:1d9
 B:HIT:HURT:1d8
-F:UNIQUE | MALE | EVIL | SMART | ESCORT
-F:ESCORTS
+F:UNIQUE | MALE | EVIL | SMART
 F:DROP_60 | DROP_1 | DROP_GOOD | ONLY_ITEM
 F:FORCE_SLEEP
 S:1_IN_3
 S:BLIND | BLINK | HEAL | SLOW | TPORT
 S:S_KIN | S_MONSTER
+friends:100:2d6:Brown yeek
+friends:100:2d6:Blue yeek
+friends:100:2d4:Master yeek
+friends:100:1d1:Orfax, Son of Boldor
 D:A great yeek, powerful in magic and sorcery, but a yeek all the same.
 
 N:174:Ogre
@@ -2316,8 +2406,9 @@ C:U
 I:110:65:20:49:50
 W:13:2:0:50
 B:HIT:HURT:2d8
-F:FRIENDS
 F:DROP_40
+friends-base:100:2d4:orc
+friends:100:2d4:Same
 D:A hideous, smallish giant that is often found near or with orcs.
 
 N:175:Creeping mithril coins
@@ -2347,6 +2438,10 @@ S:BLIND | BLINK | CONF | DARKNESS | HASTE | HOLD
 S:SLOW | TPORT
 drop:90:1:8:1:1
 drop:90:2:8:1:1
+friends:50:1d2:Brigand
+friends:50:1d2:Priest
+friends:50:1d2:Easterling warrior
+friends:50:1d2:Same
 D:A deceptive spell caster.
 
 N:177:Druid
@@ -2375,11 +2470,13 @@ I:110:66:20:54:60
 W:13:1:0:45
 B:HIT:HURT:3d4
 B:HIT:HURT:3d4
-F:FRIENDS
 F:DROP_20
 F:HURT_LIGHT
 S:1_IN_9
 S:ARROW_2
+friends:20:1d2:Cave troll
+friends:70:2d4:Snaga
+friends:100:3d4:Same
 D:He is a large orc with powerful arms and deep black skin.
 
 N:179:Ochre jelly
@@ -2416,9 +2513,11 @@ B:HIT:HURT:3d4
 B:HIT:HURT:3d4
 B:HIT:HURT:3d4
 B:HIT:HURT:3d4
-F:UNIQUE | ESCORT
+F:UNIQUE
 F:DROP_1 | DROP_GOOD | ONLY_ITEM
 F:IM_COLD
+friends:100:3d4:Cave orc
+friends:100:4d4:Black orc
 D:A strong orc guarding the pass of Cirith Ungol.  He is mortally afraid of
 D: spiders.
 
@@ -2456,8 +2555,9 @@ C:s
 I:120:36:20:30:10
 W:14:2:0:40
 B:BITE:HURT:1d8
-F:EVIL | FRIENDS
+F:EVIL | GROUP_AI
 F:RAND_25 | BASH_DOOR
+friends:100:2d7:Same
 D:It is a large wolf with eyes full of cunning.
 
 N:187:Giant black louse
@@ -2506,9 +2606,10 @@ I:110:100:20:49:50
 W:15:2:0:75
 B:HIT:HURT:2d8
 B:HIT:HURT:2d8
-F:FRIENDS
 F:DROP_40
 F:RAND_25
+friends:60:2d4:Ogre
+friends:100:3d4:Same
 D:A massive orc-like figure with black skin and powerful arms.
 
 N:191:Magic mushroom patch
@@ -2552,6 +2653,7 @@ F:BASH_DOOR
 F:FORCE_SLEEP
 S:1_IN_5
 S:BR_LIGHT
+friends:100:2d7:Same
 D:A brilliant canine form whose light hurts your eyes, even at this distance.
 
 N:194:Dark hound
@@ -2566,6 +2668,7 @@ F:BASH_DOOR
 F:FORCE_SLEEP
 S:1_IN_5
 S:BR_DARK
+friends:100:2d7:Same
 D:A hole in the air in the shape of a huge hound.  No light falls upon its form.
 
 N:195:Half-orc
@@ -2575,8 +2678,9 @@ I:110:88:20:60:50
 W:15:2:0:50
 B:HIT:HURT:3d4
 B:HIT:HURT:3d4
-F:FRIENDS
 F:DROP_20
+friends:50:2d4:Warg
+friends:100:4d4:Same
 D:He is a hideous deformed cross-breed with man and orc, combining man's
 D: strength and cunning with orcish evil.  The traitorous wizard Saruman is
 D: generally believed to be responsible for this abomination.
@@ -2613,8 +2717,9 @@ W:15:2:0:25
 B:BITE:HURT:1d8
 B:BITE:POISON:1d6
 B:BITE:POISON:1d6
-F:EVIL | ANIMAL | WEIRD_MIND | FRIENDS
-F:IM_POIS
+F:EVIL | ANIMAL | WEIRD_MIND
+F:IM_POIS | GROUP_AI
+friends:100:2d7:Same
 D:A strong and powerful spider from Mirkwood forest.  Cunning and evil, it seeks
 D: to taste your juicy insides.
 
@@ -2654,6 +2759,7 @@ B:BITE:HURT:1d8
 F:INVISIBLE
 F:BASH_DOOR
 F:ATTR_CLEAR
+friends:100:2d7:Same
 D:A completely translucent hound.
 
 N:204:Clay golem
@@ -2735,6 +2841,7 @@ B:HIT:HURT:3d5
 F:UNIQUE | MALE | EVIL | HAS_LIGHT
 F:DROP_60 | DROP_GOOD | ONLY_ITEM
 F:OPEN_DOOR | TAKE_ITEM
+friends:60:1d3:Easterling warrior
 D:A short and swarthy Easterling.
 
 N:212:Quasit
@@ -2761,10 +2868,12 @@ I:110:70:20:75:30
 W:16:1:0:60
 B:HIT:HURT:3d5
 B:HIT:HURT:3d5
-F:FRIENDS
 F:DROP_20
 S:1_IN_9
 S:ARROW_2
+friends:40:1d4:Half-orc
+friends:80:2d5:Warg
+friends:100:3d3:Same
 D:A cunning orc of power, as tall as a man, and stronger.  It fears little.
 
 N:564:Grizzly bear
@@ -2786,9 +2895,10 @@ I:120:9:40:14:0
 W:16:4:0:20
 B:CLAW:HURT:1d4
 B:CLAW:HURT:1d4
-F:FRIENDS
 S:1_IN_8
 S:SHRIEK
+F:GROUP_AI
+friends:100:3d3:Same
 D:A type of crow, specially bred by the forces of evil as spies; their
 D: rudimentary intelligence guided by an evil mind has tracked you down, and now
 D: they seek to alert other evil creatures to your presence.
@@ -2819,9 +2929,10 @@ W:17:1:0:70
 B:HIT:HURT:1d4
 B:HIT:HURT:1d4
 B:BITE:HURT:1d6
-F:MALE | REGENERATE | FRIENDS
+F:MALE | REGENERATE
 F:DROP_20
 F:HURT_LIGHT
+friends:100:4d4:Same
 D:He is green skinned and ugly.
 
 N:215:Nár, the Dwarf
@@ -2902,10 +3013,14 @@ W:18:3:0:80
 B:HIT:HURT:3d5
 B:HIT:HURT:3d5
 B:HIT:HURT:3d5
-F:ESCORT
 F:DROP_60
 S:1_IN_9
 S:ARROW_2
+friends:50:1d5:Wolf
+friends:50:1d5:Warg
+friends-base:50:1d5:orc
+friends-base:50:1d5:orc
+friends-base:50:1d5:orc
 D:An armoured orc with an air of authority.
 
 N:220:Fire spirit
@@ -2934,6 +3049,7 @@ F:IM_FIRE | HURT_COLD
 F:FORCE_SLEEP
 S:1_IN_10
 S:BR_FIRE
+friends:100:2d7:Same
 D:Flames lick at its feet and its tongue is a blade of fire.  You can feel a
 D: furnace heat radiating from the creature.
 
@@ -2950,6 +3066,7 @@ F:IM_COLD | HURT_FIRE
 F:FORCE_SLEEP
 S:1_IN_10
 S:BR_COLD
+friends:100:2d7:Same
 D:A hound as tall as a man, this creature appears to be composed of angular
 D: planes of ice.  Cold radiates from it and freezes your breath in the air.
 
@@ -2967,6 +3084,7 @@ F:IM_ELEC
 F:FORCE_SLEEP
 S:1_IN_10
 S:BR_ELEC
+friends:100:2d7:Same
 D:Saint Elmo's Fire forms a ghostly halo around this hound, and sparks sting
 D: your fingers as energy builds up in the air around you.
 
@@ -2997,10 +3115,10 @@ C:B
 I:120:36:20:24:10
 W:18:2:0:50
 B:BITE:HURT:1d8
-F:FRIENDS
-F:RAND_25 | BASH_DOOR
+F:RAND_25 | BASH_DOOR | GROUP_AI
 S:1_IN_4
 S:BLINK | TELE_TO
+friends:100:2d7:Same
 D:A strange magical member of the canine race, its form seems to shimmer and
 D: fade in front of your very eyes.
 
@@ -3016,6 +3134,7 @@ F:DROP_60 | ONLY_GOLD
 F:OPEN_DOOR | BASH_DOOR
 S:1_IN_4
 S:SHRIEK
+friends:60:1d1:Giant fruit fly
 D:A pile of rotting vegetation that slides towards you with a disgusting stench,
 D: waking all it nears.
 
@@ -3046,8 +3165,10 @@ B:HIT:HURT:3d8
 B:HIT:HURT:3d8
 B:HIT:HURT:3d5
 B:HIT:HURT:3d5
-F:UNIQUE | ESCORT
+F:UNIQUE
 F:DROP_1 | DROP_GOOD | ONLY_ITEM
+friends:50:3d4:Snaga
+friends:100:4d4:Black orc
 D:He is an orc of power and great cunning, leader of the garrison at Cirith
 D: Ungol.
 
@@ -3060,8 +3181,10 @@ B:HIT:HURT:3d8
 B:HIT:HURT:3d8
 B:HIT:HURT:3d5
 B:HIT:HURT:3d5
-F:UNIQUE | ESCORT
+F:UNIQUE
 F:DROP_1 | DROP_GOOD | ONLY_ITEM
+friends:50:3d4:Snaga
+friends:100:4d4:Black orc
 D:He is an orc of power and great cunning, leader of the garrison at Minas
 D: Morgul.
 
@@ -3117,8 +3240,11 @@ B:HIT:HURT:3d6
 B:HIT:HURT:3d6
 B:HIT:HURT:3d6
 B:HIT:HURT:3d6
-F:UNIQUE | ESCORT
+F:UNIQUE
 F:DROP_2 | DROP_GOOD | ONLY_ITEM
+friends:50:3d4:Half-orc
+friends:80:2d7:Warg
+friends:100:4d4:Uruk
 D:A large and powerful orc, he looks just like his father.  He is tall and fast,
 D: but fortunately blessed with orcish brains.
 
@@ -3130,10 +3256,11 @@ W:20:2:0:60
 B:BITE:HURT:1d8
 B:BITE:POISON:1d6
 B:BITE:POISON:1d6
-F:ANIMAL | WEIRD_MIND | FRIENDS
-F:IM_POIS
+F:ANIMAL | WEIRD_MIND
+F:IM_POIS | GROUP_AI
 S:1_IN_5
 S:BLINK | TELE_TO
+friends:100:2d7:Same
 D:A spider that never seems quite there.  Everywhere you look it is just
 D: half-seen in the corner of one eye.
 
@@ -3164,6 +3291,7 @@ F:BASH_DOOR
 F:FORCE_SLEEP
 S:1_IN_10
 S:BR_SHAR
+friends:100:2d7:Same
 D:A beautiful crystalline shape does not disguise the danger this hound clearly
 D: presents.  Your flesh tingles as it approaches.
 
@@ -3181,6 +3309,7 @@ F:IM_POIS
 F:FORCE_SLEEP
 S:1_IN_10
 S:BR_POIS
+friends:100:2d7:Same
 D:Swirling vapours surround this beast as it floats towards you, seemingly
 D: walking on air.  Noxious gases sting your throat.
 
@@ -3211,6 +3340,7 @@ F:IM_ACID
 F:FORCE_SLEEP
 S:1_IN_10
 S:BR_ACID
+friends:100:2d7:Same
 D:Liquid footprints follow this hound as it pads around the dungeon.  An acrid
 D: smell of acid rises from the dog's pelt.
 
@@ -3278,6 +3408,10 @@ S:BLIND | CONF | DARKNESS | HASTE
 S:BO_COLD | BO_FIRE
 drop:90:1:5:1:1
 drop:90:2:5:1:1
+friends:80:1d3:Dark elf
+friends:70:1d2:Dark elven warrior
+friends:50:1d1:Dark elven mage
+friends:50:1d1:Dark elven priest
 D:A dark elven figure in armour and radiating evil power.
 
 N:580:Ranger
@@ -3296,6 +3430,11 @@ S:BO_COLD | BO_ELEC
 S:S_ANIMAL
 drop:90:1:5:1:1
 drop:90:2:5:1:1
+friends:50:1d1:Easterling champion
+friends:50:1d1:Master rogue
+friends:50:1d2:Illusionist
+friends:50:1d2:Priest
+friends:50:1d1:Paladin
 D:A warrior who is at one with nature.  A master of both bow and sword, with
 D: minor spellcasting skills, and animals come to do his bidding.
 
@@ -3313,6 +3452,11 @@ S:1_IN_4
 S:BLIND | CAUSE_2 | HEAL | SCARE | SLOW
 drop:91:1:5:1:1
 drop:91:2:5:1:1
+friends:50:1d1:Easterling champion
+friends:50:1d1:Master rogue
+friends:50:1d2:Illusionist
+friends:50:1d2:Priest
+friends:50:1d1:Ranger
 D:A warrior for a holy cause.  Unfortunately, his god is not yours, and there is
 D: rivalry even between the various gods of Good, so he is your enemy.
 
@@ -3327,8 +3471,12 @@ B:HIT:HURT:3d7
 B:HIT:HURT:3d7
 B:HIT:HURT:3d5
 B:HIT:HURT:3d5
-F:UNIQUE | ESCORT
+F:UNIQUE 
 F:DROP_1 | DROP_GOOD | ONLY_ITEM
+friends:50:3d4:Half-orc
+friends:80:2d7:Warg
+friends:50:1d3:Orc captain
+friends:100:4d4:Uruk
 D:A large and powerful orc, captain of one of Saruman's orcish regiments.
 
 N:250:Blue dragon bat
@@ -3436,9 +3584,14 @@ B:HIT:HURT:3d8
 B:HIT:HURT:3d8
 B:HIT:HURT:3d5
 B:HIT:HURT:3d5
-F:UNIQUE | ESCORT
+F:UNIQUE
 F:DROP_1 | DROP_GOOD | ONLY_ITEM
 F:IM_COLD | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP
+friends:50:2d4:Half-orc
+friends:80:2d5:Warg
+friends:100:4d4:Uruk
+friends:80:1d3:Orc captain
+friends:100:1d1:Lugdush, the Uruk
 D:A strong and cunning orc warrior, the commander of Saruman's orcish horde.
 
 N:257:Killer stag beetle
@@ -3506,7 +3659,7 @@ S:1_IN_11
 S:DRAIN_MANA
 D:It is a strangely moving puddle.
 
-N:261:Hardened warrior
+N:261:Easterling champion
 T:person
 C:u
 I:110:90:20:60:60
@@ -3516,6 +3669,10 @@ B:HIT:HURT:6d5
 F:MALE | EVIL | HAS_LIGHT
 F:DROP_1
 F:OPEN_DOOR | TAKE_ITEM
+friends:50:1d1:Master rogue
+friends:50:1d1:Ranger
+friends:50:1d1:Mage
+friends:50:1d1:Paladin
 D:A scarred warrior who moves with confidence.
 
 N:262:Azog, King of the Uruk-Hai
@@ -3526,8 +3683,13 @@ W:23:5:0:1111
 B:HIT:HURT:5d5
 B:HIT:HURT:5d5
 B:HIT:HURT:5d5
-F:UNIQUE | ESCORT | ESCORTS
+F:UNIQUE
 F:DROP_2 | DROP_GOOD | ONLY_ITEM
+friends:50:3d4:Half-orc
+friends:80:2d7:Warg
+friends:100:4d4:Uruk
+friends:50:1d3:Orc captain
+friends:100:1d1:Bolg, son of Azog
 D:He is also known as the King of Khazad-dûm.  His ego is renowned to be 
 D: bigger than his head.
 
@@ -3542,6 +3704,10 @@ B:HIT:EAT_GOLD:4d4
 F:MALE | EVIL
 F:DROP_2
 F:OPEN_DOOR | TAKE_ITEM
+friends:50:1d1:Easterling champion
+friends:50:1d1:Ranger
+friends:50:1d1:Mage
+friends:50:1d1:Paladin
 D:A thief of great power and shifty speed.
 
 N:264:Red dragon bat
@@ -3687,6 +3853,7 @@ F:IM_ELEC | IM_FIRE | NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
 S:1_IN_4
 S:CONF | SLOW
+friends:100:1d1:Angamaitë of Umbar
 D:A Black Númenorean with a blacker heart.
 
 N:274:Angamaitë of Umbar
@@ -3705,6 +3872,7 @@ F:IM_ELEC | IM_FIRE | NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
 S:1_IN_4
 S:CONF | SLOW
+friends:100:1d1:Sangahyando of Umbar
 D:A Black Númenorean who hates the men of the west.
 
 N:275:Banshee
@@ -3762,6 +3930,8 @@ B:HIT:HURT:4d8
 F:DROP_40
 F:OPEN_DOOR
 S:1_IN_10
+friends:60:1d7:Wolf
+friends:80:1d3:Same
 D:A ten foot tall humanoid with powerful muscles.
 
 N:276:Pukelman
@@ -3808,9 +3978,11 @@ W:25:1:0:85
 B:HIT:HURT:1d6
 B:HIT:HURT:1d6
 B:BITE:HURT:3d4
-F:MALE | REGENERATE | FRIENDS
+F:MALE | REGENERATE
 F:DROP_20
 F:HURT_ROCK | HURT_LIGHT
+friends:50:1d5:Earth hound
+friends:100:3d3:Same
 D:He is a giant troll with scabrous black skin.
 
 N:280:Wereworm
@@ -3834,8 +4006,9 @@ I:110:130:15:60:20
 W:25:2:0:60
 B:STING:PARALYZE:2d6
 B:STING:PARALYZE:2d6
-F:RAND_25 | BASH_DOOR | FRIEND
+F:RAND_25 | BASH_DOOR
 F:IM_POIS
+friends:100:2d4:Same
 D:A hideous centipede covered in slime and with glowing tentacles around its
 D: head.
 
@@ -3901,6 +4074,8 @@ B:HIT:HURT:4d6
 F:UNIQUE | MALE | EVIL | HAS_LIGHT
 F:DROP_60 | DROP_GOOD | ONLY_ITEM
 F:OPEN_DOOR | TAKE_ITEM
+friends:60:2d3:Easterling champion
+friends:100:1d1:Ulfast, Son of Ulfang
 D:A short and swarthy Easterling.
 
 N:285:Displacer beast
@@ -3934,8 +4109,10 @@ I:110:150:20:49:40
 W:26:2:0:80
 B:HIT:HURT:3d8
 B:HIT:HURT:3d8
-F:FRIENDS
 F:DROP_40
+friends:50:2d4:Ogre
+friends:50:2d4:Black ogre
+friends:100:2d4:Same
 D:A giant orc-like figure with an awesomely muscled frame.
 
 N:288:White wraith
@@ -3993,11 +4170,15 @@ B:CLAW:HURT:2d6
 B:CLAW:HURT:2d6
 B:BITE:HURT:2d10
 B:WAIL:TERRIFY
-F:MALE | EVIL | SMART | ESCORT | ESCORTS
+F:MALE | EVIL | SMART
 F:OPEN_DOOR | BASH_DOOR
 F:IM_COLD | NO_FEAR
 S:1_IN_8
 S:DARKNESS
+friends:100:2d4:Wolf
+friends:60:2d4:White wolf
+friends:60:2d4:Warg
+friends:60:1d4:Werewolf
 D:A great wolf-chieftain whose pack is in the service of the Dark Lord, and
 D: whose howls strike fear into even the boldest heart.
 
@@ -4009,11 +4190,11 @@ W:26:2:0:95
 B:CLAW:PARALYZE:1d4
 B:CLAW:PARALYZE:1d4
 B:BITE:POISON:1d6
-F:FRIENDS
 F:DROP_40
 F:HURT_LIGHT
 S:1_IN_9
 S:HOLD | SCARE
+friends:100:4d4:Same
 D:Flesh is falling off in chunks from this decaying abomination.
 
 ### Dungeon level 27 ###
@@ -4036,6 +4217,8 @@ S:1_IN_6
 S:HEAL | SCARE
 S:BA_ACID
 S:BO_ACID
+friends:100:1d1:Ibun, Son of Mîm
+friends:100:1d1:Khîm, Son of Mîm
 D:The last of his race, Mîm is a Petty-Dwarf.  Petty-Dwarves are strange
 D: creatures, powerful in sorcery and originating in the East.  They have been
 D: hunted nearly to extinction by the High Elves.
@@ -4073,9 +4256,11 @@ W:27:1:0:150
 B:CLAW:POISON:3d3
 B:CLAW:POISON:3d3
 B:BITE:HURT:1d6
-F:REGENERATE | FRIENDS
+F:REGENERATE 
 F:DROP_20
 F:IM_POIS
+friends:30:1d5:Forest Troll
+friends:100:3d3:Same
 D:A powerful troll form.  Venom drips from its needlelike claws.
 
 N:294:Vibration hound
@@ -4092,6 +4277,7 @@ F:NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
 S:1_IN_5
 S:BR_SOUN
+friends:100:2d7:Same
 D:A blurry canine form which seems to be moving as fast as the eye can follow.
 D:  You can feel the earth resonating beneath your feet.
 
@@ -4109,6 +4295,7 @@ F:RES_NEXUS | NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
 S:1_IN_5
 S:BR_NEXU
+friends:100:2d7:Same
 D:A locus of conflicting points coalesce to form the vague shape of a huge
 D: hound. Or is it just your imagination?
 
@@ -4221,6 +4408,8 @@ F:DROP_40
 F:OPEN_DOOR
 F:IM_COLD
 S:1_IN_10
+friends:60:1d7:Cold Hound
+friends:80:1d3:Same
 D:A twelve foot tall giant covered in furs.
 
 N:301:Spirit naga
@@ -4277,6 +4466,11 @@ S:1_IN_8
 S:BLIND | CAUSE_3 | DARKNESS | SCARE
 drop:91:1:8:1:1
 drop:91:2:8:1:1
+friends:50:1d1:Master rogue
+friends:50:1d1:Ranger
+friends:50:1d1:Paladin
+friends:50:1d1:Mage
+friends:50:1d1:Ninja
 D:He is a figure encased in deep black plate armour; he looks at you menacingly.
 
 N:304:Uldor the Accursed
@@ -4314,6 +4508,7 @@ S:BO_COLD | BO_ELEC | BO_FIRE
 S:S_MONSTER
 drop:90:2:10:1:1
 drop:90:3:7:1:1
+friends-base:100:1d1:golem
 D:A mage of some power - you can tell by the size of his hat.
 
 N:306:Mind flayer
@@ -4341,7 +4536,7 @@ B:HIT:POISON:3d4
 B:HIT:POISON:3d4
 B:HIT:HURT:3d4
 B:INSULT
-F:UNIQUE | INVISIBLE | SMART | ESCORT
+F:UNIQUE | INVISIBLE | SMART
 F:DROP_4 | DROP_GOOD | ONLY_ITEM
 F:RAND_25 | BASH_DOOR
 F:FORCE_SLEEP
@@ -4349,6 +4544,10 @@ S:1_IN_5
 S:BLIND | BLINK | CONF | SCARE | TELE_AWAY | TELE_LEVEL
 S:TELE_TO | TPORT
 S:S_KIN
+friends-base:50:1d3:minor demon
+friends-base:50:1d3:minor demon
+friends-base:50:1d3:minor demon
+friends:100:2d4:Imp
 D:An intensely irritating git of a monster.
 
 N:308:Basilisk
@@ -4377,9 +4576,12 @@ B:HIT:HURT:1d5
 B:HIT:HURT:1d5
 B:BITE:COLD:2d6
 B:BITE:COLD:2d6
-F:MALE | REGENERATE | FRIENDS
+F:MALE | REGENERATE
 F:DROP_20
 F:HURT_LIGHT | IM_COLD
+friends:40:1d5:Cold hound
+friends:60:2d7:White wolf
+friends:100:4d4:Same
 D:He is a white troll with powerfully clawed hands.
 
 N:605:Bat of Gorgoroth
@@ -4389,13 +4591,14 @@ I:120:110:20:36:30
 W:28:3:0:100
 B:BITE:POISON:1d10
 B:CLAW:HURT:1d4
-F:WEIRD_MIND | FRIENDS
+F:WEIRD_MIND
 F:DROP_40
 F:RAND_25 | BASH_DOOR | MOVE_BODY
 F:IM_POIS
 S:1_IN_8
 S:SCARE
 S:BR_DARK | BR_POIS
+friends:100:2d7:Same
 D:Fed with horrid meats and grown to enormous size, this slavering creature
 D: seeks livelier prey.
 
@@ -4424,10 +4627,13 @@ B:CLAW:HURT:2d10
 B:CLAW:HURT:2d10
 B:BITE:HURT:4d8
 B:CRUSH:HURT:3d6
-F:UNIQUE | MALE | ANIMAL | SMART | ESCORT
+F:UNIQUE | MALE | ANIMAL | SMART
 F:DROP_2 | DROP_GOOD | ONLY_ITEM
 F:MOVE_BODY
 F:FORCE_SLEEP
+friends:100:2d3:Cave bear
+friends:100:2d3:Grizzly bear
+friends:100:2d3:Werebear
 D:Beorn is only occasionally seen in human form these days, preferring to appear
 D: in the shape of a giant black bear: he also prefers the company of beasts to
 D: that of humans.  He has never taken kindly to strangers, even in human form -
@@ -4572,6 +4778,8 @@ F:DROP_40
 F:OPEN_DOOR
 F:IM_FIRE
 S:1_IN_8
+friends:60:1d7:Fire Hound
+friends:80:1d3:Same
 D:A glowing fourteen foot tall giant.  Flames drip from its red skin.
 
 N:318:Mithril golem
@@ -4626,7 +4834,8 @@ I:110:36:10:75:10
 W:30:2:0:80
 B:BITE:ELEC:5d5
 F:RAND_25
-F:IM_ELEC | FRIENDS
+F:IM_ELEC | GROUP_AI
+friends:100:4d4:Same
 D:It is a giant ant that crackles with energy.
 
 N:323:Giant army ant
@@ -4636,8 +4845,8 @@ I:120:67:10:60:20
 W:30:3:0:90
 B:BITE:HURT:2d12
 B:BITE:HURT:2d12
-F:FRIENDS
-F:RAND_25 | KILL_BODY
+F:RAND_25 | KILL_BODY | GROUP_AI
+friends:100:4d4:Same
 D:An armoured form moving with purpose.  Powerful on its own, flee when hordes
 D: of them march.
 
@@ -4675,10 +4884,15 @@ B:HIT:HURT:3d8
 B:HIT:HURT:3d8
 B:HIT:HURT:3d8
 B:HIT:HURT:3d8
-F:MALE | ESCORT
+F:MALE
 F:DROP_60 | ONLY_ITEM
 F:MOVE_BODY
 F:FORCE_SLEEP
+friends:50:2d4:Ogre
+friends:100:2d4:Black ogre
+friends:100:2d4:Cave ogre
+friends:50:1d2:Ogre mage
+friends:50:1d2:Ogre shaman
 D:This ogre is leader of his tribe.  He sneers at you as he advances towards
 D: you, wielding a huge club and pushing his own followers rudely aside.
 
@@ -4689,12 +4903,18 @@ I:120:165:30:60:20
 W:30:3:0:130
 B:CLAW:PARALYZE:2d4
 B:CLAW:PARALYZE:2d4
-B:BITE:LOSE_CON:2d4
-F:ESCORT
+B:BITE:LOSE_CHR:2d4
 F:DROP_40
 F:HURT_LIGHT
 S:1_IN_7
 S:HOLD | SCARE
+friends:20:1d3:Zombified kobold
+friends:20:1d3:Zombified orc
+friends:20:1d3:Zombified human
+friends:40:1d3:Mummified orc
+friends:40:1d3:Mummified human
+friends:40:1d3:Mummified troll
+friends:100:4d4:Ghoul
 D:This vile abomination is a relative of ghouls, and often leads packs of them.
 D:  It smells foul, and its bite carries a rotting disease.
 
@@ -4788,8 +5008,14 @@ W:32:2:0:1500
 B:HIT:HURT:6d6
 B:HIT:HURT:6d6
 B:HIT:HURT:6d6
-F:UNIQUE | MALE | ESCORT
+F:UNIQUE | MALE
 F:DROP_2 | DROP_GOOD | ONLY_ITEM
+friends:100:3d3:Ogre
+friends:100:3d3:Black ogre
+friends:100:3d3:Cave ogre
+friends:80:1d2:Ogre mage
+friends:80:1d2:Ogre shaman
+friends:50:1d2:Ogre chieftain
 D:An ogre renowned for acts of surpassing cruelty, Lokkak quickly became the
 D: leader of a large band of violent ogres.
 
@@ -4815,6 +5041,9 @@ F:MALE | EVIL
 F:DROP_1
 F:OPEN_DOOR
 F:NO_CONF | NO_SLEEP
+friends:50:1d1:Master thief
+friends:50:1d1:Mage
+friends:50:1d1:Black knight
 D:A humanoid clothed in black who moves with blinding speed.
 
 N:332:Memory moss
@@ -4875,6 +5104,8 @@ B:HIT:HURT:7d8
 F:DROP_40
 F:OPEN_DOOR | TAKE_ITEM
 S:1_IN_5
+friends:60:1d7:Earth hound
+friends:80:1d3:Same
 D:It is eighteen feet tall and looking at you.
 
 N:319:Shadow drake
@@ -4905,9 +5136,12 @@ B:HIT:HURT:3d5
 B:HIT:HURT:3d5
 B:BITE:HURT:1d8
 B:BITE:HURT:1d8
-F:MALE | REGENERATE | FRIENDS
+F:MALE | REGENERATE
 F:DROP_20
 F:HURT_LIGHT
+friends:30:1d5:Stone troll
+friends:30:1d5:Algroth
+friends:100:3d3:Same
 D:He is a vicious monster, feared for his ferocity.
 
 N:336:Mystic
@@ -4929,6 +5163,7 @@ S:HEAL
 S:S_ANIMAL | S_SPIDER
 drop:91:2:10:1:1
 drop:91:3:5:1:1
+friends-base:50:2d4:spider
 D:An adept at unarmed combat, the mystic strikes with stunning power.  He can
 D: summon help from nature and is able to focus his power to ease any pain.
 
@@ -4940,13 +5175,13 @@ W:33:3:0:375
 B:HIT:HURT:1d8
 B:HIT:HURT:1d8
 B:TOUCH:EXP_40
-F:FRIENDS
 F:DROP_40
 F:OPEN_DOOR | BASH_DOOR
 F:FORCE_SLEEP
 F:IM_POIS
 S:1_IN_8
 S:CAUSE_2 | DARKNESS | HOLD | SCARE
+friends:100:4d4:Same
 D:It is a ghostly nightmare of an entity.
 
 N:338:Skeleton ettin
@@ -5126,8 +5361,10 @@ B:CLAW:HURT:1d5
 B:CLAW:HURT:1d5
 B:BITE:HURT:2d6
 B:BITE:HURT:2d6
-F:MALE | REGENERATE | FRIENDS
+F:MALE | REGENERATE
 F:DROP_20 | ONLY_ITEM
+friends:100:2d4:Stone Troll
+friends:100:4d4:Same
 D:A huge, ugly, half-human in search of plunder.
 
 N:343:Bert the Stone Troll
@@ -5138,12 +5375,14 @@ W:34:7:0:2000
 B:HIT:HURT:6d6
 B:HIT:HURT:6d6
 B:BITE:HURT:3d10
-F:UNIQUE | MALE | REGENERATE | ESCORT
+F:UNIQUE | MALE | REGENERATE
 F:DROP_1 | DROP_GOOD | ONLY_ITEM
 F:MOVE_BODY | TAKE_ITEM
 F:HURT_ROCK | HURT_LIGHT | IM_COLD
 S:1_IN_7
 S:BOULDER
+friends:100:1d1:Tom the Stone Troll
+friends:100:1d1:Bill the Stone Troll
 D:Big, brawny, powerful and with a taste for hobbit.  He has friends called Bill
 D: and Tom.
 
@@ -5155,12 +5394,14 @@ W:34:7:0:2000
 B:HIT:HURT:6d6
 B:HIT:HURT:6d6
 B:BITE:HURT:3d10
-F:UNIQUE | MALE | REGENERATE | ESCORT
+F:UNIQUE | MALE | REGENERATE
 F:DROP_1 | DROP_GOOD | ONLY_ITEM
 F:MOVE_BODY | TAKE_ITEM
 F:HURT_ROCK | HURT_LIGHT | IM_COLD
 S:1_IN_7
 S:BOULDER
+friends:100:1d1:Bert the Stone Troll
+friends:100:1d1:Tom the Stone Troll
 D:Big, brawny, powerful and with a taste for hobbit.  He has friends called Bert
 D: and Tom.
 
@@ -5172,12 +5413,14 @@ W:34:7:0:2000
 B:HIT:HURT:6d6
 B:HIT:HURT:6d6
 B:BITE:HURT:3d10
-F:UNIQUE | MALE | REGENERATE | ESCORT
+F:UNIQUE | MALE | REGENERATE
 F:DROP_1 | DROP_GOOD | ONLY_ITEM
 F:MOVE_BODY | TAKE_ITEM
 F:HURT_ROCK | HURT_LIGHT | IM_COLD
 S:1_IN_7
 S:BOULDER
+friends:100:1d1:Bert the Stone Troll
+friends:100:1d1:Bill the Stone Troll
 D:Big, brawny, powerful and with a taste for hobbit.  He has friends called Bert
 D: and Bill.
 
@@ -5217,6 +5460,9 @@ F:DROP_2
 F:OPEN_DOOR | TAKE_ITEM
 S:1_IN_6
 S:ARROW_2 | BLINK | TRAPS
+friends:50:1d1:Black knight
+friends:50:1d1:Mage
+friends:50:1d1:Ninja
 D:Cool and confident, fast and lithe; protect your possessions quickly!
 
 N:355:Ulfang the Black
@@ -5233,6 +5479,10 @@ F:DROP_2 | DROP_GOOD | ONLY_ITEM
 F:OPEN_DOOR | TAKE_ITEM
 S:1_IN_10
 S:S_KIN
+friends:60:1d3:Mûmak
+friends:100:3d3:Easterling champion
+friends:100:1d1:Ulfast, Son of Ulfang
+friends:100:1d1:Ulwarth, Son of Ulfang
 D:A short and swarthy Easterling dressed in black.  He and his three sons once
 D: openly swore allegiance to the High Elves, but were secretly in the pay of
 D: Morgoth.
@@ -5252,6 +5502,7 @@ F:IM_POIS
 S:1_IN_4
 S:BLIND | BLINK | CAUSE_3 | DRAIN_MANA | HOLD
 S:SCARE | SLOW | TELE_AWAY | TELE_TO
+friends-base:70:1d3:skeleton
 D:It is a skeletal form dressed in robes.  It radiates vastly evil power.
 
 N:358:Giant grey scorpion
@@ -5328,6 +5579,8 @@ F:IM_COLD | NO_CONF | NO_SLEEP
 S:1_IN_9
 S:SCARE
 S:BR_COLD
+friends:50:1d4:Baby white dragon
+friends:50:1d2:Young white dragon
 D:A large dragon, scales gleaming bright white.
 
 N:384:Mature blue dragon
@@ -5344,6 +5597,8 @@ F:IM_ELEC | NO_CONF | NO_SLEEP
 S:1_IN_9
 S:SCARE
 S:BR_ELEC
+friends:50:1d4:Baby blue dragon
+friends:50:1d2:Young blue dragon
 D:A large dragon, scales tinted deep blue.
 
 N:385:Mature green dragon
@@ -5360,6 +5615,8 @@ F:IM_POIS | NO_CONF | NO_SLEEP
 S:1_IN_9
 S:SCARE
 S:BR_POIS
+friends:50:1d4:Baby green dragon
+friends:50:1d2:Young green dragon
 D:A large dragon, scales tinted deep green.
 
 N:386:Mature bronze dragon
@@ -5376,6 +5633,8 @@ F:NO_CONF | NO_SLEEP
 S:1_IN_9
 S:CONF | SCARE
 S:BR_CONF
+friends:50:1d4:Baby bronze dragon
+friends:50:1d2:Young bronze dragon
 D:A large dragon with scales of rich bronze.
 
 ### Dungeon level 35 ###
@@ -5389,9 +5648,11 @@ B:HIT:HURT:1d9
 B:HIT:HURT:1d9
 B:BITE:HURT:2d2
 B:BITE:HURT:2d2
-F:MALE | REGENERATE | FRIENDS
+F:MALE | REGENERATE
 F:DROP_20
 F:HURT_LIGHT | IM_COLD
+friends:50:1d5:Water hound
+friends:100:4d4:Same
 D:He is a troll that reeks of brine.
 
 N:352:Invisible stalker
@@ -5415,12 +5676,13 @@ W:35:2:0:600
 B:BITE:FIRE:3d12
 B:BITE:FIRE:3d12
 B:BITE:FIRE:3d12
-F:EVIL | HAS_LIGHT | FRIEND
+F:EVIL | HAS_LIGHT
 F:RAND_25 | BASH_DOOR | MOVE_BODY
-F:IM_FIRE
+F:IM_FIRE | GROUP_AI
 F:FORCE_SLEEP
 S:1_IN_5
 S:BR_FIRE
+friends:100:2d5:Same
 D:It is a giant dog that glows with heat.  Flames pour from its nostrils.
 
 N:364:Dagashi
@@ -5436,6 +5698,7 @@ F:MALE | EVIL | HAS_LIGHT
 F:DROP_1
 F:OPEN_DOOR
 F:NO_CONF | NO_SLEEP
+friends:80:1d4:Ninja
 D:A human warrior, moving with lightning speed.
 
 N:365:Gravity hound
@@ -5452,6 +5715,7 @@ F:NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
 S:1_IN_5
 S:BR_GRAV
+friends:100:2d7:Same
 D:Unfettered by the usual constraints of gravity, these unnatural creatures are
 D: walking on the walls and even the ceiling!  The earth suddenly feels rather
 D: less solid as you see gravity warp all round the monsters.
@@ -5486,6 +5750,7 @@ F:NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
 S:1_IN_5
 S:BR_INER
+friends:100:2d7:Same
 D:Bizarrely, this hound seems to be hardly moving at all, yet it approaches you
 D: with deadly menace.  It makes you tired just to look at it.
 
@@ -5503,6 +5768,7 @@ F:NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
 S:1_IN_5
 S:BR_WALL
+friends:100:2d7:Same
 D:A deep brown shape is visible before you, its canine form strikes you with an
 D: almost physical force.  The dungeon floor buckles as if struck by a powerful
 D: blow as it stalks towards you.
@@ -5518,10 +5784,11 @@ B:HIT:LOSE_STR:3d4
 F:DROP_2 | ONLY_ITEM
 F:RAND_25 | TAKE_ITEM
 F:IM_COLD | IM_POIS
-F:FORCE_SLEEP | FRIEND
+F:FORCE_SLEEP
 S:1_IN_15
 S:BLIND | CONF | DRAIN_MANA | HOLD
 S:BO_NETH
+friends:100:2d5:Same
 D:It is a form that screams its presence against the eye.  Death incarnate, its
 D: hideous black body seems to struggle against reality as the universe itself
 D: struggles to banish it.
@@ -5534,7 +5801,8 @@ W:35:2:0:2100
 B:BUTT:HURT:4d6
 B:BUTT:HURT:4d6
 B:CRUSH:HURT:4d4
-F:ANIMAL | FRIEND
+F:ANIMAL
+friends:100:4d4:Same
 D:A massive elephantine form with eyes twisted by madness.
 
 N:374:Giant fire ant
@@ -5544,9 +5812,10 @@ I:110:176:14:58:40
 W:35:1:0:350
 B:BITE:FIRE:3d12
 B:BITE:FIRE:3d12
-F:FRIENDS | HAS_LIGHT
+F:HAS_LIGHT
 F:KILL_BODY
-F:IM_FIRE
+F:IM_FIRE | GROUP_AI
+friends:100:4d4:Same
 D:A giant ant covered in shaggy fur.  Its powerful jaws glow with heat.
 
 N:556:Chest mimic
@@ -5604,8 +5873,9 @@ B:HIT:HURT:1d12
 B:HIT:HURT:1d12
 B:BITE:HURT:2d3
 B:BITE:HURT:2d3
-F:SMART | REGENERATE | FRIENDS
+F:SMART | REGENERATE 
 F:DROP_20
+friends:100:4d4:Olog
 D:It is a massive intelligent troll with needle-sharp fangs.
 
 N:247:Cloud giant
@@ -5619,6 +5889,8 @@ F:DROP_60
 F:OPEN_DOOR | TAKE_ITEM
 F:IM_ELEC
 S:1_IN_8
+friends:60:1d7:Energy hound
+friends:80:1d3:Same
 D:It is a twenty foot tall giant wreathed in clouds.
 
 N:357:Master vampire
@@ -5801,6 +6073,7 @@ S:BO_NETH
 S:S_UNDEAD
 drop:91:2:8:1:1
 drop:91:3:8:1:1
+friends-base:80:1d3:skeleton
 D:A gaunt figure, clothed in black robes.
 
 N:392:Lorgan, Chief of the Easterlings
@@ -5821,6 +6094,8 @@ F:FORCE_SLEEP
 S:1_IN_4
 S:TELE_TO
 S:S_MONSTERS
+friends:50:1d3:Mûmak
+friends:100:2d5:Easterling champion
 D:A mighty warrior from the east, Lorgan hates everything that he cannot
 D: control.
 
@@ -5842,6 +6117,8 @@ S:BO_FIRE
 S:S_DEMON
 drop:90:2:8:1:1
 drop:90:3:8:1:1
+friends-base:50:1d3:minor demon
+friends:100:1d1:Quasit
 D:A figure twisted by evil standing in robes of deepest crimson.
 
 N:402:Mature red dragon
@@ -5859,6 +6136,8 @@ F:IM_FIRE | NO_CONF | NO_SLEEP
 S:1_IN_9
 S:CONF | SCARE
 S:BR_FIRE
+friends:50:1d4:Baby red dragon
+friends:50:1d2:Young red dragon
 D:A large dragon, scales tinted deep red.
 
 N:403:Mature gold dragon
@@ -5875,6 +6154,8 @@ F:NO_CONF | NO_SLEEP
 S:1_IN_9
 S:CONF | SCARE
 S:BR_SOUN
+friends:50:1d4:Baby gold dragon
+friends:50:1d2:Young gold dragon
 D:A large dragon with scales of gleaming gold.
 
 N:405:Mature black dragon
@@ -5891,6 +6172,8 @@ F:IM_ACID | NO_CONF | NO_SLEEP
 S:1_IN_9
 S:SCARE
 S:BR_ACID
+friends:50:1d4:Baby black dragon
+friends:50:1d2:Young black dragon
 D:A large dragon, with scales of deepest black.
 
 N:615:Greater mummy
@@ -5902,7 +6185,7 @@ B:CLAW:LOSE_CON:3d6
 B:CLAW:LOSE_CON:3d6
 B:GAZE:EXP_40:3d4
 B:GAZE:TERRIFY:3d4
-F:SMART | ESCORT | ATTR_FLICKER
+F:SMART | ATTR_FLICKER
 F:DROP_2 | ONLY_ITEM
 F:MOVE_BODY | TAKE_ITEM
 F:IM_ACID | IM_ELEC | NO_FEAR
@@ -5913,6 +6196,9 @@ S:HEAL | MIND_BLAST | SCARE
 S:BA_COLD | BA_POIS
 S:BO_NETH
 S:S_UNDEAD
+friends:100:2d3:Mummified orc
+friends:100:2d3:Mummified human
+friends:100:2d3:Mummified troll
 D:Once a powerful ruler, now an even more powerful undead menace.
 
 N:590:Gauth
@@ -5975,13 +6261,19 @@ B:BITE:HURT:2d12
 B:BITE:HURT:2d12
 B:BITE:HURT:2d8
 B:BITE:HURT:2d8
-F:UNIQUE | FEMALE | ESCORT | ESCORTS
+F:UNIQUE | FEMALE
 F:DROP_2 | DROP_GOOD | ONLY_ITEM
 F:OPEN_DOOR
 F:NO_CONF | NO_SLEEP
-F:FORCE_SLEEP
+F:FORCE_SLEEP | GROUP_AI
 S:1_IN_2
 S:S_KIN
+friends:100:2d6:Soldier ant
+friends:60:2d3:Giant silver ant
+friends:60:2d3:Giant grey ant
+friends:60:2d3:Giant blue ant
+friends:60:2d3:Giant fire ant
+friends:100:3d3:Giant army ant
 D:She's upset because you hurt her children.
 
 N:397:Magma elemental
@@ -6010,11 +6302,12 @@ B:TOUCH:ACID:1d10
 B:TOUCH:ACID:1d10
 B:TOUCH:ACID:1d10
 B:TOUCH:ACID:1d10
-F:COLD_BLOOD | FRIENDS
+F:COLD_BLOOD
 F:DROP_40 | DROP_60 | DROP_1
 F:OPEN_DOOR | BASH_DOOR | TAKE_ITEM
 F:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS
 F:NO_CONF | NO_SLEEP
+friends:100:2d5:Same
 D:A lump of rotting black flesh that slurrrrrrrps across the dungeon floor.
 
 N:399:Killer iridescent beetle
@@ -6115,6 +6408,8 @@ F:ATTR_MULTI
 S:1_IN_7
 S:BLIND | CONF | SCARE
 S:BR_ACID | BR_COLD | BR_ELEC | BR_FIRE | BR_POIS
+friends:50:1d4:Baby multi-hued dragon
+friends:50:1d2:Young multi-hued dragon
 D:A large dragon, scales shimmering many colours.
 
 N:407:Death knight
@@ -6136,6 +6431,7 @@ S:BO_NETH
 S:S_MONSTERS
 drop:91:2:8:1:1
 drop:91:3:8:1:1
+friends:50:1d1:Imp
 D:It is a humanoid figure dressed in armour of an ancient form.  From beneath
 D: its helmet, eyes glow a baleful red and seem to pierce you like lances of
 D: fire.
@@ -6202,6 +6498,7 @@ F:IM_POIS
 S:1_IN_6
 S:CAUSE_3 | HOLD | SCARE
 S:BO_NETH
+friends-base:50:1d3:wraith
 D:Your life force is torn from your body as this powerful unearthly being
 D: approaches.
 
@@ -6263,13 +6560,15 @@ B:CLAW:POISON:2d8
 B:CLAW:POISON:2d8
 B:BITE:POISON:2d6
 B:BITE:POISON:2d6
-F:EVIL | ANIMAL | SMART | FRIENDS
-F:OPEN_DOOR
+F:EVIL | ANIMAL | SMART
+F:OPEN_DOOR | GROUP_AI
 F:HURT_LIGHT | IM_POIS
 F:FORCE_SLEEP
 S:1_IN_6
 S:CAUSE_3 | HOLD | MISSILE | SLOW
 S:BO_FIRE
+friends:50:2d3:Mirkwood Spider
+friends:100:3d3:Same
 D:An intelligent arachnid whose hairy legs weave spells in the air.
 
 ### Dungeon level 39 ###
@@ -6394,6 +6693,8 @@ S:1_IN_8
 S:BLINK | CONF | SCARE | TELE_TO
 S:BA_ELEC
 S:BO_ELEC
+friends:60:1d7:Energy hound
+friends:80:1d3:Same
 D:It is a twenty-five foot tall giant wreathed in lightning.
 
 N:411:Ancient blue dragon
@@ -6538,6 +6839,8 @@ S:BLIND
 S:S_DRAGON
 drop:90:2:8:1:1
 drop:90:3:8:1:1
+friends-base:30:1d1:dragon
+friends-base:60:1d1:dragon
 D:This elusive female spellcaster has a special affinity for dragons, whom she
 D: rarely fights without.
 
@@ -6561,6 +6864,11 @@ S:BO_ACID
 S:S_DRAGON | S_MONSTER | S_UNDEAD
 drop:90:2:5:1:1
 drop:90:3:10:1:1
+friends:30:1d1:Master thief
+friends:30:1d1:Ranger chieftain
+friends:30:1d1:Patriarch
+friends:30:1d1:Knight templar
+friends:30:1d1:Berserker
 D:A human figure in robes, he moves with magically improved speed, and his hands
 D: are ablur with spell casting.
 
@@ -6652,11 +6960,11 @@ W:40:2:0:2000
 B:HIT:HURT:3d4
 B:CRUSH:HURT:8d12
 B:CRUSH:HURT:8d12
-F:FRIENDS
 F:DROP_40
 F:IM_FIRE
 S:1_IN_8
 S:BLIND | CONF
+friends:100:4d4:Same
 D:It is a demon with a long neck and raking claws.
 
 N:448:Death quasit
@@ -6696,6 +7004,11 @@ S:BLIND | CAUSE_3 | CAUSE_4 | HEAL | HOLD
 S:S_MONSTER | S_UNDEAD
 drop:91:2:5:1:1
 drop:91:3:10:1:1
+friends:30:1d1:Master thief
+friends:30:1d1:Ranger chieftain
+friends:30:1d1:Sorcerer
+friends:30:1d1:Knight templar
+friends:30:1d1:Berserker
 D:An evil priest, dressed all in black.  Deadly spells hit you at an alarming
 D: rate as his black spiked mace rains down blow after blow on your pitiful
 D: frame.
@@ -6709,10 +7022,17 @@ B:HIT:HURT:2d12
 B:HIT:HURT:2d12
 B:BITE:HURT:3d6
 B:BITE:HURT:3d6
-F:SMART | REGENERATE | ESCORT
+F:SMART | REGENERATE
 F:DROP_1
 F:MOVE_BODY | TAKE_ITEM
 F:NO_FEAR
+friends:60:2d3:Forest troll
+friends:60:2d3:Stone troll
+friends:60:2d3:Ice troll
+friends:60:2d3:Water troll
+friends:60:2d3:Half-troll
+friends:60:2d3:Cave troll
+friends:60:2d3:Olog
 D:This troll's great strength and size have won it the place of chieftain of its
 D: tribe.  It fears nothing.
 
@@ -6803,6 +7123,8 @@ S:1_IN_3
 S:BLIND | BLINK | CAUSE_3 | CAUSE_4 | CONF
 S:DRAIN_MANA | HOLD | SCARE | TELE_TO
 S:S_UNDEAD
+friends-base:80:1d3:zombie
+friends-base:80:1d3:skeleton
 D:A skeletal form wrapped in robes.  Powerful magic crackles along its bony
 D: fingers.
 
@@ -6813,12 +7135,12 @@ I:110:457:20:60:70
 W:41:3:0:2500
 B:HIT:HURT:3d4
 B:HIT:HURT:3d4
-F:FRIENDS
 F:DROP_1
 F:IM_FIRE
 S:1_IN_9
 S:BO_FIRE
 S:S_DEMON
+friends:100:4d4:Same
 D:It is a demon of lizard form with cruel-looking jaws.
 
 N:454:Gorlim, Betrayer of Barahir
@@ -6862,6 +7184,11 @@ S:BO_ELEC | BO_FIRE
 S:S_ANIMAL
 drop:90:2:8:1:1
 drop:90:3:8:1:1
+friends:30:1d1:Master thief
+friends:30:1d1:Sorcerer
+friends:30:1d1:Patriarch
+friends:30:1d1:Knight templar
+friends:30:1d1:Berserker
 D:A chieftain among the Rangers.  His understanding of nature gives him powerful
 D: elemental spells to use against you, in addition to his skills as an archer
 D: and a warrior.  Furthermore, he is a master of camouflage, so you will need
@@ -6878,12 +7205,17 @@ B:HIT:HURT:6d7
 B:HIT:HURT:6d7
 B:BITE:HURT:4d10
 B:SPIT:ACID:4d8
-F:UNIQUE | MALE | REGENERATE | ESCORT
+F:UNIQUE | MALE | REGENERATE
 F:DROP_3 | DROP_GOOD | ONLY_ITEM
 F:MOVE_BODY | TAKE_ITEM
 F:IM_COLD
 S:1_IN_7
 S:BOULDER
+friends:60:2d3:Half-troll
+friends:60:2d3:Cave troll
+friends:40:2d3:Olog
+friends:30:1d2:Eldrak
+friends:100:4d4:Water troll
 D:A massive and cruel troll of great power, drool slides caustically down his
 D: muscular frame.  Despite his bulk, he strikes with stunning speed.
 
@@ -6900,6 +7232,7 @@ F:DROP_4
 S:1_IN_7
 S:BLIND | BRAIN_SMASH | CAUSE_3 | CAUSE_4 | DARKNESS | DRAIN_MANA
 S:BO_NETH
+friends:40:1d4:Vampire
 D:A foul wind chills your bones as this ghastly figure approaches.
 
 #N:460:Dread
@@ -7052,6 +7385,7 @@ F:NO_SLEEP
 F:ATTR_MULTI | FORCE_SLEEP
 S:1_IN_5
 S:BR_ACID | BR_COLD | BR_ELEC | BR_FIRE | BR_POIS
+friends:100:2d7:Same
 D:Shimmering in rainbow hues, this hound is beautiful and deadly.
 
 ### Dungeon level 44 ###
@@ -7072,6 +7406,11 @@ S:1_IN_4
 S:BLIND | CAUSE_3 | CAUSE_4 | HASTE | HEAL | SCARE
 drop:91:2:10:1:1
 drop:91:3:10:1:1
+friends:30:1d1:Master thief
+friends:30:1d1:Ranger chieftain
+friends:30:1d1:Patriarch
+friends:30:1d1:Sorcerer
+friends:30:1d1:Berserker
 # Knight templars summoning Ainu doesn't make much sense -JG
 D:It seems that the more devout the person, the more likely they are to cross
 D: the boundary between piety and sanctimoniousness.  And such is the case with
@@ -7345,6 +7684,11 @@ F:KILL_BODY
 F:NO_FEAR | NO_CONF | NO_SLEEP
 S:1_IN_4
 S:HASTE | SCARE
+friends:30:1d1:Master thief
+friends:30:1d1:Ranger chieftain
+friends:30:1d1:Patriarch
+friends:30:1d1:Knight templar
+friends:30:1d1:Sorcerer
 D:Even the strongest of normal human warriors fears the Berserker - the one who
 D: can drive himself into such a terrible battle-frenzy that he can survive
 D: blows which should kill him, and still apparently feel no pain.  He tramples
@@ -7497,7 +7841,7 @@ B:CLAW:POISON:5d8
 B:CLAW:POISON:5d8
 B:BITE:POISON:5d6
 B:BITE:POISON:5d6
-F:EVIL | ANIMAL | SMART | ESCORT
+F:EVIL | ANIMAL | SMART
 F:OPEN_DOOR
 F:HURT_LIGHT | IM_FIRE | IM_POIS
 F:FORCE_SLEEP
@@ -7506,6 +7850,8 @@ S:CAUSE_3 | DRAIN_MANA | HEAL | HOLD | MIND_BLAST | SLOW
 S:BA_FIRE
 S:BO_FIRE
 S:S_KIN | S_SPIDER
+friends:50:3d3:Mirkwood Spider
+friends:100:4d4:Aranea
 D:A vast, bloated arachnid, master of its brood: among the more terrible of
 D: Ungoliant's descendants, this is a monster such as those who haunted the
 D: dread valley of Nan Dungortheb long ago.
@@ -7598,6 +7944,7 @@ S:HEAL
 S:S_ANIMAL
 drop:91:2:8:1:1
 drop:91:3:8:1:1
+friends:50:2d4:spider
 D:A lord of all that is natural, skilled in the mystic ways.  He is a master of
 D: martial arts and is at one with nature, able to summon help from the wild if
 D: need be.
@@ -7611,8 +7958,7 @@ B:HIT:FIRE:6d12
 B:HIT:FIRE:6d12
 B:CRUSH:HURT:5d12
 B:TOUCH:UN_POWER
-F:UNIQUE | MALE | POWERFUL | ESCORT | HAS_LIGHT
-F:ESCORTS
+F:UNIQUE | MALE | POWERFUL | HAS_LIGHT
 F:DROP_4 | DROP_GOOD
 F:MOVE_BODY
 F:IM_FIRE
@@ -7620,6 +7966,8 @@ S:1_IN_4
 S:CONF | SCARE
 S:BR_FIRE
 S:S_DEMON | S_UNDEAD
+friends:100:4d4:Cave orc
+friends:100:3d4:Cave troll
 D:A huge Balrog surrounded by raging pillars of fire, this is indeed a terrible
 D: opponent.  Wielding a great whip of fire and a blazing sword, his fury
 D: blisters your skin and melts your flesh!
@@ -7640,6 +7988,7 @@ F:NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
 S:1_IN_5
 S:BR_NETH
+friends:100:2d7:Same
 D:You feel a soul-tearing chill upon viewing this beast, a ghostly form of
 D: darkness in the shape of a large dog.
 
@@ -7658,6 +8007,7 @@ F:NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
 S:1_IN_5
 S:BR_TIME
+friends:100:2d7:Same
 D:You get a terrible sense of deja vu, or is it a premonition?  All at once you
 D: see a little puppy and a toothless old dog.  Perhaps you should give up and
 D: go to bed.
@@ -7677,6 +8027,7 @@ F:IM_ELEC | IM_FIRE | RES_PLAS | NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
 S:1_IN_5
 S:BR_PLAS
+friends:100:2d7:Same
 D:The very air warps as pure elemental energy stalks towards you in the shape of
 D: a giant hound.  Your hair stands on end and your palms itch as you sense
 D: trouble.
@@ -7814,6 +8165,7 @@ S:1_IN_5
 S:BRAIN_SMASH | CAUSE_3 | CAUSE_4 | DARKNESS | DRAIN_MANA
 S:BO_NETH
 S:S_UNDEAD
+friends-base:30:1d3:ghost
 D:A terrible robed undead figure, this creature has existed in its unlife for
 D: many centuries by stealing the life of others.  It can summon the very shades
 D: of its victims from beyond the grave to come enslaved to its aid.
@@ -7829,8 +8181,7 @@ B:CLAW:POISON:5d6
 B:CLAW:POISON:5d6
 B:BITE:PARALYZE:5d10
 B:STING:LOSE_STR:5d4
-F:UNIQUE | FEMALE | EVIL | ANIMAL | SMART | ESCORT
-F:ESCORTS
+F:UNIQUE | FEMALE | EVIL | ANIMAL | SMART
 F:DROP_2 | DROP_GOOD | ONLY_ITEM
 F:HURT_LIGHT | IM_ACID | IM_POIS | NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
@@ -7839,6 +8190,8 @@ S:BLIND | CAUSE_3 | CAUSE_4 | CONF | HEAL | SCARE
 S:SLOW | TRAPS
 S:BR_DARK | BR_POIS
 S:S_KIN
+friends:80:4d4:Black orc
+friends:100:3d7:Mirkwood spider
 D:Shelob is an enormous bloated spider, the last daughter of Ungoliant the
 D: Unlight.  Her poison is legendary, as is her ego.  She normally guards the
 D: pass through Cirith Ungol, but occasionally goes out foraging for food to
@@ -7933,12 +8286,12 @@ B:HIT:HURT:4d10
 B:HIT:HURT:4d10
 B:HIT:LOSE_CON:10d2
 B:STING:POISON:5d5
-F:FRIENDS
 F:DROP_1
 F:IM_POIS
 S:1_IN_10
 S:SCARE
 S:S_DEMON
+friends:100:4d4:Same
 D:A foul, humanoid creature with a long tail, clawed hands and feet, and a
 D: disgusting, wiry, snaky beard.  They are the elite shock troops of the hells,
 D: capable of a terrifying berserk fury.
@@ -8007,6 +8360,7 @@ S:HEAL | MIND_BLAST
 S:S_ANIMAL | S_HOUND | S_SPIDER
 drop:91:2:5:1:1
 drop:91:3:15:1:1
+friends:80:3d5:spider
 D:He is one of the few true masters of the art, being extremely skillful in all
 D: forms of unarmed combat and controlling the world's natural creatures with
 D: disdainful ease.
@@ -8109,6 +8463,7 @@ F:NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
 S:1_IN_5
 S:BR_NETH
+friends:100:2d7:Same
 D:A pale green hound.  Pulsing red lines and strange fluorescent light hints at
 D: internal organs best left to the imagination.
 
@@ -8198,6 +8553,7 @@ S:SCARE | TELE_AWAY | TPORT | TRAPS
 S:BA_ACID | BA_COLD | BA_FIRE | BA_WATE
 S:BO_ICEE
 S:S_ANIMAL | S_DEMON | S_HI_DRAGON | S_MONSTERS | S_UNDEAD
+friends:100:1d1:Wormtongue, Agent of Saruman
 D:Originally known as the White, Saruman fell prey to Sauron's wiles.  He seeks
 D: to emulate him and breeds orcs and trolls to fight for him.  He searches
 D: forever for the One Ring, to become a mighty Sorcerer-King of the world.
@@ -8318,6 +8674,7 @@ S:BLIND | BLINK | BRAIN_SMASH | CONF | DRAIN_MANA | HOLD
 S:TELE_TO | TPORT
 S:BA_NETH
 S:S_UNDEAD
+friends:50:2d3:Dread
 D:It is a massive form of animated death, its colour deeper than black.  It
 D: drinks in light, and space around it is twisted and torn by the weight of its
 D: evil.  It is unlife and it knows nothing but the stealing of souls and the
@@ -8437,7 +8794,7 @@ B:HIT:UN_BONUS:6d8
 B:HIT:FIRE:6d8
 B:HIT:BLIND:10d10
 B:HIT:BLIND:10d10
-F:UNIQUE | MALE | SMART | ESCORT
+F:UNIQUE | MALE | SMART
 F:DROP_4 | DROP_GOOD
 F:MOVE_BODY
 F:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | HAS_LIGHT
@@ -8445,6 +8802,10 @@ S:1_IN_2
 S:BLIND | TELE_TO
 S:BO_MANA | BO_WATE | BO_FIRE | BO_ICEE
 S:S_AINU | S_ANIMAL | S_SPIDER | S_HOUND
+friends:60:1d3:Maia
+friends:60:1d3:Greater Maia
+friends:60:1d3:Blue Wizard
+friends:80:1d3:Istar
 D:A stocky, smiling man in brown robes, holding in his right hand a
 D: gnarled walking stick. Sent to Middle-Earth by Yavanna, Radagast
 D: has studied the plants and animals of Middle-Earth for many years
@@ -8465,6 +8826,7 @@ F:NO_CONF | NO_SLEEP
 F:ATTR_MULTI | FORCE_SLEEP
 S:1_IN_5
 S:BR_CHAO
+friends:100:2d7:Same
 D:A constantly changing canine form, this hound rushes towards you as if
 D: expecting mayhem and chaos ahead.  It appears to have an almost kamikaze
 D: relish for combat.  You suspect all may not be as it seems.
@@ -8486,6 +8848,8 @@ S:BLINK | CAUSE_4 | DRAIN_MANA | FORGET | HEAL
 S:HOLD | SCARE | TELE_TO | TPORT
 S:BA_NETH
 S:S_DEMON | S_HI_UNDEAD
+friends-base:80:2d3:zombie
+friends-base:80:2d3:skeleton
 D:A lich who has reached its ultimate evolutionary stage: a completely
 D: immaterial state.
 
@@ -8567,7 +8931,7 @@ B:CLAW:CONFUSE:12d12
 B:CLAW:LOSE_DEX:2d12
 B:CLAW:BLIND:10d5
 B:BITE:PARALYZE:15d1
-F:UNIQUE | MALE | INVISIBLE | ESCORT | ESCORTS
+F:UNIQUE | MALE | INVISIBLE
 F:DROP_4 | ONLY_ITEM
 F:OPEN_DOOR | BASH_DOOR
 F:IM_COLD | IM_FIRE | NO_CONF | NO_SLEEP
@@ -8575,6 +8939,9 @@ F:FORCE_SLEEP
 S:1_IN_3
 S:TELE_TO
 S:S_KIN
+friends:100:2d4:Tiger
+friends:100:2d4:Sabre-tooth tiger
+friends:100:2d4:Displacer beast
 D:Master of all things feline, the Cat Lord moves with unsurpassed stealth.
 
 ### Dungeon level 67 ###
@@ -9017,6 +9384,7 @@ S:BR_ACID | BR_CHAO | BR_COLD | BR_DARK | BR_DISE
 S:BR_ELEC | BR_FIRE | BR_GRAV | BR_INER | BR_LIGHT | BR_NETH
 S:BR_NEXU | BR_PLAS | BR_POIS | BR_SHAR | BR_SOUN | BR_TIME
 S:BR_WALL
+friends:100:2d7:Same
 D:A shifting, swirling form.  It seems to be all colours and sizes and shapes,
 D: though the dominant form is that of a huge dog.  You feel very uncertain all
 D: of a sudden.
@@ -9154,7 +9522,6 @@ B:TOUCH:UN_POWER:6d12
 B:TOUCH:LOSE_DEX:6d12
 B:TOUCH:LOSE_DEX:6d12
 F:UNIQUE | MALE
-F:ESCORT
 F:DROP_4 | DROP_GOOD | DROP_GREAT | ONLY_ITEM
 F:IM_POIS
 S:1_IN_2
@@ -9163,6 +9530,12 @@ S:TELE_TO | TRAPS
 S:BA_MANA | BA_NETH
 S:BO_MANA
 S:S_KIN | S_MONSTERS | S_UNDEAD
+friends:100:2d4:Dread
+friends:40:1d2:Dreadmaster
+friends:10:1d2:Dreadlord
+friends:100:1d4:Lich
+friends:40:1d2:Master lich
+friends:10:1d2:Archlich
 D:A stench of corruption and decay surrounds this sorcerer, who has clearly
 D: risen from the dead to continue his foul plots and schemes.
 
@@ -9301,6 +9674,7 @@ S:BLIND | BRAIN_SMASH | CAUSE_3 | HOLD | SCARE | TELE_AWAY
 S:BA_NETH
 S:BO_MANA
 S:S_HI_DEMON | S_HI_DRAGON | S_HI_UNDEAD | S_KIN | S_MONSTERS | S_WRAITH
+friends:50:1d1:Winged Horror
 D:The Chief of the Ringwraiths.  A fell being of devastating power.  His spells
 D: are lethal and his combat blows crushingly hard.  He moves at speed, and
 D: commands legions of evil to do his bidding.  It is said that he is fated
@@ -9349,6 +9723,7 @@ S:MIND_BLAST
 S:BA_ELEC
 S:BO_ELEC | BO_MANA
 S:S_HI_DEMON
+friends:100:2d3:Giant roc
 D:A winged humanoid demon from the Planes of Hell, Pazuzu grins inhumanely at
 D: you as he decides your fate.
 
@@ -9363,7 +9738,7 @@ B:CLAW:HURT:6d8
 B:CLAW:HURT:6d8
 B:BITE:POISON:6d6
 B:BITE:POISON:6d6
-F:UNIQUE | MALE | EVIL | ESCORT | ESCORTS
+F:UNIQUE | MALE | EVIL
 F:DROP_1 | DROP_GOOD | ONLY_ITEM
 F:RAND_25 | OPEN_DOOR | BASH_DOOR | MOVE_BODY | TAKE_ITEM
 F:IM_POIS
@@ -9371,6 +9746,8 @@ F:FORCE_SLEEP
 S:1_IN_3
 S:SCARE
 S:S_HOUND | S_MONSTERS
+friends:100:3d5:Werewolf
+friends:100:2d4:Wolf Chieftain
 D:Draugluin provides Sauron with a fearsome personal guard.  He is an enormous
 D: wolf inhabited with a human spirit.  He is chief of all his kind.
 
@@ -9411,13 +9788,17 @@ B:CLAW:HURT:6d12
 B:BITE:HURT:10d14
 B:BITE:HURT:10d14
 F:UNIQUE | MALE
-F:ESCORT
 F:DROP_GOOD | DROP_GREAT | ONLY_ITEM
 F:BASH_DOOR
 F:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS
 S:1_IN_3
 S:BR_ACID | BR_COLD | BR_ELEC | BR_FIRE | BR_POIS
 S:S_HI_DRAGON | S_KIN
+friends:100:1d1:Kavlax the Many-Headed
+friends:100:1d1:Scatha the Worm
+friends:100:1d1:Itangast the Fire Drake
+friends:100:1d1:Smaug the Golden
+friends:100:1d1:Glaurung, Father of the Dragons
 D:"Rushing Jaws" is his name, and death is his game; the greatest and most
 D: terrible of all dragonkind, his power dismayed even the Valar for a time.
 
@@ -9454,7 +9835,7 @@ B:HIT:CONFUSE:12d12
 B:HIT:CONFUSE:12d12
 B:HIT:CONFUSE:12d12
 B:HIT:CONFUSE:12d12
-F:UNIQUE | MALE | SMART | ESCORT
+F:UNIQUE | MALE | SMART
 F:DROP_4 | DROP_GOOD | ONLY_ITEM
 F:MOVE_BODY | TAKE_ITEM
 F:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS
@@ -9463,6 +9844,12 @@ S:1_IN_3
 S:HEAL | TELE_TO
 S:BR_COLD | BR_FIRE | BR_SHAR | BR_SOUN
 S:S_KIN | S_MONSTERS
+friends:50:1d4:Cloud giant
+friends:50:1d4:Storm giant
+friends:50:1d3:Lesser titan
+friends:50:1d2:Greater titan
+friends:100:1d1:Polyphemus, the Blind Cyclops
+friends:100:1d1:Atlas, the Titan
 D:The lord of the Titans, he has broken loose from his confinement in the nether
 D: hells to seek revenge on the world.
 
@@ -9477,8 +9864,7 @@ B:HIT:FIRE:8d12
 B:HIT:FIRE:8d12
 B:CRUSH:HURT:8d12
 B:TOUCH:UN_POWER
-F:UNIQUE | MALE | POWERFUL | ESCORT | HAS_LIGHT
-F:ESCORTS
+F:UNIQUE | MALE | POWERFUL | HAS_LIGHT
 F:DROP_4 | DROP_GOOD
 F:MOVE_BODY
 F:IM_FIRE | RES_PLAS
@@ -9486,6 +9872,9 @@ S:1_IN_4
 S:BLIND | CONF | SCARE
 S:BR_FIRE | BR_PLAS
 S:S_HI_DEMON | S_UNDEAD
+friends:100:1d3:Lesser balrog
+friends:50:1d2:Greater balrog
+friends:100:1d1:The Balrog of Moria
 D:A massive form cloaked in flame.  Lungorthin stares balefully at you with eyes
 D: that smoulder red.  The dungeon floor where he stands is scorched by the heat
 D: of his body.
@@ -9550,7 +9939,6 @@ B:HIT:LOSE_DEX:7d12
 B:HIT:UN_POWER:7d12
 B:HIT:UN_POWER:7d12
 F:UNIQUE | MALE
-F:ESCORT
 F:DROP_4 | DROP_GOOD | DROP_GREAT | ONLY_ITEM
 F:IM_ELEC | IM_FIRE | IM_POIS
 S:1_IN_2
@@ -9558,6 +9946,16 @@ S:BLIND | CAUSE_4 | SCARE | TPORT
 S:BA_FIRE | BA_MANA | BA_NETH
 S:BO_MANA
 S:S_HI_DEMON | S_HI_UNDEAD | S_KIN | S_MONSTERS
+friends:50:1d3:Greater mummy
+friends:50:1d3:Skeleton ettin
+friends:50:1d3:Night mare
+friends:30:1d2:Dreadlord
+friends:40:1d2:Archlich
+friends:30:1d2:Nightwing
+friends:30:1d2:Nightcrawler
+friends:20:1d2:Nightwalker
+friends:20:1d2:Bone golem
+friends:20:1d2:Black reaver
 D:The greatest of all undead sorcerers, even the gods once feared him.  This
 D: ancient shadow of death wilts every living thing it passes.
 
@@ -9572,8 +9970,7 @@ B:HIT:FIRE:9d12
 B:HIT:FIRE:9d12
 B:CRUSH:HURT:8d12
 B:TOUCH:UN_POWER
-F:UNIQUE | MALE | POWERFUL | ESCORT | HAS_LIGHT
-F:ESCORTS
+F:UNIQUE | MALE | POWERFUL | HAS_LIGHT
 F:DROP_4 | DROP_GOOD | DROP_GREAT
 F:MOVE_BODY
 F:IM_ELEC | IM_FIRE | RES_PLAS
@@ -9581,6 +9978,13 @@ S:1_IN_3
 S:BLIND | CONF | SCARE
 S:BR_FIRE | BR_PLAS
 S:S_HI_DEMON | S_HI_UNDEAD
+friends:100:1d5:Lesser balrog
+friends:30:1d3:Osyluth
+friends:30:1d3:Gelugon
+friends:30:1d3:Pit fiend
+friends:100:1d2:Greater balrog
+friends:100:1d1:The Balrog of Moria
+friends:100:1d1:Lungorthin, the Balrog of White Fire
 D:Gothmog is the Chief Balrog in Morgoth's personal guard.  He is renowned for
 D: slaying Fëanor and Fingon, two of the High Kings of the Noldor Elves, and
 D: has never been defeated in combat.  With his whip of flame and awesome fiery
@@ -9608,6 +10012,8 @@ S:BLIND | BRAIN_SMASH | CAUSE_4 | SCARE | TELE_LEVEL | TPORT
 S:BA_DARK | BA_FIRE | BA_MANA | BA_NETH | BA_WATE
 S:BO_ICEE | BO_MANA | BO_PLAS
 S:S_HI_DEMON | S_HI_DRAGON | S_HI_UNDEAD | S_MONSTERS | S_UNIQUE | S_WRAITH
+friends:100:1d1:Khamûl, the Black Easterling
+friends:100:1d1:The Witch-King of Angmar
 D:He is Morgoth's most powerful servant.  Mighty in spells and enchantments, he
 D: created the One Ring.  His eyes glow with power and his gaze seeks to destroy
 D: your soul.  He has many servants, and rarely fights without them.
