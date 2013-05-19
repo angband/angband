@@ -485,6 +485,7 @@ static bool store_will_buy(struct store *store, const object_type *o_ptr)
 				default:
 					return (FALSE);
 			}
+			break;
 		}
 
 		/* Armoury */
@@ -1300,7 +1301,7 @@ static void store_delete_index(struct store *store, int what)
 /**
  * Find a given object kind in the store.
  */
-static bool store_find_kind(struct store *s, object_kind *k) {
+static object_type *store_find_kind(struct store *s, object_kind *k) {
 	int slot;
 
 	assert(s);
@@ -1308,12 +1309,12 @@ static bool store_find_kind(struct store *s, object_kind *k) {
 
 	/* Check if it's already in stock */
 	for (slot = 0; slot < s->stock_num; slot++) {
-		if (s->stock[slot].kind == k) {
-			return TRUE;
+		if (s->stock[slot].kind == k && !s->stock[slot].ego) {
+			return &s->stock[slot];
 		}
 	}
 
-	return FALSE;
+	return NULL;
 }
 
 /**
@@ -1626,9 +1627,11 @@ void store_maint(struct store *s)
 		size_t i;
 		for (i = 0; i < s->always_num; i++) {
 			object_kind *k = s->always_table[i];
-
-			/* Check if it already has this item */
-			if (!store_find_kind(s, k)) {
+			object_type *o = store_find_kind(s, k);
+			if (o) {
+				/* ensure a full stack */
+				o->number = MAX_STACK_SIZE - 1;
+			} else {
 				/* Now create the item */
 				int slot = store_create_item(s, k);
 				struct object *o = &s->stock[slot];
