@@ -22,6 +22,8 @@
 #include "init.h"
 #include "grafmode.h"
 
+#define NSLog(...) ;
+
 #if BORG
 #include "borg1.h"
 #include "borg9.h"
@@ -414,20 +416,7 @@ static bool initialized = FALSE;
 
 - (NSSize)scaleFactor
 {
-    if (inLiveResize)
-    {
-        NSSize baseSize = [self baseSize];
-#if BUFFER_WITH_CGLAYER
-        CGSize currentSize = CGLayerGetSize(angbandLayer);
-#else
-        NSSize currentSize = [angbandImage size];
-#endif
-        return NSMakeSize(currentSize.width / baseSize.width, currentSize.height / baseSize.height);
-    }
-    else
-    {
-        return [[self activeView] scaleFromBaseSize];
-    }
+    return NSMakeSize( 1.0, 1.0 );
 }
 
 // qsort-compatible compare function for CGSizes
@@ -439,7 +428,6 @@ static int compare_advances(const void *ap, const void *bp)
 
 - (void)updateGlyphInfo
 {
-    
     // Update glyphArray and glyphWidths
     NSFont *screenFont = [angbandViewFont screenFont];
     
@@ -772,11 +760,7 @@ static int compare_advances(const void *ap, const void *bp)
 
 - (CGContextRef)lockFocus
 {
-    /* Do a lock focus unscaled, but then apply our scale factor */
-    CGContextRef ctx = [self lockFocusUnscaled];
-    NSSize scaleFactor = [self scaleFactor];
-    CGContextScaleCTM(ctx, scaleFactor.width, scaleFactor.height);
-    return ctx;
+    return [self lockFocusUnscaled];
 }
 
 
@@ -789,7 +773,6 @@ static int compare_advances(const void *ap, const void *bp)
 
 - (void)setSelectionFont:(NSFont*)font
 {
-    
     /* Record the new font */
     [font retain];
     [angbandViewFont release];
@@ -835,7 +818,6 @@ static int compare_advances(const void *ap, const void *bp)
 /* Destroy all the receiver's stuff. This is intended to be callable more than once. */
 - (void)dispose
 {
-    
     terminal = NULL;
     
     /* Disassociate ourselves from our angbandViews */
@@ -879,7 +861,6 @@ static int compare_advances(const void *ap, const void *bp)
 /* Entry point for initializing Angband */
 + (void)beginGame
 {
-    
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     
     //set the command hook
@@ -1139,13 +1120,59 @@ static NSMenuItem *superitem(NSMenuItem *self)
 {
     for (NSView *angbandView in angbandViews)
     {
-        [angbandView setNeedsDisplayInRect:[self convertBaseRect:rect toView:angbandView]];
+        [angbandView setNeedsDisplayInRect: rect];
     }
 }
 
 - (void)displayIfNeeded
 {
     [[self activeView] displayIfNeeded];
+}
+
+
+
+#pragma mark -
+#pragma mark NSWindowDelegate Methods
+
+- (void)windowWillStartLiveResize: (NSNotification *)notification
+{
+    NSWindow *window = [notification object];
+    [window setContentResizeIncrements: NSMakeSize( tileSize.width, tileSize.height )];
+}
+
+- (void)windowDidEndLiveResize: (NSNotification *)notification
+{
+    NSWindow *window = [notification object];
+    NSRect rect = [window contentRectForFrameRect: [window frame]];
+
+    CGFloat arows = floor( rect.size.height / tileSize.height );
+    CGFloat acols = floor( rect.size.width / tileSize.width );
+
+    self->cols = acols;
+    self->rows = arows;
+
+    /* Free overdraw cache (unless we're GC, in which case it was allocated collectable) */
+    if (! [NSGarbageCollector defaultCollector]) free(self->charOverdrawCache);
+    self->charOverdrawCache = NULL;
+    if (! [NSGarbageCollector defaultCollector]) free(self->attrOverdrawCache);
+    self->attrOverdrawCache = NULL;
+
+    /* Allocate overdraw cache, unscanned and collectable. */
+    self->charOverdrawCache = NSAllocateCollectable(self->cols * self->rows *sizeof *charOverdrawCache, 0);
+    self->attrOverdrawCache = NSAllocateCollectable(self->cols * self->rows *sizeof *attrOverdrawCache, 0);
+
+
+    term *old = Term;
+    Term_activate( self->terminal );
+    Term_resize( (int)acols, (int)arows);
+    Term_redraw();
+    Term_activate( old );
+}
+
+- (NSSize)windowWillResize: (NSWindow *)sender toSize: (NSSize)frameSize
+{
+    NSSize safeSize = NSMakeSize( MAX( frameSize.width, 1 * tileSize.width ), MAX( frameSize.height, 1 * tileSize.height ) );
+    return safeSize;
 }
 
 @end
@@ -1255,7 +1282,6 @@ static void record_current_savefile(void)
 static void Term_init_cocoa(term *t)
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    
     AngbandContext *context = [[AngbandContext alloc] init];
     
     /* Give the term a hard retain on context (for GC) */
@@ -1443,7 +1469,8 @@ static errr Term_xtra_cocoa_react(void)
     int expected_graf_mode = (current_graphics_mode ? current_graphics_mode->grafID : GRAF_MODE_NONE);
     if (graf_mode_req != expected_graf_mode)
     {
-        
+        NSLog( @"!!! switching graphics mode" );
+
         graphics_mode *new_mode;
 		if (graf_mode_req != GRAF_MODE_NONE) {
 			new_mode = get_graphics_mode(graf_mode_req);
@@ -1508,6 +1535,7 @@ static errr Term_xtra_cocoa_react(void)
 static errr Term_xtra_cocoa(int n, int v)
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+    NSLog( @"_xtra" );
     AngbandContext* angbandContext = Term->data;
     
     errr result = 0;
@@ -1633,6 +1661,7 @@ static errr Term_xtra_cocoa(int n, int v)
 static errr Term_curs_cocoa(int x, int y)
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+    NSLog( @"_curs" );
     AngbandContext *angbandContext = Term->data;
     
     /* Get the tile */
@@ -1673,6 +1702,7 @@ static errr Term_curs_cocoa(int x, int y)
 static errr Term_wipe_cocoa(int x, int y, int n)
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+    NSLog( @"_wipe" );
     AngbandContext *angbandContext = Term->data;
     
     /* clear our overdraw cache for subpixel rendering */
@@ -1717,7 +1747,7 @@ static errr Term_pict_cocoa(int x, int y, int n, const int *ap,
     
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     AngbandContext* angbandContext = Term->data;
-    
+    NSLog( @"_pict" );
     /* Indicate that we have a picture here (and hence this should not be overdrawn by Term_text_cocoa) */
     angbandContext->charOverdrawCache[y * angbandContext->cols + x] = NO_OVERDRAW;
     
@@ -1737,6 +1767,7 @@ static errr Term_pict_cocoa(int x, int y, int n, const int *ap,
     int i;
     int graf_width = current_graphics_mode->cell_width;
     int graf_height = current_graphics_mode->cell_height;
+
     for (i = 0; i < n; i++)
     {
         
@@ -1805,7 +1836,7 @@ static errr Term_pict_cocoa(int x, int y, int n, const int *ap,
 static errr Term_text_cocoa(int x, int y, int n, int a, const wchar_t *cp)
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    
+    NSLog( @"_text" );
     /* Subpixel rendering looks really nice!  Unfortunately, drawing a string like this:
      .@
      causes subpixels to extend slightly into the region 'owned' by the period.  This means that when the user presses right,
@@ -1830,7 +1861,7 @@ static errr Term_text_cocoa(int x, int y, int n, int a, const wchar_t *cp)
     [angbandContext lockFocus];
     
     NSSize scaleFactor = [angbandContext scaleFactor];
-    
+
     /* Starting pixel */
     NSRect charRect = [angbandContext rectInImageForTileAtX:x Y:y];
     
