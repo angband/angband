@@ -638,8 +638,8 @@ static int compare_advances(const void *ap, const void *bp)
 - (void)drawWChar:(wchar_t)wchar inRect:(NSRect)tile
 {
     CGContextRef ctx = [[NSGraphicsContext currentContext] graphicsPort];
-    CGFloat tileOffsetY = -fontDescender;
-    CGFloat tileOffsetX;
+    CGFloat tileOffsetY = CTFontGetAscent( (CTFontRef)[angbandViewFont screenFont] );
+    CGFloat tileOffsetX = 0.0;
     NSFont *screenFont = [angbandViewFont screenFont];
     UniChar unicharString[2] = {(UniChar)wchar, 0};
 
@@ -667,24 +667,24 @@ static int compare_advances(const void *ap, const void *bp)
         compressionRatio = NSWidth(tile) / advance.width;
         tileOffsetX = 0;
     }
-    
+
     
     /* Now draw it */
     CGAffineTransform textMatrix = CGContextGetTextMatrix(ctx);
     CGFloat savedA = textMatrix.a;
-    
+
     /* Set the position */
     textMatrix.tx = tile.origin.x + tileOffsetX;
     textMatrix.ty = tile.origin.y + tileOffsetY;
-    
+
     /* Maybe squish it horizontally. */
     if (compressionRatio != 1.)
     {
         textMatrix.a *= compressionRatio;
     }
-    
+
+    textMatrix = CGAffineTransformScale( textMatrix, 1.0, -1.0 );
     CGContextSetTextMatrix(ctx, textMatrix);
-    
     CGContextShowGlyphsWithAdvances(ctx, &glyph, &CGSizeZero, 1);
     
     /* Restore the text matrix if we messed with the compression ratio */
@@ -693,6 +693,9 @@ static int compare_advances(const void *ap, const void *bp)
         textMatrix.a = savedA;
         CGContextSetTextMatrix(ctx, textMatrix);
     }
+
+    textMatrix = CGAffineTransformScale( textMatrix, 1.0, -1.0 );
+    CGContextSetTextMatrix(ctx, textMatrix);
 }
 
 /* Indication that we're redrawing everything, so get rid of the overdraw cache. */
@@ -766,8 +769,7 @@ static int compare_advances(const void *ap, const void *bp)
 
 - (NSRect)rectInImageForTileAtX:(int)x Y:(int)y
 {
-    /* Angband treats 0, 0 as upper left; we treat it as lower right */
-    int flippedY = rows - y - 1;
+    int flippedY = y;
     return NSMakeRect(x * tileSize.width + borderSize.width, flippedY * tileSize.height + borderSize.height, tileSize.width, tileSize.height);
 }
 
@@ -1181,6 +1183,11 @@ static NSMenuItem *superitem(NSMenuItem *self)
 @implementation AngbandView
 
 - (BOOL)isOpaque
+{
+    return YES;
+}
+
+- (BOOL)isFlipped
 {
     return YES;
 }
@@ -1859,7 +1866,7 @@ static errr Term_text_cocoa(int x, int y, int n, int a, const wchar_t *cp)
     
     /* Focus on our layer */
     [angbandContext lockFocus];
-    
+
     NSSize scaleFactor = [angbandContext scaleFactor];
 
     /* Starting pixel */
