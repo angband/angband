@@ -1099,7 +1099,8 @@ static bool place_monster_base_okay(monster_race *race)
 	
 	/* Handle friends same as original monster */
 	if (race->ridx == friends_race->ridx){
-		place_new_monster_group(c, y, x, race, sleep, total, origin);
+		success = place_new_monster_group(c, y, x, race, sleep, total, origin);
+		return success;
 	}
 	
 	/* Find a nearby place to put the other groups */

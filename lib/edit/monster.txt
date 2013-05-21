@@ -535,10 +535,10 @@ B:HIT:HURT:1d7
 F:MALE | HAS_LIGHT
 F:DROP_60
 F:OPEN_DOOR
-friends:60:1d4:Cutpurse
-friends:60:1d4:Acolyte
-friends:60:1d4:Apprentice
-friends:60:1d4:Same
+friends-base:20:1d3:person
+friends-base:40:1d3:person
+friends-base:80:1d3:person
+friends:50:1d2:Same
 D:An inexperienced but tough warrior.
 
 N:36:Cutpurse
@@ -551,10 +551,10 @@ B:TOUCH:EAT_GOLD
 F:MALE | EVIL
 F:DROP_40
 F:OPEN_DOOR | TAKE_ITEM
-friends:60:1d4:Soldier
-friends:60:1d4:Acolyte
-friends:60:1d4:Apprentice
-friends:60:1d4:Same
+friends-base:20:1d3:person
+friends-base:40:1d3:person
+friends-base:80:1d3:person
+friends:50:1d2:Same
 D:A rather shifty individual.
 
 N:37:Acolyte
@@ -570,10 +570,10 @@ F:FORCE_SLEEP
 S:1_IN_12
 S:CAUSE_1 | HEAL | SCARE
 drop:91:0:5:1:1
-friends:60:1d4:Soldier
-friends:60:1d4:Cutpurse
-friends:60:1d4:Apprentice
-friends:60:1d4:Same
+friends-base:20:1d3:person
+friends-base:40:1d3:person
+friends-base:80:1d3:person
+friends:50:1d2:Same
 D:He is tripping over his priestly robes.
 
 N:38:Apprentice
@@ -589,10 +589,10 @@ F:FORCE_SLEEP
 S:1_IN_12
 S:BLIND | BLINK | CONF | MISSILE
 drop:90:0:5:1:1
-friends:60:1d4:Soldier
-friends:60:1d4:Cutpurse
-friends:60:1d4:Acolyte
-friends:60:1d4:Same
+friends-base:20:1d3:person
+friends-base:40:1d3:person
+friends-base:80:1d3:person
+friends:50:1d2:Same
 D:He is leaving behind a trail of dropped spell components.
 
 N:39:Yellow mushroom patch
@@ -954,12 +954,10 @@ F:FORCE_SLEEP
 S:1_IN_9
 S:ARROW_1 | MISSILE
 drop:90:0:3:1:1
-friends:60:1d4:Gallant
-friends:60:1d4:Soldier
-friends:60:1d4:Apprentice
-friends:60:1d4:Acolyte
-friends:60:1d4:Cutpurse
-friends:60:1d4:Same
+friends-base:20:1d3:person
+friends-base:40:1d3:person
+friends-base:80:1d3:person
+friends:50:1d2:Same
 D:An agile hunter, ready and relaxed.
 
 N:70:Gallant
@@ -976,12 +974,10 @@ F:FORCE_SLEEP
 S:1_IN_9
 S:CAUSE_1 | SCARE
 drop:91:0:3:1:1
-friends:60:1d4:Scout
-friends:60:1d4:Soldier
-friends:60:1d4:Apprentice
-friends:60:1d4:Acolyte
-friends:60:1d4:Cutpurse
-friends:60:1d4:Same
+friends-base:20:1d3:person
+friends-base:40:1d3:person
+friends-base:80:1d3:person
+friends:50:1d2:Same
 D:An adventurer both devoutly religious and skillful in combat.
 
 N:71:Blue jelly
