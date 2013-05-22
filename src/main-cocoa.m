@@ -274,7 +274,7 @@ static NSRect crack_rect(NSRect rect, NSSize scale, unsigned pushOptions)
 /* Returns the pixel push options (describing how we round) for the tile at a given index. Currently it's pretty uniform! */
 static unsigned push_options(unsigned x, unsigned y)
 {
-    return PUSH_BOTTOM | PUSH_LEFT;
+    return PUSH_TOP | PUSH_LEFT;
 }
 
 /*
