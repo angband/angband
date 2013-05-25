@@ -41,12 +41,7 @@
 #include <Cocoa/Cocoa.h>
 #include <Carbon/Carbon.h> // For keycodes
 
-static NSSize AngbandScaleIdentity = {1.0, 1.0};
-
-/* We know how to double-buffer either into a CGLayer or a CGImage.  Currently CGLayers are a lot faster, probably because NSImage thrashes between a CGImageRef and a bitmap context. */
-#ifndef BUFFER_WITH_CGLAYER
-# define BUFFER_WITH_CGLAYER 1
-#endif
+static NSSize const AngbandScaleIdentity = {1.0, 1.0};
 
 /* We can blit to a large layer or image and then scale it down during live resize, which makes resizing much faster, at the cost of some image quality during resizing */
 #ifndef USE_LIVE_RESIZE_CACHE
@@ -119,12 +114,8 @@ static NSFont *default_font;
     /* Our array of views */
     NSMutableArray *angbandViews;
     
-    /* The buffered image  (either CGLayerRef or NSImage) */
-#if BUFFER_WITH_CGLAYER
+    /* The buffered image */
     CGLayerRef angbandLayer;
-#else
-    NSImage *angbandImage;
-#endif
     
     /* The font of this context */
     NSFont *angbandViewFont;
@@ -489,7 +480,6 @@ static int compare_advances(const void *ap, const void *bp)
     size.width = fmax(1, ceil(size.width));
     size.height = fmax(1, ceil(size.height));
     
-#if BUFFER_WITH_CGLAYER
     CGLayerRelease(angbandLayer);
     
     // make a bitmap context as an example for our layer
@@ -498,13 +488,7 @@ static int compare_advances(const void *ap, const void *bp)
     CGColorSpaceRelease(cs);
     angbandLayer = CGLayerCreateWithContext(exampleCtx, *(CGSize *)&size, NULL);
     CFRelease(exampleCtx);
-#else
-    
-    [angbandImage release];
-    angbandImage = [[NSImage alloc] initWithSize:size];
-    [angbandImage setFlipped:NO];
-#endif
-    
+
     [self lockFocus];
     [[NSColor blackColor] set];
     NSRectFill((NSRect){NSZeroPoint, [self baseSize]});
@@ -655,8 +639,6 @@ static int compare_advances(const void *ap, const void *bp)
 }
 
 /* Lock and unlock focus on our image or layer, setting up the CTM appropriately. */
-#if BUFFER_WITH_CGLAYER
-
 - (CGContextRef)lockFocusUnscaled
 {
     /* Create an NSGraphicsContext representing this CGLayer */
@@ -682,33 +664,6 @@ static int compare_advances(const void *ap, const void *bp)
     CGSize result = CGLayerGetSize(angbandLayer);
     return NSMakeSize(result.width, result.height);
 }
-
-#else
-
-- (CGContextRef)lockFocusUnscaled
-{
-    /* Just lock focus on our image */
-    [angbandImage lockFocus];
-    CGContextRef ctx = [[NSGraphicsContext currentContext] graphicsPort];
-    CGContextSaveGState(ctx);
-    return ctx;
-}
-
-- (void)unlockFocus
-{
-    /* Restore the graphics state */
-    CGContextRef ctx = [[NSGraphicsContext currentContext] graphicsPort];
-    CGContextRestoreGState(ctx);
-    [angbandImage unlockFocus];
-}
-
-- (NSSize)imageSize
-{
-    /* Return the image size */
-    return [angbandImage size];
-}
-
-#endif
 
 - (CGContextRef)lockFocus
 {
@@ -777,14 +732,9 @@ static int compare_advances(const void *ap, const void *bp)
     angbandViews = nil;
     
     /* Destroy the layer/image */
-#if BUFFER_WITH_CGLAYER
     CGLayerRelease(angbandLayer);
     angbandLayer = NULL;
-#else
-    [angbandImage release];
-    angbandImage = nil;
-#endif
-    
+
     /* Font */
     [angbandViewFont release];
     angbandViewFont = nil;
@@ -1024,7 +974,6 @@ static NSMenuItem *superitem(NSMenuItem *self)
     BOOL viewInLiveResize = [view inLiveResize];
     if (! viewInLiveResize) [self throttle];
 
-#if BUFFER_WITH_CGLAYER
     /* With a GLayer, use CGContextDrawLayerInRect */
     CGContextRef context = [[NSGraphicsContext currentContext] graphicsPort];
     NSRect bounds = [view bounds];
@@ -1032,10 +981,6 @@ static NSMenuItem *superitem(NSMenuItem *self)
     CGContextSetBlendMode(context, kCGBlendModeCopy);
     CGContextDrawLayerInRect(context, *(CGRect *)&bounds, angbandLayer);
     if (viewInLiveResize) CGContextSetInterpolationQuality(context, kCGInterpolationDefault);
-#else
-    /* NSImage just draws it. */
-    [angbandImage drawInRect:[view bounds] fromRect:NSZeroRect operation:NSCompositeCopy fraction:1.];
-#endif
 }
 
 
