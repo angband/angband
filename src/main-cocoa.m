@@ -680,7 +680,7 @@ static int compare_advances(const void *ap, const void *bp)
     return NSMakeRect(x * tileSize.width + borderSize.width, flippedY * tileSize.height + borderSize.height, tileSize.width, tileSize.height);
 }
 
-- (void)setSelectionFont:(NSFont*)font
+- (void)setSelectionFont:(NSFont*)font adjustTerminal: (BOOL)adjustTerminal
 {
     /* Record the new font */
     [font retain];
@@ -689,7 +689,14 @@ static int compare_advances(const void *ap, const void *bp)
     
     /* Update our glyph info */
     [self updateGlyphInfo];
-    
+
+    if( adjustTerminal )
+    {
+        // adjust terminal to fit window with new font; save the new columns and rows since they could be changed
+        NSRect contentRect = [self->primaryWindow contentRectForFrameRect: [self->primaryWindow frame]];
+        [self resizeTerminalWithContentRect: contentRect saveToDefaults: YES];
+    }
+
     /* Update our image */
     [self updateImage];
     
@@ -1262,7 +1269,7 @@ static void Term_init_cocoa(term *t)
     float fontSize = [[NSUserDefaults angbandDefaults] 
         floatForKey:[NSString stringWithFormat:@"FontSize-%d", termIdx]];
     if (! fontSize) fontSize = [default_font pointSize];
-    [context setSelectionFont:[NSFont fontWithName:fontName size:fontSize]];
+    [context setSelectionFont:[NSFont fontWithName:fontName size:fontSize] adjustTerminal: NO];
 
     NSArray *terminalDefaults = [[NSUserDefaults standardUserDefaults] valueForKey: AngbandTerminalsDefaultsKey];
     NSInteger rows = 24;
@@ -2837,7 +2844,7 @@ static void initialize_file_paths(void)
     
     /* Update window */
     AngbandContext *angbandContext = angband_term[mainTerm]->data;
-    [(id)angbandContext setSelectionFont:newFont];
+    [(id)angbandContext setSelectionFont:newFont adjustTerminal: YES];
     
     NSEnableScreenUpdates();
 }
