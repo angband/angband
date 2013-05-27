@@ -947,11 +947,11 @@ static NSMenuItem *superitem(NSMenuItem *self)
 {
     if (! primaryWindow)
     {
-        /* The base size is quite small, so double its width and height as an initial guess */
-        NSRect contentRect = {NSZeroPoint, [self baseSize]};
-        contentRect.size.width *= 2;
-        contentRect.size.height *= 2;
-        
+        // this has to be done after the font is set, which it already is in term_init_cocoa()
+        CGFloat width = self->cols * tileSize.width + borderSize.width * 2.0;
+        CGFloat height = self->rows * tileSize.height + borderSize.height * 2.0;
+        NSRect contentRect = NSMakeRect( 0.0, 0.0, width, height );
+
         primaryWindow = [[NSWindow alloc] initWithContentRect:contentRect styleMask:NSTitledWindowMask | NSResizableWindowMask | NSMiniaturizableWindowMask backing:NSBackingStoreBuffered defer:YES];
         
         /* Not to be released when closed */
