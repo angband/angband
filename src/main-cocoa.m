@@ -410,7 +410,7 @@ static int compare_advances(const void *ap, const void *bp)
 {
     // Update glyphArray and glyphWidths
     NSFont *screenFont = [angbandViewFont screenFont];
-    
+
     // Generate a string containing each MacRoman character
     unsigned char latinString[GLYPH_COUNT];
     size_t i;
@@ -700,14 +700,14 @@ static int compare_advances(const void *ap, const void *bp)
 - (id)init
 {
     if ((self = [super init]))
-    {        
+    {
         /* Default rows and cols */
         self->cols = 80;
         self->rows = 24;
-        
+
         /* Default border size */
         self->borderSize = NSMakeSize(2, 2);
-        
+
         /* Allocate overdraw cache, unscanned and collectable. */
         self->charOverdrawCache = NSAllocateCollectable(self->cols * self->rows *sizeof *charOverdrawCache, 0);
         self->attrOverdrawCache = NSAllocateCollectable(self->cols * self->rows *sizeof *attrOverdrawCache, 0);
@@ -1025,26 +1025,8 @@ static NSMenuItem *superitem(NSMenuItem *self)
     [[self activeView] displayIfNeeded];
 }
 
-#pragma mark -
-#pragma mark NSWindowDelegate Methods
-
-- (void)windowWillStartLiveResize: (NSNotification *)notification
+- (void)resizeOverdrawCache
 {
-    NSWindow *window = [notification object];
-    [window setContentResizeIncrements: NSMakeSize( tileSize.width, tileSize.height )];
-}
-
-- (void)windowDidEndLiveResize: (NSNotification *)notification
-{
-    NSWindow *window = [notification object];
-    NSRect rect = [window contentRectForFrameRect: [window frame]];
-
-    CGFloat arows = floor( rect.size.height / tileSize.height );
-    CGFloat acols = floor( rect.size.width / tileSize.width );
-
-    self->cols = acols;
-    self->rows = arows;
-
     /* Free overdraw cache (unless we're GC, in which case it was allocated collectable) */
     if (! [NSGarbageCollector defaultCollector]) free(self->charOverdrawCache);
     self->charOverdrawCache = NULL;
@@ -1054,7 +1036,26 @@ static NSMenuItem *superitem(NSMenuItem *self)
     /* Allocate overdraw cache, unscanned and collectable. */
     self->charOverdrawCache = NSAllocateCollectable(self->cols * self->rows *sizeof *charOverdrawCache, 0);
     self->attrOverdrawCache = NSAllocateCollectable(self->cols * self->rows *sizeof *attrOverdrawCache, 0);
+}
 
+#pragma mark -
+#pragma mark NSWindowDelegate Methods
+
+//- (void)windowWillStartLiveResize: (NSNotification *)notification
+//{
+//}
+
+- (void)windowDidEndLiveResize: (NSNotification *)notification
+{
+    NSWindow *window = [notification object];
+    NSRect rect = [window contentRectForFrameRect: [window frame]];
+
+    CGFloat arows = floor( (rect.size.height - (borderSize.height * 2.0)) / tileSize.height );
+    CGFloat acols = ceil( (rect.size.width - (borderSize.width * 2.0)) / tileSize.width );
+
+    self->cols = acols;
+    self->rows = arows;
+    [self resizeOverdrawCache];
 
     term *old = Term;
     Term_activate( self->terminal );
@@ -1063,12 +1064,9 @@ static NSMenuItem *superitem(NSMenuItem *self)
     Term_activate( old );
 }
 
-- (NSSize)windowWillResize: (NSWindow *)sender toSize: (NSSize)frameSize
-{
-    NSSize safeSize = NSMakeSize( MAX( frameSize.width, 1 * tileSize.width ), MAX( frameSize.height, 1 * tileSize.height ) );
-    return safeSize;
-}
-
+//- (NSSize)windowWillResize: (NSWindow *)sender toSize: (NSSize)frameSize
+//{
+//}
 
 - (void)windowDidBecomeMain:(NSNotification *)notification
 {
