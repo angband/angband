@@ -22,7 +22,7 @@
 #include "init.h"
 #include "grafmode.h"
 
-#define NSLog(...) ;
+//#define NSLog(...) ;
 
 
 #if BORG
@@ -1041,6 +1041,51 @@ static NSMenuItem *superitem(NSMenuItem *self)
     self->attrOverdrawCache = NSAllocateCollectable(self->cols * self->rows *sizeof *attrOverdrawCache, 0);
 }
 
+- (void)resizeTerminalWithContentRect: (NSRect)contentRect saveToDefaults: (BOOL)saveToDefaults
+{
+    CGFloat newRows = floor( (contentRect.size.height - (borderSize.height * 2.0)) / tileSize.height );
+    CGFloat newColumns = ceil( (contentRect.size.width - (borderSize.width * 2.0)) / tileSize.width );
+
+    self->cols = newColumns;
+    self->rows = newRows;
+    [self resizeOverdrawCache];
+
+    if( saveToDefaults )
+    {
+        int termIndex = 0;
+
+        for( termIndex = 0; termIndex < ANGBAND_TERM_MAX; termIndex++ )
+        {
+            if( angband_term[termIndex] == self->terminal )
+            {
+                break;
+            }
+        }
+
+        NSArray *terminals = [[NSUserDefaults standardUserDefaults] valueForKey: AngbandTerminalsDefaultsKey];
+
+        if( termIndex < (int)[terminals count] )
+        {
+            NSMutableDictionary *mutableTerm = [[NSMutableDictionary alloc] initWithDictionary: [terminals objectAtIndex: termIndex]];
+            [mutableTerm setValue: @(self->cols) forKey: AngbandTerminalColumnsDefaultsKey];
+            [mutableTerm setValue: @(self->rows) forKey: AngbandTerminalRowsDefaultsKey];
+
+            NSMutableArray *mutableTerminals = [[NSMutableArray alloc] initWithArray: terminals];
+            [mutableTerminals replaceObjectAtIndex: termIndex withObject: mutableTerm];
+
+            [[NSUserDefaults standardUserDefaults] setValue: mutableTerminals forKey: AngbandTerminalsDefaultsKey];
+            [mutableTerminals release];
+            [mutableTerm release];
+        }
+    }
+
+    term *old = Term;
+    Term_activate( self->terminal );
+    Term_resize( (int)newColumns, (int)newRows);
+    Term_redraw();
+    Term_activate( old );
+}
+
 #pragma mark -
 #pragma mark NSWindowDelegate Methods
 
@@ -1052,51 +1097,26 @@ static NSMenuItem *superitem(NSMenuItem *self)
 {
     NSWindow *window = [notification object];
     NSRect contentRect = [window contentRectForFrameRect: [window frame]];
-
-    CGFloat newRows = floor( (contentRect.size.height - (borderSize.height * 2.0)) / tileSize.height );
-    CGFloat newColumns = ceil( (contentRect.size.width - (borderSize.width * 2.0)) / tileSize.width );
-
-    self->cols = newColumns;
-    self->rows = newRows;
-    [self resizeOverdrawCache];
-
-
-    int termIndex = 0;
-
-    for( termIndex = 0; termIndex < ANGBAND_TERM_MAX; termIndex++ )
-    {
-        if( angband_term[termIndex] == self->terminal )
-        {
-            break;
-        }
-    }
-
-    NSArray *terminals = [[NSUserDefaults standardUserDefaults] valueForKey: AngbandTerminalsDefaultsKey];
-
-    if( termIndex < (int)[terminals count] )
-    {
-        NSMutableDictionary *mutableTerm = [[NSMutableDictionary alloc] initWithDictionary: [terminals objectAtIndex: termIndex]];
-        [mutableTerm setValue: @(self->cols) forKey: AngbandTerminalColumnsDefaultsKey];
-        [mutableTerm setValue: @(self->rows) forKey: AngbandTerminalRowsDefaultsKey];
-
-        NSMutableArray *mutableTerminals = [[NSMutableArray alloc] initWithArray: terminals];
-        [mutableTerminals replaceObjectAtIndex: termIndex withObject: mutableTerm];
-
-        [[NSUserDefaults standardUserDefaults] setValue: mutableTerminals forKey: AngbandTerminalsDefaultsKey];
-        [mutableTerminals release];
-        [mutableTerm release];
-    }
-
-    term *old = Term;
-    Term_activate( self->terminal );
-    Term_resize( (int)newColumns, (int)newRows);
-    Term_redraw();
-    Term_activate( old );
+    [self resizeTerminalWithContentRect: contentRect saveToDefaults: YES];
 }
 
 //- (NSSize)windowWillResize: (NSWindow *)sender toSize: (NSSize)frameSize
 //{
 //}
+
+- (void)windowDidEnterFullScreen: (NSNotification *)notification
+{
+    NSWindow *window = [notification object];
+    NSRect contentRect = [window contentRectForFrameRect: [window frame]];
+    [self resizeTerminalWithContentRect: contentRect saveToDefaults: NO];
+}
+
+- (void)windowDidExitFullScreen: (NSNotification *)notification
+{
+    NSWindow *window = [notification object];
+    NSRect contentRect = [window contentRectForFrameRect: [window frame]];
+    [self resizeTerminalWithContentRect: contentRect saveToDefaults: NO];
+}
 
 - (void)windowDidBecomeMain:(NSNotification *)notification
 {
@@ -1412,8 +1432,6 @@ static errr Term_xtra_cocoa_react(void)
     int expected_graf_mode = (current_graphics_mode ? current_graphics_mode->grafID : GRAF_MODE_NONE);
     if (graf_mode_req != expected_graf_mode)
     {
-        NSLog( @"!!! switching graphics mode" );
-
         graphics_mode *new_mode;
 		if (graf_mode_req != GRAF_MODE_NONE) {
 			new_mode = get_graphics_mode(graf_mode_req);
@@ -1478,7 +1496,6 @@ static errr Term_xtra_cocoa_react(void)
 static errr Term_xtra_cocoa(int n, int v)
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    NSLog( @"_xtra" );
     AngbandContext* angbandContext = Term->data;
     
     errr result = 0;
@@ -1604,7 +1621,6 @@ static errr Term_xtra_cocoa(int n, int v)
 static errr Term_curs_cocoa(int x, int y)
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    NSLog( @"_curs" );
     AngbandContext *angbandContext = Term->data;
     
     /* Get the tile */
@@ -1638,7 +1654,6 @@ static errr Term_curs_cocoa(int x, int y)
 static errr Term_wipe_cocoa(int x, int y, int n)
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    NSLog( @"_wipe" );
     AngbandContext *angbandContext = Term->data;
     
     /* clear our overdraw cache for subpixel rendering */
@@ -1683,7 +1698,7 @@ static errr Term_pict_cocoa(int x, int y, int n, const int *ap,
     
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     AngbandContext* angbandContext = Term->data;
-    NSLog( @"_pict" );
+
     /* Indicate that we have a picture here (and hence this should not be overdrawn by Term_text_cocoa) */
     angbandContext->charOverdrawCache[y * angbandContext->cols + x] = NO_OVERDRAW;
     
@@ -1771,7 +1786,7 @@ static errr Term_pict_cocoa(int x, int y, int n, const int *ap,
 static errr Term_text_cocoa(int x, int y, int n, int a, const wchar_t *cp)
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    NSLog( @"_text" );
+
     /* Subpixel rendering looks really nice!  Unfortunately, drawing a string like this:
      .@
      causes subpixels to extend slightly into the region 'owned' by the period.  This means that when the user presses right,
