@@ -42,6 +42,9 @@
 #include <Carbon/Carbon.h> // For keycodes
 
 static NSSize const AngbandScaleIdentity = {1.0, 1.0};
+static NSString * const AngbandTerminalsDefaultsKey = @"Terminals";
+static NSString * const AngbandTerminalRowsDefaultsKey = @"Rows";
+static NSString * const AngbandTerminalColumnsDefaultsKey = @"Columns";
 
 /* We can blit to a large layer or image and then scale it down during live resize, which makes resizing much faster, at the cost of some image quality during resizing */
 #ifndef USE_LIVE_RESIZE_CACHE
@@ -1048,18 +1051,45 @@ static NSMenuItem *superitem(NSMenuItem *self)
 - (void)windowDidEndLiveResize: (NSNotification *)notification
 {
     NSWindow *window = [notification object];
-    NSRect rect = [window contentRectForFrameRect: [window frame]];
+    NSRect contentRect = [window contentRectForFrameRect: [window frame]];
 
-    CGFloat arows = floor( (rect.size.height - (borderSize.height * 2.0)) / tileSize.height );
-    CGFloat acols = ceil( (rect.size.width - (borderSize.width * 2.0)) / tileSize.width );
+    CGFloat newRows = floor( (contentRect.size.height - (borderSize.height * 2.0)) / tileSize.height );
+    CGFloat newColumns = ceil( (contentRect.size.width - (borderSize.width * 2.0)) / tileSize.width );
 
-    self->cols = acols;
-    self->rows = arows;
+    self->cols = newColumns;
+    self->rows = newRows;
     [self resizeOverdrawCache];
+
+
+    int termIndex = 0;
+
+    for( termIndex = 0; termIndex < ANGBAND_TERM_MAX; termIndex++ )
+    {
+        if( angband_term[termIndex] == self->terminal )
+        {
+            break;
+        }
+    }
+
+    NSArray *terminals = [[NSUserDefaults standardUserDefaults] valueForKey: AngbandTerminalsDefaultsKey];
+
+    if( termIndex < (int)[terminals count] )
+    {
+        NSMutableDictionary *mutableTerm = [[NSMutableDictionary alloc] initWithDictionary: [terminals objectAtIndex: termIndex]];
+        [mutableTerm setValue: @(self->cols) forKey: AngbandTerminalColumnsDefaultsKey];
+        [mutableTerm setValue: @(self->rows) forKey: AngbandTerminalRowsDefaultsKey];
+
+        NSMutableArray *mutableTerminals = [[NSMutableArray alloc] initWithArray: terminals];
+        [mutableTerminals replaceObjectAtIndex: termIndex withObject: mutableTerm];
+
+        [[NSUserDefaults standardUserDefaults] setValue: mutableTerminals forKey: AngbandTerminalsDefaultsKey];
+        [mutableTerminals release];
+        [mutableTerm release];
+    }
 
     term *old = Term;
     Term_activate( self->terminal );
-    Term_resize( (int)acols, (int)arows);
+    Term_resize( (int)newColumns, (int)newRows);
     Term_redraw();
     Term_activate( old );
 }
@@ -1213,7 +1243,22 @@ static void Term_init_cocoa(term *t)
         floatForKey:[NSString stringWithFormat:@"FontSize-%d", termIdx]];
     if (! fontSize) fontSize = [default_font pointSize];
     [context setSelectionFont:[NSFont fontWithName:fontName size:fontSize]];
-        
+
+    NSArray *terminalDefaults = [[NSUserDefaults standardUserDefaults] valueForKey: AngbandTerminalsDefaultsKey];
+    NSInteger rows = 24;
+    NSInteger columns = 80;
+
+    if( termIdx < (int)[terminalDefaults count] )
+    {
+        NSDictionary *term = [terminalDefaults objectAtIndex: termIdx];
+        rows = [[term valueForKey: AngbandTerminalRowsDefaultsKey] integerValue];
+        columns = [[term valueForKey: AngbandTerminalColumnsDefaultsKey] integerValue];
+    }
+
+    context->cols = columns;
+    context->rows = rows;
+    [context resizeOverdrawCache];
+
     /* Get the window */
     NSWindow *window = [context makePrimaryWindow];
     
@@ -1911,12 +1956,23 @@ static void wakeup_event_loop(void)
  * Create and initialize window number "i"
  */
 static term *term_data_link(int i)
-{    
+{
+    NSArray *terminalDefaults = [[NSUserDefaults standardUserDefaults] valueForKey: AngbandTerminalsDefaultsKey];
+    NSInteger rows = 24;
+    NSInteger columns = 80;
+
+    if( i < (int)[terminalDefaults count] )
+    {
+        NSDictionary *term = [terminalDefaults objectAtIndex: i];
+        rows = [[term valueForKey: AngbandTerminalRowsDefaultsKey] integerValue];
+        columns = [[term valueForKey: AngbandTerminalColumnsDefaultsKey] integerValue];
+    }
+
     /* Allocate */
     term *newterm = ZNEW(term);
-    
+
     /* Initialize the term */
-    term_init(newterm, 80, 24, 256 /* keypresses, for some reason? */);
+    term_init(newterm, columns, rows, 256 /* keypresses, for some reason? */);
     
     /* Differentiate between BS/^h, Tab/^i, etc. */
     newterm->complex_input = TRUE;
@@ -1955,15 +2011,28 @@ static void load_prefs()
     NSUserDefaults *defs = [NSUserDefaults angbandDefaults];
     
     /* Make some default defaults */
+    NSMutableArray *defaultTerms = [[NSMutableArray alloc] init];
+    NSDictionary *standardTerm = @{
+                                   AngbandTerminalRowsDefaultsKey : @24,
+                                   AngbandTerminalColumnsDefaultsKey : @80,
+                                   };
+    
+    for( NSUInteger i = 0; i < 9; i++ )
+    {
+        [defaultTerms addObject: standardTerm];
+    }
+
     NSDictionary *defaults = [[NSDictionary alloc] initWithObjectsAndKeys:
                               @"Menlo", @"FontName",
                               [NSNumber numberWithFloat:13.f], @"FontSize",
                               [NSNumber numberWithInt:60], @"FramesPerSecond",
                               [NSNumber numberWithBool:YES], @"AllowSound",
                               [NSNumber numberWithInt:GRAPHICS_NONE], @"GraphicsID",
+                              defaultTerms, AngbandTerminalsDefaultsKey,
                               nil];
     [defs registerDefaults:defaults];
     [defaults release];
+    [defaultTerms release];
     
     /* preferred graphics mode */
     graf_mode_req = [defs integerForKey:@"GraphicsID"];
