@@ -65,8 +65,9 @@ errr quarks_free(void)
 {
 	size_t i;
 
-	for (i = 0; i < nr_quarks; i++)
-		string_free(quarks[i]);
+	if (nr_quarks != 1)
+		for (i = 1; i < nr_quarks; i++)
+			string_free(quarks[i]);
 
 	FREE(quarks);
 	return 0;
