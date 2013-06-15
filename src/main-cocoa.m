@@ -455,7 +455,7 @@ static int compare_advances(const void *ap, const void *bp)
     [allCharsString autorelease];
     
     // Get glyphs
-    bzero(glyphArray, sizeof glyphArray);
+    memset(glyphArray, 0, sizeof glyphArray);
     CTFontGetGlyphsForCharacters((CTFontRef)screenFont, unicharString, glyphArray, GLYPH_COUNT);
     
     // Get advances. Record the max advance.
@@ -656,10 +656,8 @@ static int compare_advances(const void *ap, const void *bp)
     UniChar unicharString[2] = {(UniChar)wchar, 0};
 
     // Get glyph and advance
-    CGGlyph thisGlyphArray[1] = {};
-    CGSize advances[1] = {};
-    bzero(thisGlyphArray, 1);
-    bzero(advances, 1);
+    CGGlyph thisGlyphArray[1] = { 0 };
+    CGSize advances[1] = { { 0, 0 } };
     CTFontGetGlyphsForCharacters((CTFontRef)screenFont, unicharString, thisGlyphArray, 1);
     CGGlyph glyph = thisGlyphArray[0];
     CTFontGetAdvancesForGlyphs((CTFontRef)screenFont, kCTFontHorizontalOrientation, thisGlyphArray, advances, 1);
@@ -710,8 +708,8 @@ static int compare_advances(const void *ap, const void *bp)
 /* Indication that we're redrawing everything, so get rid of the overdraw cache. */
 - (void)clearOverdrawCache
 {
-    bzero(charOverdrawCache, self->cols * self->rows * sizeof *charOverdrawCache);
-    bzero(attrOverdrawCache, self->cols * self->rows * sizeof *attrOverdrawCache);
+    memset(charOverdrawCache, 0, self->cols * self->rows * sizeof *charOverdrawCache);
+    memset(attrOverdrawCache, 0, self->cols * self->rows * sizeof *attrOverdrawCache);
 }
 
 /* Lock and unlock focus on our image or layer, setting up the CTM appropriately. */
