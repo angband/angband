@@ -176,7 +176,7 @@
 #define ART_IDX_SHIELD_COUNT 2
 #define ART_IDX_CLOAK_COUNT 2
 #define ART_IDX_ARMOR_COUNT 7
-#define ART_IDX_GEN_COUNT 31
+#define ART_IDX_GEN_COUNT 32
 #define ART_IDX_HIGH_RESIST_COUNT 13
 
 /* Arrays of indices by item type, used in frequency generation */
@@ -2544,6 +2544,10 @@ static void add_ability_aux(artifact_type *a_ptr, int r, s32b target_power)
 
 		case ART_IDX_GEN_RDISEN:
 			add_flag(a_ptr, OF_RES_DISEN);
+			break;
+
+		case ART_IDX_GEN_PSTUN:
+			add_flag(a_ptr, OF_RES_STUN);
 			break;
 
 		case ART_IDX_GEN_ACTIV:
