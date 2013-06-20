@@ -163,22 +163,6 @@
 /* Total of abilities */
 #define ART_IDX_TOTAL 87
 
-/* Tallies of different ability types */
-/* ToDo: use N_ELEMENTS for these */
-#define ART_IDX_BOW_COUNT 4
-#define ART_IDX_WEAPON_COUNT 3
-#define ART_IDX_NONWEAPON_COUNT 8
-#define ART_IDX_MELEE_COUNT 9
-#define ART_IDX_ALLARMOR_COUNT 1
-#define ART_IDX_BOOT_COUNT 4
-#define ART_IDX_GLOVE_COUNT 3
-#define ART_IDX_HELM_COUNT 6
-#define ART_IDX_SHIELD_COUNT 2
-#define ART_IDX_CLOAK_COUNT 2
-#define ART_IDX_ARMOR_COUNT 7
-#define ART_IDX_GEN_COUNT 32
-#define ART_IDX_HIGH_RESIST_COUNT 13
-
 /* Arrays of indices by item type, used in frequency generation */
 static s16b art_idx_bow[] =
 	{ART_IDX_BOW_SHOTS, ART_IDX_BOW_MIGHT, ART_IDX_BOW_BRAND, ART_IDX_BOW_SLAY};
@@ -700,7 +684,8 @@ static void adjust_freqs(void)
  */
 static void parse_frequencies(void)
 {
-	int i, j;
+	size_t i;
+	int j;
 	const artifact_type *a_ptr;
 	object_kind *k_ptr;
 	s32b m, temp, temp2;
@@ -1638,14 +1623,14 @@ static void parse_frequencies(void)
 	 */
 
 	/* Bow-only abilities */
-	for (i = 0; i < ART_IDX_BOW_COUNT; i++)
+	for (i = 0; i < N_ELEMENTS(art_idx_bow); i++)
 	{
 		artprobs[art_idx_bow[i]] = (artprobs[art_idx_bow[i]] * art_total)
 			/ art_bow_total;
 	}
 
 	/* All weapon abilities */
-	for (i = 0; i < ART_IDX_WEAPON_COUNT; i++)
+	for (i = 0; i < N_ELEMENTS(art_idx_weapon); i++)
 	{
 		artprobs[art_idx_weapon[i]] = (artprobs[art_idx_weapon[i]] *
 			art_total) / (art_bow_total + art_melee_total);
@@ -1653,14 +1638,14 @@ static void parse_frequencies(void)
 
 	/* Corresponding non-weapon abilities */
 	temp = art_total - art_melee_total - art_bow_total;
-	for (i = 0; i < ART_IDX_NONWEAPON_COUNT; i++)
+	for (i = 0; i < N_ELEMENTS(art_idx_nonweapon); i++)
 	{
 		artprobs[art_idx_nonweapon[i]] = (artprobs[art_idx_nonweapon[i]] *
 			art_total) / temp;
 	}
 
 	/* All melee weapon abilities */
-	for (i = 0; i < ART_IDX_MELEE_COUNT; i++)
+	for (i = 0; i < N_ELEMENTS(art_idx_melee); i++)
 	{
 		artprobs[art_idx_melee[i]] = (artprobs[art_idx_melee[i]] *
 			art_total) / art_melee_total;
@@ -1669,49 +1654,49 @@ static void parse_frequencies(void)
 	/* All general armor abilities */
 	temp = art_armor_total + art_boot_total + art_shield_total +
 		art_headgear_total + art_cloak_total + art_glove_total;
-	for (i = 0; i < ART_IDX_ALLARMOR_COUNT; i++)
+	for (i = 0; i < N_ELEMENTS(art_idx_allarmor); i++)
 	{
 		artprobs[art_idx_allarmor[i]] = (artprobs[art_idx_allarmor[i]] *
 			art_total) / temp;
 	}
 
 	/* Boots */
-	for (i = 0; i < ART_IDX_BOOT_COUNT; i++)
+	for (i = 0; i < N_ELEMENTS(art_idx_boot); i++)
 	{
 		artprobs[art_idx_boot[i]] = (artprobs[art_idx_boot[i]] *
 			art_total) / art_boot_total;
 	}
 
 	/* Gloves */
-	for (i = 0; i < ART_IDX_GLOVE_COUNT; i++)
+	for (i = 0; i < N_ELEMENTS(art_idx_glove); i++)
 	{
 		artprobs[art_idx_glove[i]] = (artprobs[art_idx_glove[i]] *
 			art_total) / art_glove_total;
 	}
 
 	/* Headgear */
-	for (i = 0; i < ART_IDX_HELM_COUNT; i++)
+	for (i = 0; i < N_ELEMENTS(art_idx_headgear); i++)
 	{
 		artprobs[art_idx_headgear[i]] = (artprobs[art_idx_headgear[i]] *
 			art_total) / art_headgear_total;
 	}
 
 	/* Shields */
-	for (i = 0; i < ART_IDX_SHIELD_COUNT; i++)
+	for (i = 0; i < N_ELEMENTS(art_idx_shield); i++)
 	{
 		artprobs[art_idx_shield[i]] = (artprobs[art_idx_shield[i]] *
 			art_total) / art_shield_total;
 	}
 
 	/* Cloaks */
-	for (i = 0; i < ART_IDX_CLOAK_COUNT; i++)
+	for (i = 0; i < N_ELEMENTS(art_idx_cloak); i++)
 	{
 		artprobs[art_idx_cloak[i]] = (artprobs[art_idx_cloak[i]] *
 			art_total) / art_cloak_total;
 	}
 
 	/* Body armor */
-	for (i = 0; i < ART_IDX_ARMOR_COUNT; i++)
+	for (i = 0; i < N_ELEMENTS(art_idx_armor); i++)
 	{
 		artprobs[art_idx_armor[i]] = (artprobs[art_idx_armor[i]] *
 			art_total) / art_armor_total;
@@ -1892,12 +1877,13 @@ static void add_low_resist(artifact_type *a_ptr)
 static void add_high_resist(artifact_type *a_ptr)
 {
 	/* Add a high resist, according to the generated frequency distribution. */
-	int r, i, temp;
+	size_t i;
+	int r, temp;
 	int count = 0;
 	bool success = FALSE;
 
 	temp = 0;
-	for (i = 0; i < ART_IDX_HIGH_RESIST_COUNT; i++)
+	for (i = 0; i < N_ELEMENTS(art_idx_high_resist); i++)
 	{
 		temp += artprobs[art_idx_high_resist[i]];
 	}
@@ -1912,7 +1898,7 @@ static void add_high_resist(artifact_type *a_ptr)
 
 		temp = artprobs[art_idx_high_resist[0]];
 		i = 0;
-		while (r > temp && i < ART_IDX_HIGH_RESIST_COUNT)
+		while (r > temp && i < N_ELEMENTS(art_idx_high_resist))
 		{
 			temp += artprobs[art_idx_high_resist[i]];
 			i++;
@@ -2137,7 +2123,8 @@ static void add_activation(artifact_type *a_ptr, s32b target_power)
  */
 static void build_freq_table(artifact_type *a_ptr, s16b *freq)
 {
-	int i,j;
+	int i;
+	size_t j;
 	s16b f_temp[ART_IDX_TOTAL];
 
 	/* First, set everything to zero */
@@ -2151,7 +2138,8 @@ static void build_freq_table(artifact_type *a_ptr, s16b *freq)
 	/* Bow abilities */
 	if (a_ptr->tval == TV_BOW)
 	{
-		for (j = 0; j < ART_IDX_BOW_COUNT; j++)
+		size_t n = N_ELEMENTS(art_idx_bow);
+		for (j = 0; j < n; j++)
 		{
 			f_temp[art_idx_bow[j]] = artprobs[art_idx_bow[j]];
 		}
@@ -2161,7 +2149,8 @@ static void build_freq_table(artifact_type *a_ptr, s16b *freq)
 		a_ptr->tval == TV_HAFTED || a_ptr->tval == TV_POLEARM ||
 		a_ptr->tval == TV_SWORD)
 	{
-		for (j = 0; j < ART_IDX_WEAPON_COUNT; j++)
+		size_t n = N_ELEMENTS(art_idx_weapon);
+		for (j = 0; j < n; j++)
 		{
 			f_temp[art_idx_weapon[j]] = artprobs[art_idx_weapon[j]];
 		}
@@ -2169,7 +2158,8 @@ static void build_freq_table(artifact_type *a_ptr, s16b *freq)
 	/* General non-weapon abilities */
 	else
 	{
-		for (j = 0; j < ART_IDX_NONWEAPON_COUNT; j++)
+		size_t n = N_ELEMENTS(art_idx_nonweapon);
+		for (j = 0; j < n; j++)
 		{
 			f_temp[art_idx_nonweapon[j]] = artprobs[art_idx_nonweapon[j]];
 		}
@@ -2178,7 +2168,8 @@ static void build_freq_table(artifact_type *a_ptr, s16b *freq)
 	if (a_ptr->tval == TV_DIGGING || a_ptr->tval == TV_HAFTED ||
 		a_ptr->tval == TV_POLEARM || a_ptr->tval == TV_SWORD)
 	{
-		for (j = 0; j < ART_IDX_MELEE_COUNT; j++)
+		size_t n = N_ELEMENTS(art_idx_melee);
+		for (j = 0; j < n; j++)
 		{
 			f_temp[art_idx_melee[j]] = artprobs[art_idx_melee[j]];
 		}
@@ -2189,8 +2180,9 @@ static void build_freq_table(artifact_type *a_ptr, s16b *freq)
 		a_ptr->tval == TV_SHIELD || a_ptr->tval == TV_CLOAK ||
 		a_ptr->tval == TV_SOFT_ARMOR || a_ptr->tval == TV_HARD_ARMOR ||
 		a_ptr->tval == TV_DRAG_ARMOR)
-		{
-		for (j = 0; j < ART_IDX_ALLARMOR_COUNT; j++)
+	{
+		size_t n = N_ELEMENTS(art_idx_allarmor);
+		for (j = 0; j < n; j++)
 		{
 			f_temp[art_idx_allarmor[j]] = artprobs[art_idx_allarmor[j]];
 		}
@@ -2198,7 +2190,8 @@ static void build_freq_table(artifact_type *a_ptr, s16b *freq)
 	/* Boot abilities */
 	if (a_ptr->tval == TV_BOOTS)
 	{
-		for (j = 0; j < ART_IDX_BOOT_COUNT; j++)
+		size_t n = N_ELEMENTS(art_idx_boot);
+		for (j = 0; j < n; j++)
 		{
 			f_temp[art_idx_boot[j]] = artprobs[art_idx_boot[j]];
 		}
@@ -2206,7 +2199,8 @@ static void build_freq_table(artifact_type *a_ptr, s16b *freq)
 	/* Glove abilities */
 	if (a_ptr->tval == TV_GLOVES)
 	{
-		for (j = 0; j < ART_IDX_GLOVE_COUNT; j++)
+		size_t n = N_ELEMENTS(art_idx_glove);
+		for (j = 0; j < n; j++)
 		{
 			f_temp[art_idx_glove[j]] = artprobs[art_idx_glove[j]];
 		}
@@ -2214,7 +2208,8 @@ static void build_freq_table(artifact_type *a_ptr, s16b *freq)
 	/* Headgear abilities */
 	if (a_ptr->tval == TV_HELM || a_ptr->tval == TV_CROWN)
 	{
-		for (j = 0; j < ART_IDX_HELM_COUNT; j++)
+		size_t n = N_ELEMENTS(art_idx_headgear);
+		for (j = 0; j < n; j++)
 		{
 			f_temp[art_idx_headgear[j]] = artprobs[art_idx_headgear[j]];
 		}
@@ -2222,7 +2217,8 @@ static void build_freq_table(artifact_type *a_ptr, s16b *freq)
 	/* Shield abilities */
 	if (a_ptr->tval == TV_SHIELD)
 	{
-		for (j = 0; j < ART_IDX_SHIELD_COUNT; j++)
+		size_t n = N_ELEMENTS(art_idx_shield);
+		for (j = 0; j < n; j++)
 		{
 			f_temp[art_idx_shield[j]] = artprobs[art_idx_shield[j]];
 		}
@@ -2230,7 +2226,8 @@ static void build_freq_table(artifact_type *a_ptr, s16b *freq)
 	/* Cloak abilities */
 	if (a_ptr->tval == TV_CLOAK)
 	{
-		for (j = 0; j < ART_IDX_CLOAK_COUNT; j++)
+		size_t n = N_ELEMENTS(art_idx_cloak);
+		for (j = 0; j < n; j++)
 		{
 			f_temp[art_idx_cloak[j]] = artprobs[art_idx_cloak[j]];
 		}
@@ -2239,13 +2236,14 @@ static void build_freq_table(artifact_type *a_ptr, s16b *freq)
 	if (a_ptr->tval == TV_SOFT_ARMOR || a_ptr->tval == TV_HARD_ARMOR ||
 		a_ptr->tval == TV_DRAG_ARMOR)
 	{
-		for (j = 0; j < ART_IDX_ARMOR_COUNT; j++)
+		size_t n = N_ELEMENTS(art_idx_armor);
+		for (j = 0; j < n; j++)
 		{
 			f_temp[art_idx_armor[j]] = artprobs[art_idx_armor[j]];
 		}
 	}
 	/* General abilities - no constraint */
-	for (j = 0; j < ART_IDX_GEN_COUNT; j++)
+	for (j = 0; j < N_ELEMENTS(art_idx_gen); j++)
 	{
 		f_temp[art_idx_gen[j]] = artprobs[art_idx_gen[j]];
 	}
