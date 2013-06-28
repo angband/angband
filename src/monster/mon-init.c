@@ -631,32 +631,32 @@ static void cleanup_r(void)
 
 	for (ridx = 0; ridx < z_info->r_max; ridx++) {
 		struct monster_race *r = &r_info[ridx];
-		struct monster_drop *d, *dn;
-		struct monster_friends *f, *fn;
-		struct monster_friends_base *fb, *fbn;
-		struct monster_mimic *m, *mn;
+		struct monster_drop *d;
+		struct monster_friends *f;
+		struct monster_friends_base *fb;
+		struct monster_mimic *m;
 
 		d = r->drops;
 		while (d) {
-			dn = d->next;
+			struct monster_drop *dn = d->next;
 			mem_free(d);
 			d = dn;
 		}
 		f = r->friends;
 		while (f) {
-			fn = f->next;
+			struct monster_friends *fn = f->next;
 			mem_free(f);
 			f = fn;
 		}
-		while (fb) {
 		fb = r->friends_base;
-			fbn = fb->next;
+		while (fb) {
+			struct monster_friends_base *fbn = fb->next;
 			mem_free(fb);
 			fb = fbn;
 		}		
 		m = r->mimic_kinds;
 		while (m) {
-			mn = m->next;
+			struct monster_mimic *mn = m->next;
 			mem_free(m);
 			m = mn;
 		}
