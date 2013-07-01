@@ -737,7 +737,7 @@ static size_t prt_stun(int row, int col)
  */
 static size_t prt_hunger(int row, int col)
 {
-	PRINT_STATE(<, hunger_data, p_ptr->food, row, col);
+	PRINT_STATE(<=, hunger_data, p_ptr->food, row, col);
 	return 0;
 }
 
