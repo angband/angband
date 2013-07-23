@@ -8844,8 +8844,6 @@ S:BLINK | CAUSE_4 | DRAIN_MANA | FORGET | HEAL
 S:HOLD | SCARE | TELE_TO | TPORT
 S:BA_NETH
 S:S_DEMON | S_HI_UNDEAD
-friends-base:80:2d3:zombie
-friends-base:80:2d3:skeleton
 D:A lich who has reached its ultimate evolutionary stage: a completely
 D: immaterial state.
 
