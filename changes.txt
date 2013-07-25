@@ -41,8 +41,10 @@ Bugs fixed
  * Allow the -u switch to specify filenames outside of ANGBAND_LIB_SAVE on non-setgid systems. Closes #1220.
  * Fix the birth menu starting race and class on the last entry instead of the first.
  * Save HP warning and delay factor settings to options pref file.
+ * Allow pStun to be generated on non-body armour randarts.
 
 OS X:
+ * You can now resize the term windows!  Yay.  Thanks Ben Semmler.
  * Fix for #1709: Use isMainWindow instead of isKeyWindow for detecting front-most window in main-cocoa, and don't try to change font for non-Angband windows. Also update the font selection panel when windows become main.
  * Fix for #1695: In the Cocoa port, Cmd-Q now does nothing when inkey_flag is false, e .g. when the inventory menu is up. This behavior is now consistent with the Windows port.
  * Finished the fix to #1669: remove call to displayIfNeeded from Cocoa TERM_XTRA_FRESH handler. (thanks to mtadd)
@@ -51,8 +53,10 @@ OS X:
 
 Gameplay changes
 ================
+ * Monster groups completely overhauled.  Now different monsters tend to appear with different companions, and some uniques appear together too.  This results in e.g. groups of novice adventurers of different kinds appearing together.
  * Rebalance object generation. Flatten out chances of getting good and great items - means more good and great items early on, proportionally fewer later.
  * Rewrite ego allocation and rarities so that egos are more level-appropriate.
+ * Turn off selling to stores by default.
  * Monsters spawn a lot less frequently after level is created (chance per turn has gone from 1/160 to 1/500).
  * Reduce the size of monster escorts and groups.
  * Make uniques more likely to drop out-of-depth items, and reduce the number of chances DROP_GREAT drops get at being great to compensate.
@@ -66,6 +70,8 @@ Gameplay changes
  * Make the damage monsters deal with each attack and their AC visible to the player after one attack/one hit.
  * Remove Charisma and tone down gold drops to compensate.
  * Remove Iron Spikes, jammed doors, and player door bashing.
+ * All classes now start with a dagger (except priests) and less food/fewer torches.
+ * Split out start_kit option from no_selling.
  * More option removals: maximise, birth_ai_smell, birth_ai_packs and easy_open are now permanently on. birth_ai_cheat is permanently off. Most disturb options have been removed, leaving only the one that people seem to actually change.
  * Add solid and hybrid wall options, a la Sil. This removes platform-specific solid wall setups.
  * Tone down the drop frequencies of spellbooks
@@ -80,7 +86,8 @@ Gameplay changes
  * Teleport object power now triggers 2x as often.
  * No rings are now native <DL10
  * All DSM breath weapons do at least 150 damage
- 
+ * Make the game calculate distances between grids more accurately (closes #1118)
+
  Level generation changes:
  * Add Nomad's new rooms, which make dungeons feel a lot more interesting.
  * Add pac-man vault (thanks to Nomad? XXX)
@@ -106,13 +113,17 @@ User interface
  * Add platform-native save dialogue boxes for character dumps and other things which prompt for a file to save to on OS X (both Carbon and Cocoa). Add note telling user where character dump is going to be saved to in text mode.
  * On UNIX systems, there is a -l argument which shows you which savefiles you can use and what they are (e.g. savefile 'Nomad', L30 High-Elf Warrior on dungoen level 30). This will be ported to other frontends at some point.
  * (OS X) Add mouseclick support for the Cocoa frontend.
+ * (Windows) Add some keyboard shortcuts to the Windows port for 'new game' and 'open game'.  Closes #887.
+ * (Windows) Make the windows port save the game before closing on shutdown.  Closes #296.
+ * (Curses) Allow specification of number of terminals in the curses port.
+
 
 
 Borg changes
 ============
  * Clean up logic and fix bugs in borg_item_analyze().
  * Make borg room lighting behaviour a lot smarter.
- * The borg turns of 'lazy movement' if it's on because it can't cope with it.
+ * The borg turns off 'lazy movement' if it's on because it can't cope with it.
  * Allow the borg to remove rubble it finds.
  * Fix up borg ID routines to reflect the fact the game doesn't have 'light' pseudo anymore, and to get less confused about equip/inven screen selection.
  * Lots of unused or defunct code has been removed (unused globals, copies of the main game's constants/tables).
@@ -122,6 +133,7 @@ Borg changes
 Coding changes
 ==============
  * Stop the code indexing into the monster race array all the time, instead preferring to pass around monster_race *. This has allowed significant simplifications throughout the code.
+ * Merge all store-related info in external files into a rewritten store.txt.
  * Support building with clang.
  * Add debug command to really hurt monsters ('H')
  * Fix loads of warnings and errors that clang and splint threw up.
