@@ -22,3 +22,4 @@ src/tests/ran-already
 doc/manual/*.aux
 mk/buildsys.mk
 *~
+.DS_Store
