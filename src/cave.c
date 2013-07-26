@@ -26,29 +26,22 @@
 #include "cmds.h"
 
 /*
- * Calculate distance between two points.
+ * Approximate distance between two points.
+ *
+ * When either the X or Y component dwarfs the other component,
+ * this function is almost perfect, and otherwise, it tends to
+ * over-estimate about one grid per fifteen grids of distance.
+ *
+ * Algorithm: hypot(dy,dx) = max(dy,dx) + min(dy,dx) / 2
  */
 int distance(int y1, int x1, int y2, int x2)
 {
-	int dy = abs(y2 - y1);
-	int dx = abs(x2 - x1);
-	int dsq = dx * dx + dy * dy;
+	/* Find the absolute y/x distance components */
+	int ay = abs(y2 - y1);
+	int ax = abs(x2 - x1);
 
-	/* Create an interval upper and lower bounds */
-	int below = (dx + dy) / 2 - 1;
-	int above = dx + dy;
-
-	/* Maintain below < distance <= above */
-	while (below < above - 1)
-	{
-		/* Cut the interval in half */
-		int mid = (below + above) / 2;
-		if (mid * mid < dsq)
-			below = mid;
-		else
-			above = mid;
-	}
-	return above;
+	/* Approximate the distance */
+	return ay > ax ? ay + (ax>>1) : ax + (ay>>1);
 }
 
 
