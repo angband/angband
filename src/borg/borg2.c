@@ -31,10 +31,278 @@
  * flow calculations that penalize grids by variable amounts.
  */
 
+
+/*
+ * Determine the path taken by a projection.
+ *
+ * The projection will always start from the grid (y1,x1), and will travel
+ * towards the grid (y2,x2), touching one grid per unit of distance along
+ * the major axis, and stopping when it enters the destination grid or a
+ * wall grid, or has travelled the maximum legal distance of "range".
+ *
+ * Note that "distance" in this function (as in the "update_view()" code)
+ * is defined as "MAX(dy,dx) + MIN(dy,dx)/2", which means that the player
+ * actually has an "octagon of projection" not a "circle of projection".
+ *
+ * The path grids are saved into the grid array pointed to by "gp", and
+ * there should be room for at least "range" grids in "gp".  Note that
+ * due to the way in which distance is calculated, this function normally
+ * uses fewer than "range" grids for the projection path, so the result
+ * of this function should never be compared directly to "range".  Note
+ * that the initial grid (y1,x1) is never saved into the grid array, not
+ * even if the initial grid is also the final grid.  XXX XXX XXX
+ *
+ * The "flg" flags can be used to modify the behavior of this function.
+ *
+ * In particular, the "PROJECT_STOP" and "PROJECT_THRU" flags have the same
+ * semantics as they do for the "project" function, namely, that the path
+ * will stop as soon as it hits a monster, or that the path will continue
+ * through the destination grid, respectively.
+ *
+ * The "PROJECT_JUMP" flag, which for the "project()" function means to
+ * start at a special grid (which makes no sense in this function), means
+ * that the path should be "angled" slightly if needed to avoid any wall
+ * grids, allowing the player to "target" any grid which is in "view".
+ * This flag is non-trivial and has not yet been implemented, but could
+ * perhaps make use of the "vinfo" array (above).  XXX XXX XXX
+ *
+ * This function returns the number of grids (if any) in the path.  This
+ * function will return zero if and only if (y1,x1) and (y2,x2) are equal.
+ *
+ * This algorithm is similar to, but slightly different from, the one used
+ * by "update_view_los()", and very different from the one used by "los()".
+ */
+int borg_project_path(u16b *gp, int range, int y1, int x1, int y2, int x2, int flg)
+{
+	int y, x;
+
+	int n = 0;
+	int k = 0;
+
+	/* Absolute */
+	int ay, ax;
+
+	/* Offsets */
+	int sy, sx;
+
+	/* Fractions */
+	int frac;
+
+	/* Scale factors */
+	int full, half;
+
+	/* Slope */
+	int m;
+
+
+	/* No path necessary (or allowed) */
+	if ((x1 == x2) && (y1 == y2)) return (0);
+
+
+	/* Analyze "dy" */
+	if (y2 < y1)
+	{
+		ay = (y1 - y2);
+		sy = -1;
+	}
+	else
+	{
+		ay = (y2 - y1);
+		sy = 1;
+	}
+
+	/* Analyze "dx" */
+	if (x2 < x1)
+	{
+		ax = (x1 - x2);
+		sx = -1;
+	}
+	else
+	{
+		ax = (x2 - x1);
+		sx = 1;
+	}
+
+
+	/* Number of "units" in one "half" grid */
+	half = (ay * ax);
+
+	/* Number of "units" in one "full" grid */
+	full = half << 1;
+
+
+	/* Vertical */
+	if (ay > ax)
+	{
+		/* Start at tile edge */
+		frac = ax * ax;
+
+		/* Let m = ((dx/dy) * full) = (dx * dx * 2) = (frac * 2) */
+		m = frac << 1;
+
+		/* Start */
+		y = y1 + sy;
+		x = x1;
+
+		/* Create the projection path */
+		while (1)
+		{
+			/* Save grid */
+			gp[n++] = GRID(y,x);
+
+			/* Hack -- Check maximum range */
+			if ((n + (k >> 1)) >= range) break;
+
+			/* Sometimes stop at destination grid */
+			if (!(flg & (PROJECT_THRU)))
+			{
+				if ((x == x2) && (y == y2)) break;
+			}
+
+			/* Always stop at non-initial wall grids */
+			if ((n > 0) && !borg_cave_floor_bold(y, x)) break;
+
+			/* Sometimes stop at non-initial monsters/players */
+			if (flg & (PROJECT_STOP))
+			{
+				if ((n > 0) && (borg_grids[y][x].kill != 0)) break;
+			}
+
+			/* Slant */
+			if (m)
+			{
+				/* Advance (X) part 1 */
+				frac += m;
+
+				/* Horizontal change */
+				if (frac >= half)
+				{
+					/* Advance (X) part 2 */
+					x += sx;
+
+					/* Advance (X) part 3 */
+					frac -= full;
+
+					/* Track distance */
+					k++;
+				}
+			}
+
+			/* Advance (Y) */
+			y += sy;
+		}
+	}
+
+	/* Horizontal */
+	else if (ax > ay)
+	{
+		/* Start at tile edge */
+		frac = ay * ay;
+
+		/* Let m = ((dy/dx) * full) = (dy * dy * 2) = (frac * 2) */
+		m = frac << 1;
+
+		/* Start */
+		y = y1;
+		x = x1 + sx;
+
+		/* Create the projection path */
+		while (1)
+		{
+			/* Save grid */
+			gp[n++] = GRID(y,x);
+
+			/* Hack -- Check maximum range */
+			if ((n + (k >> 1)) >= range) break;
+
+			/* Sometimes stop at destination grid */
+			if (!(flg & (PROJECT_THRU)))
+			{
+				if ((x == x2) && (y == y2)) break;
+			}
+
+			/* Always stop at non-initial wall grids */
+			if ((n > 0) && !borg_cave_floor_bold(y, x)) break;
+
+			/* Sometimes stop at non-initial monsters/players */
+			if (flg & (PROJECT_STOP))
+			{
+				if ((n > 0) && (borg_grids[y][x].kill != 0)) break;
+			}
+
+			/* Slant */
+			if (m)
+			{
+				/* Advance (Y) part 1 */
+				frac += m;
+
+				/* Vertical change */
+				if (frac >= half)
+				{
+					/* Advance (Y) part 2 */
+					y += sy;
+
+					/* Advance (Y) part 3 */
+					frac -= full;
+
+					/* Track distance */
+					k++;
+				}
+			}
+
+			/* Advance (X) */
+			x += sx;
+		}
+	}
+
+	/* Diagonal */
+	else
+	{
+		/* Start */
+		y = y1 + sy;
+		x = x1 + sx;
+
+		/* Create the projection path */
+		while (1)
+		{
+			/* Save grid */
+			gp[n++] = GRID(y,x);
+
+			/* Hack -- Check maximum range */
+			if ((n + (n >> 1)) >= range) break;
+
+			/* Sometimes stop at destination grid */
+			if (!(flg & (PROJECT_THRU)))
+			{
+				if ((x == x2) && (y == y2)) break;
+			}
+
+			/* Always stop at non-initial wall grids */
+			if ((n > 0) && !borg_cave_floor_bold(y, x)) break;
+
+			/* Sometimes stop at non-initial monsters/players */
+			if (flg & (PROJECT_STOP))
+			{
+				if ((n > 0) && (borg_grids[y][x].kill != 0)) break;
+			}
+
+			/* Advance (Y) */
+			y += sy;
+
+			/* Advance (X) */
+			x += sx;
+		}
+	}
+
+
+	/* Length */
+	return (n);
+}
+
 /* Is this grid a grid which can be stepped on or can I see through it */
 bool borg_cave_floor_bold(int Y, int X)
 {
-	if (cave_in_bounds_fully(cave, Y,X))
+	if (in_bounds_fully(Y,X))
 	{
 		if ((borg_grids[Y][X].feat == FEAT_FLOOR) ||
 			(borg_grids[Y][X].feat >= FEAT_TRAP_HEAD && borg_grids[Y][X].feat <= FEAT_TRAP_TAIL) ||
@@ -76,8 +344,30 @@ bool borg_los(int y1, int x1, int y2, int x2)
     /* Slope, or 1/Slope, of LOS */
     int m;
 
+    borg_grid *ag;
 
-    /* Extract the offset */
+    borg_kill *kill;
+
+    monster_race *r_ptr;
+
+	/* Determine which has the monster */
+    ag = &borg_grids[y1][x1];
+	if (ag->kill)
+	{
+		kill = &borg_kills[ag->kill];
+		r_ptr = &r_info[kill->r_idx];
+	}
+	else
+	{
+	    ag = &borg_grids[y2][x2];
+		if (ag->kill)
+		{
+			kill = &borg_kills[ag->kill];
+			r_ptr = &r_info[kill->r_idx];
+		}
+	}
+
+	/* Extract the offset */
     dy = y2 - y1;
     dx = x2 - x1;
 
@@ -85,14 +375,48 @@ bool borg_los(int y1, int x1, int y2, int x2)
     ay = ABS(dy);
     ax = ABS(dx);
 
-
+	
     /* Handle adjacent (or identical) grids */
     if ((ax < 2) && (ay < 2)) return (TRUE);
 
 
     /* Paranoia -- require "safe" origin */
-    if (!cave_in_bounds_fully(cave, y1, x1)) return (FALSE);
+    if (!in_bounds_fully(y1, x1)) return (FALSE);
 
+	/* We have to address a specific event which happens early in the game.
+	 * The borg might have infravision,a torch, and see a monster a few grids
+	 * away.  That monster might be in a unlit region of the dungeon.  
+	 * The borg only sees the monster because of the infravision.
+	 * The lower half of the LOS() routine would return a FALSE in this case
+	 * because the grids 2 or 3 spaces away from the borg are not lit by the 
+	 * torch nor dungeon illuminated.  If the game is allowing the borg to 
+	 * see the monster, then it must be LOS().  An example illustrated below.
+	 *
+	 *   ########
+	 * e  .@.....
+	 *   ########
+	 *
+	 *
+	 */
+
+	/* Does the grid have a monster and the borg has infravision and not ESP*/
+	if (ag->kill && borg_skill[BI_INFRA] && !borg_skill[BI_ESP])
+	{
+		/* Is the monster within the infravision range */
+		if (distance(y1, x1, y2, x2) <= borg_skill[BI_INFRA])
+		{
+			/* Was the monster recently seen (as opposed to detected via spells) */
+			if (kill->when + 2 > borg_t)
+			{
+				/* Would this monster be detected by infravision? */
+				if (!(rf_has(r_info->flags, RF_COLD_BLOOD)))
+				{
+					/* Then that grid is most likely LOS */
+					return (TRUE);
+				}
+			}
+		}
+	}
 
     /* Directly South/North */
     if (!dx)
@@ -299,7 +623,7 @@ bool borg_projectable(int y1, int x1, int y2, int x2)
         ag = &borg_grids[y][x];
 
         if ((borg_skill[BI_CURHP] < borg_skill[BI_MAXHP] / 3 ||
-            borg_morgoth_position || scaryguy_on_level))
+            borg_morgoth_position || borg_atlas_position || scaryguy_on_level))
         {
             /* Assume all unknown grids more than distance 20 from you
              * are walls--when I am wounded. This will make me more fearful
@@ -311,7 +635,7 @@ bool borg_projectable(int y1, int x1, int y2, int x2)
         }
         else if (borg_skill[BI_CURHP] < borg_skill[BI_MAXHP] / 2)
         {
-            /* Assume all unknow grids more than distance 10 from you
+            /* Assume all unknown grids more than distance 10 from you
              * are walls--when I am wounded. This will make me more fearful
              * of the grids that are up to 9 spaces away.  I treat them as
              * regular floor grids.
@@ -334,6 +658,14 @@ bool borg_projectable(int y1, int x1, int y2, int x2)
 			 */
             if ((dist > MAX_RANGE) && (ag->feat == FEAT_NONE)) break;
 		}
+		else if (borg_detect_wall[(w_y / PANEL_HGT)+0][(w_x / PANEL_WID)+0] == TRUE &&
+				borg_detect_wall[(w_y / PANEL_HGT)+0][(w_x / PANEL_WID)+1] == TRUE &&
+				borg_detect_wall[(w_y / PANEL_HGT)+1][(w_x / PANEL_WID)+0] == TRUE &&
+				borg_detect_wall[(w_y / PANEL_HGT)+1][(w_x / PANEL_WID)+1] == TRUE)
+		{
+				/* This area has been magic mapped, so I should be able to see the unknown grids */
+		}
+
         else
         {
             /* Assume all unknow grids more than distance 3 from you
@@ -359,9 +691,8 @@ bool borg_projectable(int y1, int x1, int y2, int x2)
 /*
  * Check the projection from (x1,y1) to (x2,y2).
  * Assume that there is no monster in the way.
- * Hack -- we refuse to assume that unknown grids are floors
- * Adapted from "projectable()" in "spells1.c".
- * This is used by borg_offset()
+ * Assume that unknown grids are floors
+ * This is used by when calculating damage from a blast radius in borg_launch_bolt_aux()
  */
 bool borg_offset_projectable(int y1, int x1, int y2, int x2)
 {
@@ -379,7 +710,7 @@ bool borg_offset_projectable(int y1, int x1, int y2, int x2)
         ag = &borg_grids[y][x];
 
         /* Assume all unknown grids are walls. */
-        if ((dist) && (ag->feat == FEAT_NONE)) break;
+        /* if ((dist) && (ag->feat == FEAT_NONE)) break; */
 
         /* Never pass through walls/doors */
         if (dist && (!borg_cave_floor_grid(ag))) break;
@@ -426,8 +757,8 @@ bool borg_projectable_pure(int y1, int x1, int y2, int x2)
         /* Check for arrival at "final target" */
         if ((x == x2) && (y == y2)) return (TRUE);
 
-        /* Stop at monsters */
-        if (ag->kill) break;
+        /* Stop at other monsters, not the source monster */
+        if (ag->kill && x != x1 && y != y1) break;
 
         /* Calculate the new location */
         mmove2(&y, &x, y1, x1, y2, x2);
@@ -472,7 +803,7 @@ bool borg_projectable_dark(int y1, int x1, int y2, int x2)
         if ((x == x2) && (y == y2) && unknown >= 1) return (TRUE);
 
         /* Stop at monsters */
-        if (ag->kill) break;
+        if (ag->kill && dist != 0) break;
 
         /* Calculate the new location */
         mmove2(&y, &x, y1, x1, y2, x2);
@@ -924,7 +1255,7 @@ void borg_update_view(void)
     /* Scan south-east */
     for (d = 1; d <= z; d++)
     {
-		if (!cave_in_bounds_fully(cave, y+d, x+d)) continue;
+		if (!in_bounds_fully(y+d, x+d)) continue;
 
         ag = &borg_grids[y+d][x+d];
         ag->info |= BORG_XTRA;
@@ -936,7 +1267,7 @@ void borg_update_view(void)
     for (d = 1; d <= z; d++)
     {
 		/* Caution */
-		if (!cave_in_bounds_fully(cave, y+d, x-d)) continue;
+		if (!in_bounds_fully(y+d, x-d)) continue;
 
 		ag = &borg_grids[y+d][x-d];
         ag->info |= BORG_XTRA;
@@ -948,7 +1279,7 @@ void borg_update_view(void)
     for (d = 1; d <= z; d++)
     {
 		/* Caution */
-		if (!cave_in_bounds_fully(cave, y-d, x+d)) continue;
+		if (!in_bounds_fully(y-d, x+d)) continue;
 
 		ag = &borg_grids[y-d][x+d];
         ag->info |= BORG_XTRA;
@@ -960,7 +1291,7 @@ void borg_update_view(void)
     for (d = 1; d <= z; d++)
     {
 		/* Caution */
-		if (!cave_in_bounds_fully(cave, y-d, x-d)) continue;
+		if (!in_bounds_fully(y-d, x-d)) continue;
 
 		ag = &borg_grids[y-d][x-d];
         ag->info |= BORG_XTRA;
@@ -975,7 +1306,7 @@ void borg_update_view(void)
     for (d = 1; d <= full; d++)
     {
 		/* Caution */
-		if (!cave_in_bounds_fully(cave, y+d, x)) continue;
+		if (!in_bounds_fully(y+d, x)) continue;
         ag = &borg_grids[y+d][x];
         ag->info |= BORG_XTRA;
         borg_cave_view_hack(ag, y+d, x);
@@ -989,7 +1320,7 @@ void borg_update_view(void)
     for (d = 1; d <= full; d++)
     {
 		/* Caution */
-		if (!cave_in_bounds_fully(cave, y-d, x)) continue;
+		if (!in_bounds_fully(y-d, x)) continue;
 
 		ag = &borg_grids[y-d][x];
         ag->info |= BORG_XTRA;
@@ -1004,7 +1335,7 @@ void borg_update_view(void)
     for (d = 1; d <= full; d++)
     {
 		/* Caution */
-		if (!cave_in_bounds_fully(cave, y, x+d)) continue;
+		if (!in_bounds_fully(y, x+d)) continue;
         ag = &borg_grids[y][x+d];
         ag->info |= BORG_XTRA;
         borg_cave_view_hack(ag, y, x+d);
@@ -1018,7 +1349,7 @@ void borg_update_view(void)
     for (d = 1; d <= full; d++)
     {
 		/* Caution */
-		if (!cave_in_bounds_fully(cave, y, x-d)) continue;
+		if (!in_bounds_fully(y, x-d)) continue;
 
 		ag = &borg_grids[y][x-d];
         ag->info |= BORG_XTRA;

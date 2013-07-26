@@ -21,9 +21,9 @@
 
 
 /*
- * Determine if an item is likely to be worthless
+ * Determine if an item is "icky"
  */
-extern bool borg_item_worth_id(const borg_item *item);
+extern bool borg_item_icky(borg_item *item);
 
 /*
  * Various functions
@@ -40,6 +40,7 @@ extern bool borg_crush_slow(void);
 extern bool borg_test_stuff(void);
 extern bool borg_takeoff_stuff(void);
 extern bool borg_swap_rings(void);
+extern bool borg_tight_rings(void);
 extern bool borg_wear_rings(void);
 extern bool borg_wear_stuff(void);
 extern bool borg_wear_quiver(void);

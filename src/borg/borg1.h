@@ -21,6 +21,7 @@
 #define MAKE(P, T) \
 	((P) = ZNEW(T))
 
+
 /* Mega-Hack - indices of the player classes */
 
 #define CLASS_WARRIOR            0
@@ -30,9 +31,251 @@
 #define CLASS_RANGER             4
 #define CLASS_PALADIN            5
 
-#include "../effects.h"
+enum
+{
+EFF_XXX,
+EFF_POISON,		 /* "poisons you for 2d7+10 turns") */
+EFF_BLIND,         /* "blinds you for 4d25+75 turns") */
+EFF_SCARE,           /* "induces fear in you for 1d10+10 turns") */
+EFF_CONFUSE,         /* "confuses you for 4d5+10 turns") */
+EFF_HALLUC,          /* "causes you to hallucinate") */
+EFF_PARALYZE,        /* "induces paralysis for 1d5+5 turns") */
+EFF_SLOW,             /* "slows you for 1d25+15 turns") */
 
+EFF_CURE_POISON,      /* "neutralizes poison") */
+EFF_CURE_BLINDNESS,  /*	"cures blindness") */
+EFF_CURE_PARANOIA,    /*	"removes your fear") */
+EFF_CURE_CONFUSION,   /*	"cures confusion") */
+EFF_CURE_MIND,        /*	"cures confusion and hallucination, removes fear and grants you temporary resistance to confusion") */
+EFF_CURE_BODY,        /*	"heals cut damage, and cures stunning, poison and blindness") */
 
+EFF_CURE_LIGHT,       /*	"heals you a small amount (15% of your wounds, minimum 15HP), heals some cut damage, makes you a little less confused, and cures blindness") */
+EFF_CURE_SERIOUS,     /*	"heals you a fair amount (1/5 of your wounds, minimum 25HP), heals cut damage, and cures blindness and confusion") */
+EFF_CURE_CRITICAL,    /* "heals you a large amount (1/4 of your wounds, minimum 30HP), heals cut damage, and cures stunning, poisoning, blindness, and confusion") */
+EFF_CURE_FULL,        /*	"heals you a really large amount (35% of max HP, minimum 300HP), heals cut damage, and cures stunning, poisoning, blindness, and confusion") */
+EFF_CURE_FULL2,       /* 	"restores 1200 hit points, heals cut damage, and cures stunning, poisoning, blindness, and confusion") */
+EFF_CURE_NONORLYBIG,  /* 	"restores 5000 hit points, restores experience and stats, heals cut damage, and cures stunning, poison, blindness, and confusion") */
+EFF_CURE_TEMP,        /*	"heals cut damage, and cures all stunning, poison, blindness and confusion") */
+EFF_HEAL1,           /* 	"heals 500 hit points") */
+EFF_HEAL2,            /* 	"heals 1000 hit points") */
+EFF_HEAL3,            /* 	"heals 500 hit points, heals cut damage, and cures stunning") */
+
+EFF_GAIN_EXP,         /*"grants 100,000 experience points") */
+EFF_LOSE_EXP,         /* "drains a quarter of your experience") */
+EFF_RESTORE_EXP,      /*	"restores your experience") */
+
+EFF_RESTORE_MANA,   /* "restores your mana points to maximum") */
+
+EFF_GAIN_STR,        /* "restores and increases your strength") */
+EFF_GAIN_INT,        /* "restores and increases your intelligence") */
+EFF_GAIN_WIS,        /* "restores and increases your wisdom") */
+EFF_GAIN_DEX,        /* "restores and increases your dexterity") */
+EFF_GAIN_CON,        /* "restores and increases your constitution") */
+EFF_GAIN_CHR,        /* "restores and increases your charisma") */
+EFF_GAIN_ALL,        /* "restores and increases all your stats") */
+EFF_BRAWN,           /* "raises your strength at the expense of a random attribute") */
+EFF_INTELLECT,       /*	"raises your intelligence at the expense of a random attribute") */
+EFF_CONTEMPLATION,   /*	"raises your wisdom at the expense of a random attribute") */
+EFF_TOUGHNESS,       /*"raises your constitution at the expense of a random attribute") */
+EFF_NIMBLENESS,      /*	"raises your dexterity at the expense of a random attribute") */
+EFF_PLEASING,         /*	"raises your charisma at the expense of a random attribute") */
+EFF_LOSE_STR,         /* "reduces your strength with damage 5d5") */
+EFF_LOSE_INT,         /* "reduces your intelligence with damage 5d5") */
+EFF_LOSE_WIS,         /* "reduces your wisdom with damage 5d5") */
+EFF_LOSE_DEX,         /* "reduces your dexterity with damage 5d5") */
+EFF_LOSE_CON,         /* "reduces your constitution with damage 5d5") */
+EFF_LOSE_CHR,         /* "reduces your intelligence with damage 5d5") */
+EFF_LOSE_CON2,       /* "reduces your constitution with damage 10d10") */
+EFF_RESTORE_STR,     /* "restores your strength") */
+EFF_RESTORE_INT,     /*	"restores your intelligence") */
+EFF_RESTORE_WIS,     /*	"restores your wisdom") */
+EFF_RESTORE_DEX,     /*	"restores your dexterity") */
+EFF_RESTORE_CON,    /* "restores your constitution") */
+EFF_RESTORE_CHR,      /*	"restores your charisma") */
+EFF_RESTORE_ALL,      /*	"restores all your stats") */
+
+EFF_RESTORE_ST_LEV,  /*	"restores all your stats and your experience points") */
+
+EFF_TMD_INFRA,       /*	"extends your infravision by 50 feet for 4d25+100 turns") */
+EFF_TMD_SINVIS,       /*	"cures blindness and allows you to see invisible things for 2d6+12 turns") */
+EFF_TMD_ESP,          /* "cures blindness and gives you telepathy for 6d6+12 turns") */
+
+EFF_ENLIGHTENMENT,    /*	"completely lights up and magically maps the level") */
+EFF_ENLIGHTENMENT2,   /* "increases your intelligence and wisdom, detects and maps everything in the surrounding area, and identifies all items in your pack") */
+
+EFF_HERO,             /*	"restores 10 hit points, removes fear and grants you resistance to fear and +12 to-hit for 1d25+25 turns") */
+EFF_SHERO,            /*	"restores 30 hit points, removes fear and grants you resistance to fear, +24 to-hit, and -10AC for 1d25+25 turns") */
+
+EFF_RESIST_ACID,      /*	"grants temporary resistance to acid for 1d10+10 turns") */
+EFF_RESIST_ELEC,      /*	"grants temporary resistance to electricity for 1d10+10 turns") */
+EFF_RESIST_FIRE,      /*	"grants temporary resistance to fire for 1d10+10 turns") */
+EFF_RESIST_COLD,      /*	"grants temporary resistance to cold for 1d10+10 turns") */
+EFF_RESIST_POIS,      /*	"grants temporary resistance to poison for 1d10+10 turns") */
+EFF_RESIST_ALL,       /* "grants temporary resistance to acid, electricity, fire, cold and poison for 1d20+20 turns") */
+
+EFF_DETECT_TREASURE,     /*	"detects gold and objects nearby") */
+EFF_DETECT_TRAP,         /*	"detects traps nearby") */
+EFF_DETECT_DOORSTAIR,    /*	"detects doors and stairs nearby") */
+EFF_DETECT_INVIS,        /*	"detects invisible creatures nearby") */
+EFF_DETECT_EVIL,         /*	"detects evil creatures nearby") */
+EFF_DETECT_ALL,          /* "detects treasure, traps, doors, stairs, and all creatures nearby") */
+
+EFF_ENCHANT_TOHIT,       /*	"attempts to magically enhance a weapon's to-hit bonus") */
+EFF_ENCHANT_TODAM,	   /* "attempts to magically enhance a weapon's to-dam bonus") */
+EFF_ENCHANT_WEAPON,	   /*	"attempts to magically enhance a weapon both to-hit and to-dam") */
+EFF_ENCHANT_ARMOR, 	/*	"attempts to magically enhance a piece of armour") */
+EFF_ENCHANT_ARMOR2, 	/*	"attempts to magically enhance a piece of armour with high chance of success") */
+EFF_RESTORE_ITEM,    /* "restores an item after disenchantment or damage" */
+EFF_IDENTIFY,	 	/*	"reveals to you the extent of an item's magical powers") */
+EFF_REMOVE_CURSE, 	/*	"removes all ordinary curses from all equipped items") */
+EFF_REMOVE_CURSE2, 	/* "removes all curses from all equipped items") */
+EFF_LIGHT,		 	/*	"lights up an area and inflicts 2d8 damage on light-sensitive creatures") */
+EFF_SUMMON_MON,	 	/* "summons monsters at the current dungeon level") */
+EFF_SUMMON_UNDEAD, 	/* "summons undead monsters at the current dungeon level") */
+EFF_TELE_PHASE,	 	/*	"teleports you randomly up to 10 squares away") */
+EFF_TELE_LONG,	 	/*	"teleports you randomly up to 100 squares away") */
+EFF_TELE_LEVEL,	 	/*	"teleports you one level up or down") */
+EFF_CONFUSING,	 	/*	"causes your next attack upon a monster to confuse it") */
+EFF_MAPPING,		/* "maps the area around you") */
+EFF_RUNE,		 	/* "inscribes a glyph of warding beneath you, which monsters cannot move onto") */
+EFF_ACQUIRE,	 	/* "creates a good object nearby") */
+EFF_ACQUIRE2,	 	/* "creates a few good items nearby") */
+EFF_ANNOY_MON,	 	/* "awakens all nearby sleeping monsters and hastens all monsters within line of sight") */
+EFF_CREATE_TRAP,	 	/* "creates traps surrounding you") */
+EFF_DESTROY_TDOORS, 	/*	"destroys all traps and doors surrounding you") */
+EFF_RECHARGE,	 	/*	"tries to recharge a wand or staff, destroying the wand or staff on failure") */
+EFF_BANISHMENT,	 	/* "removes all non-unique monsters represented by a chosen symbol from the level, dealing you damage in the process") */
+EFF_DARKNESS,	 /* "darkens the nearby area and blinds you for 1d5+3 turns") */
+EFF_PROTEVIL,	 	/*	"grants you protection from evil for 1d25 plus 3 times your character level turns") */
+EFF_SATISFY,		 	/*	"magically renders you well-fed, curing any gastrointestinal problems") */
+EFF_CURSE_WEAPON, 	/* "curses your currently wielded melee weapon") */
+EFF_CURSE_ARMOR,	 	/* "curses your currently worn body armor") */
+EFF_BLESSING,	 	/*	"increases your AC and to-hit bonus for 1d12+6 turns") */
+EFF_BLESSING2,	 	/*	"increases your AC and to-hit bonus for 1d24+12 turns") */
+EFF_BLESSING3,	 	/*	"increases your AC and to-hit bonus for 1d48+24 turns") */
+EFF_RECALL,		 	/*	"returns you from the dungeon or takes you to the dungeon after a short delay") */
+EFF_DEEP_DESCENT, 	/*	"teleports you two levels down") */
+EFF_EARTHQUAKES,	 	/*	"causes an earthquake around you") */
+EFF_DESTRUCTION2, 	/*	"destroys an area around you in the shape of a circle radius 15, and blinds you for 1d10+10 turns") */
+EFF_LOSHASTE,	 	/* "hastes all monsters within line of sight") */
+EFF_LOSSLOW,	 	/*	"slows all non-unique monsters within line of sight") */
+EFF_LOSSLEEP,	 	/*	"sleeps all non-unique creatures within line of sight") */
+EFF_LOSCONF,		 	/* "confuses all non-unique creatures within line of sight") */
+EFF_LOSKILL,		 	/*	"removes all non-unique monsters within 20 squares, dealing you damage in the process") */
+EFF_ILLUMINATION, 	/*	"lights up the surrounding area, hurting light-sensitive creatures") */
+EFF_CLAIRVOYANCE, 	/*	"maps the entire level and detects objects, traps, doors, and stairs") */
+EFF_PROBING,		 	/*	"gives you information on the health and abilities of monsters you can see") */
+EFF_HASTE,		 	/* "hastens you for 2d10+20 turns") */
+EFF_HASTE1,		 	/* "hastens you for d20+20 turns") */
+EFF_HASTE2,		 	/*	"hastens you for d75+75 turns") */
+EFF_DISPEL_EVIL,	 	/*	"deals five times your level's damage to all evil creatures that you can see") */
+EFF_DISPEL_EVIL60, 	/*	"deals 60 damage to all evil creatures that you can see") */
+EFF_DISPEL_UNDEAD, 	/*	"deals 60 damage to all undead creatures that you can see") */
+EFF_DISPEL_ALL,	 	/*	"deals 120 damage to all creatures that you can see") */
+EFF_SLEEPII,		 	/*	"puts to sleep the monsters around you") */
+EFF_STAR_BALL,	 	/*	"fires a ball of electricity in all directions, each one causing 150 damage") */
+EFF_RAGE_BLESS_RESIST, 	/*	"bestows upon you berserk rage, bless, and resistance") */
+EFF_RESTORE_LIFE, 	/*	"restores your experience to full") */
+EFF_REM_FEAR_POIS, 	/*	"cures you of fear and poison") */
+EFF_FIREBRAND,	 	/*	"brands bolts with fire, in an unbalanced fashion") */
+EFF_FIRE_BOLT,	 	/*	"creates a fire bolt with damage 9d8") */
+EFF_FIRE_BOLT2,	 	/*	"creates a fire bolt with damage 12d8") */
+EFF_FIRE_BOLT3,	 /*	"creates a fire bolt with damage 16d8") */
+EFF_FIRE_BOLT72,	 	/*	"creates a fire ball with damage 72") */
+EFF_FIRE_BALL,	 	/*	"creates a fire ball with damage 144") */
+EFF_FIRE_BALL2,	 	/*	"creates a large fire ball with damage 120") */
+EFF_FIRE_BALL200, 	/*	"creates a large fire ball with damage 200") */
+EFF_COLD_BOLT,	 	/*	"creates a frost bolt with damage 6d8") */
+EFF_COLD_BOLT2,	 	/*	"creates a frost bolt with damage 12d8") */
+EFF_COLD_BALL2,	 	/*	"creates a large frost ball with damage 200") */
+EFF_COLD_BALL50,	 	/*	"creates a frost ball with damage 50") */
+EFF_COLD_BALL100, 	/* "creates a frost ball with damage 100") */
+EFF_COLD_BALL160, 	/*	"creates a frost ball with damage 160") */
+EFF_ACID_BOLT,	 	/*	"creates an acid bolt with damage 5d8") */
+EFF_ACID_BOLT2,	 	/*	"creates an acid bolt with damage 10d8") */
+EFF_ACID_BOLT3,	 	/*	"creates an acid bolt with damage 12d8") */
+EFF_ACID_BALL,	 	/*	"creates an acid ball with damage 125") */
+EFF_ELEC_BOLT,	 	/*	"creates a lightning bolt (that always beams) with damage 6d6") */
+EFF_ELEC_BALL,	 	/*	"creates a lightning ball with damage 64") */
+EFF_ELEC_BALL2,	 	/*	"creates a large lightning ball with damage 250") */
+EFF_DRAIN_LIFE1,	 	/*	"drains up to 90 hit points of life from a target creature") */
+EFF_DRAIN_LIFE2,	 	/* "drains up to 120 hit points of life from a target creature") */
+EFF_DRAIN_LIFE3,	 	/*	"drains up to 150 hit points of life from a target creature") */
+EFF_DRAIN_LIFE4,	 	/*	"drains up to 250 hit points of life from a target creature") */
+EFF_MISSILE,		 	/*	"fires a magic missile with damage 3d4") */
+EFF_MANA_BOLT,	 /*	"fires a mana bolt with damage 12d8") */
+EFF_BIZARRE,		 	/* "does bizarre things") */
+EFF_ARROW,		 	/*	"fires a magical arrow with damage 150") */
+EFF_STINKING_CLOUD, 	/*	"fires a stinking cloud with damage 12") */
+EFF_STONE_TO_MUD, 	/*	"turns rock into mud") */
+EFF_TELE_OTHER,	 	/*	"teleports a target monster away") */
+EFF_CONFUSE2,	 	/*	"confuses a target monster") */
+EFF_MON_HEAL,	 	/* "heals a single monster 4d6 hit points") */
+EFF_MON_HASTE,		/* "hastes a single monster") */
+EFF_MON_SLOW,	 	/*	"attempts to magically slow a single monster") */
+EFF_MON_CONFUSE,	 	/*	"attempts to magically confuse a single monster") */
+EFF_MON_SLEEP,	 	/*	"attempts to induce magical sleep in a single monster") */
+EFF_MON_CLONE,	 	/* "hastes, heals, and magically duplicates a single monster") */
+EFF_MON_SCARE,	 	/*	"attempts to induce magical fear in a single monster") */
+EFF_LIGHT_LINE,	 	/*	"lights up part of the dungeon in a straight line") */
+EFF_DISARMING,	 	/*	"destroys traps, unlocks doors and reveals all secret doors in a given direction") */
+EFF_TDOOR_DEST,	 	/*	"destroys traps and doors") */
+EFF_POLYMORPH,	 	/*	"polymorphs a monster into another kind of creature") */
+EFF_STARLIGHT,	 	/*	"fires a line of light in all directions, each one causing light-sensitive creatures 6d8 damage") */
+EFF_STARLIGHT2,	 	/*	"fires a line of light in all directions, each one causing 10d8 damage") */
+EFF_BERSERKER,	 	/* "puts you in a berserker rage for d50+50 turns") */
+EFF_WONDER,		 	/*	"creates random and unpredictable effects") */
+EFF_WAND_BREATH,	 	/*	"shoots a large ball of one of the base elements for 120-200 damage") */
+EFF_STAFF_MAGI,	 	/* "restores both intelligence and manapoints to maximum") */
+EFF_STAFF_HOLY,	 	/*	"inflicts damage on evil creatures you can see, cures 50 hit points, heals all temporary effects and grants you protection from evil") */
+EFF_DRINK_GOOD,	 	/* NULL) */
+EFF_DRINK_BREATH, 	/*	"causes you to breathe either cold or flames for 80 damage") */
+EFF_DRINK_SALT,	 	/* "induces vomiting and paralysis for 4 turns, resulting in severe hunger but also curing poison") */
+EFF_DRINK_DEATH,	 	/* "inflicts 5000 points of damage") */
+EFF_DRINK_RUIN,	 	/* "inflicts 10d10 points of damage and decreases all your stats") */
+EFF_DRINK_DETONATE, 	/* "inflicts 50d20 points of damage, severe cuts, and stunning") */
+EFF_FOOD_GOOD,	 	/* NULL) */
+EFF_FOOD_WAYBREAD, 	/*	"restores 4d8 hit points and neutralizes poison") */
+EFF_SHROOM_EMERGENCY, 	/*	"grants temporary resistance to fire and cold, cures 200HP, but also makes you hallucinate wildly") */
+EFF_SHROOM_TERROR, 	/*	"speeds up you temporarily but also makes you mortally afraid") */
+EFF_SHROOM_STONE, 	/*	"turns your skin to stone briefly, which grants an extra 40AC but slows you down") */
+EFF_SHROOM_DEBILITY, 	/*	"restores some mana but also drains either your strength or constitution") */
+EFF_SHROOM_SPRINTING, 	/*	"hastes you for a while, but then makes you slower for a while afterward") */
+EFF_SHROOM_PURGING, 	/*	"makes you very hungry but restores constitution and strength") */
+EFF_RING_ACID,	 	/*	"grants acid resistance for d20+20 turns and creates an acid ball of damage 70") */
+EFF_RING_FLAMES,	 	/*	"grants fire resistance for d20+20 turns and creates a fire ball of damage 80") */
+EFF_RING_ICE,	 	/*	"grants cold resistance for d20+20 turns and creates a cold ball of damage 75") */
+EFF_RING_LIGHTNING, 	/*	"grants electricity resistance for d20+20 turns and creates a lightning ball of damage 85") */
+EFF_DRAGON_BLUE,	 	/* "allows you to breathe lightning for 100 damage") */
+EFF_DRAGON_GREEN, 	/*	"allows you to breathe poison gas for 150 damage") */
+EFF_DRAGON_RED,	 	/*	"allows you to breathe fire for 200 damage") */
+EFF_DRAGON_MULTIHUED, 	/*	"allows you to breathe the elements for 250 damage") */
+EFF_DRAGON_BRONZE, 	/*	"allows you to breathe confusion for 120 damage") */
+EFF_DRAGON_GOLD,	 	/*	"allows you to breathe sound for 130 damage") */
+EFF_DRAGON_CHAOS, 	/*	"allows you to breathe chaos or disenchantment for 220 damage") */
+EFF_DRAGON_LAW,	 	/*	"allows you to breathe sound/shards for 230 damage") */
+EFF_DRAGON_BALANCE, 	/*	"allows you to breathe balance for 250 damage") */
+EFF_DRAGON_SHINING, 	/*	"allows you to breathe light or darkness for 200 damage") */
+EFF_DRAGON_POWER, 	/*	"allows you to breathe for 300 damage") */
+EFF_TRAP_DOOR,	 	/* "a trap door which drops you down a level") */
+EFF_TRAP_PIT,	 	/* "a pit trap - the fall might hurt") */
+EFF_TRAP_PIT_SPIKES, 	/*  "a pit trap, with nasty spikes") */
+EFF_TRAP_PIT_POISON, 	/* "a pit trap, with poisoned spikes") */
+EFF_TRAP_RUNE_SUMMON, 	/* "a rune which summons monsters") */
+EFF_TRAP_RUNE_TELEPORT,   /* "a rune which teleports") */
+EFF_TRAP_SPOT_FIRE,	  /* "a magical fire trap") */
+EFF_TRAP_SPOT_ACID, 	/* "a magical acid trap") */
+EFF_TRAP_DART_SLOW,	/* "a dart which slows movements") */
+EFF_TRAP_DART_LOSE_STR, /* "a dart which drains strength") */
+EFF_TRAP_DART_LOSE_DEX, /* "a dart which drains dexterity") */
+EFF_TRAP_DART_LOSE_CON, /* "a dart which drains constitution") */
+EFF_TRAP_GAS_BLIND,	/* "blinding gas") */
+EFF_TRAP_GAS_CONFUSE,	/* "confusing gas") */
+EFF_TRAP_GAS_POISON,  	/* "poison gas") */
+EFF_TRAP_GAS_SLEEP,	/* "soporific gas") */
+};
+
+        
 
 /* WARNING: If you mess with the objects.txt or the monster.txt and change
  * the locations of things, then you must make those changes in borg.txt
@@ -57,7 +300,7 @@
 
 /* The borg_has[] needs to know certain numbers */
 #define SHROOM_STONESKIN	 22
-#define POTION_HEAL			321 /* lookup_kind(TV_POTION, SV_POTION_HEAL) */
+#define POTION_HEAL			321 /* borg_lookup_kind(TV_POTION, SV_POTION_HEAL) */
 #define POTION_STAR_HEAL	322
 #define POTION_LIFE			323
 #define POTION_RES_MANA		325
@@ -75,10 +318,22 @@
 #define STAFF_TPORT			420
 #define ROD_RECALL			455
 #define ROD_HEAL			447
+
 #define RING_FLAMES			207
 #define RING_ACID			208
 #define RING_ICE			209
 #define RING_LIGHTNING		210
+#define RING_ONE			13 /* the name1 value of the ring of power */
+
+#define RING_TELEPORT		216
+#define RING_RECKLESS		217
+#define RING_OPEN_WOUND		218
+#define RING_ESCAPING		219
+#define RING_MOUSE			220
+#define RING_DOG			221
+
+#define K_MONEY_START		520
+#define K_MONEY_STOP		530
 
 
 /* The sval of some items are needed and the game does not supply some any if it has an effect (activation) */
@@ -87,6 +342,7 @@
 #define SV_POTION_INC_WIS			3
 #define SV_POTION_INC_DEX			4
 #define SV_POTION_INC_CON			5
+#define SV_POTION_INC_CHR			6
 #define SV_POTION_INC_ALL			7
 #define SV_POTION_INC_EXP			8
 #define SV_POTION_CURE_LIGHT		9
@@ -102,6 +358,7 @@
 #define SV_POTION_RES_WIS			19
 #define SV_POTION_RES_DEX			20
 #define SV_POTION_RES_CON			21
+#define SV_POTION_RES_CHR			22
 #define SV_POTION_RESTORE_EXP		23 /* Restore Level */
 #define SV_POTION_INC_STR2			24 /* Brawn, gain Str lose 1 other */
 #define SV_POTION_INC_INT2			25 /* Intellect, gain Str lose 1 other */
@@ -114,15 +371,23 @@
 #define SV_POTION_HEROISM			33
 #define SV_POTION_BERSERK_STRENGTH	34
 #define SV_POTION_BOLDNESS			35
-#define SV_POTION_RESIST_HEAT		36
+#define SV_POTION_RESIST_HEAT		36		
 #define SV_POTION_RESIST_COLD		37
 #define SV_POTION_RESIST_POIS		38
 #define SV_POTION_DETECT_INVIS		39
 #define SV_POTION_INFRAVISION		49
 #define SV_POTION_SLIME_MOLD		50
+#define SV_POTION_SLEEP				51
+#define SV_POTION_BLINDNESS			52
+#define SV_POTION_CONFUSION			53
+#define SV_POTION_POISON			54
+#define SV_POTION_SLOWNESS			55
 
 
-#define SV_POTION_DRAGON_BREATH		58
+
+
+
+#define SV_POTION_DRAGON_BREATH		58			
 #define SV_POTION_DETONATIONS		59
 
 
@@ -172,6 +437,7 @@
 #define SV_WAND_DRAGON_FIRE			23
 #define SV_WAND_DRAGON_COLD			24
 #define SV_WAND_DRAIN_LIFE			26
+#define SV_WAND_STONE_TO_MUD		16
 
 
 #define SV_STAFF_IDENTIFY			25
@@ -230,7 +496,7 @@
 #define SV_SCROLL_SATISFY_HUNGER	26
 #define SV_SCROLL_IDENTIFY			27
 #define SV_SCROLL_LIGHT				28
-
+/* SV_SCROLL_WORD_OF_RECALL	 defined by game */
 #define SV_SCROLL_RECHARGING		30
 #define SV_SCROLL_TRAP_DOOR_DESTRUCTION	31
 #define SV_SCROLL_BLESSING			33
@@ -248,9 +514,18 @@
 #define SV_PLANATIR					7
 #define SV_PHIAL					4
 
-#define EGO_AMAN					42 /* Where did not name2 go in 330? */
-#define MAX_CLASSES					6 /* Max # of classes 0 = warrior, 5 = Paladin */
-#define MAX_RACES					10
+/* The borg keeps track of certain monsters by their index */
+#define IDX_MORGOTH				547
+#define IDX_SAURON				546
+#define IDX_TARRASQUE			539
+#define IDX_ATLAS				586
+#define IDX_MAEGLIN				595
+#define MORGOTH_DX				1 /* Distance at which we banish and teleport him away */
+
+#define EGO_AMAN			42
+#define MAX_CLASSES			6	
+#define MAX_RACES			10
+
 /*
  * Flags for the "info" field of grids
  *
@@ -361,10 +636,10 @@
  */
 #define BORG_NOTE_ROWS      12
 
-/*
+/* 
  * Threshold where the borg will start to carry / use Digger items
  */
-#define BORG_DIG			14
+#define BORG_DIG			25
 
 /*
  * Size of Keypress buffer
@@ -399,6 +674,12 @@ struct borg_take
 	int		value;		/* Estimated value of item */
 
 	int		tval;		/* Known tval */
+
+	int		sval;
+
+	bool	quest;
+
+	int		iqty;		/* Quantity of item */
 
 
 };
@@ -435,7 +716,7 @@ struct borg_kill
     byte    ranged_attack; /* qty of ranged attacks */
     byte	spell[96];		/* spell flag for monster spells */
     s16b    power;      /* Estimated hit-points */
-	s16b	injury;		/* Percent wounded */
+	s16b	injury;		/* Percent dead */
     s16b    other;      /* Estimated something */
     s16b    level;      /* Monsters Level */
 	u32b	spell_flags[RF_MAX]; /* Monster race spell flags preloaded */
@@ -558,12 +839,12 @@ extern int bought_item_store[10];
 extern int bought_item_num;
 extern int bought_item_nxt;
 
-extern char shop_orig[28];
-extern char shop_rogue[28];
+extern char shop_orig[29];
+extern char shop_rogue[29];
 extern byte borg_nasties_num;
-extern byte borg_nasties_count[7];
-extern char borg_nasties[7];
-extern byte borg_nasties_limit[7];
+extern byte borg_nasties_count[8];
+extern char borg_nasties[8];
+extern byte borg_nasties_limit[8];
 
 /* options from the borg.txt file */
 extern int borg_respawn_race;
@@ -573,6 +854,7 @@ extern int borg_respawn_int;
 extern int borg_respawn_wis;
 extern int borg_respawn_dex;
 extern int borg_respawn_con;
+extern int borg_respawn_chr;
 extern int borg_dump_level;
 extern int borg_save_death;
 extern bool borg_respawn_winners;
@@ -649,16 +931,19 @@ enum
     BI_WIS,
     BI_DEX,
     BI_CON,
+    BI_CHR,
     BI_CSTR,
     BI_CINT,
     BI_CWIS,
     BI_CDEX,
     BI_CCON,
+    BI_CCHR,
     BI_SSTR,
     BI_SINT,
     BI_SWIS,
     BI_SDEX,
     BI_SCON,
+    BI_SCHR,
     BI_LIGHT,
     BI_CURHP,
     BI_MAXHP,
@@ -754,7 +1039,6 @@ enum
 	BI_ISPARALYZED,
     BI_ISIMAGE,
     BI_ISFORGET,
-	BI_ISENCUMB,
     BI_ISSTUDY,
     BI_ISSEARCHING,
     BI_ISFIXLEV,
@@ -764,7 +1048,9 @@ enum
     BI_ISFIXWIS,
     BI_ISFIXDEX,
     BI_ISFIXCON,
+    BI_ISFIXCHR,
     BI_ISFIXALL,
+	BI_ISENCUMB,
 
     BI_ARMOR,
     BI_TOHIT,
@@ -813,6 +1099,7 @@ enum
     BI_AHEAL,
     BI_AEZHEAL,
     BI_ALIFE,
+	BI_AMANA,
 	BI_AID,
     BI_ASPEED,
     BI_ASTFMAGI,
@@ -840,7 +1127,8 @@ enum
 	BI_AMASSBAN,	/* ?Mass Banishment */
 	BI_ASHROOM,
 	BI_AROD1,		/* Attack rods */
-	BI_AROD2,		/* Attack rods */
+	BI_AROD2,		/* deeper attack rods */
+	BI_ARODLIGHT,	/* Rod of Light are useful */
 	BI_DINV,	/* See Inv Spell Legal */
 
     BI_MAX
@@ -868,7 +1156,7 @@ enum
 };
 
 extern int *formula[1000];
-extern const char *prefix_pref[];
+extern char *prefix_pref[];
 
 /*
  * Hack -- optional cheating flags
@@ -907,6 +1195,7 @@ extern u32b borg_rand_local;        /* Save personal setting */
 
 extern s16b borg_t;        /* Current "time" */
 extern s16b borg_t_morgoth;
+extern s16b borg_t_atlas;	/* Last time Atlas or Maeglin was seen */
 extern s16b need_see_inviso;        /* To tell me to cast it */
 extern s16b borg_see_inv;
 extern bool need_shift_panel;        /* to spot offscreeners */
@@ -914,13 +1203,15 @@ extern s16b when_shift_panel;
 extern s16b time_this_panel;        /* Current "time" for current panel*/
 extern bool vault_on_level;     /* borg will search for a vault */
 extern int unique_on_level;
+extern bool borg_adjacent_unique; /* a unique is next to borg */
 extern bool scaryguy_on_level;
 extern bool morgoth_on_level;
 extern bool borg_morgoth_position;
-extern int borg_t_antisummon;		/* Timestamp when in a AS spot */
-extern bool borg_as_position;		/* Sitting in an anti-summon corridor */
-extern bool borg_digging;			/* used in Anti-summon corridor */
-
+extern bool atlas_on_level;
+extern bool borg_atlas_position;
+extern bool borg_as_position;
+extern int borg_t_antisummon;		/* timestamp when in AS position */
+extern bool borg_digging; 
 extern bool breeder_level;      /* Borg will shut doors */
 extern s16b old_depth;
 extern s16b borg_respawning;       /* to prevent certain crashes */
@@ -996,10 +1287,12 @@ extern bool borg_speed;
 extern bool borg_bless;
 extern bool borg_hero;
 extern bool borg_berserk;
+
 extern s16b borg_game_ratio;
 extern s16b borg_resistance;
 extern s16b borg_no_rest_prep; /* borg wont rest for a few turns */
 extern bool borg_shield;
+extern bool borg_stone;
 extern bool borg_on_glyph; /* borg is standing on a glyph of warding */
 extern bool borg_create_door; /* borg is going to create doors */
 extern bool borg_sleep_spell;
@@ -1016,11 +1309,11 @@ extern bool borg_in_shop;
 extern s16b goal_shop;      /* Next shop to visit */
 extern s16b goal_ware;      /* Next item to buy there */
 extern s16b goal_item;      /* Next item to sell there */
+extern s16b goal_qty;
 extern int borg_food_onsale;      /* Are shops selling food? */
 extern int borg_fuel_onsale;      /* Are shops selling fuel? */
 extern bool borg_needs_quick_shopping; /* Needs to buy without browsing all shops */
 extern s16b borg_best_fit_item;   /* Item to be worn, not sold */
-extern int borg_best_item;
 
 /*
  * Other variables
@@ -1030,6 +1323,8 @@ extern int w_x;         /* Current panel offset (X) */
 extern int w_y;         /* Current panel offset (Y) */
 extern int morgy_panel_y;
 extern int morgy_panel_x;
+extern int atlas_panel_y;
+extern int atlas_panel_x;
 
 extern int borg_target_y;
 extern int borg_target_x;  /* Current targetted location */
@@ -1040,9 +1335,20 @@ extern int c_y;         /* Current location (Y) */
 extern int g_x;         /* Goal location (X) */
 extern int g_y;         /* Goal location (Y) */
 
-extern int bad_obj_x[50];   /* Dropped cursed artifact at location (X) */
-extern int bad_obj_y[50];   /* Dropped cursed artifact at location (Y) */
-extern int bad_obj_cnt;
+#define BAD_ITEM_SIZE 255	/* Number of junk items on ground that the borg counts */ 
+extern int bad_obj_x[BAD_ITEM_SIZE];   /* Dropped cursed artifact at location (X) */
+extern int bad_obj_y[BAD_ITEM_SIZE];   /* Dropped cursed artifact at location (Y) */
+extern int bad_obj_cnt;		
+
+extern byte *good_obj_x;	/* possible quest monster drop */
+extern byte *good_obj_y;
+extern byte *good_obj_tval;
+extern byte *good_obj_sval;
+extern s16b good_obj_num;
+extern s16b good_obj_size;
+extern s16b borg_questor_died; /* time stamp */
+
+
 
 /*
  * Some estimated state variables
@@ -1144,6 +1450,7 @@ extern byte  armour_swap_see_infra;
 extern byte  armour_swap_slow_digest;
 extern byte  armour_swap_aggravate;
 extern byte  armour_swap_teleport;
+extern byte  armour_swap_fear;
 extern byte  armour_swap_regenerate;
 extern byte  armour_swap_telepathy;
 extern byte  armour_swap_LIGHT;
@@ -1242,6 +1549,7 @@ extern s16b num_cure_serious;
 
 extern s16b num_pot_rheat;
 extern s16b num_pot_rcold;
+extern s16b num_pot_rpois;
 
 extern s16b num_missile;
 
@@ -1255,10 +1563,12 @@ extern s16b num_heal;
 extern s16b num_heal_true;
 extern s16b num_ezheal;
 extern s16b num_ezheal_true;
+extern s16b num_mana_true;
 extern s16b num_life;
 extern s16b num_life_true;
 extern s16b num_pfe;
 extern s16b num_glyph;
+extern s16b num_speed;
 extern s16b num_detonate;
 extern s16b num_mush_second_sight;		/* esp */
 extern s16b num_mush_fast_recovery;		/* cure stun, cut, pois, blind */
@@ -1389,7 +1699,7 @@ extern int borg_class;      /* Current class */
  * Constant state structures
  */
 
-extern player_magic *mb_ptr;    /* Player magic info */
+extern player_race *rb_ptr; /* Player race info */
 
 
 extern void mmove2(int *y, int *x, int y1, int x1, int y2, int x2);
@@ -1411,6 +1721,12 @@ extern char borg_match[128];    /* Search string */
  */
 extern FILE *borg_fff;      /* Log file */
 
+
+/*
+ * Hack -- single character constants
+ */
+
+extern const char p1, p2, c1, c2, b1, b2;
 
 
 /*
@@ -1556,6 +1872,15 @@ extern s16b *borg_race_death;
 
 
 /*
+ * Classification of map symbols
+ */
+
+extern bool borg_is_take[256];      /* Symbol may be an object */
+
+extern bool borg_is_kill[256];      /* Symbol may be a monster */
+
+
+/*
  * Current "grid" list
  */
 
@@ -1622,7 +1947,14 @@ extern byte offset_x;
 extern s16b borg_flow_n;
 extern byte borg_flow_y[AUTO_FLOW_MAX];
 extern byte borg_flow_x[AUTO_FLOW_MAX];
+extern byte borg_mflow_y[AUTO_FLOW_MAX];
+extern byte borg_mflow_x[AUTO_FLOW_MAX];
 
+/* The borg calculates monster flow to him.  This is the depth
+ * or steps needed to reach the borg.  Some monsters do not 
+ * chase the borg very well, so a low number is prefered.
+ */
+#define BORG_MON_FLOW		8 
 
 /*
  * Hack -- use "flow" array as a queue
@@ -1645,6 +1977,9 @@ extern borg_data *borg_data_hard;   /* Constant "hard" data */
 extern borg_data *borg_data_know;   /* Current "know" flags */
 
 extern borg_data *borg_data_icky;   /* Current "icky" flags */
+
+extern borg_data *borg_data_cost_m;
+extern borg_data *borg_data_hard_m;  /* Constant "hard" data for monster flow */
 
 
 /*
@@ -1694,13 +2029,15 @@ extern bool borg_do_crush_slow;
 extern int borg_fighting_unique;
 extern bool borg_fighting_evil_unique;
 
-/* am I fighting a summoner */
+/* am I fighting a summoner or tunneling monster */
 extern bool borg_fighting_summoner;
+extern bool borg_fighting_tunneler;
+extern bool borg_fighting_demon;
+extern bool borg_fighting_dragon;
 
 
 
 /*** Some functions ***/
-
 extern int borg_lookup_kind(int tval, int sval);
 
 /*
@@ -1711,7 +2048,7 @@ extern errr borg_keypress(keycode_t k);
 /*
  * Queue several keypresses
  */
-extern errr borg_keypresses(const char *str);
+extern errr borg_keypresses(char *str);
 
 /*
  * Dequeue a keypress
@@ -1749,7 +2086,7 @@ extern void borg_note(char *what);
 /*
  * Abort the Borg, noting the reason
  */
-extern void borg_oops(const char *what);
+extern void borg_oops(char *what);
 
 
 /*
@@ -1794,7 +2131,7 @@ extern char *borg_prt_formula(int *formula);
 /*
  * Print the string for an item
  */
-extern const char *borg_prt_item(int item);
+extern char *borg_prt_item(int item);
 
 /*
  * Initialize this file

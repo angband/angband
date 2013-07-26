@@ -17,6 +17,7 @@
 #include "borg1.h"
 
 
+extern int borg_project_path(u16b *gp, int range, int y1, int x1, int y2, int x2, int flg);
 /*
  * Determine if a grid is a floor grid and only a floor grid
  */

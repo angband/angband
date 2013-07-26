@@ -44,14 +44,6 @@ borg_worships_ac = FALSE
 borg_worships_gold = FALSE
 
 
-# use the POWER_ and REQ_ lines below.  If false the borg will
-# use the calcs in the C code.  Which is recommended since I hone those
-# more frequently than I do the dynamic calcs.  Most borg users will 
-# have more successful borgs by leaving this option as FALSE.
-# note: the dynamic calcs are slower than the internal calcs
-
-borg_uses_dynamic_calcs = FALSE
-
 
 # Risky
 
@@ -74,6 +66,7 @@ borg_uses_dynamic_calcs = FALSE
 borg_plays_risky = FALSE
 borg_scums_uniques = TRUE
 borg_kills_uniques = FALSE
+
 
 # Swap Items
 
@@ -129,7 +122,7 @@ borg_slow_optimizehome = FALSE
 #       7 Half Troll
 #       8 Dunadan
 #       9 High Elf
-#	10 Kobold
+#	   10 Kobold
 #
 # With regards to the stats.  The minimal stats are rolled by the
 # borg.  CON will be 16, the secondary stat (usually DEX) will be 17,
@@ -172,7 +165,7 @@ borg_save_death = 1
 borg_stop_dlevel = 128
 borg_stop_clevel = 51
 borg_no_deeper = 127
-borg_stop_king = TRUE
+borg_stop_king = FALSE
 
 
 # Chest Tolerance
@@ -201,7 +194,7 @@ borg_chest_fail_tolerance = 7
 # to slow the borg down use the following variable.  The formula is:
 # base_game_delay_factor^2 + borg_delay_factor^2.
 
-borg_delay_factor = 9
+borg_delay_factor = 6
 
 
 # Money Scumming
@@ -290,14 +283,14 @@ borg_verbose = FALSE
 
 # Munchkin Start
 
-# Munchink start will have the borg stair-scum at depth 5-6, looking for items
+# Munchink start will have the borg stair-scum at depth <borg_munchkin_depth>, looking for items
 # which he will then sell in town.  He will continue this process until about
-# clevel 6 or 7.  The advantage is a sizable boost to his early income and
+# clevel <borg_munchkin_level>.  The advantage is a sizable boost to his early income and
 # he can find some wands early on to assist with monster killing.
 
 borg_munchkin_start = TRUE
-borg_munchkin_level = 12
-borg_munchkin_depth = 16
+borg_munchkin_level = 20
+borg_munchkin_depth = 15
 
 # Enchant Limit
 
@@ -318,6 +311,13 @@ borg_enchant_limit = 12
 # The borg is concerned over several items, broken swords, and several 
 # monster locations (Tarresque, Sauron, Morgoth).
 
+# use the POWER_ and REQ_ lines below.  If false the borg will
+# use the calcs in the C code.  Which is recommended since I hone those
+# more frequently than I do the dynamic calcs.  Most borg users will 
+# have more successful borgs by leaving this option as FALSE.
+# note: the dynamic calcs are slower than the internal calcs
+
+borg_uses_dynamic_calcs = FALSE
 
 
 # CHANGE THIS AT YOUR OWN RISK.  Changes here can cause VERY STUPID borg
@@ -644,6 +644,7 @@ borg_enchant_limit = 12
 # things marked depth 99 and greater are ignored if Morgoth is dead
 REQ_CLASS999_DEPTH001_CURLITE=1 
 REQ_CLASS999_DEPTH001_FOOD=5 
+REQ_CLASS999_DEPTH002_CURLITE=2 
 REQ_CLASS999_DEPTH002_FORMULA088
 REQ_CLASS999_DEPTH002_RECALL=1 
 REQ_CLASS999_DEPTH002_CURHP=30 
@@ -681,7 +682,6 @@ REQ_CLASS005_DEPTH005_FORMULA075
 # out in the original code.
 # REQ_CLASS999_DEPTH005_ID=5
 REQ_CLASS999_DEPTH005_RECALL=2
-REQ_CLASS999_DEPTH010_CURLITE=2
 REQ_CLASS999_DEPTH010_FORMULA001
 REQ_CLASS999_DEPTH010_FORMULA002
 REQ_CLASS000_DEPTH011_FORMULA003

@@ -32,7 +32,7 @@
 #define GOAL_VAULT  8		/* Vaults */
 #define GOAL_RECOVER 9		/* Resting safely */
 #define GOAL_DIGGING 10		/* Anti-summon Corridor */
-
+#define GOAL_TESTFLOW 11	/* Used to look at a monsters flow */
 
 
 /*
@@ -56,13 +56,13 @@ extern bool borg_attack(bool boosted_bravery);
 extern bool borg_munchkin_mage(void);
 extern bool borg_munchkin_melee(void);
 extern bool borg_recover(void);
-
+extern int borg_thrust_damage_one(int i);
 extern bool borg_offset_ball(void);
 extern bool borg_defend(int p);
 extern bool borg_perma_spell(void);
 
 extern bool borg_check_rest(int y, int x);
-extern void borg_near_monster_type(int dist);
+extern int borg_near_monster_type(int dist);
 
 /*
  * Twitchy goals
@@ -87,10 +87,12 @@ extern bool borg_flow_stair_more(int why, bool sneak, bool brave);
 
 
 extern bool borg_flow_glyph(int why);
+extern bool borg_flow_room(int why);
 extern bool borg_flow_light(int why);
 extern bool borg_check_LIGHT_only(void);
 extern bool borg_backup_swap(int p);
 extern bool borg_flow_recover(bool viewable, int dist);
+extern bool borg_heal(int danger);
 
 /*
  * Flow to shops
@@ -132,6 +134,8 @@ extern int borg_attack_aux_thrust(void);
 extern void borg_log_battle(bool);
 extern void borg_log_event(char *event);
 extern bool borg_target_unknown_wall(int g_y,int g_x);
+
+extern bool borg_eat_food_any(void);
 
 /*
  * Initialize this file

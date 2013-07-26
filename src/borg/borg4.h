@@ -25,7 +25,7 @@
 /*
  * Extract various bonuses
  */
-extern void borg_notice(bool notice_swap);
+extern void borg_notice(bool notice_swap, bool do_inven_equip);
 
 /*
  * Extract the bonuses for items in the home.
@@ -64,12 +64,12 @@ extern int borg_danger(int y, int x, int c, bool average, bool full_damage);
 /*
  * Determine if the Borg is out of "crucial" supplies.
  */
-extern const char *borg_restock(int depth);
+extern char *borg_restock(int depth);
 
 /*
  * Determine if the Borg is "prepared" for the given level
  */
-extern const char *borg_prepared(int depth);
+extern char *borg_prepared(int depth);
 
 
 /*
