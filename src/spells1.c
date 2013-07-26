@@ -415,7 +415,7 @@ void teleport_player_level(void)
 	/* Now actually do the level change */
 	if (up) {
 		msgt(MSG_TPLEVEL, "You rise up through the ceiling.");
-		dungeon_change_level(p_ptr->depth + 1);
+		dungeon_change_level(p_ptr->depth - 1);
 	} else if (down) {
 		msgt(MSG_TPLEVEL, "You sink through the floor.");
 
