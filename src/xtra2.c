@@ -41,8 +41,8 @@ void verify_panel_int(bool centered);
  */
 bool modify_panel(term *t, int wy, int wx)
 {
-	int dungeon_hgt = (p_ptr->depth == 0) ? TOWN_HGT : DUNGEON_HGT;
-	int dungeon_wid = (p_ptr->depth == 0) ? TOWN_WID : DUNGEON_WID;
+	int dungeon_hgt = cave->height;
+	int dungeon_wid = cave->width;
 
 	/* Verify wy, adjust if needed */
 	if (wy > dungeon_hgt - SCREEN_HGT) wy = dungeon_hgt - SCREEN_HGT;

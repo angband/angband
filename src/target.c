@@ -1549,8 +1549,8 @@ bool target_set_interactive(int mode, int x, int y)
 				/*if (press.mouse.button == 3) {
 				} else*/
 				{
-					int dungeon_hgt = (p_ptr->depth == 0) ? TOWN_HGT : DUNGEON_HGT;
-					int dungeon_wid = (p_ptr->depth == 0) ? TOWN_WID : DUNGEON_WID;
+					int dungeon_hgt = cave->height;
+					int dungeon_wid = cave->width;
 
 					y = KEY_GRID_Y(press);//.mouse.y;
 					x = KEY_GRID_X(press);//.mouse.x;
@@ -1711,8 +1711,8 @@ bool target_set_interactive(int mode, int x, int y)
 			/* Handle "direction" */
 			if (d)
 			{
-				int dungeon_hgt = (p_ptr->depth == 0) ? TOWN_HGT : DUNGEON_HGT;
-				int dungeon_wid = (p_ptr->depth == 0) ? TOWN_WID : DUNGEON_WID;
+				int dungeon_hgt = cave->height;
+				int dungeon_wid = cave->width;
 
 				/* Move */
 				x += ddx[d];

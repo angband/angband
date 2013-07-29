@@ -1978,8 +1978,8 @@ static void scan_for_objects(void)
 { 
 	int y, x;
 
-	for (y = 1; y < DUNGEON_HGT - 1; y++) {
-		for (x = 1; x < DUNGEON_WID - 1; x++) {
+	for (y = 1; y < cave->height - 1; y++) {
+		for (x = 1; x < cave->width - 1; x++) {
 			const object_type *o_ptr;
 
 			
@@ -2526,9 +2526,9 @@ void disconnect_stats(void)
 		calc_cave_distances();
 		
 		/*Cycle through the dungeon */
-		for (y = 1; y < DUNGEON_HGT - 1; y++){
+		for (y = 1; y < cave->height - 1; y++){
 		
-			for (x = 1; x < DUNGEON_WID - 1; x++){
+			for (x = 1; x < cave->width - 1; x++){
 			
 				/* don't care about walls */
 				if (cave_iswall(cave, y, x)) continue;

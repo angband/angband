@@ -3160,10 +3160,10 @@ static void init_cavern(struct cave *c, struct player *p, int density) {
 	int size = h * w;
 	
 	int count = (size * density) / 100;
-	
+
 	/* Fill the edges with perma-rock, and rest with rock */
-	draw_rectangle(c, 0, 0, DUNGEON_HGT - 1, DUNGEON_WID - 1, FEAT_PERM_SOLID);
-	fill_rectangle(c, 1, 1, DUNGEON_HGT - 2, DUNGEON_WID - 2, FEAT_WALL_SOLID);
+	fill_rectangle(c, 0, 0, DUNGEON_HGT - 1, DUNGEON_WID - 1, FEAT_PERM_SOLID);
+	fill_rectangle(c, 1, 1, h - 2, w - 2, FEAT_WALL_SOLID);
 	
 	while (count > 0) {
 		int y = randint1(h - 2);

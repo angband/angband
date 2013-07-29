@@ -501,8 +501,8 @@ void map_area(void)
 	/* Drag the co-ordinates into the dungeon */
 	if (y1 < 0) y1 = 0;
 	if (x1 < 0) x1 = 0;
-	if (y2 > DUNGEON_HGT - 1) y2 = DUNGEON_HGT - 1;
-	if (x2 > DUNGEON_WID - 1) x2 = DUNGEON_WID - 1;
+	if (y2 > cave->height - 1) y2 = cave->height - 1;
+	if (x2 > cave->width - 1) x2 = cave->width - 1;
 
 	/* Scan the dungeon */
 	for (y = y1; y < y2; y++)

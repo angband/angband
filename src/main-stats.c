@@ -286,8 +286,8 @@ static void log_all_objects(int level)
 {
 	int x, y, i;
 
-	for (y = 1; y < DUNGEON_HGT - 1; y++) {
-		for (x = 1; x < DUNGEON_WID - 1; x++) {
+	for (y = 1; y < cave->height - 1; y++) {
+		for (x = 1; x < cave->width - 1; x++) {
 			object_type *o_ptr = get_first_object(y, x);
 
 			if (o_ptr) do {
