@@ -591,7 +591,7 @@ static void process_world(struct cave *c)
 		if (check_state(p_ptr, OF_REGEN, p_ptr->state.flags)) i += 30;
 
 		/* Slow digestion takes less food */
-		if (check_state(p_ptr, OF_SLOW_DIGEST, p_ptr->state.flags)) i = 1;
+		if (check_state(p_ptr, OF_SLOW_DIGEST, p_ptr->state.flags)) i /= 5;
 
 		/* Minimal digestion */
 		if (i < 1) i = 1;
