@@ -30,7 +30,7 @@
 #include "borg9.h"
 #endif
 
-#if defined(MACH_O_CARBON)
+//#if defined(MACH_O_CARBON)
 
 /* Default creator signature */
 #ifndef ANGBAND_CREATOR
@@ -45,6 +45,7 @@ static NSSize const AngbandScaleIdentity = {1.0, 1.0};
 static NSString * const AngbandTerminalsDefaultsKey = @"Terminals";
 static NSString * const AngbandTerminalRowsDefaultsKey = @"Rows";
 static NSString * const AngbandTerminalColumnsDefaultsKey = @"Columns";
+static NSInteger const AngbandWindowMenuItemTagBase = 1000;
 
 /* We can blit to a large layer or image and then scale it down during live resize, which makes resizing much faster, at the cost of some image quality during resizing */
 #ifndef USE_LIVE_RESIZE_CACHE
@@ -145,7 +146,13 @@ static NSFont *default_font;
     /* To address subpixel rendering overdraw problems, we cache all the characters and attributes we're told to draw */
     wchar_t *charOverdrawCache;
     int *attrOverdrawCache;
+
+@private
+
+    BOOL _hasSubwindowFlags;
 }
+
+@property (nonatomic, assign) BOOL hasSubwindowFlags;
 
 - (void)drawRect:(NSRect)rect inView:(NSView *)view;
 
@@ -222,6 +229,71 @@ static NSFont *default_font;
 - (AngbandView *)activeView;
 
 @end
+
+/**
+ *  Generate a mask for the subwindow flags. The mask is just a safety check to make sure that our windows show and hide as expected.
+ *  This function allows for future changes to the set of flags without needed to update it here (unless the underlying types change).
+ */
+u32b AngbandMaskForValidSubwindowFlags(void)
+{
+    int windowFlagBits = sizeof(*(op_ptr->window_flag)) * CHAR_BIT;
+    int maxBits = MIN( PW_MAX_FLAGS, windowFlagBits );
+    u32b mask = 0;
+
+    for( int i = 0; i < maxBits; i++ )
+    {
+        if( window_flag_desc[i] != NULL )
+        {
+            mask |= (1 << i);
+        }
+    }
+
+    return mask;
+}
+
+/**
+ *  Check for changes in the subwindow flags and update window visibility. This seems to be called for every user event, so we don't
+ *  want to do any unnecessary hiding or showing of windows.
+ */
+static void AngbandUpdateWindowVisibility(void)
+{
+    // because this function is called frequently, we'll make the mask static. it doesn't change between calls, since the flags themselves are hardcoded.
+    static u32b validWindowFlagsMask = 0;
+
+    if( validWindowFlagsMask == 0 )
+    {
+        validWindowFlagsMask = AngbandMaskForValidSubwindowFlags();
+    }
+
+    // loop through all of the subwindows and see if there is a change in the flags. if so, show or hide the corresponding window.
+    // we don't care about the flags themselves; we just want to know if any are set.
+    for( int i = 1; i < ANGBAND_TERM_MAX; i++ )
+    {
+        AngbandContext *angbandContext = angband_term[i]->data;
+
+        if( angbandContext == nil )
+        {
+            continue;
+        }
+
+        BOOL termHasSubwindowFlags = ((op_ptr->window_flag[i] & validWindowFlagsMask) > 0);
+
+        if( angbandContext.hasSubwindowFlags && !termHasSubwindowFlags )
+        {
+            [angbandContext->primaryWindow close];
+            angbandContext.hasSubwindowFlags = NO;
+        }
+        else if( !angbandContext.hasSubwindowFlags && termHasSubwindowFlags )
+        {
+            [angbandContext->primaryWindow orderFront: nil];
+            angbandContext.hasSubwindowFlags = YES;
+        }
+    }
+
+    // make the main window key so that user events go to the right spot
+    AngbandContext *mainWindow = angband_term[0]->data;
+    [mainWindow->primaryWindow makeKeyAndOrderFront: nil];
+}
 
 /* To indicate that a grid element contains a picture, we store 0xFFFF. */
 #define NO_OVERDRAW ((wchar_t)(0xFFFF))
@@ -319,7 +391,6 @@ static void init_windows(void);
 static void initialize_file_paths(void);
 static void handle_open_when_ready(void);
 static void play_sound(int event);
-static void update_term_visibility(void);
 static BOOL check_events(int wait);
 static void cocoa_file_open_hook(const char *path, file_type ftype);
 static bool cocoa_get_file(const char *suggested_name, char *path, size_t len);
@@ -384,6 +455,8 @@ static bool initialized = FALSE;
 
 
 @implementation AngbandContext
+
+@synthesize hasSubwindowFlags=_hasSubwindowFlags;
 
 - (NSFont *)selectionFont
 {
@@ -950,21 +1023,30 @@ static NSMenuItem *superitem(NSMenuItem *self)
         CGFloat height = self->rows * tileSize.height + borderSize.height * 2.0;
         NSRect contentRect = NSMakeRect( 0.0, 0.0, width, height );
 
-        primaryWindow = [[NSWindow alloc] initWithContentRect:contentRect styleMask:NSTitledWindowMask | NSResizableWindowMask | NSMiniaturizableWindowMask backing:NSBackingStoreBuffered defer:YES];
-        
+        NSUInteger styleMask = NSTitledWindowMask | NSResizableWindowMask | NSMiniaturizableWindowMask;
+
+        // make every window other than the main window closable
+        if( angband_term[0]->data != self )
+        {
+            styleMask |= NSClosableWindowMask;
+        }
+
+        primaryWindow = [[NSWindow alloc] initWithContentRect:contentRect styleMask: styleMask backing:NSBackingStoreBuffered defer:YES];
+
         /* Not to be released when closed */
         [primaryWindow setReleasedWhenClosed:NO];
-        
+        [primaryWindow setExcludedFromWindowsMenu: YES]; // we're using custom window menu handling
+
         /* Make the view */
         AngbandView *angbandView = [[AngbandView alloc] initWithFrame:contentRect];
         [angbandView setAngbandContext:self];
         [angbandViews addObject:angbandView];
         [primaryWindow setContentView:angbandView];
         [angbandView release];
-        
+
         /* We are its delegate */
         [primaryWindow setDelegate:self];
-        
+
         /* Update our image, since this is probably the first angband view we've gotten. */
         [self updateImage];
     }
@@ -1126,10 +1208,52 @@ static NSMenuItem *superitem(NSMenuItem *self)
 - (void)windowDidBecomeMain:(NSNotification *)notification
 {
     NSWindow *window = [notification object];
-    NSFontPanel *panel = [NSFontPanel sharedFontPanel];
 
-    if ([panel isVisible])
-        [panel setPanelFont:[[[window contentView] angbandContext] selectionFont] isMultiple:NO];
+    if( window != self->primaryWindow )
+    {
+        return;
+    }
+
+    int termIndex = 0;
+
+    for( termIndex = 0; termIndex < ANGBAND_TERM_MAX; termIndex++ )
+    {
+        if( angband_term[termIndex] == self->terminal )
+        {
+            break;
+        }
+    }
+
+    NSMenuItem *item = [[[NSApplication sharedApplication] windowsMenu] itemWithTag: AngbandWindowMenuItemTagBase + termIndex];
+    [item setState: NSOnState];
+
+    if( [[NSFontPanel sharedFontPanel] isVisible] )
+    {
+        [[NSFontPanel sharedFontPanel] setPanelFont: [self selectionFont] isMultiple: NO];
+    }
+}
+
+- (void)windowDidResignMain: (NSNotification *)notification
+{
+    NSWindow *window = [notification object];
+
+    if( window != self->primaryWindow )
+    {
+        return;
+    }
+
+    int termIndex = 0;
+
+    for( termIndex = 0; termIndex < ANGBAND_TERM_MAX; termIndex++ )
+    {
+        if( angband_term[termIndex] == self->terminal )
+        {
+            break;
+        }
+    }
+
+    NSMenuItem *item = [[[NSApplication sharedApplication] windowsMenu] itemWithTag: AngbandWindowMenuItemTagBase + termIndex];
+    [item setState: NSOffState];
 }
 
 @end
@@ -1521,9 +1645,9 @@ static errr Term_xtra_cocoa(int n, int v)
             /* Process random events */
         case TERM_XTRA_BORED:
         {
-            /* Update our windows so that we reflect what's in p_ptr */
-            (void)update_term_visibility();
-            
+            // show or hide cocoa windows based on the subwindow flags set by the user
+            AngbandUpdateWindowVisibility();
+
             /* Process an event */
             (void)check_events(CHECK_EVENTS_NO_WAIT);
             
@@ -2618,51 +2742,6 @@ static BOOL check_events(int wait)
     
 }
 
-/* Update window visibility to match what's in p_ptr, so we show or hide terms that have or do not have contents respectively. */
-static void update_term_visibility(void)
-{
-    if (! op_ptr) return; //paranoia
-    
-    /* Make a mask of window flags that matter */
-    size_t i;
-    u32b significantWindowFlagMask = 0;
-    for (i=0; i < CHAR_BIT * sizeof significantWindowFlagMask; i++) {
-        if (window_flag_desc[i])
-        {
-            significantWindowFlagMask |= (1 << i);
-        }
-    }
-    
-    for (i=0; i < ANGBAND_TERM_MAX; i++) {
-        /* Now show or hide */
-        term *t = angband_term[i];
-        if (t)
-        {
-            AngbandContext *angbandContext = t->data;
-            
-            /* Check if we are visible */
-            BOOL isVisible = [angbandContext isOrderedIn];
-            
-            /* Ensure the first term is always visible. The remaining terms depend on the op_ptr. */
-            BOOL shouldBeVisible = (i == 0 || (op_ptr->window_flag[i] & significantWindowFlagMask));
-            
-            if (isVisible && ! shouldBeVisible)
-            {
-                /* Make it not visible */
-                [angbandContext orderOut];
-            } else if (! isVisible && shouldBeVisible)
-            {
-                /* Make it visible */
-                [angbandContext orderFront];
-            }
-        }
-        
-    }
-
-    /* Ensure that the main window is frontmost */
-    [(id)angband_term[0]->data orderFront];
-}
-
 /*
  * Hook to tell the user something important
  */
@@ -2778,6 +2857,8 @@ static void initialize_file_paths(void)
 - (IBAction)newGame:sender;
 - (IBAction)editFont:sender;
 - (IBAction)openGame:sender;
+
+- (IBAction)selectWindow: (id)sender;
 
 @end
 
@@ -2909,6 +2990,24 @@ static void initialize_file_paths(void)
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
     SEL sel = [menuItem action];
+    NSInteger tag = [menuItem tag];
+
+    if( tag >= AngbandWindowMenuItemTagBase && tag < AngbandWindowMenuItemTagBase + ANGBAND_TERM_MAX )
+    {
+        if( tag == AngbandWindowMenuItemTagBase )
+        {
+            // the main window should always be available and visible
+            return YES;
+        }
+        else
+        {
+            NSInteger subwindowNumber = tag - AngbandWindowMenuItemTagBase;
+            return (op_ptr->window_flag[subwindowNumber] > 0);
+        }
+
+        return NO;
+    }
+
     if (sel == @selector(newGame:))
     {
         return ! game_in_progress;
@@ -2923,17 +3022,67 @@ static void initialize_file_paths(void)
     }
     else if (sel == @selector(setRefreshRate:) && [superitem(menuItem) tag] == 150)
     {
-        [menuItem setState:[menuItem tag] == frames_per_second];
+        NSInteger fps = [[NSUserDefaults standardUserDefaults] integerForKey: @"FramesPerSecond"];
+        [menuItem setState: ([menuItem tag] == fps)];
+        return YES;
+    }
+    else if( sel == @selector(setGraphicsMode:) )
+    {
+        NSInteger requestedGraphicsMode = [[NSUserDefaults standardUserDefaults] integerForKey: @"GraphicsID"];
+        [menuItem setState: (tag == requestedGraphicsMode)];
         return YES;
     }
     else return YES;
 }
+
 
 - (IBAction)setRefreshRate:(NSMenuItem *)menuItem
 {
     frames_per_second = [menuItem tag];
     [[NSUserDefaults angbandDefaults] setInteger:frames_per_second forKey:@"FramesPerSecond"];
 }
+
+- (IBAction)selectWindow: (id)sender
+{
+    NSInteger subwindowNumber = [(NSMenuItem *)sender tag] - AngbandWindowMenuItemTagBase;
+    AngbandContext *context = angband_term[subwindowNumber]->data;
+    [context->primaryWindow makeKeyAndOrderFront: self];
+}
+
+
+
+- (void)prepareWindowsMenu
+{
+    // get the window menu with default items and add a separator and item for the main window
+    NSMenu *windowsMenu = [[NSApplication sharedApplication] windowsMenu];
+    [windowsMenu addItem: [NSMenuItem separatorItem]];
+
+    NSMenuItem *angbandItem = [[NSMenuItem alloc] initWithTitle: @"Angband" action: @selector(selectWindow:) keyEquivalent: @"0"];
+    [angbandItem setTarget: self];
+    [angbandItem setTag: AngbandWindowMenuItemTagBase];
+    [windowsMenu addItem: angbandItem];
+    [angbandItem release];
+
+    // add items for the additional term windows
+    for( NSInteger i = 1; i < ANGBAND_TERM_MAX; i++ )
+    {
+        NSString *title = [NSString stringWithFormat: @"Term %ld", (long)i];
+        NSMenuItem *windowItem = [[NSMenuItem alloc] initWithTitle: title action: @selector(selectWindow:) keyEquivalent: @""];
+        [windowItem setTarget: self];
+        [windowItem setTag: AngbandWindowMenuItemTagBase + i];
+        [windowsMenu addItem: windowItem];
+        [windowItem release];
+    }
+}
+
+
+- (void)awakeFromNib
+{
+    [super awakeFromNib];
+
+    [self prepareWindowsMenu];
+}
+
 
 - (void)applicationDidFinishLaunching:sender
 {
@@ -3031,4 +3180,4 @@ int main(int argc, char* argv[])
     return (0);
 }
 
-#endif /* MACINTOSH || MACH_O_CARBON */
+//#endif /* MACINTOSH || MACH_O_CARBON */
