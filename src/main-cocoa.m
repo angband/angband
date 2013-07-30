@@ -30,7 +30,7 @@
 #include "borg9.h"
 #endif
 
-//#if defined(MACH_O_CARBON)
+#if defined(MACH_O_CARBON)
 
 /* Default creator signature */
 #ifndef ANGBAND_CREATOR
@@ -3180,4 +3180,4 @@ int main(int argc, char* argv[])
     return (0);
 }
 
-//#endif /* MACINTOSH || MACH_O_CARBON */
+#endif /* MACINTOSH || MACH_O_CARBON */
