@@ -162,6 +162,7 @@ install: $(EXE) $(ICONFILES) $(PLIST) $(LIBFILES)
 	install -m 755 $(EXE) $(APPBIN)
 	install -m 644 $(ICONFILES) $(APPRES)
 	cp cocoa/English.lproj/MainMenu.nib/*ib $(APPRES)/English.lproj/MainMenu.nib
+	cp cocoa/CommandMenu.plist $(APPRES)/CommandMenu.plist
 	sed -e 's/\$$VERSION\$$/$(VERSION)/' -e 's/\$$COPYRIGHT\$$/$(COPYRIGHT)/' \
 		-e 's/\$$NAME\$$/$(NAME)/' -e 's/\$$EXECUTABLE\$$/$(EXE)/' \
 		$(PLIST) > $(APPCONT)/Info.plist

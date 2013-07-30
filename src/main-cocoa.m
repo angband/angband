@@ -46,6 +46,7 @@ static NSString * const AngbandTerminalsDefaultsKey = @"Terminals";
 static NSString * const AngbandTerminalRowsDefaultsKey = @"Rows";
 static NSString * const AngbandTerminalColumnsDefaultsKey = @"Columns";
 static NSInteger const AngbandWindowMenuItemTagBase = 1000;
+static NSInteger const AngbandCommandMenuItemTagBase = 2000;
 
 /* We can blit to a large layer or image and then scale it down during live resize, which makes resizing much faster, at the cost of some image quality during resizing */
 #ifndef USE_LIVE_RESIZE_CACHE
@@ -2852,7 +2853,12 @@ static void initialize_file_paths(void)
 
 @interface AngbandAppDelegate : NSObject {
     IBOutlet NSMenu *terminalsMenu;
+    NSMenu *_commandMenu;
+    NSDictionary *_commandMenuTagMap;
 }
+
+@property (nonatomic, retain) IBOutlet NSMenu *commandMenu;
+@property (nonatomic, retain) NSDictionary *commandMenuTagMap;
 
 - (IBAction)newGame:sender;
 - (IBAction)editFont:sender;
@@ -2863,6 +2869,9 @@ static void initialize_file_paths(void)
 @end
 
 @implementation AngbandAppDelegate
+
+@synthesize commandMenu=_commandMenu;
+@synthesize commandMenuTagMap=_commandMenuTagMap;
 
 - (IBAction)newGame:sender
 {
@@ -3032,6 +3041,11 @@ static void initialize_file_paths(void)
         [menuItem setState: (tag == requestedGraphicsMode)];
         return YES;
     }
+    else if( sel == @selector(sendAngbandCommand:) )
+    {
+        // we only want to be able to send commands during an active game
+        return !!game_in_progress;
+    }
     else return YES;
 }
 
@@ -3048,8 +3062,6 @@ static void initialize_file_paths(void)
     AngbandContext *context = angband_term[subwindowNumber]->data;
     [context->primaryWindow makeKeyAndOrderFront: self];
 }
-
-
 
 - (void)prepareWindowsMenu
 {
@@ -3075,14 +3087,90 @@ static void initialize_file_paths(void)
     }
 }
 
+/**
+ *  Send a command to Angband via a menu item. This places the appropriate key down events into the queue
+ *  so that it seems like the user pressed them (instead of trying to use the term directly).
+ */
+- (void)sendAngbandCommand: (id)sender
+{
+    NSMenuItem *menuItem = (NSMenuItem *)sender;
+    NSString *command = [self.commandMenuTagMap objectForKey: @([menuItem tag])];
+    NSInteger windowNumber = [((AngbandContext *)angband_term[0]->data)->primaryWindow windowNumber];
+
+    // send a \ to bypass keymaps
+    NSEvent *escape = [NSEvent keyEventWithType: NSKeyDown
+                                       location: NSZeroPoint
+                                  modifierFlags: 0
+                                      timestamp: 0.0
+                                   windowNumber: windowNumber
+                                        context: nil
+                                     characters: @"\\"
+                    charactersIgnoringModifiers: @"\\"
+                                      isARepeat: NO
+                                        keyCode: 0];
+    [[NSApplication sharedApplication] postEvent: escape atStart: NO];
+
+    // send the actual command (from the original command set)
+    NSEvent *keyDown = [NSEvent keyEventWithType: NSKeyDown
+                                        location: NSZeroPoint
+                                   modifierFlags: 0
+                                       timestamp: 0.0
+                                    windowNumber: windowNumber
+                                         context: nil
+                                      characters: command
+                     charactersIgnoringModifiers: command
+                                       isARepeat: NO
+                                         keyCode: 0];
+    [[NSApplication sharedApplication] postEvent: keyDown atStart: NO];
+}
+
+/**
+ *  Set up the command menu dynamically, based on CommandMenu.plist.
+ */
+- (void)prepareCommandMenu
+{
+    NSString *commandMenuPath = [[NSBundle mainBundle] pathForResource: @"CommandMenu" ofType: @"plist"];
+    NSArray *commandMenuItems = [[NSArray alloc] initWithContentsOfFile: commandMenuPath];
+    NSMutableDictionary *angbandCommands = [[NSMutableDictionary alloc] init];
+    NSInteger tagOffset = 0;
+
+    for( NSDictionary *item in commandMenuItems )
+    {
+        BOOL useShiftModifier = [[item valueForKey: @"ShiftModifier"] boolValue];
+        BOOL useOptionModifier = [[item valueForKey: @"OptionModifier"] boolValue];
+        NSUInteger keyModifiers = NSCommandKeyMask;
+        keyModifiers |= (useShiftModifier) ? NSShiftKeyMask : 0;
+        keyModifiers |= (useOptionModifier) ? NSAlternateKeyMask : 0;
+
+        NSString *title = [item valueForKey: @"Title"];
+        NSString *key = [item valueForKey: @"KeyEquivalent"];
+        NSMenuItem *menuItem = [[NSMenuItem alloc] initWithTitle: title action: @selector(sendAngbandCommand:) keyEquivalent: key];
+        [menuItem setTarget: self];
+        [menuItem setKeyEquivalentModifierMask: keyModifiers];
+        [menuItem setTag: AngbandCommandMenuItemTagBase + tagOffset];
+        [self.commandMenu addItem: menuItem];
+        [menuItem release];
+
+        NSString *angbandCommand = [item valueForKey: @"AngbandCommand"];
+        [angbandCommands setObject: angbandCommand forKey: @([menuItem tag])];
+        tagOffset++;
+    }
+
+    [commandMenuItems release];
+
+    NSDictionary *safeCommands = [[NSDictionary alloc] initWithDictionary: angbandCommands];
+    self.commandMenuTagMap = safeCommands;
+    [safeCommands release];
+    [angbandCommands release];
+}
 
 - (void)awakeFromNib
 {
     [super awakeFromNib];
 
     [self prepareWindowsMenu];
+    [self prepareCommandMenu];
 }
-
 
 - (void)applicationDidFinishLaunching:sender
 {
