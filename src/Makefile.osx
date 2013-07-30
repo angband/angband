@@ -180,6 +180,16 @@ vars:
 	@echo CFLAGS = $(CFLAGS)
 	@echo BASEOBJS = $(BASEOBJS)
 
+# build a version that has separate prefs (different bundle ID) and directories (setting SAFE_DIRECTORY preprocessor flag)
+safe-install:
+	$(MAKE) -f Makefile.osx install CFLAGS="-DSAFE_DIRECTORY $(CFLAGS)"
+	sed -e 's/\$$VERSION\$$/$(VERSION)/' \
+		-e 's/\$$COPYRIGHT\$$/$(COPYRIGHT)/' \
+		-e 's/\$$NAME\$$/$(NAME)/' \
+		-e 's/\$$EXECUTABLE\$$/$(EXE)/' \
+		-e 's/\$$BUNDLE_VERSION\$$/$(BUNDLE_VERSION)/' \
+		-e 's/\$$BUNDLE_IDENTIFIER\$$/$(BUNDLE_IDENTIFIER).$(VERSION)/' \
+		$(PLIST) > $(APPCONT)/Info.plist
 
 
 PACKAGE_NAME = $(NAME)-$(VERSION)

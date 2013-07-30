@@ -22,6 +22,10 @@
 #include "init.h"
 #include "grafmode.h"
 
+#if defined(SAFE_DIRECTORY)
+#import "buildid.h"
+#endif
+
 //#define NSLog(...) ;
 
 
@@ -42,6 +46,9 @@
 #include <Carbon/Carbon.h> // For keycodes
 
 static NSSize const AngbandScaleIdentity = {1.0, 1.0};
+static NSString * const AngbandDirectoryNameLib = @"lib";
+static NSString * const AngbandDirectoryNameBase = @"Angband";
+
 static NSString * const AngbandTerminalsDefaultsKey = @"Terminals";
 static NSString * const AngbandTerminalRowsDefaultsKey = @"Rows";
 static NSString * const AngbandTerminalColumnsDefaultsKey = @"Columns";
@@ -316,7 +323,6 @@ static void hook_quit(const char * str);
 static void load_prefs(void);
 static void load_sounds(void);
 static void init_windows(void);
-static void initialize_file_paths(void);
 static void handle_open_when_ready(void);
 static void play_sound(int event);
 static void update_term_visibility(void);
@@ -767,6 +773,64 @@ static int compare_advances(const void *ap, const void *bp)
     [super dealloc];
 }
 
+
+
+#pragma mark -
+#pragma mark Directories and Paths Setup
+
+/**
+ *  Return the path for Angband's lib directory and bail if it isn't found. The lib directory should be in the bundle's resources directory, since it's copied when built.
+ */
++ (NSString *)libDirectoryPath
+{
+    NSString *bundleLibPath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent: AngbandDirectoryNameLib];
+    BOOL isDirectory = NO;
+    BOOL libExists = [[NSFileManager defaultManager] fileExistsAtPath: bundleLibPath isDirectory: &isDirectory];
+
+    if( !libExists || !isDirectory )
+    {
+        NSLog( @"[%@ %@]: can't find %@/ in bundle: isDirectory: %d libExists: %d", NSStringFromClass( [self class] ), NSStringFromSelector( _cmd ), AngbandDirectoryNameLib, isDirectory, libExists );
+        NSRunAlertPanel( @"Missing Resources", @"Angband was unable to find required resources and must quit. Please report a bug on the Angband forums.", @"Quit", nil, nil );
+        exit( 0 );
+    }
+
+    // angband requires the trailing slash for the directory path
+    return [bundleLibPath stringByAppendingString: @"/"];
+}
+
+/**
+ *  Return the path for the directory where Angband should look for its standard user file tree.
+ */
++ (NSString *)angbandDocumentsPath
+{
+    // angband requires the trailing slash, so we'll just add it here; NSString won't care about it when we use the base path for other things
+    NSString *documents = [NSSearchPathForDirectoriesInDomains( NSDocumentDirectory, NSUserDomainMask, YES ) lastObject];
+
+#if defined(SAFE_DIRECTORY)
+    NSString *versionedDirectory = [NSString stringWithFormat: @"%@-%s", AngbandDirectoryNameBase, VERSION_STRING];
+    return [[documents stringByAppendingPathComponent: versionedDirectory] stringByAppendingString: @"/"];
+#else
+    return [[documents stringByAppendingPathComponent: AngbandDirectoryNameBase] stringByAppendingString: @"/"];
+#endif
+}
+
+/**
+ *  Give Angband the base paths that should be used for the various directories it needs. It will create any needed directories.
+ */
++ (void)prepareFilePathsAndDirectories
+{
+    char libpath[PATH_MAX + 1] = "\0";
+    char basepath[PATH_MAX + 1] = "\0";
+
+    [[self libDirectoryPath] getFileSystemRepresentation: libpath maxLength: sizeof(libpath)];
+    [[self angbandDocumentsPath] getFileSystemRepresentation: basepath maxLength: sizeof(basepath)];
+
+    init_file_paths( libpath, libpath, basepath );
+    create_needed_dirs();
+}
+
+#pragma mark -
+
 /* Entry point for initializing Angband */
 + (void)beginGame
 {
@@ -786,7 +850,7 @@ static int compare_advances(const void *ap, const void *bp)
     get_file = cocoa_get_file;
 
     // initialize file paths
-    initialize_file_paths();
+    [self prepareFilePathsAndDirectories];
 
     // load preferences
     load_prefs();
@@ -2721,55 +2785,6 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
 }
 
 /*** Main program ***/
-
-
-/* Set up file paths, including the lib directory */
-static void initialize_file_paths(void)
-{
-    NSFileManager *fm = [NSFileManager defaultManager];
-    
-    char libpath[PATH_MAX+1] = {0}, basepath[PATH_MAX+1] = {0};
-    
-    /* Get the path to the lib directory in the bundle */
-    NSString *libString = [[[NSBundle bundleForClass:[AngbandView class]] resourcePath] stringByAppendingPathComponent:@"/lib"];
-    BOOL isDir = NO;
-    if (! [fm fileExistsAtPath:libString isDirectory:&isDir] || ! isDir)
-    {
-        NSRunAlertPanel(@"Unable to find lib directory", @"Unable to find the lib directory at path %@.  Angband has to quit.", @"Nuts", nil, nil, libString);
-        exit(0);
-    }
-    
-    /* Prepare the paths. We need to append the / at the end. */
-    [libString getFileSystemRepresentation:libpath maxLength:sizeof libpath];
-    strlcat(libpath, "/", sizeof libpath);
-    
-    /* Get the path to the Angband directory in ~/Documents */
-    NSString *angbandBase = get_data_directory();
-    [angbandBase getFileSystemRepresentation:basepath maxLength:sizeof basepath];
-    strlcat(basepath, "/", sizeof basepath);
-    
-    /* Create the save and config directories if necessary */
-    NSString *config = [angbandBase stringByAppendingPathComponent:@"/config/"];
-    NSString *save = [angbandBase stringByAppendingPathComponent:@"/save/"];
-    NSString *user = [angbandBase stringByAppendingPathComponent:@"/user/"];
-    NSError *error = nil;
-    BOOL success = YES;
-    success = success && [fm createDirectoryAtPath:config withIntermediateDirectories:YES attributes:nil error:&error];
-    success = success && [fm createDirectoryAtPath:save withIntermediateDirectories:YES attributes:nil error:&error];
-    success = success && [fm createDirectoryAtPath:user withIntermediateDirectories:YES attributes:nil error:&error];
-    if (! success)
-    {
-        NSRunAlertPanel(@"Unable to create directory", @"Unable to create directory in %@ (error was %@).  Angband has to quit.", @"Nuts", nil, nil, angbandBase, error);
-        [[NSApplication sharedApplication] presentError:error];
-        exit(0);
-    }
-    
-    
-    //void init_file_paths(const char *configpath, const char *libpath, const char *datapath)
-    init_file_paths(libpath, libpath, basepath);
-    create_needed_dirs();
-    
-}
 
 @interface AngbandAppDelegate : NSObject {
     IBOutlet NSMenu *terminalsMenu;
