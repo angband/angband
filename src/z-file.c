@@ -201,7 +201,27 @@ size_t path_build(char *buf, size_t len, const char *base, const char *leaf)
 	return cur_len;
 }
 
+/*
+ * Return the index of the filename in a path, using PATH_SEPC. If no path
+ * separator is found, return 0.
+ */
+size_t path_filename_index( const char *path )
+{
+    if( strlen( path ) == 0 )
+    {
+        return 0;
+    }
 
+    for( int i = strlen( path ) - 1; i >= 0; i-- )
+    {
+        if( path[i] == PATH_SEPC )
+        {
+            return i + 1;
+        }
+    }
+
+    return 0;
+}
 
 /*** File-handling API ***/
 
