@@ -1552,8 +1552,19 @@ static void process_some_user_pref_files(void)
 	/* Get the "PLAYER.prf" filename */
 	(void)strnfmt(buf, sizeof(buf), "%s.prf", player_safe_name(p_ptr), TRUE);
 
-	/* Process the "PLAYER.prf" file */
-	(void)process_pref_file(buf, TRUE, TRUE);
+	/* Process the "PLAYER.prf" file, using the character name */
+	bool found = process_pref_file(buf, TRUE, TRUE);
+
+    // look for a pref file matching the savefile name if we couldn't find one matching the character name
+    if( !found )
+    {
+        int filenameIndex = path_filename_index( savefile );
+        char filename[128];
+
+        my_strcpy( filename, &savefile[filenameIndex], sizeof(filename) );
+        (void)strnfmt(buf, sizeof(buf), "%s.prf", filename, TRUE );
+        (void)process_pref_file( buf, TRUE, TRUE );
+    }
 }
 
 
