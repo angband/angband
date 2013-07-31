@@ -7758,6 +7758,7 @@ B:SPORE:EXP_80:5d5
 F:EVIL
 F:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE
 F:FORCE_SLEEP | ATTR_FLICKER
+-F: HURT_FIRE
 D:It is the epitome of all that is evil, in a mold.  Its lifeless form draws
 D: power from sucking the souls of those that approach it, a nimbus of pure evil
 D: surrounds it.  Luckily for you, it can't move.
