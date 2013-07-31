@@ -399,9 +399,12 @@ void process_command(cmd_context ctx, bool no_request)
 					type2 = "items";
 				}
 
-				strnfmt(prompt, sizeof(prompt), "%s which %s?", verb, type);
-				strnfmt(none, sizeof(none), "You have no %s you can %s.",
-						type2, verb);
+                char capitalVerb[256];
+                my_strcpy(capitalVerb, verb, sizeof(capitalVerb));
+                my_strcap(capitalVerb);
+
+                strnfmt(prompt, sizeof(prompt), "%s which %s?", capitalVerb, type);
+				strnfmt(none, sizeof(none), "You have no %s you can %s.", type2, verb);
 
 				item_tester_hook = is->filter;
 				if (!get_item(&item, prompt, none, cmd->command, is->mode))
