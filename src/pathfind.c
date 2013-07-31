@@ -696,7 +696,7 @@ static bool run_test(void)
 			monster_type *m_ptr = cave_monster_at(cave, row, col);
 			
 			/* Visible monster */
-			if (m_ptr->ml) return (TRUE);			
+			if (m_ptr->ml && !is_mimicking(m_ptr)) return (TRUE);			
 		}
 	}
 
