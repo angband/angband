@@ -39,7 +39,11 @@ void safe_setuid_drop(void);
  */
 size_t path_build(char *buf, size_t len, const char *base, const char *leaf);
 
-
+/**
+ * Return the index of the filename in a path, using PATH_SEPC. If no path
+ * separator is found, return 0.
+ */
+size_t path_filename_index( const char *path );
 
 /*** File access code ***/
 
