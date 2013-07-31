@@ -707,6 +707,8 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 	r.row = 1;
 	r.page_rows = m->count;
 
+	area.width = -(r.width + 2);
+
 	/* Hack -- no flush needed */
 	msg_flag = FALSE;
 	screen_save();
