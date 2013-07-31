@@ -42,10 +42,13 @@ static void show_obj_list(int num_obj, int num_head, char labels[50][80],
 	char tmp_val[80];
 	
 	bool in_term;
+	bool terse = FALSE;
 	
 	in_term = (mode & OLIST_WINDOW) ? TRUE : FALSE;
 
 	if (in_term) max_len = 40;
+
+	if (Term->wid < 50) terse = TRUE;
 
 	/* Calculate name offset and max name length */
 	for (i = 0; i < num_obj; i++)
@@ -61,7 +64,8 @@ static void show_obj_list(int num_obj, int num_head, char labels[50][80],
 				strnfmt(o_name[i], sizeof(o_name[i]), "(nothing)");
 		}
 		else
-			object_desc(o_name[i], sizeof(o_name[i]), o_ptr, ODESC_PREFIX | ODESC_FULL);
+			object_desc(o_name[i], sizeof(o_name[i]), o_ptr, ODESC_PREFIX | ODESC_FULL |
+				(terse ? ODESC_TERSE : 0));
 
 		/* Max length of label + object name */
 		max_len = MAX(max_len, strlen(labels[i]) + strlen(o_name[i]));

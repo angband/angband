@@ -98,7 +98,8 @@ enum {
 	ODESC_SPOIL  = 0x20,    /*!< Display regardless of player knowledge */
 	ODESC_PREFIX = 0x40,   /* */
 
-	ODESC_CAPITAL = 0x80	/*!< Capitalise object name */
+	ODESC_CAPITAL = 0x80,	/*!< Capitalise object name */
+	ODESC_TERSE = 0x100  	/*!< Make terse names */
 };
 
 
