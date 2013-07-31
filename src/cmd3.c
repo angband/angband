@@ -43,6 +43,9 @@ void do_cmd_inven(void)
 		return;
 	}
 
+	/* Hack -- show empty slots */
+	item_tester_full = TRUE;
+
 	/* Hack -- Start in "inventory" mode */
 	p_ptr->command_wrk = (USE_INVEN);
 
@@ -80,6 +83,9 @@ void do_cmd_inven(void)
 			ret = -1;
 		}
 	}
+
+	/* Hack -- hide empty slots */
+	item_tester_full = FALSE;
 }
 
 
@@ -124,7 +130,6 @@ void do_cmd_equip(void)
 			ret = -1;
 		}
 	}
-
 
 	/* Hack -- hide empty slots */
 	item_tester_full = FALSE;
