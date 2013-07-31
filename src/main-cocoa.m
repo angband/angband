@@ -22,6 +22,10 @@
 #include "init.h"
 #include "grafmode.h"
 
+#if defined(SAFE_DIRECTORY)
+#import "buildid.h"
+#endif
+
 //#define NSLog(...) ;
 
 
@@ -42,9 +46,14 @@
 #include <Carbon/Carbon.h> // For keycodes
 
 static NSSize const AngbandScaleIdentity = {1.0, 1.0};
+static NSString * const AngbandDirectoryNameLib = @"lib";
+static NSString * const AngbandDirectoryNameBase = @"Angband";
+
 static NSString * const AngbandTerminalsDefaultsKey = @"Terminals";
 static NSString * const AngbandTerminalRowsDefaultsKey = @"Rows";
 static NSString * const AngbandTerminalColumnsDefaultsKey = @"Columns";
+static NSInteger const AngbandWindowMenuItemTagBase = 1000;
+static NSInteger const AngbandCommandMenuItemTagBase = 2000;
 
 /* We can blit to a large layer or image and then scale it down during live resize, which makes resizing much faster, at the cost of some image quality during resizing */
 #ifndef USE_LIVE_RESIZE_CACHE
@@ -145,7 +154,13 @@ static NSFont *default_font;
     /* To address subpixel rendering overdraw problems, we cache all the characters and attributes we're told to draw */
     wchar_t *charOverdrawCache;
     int *attrOverdrawCache;
+
+@private
+
+    BOOL _hasSubwindowFlags;
 }
+
+@property (nonatomic, assign) BOOL hasSubwindowFlags;
 
 - (void)drawRect:(NSRect)rect inView:(NSView *)view;
 
@@ -222,6 +237,71 @@ static NSFont *default_font;
 - (AngbandView *)activeView;
 
 @end
+
+/**
+ *  Generate a mask for the subwindow flags. The mask is just a safety check to make sure that our windows show and hide as expected.
+ *  This function allows for future changes to the set of flags without needed to update it here (unless the underlying types change).
+ */
+u32b AngbandMaskForValidSubwindowFlags(void)
+{
+    int windowFlagBits = sizeof(*(op_ptr->window_flag)) * CHAR_BIT;
+    int maxBits = MIN( PW_MAX_FLAGS, windowFlagBits );
+    u32b mask = 0;
+
+    for( int i = 0; i < maxBits; i++ )
+    {
+        if( window_flag_desc[i] != NULL )
+        {
+            mask |= (1 << i);
+        }
+    }
+
+    return mask;
+}
+
+/**
+ *  Check for changes in the subwindow flags and update window visibility. This seems to be called for every user event, so we don't
+ *  want to do any unnecessary hiding or showing of windows.
+ */
+static void AngbandUpdateWindowVisibility(void)
+{
+    // because this function is called frequently, we'll make the mask static. it doesn't change between calls, since the flags themselves are hardcoded.
+    static u32b validWindowFlagsMask = 0;
+
+    if( validWindowFlagsMask == 0 )
+    {
+        validWindowFlagsMask = AngbandMaskForValidSubwindowFlags();
+    }
+
+    // loop through all of the subwindows and see if there is a change in the flags. if so, show or hide the corresponding window.
+    // we don't care about the flags themselves; we just want to know if any are set.
+    for( int i = 1; i < ANGBAND_TERM_MAX; i++ )
+    {
+        AngbandContext *angbandContext = angband_term[i]->data;
+
+        if( angbandContext == nil )
+        {
+            continue;
+        }
+
+        BOOL termHasSubwindowFlags = ((op_ptr->window_flag[i] & validWindowFlagsMask) > 0);
+
+        if( angbandContext.hasSubwindowFlags && !termHasSubwindowFlags )
+        {
+            [angbandContext->primaryWindow close];
+            angbandContext.hasSubwindowFlags = NO;
+        }
+        else if( !angbandContext.hasSubwindowFlags && termHasSubwindowFlags )
+        {
+            [angbandContext->primaryWindow orderFront: nil];
+            angbandContext.hasSubwindowFlags = YES;
+        }
+    }
+
+    // make the main window key so that user events go to the right spot
+    AngbandContext *mainWindow = angband_term[0]->data;
+    [mainWindow->primaryWindow makeKeyAndOrderFront: nil];
+}
 
 /* To indicate that a grid element contains a picture, we store 0xFFFF. */
 #define NO_OVERDRAW ((wchar_t)(0xFFFF))
@@ -316,10 +396,8 @@ static void hook_quit(const char * str);
 static void load_prefs(void);
 static void load_sounds(void);
 static void init_windows(void);
-static void initialize_file_paths(void);
 static void handle_open_when_ready(void);
 static void play_sound(int event);
-static void update_term_visibility(void);
 static BOOL check_events(int wait);
 static void cocoa_file_open_hook(const char *path, file_type ftype);
 static bool cocoa_get_file(const char *suggested_name, char *path, size_t len);
@@ -384,6 +462,8 @@ static bool initialized = FALSE;
 
 
 @implementation AngbandContext
+
+@synthesize hasSubwindowFlags=_hasSubwindowFlags;
 
 - (NSFont *)selectionFont
 {
@@ -767,6 +847,64 @@ static int compare_advances(const void *ap, const void *bp)
     [super dealloc];
 }
 
+
+
+#pragma mark -
+#pragma mark Directories and Paths Setup
+
+/**
+ *  Return the path for Angband's lib directory and bail if it isn't found. The lib directory should be in the bundle's resources directory, since it's copied when built.
+ */
++ (NSString *)libDirectoryPath
+{
+    NSString *bundleLibPath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent: AngbandDirectoryNameLib];
+    BOOL isDirectory = NO;
+    BOOL libExists = [[NSFileManager defaultManager] fileExistsAtPath: bundleLibPath isDirectory: &isDirectory];
+
+    if( !libExists || !isDirectory )
+    {
+        NSLog( @"[%@ %@]: can't find %@/ in bundle: isDirectory: %d libExists: %d", NSStringFromClass( [self class] ), NSStringFromSelector( _cmd ), AngbandDirectoryNameLib, isDirectory, libExists );
+        NSRunAlertPanel( @"Missing Resources", @"Angband was unable to find required resources and must quit. Please report a bug on the Angband forums.", @"Quit", nil, nil );
+        exit( 0 );
+    }
+
+    // angband requires the trailing slash for the directory path
+    return [bundleLibPath stringByAppendingString: @"/"];
+}
+
+/**
+ *  Return the path for the directory where Angband should look for its standard user file tree.
+ */
++ (NSString *)angbandDocumentsPath
+{
+    // angband requires the trailing slash, so we'll just add it here; NSString won't care about it when we use the base path for other things
+    NSString *documents = [NSSearchPathForDirectoriesInDomains( NSDocumentDirectory, NSUserDomainMask, YES ) lastObject];
+
+#if defined(SAFE_DIRECTORY)
+    NSString *versionedDirectory = [NSString stringWithFormat: @"%@-%s", AngbandDirectoryNameBase, VERSION_STRING];
+    return [[documents stringByAppendingPathComponent: versionedDirectory] stringByAppendingString: @"/"];
+#else
+    return [[documents stringByAppendingPathComponent: AngbandDirectoryNameBase] stringByAppendingString: @"/"];
+#endif
+}
+
+/**
+ *  Give Angband the base paths that should be used for the various directories it needs. It will create any needed directories.
+ */
++ (void)prepareFilePathsAndDirectories
+{
+    char libpath[PATH_MAX + 1] = "\0";
+    char basepath[PATH_MAX + 1] = "\0";
+
+    [[self libDirectoryPath] getFileSystemRepresentation: libpath maxLength: sizeof(libpath)];
+    [[self angbandDocumentsPath] getFileSystemRepresentation: basepath maxLength: sizeof(basepath)];
+
+    init_file_paths( libpath, libpath, basepath );
+    create_needed_dirs();
+}
+
+#pragma mark -
+
 /* Entry point for initializing Angband */
 + (void)beginGame
 {
@@ -786,7 +924,7 @@ static int compare_advances(const void *ap, const void *bp)
     get_file = cocoa_get_file;
 
     // initialize file paths
-    initialize_file_paths();
+    [self prepareFilePathsAndDirectories];
 
     // load preferences
     load_prefs();
@@ -950,21 +1088,30 @@ static NSMenuItem *superitem(NSMenuItem *self)
         CGFloat height = self->rows * tileSize.height + borderSize.height * 2.0;
         NSRect contentRect = NSMakeRect( 0.0, 0.0, width, height );
 
-        primaryWindow = [[NSWindow alloc] initWithContentRect:contentRect styleMask:NSTitledWindowMask | NSResizableWindowMask | NSMiniaturizableWindowMask backing:NSBackingStoreBuffered defer:YES];
-        
+        NSUInteger styleMask = NSTitledWindowMask | NSResizableWindowMask | NSMiniaturizableWindowMask;
+
+        // make every window other than the main window closable
+        if( angband_term[0]->data != self )
+        {
+            styleMask |= NSClosableWindowMask;
+        }
+
+        primaryWindow = [[NSWindow alloc] initWithContentRect:contentRect styleMask: styleMask backing:NSBackingStoreBuffered defer:YES];
+
         /* Not to be released when closed */
         [primaryWindow setReleasedWhenClosed:NO];
-        
+        [primaryWindow setExcludedFromWindowsMenu: YES]; // we're using custom window menu handling
+
         /* Make the view */
         AngbandView *angbandView = [[AngbandView alloc] initWithFrame:contentRect];
         [angbandView setAngbandContext:self];
         [angbandViews addObject:angbandView];
         [primaryWindow setContentView:angbandView];
         [angbandView release];
-        
+
         /* We are its delegate */
         [primaryWindow setDelegate:self];
-        
+
         /* Update our image, since this is probably the first angband view we've gotten. */
         [self updateImage];
     }
@@ -1126,10 +1273,52 @@ static NSMenuItem *superitem(NSMenuItem *self)
 - (void)windowDidBecomeMain:(NSNotification *)notification
 {
     NSWindow *window = [notification object];
-    NSFontPanel *panel = [NSFontPanel sharedFontPanel];
 
-    if ([panel isVisible])
-        [panel setPanelFont:[[[window contentView] angbandContext] selectionFont] isMultiple:NO];
+    if( window != self->primaryWindow )
+    {
+        return;
+    }
+
+    int termIndex = 0;
+
+    for( termIndex = 0; termIndex < ANGBAND_TERM_MAX; termIndex++ )
+    {
+        if( angband_term[termIndex] == self->terminal )
+        {
+            break;
+        }
+    }
+
+    NSMenuItem *item = [[[NSApplication sharedApplication] windowsMenu] itemWithTag: AngbandWindowMenuItemTagBase + termIndex];
+    [item setState: NSOnState];
+
+    if( [[NSFontPanel sharedFontPanel] isVisible] )
+    {
+        [[NSFontPanel sharedFontPanel] setPanelFont: [self selectionFont] isMultiple: NO];
+    }
+}
+
+- (void)windowDidResignMain: (NSNotification *)notification
+{
+    NSWindow *window = [notification object];
+
+    if( window != self->primaryWindow )
+    {
+        return;
+    }
+
+    int termIndex = 0;
+
+    for( termIndex = 0; termIndex < ANGBAND_TERM_MAX; termIndex++ )
+    {
+        if( angband_term[termIndex] == self->terminal )
+        {
+            break;
+        }
+    }
+
+    NSMenuItem *item = [[[NSApplication sharedApplication] windowsMenu] itemWithTag: AngbandWindowMenuItemTagBase + termIndex];
+    [item setState: NSOffState];
 }
 
 @end
@@ -1521,9 +1710,9 @@ static errr Term_xtra_cocoa(int n, int v)
             /* Process random events */
         case TERM_XTRA_BORED:
         {
-            /* Update our windows so that we reflect what's in p_ptr */
-            (void)update_term_visibility();
-            
+            // show or hide cocoa windows based on the subwindow flags set by the user
+            AngbandUpdateWindowVisibility();
+
             /* Process an event */
             (void)check_events(CHECK_EVENTS_NO_WAIT);
             
@@ -2618,51 +2807,6 @@ static BOOL check_events(int wait)
     
 }
 
-/* Update window visibility to match what's in p_ptr, so we show or hide terms that have or do not have contents respectively. */
-static void update_term_visibility(void)
-{
-    if (! op_ptr) return; //paranoia
-    
-    /* Make a mask of window flags that matter */
-    size_t i;
-    u32b significantWindowFlagMask = 0;
-    for (i=0; i < CHAR_BIT * sizeof significantWindowFlagMask; i++) {
-        if (window_flag_desc[i])
-        {
-            significantWindowFlagMask |= (1 << i);
-        }
-    }
-    
-    for (i=0; i < ANGBAND_TERM_MAX; i++) {
-        /* Now show or hide */
-        term *t = angband_term[i];
-        if (t)
-        {
-            AngbandContext *angbandContext = t->data;
-            
-            /* Check if we are visible */
-            BOOL isVisible = [angbandContext isOrderedIn];
-            
-            /* Ensure the first term is always visible. The remaining terms depend on the op_ptr. */
-            BOOL shouldBeVisible = (i == 0 || (op_ptr->window_flag[i] & significantWindowFlagMask));
-            
-            if (isVisible && ! shouldBeVisible)
-            {
-                /* Make it not visible */
-                [angbandContext orderOut];
-            } else if (! isVisible && shouldBeVisible)
-            {
-                /* Make it visible */
-                [angbandContext orderFront];
-            }
-        }
-        
-    }
-
-    /* Ensure that the main window is frontmost */
-    [(id)angband_term[0]->data orderFront];
-}
-
 /*
  * Hook to tell the user something important
  */
@@ -2722,66 +2866,27 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
 
 /*** Main program ***/
 
-
-/* Set up file paths, including the lib directory */
-static void initialize_file_paths(void)
-{
-    NSFileManager *fm = [NSFileManager defaultManager];
-    
-    char libpath[PATH_MAX+1] = {0}, basepath[PATH_MAX+1] = {0};
-    
-    /* Get the path to the lib directory in the bundle */
-    NSString *libString = [[[NSBundle bundleForClass:[AngbandView class]] resourcePath] stringByAppendingPathComponent:@"/lib"];
-    BOOL isDir = NO;
-    if (! [fm fileExistsAtPath:libString isDirectory:&isDir] || ! isDir)
-    {
-        NSRunAlertPanel(@"Unable to find lib directory", @"Unable to find the lib directory at path %@.  Angband has to quit.", @"Nuts", nil, nil, libString);
-        exit(0);
-    }
-    
-    /* Prepare the paths. We need to append the / at the end. */
-    [libString getFileSystemRepresentation:libpath maxLength:sizeof libpath];
-    strlcat(libpath, "/", sizeof libpath);
-    
-    /* Get the path to the Angband directory in ~/Documents */
-    NSString *angbandBase = get_data_directory();
-    [angbandBase getFileSystemRepresentation:basepath maxLength:sizeof basepath];
-    strlcat(basepath, "/", sizeof basepath);
-    
-    /* Create the save and config directories if necessary */
-    NSString *config = [angbandBase stringByAppendingPathComponent:@"/config/"];
-    NSString *save = [angbandBase stringByAppendingPathComponent:@"/save/"];
-    NSString *user = [angbandBase stringByAppendingPathComponent:@"/user/"];
-    NSError *error = nil;
-    BOOL success = YES;
-    success = success && [fm createDirectoryAtPath:config withIntermediateDirectories:YES attributes:nil error:&error];
-    success = success && [fm createDirectoryAtPath:save withIntermediateDirectories:YES attributes:nil error:&error];
-    success = success && [fm createDirectoryAtPath:user withIntermediateDirectories:YES attributes:nil error:&error];
-    if (! success)
-    {
-        NSRunAlertPanel(@"Unable to create directory", @"Unable to create directory in %@ (error was %@).  Angband has to quit.", @"Nuts", nil, nil, angbandBase, error);
-        [[NSApplication sharedApplication] presentError:error];
-        exit(0);
-    }
-    
-    
-    //void init_file_paths(const char *configpath, const char *libpath, const char *datapath)
-    init_file_paths(libpath, libpath, basepath);
-    create_needed_dirs();
-    
-}
-
 @interface AngbandAppDelegate : NSObject {
     IBOutlet NSMenu *terminalsMenu;
+    NSMenu *_commandMenu;
+    NSDictionary *_commandMenuTagMap;
 }
+
+@property (nonatomic, retain) IBOutlet NSMenu *commandMenu;
+@property (nonatomic, retain) NSDictionary *commandMenuTagMap;
 
 - (IBAction)newGame:sender;
 - (IBAction)editFont:sender;
 - (IBAction)openGame:sender;
 
+- (IBAction)selectWindow: (id)sender;
+
 @end
 
 @implementation AngbandAppDelegate
+
+@synthesize commandMenu=_commandMenu;
+@synthesize commandMenuTagMap=_commandMenuTagMap;
 
 - (IBAction)newGame:sender
 {
@@ -2909,6 +3014,24 @@ static void initialize_file_paths(void)
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
     SEL sel = [menuItem action];
+    NSInteger tag = [menuItem tag];
+
+    if( tag >= AngbandWindowMenuItemTagBase && tag < AngbandWindowMenuItemTagBase + ANGBAND_TERM_MAX )
+    {
+        if( tag == AngbandWindowMenuItemTagBase )
+        {
+            // the main window should always be available and visible
+            return YES;
+        }
+        else
+        {
+            NSInteger subwindowNumber = tag - AngbandWindowMenuItemTagBase;
+            return (op_ptr->window_flag[subwindowNumber] > 0);
+        }
+
+        return NO;
+    }
+
     if (sel == @selector(newGame:))
     {
         return ! game_in_progress;
@@ -2923,16 +3046,145 @@ static void initialize_file_paths(void)
     }
     else if (sel == @selector(setRefreshRate:) && [superitem(menuItem) tag] == 150)
     {
-        [menuItem setState:[menuItem tag] == frames_per_second];
+        NSInteger fps = [[NSUserDefaults standardUserDefaults] integerForKey: @"FramesPerSecond"];
+        [menuItem setState: ([menuItem tag] == fps)];
         return YES;
+    }
+    else if( sel == @selector(setGraphicsMode:) )
+    {
+        NSInteger requestedGraphicsMode = [[NSUserDefaults standardUserDefaults] integerForKey: @"GraphicsID"];
+        [menuItem setState: (tag == requestedGraphicsMode)];
+        return YES;
+    }
+    else if( sel == @selector(sendAngbandCommand:) )
+    {
+        // we only want to be able to send commands during an active game
+        return !!game_in_progress;
     }
     else return YES;
 }
+
 
 - (IBAction)setRefreshRate:(NSMenuItem *)menuItem
 {
     frames_per_second = [menuItem tag];
     [[NSUserDefaults angbandDefaults] setInteger:frames_per_second forKey:@"FramesPerSecond"];
+}
+
+- (IBAction)selectWindow: (id)sender
+{
+    NSInteger subwindowNumber = [(NSMenuItem *)sender tag] - AngbandWindowMenuItemTagBase;
+    AngbandContext *context = angband_term[subwindowNumber]->data;
+    [context->primaryWindow makeKeyAndOrderFront: self];
+}
+
+- (void)prepareWindowsMenu
+{
+    // get the window menu with default items and add a separator and item for the main window
+    NSMenu *windowsMenu = [[NSApplication sharedApplication] windowsMenu];
+    [windowsMenu addItem: [NSMenuItem separatorItem]];
+
+    NSMenuItem *angbandItem = [[NSMenuItem alloc] initWithTitle: @"Angband" action: @selector(selectWindow:) keyEquivalent: @"0"];
+    [angbandItem setTarget: self];
+    [angbandItem setTag: AngbandWindowMenuItemTagBase];
+    [windowsMenu addItem: angbandItem];
+    [angbandItem release];
+
+    // add items for the additional term windows
+    for( NSInteger i = 1; i < ANGBAND_TERM_MAX; i++ )
+    {
+        NSString *title = [NSString stringWithFormat: @"Term %ld", (long)i];
+        NSMenuItem *windowItem = [[NSMenuItem alloc] initWithTitle: title action: @selector(selectWindow:) keyEquivalent: @""];
+        [windowItem setTarget: self];
+        [windowItem setTag: AngbandWindowMenuItemTagBase + i];
+        [windowsMenu addItem: windowItem];
+        [windowItem release];
+    }
+}
+
+/**
+ *  Send a command to Angband via a menu item. This places the appropriate key down events into the queue
+ *  so that it seems like the user pressed them (instead of trying to use the term directly).
+ */
+- (void)sendAngbandCommand: (id)sender
+{
+    NSMenuItem *menuItem = (NSMenuItem *)sender;
+    NSString *command = [self.commandMenuTagMap objectForKey: @([menuItem tag])];
+    NSInteger windowNumber = [((AngbandContext *)angband_term[0]->data)->primaryWindow windowNumber];
+
+    // send a \ to bypass keymaps
+    NSEvent *escape = [NSEvent keyEventWithType: NSKeyDown
+                                       location: NSZeroPoint
+                                  modifierFlags: 0
+                                      timestamp: 0.0
+                                   windowNumber: windowNumber
+                                        context: nil
+                                     characters: @"\\"
+                    charactersIgnoringModifiers: @"\\"
+                                      isARepeat: NO
+                                        keyCode: 0];
+    [[NSApplication sharedApplication] postEvent: escape atStart: NO];
+
+    // send the actual command (from the original command set)
+    NSEvent *keyDown = [NSEvent keyEventWithType: NSKeyDown
+                                        location: NSZeroPoint
+                                   modifierFlags: 0
+                                       timestamp: 0.0
+                                    windowNumber: windowNumber
+                                         context: nil
+                                      characters: command
+                     charactersIgnoringModifiers: command
+                                       isARepeat: NO
+                                         keyCode: 0];
+    [[NSApplication sharedApplication] postEvent: keyDown atStart: NO];
+}
+
+/**
+ *  Set up the command menu dynamically, based on CommandMenu.plist.
+ */
+- (void)prepareCommandMenu
+{
+    NSString *commandMenuPath = [[NSBundle mainBundle] pathForResource: @"CommandMenu" ofType: @"plist"];
+    NSArray *commandMenuItems = [[NSArray alloc] initWithContentsOfFile: commandMenuPath];
+    NSMutableDictionary *angbandCommands = [[NSMutableDictionary alloc] init];
+    NSInteger tagOffset = 0;
+
+    for( NSDictionary *item in commandMenuItems )
+    {
+        BOOL useShiftModifier = [[item valueForKey: @"ShiftModifier"] boolValue];
+        BOOL useOptionModifier = [[item valueForKey: @"OptionModifier"] boolValue];
+        NSUInteger keyModifiers = NSCommandKeyMask;
+        keyModifiers |= (useShiftModifier) ? NSShiftKeyMask : 0;
+        keyModifiers |= (useOptionModifier) ? NSAlternateKeyMask : 0;
+
+        NSString *title = [item valueForKey: @"Title"];
+        NSString *key = [item valueForKey: @"KeyEquivalent"];
+        NSMenuItem *menuItem = [[NSMenuItem alloc] initWithTitle: title action: @selector(sendAngbandCommand:) keyEquivalent: key];
+        [menuItem setTarget: self];
+        [menuItem setKeyEquivalentModifierMask: keyModifiers];
+        [menuItem setTag: AngbandCommandMenuItemTagBase + tagOffset];
+        [self.commandMenu addItem: menuItem];
+        [menuItem release];
+
+        NSString *angbandCommand = [item valueForKey: @"AngbandCommand"];
+        [angbandCommands setObject: angbandCommand forKey: @([menuItem tag])];
+        tagOffset++;
+    }
+
+    [commandMenuItems release];
+
+    NSDictionary *safeCommands = [[NSDictionary alloc] initWithDictionary: angbandCommands];
+    self.commandMenuTagMap = safeCommands;
+    [safeCommands release];
+    [angbandCommands release];
+}
+
+- (void)awakeFromNib
+{
+    [super awakeFromNib];
+
+    [self prepareWindowsMenu];
+    [self prepareCommandMenu];
 }
 
 - (void)applicationDidFinishLaunching:sender

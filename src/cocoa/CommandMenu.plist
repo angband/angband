@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<array>
+	<dict>
+		<key>Title</key>
+		<string>Knowledge</string>
+		<key>KeyEquivalent</key>
+		<string>k</string>
+		<key>ShiftModifier</key>
+		<false/>
+		<key>OptionModifier</key>
+		<false/>
+		<key>AngbandCommand</key>
+		<string>~</string>
+	</dict>
+	<dict>
+		<key>Title</key>
+		<string>List Monsters</string>
+		<key>KeyEquivalent</key>
+		<string>l</string>
+		<key>ShiftModifier</key>
+		<false/>
+		<key>OptionModifier</key>
+		<false/>
+		<key>AngbandCommand</key>
+		<string>[</string>
+	</dict>
+	<dict>
+		<key>Title</key>
+		<string>List Items</string>
+		<key>KeyEquivalent</key>
+		<string>l</string>
+		<key>ShiftModifier</key>
+		<true/>
+		<key>OptionModifier</key>
+		<false/>
+		<key>AngbandCommand</key>
+		<string>]</string>
+	</dict>
+	<dict>
+		<key>Title</key>
+		<string>Inscribe</string>
+		<key>KeyEquivalent</key>
+		<string>i</string>
+		<key>ShiftModifier</key>
+		<false/>
+		<key>OptionModifier</key>
+		<false/>
+		<key>AngbandCommand</key>
+		<string>{</string>
+	</dict>
+	<dict>
+		<key>Title</key>
+		<string>Uninscribe</string>
+		<key>KeyEquivalent</key>
+		<string>i</string>
+		<key>ShiftModifier</key>
+		<true/>
+		<key>OptionModifier</key>
+		<false/>
+		<key>AngbandCommand</key>
+		<string>}</string>
+	</dict>
+</array>
+</plist>
