@@ -106,7 +106,7 @@ G:&:w
 # Remove post 3.5
 N:1:& Iron Spike~
 G:~:W
-I:5:0
+I:39:0
 W:1:0:2:1
 M:100:6d7
 P:0:1d1:0:0:0
@@ -3518,70 +3518,6 @@ G:~:s
 I:7:0
 W:0:0:250:0
 #A:100:75 to 100
-
-
-
-##### Junk #####
-
-N:490:& Empty Bottle~
-G:!:w
-I:2:1
-W:0:0:2:0
-F:EASY_KNOW
-
-N:491:& Shard~ of Pottery
-G:~:r
-I:3:3
-W:0:0:5:0
-F:EASY_KNOW
-
-N:492:& Broken Stick~
-G:~:r
-I:3:6
-W:0:0:3:0
-F:EASY_KNOW
-
-N:493:& Broken Skull~
-G:~:w
-I:1:1
-W:0:0:2:0
-F:EASY_KNOW
-
-N:494:& Broken Bone~
-G:~:w
-I:1:2
-W:0:0:2:0
-F:EASY_KNOW
-
-N:495:& Canine Skeleton~
-G:~:w
-I:1:4
-W:1:0:10:0
-F:EASY_KNOW
-
-N:496:& Rodent Skeleton~
-G:~:w
-I:1:3
-W:1:0:10:0
-F:EASY_KNOW
-
-N:497:& Human Skeleton~
-G:~:w
-I:1:8
-W:5:0:60:0
-F:EASY_KNOW
-
-N:498:& Dwarf Skeleton~
-G:~:w
-I:1:7
-W:5:0:50:0
-F:EASY_KNOW
-
-N:499:& Elf Skeleton~
-G:~:w
-I:1:6
-W:5:0:40:0
-F:EASY_KNOW
 
 
 
