@@ -392,6 +392,7 @@ void process_command(cmd_context ctx, bool no_request)
 				const char *type2 = is->type;
 
 				char prompt[1024], none[1024];
+				char capitalVerb[256];
 
 				/* Pluralise correctly or things look weird */
 				if (!type) {
@@ -399,11 +400,10 @@ void process_command(cmd_context ctx, bool no_request)
 					type2 = "items";
 				}
 
-                char capitalVerb[256];
-                my_strcpy(capitalVerb, verb, sizeof(capitalVerb));
-                my_strcap(capitalVerb);
+				my_strcpy(capitalVerb, verb, sizeof(capitalVerb));
+				my_strcap(capitalVerb);
 
-                strnfmt(prompt, sizeof(prompt), "%s which %s?", capitalVerb, type);
+				strnfmt(prompt, sizeof(prompt), "%s which %s?", capitalVerb, type);
 				strnfmt(none, sizeof(none), "You have no %s you can %s.", type2, verb);
 
 				item_tester_hook = is->filter;
