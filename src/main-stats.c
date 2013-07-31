@@ -1756,7 +1756,7 @@ static errr term_wipe_stats(int x, int y, int n) {
 	return 0;
 }
 
-static errr term_text_stats(int x, int y, int n, byte a, const wchar_t *s) {
+static errr term_text_stats(int x, int y, int n, int a, const wchar_t *s) {
 	return 0;
 }
 
