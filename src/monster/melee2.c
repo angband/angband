@@ -3196,7 +3196,7 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 								ODESC_PREFIX | ODESC_FULL);
 
 					/* Get the monster name */
-					monster_desc(m1_name, sizeof(m1_name), m_ptr, MDESC_IND1);
+					monster_desc(m1_name, sizeof(m1_name), m_ptr, MDESC_IND1 | MDESC_CAPITAL);
 
 					/* React to objects that hurt the monster */
 					react_to_slay(obj_flags, mon_flags);

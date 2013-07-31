@@ -157,7 +157,7 @@ void object_notice_slays(object_type *o_ptr, const bitflag mask[OF_SIZE])
 			learned = object_notice_flag(o_ptr, s_ptr->object_flag);
 			if (EASY_LEARN && learned) {
 				object_notice_ego(o_ptr);
-				object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
+				object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE | ODESC_SINGULAR);
 				msg("Your %s %s!", o_name, s_ptr->active_verb);
 			}
 		}
