@@ -1095,7 +1095,7 @@ bool process_pref_file(const char *name, bool quiet, bool user)
 		if (!quiet)
 			msg("Cannot open '%s'.", buf);
 
-        e = PARSE_ERROR_INTERNAL; // signal failure to callers
+		e = PARSE_ERROR_INTERNAL; // signal failure to callers
 	}
 	else
 	{
