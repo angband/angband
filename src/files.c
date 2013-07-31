@@ -1762,7 +1762,7 @@ static void write_html_escape_char(ang_file *fp, wchar_t c)
 
 
 /* Take an html screenshot */
-void html_screenshot(const char *name, int mode)
+void html_screenshot(const char *path, int mode)
 {
 	int y, x;
 	int wid, hgt;
@@ -1782,16 +1782,13 @@ void html_screenshot(const char *name, int mode)
 	const char *close_color_fmt = mode ==  0 ? "</font>" : "[/COLOR]";
 
 	ang_file *fp;
-	char buf[1024];
 
-
-	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, name);
-	fp = file_open(buf, MODE_WRITE, FTYPE_TEXT);
+	fp = file_open(path, MODE_WRITE, FTYPE_TEXT);
 
 	/* Oops */
 	if (!fp)
 	{
-		plog_fmt("Cannot write the '%s' file!", buf);
+		plog_fmt("Cannot write the '%s' file!", path);
 		return;
 	}
 
@@ -1802,7 +1799,7 @@ void html_screenshot(const char *name, int mode)
 	{
 		file_putf(fp, "<!DOCTYPE html><html><head>\n");
 		file_putf(fp, "  <meta='generator' content='%s'>\n", buildid);
-		file_putf(fp, "  <title>%s</title>\n", name);
+		file_putf(fp, "  <title>%s</title>\n", path);
 		file_putf(fp, "</head>\n\n");
 		file_putf(fp, "<body style='color: #fff; background: #000;'>\n");
 		file_putf(fp, "<pre>\n");

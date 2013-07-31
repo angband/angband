@@ -830,17 +830,12 @@ static void do_cmd_save_screen_html(int mode)
 	dump_func dump_visuals [] = 
 		{ dump_monsters, dump_features, dump_objects, dump_flavors, dump_colors };
 
-
-	if (mode == 0)
-		my_strcpy(tmp_val, "dump.html", sizeof(tmp_val));
-	else
-		my_strcpy(tmp_val, "dump.txt", sizeof(tmp_val));
-
 	/* Ask for a file */
-	if (!get_string("File: ", tmp_val, sizeof(tmp_val))) return;
+	if (!get_file(mode == 0 ? "dump.html" : "dump.txt",
+			tmp_val, sizeof(tmp_val))) return;
 
 	/* Save current preferences */
-	path_build(file_name, 1024, ANGBAND_DIR_USER, "dump.prf");
+	path_build(file_name, sizeof(file_name), ANGBAND_DIR_USER, "dump.prf");
 	fff = file_open(file_name, MODE_WRITE, (mode == 0 ? FTYPE_HTML : FTYPE_TEXT));
 
 	/* Check for failure */
