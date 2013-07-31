@@ -1,21 +1,10 @@
 Angband 3.5-dev
 ===============
 
-Welcome to the changelog for Angband 3.5. This file tracks the
-changes made since 3.4.0. References are to tickets at trac.rephial.org, or
-(if no ticket exists) to git commit IDs.
+Welcome to the changelog for Angband 3.5. This file tracks the changes made since 3.4.0. References are to tickets at tracrephial.org, or (if no ticket exists) to git commit IDs.
 
-Changes under test
-==================
-These are changes that we'd like feedback on and we're not 100% sure about:
+Please note that we don't guarantee that living characters will move gracefully between versions - it might work or it might not!  Ideally, you should finish off your character in 3.4.1 before moving over.
 
- * Replace rings of rFire & rCold with one ring, rFire&Cold
- * Move =Flames/Ice/Lightning/Acid higher in the dungeon
- * Radically improve Slow Digestion (you nearly never need to eat with it).
- * Tweak mushrooms:
-  - fast recovery heals some HP, clear mind heals 10SP.
-  - substantially increase duration of telepathy from ,SecondSight and rConf from ,ClearMind.
-  - Terror now gives you +10 speed
 
 Bugs fixed
 ==========
@@ -42,9 +31,25 @@ Bugs fixed
  * Fix the birth menu starting race and class on the last entry instead of the first.
  * Save HP warning and delay factor settings to options pref file.
  * Allow pStun to be generated on non-body armour randarts.
+ * Fix up the logic of teleport level so it's always correct.
+ * Show quiver slots in inventory again (closes #1761)
+ * Fix monster tile mappings in the Adam Bolt tileset by nicking them all from PWMAngband (many thanks!).  Closes #905.
+ * Stairs never appear in walls after killing Morgoth (fixes #874).
+ * Allow >255 character wide/high screens.  Closes #427.
+ * The game will first look for a user pref file matching the character name (as it currently does). If that fails, it will try to find one matching the savefile name. Should address parts of #671 and #758.  (Thanks Ben Semmler)
+ * A load of grammar fixes (thanks Ben Semmbler).  Fixes #1738, #1732, #1731.
+ * Clean up duplicate and conflicting monster flags (thanks Ben Semmler).  Fixes #1601, #1692.
+ * Change description for deep descent from two levels down to five levels down.
+ * Fix cavern redraw bug, update a lot of code to use cave->(width|height) instead of DUNGEON_(HGT|WID)  (fixes #1751).
+
 
 OS X:
- * You can now resize the term windows!  Yay.  Thanks Ben Semmler.
+ * Include Ben Semmler's excellent work on the Mac port:
+   - Term windows can now be resized.
+   - Add a command menu to get around issues with non-US keyboards. #880, #1460
+   - Create a safe install target for development versions. #506
+   - Change some makefile and Info.plist things to clean up version strings. #1701
+   - Make windows closeable based on subwindow flags. #1664
  * Fix for #1709: Use isMainWindow instead of isKeyWindow for detecting front-most window in main-cocoa, and don't try to change font for non-Angband windows. Also update the font selection panel when windows become main.
  * Fix for #1695: In the Cocoa port, Cmd-Q now does nothing when inkey_flag is false, e .g. when the inventory menu is up. This behavior is now consistent with the Windows port.
  * Finished the fix to #1669: remove call to displayIfNeeded from Cocoa TERM_XTRA_FRESH handler. (thanks to mtadd)
@@ -64,12 +69,20 @@ Gameplay changes
  * Give thematic spell-book drops to monsters.
  * Make town spellbooks available earlier in the dungeon (at dlev1 instead of dlev5).
  * Change monster elemental attacks so that they do some part of their damage using elemental damage and some of it using physical damage. This means that the damage a monster attack gets calculated twice - once for if it was pure damage, one if it was elemental damage. Whichever of the two is higher is the amount of damage dealt.  This meant that immunity won't reduce damage ridiculously low.
+ * Make Purifications and Healing a bit more of a find for Paladins by making CSW and CMW slightly better than the earlier versions instead of worse.  Closes #888.
  * Give the player a bonus to damage absorption for physical elemental attacks ( 085574b82d649)
  * Some monster attacks no longer do physical damage (e.g. touch, spit, etc.) - they only do elemental damage. (3fc86a0f84db)
  * Remove birth_ai_smart (broken). Replace with birth_force_descend, which is like 'ironman lite' - you can only take down stairs. You can still recall but down stairs from the town take you to your deepest level + 1.
  * Make the damage monsters deal with each attack and their AC visible to the player after one attack/one hit.
  * Remove Charisma and tone down gold drops to compensate.
  * Remove Iron Spikes, jammed doors, and player door bashing.
+ * Replace rings of rFire & rCold with one ring, rFire&Cold
+ * Move =Flames/Ice/Lightning/Acid higher in the dungeon
+ * Radically improve Slow Digestion (you nearly never need to eat with it).
+ * Tweak mushrooms:
+  - fast recovery heals some HP, clear mind heals 10SP.
+  - substantially increase duration of telepathy from ,SecondSight and rConf from ,ClearMind.
+  - Terror now gives you +10 speed
  * All classes now start with a dagger (except priests) and less food/fewer torches.
  * Split out start_kit option from no_selling.
  * More option removals: maximise, birth_ai_smell, birth_ai_packs and easy_open are now permanently on. birth_ai_cheat is permanently off. Most disturb options have been removed, leaving only the one that people seem to actually change.
@@ -86,11 +99,10 @@ Gameplay changes
  * Teleport object power now triggers 2x as often.
  * No rings are now native <DL10
  * All DSM breath weapons do at least 150 damage
- * Make the game calculate distances between grids more accurately (closes #1118)
 
  Level generation changes:
  * Add Nomad's new rooms, which make dungeons feel a lot more interesting.
- * Add pac-man vault (thanks to Nomad? XXX)
+ * Add pac-man vault
  * Rebalance frequencies and levels for different room types
  * Increase floor drops in caverns and labyrinths
  * Allow two nests or pits each level
@@ -100,6 +112,7 @@ Gameplay changes
 User interface
 ==============
  * Make the default macro for 'swap weapon' be assigned to 'x' instead of 'X' for the Angband keyset. Closes #860.
+ * Make inventory listings terser in the term window if there's not much room.  (Closes #121)
  * Make it so skills, hitdie and exp modifier when selecting a class on the birth screen are shown with racial adjustments, a la stat display. Fixes #1705 (thanks danial.santos).
  * Improved error message for no available new spells to gain. Thanks to hboetes for pointing it out.
  * Redesign character sheet, changing the fighting and shooting skills scores into numbers comparable to to-hit scores, and rearranging all combat info to be together in the centre of the screen. Also improve spacing.
