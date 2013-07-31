@@ -225,7 +225,7 @@
  * that the contents of "cp" are null-terminated.  This hook is optional,
  * unless the setting of the "always_pict" or "higher_pict" flags make
  * it required.  Note that recently, this hook was changed from taking
- * a byte "a" and a char "c" to taking a length "n", an array of bytes
+ * a int "a" and a char "c" to taking a length "n", an array of ints
  * "ap" and an array of chars "cp".  Old implementations of this hook
  * should now iterate over all "n" attr/char pairs.
  * The two new arrays "tap" and "tcp" can contain the attr/char pairs
@@ -2290,8 +2290,8 @@ errr Term_resize(int w, int h)
 
 	int wid, hgt;
 
-	byte *hold_x1;
-	byte *hold_x2;
+	int *hold_x1;
+	int *hold_x2;
 
 	term_win *hold_old;
 	term_win *hold_scr;
@@ -2335,8 +2335,8 @@ errr Term_resize(int w, int h)
 	hold_tmp = Term->tmp;
 
 	/* Create new scanners */
-	Term->x1 = C_ZNEW(h, byte);
-	Term->x2 = C_ZNEW(h, byte);
+	Term->x1 = C_ZNEW(h, int);
+	Term->x2 = C_ZNEW(h, int);
 
 	/* Create new window */
 	Term->old = ZNEW(term_win);
@@ -2597,8 +2597,8 @@ errr term_init(term *t, int w, int h, int k)
 	t->hgt = h;
 
 	/* Allocate change arrays */
-	t->x1 = C_ZNEW(h, byte);
-	t->x2 = C_ZNEW(h, byte);
+	t->x1 = C_ZNEW(h, int);
+	t->x2 = C_ZNEW(h, int);
 
 
 	/* Allocate "displayed" */

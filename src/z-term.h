@@ -39,7 +39,7 @@ typedef struct term_win term_win;
 struct term_win
 {
 	bool cu, cv;
-	byte cx, cy;
+	int cx, cy;
 
 	int **a;
 	wchar_t **c;
@@ -194,18 +194,18 @@ struct term
 	u16b key_xtra;
 	u16b key_size;
 
-	byte wid;
-	byte hgt;
+	int wid;
+	int hgt;
 
-	byte y1;
-	byte y2;
+	int y1;
+	int y2;
 
-	byte *x1;
-	byte *x2;
+	int *x1;
+	int *x2;
 
 	/* Offsets used by the map subwindows */
-	byte offset_x;
-	byte offset_y;
+	int offset_x;
+	int offset_y;
 
 	term_win *old;
 	term_win *scr;

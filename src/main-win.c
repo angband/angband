@@ -2307,7 +2307,7 @@ static errr Term_pict_win(int x, int y, int n, const int *ap, const wchar_t *cp,
 
 	/* Draw attr/char pairs */
 	for (i = n-1; i >= 0; i--, x2 -= w2) {
-		byte a = ap[i];
+		int a = ap[i];
 		wchar_t c = cp[i];
 
 		/* Extract picture */
@@ -2494,7 +2494,7 @@ static errr Term_pict_win_alpha(int x, int y, int n, const int *ap, const wchar_
 	/* Draw attr/char pairs */
 	for (i = n-1; i >= 0; i--, x2 -= w2)
 	{
-		byte a = ap[i];
+		int a = ap[i];
 		wchar_t c = cp[i];
 
 		/* Extract picture */

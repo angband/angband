@@ -1915,10 +1915,10 @@ static errr Term_pict_cocoa(int x, int y, int n, const int *ap,
     for (i = 0; i < n; i++)
     {
         
-        byte a = *ap++;
+        int a = *ap++;
         wchar_t c = *cp++;
         
-        byte ta = *tap++;
+        int ta = *tap++;
         wchar_t tc = *tcp++;
         
         
