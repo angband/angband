@@ -361,6 +361,8 @@ static void flush_monster_messages(bool delay)
 
 	/* Show every message */
 	for (i = 0; i < size_mon_msg; i++) {
+		int type = MSG_GENERIC;
+
 		if (mon_msg[i].delay != delay) continue;
    
 		/* Cache the monster count */
@@ -442,12 +444,22 @@ static void flush_monster_messages(bool delay)
 		/* Capitalize the message */
 		*buf = toupper((unsigned char)*buf);
 
-		/* Hack - play sound for fear message */
-		if (mon_msg[i].msg_code == MON_MSG_FLEE_IN_TERROR)
-			sound(MSG_FLEE);
+		switch (mon_msg[i].msg_code) {
+			case MON_MSG_FLEE_IN_TERROR:
+				type = MSG_FLEE;
+				break;
+
+			case MON_MSG_MORIA_DEATH:
+			case MON_MSG_DESTROYED:
+			case MON_MSG_DIE:
+			case MON_MSG_SHRIVEL_LIGHT:
+			case MON_MSG_DISENTEGRATES:
+			case MON_MSG_FREEZE_SHATTER:
+				type = MSG_KILL;
+		}
 
 		/* Show the message */
-		msg(buf);
+		msgt(type, "%s", buf);
    }
 }
 
