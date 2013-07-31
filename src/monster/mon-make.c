@@ -1279,18 +1279,16 @@ static void build_quest_stairs(int y, int x)
 	int ny, nx;
 
 	/* Stagger around */
-	while (!cave_valid_bold(y, x)) {
-		int d = 1;
-
+	while (!cave_valid_bold(y, x) && !cave_iswall(cave, y, x) && !cave_isdoor(cave, y, x)) {
 		/* Pick a location */
-		scatter(&ny, &nx, y, x, d, FALSE);
+		scatter(&ny, &nx, y, x, 1, FALSE);
 
 		/* Stagger */
 		y = ny; x = nx;
 	}
 
-	/* Destroy any objects */
-	delete_object(y, x);
+	/* Push any objects */
+	push_object(y, x);
 
 	/* Explain the staircase */
 	msg("A magical staircase appears...");
