@@ -1067,7 +1067,7 @@ static bool describe_effect(textblock *tb, const object_type *o_ptr, bool full,
 	else if (o_ptr->tval == TV_FOOD)
 		textblock_append(tb, "When eaten, it ");
 	else if (o_ptr->tval == TV_POTION)
-		textblock_append(tb, "When drunk, it ");
+		textblock_append(tb, "When quaffed, it ");
 	else if (o_ptr->tval == TV_SCROLL)
 	    textblock_append(tb, "When read, it ");
 	else
