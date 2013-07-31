@@ -4223,6 +4223,21 @@ bool obj_needs_aim(object_type *o_ptr)
 			(o_ptr->tval == TV_ROD && !object_flavor_is_aware(o_ptr));
 }
 
+/*
+ * Can the object fail if used?
+ */
+bool obj_can_fail(const struct object *o) {
+	switch (o->tval) {
+		case TV_STAFF:
+		case TV_WAND:
+		case TV_ROD:
+			return TRUE;
+
+		default:
+			return wield_slot(o) == -1 ? FALSE : TRUE;
+	}
+}
+
 
 /*
  * Verify the "okayness" of a given item.

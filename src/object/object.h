@@ -725,6 +725,7 @@ bool obj_is_used_unaimed(const object_type *o_ptr);
 u16b object_effect(const object_type *o_ptr);
 object_type *object_from_item_idx(int item);
 bool obj_needs_aim(object_type *o_ptr);
+bool obj_can_fail(const struct object *o);
 bool get_item_okay(int item);
 int scan_items(int *item_list, size_t item_list_max, int mode);
 bool item_is_available(int item, bool (*tester)(const object_type *), int mode);

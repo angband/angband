@@ -147,7 +147,7 @@ static void show_obj_list(int num_obj, int num_head, char labels[50][80],
 			ex_offset_ctr += 9;
 		}
 
-		if (mode & OLIST_FAIL)
+		if (mode & OLIST_FAIL && obj_can_fail(o_ptr))
 		{
 			int fail = (9 + get_use_device_chance(o_ptr)) / 10;
 			if (object_effect_is_known(o_ptr))
