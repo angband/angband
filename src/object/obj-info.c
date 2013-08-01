@@ -976,6 +976,11 @@ static bool describe_light(textblock *tb, const object_type *o_ptr,
 	if (!is_light && !of_has(flags, OF_LIGHT))
 		return FALSE;
 
+	/* Prevent unidentified objects (especially artifact lights) from showing bad radius
+	 and refueling info, but allow it to appear in ego knowledge and spoilers */
+	if (!object_is_known(o_ptr) && !(mode & (OINFO_EGO | OINFO_FULL | OINFO_DUMMY)))
+		return FALSE;
+
 	/* Work out radius */
 	if (of_has(flags, OF_LIGHT))
 		rad = o_ptr->pval[which_pval(o_ptr, OF_LIGHT)];
@@ -1353,6 +1358,7 @@ static textblock *object_info_out(const object_type *o_ptr, int mode)
 	if (describe_hates(tb, flags)) something = TRUE;
 	if (describe_sustains(tb, flags)) something = TRUE;
 	if (describe_misc_magic(tb, flags)) something = TRUE;
+	if (describe_light(tb, o_ptr, flags, mode)) something = TRUE;
 	if (ego && describe_ego(tb, o_ptr->ego)) something = TRUE;
 	if (something) textblock_append(tb, "\n");
 
@@ -1367,10 +1373,10 @@ static textblock *object_info_out(const object_type *o_ptr, int mode)
 	}
 
 	if (!terse && describe_food(tb, o_ptr, subjective, full)) something = TRUE;
-	if (describe_light(tb, o_ptr, flags, mode)) something = TRUE;
 	if (!terse && subjective && describe_digger(tb, o_ptr, mode)) something = TRUE;
 
-	if (!something)
+	/* Hack? Don't append anything in terse (for chararacter dump), since that seems to cause extra linebreaks */
+	if (!something && !terse)
 		textblock_append(tb, "\n\nThis item does not seem to possess any special abilities.");
 
 	return tb;
