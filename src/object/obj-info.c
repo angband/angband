@@ -1375,7 +1375,8 @@ static textblock *object_info_out(const object_type *o_ptr, int mode)
 	if (!terse && describe_food(tb, o_ptr, subjective, full)) something = TRUE;
 	if (!terse && subjective && describe_digger(tb, o_ptr, mode)) something = TRUE;
 
-	if (!something)
+	/* Hack? Don't append anything in terse (for chararacter dump), since that seems to cause extra linebreaks */
+	if (!something && !terse)
 		textblock_append(tb, "\n\nThis item does not seem to possess any special abilities.");
 
 	return tb;
