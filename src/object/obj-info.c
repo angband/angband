@@ -976,6 +976,10 @@ static bool describe_light(textblock *tb, const object_type *o_ptr,
 	if (!is_light && !of_has(flags, OF_LIGHT))
 		return FALSE;
 
+	/* Prevent unidentified objects (especially artifact lights) from showing bad radius and refueling info */
+	if (!object_is_known(o_ptr))
+		return FALSE;
+
 	/* Work out radius */
 	if (of_has(flags, OF_LIGHT))
 		rad = o_ptr->pval[which_pval(o_ptr, OF_LIGHT)];
