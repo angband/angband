@@ -1002,7 +1002,7 @@ static bool describe_light(textblock *tb, const object_type *o_ptr,
 		textblock_append(tb, "  Refills other %s up to %d turns of fuel.", name, turns);
 	}
 
-	textblock_append(tb, "\n");
+	textblock_append(tb, "\n\n");
 
 	return TRUE;
 }
