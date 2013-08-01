@@ -976,8 +976,9 @@ static bool describe_light(textblock *tb, const object_type *o_ptr,
 	if (!is_light && !of_has(flags, OF_LIGHT))
 		return FALSE;
 
-	/* Prevent unidentified objects (especially artifact lights) from showing bad radius and refueling info */
-	if (!object_is_known(o_ptr))
+	/* Prevent unidentified objects (especially artifact lights) from showing bad radius
+	 and refueling info, but allow it to appear in ego knowledge */
+	if (!object_is_known(o_ptr) && !(mode & OINFO_EGO))
 		return FALSE;
 
 	/* Work out radius */
