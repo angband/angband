@@ -1002,7 +1002,7 @@ static bool describe_light(textblock *tb, const object_type *o_ptr,
 		textblock_append(tb, "  Refills other %s up to %d turns of fuel.", name, turns);
 	}
 
-	textblock_append(tb, "\n\n");
+	textblock_append(tb, "\n");
 
 	return TRUE;
 }
@@ -1357,6 +1357,7 @@ static textblock *object_info_out(const object_type *o_ptr, int mode)
 	if (describe_hates(tb, flags)) something = TRUE;
 	if (describe_sustains(tb, flags)) something = TRUE;
 	if (describe_misc_magic(tb, flags)) something = TRUE;
+	if (describe_light(tb, o_ptr, flags, mode)) something = TRUE;
 	if (ego && describe_ego(tb, o_ptr->ego)) something = TRUE;
 	if (something) textblock_append(tb, "\n");
 
@@ -1371,7 +1372,6 @@ static textblock *object_info_out(const object_type *o_ptr, int mode)
 	}
 
 	if (!terse && describe_food(tb, o_ptr, subjective, full)) something = TRUE;
-	if (describe_light(tb, o_ptr, flags, mode)) something = TRUE;
 	if (!terse && subjective && describe_digger(tb, o_ptr, mode)) something = TRUE;
 
 	if (!something)
