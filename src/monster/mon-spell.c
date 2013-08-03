@@ -72,7 +72,7 @@ static int nonhp_dam(int spell, int rlev, aspect dam_aspect)
 	dam += (rlev * rs_ptr->rlev_dam.base / 100);
 
 	if (rs_ptr->rlev_dam.m_bonus == 1) /* then rlev affects dice */
-		dam += damcalc(MIN(1, rs_ptr->rlev_dam.dice * rlev / 100), 
+		dam += damcalc(MAX(1, rs_ptr->rlev_dam.dice * rlev / 100), 
 				rs_ptr->rlev_dam.sides, dam_aspect);
 	else /* rlev affects sides */
 		dam += damcalc(rs_ptr->rlev_dam.dice, rs_ptr->rlev_dam.sides *
