@@ -1,6 +1,3 @@
-/* Force a vertical scrollbar */
-html { min-height: 100%; margin-bottom: 1px; overflow-y: scroll; }
-
 body { 
   background: rgb(186, 206, 215); 
   color: black; 
@@ -106,7 +103,7 @@ section { clear: both; margin-bottom: 2em; }
 
 @media all and (max-width: 450px) {
 	.slots { width: 200px; margin: 0 auto; }
-	.slot { clear: both: margin: 1em auto; }
+	.slot { clear: both; margin: 1em auto; }
 }
 
 #downloads { text-align: center; }
@@ -136,27 +133,37 @@ section { clear: both; margin-bottom: 2em; }
   float: right;
   margin-left: 20px;
   font-size: 80%;
+  border-radius: 5px;
+  background-color: rgba(0, 0, 0, 0.1);
+  padding: 0 1em;
+}
+
+#releasesnav h3 {
+  font-size: 100%;
+  margin: 0.8em 0;
 }
 
 #releasesnav ul { 
-  list-style-type: none; 
-  margin: 0; 
-  padding-left: 0; 
+  list-style-type: none;
+  margin: 0;
+  padding-left: 0;
 }
 
 #releasesnav li { 
   display: block;
-  text-align:center; 
+  text-align: center;
   padding-left: 0; 
   margin-left: 0; 
 }
 
 #releasesnav button {
+  cursor: pointer;
+  background-color: transparent;
+  border: none;
   text-decoration: underline;
-  border: 0;
-  background: #fff;
+  color: blue;
+  font-size: inherit;
 }
-
 
 hr { border: 0; border-top: 1px solid rgb(54,89,112); margin: 0; }
 
