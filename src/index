@@ -6,22 +6,18 @@ pageclass = "class='front'"
 </section>
 
 <section id="downloads">
-<p><a id="download" href="/downloads/3.4/angband-v3.4.1-win.zip" onclick="pageTracker._trackPageview(this.pathname);"><b>Download</b><br>
+<p><a id="download" href="/downloads/3.4/angband-v3.4.1-win.zip" download onclick="downloadClick(this.pathname);"><b>Download</b><br>
 <span class="sub">version 3.4.1, <span id="os">Windows</span></span></a>
 
 <p class="other">Also available:
-
-<a id="osx" href="/downloads/3.4/Angband-v3.4.1-osx.dmg" onclick="pageTracker._trackPageview(this.pathname);">OS X</a> |
-
-<a id="android" href="https://play.google.com/store/apps/details?id=org.angdroid.angband" onclick="pageTracker._trackPageview('/downloads/3.4/android');">Android</a> |
-
-<a id="source" href="/downloads/3.4/angband-v3.4.1.tar.gz" onclick="pageTracker._trackPageview(this.pathname);">Source code</a><br>
+<a id="osx" href="/downloads/3.4/Angband-v3.4.1-osx.dmg" download onclick="downloadClick(this.pathname);">OS X</a> |
+<a id="android" href="https://play.google.com/store/apps/details?id=org.angdroid.angband" download onclick="downloadClick('/downloads/3.4/android');">Android</a> |
+<a id="source" href="/downloads/3.4/angband-v3.4.1.tar.gz" download onclick="downloadClick(this.pathname);">Source code</a><br>
 
 <a href="/release">Read about the changes in this version</a>
 </section>
-<script src="/js/detect.js" async defer></script>
 
-<section class="slots">
+<section id="images" class="slots">
 <div class="slot">
 <img src="/img/shot1.png" width="175" height="175">
 <p class="caption">You (the <tt>@</tt>) begin in the small trading town above Angband, ready to descend into its depths (using the down staircase, '<tt>></tt>').
@@ -59,3 +55,13 @@ pageclass = "class='front'"
 
 </dl>
 </section>
+
+<script src="/js/detect.js" async defer></script>
+<script>
+function downloadClick(pathname) {
+	pageTracker._trackPageview(pathname);
+	var resources = document.getElementById("resources");
+	var images = document.getElementById("images");
+	images.parentNode.insertBefore(resources, images);
+}
+</script>
