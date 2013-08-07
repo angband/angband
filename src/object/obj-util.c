@@ -2148,7 +2148,7 @@ void drop_near(struct cave *c, object_type *j_ptr, int chance, int y, int x, boo
 		}
 
 		/* Require floor space */
-		if (!cave_canputitem(cave, y, x)) continue;
+		if (!cave_canputitem(cave, ty, tx)) continue;
 
 		/* Bounce to that location */
 		by = ty;
