@@ -2704,6 +2704,7 @@ static BOOL send_event(NSEvent *event)
         }
             
         case NSLeftMouseDown:
+		case NSRightMouseDown:
         {
             /* Queue mouse presses if they occur in the map section
              * of the main window.
@@ -2739,7 +2740,19 @@ static BOOL send_event(NSEvent *event)
                     (OPT(mouse_buttons) && y == rows - 1 && 
                      x >= COL_MAP && x < COL_MAP + button_get_length()))
                 {
-                    Term_mousepress(x, y, 1);
+					// [event buttonNumber] will return 0 for left click, 1 for right click, but this is safer
+					int button = ([event type] == NSLeftMouseDown) ? 1 : 2;
+
+#ifdef KC_MOD_ALT
+					NSUInteger eventModifiers = [event modifierFlags];
+					byte angbandModifiers = 0;
+					angbandModifiers |= (eventModifiers & NSShiftKeyMask) ? KC_MOD_SHIFT : 0;
+					angbandModifiers |= (eventModifiers & NSControlKeyMask) ? KC_MOD_CONTROL : 0;
+					angbandModifiers |= (eventModifiers & NSAlternateKeyMask) ? KC_MOD_ALT : 0;
+					button |= (angbandModifiers & 0x0F) << 4; // encode modifiers in the button number (see Term_mousepress())
+#endif
+
+                    Term_mousepress(x, y, button);
                 }
             }
 
