@@ -28,8 +28,10 @@
 enum monster_sex {
 	MON_SEX_NEUTER = 0,
 	MON_SEX_MALE,
-	MON_SEX_FEMALE
+	MON_SEX_FEMALE,
+	MON_SEX_MAX,
 };
+typedef enum monster_sex monster_sex_t;
 
 /*
  * Pronoun arrays, by gender.
@@ -2207,4 +2209,1411 @@ void monster_flags_known(const monster_race *r_ptr, const monster_lore *l_ptr,
 {
 	rf_copy(flags, r_ptr->flags);
 	rf_inter(flags, l_ptr->flags);
+}
+
+/*** textblock version ***/
+
+/**
+ * Return a description for the given monster race flag.
+ *
+ * Returns an empty string for an out-of-range flag. Descriptions are in list-mon-flag.h.
+ *
+ * \param flag is one of the RF_ flags.
+ */
+static const char *lore_describe_race_flag(int flag)
+{
+	static const char *r_flag_description[] = {
+		#define RF(a, b) b,
+		#include "monster/list-mon-flags.h"
+		#undef RF
+		NULL
+	};
+
+	if (flag <= RF_NONE || flag >= RF_MAX)
+		return "";
+
+	return r_flag_description[flag];
+}
+
+/**
+ * Return a description for the given monster blow method flags.
+ *
+ * Returns an sensible placeholder string for an out-of-range flag. Descriptions are in list-blow-methods.h.
+ *
+ * \param method is one of the RBM_ flags.
+ */
+static const char *lore_describe_blow_method(int method)
+{
+	static const char *r_blow_method_description[] = {
+		#define RBM(a, b) b,
+		#include "monster/list-blow-methods.h"
+		#undef RBM
+		NULL
+	};
+
+	if (method <= RBM_NONE || method >= RBM_MAX)
+		return "do something weird";
+
+	return r_blow_method_description[method];
+}
+
+/**
+ * Return a description for the given monster blow effect flags.
+ *
+ * Returns an sensible placeholder string for an out-of-range flag. Descriptions are in list-blow-effects.h.
+ *
+ * \param effect is one of the RBE_ flags.
+ */
+static const char *lore_describe_blow_effect(int effect)
+{
+	static const char *r_blow_effect_description[] = {
+		#define RBE(a, b) b,
+		#include "monster/list-blow-effects.h"
+		#undef RBE
+		NULL
+	};
+
+	if (effect <= RBE_NONE || effect >= RBE_MAX)
+		return "do weird things";
+
+	return r_blow_effect_description[effect];
+}
+
+/**
+ * Return a description for the given monster race awareness value.
+ *
+ * Descriptions are in a table within the function. Returns a sensible string for values not in the table.
+ *
+ * \param awareness is the inactivity counter of the race (monster_race.sleep).
+ */
+static const char *lore_describe_awareness(s16b awareness)
+{
+	/* Value table ordered descending, for priority. Terminator is {MAX_SHORT, NULL}. */
+	static const struct lore_awareness {
+		s16b threshold;
+		const char *description;
+	} lore_awareness_description[] = {
+		{200,	"prefers to ignore"},
+		{95,	"pays very little attention to"},
+		{75,	"pays little attention to"},
+		{45,	"tends to overlook"},
+		{25,	"takes quite a while to see"},
+		{10,	"takes a while to see"},
+		{5,		"is fairly observant of"},
+		{3,		"is observant of"},
+		{1,		"is very observant of"},
+		{0,		"is vigilant for"},
+		{MAX_SHORT,	NULL},
+	};
+	const struct lore_awareness *current = lore_awareness_description;
+
+	while (current->threshold != MAX_SHORT && current->description != NULL) {
+		if (awareness > current->threshold)
+			return current->description;
+
+		current++;
+	}
+
+	/* Values zero and less are the most vigilant */
+	return "is ever vigilant for";
+}
+
+/**
+ * Return a description for the given monster race speed value.
+ *
+ * Descriptions are in a table within the function. Returns a sensible string for values not in the table.
+ *
+ * \param speed is the speed rating of the race (monster_race.speed).
+ */
+static const char *lore_describe_speed(byte speed)
+{
+	/* Value table ordered descending, for priority. Terminator is {MAX_UCHAR, NULL}. */
+	static const struct lore_speed {
+		byte threshold;
+		const char *description;
+	} lore_speed_description[] = {
+		{130,	"incredibly quickly"},
+		{120,	"very quickly"},
+		{110,	"quickly"},
+		{109,	"normal speed"}, /* 110 is normal speed */
+		{99,	"slowly"},
+		{89,	"very slowly"},
+		{0,		"incredibly slowly"},
+		{MAX_UCHAR,	NULL},
+	};
+	const struct lore_speed *current = lore_speed_description;
+
+	while (current->threshold != MAX_UCHAR && current->description != NULL) {
+		if (speed > current->threshold)
+			return current->description;
+
+		current++;
+	}
+
+	/* Return a weird description, since the value wasn't found in the table */
+	return "erroneously";
+}
+
+/**
+ * Return a value describing the sex of the provided monster race.
+ */
+static monster_sex_t lore_monster_sex(const monster_race *race)
+{
+	if (rf_has(race->flags, RF_FEMALE))
+		return MON_SEX_FEMALE;
+	else if (rf_has(race->flags, RF_MALE))
+		return MON_SEX_MALE;
+
+	return MON_SEX_NEUTER;
+}
+
+/**
+ * Return a pronoun for a monster; used as the subject of a sentence.
+ *
+ * Descriptions are in a table within the function. Table must match monster_sex_t values.
+ *
+ * \param sex is the gender value (as provided by `lore_monster_sex()`.
+ * \param title_case indicates whether the initial letter should be capitalized; `TRUE` is capitalized, `FALSE` is not.
+ */
+static const char *lore_pronoun_nominative(monster_sex_t sex, bool title_case)
+{
+	static const char *lore_pronouns[MON_SEX_MAX][2] = {
+		{"it", "It"},
+		{"he", "He"},
+		{"she", "She"},
+	};
+
+	int pronoun_index = MON_SEX_NEUTER, case_index = 0;
+
+	if (sex >= MON_SEX_NEUTER && sex < MON_SEX_MAX)
+		pronoun_index = sex;
+
+	if (title_case)
+		case_index = 1;
+
+	return lore_pronouns[pronoun_index][case_index];
+}
+
+/**
+ * Return a possessive pronoun for a monster.
+ *
+ * Descriptions are in a table within the function. Table must match monster_sex_t values.
+ *
+ * \param sex is the gender value (as provided by `lore_monster_sex()`.
+ * \param title_case indicates whether the initial letter should be capitalized; `TRUE` is capitalized, `FALSE` is not.
+ */
+static const char *lore_pronoun_possessive(monster_sex_t sex, bool title_case)
+{
+	static const char *lore_pronouns[MON_SEX_MAX][2] = {
+		{"its", "Its"},
+		{"his", "His"},
+		{"her", "Her"},
+	};
+
+	int pronoun_index = MON_SEX_NEUTER, case_index = 0;
+
+	if (sex >= MON_SEX_NEUTER && sex < MON_SEX_MAX)
+		pronoun_index = sex;
+
+	if (title_case)
+		case_index = 1;
+
+	return lore_pronouns[pronoun_index][case_index];
+}
+
+/**
+ * Insert into a list the description for a given flag, if it is set. Return the next index available for insertion.
+ *
+ * The function returns an incremented index if it inserted something; otherwise, it returns the same index (which is used for the next insertion attempt).
+ *
+ * \param flag is the RF_ flag to check for in `known_flags`.
+ * \param known_flags is the preprocessed set of flags for the lore/race.
+ * \param list is the list in which the description will be inserted.
+ * \param index is where in `list` the description will be inserted.
+ */
+static int lore_insert_flag_description(int flag, const bitflag known_flags[RF_SIZE], const char *list[], int index)
+{
+	if (rf_has(known_flags, flag)) {
+		list[index] = lore_describe_race_flag(flag);
+		return index + 1;
+	}
+
+	return index;
+}
+
+/**
+ * Insert into a list the description for a given flag, if a flag is not known to the player as a vulnerability. Return the next index available for insertion.
+ *
+ * The function returns an incremented index if it inserted something; otherwise, it returns the same index (which is used for the next insertion attempt).
+ *
+ * \param flag is the RF_ flag to check for in `known_flags`.
+ * \param known_flags is the preprocessed set of flags for the lore/race.
+ * \param lore is the base knowledge about the monster.
+ * \param list is the list in which the description will be inserted.
+ * \param index is where in `list` the description will be inserted.
+ */
+static int lore_insert_unknown_vulnerability(int flag, const bitflag known_flags[RF_SIZE], const monster_lore *lore, const char *list[], int index)
+{
+	if (rf_has(lore->flags, flag) && !rf_has(known_flags, flag)) {
+		list[index] = lore_describe_race_flag(flag);
+		return index + 1;
+	}
+
+	return index;
+}
+
+/**
+ * Insert into a list the description for a spell if it is known to the player. Return the next index available for insertion.
+ *
+ * The function returns an incremented index if it inserted something; otherwise, it returns the same index (which is used for the next insertion attempt).
+ *
+ * \param spell is the RSF_ flag to describe.
+ * \param race is the monster race of the spell.
+ * \param lore is the player's current knowledge about the monster.
+ * \param spell_colors is where the color for `spell` will be chosen from.
+ * \param know_hp indicates whether or know the player has determined the monster's AC/HP.
+ * \param name_list is the list in which the description will be inserted.
+ * \param color_list is the list in which the selected color will be inserted.
+ * \param damage_list is the list in which the max spell damage will be inserted.
+ * \param index is where in `name_list`, `color_list`, and `damage_list` the description will be inserted.
+ */
+static int lore_insert_spell_description(int spell, const monster_race *race, const monster_lore *lore, const int spell_colors[RSF_MAX], bool know_hp, const char *name_list[], int color_list[], int damage_list[], int index)
+{
+	if (rsf_has(lore->spell_flags, spell)) {
+		name_list[index] = mon_spell_lore_description(spell);
+		color_list[index] = spell_colors[spell];
+		damage_list[index] = mon_spell_lore_damage(spell, race, know_hp);
+		return index + 1;
+	}
+
+	return index;
+}
+
+/**
+ * Append a list of items to a textblock, with each item using the provided attribute.
+ *
+ * The text that joins the list is drawn using the default attributes. The list uses a serial comma ("a, b, c, and d").
+ *
+ * \param tb is the textblock we are adding to.
+ * \param list is a list of strings that should be joined and appended; drawn with the attribute in `attribute`.
+ * \param count is the number of items in `list`.
+ * \param attr is the attribute each list item will be drawn with.
+ * \param conjunction is a string that is added before the last item.
+ */
+static void lore_append_list(textblock *tb, const char *list[], int count, byte attr, const char *conjunction)
+{
+	int i;
+
+	assert(count >= 0);
+
+	for (i = 0; i < count; i++) {
+		if (i > 0) {
+			if (count > 2)
+				textblock_append(tb, ",");
+
+			if (i == count - 1) {
+				textblock_append(tb, " ");
+				textblock_append(tb, conjunction);
+			}
+
+			textblock_append(tb, " ");
+		}
+
+		textblock_append_c(tb, attr, list[i]);
+	}
+}
+
+/**
+ * Append a list of spell descriptions.
+ *
+ * This is a modified version of `lore_append_list()` to format spells, without have to do a lot of allocating and freeing of formatted strings.
+ *
+ * \param tb is the textblock we are adding to.
+ * \param name_list is a list of base spell description.
+ * \param color_list is the list of attributes which the description should be drawn with.
+ * \param damage_list is a value that should be appended to the base spell description (if it is greater than zero).
+ * \param count is the number of items in the lists.
+ * \param conjunction is a string that is added before the last item.
+ */
+static void lore_append_spell_descriptions(textblock *tb, const char *name_list[], int color_list[], int damage_list[], int count, const char *conjunction)
+{
+	int i;
+
+	assert(count >= 0);
+
+	for (i = 0; i < count; i++) {
+		if (i > 0) {
+			if (count > 2)
+				textblock_append(tb, ",");
+
+			if (i == count - 1) {
+				textblock_append(tb, " ");
+				textblock_append(tb, conjunction);
+			}
+
+			textblock_append(tb, " ");
+		}
+
+		textblock_append_c(tb, color_list[i], name_list[i]);
+
+		if (damage_list[i] > 0)
+			textblock_append_c(tb, color_list[i], " (%d)", damage_list[i]);
+	}
+}
+
+/**
+ * Append the kill history to a texblock for a given monster race.
+ *
+ * Known race flags are passed in for simplicity/efficiency.
+ *
+ * \param tb is the textblock we are adding to.
+ * \param race is the monster race we are describing.
+ * \param lore is the known information about the monster race.
+ * \param known_flags is the preprocessed bitfield of race flags known to the player.
+ */
+static void lore_append_kills(textblock *tb, const monster_race *race, const monster_lore *lore, const bitflag known_flags[RF_SIZE])
+{
+	monster_sex_t msex = MON_SEX_NEUTER;
+	bool out = TRUE;
+
+	assert(tb && race && lore);
+
+	/* Extract a gender (if applicable) */
+	msex = lore_monster_sex(race);
+
+	/* Treat uniques differently */
+	if (rf_has(known_flags, RF_UNIQUE)) {
+		/* Hack -- Determine if the unique is "dead" */
+		bool dead = (race->max_num == 0) ? TRUE : FALSE;
+
+		/* We've been killed... */
+		if (lore->deaths) {
+			/* Killed ancestors */
+			textblock_append(tb, "%s has slain %d of your ancestors", lore_pronoun_nominative(msex, TRUE), lore->deaths);
+
+			/* But we've also killed it */
+			if (dead)
+				textblock_append(tb, ", but you have taken revenge!  ");
+
+			/* Unavenged (ever) */
+			else
+				textblock_append(tb, ", who remain%s unavenged.  ", PLURAL(lore->deaths));
+		}
+		else if (dead) {
+			/* Dead unique who never hurt us */
+			textblock_append(tb, "You have slain this foe.  ");
+		}
+		else {
+			/* Alive and never killed us */
+			out = FALSE;
+		}
+	}
+
+	/* Not unique, but killed us */
+	else if (lore->deaths) {
+		/* Dead ancestors */
+		textblock_append(tb, "%d of your ancestors %s been killed by this creature, ", lore->deaths, plural(lore->deaths, "has", "have"));
+
+		/* Some kills this life */
+		if (lore->pkills) {
+			textblock_append(tb, "and you have exterminated at least %d of the creatures.  ", lore->pkills);
+		}
+
+		/* Some kills past lives */
+		else if (lore->tkills) {
+			textblock_append(tb, "and your ancestors have exterminated at least %d of the creatures.  ", lore->tkills);
+		}
+
+		/* No kills */
+		else {
+			textblock_append_c(tb, TERM_RED, "and %s is not ever known to have been defeated.  ", lore_pronoun_nominative(msex, FALSE));
+		}
+	}
+
+	/* Normal monsters */
+	else {
+		/* Killed some this life */
+		if (lore->pkills) {
+			textblock_append(tb, "You have killed at least %d of these creatures.  ", lore->pkills);
+		}
+
+		/* Killed some last life */
+		else if (lore->tkills) {
+			textblock_append(tb, "Your ancestors have killed at least %d of these creatures.  ", lore->tkills);
+		}
+
+		/* Killed none */
+		else {
+			textblock_append(tb, "No battles to the death are recalled.  ");
+		}
+	}
+
+	/* Separate */
+	if (out)
+		textblock_append(tb, "\n");
+}
+
+/**
+ * Append the monster race description to a textblock.
+ *
+ * \param tb is the textblock we are adding to.
+ * \param race is the monster race we are describing.
+ */
+static void lore_append_flavor(textblock *tb, const monster_race *race)
+{
+	assert(tb && race);
+	textblock_append(tb, race->text);
+	textblock_append(tb, "\n");
+}
+
+/**
+ * Append the monster type, location, and movement patterns to a textblock.
+ *
+ * Known race flags are passed in for simplicity/efficiency.
+ *
+ * \param tb is the textblock we are adding to.
+ * \param race is the monster race we are describing.
+ * \param lore is the known information about the monster race.
+ * \param known_flags is the preprocessed bitfield of race flags known to the player.
+ */
+static void lore_append_movement(textblock *tb, const monster_race *race, const monster_lore *lore, bitflag known_flags[RF_SIZE])
+{
+	assert(tb && race && lore);
+
+	textblock_append(tb, "This");
+
+	if (rf_has(race->flags, RF_ANIMAL))		textblock_append_c(tb, TERM_L_BLUE, " %s", lore_describe_race_flag(RF_ANIMAL));
+	if (rf_has(race->flags, RF_EVIL))		textblock_append_c(tb, TERM_L_BLUE, " %s", lore_describe_race_flag(RF_EVIL));
+	if (rf_has(race->flags, RF_UNDEAD))		textblock_append_c(tb, TERM_L_BLUE, " %s", lore_describe_race_flag(RF_UNDEAD));
+	if (rf_has(race->flags, RF_NONLIVING))	textblock_append_c(tb, TERM_L_BLUE, " %s", lore_describe_race_flag(RF_NONLIVING));
+	if (rf_has(race->flags, RF_METAL))		textblock_append_c(tb, TERM_L_BLUE, " %s", lore_describe_race_flag(RF_METAL));
+
+	if (rf_has(race->flags, RF_DRAGON))		textblock_append_c(tb, TERM_L_BLUE, " %s", lore_describe_race_flag(RF_DRAGON));
+	else if (rf_has(race->flags, RF_DEMON))	textblock_append_c(tb, TERM_L_BLUE, " %s", lore_describe_race_flag(RF_DEMON));
+	else if (rf_has(race->flags, RF_GIANT))	textblock_append_c(tb, TERM_L_BLUE, " %s", lore_describe_race_flag(RF_GIANT));
+	else if (rf_has(race->flags, RF_TROLL))	textblock_append_c(tb, TERM_L_BLUE, " %s", lore_describe_race_flag(RF_TROLL));
+	else if (rf_has(race->flags, RF_ORC))	textblock_append_c(tb, TERM_L_BLUE, " %s", lore_describe_race_flag(RF_ORC));
+	else									textblock_append_c(tb, TERM_L_BLUE, " creature");
+
+	/* Describe location */
+	if (race->level == 0) {
+		textblock_append(tb, " lives in the town");
+	}
+	else {
+		byte colour = (race->level > p_ptr->max_depth) ? TERM_RED : TERM_L_BLUE;
+
+		if (rf_has(known_flags, RF_FORCE_DEPTH))
+			textblock_append(tb, " is found ");
+		else
+			textblock_append(tb, " is normally found ");
+
+		textblock_append(tb, "at depths of ");
+		textblock_append_c(tb, colour, "%d", race->level * 50);
+		textblock_append(tb, " feet (level ");
+		textblock_append_c(tb, colour, "%d", race->level);
+		textblock_append(tb, ")");
+	}
+
+	textblock_append(tb, ", and moves");
+
+	/* Random-ness */
+	if (flags_test(known_flags, RF_SIZE, RF_RAND_50, RF_RAND_25, FLAG_END)) {
+		/* Adverb */
+		if (rf_has(known_flags, RF_RAND_50) && rf_has(known_flags, RF_RAND_25))
+			textblock_append(tb, " extremely");
+		else if (rf_has(known_flags, RF_RAND_50))
+			textblock_append(tb, " somewhat");
+		else if (rf_has(known_flags, RF_RAND_25))
+			textblock_append(tb, " a bit");
+
+		/* Adjective */
+		textblock_append(tb, " erratically");
+
+		/* Hack -- Occasional conjunction */
+		if (race->speed != 110) textblock_append(tb, ", and");
+	}
+
+	/* Speed */
+	textblock_append(tb, " ");
+
+	/* "at" is separate from the normal speed description in order to use the normal text colour */
+	if (race->speed == 110)
+		textblock_append(tb, "at ");
+
+	textblock_append_c(tb, TERM_GREEN, lore_describe_speed(race->speed));
+
+	/* The speed description also describes "attack speed" */
+	if (rf_has(known_flags, RF_NEVER_MOVE)) {
+		textblock_append(tb, ", but ");
+		textblock_append_c(tb, TERM_L_GREEN, "does not deign to chase intruders");
+	}
+
+	/* End this sentence */
+	textblock_append(tb, ".  ");
+}
+
+/**
+ * Append the monster AC, HP, and hit chance to a textblock.
+ *
+ * Known race flags are passed in for simplicity/efficiency.
+ *
+ * \param tb is the textblock we are adding to.
+ * \param race is the monster race we are describing.
+ * \param lore is the known information about the monster race.
+ * \param known_flags is the preprocessed bitfield of race flags known to the player.
+ */
+static void lore_append_toughness(textblock *tb, const monster_race *race, const monster_lore *lore, bitflag known_flags[RF_SIZE])
+{
+	monster_sex_t msex = MON_SEX_NEUTER;
+	long chance = 0, chance2 = 0;
+
+	assert(tb && race && lore);
+
+	/* Extract a gender (if applicable) */
+	msex = lore_monster_sex(race);
+
+	/* Describe monster "toughness" */
+	if (know_armour(race, lore)) {
+		/* Armor */
+		textblock_append(tb, "%s has an armor rating of ", lore_pronoun_nominative(msex, TRUE));
+		textblock_append_c(tb, TERM_L_BLUE, "%d", race->ac);
+
+		/* Hitpoints */
+		textblock_append(tb, ", and a");
+
+		if (!rf_has(known_flags, RF_UNIQUE))
+			textblock_append(tb, "n average");
+
+		textblock_append(tb, " life rating of ");
+		textblock_append_c(tb, TERM_L_BLUE, "%d", race->avg_hp);
+		textblock_append(tb, ".  ");
+
+		/* Player's chance to hit it - XXX this code is duplicated in py_attack_real() and test_hit() and must be kept in sync */
+		chance = (p_ptr->state.skills[SKILL_TO_HIT_MELEE] + ((p_ptr->state.to_h + p_ptr->inventory[INVEN_WIELD].to_h) * BTH_PLUS_ADJ));
+
+		/* Avoid division by zero errors, and starting higher on the scale */
+		if (chance < 9)
+			chance = 9;
+
+		chance2 = 90 * (chance - (race->ac / 2)) / chance + 5;
+
+		/* There is always a 12 percent chance to hit */
+		if (chance2 < 12) chance2 = 12;
+
+		textblock_append(tb, "You have a");
+		if ((chance2 == 8) || ((chance2 / 10) == 8))
+			textblock_append(tb, "n");
+		textblock_append_c(tb, TERM_L_BLUE, " %d", chance2);
+		textblock_append(tb, " percent chance to hit such a creature in melee (if you can see it).  ");
+	}
+}
+
+/**
+ * Append the experience value description to a textblock.
+ *
+ * Known race flags are passed in for simplicity/efficiency.
+ *
+ * \param tb is the textblock we are adding to.
+ * \param race is the monster race we are describing.
+ * \param lore is the known information about the monster race.
+ * \param known_flags is the preprocessed bitfield of race flags known to the player.
+ */
+static void lore_append_exp(textblock *tb, const monster_race *race, const monster_lore *lore, bitflag known_flags[RF_SIZE])
+{
+	const char *ordinal, *article;
+	char buf[20] = "";
+	long exp_integer, exp_fraction;
+	s16b level;
+
+	assert(tb && race && lore);
+
+	/* Introduction */
+	if (rf_has(known_flags, RF_UNIQUE))
+		textblock_append(tb, "Killing");
+	else
+		textblock_append(tb, "A kill of");
+
+	textblock_append(tb, " this creature");
+
+	/* calculate the integer exp part */
+	exp_integer = (long)race->mexp * race->level / p_ptr->lev;
+
+	/* calculate the fractional exp part scaled by 100, must use long arithmetic to avoid overflow */
+	exp_fraction = ((((long)race->mexp * race->level % p_ptr->lev) * (long)1000 / p_ptr->lev + 5) / 10);
+
+	/* Calculate textual representation */
+	strnfmt(buf, sizeof(buf), "%ld", (long)exp_integer);
+	if (exp_fraction) my_strcat(buf, format(".%02ld", (long)exp_fraction), sizeof(buf));
+
+	/* Mention the experience */
+	textblock_append(tb, " is worth ");
+	textblock_append_c(tb, TERM_BLUE, format("%s point%s", buf, PLURAL((exp_integer == 1) && (exp_fraction == 0))));
+
+	/* Take account of annoying English */
+	ordinal = "th";
+	level = p_ptr->lev % 10;
+	if ((p_ptr->lev / 10) == 1) /* nothing */;
+	else if (level == 1) ordinal = "st";
+	else if (level == 2) ordinal = "nd";
+	else if (level == 3) ordinal = "rd";
+
+	/* Take account of "leading vowels" in numbers */
+	article = "a";
+	level = p_ptr->lev;
+	if ((level == 8) || (level == 11) || (level == 18)) article = "an";
+
+	/* Mention the dependance on the player's level */
+	textblock_append(tb, " for %s %lu%s level character.  ", article, (long)level, ordinal);
+}
+
+/**
+ * Append the monster drop description to a textblock.
+ *
+ * Known race flags are passed in for simplicity/efficiency.
+ *
+ * \param tb is the textblock we are adding to.
+ * \param race is the monster race we are describing.
+ * \param lore is the known information about the monster race.
+ * \param known_flags is the preprocessed bitfield of race flags known to the player.
+ */
+static void lore_append_drop(textblock *tb, const monster_race *race, const monster_lore *lore, bitflag known_flags[RF_SIZE])
+{
+	int n;
+	monster_sex_t msex = MON_SEX_NEUTER;
+
+	assert(tb && race && lore);
+
+	/* Extract a gender (if applicable) */
+	msex = lore_monster_sex(race);
+
+	/* Drops gold and/or items */
+	if (lore->drop_gold || lore->drop_item) {
+		/* Intro */
+		textblock_append(tb, "%s may carry", lore_pronoun_nominative(msex, TRUE));
+
+		/* Count maximum drop */
+		n = MAX(lore->drop_gold, lore->drop_item);
+
+		/* Count drops */
+		if (n == 1)
+			textblock_append_c(tb, TERM_BLUE, " a single ");
+		else if (n == 2)
+			textblock_append_c(tb, TERM_BLUE, " one or two ");
+		else {
+			textblock_append(tb, " up to ");
+			textblock_append_c(tb, TERM_BLUE, format("%d ", n));
+		}
+
+		/* Quality */
+		if (rf_has(known_flags, RF_DROP_GREAT))
+			textblock_append_c(tb, TERM_BLUE, "exceptional ");
+		else if (rf_has(known_flags, RF_DROP_GOOD))
+			textblock_append_c(tb, TERM_BLUE, "good ");
+
+		/* Objects */
+		if (lore->drop_item) {
+			/* Dump "object(s)" */
+			textblock_append_c(tb, TERM_BLUE, "object%s", PLURAL(n));
+
+			/* Add conjunction if also dropping gold */
+			if (lore->drop_gold)
+				textblock_append_c(tb, TERM_BLUE, " or ");
+		}
+
+		/* Treasures */
+		if (lore->drop_gold) {
+			/* Dump "treasure(s)" */
+			textblock_append_c(tb, TERM_BLUE, "treasure%s", PLURAL(n));
+		}
+
+		/* End this sentence */
+		textblock_append(tb, ".  ");
+	}
+}
+
+/**
+ * Append the monster abilities (resists, weaknesses, other traits) to a textblock.
+ *
+ * Known race flags are passed in for simplicity/efficiency. Note the macros that are used to simplify the code.
+ *
+ * \param tb is the textblock we are adding to.
+ * \param race is the monster race we are describing.
+ * \param lore is the known information about the monster race.
+ * \param known_flags is the preprocessed bitfield of race flags known to the player.
+ */
+static void lore_append_abilities(textblock *tb, const monster_race *race, const monster_lore *lore, bitflag known_flags[RF_SIZE])
+{
+	int list_index;
+	const char *descs[64];
+	const char *initial_pronoun;
+	bool prev = FALSE;
+	monster_sex_t msex = MON_SEX_NEUTER;
+
+	/* "Local" macros for easier reading; undef'd at end of function */
+	#define LORE_INSERT_FLAG_DESCRIPTION(x) lore_insert_flag_description((x), known_flags, descs, list_index)
+	#define LORE_INSERT_UNKNOWN_VULN(x) lore_insert_unknown_vulnerability((x), known_flags, lore, descs, list_index)
+
+	assert(tb && race && lore);
+
+	/* Extract a gender (if applicable) and get a pronoun for the start of sentences */
+	msex = lore_monster_sex(race);
+	initial_pronoun = lore_pronoun_nominative(msex, TRUE);
+
+	/* Collect special abilities. */
+	list_index = 0;
+	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_OPEN_DOOR);
+	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_BASH_DOOR);
+	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_PASS_WALL);
+	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_KILL_WALL);
+	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_MOVE_BODY);
+	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_KILL_BODY);
+	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_TAKE_ITEM);
+	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_KILL_ITEM);
+
+	if (list_index > 0) {
+		textblock_append(tb, "%s can ", initial_pronoun);
+		lore_append_list(tb, descs, list_index, TERM_WHITE, "and");
+		textblock_append(tb, ".  ");
+	}
+
+	/* Describe detection traits */
+	list_index = 0;
+	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_INVISIBLE);
+	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_COLD_BLOOD);
+	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_EMPTY_MIND);
+	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_WEIRD_MIND);
+
+	if (list_index > 0) {
+		textblock_append(tb, "%s is ", initial_pronoun);
+		lore_append_list(tb, descs, list_index, TERM_WHITE, "and");
+		textblock_append(tb, ".  ");
+	}
+
+	/* Describe special things */
+	if (rf_has(known_flags, RF_UNAWARE))
+		textblock_append(tb, "%s disguises itself to look like something else.  ", initial_pronoun);
+	if (rf_has(known_flags, RF_MULTIPLY))
+		textblock_append_c(tb, TERM_ORANGE, "%s breeds explosively.  ", initial_pronoun);
+	if (rf_has(known_flags, RF_REGENERATE))
+		textblock_append(tb, "%s regenerates quickly.  ", initial_pronoun);
+	if (rf_has(known_flags, RF_HAS_LIGHT))
+		textblock_append(tb, "%s illuminates %s surroundings.  ", initial_pronoun, lore_pronoun_possessive(msex, FALSE));
+
+	/* Collect susceptibilities */
+	list_index = 0;
+	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_HURT_ROCK);
+	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_HURT_LIGHT);
+	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_HURT_FIRE);
+	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_HURT_COLD);
+
+	if (list_index > 0) {
+		textblock_append(tb, "%s is hurt by ", initial_pronoun);
+		lore_append_list(tb, descs, list_index, TERM_VIOLET, "and");
+		prev = TRUE;
+	}
+
+	/* Collect immunities and resistances */
+	list_index = 0;
+	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_IM_ACID);
+	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_IM_ELEC);
+	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_IM_FIRE);
+	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_IM_COLD);
+	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_IM_POIS);
+	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_IM_WATER);
+	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_RES_NETH);
+	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_RES_PLAS);
+	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_RES_NEXUS);
+	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_RES_DISE);
+
+	/* Note lack of vulnerability as a resistance */
+	list_index = LORE_INSERT_UNKNOWN_VULN(RF_HURT_LIGHT);
+	list_index = LORE_INSERT_UNKNOWN_VULN(RF_HURT_ROCK);
+
+	if (list_index > 0) {
+		/* Output connecting text */
+		if (prev)
+			textblock_append(tb, ", but resists ");
+		else
+			textblock_append(tb, "%s resists ", initial_pronoun);
+
+		lore_append_list(tb, descs, list_index, TERM_L_UMBER, "and");
+		prev = TRUE;
+	}
+
+	/* Collect known but average susceptibilities */
+	list_index = 0;
+	list_index = LORE_INSERT_UNKNOWN_VULN(RF_IM_ACID);
+	list_index = LORE_INSERT_UNKNOWN_VULN(RF_IM_ELEC);
+	if (rf_has(lore->flags, RF_IM_FIRE)   && !rf_has(known_flags, RF_IM_FIRE) && !rf_has(known_flags, RF_HURT_FIRE))
+		descs[list_index++] = lore_describe_race_flag(RF_HURT_FIRE);
+	if (rf_has(lore->flags, RF_IM_COLD)   && !rf_has(known_flags, RF_IM_COLD) && !rf_has(known_flags, RF_HURT_COLD))
+		descs[list_index++] = lore_describe_race_flag(RF_HURT_COLD);
+	list_index = LORE_INSERT_UNKNOWN_VULN(RF_IM_POIS);
+	list_index = LORE_INSERT_UNKNOWN_VULN(RF_IM_WATER);
+	list_index = LORE_INSERT_UNKNOWN_VULN(RF_RES_NETH);
+	list_index = LORE_INSERT_UNKNOWN_VULN(RF_RES_PLAS);
+	list_index = LORE_INSERT_UNKNOWN_VULN(RF_RES_NEXUS);
+	list_index = LORE_INSERT_UNKNOWN_VULN(RF_RES_DISE);
+
+	if (list_index > 0) {
+		/* Output connecting text */
+		if (prev)
+			textblock_append(tb, ", and does not resist ");
+		else
+			textblock_append(tb, "%s does not resist ", initial_pronoun);
+
+		lore_append_list(tb, descs, list_index, TERM_L_UMBER, "or");
+		prev = TRUE;
+	}
+
+	/* Collect non-effects */
+	list_index = 0;
+	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_NO_STUN);
+	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_NO_FEAR);
+	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_NO_CONF);
+	list_index = LORE_INSERT_FLAG_DESCRIPTION(RF_NO_SLEEP);
+
+	if (list_index > 0) {
+		/* Output connecting text */
+		if (prev)
+			textblock_append(tb, ", and cannot be ");
+		else
+			textblock_append(tb, "%s cannot be ", initial_pronoun);
+
+		lore_append_list(tb, descs, list_index, TERM_L_UMBER, "or");
+		prev = TRUE;
+	}
+
+	if (prev)
+		textblock_append(tb, ".  ");
+
+	#undef LORE_INSERT_FLAG_DESCRIPTION
+	#undef LORE_INSERT_UNKNOWN_VULN
+}
+
+/**
+ * Append how the monster reacts to intruders and at what distance it does so.
+ *
+ * Known race flags are passed in for simplicity/efficiency. Note the macros that are used to simplify the checks; they append to an array.
+ *
+ * \param tb is the textblock we are adding to.
+ * \param race is the monster race we are describing.
+ * \param lore is the known information about the monster race.
+ * \param known_flags is the preprocessed bitfield of race flags known to the player.
+ */
+static void lore_append_awareness(textblock *tb, const monster_race *race, const monster_lore *lore, bitflag known_flags[RF_SIZE])
+{
+	monster_sex_t msex = MON_SEX_NEUTER;
+
+	assert(tb && race && lore);
+
+	/* Extract a gender (if applicable) */
+	msex = lore_monster_sex(race);
+
+	/* Do we know how aware it is? */
+	if ((((int)lore->wake * (int)lore->wake) > race->sleep) ||
+	    (lore->ignore == MAX_UCHAR) ||
+	    ((race->sleep == 0) && (lore->tkills >= 10)))
+	{
+		const char *aware = lore_describe_awareness(race->sleep);
+		textblock_append(tb, "%s %s intruders, which %s may notice from ", lore_pronoun_nominative(msex, TRUE), aware, lore_pronoun_nominative(msex, FALSE));
+		textblock_append_c(tb, TERM_L_BLUE, "%d", (OPT(birth_small_range) ? 5 : 10) * race->aaf);
+		textblock_append(tb, " feet.  ");
+	}
+}
+
+/**
+ * Append information about what other races the monster appears with and if they work together.
+ *
+ * Known race flags are passed in for simplicity/efficiency. Note the macros that are used to simplify the checks; they append to an array.
+ *
+ * \param tb is the textblock we are adding to.
+ * \param race is the monster race we are describing.
+ * \param lore is the known information about the monster race.
+ * \param known_flags is the preprocessed bitfield of race flags known to the player.
+ */
+static void lore_append_friends(textblock *tb, const monster_race *race, const monster_lore *lore, bitflag known_flags[RF_SIZE])
+{
+	monster_sex_t msex = MON_SEX_NEUTER;
+
+	assert(tb && race && lore);
+
+	/* Extract a gender (if applicable) */
+	msex = lore_monster_sex(race);
+
+	/* Describe friends */
+	if (race->friends || race->friends_base) {
+		textblock_append(tb, "%s may appear with other monsters", lore_pronoun_nominative(msex, TRUE));
+		if (rf_has(known_flags, RF_GROUP_AI))
+			textblock_append(tb, " and hunts in packs");
+		textblock_append(tb, ".  ");
+	}
+}
+
+/**
+ * Append the monster's attack spells to a textblock.
+ *
+ * Known race flags are passed in for simplicity/efficiency. Note the macros that are used to simplify the code.
+ *
+ * \param tb is the textblock we are adding to.
+ * \param race is the monster race we are describing.
+ * \param lore is the known information about the monster race.
+ * \param known_flags is the preprocessed bitfield of race flags known to the player.
+ * \param spell_colors is a list of colors that is associated with each RSF_ spell.
+ */
+static void lore_append_spells(textblock *tb, const monster_race *race, const monster_lore *lore, bitflag known_flags[RF_SIZE], const int spell_colors[RSF_MAX])
+{
+	int i, average_frequency, casting_frequency;
+	monster_sex_t msex = MON_SEX_NEUTER;
+	bool breath = FALSE;
+	bool magic = FALSE;
+	int list_index;
+	static const int list_size = 64;
+	const char *initial_pronoun;
+	const char *name_list[list_size];
+	int color_list[list_size];
+	int damage_list[list_size];
+	bool know_hp;
+
+	/* "Local" macros for easier reading; undef'd at end of function */
+	#define LORE_INSERT_SPELL_DESCRIPTION(x) lore_insert_spell_description((x), race, lore, spell_colors, know_hp, name_list, color_list, damage_list, list_index)
+	#define LORE_RESET_LISTS() { list_index = 0; for(i = 0; i < list_size; i++) { damage_list[i] = 0; color_list[i] = TERM_WHITE; } }
+
+	assert(tb && race && lore);
+
+	know_hp = know_armour(race, lore);
+
+	/* Extract a gender (if applicable) and get a pronoun for the start of sentences */
+	msex = lore_monster_sex(race);
+	initial_pronoun = lore_pronoun_nominative(msex, TRUE);
+
+	/* Collect innate attacks */
+	LORE_RESET_LISTS();
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_SHRIEK);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_ARROW_1);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_ARROW_2);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_ARROW_3);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_ARROW_4);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BOULDER);
+
+	if (list_index > 0) {
+		textblock_append(tb, "%s may ", initial_pronoun);
+		lore_append_spell_descriptions(tb, name_list, color_list, damage_list, list_index, "or");
+		textblock_append(tb, ".  ");
+	}
+
+	/* Collect breaths */
+	LORE_RESET_LISTS();
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BR_ACID);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BR_ELEC);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BR_FIRE);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BR_COLD);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BR_POIS);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BR_NETH);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BR_LIGHT);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BR_DARK);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BR_SOUN);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BR_CHAO);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BR_DISE);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BR_NEXU);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BR_TIME);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BR_INER);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BR_GRAV);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BR_SHAR);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BR_PLAS);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BR_WALL);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BR_MANA);
+	/* Enum counting note: RSF_BR_CONF isn't used anymore */
+
+	if (list_index > 0) {
+		breath = TRUE;
+		textblock_append(tb, "%s may ", initial_pronoun);
+		textblock_append_c(tb, TERM_L_RED, "breathe ");
+		lore_append_spell_descriptions(tb, name_list, color_list, damage_list, list_index, "or");
+	}
+
+	/* Collect spell information */
+	LORE_RESET_LISTS();
+
+	/* Ball spells */
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BA_MANA);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BA_DARK);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BA_WATE);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BA_NETH);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BA_FIRE);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BA_ACID);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BA_COLD);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BA_ELEC);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BA_POIS);
+
+	/* Bolt spells */
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BO_MANA);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BO_PLAS);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BO_ICEE);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BO_WATE);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BO_NETH);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BO_FIRE);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BO_ACID);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BO_COLD);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BO_ELEC);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BO_POIS);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_MISSILE);
+
+	/* Curses */
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BRAIN_SMASH);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_MIND_BLAST);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_CAUSE_4);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_CAUSE_3);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_CAUSE_2);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_CAUSE_1);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_FORGET);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_SCARE);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BLIND);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_CONF);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_SLOW);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_HOLD);
+
+	/* Healing and haste */
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_DRAIN_MANA);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_HEAL);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_HASTE);
+
+	/* Teleports */
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_BLINK);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_TPORT);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_TELE_TO);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_TELE_AWAY);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_TELE_LEVEL);
+
+	/* Annoyances */
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_DARKNESS);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_TRAPS);
+
+	/* Summoning */
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_S_KIN);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_S_MONSTER);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_S_MONSTERS);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_S_ANIMAL);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_S_SPIDER);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_S_HOUND);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_S_HYDRA);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_S_AINU);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_S_DEMON);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_S_UNDEAD);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_S_DRAGON);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_S_HI_UNDEAD);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_S_HI_DRAGON);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_S_HI_DEMON);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_S_WRAITH);
+	list_index = LORE_INSERT_SPELL_DESCRIPTION(RSF_S_UNIQUE);
+
+	if (list_index > 0) {
+		magic = TRUE;
+
+		/* Intro */
+		if (breath)
+			textblock_append(tb, ", and may ");
+		else
+			textblock_append(tb, "%s may ", initial_pronoun);
+
+		/* Verb Phrase */
+		textblock_append_c(tb, TERM_L_RED, "cast spells");
+
+		/* Adverb */
+		if (rf_has(known_flags, RF_SMART)) textblock_append(tb, " intelligently");
+
+		/* List */
+		textblock_append(tb, " which ");
+		lore_append_spell_descriptions(tb, name_list, color_list, damage_list, list_index, "or");
+	}
+
+	/* End the sentence about innate/other spells */
+	if (breath || magic) {
+		/* Calculate total casting and average frequency */
+		casting_frequency = lore->cast_innate + lore->cast_spell;
+		average_frequency = (race->freq_innate + race->freq_spell) / 2;
+
+		if (casting_frequency > 100) {
+			/* Describe the spell frequency */
+			textblock_append(tb, "; ");
+			textblock_append_c(tb, TERM_L_GREEN, "1");
+			textblock_append(tb, " time in ");
+			textblock_append_c(tb, TERM_L_GREEN, "%d", 100 / average_frequency);
+		}
+		else if (casting_frequency) {
+			/* Guess at the frequency */
+			average_frequency = ((average_frequency + 9) / 10) * 10;
+			textblock_append(tb, "; about ");
+			textblock_append_c(tb, TERM_L_GREEN, "1");
+			textblock_append(tb, " time in ");
+			textblock_append_c(tb, TERM_L_GREEN, "%d", 100 / average_frequency);
+		}
+
+		textblock_append(tb, ".  ");
+	}
+
+	#undef LORE_INSERT_SPELL_DESCRIPTION
+	#undef LORE_RESET_LISTS
+}
+
+/**
+ * Append the monster's melee attacks to a textblock.
+ *
+ * Known race flags are passed in for simplicity/efficiency.
+ *
+ * \param tb is the textblock we are adding to.
+ * \param race is the monster race we are describing.
+ * \param lore is the known information about the monster race.
+ * \param known_flags is the preprocessed bitfield of race flags known to the player.
+ * \param melee_colors is a list of colors that is associated with each RBE_ effect.
+ */
+static void lore_append_attack(textblock *tb, const monster_race *race, const monster_lore *lore, bitflag known_flags[RF_SIZE], const int melee_colors[RBE_MAX])
+{
+	int i, total_attacks;
+	monster_sex_t msex = MON_SEX_NEUTER;
+
+	assert(tb && race && lore);
+
+	/* Extract a gender (if applicable) */
+	msex = lore_monster_sex(race);
+
+	/* Notice lack of attacks */
+	if (rf_has(known_flags, RF_NEVER_BLOW)) {
+		textblock_append(tb, "%s has no physical attacks.  ", lore_pronoun_nominative(msex, TRUE));
+		return;
+	}
+
+	/* Count the number of known attacks */
+	for (total_attacks = 0, i = 0; i < MONSTER_BLOW_MAX; i++) {
+		/* Skip non-attacks */
+		if (!race->blow[i].method) continue;
+
+		/* Count known attacks */
+		if (lore->blows[i])
+			total_attacks++;
+	}
+
+	/* Describe the lack of knowledge */
+	if (total_attacks == 0) {
+		textblock_append(tb, "Nothing is known about %s attack.  ", lore_pronoun_possessive(msex, FALSE));
+		return;
+	}
+
+	/* Describe each melee attack */
+	for (i = 0; i < MONSTER_BLOW_MAX; i++) {
+		int dice, sides;
+		const char *method_str = NULL;
+		const char *effect_str = NULL;
+
+		/* Skip unknown and undefined attacks */
+		if (!race->blow[i].method || !lore->blows[i]) continue;
+
+		/* Extract the attack info */
+		dice = race->blow[i].d_dice;
+		sides = race->blow[i].d_side;
+		method_str = lore_describe_blow_method(race->blow[i].method);
+		effect_str = lore_describe_blow_effect(race->blow[i].effect);
+
+		/* Introduce the attack description */
+		if (i == 0)
+			textblock_append(tb, "%s can ", lore_pronoun_nominative(msex, TRUE));
+		else if (i < total_attacks - 1)
+			textblock_append(tb, ", ");
+		else
+			textblock_append(tb, ", and ");
+
+		/* Describe the method */
+		textblock_append(tb, method_str);
+
+		/* Describe the effect (if any) */
+		if (effect_str) {
+			/* Describe the attack type */
+			textblock_append(tb, " to ");
+			textblock_append_c(tb, melee_colors[race->blow[i].effect], effect_str);
+
+			/* Describe damage (if known) */
+			if (dice && sides) {
+				textblock_append(tb, " with damage ");
+				textblock_append_c(tb, TERM_L_GREEN, "%dd%d", dice, sides);
+			}
+		}
+	}
+
+	textblock_append(tb, ".  ");
+}
+
+/**
+ * Place a monster recall title into a textblock.
+ *
+ * If graphics are turned on, this appends the title with the appropriate tile. Note: if the title is the only thing in the textblock, make sure to append a newline so that the textui stuff works properly. 
+ *
+ * \param tb is the textblock we are placing the title into.
+ * \param race is the monster race we are describing.
+ */
+void lore_title(textblock *tb, const monster_race *r_ptr)
+{
+	byte standard_attr, optional_attr;
+	wchar_t standard_char, optional_char;
+
+	char buffer[MB_LEN_MAX];
+
+	assert(r_ptr);
+
+	/* Get the chars */
+	standard_char = r_ptr->d_char;
+	optional_char = r_ptr->x_char;
+
+	/* Get the attrs */
+	standard_attr = r_ptr->d_attr;
+	optional_attr = r_ptr->x_attr;
+
+	/* A title (use "The" for non-uniques) */
+	if (!rf_has(r_ptr->flags, RF_UNIQUE))
+		textblock_append(tb, "The ");
+	else if (OPT(purple_uniques)) {
+		standard_attr = TERM_VIOLET;
+		if (!(optional_attr & 0x80))
+			optional_attr = TERM_VIOLET;
+	}
+
+	/* Dump the name and then append standard attr/char info */
+	textblock_append(tb, r_ptr->name);
+
+	/* The textblock format strings seem like they can handle wchars, but we'll convert it just to be safe */
+	wctomb(buffer, standard_char);
+	textblock_append(tb, " ('");
+	textblock_append_c(tb, standard_attr, buffer);
+	textblock_append(tb, "')");
+
+	if (((optional_attr != standard_attr) || (optional_char != standard_char)) && (tile_width == 1) && (tile_height == 1)) {
+		/* Append the "optional" attr/char info */
+		textblock_append(tb, " ('");
+		textblock_append_pict(tb, optional_attr, optional_char);
+		textblock_append(tb, "')");
+	}
+}
+
+/**
+ * Place a full monster recall description (with title) into a textblock, with or without spoilers.
+ *
+ * \param tb is the textblock we are placing the description into.
+ * \param race is the monster race we are describing.
+ * \param original_lore is the known information about the monster race.
+ * \param spoilers indicates what information is used; `TRUE` will display full information without subjective information and monstor flavor, while `FALSE` only shows what the player knows.
+ */
+void lore_description(textblock *tb, const monster_race *race, const monster_lore *original_lore, bool spoilers)
+{
+	monster_lore mutable_lore;
+	monster_lore *lore = &mutable_lore;
+	bitflag known_flags[RF_SIZE];
+	int melee_colors[RBE_MAX], spell_colors[RSF_MAX];
+
+	assert(tb && race && original_lore);
+
+	/* Determine the special attack colors */
+	get_attack_colors(melee_colors, spell_colors);
+
+	/* Hack -- create a copy of the monster-memory that we can modify */
+	COPY(lore, original_lore, monster_lore);
+
+	/* Assume some "obvious" flags */
+	flags_set(lore->flags, RF_SIZE, RF_OBVIOUS_MASK, FLAG_END);
+
+	/* Killing a monster reveals some properties */
+	if (lore->tkills > 0) {
+		/* Know "race" and "forced" flags */
+		flags_set(lore->flags, RF_SIZE, RF_RACE_MASK, FLAG_END);
+		rf_on(lore->flags, RF_FORCE_DEPTH);
+	}
+
+	/* Now get the known monster flags */
+	monster_flags_known(race, lore, known_flags);
+
+	/* Cheat -- know everything */
+	if (OPT(cheat_know) || spoilers)
+		cheat_monster_lore(race, lore);
+
+	/* Appending the title here simplifies code in the callers. It also causes a crash when generating spoilers (we don't need titles for them anwyay) */
+	if (!spoilers) {
+		lore_title(tb, race);
+		textblock_append(tb, "\n");
+	}
+
+	/* Show kills of monster vs. player(s) */
+	if (!spoilers)
+		lore_append_kills(tb, race, lore, known_flags);
+
+	/* Monster description */
+	lore_append_flavor(tb, race);
+
+	/* Describe the monster type, speed, life, and armor */
+	lore_append_movement(tb, race, lore, known_flags);
+
+	if (!spoilers)
+		lore_append_toughness(tb, race, lore, known_flags);
+
+	/* Describe the experience and item reward when killed */
+	if (!spoilers)
+		lore_append_exp(tb, race, lore, known_flags);
+
+	lore_append_drop(tb, race, lore, known_flags);
+
+	/* Describe the special properties of the monster */
+	lore_append_abilities(tb, race, lore, known_flags);
+	lore_append_awareness(tb, race, lore, known_flags);
+	lore_append_friends(tb, race, lore, known_flags);
+
+	/* Describe the spells, spell-like abilities and melee attacks */
+	lore_append_spells(tb, race, lore, known_flags, spell_colors);
+	lore_append_attack(tb, race, lore, known_flags, melee_colors);
+
+	/* Notice "Quest" monsters */
+	if (rf_has(race->flags, RF_QUESTOR))
+		textblock_append(tb, "You feel an intense desire to kill this monster...  ");
+
+	textblock_append(tb, "\n");
+}
+
+/**
+ * Display monster recall modally and wait for a keypress.
+ *
+ * This is intended to be called when the main window is active (hence the message flushing).
+ *
+ * \param race is the monster race we are describing.
+ * \param lore is the known information about the monster race.
+ */
+void lore_show_interactive(const monster_race *race, const monster_lore *lore)
+{
+	assert(race && lore);
+
+	message_flush();
+
+	textblock *tb = textblock_new();
+	lore_description(tb, race, lore, FALSE);
+	textui_textblock_show(tb, SCREEN_REGION, NULL);
+	textblock_free(tb);
+}
+
+/**
+ * Display monster recall statically.
+ *
+ * This is intended to be called in a subwindow, since it clears the entire window before drawing, and has no interactivity.
+ *
+ * \param race is the monster race we are describing.
+ * \param lore is the known information about the monster race.
+ */
+void lore_show_subwindow(const monster_race *race, const monster_lore *lore)
+{
+	int y;
+
+	assert(race && lore);
+
+	/* Erase the window, since textui_textblock_place() only clears what it needs */
+	for (y = 0; y < Term->hgt; y++)
+		Term_erase(0, y, 255);
+
+	textblock *tb = textblock_new();
+	lore_description(tb, race, lore, FALSE);
+	textui_textblock_place(tb, SCREEN_REGION, NULL);
+	textblock_free(tb);
 }

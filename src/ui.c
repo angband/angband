@@ -104,13 +104,14 @@ void textui_textblock_place(textblock *tb, region orig_area, const char *header)
 	n_lines = textblock_calculate_lines(tb,
 			&line_starts, &line_lengths, area.width);
 
-	area.page_rows--;
+	if (header != NULL) {
+		area.page_rows--;
+		c_prt(TERM_L_BLUE, header, area.row, area.col);
+		area.row++;
+	}
 
 	if (n_lines > (size_t) area.page_rows)
 		n_lines = area.page_rows;
-
-	c_prt(TERM_L_BLUE, header, area.row, area.col);
-	area.row++;
 
 	display_area(textblock_text(tb), textblock_attrs(tb), line_starts,
 	             line_lengths, n_lines, area, 0);
@@ -132,11 +133,14 @@ void textui_textblock_show(textblock *tb, region orig_area, const char *header)
 
 	screen_save();
 
-	/* make room for the header & footer */
-	area.page_rows -= 3;
+	/* make room for the footer */
+	area.page_rows -= 2;
 
-	c_prt(TERM_L_BLUE, header, area.row, area.col);
-	area.row++;
+	if (header != NULL) {
+		area.page_rows--;
+		c_prt(TERM_L_BLUE, header, area.row, area.col);
+		area.row++;
+	}
 
 	if (n_lines > (size_t) area.page_rows) {
 		int start_line = 0;

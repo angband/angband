@@ -24,6 +24,7 @@
 /** Constants **/
 
 /** Macros **/
+#define LORE_USE_TEXTBLOCK 1 /* This should be removed once the updated lore system is verified */
 
 /** Structures **/
 
@@ -40,5 +41,9 @@ void lore_do_probe(struct monster *m);
 void monster_flags_known(const monster_race *r_ptr, const monster_lore *l_ptr, bitflag flags[RF_SIZE]);
 void lore_treasure(struct monster *m_ptr, int num_item, int num_gold);
 
+void lore_title(textblock *tb, const monster_race *r_ptr);
+void lore_description(textblock *tb, const monster_race *race, const monster_lore *original_lore, bool spoilers);
+void lore_show_interactive(const monster_race *race, const monster_lore *lore);
+void lore_show_subwindow(const monster_race *race, const monster_lore *lore);
 
 #endif /* MONSTER_LORE_H */

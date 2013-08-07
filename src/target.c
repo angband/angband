@@ -633,6 +633,10 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 					/* Recall */
 					if (recall)
 					{
+#if LORE_USE_TEXTBLOCK
+						lore_show_interactive(m_ptr->race, l_ptr);
+						press = inkey_m();
+#else
 						/* Save screen */
 						screen_save();
 
@@ -644,6 +648,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 
 						/* Load screen */
 						screen_load();
+#endif /* LORE_USE_TEXTBLOCK */
 					}
 
 					/* Normal */
