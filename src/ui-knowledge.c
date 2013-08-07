@@ -1263,6 +1263,13 @@ static void mon_lore(int oid)
 	monster_race_track(r_ptr);
 	handle_stuff(p_ptr);
 
+#if LORE_USE_TEXTBLOCK
+	/* XXX This could probably be replaced with lore_show_interactive(), check implementation */
+	textblock *tb = textblock_new();
+	lore_description(tb, r_ptr, l_ptr, FALSE);
+	textui_textblock_show(tb, SCREEN_REGION, NULL);
+	textblock_free(tb);
+#else
 	/* Save the screen */
 	screen_save();
 
@@ -1279,6 +1286,7 @@ static void mon_lore(int oid)
 
 	/* Load the screen */
 	screen_load();
+#endif /* LORE_USE_TEXTBLOCK */
 }
 
 static void mon_summary(int gid, const int *object_list, int n, int top, int row, int col)

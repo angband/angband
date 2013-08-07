@@ -109,6 +109,25 @@ static void textblock_vappend_c(textblock *tb, byte attr, const char *fmt,
 }
 
 /**
+ * Add a graphics tile to a text block.
+ */
+void textblock_append_pict(textblock *tb, byte attr, int c)
+{
+	size_t remaining = tb->size - tb->strlen;
+
+	/* If we need more room, reallocate it */
+	if (remaining < 1) {
+		tb->size = TEXTBLOCK_LEN_INCR(tb->strlen + 1);
+		tb->text = mem_realloc(tb->text, tb->size * sizeof *tb->text);
+		tb->attrs = mem_realloc(tb->attrs, tb->size);
+	}
+
+	tb->text[tb->strlen] = (wchar_t)c;
+	tb->attrs[tb->strlen] = attr;
+	tb->strlen += 1;
+}
+
+/**
  * Add text to a text block, formatted.
  */
 void textblock_append(textblock *tb, const char *fmt, ...)
