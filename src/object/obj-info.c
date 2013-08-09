@@ -1134,9 +1134,13 @@ static bool describe_effect(textblock *tb, const object_type *o_ptr, bool full,
 }
 
 
-static bool describe_origin(textblock *tb, const object_type *o_ptr)
+static bool describe_origin(textblock *tb, const object_type *o_ptr, bool terse)
 {
 	char origin_text[80];
+
+	/* Only give this info in chardumps if wieldable */
+	if (terse && !obj_can_wear(o_ptr))
+		return FALSE;
 
 	if (o_ptr->origin_depth)
 		strnfmt(origin_text, sizeof(origin_text), "%d feet (level %d)",
@@ -1338,9 +1342,13 @@ static textblock *object_info_out(const object_type *o_ptr, int mode)
 	} else {
 		object_flags_known(o_ptr, flags);
 		object_pval_flags_known(o_ptr, pv_flags);
+
+		/* Don't include base flags when terse */
+		if (terse)
+			of_diff(flags, o_ptr->kind->base->flags);
 	}
 
-	if (subjective) describe_origin(tb, o_ptr);
+	if (subjective) describe_origin(tb, o_ptr, terse);
 	if (!terse) describe_flavor_text(tb, o_ptr, ego);
 
 	if (!full && !known)
