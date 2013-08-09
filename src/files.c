@@ -1100,7 +1100,7 @@ errr file_character(const char *path, bool full)
 		const char *title = "";
 		switch (i) {
 			case 0: title = "User interface"; break;
-			case 2: title = "Birth"; break;
+			case 1: title = "Birth"; break;
 		}
 
 		file_putf(fp, "  [%s]\n\n", title);
