@@ -23,10 +23,10 @@ void option_dump(ang_file *f);
 /*
  * Information for "do_cmd_options()".
  */
-#define OPT_PAGE_MAX				4
-#define OPT_PAGE_PER				16
+#define OPT_PAGE_MAX				3
+#define OPT_PAGE_PER				19
 
-#define OPT_PAGE_BIRTH				2
+#define OPT_PAGE_BIRTH				1
 
 /* The option data structures */
 extern const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER];

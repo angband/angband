@@ -1099,8 +1099,7 @@ errr file_character(const char *path, bool full)
 		int j;
 		const char *title = "";
 		switch (i) {
-			case 0: title = "Interface"; break;
-			case 1: title = "Warning"; break;
+			case 0: title = "User interface"; break;
 			case 2: title = "Birth"; break;
 		}
 

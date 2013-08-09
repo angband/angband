@@ -23,45 +23,34 @@
  */
 const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 {
-	/* Interface */
+	/* User interface */
 	{
+		/* keyset */
 		OPT_rogue_like_commands,
 		OPT_use_old_target,
+		OPT_auto_more,
+		/* items */
 		OPT_pickup_always,
 		OPT_pickup_inven,
-		OPT_center_player,
+		OPT_notify_recharge,
 		OPT_show_flavors,
-		OPT_mouse_movement,
-		OPT_mouse_buttons,
-		OPT_use_sound,
+		/* panel change */
+		OPT_center_player,
+		OPT_disturb_near,
+		/* extra info */
 		OPT_show_damage,
+		/* colouring */
 		OPT_view_yellow_light,
 		OPT_animate_flicker,
-		OPT_solid_walls,
-		OPT_hybrid_walls,
-		OPT_NONE,
-		OPT_NONE,
-	},
-
-
-	/* Warning */
-	{
 		OPT_hp_changes_color,
 		OPT_purple_uniques,
-		OPT_disturb_near,
-		OPT_auto_more,
-		OPT_notify_recharge,
-		OPT_NONE,
-		OPT_NONE,
-		OPT_NONE,
-		OPT_NONE,
-		OPT_NONE,
-		OPT_NONE,
-		OPT_NONE,
-		OPT_NONE,
-		OPT_NONE,
-		OPT_NONE,
-		OPT_NONE
+		OPT_solid_walls,
+		OPT_hybrid_walls,
+		/* mouse */
+		OPT_mouse_movement,
+		OPT_mouse_buttons,
+		/* sound */
+		OPT_use_sound,
 	},
 
 	/* Birth/Difficulty */
@@ -79,6 +68,9 @@ const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_birth_no_feelings,
 		OPT_birth_no_selling,
 		OPT_birth_start_kit,
+		OPT_NONE,
+		OPT_NONE,
+		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,
