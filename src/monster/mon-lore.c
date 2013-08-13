@@ -2251,6 +2251,7 @@ static const char *lore_describe_blow_method(int method)
 		NULL
 	};
 
+	/* Return a placeholder for RBM_NONE, since it doesn't make sense to describe a blow that doesn't have a method */
 	if (method <= RBM_NONE || method >= RBM_MAX)
 		return "do something weird";
 
@@ -2273,7 +2274,8 @@ static const char *lore_describe_blow_effect(int effect)
 		NULL
 	};
 
-	if (effect <= RBE_NONE || effect >= RBE_MAX)
+	/* Some blows have no effects, so we do want to return whatever is in the table for RBE_NONE */
+	if (effect < RBE_NONE || effect >= RBE_MAX)
 		return "do weird things";
 
 	return r_blow_effect_description[effect];
@@ -3426,7 +3428,7 @@ static void lore_append_attack(textblock *tb, const monster_race *race, const mo
 		textblock_append(tb, method_str);
 
 		/* Describe the effect (if any) */
-		if (effect_str) {
+		if (effect_str && strlen(effect_str) > 0) {
 			/* Describe the attack type */
 			textblock_append(tb, " to ");
 			textblock_append_c(tb, melee_colors[race->blow[i].effect], effect_str);
