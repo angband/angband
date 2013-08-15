@@ -269,8 +269,10 @@ void textblock_to_file(textblock *tb, ang_file *f, int indent, int wrap_at)
 	n_lines = textblock_calculate_lines(tb, &line_starts, &line_lengths, width);
 
 	for (i = 0; i < n_lines; i++) {
-		file_putf(f, "%*c%.*ls\n",
-				indent, ' ',
-				line_lengths[i], tb->text + line_starts[i]);
+		/* For some reason, the %*c part of the format string was still indenting, even when indent was zero */
+		if (indent == 0)
+			file_putf(f, "%.*ls\n", line_lengths[i], tb->text + line_starts[i]);
+		else
+			file_putf(f, "%*c%.*ls\n", indent, ' ', line_lengths[i], tb->text + line_starts[i]);
 	}
 }
