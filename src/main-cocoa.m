@@ -2791,6 +2791,21 @@ static BOOL check_events(int wait)
         }
         else {
             event = [NSApp nextEventMatchingMask:-1 untilDate:endDate inMode:NSDefaultRunLoopMode dequeue:YES];
+
+			static BOOL periodicStarted = NO;
+
+			if (OPT(animate_flicker) && !periodicStarted) {
+				[NSEvent startPeriodicEventsAfterDelay: 0.0 withPeriod: 0.2];
+				periodicStarted = YES;
+			}
+			else if (!OPT(animate_flicker) && periodicStarted) {
+				[NSEvent stopPeriodicEvents];
+				periodicStarted = NO;
+			}
+
+			if (OPT(animate_flicker) && wait && periodicStarted && [event type] == NSPeriodic)
+				idle_update();
+
             if (! event)
             {
                 [pool drain];
