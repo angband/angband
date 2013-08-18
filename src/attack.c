@@ -733,7 +733,7 @@ void textui_cmd_fire_at_nearest(void) {
 
 	/* Require usable ammo */
 	if (item < 0) {
-		msg("You have no ammunition in the quiver to fire");
+		msg("You have no ammunition in the quiver to fire.");
 		return;
 	}
 
