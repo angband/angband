@@ -2660,11 +2660,17 @@ static void lore_append_kills(textblock *tb, const monster_race *race, const mon
  *
  * \param tb is the textblock we are adding to.
  * \param race is the monster race we are describing.
+ * \param append_utf8 indicates if we should append the flavor text as UTF-8 (which is preferred for spoiler files).
  */
-static void lore_append_flavor(textblock *tb, const monster_race *race)
+static void lore_append_flavor(textblock *tb, const monster_race *race, bool append_utf8)
 {
 	assert(tb && race);
-	textblock_append(tb, race->text);
+
+	if (append_utf8)
+		textblock_append_utf8(tb, race->text);
+	else
+		textblock_append(tb, race->text);
+
 	textblock_append(tb, "\n");
 }
 
@@ -3545,8 +3551,8 @@ void lore_description(textblock *tb, const monster_race *race, const monster_lor
 	if (!spoilers)
 		lore_append_kills(tb, race, lore, known_flags);
 
-	/* Monster description */
-	lore_append_flavor(tb, race);
+	/* If we are generating spoilers, we want to output as UTF-8. As of 3.5, the values in race->name and race->text remain unconverted from the UTF-8 edit files. */
+	lore_append_flavor(tb, race, spoilers);
 
 	/* Describe the monster type, speed, life, and armor */
 	lore_append_movement(tb, race, lore, known_flags);

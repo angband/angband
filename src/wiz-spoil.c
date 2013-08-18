@@ -658,7 +658,7 @@ static void spoil_mon_info(const char *fname)
 	int i, n;
 	u16b *who;
 	int count = 0;
-	textblock *tb;
+	textblock *tb = NULL;
 
 	/* Open the file */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, fname);
@@ -676,6 +676,7 @@ static void spoil_mon_info(const char *fname)
 	textblock_append(tb, "------------------------------------------\n\n");
 	textblock_to_file(tb, fh, 0, 75);
 	textblock_free(tb);
+	tb = NULL;
 
 	/* Allocate the "who" array */
 	who = C_ZNEW(z_info->r_max, u16b);
@@ -707,7 +708,9 @@ static void spoil_mon_info(const char *fname)
 		else
 			textblock_append(tb, "The ");
 
-		textblock_append(tb, "%s  (",  r_ptr->name);	/* ---)--- */
+		/* As of 3.5, race->name and race->text are stored as UTF-8 strings; there is no conversion from the source edit files. */
+		textblock_append_utf8(tb, r_ptr->name);
+		textblock_append(tb, "  (");	/* ---)--- */
 		textblock_append(tb, attr_to_text(r_ptr->d_attr));
 		textblock_append(tb, " '%c')\n", r_ptr->d_char);
 
@@ -732,6 +735,7 @@ static void spoil_mon_info(const char *fname)
 
 		textblock_to_file(tb, fh, 0, 75);
 		textblock_free(tb);
+		tb = NULL;
 	}
 
 	/* Free the "who" array */

@@ -62,12 +62,29 @@ void textblock_free(textblock *tb)
 	mem_free(tb);
 }
 
+/**
+ * Resize the internal textblock storage (if needed) to hold additional characters.
+ *
+ * \param tb is the textblock we need to resize.
+ * \param additional_size is how many characters we want to add.
+ */
+void textblock_resize_if_needed(textblock *tb, size_t additional_size)
+{
+	size_t remaining = tb->size - tb->strlen;
+
+	/* If we need more room, reallocate it */
+	if (remaining < additional_size) {
+		tb->size = TEXTBLOCK_LEN_INCR(tb->strlen + additional_size);
+		tb->text = mem_realloc(tb->text, tb->size * sizeof *tb->text);
+		tb->attrs = mem_realloc(tb->attrs, tb->size);
+	}
+}
+
 static void textblock_vappend_c(textblock *tb, byte attr, const char *fmt,
 		va_list vp)
 {
 	size_t temp_len = TEXTBLOCK_LEN_INITIAL;
 	char *temp_space = mem_zalloc(temp_len);
-	size_t remaining = tb->size - tb->strlen;
 	size_t new_length;
 
 	/* We have to format the incoming string in native (external) format
@@ -94,13 +111,8 @@ static void textblock_vappend_c(textblock *tb, byte attr, const char *fmt,
 
 	/* Get extent of addition in wide chars */
 	new_length = Term_mbstowcs(NULL, temp_space, 0);
+	textblock_resize_if_needed(tb, new_length);
 
-	/* If we need more room, reallocate it */
-	if (remaining < new_length) {
-		tb->size = TEXTBLOCK_LEN_INCR(tb->strlen + new_length);
-		tb->text = mem_realloc(tb->text, tb->size * sizeof *tb->text);
-		tb->attrs = mem_realloc(tb->attrs, tb->size);
-	}
 	/* Convert to wide chars, into the text block buffer */
 	Term_mbstowcs(tb->text + tb->strlen, temp_space, tb->size - tb->strlen);
 	memset(tb->attrs + tb->strlen, attr, new_length);
@@ -113,18 +125,38 @@ static void textblock_vappend_c(textblock *tb, byte attr, const char *fmt,
  */
 void textblock_append_pict(textblock *tb, byte attr, int c)
 {
-	size_t remaining = tb->size - tb->strlen;
-
-	/* If we need more room, reallocate it */
-	if (remaining < 1) {
-		tb->size = TEXTBLOCK_LEN_INCR(tb->strlen + 1);
-		tb->text = mem_realloc(tb->text, tb->size * sizeof *tb->text);
-		tb->attrs = mem_realloc(tb->attrs, tb->size);
-	}
-
+	textblock_resize_if_needed(tb, 1);
 	tb->text[tb->strlen] = (wchar_t)c;
 	tb->attrs[tb->strlen] = attr;
 	tb->strlen += 1;
+}
+
+/**
+ * Append a UTF-8 string to the textblock.
+ *
+ * This is needed in order for proper file writing. Normally, textblocks convert
+ * to the system's encoding when a string is appended. However, there are still
+ * some strings in the game that are imported from external files as UTF-8.
+ * Instead of requiring each port to provide another converter back to UTF-8,
+ * we'll just use the original strings as is.
+ *
+ * \param tb is the textblock we are appending to.
+ * \param utf8_string is the C string that is encoded as UTF-8.
+ */
+void textblock_append_utf8(textblock *tb, const char *utf8_string)
+{
+	size_t i;
+	size_t new_length = strlen(utf8_string);
+
+	textblock_resize_if_needed(tb, new_length);
+
+	/* Append each UTF-8 char one at a time, so we don't trigger any conversions (which would require multiple bytes). */
+	for (i = 0; i < new_length; i++) {
+		tb->text[tb->strlen + i] = (wchar_t)utf8_string[i];
+	}
+
+	memset(tb->attrs + tb->strlen, TERM_WHITE, new_length);
+	tb->strlen += new_length;
 }
 
 /**
