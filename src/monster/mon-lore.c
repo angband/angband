@@ -3458,25 +3458,25 @@ static void lore_append_attack(textblock *tb, const monster_race *race, const mo
  * \param tb is the textblock we are placing the title into.
  * \param race is the monster race we are describing.
  */
-void lore_title(textblock *tb, const monster_race *r_ptr)
+void lore_title(textblock *tb, const monster_race *race)
 {
 	byte standard_attr, optional_attr;
 	wchar_t standard_char, optional_char;
 
 	char buffer[MB_LEN_MAX];
 
-	assert(r_ptr);
+	assert(race);
 
 	/* Get the chars */
-	standard_char = r_ptr->d_char;
-	optional_char = r_ptr->x_char;
+	standard_char = race->d_char;
+	optional_char = race->x_char;
 
 	/* Get the attrs */
-	standard_attr = r_ptr->d_attr;
-	optional_attr = r_ptr->x_attr;
+	standard_attr = race->d_attr;
+	optional_attr = race->x_attr;
 
 	/* A title (use "The" for non-uniques) */
-	if (!rf_has(r_ptr->flags, RF_UNIQUE))
+	if (!rf_has(race->flags, RF_UNIQUE))
 		textblock_append(tb, "The ");
 	else if (OPT(purple_uniques)) {
 		standard_attr = TERM_VIOLET;
@@ -3485,7 +3485,7 @@ void lore_title(textblock *tb, const monster_race *r_ptr)
 	}
 
 	/* Dump the name and then append standard attr/char info */
-	textblock_append(tb, r_ptr->name);
+	textblock_append(tb, race->name);
 
 	/* The textblock format strings seem like they can handle wchars, but we'll convert it just to be safe */
 	wctomb(buffer, standard_char);
