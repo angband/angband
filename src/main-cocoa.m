@@ -2806,9 +2806,6 @@ static BOOL check_events(int wait)
 			if (OPT(animate_flicker) && wait && periodicStarted && [event type] == NSPeriodic)
 				idle_update();
 
-			if (wait && [event type] == NSPeriodic)
-				idle_update();
-
             if (! event)
             {
                 [pool drain];
