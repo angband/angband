@@ -2599,7 +2599,7 @@ static void lore_append_kills(textblock *tb, const monster_race *race, const mon
 
 			/* Unavenged (ever) */
 			else
-				textblock_append(tb, ", who remain%s unavenged.  ", PLURAL(lore->deaths));
+				textblock_append(tb, ", who %s unavenged.  ", plural(lore->deaths, "remains", "remain"));
 		}
 		else if (dead) {
 			/* Dead unique who never hurt us */
