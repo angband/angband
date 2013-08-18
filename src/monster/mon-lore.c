@@ -3377,7 +3377,7 @@ static void lore_append_spells(textblock *tb, const monster_race *race, const mo
  */
 static void lore_append_attack(textblock *tb, const monster_race *race, const monster_lore *lore, bitflag known_flags[RF_SIZE], const int melee_colors[RBE_MAX])
 {
-	int i, total_attacks;
+	int i, total_attacks, described_count;
 	monster_sex_t msex = MON_SEX_NEUTER;
 
 	assert(tb && race && lore);
@@ -3407,6 +3407,8 @@ static void lore_append_attack(textblock *tb, const monster_race *race, const mo
 		return;
 	}
 
+	described_count = 0;
+
 	/* Describe each melee attack */
 	for (i = 0; i < MONSTER_BLOW_MAX; i++) {
 		int dice, sides;
@@ -3423,9 +3425,9 @@ static void lore_append_attack(textblock *tb, const monster_race *race, const mo
 		effect_str = lore_describe_blow_effect(race->blow[i].effect);
 
 		/* Introduce the attack description */
-		if (i == 0)
+		if (described_count == 0)
 			textblock_append(tb, "%s can ", lore_pronoun_nominative(msex, TRUE));
-		else if (i < total_attacks - 1)
+		else if (described_count < total_attacks - 1)
 			textblock_append(tb, ", ");
 		else
 			textblock_append(tb, ", and ");
@@ -3445,6 +3447,8 @@ static void lore_append_attack(textblock *tb, const monster_race *race, const mo
 				textblock_append_c(tb, TERM_L_GREEN, "%dd%d", dice, sides);
 			}
 		}
+
+		described_count++;
 	}
 
 	textblock_append(tb, ".  ");
