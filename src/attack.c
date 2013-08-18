@@ -476,7 +476,7 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 			if (dmg <= 0) {
 				dmg = 0;
 				msg_type = MSG_MISS;
-				hit_verb = "fail to harm";
+				hit_verb = "fails to harm";
 			}
 		
 			if (!visible) {
