@@ -10,10 +10,12 @@ CC = clang
 LD = ld
 OPT ?= -O2
 
-# the CFBundleExecutable plist value is used within the app, so we want it to match the bundle name to make everything look right
+# NAME is how the bundle name will be displayed
 NAME = Angband
 APPNAME = $(NAME).app
-EXE = $(NAME)
+
+# EXE should stay as "angband", since there are other rules (in this file and in others) that are hardcoded as such
+EXE = angband
 
 # for consistency with older versions, use a lower case bundle ID
 BUNDLE_IDENTIFIER = org.rephial.angband
