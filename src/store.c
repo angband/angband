@@ -2393,7 +2393,11 @@ static bool store_purchase(int item)
 		}
 
 		/* Work out how many the player can afford */
-		amt = p_ptr->au / price;
+		if (price == 0)
+			amt = o_ptr->number; /* Prevent division by zero */
+		else
+			amt = p_ptr->au / price;
+
 		if (amt > o_ptr->number) amt = o_ptr->number;
 		
 		/* Double check for wands/staves */
