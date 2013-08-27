@@ -1717,7 +1717,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			msg("That tastes great!  A fine vintage.");
 			player_set_timed(p_ptr, TMD_BOLD, rand_spread(100, 20), TRUE);
 			*ident = TRUE;
-			break;
+			return TRUE;
 		}
 
 		case EF_SHROOM_EMERGENCY:
