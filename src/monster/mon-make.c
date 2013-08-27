@@ -872,7 +872,7 @@ static bool place_new_monster_one(int y, int x, monster_race *race,
 	assert(race && race->name);
 
 	/* Require empty space */
-	if (!cave_isempty(cave, y, x)) return (FALSE);
+	if (!cave_isopen(cave, y, x)) return (FALSE);
 
 	/* No creation on glyph of warding */
 	if (cave_iswarded(cave, y, x)) return FALSE;

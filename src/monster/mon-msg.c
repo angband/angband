@@ -327,9 +327,16 @@ bool add_monster_message(const char *mon_name, struct monster *m_ptr,
 	mon_msg[i].mon_flags = mon_flags;
 	mon_msg[i].msg_code = msg_code;
 	mon_msg[i].delay = delay;
+	mon_msg[i].delay_tag = MON_DELAY_TAG_DEFAULT;
 	/* Just this monster so far */
 	mon_msg[i].mon_count = 1;
-    
+
+	/* Force all death messages to go at the end of the group for logical presentation */
+	if (msg_code == MON_MSG_DIE || msg_code == MON_MSG_DESTROYED) {
+		mon_msg[i].delay = TRUE;
+		mon_msg[i].delay_tag = MON_DELAY_TAG_DEATH;
+	}
+
 	/* One more entry */
 	++size_mon_msg;
  
@@ -351,7 +358,7 @@ bool add_monster_message(const char *mon_name, struct monster *m_ptr,
  * This is to avoid things like "The snaga dies. The snaga runs in fear!"
  * So we only flush messages matching the delay parameter.
  */
-static void flush_monster_messages(bool delay)
+static void flush_monster_messages(bool delay, byte delay_tag)
 {
 	const monster_race *r_ptr;
 	int i, count;
@@ -364,6 +371,9 @@ static void flush_monster_messages(bool delay)
 		int type = MSG_GENERIC;
 
 		if (mon_msg[i].delay != delay) continue;
+
+		/* Skip if we are delaying and the tags don't match */
+		if (mon_msg[i].delay && mon_msg[i].delay_tag != delay_tag) continue;
    
 		/* Cache the monster count */
 		count = mon_msg[i].mon_count;
@@ -469,8 +479,9 @@ static void flush_monster_messages(bool delay)
 void flush_all_monster_messages(void)
 {
 	/* Flush regular messages, then delayed messages */
-	flush_monster_messages(FALSE);
-	flush_monster_messages(TRUE);
+	flush_monster_messages(FALSE, MON_DELAY_TAG_DEFAULT);
+	flush_monster_messages(TRUE, MON_DELAY_TAG_DEFAULT);
+	flush_monster_messages(TRUE, MON_DELAY_TAG_DEATH);
 
 	/* Delete all the stacked messages and history */
 	size_mon_msg = 0;

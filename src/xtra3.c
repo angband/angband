@@ -1305,6 +1305,17 @@ static void update_minimap_subwindow(game_event_type type,
 
 		flags->needs_redraw = FALSE;
 	}
+	else if (type == EVENT_DUNGEONLEVEL) {
+		/* XXX map_height and map_width need to be kept in sync with display_map() */
+		term *t = angband_term[flags->win_idx];
+		int map_height = t->hgt - 2;
+		int map_width = t->wid - 2;
+
+		/* Clear the entire term if the new map isn't going to fit the entire thing */
+		if (cave->height <= map_height || cave->width <= map_width) {
+			flags->needs_redraw = TRUE;
+		}
+	}
 }
 
 
@@ -1511,6 +1522,8 @@ static void subwindow_flag_changed(int win_idx, u32b flag, bool new_state)
 			register_or_deregister(EVENT_MAP,
 					       update_minimap_subwindow,
 					       &minimap_data[win_idx]);
+
+			register_or_deregister(EVENT_DUNGEONLEVEL, update_minimap_subwindow, &minimap_data[win_idx]);
 
 			register_or_deregister(EVENT_END,
 					       update_minimap_subwindow,
