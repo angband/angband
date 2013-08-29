@@ -640,9 +640,6 @@ const char *describe_use(int i)
  */
 bool item_tester_okay(const object_type *o_ptr)
 {
-	/* Hack -- allow listing empty slots */
-	if (item_tester_full) return (TRUE);
-
 	/* Require an item */
 	if (!o_ptr->kind) return (FALSE);
 

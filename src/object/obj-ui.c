@@ -261,7 +261,7 @@ void show_inven(int mode)
 		if (item_tester_okay(o_ptr))
 			strnfmt(labels[num_obj], sizeof(labels[num_obj]), "%c) ", index_to_label(i));
 
-		/* Unacceptable items are still displayed in term windows */
+		/* Unacceptable items are still sometimes shown */
 		else if (in_term)
 			my_strcpy(labels[num_obj], "   ", sizeof(labels[num_obj]));
 
@@ -300,6 +300,7 @@ void show_equip(int mode)
 	char tmp_val[80];
 
 	bool in_term = (mode & OLIST_WINDOW) ? TRUE : FALSE;
+	bool show_empty = (mode & OLIST_SEMPTY) ? TRUE : FALSE;
 
 	/* Find the last equipment slot to display */
 	for (i = INVEN_WIELD; i < ALL_INVEN_TOTAL; i++)
@@ -341,8 +342,8 @@ void show_equip(int mode)
 		if (item_tester_okay(o_ptr))
 			strnfmt(labels[num_obj], sizeof(labels[num_obj]), "%c) ", index_to_label(i));
 
-		/* Unacceptable items are still displayed in term windows */
-		else if (in_term)
+		/* Unacceptable items are still sometimes shown */
+		else if ((!o_ptr->kind && show_empty) || in_term)
 			my_strcpy(labels[num_obj], "   ", sizeof(labels[num_obj]));
 
 		/* Unacceptable items are skipped in the main window */
@@ -637,7 +638,6 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 	bool use_inven = ((mode & USE_INVEN) ? TRUE : FALSE);
 	bool use_equip = ((mode & USE_EQUIP) ? TRUE : FALSE);
 	bool use_floor = ((mode & USE_FLOOR) ? TRUE : FALSE);
-	bool use_quiver = ((mode & QUIVER_TAGS) ? TRUE : FALSE);
 	bool is_harmless = ((mode & IS_HARMLESS) ? TRUE : FALSE);
 	bool quiver_tags = ((mode & QUIVER_TAGS) ? TRUE : FALSE);
 
@@ -660,11 +660,15 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 
 	/* Object list display modes */
 	if (mode & SHOW_FAIL)
-		olist_mode |= (OLIST_FAIL);
+		olist_mode |= OLIST_FAIL;
 	else
-		olist_mode |= (OLIST_WEIGHT);
+		olist_mode |= OLIST_WEIGHT;
+
 	if (mode & SHOW_PRICES)
-		olist_mode |= (OLIST_PRICE);
+		olist_mode |= OLIST_PRICE;
+
+	if (mode & SHOW_EMPTY)
+		olist_mode |= OLIST_SEMPTY;
 
 	/* Paranoia XXX XXX XXX */
 	message_flush();
@@ -745,7 +749,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 			p_ptr->command_wrk = USE_FLOOR;
 
 		/* If we are using the quiver then start on equipment */
-		else if (use_quiver && allow_equip)
+		else if (quiver_tags && allow_equip)
 			p_ptr->command_wrk = USE_EQUIP;
 
 		/* Use inventory if allowed */
@@ -813,18 +817,15 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 		/* Viewing inventory */
 		if (p_ptr->command_wrk == USE_INVEN)
 		{
-			/* Hack - show the quiver counts in certain cases like the 'i' command */
-			if (item_tester_full) {
-				olist_mode |= OLIST_QUIVER;
-			}
+			int nmode = olist_mode;
+
+			/* Show the quiver counts in certain cases, like the 'i' command */
+			if (mode & SHOW_QUIVER)
+				nmode |= OLIST_QUIVER;
 
 			/* Redraw if needed */
-			if (show_list) show_inven(olist_mode);
-
-			/* Hack - hide the quiver counts outside the inventory page */
-			if (item_tester_full) {
-				olist_mode &= ~OLIST_QUIVER;
-			}
+			if (show_list)
+				show_inven(nmode);
 
 			/* Begin the prompt */
 			strnfmt(out_val, sizeof(out_val), "Inven:");

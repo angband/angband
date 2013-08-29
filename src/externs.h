@@ -113,7 +113,6 @@ extern char *ANGBAND_DIR_XTRA_GRAF;
 extern char *ANGBAND_DIR_XTRA_SOUND;
 extern char *ANGBAND_DIR_XTRA_ICON;
 
-extern bool item_tester_full;
 extern byte item_tester_tval;
 extern bool (*item_tester_hook)(const object_type *);
 extern ang_file *text_out_file;

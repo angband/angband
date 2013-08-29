@@ -106,24 +106,22 @@ enum {
 /**
  * Modes for item lists in "show_inven()"  "show_equip()" and "show_floor()"
  */
-typedef enum
-{
+typedef enum {
 	OLIST_NONE   = 0x00,   /* No options */
    	OLIST_WINDOW = 0x01,   /* Display list in a sub-term (left-align) */
    	OLIST_QUIVER = 0x02,   /* Display quiver lines */
    	OLIST_GOLD   = 0x04,   /* Include gold in the list */
 	OLIST_WEIGHT = 0x08,   /* Show item weight */
 	OLIST_PRICE  = 0x10,   /* Show item price */
-	OLIST_FAIL   = 0x20    /* Show device failure */
-
+	OLIST_FAIL   = 0x20,    /* Show device failure */
+	OLIST_SEMPTY = 0x40
 } olist_detail_t;
 
 
 /**
  * Modes for object_info()
  */
-typedef enum
-{
+typedef enum {
 	OINFO_NONE   = 0x00, /* No options */
 	OINFO_TERSE  = 0x01, /* Keep descriptions brief, e.g. for dumps */
 	OINFO_SUBJ   = 0x02, /* Describe object from the character's POV */
@@ -173,6 +171,20 @@ enum chest_query {
 	CHEST_OPENABLE,
 	CHEST_TRAPPED
 };
+
+/*
+ * Bit flags for get_item() function
+ */
+#define USE_EQUIP     0x0001	/* Allow equip items */
+#define USE_INVEN     0x0002	/* Allow inven items */
+#define USE_FLOOR     0x0004	/* Allow floor items */
+#define IS_HARMLESS   0x0008	/* Ignore generic warning inscriptions */
+#define SHOW_PRICES   0x0010	/* Show item prices in item lists */
+#define SHOW_FAIL     0x0020 	/* Show device failure in item lists */
+#define SHOW_QUIVER   0x0040	/* Show quiver summary when looking at inventory */
+#define SHOW_EMPTY    0x0080	/* Show empty slots in equipment display */
+#define QUIVER_TAGS   0x0100	/* 0-9 are quiver slots when selecting */
+
 
 /*
  * Some constants used in randart generation and power calculation

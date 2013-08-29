@@ -488,37 +488,6 @@ enum
 #define ART_MIN_NORMAL		16
 
 
-/*** Function flags ***/
-
-
-/*
- * Bit flags for the "target_set" function
- *
- *	KILL: Target monsters
- *	LOOK: Describe grid fully
- *	XTRA: Currently unused flag (NOT USED)
- *	GRID: Select from all grids (NOT USED)
- * QUIET: Prevent targeting messages.
- */
-#define TARGET_KILL   0x01
-#define TARGET_LOOK   0x02
-#define TARGET_XTRA   0x04
-#define TARGET_GRID   0x08
-#define TARGET_QUIET  0x10
-
-
-/*
- * Bit flags for the "get_item" function
- */
-#define USE_EQUIP     0x01	/* Allow equip items */
-#define USE_INVEN     0x02	/* Allow inven items */
-#define USE_FLOOR     0x04	/* Allow floor items */
-#define CAN_SQUELCH   0x08	/* Allow selection of all squelched items */
-#define IS_HARMLESS   0x10	/* Ignore generic warning inscriptions */
-#define SHOW_PRICES   0x20	/* Show item prices in item lists */
-#define SHOW_FAIL     0x40 	/* Show device failure in item lists */
-#define QUIVER_TAGS   0x80	/* 0-9 are quiver slots when selecting */
-
 
 /*** Player flags ***/
 

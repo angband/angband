@@ -294,9 +294,6 @@ int context_menu_player(int mx, int my)
 			/* Save screen */
 			screen_save();
 
-			/* Hack -- show empty slots */
-			item_tester_full = TRUE;
-
 			/* Prompt for a command */
 			prt(format("(Inventory) Burden %d.%d lb (%d.%d lb %s). Item for command: ",
 				p_ptr->total_weight / 10, p_ptr->total_weight % 10,
@@ -306,7 +303,7 @@ int context_menu_player(int mx, int my)
 
 
 			/* Get an item to use a context command on */
-			if (get_item(&diff, NULL, NULL, CMD_NULL, USE_EQUIP|USE_INVEN|USE_FLOOR|IS_HARMLESS)) {
+			if (get_item(&diff, NULL, NULL, CMD_NULL, USE_EQUIP|USE_INVEN|USE_FLOOR|SHOW_EMPTY|IS_HARMLESS)) {
 				object_type *o_ptr;
 
 				/* Track the object kind */
@@ -316,9 +313,6 @@ int context_menu_player(int mx, int my)
 
 				context_menu_object(o_ptr, diff);
 			}
-
-			/* Hack -- hide empty slots */
-			item_tester_full = FALSE;
 
 			/* Load screen */
 			screen_load();
