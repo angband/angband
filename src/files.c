@@ -1047,9 +1047,10 @@ errr file_character(const char *path, bool full)
 		object_desc(o_name, sizeof(o_name), &p_ptr->inventory[i],
 				ODESC_PREFIX | ODESC_FULL);
 
-		x_file_putf(fp, "%c) %s\n", index_to_label(i), o_name);
-		if (p_ptr->inventory[i].kind)
+		if (p_ptr->inventory[i].kind) {
+			x_file_putf(fp, "%c) %s\n", index_to_label(i), o_name);
 			object_info_chardump(fp, &p_ptr->inventory[i], 5, 72);
+		}
 	}
 
 	/* Dump the inventory */
