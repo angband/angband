@@ -56,11 +56,12 @@ endif
 
 # Note that Makefile.inc sets VERSION, and so we must run version.sh after
 # including Makefile.inc
-USE_OSX = 1
 include Makefile.inc
 
 VERSION := $(shell ../scripts/version.sh)
-CFLAGS += -DBUILD_ID=${VERSION}
+ifneq (${VERSION},)
+	CFLAGS += -DBUILD_ID=${VERSION}
+endif
 
 BOBJS = borg1.o borg2.o borg3.o borg4.o borg5.o borg6.o borg7.o borg8.o borg9.o
 OBJS = $(BASEOBJS)
