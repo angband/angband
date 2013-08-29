@@ -618,8 +618,8 @@ void grid_data_as_text(grid_data *g, int *ap, wchar_t *cp, int *tap, wchar_t *tc
 				/* Use attr */
 				a = da;
 
-				/* Desired attr & char */
-				da = m_ptr->race->x_attr;
+				/* Desired attr & char. da is not used, but should a be set to it? */
+				/*da = m_ptr->race->x_attr;*/
 				dc = m_ptr->race->x_char;
 				
 				/* Use char */

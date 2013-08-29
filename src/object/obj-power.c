@@ -320,7 +320,8 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 		if (known || object_this_pval_is_visible(o_ptr, j)) {
 			if (o_ptr->pval[j] >= INHIBIT_MIGHT) {
 				p += INHIBIT_POWER;
-				mult = 1;	/* don't overflow */
+				/* mult is never used before returning */
+				/*mult = 1;*/	/* don't overflow */
 				file_putf(log_file, "INHIBITING - too much extra might - quitting\n");
 				return p;
 			} else

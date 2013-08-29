@@ -21,6 +21,7 @@
 #include "cave.h"
 #include "pathfind.h"
 #include "squelch.h"
+#include "monster/mon-util.h"
 
 /****** Pathfinding code ******/
 

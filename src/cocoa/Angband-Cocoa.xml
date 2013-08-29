@@ -6,6 +6,10 @@
 	<string>English</string>
 	<key>CFBundleExecutable</key>
 	<string>$EXECUTABLE$</string>
+	<key>CFBundleDisplayName</key>
+	<string>$NAME$</string>
+	<key>CFBundleName</key>
+	<string>$NAME$</string>
 	<key>CFBundleIconFile</key>
 	<string>$NAME$_Icons</string>
 	<key>CFBundleIdentifier</key>

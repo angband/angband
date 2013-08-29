@@ -85,6 +85,10 @@ enum mon_messages {
 	MAX_MON_MSG
 };
 
+enum {
+	MON_DELAY_TAG_DEFAULT = 0,
+	MON_DELAY_TAG_DEATH,
+};
 
 /* Maxinum number of stacked monster messages */
 #define MAX_STORED_MON_MSG		200
@@ -105,6 +109,7 @@ typedef struct monster_race_message
  	int  msg_code;		/* The coded message */
 	byte mon_count;		/* How many monsters triggered this message */
 	bool delay;			/* Should this message be put off to the end */
+	byte delay_tag;		/* Tag to group delayed messages for better presentation */
 } monster_race_message;
 
 typedef struct monster_message_history
