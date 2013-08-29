@@ -175,11 +175,6 @@ bool file_put(ang_file *f, const char *buf);
 bool file_putf(ang_file *f, const char *fmt, ...);
 bool file_vputf(ang_file *f, const char *fmt, va_list vp);
 
-/**
- * Format a string, then print it out to file.
- */
-bool x_file_putf(ang_file *f, const char *fmt, ...);
-
 
 /** Byte-based IO */
 

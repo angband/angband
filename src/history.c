@@ -460,7 +460,7 @@ void dump_history(ang_file *file)
                 if (history_list[i].type & HISTORY_ARTIFACT_LOST)
                                 my_strcat(buf, " (LOST)", sizeof(buf));
 
-		x_file_putf(file, "%s", buf);
+		file_putf(file, "%s", buf);
 		file_put(file, "\n");
 	}
 

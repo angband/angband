@@ -957,7 +957,7 @@ errr file_character(const char *path, bool full)
 		*p = '\0';
 
 		/* End the row */
-		x_file_putf(fp, "%s\n", buf);
+		file_putf(fp, "%s\n", buf);
 	}
 
 	/* Skip a line */
@@ -987,7 +987,7 @@ errr file_character(const char *path, bool full)
 		*p = '\0';
 
 		/* End the row */
-		x_file_putf(fp, "%s\n", buf);
+		file_putf(fp, "%s\n", buf);
 	}
 
 	/* Skip a line */
@@ -1014,7 +1014,7 @@ errr file_character(const char *path, bool full)
 		*p = '\0';
 
 		/* End the row */
-		x_file_putf(fp, "%s\n", buf);
+		file_putf(fp, "%s\n", buf);
 	}
 
 	/* Skip some lines */
@@ -1029,9 +1029,9 @@ errr file_character(const char *path, bool full)
 		file_putf(fp, "  [Last Messages]\n\n");
 		while (i-- > 0)
 		{
-			x_file_putf(fp, "> %s\n", message_str((s16b)i));
+			file_putf(fp, "> %s\n", message_str((s16b)i));
 		}
-		x_file_putf(fp, "\nKilled by %s.\n\n", p_ptr->died_from);
+		file_putf(fp, "\nKilled by %s.\n\n", p_ptr->died_from);
 	}
 
 
@@ -1048,7 +1048,7 @@ errr file_character(const char *path, bool full)
 				ODESC_PREFIX | ODESC_FULL);
 
 		if (p_ptr->inventory[i].kind) {
-			x_file_putf(fp, "%c) %s\n", index_to_label(i), o_name);
+			file_putf(fp, "%c) %s\n", index_to_label(i), o_name);
 			object_info_chardump(fp, &p_ptr->inventory[i], 5, 72);
 		}
 	}
@@ -1062,7 +1062,7 @@ errr file_character(const char *path, bool full)
 		object_desc(o_name, sizeof(o_name), &p_ptr->inventory[i],
 					ODESC_PREFIX | ODESC_FULL);
 
-		x_file_putf(fp, "%c) %s\n", index_to_label(i), o_name);
+		file_putf(fp, "%c) %s\n", index_to_label(i), o_name);
 		object_info_chardump(fp, &p_ptr->inventory[i], 5, 72);
 	}
 	file_putf(fp, "\n\n");
@@ -1079,7 +1079,7 @@ errr file_character(const char *path, bool full)
 		{
 			object_desc(o_name, sizeof(o_name), &st_ptr->stock[i],
 						ODESC_PREFIX | ODESC_FULL);
-			x_file_putf(fp, "%c) %s\n", I2A(i), o_name);
+			file_putf(fp, "%c) %s\n", I2A(i), o_name);
 
 			object_info_chardump(fp, &st_ptr->stock[i], 5, 72);
 		}

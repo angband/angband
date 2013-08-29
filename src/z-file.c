@@ -635,27 +635,6 @@ bool file_vputf(ang_file *f, const char *fmt, va_list vp)
 	return file_put(f, buf);
 }
 
-/*
- * Format and translate a string, then print it out to file.
- */
-bool x_file_putf(ang_file *f, const char *fmt, ...)
-{
-	va_list vp;
-
- 	char buf[1024];
-
- 	/* Begin the Varargs Stuff */
- 	va_start(vp, fmt);
-
- 	/* Format the args, save the length */
- 	(void)vstrnfmt(buf, sizeof(buf), fmt, vp);
-
- 	/* End the Varargs Stuff */
- 	va_end(vp);
-
- 	return file_put(f, buf);
-}
-
 
 bool dir_exists(const char *path)
 {
