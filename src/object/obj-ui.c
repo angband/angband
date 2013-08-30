@@ -212,7 +212,7 @@ static void show_obj_list(int num_obj, int num_head, char labels[50][80],
 	}
 }
 
-
+/* Find an @ tag with the specified command */
 static char find_tag(struct object *obj, unsigned char cmdkey) {
 	const char *haystack;
 	char needle[] = "@ ";

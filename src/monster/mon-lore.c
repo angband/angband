@@ -1815,8 +1815,6 @@ void lore_title(textblock *tb, const monster_race *race)
 	byte standard_attr, optional_attr;
 	wchar_t standard_char, optional_char;
 
-	char buffer[MB_LEN_MAX];
-
 	assert(race);
 
 	/* Get the chars */
@@ -1839,10 +1837,8 @@ void lore_title(textblock *tb, const monster_race *race)
 	/* Dump the name and then append standard attr/char info */
 	textblock_append(tb, race->name);
 
-	/* The textblock format strings seem like they can handle wchars, but we'll convert it just to be safe */
-	wctomb(buffer, standard_char);
 	textblock_append(tb, " ('");
-	textblock_append_c(tb, standard_attr, buffer);
+	textblock_append_pict(tb, standard_attr, standard_char);
 	textblock_append(tb, "')");
 
 	if (((optional_attr != standard_attr) || (optional_char != standard_char)) && (tile_width == 1) && (tile_height == 1)) {
