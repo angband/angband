@@ -1598,12 +1598,15 @@ static CGImageRef create_angband_image(NSString *name)
                 contextBitmapInfo |= kCGImageAlphaPremultipliedLast;
                 break;
         }
-        
+
+        // draw the source image flipped, since the view is flipped
         CGContextRef ctx = CGBitmapContextCreate(NULL, width, height, CGImageGetBitsPerComponent(decodedImage), CGImageGetBytesPerRow(decodedImage), CGImageGetColorSpace(decodedImage), contextBitmapInfo);
         CGContextSetBlendMode(ctx, kCGBlendModeCopy);
+        CGContextTranslateCTM(ctx, 0.0, height);
+        CGContextScaleCTM(ctx, 1.0, -1.0);
         CGContextDrawImage(ctx, CGRectMake(0, 0, width, height), decodedImage);
         result = CGBitmapContextCreateImage(ctx);
-        
+
         /* Done with these things */
         CFRelease(ctx);
         CGImageRelease(decodedImage);
@@ -1874,11 +1877,17 @@ static errr Term_wipe_cocoa(int x, int y, int n)
 
 static void draw_image_tile(CGImageRef image, NSRect srcRect, NSRect dstRect, NSCompositingOperation op)
 {
+    // flip the source rect since the source image is flipped
+    CGAffineTransform flip = CGAffineTransformIdentity;
+    flip = CGAffineTransformTranslate(flip, 0.0, CGImageGetHeight(image));
+    flip = CGAffineTransformScale(flip, 1.0, -1.0);
+    CGRect flippedSourceRect = CGRectApplyAffineTransform(NSRectToCGRect(srcRect), flip);
+
     /* When we use high-quality resampling to draw a tile, pixels from outside the tile may bleed in, causing graphics artifacts. Work around that. */
-    CGImageRef subimage = CGImageCreateWithImageInRect(image, *(CGRect *)&srcRect);
+    CGImageRef subimage = CGImageCreateWithImageInRect(image, flippedSourceRect);
     NSGraphicsContext *context = [NSGraphicsContext currentContext];
     [context setCompositingOperation:op];
-    CGContextDrawImage([context graphicsPort], *(CGRect *)&dstRect, subimage);
+    CGContextDrawImage([context graphicsPort], NSRectToCGRect(dstRect), subimage);
     CGImageRelease(subimage);
 }
 

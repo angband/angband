@@ -48,14 +48,14 @@ ifneq ($(autoconf),)
 CFLAGS += -DHAVE_CONFIG_H
 endif
 
-# let Makefile.inc set VERSION and then we'll use the detailed build ID as the bundle version (visible in "About Angband")
+# Note that Makefile.inc sets VERSION, and so we must run version.sh after including Makefile.inc
 include Makefile.inc
-BUNDLE_VERSION := $(shell ../scripts/version.sh)
-ifeq (${BUNDLE_VERSION},)
+VERSION := $(shell ../scripts/version.sh)
+ifeq (${VERSION},)
 	BUNDLE_VERSION := ${VERSION}
+	CFLAGS += -DBUILD_ID=${VERSION}
 endif
 
-CFLAGS += -DBUILD_ID=${VERSION}
 
 BOBJS = borg1.o borg2.o borg3.o borg4.o borg5.o borg6.o borg7.o borg8.o borg9.o
 OBJS = $(BASEOBJS)
