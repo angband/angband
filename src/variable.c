@@ -56,7 +56,6 @@ bool character_generated;	/* The character exists */
 bool character_dungeon;		/* The character has a dungeon */
 bool character_saved;		/* The character was just saved to a savefile */
 
-s16b character_icky;		/* Depth of the game in special mode */
 s16b character_xtra;		/* Depth of the game in startup mode */
 
 u32b seed_randart;		/* Hack -- consistent random artifacts */
