@@ -55,25 +55,16 @@ enum
 static unsigned int scr_places_x[LOC_MAX];
 static unsigned int scr_places_y[LOC_MAX];
 
-
 /* State flags */
 #define STORE_GOLD_CHANGE      0x01
 #define STORE_FRAME_CHANGE     0x02
-
 #define STORE_SHOW_HELP        0x04
-
-
-
-
 
 /* Compound flag for the initial display of a store */
 #define STORE_INIT_CHANGE		(STORE_FRAME_CHANGE | STORE_GOLD_CHANGE)
 
-
-
 /* Some local constants */
 #define STORE_OBJ_LEVEL 5       /* Magic Level for normal stores */
-
 
 
 /** Variables to maintain state XXX ***/
@@ -81,15 +72,14 @@ static unsigned int scr_places_y[LOC_MAX];
 /* Flags for the display */
 static u16b store_flags;
 
-
+/* Are we in store? */
+bool store_in_store = FALSE;
 
 
 /*** Utilities ***/
 
-
 /* Randomly select one of the entries in an array */
 #define ONE_OF(x)	x[randint0(N_ELEMENTS(x))]
-
 
 
 /*** Flavour text stuff ***/
@@ -3143,6 +3133,9 @@ void do_cmd_store(cmd_code code, cmd_arg args[])
 	event_signal(EVENT_LEAVE_GAME);
 	event_signal(EVENT_ENTER_STORE);
 
+	/* XXX ick */
+	store_in_store = TRUE;
+
 	/* Forget the view */
 	forget_view(cave);
 
@@ -3176,6 +3169,9 @@ void do_cmd_store(cmd_code code, cmd_arg args[])
 	/* Switch back to the normal game view. */
 	event_signal(EVENT_LEAVE_STORE);
 	event_signal(EVENT_ENTER_GAME);
+
+	/* XXX ick */
+	store_in_store = TRUE;
 
 	/* Take a turn */
 	p_ptr->energy_use = 100;

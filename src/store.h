@@ -5,6 +5,9 @@
 #include "object/object.h"
 #include "parser.h"
 
+extern bool store_in_store;
+
+
 #define STORE_INVEN_MAX		24    /* Max number of discrete objs in inven */
 #define STORE_TURNS		1000  /* Number of turns between turnovers */
 #define STORE_SHUFFLE		25    /* 1/Chance (per day) of an owner changing */

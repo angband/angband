@@ -525,6 +525,7 @@ void process_command(cmd_context ctx, bool no_request)
 			}
 
 			case CMD_DROP:
+			case CMD_STASH:
 			{
 				if (!cmd->arg_present[1])
 				{

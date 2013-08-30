@@ -3067,7 +3067,9 @@ bool cave_isshop(struct cave *c, int y, int x) {
 }
 
 int cave_shopnum(struct cave *c, int y, int x) {
-	return c->feat[y][x] - FEAT_SHOP_HEAD;
+	if (cave_isshop(c, y, x))
+		return c->feat[y][x] - FEAT_SHOP_HEAD;
+	return -1;
 }
 
 /**
