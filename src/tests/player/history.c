@@ -1,7 +1,7 @@
 /* player/history */
 
+#include "player/player.h"
 #include "birth.h"
-#include "player/types.h"
 #include "unit-test.h"
 
 NOTEARDOWN

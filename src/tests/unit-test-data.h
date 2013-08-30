@@ -15,7 +15,7 @@
 
 #include "angband.h"
 #include "object/tvalsval.h"
-#include "player/types.h"
+#include "player/player.h"
 
 static struct player_sex TEST_DATA test_sex = {
 	.title = "Test Sex",
