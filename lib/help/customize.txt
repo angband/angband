@@ -62,7 +62,7 @@ Inscribing an item with '=g':
 	picking up ammunition after a shootout.
 
 Inscribing an item with '!' followed by a command letter or '*':
-	This means "ask me before doing something".  '!w' means 'ask me before
+	This means "ask me before using this item".  '!w' means 'ask me before
 	wielding', '!d' means 'ask me before dropping', and so on.  If you
 	inscribe an item with '!*' then the game will confirm any use of an item.
 
@@ -99,6 +99,16 @@ Inscribing an item with '@', followed by a command latter, followed by 0-9:
 	inscribing your spellbooks with '@m1', '@m2', etc., if you lose your first
 	spellbook and attempt to cast magic missile by using 'm1a', you cannot
 	accidentally select the wrong spellbook.
+
+Inscribing an item with '^', followed by a command letter:
+	When you wear an item inscribed with '^', the game prompts you before 
+	doing that action.  You might inscribe '^>' on an item if you want to be
+	reminded to take it off before going down stairs.  If the item is in your
+	backpack then the game won't prompt you.
+
+	Like with '!', you can use '*' for the command letter if you want to game
+	to prompt you every turn whatever you're doing.  This can get very
+	annoying!
 
 
 User Pref Files
