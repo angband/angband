@@ -1202,7 +1202,7 @@ static void update_monster_subwindow(game_event_type type, game_event_data *data
 
 	/* Display monster race info */
 	if (p_ptr->monster_race)
-		display_roff(p_ptr->monster_race, get_lore(p_ptr->monster_race));
+		lore_show_subwindow(p_ptr->monster_race, get_lore(p_ptr->monster_race));
 
 	Term_fresh();
 	

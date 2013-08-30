@@ -559,18 +559,7 @@ int context_menu_cave(struct cave *c, int y, int x, int adjacent, int mx, int my
 		monster_type *m_ptr = cave_monster_at(c, y, x);
 		if (m_ptr) {
 			monster_lore *lore = get_lore(m_ptr->race);
-
-			/* Save screen */
-			screen_save();
-
-			/* Recall on screen */
-			screen_roff(m_ptr->race, lore);
-
-			/* wait for a key or mouse press */
-			anykey();
-
-			/* Load screen */
-			screen_load();
+			lore_show_interactive(m_ptr->race, lore);
 		}
 	}
 

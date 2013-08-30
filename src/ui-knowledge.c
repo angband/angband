@@ -1263,22 +1263,10 @@ static void mon_lore(int oid)
 	monster_race_track(r_ptr);
 	handle_stuff(p_ptr);
 
-	/* Save the screen */
-	screen_save();
-
-	/* Describe */
-	text_out_hook = text_out_to_screen;
-
-	/* Recall monster */
-	roff_top(r_ptr);
-	Term_gotoxy(0, 2);
-	describe_monster(r_ptr, l_ptr, FALSE);
-
-	text_out_c(TERM_L_BLUE, "\n[Press any key to continue]\n");
-	(void)anykey();
-
-	/* Load the screen */
-	screen_load();
+	textblock *tb = textblock_new();
+	lore_description(tb, r_ptr, l_ptr, FALSE);
+	textui_textblock_show(tb, SCREEN_REGION, NULL);
+	textblock_free(tb);
 }
 
 static void mon_summary(int gid, const int *object_list, int n, int top, int row, int col)

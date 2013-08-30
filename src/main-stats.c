@@ -801,8 +801,8 @@ static int stats_dump_lists(void)
 
 	struct mon_spell mon_spell_table[] =
 	{
-		#define RSF(a, b, c, d, e, f, g, h, i, j, k, l, m) \
-			{ RSF_##a, b, #a, d, e, f, g, h, i, j, k, l, m },
+		#define RSF(a, b, c, d, e, f, g, h, i, j, k, l, m, n) \
+			{ RSF_##a, b, #a, d, e, f, g, h, i, j, k, l, m, n },
 		#define RV(b, x, y, m) {b, x, y, m}
 		#include "monster/list-mon-spells.h"
 		#undef RV
