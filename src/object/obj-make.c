@@ -17,6 +17,7 @@
  */
 
 #include "angband.h"
+#include "alloc.h"
 #include "cave.h"
 #include "init.h"
 #include "object/tvalsval.h"

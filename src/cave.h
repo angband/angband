@@ -186,6 +186,15 @@ typedef struct
 
 
 
+/** An array of 256 bytes */
+typedef byte byte_256[256];
+
+/** An array of DUNGEON_WID bytes */
+typedef byte byte_wid[DUNGEON_WID];
+
+/** An array of DUNGEON_WID s16b's */
+typedef s16b s16b_wid[DUNGEON_WID];
+
 struct cave {
 	s32b created_at;
 	int depth;

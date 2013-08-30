@@ -297,6 +297,24 @@ enum {
 
 /*** Structures ***/
 
+/*
+ * And here's the structure for the "fixed" spell information
+ */
+typedef struct spell {
+	struct spell *next;
+	unsigned int sidx;
+	char *name;
+	char *text;
+
+	byte realm;			/* 0 = mage; 1 = priest */
+	byte tval;			/* Item type for book this spell is in */
+	byte sval;			/* Item sub-type for book (= book number) */
+	byte snum;			/* Position of spell within book */
+
+	byte spell_index;	/* Index into player_magic array */
+} spell_type;
+
+
 /**
  * Information about object types, like rods, wands, etc.
  */

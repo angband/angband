@@ -4,9 +4,6 @@
 /*
  * This file contains various defined types used by the game.
  *
- * TODO: Most of these should be elsewhere, in their own header files.
- * For example, the object structs should be in object.h.
- *
  * Be careful when creating data structures; most of these are designed
  * to be serialised to file, so be careful to use exact-size data types
  * (like u32b and s32b) and not just "int"s.
@@ -14,34 +11,9 @@
 
 #include "z-term.h"
 
-/**** Available Types ****/
-
-/** An array of 256 bytes */
-typedef byte byte_256[256];
-
-/** An array of DUNGEON_WID bytes */
-typedef byte byte_wid[DUNGEON_WID];
-
-/** An array of DUNGEON_WID s16b's */
-typedef s16b s16b_wid[DUNGEON_WID];
-
-
-
-/** Function hook types **/
-
-/** Function prototype for the UI to provide to create native buttons */
-typedef int (*button_add_f)(const char *, keycode_t);
-
-/** Function prototype for the UI to provide to remove native buttons */
-typedef int (*button_kill_f)(keycode_t);
-
-
-
 /**** Available Structs ****/
 
-typedef struct alloc_entry alloc_entry;
 typedef struct quest quest;
-typedef struct spell spell_type;
 typedef struct color_type color_type;
 
 
@@ -106,24 +78,6 @@ typedef struct room_template {
 } room_template_type;
 
 
-/*
- * An entry for the object/monster allocation functions
- *
- * Pass 1 is determined from allocation information
- * Pass 2 is determined from allocation restriction
- * Pass 3 is determined from allocation calculation
- */
-struct alloc_entry
-{
-	int index;		/* The actual index */
-
-	int level;		/* Base dungeon level */
-	int prob1;		/* Probability, pass 1 */
-	int prob2;		/* Probability, pass 2 */
-	int prob3;		/* Probability, pass 3 */
-};
-
-
 
 /*
  * Structure for the "quests"
@@ -143,24 +97,6 @@ struct quest
 
 	int cur_num;	/* Number killed (unused) */
 	int max_num;	/* Number required (unused) */
-};
-
-
-/*
- * And here's the structure for the "fixed" spell information
- */
-struct spell {
-	struct spell *next;
-	unsigned int sidx;
-	char *name;
-	char *text;
-
-	byte realm;			/* 0 = mage; 1 = priest */
-	byte tval;			/* Item type for book this spell is in */
-	byte sval;			/* Item sub-type for book (= book number) */
-	byte snum;			/* Position of spell within book */
-
-	byte spell_index;	/* Index into player_magic array */
 };
 
 

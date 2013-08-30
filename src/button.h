@@ -3,6 +3,17 @@
 #ifndef BUTTON_H
 #define BUTTON_H
 
+
+/** Function hook types **/
+
+/** Function prototype for the UI to provide to create native buttons */
+typedef int (*button_add_f)(const char *, keycode_t);
+
+/** Function prototype for the UI to provide to remove native buttons */
+typedef int (*button_kill_f)(keycode_t);
+
+
+
 int button_add_text(const char *label, keycode_t keypress);
 int button_add(const char *label, keycode_t keypress);
 void button_backup_all(void);

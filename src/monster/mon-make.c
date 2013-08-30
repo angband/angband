@@ -17,6 +17,7 @@
  */
 
 #include "angband.h"
+#include "alloc.h"
 #include "history.h"
 #include "init.h"
 #include "target.h"
