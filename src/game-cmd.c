@@ -407,6 +407,7 @@ void process_command(cmd_context ctx, bool no_request)
 				strnfmt(none, sizeof(none), "You have no %s you can %s.", type2, verb);
 
 				item_tester_hook = is->filter;
+				if (cmd->command == CMD_USE_ANY) p_ptr->command_wrk = USE_INVEN;
 				if (!get_item(&item, prompt, none, cmd->command, is->mode))
 					return;
 
