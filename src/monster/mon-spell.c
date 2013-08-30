@@ -28,8 +28,8 @@
  */
 static const struct mon_spell mon_spell_table[] =
 {
-    #define RSF(a, b, c, d, e, f, g, h, i, j, k, l, m) \
-			{ RSF_##a, b, c, d, e, f, g, h, i, j, k, l, m },
+    #define RSF(a, b, c, d, e, f, g, h, i, j, k, l, m, n) \
+			{ RSF_##a, b, c, d, e, f, g, h, i, j, k, l, m, n },
 		#define RV(b, x, y, m) {b, x, y, m}
     #include "list-mon-spells.h"
     #undef RSF
@@ -709,3 +709,29 @@ int best_spell_power(const monster_race *r_ptr, int resist)
 	return best_dam;
 }
 
+static bool mon_spell_is_valid(int spell)
+{
+	return spell > RSF_NONE && spell < RSF_MAX;
+}
+
+static bool mon_spell_has_damage(int spell)
+{
+	return mon_spell_table[spell].type & (RST_BOLT | RST_BALL | RST_BREATH | RST_ATTACK);
+}
+
+const char *mon_spell_lore_description(int spell)
+{
+	if (!mon_spell_is_valid(spell))
+		return "";
+
+	return mon_spell_table[spell].lore_desc;
+}
+
+int mon_spell_lore_damage(int spell, const monster_race *race, bool know_hp)
+{
+	if (!mon_spell_is_valid(spell) || !mon_spell_has_damage(spell))
+		return 0;
+
+	int hp = (know_hp) ? race->avg_hp : 0;
+	return mon_spell_dam(spell, hp, race->level, MAXIMISE);
+}

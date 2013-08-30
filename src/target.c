@@ -640,17 +640,8 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 					/* Recall */
 					if (recall)
 					{
-						/* Save screen */
-						screen_save();
-
-						/* Recall on screen */
-						screen_roff(m_ptr->race, l_ptr);
-
-						/* Command */
+						lore_show_interactive(m_ptr->race, l_ptr);
 						press = inkey_m();
-
-						/* Load screen */
-						screen_load();
 					}
 
 					/* Normal */
