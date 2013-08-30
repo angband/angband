@@ -809,8 +809,8 @@ static struct panel *get_panel_misc(void) {
 	byte attr = TERM_L_BLUE;
 
 	panel_line(p, attr, "Age", "%d", p_ptr->age);
-	panel_line(p, attr, "Height", "%d in", p_ptr->ht);
-	panel_line(p, attr, "Weight", "%d lbs", p_ptr->wt);
+	panel_line(p, attr, "Height", "%d'%d\"", p_ptr->ht / 12, p_ptr->ht % 12);
+	panel_line(p, attr, "Weight", "%dst %dlb", p_ptr->wt / 14, p_ptr->wt % 14);
 	panel_line(p, attr, "Turns used:", "");
 	panel_line(p, attr, "Game", "%d", turn);
 	panel_line(p, attr, "Standard", "%d", p_ptr->total_energy / 100);
