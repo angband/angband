@@ -350,7 +350,7 @@ static void spoil_obj_desc(const char *fname)
 /*
  * Artifact Spoilers by: randy@PICARD.tamu.edu (Randy Hutson)
  *
- * (Mostly) rewritten in 2002 by Andrew Sidwell and Robert Ruehlmann.
+ * (Mostly) rewritten in 2002 by Andi Sidwell and Robert Ruehlmann.
  */
 
 

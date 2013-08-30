@@ -24,7 +24,7 @@
 /*
  * Comments and suggestions are welcome. The UI probably needs some
  * adjustment, and I need comments from you.
- * perhaps also something like "Angband 3.0.8 by Andrew Sidwell and others;
+ * perhaps also something like "Angband 3.0.8 by Andi Sidwell and others;
  * SDL port by Iain McFall an others, please see the accompanying documentation
  * for credits" or something
  */

@@ -3,7 +3,7 @@
  * Purpose: Item destruction
  *
  * Copyright (c) 2007 David T. Blackston, Iain McFall, DarkGod, Jeff Greene,
- * David Vestal, Pete Mack, Andrew Sidwell.
+ * David Vestal, Pete Mack, Andi Sidwell.
  *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:

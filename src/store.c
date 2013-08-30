@@ -3,7 +3,7 @@
  * Purpose: Store stocking and UI
  *
  * Copyright (c) 1997 Robert A. Koeneke, James E. Wilson, Ben Harrison
- * Copyright (c) 2007 Andrew Sidwell, who rewrote a fair portion
+ * Copyright (c) 2007 Andi Sidwell, who rewrote a fair portion
  *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:

@@ -2,7 +2,7 @@
  * File: effects.c
  * Purpose: Big switch statement for every effect in the game
  *
- * Copyright (c) 2007 Andrew Sidwell
+ * Copyright (c) 2007 Andi Sidwell
  *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:

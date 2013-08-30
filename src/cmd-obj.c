@@ -3,7 +3,7 @@
  * Purpose: Handle objects in various ways
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
- * Copyright (c) 2007-9 Andrew Sidwell, Chris Carr, Ed Graham, Erik Osheim
+ * Copyright (c) 2007-9 Andi Sidwell, Chris Carr, Ed Graham, Erik Osheim
  *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:

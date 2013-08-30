@@ -2,7 +2,7 @@
  * File: z-msg.c
  * Purpose: Message handling
  *
- * Copyright (c) 2007 Elly, Andrew Sidwell
+ * Copyright (c) 2007 Elly, Andi Sidwell
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
