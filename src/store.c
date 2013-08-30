@@ -110,7 +110,7 @@ static const char *comment_welcome[] =
 	"%s: \"A pleasure to see you again, %s.\"",
 	"%s: \"How may I be of assistance, good %s?\"",
 	"%s: \"You do honour to my humble store, noble %s.\"",
-	"%s: \"I and my family are entirely at your service, glorious %s.\""
+	"%s: \"I and my family are entirely at your service, %s.\""
 };
 
 static const char *comment_hint[] =
@@ -422,7 +422,13 @@ static void prt_welcome(const owner_type *ot_ptr)
 		/* Get a title for the character */
 		if ((i % 2) && randint0(2)) player_name = p_ptr->class->title[(p_ptr->lev - 1) / 5];
 		else if (randint0(2))       player_name = op_ptr->full_name;
-		else                        player_name = (p_ptr->psex == SEX_MALE ? "sir" : "lady");
+		else {
+			switch (p_ptr->psex) {
+				case SEX_MALE:   player_name = "sir"; break;
+				case SEX_FEMALE: player_name = "madam"; break;
+				case SEX_NEUTER: player_name = "ser"; break;
+			}
+		}
 
 		/* Balthazar says "Welcome" */
 		prt(format(comment_welcome[i], short_name, player_name), 0, 0);

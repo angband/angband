@@ -311,10 +311,10 @@ static void display_scores_aux(const high_score scores[], int from, int to, int 
 
 			/* Dump some info */
 			strnfmt(out_val, sizeof(out_val),
-			        "%3d.%9s  %s the %s %s, Level %d",
-			        place, score->pts, score->who,
-			        r ? r->name : "<none>", c ? c->name : "<none>",
-			        clev);
+					"%3d.%9s  %s the %s %s, level %d",
+					place, score->pts, score->who,
+					r ? r->name : "<none>", c ? c->name : "<none>",
+					clev);
 
 			/* Append a "maximum level" */
 			if (mlev > clev) my_strcat(out_val, format(" (Max %d)", mlev), sizeof(out_val));
@@ -365,6 +365,13 @@ static void display_scores_aux(const high_score scores[], int from, int to, int 
 static void build_score(high_score *entry, const char *died_from, time_t *death_time)
 {
 	WIPE(entry, high_score);
+	char psex;
+
+	switch (p_ptr->psex) {
+		case SEX_MALE:   psex = 'm'; break;
+		case SEX_FEMALE: psex = 'f'; break;
+		case SEX_NEUTER: psex = 'n'; break; 
+	}
 
 	/* Save the version */
 	strnfmt(entry->what, sizeof(entry->what), "%s", buildid);
@@ -389,7 +396,7 @@ static void build_score(high_score *entry, const char *died_from, time_t *death_
 
 	/* Save the player info XXX XXX XXX */
 	strnfmt(entry->uid, sizeof(entry->uid), "%7u", player_uid);
-	strnfmt(entry->sex, sizeof(entry->sex), "%c", (p_ptr->psex ? 'm' : 'f'));
+	strnfmt(entry->sex, sizeof(entry->sex), "%c", psex);
 	strnfmt(entry->p_r, sizeof(entry->p_r), "%2d", p_ptr->race->ridx);
 	strnfmt(entry->p_c, sizeof(entry->p_c), "%2d", p_ptr->class->cidx);
 

@@ -321,6 +321,17 @@ static void get_ahw(struct player *p)
 		p->ht = p->ht_birth = Rand_normal(p->race->f_b_ht, p->race->f_m_ht);
 		p->wt = p->wt_birth = Rand_normal(p->race->f_b_wt, p->race->f_m_wt);
 	}
+
+	/* For neither, go inbetween */
+	else 
+	{
+		p->ht = p->ht_birth = Rand_normal(
+			(p->race->f_b_ht + p->race->m_b_ht) / 2,
+			(p->race->f_m_ht + p->race->m_m_ht) / 2);
+		p->wt = p->wt_birth = Rand_normal(
+			(p->race->f_b_wt + p->race->m_b_wt) / 2,
+			(p->race->f_m_wt + p->race->m_m_wt) / 2);
+	}
 }
 
 
