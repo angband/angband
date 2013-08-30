@@ -174,6 +174,13 @@ void target_set_location(int y, int x)
 	/* Legal target */
 	if (cave_in_bounds_fully(cave, y, x))
 	{
+		/* If there's a monster there, target that instead */
+		struct monster *m = cave_monster_at(cave, y, x);
+		if (m) {
+			target_set_monster(m);
+			return;
+		}
+
 		/* Save target info */
 		target_set = TRUE;
 		target_who = NULL;
