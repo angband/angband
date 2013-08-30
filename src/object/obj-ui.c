@@ -619,7 +619,8 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 {
 	int py = p_ptr->py;
 	int px = p_ptr->px;
-	unsigned char cmdkey = cmd_lookup_key(cmd, KEYMAP_MODE_ORIG);
+	unsigned char cmdkey = cmd_lookup_key(cmd,
+			OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG);
 
 	//struct keypress which;
 	ui_event press;
