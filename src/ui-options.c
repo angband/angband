@@ -1016,32 +1016,17 @@ static void do_cmd_pref_file_hack(long row)
 	screen_load();
 }
 
-
+ 
+ 
 /*
  * Write options to a file.
  */
 static void do_dump_options(const char *title, int row) {
-	char buf[1024];
-
-	/* Get filename from user */
-	if (!get_pref_path("Dump options", 20, buf, sizeof(buf)))
-		return;
-
-	if (prefs_save(buf, option_dump, "Dump options") &&
-			prefs_save(buf, keymap_dump, "Dump keymaps"))
-		msg("Saved options and keymaps.");
-	else
-		msg("Failed to save options and keymaps.");
-
-	message_flush();
-
-	return;
+	(void)dump_pref_file(option_dump, "Dump window settings", 20);
 }
 
-
-static void do_dump_autoinsc(const char *title, int row)
-{
-	(void)dump_pref_file(dump_autoinscriptions, "Dump autoinscriptions", 13);
+static void do_dump_autoinsc(const char *title, int row) {
+	(void)dump_pref_file(dump_autoinscriptions, "Dump autoinscriptions", 20);
 }
 
 /*
@@ -1082,6 +1067,24 @@ static tval_desc sval_dependent[] =
 /*	{ TV_DRAG_ARMOR,	"Dragon Mail Armor" }, */
 	{ TV_GOLD,			"Money" },
 };
+
+
+/*
+ * Determines whether a tval is eligible for sval-squelch.
+ */
+bool squelch_tval(int tval)
+{
+	size_t i;
+
+	/* Only squelch if the tval's allowed */
+	for (i = 0; i < N_ELEMENTS(sval_dependent); i++)
+	{
+		if (tval == sval_dependent[i].tval)
+			return TRUE;
+	}
+
+	return FALSE;
+}
 
 
 /*
@@ -1539,19 +1542,20 @@ static menu_type *option_menu;
 static menu_action option_actions[] = 
 {
 	{ 0, 'a', "User interface options", option_toggle_menu },
-	{ 0, 'c', "Birth (difficulty) options", option_toggle_menu },
-	{ 0, 'd', "Cheat options", option_toggle_menu },
-	{ 0, 'e', "Subwindow setup", do_cmd_options_win },
-	{ 0, 'f', "Item ignoring setup", do_cmd_options_item },
+	{ 0, 'b', "Birth (difficulty) options", option_toggle_menu },
+	{ 0, 'c', "Cheat options", option_toggle_menu },
+	{ 0, 'w', "Subwindow setup", do_cmd_options_win },
+	{ 0, 'i', "Item ignoring setup", do_cmd_options_item },
+	{ 0, '{', "Auto-inscription setup", textui_browse_object_knowledge },
 	{ 0 },
-	{ 0, 'g', "Set base delay factor", do_cmd_delay },
+	{ 0, 'd', "Set base delay factor", do_cmd_delay },
 	{ 0, 'h', "Set hitpoint warning", do_cmd_hp_warn },
-	{ 0, 'i', "Set movement delay", do_cmd_lazymove_delay },
+	{ 0, 'm', "Set movement delay", do_cmd_lazymove_delay },
+	{ 0 },
+	{ 0, 's', "Save subwindow setup to pref file", do_dump_options },
+	{ 0, 't', "Save autoinscriptions to pref file", do_dump_autoinsc },
 	{ 0 },
 	{ 0, 'l', "Load a user pref file", options_load_pref_file },
-	{ 0, 's', "Save keymaps and options", do_dump_options },
-	{ 0, 'S', "Save autoinscriptions", do_dump_autoinsc },
-	{ 0 },
 	{ 0, 'k', "Edit keymaps (advanced)", do_cmd_keymaps },
 #ifdef ALLOW_COLORS
 	{ 0, 'c', "Edit colours (advanced)", do_cmd_colors },
@@ -1582,30 +1586,4 @@ void do_cmd_options(void)
 	menu_select(option_menu, 0, FALSE);
 
 	screen_load();
-}
-
-
-
-
-
-
-
-
-
-
-/*
- * Determines whether a tval is eligible for sval-squelch.
- */
-bool squelch_tval(int tval)
-{
-	size_t i;
-
-	/* Only squelch if the tval's allowed */
-	for (i = 0; i < N_ELEMENTS(sval_dependent); i++)
-	{
-		if (tval == sval_dependent[i].tval)
-			return TRUE;
-	}
-
-	return FALSE;
 }

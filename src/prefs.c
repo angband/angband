@@ -982,7 +982,7 @@ static enum parser_error parse_prefs_o(struct parser *p)
 	assert(d != NULL);
 	if (d->bypass) return PARSE_ERROR_NONE;
 
-	option_set(parser_getsym(p, "name"), parser_getuint(p, "value"));
+	/* Don't load options anymore */
 
 	return PARSE_ERROR_NONE;
 }

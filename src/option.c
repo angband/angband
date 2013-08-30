@@ -217,15 +217,7 @@ bool option_set(const char *name, int val)
 		return TRUE;
 	}
 
-	if (streq(name, "hp_warn_factor")) {
-		op_ptr->hitpoint_warn = val;
-	} else if (streq(name, "delay_factor")) {
-		op_ptr->delay_factor = val;
-	} else {
-		return FALSE;
-	}
-
-	return TRUE;
+	return FALSE;
 }
 
 void option_set_defaults(void)
@@ -249,18 +241,7 @@ void option_dump(ang_file *f)
 {
 	int i, j;
 
-	file_putf(f, "# Options\n");
-
-	/* Dump options (skip cheat, score) */
-	for (i = 0; i < OPT_CHEAT; i++) {
-		const char *name = option_name(i);
-		if (name)
-			file_putf(f, "%c:%s\n", op_ptr->opt[i] ? 'Y' : 'X', name);
-	}
-
-	file_putf(f, "O:hp_warn_factor:%d\n", op_ptr->hitpoint_warn);
-	file_putf(f, "O:delay_factor:%d\n", op_ptr->delay_factor);
-	file_putf(f, "\n");
+	file_putf(f, "# Options\n\n");
 
 	/* Dump window flags */
 	for (i = 1; i < ANGBAND_TERM_MAX; i++)
