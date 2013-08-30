@@ -650,7 +650,6 @@ static void spoil_mon_desc(const char *fname)
  * Monster spoilers originally by: smchorse@ringer.cs.utsa.edu (Shawn McHorse)
  */
 
-
 /*
  * Create a spoiler file for monsters (-SHAWN-)
  */
@@ -660,26 +659,25 @@ static void spoil_mon_info(const char *fname)
 	int i, n;
 	u16b *who;
 	int count = 0;
-
+	textblock *tb = NULL;
 
 	/* Open the file */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, fname);
 	fh = file_open(buf, MODE_WRITE, FTYPE_TEXT);
 
-	/* Oops */
 	if (!fh)
 	{
 		msg("Cannot create spoiler file.");
 		return;
 	}
 
-	/* Dump to the spoiler file */
-	text_out_hook = text_out_to_file;
-	text_out_file = fh;
-
 	/* Dump the header */
-	text_out("Monster Spoilers for %s\n", buildid);
-	text_out("------------------------------------------\n\n");
+	tb = textblock_new();
+	textblock_append(tb, "Monster Spoilers for %s\n", buildid);
+	textblock_append(tb, "------------------------------------------\n\n");
+	textblock_to_file(tb, fh, 0, 75);
+	textblock_free(tb);
+	tb = NULL;
 
 	/* Allocate the "who" array */
 	who = C_ZNEW(z_info->r_max, u16b);
@@ -695,75 +693,50 @@ static void spoil_mon_info(const char *fname)
 
 	sort(who, count, sizeof(*who), cmp_monsters);
 
-	/*
-	 * List all monsters in order (except the ghost).
-	 */
+	/* List all monsters in order. */
 	for (n = 0; n < count; n++)
 	{
 		int r_idx = who[n];
 		const monster_race *r_ptr = &r_info[r_idx];
 		const monster_lore *l_ptr = &l_list[r_idx];
+		tb = textblock_new();
 
-		/* Prefix */
+		/* Line 1: prefix, name, color, and symbol */
 		if (rf_has(r_ptr->flags, RF_QUESTOR))
-		{
-			text_out("[Q] ");
-		}
+			textblock_append(tb, "[Q] ");
 		else if (rf_has(r_ptr->flags, RF_UNIQUE))
-		{
-			text_out("[U] ");
-		}
+			textblock_append(tb, "[U] ");
 		else
-		{
-			text_out("The ");
-		}
+			textblock_append(tb, "The ");
 
-		/* Name */
-		text_out("%s  (",  r_ptr->name);	/* ---)--- */
+		/* As of 3.5, race->name and race->text are stored as UTF-8 strings; there is no conversion from the source edit files. */
+		textblock_append_utf8(tb, r_ptr->name);
+		textblock_append(tb, "  (");	/* ---)--- */
+		textblock_append(tb, attr_to_text(r_ptr->d_attr));
+		textblock_append(tb, " '%c')\n", r_ptr->d_char);
 
-		/* Color */
-		text_out(attr_to_text(r_ptr->d_attr));
+		/* Line 2: number, level, rarity, speed, HP, AC, exp */
+		textblock_append(tb, "=== ");
+		textblock_append(tb, "Num:%d  ", r_idx);
+		textblock_append(tb, "Lev:%d  ", r_ptr->level);
+		textblock_append(tb, "Rar:%d  ", r_ptr->rarity);
 
-		/* Symbol --(-- */
-		text_out(" '%c')\n", r_ptr->d_char);
-
-
-		/* Indent */
-		text_out("=== ");
-
-		/* Number */
-		text_out("Num:%d  ", r_idx);
-
-		/* Level */
-		text_out("Lev:%d  ", r_ptr->level);
-
-		/* Rarity */
-		text_out("Rar:%d  ", r_ptr->rarity);
-
-		/* Speed */
 		if (r_ptr->speed >= 110)
-		{
-			text_out("Spd:+%d  ", (r_ptr->speed - 110));
-		}
+			textblock_append(tb, "Spd:+%d  ", (r_ptr->speed - 110));
 		else
-		{
-			text_out("Spd:-%d  ", (110 - r_ptr->speed));
-		}
+			textblock_append(tb, "Spd:-%d  ", (110 - r_ptr->speed));
 
-		/* Hitpoints */
-		text_out("Hp:%d  ", r_ptr->avg_hp);
+		textblock_append(tb, "Hp:%d  ", r_ptr->avg_hp);
+		textblock_append(tb, "Ac:%d  ", r_ptr->ac);
+		textblock_append(tb, "Exp:%ld\n", (long)(r_ptr->mexp));
 
-		/* Armor Class */
-		text_out("Ac:%d  ", r_ptr->ac);
+		/* Normal description (with automatic line breaks) */
+		lore_description(tb, r_ptr, l_ptr, TRUE);
+		textblock_append(tb, "\n");
 
-		/* Experience */
-		text_out("Exp:%ld\n", (long)(r_ptr->mexp));
-
-		/* Describe */
-		describe_monster(r_ptr, l_ptr, TRUE);
-
-		/* Terminate the entry */
-		text_out("\n");
+		textblock_to_file(tb, fh, 0, 75);
+		textblock_free(tb);
+		tb = NULL;
 	}
 
 	/* Free the "who" array */
@@ -778,7 +751,6 @@ static void spoil_mon_info(const char *fname)
 
 	msg("Successfully created a spoiler file.");
 }
-
 
 static void spoiler_menu_act(const char *title, int row)
 {
