@@ -1944,11 +1944,12 @@ void lore_description(textblock *tb, const monster_race *race, const monster_lor
  */
 void lore_show_interactive(const monster_race *race, const monster_lore *lore)
 {
+	textblock *tb;
 	assert(race && lore);
 
 	message_flush();
 
-	textblock *tb = textblock_new();
+	tb = textblock_new();
 	lore_description(tb, race, lore, FALSE);
 	textui_textblock_show(tb, SCREEN_REGION, NULL);
 	textblock_free(tb);
@@ -1965,6 +1966,7 @@ void lore_show_interactive(const monster_race *race, const monster_lore *lore)
 void lore_show_subwindow(const monster_race *race, const monster_lore *lore)
 {
 	int y;
+	textblock *tb;
 
 	assert(race && lore);
 
@@ -1972,7 +1974,7 @@ void lore_show_subwindow(const monster_race *race, const monster_lore *lore)
 	for (y = 0; y < Term->hgt; y++)
 		Term_erase(0, y, 255);
 
-	textblock *tb = textblock_new();
+	tb = textblock_new();
 	lore_description(tb, race, lore, FALSE);
 	textui_textblock_place(tb, SCREEN_REGION, NULL);
 	textblock_free(tb);

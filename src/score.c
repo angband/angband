@@ -364,8 +364,9 @@ static void display_scores_aux(const high_score scores[], int from, int to, int 
 
 static void build_score(high_score *entry, const char *died_from, time_t *death_time)
 {
-	WIPE(entry, high_score);
 	char psex;
+
+	WIPE(entry, high_score);
 
 	switch (p_ptr->psex) {
 		case SEX_MALE:   psex = 'm'; break;

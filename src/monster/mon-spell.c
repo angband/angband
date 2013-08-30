@@ -729,9 +729,11 @@ const char *mon_spell_lore_description(int spell)
 
 int mon_spell_lore_damage(int spell, const monster_race *race, bool know_hp)
 {
+	int hp;
+
 	if (!mon_spell_is_valid(spell) || !mon_spell_has_damage(spell))
 		return 0;
 
-	int hp = (know_hp) ? race->avg_hp : 0;
+	hp = (know_hp) ? race->avg_hp : 0;
 	return mon_spell_dam(spell, hp, race->level, MAXIMISE);
 }

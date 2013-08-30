@@ -643,6 +643,8 @@ void do_cmd_query_symbol(void)
 	/* Scan the monster memory */
 	while (1)
 	{
+		textblock *tb;
+
 		/* Extract a race */
 		int r_idx = who[i];
 		monster_race *r_ptr = &r_info[r_idx];
@@ -654,7 +656,7 @@ void do_cmd_query_symbol(void)
 		/* Hack -- Handle stuff */
 		handle_stuff(p_ptr);
 
-		textblock *tb = textblock_new();
+		tb = textblock_new();
 		lore_title(tb, r_ptr);
 		textblock_append(tb, " [(r)ecall, ESC]\n"); /* Line break is needed for proper display */
 		textui_textblock_place(tb, SCREEN_REGION, NULL);

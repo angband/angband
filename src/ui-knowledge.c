@@ -1252,6 +1252,7 @@ static void mon_lore(int oid)
 	int r_idx;
 	monster_race *r_ptr;
 	const monster_lore *l_ptr;
+	textblock *tb;
 
 	r_idx = default_join[oid].oid;
 
@@ -1263,7 +1264,7 @@ static void mon_lore(int oid)
 	monster_race_track(r_ptr);
 	handle_stuff(p_ptr);
 
-	textblock *tb = textblock_new();
+	tb = textblock_new();
 	lore_description(tb, r_ptr, l_ptr, FALSE);
 	textui_textblock_show(tb, SCREEN_REGION, NULL);
 	textblock_free(tb);
