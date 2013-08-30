@@ -41,12 +41,11 @@ static void show_obj_list(int num_obj, int num_head, char labels[50][80],
 	char o_name[50][80];
 	char tmp_val[80];
 	
-	bool in_term;
+	bool in_term = (mode & OLIST_WINDOW) ? TRUE : FALSE;
 	bool terse = FALSE;
-	
-	in_term = (mode & OLIST_WINDOW) ? TRUE : FALSE;
 
 	if (in_term) max_len = 40;
+	if (in_term && Term->wid < 40) mode &= ~(OLIST_WEIGHT);
 
 	if (Term->wid < 50) terse = TRUE;
 
