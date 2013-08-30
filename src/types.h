@@ -173,31 +173,6 @@ typedef struct
 	const char *name;
 } grouper;
 
-enum grid_light_level
-{
-	FEAT_LIGHTING_BRIGHT = 0,
-	FEAT_LIGHTING_LIT,
-	FEAT_LIGHTING_DARK,
-	FEAT_LIGHTING_MAX
-};
-
-typedef struct
-{
-	u32b m_idx;		/* Monster index */
-	u32b f_idx;		/* Feature index */
-	struct object_kind *first_kind;	/* The "kind" of the first item on the grid */
-	bool multiple_objects;	/* Is there more than one item there? */
-	bool unseen_object;	/* Is there an unaware object there? */
-	bool unseen_money; /* Is there some unaware money there? */
-
-	enum grid_light_level lighting; /* Light level */
-	bool in_view; /* TRUE when the player can currently see the grid. */
-	bool is_player;
-	bool hallucinate;
-	bool trapborder;
-} grid_data;
-
-
 /*
  * A game color.
  */

@@ -160,8 +160,29 @@ typedef struct feature
 	wchar_t x_char[3];   /**< Desired feature character (set by user/pref file) */
 } feature_type;
 
+enum grid_light_level
+{
+	FEAT_LIGHTING_BRIGHT = 0,
+	FEAT_LIGHTING_LIT,
+	FEAT_LIGHTING_DARK,
+	FEAT_LIGHTING_MAX
+};
 
+typedef struct
+{
+	u32b m_idx;		/* Monster index */
+	u32b f_idx;		/* Feature index */
+	struct object_kind *first_kind;	/* The "kind" of the first item on the grid */
+	bool multiple_objects;	/* Is there more than one item there? */
+	bool unseen_object;	/* Is there an unaware object there? */
+	bool unseen_money; /* Is there some unaware money there? */
 
+	enum grid_light_level lighting; /* Light level */
+	bool in_view; /* TRUE when the player can currently see the grid. */
+	bool is_player;
+	bool hallucinate;
+	bool trapborder;
+} grid_data;
 
 
 
@@ -198,6 +219,7 @@ extern bool no_light(void);
 extern bool cave_valid_bold(int y, int x);
 extern byte get_color(byte a, int attr, int n);
 extern void map_info(unsigned x, unsigned y, grid_data *g);
+extern void grid_data_as_text(grid_data *g, int *ap, wchar_t *cp, int *tap, wchar_t *tcp);
 extern void move_cursor_relative(int y, int x);
 extern void print_rel(wchar_t c, byte a, int y, int x);
 extern void prt_map(void);
