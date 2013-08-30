@@ -42,7 +42,6 @@ typedef int (*button_kill_f)(keycode_t);
 typedef struct alloc_entry alloc_entry;
 typedef struct quest quest;
 typedef struct spell spell_type;
-typedef struct history_info history_info;
 typedef struct color_type color_type;
 
 
@@ -173,16 +172,6 @@ typedef struct
 	byte tval;
 	const char *name;
 } grouper;
-
-struct history_info
-{
-	u16b type;			/* Kind of history item */
-	s16b dlev;			/* Dungeon level when this item was recorded */
-	s16b clev;			/* Character level when this item was recorded */
-	byte a_idx;			/* Artifact this item relates to */
-	s32b turn;			/* Turn this item was recorded on */
-	char event[80];	/* The text of the item */
-};
 
 enum grid_light_level
 {

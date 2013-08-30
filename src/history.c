@@ -30,7 +30,7 @@
 
 
 /* The historical list for the character */
-history_info *history_list;
+struct history_info *history_list;
 
 /* Index of first writable entry */
 static size_t history_ctr;
@@ -45,7 +45,7 @@ static void history_init(size_t entries)
 {
 	history_ctr = 0;
 	history_size = entries;
-	history_list = C_ZNEW(history_size, history_info);
+	history_list = C_ZNEW(history_size, struct history_info);
 }
 
 
@@ -67,7 +67,7 @@ void history_clear(void)
  */
 static bool history_set_num(size_t num)
 {
-	history_info *new_list;
+	struct history_info *new_list;
 
 	if (num > HISTORY_MAX)
 		num = HISTORY_MAX;
@@ -77,8 +77,8 @@ static bool history_set_num(size_t num)
 
 	/* Allocate new memory, copy across */
 	/* XXX Should use mem_realloc() */
-	new_list = C_ZNEW(num, history_info);
-	C_COPY(new_list, history_list, history_ctr, history_info);
+	new_list = C_ZNEW(num, struct history_info);
+	C_COPY(new_list, history_list, history_ctr, struct history_info);
 	FREE(history_list);
 
 	history_list = new_list;
@@ -162,7 +162,7 @@ bool history_add_full(u16b type, struct artifact *artifact, s16b dlev,
 	history_list[history_ctr].dlev = dlev;
 	history_list[history_ctr].clev = clev;
 	history_list[history_ctr].a_idx = artifact ? artifact->aidx : 0;
-	history_list[history_ctr].turn = turnno;
+	history_list[history_ctr].turn = p_ptr->total_energy / 100;
 	my_strcpy(history_list[history_ctr].event,
 	          text, sizeof(history_list[history_ctr].event));
 
@@ -323,19 +323,8 @@ static size_t last_printable_item(void)
 
 static void print_history_header(void)
 {
-	char buf[80];
-
-	/* Print the header (character name and title) */
-	strnfmt(buf, sizeof(buf), "%s the %s %s",
-	        op_ptr->full_name,
-	        p_ptr->race->name,
-	        p_ptr->class->name);
-
-	c_put_str(TERM_WHITE, buf, 0, 0);
-	c_put_str(TERM_WHITE, "============================================================", 1, 0);
-	c_put_str(TERM_WHITE, "                   CHAR.  ", 2, 0);
-	c_put_str(TERM_WHITE, "|   TURN  | DEPTH |LEVEL| EVENT", 3, 0);
-	c_put_str(TERM_WHITE, "============================================================", 4, 0);
+	c_put_str(TERM_WHITE, "[Player history]", 0, 0);
+	c_put_str(TERM_L_BLUE, "      Turn   Depth  Note", 1, 0);
 }
 
 
@@ -343,19 +332,20 @@ static void print_history_header(void)
 void history_display(void)
 {
 	int row, wid, hgt, page_size;
-	char buf[90];
+	char buf[120];
 	static size_t first_item = 0;
 	size_t max_item = last_printable_item();
 	size_t i;
+	bool active = TRUE;
 
 	Term_get_size(&wid, &hgt);
 
-	/* Six lines provide space for the header and footer */
-	page_size = hgt - 6;
+	/* Five lines provide space for the header and footer */
+	page_size = hgt - 5;
 
 	screen_save();
 
-	while (1)
+	while (active)
 	{
 		struct keypress ch;
 
@@ -371,62 +361,62 @@ void history_display(void)
 			if (history_masked(i))
 				continue;
 
-			strnfmt(buf, sizeof(buf), "%10d%7d\'%5d   %s",
+			strnfmt(buf, sizeof(buf), "%10d%7d\'  %s",
 				history_list[i].turn,
 				history_list[i].dlev * 50,
-				history_list[i].clev,
 				history_list[i].event);
 
 			if (history_list[i].type & HISTORY_ARTIFACT_LOST)
 				my_strcat(buf, " (LOST)", sizeof(buf));
 
-			/* Size of header = 5 lines */
-			prt(buf, row + 5, 0);
+			/* Size of header = 3 lines */
+			prt(buf, row + 2, 0);
 			row++;
 		}
-		prt("[Arrow keys scroll, p for previous page, n for next page, ESC to exit.]", hgt - 1, 0);
+		prt("[Arrow keys scroll, p/PgUp for previous page, n/PgDn for next page, ESC to exit.]", hgt - 1, 0);
 
 		ch = inkey();
 
-		/* XXXmacro we should have a generic "key -> scroll" function */
-		if (ch.code == 'n')
-		{
-			size_t scroll_to = first_item + page_size;
+		switch (ch.code) {
+			case 'n':
+			case ' ':
+			case KC_PGDOWN: {
+				size_t scroll_to = first_item + page_size;
+				while (history_masked(scroll_to) && scroll_to < history_ctr - 1)
+					scroll_to++;
+				first_item = (scroll_to < max_item ? scroll_to : max_item);
+				break;
+			}
 
-			while (history_masked(scroll_to) && scroll_to < history_ctr - 1)
-				scroll_to++;
+			case 'p':
+			case KC_PGUP: {
+				int scroll_to = first_item - page_size;
+				while (history_masked(scroll_to) && scroll_to > 0)
+					scroll_to--;
+				first_item = (scroll_to >= 0 ? scroll_to : 0);
+				break;
+			}
 
-			first_item = (scroll_to < max_item ? scroll_to : max_item);
+			case ARROW_DOWN: {
+				size_t scroll_to = first_item + 1;
+				while (history_masked(scroll_to) && scroll_to < history_ctr - 1)
+					scroll_to++;
+				first_item = (scroll_to < max_item ? scroll_to : max_item);
+				break;
+			}
+
+			case ARROW_UP: {
+				int scroll_to = first_item - 1;
+				while (history_masked(scroll_to) && scroll_to > 0)
+					scroll_to--;
+				first_item = (scroll_to >= 0 ? scroll_to : 0);
+				break;
+			}
+
+			case ESCAPE:
+				active = FALSE;
+				break;
 		}
-		else if (ch.code == 'p')
-		{
-			int scroll_to = first_item - page_size;
-
-			while (history_masked(scroll_to) && scroll_to > 0)
-				scroll_to--;
-
-			first_item = (scroll_to >= 0 ? scroll_to : 0);
-		}
-		else if (ch.code == ARROW_DOWN)
-		{
-			size_t scroll_to = first_item + 1;
-
-			while (history_masked(scroll_to) && scroll_to < history_ctr - 1)
-				scroll_to++;
-
-			first_item = (scroll_to < max_item ? scroll_to : max_item);
-		}
-		else if (ch.code == ARROW_UP)
-		{
-			int scroll_to = first_item - 1;
-
-			while (history_masked(scroll_to) && scroll_to > 0)
-				scroll_to--;
-
-			first_item = (scroll_to >= 0 ? scroll_to : 0);
-		}
-		else if (ch.code == ESCAPE)
-			break;
 	}
 
 	screen_load();
@@ -439,26 +429,22 @@ void history_display(void)
 void dump_history(ang_file *file)
 {
 	size_t i;
-	char buf[90];
+	char buf[120];
 
-        file_putf(file, "============================================================\n");
-        file_putf(file, "                   CHAR.\n");
-        file_putf(file, "|   TURN  | DEPTH |LEVEL| EVENT\n");
-        file_putf(file, "============================================================\n");
+	file_putf(file, "[Player history]\n");
+	file_putf(file, "      Turn   Depth  Note\n");
 
-	for (i = 0; i < (last_printable_item() + 1); i++)
-	{
+	for (i = 0; i < (last_printable_item() + 1); i++) {
 		/* Skip not-yet-IDd artifacts */
 		if (history_masked(i)) continue;
 
-                strnfmt(buf, sizeof(buf), "%10d%7d\'%5d   %s",
-                                history_list[i].turn,
-                                history_list[i].dlev * 50,
-                                history_list[i].clev,
-                                history_list[i].event);
+		strnfmt(buf, sizeof(buf), "%10d%7d\'  %s",
+				history_list[i].turn,
+				history_list[i].dlev * 50,
+				history_list[i].event);
 
-                if (history_list[i].type & HISTORY_ARTIFACT_LOST)
-                                my_strcat(buf, " (LOST)", sizeof(buf));
+		if (history_list[i].type & HISTORY_ARTIFACT_LOST)
+			my_strcat(buf, " (LOST)", sizeof(buf));
 
 		file_putf(file, "%s", buf);
 		file_put(file, "\n");
