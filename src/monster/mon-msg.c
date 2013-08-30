@@ -465,6 +465,7 @@ static void flush_monster_messages(bool delay, byte delay_tag)
 			case MON_MSG_SHRIVEL_LIGHT:
 			case MON_MSG_DISENTEGRATES:
 			case MON_MSG_FREEZE_SHATTER:
+			case MON_MSG_DISSOLVE:
 				type = MSG_KILL;
 		}
 
