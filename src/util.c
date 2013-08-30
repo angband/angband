@@ -1633,7 +1633,7 @@ static bool get_file_text(const char *suggested_name, char *path, size_t len)
 	path_build(path, len, ANGBAND_DIR_USER, buf);
 
 	/* Check if it already exists */
-	if (file_exists(buf) && !get_check("Replace existing file? "))
+	if (file_exists(path) && !get_check("Replace existing file? "))
 		return FALSE;
 
 	/* Tell the user where it's saved to. */
