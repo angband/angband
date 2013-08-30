@@ -37,11 +37,11 @@
 #include "option.h"
 #include "types.h"
 #include "game-cmd.h"
+#include "cave.h"
 #include "object/obj-flag.h"
 #include "object/object.h"
 #include "monster/constants.h"
 #include "monster/monster.h"
-#include "player/types.h"
 #include "player/player.h"
 #include "store.h"
 

@@ -24,171 +24,6 @@
 #include "randname.h"
 
 
-/*
- * Find the start of a possible Roman numerals suffix by going back from the
- * end of the string to a space, then checking that all the remaining chars
- * are valid Roman numerals.
- * 
- * Return the start position, or NULL if there isn't a valid suffix. 
- */
-char *find_roman_suffix_start(const char *buf)
-{
-	const char *start = strrchr(buf, ' ');
-	const char *p;
-	
-	if (start)
-	{
-		start++;
-		p = start;
-		while (*p)
-		{
-			if (*p != 'I' && *p != 'V' && *p != 'X' && *p != 'L' &&
-			    *p != 'C' && *p != 'D' && *p != 'M')
-			{
-				start = NULL;
-				break;
-			}
-			++p;			    
-		}
-	}
-	return (char *)start;
-}
-
-/*----- Roman numeral functions  ------*/
-
-/*
- * Converts an arabic numeral (int) to a roman numeral (char *).
- *
- * An arabic numeral is accepted in parameter `n`, and the corresponding
- * upper-case roman numeral is placed in the parameter `roman`.  The
- * length of the buffer must be passed in the `bufsize` parameter.  When
- * there is insufficient room in the buffer, or a roman numeral does not
- * exist (e.g. non-positive integers) a value of 0 is returned and the
- * `roman` buffer will be the empty string.  On success, a value of 1 is
- * returned and the zero-terminated roman numeral is placed in the
- * parameter `roman`.
- */
-int int_to_roman(int n, char *roman, size_t bufsize)
-{
-	/* Roman symbols */
-	char roman_symbol_labels[13][3] =
-		{"M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX",
-		 "V", "IV", "I"};
-	int  roman_symbol_values[13] =
-		{1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1};
-
-	/* Clear the roman numeral buffer */
-	roman[0] = '\0';
-
-	/* Roman numerals have no zero or negative numbers */
-	if (n < 1)
-		return 0;
-
-	/* Build the roman numeral in the buffer */
-	while (n > 0)
-	{
-		int i = 0;
-
-		/* Find the largest possible roman symbol */
-		while (n < roman_symbol_values[i])
-			i++;
-
-		/* No room in buffer, so abort */
-		if (strlen(roman) + strlen(roman_symbol_labels[i]) + 1
-			> bufsize)
-			break;
-
-		/* Add the roman symbol to the buffer */
-		my_strcat(roman, roman_symbol_labels[i], bufsize);
-
-		/* Decrease the value of the arabic numeral */
-		n -= roman_symbol_values[i];
-	}
-
-	/* Ran out of space and aborted */
-	if (n > 0)
-	{
-		/* Clean up and return */
-		roman[0] = '\0';
-
-		return 0;
-	}
-
-	return 1;
-}
-
-
-/*
- * Converts a roman numeral (char *) to an arabic numeral (int).
- *
- * The null-terminated roman numeral is accepted in the `roman`
- * parameter and the corresponding integer arabic numeral is returned.
- * Only upper-case values are considered. When the `roman` parameter
- * is empty or does not resemble a roman numeral, a value of -1 is
- * returned.
- *
- * XXX This function will parse certain non-sense strings as roman
- *     numerals, such as IVXCCCVIII
- */
-int roman_to_int(const char *roman)
-{
-	size_t i;
-	int n = 0;
-	char *p;
-
-	char roman_token_chr1[] = "MDCLXVI";
-	const char *roman_token_chr2[] = {0, 0, "DM", 0, "LC", 0, "VX"};
-
-	int roman_token_vals[7][3] = {{1000},
-	                              {500},
-	                              {100, 400, 900},
-	                              {50},
-	                              {10, 40, 90},
-	                              {5},
-	                              {1, 4, 9}};
-
-	if (strlen(roman) == 0)
-		return -1;
-
-	/* Check each character for a roman token, and look ahead to the
-	   character after this one to check for subtraction */
-	for (i = 0; i < strlen(roman); i++)
-	{
-		char c1, c2;
-		int c1i, c2i;
-
-		/* Get the first and second chars of the next roman token */
-		c1 = roman[i];
-		c2 = roman[i + 1];
-
-		/* Find the index for the first character */
-		p = strchr(roman_token_chr1, c1);
-		if (p)
-		{
-			c1i = p - roman_token_chr1;
-		} else {
-			return -1;
-		}
-
-		/* Find the index for the second character */
-		c2i = 0;
-		if (roman_token_chr2[c1i] && c2)
-		{
-			p = strchr(roman_token_chr2[c1i], c2);
-			if (p)
-			{
-				c2i = (p - roman_token_chr2[c1i]) + 1;
-				/* Two-digit token, so skip a char on the next pass */
-				i++;
-			}
-		}
-
-		/* Increase the arabic numeral */
-		n += roman_token_vals[c1i][c2i];
-	}
-
-	return n;
-}
 
 static bool inkey_xtra;
 
@@ -816,92 +651,28 @@ void message_flush(void)
 
 
 
-/*
- * Save the screen, and increase the "icky" depth.
- *
- * This function must match exactly one call to "screen_load()".
- */
-void screen_save(void)
-{
-	/* Hack -- Flush messages */
-	message_flush();
-
-	/* Save the screen (if legal) */
-	Term_save();
-
-	/* Increase "icky" depth */
-	character_icky++;
-}
-
+/*** text_out() ***/
 
 /*
- * Load the screen, and decrease the "icky" depth.
- *
- * This function must match exactly one call to "screen_save()".
+ * Function hook to output (colored) text to the screen or to a file.
  */
-void screen_load(void)
-{
-	/* Hack -- Flush messages */
-	message_flush();
-
-	/* Load the screen (if legal) */
-	Term_load();
-
-	/* Decrease "icky" depth */
-	character_icky--;
-
-	/* Mega hack -redraw big graphics - sorry NRM */
-	if (character_icky == 0 && (tile_width > 1 || tile_height > 1))
-		Term_redraw();
-}
-
+void (*text_out_hook)(byte a, const char *str);
 
 /*
- * Display a string on the screen using an attribute.
- *
- * At the given location, using the given attribute, if allowed,
- * add the given string.  Do not clear the line.
+ * Hack -- Where to wrap the text when using text_out().  Use the default
+ * value (for example the screen width) when 'text_out_wrap' is 0.
  */
-void c_put_str(byte attr, const char *str, int row, int col)
-{
-	/* Position cursor, Dump the attr/text */
-	Term_putstr(col, row, -1, attr, str);
-}
-
+int text_out_wrap = 0;
 
 /*
- * As above, but in "white"
+ * Hack -- Indentation for the text when using text_out().
  */
-void put_str(const char *str, int row, int col)
-{
-	/* Spawn */
-	Term_putstr(col, row, -1, TERM_WHITE, str);
-}
-
-
+int text_out_indent = 0;
 
 /*
- * Display a string on the screen using an attribute, and clear
- * to the end of the line.
+ * Hack -- Padding after wrapping
  */
-void c_prt(byte attr, const char *str, int row, int col)
-{
-	/* Clear line, position cursor */
-	Term_erase(col, row, 255);
-
-	/* Dump the attr/text */
-	Term_addstr(-1, attr, str);
-}
-
-
-/*
- * As above, but in "white"
- */
-void prt(const char *str, int row, int col)
-{
-	/* Spawn */
-	c_prt(TERM_WHITE, str, row, col);
-}
+int text_out_pad = 0;
 
 
 /*
@@ -1027,6 +798,12 @@ void text_out_to_screen(byte a, const char *str)
 		if (++x > wrap) x = wrap;
 	}
 }
+
+
+/*
+ * Hack - the destination file for text_out_to_file.
+ */
+ang_file *text_out_file = NULL;
 
 
 /*

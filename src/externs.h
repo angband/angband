@@ -4,7 +4,7 @@
 #include "monster/constants.h"
 #include "monster/monster.h"
 #include "object/object.h"
-#include "player/types.h"
+#include "player/player.h"
 #include "store.h"
 #include "types.h"
 #include "z-file.h"
@@ -168,9 +168,6 @@ extern void signals_init(void);
 void do_cmd_store_knowledge(void);
 
 /* util.c */
-extern char *find_roman_suffix_start(const char *buf);
-extern int roman_to_int(const char *roman);
-extern int int_to_roman(int n, char *roman, size_t bufsize);
 extern void flush(void);
 extern void flush_fail(void);
 extern struct keypress inkey(void);

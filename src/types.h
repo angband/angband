@@ -68,38 +68,6 @@ typedef struct maxima
 } maxima;
 
 
-/**
- * Information about terrain features.
- *
- * At the moment this isn't very much, but eventually a primitive flag-based
- * information system will be used here.
- */
-typedef struct feature
-{
-	char *name;
-	int fidx;
-
-	struct feature *next;
-
-	byte mimic;    /**< Feature to mimic */
-	byte priority; /**< Display priority */
-
-	byte locked;   /**< How locked is it? */
-	byte jammed;   /**< How jammed is it? */
-	byte shopnum;  /**< Which shop does it take you to? */
-	byte dig;      /**< How hard is it to dig through? */
-
-	u32b effect;   /**< Effect on entry to grid */
-	bitflag flags[FF_SIZE];    /**< Terrain flags */
-
-	byte d_attr;   /**< Default feature attribute */
-	wchar_t d_char;   /**< Default feature character */
-
-	byte x_attr[3];   /**< Desired feature attribute (set by user/pref file) */
-	wchar_t x_char[3];   /**< Desired feature character (set by user/pref file) */
-} feature_type;
-
-
 
 /*
  * Information about "vault generation"

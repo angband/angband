@@ -11,7 +11,33 @@
 
 struct player;
 
-/*** Constants ***/
+
+/*** Game constants ***/
+
+/*
+ * Refueling constants
+ */
+#define FUEL_TORCH                5000  /* Maximum amount of fuel in a torch */
+#define FUEL_LAMP                15000  /* Maximum amount of fuel in a lantern */
+#define DEFAULT_TORCH       FUEL_TORCH  /* Default amount of fuel in a torch */
+#define DEFAULT_LAMP   (FUEL_LAMP / 2)  /* Default amount of fuel in a lantern */
+
+/* A "stack" of items is limited to 40 items (hard-coded). */
+#define MAX_STACK_SIZE 41
+
+/* An item's pval (for charges, amount of gold, etc) is limited to s16b */
+#define MAX_PVAL  32767
+
+/*
+ * Maximum number of objects allowed in a single dungeon grid.
+ *
+ * The main-screen has a minimum size of 24 rows, so we can always
+ * display 23 objects + 1 header line.
+ */
+#define MAX_FLOOR_STACK			23
+
+
+/*** API constants ***/
 
 /* Object origin kinds */
 
@@ -413,6 +439,12 @@ typedef struct artifact
 	random_value time;  /**< Recharge time (if appropriate) */
 } artifact_type;
 
+
+
+/*
+ * Number of tval/min-sval/max-sval slots per ego item
+ */
+#define EGO_TVALS_MAX 3
 
 /*
  * Information about "ego-items".

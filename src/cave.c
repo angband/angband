@@ -24,6 +24,7 @@
 #include "object/tvalsval.h"
 #include "squelch.h"
 #include "cmds.h"
+#include "grafmode.h"
 
 /*
  * Approximate distance between two points.

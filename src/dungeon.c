@@ -25,6 +25,7 @@
 #include "files.h"
 #include "game-event.h"
 #include "generate.h"
+#include "grafmode.h"
 #include "init.h"
 #include "monster/monster.h"
 #include "monster/mon-make.h"
