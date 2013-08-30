@@ -8,6 +8,7 @@
 #include "z-bitflag.h"
 #include "game-cmd.h"
 #include "cave.h"
+#include "object/obj-flag.h"
 
 struct player;
 
