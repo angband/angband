@@ -39,46 +39,6 @@ typedef struct maxima
 } maxima;
 
 
-
-/*
- * Information about "vault generation"
- */
-typedef struct vault {
-	struct vault *next;
-	unsigned int vidx;
-	char *name;
-	char *text;
-
-	byte typ;			/* Vault type */
-
-	byte rat;			/* Vault rating */
-
-	byte hgt;			/* Vault height */
-	byte wid;			/* Vault width */
-} vault_type;
-
-
-/*
- * Information about "room generation"
- */
-typedef struct room_template {
-	struct room_template *next;
-	unsigned int tidx;
-	char *name;
-	char *text;
-
-	byte typ;			/* Room type */
-
-	byte rat;			/* Room rating */
-
-	byte hgt;			/* Room height */
-	byte wid;			/* Room width */
-	byte dor;           /* Random door options */
-	byte tval;			/* tval for objects in this room */
-} room_template_type;
-
-
-
 /*
  * Structure for the "quests"
  *

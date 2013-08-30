@@ -2269,7 +2269,7 @@ static void build_vault(struct cave *c, int y0, int x0, int ymax, int xmax, cons
  */
 static bool build_vault_type(struct cave*c, int y0, int x0, int typ, const char *label)
 {
-	vault_type *v_ptr = random_vault(typ);
+	struct vault *v_ptr = random_vault(typ);
 	if (v_ptr == NULL) {
 		/*quit_fmt("got NULL from random_vault(%d)", typ);*/
 		return FALSE;
