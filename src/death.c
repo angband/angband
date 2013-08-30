@@ -248,7 +248,7 @@ static void death_info(const char *title, int row)
 	if (p_ptr->inven_cnt)
 	{
 		Term_clear();
-		show_inven(OLIST_WEIGHT);
+		show_inven(OLIST_WEIGHT, 0);
 		prt("You are carrying: -more-", 0, 0);
 		(void)anykey();
 	}

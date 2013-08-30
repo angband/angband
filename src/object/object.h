@@ -685,7 +685,7 @@ void ego_apply_magic(object_type *o_ptr, int level);
 void ego_min_pvals(object_type *o_ptr);
 
 /* obj-ui.c */
-void show_inven(int mode);
+void show_inven(int mode, unsigned char cmdkey);
 void show_equip(int mode);
 void show_floor(const int *floor_list, int floor_num, int mode);
 bool verify_item(const char *prompt, int item);
