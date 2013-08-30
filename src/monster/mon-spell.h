@@ -129,6 +129,7 @@ struct mon_spell {
     random_value base_dam;  /* Base damage for the attack */
     random_value rlev_dam;  /* Monster-level-dependent damage */
     const char *blind_verb; /* Description of the attack if unseen */
+	const char *lore_desc;	/* Description of the attack used in lore text */
 };
 
 /* Structure for side effects of spell attacks */
@@ -153,5 +154,7 @@ bool test_spells(bitflag *f, int types);
 void set_spells(bitflag *f, int types);
 int best_spell_power(const monster_race *r_ptr, int resist);
 void unset_spells(bitflag *spells, bitflag *flags, const monster_race *r_ptr);
+const char *mon_spell_lore_description(int spell);
+int mon_spell_lore_damage(int spell, const monster_race *race, bool know_hp);
 
 #endif /* MONSTER_SPELL_H */

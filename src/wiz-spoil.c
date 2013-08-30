@@ -651,6 +651,106 @@ static void spoil_mon_desc(const char *fname)
  */
 
 
+#if LORE_USE_TEXTBLOCK
+static void spoil_mon_info(const char *fname)
+{
+	char buf[1024];
+	int i, n;
+	u16b *who;
+	int count = 0;
+	textblock *tb = NULL;
+
+	/* Open the file */
+	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, fname);
+	fh = file_open(buf, MODE_WRITE, FTYPE_TEXT);
+
+	if (!fh)
+	{
+		msg("Cannot create spoiler file.");
+		return;
+	}
+
+	/* Dump the header */
+	tb = textblock_new();
+	textblock_append(tb, "Monster Spoilers for %s\n", buildid);
+	textblock_append(tb, "------------------------------------------\n\n");
+	textblock_to_file(tb, fh, 0, 75);
+	textblock_free(tb);
+	tb = NULL;
+
+	/* Allocate the "who" array */
+	who = C_ZNEW(z_info->r_max, u16b);
+
+	/* Scan the monsters */
+	for (i = 1; i < z_info->r_max; i++)
+	{
+		monster_race *r_ptr = &r_info[i];
+
+		/* Use that monster */
+		if (r_ptr->name) who[count++] = (u16b)i;
+	}
+
+	sort(who, count, sizeof(*who), cmp_monsters);
+
+	/* List all monsters in order. */
+	for (n = 0; n < count; n++)
+	{
+		int r_idx = who[n];
+		const monster_race *r_ptr = &r_info[r_idx];
+		const monster_lore *l_ptr = &l_list[r_idx];
+		tb = textblock_new();
+
+		/* Line 1: prefix, name, color, and symbol */
+		if (rf_has(r_ptr->flags, RF_QUESTOR))
+			textblock_append(tb, "[Q] ");
+		else if (rf_has(r_ptr->flags, RF_UNIQUE))
+			textblock_append(tb, "[U] ");
+		else
+			textblock_append(tb, "The ");
+
+		/* As of 3.5, race->name and race->text are stored as UTF-8 strings; there is no conversion from the source edit files. */
+		textblock_append_utf8(tb, r_ptr->name);
+		textblock_append(tb, "  (");	/* ---)--- */
+		textblock_append(tb, attr_to_text(r_ptr->d_attr));
+		textblock_append(tb, " '%c')\n", r_ptr->d_char);
+
+		/* Line 2: number, level, rarity, speed, HP, AC, exp */
+		textblock_append(tb, "=== ");
+		textblock_append(tb, "Num:%d  ", r_idx);
+		textblock_append(tb, "Lev:%d  ", r_ptr->level);
+		textblock_append(tb, "Rar:%d  ", r_ptr->rarity);
+
+		if (r_ptr->speed >= 110)
+			textblock_append(tb, "Spd:+%d  ", (r_ptr->speed - 110));
+		else
+			textblock_append(tb, "Spd:-%d  ", (110 - r_ptr->speed));
+
+		textblock_append(tb, "Hp:%d  ", r_ptr->avg_hp);
+		textblock_append(tb, "Ac:%d  ", r_ptr->ac);
+		textblock_append(tb, "Exp:%ld\n", (long)(r_ptr->mexp));
+
+		/* Normal description (with automatic line breaks) */
+		lore_description(tb, r_ptr, l_ptr, TRUE);
+		textblock_append(tb, "\n");
+
+		textblock_to_file(tb, fh, 0, 75);
+		textblock_free(tb);
+		tb = NULL;
+	}
+
+	/* Free the "who" array */
+	FREE(who);
+
+	/* Check for errors */
+	if (!file_close(fh))
+	{
+		msg("Cannot close spoiler file.");
+		return;
+	}
+
+	msg("Successfully created a spoiler file.");
+}
+#else
 /*
  * Create a spoiler file for monsters (-SHAWN-)
  */
@@ -778,6 +878,7 @@ static void spoil_mon_info(const char *fname)
 
 	msg("Successfully created a spoiler file.");
 }
+#endif /* LORE_USE_TEXTBLOCK */
 
 
 static void spoiler_menu_act(const char *title, int row)

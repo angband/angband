@@ -654,15 +654,30 @@ void do_cmd_query_symbol(void)
 		/* Hack -- Handle stuff */
 		handle_stuff(p_ptr);
 
+#if LORE_USE_TEXTBLOCK
+		textblock *tb = textblock_new();
+		lore_title(tb, r_ptr);
+		textblock_append(tb, " [(r)ecall, ESC]\n"); /* Line break is needed for proper display */
+		textui_textblock_place(tb, SCREEN_REGION, NULL);
+		textblock_free(tb);
+#else
 		/* Hack -- Begin the prompt */
 		roff_top(r_ptr);
 
 		/* Hack -- Complete the prompt */
 		Term_addstr(-1, TERM_WHITE, " [(r)ecall, ESC]");
+#endif /* LORE_USE_TEXTBLOCK */
 
 		/* Interact */
 		while (1)
 		{
+#if LORE_USE_TEXTBLOCK
+			/* Ignore keys during recall presentation, otherwise, the 'r' key acts like a toggle and instead of a one-off command */
+			if (recall)
+				lore_show_interactive(r_ptr, l_ptr);
+			else
+				query = inkey();
+#else
 			/* Recall */
 			if (recall)
 			{
@@ -685,6 +700,7 @@ void do_cmd_query_symbol(void)
 				/* Load screen */
 				screen_load();
 			}
+#endif /* LORE_USE_TEXTBLOCK */
 
 			/* Normal commands */
 			if (query.code != 'r') break;

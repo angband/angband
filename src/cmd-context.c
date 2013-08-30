@@ -560,6 +560,9 @@ int context_menu_cave(struct cave *c, int y, int x, int adjacent, int mx, int my
 		if (m_ptr) {
 			monster_lore *lore = get_lore(m_ptr->race);
 
+#if LORE_USE_TEXTBLOCK
+			lore_show_interactive(m_ptr->race, lore);
+#else
 			/* Save screen */
 			screen_save();
 
@@ -571,6 +574,7 @@ int context_menu_cave(struct cave *c, int y, int x, int adjacent, int mx, int my
 
 			/* Load screen */
 			screen_load();
+#endif /* LORE_USE_TEXTBLOCK */
 		}
 	}
 
