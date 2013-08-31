@@ -19,6 +19,7 @@
 #include "angband.h"
 #include "buildid.h"
 #include "cmds.h"
+#include "dungeon.h"
 #include "files.h"
 
 /*

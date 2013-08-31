@@ -386,7 +386,7 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 		target_get(&tx, &ty);
 		taim = distance(y, x, ty, tx);
 		if (taim > range) {
-			sprintf (msg, "Target out of range by %d squares. Fire anyway? ",
+			strnfmt(msg, sizeof(msg), "Target out of range by %d squares. Fire anyway? ",
 				taim - range);
 			if (!get_check(msg)) return;
 		}

@@ -20,6 +20,7 @@
 #include "angband.h"
 #include "buildid.h"
 #include "cmds.h"
+#include "dungeon.h"
 
 #ifdef USE_GCU
 #include "main.h"

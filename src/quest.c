@@ -31,9 +31,9 @@ bool is_quest(int level)
 	int i;
 
 	/* Town is never a quest */
-	if (!level || !q_list) return FALSE;
+	if (!level) return FALSE;
 
-	for (i = 0; i < MAX_Q_IDX; i++)
+	for (i = 0; i < N_ELEMENTS(q_list); i++)
 		if (q_list[i].level == level)
 			return TRUE;
 
@@ -46,13 +46,11 @@ bool is_quest(int level)
 void quest_reset(void) {
 	int i;
 
-	for (i = 0; q_list && i < MAX_Q_IDX; i++)
+	for (i = 0; i < N_ELEMENTS(q_list); i++)
 		q_list[i].level = 0;
 
-	if (q_list) {
-		q_list[0].level = 99;
-		q_list[1].level = 100;
-	}
+	q_list[0].level = 99;
+	q_list[1].level = 100;
 }
 
 /*
@@ -99,7 +97,7 @@ bool quest_check(const struct monster *m) {
 	if (!rf_has(m->race->flags, RF_QUESTOR)) return FALSE;
 
 	/* Mark quests as complete */
-	for (i = 0; i < MAX_Q_IDX; i++)	{
+	for (i = 0; i < N_ELEMENTS(q_list); i++) {
 		/* Note completed quests */
 		if (q_list[i].level == m->race->level) q_list[i].level = 0;
 
