@@ -41,6 +41,12 @@
 #include "randname.h"
 #include "squelch.h"
 
+/*
+ * Structure (not array) of size limits
+ */
+maxima *z_info;
+
+
 static struct history_chart *histories;
 
 /*

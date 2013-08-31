@@ -1290,10 +1290,8 @@ bool pick_and_place_distant_monster(struct cave *c, struct loc loc, int dis,
  */
 void monster_death(struct monster *m_ptr, bool stats)
 {
-	int i;
 	int dump_item = 0;
 	int dump_gold = 0;
-	int total = 0;
 	s16b this_o_idx, next_o_idx = 0;
 
 	object_type *i_ptr;

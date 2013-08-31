@@ -38,6 +38,17 @@ struct loc {
 
 struct loc loc(int x, int y);
 
+
+/**
+ * Defines a (value, name) pairing.  Variable names used are historical.
+ */
+typedef struct grouper grouper;
+struct grouper {
+	int tval;
+	const char *name;
+};
+
+
 /*
  * A set of points that can be constructed to apply a set of changes to
  */

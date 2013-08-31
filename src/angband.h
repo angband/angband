@@ -34,16 +34,18 @@
  */
 #include "config.h"
 #include "defines.h"
-#include "option.h"
-#include "types.h"
-#include "game-cmd.h"
+
 #include "cave.h"
-#include "object/obj-flag.h"
-#include "object/object.h"
+#include "game-cmd.h"
+#include "init.h"
 #include "monster/constants.h"
 #include "monster/monster.h"
+#include "object/obj-flag.h"
+#include "object/object.h"
+#include "option.h"
 #include "player/player.h"
 #include "store.h"
+#include "types.h"
 
 #include "ui.h"
 #include "z-type.h"

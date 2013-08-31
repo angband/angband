@@ -324,11 +324,6 @@ player_type *p_ptr = &player_type_body;
 
 
 /*
- * Structure (not array) of size limits
- */
-maxima *z_info;
-
-/*
  * The vault generation arrays
  */
 feature_type *f_info;

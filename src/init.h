@@ -17,11 +17,34 @@
 #include "z-rand.h"
 #include "parser.h"
 
+/**
+ * Information about maximal indices of certain arrays.
+ *
+ * These are actually not the maxima, but the maxima plus one, because of
+ * 0-based indexing issues.
+ */
+typedef struct maxima
+{
+	u16b f_max;       /**< Maximum number of terrain features */
+	u16b k_max;       /**< Maximum number of object base kinds */
+	u16b a_max;       /**< Maximum number of artifact kinds */
+	u16b e_max;       /**< Maximum number of ego-item kinds */
+	u16b r_max;       /**< Maximum number of monster races */
+	u16b mp_max;	  /**< Maximum number of monster pain message sets */
+	u16b s_max;       /**< Maximum number of magic spells */
+	u16b pit_max;	  /**< Maximum number of monster pit types */
+
+	u16b o_max;       /**< Maximum number of objects on a given level */
+	u16b m_max;       /**< Maximum number of monsters on a given level */
+} maxima;
+
 struct init_module {
 	const char *name;
 	void (*init)(void);
 	void (*cleanup)(void);
 };
+
+extern maxima *z_info;
 
 extern struct parser *init_parse_a(void);
 extern struct parser *init_parse_c(void);
