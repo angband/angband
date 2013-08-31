@@ -1791,3 +1791,16 @@ struct monster *target_get_monster(void)
 {
 	return target_who;
 }
+
+
+/*
+ * True if the player's current target is in LOS.
+ */
+bool target_sighted(void)
+{
+	return target_okay() &&
+			panel_contains(target_y, target_x) &&
+			 /* either the target is a grid and is visible, or it is a monster that is visible */
+			((!target_who && player_can_see_bold(target_y, target_x)) || (target_who && target_who->ml));
+}
+

@@ -24,7 +24,7 @@ void option_dump(ang_file *f);
  * Information for "do_cmd_options()".
  */
 #define OPT_PAGE_MAX				3
-#define OPT_PAGE_PER				19
+#define OPT_PAGE_PER				20
 
 #define OPT_PAGE_BIRTH				1
 
@@ -60,7 +60,7 @@ extern const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER];
 #define OPT_pickup_always			4
 #define OPT_pickup_inven			5
 #define OPT_show_flavors			6
-/* XXX 7 */
+#define OPT_show_target				7
 #define OPT_disturb_near			8
 /* XXX 9 */
 /* XXX 10 */

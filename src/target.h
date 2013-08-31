@@ -28,5 +28,6 @@ bool target_set_interactive(int mode, int x, int y);
 bool get_aim_dir(int *dp);
 void target_get(s16b *col, s16b *row);
 struct monster *target_get_monster(void);
+bool target_sighted(void);
 
 #endif /* !TARGET_H */

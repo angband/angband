@@ -39,6 +39,7 @@ const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_disturb_near,
 		/* extra info */
 		OPT_show_damage,
+		OPT_show_target,
 		/* colouring */
 		OPT_view_yellow_light,
 		OPT_animate_flicker,
@@ -74,6 +75,7 @@ const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,
+		OPT_NONE,
 	},
 
 	/* Cheat */
@@ -83,6 +85,7 @@ const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_cheat_xtra,
 		OPT_cheat_know,
 		OPT_cheat_live,
+		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,
@@ -114,7 +117,7 @@ static const struct option options[OPT_MAX] =
 { "pickup_always",       "Always pickup items",                         FALSE }, /* 4 */
 { "pickup_inven",        "Always pickup items matching inventory",      TRUE },  /* 5 */
 { "show_flavors",        "Show flavors in object descriptions",         FALSE }, /* 6 */
-{ NULL,                  NULL,                                          FALSE }, /* 7 */
+{ "show_target",         "Highlight target with cursor",                TRUE }, /* 7 */
 { "disturb_near",        "Disturb whenever viewable monster moves",     TRUE },  /* 8 */
 { NULL,                  NULL,                                          FALSE }, /* 9 */
 { NULL,                  NULL,                                          FALSE }, /* 10 */
