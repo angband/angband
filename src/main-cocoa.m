@@ -2596,17 +2596,69 @@ static BOOL contains_angband_view(NSView *view)
     return NO;
 }
 
+
+/**
+ * Queue mouse presses if they occur in the map section of the main window.
+ */
+static void AngbandHandleEventMouseDown( NSEvent *event )
+{
+	AngbandContext *angbandContext = [[[event window] contentView] angbandContext];
+	AngbandContext *mainAngbandContext = angband_term[0]->data;
+
+	if (mainAngbandContext->primaryWindow && [[event window] windowNumber] == [mainAngbandContext->primaryWindow windowNumber])
+	{
+		int cols, rows, x, y;
+		Term_get_size(&cols, &rows);
+		NSSize tileSize = angbandContext->tileSize;
+		NSSize border = angbandContext->borderSize;
+		NSPoint windowPoint = [event locationInWindow];
+
+		// adjust for border; add border height because window origin is at bottom
+		windowPoint = NSMakePoint( windowPoint.x - border.width, windowPoint.y + border.height );
+
+		NSPoint p = [[[event window] contentView] convertPoint: windowPoint fromView: nil];
+		x = floor( p.x / tileSize.width );
+		y = floor( p.y / tileSize.height );
+
+		/* Sidebar plus border == thirteen characters;
+		 * top row is reserved, and bottom row may have mouse buttons.
+		 * Coordinates run from (0,0) to (cols-1, rows-1).
+		 */
+		if ((x > 13 && x <= cols - 1 && y > 0  && y <= rows - 2) || (OPT(mouse_buttons) && y == rows - 1 && x >= COL_MAP && x < COL_MAP + button_get_length()))
+		{
+			// [event buttonNumber] will return 0 for left click, 1 for right click, but this is safer
+			int button = ([event type] == NSLeftMouseDown) ? 1 : 2;
+
+#ifdef KC_MOD_ALT
+			NSUInteger eventModifiers = [event modifierFlags];
+			byte angbandModifiers = 0;
+			angbandModifiers |= (eventModifiers & NSShiftKeyMask) ? KC_MOD_SHIFT : 0;
+			angbandModifiers |= (eventModifiers & NSControlKeyMask) ? KC_MOD_CONTROL : 0;
+			angbandModifiers |= (eventModifiers & NSAlternateKeyMask) ? KC_MOD_ALT : 0;
+			button |= (angbandModifiers & 0x0F) << 4; // encode modifiers in the button number (see Term_mousepress())
+#endif
+
+			Term_mousepress(x, y, button);
+		}
+	}
+
+	/* Pass click through to permit focus change, resize, etc. */
+	[NSApp sendEvent:event];
+}
+
+
+
 /* Encodes an NSEvent Angband-style, or forwards it along.  Returns YES if the event was sent to Angband, NO if Cocoa (or nothing) handled it */
 static BOOL send_event(NSEvent *event)
 {
-        
+
     /* If the receiving window is not an Angband window, then do nothing */
     if (! contains_angband_view([[event window] contentView]))
     {
         [NSApp sendEvent:event];
         return NO;
     }
-    
+
     /* Analyze the event */
     switch ([event type])
     {
@@ -2715,61 +2767,8 @@ static BOOL send_event(NSEvent *event)
             
         case NSLeftMouseDown:
 		case NSRightMouseDown:
-        {
-            /* Queue mouse presses if they occur in the map section
-             * of the main window.
-             */
-
-            AngbandContext *angbandContext =
-                [[[event window] contentView] angbandContext];
-            AngbandContext *mainAngbandContext =
-                angband_term[0]->data;
-
-            if (mainAngbandContext->primaryWindow &&
-                [[event window] windowNumber] ==
-                [mainAngbandContext->primaryWindow windowNumber])
-            {
-                int cols, rows, x, y;
-                Term_get_size(&cols, &rows);
-
-                /* Term_mousepress() expects the origin (0,0) at the upper
-                 * left, while locationInWindow puts the origin at the lower
-                 * left.
-                 */
-                NSPoint p = [event locationInWindow];
-                NSSize tileSize = angbandContext->tileSize;
-                x = p.x/(tileSize.width * AngbandScaleIdentity.width);
-                y = rows - p.y/(tileSize.height * AngbandScaleIdentity.height);
-                    
-                /* Sidebar plus border == thirteen characters;
-                 * top row is reserved, and bottom row may have mouse buttons.
-                 * Coordinates run from (0,0) to (cols-1, rows-1).
-                 */
-                if ((x > 13 && x <= cols - 1 &&
-                     y > 0  && y <= rows - 2) ||
-                    (OPT(mouse_buttons) && y == rows - 1 && 
-                     x >= COL_MAP && x < COL_MAP + button_get_length()))
-                {
-					// [event buttonNumber] will return 0 for left click, 1 for right click, but this is safer
-					int button = ([event type] == NSLeftMouseDown) ? 1 : 2;
-
-#ifdef KC_MOD_ALT
-					NSUInteger eventModifiers = [event modifierFlags];
-					byte angbandModifiers = 0;
-					angbandModifiers |= (eventModifiers & NSShiftKeyMask) ? KC_MOD_SHIFT : 0;
-					angbandModifiers |= (eventModifiers & NSControlKeyMask) ? KC_MOD_CONTROL : 0;
-					angbandModifiers |= (eventModifiers & NSAlternateKeyMask) ? KC_MOD_ALT : 0;
-					button |= (angbandModifiers & 0x0F) << 4; // encode modifiers in the button number (see Term_mousepress())
-#endif
-
-                    Term_mousepress(x, y, button);
-                }
-            }
-
-            /* Pass click through to permit focus change, resize, etc. */
-            [NSApp sendEvent:event];
+			AngbandHandleEventMouseDown(event);
             break;
-        }
 
         case NSApplicationDefined:
         {
