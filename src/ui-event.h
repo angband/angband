@@ -187,4 +187,15 @@ void keypress_from_text(struct keypress *buf, size_t len, const char *str);
 /** Convert a keypress into something the user can read (not designed to be used internally */
 void keypress_to_readable(char *buf, size_t len, struct keypress src);
 
+/* Screen loading/saving */
+extern void screen_save(void);
+extern void screen_load(void);
+
+/* Placing text on screen */
+extern void c_put_str(byte attr, const char *str, int row, int col);
+extern void put_str(const char *str, int row, int col);
+extern void c_prt(byte attr, const char *str, int row, int col);
+extern void prt(const char *str, int row, int col);
+
+
 #endif /* INCLUDED_UI_EVENT_H */

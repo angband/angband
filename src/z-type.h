@@ -48,7 +48,6 @@ struct grouper {
 	const char *name;
 };
 
-
 /*
  * A set of points that can be constructed to apply a set of changes to
  */

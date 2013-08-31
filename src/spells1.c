@@ -18,18 +18,19 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "dungeon.h"
 #include "generate.h"
 #include "grafmode.h"
-#include "object/tvalsval.h"
-#include "object/object.h"
 #include "monster/mon-make.h"
 #include "monster/mon-msg.h"
 #include "monster/mon-spell.h"
 #include "monster/mon-timed.h"
 #include "monster/mon-util.h"
+#include "object/object.h"
+#include "object/tvalsval.h"
+#include "spells.h"
 #include "squelch.h"
 #include "trap.h"
-#include "spells.h"
 
 /**
  * Details of the different projectable attack types in the game.

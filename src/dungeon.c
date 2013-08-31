@@ -17,6 +17,7 @@
  */
 
 #include "angband.h"
+#include "birth.h"
 #include "borg/borg1.h"
 #include "button.h"
 #include "cave.h"
@@ -27,11 +28,12 @@
 #include "generate.h"
 #include "grafmode.h"
 #include "init.h"
-#include "monster/monster.h"
 #include "monster/mon-make.h"
 #include "monster/mon-spell.h"
 #include "monster/mon-util.h"
+#include "monster/monster.h"
 #include "object/tvalsval.h"
+#include "pathfind.h"
 #include "prefs.h"
 #include "savefile.h"
 #include "spells.h"

@@ -88,8 +88,7 @@ extern struct object_kind *objkinds;
 extern spell_type *s_info;
 extern struct hint *hints;
 extern struct pit_profile *pit_info;
-
-
+extern u16b lazymove_delay;
 
 extern const char *ANGBAND_SYS;
 extern const char *ANGBAND_GRAF;
@@ -122,11 +121,6 @@ extern void (*sound_hook)(int);
 /* util.c */
 extern struct keypress *inkey_next;
 
-
-
-/* birth.c */
-extern void player_birth(bool quickstart_allowed);
-
 /* cmd1.c */
 extern bool search(bool verbose);
 extern byte py_pickup(int pickup);
@@ -136,16 +130,6 @@ extern void move_player(int dir, bool disarm);
 int count_feats(int *y, int *x, bool (*test)(struct cave *cave, int y, int x), bool under);
 int coords_to_dir(int y, int x);
 
-/* dungeon.c */
-extern void dungeon_change_level(int dlev);
-extern void play_game(void);
-extern int value_check_aux1(const object_type *o_ptr);
-extern void idle_update(void);
-
-/* pathfind.c */
-extern bool findpath(int y, int x);
-extern void run_step(int dir);
-
 /* randart.c */
 extern errr do_randart(u32b randart_seed, bool full);
 
@@ -153,7 +137,6 @@ extern errr do_randart(u32b randart_seed, bool full);
 extern void enter_score(time_t *death_time);
 extern void show_scores(void);
 extern void predict_score(void);
-
 
 /* signals.c */
 extern void signals_ignore_tstp(void);
@@ -175,12 +158,6 @@ extern void sound(int val);
 extern void msg(const char *fmt, ...);
 extern void msgt(unsigned int type, const char *fmt, ...);
 extern void message_flush(void);
-extern void screen_save(void);
-extern void screen_load(void);
-extern void c_put_str(byte attr, const char *str, int row, int col);
-extern void put_str(const char *str, int row, int col);
-extern void c_prt(byte attr, const char *str, int row, int col);
-extern void prt(const char *str, int row, int col);
 extern void text_out_to_file(byte attr, const char *str);
 extern void text_out_to_screen(byte a, const char *str);
 extern void text_out(const char *fmt, ...);
@@ -228,16 +205,9 @@ char* random_hint(void);
 /* wiz-spoil.c */
 bool make_fake_artifact(object_type *o_ptr, struct artifact *artifact);
 
-
-
 /* borg.h */
 #ifdef ALLOW_BORG
 extern void do_cmd_borg(void);
 #endif /* ALLOW_BORG */
 
-
-extern u16b lazymove_delay;
-
-
 #endif /* !INCLUDED_EXTERNS_H */
-

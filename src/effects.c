@@ -19,6 +19,7 @@
 #include "angband.h"
 #include "cave.h"
 #include "effects.h"
+#include "dungeon.h"
 #include "monster/mon-spell.h"
 #include "monster/mon-util.h"
 #include "trap.h"
