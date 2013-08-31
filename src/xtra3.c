@@ -26,6 +26,7 @@
 #include "game-event.h"
 #include "game-cmd.h"
 #include "grafmode.h"
+#include "hint.h"
 #include "monster/mon-lore.h"
 #include "monster/mon-util.h"
 #include "monster/monster.h"

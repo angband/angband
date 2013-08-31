@@ -7,6 +7,7 @@
 #include "player/player.h"
 #include "store.h"
 #include "types.h"
+#include "z-term.h"
 #include "z-file.h"
 #include "z-msg.h"
 #include "spells.h"
@@ -62,12 +63,9 @@ extern s16b o_cnt;
 extern char savefile[1024];
 extern term *angband_term[ANGBAND_TERM_MAX];
 extern char angband_term_name[ANGBAND_TERM_MAX][16];
-extern byte angband_color_table[MAX_COLORS][4];
-extern color_type color_table[MAX_COLORS];
 extern const char *angband_sound_name[MSG_MAX];
 extern maxima *z_info;
 extern monster_lore *l_list;
-extern quest *q_list;
 extern struct store *stores;
 extern int store_knowledge;
 extern const char *** name_sections;

@@ -23,6 +23,7 @@
 #include "monster/mon-make.h"
 #include "monster/monster.h"
 #include "option.h"
+#include "quest.h"
 #include "savefile.h"
 #include "squelch.h"
 

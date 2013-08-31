@@ -130,6 +130,7 @@ ANGFILES = \
 	player/spell.o \
 	player/timed.o \
 	player/p-util.o \
+	quest.o \
 	score.o \
 	signals.o \
 	save.o \

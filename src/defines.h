@@ -98,8 +98,6 @@
 /* The fixed amount of energy a player should have at the start of a new level */
 #define INITIAL_DUNGEON_ENERGY 100
 
-/* Maximum number of quests */
-#define MAX_Q_IDX	4
 
 /*
  * Maximum dungeon level.  The player can never reach this level

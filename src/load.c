@@ -25,6 +25,8 @@
 #include "object/tvalsval.h"
 #include "savefile.h"
 #include "squelch.h"
+#include "quest.h"
+
 
 /* Object constants */
 byte max_pvals = 0;

@@ -26,6 +26,7 @@
 #include "monster/mon-timed.h"
 #include "monster/mon-util.h"
 #include "object/tvalsval.h"
+#include "quest.h"
 
 s16b num_repro;
 
@@ -1272,39 +1273,6 @@ bool pick_and_place_distant_monster(struct cave *c, struct loc loc, int dis,
 	return (FALSE);
 }
 
-/**
- * Creates magical stairs after finishing a quest monster.
- */
-static void build_quest_stairs(int y, int x)
-{
-	int ny, nx;
-
-	/* Stagger around */
-	while (!cave_valid_bold(y, x) && !cave_iswall(cave, y, x) && !cave_isdoor(cave, y, x)) {
-		/* Pick a location */
-		scatter(&ny, &nx, y, x, 1, FALSE);
-
-		/* Stagger */
-		y = ny; x = nx;
-	}
-
-	/* Push any objects */
-	push_object(y, x);
-
-	/* Explain the staircase */
-	msg("A magical staircase appears...");
-
-	/* Create stairs down */
-	/* XXX: fake depth = 0 to always produce downstairs */
-	cave_add_stairs(cave, y, x, 0);
-
-	/* Update the visuals */
-	p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
-
-	/* Fully update the flow */
-	p_ptr->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);
-}
-
 
 /**
  * Handles the "death" of a monster.
@@ -1390,29 +1358,8 @@ void monster_death(struct monster *m_ptr, bool stats)
 	/* Update monster list window */
 	p_ptr->redraw |= PR_MONLIST;
 
-	/* Nothing else to do for non-"Quest Monsters" */
-	if (!rf_has(m_ptr->race->flags, RF_QUESTOR)) return;
-
-	/* Mark quests as complete */
-	for (i = 0; i < MAX_Q_IDX; i++)	{
-		/* Note completed quests */
-		if (q_list[i].level == m_ptr->race->level) q_list[i].level = 0;
-
-		/* Count incomplete quests */
-		if (q_list[i].level) total++;
-	}
-
-	/* Build magical stairs */
-	build_quest_stairs(y, x);
-
-	/* Nothing left, game over... */
-	if (total == 0) {
-		p_ptr->total_winner = TRUE;
-		p_ptr->redraw |= (PR_TITLE);
-		msg("*** CONGRATULATIONS ***");
-		msg("You have won the game!");
-		msg("You may retire (commit suicide) when you are ready.");
-	}
+	/* Check if we finished a quest */
+	quest_check(m_ptr);
 }
 
 

@@ -2806,20 +2806,6 @@ void disturb(struct player *p, int stop_search, int unused_flag)
 	flush();
 }
 
-bool is_quest(int level)
-{
-	int i;
-
-	/* Town is never a quest */
-	if (!level || !q_list) return FALSE;
-
-	for (i = 0; i < MAX_Q_IDX; i++)
-		if (q_list[i].level == level)
-			return TRUE;
-
-	return FALSE;
-}
-
 struct cave *cave = NULL;
 
 struct cave *cave_new(void) {

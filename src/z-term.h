@@ -274,8 +274,7 @@ struct term
 #define TERM_XTRA_DELAY 13    /* Delay some milliseconds (optional) */
 
 
-/*** Color constants ***/
-
+/*** Colors ***/
 
 /*
  * Angband "attributes" (with symbols, and base (R,G,B) codes)
@@ -338,6 +337,20 @@ struct term
 #define BG_SAME  1	/* The set number for the same-background glyphs */
 #define BG_DARK  2	/* The set number for the dark-background glyphs */
 #define BG_MAX   3	/* The max number of backgrounds */
+
+/*
+ * A game color.
+ */
+typedef struct color_type color_type;
+struct color_type
+{
+	char index_char;            /* Character index:  'r' = red, etc. */
+	char name[32];              /* Color name */
+	byte color_translate[MAX_ATTR];       /* Index for various in-game translations */
+};
+
+extern byte angband_color_table[MAX_COLORS][4];
+extern color_type color_table[MAX_COLORS];
 
 
 

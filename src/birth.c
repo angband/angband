@@ -27,6 +27,7 @@
 #include "object/tvalsval.h"
 #include "object/object.h"
 #include "squelch.h"
+#include "quest.h"
 #include "ui-menu.h"
 
 /*
@@ -370,17 +371,8 @@ void player_init(struct player *p)
 		a_ptr->seen = FALSE;
 	}
 
-
 	/* Start with no quests */
-	for (i = 0; q_list && i < MAX_Q_IDX; i++)
-	{
-		q_list[i].level = 0;
-	}
-
-	if (q_list) {
-		q_list[0].level = 99;
-		q_list[1].level = 100;
-	}
+	quest_reset();
 
 	for (i = 1; z_info && i < z_info->k_max; i++) {
 		object_kind *k_ptr = &k_info[i];

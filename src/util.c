@@ -19,6 +19,7 @@
 #include "angband.h"
 #include "button.h"
 #include "cmds.h"
+#include "target.h"
 #include "files.h"
 #include "game-event.h"
 #include "randname.h"

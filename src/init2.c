@@ -25,6 +25,7 @@
 #include "game-cmd.h"
 #include "generate.h"
 #include "history.h"
+#include "hint.h"
 #include "keymap.h"
 #include "init.h"
 #include "monster/mon-init.h"
@@ -36,6 +37,7 @@
 #include "option.h"
 #include "parser.h"
 #include "prefs.h"
+#include "quest.h"
 #include "randname.h"
 #include "squelch.h"
 
@@ -2716,8 +2718,7 @@ static errr init_other(void)
 
 	/*** Prepare quest array ***/
 
-	/* Quests */
-	q_list = C_ZNEW(MAX_Q_IDX, quest);
+	quest_init();
 
 
 	/*** Prepare the inventory ***/
@@ -2989,10 +2990,9 @@ void cleanup_angband(void)
 	/* Free the stores */
 	if (stores) free_stores();
 
-	/* Free the quest list */
-	FREE(q_list);
-
+	quest_free();
 	button_free();
+
 	FREE(p_ptr->inventory);
 
 	/* Free the lore, monster, and object lists */
