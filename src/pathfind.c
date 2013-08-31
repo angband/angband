@@ -18,6 +18,7 @@
  */
 
 #include "angband.h"
+#include "cmds.h"
 #include "cave.h"
 #include "pathfind.h"
 #include "squelch.h"

@@ -3,6 +3,8 @@
 #include "unit-test.h"
 
 #include "init.h"
+#include "cave.h"
+#include "generate.h"
 
 
 int setup_tests(void **state) {

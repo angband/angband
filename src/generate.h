@@ -3,6 +3,9 @@
 #ifndef GENERATE_H
 #define GENERATE_H
 
+#include "monster/constants.h"
+#include "monster/monster.h"
+
 void ensure_connectedness(struct cave *c);
 
 void place_object(struct cave *c, int y, int x, int level, bool good,

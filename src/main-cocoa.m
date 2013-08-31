@@ -18,6 +18,7 @@
 #include "angband.h"
 #include "button.h"
 #include "cmds.h"
+#include "dungeon.h"
 #include "files.h"
 #include "init.h"
 #include "grafmode.h"
