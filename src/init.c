@@ -1,5 +1,5 @@
 /*
- * File: init2.c
+ * File: init.c
  * Purpose: Various game initialistion routines
  *
  * Copyright (c) 1997 Ben Harrison

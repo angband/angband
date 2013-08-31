@@ -93,7 +93,7 @@ ANGFILES = \
 	grafmode.o \
 	guid.o \
 	history.o \
-	init2.o \
+	init.o \
 	keymap.o \
 	load.o \
 	monster/mon-init.o \
