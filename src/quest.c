@@ -126,9 +126,10 @@ bool quest_check(const struct monster *m) {
  * Initialise/free the quest list.
  *
  * This used to dynamically allocate an array of length 4, but
- * now it has nothing to do.  Good placeholder, though.
+ * now it just makes sure the existing one is clear.
  */
 void quest_init(void) {
+	memset(q_list, 0, sizeof q_list);
 	return;
 }
 
