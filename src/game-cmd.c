@@ -17,6 +17,7 @@
  */
 
 #include "angband.h"
+#include "attack.h"
 #include "cmds.h"
 #include "game-cmd.h"
 #include "object/object.h"

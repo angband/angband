@@ -74,14 +74,13 @@ ANGFILES = \
 	birth.o \
 	button.o \
 	cave.o \
-	cmd0.o \
-	cmd1.o \
-	cmd2.o \
-	cmd3.o \
-	cmd4.o \
+	cmd-cave.o \
 	cmd-context.o \
+	cmd-know.o \
 	cmd-misc.o \
 	cmd-obj.o \
+	cmd-pickup.o \
+	cmd-process.o \
 	death.o \
 	debug.o \
 	dungeon.o \

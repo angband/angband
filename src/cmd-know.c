@@ -1,8 +1,10 @@
 /*
- * File: cmd3.c
- * Purpose: Miscellaneous queries
+ * File: cmd4.c
+ * Purpose: Various kinds of browsing functions.
  *
- * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
+ * Copyright (c) 1997-2007 Robert A. Koeneke, James E. Wilson, Ben Harrison,
+ * Eytan Zweig, Andrew Doull, Pete Mack.
+ * Copyright (c) 2004 DarkGod (HTML dump code)
  *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:
@@ -20,14 +22,437 @@
 #include "button.h"
 #include "cave.h"
 #include "cmds.h"
-#include "monster/mon-lore.h"
-#include "monster/monster.h"
-#include "object/inventory.h"
+#include "files.h"
+#include "history.h"
 #include "object/tvalsval.h"
-#include "object/object.h"
+#include "monster/mon-lore.h"
+#include "monster/mon-util.h"
+#include "option.h"
+#include "prefs.h"
 #include "squelch.h"
-#include "ui-menu.h"
 #include "target.h"
+#include "ui-menu.h"
+#include "ui.h"
+
+
+
+#define INFO_SCREENS 2 /* Number of screens in character info mode */
+
+
+
+/*
+ * Hack -- redraw the screen
+ *
+ * This command performs various low level updates, clears all the "extra"
+ * windows, does a total redraw of the main window, and requests all of the
+ * interesting updates and redraws that I can think of.
+ *
+ * This command is also used to "instantiate" the results of the user
+ * selecting various things, such as graphics mode, so it must call
+ * the "TERM_XTRA_REACT" hook before redrawing the windows.
+ *
+ */
+void do_cmd_redraw(void)
+{
+	int j;
+
+	term *old = Term;
+
+
+	/* Low level flush */
+	Term_flush();
+
+	/* Reset "inkey()" */
+	flush();
+
+	if (character_dungeon)
+		verify_panel();
+
+
+	/* Hack -- React to changes */
+	Term_xtra(TERM_XTRA_REACT, 0);
+
+
+	/* Combine and Reorder the pack (later) */
+	p_ptr->notice |= (PN_COMBINE | PN_REORDER);
+
+
+	/* Update torch */
+	p_ptr->update |= (PU_TORCH);
+
+	/* Update stuff */
+	p_ptr->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
+
+	/* Fully update the visuals */
+	p_ptr->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
+
+	/* Redraw everything */
+	p_ptr->redraw |= (PR_BASIC | PR_EXTRA | PR_MAP | PR_INVEN | PR_EQUIP |
+	                  PR_MESSAGE | PR_MONSTER | PR_OBJECT |
+					  PR_MONLIST | PR_ITEMLIST);
+
+	/* Clear screen */
+	Term_clear();
+
+	/* Hack -- update */
+	handle_stuff(p_ptr);
+
+	/* Place the cursor on the player */
+	if (0 != character_dungeon)
+		move_cursor_relative(p_ptr->px, p_ptr->py);
+
+
+	/* Redraw every window */
+	for (j = 0; j < ANGBAND_TERM_MAX; j++)
+	{
+		if (!angband_term[j]) continue;
+
+		Term_activate(angband_term[j]);
+		Term_redraw();
+		Term_fresh();
+		Term_activate(old);
+	}
+}
+
+
+/*
+ * Hack -- change name
+ */
+void do_cmd_change_name(void)
+{
+	ui_event ke;
+	int mode = 0;
+
+	const char *p;
+
+	bool more = TRUE;
+	bool button_state;
+
+	if (OPT(mouse_movement)) {
+		/**
+		 * show some buttons on the last line regardless of whether
+		 * mouse buttons are usually shown
+		 */
+		button_state = OPT(mouse_buttons);
+		if (!button_state) {
+			option_set("mouse_buttons", TRUE);
+		}
+	} else {
+		/* make sure we do not change the state of the mouse_buttons option below */
+		button_state = TRUE;
+	}
+
+	/* Prompt */
+	p = "['c' to change name, 'f' to file, 'h' to change mode, or ESC]";
+
+	/* Save screen */
+	screen_save();
+
+	/* backup the previous buttons and clear them */
+	button_backup_all();
+	button_kill_all();
+
+	/* add some 1d buttons for if we are using them */
+	button_add("[c]", 'c');
+	button_add("[f]", 'f');
+	button_add("[->]", 'h');
+	button_add("[<-]", 'l');
+
+	button_add("[Ret]",'\n');
+	button_add("[ESC]",ESCAPE);
+
+	/* Forever */
+	while (more)
+	{
+		/* Display the player */
+		display_player(mode);
+
+		/* Prompt */
+		Term_putstr(2, 23, -1, TERM_WHITE, p);
+		/* display the mouse buttons */
+		if (OPT(mouse_buttons)) {
+			if (Term->hgt == 24) {
+				button_print(23, 2+62);
+			} else {
+				button_print(Term->hgt - 1, COL_MAP);
+			}
+		}
+
+		/* Query */
+		ke = inkey_ex();
+
+		if ((ke.type == EVT_KBRD)||(ke.type == EVT_BUTTON)) {
+			switch (ke.key.code) {
+				case ESCAPE: more = FALSE; break;
+				case 'c': {
+					char namebuf[32] = "";
+
+					/* Set player name */
+					if (get_name(namebuf, sizeof namebuf))
+						my_strcpy(op_ptr->full_name, namebuf,
+								  sizeof(op_ptr->full_name));
+
+					break;
+				}
+
+				case 'f': {
+					char buf[1024];
+					char fname[80];
+
+					strnfmt(fname, sizeof fname, "%s.txt", player_safe_name(p_ptr));
+
+					if (get_file(fname, buf, sizeof buf))
+					{
+						if (file_character(buf, FALSE) != 0)
+							msg("Character dump failed!");
+						else
+							msg("Character dump successful.");
+					}
+					break;
+				}
+				
+				case 'h':
+				case ARROW_LEFT:
+				case ' ':
+					mode = (mode + 1) % INFO_SCREENS;
+					break;
+
+				case 'l':
+				case ARROW_RIGHT:
+					mode = (mode - 1) % INFO_SCREENS;
+					break;
+			}
+		} else if (ke.type == EVT_MOUSE) {
+			if (ke.mouse.button == 1) {
+				/* Flip through the screens */			
+				mode = (mode + 1) % INFO_SCREENS;
+			} else
+			if (ke.mouse.button == 2) {
+				/* exit the screen */
+				more = FALSE;
+			} else
+			{
+				/* Flip backwards through the screens */			
+				mode = (mode - 1) % INFO_SCREENS;
+			}
+		}
+
+		/* Flush messages */
+		message_flush();
+	}
+	/* Remove the 1d buttons that we added earlier */
+	button_restore();
+	if (!button_state) {
+		option_set("mouse_buttons", FALSE);
+	}
+
+	/* Load screen */
+	screen_load();
+}
+
+
+/*
+ * Recall the most recent message
+ */
+void do_cmd_message_one(void)
+{
+	/* Recall one message XXX XXX XXX */
+	c_prt(message_color(0), format( "> %s", message_str(0)), 0, 0);
+}
+
+
+/*
+ * Show previous messages to the user
+ *
+ * The screen format uses line 0 and 23 for headers and prompts,
+ * skips line 1 and 22, and uses line 2 thru 21 for old messages.
+ *
+ * This command shows you which commands you are viewing, and allows
+ * you to "search" for strings in the recall.
+ *
+ * Note that messages may be longer than 80 characters, but they are
+ * displayed using "infinite" length, with a special sub-command to
+ * "slide" the virtual display to the left or right.
+ *
+ * Attempt to only highlight the matching portions of the string.
+ */
+void do_cmd_messages(void)
+{
+	ui_event ke;
+
+	bool more = TRUE;
+
+	int i, j, n, q;
+	int wid, hgt;
+
+	char shower[80] = "";
+
+
+
+	/* Total messages */
+	n = messages_num();
+
+	/* Start on first message */
+	i = 0;
+
+	/* Start at leftmost edge */
+	q = 0;
+
+	/* Get size */
+	Term_get_size(&wid, &hgt);
+
+	/* Save screen */
+	screen_save();
+
+	/* Process requests until done */
+	while (more)
+	{
+		/* Clear screen */
+		Term_clear();
+
+		/* Dump messages */
+		for (j = 0; (j < hgt - 4) && (i + j < n); j++)
+		{
+			const char *msg;
+			const char *str = message_str(i + j);
+			byte attr = message_color(i + j);
+			u16b count = message_count(i + j);
+
+			if (count == 1)
+				msg = str;
+			else
+				msg = format("%s <%dx>", str, count);
+
+			/* Apply horizontal scroll */
+			msg = ((int)strlen(msg) >= q) ? (msg + q) : "";
+
+			/* Dump the messages, bottom to top */
+			Term_putstr(0, hgt - 3 - j, -1, attr, msg);
+
+			/* Highlight "shower" */
+			if (shower[0])
+			{
+				str = msg;
+
+				/* Display matches */
+				while ((str = my_stristr(str, shower)) != NULL)
+				{
+					int len = strlen(shower);
+
+					/* Display the match */
+					Term_putstr(str-msg, hgt - 3 - j, len, TERM_YELLOW, str);
+
+					/* Advance */
+					str += len;
+				}
+			}
+		}
+
+		/* Display header */
+		prt(format("Message recall (%d-%d of %d), offset %d", i, i + j - 1, n, q), 0, 0);
+
+		/* Display prompt (not very informative) */
+		if (shower[0])
+			prt("[Movement keys to navigate, '-' for next, '=' to find]", hgt - 1, 0);
+		else
+			prt("[Movement keys to navigate, '=' to find, or ESCAPE to exit]", hgt - 1, 0);
+			
+
+		/* Get a command */
+		ke = inkey_ex();
+
+
+		/* Scroll forwards or backwards using mouse clicks */
+		if (ke.type == EVT_MOUSE) {
+			if (ke.mouse.button == 1) {
+				if (ke.mouse.y <= hgt / 2) {
+					/* Go older if legal */
+					if (i + 20 < n)
+						i += 20;
+				} else {
+					/* Go newer */
+					i = (i >= 20) ? (i - 20) : 0;
+				}
+			} else
+			if (ke.mouse.button == 2) {
+				more = FALSE;
+			}
+		} else if (ke.type == EVT_KBRD) {
+			switch (ke.key.code) {
+				case ESCAPE: {
+					more = FALSE;
+					break;
+				}
+
+				case '=': {
+					/* Get the string to find */
+					prt("Find: ", hgt - 1, 0);
+					if (!askfor_aux(shower, sizeof shower, NULL)) continue;
+		
+					/* Set to find */
+					ke.key.code = '-';
+					break;
+				}
+
+				case ARROW_LEFT:
+				case '4':
+					q = (q >= wid / 2) ? (q - wid / 2) : 0;
+					break;
+
+				case ARROW_RIGHT:
+				case '6':
+					q = q + wid / 2;
+					break;
+
+				case ARROW_UP:
+				case '8':
+					if (i + 1 < n) i += 1;
+					break;
+
+				case ARROW_DOWN:
+				case '2':
+				case KC_ENTER:
+					i = (i >= 1) ? (i - 1) : 0;
+					break;
+
+				case KC_PGUP:
+				case 'p':
+				case ' ':
+					if (i + 20 < n) i += 20;
+					break;
+
+				case KC_PGDOWN:
+				case 'n':
+					i = (i >= 20) ? (i - 20) : 0;
+					break;
+			}
+		}
+
+		/* Find the next item */
+		if (ke.key.code == '-' && shower[0])
+		{
+			s16b z;
+
+			/* Scan messages */
+			for (z = i + 1; z < n; z++)
+			{
+				/* Search for it */
+				if (my_stristr(message_str(z), shower))
+				{
+					/* New location */
+					i = z;
+
+					/* Done */
+					break;
+				}
+			}
+		}
+	}
+
+	/* Load screen */
+	screen_load();
+}
+
 
 
 #define GET_ITEM_PARAMS \
@@ -125,176 +550,6 @@ void do_cmd_equip(void)
 			ret = -1;
 		}
 	}
-}
-
-enum
-{
-	IGNORE_THIS_ITEM,
-	UNIGNORE_THIS_ITEM,
-	IGNORE_THIS_FLAVOR,
-	UNIGNORE_THIS_FLAVOR,
-	IGNORE_THIS_QUALITY
-};
-
-void textui_cmd_destroy_menu(int item)
-{
-	object_type *o_ptr;
-	char out_val[160];
-
-	menu_type *m;
-	region r;
-	int selected;
-
-	o_ptr = object_from_item_idx(item);
-	if (!(o_ptr->kind))
-		return;
-
-	m = menu_dynamic_new();
-	m->selections = lower_case;
-
-	/* Basic ignore option */
-	if (!o_ptr->ignore) {
-		menu_dynamic_add(m, "This item only", IGNORE_THIS_ITEM);
-	} else {
-		menu_dynamic_add(m, "Unignore this item", UNIGNORE_THIS_ITEM);
-	}
-
-	/* Flavour-aware squelch */
-	if (squelch_tval(o_ptr->tval) &&
-			(!o_ptr->artifact || !object_flavor_is_aware(o_ptr))) {
-		bool squelched = kind_is_squelched_aware(o_ptr->kind) ||
-				kind_is_squelched_unaware(o_ptr->kind);
-
-		char tmp[70];
-		object_desc(tmp, sizeof(tmp), o_ptr, ODESC_BASE | ODESC_PLURAL);
-		if (!squelched) {
-			strnfmt(out_val, sizeof out_val, "All %s", tmp);
-			menu_dynamic_add(m, out_val, IGNORE_THIS_FLAVOR);
-		} else {
-			strnfmt(out_val, sizeof out_val, "Unignore all %s", tmp);
-			menu_dynamic_add(m, out_val, UNIGNORE_THIS_FLAVOR);
-		}
-	}
-
-	/* Quality squelching */
-	if (object_was_sensed(o_ptr) || object_was_worn(o_ptr) ||
-			object_is_known_not_artifact(o_ptr)) {
-		byte value = squelch_level_of(o_ptr);
-		int type = squelch_type_of(o_ptr);
-
-		if (object_is_jewelry(o_ptr) &&
-					squelch_level_of(o_ptr) != SQUELCH_BAD)
-			value = SQUELCH_MAX;
-
-		if (value != SQUELCH_MAX && type != TYPE_MAX) {
-			strnfmt(out_val, sizeof out_val, "All %s %s",
-					quality_values[value].name, quality_choices[type].name);
-
-			menu_dynamic_add(m, out_val, IGNORE_THIS_QUALITY);
-		}
-	}
-
-	/* work out display region */
-	r.width = menu_dynamic_longest_entry(m) + 3 + 2; /* +3 for tag, 2 for pad */
-	r.col = 80 - r.width;
-	r.row = 1;
-	r.page_rows = m->count;
-
-	screen_save();
-	menu_layout(m, &r);
-	region_erase_bordered(&r);
-
-	prt("(Enter to select, ESC) Ignore:", 0, 0);
-	selected = menu_dynamic_select(m);
-
-	screen_load();
-
-	if (selected == IGNORE_THIS_ITEM) {
-		cmd_insert(CMD_DESTROY);
-		cmd_set_arg_item(cmd_get_top(), 0, item);
-	} else if (selected == UNIGNORE_THIS_ITEM) {
-		o_ptr->ignore = FALSE;
-	} else if (selected == IGNORE_THIS_FLAVOR) {
-		object_squelch_flavor_of(o_ptr);
-	} else if (selected == UNIGNORE_THIS_FLAVOR) {
-		kind_squelch_clear(o_ptr->kind);
-	} else if (selected == IGNORE_THIS_QUALITY) {
-		byte value = squelch_level_of(o_ptr);
-		int type = squelch_type_of(o_ptr);
-
-		squelch_level[type] = value;
-	}
-
-	p_ptr->notice |= PN_SQUELCH;
-
-	menu_dynamic_free(m);
-}
-
-void textui_cmd_destroy(void)
-{
-	int item;
-
-	/* Get an item */
-	const char *q = "Ignore which item? ";
-	const char *s = "You have nothing to ignore.";
-	if (!get_item(&item, q, s, CMD_DESTROY, USE_INVEN | USE_EQUIP | USE_FLOOR))
-		return;
-
-	textui_cmd_destroy_menu(item);
-}
-
-void textui_cmd_toggle_ignore(void)
-{
-	p_ptr->unignoring = !p_ptr->unignoring;
-	p_ptr->notice |= PN_SQUELCH;
-	do_cmd_redraw();
-}
-
-/* Examine an object */
-void textui_obj_examine(void)
-{
-	char header[120];
-
-	textblock *tb;
-	region area = { 0, 0, 0, 0 };
-
-	object_type *o_ptr;
-	int item;
-
-	/* Select item */
-	if (!get_item(&item, "Examine which item?", "You have nothing to examine.",
-			CMD_NULL, (USE_EQUIP | USE_INVEN | USE_FLOOR | IS_HARMLESS)))
-		return;
-
-	/* Track object for object recall */
-	track_object(item);
-
-	/* Display info */
-	o_ptr = object_from_item_idx(item);
-	tb = object_info(o_ptr, OINFO_NONE);
-	object_desc(header, sizeof(header), o_ptr,
-			ODESC_PREFIX | ODESC_FULL | ODESC_CAPITAL);
-
-	textui_textblock_show(tb, area, header);
-	textblock_free(tb);
-}
-
-
-/*
- * Target command
- */
-void do_cmd_target(void)
-{
-	if (target_set_interactive(TARGET_KILL, -1, -1))
-		msg("Target Selected.");
-	else
-		msg("Target Aborted.");
-}
-
-
-void do_cmd_target_closest(void)
-{
-	target_set_closest(TARGET_KILL);
 }
 
 
@@ -713,4 +968,39 @@ void do_cmd_query_symbol(void)
 void do_cmd_center_map(void)
 {
 	center_panel();
+}
+
+
+
+/*
+ * Display the main-screen monster list.
+ */
+void do_cmd_monlist(void)
+{
+	/* Save the screen and display the list */
+	screen_save();
+	display_monlist();
+
+	/* Wait */
+	anykey();
+
+	/* Return */
+	screen_load();
+}
+
+
+/*
+ * Display the main-screen item list.
+ */
+void do_cmd_itemlist(void)
+{
+	/* Save the screen and display the list */
+	screen_save();
+	display_itemlist();
+
+	/* Wait */
+	anykey();
+
+	/* Return */
+	screen_load();
 }

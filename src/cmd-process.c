@@ -1,5 +1,5 @@
 /*
- * File: cmd0.c
+ * File: cmds.c
  * Purpose: Deal with command processing.
  *
  * Copyright (c) 2010 Andi Sidwell
@@ -17,6 +17,7 @@
  */
 
 #include "angband.h"
+#include "attack.h"
 #include "cave.h"
 #include "cmds.h"
 #include "files.h"

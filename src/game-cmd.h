@@ -180,6 +180,13 @@ typedef struct game_command
 	enum cmd_arg_type arg_type[CMD_MAX_ARGS];
 } game_command;
 
+/* 
+ * Command handlers will take a pointer to the command structure
+ * so that they can access any arguments supplied.
+ */
+typedef void (*cmd_handler_fn)(cmd_code code, cmd_arg args[]);
+
+
 
 /**
  * Return the verb that goes alongside the given command.

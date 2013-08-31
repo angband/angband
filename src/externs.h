@@ -121,15 +121,6 @@ extern void (*sound_hook)(int);
 /* util.c */
 extern struct keypress *inkey_next;
 
-/* cmd1.c */
-extern bool search(bool verbose);
-extern byte py_pickup(int pickup);
-extern void move_player(int dir, bool disarm);
-
-/* cmd2.c */
-int count_feats(int *y, int *x, bool (*test)(struct cave *cave, int y, int x), bool under);
-int coords_to_dir(int y, int x);
-
 /* randart.c */
 extern errr do_randart(u32b randart_seed, bool full);
 

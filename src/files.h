@@ -3,7 +3,6 @@
 #ifndef FILES_H
 #define FILES_H
 
-extern void html_screenshot(const char *name, int mode);
 extern void player_flags(bitflag f[OF_SIZE]);
 extern void display_player(int mode);
 extern void display_player_stat_info(void);

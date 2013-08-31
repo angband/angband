@@ -18,6 +18,7 @@
  */
 
 #include "angband.h"
+#include "attack.h"
 #include "cave.h"
 #include "cmds.h"
 #include "effects.h"
@@ -25,7 +26,9 @@
 #include "object/inventory.h"
 #include "object/tvalsval.h"
 #include "spells.h"
+#include "squelch.h"
 #include "target.h"
+#include "ui-menu.h"
 
 /*** Utility bits and bobs ***/
 
@@ -1011,3 +1014,158 @@ void do_cmd_study_book(cmd_code code, cmd_arg args[])
 		p_ptr->energy_use = 100;	
 	}
 }
+
+
+
+enum
+{
+	IGNORE_THIS_ITEM,
+	UNIGNORE_THIS_ITEM,
+	IGNORE_THIS_FLAVOR,
+	UNIGNORE_THIS_FLAVOR,
+	IGNORE_THIS_QUALITY
+};
+
+void textui_cmd_destroy_menu(int item)
+{
+	object_type *o_ptr;
+	char out_val[160];
+
+	menu_type *m;
+	region r;
+	int selected;
+
+	o_ptr = object_from_item_idx(item);
+	if (!(o_ptr->kind))
+		return;
+
+	m = menu_dynamic_new();
+	m->selections = lower_case;
+
+	/* Basic ignore option */
+	if (!o_ptr->ignore) {
+		menu_dynamic_add(m, "This item only", IGNORE_THIS_ITEM);
+	} else {
+		menu_dynamic_add(m, "Unignore this item", UNIGNORE_THIS_ITEM);
+	}
+
+	/* Flavour-aware squelch */
+	if (squelch_tval(o_ptr->tval) &&
+			(!o_ptr->artifact || !object_flavor_is_aware(o_ptr))) {
+		bool squelched = kind_is_squelched_aware(o_ptr->kind) ||
+				kind_is_squelched_unaware(o_ptr->kind);
+
+		char tmp[70];
+		object_desc(tmp, sizeof(tmp), o_ptr, ODESC_BASE | ODESC_PLURAL);
+		if (!squelched) {
+			strnfmt(out_val, sizeof out_val, "All %s", tmp);
+			menu_dynamic_add(m, out_val, IGNORE_THIS_FLAVOR);
+		} else {
+			strnfmt(out_val, sizeof out_val, "Unignore all %s", tmp);
+			menu_dynamic_add(m, out_val, UNIGNORE_THIS_FLAVOR);
+		}
+	}
+
+	/* Quality squelching */
+	if (object_was_sensed(o_ptr) || object_was_worn(o_ptr) ||
+			object_is_known_not_artifact(o_ptr)) {
+		byte value = squelch_level_of(o_ptr);
+		int type = squelch_type_of(o_ptr);
+
+		if (object_is_jewelry(o_ptr) &&
+					squelch_level_of(o_ptr) != SQUELCH_BAD)
+			value = SQUELCH_MAX;
+
+		if (value != SQUELCH_MAX && type != TYPE_MAX) {
+			strnfmt(out_val, sizeof out_val, "All %s %s",
+					quality_values[value].name, quality_choices[type].name);
+
+			menu_dynamic_add(m, out_val, IGNORE_THIS_QUALITY);
+		}
+	}
+
+	/* work out display region */
+	r.width = menu_dynamic_longest_entry(m) + 3 + 2; /* +3 for tag, 2 for pad */
+	r.col = 80 - r.width;
+	r.row = 1;
+	r.page_rows = m->count;
+
+	screen_save();
+	menu_layout(m, &r);
+	region_erase_bordered(&r);
+
+	prt("(Enter to select, ESC) Ignore:", 0, 0);
+	selected = menu_dynamic_select(m);
+
+	screen_load();
+
+	if (selected == IGNORE_THIS_ITEM) {
+		cmd_insert(CMD_DESTROY);
+		cmd_set_arg_item(cmd_get_top(), 0, item);
+	} else if (selected == UNIGNORE_THIS_ITEM) {
+		o_ptr->ignore = FALSE;
+	} else if (selected == IGNORE_THIS_FLAVOR) {
+		object_squelch_flavor_of(o_ptr);
+	} else if (selected == UNIGNORE_THIS_FLAVOR) {
+		kind_squelch_clear(o_ptr->kind);
+	} else if (selected == IGNORE_THIS_QUALITY) {
+		byte value = squelch_level_of(o_ptr);
+		int type = squelch_type_of(o_ptr);
+
+		squelch_level[type] = value;
+	}
+
+	p_ptr->notice |= PN_SQUELCH;
+
+	menu_dynamic_free(m);
+}
+
+void textui_cmd_destroy(void)
+{
+	int item;
+
+	/* Get an item */
+	const char *q = "Ignore which item? ";
+	const char *s = "You have nothing to ignore.";
+	if (!get_item(&item, q, s, CMD_DESTROY, USE_INVEN | USE_EQUIP | USE_FLOOR))
+		return;
+
+	textui_cmd_destroy_menu(item);
+}
+
+void textui_cmd_toggle_ignore(void)
+{
+	p_ptr->unignoring = !p_ptr->unignoring;
+	p_ptr->notice |= PN_SQUELCH;
+	do_cmd_redraw();
+}
+
+/* Examine an object */
+void textui_obj_examine(void)
+{
+	char header[120];
+
+	textblock *tb;
+	region area = { 0, 0, 0, 0 };
+
+	object_type *o_ptr;
+	int item;
+
+	/* Select item */
+	if (!get_item(&item, "Examine which item?", "You have nothing to examine.",
+			CMD_NULL, (USE_EQUIP | USE_INVEN | USE_FLOOR | IS_HARMLESS)))
+		return;
+
+	/* Track object for object recall */
+	track_object(item);
+
+	/* Display info */
+	o_ptr = object_from_item_idx(item);
+	tb = object_info(o_ptr, OINFO_NONE);
+	object_desc(header, sizeof(header), o_ptr,
+			ODESC_PREFIX | ODESC_FULL | ODESC_CAPITAL);
+
+	textui_textblock_show(tb, area, header);
+	textblock_free(tb);
+}
+
