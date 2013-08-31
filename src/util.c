@@ -1010,7 +1010,7 @@ static bool next_section(const char *source, size_t init, const char **text, siz
 	{
 		const char *s = next + 1;
 
-		while (*s && isalpha((unsigned char) *s)) s++;
+		while (*s && (isalpha((unsigned char) *s) || isspace((unsigned char) *s))) s++;
 
 		/* Woo!  valid opening tag thing */
 		if (*s == '}')
@@ -1106,10 +1106,10 @@ void text_out_e(const char *fmt, ...)
 
 		if (tag)
 		{
-			char tagbuffer[11];
+			char tagbuffer[16];
 
-			/* Colour names are less than 11 characters long. */
-			assert(taglen < 11);
+			/* Colour names are less than 16 characters long. */
+			assert(taglen < 16);
 
 			memcpy(tagbuffer, tag, taglen);
 			tagbuffer[taglen] = '\0';
