@@ -6,7 +6,6 @@
 #include "object/object.h"
 #include "player/player.h"
 #include "store.h"
-#include "types.h"
 #include "z-term.h"
 #include "z-file.h"
 #include "z-msg.h"
