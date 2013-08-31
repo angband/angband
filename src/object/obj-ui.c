@@ -1026,19 +1026,24 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 						}
 					} else
 					if (press.mouse.y <= e2-e1+1) {
-						//k = label_to_equip(index_to_label(e1+press.mouse.y-1));
-						/* get the item index, allowing for skipped indices */
-						for (j = e1; j <= e2; j++) {
-							/* skip the quiver slot which is a blank line in the list */
-							if (j == 36) {
-								press.mouse.y--;
-							} else
-							if (get_item_okay(j)) {
-								if (press.mouse.y == 1) {
-									k = j;
-									break;
-								}
-								press.mouse.y--;
+						if (olist_mode & OLIST_SEMPTY) {
+							/* If we are showing empties, just set the object (empty objects will just keep the loop going) */
+							k = label_to_equip(index_to_label(e1+press.mouse.y-1));
+						}
+						else {
+							/* get the item index, allowing for skipped indices */
+							for (j = e1; j <= e2; j++) {
+								/* skip the quiver slot which is a blank line in the list */
+								if (j == 36) {
+									press.mouse.y--;
+								} else
+									if (get_item_okay(j)) {
+										if (press.mouse.y == 1) {
+											k = j;
+											break;
+										}
+										press.mouse.y--;
+									}
 							}
 						}
 					}
