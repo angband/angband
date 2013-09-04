@@ -21,6 +21,7 @@
 #include "monster/mon-spell.h"
 #include "monster/mon-util.h"
 #include "object/tvalsval.h"
+#include "attack.h"
 
 /*
  * Monster genders
@@ -1122,6 +1123,7 @@ static void lore_append_toughness(textblock *tb, const monster_race *race, const
 {
 	monster_sex_t msex = MON_SEX_NEUTER;
 	long chance = 0, chance2 = 0;
+	object_type *weapon = &p_ptr->inventory[INVEN_WIELD];
 
 	assert(tb && race && lore);
 
@@ -1144,14 +1146,15 @@ static void lore_append_toughness(textblock *tb, const monster_race *race, const
 		textblock_append_c(tb, TERM_L_BLUE, "%d", race->avg_hp);
 		textblock_append(tb, ".  ");
 
-		/* Player's chance to hit it - XXX this code is duplicated in py_attack_real() and test_hit() and must be kept in sync */
-		chance = (p_ptr->state.skills[SKILL_TO_HIT_MELEE] + ((p_ptr->state.to_h + p_ptr->inventory[INVEN_WIELD].to_h) * BTH_PLUS_ADJ));
+		/* Player's chance to hit it */
+		chance = py_attack_hit_chance(weapon);
 
+		/* The following calculations are based on test_hit(); make sure to keep it in sync */
 		/* Avoid division by zero errors, and starting higher on the scale */
 		if (chance < 9)
 			chance = 9;
 
-		chance2 = 90 * (chance - (race->ac / 2)) / chance + 5;
+		chance2 = 90 * (chance - (race->ac * 2 / 3)) / chance + 5;
 
 		/* There is always a 12 percent chance to hit */
 		if (chance2 < 12) chance2 = 12;
