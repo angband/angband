@@ -143,7 +143,7 @@ bool target_okay(void)
 /*
  * Set the target to a monster (or nobody)
  */
-void target_set_monster(struct monster *mon)
+bool target_set_monster(struct monster *mon)
 {
 	/* Acceptable target */
 	if (mon && target_able(mon))
@@ -152,17 +152,16 @@ void target_set_monster(struct monster *mon)
 		target_who = mon;
 		target_y = mon->fy;
 		target_x = mon->fx;
+		return TRUE;
 	}
 
-	/* Clear target */
-	else
-	{
-		/* Reset target info */
-		target_set = FALSE;
-		target_who = NULL;
-		target_y = 0;
-		target_x = 0;
-	}
+	/* Reset target info */
+	target_set = FALSE;
+	target_who = NULL;
+	target_y = 0;
+	target_x = 0;
+
+	return FALSE;
 }
 
 
@@ -176,10 +175,7 @@ void target_set_location(int y, int x)
 	{
 		/* If there's a monster there, target that instead */
 		struct monster *m = cave_monster_at(cave, y, x);
-		if (m) {
-			target_set_monster(m);
-			return;
-		}
+		if (m && target_set_monster(m)) return;
 
 		/* Save target info */
 		target_set = TRUE;
