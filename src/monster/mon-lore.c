@@ -21,6 +21,7 @@
 #include "monster/mon-spell.h"
 #include "monster/mon-util.h"
 #include "object/tvalsval.h"
+#include "attack.h"
 
 /*
  * Monster genders
@@ -194,19 +195,10 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 	spell_colors[RSF_BR_GRAV] = TERM_L_RED;
 	spell_colors[RSF_BR_TIME] = TERM_L_RED;
 
-	/* Sound, force, and plasma */
+	/* Sound */
 	if (!check_state(p_ptr, OF_RES_SOUND, st.flags))
 	{
 		spell_colors[RSF_BR_SOUN] = TERM_ORANGE;
-		spell_colors[RSF_BR_WALL] = TERM_YELLOW;
-
-		spell_colors[RSF_BR_PLAS] = TERM_ORANGE;
-		spell_colors[RSF_BO_PLAS] = TERM_ORANGE;
-	}
-	else
-	{
-		spell_colors[RSF_BR_PLAS] = TERM_YELLOW;
-		spell_colors[RSF_BO_PLAS] = TERM_YELLOW;
 	}
 
  	/* Shards */
@@ -218,6 +210,20 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 	{
 		melee_colors[RBE_CONFUSE] = TERM_ORANGE;
 		spell_colors[RSF_BR_CONF] = TERM_ORANGE;
+	}
+
+	/* Stunning */
+	if (!check_state(p_ptr, OF_RES_STUN, st.flags)) {
+		spell_colors[RSF_BR_WALL] = TERM_YELLOW;
+		spell_colors[RSF_BR_PLAS] = TERM_ORANGE;
+		spell_colors[RSF_BO_PLAS] = TERM_ORANGE;
+		spell_colors[RSF_BO_ICEE] = TERM_ORANGE;
+	}
+	else {
+		spell_colors[RSF_BR_SOUN] = TERM_YELLOW;
+		spell_colors[RSF_BR_PLAS] = TERM_YELLOW;
+		spell_colors[RSF_BO_PLAS] = TERM_YELLOW;
+		spell_colors[RSF_BO_ICEE] = TERM_YELLOW;
 	}
 
 	/* Chaos */
@@ -237,7 +243,7 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 
 	/* Water */
 	if (!check_state(p_ptr, OF_RES_CONFU, st.flags) ||
-			!check_state(p_ptr, OF_RES_SOUND, st.flags))
+			!check_state(p_ptr, OF_RES_STUN, st.flags))
 	{
 		spell_colors[RSF_BA_WATE] = TERM_L_RED;
 		spell_colors[RSF_BO_WATE] = TERM_L_RED;
@@ -436,6 +442,8 @@ void cheat_monster_lore(const monster_race *r_ptr, monster_lore *l_ptr)
 	if (rf_has(r_ptr->flags, RF_DROP_40))
 		l_ptr->drop_item++;
 	if (rf_has(r_ptr->flags, RF_DROP_60))
+		l_ptr->drop_item++;
+	if (rf_has(r_ptr->flags, RF_DROP_20))
 		l_ptr->drop_item++;
 
 	l_ptr->drop_gold = l_ptr->drop_item;
@@ -1122,6 +1130,7 @@ static void lore_append_toughness(textblock *tb, const monster_race *race, const
 {
 	monster_sex_t msex = MON_SEX_NEUTER;
 	long chance = 0, chance2 = 0;
+	object_type *weapon = &p_ptr->inventory[INVEN_WIELD];
 
 	assert(tb && race && lore);
 
@@ -1144,14 +1153,15 @@ static void lore_append_toughness(textblock *tb, const monster_race *race, const
 		textblock_append_c(tb, TERM_L_BLUE, "%d", race->avg_hp);
 		textblock_append(tb, ".  ");
 
-		/* Player's chance to hit it - XXX this code is duplicated in py_attack_real() and test_hit() and must be kept in sync */
-		chance = (p_ptr->state.skills[SKILL_TO_HIT_MELEE] + ((p_ptr->state.to_h + p_ptr->inventory[INVEN_WIELD].to_h) * BTH_PLUS_ADJ));
+		/* Player's chance to hit it */
+		chance = py_attack_hit_chance(weapon);
 
+		/* The following calculations are based on test_hit(); make sure to keep it in sync */
 		/* Avoid division by zero errors, and starting higher on the scale */
 		if (chance < 9)
 			chance = 9;
 
-		chance2 = 90 * (chance - (race->ac / 2)) / chance + 5;
+		chance2 = 90 * (chance - (race->ac * 2 / 3)) / chance + 5;
 
 		/* There is always a 12 percent chance to hit */
 		if (chance2 < 12) chance2 = 12;

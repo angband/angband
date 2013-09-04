@@ -154,6 +154,16 @@ static const struct {
 };
 
 /**
+ * Return the player's chance to hit with a particular weapon.
+ */
+int py_attack_hit_chance(const object_type *weapon)
+{
+	int bonus = p_ptr->state.to_h + weapon->to_h;
+	int chance = p_ptr->state.skills[SKILL_TO_HIT_MELEE] + bonus * BTH_PLUS_ADJ;
+	return chance;
+}
+
+/**
  * Attack the monster at the given location with a single blow.
  */
 static bool py_attack_real(int y, int x, bool *fear) {
@@ -168,8 +178,7 @@ static bool py_attack_real(int y, int x, bool *fear) {
 	object_type *o_ptr = &p_ptr->inventory[INVEN_WIELD];
 
 	/* Information about the attack */
-	int bonus = p_ptr->state.to_h + o_ptr->to_h;
-	int chance = p_ptr->state.skills[SKILL_TO_HIT_MELEE] + bonus * BTH_PLUS_ADJ;
+	int chance = py_attack_hit_chance(o_ptr);
 	bool do_quake = FALSE;
 	bool success = FALSE;
 

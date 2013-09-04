@@ -3777,6 +3777,27 @@ void display_object_kind_recall(struct object_kind *kind)
 	display_object_recall(&object);
 }
 
+/**
+ * Display object recall modally and wait for a keypress.
+ *
+ * This is set up for use in look mode (see target_set_interactive_aux()).
+ *
+ * \param o_ptr is the object to be described.
+ */
+void display_object_recall_interactive(object_type *o_ptr)
+{
+	char header[120];
+	textblock *tb;
+
+	message_flush();
+
+	tb = object_info(o_ptr, OINFO_NONE);
+	object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_FULL);
+	textui_textblock_show(tb, SCREEN_REGION, header);
+	textblock_free(tb);
+}
+
+
 /*
  * Display visible items, similar to display_monlist
  */
