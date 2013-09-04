@@ -195,19 +195,10 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 	spell_colors[RSF_BR_GRAV] = TERM_L_RED;
 	spell_colors[RSF_BR_TIME] = TERM_L_RED;
 
-	/* Sound, force, and plasma */
+	/* Sound */
 	if (!check_state(p_ptr, OF_RES_SOUND, st.flags))
 	{
 		spell_colors[RSF_BR_SOUN] = TERM_ORANGE;
-		spell_colors[RSF_BR_WALL] = TERM_YELLOW;
-
-		spell_colors[RSF_BR_PLAS] = TERM_ORANGE;
-		spell_colors[RSF_BO_PLAS] = TERM_ORANGE;
-	}
-	else
-	{
-		spell_colors[RSF_BR_PLAS] = TERM_YELLOW;
-		spell_colors[RSF_BO_PLAS] = TERM_YELLOW;
 	}
 
  	/* Shards */
@@ -219,6 +210,20 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 	{
 		melee_colors[RBE_CONFUSE] = TERM_ORANGE;
 		spell_colors[RSF_BR_CONF] = TERM_ORANGE;
+	}
+
+	/* Stunning */
+	if (!check_state(p_ptr, OF_RES_STUN, st.flags)) {
+		spell_colors[RSF_BR_WALL] = TERM_YELLOW;
+		spell_colors[RSF_BR_PLAS] = TERM_ORANGE;
+		spell_colors[RSF_BO_PLAS] = TERM_ORANGE;
+		spell_colors[RSF_BO_ICEE] = TERM_ORANGE;
+	}
+	else {
+		spell_colors[RSF_BR_SOUN] = TERM_YELLOW;
+		spell_colors[RSF_BR_PLAS] = TERM_YELLOW;
+		spell_colors[RSF_BO_PLAS] = TERM_YELLOW;
+		spell_colors[RSF_BO_ICEE] = TERM_YELLOW;
 	}
 
 	/* Chaos */
@@ -238,7 +243,7 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 
 	/* Water */
 	if (!check_state(p_ptr, OF_RES_CONFU, st.flags) ||
-			!check_state(p_ptr, OF_RES_SOUND, st.flags))
+			!check_state(p_ptr, OF_RES_STUN, st.flags))
 	{
 		spell_colors[RSF_BA_WATE] = TERM_L_RED;
 		spell_colors[RSF_BO_WATE] = TERM_L_RED;
@@ -437,6 +442,8 @@ void cheat_monster_lore(const monster_race *r_ptr, monster_lore *l_ptr)
 	if (rf_has(r_ptr->flags, RF_DROP_40))
 		l_ptr->drop_item++;
 	if (rf_has(r_ptr->flags, RF_DROP_60))
+		l_ptr->drop_item++;
+	if (rf_has(r_ptr->flags, RF_DROP_20))
 		l_ptr->drop_item++;
 
 	l_ptr->drop_gold = l_ptr->drop_item;
