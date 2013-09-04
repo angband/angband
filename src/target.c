@@ -97,14 +97,11 @@ static void look_mon_desc(char *buf, size_t max, int m_idx)
  * Currently, a monster is "target_able" if it is visible, and if
  * the player can hit it with a projection, and the player is not
  * hallucinating.  This allows use of "use closest target" macros.
- *
- * Future versions may restrict the ability to target "trappers"
- * and "mimics", but the semantics is a little bit weird.
  */
 bool target_able(struct monster *m)
 {
 	return m && m->race && m->ml && !m->unaware &&
-			projectable(p_ptr->py, p_ptr->px, m->fy, m->fx, PROJECT_NONE) &&
+/*			projectable(p_ptr->py, p_ptr->px, m->fy, m->fx, PROJECT_NONE) && */
 			!p_ptr->timed[TMD_IMAGE];
 }
 
