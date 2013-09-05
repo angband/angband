@@ -13,6 +13,7 @@ extern void textui_cmd_throw(void);
 extern int breakage_chance(const object_type *o_ptr, bool hit_target);
 extern bool test_hit(int chance, int ac, int vis);
 extern void py_attack(int y, int x);
+int py_attack_hit_chance(const object_type *weapon);
 
 /**
  *
