@@ -295,7 +295,7 @@ static void get_mon_name(char *output_name, size_t max,
 
 
 /* 
- * Monster data for the visible monster list 
+ * Monster data for the visible monster list
  */
 typedef struct
 {
@@ -304,7 +304,32 @@ typedef struct
 	u16b los;		/* number in LOS */
 	u16b los_asleep;	/* number asleep and in LOS */
 	byte attr; /* attr to use for drawing */
+	s16b dx, dy;	/* Location offset from the player's coordinate */
 } monster_vis; 
+
+#define MONLIST_APPEND_BUFFER_SIZE 80
+
+/**
+ * Append the monster's offset from the player to a string in the monster list.
+ */
+static void monlist_append_location(char buffer[MONLIST_APPEND_BUFFER_SIZE], monster_vis info)
+{
+	char original[MONLIST_APPEND_BUFFER_SIZE];
+	char *direction;
+
+	/* It doesn't make sense to provide a location for multiple monsters */
+	if (info.count != 1)
+		return;
+
+	memcpy(original, buffer, MONLIST_APPEND_BUFFER_SIZE);
+	direction = (info.dy <= 0) ? "N" : "S";
+	strnfmt(buffer, MONLIST_APPEND_BUFFER_SIZE, "%s %d %s", original, abs(info.dy), direction);
+
+	memcpy(original, buffer, MONLIST_APPEND_BUFFER_SIZE);
+	direction = (info.dx <= 0) ? "W" : "E";
+	strnfmt(buffer, MONLIST_APPEND_BUFFER_SIZE, "%s %d %s", original, abs(info.dx), direction);
+}
+
 
 /*
  * Display visible monsters in a window
@@ -392,6 +417,10 @@ void display_monlist(void)
 		}
 		/* Not in LOS so increment if asleep */
 		else if (m_ptr->m_timed[MON_TMD_SLEEP]) v->asleep++;
+
+		/* Store the location offset from the player; this is only used for monster counts of 1 */
+		v->dx = m_ptr->fx - p_ptr->px;
+		v->dy = m_ptr->fy - p_ptr->py;
 
 		/* Bump the count for this race, and the total count */
 		v->count++;
@@ -495,6 +524,8 @@ void display_monlist(void)
 		else strnfmt(buf, sizeof(buf), (list[order[i]].los_asleep > 0 ?
 			"%s (%d asleep) " : "%s"), m_name, list[order[i]].los_asleep);
 
+		monlist_append_location(buf, list[order[i]]);
+
 		/* Display the pict */
 		if ((tile_width == 1) && (tile_height == 1)) {
 	        Term_putch(cur_x++, line, list[order[i]].attr, r_ptr->x_char);
@@ -566,6 +597,8 @@ void display_monlist(void)
 		else strnfmt(buf, sizeof(buf), (list[order[i]].asleep > 0 ? 
 			"%s (%d asleep) " : "%s"), m_name,
 			list[order[i]].asleep);
+
+		monlist_append_location(buf, list[order[i]]);
 
 		/* Display the pict */
 		if ((tile_width == 1) && (tile_height == 1)) {
