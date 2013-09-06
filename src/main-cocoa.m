@@ -1220,8 +1220,8 @@ static NSMenuItem *superitem(NSMenuItem *self)
         if( termIndex < (int)[terminals count] )
         {
             NSMutableDictionary *mutableTerm = [[NSMutableDictionary alloc] initWithDictionary: [terminals objectAtIndex: termIndex]];
-            [mutableTerm setValue: @(self->cols) forKey: AngbandTerminalColumnsDefaultsKey];
-            [mutableTerm setValue: @(self->rows) forKey: AngbandTerminalRowsDefaultsKey];
+            [mutableTerm setValue: [NSNumber numberWithUnsignedInt: self->cols] forKey: AngbandTerminalColumnsDefaultsKey];
+            [mutableTerm setValue: [NSNumber numberWithUnsignedInt: self->rows] forKey: AngbandTerminalRowsDefaultsKey];
 
             NSMutableArray *mutableTerminals = [[NSMutableArray alloc] initWithArray: terminals];
             [mutableTerminals replaceObjectAtIndex: termIndex withObject: mutableTerm];
@@ -2231,11 +2231,11 @@ static void load_prefs()
     
     /* Make some default defaults */
     NSMutableArray *defaultTerms = [[NSMutableArray alloc] init];
-    NSDictionary *standardTerm = @{
-                                   AngbandTerminalRowsDefaultsKey : @24,
-                                   AngbandTerminalColumnsDefaultsKey : @80,
-                                   };
-    
+	NSDictionary *standardTerm = [NSDictionary dictionaryWithObjectsAndKeys:
+								  [NSNumber numberWithInt: 24], AngbandTerminalRowsDefaultsKey,
+								  [NSNumber numberWithInt: 80], AngbandTerminalColumnsDefaultsKey,
+								  nil];
+
     for( NSUInteger i = 0; i < 9; i++ )
     {
         [defaultTerms addObject: standardTerm];
@@ -3146,7 +3146,7 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
 - (void)sendAngbandCommand: (id)sender
 {
     NSMenuItem *menuItem = (NSMenuItem *)sender;
-    NSString *command = [self.commandMenuTagMap objectForKey: @([menuItem tag])];
+    NSString *command = [self.commandMenuTagMap objectForKey: [NSNumber numberWithInteger: [menuItem tag]]];
     NSInteger windowNumber = [((AngbandContext *)angband_term[0]->data)->primaryWindow windowNumber];
 
     // send a \ to bypass keymaps
@@ -3204,7 +3204,7 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
         [menuItem release];
 
         NSString *angbandCommand = [item valueForKey: @"AngbandCommand"];
-        [angbandCommands setObject: angbandCommand forKey: @([menuItem tag])];
+        [angbandCommands setObject: angbandCommand forKey: [NSNumber numberWithInteger: [menuItem tag]]];
         tagOffset++;
     }
 
