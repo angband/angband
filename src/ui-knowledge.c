@@ -29,6 +29,7 @@
 #include "store.h"
 #include "ui.h"
 #include "ui-menu.h"
+#include "ui-options.h"
 #include "grafmode.h"
 
 /* Flag value for missing array entry */

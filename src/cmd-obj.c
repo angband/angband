@@ -29,6 +29,7 @@
 #include "squelch.h"
 #include "target.h"
 #include "ui-menu.h"
+#include "ui-options.h"
 
 /*** Utility bits and bobs ***/
 

@@ -77,7 +77,6 @@ int remove_autoinscription(s16b kind);
 int add_autoinscription(s16b kind, const char *inscription);
 void autoinscribe_ground(void);
 void autoinscribe_pack(void);
-bool squelch_tval(int tval);
 void kind_squelch_clear(object_kind *k_ptr);
 bool kind_is_squelched_aware(const object_kind *k_ptr);
 bool kind_is_squelched_unaware(const object_kind *k_ptr);
@@ -86,7 +85,6 @@ void kind_squelch_when_unaware(object_kind *k_ptr);
 bool squelch_item_ok(const object_type *o_ptr);
 bool object_is_squelched(const object_type *o_ptr);
 void squelch_drop(void);
-void do_cmd_options_item(const char *title, int row);
 
 byte squelch_level_of(const object_type *o_ptr);
 squelch_type_t squelch_type_of(const object_type *o_ptr);

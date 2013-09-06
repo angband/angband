@@ -28,7 +28,7 @@ quest q_list[MAX_Q_IDX];
  */
 bool is_quest(int level)
 {
-	int i;
+	size_t i;
 
 	/* Town is never a quest */
 	if (!level) return FALSE;
@@ -44,7 +44,7 @@ bool is_quest(int level)
  * Wipe all quests, add back in Sauron and Morgoth
  */
 void quest_reset(void) {
-	int i;
+	size_t i;
 
 	for (i = 0; i < N_ELEMENTS(q_list); i++)
 		q_list[i].level = 0;
@@ -90,7 +90,7 @@ static void build_quest_stairs(int y, int x)
  * Check if this (now dead) monster is a quest monster, and act appropriately
  */
 bool quest_check(const struct monster *m) {
-	int i;
+	size_t i;
 	int total = 0;
 
 	/* Don't bother with non-questors */

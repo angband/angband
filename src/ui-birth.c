@@ -25,6 +25,7 @@
 #include "object/tvalsval.h"
 #include "ui-birth.h"
 #include "ui-menu.h"
+#include "ui-options.h"
 
 
 /*

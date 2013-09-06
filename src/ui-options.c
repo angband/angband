@@ -24,6 +24,7 @@
 #include "prefs.h"
 #include "object/tvalsval.h"
 #include "ui-menu.h"
+#include "ui-options.h"
 #include "files.h"
 
 

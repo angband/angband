@@ -17,6 +17,7 @@
  */
 #include "angband.h"
 #include "buildid.h"
+#include "dungeon.h"
 
 /*
  * This file helps Angband work with UNIX/X11 computers.

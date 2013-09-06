@@ -22,7 +22,7 @@ int test_store0(void *state) {
 	s = parser_priv(state);
 	require(s);
 	eq(s->sidx, 0);
-	streq(s->name, "foobar");
+	require(streq(s->name, "foobar"));
 	ok;
 }
 
