@@ -522,7 +522,7 @@ for (iteration = 0; iteration < 3; iteration ++) {
 			int adj_power;
 
 			if (flags_test(r_ptr->flags, RF_SIZE, RF_KILL_WALL, RF_PASS_WALL, FLAG_END))
-				adj_power = power[i] * adj_energy(r_ptr)
+				adj_power = power[i] * adj_energy(r_ptr);
 			else if (flags_test(r_ptr->flags, RF_SIZE, RF_OPEN_DOOR, RF_BASH_DOOR, FLAG_END))
 				adj_power = power[i] * adj_energy(r_ptr) * 3 / 2;
 			else
@@ -570,16 +570,16 @@ for (iteration = 0; iteration < 3; iteration ++) {
 				count = 15;
 
 			if (rf_has(r_ptr->flags, RF_MULTIPLY)) {
-				int adj_energy;
+				int adj_energy_amt;
 
 				if (flags_test(r_ptr->flags, RF_SIZE, RF_KILL_WALL, RF_PASS_WALL, FLAG_END))
-					adj_energy = adj_energy(r_ptr);
+					adj_energy_amt = adj_energy(r_ptr);
 				else if (flags_test(r_ptr->flags, RF_SIZE, RF_OPEN_DOOR, RF_BASH_DOOR, FLAG_END))
-					adj_energy = adj_energy(r_ptr) * 3 / 2;
+					adj_energy_amt = adj_energy(r_ptr) * 3 / 2;
 				else
-					adj_energy = adj_energy(r_ptr) / 2;
+					adj_energy_amt = adj_energy(r_ptr) / 2;
 
-				count = MAX(1, adj_energy) * count;
+				count = MAX(1, adj_energy_amt) * count;
 			}
 
 			/* Very rare monsters count less towards total monster power on the
