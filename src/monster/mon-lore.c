@@ -196,10 +196,12 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 	spell_colors[RSF_BR_TIME] = TERM_L_RED;
 
 	/* Sound */
-	if (!check_state(p_ptr, OF_RES_SOUND, st.flags))
-	{
+	if (check_state(p_ptr, OF_RES_SOUND, st.flags))
+		spell_colors[RSF_BR_SOUN] = TERM_L_GREEN;
+	else if (!check_state(p_ptr, OF_RES_SOUND, st.flags) && check_state(p_ptr, OF_RES_STUN, st.flags))
+		spell_colors[RSF_BR_SOUN] = TERM_YELLOW;
+	else
 		spell_colors[RSF_BR_SOUN] = TERM_ORANGE;
-	}
 
  	/* Shards */
  	if(!check_state(p_ptr, OF_RES_SHARD, st.flags))
@@ -220,7 +222,6 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 		spell_colors[RSF_BO_ICEE] = TERM_ORANGE;
 	}
 	else {
-		spell_colors[RSF_BR_SOUN] = TERM_YELLOW;
 		spell_colors[RSF_BR_PLAS] = TERM_YELLOW;
 		spell_colors[RSF_BO_PLAS] = TERM_YELLOW;
 		spell_colors[RSF_BO_ICEE] = TERM_YELLOW;
