@@ -2103,7 +2103,7 @@ static bool borg_think_home_buy_swap_weapon(void)
     int old_armour_swap;
     s32b old_armour_swap_value;
     int n, b_n = -1;
-    s32b p, b_p = 0L;
+    s32b p = 0L, b_p = 0L;
 
     bool fix = FALSE;
 

@@ -1197,22 +1197,6 @@ static bool item_tester_hook_armour(const object_type *o_ptr)
  */
 static bool item_tester_unknown(const object_type *o_ptr)
 {
-	/* A hack for a hack - Disable this for the 3.1.2 release */
-	if (FALSE && object_is_not_known_consistently(o_ptr))
-	{
-		/*
-		 * This next hack is pretty terrible, but people playing
-		 * the nightlies will really appreciate not having to reidentify
-		 * every time a new IDENT_ flag is added.  It should be
-		 * removed when the codebase is stable.
-		 */
-		object_type *i_ptr = (object_type *) o_ptr;
-		if (!object_check_for_ident(i_ptr))
-			return TRUE;
-		else
-			return FALSE;
-	}
-
 	return object_is_known(o_ptr) ? FALSE : TRUE;
 }
 

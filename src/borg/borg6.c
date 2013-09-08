@@ -491,7 +491,7 @@ static void borg_flow_spread(int depth, bool optimize, bool avoid, bool tunnelin
 static void borg_flow_enqueue_grid(int y, int x)
 {
     int old_head;
-	int fear;
+	int fear = 0;
 	int p;
 
     /* Avoid icky grids */
@@ -5114,8 +5114,6 @@ bool borg_target_unknown_wall(int y, int x)
         /* Calculate the new location */
         mmove2(&n_y, &n_x, c_y, c_x, y, x);
     }
-
-    return found;
 }
 
 
@@ -18491,7 +18489,7 @@ static void borg_flow_direct(int y, int x)
 
     int shift;
 
-	int p, fear;
+	int p, fear = 0;
 
     borg_grid *ag;
 
@@ -18659,7 +18657,7 @@ extern void borg_flow_direct_dig(int y, int x)
 
     int shift;
 
-	int p, fear;
+	int p, fear = 0;
 
 #if 0
     /* Avoid icky grids */

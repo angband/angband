@@ -34,8 +34,6 @@
 
 #define MIN_NAME_LEN 5
 #define MAX_NAME_LEN 9
-#define S_WORD 26
-#define E_WORD S_WORD
 
 /*
  * Inhibiting factors for large bonus values

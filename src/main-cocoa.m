@@ -2782,7 +2782,6 @@ static BOOL send_event(NSEvent *event)
         default:
             [NSApp sendEvent:event];
             return YES;
-            break;
     }
     return YES;
 }
