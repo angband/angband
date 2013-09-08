@@ -519,12 +519,16 @@ for (iteration = 0; iteration < 3; iteration ++) {
 		 * ability to bypass walls or doors.
 		 */
 		if (rf_has(r_ptr->flags, RF_MULTIPLY)) {
+			int adj_power;
+
 			if (flags_test(r_ptr->flags, RF_SIZE, RF_KILL_WALL, RF_PASS_WALL, FLAG_END))
-				power[i] = MAX(power[i], power[i] * adj_energy(r_ptr));
+				adj_power = power[i] * adj_energy(r_ptr);
 			else if (flags_test(r_ptr->flags, RF_SIZE, RF_OPEN_DOOR, RF_BASH_DOOR, FLAG_END))
-				power[i] = MAX(power[i], power[i] *  adj_energy(r_ptr) * 3 / 2);
+				adj_power = power[i] * adj_energy(r_ptr) * 3 / 2;
 			else
-				power[i] = MAX(power[i], power[i] * adj_energy(r_ptr) / 2);
+				adj_power = power[i] * adj_energy(r_ptr) / 2;
+
+			power[i] = MAX(power[i], adj_power);
 		}
 
 		/*
@@ -566,12 +570,16 @@ for (iteration = 0; iteration < 3; iteration ++) {
 				count = 15;
 
 			if (rf_has(r_ptr->flags, RF_MULTIPLY)) {
+				int adj_energy_amt;
+
 				if (flags_test(r_ptr->flags, RF_SIZE, RF_KILL_WALL, RF_PASS_WALL, FLAG_END))
-					count = MAX(1, adj_energy(r_ptr)) * count;
+					adj_energy_amt = adj_energy(r_ptr);
 				else if (flags_test(r_ptr->flags, RF_SIZE, RF_OPEN_DOOR, RF_BASH_DOOR, FLAG_END))
-					count = MAX(1, adj_energy(r_ptr) * 3 / 2) * count;
+					adj_energy_amt = adj_energy(r_ptr) * 3 / 2;
 				else
-					count = MAX(1, adj_energy(r_ptr) / 2) * count;
+					adj_energy_amt = adj_energy(r_ptr) / 2;
+
+				count = MAX(1, adj_energy_amt) * count;
 			}
 
 			/* Very rare monsters count less towards total monster power on the

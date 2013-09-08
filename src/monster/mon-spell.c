@@ -381,9 +381,10 @@ static void do_side_effects(int spell, int dam, struct monster *m_ptr, bool seen
 			} else {
 				switch (re_ptr->flag) {
 					case S_INV_DAM:
-						if (dam > 0)
-							inven_damage(p_ptr, re_ptr->gf, MIN(dam *
-								randcalc(re_ptr->dam, 0, RANDOMISE), 300));
+						if (dam > 0) {
+							int rand_dam = dam * randcalc(re_ptr->dam, 0, RANDOMISE);
+							inven_damage(p_ptr, re_ptr->gf, MIN(rand_dam, 300));
+						}
 						break;
 
 					case S_TELEPORT: /* m_bonus is used as a clev filter */
