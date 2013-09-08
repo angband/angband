@@ -371,7 +371,8 @@ static void build_score(high_score *entry, const char *died_from, time_t *death_
 	switch (p_ptr->psex) {
 		case SEX_MALE:   psex = 'm'; break;
 		case SEX_FEMALE: psex = 'f'; break;
-		case SEX_NEUTER: psex = 'n'; break; 
+		case SEX_NEUTER:
+		default:         psex = 'n'; break;
 	}
 
 	/* Save the version */

@@ -743,7 +743,7 @@ static const char *lore_pronoun_nominative(monster_sex_t sex, bool title_case)
 
 	int pronoun_index = MON_SEX_NEUTER, case_index = 0;
 
-	if (sex >= MON_SEX_NEUTER && sex < MON_SEX_MAX)
+	if (sex < MON_SEX_MAX)
 		pronoun_index = sex;
 
 	if (title_case)
@@ -770,7 +770,7 @@ static const char *lore_pronoun_possessive(monster_sex_t sex, bool title_case)
 
 	int pronoun_index = MON_SEX_NEUTER, case_index = 0;
 
-	if (sex >= MON_SEX_NEUTER && sex < MON_SEX_MAX)
+	if (sex < MON_SEX_MAX)
 		pronoun_index = sex;
 
 	if (title_case)

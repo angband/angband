@@ -416,7 +416,8 @@ static void prt_welcome(const owner_type *ot_ptr)
 			switch (p_ptr->psex) {
 				case SEX_MALE:   player_name = "sir"; break;
 				case SEX_FEMALE: player_name = "madam"; break;
-				case SEX_NEUTER: player_name = "ser"; break;
+				case SEX_NEUTER:
+				default:         player_name = "ser"; break;
 			}
 		}
 

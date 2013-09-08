@@ -82,6 +82,7 @@
 #include "buildid.h"
 #include "cmds.h"
 #include "cave.h"
+#include "dungeon.h"
 #include "init.h"
 #include "files.h"
 #include "grafmode.h"
