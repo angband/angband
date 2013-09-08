@@ -523,7 +523,6 @@ static void target_display_help(bool monster, bool free)
  */
 static ui_event target_recall_loop_object(object_type *o_ptr, int y, int x, char out_val[TARGET_OUT_VAL_SIZE], const char *s1, const char *s2, const char *s3, char *coords)
 {
-	bool boring = FALSE;
 	bool recall = FALSE;
 	ui_event press;
 
@@ -534,9 +533,6 @@ static ui_event target_recall_loop_object(object_type *o_ptr, int y, int x, char
 		}
 		else {
 			char o_name[80];
-
-			/* Not boring */
-			boring = FALSE;
 
 			/* Obtain an object description */
 			object_desc(o_name, sizeof(o_name), o_ptr,
