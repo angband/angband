@@ -2678,103 +2678,105 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 		obvious = mon_inc_timed(m_ptr, MON_TMD_FEAR, do_fear,
 			flag | MON_TMD_FLG_NOTIFY, id);
 
-	/* If another monster did the damage, hurt the monster by hand */
-	if (who > 0)
-	{
-		/* Redraw (later) if needed */
-		if (p_ptr->health_who == m_ptr) p_ptr->redraw |= (PR_HEALTH);
-
-		/* Wake the monster up */
-		mon_clear_timed(m_ptr, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, FALSE);
-
-		/* Hurt the monster */
-		m_ptr->hp -= dam;
-
-		/* Dead monster */
-		if (m_ptr->hp < 0)
+	/* Hack: Avoid a crash in case polymorph goes bad; this will certainly have weird side effects */
+	if (m_ptr != NULL) {
+		/* If another monster did the damage, hurt the monster by hand */
+		if (who > 0)
 		{
-			/* Give detailed messages if destroyed */
-			if (!seen) note_dies = MON_MSG_MORIA_DEATH;
+			/* Redraw (later) if needed */
+			if (p_ptr->health_who == m_ptr) p_ptr->redraw |= (PR_HEALTH);
 
-			/* dump the note*/
-			add_monster_message(m_name, m_ptr, note_dies, FALSE);
+			/* Wake the monster up */
+			mon_clear_timed(m_ptr, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, FALSE);
 
-			/* Generate treasure, etc */
-			monster_death(m_ptr, FALSE);
+			/* Hurt the monster */
+			m_ptr->hp -= dam;
 
-			/* Delete the monster */
-			delete_monster_idx(m_idx);
-
-			mon_died = TRUE;
-		}
-
-		/* Damaged monster */
-		else if (!is_mimicking(m_ptr))
-		{
-			/* Give detailed messages if visible or destroyed */
-			if ((m_note != MON_MSG_NONE) && seen)
+			/* Dead monster */
+			if (m_ptr->hp < 0)
 			{
-				add_monster_message(m_name, m_ptr, m_note, FALSE);
+				/* Give detailed messages if destroyed */
+				if (!seen) note_dies = MON_MSG_MORIA_DEATH;
+
+				/* dump the note*/
+				add_monster_message(m_name, m_ptr, note_dies, FALSE);
+
+				/* Generate treasure, etc */
+				monster_death(m_ptr, FALSE);
+
+				/* Delete the monster */
+				delete_monster_idx(m_idx);
+
+				mon_died = TRUE;
 			}
 
-			/* Hack -- Pain message */
-			else if (dam > 0) message_pain(m_ptr, dam);
-		}
-	}
+			/* Damaged monster */
+			else if (!is_mimicking(m_ptr))
+			{
+				/* Give detailed messages if visible or destroyed */
+				if ((m_note != MON_MSG_NONE) && seen)
+				{
+					add_monster_message(m_name, m_ptr, m_note, FALSE);
+				}
 
-	/* If the player did it, give them experience, check fear */
-	else
-	{
-		bool fear = FALSE;
-
-		/* The monster is going to be killed */
-		if (dam > m_ptr->hp)
-		{
-			/* Adjust message for unseen monsters */
-			if (!seen) note_dies = MON_MSG_MORIA_DEATH;
-
-			/* Save the death notification for later */
-			add_monster_message(m_name, m_ptr, note_dies, FALSE);
+				/* Hack -- Pain message */
+				else if (dam > 0) message_pain(m_ptr, dam);
+			}
 		}
 
-		if (do_sleep)
-			obvious = mon_inc_timed(m_ptr, MON_TMD_SLEEP, 500 + p_ptr->lev * 10,
-				flag | MON_TMD_FLG_NOTIFY, id);
-		else if (mon_take_hit(m_ptr, dam, &fear, ""))
-			mon_died = TRUE;
+		/* If the player did it, give them experience, check fear */
 		else
 		{
-			/* Give detailed messages if visible or destroyed */
-			if ((m_note != MON_MSG_NONE) && seen)
+			bool fear = FALSE;
+
+			/* The monster is going to be killed */
+			if (dam > m_ptr->hp)
 			{
-				add_monster_message(m_name, m_ptr, m_note, FALSE);
+				/* Adjust message for unseen monsters */
+				if (!seen) note_dies = MON_MSG_MORIA_DEATH;
+
+				/* Save the death notification for later */
+				add_monster_message(m_name, m_ptr, note_dies, FALSE);
 			}
 
-			/* Hack -- Pain message */
-			else if (dam > 0)
-				message_pain(m_ptr, dam);
+			if (do_sleep)
+				obvious = mon_inc_timed(m_ptr, MON_TMD_SLEEP, 500 + p_ptr->lev * 10,
+										flag | MON_TMD_FLG_NOTIFY, id);
+			else if (mon_take_hit(m_ptr, dam, &fear, ""))
+				mon_died = TRUE;
+			else
+			{
+				/* Give detailed messages if visible or destroyed */
+				if ((m_note != MON_MSG_NONE) && seen)
+				{
+					add_monster_message(m_name, m_ptr, m_note, FALSE);
+				}
 
-			if (fear && m_ptr->ml)
-				add_monster_message(m_name, m_ptr, MON_MSG_FLEE_IN_TERROR, TRUE);
+				/* Hack -- Pain message */
+				else if (dam > 0)
+					message_pain(m_ptr, dam);
+
+				if (fear && m_ptr->ml)
+					add_monster_message(m_name, m_ptr, MON_MSG_FLEE_IN_TERROR, TRUE);
+			}
 		}
-	}
 
-	/* Verify this code XXX XXX XXX */
+		/* Verify this code XXX XXX XXX */
 
-	/* Update the monster */
-	if (!mon_died) update_mon(m_ptr, FALSE);
+		/* Update the monster */
+		if (!mon_died) update_mon(m_ptr, FALSE);
 
-	/* Redraw the monster grid */
-	cave_light_spot(cave, y, x);
+		/* Redraw the monster grid */
+		cave_light_spot(cave, y, x);
 
 
-	/* Update monster recall window */
-	if (p_ptr->monster_race == m_ptr->race)
-	{
-		/* Window stuff */
-		p_ptr->redraw |= (PR_MONSTER);
-	}
-
+		/* Update monster recall window */
+		if (p_ptr->monster_race == m_ptr->race)
+		{
+			/* Window stuff */
+			p_ptr->redraw |= (PR_MONSTER);
+		}
+	} /* m_ptr != NULL */
 
 	/* Track it */
 	project_m_n++;
