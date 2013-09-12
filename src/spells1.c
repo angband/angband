@@ -174,6 +174,9 @@ static monster_race *poly_race(monster_race *race)
 		if (rf_has(new_race->flags, RF_UNIQUE)) continue;
 		if (new_race->level < minlvl || new_race->level > maxlvl) continue;
 
+		/* Avoid force-depth monsters, since it might cause a crash in project_m() */
+		if (rf_has(new_race->flags, RF_FORCE_DEPTH) && p_ptr->depth < new_race->level) continue;
+
 		return new_race;
 	}
 
