@@ -3099,6 +3099,26 @@ bool cave_isdiggable(struct cave *c, int y, int x) {
 }
 
 /**
+ * True if a monster can walk through the feature.
+ */
+bool feat_is_monster_walkable(feature_type *feature)
+{
+	return ff_has(feature->flags, FF_MWALK);
+}
+
+/**
+ * True if a monster can walk through the tile.
+ *
+ * This is needed for polymorphing. A monster may be on a feature that isn't
+ * an empty space, causing problems when it is replaced with a new monster.
+ */
+bool cave_is_monster_walkable(struct cave *c, int y, int x)
+{
+	assert(cave_in_bounds(c, y, x));
+	return feat_is_monster_walkable(&f_info[c->feat[y][x]]);
+}
+
+/**
  * True if the feature is passable by the player.
  */
 bool feat_ispassable(feature_type *f_ptr) {
