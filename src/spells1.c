@@ -2777,6 +2777,9 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 			p_ptr->redraw |= (PR_MONSTER);
 		}
 	} /* m_ptr != NULL */
+	else {
+		bell("Polymorph crash avoided! Please file a bug report (with a screen shot if possible).");
+	}
 
 	/* Track it */
 	project_m_n++;
