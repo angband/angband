@@ -873,8 +873,9 @@ static bool place_new_monster_one(int y, int x, monster_race *race,
 	assert(cave_in_bounds(cave, y, x));
 	assert(race && race->name);
 
-	/* Require empty space */
-	if (!cave_isopen(cave, y, x)) return (FALSE);
+	/* Prevent monsters from being placed where they cannot walk, but allow other feature types */
+	if (!cave_is_monster_walkable(cave, y, x))
+		return FALSE;
 
 	/* No creation on glyph of warding */
 	if (cave_iswarded(cave, y, x)) return FALSE;
