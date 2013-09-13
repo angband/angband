@@ -1754,7 +1754,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 
 
 	/* Get the monster name (BEFORE polymorphing) */
-	monster_desc(m_name, sizeof(m_name), m_ptr, 0);
+	monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_DEFAULT);
 
 	/* Get the monster possessive ("his"/"her"/"its") */
 	monster_desc(m_poss, sizeof(m_poss), m_ptr, MDESC_PRO_VIS | MDESC_POSS);
@@ -2811,9 +2811,6 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ,
 	/* Source monster */
 	monster_type *m_ptr;
 
-	/* Monster name (for attacks) */
-	char m_name[80];
-
 	/* Monster name (for damage) */
 	char killer[80];
 
@@ -2835,11 +2832,8 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ,
 	/* Reduce damage by distance */
 	dam = (dam + r) / (r + 1);
 
-	/* Get the monster name */
-	monster_desc(m_name, sizeof(m_name), m_ptr, 0);
-
 	/* Get the monster's real name */
-	monster_desc(killer, sizeof(killer), m_ptr, MDESC_SHOW | MDESC_IND_VIS);
+	monster_desc(killer, sizeof(killer), m_ptr, MDESC_DIED_FROM);
 
 	/* Let player know what is going on */
 	if (!seen)

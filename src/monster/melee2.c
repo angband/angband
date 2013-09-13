@@ -308,13 +308,13 @@ bool make_attack_spell(struct monster *m_ptr)
 	if (rsf_is_empty(f)) return FALSE;
 
 	/* Get the monster name (or "it") */
-	monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_CAPITAL);
+	monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_STANDARD);
 
 	/* Get the monster possessive ("his"/"her"/"its") */
 	monster_desc(m_poss, sizeof(m_poss), m_ptr, MDESC_PRO_VIS | MDESC_POSS);
 
 	/* Get the "died from" name */
-	monster_desc(ddesc, sizeof(ddesc), m_ptr, MDESC_SHOW | MDESC_IND_VIS);
+	monster_desc(ddesc, sizeof(ddesc), m_ptr, MDESC_DIED_FROM);
 
 	/* Choose a spell to cast */
 	thrown_spell = choose_attack_spell(m_ptr, f);
@@ -1453,7 +1453,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 
 
 	/* Get the monster name (or "it") */
-	monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_CAPITAL);
+	monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_STANDARD);
 
 	/* Get the "died from" information (i.e. "a kobold") */
 	monster_desc(ddesc, sizeof(ddesc), m_ptr, MDESC_SHOW | MDESC_IND_VIS);
@@ -2622,7 +2622,7 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 	char m_name[80];
 
 	/* Get the monster name */
-	monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_CAPITAL);
+	monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_CAPITAL | MDESC_IND_HID);
 
 	/* Handle "sleep" */
 	if (m_ptr->m_timed[MON_TMD_SLEEP]) {
@@ -2900,6 +2900,7 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 
 						if (randint0(m_ptr->hp / 10) > k) {
 							/* Print a message */
+							/* XXX This can probably be consolidated, since monster_desc checks m_ptr->ml */
 							if (m_ptr->ml) {
 								if (may_bash)
 									msg("%s slams against the door.", m_name);
@@ -3024,7 +3025,7 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 					/* Get the names of the monsters involved */
 					char m1_name[80];
 					char n_name[80];
-					monster_desc(m1_name, sizeof(m1_name), m_ptr, MDESC_IND_HID);
+					monster_desc(m1_name, sizeof(m1_name), m_ptr, MDESC_CAPITAL | MDESC_IND_HID);
 					monster_desc(n_name, sizeof(n_name), n_ptr, MDESC_IND_HID);
 
 					/* Allow movement */

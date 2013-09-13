@@ -1413,7 +1413,7 @@ bool mon_take_hit(struct monster *m_ptr, int dam, bool *fear, const char *note)
 		}
 
 		/* Extract monster name */
-		monster_desc(m_name, sizeof(m_name), m_ptr, 0);
+		monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_DEFAULT);
 
 		/* Death by Missile/Spell attack */
 		if (note) {
@@ -1466,8 +1466,7 @@ bool mon_take_hit(struct monster *m_ptr, int dam, bool *fear, const char *note)
 			 * This gets the correct name if we slay an invisible 
 			 * unique and don't have See Invisible.
 			 */
-			monster_desc(unique_name, sizeof(unique_name), m_ptr, 
-					MDESC_SHOW | MDESC_IND_VIS);
+			monster_desc(unique_name, sizeof(unique_name), m_ptr, MDESC_DIED_FROM);
 
 			/* Log the slaying of a unique */
 			strnfmt(buf, sizeof(buf), "Killed %s", unique_name);
