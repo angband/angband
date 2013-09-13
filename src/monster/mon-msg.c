@@ -115,7 +115,8 @@ void message_pain(struct monster *m_ptr, int dam)
 	char m_name[80];
 
 	/* Get the monster name */
-	monster_desc(m_name, sizeof(m_name), m_ptr, 0);
+	/* XXX Don't use monster_desc flags because add_monster_message does string processing on m_name */
+	monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_DEFAULT);
 
 	/* Notice non-damage */
 	if (dam == 0)

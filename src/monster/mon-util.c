@@ -701,77 +701,77 @@ void display_monlist(void)
  */
 void monster_desc(char *desc, size_t max, const struct monster *mon, int mode)
 {
-	const char *res;
-	bool seen, pron;
+	const char *choice;
+	bool seen, use_pronoun;
 
 	assert(mon);
 
 
 	/* Can we "see" it (forced, or not hidden + visible) */
-	seen = ((mode & (0x80)) || (!(mode & (0x40)) && mon->ml));
+	seen = ((mode & (MDESC_SHOW)) || (!(mode & (MDESC_HIDE)) && mon->ml));
 
 	/* Sexed Pronouns (seen and forced, or unseen and allowed) */
-	pron = ((seen && (mode & (0x20))) || (!seen && (mode & (0x10))));
+	use_pronoun = ((seen && (mode & (MDESC_PRO_VIS))) || (!seen && (mode & (MDESC_PRO_HID))));
 
 
 	/* First, try using pronouns, or describing hidden monsters */
-	if (!seen || pron)
+	if (!seen || use_pronoun)
 	{
 		/* an encoding of the monster "sex" */
-		int kind = 0x00;
+		int msex = 0x00;
 
 		/* Extract the gender (if applicable) */
-		if (rf_has(mon->race->flags, RF_FEMALE)) kind = 0x20;
-		else if (rf_has(mon->race->flags, RF_MALE)) kind = 0x10;
+		if (rf_has(mon->race->flags, RF_FEMALE)) msex = 0x20;
+		else if (rf_has(mon->race->flags, RF_MALE)) msex = 0x10;
 
 		/* Ignore the gender (if desired) */
-		if (!mon || !pron) kind = 0x00;
+		if (!mon || !use_pronoun) msex = 0x00;
 
 
 		/* Assume simple result */
-		res = "it";
+		choice = "it";
 
 		/* Brute force: split on the possibilities */
-		switch (kind + (mode & 0x07))
+		switch (msex + (mode & 0x07))
 		{
 			/* Neuter, or unknown */
-			case 0x00: res = "it"; break;
-			case 0x01: res = "it"; break;
-			case 0x02: res = "its"; break;
-			case 0x03: res = "itself"; break;
-			case 0x04: res = "something"; break;
-			case 0x05: res = "something"; break;
-			case 0x06: res = "something's"; break;
-			case 0x07: res = "itself"; break;
+			case 0x00: choice = "it"; break;
+			case 0x01: choice = "it"; break;
+			case 0x02: choice = "its"; break;
+			case 0x03: choice = "itself"; break;
+			case 0x04: choice = "something"; break;
+			case 0x05: choice = "something"; break;
+			case 0x06: choice = "something's"; break;
+			case 0x07: choice = "itself"; break;
 
 			/* Male (assume human if vague) */
-			case 0x10: res = "he"; break;
-			case 0x11: res = "him"; break;
-			case 0x12: res = "his"; break;
-			case 0x13: res = "himself"; break;
-			case 0x14: res = "someone"; break;
-			case 0x15: res = "someone"; break;
-			case 0x16: res = "someone's"; break;
-			case 0x17: res = "himself"; break;
+			case 0x10: choice = "he"; break;
+			case 0x11: choice = "him"; break;
+			case 0x12: choice = "his"; break;
+			case 0x13: choice = "himself"; break;
+			case 0x14: choice = "someone"; break;
+			case 0x15: choice = "someone"; break;
+			case 0x16: choice = "someone's"; break;
+			case 0x17: choice = "himself"; break;
 
 			/* Female (assume human if vague) */
-			case 0x20: res = "she"; break;
-			case 0x21: res = "her"; break;
-			case 0x22: res = "her"; break;
-			case 0x23: res = "herself"; break;
-			case 0x24: res = "someone"; break;
-			case 0x25: res = "someone"; break;
-			case 0x26: res = "someone's"; break;
-			case 0x27: res = "herself"; break;
+			case 0x20: choice = "she"; break;
+			case 0x21: choice = "her"; break;
+			case 0x22: choice = "her"; break;
+			case 0x23: choice = "herself"; break;
+			case 0x24: choice = "someone"; break;
+			case 0x25: choice = "someone"; break;
+			case 0x26: choice = "someone's"; break;
+			case 0x27: choice = "herself"; break;
 		}
 
 		/* Copy the result */
-		my_strcpy(desc, res, max);
+		my_strcpy(desc, choice, max);
 	}
 
 
 	/* Handle visible monsters, "reflexive" request */
-	else if ((mode & 0x02) && (mode & 0x01))
+	else if ((mode & MDESC_POSS) && (mode & MDESC_OBJE))
 	{
 		/* The monster is visible, so use its gender */
 		if (rf_has(mon->race->flags, RF_FEMALE)) my_strcpy(desc, "herself", max);
@@ -791,7 +791,7 @@ void monster_desc(char *desc, size_t max, const struct monster *mon, int mode)
 		}
 
 		/* It could be an indefinite monster */
-		else if (mode & 0x08)
+		else if (mode & MDESC_IND_VIS)
 		{
 			/* XXX Check plurality for "some" */
 
@@ -809,7 +809,7 @@ void monster_desc(char *desc, size_t max, const struct monster *mon, int mode)
 		}
 
 		/* Handle the Possessive as a special afterthought */
-		if (mode & 0x02)
+		if (mode & MDESC_POSS)
 		{
 			/* XXX Check for trailing "s" */
 

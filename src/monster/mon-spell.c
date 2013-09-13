@@ -175,7 +175,7 @@ static void drain_mana(struct monster *m_ptr, int rlev, bool seen)
 	char m_name[80];
 
 	/* Get the monster name (or "it") */
-	monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_CAPITAL);
+	monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_STANDARD);
 
 	if (!p_ptr->csp) {
 		msg("The draining fails.");
@@ -230,11 +230,11 @@ static void heal_self(struct monster *m_ptr, int rlev, bool seen)
 	char m_name[80], m_poss[80];
 
 	/* Get the monster name (or "it") */
-	monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_CAPITAL);
+	monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_STANDARD);
 
 	/* Get the monster possessive ("his"/"her"/"its") */
 	monster_desc(m_poss, sizeof(m_poss), m_ptr,
-			MDESC_PRO2 | MDESC_POSS);
+			MDESC_PRO_VIS | MDESC_POSS);
 
 	/* Heal some */
 	m_ptr->hp += (rlev * 6);
@@ -530,7 +530,7 @@ void do_mon_spell(int spell, struct monster *m_ptr, bool seen)
 	int rlev = ((m_ptr->race->level >= 1) ? m_ptr->race->level : 1);
 
 	/* Get the monster name (or "it") */
-	monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_CAPITAL);
+	monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_STANDARD);
 
 	/* See if it hits */
 	if (rs_ptr->hit == 100) 
@@ -564,7 +564,7 @@ void do_mon_spell(int spell, struct monster *m_ptr, bool seen)
 	dam = mon_spell_dam(spell, m_ptr->hp, rlev, RANDOMISE);
 
 	/* Get the "died from" name in case this attack kills @ */
-	monster_desc(ddesc, sizeof(ddesc), m_ptr, MDESC_SHOW | MDESC_IND2);
+	monster_desc(ddesc, sizeof(ddesc), m_ptr, MDESC_DIED_FROM);
 
 	/* Display the attack, adjust for resists and apply effects */
 	if (rs_ptr->type & RST_BOLT)

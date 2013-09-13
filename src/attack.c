@@ -188,7 +188,7 @@ static bool py_attack_real(int y, int x, bool *fear) {
 	u32b msg_type = MSG_HIT;
 
 	/* Extract monster name (or "it") */
-	monster_desc(m_name, sizeof(m_name), m_ptr, 0);
+	monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_OBJE | MDESC_IND_HID | MDESC_PRO_HID);
 
 	/* Auto-Recall if possible and visible */
 	if (m_ptr->ml) monster_race_track(m_ptr->race);
@@ -333,7 +333,8 @@ void py_attack(int y, int x) {
 	/* Hack - delay fear messages */
 	if (fear && m_ptr->ml) {
 		char m_name[80];
-		monster_desc(m_name, sizeof(m_name), m_ptr, 0);
+		/* XXX Don't set monster_desc flags, since add_monster_message does string processing on m_name */
+		monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_DEFAULT);
 		add_monster_message(m_name, m_ptr, MON_MSG_FLEE_IN_TERROR, TRUE);
 	}
 }
@@ -473,9 +474,6 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 		if (result.success) {
 			hit_target = TRUE;
 
-			/* Get "the monster" or "it" */
-			monster_desc(m_name, sizeof(m_name), m_ptr, 0);
-		
 			object_notice_attack_plusses(o_ptr);
 
 			/* Learn by use for other equipped items */
@@ -501,6 +499,8 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 					if (OPT(show_damage))
 						dmg_text = format(" (%d)", dmg);
 
+					monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_OBJE);
+					
 					if (ranged_hit_types[i].text)
 						msgt(msg_type, "Your %s %s %s%s. %s", o_name, hit_verb,
 								m_name, dmg_text, ranged_hit_types[i].text);
@@ -517,8 +517,10 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 			/* Hit the monster, check for death */
 			if (!mon_take_hit(m_ptr, dmg, &fear, note_dies)) {
 				message_pain(m_ptr, dmg);
-				if (fear && m_ptr->ml)
+				if (fear && m_ptr->ml) {
+					monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_DEFAULT);
 					add_monster_message(m_name, m_ptr, MON_MSG_FLEE_IN_TERROR, TRUE);
+				}
 			}
 		}
 	}

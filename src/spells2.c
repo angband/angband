@@ -1872,7 +1872,7 @@ bool probing(void)
 
 			/* Get "the monster" or "something" */
 			monster_desc(m_name, sizeof(m_name), m_ptr,
-					MDESC_IND1 | MDESC_CAPITAL);
+					MDESC_IND_HID | MDESC_CAPITAL);
 
 			/* Describe the monster */
 			msg("%s has %d hit points.", m_name, m_ptr->hp);
@@ -2232,7 +2232,7 @@ void earthquake(int cy, int cx, int r)
 					}
 
 					/* Describe the monster */
-					monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_CAPITAL);
+					monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_STANDARD);
 
 					/* Scream in pain */
 					msg("%s wails out in pain!", m_name);
