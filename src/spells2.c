@@ -1872,7 +1872,7 @@ bool probing(void)
 
 			/* Get "the monster" or "something" */
 			monster_desc(m_name, sizeof(m_name), m_ptr,
-					MDESC_IND1 | MDESC_CAPITAL);
+					MDESC_IND_HID | MDESC_CAPITAL);
 
 			/* Describe the monster */
 			msg("%s has %d hit points.", m_name, m_ptr->hp);

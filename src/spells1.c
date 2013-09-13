@@ -1757,7 +1757,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 	monster_desc(m_name, sizeof(m_name), m_ptr, 0);
 
 	/* Get the monster possessive ("his"/"her"/"its") */
-	monster_desc(m_poss, sizeof(m_poss), m_ptr, MDESC_PRO2 | MDESC_POSS);
+	monster_desc(m_poss, sizeof(m_poss), m_ptr, MDESC_PRO_VIS | MDESC_POSS);
 
 
 	/* Some monsters get "destroyed" */
@@ -2839,7 +2839,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ,
 	monster_desc(m_name, sizeof(m_name), m_ptr, 0);
 
 	/* Get the monster's real name */
-	monster_desc(killer, sizeof(killer), m_ptr, MDESC_SHOW | MDESC_IND2);
+	monster_desc(killer, sizeof(killer), m_ptr, MDESC_SHOW | MDESC_IND_VIS);
 
 	/* Let player know what is going on */
 	if (!seen)

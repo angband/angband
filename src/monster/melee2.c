@@ -311,10 +311,10 @@ bool make_attack_spell(struct monster *m_ptr)
 	monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_CAPITAL);
 
 	/* Get the monster possessive ("his"/"her"/"its") */
-	monster_desc(m_poss, sizeof(m_poss), m_ptr, MDESC_PRO2 | MDESC_POSS);
+	monster_desc(m_poss, sizeof(m_poss), m_ptr, MDESC_PRO_VIS | MDESC_POSS);
 
 	/* Get the "died from" name */
-	monster_desc(ddesc, sizeof(ddesc), m_ptr, MDESC_SHOW | MDESC_IND2);
+	monster_desc(ddesc, sizeof(ddesc), m_ptr, MDESC_SHOW | MDESC_IND_VIS);
 
 	/* Choose a spell to cast */
 	thrown_spell = choose_attack_spell(m_ptr, f);
@@ -1456,7 +1456,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 	monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_CAPITAL);
 
 	/* Get the "died from" information (i.e. "a kobold") */
-	monster_desc(ddesc, sizeof(ddesc), m_ptr, MDESC_SHOW | MDESC_IND2);
+	monster_desc(ddesc, sizeof(ddesc), m_ptr, MDESC_SHOW | MDESC_IND_VIS);
 
 	/* Assume no blink */
 	blinked = FALSE;
@@ -3024,8 +3024,8 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 					/* Get the names of the monsters involved */
 					char m1_name[80];
 					char n_name[80];
-					monster_desc(m1_name, sizeof(m1_name), m_ptr, MDESC_IND1);
-					monster_desc(n_name, sizeof(n_name), n_ptr, MDESC_IND1);
+					monster_desc(m1_name, sizeof(m1_name), m_ptr, MDESC_IND_HID);
+					monster_desc(n_name, sizeof(n_name), n_ptr, MDESC_IND_HID);
 
 					/* Allow movement */
 					do_move = TRUE;
@@ -3102,7 +3102,7 @@ static void process_monster(struct cave *c, struct monster *m_ptr)
 								ODESC_PREFIX | ODESC_FULL);
 
 					/* Get the monster name */
-					monster_desc(m1_name, sizeof(m1_name), m_ptr, MDESC_IND1 | MDESC_CAPITAL);
+					monster_desc(m1_name, sizeof(m1_name), m_ptr, MDESC_IND_HID | MDESC_CAPITAL);
 
 					/* React to objects that hurt the monster */
 					react_to_slay(obj_flags, mon_flags);

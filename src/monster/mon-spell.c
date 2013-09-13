@@ -234,7 +234,7 @@ static void heal_self(struct monster *m_ptr, int rlev, bool seen)
 
 	/* Get the monster possessive ("his"/"her"/"its") */
 	monster_desc(m_poss, sizeof(m_poss), m_ptr,
-			MDESC_PRO2 | MDESC_POSS);
+			MDESC_PRO_VIS | MDESC_POSS);
 
 	/* Heal some */
 	m_ptr->hp += (rlev * 6);
@@ -564,7 +564,7 @@ void do_mon_spell(int spell, struct monster *m_ptr, bool seen)
 	dam = mon_spell_dam(spell, m_ptr->hp, rlev, RANDOMISE);
 
 	/* Get the "died from" name in case this attack kills @ */
-	monster_desc(ddesc, sizeof(ddesc), m_ptr, MDESC_SHOW | MDESC_IND2);
+	monster_desc(ddesc, sizeof(ddesc), m_ptr, MDESC_SHOW | MDESC_IND_VIS);
 
 	/* Display the attack, adjust for resists and apply effects */
 	if (rs_ptr->type & RST_BOLT)

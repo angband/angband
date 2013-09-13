@@ -1467,7 +1467,7 @@ bool mon_take_hit(struct monster *m_ptr, int dam, bool *fear, const char *note)
 			 * unique and don't have See Invisible.
 			 */
 			monster_desc(unique_name, sizeof(unique_name), m_ptr, 
-					MDESC_SHOW | MDESC_IND2);
+					MDESC_SHOW | MDESC_IND_VIS);
 
 			/* Log the slaying of a unique */
 			strnfmt(buf, sizeof(buf), "Killed %s", unique_name);
