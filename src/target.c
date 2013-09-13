@@ -682,7 +682,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 				boring = FALSE;
 
 				/* Get the monster name ("a kobold") */
-				monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_IND2);
+				monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_IND_VIS);
 
 				/* Hack -- track this monster race */
 				monster_race_track(m_ptr->race);

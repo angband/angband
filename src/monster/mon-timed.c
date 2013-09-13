@@ -211,7 +211,7 @@ static bool mon_set_timed(monster_type *m_ptr, int ef_idx, int timer,
 	if (m_note && (m_ptr->ml || id) && !(flag & MON_TMD_FLG_NOMESSAGE) &&
 			(flag & MON_TMD_FLG_NOTIFY)) {
 		char m_name[80];
-		monster_desc(m_name, sizeof(m_name), m_ptr, 0x04);
+		monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_IND_HID);
 		add_monster_message(m_name, m_ptr, m_note, TRUE);
 	}
 

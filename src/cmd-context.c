@@ -443,7 +443,7 @@ int context_menu_cave(struct cave *c, int y, int x, int adjacent, int mx, int my
 		monster_type *m_ptr = cave_monster_at(c, y, x);
 
 		/* Get the monster name ("a kobold") */
-		monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_IND2);
+		monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_IND_VIS);
 
 		prt(format("(Enter to select command, ESC to cancel) You see %s:", m_name), 0, 0);
 	} else

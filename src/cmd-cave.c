@@ -1250,7 +1250,7 @@ static bool do_cmd_walk_test(int y, int x)
 		{
 			/* Extract monster name (or "it") */
 			char m_name[80];
-			monster_desc(m_name, sizeof(m_name), m_ptr, 0);
+			monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_DEFAULT);
 
 			/* Message */
 			msgt(MSG_AFRAID, "You are too afraid to attack %s!", m_name);
