@@ -873,6 +873,10 @@ static bool place_new_monster_one(int y, int x, monster_race *race,
 	assert(cave_in_bounds(cave, y, x));
 	assert(race && race->name);
 
+	/* Not where monsters already are */
+	if (cave_monster_at(cave, y, x))
+		return FALSE;
+
 	/* Prevent monsters from being placed where they cannot walk, but allow other feature types */
 	if (!cave_is_monster_walkable(cave, y, x))
 		return FALSE;
