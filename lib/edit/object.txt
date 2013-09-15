@@ -1990,7 +1990,7 @@ N:302:Curse Weapon
 G:?:w
 I:70:41
 W:50:0:5:0
-A:10:50 to 100
+#A:10:50 to 100
 M:70:1d3
 F:EASY_KNOW
 E:CURSE_WEAPON
@@ -1999,7 +1999,7 @@ N:303:Curse Armour
 G:?:w
 I:70:42
 W:50:0:5:0
-A:10:50 to 100
+#A:10:50 to 100
 M:70:1d3
 F:EASY_KNOW
 E:CURSE_ARMOR
