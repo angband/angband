@@ -101,7 +101,7 @@ static void look_mon_desc(char *buf, size_t max, int m_idx)
 bool target_able(struct monster *m)
 {
 	return m && m->race && m->ml && !m->unaware &&
-/*			projectable(p_ptr->py, p_ptr->px, m->fy, m->fx, PROJECT_NONE) && */
+			projectable(p_ptr->py, p_ptr->px, m->fy, m->fx, PROJECT_NONE) &&
 			!p_ptr->timed[TMD_IMAGE];
 }
 
@@ -170,13 +170,9 @@ void target_set_location(int y, int x)
 	/* Legal target */
 	if (cave_in_bounds_fully(cave, y, x))
 	{
-		/* If there's a monster there, target that instead */
-		struct monster *m = cave_monster_at(cave, y, x);
-		if (m && target_set_monster(m)) return;
-
 		/* Save target info */
 		target_set = TRUE;
-		target_who = NULL;
+		target_who = cave_monster_at(cave, y, x);
 		target_y = y;
 		target_x = x;
 	}
