@@ -1415,10 +1415,7 @@ static errr term_force_font(term_data *td, const char *path)
 	if (!file_exists(buf)) return (1);
 
 	/* Load the new font */
-	if (!AddFontResource(buf)) return (1);
-
-	/* Notify other applications that a new font is available  XXX */
-	PostMessage(HWND_BROADCAST, WM_FONTCHANGE, 0, 0);
+	if (!AddFontResourceEx(buf, FR_PRIVATE, 0)) return (1);
 
 	/* Save new font name */
 	td->font_file = string_make(base);
