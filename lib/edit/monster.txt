@@ -158,10 +158,6 @@
 # TODO: Explain the other monster and spell flags. But maybe in another file.
 
 
-# Version stamp (required)
-
-V:3.4.0
-
 
 ##### Non-race (contains the "player" picture) #####
 

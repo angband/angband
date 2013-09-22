@@ -47,9 +47,6 @@
 #          1         2         3   
 # 123456789012345678901234567890123
 
-# Version stamp (required)
-
-V:4.0
 
 ### Templated rooms -- maximum size 33x11 ###
 

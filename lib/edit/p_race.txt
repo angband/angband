@@ -48,11 +48,6 @@
 # 'C' is for class choices.
 
 
-# Version stamp (required)
-
-V:3.4.0
-
-
 N:0:Human
 S:0:0:0:0:0
 R:0:0:0:0:0:10:0:0:0:0

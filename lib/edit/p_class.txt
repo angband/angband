@@ -56,10 +56,6 @@
 # 'F' is for class flags.
 
 
-# Version stamp (required)
-
-V:3.4.0
-
 
 N:0:Warrior
 S:3:-2:-2:2:2

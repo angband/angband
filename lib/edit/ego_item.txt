@@ -75,9 +75,6 @@
 # value. A pval can take a random value. The min_pval must be present,
 # but can be 0. As with 'M' above, 255 means "do not apply a minimum".
 
-# Version stamp (required)
-
-V:3.4.0
 
 # 1 (unused)
 

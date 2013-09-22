@@ -87,10 +87,6 @@
 
 
 
-# Version stamp (required)
-
-V:3.4.0
-
 
 
 ##### Non-kind (contains the "pile" picture) #####

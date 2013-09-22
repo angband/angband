@@ -40,10 +40,6 @@
 # 'E' is for entry effects.  See list-effects.h.
 
 
-# Version stamp (required)
-
-V:3.0.11
-
 
 # 0x00 --> <darkness>
 

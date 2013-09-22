@@ -270,7 +270,6 @@ struct parser *init_parse_z(void) {
 	struct parser *p = parser_new();
 
 	parser_setpriv(p, z);
-	parser_reg(p, "V sym version", ignored);
 	parser_reg(p, "M sym label int value", parse_z);
 	return p;
 }
@@ -385,7 +384,6 @@ struct parser *init_parse_kb(void) {
 	struct kb_parsedata *d = mem_zalloc(sizeof(*d));
 	parser_setpriv(p, d);
 
-	parser_reg(p, "V sym version", ignored);
 	parser_reg(p, "D sym label int value", parse_kb_d);
 	parser_reg(p, "N sym tval str name", parse_kb_n);
 	parser_reg(p, "B int breakage", parse_kb_b);
@@ -613,7 +611,6 @@ static enum parser_error parse_k_l(struct parser *p) {
 struct parser *init_parse_k(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
-	parser_reg(p, "V sym version", ignored);
 	parser_reg(p, "N int index str name", parse_k_n);
 	parser_reg(p, "G char glyph sym color", parse_k_g);
 	parser_reg(p, "I sym tval int sval", parse_k_i);
@@ -845,7 +842,6 @@ static enum parser_error parse_a_d(struct parser *p) {
 struct parser *init_parse_a(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
-	parser_reg(p, "V sym version", ignored);
 	parser_reg(p, "N int index str name", parse_a_n);
 	parser_reg(p, "I sym tval sym sval", parse_a_i);
 	parser_reg(p, "W int level int rarity int weight int cost", parse_a_w);
@@ -1127,7 +1123,6 @@ static enum parser_error parse_f_e(struct parser *p) {
 struct parser *init_parse_f(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
-	parser_reg(p, "V sym version", ignored);
 	parser_reg(p, "N uint index str name", parse_f_n);
 	parser_reg(p, "G char glyph sym color", parse_f_g);
 	parser_reg(p, "M uint index", parse_f_m);
@@ -1370,7 +1365,6 @@ static enum parser_error parse_e_d(struct parser *p) {
 struct parser *init_parse_e(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
-	parser_reg(p, "V sym version", ignored);
 	parser_reg(p, "N int index str name", parse_e_n);
 	parser_reg(p, "W int level int rarity int pad int cost", parse_e_w);
 	parser_reg(p, "X int rating int xtra", parse_e_x);
@@ -1591,7 +1585,6 @@ static enum parser_error parse_p_c(struct parser *p) {
 struct parser *init_parse_p(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
-	parser_reg(p, "V sym version", ignored);
 	parser_reg(p, "N uint index str name", parse_p_n);
 	parser_reg(p, "S int str int int int wis int dex int con", parse_p_s);
 	parser_reg(p, "R int dis int dev int sav int stl int srh int fos int thm int thb int throw int dig", parse_p_r);
@@ -1822,7 +1815,6 @@ static enum parser_error parse_c_f(struct parser *p) {
 struct parser *init_parse_c(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
-	parser_reg(p, "V sym version", ignored);
 	parser_reg(p, "N uint index str name", parse_c_n);
 	parser_reg(p, "S int str int int int wis int dex int con", parse_c_s);
 	parser_reg(p, "C int dis int dev int sav int stl int srh int fos int thm int thb int throw int dig", parse_c_c);
@@ -1922,7 +1914,6 @@ static enum parser_error parse_v_d(struct parser *p) {
 struct parser *init_parse_v(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
-	parser_reg(p, "V sym version", ignored);
 	parser_reg(p, "N uint index str name", parse_v_n);
 	parser_reg(p, "X uint type int rating uint height uint width", parse_v_x);
 	parser_reg(p, "D str text", parse_v_d);
@@ -1993,7 +1984,6 @@ static enum parser_error parse_h_d(struct parser *p) {
 struct parser *init_parse_h(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
-	parser_reg(p, "V sym version", ignored);
 	parser_reg(p, "N uint chart int next int roll", parse_h_n);
 	parser_reg(p, "D str text", parse_h_d);
 	return p;
@@ -2197,7 +2187,6 @@ static enum parser_error parse_s_d(struct parser *p) {
 struct parser *init_parse_s(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
-	parser_reg(p, "V sym version", ignored);
 	parser_reg(p, "N uint index str name", parse_s_n);
 	parser_reg(p, "I uint tval uint sval uint snum", parse_s_i);
 	parser_reg(p, "D str desc", parse_s_d);

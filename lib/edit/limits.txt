@@ -7,9 +7,6 @@
 # unless you wish to risk possible system crashes and broken savefiles.
 
 
-# Version stamp (required)
-
-V:3.0.11
 
 
 # Maximum number of object kinds

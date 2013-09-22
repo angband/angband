@@ -77,10 +77,6 @@
 # or limits.txt.)
 
 
-# Version stamp (required)
-
-V:3.4.0
-
 
 # Here is the list of "Special" artifacts - Amulets, Light Sources, Rings.
 # Only the FIRST 15 artifacts may be of these types currently: artifacts
