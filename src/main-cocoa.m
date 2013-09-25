@@ -1449,14 +1449,20 @@ static void Term_init_cocoa(term *t)
             break;
         }
     }
-    
+
     /* Set its font. */
-    NSString *fontName = [[NSUserDefaults angbandDefaults] 
-        stringForKey:[NSString stringWithFormat:@"FontName-%d", termIdx]];
+    NSString *fontName = [[NSUserDefaults angbandDefaults] stringForKey:[NSString stringWithFormat:@"FontName-%d", termIdx]];
     if (! fontName) fontName = [default_font fontName];
-    float fontSize = [[NSUserDefaults angbandDefaults] 
-        floatForKey:[NSString stringWithFormat:@"FontSize-%d", termIdx]];
-    if (! fontSize) fontSize = [default_font pointSize];
+
+    // use a smaller default font for the other windows, but only if the font hasn't been explicitly set
+    float fontSize = (termIdx > 0) ? 10.0 : [default_font pointSize];
+    NSNumber *fontSizeNumber = [[NSUserDefaults angbandDefaults] valueForKey: [NSString stringWithFormat: @"FontSize-%d", termIdx]];
+
+    if( fontSizeNumber != nil )
+    {
+        fontSize = [fontSizeNumber floatValue];
+    }
+
     [context setSelectionFont:[NSFont fontWithName:fontName size:fontSize] adjustTerminal: NO];
 
     NSArray *terminalDefaults = [[NSUserDefaults standardUserDefaults] valueForKey: AngbandTerminalsDefaultsKey];
