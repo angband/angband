@@ -53,6 +53,7 @@ static NSString * const AngbandDirectoryNameBase = @"Angband";
 static NSString * const AngbandTerminalsDefaultsKey = @"Terminals";
 static NSString * const AngbandTerminalRowsDefaultsKey = @"Rows";
 static NSString * const AngbandTerminalColumnsDefaultsKey = @"Columns";
+static NSString * const AngbandTerminalVisibleDefaultsKey = @"Visible";
 static NSInteger const AngbandWindowMenuItemTagBase = 1000;
 static NSInteger const AngbandCommandMenuItemTagBase = 2000;
 
@@ -159,9 +160,11 @@ static NSFont *default_font;
 @private
 
     BOOL _hasSubwindowFlags;
+    BOOL _windowVisibilityChecked;
 }
 
 @property (nonatomic, assign) BOOL hasSubwindowFlags;
+@property (nonatomic, assign) BOOL windowVisibilityChecked;
 
 - (void)drawRect:(NSRect)rect inView:(NSView *)view;
 
@@ -201,12 +204,6 @@ static NSFont *default_font;
 /* Handle becoming the main window */
 - (void)windowDidBecomeMain:(NSNotification *)notification;
 
-/* Order the context's primary window frontmost */
-- (void)orderFront;
-
-/* Order the context's primary window out */
-- (void)orderOut;
-
 /* Return whether the context's primary window is ordered in or not */
 - (BOOL)isOrderedIn;
 
@@ -225,6 +222,8 @@ static NSFont *default_font;
 /* Called from the view to indicate that it is starting or ending live resize */
 - (void)viewWillStartLiveResize:(AngbandView *)view;
 - (void)viewDidEndLiveResize:(AngbandView *)view;
+- (void)saveWindowVisibleToDefaults: (BOOL)windowVisible;
+- (BOOL)windowVisibleUsingDefaults;
 
 /* Class methods */
 
@@ -285,17 +284,39 @@ static void AngbandUpdateWindowVisibility(void)
             continue;
         }
 
-        BOOL termHasSubwindowFlags = ((op_ptr->window_flag[i] & validWindowFlagsMask) > 0);
-
-        if( angbandContext.hasSubwindowFlags && !termHasSubwindowFlags )
+        // this horrible mess of flags is so that we can try to maintain some user visibility preference. this should allow the user
+        // a window and have it stay closed between application launches. however, this means that when a subwindow is turned on, 
+        // it will no longer appear automatically. angband has no concept of user control over window visibility, other than the
+        // subwindow flags.
+        if( !angbandContext.windowVisibilityChecked )
         {
-            [angbandContext->primaryWindow close];
-            angbandContext.hasSubwindowFlags = NO;
+            if( [angbandContext windowVisibleUsingDefaults] )
+            {
+                [angbandContext->primaryWindow orderFront: nil];
+                angbandContext.windowVisibilityChecked = YES;
+            }
+            else
+            {
+                [angbandContext->primaryWindow close];
+                angbandContext.windowVisibilityChecked = NO;
+            }
         }
-        else if( !angbandContext.hasSubwindowFlags && termHasSubwindowFlags )
+        else
         {
-            [angbandContext->primaryWindow orderFront: nil];
-            angbandContext.hasSubwindowFlags = YES;
+            BOOL termHasSubwindowFlags = ((op_ptr->window_flag[i] & validWindowFlagsMask) > 0);
+
+            if( angbandContext.hasSubwindowFlags && !termHasSubwindowFlags )
+            {
+                [angbandContext->primaryWindow close];
+                angbandContext.hasSubwindowFlags = NO;
+                [angbandContext saveWindowVisibleToDefaults: NO];
+            }
+            else if( !angbandContext.hasSubwindowFlags && termHasSubwindowFlags )
+            {
+                [angbandContext->primaryWindow orderFront: nil];
+                angbandContext.hasSubwindowFlags = YES;
+                [angbandContext saveWindowVisibleToDefaults: YES];
+            }
         }
     }
 
@@ -465,6 +486,7 @@ static bool initialized = FALSE;
 @implementation AngbandContext
 
 @synthesize hasSubwindowFlags=_hasSubwindowFlags;
+@synthesize windowVisibilityChecked=_windowVisibilityChecked;
 
 - (NSFont *)selectionFont
 {
@@ -805,7 +827,9 @@ static int compare_advances(const void *ap, const void *bp)
         angbandViews = [[NSMutableArray alloc] init];
         
         /* Make the image. Since we have no views, it'll just be a puny 1x1 image. */
-        [self updateImage];        
+        [self updateImage];
+
+        _windowVisibilityChecked = NO;
     }
     return self;
 }
@@ -1139,12 +1163,6 @@ static NSMenuItem *superitem(NSMenuItem *self)
     if (viewInLiveResize) CGContextSetInterpolationQuality(context, kCGInterpolationDefault);
 }
 
-
-- (void)orderFront
-{
-    [[[angbandViews lastObject] window] makeKeyAndOrderFront:self];
-}
-
 - (BOOL)isOrderedIn
 {
     return [[[angbandViews lastObject] window] isVisible];
@@ -1153,11 +1171,6 @@ static NSMenuItem *superitem(NSMenuItem *self)
 - (BOOL)isMainWindow
 {
     return [[[angbandViews lastObject] window] isMainWindow];
-}
-
-- (void)orderOut
-{
-    [[[angbandViews lastObject] window] orderOut:self];
 }
 
 - (void)setNeedsDisplay:(BOOL)val
@@ -1194,6 +1207,21 @@ static NSMenuItem *superitem(NSMenuItem *self)
     self->attrOverdrawCache = NSAllocateCollectable(self->cols * self->rows *sizeof *attrOverdrawCache, 0);
 }
 
+- (int)terminalIndex
+{
+	int termIndex = 0;
+
+	for( termIndex = 0; termIndex < ANGBAND_TERM_MAX; termIndex++ )
+	{
+		if( angband_term[termIndex] == self->terminal )
+		{
+			break;
+		}
+	}
+
+	return termIndex;
+}
+
 - (void)resizeTerminalWithContentRect: (NSRect)contentRect saveToDefaults: (BOOL)saveToDefaults
 {
     CGFloat newRows = floor( (contentRect.size.height - (borderSize.height * 2.0)) / tileSize.height );
@@ -1205,16 +1233,7 @@ static NSMenuItem *superitem(NSMenuItem *self)
 
     if( saveToDefaults )
     {
-        int termIndex = 0;
-
-        for( termIndex = 0; termIndex < ANGBAND_TERM_MAX; termIndex++ )
-        {
-            if( angband_term[termIndex] == self->terminal )
-            {
-                break;
-            }
-        }
-
+        int termIndex = [self terminalIndex];
         NSArray *terminals = [[NSUserDefaults standardUserDefaults] valueForKey: AngbandTerminalsDefaultsKey];
 
         if( termIndex < (int)[terminals count] )
@@ -1237,6 +1256,52 @@ static NSMenuItem *superitem(NSMenuItem *self)
     Term_resize( (int)newColumns, (int)newRows);
     Term_redraw();
     Term_activate( old );
+}
+
+- (void)saveWindowVisibleToDefaults: (BOOL)windowVisible
+{
+	int termIndex = [self terminalIndex];
+	BOOL safeVisibility = (termIndex == 0) ? YES : windowVisible; // ensure main term doesn't go away because of these defaults
+	NSArray *terminals = [[NSUserDefaults standardUserDefaults] valueForKey: AngbandTerminalsDefaultsKey];
+
+	if( termIndex < (int)[terminals count] )
+	{
+		NSMutableDictionary *mutableTerm = [[NSMutableDictionary alloc] initWithDictionary: [terminals objectAtIndex: termIndex]];
+		[mutableTerm setValue: [NSNumber numberWithBool: safeVisibility] forKey: AngbandTerminalVisibleDefaultsKey];
+
+		NSMutableArray *mutableTerminals = [[NSMutableArray alloc] initWithArray: terminals];
+		[mutableTerminals replaceObjectAtIndex: termIndex withObject: mutableTerm];
+
+		[[NSUserDefaults standardUserDefaults] setValue: mutableTerminals forKey: AngbandTerminalsDefaultsKey];
+		[mutableTerminals release];
+		[mutableTerm release];
+	}
+}
+
+- (BOOL)windowVisibleUsingDefaults
+{
+	int termIndex = [self terminalIndex];
+
+	if( termIndex == 0 )
+	{
+		return YES;
+	}
+
+	NSArray *terminals = [[NSUserDefaults standardUserDefaults] valueForKey: AngbandTerminalsDefaultsKey];
+	BOOL visible = NO;
+
+	if( termIndex < (int)[terminals count] )
+	{
+		NSDictionary *term = [terminals objectAtIndex: termIndex];
+		NSNumber *visibleValue = [term valueForKey: AngbandTerminalVisibleDefaultsKey];
+
+		if( visibleValue != nil )
+		{
+			visible = [visibleValue boolValue];
+		}
+	}
+
+	return visible;
 }
 
 #pragma mark -
@@ -1320,6 +1385,11 @@ static NSMenuItem *superitem(NSMenuItem *self)
 
     NSMenuItem *item = [[[NSApplication sharedApplication] windowsMenu] itemWithTag: AngbandWindowMenuItemTagBase + termIndex];
     [item setState: NSOffState];
+}
+
+- (void)windowWillClose: (NSNotification *)notification
+{
+	[self saveWindowVisibleToDefaults: NO];
 }
 
 @end
@@ -1575,8 +1645,8 @@ static void Term_init_cocoa(term *t)
     /* Tell it about its term. Do this after we've sized it so that the sizing doesn't trigger redrawing and such. */
     [context setTerm:t];
     
-    /* Only order front if it's the first term. Other terms will be ordered front from update_term_visibility(). This is to work around a problem where Angband aggressively tells us to initialize terms that don't do anything! */
-    if (t == angband_term[0]) [context orderFront];
+    /* Only order front if it's the first term. Other terms will be ordered front from AngbandUpdateWindowVisibility(). This is to work around a problem where Angband aggressively tells us to initialize terms that don't do anything! */
+    if (t == angband_term[0]) [context->primaryWindow makeKeyAndOrderFront: nil];
     
     NSEnableScreenUpdates();
     
@@ -2298,6 +2368,7 @@ static void load_prefs()
     for( NSUInteger i = 0; i < ANGBAND_TERM_MAX; i++ )
     {
 		int columns, rows;
+		BOOL visible = YES;
 
 		switch( i )
 		{
@@ -2328,12 +2399,14 @@ static void load_prefs()
 			default:
 				columns = 80;
 				rows = 24;
+				visible = NO;
 				break;
 		}
 
 		NSDictionary *standardTerm = [NSDictionary dictionaryWithObjectsAndKeys:
 									  [NSNumber numberWithInt: rows], AngbandTerminalRowsDefaultsKey,
 									  [NSNumber numberWithInt: columns], AngbandTerminalColumnsDefaultsKey,
+									  [NSNumber numberWithBool: visible], AngbandTerminalVisibleDefaultsKey,
 									  nil];
         [defaultTerms addObject: standardTerm];
     }
@@ -3209,6 +3282,7 @@ static bool cocoa_get_file(const char *suggested_name, char *path, size_t len)
     NSInteger subwindowNumber = [(NSMenuItem *)sender tag] - AngbandWindowMenuItemTagBase;
     AngbandContext *context = angband_term[subwindowNumber]->data;
     [context->primaryWindow makeKeyAndOrderFront: self];
+	[context saveWindowVisibleToDefaults: YES];
 }
 
 - (void)prepareWindowsMenu
