@@ -1507,17 +1507,71 @@ static void Term_init_cocoa(term *t)
     {
         [window setRestorable:NO];
     }
-    
-    /* Position the window, either through autosave or cascading it */
-    [window center];
-    
-    /* Cascade it */
-    static NSPoint lastPoint = {0, 0};
-    lastPoint = [window cascadeTopLeftFromPoint:lastPoint];
-    
-    /* And maybe that's all for naught */
-    if (autosaveName) [window setFrameAutosaveName:autosaveName];
-    
+
+	/* default window placement */ {
+		static NSRect overallBoundingRect;
+
+		if( termIdx == 0 )
+		{
+			// this is a bit of a trick to allow us to display multiple windows in the "standard default" window position in OS X: the upper center of the screen.
+			// the term sizes set in load_prefs() are based on a 5-wide by 3-high grid, with the main term being 4/5 wide by 2/3 high (hence the scaling to find
+			// what the containing rect would be).
+			NSRect originalMainTermFrame = [window frame];
+			NSRect scaledFrame = originalMainTermFrame;
+			scaledFrame.size.width *= 5.0 / 4.0;
+			scaledFrame.size.height *= 3.0 / 2.0;
+			scaledFrame.size.width += 1.0; // spacing between window columns
+			scaledFrame.size.height += 1.0; // spacing between window rows
+			[window setFrame: scaledFrame  display: NO];
+			[window center];
+			overallBoundingRect = [window frame];
+			[window setFrame: originalMainTermFrame display: NO];
+		}
+
+		static NSRect mainTermBaseRect;
+		NSRect windowFrame = [window frame];
+
+		if( termIdx == 0 )
+		{
+			// the height and width adjustments were determined experimentally, so that the rest of the windows line up nicely without overlapping
+            windowFrame.size.width += 7.0;
+			windowFrame.size.height += 9.0;
+			windowFrame.origin.x = NSMinX( overallBoundingRect );
+			windowFrame.origin.y = NSMaxY( overallBoundingRect ) - NSHeight( windowFrame );
+			mainTermBaseRect = windowFrame;
+		}
+		else if( termIdx == 1 )
+		{
+			windowFrame.origin.x = NSMinX( mainTermBaseRect );
+			windowFrame.origin.y = NSMinY( mainTermBaseRect ) - NSHeight( windowFrame ) - 1.0;
+		}
+		else if( termIdx == 2 )
+		{
+			windowFrame.origin.x = NSMaxX( mainTermBaseRect ) + 1.0;
+			windowFrame.origin.y = NSMaxY( mainTermBaseRect ) - NSHeight( windowFrame );
+		}
+		else if( termIdx == 3 )
+		{
+			windowFrame.origin.x = NSMaxX( mainTermBaseRect ) + 1.0;
+			windowFrame.origin.y = NSMinY( mainTermBaseRect ) - NSHeight( windowFrame ) - 1.0;
+		}
+		else if( termIdx == 4 )
+		{
+			windowFrame.origin.x = NSMaxX( mainTermBaseRect ) + 1.0;
+			windowFrame.origin.y = NSMinY( mainTermBaseRect );
+		}
+		else if( termIdx == 5 )
+		{
+			windowFrame.origin.x = NSMinX( mainTermBaseRect ) + NSWidth( windowFrame ) + 1.0;
+			windowFrame.origin.y = NSMinY( mainTermBaseRect ) - NSHeight( windowFrame ) - 1.0;
+		}
+
+		[window setFrame: windowFrame display: NO];
+	}
+
+	// override the default frame above if the user has adjusted windows in the past
+	if (autosaveName) [window setFrameAutosaveName:autosaveName];
+
     /* Tell it about its term. Do this after we've sized it so that the sizing doesn't trigger redrawing and such. */
     [context setTerm:t];
     
@@ -2257,7 +2311,7 @@ static void load_prefs()
 				break;
 			case 2:
 				columns = 42;
-				rows = 20;
+				rows = 24;
 				break;
 			case 3:
 				columns = 42;
@@ -2265,7 +2319,7 @@ static void load_prefs()
 				break;
 			case 4:
 				columns = 42;
-				rows = 20;
+				rows = 16;
 				break;
 			case 5:
 				columns = 84;
