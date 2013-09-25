@@ -2237,13 +2237,50 @@ static void load_prefs()
     
     /* Make some default defaults */
     NSMutableArray *defaultTerms = [[NSMutableArray alloc] init];
-	NSDictionary *standardTerm = [NSDictionary dictionaryWithObjectsAndKeys:
-								  [NSNumber numberWithInt: 24], AngbandTerminalRowsDefaultsKey,
-								  [NSNumber numberWithInt: 80], AngbandTerminalColumnsDefaultsKey,
-								  nil];
 
-    for( NSUInteger i = 0; i < 9; i++ )
+    // the following default rows/cols were determined experimentally by first finding the ideal window/font size combinations.
+    // but because of awful temporal coupling in Term_init_cocoa(), it's impossible to set up the defaults there, so we do it
+    // this way.
+    for( NSUInteger i = 0; i < ANGBAND_TERM_MAX; i++ )
     {
+		int columns, rows;
+
+		switch( i )
+		{
+			case 0:
+				columns = 129;
+				rows = 32;
+				break;
+			case 1:
+				columns = 84;
+				rows = 20;
+				break;
+			case 2:
+				columns = 42;
+				rows = 20;
+				break;
+			case 3:
+				columns = 42;
+				rows = 20;
+				break;
+			case 4:
+				columns = 42;
+				rows = 20;
+				break;
+			case 5:
+				columns = 84;
+				rows = 20;
+				break;
+			default:
+				columns = 80;
+				rows = 24;
+				break;
+		}
+
+		NSDictionary *standardTerm = [NSDictionary dictionaryWithObjectsAndKeys:
+									  [NSNumber numberWithInt: rows], AngbandTerminalRowsDefaultsKey,
+									  [NSNumber numberWithInt: columns], AngbandTerminalColumnsDefaultsKey,
+									  nil];
         [defaultTerms addObject: standardTerm];
     }
 
