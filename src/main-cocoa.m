@@ -219,6 +219,10 @@ static NSFont *default_font;
 /* Display (flush) our Angband views */
 - (void)displayIfNeeded;
 
+/* Resize context to size of contentRect, and optionally save size to
+ * defaults */
+- (void)resizeTerminalWithContentRect: (NSRect)contentRect saveToDefaults: (BOOL)saveToDefaults;
+
 /* Called from the view to indicate that it is starting or ending live resize */
 - (void)viewWillStartLiveResize:(AngbandView *)view;
 - (void)viewDidEndLiveResize:(AngbandView *)view;
