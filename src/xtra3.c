@@ -1257,6 +1257,8 @@ static void update_messages_subwindow(game_event_type type, game_event_data *dat
 
 		if (count == 1)
 			msg = str;
+		else if (count == 0)
+			msg = " ";
 		else
 			msg = format("%s <%dx>", str, count);
 
