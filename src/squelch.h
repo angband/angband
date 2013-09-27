@@ -34,6 +34,7 @@ typedef enum
 	TYPE_RING,
 	TYPE_AMULET,
 	TYPE_LIGHT,
+	TYPE_WEAPON_GREAT,
 
 	TYPE_MAX
 } squelch_type_t;

@@ -375,6 +375,7 @@ void process_command(cmd_context ctx, bool no_request)
 		int oldrepeats = cmd->nrepeats;
 		int idx = cmd_idx(cmd->command);
 		size_t i;
+		bool allow_5 = FALSE;
 
 		if (idx == -1) return;
 
@@ -498,6 +499,9 @@ void process_command(cmd_context ctx, bool no_request)
 
 					if (n_visible_traps + n_trapped_chests == 1)
 						cmd_set_arg_direction(cmd, 0, coords_to_dir(y, x));
+
+					/* If there are chests to disarm, allow 5 as a direction */
+					allow_5 = (n_trapped_chests > 0);
 				}
 
 				goto get_dir;
@@ -516,7 +520,7 @@ void process_command(cmd_context ctx, bool no_request)
 						cmd->arg[0].direction == DIR_UNKNOWN)
 				{
 					int dir;
-					if (!get_rep_dir(&dir))
+					if (!get_rep_dir(&dir, allow_5))
 						return;
 
 					cmd_set_arg_direction(cmd, 0, dir);

@@ -34,6 +34,9 @@ typedef struct
 
 static quality_squelch_struct quality_mapping[] =
 {
+	{ TYPE_WEAPON_GREAT,		TV_SWORD,		SV_BLADE_OF_CHAOS,	SV_BLADE_OF_CHAOS },
+	{ TYPE_WEAPON_GREAT,		TV_POLEARM,		SV_SCYTHE_OF_SLICING,	SV_SCYTHE_OF_SLICING },
+	{ TYPE_WEAPON_GREAT,		TV_HAFTED,		SV_MACE_OF_DISRUPTION,	SV_MACE_OF_DISRUPTION },
 	{ TYPE_WEAPON_POINTY,	TV_SWORD,		0,		SV_UNKNOWN },
 	{ TYPE_WEAPON_POINTY,	TV_POLEARM,		0,		SV_UNKNOWN },
 	{ TYPE_WEAPON_BLUNT,	TV_HAFTED,		0,		SV_UNKNOWN },
@@ -66,6 +69,7 @@ quality_name_struct quality_choices[TYPE_MAX] =
 {
 	{ TYPE_WEAPON_POINTY,		"Pointy Melee Weapons" },
 	{ TYPE_WEAPON_BLUNT,		"Blunt Melee Weapons" },
+	{ TYPE_WEAPON_GREAT,			"Great Weapons" },
 	{ TYPE_SHOOTER,				"Missile weapons" },
 	{ TYPE_MISSILE_SLING,		"Shots and Pebbles" },
 	{ TYPE_MISSILE_BOW,			"Arrows" },
