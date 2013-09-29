@@ -10,6 +10,23 @@ enum
 	CURS_KNOWN = 1			/* Use white / light blue for cursor */
 };
 
+/**
+ * Type wrapper for various row styles.
+ */
+typedef enum _menu_row_style_t {
+	MN_ROW_STYLE_DISABLED = CURS_UNKNOWN,
+	MN_ROW_STYLE_ENABLED = CURS_KNOWN,
+} menu_row_style_t;
+
+/**
+ * Type wrapper for row validity.
+ */
+typedef enum _menu_row_validity_t {
+	MN_ROW_INVALID = 0,
+	MN_ROW_VALID = 1,
+	MN_ROW_HIDDEN = 2,
+} menu_row_validity_t;
+
 /* Cursor colours for different states */
 extern const byte curs_attrs[2][2];
 
