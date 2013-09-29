@@ -18,6 +18,7 @@
 
 #include "angband.h"
 #include "monster/mon-lore.h"
+#include "monster/mon-make.h"
 #include "monster/mon-spell.h"
 #include "monster/mon-util.h"
 #include "object/tvalsval.h"
@@ -1245,7 +1246,7 @@ static void lore_append_exp(textblock *tb, const monster_race *race, const monst
  */
 static void lore_append_drop(textblock *tb, const monster_race *race, const monster_lore *lore, bitflag known_flags[RF_SIZE])
 {
-	int n;
+	int n = 0;
 	monster_sex_t msex = MON_SEX_NEUTER;
 
 	assert(tb && race && lore);
@@ -1253,13 +1254,15 @@ static void lore_append_drop(textblock *tb, const monster_race *race, const mons
 	/* Extract a gender (if applicable) */
 	msex = lore_monster_sex(race);
 
-	/* Drops gold and/or items */
-	if (lore->drop_gold || lore->drop_item) {
-		/* Intro */
-		textblock_append(tb, "%s may carry", lore_pronoun_nominative(msex, TRUE));
+	/* Count maximum drop */
+	n = mon_create_drop_count(race, TRUE);
 
-		/* Count maximum drop */
-		n = MAX(lore->drop_gold, lore->drop_item);
+	/* Drops gold and/or items */
+	if (n > 0) {
+		bool only_item = rf_has(known_flags, RF_ONLY_ITEM);
+		bool only_gold = rf_has(known_flags, RF_ONLY_GOLD);
+
+		textblock_append(tb, "%s may carry", lore_pronoun_nominative(msex, TRUE));
 
 		/* Count drops */
 		if (n == 1)
@@ -1277,23 +1280,16 @@ static void lore_append_drop(textblock *tb, const monster_race *race, const mons
 		else if (rf_has(known_flags, RF_DROP_GOOD))
 			textblock_append_c(tb, TERM_BLUE, "good ");
 
-		/* Objects */
-		if (lore->drop_item) {
-			/* Dump "object(s)" */
+		/* Objects or treasures */
+		if (only_item && only_gold)
+			textblock_append_c(tb, TERM_BLUE, "error%s", PLURAL(n));
+		else if (only_item && !only_gold)
 			textblock_append_c(tb, TERM_BLUE, "object%s", PLURAL(n));
-
-			/* Add conjunction if also dropping gold */
-			if (lore->drop_gold)
-				textblock_append_c(tb, TERM_BLUE, " or ");
-		}
-
-		/* Treasures */
-		if (lore->drop_gold) {
-			/* Dump "treasure(s)" */
+		else if (!only_item && only_gold)
 			textblock_append_c(tb, TERM_BLUE, "treasure%s", PLURAL(n));
-		}
+		else if (!only_item && !only_gold)
+			textblock_append_c(tb, TERM_BLUE, "object%s or treasure%s", PLURAL(n), PLURAL(n));
 
-		/* End this sentence */
 		textblock_append(tb, ".  ");
 	}
 }
@@ -1888,8 +1884,9 @@ void lore_description(textblock *tb, const monster_race *race, const monster_lor
 
 	/* Killing a monster reveals some properties */
 	if (lore->tkills > 0) {
-		/* Know "race" and "forced" flags */
+		/* Know "race", "forced", and "drop" flags */
 		flags_set(lore->flags, RF_SIZE, RF_RACE_MASK, FLAG_END);
+		flags_set(lore->flags, RF_SIZE, RF_DROP_MASK, FLAG_END);
 		rf_on(lore->flags, RF_FORCE_DEPTH);
 	}
 

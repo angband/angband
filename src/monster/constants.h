@@ -112,7 +112,19 @@ enum
 	RF_ORC, RF_TROLL, RF_GIANT, RF_DRAGON, RF_DEMON, \
 	RF_UNDEAD, RF_EVIL, RF_ANIMAL, RF_METAL, RF_NONLIVING
 
-
+/* Drop flags to be revealed on first kill */
+#define RF_DROP_MASK \
+	RF_DROP_GOOD, \
+	RF_DROP_GREAT, \
+	RF_ONLY_ITEM, \
+	RF_ONLY_GOLD, \
+	RF_DROP_20, \
+	RF_DROP_40, \
+	RF_DROP_60, \
+	RF_DROP_4, \
+	RF_DROP_3, \
+	RF_DROP_2, \
+	RF_DROP_1
 
 /*
  * Some monster types are different.
