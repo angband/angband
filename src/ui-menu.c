@@ -871,9 +871,22 @@ menu_type *menu_new_action(menu_action *acts, size_t n)
 struct menu_entry {
 	char *text;
 	int value;
+	menu_row_validity_t valid;
 
 	struct menu_entry *next;
 };
+
+static int dynamic_valid(menu_type *m, int oid)
+{
+	struct menu_entry *entry;
+
+	for (entry = menu_priv(m); oid; oid--) {
+		entry = entry->next;
+		assert(entry);
+	}
+
+	return entry->valid;
+}
 
 static void dynamic_display(menu_type *m, int oid, bool cursor,
 		int row, int col, int width)
@@ -898,7 +911,7 @@ static void dynamic_display(menu_type *m, int oid, bool cursor,
 
 static const menu_iter dynamic_iter = {
 	NULL,	/* tag */
-	NULL,	/* valid */
+	dynamic_valid,
 	dynamic_display,
 	NULL,	/* handler */
 	NULL	/* resize */
@@ -911,7 +924,7 @@ menu_type *menu_dynamic_new(void)
 	return m;
 }
 
-void menu_dynamic_add(menu_type *m, const char *text, int value)
+void menu_dynamic_add_valid(menu_type *m, const char *text, int value, menu_row_validity_t valid)
 {
 	struct menu_entry *head = menu_priv(m);
 	struct menu_entry *new = mem_zalloc(sizeof *new);
@@ -920,6 +933,7 @@ void menu_dynamic_add(menu_type *m, const char *text, int value)
 
 	new->text = string_make(text);
 	new->value = value;
+	new->valid = valid;
 
 	if (head) {
 		struct menu_entry *tail = head;
@@ -937,12 +951,22 @@ void menu_dynamic_add(menu_type *m, const char *text, int value)
 	}
 }
 
-void menu_dynamic_add_label(menu_type *m, const char *text, const char label, int value, char *label_list)
+void menu_dynamic_add(menu_type *m, const char *text, int value)
+{
+	menu_dynamic_add_valid(m, text, value, MN_ROW_VALID);
+}
+
+void menu_dynamic_add_label_valid(menu_type *m, const char *text, const char label, int value, char *label_list, menu_row_validity_t valid)
 {
 	if(label && m->selections && (m->selections == label_list)) {
 		label_list[m->count] = label;
 	}
-	menu_dynamic_add(m,text,value);
+	menu_dynamic_add_valid(m,text,value, valid);
+}
+
+void menu_dynamic_add_label(menu_type *m, const char *text, const char label, int value, char *label_list)
+{
+	menu_dynamic_add_label_valid(m, text, label, value, label_list, MN_ROW_VALID);
 }
 
 size_t menu_dynamic_longest_entry(menu_type *m)

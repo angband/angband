@@ -602,25 +602,17 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 	} else
 	if (obj_is_useable(o_ptr)) {
 		if (obj_is_wand(o_ptr)) {
-			if (obj_has_charges(o_ptr))
-				menu_dynamic_add_label(m, "Aim", 'a', 8, labels);
-			else
-				menu_dynamic_add_label(m, "Aim (grey)", 'a', 8, labels);
+			menu_row_validity_t valid = (obj_has_charges(o_ptr)) ? MN_ROW_VALID : MN_ROW_INVALID;
+			menu_dynamic_add_label_valid(m, "Aim", 'a', 8, labels, valid);
 		} else if (obj_is_rod(o_ptr)) {
-			if (obj_can_zap(o_ptr))
-				menu_dynamic_add_label(m, "Zap", 'z', 8, labels);
-			else
-				menu_dynamic_add_label(m, "Zap (grey)", 'z', 8, labels);
+			menu_row_validity_t valid = (obj_can_zap(o_ptr)) ? MN_ROW_VALID : MN_ROW_INVALID;
+			menu_dynamic_add_label_valid(m, "Zap", 'z', 8, labels, valid);
 		} else if (obj_is_staff(o_ptr)) {
-			if (obj_has_charges(o_ptr))
-				menu_dynamic_add_label(m, "Use", 'u', 8, labels);
-			else
-				menu_dynamic_add_label(m, "Use (grey)", 'u', 8, labels);
+			menu_row_validity_t valid = (obj_has_charges(o_ptr)) ? MN_ROW_VALID : MN_ROW_INVALID;
+			menu_dynamic_add_label_valid(m, "Use", 'u', 8, labels, valid);
 		} else if (obj_is_scroll(o_ptr)) {
-			if (player_can_read())
-				menu_dynamic_add_label(m, "Read", 'r', 8, labels);
-			else
-				menu_dynamic_add_label(m, "Read (grey)", 'r', 8, labels);
+			menu_row_validity_t valid = (player_can_read()) ? MN_ROW_VALID : MN_ROW_INVALID;
+			menu_dynamic_add_label_valid(m, "Read", 'r', 8, labels, valid);
 		} else if (obj_is_potion(o_ptr))
 			menu_dynamic_add_label(m, "Quaff", 'q', 8, labels);
 		else if (obj_is_food(o_ptr))
