@@ -557,3 +557,18 @@ void squelch_drop(void)
 	/* Combine/reorder the pack */
 	p_ptr->notice |= (PN_COMBINE | PN_REORDER);
 }
+
+/**
+ * Return the name of a squelch type.
+ */
+const char *squelch_name_for_type(squelch_type_t type)
+{
+	int i;
+
+	for (i = 0; i < TYPE_MAX; i++) {
+		if (quality_choices[i].enum_val == type)
+			return quality_choices[i].name;
+	}
+
+	return "unknown";
+}

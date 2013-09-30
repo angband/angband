@@ -1124,6 +1124,7 @@ static int cmp_squelch(const void *a, const void *b)
  */
 static void quality_display(menu_type *menu, int oid, bool cursor, int row, int col, int width)
 {
+	/* Note: the order of the values in quality_choices do not align with the squelch_type_t enum order. */
 	const char *name = quality_choices[oid].name;
 
 	byte level = squelch_level[oid];

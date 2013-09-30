@@ -844,7 +844,7 @@ static enum parser_error parse_prefs_a(struct parser *p)
 {
 	const char *act = "";
 
-	struct prefs_data *d = parser_priv(p);
+	struct prefs_data *d = parser_priv(p);	
 	assert(d != NULL);
 	if (d->bypass) return PARSE_ERROR_NONE;
 
@@ -1064,17 +1064,18 @@ static void print_error(const char *name, struct parser *p) {
 	message_flush();
 }
 
-
-/*
- * Process the user pref file with the given name.
- * "quiet" means "don't complain about not finding the file.
+/**
+ * Process the user pref file with a given name and search paths.
  *
- * 'user' should be TRUE if the pref file loaded is user-specific and not
- * a game default.
- *
- * Returns TRUE if everything worked OK, false otherwise
+ * \param name is the name of the pref file.
+ * \param quiet means "don't complain about not finding the file".
+ * \param user should be TRUE if the pref file is user-specific and not a game default.
+ * \param base_search_path is the first path that should be checked for the file.
+ * \param fallback_search_path is the path that should be checked if the file couldn't be found at the base path.
+ * \param used_fallback will be set on return to TRUE if the fallback path was used, FALSE otherwise.
+ * \returns TRUE if everything worked OK, FALSE otherwise.
  */
-bool process_pref_file(const char *name, bool quiet, bool user)
+static bool process_pref_file_layered(const char *name, bool quiet, bool user, const char *base_search_path, const char *fallback_search_path, bool *used_fallback)
 {
 	char buf[1024];
 
@@ -1084,10 +1085,20 @@ bool process_pref_file(const char *name, bool quiet, bool user)
 
 	int line_no = 0;
 
+	assert(base_search_path != NULL);
+
 	/* Build the filename */
-	path_build(buf, sizeof(buf), ANGBAND_DIR_PREF, name);
-	if (!file_exists(buf))
-		path_build(buf, sizeof(buf), ANGBAND_DIR_USER, name);
+	path_build(buf, sizeof(buf), base_search_path, name);
+
+	if (used_fallback != NULL)
+		*used_fallback = FALSE;
+
+	if (!file_exists(buf) && fallback_search_path != NULL) {
+		path_build(buf, sizeof(buf), fallback_search_path, name);
+
+		if (used_fallback != NULL)
+			*used_fallback = TRUE;
+	}
 
 	f = file_open(buf, MODE_READ, -1);
 	if (!f)
@@ -1095,7 +1106,7 @@ bool process_pref_file(const char *name, bool quiet, bool user)
 		if (!quiet)
 			msg("Cannot open '%s'.", buf);
 
-		e = PARSE_ERROR_INTERNAL; // signal failure to callers
+		e = PARSE_ERROR_INTERNAL; /* signal failure to callers */
 	}
 	else
 	{
@@ -1122,4 +1133,38 @@ bool process_pref_file(const char *name, bool quiet, bool user)
 
 	/* Result */
 	return e == PARSE_ERROR_NONE;
+}
+
+/**
+ * Look for a pref file at its base location (falling back to another path if needed) and then in the user location. This
+ * effectively will layer a user pref file on top of a default pref file.
+ *
+ * Because of the way this function works, there might be some unexpected effects when a pref file triggers another
+ * pref file to be loaded. For example, pref/pref.prf causes message.prf to load. This means that the game will
+ * load pref/pref.prf, then pref/message.prf, then user/message.prf, and finally user/pref.prf.
+ *
+ * \param name is the name of the pref file.
+ * \param quiet means "don't complain about not finding the file".
+ * \param user should be TRUE if the pref file is user-specific and not a game default.
+ * \returns TRUE if everything worked OK, FALSE otherwise.
+ */
+bool process_pref_file(const char *name, bool quiet, bool user)
+{
+	bool root_success = FALSE;
+	bool user_success = FALSE;
+	bool used_fallback = FALSE;
+
+	/* This supports the old behavior: look for a file first in 'pref/', and if not found there, then 'user/'. */
+	root_success = process_pref_file_layered(name, quiet, user, ANGBAND_DIR_PREF, ANGBAND_DIR_USER, &used_fallback);
+
+	/* Next, we want to force a check for the file in the user/ directory. However, since we used the user directory
+	 * as a fallback in the previous check, we only want to do this if the fallback wasn't used. This cuts down on
+	 * unnecessary parsing. */
+	if (!used_fallback) {
+		/* Force quiet (since this is an optional file) and force user (since this should always be considered user-specific). */
+		user_success = process_pref_file_layered(name, TRUE, TRUE, ANGBAND_DIR_USER, NULL, &used_fallback);
+	}
+
+	/* If only one load was successful, that's okay; we loaded something. */
+	return root_success || user_success;
 }

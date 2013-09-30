@@ -90,6 +90,7 @@ void squelch_drop(void);
 byte squelch_level_of(const object_type *o_ptr);
 squelch_type_t squelch_type_of(const object_type *o_ptr);
 void object_squelch_flavor_of(const object_type *o_ptr);
+const char *squelch_name_for_type(squelch_type_t type);
 
 extern byte squelch_level[];
 extern const size_t squelch_size;
