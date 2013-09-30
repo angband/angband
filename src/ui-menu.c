@@ -401,6 +401,26 @@ static int get_cursor_key(menu_type *menu, int top, struct keypress key)
 	return -1;
 }
 
+static menu_row_style_t menu_row_style_for_validity(menu_row_validity_t row_valid)
+{
+	menu_row_style_t style;
+
+	switch (row_valid) {
+		case MN_ROW_INVALID:
+		case MN_ROW_HIDDEN:
+			style = MN_ROW_STYLE_DISABLED;
+			break;
+		case MN_ROW_VALID:
+			style = MN_ROW_STYLE_ENABLED;
+			break;
+		default:
+			style = MN_ROW_STYLE_ENABLED;
+			break;
+	}
+
+	return style;
+}
+
 /* Modal display of menu */
 static void display_menu_row(menu_type *menu, int pos, int top,
                              bool cursor, int row, int col, int width)
@@ -408,11 +428,15 @@ static void display_menu_row(menu_type *menu, int pos, int top,
 	int flags = menu->flags;
 	char sel = 0;
 	int oid = pos;
+	menu_row_validity_t row_valid = MN_ROW_VALID;
 
 	if (menu->filter_list)
 		oid = menu->filter_list[oid];
 
-	if (menu->row_funcs->valid_row && menu->row_funcs->valid_row(menu, oid) == 2)
+	if (menu->row_funcs->valid_row)
+		row_valid = menu->row_funcs->valid_row(menu, oid);
+
+	if (row_valid == MN_ROW_HIDDEN)
 		return;
 
 	if (!(flags & MN_NO_TAGS))
@@ -427,8 +451,8 @@ static void display_menu_row(menu_type *menu, int pos, int top,
 
 	if (sel)
 	{
-		/* TODO: CHECK FOR VALID */
-		byte color = curs_attrs[CURS_KNOWN][0 != (cursor)];
+		menu_row_style_t style = menu_row_style_for_validity(row_valid);
+		byte color = curs_attrs[style][0 != (cursor)];
 		Term_putstr(col, row, 3, color, format("%c) ", sel));
 		col += 3;
 		width -= 3;
@@ -847,15 +871,35 @@ menu_type *menu_new_action(menu_action *acts, size_t n)
 struct menu_entry {
 	char *text;
 	int value;
+	menu_row_validity_t valid;
 
 	struct menu_entry *next;
 };
+
+static int dynamic_valid(menu_type *m, int oid)
+{
+	struct menu_entry *entry;
+
+	for (entry = menu_priv(m); oid; oid--) {
+		entry = entry->next;
+		assert(entry);
+	}
+
+	return entry->valid;
+}
 
 static void dynamic_display(menu_type *m, int oid, bool cursor,
 		int row, int col, int width)
 {
 	struct menu_entry *entry;
-	byte color = curs_attrs[CURS_KNOWN][0 != cursor];
+	byte color = curs_attrs[MN_ROW_STYLE_ENABLED][0 != cursor];
+
+	/* Hack? While row_funcs is private, we need to be consistent with what the menu will do. */
+	if (m->row_funcs->valid_row) {
+		menu_row_validity_t row_valid = m->row_funcs->valid_row(m, oid);
+		menu_row_style_t style = menu_row_style_for_validity(row_valid);
+		color = curs_attrs[style][0 != cursor];
+	}
 
 	for (entry = menu_priv(m); oid; oid--) {
 		entry = entry->next;
@@ -867,7 +911,7 @@ static void dynamic_display(menu_type *m, int oid, bool cursor,
 
 static const menu_iter dynamic_iter = {
 	NULL,	/* tag */
-	NULL,	/* valid */
+	dynamic_valid,
 	dynamic_display,
 	NULL,	/* handler */
 	NULL	/* resize */
@@ -880,7 +924,7 @@ menu_type *menu_dynamic_new(void)
 	return m;
 }
 
-void menu_dynamic_add(menu_type *m, const char *text, int value)
+void menu_dynamic_add_valid(menu_type *m, const char *text, int value, menu_row_validity_t valid)
 {
 	struct menu_entry *head = menu_priv(m);
 	struct menu_entry *new = mem_zalloc(sizeof *new);
@@ -889,6 +933,7 @@ void menu_dynamic_add(menu_type *m, const char *text, int value)
 
 	new->text = string_make(text);
 	new->value = value;
+	new->valid = valid;
 
 	if (head) {
 		struct menu_entry *tail = head;
@@ -906,12 +951,22 @@ void menu_dynamic_add(menu_type *m, const char *text, int value)
 	}
 }
 
-void menu_dynamic_add_label(menu_type *m, const char *text, const char label, int value, char *label_list)
+void menu_dynamic_add(menu_type *m, const char *text, int value)
+{
+	menu_dynamic_add_valid(m, text, value, MN_ROW_VALID);
+}
+
+void menu_dynamic_add_label_valid(menu_type *m, const char *text, const char label, int value, char *label_list, menu_row_validity_t valid)
 {
 	if(label && m->selections && (m->selections == label_list)) {
 		label_list[m->count] = label;
 	}
-	menu_dynamic_add(m,text,value);
+	menu_dynamic_add_valid(m,text,value, valid);
+}
+
+void menu_dynamic_add_label(menu_type *m, const char *text, const char label, int value, char *label_list)
+{
+	menu_dynamic_add_label_valid(m, text, label, value, label_list, MN_ROW_VALID);
 }
 
 size_t menu_dynamic_longest_entry(menu_type *m)

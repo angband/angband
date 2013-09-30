@@ -39,6 +39,7 @@ struct spell_menu_data {
 
 	bool browse;
 	bool (*is_valid)(int spell);
+	bool show_description;
 
 	int selected_spell;
 };
@@ -114,6 +115,11 @@ static bool spell_menu_handler(menu_type *m, const ui_event *e, int oid)
 		d->selected_spell = d->spells[oid];
 		return d->browse ? TRUE : FALSE;
 	}
+	else if (e->type == EVT_KBRD) {
+		if (e->key.code == '?') {
+			d->show_description = !d->show_description;
+		}
+	}
 
 	return FALSE;
 }
@@ -126,18 +132,20 @@ static void spell_menu_browser(int oid, void *data, const region *loc)
 	struct spell_menu_data *d = data;
 	int spell = d->spells[oid];
 
-	/* Redirect output to the screen */
-	text_out_hook = text_out_to_screen;
-	text_out_wrap = 0;
-	text_out_indent = loc->col - 1;
-	text_out_pad = 1;
+	if (d->show_description) {
+		/* Redirect output to the screen */
+		text_out_hook = text_out_to_screen;
+		text_out_wrap = 0;
+		text_out_indent = loc->col - 1;
+		text_out_pad = 1;
 
-	Term_gotoxy(loc->col, loc->row + loc->page_rows);
-	text_out("\n%s\n", s_info[(p_ptr->class->spell_book == TV_MAGIC_BOOK) ? spell : spell + PY_MAX_SPELLS].text);
+		Term_gotoxy(loc->col, loc->row + loc->page_rows);
+		text_out("\n%s\n", s_info[(p_ptr->class->spell_book == TV_MAGIC_BOOK) ? spell : spell + PY_MAX_SPELLS].text);
 
-	/* XXX */
-	text_out_pad = 0;
-	text_out_indent = 0;
+		/* XXX */
+		text_out_pad = 0;
+		text_out_indent = 0;
+	}
 }
 
 static const menu_iter spell_menu_iter = {
@@ -170,6 +178,7 @@ static menu_type *spell_menu_new(const object_type *o_ptr,
 	d->is_valid = is_valid;
 	d->selected_spell = -1;
 	d->browse = FALSE;
+	d->show_description = FALSE;
 
 	menu_setpriv(m, d->n_spells, d);
 
@@ -178,6 +187,7 @@ static menu_type *spell_menu_new(const object_type *o_ptr,
 	m->flags = MN_CASELESS_TAGS;
 	m->selections = lower_case;
 	m->browse_hook = spell_menu_browser;
+	m->cmd_keys = "?";
 
 	/* set size */
 	loc.page_rows = d->n_spells + 1;
@@ -206,7 +216,7 @@ static int spell_menu_select(menu_type *m, const char *noun, const char *verb)
 	region_erase_bordered(&m->active);
 
 	/* Format, capitalise and display */
-	strnfmt(buf, sizeof buf, "%s which %s? ", verb, noun);
+	strnfmt(buf, sizeof buf, "%s which %s? ('?' to toggle description)", verb, noun);
 	my_strcap(buf);
 	prt(buf, 0, 0);
 

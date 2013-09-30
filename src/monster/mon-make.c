@@ -628,6 +628,40 @@ void player_place(struct cave *c, struct player *p, int y, int x)
 	c->m_idx[y][x] = -1;
 }
 
+/**
+ * Return the number of things dropped by a monster.
+ *
+ * \param race is the monster race.
+ * \param maximize should be set to FALSE for a random number, TRUE to find out the maximum count.
+ */
+int mon_create_drop_count(const struct monster_race *race, bool maximize)
+{
+	int number = 0;
+	static const int drop_4_max = 6;
+	static const int drop_3_max = 4;
+	static const int drop_2_max = 3;
+
+	if (maximize) {
+		if (rf_has(race->flags, RF_DROP_20)) number++;
+		if (rf_has(race->flags, RF_DROP_40)) number++;
+		if (rf_has(race->flags, RF_DROP_60)) number++;
+		if (rf_has(race->flags, RF_DROP_4)) number += drop_4_max;
+		if (rf_has(race->flags, RF_DROP_3)) number += drop_3_max;
+		if (rf_has(race->flags, RF_DROP_2)) number += drop_2_max;
+		if (rf_has(race->flags, RF_DROP_1)) number++;
+	}
+	else {
+		if (rf_has(race->flags, RF_DROP_20) && randint0(100) < 20) number++;
+		if (rf_has(race->flags, RF_DROP_40) && randint0(100) < 40) number++;
+		if (rf_has(race->flags, RF_DROP_60) && randint0(100) < 60) number++;
+		if (rf_has(race->flags, RF_DROP_4)) number += rand_range(2, drop_4_max);
+		if (rf_has(race->flags, RF_DROP_3)) number += rand_range(2, drop_3_max);
+		if (rf_has(race->flags, RF_DROP_2)) number += rand_range(1, drop_2_max);
+		if (rf_has(race->flags, RF_DROP_1)) number++;
+	}
+
+	return number;
+}
 
 /**
  * Creates a specific monster's drop, including any drops specified
@@ -656,13 +690,7 @@ static bool mon_create_drop(struct monster *m_ptr, byte origin)
 	item_ok = (!rf_has(m_ptr->race->flags, RF_ONLY_GOLD));
 
 	/* Determine how much we can drop */
-	if (rf_has(m_ptr->race->flags, RF_DROP_20) && randint0(100) < 20) number++;
-	if (rf_has(m_ptr->race->flags, RF_DROP_40) && randint0(100) < 40) number++;
-	if (rf_has(m_ptr->race->flags, RF_DROP_60) && randint0(100) < 60) number++;
-	if (rf_has(m_ptr->race->flags, RF_DROP_4)) number += rand_range(2, 6);
-	if (rf_has(m_ptr->race->flags, RF_DROP_3)) number += rand_range(2, 4);
-	if (rf_has(m_ptr->race->flags, RF_DROP_2)) number += rand_range(1, 3);
-	if (rf_has(m_ptr->race->flags, RF_DROP_1)) number++;
+	number = mon_create_drop_count(m_ptr->race, FALSE);
 
     /* Give added bonus for unique monters */
     monlevel = m_ptr->race->level;

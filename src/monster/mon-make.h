@@ -45,7 +45,7 @@ bool pick_and_place_monster(struct cave *c, int y, int x, int depth, bool sleep,
 bool pick_and_place_distant_monster(struct cave *c, struct loc loc, int dis, bool sleep, int depth);
 void monster_death(struct monster *m, bool stats);
 bool mon_take_hit(struct monster *m, int dam, bool *fear, const char *note);
-
+int mon_create_drop_count(const struct monster_race *race, bool maximize);
 
 
 #endif /* MONSTER_MAKE_H */
