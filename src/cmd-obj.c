@@ -1079,7 +1079,7 @@ void textui_cmd_destroy_menu(int item)
 
 		if (value != SQUELCH_MAX && type != TYPE_MAX) {
 			strnfmt(out_val, sizeof out_val, "All %s %s",
-					quality_values[value].name, quality_choices[type].name);
+					quality_values[value].name, squelch_name_for_type(type));
 
 			menu_dynamic_add(m, out_val, IGNORE_THIS_QUALITY);
 		}
