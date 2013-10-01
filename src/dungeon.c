@@ -1567,7 +1567,7 @@ static void process_some_user_pref_files(void)
 	process_pref_file("user.prf", TRUE, TRUE);
 
 	/* Get the "PLAYER.prf" filename */
-	strnfmt(buf, sizeof(buf), "%s.prf", player_safe_name(p_ptr));
+	strnfmt(buf, sizeof(buf), "%s.prf", player_safe_name(p_ptr, TRUE));
 
 	/* Process the "PLAYER.prf" file, using the character name */
 	found = process_pref_file(buf, TRUE, TRUE);
@@ -1730,7 +1730,7 @@ void play_game(void)
 
 	/* Set the savefile name if it's not already set */
 	if (!savefile[0])
-		savefile_set_name(player_safe_name(p_ptr));
+		savefile_set_name(player_safe_name(p_ptr, TRUE));
 
 	/* Stop the player being quite so dead */
 	p_ptr->is_dead = FALSE;

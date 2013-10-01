@@ -189,7 +189,7 @@ static void death_file(const char *title, int row)
 	char buf[1024];
 	char ftmp[80];
 
-	strnfmt(ftmp, sizeof(ftmp), "%s.txt", player_safe_name(p_ptr));
+	strnfmt(ftmp, sizeof(ftmp), "%s.txt", player_safe_name(p_ptr, FALSE));
 
 	if (get_file(ftmp, buf, sizeof buf))
 	{

@@ -11,4 +11,6 @@ extern void player_generate(struct player *p, const player_sex *s,
 extern char *get_history(struct history_chart *h);
 extern void wield_all(struct player *p);
 
+char *find_roman_suffix_start(const char *buf);
+
 #endif /* !BIRTH_H */

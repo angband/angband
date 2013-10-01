@@ -60,7 +60,6 @@
 /* These functions are defined at the end of the file */
 static int roman_to_int(const char *roman);
 static int int_to_roman(int n, char *roman, size_t bufsize);
-static char *find_roman_suffix_start(const char *buf);
 
 
 /* 
@@ -1122,7 +1121,7 @@ void player_birth(bool quickstart_allowed)
  * 
  * Return the start position, or NULL if there isn't a valid suffix. 
  */
-static char *find_roman_suffix_start(const char *buf)
+char *find_roman_suffix_start(const char *buf)
 {
 	const char *start = strrchr(buf, ' ');
 	const char *p;

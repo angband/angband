@@ -5,6 +5,7 @@
 #include "externs.h" /* player_exp */
 #include "history.h" /* history_add */
 #include "player/player.h"
+#include "birth.h" /* find_roman_suffix_start */
 #include "z-util.h" /* my_strcpy */
 
 
@@ -245,12 +246,21 @@ bool player_restore_mana(struct player *p, int amt) {
 /**
  * Return a version of the player's name safe for use in filesystems.
  */
-const char *player_safe_name(struct player *p)
+const char *player_safe_name(struct player *p, bool strip_suffix)
 {
 	static char buf[40];
-
 	int i;
-	for (i = 0; op_ptr->full_name[i]; i++) {
+	int limit = 0;
+
+	if (op_ptr->full_name[0]) {
+		char *suffix = find_roman_suffix_start(op_ptr->full_name);
+		if (suffix)
+			limit = suffix - op_ptr->full_name - 1; /* -1 for preceding space */
+		else
+			limit = strlen(op_ptr->full_name);
+	}
+
+	for (i = 0; i < limit; i++) {
 		char c = op_ptr->full_name[i];
 
 		/* Convert all non-alphanumeric symbols */

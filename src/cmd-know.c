@@ -199,7 +199,7 @@ void do_cmd_change_name(void)
 					char buf[1024];
 					char fname[80];
 
-					strnfmt(fname, sizeof fname, "%s.txt", player_safe_name(p_ptr));
+					strnfmt(fname, sizeof fname, "%s.txt", player_safe_name(p_ptr, FALSE));
 
 					if (get_file(fname, buf, sizeof buf))
 					{

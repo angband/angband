@@ -657,7 +657,7 @@ extern byte player_sp_attr(struct player *p);
 
 extern bool player_restore_mana(struct player *p, int amt);
 
-extern const char *player_safe_name(struct player *p);
+extern const char *player_safe_name(struct player *p, bool strip_suffix);
 
 /* race.c */
 extern struct player_race *player_id2race(guid id);
