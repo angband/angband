@@ -466,7 +466,12 @@ static void grid_get_attr(grid_data *g, int *a)
 
 			/* If it's another kind of tile, only tint when unlit. */
 			else if (g->f_idx > FEAT_INVIS && g->lighting == FEAT_LIGHTING_DARK)
-				*a = TERM_SLATE;
+				*a = TERM_L_DARK;
+		}
+		else if (feat_is_magma(g->f_idx) || feat_is_quartz(g->f_idx)) {
+			if (g->lighting == FEAT_LIGHTING_DARK) {
+				*a = TERM_L_DARK;
+			}
 		}
 	}
 
@@ -2894,8 +2899,9 @@ bool cave_isperm(struct cave *c, int y, int x) {
 /**
  * True if the square is a magma wall.
  */
-bool cave_ismagma(struct cave *c, int y, int x) {
-	switch (c->feat[y][x]) {
+bool feat_is_magma(int feat)
+{
+	switch (feat) {
 		case FEAT_MAGMA:
 		case FEAT_MAGMA_H:
 		case FEAT_MAGMA_K: return TRUE;
@@ -2904,15 +2910,30 @@ bool cave_ismagma(struct cave *c, int y, int x) {
 }
 
 /**
+ * True if the square is a magma wall.
+ */
+bool cave_ismagma(struct cave *c, int y, int x) {
+	return feat_is_magma(c->feat[y][x]);
+}
+
+/**
  * True if the square is a quartz wall.
  */
-bool cave_isquartz(struct cave *c, int y, int x) {
-	switch (c->feat[y][x]) {
+bool feat_is_quartz(int feat)
+{
+	switch (feat) {
 		case FEAT_QUARTZ:
 		case FEAT_QUARTZ_H:
 		case FEAT_QUARTZ_K: return TRUE;
 		default: return FALSE;
 	}
+}
+
+/**
+ * True if the square is a quartz wall.
+ */
+bool cave_isquartz(struct cave *c, int y, int x) {
+	return feat_is_quartz(c->feat[y][x]);
 }
 
 /**
