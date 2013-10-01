@@ -463,7 +463,7 @@ X:0:0:0:2
 # 0x33 --> quartz vein
 
 N:51:quartz vein
-G:%:w
+G:%:W
 P:11
 F:DIG | BORING
 X:0:0:0:3
@@ -480,7 +480,7 @@ X:0:0:0:2
 # 0x35 --> quartz vein + treasure
 
 N:53:quartz vein
-G:%:w
+G:%:W
 P:11
 M:51
 F:DIG | BORING
