@@ -102,16 +102,48 @@ static const char *obj_desc_get_modstr(const object_kind *kind)
 	return "";
 }
 
+/**
+ * Return a malloc'd string with the basename for an artifact.
+ *
+ * For objects that are only seen, this will return the artifact's object kind (flavored,
+ * if appropriate). Once the object is picked up (so the name shows), this will dump the
+ * flavoring.
+ *
+ * \param o_ptr is the object, which must be an artifact.
+ * \param aware is if the object is known.
+ * \param terse is if we should hide flavor.
+ * \returns a string which must be freed by the caller.
+ */
+static char *obj_desc_get_basename_artifact(const object_type *o_ptr, bool aware, bool terse)
+{
+    char buffer[80];
+    size_t end = 0;
+    const char *format;
+	bool has_ident_flags = (o_ptr->ident & IDENT_NAME) || (o_ptr->ident & IDENT_STORE);
+
+    /* Return a free-able object kind so that callers can be consistent. */
+    if (!o_ptr->artifact)
+        return string_make(o_ptr->kind->name);
+
+	/* Ignoring OPT_show_flavors, since we never want to see the flavor if we're aware of it. */
+    if (aware || has_ident_flags	 || terse || !o_ptr->kind->flavor) {
+        format = "& ";
+    }
+    else {
+        format = "& # ";
+    }
+
+    end = my_strcpy(buffer, format, sizeof(buffer));
+    end = my_strcpy(buffer + end, o_ptr->kind->name, sizeof(buffer) - end);
+    return string_make(buffer);
+}
+
 static const char *obj_desc_get_basename(const object_type *o_ptr, bool aware, bool terse)
 {
 	bool show_flavor = !terse && o_ptr->kind->flavor;
 
 	if (o_ptr->ident & IDENT_STORE) show_flavor = FALSE;
 	if (aware && !OPT(show_flavors)) show_flavor = FALSE;
-
-	/* Known artifacts get special treatment */
-	if (o_ptr->artifact && aware)
-		return o_ptr->kind->name;
 
 	/* Analyze the object */
 	switch (o_ptr->tval)
@@ -318,9 +350,18 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 {
 	bool known = object_is_known(o_ptr) || (o_ptr->ident & IDENT_STORE) || spoil;
 	bool aware = object_flavor_is_aware(o_ptr) || (o_ptr->ident & IDENT_STORE) || spoil;
+	bool free_basename = FALSE;
 
-	const char *basename = obj_desc_get_basename(o_ptr, aware, terse);
+	char *basename;
 	const char *modstr = obj_desc_get_modstr(o_ptr->kind);
+
+	if (o_ptr->artifact) {
+		basename = obj_desc_get_basename_artifact(o_ptr, aware, terse);
+		free_basename = TRUE;
+	}
+	else {
+		basename = (char *)obj_desc_get_basename(o_ptr, aware, terse);
+	}
 
 	if (aware && !o_ptr->kind->everseen && !spoil)
 		o_ptr->kind->everseen = TRUE;
@@ -338,6 +379,8 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 			  (object_name_is_visible(o_ptr) || known)) &&
 			(o_ptr->number != 1 || (mode & ODESC_PLURAL)));
 
+	if (free_basename)
+		string_free(basename);
 
 	/** Append extra names of various kinds **/
 
