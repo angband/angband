@@ -23,6 +23,18 @@ kind:ring:=
 # Fixed: the One Ring
 fixed:1:55:Yellow:Plain Gold
 
+# The Ring of Barahir 50
+# The Ring of Tulkas 51
+
+# The Ring of Power 'Narya'
+fixed:28:52:Red:Ruby
+
+# The Ring of Power 'Nenya'
+fixed:40:53:Light Blue:Mithril
+
+# The Ring of Power 'Vilya'
+fixed:29:54:Blue:Sapphire
+
 flavor:2:Green:Alexandrite
 flavor:3:Violet:Amethyst
 flavor:4:Light Blue:Aquamarine
@@ -49,8 +61,8 @@ flavor:24:White:Pearl
 flavor:25:Light Slate:Quartz
 flavor:26:Light Slate:Quartzite
 flavor:27:Light Red:Rhodonite
-flavor:28:Red:Ruby
-flavor:29:Blue:Sapphire
+#flavor:28:Red:Ruby
+#flavor:29:Blue:Sapphire
 flavor:30:Yellow:Tiger Eye
 flavor:31:Yellow:Topaz
 flavor:32:Light Blue:Turquoise
@@ -61,7 +73,7 @@ flavor:36:Yellow:Gold
 flavor:37:Light Dark:Obsidian
 flavor:38:Light Slate:Silver
 flavor:39:Umber:Tortoise Shell
-flavor:40:Light Blue:Mithril
+#flavor:40:Light Blue:Mithril
 flavor:41:Light Dark:Jet
 flavor:42:Yellow:Engagement
 flavor:43:Light Green:Adamantite
@@ -70,18 +82,32 @@ flavor:43:Light Green:Adamantite
 
 kind:amulet:"
 
-flavor:44:Yellow:Amber
+# The Amulet of Carlammas
+fixed:52:50:Light Umber:Bronze
+
+# The Amulet of Ingwe 51
+
+# The Necklace of the Dwarves
+fixed:55:52:Yellow:Golden
+
+# New Artifact (14): The Elfstone 'Elessar'
+fixed:44:53:Green:Green
+
+# New Artifact (15): The Jewel 'Evenstar'
+fixed:46:54:White:White
+
+#flavor:44:Yellow:Amber
 flavor:45:Light Umber:Driftwood
-flavor:46:White:Coral
+#flavor:46:White:Coral
 flavor:47:Light Slate:Agate
 flavor:48:White:Ivory
 flavor:49:Light Dark:Obsidian
 flavor:50:White:Bone
 flavor:51:Light Umber:Brass
-flavor:52:Light Umber:Bronze
+#flavor:52:Light Umber:Bronze
 flavor:53:Slate:Pewter
 flavor:54:Umber:Tortoise Shell
-flavor:55:Yellow:Golden
+#flavor:55:Yellow:Golden
 flavor:56:Light Blue:Azure
 flavor:57:White:Crystal
 flavor:58:Light Slate:Silver
