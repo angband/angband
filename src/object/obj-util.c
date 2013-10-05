@@ -100,6 +100,23 @@ static void flavor_assign_random(byte tval)
 	}
 }
 
+/**
+ * Reset svals on flavors, effectively removing any fixed flavors.
+ *
+ * Mainly useful for randarts so that fixed flavors for standards aren't predictable. The One Ring
+ * is kept as fixed, since it lives through randarts.
+ */
+void flavor_reset_fixed(void)
+{
+	struct flavor *f;
+
+	for (f = flavors; f; f = f->next) {
+		if (f->tval == TV_RING && f->sval == SV_RING_POWER)
+			continue;
+
+		f->sval = SV_UNKNOWN;
+	}
+}
 
 /*
  * Prepare the "variable" part of the "k_info" array.
@@ -134,6 +151,9 @@ void flavor_init(void)
 
 	/* Hack -- Induce consistant flavors */
 	Rand_value = seed_flavor;
+
+	if (OPT(birth_randarts))
+		flavor_reset_fixed();
 
 	flavor_assign_fixed();
 
