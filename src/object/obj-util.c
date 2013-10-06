@@ -4245,6 +4245,92 @@ object_type *object_from_item_idx(int item)
 		return object_byid(0 - item);
 }
 
+/**
+ * Return TRUE if the two objects are the same. Equality can be either be by value or by
+ * identity (memory address). Value comparison is strict; all values must be equal.
+ */
+bool object_equals_object(const object_type *a, const object_type *b)
+{
+	int i;
+
+	if (a == b)
+		return TRUE;
+
+#define MUST_EQUAL(p) if (a->p != b->p) return FALSE;
+	MUST_EQUAL(kind);
+	MUST_EQUAL(ego);
+	MUST_EQUAL(artifact);
+
+	MUST_EQUAL(iy);
+	MUST_EQUAL(ix);
+
+	MUST_EQUAL(tval);
+	MUST_EQUAL(sval);
+
+	MUST_EQUAL(num_pvals);
+	MUST_EQUAL(weight);
+	MUST_EQUAL(ident);
+
+	MUST_EQUAL(ac);
+	MUST_EQUAL(to_a);
+	MUST_EQUAL(to_h);
+	MUST_EQUAL(to_d);
+
+	MUST_EQUAL(dd);
+	MUST_EQUAL(ds);
+
+	MUST_EQUAL(timeout);
+
+	MUST_EQUAL(number);
+	MUST_EQUAL(marked);
+	MUST_EQUAL(ignore);
+
+	MUST_EQUAL(next_o_idx);
+	MUST_EQUAL(held_m_idx);
+	MUST_EQUAL(mimicking_m_idx);
+
+	MUST_EQUAL(origin);
+	MUST_EQUAL(origin_depth);
+	MUST_EQUAL(origin_xtra);
+
+	MUST_EQUAL(note);
+#undef MUST_EQUAL
+
+	for (i = 0; i < MAX_PVALS; i++) {
+		if (a->pval[i] != b->pval[i])
+			return FALSE;
+
+		if (!of_is_equal((const bitflag *)&a->pval_flags[i], (const bitflag *)&b->pval_flags[i]))
+			return FALSE;
+	}
+
+	if (!of_is_equal((const bitflag *)&a->flags, (const bitflag *)&b->flags))
+		return FALSE;
+
+	if (!of_is_equal((const bitflag *)&a->known_flags, (const bitflag *)&b->known_flags))
+		return FALSE;
+
+	return TRUE;
+}
+
+/**
+ * Return the inventory index of an object that matches the given object.
+ *
+ * Currently, this is limited to INVEN_PACK, since it is only used for object identification.
+ *
+ * \returns A valid inventory index or -1 if the object cannot be found.
+ */
+int inventory_index_matching_object(const object_type *o_ptr)
+{
+	int i;
+
+	for (i = 0; i < INVEN_PACK; i++) {
+		if (object_equals_object(o_ptr, &p_ptr->inventory[i]))
+			return i;
+	}
+
+	return -1;
+}
 
 /*
  * Does the given object need to be aimed?
