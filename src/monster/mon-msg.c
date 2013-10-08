@@ -413,7 +413,12 @@ static void flush_monster_messages(bool delay, byte delay_tag)
 			/* We have more than one monster */
 			else if (count > 1) {
 				/* Get the plural of the race name */
-				plural_aux(race_name, sizeof(race_name));
+				if (r_ptr->plural != NULL) {
+					my_strcpy(race_name, r_ptr->plural, sizeof(race_name));
+				}
+				else {
+					plural_aux(race_name, sizeof(race_name));
+				}
 
 				/* Put the count and the race name together */
 				strnfmt(buf, sizeof(buf), "%d %s", count, race_name);

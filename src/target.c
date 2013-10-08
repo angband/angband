@@ -918,11 +918,8 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 				/* Sometimes stop at "space" key */
 				if ((press.key.code == ' ') && !(mode & (TARGET_LOOK))) break;
 
-				/* Change the intro */
-				s1 = "It is ";
-
 				/* Plurals */
-				if (o_ptr->number != 1) s1 = "They are ";
+				s1 = VERB_AGREEMENT(o_ptr->number, "It is ", "They are ");
 
 				/* Preposition */
 				s2 = "on ";
