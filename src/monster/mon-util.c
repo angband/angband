@@ -101,165 +101,16 @@ bool match_monster_bases(const monster_base *base, ...)
 }
 
 /**
- * Mega-hack - Fix plural names of monsters
- *
- * Taken from PernAngband via EY, modified to fit NPP monster list
- *
- * Note: It should handle all regular Angband monsters.
- *
- * TODO: Specify monster name plurals in monster.txt instead.
+ * Perform simple English pluralization on a monster name.
  */
 void plural_aux(char *name, size_t max)
 {
-	int name_len = strlen(name);
+	unsigned long name_len = strlen(name);
 
-	if (strstr(name, " of "))
-	{
-		char *aider = strstr(name, " of ");
-		char dummy[80];
-		int i = 0;
-		char *ctr = name;
-
-		while (ctr < aider)
-		{
-			dummy[i] = *ctr;
-			ctr++;
-			i++;
-		}
-
-		if (dummy[i - 1] == 's')
-		{
-			strcpy(&(dummy[i]), "es");
-			i++;
-		}
-		else
-		{
-			strcpy(&(dummy[i]), "s");
-		}
-
-		strcpy(&(dummy[i + 1]), aider);
-		my_strcpy(name, dummy, max);
-	}
-	else if ((strstr(name, "coins")) || (strstr(name, "gems")))
-	{
-		char dummy[80];
-		strcpy(dummy, "Piles of c");
-		my_strcat(dummy, &(name[1]), sizeof(dummy));
-		my_strcpy(name, dummy, max);
-		return;
-	}
-
-	else if (strstr(name, "Greater Servant of"))
-	{
-		char dummy[80];
-		strcpy(dummy, "Greater Servants of ");
-		my_strcat(dummy, &(name[1]), sizeof(dummy));
-		my_strcpy(name, dummy, max);
-		return;
-	}
-	else if (strstr(name, "Lesser Servant of"))
-	{
-		char dummy[80];
-		strcpy(dummy, "Greater Servants of ");
-		my_strcat(dummy, &(name[1]), sizeof(dummy));
-		my_strcpy(name, dummy, max);
-		return;
-	}
-	else if (strstr(name, "Servant of"))
-	{
-		char dummy[80];
-		strcpy(dummy, "Servants of ");
-		my_strcat(dummy, &(name[1]), sizeof(dummy));
-		my_strcpy(name, dummy, max);
-		return;
-	}
-	else if (strstr(name, "Great Wyrm"))
-	{
-		char dummy[80];
-		strcpy(dummy, "Great Wyrms ");
-		my_strcat(dummy, &(name[1]), sizeof(dummy));
-		my_strcpy(name, dummy, max);
-		return;
-	}
-	else if (strstr(name, "Spawn of"))
-	{
-		char dummy[80];
-		strcpy(dummy, "Spawn of ");
-		my_strcat(dummy, &(name[1]), sizeof(dummy));
-		my_strcpy(name, dummy, max);
-		return;
-	}
-	else if (strstr(name, "Descendant of"))
-	{
-		char dummy[80];
-		strcpy(dummy, "Descendant of ");
-		my_strcat(dummy, &(name[1]), sizeof(dummy));
-		my_strcpy(name, dummy, max);
-		return;
-	}
-	else if ((strstr(name, "Manes")) || (name[name_len-1] == 'u') || (strstr(name, "Yeti")) ||
-		(streq(&(name[name_len-2]), "ua")) || (streq(&(name[name_len-3]), "nee")) ||
-		(streq(&(name[name_len-4]), "idhe")))
-	{
-		return;
-	}
-	else if (name[name_len-1] == 'y')
-	{
-		strcpy(&(name[name_len - 1]), "ies");
-	}
-	else if (streq(&(name[name_len - 4]), "ouse"))
-	{
-		strcpy(&(name[name_len - 4]), "ice");
-	}
-	else if (streq(&(name[name_len - 4]), "lung"))
-	{
-		strcpy(&(name[name_len - 4]), "lungen");
-	}
-	else if (streq(&(name[name_len - 3]), "sus"))
-	{
-		strcpy(&(name[name_len - 3]), "si");
-	}
-	else if (streq(&(name[name_len - 4]), "star"))
-	{
-		strcpy(&(name[name_len - 4]), "stari");
-	}
-	else if (streq(&(name[name_len - 3]), "aia"))
-	{
-		strcpy(&(name[name_len - 3]), "aiar");
-	}
-	else if (streq(&(name[name_len - 3]), "inu"))
-	{
-		strcpy(&(name[name_len - 3]), "inur");
-	}
-	else if (streq(&(name[name_len - 5]), "culus"))
-	{
-		strcpy(&(name[name_len - 5]), "culi");
-	}
-	else if (streq(&(name[name_len - 4]), "sman"))
-	{
-		strcpy(&(name[name_len - 4]), "smen");
-	}
-	else if (streq(&(name[name_len - 4]), "lman"))
-	{
-		strcpy(&(name[name_len - 4]), "lmen");
-	}
-	else if (streq(&(name[name_len - 2]), "ex"))
-	{
-		strcpy(&(name[name_len - 2]), "ices");
-	}
-	else if ((name[name_len - 1] == 'f') && (!streq(&(name[name_len - 2]), "ff")))
-	{
-		strcpy(&(name[name_len - 1]), "ves");
-	}
-	else if (((streq(&(name[name_len - 2]), "ch")) || (name[name_len - 1] == 's')) &&
-			(!streq(&(name[name_len - 5]), "iarch")))
-	{
-		strcpy(&(name[name_len]), "es");
-	}
+	if (name[name_len - 1] == 's')
+		my_strcat(name, "es", max);
 	else
-	{
-		strcpy(&(name[name_len]), "s");
-	}
+		my_strcat(name, "s", max);
 }
 
 
@@ -270,27 +121,31 @@ void plural_aux(char *name, size_t max)
 static void get_mon_name(char *output_name, size_t max, 
 		const monster_race *r_ptr, int num)
 {
-	char race_name[80];
-
 	assert(r_ptr);
 
-	my_strcpy(race_name, r_ptr->name, sizeof(race_name));
-
-	/* Unique names don't have a number */
-	if (rf_has(r_ptr->flags, RF_UNIQUE))
+    /* Unique names don't have a number */
+	if (rf_has(r_ptr->flags, RF_UNIQUE)) {
 		my_strcpy(output_name, "[U] ", max);
+        my_strcat(output_name, r_ptr->name, max);
+        return;
+    }
 
-	/* Normal races*/
-	else {
-		my_strcpy(output_name, format("%3d ", num), max);
+    my_strcpy(output_name, format("%3d ", num), max);
 
-		/* Make it plural, if needed. */
-		if (num > 1)
-			plural_aux(race_name, sizeof(race_name));
-	}
+    if (num == 1) {
+        my_strcat(output_name, r_ptr->name, max);
+        return;
+    }
 
-	/* Mix the quantity and the header. */
-	my_strcat(output_name, race_name, max);
+    if (r_ptr->plural != NULL) {
+        my_strcat(output_name, r_ptr->plural, max);
+    }
+    else {
+        char race_name[80];
+		my_strcpy(race_name, r_ptr->name, sizeof(race_name));
+        plural_aux(race_name, sizeof(race_name));
+        my_strcat(output_name, race_name, max);
+    }
 }
 
 

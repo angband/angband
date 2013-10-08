@@ -154,6 +154,7 @@ typedef struct monster_race
 
 	char *name;
 	char *text;
+	char *plural; /* Optional pluralized name */
 
 	struct monster_base *base;
 	
