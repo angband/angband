@@ -2021,12 +2021,6 @@ void drop_near(struct cave *c, object_type *j_ptr, int chance, int y, int x, boo
 
 	bool flag = FALSE;
 
-	bool plural = FALSE;
-
-
-	/* Extract plural */
-	if (j_ptr->number != 1) plural = TRUE;
-
 	/* Describe object */
 	object_desc(o_name, sizeof(o_name), j_ptr, ODESC_BASE);
 
@@ -2035,7 +2029,7 @@ void drop_near(struct cave *c, object_type *j_ptr, int chance, int y, int x, boo
 	if (!j_ptr->artifact && (randint0(100) < chance))
 	{
 		/* Message */
-		msg("The %s break%s.", o_name, PLURAL(plural));
+		msg("The %s %s.", o_name, VERB_AGREEMENT(j_ptr->number, "breaks", "break"));
 
 		/* Failure */
 		return;
@@ -2137,7 +2131,7 @@ void drop_near(struct cave *c, object_type *j_ptr, int chance, int y, int x, boo
 	if (!flag && !j_ptr->artifact)
 	{
 		/* Message */
-		msg("The %s disappear%s.", o_name, PLURAL(plural));
+		msg("The %s %s.", o_name, VERB_AGREEMENT(j_ptr->number, "disappears", "disappear"));
 
 		/* Debug */
 		if (p_ptr->wizard) msg("Breakage (no floor space).");
@@ -2180,7 +2174,7 @@ void drop_near(struct cave *c, object_type *j_ptr, int chance, int y, int x, boo
 	if (!floor_carry(c, by, bx, j_ptr))
 	{
 		/* Message */
-		msg("The %s disappear%s.", o_name, PLURAL(plural));
+		msg("The %s %s.", o_name, VERB_AGREEMENT(j_ptr->number, "disappears", "disappear"));
 
 		/* Debug */
 		if (p_ptr->wizard) msg("Breakage (too many objects).");
