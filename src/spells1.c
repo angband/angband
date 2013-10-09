@@ -1413,7 +1413,6 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ,
 
 		bool is_art = FALSE;
 		bool ignore = FALSE;
-		bool plural = FALSE;
 		bool do_kill = FALSE;
 
 		const char *note_kill = NULL;
@@ -1427,9 +1426,6 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ,
 		/* Extract the flags */
 		object_flags(o_ptr, f);
 
-		/* Get the "plural"-ness */
-		if (o_ptr->number > 1) plural = TRUE;
-
 		/* Check for artifact */
 		if (o_ptr->artifact) is_art = TRUE;
 
@@ -1442,7 +1438,7 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ,
 				if (of_has(f, OF_HATES_ACID))
 				{
 					do_kill = TRUE;
-					note_kill = (plural ? " melt!" : " melts!");
+					note_kill = VERB_AGREEMENT(o_ptr->number, "melts", "melt");
 					if (of_has(f, OF_IGNORE_ACID)) ignore = TRUE;
 				}
 				break;
@@ -1454,7 +1450,7 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ,
 				if (of_has(f, OF_HATES_ELEC))
 				{
 					do_kill = TRUE;
-					note_kill = (plural ? " are destroyed!" : " is destroyed!");
+					note_kill = VERB_AGREEMENT(o_ptr->number, "is destroyed", "are destroyed");
 					if (of_has(f, OF_IGNORE_ELEC)) ignore = TRUE;
 				}
 				break;
@@ -1466,7 +1462,7 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ,
 				if (of_has(f, OF_HATES_FIRE))
 				{
 					do_kill = TRUE;
-					note_kill = (plural ? " burn up!" : " burns up!");
+					note_kill = VERB_AGREEMENT(o_ptr->number, "burns up", "burn up");
 					if (of_has(f, OF_IGNORE_FIRE)) ignore = TRUE;
 				}
 				break;
@@ -1477,7 +1473,7 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ,
 			{
 				if (of_has(f, OF_HATES_COLD))
 				{
-					note_kill = (plural ? " shatter!" : " shatters!");
+					note_kill = VERB_AGREEMENT(o_ptr->number, "shatters", "shatter");
 					do_kill = TRUE;
 					if (of_has(f, OF_IGNORE_COLD)) ignore = TRUE;
 				}
@@ -1490,14 +1486,14 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ,
 				if (of_has(f, OF_HATES_FIRE))
 				{
 					do_kill = TRUE;
-					note_kill = (plural ? " burn up!" : " burns up!");
+					note_kill = VERB_AGREEMENT(o_ptr->number, "burns up", "burn up");
 					if (of_has(f, OF_IGNORE_FIRE)) ignore = TRUE;
 				}
 				if (of_has(f, OF_HATES_ELEC))
 				{
 					ignore = FALSE;
 					do_kill = TRUE;
-					note_kill = (plural ? " are destroyed!" : " is destroyed!");
+					note_kill = VERB_AGREEMENT(o_ptr->number, "is destroyed", "are destroyed");
 					if (of_has(f, OF_IGNORE_ELEC)) ignore = TRUE;
 				}
 				break;
@@ -1509,14 +1505,14 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ,
 				if (of_has(f, OF_HATES_FIRE))
 				{
 					do_kill = TRUE;
-					note_kill = (plural ? " burn up!" : " burns up!");
+					note_kill = VERB_AGREEMENT(o_ptr->number, "burns up", "burn up");
 					if (of_has(f, OF_IGNORE_FIRE)) ignore = TRUE;
 				}
 				if (of_has(f, OF_HATES_COLD))
 				{
 					ignore = FALSE;
 					do_kill = TRUE;
-					note_kill = (plural ? " shatter!" : " shatters!");
+					note_kill = VERB_AGREEMENT(o_ptr->number, "shatters", "shatter");
 					if (of_has(f, OF_IGNORE_COLD)) ignore = TRUE;
 				}
 				break;
@@ -1530,7 +1526,7 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ,
 			{
 				if (of_has(f, OF_HATES_COLD))
 				{
-					note_kill = (plural ? " shatter!" : " shatters!");
+					note_kill = VERB_AGREEMENT(o_ptr->number, "shatters", "shatter");
 					do_kill = TRUE;
 				}
 				break;
@@ -1540,7 +1536,7 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ,
 			case GF_MANA:
 			{
 				do_kill = TRUE;
-				note_kill = (plural ? " are destroyed!" : " is destroyed!");
+				note_kill = VERB_AGREEMENT(o_ptr->number, "is destroyed", "are destroyed");
 				break;
 			}
 
@@ -1550,7 +1546,7 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ,
 				if (cursed_p(o_ptr->flags))
 				{
 					do_kill = TRUE;
-					note_kill = (plural ? " are destroyed!" : " is destroyed!");
+					note_kill = VERB_AGREEMENT(o_ptr->number, "is destroyed", "are destroyed");
 				}
 				break;
 			}
@@ -1596,10 +1592,7 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ,
 			{
 				/* Observe the resist */
 				if (o_ptr->marked && !squelch_item_ok(o_ptr))
-				{
-					msg("The %s %s unaffected!",
-					           o_name, (plural ? "are" : "is"));
-				}
+					msg("The %s %s unaffected!", o_name, VERB_AGREEMENT(o_ptr->number, "is", "are"));
 			}
 
 			/* Kill it */
@@ -1607,9 +1600,7 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ,
 			{
 				/* Describe if needed */
 				if (o_ptr->marked && note_kill && !squelch_item_ok(o_ptr))
-				{
-					msgt(MSG_DESTROY, "The %s%s", o_name, note_kill);
-				}
+					msgt(MSG_DESTROY, "The %s %s!", o_name, note_kill);
 
 				/* Delete the object */
 				delete_object_idx(this_o_idx);
