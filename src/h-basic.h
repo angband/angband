@@ -253,6 +253,10 @@ typedef int errr;
  */
 #define PLURAL(n)		((n) == 1 ? "" : "s")
 
+/**
+ * Return the verb form matching the given count
+ */
+#define VERB_AGREEMENT(count, singular, plural)    (((count) == 1) ? (singular) : (plural))
 
 /*** Some hackish character manipulation ***/
 

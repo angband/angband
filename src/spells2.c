@@ -3168,6 +3168,8 @@ void ring_of_power(int dir)
  * `item` is used to print the slot occupied by an object in equip/inven.
  * Any negative value assigned to "item" can be used for specifying an object
  * on the floor.
+ *
+ * XXX Remove the item parameter, as it is no longer used.
  */
 void do_ident_item(int item, object_type *o_ptr)
 {
@@ -3176,12 +3178,12 @@ void do_ident_item(int item, object_type *o_ptr)
 	u32b msg_type = 0;
 	int i;
 	bool bad = TRUE;
+    object_type *original = ZNEW(object_type);
 
-	/* Identify it */
+    /* Identify and apply autoinscriptions. We use o_ptr here since it points to the inventory
+     * slot that the real object is in. o_ptr does NOT point to the object data itself. */
 	object_flavor_aware(o_ptr);
 	object_notice_everything(o_ptr);
-
-	/* Apply an autoinscription, if necessary */
 	apply_autoinscription(o_ptr);
 
 	/* Set squelch flag */
@@ -3190,49 +3192,59 @@ void do_ident_item(int item, object_type *o_ptr)
 	/* Recalculate bonuses */
 	p_ptr->update |= (PU_BONUS);
 
-	/* Combine / Reorder the pack (later) */
-	p_ptr->notice |= (PN_COMBINE | PN_REORDER | PN_SORT_QUIVER);
-
 	/* Window stuff */
 	p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
 
+    /* Create a copy of the object for later reference, since o_ptr will remain the same after
+     * combinging and reordering. */
+    object_copy(original, o_ptr);
+
+    /* Force inventory cleanup so that we can display updated slot information in the message. */
+	combine_pack();
+	reorder_pack();
+	sort_quiver();
+
 	/* Description */
-	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), original, ODESC_PREFIX | ODESC_FULL);
 
 	/* Determine the message type. */
 	/* CC: we need to think more carefully about how we define "bad" with
 	 * multiple pvals - currently using "all nonzero pvals < 0" */
-	for (i = 0; i < o_ptr->num_pvals; i++)
-		if (o_ptr->pval[i] > 0)
+	for (i = 0; i < original->num_pvals; i++)
+		if (original->pval[i] > 0)
 			bad = FALSE;
 
 	if (bad)
 		msg_type = MSG_IDENT_BAD;
-	else if (o_ptr->artifact)
+	else if (original->artifact)
 		msg_type = MSG_IDENT_ART;
-	else if (o_ptr->ego)
+	else if (original->ego)
 		msg_type = MSG_IDENT_EGO;
 	else
 		msg_type = MSG_GENERIC;
 
 	/* Log artifacts to the history list. */
-	if (o_ptr->artifact)
-		history_add_artifact(o_ptr->artifact, TRUE, TRUE);
+	if (original->artifact)
+		history_add_artifact(original->artifact, TRUE, TRUE);
+
+    /* Get the index of the inventory slot that our real original object is in. */
+    int index = inventory_index_matching_object(original);
+    FREE(original);
 
 	/* Describe */
-	if (item >= INVEN_WIELD)
+	if (index >= INVEN_WIELD)
 	{
 		/* Format and capitalise */
 		char *msg = format("%s: %s (%c).",
-			  describe_use(item), o_name, index_to_label(item));
+			  describe_use(index), o_name, index_to_label(index));
 		my_strcap(msg);
 
 		msgt(msg_type, msg);
 	}
-	else if (item >= 0)
+	else if (index >= 0)
 	{
 		msgt(msg_type, "In your pack: %s (%c).",
-			  o_name, index_to_label(item));
+			  o_name, index_to_label(index));
 	}
 	else
 	{

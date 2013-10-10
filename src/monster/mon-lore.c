@@ -35,11 +35,6 @@ enum monster_sex {
 };
 typedef enum monster_sex monster_sex_t;
 
-/*
- * Pluralizer.  Args(count, singular, plural)
- */
-#define plural(c, s, p)    (((c) == 1) ? (s) : (p))
-
 /**
  * Initializes the color-coding of monster attacks / spells.
  *
@@ -957,7 +952,7 @@ static void lore_append_kills(textblock *tb, const monster_race *race, const mon
 
 			/* Unavenged (ever) */
 			else
-				textblock_append(tb, ", who %s unavenged.  ", plural(lore->deaths, "remains", "remain"));
+				textblock_append(tb, ", who %s unavenged.  ", VERB_AGREEMENT(lore->deaths, "remains", "remain"));
 		}
 		else if (dead) {
 			/* Dead unique who never hurt us */
@@ -972,7 +967,7 @@ static void lore_append_kills(textblock *tb, const monster_race *race, const mon
 	/* Not unique, but killed us */
 	else if (lore->deaths) {
 		/* Dead ancestors */
-		textblock_append(tb, "%d of your ancestors %s been killed by this creature, ", lore->deaths, plural(lore->deaths, "has", "have"));
+		textblock_append(tb, "%d of your ancestors %s been killed by this creature, ", lore->deaths, VERB_AGREEMENT(lore->deaths, "has", "have"));
 
 		/* Some kills this life */
 		if (lore->pkills) {
