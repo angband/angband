@@ -489,7 +489,8 @@ void display_monlist(void)
 
 	/* Print "and others" message if we've run out of space */
 	if (disp_count != total_count) {
-		strnfmt(buf, sizeof buf, "  ...and %d others.", total_count - disp_count);
+		int others = total_count - disp_count;
+		strnfmt(buf, sizeof buf, "  ...and %d other%s.", others, PLURAL(others));
 		c_prt(TERM_WHITE, buf, line, x);
 	}
 
