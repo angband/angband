@@ -512,14 +512,13 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 {
 	int item = args[0].item;
 	object_type *o_ptr = object_from_item_idx(item);
-	object_type *original = ZNEW(object_type);
+	object_type *original = NULL;
 	int effect;
 	bool ident = FALSE, used = FALSE;
 	bool was_aware = object_flavor_is_aware(o_ptr);
 	int dir = 5;
 	int px = p_ptr->px, py = p_ptr->py;
 	int snd = MSG_GENERIC, boost, level;
-	int index;
 	enum {
 		USE_TIMEOUT,
 		USE_CHARGE,
@@ -625,9 +624,12 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	if (obj_needs_aim(o_ptr))
 		dir = args[1].direction;
 
-	/* Create a copy so that we can remember what we are working with, in case the
-	 * inventory is changed. */
-	object_copy(original, o_ptr);
+	if (item >= 0) {
+		/* Create a copy so that we can remember what we are working with, in case the
+		 * inventory is changed. */
+		original = ZNEW(object_type);
+		object_copy(original, o_ptr);
+	}
 
 	/* Check for use if necessary, and execute the effect */
 	if ((use != USE_CHARGE && use != USE_TIMEOUT) || check_devices(o_ptr))
@@ -663,12 +665,14 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 		if (!used && (was_aware || !ident)) return;
 	}
 
-	/* Restore o_ptr to the new inventory slot that contains the original object. We
-	 * have to do this because object mutating functions follow; "original" is a dummy
-	 * just so that we know what we are working with. */
-	index = inventory_index_matching_object(original);
-	o_ptr = object_from_item_idx(index);
-	FREE(original);
+	if (item >= 0) {
+		/* Restore o_ptr to the new inventory slot that contains the original object. We
+		 * have to do this because object mutating functions follow; "original" is a dummy
+		 * just so that we know what we are working with. */
+		item = inventory_index_matching_object(original);
+		o_ptr = object_from_item_idx(item);
+		FREE(original);
+	}
 
 	/* If the item is a null pointer or has been wiped, be done now */
 	if (!o_ptr || !o_ptr->kind) return;
@@ -734,17 +738,17 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 		/* Destroy a potion in the pack */
 		if (item >= 0)
 		{
-			inven_item_increase(index, -1);
-			inven_item_describe(index);
-			inven_item_optimize(index);
+			inven_item_increase(item, -1);
+			inven_item_describe(item);
+			inven_item_optimize(item);
 		}
 
 		/* Destroy a potion on the floor */
 		else
 		{
-			floor_item_increase(0 - index, -1);
-			floor_item_describe(0 - index);
-			floor_item_optimize(0 - index);
+			floor_item_increase(0 - item, -1);
+			floor_item_describe(0 - item);
+			floor_item_optimize(0 - item);
 		}
 	}
 	
