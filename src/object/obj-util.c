@@ -3926,7 +3926,7 @@ void display_itemlist(void)
 	} else {
 		/* Reprint Message */
 		prt(format("You can see %d item%s:",
-				   counter, (counter > 1 ? "s" : "")), 0, 0);
+				   counter, PLURAL(counter)), 0, 0);
 	}
 
 	for (i = 0; i < counter; i++) {
@@ -3962,7 +3962,7 @@ void display_itemlist(void)
 
 			/* Reprint Message */
 			prt(format("You can see %d item%s:",
-					   counter, (counter > 1 ? "s" : "")), 0, 0);
+					   counter, PLURAL(counter)), 0, 0);
 
 			/* Reset */
 			line = 1;
