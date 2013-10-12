@@ -1595,6 +1595,11 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ,
 					msg("The %s %s unaffected!", o_name, VERB_AGREEMENT(o_ptr->number, "is", "are"));
 			}
 
+			/* Reveal mimics */
+			else if (o_ptr->mimicking_m_idx) {
+				become_aware(cave_monster(cave, o_ptr->mimicking_m_idx));
+			}
+
 			/* Kill it */
 			else
 			{
