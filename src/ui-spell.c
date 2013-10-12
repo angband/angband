@@ -236,7 +236,7 @@ static void spell_menu_browse(menu_type *m, const char *noun)
 	screen_save();
 
 	region_erase_bordered(&m->active);
-	prt(format("Browsing %ss.  Press Escape to exit.", noun), 0, 0);
+	prt(format("Browsing %ss. ('?' to toggle description)", noun), 0, 0);
 
 	d->browse = TRUE;
 	menu_select(m, 0, TRUE);
