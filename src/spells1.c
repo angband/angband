@@ -1302,8 +1302,9 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 		/* Make traps */
 		case GF_MAKE_TRAP:
 		{
-			/* Require an "empty" floor grid */
+			/* Require an "empty", non-warded floor grid */
 			if (!cave_isempty(cave, y, x)) break;
+			if (cave_iswarded(cave, y, x)) break;
 
 			/* Create a trap */
 			create_trap(cave, y, x);
