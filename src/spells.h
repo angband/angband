@@ -186,6 +186,7 @@ extern void brand_weapon(void);
 extern bool brand_ammo(void);
 extern bool brand_bolts(void);
 extern void ring_of_power(int dir);
+extern bool spell_identify_unknown_available(void);
 
 /* x-spell.c */
 extern int get_spell_index(const object_type *o_ptr, int index);
