@@ -1317,3 +1317,8 @@ bool cast_spell(int tval, int index, int dir)
 		return cast_priest_spell(index, dir);
 	}
 }
+
+bool spell_is_identify(int book, int spell)
+{
+	return (book == TV_MAGIC_BOOK && spell == SPELL_IDENTIFY) || (book == TV_PRAYER_BOOK && spell == PRAYER_PERCEPTION);
+}

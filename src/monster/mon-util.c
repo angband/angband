@@ -345,8 +345,7 @@ void display_monlist(void)
 
 	/* Message for monsters in LOS - even if there are none */
 	if (!los_count) prt(format("You can see no monsters."), 0, 0);
-	else prt(format("You can see %d monster%s", los_count, (los_count == 1
-		? ":" : "s:")), 0, 0);
+	else prt(format("You can see %d monster%s:", los_count, PLURAL(los_count)), 0, 0);
 
 	/* Print out in-LOS monsters in descending order */
 	for (i = 0; (i < type_count) && (line < max); i++)
@@ -401,9 +400,11 @@ void display_monlist(void)
 				prt("", line, 0);
 
 			/* Reprint Message */
-			prt(format("You can see %d monster%s",
-				los_count, (los_count > 0 ? (los_count == 1 ?
-				":" : "s:") : "s.")), 0, 0);
+			prt(format("You can see %d monster%s%s",
+					   los_count,
+					   PLURAL(los_count),
+					   (los_count == 0 ? "." : ":")),
+				0, 0);
 
 			/* Reset */
 			line = 1;
@@ -412,12 +413,15 @@ void display_monlist(void)
 
 	/* Message for monsters outside LOS, if there are any */
 	if (total_count > los_count) {
+		int others = total_count - los_count;
 		/* Leave a blank line */
 		line++;
 		
-		prt(format("You are aware of %d %smonster%s", 
-		(total_count - los_count), (los_count > 0 ? "other " : ""), 
-		((total_count - los_count) == 1 ? ":" : "s:")), line++, 0);
+		prt(format("You are aware of %d %smonster%s:",
+				   others,
+				   (los_count > 0 ? "other " : ""),
+				   PLURAL(others)),
+			line++, 0);
 	}
 
 	/* Print out non-LOS monsters in descending order */
@@ -467,6 +471,7 @@ void display_monlist(void)
 
 		/* Page wrap */
 		if (!in_term && (line == max) && disp_count != total_count) {
+			int others = total_count - los_count;
 			prt("-- more --", line, x);
 			anykey();
 
@@ -475,11 +480,12 @@ void display_monlist(void)
 				prt("", line, 0);
 
 			/* Reprint Message */
-			prt(format("You are aware of %d %smonster%s",
-				(total_count - los_count), (los_count > 0 ?
-				"other " : ""), ((total_count - los_count) > 0
-				? ((total_count - los_count) == 1 ? ":" : "s:")
-				: "s.")), 0, 0);
+			prt(format("You are aware of %d %smonster%s%s",
+					   others,
+					   (los_count > 0 ? "other " : ""),
+					   PLURAL(others),
+					   (others == 0 ? "." : ":")),
+				0, 0);
 
 			/* Reset */
 			line = 1;
@@ -489,7 +495,8 @@ void display_monlist(void)
 
 	/* Print "and others" message if we've run out of space */
 	if (disp_count != total_count) {
-		strnfmt(buf, sizeof buf, "  ...and %d others.", total_count - disp_count);
+		int others = total_count - disp_count;
+		strnfmt(buf, sizeof buf, "  ...and %d other%s.", others, PLURAL(others));
 		c_prt(TERM_WHITE, buf, line, x);
 	}
 
