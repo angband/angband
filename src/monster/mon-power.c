@@ -22,90 +22,34 @@
 
 s32b tot_mon_power;
 
+static int monster_blow_effect_eval(int effect)
+{
+	static const int effect_evals[] = {
+		#define RBE(x, p, e, d) e,
+		#include "list-blow-effects.h"
+		#undef RBE
+	};
+
+	if (effect < RBE_NONE || effect >= RBE_MAX)
+		return 0;
+
+	return effect_evals[effect];
+}
+
 static long eval_blow_effect(int effect, int atk_dam, int rlev)
 {
-	switch (effect)
-	{
-		/*other bad effects - minor*/
-		case RBE_EAT_GOLD:
-		case RBE_EAT_ITEM:
-		case RBE_EAT_FOOD:
-		case RBE_EAT_LIGHT:
-		{
-			atk_dam += 5;
-			break;
-		}
-		/*other bad effects - poison / disease */
-		case RBE_POISON:
-		{
-			atk_dam *= 5;
-			atk_dam /= 4;
-			atk_dam += rlev;
-			break;
-		}
-		/*other bad effects - elements / sustains*/
-		case RBE_TERRIFY:
-		case RBE_ELEC:
-		case RBE_COLD:
-		case RBE_FIRE:
-		{
-			atk_dam += 10;
-			break;
-		}
-		/*other bad effects - elements / major*/
-		case RBE_ACID:
-		case RBE_BLIND:
-		case RBE_CONFUSE:
-		case RBE_LOSE_STR:
-		case RBE_LOSE_INT:
-		case RBE_LOSE_WIS:
-		case RBE_LOSE_DEX:
-		case RBE_HALLU:
-		{
-			atk_dam += 20;
-			break;
-		}
-		/*other bad effects - major*/
-		case RBE_UN_BONUS:
-		case RBE_UN_POWER:
-		case RBE_LOSE_CON:
-		{
-			atk_dam += 30;
-			break;
-		}
-		/*other bad effects - major*/
-		case RBE_PARALYZE:
-		case RBE_LOSE_ALL:
-		{
-			atk_dam += 40;
-			break;
-		}
-		/* Experience draining attacks */
-		case RBE_EXP_10:
-		case RBE_EXP_20:
-		{
-			/* change inspired by Eddie because exp is infinite */
-			atk_dam += 5;
-			break;
-		}
-		case RBE_EXP_40:
-		case RBE_EXP_80:
-		{
-			/* as above */
-			atk_dam += 10;
-			break;
-		}
-		/*Earthquakes*/
-		case RBE_SHATTER:
-		{
-			atk_dam += 300;
-			break;
-		}
-		/*nothing special*/
-		default: break;
+	int adjustment = monster_blow_effect_eval(effect);
+
+	if (effect == RBE_POISON) {
+		atk_dam *= 5;
+		atk_dam /= 4;
+		atk_dam += rlev;
+	}
+	else {
+		atk_dam += adjustment;
 	}
 
-	return (atk_dam);
+	return atk_dam;
 }
 
 static byte adj_energy(monster_race *r_ptr)

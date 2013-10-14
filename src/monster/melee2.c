@@ -1392,6 +1392,8 @@ typedef struct melee_effect_handler_context_s {
  */
 typedef void (*melee_effect_handler_f)(melee_effect_handler_context_t *);
 
+static bool monster_blow_method_physical(int method);
+
 /**
  * Do damage as the result of a melee attack that has an elemental aspect.
  *
@@ -1423,20 +1425,8 @@ static void melee_effect_elemental(melee_effect_handler_context_t *context, int 
 	physical_dam = adjust_dam_armor(context->damage, context->ac + 50);
 
 	/* Some attacks do no physical damage */
-	switch (context->method) {
-		case RBM_TOUCH:
-		case RBM_ENGULF:
-		case RBM_DROOL:
-		case RBM_SPIT:
-		case RBM_CRAWL:
-		case RBM_GAZE:
-		case RBM_WAIL:
-		case RBM_SPORE:
-		case RBM_BEG:
-		case RBM_INSULT:
-		case RBM_MOAN:
-			physical_dam = 0;
-	}
+	if (!monster_blow_method_physical(context->method))
+		physical_dam = 0;
 
 	elemental_dam = adjust_dam(context->p, type, context->damage, RANDOMISE,
 							   check_for_resist(context->p, type, context->p->state.flags, TRUE));
@@ -2171,6 +2161,117 @@ melee_effect_handler_f melee_handler_for_blow_effect(int effect)
 	return NULL;
 }
 
+
+static int monster_blow_effect_power(int effect)
+{
+	static const int effect_powers[] = {
+		#define RBE(x, p, e, d) p,
+		#include "list-blow-effects.h"
+		#undef RBE
+	};
+
+	if (effect < RBE_NONE || effect >= RBE_MAX)
+		return 0;
+
+	return effect_powers[effect];
+}
+
+static bool monster_blow_method_cut(int method)
+{
+	static const bool blow_cuts[] = {
+		#define RBM(x, c, s, miss, p, m, a, d) c,
+		#include "list-blow-methods.h"
+		#undef RBM
+	};
+
+	if (method < RBM_NONE || method >= RBM_MAX)
+		return FALSE;
+
+	return blow_cuts[method];
+}
+
+static bool monster_blow_method_stun(int method)
+{
+	static const bool blow_stuns[] = {
+		#define RBM(x, c, s, miss, p, m, a, d) s,
+		#include "list-blow-methods.h"
+		#undef RBM
+	};
+
+	if (method < RBM_NONE || method >= RBM_MAX)
+		return FALSE;
+
+	return blow_stuns[method];
+}
+
+static int monster_blow_method_message(int method)
+{
+	static const int blow_messages[] = {
+		#define RBM(x, c, s, miss, p, m, a, d) m,
+		#include "list-blow-methods.h"
+		#undef RBM
+	};
+
+	if (method < RBM_NONE || method >= RBM_MAX)
+		return MSG_GENERIC;
+
+	return blow_messages[method];
+}
+
+static const char *monster_blow_method_action(int method)
+{
+	static const char *blow_actions[] = {
+		#define RBM(x, c, s, miss, p, m, a, d) a,
+		#include "list-blow-methods.h"
+		#undef RBM
+	};
+	const char *action = NULL;
+
+	if (method < RBM_NONE || method >= RBM_MAX)
+		return NULL;
+
+	action = blow_actions[method];
+
+	if (method == RBM_INSULT && action == NULL) {
+		action = desc_insult[randint0(MAX_DESC_INSULT)];
+	}
+	else if (method == RBM_MOAN && action == NULL) {
+		action = desc_moan[randint0(MAX_DESC_MOAN)];
+	}
+
+	return action;
+}
+
+static bool monster_blow_method_miss(int method)
+{
+	static const bool blow_misses[] = {
+		#define RBM(x, c, s, miss, p, m, a, d) miss,
+		#include "list-blow-methods.h"
+		#undef RBM
+	};
+
+	if (method < RBM_NONE || method >= RBM_MAX)
+		return FALSE;
+
+	return blow_misses[method];
+}
+
+static bool monster_blow_method_physical(int method)
+{
+	static const bool blow_physicals[] = {
+		#define RBM(x, c, s, miss, p, m, a, d) p,
+		#include "list-blow-methods.h"
+		#undef RBM
+	};
+
+	if (method < RBM_NONE || method >= RBM_MAX)
+		return FALSE;
+
+	return blow_physicals[method];
+}
+
+
+
 /*
  * Attack the player via physical attacks.
  */
@@ -2179,12 +2280,9 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 	monster_lore *l_ptr = get_lore(m_ptr->race);
 	int ap_cnt;
 	int k, tmp, ac, rlev;
-	int do_cut, do_stun;
 	char m_name[80];
 	char ddesc[80];
 	bool blinked;
-	int sound_msg;
-
 
 	/* Not allowed to attack */
 	if (rf_has(m_ptr->race->flags, RF_NEVER_BLOW)) return (FALSE);
@@ -2214,6 +2312,9 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 
 		int power = 0;
 		int damage = 0;
+		int do_cut = 0;
+		int do_stun = 0;
+		int sound_msg = MSG_GENERIC;
 
 		const char *act = NULL;
 
@@ -2236,42 +2337,10 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 		if (rf_has(m_ptr->race->flags, RF_HAS_LIGHT)) visible = TRUE;
 
 		/* Extract the attack "power" */
-		switch (effect)
-		{
-			case RBE_HURT:      power = 40; break;
-			case RBE_POISON:    power = 20; break;
-			case RBE_ACID:      power = 20; break;
-			case RBE_ELEC:      power = 40; break;
-			case RBE_FIRE:      power = 40; break;
-			case RBE_COLD:      power = 40; break;
-			case RBE_BLIND:     power =  0; break;
-			case RBE_CONFUSE:   power = 20; break;
-			case RBE_TERRIFY:   power =  0; break;
-			case RBE_PARALYZE:  power =  0; break;
-			case RBE_HALLU:     power =  0; break;
-			case RBE_EXP_10:    power = 20; break;
-			case RBE_EXP_20:    power = 20; break;
-			case RBE_EXP_40:    power = 20; break;
-			case RBE_EXP_80:    power = 20; break;
-			case RBE_UN_BONUS:  power = 10; break;
-			case RBE_UN_POWER:  power = 10; break;
-			case RBE_EAT_GOLD:  power =  0; break;
-			case RBE_EAT_ITEM:  power =  0; break;
-			case RBE_EAT_FOOD:  power =  0; break;
-			case RBE_EAT_LIGHT: power =  0; break;
-			case RBE_LOSE_STR:  power =  0; break;
-			case RBE_LOSE_DEX:  power =  0; break;
-			case RBE_LOSE_CON:  power =  0; break;
-			case RBE_LOSE_INT:  power =  0; break;
-			case RBE_LOSE_WIS:  power =  0; break;
-			case RBE_LOSE_ALL:  power =  0; break;
-			case RBE_SHATTER:   power = 60; break;
-		}
-
+		power = monster_blow_effect_power(effect);
 
 		/* Monster hits player */
-		if (!effect || check_hit(p, power, rlev))
-		{
+		if (!effect || check_hit(p, power, rlev)) {
 			/* Always disturbing */
 			disturb(p, 1, 0);
 
@@ -2296,161 +2365,15 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 				}
 			}
 
-
-			/* Assume no cut or stun */
-			do_cut = do_stun = 0;
-
-			/* Assume no sound */
-			sound_msg = MSG_GENERIC;
-
 			/* Describe the attack method */
-			switch (method)
-			{
-				case RBM_HIT:
-				{
-					act = "hits you.";
-					do_cut = do_stun = 1;
-					sound_msg = MSG_MON_HIT;
-					break;
-				}
-
-				case RBM_TOUCH:
-				{
-					act = "touches you.";
-					sound_msg = MSG_MON_TOUCH;
-					break;
-				}
-
-				case RBM_PUNCH:
-				{
-					act = "punches you.";
-					do_stun = 1;
-					sound_msg = MSG_MON_PUNCH;
-					break;
-				}
-
-				case RBM_KICK:
-				{
-					act = "kicks you.";
-					do_stun = 1;
-					sound_msg = MSG_MON_KICK;
-					break;
-				}
-
-				case RBM_CLAW:
-				{
-					act = "claws you.";
-					do_cut = 1;
-					sound_msg = MSG_MON_CLAW;
-					break;
-				}
-
-				case RBM_BITE:
-				{
-					act = "bites you.";
-					do_cut = 1;
-					sound_msg = MSG_MON_BITE;
-					break;
-				}
-
-				case RBM_STING:
-				{
-					act = "stings you.";
-					sound_msg = MSG_MON_STING;
-					break;
-				}
-
-				case RBM_BUTT:
-				{
-					act = "butts you.";
-					do_stun = 1;
-					sound_msg = MSG_MON_BUTT;
-					break;
-				}
-
-				case RBM_CRUSH:
-				{
-					act = "crushes you.";
-					do_stun = 1;
-					sound_msg = MSG_MON_CRUSH;
-					break;
-				}
-
-				case RBM_ENGULF:
-				{
-					act = "engulfs you.";
-					sound_msg = MSG_MON_ENGULF;
-					break;
-				}
-
-				case RBM_CRAWL:
-				{
-					act = "crawls on you.";
-					sound_msg = MSG_MON_CRAWL;
-					break;
-				}
-
-				case RBM_DROOL:
-				{
-					act = "drools on you.";
-					sound_msg = MSG_MON_DROOL;
-					break;
-				}
-
-				case RBM_SPIT:
-				{
-					act = "spits on you.";
-					sound_msg = MSG_MON_SPIT;
-					break;
-				}
-
-				case RBM_GAZE:
-				{
-					act = "gazes at you.";
-					sound_msg = MSG_MON_GAZE;
-					break;
-				}
-
-				case RBM_WAIL:
-				{
-					act = "wails at you.";
-					sound_msg = MSG_MON_WAIL;
-					break;
-				}
-
-				case RBM_SPORE:
-				{
-					act = "releases spores at you.";
-					sound_msg = MSG_MON_SPORE;
-					break;
-				}
-
-				case RBM_BEG:
-				{
-					act = "begs you for money.";
-					sound_msg = MSG_MON_BEG;
-					break;
-				}
-
-				case RBM_INSULT:
-				{
-					act = desc_insult[randint0(MAX_DESC_INSULT)];
-					sound_msg = MSG_MON_INSULT;
-					break;
-				}
-
-				case RBM_MOAN:
-				{
-					act = desc_moan[randint0(MAX_DESC_MOAN)];
-					sound_msg = MSG_MON_MOAN;
-					break;
-				}
-			}
+			act = monster_blow_method_action(method);
+			do_cut = monster_blow_method_cut(method);
+			do_stun = monster_blow_method_stun(method);
+			sound_msg = monster_blow_method_message(method);
 
 			/* Message */
 			if (act)
 				msgt(sound_msg, "%s %s", m_name, act);
-
 
 			/* Hack -- assume all attacks are obvious */
 			obvious = TRUE;
@@ -2550,35 +2473,12 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 				if (k) (void)player_inc_timed(p, TMD_STUN, k, TRUE, TRUE);
 			}
 		}
-
-		/* Monster missed player */
-		else
-		{
-			/* Analyze failed attacks */
-			switch (method)
-			{
-				case RBM_HIT:
-				case RBM_TOUCH:
-				case RBM_PUNCH:
-				case RBM_KICK:
-				case RBM_CLAW:
-				case RBM_BITE:
-				case RBM_STING:
-				case RBM_BUTT:
-				case RBM_CRUSH:
-				case RBM_ENGULF:
-
-				/* Visible monsters */
-				if (m_ptr->ml)
-				{
-					/* Disturbing */
-					disturb(p, 1, 0);
-
-					/* Message */
-					msg("%s misses you.", m_name);
-				}
-
-				break;
+		else {
+			/* Visible monster missed player, so notify if appropriate. */
+			if (m_ptr->ml && monster_blow_method_miss(method)) {
+				/* Disturbing */
+				disturb(p, 1, 0);
+				msg("%s misses you.", m_name);
 			}
 		}
 

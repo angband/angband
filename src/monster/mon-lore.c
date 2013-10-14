@@ -598,10 +598,9 @@ static const char *lore_describe_race_flag(int flag)
 static const char *lore_describe_blow_method(int method)
 {
 	static const char *r_blow_method_description[] = {
-		#define RBM(a, b) b,
+		#define RBM(x, c, s, miss, p, m, a, d) d,
 		#include "monster/list-blow-methods.h"
 		#undef RBM
-		NULL
 	};
 
 	/* Return a placeholder for RBM_NONE, since it doesn't make sense to describe a blow that doesn't have a method */
@@ -621,10 +620,9 @@ static const char *lore_describe_blow_method(int method)
 static const char *lore_describe_blow_effect(int effect)
 {
 	static const char *r_blow_effect_description[] = {
-		#define RBE(a, b) b,
+		#define RBE(x, p, e, d) d,
 		#include "monster/list-blow-effects.h"
 		#undef RBE
-		NULL
 	};
 
 	/* Some blows have no effects, so we do want to return whatever is in the table for RBE_NONE */

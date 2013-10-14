@@ -269,10 +269,9 @@ static enum parser_error parse_r_w(struct parser *p) {
 
 static const char *r_info_blow_method[] =
 {
-	#define RBM(a, b) #a,
+	#define RBM(x, c, s, miss, p, m, a, d) #x,
 	#include "monster/list-blow-methods.h"
 	#undef RBM
-	NULL
 };
 
 static int find_blow_method(const char *name) {
@@ -285,10 +284,9 @@ static int find_blow_method(const char *name) {
 
 static const char *r_info_blow_effect[] =
 {
-	#define RBE(a, b) #a,
+	#define RBE(x, p, e, d) #x,
 	#include "monster/list-blow-effects.h"
 	#undef RBE
-	NULL
 };
 
 static int find_blow_effect(const char *name) {

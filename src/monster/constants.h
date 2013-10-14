@@ -34,10 +34,9 @@
  */
 enum
 {
-	#define RBM(x, y) RBM_##x,
+	#define RBM(x, c, s, miss, p, m, a, d) RBM_##x,
 	#include "list-blow-methods.h"
 	#undef RBM
-	RBM_MAX
 };
 
 /*
@@ -45,10 +44,9 @@ enum
  */
 enum
 {
-	#define RBE(x, y) RBE_##x,
+	#define RBE(x, p, e, d) RBE_##x,
 	#include "list-blow-effects.h"
 	#undef RBE
-	RBE_MAX
 };
 
 
