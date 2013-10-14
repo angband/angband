@@ -30,27 +30,6 @@
 #define MONSTER_BLOW_MAX 4
 
 /*
- * Monster blow methods
- */
-enum
-{
-	#define RBM(x, c, s, miss, p, m, a, d) RBM_##x,
-	#include "list-blow-methods.h"
-	#undef RBM
-};
-
-/*
- * Monster blow effects
- */
-enum
-{
-	#define RBE(x, p, e, d) RBE_##x,
-	#include "list-blow-effects.h"
-	#undef RBE
-};
-
-
-/*
  * XXX Hack: player immunity to mana draining cannot be represented by 
  * m_ptr->known_pflags, so we need this.
  */

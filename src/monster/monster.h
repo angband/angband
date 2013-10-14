@@ -25,6 +25,8 @@
 #include "z-rand.h"
 #include "cave.h"
 #include "monster/mon-timed.h"
+#include "monster/mon-blow-methods.h"
+#include "monster/mon-blow-effects.h"
 #include "object/obj-flag.h"
 
 /** Constants **/
@@ -290,9 +292,9 @@ typedef struct monster
 /* melee2.c */
 extern bool check_hit(struct player *p, int power, int level);
 extern void process_monsters(struct cave *c, byte min_energy);
-int mon_hp(const struct monster_race *r_ptr, aspect hp_aspect);
+extern int mon_hp(const struct monster_race *r_ptr, aspect hp_aspect);
 extern bool make_attack_spell(struct monster *m);
-
+extern int adjust_dam_armor(int damage, int ac);
 
 extern s16b num_repro;
 

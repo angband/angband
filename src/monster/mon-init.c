@@ -22,6 +22,8 @@
 #include "monster/mon-power.h"
 #include "monster/mon-spell.h"
 #include "monster/mon-util.h"
+#include "monster/mon-blow-methods.h"
+#include "monster/mon-blow-effects.h"
 #include "monster/monster.h"
 #include "parser.h"
 #include "z-util.h"
@@ -267,36 +269,6 @@ static enum parser_error parse_r_w(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static const char *r_info_blow_method[] =
-{
-	#define RBM(x, c, s, miss, p, m, a, d) #x,
-	#include "monster/list-blow-methods.h"
-	#undef RBM
-};
-
-static int find_blow_method(const char *name) {
-	int i;
-	for (i = 0; r_info_blow_method[i]; i++)
-		if (streq(name, r_info_blow_method[i]))
-			break;
-	return i;
-}
-
-static const char *r_info_blow_effect[] =
-{
-	#define RBE(x, p, e, d) #x,
-	#include "monster/list-blow-effects.h"
-	#undef RBE
-};
-
-static int find_blow_effect(const char *name) {
-	int i;
-	for (i = 0; r_info_blow_effect[i]; i++)
-		if (streq(name, r_info_blow_effect[i]))
-			break;
-	return i;
-}
-
 static enum parser_error parse_r_b(struct parser *p) {
 	struct monster_race *r = parser_priv(p);
 	int i;
@@ -309,12 +281,12 @@ static enum parser_error parse_r_b(struct parser *p) {
 			break;
 	if (i == MONSTER_BLOW_MAX)
 		return PARSE_ERROR_TOO_MANY_ENTRIES;
-	r->blow[i].method = find_blow_method(parser_getsym(p, "method"));
-	if (!r_info_blow_method[r->blow[i].method])
+	r->blow[i].method = monster_blow_method_for_string(parser_getsym(p, "method"));
+	if (!monster_blow_method_is_valid(r->blow[i].method))
 		return PARSE_ERROR_UNRECOGNISED_BLOW;
 	if (parser_hasval(p, "effect")) {
-		r->blow[i].effect = find_blow_effect(parser_getsym(p, "effect"));
-		if (!r_info_blow_effect[r->blow[i].effect])
+		r->blow[i].effect = monster_blow_effect_for_string(parser_getsym(p, "effect"));
+		if (!monster_blow_effect_is_valid(r->blow[i].effect))
 			return PARSE_ERROR_INVALID_EFFECT;
 	}
 	if (parser_hasval(p, "damage")) {

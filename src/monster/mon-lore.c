@@ -21,6 +21,7 @@
 #include "monster/mon-make.h"
 #include "monster/mon-spell.h"
 #include "monster/mon-util.h"
+#include "monster/mon-blow-effects.h"
 #include "object/tvalsval.h"
 #include "attack.h"
 
@@ -590,46 +591,18 @@ static const char *lore_describe_race_flag(int flag)
 
 /**
  * Return a description for the given monster blow method flags.
- *
- * Returns an sensible placeholder string for an out-of-range flag. Descriptions are in list-blow-methods.h.
- *
- * \param method is one of the RBM_ flags.
  */
 static const char *lore_describe_blow_method(int method)
 {
-	static const char *r_blow_method_description[] = {
-		#define RBM(x, c, s, miss, p, m, a, d) d,
-		#include "monster/list-blow-methods.h"
-		#undef RBM
-	};
-
-	/* Return a placeholder for RBM_NONE, since it doesn't make sense to describe a blow that doesn't have a method */
-	if (method <= RBM_NONE || method >= RBM_MAX)
-		return "do something weird";
-
-	return r_blow_method_description[method];
+	monster_blow_method_description(method);
 }
 
 /**
  * Return a description for the given monster blow effect flags.
- *
- * Returns an sensible placeholder string for an out-of-range flag. Descriptions are in list-blow-effects.h.
- *
- * \param effect is one of the RBE_ flags.
  */
 static const char *lore_describe_blow_effect(int effect)
 {
-	static const char *r_blow_effect_description[] = {
-		#define RBE(x, p, e, d) d,
-		#include "monster/list-blow-effects.h"
-		#undef RBE
-	};
-
-	/* Some blows have no effects, so we do want to return whatever is in the table for RBE_NONE */
-	if (effect < RBE_NONE || effect >= RBE_MAX)
-		return "do weird things";
-
-	return r_blow_effect_description[effect];
+	monster_blow_effect_description(effect);
 }
 
 /**

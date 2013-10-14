@@ -19,22 +19,10 @@
 #include "angband.h"
 #include "monster/mon-power.h"
 #include "monster/mon-spell.h"
+#include "monster/mon-blow-methods.h"
+#include "monster/mon-blow-effects.h"
 
 s32b tot_mon_power;
-
-static int monster_blow_effect_eval(int effect)
-{
-	static const int effect_evals[] = {
-		#define RBE(x, p, e, d) e,
-		#include "list-blow-effects.h"
-		#undef RBE
-	};
-
-	if (effect < RBE_NONE || effect >= RBE_MAX)
-		return 0;
-
-	return effect_evals[effect];
-}
 
 static long eval_blow_effect(int effect, int atk_dam, int rlev)
 {
