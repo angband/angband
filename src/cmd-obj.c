@@ -620,6 +620,12 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	/* Figure out effect to use */
 	effect = object_effect(o_ptr);
 
+	/* Check for unknown objects to prevent wasted player turns. */
+	if (effect == EF_IDENTIFY && !spell_identify_unknown_available()) {
+		msg("You have nothing to identify.");
+		return;
+	}
+
 	/* If the item requires a direction, get one (allow cancelling) */
 	if (obj_needs_aim(o_ptr))
 		dir = args[1].direction;
@@ -959,7 +965,13 @@ void do_cmd_cast(cmd_code code, cmd_arg args[])
 			{
 				/* Get the spell */
 				const magic_type *s_ptr = &p_ptr->class->spells.info[spell];
-				
+
+				/* Check for unknown objects to prevent wasted player turns. */
+				if (spell_is_identify(p_ptr->class->spell_book, spell) && !spell_identify_unknown_available()) {
+					msg("You have nothing to identify.");
+					return;
+				}
+
 				/* Verify "dangerous" spells */
 				if (s_ptr->smana > p_ptr->csp)
 				{

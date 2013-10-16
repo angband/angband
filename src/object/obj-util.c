@@ -3926,7 +3926,7 @@ void display_itemlist(void)
 	} else {
 		/* Reprint Message */
 		prt(format("You can see %d item%s:",
-				   counter, (counter > 1 ? "s" : "")), 0, 0);
+				   counter, PLURAL(counter)), 0, 0);
 	}
 
 	for (i = 0; i < counter; i++) {
@@ -3962,7 +3962,7 @@ void display_itemlist(void)
 
 			/* Reprint Message */
 			prt(format("You can see %d item%s:",
-					   counter, (counter > 1 ? "s" : "")), 0, 0);
+					   counter, PLURAL(counter)), 0, 0);
 
 			/* Reset */
 			line = 1;
@@ -4008,8 +4008,9 @@ void display_itemlist(void)
 	}
 
 	if (disp_count != counter) {
+		int others = counter - disp_count;
 		/* Print "and others" message if we've run out of space */
-		strnfmt(buf, sizeof buf, "  ...and %d others.", counter - disp_count);
+		strnfmt(buf, sizeof buf, "  ...and %d other%s.", others, PLURAL(others));
 		c_prt(TERM_WHITE, buf, line, x);
 	} else
 		/* Otherwise clear a line at the end, for main-term display */

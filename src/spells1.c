@@ -1302,8 +1302,9 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 		/* Make traps */
 		case GF_MAKE_TRAP:
 		{
-			/* Require an "empty" floor grid */
+			/* Require an "empty", non-warded floor grid */
 			if (!cave_isempty(cave, y, x)) break;
+			if (cave_iswarded(cave, y, x)) break;
 
 			/* Create a trap */
 			create_trap(cave, y, x);
@@ -1593,6 +1594,11 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ,
 				/* Observe the resist */
 				if (o_ptr->marked && !squelch_item_ok(o_ptr))
 					msg("The %s %s unaffected!", o_name, VERB_AGREEMENT(o_ptr->number, "is", "are"));
+			}
+
+			/* Reveal mimics */
+			else if (o_ptr->mimicking_m_idx) {
+				become_aware(cave_monster(cave, o_ptr->mimicking_m_idx));
 			}
 
 			/* Kill it */

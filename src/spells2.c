@@ -1481,7 +1481,28 @@ bool ident_spell(void)
 	return (TRUE);
 }
 
+/**
+ * Return TRUE if there are any objects available to identify (whether on floor or in inventory/equip.
+ */
+bool spell_identify_unknown_available(void)
+{
+	int floor_list[MAX_FLOOR_STACK];
+	int floor_num;
+	int i;
+	bool unidentified_inventory = FALSE;
 
+	item_tester_hook = item_tester_unknown;
+	floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), p_ptr->py, p_ptr->px, 0x0B);
+
+	for (i = 0; i < ALL_INVEN_TOTAL; i++) {
+		if (get_item_okay(i)) {
+			unidentified_inventory = TRUE;
+			break;
+		}
+	}
+
+	return unidentified_inventory || floor_num > 0;
+}
 
 /*
  * Hook for "get_item()".  Determine if something is rechargable.
