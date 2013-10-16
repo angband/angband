@@ -1938,8 +1938,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 				m_note = MON_MSG_IMMUNE;
 				dam = 0;
 			}
-			else if (rf_has(m_ptr->race->flags, RF_RES_NETH) ||
-			         rsf_has(m_ptr->race->spell_flags, RSF_BR_NETH))
+			else if (rf_has(m_ptr->race->flags, RF_RES_NETH))
 			{
 				m_note = MON_MSG_RESIST;
 				dam *= 3; dam /= (randint1(6)+6);
