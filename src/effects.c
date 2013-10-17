@@ -256,6 +256,26 @@ bool effect_stat_restore_all(effect_handler_context_t *context)
 	return TRUE;
 }
 
+bool effect_project_bolt_or_beam(effect_handler_context_t *context, int type, int dam)
+{
+	fire_bolt_or_beam(context->beam, type, context->dir, dam);
+	context->ident = TRUE;
+	return TRUE;
+}
+
+bool effect_project_bolt_only(effect_handler_context_t *context, int type, int dam)
+{
+	fire_bolt(type, context->dir, dam);
+	context->ident = TRUE;
+	return TRUE;
+}
+
+bool effect_project_ball(effect_handler_context_t *context, int type, int dam, int radius)
+{
+	fire_ball(type, context->dir, dam, radius);
+	context->ident = TRUE;
+	return TRUE;
+}
 
 #pragma mark handlers
 
@@ -1177,10 +1197,8 @@ bool effect_handler_RESTORE_LIFE(effect_handler_context_t *context)
 
 bool effect_handler_MISSILE(effect_handler_context_t *context)
 {
-	context->ident = TRUE;
 	int dam = damroll(3, 4) * (100 + context->boost) / 100;
-	fire_bolt_or_beam(context->beam, GF_MISSILE, context->dir, dam);
-	return TRUE;
+	return effect_project_bolt_or_beam(context, GF_MISSILE, dam);
 }
 
 bool effect_handler_DISPEL_EVIL(effect_handler_context_t *context)
@@ -1256,138 +1274,104 @@ bool effect_handler_HASTE2(effect_handler_context_t *context)
 
 bool effect_handler_FIRE_BOLT(effect_handler_context_t *context)
 {
-	context->ident = TRUE;
 	int dam = damroll(9, 8) * (100 + context->boost) / 100;
-	fire_bolt(GF_FIRE, context->dir, dam);
-	return TRUE;
+	return effect_project_bolt_only(context, GF_FIRE, dam);
 }
 
 bool effect_handler_FIRE_BOLT2(effect_handler_context_t *context)
 {
 	int dam = damroll(12, 8) * (100 + context->boost) / 100;
-	fire_bolt_or_beam(context->beam, GF_FIRE, context->dir, dam);
-	context->ident = TRUE;
-	return TRUE;
+	return effect_project_bolt_or_beam(context, GF_FIRE, dam);
 }
 
 bool effect_handler_FIRE_BOLT3(effect_handler_context_t *context)
 {
 	int dam = damroll(16, 8) * (100 + context->boost) / 100;
-	fire_bolt_or_beam(context->beam, GF_FIRE, context->dir, dam);
-	context->ident = TRUE;
-	return TRUE;
+	return effect_project_bolt_or_beam(context, GF_FIRE, dam);
 }
 
 bool effect_handler_FIRE_BOLT72(effect_handler_context_t *context)
 {
 	int dam = 72 * (100 + context->boost) / 100;
-	context->ident = TRUE;
-	fire_ball(GF_FIRE, context->dir, dam, 2);
-	return TRUE;
+	return effect_project_ball(context, GF_FIRE, dam, 2);
 }
 
 bool effect_handler_FIRE_BALL(effect_handler_context_t *context)
 {
 	int dam = 144 * (100 + context->boost) / 100;
-	fire_ball(GF_FIRE, context->dir, dam, 2);
-	context->ident = TRUE;
-	return TRUE;
+	return effect_project_ball(context, GF_FIRE, dam, 2);
 }
 
 bool effect_handler_FIRE_BALL2(effect_handler_context_t *context)
 {
 	int dam = 120 * (100 + context->boost) / 100;
-	context->ident = TRUE;
-	fire_ball(GF_FIRE, context->dir, dam, 3);
-	return TRUE;
+	return effect_project_ball(context, GF_FIRE, dam, 3);
 }
 
 bool effect_handler_FIRE_BALL200(effect_handler_context_t *context)
 {
 	int dam = 200 * (100 + context->boost) / 100;
-	context->ident = TRUE;
-	fire_ball(GF_FIRE, context->dir, dam, 3);
-	return TRUE;
+	return effect_project_ball(context, GF_FIRE, dam, 3);
 }
 
 bool effect_handler_COLD_BOLT(effect_handler_context_t *context)
 {
 	int dam = damroll(6, 8) * (100 + context->boost) / 100;
-	context->ident = TRUE;
-	fire_bolt_or_beam(context->beam, GF_COLD, context->dir, dam);
-	return TRUE;
+	return effect_project_bolt_or_beam(context, GF_COLD, dam);
 }
 
 bool effect_handler_COLD_BOLT2(effect_handler_context_t *context)
 {
 	int dam = damroll(12, 8) * (100 + context->boost) / 100;
-	context->ident = TRUE;
-	fire_bolt(GF_COLD, context->dir, dam);
-	return TRUE;
+	return effect_project_bolt_only(context, GF_COLD, dam);
 }
 
 bool effect_handler_COLD_BALL2(effect_handler_context_t *context)
 {
 	int dam = 200 * (100 + context->boost) / 100;
-	context->ident = TRUE;
-	fire_ball(GF_COLD, context->dir, dam, 3);
-	return TRUE;
+	return effect_project_ball(context, GF_COLD, dam, 3);
 }
 
 bool effect_handler_COLD_BALL50(effect_handler_context_t *context)
 {
 	int dam = 50 * (100 + context->boost) / 100;
-	context->ident = TRUE;
-	fire_ball(GF_COLD, context->dir, dam, 2);
-	return TRUE;
+	return effect_project_ball(context, GF_COLD, dam, 2);
 }
 
 bool effect_handler_COLD_BALL100(effect_handler_context_t *context)
 {
 	int dam = 100 * (100 + context->boost) / 100;
-	context->ident = TRUE;
-	fire_ball(GF_COLD, context->dir, dam, 2);
-	return TRUE;
+	return effect_project_ball(context, GF_COLD, dam, 2);
 }
 
 bool effect_handler_COLD_BALL160(effect_handler_context_t *context)
 {
 	int dam = 160 * (100 + context->boost) / 100;
-	context->ident = TRUE;
-	fire_ball(GF_COLD, context->dir, dam, 3);
-	return TRUE;
+	return effect_project_ball(context, GF_COLD, dam, 3);
 }
 
 bool effect_handler_ACID_BOLT(effect_handler_context_t *context)
 {
 	int dam = damroll(5, 8) * (100 + context->boost) / 100;
-	context->ident = TRUE;
-	fire_bolt(GF_ACID, context->dir, dam);
-	return TRUE;
+	return effect_project_bolt_only(context, GF_ACID, dam);
 }
 
 bool effect_handler_ACID_BOLT2(effect_handler_context_t *context)
 {
 	int dam = damroll(10, 8) * (100 + context->boost) / 100;
-	fire_bolt_or_beam(context->beam, GF_ACID, context->dir, dam);
-	context->ident = TRUE;
-	return TRUE;
+	return effect_project_bolt_or_beam(context, GF_ACID, dam);
 }
 
 bool effect_handler_ACID_BOLT3(effect_handler_context_t *context)
 {
 	int dam = damroll(12, 8) * (100 + context->boost) / 100;
-	fire_bolt_or_beam(context->beam, GF_ACID, context->dir, dam);
-	context->ident = TRUE;
-	return TRUE;
+	return effect_project_bolt_or_beam(context, GF_ACID, dam);
 }
 
 bool effect_handler_ACID_BALL(effect_handler_context_t *context)
 {
 	int dam = 120 * (100 + context->boost) / 100;
-	fire_ball(GF_ACID, context->dir, dam, 2);
-	context->ident = TRUE;
-	return TRUE;
+	return effect_project_ball(context, GF_ACID, dam, 2);
 }
 
 bool effect_handler_ELEC_BOLT(effect_handler_context_t *context)
@@ -1401,25 +1385,19 @@ bool effect_handler_ELEC_BOLT(effect_handler_context_t *context)
 bool effect_handler_ELEC_BALL(effect_handler_context_t *context)
 {
 	int dam = 64 * (100 + context->boost) / 100;
-	fire_ball(GF_ELEC, context->dir, dam, 2);
-	context->ident = TRUE;
-	return TRUE;
+	return effect_project_ball(context, GF_ELEC, dam, 2);
 }
 
 bool effect_handler_ELEC_BALL2(effect_handler_context_t *context)
 {
 	int dam = 250 * (100 + context->boost) / 100;
-	context->ident = TRUE;
-	fire_ball(GF_ELEC, context->dir, dam, 3);
-	return TRUE;
+	return effect_project_ball(context, GF_ELEC, dam, 3);
 }
 
 bool effect_handler_ARROW(effect_handler_context_t *context)
 {
 	int dam = 150 * (100 + context->boost) / 100;
-	context->ident = TRUE;
-	fire_bolt(GF_ARROW, context->dir, dam);
-	return TRUE;
+	return effect_project_bolt_only(context, GF_ARROW, dam);
 }
 
 bool effect_handler_REM_FEAR_POIS(effect_handler_context_t *context)
@@ -1433,9 +1411,7 @@ bool effect_handler_REM_FEAR_POIS(effect_handler_context_t *context)
 bool effect_handler_STINKING_CLOUD(effect_handler_context_t *context)
 {
 	int dam = 12 * (100 + context->boost) / 100;
-	context->ident = TRUE;
-	fire_ball(GF_POIS, context->dir, dam, 3);
-	return TRUE;
+	return effect_project_ball(context, GF_POIS, dam, 3);
 }
 
 bool effect_handler_DRAIN_LIFE1(effect_handler_context_t *context)
@@ -1476,9 +1452,7 @@ bool effect_handler_FIREBRAND(effect_handler_context_t *context)
 bool effect_handler_MANA_BOLT(effect_handler_context_t *context)
 {
 	int dam = damroll(12, 8) * (100 + context->boost) / 100;
-	fire_bolt(GF_MANA, context->dir, dam);
-	context->ident = TRUE;
-	return TRUE;
+	return effect_project_bolt_only(context, GF_MANA, dam);
 }
 
 bool effect_handler_MON_HEAL(effect_handler_context_t *context)
