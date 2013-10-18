@@ -74,7 +74,7 @@ static const char *k_info_flags[] = {
 };
 
 static const char *effect_list[] = {
-	#define EFFECT(x, a, r, v, d)    #x,
+	#define EFFECT(x, a, r, h, v, c, d)	#x,
 	#include "list-effects.h"
 	#undef EFFECT
 };

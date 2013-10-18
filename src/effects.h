@@ -21,7 +21,7 @@
 /* Types of effect */
 typedef enum
 {
-	#define EFFECT(x, a, r, v, d)		EF_##x,
+	#define EFFECT(x, a, r, h, v, c, d)	EF_##x,
 	#include "list-effects.h"
 	#undef EFFECT
 

@@ -25,6 +25,20 @@
 #include "trap.h"
 #include "spells.h"
 
+
+typedef struct effect_handler_context_s {
+	const effect_type effect;
+	const bool aware;
+	const int dir;
+	const int beam;
+	const int boost;
+	const random_value value;
+	const int p1, p2, p3;
+	bool ident;
+} effect_handler_context_t;
+
+typedef bool (*effect_handler_f)(effect_handler_context_t *);
+
 /*
  * Entries for spell/activation descriptions
  */
@@ -33,67 +47,13 @@ typedef struct
 	u16b index;          /* Effect index */
 	bool aim;            /* Whether the effect requires aiming */
 	u16b power;	     /* Power rating for obj-power.c */
+	effect_handler_f handler;
 	random_value value;
+	int params[3];
 	const char *desc;    /* Effect description */
 } info_entry;
 
-/*
- * Useful things about effects.
- */
-static const info_entry effects[] =
-{
-	#define RV(b, x, y, m) {b, x, y, m}
-	#define EFFECT(x, a, r, v, d)    { EF_##x, a, r, v, d },
-	#include "list-effects.h"
-	#undef EFFECT
-	#undef RV
-};
 
-
-/*
- * Utility functions
- */
-bool effect_aim(effect_type effect)
-{
-	if (effect < 1 || effect > EF_MAX)
-		return FALSE;
-
-	return effects[effect].aim;
-}
-
-int effect_power(effect_type effect)
-{
-	if (effect < 1 || effect > EF_MAX)
-		return FALSE;
-
-	return effects[effect].power;
-}
-
-random_value effect_value(effect_type effect)
-{
-	if (effect < 1 || effect > EF_MAX) {
-		random_value rv = {0, 0, 0, 0};
-		return rv;
-	}
-
-	return effects[effect].value;
-}
-
-const char *effect_desc(effect_type effect)
-{
-	if (effect < 1 || effect > EF_MAX)
-		return FALSE;
-
-	return effects[effect].desc;
-}
-
-bool effect_obvious(effect_type effect)
-{
-	if (effect == EF_IDENTIFY)
-		return TRUE;
-
-	return FALSE;
-}
 
 
 /*
@@ -166,15 +126,6 @@ bool effect_wonder(int dir, int die, int beam)
 }
 
 
-typedef struct effect_handler_context_s {
-	const effect_type effect;
-	const bool aware;
-	const int dir;
-	const int beam;
-	const int boost;
-	const random_value value;
-	bool ident;
-} effect_handler_context_t;
 
 
 typedef struct effect_breath_info_s {
@@ -2144,260 +2095,82 @@ bool effect_handler_TRAP_GAS_SLEEP(effect_handler_context_t *context)
 }
 
 
-
-
-
-typedef bool (*effect_handler_f)(effect_handler_context_t *);
-
-effect_handler_f effect_handler_for_effect(effect_type effect)
+/*
+ * Useful things about effects.
+ */
+static const info_entry effects[] =
 {
-	/* Effect handler table. Terminator is {(effect_type)-1, NULL}. */
-	static const struct effect_handler_s {
-		effect_type effect;
-		effect_handler_f handler;
-	} effect_handlers[] = {
-		{ EF_POISON, effect_handler_POISON },
-		{ EF_BLIND, effect_handler_BLIND },
-		{ EF_SCARE, effect_handler_SCARE },
-		{ EF_CONFUSE, effect_handler_CONFUSE },
-		{ EF_HALLUC, effect_handler_HALLUC },
-		{ EF_PARALYZE, effect_handler_PARALYZE },
-		{ EF_SLOW, effect_handler_SLOW },
-		{ EF_CURE_POISON, effect_handler_CURE_POISON },
-		{ EF_CURE_BLINDNESS, effect_handler_CURE_BLINDNESS },
-		{ EF_CURE_PARANOIA, effect_handler_CURE_PARANOIA },
-		{ EF_CURE_CONFUSION, effect_handler_CURE_CONFUSION },
-		{ EF_CURE_MIND, effect_handler_CURE_MIND },
-		{ EF_CURE_BODY, effect_handler_CURE_BODY },
-		{ EF_CURE_LIGHT, effect_handler_CURE_LIGHT },
-		{ EF_CURE_SERIOUS, effect_handler_CURE_SERIOUS },
-		{ EF_CURE_CRITICAL, effect_handler_CURE_CRITICAL },
-		{ EF_CURE_FULL, effect_handler_CURE_FULL },
-		{ EF_CURE_FULL2, effect_handler_CURE_FULL2 },
-		{ EF_CURE_TEMP, effect_handler_CURE_TEMP },
-		{ EF_HEAL1, effect_handler_HEAL1 },
-		{ EF_HEAL2, effect_handler_HEAL2 },
-		{ EF_HEAL3, effect_handler_HEAL3 },
-		{ EF_GAIN_EXP, effect_handler_GAIN_EXP },
-		{ EF_LOSE_EXP, effect_handler_LOSE_EXP },
-		{ EF_RESTORE_EXP, effect_handler_RESTORE_EXP },
-		{ EF_RESTORE_MANA, effect_handler_RESTORE_MANA },
-		{ EF_GAIN_STR, effect_handler_GAIN_STR },
-		{ EF_GAIN_INT, effect_handler_GAIN_INT },
-		{ EF_GAIN_WIS, effect_handler_GAIN_WIS },
-		{ EF_GAIN_DEX, effect_handler_GAIN_DEX },
-		{ EF_GAIN_CON, effect_handler_GAIN_CON },
-		{ EF_GAIN_ALL, effect_handler_GAIN_ALL },
-		{ EF_BRAWN, effect_handler_BRAWN },
-		{ EF_INTELLECT, effect_handler_INTELLECT },
-		{ EF_CONTEMPLATION, effect_handler_CONTEMPLATION },
-		{ EF_TOUGHNESS, effect_handler_TOUGHNESS },
-		{ EF_NIMBLENESS, effect_handler_NIMBLENESS },
-		{ EF_LOSE_STR, effect_handler_LOSE_STR },
-		{ EF_LOSE_INT, effect_handler_LOSE_INT },
-		{ EF_LOSE_WIS, effect_handler_LOSE_WIS },
-		{ EF_LOSE_DEX, effect_handler_LOSE_DEX },
-		{ EF_LOSE_CON, effect_handler_LOSE_CON },
-		{ EF_LOSE_CON2, effect_handler_LOSE_CON2 },
-		{ EF_RESTORE_STR, effect_handler_RESTORE_STR },
-		{ EF_RESTORE_INT, effect_handler_RESTORE_INT },
-		{ EF_RESTORE_WIS, effect_handler_RESTORE_WIS },
-		{ EF_RESTORE_DEX, effect_handler_RESTORE_DEX },
-		{ EF_RESTORE_CON, effect_handler_RESTORE_CON },
-		{ EF_CURE_NONORLYBIG, effect_handler_CURE_NONORLYBIG },
-		{ EF_RESTORE_ALL, effect_handler_RESTORE_ALL },
-		{ EF_RESTORE_ST_LEV, effect_handler_RESTORE_ST_LEV },
-		{ EF_TMD_INFRA, effect_handler_TMD_INFRA },
-		{ EF_TMD_SINVIS, effect_handler_TMD_SINVIS },
-		{ EF_TMD_ESP, effect_handler_TMD_ESP },
-		{ EF_ENLIGHTENMENT, effect_handler_ENLIGHTENMENT },
-		{ EF_ENLIGHTENMENT2, effect_handler_ENLIGHTENMENT2 },
-		{ EF_HERO, effect_handler_HERO },
-		{ EF_SHERO, effect_handler_SHERO },
-		{ EF_RESIST_ACID, effect_handler_RESIST_ACID },
-		{ EF_RESIST_ELEC, effect_handler_RESIST_ELEC },
-		{ EF_RESIST_FIRE, effect_handler_RESIST_FIRE },
-		{ EF_RESIST_COLD, effect_handler_RESIST_COLD },
-		{ EF_RESIST_POIS, effect_handler_RESIST_POIS },
-		{ EF_RESIST_ALL, effect_handler_RESIST_ALL },
-		{ EF_DETECT_TREASURE, effect_handler_DETECT_TREASURE },
-		{ EF_DETECT_TRAP, effect_handler_DETECT_TRAP },
-		{ EF_DETECT_DOORSTAIR, effect_handler_DETECT_DOORSTAIR },
-		{ EF_DETECT_INVIS, effect_handler_DETECT_INVIS },
-		{ EF_DETECT_EVIL, effect_handler_DETECT_EVIL },
-		{ EF_DETECT_ALL, effect_handler_DETECT_ALL },
-		{ EF_ENCHANT_TOHIT, effect_handler_ENCHANT_TOHIT },
-		{ EF_ENCHANT_TODAM, effect_handler_ENCHANT_TODAM },
-		{ EF_ENCHANT_WEAPON, effect_handler_ENCHANT_WEAPON },
-		{ EF_ENCHANT_ARMOR, effect_handler_ENCHANT_ARMOR },
-		{ EF_ENCHANT_ARMOR2, effect_handler_ENCHANT_ARMOR2 },
-		{ EF_RESTORE_ITEM, effect_handler_RESTORE_ITEM },
-		{ EF_IDENTIFY, effect_handler_IDENTIFY },
-		{ EF_REMOVE_CURSE, effect_handler_REMOVE_CURSE },
-		{ EF_REMOVE_CURSE2, effect_handler_REMOVE_CURSE2 },
-		{ EF_LIGHT, effect_handler_LIGHT },
-		{ EF_SUMMON_MON, effect_handler_SUMMON_MON },
-		{ EF_SUMMON_UNDEAD, effect_handler_SUMMON_UNDEAD },
-		{ EF_TELE_PHASE, effect_handler_TELE_PHASE },
-		{ EF_TELE_LONG, effect_handler_TELE_LONG },
-		{ EF_TELE_LEVEL, effect_handler_TELE_LEVEL },
-		{ EF_CONFUSING, effect_handler_CONFUSING },
-		{ EF_MAPPING, effect_handler_MAPPING },
-		{ EF_RUNE, effect_handler_RUNE },
-		{ EF_ACQUIRE, effect_handler_ACQUIRE },
-		{ EF_ACQUIRE2, effect_handler_ACQUIRE2 },
-		{ EF_ANNOY_MON, effect_handler_ANNOY_MON },
-		{ EF_CREATE_TRAP, effect_handler_CREATE_TRAP },
-		{ EF_DESTROY_TDOORS, effect_handler_DESTROY_TDOORS },
-		{ EF_RECHARGE, effect_handler_RECHARGE },
-		{ EF_BANISHMENT, effect_handler_BANISHMENT },
-		{ EF_DARKNESS, effect_handler_DARKNESS },
-		{ EF_PROTEVIL, effect_handler_PROTEVIL },
-		{ EF_SATISFY, effect_handler_SATISFY },
-		{ EF_CURSE_WEAPON, effect_handler_CURSE_WEAPON },
-		{ EF_CURSE_ARMOR, effect_handler_CURSE_ARMOR },
-		{ EF_BLESSING, effect_handler_BLESSING },
-		{ EF_BLESSING2, effect_handler_BLESSING2 },
-		{ EF_BLESSING3, effect_handler_BLESSING3 },
-		{ EF_RECALL, effect_handler_RECALL },
-		{ EF_DEEP_DESCENT, effect_handler_DEEP_DESCENT },
-		{ EF_LOSHASTE, effect_handler_LOSHASTE },
-		{ EF_LOSSLEEP, effect_handler_LOSSLEEP },
-		{ EF_LOSSLOW, effect_handler_LOSSLOW },
-		{ EF_LOSCONF, effect_handler_LOSCONF },
-		{ EF_LOSKILL, effect_handler_LOSKILL },
-		{ EF_EARTHQUAKES, effect_handler_EARTHQUAKES },
-		{ EF_DESTRUCTION2, effect_handler_DESTRUCTION2 },
-		{ EF_ILLUMINATION, effect_handler_ILLUMINATION },
-		{ EF_CLAIRVOYANCE, effect_handler_CLAIRVOYANCE },
-		{ EF_PROBING, effect_handler_PROBING },
-		{ EF_STONE_TO_MUD, effect_handler_STONE_TO_MUD },
-		{ EF_CONFUSE2, effect_handler_CONFUSE2 },
-		{ EF_BIZARRE, effect_handler_BIZARRE },
-		{ EF_STAR_BALL, effect_handler_STAR_BALL },
-		{ EF_RAGE_BLESS_RESIST, effect_handler_RAGE_BLESS_RESIST },
-		{ EF_SLEEPII, effect_handler_SLEEPII },
-		{ EF_RESTORE_LIFE, effect_handler_RESTORE_LIFE },
-		{ EF_MISSILE, effect_handler_MISSILE },
-		{ EF_DISPEL_EVIL, effect_handler_DISPEL_EVIL },
-		{ EF_DISPEL_EVIL60, effect_handler_DISPEL_EVIL60 },
-		{ EF_DISPEL_UNDEAD, effect_handler_DISPEL_UNDEAD },
-		{ EF_DISPEL_ALL, effect_handler_DISPEL_ALL },
-		{ EF_HASTE, effect_handler_HASTE },
-		{ EF_HASTE1, effect_handler_HASTE1 },
-		{ EF_HASTE2, effect_handler_HASTE2 },
-		{ EF_FIRE_BOLT, effect_handler_FIRE_BOLT },
-		{ EF_FIRE_BOLT2, effect_handler_FIRE_BOLT2 },
-		{ EF_FIRE_BOLT3, effect_handler_FIRE_BOLT3 },
-		{ EF_FIRE_BOLT72, effect_handler_FIRE_BOLT72 },
-		{ EF_FIRE_BALL, effect_handler_FIRE_BALL },
-		{ EF_FIRE_BALL2, effect_handler_FIRE_BALL2 },
-		{ EF_FIRE_BALL200, effect_handler_FIRE_BALL200 },
-		{ EF_COLD_BOLT, effect_handler_COLD_BOLT },
-		{ EF_COLD_BOLT2, effect_handler_COLD_BOLT2 },
-		{ EF_COLD_BALL2, effect_handler_COLD_BALL2 },
-		{ EF_COLD_BALL50, effect_handler_COLD_BALL50 },
-		{ EF_COLD_BALL100, effect_handler_COLD_BALL100 },
-		{ EF_COLD_BALL160, effect_handler_COLD_BALL160 },
-		{ EF_ACID_BOLT, effect_handler_ACID_BOLT },
-		{ EF_ACID_BOLT2, effect_handler_ACID_BOLT2 },
-		{ EF_ACID_BOLT3, effect_handler_ACID_BOLT3 },
-		{ EF_ACID_BALL, effect_handler_ACID_BALL },
-		{ EF_ELEC_BOLT, effect_handler_ELEC_BOLT },
-		{ EF_ELEC_BALL, effect_handler_ELEC_BALL },
-		{ EF_ELEC_BALL2, effect_handler_ELEC_BALL2 },
-		{ EF_ARROW, effect_handler_ARROW },
-		{ EF_REM_FEAR_POIS, effect_handler_REM_FEAR_POIS },
-		{ EF_STINKING_CLOUD, effect_handler_STINKING_CLOUD },
-		{ EF_DRAIN_LIFE1, effect_handler_DRAIN_LIFE1 },
-		{ EF_DRAIN_LIFE2, effect_handler_DRAIN_LIFE2 },
-		{ EF_DRAIN_LIFE3, effect_handler_DRAIN_LIFE3 },
-		{ EF_DRAIN_LIFE4, effect_handler_DRAIN_LIFE4 },
-		{ EF_FIREBRAND, effect_handler_FIREBRAND },
-		{ EF_MANA_BOLT, effect_handler_MANA_BOLT },
-		{ EF_MON_HEAL, effect_handler_MON_HEAL },
-		{ EF_MON_HASTE, effect_handler_MON_HASTE },
-		{ EF_MON_SLOW, effect_handler_MON_SLOW },
-		{ EF_MON_CONFUSE, effect_handler_MON_CONFUSE },
-		{ EF_MON_SLEEP, effect_handler_MON_SLEEP },
-		{ EF_MON_CLONE, effect_handler_MON_CLONE },
-		{ EF_MON_SCARE, effect_handler_MON_SCARE },
-		{ EF_LIGHT_LINE, effect_handler_LIGHT_LINE },
-		{ EF_TELE_OTHER, effect_handler_TELE_OTHER },
-		{ EF_DISARMING, effect_handler_DISARMING },
-		{ EF_TDOOR_DEST, effect_handler_TDOOR_DEST },
-		{ EF_POLYMORPH, effect_handler_POLYMORPH },
-		{ EF_STARLIGHT, effect_handler_STARLIGHT },
-		{ EF_STARLIGHT2, effect_handler_STARLIGHT2 },
-		{ EF_BERSERKER, effect_handler_BERSERKER },
-		{ EF_WONDER, effect_handler_WONDER },
-		{ EF_WAND_BREATH, effect_handler_WAND_BREATH },
-		{ EF_STAFF_MAGI, effect_handler_STAFF_MAGI },
-		{ EF_STAFF_HOLY, effect_handler_STAFF_HOLY },
-		{ EF_DRINK_BREATH, effect_handler_DRINK_BREATH },
-		{ EF_DRINK_GOOD, effect_handler_DRINK_GOOD },
-		{ EF_DRINK_DEATH, effect_handler_DRINK_DEATH },
-		{ EF_DRINK_RUIN, effect_handler_DRINK_RUIN },
-		{ EF_DRINK_DETONATE, effect_handler_DRINK_DETONATE },
-		{ EF_DRINK_SALT, effect_handler_DRINK_SALT },
-		{ EF_FOOD_GOOD, effect_handler_FOOD_GOOD },
-		{ EF_FOOD_WAYBREAD, effect_handler_FOOD_WAYBREAD },
-		{ EF_FOOD_CRUNCH, effect_handler_FOOD_CRUNCH },
-		{ EF_FOOD_WHISKY, effect_handler_FOOD_WHISKY },
-		{ EF_FOOD_WINE, effect_handler_FOOD_WINE },
-		{ EF_SHROOM_EMERGENCY, effect_handler_SHROOM_EMERGENCY },
-		{ EF_SHROOM_TERROR, effect_handler_SHROOM_TERROR },
-		{ EF_SHROOM_STONE, effect_handler_SHROOM_STONE },
-		{ EF_SHROOM_DEBILITY, effect_handler_SHROOM_DEBILITY },
-		{ EF_SHROOM_SPRINTING, effect_handler_SHROOM_SPRINTING },
-		{ EF_SHROOM_PURGING, effect_handler_SHROOM_PURGING },
-		{ EF_RING_ACID, effect_handler_RING_ACID },
-		{ EF_RING_FLAMES, effect_handler_RING_FLAMES },
-		{ EF_RING_ICE, effect_handler_RING_ICE },
-		{ EF_RING_LIGHTNING, effect_handler_RING_LIGHTNING },
-		{ EF_DRAGON_BLUE, effect_handler_DRAGON_BLUE },
-		{ EF_DRAGON_GREEN, effect_handler_DRAGON_GREEN },
-		{ EF_DRAGON_RED, effect_handler_DRAGON_RED },
-		{ EF_DRAGON_MULTIHUED, effect_handler_DRAGON_MULTIHUED },
-		{ EF_DRAGON_BRONZE, effect_handler_DRAGON_BRONZE },
-		{ EF_DRAGON_GOLD, effect_handler_DRAGON_GOLD },
-		{ EF_DRAGON_CHAOS, effect_handler_DRAGON_CHAOS },
-		{ EF_DRAGON_LAW, effect_handler_DRAGON_LAW },
-		{ EF_DRAGON_BALANCE, effect_handler_DRAGON_BALANCE },
-		{ EF_DRAGON_SHINING, effect_handler_DRAGON_SHINING },
-		{ EF_DRAGON_POWER, effect_handler_DRAGON_POWER },
-		{ EF_TRAP_DOOR, effect_handler_TRAP_DOOR },
-		{ EF_TRAP_PIT, effect_handler_TRAP_PIT },
-		{ EF_TRAP_PIT_SPIKES, effect_handler_TRAP_PIT_SPIKES },
-		{ EF_TRAP_PIT_POISON, effect_handler_TRAP_PIT_POISON },
-		{ EF_TRAP_RUNE_SUMMON, effect_handler_TRAP_RUNE_SUMMON },
-		{ EF_TRAP_RUNE_TELEPORT, effect_handler_TRAP_RUNE_TELEPORT },
-		{ EF_TRAP_SPOT_FIRE, effect_handler_TRAP_SPOT_FIRE },
-		{ EF_TRAP_SPOT_ACID, effect_handler_TRAP_SPOT_ACID },
-		{ EF_TRAP_DART_SLOW, effect_handler_TRAP_DART_SLOW },
-		{ EF_TRAP_DART_LOSE_STR, effect_handler_TRAP_DART_LOSE_STR },
-		{ EF_TRAP_DART_LOSE_DEX, effect_handler_TRAP_DART_LOSE_DEX },
-		{ EF_TRAP_DART_LOSE_CON, effect_handler_TRAP_DART_LOSE_CON },
-		{ EF_TRAP_GAS_BLIND, effect_handler_TRAP_GAS_BLIND },
-		{ EF_TRAP_GAS_CONFUSE, effect_handler_TRAP_GAS_CONFUSE },
-		{ EF_TRAP_GAS_POISON, effect_handler_TRAP_GAS_POISON },
-		{ EF_TRAP_GAS_SLEEP, effect_handler_TRAP_GAS_SLEEP },
-		{ EF_XXX, NULL },
-		{ (effect_type)-1, NULL },
-	};
-	const struct effect_handler_s *current = effect_handlers;
+	#define RV(b, x, y, m) {b, x, y, m}
+	#define EP(p1, p2, p3) {p1, p2, p3}
+	#define F(x) effect_handler_##x
+	#define EFFECT(x, a, r, h, v, c, d)    { EF_##x, a, r, h, v, c, d },
+	#include "list-effects.h"
+	#undef EFFECT
+	#undef F
+	#undef EP
+	#undef RV
+};
 
-	if (effect < 1 || effect >= EF_MAX)
-		return NULL;
 
-	while (current->effect != (effect_type)-1 && current->handler != NULL) {
-		if (effect == current->effect)
-			return current->handler;
+/*
+ * Utility functions
+ */
+bool effect_aim(effect_type effect)
+{
+	if (effect < 1 || effect > EF_MAX)
+		return FALSE;
 
-		current++;
+	return effects[effect].aim;
+}
+
+int effect_power(effect_type effect)
+{
+	if (effect < 1 || effect > EF_MAX)
+		return FALSE;
+
+	return effects[effect].power;
+}
+
+random_value effect_value(effect_type effect)
+{
+	if (effect < 1 || effect > EF_MAX) {
+		random_value rv = {0, 0, 0, 0};
+		return rv;
 	}
 
-	return NULL;
+	return effects[effect].value;
+}
+
+const char *effect_desc(effect_type effect)
+{
+	if (effect < 1 || effect > EF_MAX)
+		return FALSE;
+
+	return effects[effect].desc;
+}
+
+bool effect_obvious(effect_type effect)
+{
+	if (effect == EF_IDENTIFY)
+		return TRUE;
+
+	return FALSE;
+}
+
+effect_handler_f effect_handler(effect_type effect)
+{
+	if (effect < 1 || effect > EF_MAX)
+		return NULL;
+
+	return effects[effect].handler;
+}
+
+int effect_param(effect_type effect, size_t param_num)
+{
+	if (effect < 1 || effect > EF_MAX)
+		return 0;
+
+	return effects[effect].params[param_num];
 }
 
 
@@ -2415,10 +2188,13 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam, i
 		return FALSE;
 	}
 
-	effect_handler_f effect_handler = effect_handler_for_effect(effect);
+	effect_handler_f handler = effect_handler(effect);
 
-	if (effect_handler != NULL) {
+	if (handler != NULL) {
 		random_value value = effect_value(effect);
+		int p1 = effect_param(effect, 0);
+		int p2 = effect_param(effect, 1);
+		int p3 = effect_param(effect, 2);
 		effect_handler_context_t context = {
 			effect,
 			aware,
@@ -2426,10 +2202,13 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam, i
 			beam,
 			boost,
 			value,
+			p1,
+			p2,
+			p3,
 			*ident,
 		};
 
-		handled = effect_handler(&context);
+		handled = handler(&context);
 		*ident = context.ident;
 	}
 
