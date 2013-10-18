@@ -258,7 +258,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 				player_inc_timed(p_ptr, TMD_OPP_CONF, 12 + damroll(6, 10), TRUE, TRUE))
 			    	*ident = TRUE;
 
-			if (*ident) msg("Your feel your head clear.");
+			if (*ident) msg("You feel your head clear.");
 			return TRUE;
 		}
 
@@ -398,7 +398,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			{
 				p_ptr->csp = p_ptr->msp;
 				p_ptr->csp_frac = 0;
-				msg("Your feel your head clear.");
+				msg("You feel your head clear.");
 				p_ptr->redraw |= (PR_MANA);
 				*ident = TRUE;
 			}
@@ -1591,7 +1591,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 				p_ptr->csp = p_ptr->msp;
 				p_ptr->csp_frac = 0;
 				*ident = TRUE;
-				msg("Your feel your head clear.");
+				msg("You feel your head clear.");
 				p_ptr->redraw |= (PR_MANA);
 			}
 			return TRUE;
@@ -1753,7 +1753,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			{
 				p_ptr->csp = p_ptr->msp;
 				p_ptr->csp_frac = 0;
-				msg("Your feel your head clear.");
+				msg("You feel your head clear.");
 				p_ptr->redraw |= (PR_MANA);
 				*ident = TRUE;
 			}
