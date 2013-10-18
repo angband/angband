@@ -787,9 +787,11 @@ static int stats_dump_lists(void)
 	 * description field. */
 	info_entry effects[] =
 	{
-		#define EFFECT(x, y, r, z)    { EF_##x, y, r, #x },
+		#define RV(b, x, y, m)
+		#define EFFECT(x, a, r, v, d)    { EF_##x, a, r, v, d },
 		#include "list-effects.h"
 		#undef EFFECT
+		#undef RV
 	};
 
 	char *r_info_flags[] =

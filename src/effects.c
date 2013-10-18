@@ -33,6 +33,7 @@ typedef struct
 	u16b index;          /* Effect index */
 	bool aim;            /* Whether the effect requires aiming */
 	u16b power;	     /* Power rating for obj-power.c */
+	random_value value;
 	const char *desc;    /* Effect description */
 } info_entry;
 
@@ -41,9 +42,11 @@ typedef struct
  */
 static const info_entry effects[] =
 {
-	#define EFFECT(x, y, r, z)    { EF_##x, y, r, z },
+	#define RV(b, x, y, m) {b, x, y, m}
+	#define EFFECT(x, a, r, v, d)    { EF_##x, a, r, v, d },
 	#include "list-effects.h"
 	#undef EFFECT
+	#undef RV
 };
 
 
@@ -64,6 +67,16 @@ int effect_power(effect_type effect)
 		return FALSE;
 
 	return effects[effect].power;
+}
+
+random_value effect_value(effect_type effect)
+{
+	if (effect < 1 || effect > EF_MAX) {
+		random_value rv = {0, 0, 0, 0};
+		return rv;
+	}
+
+	return effects[effect].value;
 }
 
 const char *effect_desc(effect_type effect)
@@ -159,6 +172,7 @@ typedef struct effect_handler_context_s {
 	const int dir;
 	const int beam;
 	const int boost;
+	const random_value value;
 	bool ident;
 } effect_handler_context_t;
 
@@ -168,6 +182,20 @@ typedef struct effect_breath_info_s {
 	int type;
 	const char *msg;
 } effect_breath_info_t;
+
+
+int effect_calculate_value(effect_handler_context_t *context, bool use_boost)
+{
+	int final = 0;
+
+	if (context->value.base > 0 || (context->value.dice > 0 && context->value.sides > 0))
+		final = context->value.base + damroll(context->value.dice, context->value.sides);
+
+	if (use_boost)
+		final *= (100 + context->boost) / 100;
+
+	return final;
+}
 
 
 #define EFFECT_STOP -1
@@ -234,7 +262,8 @@ bool effect_stat_gain(effect_handler_context_t *context, int stat)
 
 bool effect_stat_lose(effect_handler_context_t *context, int stat)
 {
-	take_hit(p_ptr, damroll(5, 5), "stat drain");
+	int dam = effect_calculate_value(context, FALSE);
+	take_hit(p_ptr, dam, "stat drain");
 	(void)do_dec_stat(stat, FALSE);
 	context->ident = TRUE;
 	return TRUE;
@@ -256,22 +285,33 @@ bool effect_stat_restore_all(effect_handler_context_t *context)
 	return TRUE;
 }
 
-bool effect_project_bolt_or_beam(effect_handler_context_t *context, int type, int dam)
+bool effect_project_bolt_or_beam(effect_handler_context_t *context, int type)
 {
+	int dam = effect_calculate_value(context, TRUE);
 	fire_bolt_or_beam(context->beam, type, context->dir, dam);
 	context->ident = TRUE;
 	return TRUE;
 }
 
-bool effect_project_bolt_only(effect_handler_context_t *context, int type, int dam)
+bool effect_project_bolt_only(effect_handler_context_t *context, int type)
 {
+	int dam = effect_calculate_value(context, TRUE);
 	fire_bolt(type, context->dir, dam);
 	context->ident = TRUE;
 	return TRUE;
 }
 
-bool effect_project_ball(effect_handler_context_t *context, int type, int dam, int radius)
+bool effect_project_beam_only(effect_handler_context_t *context, int type)
 {
+	int dam = effect_calculate_value(context, TRUE);
+    fire_beam(type, context->dir, dam);
+    context->ident = TRUE;
+    return TRUE;
+}
+
+bool effect_project_ball(effect_handler_context_t *context, int type, int radius)
+{
+	int dam = effect_calculate_value(context, TRUE);
 	fire_ball(type, context->dir, dam, radius);
 	context->ident = TRUE;
 	return TRUE;
@@ -283,37 +323,44 @@ bool effect_project_ball(effect_handler_context_t *context, int type, int dam, i
 
 bool effect_handler_POISON(effect_handler_context_t *context)
 {
-	return effect_increment_timed_obvious(context, TMD_POISONED, damroll(2, 7) + 10);
+	int amount = effect_calculate_value(context, FALSE);
+	return effect_increment_timed_obvious(context, TMD_POISONED, amount);
 }
 
 bool effect_handler_BLIND(effect_handler_context_t *context)
 {
-	return effect_increment_timed_obvious(context, TMD_BLIND, damroll(4, 25) + 75);
+	int amount = effect_calculate_value(context, FALSE);
+	return effect_increment_timed_obvious(context, TMD_BLIND, amount);
 }
 
 bool effect_handler_SCARE(effect_handler_context_t *context)
 {
-	return effect_increment_timed_obvious(context, TMD_AFRAID, randint0(10) + 10);
+	int amount = effect_calculate_value(context, FALSE);
+	return effect_increment_timed_obvious(context, TMD_AFRAID, amount);
 }
 
 bool effect_handler_CONFUSE(effect_handler_context_t *context)
 {
-	return effect_increment_timed_obvious(context, TMD_CONFUSED, damroll(4, 5) + 10);
+	int amount = effect_calculate_value(context, FALSE);
+	return effect_increment_timed_obvious(context, TMD_CONFUSED, amount);
 }
 
 bool effect_handler_HALLUC(effect_handler_context_t *context)
 {
-	return effect_increment_timed_obvious(context, TMD_IMAGE, randint0(250) + 250);
+	int amount = effect_calculate_value(context, FALSE);
+	return effect_increment_timed_obvious(context, TMD_IMAGE, amount);
 }
 
 bool effect_handler_PARALYZE(effect_handler_context_t *context)
 {
-	return effect_increment_timed_obvious(context, TMD_PARALYZED, randint0(5) + 5);
+	int amount = effect_calculate_value(context, FALSE);
+	return effect_increment_timed_obvious(context, TMD_PARALYZED, amount);
 }
 
 bool effect_handler_SLOW(effect_handler_context_t *context)
 {
-	return effect_increment_timed_normal(context, TMD_SLOW, randint1(25) + 15);
+	int amount = effect_calculate_value(context, FALSE);
+	return effect_increment_timed_normal(context, TMD_SLOW, amount);
 }
 
 bool effect_handler_CURE_POISON(effect_handler_context_t *context)
@@ -345,7 +392,7 @@ bool effect_handler_CURE_MIND(effect_handler_context_t *context)
 		player_inc_timed(p_ptr, TMD_OPP_CONF, 12 + damroll(6, 10), TRUE, TRUE))
 		context->ident = TRUE;
 
-	if (context->ident) msg("Your feel your head clear.");
+	if (context->ident) msg("You feel your head clear.");
 	return TRUE;
 }
 
@@ -456,7 +503,7 @@ bool effect_handler_RESTORE_MANA(effect_handler_context_t *context)
 	{
 		p_ptr->csp = p_ptr->msp;
 		p_ptr->csp_frac = 0;
-		msg("Your feel your head clear.");
+		msg("You feel your head clear.");
 		p_ptr->redraw |= (PR_MANA);
 		context->ident = TRUE;
 	}
@@ -599,7 +646,8 @@ bool effect_handler_LOSE_CON(effect_handler_context_t *context)
 
 bool effect_handler_LOSE_CON2(effect_handler_context_t *context)
 {
-	take_hit(p_ptr, damroll(10, 10), "poisonous food");
+	int dam = effect_calculate_value(context, FALSE);
+	take_hit(p_ptr, dam, "poisonous food");
 	(void)do_dec_stat(A_CON, FALSE);
 	context->ident = TRUE;
 
@@ -663,20 +711,23 @@ bool effect_handler_RESTORE_ST_LEV(effect_handler_context_t *context)
 
 bool effect_handler_TMD_INFRA(effect_handler_context_t *context)
 {
-	return effect_increment_timed_normal(context, TMD_SINFRA, 100 + damroll(4, 25));
+	int amount = effect_calculate_value(context, FALSE);
+	return effect_increment_timed_normal(context, TMD_SINFRA, amount);
 }
 
 bool effect_handler_TMD_SINVIS(effect_handler_context_t *context)
 {
+	int amount = effect_calculate_value(context, FALSE);
 	effect_clear_timed_one(context, TMD_BLIND);
-	effect_increment_timed_normal(context, TMD_SINVIS, 12 + damroll(2, 6));
+	effect_increment_timed_normal(context, TMD_SINVIS, amount);
 	return TRUE;
 }
 
 bool effect_handler_TMD_ESP(effect_handler_context_t *context)
 {
+	int amount = effect_calculate_value(context, FALSE);
 	effect_clear_timed_one(context, TMD_BLIND);
-	effect_increment_timed_normal(context, TMD_TELEPATHY, 24 + damroll(9, 9));
+	effect_increment_timed_normal(context, TMD_TELEPATHY, amount);
 	return TRUE;
 }
 
@@ -706,56 +757,61 @@ bool effect_handler_ENLIGHTENMENT2(effect_handler_context_t *context)
 
 bool effect_handler_HERO(effect_handler_context_t *context)
 {
-	int dur = randint1(25) + 25;
+	int amount = effect_calculate_value(context, FALSE);
 	if (hp_player(10)) context->ident = TRUE;
 	effect_clear_timed_one(context, TMD_AFRAID);
-	effect_increment_timed_normal(context, TMD_BOLD, dur);
-	effect_increment_timed_normal(context, TMD_HERO, dur);
+	effect_increment_timed_normal(context, TMD_BOLD, amount);
+	effect_increment_timed_normal(context, TMD_HERO, amount);
 	return TRUE;
 }
 
 bool effect_handler_SHERO(effect_handler_context_t *context)
 {
-	int dur = randint1(25) + 25;
+	int amount = effect_calculate_value(context, FALSE);
 	if (hp_player(30)) context->ident = TRUE;
 	effect_clear_timed_one(context, TMD_AFRAID);
-	effect_increment_timed_normal(context, TMD_BOLD, dur);
-	effect_increment_timed_normal(context, TMD_SHERO, dur);
+	effect_increment_timed_normal(context, TMD_BOLD, amount);
+	effect_increment_timed_normal(context, TMD_SHERO, amount);
 	return TRUE;
 }
 
 bool effect_handler_RESIST_ACID(effect_handler_context_t *context)
 {
-	return effect_increment_timed_normal(context, TMD_OPP_ACID, randint1(10) + 10);
+	int amount = effect_calculate_value(context, FALSE);
+	return effect_increment_timed_normal(context, TMD_OPP_ACID, amount);
 }
 
 bool effect_handler_RESIST_ELEC(effect_handler_context_t *context)
 {
-	return effect_increment_timed_normal(context, TMD_OPP_ELEC, randint1(10) + 10);
+	int amount = effect_calculate_value(context, FALSE);
+	return effect_increment_timed_normal(context, TMD_OPP_ELEC, amount);
 }
 
 bool effect_handler_RESIST_FIRE(effect_handler_context_t *context)
 {
-	return effect_increment_timed_normal(context, TMD_OPP_FIRE, randint1(10) + 10);
+	int amount = effect_calculate_value(context, FALSE);
+	return effect_increment_timed_normal(context, TMD_OPP_FIRE, amount);
 }
 
 bool effect_handler_RESIST_COLD(effect_handler_context_t *context)
 {
-	return effect_increment_timed_normal(context, TMD_OPP_COLD, randint1(10) + 10);
+	int amount = effect_calculate_value(context, FALSE);
+	return effect_increment_timed_normal(context, TMD_OPP_COLD, amount);
 }
 
 bool effect_handler_RESIST_POIS(effect_handler_context_t *context)
 {
-	return effect_increment_timed_normal(context, TMD_OPP_POIS, randint1(10) + 10);
+	int amount = effect_calculate_value(context, FALSE);
+	return effect_increment_timed_normal(context, TMD_OPP_POIS, amount);
 }
 
 bool effect_handler_RESIST_ALL(effect_handler_context_t *context)
 {
-	effect_increment_timed_normal(context, TMD_OPP_ACID, randint1(20) + 20);
-	effect_increment_timed_normal(context, TMD_OPP_ELEC, randint1(20) + 20);
-	effect_increment_timed_normal(context, TMD_OPP_FIRE, randint1(20) + 20);
-	effect_increment_timed_normal(context, TMD_OPP_COLD, randint1(20) + 20);
-	effect_increment_timed_normal(context, TMD_OPP_POIS, randint1(20) + 20);
+	effect_increment_timed_normal(context, TMD_OPP_ACID, effect_calculate_value(context, FALSE));
+	effect_increment_timed_normal(context, TMD_OPP_ELEC, effect_calculate_value(context, FALSE));
+	effect_increment_timed_normal(context, TMD_OPP_FIRE, effect_calculate_value(context, FALSE));
+	effect_increment_timed_normal(context, TMD_OPP_COLD, effect_calculate_value(context, FALSE));
+	effect_increment_timed_normal(context, TMD_OPP_POIS, effect_calculate_value(context, FALSE));
 	return TRUE;
 }
 
@@ -860,7 +916,8 @@ bool effect_handler_REMOVE_CURSE2(effect_handler_context_t *context)
 
 bool effect_handler_LIGHT(effect_handler_context_t *context)
 {
-	if (light_area(damroll(2, 8), 2)) context->ident = TRUE;
+	int dam = effect_calculate_value(context, FALSE);
+	if (light_area(dam, 2)) context->ident = TRUE;
 	return TRUE;
 }
 
@@ -991,8 +1048,11 @@ bool effect_handler_BANISHMENT(effect_handler_context_t *context)
 
 bool effect_handler_DARKNESS(effect_handler_context_t *context)
 {
-	if (!check_state(p_ptr, OF_RES_DARK, p_ptr->state.flags))
-		(void)player_inc_timed(p_ptr, TMD_BLIND, 3 + randint1(5), TRUE, TRUE);
+	if (!check_state(p_ptr, OF_RES_DARK, p_ptr->state.flags)) {
+		int amount = effect_calculate_value(context, FALSE);
+		(void)player_inc_timed(p_ptr, TMD_BLIND, amount, TRUE, TRUE);
+	}
+
 	unlight_area(10, 3);
 	wieldeds_notice_flag(p_ptr, OF_RES_DARK);
 	context->ident = TRUE;
@@ -1001,9 +1061,8 @@ bool effect_handler_DARKNESS(effect_handler_context_t *context)
 
 bool effect_handler_PROTEVIL(effect_handler_context_t *context)
 {
-	if (player_inc_timed(p_ptr, TMD_PROTEVIL, randint1(25) + 3 *
-						 p_ptr->lev, TRUE, TRUE)) context->ident = TRUE;
-	return TRUE;
+	int amount = effect_calculate_value(context, FALSE) + 3 * p_ptr->lev;
+	return effect_increment_timed_normal(context, TMD_PROTEVIL, amount);
 }
 
 bool effect_handler_SATISFY(effect_handler_context_t *context)
@@ -1026,17 +1085,20 @@ bool effect_handler_CURSE_ARMOR(effect_handler_context_t *context)
 
 bool effect_handler_BLESSING(effect_handler_context_t *context)
 {
-	return effect_increment_timed_normal(context, TMD_BLESSED, randint1(12) + 6);
+	int amount = effect_calculate_value(context, FALSE);
+	return effect_increment_timed_normal(context, TMD_BLESSED, amount);
 }
 
 bool effect_handler_BLESSING2(effect_handler_context_t *context)
 {
-	return effect_increment_timed_normal(context, TMD_BLESSED, randint1(24) + 12	);
+	int amount = effect_calculate_value(context, FALSE);
+	return effect_increment_timed_normal(context, TMD_BLESSED, amount);
 }
 
 bool effect_handler_BLESSING3(effect_handler_context_t *context)
 {
-	return effect_increment_timed_normal(context, TMD_BLESSED, randint1(48) + 24);
+	int amount = effect_calculate_value(context, FALSE);
+	return effect_increment_timed_normal(context, TMD_BLESSED, amount);
 }
 
 bool effect_handler_RECALL(effect_handler_context_t *context)
@@ -1116,7 +1178,8 @@ bool effect_handler_DESTRUCTION2(effect_handler_context_t *context)
 
 bool effect_handler_ILLUMINATION(effect_handler_context_t *context)
 {
-	if (light_area(damroll(2, 15), 3)) context->ident = TRUE;
+	int dam = effect_calculate_value(context, FALSE);
+	if (light_area(dam, 3)) context->ident = TRUE;
 	return TRUE;
 }
 
@@ -1158,9 +1221,12 @@ bool effect_handler_BIZARRE(effect_handler_context_t *context)
 bool effect_handler_STAR_BALL(effect_handler_context_t *context)
 {
 	int i;
+	int dam = effect_calculate_value(context, TRUE);
+
+	for (i = 0; i < 8; i++)
+		fire_ball(GF_ELEC, ddd[i], dam, 3);
+
 	context->ident = TRUE;
-	for (i = 0; i < 8; i++) fire_ball(GF_ELEC, ddd[i],
-									  (150 * (100 + context->boost) / 100), 3);
 	return TRUE;
 }
 
@@ -1197,8 +1263,7 @@ bool effect_handler_RESTORE_LIFE(effect_handler_context_t *context)
 
 bool effect_handler_MISSILE(effect_handler_context_t *context)
 {
-	int dam = damroll(3, 4) * (100 + context->boost) / 100;
-	return effect_project_bolt_or_beam(context, GF_MISSILE, dam);
+	return effect_project_bolt_or_beam(context, GF_MISSILE);
 }
 
 bool effect_handler_DISPEL_EVIL(effect_handler_context_t *context)
@@ -1211,21 +1276,21 @@ bool effect_handler_DISPEL_EVIL(effect_handler_context_t *context)
 
 bool effect_handler_DISPEL_EVIL60(effect_handler_context_t *context)
 {
-	int dam = 60 * (100 + context->boost) / 100;
+	int dam = effect_calculate_value(context, TRUE);
 	if (dispel_evil(dam)) context->ident = TRUE;
 	return TRUE;
 }
 
 bool effect_handler_DISPEL_UNDEAD(effect_handler_context_t *context)
 {
-	int dam = 60 * (100 + context->boost) / 100;
+	int dam = effect_calculate_value(context, TRUE);
 	if (dispel_undead(dam)) context->ident = TRUE;
 	return TRUE;
 }
 
 bool effect_handler_DISPEL_ALL(effect_handler_context_t *context)
 {
-	int dam = 120 * (100 + context->boost) / 100;
+	int dam = effect_calculate_value(context, TRUE);
 	if (dispel_monsters(dam)) context->ident = TRUE;
 	return TRUE;
 }
@@ -1234,7 +1299,8 @@ bool effect_handler_HASTE(effect_handler_context_t *context)
 {
 	if (!p_ptr->timed[TMD_FAST])
 	{
-		if (player_set_timed(p_ptr, TMD_FAST, damroll(2, 10) + 20, TRUE)) context->ident = TRUE;
+		int amount = effect_calculate_value(context, FALSE);
+		if (player_set_timed(p_ptr, TMD_FAST, amount, TRUE)) context->ident = TRUE;
 	}
 	else
 	{
@@ -1248,7 +1314,8 @@ bool effect_handler_HASTE1(effect_handler_context_t *context)
 {
 	if (!p_ptr->timed[TMD_FAST])
 	{
-		if (player_set_timed(p_ptr, TMD_FAST, randint1(20) + 20, TRUE)) context->ident = TRUE;
+		int amount = effect_calculate_value(context, FALSE);
+		if (player_set_timed(p_ptr, TMD_FAST, amount, TRUE)) context->ident = TRUE;
 	}
 	else
 	{
@@ -1262,7 +1329,8 @@ bool effect_handler_HASTE2(effect_handler_context_t *context)
 {
 	if (!p_ptr->timed[TMD_FAST])
 	{
-		if (player_set_timed(p_ptr, TMD_FAST, randint1(75) + 75, TRUE)) context->ident = TRUE;
+		int amount = effect_calculate_value(context, FALSE);
+		if (player_set_timed(p_ptr, TMD_FAST, amount, TRUE)) context->ident = TRUE;
 	}
 	else
 	{
@@ -1274,130 +1342,107 @@ bool effect_handler_HASTE2(effect_handler_context_t *context)
 
 bool effect_handler_FIRE_BOLT(effect_handler_context_t *context)
 {
-	int dam = damroll(9, 8) * (100 + context->boost) / 100;
-	return effect_project_bolt_only(context, GF_FIRE, dam);
+	return effect_project_bolt_only(context, GF_FIRE);
 }
 
 bool effect_handler_FIRE_BOLT2(effect_handler_context_t *context)
 {
-	int dam = damroll(12, 8) * (100 + context->boost) / 100;
-	return effect_project_bolt_or_beam(context, GF_FIRE, dam);
+	return effect_project_bolt_or_beam(context, GF_FIRE);
 }
 
 bool effect_handler_FIRE_BOLT3(effect_handler_context_t *context)
 {
-	int dam = damroll(16, 8) * (100 + context->boost) / 100;
-	return effect_project_bolt_or_beam(context, GF_FIRE, dam);
+	return effect_project_bolt_or_beam(context, GF_FIRE);
 }
 
 bool effect_handler_FIRE_BOLT72(effect_handler_context_t *context)
 {
-	int dam = 72 * (100 + context->boost) / 100;
-	return effect_project_ball(context, GF_FIRE, dam, 2);
+	return effect_project_ball(context, GF_FIRE, 2);
 }
 
 bool effect_handler_FIRE_BALL(effect_handler_context_t *context)
 {
-	int dam = 144 * (100 + context->boost) / 100;
-	return effect_project_ball(context, GF_FIRE, dam, 2);
+	return effect_project_ball(context, GF_FIRE, 2);
 }
 
 bool effect_handler_FIRE_BALL2(effect_handler_context_t *context)
 {
-	int dam = 120 * (100 + context->boost) / 100;
-	return effect_project_ball(context, GF_FIRE, dam, 3);
+	return effect_project_ball(context, GF_FIRE, 3);
 }
 
 bool effect_handler_FIRE_BALL200(effect_handler_context_t *context)
 {
-	int dam = 200 * (100 + context->boost) / 100;
-	return effect_project_ball(context, GF_FIRE, dam, 3);
+	return effect_project_ball(context, GF_FIRE, 3);
 }
 
 bool effect_handler_COLD_BOLT(effect_handler_context_t *context)
 {
-	int dam = damroll(6, 8) * (100 + context->boost) / 100;
-	return effect_project_bolt_or_beam(context, GF_COLD, dam);
+	return effect_project_bolt_or_beam(context, GF_COLD);
 }
 
 bool effect_handler_COLD_BOLT2(effect_handler_context_t *context)
 {
-	int dam = damroll(12, 8) * (100 + context->boost) / 100;
-	return effect_project_bolt_only(context, GF_COLD, dam);
+	return effect_project_bolt_only(context, GF_COLD);
 }
 
 bool effect_handler_COLD_BALL2(effect_handler_context_t *context)
 {
-	int dam = 200 * (100 + context->boost) / 100;
-	return effect_project_ball(context, GF_COLD, dam, 3);
+	return effect_project_ball(context, GF_COLD, 3);
 }
 
 bool effect_handler_COLD_BALL50(effect_handler_context_t *context)
 {
-	int dam = 50 * (100 + context->boost) / 100;
-	return effect_project_ball(context, GF_COLD, dam, 2);
+	return effect_project_ball(context, GF_COLD, 2);
 }
 
 bool effect_handler_COLD_BALL100(effect_handler_context_t *context)
 {
-	int dam = 100 * (100 + context->boost) / 100;
-	return effect_project_ball(context, GF_COLD, dam, 2);
+	return effect_project_ball(context, GF_COLD, 2);
 }
 
 bool effect_handler_COLD_BALL160(effect_handler_context_t *context)
 {
-	int dam = 160 * (100 + context->boost) / 100;
-	return effect_project_ball(context, GF_COLD, dam, 3);
+	return effect_project_ball(context, GF_COLD, 3);
 }
 
 bool effect_handler_ACID_BOLT(effect_handler_context_t *context)
 {
-	int dam = damroll(5, 8) * (100 + context->boost) / 100;
-	return effect_project_bolt_only(context, GF_ACID, dam);
+	return effect_project_bolt_only(context, GF_ACID);
 }
 
 bool effect_handler_ACID_BOLT2(effect_handler_context_t *context)
 {
-	int dam = damroll(10, 8) * (100 + context->boost) / 100;
-	return effect_project_bolt_or_beam(context, GF_ACID, dam);
+	return effect_project_bolt_or_beam(context, GF_ACID);
 }
 
 bool effect_handler_ACID_BOLT3(effect_handler_context_t *context)
 {
-	int dam = damroll(12, 8) * (100 + context->boost) / 100;
-	return effect_project_bolt_or_beam(context, GF_ACID, dam);
+	return effect_project_bolt_or_beam(context, GF_ACID);
 }
 
 bool effect_handler_ACID_BALL(effect_handler_context_t *context)
 {
-	int dam = 120 * (100 + context->boost) / 100;
-	return effect_project_ball(context, GF_ACID, dam, 2);
+	return effect_project_ball(context, GF_ACID, 2);
 }
 
 bool effect_handler_ELEC_BOLT(effect_handler_context_t *context)
 {
-	int dam = damroll(6, 6) * (100 + context->boost) / 100;
-	context->ident = TRUE;
-	fire_beam(GF_ELEC, context->dir, dam);
-	return TRUE;
+    return effect_project_beam_only(context, GF_ELEC);
 }
 
 bool effect_handler_ELEC_BALL(effect_handler_context_t *context)
 {
-	int dam = 64 * (100 + context->boost) / 100;
-	return effect_project_ball(context, GF_ELEC, dam, 2);
+	return effect_project_ball(context, GF_ELEC, 2);
 }
 
 bool effect_handler_ELEC_BALL2(effect_handler_context_t *context)
 {
-	int dam = 250 * (100 + context->boost) / 100;
-	return effect_project_ball(context, GF_ELEC, dam, 3);
+	return effect_project_ball(context, GF_ELEC, 3);
 }
 
 bool effect_handler_ARROW(effect_handler_context_t *context)
 {
-	int dam = 150 * (100 + context->boost) / 100;
-	return effect_project_bolt_only(context, GF_ARROW, dam);
+	return effect_project_bolt_only(context, GF_ARROW);
 }
 
 bool effect_handler_REM_FEAR_POIS(effect_handler_context_t *context)
@@ -1410,34 +1455,33 @@ bool effect_handler_REM_FEAR_POIS(effect_handler_context_t *context)
 
 bool effect_handler_STINKING_CLOUD(effect_handler_context_t *context)
 {
-	int dam = 12 * (100 + context->boost) / 100;
-	return effect_project_ball(context, GF_POIS, dam, 3);
+	return effect_project_ball(context, GF_POIS, 3);
 }
 
 bool effect_handler_DRAIN_LIFE1(effect_handler_context_t *context)
 {
-	int dam = 90 * (100 + context->boost) / 100;
+	int dam = effect_calculate_value(context, TRUE);
 	if (drain_life(context->dir, dam)) context->ident = TRUE;
 	return TRUE;
 }
 
 bool effect_handler_DRAIN_LIFE2(effect_handler_context_t *context)
 {
-	int dam = 120 * (100 + context->boost) / 100;
+	int dam = effect_calculate_value(context, TRUE);
 	if (drain_life(context->dir, dam)) context->ident = TRUE;
 	return TRUE;
 }
 
 bool effect_handler_DRAIN_LIFE3(effect_handler_context_t *context)
 {
-	int dam = 150 * (100 + context->boost) / 100;
+	int dam = effect_calculate_value(context, TRUE);
 	if (drain_life(context->dir, dam)) context->ident = TRUE;
 	return TRUE;
 }
 
 bool effect_handler_DRAIN_LIFE4(effect_handler_context_t *context)
 {
-	int dam = 250 * (100 + context->boost) / 100;
+	int dam = effect_calculate_value(context, TRUE);
 	if (drain_life(context->dir, dam)) context->ident = TRUE;
 	return TRUE;
 }
@@ -1451,8 +1495,7 @@ bool effect_handler_FIREBRAND(effect_handler_context_t *context)
 
 bool effect_handler_MANA_BOLT(effect_handler_context_t *context)
 {
-	int dam = damroll(12, 8) * (100 + context->boost) / 100;
-	return effect_project_bolt_only(context, GF_MANA, dam);
+	return effect_project_bolt_only(context, GF_MANA);
 }
 
 bool effect_handler_MON_HEAL(effect_handler_context_t *context)
@@ -1549,9 +1592,9 @@ bool effect_handler_STARLIGHT2(effect_handler_context_t *context)
 
 bool effect_handler_BERSERKER(effect_handler_context_t *context)
 {
-	int dur = randint1(50) + 50;
-	effect_increment_timed_normal(context, TMD_BOLD, dur);
-	effect_increment_timed_normal(context, TMD_SHERO, dur);
+	int amount = effect_calculate_value(context, FALSE);
+	effect_increment_timed_normal(context, TMD_BOLD, amount);
+	effect_increment_timed_normal(context, TMD_SHERO, amount);
 	return TRUE;
 }
 
@@ -1637,8 +1680,9 @@ bool effect_handler_DRINK_DEATH(effect_handler_context_t *context)
 
 bool effect_handler_DRINK_RUIN(effect_handler_context_t *context)
 {
+	int dam = effect_calculate_value(context, FALSE);
 	msg("Your nerves and muscles feel weak and lifeless!");
-	take_hit(p_ptr, damroll(10, 10), "a potion of Ruination");
+	take_hit(p_ptr, dam, "a potion of Ruination");
 	player_stat_dec(p_ptr, A_DEX, TRUE);
 	player_stat_dec(p_ptr, A_WIS, TRUE);
 	player_stat_dec(p_ptr, A_CON, TRUE);
@@ -1650,8 +1694,9 @@ bool effect_handler_DRINK_RUIN(effect_handler_context_t *context)
 
 bool effect_handler_DRINK_DETONATE(effect_handler_context_t *context)
 {
+	int dam = effect_calculate_value(context, FALSE);
 	msg("Massive explosions rupture your body!");
-	take_hit(p_ptr, damroll(50, 20), "a potion of Detonation");
+	take_hit(p_ptr, dam, "a potion of Detonation");
 	(void)player_inc_timed(p_ptr, TMD_STUN, 75, TRUE, TRUE);
 	(void)player_inc_timed(p_ptr, TMD_CUT, 5000, TRUE, TRUE);
 	context->ident = TRUE;
@@ -1677,9 +1722,10 @@ bool effect_handler_FOOD_GOOD(effect_handler_context_t *context)
 
 bool effect_handler_FOOD_WAYBREAD(effect_handler_context_t *context)
 {
+	int hp = effect_calculate_value(context, FALSE);
 	msg("That tastes good.");
 	(void)player_clear_timed(p_ptr, TMD_POISONED, TRUE);
-	(void)hp_player(damroll(4, 8));
+	(void)hp_player(hp);
 	context->ident = TRUE;
 	return TRUE;
 }
@@ -1805,19 +1851,19 @@ bool effect_handler_RING_LIGHTNING(effect_handler_context_t *context)
 
 bool effect_handler_DRAGON_BLUE(effect_handler_context_t *context)
 {
-	int dam = 150 * (100 + context->boost) / 100;
+	int dam = effect_calculate_value(context, TRUE);
 	return effect_breathe_one(context, dam, GF_ELEC, MSG_BR_ELEC, "lightning");
 }
 
 bool effect_handler_DRAGON_GREEN(effect_handler_context_t *context)
 {
-	int dam = 150 * (100 + context->boost) / 100;
+	int dam = effect_calculate_value(context, TRUE);
 	return effect_breathe_one(context, dam, GF_POIS, MSG_BR_GAS, "poison gas");
 }
 
 bool effect_handler_DRAGON_RED(effect_handler_context_t *context)
 {
-	int dam = 200 * (100 + context->boost) / 100;
+	int dam = effect_calculate_value(context, TRUE);
 	return effect_breathe_one(context, dam, GF_FIRE, MSG_BR_FIRE, "fire");
 }
 
@@ -1831,19 +1877,19 @@ bool effect_handler_DRAGON_MULTIHUED(effect_handler_context_t *context)
 		{ MSG_BR_FIRE,	GF_FIRE,		"fire" },
 	};
 
-	int dam = 250 * (100 + context->boost) / 100;
+	int dam = effect_calculate_value(context, TRUE);
 	return effect_breathe_random(context, dam, multihued, N_ELEMENTS(multihued));
 }
 
 bool effect_handler_DRAGON_BRONZE(effect_handler_context_t *context)
 {
-	int dam = 150 * (100 + context->boost) / 100;
+	int dam = effect_calculate_value(context, TRUE);
 	return effect_breathe_one(context, dam, GF_CONFU, MSG_BR_CONF, "confusion");
 }
 
 bool effect_handler_DRAGON_GOLD(effect_handler_context_t *context)
 {
-	int dam = 150 * (100 + context->boost) / 100;
+	int dam = effect_calculate_value(context, TRUE);
 	return effect_breathe_one(context, dam, GF_SOUND, MSG_BR_SOUND, "sound");
 }
 
@@ -1854,7 +1900,7 @@ bool effect_handler_DRAGON_CHAOS(effect_handler_context_t *context)
 		{ MSG_BR_CHAOS,	GF_CHAOS,	"chaos" },
 	};
 
-	int dam = 220 * (100 + context->boost) / 100;
+	int dam = effect_calculate_value(context, TRUE);
 	return effect_breathe_random(context, dam, chaos, N_ELEMENTS(chaos));
 }
 
@@ -1865,7 +1911,7 @@ bool effect_handler_DRAGON_LAW(effect_handler_context_t *context)
 		{ MSG_BR_SOUND,		GF_SOUND,	"sound" },
 	};
 
-	int dam = 230 * (100 + context->boost) / 100;
+	int dam = effect_calculate_value(context, TRUE);
 	return effect_breathe_random(context, dam, law, N_ELEMENTS(law));
 }
 
@@ -1878,7 +1924,7 @@ bool effect_handler_DRAGON_BALANCE(effect_handler_context_t *context)
 		{ MSG_BR_SOUND,		GF_SOUND,	"sound" },
 	};
 
-	int dam = 250 * (100 + context->boost) / 100;
+	int dam = effect_calculate_value(context, TRUE);
 	return effect_breathe_random(context, dam, balance, N_ELEMENTS(balance));
 }
 
@@ -1889,13 +1935,13 @@ bool effect_handler_DRAGON_SHINING(effect_handler_context_t *context)
 		{ MSG_BR_DARK,	GF_DARK,		"darkness" },
 	};
 
-	int dam = 200 * (100 + context->boost) / 100;
+	int dam = effect_calculate_value(context, TRUE);
 	return effect_breathe_random(context, dam, shining, N_ELEMENTS(shining));
 }
 
 bool effect_handler_DRAGON_POWER(effect_handler_context_t *context)
 {
-	int dam = 300 * (100 + context->boost) / 100;
+	int dam = effect_calculate_value(context, TRUE);
 	return effect_breathe_one(context, dam, GF_MISSILE, MSG_BR_ELEMENTS, "the elements");
 }
 
@@ -2372,12 +2418,14 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam, i
 	effect_handler_f effect_handler = effect_handler_for_effect(effect);
 
 	if (effect_handler != NULL) {
+		random_value value = effect_value(effect);
 		effect_handler_context_t context = {
 			effect,
 			aware,
 			dir,
 			beam,
 			boost,
+			value,
 			*ident,
 		};
 
