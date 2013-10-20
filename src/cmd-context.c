@@ -46,6 +46,20 @@ enum context_menu_value_e {
     MENU_VALUE_DROP_ALL,
 	MENU_VALUE_LOOK,
 	MENU_VALUE_RECALL,
+	MENU_VALUE_REST,
+	MENU_VALUE_INVENTORY,
+	MENU_VALUE_CENTER_MAP,
+	MENU_VALUE_FLOOR,
+	MENU_VALUE_CHARACTER,
+	MENU_VALUE_OTHER,
+	MENU_VALUE_KNOWLEDGE,
+	MENU_VALUE_MAP,
+	MENU_VALUE_MESSAGES,
+	MENU_VALUE_OBJECTS,
+	MENU_VALUE_MONSTERS,
+	MENU_VALUE_TOGGLE_SQUELCHED,
+	MENU_VALUE_OPTIONS,
+	MENU_VALUE_HELP,
 };
 
 
@@ -55,6 +69,9 @@ static int context_menu_player_2(int mx, int my)
 	region r;
 	int selected;
 	char *labels;
+	bool allowed = TRUE;
+	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
+	unsigned char cmdkey;
 
 	m = menu_dynamic_new();
 	if (!m) {
@@ -64,19 +81,25 @@ static int context_menu_player_2(int mx, int my)
 	labels = string_make(lower_case);
 	m->selections = labels;
 
-	menu_dynamic_add_label(m, "Knowledge", '~', 1, labels);
-	menu_dynamic_add_label(m, "Show Map", 'M', 2, labels);
-	menu_dynamic_add_label(m, "^Show Messages", 'P', 3, labels);
-	menu_dynamic_add_label(m, "Show Monster List", '[', 9, labels);
-	menu_dynamic_add_label(m, "Show Object List", ']', 10, labels);
-	menu_dynamic_add_label(m, "Toggle Searching", 'S', 4, labels);
-	menu_dynamic_add_label(m, "Toggle Squelched", 'K', 5, labels);
-	menu_dynamic_add_label(m, "Squelch an item", 'k', 6, labels);
-	menu_dynamic_add_label(m, "Options", '=', 8, labels);
-	menu_dynamic_add_label(m, "Commands", '?', 7, labels);
+	menu_dynamic_add_label(m, "Knowledge", '~', MENU_VALUE_KNOWLEDGE, labels);
+	menu_dynamic_add_label(m, "Show Map", 'M', MENU_VALUE_MAP, labels);
+	menu_dynamic_add_label(m, "^Show Messages", 'P', MENU_VALUE_MESSAGES, labels);
+	menu_dynamic_add_label(m, "Show Monster List", '[', MENU_VALUE_MONSTERS, labels);
+	menu_dynamic_add_label(m, "Show Object List", ']', MENU_VALUE_OBJECTS, labels);
+
+	ADD_LABEL("Toggle Searching", CMD_TOGGLE_SEARCH, MN_ROW_VALID);
+
+	/* Squelch toggle has different keys, but we don't have a way to look them up (see cmd-process.c). */
+	cmdkey = (mode == KEYMAP_MODE_ORIG) ? 'K' : 'O';
+	menu_dynamic_add_label(m, "Toggle Squelched", cmdkey, MENU_VALUE_TOGGLE_SQUELCHED, labels);
+
+	ADD_LABEL("Squelch an item", CMD_DESTROY, MN_ROW_VALID);
+
+	menu_dynamic_add_label(m, "Options", '=', MENU_VALUE_OPTIONS, labels);
+	menu_dynamic_add_label(m, "Commands", '?', MENU_VALUE_HELP, labels);
 
 	/* work out display region */
-	r.width = menu_dynamic_longest_entry(m) + 3 + 2; /* +3 for tag, 2 for pad */
+	r.width = (int)menu_dynamic_longest_entry(m) + 3 + 2; /* +3 for tag, 2 for pad */
 	if (mx > Term->wid - r.width - 1) {
 		r.col = Term->wid - r.width - 1;
 	} else {
@@ -110,48 +133,123 @@ static int context_menu_player_2(int mx, int my)
 
 	screen_load();
 
-	if (selected == 1) {
-		/* show knowledge screen */
-		Term_keypress('~',0);
-	} else
-	if (selected == 2) {
-		/* Toggle show map */
-		Term_keypress('M',0);
-	} else
-	if (selected == 3) {
-		/* Toggle show messages */
-		Term_keypress(KTRL('p'),0);/*XXX should be ('p', KC_MOD_CONTROL);*/
-	} else
-	if (selected == 4) {
-		/* Toggle search mode */
-		Term_keypress('S',0);
-	} else
-	if (selected == 5) {
-		/* toggle showing squelched objects */
-		Term_keypress('K',0);
-	} else
-	if (selected == 6) {
-		/* destroy/squelch an item */
-		Term_keypress('k',0);
-	} else
-	if (selected == 7) {
-		/* show the commands */
-		context_menu_command(mx, my);
-	} else
-	if (selected == 8) {
-		/* show options screen */
-		Term_keypress('=',0);
-	} else
-	if (selected == 9) {
-		/* show the monster list */
-		Term_keypress('[',0);
-	} else
-	if (selected == 10) {
-		/* show the object list */
-		Term_keypress(']',0);
+	/* Check the command to see if it is allowed. */
+	switch (selected) {
+		case -1:
+			/* User cancelled the menu. */
+			return 3;
+
+		case MENU_VALUE_KNOWLEDGE:
+		case MENU_VALUE_MAP:
+		case MENU_VALUE_MESSAGES:
+		case MENU_VALUE_TOGGLE_SQUELCHED:
+		case MENU_VALUE_HELP:
+		case MENU_VALUE_MONSTERS:
+		case MENU_VALUE_OBJECTS:
+		case MENU_VALUE_OPTIONS:
+		case CMD_TOGGLE_SEARCH:
+			allowed = TRUE;
+			break;
+
+		case CMD_DESTROY:
+			cmdkey = cmd_lookup_key(selected, mode);
+			allowed = key_confirm_command(cmdkey);
+			break;
+
+		default:
+			/* Invalid command; prevent anything from happening. */
+			bell("Invalid context menu command.");
+			allowed = FALSE;
+			break;
+	}
+
+	if (!allowed)
+		return 1;
+
+	/* Perform the command. */
+	switch (selected) {
+		case MENU_VALUE_KNOWLEDGE:
+			Term_keypress('~', 0);
+			break;
+
+		case MENU_VALUE_MAP:
+			Term_keypress('M', 0);
+			break;
+
+		case MENU_VALUE_MESSAGES:
+			Term_keypress(KTRL('p'), 0);
+			break;
+
+		case CMD_DESTROY:
+		case CMD_TOGGLE_SEARCH:
+			cmdkey = cmd_lookup_key(selected, mode);
+			Term_keypress(cmdkey, 0);
+			break;
+
+		case MENU_VALUE_TOGGLE_SQUELCHED:
+			/* Squelch toggle has different keys, but we don't have a way to look them up (see cmd-process.c). */
+			cmdkey = (mode == KEYMAP_MODE_ORIG) ? 'K' : 'O';
+			Term_keypress(cmdkey, 0);
+			break;
+
+		case MENU_VALUE_HELP:
+			context_menu_command(mx, my);
+			break;
+
+		case MENU_VALUE_MONSTERS:
+			Term_keypress('[', 0);
+			break;
+
+		case MENU_VALUE_OBJECTS:
+			Term_keypress(']', 0);
+			break;
+
+		case MENU_VALUE_OPTIONS:
+			Term_keypress('=', 0);
+			break;
+
+		default:
+			break;
 	}
 
 	return 1;
+}
+
+static void context_menu_player_display_floor(void)
+{
+	/* there is an item on the floor, show the inventory screen starting
+	 * from the floor */
+	//Term_keypress('i',0);
+	int diff = weight_remaining();
+
+	/* Hack -- Start in "inventory" mode */
+	p_ptr->command_wrk = (USE_FLOOR);
+
+	/* Save screen */
+	screen_save();
+
+	/* Prompt for a command */
+	prt(format("(Inventory) Burden %d.%d lb (%d.%d lb %s). Item for command: ",
+			   p_ptr->total_weight / 10, p_ptr->total_weight % 10,
+			   abs(diff) / 10, abs(diff) % 10,
+			   (diff < 0 ? "overweight" : "remaining")),
+		0, 0);
+
+
+	/* Get an item to use a context command on */
+	if (get_item(&diff, NULL, NULL, CMD_NULL, USE_EQUIP|USE_INVEN|USE_FLOOR|SHOW_EMPTY|IS_HARMLESS)) {
+		object_type *o_ptr;
+
+		/* Track the object kind */
+		track_object(diff);
+
+		o_ptr = object_from_item_idx(diff);
+
+		context_menu_object(o_ptr, diff);
+	}
+
+	/* Load screen */
+	screen_load();
 }
 
 int context_menu_player(int mx, int my)
@@ -160,6 +258,9 @@ int context_menu_player(int mx, int my)
 	region r;
 	int selected;
 	char *labels;
+	bool allowed = TRUE;
+	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
+	unsigned char cmdkey;
 
 	m = menu_dynamic_new();
 	if (!m) {
@@ -169,44 +270,60 @@ int context_menu_player(int mx, int my)
 	labels = string_make(lower_case);
 	m->selections = labels;
 
-	menu_dynamic_add_label(m, "Use", 'U', 1, labels);
+	ADD_LABEL("Use", CMD_USE_ANY, MN_ROW_VALID);
+
 	/* if player can cast, add casting option */
 	if (player_can_cast()) {
-		menu_dynamic_add_label(m, "Cast", 'm', 2, labels);
+		ADD_LABEL("Cast", CMD_CAST, MN_ROW_VALID);
 	}
+
 	/* if player is on stairs add option to use them */
 	if (cave_isupstairs(cave, p_ptr->py, p_ptr->px)) {
-		menu_dynamic_add_label(m, "Go Up", '<', 11, labels);
-	} else if (cave_isdownstairs(cave, p_ptr->py, p_ptr->px)) {
-		menu_dynamic_add_label(m, "Go Down", '>', 12, labels);
+		ADD_LABEL("Go Up", CMD_GO_UP, MN_ROW_VALID);
 	}
-	menu_dynamic_add_label(m, "Search", 's', 3, labels);
-	menu_dynamic_add_label(m, "Look", 'l', 6, labels);
-	menu_dynamic_add_label(m, "Rest", 'R', 4, labels);
-	menu_dynamic_add_label(m, "Inventory", 'i', 5, labels);
+	else if (cave_isdownstairs(cave, p_ptr->py, p_ptr->px)) {
+		ADD_LABEL("Go Down", CMD_GO_DOWN, MN_ROW_VALID);
+	}
+
+	ADD_LABEL("Search", CMD_SEARCH, MN_ROW_VALID);
+
+	/* Looking has different keys, but we don't have a way to look them up (see cmd-process.c). */
+	cmdkey = (mode == KEYMAP_MODE_ORIG) ? 'l' : 'x';
+	menu_dynamic_add_label(m, "Look", cmdkey, MENU_VALUE_LOOK, labels);
+
+	/* 'R' is used for resting in both keymaps. */
+	menu_dynamic_add_label(m, "Rest", 'R', MENU_VALUE_REST, labels);
+
+	/* 'i' is used for inventory in both keymaps. */
+	menu_dynamic_add_label(m, "Inventory", 'i', MENU_VALUE_INVENTORY, labels);
+
 	/* if object under player add pickup option */
 	if (cave->o_idx[p_ptr->py][p_ptr->px]) {
 		object_type *o_ptr = object_byid(cave->o_idx[p_ptr->py][p_ptr->px]);
 		if (!squelch_item_ok(o_ptr)) {
-  			menu_dynamic_add_label(m, "Floor", 'i', 13, labels);
-			if (inven_carry_okay(o_ptr)) {
-  				menu_dynamic_add_label(m, "Pickup", 'g', 14, labels);
-			} else {
-  				menu_dynamic_add_label(m, "Pickup (Full)", 'g', 14, labels);
-			}
+			/* 'f' isn't in rogue keymap, so we can use it here. */
+  			menu_dynamic_add_label(m, "Floor", 'f', MENU_VALUE_FLOOR, labels);
+
+			menu_row_validity_t valid = (inven_carry_okay(o_ptr)) ? MN_ROW_VALID : MN_ROW_INVALID;
+			ADD_LABEL("Pick up", CMD_PICKUP, valid);
 		}
 	}
-	menu_dynamic_add_label(m, "Character", 'C', 7, labels);
+
+	/* 'C' is used for the character sheet in both keymaps. */
+	menu_dynamic_add_label(m, "Character", 'C', MENU_VALUE_CHARACTER, labels);
+
 	/* XXX Don't show the keymap line until the keymap list is implemented, to
 	 * avoid confusion as to what should be there */
 	/*menu_dynamic_add(m, "Keymaps", 10);*/
+
 	if (!OPT(center_player)) {
-		menu_dynamic_add_label(m, "^Center Map", 'L', 15, labels);
+		menu_dynamic_add_label(m, "^Center Map", 'L', MENU_VALUE_CENTER_MAP, labels);
 	}
-	menu_dynamic_add_label(m, "Other", ' ', 9, labels);
+
+	menu_dynamic_add_label(m, "Other", ' ', MENU_VALUE_OTHER, labels);
 
 	/* work out display region */
-	r.width = menu_dynamic_longest_entry(m) + 3 + 2; /* +3 for tag, 2 for pad */
+	r.width = (int)menu_dynamic_longest_entry(m) + 3 + 2; /* +3 for tag, 2 for pad */
 	if (mx > Term->wid - r.width - 1) {
 		r.col = Term->wid - r.width - 1;
 	} else {
@@ -240,114 +357,94 @@ int context_menu_player(int mx, int my)
 
 	screen_load();
 
+	cmdkey = cmd_lookup_key(selected, mode);
+
+	/* Check the command to see if it is allowed. */
 	switch(selected) {
-	case 1:
-		{
-			/* use an item */
-			Term_keypress('U',0);
-		} break;
-	case 2:
-		{
-			/* Cast a spell */
-			Term_keypress('m',0);
-		} break;
-	case 3:
-		{
-			/* search */
-			Term_keypress('s',0);
-		} break;
-	case 4:
-		{
-			/* rest */
-			Term_keypress('R',0);
-		} break;
-	case 5:
-		{
-			/* show inventory screen */
-			Term_keypress('i',0);
-		} break;
-	case 6:
-		{
-			/* look mode */
+		case -1:
+			/* User cancelled the menu. */
+			return 3;
+
+		case CMD_USE_ANY:
+		case CMD_CAST:
+		case CMD_SEARCH:
+		case CMD_GO_UP:
+		case CMD_GO_DOWN:
+		case CMD_PICKUP:
+			/* Only check for ^ inscriptions, since we don't have an object selected (if we need one). */
+			allowed = key_confirm_command(cmdkey);
+			break;
+
+		case MENU_VALUE_REST:
+			allowed = key_confirm_command('R');
+			break;
+
+		case MENU_VALUE_INVENTORY:
+		case MENU_VALUE_LOOK:
+		case MENU_VALUE_CHARACTER:
+		case MENU_VALUE_OTHER:
+		case MENU_VALUE_FLOOR:
+		case MENU_VALUE_CENTER_MAP:
+			allowed = TRUE;
+			break;
+
+		default:
+			/* Invalid command; prevent anything from happening. */
+			bell("Invalid context menu command.");
+			allowed = FALSE;
+			break;
+	}
+
+	if (!allowed)
+		return 1;
+
+	/* Perform the command. */
+	switch(selected) {
+		case CMD_USE_ANY:
+		case CMD_CAST:
+			cmdkey = cmd_lookup_key(selected, mode);
+			Term_keypress(cmdkey, 0);
+			break;
+
+		case CMD_SEARCH:
+		case CMD_GO_UP:
+		case CMD_GO_DOWN:
+		case CMD_PICKUP:
+			cmd_insert(selected);
+			break;
+
+		case MENU_VALUE_REST:
+			Term_keypress('R', 0);
+			break;
+
+		case MENU_VALUE_INVENTORY:
+			Term_keypress('i', 0);
+			break;
+
+		case MENU_VALUE_LOOK:
 			if (target_set_interactive(TARGET_LOOK, p_ptr->px, p_ptr->py)) {
 				msg("Target Selected.");
 			}
-		} break;
-	case 7:
-		{
-			/* show character screen */
-			Term_keypress('C',0);
-		} break;
-	case 9:
-		{
-			/* show another layer of menu options screen */
-			context_menu_player_2(mx,my);
-		} break;
-	case 10:
-		{
-			/* show the commands */
-			context_menu_command(mx, my);
-		} break;
-	case 11:
-		{
-			/* go up stairs */
-			cmd_insert(CMD_GO_UP);
-		} break;
-	case 12:
-		{
-			/* go down stairs */
-			cmd_insert(CMD_GO_DOWN);
-		} break;
-	case 13:
-		{
-			/* there is an item on the floor, show the inventory screen starting
-			 * from the floor */
-			//Term_keypress('i',0);
-			int diff = weight_remaining();
+			break;
 
-			/* Hack -- Start in "inventory" mode */
-			p_ptr->command_wrk = (USE_FLOOR);
+		case MENU_VALUE_CHARACTER:
+			Term_keypress('C', 0);
+			break;
 
-			/* Save screen */
-			screen_save();
+		case MENU_VALUE_OTHER:
+			context_menu_player_2(mx, my);
+			break;
 
-			/* Prompt for a command */
-			prt(format("(Inventory) Burden %d.%d lb (%d.%d lb %s). Item for command: ",
-				p_ptr->total_weight / 10, p_ptr->total_weight % 10,
-				abs(diff) / 10, abs(diff) % 10,
-				(diff < 0 ? "overweight" : "remaining")),
-				0, 0);
+		case MENU_VALUE_FLOOR:
+			context_menu_player_display_floor();
+			break;
 
-
-			/* Get an item to use a context command on */
-			if (get_item(&diff, NULL, NULL, CMD_NULL, USE_EQUIP|USE_INVEN|USE_FLOOR|SHOW_EMPTY|IS_HARMLESS)) {
-				object_type *o_ptr;
-
-				/* Track the object kind */
-				track_object(diff);
-
-				o_ptr = object_from_item_idx(diff);
-
-				context_menu_object(o_ptr, diff);
-			}
-
-			/* Load screen */
-			screen_load();
-
-
-		} break;
-	case 14:
-		{
-			/* pick the item up */
-			cmd_insert(CMD_PICKUP);
-			cmd_set_arg_item(cmd_get_top(), 0, -1);
-		} break;
-	case 15:
-		{
-			/* center the map on the player */
+		case MENU_VALUE_CENTER_MAP:
 			do_cmd_center_map();
-		} break;
+			break;
 
+		default:
+			break;
 	}
 
 	return 1;
