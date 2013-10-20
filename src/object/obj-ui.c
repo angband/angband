@@ -508,6 +508,7 @@ static int get_tag(int *cp, char tag, cmd_code cmd, bool quiver_tags)
 {
 	int i;
 	const char *s;
+	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
 
 	/* (f)ire is handled differently from all others, due to the quiver */
 	if (quiver_tags)
@@ -538,6 +539,8 @@ static int get_tag(int *cp, char tag, cmd_code cmd, bool quiver_tags)
 		/* Process all tags */
 		while (s)
 		{
+			unsigned char cmdkey;
+
 			/* Check the normal tags */
 			if (s[1] == tag)
 			{
@@ -548,8 +551,14 @@ static int get_tag(int *cp, char tag, cmd_code cmd, bool quiver_tags)
 				return (TRUE);
 			}
 
+			cmdkey = cmd_lookup_key(cmd, mode);
+
+			/* Hack - Only shift the command key if it actually needs to be shifted. */
+			if (cmdkey < 0x20)
+				cmdkey = UN_KTRL(cmdkey);
+
 			/* Check the special tags */
-			if ((cmd_lookup(s[1], KEYMAP_MODE_ORIG) == cmd) && (s[2] == tag))
+			if ((s[1] == cmdkey) && (s[2] == tag))
 			{
 				/* Save the actual inventory ID */
 				*cp = i;
