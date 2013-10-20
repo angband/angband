@@ -538,17 +538,24 @@ void squelch_drop(void)
 	int n;
 
 	/* Scan through the slots backwards */
-	for (n = INVEN_PACK - 1; n >= 0; n--)
+	for (n = INVEN_TOTAL - 1; n >= 0; n--)
 	{
 		object_type *o_ptr = &p_ptr->inventory[n];
 
 		/* Skip non-objects and unsquelchable objects */
+		if (n == INVEN_PACK) continue; /* Skip overflow slot. */
 		if (!o_ptr->kind) continue;
 		if (!squelch_item_ok(o_ptr)) continue;
 
 		/* Check for !d (no drop) inscription */
 		if (!check_for_inscrip(o_ptr, "!d") && !check_for_inscrip(o_ptr, "!*"))
 		{
+			/* Confirm the drop if the item is equipped. */
+			if (n >= INVEN_WIELD) {
+				if (!verify_item("Really take off and drop", n))
+					continue;
+			}
+
 			/* We're allowed to drop it. */
 			inven_drop(n, o_ptr->number);
 		}
