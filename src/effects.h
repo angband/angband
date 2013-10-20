@@ -36,5 +36,6 @@ int effect_power(effect_type effect);
 bool effect_obvious(effect_type effect);
 bool effect_wonder(int dir, int die, int beam);
 bool effect_valid(effect_type effect);
+effect_type effect_lookup(const char *name);
 
 #endif /* INCLUDED_EFFECTS_H */

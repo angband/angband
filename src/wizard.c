@@ -19,6 +19,7 @@
 #include "angband.h"
 #include "cave.h"
 #include "cmds.h"
+#include "effects.h"
 #include "files.h"
 #include "monster/mon-lore.h"
 #include "monster/mon-make.h"
@@ -1590,6 +1591,43 @@ static void do_cmd_wiz_advance(void)
 
 }
 
+/**
+ * Prompt for an effect and perform it.
+ */
+void do_cmd_wiz_effect(void)
+{
+	char name[80] = "";
+	int effect = -1;
+	bool ident = FALSE, handled = FALSE;
+
+	/* Avoid the prompt getting in the way */
+	screen_save();
+
+	/* Prompt */
+	prt("Do which effect? ", 0, 0);
+
+	/* Get the name */
+	if (askfor_aux(name, sizeof(name), NULL)) {
+		/* See if an effect index was entered */
+		effect = get_idx_from_name(name);
+
+		/* If not, find the effect with that name */
+		if (!effect_valid(effect))
+			effect = effect_lookup(name);
+	}
+
+	/* Reload the screen */
+	screen_load();
+
+	if (effect_valid(effect)) {
+		ident = FALSE;
+		handled = effect_do(effect, &ident, FALSE, DIR_TARGET, 0, 0);
+		msg(format("Effect handled: %d ident: %d", handled, ident));
+	}
+	else
+		msg("No effect found.");
+}
+
 /*
  * Ask for and parse a "debug command"
  */
@@ -1715,6 +1753,13 @@ void do_cmd_debug(void)
 		case 'e':
 		{
 			do_cmd_wiz_change();
+			break;
+		}
+
+		/* Perform an effect. */
+		case 'E':
+		{
+			do_cmd_wiz_effect();
 			break;
 		}
 

@@ -1883,7 +1883,7 @@ effect_handler_f effect_handler(effect_type effect)
 	return effects[effect].handler;
 }
 
-int effect_param(effect_type effect, size_t param_num)
+static int effect_param(effect_type effect, size_t param_num)
 {
 	if (!effect_valid(effect))
 		return 0;
@@ -1891,6 +1891,32 @@ int effect_param(effect_type effect, size_t param_num)
 	return effects[effect].params[param_num];
 }
 
+effect_type effect_lookup(const char *name)
+{
+	static const char *effect_names[] = {
+		#define EFFECT(x, a, r, h, v, c, d)	#x,
+		#include "list-effects.h"
+		#undef EFFECT
+	};
+	int i;
+
+	for (i = 0; i < EF_MAX; i++) {
+		const char *effect_name = effect_names[i];
+
+		if (!effect_valid(i))
+			continue;
+
+		/* Test for equality */
+		if (effect_name != NULL && streq(name, effect_name))
+			return i;
+
+		/* Test for close matches */
+		if (effect_name != NULL && strlen(name) >= 3 && my_stristr(name, effect_name))
+			return i;
+	}
+
+	return EF_MAX;
+}
 
 /*
  * Do an effect, given an object.
