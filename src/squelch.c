@@ -552,8 +552,22 @@ void squelch_drop(void)
 		{
 			/* Confirm the drop if the item is equipped. */
 			if (n >= INVEN_WIELD) {
-				if (!verify_item("Really take off and drop", n))
+				if (!verify_item("Really take off and drop", n)) {
+					/* Hack - inscribe the item with !d to prevent repeated confirmations. */
+					const char *inscription = quark_str(o_ptr->note);
+
+					if (inscription == NULL) {
+						o_ptr->note = quark_add("!d");
+					}
+					else {
+						char buffer[1024];
+						my_strcpy(buffer, inscription, sizeof(buffer));
+						my_strcat(buffer, "!d", sizeof(buffer));
+						o_ptr->note = quark_add(buffer);
+					}
+
 					continue;
+				}
 			}
 
 			/* We're allowed to drop it. */
