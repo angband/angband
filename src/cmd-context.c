@@ -779,7 +779,8 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 			ADD_LABEL("Eat", CMD_EAT, MN_ROW_VALID);
 		}
 		else if (obj_is_activatable(o_ptr)) {
-			ADD_LABEL("Activate", CMD_ACTIVATE, MN_ROW_VALID);
+			menu_row_validity_t valid = (slot >= INVEN_WIELD && obj_can_activate(o_ptr)) ? MN_ROW_VALID : MN_ROW_INVALID;
+			ADD_LABEL("Activate", CMD_ACTIVATE, valid);
 		}
 		else if (obj_can_fire(o_ptr)) {
 			ADD_LABEL("Fire", CMD_FIRE, MN_ROW_VALID);
