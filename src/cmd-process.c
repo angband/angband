@@ -824,7 +824,7 @@ static void textui_process_click(ui_event e)
 /**
  * Check no currently worn items are stopping the action 'c'
  */
-static bool key_confirm_command(unsigned char c)
+bool key_confirm_command(unsigned char c)
 {
 	int i;
 

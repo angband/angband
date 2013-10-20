@@ -754,7 +754,7 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 		case CMD_FIRE:
 		case CMD_USE_ANY:
 			/* Check for inscriptions that trigger confirmation. */
-			allowed = get_item_allow(slot, cmdkey, selected, FALSE);
+			allowed = key_confirm_command(cmdkey) && get_item_allow(slot, cmdkey, selected, FALSE);
 			break;
 		default:
 			/* Invalid command; prevent anything from happening. */
