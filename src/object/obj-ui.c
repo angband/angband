@@ -445,8 +445,7 @@ bool verify_item(const char *prompt, int item)
  *
  * The item can be negative to mean "item on floor".
  */
-static bool get_item_allow(int item, unsigned char ch, cmd_code cmd,
-		bool is_harmless)
+bool get_item_allow(int item, unsigned char ch, cmd_code cmd, bool is_harmless)
 {
 	object_type *o_ptr;
 	char verify_inscrip[] = "!*";
@@ -459,8 +458,11 @@ static bool get_item_allow(int item, unsigned char ch, cmd_code cmd,
 	else
 		o_ptr = object_byid(0 - item);
 
+	/* Hack - Only shift the command key if it actually needs to be shifted. */
+	if (ch < 0x20)
+		ch = UN_KTRL(ch);
+
 	/* The inscription to look for */
-	/* XXX needs to do un-KTRL... */
 	verify_inscrip[1] = ch;
 
 	/* Look for the inscription */

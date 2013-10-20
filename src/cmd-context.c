@@ -566,6 +566,15 @@ int context_menu_cave(struct cave *c, int y, int x, int adjacent, int mx, int my
 	return 1;
 }
 
+/**
+ * Additional constants for menu item values in context_menu_object(). The values must not collide
+ * with the cmd_code enum, since those are the main values for these menu items.
+ */
+enum context_menu_object_value_e {
+    MENU_VALUE_INSPECT = CMD_REPEAT + 1000,
+    MENU_VALUE_DROP_ALL,
+};
+
 /* pick the context menu options appropiate for the item */
 int context_menu_object(const object_type *o_ptr, const int slot)
 {
@@ -578,6 +587,10 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 	textblock *tb;
 	region area = { 0, 0, 0, 0 };
 
+	bool allowed = TRUE;
+	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
+	unsigned char cmdkey;
+
 	m = menu_dynamic_new();
 	if (!m || !o_ptr) {
 		return 0;
@@ -587,48 +600,49 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 	labels = string_make(lower_case);
 	m->selections = labels;
 
-	menu_dynamic_add_label(m, "Inspect", 'I', 1, labels);
+	menu_dynamic_add_label(m, "Inspect", 'I', MENU_VALUE_INSPECT, labels);
 
 	if (obj_can_browse(o_ptr)) {
 		if (obj_can_cast_from(o_ptr) && player_can_cast()) {
-			menu_dynamic_add_label(m, "Cast", 'm', 8, labels);
+			menu_dynamic_add_label(m, "Cast", 'm', CMD_CAST, labels);
 		}
 		if (obj_can_study(o_ptr) && player_can_study()) {
-			menu_dynamic_add_label(m, "Study", 'G', 10, labels);
+			cmd_code study_cmd = player_has(PF_CHOOSE_SPELLS) ? CMD_STUDY_SPELL : CMD_STUDY_BOOK;
+			menu_dynamic_add_label(m, "Study", 'G', study_cmd, labels);
 		}
 		if (player_can_read()) {
-			menu_dynamic_add_label(m, "Browse", 'b', 9, labels);
+			menu_dynamic_add_label(m, "Browse", 'b', CMD_BROWSE_SPELL, labels);
 		}
 	} else
 	if (obj_is_useable(o_ptr)) {
 		if (obj_is_wand(o_ptr)) {
 			menu_row_validity_t valid = (obj_has_charges(o_ptr)) ? MN_ROW_VALID : MN_ROW_INVALID;
-			menu_dynamic_add_label_valid(m, "Aim", 'a', 8, labels, valid);
+			menu_dynamic_add_label_valid(m, "Aim", 'a', CMD_USE_WAND, labels, valid);
 		} else if (obj_is_rod(o_ptr)) {
 			menu_row_validity_t valid = (obj_can_zap(o_ptr)) ? MN_ROW_VALID : MN_ROW_INVALID;
-			menu_dynamic_add_label_valid(m, "Zap", 'z', 8, labels, valid);
+			menu_dynamic_add_label_valid(m, "Zap", 'z', CMD_USE_ROD, labels, valid);
 		} else if (obj_is_staff(o_ptr)) {
 			menu_row_validity_t valid = (obj_has_charges(o_ptr)) ? MN_ROW_VALID : MN_ROW_INVALID;
-			menu_dynamic_add_label_valid(m, "Use", 'u', 8, labels, valid);
+			menu_dynamic_add_label_valid(m, "Use", 'u', CMD_USE_STAFF, labels, valid);
 		} else if (obj_is_scroll(o_ptr)) {
 			menu_row_validity_t valid = (player_can_read()) ? MN_ROW_VALID : MN_ROW_INVALID;
-			menu_dynamic_add_label_valid(m, "Read", 'r', 8, labels, valid);
+			menu_dynamic_add_label_valid(m, "Read", 'r', CMD_READ_SCROLL, labels, valid);
 		} else if (obj_is_potion(o_ptr))
-			menu_dynamic_add_label(m, "Quaff", 'q', 8, labels);
+			menu_dynamic_add_label(m, "Quaff", 'q', CMD_QUAFF, labels);
 		else if (obj_is_food(o_ptr))
-			menu_dynamic_add_label(m, "Eat", 'E', 8, labels);
+			menu_dynamic_add_label(m, "Eat", 'E', CMD_EAT, labels);
 		else if (obj_is_activatable(o_ptr))
-			menu_dynamic_add_label(m, "Activate", 'A', 8, labels);
+			menu_dynamic_add_label(m, "Activate", 'A', CMD_ACTIVATE, labels);
 		else if (obj_can_fire(o_ptr))
-			menu_dynamic_add_label(m, "Fire", 'f', 8, labels);
+			menu_dynamic_add_label(m, "Fire", 'f', CMD_FIRE, labels);
 		else
-			menu_dynamic_add_label(m, "Use", 'U', 8, labels);
+			menu_dynamic_add_label(m, "Use", 'U', CMD_USE_ANY, labels);
 	}
 	if (obj_can_refill(o_ptr)) {
-		menu_dynamic_add_label(m, "Refill", 'F', 11, labels);
+		menu_dynamic_add_label(m, "Refill", 'F', CMD_REFILL, labels);
 	}
 	if ((slot >= INVEN_WIELD) && obj_can_takeoff(o_ptr)) {
-		menu_dynamic_add_label(m, "Take off", 't', 3, labels);
+		menu_dynamic_add_label(m, "Take off", 't', CMD_TAKEOFF, labels);
 	} else
 	if ((slot < INVEN_WIELD) && obj_can_wear(o_ptr)) {
 		//if (obj_is_armor(o_ptr)) {
@@ -636,32 +650,32 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 		//} else {
 		// 	menu_dynamic_add(m, "Wield", 2);
 		//}
-		menu_dynamic_add_label(m, "Equip", 'w', 2, labels);
+		menu_dynamic_add_label(m, "Equip", 'w', CMD_WIELD, labels);
 	}
 	if (slot >= 0) {
 		if (!store_in_store || cave_shopnum(cave, p_ptr->py, p_ptr->px) == STORE_HOME) {
-			menu_dynamic_add_label(m, "Drop", 'd', 6, labels);
+			menu_dynamic_add_label(m, "Drop", 'd', CMD_DROP, labels);
 			if (o_ptr->number > 1)
-				menu_dynamic_add_label(m, "Drop All", 'D', 13, labels);
+				menu_dynamic_add_label(m, "Drop All", 'D', MENU_VALUE_DROP_ALL, labels);
 		}
 	} else {
 		if (inven_carry_okay(o_ptr))
-			menu_dynamic_add_label(m, "Pickup", 'g', 7, labels);
+			menu_dynamic_add_label(m, "Pickup", 'g', CMD_PICKUP, labels);
 		else
-			menu_dynamic_add_label(m, "Pickup (Full)", 'g', 7, labels);
+			menu_dynamic_add_label(m, "Pickup (Full)", 'g', CMD_PICKUP, labels);
 	}
-	menu_dynamic_add_label(m, "Throw", 'v', 12, labels);
-	menu_dynamic_add_label(m, "Inscribe", '{', 4, labels);
+	menu_dynamic_add_label(m, "Throw", 'v', CMD_THROW, labels);
+	menu_dynamic_add_label(m, "Inscribe", '{', CMD_INSCRIBE, labels);
 	if (obj_has_inscrip(o_ptr))
-		menu_dynamic_add_label(m, "Uninscribe", '}', 5, labels);
+		menu_dynamic_add_label(m, "Uninscribe", '}', CMD_UNINSCRIBE, labels);
 
 	if (object_is_squelched(o_ptr))
-		menu_dynamic_add_label(m, "Unignore", 'k', 14, labels);
+		menu_dynamic_add_label(m, "Unignore", 'k', CMD_DESTROY, labels);
 	else
-		menu_dynamic_add_label(m, "Ignore", 'k', 14, labels);
+		menu_dynamic_add_label(m, "Ignore", 'k', CMD_DESTROY, labels);
 
 	/* work out display region */
-	r.width = menu_dynamic_longest_entry(m) + 3 + 2; /* +3 for tag, 2 for pad */
+	r.width = (int)menu_dynamic_longest_entry(m) + 3 + 2; /* +3 for tag, 2 for pad */
 	r.col = Term->wid - r.width - 1;
 	r.row = 1;
 	r.page_rows = m->count;
@@ -689,96 +703,114 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 	string_free(labels);
 
 	screen_load();
-	if (selected == 1) {
-		/* copied from textui_obj_examine */
-		/* Display info */
-		tb = object_info(o_ptr, OINFO_NONE);
-		object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_FULL);
 
-		textui_textblock_show(tb, area, format("%s", header));
-		textblock_free(tb);
-		return 2;
-	} else if (selected == 2) {
-		/* wield the item */
- 		cmd_insert(CMD_WIELD);
-		cmd_set_arg_item(cmd_get_top(), 0, slot);
-	} else if (selected == 3) {
-		/* take the item off */
- 		cmd_insert(CMD_TAKEOFF);
-		cmd_set_arg_item(cmd_get_top(), 0, slot);
-	} else if (selected == 4) {
-		/* inscribe the item */
- 		cmd_insert(CMD_INSCRIBE);
-		cmd_set_arg_item(cmd_get_top(), 0, slot);
-	} else if (selected == 5) {
-		/* uninscribe the item */
- 		cmd_insert(CMD_UNINSCRIBE);
-		cmd_set_arg_item(cmd_get_top(), 0, slot);
-	} else if (selected == 6) {
-		/* drop the item */
-		cmd_insert(store_in_store ? CMD_STASH : CMD_DROP);
-		cmd_set_arg_item(cmd_get_top(), 0, slot);
-	} else if (selected == 7) {
-		/* pick the item up */
- 		cmd_insert(CMD_PICKUP);
-		cmd_set_arg_item(cmd_get_top(), 0, slot);
-	} else if (selected == 8) {
-		/* use the item */
-		if (obj_can_browse(o_ptr)) {
-			/* copied from textui_obj_cast */
-			int spell;
-			const char *verb = ((p_ptr->class->spell_book == TV_MAGIC_BOOK) ? "cast" : "recite");
-			/* Ask for a spell */
-			spell = get_spell(o_ptr, verb, spell_okay_to_cast);
-			if (spell >= 0) {
-				cmd_insert(CMD_CAST);
-				cmd_set_arg_choice(cmd_get_top(), 0, spell);
+	cmdkey = cmd_lookup_key(selected, mode);
+
+	switch (selected) {
+		case -1:
+			/* User cancelled the menu. */
+			return 3;
+
+		case MENU_VALUE_INSPECT:
+			/* copied from textui_obj_examine */
+			/* Display info */
+			tb = object_info(o_ptr, OINFO_NONE);
+			object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_FULL);
+
+			textui_textblock_show(tb, area, format("%s", header));
+			textblock_free(tb);
+			return 2;
+
+		case MENU_VALUE_DROP_ALL:
+			/* Drop entire stack with confirmation. */
+			if (get_check(format("Drop %s? ", header))) {
+				cmd_insert(store_in_store ? CMD_STASH : CMD_DROP);
+				cmd_set_arg_item(cmd_get_top(), 0, slot);
+				cmd_set_arg_number(cmd_get_top(), 1, o_ptr->number);
 			}
-		} else {
-			cmd_insert(CMD_USE_ANY);
-			cmd_set_arg_item(cmd_get_top(), 0, slot);
-		}
-	} else if (selected == 9) {
+			return 1;
+
+		case CMD_STUDY_SPELL:
+			/* Hack - Use the STUDY_BOOK command key so that get_item_allow() works properly. */
+			cmdkey = cmd_lookup_key(CMD_STUDY_BOOK, mode);
+			/* Fall through. */
+		case CMD_BROWSE_SPELL:
+		case CMD_STUDY_BOOK:
+		case CMD_CAST:
+		case CMD_DESTROY:
+		case CMD_WIELD:
+		case CMD_TAKEOFF:
+		case CMD_INSCRIBE:
+		case CMD_UNINSCRIBE:
+		case CMD_PICKUP:
+		case CMD_DROP:
+		case CMD_REFILL:
+		case CMD_THROW:
+		case CMD_USE_WAND:
+		case CMD_USE_ROD:
+		case CMD_USE_STAFF:
+		case CMD_READ_SCROLL:
+		case CMD_QUAFF:
+		case CMD_EAT:
+		case CMD_ACTIVATE:
+		case CMD_FIRE:
+		case CMD_USE_ANY:
+			/* Check for inscriptions that trigger confirmation. */
+			allowed = get_item_allow(slot, cmdkey, selected, FALSE);
+			break;
+		default:
+			/* Invalid command; prevent anything from happening. */
+			bell("Invalid context menu command.");
+			allowed = FALSE;
+			break;
+	}
+
+	if (!allowed)
+		return 1;
+
+	if (selected == CMD_DESTROY) {
+		/* squelch or unsquelch the item */
+		textui_cmd_destroy_menu(slot);
+	}
+	else if (selected == CMD_BROWSE_SPELL) {
 		/* browse a spellbook */
 		/* copied from textui_spell_browse */
 		textui_book_browse(o_ptr);
 		return 2;
-	} else if (selected == 10) {
+	}
+	else if (selected == CMD_STUDY_SPELL) {
 		/* study a spell book */
 		/* copied from textui_obj_study */
-		if (player_has(PF_CHOOSE_SPELLS)) {
-			int spell = get_spell(o_ptr,
-				  "study", spell_okay_to_study);
+		int spell = get_spell(o_ptr, "study", spell_okay_to_study);
+
+		if (spell >= 0) {
+			cmd_insert(CMD_STUDY_SPELL);
+			cmd_set_arg_choice(cmd_get_top(), 0, spell);
+		}
+	}
+	else if (selected == CMD_CAST) {
+		if (obj_can_browse(o_ptr)) {
+			/* copied from textui_obj_cast */
+			const char *verb = ((p_ptr->class->spell_book == TV_MAGIC_BOOK) ? "cast" : "recite");
+			int spell = get_spell(o_ptr, verb, spell_okay_to_cast);
+
 			if (spell >= 0) {
-				cmd_insert(CMD_STUDY_SPELL);
+				cmd_insert(CMD_CAST);
 				cmd_set_arg_choice(cmd_get_top(), 0, spell);
 			}
-		} else {
-			cmd_insert(CMD_STUDY_BOOK);
-			cmd_set_arg_item(cmd_get_top(), 0, slot);
 		}
-	} else if (selected == 11) {
-		/* use the item to refill a light source */
-		cmd_insert(CMD_REFILL);
-		cmd_set_arg_item(cmd_get_top(), 0, slot);
-	} else if (selected == 12) {
-		/* throw the item */
-		cmd_insert(CMD_THROW);
-		cmd_set_arg_item(cmd_get_top(), 0, slot);
-	} else if (selected == 13) {
-		/* drop all of the item stack */
-		if (get_check(format("Drop %s? ", header))) {
-			cmd_insert(store_in_store ? CMD_STASH : CMD_DROP);
-			cmd_set_arg_item(cmd_get_top(), 0, slot);
-			cmd_set_arg_number(cmd_get_top(), 1, o_ptr->number);
-		}
-	} else if (selected == 14) {
-		/* squelch or unsquelch the item */
-		textui_cmd_destroy_menu(slot);
-	} else if (selected == -1) {
-		/* this menu was canceled, tell whatever called us to display its menu again */
-		return 3;
 	}
+	else {
+		cmd_insert(selected);
+		cmd_set_arg_item(cmd_get_top(), 0, slot);
+
+		/* If we're in a store, we need to change the "drop" command to "stash". */
+		if (selected == CMD_DROP && store_in_store) {
+			game_command *gc = cmd_get_top();
+			gc->command = CMD_STASH;
+		}
+	}
+
 	return 1;
 }
 

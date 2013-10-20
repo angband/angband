@@ -690,6 +690,7 @@ void show_equip(int mode);
 void show_floor(const int *floor_list, int floor_num, int mode);
 bool verify_item(const char *prompt, int item);
 bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode);
+bool get_item_allow(int item, unsigned char ch, cmd_code cmd, bool is_harmless);
 
 /* obj-util.c */
 struct object_kind *objkind_get(int tval, int sval);
