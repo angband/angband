@@ -102,6 +102,7 @@ cmd_code cmd_lookup(unsigned char key, int mode);
 int context_menu_command(int mx, int my);
 void textui_process_command(bool no_request);
 bool key_confirm_command(unsigned char c);
+unsigned char cmd_lookup_key_unktrl(cmd_code lookup_cmd, int mode);
 
 /* XXX none under here should be here */
 

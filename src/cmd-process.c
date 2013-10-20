@@ -351,6 +351,16 @@ unsigned char cmd_lookup_key(cmd_code lookup_cmd, int mode)
 	return 0;
 }
 
+unsigned char cmd_lookup_key_unktrl(cmd_code lookup_cmd, int mode)
+{
+	unsigned char c = cmd_lookup_key(lookup_cmd, mode);
+
+	if (c < 0x20)
+		c = UN_KTRL(c);
+
+	return c;
+}
+
 cmd_code cmd_lookup(unsigned char key, int mode)
 {
 	assert(mode == KEYMAP_MODE_ROGUE || mode == KEYMAP_MODE_ORIG);

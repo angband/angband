@@ -600,77 +600,106 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 	labels = string_make(lower_case);
 	m->selections = labels;
 
+	/* 'I' is used for inspect in both keymaps. */
 	menu_dynamic_add_label(m, "Inspect", 'I', MENU_VALUE_INSPECT, labels);
+
+#define ADD_LABEL(text, cmd, valid) { \
+	cmdkey = cmd_lookup_key_unktrl((cmd), mode); \
+	menu_dynamic_add_label_valid(m, (text), cmdkey, (cmd), labels, (valid)); \
+}
 
 	if (obj_can_browse(o_ptr)) {
 		if (obj_can_cast_from(o_ptr) && player_can_cast()) {
-			menu_dynamic_add_label(m, "Cast", 'm', CMD_CAST, labels);
+			ADD_LABEL("Cast", CMD_CAST, MN_ROW_VALID);
 		}
+
 		if (obj_can_study(o_ptr) && player_can_study()) {
 			cmd_code study_cmd = player_has(PF_CHOOSE_SPELLS) ? CMD_STUDY_SPELL : CMD_STUDY_BOOK;
-			menu_dynamic_add_label(m, "Study", 'G', study_cmd, labels);
+			/* Hack - Use the STUDY_BOOK command key so that we get the correct command key. */
+			cmdkey = cmd_lookup_key_unktrl(CMD_STUDY_BOOK, mode);
+			menu_dynamic_add_label(m, "Study", cmdkey, study_cmd, labels);
 		}
+
 		if (player_can_read()) {
-			menu_dynamic_add_label(m, "Browse", 'b', CMD_BROWSE_SPELL, labels);
+			ADD_LABEL("Browse", CMD_BROWSE_SPELL, MN_ROW_VALID);
 		}
-	} else
-	if (obj_is_useable(o_ptr)) {
+	}
+	else if (obj_is_useable(o_ptr)) {
 		if (obj_is_wand(o_ptr)) {
 			menu_row_validity_t valid = (obj_has_charges(o_ptr)) ? MN_ROW_VALID : MN_ROW_INVALID;
-			menu_dynamic_add_label_valid(m, "Aim", 'a', CMD_USE_WAND, labels, valid);
-		} else if (obj_is_rod(o_ptr)) {
+			ADD_LABEL("Aim", CMD_USE_WAND, valid);
+		}
+		else if (obj_is_rod(o_ptr)) {
 			menu_row_validity_t valid = (obj_can_zap(o_ptr)) ? MN_ROW_VALID : MN_ROW_INVALID;
-			menu_dynamic_add_label_valid(m, "Zap", 'z', CMD_USE_ROD, labels, valid);
-		} else if (obj_is_staff(o_ptr)) {
+			ADD_LABEL("Zap", CMD_USE_ROD, valid);
+		}
+		else if (obj_is_staff(o_ptr)) {
 			menu_row_validity_t valid = (obj_has_charges(o_ptr)) ? MN_ROW_VALID : MN_ROW_INVALID;
-			menu_dynamic_add_label_valid(m, "Use", 'u', CMD_USE_STAFF, labels, valid);
-		} else if (obj_is_scroll(o_ptr)) {
+			ADD_LABEL("Use", CMD_USE_STAFF, valid);
+		}
+		else if (obj_is_scroll(o_ptr)) {
 			menu_row_validity_t valid = (player_can_read()) ? MN_ROW_VALID : MN_ROW_INVALID;
-			menu_dynamic_add_label_valid(m, "Read", 'r', CMD_READ_SCROLL, labels, valid);
-		} else if (obj_is_potion(o_ptr))
-			menu_dynamic_add_label(m, "Quaff", 'q', CMD_QUAFF, labels);
-		else if (obj_is_food(o_ptr))
-			menu_dynamic_add_label(m, "Eat", 'E', CMD_EAT, labels);
-		else if (obj_is_activatable(o_ptr))
-			menu_dynamic_add_label(m, "Activate", 'A', CMD_ACTIVATE, labels);
-		else if (obj_can_fire(o_ptr))
-			menu_dynamic_add_label(m, "Fire", 'f', CMD_FIRE, labels);
-		else
-			menu_dynamic_add_label(m, "Use", 'U', CMD_USE_ANY, labels);
+			ADD_LABEL("Read", CMD_READ_SCROLL, valid);
+		}
+		else if (obj_is_potion(o_ptr)) {
+			ADD_LABEL("Quaff", CMD_QUAFF, MN_ROW_VALID);
+		}
+		else if (obj_is_food(o_ptr)) {
+			ADD_LABEL("Eat", CMD_EAT, MN_ROW_VALID);
+		}
+		else if (obj_is_activatable(o_ptr)) {
+			ADD_LABEL("Activate", CMD_ACTIVATE, MN_ROW_VALID);
+		}
+		else if (obj_can_fire(o_ptr)) {
+			ADD_LABEL("Fire", CMD_FIRE, MN_ROW_VALID);
+		}
+		else {
+			ADD_LABEL("Use", CMD_USE_ANY, MN_ROW_VALID);
+		}
 	}
+
 	if (obj_can_refill(o_ptr)) {
-		menu_dynamic_add_label(m, "Refill", 'F', CMD_REFILL, labels);
+		ADD_LABEL("Refill", CMD_REFILL, MN_ROW_VALID);
 	}
-	if ((slot >= INVEN_WIELD) && obj_can_takeoff(o_ptr)) {
-		menu_dynamic_add_label(m, "Take off", 't', CMD_TAKEOFF, labels);
-	} else
-	if ((slot < INVEN_WIELD) && obj_can_wear(o_ptr)) {
+
+	if (slot >= INVEN_WIELD && obj_can_takeoff(o_ptr)) {
+		ADD_LABEL("Take off", CMD_TAKEOFF, MN_ROW_VALID);
+	}
+	else if (slot < INVEN_WIELD && obj_can_wear(o_ptr)) {
 		//if (obj_is_armor(o_ptr)) {
 		//	menu_dynamic_add(m, "Wear", 2);
 		//} else {
 		// 	menu_dynamic_add(m, "Wield", 2);
 		//}
-		menu_dynamic_add_label(m, "Equip", 'w', CMD_WIELD, labels);
+		ADD_LABEL("Equip", CMD_WIELD, MN_ROW_VALID);
 	}
+
 	if (slot >= 0) {
 		if (!store_in_store || cave_shopnum(cave, p_ptr->py, p_ptr->px) == STORE_HOME) {
-			menu_dynamic_add_label(m, "Drop", 'd', CMD_DROP, labels);
-			if (o_ptr->number > 1)
-				menu_dynamic_add_label(m, "Drop All", 'D', MENU_VALUE_DROP_ALL, labels);
-		}
-	} else {
-		menu_row_validity_t valid = (inven_carry_okay(o_ptr)) ? MN_ROW_VALID : MN_ROW_INVALID;
-		menu_dynamic_add_label_valid(m, "Pick up", 'g', CMD_PICKUP, labels, valid);
-	}
-	menu_dynamic_add_label(m, "Throw", 'v', CMD_THROW, labels);
-	menu_dynamic_add_label(m, "Inscribe", '{', CMD_INSCRIBE, labels);
-	if (obj_has_inscrip(o_ptr))
-		menu_dynamic_add_label(m, "Uninscribe", '}', CMD_UNINSCRIBE, labels);
+			ADD_LABEL("Drop", CMD_DROP, MN_ROW_VALID);
 
-	if (object_is_squelched(o_ptr))
-		menu_dynamic_add_label(m, "Unignore", 'k', CMD_DESTROY, labels);
-	else
-		menu_dynamic_add_label(m, "Ignore", 'k', CMD_DESTROY, labels);
+			if (o_ptr->number > 1) {
+				/* 'D' is used for squelch in rogue keymap, so we'll just swap letters. */
+				cmdkey = (mode == KEYMAP_MODE_ORIG) ? 'D' : 'k';
+				menu_dynamic_add_label(m, "Drop All", cmdkey, MENU_VALUE_DROP_ALL, labels);
+			}
+		}
+	}
+	else {
+		menu_row_validity_t valid = (inven_carry_okay(o_ptr)) ? MN_ROW_VALID : MN_ROW_INVALID;
+		ADD_LABEL("Pick up", CMD_PICKUP, valid);
+	}
+
+	ADD_LABEL("Throw", CMD_THROW, MN_ROW_VALID);
+	ADD_LABEL("Inscribe", CMD_INSCRIBE, MN_ROW_VALID);
+
+	if (obj_has_inscrip(o_ptr)) {
+		ADD_LABEL("Uninscribe", CMD_UNINSCRIBE, MN_ROW_VALID);
+	}
+
+	ADD_LABEL( (object_is_squelched(o_ptr) ? "Unignore" : "Ignore"), CMD_DESTROY, MN_ROW_VALID);
+
+#undef ADD_LABEL
 
 	/* work out display region */
 	r.width = (int)menu_dynamic_longest_entry(m) + 3 + 2; /* +3 for tag, 2 for pad */
