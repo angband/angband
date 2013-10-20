@@ -92,6 +92,7 @@ void do_cmd_pickup(cmd_code code, cmd_arg args[]);
 void do_cmd_autopickup(cmd_code code, cmd_arg args[]);
 int do_autopickup(void);
 byte py_pickup(int pickup);
+byte py_pickup_item(int pickup, int item);
 void move_player(int dir, bool disarm);
 
 /* cmd-process.c */
