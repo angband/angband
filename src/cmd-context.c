@@ -659,10 +659,8 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 				menu_dynamic_add_label(m, "Drop All", 'D', MENU_VALUE_DROP_ALL, labels);
 		}
 	} else {
-		if (inven_carry_okay(o_ptr))
-			menu_dynamic_add_label(m, "Pickup", 'g', CMD_PICKUP, labels);
-		else
-			menu_dynamic_add_label(m, "Pickup (Full)", 'g', CMD_PICKUP, labels);
+		menu_row_validity_t valid = (inven_carry_okay(o_ptr)) ? MN_ROW_VALID : MN_ROW_INVALID;
+		menu_dynamic_add_label_valid(m, "Pick up", 'g', CMD_PICKUP, labels, valid);
 	}
 	menu_dynamic_add_label(m, "Throw", 'v', CMD_THROW, labels);
 	menu_dynamic_add_label(m, "Inscribe", '{', CMD_INSCRIBE, labels);
