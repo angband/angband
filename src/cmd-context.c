@@ -32,6 +32,23 @@
 #include "monster/mon-lore.h"
 #include "monster/mon-util.h"
 
+#define ADD_LABEL(text, cmd, valid) { \
+	cmdkey = cmd_lookup_key_unktrl((cmd), mode); \
+	menu_dynamic_add_label_valid(m, (text), cmdkey, (cmd), labels, (valid)); \
+}
+
+/**
+ * Additional constants for menu item values. The values must not collide
+ * with the cmd_code enum, since those are the main values for these menu items.
+ */
+enum context_menu_value_e {
+    MENU_VALUE_INSPECT = CMD_REPEAT + 1000,
+    MENU_VALUE_DROP_ALL,
+	MENU_VALUE_LOOK,
+	MENU_VALUE_RECALL,
+};
+
+
 static int context_menu_player_2(int mx, int my)
 {
 	menu_type *m;
@@ -342,6 +359,9 @@ int context_menu_cave(struct cave *c, int y, int x, int adjacent, int mx, int my
 	region r;
 	int selected;
 	char *labels;
+	bool allowed = TRUE;
+	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
+	unsigned char cmdkey;
 
 	m = menu_dynamic_new();
 	if (!m) {
@@ -351,20 +371,24 @@ int context_menu_cave(struct cave *c, int y, int x, int adjacent, int mx, int my
 	labels = string_make(lower_case);
 	m->selections = labels;
 
-	menu_dynamic_add_label(m, "Look At", 'l', 1, labels);
+	/* Looking has different keys, but we don't have a way to look them up (see cmd-process.c). */
+	cmdkey = (mode == KEYMAP_MODE_ORIG) ? 'l' : 'x';
+	menu_dynamic_add_label(m, "Look At", cmdkey, MENU_VALUE_LOOK, labels);
+
 	if (c->m_idx[y][x]) {
-		menu_dynamic_add_label(m, "Recall Info", '/', 18, labels);
+		/* '/' is used for recall in both keymaps. */
+		menu_dynamic_add_label(m, "Recall Info", '/', MENU_VALUE_RECALL, labels);
 	}
-	menu_dynamic_add_label(m, "Use Item On", 'U', 2, labels);
+
+	ADD_LABEL("Use Item On", CMD_USE_ANY, MN_ROW_VALID);
+
 	if (player_can_cast()) {
-		menu_dynamic_add_label(m, "Cast On", 'm', 3, labels);
+		ADD_LABEL("Cast On", CMD_CAST, MN_ROW_VALID);
 	}
+
 	if (adjacent) {
-		if (c->m_idx[y][x]) {
-			menu_dynamic_add_label(m, "Attack", '+', 4, labels);
-		} else {
-			menu_dynamic_add_label(m, "Alter", '+', 4, labels);
-		}
+		ADD_LABEL((c->m_idx[y][x]) ? "Attack" : "Alter", CMD_ALTER, MN_ROW_VALID);
+
 		if (c->o_idx[y][x]) {
 			s16b o_idx = chest_check(y,x, CHEST_ANY);
 			if (o_idx) {
@@ -372,45 +396,56 @@ int context_menu_cave(struct cave *c, int y, int x, int adjacent, int mx, int my
 				if (!squelch_item_ok(o_ptr)) {
 					if (object_is_known(o_ptr)) {
 						if (is_locked_chest(o_ptr)) {
-							menu_dynamic_add_label(m, "Disarm Chest", 'D', 5, labels);
-							menu_dynamic_add_label(m, "Open Chest", 'o', 8, labels);
-						} else {
-							menu_dynamic_add_label(m, "Open Disarmed Chest", 'o', 8, labels);
+							ADD_LABEL("Disarm Chest", CMD_DISARM, MN_ROW_VALID);
+							ADD_LABEL("Open Chest", CMD_OPEN, MN_ROW_VALID);
 						}
-					} else {
-						menu_dynamic_add_label(m, "Open Chest", 'o', 8, labels);
+						else {
+							ADD_LABEL("Open Disarmed Chest", CMD_OPEN, MN_ROW_VALID);
+						}
+					}
+					else {
+						ADD_LABEL("Open Chest", CMD_OPEN, MN_ROW_VALID);
 					}
 				}
 			}
 		}
+
 		if (cave_istrap(c, y, x)) {
-			menu_dynamic_add_label(m, "Disarm", 'D', 5, labels);
-			menu_dynamic_add_label(m, "Jump Onto", 'W', 6, labels);
+			ADD_LABEL("Disarm", CMD_DISARM, MN_ROW_VALID);
+			ADD_LABEL("Jump Onto", CMD_JUMP, MN_ROW_VALID);
 		}
+
 		if (cave_isopendoor(c, y, x)) {
-			menu_dynamic_add_label(m, "Close", 'c', 7, labels);
-		} else
-		if (cave_iscloseddoor(c, y, x)) {
-			menu_dynamic_add_label(m, "Open", 'o', 8, labels);
-			menu_dynamic_add_label(m, "Lock", 'D', 5, labels);
-		} else
-		if (cave_isdiggable(c, y, x)) {
-			menu_dynamic_add_label(m, "Tunnel", 'T', 11, labels);
+			ADD_LABEL("Close", CMD_CLOSE, MN_ROW_VALID);
 		}
-		menu_dynamic_add_label(m, "Search", 's', 12, labels);
-		menu_dynamic_add_label(m, "Walk Towards", ';', 14, labels);
-	} else {
-		menu_dynamic_add_label(m, "Pathfind To", ',', 13, labels);
-		menu_dynamic_add_label(m, "Walk Towards", ';', 14, labels);
-		menu_dynamic_add_label(m, "Run Towards", '.', 15, labels);
+		else if (cave_iscloseddoor(c, y, x)) {
+			ADD_LABEL("Open", CMD_OPEN, MN_ROW_VALID);
+			ADD_LABEL("Lock", CMD_DISARM, MN_ROW_VALID);
+		}
+		else if (cave_isdiggable(c, y, x)) {
+			ADD_LABEL("Tunnel", CMD_TUNNEL, MN_ROW_VALID);
+		}
+
+		ADD_LABEL("Search", CMD_SEARCH, MN_ROW_VALID);
+		ADD_LABEL("Walk Towards", CMD_WALK, MN_ROW_VALID);
 	}
+	else {
+		/* ',' is used for squelch in rogue keymap, so we'll just swap letters. */
+		cmdkey = (mode == KEYMAP_MODE_ORIG) ? ',' : '.';
+		menu_dynamic_add_label(m, "Pathfind To", cmdkey, CMD_PATHFIND, labels);
+
+		ADD_LABEL("Walk Towards", CMD_WALK, MN_ROW_VALID);
+		ADD_LABEL("Run Towards", CMD_RUN, MN_ROW_VALID);
+	}
+
 	if (player_can_fire()) {
-		menu_dynamic_add_label(m, "Fire On", 'f', 16, labels);
+		ADD_LABEL("Fire On", CMD_FIRE, MN_ROW_VALID);
 	}
-	menu_dynamic_add_label(m, "Throw To", 'v', 17, labels);
+
+	ADD_LABEL("Throw To", CMD_THROW, MN_ROW_VALID);
 
 	/* work out display region */
-	r.width = menu_dynamic_longest_entry(m) + 3 + 2; /* +3 for tag, 2 for pad */
+	r.width = (int)menu_dynamic_longest_entry(m) + 3 + 2; /* +3 for tag, 2 for pad */
 	if (mx > Term->wid - r.width - 1) {
 		r.col = Term->wid - r.width - 1;
 	} else {
@@ -478,102 +513,106 @@ int context_menu_cave(struct cave *c, int y, int x, int adjacent, int mx, int my
 
 	screen_load();
 
-	if (selected == 1) {
-		/* look at the spot */
-		if (target_set_interactive(TARGET_LOOK, x, y)) {
-			msg("Target Selected.");
+	cmdkey = cmd_lookup_key(selected, mode);
+
+	/* Check the command to see if it is allowed. */
+	switch (selected) {
+		case -1:
+			/* User cancelled the menu. */
+			return 3;
+
+		case MENU_VALUE_LOOK:
+		case MENU_VALUE_RECALL:
+		case CMD_PATHFIND:
+			allowed = TRUE;
+			break;
+
+		case CMD_SEARCH:
+		case CMD_ALTER:
+		case CMD_DISARM:
+		case CMD_JUMP:
+		case CMD_CLOSE:
+		case CMD_OPEN:
+		case CMD_TUNNEL:
+		case CMD_WALK:
+		case CMD_RUN:
+		case CMD_CAST:
+		case CMD_FIRE:
+		case CMD_THROW:
+		case CMD_USE_ANY:
+			/* Only check for ^ inscriptions, since we don't have an object selected (if we need one). */
+			allowed = key_confirm_command(cmdkey);
+			break;
+
+		default:
+			/* Invalid command; prevent anything from happening. */
+			bell("Invalid context menu command.");
+			allowed = FALSE;
+			break;
+	}
+
+	if (!allowed)
+		return 1;
+
+	/* Perform the command. */
+	switch (selected) {
+		case MENU_VALUE_LOOK:
+			/* look at the spot */
+			if (target_set_interactive(TARGET_LOOK, x, y)) {
+				msg("Target Selected.");
+			}
+			break;
+
+		case MENU_VALUE_RECALL: {
+			/* recall monster Info */
+			monster_type *m_ptr = cave_monster_at(c, y, x);
+			if (m_ptr) {
+				monster_lore *lore = get_lore(m_ptr->race);
+				lore_show_interactive(m_ptr->race, lore);
+			}
 		}
-	} else
-	if (selected == 2) {
-		/* use an item on the spot */
-		cmd_insert(CMD_USE_AIMED);
-		cmd_set_arg_target(cmd_get_top(), 1, DIR_TARGET);
-	} else
-	if (selected == 3) {
-		/* cast a spell on the spot */
-		if (textui_obj_cast_ret() >= 0) {
+			break;
+
+		case CMD_SEARCH:
+			cmd_insert(selected);
+			break;
+
+		case CMD_PATHFIND:
+			cmd_insert(selected);
+			cmd_set_arg_point(cmd_get_top(), 0, x, y);
+			break;
+
+		case CMD_ALTER:
+		case CMD_DISARM:
+		case CMD_JUMP:
+		case CMD_CLOSE:
+		case CMD_OPEN:
+		case CMD_TUNNEL:
+		case CMD_WALK:
+		case CMD_RUN:
+			cmd_insert(selected);
+			cmd_set_arg_direction(cmd_get_top(), 0, coords_to_dir(y,x));
+			break;
+
+		case CMD_CAST:
+			if (textui_obj_cast_ret() >= 0) {
+				cmd_set_arg_target(cmd_get_top(), 1, DIR_TARGET);
+			}
+			break;
+
+		case CMD_FIRE:
+		case CMD_THROW:
+		case CMD_USE_ANY:
+			cmd_insert(selected);
 			cmd_set_arg_target(cmd_get_top(), 1, DIR_TARGET);
-		}
-	} else
-	if (selected == 4) {
-		/* attack a spot adjacent to the player */
-		cmd_insert(CMD_ALTER);
-		cmd_set_arg_direction(cmd_get_top(), 0, coords_to_dir(y,x));
-	} else
-	if (selected == 5) {
-		/* disarm an adjacent trap or chest */
-		cmd_insert(CMD_DISARM);
-		cmd_set_arg_direction(cmd_get_top(), 0, coords_to_dir(y,x));
-	} else
-	if (selected == 6) {
-		/* walk onto an adjacent spot even if there is a trap there */
-		cmd_insert(CMD_JUMP);
-		cmd_set_arg_direction(cmd_get_top(), 0, coords_to_dir(y,x));
-	} else
-	if (selected == 7) {
-		/* close a door */
-		cmd_insert(CMD_CLOSE);
-		cmd_set_arg_direction(cmd_get_top(), 0, coords_to_dir(y,x));
-	} else
-	if (selected == 8) {
-		/* open a door or chest */
-		cmd_insert(CMD_OPEN);
-		cmd_set_arg_direction(cmd_get_top(), 0, coords_to_dir(y,x));
-	} else
-	if (selected == 11) {
-		/* Tunnel in a direction */
-		cmd_insert(CMD_TUNNEL);
-		cmd_set_arg_direction(cmd_get_top(), 0, coords_to_dir(y,x));
-	} else
-	if (selected == 12) {
-		/* Search */
-		cmd_insert(CMD_SEARCH);
-	} else
-	if (selected == 13) {
-		/* pathfind to the spot */
-		cmd_insert(CMD_PATHFIND);
-		cmd_set_arg_point(cmd_get_top(), 0, x, y);
-	} else
-	if (selected == 14) {
-		/* walk towards the spot */
-		cmd_insert(CMD_WALK);
-		cmd_set_arg_direction(cmd_get_top(), 0, coords_to_dir(y,x));
-	} else
-	if (selected == 15) {
-		/* run towards the spot */
-		cmd_insert(CMD_RUN);
-		cmd_set_arg_direction(cmd_get_top(), 0, coords_to_dir(y,x));
-	} else
-	if (selected == 16) {
-		/* Fire ammo towards the spot */
-		cmd_insert(CMD_FIRE);
-		cmd_set_arg_target(cmd_get_top(), 1, DIR_TARGET);
-	} else
-	if (selected == 17) {
-		/* throw an item towards the spot */
-		cmd_insert(CMD_THROW);
- 		cmd_set_arg_target(cmd_get_top(), 1, DIR_TARGET);
-	} else
-	if (selected == 18) {
-		/* recall monster Info */
-		monster_type *m_ptr = cave_monster_at(c, y, x);
-		if (m_ptr) {
-			monster_lore *lore = get_lore(m_ptr->race);
-			lore_show_interactive(m_ptr->race, lore);
-		}
+			break;
+
+		default:
+			break;
 	}
 
 	return 1;
 }
-
-/**
- * Additional constants for menu item values in context_menu_object(). The values must not collide
- * with the cmd_code enum, since those are the main values for these menu items.
- */
-enum context_menu_object_value_e {
-    MENU_VALUE_INSPECT = CMD_REPEAT + 1000,
-    MENU_VALUE_DROP_ALL,
-};
 
 /* pick the context menu options appropiate for the item */
 int context_menu_object(const object_type *o_ptr, const int slot)
@@ -602,11 +641,6 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 
 	/* 'I' is used for inspect in both keymaps. */
 	menu_dynamic_add_label(m, "Inspect", 'I', MENU_VALUE_INSPECT, labels);
-
-#define ADD_LABEL(text, cmd, valid) { \
-	cmdkey = cmd_lookup_key_unktrl((cmd), mode); \
-	menu_dynamic_add_label_valid(m, (text), cmdkey, (cmd), labels, (valid)); \
-}
 
 	if (obj_can_browse(o_ptr)) {
 		if (obj_can_cast_from(o_ptr) && player_can_cast()) {
@@ -698,8 +732,6 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 	}
 
 	ADD_LABEL( (object_is_squelched(o_ptr) ? "Unignore" : "Ignore"), CMD_DESTROY, MN_ROW_VALID);
-
-#undef ADD_LABEL
 
 	/* work out display region */
 	r.width = (int)menu_dynamic_longest_entry(m) + 3 + 2; /* +3 for tag, 2 for pad */
@@ -1042,4 +1074,3 @@ int context_menu_store_item(struct store *store, const int oid, int mx, int my)
 
 	return 1;
 }
-
