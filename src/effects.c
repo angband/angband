@@ -151,14 +151,6 @@ int effect_calculate_value(effect_handler_context_t *context, bool use_boost)
 
 #define EFFECT_STOP -1
 
-
-bool effect_increment_timed_obvious(effect_handler_context_t *context, int type, int amount)
-{
-	player_inc_timed(p_ptr, type, amount, TRUE, TRUE);
-	context->ident = TRUE;
-	return TRUE;
-}
-
 bool effect_increment_timed_normal(effect_handler_context_t *context, int type, int amount)
 {
 	context->ident = player_inc_timed(p_ptr, type, amount, TRUE, TRUE);
@@ -211,15 +203,6 @@ bool effect_stat_gain(effect_handler_context_t *context, int stat)
 	return TRUE;
 }
 
-bool effect_stat_lose(effect_handler_context_t *context, int stat)
-{
-	int dam = effect_calculate_value(context, FALSE);
-	take_hit(p_ptr, dam, "stat drain");
-	(void)do_dec_stat(stat, FALSE);
-	context->ident = TRUE;
-	return TRUE;
-}
-
 bool effect_stat_restore_one(effect_handler_context_t *context, int stat)
 {
 	context->ident = do_res_stat(stat);
@@ -236,103 +219,80 @@ bool effect_stat_restore_all(effect_handler_context_t *context)
 	return TRUE;
 }
 
-bool effect_project_bolt_or_beam(effect_handler_context_t *context, int type)
+#pragma mark generic handlers
+
+bool effect_handler_increment_timed(effect_handler_context_t *context)
 {
-	int dam = effect_calculate_value(context, TRUE);
-	fire_bolt_or_beam(context->beam, type, context->dir, dam);
+	int amount = effect_calculate_value(context, FALSE);
+	return effect_increment_timed_normal(context, context->p1, amount);
+}
+
+bool effect_handler_increment_timed_o(effect_handler_context_t *context)
+{
+	int amount = effect_calculate_value(context, FALSE);
+	player_inc_timed(p_ptr, context->p1, amount, TRUE, TRUE);
+	context->ident = TRUE;
+	return TRUE;
+
+}
+
+bool effect_handler_clear_timed(effect_handler_context_t *context)
+{
+	return effect_clear_timed_one(context, context->p1);
+}
+
+bool effect_handler_stat_gain(effect_handler_context_t *context)
+{
+	return effect_stat_gain(context, context->p1);
+}
+
+bool effect_handler_stat_lose(effect_handler_context_t *context)
+{
+	int dam = effect_calculate_value(context, FALSE);
+	take_hit(p_ptr, dam, "stat drain");
+	(void)do_dec_stat(context->p1, FALSE);
 	context->ident = TRUE;
 	return TRUE;
 }
 
-bool effect_project_bolt_only(effect_handler_context_t *context, int type)
+bool effect_handler_stat_restore(effect_handler_context_t *context)
+{
+	return effect_stat_restore_one(context, context->p1);
+}
+
+bool effect_handler_project_bolt_or_beam(effect_handler_context_t *context)
 {
 	int dam = effect_calculate_value(context, TRUE);
-	fire_bolt(type, context->dir, dam);
+	fire_bolt_or_beam(context->beam, context->p1, context->dir, dam);
 	context->ident = TRUE;
 	return TRUE;
 }
 
-bool effect_project_beam_only(effect_handler_context_t *context, int type)
+bool effect_handler_project_bolt_only(effect_handler_context_t *context)
 {
 	int dam = effect_calculate_value(context, TRUE);
-    fire_beam(type, context->dir, dam);
+	fire_bolt(context->p1, context->dir, dam);
+	context->ident = TRUE;
+	return TRUE;
+}
+
+bool effect_handler_project_beam_only(effect_handler_context_t *context)
+{
+	int dam = effect_calculate_value(context, TRUE);
+    fire_beam(context->p1, context->dir, dam);
     context->ident = TRUE;
     return TRUE;
 }
 
-bool effect_project_ball(effect_handler_context_t *context, int type, int radius)
+bool effect_handler_project_ball(effect_handler_context_t *context)
 {
 	int dam = effect_calculate_value(context, TRUE);
-	fire_ball(type, context->dir, dam, radius);
+	fire_ball(context->p1, context->dir, dam, context->p2);
 	context->ident = TRUE;
 	return TRUE;
 }
 
-#pragma mark handlers
-
-
-
-bool effect_handler_POISON(effect_handler_context_t *context)
-{
-	int amount = effect_calculate_value(context, FALSE);
-	return effect_increment_timed_obvious(context, TMD_POISONED, amount);
-}
-
-bool effect_handler_BLIND(effect_handler_context_t *context)
-{
-	int amount = effect_calculate_value(context, FALSE);
-	return effect_increment_timed_obvious(context, TMD_BLIND, amount);
-}
-
-bool effect_handler_SCARE(effect_handler_context_t *context)
-{
-	int amount = effect_calculate_value(context, FALSE);
-	return effect_increment_timed_obvious(context, TMD_AFRAID, amount);
-}
-
-bool effect_handler_CONFUSE(effect_handler_context_t *context)
-{
-	int amount = effect_calculate_value(context, FALSE);
-	return effect_increment_timed_obvious(context, TMD_CONFUSED, amount);
-}
-
-bool effect_handler_HALLUC(effect_handler_context_t *context)
-{
-	int amount = effect_calculate_value(context, FALSE);
-	return effect_increment_timed_obvious(context, TMD_IMAGE, amount);
-}
-
-bool effect_handler_PARALYZE(effect_handler_context_t *context)
-{
-	int amount = effect_calculate_value(context, FALSE);
-	return effect_increment_timed_obvious(context, TMD_PARALYZED, amount);
-}
-
-bool effect_handler_SLOW(effect_handler_context_t *context)
-{
-	int amount = effect_calculate_value(context, FALSE);
-	return effect_increment_timed_normal(context, TMD_SLOW, amount);
-}
-
-bool effect_handler_CURE_POISON(effect_handler_context_t *context)
-{
-	return effect_clear_timed_one(context, TMD_POISONED);
-}
-
-bool effect_handler_CURE_BLINDNESS(effect_handler_context_t *context)
-{
-	return effect_clear_timed_one(context, TMD_BLIND);
-}
-
-bool effect_handler_CURE_PARANOIA(effect_handler_context_t *context)
-{
-	return effect_clear_timed_one(context, TMD_AFRAID);
-}
-
-bool effect_handler_CURE_CONFUSION(effect_handler_context_t *context)
-{
-	return effect_clear_timed_one(context, TMD_CONFUSED);
-}
+#pragma mark specific handlers
 
 bool effect_handler_CURE_MIND(effect_handler_context_t *context)
 {
@@ -461,31 +421,6 @@ bool effect_handler_RESTORE_MANA(effect_handler_context_t *context)
 	return TRUE;
 }
 
-bool effect_handler_GAIN_STR(effect_handler_context_t *context)
-{
-	return effect_stat_gain(context, A_STR);
-}
-
-bool effect_handler_GAIN_INT(effect_handler_context_t *context)
-{
-	return effect_stat_gain(context, A_INT);
-}
-
-bool effect_handler_GAIN_WIS(effect_handler_context_t *context)
-{
-	return effect_stat_gain(context, A_WIS);
-}
-
-bool effect_handler_GAIN_DEX(effect_handler_context_t *context)
-{
-	return effect_stat_gain(context, A_DEX);
-}
-
-bool effect_handler_GAIN_CON(effect_handler_context_t *context)
-{
-	return effect_stat_gain(context, A_CON);
-}
-
 bool effect_handler_GAIN_ALL(effect_handler_context_t *context)
 {
 	effect_stat_gain(context, A_STR);
@@ -570,31 +505,6 @@ bool effect_handler_NIMBLENESS(effect_handler_context_t *context)
 	return TRUE;
 }
 
-bool effect_handler_LOSE_STR(effect_handler_context_t *context)
-{
-	return effect_stat_lose(context, A_STR);
-}
-
-bool effect_handler_LOSE_INT(effect_handler_context_t *context)
-{
-	return effect_stat_lose(context, A_INT);
-}
-
-bool effect_handler_LOSE_WIS(effect_handler_context_t *context)
-{
-	return effect_stat_lose(context, A_WIS);
-}
-
-bool effect_handler_LOSE_DEX(effect_handler_context_t *context)
-{
-	return effect_stat_lose(context, A_DEX);
-}
-
-bool effect_handler_LOSE_CON(effect_handler_context_t *context)
-{
-	return effect_stat_lose(context, A_CON);
-}
-
 bool effect_handler_LOSE_CON2(effect_handler_context_t *context)
 {
 	int dam = effect_calculate_value(context, FALSE);
@@ -603,31 +513,6 @@ bool effect_handler_LOSE_CON2(effect_handler_context_t *context)
 	context->ident = TRUE;
 
 	return TRUE;
-}
-
-bool effect_handler_RESTORE_STR(effect_handler_context_t *context)
-{
-	return effect_stat_restore_one(context, A_STR);
-}
-
-bool effect_handler_RESTORE_INT(effect_handler_context_t *context)
-{
-	return effect_stat_restore_one(context, A_INT);
-}
-
-bool effect_handler_RESTORE_WIS(effect_handler_context_t *context)
-{
-	return effect_stat_restore_one(context, A_WIS);
-}
-
-bool effect_handler_RESTORE_DEX(effect_handler_context_t *context)
-{
-	return effect_stat_restore_one(context, A_DEX);
-}
-
-bool effect_handler_RESTORE_CON(effect_handler_context_t *context)
-{
-	return effect_stat_restore_one(context, A_CON);
 }
 
 bool effect_handler_CURE_NONORLYBIG(effect_handler_context_t *context)
@@ -724,36 +609,6 @@ bool effect_handler_SHERO(effect_handler_context_t *context)
 	effect_increment_timed_normal(context, TMD_BOLD, amount);
 	effect_increment_timed_normal(context, TMD_SHERO, amount);
 	return TRUE;
-}
-
-bool effect_handler_RESIST_ACID(effect_handler_context_t *context)
-{
-	int amount = effect_calculate_value(context, FALSE);
-	return effect_increment_timed_normal(context, TMD_OPP_ACID, amount);
-}
-
-bool effect_handler_RESIST_ELEC(effect_handler_context_t *context)
-{
-	int amount = effect_calculate_value(context, FALSE);
-	return effect_increment_timed_normal(context, TMD_OPP_ELEC, amount);
-}
-
-bool effect_handler_RESIST_FIRE(effect_handler_context_t *context)
-{
-	int amount = effect_calculate_value(context, FALSE);
-	return effect_increment_timed_normal(context, TMD_OPP_FIRE, amount);
-}
-
-bool effect_handler_RESIST_COLD(effect_handler_context_t *context)
-{
-	int amount = effect_calculate_value(context, FALSE);
-	return effect_increment_timed_normal(context, TMD_OPP_COLD, amount);
-}
-
-bool effect_handler_RESIST_POIS(effect_handler_context_t *context)
-{
-	int amount = effect_calculate_value(context, FALSE);
-	return effect_increment_timed_normal(context, TMD_OPP_POIS, amount);
 }
 
 bool effect_handler_RESIST_ALL(effect_handler_context_t *context)
@@ -1034,24 +889,6 @@ bool effect_handler_CURSE_ARMOR(effect_handler_context_t *context)
 	return TRUE;
 }
 
-bool effect_handler_BLESSING(effect_handler_context_t *context)
-{
-	int amount = effect_calculate_value(context, FALSE);
-	return effect_increment_timed_normal(context, TMD_BLESSED, amount);
-}
-
-bool effect_handler_BLESSING2(effect_handler_context_t *context)
-{
-	int amount = effect_calculate_value(context, FALSE);
-	return effect_increment_timed_normal(context, TMD_BLESSED, amount);
-}
-
-bool effect_handler_BLESSING3(effect_handler_context_t *context)
-{
-	int amount = effect_calculate_value(context, FALSE);
-	return effect_increment_timed_normal(context, TMD_BLESSED, amount);
-}
-
 bool effect_handler_RECALL(effect_handler_context_t *context)
 {
 	context->ident = TRUE;
@@ -1212,11 +1049,6 @@ bool effect_handler_RESTORE_LIFE(effect_handler_context_t *context)
 	return TRUE;
 }
 
-bool effect_handler_MISSILE(effect_handler_context_t *context)
-{
-	return effect_project_bolt_or_beam(context, GF_MISSILE);
-}
-
 bool effect_handler_DISPEL_EVIL(effect_handler_context_t *context)
 {
 	context->ident = TRUE;
@@ -1291,122 +1123,12 @@ bool effect_handler_HASTE2(effect_handler_context_t *context)
 	return TRUE;
 }
 
-bool effect_handler_FIRE_BOLT(effect_handler_context_t *context)
-{
-	return effect_project_bolt_only(context, GF_FIRE);
-}
-
-bool effect_handler_FIRE_BOLT2(effect_handler_context_t *context)
-{
-	return effect_project_bolt_or_beam(context, GF_FIRE);
-}
-
-bool effect_handler_FIRE_BOLT3(effect_handler_context_t *context)
-{
-	return effect_project_bolt_or_beam(context, GF_FIRE);
-}
-
-bool effect_handler_FIRE_BOLT72(effect_handler_context_t *context)
-{
-	return effect_project_ball(context, GF_FIRE, 2);
-}
-
-bool effect_handler_FIRE_BALL(effect_handler_context_t *context)
-{
-	return effect_project_ball(context, GF_FIRE, 2);
-}
-
-bool effect_handler_FIRE_BALL2(effect_handler_context_t *context)
-{
-	return effect_project_ball(context, GF_FIRE, 3);
-}
-
-bool effect_handler_FIRE_BALL200(effect_handler_context_t *context)
-{
-	return effect_project_ball(context, GF_FIRE, 3);
-}
-
-bool effect_handler_COLD_BOLT(effect_handler_context_t *context)
-{
-	return effect_project_bolt_or_beam(context, GF_COLD);
-}
-
-bool effect_handler_COLD_BOLT2(effect_handler_context_t *context)
-{
-	return effect_project_bolt_only(context, GF_COLD);
-}
-
-bool effect_handler_COLD_BALL2(effect_handler_context_t *context)
-{
-	return effect_project_ball(context, GF_COLD, 3);
-}
-
-bool effect_handler_COLD_BALL50(effect_handler_context_t *context)
-{
-	return effect_project_ball(context, GF_COLD, 2);
-}
-
-bool effect_handler_COLD_BALL100(effect_handler_context_t *context)
-{
-	return effect_project_ball(context, GF_COLD, 2);
-}
-
-bool effect_handler_COLD_BALL160(effect_handler_context_t *context)
-{
-	return effect_project_ball(context, GF_COLD, 3);
-}
-
-bool effect_handler_ACID_BOLT(effect_handler_context_t *context)
-{
-	return effect_project_bolt_only(context, GF_ACID);
-}
-
-bool effect_handler_ACID_BOLT2(effect_handler_context_t *context)
-{
-	return effect_project_bolt_or_beam(context, GF_ACID);
-}
-
-bool effect_handler_ACID_BOLT3(effect_handler_context_t *context)
-{
-	return effect_project_bolt_or_beam(context, GF_ACID);
-}
-
-bool effect_handler_ACID_BALL(effect_handler_context_t *context)
-{
-	return effect_project_ball(context, GF_ACID, 2);
-}
-
-bool effect_handler_ELEC_BOLT(effect_handler_context_t *context)
-{
-    return effect_project_beam_only(context, GF_ELEC);
-}
-
-bool effect_handler_ELEC_BALL(effect_handler_context_t *context)
-{
-	return effect_project_ball(context, GF_ELEC, 2);
-}
-
-bool effect_handler_ELEC_BALL2(effect_handler_context_t *context)
-{
-	return effect_project_ball(context, GF_ELEC, 3);
-}
-
-bool effect_handler_ARROW(effect_handler_context_t *context)
-{
-	return effect_project_bolt_only(context, GF_ARROW);
-}
-
 bool effect_handler_REM_FEAR_POIS(effect_handler_context_t *context)
 {
 	context->ident = TRUE;
 	(void)player_clear_timed(p_ptr, TMD_AFRAID, TRUE);
 	(void)player_clear_timed(p_ptr, TMD_POISONED, TRUE);
 	return TRUE;
-}
-
-bool effect_handler_STINKING_CLOUD(effect_handler_context_t *context)
-{
-	return effect_project_ball(context, GF_POIS, 3);
 }
 
 bool effect_handler_DRAIN_LIFE1(effect_handler_context_t *context)
@@ -1442,11 +1164,6 @@ bool effect_handler_FIREBRAND(effect_handler_context_t *context)
 	context->ident = TRUE;
 	if (!brand_bolts()) return FALSE;
 	return TRUE;
-}
-
-bool effect_handler_MANA_BOLT(effect_handler_context_t *context)
-{
-	return effect_project_bolt_only(context, GF_MANA);
 }
 
 bool effect_handler_MON_HEAL(effect_handler_context_t *context)
@@ -1748,11 +1465,6 @@ bool effect_handler_SHROOM_DEBILITY(effect_handler_context_t *context)
 
 	context->ident = TRUE;
 	return TRUE;
-}
-
-bool effect_handler_SHROOM_SPRINTING(effect_handler_context_t *context)
-{
-	return effect_increment_timed_normal(context, TMD_SPRINT, 100);
 }
 
 bool effect_handler_SHROOM_PURGING(effect_handler_context_t *context)
@@ -2115,9 +1827,15 @@ static const info_entry effects[] =
 /*
  * Utility functions
  */
+
+bool effect_valid(effect_type effect)
+{
+	return effect > EF_XXX && effect < EF_MAX;
+}
+
 bool effect_aim(effect_type effect)
 {
-	if (effect < 1 || effect > EF_MAX)
+	if (!effect_valid(effect))
 		return FALSE;
 
 	return effects[effect].aim;
@@ -2125,15 +1843,15 @@ bool effect_aim(effect_type effect)
 
 int effect_power(effect_type effect)
 {
-	if (effect < 1 || effect > EF_MAX)
-		return FALSE;
+	if (!effect_valid(effect))
+		return 0;
 
 	return effects[effect].power;
 }
 
 random_value effect_value(effect_type effect)
 {
-	if (effect < 1 || effect > EF_MAX) {
+	if (!effect_valid(effect)) {
 		random_value rv = {0, 0, 0, 0};
 		return rv;
 	}
@@ -2143,8 +1861,8 @@ random_value effect_value(effect_type effect)
 
 const char *effect_desc(effect_type effect)
 {
-	if (effect < 1 || effect > EF_MAX)
-		return FALSE;
+	if (!effect_valid(effect))
+		return NULL;
 
 	return effects[effect].desc;
 }
@@ -2159,7 +1877,7 @@ bool effect_obvious(effect_type effect)
 
 effect_handler_f effect_handler(effect_type effect)
 {
-	if (effect < 1 || effect > EF_MAX)
+	if (!effect_valid(effect))
 		return NULL;
 
 	return effects[effect].handler;
@@ -2167,7 +1885,7 @@ effect_handler_f effect_handler(effect_type effect)
 
 int effect_param(effect_type effect, size_t param_num)
 {
-	if (effect < 1 || effect > EF_MAX)
+	if (!effect_valid(effect))
 		return 0;
 
 	return effects[effect].params[param_num];
@@ -2183,7 +1901,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam, i
 {
 	bool handled = FALSE;
 
-	if (effect < 1 || effect > EF_MAX) {
+	if (!effect_valid(effect)) {
 		msg("Bad effect passed to do_effect().  Please report this bug.");
 		return FALSE;
 	}

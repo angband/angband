@@ -24,8 +24,6 @@ typedef enum
 	#define EFFECT(x, a, r, h, v, c, d)	EF_##x,
 	#include "list-effects.h"
 	#undef EFFECT
-
-	EF_MAX
 } effect_type;
 
 /*** Functions ***/
@@ -37,5 +35,6 @@ const char *effect_desc(effect_type effect);
 int effect_power(effect_type effect);
 bool effect_obvious(effect_type effect);
 bool effect_wonder(int dir, int die, int beam);
+bool effect_valid(effect_type effect);
 
 #endif /* INCLUDED_EFFECTS_H */
