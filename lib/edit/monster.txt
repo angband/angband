@@ -5701,23 +5701,6 @@ F:RAND_50 | OPEN_DOOR | BASH_DOOR
 F:IM_ELEC
 D:It is impossible to define its form but its violence is legendary.
 
-N:361:Hellhound
-T:canine
-C:r
-I:120:352:25:120:10
-W:35:2:0:600
-B:BITE:FIRE:3d12
-B:BITE:FIRE:3d12
-B:BITE:FIRE:3d12
-F:EVIL | HAS_LIGHT
-F:RAND_25 | BASH_DOOR | MOVE_BODY
-F:IM_FIRE | GROUP_AI
-F:FORCE_SLEEP
-S:1_IN_5
-S:BR_FIRE
-friends:100:2d5:Same
-D:It is a giant dog that glows with heat.  Flames pour from its nostrils.
-
 N:364:Dagashi
 T:person
 C:y
@@ -7229,6 +7212,23 @@ D: and a warrior.  Furthermore, he is a master of camouflage, so you will need
 D: magically enhanced seeing to spot him.
 
 ### Dungeon level 42 ###
+
+N:361:Hellhound
+T:canine
+C:r
+I:120:352:25:120:10
+W:42:2:0:600
+B:BITE:FIRE:3d12
+B:BITE:FIRE:3d12
+B:BITE:FIRE:3d12
+F:EVIL | HAS_LIGHT
+F:RAND_25 | BASH_DOOR | MOVE_BODY
+F:IM_FIRE | GROUP_AI
+F:FORCE_SLEEP
+S:1_IN_5
+S:BR_FIRE
+friends:100:2d5:Same
+D:It is a giant dog that glows with heat.  Flames pour from its nostrils.
 
 N:383:Rogrog the Black Troll
 T:troll
