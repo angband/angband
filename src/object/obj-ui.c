@@ -445,8 +445,7 @@ bool verify_item(const char *prompt, int item)
  *
  * The item can be negative to mean "item on floor".
  */
-static bool get_item_allow(int item, unsigned char ch, cmd_code cmd,
-		bool is_harmless)
+bool get_item_allow(int item, unsigned char ch, cmd_code cmd, bool is_harmless)
 {
 	object_type *o_ptr;
 	char verify_inscrip[] = "!*";
@@ -459,8 +458,11 @@ static bool get_item_allow(int item, unsigned char ch, cmd_code cmd,
 	else
 		o_ptr = object_byid(0 - item);
 
+	/* Hack - Only shift the command key if it actually needs to be shifted. */
+	if (ch < 0x20)
+		ch = UN_KTRL(ch);
+
 	/* The inscription to look for */
-	/* XXX needs to do un-KTRL... */
 	verify_inscrip[1] = ch;
 
 	/* Look for the inscription */
@@ -506,6 +508,7 @@ static int get_tag(int *cp, char tag, cmd_code cmd, bool quiver_tags)
 {
 	int i;
 	const char *s;
+	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
 
 	/* (f)ire is handled differently from all others, due to the quiver */
 	if (quiver_tags)
@@ -536,6 +539,8 @@ static int get_tag(int *cp, char tag, cmd_code cmd, bool quiver_tags)
 		/* Process all tags */
 		while (s)
 		{
+			unsigned char cmdkey;
+
 			/* Check the normal tags */
 			if (s[1] == tag)
 			{
@@ -546,8 +551,14 @@ static int get_tag(int *cp, char tag, cmd_code cmd, bool quiver_tags)
 				return (TRUE);
 			}
 
+			cmdkey = cmd_lookup_key(cmd, mode);
+
+			/* Hack - Only shift the command key if it actually needs to be shifted. */
+			if (cmdkey < 0x20)
+				cmdkey = UN_KTRL(cmdkey);
+
 			/* Check the special tags */
-			if ((cmd_lookup(s[1], KEYMAP_MODE_ORIG) == cmd) && (s[2] == tag))
+			if ((s[1] == cmdkey) && (s[2] == tag))
 			{
 				/* Save the actual inventory ID */
 				*cp = i;
@@ -619,8 +630,8 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 {
 	int py = p_ptr->py;
 	int px = p_ptr->px;
-	unsigned char cmdkey = UN_KTRL(cmd_lookup_key(cmd,
-			OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG));
+	unsigned char cmdkey = cmd_lookup_key(cmd,
+			OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG);
 
 	//struct keypress which;
 	ui_event press;
@@ -657,6 +668,9 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 
 	bool show_list = TRUE;
 
+	/* Hack - Only shift the command key if it actually needs to be shifted. */
+	if (cmdkey < 0x20)
+		cmdkey = UN_KTRL(cmdkey);
 
 	/* Object list display modes */
 	if (mode & SHOW_FAIL)

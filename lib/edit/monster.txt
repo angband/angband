@@ -6539,6 +6539,7 @@ D:A figure that seems made of void, its strangely human shape is cloaked in
 D: shadow.  It reaches out at you.
 
 N:418:Erinyes
+plural:Erinyes
 T:major demon
 C:u
 I:110:210:20:75:70
@@ -7145,7 +7146,6 @@ D:A skeletal form wrapped in robes.  Powerful magic crackles along its bony
 D: fingers.
 
 N:452:Hezrou
-plural:Hezrou
 T:major demon
 C:g
 I:110:457:20:60:70
@@ -7603,7 +7603,6 @@ D: enchantments, he created jewelled eyes that enabled him to see better than
 D: any ordinary man ever could.
 
 N:458:Nalfeshnee
-plural:Nalfeshnee
 T:major demon
 C:r
 I:110:792:20:60:80
@@ -7729,6 +7728,7 @@ D: weaker creatures underfoot in his eagerness to get to his real enemy, and his
 D: battle-cry strikes terror into his foes.
 
 N:584:Cyclops
+plural:Cyclopes
 T:giant
 C:u
 I:120:1050:20:144:20

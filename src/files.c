@@ -726,6 +726,7 @@ static struct panel *get_panel_combat(void) {
 	struct panel *p = panel_allocate(9);
 	struct object *obj;
 	int bth, dam, hit;
+	int melee_dice = 1, melee_sides = 1;
 
 	/* AC */
 	panel_line(p, TERM_L_BLUE, "Armor", "[%d,%+d]",
@@ -738,7 +739,13 @@ static struct panel *get_panel_combat(void) {
 	hit = p_ptr->state.dis_to_h + (object_attack_plusses_are_visible(obj) ? obj->to_h : 0);
 
 	panel_space(p);
-	panel_line(p, TERM_L_BLUE, "Melee", "%dd%d,%+d", obj->dd, obj->ds, dam);
+
+	if (obj->kind) {
+		melee_dice = obj->dd;
+		melee_sides = obj->ds;
+	}
+
+	panel_line(p, TERM_L_BLUE, "Melee", "%dd%d,%+d", melee_dice, melee_sides, dam);
 	panel_line(p, TERM_L_BLUE, "To-hit", "%d,%+d", bth / 10, hit);
 	panel_line(p, TERM_L_BLUE, "Blows", "%d.%d/turn",
 			p_ptr->state.num_blows / 100, (p_ptr->state.num_blows / 10 % 10));

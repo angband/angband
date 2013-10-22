@@ -92,6 +92,7 @@ void do_cmd_pickup(cmd_code code, cmd_arg args[]);
 void do_cmd_autopickup(cmd_code code, cmd_arg args[]);
 int do_autopickup(void);
 byte py_pickup(int pickup);
+byte py_pickup_item(int pickup, int item);
 void move_player(int dir, bool disarm);
 
 /* cmd-process.c */
@@ -100,6 +101,8 @@ unsigned char cmd_lookup_key(cmd_code lookup_cmd, int mode);
 cmd_code cmd_lookup(unsigned char key, int mode);
 int context_menu_command(int mx, int my);
 void textui_process_command(bool no_request);
+bool key_confirm_command(unsigned char c);
+unsigned char cmd_lookup_key_unktrl(cmd_code lookup_cmd, int mode);
 
 /* XXX none under here should be here */
 

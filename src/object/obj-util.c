@@ -4311,15 +4311,13 @@ bool object_equals_object(const object_type *a, const object_type *b)
 /**
  * Return the inventory index of an object that matches the given object.
  *
- * Currently, this is limited to INVEN_PACK, since it is only used for object identification.
- *
  * \returns A valid inventory index or -1 if the object cannot be found.
  */
 int inventory_index_matching_object(const object_type *o_ptr)
 {
 	int i;
 
-	for (i = 0; i < INVEN_PACK; i++) {
+	for (i = 0; i < INVEN_TOTAL; i++) {
 		if (object_equals_object(o_ptr, &p_ptr->inventory[i]))
 			return i;
 	}

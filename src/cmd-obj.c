@@ -630,7 +630,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	if (obj_needs_aim(o_ptr))
 		dir = args[1].direction;
 
-	if (item >= 0) {
+	if (item >= 0 && item < INVEN_PACK) {
 		/* Create a copy so that we can remember what we are working with, in case the
 		 * inventory is changed. */
 		original = ZNEW(object_type);
@@ -671,7 +671,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 		if (!used && (was_aware || !ident)) return;
 	}
 
-	if (item >= 0) {
+	if (original != NULL) {
 		/* Restore o_ptr to the new inventory slot that contains the original object. We
 		 * have to do this because object mutating functions follow; "original" is a dummy
 		 * just so that we know what we are working with. */

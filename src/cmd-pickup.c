@@ -42,7 +42,7 @@ void do_cmd_pickup(cmd_code code, cmd_arg args[])
 	int energy_cost;
 
 	/* Pick up floor objects, forcing a menu for multiple objects. */
-	energy_cost = py_pickup(1) * 10;
+	energy_cost = py_pickup_item(1, args[0].item);
 
 	/* Charge this amount of energy. */
 	p_ptr->energy_use = energy_cost;
@@ -320,9 +320,7 @@ int do_autopickup(void)
 	return objs_picked_up;
 }
 
-
-
-/*
+/**
  * Pick up objects and treasure on the floor.  -LM-
  *
  * Called with pickup:
@@ -356,8 +354,10 @@ int do_autopickup(void)
  *
  * Note the lack of chance for the character to be disturbed by unmarked
  * objects.  They are truly "unknown".
+ *
+ * \param item is the floor item index (must be negative) to pick up.
  */
-byte py_pickup(int pickup)
+byte py_pickup_item(int pickup, int item)
 {
 	int py = p_ptr->py;
 	int px = p_ptr->px;
@@ -396,8 +396,12 @@ byte py_pickup(int pickup)
 	    return objs_picked_up;
 	}
 
+	/* Use the item that we are given, if it is on the floor. */
+	if (item < 0)
+		this_o_idx = 0 - item;
+
 	/* Use a menu interface for multiple objects, or pickup single objects */
-	if (pickup == 1)
+	if (pickup == 1 && !this_o_idx)
 	{
 		if (floor_num > 1)
 			pickup = 2;
@@ -405,9 +409,8 @@ byte py_pickup(int pickup)
 			this_o_idx = floor_list[0];
 	}
 
-
 	/* Display a list if requested. */
-	if (pickup == 2)
+	if (pickup == 2 && !this_o_idx)
 	{
 		const char *q, *s;
 		int item;
@@ -448,6 +451,10 @@ byte py_pickup(int pickup)
 	return (objs_picked_up);
 }
 
+byte py_pickup(int pickup)
+{
+	return py_pickup_item(pickup, 0);
+}
 
 /*
  * Move player in the given direction.
