@@ -2745,6 +2745,71 @@ bool inven_stack_okay(const object_type *o_ptr)
 	return (FALSE);
 }
 
+/**
+ * Return the preferred inventory slot for the given object.
+ *
+ * This function defines the sort order for the inventory.
+ *
+ * \param o_ptr is the object that needs a slot.
+ * \param max_slot is the maximum slot we will allow for this object.
+ * \return the inventory slot index for the object.
+ */
+static int inventory_slot_for_object(struct object *o_ptr, size_t max_slot)
+{
+	/* Get the "value" of the item */
+	s32b o_value = o_ptr->kind->cost;
+	s32b j_value;
+	struct object *j_ptr;
+	size_t j;
+
+	/* Scan every occupied slot */
+	for (j = 0; j < max_slot; j++)
+	{
+		/* Get the item already there */
+		j_ptr = &p_ptr->inventory[j];
+
+		/* Use empty slots */
+		if (!j_ptr->kind) break;
+		
+		/* Hack -- readable books always come first */
+		if ((o_ptr->tval == p_ptr->class->spell_book) &&
+			(j_ptr->tval != p_ptr->class->spell_book)) break;
+		if ((j_ptr->tval == p_ptr->class->spell_book) &&
+			(o_ptr->tval != p_ptr->class->spell_book)) continue;
+		
+		/* Objects sort by decreasing type */
+		if (o_ptr->tval > j_ptr->tval) break;
+		if (o_ptr->tval < j_ptr->tval) continue;
+		
+		/* Non-aware (flavored) items always come last */
+		if (!object_flavor_is_aware(o_ptr)) continue;
+		if (!object_flavor_is_aware(j_ptr)) break;
+		
+		/* Objects sort by increasing sval */
+		if (o_ptr->sval < j_ptr->sval) break;
+		if (o_ptr->sval > j_ptr->sval) continue;
+		
+		/* Unidentified objects always come last */
+		if (!object_is_known(o_ptr)) continue;
+		if (!object_is_known(j_ptr)) break;
+		
+		/* Lights sort by decreasing fuel */
+		if (o_ptr->tval == TV_LIGHT)
+		{
+			if (o_ptr->pval[DEFAULT_PVAL] > j_ptr->pval[DEFAULT_PVAL]) break;
+			if (o_ptr->pval[DEFAULT_PVAL] < j_ptr->pval[DEFAULT_PVAL]) continue;
+		}
+		
+		/* Determine the "value" of the pack item */
+		j_value = j_ptr->kind->cost;
+		
+		/* Objects sort by decreasing value */
+		if (o_value > j_value) break;
+		if (o_value < j_value) continue;
+	}
+
+	return j;
+}
 
 /*
  * Add an item to the players inventory, and return the slot used.
@@ -2823,53 +2888,7 @@ extern s16b inven_carry(struct player *p, struct object *o)
 	/* Reorder the pack */
 	if (i < INVEN_MAX_PACK)
 	{
-		s32b o_value, j_value;
-
-		/* Get the "value" of the item */
-		o_value = o->kind->cost;
-
-		/* Scan every occupied slot */
-		for (j = 0; j < INVEN_MAX_PACK; j++)
-		{
-			j_ptr = &p->inventory[j];
-			if (!j_ptr->kind) break;
-
-			/* Hack -- readable books always come first */
-			if ((o->tval == p_ptr->class->spell_book) &&
-			    (j_ptr->tval != p_ptr->class->spell_book)) break;
-			if ((j_ptr->tval == p_ptr->class->spell_book) &&
-			    (o->tval != p_ptr->class->spell_book)) continue;
-
-			/* Objects sort by decreasing type */
-			if (o->tval > j_ptr->tval) break;
-			if (o->tval < j_ptr->tval) continue;
-
-			/* Non-aware (flavored) items always come last */
-			if (!object_flavor_is_aware(o)) continue;
-			if (!object_flavor_is_aware(j_ptr)) break;
-
-			/* Objects sort by increasing sval */
-			if (o->sval < j_ptr->sval) break;
-			if (o->sval > j_ptr->sval) continue;
-
-			/* Unidentified objects always come last */
-			if (!object_is_known(o)) continue;
-			if (!object_is_known(j_ptr)) break;
-
-			/* Lights sort by decreasing fuel */
-			if (o->tval == TV_LIGHT)
-			{
-				if (o->pval[DEFAULT_PVAL] > j_ptr->pval[DEFAULT_PVAL]) break;
-				if (o->pval[DEFAULT_PVAL] < j_ptr->pval[DEFAULT_PVAL]) continue;
-			}
-
-			/* Determine the "value" of the pack item */
-			j_value = j_ptr->kind->cost;
-
-			/* Objects sort by decreasing value */
-			if (o_value > j_value) break;
-			if (o_value < j_value) continue;
-		}
+		j = inventory_slot_for_object(o, INVEN_MAX_PACK);
 
 		/* Use that slot */
 		i = j;
@@ -3190,7 +3209,6 @@ void combine_pack(void)
 	}
 }
 
-
 /*
  * Reorder items in the pack
  *
@@ -3199,18 +3217,10 @@ void combine_pack(void)
 void reorder_pack(void)
 {
 	int i, j, k;
-
-	s32b o_value;
-	s32b j_value;
-
 	object_type *o_ptr;
-	object_type *j_ptr;
-
 	object_type *i_ptr;
 	object_type object_type_body;
-
 	bool flag = FALSE;
-
 
 	/* Re-order the pack (forwards) */
 	for (i = 0; i < INVEN_PACK; i++)
@@ -3221,54 +3231,7 @@ void reorder_pack(void)
 		/* Skip empty slots */
 		if (!o_ptr->kind) continue;
 
-		/* Get the "value" of the item */
-		o_value = o_ptr->kind->cost;
-
-		/* Scan every occupied slot */
-		for (j = 0; j < INVEN_PACK; j++)
-		{
-			/* Get the item already there */
-			j_ptr = &p_ptr->inventory[j];
-
-			/* Use empty slots */
-			if (!j_ptr->kind) break;
-
-			/* Hack -- readable books always come first */
-			if ((o_ptr->tval == p_ptr->class->spell_book) &&
-			    (j_ptr->tval != p_ptr->class->spell_book)) break;
-			if ((j_ptr->tval == p_ptr->class->spell_book) &&
-			    (o_ptr->tval != p_ptr->class->spell_book)) continue;
-
-			/* Objects sort by decreasing type */
-			if (o_ptr->tval > j_ptr->tval) break;
-			if (o_ptr->tval < j_ptr->tval) continue;
-
-			/* Non-aware (flavored) items always come last */
-			if (!object_flavor_is_aware(o_ptr)) continue;
-			if (!object_flavor_is_aware(j_ptr)) break;
-
-			/* Objects sort by increasing sval */
-			if (o_ptr->sval < j_ptr->sval) break;
-			if (o_ptr->sval > j_ptr->sval) continue;
-
-			/* Unidentified objects always come last */
-			if (!object_is_known(o_ptr)) continue;
-			if (!object_is_known(j_ptr)) break;
-
-			/* Lights sort by decreasing fuel */
-			if (o_ptr->tval == TV_LIGHT)
-			{
-				if (o_ptr->pval[DEFAULT_PVAL] > j_ptr->pval[DEFAULT_PVAL]) break;
-				if (o_ptr->pval[DEFAULT_PVAL] < j_ptr->pval[DEFAULT_PVAL]) continue;
-			}
-
-			/* Determine the "value" of the pack item */
-			j_value = j_ptr->kind->cost;
-
-			/* Objects sort by decreasing value */
-			if (o_value > j_value) break;
-			if (o_value < j_value) continue;
-		}
+		j = inventory_slot_for_object(o_ptr, INVEN_PACK);
 
 		/* Never move down */
 		if (j >= i) continue;
