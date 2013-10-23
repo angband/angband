@@ -1579,8 +1579,7 @@ s32b object_value(const object_type *o_ptr, int qty, int verbose)
 	return (value);
 }
 
-
-/*
+/**
  * Determine if an item can "absorb" a second item
  *
  * See "object_absorb()" for the actual "absorption" code.
@@ -1595,14 +1594,9 @@ s32b object_value(const object_type *o_ptr, int qty, int verbose)
  * Chests, and activatable items, except rods, never stack (for various
  * reasons).
  */
-bool object_similar(const object_type *o_ptr, const object_type *j_ptr,
-	object_stack_t mode)
+bool inventory_object_stackable(const object_type *o_ptr, const object_type *j_ptr, object_stack_t mode)
 {
 	int i;
-	int total = o_ptr->number + j_ptr->number;
-
-	/* Check against stacking limit - except in stores which absorb anyway */
-	if (!(mode & OSTACK_STORE) && (total >= MAX_STACK_SIZE)) return FALSE;
 
 	/* If either item is unknown, do not stack */
 	if (mode & OSTACK_LIST && o_ptr->marked == MARK_AWARE) return FALSE;
@@ -1637,7 +1631,7 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr,
 		case TV_ROD:
 		{
 			/* Since the kinds are identical, either both will be
-			aware or both will be unaware */
+			 aware or both will be unaware */
 			break;
 		}
 
@@ -1692,19 +1686,19 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr,
 					return (FALSE);
 
 			/* Require identical ego-item types */
-			if (o_ptr->ego != j_ptr->ego) return (FALSE);
+			if (o_ptr->ego != j_ptr->ego) return FALSE;
 
 			/* Hack - Never stack recharging wearables ... */
 			if ((o_ptr->timeout || j_ptr->timeout) &&
-					o_ptr->tval != TV_LIGHT) return FALSE;
+				o_ptr->tval != TV_LIGHT) return FALSE;
 
 			/* ... and lights must have same amount of fuel */
 			else if ((o_ptr->timeout != j_ptr->timeout) &&
-					o_ptr->tval == TV_LIGHT) return FALSE;
+					 o_ptr->tval == TV_LIGHT) return FALSE;
 
 			/* Prevent unIDd items stacking in the object list */
 			if (mode & OSTACK_LIST &&
-					!(o_ptr->ident & j_ptr->ident & IDENT_KNOWN)) return FALSE;
+				!(o_ptr->ident & j_ptr->ident & IDENT_KNOWN)) return FALSE;
 
 			/* Probably okay */
 			break;
@@ -1723,11 +1717,39 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr,
 		return FALSE;
 
 	/* They must be similar enough */
-	return (TRUE);
+	return TRUE;
 }
 
+/**
+ * Return whether each stack of objects can be merged into two uneven stacks.
+ */
+bool inventory_can_stack_partial(const object_type *o_ptr, const object_type *j_ptr, object_stack_t mode)
+{
+	if (!(mode & OSTACK_STORE)) {
+		int total = o_ptr->number + j_ptr->number;
+		int remainder = total - (MAX_STACK_SIZE - 1);
 
-/*
+		if (remainder >= MAX_STACK_SIZE)
+			return FALSE;
+	}
+
+	return inventory_object_stackable(o_ptr, j_ptr, mode);
+}
+
+/**
+ * Return whether each stack of objects can be merged into one stack.
+ */
+bool object_similar(const object_type *o_ptr, const object_type *j_ptr, object_stack_t mode)
+{
+	int total = o_ptr->number + j_ptr->number;
+
+	/* Check against stacking limit - except in stores which absorb anyway */
+	if (!(mode & OSTACK_STORE) && (total >= MAX_STACK_SIZE)) return FALSE;
+
+	return inventory_object_stackable(o_ptr, j_ptr, mode);
+}
+
+/**
  * Allow one item to "absorb" another, assuming they are similar.
  *
  * The blending of the "note" field assumes that either (1) one has an
@@ -1743,12 +1765,9 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr,
  *
  * These assumptions are enforced by the "object_similar()" code.
  */
-void object_absorb(object_type *o_ptr, const object_type *j_ptr)
+void object_absorb_merge(object_type *o_ptr, const object_type *j_ptr)
 {
-	int total = o_ptr->number + j_ptr->number;
-
-	/* Add together the item counts */
-	o_ptr->number = ((total < MAX_STACK_SIZE) ? total : (MAX_STACK_SIZE - 1));
+	int total;
 
 	/* Blend all knowledge */
 	o_ptr->ident |= (j_ptr->ident & ~IDENT_EMPTY);
@@ -1764,7 +1783,7 @@ void object_absorb(object_type *o_ptr, const object_type *j_ptr)
 
 	/* Combine pvals for wands and staves */
 	if (o_ptr->tval == TV_WAND || o_ptr->tval == TV_STAFF ||
-			o_ptr->tval == TV_GOLD)
+		o_ptr->tval == TV_GOLD)
 	{
 		total = o_ptr->pval[DEFAULT_PVAL] + j_ptr->pval[DEFAULT_PVAL];
 		o_ptr->pval[DEFAULT_PVAL] = total >= MAX_PVAL ? MAX_PVAL : total;
@@ -1772,8 +1791,8 @@ void object_absorb(object_type *o_ptr, const object_type *j_ptr)
 
 	/* Combine origin data as best we can */
 	if (o_ptr->origin != j_ptr->origin ||
-			o_ptr->origin_depth != j_ptr->origin_depth ||
-			o_ptr->origin_xtra != j_ptr->origin_xtra) {
+		o_ptr->origin_depth != j_ptr->origin_depth ||
+		o_ptr->origin_xtra != j_ptr->origin_xtra) {
 		int act = 2;
 
 		if (o_ptr->origin_xtra && j_ptr->origin_xtra) {
@@ -1790,7 +1809,7 @@ void object_absorb(object_type *o_ptr, const object_type *j_ptr)
 
 		switch (act)
 		{
-			/* Overwrite with j_ptr */
+				/* Overwrite with j_ptr */
 			case 1:
 			{
 				o_ptr->origin = j_ptr->origin;
@@ -1798,7 +1817,7 @@ void object_absorb(object_type *o_ptr, const object_type *j_ptr)
 				o_ptr->origin_xtra = j_ptr->origin_xtra;
 			}
 
-			/* Set as "mixed" */
+				/* Set as "mixed" */
 			case 2:
 			{
 				o_ptr->origin = ORIGIN_MIXED;
@@ -1807,7 +1826,32 @@ void object_absorb(object_type *o_ptr, const object_type *j_ptr)
 	}
 }
 
+/**
+ * Merge a smaller stack into a larger stack, leaving two uneven stacks.
+ */
+void object_absorb_partial(object_type *o_ptr, object_type *j_ptr)
+{
+	int smallest = MIN(o_ptr->number, j_ptr->number);
+	int largest = MAX(o_ptr->number, j_ptr->number);
+	int difference = (MAX_STACK_SIZE - 1) - largest;
+	o_ptr->number = largest + difference;
+	j_ptr->number = smallest - difference;
 
+	object_absorb_merge(o_ptr, j_ptr);
+}
+
+/**
+ * Merge two stacks into one stack.
+ */
+void object_absorb(object_type *o_ptr, const object_type *j_ptr)
+{
+	int total = o_ptr->number + j_ptr->number;
+
+	/* Add together the item counts */
+	o_ptr->number = ((total < MAX_STACK_SIZE) ? total : (MAX_STACK_SIZE - 1));
+
+	object_absorb_merge(o_ptr, j_ptr);
+}
 
 /*
  * Wipe an object clean.
@@ -2754,7 +2798,7 @@ bool inven_stack_okay(const object_type *o_ptr)
  * \param max_slot is the maximum slot we will allow for this object.
  * \return the inventory slot index for the object.
  */
-static int inventory_slot_for_object(struct object *o_ptr, size_t max_slot)
+static int inventory_slot_for_object(const struct object *o_ptr, size_t max_slot)
 {
 	/* Get the "value" of the item */
 	s32b o_value = o_ptr->kind->cost;
@@ -3123,12 +3167,10 @@ void inven_drop(int item, int amt)
 void combine_pack(void)
 {
 	int i, j, k;
-
 	object_type *o_ptr;
 	object_type *j_ptr;
-
-	bool flag = FALSE;
-
+	bool display_message = FALSE;
+	bool redraw = FALSE;
 
 	/* Combine the pack (backwards) */
 	for (i = INVEN_PACK; i > 0; i--)
@@ -3159,18 +3201,21 @@ void combine_pack(void)
 			if (!j_ptr->kind) continue;
 
 			/* Can we drop "o_ptr" onto "j_ptr"? */
-			if (object_similar(j_ptr, o_ptr, OSTACK_PACK))
-			{
-				/* Take note */
-				flag = slide = TRUE;
-
-				/* Add together the item counts */
+			if (object_similar(j_ptr, o_ptr, OSTACK_PACK)) {
+				display_message = TRUE;
+				slide = TRUE;
+				redraw = TRUE;
 				object_absorb(j_ptr, o_ptr);
-
+				break;
+			}
+			else if (inventory_can_stack_partial(j_ptr, o_ptr, OSTACK_PACK)) {
+				display_message = TRUE;
+				slide = FALSE;
+				redraw = TRUE;
+				object_absorb_partial(j_ptr, o_ptr);
 				break;
 			}
 		}
-
 
 		/* Compact the inventory */
 		if (slide)
@@ -3194,13 +3239,16 @@ void combine_pack(void)
 			/* Hack -- wipe hole */
 			object_wipe(&p_ptr->inventory[k]);
 
-			/* Redraw stuff */
-			p_ptr->redraw |= (PR_INVEN);
+			redraw = TRUE;
 		}
 	}
 
+	/* Redraw stuff */
+	if (redraw)
+		p_ptr->redraw |= (PR_INVEN);
+
 	/* Message */
-	if (flag)
+	if (display_message)
 	{
 		msg("You combine some items in your pack.");
 
