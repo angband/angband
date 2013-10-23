@@ -1594,7 +1594,7 @@ s32b object_value(const object_type *o_ptr, int qty, int verbose)
  * Chests, and activatable items, except rods, never stack (for various
  * reasons).
  */
-bool inventory_object_stackable(const object_type *o_ptr, const object_type *j_ptr, object_stack_t mode)
+static bool inventory_object_stackable(const object_type *o_ptr, const object_type *j_ptr, object_stack_t mode)
 {
 	int i;
 
@@ -1723,7 +1723,7 @@ bool inventory_object_stackable(const object_type *o_ptr, const object_type *j_p
 /**
  * Return whether each stack of objects can be merged into two uneven stacks.
  */
-bool inventory_can_stack_partial(const object_type *o_ptr, const object_type *j_ptr, object_stack_t mode)
+static bool inventory_can_stack_partial(const object_type *o_ptr, const object_type *j_ptr, object_stack_t mode)
 {
 	if (!(mode & OSTACK_STORE)) {
 		int total = o_ptr->number + j_ptr->number;
@@ -1765,7 +1765,7 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr, object_s
  *
  * These assumptions are enforced by the "object_similar()" code.
  */
-void object_absorb_merge(object_type *o_ptr, const object_type *j_ptr)
+static void object_absorb_merge(object_type *o_ptr, const object_type *j_ptr)
 {
 	int total;
 
@@ -1829,7 +1829,7 @@ void object_absorb_merge(object_type *o_ptr, const object_type *j_ptr)
 /**
  * Merge a smaller stack into a larger stack, leaving two uneven stacks.
  */
-void object_absorb_partial(object_type *o_ptr, object_type *j_ptr)
+static void object_absorb_partial(object_type *o_ptr, object_type *j_ptr)
 {
 	int smallest = MIN(o_ptr->number, j_ptr->number);
 	int largest = MAX(o_ptr->number, j_ptr->number);
@@ -3209,7 +3209,7 @@ void combine_pack(void)
 				break;
 			}
 			else if (inventory_can_stack_partial(j_ptr, o_ptr, OSTACK_PACK)) {
-				display_message = TRUE;
+				display_message = FALSE; /* Setting this to TRUE spams the combine message. */
 				slide = FALSE;
 				redraw = TRUE;
 				object_absorb_partial(j_ptr, o_ptr);
