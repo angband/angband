@@ -1174,7 +1174,7 @@ void sense_inventory(void)
 			/* Small chance of wielded, sensed items getting complete ID */
 			if (!o_ptr->artifact && (i >= INVEN_WIELD) && one_in_(1000)) {
 				/* Reset the loop to finish sensing. This item is now known, and will be skipped on the next pass. */
-				do_ident_item(i, o_ptr);
+				do_ident_item(o_ptr);
 				i = -1;
 			}
 
