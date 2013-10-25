@@ -166,6 +166,10 @@ enum
 	REST_SOME_POINTS = -3
 };
 
+/**
+ * Minimum number of turns required for regeneration to kick in during resting.
+ */
+#define REST_REQUIRED_FOR_REGEN 5
 
 /*** General index values ***/
 

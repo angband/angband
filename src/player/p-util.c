@@ -287,11 +287,26 @@ bool player_confuse_dir(struct player *p, int *dp, bool too)
 }
 
 /**
+ * Return TRUE if the provided count is one of the conditional REST_ flags.
+ */
+bool player_resting_is_special(s16b count)
+{
+	switch (count) {
+		case REST_COMPLETE:
+		case REST_ALL_POINTS:
+		case REST_SOME_POINTS:
+			return TRUE;
+	}
+
+	return FALSE;
+}
+
+/**
  * Return TRUE if the player is resting.
  */
 bool player_is_resting(void)
 {
-	return p_ptr->resting != 0;
+	return p_ptr->resting > 0 || player_resting_is_special(p_ptr->resting);
 }
 
 /**
@@ -302,6 +317,13 @@ s16b player_resting_count(void)
 	return p_ptr->resting;
 }
 
+/*
+ * In order to prevent the regeneration bonus from the first few turns, we have to
+ * store the original number of turns the user entered. Otherwise, the first few
+ * turns will have the bonus and the last few will not.
+ */
+static s16b player_resting_start_count = 0;
+
 /**
  * Set the number of resting turns.
  *
@@ -309,11 +331,23 @@ s16b player_resting_count(void)
  */
 void player_resting_set_count(s16b count)
 {
+	if (count < 0 && !player_resting_is_special(count)) {
+		/* Ignore if the rest count is negative. */
+		p_ptr->resting = 0;
+		return;
+	}
+
 	/* Save the rest code */
 	p_ptr->resting = count;
 
 	/* Truncate overlarge values */
 	if (p_ptr->resting > 9999) p_ptr->resting = 9999;
+
+	/* The first turn is always used, so we need to adjust the count. */
+	if (p_ptr->resting > 0)
+		p_ptr->resting--;
+
+	player_resting_start_count = p_ptr->resting;
 }
 
 /**
@@ -329,7 +363,7 @@ void player_resting_cancel(void)
  */
 bool player_resting_can_regenerate(void)
 {
-	return p_ptr->resting;
+	return (player_resting_start_count - p_ptr->resting) >= REST_REQUIRED_FOR_REGEN || player_resting_is_special(p_ptr->resting);
 }
 
 /**
@@ -357,12 +391,12 @@ void player_resting_step_turn(void)
 }
 
 /**
- * Handle the conditions for conditional resting (resting with the REST_ constants.
+ * Handle the conditions for conditional resting (resting with the REST_ constants).
  */
 void player_resting_complete_special(void)
 {
 	/* Complete resting */
-	if (p_ptr->resting < 0)
+	if (player_resting_is_special(p_ptr->resting))
 	{
 		/* Basic resting */
 		if (p_ptr->resting == REST_ALL_POINTS)

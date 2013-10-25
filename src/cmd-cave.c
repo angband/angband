@@ -1446,13 +1446,8 @@ void do_cmd_rest(cmd_code code, cmd_arg args[])
 	 * A little sanity checking on the input - only the specified negative 
 	 * values are valid. 
 	 */
-	if ((args[0].choice < 0) &&
-		((args[0].choice != REST_COMPLETE) &&
-		 (args[0].choice != REST_ALL_POINTS) &&
-		 (args[0].choice != REST_SOME_POINTS))) 
-	{
-		return;
-	}
+    if (args[0].choice < 0 && !player_resting_is_special(args[0].choice))
+        return;
 
 	player_resting_set_count(args[0].choice);
 

@@ -703,6 +703,7 @@ bool player_is_resting(void);
 s16b player_resting_count(void);
 void player_resting_set_count(s16b count);
 void player_resting_cancel(void);
+bool player_resting_is_special(s16b count);
 bool player_resting_can_regenerate(void);
 void player_resting_step_turn(void);
 void player_resting_complete_special(void);
