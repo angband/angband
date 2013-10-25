@@ -1210,27 +1210,30 @@ void sense_inventory(void)
 		{
 			object_notice_everything(o_ptr);
 
-			msgt(MSG_PSEUDOID,
-					"You feel the %s (%c) %s %s average...",
-					o_name, index_to_label(i),((i >=
-					INVEN_WIELD) ? "you are using" : "in your pack"),
-					((o_ptr->number == 1) ? "is" : "are"));
+			msgt(MSG_PSEUDOID, "You feel the %s (%c) %s %s average...",
+				 o_name,
+				 index_to_label(i),
+				 ((i >= INVEN_WIELD) ? "you are using" : "in your pack"),
+				 VERB_AGREEMENT(o_ptr->number, "is", "are"));
 		}
 		else
 		{
 			if (i >= INVEN_WIELD)
 			{
 				msgt(MSG_PSEUDOID, "You feel the %s (%c) you are %s %s %s...",
-							   o_name, index_to_label(i), describe_use(i),
-							   ((o_ptr->number == 1) ? "is" : "are"),
-				                           text);
+					 o_name,
+					 index_to_label(i),
+					 describe_use(i),
+					 VERB_AGREEMENT(o_ptr->number, "is", "are"),
+					 text);
 			}
 			else
 			{
 				msgt(MSG_PSEUDOID, "You feel the %s (%c) in your pack %s %s...",
-							   o_name, index_to_label(i),
-							   ((o_ptr->number == 1) ? "is" : "are"),
-				                           text);
+					 o_name,
+					 index_to_label(i),
+					 VERB_AGREEMENT(o_ptr->number, "is", "are"),
+					 text);
 			}
 		}
 
