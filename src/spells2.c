@@ -308,8 +308,8 @@ void identify_pack(void)
 		/* Identify it */
 		do_ident_item(i, o_ptr);
 
-		/* repeat with same slot */
-		i--;
+		/* Reset loop in case the pack reordered. */
+		i = 0;
 	}
 }
 
