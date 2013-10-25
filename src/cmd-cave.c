@@ -1454,12 +1454,8 @@ void do_cmd_rest(cmd_code code, cmd_arg args[])
 		return;
 	}
 
-	/* Save the rest code */
-	p_ptr->resting = args[0].choice;
-	
-	/* Truncate overlarge values */
-	if (p_ptr->resting > 9999) p_ptr->resting = 9999;
-	
+	player_resting_set_count(args[0].choice);
+
 	/* Take a turn XXX XXX XXX (?) */
 	p_ptr->energy_use = 100;
 

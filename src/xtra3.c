@@ -760,10 +760,10 @@ static size_t prt_state(int row, int col)
 
 
 	/* Resting */
-	if (p_ptr->resting)
+	if (player_is_resting())
 	{
 		int i;
-		int n = p_ptr->resting;
+		int n = player_resting_count();
 
 		/* Start with "Rest" */
 		my_strcpy(text, "Rest      ", sizeof(text));
@@ -812,19 +812,19 @@ static size_t prt_state(int row, int col)
 		}
 
 		/* Rest until healed */
-		else if (n == -1)
+		else if (n == REST_ALL_POINTS)
 		{
 			text[5] = text[6] = text[7] = text[8] = text[9] = '*';
 		}
 
 		/* Rest until done */
-		else if (n == -2)
+		else if (n == REST_COMPLETE)
 		{
 			text[5] = text[6] = text[7] = text[8] = text[9] = '&';
 		}
 		
 		/* Rest until HP or SP filled */
-		else if (n == -3)
+		else if (n == REST_SOME_POINTS)
 		{
 			text[5] = text[6] = text[7] = text[8] = text[9] = '!';
 		}

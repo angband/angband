@@ -285,3 +285,122 @@ bool player_confuse_dir(struct player *p, int *dp, bool too)
 
 	return FALSE;
 }
+
+/**
+ * Return TRUE if the player is resting.
+ */
+bool player_is_resting(void)
+{
+	return p_ptr->resting != 0;
+}
+
+/**
+ * Return the remaining number of resting turns.
+ */
+s16b player_resting_count(void)
+{
+	return p_ptr->resting;
+}
+
+/**
+ * Set the number of resting turns.
+ *
+ * \param count is the number of turns to rest or one of the REST_ constants.
+ */
+void player_resting_set_count(s16b count)
+{
+	/* Save the rest code */
+	p_ptr->resting = count;
+
+	/* Truncate overlarge values */
+	if (p_ptr->resting > 9999) p_ptr->resting = 9999;
+}
+
+/**
+ * Cancel current rest.
+ */
+void player_resting_cancel(void)
+{
+	player_resting_set_count(0);
+}
+
+/**
+ * Return TRUE if the player should get a regeneration bonus for the current rest.
+ */
+bool player_resting_can_regenerate(void)
+{
+	return p_ptr->resting;
+}
+
+/**
+ * Perform one turn of resting. This only handles the bookkeeping of resting itself,
+ * and does not calculate any possible other effects of resting (see process_world()
+ * for regeneration).
+ */
+void player_resting_step_turn(void)
+{
+	/* Timed rest */
+	if (p_ptr->resting > 0)
+	{
+		/* Reduce rest count */
+		p_ptr->resting--;
+
+		/* Redraw the state */
+		p_ptr->redraw |= (PR_STATE);
+	}
+
+	/* Take a turn */
+	p_ptr->energy_use = 100;
+
+	/* Increment the resting counter */
+	p_ptr->resting_turn++;
+}
+
+/**
+ * Handle the conditions for conditional resting (resting with the REST_ constants.
+ */
+void player_resting_complete_special(void)
+{
+	/* Complete resting */
+	if (p_ptr->resting < 0)
+	{
+		/* Basic resting */
+		if (p_ptr->resting == REST_ALL_POINTS)
+		{
+			/* Stop resting */
+			if ((p_ptr->chp == p_ptr->mhp) &&
+			    (p_ptr->csp == p_ptr->msp))
+			{
+				disturb(p_ptr, 0, 0);
+			}
+		}
+
+		/* Complete resting */
+		else if (p_ptr->resting == REST_COMPLETE)
+		{
+			/* Stop resting */
+			if ((p_ptr->chp == p_ptr->mhp) &&
+			    (p_ptr->csp == p_ptr->msp) &&
+			    !p_ptr->timed[TMD_BLIND] && !p_ptr->timed[TMD_CONFUSED] &&
+			    !p_ptr->timed[TMD_POISONED] && !p_ptr->timed[TMD_AFRAID] &&
+			    !p_ptr->timed[TMD_TERROR] &&
+			    !p_ptr->timed[TMD_STUN] && !p_ptr->timed[TMD_CUT] &&
+			    !p_ptr->timed[TMD_SLOW] && !p_ptr->timed[TMD_PARALYZED] &&
+			    !p_ptr->timed[TMD_IMAGE] && !p_ptr->word_recall)
+			{
+				disturb(p_ptr, 0, 0);
+			}
+		}
+
+		/* Rest until HP or SP are filled */
+		else if (p_ptr->resting == REST_SOME_POINTS)
+		{
+			/* Stop resting */
+			if ((p_ptr->chp == p_ptr->mhp) ||
+			    (p_ptr->csp == p_ptr->msp))
+			{
+				disturb(p_ptr, 0, 0);
+			}
+		}
+	}
+}
