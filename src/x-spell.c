@@ -28,146 +28,150 @@
  *
  * It would be nice if we could get rid of this dependency.
  */
-#define SPELL_MAGIC_MISSILE             0
-#define SPELL_DETECT_MONSTERS           1
-#define SPELL_PHASE_DOOR                2
-#define SPELL_LIGHT_AREA                3
-#define SPELL_FIND_TRAPS_DOORS          4
-#define SPELL_CURE_LIGHT_WOUNDS         5
-#define SPELL_OBJECT_DETECTION        6
 
-#define SPELL_IDENTIFY                  8
-#define SPELL_DETECT_INVISIBLE          9
-#define SPELL_TREASURE_DETECTION        10
-#define SPELL_STINKING_CLOUD            11
-#define SPELL_LIGHTNING_BOLT            12
-#define SPELL_CONFUSE_MONSTER           13
-#define SPELL_SLEEP_MONSTER             14
-#define SPELL_WONDER                    15
-#define SPELL_FROST_BOLT                16
-#define SPELL_ACID_BOLT                 17
-#define SPELL_FIRE_BOLT                 18
-#define SPELL_TRAP_DOOR_DESTRUCTION     19
-#define SPELL_SPEAR_OF_LIGHT            20
-#define SPELL_TURN_STONE_TO_MUD         21
-#define SPELL_DOOR_CREATION             22
-#define SPELL_EARTHQUAKE                23
-#define SPELL_STAIR_CREATION            24
-#define SPELL_CURE_POISON               25
-#define SPELL_SATISFY_HUNGER            26
-#define SPELL_HEROISM                   27
-#define SPELL_BERSERKER                 28
-#define SPELL_HASTE_SELF                29
-#define SPELL_TELEPORT_SELF             30
-#define SPELL_SLOW_MONSTER              31
-#define SPELL_TELEPORT_OTHER            32
-#define SPELL_TELEPORT_LEVEL            33
-#define SPELL_WORD_OF_RECALL            34
-#define SPELL_POLYMORPH_OTHER           35
-#define SPELL_SHOCK_WAVE                36
-#define SPELL_EXPLOSION                 37
-#define SPELL_CLOUD_KILL                38
-#define SPELL_MASS_SLEEP                39
-#define SPELL_BEDLAM                    40
-#define SPELL_REND_SOUL                 41
-#define SPELL_WORD_OF_DESTRUCTION       42
-#define SPELL_CHAOS_STRIKE              43
-#define SPELL_RESIST_COLD               44
-#define SPELL_RESIST_FIRE               45
-#define SPELL_RESIST_POISON             46
-#define SPELL_RESISTANCE                47
-#define SPELL_SHIELD                    48
-#define SPELL_RUNE_OF_PROTECTION        49
-#define SPELL_RECHARGE_ITEM_I           50
-#define SPELL_ENCHANT_ARMOR             51
-#define SPELL_ENCHANT_WEAPON            52
-#define SPELL_RECHARGE_ITEM_II          53
-#define SPELL_ELEMENTAL_BRAND           54
-#define SPELL_FROST_BALL                55
-#define SPELL_ACID_BALL                 56
-#define SPELL_FIRE_BALL                 57
-#define SPELL_ICE_STORM                 58
-#define SPELL_BANISHMENT                59
-#define SPELL_METEOR_SWARM              60
-#define SPELL_MASS_BANISHMENT           61
-#define SPELL_RIFT                      62
-#define SPELL_MANA_STORM                63
+enum spell_index_arcane_e {
+	SPELL_MAGIC_MISSILE = 0,
+	SPELL_DETECT_MONSTERS = 1,
+	SPELL_PHASE_DOOR = 2,
+	SPELL_LIGHT_AREA = 3,
+	SPELL_FIND_TRAPS_DOORS = 4,
+	SPELL_CURE_LIGHT_WOUNDS = 5,
+	SPELL_OBJECT_DETECTION = 6,
 
-/* Beginners Handbook */
-#define PRAYER_DETECT_EVIL              0
-#define PRAYER_CURE_LIGHT_WOUNDS        1
-#define PRAYER_BLESS                    2
-#define PRAYER_REMOVE_FEAR              3
-#define PRAYER_CALL_LIGHT               4
-#define PRAYER_FIND_TRAPS_DOORS         5
-#define PRAYER_SLOW_POISON              7
+	SPELL_IDENTIFY = 8,
+	SPELL_DETECT_INVISIBLE = 9,
+	SPELL_TREASURE_DETECTION = 10,
+	SPELL_STINKING_CLOUD = 11,
+	SPELL_LIGHTNING_BOLT = 12,
+	SPELL_CONFUSE_MONSTER = 13,
+	SPELL_SLEEP_MONSTER = 14,
+	SPELL_WONDER = 15,
+	SPELL_FROST_BOLT = 16,
+	SPELL_ACID_BOLT = 17,
+	SPELL_FIRE_BOLT = 18,
+	SPELL_TRAP_DOOR_DESTRUCTION = 19,
+	SPELL_SPEAR_OF_LIGHT = 20,
+	SPELL_TURN_STONE_TO_MUD = 21,
+	SPELL_DOOR_CREATION = 22,
+	SPELL_EARTHQUAKE = 23,
+	SPELL_STAIR_CREATION = 24,
+	SPELL_CURE_POISON = 25,
+	SPELL_SATISFY_HUNGER = 26,
+	SPELL_HEROISM = 27,
+	SPELL_BERSERKER = 28,
+	SPELL_HASTE_SELF = 29,
+	SPELL_TELEPORT_SELF = 30,
+	SPELL_SLOW_MONSTER = 31,
+	SPELL_TELEPORT_OTHER = 32,
+	SPELL_TELEPORT_LEVEL = 33,
+	SPELL_WORD_OF_RECALL = 34,
+	SPELL_POLYMORPH_OTHER = 35,
+	SPELL_SHOCK_WAVE = 36,
+	SPELL_EXPLOSION = 37,
+	SPELL_CLOUD_KILL = 38,
+	SPELL_MASS_SLEEP = 39,
+	SPELL_BEDLAM = 40,
+	SPELL_REND_SOUL = 41,
+	SPELL_WORD_OF_DESTRUCTION = 42,
+	SPELL_CHAOS_STRIKE = 43,
+	SPELL_RESIST_COLD = 44,
+	SPELL_RESIST_FIRE = 45,
+	SPELL_RESIST_POISON = 46,
+	SPELL_RESISTANCE = 47,
+	SPELL_SHIELD = 48,
+	SPELL_RUNE_OF_PROTECTION = 49,
+	SPELL_RECHARGE_ITEM_I = 50,
+	SPELL_ENCHANT_ARMOR = 51,
+	SPELL_ENCHANT_WEAPON = 52,
+	SPELL_RECHARGE_ITEM_II = 53,
+	SPELL_ELEMENTAL_BRAND = 54,
+	SPELL_FROST_BALL = 55,
+	SPELL_ACID_BALL = 56,
+	SPELL_FIRE_BALL = 57,
+	SPELL_ICE_STORM = 58,
+	SPELL_BANISHMENT = 59,
+	SPELL_METEOR_SWARM = 60,
+	SPELL_MASS_BANISHMENT = 61,
+	SPELL_RIFT = 62,
+	SPELL_MANA_STORM = 63,
+};
 
-/* Words of Wisdom */
-#define PRAYER_SCARE_MONSTER            8
-#define PRAYER_PORTAL                   9
-#define PRAYER_CURE_SERIOUS_WOUNDS     10
-#define PRAYER_CHANT                   11
-#define PRAYER_SANCTUARY               12
-#define PRAYER_SATISFY_HUNGER          13
-//#define PRAYER_REMOVE_CURSE            14
-#define PRAYER_RESIST_HEAT_COLD        15
+enum spell_index_prayer_e {
+	/* Beginners Handbook */
+	PRAYER_DETECT_EVIL = 0,
+	PRAYER_CURE_LIGHT_WOUNDS = 1,
+	PRAYER_BLESS = 2,
+	PRAYER_REMOVE_FEAR = 3,
+	PRAYER_CALL_LIGHT = 4,
+	PRAYER_FIND_TRAPS_DOORS = 5,
+	PRAYER_SLOW_POISON = 7,
 
-/* Chants and Blessings */
-#define PRAYER_NEUTRALIZE_POISON       16
-#define PRAYER_ORB_OF_DRAINING         17
-#define PRAYER_CURE_CRITICAL_WOUNDS    18
-#define PRAYER_SENSE_INVISIBLE         19
-#define PRAYER_PROTECTION_FROM_EVIL    20
-#define PRAYER_EARTHQUAKE              21
-#define PRAYER_SENSE_SURROUNDINGS      22
-#define PRAYER_CURE_MORTAL_WOUNDS      23
-#define PRAYER_TURN_UNDEAD             24
+	/* Words of Wisdom */
+	PRAYER_SCARE_MONSTER = 8,
+	PRAYER_PORTAL = 9,
+	PRAYER_CURE_SERIOUS_WOUNDS = 10,
+	PRAYER_CHANT = 11,
+	PRAYER_SANCTUARY = 12,
+	PRAYER_SATISFY_HUNGER = 13,
+	PRAYER_REMOVE_CURSE = 14,
+	PRAYER_RESIST_HEAT_COLD = 15,
 
-/* Exorcism and Dispelling */
-#define PRAYER_PRAYER                  25
-#define PRAYER_DISPEL_UNDEAD           26
-#define PRAYER_HEAL                    27
-#define PRAYER_DISPEL_EVIL             28
-#define PRAYER_GLYPH_OF_WARDING        29
-#define PRAYER_HOLY_WORD               30
+	/* Chants and Blessings */
+	PRAYER_NEUTRALIZE_POISON = 16,
+	PRAYER_ORB_OF_DRAINING = 17,
+	PRAYER_CURE_CRITICAL_WOUNDS = 18,
+	PRAYER_SENSE_INVISIBLE = 19,
+	PRAYER_PROTECTION_FROM_EVIL = 20,
+	PRAYER_EARTHQUAKE = 21,
+	PRAYER_SENSE_SURROUNDINGS = 22,
+	PRAYER_CURE_MORTAL_WOUNDS = 23,
+	PRAYER_TURN_UNDEAD = 24,
 
-/* Godly Insights */
-#define PRAYER_DETECT_MONSTERS         31
-#define PRAYER_DETECTION               32
-#define PRAYER_PERCEPTION              33
-#define PRAYER_PROBING                 34
-#define PRAYER_CLAIRVOYANCE            35
+	/* Exorcism and Dispelling */
+	PRAYER_PRAYER = 25,
+	PRAYER_DISPEL_UNDEAD = 26,
+	PRAYER_HEAL = 27,
+	PRAYER_DISPEL_EVIL = 28,
+	PRAYER_GLYPH_OF_WARDING = 29,
+	PRAYER_HOLY_WORD = 30,
 
-/* Purifications and Healing */
-#define PRAYER_CURE_SERIOUS_WOUNDS2    36
-#define PRAYER_CURE_MORTAL_WOUNDS2     37
-#define PRAYER_HEALING                 38
-#define PRAYER_RESTORATION             39
-#define PRAYER_REMEMBRANCE             40
+	/* Godly Insights */
+	PRAYER_DETECT_MONSTERS = 31,
+	PRAYER_DETECTION = 32,
+	PRAYER_PERCEPTION = 33,
+	PRAYER_PROBING = 34,
+	PRAYER_CLAIRVOYANCE = 35,
 
-/* Wrath of God */
-#define PRAYER_DISPEL_UNDEAD2          41
-#define PRAYER_DISPEL_EVIL2            42
-#define PRAYER_BANISH_EVIL             43
-#define PRAYER_WORD_OF_DESTRUCTION     44
-#define PRAYER_ANNIHILATION            45
+	/* Purifications and Healing */
+	PRAYER_CURE_SERIOUS_WOUNDS2 = 36,
+	PRAYER_CURE_MORTAL_WOUNDS2 = 37,
+	PRAYER_HEALING = 38,
+	PRAYER_RESTORATION = 39,
+	PRAYER_REMEMBRANCE = 40,
 
-/* Holy Infusions */
-#define PRAYER_UNBARRING_WAYS          46
-#define PRAYER_RECHARGING              47
-//#define PRAYER_DISPEL_CURSE            48
-#define PRAYER_ENCHANT_WEAPON          49
-#define PRAYER_ENCHANT_ARMOUR          50
-#define PRAYER_ELEMENTAL_BRAND         51
+	/* Wrath of God */
+	PRAYER_DISPEL_UNDEAD2 = 41,
+	PRAYER_DISPEL_EVIL2 = 42,
+	PRAYER_BANISH_EVIL = 43,
+	PRAYER_WORD_OF_DESTRUCTION = 44,
+	PRAYER_ANNIHILATION = 45,
 
-/* Ethereal openings */
-#define PRAYER_BLINK                   52
-#define PRAYER_TELEPORT_SELF           53
-#define PRAYER_TELEPORT_OTHER          54
-#define PRAYER_TELEPORT_LEVEL          55
-#define PRAYER_WORD_OF_RECALL          56
-#define PRAYER_ALTER_REALITY           57
+	/* Holy Infusions */
+	PRAYER_UNBARRING_WAYS = 46,
+	PRAYER_RECHARGING = 47,
+	PRAYER_DISPEL_CURSE = 48,
+	PRAYER_ENCHANT_WEAPON = 49,
+	PRAYER_ENCHANT_ARMOUR = 50,
+	PRAYER_ELEMENTAL_BRAND = 51,
 
+	/* Ethereal openings */
+	PRAYER_BLINK = 52,
+	PRAYER_TELEPORT_SELF = 53,
+	PRAYER_TELEPORT_OTHER = 54,
+	PRAYER_TELEPORT_LEVEL = 55,
+	PRAYER_WORD_OF_RECALL = 56,
+	PRAYER_ALTER_REALITY = 57,
+};
 
 
 int get_spell_index(const struct object *object, int index)
@@ -466,418 +470,742 @@ bool spell_needs_aim(int tval, int spell)
 	}
 }
 
+typedef struct spell_handler_context_s {
+	const int spell;
+	const int dir;
+	const int beam;
+} spell_handler_context_t;
+
+
+#pragma mark arcane spell handlers
+
+static bool spell_handler_arcane_MAGIC_MISSILE(spell_handler_context_t *context)
+{
+	fire_bolt_or_beam(context->beam-10, GF_MISSILE, context->dir,
+					  damroll(3 + ((p_ptr->lev - 1) / 5), 4));
+	return TRUE;
+}
+
+static bool spell_handler_arcane_DETECT_MONSTERS(spell_handler_context_t *context)
+{
+	(void)detect_monsters_normal(TRUE);
+	return TRUE;
+}
+
+static bool spell_handler_arcane_PHASE_DOOR(spell_handler_context_t *context)
+{
+	teleport_player(10);
+	return TRUE;
+}
+
+static bool spell_handler_arcane_LIGHT_AREA(spell_handler_context_t *context)
+{
+	(void)light_area(damroll(2, (p_ptr->lev / 2)), (p_ptr->lev / 10) + 1);
+	return TRUE;
+}
+
+static bool spell_handler_arcane_OBJECT_DETECTION(spell_handler_context_t *context)
+{
+	(void)detect_treasure(TRUE, TRUE);
+	return TRUE;
+}
+
+static bool spell_handler_arcane_CURE_LIGHT_WOUNDS(spell_handler_context_t *context)
+{
+
+	heal_player(15, 15);
+	player_dec_timed(p_ptr, TMD_CUT, 20, TRUE);
+	player_dec_timed(p_ptr, TMD_CONFUSED, 20, TRUE);
+	player_clear_timed(p_ptr, TMD_BLIND, TRUE);
+	return TRUE;
+}
+
+static bool spell_handler_arcane_FIND_TRAPS_DOORS(spell_handler_context_t *context)
+{
+	(void)detect_traps(TRUE);
+	(void)detect_doorstairs(TRUE);
+	return TRUE;
+}
+
+static bool spell_handler_arcane_STINKING_CLOUD(spell_handler_context_t *context)
+{
+	fire_ball(GF_POIS, context->dir, 10 + (p_ptr->lev / 2), 2);
+	return TRUE;
+}
+
+static bool spell_handler_arcane_CONFUSE_MONSTER(spell_handler_context_t *context)
+{
+	(void)confuse_monster(context->dir, p_ptr->lev, TRUE);
+	return TRUE;
+}
+
+static bool spell_handler_arcane_LIGHTNING_BOLT(spell_handler_context_t *context)
+{
+	fire_beam(GF_ELEC, context->dir, damroll(3+((p_ptr->lev-5)/6), 6));
+	return TRUE;
+}
+
+static bool spell_handler_arcane_TRAP_DOOR_DESTRUCTION(spell_handler_context_t *context)
+{
+	(void)destroy_doors_touch();
+	return TRUE;
+}
+
+static bool spell_handler_arcane_SLEEP_MONSTER(spell_handler_context_t *context)
+{
+	(void)sleep_monster(context->dir, TRUE);
+	return TRUE;
+}
+
+static bool spell_handler_arcane_CURE_POISON(spell_handler_context_t *context)
+{
+	(void)player_clear_timed(p_ptr, TMD_POISONED, TRUE);
+	return TRUE;
+}
+
+static bool spell_handler_arcane_TELEPORT_SELF(spell_handler_context_t *context)
+{
+	teleport_player(p_ptr->lev * 5);
+	return TRUE;
+}
+
+static bool spell_handler_arcane_SPEAR_OF_LIGHT(spell_handler_context_t *context)
+{
+	msg("A line of blue shimmering light appears.");
+	light_line(context->dir);
+	return TRUE;
+}
+
+static bool spell_handler_arcane_FROST_BOLT(spell_handler_context_t *context)
+{
+	fire_bolt_or_beam(context->beam-10, GF_COLD, context->dir,
+					  damroll(5+((p_ptr->lev-5)/4), 8));
+	return TRUE;
+}
+
+static bool spell_handler_arcane_TURN_STONE_TO_MUD(spell_handler_context_t *context)
+{
+	(void)wall_to_mud(context->dir);
+	return TRUE;
+}
+
+static bool spell_handler_arcane_SATISFY_HUNGER(spell_handler_context_t *context)
+{
+	player_set_food(p_ptr, PY_FOOD_MAX - 1);
+	return TRUE;
+}
+
+static bool spell_handler_arcane_RECHARGE_ITEM_I(spell_handler_context_t *context)
+{
+	return recharge(2 + p_ptr->lev / 5);
+}
+
+static bool spell_handler_arcane_WONDER(spell_handler_context_t *context)
+{
+	(void)spell_wonder(context->dir);
+	return TRUE;
+}
+
+static bool spell_handler_arcane_POLYMORPH_OTHER(spell_handler_context_t *context)
+{
+	(void)poly_monster(context->dir);
+	return TRUE;
+}
+
+static bool spell_handler_arcane_IDENTIFY(spell_handler_context_t *context)
+{
+	return ident_spell();
+}
+
+static bool spell_handler_arcane_MASS_SLEEP(spell_handler_context_t *context)
+{
+	(void)sleep_monsters(TRUE);
+	return TRUE;
+}
+
+static bool spell_handler_arcane_FIRE_BOLT(spell_handler_context_t *context)
+{
+	fire_bolt_or_beam(context->beam, GF_FIRE, context->dir,
+					  damroll(6+((p_ptr->lev-5)/4), 8));
+	return TRUE;
+}
+
+static bool spell_handler_arcane_SLOW_MONSTER(spell_handler_context_t *context)
+{
+	(void)slow_monster(context->dir);
+	return TRUE;
+}
+
+static bool spell_handler_arcane_FROST_BALL(spell_handler_context_t *context)
+{
+	fire_ball(GF_COLD, context->dir, 30 + (p_ptr->lev), 2);
+	return TRUE;
+}
+
+static bool spell_handler_arcane_RECHARGE_ITEM_II(spell_handler_context_t *context) /* greater recharging */
+{
+	return recharge(50 + p_ptr->lev);
+}
+
+static bool spell_handler_arcane_TELEPORT_OTHER(spell_handler_context_t *context)
+{
+	(void)teleport_monster(context->dir);
+	return TRUE;
+}
+
+static bool spell_handler_arcane_BEDLAM(spell_handler_context_t *context)
+{
+	fire_ball(GF_OLD_CONF, context->dir, p_ptr->lev, 4);
+	return TRUE;
+}
+
+static bool spell_handler_arcane_FIRE_BALL(spell_handler_context_t *context)
+{
+	fire_ball(GF_FIRE, context->dir, 55 + (p_ptr->lev), 2);
+	return TRUE;
+}
+
+static bool spell_handler_arcane_WORD_OF_DESTRUCTION(spell_handler_context_t *context)
+{
+	destroy_area(p_ptr->py, p_ptr->px, 15, TRUE);
+	return TRUE;
+}
+
+static bool spell_handler_arcane_BANISHMENT(spell_handler_context_t *context)
+{
+	return banishment();
+}
+
+static bool spell_handler_arcane_DOOR_CREATION(spell_handler_context_t *context)
+{
+	(void)door_creation();
+	return TRUE;
+}
+
+static bool spell_handler_arcane_STAIR_CREATION(spell_handler_context_t *context)
+{
+	(void)stair_creation();
+	return TRUE;
+}
+
+static bool spell_handler_arcane_TELEPORT_LEVEL(spell_handler_context_t *context)
+{
+	(void)teleport_player_level();
+	return TRUE;
+}
+
+static bool spell_handler_arcane_EARTHQUAKE(spell_handler_context_t *context)
+{
+	earthquake(p_ptr->py, p_ptr->px, 10);
+	return TRUE;
+}
+
+static bool spell_handler_arcane_WORD_OF_RECALL(spell_handler_context_t *context)
+{
+	return set_recall();
+}
+
+static bool spell_handler_arcane_ACID_BOLT(spell_handler_context_t *context)
+{
+	fire_bolt_or_beam(context->beam, GF_ACID, context->dir, damroll(8+((p_ptr->lev-5)/4), 8));
+	return TRUE;
+}
+
+static bool spell_handler_arcane_CLOUD_KILL(spell_handler_context_t *context)
+{
+	fire_ball(GF_POIS, context->dir, 40 + (p_ptr->lev / 2), 3);
+	return TRUE;
+}
+
+static bool spell_handler_arcane_ACID_BALL(spell_handler_context_t *context)
+{
+	fire_ball(GF_ACID, context->dir, 40 + (p_ptr->lev), 2);
+	return TRUE;
+}
+
+static bool spell_handler_arcane_ICE_STORM(spell_handler_context_t *context)
+{
+	fire_ball(GF_ICE, context->dir, 50 + (p_ptr->lev * 2), 3);
+	return TRUE;
+}
+
+static bool spell_handler_arcane_METEOR_SWARM(spell_handler_context_t *context)
+{
+	fire_swarm(2 + p_ptr->lev / 20, GF_METEOR, context->dir, 30 + p_ptr->lev / 2, 1);
+	return TRUE;
+}
+
+static bool spell_handler_arcane_MANA_STORM(spell_handler_context_t *context)
+{
+	fire_ball(GF_MANA, context->dir, 300 + (p_ptr->lev * 2), 3);
+	return TRUE;
+}
+
+static bool spell_handler_arcane_DETECT_INVISIBLE(spell_handler_context_t *context)
+{
+	(void)detect_monsters_normal(TRUE);
+	(void)detect_monsters_invis(TRUE);
+	return TRUE;
+}
+
+static bool spell_handler_arcane_TREASURE_DETECTION(spell_handler_context_t *context)
+{
+	(void)detect_treasure(TRUE, FALSE);
+	return TRUE;
+}
+
+static bool spell_handler_arcane_SHOCK_WAVE(spell_handler_context_t *context)
+{
+	fire_ball(GF_SOUND, context->dir, 10 + p_ptr->lev, 2);
+	return TRUE;
+}
+
+static bool spell_handler_arcane_EXPLOSION(spell_handler_context_t *context)
+{
+	fire_ball(GF_SHARD, context->dir, 20 + (p_ptr->lev * 2), 2);
+	return TRUE;
+}
+
+static bool spell_handler_arcane_MASS_BANISHMENT(spell_handler_context_t *context)
+{
+	(void)mass_banishment();
+	return TRUE;
+}
+
+static bool spell_handler_arcane_RESIST_FIRE(spell_handler_context_t *context)
+{
+	(void)player_inc_timed(p_ptr, TMD_OPP_FIRE, randint1(20) + 20, TRUE, TRUE);
+	return TRUE;
+}
+
+static bool spell_handler_arcane_RESIST_COLD(spell_handler_context_t *context)
+{
+	(void)player_inc_timed(p_ptr, TMD_OPP_COLD, randint1(20) + 20, TRUE, TRUE);
+	return TRUE;
+}
+
+static bool spell_handler_arcane_ELEMENTAL_BRAND(spell_handler_context_t *context)
+{
+	return brand_ammo();
+}
+
+static bool spell_handler_arcane_RESIST_POISON(spell_handler_context_t *context)
+{
+	(void)player_inc_timed(p_ptr, TMD_OPP_POIS, randint1(20) + 20, TRUE, TRUE);
+	return TRUE;
+}
+
+static bool spell_handler_arcane_RESISTANCE(spell_handler_context_t *context)
+{
+	int time = randint1(20) + 20;
+	(void)player_inc_timed(p_ptr, TMD_OPP_ACID, time, TRUE, TRUE);
+	(void)player_inc_timed(p_ptr, TMD_OPP_ELEC, time, TRUE, TRUE);
+	(void)player_inc_timed(p_ptr, TMD_OPP_FIRE, time, TRUE, TRUE);
+	(void)player_inc_timed(p_ptr, TMD_OPP_COLD, time, TRUE, TRUE);
+	(void)player_inc_timed(p_ptr, TMD_OPP_POIS, time, TRUE, TRUE);
+	return TRUE;
+}
+
+static bool spell_handler_arcane_HEROISM(spell_handler_context_t *context)
+{
+	int dur = randint1(25) + 25;
+	(void)hp_player(10);
+	(void)player_clear_timed(p_ptr, TMD_AFRAID, TRUE);
+	(void)player_inc_timed(p_ptr, TMD_BOLD, dur, TRUE, TRUE);
+	(void)player_inc_timed(p_ptr, TMD_HERO, dur, TRUE, TRUE);
+	return TRUE;
+}
+
+static bool spell_handler_arcane_SHIELD(spell_handler_context_t *context)
+{
+	(void)player_inc_timed(p_ptr, TMD_SHIELD, randint1(20) + 30, TRUE, TRUE);
+	return TRUE;
+}
+
+static bool spell_handler_arcane_BERSERKER(spell_handler_context_t *context)
+{
+	int dur = randint1(25) + 25;
+	(void)hp_player(30);
+	(void)player_clear_timed(p_ptr, TMD_AFRAID, TRUE);
+	(void)player_inc_timed(p_ptr, TMD_BOLD, dur, TRUE, TRUE);
+	(void)player_inc_timed(p_ptr, TMD_SHERO, dur, TRUE, TRUE);
+	return TRUE;
+}
+
+static bool spell_handler_arcane_HASTE_SELF(spell_handler_context_t *context)
+{
+	if (!p_ptr->timed[TMD_FAST])
+	{
+		(void)player_set_timed(p_ptr, TMD_FAST, randint1(20) + p_ptr->lev, TRUE);
+	}
+	else
+	{
+		(void)player_inc_timed(p_ptr, TMD_FAST, randint1(5), TRUE, TRUE);
+	}
+	return TRUE;
+}
+
+static bool spell_handler_arcane_RIFT(spell_handler_context_t *context)
+{
+	fire_beam(GF_GRAVITY, context->dir,	40 + damroll(p_ptr->lev, 7));
+	return TRUE;
+}
+
+static bool spell_handler_arcane_REND_SOUL(spell_handler_context_t *context)
+{
+	fire_bolt_or_beam(context->beam / 4, GF_NETHER, context->dir, damroll(11, p_ptr->lev));
+	return TRUE;
+}
+
+static bool spell_handler_arcane_CHAOS_STRIKE(spell_handler_context_t *context)
+{
+	fire_bolt_or_beam(context->beam, GF_CHAOS, context->dir, damroll(13, p_ptr->lev));
+	return TRUE;
+}
+
+static bool spell_handler_arcane_RUNE_OF_PROTECTION(spell_handler_context_t *context)
+{
+	warding_glyph_spell();
+	return TRUE;
+}
+
+static bool spell_handler_arcane_ENCHANT_ARMOR(spell_handler_context_t *context)
+{
+	return enchant_spell(0, 0, randint0(3) + p_ptr->lev / 20);
+}
+
+static bool spell_handler_arcane_ENCHANT_WEAPON(spell_handler_context_t *context)
+{
+	return enchant_spell(randint0(4) + p_ptr->lev / 20,
+						 randint0(4) + p_ptr->lev / 20, 0);
+}
 
 static bool cast_mage_spell(int spell, int dir)
 {
-	int py = p_ptr->py;
-	int px = p_ptr->px;
-
-	int plev = p_ptr->lev;
-
 	/* Hack -- chance of "beam" instead of "bolt" */
 	int beam = beam_chance();
+
+	spell_handler_context_t context = {
+		spell,
+		dir,
+		beam,
+	};
 
 	/* Spells. */
 	switch (spell)
 	{
 		case SPELL_MAGIC_MISSILE:
 		{
-			fire_bolt_or_beam(beam-10, GF_MISSILE, dir,
-			                  damroll(3 + ((plev - 1) / 5), 4));
-			break;
+			return spell_handler_arcane_MAGIC_MISSILE(&context);
 		}
 
 		case SPELL_DETECT_MONSTERS:
 		{
-			(void)detect_monsters_normal(TRUE);
-			break;
+			return spell_handler_arcane_DETECT_MONSTERS(&context);
 		}
 
 		case SPELL_PHASE_DOOR:
 		{
-			teleport_player(10);
-			break;
+			return spell_handler_arcane_PHASE_DOOR(&context);
 		}
 
 		case SPELL_LIGHT_AREA:
 		{
-			(void)light_area(damroll(2, (plev / 2)), (plev / 10) + 1);
-			break;
+			return spell_handler_arcane_LIGHT_AREA(&context);
 		}
 
 		case SPELL_OBJECT_DETECTION:
 		{
-			(void)detect_treasure(TRUE, TRUE);
-			break;
+			return spell_handler_arcane_OBJECT_DETECTION(&context);
 		}
 
 		case SPELL_CURE_LIGHT_WOUNDS:
 		{
-
-			heal_player(15, 15);
-			player_dec_timed(p_ptr, TMD_CUT, 20, TRUE);
-			player_dec_timed(p_ptr, TMD_CONFUSED, 20, TRUE);
-			player_clear_timed(p_ptr, TMD_BLIND, TRUE);
-			break;
+			return spell_handler_arcane_CURE_LIGHT_WOUNDS(&context);
 		}
 
 		case SPELL_FIND_TRAPS_DOORS:
 		{
-			(void)detect_traps(TRUE);
-			(void)detect_doorstairs(TRUE);
-			break;
+			return spell_handler_arcane_FIND_TRAPS_DOORS(&context);
 		}
 
 		case SPELL_STINKING_CLOUD:
 		{
-			fire_ball(GF_POIS, dir, 10 + (plev / 2), 2);
-			break;
+			return spell_handler_arcane_STINKING_CLOUD(&context);
 		}
 
 		case SPELL_CONFUSE_MONSTER:
 		{
-			(void)confuse_monster(dir, plev, TRUE);
-			break;
+			return spell_handler_arcane_CONFUSE_MONSTER(&context);
 		}
 
 		case SPELL_LIGHTNING_BOLT:
 		{
-			fire_beam(GF_ELEC, dir, damroll(3+((plev-5)/6), 6));
-			break;
+			return spell_handler_arcane_LIGHTNING_BOLT(&context);
 		}
 
 		case SPELL_TRAP_DOOR_DESTRUCTION:
 		{
-			(void)destroy_doors_touch();
-			break;
+			return spell_handler_arcane_TRAP_DOOR_DESTRUCTION(&context);
 		}
 
 		case SPELL_SLEEP_MONSTER:
 		{
-			(void)sleep_monster(dir, TRUE);
-			break;
+			return spell_handler_arcane_SLEEP_MONSTER(&context);
 		}
 
 		case SPELL_CURE_POISON:
 		{
-			(void)player_clear_timed(p_ptr, TMD_POISONED, TRUE);
-			break;
+			return spell_handler_arcane_CURE_POISON(&context);
 		}
 
 		case SPELL_TELEPORT_SELF:
 		{
-			teleport_player(plev * 5);
-			break;
+			return spell_handler_arcane_TELEPORT_SELF(&context);
 		}
 
 		case SPELL_SPEAR_OF_LIGHT:
 		{
-			msg("A line of blue shimmering light appears.");
-			light_line(dir);
-			break;
+			return spell_handler_arcane_SPEAR_OF_LIGHT(&context);
 		}
 
 		case SPELL_FROST_BOLT:
 		{
-			fire_bolt_or_beam(beam-10, GF_COLD, dir,
-			                  damroll(5+((plev-5)/4), 8));
-			break;
+			return spell_handler_arcane_FROST_BOLT(&context);
 		}
 
 		case SPELL_TURN_STONE_TO_MUD:
 		{
-			(void)wall_to_mud(dir);
-			break;
+			return spell_handler_arcane_TURN_STONE_TO_MUD(&context);
 		}
 
 		case SPELL_SATISFY_HUNGER:
 		{
-			player_set_food(p_ptr, PY_FOOD_MAX - 1);
-			break;
+			return spell_handler_arcane_SATISFY_HUNGER(&context);
 		}
 
 		case SPELL_RECHARGE_ITEM_I:
 		{
-			return recharge(2 + plev / 5);
+			return spell_handler_arcane_RECHARGE_ITEM_I(&context);
 		}
 
 		case SPELL_WONDER:
 		{
-			(void)spell_wonder(dir);
-			break;
+			return spell_handler_arcane_WONDER(&context);
 		}
 
 		case SPELL_POLYMORPH_OTHER:
 		{
-			(void)poly_monster(dir);
-			break;
+			return spell_handler_arcane_POLYMORPH_OTHER(&context);
 		}
 
 		case SPELL_IDENTIFY:
 		{
-			return ident_spell();
+			return spell_handler_arcane_IDENTIFY(&context);
 		}
 
 		case SPELL_MASS_SLEEP:
 		{
-			(void)sleep_monsters(TRUE);
-			break;
+			return spell_handler_arcane_MASS_SLEEP(&context);
 		}
 
 		case SPELL_FIRE_BOLT:
 		{
-			fire_bolt_or_beam(beam, GF_FIRE, dir,
-			                  damroll(6+((plev-5)/4), 8));
-			break;
+			return spell_handler_arcane_FIRE_BOLT(&context);
 		}
 
 		case SPELL_SLOW_MONSTER:
 		{
-			(void)slow_monster(dir);
-			break;
+			return spell_handler_arcane_SLOW_MONSTER(&context);
 		}
 
 		case SPELL_FROST_BALL:
 		{
-			fire_ball(GF_COLD, dir, 30 + (plev), 2);
-			break;
+			return spell_handler_arcane_FROST_BALL(&context);
 		}
 
-		case SPELL_RECHARGE_ITEM_II: /* greater recharging */
+		case SPELL_RECHARGE_ITEM_II:
 		{
-			return recharge(50 + plev);
+			return spell_handler_arcane_RECHARGE_ITEM_II(&context);
 		}
 
 		case SPELL_TELEPORT_OTHER:
 		{
-			(void)teleport_monster(dir);
-			break;
+			return spell_handler_arcane_TELEPORT_OTHER(&context);
 		}
 
 		case SPELL_BEDLAM:
 		{
-			fire_ball(GF_OLD_CONF, dir, plev, 4);
-			break;
+			return spell_handler_arcane_BEDLAM(&context);
 		}
 
 		case SPELL_FIRE_BALL:
 		{
-			fire_ball(GF_FIRE, dir, 55 + (plev), 2);
-			break;
+			return spell_handler_arcane_FIRE_BALL(&context);
 		}
 
 		case SPELL_WORD_OF_DESTRUCTION:
 		{
-			destroy_area(py, px, 15, TRUE);
-			break;
+			return spell_handler_arcane_WORD_OF_DESTRUCTION(&context);
 		}
 
 		case SPELL_BANISHMENT:
 		{
-			return banishment();
+			return spell_handler_arcane_BANISHMENT(&context);
 		}
 
 		case SPELL_DOOR_CREATION:
 		{
-			(void)door_creation();
-			break;
+			return spell_handler_arcane_DOOR_CREATION(&context);
 		}
 
 		case SPELL_STAIR_CREATION:
 		{
-			(void)stair_creation();
-			break;
+			return spell_handler_arcane_STAIR_CREATION(&context);
 		}
 
 		case SPELL_TELEPORT_LEVEL:
 		{
-			(void)teleport_player_level();
-			break;
+			return spell_handler_arcane_TELEPORT_LEVEL(&context);
 		}
 
 		case SPELL_EARTHQUAKE:
 		{
-			earthquake(py, px, 10);
-			break;
+			return spell_handler_arcane_EARTHQUAKE(&context);
 		}
 
 		case SPELL_WORD_OF_RECALL:
 		{
-			return set_recall();
+			return spell_handler_arcane_WORD_OF_RECALL(&context);
 		}
 
 		case SPELL_ACID_BOLT:
 		{
-			fire_bolt_or_beam(beam, GF_ACID, dir, damroll(8+((plev-5)/4), 8));
-			break;
+			return spell_handler_arcane_ACID_BOLT(&context);
 		}
 
 		case SPELL_CLOUD_KILL:
 		{
-			fire_ball(GF_POIS, dir, 40 + (plev / 2), 3);
-			break;
+			return spell_handler_arcane_CLOUD_KILL(&context);
 		}
 
 		case SPELL_ACID_BALL:
 		{
-			fire_ball(GF_ACID, dir, 40 + (plev), 2);
-			break;
+			return spell_handler_arcane_ACID_BALL(&context);
 		}
 
 		case SPELL_ICE_STORM:
 		{
-			fire_ball(GF_ICE, dir, 50 + (plev * 2), 3);
-			break;
+			return spell_handler_arcane_ICE_STORM(&context);
 		}
 
 		case SPELL_METEOR_SWARM:
 		{
-			fire_swarm(2 + plev / 20, GF_METEOR, dir, 30 + plev / 2, 1);
-			break;
+			return spell_handler_arcane_METEOR_SWARM(&context);
 		}
 
 		case SPELL_MANA_STORM:
 		{
-			fire_ball(GF_MANA, dir, 300 + (plev * 2), 3);
-			break;
+			return spell_handler_arcane_MANA_STORM(&context);
 		}
 		case SPELL_DETECT_INVISIBLE:
 		{
-			(void)detect_monsters_normal(TRUE);
-			(void)detect_monsters_invis(TRUE);
-			break;
+			return spell_handler_arcane_DETECT_INVISIBLE(&context);
 		}
 
 		case SPELL_TREASURE_DETECTION:
 		{
-			(void)detect_treasure(TRUE, FALSE);
-			break;
+			return spell_handler_arcane_TREASURE_DETECTION(&context);
 		}
 
 		case SPELL_SHOCK_WAVE:
 		{
-			fire_ball(GF_SOUND, dir, 10 + plev, 2);
-			break;
+			return spell_handler_arcane_SHOCK_WAVE(&context);
 		}
 
 		case SPELL_EXPLOSION:
 		{
-			fire_ball(GF_SHARD, dir, 20 + (plev * 2), 2);
-			break;
+			return spell_handler_arcane_EXPLOSION(&context);
 		}
 
 		case SPELL_MASS_BANISHMENT:
 		{
-			(void)mass_banishment();
-			break;
+			return spell_handler_arcane_MASS_BANISHMENT(&context);
 		}
 
 		case SPELL_RESIST_FIRE:
 		{
-			(void)player_inc_timed(p_ptr, TMD_OPP_FIRE, randint1(20) + 20, TRUE, TRUE);
-			break;
+			return spell_handler_arcane_RESIST_FIRE(&context);
 		}
 
 		case SPELL_RESIST_COLD:
 		{
-			(void)player_inc_timed(p_ptr, TMD_OPP_COLD, randint1(20) + 20, TRUE, TRUE);
-			break;
+			return spell_handler_arcane_RESIST_COLD(&context);
 		}
 
-		case SPELL_ELEMENTAL_BRAND: /* elemental brand */
+		case SPELL_ELEMENTAL_BRAND:
 		{
-			return brand_ammo();
+			return spell_handler_arcane_ELEMENTAL_BRAND(&context);
 		}
 
 		case SPELL_RESIST_POISON:
 		{
-			(void)player_inc_timed(p_ptr, TMD_OPP_POIS, randint1(20) + 20, TRUE, TRUE);
-			break;
+			return spell_handler_arcane_RESIST_POISON(&context);
 		}
 
 		case SPELL_RESISTANCE:
 		{
-			int time = randint1(20) + 20;
-			(void)player_inc_timed(p_ptr, TMD_OPP_ACID, time, TRUE, TRUE);
-			(void)player_inc_timed(p_ptr, TMD_OPP_ELEC, time, TRUE, TRUE);
-			(void)player_inc_timed(p_ptr, TMD_OPP_FIRE, time, TRUE, TRUE);
-			(void)player_inc_timed(p_ptr, TMD_OPP_COLD, time, TRUE, TRUE);
-			(void)player_inc_timed(p_ptr, TMD_OPP_POIS, time, TRUE, TRUE);
-			break;
+			return spell_handler_arcane_RESISTANCE(&context);
 		}
 
 		case SPELL_HEROISM:
 		{
-			int dur = randint1(25) + 25;
-			(void)hp_player(10);
-			(void)player_clear_timed(p_ptr, TMD_AFRAID, TRUE);
-			(void)player_inc_timed(p_ptr, TMD_BOLD, dur, TRUE, TRUE);
-			(void)player_inc_timed(p_ptr, TMD_HERO, dur, TRUE, TRUE);
-			break;
+			return spell_handler_arcane_HEROISM(&context);
 		}
 
 		case SPELL_SHIELD:
 		{
-			(void)player_inc_timed(p_ptr, TMD_SHIELD, randint1(20) + 30, TRUE, TRUE);
-			break;
+			return spell_handler_arcane_SHIELD(&context);
 		}
-
+			
 		case SPELL_BERSERKER:
 		{
-			int dur = randint1(25) + 25;
-			(void)hp_player(30);
-			(void)player_clear_timed(p_ptr, TMD_AFRAID, TRUE);
-			(void)player_inc_timed(p_ptr, TMD_BOLD, dur, TRUE, TRUE);
-			(void)player_inc_timed(p_ptr, TMD_SHERO, dur, TRUE, TRUE);
-			break;
+			return spell_handler_arcane_BERSERKER(&context);
 		}
-
+			
 		case SPELL_HASTE_SELF:
 		{
-			if (!p_ptr->timed[TMD_FAST])
-			{
-				(void)player_set_timed(p_ptr, TMD_FAST, randint1(20) + plev, TRUE);
-			}
-			else
-			{
-				(void)player_inc_timed(p_ptr, TMD_FAST, randint1(5), TRUE, TRUE);
-			}
-			break;
+			return spell_handler_arcane_HASTE_SELF(&context);
 		}
-
+			
 		case SPELL_RIFT:
 		{
-			fire_beam(GF_GRAVITY, dir,	40 + damroll(plev, 7));
-			break;
+			return spell_handler_arcane_RIFT(&context);
 		}
-
-		case SPELL_REND_SOUL: /* rend soul */
+			
+		case SPELL_REND_SOUL:
 		{
-			fire_bolt_or_beam(beam / 4, GF_NETHER, dir, damroll(11, plev));
-			break;
+			return spell_handler_arcane_REND_SOUL(&context);
 		}
-
-		case SPELL_CHAOS_STRIKE: /* chaos strike */
+			
+		case SPELL_CHAOS_STRIKE:
 		{
-			fire_bolt_or_beam(beam, GF_CHAOS, dir, damroll(13, plev));
-			break;
+			return spell_handler_arcane_CHAOS_STRIKE(&context);
 		}
-
-		case SPELL_RUNE_OF_PROTECTION: /* rune of protection */
+			
+		case SPELL_RUNE_OF_PROTECTION:
 		{
-			warding_glyph_spell();
-			break;
+			return spell_handler_arcane_RUNE_OF_PROTECTION(&context);
 		}
-
-		case SPELL_ENCHANT_ARMOR: /* enchant armor */
+			
+		case SPELL_ENCHANT_ARMOR:
 		{
-			return enchant_spell(0, 0, randint0(3) + plev / 20);
+			return spell_handler_arcane_ENCHANT_ARMOR(&context);
 		}
-
-		case SPELL_ENCHANT_WEAPON: /* enchant weapon */
+			
+		case SPELL_ENCHANT_WEAPON:
 		{
-			return enchant_spell(randint0(4) + plev / 20,
-			                     randint0(4) + plev / 20, 0);
+			return spell_handler_arcane_ENCHANT_WEAPON(&context);
 		}
 	}
 
@@ -885,419 +1213,705 @@ static bool cast_mage_spell(int spell, int dir)
 	return (TRUE);
 }
 
+#pragma mark prayer handlers
+
+static bool spell_handler_prayer_DETECT_EVIL(spell_handler_context_t *context)
+{
+	(void)detect_monsters_evil(TRUE);
+	return TRUE;
+}
+
+static bool spell_handler_prayer_CURE_LIGHT_WOUNDS(spell_handler_context_t *context)
+{
+	(void)heal_player(15, 15);
+	(void)player_dec_timed(p_ptr, TMD_CUT, 20, TRUE);
+	(void)player_dec_timed(p_ptr, TMD_CONFUSED, 20, TRUE);
+	(void)player_clear_timed(p_ptr, TMD_BLIND, TRUE);
+	return TRUE;
+}
+
+static bool spell_handler_prayer_BLESS(spell_handler_context_t *context)
+{
+	(void)player_inc_timed(p_ptr, TMD_BLESSED, randint1(12) + 12, TRUE, TRUE);
+	return TRUE;
+}
+
+static bool spell_handler_prayer_REMOVE_FEAR(spell_handler_context_t *context)
+{
+	(void)player_clear_timed(p_ptr, TMD_AFRAID, TRUE);
+	return TRUE;
+}
+
+static bool spell_handler_prayer_CALL_LIGHT(spell_handler_context_t *context)
+{
+	(void)light_area(damroll(2, (p_ptr->lev / 2)), (p_ptr->lev / 10) + 1);
+	return TRUE;
+}
+
+static bool spell_handler_prayer_FIND_TRAPS_DOORS(spell_handler_context_t *context)
+{
+	(void)detect_traps(TRUE);
+	(void)detect_doorstairs(TRUE);
+	return TRUE;
+}
+
+static bool spell_handler_prayer_SLOW_POISON(spell_handler_context_t *context)
+{
+	(void)player_set_timed(p_ptr, TMD_POISONED, p_ptr->timed[TMD_POISONED] / 2, TRUE);
+	return TRUE;
+}
+
+static bool spell_handler_prayer_SCARE_MONSTER(spell_handler_context_t *context)
+{
+	(void)fear_monster(context->dir, p_ptr->lev, TRUE);
+	return TRUE;
+}
+
+static bool spell_handler_prayer_PORTAL(spell_handler_context_t *context)
+{
+	teleport_player(p_ptr->lev * 3);
+	return TRUE;
+}
+
+static bool spell_handler_prayer_CURE_SERIOUS_WOUNDS(spell_handler_context_t *context)
+{
+	(void)heal_player(20, 25);
+	(void)player_clear_timed(p_ptr, TMD_CUT, TRUE);
+	(void)player_clear_timed(p_ptr, TMD_CONFUSED, TRUE);
+	(void)player_clear_timed(p_ptr, TMD_BLIND, TRUE);
+	return TRUE;
+}
+
+static bool spell_handler_prayer_CHANT(spell_handler_context_t *context)
+{
+	(void)player_inc_timed(p_ptr, TMD_BLESSED, randint1(24) + 24, TRUE, TRUE);
+	return TRUE;
+}
+
+static bool spell_handler_prayer_SANCTUARY(spell_handler_context_t *context)
+{
+	(void)sleep_monsters_touch(TRUE);
+	return TRUE;
+}
+
+static bool spell_handler_prayer_SATISFY_HUNGER(spell_handler_context_t *context)
+{
+	player_set_food(p_ptr, PY_FOOD_MAX - 1);
+	return TRUE;
+}
+
+
+static bool spell_handler_prayer_REMOVE_CURSE(spell_handler_context_t *context)
+{
+	/* Remove curse has been removed in 3.4 until curses are redone */
+	/* remove_curse(); */
+	return FALSE;
+}
+
+static bool spell_handler_prayer_RESIST_HEAT_COLD(spell_handler_context_t *context)
+{
+	(void)player_inc_timed(p_ptr, TMD_OPP_FIRE, randint1(10) + 10, TRUE, TRUE);
+	(void)player_inc_timed(p_ptr, TMD_OPP_COLD, randint1(10) + 10, TRUE, TRUE);
+	return TRUE;
+}
+
+static bool spell_handler_prayer_NEUTRALIZE_POISON(spell_handler_context_t *context)
+{
+	(void)player_clear_timed(p_ptr, TMD_POISONED, TRUE);
+	return TRUE;
+}
+
+static bool spell_handler_prayer_ORB_OF_DRAINING(spell_handler_context_t *context)
+{
+	fire_ball(GF_HOLY_ORB, context->dir,
+			  (damroll(3, 6) + p_ptr->lev +
+			   (player_has(PF_ZERO_FAIL)
+				? (p_ptr->lev / 2)
+				: (p_ptr->lev / 4))),
+			  ((p_ptr->lev < 30) ? 2 : 3));
+	return TRUE;
+}
+
+static bool spell_handler_prayer_CURE_CRITICAL_WOUNDS(spell_handler_context_t *context)
+{
+	(void)heal_player(25, 30);
+	(void)player_clear_timed(p_ptr, TMD_CUT, TRUE);
+	(void)player_clear_timed(p_ptr, TMD_AMNESIA, TRUE);
+	(void)player_clear_timed(p_ptr, TMD_CONFUSED, TRUE);
+	(void)player_clear_timed(p_ptr, TMD_BLIND, TRUE);
+	(void)player_clear_timed(p_ptr, TMD_POISONED, TRUE);
+	(void)player_clear_timed(p_ptr, TMD_STUN, TRUE);
+	return TRUE;
+}
+
+static bool spell_handler_prayer_SENSE_INVISIBLE(spell_handler_context_t *context)
+{
+	(void)player_inc_timed(p_ptr, TMD_SINVIS, randint1(24) + 24, TRUE, TRUE);
+	return TRUE;
+}
+
+static bool spell_handler_prayer_PROTECTION_FROM_EVIL(spell_handler_context_t *context)
+{
+	(void)player_inc_timed(p_ptr, TMD_PROTEVIL, randint1(25) + 3 * p_ptr->lev, TRUE,
+						   TRUE);
+	return TRUE;
+}
+
+static bool spell_handler_prayer_EARTHQUAKE(spell_handler_context_t *context)
+{
+	earthquake(p_ptr->py, p_ptr->px, 10);
+	return TRUE;
+}
+
+static bool spell_handler_prayer_SENSE_SURROUNDINGS(spell_handler_context_t *context)
+{
+	map_area();
+	return TRUE;
+}
+
+static bool spell_handler_prayer_CURE_MORTAL_WOUNDS(spell_handler_context_t *context)
+{
+	(void)heal_player(30, 50);
+	(void)player_clear_timed(p_ptr, TMD_CUT, TRUE);
+	(void)player_clear_timed(p_ptr, TMD_AMNESIA, TRUE);
+	(void)player_clear_timed(p_ptr, TMD_CONFUSED, TRUE);
+	(void)player_clear_timed(p_ptr, TMD_BLIND, TRUE);
+	(void)player_clear_timed(p_ptr, TMD_POISONED, TRUE);
+	(void)player_clear_timed(p_ptr, TMD_STUN, TRUE);
+	return TRUE;
+}
+
+static bool spell_handler_prayer_TURN_UNDEAD(spell_handler_context_t *context)
+{
+	(void)turn_undead(TRUE);
+	return TRUE;
+}
+
+static bool spell_handler_prayer_PRAYER(spell_handler_context_t *context)
+{
+	(void)player_inc_timed(p_ptr, TMD_BLESSED, randint1(48) + 48, TRUE, TRUE);
+	return TRUE;
+}
+
+static bool spell_handler_prayer_DISPEL_UNDEAD(spell_handler_context_t *context)
+{
+	(void)dispel_undead(randint1(p_ptr->lev * 3));
+	return TRUE;
+}
+
+static bool spell_handler_prayer_HEAL(spell_handler_context_t *context)
+{
+	int amt = (p_ptr->mhp * 35) / 100;
+	if (amt < 300) amt = 300;
+
+	(void)hp_player(amt);
+	(void)player_clear_timed(p_ptr, TMD_CUT, TRUE);
+	(void)player_clear_timed(p_ptr, TMD_AMNESIA, TRUE);
+	(void)player_clear_timed(p_ptr, TMD_CONFUSED, TRUE);
+	(void)player_clear_timed(p_ptr, TMD_BLIND, TRUE);
+	(void)player_clear_timed(p_ptr, TMD_POISONED, TRUE);
+	(void)player_clear_timed(p_ptr, TMD_STUN, TRUE);
+	return TRUE;
+}
+
+static bool spell_handler_prayer_DISPEL_EVIL(spell_handler_context_t *context)
+{
+	(void)dispel_evil(randint1(p_ptr->lev * 3));
+	return TRUE;
+}
+
+static bool spell_handler_prayer_GLYPH_OF_WARDING(spell_handler_context_t *context)
+{
+	warding_glyph_spell();
+	return TRUE;
+}
+
+static bool spell_handler_prayer_HOLY_WORD(spell_handler_context_t *context)
+{
+	(void)dispel_evil(randint1(p_ptr->lev * 4));
+	(void)hp_player(1000);
+	(void)player_clear_timed(p_ptr, TMD_AFRAID, TRUE);
+	(void)player_clear_timed(p_ptr, TMD_POISONED, TRUE);
+	(void)player_clear_timed(p_ptr, TMD_STUN, TRUE);
+	(void)player_clear_timed(p_ptr, TMD_CUT, TRUE);
+	return TRUE;
+}
+
+static bool spell_handler_prayer_DETECT_MONSTERS(spell_handler_context_t *context)
+{
+	(void)detect_monsters_normal(TRUE);
+	return TRUE;
+}
+
+static bool spell_handler_prayer_DETECTION(spell_handler_context_t *context)
+{
+	(void)detect_all(TRUE);
+	return TRUE;
+}
+
+static bool spell_handler_prayer_PERCEPTION(spell_handler_context_t *context)
+{
+	return ident_spell();
+}
+
+static bool spell_handler_prayer_PROBING(spell_handler_context_t *context)
+{
+	(void)probing();
+	return TRUE;
+}
+
+static bool spell_handler_prayer_CLAIRVOYANCE(spell_handler_context_t *context)
+{
+	wiz_light(FALSE);
+	return TRUE;
+}
+
+static bool spell_handler_prayer_CURE_SERIOUS_WOUNDS2(spell_handler_context_t *context)
+{
+	(void)heal_player(20, 25);
+	(void)player_clear_timed(p_ptr, TMD_CUT, TRUE);
+	(void)player_clear_timed(p_ptr, TMD_CONFUSED, TRUE);
+	(void)player_clear_timed(p_ptr, TMD_BLIND, TRUE);
+	return TRUE;
+}
+
+static bool spell_handler_prayer_CURE_MORTAL_WOUNDS2(spell_handler_context_t *context)
+{
+	(void)heal_player(30, 50);
+	(void)player_clear_timed(p_ptr, TMD_CUT, TRUE);
+	(void)player_clear_timed(p_ptr, TMD_AMNESIA, TRUE);
+	(void)player_clear_timed(p_ptr, TMD_CONFUSED, TRUE);
+	(void)player_clear_timed(p_ptr, TMD_BLIND, TRUE);
+	(void)player_clear_timed(p_ptr, TMD_POISONED, TRUE);
+	(void)player_clear_timed(p_ptr, TMD_STUN, TRUE);
+	return TRUE;
+}
+
+static bool spell_handler_prayer_HEALING(spell_handler_context_t *context)
+{
+	(void)hp_player(2000);
+	(void)player_clear_timed(p_ptr, TMD_STUN, TRUE);
+	(void)player_clear_timed(p_ptr, TMD_CUT, TRUE);
+	return TRUE;
+}
+
+static bool spell_handler_prayer_RESTORATION(spell_handler_context_t *context)
+{
+	(void)do_res_stat(A_STR);
+	(void)do_res_stat(A_INT);
+	(void)do_res_stat(A_WIS);
+	(void)do_res_stat(A_DEX);
+	(void)do_res_stat(A_CON);
+	return TRUE;
+}
+
+static bool spell_handler_prayer_REMEMBRANCE(spell_handler_context_t *context)
+{
+	(void)restore_level();
+	return TRUE;
+}
+
+static bool spell_handler_prayer_DISPEL_UNDEAD2(spell_handler_context_t *context)
+{
+	(void)dispel_undead(randint1(p_ptr->lev * 4));
+	return TRUE;
+}
+
+static bool spell_handler_prayer_DISPEL_EVIL2(spell_handler_context_t *context)
+{
+	(void)dispel_evil(randint1(p_ptr->lev * 4));
+	return TRUE;
+}
+
+static bool spell_handler_prayer_BANISH_EVIL(spell_handler_context_t *context)
+{
+	if (banish_evil(100))
+	{
+		msg("The power of your god banishes evil!");
+	}
+	return TRUE;
+}
+
+static bool spell_handler_prayer_WORD_OF_DESTRUCTION(spell_handler_context_t *context)
+{
+	destroy_area(p_ptr->py, p_ptr->px, 15, TRUE);
+	return TRUE;
+}
+
+static bool spell_handler_prayer_ANNIHILATION(spell_handler_context_t *context)
+{
+	drain_life(context->dir, 200);
+	return TRUE;
+}
+
+static bool spell_handler_prayer_UNBARRING_WAYS(spell_handler_context_t *context)
+{
+	(void)destroy_doors_touch();
+	return TRUE;
+}
+
+static bool spell_handler_prayer_RECHARGING(spell_handler_context_t *context)
+{
+	return recharge(20 + p_ptr->lev);
+}
+
+static bool spell_handler_prayer_DISPEL_CURSE(spell_handler_context_t *context)
+{
+	/* Dispel Curse has been removed in 3.4 until curses are redone */
+	/* (void)remove_all_curse(); */
+	return FALSE;
+}
+
+static bool spell_handler_prayer_ENCHANT_WEAPON(spell_handler_context_t *context)
+{
+	return enchant_spell(randint0(4) + 1, randint0(4) + 1, 0);
+}
+
+static bool spell_handler_prayer_ENCHANT_ARMOUR(spell_handler_context_t *context)
+{
+	return enchant_spell(0, 0, randint0(3) + 2);
+}
+
+static bool spell_handler_prayer_ELEMENTAL_BRAND(spell_handler_context_t *context)
+{
+	brand_weapon();
+	return TRUE;
+}
+
+static bool spell_handler_prayer_BLINK(spell_handler_context_t *context)
+{
+	teleport_player(10);
+	return TRUE;
+}
+
+static bool spell_handler_prayer_TELEPORT_SELF(spell_handler_context_t *context)
+{
+	teleport_player(p_ptr->lev * 8);
+	return TRUE;
+}
+
+static bool spell_handler_prayer_TELEPORT_OTHER(spell_handler_context_t *context)
+{
+	(void)teleport_monster(context->dir);
+	return TRUE;
+}
+
+static bool spell_handler_prayer_TELEPORT_LEVEL(spell_handler_context_t *context)
+{
+	(void)teleport_player_level();
+	return TRUE;
+}
+
+static bool spell_handler_prayer_WORD_OF_RECALL(spell_handler_context_t *context)
+{
+	return set_recall();
+}
+
+static bool spell_handler_prayer_ALTER_REALITY(spell_handler_context_t *context)
+{
+	msg("The world changes!");
+
+	/* Leaving */
+	p_ptr->leaving = TRUE;
+
+	return TRUE;
+}
+
+
 
 static bool cast_priest_spell(int spell, int dir)
 {
-	int py = p_ptr->py;
-	int px = p_ptr->px;
-
-	int plev = p_ptr->lev;
-
-	int amt;
+	spell_handler_context_t context = {
+		spell,
+		dir,
+		0,
+	};
 
 	switch (spell)
 	{
 		case PRAYER_DETECT_EVIL:
 		{
-			(void)detect_monsters_evil(TRUE);
-			break;
+			return spell_handler_prayer_DETECT_EVIL(&context);
 		}
 
 		case PRAYER_CURE_LIGHT_WOUNDS:
 		{
-			(void)heal_player(15, 15);
-			(void)player_dec_timed(p_ptr, TMD_CUT, 20, TRUE);
-			(void)player_dec_timed(p_ptr, TMD_CONFUSED, 20, TRUE);
-			(void)player_clear_timed(p_ptr, TMD_BLIND, TRUE);
-			break;
+			return spell_handler_prayer_CURE_LIGHT_WOUNDS(&context);
 		}
 
 		case PRAYER_BLESS:
 		{
-			(void)player_inc_timed(p_ptr, TMD_BLESSED, randint1(12) + 12, TRUE, TRUE);
-			break;
+			return spell_handler_prayer_BLESS(&context);
 		}
 
 		case PRAYER_REMOVE_FEAR:
 		{
-			(void)player_clear_timed(p_ptr, TMD_AFRAID, TRUE);
-			break;
+			return spell_handler_prayer_REMOVE_FEAR(&context);
 		}
 
 		case PRAYER_CALL_LIGHT:
 		{
-			(void)light_area(damroll(2, (plev / 2)), (plev / 10) + 1);
-			break;
+			return spell_handler_prayer_CALL_LIGHT(&context);
 		}
 
 		case PRAYER_FIND_TRAPS_DOORS:
 		{
-			(void)detect_traps(TRUE);
-			(void)detect_doorstairs(TRUE);
-			break;
+			return spell_handler_prayer_FIND_TRAPS_DOORS(&context);
 		}
 
 		case PRAYER_SLOW_POISON:
 		{
-			(void)player_set_timed(p_ptr, TMD_POISONED, p_ptr->timed[TMD_POISONED] / 2, TRUE);
-			break;
+			return spell_handler_prayer_SLOW_POISON(&context);
 		}
 
 		case PRAYER_SCARE_MONSTER:
 		{
-			(void)fear_monster(dir, plev, TRUE);
-			break;
+			return spell_handler_prayer_SCARE_MONSTER(&context);
 		}
 
 		case PRAYER_PORTAL:
 		{
-			teleport_player(plev * 3);
-			break;
+			return spell_handler_prayer_PORTAL(&context);
 		}
 
 		case PRAYER_CURE_SERIOUS_WOUNDS:
 		{
-			(void)heal_player(20, 25);
-			(void)player_clear_timed(p_ptr, TMD_CUT, TRUE);
-			(void)player_clear_timed(p_ptr, TMD_CONFUSED, TRUE);
-			(void)player_clear_timed(p_ptr, TMD_BLIND, TRUE);
-			break;
+			return spell_handler_prayer_CURE_SERIOUS_WOUNDS(&context);
 		}
 
 		case PRAYER_CHANT:
 		{
-			(void)player_inc_timed(p_ptr, TMD_BLESSED, randint1(24) + 24, TRUE, TRUE);
-			break;
+			return spell_handler_prayer_CHANT(&context);
 		}
 
 		case PRAYER_SANCTUARY:
 		{
-			(void)sleep_monsters_touch(TRUE);
-			break;
+			return spell_handler_prayer_SANCTUARY(&context);
 		}
 
 		case PRAYER_SATISFY_HUNGER:
 		{
-			player_set_food(p_ptr, PY_FOOD_MAX - 1);
-			break;
+			return spell_handler_prayer_SATISFY_HUNGER(&context);
 		}
-		
-        /* Remove curse has been removed in 3.4 until curses are redone
+
 		case PRAYER_REMOVE_CURSE:
 		{
-			remove_curse();
-			break;
+			return spell_handler_prayer_REMOVE_CURSE(&context);
 		}
-		*/
 
 		case PRAYER_RESIST_HEAT_COLD:
 		{
-			(void)player_inc_timed(p_ptr, TMD_OPP_FIRE, randint1(10) + 10, TRUE, TRUE);
-			(void)player_inc_timed(p_ptr, TMD_OPP_COLD, randint1(10) + 10, TRUE, TRUE);
-			break;
+			return spell_handler_prayer_RESIST_HEAT_COLD(&context);
 		}
 
 		case PRAYER_NEUTRALIZE_POISON:
 		{
-			(void)player_clear_timed(p_ptr, TMD_POISONED, TRUE);
-			break;
+			return spell_handler_prayer_NEUTRALIZE_POISON(&context);
 		}
 
 		case PRAYER_ORB_OF_DRAINING:
 		{
-			fire_ball(GF_HOLY_ORB, dir,
-				(damroll(3, 6) + plev +
-				 (player_has(PF_ZERO_FAIL)
-					? (plev / 2)
-					: (plev / 4))),	
-				((plev < 30) ? 2 : 3));
-			break;
+			return spell_handler_prayer_ORB_OF_DRAINING(&context);
 		}
 
 		case PRAYER_CURE_CRITICAL_WOUNDS:
 		{
-			(void)heal_player(25, 30);
-			(void)player_clear_timed(p_ptr, TMD_CUT, TRUE);
-			(void)player_clear_timed(p_ptr, TMD_AMNESIA, TRUE);
-			(void)player_clear_timed(p_ptr, TMD_CONFUSED, TRUE);
-			(void)player_clear_timed(p_ptr, TMD_BLIND, TRUE);
-			(void)player_clear_timed(p_ptr, TMD_POISONED, TRUE);
-			(void)player_clear_timed(p_ptr, TMD_STUN, TRUE);
-			break;
+			return spell_handler_prayer_CURE_CRITICAL_WOUNDS(&context);
 		}
 
 		case PRAYER_SENSE_INVISIBLE:
 		{
-			(void)player_inc_timed(p_ptr, TMD_SINVIS, randint1(24) + 24, TRUE, TRUE);
-			break;
+			return spell_handler_prayer_SENSE_INVISIBLE(&context);
 		}
 
 		case PRAYER_PROTECTION_FROM_EVIL:
 		{
-			(void)player_inc_timed(p_ptr, TMD_PROTEVIL, randint1(25) + 3 * p_ptr->lev, TRUE,
-				TRUE);
-			break;
+			return spell_handler_prayer_PROTECTION_FROM_EVIL(&context);
 		}
 
 		case PRAYER_EARTHQUAKE:
 		{
-			earthquake(py, px, 10);
-			break;
+			return spell_handler_prayer_EARTHQUAKE(&context);
 		}
 
 		case PRAYER_SENSE_SURROUNDINGS:
 		{
-			map_area();
-			break;
+			return spell_handler_prayer_SENSE_SURROUNDINGS(&context);
 		}
 
 		case PRAYER_CURE_MORTAL_WOUNDS:
 		{
-			(void)heal_player(30, 50);
-			(void)player_clear_timed(p_ptr, TMD_CUT, TRUE);
-			(void)player_clear_timed(p_ptr, TMD_AMNESIA, TRUE);
-			(void)player_clear_timed(p_ptr, TMD_CONFUSED, TRUE);
-			(void)player_clear_timed(p_ptr, TMD_BLIND, TRUE);
-			(void)player_clear_timed(p_ptr, TMD_POISONED, TRUE);
-			(void)player_clear_timed(p_ptr, TMD_STUN, TRUE);
-			break;
+			return spell_handler_prayer_CURE_MORTAL_WOUNDS(&context);
 		}
 
 		case PRAYER_TURN_UNDEAD:
 		{
-			(void)turn_undead(TRUE);
-			break;
+			return spell_handler_prayer_TURN_UNDEAD(&context);
 		}
 
 		case PRAYER_PRAYER:
 		{
-			(void)player_inc_timed(p_ptr, TMD_BLESSED, randint1(48) + 48, TRUE, TRUE);
-			break;
+			return spell_handler_prayer_PRAYER(&context);
 		}
 
 		case PRAYER_DISPEL_UNDEAD:
 		{
-			(void)dispel_undead(randint1(plev * 3));
-			break;
+			return spell_handler_prayer_DISPEL_UNDEAD(&context);
 		}
 
 		case PRAYER_HEAL:
 		{
-			amt = (p_ptr->mhp * 35) / 100;
-                        if (amt < 300) amt = 300;
-			
-			(void)hp_player(amt);
-			(void)player_clear_timed(p_ptr, TMD_CUT, TRUE);
-			(void)player_clear_timed(p_ptr, TMD_AMNESIA, TRUE);
-			(void)player_clear_timed(p_ptr, TMD_CONFUSED, TRUE);
-			(void)player_clear_timed(p_ptr, TMD_BLIND, TRUE);
-			(void)player_clear_timed(p_ptr, TMD_POISONED, TRUE);
-			(void)player_clear_timed(p_ptr, TMD_STUN, TRUE);
-			break;
+			return spell_handler_prayer_HEAL(&context);
 		}
 
 		case PRAYER_DISPEL_EVIL:
 		{
-			(void)dispel_evil(randint1(plev * 3));
-			break;
+			return spell_handler_prayer_DISPEL_EVIL(&context);
 		}
 
 		case PRAYER_GLYPH_OF_WARDING:
 		{
-			warding_glyph_spell();
-			break;
+			return spell_handler_prayer_GLYPH_OF_WARDING(&context);
 		}
 
 		case PRAYER_HOLY_WORD:
 		{
-			(void)dispel_evil(randint1(plev * 4));
-			(void)hp_player(1000);
-			(void)player_clear_timed(p_ptr, TMD_AFRAID, TRUE);
-			(void)player_clear_timed(p_ptr, TMD_POISONED, TRUE);
-			(void)player_clear_timed(p_ptr, TMD_STUN, TRUE);
-			(void)player_clear_timed(p_ptr, TMD_CUT, TRUE);
-			break;
+			return spell_handler_prayer_HOLY_WORD(&context);
 		}
 
 		case PRAYER_DETECT_MONSTERS:
 		{
-			(void)detect_monsters_normal(TRUE);
-			break;
+			return spell_handler_prayer_DETECT_MONSTERS(&context);
 		}
 
 		case PRAYER_DETECTION:
 		{
-			(void)detect_all(TRUE);
-			break;
+			return spell_handler_prayer_DETECTION(&context);
 		}
 
 		case PRAYER_PERCEPTION:
 		{
-			return ident_spell();
+			return spell_handler_prayer_PERCEPTION(&context);
 		}
 
 		case PRAYER_PROBING:
 		{
-			(void)probing();
-			break;
+			return spell_handler_prayer_PROBING(&context);
 		}
 
 		case PRAYER_CLAIRVOYANCE:
 		{
-			wiz_light(FALSE);
-			break;
+			return spell_handler_prayer_CLAIRVOYANCE(&context);
 		}
 
 		case PRAYER_CURE_SERIOUS_WOUNDS2:
 		{
-			(void)heal_player(20, 25);
-			(void)player_clear_timed(p_ptr, TMD_CUT, TRUE);
-			(void)player_clear_timed(p_ptr, TMD_CONFUSED, TRUE);
-			(void)player_clear_timed(p_ptr, TMD_BLIND, TRUE);
-			break;
+			return spell_handler_prayer_CURE_SERIOUS_WOUNDS2(&context);
 		}
 
 		case PRAYER_CURE_MORTAL_WOUNDS2:
 		{
-			(void)heal_player(30, 50);
-			(void)player_clear_timed(p_ptr, TMD_CUT, TRUE);
-			(void)player_clear_timed(p_ptr, TMD_AMNESIA, TRUE);
-			(void)player_clear_timed(p_ptr, TMD_CONFUSED, TRUE);
-			(void)player_clear_timed(p_ptr, TMD_BLIND, TRUE);
-			(void)player_clear_timed(p_ptr, TMD_POISONED, TRUE);
-			(void)player_clear_timed(p_ptr, TMD_STUN, TRUE);
-			break;
+			return spell_handler_prayer_CURE_MORTAL_WOUNDS2(&context);
 		}
 
 		case PRAYER_HEALING:
 		{
-			(void)hp_player(2000);
-			(void)player_clear_timed(p_ptr, TMD_STUN, TRUE);
-			(void)player_clear_timed(p_ptr, TMD_CUT, TRUE);
-			break;
+			return spell_handler_prayer_HEALING(&context);
 		}
 
 		case PRAYER_RESTORATION:
 		{
-			(void)do_res_stat(A_STR);
-			(void)do_res_stat(A_INT);
-			(void)do_res_stat(A_WIS);
-			(void)do_res_stat(A_DEX);
-			(void)do_res_stat(A_CON);
-			break;
+			return spell_handler_prayer_RESTORATION(&context);
 		}
 
 		case PRAYER_REMEMBRANCE:
 		{
-			(void)restore_level();
-			break;
+			return spell_handler_prayer_REMEMBRANCE(&context);
 		}
 
 		case PRAYER_DISPEL_UNDEAD2:
 		{
-			(void)dispel_undead(randint1(plev * 4));
-			break;
+			return spell_handler_prayer_DISPEL_UNDEAD2(&context);
 		}
 
 		case PRAYER_DISPEL_EVIL2:
 		{
-			(void)dispel_evil(randint1(plev * 4));
-			break;
+			return spell_handler_prayer_DISPEL_EVIL2(&context);
 		}
 
 		case PRAYER_BANISH_EVIL:
 		{
-			if (banish_evil(100))
-			{
-				msg("The power of your god banishes evil!");
-			}
-			break;
+			return spell_handler_prayer_BANISH_EVIL(&context);
 		}
 
 		case PRAYER_WORD_OF_DESTRUCTION:
 		{
-			destroy_area(py, px, 15, TRUE);
-			break;
+			return spell_handler_prayer_WORD_OF_DESTRUCTION(&context);
 		}
 
 		case PRAYER_ANNIHILATION:
 		{
-			drain_life(dir, 200);
-			break;
+			return spell_handler_prayer_ANNIHILATION(&context);
 		}
 
 		case PRAYER_UNBARRING_WAYS:
 		{
-			(void)destroy_doors_touch();
-			break;
+			return spell_handler_prayer_UNBARRING_WAYS(&context);
 		}
 
 		case PRAYER_RECHARGING:
 		{
-			return recharge(20 + plev);
+			return spell_handler_prayer_RECHARGING(&context);
 		}
-		
-        /* Dispel Curse has been removed in 3.4 until curses are redone 
+
 		case PRAYER_DISPEL_CURSE:
 		{
-			(void)remove_all_curse();
-			break;
+			return spell_handler_prayer_DISPEL_CURSE(&context);
 		}
-		*/
-		
+
 		case PRAYER_ENCHANT_WEAPON:
 		{
-			return enchant_spell(randint0(4) + 1, randint0(4) + 1, 0);
+			return spell_handler_prayer_ENCHANT_WEAPON(&context);
 		}
 
 		case PRAYER_ENCHANT_ARMOUR:
 		{
-			return enchant_spell(0, 0, randint0(3) + 2);
+			return spell_handler_prayer_ENCHANT_ARMOUR(&context);
 		}
 
 		case PRAYER_ELEMENTAL_BRAND:
 		{
-			brand_weapon();
-			break;
+			return spell_handler_prayer_ELEMENTAL_BRAND(&context);
 		}
 
 		case PRAYER_BLINK:
 		{
-			teleport_player(10);
-			break;
+			return spell_handler_prayer_BLINK(&context);
 		}
 
 		case PRAYER_TELEPORT_SELF:
 		{
-			teleport_player(plev * 8);
-			break;
+			return spell_handler_prayer_TELEPORT_SELF(&context);
 		}
-
+			
 		case PRAYER_TELEPORT_OTHER:
 		{
-			(void)teleport_monster(dir);
-			break;
+			return spell_handler_prayer_TELEPORT_OTHER(&context);
 		}
-
+			
 		case PRAYER_TELEPORT_LEVEL:
 		{
-			(void)teleport_player_level();
-			break;
+			return spell_handler_prayer_TELEPORT_LEVEL(&context);
 		}
-
+			
 		case PRAYER_WORD_OF_RECALL:
 		{
-			return set_recall();
+			return spell_handler_prayer_WORD_OF_RECALL(&context);
 		}
-
+			
 		case PRAYER_ALTER_REALITY:
 		{
-			msg("The world changes!");
-
-			/* Leaving */
-			p_ptr->leaving = TRUE;
-
-			break;
+			return spell_handler_prayer_ALTER_REALITY(&context);
 		}
 	}
 
