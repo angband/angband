@@ -37,7 +37,7 @@ enum spell_index_arcane_e {
 	SPELL_FIND_TRAPS_DOORS = 4,
 	SPELL_CURE_LIGHT_WOUNDS = 5,
 	SPELL_OBJECT_DETECTION = 6,
-
+	SPELL_XXX = 7,
 	SPELL_IDENTIFY = 8,
 	SPELL_DETECT_INVISIBLE = 9,
 	SPELL_TREASURE_DETECTION = 10,
@@ -94,6 +94,8 @@ enum spell_index_arcane_e {
 	SPELL_MASS_BANISHMENT = 61,
 	SPELL_RIFT = 62,
 	SPELL_MANA_STORM = 63,
+
+	SPELL_MAX,
 };
 
 enum spell_index_prayer_e {
@@ -104,6 +106,7 @@ enum spell_index_prayer_e {
 	PRAYER_REMOVE_FEAR = 3,
 	PRAYER_CALL_LIGHT = 4,
 	PRAYER_FIND_TRAPS_DOORS = 5,
+	PRAYER_XXX = 6,
 	PRAYER_SLOW_POISON = 7,
 
 	/* Words of Wisdom */
@@ -171,6 +174,8 @@ enum spell_index_prayer_e {
 	PRAYER_TELEPORT_LEVEL = 55,
 	PRAYER_WORD_OF_RECALL = 56,
 	PRAYER_ALTER_REALITY = 57,
+
+	PRAYER_MAX,
 };
 
 
@@ -193,6 +198,19 @@ const char *get_spell_name(int tval, int spell)
 		return s_info[spell + PY_MAX_SPELLS].name;
 }
 
+typedef struct spell_handler_context_s {
+	const int spell;
+	const int dir;
+	const int beam;
+} spell_handler_context_t;
+
+typedef bool (*spell_handler_f)(spell_handler_context_t *);
+
+typedef struct spell_info_s {
+	u16b spell;
+	bool aim;
+	spell_handler_f handler;
+} spell_info_t;
 
 void get_spell_info(int tval, int spell, char *p, size_t len)
 {
@@ -413,69 +431,6 @@ static void spell_wonder(int dir)
    some potent effects only at high level. */
 	effect_wonder(dir, randint1(100) + p_ptr->lev / 5, beam_chance());
 }
-
-
-bool spell_needs_aim(int tval, int spell)
-{
-	if (tval == TV_MAGIC_BOOK)
-	{
-		switch (spell)
-		{
-			case SPELL_MAGIC_MISSILE:
-			case SPELL_STINKING_CLOUD:
-			case SPELL_CONFUSE_MONSTER:
-			case SPELL_LIGHTNING_BOLT:
-			case SPELL_SLEEP_MONSTER:
-			case SPELL_SPEAR_OF_LIGHT:
-			case SPELL_FROST_BOLT:
-			case SPELL_TURN_STONE_TO_MUD:
-			case SPELL_WONDER:
-			case SPELL_POLYMORPH_OTHER:
-			case SPELL_FIRE_BOLT:
-			case SPELL_SLOW_MONSTER:
-			case SPELL_FROST_BALL:
-			case SPELL_TELEPORT_OTHER:
-			case SPELL_BEDLAM:
-			case SPELL_FIRE_BALL:
-			case SPELL_ACID_BOLT:
-			case SPELL_CLOUD_KILL:
-			case SPELL_ACID_BALL:
-			case SPELL_ICE_STORM:
-			case SPELL_METEOR_SWARM:
-			case SPELL_MANA_STORM:
-			case SPELL_SHOCK_WAVE:
-			case SPELL_EXPLOSION:
-			case SPELL_RIFT:
-			case SPELL_REND_SOUL: 
-			case SPELL_CHAOS_STRIKE: 
-				return TRUE;
-				
-			default:
-				return FALSE;
-		}
-	}
-	else
-	{
-		switch (spell)
-		{
-			case PRAYER_SCARE_MONSTER:
-			case PRAYER_ORB_OF_DRAINING:
-			case PRAYER_ANNIHILATION:
-			case PRAYER_TELEPORT_OTHER:
-				return TRUE;
-
-			default:
-				return FALSE;
-		}
-	}
-}
-
-typedef struct spell_handler_context_s {
-	const int spell;
-	const int dir;
-	const int beam;
-} spell_handler_context_t;
-
 
 #pragma mark arcane spell handlers
 
@@ -880,339 +835,6 @@ static bool spell_handler_arcane_ENCHANT_WEAPON(spell_handler_context_t *context
 						 randint0(4) + p_ptr->lev / 20, 0);
 }
 
-static bool cast_mage_spell(int spell, int dir)
-{
-	/* Hack -- chance of "beam" instead of "bolt" */
-	int beam = beam_chance();
-
-	spell_handler_context_t context = {
-		spell,
-		dir,
-		beam,
-	};
-
-	/* Spells. */
-	switch (spell)
-	{
-		case SPELL_MAGIC_MISSILE:
-		{
-			return spell_handler_arcane_MAGIC_MISSILE(&context);
-		}
-
-		case SPELL_DETECT_MONSTERS:
-		{
-			return spell_handler_arcane_DETECT_MONSTERS(&context);
-		}
-
-		case SPELL_PHASE_DOOR:
-		{
-			return spell_handler_arcane_PHASE_DOOR(&context);
-		}
-
-		case SPELL_LIGHT_AREA:
-		{
-			return spell_handler_arcane_LIGHT_AREA(&context);
-		}
-
-		case SPELL_OBJECT_DETECTION:
-		{
-			return spell_handler_arcane_OBJECT_DETECTION(&context);
-		}
-
-		case SPELL_CURE_LIGHT_WOUNDS:
-		{
-			return spell_handler_arcane_CURE_LIGHT_WOUNDS(&context);
-		}
-
-		case SPELL_FIND_TRAPS_DOORS:
-		{
-			return spell_handler_arcane_FIND_TRAPS_DOORS(&context);
-		}
-
-		case SPELL_STINKING_CLOUD:
-		{
-			return spell_handler_arcane_STINKING_CLOUD(&context);
-		}
-
-		case SPELL_CONFUSE_MONSTER:
-		{
-			return spell_handler_arcane_CONFUSE_MONSTER(&context);
-		}
-
-		case SPELL_LIGHTNING_BOLT:
-		{
-			return spell_handler_arcane_LIGHTNING_BOLT(&context);
-		}
-
-		case SPELL_TRAP_DOOR_DESTRUCTION:
-		{
-			return spell_handler_arcane_TRAP_DOOR_DESTRUCTION(&context);
-		}
-
-		case SPELL_SLEEP_MONSTER:
-		{
-			return spell_handler_arcane_SLEEP_MONSTER(&context);
-		}
-
-		case SPELL_CURE_POISON:
-		{
-			return spell_handler_arcane_CURE_POISON(&context);
-		}
-
-		case SPELL_TELEPORT_SELF:
-		{
-			return spell_handler_arcane_TELEPORT_SELF(&context);
-		}
-
-		case SPELL_SPEAR_OF_LIGHT:
-		{
-			return spell_handler_arcane_SPEAR_OF_LIGHT(&context);
-		}
-
-		case SPELL_FROST_BOLT:
-		{
-			return spell_handler_arcane_FROST_BOLT(&context);
-		}
-
-		case SPELL_TURN_STONE_TO_MUD:
-		{
-			return spell_handler_arcane_TURN_STONE_TO_MUD(&context);
-		}
-
-		case SPELL_SATISFY_HUNGER:
-		{
-			return spell_handler_arcane_SATISFY_HUNGER(&context);
-		}
-
-		case SPELL_RECHARGE_ITEM_I:
-		{
-			return spell_handler_arcane_RECHARGE_ITEM_I(&context);
-		}
-
-		case SPELL_WONDER:
-		{
-			return spell_handler_arcane_WONDER(&context);
-		}
-
-		case SPELL_POLYMORPH_OTHER:
-		{
-			return spell_handler_arcane_POLYMORPH_OTHER(&context);
-		}
-
-		case SPELL_IDENTIFY:
-		{
-			return spell_handler_arcane_IDENTIFY(&context);
-		}
-
-		case SPELL_MASS_SLEEP:
-		{
-			return spell_handler_arcane_MASS_SLEEP(&context);
-		}
-
-		case SPELL_FIRE_BOLT:
-		{
-			return spell_handler_arcane_FIRE_BOLT(&context);
-		}
-
-		case SPELL_SLOW_MONSTER:
-		{
-			return spell_handler_arcane_SLOW_MONSTER(&context);
-		}
-
-		case SPELL_FROST_BALL:
-		{
-			return spell_handler_arcane_FROST_BALL(&context);
-		}
-
-		case SPELL_RECHARGE_ITEM_II:
-		{
-			return spell_handler_arcane_RECHARGE_ITEM_II(&context);
-		}
-
-		case SPELL_TELEPORT_OTHER:
-		{
-			return spell_handler_arcane_TELEPORT_OTHER(&context);
-		}
-
-		case SPELL_BEDLAM:
-		{
-			return spell_handler_arcane_BEDLAM(&context);
-		}
-
-		case SPELL_FIRE_BALL:
-		{
-			return spell_handler_arcane_FIRE_BALL(&context);
-		}
-
-		case SPELL_WORD_OF_DESTRUCTION:
-		{
-			return spell_handler_arcane_WORD_OF_DESTRUCTION(&context);
-		}
-
-		case SPELL_BANISHMENT:
-		{
-			return spell_handler_arcane_BANISHMENT(&context);
-		}
-
-		case SPELL_DOOR_CREATION:
-		{
-			return spell_handler_arcane_DOOR_CREATION(&context);
-		}
-
-		case SPELL_STAIR_CREATION:
-		{
-			return spell_handler_arcane_STAIR_CREATION(&context);
-		}
-
-		case SPELL_TELEPORT_LEVEL:
-		{
-			return spell_handler_arcane_TELEPORT_LEVEL(&context);
-		}
-
-		case SPELL_EARTHQUAKE:
-		{
-			return spell_handler_arcane_EARTHQUAKE(&context);
-		}
-
-		case SPELL_WORD_OF_RECALL:
-		{
-			return spell_handler_arcane_WORD_OF_RECALL(&context);
-		}
-
-		case SPELL_ACID_BOLT:
-		{
-			return spell_handler_arcane_ACID_BOLT(&context);
-		}
-
-		case SPELL_CLOUD_KILL:
-		{
-			return spell_handler_arcane_CLOUD_KILL(&context);
-		}
-
-		case SPELL_ACID_BALL:
-		{
-			return spell_handler_arcane_ACID_BALL(&context);
-		}
-
-		case SPELL_ICE_STORM:
-		{
-			return spell_handler_arcane_ICE_STORM(&context);
-		}
-
-		case SPELL_METEOR_SWARM:
-		{
-			return spell_handler_arcane_METEOR_SWARM(&context);
-		}
-
-		case SPELL_MANA_STORM:
-		{
-			return spell_handler_arcane_MANA_STORM(&context);
-		}
-		case SPELL_DETECT_INVISIBLE:
-		{
-			return spell_handler_arcane_DETECT_INVISIBLE(&context);
-		}
-
-		case SPELL_TREASURE_DETECTION:
-		{
-			return spell_handler_arcane_TREASURE_DETECTION(&context);
-		}
-
-		case SPELL_SHOCK_WAVE:
-		{
-			return spell_handler_arcane_SHOCK_WAVE(&context);
-		}
-
-		case SPELL_EXPLOSION:
-		{
-			return spell_handler_arcane_EXPLOSION(&context);
-		}
-
-		case SPELL_MASS_BANISHMENT:
-		{
-			return spell_handler_arcane_MASS_BANISHMENT(&context);
-		}
-
-		case SPELL_RESIST_FIRE:
-		{
-			return spell_handler_arcane_RESIST_FIRE(&context);
-		}
-
-		case SPELL_RESIST_COLD:
-		{
-			return spell_handler_arcane_RESIST_COLD(&context);
-		}
-
-		case SPELL_ELEMENTAL_BRAND:
-		{
-			return spell_handler_arcane_ELEMENTAL_BRAND(&context);
-		}
-
-		case SPELL_RESIST_POISON:
-		{
-			return spell_handler_arcane_RESIST_POISON(&context);
-		}
-
-		case SPELL_RESISTANCE:
-		{
-			return spell_handler_arcane_RESISTANCE(&context);
-		}
-
-		case SPELL_HEROISM:
-		{
-			return spell_handler_arcane_HEROISM(&context);
-		}
-
-		case SPELL_SHIELD:
-		{
-			return spell_handler_arcane_SHIELD(&context);
-		}
-			
-		case SPELL_BERSERKER:
-		{
-			return spell_handler_arcane_BERSERKER(&context);
-		}
-			
-		case SPELL_HASTE_SELF:
-		{
-			return spell_handler_arcane_HASTE_SELF(&context);
-		}
-			
-		case SPELL_RIFT:
-		{
-			return spell_handler_arcane_RIFT(&context);
-		}
-			
-		case SPELL_REND_SOUL:
-		{
-			return spell_handler_arcane_REND_SOUL(&context);
-		}
-			
-		case SPELL_CHAOS_STRIKE:
-		{
-			return spell_handler_arcane_CHAOS_STRIKE(&context);
-		}
-			
-		case SPELL_RUNE_OF_PROTECTION:
-		{
-			return spell_handler_arcane_RUNE_OF_PROTECTION(&context);
-		}
-			
-		case SPELL_ENCHANT_ARMOR:
-		{
-			return spell_handler_arcane_ENCHANT_ARMOR(&context);
-		}
-			
-		case SPELL_ENCHANT_WEAPON:
-		{
-			return spell_handler_arcane_ENCHANT_WEAPON(&context);
-		}
-	}
-
-	/* Success */
-	return (TRUE);
-}
-
 #pragma mark prayer handlers
 
 static bool spell_handler_prayer_DETECT_EVIL(spell_handler_context_t *context)
@@ -1299,7 +921,6 @@ static bool spell_handler_prayer_SATISFY_HUNGER(spell_handler_context_t *context
 	player_set_food(p_ptr, PY_FOOD_MAX - 1);
 	return TRUE;
 }
-
 
 static bool spell_handler_prayer_REMOVE_CURSE(spell_handler_context_t *context)
 {
@@ -1617,308 +1238,72 @@ static bool spell_handler_prayer_ALTER_REALITY(spell_handler_context_t *context)
 	return TRUE;
 }
 
+static const spell_info_t arcane_spells[] = {
+	#define F(x) spell_handler_arcane_##x
+	#define SPELL(x, a, f) {x, a, f},
+	#include "list-spells-arcane.h"
+	#undef SPELL
+	#undef F
+};
 
+static const spell_info_t prayer_spells[] = {
+	#define F(x) spell_handler_prayer_##x
+	#define SPELL(x, a, f) {x, a, f},
+	#include "list-spells-prayer.h"
+	#undef SPELL
+	#undef F
+};
+
+static bool cast_mage_spell(int spell, int dir)
+{
+	spell_handler_f spell_handler = NULL;
+
+	if (spell < 0 || spell >= SPELL_MAX)
+		return FALSE;
+
+	// !!!: this is messed up beyond SPELL_XXX
+	spell_handler = arcane_spells[spell].handler;
+
+	if (spell_handler != NULL) {
+		/* Hack -- chance of "beam" instead of "bolt" */
+		int beam = beam_chance();
+		spell_handler_context_t context = {
+			spell,
+			dir,
+			beam,
+		};
+
+		return spell_handler(&context);
+	}
+
+	/* Unable to handle the spell. */
+	return FALSE;
+
+}
 
 static bool cast_priest_spell(int spell, int dir)
 {
-	spell_handler_context_t context = {
-		spell,
-		dir,
-		0,
-	};
+	spell_handler_f spell_handler = NULL;
 
-	switch (spell)
-	{
-		case PRAYER_DETECT_EVIL:
-		{
-			return spell_handler_prayer_DETECT_EVIL(&context);
-		}
+	if (spell < 0 || spell >= PRAYER_MAX)
+		return FALSE;
 
-		case PRAYER_CURE_LIGHT_WOUNDS:
-		{
-			return spell_handler_prayer_CURE_LIGHT_WOUNDS(&context);
-		}
+	// !!!: this is messed up beyond PRAYER_XXX
+	spell_handler = prayer_spells[spell].handler;
 
-		case PRAYER_BLESS:
-		{
-			return spell_handler_prayer_BLESS(&context);
-		}
+	if (spell_handler != NULL) {
+		spell_handler_context_t context = {
+			spell,
+			dir,
+			0,
+		};
 
-		case PRAYER_REMOVE_FEAR:
-		{
-			return spell_handler_prayer_REMOVE_FEAR(&context);
-		}
-
-		case PRAYER_CALL_LIGHT:
-		{
-			return spell_handler_prayer_CALL_LIGHT(&context);
-		}
-
-		case PRAYER_FIND_TRAPS_DOORS:
-		{
-			return spell_handler_prayer_FIND_TRAPS_DOORS(&context);
-		}
-
-		case PRAYER_SLOW_POISON:
-		{
-			return spell_handler_prayer_SLOW_POISON(&context);
-		}
-
-		case PRAYER_SCARE_MONSTER:
-		{
-			return spell_handler_prayer_SCARE_MONSTER(&context);
-		}
-
-		case PRAYER_PORTAL:
-		{
-			return spell_handler_prayer_PORTAL(&context);
-		}
-
-		case PRAYER_CURE_SERIOUS_WOUNDS:
-		{
-			return spell_handler_prayer_CURE_SERIOUS_WOUNDS(&context);
-		}
-
-		case PRAYER_CHANT:
-		{
-			return spell_handler_prayer_CHANT(&context);
-		}
-
-		case PRAYER_SANCTUARY:
-		{
-			return spell_handler_prayer_SANCTUARY(&context);
-		}
-
-		case PRAYER_SATISFY_HUNGER:
-		{
-			return spell_handler_prayer_SATISFY_HUNGER(&context);
-		}
-
-		case PRAYER_REMOVE_CURSE:
-		{
-			return spell_handler_prayer_REMOVE_CURSE(&context);
-		}
-
-		case PRAYER_RESIST_HEAT_COLD:
-		{
-			return spell_handler_prayer_RESIST_HEAT_COLD(&context);
-		}
-
-		case PRAYER_NEUTRALIZE_POISON:
-		{
-			return spell_handler_prayer_NEUTRALIZE_POISON(&context);
-		}
-
-		case PRAYER_ORB_OF_DRAINING:
-		{
-			return spell_handler_prayer_ORB_OF_DRAINING(&context);
-		}
-
-		case PRAYER_CURE_CRITICAL_WOUNDS:
-		{
-			return spell_handler_prayer_CURE_CRITICAL_WOUNDS(&context);
-		}
-
-		case PRAYER_SENSE_INVISIBLE:
-		{
-			return spell_handler_prayer_SENSE_INVISIBLE(&context);
-		}
-
-		case PRAYER_PROTECTION_FROM_EVIL:
-		{
-			return spell_handler_prayer_PROTECTION_FROM_EVIL(&context);
-		}
-
-		case PRAYER_EARTHQUAKE:
-		{
-			return spell_handler_prayer_EARTHQUAKE(&context);
-		}
-
-		case PRAYER_SENSE_SURROUNDINGS:
-		{
-			return spell_handler_prayer_SENSE_SURROUNDINGS(&context);
-		}
-
-		case PRAYER_CURE_MORTAL_WOUNDS:
-		{
-			return spell_handler_prayer_CURE_MORTAL_WOUNDS(&context);
-		}
-
-		case PRAYER_TURN_UNDEAD:
-		{
-			return spell_handler_prayer_TURN_UNDEAD(&context);
-		}
-
-		case PRAYER_PRAYER:
-		{
-			return spell_handler_prayer_PRAYER(&context);
-		}
-
-		case PRAYER_DISPEL_UNDEAD:
-		{
-			return spell_handler_prayer_DISPEL_UNDEAD(&context);
-		}
-
-		case PRAYER_HEAL:
-		{
-			return spell_handler_prayer_HEAL(&context);
-		}
-
-		case PRAYER_DISPEL_EVIL:
-		{
-			return spell_handler_prayer_DISPEL_EVIL(&context);
-		}
-
-		case PRAYER_GLYPH_OF_WARDING:
-		{
-			return spell_handler_prayer_GLYPH_OF_WARDING(&context);
-		}
-
-		case PRAYER_HOLY_WORD:
-		{
-			return spell_handler_prayer_HOLY_WORD(&context);
-		}
-
-		case PRAYER_DETECT_MONSTERS:
-		{
-			return spell_handler_prayer_DETECT_MONSTERS(&context);
-		}
-
-		case PRAYER_DETECTION:
-		{
-			return spell_handler_prayer_DETECTION(&context);
-		}
-
-		case PRAYER_PERCEPTION:
-		{
-			return spell_handler_prayer_PERCEPTION(&context);
-		}
-
-		case PRAYER_PROBING:
-		{
-			return spell_handler_prayer_PROBING(&context);
-		}
-
-		case PRAYER_CLAIRVOYANCE:
-		{
-			return spell_handler_prayer_CLAIRVOYANCE(&context);
-		}
-
-		case PRAYER_CURE_SERIOUS_WOUNDS2:
-		{
-			return spell_handler_prayer_CURE_SERIOUS_WOUNDS2(&context);
-		}
-
-		case PRAYER_CURE_MORTAL_WOUNDS2:
-		{
-			return spell_handler_prayer_CURE_MORTAL_WOUNDS2(&context);
-		}
-
-		case PRAYER_HEALING:
-		{
-			return spell_handler_prayer_HEALING(&context);
-		}
-
-		case PRAYER_RESTORATION:
-		{
-			return spell_handler_prayer_RESTORATION(&context);
-		}
-
-		case PRAYER_REMEMBRANCE:
-		{
-			return spell_handler_prayer_REMEMBRANCE(&context);
-		}
-
-		case PRAYER_DISPEL_UNDEAD2:
-		{
-			return spell_handler_prayer_DISPEL_UNDEAD2(&context);
-		}
-
-		case PRAYER_DISPEL_EVIL2:
-		{
-			return spell_handler_prayer_DISPEL_EVIL2(&context);
-		}
-
-		case PRAYER_BANISH_EVIL:
-		{
-			return spell_handler_prayer_BANISH_EVIL(&context);
-		}
-
-		case PRAYER_WORD_OF_DESTRUCTION:
-		{
-			return spell_handler_prayer_WORD_OF_DESTRUCTION(&context);
-		}
-
-		case PRAYER_ANNIHILATION:
-		{
-			return spell_handler_prayer_ANNIHILATION(&context);
-		}
-
-		case PRAYER_UNBARRING_WAYS:
-		{
-			return spell_handler_prayer_UNBARRING_WAYS(&context);
-		}
-
-		case PRAYER_RECHARGING:
-		{
-			return spell_handler_prayer_RECHARGING(&context);
-		}
-
-		case PRAYER_DISPEL_CURSE:
-		{
-			return spell_handler_prayer_DISPEL_CURSE(&context);
-		}
-
-		case PRAYER_ENCHANT_WEAPON:
-		{
-			return spell_handler_prayer_ENCHANT_WEAPON(&context);
-		}
-
-		case PRAYER_ENCHANT_ARMOUR:
-		{
-			return spell_handler_prayer_ENCHANT_ARMOUR(&context);
-		}
-
-		case PRAYER_ELEMENTAL_BRAND:
-		{
-			return spell_handler_prayer_ELEMENTAL_BRAND(&context);
-		}
-
-		case PRAYER_BLINK:
-		{
-			return spell_handler_prayer_BLINK(&context);
-		}
-
-		case PRAYER_TELEPORT_SELF:
-		{
-			return spell_handler_prayer_TELEPORT_SELF(&context);
-		}
-			
-		case PRAYER_TELEPORT_OTHER:
-		{
-			return spell_handler_prayer_TELEPORT_OTHER(&context);
-		}
-			
-		case PRAYER_TELEPORT_LEVEL:
-		{
-			return spell_handler_prayer_TELEPORT_LEVEL(&context);
-		}
-			
-		case PRAYER_WORD_OF_RECALL:
-		{
-			return spell_handler_prayer_WORD_OF_RECALL(&context);
-		}
-			
-		case PRAYER_ALTER_REALITY:
-		{
-			return spell_handler_prayer_ALTER_REALITY(&context);
-		}
+		return spell_handler(&context);
 	}
 
-	/* Success */
-	return (TRUE);
+	/* Unable to handle the spell. */
+	return FALSE;
 }
-
 
 bool cast_spell(int tval, int index, int dir)
 {
@@ -1935,4 +1320,24 @@ bool cast_spell(int tval, int index, int dir)
 bool spell_is_identify(int book, int spell)
 {
 	return (book == TV_MAGIC_BOOK && spell == SPELL_IDENTIFY) || (book == TV_PRAYER_BOOK && spell == PRAYER_PERCEPTION);
+}
+
+bool spell_needs_aim(int tval, int spell)
+{
+	if (tval == TV_MAGIC_BOOK)
+	{
+		if (spell < 0 || spell >= SPELL_MAX)
+			return FALSE;
+
+		return arcane_spells[spell].aim;
+	}
+	else if (tval == TV_PRAYER_BOOK)
+	{
+		if (spell < 0 || spell >= PRAYER_MAX)
+			return FALSE;
+
+		return prayer_spells[spell].aim;
+	}
+
+	return FALSE;
 }
