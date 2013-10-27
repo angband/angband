@@ -1254,55 +1254,63 @@ static const spell_info_t prayer_spells[] = {
 	#undef F
 };
 
+static const spell_info_t *spell_info_for_index(const spell_info_t *list, size_t list_size, int spell_max, int spell)
+{
+	size_t i;
+
+	if (spell < 0 || spell >= spell_max)
+		return NULL;
+
+	for (i = 0; i < list_size; i++) {
+		if (list[i].spell == spell)
+			return &list[i];
+	}
+
+	return NULL;
+}
+
 static bool cast_mage_spell(int spell, int dir)
 {
 	spell_handler_f spell_handler = NULL;
+	const spell_info_t *spell_info = spell_info_for_index(arcane_spells, N_ELEMENTS(arcane_spells), SPELL_MAX, spell);
 
-	if (spell < 0 || spell >= SPELL_MAX)
+	if (spell_info == NULL)
 		return FALSE;
 
-	// !!!: this is messed up beyond SPELL_XXX
-	spell_handler = arcane_spells[spell].handler;
+	spell_handler = spell_info->handler;
 
-	if (spell_handler != NULL) {
-		/* Hack -- chance of "beam" instead of "bolt" */
-		int beam = beam_chance();
-		spell_handler_context_t context = {
-			spell,
-			dir,
-			beam,
-		};
+	if (spell_handler == NULL)
+		return FALSE;
 
-		return spell_handler(&context);
-	}
+	spell_handler_context_t context = {
+		spell,
+		dir,
+		beam_chance(),
+	};
 
-	/* Unable to handle the spell. */
-	return FALSE;
-
+	return spell_handler(&context);
 }
 
 static bool cast_priest_spell(int spell, int dir)
 {
 	spell_handler_f spell_handler = NULL;
+	const spell_info_t *spell_info = spell_info_for_index(prayer_spells, N_ELEMENTS(prayer_spells), PRAYER_MAX, spell);
 
-	if (spell < 0 || spell >= PRAYER_MAX)
+	if (spell_info == NULL)
 		return FALSE;
 
-	// !!!: this is messed up beyond PRAYER_XXX
-	spell_handler = prayer_spells[spell].handler;
+	spell_handler = spell_info->handler;
 
-	if (spell_handler != NULL) {
-		spell_handler_context_t context = {
-			spell,
-			dir,
-			0,
-		};
+	if (spell_handler == NULL)
+		return FALSE;
 
-		return spell_handler(&context);
-	}
+	spell_handler_context_t context = {
+		spell,
+		dir,
+		0,
+	};
 
-	/* Unable to handle the spell. */
-	return FALSE;
+	return spell_handler(&context);
 }
 
 bool cast_spell(int tval, int index, int dir)
@@ -1324,20 +1332,21 @@ bool spell_is_identify(int book, int spell)
 
 bool spell_needs_aim(int tval, int spell)
 {
-	if (tval == TV_MAGIC_BOOK)
-	{
-		if (spell < 0 || spell >= SPELL_MAX)
-			return FALSE;
+	const spell_info_t *spell_info = NULL;
 
-		return arcane_spells[spell].aim;
+	if (tval == TV_MAGIC_BOOK) {
+		spell_info = spell_info_for_index(arcane_spells, N_ELEMENTS(arcane_spells), SPELL_MAX, spell);
 	}
-	else if (tval == TV_PRAYER_BOOK)
-	{
-		if (spell < 0 || spell >= PRAYER_MAX)
-			return FALSE;
-
-		return prayer_spells[spell].aim;
+	else if (tval == TV_PRAYER_BOOK) {
+		spell_info = spell_info_for_index(prayer_spells, N_ELEMENTS(prayer_spells), PRAYER_MAX, spell);
+	}
+	else {
+		/* Unknown book */
+		return FALSE;
 	}
 
-	return FALSE;
+	if (spell_info == NULL)
+		return FALSE;
+
+	return spell_info->aim;
 }
