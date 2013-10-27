@@ -1870,12 +1870,12 @@ static enum parser_error parse_c_m(struct parser *p) {
 
 static enum parser_error parse_c_b(struct parser *p) {
 	struct player_class *c = parser_priv(p);
-	unsigned int spell;
+	int spell;
 
 	if (!c)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	spell = parser_getuint(p, "spell");
-	if (spell >= PY_MAX_SPELLS)
+	spell = spell_lookup_by_name(c->spell_book, parser_getsym(p, "spell"));
+	if (spell >= PY_MAX_SPELLS || spell < 0)
 		return PARSE_ERROR_OUT_OF_BOUNDS;
 	c->spells.info[spell].slevel = parser_getint(p, "level");
 	c->spells.info[spell].smana = parser_getint(p, "mana");
@@ -1965,7 +1965,7 @@ struct parser *init_parse_c(void) {
 	parser_reg(p, "I int mhp int exp int sense-base int sense-div", parse_c_i);
 	parser_reg(p, "A int max-attacks int min-weight int att-multiply", parse_c_a);
 	parser_reg(p, "M uint book uint stat uint first uint weight", parse_c_m);
-	parser_reg(p, "B uint spell int level int mana int fail int exp", parse_c_b);
+	parser_reg(p, "B sym spell int level int mana int fail int exp", parse_c_b);
 	parser_reg(p, "T str title", parse_c_t);
 	parser_reg(p, "E sym tval sym sval uint min uint max", parse_c_e);
 	parser_reg(p, "F ?str flags", parse_c_f);
@@ -2327,11 +2327,29 @@ static enum parser_error parse_s_d(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_s_id(struct parser *p) {
+	struct spell *s = parser_priv(p);
+	int spell;
+
+	if (!s)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	spell = spell_lookup_by_name(s->tval, parser_getsym(p, "id"));
+
+	if (spell < 0 || spell >= PY_MAX_SPELLS)
+		return PARSE_ERROR_OUT_OF_BOUNDS;
+
+	s->spell_index = spell;
+
+	return PARSE_ERROR_NONE;
+}
+
 struct parser *init_parse_s(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 	parser_reg(p, "N uint index str name", parse_s_n);
 	parser_reg(p, "I uint tval uint sval uint snum", parse_s_i);
+	parser_reg(p, "id sym id", parse_s_id);
 	parser_reg(p, "D str desc", parse_s_d);
 	return p;
 }
