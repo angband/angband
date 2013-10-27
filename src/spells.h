@@ -195,5 +195,6 @@ extern void get_spell_info(int tval, int index, char *buf, size_t len);
 extern bool cast_spell(int tval, int index, int dir);
 extern bool spell_needs_aim(int tval, int spell);
 extern bool spell_is_identify(int book, int spell);
+extern int spell_lookup_by_name(int tval, const char *name);
 
 #endif /* !SPELLS_H */

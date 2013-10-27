@@ -1350,3 +1350,58 @@ bool spell_needs_aim(int tval, int spell)
 
 	return spell_info->aim;
 }
+
+static int spell_lookup_by_name_arcane(const char *name)
+{
+	static const char *spell_names[] = {
+		#define SPELL(x, a, f) #x,
+		#include "list-spells-arcane.h"
+		#undef SPELL
+	};
+	size_t i;
+	unsigned int number;
+
+	if (sscanf(name, "%u", &number) == 1)
+		return number;
+
+	for (i = 0; i < N_ELEMENTS(spell_names); i++) {
+		if (my_stricmp(name, spell_names[i]) == 0)
+			return (int)i;
+	}
+
+	return -1;
+}
+
+static int spell_lookup_by_name_prayer(const char *name)
+{
+	static const char *spell_names[] = {
+		#define SPELL(x, a, f) #x,
+		#include "list-spells-prayer.h"
+		#undef SPELL
+	};
+	size_t i;
+	unsigned int number;
+
+	if (sscanf(name, "%u", &number) == 1)
+		return number;
+
+	for (i = 0; i < N_ELEMENTS(spell_names); i++) {
+		if (my_stricmp(name, spell_names[i]) == 0)
+			return (int)i;
+	}
+
+	return -1;
+}
+
+int spell_lookup_by_name(int tval, const char *name)
+{
+	if (name == NULL)
+		return -1;
+
+	if (tval == TV_MAGIC_BOOK)
+		return spell_lookup_by_name_arcane(name);
+	else if (tval == TV_PRAYER_BOOK)
+		return spell_lookup_by_name_prayer(name);
+	else
+		return -1;
+}
