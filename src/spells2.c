@@ -233,24 +233,30 @@ void identify_pack(void)
 	/* Simply identify and know every item */
 	for (i = 0; i < INVEN_TOTAL; i++)
 	{
+		int squelch;
 		object_type *o_ptr = &inventory[i];
 
 		/* Skip non-objects */
 		if (!o_ptr->k_idx) continue;
 
 		/* Aware and Known */
-		object_aware(o_ptr);
-		object_known(o_ptr);
+		if(object_known_p(o_ptr)) continue;
+
+		/* Identify it and get the squelch setting */
+		squelch = do_ident_item(i, o_ptr);
+
+		/*
+		* If the object was squelched, keep analyzing
+		* the same slot (the inventory was displaced). -DG-
+		*/
+		if (squelch != SQUELCH_YES || i < INVEN_WIELD) continue;
+
+		/* Now squelch the object */
+		squelch_item(squelch, i, o_ptr);
+
+		/* repeat with same slot */
+		i--;
 	}
-
-	/* Recalculate bonuses */
-	p_ptr->update |= (PU_BONUS);
-
-	/* Combine / Reorder the pack (later) */
-	p_ptr->notice |= (PN_COMBINE | PN_REORDER);
-
-	/* Window stuff */
-	p_ptr->window |= (PW_INVEN | PW_EQUIP | PW_PLAYER_0 | PW_PLAYER_1);
 }
 
 
@@ -666,13 +672,13 @@ void self_knowledge(void)
 	{
 		info[i++] = "Your wisdom is sustained.";
 	}
-	if (p_ptr->sustain_con)
-	{
-		info[i++] = "Your constitution is sustained.";
-	}
 	if (p_ptr->sustain_dex)
 	{
 		info[i++] = "Your dexterity is sustained.";
+	}
+	if (p_ptr->sustain_con)
+	{
+		info[i++] = "Your constitution is sustained.";
 	}
 	if (p_ptr->sustain_chr)
 	{
@@ -1886,9 +1892,9 @@ bool ident_spell(void)
 {
 	int item;
 
-	object_type *o_ptr;
+	int squelch;
 
-	char o_name[80];
+	object_type *o_ptr;
 
 	cptr q, s;
 
@@ -1913,55 +1919,12 @@ bool ident_spell(void)
 	}
 
 
-	/* Identify it */
-	object_aware(o_ptr);
-	object_known(o_ptr);
+	/* Identify the object and get squelch setting */
+	squelch = do_ident_item(item, o_ptr);
 
-	/* Recalculate bonuses */
-	p_ptr->update |= (PU_BONUS);
+	/* Squelch it (if needed) */
+	squelch_item(squelch, item, o_ptr);
 
-	/* Combine / Reorder the pack (later) */
-	p_ptr->notice |= (PN_COMBINE | PN_REORDER);
-
-	/* Window stuff */
-	p_ptr->window |= (PW_INVEN | PW_EQUIP | PW_PLAYER_0 | PW_PLAYER_1);
-
-	/* Description */
-	object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
-
-	/* Possibly play a sound depending on object quality. */
-	if (o_ptr->pval < 0) 
-	{
-		/* This is a bad item. */
-		sound(MSG_IDENT_BAD);
-	} 
-	else if (o_ptr->name1 != 0)
-	{
-		/* We have a good artifact. */
-		sound(MSG_IDENT_ART);
-	}
-	else if (o_ptr->name2 != 0)
-	{
-		/* We have a good ego item. */
-		sound(MSG_IDENT_EGO);
-	}
-
-	/* Describe */
-	if (item >= INVEN_WIELD)
-	{
-		msg_format("%^s: %s (%c).",
-		           describe_use(item), o_name, index_to_label(item));
-	}
-	else if (item >= 0)
-	{
-		msg_format("In your pack: %s (%c).",
-		           o_name, index_to_label(item));
-	}
-	else
-	{
-		msg_format("On the ground: %s.",
-		           o_name);
-	}
 
 	/* Something happened */
 	return (TRUE);
@@ -1977,10 +1940,9 @@ bool ident_spell(void)
 bool identify_fully(void)
 {
 	int item;
+	int squelch;
 
 	object_type *o_ptr;
-
-	char o_name[80];
 
 	cptr q, s;
 
@@ -2005,65 +1967,27 @@ bool identify_fully(void)
 		o_ptr = &o_list[0 - item];
 	}
 
-
-	/* Identify it */
-	object_aware(o_ptr);
-	object_known(o_ptr);
+	/* Identify the object and get the squelch setting */
+	squelch = do_ident_item(item, o_ptr);
 
 	/* Mark the item as fully known */
 	o_ptr->ident |= (IDENT_MENTAL);
 
-	/* Recalculate bonuses */
-	p_ptr->update |= (PU_BONUS);
-
-	/* Combine / Reorder the pack (later) */
-	p_ptr->notice |= (PN_COMBINE | PN_REORDER);
-
-	/* Window stuff */
-	p_ptr->window |= (PW_INVEN | PW_EQUIP | PW_PLAYER_0 | PW_PLAYER_1);
-
 	/* Handle stuff */
 	handle_stuff();
 
-	/* Description */
-	object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
-
-	/* Possibly play a sound depending on object quality. */
-	if (o_ptr->pval < 0) 
+	/* Now squelch it if needed */
+	if (squelch == SQUELCH_YES)
 	{
-		/* This is a bad item. */
-		sound(MSG_IDENT_BAD);
-	} 
-	else if (o_ptr->name1 != 0)
-	{
-		/* We have a good artifact. */
-		sound(MSG_IDENT_ART);
-	}
-	else if (o_ptr->name2 != 0)
-	{
-		/* We have a good ego item. */
-		sound(MSG_IDENT_EGO);
+		squelch_item(squelch, item, o_ptr);
 	}
 
-	/* Describe */
-	if (item >= INVEN_WIELD)
-	{
-		msg_format("%^s: %s (%c).",
-		           describe_use(item), o_name, index_to_label(item));
-	}
-	else if (item >= 0)
-	{
-		msg_format("In your pack: %s (%c).",
-		           o_name, index_to_label(item));
-	}
 	else
 	{
-		msg_format("On the ground: %s.",
-		           o_name);
+		/* Describe it fully */
+		object_info_screen(o_ptr);
 	}
 
-	/* Describe it fully */
-	object_info_screen(o_ptr);
 
 	/* Success */
 	return (TRUE);
@@ -2092,6 +2016,15 @@ static bool item_tester_hook_recharge(const object_type *o_ptr)
  * Recharge a wand or staff from the pack or on the floor.
  *
  * It is harder to recharge high level, and highly charged wands.
+ *
+ * XXX XXX XXX Beware of "sliding index errors".
+ *
+ * Should probably not "destroy" over-charged items, unless we
+ * "replace" them by, say, a broken stick or some such.  The only
+ * reason this is okay is because "scrolls of recharging" appear
+ * BEFORE all staves/wands in the inventory.  Note that the
+ * new "auto_sort_pack" option would correctly handle replacing
+ * the "broken" wand with any other item (i.e. a broken stick).
  */
 bool recharge(int num)
 {
@@ -2127,15 +2060,16 @@ bool recharge(int num)
 	lev = k_info[o_ptr->k_idx].level;
 
 	/* Recharge power */
-	i = (num + 100 - lev - (10 * o_ptr->pval)) / 15;
+	i = (num + 100 - lev - (10 * (o_ptr->pval / o_ptr->number))) / 15;
 
 	/* Back-fire */
 	if ((i <= 1) || (rand_int(i) == 0))
 	{
+		msg_print("The recharge backfires!");
 		msg_print("There is a bright flash of light.");
 
-		/* Drain the power */
-		o_ptr->pval = 0;
+		/* Reduce the charges of rods/wands/staves */
+		reduce_charges(o_ptr, 1);
 
 		/* *Identified* items keep the knowledge about the charges */
 		if (!(o_ptr->ident & IDENT_MENTAL))
@@ -2144,8 +2078,20 @@ bool recharge(int num)
 			o_ptr->ident &= ~(IDENT_KNOWN);
 		}
 
-		/* We know that the item is empty */
-		o_ptr->ident |= IDENT_EMPTY;
+		/* Reduce and describe inventory */
+		if (item >= 0)
+		{
+			inven_item_increase(item, -1);
+			inven_item_describe(item);
+			inven_item_optimize(item);
+		}
+		/* Reduce and describe floor item */
+		else
+		{
+			floor_item_increase(0 - item, -1);
+			floor_item_describe(0 - item);
+			floor_item_optimize(0 - item);
+		}
 	}
 
 	/* Recharge */
@@ -3922,3 +3868,80 @@ void ring_of_power(int dir)
 		}
 	}
 }
+
+
+/*
+ * Identify an item.
+ *
+ * `item` is used to print the slot occupied by an object in equip/inven.
+ * Any negative value assigned to "item" can be used for specifying an object
+ * on the floor.
+ *
+ * Returns squelch_item_ok(o_ptr).
+ */
+int do_ident_item(int item, object_type *o_ptr)
+{
+	char o_name[80];
+	int squelch = SQUELCH_NO;
+
+	/* Identify it */
+	object_aware(o_ptr);
+	object_known(o_ptr);
+
+	/* Apply an autoinscription, if necessary */
+	apply_autoinscription(o_ptr);
+
+	/* Squelch it? */
+	if (item < INVEN_WIELD)
+		squelch = squelch_item_ok(o_ptr, 0, TRUE);
+
+	/* Recalculate bonuses */
+	p_ptr->update |= (PU_BONUS);
+
+	/* Combine / Reorder the pack (later) */
+	p_ptr->notice |= (PN_COMBINE | PN_REORDER);
+
+	/* Window stuff */
+	p_ptr->window |= (PW_INVEN | PW_EQUIP | PW_PLAYER_0 | PW_PLAYER_1);
+
+	/* Description */
+	object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
+
+	/* Possibly play a sound depending on object quality. */
+	if (o_ptr->pval < 0)
+	{
+		/* This is a bad item. */
+		sound(MSG_IDENT_BAD);
+	}
+	else if (o_ptr->name1 != 0)
+	{
+		/* We have a good artifact. */
+		sound(MSG_IDENT_ART);
+	}
+	else if (o_ptr->name2 != 0)
+	{
+		/* We have a good ego item. */
+		sound(MSG_IDENT_EGO);
+	}
+
+	/* Describe */
+	if (item >= INVEN_WIELD)
+	{
+		msg_format("%^s: %s (%c).",
+			  describe_use(item), o_name, index_to_label(item));
+	}
+	else if (item >= 0)
+	{
+		msg_format("In your pack: %s (%c).  %s",
+			  o_name, index_to_label(item),
+			  squelch_to_label(squelch));
+	}
+	else
+	{
+		 msg_format("On the ground: %s.  %s", o_name,
+			  squelch_to_label(squelch));
+	}
+
+	return (squelch);
+}
+

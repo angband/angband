@@ -415,7 +415,7 @@ static const tval_desc tvals[] =
 /*
  * Strip an "object name" into a buffer
  */
-static void strip_name(char *buf, int k_idx)
+void strip_name(char *buf, int k_idx)
 {
 	char *t;
 
@@ -430,7 +430,19 @@ static void strip_name(char *buf, int k_idx)
 	/* Copy useful chars */
 	for (t = buf; *str; str++)
 	{
-		if (*str != '~') *t++ = *str;
+		/* Pluralizer for irregular plurals */
+		/* Useful for languages where adjective changes for plural */
+		if (*str == '|')
+		{
+			/* Process singular part */
+			for (str++; *str != '|'; str++) *t++ = *str;
+
+			/* Process plural part */
+			for (str++; *str != '|'; str++) ;
+		}
+
+		/* English plural indicator can simply be skipped */
+		else if (*str != '~') *t++ = *str;
 	}
 
 	/* Terminate the new name */
@@ -1698,13 +1710,6 @@ void do_cmd_debug(void)
 		{
 			if (p_ptr->command_arg <= 0) p_ptr->command_arg = MAX_SIGHT;
 			do_cmd_wiz_zap(p_ptr->command_arg);
-			break;
-		}
-
-		/* Execute script */
-		case '@':
-		{
-			do_cmd_script();
 			break;
 		}
 

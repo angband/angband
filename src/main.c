@@ -17,7 +17,7 @@
  */
 
 
-#if !defined(MACINTOSH) && !defined(WINDOWS) && !defined(RISCOS)
+#if defined(WIN32_CONSOLE_MODE) || (!defined(MACINTOSH) && !defined(WINDOWS) && !defined(RISCOS))
 
 #include "main.h"
 
@@ -78,10 +78,6 @@ static const struct module modules[] =
 #ifdef USE_AMI
 	{ "ami", help_ami, init_ami },
 #endif /* USE_AMI */
-
-#ifdef USE_VME
-	{ "vme", help_vme, init_vme },
-#endif /* USE_VME */
 
 #ifdef USE_VCS
 	{ "vcs", help_vcs, init_vcs },
@@ -160,12 +156,12 @@ static void init_stuff(void)
 {
 	char path[1024];
 
-#if defined(AMIGA) || defined(VM)
+#if defined(AMIGA)
 
 	/* Hack -- prepare "path" */
 	strcpy(path, "Angband:");
 
-#else /* AMIGA / VM */
+#else /* AMIGA */
 
 	cptr tail = NULL;
 
@@ -185,7 +181,7 @@ static void init_stuff(void)
 	/* Hack -- Add a path separator (only if needed) */
 	if (!suffix(path, PATH_SEP)) my_strcat(path, PATH_SEP, sizeof(path));
 
-#endif /* AMIGA / VM */
+#endif /* AMIGA */
 
 	/* Initialize */
 	init_file_paths(path);
@@ -550,7 +546,7 @@ int main(int argc, char *argv[])
 					printf("     %s   %s\n",
 					       modules[i].name, modules[i].help);
 				}
-				
+
 				/* Actually abort the process */
 				quit(NULL);
 			}

@@ -11,7 +11,7 @@
 
 # Version stamp (required)
 
-V:3.0.5
+V:3.0.6
 
 
 # Maximum number of feature types
@@ -46,6 +46,9 @@ M:B:4
 
 # Maximum number of flavors
 M:L:303
+
+# Maximum number of spells
+M:S:122
 
 # Maximum number of objects on the level
 M:O:512

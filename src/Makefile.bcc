@@ -46,19 +46,6 @@ CCFLAGS= $(CCOPTS) $(DBGOPT)
 
 ######################## Targets ##################################
 
-LUAOBJS = \
-  lua\lapi.obj lua\ldebug.obj lua\lmem.obj lua\lstrlib.obj lua\lvm.obj \
-  lua\lauxlib.obj lua\ldo.obj lua\lobject.obj lua\ltable.obj lua\lzio.obj \
-  lua\lbaselib.obj lua\lfunc.obj lua\lparser.obj lua\lcode.obj lua\lgc.obj \
-  lua\lopcodes.obj lua\lstate.obj lua\ltm.obj  lua\ldblib.obj lua\llex.obj \
-  lua\lstring.obj lua\ldump.obj lua\lundump.obj lua\ltablib.obj \
-  lua\tolua_map.obj lua\tolua_is.obj lua\tolua_to.obj lua\tolua_push.obj \
-  lua\tolua_event.obj
-
-TOLUAOBJS = \
-  lua\tolua.obj lua\toluabind.obj lua\liolib.obj \
-  $(LUAOBJS)
-
 OBJ = \
   main-win.obj readdib.obj \
   birth.obj cave.obj cmd1.obj cmd2.obj \
@@ -67,16 +54,13 @@ OBJ = \
   init2.obj randart.obj load.obj \
   melee1.obj melee2.obj monster1.obj monster2.obj \
   object1.obj object2.obj save.obj spells1.obj \
-  spells2.obj store.obj tables.obj util.obj \
+  spells2.obj squelch.obj store.obj tables.obj util.obj \
   variable.obj wizard1.obj wizard2.obj xtra1.obj \
   xtra2.obj z-form.obj z-rand.obj z-term.obj \
   z-util.obj z-virt.obj \
   script.obj \
-  l-monst.obj l-object.obj l-player.obj l-random.obj l-random.obj \
-  l-ui.obj l-misc.obj l-spell.obj \
   use-obj.obj x-spell.obj \
-  obj-info.obj \
-  $(LUAOBJS)
+  obj-info.obj
 
 
 all : $(EXE_FILE)
@@ -99,32 +83,9 @@ install: $(EXE_FILE)
 $(EXE_FILE): $(OBJ) angband.res
 	$(LINKER) -aa -x $(OBJ) c0w32.obj, $(EXE_FILE),, cw32.lib import32.lib,, angband.res
 
-lua\tolua.exe: $(TOLUAOBJS)
-	$(LINKER) -aa -x $(TOLUAOBJS) c0x32.obj, lua\tolua.exe,, cw32.lib import32.lib
-
 angband.res: angband.rc
 	$(RC) -r angband.rc
 
-l-monst.c: lua\tolua.exe l-monst.pkg
-	lua\tolua.exe -n monster -o l-monst.c l-monst.pkg
-
-l-object.c: lua\tolua.exe l-object.pkg
-	lua\tolua.exe -n object -o l-object.c l-object.pkg
-
-l-player.c: lua\tolua.exe l-player.pkg
-	lua\tolua.exe -n player -o l-player.c l-player.pkg
-
-l-random.c: lua\tolua.exe l-random.pkg
-	lua\tolua.exe -n random -o l-random.c l-random.pkg
-
-l-ui.c: lua\tolua.exe l-ui.pkg
-	lua\tolua.exe -n ui -o l-ui.c l-ui.pkg
-
-l-misc.c: lua\tolua.exe l-misc.pkg
-	lua\tolua.exe -n misc -o l-misc.c l-misc.pkg
-
-l-spell.c: lua\tolua.exe l-spell.pkg
-	lua\tolua.exe -n spell -o l-spell.c l-spell.pkg
 
 ########################### Implicit Rules ########################
 .c.obj:

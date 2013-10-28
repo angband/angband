@@ -163,6 +163,158 @@ static void purchase_analyze(s32b price, s32b value, s32b guess)
 }
 
 
+static int get_store_choice(int store_num)
+{
+	return store[store_num].table[rand_int(store[store_num].table_num)];
+}
+
+
+/*
+ * Determine if the current store will purchase the given object
+ *
+ * Note that a shop-keeper must refuse to buy "worthless" objects
+ */
+static bool store_will_buy(int store_num, const object_type *o_ptr)
+{
+	/* Hack -- The Home is simple */
+	if (store_num == STORE_HOME) return (TRUE);
+
+	/* Switch on the store */
+	switch (store_num)
+	{
+		/* General Store */
+		case STORE_GENERAL:
+		{
+			/* Analyze the type */
+			switch (o_ptr->tval)
+			{
+				case TV_FOOD:
+				case TV_LITE:
+				case TV_FLASK:
+				case TV_SPIKE:
+				case TV_SHOT:
+				case TV_ARROW:
+				case TV_BOLT:
+				case TV_DIGGING:
+				case TV_CLOAK:
+				break;
+				default:
+				return (FALSE);
+			}
+			break;
+		}
+
+		/* Armoury */
+		case STORE_ARMOR:
+		{
+			/* Analyze the type */
+			switch (o_ptr->tval)
+			{
+				case TV_BOOTS:
+				case TV_GLOVES:
+				case TV_CROWN:
+				case TV_HELM:
+				case TV_SHIELD:
+				case TV_CLOAK:
+				case TV_SOFT_ARMOR:
+				case TV_HARD_ARMOR:
+				case TV_DRAG_ARMOR:
+				break;
+				default:
+				return (FALSE);
+			}
+			break;
+		}
+
+		/* Weapon Shop */
+		case STORE_WEAPON:
+		{
+			/* Analyze the type */
+			switch (o_ptr->tval)
+			{
+				case TV_SHOT:
+				case TV_BOLT:
+				case TV_ARROW:
+				case TV_BOW:
+				case TV_DIGGING:
+				case TV_HAFTED:
+				case TV_POLEARM:
+				case TV_SWORD:
+				break;
+				default:
+				return (FALSE);
+			}
+			break;
+		}
+
+		/* Temple */
+		case STORE_TEMPLE:
+		{
+			/* Analyze the type */
+			switch (o_ptr->tval)
+			{
+				case TV_PRAYER_BOOK:
+				case TV_SCROLL:
+				case TV_POTION:
+				case TV_HAFTED:
+				break;
+				case TV_POLEARM:
+				case TV_SWORD:
+				{
+					/* Known blessed blades are accepted too */
+					if (is_blessed(o_ptr) && object_known_p(o_ptr)) break;
+				}
+				default:
+				return (FALSE);
+			}
+			break;
+		}
+
+		/* Alchemist */
+		case STORE_ALCHEMY:
+		{
+			/* Analyze the type */
+			switch (o_ptr->tval)
+			{
+				case TV_SCROLL:
+				case TV_POTION:
+				break;
+				default:
+				return (FALSE);
+			}
+			break;
+		}
+
+		/* Magic Shop */
+		case STORE_MAGIC:
+		{
+			/* Analyze the type */
+			switch (o_ptr->tval)
+			{
+				case TV_MAGIC_BOOK:
+				case TV_AMULET:
+				case TV_RING:
+				case TV_STAFF:
+				case TV_WAND:
+				case TV_ROD:
+				case TV_SCROLL:
+				case TV_POTION:
+				break;
+				default:
+				return (FALSE);
+			}
+			break;
+		}
+	}
+
+	/* Ignore "worthless" items XXX XXX XXX */
+	if (object_value(o_ptr) <= 0) return (FALSE);
+
+	/* Assume okay */
+	return (TRUE);
+}
+
+
 
 
 
@@ -1998,6 +2150,8 @@ static void store_sell(void)
 		/* Haggle for it */
 		if (sell_haggle(i_ptr, &price))
 		{
+			int squelch = SQUELCH_NO;
+
 			/* Say "okay" */
 			say_comment_accept();
 
@@ -2019,6 +2173,10 @@ static void store_sell(void)
 			/* Identify original object */
 			object_aware(o_ptr);
 			object_known(o_ptr);
+
+			/* Squelch it only if there will be items left over */
+			if (amt < o_ptr->number)
+				squelch = squelch_item_ok(o_ptr, 0, TRUE);
 
 			/* Combine / Reorder the pack (later) */
 			p_ptr->notice |= (PN_COMBINE | PN_REORDER);
@@ -2058,12 +2216,25 @@ static void store_sell(void)
 
 			/* Analyze the prices (and comment verbally) */
 			purchase_analyze(price, value, dummy);
+			/*
+			 * Check to see if anything left in the pack should be squelched.
+			 * We must make sure to do this before the item is sold
+			 */
+			if (squelch == SQUELCH_YES)
+			{
+				msg_format("In your pack: %s (%c).  %s",
+							o_name, index_to_label(item),
+							squelch_to_label(squelch));
 
-			/* Take the object from the player */
-			inven_item_increase(item, -amt);
-			inven_item_describe(item);
-			inven_item_optimize(item);
-
+				squelch_item(squelch, item, o_ptr);
+			}
+			else 
+			{
+				/* Take the object from the player */
+				inven_item_increase(item, -amt);
+				inven_item_describe(item);
+				inven_item_optimize(item);
+			}
 			/* Handle stuff */
 			handle_stuff();
 

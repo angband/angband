@@ -14,28 +14,10 @@ CC = cc
 LD = link
 SQ = squeeze
 RM = remove
-tolua = lua.tolua
 
 # Flags:
 CCFLAGS = -Wall -depend !Depend -throwback
 LDFLAGS = -aif
-
-LUAOBJS = \
-  lua.lapi.o lua.ldebug.o lua.lmem.o lua.lstrlib.o lua.lvm.o \
-  lua.lauxlib.o lua.ldo.o lua.lobject.o lua.ltable.o lua.lzio.o \
-  lua.lbaselib.o lua.lfunc.o lua.lparser.o lua.lcode.o lua.lgc.o \
-  lua.lopcodes.o lua.lstate.o lua.ltm.o  lua.ldblib.o lua.llex.o \
-  lua.lstring.o lua.ldump.o lua.lundump.o lua.ltablib.o \
-  lua.tolua_map.o lua.tolua_is.o lua.tolua_to.o lua.tolua_push.o \
-  lua.tolua_event.o
-
-TOLUAOBJS = \
-  lua.tolua.o lua.toluabind.o lua.liolib.o \
-  $(LUAOBJS)
-
-# Lua package files:
-LUAPKGS = \
-  l-monst.c l-object.c l-player.c l-random.c l-ui.c l-misc.c l-spell.c
 
 # The standard object files:
 OBJS = z-util.o z-virt.o z-form.o z-rand.o z-term.o \
@@ -44,58 +26,30 @@ OBJS = z-util.o z-virt.o z-form.o z-rand.o z-term.o \
   xtra1.o xtra2.o spells1.o spells2.o \
   melee1.o melee2.o files.o \
   cmd1.o cmd2.o cmd3.o cmd4.o cmd5.o cmd6.o \
-  store.o birth.o save.o load.o \
+  squelch.o store.o birth.o save.o load.o \
   wizard1.o wizard2.o obj-info.o \
   generate.o dungeon.o init1.o init2.o randart.o \
   main-ros.o main.o \
-  script.o tables.o x-spell.o use-obj.o \
-  l-monst.o l-object.o l-player.o l-random.o l-ui.o l-misc.o l-spell.o \
-  $(LUAOBJS)
+  script.o tables.o x-spell.o use-obj.o
 
 # Borg object files:
 BOBJS = borg1.o borg2.o borg3.o borg4.o borg5.o borg6.o borg7.o \
 	borg8.o borg9.o
 
 # A standard compile
-compile: ^.!RunImage lua/tolua
+compile: ^.!RunImage
 
 # The normal !RunImage:
-^.!RunImage:	$(LUAPKGS) $(OBJS) $(LIBS)
+^.!RunImage:	$(OBJS) $(LIBS)
 		$(LD) $(LDFLAGS) -o !RunImage $(OBJS) $(LIBS)
 		$(SQ) $(SQFLAGS) !RunImage ^.!RunImage
 		$(RM) !RunImage
 
 # The Borg RunImage
-^.!RunImageB:	$(LUAPKGS) $(OBJS) $(BOBJS) $(LIBS)
+^.!RunImageB:	$(OBJS) $(BOBJS) $(LIBS)
 		$(LD) $(LDFLAGS) -o !RunImage $(BOBJS) $(LIBS)
 		$(SQ) $(SQFLAGS) !RunImageB ^.!RunImageB
 		$(RM) !RunImageB
-
-# tolua
-lua/tolua: $(TOLUAOBJS)
-	$(LD) -o lua.tolua $(TOLUAOBJS) $(LDFLAGS) $(LIBS)
-
-# Lua packages
-l-monst.c: $(tolua) pkg.l-monst
-	$(tolua) -n monster -o @.c.l-monst pkg.l-monst
-
-l-object.c: $(tolua) pkg.l-object
-	$(tolua) -n object -o c.l-object pkg.l-object
-
-l-player.c: $(tolua) pkg.l-player
-	$(tolua) -n player -o c.l-player pkg.l-player
-
-l-random.c: $(tolua) pkg.l-random
-	$(tolua) -n random -o c.l-random pkg.l-random
-
-l-ui.c: $(tolua) pkg.l-ui
-	$(tolua) -n ui -o c.l-ui pkg.l-ui
-
-l-misc.c: $(tolua) pkg.l-misc
-	$(tolua) -n misc -o c.l-misc pkg.l-misc
-
-l-spell.c: $(tolua) pkg.l-spell
-	$(tolua) -n spell -o c.l-spell pkg.l-spell   
 
 # Suffix rules
 .SUFFIXES: .o .c

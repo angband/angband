@@ -148,7 +148,7 @@ extern void* rnfree(void *p);
 /* Panic, attempt to allocate 'len' bytes */
 extern void* rpanic(size_t len);
 
-/* Allocate (and return) 'len', or dump core */
+/* Allocate (and return) 'len', or quit */
 extern void* ralloc(size_t len);
 
 /* Create a "dynamic string" */

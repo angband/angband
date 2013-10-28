@@ -226,6 +226,7 @@ struct metadpy
  *	- The current Input Event Mask
  *
  *	- The location of the window
+ *	- The saved (startup) location of the window
  *	- The width, height of the window
  *	- The border width of this window
  *
@@ -250,6 +251,7 @@ struct infowin
 	s16b ox, oy;
 
 	s16b x, y;
+	s16b x_save, y_save;
 	s16b w, h;
 	u16b b;
 
@@ -361,6 +363,10 @@ struct term_data
 	int tile_hgt;
 
 #endif /* USE_GRAPHICS */
+
+	/* Pointers to allocated data, needed to clear up memory */
+	XClassHint *classh;
+	XSizeHints *sizeh;
 
 };
 
@@ -556,8 +562,6 @@ static errr Metadpy_init_2(Display *dpy, cptr name)
 }
 
 
-#ifndef IGNORE_UNUSED_FUNCTIONS
-
 /*
  * Nuke the current metadpy
  */
@@ -582,8 +586,6 @@ static errr Metadpy_nuke(void)
 	/* Return Success */
 	return (0);
 }
-
-#endif /* IGNORE_UNUSED_FUNCTIONS */
 
 
 /*
@@ -648,6 +650,8 @@ static errr Infowin_set_icon_name(cptr name)
 	return (0);
 }
 
+#endif /* IGNORE_UNUSED_FUNCTIONS */
+
 
 /*
  * Nuke Infowin
@@ -666,8 +670,6 @@ static errr Infowin_nuke(void)
 	/* Success */
 	return (0);
 }
-
-#endif /* IGNORE_UNUSED_FUNCTIONS */
 
 
 /*
@@ -691,6 +693,8 @@ static errr Infowin_prepare(Window xid)
 	/* Apply the above info */
 	iwin->x = x;
 	iwin->y = y;
+	iwin->x_save = x;
+	iwin->y_save = y;
 	iwin->w = w;
 	iwin->h = h;
 	iwin->b = b;
@@ -1082,6 +1086,8 @@ static errr Infoclr_init_1(GC gc)
 	return (0);
 }
 
+#endif /* IGNORE_UNUSED_FUNCTIONS */
+
 
 /*
  * Nuke an old 'infoclr'.
@@ -1103,8 +1109,6 @@ static errr Infoclr_nuke(void)
 	/* Success */
 	return (0);
 }
-
-#endif /* IGNORE_UNUSED_FUNCTIONS */
 
 
 /*
@@ -1216,8 +1220,6 @@ static errr Infoclr_change_fg(Pixell fg)
 
 
 
-#ifndef IGNORE_UNUSED_FUNCTIONS
-
 /*
  * Nuke an old 'infofnt'.
  */
@@ -1242,8 +1244,6 @@ static errr Infofnt_nuke(void)
 	/* Success */
 	return (0);
 }
-
-#endif /* IGNORE_UNUSED_FUNCTIONS */
 
 
 /*
@@ -1514,6 +1514,12 @@ char settings[1024];
 /* Use short names for the most commonly used elements of various structures. */
 #define DPY (Metadpy->dpy)
 #define WIN (Infowin->win)
+
+
+/*
+ * Remember the number of terminal windows open
+ */
+static int term_windows_open;
 
 
 /* Describe a set of co-ordinates. */
@@ -2464,6 +2470,9 @@ static void save_prefs(void)
 	/* Header */
 	fprintf(fff, "# %s X11 settings\n\n", VERSION_NAME);
 
+	/* Number of term windows to open */
+	fprintf(fff, "TERM_WINS=%d\n\n", term_windows_open);
+
 	/* Save window prefs */
 	for (i = 0; i < MAX_TERM_DATA; i++)
 	{
@@ -2474,20 +2483,21 @@ static void save_prefs(void)
 		/* Header */
 		fprintf(fff, "# Term %d\n", i);
 
-#if 0
 		/*
-		 * ToDo: Fix
-		 *
 		 * This doesn't seem to work under various WMs
 		 * since the decoration messes the position up
+		 *
+		 * Hack -- Use saved window positions.
+		 * This means that we won't remember ingame repositioned
+		 * windows, but also means that WMs won't screw predefined
+		 * positions up. -CJN-
 		 */
 
 		/* Window specific location (x) */
-		fprintf(fff, "AT_X_%d=%d\n", i, td->win->x);
+		fprintf(fff, "AT_X_%d=%d\n", i, td->win->x_save);
 
 		/* Window specific location (y) */
-		fprintf(fff, "AT_Y_%d=%d\n", i, td->win->y);
-#endif /* 0 */
+		fprintf(fff, "AT_Y_%d=%d\n", i, td->win->y_save);
 
 		/* Window specific cols */
 		fprintf(fff, "COLS_%d=%d\n", i, td->t.wid);
@@ -2513,6 +2523,9 @@ static void save_prefs(void)
 		/* Footer */
 		fprintf(fff, "\n");
 	}
+
+	/* Close */
+	(void)my_fclose(fff);
 }
 
 
@@ -2838,6 +2851,9 @@ static errr term_data_init(term_data *td, int i)
 	/* Map the window */
 	Infowin_map();
 
+	/* Set pointers to allocated data */
+	td->sizeh = sh;
+	td->classh = ch;
 
 	/* Move the window to requested location */
 	if ((x >= 0) && (y >= 0)) Infowin_impell(x, y);
@@ -2881,10 +2897,53 @@ const char help_x11[] = "Basic X11, subopts -d<display> -n<windows>"
 
 static void hook_quit(cptr str)
 {
+	int i;
+
 	/* Unused */
 	(void)str;
 
 	save_prefs();
+
+	/* Free allocated data */
+	for (i = 0; i < term_windows_open; i++)
+	{
+		term_data *td = &data[i];
+		term *t = &td->t;
+
+		/* Free size hints */
+		XFree(td->sizeh);
+
+		/* Free class hints */
+		XFree(td->classh);
+
+		/* Free fonts */
+		Infofnt_set(td->fnt);
+		(void)Infofnt_nuke();
+		KILL(td->fnt);
+
+		/* Free window */
+		Infowin_set(td->win);
+		(void)Infowin_nuke();
+		KILL(td->win);
+
+		/* Free term */
+		(void)term_nuke(t);
+	}
+
+	/* Free colors */
+	Infoclr_set(xor);
+	(void)Infoclr_nuke();
+	KILL(xor);
+
+	for (i = 0; i < 256; ++i)
+	{
+		Infoclr_set(clr[i]);
+		(void)Infoclr_nuke();
+		KILL(clr[i]);
+	}
+
+	/* Close link to display */
+	(void)Metadpy_nuke();
 }
 
 
@@ -2899,6 +2958,13 @@ errr init_x11(int argc, char **argv)
 
 	int num_term = 1;
 
+	FILE *fff;
+
+	char buf[1024];
+	cptr str;
+	int val;
+	int line = 0;
+
 #ifdef USE_GRAPHICS
 
 	cptr bitmap_file = "";
@@ -2911,6 +2977,49 @@ errr init_x11(int argc, char **argv)
 
 #endif /* USE_GRAPHICS */
 
+
+	/*
+	 * Check x11-settings for the number of windows before handling
+	 * command line options to allow for easy override
+	 */
+
+	/* Build the filename */
+	(void)path_build(settings, sizeof(settings), ANGBAND_DIR_USER, "x11-settings.prf");
+
+	/* Open the file */
+	fff = my_fopen(settings, "r");
+
+	/* File exists */
+	if (fff)
+	{
+		/* Process the file */
+		while (0 == my_fgets(fff, buf, sizeof(buf)))
+		{
+			/* Count lines */
+			line++;
+
+			/* Skip "empty" lines */
+			if (!buf[0]) continue;
+
+			/* Skip "blank" lines */
+			if (isspace((unsigned char)buf[0])) continue;
+
+			/* Skip comments */
+			if (buf[0] == '#') continue;
+
+			/* Number of terminal windows */
+			if (prefix(buf, "TERM_WINS"))
+			{
+				str = strstr(buf, "=");
+				val = (str != NULL) ? atoi(str + 1) : -1;
+				if (val > 0) num_term = val;
+				continue;
+			}
+		}
+
+		/* Close */
+		(void)my_fclose(fff);
+	}
 
 	/* Parse args */
 	for (i = 1; i < argc; i++)
@@ -2970,6 +3079,8 @@ errr init_x11(int argc, char **argv)
 	/* Init the Metadpy if possible */
 	if (Metadpy_init_name(dpy_name)) return (-1);
 
+	/* Remember the number of terminal windows */
+	term_windows_open = num_term;
 
 	/* Prepare cursor color */
 	MAKE(xor, infoclr);
@@ -3159,7 +3270,7 @@ errr init_x11(int argc, char **argv)
 			/* Free tiles_raw */
 			FREE(tiles_raw);
 		}
-                        
+
 		/* Initialize the transparency masks */
 		for (i = 0; i < num_term; i++)
 		{

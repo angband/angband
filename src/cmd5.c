@@ -79,33 +79,37 @@ s16b spell_chance(int spell)
  * Determine if a spell is "okay" for the player to cast or study
  * The spell must be legible, not forgotten, and also, to cast,
  * it must be known, and to study, it must not be known.
+ * When browsing a book, all legible spells are okay.
  */
-bool spell_okay(int spell, bool known)
+bool spell_okay(int spell, bool known, bool browse)
 {
 	const magic_type *s_ptr;
 
 	/* Get the spell */
 	s_ptr = &mp_ptr->info[spell];
 
-	/* Spell is illegal */
-	if (s_ptr->slevel > p_ptr->lev) return (FALSE);
+	/* Spell is illegible */
+	if (s_ptr->slevel >= 99) return (FALSE);
+
+	/* Spell is too hard */
+	if (s_ptr->slevel > p_ptr->lev) return (browse);
 
 	/* Spell is forgotten */
 	if (p_ptr->spell_flags[spell] & PY_SPELL_FORGOTTEN)
 	{
 		/* Never okay */
-		return (FALSE);
+		return (!browse);
 	}
 
 	/* Spell is learned */
 	if (p_ptr->spell_flags[spell] & PY_SPELL_LEARNED)
 	{
-		/* Okay to cast, not to study */
-		return (known);
+		/* Okay to cast or browse, not to study */
+		return (known || browse);
 	}
 
-	/* Okay to study, not to cast */
-	return (!known);
+	/* Okay to study or browse, not to cast */
+	return (!known || browse);
 }
 
 
@@ -269,10 +273,11 @@ void display_koff(int k_idx)
  * Returns -2 if there are no legal choices.
  * Returns a valid spell otherwise.
  *
- * The "prompt" should be "cast", "recite", or "study"
+ * The "prompt" should be "cast", "recite", "study", or "browse"
  * The "known" should be TRUE for cast/pray, FALSE for study
+ * The "browse" should be TRUE for browse, FALSE for cast/pray/study
  */
-static int get_spell(const object_type *o_ptr, cptr prompt, bool known)
+static int get_spell(const object_type *o_ptr, cptr prompt, bool known, bool browse)
 {
 	int i;
 
@@ -300,7 +305,7 @@ static int get_spell(const object_type *o_ptr, cptr prompt, bool known)
 	if (repeat_pull(&result))
 	{
 		/* Verify the spell */
-		if (spell_okay(result, known))
+		if (spell_okay(result, known, browse))
 		{
 			/* Success */
 			return (result);
@@ -330,7 +335,7 @@ static int get_spell(const object_type *o_ptr, cptr prompt, bool known)
 	for (i = 0; i < num; i++)
 	{
 		/* Look for "okay" spells */
-		if (spell_okay(spells[i], known)) okay = TRUE;
+		if (spell_okay(spells[i], known, browse)) okay = TRUE;
 	}
 
 	/* No available spells */
@@ -342,6 +347,19 @@ static int get_spell(const object_type *o_ptr, cptr prompt, bool known)
 
 	/* No redraw yet */
 	redraw = FALSE;
+
+	/* Hack -- when browsing a book, start with list shown */
+	if (browse)
+	{
+		/* Show list */
+		redraw = TRUE;
+
+		/* Save screen */
+		screen_save();
+
+		/* Display a list of spells */
+		print_spells(spells, num, 1, 20);
+	}
 
 	/* Build a prompt (accept all spells) */
 	strnfmt(out_val, 78, "(%^ss %c-%c, *=List, ESC=exit) %^s which %s? ",
@@ -401,7 +419,7 @@ static int get_spell(const object_type *o_ptr, cptr prompt, bool known)
 		spell = spells[i];
 
 		/* Require "okay" spells */
-		if (!spell_okay(spell, known))
+		if (!spell_okay(spell, known, browse))
 		{
 			bell("Illegal spell choice!");
 			msg_format("You may not %s that %s.", prompt, p);
@@ -452,13 +470,95 @@ static int get_spell(const object_type *o_ptr, cptr prompt, bool known)
 }
 
 
+
+/*
+ * View the detailed description for a selected spell.
+ */
+static void browse_spell(int spell)
+{
+	const magic_type *s_ptr;
+
+	cptr comment;
+
+	char out_val[160];
+
+	byte line_attr;
+
+
+	/* Redirect output to the screen */
+	text_out_hook = text_out_to_screen;
+
+	/* Save the screen */
+	screen_save();
+
+	/* Get the magic and spell info */
+	s_ptr = &mp_ptr->info[spell];
+
+	/* Get extra info */
+	comment = get_spell_info(cp_ptr->spell_book, spell);
+
+	/* Assume spell is known and tried */
+	line_attr = TERM_WHITE;
+
+	/* Analyze the spell */
+	if (p_ptr->spell_flags[spell] & PY_SPELL_FORGOTTEN)
+	{
+		comment = " forgotten";
+		line_attr = TERM_YELLOW;
+	}
+	else if (!(p_ptr->spell_flags[spell] & PY_SPELL_LEARNED))
+	{
+		if (s_ptr->slevel <= p_ptr->lev)
+		{
+			comment = " unknown";
+			line_attr = TERM_L_BLUE;
+		}
+		else
+		{
+			comment = " difficult";
+			line_attr = TERM_RED;
+		}
+	}
+	else if (!(p_ptr->spell_flags[spell] & PY_SPELL_WORKED))
+	{
+		comment = " untried";
+		line_attr = TERM_L_GREEN;
+	}
+
+	/* Show spell name and comment (if any) on first line of screen */
+	if (streq(comment, ""))
+	{
+		strnfmt(out_val, sizeof(out_val), "%^s",
+	    	    get_spell_name(cp_ptr->spell_book, spell));
+	}
+	else
+	{
+		strnfmt(out_val, sizeof(out_val), "%^s (%s)",
+	    	    get_spell_name(cp_ptr->spell_book, spell),
+	    	    /* Hack -- skip leading space */
+	    	    ++comment);
+	}
+
+	/* Print, in colour */
+	text_out_c(line_attr, out_val);
+
+	/* Display the spell description */
+	text_out("\n\n   ");
+
+	text_out(s_text + s_info[(cp_ptr->spell_book == TV_MAGIC_BOOK) ? spell : spell + PY_MAX_SPELLS].text);
+	text_out_c(TERM_L_BLUE, "\n\n[Press any key to continue]\n");
+
+	/* Wait for input */
+	(void)inkey();
+
+	/* Load screen */
+	screen_load();
+}
+
+
 void do_cmd_browse_aux(const object_type *o_ptr)
 {
-	int i;
 	int spell;
-	int num = 0;
-
-	byte spells[PY_MAX_SPELLS];
 
 
 	/* Track the object kind */
@@ -467,37 +567,16 @@ void do_cmd_browse_aux(const object_type *o_ptr)
 	/* Hack -- Handle stuff */
 	handle_stuff();
 
-	/* Extract spells */
-	for (i = 0; i < SPELLS_PER_BOOK; i++)
+
+	/* Continue to browse spells until player hits ESC */
+	while (1)
 	{
-		spell = get_spell_index(o_ptr, i);
-
-		/* Collect this spell */
-		if (spell != -1) spells[num++] = spell;
-	}
-
-
-	/* Save screen */
-	screen_save();
-
-	/* Display the spells */
-	print_spells(spells, num, 1, 20);
-
-	/* Prompt for a command */
-	put_str("(Browsing) Command: ", 0, 0);
-
-	/* Hack -- Get a new command */
-	p_ptr->command_new = inkey();
-
-	/* Load screen */
-	screen_load();
-
-
-	/* Hack -- Process "Escape" */
-	if (p_ptr->command_new == ESCAPE)
-	{
-		/* Reset stuff */
-		p_ptr->command_new = 0;
+		/* Ask for a spell */
+		spell = get_spell(o_ptr, "browse", TRUE, TRUE);
+		if (spell < 0) break;
+	
+		/* Browse the spell */
+		browse_spell(spell);
 	}
 }
 
@@ -644,7 +723,7 @@ void do_cmd_study(void)
 	if (cp_ptr->flags & CF_CHOOSE_SPELLS)
 	{
 		/* Ask for a spell */
-		spell = get_spell(o_ptr, "study", FALSE);
+		spell = get_spell(o_ptr, "study", FALSE, FALSE);
 
 		/* Allow cancel */
 		if (spell == -1) return;
@@ -664,7 +743,7 @@ void do_cmd_study(void)
 			if (spell == -1) continue;
 
 			/* Skip non "okay" prayers */
-			if (!spell_okay(spell, FALSE)) continue;
+			if (!spell_okay(spell, FALSE, FALSE)) continue;
 
 			/* Apply the randomizer */
 			if ((++k > 1) && (rand_int(k) != 0)) continue;
@@ -795,7 +874,7 @@ void do_cmd_cast(void)
 
 
 	/* Ask for a spell */
-	spell = get_spell(o_ptr, "cast", TRUE);
+	spell = get_spell(o_ptr, "cast", TRUE, FALSE);
 
 	if (spell < 0)
 	{
@@ -965,7 +1044,7 @@ void do_cmd_pray(void)
 
 
 	/* Choose a spell */
-	spell = get_spell(o_ptr, "recite", TRUE);
+	spell = get_spell(o_ptr, "recite", TRUE, FALSE);
 
 	if (spell < 0)
 	{

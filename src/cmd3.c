@@ -132,11 +132,14 @@ void do_cmd_wield(void)
 	object_type *i_ptr;
 	object_type object_type_body;
 
+	object_type *equip_o_ptr;
+
 	cptr act;
 
 	cptr q, s;
 
 	char o_name[80];
+	char out_val[160];
 
 
 	/* Restrict the choices */
@@ -163,11 +166,14 @@ void do_cmd_wield(void)
 	/* Check the slot */
 	slot = wield_slot(o_ptr);
 
+	/* Get a pointer to the slot to be removed */
+	equip_o_ptr = &inventory[slot];
+
 	/* Prevent wielding into a cursed slot */
-	if (cursed_p(&inventory[slot]))
+	if (cursed_p(equip_o_ptr))
 	{
 		/* Describe it */
-		object_desc(o_name, sizeof(o_name), &inventory[slot], FALSE, 0);
+		object_desc(o_name, sizeof(o_name), equip_o_ptr, FALSE, 0);
 
 		/* Message */
 		msg_format("The %s you are %s appears to be cursed.",
@@ -177,6 +183,33 @@ void do_cmd_wield(void)
 		return;
 	}
 
+	/* Double-check taking off an item with "!t" */
+	if (equip_o_ptr->note)
+	{
+		/* Find a '!' */
+		s = strchr(quark_str(equip_o_ptr->note), '!');
+
+		/* Process preventions */
+		/* XXX Perhaps this should be factored out to a seperate function? */
+		while (s)
+		{
+			/* Check the "restriction" */
+			if (s[1] == 't')
+			{
+				/* Describe it */
+				object_desc(o_name, sizeof(o_name), equip_o_ptr, TRUE, 3);
+
+				/* Prompt */
+				strnfmt(out_val, sizeof(out_val), "Really take off %s? ", o_name);
+
+				/* Forget it */
+				if (!get_check(out_val)) return;
+			}
+
+			/* Find another '!' */
+			s = strchr(s + 1, '!');
+		}
+	}
 
 	/* Take a turn */
 	p_ptr->energy_use = 100;
@@ -391,6 +424,7 @@ void do_cmd_drop(void)
 void do_cmd_destroy(void)
 {
 	int item, amt;
+	int result;
 
 	object_type *o_ptr;
 
@@ -398,7 +432,6 @@ void do_cmd_destroy(void)
 	object_type object_type_body;
 
 	char o_name[120];
-
 	char out_val[160];
 
 	cptr q, s;
@@ -451,7 +484,79 @@ void do_cmd_destroy(void)
 	if (verify_destroy)
 	{
 		strnfmt(out_val, sizeof(out_val), "Really destroy %s? ", o_name);
-		if (!get_check(out_val)) return;
+
+		/* Check for known ego-items */
+		if (ego_item_p(o_ptr) && object_known_p(o_ptr))
+		{
+			/* XXX Hook for context help here to explain 'E' */
+ 
+			/* Prompt */
+			result = get_check_other(out_val, 'E');
+
+			/* No */
+			if (result == 0)
+				return;
+ 
+			/* Squelch */
+			else if (result == 2)
+			{
+				/* Get the ego item type */
+				ego_item_type *e_ptr = &e_info[o_ptr->name2];
+ 
+				/* Set to squelch */
+				e_ptr->squelch = TRUE;
+ 
+				/* Tell user */
+				msg_format("Ego-item type '%s' will always be squelched.", e_name + e_ptr->name);
+			}
+		}
+
+		/* Check for aware objects */
+		else if (object_aware_p(o_ptr) && !(k_info[o_ptr->k_idx].flags3 & (TR3_INSTA_ART)))
+		{
+			result = get_check_other(out_val, 'S');
+
+			/* returned "no" */
+			if (!result) return;
+
+			/* Return of 2 sets item to squelch */
+			else if (result == 2)
+			{
+				object_kind *k_ptr = &k_info[o_ptr->k_idx];
+				char o_name2[80];
+
+				/* Make a fake object so we can give a proper message */
+				object_type object_type_body;
+				object_type *i_ptr = &object_type_body;
+
+				/* Wipe the object */
+				object_wipe(i_ptr);
+
+				/* Create the object */
+				object_prep(i_ptr, o_ptr->k_idx);
+
+				/* Make it plural */
+				i_ptr->number = 2;
+
+				/* Now describe with correct amount */
+				object_desc(o_name2, sizeof(o_name2), i_ptr, FALSE, 0);
+
+				/* Set to squelch */
+				k_ptr->squelch = SQUELCH_ALWAYS;
+
+				/* Message - no good routine for extracting the plain name*/
+				msg_format("All %^s will always be squelched.", o_name2);
+
+				/*Mark the view to be updated*/
+				p_ptr->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW);;
+			}
+		}
+
+		/* Everything else */
+		else
+		{
+			if (!get_check(out_val)) return;
+		}
 	}
 
 	/* Take a turn */

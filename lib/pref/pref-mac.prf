@@ -180,15 +180,15 @@ P:^_CO18\r
 # Hack -- Arrow-Keys
 #
 
-A:4
+A:\x8B
 P:^_59\r
 
-A:6
+A:\x8C
 P:^_60\r
 
-A:2
+A:\x8A
 P:^_61\r
 
-A:8
+A:\x8D
 P:^_62\r
 

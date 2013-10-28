@@ -745,6 +745,9 @@ void object_desc(char *buf, size_t max, const object_type *o_ptr, int pref, int 
 	/* Allow flavors to be hidden when aware */
 	if (aware && !show_flavors) flavor = FALSE;
 
+	/* We've seen it at least once now we're aware of it */
+	if (aware) k_ptr->everseen = TRUE;
+
 	/* Object is in the inventory of a store */
 	if (o_ptr->ident & IDENT_STORE)
 	{
@@ -755,6 +758,10 @@ void object_desc(char *buf, size_t max, const object_type *o_ptr, int pref, int 
 		aware = TRUE;
 		known = TRUE;
 	}
+
+
+	/* XXX anything object_desc'd can be squelched */
+	if (aware) k_ptr->everseen = TRUE;
 
 	/* Assume no name appending */
 	append_name = FALSE;
@@ -1045,7 +1052,7 @@ void object_desc(char *buf, size_t max, const object_type *o_ptr, int pref, int 
 	/* Copy the string */
 	for (; *s; s++)
 	{
-		/* Pluralizer */
+		/* Pluralizer (regular English plurals) */
 		if (*s == '~')
 		{
 			/* Add a plural if needed */
@@ -1061,11 +1068,56 @@ void object_desc(char *buf, size_t max, const object_type *o_ptr, int pref, int 
 			}
 		}
 
+		/* Pluralizer for irregular plurals */
+		else if (*s == '|')
+		{
+			bool singular = (o_ptr->number == 1);
+
+			/* Process singular part */
+			for (s++; *s != '|'; s++)
+			{
+				if (singular) *t++ = *s;
+			}
+
+			/* Process plural part */
+			for (s++; *s != '|'; s++)
+			{
+				if (!singular) *t++ = *s;
+			}
+		}
+
 		/* Modifier */
 		else if (*s == '#')
 		{
 			/* Append the modifier */
-			object_desc_str_macro(t, modstr);
+			cptr m = (modstr);
+
+			for (; *m; m++)
+			{
+				/* Handle pluralization in the modifier */
+				if (*m != '|')
+				{
+					/* Normal character - copy */
+					*t++ = *m;
+				}
+				else
+				{
+					/* Pluralizer */
+					bool singular = (o_ptr->number == 1);
+
+					/* Process singular part */
+					for (m++; *m != '|'; m++)
+					{
+						if (singular) *t++ = *m;
+					}
+
+					/* Process plural part */
+					for (m++; *m != '|'; m++)
+					{
+						if (!singular) *t++ = *m;
+					}
+				}
+			}
 		}
 
 		/* Normal */
@@ -1104,6 +1156,10 @@ void object_desc(char *buf, size_t max, const object_type *o_ptr, int pref, int 
 
 			object_desc_chr_macro(t, ' ');
 			object_desc_str_macro(t, (e_name + e_ptr->name));
+
+			/* Hack - Now we know about the ego-item type */
+			e_info[o_ptr->name2].everseen = TRUE;
+
 		}
 	}
 
@@ -1617,7 +1673,7 @@ void identify_random_gen(const object_type *o_ptr)
 
 	/* Set the indent/wrap */
 	text_out_indent = 3;
-	text_out_wrap = 75;
+	text_out_wrap = 72;
 
 	/* Dump the info */
 	if (object_info_out(o_ptr))
@@ -2510,7 +2566,7 @@ void toggle_inven_equip(void)
  *
  * The item can be negative to mean "item on floor".
  */
-static bool verify_item(cptr prompt, int item)
+bool verify_item(cptr prompt, int item)
 {
 	char o_name[80];
 

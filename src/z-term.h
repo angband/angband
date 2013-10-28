@@ -27,6 +27,9 @@
  *	- Array[h*w] -- Attribute array
  *	- Array[h*w] -- Character array
  *
+ *	- next screen saved
+ *	- hook to be called on screen size change
+ *
  * Note that the attr/char pair at (x,y) is a[y][x]/c[y][x]
  * and that the row of attr/chars at (0,y) is a[y]/c[y]
  */
@@ -49,6 +52,9 @@ struct term_win
 
 	byte *vta;
 	char *vtc;
+
+	term_win *next;
+	void (*resize_hook)(void);
 };
 
 
@@ -302,10 +308,9 @@ extern errr Term_keypress(int k);
 extern errr Term_key_push(int k);
 extern errr Term_inkey(char *ch, bool wait, bool take);
 
+extern errr Term_set_resize_hook(void (*hook)(void));
 extern errr Term_save(void);
 extern errr Term_load(void);
-
-extern errr Term_exchange(void);
 
 extern errr Term_resize(int w, int h);
 

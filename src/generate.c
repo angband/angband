@@ -3425,22 +3425,18 @@ void generate_cave(void)
 		rating = 0;
 
 
-		/* Event -- generate level */
-		if (!generate_level_hook(p_ptr->depth))
+		/* Build the town */
+		if (!p_ptr->depth)
 		{
-			/* Build the town */
-			if (!p_ptr->depth)
-			{
-				/* Make a town */
-				town_gen();
-			}
+			/* Make a town */
+			town_gen();
+		}
 
-			/* Build a real level */
-			else
-			{
-				/* Make a dungeon */
-				cave_gen();
-			}
+		/* Build a real level */
+		else
+		{
+			/* Make a dungeon */
+			cave_gen();
 		}
 
 		/* Extract the feeling */

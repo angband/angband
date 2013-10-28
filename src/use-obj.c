@@ -9,11 +9,8 @@
  */
 
 #include "angband.h"
-
-
-#ifndef USE_SCRIPT
-
 #include "script.h"
+
 
 static bool eat_food(object_type *o_ptr, bool *ident)
 {
@@ -2772,11 +2769,3 @@ void describe_item_activation(const object_type *o_ptr)
 		}
 	}
 }
-
-#else
-
-#ifdef MACINTOSH
-static int i = 0;
-#endif
-
-#endif /* USE_SCRIPT */

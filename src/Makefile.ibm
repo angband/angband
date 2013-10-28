@@ -11,19 +11,6 @@
 # Basic definitions
 #
 
-LUAOBJS = \
-  lua/lapi.o lua/ldebug.o lua/lmem.o lua/lstrlib.o lua/lvm.o \
-  lua/lauxlib.o lua/ldo.o lua/lobject.o lua/ltable.o lua/lzio.o \
-  lua/lbaselib.o lua/lfunc.o lua/lparser.o lua/lcode.o lua/lgc.o \
-  lua/lopcodes.o lua/lstate.o lua/ltm.o  lua/ldblib.o lua/llex.o \
-  lua/lstring.o lua/ldump.o lua/lundump.o lua/ltablib.o \
-  lua/tolua_map.o lua/tolua_is.o lua/tolua_to.o lua/tolua_push.o \
-  lua/tolua_event.o
-
-TOLUAOBJS = \
-  lua/tolua.o lua/toluabind.o lua/liolib.o \
-  $(LUAOBJS)
-
 # Objects
 OBJS = \
   main.o \
@@ -53,6 +40,7 @@ OBJS = \
   save.o \
   spells1.o \
   spells2.o \
+  squelch.o \
   store.o \
   tables.o \
   util.o \
@@ -67,10 +55,8 @@ OBJS = \
   z-virt.o \
   z-util.o \
   script.o \
-  l-monst.o l-object.o l-player.o l-random.o l-ui.o l-misc.o l-spell.o \
   use-obj.o \
-  x-spell.o \
-  $(LUAOBJS)
+  x-spell.o
 
 # Compiler
 CC = gcc
@@ -102,9 +88,6 @@ all: angband.exe
 angband.exe: $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LIBS)
 
-lua\tolua: $(TOLUAOBJS)
-	$(CC) -o lua\tolua $(TOLUAOBJS) $(INCDIRS) $(LIBDIRS) $(LUALIBS)
-
 
 #
 # Compile source files
@@ -113,30 +96,6 @@ lua\tolua: $(TOLUAOBJS)
 .c.o:
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-#
-# Build wrappers
-#
-
-l-monst.c: lua\tolua l-monst.pkg
-	lua\tolua -n monster -o l-monst.c l-monst.pkg
-
-l-object.c: lua\tolua l-object.pkg
-	lua\tolua -n object -o l-object.c l-object.pkg
-
-l-player.c: lua\tolua l-player.pkg
-	lua\tolua -n player -o l-player.c l-player.pkg
-
-l-random.c: lua\tolua l-random.pkg
-	lua\tolua -n random -o l-random.c l-random.pkg
-
-l-ui.c: lua\tolua l-ui.pkg
-	lua\tolua -n ui -o l-ui.c l-ui.pkg
-
-l-misc.c: lua\tolua l-misc.pkg
-	lua\tolua -n misc -o l-misc.c l-misc.pkg
-
-l-spell.c: lua\tolua l-spell.pkg
-	lua\tolua -n spell -o l-spell.c l-spell.pkg
 
 #
 # Clean up
@@ -144,8 +103,6 @@ l-spell.c: lua\tolua l-spell.pkg
 
 clean:
 	del *.o
-	del lua\*.o
 
 cleanall: clean
 	del *.exe
-	del lua\*.exe

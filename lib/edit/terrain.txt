@@ -35,7 +35,7 @@
 
 # Version stamp (required)
 
-V:3.0.5
+V:3.0.6
 
 
 # 0x00 --> <darkness>

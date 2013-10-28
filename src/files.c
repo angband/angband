@@ -299,7 +299,7 @@ s16b tokenize(char *buf, s16b num, char **tokens)
  */
 errr process_pref_file_command(char *buf)
 {
-	long i, n1, n2;
+	long i, n1, n2, sq;
 
 	char *zz[16];
 
@@ -339,6 +339,53 @@ errr process_pref_file_command(char *buf)
 		}
 	}
 
+	/* Process "B:<k_idx>:inscription */
+	else if (buf[0] == 'B')
+	{
+		if (2 == tokenize(buf + 2, 2, zz))
+		{
+			add_autoinscription(strtol(zz[0], NULL, 0), zz[1]);
+			return (0);
+		}
+	}
+
+	/* Process "Q:<idx>:<tval>:<sval>:<y|n>"  -- squelch bits   */
+	/* and     "Q:<idx>:<val>"                -- squelch levels */
+	/* and     "Q:<val>"                      -- auto_destroy   */
+	else if (buf[0] == 'Q')
+	{
+		i = tokenize(buf+2, 4, zz);
+		if (i == 2)
+		{
+			n1 = strtol(zz[0], NULL, 0);
+			n2 = strtol(zz[1], NULL, 0);
+			squelch_level[n1] = n2;
+			return(0);
+		}
+		else if (i == 4)
+		{
+			i = strtol(zz[0], NULL, 0);
+			n1 = strtol(zz[1], NULL, 0);
+			n2 = strtol(zz[2], NULL, 0);
+			sq = strtol(zz[3], NULL, 0);
+			if ((k_info[i].tval == n1) && (k_info[i].sval == n2))
+			{
+				k_info[i].squelch = sq;
+				return(0);
+			}
+			else
+			{
+				for (i = 1; i < z_info->k_max; i++)
+				{
+					if ((k_info[i].tval == n1) && (k_info[i].sval == n2))
+					{
+						k_info[i].squelch = sq;
+						return(0);
+					}
+				}
+			}
+		}
+	}
 
 	/* Process "K:<num>:<a>/<c>"  -- attr/char for object kinds */
 	else if (buf[0] == 'K')
@@ -2900,11 +2947,6 @@ void process_player_name(bool sf)
 		strnfmt(temp, sizeof(temp), "%s", op_ptr->base_name);
 #endif
 
-#ifdef VM
-		/* Hack -- support "flat directory" usage on VM/ESA */
-		strnfmt(temp, sizeof(temp), "%s.sv", op_ptr->base_name);
-#endif /* VM */
-
 		/* Build the filename */
 		path_build(savefile, sizeof(savefile), ANGBAND_DIR_SAVE, temp);
 	}
@@ -4863,7 +4905,7 @@ void html_screenshot(cptr name)
 	int y, x;
 	int wid, hgt;
 
-	byte a;
+	byte a = 0;
 	byte oa = TERM_WHITE;
 	char c = ' ';
 
@@ -4890,14 +4932,15 @@ void html_screenshot(cptr name)
 	/* Retrieve current screen size */
 	Term_get_size(&wid, &hgt);
 
-	fprintf(htm, "<HTML>\n");
-	fprintf(htm, "<HEAD>\n");
-	fprintf(htm, "<META NAME=\"GENERATOR\" Content=\"%s %d.%d.%d\">\n",
+	fprintf(htm, "<!DOCTYPE html>");
+	fprintf(htm, "<html\n");
+	fprintf(htm, "<head>\n");
+	fprintf(htm, "  <meta=\"generator\" content=\"%s %d.%d.%d\">\n",
 	             VERSION_NAME, VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
-	fprintf(htm, "<TITLE>%s</TITLE>\n", name);
-	fprintf(htm, "</HEAD>\n\n");
-	fprintf(htm, "<BODY TEXT=\"#FFFFFF\" BGCOLOR=\"#000000\">\n");
-	fprintf(htm, "<PRE><TT>\n");
+	fprintf(htm, "  <title>%s</title>\n", name);
+	fprintf(htm, "</head>\n\n");
+	fprintf(htm, "<body text=\"#FFFFFF\" bgcolor=\"#000000\">\n");
+	fprintf(htm, "<pre><tt>\n");
 
 	/* Dump the screen */
 	for (y = 0; y < hgt; y++)
@@ -4913,7 +4956,7 @@ void html_screenshot(cptr name)
 				/* From the default white to another color */
 				if (oa == TERM_WHITE)
 				{
-					fprintf(htm, "<FONT COLOR=\"#%02X%02X%02X\">",
+					fprintf(htm, "<font color=\"#%02X%02X%02X\">",
 					        angband_color_table[a][1],
 					        angband_color_table[a][2],
 					        angband_color_table[a][3]);
@@ -4921,12 +4964,12 @@ void html_screenshot(cptr name)
 				/* From another color to the default white */
 				else if (a == TERM_WHITE)
 				{
-					fprintf(htm, "</FONT>");
+					fprintf(htm, "</font>");
 				}
 				/* Change colors */
 				else
 				{
-					fprintf(htm, "</FONT><FONT COLOR=\"#%02X%02X%02X\">",
+					fprintf(htm, "</font><font color=\"#%02X%02X%02X\">",
 					        angband_color_table[a][1],
 					        angband_color_table[a][2],
 					        angband_color_table[a][3]);
@@ -4945,12 +4988,12 @@ void html_screenshot(cptr name)
 	}
 
 	/* Close the last <font> tag if necessary */
-	if (a != TERM_WHITE) fprintf(htm, "</FONT>");
+	if (a != TERM_WHITE) fprintf(htm, "</font>");
 
-	fprintf(htm, "</TT></PRE>\n");
+	fprintf(htm, "</tt></pre>\n");
 
-	fprintf(htm, "</BODY>\n");
-	fprintf(htm, "</HTML>\n");
+	fprintf(htm, "</body>\n");
+	fprintf(htm, "</html>\n");
 
 	/* Close it */
 	my_fclose(htm);

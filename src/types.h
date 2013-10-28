@@ -79,6 +79,7 @@ typedef struct owner_type owner_type;
 typedef struct store_type store_type;
 typedef struct magic_type magic_type;
 typedef struct player_magic player_magic;
+typedef struct spell_type spell_type;
 typedef struct player_sex player_sex;
 typedef struct player_race player_race;
 typedef struct player_class player_class;
@@ -86,7 +87,7 @@ typedef struct hist_type hist_type;
 typedef struct player_other player_other;
 typedef struct player_type player_type;
 typedef struct start_item start_item;
-
+typedef struct autoinscription autoinscription;
 
 
 /**** Available structs ****/
@@ -112,6 +113,7 @@ struct maxima
 	u16b b_max;		/* Max size per element of "b_info[]" */
 	u16b c_max;		/* Max size for "c_info[]" */
 	u16b flavor_max; /* Max size for "flavor_info[]" */
+	u16b s_max;		/* Max size for "s_info[]" */
 
 	u16b o_max;		/* Max size for "o_list[]" */
 	u16b m_max;		/* Max size for "mon_list[]" */
@@ -187,6 +189,9 @@ struct object_kind
 	byte x_attr;		/* Desired object attribute */
 	char x_char;		/* Desired object character */
 
+	byte charge_base;	/* Charge base */
+	byte charge_dd, charge_ds;	/* Charge dice/sides */
+
 
 	u16b flavor;		/* Special object flavor (or zero) */
 
@@ -194,6 +199,11 @@ struct object_kind
 	bool aware;			/* The player is "aware" of the item's effects */
 
 	bool tried;			/* The player has "tried" one of the items */
+
+	byte squelch;		/* Squelch setting for the particular item */
+
+	bool everseen;		/* Used to despoilify squelch menus */
+
 };
 
 
@@ -271,6 +281,10 @@ struct ego_item_type
 	byte max_pval;		/* Maximum pval */
 
 	byte xtra;			/* Extra sustain/resist/power */
+
+	bool everseen;		/* Do not spoil squelch menus */
+	bool squelch;		/* Squelch this ego-item */
+
 };
 
 
@@ -606,14 +620,15 @@ struct store_type
 	s16b stock_size;		/* Stock -- Total Size of Array */
 	object_type *stock;		/* Stock -- Actual stock items */
 
-#ifndef USE_SCRIPT
 	s16b table_num;     /* Table -- Number of entries */
 	s16b table_size;    /* Table -- Total Size of Array */
 	s16b *table;        /* Table -- Legal item kinds */
-#endif /* USE_SCRIPT */
 };
 
 
+/*
+ * A structure to hold class-dependent information on spells.
+ */
 struct magic_type
 {
 	byte slevel;		/* Required level (to learn) */
@@ -633,6 +648,22 @@ struct player_magic
 	magic_type info[PY_MAX_SPELLS];	/* The available spells */
 };
 
+
+/*
+ * And here's the structure for the "fixed" spell information
+ */
+struct spell_type
+{
+	u32b name;			/* Name (offset) */
+	u32b text;			/* Text (offset) */
+
+	byte realm;			/* 0 = mage; 1 = priest */
+	byte tval;			/* Item type for book this spell is in */
+	byte sval;			/* Item sub-type for book (= book number) */
+	byte snum;			/* Position of spell within book */
+
+	byte spell_index;	/* Index into player_magic array */
+};
 
 
 /*
@@ -1109,3 +1140,11 @@ struct flavor_type
 	byte x_attr;    /* Desired flavor attribute */
 	char x_char;    /* Desired flavor character */
 };
+
+/* Information for object auto-inscribe */
+struct autoinscription
+{
+	s16b kind_idx;
+	s16b inscription_idx;
+};
+

@@ -828,8 +828,11 @@ static void wr_xtra(int k_idx)
 
 	if (k_ptr->aware) tmp8u |= 0x01;
 	if (k_ptr->tried) tmp8u |= 0x02;
+	if (k_ptr->everseen) tmp8u |= 0x08;
 
 	wr_byte(tmp8u);
+
+	wr_byte(k_ptr->squelch);
 }
 
 
@@ -1002,6 +1005,45 @@ static void wr_ghost(void)
 
 
 /*
+ * Write autoinscribe & squelch item-quality submenu to the savefile
+ */
+static void wr_squelch()
+{
+	int i;
+
+	for (i = 0; i < SQUELCH_BYTES; i++)
+		wr_byte(squelch_level[i]);
+
+	/* Save the current number of ego-item types */
+	wr_u16b(z_info->e_max);
+
+	/* Save ego-item squelch settings */
+	for (i = 0; i < z_info->e_max; i++)
+	{
+		ego_item_type *e_ptr = &e_info[i];
+		byte tmp8u = 0;
+
+		if (e_ptr->squelch) tmp8u |= 0x01;
+		if (e_ptr->everseen) tmp8u |= 0x02;
+
+		wr_byte(tmp8u);
+	}
+
+	/* Write the current number of auto-inscriptions */
+	wr_u16b(inscriptions_count);
+
+	/* Write the autoinscriptions array */
+	for (i = 0; i < inscriptions_count; i++)
+	{
+		wr_s16b(inscriptions[i].kind_idx);
+		wr_string(quark_str(inscriptions[i].inscription_idx));
+	}
+
+	return;
+}
+
+
+/*
  * Write some "extra" info
  */
 static void wr_extra(void)
@@ -1104,6 +1146,7 @@ static void wr_extra(void)
 	/* Future use */
 	for (i = 0; i < 10; i++) wr_u32b(0L);
 
+	wr_squelch();
 
 	/* Random artifact version */
 	wr_u32b(RANDART_VERSION);
@@ -1638,12 +1681,6 @@ bool save_player(void)
 	my_strcpy(safe, savefile, sizeof(safe));
 	strcat(safe, ".new");
 
-#ifdef VM
-	/* Hack -- support "flat directory" usage on VM/ESA */
-	my_strcpy(safe, savefile, sizeof(safe));
-	strcat(safe, "n");
-#endif /* VM */
-
 	/* Grab permissions */
 	safe_setuid_grab();
 
@@ -1661,12 +1698,6 @@ bool save_player(void)
 		/* Old savefile */
 		my_strcpy(temp, savefile, sizeof(temp));
 		strcat(temp, ".old");
-
-#ifdef VM
-		/* Hack -- support "flat directory" usage on VM/ESA */
-		my_strcpy(temp, savefile, sizeof(temp));
-		strcat(temp, "o");
-#endif /* VM */
 
 		/* Grab permissions */
 		safe_setuid_grab();

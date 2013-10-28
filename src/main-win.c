@@ -334,6 +334,12 @@ unsigned _cdecl _dos_getfileattr(const char *, unsigned *);
  */
 #define VUD_BRIGHT	0x80
 
+/*
+ * Font settings
+ */
+#define DEFAULT_FONT	"8X13.FON"
+
+
 
 /*
  * Forward declare
@@ -898,17 +904,13 @@ static void term_getsize(term_data *td)
 	wid = td->cols * td->tile_wid + td->size_ow1 + td->size_ow2;
 	hgt = td->rows * td->tile_hgt + td->size_oh1 + td->size_oh2;
 
-	/* Fake window size */
+	/* Client window size */
 	rc.left = 0;
 	rc.right = rc.left + wid;
 	rc.top = 0;
 	rc.bottom = rc.top + hgt;
 
-	/* XXX XXX XXX */
-	/* rc.right += 1; */
-	/* rc.bottom += 1; */
-
-	/* Adjust */
+	/* Get total window size (without menu for sub-windows) */
 	AdjustWindowRectEx(&rc, td->dwStyle, TRUE, td->dwExStyle);
 
 	/* Total size */
@@ -946,7 +948,7 @@ static void save_prefs_aux(term_data *td, cptr sec_name)
 	WritePrivateProfileString(sec_name, "Visible", buf, ini_file);
 
 	/* Font */
-	strcpy(buf, td->font_file ? td->font_file : "8X13.FON");
+	strcpy(buf, td->font_file ? td->font_file : DEFAULT_FONT);
 	WritePrivateProfileString(sec_name, "Font", buf, ini_file);
 
 	/* Bizarre */
@@ -1047,7 +1049,7 @@ static void load_prefs_aux(term_data *td, cptr sec_name)
 	td->maximized = (GetPrivateProfileInt(sec_name, "Maximized", td->maximized, ini_file) != 0);
 
 	/* Desired font, with default */
-	GetPrivateProfileString(sec_name, "Font", "8X13.FON", tmp, 127, ini_file);
+	GetPrivateProfileString(sec_name, "Font", DEFAULT_FONT, tmp, 127, ini_file);
 
 	/* Bizarre */
 	td->bizarre = (GetPrivateProfileInt(sec_name, "Bizarre", TRUE, ini_file) != 0);
@@ -1491,6 +1493,25 @@ static void term_window_resize(const term_data *td)
 
 
 /*
+ * Remove a font, given its filename.
+ */
+static void term_remove_font(const char *name)
+{
+	char buf[1024];
+
+	/* Build path to the file */
+	my_strcpy(buf, ANGBAND_DIR_XTRA_FONT, sizeof(buf));
+	my_strcat(buf, "\\", sizeof(buf));
+	my_strcat(buf, name, sizeof(buf));
+
+	/* Remove it */
+	RemoveFontResource(buf);
+
+	return;
+}
+
+
+/*
  * Force the use of a new "font file" for a term_data
  *
  * This function may be called before the "window" is ready
@@ -1510,6 +1531,10 @@ static errr term_force_font(term_data *td, cptr path)
 	char buf[1024];
 
 
+	/* Check we have a path */
+	if (!path) return (1);
+
+
 	/* Forget the old font (if needed) */
 	if (td->font_id) DeleteObject(td->font_id);
 
@@ -1521,9 +1546,6 @@ static errr term_force_font(term_data *td, cptr path)
 		/* Scan windows */
 		for (i = 0; i < MAX_TERM_DATA; i++)
 		{
-			/* Don't check when closing the application */
-			if (!path) break;
-
 			/* Check "screen" */
 			if ((td != &data[i]) &&
 			    (data[i].font_file) &&
@@ -1534,7 +1556,7 @@ static errr term_force_font(term_data *td, cptr path)
 		}
 
 		/* Remove unused font resources */
-		if (!used) RemoveFontResource(td->font_file);
+		if (!used) term_remove_font(td->font_file);
 
 		/* Free the old name */
 		string_free(td->font_file);
@@ -1543,9 +1565,6 @@ static errr term_force_font(term_data *td, cptr path)
 		td->font_file = NULL;
 	}
 
-
-	/* No path given */
-	if (!path) return (1);
 
 
 	/* Local copy */
@@ -1562,6 +1581,9 @@ static errr term_force_font(term_data *td, cptr path)
 
 	/* Load the new font */
 	if (!AddFontResource(buf)) return (1);
+
+	/* Notify other applications that a new font is available  XXX */
+	SendMessage(HWND_BROADCAST, WM_FONTCHANGE, 0, 0);
 
 	/* Save new font name */
 	td->font_file = string_make(base);
@@ -1635,7 +1657,7 @@ static void term_change_font(term_data *td)
 		if (term_force_font(td, tmp))
 		{
 			/* Access the standard font file */
-			path_build(tmp, sizeof(tmp), ANGBAND_DIR_XTRA_FONT, "8X13.FON");
+			path_build(tmp, sizeof(tmp), ANGBAND_DIR_XTRA_FONT, DEFAULT_FONT);
 
 			/* Force the use of that font */
 			(void)term_force_font(td, tmp);
@@ -2749,7 +2771,7 @@ static void init_windows(void)
 		if (term_force_font(td, buf))
 		{
 			/* Access the standard font file */
-			path_build(buf, sizeof(buf), ANGBAND_DIR_XTRA_FONT, "8X13.FON");
+			path_build(buf, sizeof(buf), ANGBAND_DIR_XTRA_FONT, DEFAULT_FONT);
 
 			/* Force the use of that font */
 			(void)term_force_font(td, buf);
@@ -4698,11 +4720,14 @@ static void hook_quit(cptr str)
 	/* Destroy all windows */
 	for (i = MAX_TERM_DATA - 1; i >= 0; --i)
 	{
-		term_force_font(&data[i], NULL);
+		/* Remove all fonts from the system, free resources */
+		if (data[i].font_file) term_remove_font(data[i].font_file);
+		if (data[i].font_id) DeleteObject(data[i].font_id);
 		if (data[i].font_want) string_free(data[i].font_want);
+
+		/* Kill the window */
 		if (data[i].w) DestroyWindow(data[i].w);
 		data[i].w = 0;
-
 		term_nuke(&data[i].t);
 	}
 
@@ -4825,11 +4850,6 @@ static void init_stuff(void)
 	validate_dir(ANGBAND_DIR_BONE);
 	validate_dir(ANGBAND_DIR_DATA);
 	validate_dir(ANGBAND_DIR_EDIT);
-
-#ifdef USE_SCRIPT
-	validate_dir(ANGBAND_DIR_SCRIPT);
-#endif /* USE_SCRIPT */
-
 	validate_dir(ANGBAND_DIR_FILE);
 	validate_dir(ANGBAND_DIR_HELP);
 	validate_dir(ANGBAND_DIR_INFO);
@@ -4855,7 +4875,7 @@ static void init_stuff(void)
 	validate_dir(ANGBAND_DIR_XTRA_FONT);
 
 	/* Build the filename */
-	path_build(path, sizeof(path), ANGBAND_DIR_XTRA_FONT, "8X13.FON");
+	path_build(path, sizeof(path), ANGBAND_DIR_XTRA_FONT, DEFAULT_FONT);
 
 	/* Hack -- Validate the basic font */
 	validate_file(path);

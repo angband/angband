@@ -17,6 +17,10 @@
 	WWW			: http://www.angband.pwp.blueyonder.co.uk
 */
 
+#include "angband.h"
+
+#ifdef USE_AMI
+
 /* Variant name and version */
 #define VARIANT "Angband 3.0.1"
 
@@ -26,8 +30,6 @@
 #define CGXSUPPORT		/* Define for RTG support. Leave on */
 
 #ifndef __CEXTRACT__
-#include "angband.h"
-
 #include "main.h"
 
 #include "vers.h"
@@ -5482,3 +5484,5 @@ static void quick_BltMaskBitMapRastPort( struct BitMap *src, int x, int y, struc
 }
 
 #endif
+
+#endif /* USE_AMI */

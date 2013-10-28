@@ -78,6 +78,7 @@ void init_file_paths(char *path)
 
 #ifdef PRIVATE_USER_PATH
 	char buf[1024];
+	char dirpath[1024];
 #endif /* PRIVATE_USER_PATH */
 
 	/*** Free everything ***/
@@ -109,29 +110,6 @@ void init_file_paths(char *path)
 	tail = path + strlen(path);
 
 
-#ifdef VM
-
-
-	/*** Use "flat" paths with VM/ESA ***/
-
-	/* Use "blank" path names */
-	ANGBAND_DIR_APEX = string_make("");
-	ANGBAND_DIR_BONE = string_make("");
-	ANGBAND_DIR_DATA = string_make("");
-	ANGBAND_DIR_EDIT = string_make("");
-	ANGBAND_DIR_FILE = string_make("");
-	ANGBAND_DIR_HELP = string_make("");
-	ANGBAND_DIR_INFO = string_make("");
-	ANGBAND_DIR_SAVE = string_make("");
-	ANGBAND_DIR_PREF = string_make("");
-	ANGBAND_DIR_USER = string_make("");
-	ANGBAND_DIR_XTRA = string_make("");
-	ANGBAND_DIR_SCRIPT = string_make("");
-
-
-#else /* VM */
-
-
 	/*** Build the sub-directory names ***/
 
 	/* Build a path name */
@@ -156,8 +134,10 @@ void init_file_paths(char *path)
 
 #ifdef PRIVATE_USER_PATH
 
+	/* Get an absolute path from the filename */
+	path_parse(dirpath, sizeof(dirpath), PRIVATE_USER_PATH);
 	/* Build the path to the user specific directory */
-	path_build(buf, sizeof(buf), PRIVATE_USER_PATH, VERSION_NAME);
+	path_build(buf, sizeof(buf), dirpath, VERSION_NAME);
 
 	/* Build a relative path name */
 	ANGBAND_DIR_USER = string_make(buf);
@@ -223,8 +203,6 @@ void init_file_paths(char *path)
 	/* Build a path name */
 	strcpy(tail, "script");
 	ANGBAND_DIR_SCRIPT = string_make(path);
-
-#endif /* VM */
 
 
 #ifdef NeXT
@@ -377,6 +355,7 @@ header h_head;
 header b_head;
 header g_head;
 header flavor_head;
+header s_head;
 
 
 
@@ -1082,9 +1061,66 @@ static errr init_flavor_info(void)
 }
 
 
-/*** Initialize others ***/
 
-#ifndef USE_SCRIPT
+/*
+ * Initialize the "s_info" array
+ */
+static errr init_s_info(void)
+{
+	errr err;
+
+	/* Init the header */
+	init_header(&s_head, z_info->s_max, sizeof(spell_type));
+
+#ifdef ALLOW_TEMPLATES
+
+	/* Save a pointer to the parsing function */
+	s_head.parse_info_txt = parse_s_info;
+
+#endif /* ALLOW_TEMPLATES */
+
+	err = init_info("spell", &s_head);
+
+	/* Set the global variables */
+	s_info = s_head.info_ptr;
+	s_name = s_head.name_ptr;
+	s_text = s_head.text_ptr;
+
+	return (err);
+}
+
+/*
+ * Initialize the "spell_list" array
+ */
+static void init_books(void)
+{
+	byte realm, sval, snum;
+	u16b spell;
+
+	/* Since not all slots in all books are used, initialize to -1 first */
+	for (realm = 0; realm < MAX_REALMS; realm++)
+	{
+		for (sval = 0; sval < BOOKS_PER_REALM; sval++)
+		{
+			for (snum = 0; snum < SPELLS_PER_BOOK; snum++)
+			{
+				spell_list[realm][sval][snum] = -1;
+			}
+		}
+	}
+
+	/* Place each spell in it's own book */
+	for (spell = 0; spell < z_info->s_max; spell++)
+	{
+		/* Get the spell */
+		spell_type *s_ptr = &s_info[spell];
+
+		/* Put it in the book */
+		spell_list[s_ptr->realm][s_ptr->sval][s_ptr->snum] = spell;
+	}
+}
+
+/*** Initialize others ***/
 
 #define STORE_CHOICES   32              /* Number of items to choose stock from */
 
@@ -1335,7 +1371,17 @@ static const byte store_table[MAX_STORES-2][STORE_CHOICES][2] =
 	}
 };
 
-#endif /* USE_SCRIPT */
+
+
+static void autoinscribe_init(void)
+{
+	if (inscriptions)
+		FREE(inscriptions);
+ 
+	inscriptions = 0;
+	inscriptions_count = 0;
+}
+
 
 /*
  * Initialize some other arrays
@@ -1352,6 +1398,11 @@ static errr init_other(void)
 
 	/* Initialize the "quark" package */
 	(void)quarks_init();
+
+	/* Initialize squelch things */
+	squelch_init();
+	autoinscribe_init();
+	C_MAKE(inscriptions, AUTOINSCRIPTIONS_MAX, autoinscription);
 
 	/* Initialize the "message" package */
 	(void)messages_init();
@@ -1430,10 +1481,7 @@ static errr init_other(void)
 	/* Fill in each store */
 	for (i = 0; i < MAX_STORES; i++)
 	{
-
-#ifndef USE_SCRIPT
 		int k;
-#endif /* USE_SCRIPT */
 
 		/* Get the store */
 		store_type *st_ptr = &store[i];
@@ -1443,8 +1491,6 @@ static errr init_other(void)
 
 		/* Allocate the stock */
 		C_MAKE(st_ptr->stock, st_ptr->stock_size, object_type);
-
-#ifndef USE_SCRIPT
 
 		/* No table for the black market or home */
 		if ((i == STORE_B_MARKET) || (i == STORE_HOME)) continue;
@@ -1479,9 +1525,6 @@ static errr init_other(void)
 			/* Add that item index to the table */
 			st_ptr->table[st_ptr->table_num++] = k_idx;
 		}
-
-#endif /* USE_SCRIPT */
-
 	}
 
 
@@ -2020,6 +2063,14 @@ void init_angband(void)
 	note("[Initializing arrays... (flavors)]");
 	if (init_flavor_info()) quit("Cannot initialize flavors");
 	
+	/* Initialize spell info */
+	note("[Initializing arrays... (spells)]");
+	if (init_s_info()) quit("Cannot initialize spells");
+
+	/* Initialize spellbook info */
+	note("[Initializing arrays... (spellbooks)]");
+	init_books();
+
 	/* Initialize some other arrays */
 	note("[Initializing arrays... (other)]");
 	if (init_other()) quit("Cannot initialize other stuff");
@@ -2027,10 +2078,6 @@ void init_angband(void)
 	/* Initialize some other arrays */
 	note("[Initializing arrays... (alloc)]");
 	if (init_alloc()) quit("Cannot initialize alloc stuff");
-
-	/* Initialize scripting */
-	note("[Initializing scripts... (scripts)]");
-	if (script_init()) quit("Cannot initialize scripts");
 
 	/*** Load default user pref files ***/
 
@@ -2049,9 +2096,6 @@ void cleanup_angband(void)
 {
 	int i;
 
-
-	/* Free the scripting support */
-	script_free();
 
 	/* Free the macros */
 	macro_free();
@@ -2131,6 +2175,7 @@ void cleanup_angband(void)
 	free_info(&k_head);
 	free_info(&f_head);
 	free_info(&z_head);
+	free_info(&s_head);
 
 	/* Free the format() buffer */
 	vformat_kill();

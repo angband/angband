@@ -41,43 +41,6 @@
 
 
 /*
- * OPTION: Use the POSIX "termios" methods in "main-gcu.c"
- */
-/* #define USE_TPOSIX */
-
-/*
- * OPTION: Use the "termio" methods in "main-gcu.c"
- */
-/* #define USE_TERMIO */
-
-/*
- * OPTION: Use the icky BSD "tchars" methods in "main-gcu.c"
- */
-/* #define USE_TCHARS */
-
-
-/*
- * OPTION: Use "blocking getch() calls" in "main-gcu.c".
- * Hack -- Note that this option will NOT work on many BSD machines
- * Currently used whenever available, if you get a warning about
- * "nodelay()" undefined, then make sure to undefine this.
- */
-#if defined(SYS_V) || defined(AMIGA)
-# define USE_GETCH
-#endif
-
-
-/*
- * OPTION: Use the "curs_set()" call in "main-gcu.c".
- * Hack -- This option will not work on most BSD machines
- * But it *will* work on Linux, which is not System V.
- */
-#if defined(SYS_V) || defined(linux)
-# define USE_CURS_SET
-#endif
-
-
-/*
  * OPTION: Include "ncurses.h" instead of "curses.h" in "main-gcu.c"
  */
 /* #define USE_NCURSES */
@@ -153,11 +116,6 @@
  * OPTION: Hack -- Compile in support for "Spoiler Generation"
  */
 #define ALLOW_SPOILERS
-
-/*
- * OPTION: Compile in scripting support
- */
-#define USE_SCRIPT
 
 /*
  * OPTION: Allow "do_cmd_colors" at run-time

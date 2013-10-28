@@ -33,11 +33,7 @@
  *
  * This file will attempt to redefine the screen colors to conform to
  * standard Angband colors.  It will only do so if the terminal type
- * indicates that it can do so.  See the page:
- *
- *     http://www.umr.edu/~keldon/ang-patch/ncurses_color.html
- *
- * for information on this.
+ * indicates that it can do so.
  *
  * Consider the use of "savetty()" and "resetty()".  XXX XXX XXX
  */
@@ -81,73 +77,73 @@
 
 
 /*
- * Hack -- try to guess which systems use what commands
- * Hack -- allow one of the "USE_Txxxxx" flags to be pre-set.
- * Mega-Hack -- try to guess when "POSIX" is available.
- * If the user defines two of these, we will probably crash.
+ * Use POSIX terminal I/O
  */
-#if !defined(USE_TPOSIX)
-# if !defined(USE_TERMIO) && !defined(USE_TCHARS)
-#  if defined(_POSIX_VERSION)
-#   define USE_TPOSIX
-#  else
-#   if defined(USG) || defined(linux) || defined(SOLARIS)
-#    define USE_TERMIO
-#   else
-#    define USE_TCHARS
-#   endif
-#  endif
-# endif
-#endif
+#define USE_TPOSIX
 
 /*
  * Hack -- Amiga uses "fake curses" and cannot do any of this stuff
  */
 #if defined(AMIGA)
 # undef USE_TPOSIX
-# undef USE_TERMIO
-# undef USE_TCHARS
 #endif
 
-
-
+/*
+ * Hack -- Windows Console mode uses PDCURSES and cannot do any terminal stuff
+ * Hack -- Windows needs Sleep(), and I really don't want to pull in all
+ *         the Win32 headers for this one function
+ */
+#if defined(WIN32_CONSOLE_MODE)
+# undef USE_TPOSIX
+_stdcall void Sleep(int);
+#define usleep(v) Sleep(v / 1000)
+#endif
 
 /*
  * POSIX stuff
  */
 #ifdef USE_TPOSIX
-# include <sys/ioctl.h>
+/*# include <sys/ioctl.h>*/
 # include <termios.h>
 #endif
 
 /*
- * One version needs these files
- */
-#ifdef USE_TERMIO
-# include <sys/ioctl.h>
-# include <termio.h>
-#endif
-
-/*
- * The other needs these files
- */
-#ifdef USE_TCHARS
-# include <sys/ioctl.h>
-# include <sys/resource.h>
-# include <sys/param.h>
-# include <sys/file.h>
-# include <sys/types.h>
-#endif
-
-
-/*
- * XXX XXX Hack -- POSIX uses "O_NONBLOCK" instead of "O_NDELAY"
+ * OPTION: Use old BSD curses.
  *
- * They should both work due to the "(i != 1)" test below.
+ * Some versions of curses does things a bit differently.
+ *
+ * If you have an old BSD 4.4 version of curses that isn't
+ * XSI Curses standard compatible enable this.
  */
-#ifndef O_NDELAY
-# define O_NDELAY O_NONBLOCK
+/* #define USE_OLD_CURSES */
+
+
+/*
+ * Turn on options that are available in modern curses.
+ */
+#if defined (USE_OLD_CURSES)
+/* Nothing */
+#else
+# define USE_GETCH
+# define USE_CURS_SET
 #endif
+
+/*
+ * You might want to turn on some of the options below this line
+ * if you had to turn on USE_OLD_CURSES
+ */
+
+
+/*
+ * OPTION: Use "blocking getch() calls" in "main-gcu.c".
+ */
+/* #define USE_GETCH */
+
+/*
+ * OPTION: Use the "curs_set()" call in "main-gcu.c".
+ */
+/* #define USE_CURS_SET */
+
 
 
 /*
@@ -177,27 +173,6 @@ static struct termios  game_termios;
 
 #endif
 
-#ifdef USE_TERMIO
-
-static struct termio  norm_termio;
-
-static struct termio  game_termio;
-
-#endif
-
-#ifdef USE_TCHARS
-
-static struct ltchars norm_special_chars;
-static struct sgttyb  norm_ttyb;
-static struct tchars  norm_tchars;
-static int            norm_local_chars;
-
-static struct ltchars game_special_chars;
-static struct sgttyb  game_ttyb;
-static struct tchars  game_tchars;
-static int            game_local_chars;
-
-#endif
 
 /*
  * Information about a term
@@ -266,22 +241,6 @@ static void keymap_norm(void)
 
 #endif
 
-#ifdef USE_TERMIO
-
-	/* restore the saved values of the special chars */
-	(void)ioctl(0, TCSETA, (char *)&norm_termio);
-
-#endif
-
-#ifdef USE_TCHARS
-
-	/* restore the saved values of the special chars */
-	(void)ioctl(0, TIOCSLTC, (char *)&norm_special_chars);
-	(void)ioctl(0, TIOCSETP, (char *)&norm_ttyb);
-	(void)ioctl(0, TIOCSETC, (char *)&norm_tchars);
-	(void)ioctl(0, TIOCLSET, (char *)&norm_local_chars);
-
-#endif
 
 }
 
@@ -298,24 +257,6 @@ static void keymap_game(void)
 	(void)tcsetattr(0, TCSAFLUSH, &game_termios);
 
 #endif
-
-#ifdef USE_TERMIO
-
-	/* restore the saved values of the special chars */
-	(void)ioctl(0, TCSETA, (char *)&game_termio);
-
-#endif
-
-#ifdef USE_TCHARS
-
-	/* restore the saved values of the special chars */
-	(void)ioctl(0, TIOCSLTC, (char *)&game_special_chars);
-	(void)ioctl(0, TIOCSETP, (char *)&game_ttyb);
-	(void)ioctl(0, TIOCSETC, (char *)&game_tchars);
-	(void)ioctl(0, TIOCLSET, (char *)&game_local_chars);
-
-#endif
-
 }
 
 
@@ -329,23 +270,6 @@ static void keymap_norm_prepare(void)
 
 	/* Get the normal keymap */
 	tcgetattr(0, &norm_termios);
-
-#endif
-
-#ifdef USE_TERMIO
-
-	/* Get the normal keymap */
-	(void)ioctl(0, TCGETA, (char *)&norm_termio);
-
-#endif
-
-#ifdef USE_TCHARS
-
-	/* Get the normal keymap */
-	(void)ioctl(0, TIOCGETP, (char *)&norm_ttyb);
-	(void)ioctl(0, TIOCGLTC, (char *)&norm_special_chars);
-	(void)ioctl(0, TIOCGETC, (char *)&norm_tchars);
-	(void)ioctl(0, TIOCLGET, (char *)&norm_local_chars);
 
 #endif
 
@@ -384,75 +308,6 @@ static void keymap_game_prepare(void)
 
 #endif
 
-#ifdef USE_TERMIO
-
-	/* Acquire the current mapping */
-	(void)ioctl(0, TCGETA, (char *)&game_termio);
-
-	/* Force "Ctrl-C" to interupt */
-	game_termio.c_cc[VINTR] = (char)3;
-
-	/* Force "Ctrl-Z" to suspend */
-	game_termio.c_cc[VSUSP] = (char)26;
-
-	/* Hack -- Leave "VSTART/VSTOP" alone */
-
-	/* Disable the standard control characters */
-	game_termio.c_cc[VQUIT] = (char)-1;
-	game_termio.c_cc[VERASE] = (char)-1;
-	game_termio.c_cc[VKILL] = (char)-1;
-	game_termio.c_cc[VEOF] = (char)-1;
-	game_termio.c_cc[VEOL] = (char)-1;
-
-#if 0
-	/* Disable the non-posix control characters */
-	game_termio.c_cc[VEOL2] = (char)-1;
-	game_termio.c_cc[VSWTCH] = (char)-1;
-	game_termio.c_cc[VDSUSP] = (char)-1;
-	game_termio.c_cc[VREPRINT] = (char)-1;
-	game_termio.c_cc[VDISCARD] = (char)-1;
-	game_termio.c_cc[VWERASE] = (char)-1;
-	game_termio.c_cc[VLNEXT] = (char)-1;
-	game_termio.c_cc[VSTATUS] = (char)-1;
-#endif
-
-	/* Normally, block until a character is read */
-	game_termio.c_cc[VMIN] = 1;
-	game_termio.c_cc[VTIME] = 0;
-
-#endif
-
-#ifdef USE_TCHARS
-
-	/* Get the default game characters */
-	(void)ioctl(0, TIOCGETP, (char *)&game_ttyb);
-	(void)ioctl(0, TIOCGLTC, (char *)&game_special_chars);
-	(void)ioctl(0, TIOCGETC, (char *)&game_tchars);
-	(void)ioctl(0, TIOCLGET, (char *)&game_local_chars);
-
-	/* Force suspend (^Z) */
-	game_special_chars.t_suspc = (char)26;
-
-	/* Cancel some things */
-	game_special_chars.t_dsuspc = (char)-1;
-	game_special_chars.t_rprntc = (char)-1;
-	game_special_chars.t_flushc = (char)-1;
-	game_special_chars.t_werasc = (char)-1;
-	game_special_chars.t_lnextc = (char)-1;
-
-	/* Force interupt (^C) */
-	game_tchars.t_intrc = (char)3;
-
-	/* Force start/stop (^Q, ^S) */
-	game_tchars.t_startc = (char)17;
-	game_tchars.t_stopc = (char)19;
-
-	/* Cancel some things */
-	game_tchars.t_quitc = (char)-1;
-	game_tchars.t_eofc = (char)-1;
-	game_tchars.t_brkc = (char)-1;
-
-#endif
 
 }
 
@@ -682,7 +537,7 @@ static errr Term_xtra_gcu_event(int v)
 		if (k < 0) return (1);
 
 		/* Tell stdin not to block */
-		if (fcntl(0, F_SETFL, k | O_NDELAY) < 0) return (1);
+		if (fcntl(0, F_SETFL, k | O_NONBLOCK) < 0) return (1);
 
 		/* Read one byte, if possible */
 		i = read(0, buf, 1);
@@ -783,7 +638,8 @@ static errr Term_xtra_gcu(int n, int v)
 
 		/* Delay */
 		case TERM_XTRA_DELAY:
-		if (v > 0) usleep(1000 * v);
+		if (v > 0)
+			usleep(1000 * v);
 		return (0);
 
 		/* React to events */
@@ -819,6 +675,7 @@ static errr Term_curs_gcu(int x, int y)
 static errr Term_wipe_gcu(int x, int y, int n)
 {
 	term_data *td = (term_data *)(Term->data);
+	char buf[1024];
 
 	/* Place cursor */
 	wmove(td->win, y, x);
@@ -832,7 +689,11 @@ static errr Term_wipe_gcu(int x, int y, int n)
 	/* Clear some characters */
 	else
 	{
-		while (n-- > 0) waddch(td->win, ' ');
+		/* Format a buffer */
+		strnfmt(buf, sizeof(buf), "%*c", n, ' ');
+
+		/* Output */
+		waddstr(td->win, buf);
 	}
 
 	/* Success */
@@ -846,8 +707,7 @@ static errr Term_wipe_gcu(int x, int y, int n)
 static errr Term_text_gcu(int x, int y, int n, byte a, cptr s)
 {
 	term_data *td = (term_data *)(Term->data);
-
-	int i;
+	char buf[1024];
 
 #ifdef A_COLOR
 	/* Set the color */
@@ -857,50 +717,16 @@ static errr Term_text_gcu(int x, int y, int n, byte a, cptr s)
 	/* Move the cursor */
 	wmove(td->win, y, x);
 
-	/* Draw each character */
-	for (i = 0; i < n; i++)
-	{
-#ifdef USE_GRAPHICS
-		int pic;
+	/* Format to appropriate size */
+	strnfmt(buf, sizeof buf, "%.*s", n, s);
 
-		/* Special character */
-		if (use_graphics && (s[i] & 0x80))
-		{
-			/* Determine picture to use */
-			switch (s[i] & 0x7F)
-			{
+	/* Write to screen */
+	waddstr(td->win, buf);
 
-#ifdef ACS_CKBOARD
-				/* Wall */
-				case '#':
-					pic = ACS_CKBOARD;
-					break;
-#endif /* ACS_CKBOARD */
-
-#ifdef ACS_BOARD
-				/* Mineral vein */
-				case '%':
-					pic = ACS_BOARD;
-					break;
-#endif /* ACS_BOARD */
-
-				/* XXX */
-				default:
-					pic = '?';
-					break;
-			}
-
-			/* Draw the picture */
-			waddch(td->win, pic);
-
-			/* Next character */
-			continue;
-		}
-#endif /* USE_GRAPHICS */
-
-		/* Draw a normal character */
-		waddch(td->win, (byte)s[i]);
-	}
+#ifdef A_COLOR
+	/* Unset the color */
+	if (can_use_color) wattrset(td->win, 0);
+#endif
 
 	/* Success */
 	return (0);
@@ -983,7 +809,7 @@ errr init_gcu(int argc, char **argv)
 
 	bool use_big_screen = FALSE;
 
-	
+
 	/* Parse args */
 	for (i = 1; i < argc; i++)
 	{
@@ -1013,17 +839,6 @@ errr init_gcu(int argc, char **argv)
 		quit("Angband needs at least an 80x24 'curses' screen");
 	}
 
-
-#ifdef USE_GRAPHICS
-
-	/* Set graphics */
-	if (arg_graphics)
-	{
-		use_graphics = GRAPHICS_PSEUDO;
-		ANGBAND_GRAF = "pseudo";
-	}
-
-#endif /* USE_GRAPHICS */
 
 #ifdef A_COLOR
 

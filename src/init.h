@@ -112,6 +112,7 @@ extern errr parse_h_info(char *buf, header *head);
 extern errr parse_b_info(char *buf, header *head);
 extern errr parse_g_info(char *buf, header *head);
 extern errr parse_flavor_info(char *buf, header *head);
+extern errr parse_s_info(char *buf, header *head);
 
 /*
  * Error tracking

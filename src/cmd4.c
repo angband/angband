@@ -211,6 +211,7 @@ void do_cmd_redraw(void)
 	                  PW_MESSAGE | PW_OVERHEAD | PW_MONSTER | PW_OBJECT |
 	                  PW_MAP | PW_MONLIST);
 
+
 	/* Clear screen */
 	Term_clear();
 
@@ -236,6 +237,54 @@ void do_cmd_redraw(void)
 		/* Restore */
 		Term_activate(old);
 	}
+}
+
+
+/*
+ * Hack -- redraw map 
+ */
+void resize_map(void)
+{
+	/* Only if the dungeon exists */
+	if (!character_dungeon) return;
+
+	/* Verify the correct panel */
+	verify_panel();
+
+
+	/* Combine and Reorder the pack (later) */
+	p_ptr->notice |= (PN_COMBINE | PN_REORDER);
+
+
+	/* Update torch */
+	p_ptr->update |= (PU_TORCH);
+
+	/* Update stuff */
+	p_ptr->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
+
+	/* Fully update the visuals */
+	p_ptr->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
+
+	/* Redraw everything */
+	p_ptr->redraw |= (PR_BASIC | PR_EXTRA | PR_MAP | PR_EQUIPPY);
+
+	/* Window stuff */
+	p_ptr->window |= (PW_INVEN | PW_EQUIP | PW_PLAYER_0 | PW_PLAYER_1 |
+	                  PW_MESSAGE | PW_OVERHEAD | PW_MONSTER | PW_OBJECT |
+	                  PW_MAP | PW_MONLIST);
+
+	/* Clear screen */
+	Term_clear();
+
+	/* Hack -- update */
+	handle_stuff();
+
+
+	/* Place the cursor on the player */
+	move_cursor_relative(p_ptr->px, p_ptr->py);
+
+	/* Refresh */
+	Term_fresh();
 }
 
 
@@ -353,15 +402,8 @@ void do_cmd_messages(void)
 	int i, j, n, q;
 	int wid, hgt;
 
-	char shower[80];
-	char finder[80];
-
-
-	/* Wipe finder */
-	strcpy(finder, "");
-
-	/* Wipe shower */
-	strcpy(shower, "");
+	char shower[80] = "";
+	char finder[80] = "";
 
 
 	/* Total messages */
@@ -1043,6 +1085,9 @@ void do_cmd_options(void)
 		/* Window flags */
 		prt("(W) Window flags", 12, 5);
 
+		/* Squelch menus */
+		prt("(S) Item Squelch and Autoinscribe Menus", 13, 5);
+
 		/* Load and Append */
 		prt("(L) Load a user pref file", 14, 5);
 		prt("(A) Append options to a file", 15, 5);
@@ -1107,6 +1152,12 @@ void do_cmd_options(void)
 		{
 			do_cmd_options_win();
 		}
+
+		/* Squelching and autoinscription menus */
+		else if ((ch == 'S') || (ch == 's'))
+		{
+			do_cmd_squelch_autoinsc();
+		} 
 
 		/* Load a user pref file */
 		else if ((ch == 'L') || (ch == 'l'))

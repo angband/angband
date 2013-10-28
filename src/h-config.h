@@ -13,13 +13,7 @@
  * should not be defined by the user.
  */
 
-
-/*
- * OPTION: Compile on a Macintosh machine
- */
-#ifndef MACINTOSH
-/* #define MACINTOSH */
-#endif
+#include <limits.h>
 
 /*
  * OPTION: Compile on a Windows machine
@@ -162,22 +156,21 @@
 #endif
 
 /*
- * Remove the WINDOWS flag when using MACINTOSH
- */
-#ifdef MACINTOSH
-# ifdef WINDOWS
-#  undef WINDOWS
-# endif
-#endif
-
-
-
-/*
  * OPTION: Define "L64" if a "long" is 64-bits.  See "h-types.h".
  * The only such platform that angband is ported to is currently
  * DEC Alpha AXP running OSF/1 (OpenVMS uses 32-bit longs).
+ *
+ * Try to use __WORDSIZE to test for 64-bit platforms.
+ * I don't know how portable this is.
+ * -CJN-
  */
-#if defined(__alpha) && defined(__osf__)
+#ifdef __WORDSIZE
+# if __WORDSIZE == 64
+#  define L64
+# endif
+#endif
+
+#if defined(__alpha) && defined(__osf__) && !defined(L64)
 # define L64
 #endif
 
@@ -194,27 +187,10 @@
  * Basically, SET_UID should *only* be set for "Unix" machines,
  * or for the "Atari" platform which is Unix-like, apparently
  */
-#if !defined(MACINTOSH) && !defined(WINDOWS) && \
+#if !defined(MACH_O_CARBON) && !defined(WINDOWS) && \
     !defined(MSDOS) && !defined(USE_EMX) && \
-    !defined(AMIGA) && !defined(RISCOS) && !defined(VM)
+    !defined(AMIGA) && !defined(RISCOS)
 # define SET_UID
-#endif
-
-
-/*
- * OPTION: Set "USG" for "System V" versions of Unix
- * This is used to choose a "lock()" function, and to choose
- * which header files ("string.h" vs "strings.h") to include.
- * It is also used to allow certain other options, such as options
- * involving userid's, or multiple users on a single machine, etc.
- */
-#ifdef SET_UID
-# if defined(SYS_III) || defined(SYS_V) || defined(SOLARIS) || \
-     defined(HPUX) || defined(SGI) || defined(ATARI)
-#  ifndef USG
-#   define USG
-#  endif
-# endif
 #endif
 
 
@@ -224,49 +200,43 @@
  * for various other systems.  Note that any system that uses the
  * "period" as a separator (i.e. RISCOS) will have to pretend that
  * it uses the slash, and do its own mapping of period <-> slash.
- * Note that the VM system uses a "flat" directory, and thus uses
- * the empty string for "PATH_SEP".
  */
 #undef PATH_SEP
 #define PATH_SEP "/"
-#ifdef MACINTOSH
-# undef PATH_SEP
-# define PATH_SEP ":"
-#endif
-#if defined(WINDOWS) || defined(WINNT)
+
+#if defined(WINDOWS) || defined(WINNT) || defined(MSDOS) || defined(OS2) || defined(USE_EMX)
 # undef PATH_SEP
 # define PATH_SEP "\\"
 #endif
-#if defined(MSDOS) || defined(OS2) || defined(USE_EMX)
-# undef PATH_SEP
-# define PATH_SEP "\\"
-#endif
-#ifdef AMIGA
+
+#if defined(AMIGA) || defined(__GO32__)
 # undef PATH_SEP
 # define PATH_SEP "/"
-#endif
-#ifdef __GO32__
-# undef PATH_SEP
-# define PATH_SEP "/"
-#endif
-#ifdef VM
-# undef PATH_SEP
-# define PATH_SEP ""
 #endif
 
 
 /*
- * The Macintosh allows the use of a "file type" when creating a file
+ * Mac support
  */
-#if defined(MACINTOSH) || defined(MACH_O_CARBON)
+#ifdef MACH_O_CARBON
+
+/* OS X uses filetypes when creating files. */
 # define FILE_TYPE_TEXT 'TEXT'
 # define FILE_TYPE_DATA 'DATA'
 # define FILE_TYPE_SAVE 'SAVE'
 # define FILE_TYPE(X) (_ftype = (X))
-#else
-# define FILE_TYPE(X) ((void)0)
-#endif
 
+extern u32b _fcreator;
+extern u32b _ftype;
+
+/* Mac OS X has usleep(). */
+# define HAVE_USLEEP
+
+#else
+
+# define FILE_TYPE(X) ((void)0)
+
+#endif
 
 /*
  * OPTION: Define "HAVE_USLEEP" only if "usleep()" exists.
@@ -283,6 +253,6 @@
 
 
 
-#endif
+#endif /* INCLUDED_H_CONFIG_H */
 
 

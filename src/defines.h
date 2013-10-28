@@ -47,7 +47,7 @@
 /*
  * Current version string
  */
-#define VERSION_STRING	"3.0.6"
+#define VERSION_STRING	"3.0.7s"
 
 
 /*
@@ -55,8 +55,8 @@
  */
 #define VERSION_MAJOR	3
 #define VERSION_MINOR	0
-#define VERSION_PATCH	5
-#define VERSION_EXTRA	0
+#define VERSION_PATCH	6
+#define VERSION_EXTRA	4
 
 
 /*
@@ -226,6 +226,11 @@
 #define QUARK_MAX	512
 
 /*
+ * OPTION: Maximum number of autoinscriptions(see "object1.c")
+ */
+#define AUTOINSCRIPTIONS_MAX 216
+
+/*
  * OPTION: Maximum number of messages to remember (see "util.c")
  * Default: assume maximal memorization of 2048 total messages
  */
@@ -377,6 +382,16 @@
  * Number of spells per book
  */
 #define SPELLS_PER_BOOK 9
+
+/*
+ * Maximum number of spells per realm
+ */
+#define BOOKS_PER_REALM 9
+
+/*
+ * Maximum number realms
+ */
+#define MAX_REALMS 2
 
 
 /*
@@ -1430,6 +1445,46 @@
 #define SV_UNKNOWN			255
 
 
+
+
+/*** Squelch stuff ***/
+
+/* XXX Too many things beginning with SQUELCH_ */
+
+/*
+ * Squelch modes for k_info->squelch
+ */
+#define SQUELCH_NEVER               0 /* Allow pickup, defer to OPT_always_pickup */
+#define NO_SQUELCH_NEVER_PICKUP     1 /* Never pickup, override OPT_always_pickup */ 
+#define NO_SQUELCH_ALWAYS_PICKUP    2 /* Always pickup, override all other options */
+#define SQUELCH_ALWAYS              3 /* Destroy when player walks over */
+
+/*
+ * These are the return values of squelch_item_ok().
+ */
+#define SQUELCH_FAILED -1
+#define SQUELCH_NO      0
+#define SQUELCH_YES     1
+
+/*
+ * Possible levels of quality squelching
+ */
+#define SQUELCH_NONE            0 /* No squelch */
+#define SQUELCH_CURSED          1 /* Squelch only cursed items */
+#define SQUELCH_AVERAGE         2 /* Squelch average and worse items */
+#define SQUELCH_GOOD_STRONG     3 /* Squelch good and worse items */
+#define SQUELCH_GOOD_WEAK       4 /* Squelch good and worse items (weak pseudo-id) */
+#define SQUELCH_ALL             5 /* Squelch everything save artifacts */
+
+#define SQUELCH_OPENED_CHESTS   6 /* Squelch open chests */
+
+/* XXX Others defined at beginning of squelch.c */
+#define CHEST_INDEX     19
+
+/* Number of bytes used in squelch sub-quality array */
+#define SQUELCH_BYTES    24
+
+
 /*** Monster blow constants ***/
 
 
@@ -1575,6 +1630,7 @@
  */
 #define PN_COMBINE		0x00000001L	/* Combine the pack */
 #define PN_REORDER		0x00000002L	/* Reorder the pack */
+#define PN_AUTOINSCRIBE	0x00000004L	/* Autoinscribe items */
 /* xxx (many) */
 
 
@@ -2421,7 +2477,7 @@
 #define OPT_disturb_panel			22
 #define OPT_disturb_state			23
 #define OPT_disturb_minor			24
-/* xxx OPT_disturb_other */
+#define OPT_next_xp					25
 /* xxx OPT_alert_hitpoint */
 /* xxx OPT_alert_failure */
 #define OPT_verify_destroy			28
@@ -2541,7 +2597,7 @@
 #define disturb_panel			op_ptr->opt[OPT_disturb_panel]
 #define disturb_state			op_ptr->opt[OPT_disturb_state]
 #define disturb_minor			op_ptr->opt[OPT_disturb_minor]
-/* xxx disturb_other */
+#define next_xp					op_ptr->opt[OPT_next_xp]
 /* xxx */
 /* xxx alert_failure */
 #define verify_destroy			op_ptr->opt[OPT_verify_destroy]

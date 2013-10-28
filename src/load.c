@@ -916,6 +916,66 @@ static errr rd_player_spells(void)
 	return (0);
 }
 
+/*
+ * Read squelch and autoinscription submenu for all known objects
+ */
+static int rd_squelch(void)
+{
+	int i;
+	byte tmp8u;
+	u16b file_e_max;
+
+	/* Handle old versions, and Pete Mack's patch */
+	if (older_than(3, 0, 6))
+		return 0;
+
+	/* Read item-quality squelch sub-menu */
+	for (i = 0; i < SQUELCH_BYTES; i++)
+		rd_byte(&squelch_level[i]);
+
+	/* Read the number of saved ego-item types */
+	rd_u16b(&file_e_max);
+
+	/* Read ego-item squelch settings */
+	for (i = 0; i < z_info->e_max; i++)
+	{
+		ego_item_type *e_ptr = &e_info[i];
+		tmp8u = 0;
+
+		if (i < file_e_max)
+			rd_byte(&tmp8u);
+
+		e_ptr->squelch |= (tmp8u & 0x01);
+		e_ptr->everseen |= (tmp8u & 0x02);
+
+		/* Hack - Repair the savefile */
+		if (!e_ptr->everseen) e_ptr->squelch = FALSE;
+	}
+
+	/* Read possible extra elements */
+	while (i < file_e_max)
+	{
+		rd_byte(&tmp8u);
+		i++;
+	}
+
+	/* Read the current number of auto-inscriptions */
+	rd_u16b(&inscriptions_count);
+
+	/* Write the autoinscriptions array*/
+	for (i = 0; i < inscriptions_count; i++)
+	{
+		 char tmp[80];
+
+		 rd_s16b(&inscriptions[i].kind_idx);
+		 rd_string(tmp, 80);
+
+		 inscriptions[i].inscription_idx = quark_add(tmp);
+	}
+
+	return 0;
+}
+
 
 /*
  * Read the "extra" information
@@ -1076,6 +1136,9 @@ static errr rd_extra(void)
 
 	/* Future use */
 	strip_bytes(40);
+
+	/* Read item-quality squelch sub-menu */
+	if (rd_squelch()) return -1;
 
 	/* Read the randart version */
 	rd_u32b(&randart_version);
@@ -1804,6 +1867,10 @@ static errr rd_savefile_new_aux(void)
 
 		k_ptr->aware = (tmp8u & 0x01) ? TRUE: FALSE;
 		k_ptr->tried = (tmp8u & 0x02) ? TRUE: FALSE;
+		k_ptr->everseen = (tmp8u & 0x08) ? TRUE: FALSE;
+
+		if (!older_than(3, 0, 6))
+			rd_byte(&k_ptr->squelch);
 	}
 	if (arg_fiddle) note("Loaded Object Memory");
 

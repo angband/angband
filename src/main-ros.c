@@ -4,9 +4,12 @@
  * Abstract: Support for RISC OS versions of Angband, including support
  * for multitasking and dynamic areas.
  *
- * Authors: Musus Umbra, Andrew Sidwell, Ben Harrison, and others.
+ * Authors: Musus Umbra, Antony Sidwell, Thomas Harris, Andrew Sidwell,
+ *          Ben Harrison, and others.
  *
- * Licences: Angband licence.
+ * Licences: Angband licence, GNU GPL version 2	
+ *
+ * Current maintainer: Antony Sidwell <antony@isparp.co.uk>  (ajps)
  */
 
 #ifdef __riscos
@@ -20,9 +23,19 @@
  * it for your own compilation/variant, please contact me so that I can
  * keep you up to date and give you support :)
  *
+ * NB: This frontend will no longer work as-is for modern Zangbands (2.7.3
+ * onwards), as the display code has changed, and so our platform-specific
+ * menu needs adjusting to use the appropriate new functions.  A version which
+ * should work should be supplied with the Z source. -- ajps
+ *
+ * NB: This frontend will not work with the in-development ToME3, as the file
+ * handling (and many other parts) have been completely overhauled.  I suspect
+ * it is not worth trying to shoehorn that model into this code, and a fresh,
+ * UNIX-porting-tools approach may be better suited. -- ajps
+ *
  * Prerequisites to compiling:
  *
- * DeskLib 2.30 or later  (earlier versions may be OK though)
+ * DeskLib 2.50 or later 
  *
  * An ANSI C compiler (tested with Acorn's C/C++ and GCC, but should be OK
  *                     with any decent compiler)
@@ -34,18 +47,23 @@
  */
 
 /*
+ * PORTVERSION
+ *   This is the port version; it appears in the infobox.
+ */
+#define PORTVERSION	"1.33 (2007-02-06)"
+
+/*
  * VARIANT & VERSION
  *   These two get variant and version data from Angband itself; older
  *   variants may not have these defined and will have to be altered.
  */
+#ifndef VARIANT
 #define VARIANT		VERSION_NAME
-#define VERSION		VERSION_STRING
+#endif
 
-/*
- * PORTVERSION
- *   This is the port version; it appears in the infobox.
- */
-#define PORTVERSION	"1.27 (2002-05-25)"
+#ifndef VERSION
+#define VERSION		VERSION_STRING
+#endif
 
 /*
  * RISCOS_VARIANT
@@ -53,38 +71,137 @@
  *  contain characters that are valid as part of a RISC OS path variable.
  *  [eg. "Yin-Yangband" is not okay, "EyAngband" is.]
  */
+#ifndef RISCOS_VARIANT
 #define RISCOS_VARIANT	"Angband"
+#endif
 
 /*
  * AUTHORS
  *  For the info box. [eg. "Ben Harrison"]
  */
+#ifndef AUTHORS
 #define AUTHORS		"Robert Ruehlmann"
+#endif
 
 /*
  * PORTERS
  *  For the info box. [eg. "Musus Umbra"]
  */
-#define PORTERS		"Andrew Sidwell"
+#ifndef PORTERS
+#define PORTERS		"Antony Sidwell"
+#endif
 
 /*
  * ICONNAME
  *  Iconbar icon sprite name eg. "!angband".  Note that this must be a valid
  *  sprite name; it may need modifying for long variant names.
  */
+#ifndef ICONNAME
 #define ICONNAME	"!"RISCOS_VARIANT
+#endif
 
 /*
  * PDEADCHK
  *   This should expand to an expression that is true if the player is dead.
- *   [eg. (p_ptr->is_dead) for Angband or (!alive || dead) for some Zangbands]
+ *   Examples (correct as of Feb 2004):
+ *   Vanilla (and most variants):  #define PDEADCHK	(p_ptr->is_dead)
+ *   Zangband:                     #define PDEADCHK	(p_ptr->state.is_dead)
+ *   Tome:                         #define PDEADCHK	(!alive)
+ *   SCthAngband:                  #define PDEADCHK	(!alive || death)
  */
-
+#ifndef PDEADCHK
 #define PDEADCHK	(p_ptr->is_dead)
+#endif
+
+/*
+ * MEMTYPE
+ *   This defines which of the various sets of memory allocation prototypes
+ *   should be used for this variant.
+ *
+ *   1: The pre 2.9.x type, where g_free returns an errr (largely obsolete)
+ *   2: The 2.9.x type, where sizes are type "huge" and g_free takes a size.
+ *   3: The 2.9.7(ish)+ type, where they take sizes as size_t
+ */
+#ifndef MEMTYPE
+#define MEMTYPE 3
+#endif
+
+/*
+ * FD_TYPE
+ *   Many of the variants based on older Angbands use huge rather than
+ *   size_t in the fd_* functions.  There are other halfway changes too,
+ *   so you have to pick one of three for each variant. :(
+ */
+#ifndef FDTYPE
+#define FDTYPE 3
+#endif
+
+/*
+ * HAS_MY_STRCPY, HAS_MY_STRCAT, HAS_MY_STRNICMP
+ *   We require the definition of two functions: my_strcat and my_strcpy.
+ *   Some variants already have these defined (e.g. modern Vanilla), and
+ *   so these should be defined when compiling those.
+ */
+/*
+#define HAS_MY_STRCPY
+#define HAS_MY_STRCAT
+#define HAS_MY_STRNICMP
+*/
+
+/*
+ * BIGSCREEN
+ *   This should be TRUE if the variant actually supports bigscreen, FALSE
+ *   otherwise.
+ */
+#ifndef BIGSCREEN
+#define BIGSCREEN FALSE
+#endif
+
+/*
+ * HASNOCORE
+ *   In case someone's removed the core() function in an attempt
+ *   to clean up the code but just making work for people with no
+ *   ultimate benefit.
+ */
+/* #define HASNOCORE */
+
+/*
+ * USE_DA
+ *  If defined, it enables the use of dynamic areas (these are still only
+ *  used when the !Variant file allows it).  It is likely that this option
+ *  will eventually be removed altogether as there is no major advantege
+ *  to using DAs over just using the Wimpslot.
+ */
+/* #define USE_DA */
+
+/*
+ * FULLSCREEN_ONLY
+ *  If defined, the Wimp window-based interface will be disabled, and the
+ *  game will only play in fullscreen mode.  This turns out to be a pointless
+ *  feature, as the memory saving is now negligable compared to the overall
+ *  size of the game.
+ */
+/* #define FULLSCREEN_ONLY */ 
+
+/*
+ * ZANGBAND_TERM_PACKAGE
+ *  New version of Zangband (2.7.3ish and later) use a new term streamlined
+ *  term package including a put_fstr function we have to use for our
+ *  "platform specific menu" in the game.  Define this if you are compiling
+ *  such a version of Zangband or (who knows?) a variant.
+ */
+/* #define ZANGBAND_TERM_PACKAGE */  
+
 
 /*
  * The following symbols control the (optional) file-cache:
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * NOTE (11th Dec 2004): The file caches have not been used for the last
+ * few years - I do not believe they still work with most variants, except
+ * possibly some branched off old Zangband (e.g. Cth).  The introduction of
+ * scripting into those variants which used to use large plain text files
+ * seems to have diminished their usefulness. -- Antony Sidwell
+ *
  * NB: Variants that don't repeatedly read any files whilst running
  * (eg. vanilla, sang, etc) should NOT define USE_FILECACHE, etc. as
  * it causes a non-negligable amount of code to be compiled in.
@@ -151,6 +268,28 @@
  */
 /* #define FE_DEBUG_INFO */
 
+
+/* sCthAngband oddities */
+#ifdef IS_SCTH
+  #define SAVE_PLAYER_PARAM FALSE
+  #define PAUSE_LINE_PARAM
+  #define TERM_NAME(n) windows[n].name
+  #define TERM(i) windows[i].term
+  extern errr check_modification_date(int fd, cptr template_file);
+#else
+  #define SAVE_PLAYER_PARAM
+  #define PAUSE_LINE_PARAM 23
+  #define TERM_NAME(n) angband_term_name[n]
+  #define TERM(i) angband_term[i]
+#endif
+
+
+/* NPP (for now) oddities */
+#ifdef HASNOCORE
+extern void core(cptr str);
+#endif
+
+
 /* Constants, etc. ---------------------------------------------------------*/
 
 /* Deal with any weird file-caching symbols */
@@ -163,19 +302,26 @@
 #define MAX_TERM_DATA 8
 
 /* Menu entry numbers */
-#define IBAR_MENU_INFO			0
-#define IBAR_MENU_SAVE			1
-#define IBAR_MENU_FULLSCREEN	2
-#define IBAR_MENU_GAMMA			3
-#define IBAR_MENU_SOUND			4
-#define IBAR_MENU_WINDOWS		5
-#define IBAR_MENU_SAVECHOICES	6
-#define IBAR_MENU_QUIT			7
+enum
+{
+	IBAR_MENU_INFO = 0,
+	IBAR_MENU_SAVE,
+	IBAR_MENU_FULLSCREEN,
+	IBAR_MENU_GAMMA,
+	IBAR_MENU_SOUND,
+	IBAR_MENU_WINDOWS,
+	IBAR_MENU_SAVECHOICES,
+	IBAR_MENU_QUIT
+};
 
-#define TERM_MENU_INFO			0
-#define TERM_MENU_SAVE			1
-#define TERM_MENU_FONT			2
-#define TERM_MENU_WINDOWS		3
+enum
+{
+	TERM_MENU_INFO = 0,
+	TERM_MENU_SAVE,
+	TERM_MENU_SIZE,
+	TERM_MENU_FONT,
+	TERM_MENU_WINDOWS
+};
 
 /* Icon numbers */
 #define SND_VOL_SLIDER			0
@@ -192,6 +338,11 @@
 #define SAVE_OK					0
 #define SAVE_CANCEL				3
 
+#define SIZE_WIDTH              1
+#define SIZE_HEIGHT             4
+#define SIZE_CANCEL             7
+#define SIZE_SET                6
+
 /* Position and size of the colours strip in the gamma window */
 #define GC_XOFF 20
 #define GC_YOFF -14
@@ -207,6 +358,7 @@
 
 #undef rename
 #undef remove
+#undef UNUSED
 
 #include "Desklib:Event.h"
 #include "Desklib:EventMsg.h"
@@ -219,6 +371,7 @@
 #include "Desklib:Icon.h"
 #include "Desklib:Resource.h"
 #include "Desklib:SWI.h"
+#include "DeskLib:Str.h"
 #include "Desklib:Time.h"
 #include "Desklib:Sound.h"
 #include "Desklib:KeyCodes.h"
@@ -230,8 +383,9 @@
 #include "Desklib:Slider.h"
 #include "Desklib:Hourglass.h"
 #include "Desklib:Save.h"
-#include "Desklib:Sprite.h"
 #include "Desklib:KernelSWIs.h"
+#include "DeskLib:File.h"
+#include "DeskLib:Filing.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -250,10 +404,15 @@
  | Kamband/Zangband and the Borg in particular can have quite long delays at
  | times.
  */
-#define Start_Hourglass \
-	{ if ( use_glass && !glass_on ) { glass_on=1; Hourglass_Start(50); } }
-#define Stop_Hourglass \
-	{ if ( glass_on ) { glass_on=0; Hourglass_Off(); } }
+
+/*
+ * Note that empty-bracketed macros aren't ANSI/ISO C89 defined.  GCC and
+ * Norcroft don't mind them though.
+ */
+#define START_HOURGLASS \
+	do { if (use_glass && !glass_on) { glass_on=1; Hourglass_Start(50); }} while (0)
+#define STOP_HOURGLASS \
+	do { if (glass_on) { glass_on=0; Hourglass_Off(); } } while (0)
 
 
 /*--------------------------------------------------------------------------*/
@@ -312,7 +471,7 @@ typedef struct
 	int r_xsize;	/* width of screen in pixels */
 	int r_ysize;	/* height of screen in pixels */
 
-	int r_mode;	/* current screen mode */
+	unsigned int r_mode;	/* current screen mode */
 }
 ZapRedrawBlock;
 
@@ -344,8 +503,8 @@ typedef struct
 	wimp_box changed_box;	/* Area out of date */
 	struct
 	{
-	wimp_point pos;	/* Cursor position */
-	BOOL visible;	/* visibility flag */
+		wimp_point pos;	/* Cursor position */
+		BOOL visible;	/* visibility flag */
 	}
 	cursor;
 	char name[12];	/* Name to give menus opened from the term */
@@ -388,8 +547,6 @@ term_data;
 /*
  | Other SWI numbers that aren't defined in DeskLib's SWI.h:
  */
-#define SWI_OS_ScreenMode 0x65
-#define SWI_OS_DynamicArea 0x66
 #define SWI_ColourTrans_ReturnColourNumber 0x40744
 #define SWI_Wimp_ReportError 0x400df
 #define SWI_PlayIt_Volume 0x4d146
@@ -430,7 +587,7 @@ static int game_in_progress = 0;	/* if Quit (or core() is called),  etc. */
 static byte a_palette[256][4];	/* a copy of the raw Angband palette */
 static unsigned int palette[256];	/* palette as gamma'd bbggrrxx words */
 static unsigned int zpalette[256];	/* And our version for ZapRedraw */
-static double gamma = 1.0;	/* assume gamma of 1.0 if unspecified */
+static int gamma = 100;	/* assume gamma of 1.0 if unspecified */
 
 static int enable_sound = 0;	/* enable sound FX */
 static int sound_volume = 127;	/* Full volume */
@@ -440,14 +597,14 @@ static int hack_flush = 0;	/* Should TERM_XTRA_FLUSH wait for all keys to be rel
 static int flush_scrap = 1;	/* Should any scrapfiles (incl. filecache) be deleted at exit? */
 static int max_file_cache_size = 64 << 10;
 static unsigned int vfiletype;
-static int allow_iclear_hack = 0;	/* Allow the hideously evil Iclear workaround thing */
 static int alarm_type = 0;	/* is there an alarm set? */
 static int alarm_h = 0, alarm_m = 0;	/* alarm time (midnight) */
 static char alarm_message[80] = "Time for bed!";	/* the message to give */
 static int alarm_disp = 0;	/* is the alarm being displayed? */
 static int alarm_beep = 0;	/* should be beep? */
-static char *alarm_types[] =
+static const char *alarm_types[] =
 { "Off", "On (one-shot)", "On (repeating)", "On (one-shot)" };
+static unsigned int alarm_lastcheck = 0;
 
 
 /* A little macro to save some typing later: */
@@ -468,13 +625,17 @@ static ZapFont fonts[MAX_TERM_DATA + 1];	/* The +1 is for the system font */
 /* The system font is always font 0 */
 #define SYSTEM_FONT (&(fonts[0]))
 
-/* Term system variables */
+                                                                                                                                 /* Term system variables */
 static term_data data[MAX_TERM_DATA];	/* One per term */
-static char r_data[24 * (80 * 5 + 4) + 25 * 4];	/* buffer for ZapRedraw data */
+
+#ifndef FULLSCREEN_ONLY
+static char *r_data = NULL;	/* buffer for ZapRedraw data */
+static int r_maxwid, r_maxhgt;
 
 /* Wimp variables */
 static icon_handle ibar_icon;	/* Iconbar icon handle */
 static window_handle info_box;	/* handle of the info window */
+static window_handle resize_win; /* term resizing window */
 static window_handle gamma_win;	/* gamma correction window */
 static window_handle sound_win;	/* sound options window */
 static window_handle save_box;	/* The savebox */
@@ -485,22 +646,9 @@ static menu_ptr font_menu;	/* Font (sub)menu */
 
 static save_saveblock *saveblk = NULL;	/* For the save box */
 
-/* List of Wimp messages we want to be given */
-static int message_list[] =
-{
-	message_MODECHANGE,
-	message_PALETTECHANGE,
-
-	/* For the savebox */
-	message_MENUWARN,
-	message_DATASAVEACK,
-
-	message_PREQUIT,
-	0
-};
-
-
 static term_data *menu_term;	/* term the last menu was opened for */
+
+#endif /* FULLSCREEN_ONLY */
 
 static ZapRedrawBlock zrb;	/* a redraw block */
 
@@ -523,8 +671,8 @@ static int fullscreen_topline;	/* raster offset of fullscreen */
 #define TIME_LINE        26		/* Line to display the clock on */
 
 /* text to display at the bottom left of the fullscreen display */
-static char *fs_quit_key_text = "Press f12 to return to the desktop";
-static char *alarm_cancel_text = "(Press ^Escape to cancel the alarm)";
+static const char *fs_quit_key_text = "Press f12 to return to the desktop";
+static const char *alarm_cancel_text = "(Press ^Escape to cancel the alarm)";
 
 /* Debugging flags, etc. */
 static int log_g_malloc = 0;	/* Log calls to ralloc, etc */
@@ -550,32 +698,39 @@ static void initialise_sound(void);
 static void play_sound(int event);
 
 /* Forward declarations of Term hooks, etc. */
-static errr Term_curs_acn(int x, int y);
-static errr Term_curs_acnFS(int x, int y);
 static void Term_init_acn(term *t);
-static errr Term_text_acn(int x, int y, int n, byte a, cptr s);
-static errr Term_text_acnFS(int x, int y, int n, byte a, cptr s);
 static errr Term_user_acn(int n);
-static errr Term_wipe_acn(int x, int y, int n);
-static errr Term_wipe_acnFS(int x, int y, int n);
+
+#ifndef FULLSCREEN_ONLY
+static errr Term_curs_acn(int x, int y);
+static errr Term_text_acn(int x, int y, int n, byte a, cptr s);
 static errr Term_xtra_acn(int n, int v);
-static errr Term_xtra_acnFS(int n, int v);
+static errr Term_wipe_acn(int x, int y, int n);
 static errr Term_xtra_acn_check(void);
-static errr Term_xtra_acn_checkFS(void);
-static errr Term_xtra_acn_clearFS(void);
 static errr Term_xtra_acn_event(void);
-static errr Term_xtra_acn_eventFS(void);
 static errr Term_xtra_acn_react(void);
+#endif /* FULLSCREEN_ONLY */
+
+static errr Term_curs_acnFS(int x, int y);
+static errr Term_text_acnFS(int x, int y, int n, byte a, cptr s);
+static errr Term_wipe_acnFS(int x, int y, int n);
+static errr Term_xtra_acn_clearFS(void);
+static errr Term_xtra_acn_eventFS(int);
 static errr Term_xtra_acn_reactFS(int force);
+static void bored(void);
+static void redraw_areaFS(int x, int y, int w, int h);
+static void draw_cursor(int x, int y);
 
-
+#ifdef USE_DA
 /* Forward declarations of the memory stuff */
 static void init_memory(int, int);
-
+#endif
 
 /* Forward declarations of the alarm stuff */
-static void check_alarm(BOOL desktop);
+static void check_alarm(void);
+#ifndef FULLSCREEN_ONLY
 static void trigger_alarm_desktop(void);
+#endif /* FULLSCREEN_ONLY */
 static void ack_alarm(void);
 static void write_alarm_choices(void);
 static void read_alarm_choices(void);
@@ -593,30 +748,54 @@ errr cached_fclose(FILE *fch);
 errr cached_fgets(FILE *fch, char *buffer, int max_len);
 #endif
 
+
+/*
+ * There are various different ways in which the g_malloc and g_free functions
+ * are prototyped, depending on the variant.  This is an attempt to unify the
+ * codebase across thoe variants.
+ */
+#if MEMTYPE == 3
+  #define G_MALLOC_PROT static void *g_malloc(size_t size)
+  #define G_FREE_PROT static void *g_free(void *blk)
+#elif MEMTYPE == 2
+  #define G_MALLOC_PROT static vptr g_malloc(huge size)
+  #define G_FREE_PROT static vptr g_free(vptr blk, huge size)
+#elif MEMTYPE == 1
+  #define G_MALLOC_PROT static vptr g_malloc(huge size)
+  #define G_FREE_PROT static errr g_free(vptr blk, huge size)
+#endif
+
 /*
  | These functions act as malloc/free, but (if possible) using memory
  | in the 'Game' Dynamic Area created by init_memory()
  | We attach these functions to the ralloc_aux and rnfree_aux hooks
  | that z-virt.c provides.
  */
-static void* g_malloc(size_t size);
-static void* g_free(void *blk);
-
+#ifdef USE_DA
+  G_MALLOC_PROT;
+  G_FREE_PROT;
+#else  
+  #define g_malloc(size) malloc(size);
+#if MEMTYPE > 2
+  #define g_free(block, size) free(block);
+#else
+  #define g_free(block) free(block);
+#endif
+#endif
 
 /*
  | These functions act as malloc/free, but (if possible) using memory
  | in the 'Fonts' Dynamic Area created by init_memory()
  */
+#ifdef USE_DA
 static void* f_malloc(size_t size);
 static void f_free(void *blk);
+#else
+  #define f_malloc(size) malloc(size);
+  #define f_free(block) free(block);
+#endif
 
 
-/*
- | These two functions perpetrate great evil to stop IClear from mucking
- | with the cursor keys in fullscreen mode.
- */
-static void iclear_hack(void);
-static void remove_iclear_hack(void);
 
 /*
  | We use this to locate the choices file(s)...
@@ -655,7 +834,7 @@ extern int save_player_panic_acn(void)
 	strcpy(l, "!!PANIC!!");
 
 	/* save the game */
-	return save_player();
+	return save_player(SAVE_PLAYER_PARAM);
 }
 
 
@@ -674,8 +853,7 @@ static void plog_hook(cptr str)
 static void quit_hook(cptr str)
 {
 	/* str may be null */
-	if (str)
-		Msgs_Report(1, "err.quit", str);
+	if (str) Msgs_Report(1, "err.quit", str);
 	exit(0);
 }
 
@@ -690,7 +868,7 @@ static void core_hook(cptr str)
 	quit(NULL);
 }
 
-static void debug(char *fmt, ...)
+static void debug(const char *fmt, ...)
 {
 	va_list ap;
 	char buffer[260];
@@ -702,45 +880,17 @@ static void debug(char *fmt, ...)
 
 
 
-/*
-static void oserror_handler( int sig )
-{
-	core(_kernel_last_oserror()->errmess);
-}
-*/
 
 
 /*--------------------------------------------------------------------------*/
 /* File handling															*/
 /*--------------------------------------------------------------------------*/
 
-static int myFile_Open(const char *name, int mode)
-{
-	int handle;
-	if (SWI(2, 1, SWI_OS_Find, mode, name, /**/ &handle))
-		return 0;
-	return handle;
-}
-
-static int myFile_Size(const char *name)
-{
-	int size, type;
-	if (SWI(2, 5, SWI_OS_File, 17, name, /**/ &type, 0, 0, 0, &size))
-		return -2;
-	return type ? size : -1;
-}
-
-static os_error *myFile_Close(const int handle)
-{
-	return SWI(2, 0, SWI_OS_Find, 0, handle);
-}
-
-static os_error *myFile_Seek(const int handle, const int offset)
-{
-	return SWI(3, 0, SWI_OS_Args, 1, handle, offset);
-}
-
-static int myFile_WriteBytes(const int handle, void *buf, const int n)
+/*
+ * We use myFile_WriteBytes and myFile_ReadBytes because we require a
+ * different return value to that given by the DeskLib "File_" equivalents.
+ */
+static int myFile_WriteBytes(const int handle, const void *buf, const int n)
 {
 	int ntf;
 	if (SWI(4, 4, SWI_OS_GBPB, 2, handle, buf, n, /**/ NULL, NULL, NULL, &ntf))
@@ -756,20 +906,6 @@ static int myFile_ReadBytes(const int handle, void *buf, const int n)
 	return ntf;
 }
 
-static os_error *myFile_SetType(const char *n, const int type)
-{
-	return SWI(3, 0, SWI_OS_File, 18, n, type);
-}
-
-
-static int myFile_Extent(const int handle)
-{
-	int ext;
-	if (SWI(2, 3, SWI_OS_Args, 2, handle, /**/ NULL, NULL, &ext))
-		return -1;
-	return ext;
-}
-
 
 /*
  | Determine if one file is newer than another.
@@ -780,88 +916,51 @@ static int myFile_Extent(const int handle)
  */
 static int file_is_newer(const char *a, const char *b)
 {
-	os_error *e;
-	struct
-	{
-	unsigned int msw;
-	unsigned int lsw;
-	}
-	a_time;
-	struct
-	{
-	unsigned int msw;
-	unsigned int lsw;
-	}
-	b_time;
-	int a_type, b_type;
+	unsigned char a_time[5];
+	unsigned char b_time[5];
+	int n;
+
+	/* If 'a' doesn't exist then 'b' isn't out of date */
+	if (!File_Exists(a)) return 0;
+
+	/* If 'b' doesn't exist then 'b' is out of date */
+	if (!File_Exists(b)) return -1;
 
 	/* Get the datestamp of the 'a' file */
-	e = SWI(2, 4, SWI_OS_File,
-			/* In */
-			17, (int)a,
-			/* Out */
-			&a_type,			/* object type */
-			NULL, &(a_time.msw),	/* Load Addr */
-			&(a_time.lsw)		/* Exec Addr */
-		);
-	if (e)
-	{
-		core(e->errmess);
-	}
-
+	File_Date(a, a_time);
 
 	/* Get the datestamp of the 'b' file */
-	e = SWI(2, 4, SWI_OS_File,
-			/* In */
-			17, (int)b,
-			/* Out */
-			&b_type,			/* object type */
-			NULL, &(b_time.msw),	/* Load Addr */
-			&(b_time.lsw)		/* Exec Addr */
-		);
-	if (e)
+	File_Date(b, b_time);
+
+	/* Compare timestamps, defaulting to 0 if they are of equal age */
+	for (n = 4; n >= 0; n--)
 	{
-		core(e->errmess);
+		if (b_time[n] < a_time[n])
+		{
+			return -1;
+		}
+		if (b_time[n] > a_time[n]) return 0;
 	}
 
-	/* If 'b' doesn't exist then 'b' is OOD. */
-	if (!b_type)
-	{
-		return -1;
-	}
-	/* If 'a' doesn't exist then 'b' isn't OOD. (?) */
-	if (!a_type)
-	{
-		return 0;
-	}
-
-	/* Compare the timestamps (assume that the files are typed) */
-	if ((a_time.msw & 0xff) >= (b_time.msw & 0xff))
-		if ((a_time.lsw) > (b_time.lsw))
-			return -1;			/* OOD */
-	return 0;					/* Not OOD */
+	return 0;
 }
 
 
 /*
- | As fprintf, but outout to all files (if their handles are non zero).
+ | As fprintf, but output to all files (if their handles are non zero).
  | NB: void type.
  */
-static void f2printf(FILE *a, FILE *b, char *fmt, ...)
+static void f2printf(FILE *a, FILE *b, const char *fmt, ...)
 {
 	va_list ap;
 	char buffer[2048];
 	va_start(ap, fmt);
 	vsprintf(buffer, fmt, ap);
 	va_end(ap);
-	if (a)
-	{
-		fprintf(a, buffer);
-	}
-	if (b)
-	{
-		fprintf(b, buffer);
-	}
+
+	if (a) fprintf(a, buffer);
+	if (b) fprintf(b, buffer);
+
 	va_end(ap);
 }
 
@@ -876,8 +975,7 @@ static void final_acn(void)
 {
 	int i;
 
-	for (i = 0; i < openfiles; i++)
-		myFile_Close(filehandle[i]);
+	for (i = 0; i < openfiles; i++) File_Close(filehandle[i]);
 
 	if (fullscreen_mode)
 	{
@@ -886,13 +984,6 @@ static void final_acn(void)
 
 		/* Restore the various soft keys */
 		set_keys(FALSE);
-
-		/*
-		   | Hack: Early WIMP versions do the "Press SPACE" thing, or something
-		   | odd.  It's bloody annoying, whatever it is...
-		 */
-		if (event_wimpversion < 300)
-			Wimp_CommandWindow(-1);
 	}
 
 	if (flush_scrap && *scrap_path)
@@ -900,10 +991,16 @@ static void final_acn(void)
 		char tmp[512];
 		strcpy(tmp, scrap_path);
 		tmp[strlen(tmp) - 1] = 0;	/* Remove trailing dot */
-		SWI(4, 0, SWI_OS_FSControl, 27, tmp, 0, 1);	/* ie. "*Wipe <scrapdir> r~c~v~f" */
+
+		/* ie. "*Wipe <scrapdir> r~c~v~f" */
+		SWI(4, 0, SWI_OS_FSControl, 27, tmp, 0, 1);
 	}
 
-	Stop_Hourglass;
+#ifdef FULLSCREEN_ONLY
+	Wimp_CommandWindow(-1);
+#endif /* FULLSCREEN_ONLY */
+
+	STOP_HOURGLASS;
 }
 
 
@@ -920,13 +1017,6 @@ static void final_acn(void)
 static int truncate_names(void)
 {
 	int r1, r2;
-
-	/* First, check the OS version */
-	OS_Byte(osbyte_READOSIDENTIFIER, 0x00, 0xff, &r1, &r2);
-
-	/* Assume that we need to truncate if running under RO2 */
-	if (r1 == 0xa1 || r1 == 0xa2)
-		return TRUE;
 
 	/* Okay, so we've got RO3 (or later), so check the CMOS RAM */
 	OS_Byte(osbyte_READCMOSRAM, 28, 0, &r1, &r2);
@@ -1039,8 +1129,9 @@ static char *unixify_name(const char *path)
 /*--------------------------------------------------------------------------*/
 
 
-/* Open a file [as fopen()] but translate the requested filename first */
-
+/*
+ * Open a file [as fopen()] but translate the requested filename first
+ */
 FILE *my_fopen(const char *f, const char *m)
 {
 	FILE *fp;
@@ -1056,51 +1147,54 @@ FILE *my_fopen(const char *f, const char *m)
 
 	if (fp && strstr(m, "wb"))
 	{
-		myFile_SetType(n, ftype);
+		File_SetType(n, ftype);
 	}
 
 	return fp;
 }
 
 
-
-
-/* Close a file, a la fclose() */
-
-errr my_fclose(FILE *fp)
+/*
+ * Close a file, a la fclose()
+ */
+#if FCLOSETYPE == 1
+  #define RETURN
+  void my_fclose(FILE *fp)
+#else
+  #define RETURN return
+  errr my_fclose(FILE *fp)
+#endif
 {
 	/* Close the file, return 1 for an error, 0 otherwise */
-	return fclose(fp) ? 1 : 0;
+	RETURN fclose(fp) ? 1 : 0;
 }
+#undef RETURN
 
 
-/* Open/Create a file */
-
+/*
+ * Open/Create a file
+ */
 int fd_make(cptr file, int mode)
 {
 	char *real_path;
-	int handle;
+	file_handle handle;
 
 	/* Translate the filename into a RISCOS one */
 	real_path = riscosify_name(file);
 
 	/* Try to OPENOUT the file (no path, error if dir or not found) */
-	handle = myFile_Open(real_path, 0x8f);
+	handle = File_Open(real_path, (file_access) 0x8f);
 
 	/* Check for failure */
-	if (!handle)
-	{
-		return -1;
-	}
+	if (!handle) return -1;
 
 	/* Try to set the filetype according to the ftype hack */
-	myFile_SetType(real_path, ftype);
+	File_SetType(real_path, ftype);
 
 	/* We keep track of up to 16 open files at any given time */
-	if (openfiles < 16)
-		filehandle[openfiles++] = handle;
-                                                                                
-	return (handle);
+	if (openfiles < 16) filehandle[openfiles++] = handle;
+
+	return (int) handle;
 }
 
 
@@ -1122,30 +1216,27 @@ errr fd_move(cptr old, cptr new)
 /* Open a file */
 int fd_open(cptr path, int flags)
 {
-	int handle = 0;
+	file_handle handle = 0;
 	char *real_path = riscosify_name(path);
 
 	switch (flags & 0x0f)
 	{
 		case O_RDONLY:			/* Read only */
-			handle = myFile_Open(real_path, 0x4f);
+			handle = File_Open(real_path, (file_access) 0x4f);
 			break;
 		case O_WRONLY:			/* Write only */
 		case O_RDWR:			/* Read/Write */
-			handle = myFile_Open(real_path, 0xcf);
+			handle = File_Open(real_path, (file_access) 0xcf);
 	}
 
 	/* Check for failure */
-	if (!handle)
-	{
-		return (-1);
-	}
+	if (!handle) return (-1);
 
 	/* Keep track of upto 16 open files... */
 	if (openfiles < 16)
 		filehandle[openfiles++] = handle;
 
-	return (handle);
+	return (int) handle;
 }
 
 
@@ -1160,7 +1251,7 @@ errr fd_close(int handle)
 	}							/* Illegal handle */
 
 	/* Try to close the file */
-	if (myFile_Close(handle))
+	if (File_Close(handle))
 	{
 		return 1;
 	}
@@ -1183,45 +1274,60 @@ errr fd_close(int handle)
 
 
 /* Read some bytes from a file */
+#if FDTYPE == 1
+errr fd_read(int handle, char *buf, huge nbytes)
+#elif FDTYPE == 2
+errr fd_read(int handle, char *buf, huge nbytes)
+#else
 errr fd_read(int handle, char *buf, size_t nbytes)
+#endif
 {
 	int unread;
 
-	if (handle <= 0)
-	{
-		return -1;
-	}							/* Illegal handle */
-	unread = myFile_ReadBytes(handle, buf, (int)nbytes);
+	/* Check the handle is legal */
+	if (handle <= 0) return -1;
+
+	unread = myFile_ReadBytes(handle, buf, (int) nbytes);
 
 	return unread ? 1 : 0;
 }
 
 
 /* Write some bytes to a file */
+#if FDTYPE == 1
+errr fd_write(int handle, const char *buf, huge nbytes)
+#elif FDTYPE == 2
+errr fd_write(int handle, cptr buf, huge nbytes)
+#else
 errr fd_write(int handle, const char *buf, size_t nbytes)
+#endif
 {
 	int unwritten;
 
-	if (handle <= 0)
-	{
-		return -1;
-	}							/* Illegal handle */
-	unwritten = myFile_WriteBytes(handle, (void *)buf, (int)nbytes);
+	/* Check the handle is legal */
+	if (handle <= 0) return -1;
+
+	unwritten = myFile_WriteBytes(handle, buf, (int)nbytes);
 
 	return unwritten ? 1 : 0;
 }
 
 
 /* Seek in a file */
+#if FDTYPE == 1
+errr fd_seek(int handle, huge offset)
+#elif FDTYPE == 2
 errr fd_seek(int handle, long offset)
+#else
+errr fd_seek(int handle, long offset)
+#endif
 {
 	os_error *e;
 
-	if (handle <= 0)
-	{
-		return -1;
-	}							/* Illegal handle */
-	e = myFile_Seek(handle, (int)offset);
+	/* Check the handle is legal */
+	if (handle <= 0) return -1;
+
+	e = File_Seek(handle, (int)offset);
 
 	return e ? 1 : 0;
 }
@@ -1235,7 +1341,7 @@ errr fd_lock(int handle, int what)
 
 
 /* Get a temporary filename */
-errr path_temp(char *buf, size_t max)
+errr path_temp(char *buf, int max)
 {
 
 	/*
@@ -1248,14 +1354,16 @@ errr path_temp(char *buf, size_t max)
 		int m;
 		char tmp[512];
 
+		/*
+		 * We try up to eighty scrapfiles based on the current time
+		 * until we find a filenane that doesn't yet exist.
+		 */
 		time(&t);
 		for (m = 0; m < 80; m++)
 		{
-			sprintf(tmp, "%s0x%08x", scrap_path, (int)t + m);
-			if (myFile_Size(tmp) == -1)
-			{
-				break;
-			}
+			sprintf(tmp, "%s0x%08x", scrap_path, (int) t + m);
+
+			if (File_Size(tmp) == -1) break;
 		}
 
 		if (m < 80)
@@ -1269,6 +1377,21 @@ errr path_temp(char *buf, size_t max)
 	return 0;
 }
 
+#ifdef NEEDS_ACCESS
+int access(const char *path, int mode)
+{
+	os_error *e;
+	int f;
+
+    e = SWI(2, 1, SWI_OS_Find, (1<<2) | (1<<3) | 0x40, riscosify_name(path), &f);
+
+	if (e || f == 0) return -1;
+
+    SWI(2, 0, SWI_OS_Find, 0, f);
+
+	return 0;
+}
+#endif
 
 
 /*
@@ -1284,27 +1407,33 @@ errr path_temp(char *buf, size_t max)
  * Note that this function yields a path which must be "parsed"
  * using the "parse" function above.
  */
+#if PATHBUILDTYPE == 1
+void path_build(char *buf, int max, cptr path, cptr file)
+#elif PATHBUILDTYPE == 2
+errr path_build(char *buf, int max, cptr path, cptr file)
+#else
 errr path_build(char *buf, size_t max, cptr path, cptr file)
+#endif
 {
 	/* Special file */
 	if (file[0] == '~')
 	{
 		/* Use the file itself */
-		my_strcpy(buf, file, max);
+		strnfmt(buf, max, "%s", file);
 	}
 
 	/* Absolute file, on "normal" systems */
 	else if (prefix(file, PATH_SEP) && !streq(PATH_SEP, ""))
 	{
 		/* Use the file itself */
-		my_strcpy(buf, file, max);
+		strnfmt(buf, max, "%s", file);
 	}
 
 	/* No path given */
 	else if (!path[0])
 	{
 		/* Use the file itself */
-		my_strcpy(buf, file, max);
+		strnfmt(buf, max, "%s", file);
 	}
 
 	/* Path and File */
@@ -1314,8 +1443,10 @@ errr path_build(char *buf, size_t max, cptr path, cptr file)
 		strnfmt(buf, max, "%s%s%s", path, PATH_SEP, file);
 	}
 
+#if PATHBUILDTYPE > 1
 	/* Success */
-	return (0);
+	return 0;
+#endif
 }
 
 
@@ -1369,7 +1500,7 @@ static int cache_system_font(void)
 	SWI(2, 0, SWI_ZapRedraw_ReadSystemChars, sys->bpp_1, &zrb);
 
 	/* Set up some little bits of info */
-	sys->name = "<System>";
+	sys->name = (char *) "<System>";
 	sys->w = sys->h = 8;
 	sys->f = 0;
 	sys->l = 255;
@@ -1385,7 +1516,7 @@ static int cache_system_font(void)
 static void initialise_fonts(void)
 {
 	/* Initialise the array */
-	memset(fonts, 0, sizeof(fonts));	/* Clear to zeroes */
+	memset(fonts, 0, sizeof(fonts));
 
 	/* Cache the system font */
 	cache_system_font();
@@ -1393,6 +1524,7 @@ static void initialise_fonts(void)
 }
 
 
+#ifndef FULLSCREEN_ONLY
 /*
  | Find a font (by name) in the array.
  | Returns 0 if the font isn't loaded, or a ZapFont* for it if it is.
@@ -1421,6 +1553,66 @@ static ZapFont *find_free_font(void)
 	return NULL;
 }
 
+#ifndef HAS_MY_STRCPY
+/*
+ * The my_strcpy() function copies up to 'bufsize'-1 characters from 'src'
+ * to 'buf' and NUL-terminates the result.  The 'buf' and 'src' strings may
+ * not overlap.
+ *
+ * my_strcpy() returns strlen(src).  This makes checking for truncation
+ * easy.  Example: if (my_strcpy(buf, src, sizeof(buf)) >= sizeof(buf)) ...;
+ *
+ * This function should be equivalent to the strlcpy() function in BSD.
+ */
+size_t my_strcpy(char *buf, const char *src, size_t bufsize)
+{
+	size_t len = strlen(src);
+	size_t ret = len;
+
+	/* Paranoia */
+	if (bufsize == 0) return ret;
+
+	/* Truncate */
+	if (len >= bufsize) len = bufsize - 1;
+
+	/* Copy the string and terminate it */
+	(void)memcpy(buf, src, len);
+	buf[len] = '\0';
+
+	/* Return strlen(src) */
+	return ret;
+}
+#endif /* !HAS_MY_STRCPY */
+
+#ifndef HAS_MY_STRCAT
+/*
+ * The my_strcat() tries to append a string to an existing NUL-terminated string.
+ * It never writes more characters into the buffer than indicated by 'bufsize' and
+ * NUL-terminates the buffer.  The 'buf' and 'src' strings may not overlap.
+ *
+ * my_strcat() returns strlen(buf) + strlen(src).  This makes checking for
+ * truncation easy.  Example:
+ * if (my_strcat(buf, src, sizeof(buf)) >= sizeof(buf)) ...;
+ *
+ * This function should be equivalent to the strlcat() function in BSD.
+ */
+static size_t my_strcat(char *buf, const char *src, size_t bufsize)
+{
+	size_t dlen = strlen(buf);
+
+	/* Is there room left in the buffer? */
+	if (dlen < bufsize - 1)
+	{
+		/* Append as much as possible  */
+		return (dlen + my_strcpy(buf + dlen, src, bufsize - dlen));
+	}
+	else
+	{
+		/* Return without appending */
+		return (dlen + strlen(src));
+	}
+}
+#endif /* !HAS_MY_STRCAT */
 
 
 /*
@@ -1479,7 +1671,7 @@ static ZapFont *load_font(char *name, ZapFont *f)
 
 
 	/* Open the file */
-	handle = myFile_Open(path, 0x4f);
+	handle = File_Open(path, (file_access) 0x4f);
 	if (!handle)
 	{
 		return NULL;
@@ -1488,25 +1680,25 @@ static ZapFont *load_font(char *name, ZapFont *f)
 	/* Read the header */
 	if (myFile_ReadBytes(handle, &header, sizeof(header)))
 	{
-		myFile_Close(handle);
+		File_Close(handle);
 		return NULL;
 	}
 
 	/* Check that it's a zapfont */
 	if (strncmp(header.id, "ZapFont\r", 8))
 	{
-		myFile_Close(handle);
+		File_Close(handle);
 		return NULL;
 	}
 
 	/* Calculate the size of the 1bpp data */
-	extent = myFile_Extent(handle) - sizeof(header);
+	extent = File_ReadExtent(handle) - sizeof(header);
 
 	/* Allocate the storage for the 1bpp data */
 	f->bpp_1 = f_malloc(extent);
 	if (!f->bpp_1)
 	{
-		myFile_Close(handle);
+		File_Close(handle);
 		return NULL;
 	}
 
@@ -1515,12 +1707,12 @@ static ZapFont *load_font(char *name, ZapFont *f)
 	{
 		f_free(f->bpp_1);
 		f->bpp_1 = 0;
-		myFile_Close(handle);
+		File_Close(handle);
 		return NULL;
 	}
 
 	/* Close the file and set the header, etc. */
-	myFile_Close(handle);
+	File_Close(handle);
 	f->name = f_malloc(strlen(real_name) + 1);
 	if (!f->name)
 	{
@@ -1683,38 +1875,27 @@ typedef struct
 }
 osgbpb10_block;
 
-
-static char *leafname(char *path)
-{
-	char *s = path + strlen(path);
-	while (--s > path)
-		if (*s == '.' || *s == ':')
-		{
-			return s + 1;
-		}
-	return path;
-}
-
 /*
  | NB: This function is recursive.
  */
-static menu_ptr make_zfont_menu(char *dir)
+static menu_ptr make_zfont_menu(const char *dir)
 {
 	int entries, entry;
 	int read, offset;
-	int max_width;
+	unsigned int max_width;
 	menu_ptr m;
 	menu_item *mi;
 	char *temp;
-	osgbpb10_block *item_info;
+	filing_direntry *item_info;
 	char buffer[1024];	/* 1Kb buffer */
 
 	/* Count the entries in the directory */
-	entries = read = offset = 0;
+	entries = offset = 0;
 	while (offset != -1)
 	{
-		if (SWI(7, 5, SWI_OS_GBPB, 10, dir, buffer, 77, offset, 1024, 0,
-				NULL, NULL, NULL, &read, &offset))
+		read = 77;
+
+		if (Filing_ReadDirNames(dir, buffer, &read, &offset, sizeof(buffer), (char *) "*"))
 		{
 			offset = -1;
 			read = 0;
@@ -1722,10 +1903,7 @@ static menu_ptr make_zfont_menu(char *dir)
 		entries += read;
 	}
 
-	if (!entries)
-	{
-		return NULL;
-	}
+	if (!entries) return NULL;
 
 	/* Allocate a big enough area of storage for the number of entries */
 	m = f_malloc(sizeof(menu_block) + entries * sizeof(menu_item));
@@ -1736,7 +1914,7 @@ static menu_ptr make_zfont_menu(char *dir)
 	memset(m, 0, sizeof(menu_block) + entries * sizeof(menu_item));
 
 	/* Set up the menu header */
-	strncpy(m->title, leafname(dir), 12);
+	strncpy(m->title, Str_LeafName((char *) dir), 12);
 	m->titlefore = 7;
 	m->titleback = 2;
 	m->workfore = 7;
@@ -1749,26 +1927,27 @@ static menu_ptr make_zfont_menu(char *dir)
 	entry = 0;
 
 	/* Read the entries */
-	read = offset = 0;
+	offset = 0;
 	while (offset != -1)
 	{
-		if (SWI(7, 5, SWI_OS_GBPB, 10, dir, buffer, 77, offset, 1024, 0,
-				NULL, NULL, NULL, &read, &offset))
+		read = 77;
+
+		if (Filing_ReadDirEntry(dir, (filing_direntry *) buffer, &read, &offset, sizeof(buffer), (char *) "*"))
 		{
 			offset = -1;
 			read = 0;
-			/*free(m);return NULL; */
 		}
 
-		item_info = (osgbpb10_block *) buffer;
+		item_info = (filing_direntry *) buffer;
 
 		/* Create a menu item for each entry read (if it fits) */
 		while (read-- > 0)
 		{
-			switch (item_info->type)
+			switch (item_info->objtype)
 			{
-				case 1:		/* File */
-					if ((item_info->load & 0xffffff00) == 0xfffffd00)
+				case filing_FILE:
+				{
+					if ((item_info->loadaddr & 0xffffff00) == 0xfffffd00)
 					{
 						/* Data file */
 						mi[entry].submenu.value = -1;
@@ -1782,8 +1961,10 @@ static menu_ptr make_zfont_menu(char *dir)
 						entry++;
 					}
 					break;
-				case 2:		/* Directory */
-				case 3:		/* Image */
+				}
+
+				case filing_DIRECTORY:
+				case filing_IMAGEFILE:
 				{
 					menu_ptr sub;
 					char new_path[260];
@@ -1805,12 +1986,13 @@ static menu_ptr make_zfont_menu(char *dir)
 							max_width = strlen(mi[entry].icondata.text);
 						entry++;
 					}
-				}
+
 					break;
+				}
 			}
-			temp = ((char *)item_info) + 20;
-			while (*temp++) ;
-			item_info = (osgbpb10_block *) ((((int)temp) + 3) & ~3);
+			temp = ((char *) item_info) + 20;
+			while (*temp++);
+			item_info = (filing_direntry *) WORDALIGN((int) temp);
 		}
 	}
 
@@ -1826,9 +2008,7 @@ static menu_ptr make_zfont_menu(char *dir)
 	}
 	else
 	{
-		/*
-		   | No point in returning an empty menu.
-		 */
+		/* No point in returning an empty menu. */
 		f_free(m);
 		m = NULL;
 	}
@@ -1836,6 +2016,7 @@ static menu_ptr make_zfont_menu(char *dir)
 	return m;
 }
 
+#endif /* FULLSCREEN_ONLY */
 
 
 
@@ -1854,7 +2035,7 @@ static void initialise_palette(void)
 
 
 
-
+#ifndef FULLSCREEN_ONLY
 
 /*
  | Cache the ZapRedraw palette
@@ -1865,13 +2046,13 @@ static void cache_palette(void)
 	char workspace[128];
 	int i;
 
-	static double old_gamma = -1.0;
+	static int old_gamma = -1;
 
 	/* Idiocy check: */
-	if (gamma < 0.01)
+	if (gamma < 1)
 	{
 		plog("Internal error: Attempt to apply zero gamma - recovering...");
-		gamma = 1.00;
+		gamma = 100;
 	}
 
 	if (gamma != old_gamma)
@@ -1886,12 +2067,9 @@ static void cache_palette(void)
 		if (COLOUR_CHANGED(i))
 		{
 			int r, g, b;
-			r = (int)(255.0 *
-					  pow(angband_color_table[i][1] / 255.0, 1.0 / gamma));
-			g = (int)(255.0 *
-					  pow(angband_color_table[i][2] / 255.0, 1.0 / gamma));
-			b = (int)(255.0 *
-					  pow(angband_color_table[i][3] / 255.0, 1.0 / gamma));
+			r = (int)(255.0 * pow(angband_color_table[i][1] / 255.0, 1.0 / ((double) gamma / 100.0)));
+			g = (int)(255.0 * pow(angband_color_table[i][2] / 255.0, 1.0 / ((double) gamma / 100.0)));
+			b = (int)(255.0 * pow(angband_color_table[i][3] / 255.0, 1.0 / ((double) gamma / 100.0)));
 			palette[i] = (b << 24) | (g << 16) | (r << 8);
 			a_palette[i][1] = angband_color_table[i][1];
 			a_palette[i][2] = angband_color_table[i][2];
@@ -1903,8 +2081,10 @@ static void cache_palette(void)
 
 	/* Cache the ZapRedraw palette for it */
 	b.r_workarea = workspace;
-	if (b.r_mode != screen_mode)
+
+	if (b.r_mode != screen_mode.screen_mode)
 		SWI(2, 0, SWI_ZapRedraw_ReadVduVars, 0, &b);
+
 	SWI(5, 0, SWI_ZapRedraw_CreatePalette, 2, &b, palette, zpalette, 256);
 }
 
@@ -1917,19 +2097,8 @@ static void cache_palette(void)
  | Functions for dealing with the SaveBox
  */
 
-/*
- | Create the window and claim various handlers for it
- */
-static void init_save_window(void)
-{
-	/* Create the window */
-	save_box = Window_Create("save", template_TITLEMIN);
 
-	/* Set the file icon */
-	Icon_printf(save_box, SAVE_ICON, "file_%03x", vfiletype);
-
-}
-
+#ifndef HAS_MY_STRNICMP
 /*
  | Hack: can't use Str.h without defining HAS_STRICMP.  Rather than
  | require that the header files are altered we simply provide our
@@ -1952,6 +2121,7 @@ static int my_strnicmp(const char *a, const char *b, int n)
 
 	return 0;
 }
+#endif /* HAS_MY_STRNICMP */
 
 
 /*
@@ -1986,7 +2156,7 @@ static BOOL SaveHnd_FileSave(char *filename, void *ref)
 	/* Try a save (if sensible) */
 	if (game_in_progress && character_generated)
 	{
-		if (!save_player())
+		if (!save_player(SAVE_PLAYER_PARAM))
 		{
 			Msgs_Report(0, "err.save", filename);
 			strcpy(savefile, old_savefile);
@@ -1997,26 +2167,19 @@ static BOOL SaveHnd_FileSave(char *filename, void *ref)
 	/* Set the pathname icon */
 	Icon_printf(save_box, SAVE_PATH, "%s", riscosify_name(savefile));
 
-	/* Kill the menu */
-	Wimp_CreateMenu((menu_block *) - 1, -1, -1);
-
 	return TRUE;				/* => Success */
 }
 
-
-
 /*
- | Init the handlers for the savebox (eg. as a result of a menuwarning
- | being received for the savebox)
+ | Create the window and claim various handlers for it
  */
-
-static void init_savehandlers(void)
+static void init_save_window(void)
 {
-	if (saveblk)
-	{
-		Save_ReleaseSaveHandlers(saveblk);
-		saveblk = 0;
-	}
+	/* Create the window */
+	save_box = Window_Create("save", template_TITLEMIN);
+
+	/* Set the file icon */
+	Icon_printf(save_box, SAVE_ICON, "file_%03x", vfiletype);
 
 	saveblk = Save_InitSaveWindowHandler(save_box,	/* Window handle */
 										 TRUE,	/* it's part of a menu */
@@ -2037,26 +2200,49 @@ static void init_savehandlers(void)
 
 
 /*
- | Handle a MenuWarning message for the savebox
+ | Handles MenuWarning messages
  */
-static BOOL Hnd_SaveWarning(event_pollblock * pb, void *ref)
+static BOOL Hnd_MenuWarning(event_pollblock * pb, void *ref)
 {
 	os_error *e;
+	window_handle win;
 
-	init_savehandlers();
+	if (menu_currentopen == ibar_menu)
+	{
+		win = save_box;
+	}
+	else if (menu_currentopen == term_menu)
+	{
+		switch (pb->data.message.data.menuwarn.selection[0])
+		{
+			case TERM_MENU_SAVE: win = save_box;    break;
+			case TERM_MENU_SIZE: win = resize_win;  break;
+			default: return FALSE;
+		}
+	}
+	else
+	{
+		return FALSE;
+	}
 
-	/* Set the pathname */
-	Icon_printf(save_box, SAVE_PATH, "%s", riscosify_name(savefile));
+	if (win == save_box)
+	{
+		/* Set the pathname */
+		Icon_printf(save_box, SAVE_PATH, "%s", riscosify_name(savefile));
+	}
+	else
+	{
+		/* Set the size */
+		Icon_SetInteger(resize_win, SIZE_WIDTH, menu_term->t.wid);
+		Icon_SetInteger(resize_win, SIZE_HEIGHT, menu_term->t.hgt);
+	}
 
 	/* Open the submenu */
-	e = Wimp_CreateSubMenu((menu_block *) save_box,
+	e = Wimp_CreateSubMenu((menu_block *) win,
 						   pb->data.message.data.menuwarn.openpos.x,
 						   pb->data.message.data.menuwarn.openpos.y);
 
-	if (e)
-	{
-		Msgs_ReportFatal(0, "err.swi", __LINE__, e->errmess);
-	}
+	if (e) Msgs_ReportFatal(0, "err.swi", __LINE__, e->errmess);
 
 	return TRUE;
 }
@@ -2066,23 +2252,67 @@ static BOOL Hnd_SaveWarning(event_pollblock * pb, void *ref)
 
 
 /*
- | Initialise the r_data array
- | Mainly we just set up the line offset pointers and make sure that the
- | lines themselves are 'safe' by writing end-of-line codes to them.
+ * Initialise the r_data array, reallocating memory for it if the size of our
+ * "theoretical largest term" has changed since the last call.
+ *
+ * We just set up the line offset pointers and make sure that the
+ * lines themselves are 'safe' by writing end-of-line codes to them.
  */
 static void initialise_r_data(void)
 {
-	int *lo = (int *)r_data;
+	int maxwid = 0, maxhgt = 0;
+	char *new_r_data;
+
+	int *lo;
 	char *ld;
-	int j;
-	for (j = 0; j < 24; j++)
+
+	int i;
+
+	for (i = 0; i < MAX_TERM_DATA; i++)
 	{
-		lo[j] = 25 * 4 + (80 * 5 + 4) * j;	/* Offset of line */
-		ld = r_data + lo[j];
-		*ld++ = 0;				/* 0,2 ==     */
-		*ld = 2;				/* end of line */
+		if (data[i].t.wid > maxwid) maxwid = data[i].t.wid;
+		if (data[i].t.hgt > maxhgt) maxhgt = data[i].t.hgt;
 	}
-	lo[j] = 0;					/* Terminate line index */
+
+	if (r_maxwid != maxwid || r_maxhgt != maxhgt)
+	{
+		/*
+		 * We allocate enough memory for a theoretical largest zapredrawblock.
+		 * This consists of a list of line starts + terminator, then a big
+		 * block containing enough space for max_hgt lines of max_wid each
+		 * (allowing for possible control codes) and an end-of-line-terminator
+		 * for each line.
+		 */
+	 	new_r_data = realloc(r_data,
+		                     (maxhgt + 1) * 4 + maxhgt * (maxwid * 5 + 4));
+
+		if (new_r_data == NULL)
+		{
+			Msgs_Report(0, "err.resize");
+			return;
+		}
+
+		r_data = new_r_data;
+		zrb.r_data = r_data;
+
+		r_maxwid = maxwid;
+		r_maxhgt = maxhgt;
+	}
+
+	lo = (int *) r_data;
+
+
+	/* Make a dummy block where all lines point to the same empty line */
+	ld = r_data + (maxhgt + 1) * 4;
+	*ld++ = 0;				/* 0,2 ==     */
+	*ld = 2;				/* end of line */
+
+	for (i = 0; i < maxhgt; i++)
+	{
+		/* Offset of line */
+		lo[i] = (maxhgt + 1) * 4;
+	}
+	lo[i] = 0;					/* Terminate line index */
 }
 
 
@@ -2095,23 +2325,22 @@ static void initialise_r_data(void)
  */
 static void make_r_data(term_data *t)
 {
-	char **c = t->t.old->c;	/* char array [24][80] */
-	byte **a = t->t.old->a;	/* attr array [24][80] */
+	char **c = t->t.old->c;	/* char array */
+	byte **a = t->t.old->a;	/* attr array */
 	char *o;
 	int i, j, cf;
 
-/* New code: */
-
-	o = r_data + 25 * 4;		/* First byte of r_data after line index */
+	/* First byte of r_data after line index */
+	o = r_data + (t->t.hgt + 1) * 4;
 
 	if (force_mono)
 	{
-		for (j = 0; j < 24; j++)
+		for (j = 0; j < t->t.hgt; j++)
 		{
 			/* Set up the line offset entry */
 			((int *)r_data)[j] = o - r_data;
 
-			for (i = 0; i < 80; i++)
+			for (i = 0; i < t->t.wid; i++)
 				*o++ = a[j][i] != TERM_DARK ? c[j][i] : ' ';
 			/* 0,2 => end of line */
 			*o++ = 0;
@@ -2120,7 +2349,7 @@ static void make_r_data(term_data *t)
 	}
 	else
 	{
-		for (j = 0; j < 24; j++)
+		for (j = 0; j < t->t.hgt; j++)
 		{
 			/* Set up the line offset entry */
 			((int *)r_data)[j] = o - r_data;
@@ -2128,7 +2357,7 @@ static void make_r_data(term_data *t)
 			/* Each line starts in white */
 			cf = TERM_WHITE;
 
-			for (i = 0; i < 80; i++)
+			for (i = 0; i < t->t.wid; i++)
 			{
 				if (a[j][i] != cf)
 				{
@@ -2144,6 +2373,9 @@ static void make_r_data(term_data *t)
 			*o++ = 2;
 		}
 	}
+
+	/* Terminate line index */
+	((int *) r_data)[t->t.hgt] = 0;
 }
 
 
@@ -2195,8 +2427,11 @@ static void set_up_zrb(term_data *t)
 
 
 
-
-static void redraw_window(window_redrawblock * rb, BOOL *more, term_data *t)
+/*
+ * Redraws the contents of the given term, as initialised by a
+ * Wimp_RedrawWindow or Wimp_UpdateWindow call.
+ */
+static void RO_redraw_window(window_redrawblock * rb, BOOL *more, term_data *t)
 {
 	int cx, cy, cw, ch;
 
@@ -2238,7 +2473,9 @@ static void redraw_window(window_redrawblock * rb, BOOL *more, term_data *t)
 
 
 
-
+/*
+ * Perform the redraw for the requested term window.
+ */
 static BOOL Hnd_Redraw(event_pollblock * pb, void *ref)
 {
 	term_data *t = (term_data *)ref;
@@ -2250,7 +2487,7 @@ static BOOL Hnd_Redraw(event_pollblock * pb, void *ref)
 
 	set_up_zrb(t);
 
-	redraw_window(&rb, &more, t);
+	RO_redraw_window(&rb, &more, t);
 
 	return TRUE;
 }
@@ -2258,7 +2495,9 @@ static BOOL Hnd_Redraw(event_pollblock * pb, void *ref)
 
 
 
-
+/*
+ * Redraw the out-of-date parts of the given term window
+ */
 static void refresh_window(term_data *t)
 {
 	window_redrawblock rb;
@@ -2286,24 +2525,26 @@ static void refresh_window(term_data *t)
 	rb.rect.min.y = fh * t->changed_box.max.y;
 
 	Wimp_UpdateWindow(&rb, &more);
-	redraw_window(&rb, &more, t);
+	RO_redraw_window(&rb, &more, t);
 
 	t->changed_box.min.x = t->changed_box.min.y = 255;
 	t->changed_box.max.x = t->changed_box.max.y = 0;
 }
 
 
-
+/*
+ * Redraws the out-of-date parts of the all the open term windows.
+ */
 static void refresh_windows(void)
 {
 	int i;
 	window_info info;
+
 	for (i = 0; i < MAX_TERM_DATA; i++)
 	{
 		info.window = data[i].w;
 		Wimp_GetWindowInfo(&info);
-		if (info.block.flags.data.open)
-			refresh_window(&(data[i]));
+		if (info.block.flags.data.open) refresh_window(&(data[i]));
 	}
 }
 
@@ -2317,14 +2558,14 @@ static void refresh_windows(void)
  | resized and then closed again...  I /did/ have a reason for doing this
  | rather than simply recreating the window at the new size, but for the
  | life of me I can't remember what it was...
+ |
+ | <ajps> I think this is simply so that the Wimp remembers the position
+ |        of the window for when we next call show_windows().
  */
 static void set_window_size(window_handle w, int width, int height)
 {
 	window_state ws;
 	int reclose;
-/*
- *  int cw,ch;
- */
 
 	Wimp_GetWindowState(w, &ws);
 	Window_SetExtent(w, 0, -height, width, 0);
@@ -2337,17 +2578,13 @@ static void set_window_size(window_handle w, int width, int height)
 			ws.openblock.behind = -3;
 			Wimp_OpenWindow(&(ws.openblock));
 		}
-		/* Removed - caused "pixel creep" :)
-		 *  cw = ws.openblock.screenrect.max.x;
-		 *  ch = ws.openblock.screenrect.max.y;
-		 *  cw -= ws.openblock.screenrect.min.x;
-		 *  ch -= ws.openblock.screenrect.min.y;
-		 *  ws.openblock.screenrect.min.x -= ((width-cw)/2)-(1<<screen_eig.x);
-		 *  ws.openblock.screenrect.min.y -= ((height-ch)/2)-(1<<screen_eig.y);
-		 */
+
+		/* Keep the top right-hand corner of the window fixed. */
 		ws.openblock.screenrect.max.x = ws.openblock.screenrect.min.x + width;
-		ws.openblock.screenrect.max.y = ws.openblock.screenrect.min.y + height;
+		ws.openblock.screenrect.min.y = ws.openblock.screenrect.max.y - height;
+
 		Wimp_OpenWindow(&(ws.openblock));
+
 		if (reclose)
 		{
 			Wimp_CloseWindow(w);
@@ -2372,7 +2609,7 @@ static void set_window_size(window_handle w, int width, int height)
 /*
  | Change the size of a window to suit the font displayed in it
  */
-static void resize_term_for_font(term_data *t)
+static void force_term_resize(term_data *t)
 {
 	int fw, fh;
 	set_up_zrb(t);
@@ -2384,23 +2621,42 @@ static void resize_term_for_font(term_data *t)
 		fh *= 2;
 	}
 
-	/* Caulculate new size */
-	fw *= 80;
-	fh *= 24;
+	/* Calculate new size */
+	fw *= t->t.wid;
+	fh *= t->t.hgt;
 
 	set_window_size(t->w, fw, fh);
 }
 
 
+/*
+ * Change the actual size of the terminal (so as to support variable-sized
+ * "bigscreen" windows.
+ */
+static void term_change_size(term_data *t, int wid, int hgt)
+{
+	term *old_t = Term;
 
+	/* Ignore attempts to resize too small */
+	if (t == &data[0] && (wid < 80 || hgt < 24)) return;
 
+	/* Hack -- activate the Term */
+	Term_activate(&(t->t));
 
+	/* Only do all the complicated stuff if the resize attempt succeeded */
+#ifdef IS_SCTH
+        Term_resize(wid, hgt);
+#else
+	if (Term_resize(wid, hgt) == NULL)
+#endif	
+	{
+		initialise_r_data();
+		force_term_resize(t);
+	}
 
-
-
-
-
-
+	/* Hack -- restore the old Term */
+	Term_activate(old_t);
+}
 
 
 
@@ -2411,10 +2667,9 @@ static void resize_term_for_font(term_data *t)
 
 static BOOL Hnd_Caret(event_pollblock * pb, void *ref)
 {
-	if (ref)
-		got_caret = 1;
-	else
-		got_caret = 0;
+	if (ref) got_caret = 1;
+	else got_caret = 0;
+
 	return TRUE;
 }
 
@@ -2431,21 +2686,14 @@ static BOOL Hnd_Caret(event_pollblock * pb, void *ref)
  */
 static int attach_font_to_term(term_data *t, char *font)
 {
-	if (t->font != SYSTEM_FONT)
-	{
-		lose_font(t->font);
-	}
-	if (font)
-	{
-		t->font = find_font(font);
-	}
+	if (t->font != SYSTEM_FONT) lose_font(t->font);
+
+	if (font) t->font = find_font(font);
+
 	if (!t->font)
 	{
 		t->font = SYSTEM_FONT;
-		if (font)
-		{
-			Msgs_Report(1, "err.font_l", font);
-		}
+		if (font) Msgs_Report(1, "err.font_l", font);
 	}
 	else
 	{
@@ -2453,13 +2701,12 @@ static int attach_font_to_term(term_data *t, char *font)
 		{
 			lose_font(t->font);
 			t->font = SYSTEM_FONT;
-			if (font)
-			{
-				Msgs_Report(1, "err.font_c", font);
-			}
+			if (font) Msgs_Report(1, "err.font_c", font);
 		}
 	}
-	resize_term_for_font(t);
+
+	force_term_resize(t);
+
 	return !(t->font == SYSTEM_FONT);
 }
 
@@ -2487,11 +2734,13 @@ static int attach_font_to_term(term_data *t, char *font)
  */
 static void make_font_menu(void)
 {
-	char *t, buffer[260];
+	char *t;
+	char buffer[260];
 	char menu_buffer[260];
 	int paths;
-	int i, max_width;
-	char *path[64];	/* pointers to path names */
+	int i;
+	unsigned int max_width;
+	const char *path[64];	/* pointers to path names */
 	menu_item *mi;
 
 	font_menu = NULL;
@@ -2629,6 +2878,72 @@ static void create_info_box(void)
 	return;
 }
 
+
+static BOOL Hnd_ResizeSet(event_pollblock *pb, void *ref)
+{
+	int newwid = Icon_GetInteger(resize_win, SIZE_WIDTH);
+	int newhgt = Icon_GetInteger(resize_win, SIZE_HEIGHT);
+
+	if (pb->type != event_CLICK || pb->data.mouse.button.data.adjust == 0)
+	{
+		Menu_Show((menu_ptr) -1, -1, -1);
+	}
+
+	/* Do simple validation of the values */
+	if (menu_term == &data[0])
+	{
+		if (newwid < 80 || newhgt < 24)
+		{
+			Msgs_Report(0, "err.minsize1");
+			return TRUE;
+		}
+	}
+	else if (newwid < 1 || newhgt < 1)
+	{
+		Msgs_Report(0, "err.minsize2");
+		return TRUE;
+	}
+
+	term_change_size(menu_term, newwid, newhgt);
+
+	return TRUE;
+}
+
+
+static BOOL Hnd_ResizeCancel(event_pollblock *pb, void *ref)
+{
+	/* Close menus */
+	Menu_Show((menu_ptr) -1, -1, -1);
+
+	return TRUE;
+}
+
+
+static BOOL Hnd_ResizeKeypress(event_pollblock *pb, void *ref)
+{
+  if(pb->data.key.code == keycode_RETURN)
+    return Hnd_ResizeSet(pb, ref);
+
+  return FALSE;
+}
+
+
+/*
+ * Create and set up the term-resize window.
+ */
+static void create_resize_win(void)
+{
+	resize_win = Window_Create("resize", template_TITLEMIN);
+
+	Event_Claim(event_CLICK, resize_win, SIZE_SET, Hnd_ResizeSet, NULL);
+	Event_Claim(event_CLICK, resize_win, SIZE_CANCEL, Hnd_ResizeCancel, NULL);
+	Event_Claim(event_KEY, resize_win, event_ANY, Hnd_ResizeKeypress, NULL);
+
+	return;
+}
+
+
+
 /*
  | Create the various menus
  */
@@ -2638,25 +2953,26 @@ static void init_menus(void)
 	char buffer2[32];
 	char *o;
 
-	create_info_box();			/* For the Info> entries */
-	make_font_menu();			/* Make the fonts menu */
+	create_info_box();
+	make_font_menu();
+	create_resize_win();
 
 	Msgs_Lookup("menu.ibar:Info|>Save As|Full screen,Gamma correction,Sound,"
 				"Windows|Save choices|Quit (& save)", buffer1, 256);
 	ibar_menu = Menu_New(VARIANT, buffer1);
 	if (!ibar_menu) core("Can't create Iconbar menu!");
 
-	Msgs_Lookup("menu.term:Info|>Save As|Font,Windows", buffer1, 256);
+	Msgs_Lookup("menu.term:Info|>Save As|>Size,Font,Windows", buffer1, 256);
 	term_menu = Menu_New(VARIANT, buffer1);
 	if (!term_menu) core("Can't create Term menu!");
 
 #ifndef OLD_TERM_MENU
 	o = buffer1;
 	o += sprintf(buffer1, "%s|", VARIANT);
-	o += sprintf(o, "%s,%s,%s|", angband_term_name[1], angband_term_name[2],
-				 angband_term_name[3]);
-	sprintf(o, "%s,%s,%s,%s", angband_term_name[4], angband_term_name[5],
-			angband_term_name[6], angband_term_name[7]);
+	o += sprintf(o, "%s,%s,%s|", TERM_NAME(1), TERM_NAME(2),
+				 TERM_NAME(3));
+	sprintf(o, "%s,%s,%s,%s", TERM_NAME(4), TERM_NAME(5),
+			TERM_NAME(6), TERM_NAME(7));
 #else
 	Msgs_printf(buffer1, "menu.windows:%s|Term-1 (Mirror),Term-2 (Recall),"
 				"Term-3 (Choice)|Term-4,Term-5,Term-6,Term-7", VARIANT);
@@ -2669,16 +2985,21 @@ static void init_menus(void)
 	}
 
 	/* Now attach the various submenus to where they belong */
-	Menu_AddSubMenu(ibar_menu, IBAR_MENU_INFO, (menu_ptr) info_box);
-	Menu_AddSubMenu(ibar_menu, IBAR_MENU_GAMMA, (menu_ptr) gamma_win);
-	Menu_AddSubMenu(ibar_menu, IBAR_MENU_SOUND, (menu_ptr) sound_win);
-	Menu_AddSubMenu(ibar_menu, IBAR_MENU_WINDOWS, (menu_ptr) wind_menu);
+	Menu_AddSubWindow(ibar_menu, IBAR_MENU_INFO, info_box);
+	Menu_AddSubWindow(ibar_menu, IBAR_MENU_GAMMA, gamma_win);
+	Menu_AddSubWindow(ibar_menu, IBAR_MENU_SOUND, sound_win);
+	Menu_AddSubMenu(ibar_menu, IBAR_MENU_WINDOWS, wind_menu);
+
 	Menu_AddSubMenu(term_menu, TERM_MENU_INFO, (menu_ptr) info_box);
 	Menu_AddSubMenu(term_menu, TERM_MENU_WINDOWS, wind_menu);
 
-	/* Add the savebox */
-	Menu_Warn(ibar_menu, IBAR_MENU_SAVE, TRUE, Hnd_SaveWarning, NULL);
-	Menu_Warn(term_menu, TERM_MENU_SAVE, TRUE, Hnd_SaveWarning, NULL);
+	/* Add the handler for menu warnings */
+	EventMsg_Claim(message_MENUWARN, event_ANY, Hnd_MenuWarning, NULL);
+
+	/* Set up these menu items to issue menuwarn messages */
+/*	Menu_Warn(ibar_menu, IBAR_MENU_SAVE, TRUE, NULL, NULL);
+	Menu_Warn(term_menu, TERM_MENU_SAVE, TRUE, NULL, NULL);
+	Menu_Warn(term_menu, TERM_MENU_SIZE, TRUE, NULL, NULL);*/
 
 	if (font_menu)
 		/* add the submenu */
@@ -2713,10 +3034,10 @@ static void clear_all_menu_ticks(menu_ptr mp)
 
 	do
 	{
-		if (mi->menuflags.data.ticked)
-			mi->menuflags.data.ticked = 0;
-		if (mi->submenu.value != -1)
-			clear_all_menu_ticks(mi->submenu.menu);
+		if (mi->menuflags.data.ticked) mi->menuflags.data.ticked = 0;
+
+		if (mi->submenu.value != -1) clear_all_menu_ticks(mi->submenu.menu);
+
 		mi++;
 	}
 	while (mi[-1].menuflags.data.last != 1);
@@ -2740,7 +3061,7 @@ static void clear_all_menu_ticks(menu_ptr mp)
  |
  */
 
-static void set_font_menu_ticks(menu_ptr fm, char *fn, char *prefix)
+static void set_font_menu_ticks(menu_ptr fm, char *fn, const char *prefix)
 {
 	char buffer[260];
 	char *b_leaf;	/* -> menu 'leaf' text in buffer */
@@ -2825,6 +3146,14 @@ static void set_up_term_menu(term_data *t)
 	else
 		Menu_SetFlags(term_menu, TERM_MENU_SAVE, 0, TRUE);
 
+	/*
+	 * Shade the resize entry if Term->fixed_shape is set, or if
+	 * bigscreen isn't supported
+	 */
+	if (BIGSCREEN == FALSE || t->t.fixed_shape)
+		Menu_SetFlags(term_menu, TERM_MENU_SIZE, 0, TRUE);
+	else
+		Menu_SetFlags(term_menu, TERM_MENU_SIZE, 0, FALSE);
 }
 
 
@@ -2875,7 +3204,7 @@ static BOOL Hnd_TermClick(event_pollblock * pb, void *ref)
 	return TRUE;
 }
 
-
+#endif /* !FULLSCREEN_ONLY */
 
 
 
@@ -2892,17 +3221,19 @@ static void mark_ood(term_data *t, int minx, int miny, int maxx, int maxy)
 }
 
 
+#ifndef FULLSCREEN_ONLY
 
 /* Check for an event (ie. key press) */
 static errr Term_xtra_acn_check(void)
 {
 	static int last_poll = 0;
-	int curr_time;
+	unsigned int curr_time;
 	int bh, bl;
 
 	/*
 	   | Only poll the wimp if there's something in the keyboard buffer
-	   | or every 10cs
+	   | or every 10cs.  This is presumably so that we process as many
+	   | keypresses as possible before any other application gets a go.
 	 */
 
 	/* Check the kbd buffer */
@@ -2914,20 +3245,16 @@ static errr Term_xtra_acn_check(void)
 
 	if ((bl > 0 && got_caret) || ((curr_time - last_poll) > 9))
 	{
-		event_pollmask old_mask = event_mask;
 		last_poll = curr_time;
-		event_mask.data.null = 0;
-		Stop_Hourglass;
+		STOP_HOURGLASS;
 		Event_Poll();
-		Start_Hourglass;
-		event_mask = old_mask;
+		START_HOURGLASS;
 	}
 
 	/*
 	   | This allows the user to interrupt the borg.
 	 */
-	if (key_pressed)
-		return key_pressed = 0;
+	if (key_pressed) return key_pressed = 0;
 
 	return 1;
 }
@@ -2940,21 +3267,14 @@ static errr Term_xtra_acn_check(void)
  */
 static errr Term_xtra_acn_event(void)
 {
-	event_pollmask old_mask = event_mask;
-	event_mask.data.null = 0;
-
-	Stop_Hourglass;
+	STOP_HOURGLASS;
 
 	while (!key_pressed && !fullscreen_font)
 	{
-		int curr_time = Time_Monotonic();
-		Wimp_PollIdle(event_mask, &event_lastevent, curr_time + 100);
-		Event_Process(&event_lastevent);
-		check_alarm(TRUE);
+		Event_PollIdle(100);
 	}
-	Start_Hourglass;
+	START_HOURGLASS;
 
-	event_mask = old_mask;
 	return key_pressed = 0;
 }
 
@@ -2969,7 +3289,9 @@ static errr Term_xtra_acn_react(void)
 
 	/* Mark the entirety of each window as out of date */
 	for (c = 0; c < MAX_TERM_DATA; c++)
-		mark_ood(&data[c], 0, 0, 80, 24);
+	{
+		mark_ood(&data[c], 0, 0, data[c].t.wid, data[c].t.hgt);
+	}
 
 	/* Force a redraw of the windows */
 	refresh_windows();
@@ -2978,7 +3300,7 @@ static errr Term_xtra_acn_react(void)
 	return 0;
 }
 
-
+#endif /* FULLSCREEN_ONLY */
 
 /* Do various things to a term */
 static errr Term_xtra_acn(int n, int v)
@@ -2987,81 +3309,242 @@ static errr Term_xtra_acn(int n, int v)
 
 	switch (n)
 	{
-		case TERM_XTRA_CLEAR:	/* Clear the Term */
-			/*for ( i=0; i<Term->hgt; i++ )
-			   t->froshed[i] = 1; */
-			mark_ood(t, 0, 0, Term->wid, Term->hgt);
-			/*refresh_window( t ); - NB: Term isn't actually cleared yet! */
-			/* Success */
-			return 0;
-
-		case TERM_XTRA_EVENT:	/* Wait/check for an event */
-			check_alarm(TRUE);
-			if (v)
-				return Term_xtra_acn_event();
-			else
-				return Term_xtra_acn_check();
-
-		case TERM_XTRA_BORED:	/* Bored */
-			check_alarm(TRUE);
-			return Term_xtra_acn_check();
-
-		case TERM_XTRA_FLUSH:	/* Flush input */
-			if (got_caret)
+		/* Clear the Term */
+		case TERM_XTRA_CLEAR:
+		{
+#ifndef FULLSCREEN_ONLY
+			if (fullscreen_font)
 			{
+#endif
+				if (t == (&data[0])) Term_xtra_acn_clearFS();
+#ifndef FULLSCREEN_ONLY
+			}
+			else
+			{
+				mark_ood(t, 0, 0, Term->wid, Term->hgt);
+			}
+#endif
+			return 0;
+		}
+
+		/* Wait/check for an event */
+		case TERM_XTRA_EVENT:
+		{
+#ifndef FULLSCREEN_ONLY
+			if (fullscreen_font)
+			{
+#endif
+				Term_xtra_acn_eventFS(v);
+#ifndef FULLSCREEN_ONLY
+			}
+			else
+			{
+				if (v) return Term_xtra_acn_event();
+				else return Term_xtra_acn_check();
+			}
+#endif
+		}
+
+		/* Bored */
+		case TERM_XTRA_BORED:
+		{
+#ifndef FULLSCREEN_ONLY
+			if (fullscreen_font)
+#endif
+				Term_xtra_acn_eventFS(0);
+#ifndef FULLSCREEN_ONLY
+			else return Term_xtra_acn_check();
+#endif
+		}
+
+		/* Flush input */
+		case TERM_XTRA_FLUSH:
+		{
+#ifndef FULLSCREEN_ONLY
+			if (fullscreen_font || got_caret)
+			{
+#endif
 				/* 1.21 - Hack: wait until no keys are pressed */
 				if (hack_flush)
-					for (v = 0; v != 0xff;)
-						SWI(1, 2, SWI_OS_Byte, 122, 0, &v);
-				SWI(3, 0, SWI_OS_Byte, 21, 0, 0);	/* Flush Kbd buffer */
+				{
+					v = 0;
+					while (v != 0xff) SWI(1, 2, SWI_OS_Byte, 122, 0, &v);
+				}
+
+                /* Flush Kbd buffer */
+				SWI(3, 0, SWI_OS_Byte, 21, 0, 0);
+#ifndef FULLSCREEN_ONLY
 			}
+#endif
 			return 0;
+		}
 
-		case TERM_XTRA_FRESH:	/* Flush output */
-			refresh_window(t);
+		/* Flush output */
+		case TERM_XTRA_FRESH:
+		{
+#ifndef FULLSCREEN_ONLY
+			if (!fullscreen_font) refresh_window(t);
+#endif
 			return 0;
+		}
 
-		case TERM_XTRA_FROSH:	/* Ensure line 'v' is plotted */
+        /* Ensure line 'v' is plotted */
+		case TERM_XTRA_FROSH:
+		{
 			/* Doesn't do anything */
 			return 0;
+		}
 
-		case TERM_XTRA_SHAPE:	/* Set cursor visibility */
-			t->cursor.visible = v ? TRUE : FALSE;
-			mark_ood(t, t->cursor.pos.x, t->cursor.pos.y,
-					 t->cursor.pos.x + 1, t->cursor.pos.y + 1);
-			refresh_window(t);	/* needed? */
+		/* Set cursor visibility */
+		case TERM_XTRA_SHAPE:
+		{
+#ifndef FULLSCREEN_ONLY
+			if (fullscreen_font)
+			{
+#endif
+				if (t == (&data[0]))
+				{
+					t->cursor.visible = v;
+					if (v)
+						draw_cursor(t->cursor.pos.x, t->cursor.pos.y);
+					else
+						redraw_areaFS(t->cursor.pos.x, t->cursor.pos.y, 1, 1);
+				}
+#ifndef FULLSCREEN_ONLY
+			}
+			else
+			{
+				t->cursor.visible = v ? TRUE : FALSE;
+				mark_ood(t, t->cursor.pos.x, t->cursor.pos.y,
+						 t->cursor.pos.x + 1, t->cursor.pos.y + 1);
+
+				refresh_window(t);	/* needed? */
+			}
+#endif
 			return 0;
+		}
 
-		case TERM_XTRA_NOISE:	/* Make a beep */
+		/* Make a beep */
+		case TERM_XTRA_NOISE:
+		{
 			Sound_SysBeep();
 			return 0;
+		}
 
-		case TERM_XTRA_REACT:	/* React to, eg. palette changes */
-			return Term_xtra_acn_react();
+		/* React to, eg. palette changes */
+		case TERM_XTRA_REACT:
+		{
+#ifndef FULLSCREEN_ONLY
+			if (fullscreen_font)
+			{
+#endif
+				return Term_xtra_acn_reactFS(FALSE);
+#ifndef FULLSCREEN_ONLY
+			}
+			else
+			{
+				return Term_xtra_acn_react();
+			}
+#endif
+		}
 
-		case TERM_XTRA_DELAY:	/* Delay for 'v' ms */
+		/* Delay for 'v' ms */
+		case TERM_XTRA_DELAY:
+		{
 			if (v > 0)
 			{
-				int start = Time_Monotonic();
-				v = (v + 5) / 10;	/* Round to nearest cs */
-				GFX_Wait();
-				while ((Time_Monotonic() - start) < v)
-					;
-			}
-			return 0;
+				unsigned int start = Time_Monotonic();
 
-		case TERM_XTRA_SOUND:	/* Play a sound :) */
-			if (enable_sound)
-			{
-				play_sound(v);
+				/* Round to nearest cs */
+				v = (v + 5) / 10;
+
+				/* Wait for vsync for the hell of it. */
+				GFX_Wait();
+				while ((Time_Monotonic() - start) < v);
 			}
 			return 0;
+		}
+
+		/* Play a sound :) */
+		case TERM_XTRA_SOUND:
+		{
+			if (enable_sound) play_sound(v);
+
+			return 0;
+		}
+
+/*
+ * This is used by ToME2, and presumably will never be picked up by other
+ * variants, so it should be safe to #ifdef out like so:
+ */
+#ifdef TERM_XTRA_SCANSUBDIR
+		/* Subdirectory scan */
+		case TERM_XTRA_SCANSUBDIR:
+		{
+		    filing_dirdata directory;
+		    filing_direntry *entry;
+
+			scansubdir_max = 0;
+
+			if (Filing_OpenDir(riscosify_name(scansubdir_dir), &directory, sizeof(filing_direntry), readdirtype_DIRENTRY) != NULL)
+			{
+			  Error_Report(0, "Couldn't open directory \"%s\"", riscosify_name(scansubdir_dir));
+			  return 0;
+			}
+
+			while ((entry = Filing_ReadDir(&directory)) != NULL)
+			{
+				if (entry->objtype == filing_DIRECTORY)
+				{    
+					string_free(scansubdir_result[scansubdir_max]);
+					scansubdir_result[scansubdir_max] = string_make(entry->name);
+					++scansubdir_max;
+				}
+			}
+
+			Filing_CloseDir(&directory);
+
+			return 0;
+		}
+#endif /* TERM_XTRA_SCANSUBDIR */
+
+
+/*
+ * This is used by ToME, and presumably will never be picked up by other
+ * variants, so it should be safe to #ifdef out like so:
+ */
+#ifdef TERM_XTRA_GET_DELAY
+		/* Return current "time" in milliseconds */
+		case TERM_XTRA_GET_DELAY:
+		{
+			Term_xtra_long = Time_Monotonic() * 100;
+
+			return 0;
+		}
+#endif /* TERM_XTRA_GET_DELAY */
+                  
+/*
+ * This is used by ToME, and presumably will never be picked up by other
+ * variants, so it should be safe to #ifdef out like so:
+ */
+#ifdef TERM_XTRA_RENAME_MAIN_WIN
+#ifndef FULLSCREEN_ONLY
+		/* Rename main window */
+		case TERM_XTRA_RENAME_MAIN_WIN:
+		{
+			Window_SetTitle(data[0].w, angband_term_name[0]);
+			return 0;
+		}
+#endif /* FULLSCREEN_ONLY */
+#endif /* TERM_XTRA_RENAME_MAIN_WIN */
 
 		default:
 			return 1;			/* Unsupported */
 	}
 }
 
+
+#ifndef FULLSCREEN_ONLY
 
 
 /* Move (but don't necessarily display) the cursor */
@@ -3104,6 +3587,7 @@ static errr Term_text_acn(int x, int y, int n, byte a, cptr s)
 	return 0;
 }
 
+#endif /* !FULLSCREEN_ONLY */
 
 
 /* Initialise one of our terms */
@@ -3136,12 +3620,19 @@ static void term_data_link(term_data *td, int k)
 	t->never_frosh = TRUE;
 	/* Experiment (FS mode requires them) */
 
+#ifdef FULLSCREEN_ONLY
+	t->wipe_hook  = Term_wipe_acnFS;
+	t->xtra_hook  = Term_xtra_acnFS;
+	t->curs_hook  = Term_curs_acnFS;
+	t->text_hook  = Term_text_acnFS;
+#else
 	t->init_hook = Term_init_acn;
 	t->xtra_hook = Term_xtra_acn;
 	t->wipe_hook = Term_wipe_acn;
 	t->curs_hook = Term_curs_acn;
 	t->text_hook = Term_text_acn;
 	t->user_hook = Term_user_acn;
+#endif /* FULLSCREEN_ONLY */
 
 	t->data = td;
 
@@ -3149,7 +3640,7 @@ static void term_data_link(term_data *td, int k)
 }
 
 
-
+#ifndef FULLSCREEN_ONLY
 
 /* Open default windows (ie. as set in choices) at the appropriate sizes */
 static void show_windows(void)
@@ -3234,9 +3725,10 @@ static BOOL Hnd_ModeChange(event_pollblock * pb, void *ref)
 	set_up_zrb_for_mode();		/* (re)set up the redraw block */
 	cache_palette();			/* (re)cache the palette */
 	cache_fonts();				/* (re)cache the fonts */
+
 	/* Enforce sizes (eg. if screen_eig.y has changed) */
-	for (i = 0; i < MAX_TERM_DATA; i++)
-		resize_term_for_font(&(data[i]));
+	for (i = 0; i < MAX_TERM_DATA; i++) force_term_resize(&(data[i]));
+
 	return TRUE;
 }
 
@@ -3245,7 +3737,7 @@ static BOOL Hnd_ModeChange(event_pollblock * pb, void *ref)
 
 static BOOL Hnd_Keypress(event_pollblock * pb, void *ref)
 {
-	const static char hex[] = "0123456789ABCDEF";
+	static const char hex[] = "0123456789ABCDEF";
 	int c = pb->data.key.code;
 	/* Check whether this key was pressed in Term 0 */
 	if (pb->data.key.caret.window == data[0].w)
@@ -3267,7 +3759,7 @@ static BOOL Hnd_Keypress(event_pollblock * pb, void *ref)
 				}
 
 			/* Send everything else onto the Term package */
-			default:  
+			default:
 				/* Take care of "special" keypresses */
 				switch (c)
 				{
@@ -3276,7 +3768,7 @@ static BOOL Hnd_Keypress(event_pollblock * pb, void *ref)
 						c = '\t';
 						break;
 					}
-                   
+
 					case keycode_PAGEUP:
 					{
 						c = '9';
@@ -3287,13 +3779,13 @@ static BOOL Hnd_Keypress(event_pollblock * pb, void *ref)
 					{
 						c = '3';
 						break;
-					}         
+					}
 
 					case keycode_COPY:
 					{
 						c = '1';
 						break;
-					}          
+					}
 
 					case keycode_HOME:
 					{
@@ -3393,10 +3885,7 @@ static void update_gamma(void)
 	rb.rect.max.y = GC_YOFF + screen_delta.y;
 
 	Wimp_UpdateWindow(&rb, &more);
-	if (more)
-	{
-		redraw_gamma(&rb, &more);
-	}
+	if (more) redraw_gamma(&rb, &more);
 }
 
 
@@ -3408,10 +3897,7 @@ static BOOL Hnd_RedrawGamma(event_pollblock * pb, void *ref)
 
 	rb.window = pb->data.openblock.window;
 	Wimp_RedrawWindow(&rb, &more);
-	if (more)
-	{
-		redraw_gamma(&rb, &more);
-	}
+	if (more) redraw_gamma(&rb, &more);
 
 	return TRUE;
 }
@@ -3423,22 +3909,22 @@ static BOOL Hnd_GammaClick(event_pollblock * pb, void *ref)
 
 	if (up)
 	{
-		if (gamma < 9.0)
+		if (gamma < 900)
 		{
-			gamma += 0.05;
-			Icon_SetDouble(gamma_win, 0, gamma, 2);
-			Term_xtra_acn_react();
+			gamma += 5;
+			Icon_SetDouble(gamma_win, 0, (double) gamma / 100, 2);
 			update_gamma();
+			Term_xtra_acn_react();
 		}
 	}
 	else
 	{
-		if (gamma > 0.05)
+		if (gamma > 5)
 		{
-			gamma -= 0.05;
-			Icon_SetDouble(gamma_win, GAMMA_ICN, gamma, 2);
-			Term_xtra_acn_react();
+			gamma -= 5;
+			Icon_SetDouble(gamma_win, GAMMA_ICN, (double) gamma / 100, 2);
 			update_gamma();
+			Term_xtra_acn_react();
 		}
 	}
 
@@ -3457,15 +3943,17 @@ static BOOL Hnd_GammaClick(event_pollblock * pb, void *ref)
  */
 static void set_gamma_window_state(void)
 {
-	Icon_SetDouble(gamma_win, 0, gamma, 2);
+	if (minimise_memory) return;
+
+	Icon_SetDouble(gamma_win, 0, (double) gamma / 100, 2);
 }
 
 
 static void init_gamma_window(void)
 {
-	Template_UseSpriteArea(resource_sprites);
+	if (minimise_memory) return;
+
 	gamma_win = Window_Create("gamma", template_TITLEMIN);
-	Template_UseSpriteArea(NULL);
 	Event_Claim(event_REDRAW, gamma_win, event_ANY, Hnd_RedrawGamma, 0);
 	Event_Claim(event_CLICK, gamma_win, GAMMA_DOWN, Hnd_GammaClick, (void *)1);
 	Event_Claim(event_CLICK, gamma_win, GAMMA_UP, Hnd_GammaClick, (void *)0);
@@ -3485,6 +3973,8 @@ static slider_info volume_slider;
  */
 static void set_sound_window_state(void)
 {
+	if (minimise_memory) return;
+
 	Icon_SetSelect(sound_win, SND_ENABLE, enable_sound);
 	Slider_SetValue(&volume_slider, sound_volume, NULL, NULL);
 
@@ -3499,9 +3989,8 @@ static void set_sound_window_state(void)
 /*
  | The sound slider has been dragged, so update the sound volume setting
  */
-static int update_volume_from_slider(void *siv, void *ref)
+static int update_volume_from_slider(slider_info *si, void *ref)
 {
-	slider_info *si = (slider_info *) siv;
 	sound_volume = Slider_ReadValue(si);
 
 	if (sound_volume > 127)
@@ -3596,9 +4085,7 @@ static BOOL Hnd_SndClick(event_pollblock * pb, void *ref)
  */
 static void init_sound_window(void)
 {
-	Template_UseSpriteArea(resource_sprites);
 	sound_win = Window_Create("sound", template_TITLEMIN);
-	Template_UseSpriteArea(NULL);
 
 	Event_Claim(event_REDRAW, sound_win, event_ANY, Hnd_RedrawSnd,
 				(void *)&volume_slider);
@@ -3680,12 +4167,12 @@ static void handle_font_selection(int *s)
 	*r = 0;
 
 	attach_font_to_term(menu_term, name);
-	mark_ood(menu_term, 0, 0, 80, 24);
+	mark_ood(menu_term, 0, 0, menu_term->t.wid, menu_term->t.hgt);
 	refresh_window(menu_term);
 }
 
 
-
+#endif /* FULLSCREEN_ONLY */
 
 
 
@@ -3696,6 +4183,7 @@ static void load_choices(void)
 	char *cf;
 	int i;
 	char buffer[260];
+	int choices_version = 0;
 
 	cf = find_choices(FALSE);
 	if (*cf)
@@ -3722,14 +4210,25 @@ static void load_choices(void)
 
 	if (fp)
 	{
-		char *t_, *o_;
+		const char *t_;
+		char *o_;
 
 		if (!fgets(buffer, sizeof(buffer), fp))
 		{
 			fclose(fp);
 			return;
 		}
-		if (strcmp(buffer, "[Angband config, Musus' port]\n"))
+
+		if (memcmp(buffer, "[Angband config, Musus' port]\n", 30) == 0)
+		{
+			choices_version = 1;
+		}
+		else if (memcmp(buffer, "[Angband config v2, Musus' port]\n", 33) == 0)
+		{
+			choices_version = 2;
+		}
+
+		if (choices_version == 0)
 		{
 			fclose(fp);
 			return;
@@ -3747,7 +4246,7 @@ static void load_choices(void)
 			if (t_)
 			{
 				if (!strcmp(t_, "Gamma"))
-					gamma = atof(o_);
+					gamma = atof(o_) * 100;
 				else if (!strcmp(t_, "Monochrome"))
 					force_mono = !strcmp(o_, "on");
 				else if (!strcmp(t_, "Sound"))
@@ -3780,53 +4279,49 @@ static void load_choices(void)
 					int t = atoi(t_);
 					if (t >= 0 && t < MAX_TERM_DATA)
 					{
-						char *f_, *x0_, *y0_, *x1_, *y1_, *sx_, *sy_;
+						char *f, *x0, *y0, *x1, *y1, *sx, *sy, *dx = NULL, *dy = NULL;
 						o_ = strtok(o_, " ");	/* first word */
-						f_ = strtok(NULL, " ");	/* font name */
-						x0_ = strtok(NULL, " ");	/* x posn (min) */
-						y0_ = strtok(NULL, " ");	/* y posn (min) */
-						x1_ = strtok(NULL, " ");	/* x posn (max) */
-						y1_ = strtok(NULL, " ");	/* y posn (max) */
-						sx_ = strtok(NULL, " ");	/* x scroll offset */
-						sy_ = strtok(NULL, "\n");	/* y scroll offset */
+						f = strtok(NULL, " ");	/* font name */
+						x0 = strtok(NULL, " ");	/* x posn (min) */
+						y0 = strtok(NULL, " ");	/* y posn (min) */
+						x1 = strtok(NULL, " ");	/* x posn (max) */
+						y1 = strtok(NULL, " ");	/* y posn (max) */
+						sx = strtok(NULL, " ");	/* x scroll offset */
+
+						if (choices_version == 1)
+						{
+							sy = strtok(NULL, "\n");	/* y scroll offset */
+						}
+						else
+						{
+							sy = strtok(NULL, " ");	/* y scroll offset */
+							dx = strtok(NULL, " ");	/* width */
+							dy = strtok(NULL, " ");	/* height */
+						}
+
 						data[t].def_open = (t == 0) || atoi(o_);
-						data[t].def_pos.min.x = atoi(x0_);
-						data[t].def_pos.min.y = atoi(y0_);
-						data[t].def_pos.max.x = atoi(x1_);
-						data[t].def_pos.max.y = atoi(y1_);
-						data[t].def_scroll.x = atoi(sx_);
-						data[t].def_scroll.y = atoi(sy_);
+						data[t].def_pos.min.x = atoi(x0);
+						data[t].def_pos.min.y = atoi(y0);
+						data[t].def_pos.max.x = atoi(x1);
+						data[t].def_pos.max.y = atoi(y1);
+						data[t].def_scroll.x = atoi(sx);
+						data[t].def_scroll.y = atoi(sy);
 						data[t].unopened = 1;	/* ie. force def_pos */
-						attach_font_to_term(&(data[t]), f_);
+#ifndef FULLSCREEN_ONLY
+						/* Ensure we have size before setting it. */
+						if (dx && dy)
+						{
+							term_change_size(&data[t], atoi(dx), atoi(dy));
+						}
+
+						attach_font_to_term(&(data[t]), f);
+#endif /* FULLSCREEN_ONLY */
 					}
 				}
 			}
 		}
 		fclose(fp);
 	}
-
-	/*
-	   | Fudge so that the main term is *always* fullsize
-	 */
-	{
-		int fw, fh;
-
-		set_up_zrb(&(data[0]));
-		fw = zrb.r_charw << screen_eig.x;
-		fh = zrb.r_charh << screen_eig.y;
-		if (zrb.r_flags.bits.double_height)
-		{
-			fh *= 2;
-		}
-		fw *= 80;
-		fh *= 24;
-		data[0].def_pos.max.x = data[0].def_pos.min.x + fw;
-		data[0].def_pos.max.y = data[0].def_pos.min.y + fh;
-		data[0].def_scroll.x = 0;
-		data[0].def_scroll.y = 0;
-	}
-
-
 }
 
 
@@ -3857,8 +4352,8 @@ static void save_choices(void)
 
 	fpm = fopen(find_choices_mirror(), "w");
 
-	f2printf(fp, fpm, "[Angband config, Musus' port]\n");
-	f2printf(fp, fpm, "Gamma %.2lf\n", gamma);
+	f2printf(fp, fpm, "[Angband config v2, Musus' port]\n");
+	f2printf(fp, fpm, "Gamma %.2lf\n", (double) gamma / 100);
 	f2printf(fp, fpm, "Monochrome %s\n", force_mono ? "on" : "off");
 	f2printf(fp, fpm, "Sound %s\n", enable_sound ? "on" : "off");
 	f2printf(fp, fpm, "Volume %d\n", sound_volume);
@@ -3876,8 +4371,9 @@ static void save_choices(void)
 		f2printf(fp, fpm, "%d ", ws.openblock.screenrect.min.y);
 		f2printf(fp, fpm, "%d ", ws.openblock.screenrect.max.x);
 		f2printf(fp, fpm, "%d ", ws.openblock.screenrect.max.y);
-		f2printf(fp, fpm, "%d %d\n", ws.openblock.scroll.x,
+		f2printf(fp, fpm, "%d %d ", ws.openblock.scroll.x,
 				 ws.openblock.scroll.y);
+		f2printf(fp, fpm, "%d %d\n", data[i].t.wid, data[i].t.hgt);
 	}
 
 	fclose(fp);
@@ -3939,7 +4435,7 @@ static void read_alarm_choices(void)
 	fp = fopen(cf, "r");
 	if (fp)
 	{
-		char *t_, *o_;
+		const char *t_, *o_;
 		/* Load choices */
 		while (fgets(buffer, sizeof(buffer), fp))
 		{
@@ -3974,6 +4470,7 @@ static void read_alarm_choices(void)
 
 
 
+#ifndef FULLSCREEN_ONLY
 /*
  | Handle selections from the term menu(s)
  */
@@ -4094,7 +4591,7 @@ static BOOL Hnd_IbarMenu(event_pollblock * pb, void *ref)
 			break;
 		case IBAR_MENU_QUIT:	/* Quit */
 			if (game_in_progress && character_generated)
-				save_player();
+				save_player(SAVE_PLAYER_PARAM);
 			quit(NULL);
 			break;
 	}
@@ -4160,6 +4657,20 @@ static BOOL Hnd_IbarClick(event_pollblock * pb, void *ref)
 }
 
 
+
+/*
+ * Handler for NULL events (should this check the alarm in the desktop?
+ */
+static BOOL Hnd_null(event_pollblock *event, void *ref)
+{
+	/* Really no need to check the alarm more than once per second. */
+	if (alarm_type && Time_Monotonic() > alarm_lastcheck + 100)
+	{
+		check_alarm();
+	}
+
+	return TRUE;
+}
 
 
 
@@ -4233,7 +4744,7 @@ static BOOL Hnd_PreQuit(event_pollblock * b, void *ref)
 			return TRUE;		/* no! Pleeeeeease don't kill leeeeddle ol' me! */
 
 		if (ok == 3)
-			save_player();		/* Save & Quit */
+			save_player(SAVE_PLAYER_PARAM);		/* Save & Quit */
 	}
 
 
@@ -4251,6 +4762,7 @@ static BOOL Hnd_PreQuit(event_pollblock * b, void *ref)
 	return TRUE;				/* The one great certainty (sic) */
 }
 
+#endif /* FULLSCREEN_ONLY */
 
 
 
@@ -4260,108 +4772,56 @@ static void initialise_terms(void)
 	char t[80];
 	int i;
 
-	/* Create a window for each term.  Term 0 is special (no scroll bars) */
-	data[0].w = Window_Create("angband", template_TITLEMIN);
-	data[0].font = SYSTEM_FONT;
-	data[0].def_open = 1;
-	data[0].unopened = 1;
-	sprintf(t, "%s %s", VARIANT, VERSION);
-	Window_SetTitle(data[0].w, t);
-	strncpy(data[0].name, VARIANT, 12);
-	Event_Claim(event_KEY, data[0].w, event_ANY, Hnd_Keypress,
-				(void *)&(data[0]));
-	Event_Claim(event_REDRAW, data[0].w, event_ANY, Hnd_Redraw,
-				(void *)&(data[0]));
-	Event_Claim(event_CLICK, data[0].w, event_ANY, Hnd_TermClick,
-				(void *)&(data[0]));
-	Event_Claim(event_CLOSE, data[0].w, event_ANY, Hnd_MainClose, NULL);
-
-	for (i = 1; i < MAX_TERM_DATA; i++)
+#ifndef FULLSCREEN_ONLY
+	if (!minimise_memory)
 	{
-		data[i].w = Window_Create("term", template_TITLEMIN);
-		data[i].font = SYSTEM_FONT;
-		data[i].def_open = 0;
-		data[i].unopened = 1;
+		/* Create a window for each term.  Term 0 is special (no scroll bars) */
+		data[0].w = Window_Create("angband", template_TITLEMIN);
+		data[0].font = SYSTEM_FONT;
+		data[0].def_open = 1;
+		data[0].unopened = 1;
+		sprintf(t, "%s %s", VARIANT, VERSION);
+		Window_SetTitle(data[0].w, t);
+		strncpy(data[0].name, VARIANT, 12);
+		Event_Claim(event_KEY, data[0].w, event_ANY, Hnd_Keypress,
+					(void *)&(data[0]));
+		Event_Claim(event_REDRAW, data[0].w, event_ANY, Hnd_Redraw,
+					(void *)&(data[0]));
+		Event_Claim(event_CLICK, data[0].w, event_ANY, Hnd_TermClick,
+					(void *)&(data[0]));
+		Event_Claim(event_CLOSE, data[0].w, event_ANY, Hnd_MainClose, NULL);
+
+		for (i = 1; i < MAX_TERM_DATA; i++)
+		{
+			data[i].w = Window_Create("term", template_TITLEMIN);
+			data[i].font = SYSTEM_FONT;
+			data[i].def_open = 0;
+			data[i].unopened = 1;
 #ifndef OLD_TERM_MENU
-		sprintf(t, "%s (%s %s)", angband_term_name[i], VARIANT, VERSION);
+			sprintf(t, "%s (%s %s)", TERM_NAME(i), VARIANT, VERSION);
 #else
-		sprintf(t, "Term-%d (%s %s)", i, VARIANT, VERSION);
+			sprintf(t, "Term-%d (%s %s)", i, VARIANT, VERSION);
 #endif
-		Window_SetTitle(data[i].w, t);
-		strncpy(data[i].name, t, 12);
-		Event_Claim(event_CLICK, data[i].w, event_ANY, Hnd_TermClick,
-					(void *)&(data[i]));
-		Event_Claim(event_REDRAW, data[i].w, event_ANY, Hnd_Redraw,
-					(void *)&(data[i]));
+			Window_SetTitle(data[i].w, t);
+			strncpy(data[i].name, t, 12);
+			Event_Claim(event_CLICK, data[i].w, event_ANY, Hnd_TermClick,
+						(void *)&(data[i]));
+			Event_Claim(event_REDRAW, data[i].w, event_ANY, Hnd_Redraw,
+						(void *)&(data[i]));
+		}
 	}
+#endif /* FULLSCREEN_ONLY */
 
 	term_data_link(&(data[0]), 256);
 
 	for (i = 1; i < MAX_TERM_DATA; i++)
 	{
 		term_data_link(&(data[i]), 16);
-		angband_term[i] = &(data[i].t);
+		TERM(i) = &(data[i].t);
 	}
 
-	angband_term[0] = &(data[0].t);
+	TERM(0) = &(data[0].t);
 	Term_activate(&(data[0].t));
-}
-
-
-
-
-/*
- | Hack(ish) - determine the version of RISC OS
- */
-static int os_version(void)
-{
-	int osv;
-	SWI(3, 2, SWI_OS_Byte, 129, 0, 255, NULL, &osv);
-	switch (osv)
-	{
-		case 0xa0: return 120;
-		case 0xa1: return 200;
-		case 0xa2: return 201;
-		case 0xa3: return 300;
-		case 0xa4: return 310;
-		case 0xa5: return 350;
-		case 0xa6: return 360;
-		case 0xa7: return 370;
-		case 0xa8: return 400;
-		default: return 370;
-	}
-	return -1;					/* -sigh- */
-}
-
-/*
- | Determine whether the current screen mode is "high-res"
- | (ie. should we use the "Sprites22" or the "Sprites" file.
- */
-static int sprites22(void)
-{
-	int yeig;
-
-	OS_ReadModeVariable(-1, modevar_YEIGFACTOR, &yeig);
-
-	return yeig < 2;
-}
-
-/*
- | Determine whether we should use 2D or 3D templates.
- | 2D templates *must* be used under Wimp <3.00, but under RO3 we
- | use the CMOS settings to decide.
- */
-static int templates2d(void)
-{
-	int r1, r2;
-
-	if (event_wimpversion < 300)
-		return TRUE;
-
-	/* The 3D bit is bit 0 of byte 140 */
-	OS_Byte(osbyte_READCMOSRAM, 140, 0, &r1, &r2);
-
-	return !(r2 && 1);
 }
 
 
@@ -4369,7 +4829,7 @@ static int templates2d(void)
 
 static unsigned int htoi(char *s)
 {
-	const static char hex[] = "0123456789ABCDEF";
+	static const char hex[] = "0123456789ABCDEF";
 	unsigned int v = 0;
 	while (*s)
 	{
@@ -4535,10 +4995,10 @@ static char *find_choices(int write)
 	if (write)
 		return choices_file[CHFILE_WRITE];
 
-	if (myFile_Size(choices_file[CHFILE_WRITE]) > 0)
+	if (File_Size(choices_file[CHFILE_WRITE]) > 0)
 		return choices_file[CHFILE_WRITE];
 
-	if (myFile_Size(choices_file[CHFILE_MIRROR]) > 0)
+	if (File_Size(choices_file[CHFILE_MIRROR]) > 0)
 		return choices_file[CHFILE_MIRROR];
 
 	return choices_file[CHFILE_READ];
@@ -4554,11 +5014,41 @@ static char *find_alarmfile(int write)
 	if (write)
 		return alarm_file[CHFILE_WRITE];
 
-	if (myFile_Size(alarm_file[CHFILE_WRITE]) > 0)
+	if (File_Size(alarm_file[CHFILE_WRITE]) > 0)
 		return alarm_file[CHFILE_WRITE];
 
 	return alarm_file[CHFILE_READ];
 }
+
+
+#ifdef HASNOCORE
+/*
+ * Redefinable "core" action
+ */
+void (*core_aux)(cptr) = NULL;
+
+/*
+ * Dump a core file, after printing a warning message
+ * As with "quit()", try to use the "core_aux()" hook first.
+ */
+void core(cptr str)
+{
+	char *crash = NULL;
+
+	/* Use the aux function */
+	if (core_aux) (*core_aux)(str);
+
+	/* Dump the warning string */
+	if (str) plog(str);
+
+	/* Attempt to Crash */
+	(*crash) = (*crash);
+
+	/* Be sure we exited */
+	quit("core() failed");
+}
+#endif
+
 
 
 
@@ -4569,11 +5059,13 @@ int main(int argc, char *argv[])
 	int start_full = 0;
 	char *arg_savefile = 0;
 	char *t;
+#ifdef USE_DA
 	int da_font = 1, da_game = 1;
+#endif
 
-	atexit(final_acn);			/* "I never did care about the little things." */
+	atexit(final_acn);		/* "I never did care about the little things." */
 
-	Start_Hourglass;
+	START_HOURGLASS;
 
 	/* Parse arguments */
 	for (i = 1; i < argc; i++)
@@ -4640,9 +5132,6 @@ int main(int argc, char *argv[])
 				case 'w':		/* -waitrelease */
 					hack_flush = 1;
 					break;
-				case 'e':		/* -Evil */
-					allow_iclear_hack = 1;
-					break;
 				case 's':		/* -s<savefile> */
 					if (argv[i][2])
 						arg_savefile = argv[i] + 2;
@@ -4657,6 +5146,7 @@ int main(int argc, char *argv[])
 					if (argv[i][2])
 						vfiletype = htoi(argv[i] + 2);
 					break;
+#ifdef USE_DA
 				case 'd':		/* -df, -dg, -dc or -d : disable DAs */
 					switch (tolower((unsigned char)argv[i][2]))
 					{
@@ -4671,6 +5161,7 @@ int main(int argc, char *argv[])
 							break;
 					}
 					break;
+#endif
 				case '%':		/* -%<debug_opts> */
 				{
 					int v = read_unsigned(argv[i] + 2);
@@ -4685,16 +5176,31 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	/* 1.27 - new handling of -minimise-memory: */
+#ifndef FULLSCREEN_ONLY
+	if (minimise_memory)
+#endif /* FULLSCREEN_ONLY */
+	{
+		start_full = 1;
+		fs_quit_key_text = "(fullscreen only mode)";
+	}
+#ifdef USE_DA
 	init_memory(da_font, da_game);	/* Set up dynamic areas, etc. if possible */
 
 	/* Install memory allocation hooks */
 	ralloc_aux = g_malloc;
 	rnfree_aux = g_free;
+#endif
 
 	/* Install replacement error reporting routines */
 	quit_aux = quit_hook;
 	plog_aux = plog_hook;
 	core_aux = core_hook;
+
+#ifdef IS_SCTH
+	/* Hook in the file modification hook in scth*/
+    check_modification_date_hook = check_modification_date;
+#endif
 
 	/* Expand the (Angband) resource path */
 	t = getenv(RISCOS_VARIANT "$Path");
@@ -4720,74 +5226,63 @@ int main(int argc, char *argv[])
 	Resource_Initialise(RISCOS_VARIANT);
 	Msgs_LoadFile("Messages");
 
-	/* This is a hack to only call Event_Initialise3 under RO3 */
-	if (os_version() < 300)
+#ifndef FULLSCREEN_ONLY
+	if (!minimise_memory)
+	{
 		Event_Initialise(RISCOS_VARIANT);
-	else
-		Event_Initialise3(RISCOS_VARIANT, 300, message_list);
 
-	EventMsg_Initialise();
-
-	/*
-	   | This is a possible workaround for the FP regs getting
-	   | bolloxed in the ! menu because the compiler sets them
-	   | up before a call to Wimp_Poll if CSE optimisation is on.
-	   | At the moment I've just turned off CSE for the function
-	   | affected.
-	   |
-	   | event_mask.data.keepfpregisters = 1;
-	 */
-
-	/* Load Templates */
-	Template_Initialise();
-	if (templates2d())
-		Template_LoadFile("Templates2");
-	else
+		/* Load Templates */
+		Template_Initialise();
 		Template_LoadFile("Templates");
-
-	/* Load Sprites */
-	if (sprites22())
-		resource_sprites =
-			Sprite_LoadFile("<" RISCOS_VARIANT "$Dir>.Sprites22");
-	else
-		resource_sprites = Sprite_LoadFile("<" RISCOS_VARIANT "$Dir>.Sprites");
+	}
+#endif /* FULLSCREEN_ONLY */
 
 	Screen_CacheModeInfo();
 
 	/* Initialise some ZapRedraw stuff */
 	initialise_palette();
 	initialise_fonts();			/* Set up the fonts */
-	initialise_r_data();		/* Set up the r_data buffer */
+#ifndef FULLSCREEN_ONLY
 
-	/* Initialise some Wimp specific stuff */
-	init_gamma_window();
-	init_sound_window();
-	init_save_window();
-	init_menus();
-	ibar_icon = Icon_BarIcon(ICONNAME, iconbar_RIGHT);
+	if (!minimise_memory)
+	{
+		/* Initialise some Wimp specific stuff */
+		init_gamma_window();
+		init_sound_window();
+		init_save_window();
+		init_menus();
 
-	/* Global handlers */
-	Event_Claim(event_OPEN, event_ANY, event_ANY, Handler_OpenWindow, NULL);
-	Event_Claim(event_CLOSE, event_ANY, event_ANY, Handler_CloseWindow, NULL);
-	Event_Claim(event_GAINCARET, event_ANY, event_ANY, Hnd_Caret, (void *)1);
-	Event_Claim(event_LOSECARET, event_ANY, event_ANY, Hnd_Caret, (void *)0);
-	Event_Claim(event_MENU, event_ANY, event_ANY, Hnd_MenuSel, NULL);
-	Event_Claim(event_CLICK, window_ICONBAR, ibar_icon, Hnd_IbarClick, NULL);
-	Event_Claim(event_CLICK, event_ANY, event_ANY, Hnd_Click, NULL);
-	EventMsg_Claim(message_PALETTECHANGE, event_ANY, Hnd_PaletteChange, NULL);
-	EventMsg_Claim(message_MODECHANGE, event_ANY, Hnd_ModeChange, NULL);
-	EventMsg_Claim(message_PREQUIT, event_ANY, Hnd_PreQuit, NULL);
+		ibar_icon = Icon_BarIcon(ICONNAME, iconbar_RIGHT);
 
-	/* Initialise the sound stuff */
-	initialise_sound();
+		/* Global handlers */
+		Event_Claim(event_OPEN, event_ANY, event_ANY, Handler_OpenWindow, NULL);
+		Event_Claim(event_CLOSE, event_ANY, event_ANY, Handler_CloseWindow, NULL);
+		Event_Claim(event_GAINCARET, event_ANY, event_ANY, Hnd_Caret, (void *)1);
+		Event_Claim(event_LOSECARET, event_ANY, event_ANY, Hnd_Caret, (void *)0);
+		Event_Claim(event_MENU, event_ANY, event_ANY, Hnd_MenuSel, NULL);
+		Event_Claim(event_CLICK, window_ICONBAR, ibar_icon, Hnd_IbarClick, NULL);
+		Event_Claim(event_CLICK, event_ANY, event_ANY, Hnd_Click, NULL);
+		EventMsg_Claim(message_PALETTECHANGE, event_ANY, Hnd_PaletteChange, NULL);
+		EventMsg_Claim(message_MODECHANGE, event_ANY, Hnd_ModeChange, NULL);
+		EventMsg_Claim(message_PREQUIT, event_ANY, Hnd_PreQuit, NULL);
+
+		/* Initialise the sound stuff */
+		initialise_sound();
+	}
+#endif /* FULLSCREEN_ONLY */
 
 	/* Initialise some Angband stuff */
 	initialise_terms();
+
+	/* Set up the r_data buffer */
+	initialise_r_data();
+
 	load_choices();
 	read_alarm_choices();
+
 	init_file_paths(unixify_name(resource_path));
 
-	Start_Hourglass;			/* Paranoia */
+	START_HOURGLASS;			/* Paranoia */
 
 	/* Hack - override the saved options if -F was on the command line */
 	start_fullscreen |= start_full;
@@ -4802,32 +5297,38 @@ int main(int argc, char *argv[])
 
 	/* Catch nasty signals */
 	signals_init();
+
 	/* use pref-acn.prf */
 	ANGBAND_SYS = "acn";
 
+#ifndef FULLSCREEN_ONLY
 	if (start_fullscreen)
 	{
-		enter_fullscreen_mode();
+#endif /* FULLSCREEN_ONLY */
+		Event_Claim(event_NULL, event_ANY, event_ANY, Hnd_null, NULL);
+		enter_fullscreen_mode();   
+#ifndef FULLSCREEN_ONLY
 	}
 	else
 	{
-		Start_Hourglass;		/* Paranoia */
+		START_HOURGLASS;		/* Paranoia */
 		Hnd_ModeChange(NULL, NULL);	/* Caches the various fonts/palettes */
 		show_windows();
 		grab_caret();
+
+		Event_Claim(event_NULL, event_ANY, event_ANY, Hnd_null, NULL);
+
 		/* Wait for a null poll so that the windows can appear */
 		do
 		{
-			event_pollmask old_mask = event_mask;
-			event_mask.data.null = 0;
 			Event_Poll();
-			event_mask = old_mask;
 		}
-		while (event_lastevent.type != 0);
+		while (event_lastevent.type != event_NULL);
 	}
+#endif /* FULLSCREEN_ONLY */
 
 	/* Initialise Angband */
-	Start_Hourglass;			/* Paranoia */
+	START_HOURGLASS;			/* Paranoia */
 
 	strncpy(savefile, unixify_name(arg_savefile), sizeof(savefile));
 	savefile[sizeof(savefile) - 1] = '\0';
@@ -4836,15 +5337,15 @@ int main(int argc, char *argv[])
 	init_angband();
 	initialised = 1;
 	game_in_progress = 1;
-	pause_line(23);
+	pause_line(PAUSE_LINE_PARAM);
 	flush();
-	/* Stop_Hourglass; */
+
 	play_game(FALSE);
 
-	if (fullscreen_mode)
-		leave_fullscreen_mode();
+	if (fullscreen_mode) leave_fullscreen_mode();
 
-	Stop_Hourglass;
+	STOP_HOURGLASS;
+
 	quit(NULL);
 
 	return 0;
@@ -4864,27 +5365,14 @@ int main(int argc, char *argv[])
 
 
 
-/*--------------------------------------------------------------------------*/
-/* Stuff below here is for the full screen display							*/
-/*--------------------------------------------------------------------------*/
-
-static errr Term_xtra_acn_checkFS(void);
-static errr Term_xtra_acn_eventFS(void);
-static errr Term_xtra_acn_reactFS(int force);
-static errr Term_curs_acnFS(int x, int y);
-static errr Term_xtra_acn_clearFS(void);
-static errr Term_xtra_acnFS(int n, int v);
-static errr Term_wipe_acnFS(int x, int y, int n);
-static errr Term_text_acnFS(int x, int y, int n, byte a, cptr s);
-static void bored(void);
-static void redraw_areaFS(int x, int y, int w, int h);
-static void draw_cursor(int x, int y);
-
 /*
  | We use this to keep the mouse in the same place on return from full-screen
  | mode.
  */
 static wimp_point old_mouse_posn;
+
+/* Nasty hack to remember how big the main window is when not in fullscreen */
+static int main_wid, main_hgt;
 
 /*
  | Take a copy of the current mode descriptor/number and return either
@@ -4997,16 +5485,38 @@ static void change_screenmode(int to)
  */
 static void constrain_pointer(void)
 {
+	mouse_block ptr;
 	wimp_rect r;
 	int ys = screen_eig.y == 1 ? 32 : 64;	/* Cope with dbl height glass */
 
 	Screen_CacheModeInfo();		/* Make sure we know the screen size */
 	r.min.x = r.max.x = screen_size.x - 32;
 	r.min.y = r.max.y = screen_size.y - ys;
+
+	/* Retrieve and store old (wimp) pointer position */
+	Wimp_GetPointerInfo(&ptr);
+	old_mouse_posn = ptr.pos;
+
 	Pointer_RestrictToRect(r);
+
+	/* Turn the pointer off also */
+	SWI(2, 0, SWI_OS_Byte, 106, 0);
 }
 
+static void release_pointer(void)
+{
+	wimp_rect r;
 
+	r.min.x = r.max.x = old_mouse_posn.x;
+	r.min.y = r.max.y = old_mouse_posn.y;
+
+	Pointer_RestrictToRect(r);
+
+	Pointer_Unrestrict();
+
+	/* Turn the pointer back on also */
+	SWI(2, 0, SWI_OS_Byte, 106, 1);
+}
 
 
 /*
@@ -5062,7 +5572,8 @@ static int byte_to_word_flipped(int b)
  */
 static int cache_zapfontHR(void)
 {
-	int handle, extent;
+	int handle;
+	unsigned int extent;
 	char buffer[260];
 	struct
 	{
@@ -5076,42 +5587,42 @@ static int cache_zapfontHR(void)
 
 	/* Try to open the file */
 	sprintf(buffer, "%s%s", resource_path, "xtra.FullScreen");
-	handle = myFile_Open(buffer, 0x4f);
+	handle = File_Open(buffer, (file_access) 0x4f);
 	if (!handle)
 	{
 		return 0;
 	}
 
 	/* Check file's extent */
-	extent = myFile_Extent(handle);
+	extent = File_ReadExtent(handle);
 	if (extent > sizeof(zfh) + 256 * 16)
 	{
-		myFile_Close(handle);
+		File_Close(handle);
 		return 0;
 	}
 
 	/* Load the header */
 	if (myFile_ReadBytes(handle, &zfh, sizeof(zfh)))
 	{
-		myFile_Close(handle);
+		File_Close(handle);
 		return 0;
 	}
 
 	/* Check font size */
 	if ((zfh.w != 8) || (zfh.h > 16))
 	{
-		myFile_Close(handle);
+		File_Close(handle);
 		return 0;
 	}
 
 	/* Load the 1bpp data */
 	if (myFile_ReadBytes(handle, fullscreen_font, extent - sizeof(zfh)))
 	{
-		myFile_Close(handle);
+		File_Close(handle);
 		return 0;
 	}
 
-	myFile_Close(handle);
+	File_Close(handle);
 
 	l = zfh.l > 255 ? 255 : zfh.l;
 
@@ -5315,19 +5826,10 @@ static void enter_fullscreen_mode(void)
 	int vduvars[2] =
 	{ 149, -1 };
 	int i;
-	mouse_block mb;
 
 	/* New in 1.18 - protect against 're-entracy' */
 	if (fullscreen_font)
 		return;
-
-	/* New in 1.20 - hack IClear out of the way */
-	if (allow_iclear_hack)
-		iclear_hack();
-
-	/* Remember where the mouse is */
-	Wimp_GetPointerInfo(&mb);
-	old_mouse_posn = mb.pos;
 
 	/* Choose the mode we want */
 	fullscreen_mode = select_fullscreen_mode();
@@ -5348,7 +5850,7 @@ static void enter_fullscreen_mode(void)
 	/* SWI( 1,3, SWI_OS_Byte, 135, NULL, NULL, &old_screenmode ); */
 	old_screenmode = current_mode();
 
-	Stop_Hourglass;
+	STOP_HOURGLASS;
 
 	/* Change to the chosen screen mode */
 	change_screenmode(fullscreen_mode);
@@ -5359,7 +5861,7 @@ static void enter_fullscreen_mode(void)
 	/* Remove the cursors */
 	SWI(0, 0, SWI_OS_RemoveCursors);
 
-	Start_Hourglass;
+	START_HOURGLASS;
 
 	/* Get the base address of screen memory */
 	SWI(2, 0, SWI_OS_ReadVduVariables, vduvars, vduvars);
@@ -5369,7 +5871,6 @@ static void enter_fullscreen_mode(void)
 	for (i = 0; i < MAX_TERM_DATA; i++)
 	{
 		term *t = &(data[i].t);
-		t->xtra_hook = Term_xtra_acnFS;
 		t->wipe_hook = Term_wipe_acnFS;
 		t->curs_hook = Term_curs_acnFS;
 		t->text_hook = Term_text_acnFS;
@@ -5380,6 +5881,10 @@ static void enter_fullscreen_mode(void)
 
 	/* Make sure that the keys work properly */
 	set_keys(TRUE);
+
+	main_wid = data[0].t.wid;
+	main_hgt = data[0].t.hgt;
+	term_change_size(&data[0], 80, 24);
 
 	/* refresh the term */
 	/*Term_activate( &(data[0].t) ); */
@@ -5402,21 +5907,25 @@ static void enter_fullscreen_mode(void)
 static void leave_fullscreen_mode(void)
 {
 	int i;
-	unsigned char blk[8];
 
 	/* New in 1.18 - protect against 're-entracy' */
-	if (!fullscreen_font)
-		return;
+	if (!fullscreen_font) return;
+
+	/* Restore the screen mode */
+	Wimp_SetMode(old_screenmode);
 
 	/* Restore the Term interface */
+	term_change_size(&data[0], main_wid, main_hgt);
+
 	for (i = 0; i < MAX_TERM_DATA; i++)
 	{
+#ifndef FULLSCREEN_ONLY
 		term *t = &(data[i].t);
-		t->xtra_hook = Term_xtra_acn;
 		t->wipe_hook = Term_wipe_acn;
 		t->curs_hook = Term_curs_acn;
 		t->text_hook = Term_text_acn;
-		mark_ood(&(data[i]), 0, 0, 80, 24);
+#endif
+		mark_ood(&(data[i]), 0, 0, data[i].t.wid, data[i].t.hgt);
 	}
 
 	/* Deallocate the font */
@@ -5424,39 +5933,27 @@ static void leave_fullscreen_mode(void)
 	fullscreen_font = 0;
 	fullscreen_mode = 0;
 
-	Stop_Hourglass;
+	STOP_HOURGLASS;
 
-	/* Restore the screen mode */
-	Wimp_SetMode(old_screenmode);
+	/* Restore the pointer */
+	release_pointer();
 
-	/* Restore the pointer position */
-	blk[0] = 3;					/* Set mouse position sub-reason code */
-	blk[1] = (old_mouse_posn.x & 0xff);
-	blk[2] = (old_mouse_posn.x & 0xff00) >> 8;
-	blk[3] = (old_mouse_posn.y & 0xff);
-	blk[4] = (old_mouse_posn.y & 0xff00) >> 8;
-	OS_Word(osword_DEFINEPOINTERANDMOUSE, blk);
-
-	Start_Hourglass;
-
-	/*Start_Hourglass; */
+	START_HOURGLASS;
 
 	/* Restore the various soft keys */
 	set_keys(FALSE);
 
-	/* New in 1.20 Remove the IClear hack */
-	if (allow_iclear_hack)
-		remove_iclear_hack();
-
+#ifndef FULLSCREEN_ONLY
 	/* Refresh the windows - this probably isn't necessary anyway */
-	refresh_windows();
+	if (!minimise_memory) refresh_windows();
+#endif /* FULLSCREEN_ONLY */
 }
 
 
 
 
 
-static void fs_writechars(int x, int y, int n, char *chars, char attr)
+static void fs_writechars(int x, int y, int n, const char *chars, char attr)
 {
 	int *scr, *scrb;
 	int *cdat;
@@ -5470,7 +5967,7 @@ static void fs_writechars(int x, int y, int n, char *chars, char attr)
 			attr = TERM_WHITE;
 		}
 	}
-	fgm = (unsigned int)zpalette[attr];
+	fgm = (unsigned int)zpalette[(unsigned int) attr];
 
 	scrb = (int *)(((int)fullscreen_base) + y * fullscreen_height * 320
 				   + x * 4 + 320 * fullscreen_topline);
@@ -5503,7 +6000,7 @@ static void fs_writechar(int x, int y, char c, char attr)
 			attr = TERM_WHITE;
 		}
 	}
-	fgm = (unsigned int)zpalette[attr];
+	fgm = (unsigned int)zpalette[(unsigned int) attr];
 
 	scrb = (int *)(((int)fullscreen_base) + y * fullscreen_height * 320
 				   + x * 4 + 320 * fullscreen_topline);
@@ -5600,12 +6097,15 @@ static int wimp_code(int c)
 
 static void do_keypress(int code)
 {
-	const static char hex[] = "0123456789ABCDEF";
+	static const char hex[] = "0123456789ABCDEF";
 
-	if (code == KEYPRESS_QUIT)
+	if (code == KEYPRESS_QUIT && !minimise_memory)
 	{
-		/*Sound_SysBeep(); */
+#ifdef FULLSCREEN_ONLY
+		Sound_SysBeep();
+#else
 		leave_fullscreen_mode();
+#endif
 		return;
 	}
 
@@ -5635,63 +6135,35 @@ static void do_keypress(int code)
 
 
 
-static errr Term_xtra_acn_checkFS(void)
+static errr Term_xtra_acn_eventFS(int valid)
 {
-	int bh, bl;
-	int c;
-
-	Stop_Hourglass;
-
-	bored();
-
-	SWI(3, 3, SWI_OS_Byte, 128, 255, 0, /**/ NULL, &bl, &bh);
-	bl = (bl & 0xff) + (bh << 8);
-
-	if (bl > 0)
-	{
-		SWI(0, 1, SWI_OS_ReadC, &c);
-		bl = wimp_code(c);
-		if (bl >= 0)
-		{
-			do_keypress(bl);
-		}
-	}
-
-	Start_Hourglass;
-
-	return 0;
-}
-
-
-
-
-static errr Term_xtra_acn_eventFS(void)
-{
+	int bh, bl = -1;
 	int c;
 	int w = -1;
 
-	Stop_Hourglass;
+	STOP_HOURGLASS;
 
-	for (w = -1; w == -1;)
+	/* Loop if we want validation of the keypress */
+	do
 	{
-		int bh, bl;
-		do
-		{
-			bored();
-			SWI(3, 3, SWI_OS_Byte, 128, 255, 0, /**/ NULL, &bl, &bh);
-			bl = (bl & 0xff) + (bh << 8);
-		}
-		while (!bl);
+		bored();
 
-		SWI(0, 1, SWI_OS_ReadC, &c);
-		w = wimp_code(c);
-		if (w >= 0)
-		{
-			do_keypress(w);
-		}
-	}
+		/* Check if there are keypresses in the buffer */
+		SWI(3, 3, SWI_OS_Byte, 128, 255, 0, NULL, &bl, &bh);
+		bl = (bl & 0xff) | (bh << 8);
 
-	Start_Hourglass;
+		if (bl)
+		{
+			/* Read a keypress */
+			SWI(0, 1, SWI_OS_ReadC, &c);
+
+			/* If valid, process it */
+			w = wimp_code(c);
+			if (w >= 0) do_keypress(w);
+		}
+	} while (valid && w == -1);
+
+	START_HOURGLASS;
 
 	return 0;
 }
@@ -5703,10 +6175,10 @@ static errr Term_xtra_acn_eventFS(void)
  */
 static errr Term_xtra_acn_reactFS(int force)
 {
-	int i;
+	unsigned int i;
 	int p, r, g, b;
 
-	static double old_gamma = -1.0;
+	static int old_gamma = -1;
 
 	if (gamma != old_gamma)
 	{
@@ -5720,11 +6192,11 @@ static errr Term_xtra_acn_reactFS(int force)
 		if (COLOUR_CHANGED(i) || force)
 		{
 			r = (int)(255.0 *
-					  pow(angband_color_table[i][1] / 255.0, 1.0 / gamma));
+				  pow(angband_color_table[i][1] / 255.0, 1.0 / ((double) gamma / 100)));
 			g = (int)(255.0 *
-					  pow(angband_color_table[i][2] / 255.0, 1.0 / gamma));
+				  pow(angband_color_table[i][2] / 255.0, 1.0 / ((double) gamma / 100)));
 			b = (int)(255.0 *
-					  pow(angband_color_table[i][3] / 255.0, 1.0 / gamma));
+				  pow(angband_color_table[i][3] / 255.0, 1.0 / ((double) gamma / 100)));
 			GFX_VDU(19);
 			GFX_VDU(i);
 			GFX_VDU(16);
@@ -5757,11 +6229,11 @@ static errr Term_xtra_acn_reactFS(int force)
 		if (COLOUR_CHANGED(i) || force)
 		{
 			r = (int)(255.0 *
-					  pow(angband_color_table[i][1] / 255.0, 1.0 / gamma));
+				  pow(angband_color_table[i][1] / 255.0, 1.0 / ((double) gamma / 100)));
 			g = (int)(255.0 *
-					  pow(angband_color_table[i][2] / 255.0, 1.0 / gamma));
+				  pow(angband_color_table[i][2] / 255.0, 1.0 / ((double) gamma / 100)));
 			b = (int)(255.0 *
-					  pow(angband_color_table[i][3] / 255.0, 1.0 / gamma));
+				  pow(angband_color_table[i][3] / 255.0, 1.0 / ((double) gamma / 100)));
 			p = (b << 24) | (g << 16) | (r << 8);
 			palette[i] = p;
 			SWI(1, 1, SWI_ColourTrans_ReturnColourNumber, palette[i], &p);
@@ -5818,84 +6290,6 @@ static errr Term_xtra_acn_clearFS(void)
 
 
 
-
-
-static errr Term_xtra_acnFS(int n, int v)
-{
-	term_data *t = (term_data *)Term;
-
-	switch (n)
-	{
-		case TERM_XTRA_CLEAR:
-			if (t == (&data[0]))
-				Term_xtra_acn_clearFS();
-			return 0;
-
-		case TERM_XTRA_EVENT:
-			if (v)
-				return Term_xtra_acn_eventFS();
-			else
-				return Term_xtra_acn_checkFS();
-
-		case TERM_XTRA_BORED:
-			bored();
-			return Term_xtra_acn_checkFS();
-
-		case TERM_XTRA_FLUSH:
-			/* 1.21 - Hack: wait until no keys are pressed */
-			if (hack_flush)
-				for (v = 0; v != 0xff;)
-					SWI(1, 2, SWI_OS_Byte, 122, 0, &v);
-			SWI(3, 0, SWI_OS_Byte, 21, 0, 0);	/* Flush Kbd buffer */
-			return 0;
-
-		case TERM_XTRA_FRESH:
-			return 0;
-
-		case TERM_XTRA_FROSH:
-			return 0;
-
-		case TERM_XTRA_SHAPE:
-			if (t == (&data[0]))
-			{
-				t->cursor.visible = v;
-				if (v)
-					draw_cursor(t->cursor.pos.x, t->cursor.pos.y);
-				else
-					redraw_areaFS(t->cursor.pos.x, t->cursor.pos.y, 1, 1);
-			}
-			return 0;
-
-		case TERM_XTRA_NOISE:
-			Sound_SysBeep();
-			return 0;
-
-		case TERM_XTRA_REACT:
-			return Term_xtra_acn_reactFS(FALSE);
-
-		case TERM_XTRA_DELAY:
-			if (v > 0)
-			{
-				int start = Time_Monotonic();
-				v = (v + 5) / 10;	/* Round to nearest cs */
-				GFX_Wait();
-				while ((Time_Monotonic() - start) < v)
-					;
-			}
-			return (0);
-
-		case TERM_XTRA_SOUND:	/* Play a sound :) */
-			if (enable_sound)
-			{
-				play_sound(v);
-			}
-			return 0;
-
-		default:
-			return 1;
-	}
-}
-
 static errr Term_wipe_acnFS(int x, int y, int n)
 {
 	if (Term == &(data[0].t))
@@ -5907,7 +6301,7 @@ static errr Term_wipe_acnFS(int x, int y, int n)
 static errr Term_text_acnFS(int x, int y, int n, byte a, cptr s)
 {
 	if (Term == &(data[0].t))
-		fs_writechars(x, y, n, (char *)s, (char)a);
+		fs_writechars(x, y, n, s, (char)a);
 	return 0;
 }
 
@@ -5915,15 +6309,20 @@ static errr Term_text_acnFS(int x, int y, int n, byte a, cptr s)
 
 static void bored()
 {
-	static int last = -1;
+	static unsigned int last;
 	char ts[80];
 	time_t ct;
 	struct tm *lt;
-	int l;
+	unsigned int l;
 	int ofm;
 	static int alarm_flash = 1;
 
-	check_alarm(FALSE);
+
+	/* Really no need to check the alarm more than once per second. */
+	if (alarm_type && Time_Monotonic() > alarm_lastcheck + 100)
+	{
+		check_alarm();
+	}
 
 	l = Time_Monotonic();
 	if ((l - last) < (alarm_flash ? 25 : 50))
@@ -5934,7 +6333,7 @@ static void bored()
 
 	time(&ct);
 	lt = localtime(&ct);
-	l = strftime(ts, sizeof(ts), "%c %Z", lt);
+	l = strftime(ts, 80, "%c %Z", lt);
 
 	/* Hack: disable force_mono around printing the time */
 	ofm = force_mono;
@@ -5979,7 +6378,7 @@ static void bored()
 
 
 
-
+#ifdef USE_DA
 /*--------------------------------------------------------------------------*/
 /* (Simple) Heap management (using OS_Heap)									*/
 /*--------------------------------------------------------------------------*/
@@ -6013,8 +6412,6 @@ static int Heap_ChangeHeapSize(heap h, int resize_by)
 
 
 
-
-
 /*--------------------------------------------------------------------------*/
 /* Stuff below here is for using Dynamic areas (under RO3.5+)				*/
 /*--------------------------------------------------------------------------*/
@@ -6034,6 +6431,7 @@ static int game_heap_size;	/* size of the game's heap */
 #define MAX_G_DA_SIZE (4<<20)	/* Max size of game area (4Mb) */
 #define SHRINK_GRAN (4<<10)		/* Try to recalaim wastage > this (4Kb) */
 
+
 /*
  | Free dynamic areas when we exit
  */
@@ -6052,7 +6450,6 @@ static void cleanup_memory(void)
 	}
 
 }
-
 
 
 
@@ -6170,7 +6567,6 @@ static void init_memory(int daf, int dag)
 	}
 }
 
-
 static int grow_dynamicarea(int area, int by)
 {
 	os_error *e;
@@ -6194,7 +6590,6 @@ static void f_shrink_heap(void)
 	if (s >= SHRINK_GRAN)
 		font_area_size -= grow_dynamicarea(font_area, -s);
 }
-
 
 /*
  | Allocate a block of memory in the font heap
@@ -6251,11 +6646,10 @@ static void f_free(void *blk)
 
 
 
-
 /*
  | Allocate a block of memory in the game heap
  */
-static void* g_malloc(size_t size)
+G_MALLOC_PROT
 {
 	void *c;
 	int s;
@@ -6298,7 +6692,7 @@ static void* g_malloc(size_t size)
  | The 'len' is to be compatible with z-virt.c (we don't need/use it)
  | Returns NULL.
  */
-static void* g_free(void *blk)
+G_FREE_PROT
 {
 	os_error *e;
 	int s;
@@ -6324,7 +6718,7 @@ static void* g_free(void *blk)
 	/* Shrink the heap as far as possible */
 	game_heap_size -=
 		Heap_ChangeHeapSize((heap) game_area_base, -MAX_G_DA_SIZE);
-		
+
 	/* Shrink the dynamic area if necessary */
 	s = game_area_size - game_heap_size;
 	if (s >= SHRINK_GRAN)
@@ -6334,6 +6728,7 @@ static void* g_free(void *blk)
 }
 
 
+#endif /* USE_DA */
 
 
 
@@ -6382,7 +6777,7 @@ SampInfo;
 /*
  | Just need an array of SampInfos
  */
-static SampInfo sample[MSG_MAX];
+static SampInfo sample[SOUND_MAX];
 
 /*
  | This flag will only be set non-zero if the SampInfo array is
@@ -6412,7 +6807,7 @@ static void read_sound_config(void)
 	if (!sound_initd)
 	{
 		/* Initialise the sample array */
-		for (i = 0; i < MSG_MAX; i++)
+		for (i = 0; i < SOUND_MAX; i++)
 		{
 			sample[i].samples = 0;
 			sample[i].samplist = NULL;
@@ -6422,7 +6817,7 @@ static void read_sound_config(void)
 	else
 	{
 		/* Deallocate the sample lists */
-		for (i = 0; i < MSG_MAX; i++)
+		for (i = 0; i < SOUND_MAX; i++)
 		{
 			SampNode *si = sample[i].samplist;
 			sample[i].samples = 0;
@@ -6485,7 +6880,7 @@ static void read_sound_config(void)
 		*sample_name++ = 0;
 
 		/* Look up the event name to get the event number */
-		for (event_number = MSG_MAX - 1; event_number >= 0; event_number--)
+		for (event_number = SOUND_MAX - 1; event_number >= 0; event_number--)
 			if (!strcmp(buffer, angband_sound_name[event_number]))
 				break;
 
@@ -6584,7 +6979,7 @@ static void read_sound_config(void)
 		int i;
 		SampNode *l;
 
-		for (i = 0; i < MSG_MAX; i++)
+		for (i = 0; i < SOUND_MAX; i++)
 		{
 			fprintf(dbo, "\n\nEvent '%s'", angband_sound_name[i]);
 			fprintf(dbo, " (%d sounds)\n", sample[i].samples);
@@ -6655,7 +7050,7 @@ static void play_sound(int event)
 	}
 
 	/* Paranoia */
-	if (event < 0 || event >= MSG_MAX)
+	if (event < 0 || event >= SOUND_MAX)
 		return;
 
 	/* msg_format("Sound '%s'",angband_sound_name[event]); */
@@ -6686,10 +7081,14 @@ static void play_sound(int event)
 /*
  | This stuff is for the Term_user hook
  */
+#ifdef ZANGBAND_TERM_PACKAGE
+  #define PUT_FSTR put_fstr
+  #define COL(colour) CLR_##colour
+#else
+  #define PUT_FSTR display_line
+  #define COL(colour) TERM_##colour
 
-
-
-static void display_line(int x, int y, int c, char *fmt, ...)
+static void display_line(int x, int y, int c, const char *fmt, ...)
 {
 	va_list ap;
 	char buffer[260];
@@ -6700,6 +7099,7 @@ static void display_line(int x, int y, int c, char *fmt, ...)
 	va_end(ap);
 }
 
+#endif
 
 
 /*
@@ -6715,7 +7115,7 @@ static void do_alarm_message_input(int y)
 
 	do
 	{
-		display_line(26, y, TERM_YELLOW, "%-51s", alarm_message);
+		PUT_FSTR(26, y, COL(YELLOW), "%-51s", alarm_message);
 		Term_gotoxy(26 + inspos, y);
 		k = inkey();
 		switch (k)
@@ -6744,11 +7144,11 @@ static void do_alarm_message_input(int y)
 	}
 	while (k != 13);
 
-	display_line(26, y, TERM_WHITE, "%-51s", alarm_message);
+	PUT_FSTR(26, y, COL(WHITE), "%-51s", alarm_message);
 }
 
 
-#define tum_col(X)  ((X) ? TERM_L_BLUE : TERM_WHITE )
+#define tum_col(X)  ((X) ? COL(L_BLUE) : COL(WHITE) )
 #define tum_onoff(X)  ((X) ? "On " : "Off")
 
 static errr Term_user_acn(int n)
@@ -6758,7 +7158,9 @@ static errr Term_user_acn(int n)
 	int k, adj;
 	int redraw_mung = 0;
 	int max_opt = 11;
-	int alarm_modified = 0;	/* Will be true if the alarm choices need to be (re)saved */
+
+	/* Will be true if the alarm choices need to be (re)saved */
+	int alarm_modified = 0;
 
 	/*
 	   | Hack: let the desktop front end know that
@@ -6766,15 +7168,6 @@ static errr Term_user_acn(int n)
 	 */
 	user_menu_active = TRUE;
 
-
-	/*
-	   | This is thanks to Norcroft CC...  it seems to want
-	   | to set up FP regs nice and early and then relies
-	   | on them remaining constant over the function call.
-	   | The trouble is that we implicitly call Wimp_Poll
-	   | whilst waiting for a key press...
-	 */
-	event_mask.data.keepfpregisters = 1;
 
 	/*
 	   | Hack: alarm type 1 /looks/ the same as type 3 but doesn't get
@@ -6799,58 +7192,59 @@ static errr Term_user_acn(int n)
 	{
 		redraw_mung = 0;
 		Term_clear();
-		display_line(2, 1, TERM_YELLOW, "%s %s", VARIANT, VERSION);
-		display_line(2, 2, TERM_SLATE, "Front-end %s", PORTVERSION);
-		display_line(2, 4, TERM_WHITE,
-					 "Use cursor up/down to select an option then cursor left/right to alter it.");
-		display_line(2, 5, TERM_WHITE,
-					 "Hit 'S' to save these settings (alarm settings are saved automatically).");
-		display_line(2, 6, TERM_WHITE, "Hit ESC to return to the game.");
+		PUT_FSTR(2, 1, COL(YELLOW), "%s %s", VARIANT, VERSION);
+		PUT_FSTR(2, 2, COL(SLATE), "Front-end %s", PORTVERSION);
+		PUT_FSTR(2, 4, COL(WHITE), "Use cursor up/down to select an option then cursor left/right to alter it.");
+		PUT_FSTR(2, 5, COL(WHITE), "Hit 'S' to save these settings (alarm settings are saved automatically).");
+		PUT_FSTR(2, 6, COL(WHITE), "Hit ESC to return to the game.");
 
-		for (k = 0; k < 16; k++)
-			display_line(31 + k * 3, 8, k, "##", k);
+		for (k = 0; k < 32; k++) Term_putch(31 + k + (k / 2), 8, k / 2, '#');
 
 		do
 		{
-			display_line(2, 8, tum_col(optn == 0),
-						 "	 Gamma correction : %.2lf", gamma);
-			display_line(2, 9, tum_col(optn == 1), "	 Force monochrome : %s",
-						 tum_onoff(force_mono));
-			display_line(2, 10, tum_col(optn == 2), "		Sound effects : %s",
-						 tum_onoff(enable_sound));
-			display_line(2, 11, tum_col(optn == 3), "  Sound effect volume : ");
-			display_line(26, 11,
-						 sound_volume > 127 ? TERM_RED : tum_col(optn == 3),
-						 "%-3d", sound_volume);
-			display_line(30, 11, tum_col(optn == 3), "(127 = full volume)");
-			display_line(2, 12, tum_col(optn == 4), "	 Start fullscreen : %s",
-						 tum_onoff(start_fullscreen));
-			display_line(30, 12, tum_col(optn == 4),
-						 "(also selects fullscreen/desktop now)");
-			display_line(2, 13, tum_col(optn == 5), "		Use hourglass : %s",
-						 tum_onoff(use_glass));
-			display_line(2, 14, tum_col(optn == 6),
-						 "'Hard' input flushing : %s", tum_onoff(hack_flush));
+			PUT_FSTR(2, 8, tum_col(optn == 0),
+			             "     Gamma correction : %i.%02i", gamma / 100, gamma % 100);
+			PUT_FSTR(2, 9, tum_col(optn == 1),
+			             "     Force monochrome : %s", tum_onoff(force_mono));
+			PUT_FSTR(2, 10, tum_col(optn == 2),
+			             "        Sound effects : %s", tum_onoff(enable_sound));
+			PUT_FSTR(2, 11, tum_col(optn == 3),
+			             "  Sound effect volume : ");
+			PUT_FSTR(26, 11,
+			             sound_volume > 127 ? COL(RED) : tum_col(optn == 3),
+			             "%-3d", sound_volume);
+			PUT_FSTR(30, 11, tum_col(optn == 3), "(127 = full volume)");
+			PUT_FSTR(2, 12, tum_col(optn == 4),
+			             "     Start fullscreen : %s",
+			             tum_onoff(start_fullscreen));
+			PUT_FSTR(30, 12, tum_col(optn == 4),
+			             "(also selects fullscreen/desktop now)");
+			PUT_FSTR(2, 13, tum_col(optn == 5),
+			             "        Use hourglass : %s", tum_onoff(use_glass));
+			PUT_FSTR(2, 14, tum_col(optn == 6),
+			             "'Hard' input flushing : %s", tum_onoff(hack_flush));
 
-			display_line(7, 16, tum_col(optn == 7), "	  Alarm type : %-20s",
-						 alarm_types[alarm_type]);
-			display_line(7, 17, TERM_WHITE, "			Time : ");
-			display_line(26, 17, tum_col(optn == 8), "%02d", alarm_h);
-			display_line(28, 17, TERM_WHITE, ":");
-			display_line(29, 17, tum_col(optn == 9), "%02d", alarm_m);
-			display_line(7, 18, tum_col(optn == 10), "		 Message : %-51s",
-						 alarm_message);
-			display_line(7, 19, tum_col(optn == 11), "			Beep : %s",
-						 tum_onoff(alarm_beep));
+			PUT_FSTR(2, 16, tum_col(optn == 7),
+			             "           Alarm type : %-20s",
+			             alarm_types[alarm_type]);
+			PUT_FSTR(2, 17, COL(WHITE),
+			             "                 Time : ");
+			PUT_FSTR(26, 17, tum_col(optn == 8), "%02d", alarm_h);
+			PUT_FSTR(28, 17, COL(WHITE), ":");
+			PUT_FSTR(29, 17, tum_col(optn == 9), "%02d", alarm_m);
+			PUT_FSTR(2, 18, tum_col(optn == 10),
+			             "              Message : %-51s", alarm_message);
+			PUT_FSTR(2, 19, tum_col(optn == 11),
+			             "                 Beep : %s", tum_onoff(alarm_beep));
 
 #ifdef FE_DEBUG_INFO
-			display_line(2, 23, tum_col(optn == 23), "Show debug info");
+			PUT_FSTR(2, 23, tum_col(optn == 23), "Show debug info");
 			max_opt = 12;
 #endif
 
 			switch (optn)
 			{
-				case 12: Term_gotoxy(2, 23);
+				case 12: Term_gotoxy(26, 23);
 					break;
 				case 11: Term_gotoxy(26, 19);
 					break;
@@ -6876,7 +7270,7 @@ static errr Term_user_acn(int n)
 					break;
 				case 's':  case 'S':
 					save_choices();
-					display_line(2, 23, TERM_YELLOW, "Options saved.	   ");
+					PUT_FSTR(2, 23, COL(YELLOW), "Options saved.     ");
 					Term_fresh();
 					Term_xtra(TERM_XTRA_DELAY, 750);
 					Term_erase(2, 23, 60);
@@ -6900,17 +7294,19 @@ static errr Term_user_acn(int n)
 					switch (optn)
 					{
 						case 0:	/* Gamma correction */
-							gamma += adj * 0.05;
-							if (gamma > 9.00)
+							gamma += adj * 5;
+							if (gamma > 900)
 							{
-								gamma = 9.00;
+								gamma = 900;
 							}
-							if (gamma < 0.05)
+							if (gamma < 5)
 							{
-								gamma = 0.05;
+								gamma = 5;
 							}
 							Term_xtra(TERM_XTRA_REACT, 0);
+#ifndef FULLSCREEN_ONLY
 							set_gamma_window_state();
+#endif /* FULLSCREEN_ONLY */
 							/* flush(); */
 							Term_fresh();
 							break;
@@ -6925,7 +7321,9 @@ static errr Term_user_acn(int n)
 							break;
 						case 2:	/* Sound enable / disable */
 							enable_sound = !enable_sound;
+#ifndef FULLSCREEN_ONLY
 							set_sound_window_state();
+#endif /* FULLSCREEN_ONLY */
 							if (enable_sound)
 							{
 								initialise_sound();
@@ -6937,13 +7335,15 @@ static errr Term_user_acn(int n)
 								sound_volume = SOUND_VOL_MIN;
 							if (sound_volume > SOUND_VOL_MAX)
 								sound_volume = SOUND_VOL_MAX;
+#ifndef FULLSCREEN_ONLY
 							set_sound_window_state();
+#endif /* FULLSCREEN_ONLY */
 							break;
 						case 4:	/* Start fullscreen */
 							start_fullscreen = !start_fullscreen;
 							if (start_fullscreen)
 								enter_fullscreen_mode();
-							else
+							else if (!minimise_memory)
 								leave_fullscreen_mode();
 							break;
 						case 5:	/* Start fullscreen */
@@ -7053,9 +7453,6 @@ static errr Term_user_acn(int n)
 
 	/* Restore the screen */
 	Term_load();
-
-	/* Don't need to preserve FP regs any more */
-	event_mask.data.keepfpregisters = 0;
 
 	/*
 	   | Hack: tell the desktop front end that we're done.
@@ -7436,19 +7833,6 @@ static void init_file_cache(void)
 }
 
 
-/*
- | Helper: take a copy of the string and return a pointer to it
- */
-static char *string_cpy(char *s)
-{
-	char *d = fc_malloc(strlen(s) + 1L);
-	if (d)
-	{
-		strcpy(d, s);
-	}
-	return d;
-}
-
 
 /*
  | Cache the specified file, returning either the cache entry
@@ -7482,7 +7866,7 @@ static FileCacheEntry *cache_file(char *name)
 	}
 
 	/* Set up the info on the file */
-	if ((file_cache[i].name = string_cpy(name)) == NULL)
+	if ((file_cache[i].name = string_make(name)) == NULL)
 	{
 		return NULL;
 	}
@@ -7515,7 +7899,7 @@ static FileCacheEntry *cache_file(char *name)
 			tf = fopen(cfn, "rb");
 			if (tf)
 			{
-				size = myFile_Size(cfn);
+				size = File_Size(cfn);
 			}
 		}
 	}
@@ -7870,9 +8254,7 @@ errr cached_fgets(FILE *fch_, char *buffer, int max_len)
 
 /*
  | This section deals with checking that the .raw files are up to date
- | wrt to the .txt files.  Note that this function won't work for RISC OS 2
- | (due to the lack of OS_Args 7) so it simply returns 0 to indicate that
- | the file isn't OOD.
+ | wrt to the .txt files.
  |
  | For this to work, the equivalent function (in init2.c) needs to be
  | #if-d out (and this function should be declared).  You'll probably
@@ -7885,11 +8267,6 @@ extern errr check_modification_date(int fd, cptr template_file)
 	char txt_buf[1024];
 	int i;
 	os_error *e;
-
-	if (os_version() < 300)
-	{
-		return 0;
-	}
 
 	/* Use OS_Args 7 to find out the pathname 'fd' refers to */
 	e = SWI(6, 0, SWI_OS_Args,
@@ -7915,74 +8292,6 @@ extern errr check_modification_date(int fd, cptr template_file)
 }
 
 
-/*--------------------------------------------------------------------------*/
-
-/*
- | This is the hideous IClear hack.  Basically what we do is to take a copy
- | of the module and kill it in the RMA.  Then, on return to the desktop
- | we reinstate the module.
- |
- | NB: This is truly, truly evil.
- */
-
-static int *iclear_module = NULL;
-
-/*
- | Start the IClear hack
- */
-static void iclear_hack(void)
-{
-	os_error *e;
-	int code = 0;
-	int *i;
-
-	/* Get base address of module */
-	e = SWI(2, 4, SWI_OS_Module, 18, "IClear", 0, 0, 0, &code);
-	if (e || !code)
-		return;
-
-	/* Module size is at code!-4 */
-	i = (int *)code;
-	iclear_module = malloc(i[-1] + 4);
-	if (!iclear_module)
-		return;
-
-	/* Copy the module */
-	*iclear_module = i[-1];
-	memcpy(iclear_module + 1, (void *)code, i[-1]);
-
-	/* Kill the current version */
-	e = SWI(2, 0, SWI_OS_Module, 4, "IClear");
-	if (e)
-	{
-		free(iclear_module);
-		iclear_module = NULL;
-	}
-}
-
-
-/*
- | Remove the IClear hack
- */
-static void remove_iclear_hack(void)
-{
-	os_error *e;
-
-	if (!iclear_module)
-		return;
-
-	e = SWI(3, 0, SWI_OS_Module, 11, iclear_module + 1, *iclear_module);
-	if (e)
-		debug("Failed to reinstall IClear: %s", e->errmess);
-
-	free(iclear_module);
-	iclear_module = NULL;
-}
-
-
-
-/*--------------------------------------------------------------------------*/
-
 /* Alarm functions */
 static int alarm_ackd = 0;	/* has the alarm been acknowledged? */
 static window_handle aw = 0;	/* alarm window */
@@ -7991,24 +8300,18 @@ static window_handle aw = 0;	/* alarm window */
  | Is the alarm due to go off, ie. is it enabled, and if so
  | does the current time match the alarm time?
  */
-static void check_alarm(BOOL desktop)
+static void check_alarm()
 {
 	time_t t;
 	struct tm *lt;
 
-	if (!alarm_type)
-	{
-		return;
-	}
+	alarm_lastcheck = Time_Monotonic();
 
 	time(&t);
 	lt = localtime(&t);
 	if (lt->tm_hour == alarm_h && lt->tm_min == alarm_m)
 	{
-		if (!alarm_ackd)
-		{
-			alarm_disp = 1;
-		}
+		if (!alarm_ackd) alarm_disp = 1;
 	}
 	else
 	{
@@ -8024,9 +8327,9 @@ static void check_alarm(BOOL desktop)
 	/* Hack: if the alarm should make a noise, then make one: */
 	if (alarm_disp && alarm_beep == 1)
 	{
-		static int last_beep = 0;
-		int t = Time_Monotonic();
-		if (t - last_beep >= 100)
+		static unsigned int last_beep = 0;
+		unsigned int t = Time_Monotonic();
+		if (t > last_beep + 100)
 		{
 			Sound_SysBeep();
 			last_beep = t;
@@ -8038,8 +8341,10 @@ static void check_alarm(BOOL desktop)
 	   | If we aren't then do nothing - the fullscreen bored() function
 	   | will take care of the alarm.
 	 */
-	if (desktop && alarm_disp)
+#ifndef FULLSCREEN_ONLY
+	if (!fullscreen_font && alarm_disp)
 		trigger_alarm_desktop();
+#endif /* FULLSCREEN_ONLY */
 }
 
 
@@ -8062,7 +8367,7 @@ static void ack_alarm(void)
 
 }
 
-
+#ifndef FULLSCREEN_ONLY
 /*
  | Click in the (desktop) alarm window
  */
@@ -8083,10 +8388,8 @@ static void trigger_alarm_desktop(void)
 		return;
 
 	aw = Window_Create("alarm", template_TITLEMIN);
-	if (!aw)
-	{
-		core("failed to create Alarm window!");
-	}
+	if (!aw) core("failed to create Alarm window!");
+
 	sprintf(buffer, "Alarm from %s", VARIANT);
 	Window_SetTitle(aw, buffer);
 	Event_Claim(event_CLICK, aw, 0, Hnd_AlarmClick, NULL);
@@ -8096,6 +8399,8 @@ static void trigger_alarm_desktop(void)
 	Icon_SetText(aw, 2, alarm_message);
 	Window_Show(aw, open_CENTERED);
 }
+
+#endif /* FULLSCREEN_ONLY */
 
 
 /*--------------------------------------------------------------------------*/
@@ -8109,7 +8414,7 @@ static void show_debug_info(void)
 
 static int debug_cx = 0;
 static int debug_cy = 0;
-static int debug_cl = TERM_WHITE;
+static int debug_cl = COL(WHITE);
 static int debug_sl = 0;
 
 
@@ -8127,8 +8432,8 @@ static void debug_tcol(int c)
 
 static void debug_scroll(void)
 {
-	char **c = ((term_data *)Term)->t.scr->c;	/* char array [24][80] */
-	byte **a = ((term_data *)Term)->t.scr->a;	/* attr array [24][80] */
+	char **c = ((term_data *)Term)->t.scr->c;	/* char array */
+	byte **a = ((term_data *)Term)->t.scr->a;	/* attr array */
 	int cc;
 	char tmp[82];
 	int y, x, p;
@@ -8167,7 +8472,7 @@ static void debug_print_line(char *l)
 		if (--debug_sl < 0)
 		{
 			int k;
-			display_line(0, 23, TERM_YELLOW, "[RET one line, SPC one page]");
+			PUT_FSTR(0, 23, COL(YELLOW), "[RET one line, SPC one page]");
 			do
 			{
 				k = inkey();
@@ -8273,10 +8578,10 @@ static void debug_printf(char *fmt, ...)
 
 static void debug_version_info(void)
 {
-	debug_tcol(TERM_YELLOW);
+	debug_tcol(COL(YELLOW));
 
 	debug_printf("\n\nMisc. Info:\n");
-	debug_tcol(TERM_WHITE);
+	debug_tcol(COL(WHITE));
 	debug_printf("\tVariant name = \"%s\"\n", VARIANT);
 	debug_printf("\tFront-end version: %s\n", PORTVERSION);
 	debug_printf("\tFront-end compiled: %s %s\n", __TIME__, __DATE__);
@@ -8294,59 +8599,60 @@ static void debug_version_info(void)
 	debug_printf("\t\tSMART_FILECACHE\n");
 #endif
 
-	debug_tcol(TERM_YELLOW);
+	debug_tcol(COL(YELLOW));
 	debug_printf("\nResource path:\n");
-	debug_tcol(TERM_WHITE);
+	debug_tcol(COL(WHITE));
 	debug_printf("\t\"%s\"\n", resource_path);
 
-	debug_tcol(TERM_YELLOW);
+	debug_tcol(COL(YELLOW));
 	debug_printf("\nTempfile path:\n");
-	debug_tcol(TERM_WHITE);
+	debug_tcol(COL(WHITE));
 	debug_printf("\t\"%s\"\n", scrap_path);
 	debug_printf("\tScrapfiles are %s deleted at exit.\n",
 				 (flush_scrap ? "" : "NOT"));
 
-	debug_tcol(TERM_YELLOW);
+	debug_tcol(COL(YELLOW));
 	debug_printf("\nChoices files:\n");
-	debug_tcol(TERM_L_BLUE);
+	debug_tcol(COL(L_BLUE));
 	debug_printf("\tDesired files:\n");
-	debug_tcol(TERM_WHITE);
+	debug_tcol(COL(WHITE));
 	debug_printf("\tPrimary (r/w): \"%s\"\n", choices_file[CHFILE_WRITE]);
 	debug_printf("\t Fallback (r): \"%s\"\n", choices_file[CHFILE_READ]);
 	debug_printf("\t Mirror (r/w): \"%s\"\n", choices_file[CHFILE_MIRROR]);
-	debug_tcol(TERM_L_BLUE);
+	debug_tcol(COL(L_BLUE));
 	debug_printf("\tActual files:\n");
-	debug_tcol(TERM_WHITE);
+	debug_tcol(COL(WHITE));
 	debug_printf("\t		Write: \"%s\"\n", find_choices(TRUE));
 	debug_printf("\t		 Read: \"%s\"\n", find_choices(FALSE));
 
-	debug_tcol(TERM_YELLOW);
+	debug_tcol(COL(YELLOW));
 	debug_printf("\nAlarm files:\n");
-	debug_tcol(TERM_L_BLUE);
+	debug_tcol(COL(L_BLUE));
 	debug_printf("\tDesired files:\n");
-	debug_tcol(TERM_WHITE);
+	debug_tcol(COL(WHITE));
 	debug_printf("\tPrimary (r/w): \"%s\"\n", alarm_file[CHFILE_WRITE]);
 	debug_printf("\t Fallback (r): \"%s\"\n", alarm_file[CHFILE_READ]);
-	debug_tcol(TERM_L_BLUE);
+	debug_tcol(COL(L_BLUE));
 	debug_printf("\tActual files:\n");
-	debug_tcol(TERM_WHITE);
+	debug_tcol(COL(WHITE));
 	debug_printf("\t		Write: \"%s\"\n", find_alarmfile(TRUE));
 	debug_printf("\t		 Read: \"%s\"\n", find_alarmfile(FALSE));
-
-	debug_tcol(TERM_YELLOW);
+#ifdef USE_DA
+	debug_tcol(COL(YELLOW));
 	debug_printf("\nDynamic areas:\n");
-	debug_tcol(TERM_WHITE);
+	debug_tcol(COL(WHITE));
 	debug_printf("\tFontcache DA = %d\t", font_area);
 	debug_printf("size = %d\theap size = %d\n", font_area_size, font_heap_size);
 	debug_printf("\t   ralloc DA = %d\t", game_area);
 	debug_printf("size = %d\theap size = %d\n", game_area_size, game_heap_size);
+#endif
 }
 
 
 static void debug_filecache_info(void)
 {
 #ifndef USE_FILECACHE
-	debug_tcol(TERM_L_DARK);
+	debug_tcol(COL(L_DARK));
 	debug_printf("File cache disabled at compile time.\n");
 #else
 	int j, k;
@@ -8359,12 +8665,12 @@ static void debug_filecache_info(void)
 	{
 		init_file_cache();
 	}							/* Paranoia */
-	debug_tcol(TERM_YELLOW);
+	debug_tcol(COL(YELLOW));
 	debug_printf("\nFilecache contents:\n");
-	debug_tcol(TERM_L_BLUE);
+	debug_tcol(COL(L_BLUE));
 	debug_printf("Flags: Smart=%d;  Abbrv=%d;  Slave=%d;   Enable=%d\n",
 				 smart_filecache, abbr_filecache, abbr_tmpfile, use_filecache);
-	debug_tcol(TERM_SLATE);
+	debug_tcol(COL(SLATE));
 	if (smart_filecache || abbr_filecache)
 		debug_printf("\t\t%3s  %6s/%-6s  %6s  %6s  Path (relative to lib/)\n",
 					 "Hnd", "Cache", "Disc", "Time", "Status");
@@ -8378,15 +8684,15 @@ static void debug_filecache_info(void)
 		if (fce->name)
 		{
 			cf++;
-			debug_tcol(TERM_L_GREEN);
+			debug_tcol(COL(L_GREEN));
 			debug_printf("\t\t%3d  ", j);
-			debug_tcol(TERM_L_UMBER);
+			debug_tcol(COL(L_UMBER));
 			if (!smart_filecache && !abbr_filecache)
 				debug_printf("%6d  ", fce->eof - fce->text);
 			else
 			{
 				debug_printf("%6d/", fce->eof - fce->text);
-				k = myFile_Size(riscosify_name(fce->name));
+				k = File_Size(riscosify_name(fce->name));
 				debug_printf("%-6d  ", k);
 				if (k > 0)
 				{
@@ -8398,20 +8704,20 @@ static void debug_filecache_info(void)
 			for (k = 0; k < MAX_OPEN_CACHED_FILES; k++)
 				if (cached_file_handle[k].fce == fce)
 					break;
-			debug_tcol(TERM_RED);
+			debug_tcol(COL(RED));
 			debug_printf("%-6s  ", k < MAX_OPEN_CACHED_FILES ? "Open" : "");
-			debug_tcol(TERM_L_UMBER);
+			debug_tcol(COL(L_UMBER));
 			debug_printf("%s\n", fce->name + t);
 		}
 	}
 
-	debug_tcol(TERM_L_BLUE);
+	debug_tcol(COL(L_BLUE));
 	debug_printf("\tTotal:\t%3d  ", cf);
 	if (ucs)
 		debug_printf("%6d/%-6d\n", cs, ucs);
 	else
 		debug_printf("%6d\n", cs);
-	debug_tcol(TERM_BLUE);
+	debug_tcol(COL(BLUE));
 #endif /* USE_FILECACHE */
 }
 
@@ -8425,7 +8731,7 @@ static void show_debug_info(void)
 	/* Repeatedly prompt for a command */
 	do
 	{
-		debug_tcol(TERM_VIOLET);
+		debug_tcol(COL(VIOLET));
 		debug_printf("\nInfo: (V)ersion, (F)ilecache, ESC=exit ");
 		do
 		{
@@ -8451,4 +8757,5 @@ static void show_debug_info(void)
 #endif /* FE_DEBUG_INFO */
 
 #endif /* __riscos */
+
 

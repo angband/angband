@@ -860,6 +860,18 @@ errr parse_z_info(char *buf, header *head)
 		z_info->flavor_max = max;
 	}
 	
+	/* Process 'S' for "Maximum s_info[] subindex" */
+	else if (buf[2] == 'S')
+	{
+		int max;
+
+		/* Scan for the value */
+		if (1 != sscanf(buf+4, "%d", &max)) return (PARSE_ERROR_GENERIC);
+
+		/* Save the value */
+		z_info->s_max = max;
+	}
+	
 	/* Process 'O' for "Maximum o_list[] index" */
 	else if (buf[2] == 'O')
 	{
@@ -1356,7 +1368,49 @@ errr parse_k_info(char *buf, header *head)
 		k_ptr->ds = hd2;
 		k_ptr->to_h = th;
 		k_ptr->to_d = td;
-		k_ptr->to_a =  ta;
+		k_ptr->to_a = ta;
+	}
+
+	/* Hack -- Process 'C' for "charges" */
+	else if (buf[0] == 'C')
+	{
+		int base = 0;
+		int ds = 0;
+		int dd = 1;
+
+		/* There better be a current k_ptr */
+		if (!k_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
+
+		/* Assign base values */
+		k_ptr->charge_base = 0;
+		k_ptr->charge_ds = 0;
+		k_ptr->charge_dd = 1;
+
+		/* Scan for the values */
+		if (1 == sscanf(buf+2, "d%d", &ds))
+		{
+			k_ptr->charge_ds = ds;
+		}
+		else if (2 == sscanf(buf+2, "%d+d%d", &base, &ds))
+		{
+			k_ptr->charge_base = base;
+			k_ptr->charge_ds   = ds;
+		}
+		else if (2 == sscanf(buf+2, "%dd%d", &dd, &ds))
+		{
+			k_ptr->charge_dd = dd;
+			k_ptr->charge_ds = ds;
+		}
+		else if (3 == sscanf(buf+2, "%d+%dd%d", &base, &dd, &ds))
+		{
+			k_ptr->charge_base = base;
+			k_ptr->charge_dd   = dd;
+			k_ptr->charge_ds   = ds;
+		}
+		else
+		{
+			return (PARSE_ERROR_GENERIC);
+		}
 	}
 
 	/* Hack -- Process 'F' for flags */
@@ -3163,6 +3217,101 @@ errr parse_flavor_info(char *buf, header *head)
 
 		/* Store the text */
 		if (!add_text(&flavor_ptr->text, head, buf + 2))
+			return (PARSE_ERROR_OUT_OF_MEMORY);
+	}
+
+	else
+	{
+		/* Oops */
+		return (PARSE_ERROR_UNDEFINED_DIRECTIVE);
+	}
+
+	/* Success */
+	return (0);
+}
+
+
+/*
+ * Initialize the "s_info" array, by parsing an ascii "template" file
+ */
+errr parse_s_info(char *buf, header *head)
+{
+	int i;
+
+	char *s;
+
+	/* Current entry */
+	static spell_type *s_ptr = NULL;
+
+
+	/* Process 'N' for "New/Number/Name" */
+	if (buf[0] == 'N')
+	{
+		/* Find the colon before the name */
+		s = strchr(buf+2, ':');
+
+		/* Verify that colon */
+		if (!s) return (PARSE_ERROR_GENERIC);
+
+		/* Nuke the colon, advance to the name */
+		*s++ = '\0';
+
+		/* Paranoia -- require a name */
+		if (!*s) return (PARSE_ERROR_GENERIC);
+
+		/* Get the index */
+		i = atoi(buf+2);
+
+		/* Verify information */
+		if (i <= error_idx) return (PARSE_ERROR_NON_SEQUENTIAL_RECORDS);
+
+		/* Verify information */
+		if (i >= head->info_num) return (PARSE_ERROR_TOO_MANY_ENTRIES);
+
+		/* Save the index */
+		error_idx = i;
+
+		/* Point at the "info" */
+		s_ptr = (spell_type*)head->info_ptr + i;
+
+		/* Store the name */
+		if (!(s_ptr->name = add_name(head, s)))
+			return (PARSE_ERROR_OUT_OF_MEMORY);
+	}
+
+	/* Process 'I' for "Info" (one line only) */
+	else if (buf[0] == 'I')
+	{
+		int tval, sval, snum;
+
+		/* There better be a current s_ptr */
+		if (!s_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
+
+		/* Scan for the values */
+		if (3 != sscanf(buf+2, "%d:%d:%d",
+			            &tval, &sval, &snum)) return (PARSE_ERROR_GENERIC);
+
+		/* Save the values */
+		s_ptr->tval = tval;
+		s_ptr->sval = sval;
+		s_ptr->snum = snum;
+
+		/* Hack -- Use tval to calculate realm and spell index */
+		s_ptr->realm = tval - TV_MAGIC_BOOK;
+		s_ptr->spell_index = error_idx - (s_ptr->realm * PY_MAX_SPELLS);
+	}
+
+	/* Process 'D' for "Description" */
+	else if (buf[0] == 'D')
+	{
+		/* There better be a current s_ptr */
+		if (!s_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
+
+		/* Get the text */
+		s = buf+2;
+
+		/* Store the text */
+		if (!add_text(&s_ptr->text, head, s))
 			return (PARSE_ERROR_OUT_OF_MEMORY);
 	}
 

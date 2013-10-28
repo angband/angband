@@ -205,8 +205,7 @@ void plog(cptr str)
 void (*quit_aux)(cptr) = NULL;
 
 /*
- * Exit (ala "exit()").  If 'str' is NULL, do "exit(0)".
- * If 'str' begins with "+" or "-", do "exit(atoi(str))".
+ * Exit (ala "exit()").  If 'str' is NULL, do "exit(EXIT_SUCCESS)".
  * Otherwise, plog() 'str' and exit with an error code of -1.
  * But always use 'quit_aux', if set, before anything else.
  */
@@ -216,10 +215,7 @@ void quit(cptr str)
 	if (quit_aux) (*quit_aux)(str);
 
 	/* Success */
-	if (!str) (void)(exit(0));
-
-	/* Extract a "special error code" */
-	if ((str[0] == '-') || (str[0] == '+')) (void)(exit(atoi(str)));
+	if (!str) (void)(exit(EXIT_SUCCESS));
 
 	/* Send the string to plog() */
 	plog(str);

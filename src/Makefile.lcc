@@ -41,6 +41,7 @@ OBJS=\
 	spells1.obj \
 	script.obj \
 	save.obj \
+	squelch.obj \
 	readdib.obj \
 	randart.obj \
 	object2.obj \
@@ -548,6 +549,33 @@ SAVE_C=\
 
 save.obj: $(SAVE_C) $(SRCDIR)\save.c
 	$(CC) -c $(CFLAGS) $(SRCDIR)\save.c
+
+# Build squelch.c
+SQUELCH_C=\
+	$(SRCDIR)\angband.h\
+	$(SRCDIR)\h-basic.h\
+	$(SRCDIR)\h-config.h\
+	$(SRCDIR)\h-system.h\
+	$(SRCDIR)\h-type.h\
+	$(SRCDIR)\h-define.h\
+	$(SRCDIR)\z-util.h\
+	$(SRCDIR)\h-basic.h\
+	$(SRCDIR)\z-virt.h\
+	$(SRCDIR)\h-basic.h\
+	$(SRCDIR)\z-form.h\
+	$(SRCDIR)\h-basic.h\
+	$(SRCDIR)\z-rand.h\
+	$(SRCDIR)\h-basic.h\
+	$(SRCDIR)\z-term.h\
+	$(SRCDIR)\h-basic.h\
+	$(SRCDIR)\config.h\
+	$(SRCDIR)\defines.h\
+	$(SRCDIR)\types.h\
+	$(SRCDIR)\externs.h\
+
+squelch.obj: $(SQUELCH_C) $(SRCDIR)\squelch.c
+	$(CC) -c $(CFLAGS) $(SRCDIR)\squelch.c
+
 
 # Build READDIB.C
 READDIB_C=\

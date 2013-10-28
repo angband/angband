@@ -1,3 +1,4 @@
+- Fix remaining X11 memory leaks (reported by Christer Nyfalt).
 - Add support for gamma correction to the DOS version.
 - Move various information to external files.
 - Add player ghosts.

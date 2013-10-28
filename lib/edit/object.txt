@@ -18,6 +18,7 @@
 # W: depth : rarity : weight : cost
 # P: base armor class : base damage : plus to-hit : plus to-dam : plus to-ac
 # A: depth/rarity : depth/rarity : etc
+# C: charges
 # F: flag | flag | etc
 # D: description
 
@@ -25,6 +26,12 @@
 # increase for each new item. The '&' and '~' symbols are use to
 # include articles and pluralization as necessary to ensure
 # grammatical correctness in object descriptions.
+#
+# For non-English and irregular plurals, the '|' symbol may be used
+# instead, as in "|singular|plural|". The part between the first and
+# second | symbol is used for singular, and the part between the second
+# and third | for plural.  The number of | symbols in the name must
+# always be a multiple of 3.
 
 # 'G' is for graphics - symbol and color. There are 15 colors, as
 # follows:
@@ -56,6 +63,9 @@
 # are found throughout the dungeon. The "allocation" depth need not
 # match the depth as specified in the "W:" line.
 
+# 'C' is for charges (wands and staves only).  It specifies, in the form x+ydz,
+# the number of charges a wand or staff should have on creation.
+
 # 'F' is for flags. These are fairly self-explanatory. As many F:
 # lines may be used as are needed to specify all the flags and flags
 # are separated by the '|' symbol.
@@ -69,7 +79,7 @@
 
 # Version stamp (required)
 
-V:3.0.5
+V:3.0.6
 
 
 ##### Non-kind (contains the "pile" picture) #####
@@ -2360,6 +2370,7 @@ I:65:7:0
 W:3:0:10:200
 A:3/1
 P:0:1d1:0:0:0
+C:6+d10
 D:It lights up a line of squares, inflicting 6d8 points of damage on
 D: light-sensitive creatures on the line.
 
@@ -2369,6 +2380,7 @@ I:65:17:0
 W:15:0:10:600
 A:15/1
 P:0:1d1:0:0:0
+C:6+d8
 D:It shoots a lightning bolt that inflicts 6d6 points of damage, with a
 D: 20% chance of getting a lightning beam.
 
@@ -2378,6 +2390,7 @@ I:65:19:0
 W:20:0:10:800
 A:20/1
 P:0:1d1:0:0:0
+C:6+d5
 D:It shoots a frost bolt that inflicts 6d8 points of damage, with a 20%
 D: chance of getting a cold beam.
 
@@ -2387,6 +2400,7 @@ I:65:18:0
 W:30:0:10:1000
 A:30/1
 P:0:1d1:0:0:0
+C:6+d8
 D:It shoots a fire bolt that inflicts 12d8 points of damage, with a 20%
 D: chance of getting a fire beam.
 
@@ -2396,6 +2410,7 @@ I:65:6:0
 W:10:0:10:300
 A:10/1
 P:0:1d1:0:0:0
+C:3+d4
 D:It turns the first section of wall encountered by the beam shot by
 D: this spell into mud.
 D:  Permanent walls are not affected.
@@ -2408,6 +2423,7 @@ I:65:13:0
 W:20:0:10:400
 A:20/1
 P:0:1d1:0:0:0
+C:6+d8
 D:It attempts to polymorph a single monster.
 D:  Uniques are unaffected.
 
@@ -2417,6 +2433,7 @@ I:65:0:0
 W:3:0:10:0
 A:3/1
 P:0:1d1:0:0:0
+C:8+d20
 D:It cures a single monster for 4d6 points of damage.
 
 N:276:Haste Monster
@@ -2425,6 +2442,7 @@ I:65:1:0
 W:3:0:10:0
 A:3/1
 P:0:1d1:0:0:0
+C:8+d20
 D:It hastes a single monster.
 
 N:277:Slow Monster
@@ -2433,6 +2451,7 @@ I:65:9:0
 W:5:0:10:500
 A:5/1
 P:0:1d1:0:0:0
+C:6+d10
 D:It attempts to slow down a single monster.
 D:  Uniques are unaffected.
 
@@ -2442,6 +2461,7 @@ I:65:10:0
 W:5:0:10:500
 A:5/1
 P:0:1d1:0:0:0
+C:6+d12
 D:It attempts to confuse a single monster.
 D:  Uniques are unaffected.
 
@@ -2451,6 +2471,7 @@ I:65:8:0
 W:5:0:10:500
 A:5/1
 P:0:1d1:0:0:0
+C:8+d15
 D:It attempts to put a single monster to sleep.
 D:  Uniques are unaffected.
 
@@ -2460,6 +2481,7 @@ I:65:12:0
 W:50:0:10:1200
 A:50/1
 P:0:1d1:0:0:0
+C:3+d3
 D:It inflicts 150 points of damage on a single monster that is not
 D: undead, a demon, an elemental, a golem, or a vortex.
 
@@ -2469,6 +2491,7 @@ I:65:5:0
 W:10:0:10:100
 A:10/1
 P:0:1d1:0:0:0
+C:6+d8
 D:It destroys all doors and disarms all traps in a line.
 
 N:282:Magic Missile
@@ -2477,6 +2500,7 @@ I:65:15:0
 W:3:0:10:200
 A:3/1
 P:0:1d1:0:0:0
+C:6+d10
 D:It fires a magic missile that inflicts 3d4 points of damage, with a
 D: 20% chance of getting a magic beam.
 
@@ -2486,6 +2510,7 @@ I:65:2:0
 W:15:0:10:0
 A:15/1:50/1
 P:0:1d1:0:0:0
+C:3+d5
 D:It hastes and fully heals a single monster.  If the monster is next to
 D: an empty space and not a unique, a new monster of the same type will
 D: be created.
@@ -2496,6 +2521,7 @@ I:65:11:0
 W:10:0:10:500
 A:10/4
 P:0:1d1:0:0:0
+C:3+d5
 D:It attempts to scare a single monster.
 D:  Uniques are unaffected.
 
@@ -2505,6 +2531,7 @@ I:65:3:0
 W:20:0:10:350
 A:20/1
 P:0:1d1:0:0:0
+C:6+d5
 D:It produces a beam that teleports all monsters caught in it up to 100
 D: squares away.
 
@@ -2514,6 +2541,7 @@ I:65:4:0
 W:20:0:10:700
 A:20/1
 P:0:1d1:0:0:0
+C:4+d5
 D:It produces a beam that disarms all traps, unlocks all locked doors
 D: and reveals all secret doors.
 
@@ -2523,6 +2551,7 @@ I:65:21:0
 W:35:0:10:1200
 A:35/1
 P:0:1d1:0:0:0
+C:4+d8
 F:IGNORE_ELEC
 D:It shoots a radius-2 lightning ball that inflicts 64 points of damage
 D: at its center.
@@ -2533,6 +2562,7 @@ I:65:23:0
 W:40:0:10:1500
 A:40/1
 P:0:1d1:0:0:0
+C:2+d6
 F:IGNORE_COLD
 D:It shoots a radius-2 frost ball that inflicts 96 points of damage at
 D: its center.
@@ -2543,6 +2573,7 @@ I:65:22:0
 W:50:0:10:1800
 A:50/1
 P:0:1d1:0:0:0
+C:2+d4
 F:IGNORE_FIRE
 D:It shoots a radius-2 fire ball that inflicts 144 points of damage at
 D: its center.
@@ -2553,6 +2584,7 @@ I:65:14:0
 W:5:0:10:400
 A:5/1
 P:0:1d1:0:0:0
+C:6+d8
 D:It shoots a radius-2 poison cloud that inflicts 12 points of damage at
 D: its center.
 
@@ -2562,6 +2594,7 @@ I:65:20:0
 W:50:0:10:1650
 A:50/1
 P:0:1d1:0:0:0
+C:2+d5
 F:IGNORE_ACID
 D:It shoots a radius-2 acid ball that inflicts 120 points of damage at
 D: its center.
@@ -2572,6 +2605,7 @@ I:65:24:0
 W:3:0:10:250
 A:3/1
 P:0:1d1:0:0:0
+C:8+d15
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 D:It has a random effect chosen from the various wand effects, except
 D: Dragon's Flame, Dragon's Frost, Dragon's Breath, Annihilation.
@@ -2584,6 +2618,7 @@ I:65:16:0
 W:30:0:10:950
 A:30/1
 P:0:1d1:0:0:0
+C:6+d8
 D:It shoots an acid bolt that inflicts 10d8 points of damage, with a 20%
 D: chance of getting an acid beam.
 
@@ -2593,6 +2628,7 @@ I:65:26:0
 W:50:0:10:2400
 A:50/4
 P:0:1d1:0:0:0
+C:1+d3
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 D:It shoots a radius-3 fire ball that inflicts 200 points of damage at
 D: its center.
@@ -2603,6 +2639,7 @@ I:65:27:0
 W:50:0:10:2400
 A:50/4
 P:0:1d1:0:0:0
+C:1+d3
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 D:It shoots a radius-3 frost ball that inflicts 160 points of damage at
 D: its center.
@@ -2613,6 +2650,7 @@ I:65:28:0
 W:60:0:10:2400
 A:60/4
 P:0:1d1:0:0:0
+C:1+d3
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 D:It shoots a radius-3 fire/frost/acid/lightning/poison ball that
 D: inflicts 200/160/200/180/120 points of damage at its center (damage
@@ -2624,6 +2662,7 @@ I:65:25:0
 W:60:0:10:3000
 A:60/4
 P:0:1d1:0:0:0
+C:1+d2
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 D:It inflicts 250 points of damage on a single monster that is not
 D: undead, a demon, an elemental, a golem, or a vortex.
@@ -2639,6 +2678,7 @@ I:55:12:0
 W:10:0:50:350
 A:10/1
 P:0:1d2:0:0:0
+C:6+d5
 D:It detects all traps in the immediate area.
 
 N:301:Treasure Location
@@ -2647,6 +2687,7 @@ I:55:10:0
 W:5:0:50:200
 A:5/1
 P:0:1d2:0:0:0
+C:8+d20
 D:It detects all treasure in the immediate area.
 
 N:302:Object Location
@@ -2655,6 +2696,7 @@ I:55:11:0
 W:5:0:50:200
 A:5/1
 P:0:1d2:0:0:0
+C:6+d15
 D:It detects all objects in the immediate area.
 
 N:303:Teleportation
@@ -2663,6 +2705,7 @@ I:55:4:0
 W:20:0:50:2000
 A:20/1
 P:0:1d2:0:0:0
+C:5+d4
 D:It teleports you randomly with a maximum range of 100 squares.
 
 N:304:Earthquakes
@@ -2671,6 +2714,7 @@ I:55:28:0
 W:40:0:50:350
 A:40/1
 P:0:1d2:0:0:0
+C:3+d5
 D:It causes an earthquake centered on you that has a 10-square radius;
 D: this randomly places new walls and floor space.  Monsters can be
 D: caught by a newly created wall; this does not affect monsters that
@@ -2684,6 +2728,7 @@ I:55:3:0
 W:10:0:50:0
 A:10/1:50/1
 P:0:1d2:0:0:0
+C:1+d3
 D:It summons 1d4 monsters that are generated at the current dungeon
 D: level.
 D:  If a monster normally appears in groups, a whole group will appear.
@@ -2695,6 +2740,7 @@ I:55:8:0
 W:5:0:50:250
 A:5/1
 P:0:1d2:0:0:0
+C:8+d20
 D:It lights up an area with a radius of 2 squares, plus the entire room
 D: if you are currently in one.
 D:  This inflicts 2d8 points of damage on any light-sensitive creatures
@@ -2706,6 +2752,7 @@ I:55:29:0
 W:50:0:50:2500
 A:50/1:70/1
 P:0:1d2:0:0:0
+C:1+d3
 D:It destroys a circular area centered at you with a radius of 15
 D: squares, randomly placing new walls and floor space (stairs are
 D: immune).  All monsters and objects (excluding artifacts) are removed
@@ -2719,6 +2766,7 @@ I:55:7:0
 W:20:0:50:800
 A:20/1
 P:0:1d2:0:0:0
+C:6+d5
 D:It fires a line of light in all eight cardinal directions;
 D: light-sensitive monsters caught in one of the lines take 6d8 points
 D: of damage.
@@ -2729,6 +2777,7 @@ I:55:2:0
 W:10:0:50:0
 A:10/1
 P:0:1d2:0:0:0
+C:8+d8
 D:It hastes all monsters within line of sight.
 
 N:310:Slow Monsters
@@ -2737,6 +2786,7 @@ I:55:21:0
 W:10:0:50:800
 A:10/1
 P:0:1d2:0:0:0
+C:6+d5
 D:It attempts to slow down all monsters within line of sight.
 D:  Uniques are unaffected.
 
@@ -2746,6 +2796,7 @@ I:55:20:0
 W:10:0:50:700
 A:10/1
 P:0:1d2:0:0:0
+C:6+d5
 D:It attempts to put all monsters within line of sight to sleep.
 D:  Uniques are unaffected.
 
@@ -2755,6 +2806,7 @@ I:55:16:0
 W:5:0:50:350
 A:5/1
 P:0:1d2:0:0:0
+C:6+d5
 D:It cures 1d8 points of damage.
 
 N:313:Detect Invisible
@@ -2763,6 +2815,7 @@ I:55:14:0
 W:5:0:50:200
 A:5/1
 P:0:1d2:0:0:0
+C:8+d15
 D:It detects all invisible monsters in the immediate area.
 
 N:314:Speed
@@ -2771,6 +2824,7 @@ I:55:22:0
 W:40:0:50:1000
 A:40/1
 P:0:1d2:0:0:0
+C:4+d3
 D:It hastes you (+10 to speed) for 15+1d30 turns (or 5 additional turns
 D: if you already are under the effect of a temporary haste
 D: enchantment).
@@ -2781,6 +2835,7 @@ I:55:1:0
 W:40:0:50:0
 A:40/1
 P:0:1d2:0:0:0
+C:8+d8
 D:It slows you down (-10 to speed) for 15+1d30 turns; this duration is
 D: cumulative with other temporary slowing enchantments.
 
@@ -2790,6 +2845,7 @@ I:55:13:0
 W:10:0:50:350
 A:10/1
 P:0:1d2:0:0:0
+C:6+d8
 D:It detects all doors and stairs in the immediate area.
 
 N:317:Remove Curse
@@ -2798,6 +2854,7 @@ I:55:6:0
 W:40:0:50:500
 A:40/1
 P:0:1d2:0:0:0
+C:4+d3
 D:It removes all ordinary curses from all equipped items.
 D:  Heavy or permanent curses are unaffected.
 
@@ -2807,6 +2864,7 @@ I:55:15:0
 W:20:0:50:350
 A:20/1
 P:0:1d2:0:0:0
+C:8+d15
 D:It detects all evil monsters in the immediate area.
 
 N:319:Curing
@@ -2815,6 +2873,7 @@ I:55:17:0
 W:25:0:50:1000
 A:25/1
 P:0:1d2:0:0:0
+C:4+d3
 D:It cures all stunning, heals all cut damage, neutralizes poison, and
 D: cures blindness and confusion.
 
@@ -2824,6 +2883,7 @@ I:55:24:0
 W:50:0:50:1200
 A:50/1
 P:0:1d2:0:0:0
+C:4+d3
 D:It inflicts 60 points of damage on all evil monsters within line of
 D: sight.
 
@@ -2833,6 +2893,7 @@ I:55:23:0
 W:30:0:50:2000
 A:30/1
 P:0:1d2:0:0:0
+C:2+d6
 D:It probes all monsters within line of sight, giving information both
 D: on the current hit points of the monsters and many of their
 D: characteristics and abilities (excluding melee, spellcasting, and
@@ -2844,6 +2905,7 @@ I:55:0:0
 W:5:0:50:0
 A:5/1:50/1
 P:0:1d2:0:0:0
+C:8+d8
 D:It darkens all squares within 3 squares of you, plus the entire room
 D: if you are currently in one; and blinds you for 3+1d5 turns, unless
 D: you have resistance to blindness.
@@ -2854,6 +2916,7 @@ I:55:27:0
 W:70:0:50:3500
 A:70/4
 P:0:1d2:0:0:0
+C:1+d2
 D:It removes all monsters represented by a chosen symbol from the level.
 D:  Uniques are unaffected.
 D:  You take 1d4 points of damage for every monster removed.
@@ -2864,6 +2927,7 @@ I:55:25:0
 W:70:0:50:4000
 A:70/2
 P:0:1d2:0:0:0
+C:1+d3
 D:It inflicts 120 points of damage on all monsters within line of sight.
 
 N:325:the Magi
@@ -2872,6 +2936,7 @@ I:55:19:0
 W:70:0:50:4500
 A:70/2
 P:0:1d2:0:0:0
+C:2+d2
 D:It restores both intelligence and mana points to maximum if either or
 D: both are currently below maximum.
 
@@ -2881,6 +2946,7 @@ I:55:5:0
 W:10:0:50:400
 A:10/1
 P:0:1d2:0:0:0
+C:5+d15
 D:It reveals all normal (magical but non-hidden) powers of one object.
 D:  (The spell may be aborted without using up a charge.)
 
@@ -2890,6 +2956,7 @@ I:55:26:0
 W:70:0:50:4500
 A:70/2
 P:0:1d2:0:0:0
+C:2+d2
 D:It inflicts 120 points of damage on all evil monsters within line of
 D: sight, cures 50 points of damage, cures all stunning, heals all cut
 D: damage, neutralizes poison, removes fear, and also grants you the
@@ -2902,6 +2969,7 @@ I:55:9:0
 W:20:0:50:750
 A:20/1
 P:0:1d2:0:0:0
+C:5+d5
 D:It maps out a portion of the level centered on you.
 
 N:329:Healing
@@ -2910,6 +2978,7 @@ I:55:18:0
 W:70:0:50:5000
 A:70/2
 P:0:1d2:0:0:0
+C:1+d2
 D:It cures 300 points of damage, cures all stunning, and heals all cut
 D: damage.
 

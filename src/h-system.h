@@ -14,38 +14,43 @@
  */
 
 
-#include <stdio.h>
+/*** ANSI C headers ***/
+
 #include <ctype.h>
 #include <errno.h>
 
-#if defined(NeXT)
+#include <stdarg.h>
+#include <stdio.h>
+#if defined(NeXT)  /* BAD - NeXT uses non-standard headers!  XXX XXX */
 # include <libc.h>
 #else
 # include <stdlib.h>
 #endif
+#include <string.h>
+#include <time.h>
 
+/*** POSIX headers ***/
 
-#ifdef SET_UID
-
-# include <sys/types.h>
-
-# if defined(Pyramid) || defined(NeXT) || defined(SUNOS) || \
-     defined(NCR3K) || defined(SUNOS) || defined(ibm032) || \
-     defined(__osf__) || defined(ISC) || defined(SGI) || \
-     defined(linux)
-#  include <sys/time.h>
-# endif
-
-# if !defined(SGI) && !defined(ULTRIX)
-#  include <sys/timeb.h>
-# endif
-
+#if !defined(NeXT) && !defined(RISCOS)
+# include <fcntl.h>
 #endif
 
 
-#include <time.h>
+#if defined(SET_UID) || defined(MACH_O_CARBON)
+# include <pwd.h>
+# include <sys/stat.h>
+# include <unistd.h>
+#endif
 
+#ifdef SET_UID
+# include <sys/types.h>
+#endif
 
+#if defined(__DJGPP__) || defined(__MWERKS__)
+#include <unistd.h>
+#endif /* __DJGPP__ || __MWERKS__ */
+
+/*** Other headers ***/
 
 #if defined(MACINTOSH) && defined(__MWERKS__)
 # include <unix.h>
@@ -55,53 +60,23 @@
 # include <io.h>
 #endif
 
-#if !defined(MACINTOSH) && !defined(AMIGA) && \
-    !defined(RISCOS) && !defined(VM) && !defined(__MWERKS__)
-# if defined(__TURBOC__) || defined(__WATCOMC__)
-#  include <mem.h>
-# else
-#  include <memory.h>
-# endif
-#endif
-
-
-#if !defined(NeXT) && !defined(RISCOS)
-# include <fcntl.h>
-#endif
-
 
 #ifdef SET_UID
 
-# ifndef USG
-#  include <sys/param.h>
-#  include <sys/file.h>
-# endif
+# ifndef HAVE_USLEEP
 
-# ifdef linux
-#  include <sys/file.h>
-# endif
+/*
+ * struct timeval in usleep requires sys/time.h
+ *
+ * System test removed since Unix systems that neither have usleep nor
+ * sys/time.h are screwed anyway, since they have no way of delaying.
+ */
+#  include <sys/time.h>
 
-# include <pwd.h>
+# endif /* HAVE_USLEEP */
 
-# include <unistd.h>
+#endif /* SET_UID */
 
-# include <sys/stat.h>
-
-# if defined(SOLARIS)
-#  include <netdb.h>
-# endif
-
-#endif
-
-#if defined(__DJGPP__) || defined(__MWERKS__)
-#include <unistd.h>
-#endif /* __DJGPP__ || __MWERKS__ */
-
-#include <string.h>
-
-#include <stdarg.h>
-
-
-#endif
+#endif /* INCLUDED_H_SYSTEM_H */
 
 

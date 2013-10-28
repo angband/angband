@@ -567,6 +567,31 @@ static void player_outfit(void)
 			(void)inven_carry(i_ptr);
 		}
 	}
+
+
+	/* Hack -- give the player hardcoded equipment XXX */
+
+	/* Get local object */
+	i_ptr = &object_type_body;
+
+	/* Hack -- Give the player some food */
+	object_prep(i_ptr, lookup_kind(TV_FOOD, SV_FOOD_RATION));
+	i_ptr->number = (byte)rand_range(3, 7);
+	object_aware(i_ptr);
+	object_known(i_ptr);
+	(void)inven_carry(i_ptr);
+
+
+	/* Get local object */
+	i_ptr = &object_type_body;
+
+	/* Hack -- Give the player some torches */
+	object_prep(i_ptr, lookup_kind(TV_LITE, SV_LITE_TORCH));
+	i_ptr->number = (byte)rand_range(3, 7);
+	i_ptr->pval = rand_range(3, 7) * 500;
+	object_aware(i_ptr);
+	object_known(i_ptr);
+	(void)inven_carry(i_ptr);
 }
 
 
@@ -744,7 +769,7 @@ static int get_player_choice(birth_menu *choices, int num, int def,
 		}
 
 		/* Move */
-		else if (isdigit((unsigned char)c))
+		else if (isdigit((unsigned char)c) || isarrow(c))
 		{
 			/* Get a direction from the key */
 			dir = target_dir(c);
@@ -1080,6 +1105,19 @@ static bool player_birth_aux_1(void)
 	{
 		op_ptr->opt[OPT_SCORE + (i - OPT_CHEAT)] = op_ptr->opt[i];
 	}
+
+	/* Reset squelch bits */
+	for (i = 0; i < z_info->k_max; i++)
+		k_info[i].squelch = SQUELCH_NEVER;
+
+	/* Clear the squelch bytes */
+	for (i = 0; i < SQUELCH_BYTES; i++)
+		squelch_level[i] = SQUELCH_NONE;
+
+	/* Clear the ego-item flags */
+	for (i = 0; i < z_info->e_max; i++)
+		e_info[i].squelch = FALSE;
+
 
 	/* Clear */
 	Term_clear();
@@ -1710,8 +1748,6 @@ void player_birth(void)
 	/* Hack -- outfit the player */
 	player_outfit();
 
-	/* Event -- player birth done */
-	player_birth_done_hook();
 
 	/* Shops */
 	for (n = 0; n < MAX_STORES; n++)

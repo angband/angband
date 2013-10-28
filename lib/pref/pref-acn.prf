@@ -3,18 +3,22 @@
 # This is a minimal "pref" file for RISC OS
 
 
-# Map cursor keys onto keypad
+# Cursor keys are passed through as genuine keys now.
 
-A:4
+# Left
+A:\x8B
 P:^_18C\r
 
-A:6
+# Right
+A:\x8C
 P:^_18D\r
-
-A:2
+    
+# Down
+A:\x8A
 P:^_18E\r
-
-A:8
+     
+# Up
+A:\x8D
 P:^_18F\r
 
 

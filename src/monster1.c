@@ -719,7 +719,7 @@ static void describe_monster_abilities(int r_idx, const monster_lore *l_ptr)
 	}
 
 
-	/* Collect immunities */
+	/* Collect immunities and resistances */
 	vn = 0;
 	if (l_ptr->flags3 & RF3_IM_ACID) vp[vn++] = "acid";
 	if (l_ptr->flags3 & RF3_IM_ELEC) vp[vn++] = "lightning";
@@ -727,38 +727,12 @@ static void describe_monster_abilities(int r_idx, const monster_lore *l_ptr)
 	if (l_ptr->flags3 & RF3_IM_COLD) vp[vn++] = "cold";
 	if (l_ptr->flags3 & RF3_IM_POIS) vp[vn++] = "poison";
 	if (l_ptr->flags3 & RF3_IM_WATER) vp[vn++] = "water";
-
-	/* Describe immunities */
-	if (vn)
-	{
-		/* Intro */
-		text_out(format("%^s", wd_he[msex]));
-
-		/* Scan */
-		for (n = 0; n < vn; n++)
-		{
-			/* Intro */
-			if (n == 0) text_out(" resists ");
-			else if (n < vn-1) text_out(", ");
-			else text_out(" and ");
-
-			/* Dump */
-			text_out_c(TERM_ORANGE, vp[n]);
-		}
-
-		/* End */
-		text_out(".  ");
-	}
-
-
-	/* Collect resistances */
-	vn = 0;
 	if (l_ptr->flags3 & RF3_RES_NETH)  vp[vn++] = "nether";
 	if (l_ptr->flags3 & RF3_RES_PLAS)  vp[vn++] = "plasma";
 	if (l_ptr->flags3 & RF3_RES_NEXUS) vp[vn++] = "nexus";
 	if (l_ptr->flags3 & RF3_RES_DISE)  vp[vn++] = "disenchantment";
 
-	/* Describe resistances */
+	/* Describe immunities and resistances */
 	if (vn)
 	{
 		/* Intro */

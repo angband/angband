@@ -24,7 +24,7 @@ void* (*rpanic_aux)(size_t) = NULL;
  * The system is out of memory, so panic.  If "rpanic_aux" is set,
  * it can be used to free up some memory and do a new "ralloc()",
  * or if not, it can be used to save things, clean up, and exit.
- * By default, this function simply crashes the computer.
+ * By default, this function simply quits the computer.
  */
 void* rpanic(size_t len)
 {
@@ -32,7 +32,7 @@ void* rpanic(size_t len)
 	if (rpanic_aux) return ((*rpanic_aux)(len));
 
 	/* Attempt to crash before icky things happen */
-	core("Out of Memory!");
+	quit("Out of Memory!");
 
 	/* Paranoia */
 	return (NULL);

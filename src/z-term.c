@@ -385,6 +385,9 @@ static errr term_win_copy(term_win *s, term_win *f, int w, int h)
 	s->cu = f->cu;
 	s->cv = f->cv;
 
+	/* Copy resize hook */
+	s->resize_hook = f->resize_hook;
+
 	/* Success */
 	return (0);
 }
@@ -1985,6 +1988,20 @@ errr Term_inkey(char *ch, bool wait, bool take)
 
 /*** Extra routines ***/
 
+/*
+ * Set the resize hook for the current term.
+ */
+errr Term_set_resize_hook(void (*hook)(void))
+{
+	/* Ensure hook */
+	if (!hook) return (-1);
+
+	/* Set hook */
+	Term->scr->resize_hook = hook;
+
+	/* Success */
+	return (0);
+}
 
 /*
  * Save the "requested" screen into the "memorized" screen
@@ -1996,18 +2013,23 @@ errr Term_save(void)
 	int w = Term->wid;
 	int h = Term->hgt;
 
-	/* Create */
-	if (!Term->mem)
-	{
-		/* Allocate window */
-		MAKE(Term->mem, term_win);
+	term_win *mem;
 
-		/* Initialize window */
-		term_win_init(Term->mem, w, h);
-	}
+	/* Allocate window */
+	MAKE(mem, term_win);
+
+	/* Initialize window */
+	term_win_init(mem, w, h);
 
 	/* Grab */
-	term_win_copy(Term->mem, Term->scr, w, h);
+	term_win_copy(mem, Term->scr, w, h);
+
+	/* Front of the queue */
+	mem->next = Term->mem;
+	Term->mem = mem;
+
+	/* Nuke the resize hook (safety) */
+	Term->scr->resize_hook = NULL;
 
 	/* Success */
 	return (0);
@@ -2026,18 +2048,23 @@ errr Term_load(void)
 	int w = Term->wid;
 	int h = Term->hgt;
 
-	/* Create */
-	if (!Term->mem)
+	term_win *tmp;
+
+	/* Pop off window from the list */
+	if (Term->mem)
 	{
-		/* Allocate window */
-		MAKE(Term->mem, term_win);
+		/* Save pointer to old mem */
+		tmp = Term->mem;
 
-		/* Initialize window */
-		term_win_init(Term->mem, w, h);
+		/* Forget it */
+		Term->mem = Term->mem->next;
+
+		/* Load */
+		term_win_copy(Term->scr, tmp, w, h);
+
+		/* Free the old window */
+		(void)term_win_nuke(tmp);
 	}
-
-	/* Load */
-	term_win_copy(Term->scr, Term->mem, w, h);
 
 	/* Assume change */
 	for (y = 0; y < h; y++)
@@ -2051,50 +2078,9 @@ errr Term_load(void)
 	Term->y1 = 0;
 	Term->y2 = h - 1;
 
-	/* Success */
-	return (0);
-}
-
-
-/*
- * Exchange the "requested" screen with the "tmp" screen
- */
-errr Term_exchange(void)
-{
-	int y;
-
-	int w = Term->wid;
-	int h = Term->hgt;
-
-	term_win *exchanger;
-
-
-	/* Create */
-	if (!Term->tmp)
-	{
-		/* Allocate window */
-		MAKE(Term->tmp, term_win);
-
-		/* Initialize window */
-		term_win_init(Term->tmp, w, h);
-	}
-
-	/* Swap */
-	exchanger = Term->scr;
-	Term->scr = Term->tmp;
-	Term->tmp = exchanger;
-
-	/* Assume change */
-	for (y = 0; y < h; y++)
-	{
-		/* Assume change */
-		Term->x1[y] = 0;
-		Term->x2[y] = w - 1;
-	}
-
-	/* Assume change */
-	Term->y1 = 0;
-	Term->y2 = h - 1;
+	/* Call the resize hook */
+	if (Term->scr->resize_hook && (w != Term->wid) && (h != Term->hgt))
+		Term->scr->resize_hook();
 
 	/* Success */
 	return (0);
@@ -2271,6 +2257,9 @@ errr Term_resize(int w, int h)
 	Term->y1 = 0;
 	Term->y2 = h - 1;
 
+	/* Call the resize hook */
+	if (Term->scr->resize_hook)
+		Term->scr->resize_hook();
 
 	/* Success */
 	return (0);

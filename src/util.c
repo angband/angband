@@ -25,25 +25,15 @@ int usleep(unsigned long usecs)
 {
 	struct timeval      Timer;
 
-	int nfds = 0;
-
-#ifdef FD_SET
-	fd_set *no_fds = NULL;
-#else
-	int *no_fds = NULL;
-#endif
-
-
 	/* Paranoia -- No excessive sleeping */
-	if (usecs > 4000000L) core("Illegal usleep() call");
-
+	if (usecs > 4000000L) quit("Illegal usleep() call");
 
 	/* Wait for it */
 	Timer.tv_sec = (usecs / 1000000L);
 	Timer.tv_usec = (usecs % 1000000L);
 
 	/* Wait for it */
-	if (select(nfds, no_fds, no_fds, no_fds, &Timer) < 0)
+	if (select(0, NULL, NULL, NULL, &Timer) < 0)
 	{
 		/* Hack -- ignore interrupts */
 		if (errno != EINTR) return -1;
@@ -125,8 +115,7 @@ void user_name(char *buf, size_t len, int id)
 
 #else /* RISCOS */
 
-
-#ifdef SET_UID
+#if defined(SET_UID) || defined(USE_PRIVATE_PATHS)
 
 /*
  * Extract a "parsed" path from an initial filename
@@ -208,7 +197,7 @@ errr path_parse(char *buf, size_t max, cptr file)
 	/* Accept the filename */
 	my_strcpy(buf, file, max);
 
-# if defined(MAC_MPW) && defined(CARBON)
+# ifdef MACH_O_CARBON
 
 	/* Fix it according to the current operating system */
 	convert_pathname(buf);
@@ -541,11 +530,8 @@ errr fd_kill(cptr file)
 	/* Hack -- Try to parse the path */
 	if (path_parse(buf, sizeof(buf), file)) return (-1);
 
-	/* Remove */
-	(void)remove(buf);
-
-	/* Assume success XXX XXX XXX */
-	return (0);
+	/* Remove, return 0 on success, non-zero on failure */
+	return (remove(buf));
 }
 
 
@@ -563,33 +549,8 @@ errr fd_move(cptr file, cptr what)
 	/* Hack -- Try to parse the path */
 	if (path_parse(aux, sizeof(aux), what)) return (-1);
 
-	/* Rename */
-	(void)rename(buf, aux);
-
-	/* Assume success XXX XXX XXX */
-	return (0);
-}
-
-
-/*
- * Hack -- attempt to copy a file
- */
-errr fd_copy(cptr file, cptr what)
-{
-	char buf[1024];
-	char aux[1024];
-
-	/* Hack -- Try to parse the path */
-	if (path_parse(buf, sizeof(buf), file)) return (-1);
-
-	/* Hack -- Try to parse the path */
-	if (path_parse(aux, sizeof(aux), what)) return (-1);
-
-	/* Copy XXX XXX XXX */
-	/* (void)rename(buf, aux); */
-
-	/* Assume success XXX XXX XXX */
-	return (1);
+	/* Rename, return 0 on success, non-zero on failure */
+	return (rename(buf, aux));
 }
 
 
@@ -666,52 +627,28 @@ int fd_open(cptr file, int flags)
  */
 errr fd_lock(int fd, int what)
 {
+#ifdef SET_UID
+
+	struct flock lock;
+#endif
+
 	/* Verify the fd */
 	if (fd < 0) return (-1);
 
 #ifdef SET_UID
 
-# ifdef USG
+	lock.l_type = what;
+	lock.l_start = 0; /* Lock the entire file */
+	lock.l_whence = SEEK_SET; /* Lock the entire file */
+	lock.l_len = 0; /* Lock the entire file */
 
-#  if defined(F_ULOCK) && defined(F_LOCK)
+	/* Wait for access and set lock status */
+	/*
+	 * Change F_SETLKW to G_SETLK if it's preferable to return
+	 * without locking and reporting an error instead of waiting.
+	 */
+	return (fcntl(fd, F_SETLKW, &lock));
 
-	/* Un-Lock */
-	if (what == F_UNLCK)
-	{
-		/* Unlock it, Ignore errors */
-		lockf(fd, F_ULOCK, 0);
-	}
-
-	/* Lock */
-	else
-	{
-		/* Lock the score file */
-		if (lockf(fd, F_LOCK, 0) != 0) return (1);
-	}
-
-#  endif /* defined(F_ULOCK) && defined(F_LOCK) */
-
-# else
-
-#  if defined(LOCK_UN) && defined(LOCK_EX)
-
-	/* Un-Lock */
-	if (what == F_UNLCK)
-	{
-		/* Unlock it, Ignore errors */
-		(void)flock(fd, LOCK_UN);
-	}
-
-	/* Lock */
-	else
-	{
-		/* Lock the score file */
-		if (flock(fd, LOCK_EX) != 0) return (1);
-	}
-
-#  endif /* defined(LOCK_UN) && defined(LOCK_EX) */
-
-# endif /* USG */
 
 #else /* SET_UID */
 
@@ -749,6 +686,11 @@ errr fd_seek(int fd, long n)
 }
 
 
+#ifndef SET_UID
+#define FILE_BUF_SIZE 16384
+#endif
+
+
 /*
  * Hack -- attempt to read data from a file descriptor
  */
@@ -760,16 +702,16 @@ errr fd_read(int fd, char *buf, size_t n)
 #ifndef SET_UID
 
 	/* Read pieces */
-	while (n >= 16384)
+	while (n >= FILE_BUF_SIZE)
 	{
 		/* Read a piece */
-		if (read(fd, buf, 16384) != 16384) return (1);
+		if (read(fd, buf, FILE_BUF_SIZE) != FILE_BUF_SIZE) return (1);
 
 		/* Shorten the task */
-		buf += 16384;
+		buf += FILE_BUF_SIZE;
 
 		/* Shorten the task */
-		n -= 16384;
+		n -= FILE_BUF_SIZE;
 	}
 
 #endif
@@ -793,16 +735,16 @@ errr fd_write(int fd, cptr buf, size_t n)
 #ifndef SET_UID
 
 	/* Write pieces */
-	while (n >= 16384)
+	while (n >= FILE_BUF_SIZE)
 	{
 		/* Write a piece */
-		if (write(fd, buf, 16384) != 16384) return (1);
+		if (write(fd, buf, FILE_BUF_SIZE) != FILE_BUF_SIZE) return (1);
 
 		/* Shorten the task */
-		buf += 16384;
+		buf += FILE_BUF_SIZE;
 
 		/* Shorten the task */
-		n -= 16384;
+		n -= FILE_BUF_SIZE;
 	}
 
 #endif
@@ -823,11 +765,8 @@ errr fd_close(int fd)
 	/* Verify the fd */
 	if (fd < 0) return (-1);
 
-	/* Close */
-	(void)close(fd);
-
-	/* Assume success XXX XXX XXX */
-	return (0);
+	/* Close, return 0 on success, -1 on failure */
+	return (close(fd));
 }
 
 
@@ -3120,12 +3059,6 @@ void message_flush(void)
 
 
 /*
- * Hack -- prevent "accidents" in "screen_save()" or "screen_load()"
- */
-static int screen_depth = 0;
-
-
-/*
  * Save the screen, and increase the "icky" depth.
  *
  * This function must match exactly one call to "screen_load()".
@@ -3136,7 +3069,7 @@ void screen_save(void)
 	message_flush();
 
 	/* Save the screen (if legal) */
-	if (screen_depth++ == 0) Term_save();
+	Term_save();
 
 	/* Increase "icky" depth */
 	character_icky++;
@@ -3154,7 +3087,7 @@ void screen_load(void)
 	message_flush();
 
 	/* Load the screen (if legal) */
-	if (--screen_depth == 0) Term_load();
+	Term_load();
 
 	/* Decrease "icky" depth */
 	character_icky--;
@@ -3512,11 +3445,13 @@ bool askfor_aux(char *buf, size_t len)
 {
 	int y, x;
 
-	size_t k = 0;
+	size_t k = 0;		/* Cursor position */
+	size_t nul = 0;		/* Position of the null byte in the string */
 
 	char ch = '\0';
 
 	bool done = FALSE;
+	bool firsttime = TRUE;
 
 
 	/* Locate the cursor */
@@ -3533,6 +3468,8 @@ bool askfor_aux(char *buf, size_t len)
 	/* Truncate the default entry */
 	buf[len-1] = '\0';
 
+	/* Get the position of the null byte */
+	nul = strlen(buf);
 
 	/* Display the default answer */
 	Term_erase(x, y, (int)len);
@@ -3565,33 +3502,100 @@ bool askfor_aux(char *buf, size_t len)
 				break;
 			}
 
+			case ARROW_LEFT:
+			{
+				if (firsttime) k = 0;
+				if (k > 0) k--;
+				break;
+			}
+
+			case ARROW_RIGHT:
+			{
+				if (firsttime) k = nul - 1;
+				if (k < nul) k++;
+				break;
+			}
+
 			case 0x7F:
 			case '\010':
 			{
-				if (k > 0) k--;
+				/* If this is the first time round, backspace means "delete all" */
+				if (firsttime)
+				{
+					buf[0] = '\0';
+					k = 0;
+					nul = 0;
+
+					break;
+				}
+
+				/* Refuse to backspace into oblivion */
+				if (k == 0) break;
+
+				/* Move the string from k to nul along to the left by 1 */
+				memmove(&buf[k-1], &buf[k], nul - k);
+
+				/* Decrement */
+				k--;
+				nul--;
+
+				/* Terminate */
+				buf[nul] = '\0';
+
 				break;
 			}
 
 			default:
 			{
-				if ((k < len-1) && (isprint((unsigned char)ch)))
+				bool atnull = (buf[k] == 0);
+
+
+				if (!isprint((unsigned char)ch))
 				{
-					buf[k++] = ch;
+					bell("Illegal edit key!");
+					break;
+				}
+
+				/* Clear the buffer if this is the first time round */
+				if (firsttime)
+				{
+					buf[0] = '\0';
+					k = 0;
+					nul = 0;
+					atnull = 1;
+				}
+
+				if (atnull)
+				{
+					/* Make sure we have enough room for a new character */
+					if ((k + 1) >= len) break;
 				}
 				else
 				{
-					bell("Illegal edit key!");
+					/* Make sure we have enough room to add a new character */
+					if ((nul + 1) >= len) break;
+
+					/* Move the rest of the buffer along to make room */
+					memmove(&buf[k+1], &buf[k], nul - k);
 				}
+
+				/* Insert the character */
+				buf[k++] = ch;
+				nul++;
+
+				/* Terminate */
+				buf[nul] = '\0';
+
 				break;
 			}
 		}
 
-		/* Terminate */
-		buf[k] = '\0';
-
 		/* Update the entry */
 		Term_erase(x, y, (int)len);
 		Term_putstr(x, y, -1, TERM_WHITE, buf);
+
+		/* Not the first time round anymore */
+		firsttime = FALSE;
 	}
 
 	/* Done */
@@ -3703,6 +3707,67 @@ s16b get_quantity(cptr prompt, int max)
 
 	/* Return the result */
 	return (amt);
+}
+
+/*
+ * Hack - duplication of get_check prompt to give option of setting destroyed
+ * option to squelch.
+ *
+ * 0 - No
+ * 1 = Yes
+ * 2 = third option
+ *
+ * The "prompt" should take the form "Query? "
+ *
+ * Note that "[y/n/{char}]" is appended to the prompt.
+ */
+int get_check_other(cptr prompt, char other)
+{
+	char ch;
+	char buf[80];
+
+	int result;
+
+	/* Paranoia XXX XXX XXX */
+	message_flush();
+
+	/* Hack -- Build a "useful" prompt */
+	strnfmt(buf, 78, "%.70s[y/n/%c] ", prompt, other);
+
+	/* Prompt for it */
+	prt(buf, 0, 0);
+
+	/* Get an acceptable answer */
+	while (TRUE)
+	{
+		ch = inkey();
+		if (quick_messages) break;
+		if (ch == ESCAPE) break;
+		if (strchr("YyNn", ch)) break;
+		if (ch == toupper(other)) break;
+		if (ch == tolower(other)) break;
+		bell("Illegal response to question!");
+	}
+
+	/* Erase the prompt */
+	prt("", 0, 0);
+
+
+	/* Yes */
+	if ((ch == 'Y') || (ch == 'y'))
+		result = 1;
+
+	/* Third option */
+	else if ((ch == toupper(other)) || (ch == tolower(other)))
+		result = 2;
+
+	/* Default to no */
+	else
+		result = 0;
+
+
+	/* Success */
+	return (result);
 }
 
 
@@ -3978,6 +4043,19 @@ void request_command(bool shopping)
 					/* Continue */
 					continue;
 				}
+			}
+		}
+
+
+		/* Special case for the arrow keys */
+		if (isarrow(ch))
+		{
+			switch (ch)
+			{
+				case ARROW_DOWN:    ch = '2'; break;
+				case ARROW_LEFT:    ch = '4'; break;
+				case ARROW_RIGHT:   ch = '6'; break;
+				case ARROW_UP:      ch = '8'; break;
 			}
 		}
 

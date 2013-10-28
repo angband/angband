@@ -8,7 +8,7 @@ AC_CONFIG_SRCDIR([src/main.c])
 dnl write the resulting #defines into a header file
 AM_CONFIG_HEADER(src/autoconf.h)
 
-AM_INIT_AUTOMAKE(angband, 3.0.6)
+AM_INIT_AUTOMAKE(angband, 3.0.7)
 
 AC_ARG_WITH(setgid,
 [  --with-setgid=NAME      install angband as group NAME],
@@ -195,5 +195,5 @@ AC_FUNC_STRFTIME
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS(gethostname mkdir select strstr strtol usleep mkstemp setegid can_change_color)
 
-AC_CONFIG_FILES([Makefile src/Makefile src/lua/Makefile lib/Makefile lib/apex/Makefile lib/bone/Makefile lib/data/Makefile lib/edit/Makefile lib/file/Makefile lib/help/Makefile lib/info/Makefile lib/pref/Makefile lib/save/Makefile lib/script/Makefile lib/user/Makefile lib/xtra/Makefile lib/xtra/font/Makefile])
+AC_CONFIG_FILES([Makefile src/Makefile lib/Makefile lib/apex/Makefile lib/bone/Makefile lib/data/Makefile lib/edit/Makefile lib/file/Makefile lib/help/Makefile lib/info/Makefile lib/pref/Makefile lib/save/Makefile lib/user/Makefile lib/xtra/Makefile lib/xtra/font/Makefile])
 AC_OUTPUT

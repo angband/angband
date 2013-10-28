@@ -16,7 +16,7 @@
 /*
  * Return a "feeling" (or NULL) about an item.  Method 1 (Heavy).
  */
-static int value_check_aux1(const object_type *o_ptr)
+int value_check_aux1(const object_type *o_ptr)
 {
 	/* Artifacts */
 	if (artifact_p(o_ptr))
@@ -124,6 +124,7 @@ static void sense_inventory(void)
 	/* Check everything */
 	for (i = 0; i < INVEN_TOTAL; i++)
 	{
+		int squelch = SQUELCH_NO;
 		bool okay = FALSE;
 
 		o_ptr = &inventory[i];
@@ -183,6 +184,10 @@ static void sense_inventory(void)
 		/* Skip non-feelings */
 		if (!feel) continue;
 
+		/* Squelch it? */
+		if (i < INVEN_WIELD)
+			squelch = squelch_item_ok(o_ptr, feel, FALSE);
+
 		/* Stop everything */
 		if (disturb_minor) disturb(0, 0);
 
@@ -203,10 +208,11 @@ static void sense_inventory(void)
 		/* Message (inventory) */
 		else
 		{
-			msg_format("You feel the %s (%c) in your pack %s %s...",
+			msg_format("You feel the %s (%c) in your pack %s %s... %s",
 			           o_name, index_to_label(i),
 			           ((o_ptr->number == 1) ? "is" : "are"),
-			           inscrip_text[feel - INSCRIP_NULL]);
+			           inscrip_text[feel - INSCRIP_NULL],
+					   squelch_to_label(squelch));
 		}
 
 		/* Sense the object */
@@ -214,6 +220,9 @@ static void sense_inventory(void)
 
 		/* The object has been "sensed" */
 		o_ptr->ident |= (IDENT_SENSE);
+
+		/* Squelch it if necessary */
+		squelch_item(squelch, i, o_ptr);
 
 
 		/* Combine / Reorder the pack (later) */
@@ -370,8 +379,9 @@ static void regen_monsters(void)
 /*
  * If player has inscribed the object with "!!", let him know when it's
  * recharged. -LM-
+ * Also inform player when first item of a stack has recharged. -HK-
  */
-static void recharged_notice(const object_type *o_ptr)
+static void recharged_notice(const object_type *o_ptr, bool all)
 {
 	char o_name[120];
 
@@ -392,9 +402,15 @@ static void recharged_notice(const object_type *o_ptr)
 			/* Describe (briefly) */
 			object_desc(o_name, sizeof(o_name), o_ptr, FALSE, 0);
 
+			/* Disturb the player */
+			if (disturb_minor) disturb(0, 0);
+
 			/* Notify the player */
 			if (o_ptr->number > 1)
-				msg_format("Your %s have recharged.", o_name);
+			{
+				if (all) msg_format("Your %s have recharged.", o_name);
+				else msg_format("One of your %s has recharged.", o_name);
+			}
 
 			/* Artifacts */
 			else if (o_ptr->name1)
@@ -448,7 +464,7 @@ static void recharge_objects(void)
 			if (!(o_ptr->timeout)) charged++;
 
 			/* Message if item is recharged, if inscribed with "!!" */
-			if (!(o_ptr->timeout)) recharged_notice(o_ptr);
+			if (!(o_ptr->timeout)) recharged_notice(o_ptr, TRUE);
 		}
 	}
 
@@ -491,8 +507,9 @@ static void recharge_objects(void)
 				charged++;
 
 				/* Message if whole stack is recharged, if inscribed with "!!" */
-				if (!(o_ptr->timeout)) recharged_notice(o_ptr);
-
+				if (!(o_ptr->timeout)) recharged_notice(o_ptr, TRUE);
+				/* Message if first in a stack is recharged, if inscribed with "!!" -HK- */
+				else if (temp == o_ptr->number) recharged_notice(o_ptr, FALSE);
 			}
 		}
 	}
@@ -1262,9 +1279,6 @@ static void process_command(void)
 
 #endif /* ALLOW_REPEAT */
 
-	/* Event -- process command */
-	if (process_command_hook(p_ptr->command_cmd)) return;
-
 	/* Parse the command */
 	switch (p_ptr->command_cmd)
 	{
@@ -1965,8 +1979,6 @@ static void process_player(void)
 {
 	int i;
 
-	/* Event -- Player turn */
-	player_turn_hook();
 
 	/*** Check for interrupts ***/
 
@@ -2716,6 +2728,8 @@ void play_game(bool new_game)
 	/* Hack -- Turn off the cursor */
 	(void)Term_set_cursor(FALSE);
 
+	/* Set screen resize hook */
+	Term_set_resize_hook(resize_map);
 
 	/* Attempt to load */
 	if (!load_player())
@@ -2877,16 +2891,6 @@ void play_game(bool new_game)
 	/* Hack -- Enforce "delayed death" */
 	if (p_ptr->chp < 0) p_ptr->is_dead = TRUE;
 
-	/* Call "start game" event handler */
-	if (new_game)
-	{
-		/* Event -- start game */
-		start_game_hook();
-
-		/* Event -- enter level */
-		enter_level_hook();
-	}
-
 	/* Process */
 	while (TRUE)
 	{
@@ -3001,14 +3005,8 @@ void play_game(bool new_game)
 		/* Handle "death" */
 		if (p_ptr->is_dead) break;
 
-		/* "Leaving level" event */
-		leave_level_hook();
-
 		/* Make a new level */
 		generate_cave();
-
-		/* "Entering level" event */
-		enter_level_hook();
 	}
 
 	/* Close stuff */

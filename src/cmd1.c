@@ -499,6 +499,14 @@ static bool auto_pickup_okay(const object_type *o_ptr)
 	/* It can't be carried */
 	if (!inven_carry_okay(o_ptr)) return (FALSE);
 
+	/* Object is marked to not pickup */
+	if ((k_info[o_ptr->k_idx].squelch == NO_SQUELCH_NEVER_PICKUP) &&
+		object_aware_p(o_ptr)) return (FALSE);
+
+	/* Object is marked to not pickup */
+	if ((k_info[o_ptr->k_idx].squelch == NO_SQUELCH_ALWAYS_PICKUP) &&
+		object_aware_p(o_ptr)) return (TRUE);
+
 	/* No inscription */
 	if (!o_ptr->note) return (FALSE);
 
@@ -575,10 +583,14 @@ void py_pickup(int pickup)
 	int can_pickup = 0;
 	int not_pickup = 0;
 
+	/* Automatically destroy squelched items in pile if necessary */
+	squelch_pile(py, px);
 
 	/* Scan the pile of objects */
 	for (this_o_idx = cave_o_idx[py][px]; this_o_idx; this_o_idx = next_o_idx)
 	{
+		bool do_not_pickup = FALSE;
+
 		/* Get the object */
 		o_ptr = &o_list[this_o_idx];
 
@@ -590,6 +602,23 @@ void py_pickup(int pickup)
 
 		/* Hack -- disturb */
 		disturb(0, 0);
+
+#if 0
+		/*
+		 * I'm pretty sure this chunk of code is pointless, because
+		 * squelch_pile() should already have removed anything that is both
+		 * known and SQUELCH_ALWAYS.  OTOH, I didn't write it, so I leave it
+		 * here just in case.  -AS-
+		 */
+
+		/* End loop if squelched stuff reached */
+		if ((k_info[o_ptr->k_idx].squelch == SQUELCH_ALWAYS) &&
+			(k_info[o_ptr->k_idx].aware))
+		{
+			next_o_idx = 0;
+			continue;
+		}
+#endif
 
 		/* Pick up gold */
 		if (o_ptr->tval == TV_GOLD)
@@ -619,6 +648,14 @@ void py_pickup(int pickup)
 			continue;
 		}
 
+		/*some items are marked to never pickup*/
+		if ((k_info[o_ptr->k_idx].squelch == NO_SQUELCH_NEVER_PICKUP)
+			&& object_aware_p(o_ptr))
+		{
+			do_not_pickup = TRUE;
+		}
+
+
 		/* Test for auto-pickup */
 		if (auto_pickup_okay(o_ptr))
 		{
@@ -630,7 +667,7 @@ void py_pickup(int pickup)
 		}
 
 		/* Easy Floor */
-		if (easy_floor)
+		if (easy_floor && !do_not_pickup)
 		{
 			/* Pickup if possible */
 			if (pickup && inven_carry_okay(o_ptr))
@@ -668,7 +705,7 @@ void py_pickup(int pickup)
 		}
 
 		/* Describe the object */
-		if (!pickup)
+		if (!pickup || do_not_pickup)
 		{
 			msg_format("You see %s.", o_name);
 

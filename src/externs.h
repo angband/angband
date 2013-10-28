@@ -211,6 +211,10 @@ extern char *g_text;
 extern flavor_type *flavor_info;
 extern char *flavor_name;
 extern char *flavor_text;
+extern spell_type *s_info;
+extern char *s_name;
+extern char *s_text;
+extern s16b spell_list[MAX_REALMS][BOOKS_PER_REALM][SPELLS_PER_BOOK];
 extern cptr ANGBAND_SYS;
 extern cptr ANGBAND_GRAF;
 extern cptr ANGBAND_DIR;
@@ -239,7 +243,11 @@ extern void (*text_out_hook)(byte a, cptr str);
 extern int text_out_wrap;
 extern int text_out_indent;
 extern bool use_transparency;
+extern autoinscription *inscriptions;
+extern u16b inscriptions_count;
 
+/* squelch.c */
+extern byte squelch_level[SQUELCH_BYTES];
 
 /*
  * Automatically generated "function declarations"
@@ -335,6 +343,7 @@ extern bool ang_sort_comp_hook(const void *u, const void *v, int a, int b);
 extern void ang_sort_swap_hook(void *u, void *v, int a, int b);
 
 /* cmd4.c */
+extern void resize_map(void);
 extern void do_cmd_redraw(void);
 extern void do_cmd_change_name(void);
 extern void do_cmd_message_one(void);
@@ -369,6 +378,7 @@ extern void do_cmd_activate(void);
 
 /* dungeon.c */
 extern void play_game(bool new_game);
+extern int value_check_aux1(const object_type *o_ptr);
 
 /* files.c */
 extern void html_screenshot(cptr name);
@@ -478,6 +488,7 @@ extern void show_inven(void);
 extern void show_equip(void);
 extern void show_floor(const int *floor_list, int floor_num);
 extern void toggle_inven_equip(void);
+extern bool verify_item(cptr prompt, int item);
 extern bool get_item(int *cp, cptr pmt, cptr str, int mode);
 
 /* object2.c */
@@ -532,7 +543,7 @@ extern void inven_drop(int item, int amt);
 extern void combine_pack(void);
 extern void reorder_pack(void);
 extern s16b spell_chance(int spell);
-extern bool spell_okay(int spell, bool known);
+extern bool spell_okay(int spell, bool known, bool browse);
 extern void print_spells(const byte *spells, int num, int y, int x);
 extern void display_koff(int k_idx);
 
@@ -583,6 +594,7 @@ extern bool detect_all(void);
 extern void stair_creation(void);
 extern bool enchant(object_type *o_ptr, int n, int eflag);
 extern bool enchant_spell(int num_hit, int num_dam, int num_ac);
+extern int do_ident_item(int item, object_type *o_ptr);
 extern bool ident_spell(void);
 extern bool identify_fully(void);
 extern bool recharge(int num);
@@ -637,6 +649,21 @@ extern bool brand_ammo(void);
 extern bool brand_bolts(void);
 extern void ring_of_power(int dir);
 
+/* squelch.c */
+int get_autoinscription_index(s16b k_idx);
+int apply_autoinscription(object_type *o_ptr);
+int remove_autoinscription(s16b kind);
+int add_autoinscription(s16b kind, cptr inscription);
+void autoinscribe_ground(void);
+void autoinscribe_pack(void);
+
+void squelch_init(void);
+int squelch_item_ok(object_type *o_ptr, byte feel, bool fullid);
+int squelch_item(int squelch, int item, object_type *o_ptr);
+void squelch_pile(int y, int x);
+const char *squelch_to_label(int squelch);
+void do_cmd_squelch_autoinsc(void);
+
 /* store.c */
 extern void do_cmd_store(void);
 extern void store_shuffle(int which);
@@ -653,7 +680,6 @@ extern errr my_fgets(FILE *fff, char *buf, size_t n);
 extern errr my_fputs(FILE *fff, cptr buf, size_t n);
 extern errr fd_kill(cptr file);
 extern errr fd_move(cptr file, cptr what);
-extern errr fd_copy(cptr file, cptr what);
 extern int fd_make(cptr file, int mode);
 extern int fd_open(cptr file, int flags);
 extern errr fd_lock(int fd, int what);
@@ -706,6 +732,7 @@ extern void clear_from(int row);
 extern bool askfor_aux(char *buf, size_t len);
 extern bool get_string(cptr prompt, char *buf, size_t len);
 extern s16b get_quantity(cptr prompt, int max);
+extern int get_check_other(cptr prompt, char other);
 extern bool get_check(cptr prompt);
 extern bool get_com(cptr prompt, char *command);
 extern void pause_line(int row);
@@ -841,3 +868,5 @@ extern void do_cmd_borg(void);
 extern void do_cmd_spoilers(void);
 
 #endif /* ALLOW_SPOILERS */
+
+extern void strip_name(char *buf, int k_idx);

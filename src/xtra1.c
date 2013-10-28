@@ -198,12 +198,29 @@ static void prt_level(int row, int col)
 static void prt_exp(int row, int col)
 {
 	char out_val[32];
+	cptr text = "EXP ";
 
-	sprintf(out_val, "%8ld", (long)p_ptr->exp);
+	if (next_xp)
+	{
+		long xp = (long)(player_exp[p_ptr->lev - 1] * p_ptr->expfact / 100L) - p_ptr->exp;
+
+		/* Level 50 is a special case */
+		if (p_ptr->lev == 50)
+			sprintf(out_val, "********");
+		else
+			sprintf(out_val, "%8ld", xp);
+
+		/* Change text */
+		text = "NXT ";
+	}
+	else
+	{
+		sprintf(out_val, "%8ld", (long)p_ptr->exp);
+	}
 
 	if (p_ptr->exp >= p_ptr->max_exp)
 	{
-		put_str("EXP ", row, col);
+		put_str(text, row, col);
 		c_put_str(TERM_L_GREEN, out_val, row, col + 4);
 	}
 	else
@@ -2732,9 +2749,6 @@ static void calc_bonuses(void)
 		p_ptr->window |= (PW_PLAYER_0 | PW_PLAYER_1);
 	}
 
-	/* Event -- Calc bonus */
-	player_calc_bonus_hook();
-
 	/* Hack -- handle "xtra" mode */
 	if (character_xtra) return;
 
@@ -2816,6 +2830,14 @@ void notice_stuff(void)
 	{
 		p_ptr->notice &= ~(PN_REORDER);
 		reorder_pack();
+	}
+
+	/* Deal with autoinscribe stuff */
+	if (p_ptr->notice & PN_AUTOINSCRIBE)
+	{
+		p_ptr->notice &= ~(PN_AUTOINSCRIBE);
+		autoinscribe_pack();
+		autoinscribe_ground();
 	}
 }
 
