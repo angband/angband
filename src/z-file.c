@@ -50,7 +50,7 @@
 
 #ifdef WINDOWS
 # define my_mkdir(path, perms) mkdir(path)
-#elif HAVE_MKDIR
+#elif HAVE_MKDIR || MACH_O_CARBON
 # define my_mkdir(path, perms) mkdir(path, perms)
 #else
 # define my_mkdir(path, perms) FALSE

@@ -463,9 +463,9 @@ s32b price_item(const object_type *o_ptr, bool store_buying, int qty)
 
 	/* Get the value of the stack of wands, or a single item */
 	if ((o_ptr->tval == TV_WAND) || (o_ptr->tval == TV_STAFF))
-		price = object_value(o_ptr, qty, TRUE);
+		price = object_value(o_ptr, qty, FALSE);
 	else
-		price = object_value(o_ptr, 1, TRUE);
+		price = object_value(o_ptr, 1, FALSE);
 
 	/* Worthless items */
 	if (price <= 0) return (0L);

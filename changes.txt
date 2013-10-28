@@ -1,8 +1,8 @@
-Angband 3.1.2
-=============
+Angband 3.1.2v2
+===============
 
 We, the Angband development team, are proud to present the latest iteration
-of the game, in the form of Angband 3.1.2.  Like other releases in the 3.1.x
+of the game, in the form of Angband 3.1.2v2.  Like other releases in the 3.1.x
 series, this is a beta, though it should be less buggy than other 3.1.x
 releases have been.  Doubtless there will be another release in a few weeks
 time fixing the bugs found herein, but in the meantime, play.
@@ -53,7 +53,7 @@ User interface
 
 New commands:
  - Center map (Ctrl-L)
- - Fire at nearest enemy with default ammo ('h') (#697)
+ - Fire at nearest enemy with default ammo ('h' / TAB in roguelike) (#697)
  - Target closest monster ("'") (#374)
 Make look/target command a lot more usable, with less stuff cluttering the screen and a '?' display a la the stores (#924, #927)
 Display shots modifiers on bows in the multiplier
@@ -86,6 +86,7 @@ List of bugs fixed
  #926 Restore artifact activations to character dumps
  #929 Avoid giving away unknown pvals in object descriptions
  #930 Fix prices of known objects with unknown pval
+ #931 Turn off writing the pricing log in all circumstances
  #933 Fix ID-by-use for AC bonuses
  #935 Check that the item exists before accessing it in resistance display
  #937 Quality squelch UI fixes
@@ -104,6 +105,7 @@ List of bugs fixed
  #989 When artifact creation fails, fallback to great items
  #990 Inven/equip windows keep weights closer to item names
  #994 Make {wielded} inscription change to {worn} as necessary for consistency
+#1105 Fix OS X directory creation bug
 #1010 Branding now IDs the item after branding
 #1011 Fix fail behaviour of gain-one-lose-one stat potions 
 #1013 Multiple brand/slays should only print one message and only print brand messages once
@@ -122,7 +124,11 @@ List of bugs fixed
 #1082 Don't print messages for squelched items dropped underfoot
 #1084 Fix gold generation bug
 #1089 Fix magic missile's visual effect
+#1099 Fixed the description of the Berserker spell 
+#1103 Unarmed attacks now allow the player to learn "notice on attack" things 
+#1107 Fixed typo bug display green in 16-color GCU mode 
 
+Fix the verb used when attacking monsters with slays/brands.
 Fix effect descriptions for unIDd food, potions and scrolls
 Describe brands on torches and flasks correctly (they do not brand melee attacks)
 Re-enable auto-stat-buying in the birth process
@@ -166,3 +172,4 @@ Improve the GCU port a bit:
  - fix ncurses-autoconf bug; fix gcu bg-color bug; add xterm-256color support
  - handle putty numpad (#796)
  - supports dynamic resizing (#368)
+ - fix colours from 3.1.2

@@ -238,13 +238,16 @@ static int get_brand_mult(object_type *o_ptr, const monster_type *m_ptr,
 			/* notice any brand or slay that would affect the monster */
 			object_notice_slays(o_ptr, s_ptr->slay_flag);
 
-			if (mult < s_ptr->mult)	mult = s_ptr->mult;
+			if (mult < s_ptr->mult)
+			{
+				mult = s_ptr->mult;
 
-			/* Set the hit verb appropriately */
-			if (is_ranged)
-				*hit_verb = s_ptr->range_verb;
-			else
-				*hit_verb = s_ptr->melee_verb;
+				/* Set the hit verb appropriately */
+				if (is_ranged)
+					*hit_verb = s_ptr->range_verb;
+				else
+					*hit_verb = s_ptr->melee_verb;
+			}
 		}
 	}
 
@@ -361,13 +364,15 @@ void py_attack(int y, int x)
 				k += o_ptr->to_d;
 				k = critical_norm(o_ptr->weight, o_ptr->to_h, k, &crit_msg);
 
-				/* Learn by use */
+				/* Learn by use for the weapon */
 				object_notice_attack_plusses(o_ptr);
-				wieldeds_notice_on_attack();
 
 				if (do_quake)
 					wieldeds_notice_flag(2, TR2_IMPACT);
 			}
+
+			/* Learn by use for other equipped items */
+			wieldeds_notice_on_attack();
 
 			/* Apply the player damage bonuses */
 			k += p_ptr->state.to_d;
