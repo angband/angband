@@ -103,15 +103,13 @@ void do_cmd_equip(void)
 /*
  * Wield or wear a single item from the pack or floor
  */
-void wield_item(object_type *o_ptr, int item)
+void wield_item(object_type *o_ptr, int item, int slot)
 {
 	object_type object_type_body;
 	object_type *i_ptr = &object_type_body;
 
 	cptr act;
 	char o_name[80];
-
-	int slot = wield_slot(o_ptr);
 
 	/* Take a turn */
 	p_ptr->energy_use = 100;
@@ -156,7 +154,7 @@ void wield_item(object_type *o_ptr, int item)
 	p_ptr->equip_cnt++;
 
 	/* Do any ID-on-wield */
-	object_id_on_wield(o_ptr);
+	object_notice_on_wield(o_ptr);
 
 	/* Where is the item now */
 	if (slot == INVEN_WIELD)
@@ -183,13 +181,7 @@ void wield_item(object_type *o_ptr, int item)
 		msg_print("Oops! It feels deathly cold!");
 
 		/* Sense the object */
-		o_ptr->pseudo = INSCRIP_CURSED;
-
-		/* The object has been "sensed" */
-		o_ptr->ident |= (IDENT_SENSE);
-
-		/* Set squelched status */
-		p_ptr->notice |= PN_SQUELCH;
+		object_notice_curses(o_ptr);
 	}
 
 	/* Recalculate bonuses, torch, mana */
@@ -202,97 +194,51 @@ void wield_item(object_type *o_ptr, int item)
 /*
  * Destroy an item
  */
-void do_cmd_destroy(void)
+void do_cmd_destroy(cmd_code code, cmd_arg args[])
 {
 	int item, amt;
 
 	object_type *o_ptr;
 
-	object_type *i_ptr;
-	object_type object_type_body;
+	object_type destroyed_obj;
 
 	char o_name[120];
-	char out_val[160];
 
-	cptr q, s;
+	item = args[0].item;
+	amt = args[1].number;
 
-	/* Get an item */
-	q = "Destroy which item? ";
-	s = "You have nothing to destroy.";
-	if (!get_item(&item, q, s, (USE_INVEN | USE_EQUIP | USE_FLOOR | CAN_SQUELCH))) return;
-
-	/* Deal with squelched items */
+	/* Destroying squelched items is easy. */
 	if (item == ALL_SQUELCHED)
 	{
 		squelch_items();
 		return;
 	}
 
-	/* Get the item (in the pack) */
-	if (item >= 0)
+	if (!item_is_available(item, NULL, USE_INVEN | USE_EQUIP | USE_FLOOR))
 	{
-		o_ptr = &inventory[item];
+		msg_print("You do not have that item to destroy it.");
+		return;
 	}
 
-	/* Get the item (on the floor) */
-	else
+	o_ptr = object_from_item_idx(item);
+
+	/* Can't destroy cursed items we're wielding. */
+	if ((item >= INVEN_WIELD) && cursed_p(o_ptr))
 	{
-		o_ptr = &o_list[0 - item];
-	}
+		msg_print("You cannot destroy the cursed item.");
+		return;
+	}	
 
-	/* Get a quantity */
-	amt = get_quantity(NULL, o_ptr->number);
-
-	/* Allow user abort */
-	if (amt <= 0) return;
-
-	/* Get local object */
-	i_ptr = &object_type_body;
-
-	/* Obtain a local object */
-	object_copy(i_ptr, o_ptr);
-
-	if ((o_ptr->tval == TV_WAND) ||
-	    (o_ptr->tval == TV_STAFF) ||
-	    (o_ptr->tval == TV_ROD))
-	{
-		/* Calculate the amount of destroyed charges */
-		i_ptr->pval = o_ptr->pval * amt / o_ptr->number;
-	}
-
-	/* Set quantity */
-	i_ptr->number = amt;
-
-	/* Describe the destroyed object */
-	object_desc(o_name, sizeof(o_name), i_ptr, TRUE, ODESC_FULL);
-
-	/* Verify destruction */
-	strnfmt(out_val, sizeof(out_val), "Really destroy %s? ", o_name);
-	if (!get_check(out_val)) return;
+	/* Describe the destroyed object by taking a copy with the right "amt" */
+	object_copy_amt(&destroyed_obj, o_ptr, amt);
+	object_desc(o_name, sizeof(o_name), &destroyed_obj, TRUE, ODESC_FULL);
 
 	/* Artifacts cannot be destroyed */
 	if (artifact_p(o_ptr))
 	{
 		/* Message */
 		msg_format("You cannot destroy %s.", o_name);
-
-		/* Don't mark id'ed objects */
-		if (object_known_p(o_ptr)) return;
-
-		/* It has already been sensed */
-		if (o_ptr->ident & (IDENT_SENSE))
-		{
-			/* Already sensed objects always get improved feelings */
-			if (cursed_p(o_ptr))
-				o_ptr->pseudo = INSCRIP_TERRIBLE;
-			else
-				o_ptr->pseudo = INSCRIP_SPECIAL;
-		}
-		else
-		{
-			/* Mark the object as indestructible */
-			o_ptr->pseudo = INSCRIP_INDESTRUCTIBLE;
-		}
+		object_notice_indestructible(o_ptr);
 
 		/* Combine the pack */
 		p_ptr->notice |= (PN_COMBINE);
@@ -325,25 +271,58 @@ void do_cmd_destroy(void)
 		floor_item_describe(0 - item);
 		floor_item_optimize(0 - item);
 	}
-
-#if 0
-	/*
-	 * We can only re-enable this when it can be made to interact well with
-	 * the repeat code.
-	 */
-
-	/* We have destroyed a floor item, and the floor is not empty */
-	if ((item < 0) && (cave_o_idx[p_ptr->py][p_ptr->px]))
-	{
-		/* Automatically repeat this command (unless disturbed) */
-		p_ptr->command_cmd = 'k';
-		p_ptr->command_rep = 2;
-	}
-#endif
 }
 
 
+void textui_cmd_destroy(void)
+{
+	int item, amt;
 
+	object_type *o_ptr;
+
+	object_type obj_to_destroy;
+
+	char o_name[120];
+	char out_val[160];
+
+	cptr q, s;
+
+	/* Get an item */
+	q = "Destroy which item? ";
+	s = "You have nothing to destroy.";
+	if (!get_item(&item, q, s, (USE_INVEN | USE_EQUIP | USE_FLOOR | CAN_SQUELCH))) return;
+
+	/* Deal with squelched items */
+	if (item == ALL_SQUELCHED)
+	{
+		cmd_insert(CMD_DESTROY, item, 0);
+		return;
+	}
+	
+	o_ptr = object_from_item_idx(item);
+
+	/* Ask if player would prefer squelching instead of destruction */
+	if (squelch_interactive(o_ptr))
+	{
+		p_ptr->notice |= PN_SQUELCH;
+		return;
+	}
+
+	/* Get a quantity */
+	amt = get_quantity(NULL, o_ptr->number);
+	if (amt <= 0) return;
+
+	/* Describe the destroyed object by taking a copy with the right "amt" */
+	object_copy_amt(&obj_to_destroy, o_ptr, amt);
+	object_desc(o_name, sizeof(o_name), &obj_to_destroy, TRUE, ODESC_FULL);
+
+	/* Verify destruction */
+	strnfmt(out_val, sizeof(out_val), "Really destroy %s? ", o_name);
+	if (!get_check(out_val)) return;
+
+	/* Tell the game to destroy the item. */
+	cmd_insert(CMD_DESTROY, item, amt);
+}
 
 void refill_lamp(object_type *j_ptr, object_type *o_ptr, int item)
 {
@@ -558,7 +537,7 @@ void do_cmd_locate(void)
 		        (y2 / PANEL_HGT), (x2 / PANEL_WID), tmp_val);
 
 		/* More detail */
-		if (center_player)
+		if (OPT(center_player))
 		{
 			strnfmt(out_val, sizeof(out_val),
 		        	"Map sector [%d(%02d),%d(%02d)], which is%s your sector.  Direction?",
@@ -836,7 +815,7 @@ void do_cmd_query_symbol(void)
 
 
 	/* Get a character, or abort */
-	if (!get_com("Enter character to be identified: ", &sym)) return;
+	if (!get_com("Enter character to be identified, or control+[ANU]: ", &sym)) return;
 
 	/* Find that character info, and describe it */
 	for (i = 0; ident_info[i]; ++i)
@@ -883,7 +862,7 @@ void do_cmd_query_symbol(void)
 		monster_lore *l_ptr = &l_list[i];
 
 		/* Nothing to recall */
-		if (!cheat_know && !l_ptr->sights) continue;
+		if (!OPT(cheat_know) && !l_ptr->sights) continue;
 
 		/* Require non-unique monsters if needed */
 		if (norm && (r_ptr->flags[0] & (RF0_UNIQUE))) continue;

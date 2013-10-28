@@ -67,20 +67,20 @@
 
 /* Allocate, and return, an array of type T[N] */
 #define C_RNEW(N, T) \
-	(mem_alloc((N) * sizeof(T)))
+	(T*)(mem_alloc((N) * sizeof(T)))
 
 /* Allocate, and return, a thing of type T */
 #define RNEW(T) \
-	(mem_alloc(sizeof(T)))
+	(T*)(mem_alloc(sizeof(T)))
 
 
 /* Allocate, wipe, and return an array of type T[N] */
 #define C_ZNEW(N, T) \
-	(C_WIPE(C_RNEW(N, T), N, T))
+	(T*)(C_WIPE(C_RNEW(N, T), N, T))
 
 /* Allocate, wipe, and return a thing of type T */
 #define ZNEW(T) \
-	(WIPE(RNEW(T), T))
+	(T*)(WIPE(RNEW(T), T))
 
 
 /* Free one thing at P, return NULL */

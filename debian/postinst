@@ -1,0 +1,261 @@
+#! /bin/sh
+#                           -*- Mode: Sh -*- 
+# postinst --- 
+# Author           : Manoj Srivastava ( srivasta@glaurung.green-gryphon.com ) 
+# Created On       : Fri Nov 14 11:25:07 2003
+# Created On Node  : glaurung.green-gryphon.com
+# Last Modified By : Manoj Srivastava
+# Last Modified On : Wed Jun 14 15:19:41 2006
+# Last Machine Used: glaurung.internal.golden-gryphon.com
+# Update Count     : 15
+# Status           : Unknown, Use with caution!
+# HISTORY          : 
+# Description      : 
+# 
+# arch-tag: 5401e9ef-39cc-4aee-96a4-61dfb8f32cf7
+#  
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+# 
+
+# Abort if any command returns an error value
+set -e
+
+package_name=angband
+
+if [ -z "$package_name" ]; then
+    print >&2 "Internal Error. Please report a bug."
+    exit 1;
+fi
+
+# This script is called as the last step of the installation of the
+# package.  All the package's files are in place, dpkg has already done
+# its automatic conffile handling, and all the packages we depend of
+# are already fully installed and configured.
+# summary of how this script can be called:
+#        * <postinst> `configure' <most-recently-configured-version>
+#        * <old-postinst> `abort-upgrade' <new version>
+#        * <conflictor's-postinst> `abort-remove' `in-favour' <package>
+#          <new-version>
+#        * <deconfigured's-postinst> `abort-deconfigure' `in-favour'
+#          <failed-install-package> <version> `removing'
+#          <conflicting-package> <version>
+# for details, see http://www.debian.org/doc/debian-policy/ or
+# the debian-policy package
+#
+# quoting from the policy:
+#     Any necessary prompting should almost always be confined to the
+#     post-installation script, and should be protected with a conditional
+#     so that unnecessary prompting doesn't happen if a package's
+#     installation fails and the `postinst' is called with `abort-upgrade',
+#     `abort-remove' or `abort-deconfigure'.
+
+# The following idempotent stuff doesn't generally need protecting
+# against being run in the abort-* cases.
+
+# Install info files into the dir file
+##: install-info --quiet --section "section pattern" "Section Title" \
+##:              --description="Name of the document" /usr/info/${package_name}.info
+
+# Create stub directories under /usr/local
+##: if test ! -d /usr/local/lib/${package_name}; then
+##:   if test ! -d /usr/local/lib; then
+##:     if mkdir /usr/local/lib; then
+##:       chown root.staff /usr/local/lib || true
+##:       chmod 2775 /usr/local/lib || true
+##:     fi
+##:   fi
+##:   if mkdir /usr/local/lib/${package_name}; then
+##:     chown root.staff /usr/local/lib/${package_name} || true
+##:     chmod 2775 /usr/local/lib/${package_name} || true
+##:   fi
+##: fi
+
+# Ensure the menu system is updated
+[ ! -x /usr/bin/update-menus ] || /usr/bin/update-menus
+
+# Arrange for a daemon to be started at system boot time
+##: update-rc.d ${package_name} default >/dev/null
+
+case "$1" in
+  configure)
+    # Configure this package.  If the package must prompt the user for
+    # information, do it here.
+    # Install emacs lisp files
+    ##:if [ -x  /usr/lib/emacsen-common/emacs-package-install ]; then
+    ##:    /usr/lib/emacsen-common/emacs-package-install $package_name
+    ##:fi
+
+
+    # Activate menu-methods script
+    ##: chmod a+x /etc/menu-methods/${package_name}
+
+    # Update ld.so cache
+    ##: ldconfig
+
+    # Make our version of a program available
+    ##: update-alternatives \
+    ##:       --install /usr/bin/program program /usr/bin/alternative 50 \
+    ##:       --slave /usr/man/man1/program.1.gz program.1.gz \
+    ##:               /usr/man/man1/alternative.1.gz
+
+    # Tell ucf that the file in /usr/share/foo is the latest
+    # maintainer version, and let it handle how to manage the real
+    # confuguration file in /etc. This is how a static configuration
+    # file can be handled:
+    ##:if which ucf >/dev/null 2>&1; then
+    ##:  ucf /usr/share/${package_name}/configuration /etc/${package_name}.conf
+    ##:fi
+
+    ### We could also do this on the fly. The following is from Tore
+    ### Anderson:
+    
+    #. /usr/share/debconf/confmodule
+
+    ### find out what the user answered.
+    #  db_get foo/run_on_boot
+    #  run_on_boot=$RET
+    #  db_stop
+
+    ### safely create a temporary file to generate our suggested
+    ### configuration file.
+    #    tempfile=`tempfile`
+    #    cat << _eof > $tempfile
+    ### Configuration file for Foo.
+
+    ### this was answered by you, the user in a debconf dialogue
+    #  RUNONBOOT=$run_on_boot
+
+    ### this was not, as it has a sane default value.
+    #  COLOUROFSKY=blue
+
+    #_eof
+
+    ### Note that some versions of debconf do not release stdin, so
+    ### the following invocation of ucf may not work, since the stdin
+    ### is never coneected to ucfr.
+
+    ### now, invoke ucf, which will take care of the rest, and ask
+    ### the user if he wants to update his file, if it is modified.
+    #ucf $tempfile /etc/foo.conf
+
+    ### done! now we'll just clear up our cruft.
+    #rm -f $tempfile
+
+        # clean up old cruft
+    if [ -d /var/lib/games/angband ]; then
+        rm -rf /var/lib/games/angband
+    fi
+
+    # Try and update the raw info files
+    for file in /var/games/angband/edit/*.txt; do
+	base_file=$(basename $file .txt);
+	cp -f $file /var/games/angband/data/${base_file}.raw;
+    done
+
+    if [ ! -e /var/lib/games/angband/apex/scores.raw ]; then
+	touch /var/games/angband/apex/scores.old
+    fi
+
+    if [ -d /var/lib/games/angband/save ]; then
+	for file in $(find /var/lib/games/angband/save/ -type f); do
+	    if [ ! -f $file ]; then
+		continue;
+	    fi
+	    base=$(basename $file)
+	    if [ "X$base" = "Xdelete.me" ]; then
+		continue;
+	    fi
+	    if [ -s /var/games/angband/save/$base ]; then
+		mv -f $file /var/games/angband/save/$base.old
+	    else
+		mv -f $file /var/games/angband/save/$base
+	    fi
+	done
+    fi
+
+    # create a scores file if none exists
+    touch /var/games/angband/apex/scores.raw
+
+    # Clean up ownership
+    chown -R root:games /var/games/angband/
+
+    # Make sure the game can write the files it needs to write to
+    chmod -R g+w /var/games/angband/data
+    chmod -R g+w /var/games/angband/user
+    chmod -R g+w /var/games/angband/bone
+    chmod -R g+w /var/games/angband/save
+    chmod -R g+w /var/games/angband/apex
+
+ 
+    # There are three sub-cases:
+    if test "${2+set}" != set; then
+      # We're being installed by an ancient dpkg which doesn't remember
+      # which version was most recently configured, or even whether
+      # there is a most recently configured version.
+      :
+
+    elif test -z "$2" || test "$2" = "<unknown>"; then
+      # The package has not ever been configured on this system, or was
+      # purged since it was last configured.
+      :
+
+    else
+      # Version $2 is the most recently configured version of this
+      # package.
+      :
+
+    fi ;;
+  abort-upgrade)
+    # Back out of an attempt to upgrade this package FROM THIS VERSION
+    # to version $2.  Undo the effects of "prerm upgrade $2".
+    :
+
+    ;;
+  abort-remove)
+    if test "$2" != in-favour; then
+      echo "$0: undocumented call to \`postinst $*'" 1>&2
+      exit 0
+    fi
+    # Back out of an attempt to remove this package, which was due to
+    # a conflict with package $3 (version $4).  Undo the effects of
+    # "prerm remove in-favour $3 $4".
+    :
+
+    ;;
+  abort-deconfigure)
+    if test "$2" != in-favour || test  "$5" != removing; then
+      echo "$0: undocumented call to \`postinst $*'" 1>&2
+      exit 0
+    fi
+    # Back out of an attempt to deconfigure this package, which was
+    # due to package $6 (version $7) which we depend on being removed
+    # to make way for package $3 (version $4).  Undo the effects of
+    # "prerm deconfigure in-favour $3 $4 removing $6 $7".
+    :
+
+    ;;
+  *) echo "$0: didn't understand being called with \`$1'" 1>&2
+     exit 0;;
+esac
+
+# Install doc base documentation
+##:if which install-docs >/dev/null 2>&1; then
+##:  if [ -e /usr/share/doc-base/${package_name} ]; then
+##:    install-docs -i /usr/share/doc-base/${package_name}
+##:  fi
+##:fi
+
+exit 0

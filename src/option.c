@@ -149,7 +149,7 @@ static option_entry options[OPT_MAX] =
 { NULL,                  NULL,                                          FALSE }, /* 12 */
 { NULL,                  NULL,                                          FALSE }, /* 13 */
 { "ring_bell",           "Audible bell (on errors, etc)",               TRUE },  /* 14 */
-{ "show_flavors",        "Show flavors in object descriptions",         TRUE },  /* 15 */
+{ "show_flavors",        "Show flavors in object descriptions",         FALSE },  /* 15 */
 { NULL,                  NULL,                                          FALSE }, /* 16 */
 { NULL,                  NULL,                                          FALSE }, /* 17 */
 { NULL,                  NULL,                                          FALSE }, /* 18 */
@@ -262,8 +262,8 @@ static option_entry options[OPT_MAX] =
 { NULL,                  NULL,                                          FALSE }, /* 125 */
 { NULL,                  NULL,                                          FALSE }, /* 126 */
 { NULL,                  NULL,                                          FALSE }, /* 127 */
-{ "birth_maximize",      "Maximize effect of race/class bonuses",       TRUE },  /* 128 */
-{ "birth_randarts",      "Randomize some of the artifacts (alpha)",     FALSE }, /* 129 */
+{ "birth_maximize",      "Maximise effect of race/class bonuses",       TRUE },  /* 128 */
+{ "birth_randarts",      "Randomise the artifacts (except a very few)", FALSE }, /* 129 */
 { "birth_money",         "Start with more money instead of equipment",  FALSE }, /* 130 */
 { "birth_ironman",       "Restrict the use of stairs/recall",           FALSE }, /* 131 */
 { "birth_no_stores",     "Restrict the use of stores/home",             FALSE }, /* 132 */

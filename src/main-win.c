@@ -653,7 +653,7 @@ static const byte special_key_list[] =
 };
 
 #include "cmds.h"
-#include "game-cmd.h"
+#include "textui.h"
 
 static game_command cmd = { CMD_NULL, 0, { NULL } };
 
@@ -993,6 +993,9 @@ static void load_prefs(void)
 
 	/* Extract the "arg_wizard" flag */
 	arg_wizard = (GetPrivateProfileInt("Angband", "Wizard", 0, ini_file) != 0);
+
+	/* Extract the "arg_rebalance" flag */
+	arg_rebalance = (GetPrivateProfileInt("Angband", "Rebalance", FALSE, ini_file) != 0);
 
 #ifdef SUPPORT_GAMMA
 
@@ -1476,7 +1479,7 @@ static errr term_force_font(term_data *td, cptr path)
 	if (!AddFontResource(buf)) return (1);
 
 	/* Notify other applications that a new font is available  XXX */
-	SendMessage(HWND_BROADCAST, WM_FONTCHANGE, 0, 0);
+	PostMessage(HWND_BROADCAST, WM_FONTCHANGE, 0, 0);
 
 	/* Save new font name */
 	td->font_file = string_make(base);
@@ -1723,13 +1726,13 @@ static errr Term_xtra_win_react(void)
 #ifdef USE_SOUND
 
 	/* Initialize sound (if needed) */
-	if (use_sound && !init_sound())
+	if (OPT(use_sound) && !init_sound())
 	{
 		/* Warning */
 		plog("Cannot initialize sound!");
 
 		/* Cannot enable */
-		use_sound = FALSE;
+		OPT(use_sound) = FALSE;
 	}
 
 #endif /* USE_SOUND */
@@ -3061,16 +3064,16 @@ static void start_screensaver(void)
 	p_ptr->noscore |= (NOSCORE_BORG);
 
 	/*
-	 * Make sure the "cheat_live" option is set, so that the Borg can
+	 * Make sure the "OPT(cheat_live)" option is set, so that the Borg can
 	 * automatically restart.
 	 */
 	screensaver_inkey_hack_buffer[j++] = '5'; /* Cheat options */
 
 	/* Cursor down to "cheat live" */
-	for (i = 0; i < OPT_cheat_live - OPT_CHEAT; i++)
+	for (i = 0; i < OPT_OPT(cheat_live) - OPT_CHEAT; i++)
 		screensaver_inkey_hack_buffer[j++] = '2';
 
-	screensaver_inkey_hack_buffer[j++] = 'y'; /* Switch on "cheat_live" */
+	screensaver_inkey_hack_buffer[j++] = 'y'; /* Switch on "OPT(cheat_live)" */
 	screensaver_inkey_hack_buffer[j++] = ESCAPE; /* Leave cheat options */
 	screensaver_inkey_hack_buffer[j++] = ESCAPE; /* Leave options */
 
@@ -3187,7 +3190,7 @@ static void process_menus(WORD wCmd)
 				msg_flag = FALSE;
 
 				/* Save the game */
-				do_cmd_save_game();
+				save_game();
 			}
 			else
 			{
@@ -3213,7 +3216,7 @@ static void process_menus(WORD wCmd)
 				msg_flag = FALSE;
 
 				/* Save the game */
-				do_cmd_save_game();
+				save_game();
 			}
 			quit(NULL);
 			break;
@@ -3874,7 +3877,7 @@ static LRESULT FAR PASCAL AngbandWndProc(HWND hWnd, UINT uMsg,
 				msg_flag = FALSE;
 
 				/* Save the game */
-				do_cmd_save_game();
+				save_game();
 			}
 			quit(NULL);
 			return 0;
@@ -4532,7 +4535,7 @@ static void hook_quit(cptr str)
 }
 
 
-static game_command get_init_cmd()
+static errr get_init_cmd()
 {
 	MSG msg;
 
@@ -4550,9 +4553,21 @@ static game_command get_init_cmd()
 	/* Bit of a hack, we'll do this when we leave the INIT context in future. */
 	game_in_progress = TRUE;
 
-	return cmd;
+	/* Push command into the queue. */
+	cmd_insert_s(&cmd);
+
+	/* Everything's OK. */
+	return 0;
 }
 
+/* Command dispatcher for windows build */
+static errr win_get_cmd(cmd_context context, bool wait)
+{
+	if (context == CMD_INIT) 
+		return get_init_cmd();
+	else 
+		return textui_get_cmd(context, wait);
+}
 
 
 /*** Initialize ***/
@@ -4861,7 +4876,7 @@ int FAR PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrevInst,
 	check_for_save_file(lpCmdLine);
 
 	/* Set command hook */
-	get_game_command = get_init_cmd;
+	cmd_get_hook = win_get_cmd;
 
 	/* Set up the display handlers and things. */
 	init_display();

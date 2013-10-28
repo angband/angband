@@ -18,7 +18,8 @@
 #include "angband.h"
 #include "randname.h"
 #include "tvalsval.h"
-
+#include "effects.h"
+#include "game-cmd.h"
 
 /*
  * Hold the titles of scrolls, 6 to 14 characters each.
@@ -315,50 +316,59 @@ void reset_visuals(bool unused)
 /*
  * Obtain the "flags" for an item
  */
-void object_flags(const object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3)
+void object_flags(const object_type *o_ptr, u32b flags[OBJ_FLAG_N])
 {
 	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 
-	(*f1) = k_ptr->flags1;
-	(*f2) = k_ptr->flags2;
-	(*f3) = k_ptr->flags3;
+	flags[0] = k_ptr->flags[0];
+	flags[1] = k_ptr->flags[1];
+	flags[2] = (k_ptr->flags[2] & ~TR2_CURSE_MASK);
 
 	if (o_ptr->name1)
 	{
 		artifact_type *a_ptr = &a_info[o_ptr->name1];
 
-		(*f1) = a_ptr->flags1;
-		(*f2) = a_ptr->flags2;
-		(*f3) = a_ptr->flags3;
+		flags[0] = a_ptr->flags[0];
+		flags[1] = a_ptr->flags[1];
+		flags[2] = (a_ptr->flags[2] & ~TR2_CURSE_MASK);
 	}
 
 	if (o_ptr->name2)
 	{
 		ego_item_type *e_ptr = &e_info[o_ptr->name2];
 
-		(*f1) |= e_ptr->flags1;
-		(*f2) |= e_ptr->flags2;
-		(*f3) |= e_ptr->flags3;
+		flags[0] |= e_ptr->flags[0];
+		flags[1] |= e_ptr->flags[1];
+		flags[2] |= (e_ptr->flags[2] & ~TR2_CURSE_MASK);
 	}
 
-	(*f1) |= o_ptr->flags1;
-	(*f2) |= o_ptr->flags2;
-	(*f3) |= o_ptr->flags3;
+	flags[0] |= o_ptr->flags[0];
+	flags[1] |= o_ptr->flags[1];
+	flags[2] |= o_ptr->flags[2];
 }
 
 
 /*
  * Obtain the "flags" for an item which are known to the player
  */
-void object_flags_known(const object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3)
+void object_flags_known(const object_type *o_ptr, u32b flags[])
 {
-	if (!object_known_p(o_ptr))
+	u32b f[OBJ_FLAG_N];
+	int i;
+	bool aware = object_flavor_is_aware(o_ptr);
+	bool easy_know = (object_kind_of(o_ptr)->flags[2] & TR2_EASY_KNOW);
+
+	object_flags(o_ptr, f);
+
+	for (i = 0; i < OBJ_FLAG_N; i++)
 	{
-		(*f1) = (*f2) = (*f3) = 0L;
-		return;
+		flags[i] = o_ptr->known_flags[i] & f[i];
+		if (aware)
+			flags[i] |= k_info[o_ptr->k_idx].flags[i];
+		if (o_ptr->name2 && easy_know)
+			flags[i] |= e_info[o_ptr->name2].flags[i];
 	}
 
-	object_flags(o_ptr, f1, f2, f3);
 }
 
 
@@ -461,7 +471,6 @@ bool wearable_p(const object_type *o_ptr)
 	return (FALSE);
 }
 
-
 /*
  * Determine which equipment slot (if any) an item likes
  */
@@ -538,6 +547,23 @@ s16b wield_slot(const object_type *o_ptr)
 
 	/* No slot available */
 	return (-1);
+}
+
+
+/*
+ * \returns whether item o_ptr will fit in slot 'slot'
+ */
+bool slot_can_wield_item(int slot, const object_type *o_ptr)
+{
+	/* XXX This is nasty, but is there a better way? */
+	if (o_ptr->tval == TV_RING &&
+			(slot == INVEN_LEFT || slot == INVEN_RIGHT))
+		return TRUE;
+
+	if (wield_slot(o_ptr) == slot)
+		return TRUE;
+	else
+		return FALSE;
 }
 
 
@@ -1160,11 +1186,13 @@ void wipe_o_list(void)
 		if (!o_ptr->k_idx) continue;
 
 		/* Preserve artifacts */
-		if (!character_dungeon || !adult_no_preserve)
+		if (!character_dungeon || !OPT(adult_no_preserve))
 		{
+			artifact_type *a_ptr = artifact_of(o_ptr);
+
 			/* Preserve only unknown artifacts */
-			if (artifact_p(o_ptr) && !object_known_p(o_ptr))
-				a_info[o_ptr->name1].cur_num = 0;
+			if (a_ptr && !a_ptr->seen)
+				a_ptr->created = FALSE;
 		}
 
 		/* Mark artifacts as lost in logs */
@@ -1294,13 +1322,13 @@ object_type *get_next_object(const object_type *o_ptr)
  */
 bool is_blessed(const object_type *o_ptr)
 {
-	u32b f1, f2, f3;
+	u32b f[OBJ_FLAG_N];
 
 	/* Get the flags */
-	object_flags(o_ptr, &f1, &f2, &f3);
+	object_flags(o_ptr, f);
 
 	/* Is the object blessed? */
-	return ((f3 & TR3_BLESSED) ? TRUE : FALSE);
+	return ((f[2] & TR2_BLESSED) ? TRUE : FALSE);
 }
 
 
@@ -1314,38 +1342,29 @@ static s32b object_value_base(const object_type *o_ptr)
 	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 
 	/* Use template cost for aware objects */
-	if (object_aware_p(o_ptr)) return (k_ptr->cost);
+	if (object_flavor_is_aware(o_ptr) || o_ptr->ident & IDENT_STORE)
+		return k_ptr->cost;
 
 	/* Analyze the type */
 	switch (o_ptr->tval)
 	{
-		/* Un-aware Food */
-		case TV_FOOD: return (5L);
-
-		/* Un-aware Potions */
-		case TV_POTION: return (20L);
-
-		/* Un-aware Scrolls */
-		case TV_SCROLL: return (20L);
-
-		/* Un-aware Staffs */
-		case TV_STAFF: return (70L);
-
-		/* Un-aware Wands */
-		case TV_WAND: return (50L);
-
-		/* Un-aware Rods */
-		case TV_ROD: return (90L);
-
-		/* Un-aware Rings */
-		case TV_RING: return (45L);
-
-		/* Un-aware Amulets */
-		case TV_AMULET: return (45L);
+		case TV_FOOD:
+			return 5;
+		case TV_POTION:
+		case TV_SCROLL:
+			return 20;
+		case TV_RING:
+		case TV_AMULET:
+			return 45;
+		case TV_WAND:
+			return 50;
+		case TV_STAFF:
+			return 70;
+		case TV_ROD:
+			return 90;
 	}
 
-	/* Paranoia -- Oops */
-	return (0L);
+	return 0;
 }
 
 
@@ -1354,29 +1373,68 @@ static s32b object_value_base(const object_type *o_ptr)
  *
  * Wand and staffs get cost for each charge.
  *
- * Armor is worth an extra 100 gold per bonus point to armor class.
- *
- * Weapons are worth an extra 100 gold per bonus point (AC,TH,TD).
- *
- * Missiles are only worth 5 gold per bonus point, since they
- * usually appear in groups of 20, and we want the player to get
- * the same amount of cash for any "equivalent" item.  Note that
- * missiles never have any of the "pval" flags, and in fact, they
- * only have a few of the available flags, primarily of the "slay"
- * and "brand" and "ignore" variety.
- *
- * Weapons with negative hit+damage bonuses are worthless.
- *
- * Every wearable item with a "pval" bonus is worth extra (see below).
+ * Wearable items (weapons, launchers, jewelry, lights, armour) and ammo
+ * are priced according to their power rating. All ammo, and normal (non-ego)
+ * torches are scaled down by AMMO_RESCALER to reflect their impermanence.
  */
-static s32b object_value_real(const object_type *o_ptr, int qty)
+static s32b object_value_real(const object_type *o_ptr, int qty, int verbose)
 {
 	s32b value, total_value;
 
-	u32b f1, f2, f3;
+	u32b f[OBJ_FLAG_N];
 
 	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 
+	s32b power;
+	int a = 2;
+	int b = 1;
+	static file_mode pricing_mode = MODE_WRITE;
+
+	if (wearable_p(o_ptr))
+	{
+ 		char buf[1024];
+		ang_file *log_file = NULL;
+
+		if (verbose)
+		{                
+			path_build(buf, sizeof(buf), ANGBAND_DIR_USER, 					"pricing.log");
+                	log_file = file_open(buf, pricing_mode, FTYPE_TEXT);
+                	if (!log_file)
+                	{
+                		msg_print("Error - can't open pricing.log for writing.");
+                	        exit(1);
+                	}
+			pricing_mode = MODE_APPEND;
+		}
+
+		LOG_PRINT1("object is %s", k_name + k_ptr->name);
+		power = object_power(o_ptr, verbose, log_file);
+		value = sign(power) * ((a * power * power) + (b * power));
+
+		if ( (o_ptr->tval == TV_SHOT) || (o_ptr->tval == TV_ARROW) ||
+  			(o_ptr->tval == TV_BOLT) || ((o_ptr->tval == TV_LITE)
+			&& (o_ptr->sval == SV_LITE_TORCH) && !o_ptr->name2) )
+		{
+			value = value / AMMO_RESCALER;
+			if (value < 1) value = 1;
+		}
+
+		LOG_PRINT2("a is %d and b is %d\n", a, b);
+		LOG_PRINT1("value is %d\n", value);
+		total_value = value * qty;
+
+		if (verbose)
+		{
+			if (!file_close(log_file))
+			{
+				msg_print("Error - can't close pricing.log file.");
+				exit(1);
+			}
+		}
+		if (total_value < 0) total_value = 0;
+
+		return (total_value);
+	}
 
 	/* Hack -- "worthless" items */
 	if (!k_ptr->cost) return (0L);
@@ -1384,92 +1442,8 @@ static s32b object_value_real(const object_type *o_ptr, int qty)
 	/* Base cost */
 	value = k_ptr->cost;
 
-
 	/* Extract some flags */
-	object_flags(o_ptr, &f1, &f2, &f3);
-
-
-	/* Artifact */
-	if (o_ptr->name1)
-	{
-		artifact_type *a_ptr = &a_info[o_ptr->name1];
-
-		/* Hack -- "worthless" artifacts */
-		if (!a_ptr->cost) return (0L);
-
-		/* Hack -- Use the artifact cost instead */
-		value = a_ptr->cost;
-	}
-
-	/* Ego-Item */
-	else if (o_ptr->name2)
-	{
-		ego_item_type *e_ptr = &e_info[o_ptr->name2];
-
-		/* Hack -- "worthless" ego-items */
-		if (!e_ptr->cost) return (0L);
-
-		/* Hack -- Reward the ego-item with a bonus */
-		value += e_ptr->cost;
-	}
-
-
-	/* Analyze pval bonus */
-	switch (o_ptr->tval)
-	{
-		case TV_SHOT:
-		case TV_ARROW:
-		case TV_BOLT:
-		case TV_BOW:
-		case TV_DIGGING:
-		case TV_HAFTED:
-		case TV_POLEARM:
-		case TV_SWORD:
-		case TV_BOOTS:
-		case TV_GLOVES:
-		case TV_HELM:
-		case TV_CROWN:
-		case TV_SHIELD:
-		case TV_CLOAK:
-		case TV_SOFT_ARMOR:
-		case TV_HARD_ARMOR:
-		case TV_DRAG_ARMOR:
-		case TV_LITE:
-		case TV_AMULET:
-		case TV_RING:
-		{
-			/* Hack -- Negative "pval" is always bad */
-			if (o_ptr->pval < 0) return (0L);
-
-			/* No pval */
-			if (!o_ptr->pval) break;
-
-			/* Give credit for stat bonuses */
-			if (f1 & (TR1_STR)) value += (o_ptr->pval * 200L);
-			if (f1 & (TR1_INT)) value += (o_ptr->pval * 200L);
-			if (f1 & (TR1_WIS)) value += (o_ptr->pval * 200L);
-			if (f1 & (TR1_DEX)) value += (o_ptr->pval * 200L);
-			if (f1 & (TR1_CON)) value += (o_ptr->pval * 200L);
-			if (f1 & (TR1_CHR)) value += (o_ptr->pval * 200L);
-
-			/* Give credit for stealth and searching */
-			if (f1 & (TR1_STEALTH)) value += (o_ptr->pval * 100L);
-			if (f1 & (TR1_SEARCH)) value += (o_ptr->pval * 100L);
-
-			/* Give credit for infra-vision and tunneling */
-			if (f1 & (TR1_INFRA)) value += (o_ptr->pval * 50L);
-			if (f1 & (TR1_TUNNEL)) value += (o_ptr->pval * 50L);
-
-			/* Give credit for extra attacks */
-			if (f1 & (TR1_BLOWS)) value += (o_ptr->pval * 2000L);
-
-			/* Give credit for speed bonus */
-			if (f1 & (TR1_SPEED)) value += (o_ptr->pval * 30000L);
-
-			break;
-		}
-	}
-
+	object_flags(o_ptr, f);
 
 	/* Analyze the item type and quantity*/
 	switch (o_ptr->tval)
@@ -1493,102 +1467,6 @@ static s32b object_value_real(const object_type *o_ptr, int qty)
 			break;
 		}
 
-		/* Rings/Amulets, Lites */
-		case TV_RING:
-		case TV_AMULET:
-		{
-			/* Hack -- negative bonuses are bad */
-			if (o_ptr->to_a < 0) return (0L);
-			if (o_ptr->to_h < 0) return (0L);
-			if (o_ptr->to_d < 0) return (0L);
-
-			/* Give credit for bonuses */
-			value += ((o_ptr->to_h + o_ptr->to_d + o_ptr->to_a) * 100L);
-
-			/* Calculate total value */
-			total_value = value * qty;
-
-			/* Done */
-			break;
-		}
-
-		/* Armor */
-		case TV_BOOTS:
-		case TV_GLOVES:
-		case TV_CLOAK:
-		case TV_CROWN:
-		case TV_HELM:
-		case TV_SHIELD:
-		case TV_SOFT_ARMOR:
-		case TV_HARD_ARMOR:
-		case TV_DRAG_ARMOR:
-		{
-			/* Give credit for hit bonus */
-			value += ((o_ptr->to_h - k_ptr->to_h) * 100L);
-
-			/* Give credit for damage bonus */
-			value += ((o_ptr->to_d - k_ptr->to_d) * 100L);
-
-			/* Give credit for armor bonus */
-			value += (o_ptr->to_a * 100L);
-
-			/* Calculate total value */
-			total_value = value * qty;
-
-			/* Done */
-			break;
-		}
-
-		/* Bows/Weapons */
-		case TV_BOW:
-		case TV_DIGGING:
-		case TV_HAFTED:
-		case TV_SWORD:
-		case TV_POLEARM:
-		{
-			/* Hack -- negative hit/damage bonuses */
-			if (o_ptr->to_h + o_ptr->to_d < 0) return (0L);
-
-			/* Factor in the bonuses */
-			value += ((o_ptr->to_h + o_ptr->to_d + o_ptr->to_a) * 100L);
-
-			/* Hack -- Factor in extra damage dice */
-			if ((o_ptr->dd > k_ptr->dd) && (o_ptr->ds == k_ptr->ds))
-			{
-				value += (o_ptr->dd - k_ptr->dd) * o_ptr->ds * 100L;
-			}
-
-			/* Calculate total value */
-			total_value = value * qty;
-
-			/* Done */
-			break;
-		}
-
-		/* Ammo */
-		case TV_SHOT:
-		case TV_ARROW:
-		case TV_BOLT:
-		{
-			/* Hack -- negative hit/damage bonuses */
-			if (o_ptr->to_h + o_ptr->to_d < 0) return (0L);
-
-			/* Factor in the bonuses */
-			value += ((o_ptr->to_h + o_ptr->to_d) * 5L);
-
-			/* Hack -- Factor in extra damage dice */
-			if ((o_ptr->dd > k_ptr->dd) && (o_ptr->ds == k_ptr->ds))
-			{
-				value += (o_ptr->dd - k_ptr->dd) * o_ptr->ds * 5L;
-			}
-
-			/* Calculate total value */
-			total_value = value * qty;
-
-			/* Done */
-			break;
-		}
-		
 		default:
 		{
 			total_value = value * qty;
@@ -1614,38 +1492,43 @@ static s32b object_value_real(const object_type *o_ptr, int qty)
  *
  * Note that discounted items stay discounted forever.
  */
-s32b object_value(const object_type *o_ptr, int qty)
+s32b object_value(const object_type *o_ptr, int qty, int verbose)
 {
 	s32b value;
 
 
-	/* Unknown items -- acquire a base value */
-	if (object_known_p(o_ptr))
+	if (object_is_known(o_ptr))
 	{
-		/* Cursed items -- worthless */
 		if (cursed_p(o_ptr)) return (0L);
 
-		/* Real value (see above) */
-		value = object_value_real(o_ptr, qty);
+		value = object_value_real(o_ptr, qty, verbose);
 	}
-
-	/* Known items -- acquire the actual value */
-	else
+	else if (wearable_p(o_ptr))
 	{
-		/* Hack -- Felt cursed items */
-		if ((o_ptr->ident & (IDENT_SENSE)) && cursed_p(o_ptr)) return (0L);
+		object_type object_type_body;
+		object_type *j_ptr = &object_type_body;
 
-		/* Base value (see above) */
-		value = object_value_base(o_ptr) * qty;
+		/* Hack -- Felt cursed items */
+		if (object_was_sensed(o_ptr) && cursed_p(o_ptr)) return (0L);
+
+		memcpy(j_ptr, o_ptr, sizeof(object_type));
+
+		/* give j_ptr only the flags known to be in o_ptr */
+		object_flags_known(o_ptr, j_ptr->flags);
+
+		if (!object_attack_plusses_are_visible(o_ptr))
+			j_ptr->to_h = j_ptr->to_d = 0;
+		else if (!object_defence_plusses_are_visible(o_ptr))
+			j_ptr->to_a = 0;
+
+		value = object_value_real(j_ptr, qty, verbose);
 	}
+	else value = object_value_base(o_ptr) * qty;
 
 
 	/* Return the final value */
 	return (value);
 }
-
-
-
 
 
 /*
@@ -1665,6 +1548,7 @@ s32b object_value(const object_type *o_ptr, int qty)
  */
 bool object_similar(const object_type *o_ptr, const object_type *j_ptr)
 {
+	int i;
 	int total = o_ptr->number + j_ptr->number;
 
 
@@ -1682,6 +1566,13 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr)
 			return (0);
 		}
 
+		/* Gold */
+		case TV_GOLD:
+		{
+			/* Too much gold for one object_type */
+			if (o_ptr->pval + j_ptr->pval > MAX_PVAL) return 0;
+		}
+
 		/* Food and Potions and Scrolls */
 		case TV_FOOD:
 		case TV_POTION:
@@ -1695,8 +1586,8 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr)
 		case TV_STAFF:
 		case TV_WAND:
 		{
-			/* Assume okay */
-			break;
+			/* Too many charges for one object_type */
+			if (o_ptr->pval + j_ptr->pval > MAX_PVAL) return 0;
 		}
 
 		/* Rods */
@@ -1706,7 +1597,7 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr)
 			break;
 		}
 
-		/* Weapons and Armor */
+		/* Weaponsm, armour and jewelery */
 		case TV_BOW:
 		case TV_DIGGING:
 		case TV_HAFTED:
@@ -1721,18 +1612,10 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr)
 		case TV_SOFT_ARMOR:
 		case TV_HARD_ARMOR:
 		case TV_DRAG_ARMOR:
-		{
-			/* Fall through */
-		}
-
-		/* Rings, Amulets, Lites */
 		case TV_RING:
 		case TV_AMULET:
 		case TV_LITE:
 		{
-			/* Require both items to be known */
-			if (!object_known_p(o_ptr) || !object_known_p(j_ptr)) return (0);
-
 			/* Fall through */
 		}
 
@@ -1741,9 +1624,6 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr)
 		case TV_ARROW:
 		case TV_SHOT:
 		{
-			/* Require identical knowledge of both items */
-			if (object_known_p(o_ptr) != object_known_p(j_ptr)) return (0);
-
 			/* Require identical "bonuses" */
 			if (o_ptr->to_h != j_ptr->to_h) return (FALSE);
 			if (o_ptr->to_d != j_ptr->to_d) return (FALSE);
@@ -1778,9 +1658,6 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr)
 		/* Various */
 		default:
 		{
-			/* Require knowledge */
-			if (!object_known_p(o_ptr) || !object_known_p(j_ptr)) return (0);
-
 			/* Probably okay */
 			break;
 		}
@@ -1795,16 +1672,10 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr)
 	}
 
 
-	/* Different pseudo-ID statuses preclude combination */
-	if (o_ptr->pseudo != j_ptr->pseudo)
-		return (0);
-
-
 	/* Different flags */
-	if (o_ptr->flags1 != j_ptr->flags1 ||
-		o_ptr->flags2 != j_ptr->flags2 ||
-		o_ptr->flags3 != j_ptr->flags3)
-		return FALSE;
+	for (i = 0; i < OBJ_FLAG_N; i++)
+		if (o_ptr->flags[i] != j_ptr->flags[1])
+			return FALSE;
 
 
 	/* Maximal "stacking" limit */
@@ -1836,22 +1707,19 @@ void object_absorb(object_type *o_ptr, const object_type *j_ptr)
 {
 	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 
+	int i;
 	int total = o_ptr->number + j_ptr->number;
 
 	/* Add together the item counts */
 	o_ptr->number = ((total < MAX_STACK_SIZE) ? total : (MAX_STACK_SIZE - 1));
 
-	/* Hack -- Blend "known" status */
-	if (object_known_p(j_ptr)) object_known(o_ptr);
-
-	/* Hack -- Blend store status */
-	if (j_ptr->ident & (IDENT_STORE)) o_ptr->ident |= (IDENT_STORE);
+	/* Blend all knowledge */
+	o_ptr->ident |= (j_ptr->ident & ~IDENT_EMPTY);
+	for (i = 0; i < OBJ_FLAG_N; i++)
+		o_ptr->known_flags[i] |= j_ptr->known_flags[i];
 
 	/* Hack -- Blend "notes" */
 	if (j_ptr->note != 0) o_ptr->note = j_ptr->note;
-
-	/* Mega-Hack -- Blend "discounts" */
-	o_ptr->pseudo = j_ptr->pseudo;
 
 	/*
 	 * Hack -- if rods are stacking, re-calculate the
@@ -1864,9 +1732,12 @@ void object_absorb(object_type *o_ptr, const object_type *j_ptr)
 	}
 
 	/* Hack -- if wands or staves are stacking, combine the charges */
-	if ((o_ptr->tval == TV_WAND) || (o_ptr->tval == TV_STAFF))
+	/* If gold is stacking combine the amount */
+	if (o_ptr->tval == TV_WAND || o_ptr->tval == TV_STAFF ||
+		o_ptr->tval == TV_GOLD)
 	{
-		o_ptr->pval += j_ptr->pval;
+		int total = o_ptr->pval + j_ptr->pval;
+		o_ptr->pval = total >= MAX_PVAL ? MAX_PVAL : total;
 	}
 
 	if ((o_ptr->origin != j_ptr->origin) ||
@@ -1928,6 +1799,40 @@ void object_copy(object_type *o_ptr, const object_type *j_ptr)
 	COPY(o_ptr, j_ptr, object_type);
 }
 
+/*
+ * Prepare an object `dst` representing `amt` objects,  based on an existing 
+ * object `src` representing at least `amt` objects.
+ *
+ * Takes care of the charge redistribution concerns of stacked items.
+ */
+void object_copy_amt(object_type *dst, object_type *src, int amt)
+{
+	/* Get a copy of the object */
+	object_copy(dst, src);
+
+	/* Modify quantity */
+	dst->number = amt;
+
+	/* 
+	 * If the item has charges/timeouts, set them to the correct level 
+	 * too. We split off the same amount as distribute_charges.
+	 */
+	if (src->tval == TV_WAND || src->tval == TV_STAFF)
+	{
+		dst->pval = src->pval * amt / src->number;
+	}
+
+	if (src->tval == TV_ROD)
+	{
+		int max_time = k_info[src->k_idx].time_base * amt;
+
+		if (src->timeout > max_time)
+			dst->timeout = max_time;
+		else
+			dst->timeout = src->timeout;
+	}
+}
+
 
 /*
  * Prepare an object based on an object kind.
@@ -1966,13 +1871,37 @@ void object_prep(object_type *o_ptr, int k_idx)
 	o_ptr->ds = k_ptr->ds;
 
 	/* Hack -- cursed items are always "cursed" */
-	if (k_ptr->flags3 & (TR3_LIGHT_CURSE))
-	    o_ptr->flags3 |= TR3_LIGHT_CURSE;
+	if (k_ptr->flags[2] & TR2_LIGHT_CURSE)
+	    o_ptr->flags[2] |= TR2_LIGHT_CURSE;
 }
 
 
+/**
+ * Find and return the index to the oldest object on the given grid marked as
+ * "squelch".
+ */
+static s16b floor_get_idx_oldest_squelched(int y, int x)
+{
+	s16b squelch_idx = 0;
+	s16b this_o_idx;
+
+	object_type *o_ptr = NULL;
+
+	for (this_o_idx = cave_o_idx[y][x]; this_o_idx; this_o_idx = o_ptr->next_o_idx)
+	{
+		o_ptr = &o_list[this_o_idx];
+
+		if (squelch_hide_item(o_ptr))
+			squelch_idx = this_o_idx;
+	}
+
+	return squelch_idx;
+}
+
+
+
 /*
- * Let the floor carry an object
+ * Let the floor carry an object, deleting old squelched items if necessary
  */
 s16b floor_carry(int y, int x, object_type *j_ptr)
 {
@@ -1986,10 +1915,7 @@ s16b floor_carry(int y, int x, object_type *j_ptr)
 	/* Scan objects in that grid for combination */
 	for (this_o_idx = cave_o_idx[y][x]; this_o_idx; this_o_idx = next_o_idx)
 	{
-		object_type *o_ptr;
-
-		/* Get the object */
-		o_ptr = &o_list[this_o_idx];
+		object_type *o_ptr = &o_list[this_o_idx];
 
 		/* Get the next object */
 		next_o_idx = o_ptr->next_o_idx;
@@ -2008,11 +1934,21 @@ s16b floor_carry(int y, int x, object_type *j_ptr)
 		n++;
 	}
 
-	/* The stack is already too large */
-	if (n > MAX_FLOOR_STACK) return (0);
-
 	/* Option -- disallow stacking */
-	if (adult_no_stacking && n) return (0);
+	if (OPT(adult_no_stacking) && n) return (0);
+
+	/* The stack is already too large */
+	if (n >= MAX_FLOOR_STACK)
+	{
+		/* Squelch the oldest squelched object */
+		s16b squelch_idx = floor_get_idx_oldest_squelched(y, x);
+
+		if (squelch_idx)
+			delete_object_idx(squelch_idx);
+		else
+			return 0;
+	}
+
 
 	/* Make an object */
 	o_idx = o_pop();
@@ -2147,7 +2083,8 @@ void drop_near(object_type *j_ptr, int chance, int y, int x)
 			n = 0;
 
 			/* Scan objects in that grid */
-			for (o_ptr = get_first_object(ty, tx); o_ptr; o_ptr = get_next_object(o_ptr))
+			for (o_ptr = get_first_object(ty, tx); o_ptr;
+					o_ptr = get_next_object(o_ptr))
 			{
 				/* Check for possible combination */
 				if (object_similar(o_ptr, j_ptr)) comb = TRUE;
@@ -2163,10 +2100,11 @@ void drop_near(object_type *j_ptr, int chance, int y, int x)
 			if (!comb) k++;
 
 			/* Option -- disallow stacking */
-			if (adult_no_stacking && (k > 1)) continue;
+			if (OPT(adult_no_stacking) && (k > 1)) continue;
 			
 			/* Paranoia? */
-			if ((k + n) > MAX_FLOOR_STACK) continue;
+			if ((k + n) > MAX_FLOOR_STACK &&
+					!floor_get_idx_oldest_squelched(ty, tx)) continue;
 
 			/* Calculate score */
 			s = 1000 - (d + k * 5);
@@ -2242,14 +2180,15 @@ void drop_near(object_type *j_ptr, int chance, int y, int x)
 	/* Give it to the floor */
 	if (!floor_carry(by, bx, j_ptr))
 	{
+		artifact_type *a_ptr = artifact_of(j_ptr);
+
 		/* Message */
 		msg_format("The %s disappear%s.", o_name, PLURAL(plural));
 
 		/* Debug */
 		if (p_ptr->wizard) msg_print("Breakage (too many objects).");
 
-		/* Hack -- Preserve artifacts */
-		a_info[j_ptr->name1].cur_num = 0;
+		if (a_ptr) a_ptr->created = FALSE;
 
 		/* Failure */
 		return;
@@ -2307,7 +2246,7 @@ void inven_item_charges(int item)
 	if ((o_ptr->tval != TV_STAFF) && (o_ptr->tval != TV_WAND)) return;
 
 	/* Require known item */
-	if (!object_known_p(o_ptr)) return;
+	if (!object_is_known(o_ptr)) return;
 
 	/* Print a message */
 	msg_format("You have %d charge%s remaining.", o_ptr->pval,
@@ -2324,7 +2263,7 @@ void inven_item_describe(int item)
 
 	char o_name[80];
 
-	if (artifact_p(o_ptr) && object_known_p(o_ptr))
+	if (artifact_p(o_ptr) && object_is_known(o_ptr))
 	{
 		/* Get a description */
 		object_desc(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_FULL);
@@ -2417,6 +2356,9 @@ void inven_item_optimize(int item)
 
 		/* Redraw stuff */
 		p_ptr->redraw |= (PR_INVEN);
+
+		/* Inventory has changed, repeated command may use the wrong item */ 
+		cmd_disable_repeat();		
 	}
 
 	/* The item is being wielded */
@@ -2454,7 +2396,7 @@ void floor_item_charges(int item)
 	if ((o_ptr->tval != TV_STAFF) && (o_ptr->tval != TV_WAND)) return;
 
 	/* Require known item */
-	if (!object_known_p(o_ptr)) return;
+	if (!object_is_known(o_ptr)) return;
 
 	/* Print a message */
 	msg_format("There are %d charge%s remaining.", o_ptr->pval,
@@ -2641,7 +2583,7 @@ s16b inven_carry(object_type *o_ptr)
 		s32b o_value, j_value;
 
 		/* Get the "value" of the item */
-		o_value = object_value(o_ptr, 1);
+		o_value = k_info[o_ptr->k_idx].cost;
 
 		/* Scan every occupied slot */
 		for (j = 0; j < INVEN_PACK; j++)
@@ -2662,16 +2604,16 @@ s16b inven_carry(object_type *o_ptr)
 			if (o_ptr->tval < j_ptr->tval) continue;
 
 			/* Non-aware (flavored) items always come last */
-			if (!object_aware_p(o_ptr)) continue;
-			if (!object_aware_p(j_ptr)) break;
+			if (!object_flavor_is_aware(o_ptr)) continue;
+			if (!object_flavor_is_aware(j_ptr)) break;
 
 			/* Objects sort by increasing sval */
 			if (o_ptr->sval < j_ptr->sval) break;
 			if (o_ptr->sval > j_ptr->sval) continue;
 
 			/* Unidentified objects always come last */
-			if (!object_known_p(o_ptr)) continue;
-			if (!object_known_p(j_ptr)) break;
+			if (!object_is_known(o_ptr)) continue;
+			if (!object_is_known(j_ptr)) break;
 
 			/* Lites sort by decreasing fuel */
 			if (o_ptr->tval == TV_LITE)
@@ -2681,7 +2623,7 @@ s16b inven_carry(object_type *o_ptr)
 			}
 
 			/* Determine the "value" of the pack item */
-			j_value = object_value(j_ptr, 1);
+			j_value = k_info[j_ptr->k_idx].cost;
 
 			/* Objects sort by decreasing value */
 			if (o_value > j_value) break;
@@ -2820,6 +2762,8 @@ s16b inven_takeoff(int item, int amt)
 	/* Message */
 	sound(MSG_WIELD);
 	msg_format("%s %s (%c).", act, o_name, index_to_label(slot));
+
+	p_ptr->notice |= PN_SQUELCH;
 
 	/* Return slot */
 	return (slot);
@@ -2974,7 +2918,13 @@ void combine_pack(void)
 	}
 
 	/* Message */
-	if (flag) msg_print("You combine some items in your pack.");
+	if (flag)
+	{
+		msg_print("You combine some items in your pack.");
+
+		/* Stop "repeat last command" from working. */
+		cmd_disable_repeat();
+	}
 }
 
 
@@ -3002,9 +2952,6 @@ void reorder_pack(void)
 	/* Re-order the pack (forwards) */
 	for (i = 0; i < INVEN_PACK; i++)
 	{
-		/* Mega-Hack -- allow "proper" over-flow */
-		if ((i == INVEN_PACK) && (p_ptr->inven_cnt == INVEN_PACK)) break;
-
 		/* Get the item */
 		o_ptr = &inventory[i];
 
@@ -3012,7 +2959,7 @@ void reorder_pack(void)
 		if (!o_ptr->k_idx) continue;
 
 		/* Get the "value" of the item */
-		o_value = object_value(o_ptr, 1);
+		o_value = k_info[o_ptr->k_idx].cost;
 
 		/* Scan every occupied slot */
 		for (j = 0; j < INVEN_PACK; j++)
@@ -3034,16 +2981,16 @@ void reorder_pack(void)
 			if (o_ptr->tval < j_ptr->tval) continue;
 
 			/* Non-aware (flavored) items always come last */
-			if (!object_aware_p(o_ptr)) continue;
-			if (!object_aware_p(j_ptr)) break;
+			if (!object_flavor_is_aware(o_ptr)) continue;
+			if (!object_flavor_is_aware(j_ptr)) break;
 
 			/* Objects sort by increasing sval */
 			if (o_ptr->sval < j_ptr->sval) break;
 			if (o_ptr->sval > j_ptr->sval) continue;
 
 			/* Unidentified objects always come last */
-			if (!object_known_p(o_ptr)) continue;
-			if (!object_known_p(j_ptr)) break;
+			if (!object_is_known(o_ptr)) continue;
+			if (!object_is_known(j_ptr)) break;
 
 			/* Lites sort by decreasing fuel */
 			if (o_ptr->tval == TV_LITE)
@@ -3053,7 +3000,7 @@ void reorder_pack(void)
 			}
 
 			/* Determine the "value" of the pack item */
-			j_value = object_value(j_ptr, 1);
+			j_value = k_info[j_ptr->k_idx].cost;
 
 			/* Objects sort by decreasing value */
 			if (o_value > j_value) break;
@@ -3086,8 +3033,13 @@ void reorder_pack(void)
 		p_ptr->redraw |= (PR_INVEN);
 	}
 
-	/* Message */
-	if (flag) msg_print("You reorder some items in your pack.");
+	if (flag) 
+	{
+		msg_print("You reorder some items in your pack.");
+
+		/* Stop "repeat last command" from working. */
+		cmd_disable_repeat();
+	}
 }
 
 
@@ -3100,6 +3052,8 @@ void reorder_pack(void)
  */
 void distribute_charges(object_type *o_ptr, object_type *q_ptr, int amt)
 {
+	int max_time;
+
 	/*
 	 * Hack -- If rods, staves, or wands are dropped, the total maximum
 	 * timeout or charges need to be allocated between the two stacks.
@@ -3107,29 +3061,30 @@ void distribute_charges(object_type *o_ptr, object_type *q_ptr, int amt)
 	 * to leave the original stack's pval alone. -LM-
 	 */
 	if ((o_ptr->tval == TV_WAND) ||
-	    (o_ptr->tval == TV_STAFF) ||
-	    (o_ptr->tval == TV_ROD))
+	    (o_ptr->tval == TV_STAFF))
 	{
 		q_ptr->pval = o_ptr->pval * amt / o_ptr->number;
 
 		if (amt < o_ptr->number) o_ptr->pval -= q_ptr->pval;
+	}
 
-		/*
-		 * Hack -- Rods also need to have their timeouts distributed.
-		 *
-		 * The dropped stack will accept all time remaining to charge up to
-		 * its maximum.
-		 */
-		if ((o_ptr->tval == TV_ROD) && (o_ptr->timeout))
-		{
-			if (q_ptr->pval > o_ptr->timeout)
-				q_ptr->timeout = o_ptr->timeout;
-			else
-				q_ptr->timeout = q_ptr->pval;
+	/*
+	 * Hack -- Rods also need to have their timeouts distributed.
+	 *
+	 * The dropped stack will accept all time remaining to charge up to
+	 * its maximum.
+	 */
+	if (o_ptr->tval == TV_ROD)
+	{
+		max_time = k_info[o_ptr->k_idx].time_base * amt;
 
-			if (amt < o_ptr->number)
-				o_ptr->timeout -= q_ptr->timeout;
-		}
+		if (o_ptr->timeout > max_time)
+			q_ptr->timeout = max_time;
+		else
+			q_ptr->timeout = o_ptr->timeout;
+
+		if (amt < o_ptr->number)
+			o_ptr->timeout -= q_ptr->timeout;
 	}
 }
 
@@ -3142,11 +3097,16 @@ void reduce_charges(object_type *o_ptr, int amt)
 	 * being destroyed. -LM-
 	 */
 	if (((o_ptr->tval == TV_WAND) ||
-	     (o_ptr->tval == TV_STAFF) ||
-	     (o_ptr->tval == TV_ROD)) &&
+	     (o_ptr->tval == TV_STAFF)) &&
 	    (amt < o_ptr->number))
 	{
 		o_ptr->pval -= o_ptr->pval * amt / o_ptr->number;
+	}
+
+	if ((o_ptr->tval == TV_ROD) &&
+	    (amt < o_ptr->number))
+	{
+		o_ptr->timeout -= o_ptr->timeout * amt / o_ptr->number;
 	}
 }
 
@@ -3297,6 +3257,29 @@ int lookup_name(int tval, const char *name)
 }
 
 /**
+ * Return the a_idx of the artifact with the given name
+ */
+int lookup_artifact_name(const char *name)
+{
+	int i;
+	
+	/* Look for it */
+	for (i = 1; i < z_info->a_max; i++)
+	{
+		artifact_type *a_ptr = &a_info[i];
+		const char *nm = a_name + a_ptr->name;
+		
+		/* Found a match */
+		if (streq(name, nm))
+			return i;
+		
+	} 
+	
+	return -1;
+}
+
+
+/**
  * Return the numeric sval of the object kind with the given `tval` and name `name`.
  */
 int lookup_sval(int tval, const char *name)
@@ -3369,8 +3352,7 @@ static int compare_types(const object_type *o1, const object_type *o2)
 }
 
 /* some handy macros for sorting */
-#define object_is_known_artifact(o) (artifact_p(o) && object_known_p(o))
-#define object_is_worthless(o) (object_value(o, 1) == 0)
+#define object_is_worthless(o) (k_info[o->k_idx].cost == 0)
 
 /**
  * Sort comparator for objects
@@ -3389,10 +3371,10 @@ static int compare_items(const object_type *o1, const object_type *o2)
 	if (object_is_known_artifact(o2)) return 1;
 
 	/* unknown objects will sort next */
-	if (!object_aware_p(o1) && !object_aware_p(o2))
+	if (!object_flavor_is_aware(o1) && !object_flavor_is_aware(o2))
 		return compare_types(o1, o2);
-	if (!object_aware_p(o1)) return -1;
-	if (!object_aware_p(o2)) return 1;
+	if (!object_flavor_is_aware(o1)) return -1;
+	if (!object_flavor_is_aware(o2)) return 1;
 
 	/* if only one of them is worthless, the other comes first */
 	if (object_is_worthless(o1) && !object_is_worthless(o2)) return 1;
@@ -3403,6 +3385,48 @@ static int compare_items(const object_type *o1, const object_type *o2)
 	return compare_types(o1, o2);
 }
 
+
+/**
+ * Helper to draw the Object Recall subwindow; this actually does the work.
+ */
+void display_object_recall(object_type *o_ptr)
+{
+	clear_from(0);
+	prt("", 0, 0);
+	object_info_header(o_ptr);
+	if (!object_info(o_ptr, FALSE))
+		text_out("This item does not seem to possess any special abilities.");
+}
+
+
+/**
+ * This draws the Object Recall subwindow when displaying a particular object
+ * (e.g. a helmet in the backpack, or a scroll on the ground)
+ */
+void display_object_idx_recall(s16b item)
+{
+	object_type *o_ptr = object_from_item_idx(item);
+	display_object_recall(o_ptr);
+}
+
+
+/**
+ * This draws the Object Recall subwindow when displaying a recalled item kind
+ * (e.g. a generic ring of acid or a generic blade of chaos)
+ */
+void display_object_kind_recall(s16b k_idx)
+{
+	/* Initialize and prepare a fake object; it will be deallocated when we */
+	/* leave the function. */
+	object_type object;
+	object_type *o_ptr = &object;
+	object_wipe(o_ptr);
+	object_prep(o_ptr, k_idx);
+	if (k_info[k_idx].aware) o_ptr->ident |= (IDENT_STORE);
+
+	/* draw it */
+	display_object_recall(o_ptr);
+}
 
 /*
  * Display visible items, similar to display_monlist
@@ -3563,13 +3587,13 @@ void display_itemlist(void)
 		/* Note that the number of items actually displayed */
 		disp_count++;
 
-		if (artifact_p(o_ptr) && object_known_p(o_ptr))
+		if (artifact_p(o_ptr) && object_is_known(o_ptr))
 			/* known artifact */
 			attr = TERM_VIOLET;
-		else if (!object_aware_p(o_ptr))
+		else if (!object_flavor_is_aware(o_ptr))
 			/* unaware of kind */
 			attr = TERM_RED;
-		else if (object_value(o_ptr, 1) == 0)
+		else if (object_is_worthless(o_ptr))
 			/* worthless */
 			attr = TERM_SLATE;
 		else
@@ -3604,3 +3628,288 @@ void display_itemlist(void)
 	if (Term == angband_term[0])
 		Term_addstr(-1, TERM_WHITE, "  (Press any key to continue.)");
 }
+
+
+/* Accessor functions, for prettier code */
+
+artifact_type *artifact_of(const object_type *o_ptr)
+{
+	if (o_ptr->name1)
+		return &a_info[o_ptr->name1];
+
+	return NULL;
+}
+
+object_kind *object_kind_of(const object_type *o_ptr)
+{
+	return &k_info[o_ptr->k_idx];
+}
+
+
+
+
+/* Basic tval testers */
+bool obj_is_staff(const object_type *o_ptr)  { return o_ptr->tval == TV_STAFF; }
+bool obj_is_wand(const object_type *o_ptr)   { return o_ptr->tval == TV_WAND; }
+bool obj_is_rod(const object_type *o_ptr)    { return o_ptr->tval == TV_ROD; }
+bool obj_is_potion(const object_type *o_ptr) { return o_ptr->tval == TV_POTION; }
+bool obj_is_scroll(const object_type *o_ptr) { return o_ptr->tval == TV_SCROLL; }
+bool obj_is_food(const object_type *o_ptr)   { return o_ptr->tval == TV_FOOD; }
+bool obj_is_lite(const object_type *o_ptr)   { return o_ptr->tval == TV_LITE; }
+bool obj_is_ring(const object_type *o_ptr)   { return o_ptr->tval == TV_RING; }
+
+
+/**
+ * Determine whether an object is ammo
+ *
+ * \param o_ptr is the object to check
+ */
+bool obj_is_ammo(const object_type *o_ptr)
+{
+	switch (o_ptr->tval)
+	{
+		case TV_SHOT:
+		case TV_ARROW:
+		case TV_BOLT:
+			return TRUE;
+		default:
+			return FALSE;
+	}
+}
+
+/* Determine if an object is zappable */
+bool obj_can_zap(const object_type *o_ptr)
+{
+	const object_kind *k_ptr = &k_info[o_ptr->k_idx];
+	if (o_ptr->tval != TV_ROD) return FALSE;
+
+	/* All still charging? */
+	if (o_ptr->number <= (o_ptr->timeout + (k_ptr->time_base - 1)) / k_ptr->time_base) return FALSE;
+
+	/* Otherwise OK */
+	return TRUE;
+}
+
+/* Determine if an object is activatable */
+bool obj_is_activatable(const object_type *o_ptr)
+{
+	return object_effect(o_ptr) ? TRUE : FALSE;
+}
+
+/* Determine if an object can be activated now */
+bool obj_can_activate(const object_type *o_ptr)
+{
+	if (obj_is_activatable(o_ptr))
+	{
+		/* Check the recharge */
+		if (!o_ptr->timeout) return TRUE;
+	}
+
+	return FALSE;
+}
+
+bool obj_can_refill(const object_type *o_ptr)
+{
+	u32b f[OBJ_FLAG_N];
+	const object_type *j_ptr = &inventory[INVEN_LITE];
+
+	/* Get flags */
+	object_flags(o_ptr, f);
+
+	if (j_ptr->sval == SV_LITE_LANTERN)
+	{
+		/* Flasks of oil are okay */
+		if (o_ptr->tval == TV_FLASK) return (TRUE);
+	}
+
+	/* Non-empty, non-everburning sources are okay */
+	if ((o_ptr->tval == TV_LITE) &&
+	    (o_ptr->sval == j_ptr->sval) &&
+	    (o_ptr->timeout > 0) &&
+		!(f[2] & TR2_NO_FUEL))
+	{
+		return (TRUE);
+	}
+
+	/* Assume not okay */
+	return (FALSE);
+}
+
+
+bool obj_can_browse(const object_type *o_ptr)
+{
+	if (o_ptr->tval != cp_ptr->spell_book) return FALSE;
+	return TRUE;
+}
+
+
+
+/* Can only take off non-cursed items */
+bool obj_can_takeoff(const object_type *o_ptr)
+{
+	return !cursed_p(o_ptr);
+}
+
+/* Can only put on wieldable items */
+bool obj_can_wear(const object_type *o_ptr)
+{
+	return (wield_slot(o_ptr) >= INVEN_WIELD);
+}
+
+/* Can has inscrip pls */
+bool obj_has_inscrip(const object_type *o_ptr)
+{
+	return (o_ptr->note ? TRUE : FALSE);
+}
+
+/*** Generic utility functions ***/
+
+/*
+ * Return an object's effect.
+ */
+u16b object_effect(const object_type *o_ptr)
+{
+	if (o_ptr->name1)
+		return a_info[o_ptr->name1].effect;
+	else
+		return k_info[o_ptr->k_idx].effect;
+}
+
+/* Get an o_ptr from an item number */
+object_type *object_from_item_idx(int item)
+{
+	if (item >= 0)
+		return &inventory[item];
+	else
+		return &o_list[0 - item];
+}
+
+
+/*
+ * Does the given object need to be aimed?
+ */ 
+bool obj_needs_aim(object_type *o_ptr)
+{
+	int effect;
+
+	/* Figure out effect the object would use */
+	if (o_ptr->name1)
+		effect = a_info[o_ptr->name1].effect;
+	else
+		effect = k_info[o_ptr->k_idx].effect;
+
+	/* If the effect needs aiming, or if the object type needs
+	   aiming, this object needs aiming. */
+	if (effect_aim(effect) ||
+	    (o_ptr->tval == TV_WAND) ||
+	    (o_ptr->tval == TV_ROD && !object_flavor_is_aware(o_ptr)))
+	{
+		return TRUE;
+	}
+	else
+	{
+		return FALSE;
+	}
+}
+
+
+/*
+ * Verify the "okayness" of a given item.
+ *
+ * The item can be negative to mean "item on floor".
+ */
+bool get_item_okay(int item)
+{
+	/* Verify the item */
+	return (item_tester_okay(object_from_item_idx(item)));
+}
+
+
+/*
+ * Get a list of "valid" item indexes.
+ *
+ * Fills item_list[] with items that are "okay" as defined by the
+ * current item_tester_hook, etc.  mode determines what combination of
+ * inventory, equipment and player's floor location should be used
+ * when drawing up the list.
+ *
+ * Returns the number of items placed into the list.
+ *
+ * Maximum space that can be used is [INVEN_TOTAL + MAX_FLOOR_STACK],
+ * though practically speaking much smaller numbers are likely.
+ */
+int scan_items(int *item_list, size_t item_list_max, int mode)
+{
+	bool use_inven = ((mode & USE_INVEN) ? TRUE : FALSE);
+	bool use_equip = ((mode & USE_EQUIP) ? TRUE : FALSE);
+	bool use_floor = ((mode & USE_FLOOR) ? TRUE : FALSE);
+
+	int floor_list[MAX_FLOOR_STACK];
+	int floor_num;
+
+	int i;
+	size_t item_list_num = 0;
+
+	if (use_inven)
+	{
+		for (i = 0; i < INVEN_PACK && item_list_num < item_list_max; i++)
+		{
+			if (get_item_okay(i))
+				item_list[item_list_num++] = i;
+		}
+	}
+
+	if (use_equip)
+	{
+		for (i = INVEN_WIELD; i < INVEN_TOTAL && item_list_num < item_list_max; i++)
+		{
+			if (get_item_okay(i))
+				item_list[item_list_num++] = i;
+		}
+	}
+
+	/* Scan all non-gold objects in the grid */
+	if (use_floor)
+	{
+		floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), p_ptr->py, p_ptr->px, 0x03);
+
+		for (i = 0; i < floor_num && item_list_num < item_list_max; i++)
+		{
+			if (get_item_okay(-floor_list[i]))
+				item_list[item_list_num++] = -floor_list[i];
+		}
+	}
+
+	/* Forget the item_tester_tval and item_tester_hook  restrictions */
+	item_tester_tval = 0;
+	item_tester_hook = NULL;
+
+	return item_list_num;
+}
+
+
+/* 
+ * Check if the given item is available for the player to use. 
+ *
+ * 'mode' defines which areas we should look at, a la scan_items().
+ */
+bool item_is_available(int item, bool (*tester)(const object_type *), int mode)
+{
+	int item_list[INVEN_TOTAL + MAX_FLOOR_STACK];
+	int item_num;
+	int i;
+
+	item_tester_hook = tester;
+	item_tester_tval = 0;
+	item_num = scan_items(item_list, N_ELEMENTS(item_list), mode);
+
+	for (i = 0; i < item_num; i++)
+	{
+		if (item_list[i] == item)
+			return TRUE;
+	}
+
+	return FALSE;
+}
+
+

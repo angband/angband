@@ -41,20 +41,6 @@ size_t path_build(char *buf, size_t len, const char *base, const char *leaf);
 
 
 
-/*** Byte-flipping functions ***/
-
-/**
- * "Flip" the bits of the integer specified in `arg` to make them big-endian.
- * Useful when writing to files intended to be portable across systems.
- * 
- * Returns the flipped value, or the original if the current system is already
- * big-endian.
- */
-u16b flip_u16b(u16b arg);
-u32b flip_u32b(u32b arg);
-
-
-
 /*** File access code ***/
 
 /** Data types **/
@@ -188,12 +174,10 @@ bool file_putf(ang_file *f, const char *fmt, ...);
 bool file_seek(ang_file *f, u32b pos);
 
 /**
- * Reads `n` bytes from the file represented by `f` into the buffer `buf`.
- * Do not mix with calls to file_readc().
- *
- * Returns the number of bytes read. 
+ * Reads n bytes from file 'f' info buffer 'buf'.
+ * \returns Number of bytes read; -1 on error
  */
-size_t file_read(ang_file *f, char *buf, size_t n);
+int file_read(ang_file *f, char *buf, size_t n);
 
 /**
  * Write the first `n` bytes following the pointer `buf` to the file represented

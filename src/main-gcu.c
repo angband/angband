@@ -18,43 +18,10 @@
 #include "angband.h"
 
 
-/*
- * This file provides support for Angband using the Curses library.  To use
- * it, define USE_GCU in your makefile, and if you are using the ncurses
- * library, also add USE_NCURSES.
- *
- *
- * Note that this file is not *intended* to support non-Unix machines, nor is
- * it intended to support VMS or other bizarre setups.  It should, however,
- * work with most versions of "curses" or "ncurses".
- *
- * This package assumes that the underlying "curses" handles both the "nonl()"
- * and "cbreak()" commands correctly, see the "OPTION" below.
- *
- *
- * See also "USE_CAP" and "main-cap.c" for code that bypasses "curses"
- * and uses the "termcap" information directly, or even bypasses the
- * "termcap" information and sends direct vt100 escape sequences.
- *
- * This file provides up to 4 term windows, or alternatively, bigscreen
- * support.
- *
- * This file will attempt to redefine the screen colors to conform to
- * standard Angband colors.  It will only do so if the terminal type
- * indicates that it can do so.
- *
- * Consider the use of "savetty()" and "resetty()".  XXX XXX XXX
- */
-
-
 #ifdef USE_GCU
 
 #include "main.h"
 
-/*
- * Hack -- play games with "bool" and "term"
- */
-#undef bool
 
 /* Avoid 'struct term' name conflict with <curses.h> (via <term.h>) on AIX */
 #define term System_term
@@ -72,6 +39,8 @@
 #else
 # include <curses.h>
 #endif
+
+#include <term.h>
 
 #undef term
 
@@ -176,6 +145,19 @@ static int can_fix_color = FALSE;
  */
 static int colortable[BASIC_COLORS];
 
+/*
+ * Lookup table for the "alternate character set".
+ *
+ * It's worth noting that curses already has this, as an undocumented
+ * (but exported) internal variable named acs_map.  I wish I could use
+ * it.
+ */
+static unsigned int acs_table[32] = {
+	0, '*', '#', '?', '?', '?', '?', '\'', '+', '?', '?', '+',
+	'+', '+', '+', '+', '~', '-', '-', '-', '_', '+', '+', '+',
+	'+', '|', '?', '?', '?', '?', '?', '.'
+};
+
 #endif
 
 
@@ -244,6 +226,11 @@ static void keymap_game_prepare(void)
 
 	/* Force "Ctrl-Z" to suspend */
 	game_termios.c_cc[VSUSP] = (char)26;
+
+#ifdef VDSUSP
+	/* Hack -- disable "Ctrl-Y" on *BSD */
+	game_termios.c_cc[VDSUSP] = (char)-1;
+#endif
 
 	/* Hack -- Leave "VSTART/VSTOP" alone */
 
@@ -458,6 +445,18 @@ static errr Term_xtra_gcu_event(int v)
 		case KEY_UP:    i = ARROW_UP;    break;
 		case KEY_LEFT:  i = ARROW_LEFT;  break;
 		case KEY_RIGHT: i = ARROW_RIGHT; break;
+		default:
+			if (i < KEY_MIN) break;
+
+			/* Mega-Hack -- Fold, spindle, and mutilate
+			 * the keys to fit in 7 bits.
+			 */
+
+			if (i >= 252) i = KEY_F(63) - (i - 252);
+			if (i >= ARROW_DOWN) i += 4;
+
+			i = 128 + (i & 127);
+			break;
 	}
 #endif
 
@@ -586,7 +585,6 @@ static errr Term_curs_gcu(int x, int y)
 static errr Term_wipe_gcu(int x, int y, int n)
 {
 	term_data *td = (term_data *)(Term->data);
-	char buf[1024];
 
 	/* Place cursor */
 	wmove(td->win, y, x);
@@ -600,11 +598,7 @@ static errr Term_wipe_gcu(int x, int y, int n)
 	/* Clear some characters */
 	else
 	{
-		/* Format a buffer */
-		strnfmt(buf, sizeof(buf), "%*c", n, ' ');
-
-		/* Output */
-		waddstr(td->win, buf);
+		whline(td->win, ' ', n);
 	}
 
 	/* Success */
@@ -618,7 +612,6 @@ static errr Term_wipe_gcu(int x, int y, int n)
 static errr Term_text_gcu(int x, int y, int n, byte a, cptr s)
 {
 	term_data *td = (term_data *)(Term->data);
-	char buf[1024];
 
 #ifdef A_COLOR
 	/* Set the color */
@@ -628,15 +621,34 @@ static errr Term_text_gcu(int x, int y, int n, byte a, cptr s)
 	/* Move the cursor */
 	wmove(td->win, y, x);
 
-	/* Format to appropriate size */
-	strnfmt(buf, sizeof(buf), "%.*s", n, s);
-
 	/* Write to screen */
-	waddstr(td->win, buf);
+	while (n--) {
+		unsigned int c = (unsigned char) *(s++);
 
-#ifdef A_COLOR
+		/* Map high-bit characters down using the $TERM-specific
+		 * alternate character set.
+		 */
+
+#ifdef A_ALTCHARSET
+		if (c < 32) c = acs_table[c];
+#endif
+
+		if ((c & 255) < ' ' || (c & 255) == 127) {
+			/* Hack - replace non-ASCII characters to
+			 * avoid display glitches in selectors.
+			 *
+			 * Note that we do this after the ACS mapping,
+			 * because the display glitches we are avoiding
+			 * are in curses itself.
+			 */
+			waddch(td->win, '?');
+		} else
+			waddch(td->win, c);
+	}
+
+#if defined(A_COLOR)
 	/* Unset the color */
-	if (can_use_color) wattrset(td->win, 0);
+	if (can_use_color) wattrset(td->win, A_NORMAL);
 #endif
 
 	/* Success */
@@ -733,9 +745,14 @@ errr init_gcu(int argc, char **argv)
 		plog_fmt("Ignoring option: %s", argv[i]);
 	}
 
-
 	/* Extract the normal keymap */
 	keymap_norm_prepare();
+
+	/* We do it like this to prevent a link error with curseses that
+	 * lack ESCDELAY.
+	 */
+	if (!getenv("ESCDELAY"))
+		putenv("ESCDELAY=20");
 
 	/* Initialize */
 	if (initscr() == NULL) return (-1);
@@ -762,7 +779,7 @@ errr init_gcu(int argc, char **argv)
 
 	/* Can we change colors? */
 	can_fix_color = (can_use_color && can_change_color() &&
-	                 (COLORS >= 16) && (COLOR_PAIRS > 8));
+	                 orig_colors && (COLORS >= 16) && (COLOR_PAIRS > 8));
 
 #endif
 
@@ -824,6 +841,20 @@ errr init_gcu(int argc, char **argv)
 
 #endif
 
+#ifdef A_ALTCHARSET
+	/* Build a quick access table for the "alternate character set". */
+
+	acs_table[1] = ACS_DIAMOND;    acs_table[16] = ACS_S1;
+	acs_table[2] = ACS_CKBOARD;    acs_table[18] = ACS_HLINE;
+	acs_table[7] = ACS_DEGREE;     acs_table[20] = ACS_S9;
+	acs_table[8] = ACS_PLMINUS;    acs_table[21] = ACS_LTEE;
+	acs_table[11] = ACS_LRCORNER;  acs_table[22] = ACS_RTEE;
+	acs_table[12] = ACS_URCORNER;  acs_table[23] = ACS_BTEE;
+	acs_table[13] = ACS_ULCORNER;  acs_table[24] = ACS_TTEE;
+	acs_table[14] = ACS_LLCORNER;  acs_table[25] = ACS_VLINE;
+	acs_table[15] = ACS_PLUS;      acs_table[31] = ACS_BULLET;
+#endif
+
 
 	/*** Low level preparation ***/
 
@@ -835,9 +866,7 @@ errr init_gcu(int argc, char **argv)
 	noecho();
 	nonl();
 
-#ifdef PDCURSES
 	keypad(stdscr, TRUE);
-#endif
 
 	/* Extract the game keymap */
 	keymap_game_prepare();

@@ -1,22 +1,5 @@
-/* File: externs.h */
-
 #ifndef INCLUDED_EXTERNS_H
 #define INCLUDED_EXTERNS_H
-
-/*
- * Copyright (c) 1997 Ben Harrison
- *
- * This software may be copied and distributed for educational, research,
- * and not for profit purposes provided that this copyright and statement
- * are included in all such copies.
- */
-
-
-/*
- * Note that some files have their own header files
- * (z-virt.h, z-util.h, z-form.h, z-term.h, z-rand.h)
- */
-
 
 /*
  * Automatically generated "variable" declarations
@@ -84,11 +67,8 @@ extern byte sf_major;
 extern byte sf_minor;
 extern byte sf_patch;
 extern byte sf_extra;
-extern u32b sf_xtra;
-extern u32b sf_when;
-extern u16b sf_lives;
-extern u16b sf_saves;
 extern bool arg_wizard;
+extern bool arg_rebalance;
 extern int arg_graphics;
 extern bool character_generated;
 extern bool character_existed;
@@ -150,6 +130,7 @@ extern byte (*cave_when)[DUNGEON_WID];
 extern maxima *z_info;
 extern object_type *o_list;
 extern monster_type *mon_list;
+extern s32b tot_mon_power;
 extern monster_lore *l_list;
 extern quest *q_list;
 extern store_type *store;
@@ -245,11 +226,14 @@ extern void (*sound_hook)(int);
 extern autoinscription *inscriptions;
 extern u16b inscriptions_count;
 
+extern flag_cache *slay_cache;
+
 /* history.c */
 extern history_info *history_list;
 
 /* squelch.c */
-extern byte squelch_level[SQUELCH_BYTES];
+extern byte squelch_level[];
+const size_t squelch_size;
 
 
 /*
@@ -260,8 +244,6 @@ extern byte squelch_level[SQUELCH_BYTES];
 extern int breakage_chance(const object_type *o_ptr);
 extern bool test_hit(int chance, int ac, int vis);
 extern void py_attack(int y, int x);
-extern void do_cmd_fire(void);
-extern void do_cmd_throw(void);
 
 /* birth.c */
 extern void player_birth(bool quickstart_allowed);
@@ -308,7 +290,8 @@ extern bool projectable(int y1, int x1, int y2, int x2, int flg);
 extern void scatter(int *yp, int *xp, int y, int x, int d, int m);
 extern void health_track(int m_idx);
 extern void monster_race_track(int r_idx);
-extern void object_kind_track(int k_idx);
+extern void track_object(int item);
+extern void track_object_kind(int k_idx);
 extern void disturb(int stop_search, int unused_flag);
 extern bool is_quest(int level);
 extern bool dtrap_edge(int y, int x);
@@ -321,26 +304,23 @@ extern void move_player(int dir);
 /* cmd5.c */
 s16b spell_chance(int spell);
 bool spell_okay(int spell, bool known, bool browse);
-int spell_choose_new(const object_type *o_ptr);
-bool spell_cast(int spell);
+bool spell_cast(int spell, int dir);
 void spell_learn(int spell);
 
 int get_spell(const object_type *o_ptr, cptr prompt, bool known, bool browse);
-void do_cmd_browse_aux(const object_type *o_ptr);
+void do_cmd_browse_aux(const object_type *o_ptr, int item);
 
 /* death.c */
 void death_screen(void);
 
 /* dungeon.c */
+extern void dungeon_change_level(int dlev);
 extern void play_game(void);
 extern int value_check_aux1(const object_type *o_ptr);
 
 /* files.c */
 extern void html_screenshot(cptr name, int mode);
-extern s16b tokenize(char *buf, s16b num, char **tokens);
-extern errr process_pref_file_command(char *buf);
-extern errr process_pref_file(cptr name);
-extern void player_flags(u32b *f1, u32b *f2, u32b *f3);
+extern void player_flags(u32b f[OBJ_FLAG_N]);
 extern void display_player(int mode);
 extern void display_player_stat_info(void);
 extern void display_player_xtra_info(void);
@@ -349,8 +329,7 @@ extern bool show_file(cptr name, cptr what, int line, int mode);
 extern void do_cmd_help(void);
 extern void process_player_name(bool sf);
 extern bool get_name(char *buf, size_t buflen);
-extern void do_cmd_suicide(void);
-extern void do_cmd_save_game(void);
+extern void save_game(void);
 extern void close_game(void);
 extern void exit_game_panic(void);
 
@@ -371,6 +350,7 @@ bool history_add_artifact(byte a_idx, bool known);
 void history_unmask_unknown(void);
 bool history_lose_artifact(byte a_idx);
 void history_display(void);
+void dump_history(ang_file *file);
 
 /* init2.c */
 extern void init_file_paths(const char *path);
@@ -394,6 +374,7 @@ extern void describe_monster(int r_idx, bool spoilers);
 extern void roff_top(int r_idx);
 extern void screen_roff(int r_idx);
 extern void display_roff(int r_idx);
+extern int lookup_monster(const char *name);
 
 /* monster2.c */
 extern bool wake_monster(monster_type *m_ptr);
@@ -417,15 +398,12 @@ extern s16b monster_place(int y, int x, monster_type *n_ptr);
 extern bool place_monster_aux(int y, int x, int r_idx, bool slp, bool grp);
 extern bool place_monster(int y, int x, int depth, bool slp, bool grp);
 extern bool alloc_monster(int dis, bool slp, int depth);
-extern bool summon_specific(int y1, int x1, int lev, int type);
+extern bool summon_specific(int y1, int x1, int lev, int type, int delay);
 extern bool multiply_monster(int m_idx);
 extern void message_pain(int m_idx, int dam);
 extern void update_smart_learn(int m_idx, int what);
 void monster_death(int m_idx);
 bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note);
-
-/* obj-util.c */
-extern void display_itemlist(void);
 
 /* pathfind.c */
 extern bool findpath(int y, int x);
@@ -434,6 +412,22 @@ extern int get_angle_to_target(int y0, int x0, int y1, int x1, int dir);
 extern void get_grid_using_angle(int angle, int y0, int x0,
 	int *ty, int *tx);
 extern void run_step(int dir);
+
+/* prefs.c */
+void autoinsc_dump(ang_file *fff);
+void squelch_dump(ang_file *fff);
+void option_dump(ang_file *fff);
+void macro_dump(ang_file *fff);
+void keymap_dump(ang_file *fff);
+void dump_monsters(ang_file *fff);
+void dump_objects(ang_file *fff);
+void dump_features(ang_file *fff);
+void dump_flavors(ang_file *fff);
+void dump_colors(ang_file *fff);
+bool prefs_save(const char *path, void (*dump)(ang_file *), const char *title);
+s16b tokenize(char *buf, s16b num, char **tokens);
+errr process_pref_file_command(char *buf);
+errr process_pref_file(cptr name);
 
 /* randart.c */
 extern errr do_randart(u32b randart_seed, bool full);
@@ -464,7 +458,7 @@ extern void elec_dam(int dam, cptr kb_str);
 extern void fire_dam(int dam, cptr kb_str);
 extern void cold_dam(int dam, cptr kb_str);
 extern bool inc_stat(int stat);
-extern bool dec_stat(int stat, int amount, bool permanent);
+extern bool dec_stat(int stat, bool permanent);
 extern bool res_stat(int stat);
 extern bool apply_disenchant(int mode);
 extern bool project(int who, int rad, int y, int x, int dam, int typ, int flg);
@@ -550,6 +544,8 @@ extern bool brand_bolts(void);
 extern void ring_of_power(int dir);
 
 /* squelch.c */
+void squelch_init(void);
+void squelch_birth_init(void);
 int get_autoinscription_index(s16b k_idx);
 const char *get_autoinscription(s16b kind_idx);
 int apply_autoinscription(object_type *o_ptr);
@@ -557,21 +553,24 @@ int remove_autoinscription(s16b kind);
 int add_autoinscription(s16b kind, cptr inscription);
 void autoinscribe_ground(void);
 void autoinscribe_pack(void);
-
 bool squelch_tval(int tval);
+void kind_squelch_clear(object_kind *k_ptr);
+bool kind_is_squelched_aware(const object_kind *k_ptr);
+bool kind_is_squelched_unaware(const object_kind *k_ptr);
+void kind_squelch_when_aware(object_kind *k_ptr);
+void kind_squelch_when_unaware(object_kind *k_ptr);
 bool squelch_item_ok(const object_type *o_ptr);
 bool squelch_hide_item(object_type *o_ptr);
-void squelch_drop(void);
 void squelch_items(void);
-void do_cmd_options_item(void *, cptr);
+void squelch_drop(void);
+void do_cmd_options_item(void *unused, cptr title);
+bool squelch_interactive(const object_type *o_ptr);
 
 /* store.c */
 s32b price_item(const object_type *o_ptr, bool store_buying, int qty);
 void store_init(void);
 void store_shuffle(int which);
 void store_maint(int which);
-bool store_overflow(void);
-void do_cmd_store(void);
 
 /* target.c */
 bool target_able(int m_idx);
@@ -591,6 +590,9 @@ extern void place_trap(int y, int x);
 /* util.c */
 extern void text_to_ascii(char *buf, size_t len, cptr str);
 extern void ascii_to_text(char *buf, size_t len, cptr str);
+extern char *find_roman_suffix_start(cptr buf);
+extern int roman_to_int(const char *roman);
+extern int int_to_roman(int n, char *roman, size_t bufsize);
 extern int macro_find_exact(cptr pat);
 extern errr macro_add(cptr pat, cptr act);
 extern errr macro_init(void);
@@ -625,6 +627,7 @@ extern bool askfor_aux(char *buf, size_t len, bool keypress_h(char *, size_t, si
 extern bool get_string(cptr prompt, char *buf, size_t len);
 extern s16b get_quantity(cptr prompt, int max);
 extern bool get_check(cptr prompt);
+extern bool (*get_file)(const char *suggested_name, char *path, size_t len);
 extern bool get_com(cptr prompt, char *command);
 extern bool get_com_ex(cptr prompt, ui_event_data *command);
 extern void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp);
@@ -640,17 +643,12 @@ extern void build_gamma_table(int gamma);
 extern byte gamma_table[256];
 #endif /* SUPPORT_GAMMA */
 
-/* util.c */
-extern void repeat_push(int what);
-extern bool repeat_pull(int *what);
-extern void repeat_clear(void);
-extern void repeat_check(void);
-
 /* x-spell.c */
 extern int get_spell_index(const object_type *o_ptr, int index);
 extern cptr get_spell_name(int tval, int index);
 extern void get_spell_info(int tval, int index, char *buf, size_t len);
-extern bool cast_spell(int tval, int index);
+extern bool cast_spell(int tval, int index, int dir);
+extern bool spell_needs_aim(int tval, int spell);
 
 /* xtra2.c */
 void check_experience(void);
@@ -672,7 +670,6 @@ byte monster_health_attr(void);
 void cnv_stat(int val, char *out_val, size_t out_len);
 void toggle_inven_equip(void);
 void subwindows_set_flags(u32b *new_flags, size_t n_subwindows);
-void init_display(void);
 
 /* wiz-spoil.c */
 bool make_fake_artifact(object_type *o_ptr, byte name1);

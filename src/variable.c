@@ -53,17 +53,10 @@ byte sf_patch;			/* Savefile's "version_patch" */
 byte sf_extra;			/* Savefile's "version_extra" */
 
 /*
- * Savefile information
- */
-u32b sf_xtra;			/* Operating system info */
-u32b sf_when;			/* Time when savefile created */
-u16b sf_lives;			/* Number of past "lives" with this file */
-u16b sf_saves;			/* Number of "saves" during this life */
-
-/*
  * Run-time arguments
  */
 bool arg_wizard;			/* Command arg -- Request wizard mode */
+bool arg_rebalance;			/* Command arg -- Rebalance monsters */
 int arg_graphics;			/* Command arg -- Request graphics mode */
 
 /*
@@ -453,6 +446,10 @@ object_type *o_list;
  */
 monster_type *mon_list;
 
+/*
+ * Total monster power
+ */
+s32b tot_mon_power;
 
 /*
  * Array[z_info->r_max] of monster lore
@@ -597,7 +594,7 @@ char *a_text;
 ego_item_type *e_info;
 char *e_name;
 char *e_text;
-
+flag_cache *slay_cache;
 
 /*
  * The monster race arrays

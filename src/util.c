@@ -16,6 +16,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
+#include "game-event.h"
 #include "randname.h"
 
 
@@ -468,6 +469,172 @@ void ascii_to_text(char *buf, size_t len, cptr str)
 }
 
 
+/*
+ * Find the start of a possible Roman numerals suffix by going back from the
+ * end of the string to a space, then checking that all the remaining chars
+ * are valid Roman numerals.
+ * 
+ * Return the start position, or NULL if there isn't a valid suffix. 
+ */
+char *find_roman_suffix_start(cptr buf)
+{
+	const char *start = strrchr(buf, ' ');
+	const char *p;
+	
+	if (start)
+	{
+		start++;
+		p = start;
+		while (*p)
+		{
+			if (*p != 'I' && *p != 'V' && *p != 'X' && *p != 'L' &&
+			    *p != 'C' && *p != 'D' && *p != 'M')
+			{
+				start = NULL;
+				break;
+			}
+			++p;			    
+		}
+	}
+	return (char *)start;
+}
+
+/*----- Roman numeral functions  ------*/
+
+/*
+ * Converts an arabic numeral (int) to a roman numeral (char *).
+ *
+ * An arabic numeral is accepted in parameter `n`, and the corresponding
+ * upper-case roman numeral is placed in the parameter `roman`.  The
+ * length of the buffer must be passed in the `bufsize` parameter.  When
+ * there is insufficient room in the buffer, or a roman numeral does not
+ * exist (e.g. non-positive integers) a value of 0 is returned and the
+ * `roman` buffer will be the empty string.  On success, a value of 1 is
+ * returned and the zero-terminated roman numeral is placed in the
+ * parameter `roman`.
+ */
+int int_to_roman(int n, char *roman, size_t bufsize)
+{
+	/* Roman symbols */
+	char roman_symbol_labels[13][3] =
+		{"M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX",
+		 "V", "IV", "I"};
+	int  roman_symbol_values[13] =
+		{1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1};
+
+	/* Clear the roman numeral buffer */
+	roman[0] = '\0';
+
+	/* Roman numerals have no zero or negative numbers */
+	if (n < 1)
+		return 0;
+
+	/* Build the roman numeral in the buffer */
+	while (n > 0)
+	{
+		int i = 0;
+
+		/* Find the largest possible roman symbol */
+		while (n < roman_symbol_values[i])
+			i++;
+
+		/* No room in buffer, so abort */
+		if (strlen(roman) + strlen(roman_symbol_labels[i]) + 1
+			> bufsize)
+			break;
+
+		/* Add the roman symbol to the buffer */
+		my_strcat(roman, roman_symbol_labels[i], bufsize);
+
+		/* Decrease the value of the arabic numeral */
+		n -= roman_symbol_values[i];
+	}
+
+	/* Ran out of space and aborted */
+	if (n > 0)
+	{
+		/* Clean up and return */
+		roman[0] = '\0';
+
+		return 0;
+	}
+
+	return 1;
+}
+
+
+/*
+ * Converts a roman numeral (char *) to an arabic numeral (int).
+ *
+ * The null-terminated roman numeral is accepted in the `roman`
+ * parameter and the corresponding integer arabic numeral is returned.
+ * Only upper-case values are considered. When the `roman` parameter
+ * is empty or does not resemble a roman numeral, a value of -1 is
+ * returned.
+ *
+ * XXX This function will parse certain non-sense strings as roman
+ *     numerals, such as IVXCCCVIII
+ */
+int roman_to_int(const char *roman)
+{
+	size_t i;
+	int n = 0;
+	char *p;
+
+	char roman_token_chr1[] = "MDCLXVI";
+	char* roman_token_chr2[] = {0, 0, "DM", 0, "LC", 0, "VX"};
+
+	int roman_token_vals[7][3] = {{1000},
+	                              {500},
+	                              {100, 400, 900},
+	                              {50},
+	                              {10, 40, 90},
+	                              {5},
+	                              {1, 4, 9}};
+
+	if (strlen(roman) == 0)
+		return -1;
+
+	/* Check each character for a roman token, and look ahead to the
+	   character after this one to check for subtraction */
+	for (i = 0; i < strlen(roman); i++)
+	{
+		char c1, c2;
+		int c1i, c2i;
+
+		/* Get the first and second chars of the next roman token */
+		c1 = roman[i];
+		c2 = roman[i + 1];
+
+		/* Find the index for the first character */
+		p = strchr(roman_token_chr1, c1);
+		if (p)
+		{
+			c1i = p - roman_token_chr1;
+		} else {
+			return -1;
+		}
+
+		/* Find the index for the second character */
+		c2i = 0;
+		if (roman_token_chr2[c1i] && c2)
+		{
+			p = strchr(roman_token_chr2[c1i], c2);
+			if (p)
+			{
+				c2i = (p - roman_token_chr2[c1i]) + 1;
+				/* Two-digit token, so skip a char on the next pass */
+				i++;
+			}
+		}
+
+		/* Increase the arabic numeral */
+		n += roman_token_vals[c1i][c2i];
+	}
+
+	return n;
+}
+
 
 /*
  * The "macro" package
@@ -647,10 +814,10 @@ errr macro_add(cptr pat, cptr act)
 errr macro_init(void)
 {
 	/* Macro patterns */
-	macro__pat = C_ZNEW(MACRO_MAX, cptr);
+	macro__pat = C_ZNEW(MACRO_MAX, char *);
 
 	/* Macro actions */
-	macro__act = C_ZNEW(MACRO_MAX, cptr);
+	macro__act = C_ZNEW(MACRO_MAX, char *);
 
 	/* Success */
 	return (0);
@@ -747,11 +914,11 @@ void flush(void)
 
 
 /*
- * Flush all pending input if the flush_failure option is set.
+ * Flush all pending input if the OPT(flush_failure) option is set.
  */
 void flush_fail(void)
 {
-	if (flush_failure) flush();
+	if (OPT(flush_failure)) flush();
 }
 
 
@@ -1014,7 +1181,7 @@ char (*inkey_hack)(int flush_first) = NULL;
  * triggers.  The "inkey_base" flag is extremely dangerous!
  *
  * If "inkey_flag" is TRUE, then we will assume that we are waiting for a
- * normal command, and we will only show the cursor if "hilite_player" is
+ * normal command, and we will only show the cursor if "OPT(hilite_player)" is
  * TRUE (or if the player is in a store), instead of always showing the
  * cursor.  The various "main-xxx.c" files should avoid saving the game
  * in response to a "menu item" request unless "inkey_flag" is TRUE, to
@@ -1087,7 +1254,7 @@ ui_event_data inkey_ex(void)
 #ifdef ALLOW_BORG
 
 	/* Mega-Hack -- Use the special hook */
-	if (inkey_hack && ((ch = (*inkey_hack)(inkey_xtra)) != 0))
+	if (inkey_hack && ((ke.key = (*inkey_hack)(inkey_xtra)) != 0))
 	{
 		/* Cancel the various "global parameters" */
 		inkey_base = inkey_xtra = inkey_flag = FALSE;
@@ -1118,7 +1285,7 @@ ui_event_data inkey_ex(void)
 	(void)Term_get_cursor(&cursor_state);
 
 	/* Show the cursor if waiting, except sometimes in "command" mode */
-	if (!inkey_scan && (!inkey_flag || hilite_player || character_icky))
+	if (!inkey_scan && (!inkey_flag || OPT(hilite_player) || character_icky))
 	{
 		/* Show the cursor */
 		(void)Term_set_cursor(TRUE);
@@ -1220,7 +1387,7 @@ ui_event_data inkey_ex(void)
 		ke = inkey_aux(inkey_scan);
 
 		/* Handle mouse buttons */
-		if ((ke.type == EVT_MOUSE) && (mouse_buttons))
+		if ((ke.type == EVT_MOUSE) && (OPT(mouse_buttons)))
 		{
 			/* Check to see if we've hit a button */
 			/* Assuming text buttons here for now - this would have to
@@ -1368,7 +1535,7 @@ void bell(cptr reason)
 	}
 
 	/* Make a bell noise (if allowed) */
-	if (ring_bell) Term_xtra(TERM_XTRA_NOISE, 0);
+	if (OPT(ring_bell)) Term_xtra(TERM_XTRA_NOISE, 0);
 
 	/* Flush the input (later!) */
 	flush();
@@ -1382,7 +1549,7 @@ void bell(cptr reason)
 void sound(int val)
 {
 	/* No sound */
-	if (!use_sound || !sound_hook) return;
+	if (!OPT(use_sound) || !sound_hook) return;
 
 	sound_hook(val);
 }
@@ -1399,14 +1566,14 @@ static void msg_flush(int x)
 	/* Pause for response */
 	Term_putstr(x, 0, -1, a, "-more-");
 
-	if (!auto_more)
+	if (!OPT(auto_more))
 	{
 		/* Get an acceptable keypress */
 		while (1)
 		{
 			char ch;
 			ch = inkey();
-			if (quick_messages) break;
+			if (OPT(quick_messages)) break;
 			if ((ch == ESCAPE) || (ch == ' ')) break;
 			if ((ch == '\n') || (ch == '\r')) break;
 			bell("Illegal response to a 'more' prompt!");
@@ -1548,6 +1715,9 @@ static void msg_print_aux(u16b type, cptr msg)
 
 	/* Remember the position */
 	message_column += n + 1;
+
+	/* Send refresh event */
+	event_signal(EVENT_MESSAGE);
 }
 
 
@@ -2509,12 +2679,6 @@ s16b get_quantity(cptr prompt, int max)
 		p_ptr->command_arg = 0;
 	}
 
-	/* Get the item index */
-	else if ((max != 1) && repeat_pull(&amt))
-	{
-		/* nothing */
-	}
-
 	/* Prompt if needed */
 	else if ((max != 1))
 	{
@@ -2550,8 +2714,6 @@ s16b get_quantity(cptr prompt, int max)
 
 	/* Enforce the minimum */
 	if (amt < 0) amt = 0;
-
-	if (amt) repeat_push(amt);
 
 	/* Return the result */
 	return (amt);
@@ -2594,7 +2756,7 @@ bool get_check(cptr prompt)
 	while (TRUE)
 	{
 		ke = inkey_ex();
-		if (quick_messages) break;
+		if (OPT(quick_messages)) break;
 		if (ke.key == ESCAPE) break;
 		if (strchr("YyNn", ke.key)) break;
 		bell("Illegal response to a 'yes/no' question!");
@@ -2617,6 +2779,48 @@ bool get_check(cptr prompt)
 	/* Success */
 	return (TRUE);
 }
+
+
+/**
+ * Text-native way of getting a filename.
+ */
+static bool get_file_text(const char *suggested_name, char *path, size_t len)
+{
+	char buf[160];
+
+	/* Get filename */
+	my_strcpy(buf, suggested_name, sizeof buf);
+	if (!get_string("File name: ", buf, sizeof buf)) return FALSE;
+
+	/* Make sure it's actually a filename */
+	if (buf[0] == '\0' || buf[0] == ' ') return FALSE;
+
+	/* Build the path */
+	path_build(path, len, ANGBAND_DIR_USER, buf);
+
+	/* Check if it already exists */
+	if (file_exists(buf))
+	{
+		char buf2[160];
+		strnfmt(buf2, sizeof(buf2), "Replace existing file %s?", buf);
+
+		if (get_check(buf2) == FALSE)
+			return FALSE;
+	}
+
+	return TRUE;
+}
+
+
+
+
+/**
+ * Get a pathname to save a file to, given the suggested name.  Returns the
+ * result in "path".
+ */
+bool (*get_file)(const char *suggested_name, char *path, size_t len) = get_file_text;
+
+
 
 
 /*
@@ -2684,6 +2888,7 @@ void pause_line(int row)
 static char request_command_buffer[256];
 
 
+
 /*
  * Request a command from the user.
  *
@@ -2715,7 +2920,7 @@ void request_command(void)
 	cptr act;
 
 
-	if (rogue_like_commands)
+	if (OPT(rogue_like_commands))
 		mode = KEYMAP_MODE_ROGUE;
 	else
 		mode = KEYMAP_MODE_ORIG;
@@ -3088,108 +3293,6 @@ cptr attr_to_text(byte a)
 
 	/* Oops */
 	return "Icky";
-}
-
-
-
-#define REPEAT_MAX 20
-
-/* Number of chars saved */
-static int repeat__cnt = 0;
-
-/* Current index */
-static int repeat__idx = 0;
-
-/* Saved "stuff" */
-static int repeat__key[REPEAT_MAX];
-
-
-/*
- * Push data.
- */
-void repeat_push(int what)
-{
-	/* Too many keys */
-	if (repeat__cnt == REPEAT_MAX) return;
-
-	/* Push the "stuff" */
-	repeat__key[repeat__cnt++] = what;
-
-	/* Prevents us from pulling keys */
-	++repeat__idx;
-}
-
-
-/*
- * Pull data.
- */
-bool repeat_pull(int *what)
-{
-	/* All out of keys */
-	if (repeat__idx == repeat__cnt) return (FALSE);
-
-	/* Grab the next key, advance */
-	*what = repeat__key[repeat__idx++];
-
-	/* Success */
-	return (TRUE);
-}
-
-
-void repeat_clear(void)
-{
-	/* Start over from the failed pull */
-	if (repeat__idx)
-		repeat__cnt = --repeat__idx;
-
-	/* Paranoia */
-	else
-		repeat__cnt = repeat__idx;
-
-	return;
-}
-
-
-/*
- * Repeat previous command, or begin memorizing new command.
- */
-void repeat_check(void)
-{
-	int what;
-
-	/* Ignore some commands */
-	if (p_ptr->command_cmd == ESCAPE) return;
-	if (p_ptr->command_cmd == ' ') return;
-	if (p_ptr->command_cmd == '\n') return;
-	if (p_ptr->command_cmd == '\r') return;
-
-	/* Repeat Last Command */
-	if (p_ptr->command_cmd == KTRL('V'))
-	{
-		/* Reset */
-		repeat__idx = 0;
-
-		/* Get the command */
-		if (repeat_pull(&what))
-		{
-			/* Save the command */
-			p_ptr->command_cmd = what;
-		}
-	}
-
-	/* Start saving new command */
-	else
-	{
-		/* Reset */
-		repeat__cnt = 0;
-		repeat__idx = 0;
-
-		/* Get the current command */
-		what = p_ptr->command_cmd;
-
-		/* Save this command */
-		repeat_push(what);
-	}
 }
 
 

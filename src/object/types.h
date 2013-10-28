@@ -31,9 +31,7 @@ typedef struct
 
 	s32b cost;     /**< Object base cost */
 
-	u32b flags1;   /**< Flags, set 1 (see TR1_ macros) */
-	u32b flags2;   /**< Flags, set 2 (see TR2_ macros) */
-	u32b flags3;   /**< Flags, set 3 (see TR3_ macros) */
+	u32b flags[OBJ_FLAG_N];		/**< Flags */
 
 	byte d_attr;   /**< Default object attribute */
 	char d_char;   /**< Default object character */
@@ -71,7 +69,7 @@ typedef struct
 	bool aware;    /**< Set if player is aware of the kind's effects */
 	bool tried;    /**< Set if kind has been tried */
 
-	bool squelch;  /**< Set if kind should be squelched */
+	byte squelch;  /**< Squelch settings */
 	bool everseen; /**< Set if kind has ever been seen (to despoilify squelch menus) */
 } object_kind;
 
@@ -106,15 +104,14 @@ typedef struct
 
 	s32b cost;    /**< Artifact (pseudo-)worth */
 
-	u32b flags1;  /**< Flags, set 1 (see TR1_ macros) */
-	u32b flags2;  /**< Flags, set 2 (see TR2_ macros) */
-	u32b flags3;  /**< Flags, set 3 (see TR3_ macros) */
+	u32b flags[OBJ_FLAG_N];		/**< Flags */
 
 	byte level;   /**< Minimum depth artifact can appear at */
 	byte rarity;  /**< Artifact rarity */
 
-	byte max_num; /**< Unused (should be "1") */
-	byte cur_num; /**< Number created (0 or 1) */
+	bool created;	/**< Whether this artifact has been created */
+	bool seen;	/**< Whether this artifact has been seen as an artifact */
+	bool everseen;	/**< Whether this artifact has ever been seen (this game or previous) */
 
 	u16b effect;     /**< Artifact activation (see effects.c) */
 	u32b effect_msg; /**< (const char *) artifact_type::effect_msg + a_text = Effect message */
@@ -136,9 +133,7 @@ typedef struct
 
 	s32b cost;			/* Ego-item "cost" */
 
-	u32b flags1;		/* Ego-Item Flags, set 1 */
-	u32b flags2;		/* Ego-Item Flags, set 2 */
-	u32b flags3;		/* Ego-Item Flags, set 3 */
+	u32b flags[OBJ_FLAG_N];		/**< Flags */
 
 	byte level;			/* Minimum level */
 	byte rarity;		/* Object rarity */
@@ -204,9 +199,9 @@ typedef struct
 	byte name1;			/* Artifact type, if any */
 	byte name2;			/* Ego-Item type, if any */
 
-	u32b flags1;		/* Flags, set 1 */
-	u32b flags2;		/* Flags, set 2 */
-	u32b flags3;		/* Flags, set 3 */
+	u32b flags[OBJ_FLAG_N];		/**< Flags */
+	u32b known_flags[OBJ_FLAG_N];	/**< Player-known flags */
+	u16b ident;			/* Special flags */
 
 	s16b ac;			/* Normal AC */
 	s16b to_a;			/* Plusses to AC */
@@ -218,9 +213,6 @@ typedef struct
 	s16b timeout;		/* Timeout Counter */
 
 	byte number;		/* Number of items */
-
-	byte pseudo;		/* Pseudo-ID marker */
-	byte ident;			/* Special flags */
 	byte marked;		/* Object is marked */
 
 	s16b next_o_idx;	/* Next object in stack (if any) */
@@ -251,5 +243,29 @@ typedef struct
 	char x_char;    /* Desired flavor character */
 } flavor_type;
 
+/*
+ * Slay type.  Used for the global table of brands/slays and their effects.
+ */
+typedef struct
+{
+	u32b slay_flag;		/* Object flag for the slay */
+	u32b monster_flag;	/* Which monster flag(s) make it vulnerable */
+	u32b resist_flag;	/* Which monster flag(s) make it resist */
+	int mult;		/* Slay multiplier */
+	const char *range_verb;	/* attack verb for ranged hits */
+	const char *melee_verb; /* attack verb for melee hits */
+	const char *active_verb; /* verb for when the object is active */
+	const char *desc;	/* description of vulnerable creatures */
+	const char *brand;	/* name of brand */
+} slay_t;
+
+/*
+ * Slay cache. Used for looking up slay values in obj-power.c
+ */
+typedef struct
+{
+	u32b flags;		/* Combination of slays and brands */
+	s32b value;		/* Value of this combination */
+} flag_cache;
 
 #endif /* INCLUDED_OBJECT_TYPES_H */

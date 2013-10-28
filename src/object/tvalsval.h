@@ -188,7 +188,7 @@ enum sval_crown /* tval 33 */
 
 enum sval_shield /* tval 34 */
 {
-	SV_BUCKLER = 1,
+/*	SV_BUCKLER = 1, */
 	SV_WICKER_SHIELD = 2,
 	SV_SMALL_METAL_SHIELD = 3,
 	SV_LEATHER_SHIELD = 4,
@@ -348,11 +348,6 @@ enum sval_gold /* tval 100 */
  * Special "sval" limit -- first "normal" food
  */
 #define SV_FOOD_MIN_SHROOM   5
-
-/*
- * Special "sval" limit -- first "aimed" rod
- */
-#define SV_ROD_MIN_DIRECTION	12
 
 /*
  * Special "sval" limit -- first "large" chest

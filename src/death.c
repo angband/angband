@@ -18,7 +18,7 @@
 #include "angband.h"
 #include "ui-menu.h"
 #include "cmds.h"
-
+#include "wizard.h"
 
 /*
  * Hack - save the time of death
@@ -113,8 +113,8 @@ static void death_knowledge(void)
 		o_ptr = &inventory[i];
 		if (!o_ptr->k_idx) continue;
 
-		object_aware(o_ptr);
-		object_known(o_ptr);
+		object_flavor_aware(o_ptr);
+		object_notice_everything(o_ptr);
 	}
 
 	for (i = 0; i < st_ptr->stock_num; i++)
@@ -122,8 +122,8 @@ static void death_knowledge(void)
 		o_ptr = &st_ptr->stock[i];
 		if (!o_ptr->k_idx) continue;
 
-		object_aware(o_ptr);
-		object_known(o_ptr);
+		object_flavor_aware(o_ptr);
+		object_notice_everything(o_ptr);
 	}
 
 	/* Hack -- Recalculate bonuses */
@@ -179,22 +179,21 @@ static void display_winner(void)
  */
 static void death_file(void *unused, const char *title)
 {
+	char buf[1024];
 	char ftmp[80];
-	strnfmt(ftmp, sizeof(ftmp), "%s.txt", op_ptr->base_name);
 
 	(void)unused;
 	(void)title;
 
-	if (!get_string("File name: ", ftmp, sizeof(ftmp)))
-		return;
+	strnfmt(ftmp, sizeof(ftmp), "%s.txt", op_ptr->base_name);
 
-	if (ftmp[0] && (ftmp[0] != ' '))
+	if (get_file(ftmp, buf, sizeof buf))
 	{
 		errr err;
 
 		/* Dump a character file */
 		screen_save();
-		err = file_character(ftmp, FALSE);
+		err = file_character(buf, FALSE);
 		screen_load();
 
 		/* Check result */
@@ -343,7 +342,7 @@ static void death_examine(void *unused, const char *title)
 	q = "Examine which item? ";
 	s = "You have nothing to examine.";
 
-	while (get_item(&item, q, s, (USE_INVEN | USE_EQUIP)))
+	while (get_item(&item, q, s, (USE_INVEN | USE_EQUIP | IS_HARMLESS)))
 	{
 		object_type *o_ptr = &inventory[item];
 
@@ -353,7 +352,7 @@ static void death_examine(void *unused, const char *title)
 		Term_gotoxy(0, 0);
 
 		object_info_header(o_ptr);
-		if (!object_info_known(o_ptr))
+		if (!object_info(o_ptr, TRUE))
 			text_out("This item does not possess any special abilities.");
 
 		text_out_c(TERM_L_BLUE, "\n\n[Press any key to continue]\n");
@@ -375,9 +374,20 @@ static void death_history(void *unused, const char *title)
 	history_display();
 }
 
+/*
+ * Menu command: allow spoiler generation (mainly for randarts).
+ */
+static void death_spoilers(void *unused, const char *title)
+{
+	(void)unused;
+	(void)title;
+
+	do_cmd_spoilers();
+}
 
 /*
- * Menu structures for the death menu.
+ * Menu structures for the death menu. Note that Quit must always be the
+ * last option, due to a hard-coded check in death_screen
  */
 static menu_type death_menu;
 static menu_action death_actions[] =
@@ -388,6 +398,7 @@ static menu_action death_actions[] =
 	{ 'v', "View scores",   death_scores,   NULL },
 	{ 'x', "Examine items", death_examine,  NULL },
 	{ 'h', "History",       death_history,  NULL },
+	{ 's', "Spoilers",	death_spoilers,	NULL },
 	{ 'q', "Quit",          death_examine,  NULL },
 };
 
@@ -425,7 +436,7 @@ void death_screen(void)
 {
 	menu_type *menu;
 	const char cmd_keys[] = { ARROW_LEFT, ARROW_RIGHT, '\0' };
-	const region area = { 51, 2, 0, 7 };
+	const region area = { 51, 2, 0, N_ELEMENTS(death_actions) };
 
 	int cursor = 0;
 	ui_event_data c = EVENT_EMPTY;
@@ -475,7 +486,7 @@ void death_screen(void)
 	{
 		c = menu_select(&death_menu, &cursor, 0);
 
-		if (c.key == ESCAPE || cursor == 6)
+		if (c.key == ESCAPE || cursor == (menu->count -1))
 		{
 			if (get_check("Do you want to quit? "))
 				break;

@@ -47,8 +47,9 @@
  * program, but that feels a little silly, especially considering some
  * of the platforms that we currently support.
  */
-#include "angband.h"
+
 #include "effects.h"
+#include "monster/constants.h"
 
 #ifdef ALLOW_TEMPLATES
 
@@ -61,7 +62,7 @@
 /* Use a slightly unusual include method to create effect_list[] */
 static const char *effect_list[] =
 {
-	#define EFFECT(x, y, z)    #x,
+	#define EFFECT(x, y, r, z)    #x,
 	#include "list-effects.h"
 	#undef EFFECT
 };
@@ -504,7 +505,7 @@ static cptr c_info_flags[] =
 	"ZERO_FAIL",
 	"BEAM",
 	"CHOOSE_SPELLS",
-	"PSEUDO_ID_HEAVY",
+	"XXX9",
 	"PSEUDO_ID_IMPROV",
 	"XXX10",
 	"XXX11",
@@ -530,6 +531,30 @@ static cptr c_info_flags[] =
 	"XXX31",
 	"XXX32"
 };
+
+
+/*
+ * Terrain feature flags
+ */
+static const char *f_info_flags[] =
+{
+	"PWALK",
+	"PPASS",
+	"MWALK",
+	"MPASS",
+	"LOOK",
+	"DIG",
+	"DOOR",
+	"EXIT_UP",
+	"EXIT_DOWN",
+	"PERM",
+	"TRAP",
+	"SHOP",
+	"HIDDEN",
+	"BORING",
+	NULL
+};
+
 
 
 /*** Initialize from ascii template files ***/
@@ -674,6 +699,70 @@ static u32b add_name(header *head, cptr buf)
 	
 	/* Return the name index */
 	return (index);
+}
+
+
+/*
+ * Grab one flag from a textual string
+ */
+static errr grab_one_flag(u32b *flags, cptr names[], cptr what)
+{
+	int i;
+
+	/* Check flags */
+	for (i = 0; i < 32 && names[i]; i++)
+	{
+		if (streq(what, names[i]))
+		{
+			*flags |= (1L << i);
+			return (0);
+		}
+	}
+
+	return (-1);
+}
+
+/*
+ * Figure out what index an activation should have
+ */
+static u32b grab_one_effect(const char *what)
+{
+	size_t i;
+
+	/* Scan activations */
+	for (i = 0; i < N_ELEMENTS(effect_list); i++)
+	{
+		if (streq(what, effect_list[i]))
+			return i;
+	}
+
+	/* Oops */
+	msg_format("Unknown effect '%s'.", what);
+
+	/* Error */
+	return 0;
+}
+
+/**
+ * Parse a timeout figure, in dice+adds format
+ *
+ * Note -- we use temporary variables of type 'int' because ther
+ * is no sscanf identifer for uint16_t.
+ */
+static bool grab_one_timeout(const char *text, u16b *dd, u16b *ds, u16b *base)
+{
+	int t_dd = 0, t_ds = 0, t_base = 0;
+
+	     if (1 == sscanf(text, "d%d",      &t_ds))          { t_dd = 1; }
+	else if (2 == sscanf(text, "%d+d%d",   &t_base, &t_ds)) { t_dd = 1; }
+	else if (2 == sscanf(text, "%dd%d",    &t_dd, &t_ds));
+	else if (3 == sscanf(text, "%d+%dd%d", &t_base, &t_dd, &t_ds));
+	else if (1 == sscanf(text, "%d",       &t_base)) { t_dd = t_ds = 0; }
+	else return FALSE;
+
+	*dd = t_dd; *ds = t_ds; *base = t_base;
+
+	return TRUE;
 }
 
 
@@ -1122,6 +1211,7 @@ errr parse_f_info(char *buf, header *head)
 	int i;
 
 	char *s;
+	char *t;
 
 	/* Current entry */
 	static feature_type *f_ptr = NULL;
@@ -1174,11 +1264,27 @@ errr parse_f_info(char *buf, header *head)
 		if (!f_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
 
 		/* Scan for the values */
-		if (1 != sscanf(buf+2, "%d",
-			            &mimic)) return (PARSE_ERROR_NOT_NUMBER);
+		if (1 != sscanf(buf+2, "%d", &mimic))
+			return (PARSE_ERROR_NOT_NUMBER);
 
 		/* Save the values */
 		f_ptr->mimic = mimic;
+	}
+
+	/* Process 'P' for "Priority" */
+	else if (buf[0] == 'P')
+	{
+		int priority;
+
+		/* There better be a current f_ptr */
+		if (!f_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
+
+		/* Scan for the values */
+		if (1 != sscanf(buf+2, "%d", &priority))
+			return (PARSE_ERROR_NOT_NUMBER);
+
+		/* Save the values */
+		f_ptr->priority = priority;
 	}
 
 	/* Process 'G' for "Graphics" (one line only) */
@@ -1220,6 +1326,55 @@ errr parse_f_info(char *buf, header *head)
 		f_ptr->d_attr = d_attr;
 		f_ptr->d_char = d_char;
 	}
+
+	/* Process 'F' for flags */
+	else if (buf[0] == 'F')
+	{
+		/* Parse every entry textually */
+		for (s = buf + 2; *s; )
+		{
+			/* Find the end of this entry */
+			for (t = s; *t && (*t != ' ') && (*t != '|'); ++t) /* loop */;
+
+			/* Nuke and skip any dividers */
+			if (*t)
+			{
+				*t++ = '\0';
+				while ((*t == ' ') || (*t == '|')) t++;
+			}
+
+			/* Parse this entry */
+			if (0 != grab_one_flag(&f_ptr->flags, f_info_flags, s))
+				return (PARSE_ERROR_INVALID_FLAG);
+
+			/* Start the next entry */
+			s = t;
+		}
+	}
+
+	/* Process 'E' for effect */
+	else if (buf[0] == 'E')
+	{
+		f_ptr->effect = grab_one_effect(buf + 2);
+		if (!f_ptr->effect)
+			return PARSE_ERROR_GENERIC;
+	}
+
+	/* Process 'X' for extra */
+	else if (buf[0] == 'X')
+	{
+		int locked, jammed, shopnum, dig;
+
+		if (4 != sscanf(buf + 2, "%d:%d:%d:%d",
+				&locked, &jammed, &shopnum, &dig))
+			return PARSE_ERROR_NOT_NUMBER;
+
+		f_ptr->locked = locked;
+		f_ptr->jammed = jammed;
+		f_ptr->shopnum = shopnum;
+		f_ptr->dig = dig;
+	}
+
 	else
 	{
 		/* Oops */
@@ -1232,38 +1387,13 @@ errr parse_f_info(char *buf, header *head)
 
 
 /*
- * Grab one flag from a textual string
- */
-static errr grab_one_flag(u32b *flags, cptr names[], cptr what)
-{
-	int i;
-
-	/* Check flags */
-	for (i = 0; i < 32; i++)
-	{
-		if (streq(what, names[i]))
-		{
-			*flags |= (1L << i);
-			return (0);
-		}
-	}
-
-	return (-1);
-}
-
-
-/*
  * Grab one flag in an object_kind from a textual string
  */
-static errr grab_one_kind_flag(object_kind *k_ptr, cptr what)
+static errr grab_one_object_flag(u32b flags[OBJ_FLAG_N], cptr what)
 {
-	if (grab_one_flag(&k_ptr->flags1, k_info_flags1, what) == 0)
-		return (0);
-
-	if (grab_one_flag(&k_ptr->flags2, k_info_flags2, what) == 0)
-		return (0);
-
-	if (grab_one_flag(&k_ptr->flags3, k_info_flags3, what) == 0)
+	if (grab_one_flag(&flags[0], k_info_flags1, what) == 0 ||
+			grab_one_flag(&flags[1], k_info_flags2, what) == 0 ||
+			grab_one_flag(&flags[2], k_info_flags3, what) == 0)
 		return (0);
 
 	/* Oops */
@@ -1271,28 +1401,6 @@ static errr grab_one_kind_flag(object_kind *k_ptr, cptr what)
 
 	/* Error */
 	return (PARSE_ERROR_INVALID_FLAG);
-}
-
-
-/*
- * Figure out what index an activation should have
- */
-static u32b grab_one_effect(const char *what)
-{
-	size_t i;
-
-	/* Scan activations */
-	for (i = 0; i < N_ELEMENTS(effect_list); i++)
-	{
-		if (streq(what, effect_list[i]))
-			return i;
-	}
-
-	/* Oops */
-	msg_format("Unknown effect '%s'.", what);
-
-	/* Error */
-	return 0;
 }
 
 
@@ -1532,7 +1640,7 @@ errr parse_k_info(char *buf, header *head)
 			}
 
 			/* Parse this entry */
-			if (0 != grab_one_kind_flag(k_ptr, s))
+			if (0 != grab_one_object_flag(k_ptr->flags, s))
 				return (PARSE_ERROR_INVALID_FLAG);
 
 			/* Start the next entry */
@@ -1543,8 +1651,6 @@ errr parse_k_info(char *buf, header *head)
 	/* Process 'E' for effect */
 	else if (buf[0] == 'E')
 	{
-		int base, ds, dd;
-
 		/* Find the colon after the name, nuke it and advance */
 		s = strchr(buf + 2, ':');
 		if (s) *s++ = '\0';
@@ -1553,39 +1659,9 @@ errr parse_k_info(char *buf, header *head)
 		k_ptr->effect = grab_one_effect(buf + 2);
 		if (!k_ptr->effect) return (PARSE_ERROR_GENERIC);
 
-		if (!s)
-		{
-		}
-		else if (1 == sscanf(s, "d%d", &ds))
-		{
-			k_ptr->time_dice = 1;
-			k_ptr->time_sides = ds;
-		}
-		else if (2 == sscanf(s, "%d+d%d", &base, &ds))
-		{
-			k_ptr->time_base = base;
-			k_ptr->time_dice = 1;
-			k_ptr->time_sides = ds;
-		}
-		else if (2 == sscanf(s, "%dd%d", &dd, &ds))
-		{
-			k_ptr->time_dice = dd;
-			k_ptr->time_sides = ds;
-		}
-		else if (3 == sscanf(s, "%d+%dd%d", &base, &dd, &ds))
-		{
-			k_ptr->time_base = base;
-			k_ptr->time_dice = dd;
-			k_ptr->time_sides = ds;
-		}
-		else if (1 == sscanf(s, "%d", &base))
-		{
-			k_ptr->time_base = base;
-		}
-		else
-		{
+		if (s && !grab_one_timeout(s, &k_ptr->time_dice,
+				&k_ptr->time_sides, &k_ptr->time_base))
 			return (PARSE_ERROR_GENERIC);
-		}
 	}
 
 	/* Process 'D' for "Description" */
@@ -1606,27 +1682,6 @@ errr parse_k_info(char *buf, header *head)
 	return (0);
 }
 
-
-/*
- * Grab one flag in an artifact_type from a textual string
- */
-static errr grab_one_artifact_flag(artifact_type *a_ptr, cptr what)
-{
-	if (grab_one_flag(&a_ptr->flags1, k_info_flags1, what) == 0)
-		return (0);
-
-	if (grab_one_flag(&a_ptr->flags2, k_info_flags2, what) == 0)
-		return (0);
-
-	if (grab_one_flag(&a_ptr->flags3, k_info_flags3, what) == 0)
-		return (0);
-
-	/* Oops */
-	msg_format("Unknown artifact flag '%s'.", what);
-
-	/* Error */
-	return (PARSE_ERROR_INVALID_FLAG);
-}
 
 
 /*
@@ -1677,7 +1732,7 @@ errr parse_a_info(char *buf, header *head)
 			return (PARSE_ERROR_OUT_OF_MEMORY);
 
 		/* Ignore everything */
-		a_ptr->flags3 |= (TR3_IGNORE_MASK);
+		a_ptr->flags[2] |= (TR2_IGNORE_MASK);
 
 		/* Return early */
 		return (0);
@@ -1785,7 +1840,7 @@ errr parse_a_info(char *buf, header *head)
 			}
 
 			/* Parse this entry */
-			if (0 != grab_one_artifact_flag(a_ptr, s))
+			if (0 != grab_one_object_flag(a_ptr->flags, s))
 				return (PARSE_ERROR_INVALID_FLAG);
 
 			/* Start the next entry */
@@ -1796,8 +1851,6 @@ errr parse_a_info(char *buf, header *head)
 	/* Process 'A' for "Activation & time" */
 	else if (buf[0] == 'A')
 	{
-		int base, ds, dd;
-
 		/* Find the colon after the name */
 		s = strchr(buf + 2, ':');
 		if (!s) return (PARSE_ERROR_MISSING_COLON);
@@ -1811,36 +1864,9 @@ errr parse_a_info(char *buf, header *head)
 		if (!a_ptr->effect) return (PARSE_ERROR_GENERIC);
 
 		/* Scan for the values */
-		if (1 == sscanf(s, "%d", &base))
-		{
-			a_ptr->time_base = base;
-		}
-		else if (1 == sscanf(s, "d%d", &ds))
-		{
-			a_ptr->time_dice = 1;
-			a_ptr->time_sides = ds;
-		}
-		else if (2 == sscanf(s, "%d+d%d", &base, &ds))
-		{
-			a_ptr->time_base = base;
-			a_ptr->time_dice = 1;
-			a_ptr->time_sides = ds;
-		}
-		else if (2 == sscanf(s, "%dd%d", &dd, &ds))
-		{
-			a_ptr->time_dice = dd;
-			a_ptr->time_sides = ds;
-		}
-		else if (3 == sscanf(s, "%d+%dd%d", &base, &dd, &ds))
-		{
-			a_ptr->time_base = base;
-			a_ptr->time_dice = dd;
-			a_ptr->time_sides = ds;
-		}
-		else
-		{
+		if (!grab_one_timeout(s, &a_ptr->time_dice, &a_ptr->time_sides,
+				&a_ptr->time_base))
 			return (PARSE_ERROR_GENERIC);
-		}
 	}
 
 	/* Process 'M' for "Effect message" */
@@ -1868,29 +1894,6 @@ errr parse_a_info(char *buf, header *head)
 	/* Success */
 	return (0);
 }
-
-
-/*
- * Grab one flag in a ego-item_type from a textual string
- */
-static bool grab_one_ego_item_flag(ego_item_type *e_ptr, cptr what)
-{
-	if (grab_one_flag(&e_ptr->flags1, k_info_flags1, what) == 0)
-		return (0);
-
-	if (grab_one_flag(&e_ptr->flags2, k_info_flags2, what) == 0)
-		return (0);
-
-	if (grab_one_flag(&e_ptr->flags3, k_info_flags3, what) == 0)
-		return (0);
-
-	/* Oops */
-	msg_format("Unknown ego-item flag '%s'.", what);
-
-	/* Error */
-	return (PARSE_ERROR_INVALID_FLAG);
-}
-
 
 
 
@@ -2046,7 +2049,7 @@ errr parse_e_info(char *buf, header *head)
 			}
 
 			/* Parse this entry */
-			if (0 != grab_one_ego_item_flag(e_ptr, s))
+			if (0 != grab_one_object_flag(e_ptr->flags, s))
 				return (PARSE_ERROR_INVALID_FLAG);
 
 			/* Start the next entry */
@@ -2395,37 +2398,17 @@ errr parse_r_info(char *buf, header *head)
 
 
 /*
- * Grab one flag in a player_race from a textual string
- */
-static errr grab_one_racial_flag(player_race *pr_ptr, cptr what)
-{
-	if (grab_one_flag(&pr_ptr->flags1, k_info_flags1, what) == 0)
-		return (0);
-
-	if (grab_one_flag(&pr_ptr->flags2, k_info_flags2, what) == 0)
-		return (0);
-
-	if (grab_one_flag(&pr_ptr->flags3, k_info_flags3, what) == 0)
-		return (0);
-
-	/* Oops */
-	msg_format("Unknown player flag '%s'.", what);
-
-	/* Error */
-	return (PARSE_ERROR_INVALID_FLAG);
-}
-
-/*
  * Helper function for reading a list of skills
  */
 static bool parse_skills(s16b *skills_array, const char *buf)
 {
-	int dis, dev, sav, stl, srh, fos, thn, thb;
+	int dis, dev, sav, stl, srh, fos, thn, thb, throw, dig;
 
 	/* Scan for the values */
-	if (8 != sscanf(buf, "%d:%d:%d:%d:%d:%d:%d:%d",
-			            &dis, &dev, &sav, &stl,
-			            &srh, &fos, &thn, &thb)) return FALSE;
+	if (SKILL_MAX != sscanf(buf, "%d:%d:%d:%d:%d:%d:%d:%d:%d:%d",
+			&dis, &dev, &sav, &stl, &srh,
+			&fos, &thn, &thb, &throw, &dig))
+		return FALSE;
 
 	/* Save the values */
 	skills_array[SKILL_DISARM] = dis;
@@ -2436,6 +2419,8 @@ static bool parse_skills(s16b *skills_array, const char *buf)
 	skills_array[SKILL_SEARCH_FREQUENCY] = fos;
 	skills_array[SKILL_TO_HIT_MELEE] = thn;
 	skills_array[SKILL_TO_HIT_BOW] = thb;
+	skills_array[SKILL_TO_HIT_THROW] = throw;
+	skills_array[SKILL_DIGGING] = dig;
 
 	return TRUE;
 }
@@ -2627,7 +2612,7 @@ errr parse_p_info(char *buf, header *head)
 			}
 
 			/* Parse this entry */
-			if (0 != grab_one_racial_flag(pr_ptr, s))
+			if (0 != grab_one_object_flag(pr_ptr->flags, s))
 				return (PARSE_ERROR_INVALID_FLAG);
 
 			/* Start the next entry */
@@ -3141,14 +3126,9 @@ errr parse_b_info(char *buf, header *head)
 		owner_idx++;
 		return 0;
 	}
-	else
-	{
-		/* Oops */
-		return (PARSE_ERROR_UNDEFINED_DIRECTIVE);
-	}
 
-	/* Success */
-	return (0);
+	/* Oops */
+	return (PARSE_ERROR_UNDEFINED_DIRECTIVE);
 }
 
 
@@ -3366,7 +3346,7 @@ errr parse_s_info(char *buf, header *head)
 /*
  * Initialise the info
  */
-errr eval_info(eval_info_power_func eval_info_process, header *head)
+errr eval_info(eval_info_post_func eval_info_process, header *head)
 {
 	int err;
 
@@ -3376,13 +3356,39 @@ errr eval_info(eval_info_power_func eval_info_process, header *head)
 	return(err);
 }
 
-#ifdef ALLOW_TEMPLATES_PROCESS
 
 /*
- * Total monster power
+ * Damage calculation - we want max damage for power evaluation,
+ * but random damage for combat. See full explanation in monster/constants.h
  */
-static s32b tot_mon_power;
-
+int damcalc(int dice, int sides, aspect dam_aspect)
+{
+	int num = 0;
+	switch (dam_aspect)
+	{
+		case MAXIMISE:
+		{
+			num = dice * sides;
+			break;
+		}
+		case RANDOMISE:
+		{
+			num = damroll(dice, sides);
+			break;
+		}
+		case MINIMISE:
+		{
+			num = dice;
+			break;
+		}
+		case AVERAGE:
+		{
+			num = dice * (sides + 1) / 2;
+			break;
+		}
+	}
+	return (num);
+}
 
 static long eval_blow_effect(int effect, int atk_dam, int rlev)
 {
@@ -3447,13 +3453,15 @@ static long eval_blow_effect(int effect, int atk_dam, int rlev)
 		case RBE_EXP_10:
 		case RBE_EXP_20:
 		{
-			atk_dam += 1000 / (rlev + 1);
+			/* change inspired by Eddie because exp is infinite */
+			atk_dam += 5;
 			break;
 		}
 		case RBE_EXP_40:
 		case RBE_EXP_80:
 		{
-			atk_dam += 2000 / (rlev + 1);
+			/* as above */
+			atk_dam += 10;
 			break;
 		}
 		/*Earthquakes*/
@@ -3496,190 +3504,261 @@ static long eval_max_dam(monster_race *r_ptr)
 	/* Extract the monster level, force 1 for town monsters */
 	rlev = ((r_ptr->level >= 1) ? r_ptr->level : 1);
 
-	/* Note the following code for average damage depends on
-	 * a lot of "magic numbers" in melee2.c.  This is
-	 * unavoidable.  Any change to the damage calculations
-	 * in melee2.c may render the following inaccurate or
-	 * obsolete.
-	 *
-	 * To do: (perhaps) change melee2.c to work with #define
-	 * statements or separate methods that can be called from
-	 * here, eliminating the need for duplication.
-	 */
-
 	/* Assume single resist for the elemental attacks */
-	breath_dam = ((hp / 3) > 1600 ? 533 : (hp / 9));
-	if ((r_ptr->flags4 & RF4_BR_ACID) && spell_dam < breath_dam) spell_dam = breath_dam + 20;
-	if ((r_ptr->flags4 & RF4_BR_ELEC) && spell_dam < breath_dam) spell_dam = breath_dam + 10;
-	if ((r_ptr->flags4 & RF4_BR_FIRE) && spell_dam < breath_dam) spell_dam = breath_dam + 10;
-	if ((r_ptr->flags4 & RF4_BR_COLD) && spell_dam < breath_dam) spell_dam = breath_dam + 10;
+	if (r_ptr->spell_flags[0] & RSF0_BR_ACID)
+		{
+		breath_dam = (RES_ACID_ADJ(MIN(BR_ACID_MAX,
+			(hp / BR_ACID_DIVISOR)), MINIMISE));
+		if (spell_dam < breath_dam) spell_dam = breath_dam + 20;
+		}
+	if (r_ptr->spell_flags[0] & RSF0_BR_ELEC)
+		{
+		breath_dam = (RES_ELEC_ADJ(MIN(BR_ELEC_MAX, 
+			(hp / BR_ELEC_DIVISOR)), MINIMISE));
+		if (spell_dam < breath_dam) spell_dam = breath_dam + 10;
+		}
+	if (r_ptr->spell_flags[0] & RSF0_BR_FIRE)
+		{
+		breath_dam = (RES_FIRE_ADJ(MIN(BR_FIRE_MAX,
+			(hp / BR_FIRE_DIVISOR)), MINIMISE));
+		if (spell_dam < breath_dam) spell_dam = breath_dam + 10;
+		}
+	if (r_ptr->spell_flags[0] & RSF0_BR_COLD)
+		{
+		breath_dam = (RES_COLD_ADJ(MIN(BR_COLD_MAX,
+			(hp / BR_COLD_DIVISOR)), MINIMISE));
+		if (spell_dam < breath_dam) spell_dam = breath_dam + 10;
+		}
 	/* Same for poison, but lower damage cap */
-	breath_dam = ((hp / 3) > 800 ? 266 : (hp / 9));
-	if ((r_ptr->flags4 & RF4_BR_POIS) && spell_dam < breath_dam) spell_dam = (breath_dam * 5 / 4) + rlev;
+	if (r_ptr->spell_flags[0] & RSF0_BR_POIS)
+		{
+		breath_dam = (RES_POIS_ADJ(MIN(BR_POIS_MAX,
+			(hp / BR_POIS_DIVISOR)), MINIMISE));
+		if (spell_dam < breath_dam) spell_dam = (breath_dam * 5 / 4)
+			+ rlev;
+		}
 	/*
-	 * Different formulae for the high resist attacks
-	 * (remember, we are assuming maximum resisted damage)
-	 * See also: melee2.c, spells1.c
+	 * Same formula for the high resist attacks
+	 * (remember, we are assuming maximum resisted damage
+	 * so we *minimise* the resistance)
+	 * See also: melee2.c, spells1.c, constants.h
 	 */
-	breath_dam = ((hp / 6) > 550 ? 471 : ((hp * 6) / 42));
-	if ((r_ptr->flags4 & RF4_BR_NETH) && spell_dam < breath_dam) spell_dam = breath_dam + 2000 / (rlev + 1);
-	breath_dam = ((hp / 6) > 500 ? 428 : ((hp * 6) / 42));
-	if ((r_ptr->flags4 & RF4_BR_CHAO) && spell_dam < breath_dam) spell_dam = breath_dam + 2000 / (rlev + 1);
-	if ((r_ptr->flags4 & RF4_BR_DISE) && spell_dam < breath_dam) spell_dam = breath_dam + 50;
-	if ((r_ptr->flags4 & RF4_BR_SHAR) && spell_dam < breath_dam) spell_dam = (breath_dam * 5 / 4) + 5;
-	breath_dam = ((hp / 6) > 400 ? 228 : ((hp * 4) / 42));
-	if ((r_ptr->flags4 & RF4_BR_LITE) && spell_dam < breath_dam) spell_dam = breath_dam + 10;
-	if ((r_ptr->flags4 & RF4_BR_DARK) && spell_dam < breath_dam) spell_dam = breath_dam + 10;
-	breath_dam = ((hp / 6) > 400 ? 285 : ((hp * 5) / 42));
-	if ((r_ptr->flags4 & RF4_BR_CONF) && spell_dam < breath_dam) spell_dam = breath_dam + 20;
-	breath_dam = ((hp / 6) > 500 ? 357 : ((hp * 5) / 42));
-	if ((r_ptr->flags4 & RF4_BR_SOUN) && spell_dam < breath_dam) spell_dam = breath_dam + 20;
-	breath_dam = ((hp / 6) > 400 ? 342 : ((hp * 6) / 42));
-	if ((r_ptr->flags4 & RF4_BR_NEXU) && spell_dam < breath_dam) spell_dam = breath_dam + 20;
-	breath_dam = ((hp / 3) > 150 ? 150 : (hp / 9));
-	if ((r_ptr->flags4 & RF4_BR_TIME) && spell_dam < breath_dam) spell_dam = breath_dam + 2000 / (rlev + 1);
-	breath_dam = ((hp / 6) > 200 ? 200 : (hp / 6));
-	if ((r_ptr->flags4 & RF4_BR_INER) && spell_dam < breath_dam) spell_dam = breath_dam + 30;
-	breath_dam = ((hp / 3) > 200 ? 200 : (hp / 3));
-	if ((r_ptr->flags4 & RF4_BR_GRAV) && spell_dam < breath_dam) spell_dam = breath_dam + 30;
-	breath_dam = ((hp / 6) > 150 ? 150 : (hp / 6));
-	if ((r_ptr->flags4 & RF4_BR_PLAS) && spell_dam < breath_dam) spell_dam = breath_dam + 30;
-	breath_dam = ((hp / 6) > 200 ? 200 : (hp / 6));
-	if ((r_ptr->flags4 & RF4_BR_WALL) && spell_dam < breath_dam) spell_dam = breath_dam + 30;
-
-	/* Handle the attack spells, again assuming single resists */
-	if ((r_ptr->flags5 & RF5_BA_ACID) && spell_dam < (rlev * 3 + 15) / 3 + 20)
-		spell_dam = (rlev * 3 + 15) / 3 + 20;
-	if ((r_ptr->flags5 & RF5_BA_ELEC) && spell_dam < ((rlev * 3 / 2) + 8) / 3 + 10)
-		spell_dam = ((rlev * 3 / 2) + 8) / 3 + 10;
-	if ((r_ptr->flags5 & RF5_BA_FIRE) && spell_dam < ((rlev * 7 / 2) + 10) / 3 + 10)
-		spell_dam = ((rlev * 7 / 2) + 10) / 3 + 10;
-	if ((r_ptr->flags5 & RF5_BA_COLD) && spell_dam < ((rlev * 3 / 2) + 10) / 3 + 10)
-		spell_dam = ((rlev * 3 / 2) + 10) / 3 + 10;
-	if ((r_ptr->flags5 & RF5_BA_POIS) && spell_dam < 8)
+	if (r_ptr->spell_flags[0] & RSF0_BR_NETH)
+		{
+		breath_dam = (RES_NETH_ADJ(MIN(BR_NETH_MAX,
+			(hp / BR_NETH_DIVISOR)), MINIMISE));
+		if (spell_dam < breath_dam) spell_dam = breath_dam + 2000
+			/ (rlev + 1);
+		}
+	if (r_ptr->spell_flags[0] & RSF0_BR_CHAO)
+		{
+		breath_dam = (RES_CHAO_ADJ(MIN(BR_CHAO_MAX,
+			(hp / BR_CHAO_DIVISOR)), MINIMISE));
+		if (spell_dam < breath_dam) spell_dam = breath_dam + 2000
+			/ (rlev + 1);
+		}
+	if (r_ptr->spell_flags[0] & RSF0_BR_DISE)
+		{
+		breath_dam = (RES_DISE_ADJ(MIN(BR_DISE_MAX,
+			(hp / BR_DISE_DIVISOR)), MINIMISE));
+		if (spell_dam < breath_dam) spell_dam = breath_dam + 50;
+		}
+	if (r_ptr->spell_flags[0] & RSF0_BR_SHAR)
+		{
+		breath_dam = (RES_SHAR_ADJ(MIN(BR_SHAR_MAX,
+			(hp / BR_SHAR_DIVISOR)), MINIMISE));
+		if (spell_dam < breath_dam) spell_dam = (breath_dam * 5 / 4)
+			+ 5;
+		}
+	if (r_ptr->spell_flags[0] & RSF0_BR_LITE)
+		{
+		breath_dam = (RES_LITE_ADJ(MIN(BR_LITE_MAX,
+			(hp / BR_LITE_DIVISOR)), MINIMISE));
+		if (spell_dam < breath_dam) spell_dam = breath_dam + 10;
+		}
+	if (r_ptr->spell_flags[0] & RSF0_BR_DARK)
+		{
+		breath_dam = (RES_DARK_ADJ(MIN(BR_DARK_MAX,
+			(hp / BR_DARK_DIVISOR)), MINIMISE));
+		if (spell_dam < breath_dam) spell_dam = breath_dam + 10;
+		}
+	if (r_ptr->spell_flags[0] & RSF0_BR_CONF)
+		{
+		breath_dam = (RES_CONF_ADJ(MIN(BR_CONF_MAX,
+			(hp / BR_CONF_DIVISOR)), MINIMISE));
+		if (spell_dam < breath_dam) spell_dam = breath_dam + 20;
+		}
+	if (r_ptr->spell_flags[0] & RSF0_BR_SOUN)
+		{
+		breath_dam = (RES_SOUN_ADJ(MIN(BR_SOUN_MAX,
+			(hp / BR_SOUN_DIVISOR)), MINIMISE));
+		if (spell_dam < breath_dam) spell_dam = breath_dam + 20;
+		}
+	if (r_ptr->spell_flags[0] & RSF0_BR_NEXU)
+		{
+		breath_dam = (RES_NEXU_ADJ(MIN(BR_NEXU_MAX,
+			(hp / BR_NEXU_DIVISOR)), MINIMISE));
+		if (spell_dam < breath_dam) spell_dam = breath_dam + 20;
+		}
+	if (r_ptr->spell_flags[0] & RSF0_BR_TIME)
+		{
+		breath_dam = MIN(BR_TIME_MAX, (hp / BR_TIME_DIVISOR));
+		if (spell_dam < breath_dam) spell_dam = breath_dam + 2000
+			/ (rlev + 1);
+		}
+	if (r_ptr->spell_flags[0] & RSF0_BR_INER)
+		{
+		breath_dam = MIN(BR_INER_MAX, (hp / BR_INER_DIVISOR));
+		if (spell_dam < breath_dam) spell_dam = breath_dam + 30;
+		}
+	if (r_ptr->spell_flags[0] & RSF0_BR_GRAV)
+		{
+		breath_dam = MIN(BR_GRAV_MAX, (hp / BR_GRAV_DIVISOR));
+		if (spell_dam < breath_dam) spell_dam = breath_dam + 30;
+		}
+	if (r_ptr->spell_flags[0] & RSF0_BR_PLAS)
+		{
+		breath_dam = MIN(BR_PLAS_MAX, (hp / BR_PLAS_DIVISOR));
+		if (spell_dam < breath_dam) spell_dam = breath_dam + 30;
+		}
+	if (r_ptr->spell_flags[0] & RSF0_BR_WALL)
+		{
+		breath_dam = MIN(BR_FORC_MAX, (hp / BR_FORC_DIVISOR));
+		if (spell_dam < breath_dam) spell_dam = breath_dam + 30;
+		}
+	/* Handle the attack spells, again assuming minimised single resists for max damage */
+	if ((r_ptr->spell_flags[1] & RSF1_BA_ACID) && spell_dam < (RES_ACID_ADJ(BA_ACID_DMG(rlev, MAXIMISE), MINIMISE) + 20))
+		spell_dam = (RES_ACID_ADJ(BA_ACID_DMG(rlev, MAXIMISE), MINIMISE) + 20);
+	if ((r_ptr->spell_flags[1] & RSF1_BA_ELEC) && spell_dam < (RES_ELEC_ADJ(BA_ELEC_DMG(rlev, MAXIMISE), MINIMISE) + 10))
+		spell_dam = (RES_ELEC_ADJ(BA_ELEC_DMG(rlev, MAXIMISE), MINIMISE) + 10);
+	if ((r_ptr->spell_flags[1] & RSF1_BA_FIRE) && spell_dam < (RES_FIRE_ADJ(BA_FIRE_DMG(rlev, MAXIMISE), MINIMISE) + 10))
+		spell_dam = (RES_FIRE_ADJ(BA_FIRE_DMG(rlev, MAXIMISE), MINIMISE) + 10);
+	if ((r_ptr->spell_flags[1] & RSF1_BA_COLD) && spell_dam < (RES_COLD_ADJ(BA_COLD_DMG(rlev, MAXIMISE), MINIMISE) + 10))
+		spell_dam = (RES_COLD_ADJ(BA_COLD_DMG(rlev, MAXIMISE), MINIMISE) + 10);
+	if ((r_ptr->spell_flags[1] & RSF1_BA_POIS) && spell_dam < 8)
 		spell_dam = 8;
-	if ((r_ptr->flags5 & RF5_BA_NETH) && spell_dam < ((rlev + 150) * 6) / 7 + 2000 / (rlev + 1))
-		spell_dam = ((rlev + 150) * 6) / 7 + 2000 / (rlev + 1);
-	if ((r_ptr->flags5 & RF5_BA_WATE) && spell_dam < ((rlev * 5) / 2) + 50 + 20)
-		spell_dam = ((rlev * 5) / 2) + 50 + 20;
-	if ((r_ptr->flags5 & RF5_BA_MANA) && spell_dam < rlev * 5 + 100)
-		spell_dam = rlev * 5 + 100;
-	if ((r_ptr->flags5 & RF5_BA_DARK) && spell_dam < ((rlev * 5 + 100) * 4) / 7 + 10)
-		spell_dam = (rlev * 20 + 400) / 7 + 10;
+	if ((r_ptr->spell_flags[1] & RSF1_BA_NETH) && spell_dam < (RES_NETH_ADJ(BA_NETH_DMG(rlev, MAXIMISE), MINIMISE) + 2000 / (rlev + 1)))
+		spell_dam = (RES_NETH_ADJ(BA_NETH_DMG(rlev, MAXIMISE), MINIMISE) + 2000 / (rlev + 1));
+	if ((r_ptr->spell_flags[1] & RSF1_BA_WATE) && spell_dam < (BA_WATE_DMG(rlev, MAXIMISE) + 20))
+		spell_dam = (BA_WATE_DMG(rlev, MAXIMISE) + 20);
+	if ((r_ptr->spell_flags[1] & RSF1_BA_MANA) && spell_dam < (BA_MANA_DMG(rlev, MAXIMISE) + 100))
+		spell_dam = (BA_MANA_DMG(rlev, MAXIMISE) + 100);
+	if ((r_ptr->spell_flags[1] & RSF1_BA_DARK) && spell_dam < (RES_DARK_ADJ(BA_DARK_DMG(rlev, MAXIMISE), MINIMISE) + 10))
+		spell_dam = (RES_DARK_ADJ(BA_DARK_DMG(rlev, MAXIMISE), MINIMISE) + 10);
 	/* Small annoyance value */
-	if ((r_ptr->flags5 & RF5_DRAIN_MANA) && spell_dam < 5)
+	if ((r_ptr->spell_flags[1] & RSF1_DRAIN_MANA) && spell_dam < 5)
 		spell_dam = 5;
 	/* For all attack forms the player can save against, spell_damage is halved */
-	if ((r_ptr->flags5 & RF5_MIND_BLAST) && spell_dam < 32)
-		spell_dam = 32;
-	if ((r_ptr->flags5 & RF5_BRAIN_SMASH) && spell_dam < 90)
-		spell_dam = 90;
-	if ((r_ptr->flags5 & RF5_CAUSE_1) && spell_dam < 12)
-		spell_dam = 12;
-	if ((r_ptr->flags5 & RF5_CAUSE_2) && spell_dam < 32)
-		spell_dam = 32;
-	if ((r_ptr->flags5 & RF5_CAUSE_3) && spell_dam < 75)
-		spell_dam = 75;
-	if ((r_ptr->flags5 & RF5_CAUSE_4) && spell_dam < 112)
-		spell_dam = 112;
-	if ((r_ptr->flags5 & RF5_BO_ACID) && spell_dam < ((rlev / 3) + 56) / 3 + 20)
-		spell_dam = ((rlev / 3) + 56) / 3 + 20;
-	if ((r_ptr->flags5 & RF5_BO_ELEC) && spell_dam < ((rlev / 3) + 32) / 3 + 10)
-		spell_dam = ((rlev / 3) + 32) / 3 + 10;
-	if ((r_ptr->flags5 & RF5_BO_FIRE) && spell_dam < ((rlev / 3) + 72) / 3 + 10)
-		spell_dam = ((rlev / 3) + 72) / 3 + 10;
-	if ((r_ptr->flags5 & RF5_BO_COLD) && spell_dam < ((rlev / 3) + 48) / 3 + 10)
-		spell_dam = ((rlev / 3) + 48) / 3 + 10;
-	if ((r_ptr->flags5 & RF5_BO_NETH) && spell_dam < ((rlev * 18) / 2 + 330) / 7  + 2000 / (rlev + 1))
-		spell_dam = ((rlev * 18) / 2 + 330) / 7;
-	if ((r_ptr->flags5 & RF5_BO_WATE) && spell_dam < rlev + 100 + 20)
-		spell_dam = rlev + 100;
-	if ((r_ptr->flags5 & RF5_BO_MANA) && spell_dam < (rlev * 7) / 2 + 50)
-		spell_dam = (rlev * 7) / 2 + 50;
-	if ((r_ptr->flags5 & RF5_BO_PLAS) && spell_dam < rlev + 66)
-		spell_dam = rlev + 66;
-	if ((r_ptr->flags5 & RF5_BO_ICEE) && spell_dam < (rlev + 36) / 3)
-		spell_dam = (rlev + 36) / 3;
-	if ((r_ptr->flags5 & RF5_MISSILE) && spell_dam < rlev / 3 + 12)
-		spell_dam = rlev / 3 + 12;
+	if ((r_ptr->spell_flags[1] & RSF1_MIND_BLAST) && spell_dam < (MIND_BLAST_DMG(rlev, MAXIMISE) / 2))
+		spell_dam = (MIND_BLAST_DMG(rlev, MAXIMISE) / 2);
+	if ((r_ptr->spell_flags[1] & RSF1_BRAIN_SMASH) && spell_dam < (BRAIN_SMASH_DMG(rlev, MAXIMISE) / 2))
+		spell_dam = (BRAIN_SMASH_DMG(rlev, MAXIMISE) / 2);
+	if ((r_ptr->spell_flags[1] & RSF1_CAUSE_1) && spell_dam < (CAUSE1_DMG(rlev, MAXIMISE) / 2))
+		spell_dam = (CAUSE1_DMG(rlev, MAXIMISE) / 2);
+	if ((r_ptr->spell_flags[1] & RSF1_CAUSE_2) && spell_dam < (CAUSE2_DMG(rlev, MAXIMISE) / 2))
+		spell_dam = (CAUSE2_DMG(rlev, MAXIMISE) / 2);
+	if ((r_ptr->spell_flags[1] & RSF1_CAUSE_3) && spell_dam < (CAUSE3_DMG(rlev, MAXIMISE) / 2))
+		spell_dam = (CAUSE3_DMG(rlev, MAXIMISE) / 2);
+	if ((r_ptr->spell_flags[1] & RSF1_CAUSE_4) && spell_dam < (CAUSE4_DMG(rlev, MAXIMISE) / 2))
+		spell_dam = (CAUSE4_DMG(rlev, MAXIMISE) / 2);
+	if ((r_ptr->spell_flags[1] & RSF1_BO_ACID) && spell_dam < (RES_ACID_ADJ(BO_ACID_DMG(rlev, MAXIMISE), MINIMISE) + 20))
+		spell_dam = (RES_ACID_ADJ(BO_ACID_DMG(rlev, MAXIMISE), MINIMISE) + 20);
+	if ((r_ptr->spell_flags[1] & RSF1_BO_ELEC) && spell_dam < (RES_ELEC_ADJ(BO_ELEC_DMG(rlev, MAXIMISE), MINIMISE) + 10))
+		spell_dam = (RES_ELEC_ADJ(BO_ELEC_DMG(rlev, MAXIMISE), MINIMISE) + 10);
+	if ((r_ptr->spell_flags[1] & RSF1_BO_FIRE) && spell_dam < (RES_FIRE_ADJ(BO_FIRE_DMG(rlev, MAXIMISE), MINIMISE) + 10))
+		spell_dam = (RES_FIRE_ADJ(BO_FIRE_DMG(rlev, MAXIMISE), MINIMISE) + 10);
+	if ((r_ptr->spell_flags[1] & RSF1_BO_COLD) && spell_dam < (RES_COLD_ADJ(BO_COLD_DMG(rlev, MAXIMISE), MINIMISE) + 10))
+		spell_dam = (RES_COLD_ADJ(BO_COLD_DMG(rlev, MAXIMISE), MINIMISE) + 10);
+	if ((r_ptr->spell_flags[1] & RSF1_BO_NETH) && spell_dam < (RES_NETH_ADJ(BO_NETH_DMG(rlev, MAXIMISE), MINIMISE) + 2000 / (rlev + 1)))
+		spell_dam = (RES_NETH_ADJ(BO_NETH_DMG(rlev, MAXIMISE), MINIMISE) + 2000 / (rlev + 1));
+	if ((r_ptr->spell_flags[1] & RSF1_BO_WATE) && spell_dam < (BO_WATE_DMG(rlev, MAXIMISE) + 20))
+		spell_dam = (BO_WATE_DMG(rlev, MAXIMISE) + 20);
+	if ((r_ptr->spell_flags[1] & RSF1_BO_MANA) && spell_dam < (BO_MANA_DMG(rlev, MAXIMISE)))
+		spell_dam = (BO_MANA_DMG(rlev, MAXIMISE));
+	if ((r_ptr->spell_flags[1] & RSF1_BO_PLAS) && spell_dam < (BO_PLAS_DMG(rlev, MAXIMISE)))
+		spell_dam = (BO_PLAS_DMG(rlev, MAXIMISE));
+	if ((r_ptr->spell_flags[1] & RSF1_BO_ICEE) && spell_dam < (RES_COLD_ADJ(BO_ICEE_DMG(rlev, MAXIMISE), MINIMISE)))
+		spell_dam = (RES_COLD_ADJ(BO_ICEE_DMG(rlev, MAXIMISE), MINIMISE));
+	if ((r_ptr->spell_flags[1] & RSF1_MISSILE) && spell_dam < (MISSILE_DMG(rlev, MAXIMISE)))
+		spell_dam = (MISSILE_DMG(rlev, MAXIMISE));
 	/* Small annoyance value */
-	if ((r_ptr->flags5 & RF5_SCARE) && spell_dam < 5)
+	if ((r_ptr->spell_flags[1] & RSF1_SCARE) && spell_dam < 5)
 		spell_dam = 5;
 	/* Somewhat higher annoyance values */
-	if ((r_ptr->flags5 & RF5_BLIND) && spell_dam < 10)
+	if ((r_ptr->spell_flags[1] & RSF1_BLIND) && spell_dam < 10)
 		spell_dam = 8;
-	if ((r_ptr->flags5 & RF5_CONF) && spell_dam < 10)
+	if ((r_ptr->spell_flags[1] & RSF1_CONF) && spell_dam < 10)
 		spell_dam = 10;
 	/* A little more dangerous */
-	if ((r_ptr->flags5 & RF5_SLOW) && spell_dam < 15)
+	if ((r_ptr->spell_flags[1] & RSF1_SLOW) && spell_dam < 15)
 		spell_dam = 15;
 	/* Quite dangerous at an early level */
-	if ((r_ptr->flags5 & RF5_HOLD) && spell_dam < 25)
+	if ((r_ptr->spell_flags[1] & RSF1_HOLD) && spell_dam < 25)
 		spell_dam = 25;
 	/* Arbitrary values along similar lines from here on */
-	if ((r_ptr->flags6 & RF6_HASTE) && spell_dam < 70)
+	if ((r_ptr->spell_flags[2] & RSF2_HASTE) && spell_dam < 70)
 		spell_dam = 70;
-	if ((r_ptr->flags6 & RF6_HEAL) && spell_dam < 30)
+	if ((r_ptr->spell_flags[2] & RSF2_HEAL) && spell_dam < 30)
 		spell_dam = 30;
-	if ((r_ptr->flags6 & RF6_BLINK) && spell_dam < 5)
+	if ((r_ptr->spell_flags[2] & RSF2_BLINK) && spell_dam < 5)
 		spell_dam = 15;
-	if ((r_ptr->flags6 & RF6_TELE_TO) && spell_dam < 25)
+	if ((r_ptr->spell_flags[2] & RSF2_TELE_TO) && spell_dam < 25)
 		spell_dam = 25;
-	if ((r_ptr->flags6 & RF6_TELE_AWAY) && spell_dam < 25)
+	if ((r_ptr->spell_flags[2] & RSF2_TELE_AWAY) && spell_dam < 25)
 		spell_dam = 25;
-	if ((r_ptr->flags6 & RF6_TELE_LEVEL) && spell_dam < 40)
+	if ((r_ptr->spell_flags[2] & RSF2_TELE_LEVEL) && spell_dam < 40)
 		spell_dam = 25;
-	if ((r_ptr->flags6 & RF6_DARKNESS) && spell_dam < 5)
+	if ((r_ptr->spell_flags[2] & RSF2_DARKNESS) && spell_dam < 5)
 		spell_dam = 6;
-	if ((r_ptr->flags6 & RF6_TRAPS) && spell_dam < 10)
+	if ((r_ptr->spell_flags[2] & RSF2_TRAPS) && spell_dam < 10)
 		spell_dam = 5;
-	if ((r_ptr->flags6 & RF6_FORGET) && spell_dam < 25)
+	if ((r_ptr->spell_flags[2] & RSF2_FORGET) && spell_dam < 25)
 		spell_dam = 5;
 	/* All summons are assigned arbitrary values */
 	/* Summon kin is more dangerous at deeper levels */
-	if ((r_ptr->flags6 & RF6_S_KIN) && spell_dam < rlev * 2)
+	if ((r_ptr->spell_flags[2] & RSF2_S_KIN) && spell_dam < rlev * 2)
 		spell_dam = rlev * 2;
 	/* Dangerous! */
-	if ((r_ptr->flags6 & RF6_S_HI_DEMON) && spell_dam < 250)
+	if ((r_ptr->spell_flags[2] & RSF2_S_HI_DEMON) && spell_dam < 250)
 		spell_dam = 250;
 	/* Somewhat dangerous */
-	if ((r_ptr->flags6 & RF6_S_MONSTER) && spell_dam < 40)
+	if ((r_ptr->spell_flags[2] & RSF2_S_MONSTER) && spell_dam < 40)
 		spell_dam = 40;
 	/* More dangerous */
-	if ((r_ptr->flags6 & RF6_S_MONSTERS) && spell_dam < 80)
+	if ((r_ptr->spell_flags[2] & RSF2_S_MONSTERS) && spell_dam < 80)
 		spell_dam = 80;
 	/* Mostly just annoying */
-	if ((r_ptr->flags6 & RF6_S_ANIMAL) && spell_dam < 30)
+	if ((r_ptr->spell_flags[2] & RSF2_S_ANIMAL) && spell_dam < 30)
 		spell_dam = 30;
-	if ((r_ptr->flags6 & RF6_S_SPIDER) && spell_dam < 20)
+	if ((r_ptr->spell_flags[2] & RSF2_S_SPIDER) && spell_dam < 20)
 		spell_dam = 20;
 	/* Can be quite dangerous */
-	if ((r_ptr->flags6 & RF6_S_HOUND) && spell_dam < 100)
+	if ((r_ptr->spell_flags[2] & RSF2_S_HOUND) && spell_dam < 100)
 		spell_dam = 100;
 	/* Dangerous! */
-	if ((r_ptr->flags6 & RF6_S_HYDRA) && spell_dam < 150)
+	if ((r_ptr->spell_flags[2] & RSF2_S_HYDRA) && spell_dam < 150)
 		spell_dam = 150;
 	/* Can be quite dangerous */
-	if ((r_ptr->flags6 & RF6_S_ANGEL) && spell_dam < 150)
+	if ((r_ptr->spell_flags[2] & RSF2_S_ANGEL) && spell_dam < 150)
 		spell_dam = 150;
 	/* All of these more dangerous at higher levels */
-	if ((r_ptr->flags6 & RF6_S_DEMON) && spell_dam < (rlev * 3) / 2)
+	if ((r_ptr->spell_flags[2] & RSF2_S_DEMON) && spell_dam < (rlev * 3) / 2)
 		spell_dam = (rlev * 3) / 2;
-	if ((r_ptr->flags6 & RF6_S_UNDEAD) && spell_dam < (rlev * 3) / 2)
+	if ((r_ptr->spell_flags[2] & RSF2_S_UNDEAD) && spell_dam < (rlev * 3) / 2)
 		spell_dam = (rlev * 3) / 2;
-	if ((r_ptr->flags6 & RF6_S_DRAGON) && spell_dam < (rlev * 3) / 2)
+	if ((r_ptr->spell_flags[2] & RSF2_S_DRAGON) && spell_dam < (rlev * 3) / 2)
 		spell_dam = (rlev * 3) / 2;
 	/* Extremely dangerous */
-	if ((r_ptr->flags6 & RF6_S_HI_UNDEAD) && spell_dam < 400)
+	if ((r_ptr->spell_flags[2] & RSF2_S_HI_UNDEAD) && spell_dam < 400)
 		spell_dam = 400;
 	/* Extremely dangerous */
-	if ((r_ptr->flags6 & RF6_S_HI_DRAGON) && spell_dam < 400)
+	if ((r_ptr->spell_flags[2] & RSF2_S_HI_DRAGON) && spell_dam < 400)
 		spell_dam = 400;
 	/* Extremely dangerous */
-	if ((r_ptr->flags6 & RF6_S_WRAITH) && spell_dam < 450)
+	if ((r_ptr->spell_flags[2] & RSF2_S_WRAITH) && spell_dam < 450)
 		spell_dam = 450;
 	/* Most dangerous summon */
-	if ((r_ptr->flags6 & RF6_S_UNIQUE) && spell_dam < 500)
+	if ((r_ptr->spell_flags[2] & RSF2_S_UNIQUE) && spell_dam < 500)
 		spell_dam = 500;
 
 	/* Hack - Apply over 10 rounds */
@@ -3739,7 +3818,7 @@ static long eval_max_dam(monster_race *r_ptr)
 			}
 
 			/* Normal melee attack */
-			if (!(r_ptr->flags1 & (RF1_NEVER_BLOW)))
+			if (!(r_ptr->flags[0] & (RF0_NEVER_BLOW)))
 			{
 				/* Keep a running total */
 				melee_dam += atk_dam;
@@ -3752,11 +3831,11 @@ static long eval_max_dam(monster_race *r_ptr)
 		 * Hack - this is except for pass wall and kill wall monsters which can always get to the player.
 		 * Hack - use different values for huge monsters as they strike out to range 2.
 		 */
-		if (r_ptr->flags2 & (RF2_KILL_WALL | RF2_PASS_WALL))
+		if (r_ptr->flags[1] & (RF1_KILL_WALL | RF1_PASS_WALL))
 				melee_dam *= 10;
 		else
 		{
-			melee_dam = melee_dam * 3 + melee_dam * extract_energy[r_ptr->speed + (r_ptr->flags6 & RF6_HASTE ? 5 : 0)] / 7;
+			melee_dam = melee_dam * 3 + melee_dam * extract_energy[r_ptr->speed + (r_ptr->spell_flags[2] & RSF2_HASTE ? 5 : 0)] / 7;
 		}
 
 		/*
@@ -3765,15 +3844,15 @@ static long eval_max_dam(monster_race *r_ptr)
 		melee_dam = melee_dam * MIN(45 + rlev * 3, 95) / 100;
 
 		/* Hack -- Monsters that multiply ignore the following reductions */
-		if (!(r_ptr->flags2 & (RF2_MULTIPLY)))
+		if (!(r_ptr->flags[1] & (RF1_MULTIPLY)))
 		{
 			/*Reduce damamge potential for monsters that move randomly */
-			if ((r_ptr->flags1 & (RF1_RAND_25)) || (r_ptr->flags1 & (RF1_RAND_50)))
+			if ((r_ptr->flags[0] & (RF0_RAND_25)) || (r_ptr->flags[0] & (RF0_RAND_50)))
 			{
 				int reduce = 100;
 
-				if (r_ptr->flags1 & (RF1_RAND_25)) reduce -= 25;
-				if (r_ptr->flags1 & (RF1_RAND_50)) reduce -= 50;
+				if (r_ptr->flags[0] & (RF0_RAND_25)) reduce -= 25;
+				if (r_ptr->flags[0] & (RF0_RAND_50)) reduce -= 50;
 
 				/*even moving randomly one in 8 times will hit the player*/
 				reduce += (100 - reduce) / 8;
@@ -3783,17 +3862,17 @@ static long eval_max_dam(monster_race *r_ptr)
 			}
 
 			/*monsters who can't move aren't nearly as much of a combat threat*/
-			if (r_ptr->flags1 & (RF1_NEVER_MOVE))
+			if (r_ptr->flags[0] & (RF0_NEVER_MOVE))
 			{
-				if (r_ptr->flags6 & (RF6_TELE_TO | RF6_BLINK))
+				if (r_ptr->spell_flags[2] & (RSF2_TELE_TO | RSF2_BLINK))
 				{
 					/* Scale for frequency */
 					melee_dam = melee_dam / 5 + 4 * melee_dam * r_ptr->freq_spell / 500;
 
 					/* Incorporate spell failure chance */
-					if (!(r_ptr->flags2 & RF2_STUPID)) melee_dam = melee_dam / 5 + 4 * melee_dam * MIN(75 + (rlev + 3) / 4, 100) / 500;
+					if (!(r_ptr->flags[1] & RF1_STUPID)) melee_dam = melee_dam / 5 + 4 * melee_dam * MIN(75 + (rlev + 3) / 4, 100) / 500;
 				}
-				else if (r_ptr->flags2 & (RF2_INVISIBLE)) melee_dam /= 3;
+				else if (r_ptr->flags[1] & (RF1_INVISIBLE)) melee_dam /= 3;
 				else melee_dam /= 5;
 			}
 		}
@@ -3814,20 +3893,20 @@ static long eval_max_dam(monster_race *r_ptr)
 	 * Adjust for speed.  Monster at speed 120 will do double damage,
 	 * monster at speed 100 will do half, etc.  Bonus for monsters who can haste self.
 	 */
-	dam = (dam * extract_energy[r_ptr->speed + (r_ptr->flags6 & RF6_HASTE ? 5 : 0)]) / 10;
+	dam = (dam * extract_energy[r_ptr->speed + (r_ptr->spell_flags[2] & RSF2_HASTE ? 5 : 0)]) / 10;
 
 	/*
 	 * Adjust threat for speed -- multipliers are more threatening.
 	 */
-	if (r_ptr->flags2 & (RF2_MULTIPLY))
-		r_ptr->highest_threat = (r_ptr->highest_threat * extract_energy[r_ptr->speed + (r_ptr->flags6 & RF6_HASTE ? 5 : 0)]) / 5;
+	if (r_ptr->flags[1] & (RF1_MULTIPLY))
+		r_ptr->highest_threat = (r_ptr->highest_threat * extract_energy[r_ptr->speed + (r_ptr->spell_flags[2] & RSF2_HASTE ? 5 : 0)]) / 5;
 
 	/*
 	 * Adjust threat for friends.
 	 */
-	if (r_ptr->flags1 & (RF1_FRIENDS))
+	if (r_ptr->flags[0] & (RF0_FRIENDS))
 		r_ptr->highest_threat *= 2;
-	else if (r_ptr->flags1 & (RF1_FRIEND))
+	else if (r_ptr->flags[0] & (RF0_FRIEND))
 		r_ptr->highest_threat = r_ptr->highest_threat * 3 / 2;
 		
 	/*but deep in a minimum*/
@@ -3848,50 +3927,50 @@ static long eval_hp_adjust(monster_race *r_ptr)
 	hp = r_ptr->avg_hp;
 
 	/* Never moves with no ranged attacks - high hit points count for less */
-	if ((r_ptr->flags1 & (RF1_NEVER_MOVE)) && !(r_ptr->freq_innate || r_ptr->freq_spell))
+	if ((r_ptr->flags[0] & (RF0_NEVER_MOVE)) && !(r_ptr->freq_innate || r_ptr->freq_spell))
 	{
 		hp /= 2;
 		if (hp < 1) hp = 1;
 	}
 
 	/* Just assume healers have more staying power */
-	if (r_ptr->flags6 & RF6_HEAL) hp = (hp * 6) / 5;
+	if (r_ptr->spell_flags[2] & RSF2_HEAL) hp = (hp * 6) / 5;
 
 	/* Miscellaneous improvements */
-	if (r_ptr->flags2 & RF2_REGENERATE) {hp *= 10; hp /= 9;}
-	if (r_ptr->flags2 & RF2_PASS_WALL) 	{hp *= 3; hp /= 2;}
+	if (r_ptr->flags[1] & RF1_REGENERATE) {hp *= 10; hp /= 9;}
+	if (r_ptr->flags[1] & RF1_PASS_WALL) 	{hp *= 3; hp /= 2;}
 
 	/* Calculate hide bonus */
-	if (r_ptr->flags2 & RF2_EMPTY_MIND) hide_bonus += 2;
+	if (r_ptr->flags[1] & RF1_EMPTY_MIND) hide_bonus += 2;
 	else
 	{
-		if (r_ptr->flags2 & RF2_COLD_BLOOD) hide_bonus += 1;
-		if (r_ptr->flags2 & RF2_WEIRD_MIND) hide_bonus += 1;
+		if (r_ptr->flags[1] & RF1_COLD_BLOOD) hide_bonus += 1;
+		if (r_ptr->flags[1] & RF1_WEIRD_MIND) hide_bonus += 1;
 	}
 
 	/* Invisibility */
-	if (r_ptr->flags2 & RF2_INVISIBLE)
+	if (r_ptr->flags[1] & RF1_INVISIBLE)
 	{
 		hp = (hp * (r_ptr->level + hide_bonus + 1)) / MAX(1, r_ptr->level);
 	}
 
 	/* Monsters that can teleport are a hassle, and can easily run away */
-	if 	((r_ptr->flags6 & RF6_TPORT) ||
-		 (r_ptr->flags6 & RF6_TELE_AWAY)||
-		 (r_ptr->flags6 & RF6_TELE_LEVEL)) hp = (hp * 6) / 5;
+	if 	((r_ptr->spell_flags[2] & RSF2_TPORT) ||
+		 (r_ptr->spell_flags[2] & RSF2_TELE_AWAY)||
+		 (r_ptr->spell_flags[2] & RSF2_TELE_LEVEL)) hp = (hp * 6) / 5;
 
 	/*
  	 * Monsters that multiply are tougher to kill
 	 */
-	if (r_ptr->flags2 & (RF2_MULTIPLY)) hp *= 2;
+	if (r_ptr->flags[1] & (RF1_MULTIPLY)) hp *= 2;
 
 	/* Monsters with resistances are harder to kill.
 	   Therefore effective slays / brands against them are worth more. */
-	if (r_ptr->flags3 & RF3_IM_ACID)	resists += 2;
-	if (r_ptr->flags3 & RF3_IM_FIRE) 	resists += 2;
-	if (r_ptr->flags3 & RF3_IM_COLD)	resists += 2;
-	if (r_ptr->flags3 & RF3_IM_ELEC)	resists += 2;
-	if (r_ptr->flags3 & RF3_IM_POIS)	resists += 2;
+	if (r_ptr->flags[2] & RF2_IM_ACID)	resists += 2;
+	if (r_ptr->flags[2] & RF2_IM_FIRE) 	resists += 2;
+	if (r_ptr->flags[2] & RF2_IM_COLD)	resists += 2;
+	if (r_ptr->flags[2] & RF2_IM_ELEC)	resists += 2;
+	if (r_ptr->flags[2] & RF2_IM_POIS)	resists += 2;
 
 	/* Bonus for multiple basic resists and weapon resists */
 	if (resists >= 12) resists *= 6;
@@ -3902,11 +3981,11 @@ static long eval_hp_adjust(monster_race *r_ptr)
 	/* If quite resistant, reduce resists by defense holes */
 	if (resists >= 6)
 	{
-		if (r_ptr->flags3 & RF3_HURT_ROCK) 	resists -= 1;
-		if (!(r_ptr->flags3 & RF3_NO_SLEEP))	resists -= 3;
-		if (!(r_ptr->flags3 & RF3_NO_FEAR))	resists -= 2;
-		if (!(r_ptr->flags3 & RF3_NO_CONF))	resists -= 2;
-		if (!(r_ptr->flags3 & RF3_NO_STUN))	resists -= 1;
+		if (r_ptr->flags[2] & RF2_HURT_ROCK) 	resists -= 1;
+		if (!(r_ptr->flags[2] & RF2_NO_SLEEP))	resists -= 3;
+		if (!(r_ptr->flags[2] & RF2_NO_FEAR))	resists -= 2;
+		if (!(r_ptr->flags[2] & RF2_NO_CONF))	resists -= 2;
+		if (!(r_ptr->flags[2] & RF2_NO_STUN))	resists -= 1;
 
 		if (resists < 5) resists = 5;
 	}
@@ -3914,10 +3993,10 @@ static long eval_hp_adjust(monster_race *r_ptr)
 	/* If quite resistant, bonus for high resists */
 	if (resists >= 3)
 	{
-		if (r_ptr->flags3 & RF3_IM_WATER)	resists += 1;
-		if (r_ptr->flags3 & RF3_RES_NETH)	resists += 1;
-		if (r_ptr->flags3 & RF3_RES_NEXUS)	resists += 1;
-		if (r_ptr->flags3 & RF3_RES_DISE)	resists += 1;
+		if (r_ptr->flags[2] & RF2_IM_WATER)	resists += 1;
+		if (r_ptr->flags[2] & RF2_RES_NETH)	resists += 1;
+		if (r_ptr->flags[2] & RF2_RES_NEXUS)	resists += 1;
+		if (r_ptr->flags[2] & RF2_RES_DISE)	resists += 1;
 	}
 
 	/* Scale resists */
@@ -3957,6 +4036,15 @@ errr eval_r_power(header *head)
 	monster_race *r_ptr = NULL;
 
 	int iteration;
+
+	/* If we came here from the .raw file, the monster power data is already done */
+	/* Hack - use Morgy (#547) as the test case */
+	r_ptr = (monster_race*)head->info_ptr + 547;
+	if (r_ptr->power)
+	{
+	     /*	msg_print("Monster power array already filled - returning."); */
+		return 0;
+	}
 
 	/* Allocate space for power */
 	power = C_ZNEW(z_info->r_max, long);
@@ -4000,7 +4088,7 @@ for (iteration = 0; iteration < 3; iteration ++)
 		else
 		{
 			/* Compute depths of non-unique monsters */
-			if (!(r_ptr->flags1 & (RF1_UNIQUE)))
+			if (!(r_ptr->flags[0] & (RF0_UNIQUE)))
 			{
 				long mexp = (hp * dam) / 25;
 				long threat = r_ptr->highest_threat;
@@ -4015,29 +4103,35 @@ for (iteration = 0; iteration < 3; iteration ++)
 						j))), 99);
 
 				/* Set level */
-				r_ptr->level = lvl;
+				if (arg_rebalance)
+					r_ptr->level = lvl;
 			}
 
-			/* Hack -- for Ungoliant */
-			if (hp > 10000) r_ptr->mexp = (hp / 25) * (dam / lvl);
-			else r_ptr->mexp = (hp * dam) / (lvl * 25);
-
-			/* Round to 2 significant figures */
-			if (r_ptr->mexp > 100)
+			if (arg_rebalance)
 			{
-				if (r_ptr->mexp < 1000) { r_ptr->mexp = (r_ptr->mexp + 5) / 10; r_ptr->mexp *= 10; }
-				else if (r_ptr->mexp < 10000) { r_ptr->mexp = (r_ptr->mexp + 50) / 100; r_ptr->mexp *= 100; }
-				else if (r_ptr->mexp < 100000) { r_ptr->mexp = (r_ptr->mexp + 500) / 1000; r_ptr->mexp *= 1000; }
-				else if (r_ptr->mexp < 1000000) { r_ptr->mexp = (r_ptr->mexp + 5000) / 10000; r_ptr->mexp *= 10000; }
-				else if (r_ptr->mexp < 10000000) { r_ptr->mexp = (r_ptr->mexp + 50000) / 100000; r_ptr->mexp *= 100000; }
+				/* Hack -- for Ungoliant */
+				if (hp > 10000) r_ptr->mexp = (hp / 25) * (dam / lvl);
+				else r_ptr->mexp = (hp * dam) / (lvl * 25);
+
+				/* Round to 2 significant figures */
+				if (r_ptr->mexp > 100)
+				{
+					if (r_ptr->mexp < 1000) { r_ptr->mexp = (r_ptr->mexp + 5) / 10; r_ptr->mexp *= 10; }
+					else if (r_ptr->mexp < 10000) { r_ptr->mexp = (r_ptr->mexp + 50) / 100; r_ptr->mexp *= 100; }
+					else if (r_ptr->mexp < 100000) { r_ptr->mexp = (r_ptr->mexp + 500) / 1000; r_ptr->mexp *= 1000; }
+					else if (r_ptr->mexp < 1000000) { r_ptr->mexp = (r_ptr->mexp + 5000) / 10000; r_ptr->mexp *= 10000; }
+					else if (r_ptr->mexp < 10000000) { r_ptr->mexp = (r_ptr->mexp + 50000) / 100000; r_ptr->mexp *= 100000; }
+				}
 			}
 		}
 
+		/* If we're rebalancing, this is a nop, if not, we restore the orig value */
+		lvl = r_ptr->level;
 		if ((lvl) && (r_ptr->mexp < 1L)) r_ptr->mexp = 1L;
 
 		/*
 		 * Hack - We have to use an adjustment factor to prevent overflow.
-                 */
+		 */
 		if (lvl >= 90)
 		{
 			hp /= 1000;
@@ -4058,27 +4152,27 @@ for (iteration = 0; iteration < 3; iteration ++)
 		power[i] = hp * dam;
 
 		/* Adjust for group monsters.  Average in-level group size is 5 */
-		if (r_ptr->flags1 & RF1_UNIQUE) ;
+		if (r_ptr->flags[0] & RF0_UNIQUE) ;
 
-		else if (r_ptr->flags1 & RF1_FRIEND) power[i] *= 2;
+		else if (r_ptr->flags[0] & RF0_FRIEND) power[i] *= 2;
 
-		else if (r_ptr->flags1 & RF1_FRIENDS) power[i] *= 5;
+		else if (r_ptr->flags[0] & RF0_FRIENDS) power[i] *= 5;
 
 		/* Adjust for multiplying monsters. This is modified by the speed,
                  * as fast multipliers are much worse than slow ones. We also adjust for
 		 * ability to bypass walls or doors.
                  */
-		if (r_ptr->flags2 & RF2_MULTIPLY)
+		if (r_ptr->flags[1] & RF1_MULTIPLY)
 		{
-			if (r_ptr->flags2 & (RF2_KILL_WALL | RF2_PASS_WALL))
+			if (r_ptr->flags[1] & (RF1_KILL_WALL | RF1_PASS_WALL))
 				power[i] = MAX(power[i], power[i] * extract_energy[r_ptr->speed
-					+ (r_ptr->flags6 & RF6_HASTE ? 5 : 0)]);
-			else if (r_ptr->flags2 & (RF2_OPEN_DOOR | RF2_BASH_DOOR))
+					+ (r_ptr->spell_flags[2] & RSF2_HASTE ? 5 : 0)]);
+			else if (r_ptr->flags[1] & (RF1_OPEN_DOOR | RF1_BASH_DOOR))
 				power[i] = MAX(power[i], power[i] *  extract_energy[r_ptr->speed
-					+ (r_ptr->flags6 & RF6_HASTE ? 5 : 0)] * 3 / 2);
+					+ (r_ptr->spell_flags[2] & RSF2_HASTE ? 5 : 0)] * 3 / 2);
 			else
 				power[i] = MAX(power[i], power[i] * extract_energy[r_ptr->speed
-					+ (r_ptr->flags6 & RF6_HASTE ? 5 : 0)] / 2);
+					+ (r_ptr->spell_flags[2] & RSF2_HASTE ? 5 : 0)] / 2);
 		}
 
 		/*
@@ -4092,7 +4186,7 @@ for (iteration = 0; iteration < 3; iteration ++)
 			/*
 			 * Uniques don't count towards monster power on the level.
 			 */
-			if (r_ptr->flags1 & RF1_UNIQUE) continue;
+			if (r_ptr->flags[0] & RF0_UNIQUE) continue;
 
 			/*
 			 * Specifically placed monsters don't count towards monster power on the level.
@@ -4125,20 +4219,20 @@ for (iteration = 0; iteration < 3; iteration ++)
 			 * so that the averages don't get thrown off
 			 */
 
-			if (r_ptr->flags1 & RF1_FRIEND) count = 20;
-			else if (r_ptr->flags1 & RF1_FRIENDS) count = 50;
+			if (r_ptr->flags[0] & RF0_FRIEND) count = 20;
+			else if (r_ptr->flags[0] & RF0_FRIENDS) count = 50;
 
-			if (r_ptr->flags2 & RF2_MULTIPLY)
+			if (r_ptr->flags[1] & RF1_MULTIPLY)
 			{
-				if (r_ptr->flags2 & (RF2_KILL_WALL | RF2_PASS_WALL))
+				if (r_ptr->flags[1] & (RF1_KILL_WALL | RF1_PASS_WALL))
 					count = MAX(1, extract_energy[r_ptr->speed
-						+ (r_ptr->flags6 & RF6_HASTE ? 5 : 0)]) * count;
-				else if (r_ptr->flags2 & (RF2_OPEN_DOOR | RF2_BASH_DOOR))
+						+ (r_ptr->spell_flags[2] & RSF2_HASTE ? 5 : 0)]) * count;
+				else if (r_ptr->flags[1] & (RF1_OPEN_DOOR | RF1_BASH_DOOR))
 					count = MAX(1, extract_energy[r_ptr->speed
-						+ (r_ptr->flags6 & RF6_HASTE ? 5 : 0)] * 3 / 2) * count;
+						+ (r_ptr->spell_flags[2] & RSF2_HASTE ? 5 : 0)] * 3 / 2) * count;
 				else
 					count = MAX(1, extract_energy[r_ptr->speed
-						+ (r_ptr->flags6 & RF6_HASTE ? 5 : 0)] / 2) * count;
+						+ (r_ptr->spell_flags[2] & RSF2_HASTE ? 5 : 0)] / 2) * count;
 			}
 
 			/*
@@ -4196,7 +4290,8 @@ for (iteration = 0; iteration < 3; iteration ++)
 			for (j = 1; new_power > j; new_power -= j * j, j++);
 
 			/* Set rarity */
-			r_ptr->rarity = j;
+			if (arg_rebalance)
+				r_ptr->rarity = j;
 		}
 	}
 
@@ -4209,7 +4304,77 @@ for (iteration = 0; iteration < 3; iteration ++)
 	return(0);
 }
 
-#endif /* ALLOW_TEMPLATES_PROCESS */
+/* 
+ * Create the slay cache by determining the number of different slay 
+ * combinations available to ego items
+ */
+errr eval_e_slays(header *head)
+{
+	int i;
+	int j;
+	int count = 0;
+	u32b cacheme;
+	u32b *dupcheck;
+	bool duplicate;
+	ego_item_type *e_ptr;
+
+	dupcheck = C_ZNEW(z_info->e_max, u32b);
+	
+	for (i = 0; i < z_info->e_max; i++)
+	{
+		dupcheck[i] = 0;
+		duplicate = FALSE;
+		e_ptr = (ego_item_type*)head->info_ptr + i;
+		cacheme = (e_ptr->flags[0] & TR0_ALL_SLAYS);
+
+		if (cacheme)
+		{
+			for (j = 0; j < i; j++)
+			{
+				if (dupcheck[j] == cacheme) duplicate = TRUE;
+			}
+			if (!duplicate)
+			{
+				count++;
+				dupcheck[i] = cacheme;
+			     /*	msg_print("Found a new slay combo on an ego item"); */
+			}
+		}
+	}
+
+	slay_cache = C_ZNEW((count + 1), flag_cache);
+	count = 0;
+
+	for (i = 0; i < z_info->e_max; i++)
+	{
+		duplicate = FALSE;
+		e_ptr = (ego_item_type*)head->info_ptr + i;
+		cacheme = (e_ptr->flags[0] & TR0_ALL_SLAYS);
+
+		if (cacheme)
+		{
+			for (j = 0; j < count; j++)
+			{
+				if (slay_cache[j].flags == cacheme) duplicate = TRUE;
+			}
+			if (!duplicate)
+			{
+				slay_cache[count].flags = cacheme;
+				slay_cache[count].value = 0;
+				count++;
+			     /*	msg_print("Cached a slay combination"); */
+			}
+		}
+	}
+
+	/* add a null element to enable looping over the array */
+	slay_cache[count].flags = 0;
+
+	FREE(dupcheck);
+	
+	/* Success */
+	return 0;
+}
 
 #ifdef ALLOW_TEMPLATES_OUTPUT
 
@@ -4546,14 +4711,14 @@ errr emit_r_info_index(ang_file *fp, header *head, int i)
 	}
 
 	/* Output 'F' for "Flags" */
-	emit_flags_32(fp, "F:", r_ptr->flags1, r_info_flags1);
-	emit_flags_32(fp, "F:", r_ptr->flags2, r_info_flags2);
-	emit_flags_32(fp, "F:", r_ptr->flags3, r_info_flags3);
+	emit_flags_32(fp, "F:", r_ptr->flags[0], r_info_flags0);
+	emit_flags_32(fp, "F:", r_ptr->flags[1], r_info_flags1);
+	emit_flags_32(fp, "F:", r_ptr->flags[2], r_info_flags2);
 
 	/* Output 'S' for "Spell Flags" (multiple lines) */
-	emit_flags_32(fp, "S:", r_ptr->flags4, r_info_flags4);
-	emit_flags_32(fp, "S:", r_ptr->flags5, r_info_flags5);
-	emit_flags_32(fp, "S:", r_ptr->flags6, r_info_flags6);
+	emit_flags_32(fp, "S:", r_ptr->spell_flags[0], r_info_spell_flags0);
+	emit_flags_32(fp, "S:", r_ptr->spell_flags[1], r_info_spell_flags1);
+	emit_flags_32(fp, "S:", r_ptr->spell_flags[2], r_info_spell_flags2);
 	
 	/* Output 'S' for spell frequency in unwieldy format */
 	/* TODO: use this routine to output M:freq_innate:freq_spell or similar to allow these to be

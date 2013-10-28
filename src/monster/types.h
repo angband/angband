@@ -54,11 +54,7 @@ typedef struct
 
 	s16b power;				/* Monster power */
 
-#ifdef ALLOW_TEMPLATES_PROCESS
-
 	s16b highest_threat;	/* Monster highest threat */
-
-#endif /* ALLOW_TEMPLATES_PROCESS */
 
 	byte freq_innate;		/* Innate spell frequency */
 	byte freq_spell;		/* Other spell frequency */
@@ -157,5 +153,16 @@ typedef struct
 
 	u32b smart;			/* Field for "adult_ai_learn" */
 } monster_type;
+
+/* 
+ * Monster data for the visible monster list 
+ */
+typedef struct
+{
+	u16b count;		/* total number of this type visible */
+	u16b asleep;		/* number asleep (not in LOS) */
+	u16b los;		/* number in LOS */
+	u16b los_asleep;	/* number asleep and in LOS */
+} monster_vis; 
 
 #endif /* INCLUDED_MONSTER_TYPES_H */

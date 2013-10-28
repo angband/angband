@@ -17,192 +17,7 @@
  */
 #include "angband.h"
 #include "object/tvalsval.h"
-
-
-/*
- * This file loads savefiles from Angband 2.9.X.
- *
- * We attempt to prevent corrupt savefiles from inducing memory errors.
- *
- * Note that this file should not use the random number generator, the
- * object flavors, the visual attr/char mappings, or anything else which
- * is initialized *after* or *during* the "load character" function.
- *
- * This file assumes that the monster/object records are initialized
- * to zero, and the race/kind tables have been loaded correctly.  The
- * order of object stacks is currently not saved in the savefiles, but
- * the "next" pointers are saved, so all necessary knowledge is present.
- *
- * We should implement simple "savefile extenders" using some form of
- * "sized" chunks of bytes, with a {size,type,data} format, so everyone
- * can know the size, interested people can know the type, and the actual
- * data is available to the parsing routines that acknowledge the type.
- *
- * Consider changing the "globe of invulnerability" code so that it
- * takes some form of "maximum damage to protect from" in addition to
- * the existing "number of turns to protect for", and where each hit
- * by a monster will reduce the shield by that amount.  XXX XXX XXX
- */
-
-
-
-
-
-/*
- * Local "savefile" pointer
- */
-static ang_file *fff;
-
-/*
- * Hack -- old "encryption" byte
- */
-static byte	xor_byte;
-
-/*
- * Hack -- simple "checksum" on the actual values
- */
-static u32b	v_check = 0L;
-
-/*
- * Hack -- simple "checksum" on the encoded bytes
- */
-static u32b	x_check = 0L;
-
-
-/*
- * Hack -- Show information on the screen, one line at a time.
- *
- * Avoid the top two lines, to avoid interference with "msg_print()".
- */
-static void note(cptr msg)
-{
-	static int y = 2;
-
-	/* Draw the message */
-	prt(msg, y, 0);
-
-	/* Advance one line (wrap if needed) */
-	if (++y >= 24) y = 2;
-
-	/* Flush it */
-	Term_fresh();
-}
-
-
-/*
- * This function determines if the version of the savefile
- * currently being read is older than version "x.y.z".
- */
-static bool older_than(int x, int y, int z)
-{
-	/* Much older, or much more recent */
-	if (sf_major < x) return (TRUE);
-	if (sf_major > x) return (FALSE);
-
-	/* Distinctly older, or distinctly more recent */
-	if (sf_minor < y) return (TRUE);
-	if (sf_minor > y) return (FALSE);
-
-	/* Barely older, or barely more recent */
-	if (sf_patch < z) return (TRUE);
-	if (sf_patch > z) return (FALSE);
-
-	/* Identical versions */
-	return (FALSE);
-}
-
-
-
-/*
- * The following functions are used to load the basic building blocks
- * of savefiles.  They also maintain the "checksum" info.
- */
-
-static byte sf_get(void)
-{
-	byte c, v;
-
-	/* Get a character, decode the value */
-	file_readc(fff, &c);
-	c &= 0xFF;
-	v = c ^ xor_byte;
-	xor_byte = c;
-
-	/* Maintain the checksum info */
-	v_check += v;
-	x_check += xor_byte;
-
-	/* Return the value */
-	return (v);
-}
-
-static void rd_byte(byte *ip)
-{
-	*ip = sf_get();
-}
-
-static void rd_u16b(u16b *ip)
-{
-	(*ip) = sf_get();
-	(*ip) |= ((u16b)(sf_get()) << 8);
-}
-
-static void rd_s16b(s16b *ip)
-{
-	rd_u16b((u16b*)ip);
-}
-
-static void rd_u32b(u32b *ip)
-{
-	(*ip) = sf_get();
-	(*ip) |= ((u32b)(sf_get()) << 8);
-	(*ip) |= ((u32b)(sf_get()) << 16);
-	(*ip) |= ((u32b)(sf_get()) << 24);
-}
-
-static void rd_s32b(s32b *ip)
-{
-	rd_u32b((u32b*)ip);
-}
-
-
-/*
- * Hack -- read a string
- */
-static void rd_string(char *str, int max)
-{
-	int i;
-
-	/* Read the string */
-	for (i = 0; TRUE; i++)
-	{
-		byte tmp8u;
-
-		/* Read a byte */
-		rd_byte(&tmp8u);
-
-		/* Collect string while legal */
-		if (i < max) str[i] = tmp8u;
-
-		/* End of string */
-		if (!tmp8u) break;
-	}
-
-	/* Terminate */
-	str[max-1] = '\0';
-}
-
-
-/*
- * Hack -- strip some bytes
- */
-static void strip_bytes(int n)
-{
-	byte tmp8u;
-
-	/* Strip the bytes */
-	while (n--) rd_byte(&tmp8u);
-}
+#include "savefile.h"
 
 
 /*
@@ -211,20 +26,36 @@ static void strip_bytes(int n)
  * This function attempts to "repair" old savefiles, and to extract
  * the most up to date values for various object fields.
  */
-static errr rd_item(object_type *o_ptr)
+static int rd_item(object_type *o_ptr)
 {
 	byte old_dd;
 	byte old_ds;
-
-	u32b f1, f2, f3;
+	byte tmp8u;
+	u16b tmp16u;
 
 	object_kind *k_ptr;
 
 	char buf[128];
 
+	byte ver = 1;
+
+	static bool lose_ok = FALSE;
 
 	/* Kind */
 	rd_s16b(&o_ptr->k_idx);
+
+	/* horrible hack */
+	if (o_ptr->k_idx == (s16b) 0xffff)
+	{
+		rd_byte(&ver);
+		rd_s16b(&o_ptr->k_idx);
+	}
+
+	if (lose_ok == FALSE && ver < 5)
+	{
+		lose_ok = get_check("Loading this savefile will lose all object knowledge data.  Is that OK? ");
+		if (lose_ok == FALSE) return -1;
+	}
 
 	/* Paranoia */
 	if ((o_ptr->k_idx < 0) || (o_ptr->k_idx >= z_info->k_max))
@@ -240,11 +71,7 @@ static errr rd_item(object_type *o_ptr)
 	rd_s16b(&o_ptr->pval);
 
 	/* Pseudo-ID bit */
-	rd_byte(&o_ptr->pseudo);
-
-	/* Fix the field */
-	if (o_ptr->pseudo > 99)
-	    o_ptr->pseudo -= 100;
+	rd_byte(&tmp8u);
 
 	rd_byte(&o_ptr->number);
 	rd_s16b(&o_ptr->weight);
@@ -263,9 +90,10 @@ static errr rd_item(object_type *o_ptr)
 	rd_byte(&old_dd);
 	rd_byte(&old_ds);
 
-	rd_byte(&o_ptr->ident);
-	if (o_ptr->ident & 0x40)
-		o_ptr->flags3 |= TR3_LIGHT_CURSE;
+	if (ver > 4)
+		rd_u16b(&o_ptr->ident);
+	else
+		rd_u16b(&tmp16u);
 
 	rd_byte(&o_ptr->marked);
 
@@ -273,9 +101,22 @@ static errr rd_item(object_type *o_ptr)
 	rd_byte(&o_ptr->origin_depth);
 	rd_u16b(&o_ptr->origin_xtra);
 
-	rd_u32b(&o_ptr->flags1);
-	rd_u32b(&o_ptr->flags2);
-	rd_u32b(&o_ptr->flags3);
+	rd_u32b(&o_ptr->flags[0]);
+	rd_u32b(&o_ptr->flags[1]);
+	rd_u32b(&o_ptr->flags[2]);
+
+	memset(&o_ptr->known_flags, 0, sizeof(o_ptr->known_flags));
+	if (ver > 4)
+	{
+		rd_u32b(&o_ptr->known_flags[0]);
+		rd_u32b(&o_ptr->known_flags[1]);
+		rd_u32b(&o_ptr->known_flags[2]);
+	}
+	else if (ver > 2)
+	{
+		strip_bytes(3 * 4);
+	}
+
 
 	/* Monster holding object */
 	rd_s16b(&o_ptr->held_m_idx);
@@ -323,9 +164,6 @@ static errr rd_item(object_type *o_ptr)
 		return (0);
 	}
 
-
-	/* Extract the flags */
-	object_flags(o_ptr, &f1, &f2, &f3);
 
 
 	/* Paranoia */
@@ -404,189 +242,23 @@ static errr rd_item(object_type *o_ptr)
 		}
 
 		/* Hack -- enforce legal pval */
-		if (e_ptr->flags1 & (TR1_PVAL_MASK))
+		if (e_ptr->flags[0] & (TR0_PVAL_MASK))
 		{
 			/* Force a meaningful pval */
 			if (!o_ptr->pval) o_ptr->pval = 1;
 		}
-
-		/* Mega-Hack - Enforce the special broken items */
-		if ((o_ptr->name2 == EGO_BLASTED) ||
-			(o_ptr->name2 == EGO_SHATTERED))
-		{
-			/* These were set to k_info values by preceding code */
-			o_ptr->ac = 0;
-			o_ptr->dd = 0;
-			o_ptr->ds = 0;
-		}
 	}
 
 
 	/* Success */
 	return (0);
 }
-
-
-
-
-/*
- * Read a monster
- */
-static void rd_monster(monster_type *m_ptr)
-{
-	byte tmp8u;
-
-	/* Read the monster race */
-	rd_s16b(&m_ptr->r_idx);
-
-	/* Read the other information */
-	rd_byte(&m_ptr->fy);
-	rd_byte(&m_ptr->fx);
-	rd_s16b(&m_ptr->hp);
-	rd_s16b(&m_ptr->maxhp);
-	rd_s16b(&m_ptr->csleep);
-	rd_byte(&m_ptr->mspeed);
-	rd_byte(&m_ptr->energy);
-	rd_byte(&m_ptr->stunned);
-	rd_byte(&m_ptr->confused);
-	rd_byte(&m_ptr->monfear);
-	rd_byte(&tmp8u);
-}
-
-
-
-
-
-/*
- * Read the monster lore
- */
-static void rd_lore(int r_idx)
-{
-	int i;
-	byte tmp8u;
-
-	monster_race *r_ptr = &r_info[r_idx];
-	monster_lore *l_ptr = &l_list[r_idx];
-
-
-	/* Count sights/deaths/kills */
-	rd_s16b(&l_ptr->sights);
-	rd_s16b(&l_ptr->deaths);
-	rd_s16b(&l_ptr->pkills);
-	rd_s16b(&l_ptr->tkills);
-
-	/* Count wakes and ignores */
-	rd_byte(&l_ptr->wake);
-	rd_byte(&l_ptr->ignore);
-
-	/* Count drops */
-	rd_byte(&l_ptr->drop_gold);
-	rd_byte(&l_ptr->drop_item);
-
-	/* Count spells */
-	rd_byte(&l_ptr->cast_innate);
-	rd_byte(&l_ptr->cast_spell);
-
-	/* Count blows of each type */
-	for (i = 0; i < MONSTER_BLOW_MAX; i++)
-		rd_byte(&l_ptr->blows[i]);
-
-	/* Memorize flags */
-	for (i = 0; i < RACE_FLAG_STRICT_UB; i++)
-		rd_u32b(&l_ptr->flags[i]);
-	for (i = 0; i < RACE_FLAG_SPELL_STRICT_UB; i++)
-		rd_u32b(&l_ptr->spell_flags[i]);
-
-
-	/* Read the "Racial" monster limit per level */
-	rd_byte(&r_ptr->max_num);
-
-	/* Later (?) */
-	rd_byte(&tmp8u);
-	rd_byte(&tmp8u);
-	rd_byte(&tmp8u);
-
-
-	/* Repair the lore flags */
-	for (i = 0; i < RACE_FLAG_STRICT_UB; i++)
-		l_ptr->flags[i] &= r_ptr->flags[i];
-	for (i = 0; i < RACE_FLAG_SPELL_STRICT_UB; i++)
-		l_ptr->spell_flags[i] &= r_ptr->spell_flags[i];
-}
-
-
-
-
-/*
- * Read a store
- */
-static errr rd_store(int n)
-{
-	store_type *st_ptr = &store[n];
-
-	int j;
-
-	byte own, num;
-
-	/* XXX Old values */
-	strip_bytes(6);
-
-	/* Read the basic info */
-	rd_byte(&own);
-	rd_byte(&num);
-
-	/* XXX Old values */
-	strip_bytes(4);
-
-	/* Paranoia */
-	if (own >= z_info->b_max)
-	{
-		note("Illegal store owner!");
-		return (-1);
-	}
-
-	st_ptr->owner = own;
-
-	/* Read the items */
-	for (j = 0; j < num; j++)
-	{
-		object_type *i_ptr;
-		object_type object_type_body;
-
-		/* Get local object */
-		i_ptr = &object_type_body;
-
-		/* Wipe the object */
-		object_wipe(i_ptr);
-
-		/* Read the item */
-		if (rd_item(i_ptr))
-		{
-			note("Error reading item");
-			return (-1);
-		}
-
-		/* Accept any valid items */
-		if ((st_ptr->stock_num < STORE_INVEN_MAX) &&
-		    (i_ptr->k_idx))
-		{
-			int k = st_ptr->stock_num++;
-
-			/* Accept the item */
-			object_copy(&st_ptr->stock[k], i_ptr);
-		}
-	}
-
-	/* Success */
-	return (0);
-}
-
 
 
 /*
  * Read RNG state
  */
-static void rd_randomizer(void)
+int rd_randomizer(u32b version)
 {
 	int i;
 
@@ -607,6 +279,8 @@ static void rd_randomizer(void)
 
 	/* Accept */
 	Rand_quick = FALSE;
+
+	return 0;
 }
 
 
@@ -623,7 +297,7 @@ static void rd_randomizer(void)
  * The window options are stored in the same way, but note that each
  * window gets 32 options, and their order is fixed by certain defines.
  */
-static void rd_options(void)
+int rd_options(u32b version)
 {
 	int i, n;
 
@@ -719,134 +393,276 @@ static void rd_options(void)
 
 	/* Set up the subwindows */
 	subwindows_set_flags(window_flag, ANGBAND_TERM_MAX);
+
+	return 0;
 }
 
 
 
-
-
 /*
- * Hack -- strip the "ghost" info
- *
- * XXX XXX XXX This is such a nasty hack it hurts.
+ * Read the saved messages
  */
-static void rd_ghost(void)
+int rd_messages(u32b version)
 {
-	char buf[64];
+	int i;
+	char buf[128];
+	u16b tmp16u;
+	
+	s16b num;
+	
+	/* Total */
+	rd_s16b(&num);
+	
+	/* Read the messages */
+	for (i = 0; i < num; i++)
+	{
+		/* Read the message */
+		rd_string(buf, sizeof(buf));
+		
+		/* Read the message type */
+		rd_u16b(&tmp16u);
 
-	/* Strip name */
-	rd_string(buf, 64);
+		/* Save the message */
+		message_add(buf, tmp16u);
+	}
+	
+	return 0;
+}
 
-	/* Strip old data */
-	strip_bytes(60);
+
+
+int rd_monster_memory(u32b version)
+{
+	int r_idx;
+	u16b tmp16u;
+	
+	/* Monster Memory */
+	rd_u16b(&tmp16u);
+	
+	/* Incompatible save files */
+	if (tmp16u > z_info->r_max)
+	{
+		note(format("Too many (%u) monster races!", tmp16u));
+		return (-1);
+	}
+	
+	/* Read the available records */
+	for (r_idx = 0; r_idx < tmp16u; r_idx++)
+	{
+		int i;
+
+		monster_race *r_ptr = &r_info[r_idx];
+		monster_lore *l_ptr = &l_list[r_idx];
+			
+			
+		/* Count sights/deaths/kills */
+		rd_s16b(&l_ptr->sights);
+		rd_s16b(&l_ptr->deaths);
+		rd_s16b(&l_ptr->pkills);
+		rd_s16b(&l_ptr->tkills);
+		
+		/* Count wakes and ignores */
+		rd_byte(&l_ptr->wake);
+		rd_byte(&l_ptr->ignore);
+			
+		/* Count drops */
+		rd_byte(&l_ptr->drop_gold);
+		rd_byte(&l_ptr->drop_item);
+
+		/* Count spells */
+		rd_byte(&l_ptr->cast_innate);
+		rd_byte(&l_ptr->cast_spell);
+
+		/* Count blows of each type */
+		for (i = 0; i < MONSTER_BLOW_MAX; i++)
+			rd_byte(&l_ptr->blows[i]);
+
+		/* Memorize flags */
+		for (i = 0; i < RACE_FLAG_STRICT_UB; i++)
+			rd_u32b(&l_ptr->flags[i]);
+		for (i = 0; i < RACE_FLAG_SPELL_STRICT_UB; i++)
+			rd_u32b(&l_ptr->spell_flags[i]);
+			
+			
+		/* Read the "Racial" monster limit per level */
+		rd_byte(&r_ptr->max_num);
+			
+		/* XXX */
+		strip_bytes(3);
+
+		/* Repair the lore flags */
+		for (i = 0; i < RACE_FLAG_STRICT_UB; i++)
+			l_ptr->flags[i] &= r_ptr->flags[i];
+		for (i = 0; i < RACE_FLAG_SPELL_STRICT_UB; i++)
+			l_ptr->spell_flags[i] &= r_ptr->spell_flags[i];
+	}
+	
+	return 0;
+}
+
+
+int rd_object_memory(u32b version)
+{
+	int i;
+	u16b tmp16u;
+	
+	/* Object Memory */
+	rd_u16b(&tmp16u);
+	
+	/* Incompatible save files */
+	if (tmp16u > z_info->k_max)
+	{
+		note(format("Too many (%u) object kinds!", tmp16u));
+		return (-1);
+	}
+	
+	/* Read the object memory */
+	for (i = 0; i < tmp16u; i++)
+	{
+		byte tmp8u;
+		object_kind *k_ptr = &k_info[i];
+		
+		rd_byte(&tmp8u);
+		
+		k_ptr->aware = (tmp8u & 0x01) ? TRUE : FALSE;
+		k_ptr->tried = (tmp8u & 0x02) ? TRUE : FALSE;
+		k_ptr->everseen = (tmp8u & 0x08) ? TRUE : FALSE;
+
+		if (tmp8u & 0x04) kind_squelch_when_aware(k_ptr);
+		if (tmp8u & 0x10) kind_squelch_when_unaware(k_ptr);
+	}
+	
+	return 0;
+}
+
+
+int rd_quests(u32b version)
+{
+	int i;
+	u16b tmp16u;
+	
+	/* Load the Quests */
+	rd_u16b(&tmp16u);
+	
+	/* Incompatible save files */
+	if (tmp16u > MAX_Q_IDX)
+	{
+		note(format("Too many (%u) quests!", tmp16u));
+		return (-1);
+	}
+	
+	/* Load the Quests */
+	for (i = 0; i < tmp16u; i++)
+	{
+		byte tmp8u;
+		
+		rd_byte(&tmp8u);
+		q_list[i].level = tmp8u;
+		rd_byte(&tmp8u);
+		rd_byte(&tmp8u);
+		rd_byte(&tmp8u);
+	}
+	
+	return 0;
+}
+
+
+int rd_artifacts(u32b version)
+{
+	int i;
+	u16b tmp16u;
+	
+	/* Load the Artifacts */
+	rd_u16b(&tmp16u);
+	
+	/* Incompatible save files */
+	if (tmp16u > z_info->a_max)
+	{
+		note(format("Too many (%u) artifacts!", tmp16u));
+		return (-1);
+	}
+	
+	/* Read the artifact flags */
+	for (i = 0; i < tmp16u; i++)
+	{
+		byte tmp8u;
+		
+		rd_byte(&tmp8u);
+		a_info[i].created = tmp8u;
+		rd_byte(&tmp8u);
+		a_info[i].seen = tmp8u;
+		rd_byte(&tmp8u);
+		a_info[i].everseen = tmp8u;
+		rd_byte(&tmp8u);
+	}
+
+	/* For old versions, we need to go through objects and update */
+	if (version == 1)
+	{
+		size_t i;
+		object_type *o_ptr = NULL;
+
+		bool *anywhere;
+		anywhere = C_ZNEW(z_info->a_max, bool);
+
+		/* All inventory/home artifacts need to be marked as seen */
+		for (i = 0; i < INVEN_TOTAL; i++)
+		{
+			o_ptr = &o_list[i];
+			if (object_is_known_artifact(o_ptr))
+				artifact_of(o_ptr)->seen = TRUE;
+			anywhere[o_ptr->name1] = TRUE;
+		}
+
+		for (i = 0; i < (size_t)o_max; i++)
+		{
+			o_ptr = &o_list[i];
+			if (object_is_known_artifact(o_ptr))
+				artifact_of(o_ptr)->seen = TRUE;
+			anywhere[o_ptr->name1] = TRUE;
+		}
+
+		for (i = 0; i < MAX_STORES; i++)
+		{
+			int j = 0;
+			for (j = 0; j < store[i].stock_num; j++)
+			{
+				o_ptr = &store[i].stock[j];
+				if (object_is_known_artifact(o_ptr))
+					artifact_of(o_ptr)->seen = TRUE;
+				anywhere[o_ptr->name1] = TRUE;
+			}
+		}
+
+		/* Now update the seen flags correctly */
+		for (i = 0; i < z_info->a_max; i++)
+		{
+			artifact_type *a_ptr = &a_info[i];
+
+			/* If it isn't present anywhere, but has been created,
+			 * then it has been lost, and thus seen */
+			if (a_ptr->created && !anywhere[i])
+				a_ptr->seen = TRUE;
+		}
+
+		FREE(anywhere);
+	}
+	
+	return 0;
 }
 
 
 static u32b randart_version;
 
 
-static errr rd_player_spells(void)
-{
-	int i;
-	u16b tmp16u;
-
-	int cnt;
-
-	/* Read the number of spells */
-	rd_u16b(&tmp16u);
-	if (tmp16u > PY_MAX_SPELLS)
-	{
-		note(format("Too many player spells (%d).", tmp16u));
-		return (-1);
-	}
-
-	/* Read the spell flags */
-	for (i = 0; i < tmp16u; i++)
-		rd_byte(&p_ptr->spell_flags[i]);
-
-	/* Read the spell order */
-	for (i = 0, cnt = 0; i < tmp16u; i++, cnt++)
-		rd_byte(&p_ptr->spell_order[cnt]);
-
-	/* Success */
-	return (0);
-}
-
-/*
- * Read squelch and autoinscription submenu for all known objects
- */
-static int rd_squelch(void)
-{
-	int i;
-	byte tmp8u = 24;
-
-	/* Read how many squelch bytes we have */
-	rd_byte(&tmp8u);
-
-	/* Check against current number */
-	if (tmp8u != SQUELCH_BYTES)
-	{
-		strip_bytes(tmp8u);
-	}
-	else
-	{
-		for (i = 0; i < SQUELCH_BYTES; i++)
-			rd_byte(&squelch_level[i]);
-	}
-
-	/* Handle ego-item squelch */
-	if ((sf_major == 3) && (sf_minor == 0) && (sf_patch != 9))
-	{
-		u16b file_e_max;
-
-		/* Read the number of saved ego-item */
-		rd_u16b(&file_e_max);
-
-		for (i = 0; i < file_e_max; i++)
-		{
-			if (i < z_info->e_max)
-			{
-				byte flags;
-
-				/* Read and extract the flag */
-				rd_byte(&flags);
-				e_info[i].everseen |= (flags & 0x02);
-			}
-		}
-	}
-	else
-	{
-	}
-
-	/* Read the current number of auto-inscriptions */
-	rd_u16b(&inscriptions_count);
-
-	/* Write the autoinscriptions array*/
-	for (i = 0; i < inscriptions_count; i++)
-	{
-		char tmp[80];
-
-		rd_s16b(&inscriptions[i].kind_idx);
-		rd_string(tmp, sizeof(tmp));
-
-		inscriptions[i].inscription_idx = quark_add(tmp);
-	}
-
-	return 0;
-}
-
-
 /*
  * Read the "extra" information
  */
-static errr rd_extra(void)
+int rd_player(u32b version)
 {
 	int i;
 
 	byte num;
-
-	byte tmp8u;
-	u16b tmp16u;
 
 
 	rd_string(op_ptr->full_name, sizeof(op_ptr->full_name));
@@ -862,6 +678,7 @@ static errr rd_extra(void)
 		note(format("Invalid player race (%d).", p_ptr->prace));
 		return (-1);
 	}
+	rp_ptr = &p_info[p_ptr->prace];
 
 	/* Player class */
 	rd_byte(&p_ptr->pclass);
@@ -872,11 +689,16 @@ static errr rd_extra(void)
 		note(format("Invalid player class (%d).", p_ptr->pclass));
 		return (-1);
 	}
+	cp_ptr = &c_info[p_ptr->pclass];
+	mp_ptr = &cp_ptr->spells;
+
 
 	/* Player gender */
 	rd_byte(&p_ptr->psex);
+	sp_ptr = &sex_info[p_ptr->psex];
 
-	strip_bytes(1);
+	/* Numeric name suffix */
+	rd_byte(&op_ptr->name_suffix);
 
 	/* Special Race/Class info */
 	rd_byte(&p_ptr->hitdie);
@@ -894,6 +716,7 @@ static errr rd_extra(void)
 
 	rd_s16b(&p_ptr->ht_birth);
 	rd_s16b(&p_ptr->wt_birth);
+	if (version >= 2) rd_s16b(&p_ptr->sc_birth);
 	rd_s32b(&p_ptr->au_birth);
 
 	strip_bytes(4);
@@ -933,6 +756,7 @@ static errr rd_extra(void)
 	/* More info */
 	strip_bytes(8);
 	rd_s16b(&p_ptr->sc);
+	if (version < 2) p_ptr->sc_birth = p_ptr->sc;
 	strip_bytes(2);
 
 	/* Read the flags */
@@ -970,9 +794,70 @@ static errr rd_extra(void)
 	/* Future use */
 	strip_bytes(40);
 
-	/* Read item-quality squelch sub-menu */
-	if (rd_squelch()) return -1;
+	return 0;
+}
 
+
+/*
+ * Read squelch and autoinscription submenu for all known objects
+ */
+int rd_squelch(u32b version)
+{
+	size_t i;
+	byte tmp8u = 24;
+	u16b file_e_max;
+	
+	/* Read how many squelch bytes we have */
+	rd_byte(&tmp8u);
+	
+	/* Check against current number */
+	if (tmp8u != squelch_size)
+	{
+		strip_bytes(tmp8u);
+	}
+	else
+	{
+		for (i = 0; i < squelch_size; i++)
+			rd_byte(&squelch_level[i]);
+	}
+		
+	/* Read the number of saved ego-item */
+	rd_u16b(&file_e_max);
+		
+	for (i = 0; i < file_e_max; i++)
+	{
+		if (i < z_info->e_max)
+		{
+			byte flags;
+			
+			/* Read and extract the flag */
+			rd_byte(&flags);
+			e_info[i].everseen |= (flags & 0x02);
+		}
+	}
+	
+	/* Read the current number of auto-inscriptions */
+	rd_u16b(&inscriptions_count);
+	
+	/* Write the autoinscriptions array*/
+	for (i = 0; i < inscriptions_count; i++)
+	{
+		char tmp[80];
+		
+		rd_s16b(&inscriptions[i].kind_idx);
+		rd_string(tmp, sizeof(tmp));
+		
+		inscriptions[i].inscription_idx = quark_add(tmp);
+	}
+	
+	return 0;
+}
+
+
+int rd_misc(u32b version)
+{
+	byte tmp8u;
+	
 	/* Read the randart version */
 	rd_u32b(&randart_version);
 
@@ -1008,6 +893,13 @@ static errr rd_extra(void)
 	/* Current turn */
 	rd_s32b(&turn);
 
+	return 0;
+}
+
+int rd_player_hp(u32b version)
+{
+	int i;
+	u16b tmp16u;
 
 	/* Read the player_hp array */
 	rd_u16b(&tmp16u);
@@ -1021,13 +913,36 @@ static errr rd_extra(void)
 
 	/* Read the player_hp array */
 	for (i = 0; i < tmp16u; i++)
-	{
 		rd_s16b(&p_ptr->player_hp[i]);
+
+	return 0;
+}
+
+
+int rd_player_spells(u32b version)
+{
+	int i;
+	u16b tmp16u;
+	
+	int cnt;
+	
+	/* Read the number of spells */
+	rd_u16b(&tmp16u);
+	if (tmp16u > PY_MAX_SPELLS)
+	{
+		note(format("Too many player spells (%d).", tmp16u));
+		return (-1);
 	}
-
-	/* Read the player spells */
-	if (rd_player_spells()) return (-1);
-
+	
+	/* Read the spell flags */
+	for (i = 0; i < tmp16u; i++)
+		rd_byte(&p_ptr->spell_flags[i]);
+	
+	/* Read the spell order */
+	for (i = 0, cnt = 0; i < tmp16u; i++, cnt++)
+		rd_byte(&p_ptr->spell_order[cnt]);
+	
+	/* Success */
 	return (0);
 }
 
@@ -1035,7 +950,7 @@ static errr rd_extra(void)
 /*
  * Read the random artifacts
  */
-static errr rd_randarts(void)
+int rd_randarts(u32b version)
 {
 	int i;
 	byte tmp8u;
@@ -1045,8 +960,10 @@ static errr rd_randarts(void)
 	s32b tmp32s;
 	u32b tmp32u;
 
+	if (!OPT(adult_randarts))
+		return 0;
 
-	if (older_than(3, 0, 14))
+	if (FALSE)
 	{
 		/*
 		 * XXX XXX XXX
@@ -1113,9 +1030,9 @@ static errr rd_randarts(void)
 
 				rd_s32b(&a_ptr->cost);
 
-				rd_u32b(&a_ptr->flags1);
-				rd_u32b(&a_ptr->flags2);
-				rd_u32b(&a_ptr->flags3);
+				rd_u32b(&a_ptr->flags[0]);
+				rd_u32b(&a_ptr->flags[1]);
+				rd_u32b(&a_ptr->flags[2]);
 
 				rd_byte(&a_ptr->level);
 				rd_byte(&a_ptr->rarity);
@@ -1125,6 +1042,9 @@ static errr rd_randarts(void)
 				rd_u16b(&a_ptr->time_dice);
 				rd_u16b(&a_ptr->time_sides);
 			}
+
+		/* Initialize only the randart names */
+		do_randart(seed_randart, FALSE);
 		}
 		else
 		{
@@ -1156,18 +1076,14 @@ static errr rd_randarts(void)
 
 				rd_u16b(&tmp16u); /* a_ptr->effect */
 				rd_u16b(&tmp16u); /* a_ptr->time_base */
-				rd_byte(&tmp8u); /* a_ptr->time_dice */
-				rd_byte(&tmp8u); /* a_ptr->time_sides */
+				rd_u16b(&tmp16u); /* a_ptr->time_dice */
+				rd_u16b(&tmp16u); /* a_ptr->time_sides */
 			}
 		}
-
-		/* Initialize only the randart names */
-		do_randart(seed_randart, FALSE);
 	}
 
 	return (0);
 }
-
 
 
 
@@ -1176,7 +1092,7 @@ static errr rd_randarts(void)
  *
  * Note that the inventory is "re-sorted" later by "dungeon()".
  */
-static errr rd_inventory(void)
+int rd_inventory(u32b version)
 {
 	int slot = 0;
 
@@ -1258,34 +1174,76 @@ static errr rd_inventory(void)
 }
 
 
-
-/*
- * Read the saved messages
- */
-static void rd_messages(void)
+int rd_stores(u32b version)
 {
 	int i;
-	char buf[128];
 	u16b tmp16u;
-
-	s16b num;
-
-	/* Total */
-	rd_s16b(&num);
-
-	/* Read the messages */
-	for (i = 0; i < num; i++)
+	
+	/* Read the stores */
+	rd_u16b(&tmp16u);
+	for (i = 0; i < tmp16u; i++)
 	{
-		/* Read the message */
-		rd_string(buf, sizeof(buf));
+		store_type *st_ptr = &store[i];
 
-		/* Read the message type */
-		rd_u16b(&tmp16u);
+		int j;		
+		byte own, num;
+		
+		/* XXX */
+		strip_bytes(6);
+		
+		/* Read the basic info */
+		rd_byte(&own);
+		rd_byte(&num);
+		
+		/* XXs */
+		strip_bytes(4);
+		
+		/* Paranoia */
+		if (own >= z_info->b_max)
+		{
+			note("Illegal store owner!");
+			return (-1);
+		}
+		
+		st_ptr->owner = own;
+		
+		/* Read the items */
+		for (j = 0; j < num; j++)
+		{
+			object_type *i_ptr;
+			object_type object_type_body;
+			
+			/* Get local object */
+			i_ptr = &object_type_body;
+			
+			/* Wipe the object */
+			object_wipe(i_ptr);
+			
+			/* Read the item */
+			if (rd_item(i_ptr))
+			{
+				note("Error reading item");
+				return (-1);
+			}
 
-		/* Save the message */
-		message_add(buf, tmp16u);
+			i_ptr->ident |= IDENT_STORE;
+			
+			/* Accept any valid items */
+			if ((st_ptr->stock_num < STORE_INVEN_MAX) &&
+				(i_ptr->k_idx))
+			{
+				int k = st_ptr->stock_num++;
+				
+				/* Accept the item */
+				object_copy(&st_ptr->stock[k], i_ptr);
+			}
+		}	
 	}
+
+	return 0;
 }
+
+
 
 
 /*
@@ -1306,7 +1264,7 @@ static void rd_messages(void)
  * After loading the monsters, the objects being held by monsters are
  * linked directly into those monsters.
  */
-static errr rd_dungeon(void)
+int rd_dungeon(u32b version)
 {
 	int i, y, x;
 
@@ -1318,8 +1276,9 @@ static errr rd_dungeon(void)
 	byte tmp8u;
 	u16b tmp16u;
 
-	u16b limit;
-
+	/* Only if the player's alive */
+	if (p_ptr->is_dead)
+		return 0;
 
 	/*** Basic info ***/
 
@@ -1452,8 +1411,28 @@ static errr rd_dungeon(void)
 		return (-1);
 	}
 
+	/*** Success ***/
+	
+	/* The dungeon is ready */
+	character_dungeon = TRUE;
+	
+#if 0
+	/* Regenerate town in old versions */
+	if (p_ptr->depth == 0)
+		character_dungeon = FALSE;
+#endif
+	
+	return 0;
+}
 
-	/*** Objects ***/
+int rd_objects(u32b version)
+{
+	int i;
+	u16b limit;
+
+	/* Only if the player's alive */
+	if (p_ptr->is_dead)
+		return 0;
 
 	/* Read the item count */
 	rd_u16b(&limit);
@@ -1520,9 +1499,19 @@ static errr rd_dungeon(void)
 		}
 	}
 
+	return 0;
+}
 
-	/*** Monsters ***/
 
+int rd_monsters(u32b version)
+{
+	int i;
+	u16b limit;
+
+	/* Only if the player's alive */
+	if (p_ptr->is_dead)
+		return 0;
+	
 	/* Read the monster count */
 	rd_u16b(&limit);
 
@@ -1536,36 +1525,39 @@ static errr rd_dungeon(void)
 	/* Read the monsters */
 	for (i = 1; i < limit; i++)
 	{
-		monster_type *n_ptr;
+		monster_type *m_ptr;
 		monster_type monster_type_body;
 
-
 		/* Get local monster */
-		n_ptr = &monster_type_body;
+		m_ptr = &monster_type_body;
+		WIPE(m_ptr, monster_type);
 
-		/* Clear the monster */
-		(void)WIPE(n_ptr, monster_type);
-
-		/* Read the monster */
-		rd_monster(n_ptr);
-
+		/* Read in record */
+		rd_s16b(&m_ptr->r_idx);
+		rd_byte(&m_ptr->fy);
+		rd_byte(&m_ptr->fx);
+		rd_s16b(&m_ptr->hp);
+		rd_s16b(&m_ptr->maxhp);
+		rd_s16b(&m_ptr->csleep);
+		rd_byte(&m_ptr->mspeed);
+		rd_byte(&m_ptr->energy);
+		rd_byte(&m_ptr->stunned);
+		rd_byte(&m_ptr->confused);
+		rd_byte(&m_ptr->monfear);
+		strip_bytes(1);
 
 		/* Place monster in dungeon */
-		if (monster_place(n_ptr->fy, n_ptr->fx, n_ptr) != i)
+		if (monster_place(m_ptr->fy, m_ptr->fx, m_ptr) != i)
 		{
 			note(format("Cannot place monster %d", i));
 			return (-1);
 		}
 	}
 
-
-	/*** Holding ***/
-
 	/* Reacquire objects */
 	for (i = 1; i < o_max; ++i)
 	{
 		object_type *o_ptr;
-
 		monster_type *m_ptr;
 
 		/* Get the object */
@@ -1591,425 +1583,55 @@ static errr rd_dungeon(void)
 		m_ptr->hold_o_idx = i;
 	}
 
-
-	/*** Success ***/
-
-	/* The dungeon is ready */
-	character_dungeon = TRUE;
-
-#if 0
-	/* Regenerate town in old versions */
-	if (p_ptr->depth == 0)
-		character_dungeon = FALSE;
-#endif
-
-	/* Success */
-	return (0);
+	return 0;
 }
 
 
-
-/*
- * Actually read the savefile
- */
-static errr rd_savefile_new_aux(void)
+int rd_ghost(u32b version)
 {
-	int i;
+	char buf[64];
 
-	byte tmp8u;
-	u16b tmp16u;
+	/* Only if the player's alive */
+	if (p_ptr->is_dead)
+		return 0;	
+
+	/* XXX */
+	
+	/* Strip name */
+	rd_string(buf, 64);
+	
+	/* Strip old data */
+	strip_bytes(60);
+
+	return 0;
+}
+
+
+int rd_history(u32b version)
+{
 	u32b tmp32u;
-
-	u32b n_x_check, n_v_check;
-	u32b o_x_check, o_v_check;
-
-	char buf[80];
-
-	/* Mention the savefile version */
-	note(format("Loading a %d.%d.%d savefile...",
-	            sf_major, sf_minor, sf_patch));
-
-	/* Strip the version bytes */
-	strip_bytes(4);
-
-	/* Hack -- decrypt */
-	xor_byte = sf_extra;
-
-
-	/* Clear the checksums */
-	v_check = 0L;
-	x_check = 0L;
-
-
-	/* Operating system info */
-	rd_u32b(&sf_xtra);
-
-	/* Time of savefile creation */
-	rd_u32b(&sf_when);
-
-	/* Number of resurrections */
-	rd_u16b(&sf_lives);
-
-	/* Number of times played */
-	rd_u16b(&sf_saves);
-
-
-	/* Later use (always zero) */
+	size_t i;
+	
+	history_clear();
+	
 	rd_u32b(&tmp32u);
-
-	/* Later use (always zero) */
-	rd_u32b(&tmp32u);
-
-
-	/* Read RNG state */
-	rd_randomizer();
-
-	/* Then the options */
-	rd_options();
-
-	/* Then the "messages" */
-	rd_messages();
-
-	/* Monster Memory */
-	rd_u16b(&tmp16u);
-
-	/* Incompatible save files */
-	if (tmp16u > z_info->r_max)
+	for (i = 0; i < tmp32u; i++)
 	{
-		note(format("Too many (%u) monster races!", tmp16u));
-		return (-1);
+		s32b turn;
+		s16b dlev, clev;
+		u16b type;
+		byte art_name;
+		char text[80];
+		
+		rd_u16b(&type);
+		rd_s32b(&turn);
+		rd_s16b(&dlev);
+		rd_s16b(&clev);
+		rd_byte(&art_name);
+		rd_string(text, sizeof(text));
+		
+		history_add_full(type, art_name, dlev, clev, turn, text);
 	}
 
-	/* Read the available records */
-	for (i = 0; i < tmp16u; i++)
-	{
-		/* Read the lore */
-		rd_lore(i);
-	}
-
-	/* Object Memory */
-	rd_u16b(&tmp16u);
-
-	/* Incompatible save files */
-	if (tmp16u > z_info->k_max)
-	{
-		note(format("Too many (%u) object kinds!", tmp16u));
-		return (-1);
-	}
-
-	/* Read the object memory */
-	for (i = 0; i < tmp16u; i++)
-	{
-		byte tmp8u;
-		object_kind *k_ptr = &k_info[i];
-
-		rd_byte(&tmp8u);
-
-		k_ptr->aware = (tmp8u & 0x01) ? TRUE : FALSE;
-		k_ptr->tried = (tmp8u & 0x02) ? TRUE : FALSE;
-		k_ptr->squelch = (tmp8u & 0x04) ? TRUE : FALSE;
-		k_ptr->everseen = (tmp8u & 0x08) ? TRUE : FALSE;
-	}
-
-
-	/* Load the Quests */
-	rd_u16b(&tmp16u);
-
-	/* Incompatible save files */
-	if (tmp16u > MAX_Q_IDX)
-	{
-		note(format("Too many (%u) quests!", tmp16u));
-		return (-1);
-	}
-
-	/* Load the Quests */
-	for (i = 0; i < tmp16u; i++)
-	{
-		rd_byte(&tmp8u);
-		q_list[i].level = tmp8u;
-		rd_byte(&tmp8u);
-		rd_byte(&tmp8u);
-		rd_byte(&tmp8u);
-	}
-
-	/* Load the Artifacts */
-	rd_u16b(&tmp16u);
-
-	/* Incompatible save files */
-	if (tmp16u > z_info->a_max)
-	{
-		note(format("Too many (%u) artifacts!", tmp16u));
-		return (-1);
-	}
-
-	/* Read the artifact flags */
-	for (i = 0; i < tmp16u; i++)
-	{
-		rd_byte(&tmp8u);
-		a_info[i].cur_num = tmp8u;
-		rd_byte(&tmp8u);
-		rd_byte(&tmp8u);
-		rd_byte(&tmp8u);
-	}
-
-	/* Read the extra stuff */
-	if (rd_extra()) return (-1);
-
-	/* Read random artifacts */
-	if (adult_randarts)
-	{
-		if (rd_randarts()) return (-1);
-	}
-
-
-	/* Important -- Initialize the sex */
-	sp_ptr = &sex_info[p_ptr->psex];
-
-	/* Important -- Initialize the race/class */
-	rp_ptr = &p_info[p_ptr->prace];
-	cp_ptr = &c_info[p_ptr->pclass];
-
-	/* Important -- Initialize the magic */
-	mp_ptr = &cp_ptr->spells;
-
-
-	/* Read the inventory */
-	if (rd_inventory())
-	{
-		note("Unable to read inventory");
-		return (-1);
-	}
-
-
-	/* Read the stores */
-	rd_u16b(&tmp16u);
-	for (i = 0; i < tmp16u; i++)
-	{
-		if (rd_store(i)) return (-1);
-	}
-
-
-	/* I'm not dead yet... */
-	if (!p_ptr->is_dead)
-	{
-		/* Dead players have no dungeon */
-		note("Restoring Dungeon...");
-		if (rd_dungeon())
-		{
-			note("Error reading dungeon data");
-			return (-1);
-		}
-
-		/* Read the ghost info */
-		rd_ghost();
-	}
-
-	/* Read in the history list if the savefile is new enough */
-	if (!older_than(3, 0, 13))
-	{
-		size_t i;
-
-		history_clear();
-
-		rd_u32b(&tmp32u);
-		for (i = 0; i < tmp32u; i++)
-		{
-			s32b turn;
-			s16b dlev, clev;
-			u16b type;
-			byte art_name;
-			char text[80];
-
-			rd_u16b(&type);
-			rd_s32b(&turn);
-			rd_s16b(&dlev);
-			rd_s16b(&clev);
-			rd_byte(&art_name);
-			rd_string(text, sizeof(text));
-
-			history_add_full(type, art_name, dlev, clev, turn, text);
-		}
-	}
-
-	/*
-	 * Savefile is from an older version:
-	 * Still have to initialize the variables correctly.
-	 * Then the game should correctly log future history entries.
-	 */
-	else
-	{
-		history_clear();
-		strnfmt(buf, sizeof(buf), "Imported an Angband %d.%d.%d savefile",
-			sf_major, sf_minor, sf_patch);
-		history_add(buf, HISTORY_SAVEFILE_IMPORT, 0);
-	}
-
-	/* Save the checksum */
-	n_v_check = v_check;
-
-	/* Read the old checksum */
-	rd_u32b(&o_v_check);
-
-	/* Verify */
-	if (o_v_check != n_v_check)
-	{
-		note("Invalid checksum");
-		return (-1);
-	}
-
-	/* Save the encoded checksum */
-	n_x_check = x_check;
-
-	/* Read the checksum */
-	rd_u32b(&o_x_check);
-
-	/* Verify */
-	if (o_x_check != n_x_check)
-	{
-		note("Invalid encoded checksum");
-		return (-1);
-	}
-
-
-	/* Hack -- no ghosts */
-	r_info[z_info->r_max-1].max_num = 0;
-
-
-	/* Success */
-	return (0);
-}
-
-
-/*
- * Actually read the savefile
- */
-static errr rd_savefile(void)
-{
-	errr err;
-
-	/* Open savefile */
-	safe_setuid_grab();
-	fff = file_open(savefile, MODE_READ, -1);
-	safe_setuid_drop();
-
-	/* Paranoia */
-	if (!fff) return (-1);
-
-	/* Call the sub-function */
-	err = rd_savefile_new_aux();
-
-	/* Close the file */
-	file_close(fff);
-
-	/* Result */
-	return (err);
-}
-
-
-/*
- * Attempt to Load a "savefile"
- *
- * On multi-user systems, you may only "read" a savefile if you will be
- * allowed to "write" it later, this prevents painful situations in which
- * the player loads a savefile belonging to someone else, and then is not
- * allowed to save his game when he quits.
- *
- * We return "TRUE" if the savefile was usable, and we set the
- * flag "character_loaded" if a real, living, character was loaded.
- *
- * Note that we always try to load the "current" savefile, even if
- * there is no such file, so we must check for "empty" savefile names.
- */
-bool old_load(void)
-{
-	ang_file *fh;
-	cptr what = "generic";
-
-	errr err = 0;
-
-	fh = file_open(savefile, MODE_READ, -1);
-
-
-	/* No file */
-	if (!fh)
-	{
-		err = -1;
-		what = "Cannot open savefile";
-	}
-
-	/* Process file */
-	if (!err)
-	{
-		/* Extract version */
-		err = file_readc(fh, &sf_major) ? 0 : -1;
-		if (!err) err = file_readc(fh, &sf_minor) ? 0 : -1;
-		if (!err) err = file_readc(fh, &sf_patch) ? 0 : -1;
-		if (!err) err = file_readc(fh, &sf_extra) ? 0 : -1;
-
-		if (err)
-			what = "Cannot read savefile";
-
-		file_close(fh);
-	}
-
-	/* Process file */
-	if (!err)
-	{
-		/* Clear screen */
-		Term_clear();
-
-		if (older_than(OLD_VERSION_MAJOR, OLD_VERSION_MINOR, OLD_VERSION_PATCH))
-		{
-			err = -1;
-			what = "Savefile is too old";
-			goto end;
-		}
-		else if (!older_than(VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH + 1))
-		{
-			err = -1;
-			what = "Savefile is from the future";
-		}
-		else
-		{
-			/* Attempt to load */
-			err = rd_savefile();
-
-			/* Message (below) */
-			if (err) what = "Cannot parse savefile";
-		}
-	}
-
-	/* Paranoia */
-	if (!err)
-	{
-		/* Invalid turn */
-		if (!turn) err = -1;
-
-		/* Message (below) */
-		if (err) what = "Broken savefile";
-	}
-
-
-	/* Okay */
-	if (!err)
-	{
-		/* Still alive */
-		if (p_ptr->chp >= 0)
-		{
-			/* Reset cause of death */
-			my_strcpy(p_ptr->died_from, "(alive and well)", sizeof(p_ptr->died_from));
-		}
-
-		/* Success */
-		return (TRUE);
-	}
-
-end:
-	/* Message */
-	msg_format("Error (%s) reading %d.%d.%d savefile.",
-	           what, sf_major, sf_minor, sf_patch);
-	message_flush();
-
-	/* Oops */
-	return (FALSE);
+	return 0;
 }

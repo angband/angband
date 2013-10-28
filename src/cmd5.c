@@ -17,7 +17,7 @@
  */
 #include "angband.h"
 #include "object/tvalsval.h"
-
+#include "game-cmd.h"
 
 /*
  * Returns chance of failure for a spell
@@ -79,7 +79,7 @@ s16b spell_chance(int spell)
 	else if (p_ptr->timed[TMD_STUN]) chance += 15;
 
 	/* Amnesia doubles failure change */
-	if (p_ptr->timed[TMD_AMNESIA]) chance *= 2;
+	if (p_ptr->timed[TMD_AMNESIA]) chance = 50 + chance / 2;
 
 	/* Always a 5 percent chance of working */
 	if (chance > 95) chance = 95;
@@ -242,24 +242,6 @@ int get_spell(const object_type *o_ptr, cptr prompt, bool known, bool browse)
 
 	cptr p = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
 
-	int result;
-
-	/* Get the spell, if available */
-	if (repeat_pull(&result))
-	{
-		/* Verify the spell */
-		if (spell_okay(result, known, browse))
-		{
-			/* Success */
-			return (result);
-		}
-		else
-		{
-			/* Invalid repeat - reset it */
-			repeat_clear();
-		}
-	}
-
 	/* Extract spells */
 	for (i = 0; i < SPELLS_PER_BOOK; i++)
 	{
@@ -280,7 +262,12 @@ int get_spell(const object_type *o_ptr, cptr prompt, bool known, bool browse)
 	}
 
 	/* No available spells */
-	if (!okay) return (-2);
+	if (!okay)
+	{
+		msg_format("You cannot learn any %ss in that book.", p);
+		return (-2);
+	}
+
 
 
 	/* Nothing chosen yet */
@@ -401,8 +388,6 @@ int get_spell(const object_type *o_ptr, cptr prompt, bool known, bool browse)
 	/* Abort if needed */
 	if (!flag) return (-1);
 
-	repeat_push(spell);
-
 	/* Success */
 	return (spell);
 }
@@ -484,7 +469,7 @@ static void browse_spell(int spell)
 	/* Display the spell description */
 	text_out("\n\n   ");
 
-	text_out(s_text + s_info[(cp_ptr->spell_book == TV_MAGIC_BOOK) ? spell : spell + PY_MAX_SPELLS].text);
+	text_out("%s", s_text + s_info[(cp_ptr->spell_book == TV_MAGIC_BOOK) ? spell : spell + PY_MAX_SPELLS].text);
 	text_out_c(TERM_L_BLUE, "\n\n[Press any key to continue]\n");
 
 	/* Wait for input */
@@ -495,15 +480,13 @@ static void browse_spell(int spell)
 }
 
 
-void do_cmd_browse_aux(const object_type *o_ptr)
+void do_cmd_browse_aux(const object_type *o_ptr, int item)
 {
 	int spell;
 
 
 	/* Track the object kind */
-	object_kind_track(o_ptr->k_idx);
-
-	/* Hack -- Handle stuff */
+	track_object(item);
 	handle_stuff();
 
 
@@ -519,45 +502,170 @@ void do_cmd_browse_aux(const object_type *o_ptr)
 	}
 }
 
-
-/*
- * Choose a new spell from the book.
- */
-int spell_choose_new(const object_type *o_ptr)
+/* Check if the given spell is in the given book. */
+static bool spell_in_book(int spell, int book)
 {
+	int i;
+	object_type *o_ptr = object_from_item_idx(book);
+
+	for (i = 0; i < SPELLS_PER_BOOK; i++)
+	{
+		if (spell == get_spell_index(o_ptr, i))
+			return TRUE;
+	}
+
+	return FALSE;
+}
+
+/* Gain a specific spell, specified by spell number (for mages). */
+void do_cmd_study_spell(cmd_code code, cmd_arg args[])
+{
+	int spell = args[0].choice;
+
+	int item_list[INVEN_TOTAL + MAX_FLOOR_STACK];
+	int item_num;
+	int i;
+
+	/* Check the player can study at all atm */
+	if (!player_can_study())
+		return;
+
+	/* Check that the player can actually learn the nominated spell. */
+	item_tester_hook = obj_can_browse;
+	item_num = scan_items(item_list, N_ELEMENTS(item_list), (USE_INVEN | USE_FLOOR));
+
+	/* Check through all available books */
+	for (i = 0; i < item_num; i++)
+	{
+		if (spell_in_book(spell, item_list[i]))
+		{
+			if (spell_okay(spell, FALSE, FALSE))
+			{
+				/* Spell is in an available book, and player is capable. */
+				spell_learn(spell);
+				p_ptr->energy_use = 100;
+			}
+			else
+			{
+				/* Spell is present, but player incapable. */
+				msg_format("You cannot learn that spell.");
+			}
+
+			return;
+		}
+	}
+}
+
+/* Cast a spell from a book */
+void do_cmd_cast(cmd_code code, cmd_arg args[])
+{
+	int spell = args[0].choice;
+	int dir = args[1].direction;
+
+	int item_list[INVEN_TOTAL + MAX_FLOOR_STACK];
+	int item_num;
+	int i;
+
+	cptr verb = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "cast" : "recite");
+    cptr noun = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
+
+	/* Check the player can cast spells at all */
+	if (!player_can_cast())
+		return;
+
+	/* Check spell is in a book they can access */
+	item_tester_hook = obj_can_browse;
+	item_num = scan_items(item_list, N_ELEMENTS(item_list), (USE_INVEN | USE_FLOOR));
+
+	/* Check through all available books */
+	for (i = 0; i < item_num; i++)
+	{
+		if (spell_in_book(spell, item_list[i]))
+		{
+			if (spell_okay(spell, TRUE, FALSE))
+			{
+				/* Get the spell */
+				const magic_type *s_ptr = &mp_ptr->info[spell];	
+				
+				/* Verify "dangerous" spells */
+				if (s_ptr->smana > p_ptr->csp)
+				{
+					/* Warning */
+					msg_format("You do not have enough mana to %s this %s.", verb, noun);
+					
+					/* Flush input */
+					flush();
+					
+					/* Verify */
+					if (!get_check("Attempt it anyway? ")) return;
+				}
+
+				/* Cast a spell */
+				if (spell_cast(spell, dir))
+					p_ptr->energy_use = 100;
+			}
+			else
+			{
+				/* Spell is present, but player incapable. */
+				msg_format("You cannot %s that %s.", verb, noun);
+			}
+
+			return;
+		}
+	}
+
+}
+
+
+/* Gain a random spell from the given book (for priests) */
+void do_cmd_study_book(cmd_code code, cmd_arg args[])
+{
+	int book = args[0].item;
+	object_type *o_ptr = object_from_item_idx(book);
+
+	int spell = -1;
 	int i, k = 0;
-	int gift = -1;
-	
+
 	cptr p = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
 
-	/* Mage -- Learn a selected spell */
-	if (cp_ptr->flags & CF_CHOOSE_SPELLS)
+	/* Check the player can study at all atm */
+	if (!player_can_study())
+		return;
+
+	/* Check that the player has access to the nominated spell book. */
+	if (!item_is_available(book, obj_can_browse, (USE_INVEN | USE_FLOOR)))
 	{
-		return get_spell(o_ptr, "study", FALSE, FALSE);
+		msg_format("That item is not within your reach.");
+		return;
 	}
 
 	/* Extract spells */
 	for (i = 0; i < SPELLS_PER_BOOK; i++)
 	{
-		int spell = get_spell_index(o_ptr, i);
-
+		int s = get_spell_index(o_ptr, i);
+		
 		/* Skip non-OK spells */
-		if (spell == -1) continue;
-		if (!spell_okay(spell, FALSE, FALSE)) continue;
-
+		if (s == -1) continue;
+		if (!spell_okay(s, FALSE, FALSE)) continue;
+		
 		/* Apply the randomizer */
 		if ((++k > 1) && (randint0(k) != 0)) continue;
-
+		
 		/* Track it */
-		gift = spell;
+		spell = s;
 	}
 
-	/* Nothing to study */
-	if (gift < 0)
+	if (spell < 0)
+	{
 		msg_format("You cannot learn any %ss in that book.", p);
-
-	return gift;
+	}
+	else
+	{
+		spell_learn(spell);
+		p_ptr->energy_use = 100;	
+	}
 }
+
 
 /*
  * Learn the specified spell.
@@ -601,33 +709,12 @@ void spell_learn(int spell)
 
 
 /* Cas the specified spell */
-bool spell_cast(int spell)
+bool spell_cast(int spell, int dir)
 {
 	int chance;
-	const magic_type *s_ptr;
-
-    cptr p = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ?
-	          "cast this spell" :
-	          "recite this prayer");
-
 
 	/* Get the spell */
-	s_ptr = &mp_ptr->info[spell];
-
-
-	/* Verify "dangerous" spells */
-	if (s_ptr->smana > p_ptr->csp)
-	{
-		/* Warning */
-		msg_format("You do not have enough mana to %s.", p);
-
-		/* Flush input */
-		flush();
-
-		/* Verify */
-		if (!get_check("Attempt it anyway? ")) return FALSE;
-	}
-
+	const magic_type *s_ptr = &mp_ptr->info[spell];	
 
 	/* Spell failure chance */
 	chance = spell_chance(spell);
@@ -635,7 +722,7 @@ bool spell_cast(int spell)
 	/* Failed spell */
 	if (randint0(100) < chance)
 	{
-		if (flush_failure) flush();
+		if (OPT(flush_failure)) flush();
 		msg_print("You failed to concentrate hard enough!");
 	}
 
@@ -643,10 +730,11 @@ bool spell_cast(int spell)
 	else
 	{
 		/* Cast the spell */
-		if (!cast_spell(cp_ptr->spell_book, spell)) return FALSE;
+		if (!cast_spell(cp_ptr->spell_book, spell, dir)) return FALSE;
 
 		/* A spell was cast */
 		sound(MSG_SPELL);
+
 		if (!(p_ptr->spell_flags[spell] & PY_SPELL_WORKED))
 		{
 			int e = s_ptr->sexp;
@@ -693,7 +781,7 @@ bool spell_cast(int spell)
 			msg_print("You have damaged your health!");
 
 			/* Reduce constitution */
-			(void)dec_stat(A_CON, 15 + randint1(10), perm);
+			(void)dec_stat(A_CON, perm);
 		}
 	}
 

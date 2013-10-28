@@ -1402,16 +1402,13 @@ const char *window_flag_desc[32] =
 const char *inscrip_text[] =
 {
 	NULL,
-	"terrible",
-	"worthless",
-	"cursed",
 	"strange",
 	"average",
 	"magical",
+	"splendid",
 	"excellent",
 	"special",
-	"uncursed",
-	"indestructible"
+	"unknown"
 };
 
 const grouper object_text_order[] =

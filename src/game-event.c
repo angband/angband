@@ -114,6 +114,14 @@ void event_signal(game_event_type type)
 	game_event_dispatch(type, NULL);
 }
 
+void event_signal_flag(game_event_type type, bool flag)
+{
+	game_event_data data;
+	data.flag = flag;
+
+	game_event_dispatch(type, &data);
+}
+
 
 void event_signal_point(game_event_type type, int x, int y)
 {
@@ -133,50 +141,13 @@ void event_signal_string(game_event_type type, const char *s)
 	game_event_dispatch(type, &data);
 }
 
-
-void event_signal_birthstage_question(enum birth_stage stage, const char *hint, int n_choices, int initial_choice, const char *choices[], const char *helptexts[])
-{
-	game_event_data data;
-
-	data.birthstage.stage = stage;
-	data.birthstage.hint = hint;
-	data.birthstage.n_choices = n_choices;
-	data.birthstage.initial_choice = initial_choice;
-	data.birthstage.choices = choices;
-	data.birthstage.helptexts = helptexts;
-
-	game_event_dispatch(EVENT_BIRTHSTAGE, &data);
-}
-
-void event_signal_birthstage(enum birth_stage stage, void *xtra)
-{
-	game_event_data data;
-
-	data.birthstage.stage = stage;
-	data.birthstage.xtra = xtra;
-
-	game_event_dispatch(EVENT_BIRTHSTAGE, &data);
-}
-
-void event_signal_birthstats(int stats[6], int remaining)
+void event_signal_birthpoints(int stats[6], int remaining)
 {
 	game_event_data data;
 
 	data.birthstats.stats = stats;
 	data.birthstats.remaining = remaining;
 
-	game_event_dispatch(EVENT_BIRTHSTATS, &data);
+	game_event_dispatch(EVENT_BIRTHPOINTS, &data);
 }
 
-
-void event_signal_birthautoroller(int limits[6], int matches[6], int current[6], unsigned long round)
-{
-	game_event_data data;
-
-	data.birthautoroll.limits = limits;
-	data.birthautoroll.matches = matches;
-	data.birthautoroll.current = current;
-	data.birthautoroll.round = round;
-
-	game_event_dispatch(EVENT_BIRTHAUTOROLLER, &data);
-}

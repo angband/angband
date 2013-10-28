@@ -329,12 +329,16 @@ static void new_player_spot(void)
 		/* Refuse to start on anti-teleport grids */
 		if (cave_info[y][x] & (CAVE_ICKY)) continue;
 
-		if (!adult_no_stairs)
+		if (!OPT(adult_no_stairs))
 		{
-			if (p_ptr->create_down_stair)
+			if (p_ptr->create_down_stair) {
 				cave_set_feat(y, x, FEAT_MORE);
-			else if (p_ptr->create_up_stair)
+				p_ptr->create_down_stair = FALSE;
+			}
+			else if (p_ptr->create_up_stair) {
 				cave_set_feat(y, x, FEAT_LESS);
+				p_ptr->create_up_stair = FALSE;
+			}
 		}
 
 		/* Done */
@@ -458,8 +462,8 @@ void place_object(int y, int x, int level, bool good, bool great)
 		/* Give it to the floor */
 		if (!floor_carry(y, x, i_ptr))
 		{
-			/* Hack -- Preserve artifacts */
-			a_info[i_ptr->name1].cur_num = 0;
+			/* XXX Should this be done in floor_carry? */
+			a_info[i_ptr->name1].created = FALSE;
 		}
 	}
 }
@@ -777,7 +781,7 @@ static void destroy_level(void)
 
 
 	/* Note destroyed levels */
-	if (cheat_room) msg_print("Destroyed Level");
+	if (OPT(cheat_room)) msg_print("Destroyed Level");
 
 	/* Drop a few epi-centers (usually about two) */
 	for (n = 0; n < randint1(5); n++)
@@ -1917,7 +1921,7 @@ static void build_type5(int y0, int x0)
 
 
 	/* Describe */
-	if (cheat_room)
+	if (OPT(cheat_room))
 	{
 		/* Room type */
 		msg_format("Monster nest (%s)", name);
@@ -2228,7 +2232,7 @@ static void build_type6(int y0, int x0)
 
 
 	/* Message */
-	if (cheat_room)
+	if (OPT(cheat_room))
 	{
 		/* Room type */
 		msg_format("Monster pit (%s)", name);
@@ -2463,7 +2467,7 @@ static void build_type7(int y0, int x0)
 	}
 
 	/* Message */
-	if (cheat_room) msg_format("Lesser vault (%s)", v_name + v_ptr->name);
+	if (OPT(cheat_room)) msg_format("Lesser vault (%s)", v_name + v_ptr->name);
 
 	/* Boost the rating */
 	rating += v_ptr->rat;
@@ -2499,7 +2503,7 @@ static void build_type8(int y0, int x0)
 	}
 
 	/* Message */
-	if (cheat_room) msg_format("Greater vault (%s)", v_name + v_ptr->name);
+	if (OPT(cheat_room)) msg_format("Greater vault (%s)", v_name + v_ptr->name);
 
 	/* Boost the rating */
 	rating += v_ptr->rat;
@@ -3522,11 +3526,13 @@ static void clear_cave(void)
 			/* No flow */
 			cave_cost[y][x] = 0;
 			cave_when[y][x] = 0;
+
+			/* Clear any left-over monsters (should be none) and the player. */
+			cave_m_idx[y][x] = 0;
 		}
 	}
 
 	/* Mega-Hack -- no player in dungeon yet */
-	cave_m_idx[p_ptr->py][p_ptr->px] = 0;
 	p_ptr->px = p_ptr->py = 0;
 
 	/* Hack -- illegal panel */

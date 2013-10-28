@@ -1,7 +1,6 @@
 If your name should be included in this file and it's not, please email us
 so we can fix it. :)
 
-
 Previous maintainers:
 =====================
 

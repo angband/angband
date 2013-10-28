@@ -312,9 +312,13 @@ static bool init_info_raw(const char *fname, header *head)
 	}
 
 
-	/* Accept the header */
-	COPY(head, &test, header);
-
+	/* 
+	 * Accept the header - these are the only parts we need to copy
+	 * from the saved structure, as the rest is either identical (see
+	 * above test), or not restorable (function hooks, data pointers).
+	 */
+	head->name_size = test.name_size;
+	head->text_size = test.text_size;
 
 	/* Allocate and read the "*_info" array */
 	head->info_ptr = C_RNEW(head->info_size, char);
@@ -359,7 +363,7 @@ static void init_header(header *head, int num, int len)
 	head->info_size = head->info_num * head->info_len;
 
 	/* Clear post-parsing evaluation function */
-	head->eval_info_power = NULL;
+	head->eval_info_post = NULL;
 	
 	/* Clear the template emission functions */
 	head->emit_info_txt_index = NULL;
@@ -417,6 +421,8 @@ static errr init_info(cptr filename, header *head)
 	if (file_newer(raw_file, txt_file) &&
 	    init_info_raw(raw_file, head))
 	{
+		/* Post processing the data */
+		if (head->eval_info_post) eval_info(head->eval_info_post, head);
 		return 0;
 	}
 
@@ -449,7 +455,7 @@ static errr init_info(cptr filename, header *head)
 	if (err) display_parse_error(filename, err, buf);
 
 	/* Post processing the data */
-	if (head->eval_info_power) eval_info(head->eval_info_power, head);
+	if (head->eval_info_post) eval_info(head->eval_info_post, head);
 
 #ifdef ALLOW_TEMPLATES_OUTPUT
 
@@ -685,6 +691,9 @@ static errr init_e_info(void)
 	/* Save a pointer to the parsing function */
 	e_head.parse_info_txt = parse_e_info;
 
+	/* Save a pointer to the slay cache function */
+	e_head.eval_info_post = eval_e_slays;
+
 #endif /* ALLOW_TEMPLATES */
 
 	err = init_info("ego_item", &e_head);
@@ -704,6 +713,7 @@ static errr init_e_info(void)
  */
 static errr init_r_info(void)
 {
+	int i;
 	errr err;
 
 	/* Init the header */
@@ -714,10 +724,8 @@ static errr init_r_info(void)
 	/* Save a pointer to the parsing function */
 	r_head.parse_info_txt = parse_r_info;
 
-#ifdef ALLOW_TEMPLATES_PROCESS
 	/* Save a pointer to the evaluate power function*/
-	r_head.eval_info_power = eval_r_power;
-#endif
+	r_head.eval_info_post = eval_r_power;
 
 #ifdef ALLOW_TEMPLATES_OUTPUT
 
@@ -733,6 +741,11 @@ static errr init_r_info(void)
 	r_info = r_head.info_ptr;
 	r_name = r_head.name_ptr;
 	r_text = r_head.text_ptr;
+	tot_mon_power = 0;
+	for (i = 0; i < z_info->r_max; i++) 
+	{
+		tot_mon_power += r_info[i].power;
+	} 
 
 	return (err);
 }
@@ -1028,6 +1041,8 @@ static errr init_other(void)
 
 	/* Initialize squelch things */
 	autoinscribe_init();
+	squelch_init();
+	init_cmd_know();
 
 	/* Initialize the "message" package */
 	(void)messages_init();
@@ -1144,10 +1159,7 @@ static errr init_alloc(void)
 
 
 	/*** Initialize object allocation info ***/
-
 	init_obj_alloc();
-
-
 
 	/*** Analyze monster allocation info ***/
 
@@ -1386,17 +1398,17 @@ bool init_angband(void)
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (objects)");
 	if (init_k_info()) quit("Cannot initialize objects");
 
-	/* Initialize artifact info */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (artifacts)");
-	if (init_a_info()) quit("Cannot initialize artifacts");
-
 	/* Initialize ego-item info */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (ego-items");
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (ego-items)");
 	if (init_e_info()) quit("Cannot initialize ego-items");
 
 	/* Initialize monster info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (monsters)");
 	if (init_r_info()) quit("Cannot initialize monsters");
+
+	/* Initialize artifact info */
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (artifacts)");
+	if (init_a_info()) quit("Cannot initialize artifacts");
 
 	/* Initialize feature info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (vaults)");
@@ -1459,21 +1471,27 @@ bool init_angband(void)
 	/* Ask for a "command" until we get one we like. */
 	while (1)
 	{
-		game_command command_req = get_game_command();
+		game_command command_req;
+
+		cmd_get(CMD_INIT, &command_req, TRUE);
 
 		if (command_req.command == CMD_QUIT)
+		{
 			quit(NULL);
-
+		}
 		else if (command_req.command == CMD_NEWGAME)
+		{
+			event_signal(EVENT_LEAVE_INIT);
 			return TRUE;
-
+		}
 		else if (command_req.command == CMD_LOADFILE)
+		{
+			event_signal(EVENT_LEAVE_INIT);
 			/* In future we might want to pass back or set the savefile
 			   path here. */
 			return FALSE;
+		}
 	}
-
-	event_signal(EVENT_LEAVE_INIT);
 }
 
 

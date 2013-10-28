@@ -128,7 +128,7 @@ static const char *obj_desc_get_modstr(const object_type *o_ptr)
 	return "";
 }
 
-static const char *obj_desc_get_basename(const object_type *o_ptr)
+static const char *obj_desc_get_basename(const object_type *o_ptr, bool aware)
 {
 	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 
@@ -136,12 +136,12 @@ static const char *obj_desc_get_basename(const object_type *o_ptr)
 
 
 	if (o_ptr->ident & IDENT_STORE) show_flavor = FALSE;
-	if (object_aware_p(o_ptr) && !OPT(show_flavors)) show_flavor = FALSE;
+	if (aware && !OPT(show_flavors)) show_flavor = FALSE;
 
 
 
 	/* Known artifacts get special treatment */
-	if (artifact_p(o_ptr) && object_aware_p(o_ptr))
+	if (artifact_p(o_ptr) && aware)
 		return (k_name + k_ptr->name);
 
 	/* Analyze the object */
@@ -180,7 +180,7 @@ static const char *obj_desc_get_basename(const object_type *o_ptr)
 			return (show_flavor ? "& # Ring~" : "& Ring~");
 
 		case TV_STAFF:
-			return (show_flavor ? "& # Staff~" : "& Staff~");
+			return (show_flavor ? "& # Sta|ff|ves|" : "& Sta|ff|ves|");
 
 		case TV_WAND:
 			return (show_flavor ? "& # Wand~" : "& Wand~");
@@ -219,21 +219,35 @@ static const char *obj_desc_get_basename(const object_type *o_ptr)
  * Copy 'src' into 'buf, replacing '#' with 'modstr' (if found), putting a plural
  * in the place indicated by '~' if required, or using alterate...
  */
-static size_t obj_desc_name(char *buf, size_t max, size_t end, const object_type *o_ptr, bool prefix)
+static size_t obj_desc_name(char *buf, size_t max, size_t end,
+		const object_type *o_ptr, bool prefix, odesc_detail_t mode,
+		bool spoil)
 {
 	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 
-	const char *basename = obj_desc_get_basename(o_ptr);
+	bool known = object_is_known(o_ptr) || (o_ptr->ident & IDENT_STORE) || spoil;
+	bool aware = object_flavor_is_aware(o_ptr) || (o_ptr->ident & IDENT_STORE) || spoil;
+
+	const char *basename = obj_desc_get_basename(o_ptr, aware);
 	const char *modstr = obj_desc_get_modstr(o_ptr);
 
-	bool known = object_known_p(o_ptr) || (o_ptr->ident & IDENT_STORE);
-	bool aware = object_aware_p(o_ptr) || (o_ptr->ident & IDENT_STORE);
+	bool pluralise = (mode & ODESC_PLURAL) ? TRUE : FALSE;
+
+	if (o_ptr->number > 1)
+		pluralise = TRUE;
+	if (mode & ODESC_SINGULAR)
+		pluralise = FALSE;
 
 	/* Add a pseudo-numerical prefix if desired */
 	if (prefix)
 	{
 		if (o_ptr->number <= 0)
+		{
 			strnfcat(buf, max, &end, "no more ");
+			
+			/* Pluralise for grammatical correctness */
+			pluralise = TRUE;
+		}
 		else if (o_ptr->number > 1)
 			strnfcat(buf, max, &end, "%d ", o_ptr->number);
 		else if (known && artifact_p(o_ptr))
@@ -291,7 +305,7 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end, const object_type
 		{
 			char prev = *(basename - 1);
 
-			if (o_ptr->number == 1)
+			if (!pluralise)
 			{
 				basename++;
 				continue;
@@ -321,7 +335,7 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end, const object_type
 
 			if (!singular || !plural || !endmark) return end;
 
-			if (o_ptr->number == 1)
+			if (!pluralise)
 				strnfcat(buf, max, &end, "%.*s", plural - singular - 1, singular);
 			else
 				strnfcat(buf, max, &end, "%.*s", endmark - plural, plural);
@@ -334,7 +348,7 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end, const object_type
 		{
 			const char *basename = modstr;
 
-			while (basename && *basename)
+			while (basename && *basename && (end < max - 1))
 			{
 				/* Special plurals */
 				if (*basename == '|')
@@ -353,7 +367,7 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end, const object_type
 
 					if (!singular || !plural || !endmark) return end;
 
-					if (o_ptr->number == 1)
+					if (!pluralise)
 						strnfcat(buf, max, &end, "%.*s", plural - singular - 1, singular);
 					else
 						strnfcat(buf, max, &end, "%.*s", endmark - plural, plural);
@@ -383,10 +397,10 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end, const object_type
 	if (known && o_ptr->name1)
 		strnfcat(buf, max, &end, " %s", a_name + a_info[o_ptr->name1].name);
 
-	else if (known && o_ptr->name2)
+	else if ((spoil && o_ptr->name2) || object_ego_is_visible(o_ptr))
 		strnfcat(buf, max, &end, " %s", e_name + e_info[o_ptr->name2].name);
 
-	else if (aware && (k_ptr->flavor || k_ptr->tval == TV_SCROLL))
+	else if (aware && !artifact_p(o_ptr) && (k_ptr->flavor || k_ptr->tval == TV_SCROLL))
 		strnfcat(buf, max, &end, " of %s", k_name + k_ptr->name);
 
 	return end;
@@ -397,11 +411,14 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end, const object_type
  */
 static bool obj_desc_show_weapon(const object_type *o_ptr)
 {
-	u32b f1, f2, f3;
-	object_flags(o_ptr, &f1, &f2, &f3);
+	u32b f[OBJ_FLAG_N];
+	object_flags(o_ptr, f);
 
-	if (f3 & TR3_SHOW_MODS) return TRUE;
+	if (f[2] & TR2_SHOW_MODS) return TRUE;
 	if (o_ptr->to_h && o_ptr->to_d) return TRUE;
+
+	/* You need to list both to_h and to_d for things like unaware rings of accuracy and damage e.g. to differentiate (+8) */
+	if ((o_ptr->to_h || o_ptr->to_d) && !object_flavor_is_aware(o_ptr)) return TRUE;
 
 	switch (o_ptr->tval)
 	{
@@ -450,7 +467,7 @@ static bool obj_desc_show_armor(const object_type *o_ptr)
 
 static size_t obj_desc_chest(const object_type *o_ptr, char *buf, size_t max, size_t end)
 {
-	bool known = object_known_p(o_ptr) || (o_ptr->ident & IDENT_STORE);
+	bool known = object_is_known(o_ptr) || (o_ptr->ident & IDENT_STORE);
 
 	if (o_ptr->tval != TV_CHEST) return end;
 	if (!known) return end;
@@ -511,10 +528,9 @@ static size_t obj_desc_chest(const object_type *o_ptr, char *buf, size_t max, si
 	return end;
 }
 
-static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max, size_t end)
+static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max, 
+		size_t end, bool spoil)
 {
-	bool known = object_known_p(o_ptr) || (o_ptr->ident & IDENT_STORE);
-
 	/* Dump base weapon info */
 	switch (o_ptr->tval)
 	{
@@ -528,19 +544,6 @@ static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max, s
 		case TV_DIGGING:
 		{
 			strnfcat(buf, max, &end, " (%dd%d)", o_ptr->dd, o_ptr->ds);
-#if 0
-			strnfcat(buf, max, &end, " (");
-
-			if (known && o_ptr->to_h)
-				strnfcat(buf, max, &end, "%+d,", o_ptr->to_h);
-			else if (!known)
-				strnfcat(buf, max, &end, "?,");
-
-			if (known && o_ptr->to_d)
-				strnfcat(buf, max, &end, "%d+", o_ptr->to_d);
-
-			strnfcat(buf, max, &end, "%dd%d)", o_ptr->dd, o_ptr->ds);
-#endif
 			break;
 		}
 
@@ -554,7 +557,7 @@ static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max, s
 
 
 	/* Show weapon bonuses */
-	if (known)
+	if (spoil || object_attack_plusses_are_visible(o_ptr))
 	{
 		if (obj_desc_show_weapon(o_ptr) || o_ptr->to_d)
 			strnfcat(buf, max, &end, " (%+d,%+d)", o_ptr->to_h, o_ptr->to_d);
@@ -564,7 +567,7 @@ static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max, s
 
 
 	/* Show armor bonuses */
-	if (known)
+	if (spoil || object_defence_plusses_are_visible(o_ptr))
 	{
 		if (obj_desc_show_armor(o_ptr))
 			strnfcat(buf, max, &end, " [%d,%+d]", o_ptr->ac, o_ptr->to_a);
@@ -581,11 +584,11 @@ static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max, s
 
 static size_t obj_desc_light(const object_type *o_ptr, char *buf, size_t max, size_t end)
 {
-	u32b f1, f2, f3;
-	object_flags(o_ptr, &f1, &f2, &f3);
+	u32b f[OBJ_FLAG_N];
+	object_flags(o_ptr, f);
 
 	/* Fuelled light sources get number of remaining turns appended */
-	if ((o_ptr->tval == TV_LITE) && !(f3 & TR3_NO_FUEL))
+	if ((o_ptr->tval == TV_LITE) && !(f[2] & TR2_NO_FUEL))
 		strnfcat(buf, max, &end, " (%d turns)", o_ptr->timeout);
 
 	return end;
@@ -593,12 +596,12 @@ static size_t obj_desc_light(const object_type *o_ptr, char *buf, size_t max, si
 
 static size_t obj_desc_pval(const object_type *o_ptr, char *buf, size_t max, size_t end)
 {
-	u32b f1, f2, f3;
-	object_flags(o_ptr, &f1, &f2, &f3);
+	u32b f[OBJ_FLAG_N];
+	object_flags(o_ptr, f);
 
-	if (!(f1 & TR1_PVAL_MASK)) return end;
+	if (!(f[0] & TR0_PVAL_MASK)) return end;
 
-	if (f3 & TR3_HIDE_TYPE)
+	if (f[2] & TR2_HIDE_TYPE)
 	{
 		strnfcat(buf, max, &end, " (%+d)", o_ptr->pval);
 		return end;
@@ -606,15 +609,15 @@ static size_t obj_desc_pval(const object_type *o_ptr, char *buf, size_t max, siz
 
 	strnfcat(buf, max, &end, " (%+d", o_ptr->pval);
 
-	if (f1 & TR1_STEALTH)
+	if (f[0] & TR0_STEALTH)
 		strnfcat(buf, max, &end, " stealth");
-	else if (f1 & TR1_SEARCH)
+	else if (f[0] & TR0_SEARCH)
 		strnfcat(buf, max, &end, " searching");
-	else if (f1 & TR1_INFRA)
+	else if (f[0] & TR0_INFRA)
 		strnfcat(buf, max, &end, " infravision");
-	else if (f1 & TR1_SPEED)
+	else if (f[0] & TR0_SPEED)
 		strnfcat(buf, max, &end, " speed");
-	else if (f1 & TR1_BLOWS)
+	else if (f[0] & TR0_BLOWS)
 		strnfcat(buf, max, &end, " attack%s", PLURAL(o_ptr->pval));
 
 	strnfcat(buf, max, &end, ")");
@@ -626,8 +629,10 @@ static size_t obj_desc_charges(const object_type *o_ptr, char *buf, size_t max, 
 {
 	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 
+	bool aware = object_flavor_is_aware(o_ptr) || (o_ptr->ident & IDENT_STORE);
+
 	/* Wands and Staffs have charges */
-	if (o_ptr->tval == TV_STAFF || o_ptr->tval == TV_WAND)
+	if (aware && (o_ptr->tval == TV_STAFF || o_ptr->tval == TV_WAND))
 		strnfcat(buf, max, &end, " (%d charge%s)", o_ptr->pval, PLURAL(o_ptr->pval));
 
 	/* Charging things */
@@ -663,30 +668,57 @@ static size_t obj_desc_charges(const object_type *o_ptr, char *buf, size_t max, 
 	return end;
 }
 
-static size_t obj_desc_inscrip(const object_type *o_ptr, char *buf, size_t max, size_t end, bool in_store)
+static size_t obj_desc_inscrip(const object_type *o_ptr, char *buf, size_t max, size_t end)
 {
-	const char *u = NULL, *v = NULL;
+	const char *u[4] = { 0, 0, 0, 0 };
+	int n = 0;
+	int feel = object_pseudo(o_ptr);
+
+	u32b flags[OBJ_FLAG_N];
+	object_flags(o_ptr, flags);
 
 	/* Get inscription */
 	if (o_ptr->note)
-		u = quark_str(o_ptr->note);
+		u[n++] = quark_str(o_ptr->note);
 
 	/* Use special inscription, if any */
-	if (o_ptr->pseudo)
-		v = inscrip_text[o_ptr->pseudo];
-	else if (object_known_p(o_ptr) && cursed_p(o_ptr))
-		v = "cursed";
-	else if ((o_ptr->ident & IDENT_EMPTY) && !object_known_p(o_ptr))
-		v = "empty";
-	else if (!in_store && !object_aware_p(o_ptr) && object_tried_p(o_ptr))
-		v = "tried";
+	if (!object_is_known(o_ptr) && feel)
+	{
+		/* cannot tell excellent vs strange vs splendid until wield */
+		if (!object_was_worn(o_ptr) && ego_item_p(o_ptr))
+			u[n++] = "ego";
+		else
+			u[n++] = inscrip_text[feel];
+	}
+	else if ((o_ptr->ident & IDENT_EMPTY) && !object_is_known(o_ptr))
+		u[n++] = "empty";
+	else if (!object_is_known(o_ptr) && object_was_worn(o_ptr))
+		u[n++] = "wielded";
+	else if (!object_flavor_is_aware(o_ptr) && object_flavor_was_tried(o_ptr))
+		u[n++] = "tried";
 
-	if (u && v)
-		strnfcat(buf, max, &end, " {%s, %s}", u, v);
-	else if (u)
-		strnfcat(buf, max, &end, " {%s}", u);
-	else if (v)
-		strnfcat(buf, max, &end, " {%s}", v);
+	/* Note curses */
+	if (o_ptr->known_flags[2] & flags[2] & TR2_CURSE_MASK)
+		u[n++] = "cursed";
+
+	/* Note squelch */
+	if (squelch_item_ok(o_ptr))
+		u[n++] = "squelch";
+
+	if (n)
+	{
+		int i;
+		for (i = 0; i < n; i++)
+		{
+			if (i == 0)
+				strnfcat(buf, max, &end, " {");
+			strnfcat(buf, max, &end, "%s", u[i]);
+			if (i < n-1)
+				strnfcat(buf, max, &end, ", ");
+		}
+
+		strnfcat(buf, max, &end, "}");
+	}
 
 	return end;
 }
@@ -695,43 +727,30 @@ static size_t obj_desc_inscrip(const object_type *o_ptr, char *buf, size_t max, 
 /**
  * Describes item `o_ptr` into buffer `buf` of size `max`.
  *
- * If `prefix` is TRUE, then the name will be prefixed with a pseudo-numeric
- * indicator of the number of items in the pile.
+ * ODESC_BASE results in a base description.
+ * ODESC_COMBAT will add to-hit, to-dam and AC info.
+ * ODESC_EXTRA will add pval/charge/inscription/squelch info.
+ * ODESC_PLURAL will pluralise regardless of the number in the stack.
+ * ODESC_STORE turns off squelch markers, for in-store display.
+ * ODESC_SPOIL treats the object as fully identified.
  *
- * Modes ("prefix" is TRUE):
- *   OD_BASE   -- Chain Mail of Death
- *   OD_COMBAT -- Chain Mail of Death [1,+3]
- *   OD_STORE  -- 5 Rings of Death [1,+3] (+2 to Stealth) {nifty}
- *   OD_fULL   -- 5 Rings of Death [1,+3] (+2 to Stealth) {nifty} (squelch)
+ * Setting 'prefix' to TRUE prepends a 'the', 'a' or the number in the stack,
+ * respectively.
  *
- * Modes ("prefix" is FALSE):
- *   OD_BASE   -- Chain Mail of Death
- *   OD_COMBAT -- Chain Mail of Death [1,+3]
- *   OD_STORE  -- Rings of Death [1,+3] (+2 to Stealth) {nifty}
- *   OD_FULL   -- Rings of Death [1,+3] (+2 to Stealth) {nifty} (squelch)
+ * \returns The number of bytes used of the buffer.
  */
-size_t object_desc(char *buf, size_t max, const object_type *o_ptr, bool prefix, odesc_detail_t mode)
+size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
+		bool prefix, odesc_detail_t mode)
 {
 	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 
-	bool aware = object_aware_p(o_ptr) || (o_ptr->ident & IDENT_STORE);
-	bool known = object_known_p(o_ptr) || (o_ptr->ident & IDENT_STORE);
+	bool spoil = (mode & ODESC_SPOIL);
+	bool aware = object_flavor_is_aware(o_ptr) ||
+			(o_ptr->ident & IDENT_STORE) || spoil;
+	bool known = object_is_known(o_ptr) ||
+			(o_ptr->ident & IDENT_STORE) || spoil;
 
 	size_t end = 0;
-
-
-	/*** Some things get really simple descriptions ***/
-
-	if (o_ptr->tval == TV_GOLD)
-	{
-		return strnfmt(buf, max, "%d gold pieces worth of %s", o_ptr->pval,
-		               k_name + k_ptr->name);
-	}
-
-	else if (!o_ptr->tval)
-	{
-		return strnfmt(buf, max, "(nothing)");
-	}
 
 
 	/** Horrible, horrible squelch **/
@@ -740,7 +759,7 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr, bool prefix,
 	if (aware && !k_ptr->everseen)
 	{
 		k_ptr->everseen = TRUE;
-		if (OPT(squelch_worthless) && object_value(o_ptr, 1) == 0)
+		if (OPT(squelch_worthless) && k_ptr->cost == 0)
 		{
 			k_ptr->squelch = TRUE;
 			p_ptr->notice |= PN_SQUELCH;
@@ -751,61 +770,40 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr, bool prefix,
 	if (known && o_ptr->name2) e_info[o_ptr->name2].everseen = TRUE;
 
 
-	/** Create basic name **/
+	/*** Some things get really simple descriptions ***/
+
+	if (o_ptr->tval == TV_GOLD)
+		return strnfmt(buf, max, "%d gold pieces worth of %s",
+				o_ptr->pval, k_name + k_ptr->name);
+	else if (!o_ptr->tval)
+		return strnfmt(buf, max, "(nothing)");
+
+
+	/** Construct the name **/
 
 	/* Copy the base name to the buffer */
-	end = obj_desc_name(buf, max, end, o_ptr, prefix);
+	end = obj_desc_name(buf, max, end, o_ptr, prefix, mode, spoil);
 
-
-	/** Append things depending on mode **/
-
-	if (mode == ODESC_BASE)
-		return end;
-
-	if (o_ptr->tval == TV_CHEST)
-		end = obj_desc_chest(o_ptr, buf, max, end);
-	else if (o_ptr->tval == TV_LITE)
-		end = obj_desc_light(o_ptr, buf, max, end);
-
-	end = obj_desc_combat(o_ptr, buf, max, end);
-
-	if (mode == ODESC_COMBAT)
-		return end;
-
-	if (known)
+	if (mode & ODESC_COMBAT)
 	{
-		end = obj_desc_pval(o_ptr, buf, max, end);
-		end = obj_desc_charges(o_ptr, buf, max, end);
+		if (o_ptr->tval == TV_CHEST)
+			end = obj_desc_chest(o_ptr, buf, max, end);
+		else if (o_ptr->tval == TV_LITE)
+			end = obj_desc_light(o_ptr, buf, max, end);
+
+		end = obj_desc_combat(o_ptr, buf, max, end, spoil);
 	}
 
-	end = obj_desc_inscrip(o_ptr, buf, max, end, (mode == ODESC_STORE));
+	if (mode & ODESC_EXTRA)
+	{
+		if (spoil || object_pval_is_visible(o_ptr))
+			end = obj_desc_pval(o_ptr, buf, max, end);
 
+		end = obj_desc_charges(o_ptr, buf, max, end);
 
-	/* Add squelch marker  */
-	if (mode == ODESC_FULL && squelch_item_ok(o_ptr))
-		strnfcat(buf, max, &end, " (squelch)");
+		if (!(mode & ODESC_STORE))
+			end = obj_desc_inscrip(o_ptr, buf, max, end);
+	}
 
 	return end;
-}
-
-
-/**
- * Describes item `o_ptr` fully into buffer `buf` of size `max`.
- *
- * This differs from object_desc() only in that it can provide information the
- * player isn't meant to know.
- */
-void object_desc_spoil(char *buf, size_t max, const object_type *o_ptr, int pref, odesc_detail_t mode)
-{
-	object_type object_type_body;
-	object_type *i_ptr = &object_type_body;
-
-	/* Make a backup */
-	object_copy(i_ptr, o_ptr);
-
-	/* HACK - Pretend the object is in a store inventory */
-	i_ptr->ident |= IDENT_STORE;
-
-	/* Describe */
-	object_desc(buf, max, i_ptr, pref, mode);
 }

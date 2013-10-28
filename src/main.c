@@ -29,7 +29,7 @@
     || defined(USE_SDL)
 
 #include "main.h"
-#include "game-cmd.h"
+#include "textui.h"
 
 /*
  * List of the available modules in the order they are tried.
@@ -127,11 +127,9 @@ static void init_stuff(void)
 {
 	char path[1024];
 
-	cptr tail = NULL;
-
 
 	/* Use the angband_path, or a default */
-	my_strcpy(path, tail ? tail : DEFAULT_PATH, sizeof(path));
+	my_strcpy(path, DEFAULT_PATH, sizeof(path));
 
 	/* Make sure it's terminated */
 	path[511] = '\0';
@@ -194,20 +192,28 @@ static bool new_game;
  * Pass the appropriate "Initialisation screen" command to the game,
  * getting user input if needed.
  */ 
-static game_command get_init_cmd(void)
+static errr get_init_cmd()
 {
-	game_command cmd;
-
 	/* Wait for response */
 	pause_line(Term->hgt - 1);
 
 	if (new_game)
-		cmd.command = CMD_NEWGAME;
+		cmd_insert(CMD_NEWGAME);
 	else
 		/* This might be modified to supply the filename in future. */
-		cmd.command = CMD_LOADFILE;
+		cmd_insert(CMD_LOADFILE);
 
-	return cmd;
+	/* Everything's OK. */
+	return 0;
+}
+
+/* Command dispatcher for curses, etc builds */
+static errr default_get_cmd(cmd_context context, bool wait)
+{
+	if (context == CMD_INIT) 
+		return get_init_cmd();
+	else 
+		return textui_get_cmd(context, wait);
 }
 
 
@@ -300,6 +306,13 @@ int main(int argc, char *argv[])
 				break;
 			}
 
+			case 'R':
+			case 'r':
+			{
+				arg_rebalance = TRUE;
+				break;
+			}
+
 			case 'G':
 			case 'g':
 			{
@@ -350,6 +363,7 @@ int main(int argc, char *argv[])
 				puts("  -n             Start a new character");
 				puts("  -L             Load a new-format save file");
 				puts("  -w             Resurrect dead character (marks savefile)");
+				puts("  -r             Rebalance monsters if monster.raw is absent");
 				puts("  -g             Request graphics mode");
 				puts("  -u<who>        Use your <who> savefile");
 				puts("  -d<path>       Store pref files and screendumps in <path>");
@@ -417,9 +431,8 @@ int main(int argc, char *argv[])
 	/* Catch nasty signals */
 	signals_init();
 
-	/* Set up the command hooks */
-	if (get_game_command == NULL)
-		get_game_command = get_init_cmd;
+	/* Set up the command hook */
+	cmd_get_hook = default_get_cmd;
 
 	/* Set up the display handlers and things. */
 	init_display();

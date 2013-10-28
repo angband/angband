@@ -49,9 +49,6 @@ static size_t history_size;
  */
 static void history_init(size_t entries)
 {
-	if (history_list)
-		FREE(history_list);
-
 	history_ctr = 0;
 	history_size = entries;
 	history_list = C_ZNEW(history_size, history_info);
@@ -222,7 +219,7 @@ static bool history_is_artifact_logged(byte a_idx)
  * This is a wrapper function that gets some of the logic out of places
  * where it really doesn't belong.  Call this to add an artifact to the history
  * list or make the history entry visible--history_add_artifact will make that
- * determination depending on what object_known_p returns for the artifact.
+ * determination depending on what object_is_known returns for the artifact.
  */
 bool history_add_artifact(byte a_idx, bool known)
 {
@@ -235,7 +232,8 @@ bool history_add_artifact(byte a_idx, bool known)
 	/* Make fake artifact for description purposes */
 	object_wipe(o_ptr);
 	make_fake_artifact(o_ptr, a_idx);
-	object_desc_spoil(o_name, sizeof(o_name), o_ptr, TRUE, ODESC_BASE);
+	object_desc(o_name, sizeof(o_name), o_ptr, TRUE,
+			ODESC_BASE | ODESC_SPOIL);
 	strnfmt(buf, sizeof(buf), "Found %s", o_name);
 
 	/* Known objects gets different treatment */
@@ -414,6 +412,39 @@ void history_display(void)
 	}
 
 	screen_load();
+
+	return;
+}
+
+
+/* Dump character history to a file, which we assume is already open. */
+void dump_history(ang_file *file)
+{
+	size_t i;
+	char buf[90];
+
+        file_putf(file, "============================================================\n");
+        file_putf(file, "                   CHAR.\n");
+        file_putf(file, "|   TURN  | DEPTH |LEVEL| EVENT\n");
+        file_putf(file, "============================================================\n");
+
+	for (i = 0; i < (last_printable_item() + 1); i++)
+	{
+		/* Skip not-yet-IDd artifacts */
+		if (history_masked(i)) continue;
+
+                strnfmt(buf, sizeof(buf), "%10d%7d\'%5d   %s",
+                                history_list[i].turn,
+                                history_list[i].dlev * 50,
+                                history_list[i].clev,
+                                history_list[i].event);
+
+                if (history_list[i].type & HISTORY_ARTIFACT_LOST)
+                                my_strcat(buf, " (LOST)", sizeof(buf));
+
+		file_putf(file, buf);
+		file_putf(file, "\n");
+	}
 
 	return;
 }

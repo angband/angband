@@ -327,7 +327,7 @@ CFMutableArrayRef recentItemsArrayRef = NULL;
 /*
  * Support the improved game command handling
  */
-#include "game-cmd.h"
+#include "textui.h"
 static game_command cmd = { CMD_NULL, 0 };
 
 
@@ -2597,7 +2597,7 @@ static void validate_menus(void)
 	}
 	
 	/* Keep the sound menu up-to-date */
-	CheckMenuItem(MyGetMenuHandle(kSpecialMenu), kSound, use_sound);
+	CheckMenuItem(MyGetMenuHandle(kSpecialMenu), kSound, OPT(use_sound));
 
 	for(int i = 0; i < N_ELEMENTS(toggle_defs); i++) {
 		m = MyGetMenuHandle(toggle_defs[i].menuID);
@@ -2824,7 +2824,7 @@ static OSStatus openGame(int op)
 /*
  *	Run the event loop and return a gameplay status to init_angband
  */
-static game_command get_init_cmd() 
+static errr get_cmd_init()
 { 
 	EventTargetRef target = GetEventDispatcherTarget();
 	OSStatus err;
@@ -2841,6 +2841,9 @@ static game_command get_init_cmd()
 			ReleaseEvent(event);
 		}
 	}
+
+	/* Push the command to the game. */
+	cmd_insert_s(&cmd);
 		
 	/* A game is starting - update status and tracking as appropriate. */ 
 	term_data *td0 = &data[0];
@@ -2860,9 +2863,16 @@ static game_command get_init_cmd()
 		redrawRecentItemsMenu();
 	}
 	
-	return cmd; 
+	return 0; 
 } 
 
+static errr crb_get_cmd(cmd_context context, bool wait)
+{
+	if (context == CMD_INIT) 
+		return get_cmd_init();
+	else 
+		return textui_get_cmd(context, wait);
+}
 
 static OSStatus QuitCommand(EventHandlerCallRef inCallRef,
 							EventRef inEvent, void *inUserData )
@@ -3240,7 +3250,7 @@ static OSStatus SoundCommand(EventHandlerCallRef inCallRef,
 							NULL, sizeof(command), NULL, &command);
 	if (command.menu.menuItemIndex == kSound)
 	{
-		use_sound = !use_sound;
+		OPT(use_sound) = !OPT(use_sound);
 	}
 	return noErr;
 }
@@ -3618,7 +3628,7 @@ static void quit_calmly(void)
 
 		/* Save the game */
 #ifndef ZANG_AUTO_SAVE
-		do_cmd_save_game();
+		save_game();
 #else
 		do_cmd_save_game(FALSE);
 #endif /* !ZANG_AUTO_SAVE */
@@ -3890,7 +3900,7 @@ int main(void)
 		N_ELEMENTS(input_event_types), input_event_types);
 
 	/* Set command hook */ 
-	get_game_command = get_init_cmd; 
+	cmd_get_hook = crb_get_cmd; 
 
 	/* Set up the display handlers and things. */
 	init_display();

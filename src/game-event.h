@@ -2,21 +2,6 @@
 #ifndef INCLUDED_GAME_EVENT_H
 #define INCLUDED_GAME_EVENT_H
 
-enum birth_stage
-{
-	BIRTH_METHOD_CHOICE = 0,
-	BIRTH_SEX_CHOICE,
-	BIRTH_RACE_CHOICE,
-	BIRTH_CLASS_CHOICE,
-	BIRTH_ROLLER_CHOICE,
-	BIRTH_POINTBASED,
-	BIRTH_AUTOROLLER,
-	BIRTH_ROLLER,
-	BIRTH_NAME_CHOICE,
-	BIRTH_FINAL_CONFIRM,
-	BIRTH_COMPLETE
-};
-
 /* The various events we can send signals about. */
 typedef enum game_event_type
 {
@@ -48,13 +33,11 @@ typedef enum game_event_type
 	EVENT_ITEMLIST,
 	EVENT_MONSTERLIST,
 	EVENT_MONSTERTARGET,
+	EVENT_OBJECTTARGET,
 	EVENT_MESSAGE,
 
 	EVENT_INITSTATUS,	/* New status message for initialisation */
-
-	EVENT_BIRTHSTAGE,	/* Change the point we're up to in birth */
-	EVENT_BIRTHSTATS,	/* Change in the birth points */
-	EVENT_BIRTHAUTOROLLER,  /* Autoroller updates. */
+	EVENT_BIRTHPOINTS,	/* Change in the birth points */
 
 	/* Changing of the game state/context. */
 	EVENT_ENTER_INIT,
@@ -83,9 +66,10 @@ typedef union
 		
 	const char *string;
 
+	bool flag;
+
 	struct
 	{
-		enum birth_stage stage;
 		bool reset;
 		const char *hint;
 		int n_choices;
@@ -100,14 +84,6 @@ typedef union
 		int *stats;
 		int remaining;
 	} birthstats;
-
-	struct
-	{
-		int *limits;
-		int *matches;
-		int *current;
-		unsigned long round;
-	} birthautoroll;
 
 } game_event_data;
 
@@ -125,13 +101,11 @@ void event_remove_handler(game_event_type type, game_event_handler *fn, void *us
 void event_add_handler_set(game_event_type *type, size_t n_types, game_event_handler *fn, void *user);
 void event_remove_handler_set(game_event_type *type, size_t n_types, game_event_handler *fn, void *user);
 
-void event_signal_birthstage_question(enum birth_stage stage, const char *hint, int n_choices, int initial_choice, const char *choices[], const char *helptexts[]);
-void event_signal_birthstage(enum birth_stage stage, void *xtra);
-void event_signal_birthstats(int stats[6], int remaining);
-void event_signal_birthautoroller(int limits[6], int matches[6], int current[6], unsigned long round);
+void event_signal_birthpoints(int stats[6], int remaining);
 
 void event_signal_point(game_event_type, int x, int y);
 void event_signal_string(game_event_type, const char *s);
+void event_signal_flag(game_event_type type, bool flag);
 void event_signal(game_event_type);
 
 #endif /* INCLUDED_GAME_EVENT_H */

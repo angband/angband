@@ -35,6 +35,7 @@
 #include "defines.h"
 #include "option.h"
 #include "types.h"
+#include "object/constants.h"
 #include "object/types.h"
 #include "object/object.h"
 #include "monster/types.h"

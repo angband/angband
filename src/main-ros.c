@@ -5395,7 +5395,7 @@ int main(int argc, char *argv[])
 	strncpy(savefile, unixify_name(arg_savefile), sizeof(savefile));
 	savefile[sizeof(savefile) - 1] = '\0';
 
-	use_sound = 1;
+	OPT(use_sound) = 1;
 	init_angband();
 	initialised = 1;
 	game_in_progress = 1;

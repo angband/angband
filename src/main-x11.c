@@ -1,12 +1,21 @@
-/* File: main-x11.c */
-
 /*
+ * File: main-x11.c
+ * Purpose: Provide support for the X Windowing System
+ *
  * Copyright (c) 1997 Ben Harrison, and others
  *
- * This software may be copied and distributed for educational, research,
- * and not for profit purposes provided that this copyright and statement
- * are included in all such copies.
+ * This work is free software; you can redistribute it and/or modify it
+ * under the terms of either:
+ *
+ * a) the GNU General Public License as published by the Free Software
+ *    Foundation, version 2, or
+ *
+ * b) the "Angband licence":
+ *    This software may be copied and distributed for educational, research,
+ *    and not for profit purposes provided that this copyright and statement
+ *    are included in all such copies.  Other copyrights may also apply.
  */
+#include "angband.h"
 
 
 /*
@@ -90,12 +99,6 @@
  *
  */
 
-
-
-#include "angband.h"
-
-
-typedef unsigned int uint;
 
 
 #ifdef USE_X11
@@ -224,9 +227,9 @@ struct metadpy
 
 	int fd;
 
-	uint width;
-	uint height;
-	uint depth;
+	unsigned int width;
+	unsigned int height;
+	unsigned int depth;
 
 	Pixell black;
 	Pixell white;
@@ -235,9 +238,9 @@ struct metadpy
 	Pixell fg;
 	Pixell zg;
 
-	uint mono:1;
-	uint color:1;
-	uint nuke:1;
+	unsigned int mono:1;
+	unsigned int color:1;
+	unsigned int nuke:1;
 };
 
 
@@ -283,16 +286,16 @@ struct infowin
 
 	byte byte1;
 
-	uint mapped:1;
-	uint redraw:1;
-	uint resize:1;
+	unsigned int mapped:1;
+	unsigned int redraw:1;
+	unsigned int resize:1;
 
-	uint nuke:1;
+	unsigned int nuke:1;
 
-	uint flag1:1;
-	uint flag2:1;
-	uint flag3:1;
-	uint flag4:1;
+	unsigned int flag1:1;
+	unsigned int flag2:1;
+	unsigned int flag3:1;
+	unsigned int flag4:1;
 };
 
 
@@ -319,9 +322,9 @@ struct infoclr
 	Pixell fg;
 	Pixell bg;
 
-	uint code:4;
-	uint stip:1;
-	uint nuke:1;
+	unsigned int code:4;
+	unsigned int stip:1;
+	unsigned int nuke:1;
 };
 
 
@@ -355,8 +358,8 @@ struct infofnt
 
 	byte off;
 
-	uint mono:1;
-	uint nuke:1;
+	unsigned int mono:1;
+	unsigned int nuke:1;
 };
 
 
@@ -1625,7 +1628,7 @@ static void react_keypress(XKeyEvent *ev)
 {
 	int i, n, mc, ms, mo, mx;
 
-	uint ks1;
+	unsigned int ks1;
 
 	KeySym ks;
 
@@ -1645,7 +1648,7 @@ static void react_keypress(XKeyEvent *ev)
 
 
 	/* Hack -- convert into an unsigned int */
-	ks1 = (uint)(ks);
+	ks1 = (unsigned int)(ks);
 
 	/* Extract four "modifier flags" */
 	mc = (ev->state & ControlMask) ? TRUE : FALSE;

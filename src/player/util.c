@@ -1,4 +1,5 @@
 #include "angband.h"
+#include "object/tvalsval.h"
 
 /*
  * Modify a stat value by a "modifier", return new value
@@ -48,3 +49,72 @@ s16b modify_stat_value(int value, int amount)
 	return (value);
 }
 
+/* Is the player capable of casting a spell? */
+bool player_can_cast(void)
+{
+	if (!cp_ptr->spell_book)
+	{
+		msg_print("You cannot pray or produce magics.");
+		return FALSE;
+	}
+
+	if (p_ptr->timed[TMD_BLIND] || no_lite())
+	{
+		msg_print("You cannot see!");
+		return FALSE;
+	}
+
+	if (p_ptr->timed[TMD_CONFUSED])
+	{
+		msg_print("You are too confused!");
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+/* Is the player capable of studying? */
+bool player_can_study(void)
+{
+	if (!player_can_cast())
+		return FALSE;
+
+	if (!p_ptr->new_spells)
+	{
+		cptr p = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
+		msg_format("You cannot learn any new %ss!", p);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+/* Determine if the player can read scrolls. */
+bool player_can_read(void)
+{
+	if (p_ptr->timed[TMD_BLIND])
+	{
+		msg_print("You can't see anything.");
+		return FALSE;
+	}
+
+	if (no_lite())
+	{
+		msg_print("You have no light to read by.");
+		return FALSE;
+	}
+
+	if (p_ptr->timed[TMD_CONFUSED])
+	{
+		msg_print("You are too confused to read!");
+		return FALSE;
+	}
+
+	if (p_ptr->timed[TMD_AMNESIA])
+	{
+		msg_print("You can't remember how to read!");
+		return FALSE;
+	}
+
+	return TRUE;
+}

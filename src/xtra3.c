@@ -18,8 +18,11 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
-#include "game-event.h"
 
+#include "game-event.h"
+#include "game-cmd.h"
+
+#include "textui.h"
 #include "ui-birth.h"
 
 #include "object/tvalsval.h"
@@ -628,7 +631,7 @@ static void hp_colour_change(game_event_type type, game_event_data *data, void *
 	 * using this command when graphics mode is on
 	 * causes the character to be a black square.
 	 */
-	if ((hp_changes_color) && (arg_graphics == GRAPHICS_NONE))
+	if ((OPT(hp_changes_color)) && (arg_graphics == GRAPHICS_NONE))
 	{
 		lite_spot(p_ptr->py, p_ptr->px);
 	}
@@ -734,6 +737,21 @@ static const struct state_info effects[] =
 			} \
 		} \
 	} \
+}
+
+
+/*
+ * Print recall status.
+ */
+static size_t prt_recall(int row, int col)
+{
+	if (p_ptr->word_recall)
+	{
+		c_put_str(TERM_WHITE, "Recall", row, col);
+		return sizeof "Recall";
+	}
+
+	return 0;
 }
 
 
@@ -845,6 +863,13 @@ static size_t prt_state(int row, int col)
 		{
 			text[5] = text[6] = text[7] = text[8] = text[9] = '&';
 		}
+		
+		/* Rest until HP or SP filled */
+		else if (n == -3)
+		{
+			text[5] = text[6] = text[7] = text[8] = text[9] = '!';
+		}
+
 	}
 
 	/* Repeating */
@@ -934,7 +959,7 @@ static size_t prt_tmd(int row, int col)
  */
 static size_t prt_buttons(int row, int col)
 {
-	if (mouse_buttons)
+	if (OPT(mouse_buttons))
 		return button_print(row, col);
 
 	return 0;
@@ -945,8 +970,8 @@ static size_t prt_buttons(int row, int col)
 typedef size_t status_f(int row, int col);
 
 status_f *status_handlers[] =
-{ prt_state, prt_cut, prt_stun, prt_hunger, prt_study, prt_tmd, prt_dtrap,
-  prt_buttons };
+{ prt_recall, prt_state, prt_cut, prt_stun, prt_hunger, prt_study, prt_tmd,
+  prt_dtrap, prt_buttons };
 
 
 /*
@@ -1085,7 +1110,6 @@ static void update_inven_subwindow(game_event_type type, game_event_data *data,
 	else
 		display_equip();
 
-
 	Term_fresh();
 	
 	/* Restore */
@@ -1117,7 +1141,38 @@ static void update_equip_subwindow(game_event_type type, game_event_data *data,
  */
 void toggle_inven_equip(void)
 {
+	term *old = Term;
+	int i;
+
+	/* Change the actual setting */
 	flip_inven = !flip_inven;
+
+	/* Redraw any subwindows showing the inventory/equipment lists */
+	for (i = 0; i < ANGBAND_TERM_MAX; i++)
+	{
+		Term_activate(angband_term[i]); 
+
+		if (op_ptr->window_flag[i] & PW_INVEN)
+		{
+			if (!flip_inven)
+				display_inven();
+			else
+				display_equip();
+			
+			Term_fresh();
+		}
+		else if (op_ptr->window_flag[i] & PW_EQUIP)
+		{
+			if (!flip_inven)
+				display_equip();
+			else
+				display_inven();
+			
+			Term_fresh();
+		}
+	}
+
+	Term_activate(old);
 }
 
 static void update_itemlist_subwindow(game_event_type type, game_event_data *data, void *user)
@@ -1163,6 +1218,25 @@ static void update_monster_subwindow(game_event_type type, game_event_data *data
 	if (p_ptr->monster_race_idx)
 		display_roff(p_ptr->monster_race_idx);
 
+	Term_fresh();
+	
+	/* Restore */
+	Term_activate(old);
+}
+
+
+static void update_object_subwindow(game_event_type type, game_event_data *data, void *user)
+{
+	term *old = Term;
+	term *inv_term = user;
+	
+	/* Activate */
+	Term_activate(inv_term);
+	
+	if (p_ptr->object_idx)
+		display_object_idx_recall(p_ptr->object_idx);
+	else if(p_ptr->object_kind_idx)
+		display_object_kind_recall(p_ptr->object_kind_idx);
 	Term_fresh();
 	
 	/* Restore */
@@ -1227,7 +1301,9 @@ static void update_minimap_subwindow(game_event_type type, game_event_data *data
 
 	if (type == EVENT_MAP)
 	{
-		flags->needs_redraw = TRUE;
+		/* Set flag if whole-map redraw. */
+		if (data->point.x == -1 && data->point.y == -1)
+			flags->needs_redraw = TRUE;
 	}
 	else if (type == EVENT_END)
 	{
@@ -1236,7 +1312,11 @@ static void update_minimap_subwindow(game_event_type type, game_event_data *data
 		
 		/* Activate */
 		Term_activate(t);
-		
+
+		/* If whole-map redraw, clear window first. */
+		if (flags->needs_redraw)
+			Term_clear();
+
 		/* Redraw map */
 		display_map(NULL, NULL);
 		Term_fresh();
@@ -1467,6 +1547,14 @@ static void subwindow_flag_changed(int win_idx, u32b flag, bool new_state)
 			break;
 		}
 
+		case PW_OBJECT:
+		{
+			register_or_deregister(EVENT_OBJECTTARGET,
+						   update_object_subwindow,
+						   angband_term[win_idx]);
+			break;
+		}
+
 		case PW_MONLIST:
 		{
 			register_or_deregister(EVENT_MONSTERLIST,
@@ -1606,7 +1694,7 @@ static void show_splashscreen(game_event_type type, game_event_data *data, void 
 		/* Dump the file to the screen */
 		while (file_getl(fp, buf, sizeof(buf)))
 		{
-			text_out_e(buf);
+			text_out_e("%s", buf);
 			text_out("\n");
 		}
 
@@ -1692,6 +1780,18 @@ static void ui_leave_game(game_event_type type, game_event_data *data, void *use
 	/* Check if the panel should shift when the player's moved */
 	event_remove_handler(EVENT_PLAYERMOVED, check_panel, NULL);
 }
+
+errr textui_get_cmd(cmd_context context, bool wait)
+{
+	if (context == CMD_BIRTH)
+		return get_birth_command(wait);
+	else if (context == CMD_GAME)
+		textui_process_command(!wait);
+
+	/* If we've reached here, we haven't got a command. */
+	return 1;
+}
+
 
 void init_display(void)
 {

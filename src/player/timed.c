@@ -47,7 +47,7 @@ static timed_effect effects[] =
 	{ "You feel yourself moving slower!", "You feel yourself speed up.",
 			NULL, NULL,
 			0, PU_BONUS, MSG_SLOW },
-	{ "You are blind.", "You can see again.",
+	{ "You are blind.", "You blink and your eyes clear.",
 			NULL, NULL,
 			PR_MAP, PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS, MSG_BLIND },
 	{ "You are paralysed!", "You can move again.",
@@ -61,7 +61,7 @@ static timed_effect effects[] =
 			0, PU_BONUS, MSG_AFRAID },
 	{ "You feel drugged!", "You can see clearly again.",
 			"You feel more drugged!", "You feel less drugged.",
-			PR_MAP, 0, MSG_DRUGGED },
+			PR_MAP | PR_MONLIST | PR_ITEMLIST, 0, MSG_DRUGGED },
 	{ "You are poisoned!", "You are no longer poisoned.",
 			"You are more poisoned!", "You are less poisoned.",
 			0, 0, MSG_POISONED },
@@ -191,7 +191,7 @@ bool set_timed(int idx, int v, bool notify)
 	if (!notify) return FALSE;
 
 	/* Disturb */
-	if (disturb_state) disturb(0, 0);
+	if (OPT(disturb_state)) disturb(0, 0);
 
 	/* Update the visuals, as appropriate. */
 	p_ptr->update |= effect->flag_update;
@@ -346,7 +346,7 @@ static bool set_stun(int v)
 			case 0:
 			{
 				message(MSG_RECOVER, 0, "You are no longer stunned.");
-				if (disturb_state) disturb(0, 0);
+				if (OPT(disturb_state)) disturb(0, 0);
 				break;
 			}
 		}
@@ -362,7 +362,7 @@ static bool set_stun(int v)
 	if (!notice) return (FALSE);
 
 	/* Disturb */
-	if (disturb_state) disturb(0, 0);
+	if (OPT(disturb_state)) disturb(0, 0);
 
 	/* Recalculate bonuses */
 	p_ptr->update |= (PU_BONUS);
@@ -558,7 +558,7 @@ static bool set_cut(int v)
 			case 0:
 			{
 				message(MSG_RECOVER, 0, "You are no longer bleeding.");
-				if (disturb_state) disturb(0, 0);
+				if (OPT(disturb_state)) disturb(0, 0);
 				break;
 			}
 		}
@@ -574,7 +574,7 @@ static bool set_cut(int v)
 	if (!notice) return (FALSE);
 
 	/* Disturb */
-	if (disturb_state) disturb(0, 0);
+	if (OPT(disturb_state)) disturb(0, 0);
 
 	/* Recalculate bonuses */
 	p_ptr->update |= (PU_BONUS);
@@ -798,7 +798,7 @@ bool set_food(int v)
 	if (!notice) return (FALSE);
 
 	/* Disturb */
-	if (disturb_state) disturb(0, 0);
+	if (OPT(disturb_state)) disturb(0, 0);
 
 	/* Recalculate bonuses */
 	p_ptr->update |= (PU_BONUS);

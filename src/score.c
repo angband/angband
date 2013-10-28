@@ -85,7 +85,8 @@ static size_t highscore_read(high_score scores[], size_t sz)
 	if (!scorefile) return TRUE;
 
 	for (i = 0; i < sz &&
-	            file_read(scorefile, (char *)&scores[i], sizeof(high_score)); i++)
+			file_read(scorefile, (char *)&scores[i], sizeof(high_score)) > 0;
+			i++)
 		;
 
 	file_close(scorefile);
@@ -480,7 +481,11 @@ void predict_score(void)
 	/* Read scores, place current score */
 	highscore_read(scores, N_ELEMENTS(scores));
 	build_score(&the_score, "nobody (yet!)", NULL);
-	j = highscore_add(&the_score, scores, N_ELEMENTS(scores));
+
+	if (p_ptr->is_dead)
+		j = highscore_where(&the_score, scores, N_ELEMENTS(scores));
+	else
+		j = highscore_add(&the_score, scores, N_ELEMENTS(scores));
 
 	/* Hack -- Display the top fifteen scores */
 	if (j < 10)

@@ -411,7 +411,7 @@ Fire an item (f) or Fire an item (t)
         exactly worth it by that stage of dungeon exploration.  If you are
         wielding a missile launcher compatible with the object you are
         throwing, then you automatically use the launcher to fire the
-        missile with much higher range, accuracy, and damage, then you
+        missile with much higher range, accuracy, and damage, than you
         would get by just throwing the missile.  Fire or Throw requires
         a direction.  Targeting mode (see the next command) can be invoked
         with "*" at the "Direction?" prompt.  This command takes some energy.

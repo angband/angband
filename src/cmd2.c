@@ -19,11 +19,12 @@
 #include "object/tvalsval.h"
 
 #include "cmds.h"
+#include "game-cmd.h"
 
 /*
  * Go up one level
  */
-void do_cmd_go_up(void)
+void do_cmd_go_up(cmd_code code, cmd_arg args[])
 {
 	/* Verify stairs */
 	if (cave_feat[p_ptr->py][p_ptr->px] != FEAT_LESS)
@@ -33,7 +34,7 @@ void do_cmd_go_up(void)
 	}
 
 	/* Ironman */
-	if (adult_ironman)
+	if (OPT(adult_ironman))
 	{
 		msg_print("Nothing happens!");
 		return;
@@ -49,18 +50,15 @@ void do_cmd_go_up(void)
 	p_ptr->create_up_stair = FALSE;
 	p_ptr->create_down_stair = TRUE;
 
-	/* New depth */
-	p_ptr->depth--;
-
-	/* Leaving */
-	p_ptr->leaving = TRUE;
+	/* Change level */
+	dungeon_change_level(p_ptr->depth - 1);
 }
 
 
 /*
  * Go down one level
  */
-void do_cmd_go_down(void)
+void do_cmd_go_down(cmd_code code, cmd_arg args[])
 {
 	/* Verify stairs */
 	if (cave_feat[p_ptr->py][p_ptr->px] != FEAT_MORE)
@@ -79,11 +77,8 @@ void do_cmd_go_down(void)
 	p_ptr->create_up_stair = TRUE;
 	p_ptr->create_down_stair = FALSE;
 
-	/* New level */
-	p_ptr->depth++;
-
-	/* Leaving */
-	p_ptr->leaving = TRUE;
+	/* Change level */
+	dungeon_change_level(p_ptr->depth + 1);
 }
 
 
@@ -91,21 +86,8 @@ void do_cmd_go_down(void)
 /*
  * Simple command to "search" for one turn
  */
-void do_cmd_search(void)
+void do_cmd_search(cmd_code code, cmd_arg args[])
 {
-	/* Allow repeated command */
-	if (p_ptr->command_arg)
-	{
-		/* Set repeat count */
-		p_ptr->command_rep = p_ptr->command_arg - 1;
-
-		/* Redraw the state */
-		p_ptr->redraw |= (PR_STATE);
-
-		/* Cancel the arg */
-		p_ptr->command_arg = 0;
-	}
-
 	/* Take a turn */
 	p_ptr->energy_use = 100;
 
@@ -117,7 +99,7 @@ void do_cmd_search(void)
 /*
  * Hack -- toggle search mode
  */
-void do_cmd_toggle_search(void)
+void do_cmd_toggle_search(cmd_code code, cmd_arg args[])
 {
 	/* Stop searching */
 	if (p_ptr->searching)
@@ -251,7 +233,7 @@ static void chest_death(int y, int x, s16b o_idx)
 	o_ptr->pval = 0;
 
 	/* Known */
-	object_known(o_ptr);
+	object_notice_everything(o_ptr);
 }
 
 
@@ -295,9 +277,9 @@ static void chest_trap(int y, int x, s16b o_idx)
 	{
 		msg_print("A puff of green gas surrounds you!");
 		if (!(p_ptr->state.resist_pois || p_ptr->timed[TMD_OPP_POIS]))
-		{
 			(void)inc_timed(TMD_POISONED, 10 + randint1(20), TRUE);
-		}
+		else if (p_ptr->state.resist_pois)
+			wieldeds_notice_flag(1, TR1_RES_POIS);
 	}
 
 	/* Paralyze */
@@ -305,9 +287,9 @@ static void chest_trap(int y, int x, s16b o_idx)
 	{
 		msg_print("A puff of yellow gas surrounds you!");
 		if (!p_ptr->state.free_act)
-		{
 			(void)inc_timed(TMD_PARALYZED, 10 + randint1(20), TRUE);
-		}
+		else
+			wieldeds_notice_flag(2, TR2_FREE_ACT);
 	}
 
 	/* Summon monsters */
@@ -318,7 +300,7 @@ static void chest_trap(int y, int x, s16b o_idx)
 		sound(MSG_SUM_MONSTER);
 		for (i = 0; i < num; i++)
 		{
-			(void)summon_specific(y, x, p_ptr->depth, 0);
+			(void)summon_specific(y, x, p_ptr->depth, 0, 1);
 		}
 	}
 
@@ -383,7 +365,7 @@ static bool do_cmd_open_chest(int y, int x, s16b o_idx)
 		{
 			/* We may continue repeating */
 			more = TRUE;
-			if (flush_failure) flush();
+			if (OPT(flush_failure)) flush();
 			message(MSG_LOCKPICK_FAIL, 0, "You failed to pick the lock.");
 		}
 	}
@@ -439,7 +421,7 @@ static bool do_cmd_disarm_chest(int y, int x, s16b o_idx)
 	if (j < 2) j = 2;
 
 	/* Must find the trap first. */
-	if (!object_known_p(o_ptr))
+	if (!object_is_known(o_ptr))
 	{
 		msg_print("I don't see any traps.");
 	}
@@ -469,7 +451,7 @@ static bool do_cmd_disarm_chest(int y, int x, s16b o_idx)
 	{
 		/* We may keep trying */
 		more = TRUE;
-		if (flush_failure) flush();
+		if (OPT(flush_failure)) flush();
 		msg_print("You failed to disarm the chest.");
 	}
 
@@ -586,7 +568,7 @@ static int count_chests(int *y, int *x, bool trapped)
 
 		/* No (known) traps here */
 		if (trapped &&
-		    (!object_known_p(o_ptr) ||
+		    (!object_is_known(o_ptr) ||
 		     (o_ptr->pval < 0) ||
 		     !chest_traps[o_ptr->pval]))
 		{
@@ -711,7 +693,7 @@ static bool do_cmd_open_aux(int y, int x)
 		else
 		{
 			/* Failure */
-			if (flush_failure) flush();
+			if (OPT(flush_failure)) flush();
 
 			/* Message */
 			message(MSG_LOCKPICK_FAIL, 0, "You failed to pick the lock.");
@@ -745,7 +727,7 @@ static bool do_cmd_open_aux(int y, int x)
  *
  * Unlocking a locked door/chest is worth one experience point.
  */
-void do_cmd_open(void)
+void do_cmd_open(cmd_code code, cmd_arg args[])
 {
 	int y, x, dir;
 
@@ -753,27 +735,7 @@ void do_cmd_open(void)
 
 	bool more = FALSE;
 
-
-	/* Easy Open */
-	if (easy_open)
-	{
-		int num_doors, num_chests;
-
-		/* Count closed doors */
-		num_doors = count_feats(&y, &x, is_closed, FALSE);
-
-		/* Count chests (locked) */
-		num_chests = count_chests(&y, &x, FALSE);
-
-		/* See if only one target */
-		if ((num_doors + num_chests) == 1)
-		{
-			p_ptr->command_dir = coords_to_dir(y, x);
-		}
-	}
-
-	/* Get a direction (or abort) */
-	if (!get_rep_dir(&dir)) return;
+	dir = args[0].direction;
 
 	/* Get location */
 	y = p_ptr->py + ddy[dir];
@@ -802,19 +764,6 @@ void do_cmd_open(void)
 	}
 
 
-	/* Allow repeated command */
-	if (p_ptr->command_arg)
-	{
-		/* Set repeat count */
-		p_ptr->command_rep = p_ptr->command_arg - 1;
-
-		/* Redraw the state */
-		p_ptr->redraw |= (PR_STATE);
-
-		/* Cancel the arg */
-		p_ptr->command_arg = 0;
-	}
-
 	/* Monster */
 	if (cave_m_idx[y][x] > 0)
 	{
@@ -841,6 +790,31 @@ void do_cmd_open(void)
 
 	/* Cancel repeat unless we may continue */
 	if (!more) disturb(0, 0);
+}
+
+void textui_cmd_open(void)
+{
+	int y, x, dir = DIR_UNKNOWN;
+
+	/* Easy Open */
+	if (OPT(easy_open))
+	{
+		int num_doors, num_chests;
+
+		/* Count closed doors */
+		num_doors = count_feats(&y, &x, is_closed, FALSE);
+
+		/* Count chests (locked) */
+		num_chests = count_chests(&y, &x, FALSE);
+
+		/* See if only one target */
+		if ((num_doors + num_chests) == 1)
+		{
+			dir = coords_to_dir(y, x);
+		}
+	}
+
+	cmd_insert(CMD_OPEN, dir);
 }
 
 
@@ -886,10 +860,8 @@ static bool do_cmd_close_aux(int y, int x)
 {
 	bool more = FALSE;
 
-
 	/* Verify legality */
 	if (!do_cmd_close_test(y, x)) return (FALSE);
-
 
 	/* Broken door */
 	if (cave_feat[y][x] == FEAT_BROKEN)
@@ -919,34 +891,20 @@ static bool do_cmd_close_aux(int y, int x)
 /*
  * Close an open door.
  */
-void do_cmd_close(void)
+void do_cmd_close(cmd_code code, cmd_arg args[])
 {
 	int y, x, dir;
 
 	bool more = FALSE;
 
-
-	/* Easy Close */
-	if (easy_open)
-	{
-		/* Count open doors */
-		if (count_feats(&y, &x, is_open, FALSE) == 1)
-		{
-			p_ptr->command_dir = coords_to_dir(y, x);
-		}
-	}
-
-	/* Get a direction (or abort) */
-	if (!get_rep_dir(&dir)) return;
+	dir = args[0].direction;
 
 	/* Get location */
 	y = p_ptr->py + ddy[dir];
 	x = p_ptr->px + ddx[dir];
 
-
 	/* Verify legality */
 	if (!do_cmd_close_test(y, x)) return;
-
 
 	/* Take a turn */
 	p_ptr->energy_use = 100;
@@ -959,19 +917,6 @@ void do_cmd_close(void)
 		x = p_ptr->px + ddx[dir];
 	}
 
-
-	/* Allow repeated command */
-	if (p_ptr->command_arg)
-	{
-		/* Set repeat count */
-		p_ptr->command_rep = p_ptr->command_arg - 1;
-
-		/* Redraw the state */
-		p_ptr->redraw |= (PR_STATE);
-
-		/* Cancel the arg */
-		p_ptr->command_arg = 0;
-	}
 
 	/* Monster */
 	if (cave_m_idx[y][x] > 0)
@@ -994,6 +939,27 @@ void do_cmd_close(void)
 	if (!more) disturb(0, 0);
 }
 
+void textui_cmd_close(void)
+{
+	int y, x, dir = DIR_UNKNOWN;
+
+	/* Easy Close */
+	if (OPT(easy_open))
+	{
+		/* Count open doors */
+		if (count_feats(&y, &x, is_open, FALSE) == 1)
+		{
+			dir = coords_to_dir(y, x);
+		}
+	}
+	else
+	{
+		if (!get_rep_dir(&dir))
+			return;
+	}
+
+	cmd_insert(CMD_CLOSE, dir);
+}
 
 
 /*
@@ -1257,15 +1223,12 @@ static bool do_cmd_tunnel_aux(int y, int x)
  * Digging is very difficult without a "digger" weapon, but can be
  * accomplished by strong players using heavy weapons.
  */
-void do_cmd_tunnel(void)
+void do_cmd_tunnel(cmd_code code, cmd_arg args[])
 {
 	int y, x, dir;
-
 	bool more = FALSE;
 
-
-	/* Get a direction (or abort) */
-	if (!get_rep_dir(&dir)) return;
+	dir = args[0].direction;
 
 	/* Get location */
 	y = p_ptr->py + ddy[dir];
@@ -1288,19 +1251,6 @@ void do_cmd_tunnel(void)
 	}
 
 
-	/* Allow repeated command */
-	if (p_ptr->command_arg)
-	{
-		/* Set repeat count */
-		p_ptr->command_rep = p_ptr->command_arg - 1;
-
-		/* Redraw the state */
-		p_ptr->redraw |= (PR_STATE);
-
-		/* Cancel the arg */
-		p_ptr->command_arg = 0;
-	}
-
 	/* Monster */
 	if (cave_m_idx[y][x] > 0)
 	{
@@ -1320,6 +1270,13 @@ void do_cmd_tunnel(void)
 
 	/* Cancel repetition unless we can continue */
 	if (!more) disturb(0, 0);
+}
+
+void textui_cmd_tunnel(void)
+{
+	int dir;
+	if (!get_rep_dir(&dir)) return;
+	cmd_insert(CMD_TUNNEL, dir);
 }
 
 
@@ -1415,7 +1372,7 @@ static bool do_cmd_disarm_aux(int y, int x)
 	else if ((i > 5) && (randint1(i) > 5))
 	{
 		/* Failure */
-		if (flush_failure) flush();
+		if (OPT(flush_failure)) flush();
 
 		/* Message */
 		msg_format("You failed to disarm the %s.", name);
@@ -1442,7 +1399,7 @@ static bool do_cmd_disarm_aux(int y, int x)
 /*
  * Disarms a trap, or a chest
  */
-void do_cmd_disarm(void)
+void do_cmd_disarm(cmd_code code, cmd_arg args[])
 {
 	int y, x, dir;
 
@@ -1450,28 +1407,7 @@ void do_cmd_disarm(void)
 
 	bool more = FALSE;
 
-
-	/* Easy Disarm */
-	if (easy_open)
-	{
-		int num_traps, num_chests;
-
-		/* Count visible traps */
-		num_traps = count_feats(&y, &x, is_trap, TRUE);
-
-		/* Count chests (trapped) */
-		num_chests = count_chests(&y, &x, TRUE);
-
-		/* See if only one target */
-		if (num_traps || num_chests)
-		{
-			if (num_traps + num_chests <= 1)
-				p_ptr->command_dir = coords_to_dir(y, x);
-		}
-	}
-
-	/* Get a direction (or abort) */
-	if (!get_rep_dir(&dir)) return;
+	dir = args[0].direction;
 
 	/* Get location */
 	y = p_ptr->py + ddy[dir];
@@ -1499,19 +1435,6 @@ void do_cmd_disarm(void)
 		o_idx = chest_check(y, x);
 	}
 
-
-	/* Allow repeated command */
-	if (p_ptr->command_arg)
-	{
-		/* Set repeat count */
-		p_ptr->command_rep = p_ptr->command_arg - 1;
-
-		/* Redraw the state */
-		p_ptr->redraw |= (PR_STATE);
-
-		/* Cancel the arg */
-		p_ptr->command_arg = 0;
-	}
 
 	/* Monster */
 	if (cave_m_idx[y][x] > 0)
@@ -1541,6 +1464,38 @@ void do_cmd_disarm(void)
 	if (!more) disturb(0, 0);
 }
 
+void textui_cmd_disarm(void)
+{
+	int y, x, dir;
+
+	dir = DIR_UNKNOWN;
+
+	/* Easy Disarm */
+	if (OPT(easy_open))
+	{
+		int num_traps, num_chests;
+
+		/* Count visible traps */
+		num_traps = count_feats(&y, &x, is_trap, TRUE);
+
+		/* Count chests (trapped) */
+		num_chests = count_chests(&y, &x, TRUE);
+
+		/* See if only one target */
+		if (num_traps || num_chests)
+		{
+			if (num_traps + num_chests <= 1)
+				dir = coords_to_dir(y, x);
+		}
+	}
+	else
+	{
+		if (!get_rep_dir(&dir))
+			return;
+	}
+
+	cmd_insert(CMD_DISARM, dir);
+}
 
 /*
  * Determine if a given grid may be "bashed"
@@ -1669,13 +1624,11 @@ static bool do_cmd_bash_aux(int y, int x)
  *
  * Creatures can also open or bash doors, see elsewhere.
  */
-void do_cmd_bash(void)
+void do_cmd_bash(cmd_code code, cmd_arg args[])
 {
 	int y, x, dir;
 
-
-	/* Get a direction (or abort) */
-	if (!get_rep_dir(&dir)) return;
+	dir = args[0].direction;
 
 	/* Get location */
 	y = p_ptr->py + ddy[dir];
@@ -1697,19 +1650,6 @@ void do_cmd_bash(void)
 		x = p_ptr->px + ddx[dir];
 	}
 
-
-	/* Allow repeated command */
-	if (p_ptr->command_arg)
-	{
-		/* Set repeat count */
-		p_ptr->command_rep = p_ptr->command_arg - 1;
-
-		/* Redraw the state */
-		p_ptr->redraw |= (PR_STATE);
-
-		/* Cancel the arg */
-		p_ptr->command_arg = 0;
-	}
 
 	/* Monster */
 	if (cave_m_idx[y][x] > 0)
@@ -1733,6 +1673,15 @@ void do_cmd_bash(void)
 	}
 }
 
+void textui_cmd_bash(void)
+{
+	int dir;
+	if (!get_rep_dir(&dir))
+		return;
+
+	cmd_insert(CMD_BASH, dir);
+}
+
 
 
 /*
@@ -1746,17 +1695,13 @@ void do_cmd_bash(void)
  * The "semantics" of this command must be chosen before the player
  * is confused, and it must be verified against the new grid.
  */
-void do_cmd_alter(void)
+void do_cmd_alter_aux(int dir)
 {
-	int y, x, dir;
+	int y, x;
 
 	int feat;
 
 	bool more = FALSE;
-
-
-	/* Get a direction */
-	if (!get_rep_dir(&dir)) return;
 
 	/* Get location */
 	y = p_ptr->py + ddy[dir];
@@ -1781,19 +1726,6 @@ void do_cmd_alter(void)
 		x = p_ptr->px + ddx[dir];
 	}
 
-
-	/* Allow repeated command */
-	if (p_ptr->command_arg)
-	{
-		/* Set repeat count */
-		p_ptr->command_rep = p_ptr->command_arg - 1;
-
-		/* Redraw the state */
-		p_ptr->redraw |= (PR_STATE);
-
-		/* Cancel the arg */
-		p_ptr->command_arg = 0;
-	}
 
 	/* Attack monsters */
 	if (cave_m_idx[y][x] > 0)
@@ -1852,6 +1784,20 @@ void do_cmd_alter(void)
 	if (!more) disturb(0, 0);
 }
 
+void do_cmd_alter(cmd_code code, cmd_arg args[])
+{
+	do_cmd_alter_aux(args[0].direction);
+}
+
+void textui_cmd_alter(void)
+{
+	int dir;
+
+	if (!get_rep_dir(&dir))
+		return;
+
+	cmd_insert(CMD_ALTER, dir);
+}
 
 /*
  * Find the index of some "spikes", if possible.
@@ -1922,10 +1868,11 @@ static bool do_cmd_spike_test(int y, int x)
  *
  * This command may NOT be repeated
  */
-void do_cmd_spike(void)
+void do_cmd_spike(cmd_code code, cmd_arg args[])
 {
 	int y, x, dir, item = 0;
 
+	dir = args[0].direction;
 
 	/* Get a spike */
 	if (!get_spike(&item))
@@ -1936,10 +1883,6 @@ void do_cmd_spike(void)
 		/* Done */
 		return;
 	}
-
-
-	/* Get a direction (or abort) */
-	if (!get_rep_dir(&dir)) return;
 
 	/* Get location */
 	y = p_ptr->py + ddy[dir];
@@ -2000,6 +1943,14 @@ void do_cmd_spike(void)
 	}
 }
 
+void textui_cmd_spike(void)
+{
+	int dir;
+	if (!get_rep_dir(&dir))
+		return;
+
+	cmd_insert(CMD_JAM, dir);
+}
 
 
 /*
@@ -2007,14 +1958,32 @@ void do_cmd_spike(void)
  */
 static bool do_cmd_walk_test(int y, int x)
 {
-	/* Hack -- walking obtains knowledge XXX XXX */
-	if (!(cave_info[y][x] & (CAVE_MARK))) return (TRUE);
-
-	/* Allow attack on visible monsters */
+	/* Allow attack on visible monsters if unafraid */
 	if ((cave_m_idx[y][x] > 0) && (mon_list[cave_m_idx[y][x]].ml))
 	{
-		return TRUE;
+		/* Handle player fear */
+		if(p_ptr->state.afraid)
+		{
+			/* Extract monster name (or "it") */
+			char m_name[80];
+			monster_type *m_ptr;
+
+			m_ptr = &mon_list[cave_m_idx[y][x]];
+			monster_desc(m_name, sizeof(m_name), m_ptr, 0);
+
+			/* Message */
+			message_format(MSG_AFRAID, 0,
+				"You are too afraid to attack %s!", m_name);
+
+			/* Nope */
+			return (FALSE);
+		}
+		
+		return (TRUE);
 	}
+
+	/* Hack -- walking obtains knowledge XXX XXX */
+	if (!(cave_info[y][x] & (CAVE_MARK))) return (TRUE);
 
 	/* Require open space */
 	if (!cave_floor_bold(y, x))
@@ -2029,8 +1998,8 @@ static bool do_cmd_walk_test(int y, int x)
 		/* Door */
 		else if (cave_feat[y][x] < FEAT_SECRET)
 		{
-			/* Hack -- Handle "easy_alter" */
-			if (easy_alter) return (TRUE);
+			/* Hack -- Handle "OPT(easy_alter)" */
+			if (OPT(easy_alter)) return (TRUE);
 
 			/* Message */
 			message(MSG_HITWALL, 0, "There is a door in the way!");
@@ -2053,14 +2022,13 @@ static bool do_cmd_walk_test(int y, int x)
 
 
 /*
- * Helper function for the "walk" command.
+ * Walk in the given direction.
  */
-static void walk(void)
+void do_cmd_walk(cmd_code code, cmd_arg args[])
 {
 	int y, x, dir;
 
-	/* Get a direction (or abort) */
-	if (!get_rep_dir(&dir)) return;
+	dir = args[0].direction;
 
 	/* Get location */
 	y = p_ptr->py + ddy[dir];
@@ -2087,50 +2055,51 @@ static void walk(void)
 	if (!do_cmd_walk_test(y, x)) return;
 
 
-	/* Allow repeated command */
-	if (p_ptr->command_arg)
-	{
-		/* Set repeat count */
-		p_ptr->command_rep = p_ptr->command_arg - 1;
-
-		/* Redraw the state */
-		p_ptr->redraw |= (PR_STATE);
-
-		/* Cancel the arg */
-		p_ptr->command_arg = 0;
-	}
-
 	/* Move the player */
 	move_player(dir);
 }
 
 /*
- * Walk.
+ * Tell the game we want to walk - in future we might want to supply
+ * directions here rather than rely on keymap/macro things.
  */
-void do_cmd_walk(void)
+void textui_cmd_walk(void)
 {
-	walk();
+	int dir;
+	if (!get_rep_dir(&dir))
+		return;
+
+	cmd_insert(CMD_WALK, dir);
 }
+
 
 /*
  * Jump into a trap, turn off pickup (does not work).
  *
  * What a horrible concept.
  */
-void do_cmd_jump(void)
+void do_cmd_jump(cmd_code code, cmd_arg args[])
 {
 	bool old_easy_alter;
 
-	/* easy_alter can be turned off (don't disarm traps) */
-	old_easy_alter = easy_alter;
-	easy_alter = FALSE;
+	/* OPT(easy_alter) can be turned off (don't disarm traps) */
+	old_easy_alter = OPT(easy_alter);
+	OPT(easy_alter) = FALSE;
 
-	walk();
+	do_cmd_walk(code, args);
 
-	/* Restore easy_alter */
-	easy_alter = old_easy_alter;
+	/* Restore OPT(easy_alter) */
+	OPT(easy_alter) = old_easy_alter;
 }
 
+void textui_cmd_jump(void)
+{
+	int dir;
+	if (!get_rep_dir(&dir))
+		return;
+
+	cmd_insert(CMD_JUMP, dir);
+}
 
 
 /*
@@ -2138,10 +2107,11 @@ void do_cmd_jump(void)
  *
  * Note that running while confused is not allowed.
  */
-void do_cmd_run(void)
+void do_cmd_run(cmd_code code, cmd_arg args[])
 {
 	int y, x, dir;
 
+	dir = args[0].direction;
 
 	/* Hack XXX XXX XXX */
 	if (p_ptr->timed[TMD_CONFUSED])
@@ -2149,10 +2119,6 @@ void do_cmd_run(void)
 		msg_print("You are too confused!");
 		return;
 	}
-
-
-	/* Get a direction (or abort) */
-	if (!get_rep_dir(&dir)) return;
 
 	/* Get location */
 	y = p_ptr->py + ddy[dir];
@@ -2167,12 +2133,21 @@ void do_cmd_run(void)
 	run_step(dir);
 }
 
+void textui_cmd_run(void)
+{
+	int dir;
+	if (!get_rep_dir(&dir))
+		return;
+
+	cmd_insert(CMD_RUN, dir);
+}
+
 /*
  * Start running with pathfinder.
  *
  * Note that running while confused is not allowed.
  */
-void do_cmd_pathfind(int y, int x)
+void do_cmd_pathfind(cmd_code code, cmd_arg args[])
 {
 	/* Hack XXX XXX XXX */
 	if (p_ptr->timed[TMD_CONFUSED])
@@ -2181,7 +2156,7 @@ void do_cmd_pathfind(int y, int x)
 		return;
 	}
 
-	if (findpath(y, x))
+	if (findpath(args[0].point.y, args[0].point.x))
 	{
 		p_ptr->running = 1000;
 		/* Calculate torch radius */
@@ -2197,21 +2172,8 @@ void do_cmd_pathfind(int y, int x)
  * Stay still.  Search.  Enter stores.
  * Pick up treasure if "pickup" is true.
  */
-void do_cmd_hold(void)
+void do_cmd_hold(cmd_code code, cmd_arg args[])
 {
-	/* Allow repeated command */
-	if (p_ptr->command_arg)
-	{
-		/* Set repeat count */
-		p_ptr->command_rep = p_ptr->command_arg - 1;
-
-		/* Redraw the state */
-		p_ptr->redraw |= (PR_STATE);
-
-		/* Cancel the arg */
-		p_ptr->command_arg = 0;
-	}
-
 	/* Take a turn */
 	p_ptr->energy_use = 100;
 
@@ -2228,8 +2190,8 @@ void do_cmd_hold(void)
 		search();
 	}
 
-	/* Handle objects now.  XXX XXX XXX */
-	p_ptr->energy_use += py_pickup(0) * 10;
+	/* Pick things up, not using extra energy */
+	(void)py_pickup(0);
 
 	/* Hack -- enter a store if we are on one */
 	if ((cave_feat[p_ptr->py][p_ptr->px] >= FEAT_SHOP_HEAD) &&
@@ -2238,8 +2200,7 @@ void do_cmd_hold(void)
 		/* Disturb */
 		disturb(0, 0);
 
-		/* Hack -- enter store */
-		p_ptr->command_new = '_';
+		cmd_insert(CMD_ENTER_STORE);
 
 		/* Free turn XXX XXX XXX */
 		p_ptr->energy_use = 0;
@@ -2251,7 +2212,7 @@ void do_cmd_hold(void)
 /*
  * Pick up objects on the floor beneath you.  -LM-
  */
-void do_cmd_pickup(void)
+void do_cmd_pickup(cmd_code code, cmd_arg args[])
 {
 	int energy_cost;
 
@@ -2270,48 +2231,37 @@ void do_cmd_pickup(void)
 /*
  * Rest (restores hit points and mana and such)
  */
-void do_cmd_rest(void)
+void do_cmd_rest(cmd_code code, cmd_arg args[])
 {
-	/* Prompt for time if needed */
-	if (p_ptr->command_arg <= 0)
+	/* Save the rest code */
+	switch (args[0].choice)
 	{
-		cptr p = "Rest (0-9999, '*' for HP/SP, '&' as needed): ";
-
-		char out_val[5] = "& ";
-
-		/* Ask for duration */
-		if (!get_string(p, out_val, sizeof(out_val))) return;
-
-		/* Rest until done */
-		if (out_val[0] == '&')
+		case REST_ALL:
 		{
-			p_ptr->command_arg = (-2);
+			p_ptr->resting = -2;
+			break;
 		}
 
-		/* Rest a lot */
-		else if (out_val[0] == '*')
+		case REST_ALL_POINTS:
 		{
-			p_ptr->command_arg = (-1);
+			p_ptr->resting = -1;
+			break;
 		}
 
-		/* Rest some */
-		else
+		case REST_SOME_POINTS:
 		{
-			p_ptr->command_arg = atoi(out_val);
-			if (p_ptr->command_arg <= 0) return;
+			p_ptr->resting = -3;
+			break;
+		}
+
+		default:
+		{
+			p_ptr->resting = p_ptr->command_arg;
 		}
 	}
 
-
-	/* Paranoia */
-	if (p_ptr->command_arg > 9999) p_ptr->command_arg = 9999;
-
-
 	/* Take a turn XXX XXX XXX (?) */
 	p_ptr->energy_use = 100;
-
-	/* Save the rest code */
-	p_ptr->resting = p_ptr->command_arg;
 
 	/* Cancel the arg */
 	p_ptr->command_arg = 0;
@@ -2331,3 +2281,103 @@ void do_cmd_rest(void)
 	/* Refresh XXX XXX XXX */
 	Term_fresh();
 }
+
+
+void textui_cmd_rest(void)
+{
+  	/* Prompt for time if needed */
+	if (p_ptr->command_arg <= 0)
+	{
+		cptr p = "Rest (0-9999, '!' for HP or SP, '*' for HP and SP, '&' as needed): ";
+
+		char out_val[5] = "& ";
+
+		/* Ask for duration */
+		if (!get_string(p, out_val, sizeof(out_val))) return;
+
+		/* Rest until done */
+		if (out_val[0] == '&')
+		{
+			cmd_insert(CMD_REST, REST_ALL);
+		}
+
+		/* Rest a lot */
+		else if (out_val[0] == '*')
+		{
+			cmd_insert(CMD_REST, REST_ALL_POINTS);
+		}
+
+		/* Rest until HP or SP filled */
+		else if (out_val[0] == '!')
+		{
+			cmd_insert(CMD_REST, REST_SOME_POINTS);
+		}
+		
+		/* Rest some */
+		else
+		{
+			p_ptr->command_arg = atoi(out_val);
+			if (p_ptr->command_arg <= 0) return;
+			if (p_ptr->command_arg > 9999) p_ptr->command_arg = 9999;
+			
+			cmd_insert(CMD_REST, REST_TURNS);
+		}
+	}
+}
+
+
+/*
+ * Hack -- commit suicide
+ */
+void do_cmd_suicide(cmd_code code, cmd_arg args[])
+{
+	/* Commit suicide */
+	p_ptr->is_dead = TRUE;
+
+	/* Stop playing */
+	p_ptr->playing = FALSE;
+
+	/* Leaving */
+	p_ptr->leaving = TRUE;
+
+	/* Cause of death */
+	my_strcpy(p_ptr->died_from, "Quitting", sizeof(p_ptr->died_from));
+}
+
+
+void textui_cmd_suicide(void)
+{
+	/* Flush input */
+	flush();
+
+	/* Verify Retirement */
+	if (p_ptr->total_winner)
+	{
+		/* Verify */
+		if (!get_check("Do you want to retire? ")) return;
+	}
+
+	/* Verify Suicide */
+	else
+	{
+		char ch;
+
+		/* Verify */
+		if (!get_check("Do you really want to commit suicide? ")) return;
+
+		/* Special Verification for suicide */
+		prt("Please verify SUICIDE by typing the '@' sign: ", 0, 0);
+		flush();
+		ch = inkey();
+		prt("", 0, 0);
+		if (ch != '@') return;
+	}
+
+	cmd_insert(CMD_SUICIDE);
+}
+
+void do_cmd_save_game(cmd_code code, cmd_arg args[])
+{
+	save_game();
+}
+

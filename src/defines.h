@@ -37,11 +37,12 @@
  * Name of the version/variant and its version string
  */
 #define VERSION_NAME   "Angband"
+#define SAVEFILE_NAME  "VNLA"
 
 #ifdef BUILD_ID
-# define VERSION_STRING "3.1.0 dev (" BUILD_ID ")"
+# define VERSION_STRING "3.1.1 dev (" BUILD_ID ")"
 #else
-# define VERSION_STRING "3.1.0 beta"
+# define VERSION_STRING "3.1.1 dev"
 #endif
 
 
@@ -132,6 +133,8 @@
  */
 #define ANGBAND_TERM_MAX 8
 
+
+/* XXX Should be enums */
 
 /*
  * Total number of stores (see "store.c", etc)
@@ -416,7 +419,14 @@
 /*
  * A "stack" of items is limited to less than 100 items (hard-coded).
  */
-#define MAX_STACK_SIZE			100
+#define MAX_STACK_SIZE 100
+
+
+/*
+ * An item's pval (for charges, amount of gold, etc) is limited to s16b
+ */
+#define MAX_PVAL  32767
+#define MIN_PVAL -32768
 
 
 /*
@@ -461,10 +471,7 @@ enum
 	SKILL_TO_HIT_THROW,		/* Skill: To hit (throwing) */
 	SKILL_DIGGING,			/* Skill: Digging */
 
-	SKILL_MAX,
-
-	/* skills that have racial/class modifiers, scheduled for obviation later */
-	SKILL_MAX_NO_RACE_CLASS = SKILL_MAX - 2
+	SKILL_MAX
 };
 
 
@@ -514,6 +521,9 @@ enum
 #define SUMMON_WRAITH       31
 #define SUMMON_UNIQUE       32
 #define SUMMON_KIN          33
+/* xxx */
+#define SUMMON_MONSTER      41
+#define SUMMON_MONSTERS     42
 
 
 /*
@@ -618,7 +628,7 @@ enum
 
 
 
-/*** Feature Indexes (see "lib/edit/feature.txt") ***/
+/*** Feature Indexes (see "lib/edit/terrain.txt") ***/
 
 /* Nothing */
 #define FEAT_NONE		0x00
@@ -691,7 +701,7 @@ enum
 #define ART_POWER			13
 #define ART_MORGOTH			34
 #define ART_GROND			111
-
+#define ART_PALANTIR			7
 
 /*
  * Hack -- first "normal" artifact in the artifact list.  All of
@@ -855,12 +865,6 @@ enum
 
 
 
-/*** Squelch stuff ***/
-
-/* Number of bytes used in squelch sub-quality array */
-#define SQUELCH_BYTES    6
-
-
 
 /*** Monster AI stuff ***/
 
@@ -937,6 +941,7 @@ enum
 #define RBE_EXP_40		27
 #define RBE_EXP_80		28
 #define RBE_HALLU		29
+#define RBE_MAX			RBE_HALLU
 
 
 /*** Function flags ***/
@@ -1008,6 +1013,7 @@ enum
 #define USE_INVEN		0x02	/* Allow inven items */
 #define USE_FLOOR		0x04	/* Allow floor items */
 #define CAN_SQUELCH		0x08	/* Allow selection of all squelched items */
+#define IS_HARMLESS		0x10	/* Ignore generic warning inscriptions */
 
 
 /*** Player flags ***/
@@ -1147,18 +1153,25 @@ enum
 /*
  * Special object flags
  */
-#define IDENT_SENSE     0x01	/* Item has been "sensed" */
+#define IDENT_SENSE     0x0001	/* Has been "sensed" */
+#define IDENT_WORN      0x0002	/* Has been tried on */
+#define IDENT_EMPTY     0x0004	/* Is known to be empty */
+#define IDENT_KNOWN     0x0008	/* Fully known */
+#define IDENT_STORE     0x0010	/* Item is in the inventory of a store */
+#define IDENT_ATTACK	0x0020	/* Know combat dice/ac/bonuses */
+#define IDENT_DEFENCE	0x0040	/* Know AC/etc bonuses */
+#define IDENT_EFFECT	0x0080	/* Know item activation/effect */
+/* xxx */
+#define IDENT_INDESTRUCT	0x0200	/* Tried to destroy it and failed */
+#define IDENT_EGO	0x0400	/* Know the ego */
 /* ... */
-#define IDENT_EMPTY     0x04	/* Item charges are known */
-#define IDENT_KNOWN     0x08	/* Item abilities are known */
-#define IDENT_STORE     0x10	/* Item is in the inventory of a store */
-/* ... */
+
 
 
 /*
  * Some bit-flags for the "smart" field of "monster_type".
  *
- * Most of these map to the "TR2_xxx" flags.
+ * Most of these map to the "TR1_xxx" flags.
  */
 #define SM_OPP_ACID		0x00000001
 #define SM_OPP_ELEC		0x00000002
@@ -1204,138 +1217,175 @@ enum
  * flags3 contains everything else.
  */
 
-#define TR1_STR             0x00000001L /* STR += "pval" */
-#define TR1_INT             0x00000002L /* INT += "pval" */
-#define TR1_WIS             0x00000004L /* WIS += "pval" */
-#define TR1_DEX             0x00000008L /* DEX += "pval" */
-#define TR1_CON             0x00000010L /* CON += "pval" */
-#define TR1_CHR             0x00000020L /* CHR += "pval" */
-#define TR1_XXX1            0x00000040L /* (reserved) */
-#define TR1_XXX2            0x00000080L /* (reserved) */
-#define TR1_STEALTH         0x00000100L /* Stealth += "pval" */
-#define TR1_SEARCH          0x00000200L /* Search += "pval" */
-#define TR1_INFRA           0x00000400L /* Infra += "pval" */
-#define TR1_TUNNEL          0x00000800L /* Tunnel += "pval" */
-#define TR1_SPEED           0x00001000L /* Speed += "pval" */
-#define TR1_BLOWS           0x00002000L /* Blows += "pval" */
-#define TR1_SHOTS           0x00004000L /* Shots += "pval" */
-#define TR1_MIGHT           0x00008000L /* Might += "pval" */
-#define TR1_SLAY_ANIMAL     0x00010000L /* Weapon slays animals */
-#define TR1_SLAY_EVIL       0x00020000L /* Weapon slays evil */
-#define TR1_SLAY_UNDEAD     0x00040000L /* Weapon slays undead */
-#define TR1_SLAY_DEMON      0x00080000L /* Weapon slays demon */
-#define TR1_SLAY_ORC        0x00100000L /* Weapon slays orc */
-#define TR1_SLAY_TROLL      0x00200000L /* Weapon slays troll */
-#define TR1_SLAY_GIANT      0x00400000L /* Weapon slays giant */
-#define TR1_SLAY_DRAGON     0x00800000L /* Weapon slays dragon */
-#define TR1_KILL_DRAGON     0x01000000L /* Weapon kills dragon */
-#define TR1_KILL_DEMON      0x02000000L /* Weapon kills demon */
-#define TR1_KILL_UNDEAD     0x04000000L /* Weapon "kills" undead */
-#define TR1_BRAND_POIS      0x08000000L /* Weapon has poison brand */
-#define TR1_BRAND_ACID      0x10000000L /* Weapon has acid brand */
-#define TR1_BRAND_ELEC      0x20000000L /* Weapon has elec brand */
-#define TR1_BRAND_FIRE      0x40000000L /* Weapon has fire brand */
-#define TR1_BRAND_COLD      0x80000000L /* Weapon has cold brand */
+#define TR0_STR             0x00000001L /* STR += "pval" */
+#define TR0_INT             0x00000002L /* INT += "pval" */
+#define TR0_WIS             0x00000004L /* WIS += "pval" */
+#define TR0_DEX             0x00000008L /* DEX += "pval" */
+#define TR0_CON             0x00000010L /* CON += "pval" */
+#define TR0_CHR             0x00000020L /* CHR += "pval" */
+#define TR0_XXX1            0x00000040L /* (reserved) */
+#define TR0_XXX2            0x00000080L /* (reserved) */
+#define TR0_STEALTH         0x00000100L /* Stealth += "pval" */
+#define TR0_SEARCH          0x00000200L /* Search += "pval" */
+#define TR0_INFRA           0x00000400L /* Infra += "pval" */
+#define TR0_TUNNEL          0x00000800L /* Tunnel += "pval" */
+#define TR0_SPEED           0x00001000L /* Speed += "pval" */
+#define TR0_BLOWS           0x00002000L /* Blows += "pval" */
+#define TR0_SHOTS           0x00004000L /* Shots += "pval" */
+#define TR0_MIGHT           0x00008000L /* Might += "pval" */
+#define TR0_SLAY_ANIMAL     0x00010000L /* Weapon slays animals */
+#define TR0_SLAY_EVIL       0x00020000L /* Weapon slays evil */
+#define TR0_SLAY_UNDEAD     0x00040000L /* Weapon slays undead */
+#define TR0_SLAY_DEMON      0x00080000L /* Weapon slays demon */
+#define TR0_SLAY_ORC        0x00100000L /* Weapon slays orc */
+#define TR0_SLAY_TROLL      0x00200000L /* Weapon slays troll */
+#define TR0_SLAY_GIANT      0x00400000L /* Weapon slays giant */
+#define TR0_SLAY_DRAGON     0x00800000L /* Weapon slays dragon */
+#define TR0_KILL_DRAGON     0x01000000L /* Weapon kills dragon */
+#define TR0_KILL_DEMON      0x02000000L /* Weapon kills demon */
+#define TR0_KILL_UNDEAD     0x04000000L /* Weapon "kills" undead */
+#define TR0_BRAND_POIS      0x08000000L /* Weapon has poison brand */
+#define TR0_BRAND_ACID      0x10000000L /* Weapon has acid brand */
+#define TR0_BRAND_ELEC      0x20000000L /* Weapon has elec brand */
+#define TR0_BRAND_FIRE      0x40000000L /* Weapon has fire brand */
+#define TR0_BRAND_COLD      0x80000000L /* Weapon has cold brand */
 
-#define TR2_SUST_STR        0x00000001L /* Sustain STR */
-#define TR2_SUST_INT        0x00000002L /* Sustain INT */
-#define TR2_SUST_WIS        0x00000004L /* Sustain WIS */
-#define TR2_SUST_DEX        0x00000008L /* Sustain DEX */
-#define TR2_SUST_CON        0x00000010L /* Sustain CON */
-#define TR2_SUST_CHR        0x00000020L /* Sustain CHR */
-#define TR2_VULN_ACID       0x00000040L /* Vulnerable to acid */
-#define TR2_VULN_ELEC       0x00000080L /* Vulnerable to elec */
-#define TR2_VULN_FIRE       0x00000100L /* Vulnerable to fire */
-#define TR2_VULN_COLD       0x00000200L /* Vulnerable to cold */
-#define TR2_XXX7            0x00000400L /* (reserved) */
-#define TR2_XXX6            0x00000800L /* (reserved) */
-#define TR2_IM_ACID         0x00001000L /* Immunity to acid */
-#define TR2_IM_ELEC         0x00002000L /* Immunity to elec */
-#define TR2_IM_FIRE         0x00004000L /* Immunity to fire */
-#define TR2_IM_COLD         0x00008000L /* Immunity to cold */
-#define TR2_RES_ACID        0x00010000L /* Resist acid */
-#define TR2_RES_ELEC        0x00020000L /* Resist elec */
-#define TR2_RES_FIRE        0x00040000L /* Resist fire */
-#define TR2_RES_COLD        0x00080000L /* Resist cold */
-#define TR2_RES_POIS        0x00100000L /* Resist poison */
-#define TR2_RES_FEAR        0x00200000L /* Resist fear */
-#define TR2_RES_LITE        0x00400000L /* Resist lite */
-#define TR2_RES_DARK        0x00800000L /* Resist dark */
-#define TR2_RES_BLIND       0x01000000L /* Resist blind */
-#define TR2_RES_CONFU       0x02000000L /* Resist confusion */
-#define TR2_RES_SOUND       0x04000000L /* Resist sound */
-#define TR2_RES_SHARD       0x08000000L /* Resist shards */
-#define TR2_RES_NEXUS       0x10000000L /* Resist nexus */
-#define TR2_RES_NETHR       0x20000000L /* Resist nether */
-#define TR2_RES_CHAOS       0x40000000L /* Resist chaos */
-#define TR2_RES_DISEN       0x80000000L /* Resist disenchant */
+#define TR1_SUST_STR        0x00000001L /* Sustain STR */
+#define TR1_SUST_INT        0x00000002L /* Sustain INT */
+#define TR1_SUST_WIS        0x00000004L /* Sustain WIS */
+#define TR1_SUST_DEX        0x00000008L /* Sustain DEX */
+#define TR1_SUST_CON        0x00000010L /* Sustain CON */
+#define TR1_SUST_CHR        0x00000020L /* Sustain CHR */
+#define TR1_VULN_ACID       0x00000040L /* Vulnerable to acid */
+#define TR1_VULN_ELEC       0x00000080L /* Vulnerable to elec */
+#define TR1_VULN_FIRE       0x00000100L /* Vulnerable to fire */
+#define TR1_VULN_COLD       0x00000200L /* Vulnerable to cold */
+#define TR1_XXX7            0x00000400L /* (reserved) */
+#define TR1_XXX6            0x00000800L /* (reserved) */
+#define TR1_IM_ACID         0x00001000L /* Immunity to acid */
+#define TR1_IM_ELEC         0x00002000L /* Immunity to elec */
+#define TR1_IM_FIRE         0x00004000L /* Immunity to fire */
+#define TR1_IM_COLD         0x00008000L /* Immunity to cold */
+#define TR1_RES_ACID        0x00010000L /* Resist acid */
+#define TR1_RES_ELEC        0x00020000L /* Resist elec */
+#define TR1_RES_FIRE        0x00040000L /* Resist fire */
+#define TR1_RES_COLD        0x00080000L /* Resist cold */
+#define TR1_RES_POIS        0x00100000L /* Resist poison */
+#define TR1_RES_FEAR        0x00200000L /* Resist fear */
+#define TR1_RES_LITE        0x00400000L /* Resist lite */
+#define TR1_RES_DARK        0x00800000L /* Resist dark */
+#define TR1_RES_BLIND       0x01000000L /* Resist blind */
+#define TR1_RES_CONFU       0x02000000L /* Resist confusion */
+#define TR1_RES_SOUND       0x04000000L /* Resist sound */
+#define TR1_RES_SHARD       0x08000000L /* Resist shards */
+#define TR1_RES_NEXUS       0x10000000L /* Resist nexus */
+#define TR1_RES_NETHR       0x20000000L /* Resist nether */
+#define TR1_RES_CHAOS       0x40000000L /* Resist chaos */
+#define TR1_RES_DISEN       0x80000000L /* Resist disenchant */
 
-#define TR3_SLOW_DIGEST     0x00000001L /* Slow digest */
-#define TR3_FEATHER         0x00000002L /* Feather Falling */
-#define TR3_LITE            0x00000004L /* Perma-Lite */
-#define TR3_REGEN           0x00000008L /* Regeneration */
-#define TR3_TELEPATHY       0x00000010L /* Telepathy */
-#define TR3_SEE_INVIS       0x00000020L /* See Invis */
-#define TR3_FREE_ACT        0x00000040L /* Free action */
-#define TR3_HOLD_LIFE       0x00000080L /* Hold life */
-#define TR3_NO_FUEL         0x00000100L /* Light source uses no fuel */
-#define TR3_IMPAIR_HP       0x00000200L /* Impair HP recovery */
-#define TR3_IMPAIR_MANA     0x00000400L /* Impair MP recovery */
-#define TR3_AFRAID          0x00000800L
-#define TR3_IMPACT          0x00001000L /* Earthquake blows */
-#define TR3_TELEPORT        0x00002000L /* Random teleportation */
-#define TR3_AGGRAVATE       0x00004000L /* Aggravate monsters */
-#define TR3_DRAIN_EXP       0x00008000L /* Experience drain */
-#define TR3_IGNORE_ACID     0x00010000L /* Item ignores Acid Damage */
-#define TR3_IGNORE_ELEC     0x00020000L /* Item ignores Elec Damage */
-#define TR3_IGNORE_FIRE     0x00040000L /* Item ignores Fire Damage */
-#define TR3_IGNORE_COLD     0x00080000L /* Item ignores Cold Damage */
-#define TR3_XXX5            0x00100000L /* (reserved) */
-#define TR3_XXX6            0x00200000L /* (reserved) */
-#define TR3_BLESSED         0x00400000L /* Item has been blessed */
-#define TR3_ACTIVATE        0x00800000L /* Item can be activated */
-#define TR3_INSTA_ART       0x01000000L /* Item makes an artifact */
-#define TR3_EASY_KNOW       0x02000000L /* Item is known if aware */
-#define TR3_HIDE_TYPE       0x04000000L /* Item hides description */
-#define TR3_SHOW_MODS       0x08000000L /* Item shows Tohit/Todam */
-#define TR3_XXX7            0x10000000L /* (reserved) */
-#define TR3_LIGHT_CURSE     0x20000000L /* Item has Light Curse */
-#define TR3_HEAVY_CURSE     0x40000000L /* Item has Heavy Curse */
-#define TR3_PERMA_CURSE     0x80000000L /* Item has Perma Curse */
+#define TR2_SLOW_DIGEST     0x00000001L /* Slow digest */
+#define TR2_FEATHER         0x00000002L /* Feather Falling */
+#define TR2_LITE            0x00000004L /* Perma-Lite */
+#define TR2_REGEN           0x00000008L /* Regeneration */
+#define TR2_TELEPATHY       0x00000010L /* Telepathy */
+#define TR2_SEE_INVIS       0x00000020L /* See Invis */
+#define TR2_FREE_ACT        0x00000040L /* Free action */
+#define TR2_HOLD_LIFE       0x00000080L /* Hold life */
+#define TR2_NO_FUEL         0x00000100L /* Light source uses no fuel */
+#define TR2_IMPAIR_HP       0x00000200L /* Impair HP recovery */
+#define TR2_IMPAIR_MANA     0x00000400L /* Impair MP recovery */
+#define TR2_AFRAID          0x00000800L
+#define TR2_IMPACT          0x00001000L /* Earthquake blows */
+#define TR2_TELEPORT        0x00002000L /* Random teleportation */
+#define TR2_AGGRAVATE       0x00004000L /* Aggravate monsters */
+#define TR2_DRAIN_EXP       0x00008000L /* Experience drain */
+#define TR2_IGNORE_ACID     0x00010000L /* Item ignores Acid Damage */
+#define TR2_IGNORE_ELEC     0x00020000L /* Item ignores Elec Damage */
+#define TR2_IGNORE_FIRE     0x00040000L /* Item ignores Fire Damage */
+#define TR2_IGNORE_COLD     0x00080000L /* Item ignores Cold Damage */
+#define TR2_XXX5            0x00100000L /* (reserved) */
+#define TR2_XXX6            0x00200000L /* (reserved) */
+#define TR2_BLESSED         0x00400000L /* Item has been blessed */
+#define TR2_XXX8            0x00800000L /* (was: activatable) */
+#define TR2_INSTA_ART       0x01000000L /* Item makes an artifact */
+#define TR2_EASY_KNOW       0x02000000L /* Item is known if aware */
+#define TR2_HIDE_TYPE       0x04000000L /* Item hides description */
+#define TR2_SHOW_MODS       0x08000000L /* Item shows Tohit/Todam */
+#define TR2_XXX7            0x10000000L /* (reserved) */
+#define TR2_LIGHT_CURSE     0x20000000L /* Item has Light Curse */
+#define TR2_HEAVY_CURSE     0x40000000L /* Item has Heavy Curse */
+#define TR2_PERMA_CURSE     0x80000000L /* Item has Perma Curse */
 
 
 /*
  * Hack -- flag set 1 -- mask for "pval-dependant" flags.
  * Note that all "pval" dependant flags must be in "flags1".
  */
-#define TR1_PVAL_MASK \
-	(TR1_STR | TR1_INT | TR1_WIS | TR1_DEX | \
-	 TR1_CON | TR1_CHR | TR1_XXX1 | TR1_XXX2 | \
-	 TR1_STEALTH | TR1_SEARCH | TR1_INFRA | TR1_TUNNEL | \
-	 TR1_SPEED | TR1_BLOWS | TR1_SHOTS | TR1_MIGHT)
+#define TR0_PVAL_MASK \
+	(TR0_STR | TR0_INT | TR0_WIS | TR0_DEX | \
+	 TR0_CON | TR0_CHR | TR0_XXX1 | TR0_XXX2 | \
+	 TR0_STEALTH | TR0_SEARCH | TR0_INFRA | TR0_TUNNEL | \
+	 TR0_SPEED | TR0_BLOWS | TR0_SHOTS | TR0_MIGHT)
 
 /*
- * Subset of the above that are obvious to the player
+ * flag set for high resists
  */
-#define TR1_OBVIOUS_MASK \
-	(TR1_STR | TR1_INT | TR1_WIS | TR1_DEX | \
-	 TR1_CON | TR1_CHR | \
-	 TR1_STEALTH | \
-	 TR1_SPEED | TR1_BLOWS | TR1_SHOTS)
+#define TR1_HIGH_RESIST_MASK \
+	(TR1_RES_POIS | TR1_RES_FEAR | TR1_RES_LITE | \
+	 TR1_RES_DARK | TR1_RES_BLIND | TR1_RES_CONFU | \
+	 TR1_RES_SOUND | TR1_RES_SHARD | TR1_RES_NEXUS | \
+	 TR1_RES_NETHR | TR1_RES_CHAOS | TR1_RES_DISEN)
 
 /*
  * Flag set 3 -- mask for "ignore element" flags.
  */
-#define TR3_IGNORE_MASK \
-	(TR3_IGNORE_ACID | TR3_IGNORE_ELEC | TR3_IGNORE_FIRE | \
-	 TR3_IGNORE_COLD )
+#define TR2_IGNORE_MASK \
+	(TR2_IGNORE_ACID | TR2_IGNORE_ELEC | TR2_IGNORE_FIRE | \
+	 TR2_IGNORE_COLD )
 
-#define TR3_CURSE_MASK \
-	(TR3_LIGHT_CURSE | TR3_HEAVY_CURSE | TR3_PERMA_CURSE)
+#define TR2_CURSE_MASK \
+	(TR2_LIGHT_CURSE | TR2_HEAVY_CURSE | TR2_PERMA_CURSE)
 
+
+/*
+ * Subset of the above that are obvious to the player on wield
+ */
+#define TR0_OBVIOUS_MASK \
+	(TR0_STR | TR0_INT | TR0_WIS | TR0_DEX | \
+	 TR0_CON | TR0_CHR | TR0_STEALTH | \
+	 TR0_INFRA | TR0_TUNNEL | TR0_SPEED | \
+	 TR0_BLOWS | TR0_SHOTS | TR0_MIGHT | \
+	 TR0_BRAND_POIS | TR0_BRAND_ELEC | \
+	 TR0_BRAND_FIRE | TR0_BRAND_COLD | TR0_BRAND_ACID)
+
+#define TR1_OBVIOUS_MASK \
+	(0)
+
+#define TR2_OBVIOUS_MASK \
+	(TR2_LITE | TR2_SEE_INVIS | TR2_TELEPATHY | TR2_NO_FUEL | \
+	 TR2_BLESSED | TR2_CURSE_MASK | TR2_AFRAID)
+
+/*
+ * Flag set 1 - masks for slays and brands
+ */
+#define TR0_SLAY_MASK \
+	(TR0_SLAY_ANIMAL | TR0_SLAY_EVIL | TR0_SLAY_UNDEAD | TR0_SLAY_DEMON | \
+	 TR0_SLAY_ORC | TR0_SLAY_TROLL | TR0_SLAY_GIANT | TR0_SLAY_DRAGON)
+
+#define TR0_BRAND_MASK \
+	(TR0_BRAND_POIS | TR0_BRAND_ACID | TR0_BRAND_ELEC | TR0_BRAND_FIRE | \
+	 TR0_BRAND_COLD)
+
+#define TR0_KILL_MASK \
+	(TR0_KILL_DRAGON | TR0_KILL_DEMON | TR0_KILL_UNDEAD)
+
+#define TR0_ALL_SLAYS \
+	(TR0_SLAY_MASK | TR0_BRAND_MASK | TR0_KILL_MASK)
+	
 /*
  * Hack -- special "xtra" object flag info (type)
  */
+#define OBJECT_XTRA_TYPE_NONE		0
 #define OBJECT_XTRA_TYPE_SUSTAIN	1
 #define OBJECT_XTRA_TYPE_RESIST		2
 #define OBJECT_XTRA_TYPE_POWER		3
@@ -1348,9 +1398,9 @@ enum
 #define CF_BLESS_WEAPON		0x00000004L	/* Requires blessed/hafted weapons */
 #define CF_CUMBER_GLOVE		0x00000008L	/* Gloves disturb spellcasting */
 #define CF_ZERO_FAIL		0x00000010L /* Fail rates can reach 0% */
-#define CF_BEAM				0x00000020L /* Higher chance of spells beaming */
+#define CF_BEAM			0x00000020L /* Higher chance of spells beaming */
 #define CF_CHOOSE_SPELLS	0x00000040L	/* Allow choice of spells */
-#define CF_PSEUDO_ID_HEAVY	0x00000080L /* Allow heavy pseudo-id */
+#define CF_XXX9			0x00000080L
 #define CF_PSEUDO_ID_IMPROV	0x00000100L /* Pseudo-id improves quicker with player-level */
 #define CF_XXX10			0x00000200L
 #define CF_XXX11			0x00000400L
@@ -1375,6 +1425,29 @@ enum
 #define CF_XXX30			0x20000000L
 #define CF_XXX31			0x40000000L
 #define CF_XXX32			0x80000000L
+
+
+/*** Terrain flags ***/
+
+enum
+{
+	FF_PWALK        = 0x00000001,
+	FF_PPASS        = 0x00000002,
+	FF_MWALK        = 0x00000004,
+	FF_MPASS        = 0x00000008,
+	FF_LOOK         = 0x00000010,
+	FF_DIG          = 0x00000020,
+	FF_DOOR         = 0x00000040,
+	FF_EXIT_UP      = 0x00000080,
+	FF_EXIT_DOWN    = 0x00000100,
+	FF_PERM         = 0x00000200,
+	FF_TRAP         = 0x00000400,
+	FF_SHOP         = 0x00000800,
+	FF_HIDDEN       = 0x00001000,
+	FF_BORING       = 0x00002000
+};
+
+
 
 
 /*** Monster flags ***/
@@ -1806,40 +1879,13 @@ enum
 
 
 /*
- * Determine if a given inventory item is "aware"
- */
-#define object_kind_aware_p(K) \
-	(k_info[(K)].aware)
-
-#define object_aware_p(T) \
-	(object_kind_aware_p((T)->k_idx))
-
-/*
- * Determine if a given inventory item is "tried"
- */
-#define object_tried_p(T) \
-	(k_info[(T)->k_idx].tried)
-
-
-/*
- * Determine if a given inventory item is "known"
- * Test One -- Check for special "known" tag
- * Test Two -- Check for "Easy Know" + "Aware"
- */
-#define object_known_p(T) \
-	(((T)->ident & IDENT_KNOWN) || \
-	 ((k_info[(T)->k_idx].flags3 & TR3_EASY_KNOW) && \
-	  k_info[(T)->k_idx].aware))
-
-
-/*
  * Determine if the attr and char should consider the item's flavor
  *
  * Identified scrolls should use their own tile.
  */
 #define use_flavor_glyph(K) \
 	((k_info[(K)].flavor) && \
-	 !((k_info[(K)].tval == TV_SCROLL) && object_kind_aware_p(K)))
+	 !((k_info[(K)].tval == TV_SCROLL) && k_info[(K)].aware))
 
 /*
  * Return the "attr" for a given item kind.
@@ -1914,7 +1960,20 @@ enum
  * Cursed items.
  */
 #define cursed_p(T) \
-	((T)->flags3 & (TR3_CURSE_MASK))
+	((T)->flags[2] & (TR2_CURSE_MASK))
+
+ /*
+ * Rings and Amulets
+ */
+#define object_is_jewelry(T) \
+	(((T)->tval == TV_RING) || ((T)->tval == TV_AMULET))
+
+
+/*
+ * Rings and Amulets
+ */
+#define object_is_jewelry(T) \
+	(((T)->tval == TV_RING) || ((T)->tval == TV_AMULET))
 
 
 /*
@@ -2122,3 +2181,6 @@ enum
 #define SCAN_MACRO 45
 
 #define MAX_ITEMLIST 256
+
+/* Whether to learn egos and flavors with less than complete information */
+#define EASY_LEARN 1

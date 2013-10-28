@@ -157,6 +157,9 @@ bool do_dec_stat(int stat, bool perma)
 		case A_CHR: if (p_ptr->state.sustain_chr) sust = TRUE; break;
 	}
 
+	assert(TR1_SUST_STR == (1<<A_STR));
+	wieldeds_notice_flag(1, 1<<stat);
+
 	/* Sustain */
 	if (sust && !perma)
 	{
@@ -164,12 +167,13 @@ bool do_dec_stat(int stat, bool perma)
 		msg_format("You feel very %s for a moment, but the feeling passes.",
 		           desc_stat_neg[stat]);
 
+
 		/* Notice effect */
 		return (TRUE);
 	}
 
 	/* Attempt to reduce the stat */
-	if (dec_stat(stat, 10, perma))
+	if (dec_stat(stat, perma))
 	{
 		/* Message */
 		message_format(MSG_DRAIN_STAT, stat, "You feel very %s.", desc_stat_neg[stat]);
@@ -256,7 +260,7 @@ void identify_pack(void)
 		if (!o_ptr->k_idx) continue;
 
 		/* Aware and Known */
-		if (object_known_p(o_ptr)) continue;
+		if (object_is_known(o_ptr)) continue;
 
 		/* Identify it */
 		do_ident_item(i, o_ptr);
@@ -289,59 +293,39 @@ static const int enchant_table[16] =
 static void uncurse_object(object_type *o_ptr)
 {
 	/* Uncurse it */
-	o_ptr->flags3 &= ~(TR3_LIGHT_CURSE);
-
-	/* Mark as uncursed */
-	o_ptr->pseudo = INSCRIP_UNCURSED;
-
-	/* The object has been "sensed" */
-	o_ptr->ident |= (IDENT_SENSE);
+	o_ptr->flags[2] &= ~(TR2_CURSE_MASK);
 }
 
 
 /*
  * Removes curses from items in inventory.
  *
- * Note that Items which are "Perma-Cursed" (The One Ring,
- * The Crown of Morgoth) can NEVER be uncursed.
+ * \param heavy removes heavy curses if true
  *
- * Note that if "all" is FALSE, then Items which are
- * "Heavy-Cursed" (Mormegil, Calris, and Weapons of Morgul)
- * will not be uncursed.
+ * \returns number of items uncursed
  */
-static int remove_curse_aux(int all)
+static int remove_curse_aux(bool heavy)
 {
 	int i, cnt = 0;
 
 	/* Attempt to uncurse items being worn */
 	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
 	{
-		u32b f1, f2, f3;
-
 		object_type *o_ptr = &inventory[i];
 
-		/* Skip non-objects */
 		if (!o_ptr->k_idx) continue;
-
-		/* Uncursed already */
 		if (!cursed_p(o_ptr)) continue;
 
-		/* Extract the flags */
-		object_flags(o_ptr, &f1, &f2, &f3);
+		/* Heavily cursed items need a special spell */
+		if ((o_ptr->flags[2] & TR2_HEAVY_CURSE) && !heavy) continue;
 
-		/* Heavily Cursed Items need a special spell */
-		if (!all && (f3 & (TR3_HEAVY_CURSE))) continue;
+		/* Perma-cursed items can never be removed */
+		if (o_ptr->flags[2] & TR2_PERMA_CURSE) continue;
 
-		/* Perma-Cursed Items can NEVER be uncursed */
-		if (f3 & (TR3_PERMA_CURSE)) continue;
-
-		/* Uncurse the object */
+		/* Uncurse, and update things */
 		uncurse_object(o_ptr);
 
-		/* Recalculate the bonuses */
 		p_ptr->update |= (PU_BONUS);
-
-		/* Redraw stuff */
 		p_ptr->redraw |= (PR_EQUIP);
 
 		/* Count the uncursings */
@@ -416,7 +400,7 @@ void self_knowledge(bool spoil)
 	int i = 0, j, k;
 	int max_x = Term->hgt - 2;
 
-	u32b t1, t2, t3;
+	u32b t[OBJ_FLAG_N];
 
 	u32b f1 = 0L, f2 = 0L, f3 = 0L;
 
@@ -435,23 +419,23 @@ void self_knowledge(bool spoil)
 
 		/* Extract the flags */
 		if (spoil)
-			object_flags(o_ptr, &t1, &t2, &t3);
+			object_flags(o_ptr, t);
 		else 
-			object_flags_known(o_ptr, &t1, &t2, &t3);
+			object_flags_known(o_ptr, t);
 
 		/* Extract flags */
-		f1 |= t1;
-		f2 |= t2;
-		f3 |= t3;
+		f1 |= t[0];
+		f2 |= t[1];
+		f3 |= t[2];
 	}
 
 	/* And flags from the player */
-	player_flags(&t1, &t2, &t3);
+	player_flags(t);
 
 	/* Extract flags */
-	f1 |= t1;
-	f2 |= t2;
-	f3 |= t3;
+	f1 |= t[0];
+	f2 |= t[1];
+	f3 |= t[2];
 
 
 	if (p_ptr->timed[TMD_BLIND])
@@ -487,11 +471,11 @@ void self_knowledge(bool spoil)
 		info[i++] = "You are hallucinating.";
 	}
 
-	if (f3 & TR3_AGGRAVATE)
+	if (f3 & TR2_AGGRAVATE)
 	{
 		info[i++] = "You aggravate monsters.";
 	}
-	if (f3 & TR3_TELEPORT)
+	if (f3 & TR2_TELEPORT)
 	{
 		info[i++] = "Your position is very uncertain.";
 	}
@@ -536,226 +520,226 @@ void self_knowledge(bool spoil)
 	{
 		info[i++] = "You will soon be recalled.";
 	}
-	if (rp_ptr->infra || f1 & TR1_INFRA)
+	if (rp_ptr->infra || f1 & TR0_INFRA)
 	{
 		info[i++] = "Your eyes are sensitive to infrared light.";
 	}
 
-	if (f3 & TR3_SLOW_DIGEST)
+	if (f3 & TR2_SLOW_DIGEST)
 	{
 		info[i++] = "Your appetite is small.";
 	}
-	if (f3 & TR3_FEATHER)
+	if (f3 & TR2_FEATHER)
 	{
 		info[i++] = "You land gently.";
 	}
-	if (f3 & TR3_REGEN)
+	if (f3 & TR2_REGEN)
 	{
 		info[i++] = "You regenerate quickly.";
 	}
-	if (f3 & TR3_TELEPATHY)
+	if (f3 & TR2_TELEPATHY)
 	{
 		info[i++] = "You have ESP.";
 	}
-	if (f3 & TR3_SEE_INVIS)
+	if (f3 & TR2_SEE_INVIS)
 	{
 		info[i++] = "You can see invisible creatures.";
 	}
-	if (f3 & TR3_FREE_ACT)
+	if (f3 & TR2_FREE_ACT)
 	{
 		info[i++] = "You have free action.";
 	}
-	if (f3 & TR3_HOLD_LIFE)
+	if (f3 & TR2_HOLD_LIFE)
 	{
 		info[i++] = "You have a firm hold on your life force.";
 	}
 
-	if (f2 & TR2_IM_ACID)
+	if (f2 & TR1_IM_ACID)
 	{
 		info[i++] = "You are completely immune to acid.";
 	}
-	else if ((f2 & TR2_RES_ACID) && (p_ptr->timed[TMD_OPP_ACID]))
+	else if ((f2 & TR1_RES_ACID) && (p_ptr->timed[TMD_OPP_ACID]))
 	{
 		info[i++] = "You resist acid exceptionally well.";
 	}
-	else if ((f2 & TR2_RES_ACID) || (p_ptr->timed[TMD_OPP_ACID]))
+	else if ((f2 & TR1_RES_ACID) || (p_ptr->timed[TMD_OPP_ACID]))
 	{
 		info[i++] = "You are resistant to acid.";
 	}
 
-	if (f2 & TR2_IM_ELEC)
+	if (f2 & TR1_IM_ELEC)
 	{
 		info[i++] = "You are completely immune to lightning.";
 	}
-	else if ((f2 & TR2_RES_ELEC) && (p_ptr->timed[TMD_OPP_ELEC]))
+	else if ((f2 & TR1_RES_ELEC) && (p_ptr->timed[TMD_OPP_ELEC]))
 	{
 		info[i++] = "You resist lightning exceptionally well.";
 	}
-	else if ((f2 & TR2_RES_ELEC) || (p_ptr->timed[TMD_OPP_ELEC]))
+	else if ((f2 & TR1_RES_ELEC) || (p_ptr->timed[TMD_OPP_ELEC]))
 	{
 		info[i++] = "You are resistant to lightning.";
 	}
 
-	if (f2 & TR2_IM_FIRE)
+	if (f2 & TR1_IM_FIRE)
 	{
 		info[i++] = "You are completely immune to fire.";
 	}
-	else if ((f2 & TR2_RES_FIRE) && (p_ptr->timed[TMD_OPP_FIRE]))
+	else if ((f2 & TR1_RES_FIRE) && (p_ptr->timed[TMD_OPP_FIRE]))
 	{
 		info[i++] = "You resist fire exceptionally well.";
 	}
-	else if ((f2 & TR2_RES_FIRE) || (p_ptr->timed[TMD_OPP_FIRE]))
+	else if ((f2 & TR1_RES_FIRE) || (p_ptr->timed[TMD_OPP_FIRE]))
 	{
 		info[i++] = "You are resistant to fire.";
 	}
 
-	if (f2 & TR2_IM_COLD)
+	if (f2 & TR1_IM_COLD)
 	{
 		info[i++] = "You are completely immune to cold.";
 	}
-	else if ((f2 & TR2_RES_COLD) && (p_ptr->timed[TMD_OPP_COLD]))
+	else if ((f2 & TR1_RES_COLD) && (p_ptr->timed[TMD_OPP_COLD]))
 	{
 		info[i++] = "You resist cold exceptionally well.";
 	}
-	else if ((f2 & TR2_RES_COLD) || (p_ptr->timed[TMD_OPP_COLD]))
+	else if ((f2 & TR1_RES_COLD) || (p_ptr->timed[TMD_OPP_COLD]))
 	{
 		info[i++] = "You are resistant to cold.";
 	}
 
-	if ((f2 & TR2_RES_POIS) && (p_ptr->timed[TMD_OPP_POIS]))
+	if ((f2 & TR1_RES_POIS) && (p_ptr->timed[TMD_OPP_POIS]))
 	{
 		info[i++] = "You resist poison exceptionally well.";
 	}
-	else if ((f2 & TR2_RES_POIS) || (p_ptr->timed[TMD_OPP_POIS]))
+	else if ((f2 & TR1_RES_POIS) || (p_ptr->timed[TMD_OPP_POIS]))
 	{
 		info[i++] = "You are resistant to poison.";
 	}
 
-	if (f2 & TR2_RES_FEAR)
+	if (f2 & TR1_RES_FEAR)
 	{
 		info[i++] = "You are completely fearless.";
 	}
 
-	if (f2 & TR2_RES_LITE)
+	if (f2 & TR1_RES_LITE)
 	{
 		info[i++] = "You are resistant to bright light.";
 	}
-	if (f2 & TR2_RES_DARK)
+	if (f2 & TR1_RES_DARK)
 	{
 		info[i++] = "You are resistant to darkness.";
 	}
-	if (f2 & TR2_RES_BLIND)
+	if (f2 & TR1_RES_BLIND)
 	{
 		info[i++] = "Your eyes are resistant to blindness.";
 	}
-	if (f2 & TR2_RES_CONFU)
+	if (f2 & TR1_RES_CONFU)
 	{
 		info[i++] = "You are resistant to confusion.";
 	}
-	if (f2 & TR2_RES_SOUND)
+	if (f2 & TR1_RES_SOUND)
 	{
 		info[i++] = "You are resistant to sonic attacks.";
 	}
-	if (f2 & TR2_RES_SHARD)
+	if (f2 & TR1_RES_SHARD)
 	{
 		info[i++] = "You are resistant to blasts of shards.";
 	}
-	if (f2 & TR2_RES_NEXUS)
+	if (f2 & TR1_RES_NEXUS)
 	{
 		info[i++] = "You are resistant to nexus attacks.";
 	}
-	if (f2 & TR2_RES_NETHR)
+	if (f2 & TR1_RES_NETHR)
 	{
 		info[i++] = "You are resistant to nether forces.";
 	}
-	if (f2 & TR2_RES_CHAOS)
+	if (f2 & TR1_RES_CHAOS)
 	{
 		info[i++] = "You are resistant to chaos.";
 	}
-	if (f2 & TR2_RES_DISEN)
+	if (f2 & TR1_RES_DISEN)
 	{
 		info[i++] = "You are resistant to disenchantment.";
 	}
 
-	if (f2 & TR2_SUST_STR)
+	if (f2 & TR1_SUST_STR)
 	{
 		info[i++] = "Your strength is sustained.";
 	}
-	if (f2 & TR2_SUST_INT)
+	if (f2 & TR1_SUST_INT)
 	{
 		info[i++] = "Your intelligence is sustained.";
 	}
-	if (f2 & TR2_SUST_WIS)
+	if (f2 & TR1_SUST_WIS)
 	{
 		info[i++] = "Your wisdom is sustained.";
 	}
-	if (f2 & TR2_SUST_DEX)
+	if (f2 & TR1_SUST_DEX)
 	{
 		info[i++] = "Your dexterity is sustained.";
 	}
-	if (f2 & TR2_SUST_CON)
+	if (f2 & TR1_SUST_CON)
 	{
 		info[i++] = "Your constitution is sustained.";
 	}
-	if (f2 & TR2_SUST_CHR)
+	if (f2 & TR1_SUST_CHR)
 	{
 		info[i++] = "Your charisma is sustained.";
 	}
 
-	if (f1 & (TR1_STR))
+	if (f1 & (TR0_STR))
 	{
 		info[i++] = "Your strength is affected by your equipment.";
 	}
-	if (f1 & (TR1_INT))
+	if (f1 & (TR0_INT))
 	{
 		info[i++] = "Your intelligence is affected by your equipment.";
 	}
-	if (f1 & (TR1_WIS))
+	if (f1 & (TR0_WIS))
 	{
 		info[i++] = "Your wisdom is affected by your equipment.";
 	}
-	if (f1 & (TR1_DEX))
+	if (f1 & (TR0_DEX))
 	{
 		info[i++] = "Your dexterity is affected by your equipment.";
 	}
-	if (f1 & (TR1_CON))
+	if (f1 & (TR0_CON))
 	{
 		info[i++] = "Your constitution is affected by your equipment.";
 	}
-	if (f1 & (TR1_CHR))
+	if (f1 & (TR0_CHR))
 	{
 		info[i++] = "Your charisma is affected by your equipment.";
 	}
 
-	if (f1 & (TR1_STEALTH))
+	if (f1 & (TR0_STEALTH))
 	{
 		info[i++] = "Your stealth is affected by your equipment.";
 	}
-	if (f1 & (TR1_SEARCH))
+	if (f1 & (TR0_SEARCH))
 	{
 		info[i++] = "Your searching ability is affected by your equipment.";
 	}
-	if (f1 & (TR1_INFRA))
+	if (f1 & (TR0_INFRA))
 	{
 		info[i++] = "Your infravision is affected by your equipment.";
 	}
-	if (f1 & (TR1_TUNNEL))
+	if (f1 & (TR0_TUNNEL))
 	{
 		info[i++] = "Your digging ability is affected by your equipment.";
 	}
-	if (f1 & (TR1_SPEED))
+	if (f1 & (TR0_SPEED))
 	{
 		info[i++] = "Your speed is affected by your equipment.";
 	}
-	if (f1 & (TR1_BLOWS))
+	if (f1 & (TR0_BLOWS))
 	{
 		info[i++] = "Your attack speed is affected by your equipment.";
 	}
-	if (f1 & (TR1_SHOTS))
+	if (f1 & (TR0_SHOTS))
 	{
 		info[i++] = "Your shooting speed is affected by your equipment.";
 	}
-	if (f1 & (TR1_MIGHT))
+	if (f1 & (TR0_MIGHT))
 	{
 		info[i++] = "Your shooting might is affected by your equipment.";
 	}
@@ -768,87 +752,50 @@ void self_knowledge(bool spoil)
 	if (o_ptr->k_idx)
 	{
 		/* Special "Attack Bonuses" */
-		if (f1 & (TR1_BRAND_ACID))
-		{
+		if (f1 & TR0_BRAND_ACID)
 			info[i++] = "Your weapon melts your foes.";
-		}
-		if (f1 & (TR1_BRAND_ELEC))
-		{
+		if (f1 & TR0_BRAND_ELEC)
 			info[i++] = "Your weapon shocks your foes.";
-		}
-		if (f1 & (TR1_BRAND_FIRE))
-		{
+		if (f1 & TR0_BRAND_FIRE)
 			info[i++] = "Your weapon burns your foes.";
-		}
-		if (f1 & (TR1_BRAND_COLD))
-		{
+		if (f1 & TR0_BRAND_COLD)
 			info[i++] = "Your weapon freezes your foes.";
-		}
-		if (f1 & (TR1_BRAND_POIS))
-		{
+		if (f1 & TR0_BRAND_POIS)
 			info[i++] = "Your weapon poisons your foes.";
-		}
 
 		/* Special "slay" flags */
-		if (f1 & (TR1_SLAY_ANIMAL))
-		{
+		if (f1 & TR0_SLAY_ANIMAL)
 			info[i++] = "Your weapon strikes at animals with extra force.";
-		}
-		if (f1 & (TR1_SLAY_EVIL))
-		{
+		if (f1 & TR0_SLAY_EVIL)
 			info[i++] = "Your weapon strikes at evil with extra force.";
-		}
-		if (f1 & (TR1_SLAY_UNDEAD))
-		{
+		if (f1 & TR0_SLAY_UNDEAD)
 			info[i++] = "Your weapon strikes at undead with holy wrath.";
-		}
-		if (f1 & (TR1_SLAY_DEMON))
-		{
+		if (f1 & TR0_SLAY_DEMON)
 			info[i++] = "Your weapon strikes at demons with holy wrath.";
-		}
-		if (f1 & (TR1_SLAY_ORC))
-		{
+		if (f1 & TR0_SLAY_ORC)
 			info[i++] = "Your weapon is especially deadly against orcs.";
-		}
-		if (f1 & (TR1_SLAY_TROLL))
-		{
+		if (f1 & TR0_SLAY_TROLL)
 			info[i++] = "Your weapon is especially deadly against trolls.";
-		}
-		if (f1 & (TR1_SLAY_GIANT))
-		{
+		if (f1 & TR0_SLAY_GIANT)
 			info[i++] = "Your weapon is especially deadly against giants.";
-		}
-		if (f1 & (TR1_SLAY_DRAGON))
-		{
+		if (f1 & TR0_SLAY_DRAGON)
 			info[i++] = "Your weapon is especially deadly against dragons.";
-		}
 
 		/* Special "kill" flags */
-		if (f1 & (TR1_KILL_DRAGON))
-		{
+		if (f1 & TR0_KILL_DRAGON)
 			info[i++] = "Your weapon is a great bane of dragons.";
-		}
-		if (f1 & (TR1_KILL_DEMON))
-		{
+		if (f1 & TR0_KILL_DEMON)
 			info[i++] = "Your weapon is a great bane of demons.";
-		}
-		if (f1 & (TR1_KILL_UNDEAD))
-		{
+		if (f1 & TR0_KILL_UNDEAD)
 			info[i++] = "Your weapon is a great bane of undead.";
-		}
-
 
 		/* Indicate Blessing */
-		if (f3 & (TR3_BLESSED))
-		{
+		if (f3 & TR2_BLESSED)
 			info[i++] = "Your weapon has been blessed by the gods.";
-		}
 
 		/* Hack */
-		if (f3 & (TR3_IMPACT))
-		{
+		if (f3 & TR2_IMPACT)
 			info[i++] = "Your weapon can induce earthquakes.";
-		}
 	}
 
 
@@ -902,7 +849,7 @@ void self_knowledge(bool spoil)
 void set_recall(void)
 {
 	/* Ironman */
-	if (adult_ironman && !p_ptr->total_winner)
+	if (OPT(adult_ironman) && !p_ptr->total_winner)
 	{
 		msg_print("Nothing happens.");
 		return;
@@ -932,6 +879,10 @@ void set_recall(void)
 		p_ptr->word_recall = 0;
 		msg_print("A tension leaves the air around you...");
 	}
+
+	/* Redraw status line */
+	p_ptr->redraw = PR_STATUS;
+	handle_stuff();
 }
 
 
@@ -941,8 +892,8 @@ void set_recall(void)
  * Useful constants for the area around the player to detect.
  * This is instead of using circular detection spells.
  */
-#define DETECT_DIST_X	52	/* Detect 52 grids to the left & right */
-#define DETECT_DIST_Y	23	/* Detect 23 grids to the top & bottom */
+#define DETECT_DIST_X	40	/* Detect 42 grids to the left & right */
+#define DETECT_DIST_Y	22	/* Detect 22 grids to the top & bottom */
 
 
 
@@ -1173,7 +1124,6 @@ bool detect_treasure(bool aware)
 	int x1, x2, y1, y2;
 
 	bool gold_buried = FALSE;
-	bool gold_object = FALSE;
 	bool objects = FALSE;
 
 
@@ -1247,19 +1197,16 @@ bool detect_treasure(bool aware)
 			objects = TRUE;
 	}
 
-	if (gold_object)
-		msg_print("You sense the presence of treasure!");
-
 	if (gold_buried)
 		msg_print("You sense the presence of buried treasure!");
 
 	if (objects)
 		msg_print("You sense the presence of objects!");
 
-	if (aware && !gold_object && !gold_buried && !objects)
+	if (aware && !gold_buried && !objects)
 		msg_print("You sense no treasure or objects.");
 
-	return (gold_object || gold_buried || objects);
+	return gold_buried || objects;
 }
 
 
@@ -1665,7 +1612,7 @@ static bool item_tester_hook_armour(const object_type *o_ptr)
 
 static bool item_tester_unknown(const object_type *o_ptr)
 {
-	if (object_known_p(o_ptr))
+	if (object_is_known(o_ptr))
 		return FALSE;
 	else
 		return TRUE;
@@ -1695,10 +1642,10 @@ bool enchant(object_type *o_ptr, int n, int eflag)
 
 	bool a = artifact_p(o_ptr);
 
-	u32b f1, f2, f3;
+	u32b f[OBJ_FLAG_N];
 
 	/* Extract the flags */
-	object_flags(o_ptr, &f1, &f2, &f3);
+	object_flags(o_ptr, f);
 
 
 	/* Large piles resist enchantment */
@@ -1713,7 +1660,7 @@ bool enchant(object_type *o_ptr, int n, int eflag)
 	}
 
 	/* Try "n" times */
-	for (i=0; i<n; i++)
+	for (i = 0; i < n; i++)
 	{
 		/* Hack -- Roll for pile resistance */
 		if ((prob > 100) && (randint0(prob) >= 100)) continue;
@@ -1735,7 +1682,7 @@ bool enchant(object_type *o_ptr, int n, int eflag)
 
 				/* Break curse */
 				if (cursed_p(o_ptr) &&
-				    (!(f3 & (TR3_PERMA_CURSE))) &&
+				    (!(f[2] & (TR2_PERMA_CURSE))) &&
 				    (o_ptr->to_h >= 0) && (randint0(100) < 25))
 				{
 					msg_print("The curse is broken!");
@@ -1763,7 +1710,7 @@ bool enchant(object_type *o_ptr, int n, int eflag)
 
 				/* Break curse */
 				if (cursed_p(o_ptr) &&
-				    (!(f3 & (TR3_PERMA_CURSE))) &&
+				    (!(f[2] & (TR2_PERMA_CURSE))) &&
 				    (o_ptr->to_d >= 0) && (randint0(100) < 25))
 				{
 					msg_print("The curse is broken!");
@@ -1791,7 +1738,7 @@ bool enchant(object_type *o_ptr, int n, int eflag)
 
 				/* Break curse */
 				if (cursed_p(o_ptr) &&
-				    (!(f3 & (TR3_PERMA_CURSE))) &&
+				    (!(f[2] & (TR2_PERMA_CURSE))) &&
 				    (o_ptr->to_a >= 0) && (randint0(100) < 25))
 				{
 					msg_print("The curse is broken!");
@@ -1849,17 +1796,7 @@ bool enchant_spell(int num_hit, int num_dam, int num_ac)
 	s = "You have nothing to enchant.";
 	if (!get_item(&item, q, s, (USE_EQUIP | USE_INVEN | USE_FLOOR))) return (FALSE);
 
-	/* Get the item (in the pack) */
-	if (item >= 0)
-	{
-		o_ptr = &inventory[item];
-	}
-
-	/* Get the item (on the floor) */
-	else
-	{
-		o_ptr = &o_list[0 - item];
-	}
+	o_ptr = object_from_item_idx(item);
 
 
 	/* Description */
@@ -1879,7 +1816,7 @@ bool enchant_spell(int num_hit, int num_dam, int num_ac)
 	if (!okay)
 	{
 		/* Flush */
-		if (flush_failure) flush();
+		if (OPT(flush_failure)) flush();
 
 		/* Message */
 		msg_print("The enchantment failed.");
@@ -1911,17 +1848,7 @@ bool ident_spell(void)
 	s = "You have nothing to identify.";
 	if (!get_item(&item, q, s, (USE_EQUIP | USE_INVEN | USE_FLOOR))) return (FALSE);
 
-	/* Get the item (in the pack) */
-	if (item >= 0)
-	{
-		o_ptr = &inventory[item];
-	}
-
-	/* Get the item (on the floor) */
-	else
-	{
-		o_ptr = &o_list[0 - item];
-	}
+	o_ptr = object_from_item_idx(item);
 
 
 	/* Identify the object */
@@ -1981,17 +1908,7 @@ bool recharge(int num)
 	s = "You have nothing to recharge.";
 	if (!get_item(&item, q, s, (USE_INVEN | USE_FLOOR))) return (FALSE);
 
-	/* Get the item (in the pack) */
-	if (item >= 0)
-	{
-		o_ptr = &inventory[item];
-	}
-
-	/* Get the item (on the floor) */
-	else
-	{
-		o_ptr = &o_list[0 - item];
-	}
+	o_ptr = object_from_item_idx(item);
 
 
 	/* Extract the object "level" */
@@ -2790,6 +2707,9 @@ void earthquake(int cy, int cx, int r)
 			yy = cy + dy;
 			xx = cx + dx;
 
+			/* ignore invalid grids */
+			if (!in_bounds_fully(yy, xx)) continue;
+
 			/* Note unaffected grids for light changes, etc. */
 			if (!map[16+yy-cy][16+xx-cx])
 			{
@@ -3454,18 +3374,11 @@ bool curse_armor(void)
 		/* Oops */
 		msg_format("A terrible black aura blasts your %s!", o_name);
 
-		/* Blast the armor */
-		o_ptr->name1 = 0;
-		o_ptr->name2 = EGO_BLASTED;
-		o_ptr->to_a = 0 - randint1(5) - randint1(5);
-		o_ptr->to_h = 0;
-		o_ptr->to_d = 0;
-		o_ptr->ac = 0;
-		o_ptr->dd = 0;
-		o_ptr->ds = 0;
+		/* Take down bonus a wee bit */
+		o_ptr->to_a -= randint1(3);
 
 		/* Curse it */
-		o_ptr->flags3 |= TR3_LIGHT_CURSE;
+		o_ptr->flags[2] |= (TR2_LIGHT_CURSE | TR2_HEAVY_CURSE);
 
 		/* Recalculate bonuses */
 		p_ptr->update |= (PU_BONUS);
@@ -3474,7 +3387,7 @@ bool curse_armor(void)
 		p_ptr->update |= (PU_MANA);
 
 		/* Window stuff */
-		p_ptr->redraw |= (PR_INVEN | PR_EQUIP );
+		p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
 	}
 
 	return (TRUE);
@@ -3515,18 +3428,12 @@ bool curse_weapon(void)
 		/* Oops */
 		msg_format("A terrible black aura blasts your %s!", o_name);
 
-		/* Shatter the weapon */
-		o_ptr->name1 = 0;
-		o_ptr->name2 = EGO_SHATTERED;
-		o_ptr->to_h = 0 - randint1(5) - randint1(5);
-		o_ptr->to_d = 0 - randint1(5) - randint1(5);
-		o_ptr->to_a = 0;
-		o_ptr->ac = 0;
-		o_ptr->dd = 0;
-		o_ptr->ds = 0;
+		/* Hurt it a bit */
+		o_ptr->to_h = 0 - randint1(3);
+		o_ptr->to_d = 0 - randint1(3);
 
 		/* Curse it */
-		o_ptr->flags3 |= TR3_LIGHT_CURSE;
+		o_ptr->flags[2] |= (TR2_LIGHT_CURSE | TR2_HEAVY_CURSE);
 
 		/* Recalculate bonuses */
 		p_ptr->update |= (PU_BONUS);
@@ -3593,7 +3500,7 @@ void brand_object(object_type *o_ptr, byte brand_type)
 	}
 	else
 	{
-		if (flush_failure) flush();
+		if (OPT(flush_failure)) flush();
 		msg_print("The Branding failed.");
 	}
 }
@@ -3658,17 +3565,7 @@ bool brand_ammo(void)
 	s = "You have nothing to brand.";
 	if (!get_item(&item, q, s, (USE_EQUIP | USE_INVEN | USE_FLOOR))) return (FALSE);
 
-	/* Get the item (in the pack) */
-	if (item >= 0)
-	{
-		o_ptr = &inventory[item];
-	}
-
-	/* Get the item (on the floor) */
-	else
-	{
-		o_ptr = &o_list[0 - item];
-	}
+	o_ptr = object_from_item_idx(item);
 
 	r = randint0(100);
 
@@ -3706,17 +3603,7 @@ bool brand_bolts(void)
 	s = "You have no bolts to brand.";
 	if (!get_item(&item, q, s, (USE_INVEN | USE_FLOOR))) return (FALSE);
 
-	/* Get the item (in the pack) */
-	if (item >= 0)
-	{
-		o_ptr = &inventory[item];
-	}
-
-	/* Get the item (on the floor) */
-	else
-	{
-		o_ptr = &o_list[0 - item];
-	}
+	o_ptr = object_from_item_idx(item);
 
 	/* Brand the bolts */
 	brand_object(o_ptr, EGO_FLAME);
@@ -3741,12 +3628,12 @@ void ring_of_power(int dir)
 			msg_print("You are surrounded by a malignant aura.");
 
 			/* Decrease all stats (permanently) */
-			(void)dec_stat(A_STR, 50, TRUE);
-			(void)dec_stat(A_INT, 50, TRUE);
-			(void)dec_stat(A_WIS, 50, TRUE);
-			(void)dec_stat(A_DEX, 50, TRUE);
-			(void)dec_stat(A_CON, 50, TRUE);
-			(void)dec_stat(A_CHR, 50, TRUE);
+			(void)dec_stat(A_STR, TRUE);
+			(void)dec_stat(A_INT, TRUE);
+			(void)dec_stat(A_WIS, TRUE);
+			(void)dec_stat(A_DEX, TRUE);
+			(void)dec_stat(A_CON, TRUE);
+			(void)dec_stat(A_CHR, TRUE);
 
 			/* Lose some experience (permanently) */
 			p_ptr->exp -= (p_ptr->exp / 4);
@@ -3803,8 +3690,8 @@ void do_ident_item(int item, object_type *o_ptr)
 	char o_name[80];
 
 	/* Identify it */
-	object_aware(o_ptr);
-	object_known(o_ptr);
+	object_flavor_aware(o_ptr);
+	object_notice_everything(o_ptr);
 
 	/* Apply an autoinscription, if necessary */
 	apply_autoinscription(o_ptr);

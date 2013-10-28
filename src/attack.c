@@ -19,54 +19,45 @@
 
 #include "object/object.h"
 #include "object/tvalsval.h"
+#include "game-cmd.h"
 
-
-/*
- * Determines the odds of an object breaking when thrown at a monster
+/**
+ * Determines how likely an object is to break on throwing or shooting.
  *
- * Note that artifacts never break, see the "drop_near()" function.
+ * \returns percentage change of breaking
  */
 int breakage_chance(const object_type *o_ptr)
 {
-	/* Examine the item type */
+	/* Artifacts never break */
+	if (artifact_p(o_ptr))
+		return 0;
+
 	switch (o_ptr->tval)
 	{
-		/* Always break */
 		case TV_FLASK:
 		case TV_POTION:
 		case TV_BOTTLE:
 		case TV_FOOD:
 		case TV_JUNK:
-		{
-			return (100);
-		}
+			return 100;
 
-		/* Often break */
 		case TV_LITE:
 		case TV_SCROLL:
 		case TV_SKELETON:
-		{
-			return (50);
-		}
+			return 50;
 
-		/* Sometimes break */
 		case TV_ARROW:
-		{
-			return (35);
-		}
+			return 35;
 
-		/* Sometimes break */
 		case TV_WAND:
 		case TV_SHOT:
 		case TV_BOLT:
 		case TV_SPIKE:
-		{
-			return (25);
-		}
-	}
+			return 25;
 
-	/* Rarely break */
-	return (10);
+		default:
+			return 10;
+	}
 }
 
 
@@ -193,263 +184,80 @@ static int critical_norm(int weight, int plus, int dam)
 
 
 
-/*
- * Extract the "multiplier" from a given object hitting a given monster.
- * If the multiplier is >1, set 'hit_verb' to be a string containing the verb for the hit (i.e. 'burn', 'smite')
+/**
+ * Extract the multiplier from a given object hitting a given monster.
  *
- * Most brands and slays are x3, except Slay Animal (x2), Slay Evil (x2),
- * and Kill dragon (x5).
+ * If there is a slay or brand in effect, change the verb for hitting
+ * to something interesting ('burn', 'smite', etc.).  Also, note which
+ * flags had an effect in o_ptr->known_flags[].
+ *
+ * \param o_ptr is the object being used to attack
+ * \param m_ptr is the monster being attacked
+ * \param hit_verb is where a new verb is returned
+ * \param is_ranged should be true for ranged attacks
+ *
+ * \returns attack multiplier
  */
-static int get_brand_mult(const object_type *o_ptr, const monster_type *m_ptr, const char **hit_verb, bool is_ranged)
+static int get_brand_mult(object_type *o_ptr, const monster_type *m_ptr,
+		const char **hit_verb, bool is_ranged, bool secondary)
 {
 	int mult = 1;
-	bool slay = FALSE;
+	const slay_t *s_ptr;
 
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
 
-	u32b f1, f2, f3;
+	u32b f[OBJ_FLAG_N];
+	object_flags(o_ptr, f);
 
-	/* Extract the flags */
-	object_flags(o_ptr, &f1, &f2, &f3);
-
-
-	/* Slay Animal */
-	if ((f1 & TR1_SLAY_ANIMAL) && (r_ptr->flags[2] & RF2_ANIMAL))
+	for (s_ptr = slay_table; s_ptr->slay_flag; s_ptr++)
 	{
-		if (m_ptr->ml)
-			l_ptr->flags[2] |= (RF2_ANIMAL);
+		if (!(f[0] & s_ptr->slay_flag)) continue;
 
-		if (mult < 2) mult = 2;
-		slay = TRUE;
-	}
+		/* notice any brand or slay that would affect the monster */
+		if ((s_ptr->resist_flag) || (r_ptr->flags[2] & s_ptr->monster_flag))
+		{
+			object_notice_slays(o_ptr, s_ptr->slay_flag);
+			wieldeds_notice_slays(s_ptr->slay_flag);
+		}
 
-	/* Slay Evil */
-	if ((f1 & TR1_SLAY_EVIL) && (r_ptr->flags[2] & RF2_EVIL))
-	{
-		if (m_ptr->ml)
-			l_ptr->flags[2] |= (RF2_EVIL);
+		/* If the monster doesn't match or the slay flag does */
+		if ((s_ptr->brand && !(r_ptr->flags[2] & s_ptr->resist_flag)) || 
+			(r_ptr->flags[2] & s_ptr->monster_flag))
+		{
+			/* Learn the flag */
+			if (m_ptr->ml)
+				l_ptr->flags[2] |= s_ptr->monster_flag;
 
-		if (mult < 2) mult = 2;
-		slay = TRUE;
-	}
+			if (mult < s_ptr->mult)
+				mult = s_ptr->mult;
 
-	/* Slay Undead */
-	if ((f1 & TR1_SLAY_UNDEAD) && (r_ptr->flags[2] & RF2_UNDEAD))
-	{
-		if (m_ptr->ml)
-			l_ptr->flags[2] |= (RF2_UNDEAD);
+			/* Set the hit verb appropriately */
+			if (is_ranged)
+				*hit_verb = s_ptr->range_verb;
+			else
+				*hit_verb = s_ptr->melee_verb;
 
-		if (mult < 3) mult = 3;
-		slay = TRUE;
-	}
+			/* Print a cool message for branded rings et al */
+			if (s_ptr->active_verb && secondary)
+			{
+				char o_name[40];
+				object_desc(o_name, sizeof(o_name), o_ptr,
+						FALSE, ODESC_BASE);
+				msg_format("Your %s %s!", o_name,
+						s_ptr->active_verb);
+			}
+		}
 
-	/* Slay Demon */
-	if ((f1 & TR1_SLAY_DEMON) && (r_ptr->flags[2] & RF2_DEMON))
-	{
-		if (m_ptr->ml)
-			l_ptr->flags[2] |= (RF2_DEMON);
-
-		if (mult < 3) mult = 3;
-		slay = TRUE;
-	}
-
-	/* Slay Orc */
-	if ((f1 & TR1_SLAY_ORC) && (r_ptr->flags[2] & RF2_ORC))
-	{
-		if (m_ptr->ml)
-			l_ptr->flags[2] |= (RF2_ORC);
-
-		if (mult < 3) mult = 3;
-		slay = TRUE;
-	}
-
-	/* Slay Troll */
-	if ((f1 & TR1_SLAY_TROLL) && (r_ptr->flags[2] & RF2_TROLL))
-	{
-		if (m_ptr->ml)
-			l_ptr->flags[2] |= (RF2_TROLL);
-
-		if (mult < 3) mult = 3;
-		slay = TRUE;
-	}
-
-	/* Slay Giant */
-	if ((f1 & TR1_SLAY_GIANT) && (r_ptr->flags[2] & RF2_GIANT))
-	{
-		if (m_ptr->ml)
-			l_ptr->flags[2] |= (RF2_GIANT);
-
-		if (mult < 3) mult = 3;
-		slay = TRUE;
-	}
-
-	/* Slay Dragon */
-	if ((f1 & TR1_SLAY_DRAGON) && (r_ptr->flags[2] & RF2_DRAGON))
-	{
-		if (m_ptr->ml)
-			l_ptr->flags[2] |= (RF2_DRAGON);
-
-		if (mult < 3) mult = 3;
-		slay = TRUE;
-	}
-
-
-	/* If a slay has been applied, then set the hit verb appropriately */
-	if (slay && is_ranged)
-		*hit_verb = "pierces";
-	else if (slay)
-		*hit_verb = "smite";
-
-
-	/* Brand (Acid) */
-	if (f1 & (TR1_BRAND_ACID))
-	{
-		/* Notice immunity */
-		if (r_ptr->flags[2] & (RF2_IM_ACID))
+		/* If the monster resisted, add to the monster lore */
+		if (r_ptr->flags[2] & s_ptr->resist_flag)
 		{
 			if (m_ptr->ml)
-				l_ptr->flags[2] |= (RF2_IM_ACID);
-		}
-
-		/* Otherwise, take the damage */
-		else
-		{
-			if (mult < 3) mult = 3;
-			if (is_ranged)
-				*hit_verb = "corrodes";
-			else 
-				*hit_verb = "corrode";
+				l_ptr->flags[2] |= s_ptr->resist_flag;
 		}
 	}
-
-	/* Brand (Elec) */
-	if (f1 & (TR1_BRAND_ELEC))
-	{
-		/* Notice immunity */
-		if (r_ptr->flags[2] & (RF2_IM_ELEC))
-		{
-			if (m_ptr->ml)
-				l_ptr->flags[2] |= (RF2_IM_ELEC);
-		}
-
-		/* Otherwise, take the damage */
-		else
-		{
-			if (mult < 3) mult = 3;
-			if (is_ranged)
-				*hit_verb = "zaps";
-			else 
-				*hit_verb = "zap";
-		}
-	}
-
-	/* Brand (Fire) */
-	if (f1 & (TR1_BRAND_FIRE))
-	{
-		/* Notice immunity */
-		if (r_ptr->flags[2] & (RF2_IM_FIRE))
-		{
-			if (m_ptr->ml)
-				l_ptr->flags[2] |= (RF2_IM_FIRE);
-		}
-
-		/* Otherwise, take the damage */
-		else
-		{
-			if (mult < 3) mult = 3;
-			if (is_ranged)
-				*hit_verb = "burns";
-			else 
-				*hit_verb = "burn";
-		}
-	}
-
-	/* Brand (Cold) */
-	if (f1 & (TR1_BRAND_COLD))
-	{
-		/* Notice immunity */
-		if (r_ptr->flags[2] & (RF2_IM_COLD))
-		{
-			if (m_ptr->ml)
-				l_ptr->flags[2] |= (RF2_IM_COLD);
-		}
-
-		/* Otherwise, take the damage */
-		else
-		{
-			if (mult < 3) mult = 3;
-			if (is_ranged)
-				*hit_verb = "freezes";
-			else 
-				*hit_verb = "freeze";
-		}
-	}
-
-	/* Brand (Poison) */
-	if (f1 & (TR1_BRAND_POIS))
-	{
-		/* Notice immunity */
-		if (r_ptr->flags[2] & (RF2_IM_POIS))
-		{
-			if (m_ptr->ml)
-				l_ptr->flags[2] |= (RF2_IM_POIS);
-		}
-
-		/* Otherwise, take the damage */
-		else
-		{
-			if (mult < 3) mult = 3;
-			if (is_ranged)
-				*hit_verb = "poisons";
-			else 
-				*hit_verb = "poison";
-		}
-	}
-
-	/* Put the Executes last so their hit_verb takes precedence */
-
-	/* Execute Dragon */
-	if ((f1 & TR1_KILL_DRAGON) && (r_ptr->flags[2] & RF2_DRAGON))
-	{
-		if (m_ptr->ml)
-			l_ptr->flags[2] |= (RF2_DRAGON);
-
-		if (mult < 5) mult = 5;
-		if (is_ranged)
-			*hit_verb = "deeply pierces";
-		else 
-			*hit_verb = "fiercely smite";
-	}
-
-	/* Execute demon */
-	if ((f1 & TR1_KILL_DEMON) && (r_ptr->flags[2] & RF2_DEMON))
-	{
-		if (m_ptr->ml)
-			l_ptr->flags[2] |= (RF2_DEMON);
-
-		if (mult < 5) mult = 5;
-		if (is_ranged)
-			*hit_verb = "deeply pierces";
-		else 
-			*hit_verb = "fiercely smite";
-	}
-
-	/* Execute undead */
-	if ((f1 & TR1_KILL_UNDEAD) && (r_ptr->flags[2] & RF2_UNDEAD))
-	{
-		if (m_ptr->ml)
-			l_ptr->flags[2] |= (RF2_UNDEAD);
-
-		if (mult < 5) mult = 5;
-		if (is_ranged)
-			*hit_verb = "deeply pierces";
-		else 
-			*hit_verb = "fiercely smite";
-	}
-
-	/* Return the multiplier */
-	return (mult);
+	
+	return mult;
 }
 
 
@@ -486,10 +294,6 @@ void py_attack(int y, int x)
 	disturb(0, 0);
 
 
-	/* Disturb the monster */
-	wake_monster(m_ptr);
-
-
 	/* Extract monster name (or "it") */
 	monster_desc(m_name, sizeof(m_name), m_ptr, 0);
 
@@ -501,15 +305,18 @@ void py_attack(int y, int x)
 	if (m_ptr->ml) health_track(cave_m_idx[y][x]);
 
 
-	/* Handle player fear */
+	/* Handle player fear (only for invisible monsters) */
 	if (p_ptr->state.afraid)
 	{
-		/* Message */
-		message_format(MSG_AFRAID, 0, "You are too afraid to attack %s!", m_name);
-
-		/* Done */
+		message_format(MSG_AFRAID, 0,
+				"You are too afraid to attack %s!",
+				m_name);
 		return;
 	}
+
+
+	/* Disturb the monster */
+	wake_monster(m_ptr);
 
 
 	/* Get the weapon */
@@ -542,13 +349,17 @@ void py_attack(int y, int x)
 				 * only be brands right now */
 				ring_brand_mult[0] = get_brand_mult(
 						&inventory[INVEN_LEFT],
-						m_ptr, &hit_verb, FALSE);
+						m_ptr, &hit_verb, FALSE, TRUE);
 				ring_brand_mult[1] = get_brand_mult(
 						&inventory[INVEN_RIGHT],
-						m_ptr, &hit_verb, FALSE);
+						m_ptr, &hit_verb, FALSE, TRUE);
 				weapon_brand_mult = get_brand_mult(
-						o_ptr, m_ptr, &hit_verb, FALSE);
+						o_ptr,
+						m_ptr, &hit_verb, FALSE, FALSE);
 
+				/* Message. Need to do this after tot_dam_aux, which sets hit_verb, but before critical_norm, which may print further messages. */
+				message_format(MSG_GENERIC, m_ptr->r_idx, "You %s %s.", hit_verb, m_name);
+						
 				if (ring_brand_mult[0] > use_mult)
 					use_mult = ring_brand_mult[0];
 				if (ring_brand_mult[1] > use_mult)
@@ -558,23 +369,24 @@ void py_attack(int y, int x)
 
 				k = damroll(o_ptr->dd, o_ptr->ds);
 				k *= use_mult;
+
 				if (p_ptr->state.impact && (k > 50))
-						do_quake = TRUE;
+					do_quake = TRUE;
+
 				k += o_ptr->to_d;
 				k = critical_norm(o_ptr->weight, o_ptr->to_h, k);
 
-				/* If it does something obviously good, pseudo it as excellent */
-				if (weapon_brand_mult > 1 &&
-						!object_known_p(o_ptr))
-				{
-					o_ptr->pseudo = INSCRIP_EXCELLENT;
-					o_ptr->ident |= IDENT_SENSE;
-				}
+				/* Learn by use */
+				object_notice_attack_plusses(o_ptr);
+				wieldeds_notice_on_attack();
 
+				if (do_quake)
+					wieldeds_notice_flag(2, TR2_IMPACT);
 			}
-
-			/* Message. Need to do this after tot_dam_aux, which sets hit_verb, but before critical_norm, which may print further messages. */
-			message_format(MSG_GENERIC, m_ptr->r_idx, "You %s %s.", hit_verb, m_name);
+			else
+			{
+				message_format(MSG_GENERIC, m_ptr->r_idx, "You %s %s.", hit_verb, m_name);
+			}
 
 			/* Apply the player damage bonuses */
 			k += p_ptr->state.to_d;
@@ -643,8 +455,6 @@ void py_attack(int y, int x)
 
 
 
-
-
 /*
  * Fire an object from the pack or floor.
  *
@@ -668,7 +478,7 @@ void py_attack(int y, int x)
  * Note that Bows of "Extra Might" get extra range and an extra bonus
  * for the damage multiplier.
  */
-void do_cmd_fire(void)
+void do_cmd_fire(cmd_code code, cmd_arg args[])
 {
 	int dir, item;
 	int i, j, y, x;
@@ -692,12 +502,9 @@ void do_cmd_fire(void)
 	int path_n;
 	u16b path_g[256];
 
-	cptr q, s;
-
 	int msec = op_ptr->delay_factor * op_ptr->delay_factor;
 
-
-	/* Get the "bow" (if any) */
+	/* Get the "bow" */
 	j_ptr = &inventory[INVEN_BOW];
 
 	/* Require a usable launcher */
@@ -707,99 +514,73 @@ void do_cmd_fire(void)
 		return;
 	}
 
+	/* Get item to fire and direction to fire in. */
+	item = args[0].item;
+	dir = args[1].direction;
 
-	/* Require proper missile */
-	item_tester_tval = p_ptr->state.ammo_tval;
-
-	/* Get an item */
-	q = "Fire which item? ";
-	s = "You have nothing to fire.";
-	if (!get_item(&item, q, s, (USE_INVEN | USE_FLOOR))) return;
-
-	/* Get the object */
-	if (item >= 0)
+	/* Check the item being fired is usable by the player. */
+	if (!item_is_available(item, NULL, (USE_INVEN | USE_FLOOR)))
 	{
-		o_ptr = &inventory[item];
-	}
-	else
-	{
-		o_ptr = &o_list[0 - item];
+		msg_format("That item is not within your reach.");
+		return;
 	}
 
+	/* Get the object for the ammo */
+	o_ptr = object_from_item_idx(item);
 
-	/* Get a direction (or cancel) */
-	if (!get_aim_dir(&dir)) return;
-
-
-	/* Get local object */
-	i_ptr = &object_type_body;
-
-	/* Obtain a local object */
-	object_copy(i_ptr, o_ptr);
-
-	/* Single object */
-	i_ptr->number = 1;
-
-	/* Reduce and describe inventory */
-	if (item >= 0)
+	/* Check the ammo can be used with the launcher */
+	if (o_ptr->tval != p_ptr->state.ammo_tval)
 	{
-		inven_item_increase(item, -1);
-		inven_item_describe(item);
-		inven_item_optimize(item);
+		msg_format("That ammo cannot be fired by your current weapon.");
+		return;
 	}
 
-	/* Reduce and describe floor item */
-	else
-	{
-		floor_item_increase(0 - item, -1);
-		floor_item_optimize(0 - item);
-	}
+	/* Base range XXX XXX */
+	tdis = 6 + 2 * p_ptr->state.ammo_mult;
 
+	/* Start at the player */
+	x = p_ptr->px;
+	y = p_ptr->py;
+
+	/* Predict the "target" location */
+	ty = y + 99 * ddy[dir];
+	tx = x + 99 * ddx[dir];
+
+	/* Check for target validity */
+	if ((dir == 5) && target_okay())
+	{
+		target_get(&tx, &ty);
+		if (distance(y, x, ty, tx) > tdis)
+		{
+			if (!get_check("Target out of range.  Fire anyway? "))
+				return;
+		}
+	}
 
 	/* Sound */
 	sound(MSG_SHOOT);
 
-
 	/* Describe the object */
-	object_desc(o_name, sizeof(o_name), i_ptr, FALSE, ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), o_ptr, FALSE,
+			ODESC_FULL | ODESC_SINGULAR);
 
 	/* Find the color and symbol for the object for throwing */
-	missile_attr = object_attr(i_ptr);
-	missile_char = object_char(i_ptr);
-
+	missile_attr = object_attr(o_ptr);
+	missile_char = object_char(o_ptr);
 
 	/* Use the proper number of shots */
 	thits = p_ptr->state.num_fire;
 
 	/* Actually "fire" the object */
-	bonus = (p_ptr->state.to_h + i_ptr->to_h + j_ptr->to_h);
-	chance = (p_ptr->state.skills[SKILL_TO_HIT_BOW] + (bonus * BTH_PLUS_ADJ));
-
-	/* Base range XXX XXX */
-	tdis = 6 + 2 * p_ptr->state.ammo_mult;
-
+	bonus = (p_ptr->state.to_h + o_ptr->to_h + j_ptr->to_h);
+	chance = p_ptr->state.skills[SKILL_TO_HIT_BOW] +
+			(bonus * BTH_PLUS_ADJ);
 
 	/* Take a (partial) turn */
 	p_ptr->energy_use = (100 / thits);
 
-
-	/* Start at the player */
-	y = p_ptr->py;
-	x = p_ptr->px;
-
-	/* Predict the "target" location */
-	ty = p_ptr->py + 99 * ddy[dir];
-	tx = p_ptr->px + 99 * ddx[dir];
-
-	/* Check for "target request" */
-	if ((dir == 5) && target_okay())
-	{
-		target_get(&tx, &ty);
-	}
-
 	/* Calculate the path */
-	path_n = project_path(path_g, tdis, p_ptr->py, p_ptr->px, ty, tx, 0);
-
+	path_n = project_path(path_g, tdis, y, x, ty, tx, 0);
 
 	/* Hack -- Handle stuff */
 	handle_stuff();
@@ -852,21 +633,10 @@ void do_cmd_fire(void)
 
 			const char *hit_verb = "hits";
 
-			int ammo_mult = get_brand_mult(i_ptr, m_ptr, &hit_verb, TRUE);
-			int shoot_mult = get_brand_mult(j_ptr, m_ptr, &hit_verb, TRUE);
-
-			/* If bow or ammo does something obviously good, pseudo it as excellent */
-			if (ammo_mult > 1 && !object_known_p(o_ptr))
-			{
-				i_ptr->pseudo = INSCRIP_EXCELLENT;
-				i_ptr->ident |= (IDENT_SENSE);
-			}			
-
-			if (shoot_mult > 1 && !object_known_p(o_ptr))
-			{
-				j_ptr->pseudo = INSCRIP_EXCELLENT;
-				j_ptr->ident |= (IDENT_SENSE);
-			}
+			int ammo_mult = get_brand_mult(o_ptr, m_ptr,
+					&hit_verb, TRUE, FALSE);
+			int shoot_mult = get_brand_mult(j_ptr, m_ptr,
+					&hit_verb, TRUE, FALSE);
 
 			/* Note the collision */
 			hit_body = TRUE;
@@ -880,10 +650,10 @@ void do_cmd_fire(void)
 				cptr note_dies = " dies.";
 
 				/* Some monsters get "destroyed" */
-				if ((r_ptr->flags[2] & (RF2_DEMON)) ||
-				    (r_ptr->flags[2] & (RF2_UNDEAD)) ||
-				    (r_ptr->flags[1] & (RF1_STUPID)) ||
-				    (strchr("Evg", r_ptr->d_char)))
+				if ((r_ptr->flags[2] & RF2_DEMON) ||
+						(r_ptr->flags[2] & RF2_UNDEAD) ||
+						(r_ptr->flags[1] & RF1_STUPID) ||
+						strchr("Evg", r_ptr->d_char))
 				{
 					/* Special note at death */
 					note_dies = " is destroyed.";
@@ -916,11 +686,14 @@ void do_cmd_fire(void)
 				}
 
 				/* Apply damage: multiplier, slays, criticals, bonuses */
-				tdam = damroll(i_ptr->dd, i_ptr->ds);
-				tdam += i_ptr->to_d + j_ptr->to_d;
+				tdam = damroll(o_ptr->dd, o_ptr->ds);
+				tdam += o_ptr->to_d + j_ptr->to_d;
 				tdam *= p_ptr->state.ammo_mult;
 				tdam *= MAX(ammo_mult, shoot_mult);
-				tdam = critical_shot(i_ptr->weight, i_ptr->to_h, tdam);
+				tdam = critical_shot(o_ptr->weight, o_ptr->to_h, tdam);
+
+				object_notice_attack_plusses(o_ptr);
+				object_notice_attack_plusses(&inventory[INVEN_BOW]);
 
 				/* No negative damage */
 				if (tdam < 0) tdam = 0;
@@ -964,6 +737,34 @@ void do_cmd_fire(void)
 		}
 	}
 
+
+
+	/* Get local object */
+	i_ptr = &object_type_body;
+
+	/* Obtain a local object */
+	object_copy(i_ptr, o_ptr);
+
+	/* Single object */
+	i_ptr->number = 1;
+
+
+	/* Reduce and describe inventory */
+	if (item >= 0)
+	{
+		inven_item_increase(item, -1);
+		inven_item_describe(item);
+		inven_item_optimize(item);
+	}
+
+	/* Reduce and describe floor item */
+	else
+	{
+		floor_item_increase(0 - item, -1);
+		floor_item_optimize(0 - item);
+	}
+
+
 	/* Chance of breakage (during attacks) */
 	j = (hit_body ? breakage_chance(i_ptr) : 0);
 
@@ -971,7 +772,40 @@ void do_cmd_fire(void)
 	drop_near(i_ptr, j, y, x);
 }
 
+void textui_cmd_fire(void)
+{
+	object_type *j_ptr, *o_ptr;
+	int item;
+	int dir;
+	cptr q, s;
 
+
+	/* Get the "bow" (if any) */
+	j_ptr = &inventory[INVEN_BOW];
+
+	/* Require a usable launcher */
+	if (!j_ptr->tval || !p_ptr->state.ammo_tval)
+	{
+		msg_print("You have nothing to fire with.");
+		return;
+	}
+
+	/* Require proper missile */
+	item_tester_tval = p_ptr->state.ammo_tval;
+
+	/* Get an item */
+	q = "Fire which item? ";
+	s = "You have nothing to fire.";
+	if (!get_item(&item, q, s, (USE_INVEN | USE_FLOOR))) return;
+
+	/* Get the object */
+	o_ptr = object_from_item_idx(item);
+
+	/* Get a direction (or cancel) */
+	if (!get_aim_dir(&dir)) return;
+
+	cmd_insert(CMD_FIRE, item, dir);
+}
 
 /*
  * Throw an object from the pack or floor.
@@ -982,7 +816,7 @@ void do_cmd_fire(void)
  * to hit bonus of the weapon to have an effect?  Should it ever cause
  * the item to be destroyed?  Should it do any damage at all?
  */
-void do_cmd_throw(void)
+void do_cmd_throw(cmd_code code, cmd_arg args[])
 {
 	int dir, item;
 	int i, j, y, x;
@@ -1005,30 +839,21 @@ void do_cmd_throw(void)
 	int path_n;
 	u16b path_g[256];
 
-	cptr q, s;
-
 	int msec = op_ptr->delay_factor * op_ptr->delay_factor;
 
+	/* Get item to throw and direction in which to throw it. */
+	item = args[0].item;
+	dir = args[1].direction;
 
-	/* Get an item */
-	q = "Throw which item? ";
-	s = "You have nothing to throw.";
-	if (!get_item(&item, q, s, (USE_INVEN | USE_FLOOR))) return;
+	/* Check the item being thrown is usable by the player. */
+	if (!item_is_available(item, NULL, (USE_INVEN | USE_FLOOR)))
+	{
+		msg_format("That item is not within your reach.");
+		return;
+	}
 
 	/* Get the object */
-	if (item >= 0)
-	{
-		o_ptr = &inventory[item];
-	}
-	else
-	{
-		o_ptr = &o_list[0 - item];
-	}
-
-
-	/* Get a direction (or cancel) */
-	if (!get_aim_dir(&dir)) return;
-
+	o_ptr = object_from_item_idx(item);
 
 	/* Get local object */
 	i_ptr = &object_type_body;
@@ -1179,7 +1004,8 @@ void do_cmd_throw(void)
 				}
 
 				/* Apply special damage  - brought forward to fill in hit_verb XXX XXX XXX */
-				tdam *= get_brand_mult(i_ptr, m_ptr, &hit_verb, TRUE);
+				tdam *= get_brand_mult(i_ptr, m_ptr,
+						&hit_verb, TRUE, FALSE);
 
 				/* Handle unseen monster */
 				if (!visible)
@@ -1211,6 +1037,13 @@ void do_cmd_throw(void)
 
 				/* No negative damage */
 				if (tdam < 0) tdam = 0;
+
+				/* Learn the bonuses */
+				/* XXX Eddie This is messed up, better done for firing, should use that method [split last] instead */
+				/* check if inven_optimize removed what o_ptr referenced */
+				if (object_similar(i_ptr, o_ptr))
+					object_notice_attack_plusses(o_ptr);
+				object_notice_attack_plusses(i_ptr);
 
 				/* Complex message */
 				if (p_ptr->wizard)
@@ -1256,4 +1089,20 @@ void do_cmd_throw(void)
 
 	/* Drop (or break) near that location */
 	drop_near(i_ptr, j, y, x);
+}
+
+void textui_cmd_throw(void)
+{
+	int item, dir;
+	cptr q, s;
+
+	/* Get an item */
+	q = "Throw which item? ";
+	s = "You have nothing to throw.";
+	if (!get_item(&item, q, s, (USE_INVEN | USE_FLOOR))) return;
+
+	/* Get a direction (or cancel) */
+	if (!get_aim_dir(&dir)) return;
+
+	cmd_insert(CMD_THROW, item, dir);
 }

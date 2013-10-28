@@ -16,7 +16,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
-
+#include "object/tvalsval.h"
 
 /*
  * Pronoun arrays, by gender.
@@ -126,7 +126,7 @@ static bool know_damage(int r_idx, const monster_lore *l_ptr, int i)
 	s32b d = d1 * d2;
 
 	/* Normal monsters */
-	if ((4 + level) * a > 80 * d) return (TRUE);
+	if ((4 + level) * a >= 80 * d) return (TRUE);
 
 	/* Skip non-uniques */
 	if (!(r_ptr->flags[0] & RF0_UNIQUE)) return (FALSE);
@@ -407,8 +407,144 @@ static void describe_monster_attack(int r_idx, const monster_lore *l_ptr)
 {
 	const monster_race *r_ptr = &r_info[r_idx];
 	int m, n, r;
+	u32b f[OBJ_FLAG_N];
+	bool known;
 
 	int msex = 0;
+
+	int color_special[RBE_MAX+1];
+	player_state st;
+
+	calc_bonuses(inventory, &st, TRUE);
+
+	/* Color-code special attacks.  Green is not special or resisted,
+	 * yellow is unresisted attacks that make a monster more dangerous,
+	 * red cannot be ignored regardless of power difference under
+	 * threat of expensive and lasting character harm.
+	 */
+
+	/* All special attacks are assumed ineffective */
+	for (m = 0; m <= RBE_MAX; m++)
+		color_special[m] = TERM_L_GREEN;
+
+	/* If you have an item that can be affected, item affecting attacks
+	 * are bad. */
+	for (m = 0; m < INVEN_TOTAL; m++)
+	{
+		object_type *o_ptr = &inventory[m];
+
+		/* Only occupied slots */
+		if (!o_ptr->k_idx) continue;
+
+		object_flags_known(o_ptr, f);
+
+		/* We need to be careful not to reveal the nature of the object
+		 * here.  Assume the player is conservative with unknown items.
+		 */
+		known = object_is_known(o_ptr);
+
+		/* Can only be hurt by disenchantment with an enchanted item */
+		if (m >= INVEN_WIELD && (!known || (o_ptr->to_a >= 0) ||
+				(o_ptr->to_h >= 0) || (o_ptr->to_d >= 0)) &&
+				!st.resist_disen)
+			color_special[RBE_UN_BONUS] = TERM_L_RED;
+
+		/* A charged item is needed for drain charges */
+		if (m < INVEN_PACK && (!known || o_ptr->pval > 0) &&
+				(o_ptr->tval == TV_STAFF || o_ptr->tval == TV_WAND))
+			color_special[RBE_UN_POWER] = TERM_L_RED;
+
+		/* Non-artifacts are needed for theft */
+		if (m < INVEN_PACK && (!known || !artifact_p(o_ptr)))
+			color_special[RBE_EAT_ITEM] = TERM_L_RED;
+
+		/* Characters without food do not suffer from eat food */
+		if (m < INVEN_PACK && o_ptr->tval == TV_FOOD)
+			color_special[RBE_EAT_FOOD] = TERM_YELLOW;
+
+		/* A fueled lite is needed for eat light */
+		if (m == INVEN_LITE && !(f[2] & TR2_NO_FUEL) &&
+				(o_ptr->timeout > 0))
+			color_special[RBE_EAT_LITE] = TERM_YELLOW;
+
+		/* With corrodable equipment, acid is much worse */
+		if (m >= INVEN_BODY && m <= INVEN_FEET &&
+				(!known || o_ptr->ac + o_ptr->to_a > 0)
+				&& !(f[2] & TR2_IGNORE_ACID) && !st.immune_acid)
+			color_special[RBE_ACID] = TERM_L_RED;
+	}
+
+	/* If they can hurt the character, they're also bad, but this is in general
+	 * less of a problem than long-term equipment damage.
+	 */
+
+	if (!st.resist_pois && !p_ptr->timed[TMD_OPP_POIS])
+		color_special[RBE_POISON] = TERM_YELLOW;
+	if (p_ptr->au)
+		color_special[RBE_EAT_GOLD] = TERM_YELLOW;
+
+	/* Theft has a general resistance */
+	if (p_ptr->lev + adj_dex_safe[st.stat_ind[A_DEX]] >= 100)
+	{
+		color_special[RBE_EAT_GOLD] = TERM_L_GREEN;
+		color_special[RBE_EAT_ITEM] = TERM_L_GREEN;
+	}
+
+	/* Acid can cause both wounding and equipment damage - always display
+	 * the worse.
+	 */
+
+	if (!st.resist_acid && !st.immune_acid && !p_ptr->timed[TMD_OPP_ACID] &&
+			(color_special[RBE_ACID] != TERM_L_RED))
+		color_special[RBE_ACID] = TERM_YELLOW;
+	if (!st.resist_fire && !st.immune_fire && !p_ptr->timed[TMD_OPP_FIRE])
+		color_special[RBE_FIRE] = TERM_YELLOW;
+	if (!st.resist_elec && !st.immune_elec && !p_ptr->timed[TMD_OPP_ELEC])
+		color_special[RBE_ELEC] = TERM_YELLOW;
+	if (!st.resist_cold && !st.immune_cold && !p_ptr->timed[TMD_OPP_COLD])
+		color_special[RBE_COLD] = TERM_YELLOW;
+
+	if (!p_ptr->state.resist_blind)
+		color_special[RBE_BLIND] = TERM_YELLOW;
+	if (!p_ptr->state.resist_confu)
+		color_special[RBE_CONFUSE] = TERM_YELLOW;
+	if (!p_ptr->state.resist_fear && p_ptr->state.skills[SKILL_SAVE] < 100)
+		color_special[RBE_TERRIFY] = TERM_YELLOW;
+	if (!p_ptr->state.resist_chaos)
+		color_special[RBE_HALLU] = TERM_YELLOW;
+
+	/* Paralysis gets an honorary permanent damage because it's so often
+	 * an instakill.
+	 */
+
+	if (!st.free_act && st.skills[SKILL_SAVE] < 100)
+		color_special[RBE_PARALYZE] = TERM_L_RED;
+
+	/* These types of wounding are expensive to fix */
+
+	if (!st.sustain_str)
+		color_special[RBE_LOSE_STR] = TERM_L_RED;
+	if (!st.sustain_int)
+		color_special[RBE_LOSE_INT] = TERM_L_RED;
+	if (!st.sustain_wis)
+		color_special[RBE_LOSE_WIS] = TERM_L_RED;
+	if (!st.sustain_dex)
+		color_special[RBE_LOSE_DEX] = TERM_L_RED;
+	if (!st.sustain_con)
+		color_special[RBE_LOSE_CON] = TERM_L_RED;
+	if (!st.sustain_chr)
+		color_special[RBE_LOSE_CHR] = TERM_L_RED;
+	if (!st.sustain_str || !st.sustain_int || !st.sustain_wis ||
+			!st.sustain_dex || !st.sustain_con || !st.sustain_chr)
+		color_special[RBE_LOSE_ALL] = TERM_L_RED;
+
+	/* Hold life isn't 100% effective */
+	color_special[RBE_EXP_10] = color_special[RBE_EXP_20] =
+		color_special[RBE_EXP_40] = color_special[RBE_EXP_80] =
+		st.hold_life ? TERM_YELLOW : TERM_L_RED;
+
+	/* Shatter is always dangerous */
+	color_special[RBE_SHATTER] = TERM_YELLOW;
 
 	/* Extract a gender (if applicable) */
 	if (r_ptr->flags[0] & RF0_FEMALE) msex = 2;
@@ -524,7 +660,8 @@ static void describe_monster_attack(int r_idx, const monster_lore *l_ptr)
 		if (q)
 		{
 			/* Describe the attack type */
-			text_out(" to %s", q);
+			text_out(" to ");
+			text_out_c(color_special[effect], "%s", q);
 
 			/* Describe damage (if known) */
 			if (d1 && d2 && know_damage(r_idx, l_ptr, m))
@@ -1052,6 +1189,7 @@ static void cheat_monster_lore(int r_idx, monster_lore *l_ptr)
 
 	/* Hack -- know all the flags */
 	race_flags_assign(l_ptr->flags, r_ptr->flags);
+	race_flags_assign_spell(l_ptr->spell_flags, r_ptr->spell_flags);
 }
 
 
@@ -1094,7 +1232,7 @@ void describe_monster(int r_idx, bool spoilers)
 	}
 
 	/* Cheat -- know everything */
-	if (cheat_know || spoilers) cheat_monster_lore(r_idx, &lore);
+	if (OPT(cheat_know) || spoilers) cheat_monster_lore(r_idx, &lore);
 
 	/* Show kills of monster vs. player(s) */
 	if (!spoilers) describe_monster_kills(r_idx, &lore);
@@ -1223,4 +1361,32 @@ void display_roff(int r_idx)
 
 	/* Describe monster */
 	roff_top(r_idx);
+}
+
+
+/*
+ * Return the r_idx of the monster with the given name.
+ *
+ * Note: on the rare occasions where two different entries have
+ * the same name (such as novice mages), we return the index of the
+ * first entry that matches. It would probably be a good idea in the
+ * future to make sure all monsters have distinct names.
+ */
+int lookup_monster(const char *name)
+{
+	int i;
+	
+	/* Look for it */
+	for (i = 1; i < z_info->r_max; i++)
+	{
+		monster_race *r_ptr = &r_info[i];
+		const char *nm = r_name + r_ptr->name;
+		
+		/* Found a match */
+		if (streq(name, nm))
+			return i;
+		
+	} 
+	
+	return -1;
 }

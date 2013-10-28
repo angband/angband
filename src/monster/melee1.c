@@ -70,6 +70,10 @@ bool check_hit(int power, int level)
 	/* Total armor */
 	ac = p_ptr->state.ac + p_ptr->state.to_a;
 
+	/* if the monster checks vs ac, the player learns ac bonuses */
+	/* XXX Eddie should you only learn +ac on miss, -ac on hit?  who knows */
+	object_notice_on_defend();
+
 	/* Check if the player was hit */
 	return test_hit(chance, ac, TRUE);
 }
@@ -613,16 +617,33 @@ bool make_attack_normal(int m_idx)
 						if (gold <= 0)
 						{
 							msg_print("Nothing was stolen.");
+							break;
 						}
-						else if (p_ptr->au)
-						{
-							msg_print("Your purse feels lighter.");
+
+						/* Let the player know they were robbed */
+						msg_print("Your purse feels lighter.");
+						if (p_ptr->au)
 							msg_format("%ld coins were stolen!", (long)gold);
-						}
 						else
-						{
-							msg_print("Your purse feels lighter.");
 							msg_print("All of your coins were stolen!");
+
+						/* While we have gold, put it in objects */
+						while (gold > 0)
+						{
+							int amt;
+
+							/* Create a new temporary object */
+							object_type o;
+							object_wipe(&o);
+							object_prep(&o, lookup_kind(TV_GOLD, SV_GOLD));
+
+							/* Amount of gold to put in this object */
+							amt = gold > MAX_PVAL ? MAX_PVAL : gold;
+							o.pval = amt;
+							gold -= amt;
+
+							/* Give the gold to the monster */
+							monster_carry(m_idx, &o);
 						}
 
 						/* Redraw gold */
@@ -763,17 +784,17 @@ bool make_attack_normal(int m_idx)
 
 				case RBE_EAT_LITE:
 				{
-					u32b f1, f2, f3; 
+					u32b f[OBJ_FLAG_N];
 
 					/* Take damage */
 					take_hit(damage, ddesc);
 
 					/* Get the lite, and its flags */
 					o_ptr = &inventory[INVEN_LITE];
-					object_flags(o_ptr, &f1, &f2, &f3);
+					object_flags(o_ptr, f);
 
 					/* Drain fuel where applicable */
-					if (!(f3 & TR3_NO_FUEL) && (o_ptr->timeout > 0))
+					if (!(f[2] & TR2_NO_FUEL) && (o_ptr->timeout > 0))
 					{
 						/* Reduce fuel */
 						o_ptr->timeout -= (250 + randint1(250));
@@ -920,9 +941,7 @@ bool make_attack_normal(int m_idx)
 					else
 					{
 						if (inc_timed(TMD_AFRAID, 3 + randint1(rlev), TRUE))
-						{
 							obvious = TRUE;
-						}
 					}
 
 					/* Learn about the player */
@@ -953,9 +972,7 @@ bool make_attack_normal(int m_idx)
 					else
 					{
 						if (inc_timed(TMD_PARALYZED, 3 + randint1(rlev), TRUE))
-						{
 							obvious = TRUE;
-						}
 					}
 
 					/* Learn about the player */
@@ -1081,6 +1098,9 @@ bool make_attack_normal(int m_idx)
 					/* Take damage */
 					take_hit(damage, ddesc);
 
+					/* XXX Eddie need a DRS for HOLD_LIFE */
+					wieldeds_notice_flag(2, TR2_HOLD_LIFE);
+
 					if (p_ptr->state.hold_life && (randint0(100) < 95))
 					{
 						msg_print("You keep hold of your life force!");
@@ -1109,6 +1129,8 @@ bool make_attack_normal(int m_idx)
 
 					/* Take damage */
 					take_hit(damage, ddesc);
+
+					wieldeds_notice_flag(2, TR2_HOLD_LIFE);
 
 					if (p_ptr->state.hold_life && (randint0(100) < 90))
 					{
@@ -1140,6 +1162,8 @@ bool make_attack_normal(int m_idx)
 					/* Take damage */
 					take_hit(damage, ddesc);
 
+					wieldeds_notice_flag(2, TR2_HOLD_LIFE);
+
 					if (p_ptr->state.hold_life && (randint0(100) < 75))
 					{
 						msg_print("You keep hold of your life force!");
@@ -1169,6 +1193,8 @@ bool make_attack_normal(int m_idx)
 
 					/* Take damage */
 					take_hit(damage, ddesc);
+
+					wieldeds_notice_flag(2, TR2_HOLD_LIFE);
 
 					if (p_ptr->state.hold_life && (randint0(100) < 50))
 					{

@@ -17,164 +17,24 @@
  */
 #include "angband.h"
 #include "object/tvalsval.h"
-#include "z-file.h"
 #include "cmds.h"
 #include "game-event.h"
 
 
 /*
- * Sense the inventory
+ * Change dungeon level - e.g. by going up stairs or with WoR.
  */
-static void sense_inventory(void)
+void dungeon_change_level(int dlev)
 {
-	int i;
+	/* New depth */
+	p_ptr->depth = dlev;
+	
+	/* Leaving */
+	p_ptr->leaving = TRUE;
 
-	int plev = p_ptr->lev;
-
-	int feel;
-
-	object_type *o_ptr;
-
-	char o_name[80];
-
-	unsigned int rate;
-
-
-	/* No ID when resting or confused */
-	if (p_ptr->resting) return;
-	if (p_ptr->timed[TMD_CONFUSED]) return;
-
-
-	/* Get improvement rate */
-	if (cp_ptr->flags & CF_PSEUDO_ID_IMPROV)
-		rate = cp_ptr->sense_base / (plev * plev + cp_ptr->sense_div);
-	else
-		rate = cp_ptr->sense_base / (plev + cp_ptr->sense_div);
-
-	if (!one_in_(rate)) return;
-
-
-	/* Check everything */
-	for (i = 0; i < INVEN_TOTAL; i++)
-	{
-		bool okay = FALSE;
-		bool heavy = ((cp_ptr->flags & CF_PSEUDO_ID_HEAVY) ? TRUE : FALSE);
-
-		o_ptr = &inventory[i];
-
-		/* Skip empty slots */
-		if (!o_ptr->k_idx) continue;
-
-		/* Valid "tval" codes */
-		switch (o_ptr->tval)
-		{
-			case TV_SHOT:
-			case TV_ARROW:
-			case TV_BOLT:
-			case TV_BOW:
-			case TV_DIGGING:
-			case TV_HAFTED:
-			case TV_POLEARM:
-			case TV_SWORD:
-			case TV_BOOTS:
-			case TV_GLOVES:
-			case TV_HELM:
-			case TV_CROWN:
-			case TV_SHIELD:
-			case TV_CLOAK:
-			case TV_SOFT_ARMOR:
-			case TV_HARD_ARMOR:
-			case TV_DRAG_ARMOR:
-			{
-				okay = TRUE;
-				break;
-			}
-		}
-
-		/* Skip non-sense machines */
-		if (!okay) continue;
-
-		/* It is known, no information needed */
-		if (object_known_p(o_ptr)) continue;
-
-
-		/* It has already been sensed, do not sense it again */
-		if (o_ptr->ident & IDENT_SENSE)
-		{
-			/* Small chance of wielded, sensed items getting complete ID */
-			if (!o_ptr->name1 && (i >= INVEN_WIELD) && one_in_(1000))
-				do_ident_item(i, o_ptr);
-
-			continue;
-		}
-
-		/* Occasional failure on inventory items */
-		if ((i < INVEN_WIELD) && one_in_(5)) continue;
-
-
-
-		/* It's already been pseudo-ID'd */
-		if (o_ptr->pseudo &&
-		    o_ptr->pseudo != INSCRIP_INDESTRUCTIBLE) continue;
-
-		/* Indestructible objects are either excellent or terrible */
-		if (o_ptr->pseudo == INSCRIP_INDESTRUCTIBLE)
-			heavy = TRUE;
-
-		/* Check for a feeling */
-		feel = (heavy ? object_pseudo_heavy(o_ptr) : object_pseudo_light(o_ptr));
-
-		/* Skip non-feelings */
-		if (!feel) continue;
-
-		/* Stop everything */
-		disturb(0, 0);
-
-		/* Average pseudo-ID means full ID */
-		if (feel == INSCRIP_AVERAGE)
-		{
-			do_ident_item(i, o_ptr);
-		}
-		else
-		{
-			object_desc(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_BASE);
-
-			if (i >= INVEN_WIELD)
-			{
-				message_format(MSG_PSEUDOID, 0, "You feel the %s (%c) you are %s %s %s...",
-				           o_name, index_to_label(i), describe_use(i),
-				           ((o_ptr->number == 1) ? "is" : "are"),
-				           inscrip_text[feel - INSCRIP_NULL]);
-			}
-			else
-			{
-				message_format(MSG_PSEUDOID, 0, "You feel the %s (%c) in your pack %s %s...",
-				           o_name, index_to_label(i),
-				           ((o_ptr->number == 1) ? "is" : "are"),
-				           inscrip_text[feel - INSCRIP_NULL]);
-			}
-
-			/* Sense the object */
-			o_ptr->pseudo = feel;
-
-			/* The object has been "sensed" */
-			o_ptr->ident |= (IDENT_SENSE);
-		}
-
-
-		/* Set squelch flag as appropriate */
-		if (i < INVEN_WIELD)
-			p_ptr->notice |= PN_SQUELCH;
-
-
-		/* Combine / Reorder the pack (later) */
-		p_ptr->notice |= (PN_COMBINE | PN_REORDER);
-
-		/* Redraw stuff */
-		p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
-	}
+	/* Save the game when we arrive on the new level. */
+	p_ptr->autosave = TRUE;
 }
-
 
 
 /*
@@ -217,6 +77,8 @@ static void regenhp(int percent)
 	{
 		/* Redraw */
 		p_ptr->redraw |= (PR_HP);
+		wieldeds_notice_flag(2, TR2_REGEN);
+		wieldeds_notice_flag(2, TR2_IMPAIR_HP);
 	}
 }
 
@@ -260,6 +122,8 @@ static void regenmana(int percent)
 	{
 		/* Redraw */
 		p_ptr->redraw |= (PR_MANA);
+		wieldeds_notice_flag(2, TR2_REGEN);
+		wieldeds_notice_flag(2, TR2_IMPAIR_MANA);
 	}
 }
 
@@ -588,7 +452,7 @@ static void process_world(void)
 	if (turn % 10) return;
 
 
-	/*** Check the Time and Load ***/
+	/*** Check the Time ***/
 
 	/* Play an ambient sound at regular intervals. */
 	if (!(turn % ((10L * TOWN_DAWN) / 4)))
@@ -634,7 +498,7 @@ static void process_world(void)
 			int n;
 
 			/* Message */
-			if (cheat_xtra) msg_print("Updating Shops...");
+			if (OPT(cheat_xtra)) msg_print("Updating Shops...");
 
 			/* Maintain each shop (except home) */
 			for (n = 0; n < MAX_STORES; n++)
@@ -650,7 +514,7 @@ static void process_world(void)
 			if (one_in_(STORE_SHUFFLE))
 			{
 				/* Message */
-				if (cheat_xtra) msg_print("Shuffling a Shopkeeper...");
+				if (OPT(cheat_xtra)) msg_print("Shuffling a Shopkeeper...");
 
 				/* Pick a random shop (except home) */
 				while (1)
@@ -664,7 +528,7 @@ static void process_world(void)
 			}
 
 			/* Message */
-			if (cheat_xtra) msg_print("Done.");
+			if (OPT(cheat_xtra)) msg_print("Done.");
 		}
 	}
 
@@ -837,18 +701,18 @@ static void process_world(void)
 	/* Burn some fuel in the current lite */
 	if (o_ptr->tval == TV_LITE)
 	{
-		u32b f1, f2, f3;
+		u32b f[OBJ_FLAG_N];
 		bool burn_fuel = TRUE;
 
 		/* Get the object flags */
-		object_flags(o_ptr, &f1, &f2, &f3);
+		object_flags(o_ptr, f);
 
 		/* Turn off the wanton burning of light during the day in the town */
 		if (!p_ptr->depth && ((turn % (10L * TOWN_DAWN)) < ((10L * TOWN_DAWN) / 2)))
 			burn_fuel = FALSE;
 
 		/* If the light has the NO_FUEL flag, well... */
-		if (f3 & TR3_NO_FUEL)
+		if (f[2] & TR2_NO_FUEL)
 		    burn_fuel = FALSE;
 
 		/* Use some fuel (except on artifacts, or during the day) */
@@ -902,6 +766,8 @@ static void process_world(void)
 			p_ptr->max_exp--;
 			check_experience();
 		}
+
+		wieldeds_notice_flag(2, TR2_DRAIN_EXP);
 	}
 
 	/* Recharge activatable objects and rods */
@@ -913,11 +779,12 @@ static void process_world(void)
 
 	/*** Involuntary Movement ***/
 
-	/* Mega-Hack -- Random teleportation XXX XXX XXX */
-	if ((p_ptr->state.teleport) && one_in_(100))
+	/* Random teleportation */
+	if (p_ptr->state.teleport && one_in_(100))
 	{
-		/* Teleport player */
+		wieldeds_notice_flag(2, TR2_TELEPORT);
 		teleport_player(40);
+		disturb(0, 0);
 	}
 
 	/* Delayed Word-of-Recall */
@@ -939,27 +806,14 @@ static void process_world(void)
 			if (p_ptr->depth)
 			{
 				msg_print("You feel yourself yanked upwards!");
-
-				/* New depth */
-				p_ptr->depth = 0;
-
-				/* Leaving */
-				p_ptr->leaving = TRUE;
-                
-                /* Don't generate connected stairs */
-                p_ptr->create_down_stair = FALSE;
-                p_ptr->create_up_stair = FALSE;
+				dungeon_change_level(0);
 			}
 			else
 			{
 				msg_print("You feel yourself yanked downwards!");
 
-				/* New depth */
-				p_ptr->depth = p_ptr->max_depth;
-				if (p_ptr->depth < 1) p_ptr->depth = 1;
-
-				/* Leaving */
-				p_ptr->leaving = TRUE;
+				/* New depth - back to max depth or 1, whichever is deeper */
+				dungeon_change_level(p_ptr->max_depth < 1 ? 1: p_ptr->max_depth);
 			}
 		}
 	}
@@ -1090,6 +944,17 @@ static void process_player(void)
 				disturb(0, 0);
 			}
 		}
+		
+		/* Rest until HP or SP are filled */
+		else if (p_ptr->resting == -3)
+		{
+			/* Stop resting */
+			if ((p_ptr->chp == p_ptr->mhp) ||
+			    (p_ptr->csp == p_ptr->msp))
+			{
+				disturb(0, 0);
+			}
+		}
 	}
 
 	/* Check for "player abort" */
@@ -1196,10 +1061,12 @@ static void process_player(void)
 		}
 
 		/* Picking up objects */
-		else if (p_ptr->notice & (PN_PICKUP))
+		else if (p_ptr->notice & PN_PICKUP)
 		{
 			/* Recursively call the pickup function, use energy */
 			p_ptr->energy_use = py_pickup(0) * 10;
+			if (p_ptr->energy_use > 100)
+				p_ptr->energy_use = 100;
 			p_ptr->notice &= ~(PN_PICKUP);
 		}
 
@@ -1237,7 +1104,7 @@ static void process_player(void)
 			prt("", 0, 0);
 
 			/* Process the command */
-			process_command(TRUE);
+			process_command(CMD_GAME, TRUE);
 
 			/* Count this execution */
 			if (p_ptr->command_rep)
@@ -1260,7 +1127,7 @@ static void process_player(void)
 			move_cursor_relative(p_ptr->py, p_ptr->px);
 
 			/* Get and process a command */
-			process_command(FALSE);
+			process_command(CMD_GAME, FALSE);
 		}
 
 
@@ -1468,6 +1335,12 @@ static void dungeon(void)
 		p_ptr->max_depth = p_ptr->depth;
 	}
 
+	/* If autosave is pending, do it now. */
+	if (p_ptr->autosave)
+	{
+		save_game();
+		p_ptr->autosave = FALSE;
+	}
 
 
 	/* Choose panel */
@@ -1547,13 +1420,14 @@ static void dungeon(void)
 	/* Refresh */
 	Term_fresh();
 
-
 	/* Handle delayed death */
 	if (p_ptr->is_dead) return;
 
-
 	/* Announce (or repeat) the feeling */
 	if (p_ptr->depth) do_cmd_feeling();
+
+	/* Player gets to go first */
+	p_ptr->energy = 100;
 
 
 	/*** Process this dungeon level ***/
@@ -1828,7 +1702,7 @@ void play_game(void)
 		player_birth(p_ptr->ht_birth ? TRUE : FALSE);
 
 		/* Randomize the artifacts */
-		if (adult_randarts)
+		if (OPT(adult_randarts))
 			do_randart(seed_randart, TRUE);
 	}
 
@@ -1901,6 +1775,9 @@ void play_game(void)
 	/* Start playing */
 	p_ptr->playing = TRUE;
 
+	/* Save not required yet. */
+	p_ptr->autosave = FALSE;
+
 	/* Hack -- Enforce "delayed death" */
 	if (p_ptr->chp < 0) p_ptr->is_dead = TRUE;
 
@@ -1946,7 +1823,7 @@ void play_game(void)
 		if (p_ptr->playing && p_ptr->is_dead)
 		{
 			/* Mega-Hack -- Allow player to cheat death */
-			if ((p_ptr->wizard || cheat_live) && !get_check("Die? "))
+			if ((p_ptr->wizard || OPT(cheat_live)) && !get_check("Die? "))
 			{
 				/* Mark social class, reset age, if needed */
 				if (p_ptr->sc) p_ptr->sc = p_ptr->age = 0;

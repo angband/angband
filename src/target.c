@@ -16,7 +16,8 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
-#include "cmds.h"
+#include "game-cmd.h"
+/*#include "cmds.h"*/
 
 
 /*** File-wide variables ***/
@@ -719,6 +720,9 @@ static ui_event_data target_set_interactive_aux(int y, int x, int mode, cptr inf
 			/* Not boring */
 			boring = FALSE;
 
+			track_object(-floor_list[0]);
+			handle_stuff();
+
 			/* If there is more than one item... */
 			if (floor_num > 1) while (1)
 			{
@@ -745,21 +749,36 @@ static ui_event_data target_set_interactive_aux(int y, int x, int mode, cptr inf
 				/* Display objects */
 				if (query.key == 'r')
 				{
-					/* Save screen */
-					screen_save();
+					int rdone = 0;
+					int pos;
+					while (!rdone)
+					{
+						/* Save screen */
+						screen_save();
 
-					/* Display */
-					show_floor(floor_list, floor_num, TRUE);
+						/* Display */
+						show_floor(floor_list, floor_num, TRUE);
 
-					/* Describe the pile */
-					prt(out_val, 0, 0);
-					query = inkey_ex();
+						/* Describe the pile */
+						prt(out_val, 0, 0);
+						query = inkey_ex();
 
-					/* Load screen */
-					screen_load();
+						/* Load screen */
+						screen_load();
 
-					/* Continue on 'r' only */
-					if (query.key == 'r') continue;
+						pos = query.key - 'a';
+						if (0 <= pos && pos < floor_num)
+						{
+							track_object(-floor_list[pos]);
+							handle_stuff();
+							continue;
+						}
+						rdone = 1;
+					}
+
+					/* Now that the user's done with the display loop, let's */
+					/* the outer loop over again */
+					continue;
 				}
 
 				/* Done */
@@ -1086,7 +1105,7 @@ bool target_set_interactive(int mode, int x, int y)
 
 				case 'g':
 				{
-					do_cmd_pathfind(y, x);
+					cmd_insert(CMD_PATHFIND, y, x);
 					done = TRUE;
 					break;
 				}
@@ -1267,7 +1286,7 @@ bool target_set_interactive(int mode, int x, int y)
 
 				case 'g':
 				{
-					do_cmd_pathfind(y,x);
+					cmd_insert(CMD_PATHFIND, y, x);
 					done = TRUE;
 					break;
 				}

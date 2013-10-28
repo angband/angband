@@ -1,0 +1,78 @@
+# This file provides a quick overview of this build system. The idea is
+# to convert ./debian/rules into a framework, which abstracts most of
+# the work required to create a Debian package into this common set of
+# make snippets.
+
+# The rules file would look like this:
+
+## Include dpkg-architecture generated variables
+#  This make snippet uses dpkg-architecture to set the various
+#  DEB_BUILD* and DEB_HOST* variables. It also adds a couple of DEBUG
+#  macros for use in the rules file.
+include debian/common/archvars.mk
+
+## variables useful for perl packages
+#  This sets things like the installed location of the private lib,
+#  arch dependent lib, and vendor library directories.
+include debian/common/perlvars.mk
+
+## Install commands
+#  This sets the convenience macros install_{file,script,program} and
+#  a make directory macro, all run as root, for the install and binary
+#  targets. It also includes a macro to create the md5sum for
+#  installed files.
+include debian/common/install_cmds.mk
+
+## Per package variable settings. 
+#  This file sets the Make variables on a per package basis. Things
+#  like include files, C, C++, and LD flags are set here, as well as
+#  installation paths or, really, anything else that would be needed
+#  during packaging operations
+include debian/local-vars.mk
+
+## Setting C compiler flags.
+#  This file takes care of setting C compiler flags, setting the
+#  compiler if a cross compilation effort is detected, and either
+#  arranges for binaries to be stripped or not based on
+#  DEB_BUILD_OPTIONS. 
+include debian/common/copt.mk
+
+## Set automake configuration flags
+#  This file sets confflags variable with the proper --host and
+#  --build options if it detects a cross compilation effort underway. 
+include debian/common/automake.mk
+
+# Set up the default target.
+all:
+        @echo nothing to be done
+
+## Include the common targets
+#  This file sets up the flow of control during a Debian package build
+#  process, taking into account policy requirements (mandatory
+#  targets, ordering targets). It sets up rules for each package found
+#  in ./debian/control file in the package, and arranges package build
+#  to follow the order of configuration, building, installation, and
+#  binary package creation (and of course, clean).
+
+# The details of the targets can be seen visually by running dot on
+# the accompanying targets.dot file. In the figure, the legend is:
+# Nodes attributes:
+#    filled  == Work target (most work is done in dependencies added
+#               to these targets). These are the targets referred to
+#               in the local.mk file
+#    Octagon == Phony target
+#    Oval    == Real target based on a time stamp
+# Double lines denote a mandatory target
+#
+# Edge attributes: A Red line indicates the target is called using
+# $(MAKE) -f ./debian/rules <target>. So the targets connected by the
+# red lines are run after all the dependencies have been updated, but
+# before anything else is done.
+
+include debian/common/targets.mk
+
+## The bulk of packaging
+#  This file adds dependencies to the double-colon rules set up in
+#  targets.mk above, and perform the bulk of the packaging. 
+include debian/local.mk
+

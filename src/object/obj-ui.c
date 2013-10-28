@@ -155,7 +155,7 @@ void display_equip(void)
 		Term_erase(3+n, i - INVEN_WIELD, 255);
 
 		/* Display the slot description (if needed) */
-		if (show_labels)
+		if (OPT(show_labels))
 		{
 			Term_putstr(61, i - INVEN_WIELD, -1, TERM_WHITE, "<--");
 			Term_putstr(65, i - INVEN_WIELD, -1, TERM_WHITE, mention_use(i));
@@ -165,7 +165,7 @@ void display_equip(void)
 		if (o_ptr->weight)
 		{
 			int wgt = o_ptr->weight * o_ptr->number;
-			int col = (show_labels ? 52 : 71);
+			int col = (OPT(show_labels) ? 52 : 71);
 			strnfmt(tmp_val, sizeof(tmp_val), "%3d.%1d lb", wgt / 10, wgt % 10);
 			Term_putstr(col, i - INVEN_WIELD, -1, TERM_WHITE, tmp_val);
 		}
@@ -321,7 +321,7 @@ void show_equip(void)
 	lim = 79 - 3;
 
 	/* Require space for labels (if needed) */
-	if (show_labels) lim -= (14 + 2);
+	if (OPT(show_labels)) lim -= (14 + 2);
 
 	/* Require space for weight */
 	lim -= 9;
@@ -353,7 +353,7 @@ void show_equip(void)
 		l = strlen(out_desc[k]) + (2 + 3);
 
 		/* Increase length for labels (if needed) */
-		if (show_labels) l += (14 + 2);
+		if (OPT(show_labels)) l += (14 + 2);
 
 		/* Increase length for weight */
 		l += 9;
@@ -389,7 +389,7 @@ void show_equip(void)
 		put_str(tmp_val, j+1, col);
 
 		/* Use labels */
-		if (show_labels)
+		if (OPT(show_labels))
 		{
 			/* Mention the use */
 			strnfmt(tmp_val, sizeof(tmp_val), "%-14s: ", mention_use(i));
@@ -567,7 +567,7 @@ bool verify_item(cptr prompt, int item)
  *
  * The item can be negative to mean "item on floor".
  */
-static bool get_item_allow(int item)
+static bool get_item_allow(int item, bool is_harmless)
 {
 	object_type *o_ptr;
 	char verify_inscrip[] = "!*";
@@ -584,7 +584,11 @@ static bool get_item_allow(int item)
 	verify_inscrip[1] = p_ptr->command_cmd;
 
 	/* Find both sets of inscriptions, add togther, and prompt that number of times */
-	n = check_for_inscrip(o_ptr, "!*") + check_for_inscrip(o_ptr, verify_inscrip);
+	n = check_for_inscrip(o_ptr, verify_inscrip);
+
+	if (!is_harmless)
+		n += check_for_inscrip(o_ptr, "!*");
+
 	while (n--)
 	{
 		if (!verify_item("Really try", item))
@@ -593,32 +597,6 @@ static bool get_item_allow(int item)
 
 	/* Allow it */
 	return (TRUE);
-}
-
-
-/*
- * Verify the "okayness" of a given item.
- *
- * The item can be negative to mean "item on floor".
- */
-static bool get_item_okay(int item)
-{
-	object_type *o_ptr;
-
-	/* Inventory */
-	if (item >= 0)
-	{
-		o_ptr = &inventory[item];
-	}
-
-	/* Floor */
-	else
-	{
-		o_ptr = &o_list[0 - item];
-	}
-
-	/* Verify the item */
-	return (item_tester_okay(o_ptr));
 }
 
 
@@ -759,6 +737,7 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 	bool use_equip = ((mode & USE_EQUIP) ? TRUE : FALSE);
 	bool use_floor = ((mode & USE_FLOOR) ? TRUE : FALSE);
 	bool can_squelch = ((mode & CAN_SQUELCH) ? TRUE : FALSE);
+	bool is_harmless = ((mode & IS_HARMLESS) ? TRUE : FALSE);
 
 	bool allow_inven = FALSE;
 	bool allow_equip = FALSE;
@@ -773,29 +752,6 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 	int floor_num;
 
 	bool show_list = OPT(show_lists) ? TRUE : FALSE;
-
-
-	/* Get the item index */
-	if (repeat_pull(cp))
-	{
-		/* Verify the item */
-		if (get_item_okay(*cp))
-		{
-			/* Forget the item_tester_tval restriction */
-			item_tester_tval = 0;
-
-			/* Forget the item_tester_hook restriction */
-			item_tester_hook = NULL;
-
-			/* Success */
-			return (TRUE);
-		}
-		else
-		{
-			/* Invalid repeat - reset it */
-			repeat_clear();
-		}
-	}
 
 
 	/* Paranoia XXX XXX XXX */
@@ -1182,7 +1138,7 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 						k = 0 - floor_list[0];
 
 						/* Allow player to "refuse" certain actions */
-						if (!get_item_allow(k))
+						if (!get_item_allow(k, is_harmless))
 						{
 							done = TRUE;
 							break;
@@ -1260,7 +1216,7 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 				}
 
 				/* Allow player to "refuse" certain actions */
-				if (!get_item_allow(k))
+				if (!get_item_allow(k, is_harmless))
 				{
 					done = TRUE;
 					break;
@@ -1320,7 +1276,7 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 				}
 
 				/* Allow player to "refuse" certain actions */
-				if (!get_item_allow(k))
+				if (!get_item_allow(k, is_harmless))
 				{
 					done = TRUE;
 					break;
@@ -1411,7 +1367,7 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 				}
 
 				/* Allow player to "refuse" certain actions */
-				if (!get_item_allow(k))
+				if (!get_item_allow(k, is_harmless))
 				{
 					done = TRUE;
 					break;
@@ -1466,9 +1422,7 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 	/* Warning if needed */
 	if (oops && str) msg_print(str);
 
-	/* Save item if available */
-	if (item) repeat_push(*cp);
-
 	/* Result */
 	return (item);
 }
+

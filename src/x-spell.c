@@ -224,7 +224,7 @@ void get_spell_info(int tval, int spell, char *p, size_t len)
 			strnfmt(p, len, " dam 2d%d", (plev / 2));
 			break; 
 		case SPELL_CURE_LIGHT_WOUNDS:
-			strnfmt(p, len, " heal 2d8");
+			strnfmt(p, len, " heal 15%%");
 			break;
 		case SPELL_STINKING_CLOUD:
 			strnfmt(p, len, " dam %d", 10 + (plev / 2));
@@ -319,7 +319,7 @@ void get_spell_info(int tval, int spell, char *p, size_t len)
 		switch (spell)
 		{
 			case PRAYER_CURE_LIGHT_WOUNDS:
-				my_strcpy(p, " heal 2d10", len);
+				my_strcpy(p, " heal 15%", len);
 				break;
 			case PRAYER_BLESS:
 				my_strcpy(p, " dur 12+d12", len);
@@ -331,7 +331,7 @@ void get_spell_info(int tval, int spell, char *p, size_t len)
 				strnfmt(p, len, " range %d", 3 * plev);
 				break;
 			case PRAYER_CURE_SERIOUS_WOUNDS:
-				my_strcpy(p, " heal 4d10", len);
+				my_strcpy(p, " heal 20%", len);
 				break;
 			case PRAYER_CHANT:
 				my_strcpy(p, " dur 24+d24", len);
@@ -344,7 +344,7 @@ void get_spell_info(int tval, int spell, char *p, size_t len)
 				        (plev / ((cp_ptr->flags & CF_BLESS_WEAPON) ? 2 : 4)));
 				break;
 			case PRAYER_CURE_CRITICAL_WOUNDS:
-				my_strcpy(p, " heal 6d10", len);
+				my_strcpy(p, " heal 25%", len);
 				break;
 			case PRAYER_SENSE_INVISIBLE:
 				my_strcpy(p, " dur 24+d24", len);
@@ -353,7 +353,7 @@ void get_spell_info(int tval, int spell, char *p, size_t len)
 				strnfmt(p, len, " dur %d+d25", 3 * plev);
 				break;
 			case PRAYER_CURE_MORTAL_WOUNDS:
-				my_strcpy(p, " heal 8d10", len);
+				my_strcpy(p, " heal 30%", len);
 				break;
 			case PRAYER_PRAYER:
 				my_strcpy(p, " dur 48+d48", len);
@@ -362,7 +362,7 @@ void get_spell_info(int tval, int spell, char *p, size_t len)
 				strnfmt(p, len, " dam d%d", 3 * plev);
 				break;
 			case PRAYER_HEAL:
-				my_strcpy(p, " heal 300", len);
+				my_strcpy(p, " heal 35%", len);
 				break;
 			case PRAYER_DISPEL_EVIL:
 				strnfmt(p, len, " dam d%d", 3 * plev);
@@ -371,10 +371,10 @@ void get_spell_info(int tval, int spell, char *p, size_t len)
 				my_strcpy(p, " heal 1000", len);
 				break;
 			case PRAYER_CURE_SERIOUS_WOUNDS2:
-				my_strcpy(p, " heal 4d10", len);
+				my_strcpy(p, " heal 20%", len);
 				break;
 			case PRAYER_CURE_MORTAL_WOUNDS2:
-				my_strcpy(p, " heal 8d10", len);
+				my_strcpy(p, " heal 30%", len);
 				break;
 			case PRAYER_HEALING:
 				my_strcpy(p, " heal 2000", len);
@@ -420,13 +420,66 @@ static void spell_wonder(int dir)
 }
 
 
+bool spell_needs_aim(int tval, int spell)
+{
+	if (tval == TV_MAGIC_BOOK)
+	{
+		switch (spell)
+		{
+			case SPELL_MAGIC_MISSILE:
+			case SPELL_STINKING_CLOUD:
+			case SPELL_CONFUSE_MONSTER:
+			case SPELL_LIGHTNING_BOLT:
+			case SPELL_SLEEP_MONSTER:
+			case SPELL_SPEAR_OF_LIGHT:
+			case SPELL_FROST_BOLT:
+			case SPELL_TURN_STONE_TO_MUD:
+			case SPELL_WONDER:
+			case SPELL_POLYMORPH_OTHER:
+			case SPELL_FIRE_BOLT:
+			case SPELL_SLOW_MONSTER:
+			case SPELL_FROST_BALL:
+			case SPELL_TELEPORT_OTHER:
+			case SPELL_BEDLAM:
+			case SPELL_FIRE_BALL:
+			case SPELL_ACID_BOLT:
+			case SPELL_CLOUD_KILL:
+			case SPELL_ACID_BALL:
+			case SPELL_ICE_STORM:
+			case SPELL_METEOR_SWARM:
+			case SPELL_MANA_STORM:
+			case SPELL_SHOCK_WAVE:
+			case SPELL_EXPLOSION:
+			case SPELL_RIFT:
+			case SPELL_REND_SOUL: 
+			case SPELL_CHAOS_STRIKE: 
+				return TRUE;
+				
+			default:
+				return FALSE;
+		}
+	}
+	else
+	{
+		switch (spell)
+		{
+			case PRAYER_SCARE_MONSTER:
+			case PRAYER_ORB_OF_DRAINING:
+			case PRAYER_ANNIHILATION:
+			case PRAYER_TELEPORT_OTHER:
+				return TRUE;
 
-static bool cast_mage_spell(int spell)
+			default:
+				return FALSE;
+		}
+	}
+}
+
+
+static bool cast_mage_spell(int spell, int dir)
 {
 	int py = p_ptr->py;
 	int px = p_ptr->px;
-
-	int dir;
 
 	int plev = p_ptr->lev;
 
@@ -438,7 +491,6 @@ static bool cast_mage_spell(int spell)
 	{
 		case SPELL_MAGIC_MISSILE:
 		{
-			if (!get_aim_dir(&dir)) return (FALSE);
 			fire_bolt_or_beam(beam-10, GF_MISSILE, dir,
 			                  damroll(3 + ((plev - 1) / 5), 4));
 			break;
@@ -471,8 +523,10 @@ static bool cast_mage_spell(int spell)
 		case SPELL_CURE_LIGHT_WOUNDS:
 		{
 
-			(void)hp_player(damroll(2, 8));
-			(void)dec_timed(TMD_CUT, 15, TRUE);
+			(void)heal_player(15, 15);
+			(void)dec_timed(TMD_CUT, 20, TRUE);
+			(void)dec_timed(TMD_CONFUSED, 20, TRUE);
+			(void)clear_timed(TMD_BLIND, TRUE);
 			break;
 		}
 
@@ -485,23 +539,19 @@ static bool cast_mage_spell(int spell)
 
 		case SPELL_STINKING_CLOUD:
 		{
-			if (!get_aim_dir(&dir)) return (FALSE);
 			fire_ball(GF_POIS, dir, 10 + (plev / 2), 2);
 			break;
 		}
 
 		case SPELL_CONFUSE_MONSTER:
 		{
-			if (!get_aim_dir(&dir)) return (FALSE);
 			(void)confuse_monster(dir, plev);
 			break;
 		}
 
 		case SPELL_LIGHTNING_BOLT:
 		{
-			if (!get_aim_dir(&dir)) return (FALSE);
-			fire_beam(GF_ELEC, dir,
-			          damroll(3+((plev-5)/6), 6));
+			fire_beam(GF_ELEC, dir, damroll(3+((plev-5)/6), 6));
 			break;
 		}
 
@@ -513,7 +563,6 @@ static bool cast_mage_spell(int spell)
 
 		case SPELL_SLEEP_MONSTER:
 		{
-			if (!get_aim_dir(&dir)) return (FALSE);
 			(void)sleep_monster(dir);
 			break;
 		}
@@ -530,9 +579,8 @@ static bool cast_mage_spell(int spell)
 			break;
 		}
 
-		case SPELL_SPEAR_OF_LIGHT: /* spear of light */
+		case SPELL_SPEAR_OF_LIGHT:
 		{
-			if (!get_aim_dir(&dir)) return (FALSE);
 			msg_print("A line of blue shimmering light appears.");
 			lite_line(dir);
 			break;
@@ -540,7 +588,6 @@ static bool cast_mage_spell(int spell)
 
 		case SPELL_FROST_BOLT:
 		{
-			if (!get_aim_dir(&dir)) return (FALSE);
 			fire_bolt_or_beam(beam-10, GF_COLD, dir,
 			                  damroll(5+((plev-5)/4), 8));
 			break;
@@ -548,7 +595,6 @@ static bool cast_mage_spell(int spell)
 
 		case SPELL_TURN_STONE_TO_MUD:
 		{
-			if (!get_aim_dir(&dir)) return (FALSE);
 			(void)wall_to_mud(dir);
 			break;
 		}
@@ -564,16 +610,14 @@ static bool cast_mage_spell(int spell)
 			return recharge(2 + plev / 5);
 		}
 
-		case SPELL_WONDER: /* wonder */
+		case SPELL_WONDER:
 		{
-			if (!get_aim_dir(&dir)) return (FALSE);
 			(void)spell_wonder(dir);
 			break;
 		}
 
 		case SPELL_POLYMORPH_OTHER:
 		{
-			if (!get_aim_dir(&dir)) return (FALSE);
 			(void)poly_monster(dir);
 			break;
 		}
@@ -591,7 +635,6 @@ static bool cast_mage_spell(int spell)
 
 		case SPELL_FIRE_BOLT:
 		{
-			if (!get_aim_dir(&dir)) return (FALSE);
 			fire_bolt_or_beam(beam, GF_FIRE, dir,
 			                  damroll(6+((plev-5)/4), 8));
 			break;
@@ -599,14 +642,12 @@ static bool cast_mage_spell(int spell)
 
 		case SPELL_SLOW_MONSTER:
 		{
-			if (!get_aim_dir(&dir)) return (FALSE);
 			(void)slow_monster(dir);
 			break;
 		}
 
 		case SPELL_FROST_BALL:
 		{
-			if (!get_aim_dir(&dir)) return (FALSE);
 			fire_ball(GF_COLD, dir, 30 + (plev), 2);
 			break;
 		}
@@ -618,21 +659,18 @@ static bool cast_mage_spell(int spell)
 
 		case SPELL_TELEPORT_OTHER:
 		{
-			if (!get_aim_dir(&dir)) return (FALSE);
 			(void)teleport_monster(dir);
 			break;
 		}
 
 		case SPELL_BEDLAM:
 		{
-			if (!get_aim_dir(&dir)) return (FALSE);
 			fire_ball(GF_OLD_CONF, dir, plev, 4);
 			break;
 		}
 
 		case SPELL_FIRE_BALL:
 		{
-			if (!get_aim_dir(&dir)) return (FALSE);
 			fire_ball(GF_FIRE, dir, 55 + (plev), 2);
 			break;
 		}
@@ -681,42 +719,36 @@ static bool cast_mage_spell(int spell)
 
 		case SPELL_ACID_BOLT:
 		{
-			if (!get_aim_dir(&dir)) return (FALSE);
 			fire_bolt_or_beam(beam, GF_ACID, dir, damroll(8+((plev-5)/4), 8));
 			break;
 		}
 
 		case SPELL_CLOUD_KILL:
 		{
-			if (!get_aim_dir(&dir)) return (FALSE);
 			fire_ball(GF_POIS, dir, 40 + (plev / 2), 3);
 			break;
 		}
 
 		case SPELL_ACID_BALL:
 		{
-			if (!get_aim_dir(&dir)) return (FALSE);
 			fire_ball(GF_ACID, dir, 40 + (plev), 2);
 			break;
 		}
 
 		case SPELL_ICE_STORM:
 		{
-			if (!get_aim_dir(&dir)) return (FALSE);
 			fire_ball(GF_ICE, dir, 50 + (plev * 2), 3);
 			break;
 		}
 
 		case SPELL_METEOR_SWARM:
 		{
-			if (!get_aim_dir(&dir)) return (FALSE);
 			fire_swarm(2 + plev / 20, GF_METEOR, dir, 30 + plev / 2, 1);
 			break;
 		}
 
 		case SPELL_MANA_STORM:
 		{
-			if (!get_aim_dir(&dir)) return (FALSE);
 			fire_ball(GF_MANA, dir, 300 + (plev * 2), 3);
 			break;
 		}
@@ -734,14 +766,12 @@ static bool cast_mage_spell(int spell)
 
 		case SPELL_SHOCK_WAVE:
 		{
-			if (!get_aim_dir(&dir)) return (FALSE);
 			fire_ball(GF_SOUND, dir, 10 + plev, 2);
 			break;
 		}
 
 		case SPELL_EXPLOSION:
 		{
-			if (!get_aim_dir(&dir)) return (FALSE);
 			fire_ball(GF_SHARD, dir, 20 + (plev * 2), 2);
 			break;
 		}
@@ -823,21 +853,18 @@ static bool cast_mage_spell(int spell)
 
 		case SPELL_RIFT:
 		{
-			if (!get_aim_dir(&dir)) return (FALSE);
 			fire_beam(GF_GRAVITY, dir,	40 + damroll(plev, 7));
 			break;
 		}
 
 		case SPELL_REND_SOUL: /* rend soul */
 		{
-			if (!get_aim_dir(&dir)) return (FALSE);
 			fire_bolt_or_beam(beam / 4, GF_NETHER, dir, damroll(11, plev));
 			break;
 		}
 
 		case SPELL_CHAOS_STRIKE: /* chaos strike */
 		{
-			if (!get_aim_dir(&dir)) return (FALSE);
 			fire_bolt_or_beam(beam, GF_CHAOS, dir, damroll(13, plev));
 			break;
 		}
@@ -865,14 +892,14 @@ static bool cast_mage_spell(int spell)
 }
 
 
-static bool cast_priest_spell(int spell)
+static bool cast_priest_spell(int spell, int dir)
 {
 	int py = p_ptr->py;
 	int px = p_ptr->px;
 
-	int dir;
-
 	int plev = p_ptr->lev;
+
+	int amt;
 
 	switch (spell)
 	{
@@ -884,8 +911,10 @@ static bool cast_priest_spell(int spell)
 
 		case PRAYER_CURE_LIGHT_WOUNDS:
 		{
-			(void)hp_player(damroll(2, 10));
-			(void)dec_timed(TMD_CUT, 10, TRUE);
+			(void)heal_player(15, 15);
+			(void)dec_timed(TMD_CUT, 20, TRUE);
+			(void)dec_timed(TMD_CONFUSED, 20, TRUE);
+			(void)clear_timed(TMD_BLIND, TRUE);
 			break;
 		}
 
@@ -927,7 +956,6 @@ static bool cast_priest_spell(int spell)
 
 		case PRAYER_SCARE_MONSTER:
 		{
-			if (!get_aim_dir(&dir)) return (FALSE);
 			(void)fear_monster(dir, plev);
 			break;
 		}
@@ -940,8 +968,10 @@ static bool cast_priest_spell(int spell)
 
 		case PRAYER_CURE_SERIOUS_WOUNDS:
 		{
-			(void)hp_player(damroll(4, 10));
-			(void)set_timed(TMD_CUT, (p_ptr->timed[TMD_CUT] / 2) - 20, TRUE);
+			(void)heal_player(20, 25);
+			(void)clear_timed(TMD_CUT, TRUE);
+			(void)clear_timed(TMD_CONFUSED, TRUE);
+			(void)clear_timed(TMD_BLIND, TRUE);
 			break;
 		}
 
@@ -984,7 +1014,6 @@ static bool cast_priest_spell(int spell)
 
 		case PRAYER_ORB_OF_DRAINING:
 		{
-			if (!get_aim_dir(&dir)) return (FALSE);
 			fire_ball(GF_HOLY_ORB, dir,
 			          (damroll(3, 6) + plev +
 			           (plev / ((cp_ptr->flags & CF_BLESS_WEAPON) ? 2 : 4))),
@@ -994,9 +1023,13 @@ static bool cast_priest_spell(int spell)
 
 		case PRAYER_CURE_CRITICAL_WOUNDS:
 		{
-			(void)hp_player(damroll(6, 10));
+			(void)heal_player(25, 30);
 			(void)clear_timed(TMD_CUT, TRUE);
 			(void)clear_timed(TMD_AMNESIA, TRUE);
+			(void)clear_timed(TMD_CONFUSED, TRUE);
+			(void)clear_timed(TMD_BLIND, TRUE);
+			(void)clear_timed(TMD_POISONED, TRUE);
+			(void)clear_timed(TMD_STUN, TRUE);
 			break;
 		}
 
@@ -1026,9 +1059,13 @@ static bool cast_priest_spell(int spell)
 
 		case PRAYER_CURE_MORTAL_WOUNDS:
 		{
-			(void)hp_player(damroll(8, 10));
-			(void)clear_timed(TMD_STUN, TRUE);
+			(void)heal_player(30, 50);
 			(void)clear_timed(TMD_CUT, TRUE);
+			(void)clear_timed(TMD_AMNESIA, TRUE);
+			(void)clear_timed(TMD_CONFUSED, TRUE);
+			(void)clear_timed(TMD_BLIND, TRUE);
+			(void)clear_timed(TMD_POISONED, TRUE);
+			(void)clear_timed(TMD_STUN, TRUE);
 			break;
 		}
 
@@ -1052,9 +1089,16 @@ static bool cast_priest_spell(int spell)
 
 		case PRAYER_HEAL:
 		{
-			(void)hp_player(300);
-			(void)clear_timed(TMD_STUN, TRUE);
+			amt = (p_ptr->mhp * 35) / 100;
+                        if (amt < 300) amt = 300;
+			
+			(void)hp_player(amt);
 			(void)clear_timed(TMD_CUT, TRUE);
+			(void)clear_timed(TMD_AMNESIA, TRUE);
+			(void)clear_timed(TMD_CONFUSED, TRUE);
+			(void)clear_timed(TMD_BLIND, TRUE);
+			(void)clear_timed(TMD_POISONED, TRUE);
+			(void)clear_timed(TMD_STUN, TRUE);
 			break;
 		}
 
@@ -1112,16 +1156,22 @@ static bool cast_priest_spell(int spell)
 
 		case PRAYER_CURE_SERIOUS_WOUNDS2:
 		{
-			(void)hp_player(damroll(4, 10));
+			(void)heal_player(20, 25);
 			(void)clear_timed(TMD_CUT, TRUE);
+			(void)clear_timed(TMD_CONFUSED, TRUE);
+			(void)clear_timed(TMD_BLIND, TRUE);
 			break;
 		}
 
 		case PRAYER_CURE_MORTAL_WOUNDS2:
 		{
-			(void)hp_player(damroll(8, 10));
-			(void)clear_timed(TMD_STUN, TRUE);
+			(void)heal_player(30, 50);
 			(void)clear_timed(TMD_CUT, TRUE);
+			(void)clear_timed(TMD_AMNESIA, TRUE);
+			(void)clear_timed(TMD_CONFUSED, TRUE);
+			(void)clear_timed(TMD_BLIND, TRUE);
+			(void)clear_timed(TMD_POISONED, TRUE);
+			(void)clear_timed(TMD_STUN, TRUE);
 			break;
 		}
 
@@ -1179,7 +1229,6 @@ static bool cast_priest_spell(int spell)
 
 		case PRAYER_ANNIHILATION:
 		{
-			if (!get_aim_dir(&dir)) return (FALSE);
 			drain_life(dir, 200);
 			break;
 		}
@@ -1231,7 +1280,6 @@ static bool cast_priest_spell(int spell)
 
 		case PRAYER_TELEPORT_OTHER:
 		{
-			if (!get_aim_dir(&dir)) return (FALSE);
 			(void)teleport_monster(dir);
 			break;
 		}
@@ -1264,14 +1312,14 @@ static bool cast_priest_spell(int spell)
 }
 
 
-bool cast_spell(int tval, int index)
+bool cast_spell(int tval, int index, int dir)
 {
 	if (tval == TV_MAGIC_BOOK)
 	{
-		return cast_mage_spell(index);
+		return cast_mage_spell(index, dir);
 	}
 	else
 	{
-		return cast_priest_spell(index);
+		return cast_priest_spell(index, dir);
 	}
 }

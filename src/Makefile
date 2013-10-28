@@ -1,30 +1,18 @@
-include ../mk/rules.mk
-include ../mk/objective.mk
+MKPATH=../mk/
+include $(MKPATH)buildsys.mk
 
 # import source list
 include Makefile.src
-HEADERS = $(HDRS) $(INCS)
+INCLUDE = $(HDRS) $(INCS)
 OBJECTS = $(ANGFILES) $(MAINFILES) $(ZFILES)
-SOURCES = ${OBJECTS:.o=.c}
-
-SUBDIRS = gtk
-
-OBJECTIVE_BINS = angband
-
+SRCS    = ${OBJECTS:.o=.c}
+SUBDIRS = gtk monster object player
+PROG    = angband
 CFLAGS += -I.
 
 angband: $(OBJECTS)
 	$(CC) $(OBJECTS) $(LDFLAGS) $(LDADD) -o $@ 
 	@printf "%10s %-20s\n" LINK $@
 
-clean-prehook:
+clean-extra:
 	-rm autoconf.h
-
-install-posthook:
-	@if [ "x$(SETEGID)" != "x" ]; then \
-		printf "%10s $(DESTDIR)$(BINDIR)/angband\n" CHOWN; \
-		if [ "x$(DRY)" = "x" ]; then \
-			chown root:${SETEGID} $(DESTDIR)$(BINDIR)/angband; \
-			chmod g+s $(DESTDIR)$(BINDIR)/angband; \
-		fi; \
-	fi

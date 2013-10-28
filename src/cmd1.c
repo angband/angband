@@ -39,6 +39,9 @@ void search(void)
 	/* Start with base search ability */
 	chance = p_ptr->state.skills[SKILL_SEARCH];
 
+	/* Notice object flags */
+	wieldeds_notice_flag(0, TR0_SEARCH);
+
 	/* Penalize various conditions */
 	if (p_ptr->timed[TMD_BLIND] || no_lite()) chance = chance / 10;
 	if (p_ptr->timed[TMD_CONFUSED] || p_ptr->timed[TMD_IMAGE]) chance = chance / 10;
@@ -90,13 +93,13 @@ void search(void)
 					if (!chest_traps[o_ptr->pval]) continue;
 
 					/* Identify once */
-					if (!object_known_p(o_ptr))
+					if (!object_is_known(o_ptr))
 					{
 						/* Message */
 						msg_print("You have discovered a trap on the chest!");
 
 						/* Know the trap */
-						object_known(o_ptr);
+						object_notice_everything(o_ptr);
 
 						/* Notice it */
 						disturb(0, 0);
@@ -162,7 +165,7 @@ static void py_pickup_gold(void)
 		int i, count, total, k_idx;
 
 		/* Build a message */
-		(void)strnfmt(buf, sizeof(buf), "You have found %ld gold pieces worth of ",  total_gold);
+		(void)strnfmt(buf, sizeof(buf), "You have found %ld gold pieces worth of ", (long)total_gold);
 
 		/* Count the types of treasure present */
 		for (total = 0, i = 0; i < SV_GOLD_MAX; i++)
@@ -228,9 +231,6 @@ static void py_pickup_gold(void)
  */
 static bool auto_pickup_okay(const object_type *o_ptr)
 {
-	/* Bad wounds prelude autopickup */
-	if (p_ptr->chp < (p_ptr->mhp * op_ptr->hitpoint_warn / 10)) return FALSE;
-
 	if (!inven_carry_okay(o_ptr)) return FALSE;
 
 	if (OPT(pickup_inven) && inven_stack_okay(o_ptr)) return TRUE;
@@ -274,7 +274,7 @@ static void py_pickup_aux(int o_idx, bool msg)
 
 	/* Log if picking up an artifact. */
 	if (artifact_p(o_ptr))
-		history_add_artifact(o_ptr->name1, object_known_p(o_ptr));
+		history_add_artifact(o_ptr->name1, object_is_known(o_ptr));
 
 	/* Delete the object */
 	delete_object_idx(o_idx);
@@ -295,12 +295,12 @@ static void py_pickup_aux(int o_idx, bool msg)
  * floor in an array, and tally both how many there are and can be picked up.
  *
  * If not picking up anything, indicate objects on the floor.  Show more
- * details if the "pickup_detail" option is set.  Do the same thing if we
+ * details if the "OPT(pickup_detail)" option is set.  Do the same thing if we
  * don't have room for anything.
  *
  * [This paragraph is not true, intentional?]
  * If we are picking up objects automatically, and have room for at least
- * one, allow the "pickup_detail" option to display information about objects
+ * one, allow the "OPT(pickup_detail)" option to display information about objects
  * and prompt the player.  Otherwise, automatically pick up a single object
  * or use a menu for more than one.
  *
@@ -425,7 +425,7 @@ byte py_pickup(int pickup)
 		else
 		{
 			/* Optionally, display more information about floor items */
-			if (pickup_detail)
+			if (OPT(pickup_detail))
 			{
 				if (!can_pickup)	p = "have no room for the following objects";
 				else if (blind)     p = "feel something on the floor";
@@ -443,7 +443,7 @@ byte py_pickup(int pickup)
 				prt(format("You %s: ", p), 0, 0);
 
 				/* Move cursor back to character, if needed */
-				if (hilite_player) move_cursor_relative(p_ptr->py, p_ptr->px);
+				if (OPT(hilite_player)) move_cursor_relative(p_ptr->py, p_ptr->px);
 
 				/* Wait for it.  Use key as next command. */
 				p_ptr->command_new = inkey();
@@ -551,46 +551,35 @@ void move_player(int dir)
 	x = px + ddx[dir];
 
 
-	/* Hack -- attack monsters */
+	/* Attack monsters */
 	if (cave_m_idx[y][x] > 0)
-	{
-		/* Attack */
 		py_attack(y, x);
-	}
 
 	/* Optionally alter known traps/doors on movement */
-	else if (easy_alter &&
-	         (cave_info[y][x] & (CAVE_MARK)) &&
-	         (cave_feat[y][x] >= FEAT_TRAP_HEAD) &&
-	         (cave_feat[y][x] <= FEAT_DOOR_TAIL))
+	else if (OPT(easy_alter) && (cave_info[y][x] & CAVE_MARK) &&
+			(cave_feat[y][x] >= FEAT_TRAP_HEAD) &&
+			(cave_feat[y][x] <= FEAT_DOOR_TAIL))
 	{
-		/*
-		 * There should always be an explicit confirmation made before fiddling
-		 * with traps.  XXX XXX
-		 */
-
 		/* Auto-repeat if not already repeating */
 		if (!p_ptr->command_rep && (p_ptr->command_arg <= 0))
 		{
-			/* Repeat 99 times */
 			p_ptr->command_rep = 99;
 
 			/* Reset the command count */
 			p_ptr->command_arg = 0;
 		}
 
-		/* Alter */
-		do_cmd_alter();
+		do_cmd_alter_aux(dir);
 	}
 
-	/* Player can not walk through "walls" */
+	/* Cannot walk through walls */
 	else if (!cave_floor_bold(y, x))
 	{
 		/* Disturb the player */
 		disturb(0, 0);
 
 		/* Notice unknown obstacles */
-		if (!(cave_info[y][x] & (CAVE_MARK)))
+		if (!(cave_info[y][x] & CAVE_MARK))
 		{
 			/* Rubble */
 			if (cave_feat[y][x] == FEAT_RUBBLE)
@@ -620,23 +609,12 @@ void move_player(int dir)
 		/* Mention known obstacles */
 		else
 		{
-			/* Rubble */
 			if (cave_feat[y][x] == FEAT_RUBBLE)
-			{
 				message(MSG_HITWALL, 0, "There is a pile of rubble blocking your way.");
-			}
-
-			/* Closed door */
 			else if (cave_feat[y][x] < FEAT_SECRET)
-			{
 				message(MSG_HITWALL, 0, "There is a door blocking your way.");
-			}
-
-			/* Wall (or secret door) */
 			else
-			{
 				message(MSG_HITWALL, 0, "There is a wall blocking your way.");
-			}
 		}
 	}
 
@@ -653,13 +631,11 @@ void move_player(int dir)
 		/* Note the change in the detect status */
 		if (old_dtrap != new_dtrap) p_ptr->redraw |= (PR_DTRAP);
 
-		/* Disturb player if the player is about to leave the detect area XXX */
-		if (disturb_detect && p_ptr->running && old_dtrap && !new_dtrap)
+		/* Disturb player if the player is about to leave the area */
+		if (OPT(disturb_detect) &&
+				p_ptr->running && old_dtrap && !new_dtrap)
 		{
-			/* Disturb the player */
 			disturb(0, 0);
-
-			/* Done XXX */
 			return;
 		}
 
@@ -693,9 +669,7 @@ void move_player(int dir)
 		{
 			/* Disturb */
 			disturb(0, 0);
-
-			/* Hack -- Enter store */
-			p_ptr->command_new = '_';
+			cmd_insert(CMD_ENTER_STORE);
 		}
 
 

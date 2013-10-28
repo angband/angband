@@ -77,15 +77,13 @@ bool init_obj_alloc(void)
 		{
 			int rarity = k_ptr->alloc_prob;
 
-			/* Give out-of-depth items a tiny chance at being made */
-			if ((lev < min) || (lev > max)) rarity = 0;
-
 			/* Save the probability in the standard table */
+			if ((lev < min) || (lev > max)) rarity = 0;
 			obj_total[lev] += rarity;
 			obj_alloc[(lev * k_max) + item] = rarity;
 
 			/* Save the probability in the "great" table if relevant */
-			if (!kind_is_good(k_ptr)) continue;
+			if (!kind_is_good(k_ptr)) rarity = 0;
 			obj_total_great[lev] += rarity;
 			obj_alloc_great[(lev * k_max) + item] = rarity;
 		}
@@ -245,7 +243,8 @@ static void object_mention(const object_type *o_ptr)
 	char o_name[80];
 
 	/* Describe */
-	object_desc_spoil(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_BASE);
+	object_desc(o_name, sizeof(o_name), o_ptr, FALSE,
+			ODESC_BASE | ODESC_SPOIL);
 
 	/* Provide a silly message */
 	if (artifact_p(o_ptr))
@@ -358,7 +357,7 @@ static int make_ego_item(object_type *o_ptr, int level, bool force_uncursed)
 	e_idx = (byte)table[i].index;
 	o_ptr->name2 = e_idx;
 
-	return (e_info[e_idx].flags3 & TR3_CURSE_MASK ? -2 : 2);
+	return (e_info[e_idx].flags[2] & TR2_CURSE_MASK ? -2 : 2);
 }
 
 
@@ -366,11 +365,8 @@ static int make_ego_item(object_type *o_ptr, int level, bool force_uncursed)
  * Copy artifact data to a normal object, and set various slightly hacky
  * globals.
  */
-static void copy_artifact_data(object_type *o_ptr, artifact_type *a_ptr)
+static void copy_artifact_data(object_type *o_ptr, const artifact_type *a_ptr)
 {
-	/* Hack -- Mark the artifact as "created" */
-	a_ptr->cur_num = 1;
-
 	/* Extract the other fields */
 	o_ptr->pval = a_ptr->pval;
 	o_ptr->ac = a_ptr->ac;
@@ -383,7 +379,7 @@ static void copy_artifact_data(object_type *o_ptr, artifact_type *a_ptr)
 
 	/* Hack -- extract the "cursed" flags */
 	if (cursed_p(a_ptr))
-		o_ptr->flags3 |= (a_ptr->flags3 & TR3_CURSE_MASK);
+		o_ptr->flags[2] |= (a_ptr->flags[2] & TR2_CURSE_MASK);
 
 	/* Mega-Hack -- increase the rating */
 	rating += 10;
@@ -395,7 +391,7 @@ static void copy_artifact_data(object_type *o_ptr, artifact_type *a_ptr)
 	good_item_flag = TRUE;
 
 	/* Cheat -- peek at the item */
-	if (cheat_peek) object_mention(o_ptr);
+	if (OPT(cheat_peek)) object_mention(o_ptr);
 }
 
 
@@ -420,7 +416,7 @@ static bool make_artifact_special(object_type *o_ptr, int level)
 
 
 	/* No artifacts, do nothing */
-	if (adult_no_artifacts) return (FALSE);
+	if (OPT(adult_no_artifacts)) return (FALSE);
 
 	/* No artifacts in the town */
 	if (!p_ptr->depth) return (FALSE);
@@ -434,7 +430,7 @@ static bool make_artifact_special(object_type *o_ptr, int level)
 		if (!a_ptr->name) continue;
 
 		/* Cannot make an artifact twice */
-		if (a_ptr->cur_num) continue;
+		if (a_ptr->created) continue;
 
 		/* Enforce minimum "depth" (loosely) */
 		if (a_ptr->level > p_ptr->depth)
@@ -471,6 +467,9 @@ static bool make_artifact_special(object_type *o_ptr, int level)
 		/* Copy across all the data from the artifact struct */
 		copy_artifact_data(o_ptr, a_ptr);
 
+		/* Mark the artifact as "created" */
+		a_ptr->created = 1;
+
 		/* Success */
 		return TRUE;
 	}
@@ -493,7 +492,7 @@ static bool make_artifact(object_type *o_ptr)
 
 
 	/* No artifacts, do nothing */
-	if (adult_no_artifacts) return (FALSE);
+	if (OPT(adult_no_artifacts)) return (FALSE);
 
 	/* No artifacts in the town */
 	if (!p_ptr->depth) return (FALSE);
@@ -510,7 +509,7 @@ static bool make_artifact(object_type *o_ptr)
 		if (!a_ptr->name) continue;
 
 		/* Cannot make an artifact twice */
-		if (a_ptr->cur_num) continue;
+		if (a_ptr->created) continue;
 
 		/* Must have the correct fields */
 		if (a_ptr->tval != o_ptr->tval) continue;
@@ -534,6 +533,9 @@ static bool make_artifact(object_type *o_ptr)
 
 		/* Copy across all the data from the artifact struct */
 		copy_artifact_data(o_ptr, a_ptr);
+
+		/* Hack -- Mark the artifact as "created" */
+		a_ptr->created = 1;
 
 		return TRUE;
 	}
@@ -678,7 +680,7 @@ static void a_m_aux_2(object_type *o_ptr, int level, int power)
 			rating += 30;
 
 			/* Mention the item */
-			if (cheat_peek) object_mention(o_ptr);
+			if (OPT(cheat_peek)) object_mention(o_ptr);
 
 			break;
 		}
@@ -697,9 +699,6 @@ static void a_m_aux_2(object_type *o_ptr, int level, int power)
  */
 static void a_m_aux_3(object_type *o_ptr, int level, int power)
 {
-	if (power < 0)
-		o_ptr->flags3 |= TR3_LIGHT_CURSE;
-
 	/* Apply magic (good or bad) according to type */
 	switch (o_ptr->tval)
 	{
@@ -745,7 +744,7 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 						rating += 25;
 
 						/* Mention the item */
-						if (cheat_peek) object_mention(o_ptr);
+						if (OPT(cheat_peek)) object_mention(o_ptr);
 					}
 
 					break;
@@ -924,7 +923,7 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 					rating += 25;
 
 					/* Mention the item */
-					if (cheat_peek) object_mention(o_ptr);
+					if (OPT(cheat_peek)) object_mention(o_ptr);
 
 					break;
 				}
@@ -938,7 +937,7 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 					rating += 25;
 
 					/* Mention the item */
-					if (cheat_peek) object_mention(o_ptr);
+					if (OPT(cheat_peek)) object_mention(o_ptr);
 
 					break;
 				}
@@ -954,7 +953,7 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 					rating += 25;
 
 					/* Mention the item */
-					if (cheat_peek) object_mention(o_ptr);
+					if (OPT(cheat_peek)) object_mention(o_ptr);
 
 					break;
 				}
@@ -968,7 +967,7 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 					rating += 25;
 
 					/* Mention the item */
-					if (cheat_peek) object_mention(o_ptr);
+					if (OPT(cheat_peek)) object_mention(o_ptr);
 
 					break;
 				}
@@ -977,6 +976,10 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 			break;
 		}
 	}
+
+	/* Just for now */
+	if (o_ptr->pval < 0)
+		o_ptr->flags[2] |= TR2_LIGHT_CURSE;
 }
 
 
@@ -1047,41 +1050,98 @@ static void a_m_aux_4(object_type *o_ptr, int level, int power)
 
 static const u32b ego_sustains[] =
 {
-	TR2_SUST_STR,
-	TR2_SUST_INT,
-	TR2_SUST_WIS,
-	TR2_SUST_DEX,
-	TR2_SUST_CON,
-	TR2_SUST_CHR,
+	TR1_SUST_STR,
+	TR1_SUST_INT,
+	TR1_SUST_WIS,
+	TR1_SUST_DEX,
+	TR1_SUST_CON,
+	TR1_SUST_CHR,
 };
+
+/*
+ * Which TR? flags have the sustains
+ */
+unsigned ego_xtra_sustain_idx(void)
+{
+	return 1;
+}
+
+u32b ego_xtra_sustain_list(void)
+{
+	u32b ret = 0;
+	size_t i;
+
+	for (i = 0; i < N_ELEMENTS(ego_sustains); i++)
+		ret |= ego_sustains[i];
+
+	return ret;
+}
 
 static const u32b ego_resists[] =
 {
-	TR2_RES_POIS,
-	TR2_RES_FEAR,
-	TR2_RES_LITE,
-	TR2_RES_DARK,
-	TR2_RES_BLIND,
-	TR2_RES_CONFU,
-	TR2_RES_SOUND,
-	TR2_RES_SHARD,
-	TR2_RES_NEXUS,
-	TR2_RES_NETHR,
-	TR2_RES_CHAOS,
-	TR2_RES_DISEN,
+	TR1_RES_POIS,
+	TR1_RES_FEAR,
+	TR1_RES_LITE,
+	TR1_RES_DARK,
+	TR1_RES_BLIND,
+	TR1_RES_CONFU,
+	TR1_RES_SOUND,
+	TR1_RES_SHARD,
+	TR1_RES_NEXUS,
+	TR1_RES_NETHR,
+	TR1_RES_CHAOS,
+	TR1_RES_DISEN,
 };
+
+/*
+ * Which TR? flags have the random resists
+ */
+unsigned ego_xtra_resist_idx(void)
+{
+	return 1;
+}
+
+u32b ego_xtra_resist_list(void)
+{
+	u32b ret = 0;
+	size_t i;
+
+	for (i = 0; i < N_ELEMENTS(ego_resists); i++)
+		ret |= ego_resists[i];
+
+	return ret;
+}
 
 static const u32b ego_powers[] =
 {
-	TR3_SLOW_DIGEST,
-	TR3_FEATHER,
-	TR3_LITE,
-	TR3_REGEN,
-	TR3_TELEPATHY,
-	TR3_SEE_INVIS,
-	TR3_FREE_ACT,
-	TR3_HOLD_LIFE,
+	TR2_SLOW_DIGEST,
+	TR2_FEATHER,
+	TR2_LITE,
+	TR2_REGEN,
+	TR2_TELEPATHY,
+	TR2_SEE_INVIS,
+	TR2_FREE_ACT,
+	TR2_HOLD_LIFE,
 };
+
+/*
+ * Which TR? flags have the random powers
+ */
+unsigned ego_xtra_power_idx(void)
+{
+	return 2;
+}
+
+u32b ego_xtra_power_list(void)
+{
+	u32b ret = 0;
+	size_t i;
+
+	for (i = 0; i < N_ELEMENTS(ego_powers); i++)
+		ret |= ego_powers[i];
+
+	return ret;
+}
 
 
 
@@ -1102,10 +1162,12 @@ static const u32b ego_powers[] =
 void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts, bool good, bool great)
 {
 	int power = 0;
+	u32b xtra = 0;
+	bool new = FALSE;
 
 	/* Chance of being `good` and `great` */
-	int good_chance = 2*lev + 10;
-	int great_chance = lev + 5;
+	int good_chance = (lev+2) * 3;
+	int great_chance = MIN(lev/4 + lev, 50);
 
 
 	/* Limit depth */
@@ -1239,26 +1301,50 @@ void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts, bool good, b
 		{
 			case OBJECT_XTRA_TYPE_SUSTAIN:
 			{
-				o_ptr->flags2 |= ego_sustains[randint0(N_ELEMENTS(ego_sustains))];
+				while (!new)
+				{
+					xtra = ego_sustains[randint0(N_ELEMENTS(ego_sustains))];
+					if ((o_ptr->flags[1] | xtra) != o_ptr->flags[1])
+					{
+						o_ptr->flags[1] |= xtra;
+						new = TRUE;
+					}
+				}
 				break;
 			}
 
 			case OBJECT_XTRA_TYPE_RESIST:
 			{
-				o_ptr->flags2 |= ego_resists[randint0(N_ELEMENTS(ego_resists))];
+				while (!new)
+				{
+					xtra = ego_resists[randint0(N_ELEMENTS(ego_resists))];
+					if ((o_ptr->flags[1] | xtra) != o_ptr->flags[1])
+					{
+						o_ptr->flags[1] |= xtra;
+						new = TRUE;
+					}
+				}
 				break;
 			}
 
 			case OBJECT_XTRA_TYPE_POWER:
 			{
-				o_ptr->flags3 |= ego_powers[randint0(N_ELEMENTS(ego_powers))];
+				while (!new)
+				{
+					xtra = ego_powers[randint0(N_ELEMENTS(ego_powers))];
+					if ((o_ptr->flags[2] | xtra) != o_ptr->flags[2])
+					{
+						o_ptr->flags[2] |= xtra;
+						new = TRUE;
+					}
+				}
 				break;
 			}
 		}
 
 		/* Hack -- acquire "cursed" flags */
 		if (cursed_p(e_ptr))
-			o_ptr->flags3 |= (e_ptr->flags3 & TR3_CURSE_MASK);
+			o_ptr->flags[2] |= (e_ptr->flags[2] & TR2_CURSE_MASK);
 
 		/* Hack -- apply extra penalties if needed */
 		if (cursed_p(o_ptr))
@@ -1288,7 +1374,7 @@ void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts, bool good, b
 		rating += e_ptr->rating;
 
 		/* Cheat -- describe the item */
-		if (cheat_peek) object_mention(o_ptr);
+		if (OPT(cheat_peek)) object_mention(o_ptr);
 
 		/* Done */
 		return;
@@ -1302,7 +1388,7 @@ void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts, bool good, b
 
 		/* Hack -- acquire "cursed" flag */
 		if (cursed_p(k_ptr))
-			o_ptr->flags3 |= (k_ptr->flags3 & TR3_CURSE_MASK);
+			o_ptr->flags[2] |= (k_ptr->flags[2] & TR2_CURSE_MASK);
 	}
 }
 
@@ -1434,7 +1520,7 @@ bool make_object(object_type *j_ptr, int lev, bool good, bool great)
 		rating += (k_info[j_ptr->k_idx].level - p_ptr->depth);
 
 		/* Cheat -- peek at items */
-		if (cheat_peek) object_mention(j_ptr);
+		if (OPT(cheat_peek)) object_mention(j_ptr);
 	}
 
 	return TRUE;

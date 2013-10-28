@@ -20,6 +20,7 @@
 
 #ifdef USE_GTK
 #include "main-gtk.h"
+#include "textui.h"
 /* 
  *Add a bunch of debugger message, to trace where problems are. 
  */
@@ -655,7 +656,7 @@ static bool save_game_gtk(void)
 		msg_flag = FALSE;
 		
 		/* Save the game */
-		do_cmd_save_game();
+		save_game();
 	}
 	
 	return(TRUE);
@@ -699,7 +700,7 @@ gboolean new_event_handler(GtkWidget *widget, GdkEventButton *event, gpointer us
 	else
 	{
 		/* We'll return NEWGAME to the game. */ 
-		cmd.command = CMD_NEWGAME;
+		cmd_insert(CMD_NEWGAME);
 		gtk_widget_set_sensitive(widget, FALSE);
 		return(FALSE);
 	}
@@ -908,7 +909,7 @@ void open_event_handler(GtkButton *was_clicked, gpointer user_data)
 	accepted = save_dialog_box(FALSE);
 	
 	/* Set the command now so that we skip the "Open File" prompt. */ 
-	if (accepted) cmd.command = CMD_LOADFILE; 
+	if (accepted) cmd_insert(CMD_LOADFILE);
 	
 	/* Done */
 	return;
@@ -934,7 +935,7 @@ gboolean save_event_handler(GtkWidget *widget, GdkEvent *event, gpointer user_da
 	bool accepted;
 	
 	if (game_saved)
-		do_cmd_save_game();
+		save_game();
 	else
 	{
 		accepted = save_dialog_box(TRUE);
@@ -2025,21 +2026,21 @@ static errr term_data_init(term_data *td, int i)
 	return (0);
 }
 
-static game_command get_init_cmd()
+static errr get_init_cmd()
 {
 	Term_fresh();
 
 	/* Prompt the user */
 	prt("[Choose 'New' or 'Open' from the 'File' menu]", 23, 17);
 	CheckEvent(FALSE);
-	
-	if ((cmd.command == CMD_NEWGAME) || (cmd.command == CMD_LOADFILE))
-	{
-		game_in_progress = TRUE;
-		/* Disable New and Open menu items - to do */
-	}
-	
-	return cmd;
+
+	return 0;
+}
+
+static void handle_leave_init(game_event_type type, game_event_data *data, void *user) 
+{
+	/* Disable New and Open menu items - to do */
+	game_in_progress = TRUE;
 }
 
 /*
@@ -2220,7 +2221,7 @@ static void inv_slot(char *str, size_t len, int i, bool equip)
 
 		strnfmt(label, sizeof(label), "%c) ", index_to_label(i));
 		
-		if (equip && show_labels)
+		if (equip && OPT(show_labels))
 			name_size = name_size - 19;
 		
 		/* Display the weight if needed */
@@ -2229,7 +2230,7 @@ static void inv_slot(char *str, size_t len, int i, bool equip)
 			int wgt = o_ptr->weight * o_ptr->number;			
 			name_size = name_size - 4 - 9 - 9 - 5;
 			
-			if (equip && show_labels)
+			if (equip && OPT(show_labels))
 				strnfmt(str, len, "%s%-*s %3d.%1d lb <-- %s", label, name_size, o_name, wgt / 10, wgt % 10, mention_use(i));
 			else
 				strnfmt(str, len, "%s%-*s %3d.%1d lb", label, name_size, o_name, wgt / 10, wgt % 10);
@@ -2238,7 +2239,7 @@ static void inv_slot(char *str, size_t len, int i, bool equip)
 		{
 			name_size = name_size - 4 - 9 - 5;
 
-			if (equip && show_labels)
+			if (equip && OPT(show_labels))
 				strnfmt(str, len, "%s%-*s <-- %s", label, name_size, o_name, mention_use(i));
 			else
 				strnfmt(str, len, "%s%-*s", label, name_size, o_name);
@@ -2615,6 +2616,16 @@ static void handle_end(game_event_type type, game_event_data *data, void *user){
 static void handle_splash(game_event_type type, game_event_data *data, void *user){}
 static void handle_statusline(game_event_type type, game_event_data *data, void *user) {}
 
+
+/* Command dispatcher for gtk builds */
+static errr gtk_get_cmd(cmd_context context, bool wait)
+{
+	if (context == CMD_INIT) 
+		return get_init_cmd();
+	else 
+		return textui_get_cmd(context, wait);
+}
+
 void init_handlers()
 {
 	
@@ -2622,7 +2633,7 @@ void init_handlers()
 	quit_aux = hook_quit;
 
 	/* Set command hook */
-	get_game_command = get_init_cmd;
+	cmd_get_hook = gtk_get_cmd;
 
 	/* I plan to put everything on the sidebar together, as well as the statusline, so... */
 	event_add_handler_set(my_player_events, N_ELEMENTS(my_player_events), handle_sidebar, NULL);
@@ -2638,6 +2649,8 @@ void init_handlers()
 	event_add_handler(EVENT_PLAYERMOVED, handle_moved, NULL);
 	event_add_handler(EVENT_MONSTERTARGET, handle_mons_target, NULL);
 	event_add_handler(EVENT_INITSTATUS, handle_init_status, NULL);
+	
+	event_add_handler(EVENT_LEAVE_INIT, handle_leave_init, NULL);
 	event_add_handler(EVENT_ENTER_BIRTH, handle_birth, NULL);
 	event_add_handler(EVENT_ENTER_STORE, handle_store, NULL);
 	event_add_handler(EVENT_ENTER_DEATH, handle_death, NULL);

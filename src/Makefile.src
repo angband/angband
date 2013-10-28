@@ -5,7 +5,7 @@
 # across a range of different makefiles, to cut down on maintenance.
 #
 
-VERSION = 3.1.0beta
+VERSION = 3.1.1
 COPYRIGHT = (c) 1995-2009 Angband contributors
 
 HEADERS = \
@@ -62,7 +62,7 @@ ANGFILES = \
 	cmd3.o \
 	cmd4.o \
 	cmd5.o \
-	cmd6.o \
+	cmd-know.o \
 	cmd-obj.o \
 	death.o \
 	debug.o \
@@ -76,6 +76,7 @@ ANGFILES = \
 	init1.o \
 	init2.o \
 	load.o \
+	load-old.o \
 	monster/melee1.o \
 	monster/melee2.o \
 	monster/monster1.o \
@@ -84,18 +85,21 @@ ANGFILES = \
 	object/obj-desc.o \
 	object/obj-info.o \
 	object/obj-make.o \
+	object/obj-power.o \
 	object/obj-ui.o \
 	object/obj-util.o \
 	object/randart.o \
 	option.o \
 	randname.o \
 	pathfind.o \
+	prefs.o \
 	player/calcs.o \
 	player/timed.o \
 	player/util.o \
 	score.o \
 	signals.o \
 	save.o \
+	savefile.o \
 	spells1.o \
 	spells2.o \
 	squelch.o \
