@@ -1,5 +1,13 @@
-Angband 3.0.9
+Angband 3.0.9a
 =============
+
+Angband 3.0.9a is a bugfix version of 3.0.9.  It fixes the bug where
+monsters act far too stupidly.  It also changes store UI behaviour so
+that pressing Enter no longer initialises buying, but rather 'p' does.
+
+This version also fixes a small bug with autoconf support.
+
+Angband 3.0.9 had the following changelist:
 
 Angband 3.0.9 is a bugfix version of 3.0.8, mostly.  Thanks go to the
 many people who reported bugs, helped track them down, and especially

@@ -1722,14 +1722,14 @@ static void store_display_help(void)
 	else
 		text_out_c(TERM_L_GREEN, "l");
 
-	text_out("' examines and ");
-	text_out_c(TERM_L_GREEN, "Enter");
+	text_out("' examines and '");
+	text_out_c(TERM_L_GREEN, "p");
 
-	if (store_current == STORE_HOME) text_out(" picks up");
-	else text_out(" purchases");
+	if (store_current == STORE_HOME) text_out("' picks up");
+	else text_out("' purchases");
 
 	text_out(" the selected item. '");
-	
+
 	text_out_c(TERM_L_GREEN, "d");
 	if (store_current == STORE_HOME) text_out("' drops");
 	else text_out("' sells");
@@ -2338,9 +2338,8 @@ static bool store_process_command(char cmd, void *db, int oid)
 		}
 
 		/* Buy */
-		case '\xff':
-		case '\n':
-		case '\r':
+		case 'p':
+		case 'g':
 		{
 			/* On successful purchase, redraw */
 			if (store_purchase(oid))
@@ -2621,8 +2620,8 @@ void do_cmd_store(void)
 		else
 		{
 			/* These two can't intersect! */
-			menu.cmd_keys = "\n\x010\r?=CbdeEiIklstw\x8B\x8C"; /* \x10 = ^p */
-			menu.selections = "acfghmnopqruvxyz13456790";
+			menu.cmd_keys = "\n\x010\r?=CbdegEiIklpstw\x8B\x8C"; /* \x10 = ^p */
+			menu.selections = "acfhmnoqruvxyz13456790ABDFGH";
 		}
 
 		/* Keep the cursor in range of the stock */

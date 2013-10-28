@@ -38,8 +38,8 @@ exceptions:
  * Adam Bolt's (16x16) graphics may be redistributed and used for any purpose, 
    with or without modification.
 
- * David Gervais' (32x32) graphics may be redistributed and used but only
-   not-for-profit, and may only be distributed over the Internet.
+ * David Gervais' (32x32) graphics may be redistributed and used under the
+   Creative Commons Attribution 3.0 licence.
 
  * the sounds are freeware, whatever that means.
 

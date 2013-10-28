@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Simple packaging file for the Windows port.  Only really useful when
 # cross-compiling, or using Cygwin.  Originally by Robert Ruehlmann.
@@ -62,6 +62,8 @@ cp_unix2dos ../lib/xtra/font/copying.txt lib/xtra/font/copying.txt
 cp ../lib/xtra/graf/8x8.bmp lib/xtra/graf
 cp ../lib/xtra/graf/16x16.bmp lib/xtra/graf
 cp ../lib/xtra/graf/mask.bmp lib/xtra/graf
+cp ../lib/xtra/graf/32x32.bmp lib/xtra/graf
+cp ../lib/xtra/graf/mask32.bmp lib/xtra/graf
 
 cp ../lib/xtra/sound/sound.cfg lib/xtra/sound
 cp ../lib/xtra/sound/*.wav lib/xtra/sound
