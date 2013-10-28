@@ -2785,8 +2785,8 @@ void disturb(struct player *p, int stop_search, int unused_flag)
 	cmd_cancel_repeat();
 
 	/* Cancel Resting */
-	if (player_is_resting()) {
-		player_resting_cancel();
+	if (p->resting) {
+		p->resting = 0;
 		p->redraw |= PR_STATE;
 	}
 
