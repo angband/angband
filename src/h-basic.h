@@ -128,8 +128,10 @@
 
 /*** Include the library header files ***/
 
-/** ANSI C headers **/
+/* Use various POSIX functions if available */
+#define _GNU_SOURCE
 
+/** ANSI C headers **/
 #include <ctype.h>
 #include <errno.h>
 #include <limits.h>
@@ -142,7 +144,6 @@
 #include <time.h>
 
 /** POSIX headers **/
-
 #if defined(SET_UID) || defined(MACH_O_CARBON)
 # include <pwd.h>
 # include <sys/stat.h>

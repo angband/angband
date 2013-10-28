@@ -213,6 +213,9 @@ void get_spell_info(int tval, int spell, char *p, size_t len)
 		case SPELL_PHASE_DOOR:
 			strnfmt(p, len, " range 10");
 			break;
+		case SPELL_LIGHT_AREA:
+			strnfmt(p, len, " dam 2d%d", (plev / 2));
+			break; 
 		case SPELL_CURE_LIGHT_WOUNDS:
 			strnfmt(p, len, " heal 2d8");
 			break;
@@ -314,6 +317,9 @@ void get_spell_info(int tval, int spell, char *p, size_t len)
 			case PRAYER_BLESS:
 				my_strcpy(p, " dur 12+d12", len);
 				break;
+			case PRAYER_CALL_LIGHT:
+				strnfmt(p, len, " dam 2d%d", (plev / 2));
+				break; 
 			case PRAYER_PORTAL:
 				strnfmt(p, len, " range %d", 3 * plev);
 				break;

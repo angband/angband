@@ -3138,7 +3138,7 @@ s16b floor_carry(int y, int x, object_type *j_ptr)
  */
 void drop_near(object_type *j_ptr, int chance, int y, int x)
 {
-	int i, k, d, s;
+	int i, k, n, d, s;
 
 	int bs, bn;
 	int by, bx;
@@ -3215,6 +3215,7 @@ void drop_near(object_type *j_ptr, int chance, int y, int x)
 
 			/* No objects */
 			k = 0;
+			n = 0;
 
 			/* Scan objects in that grid */
 			for (o_ptr = get_first_object(ty, tx); o_ptr; o_ptr = get_next_object(o_ptr))
@@ -3223,7 +3224,10 @@ void drop_near(object_type *j_ptr, int chance, int y, int x)
 				if (object_similar(o_ptr, j_ptr)) comb = TRUE;
 
 				/* Count objects */
-				k++;
+				if (!squelch_hide_item(o_ptr))
+					k++;
+				else
+					n++;
 			}
 
 			/* Add new object */
@@ -3232,8 +3236,8 @@ void drop_near(object_type *j_ptr, int chance, int y, int x)
 			/* Option -- disallow stacking */
 			if (adult_no_stacking && (k > 1)) continue;
 			
-			/* Paranoia */
-			if (k > MAX_FLOOR_STACK) continue;
+			/* Paranoia? */
+			if ((k + n) > MAX_FLOOR_STACK) continue;
 
 			/* Calculate score */
 			s = 1000 - (d + k * 5);

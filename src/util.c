@@ -1300,7 +1300,7 @@ event_type inkey_ex(void)
  */
 char anykey(void)
 {
-  event_type ke;
+  event_type ke = EVENT_EMPTY;
   
   /* Only accept a keypress or mouse click*/
   do
@@ -1489,6 +1489,19 @@ errr quarks_free(void)
 	return (0);
 }
 
+/*
+ * Looks if "inscrip" is present on the given object.
+ */
+bool check_for_inscrip(const object_type *o_ptr, const char *inscrip)
+{
+	if (o_ptr->note)
+	{
+		const char *s = strstr(quark_str(o_ptr->note), inscrip);
+		if (s) return TRUE;
+	}
+	
+	return FALSE;
+}
 
 /*
  * The "message memorization" package.
@@ -2546,7 +2559,7 @@ void text_out_to_file(byte a, cptr str)
 		for (n = 0; n < len; n++)
 		{
 			/* Ensure the character is printable */
-			ch = (isprint(s[n]) ? s[n] : ' ');
+			ch = (isprint((unsigned char) s[n]) ? s[n] : ' ');
 
 			/* Write out the character */
 			fputc(ch, text_out_file);
@@ -3024,8 +3037,8 @@ int get_check_other(cptr prompt, char other)
 		if (quick_messages) break;
 		if (ch == ESCAPE) break;
 		if (strchr("YyNn", ch)) break;
-		if (ch == toupper(other)) break;
-		if (ch == tolower(other)) break;
+		if (ch == toupper((unsigned char) other)) break;
+		if (ch == tolower((unsigned char) other)) break;
 		bell("Illegal response to question!");
 	}
 
@@ -3038,7 +3051,7 @@ int get_check_other(cptr prompt, char other)
 		result = 1;
 
 	/* Third option */
-	else if ((ch == toupper(other)) || (ch == tolower(other)))
+	else if ((ch == toupper((unsigned char) other)) || (ch == tolower((unsigned char) other)))
 		result = 2;
 
 	/* Default to no */
@@ -3181,7 +3194,7 @@ void request_command(void)
 {
 	int i;
 
-	event_type ke;
+	event_type ke = EVENT_EMPTY;
 
 	int mode;
 
@@ -3222,6 +3235,7 @@ void request_command(void)
 
 			/* Use auto-command */
 			ke.key = (char)p_ptr->command_new;
+			ke.type = EVT_KBRD;
 
 			/* Forget it */
 			p_ptr->command_new = 0;
@@ -3423,35 +3437,24 @@ void request_command(void)
 	/* Hack -- Scan equipment */
 	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
 	{
-		cptr s;
+		char verify_inscrip[] = "^*";
 
 		object_type *o_ptr = &inventory[i];
 
 		/* Skip non-objects */
 		if (!o_ptr->k_idx) continue;
 
-		/* No inscription */
-		if (!o_ptr->note) continue;
-
-		/* Find a '^' */
-		s = strchr(quark_str(o_ptr->note), '^');
-
-		/* Process preventions */
-		while (s)
+		/* Set up string to look for, e.g. "^d" */
+		verify_inscrip[1] = p_ptr->command_cmd;
+		
+		if (check_for_inscrip(o_ptr, "^*") || check_for_inscrip(o_ptr, verify_inscrip))
 		{
-			/* Check the "restriction" character */
-			if ((s[1] == p_ptr->command_cmd) || (s[1] == '*'))
+			/* Hack -- Verify command */
+			if (!get_check("Are you sure? "))
 			{
-				/* Hack -- Verify command */
-				if (!get_check("Are you sure? "))
-				{
-					/* Hack -- Use "newline" */
-					p_ptr->command_cmd = '\n';
-				}
+				/* Hack -- Use "newline" */
+				p_ptr->command_cmd = '\n';
 			}
-
-			/* Find another '^' */
-			s = strchr(s + 1, '^');
 		}
 	}
 

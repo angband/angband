@@ -10,5 +10,8 @@ OBJECTIVE_DATA =	\
 	general.txt:${DATA_PATH}/help \
 	option.txt:${DATA_PATH}/help  \
 	playing.txt:${DATA_PATH}/help \
-	version.txt:${DATA_PATH}/help
+	version.txt:${DATA_PATH}/help \
+	help.hlp:${DATA_PATH}/help    \
+	308.txt:${DATA_PATH}/help
+
 

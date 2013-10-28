@@ -76,7 +76,7 @@
 #undef RETSIGTYPE
 
 /* Define to 1 if using SDL_mixer sound support and it's found. */
-#undef SDL_SOUND
+#undef SOUND_SDL
 
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS

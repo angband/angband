@@ -77,18 +77,27 @@ bool hp_player(int num)
  */
 void warding_glyph(void)
 {
+	object_type *o_ptr;
 	int py = p_ptr->py;
 	int px = p_ptr->px;
 
-	/* XXX XXX XXX */
-	if (!cave_clean_bold(py, px))
+	if (cave_feat[py][px] != FEAT_FLOOR)
 	{
-		msg_print("The object resists the spell.");
+		msg_print("There is no clear floor on which to cast the spell.");
 		return;
 	}
 
 	/* Create a glyph */
 	cave_set_feat(py, px, FEAT_GLYPH);
+
+	/* Shift any objects to further away */
+	for (o_ptr = get_first_object(py, px); o_ptr; o_ptr = get_next_object(o_ptr))
+	{
+		drop_near(o_ptr, 0, py, px);
+	}
+
+	/* Delete the "moved" objects from their original position */
+	delete_object(py, px);
 }
 
 
@@ -623,7 +632,7 @@ void self_knowledge(bool spoil)
 	{
 		info[i++] = "You are resistant to darkness.";
 	}
-	if (f2 & TR2_RES_DARK)
+	if (f2 & TR2_RES_BLIND)
 	{
 		info[i++] = "Your eyes are resistant to blindness.";
 	}
@@ -1208,7 +1217,8 @@ bool detect_objects_normal(void)
 			lite_spot(y, x);
 
 			/* Detect */
-			detect = TRUE;
+			if (!squelch_hide_item(o_ptr))
+				detect = TRUE;
 		}
 	}
 
@@ -1275,7 +1285,8 @@ bool detect_objects_magic(void)
 			lite_spot(y, x);
 
 			/* Detect */
-			detect = TRUE;
+			if (!squelch_hide_item(o_ptr))
+				detect = TRUE;
 		}
 	}
 
@@ -2229,6 +2240,7 @@ void aggravate_monsters(int who)
 bool banishment(void)
 {
 	int i;
+	unsigned dam = 0;
 
 	char typ;
 
@@ -2256,8 +2268,11 @@ bool banishment(void)
 		delete_monster_idx(i);
 
 		/* Take some damage */
-		take_hit(randint(4), "the strain of casting Banishment");
+		dam += randint(4);
 	}
+
+	/* Hurt the player */
+	take_hit(dam, "the strain of casting Banishment");
 
 	/* Update monster list window */
 	p_ptr->window |= PW_MONLIST;
@@ -2273,6 +2288,7 @@ bool banishment(void)
 bool mass_banishment(void)
 {
 	int i;
+	unsigned dam = 0;
 
 	bool result = FALSE;
 
@@ -2296,11 +2312,14 @@ bool mass_banishment(void)
 		delete_monster_idx(i);
 
 		/* Take some damage */
-		take_hit(randint(3), "the strain of casting Mass Banishment");
-
-		/* Note effect */
-		result = TRUE;
+		dam += randint(3);
 	}
+
+	/* Hurt the player */
+	take_hit(dam, "the strain of casting Mass Banishment");
+
+	/* Calculate result */
+	result = (dam > 0) ? TRUE : FALSE;
 
 	/* Update monster list window */
 	if (result) p_ptr->window |= PW_MONLIST;

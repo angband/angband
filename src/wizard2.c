@@ -1086,6 +1086,9 @@ static void wiz_create_artifact(int a_idx)
 	i_ptr->to_d = a_ptr->to_d;
 	i_ptr->weight = a_ptr->weight;
 
+        /* Mark that the artifact has been created. */
+	a_ptr->cur_num = 1;
+
 	/* Drop the artifact from heaven */
 	drop_near(i_ptr, -1, p_ptr->py, p_ptr->px);
 
@@ -1131,6 +1134,7 @@ static void do_cmd_wiz_cure_all(void)
 	(void)clear_timed(TMD_STUN);
 	(void)clear_timed(TMD_CUT);
 	(void)clear_timed(TMD_SLOW);
+	(void)clear_timed(TMD_AMNESIA);
 
 	/* No longer hungry */
 	(void)set_food(PY_FOOD_MAX - 1);

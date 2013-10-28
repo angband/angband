@@ -555,6 +555,7 @@ void display_monlist(void)
 {
 	int i, max;
 	int line = 1, x = 0;
+	int cur_x;
 	unsigned total_count = 0, disp_count = 0;
 
 	byte attr;
@@ -576,8 +577,8 @@ void display_monlist(void)
 	}
 	else
 	{
-	    x = 13;
-	    max = Term->hgt - 2;
+		x = 13;
+		max = Term->hgt - 2;
 	}
 
 	/* Allocate the array */
@@ -617,6 +618,9 @@ void display_monlist(void)
 		/* No monsters of this race are visible */
 		if (!race_count[i]) continue;
 
+		/* Reset position */
+		cur_x = x;
+
 		/* Note that these have been displayed */
 		disp_count += race_count[i];
 
@@ -637,11 +641,12 @@ void display_monlist(void)
 			strnfmt(buf, sizeof(buf), "%s (x%d) ", m_name, race_count[i]);
 
 		/* Display the pict */
-		Term_putch(x, line, r_ptr->x_attr, r_ptr->x_char);
-		Term_putch(x + 1, line, TERM_WHITE, ' ');
+		Term_putch(cur_x++, line, r_ptr->x_attr, r_ptr->x_char);
+		if (use_bigtile) Term_putch(cur_x++, line, 255, -1);
+		Term_putch(cur_x++, line, TERM_WHITE, ' ');
 
 		/* Print and bump line counter */
-		c_prt(attr, buf, line, x + 2);
+		c_prt(attr, buf, line, cur_x);
 		line++;
 	}
 
@@ -649,7 +654,7 @@ void display_monlist(void)
 	if (disp_count != total_count)
 	{
 		strnfmt(buf, sizeof buf, "  ...and %d others.", total_count - disp_count);
-	    c_prt(TERM_WHITE, buf, line, x);
+		c_prt(TERM_WHITE, buf, line, x);
 	}
 
 	/* Otherwise clear a line at the end, for main-term display */
@@ -660,9 +665,10 @@ void display_monlist(void)
 
 	/* Message */
 	prt(format("You can see %d monster%s:",
-		total_count, (total_count > 1 ? "s" : "")), 0, 0);
+	           total_count, (total_count > 1 ? "s" : "")), 0, 0);
+
 	if (Term == angband_term[0])
-	    Term_addstr(-1, TERM_WHITE, "  (Press any key to continue.)");
+		Term_addstr(-1, TERM_WHITE, "  (Press any key to continue.)");
 
 	/* Free the race counters */
 	FREE(race_count);

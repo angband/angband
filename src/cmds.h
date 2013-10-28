@@ -26,6 +26,7 @@ extern void do_cmd_pickup(void);
 extern void do_cmd_rest(void);
 extern void do_cmd_fire(void);
 extern void do_cmd_throw(void);
+extern void do_cmd_mark_squelch(void);
 
 /* cmd3.c */
 extern void do_cmd_inven(void);

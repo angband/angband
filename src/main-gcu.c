@@ -770,8 +770,8 @@ errr init_gcu(int argc, char **argv)
 			}
 
 			/* Set up the colormap */
-			colortable[i] = (COLOR_PAIR(i - 1) | A_NORMAL);
-			colortable[i + (BASIC_COLORS / 2)] = (COLOR_PAIR(i - 1) | A_BRIGHT);
+			colortable[i] = (COLOR_PAIR(i + 1) | A_NORMAL);
+			colortable[i + (BASIC_COLORS / 2)] = (COLOR_PAIR(i + 1) | A_BRIGHT);
 		}
 
 		/* Take account of "gamma correction" XXX XXX XXX */
