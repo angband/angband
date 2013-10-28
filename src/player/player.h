@@ -699,5 +699,13 @@ bool player_can_fire_msg(void);
 bool player_can_refuel(void);
 bool player_can_refuel_msg(void);
 bool player_confuse_dir(struct player *p, int *dir, bool too);
+bool player_is_resting(void);
+s16b player_resting_count(void);
+void player_resting_set_count(s16b count);
+void player_resting_cancel(void);
+bool player_resting_is_special(s16b count);
+bool player_resting_can_regenerate(void);
+void player_resting_step_turn(void);
+void player_resting_complete_special(void);
 
 #endif /* !PLAYER_PLAYER_H */

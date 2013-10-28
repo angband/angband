@@ -644,7 +644,7 @@ static void process_world(struct cave *c)
 	/* Various things speed up regeneration */
 	if (check_state(p_ptr, OF_REGEN, p_ptr->state.flags))
 		regen_amount *= 2;
-	if (p_ptr->searching || p_ptr->resting)
+	if (p_ptr->searching || player_resting_can_regenerate())
 		regen_amount *= 2;
 
 	/* Some things slow it down */
@@ -670,7 +670,7 @@ static void process_world(struct cave *c)
 	/* Various things speed up regeneration */
 	if (check_state(p_ptr, OF_REGEN, p_ptr->state.flags))
 		regen_amount *= 2;
-	if (p_ptr->searching || p_ptr->resting)
+	if (p_ptr->searching || player_resting_can_regenerate())
 		regen_amount *= 2;
 
 	/* Some things slow it down */
@@ -950,53 +950,12 @@ static void process_player(void)
 
 	/*** Check for interrupts ***/
 
-	/* Complete resting */
-	if (p_ptr->resting < 0)
-	{
-		/* Basic resting */
-		if (p_ptr->resting == REST_ALL_POINTS)
-		{
-			/* Stop resting */
-			if ((p_ptr->chp == p_ptr->mhp) &&
-			    (p_ptr->csp == p_ptr->msp))
-			{
-				disturb(p_ptr, 0, 0);
-			}
-		}
-
-		/* Complete resting */
-		else if (p_ptr->resting == REST_COMPLETE)
-		{
-			/* Stop resting */
-			if ((p_ptr->chp == p_ptr->mhp) &&
-			    (p_ptr->csp == p_ptr->msp) &&
-			    !p_ptr->timed[TMD_BLIND] && !p_ptr->timed[TMD_CONFUSED] &&
-			    !p_ptr->timed[TMD_POISONED] && !p_ptr->timed[TMD_AFRAID] &&
-			    !p_ptr->timed[TMD_TERROR] &&
-			    !p_ptr->timed[TMD_STUN] && !p_ptr->timed[TMD_CUT] &&
-			    !p_ptr->timed[TMD_SLOW] && !p_ptr->timed[TMD_PARALYZED] &&
-			    !p_ptr->timed[TMD_IMAGE] && !p_ptr->word_recall)
-			{
-				disturb(p_ptr, 0, 0);
-			}
-		}
-		
-		/* Rest until HP or SP are filled */
-		else if (p_ptr->resting == REST_SOME_POINTS)
-		{
-			/* Stop resting */
-			if ((p_ptr->chp == p_ptr->mhp) ||
-			    (p_ptr->csp == p_ptr->msp))
-			{
-				disturb(p_ptr, 0, 0);
-			}
-		}
-	}
+	player_resting_complete_special();
 
 	/* Check for "player abort" */
 	if (p_ptr->running ||
 	    cmd_get_nrepeats() > 0 ||
-	    (p_ptr->resting && !(turn & 0x7F)))
+	    (player_is_resting() && !(turn & 0x7F)))
 	{
 		ui_event e;
 
@@ -1076,23 +1035,9 @@ static void process_player(void)
 		}
 
 		/* Resting */
-		else if (p_ptr->resting)
+		else if (player_is_resting())
 		{
-			/* Timed rest */
-			if (p_ptr->resting > 0)
-			{
-				/* Reduce rest count */
-				p_ptr->resting--;
-
-				/* Redraw the state */
-				p_ptr->redraw |= (PR_STATE);
-			}
-
-			/* Take a turn */
-			p_ptr->energy_use = 100;
-
-			/* Increment the resting counter */
-			p_ptr->resting_turn++;
+			player_resting_step_turn();
 		}
 
 		/* Running */
