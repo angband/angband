@@ -1,9 +1,3 @@
-/*
- * File: h-basic.h
- *
- * The most basic "include" file.
- */
-
 #ifndef INCLUDED_H_BASIC_H
 #define INCLUDED_H_BASIC_H
 
@@ -37,6 +31,14 @@
 # endif
 
 
+/* Necessary? */
+#ifdef NDS
+# include <fat.h>
+# include <unistd.h>
+# include <reent.h>
+# include <sys/iosupport.h>
+# include <errno.h>
+#endif
 
 /*
  * Using C99, assume we have stdint and stdbool
@@ -49,10 +51,11 @@
 
 
 /*
- * Everyone except RISC OS has fcntl.h
+ * Everyone except RISC OS has fcntl.h and sys/stat.h
  */
 #ifndef RISCOS
 # define HAVE_FCNTL_H
+# define HAVE_STAT
 #endif
 
 #endif /* HAVE_CONFIG_H */
@@ -72,7 +75,7 @@
  * Basically, SET_UID should *only* be set for "Unix" machines.
  */
 #if !defined(MACH_O_CARBON) && !defined(WINDOWS) && \
-    !defined(RISCOS) && !defined(GAMEBOY)
+    !defined(RISCOS) && !defined(GAMEBOY) && !defined(NDS)
 # define SET_UID
 
 /* Without autoconf, turn on some things */
@@ -105,25 +108,6 @@
 # undef PATH_SEP
 # define PATH_SEP "\\"
 #endif
-
-
-/*
- * Mac support
- */
-#ifdef MACH_O_CARBON
-
-/* OS X uses filetypes when creating files. */
-# define FILE_TYPE_TEXT 'TEXT'
-# define FILE_TYPE_DATA 'DATA'
-# define FILE_TYPE_SAVE 'SAVE'
-# define FILE_TYPE(X) (_ftype = (X))
-
-#else
-
-# define FILE_TYPE(X) ((void)0)
-
-#endif
-
 
 
 /*** Include the library header files ***/
@@ -214,6 +198,9 @@ typedef int errr;
   typedef uint32_t u32b;
   typedef int32_t s32b;
 
+  typedef uint64_t u64b;
+  typedef int64_t s64b;
+
 #define MAX_UCHAR		UINT8_MAX
 #define MAX_SHORT		INT16_MAX
 
@@ -239,14 +226,11 @@ typedef int errr;
 #endif /* HAVE_STDINT_H */
 
 
+/** Debugging macros ***/
 
-/*** Simple constants ***/
-
-/* Define NULL */
-#ifndef NULL
-# define NULL ((void*)0)
-#endif
-
+#define DSTRINGIFY(x) #x
+#define DSTRING(x)    DSTRINGIFY(x)
+#define DHERE         __FILE__ ":" DSTRING(__LINE__) ": "
 
 
 /*** Basic math macros ***/
@@ -255,11 +239,13 @@ typedef int errr;
 #undef MAX
 #undef ABS
 #undef SGN
+#undef CMP
 
 #define MIN(a,b)	(((a) > (b)) ? (b)  : (a))
 #define MAX(a,b)	(((a) < (b)) ? (b)  : (a))
 #define ABS(a)		(((a) < 0)   ? (-(a)) : (a))
 #define SGN(a)		(((a) < 0)   ? (-1) : ((a) != 0))
+#define CMP(a,b) (a < b ? -1 : (b < a ? 1: 0))
 
 
 /*** Useful fairly generic macros ***/

@@ -1,12 +1,21 @@
-/* File: main-gcu.c */
-
 /*
+ * File: main-gcu.c
+ * Purpose: Support for "curses" systems
+ *
  * Copyright (c) 1997 Ben Harrison, and others
  *
- * This software may be copied and distributed for educational, research,
- * and not for profit purposes provided that this copyright and statement
- * are included in all such copies.
+ * This work is free software; you can redistribute it and/or modify it
+ * under the terms of either:
+ *
+ * a) the GNU General Public License as published by the Free Software
+ *    Foundation, version 2, or
+ *
+ * b) the "Angband licence":
+ *    This software may be copied and distributed for educational, research,
+ *    and not for profit purposes provided that this copyright and statement
+ *    are included in all such copies.  Other copyrights may also apply.
  */
+#include "angband.h"
 
 
 /*
@@ -36,7 +45,6 @@
  *
  * Consider the use of "savetty()" and "resetty()".  XXX XXX XXX
  */
-#include "angband.h"
 
 
 #ifdef USE_GCU
@@ -508,7 +516,8 @@ static errr Term_xtra_gcu(int n, int v)
 
 		/* Make a noise */
 		case TERM_XTRA_NOISE:
-		(void)write(1, "\007", 1);
+		if (write(1, "\007", 1) != 1)
+			return (1);
 		return (0);
 
 		/* Flush the Curses buffer */

@@ -1,14 +1,22 @@
-/* File: save.c */
-
 /*
- * Copyright (c) 1997 Ben Harrison, and others
+ * File: save.c
+ * Purpose: Old-style savefile saving
  *
- * This software may be copied and distributed for educational, research,
- * and not for profit purposes provided that this copyright and statement
- * are included in all such copies.  Other copyrights may also apply.
+ * Copyright (c) 1997 Ben Harrison
+ *
+ * This work is free software; you can redistribute it and/or modify it
+ * under the terms of either:
+ *
+ * a) the GNU General Public License as published by the Free Software
+ *    Foundation, version 2, or
+ *
+ * b) the "Angband licence":
+ *    This software may be copied and distributed for educational, research,
+ *    and not for profit purposes provided that this copyright and statement
+ *    are included in all such copies.  Other copyrights may also apply.
  */
-
 #include "angband.h"
+#include "option.h"
 
 
 
@@ -17,7 +25,7 @@
  * Some "local" parameters, used to help write savefiles
  */
 
-static FILE	*fff;		/* Current save "file" */
+static ang_file *fff;		/* Current save "file" */
 
 static byte	xor_byte;	/* Simple encryption */
 
@@ -34,7 +42,7 @@ static void sf_put(byte v)
 {
 	/* Encode the value, write a character */
 	xor_byte ^= v;
-	(void)putc((int)xor_byte, fff);
+	file_writec(fff, xor_byte);
 
 	/* Maintain the checksum info */
 	v_stamp += v;
@@ -122,17 +130,16 @@ static void wr_item(const object_type *o_ptr)
 
 	wr_byte(o_ptr->marked);
 
-	/* Old flags */
-	wr_u32b(0L);
-	wr_u32b(0L);
-	wr_u32b(0L);
+	wr_byte(o_ptr->origin);
+	wr_byte(o_ptr->origin_depth);
+	wr_u16b(o_ptr->origin_xtra);
+
+	wr_u32b(o_ptr->flags1);
+	wr_u32b(o_ptr->flags2);
+	wr_u32b(o_ptr->flags3);
 
 	/* Held by monster index */
 	wr_s16b(o_ptr->held_m_idx);
-
-	/* Extra information */
-	wr_byte(o_ptr->xtra1);
-	wr_byte(o_ptr->xtra2);
 
 	/* Save the inscription (if any) */
 	if (o_ptr->note)
@@ -186,10 +193,6 @@ static void wr_lore(int r_idx)
 	wr_byte(l_ptr->wake);
 	wr_byte(l_ptr->ignore);
 
-	/* Extra stuff */
-	wr_byte(l_ptr->xtra1);
-	wr_byte(l_ptr->xtra2);
-
 	/* Count drops */
 	wr_byte(l_ptr->drop_gold);
 	wr_byte(l_ptr->drop_item);
@@ -203,12 +206,10 @@ static void wr_lore(int r_idx)
 		wr_byte(l_ptr->blows[i]);
 
 	/* Memorize flags */
-	wr_u32b(l_ptr->flags1);
-	wr_u32b(l_ptr->flags2);
-	wr_u32b(l_ptr->flags3);
-	wr_u32b(l_ptr->flags4);
-	wr_u32b(l_ptr->flags5);
-	wr_u32b(l_ptr->flags6);
+	for (i = 0; i < RACE_FLAG_STRICT_UB; i++)
+		wr_u32b(l_ptr->flags[i]);
+	for (i = 0; i < RACE_FLAG_SPELL_STRICT_UB; i++)
+		wr_u32b(l_ptr->spell_flags[i]);
 
 
 	/* Monster limit per level */
@@ -322,7 +323,8 @@ static void wr_options(void)
 	/* Write "hitpoint_warn" */
 	wr_byte(op_ptr->hitpoint_warn);
 
-	wr_u16b(0);	/* oops */
+	/* Write movement delay */
+	wr_u16b(lazymove_delay);
 
 
 	/*** Normal options ***/
@@ -341,7 +343,7 @@ static void wr_options(void)
 		int ob = i % 32;
 
 		/* Process real entries */
-		if (option_text[i])
+		if (option_name(i))
 		{
 			/* Set flag */
 			if (op_ptr->opt[i])
@@ -470,14 +472,20 @@ static void wr_extra(void)
 	wr_s16b(p_ptr->ht);
 	wr_s16b(p_ptr->wt);
 
-	/* Dump the stats (maximum and current) */
+	/* Dump the stats (maximum and current and birth) */
 	for (i = 0; i < A_MAX; ++i) wr_s16b(p_ptr->stat_max[i]);
 	for (i = 0; i < A_MAX; ++i) wr_s16b(p_ptr->stat_cur[i]);
+	for (i = 0; i < A_MAX; ++i) wr_s16b(p_ptr->stat_birth[i]);
 
-	/* Ignore the transient stats */
-	for (i = 0; i < 12; ++i) wr_s16b(0);
+	wr_s16b(p_ptr->ht_birth);
+	wr_s16b(p_ptr->wt_birth);
+	wr_u32b(p_ptr->au_birth);
+
+	/* Padding */
+	wr_u32b(0);
 
 	wr_u32b(p_ptr->au);
+
 
 	wr_u32b(p_ptr->max_exp);
 	wr_u32b(p_ptr->exp);
@@ -507,7 +515,7 @@ static void wr_extra(void)
 	wr_s16b(p_ptr->food);
 	wr_s16b(p_ptr->energy);
 	wr_s16b(p_ptr->word_recall);
-	wr_s16b(p_ptr->see_infra);
+	wr_s16b(p_ptr->state.see_infra);
 	wr_byte(p_ptr->confusing);
 	wr_byte(p_ptr->searching);
 
@@ -597,9 +605,10 @@ static void wr_randarts(void)
 		wr_byte(a_ptr->level);
 		wr_byte(a_ptr->rarity);
 
-		wr_byte(a_ptr->activation);
-		wr_u16b(a_ptr->time);
-		wr_u16b(a_ptr->randtime);
+		wr_u16b(a_ptr->effect);
+		wr_u16b(a_ptr->time_base);
+		wr_u16b(a_ptr->time_dice);
+		wr_u16b(a_ptr->time_sides);
 	}
 }
 
@@ -649,6 +658,44 @@ static void wr_dungeon(void)
 		{
 			/* Extract the important cave_info flags */
 			tmp8u = (cave_info[y][x] & (IMPORTANT_FLAGS));
+
+			/* If the run is broken, or too full, flush it */
+			if ((tmp8u != prev_char) || (count == MAX_UCHAR))
+			{
+				wr_byte((byte)count);
+				wr_byte((byte)prev_char);
+				prev_char = tmp8u;
+				count = 1;
+			}
+
+			/* Continue the run */
+			else
+			{
+				count++;
+			}
+		}
+	}
+
+	/* Flush the data (if any) */
+	if (count)
+	{
+		wr_byte((byte)count);
+		wr_byte((byte)prev_char);
+	}
+
+	/** Now dump the cave_info2[][] stuff **/
+
+	/* Note that this will induce two wasted bytes */
+	count = 0;
+	prev_char = 0;
+
+	/* Dump the cave */
+	for (y = 0; y < DUNGEON_HGT; y++)
+	{
+		for (x = 0; x < DUNGEON_WID; x++)
+		{
+			/* Keep all the information from info2 */
+			tmp8u = cave_info2[y][x];
 
 			/* If the run is broken, or too full, flush it */
 			if ((tmp8u != prev_char) || (count == MAX_UCHAR))
@@ -758,14 +805,16 @@ static void wr_dungeon(void)
 /*
  * Actually write a save-file
  */
-static bool wr_savefile_new(void)
+static void wr_savefile_new(void)
 {
 	int i;
 
 	u32b now;
 
 	u16b tmp16u;
+	u32b tmp32u;
 
+	u32b tmp32v;
 
 	/* Guess at the current time */
 	now = time((time_t *)0);
@@ -827,7 +876,7 @@ static bool wr_savefile_new(void)
 
 
 	/* Dump the number of "messages" */
-	tmp16u = message_num();
+	tmp16u = messages_num();
 	if (tmp16u > 80) tmp16u = 80;
 	wr_u16b(tmp16u);
 
@@ -947,19 +996,28 @@ static bool wr_savefile_new(void)
 		wr_ghost();
 	}
 
+	/* NEW (jdw): dumping history entries */
+	/* Dump the number of history entries */
+	tmp32u = history_get_num();
+	wr_u32b(tmp32u);
+
+	/* Dump the history entries one-by-one */
+	for (tmp32v = 0; tmp32v < tmp32u; tmp32v++)
+	{
+		wr_u16b(history_list[tmp32v].type);
+		wr_s32b(history_list[tmp32v].turn);
+		wr_s16b(history_list[tmp32v].dlev);
+		wr_s16b(history_list[tmp32v].clev);
+		wr_byte(history_list[tmp32v].a_idx);
+		wr_string(history_list[tmp32v].event);
+	}
+
 
 	/* Write the "value check-sum" */
 	wr_u32b(v_stamp);
 
 	/* Write the "encoded checksum" */
 	wr_u32b(x_stamp);
-
-
-	/* Error in save */
-	if (ferror(fff) || (fflush(fff) == EOF)) return FALSE;
-
-	/* Successful save */
-	return TRUE;
 }
 
 
@@ -968,133 +1026,80 @@ static bool wr_savefile_new(void)
  */
 static bool save_player_aux(cptr name)
 {
-	bool ok = FALSE;
-
-	int fd;
-
-	int mode = 0644;
-
+	bool ok = TRUE;
 
 	/* No file yet */
 	fff = NULL;
 
-
-	/* File type is "SAVE" */
-	FILE_TYPE(FILE_TYPE_SAVE);
-
-
-	/* Grab permissions */
+	/* Open the savefile */
 	safe_setuid_grab();
-
-	/* Create the savefile */
-	fd = fd_make(name, mode);
-
-	/* Drop permissions */
+	fff = file_open(name, MODE_WRITE, FTYPE_SAVE);
 	safe_setuid_drop();
 
-	/* File is okay */
-	if (fd >= 0)
-	{
-		/* Close the "fd" */
-		fd_close(fd);
+	/* Successful open */
+	if (fff) wr_savefile_new();
+	else ok = FALSE;
 
-		/* Grab permissions */
-		safe_setuid_grab();
-
-		/* Open the savefile */
-		fff = my_fopen(name, "wb");
-
-		/* Drop permissions */
-		safe_setuid_drop();
-
-		/* Successful open */
-		if (fff)
-		{
-			/* Write the savefile */
-			if (wr_savefile_new()) ok = TRUE;
-
-			/* Attempt to close it */
-			if (my_fclose(fff)) ok = FALSE;
-		}
-
-		/* Grab permissions */
-		safe_setuid_grab();
-
-		/* Remove "broken" files */
-		if (!ok) fd_kill(name);
-
-		/* Drop permissions */
-		safe_setuid_drop();
-	}
+	/* Attempt to close it */
+	if (ok && !file_close(fff)) ok = FALSE;
 
 
-	/* Failure */
-	if (!ok) return (FALSE);
+	if (ok)
+		character_saved = TRUE;
 
-	/* Successful save */
-	character_saved = TRUE;
-
-	/* Success */
-	return (TRUE);
+	return ok;
 }
 
-
+#include <errno.h>
 
 /*
  * Attempt to save the player in a savefile
  */
-bool save_player(void)
+bool old_save(void)
 {
-	int result = FALSE;
-
-	char safe[1024];
-
+	char new_savefile[1024];
+	char old_savefile[1024];
 
 	/* New savefile */
-	my_strcpy(safe, savefile, sizeof(safe));
-	my_strcat(safe, ".new", sizeof(safe));
+	strnfmt(new_savefile, sizeof(new_savefile), "%s.new", savefile);
+	strnfmt(old_savefile, sizeof(old_savefile), "%s.old", savefile);
 
-	/* Grab permissions */
+	/* Make sure that the savefile doesn't already exist */
 	safe_setuid_grab();
-
-	/* Remove it */
-	fd_kill(safe);
-
-	/* Drop permissions */
+	file_delete(new_savefile);
+	file_delete(old_savefile);
 	safe_setuid_drop();
 
 	/* Attempt to save the player */
-	if (save_player_aux(safe))
+	if (save_player_aux(new_savefile))
 	{
-		char temp[1024];
+		bool err = FALSE;
 
-		/* Old savefile */
-		my_strcpy(temp, savefile, sizeof(temp));
-		my_strcat(temp, ".old", sizeof(temp));
-
-		/* Grab permissions */
 		safe_setuid_grab();
 
-		/* Remove it */
-		fd_kill(temp);
+		if (file_exists(savefile) && !file_move(savefile, old_savefile))
+			err = TRUE;
 
-		/* Preserve old savefile */
-		fd_move(savefile, temp);
+		if (!err)
+		{
+			if (!file_move(new_savefile, savefile))
+				err = TRUE;
 
-		/* Activate new savefile */
-		fd_move(safe, savefile);
+			if (err)
+				file_move(old_savefile, savefile);
+			else
+				file_delete(old_savefile);
+		}
 
-		/* Remove preserved savefile */
-		fd_kill(temp);
-
-		/* Drop permissions */
 		safe_setuid_drop();
 
-		/* Success */
-		result = TRUE;
+		return err ? FALSE : TRUE;
 	}
 
+	/* Delete temp file */
+	safe_setuid_grab();
+	file_delete(new_savefile);
+	safe_setuid_drop();
 
-	/* Return the result */
-	return (result);
+	return FALSE;
 }

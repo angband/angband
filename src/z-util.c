@@ -81,6 +81,43 @@ int my_strnicmp(cptr a, cptr b, int n)
 	return 0;
 }
 
+/*
+ * An ANSI version of strstr() with case insensitivity.
+ *
+ * In the public domain; found at:
+ *    http://c.snippets.org/code/stristr.c
+ */
+char *my_stristr(const char *string, const char *pattern)
+{
+      const char *pptr, *sptr;
+      char *start;
+
+      for (start = (char *)string; *start != 0; start++)
+      {
+            /* find start of pattern in string */
+            for ( ; ((*start != 0) &&
+			        (toupper((unsigned char)*start) != toupper((unsigned char)*pattern))); start++)
+                  ;
+            if (*start == 0)
+                  return NULL;
+
+            pptr = (const char *)pattern;
+            sptr = (const char *)start;
+
+            while (toupper((unsigned char)*sptr) == toupper((unsigned char)*pptr))
+            {
+                  sptr++;
+                  pptr++;
+
+                  /* if end of pattern then pattern was found */
+                  if (*pptr == 0)
+                        return (start);
+            }
+      }
+
+      return NULL;
+}
+
 
 /*
  * The my_strcpy() function copies up to 'bufsize'-1 characters from 'src'
@@ -229,3 +266,75 @@ void quit(cptr str)
 	/* Failure */
 	(void)(exit(EXIT_FAILURE));
 }
+
+
+
+
+/* Compare and swap hooks */
+bool (*ang_sort_comp)(const void *u, const void *v, int a, int b);
+void (*ang_sort_swap)(void *u, void *v, int a, int b);
+
+
+/*
+ * Angband sorting algorithm -- quick sort in place
+ *
+ * Note that the details of the data we are sorting is hidden,
+ * and we rely on the "ang_sort_comp()" and "ang_sort_swap()"
+ * function hooks to interact with the data, which is given as
+ * two pointers, and which may have any user-defined form.
+ */
+void ang_sort_aux(void *u, void *v, int p, int q)
+{
+	int z, a, b;
+
+	/* Done sort */
+	if (p >= q) return;
+
+	/* Pivot */
+	z = p;
+
+	/* Begin */
+	a = p;
+	b = q;
+
+	/* Partition */
+	while (TRUE)
+	{
+		/* Slide i2 */
+		while (!(*ang_sort_comp)(u, v, b, z)) b--;
+
+		/* Slide i1 */
+		while (!(*ang_sort_comp)(u, v, z, a)) a++;
+
+		/* Done partition */
+		if (a >= b) break;
+
+		/* Swap */
+		(*ang_sort_swap)(u, v, a, b);
+
+		/* Advance */
+		a++, b--;
+	}
+
+	/* Recurse left side */
+	ang_sort_aux(u, v, p, b);
+
+	/* Recurse right side */
+	ang_sort_aux(u, v, b+1, q);
+}
+
+
+/*
+ * Angband sorting algorithm -- quick sort in place
+ *
+ * Note that the details of the data we are sorting is hidden,
+ * and we rely on the "ang_sort_comp()" and "ang_sort_swap()"
+ * function hooks to interact with the data, which is given as
+ * two pointers, and which may have any user-defined form.
+ */
+void ang_sort(void *u, void *v, int n)
+{
+	/* Sort the array */
+	ang_sort_aux(u, v, 0, n-1);
+}
+

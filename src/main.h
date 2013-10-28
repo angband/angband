@@ -18,7 +18,6 @@ extern errr init_sound_sdl(int argc, char **argv);
 
 extern errr init_lfb(int argc, char **argv);
 extern errr init_gtk(int argc, char **argv);
-extern errr init_xaw(int argc, char **argv);
 extern errr init_x11(int argc, char **argv);
 extern errr init_xpj(int argc, char **argv);
 extern errr init_gcu(int argc, char **argv);
@@ -36,7 +35,6 @@ extern errr init_sdl(int argc, char **argv);
 
 extern const char help_lfb[];
 extern const char help_xpj[];
-extern const char help_xaw[];
 extern const char help_x11[];
 extern const char help_vcs[];
 extern const char help_gtk[];

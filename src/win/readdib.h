@@ -1,5 +1,8 @@
 /* File: readdib.h */
 
+#ifndef INCLUDED_READDIB_H
+#define INCLUDED_READDIB_H
+
 /*
  * This file has been modified for use with "Angband 2.8.2"
  *
@@ -22,3 +25,5 @@ extern BOOL ReadDIB(HWND, LPSTR, DIBINIT *);
 
 /* Free a DIB */
 extern void FreeDIB(DIBINIT *dib);
+
+#endif /* !INCLUDED_READDIB_H */

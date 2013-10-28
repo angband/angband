@@ -22,21 +22,21 @@
     <key>CFBundleDocumentTypes</key>
       <array>
         <dict>
-          <key>CFBundleTypeExtentions</key><array><string>*</string></array>
+          <key>CFBundleTypeExtensions</key><array><string>*</string></array>
           <key>CFBundleTypeIconFile</key><string>Save</string>
           <key>CFBundleTypeName</key><string>Angband saved game</string>
           <key>CFBundleTypeOSTypes</key><array><string>SAVE</string></array>
           <key>CFBundleTypeRole</key><string>Editor</string>
         </dict>
         <dict>
-          <key>CFBundleTypeExtentions</key><array><string>*</string></array>
+          <key>CFBundleTypeExtensions</key><array><string>*</string></array>
           <key>CFBundleTypeIconFile</key><string>Edit</string>
           <key>CFBundleTypeName</key><string>Angband game data</string>
           <key>CFBundleTypeOSTypes</key><array><string>TEXT</string></array>
           <key>CFBundleTypeRole</key><string>Editor</string>
         </dict>
         <dict>
-          <key>CFBundleTypeExtentions</key><array><string>*</string></array>
+          <key>CFBundleTypeExtensions</key><array><string>*</string></array>
           <key>CFBundleTypeIconFile</key><string>Data</string>
           <key>CFBundleTypeName</key><string>Angband game data</string>
           <key>CFBundleTypeOSTypes</key><array><string>DATA</string></array>

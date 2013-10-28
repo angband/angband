@@ -19,6 +19,9 @@
 ?:[IOR [EQU $SYS xaw] [EQU $SYS x11]]
 %:graf-x11.prf
 
+?:[EQU $SYS gtk]
+%:graf-gtk.prf
+
 ?:[EQU $SYS mac]
 %:graf-mac.prf
 

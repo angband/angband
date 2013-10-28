@@ -18,81 +18,71 @@
 #include "z-virt.h"
 #include "z-util.h"
 
+/*
+ * Hooks for platform-specific memory allocation.
+ */
+static mem_alloc_hook ralloc_aux;
+static mem_free_hook rnfree_aux;
+static mem_realloc_hook realloc_aux;
 
 
 /*
- * Optional auxiliary "rpanic" function
+ * Set the hooks for the memory system.
  */
-void* (*rpanic_aux)(size_t) = NULL;
-
-/*
- * The system is out of memory, so panic.  If "rpanic_aux" is set,
- * it can be used to free up some memory and do a new "ralloc()",
- * or if not, it can be used to save things, clean up, and exit.
- * By default, this function simply quits the computer.
- */
-void* rpanic(size_t len)
+bool mem_set_hooks(mem_alloc_hook alloc, mem_free_hook free, mem_realloc_hook realloc)
 {
-	/* Hopefully, we have a real "panic" function */
-	if (rpanic_aux) return ((*rpanic_aux)(len));
+	/* Error-check */
+	if (!alloc || !free || !realloc) return FALSE;
 
-	/* Attempt to quit before icky things happen */
-	quit("Out of Memory!");
+	/* Set up hooks */
+	ralloc_aux = alloc;
+	rnfree_aux = free;
+	realloc_aux = realloc;
 
-	/* Paranoia */
-	return (NULL);
+	return TRUE;
 }
 
 
 /*
- * Optional auxiliary "ralloc" function
+ * Allocate `len` bytes of memory.
+ *
+ * Returns:
+ *  - NULL if `len` == 0; or
+ *  - a pointer to a block of memory of at least `len` bytes
+ *
+ * Doesn't return on out of memory.
  */
-void* (*ralloc_aux)(size_t) = NULL;
-
-
-/*
- * Allocate some memory
- */
-void* ralloc(size_t len)
+void *mem_alloc(size_t len)
 {
 	void *mem;
 
 	/* Allow allocation of "zero bytes" */
 	if (len == 0) return (NULL);
 
-	/* Use the aux function if set */
+	/* Allocate some memory */
 	if (ralloc_aux) mem = (*ralloc_aux)(len);
+	else            mem = malloc(len);
 
-	/* Use malloc() to allocate some memory */
-	else mem = malloc(len);
+	/* Handle OOM */
+	if (!mem) quit("Out of Memory!");
 
-	/* We were able to acquire memory */
-	if (!mem) mem = rpanic(len);
-
-	/* Return the memory, if any */
-	return (mem);
+	return mem;
 }
 
 
 /*
- * Optional auxiliary "rnfree" function
+ * Free the memory pointed to by `p`.
+ *
+ * Returns NULL.
  */
-void* (*rnfree_aux)(void*) = NULL;
-
-
-/*
- * Free some memory (allocated by ralloc), return NULL
- */
-void* rnfree(void *p)
+void *mem_free(void *p)
 {
 	/* Easy to free nothing */
 	if (!p) return (NULL);
 
-	/* Use the "aux" function */
-	if (rnfree_aux) return ((*rnfree_aux)(p));
-
-	/* Use "free" */
-	free(p);
+	/* Free memory */
+	if (rnfree_aux) (*rnfree_aux)(p);
+	else            free(p);
 
 	/* Done */
 	return (NULL);
@@ -100,37 +90,60 @@ void* rnfree(void *p)
 
 
 /*
- * Allocate a constant string, containing the same thing as 'str'
+ * Allocate `len` bytes of memory, copying whatever is in `p` with it.
+ *
+ * Returns:
+ *  - NULL if `len` == 0 or `p` is NULL; or
+ *  - a pointer to a block of memory of at least `len` bytes
+ *
+ * Doesn't return on out of memory.
  */
-cptr string_make(cptr str)
+void *mem_realloc(void *p, size_t len)
+{
+	void *mem;
+
+	/* Fail gracefully */
+	if (!p || len == 0) return (NULL);
+
+	if (realloc_aux) mem = (*realloc_aux)(p, len);
+	else             mem = realloc(p, len);
+
+	/* Handle OOM */
+	if (!mem) quit("Out of Memory!");
+
+	return mem;
+}
+
+
+
+/*
+ * Duplicates an existing string `str`, allocating as much memory as necessary.
+ */
+char *string_make(const char *str)
 {
 	char *res;
+	size_t siz;
 
-	/* Simple sillyness */
-	if (!str) return (str);
+	/* Error-checking */
+	if (!str) return NULL;
 
-	/* Allocate space for the string including terminator */
-	res = ralloc(strlen(str) + 1);
+	/* Allocate space for the string (including terminator) */
+	siz = strlen(str) + 1;
+	res = mem_alloc(siz);
 
 	/* Copy the string (with terminator) */
-	strcpy(res, str);
+	my_strcpy(res, str, siz);
 
-	/* Return the allocated and initialized string */
-	return (res);
+	return res;
 }
 
 
 /*
  * Un-allocate a string allocated above.
  */
-errr string_free(cptr str)
+#undef string_free
+char *string_free(char *str)
 {
-	/* Succeed on non-strings */
-	if (!str) return (0);
-
 	/* Kill the buffer of chars we must have allocated above */
-	(void)rnfree((void*)str);
-
-	/* Success */
-	return (0);
+	return mem_free(str);
 }

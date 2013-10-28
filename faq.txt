@@ -1,28 +1,94 @@
-A brief Angband FAQ
-===================
+The Angband FAQ
 
-1. "I want old school #s as wall tiles, not solid blocks!"
-   "There are no walls, and I'm playing on Windows Vista."
+Posted every other month on rec.games.roguelike.angband and kept up-to-date on the forum [http://angband.oook.cz/forum].
 
-   Please see:
-     http://angband.oook.cz/forum/showthread.php?t=88 and
-     http://angband.oook.cz/forum/showthread.php?t=26
+1. Issues and problems
+	a. How do I report a bug?
+	b. I hate the store interface!
+	c. Dark monsters are hard to see.
+	d. I want old-school '#'s as wall tiles, not solid blocks!
+	e. I use Vista and my display is messed up.
+	e. I play in the console on Linux, and the colours are screwed up.
+	f. I'm playing in a terminal and the Escape key isn't working as it should - I have to press it twice, or just wait a while.
+	g. Is there a way to disable that thing that pops up when you hit the enter key?
 
-2. "How do I get hold of the David Gervais 32x32 tiles?"
+2. Development
+	a. What are the current plans for the game?
+	b. How do I suggesting an idea/feature?
+	c. How do I get a copy of the source code?
+	c. How do I compile the game?
+	d. How do I contribute to the game?
 
-   If you're on Windows or using the X11 port, you'll have to download
-   them from the below URL and place the files in your lib/xtra directory.
+-----------------------------------------------------------------
 
-   http://angband.oook.cz/download/extra/graf-32x32-306.zip
+1a. How do I report a bug?
 
-3. "I play in the console on Linux, and the colours are screwed up"
+First of all, use http://dev.rephial.org/trac/search?ticket=on to see if your bug has been reported.  Try using a key word or two (like "recall" for monster recall, "pseudo" for pseudo-ID).
 
-   Please see:
-     http://angband.oook.cz/forum/showthread.php?t=77
+If you can't find it there, you're best off posting on the forum or the newsgroup; if it's been reported (several) already, you will get replies sounding more annoyed as the number of times it's been previously reported goes up, but so life goes.
 
-4. "I'm playing in a terminal and the Escape key isn't working as it
-   should - I have to press it twice, or just wait a while."
+Bug reports should *always* include your current operating system (e.g. Windows XP), what version the problem appeared in, and the best steps you can figure out to reproduce the bug.  Savefiles that show the problem might be requested, because they help tracking bugs down.
 
-   This is a feature of terminals to allow you to enter keypresses that
-   can't be sent directly.  Use the backtick ('`') key instead -- it's
-   equivalent in every way to Escape.
+1b. I hate the store interface!
+
+Sorry, but it's staying that way for now.  Expect a better one 
+
+1c. Dark monsters are hard to see.
+
+Fix (reduce) the alpha on your screen, or use the "Interact with colors" screen under the options ('=') menu.  (On older versions, use the '&' command.)  Navigate to the '8' using 'n' and increase the color intensity with r(ed)g(reen)b(lue).
+
+1d. I want old-school '#'s as wall tiles, not solid blocks!
+1e. I use Vista and my display is messed up.
+
+Please see http://angband.oook.cz/forum/showthread.php?t=88 and http://angband.oook.cz/forum/showthread.php?t=26
+
+1e. I play in the console on Linux, and the colours are screwed up.
+
+Please see http://angband.oook.cz/forum/showthread.php?t=77
+
+1f. I'm playing in a terminal and the Escape key isn't working as it should - I have to press it twice, or just wait a while.
+
+This is a feature of terminals to allow you to enter keypresses that can't be sent directly.  Use the backtick '`' key instead - it's equivalent in every way to Escape.  (This doesn't apply in Sangband, or NPPAngband.)
+
+1g. Is there a way to disable that thing that pops up when you hit the enter key?
+
+Go into the options menu, choose "Interact with macros", then "Create a keymap".  Press Enter at the "Keypress" prompt and a single space as the "Action".  In short: `=m8<enter> <enter>`
+
+And then you'll probably want to choose to "Append keymaps to a file" so that it persists for next time you load the game.
+
+This just replaces the default action of Enter with a "do nothing but don't tell me about help" action.  If you want to keep the menu available, say on the 'Tab' key, you can also remap the Tab keypress to the '\n' action.
+
+-----------------------------------------------------------------
+
+2a. What are the current plans for the game?
+
+Ever-changing and subject to U-turning with public dissent.
+
+2b. How do I suggest an idea/feature?
+
+Post it on the newsgroup or the forums.  If people think it's a good idea, it will generally get some discussion; if they don't, it won't.  The developers keep an eye on r.g.r.a and the forums, and ideas deemed OK will get filed for future implementation.
+
+Sometimes a suggestion may not be right for the game, thougn. Some suggestions would change aspects of Angband that are essential to its nature; Angband has a long history, and so has developed a certain character over the years.  Some suggestions might make a good game, perhaps even a better game than Angband, but would make a game that is not Angband.  To some extent, variants exist to address this, but even so they tend to adhere to the core Angband principles. 
+
+2c. How do I get a copy of the source code?
+
+It depends what you want it for.  If you want to start a new variant, you may want to start with the last stable release of the game (maybe 3.0.9, for example).  If you're more interested in hacking on Vanilla Angband, then you really want to get hold of the latest development version.  Luckily, both are easy.
+
+The latest version's source is linked to from the page http://rephial.org/.
+
+To get the SVN trunk, get Subversion [http://subversion.tigris.org/] for your system, and checkout the repository "http://dev.rephial.org/svn/trunk/".  On the commandline, this would be done like so: "svn co http://dev.rephial.org/".  You'd do well to read a Subversion primer, too.
+
+2c. How do I compile the game?
+
+Please see http://rephial.org/wiki/Compiling for an up-to-date guide to this.
+
+2d. How do I contribute to the game?
+
+First, join the mailing list [http://angband.oook.cz/mailman/listinfo/angband-dev].
+
+If you already have a patch you want to be included, please send it to the mailing list in the form of a unified diff against either the SVN trunk (e.g. using svn diff) or the latest public release.  Please be careful to follow the Angband coding guidelines [http://rephial.org/wiki/CodingGuidelines].  All contributions to individual files are accepted under the licences used in the file header.  Make sure you're OK with this before sending in patches.
+
+If the patch is a bugfix, then you can reasonably expect it to be integrated into the development tree. If it's more involved, and the feature is not one that the next version is planned to have, the patch may go through several reviews before being incorporated. It may also just be unsuitable for Angband—in which case, please don't take rejection badly; you may just be better off writing a variant.
+
+Non-code activites are different. Documentation can be written on the wiki, or if you're a graphics designer (and they're always welcome) then please talk on the mailing list about your work.
+

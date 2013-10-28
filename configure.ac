@@ -1,5 +1,5 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT([Angband], [3.0.9b], [bugs@rephial.org], [angband])
+AC_INIT([Angband], [3.1.0beta])
 AC_PREREQ([2.50])
 
 AC_CONFIG_HEADER(src/autoconf.h)
@@ -11,11 +11,57 @@ AC_SUBST([VERSION], [AC_PACKAGE_VERSION])
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE", [Name of package])
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Version number of package])
 
+AC_ARG_WITH(setgid,       [  --with-setgid=NAME      install angband as group NAME])
+AC_ARG_WITH(private_dirs, [  --with-private-dirs     use private scorefiles/savefiles/datafiles],
+            [], [with_private_dirs=yes])
+AC_ARG_WITH(noinstall,    [  --with-noinstall        don't install globally at all])
+
+if test "x$with_setgid" != "xyes"; then
+	if test "x$with_setgid" != "x"; then
+		wsetgid=yes
+		with_private_dirs=
+	fi
+fi
+if test "x$with_noinstall" == "xyes"; then
+	with_private_dirs=
+fi
+#if test "x$with_segtid" == "xyes"; then
+#	with_private_dirs=
+#fi
+if test "x$wsetgid$with_private_dirs$with_noinstall" != "xyes";  then
+
+	echo "Please run ./configure with one of:
+
+--with-setgid=<groupname>
+    This configures the game to store savefiles and scorefiles in a central
+    location on the system, writeable only by the group \"groupname\".  If you
+    want a traditional installation of Angband, where all users share a
+    scorefile, then use this option, and set the groupname to your \"games\"
+    group.  This option requires the game to have the \"setgid\" bit set on its
+    permissions, and thus this option requires root when installing.
+
+--with-private-dirs
+    This configures the game to store savefiles and scorefiles for each user
+    in that user's home directory.  The game requires no special privileges if
+    you do this, and should be used for most installations of the game.
+
+--with-noinstall
+    This configures the game to store savefiles and scorefiles in the "lib"
+    directory that the game uses.  This is useful if you don't want to install
+    system-wide at all; \"make install\" will just move the executable to the
+    directory above \"src\" if you choose this option.  This option is
+    recommended for developers.
+"
+
+	AC_MSG_ERROR([Please specify an installation method.])
+fi
+
+
 dnl Check for C compiler
 AC_LANG([C])
 AC_PROG_CC
 
-test "$GCC" = "yes" && CFLAGS="$CFLAGS -Wall -pipe -g -fno-strength-reduce"
+test "$GCC" = "yes" && CFLAGS="$CFLAGS -fno-strength-reduce -Wall"
 
 dnl Checks for various programs
 AC_PROG_INSTALL
@@ -26,22 +72,26 @@ AC_PATH_PROG(RM, rm)
 AC_PATH_PROG(MV, mv)
 AC_PATH_PROG(CP, cp)
 
-dnl Work around an autoconf bugs.
+dnl Work around an autoconf bug.
 if test "$prefix" = "NONE"; then
 	prefix="${ac_default_prefix}"
 fi
 
 
-AC_ARG_WITH(setgid,  [  --with-setgid=NAME      install angband as group NAME])
+
+if test "x$with_private_dirs" != "x"; then
+	AC_DEFINE(USE_PRIVATE_PATHS, 1, [Define to use private user paths.])
+fi
+
 AC_ARG_WITH(libpath, [  --with-libpath=PATH     use PATH as the path to the Angband lib folder])
 
 if test "$with_libpath" != ""; then
 	libpath="${with_libpath}"
-elif test "$with_setgid" != ""; then
-	libpath="${prefix}/share/${PACKAGE}/"
-else
+elif test "$with_noinstall" != ""; then
 	libpath="./lib/"
 	bindir=".."
+else
+	libpath="${prefix}/share/${PACKAGE}/"
 fi
 
 case "/$libpath" in
@@ -51,35 +101,40 @@ esac
 
 AC_DEFINE_UNQUOTED([DEFAULT_PATH], "${game_datadir}", [Path to the game's lib directory])
 
-SETEGID="$with_setgid";    AC_SUBST(SETEGID)
-DATA_PATH="$game_datadir"; AC_SUBST(DATA_PATH)
-
+NOINSTALL="$with_noinstall"; AC_SUBST(NOINSTALL)
+SETEGID="$with_setgid";      AC_SUBST(SETEGID)
+DATA_PATH="$game_datadir";   AC_SUBST(DATA_PATH)
 
 dnl Frontends
 AC_ARG_ENABLE(gtk,
-	[  --enable-gtk                         Enables GTK 2.x frontend, can't use on system-wide installs (default: disabled)],
+	[AS_HELP_STRING([--enable-gtk],       [Enables GTK 2.x frontend (default: disabled)])],
 	[enable_gtk=$enableval],
 	[enable_gtk=no])
 AC_ARG_ENABLE(curses,
-	[  --enable-curses                      Enables Curses frontend (default: enabled)],
+	[AS_HELP_STRING([--enable-curses],    [Enables Curses frontend (default: enabled)])],
 	[enable_curses=$enableval],
 	[enable_curses=yes])
 AC_ARG_ENABLE(x11,
-	[  --enable-x11                         Enables X11 frontend (default: enabled)],
+	[AS_HELP_STRING([--enable-x11],       [Enables X11 frontend (default: enabled)])],
 	[enable_x11=$enableval],
 	[enable_x11=yes])
 AC_ARG_ENABLE(sdl,
-	[  --enable-sdl                         Enables SDL frontend (default: disabled)],
+	[AS_HELP_STRING([--enable-sdl],       [Enables SDL frontend (default: disabled)])],
 	[enable_sdl=$enableval],
 	[enable_sdl=no])
 
 dnl Sound modules
 AC_ARG_ENABLE(sdl_mixer,
-	[  --enable-sdl-mixer                   Enables SDL mixer sound support (default: enabled)],
+	[AS_HELP_STRING([--enable-sdl-mixer], [Enables SDL mixer sound support (default: enabled)])],
 	[enable_sdl_mixer=$enable_sdl_mixer],
 	[enable_sdl_mixer=yes])
 
 
+if test "x$enable_gtk" = "xyes"; then
+	if test "x$wsetgid" = "xyes"; then
+		AC_MSG_ERROR([The "setgid" option and the GTK port are incompatible.])
+	fi
+fi
 
 
 dnl curses checking
@@ -156,7 +211,7 @@ if test "$enable_gtk" = "yes"; then
 		[with_gtk=no]
 	)
 
-	if [ "x$SETEGID" != "x"]; then
+	if test "x$SETEGID" != "x"; then
 		enable_gtk=no
 		with_gtk=no
 	fi
@@ -188,7 +243,7 @@ AC_CHECK_HEADERS([fcntl.h stdint.h dirent.h])
 AC_HEADER_STDBOOL
 AC_C_CONST
 AC_TYPE_SIGNAL
-AC_CHECK_FUNCS([mkstemp setresgid setegid can_change_color])
+AC_CHECK_FUNCS([setresgid setegid can_change_color stat])
 
 
 
@@ -238,4 +293,16 @@ if test "$enable_sdl" = "yes"; then
 	fi
 else
 	echo "- SDL                                     Disabled"
+fi
+
+echo
+
+if test "$enable_sdl_mixer" = "yes"; then
+	if test "$found_sdl_mixer" = "no"; then
+		echo "- SDL sound                               No; missing libraries"
+	else
+		echo "- SDL sound                               Yes"
+	fi
+else
+	echo "- SDL sound                               Disabled"
 fi

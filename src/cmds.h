@@ -5,46 +5,60 @@
 extern void cmd_init(void);
 extern void process_command(bool no_request);
 
+/* cmd-obj.c */
+void do_cmd_uninscribe(void);
+void do_cmd_inscribe(void);
+void do_cmd_observe(void);
+void do_cmd_takeoff(void);
+void do_cmd_wield(void);
+void do_cmd_drop(void);
+void do_cmd_mark_squelch(void);
+void do_cmd_browse(void);
+void do_cmd_study(void);
+void do_cmd_cast(void);
+void do_cmd_pray(void);
+void do_cmd_use_staff(void);
+void do_cmd_aim_wand(void);
+void do_cmd_zap_rod(void);
+void do_cmd_activate(void);
+void do_cmd_eat_food(void);
+void do_cmd_quaff_potion(void);
+void do_cmd_read_scroll(void);
+void do_cmd_refill(void);
+
 /* cmd2.c */
-extern void do_cmd_go_up(void);
-extern void do_cmd_go_down(void);
-extern void do_cmd_search(void);
-extern void do_cmd_toggle_search(void);
-extern void do_cmd_open(void);
-extern void do_cmd_close(void);
-extern void do_cmd_tunnel(void);
-extern void do_cmd_disarm(void);
-extern void do_cmd_bash(void);
-extern void do_cmd_alter(void);
-extern void do_cmd_spike(void);
-extern void do_cmd_walk(void);
-extern void do_cmd_jump(void);
-extern void do_cmd_run(void);
-extern void do_cmd_pathfind(int y, int x);
-extern void do_cmd_hold(void);
-extern void do_cmd_pickup(void);
-extern void do_cmd_rest(void);
-extern void do_cmd_fire(void);
-extern void do_cmd_throw(void);
-extern void do_cmd_mark_squelch(void);
+void do_cmd_go_up(void);
+void do_cmd_go_down(void);
+void do_cmd_search(void);
+void do_cmd_toggle_search(void);
+void do_cmd_open(void);
+void do_cmd_close(void);
+void do_cmd_tunnel(void);
+void do_cmd_disarm(void);
+void do_cmd_bash(void);
+void do_cmd_alter(void);
+void do_cmd_spike(void);
+void do_cmd_walk(void);
+void do_cmd_jump(void);
+void do_cmd_run(void);
+void do_cmd_pathfind(int y, int x);
+void do_cmd_hold(void);
+void do_cmd_pickup(void);
+void do_cmd_rest(void);
 
 /* cmd3.c */
-extern void do_cmd_inven(void);
-extern void do_cmd_equip(void);
-extern void do_cmd_wield(void);
-extern void do_cmd_takeoff(void);
-extern void do_cmd_drop(void);
-extern void do_cmd_destroy(void);
-extern void do_cmd_observe(void);
-extern void do_cmd_uninscribe(void);
-extern void do_cmd_inscribe(void);
-extern void do_cmd_refill(void);
-extern void do_cmd_target(void);
-extern void do_cmd_look(void);
-extern void do_cmd_locate(void);
-extern void do_cmd_query_symbol(void);
-extern bool ang_sort_comp_hook(const void *u, const void *v, int a, int b);
-extern void ang_sort_swap_hook(void *u, void *v, int a, int b);
+void do_cmd_inven(void);
+void do_cmd_equip(void);
+void wield_item(object_type *o_ptr, int item);
+void do_cmd_destroy(void);
+void refill_lamp(object_type *j_ptr, object_type *o_ptr, int item);
+void refuel_torch(object_type *j_ptr, object_type *o_ptr, int item);
+void do_cmd_target(void);
+void do_cmd_look(void);
+void do_cmd_locate(void);
+bool ang_sort_comp_hook(const void *u, const void *v, int a, int b);
+void ang_sort_swap_hook(void *u, void *v, int a, int b);
+void do_cmd_query_symbol(void);
 
 /* cmd4.c */
 extern void do_cmd_redraw(void);
@@ -67,21 +81,18 @@ extern void init_cmd4_c(void);
 
 extern void do_cmd_knowledge_objects(void *obj, const char *name);
 
-/* cmd5.c */
-extern void do_cmd_browse_aux(const object_type *o_ptr);
-extern void do_cmd_browse(void);
-extern void do_cmd_study(void);
-extern void do_cmd_cast(void);
-extern void do_cmd_pray(void);
 
 /* cmd6.c */
-extern void do_cmd_eat_food(void);
-extern void do_cmd_quaff_potion(void);
-extern void do_cmd_read_scroll(void);
-extern void do_cmd_use_staff(void);
-extern void do_cmd_aim_wand(void);
-extern void do_cmd_zap_rod(void);
-extern void do_cmd_activate(void);
+
+/* Types of item use */
+typedef enum
+{
+	USE_TIMEOUT,
+	USE_CHARGE,
+	USE_SINGLE
+} use_type;
+
+void do_cmd_use(object_type *o_ptr, int item, int snd, use_type use);
 
 
 #endif

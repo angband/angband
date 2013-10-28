@@ -1,8 +1,7 @@
-.SILENT:
-
 include mk/rules.mk
-include mk/init.mk
+include mk/objective.mk
 
 SUBDIRS = src lib
 
-include mk/objective.mk
+clean-posthook:
+	-rm config.status config.log

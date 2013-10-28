@@ -77,6 +77,9 @@
 #if (defined(WINDOWS) && !defined(USE_SDL))
 
 
+#define HAS_CLEANUP
+
+
 /*
  * Use HTML-Help.
  */
@@ -373,9 +376,8 @@ struct _term_data
 
 	bool bizarre;
 
-	cptr font_want;
-
-	cptr font_file;
+	char *font_want;
+	char *font_file;
 
 	HFONT font_id;
 
@@ -504,7 +506,7 @@ static bool can_use_sound = FALSE;
 /*
  * An array of sound file names
  */
-static cptr sound_file[MSG_MAX][SAMPLE_MAX];
+static char *sound_file[MSG_MAX][SAMPLE_MAX];
 
 #endif /* USE_SOUND */
 
@@ -512,7 +514,7 @@ static cptr sound_file[MSG_MAX][SAMPLE_MAX];
 /*
  * Full path to ANGBAND.INI
  */
-static cptr ini_file = NULL;
+static char *ini_file = NULL;
 
 /*
  * Name of application
@@ -523,14 +525,6 @@ static cptr AppName = VERSION_NAME;
  * Name of sub-window type
  */
 static cptr AngList = "AngList";
-
-/*
- * Directory names
- */
-static cptr ANGBAND_DIR_XTRA_FONT;
-static cptr ANGBAND_DIR_XTRA_GRAF;
-static cptr ANGBAND_DIR_XTRA_SOUND;
-static cptr ANGBAND_DIR_XTRA_HELP;
 
 /*
  * The "complex" color values
@@ -658,6 +652,11 @@ static const byte special_key_list[] =
 	0
 };
 
+#include "cmds.h"
+#include "game-cmd.h"
+
+static game_command cmd = { CMD_NULL, 0, { NULL } };
+
 #if 0
 /*
  * Hack -- given a pathname, point at the filename
@@ -739,32 +738,6 @@ static char *analyze_font(char *path, int *wp, int *hp)
 
 
 /*
- * Check for existance of a file
- */
-static bool check_file(cptr s)
-{
-	char path[1024];
-
-	DWORD attrib;
-
-	/* Copy it */
-	my_strcpy(path, s, sizeof(path));
-
-	/* Examine */
-	attrib = GetFileAttributes(path);
-
-	/* Require valid filename */
-	if (attrib == INVALID_FILE_NAME) return (FALSE);
-
-	/* Prohibit directory */
-	if (attrib & FILE_ATTRIBUTE_DIRECTORY) return (FALSE);
-
-	/* Success */
-	return (TRUE);
-}
-
-
-/*
  * Check for existance of a directory
  */
 static bool check_dir(cptr s)
@@ -804,10 +777,8 @@ static bool check_dir(cptr s)
 static void validate_file(cptr s)
 {
 	/* Verify or fail */
-	if (!check_file(s))
-	{
+	if (!file_exists(s))
 		quit_fmt("Cannot find required file:\n%s", s);
-	}
 }
 
 
@@ -1020,9 +991,6 @@ static void load_prefs(void)
 	/* Extract the "use_bigtile" flag */
 	use_bigtile = GetPrivateProfileInt("Angband", "Bigtile", FALSE, ini_file);
 
-	/* Extract the "arg_fiddle" flag */
-	arg_fiddle = (GetPrivateProfileInt("Angband", "Fiddle", 0, ini_file) != 0);
-
 	/* Extract the "arg_wizard" flag */
 	arg_wizard = (GetPrivateProfileInt("Angband", "Wizard", 0, ini_file) != 0);
 
@@ -1128,7 +1096,7 @@ static void load_sound_prefs(void)
 			path_build(wav_path, sizeof(wav_path), ANGBAND_DIR_XTRA_SOUND, zz[j]);
 
 			/* Save the sound filename, if it exists */
-			if (check_file(wav_path))
+			if (file_exists(wav_path))
 				sound_file[i][j] = string_make(zz[j]);
 		}
 	}
@@ -1179,7 +1147,7 @@ static int new_palette(void)
 	/* Use the bitmap */
 	if (hBmPal)
 	{
-		lppe = ralloc(256 * sizeof(PALETTEENTRY));
+		lppe = mem_alloc(256 * sizeof(PALETTEENTRY));
 		nEntries = GetPaletteEntries(hBmPal, 0, 255, lppe);
 		if ((nEntries == 0) || (nEntries > 220))
 		{
@@ -1187,7 +1155,7 @@ static int new_palette(void)
 			plog("Please switch to high- or true-color mode.");
 
 			/* Cleanup */
-			free(lppe);
+			mem_free(lppe);
 
 			/* Fail */
 			return (FALSE);
@@ -1200,7 +1168,7 @@ static int new_palette(void)
 	pLogPalSize = sizeof(LOGPALETTE) + (nEntries + 16) * sizeof(PALETTEENTRY);
 
 	/* Allocate palette */
-	pLogPal = (LPLOGPALETTE)ralloc(pLogPalSize);
+	pLogPal = (LPLOGPALETTE)mem_alloc(pLogPalSize);
 
 	/* Version */
 	pLogPal->palVersion = 0x300;
@@ -1243,14 +1211,14 @@ static int new_palette(void)
 	}
 
 	/* Free something */
-	if (lppe) free(lppe);
+	if (lppe) mem_free(lppe);
 
 	/* Create a new palette, or fail */
 	hNewPal = CreatePalette(pLogPal);
 	if (!hNewPal) quit("Cannot create palette!");
 
 	/* Free the palette */
-	free(pLogPal);
+	mem_free(pLogPal);
 
 	/* Main window */
 	td = &data[0];
@@ -1502,7 +1470,7 @@ static errr term_force_font(term_data *td, cptr path)
 	if (!suffix(base, ".FON")) return (1);
 
 	/* Verify file */
-	if (!check_file(buf)) return (1);
+	if (!file_exists(buf)) return (1);
 
 	/* Load the new font */
 	if (!AddFontResource(buf)) return (1);
@@ -1754,21 +1722,14 @@ static errr Term_xtra_win_react(void)
 
 #ifdef USE_SOUND
 
-	/* Handle "arg_sound" */
-	if (use_sound != arg_sound)
+	/* Initialize sound (if needed) */
+	if (use_sound && !init_sound())
 	{
-		/* Initialize (if needed) */
-		if (use_sound && !init_sound())
-		{
-			/* Warning */
-			plog("Cannot initialize sound!");
+		/* Warning */
+		plog("Cannot initialize sound!");
 
-			/* Cannot enable */
-			use_sound = FALSE;
-		}
-
-		/* Change setting */
-		arg_sound = use_sound;
+		/* Cannot enable */
+		use_sound = FALSE;
 	}
 
 #endif /* USE_SOUND */
@@ -2444,7 +2405,10 @@ static void windows_map_aux(void)
 	{
 		for (y = min_y; y < max_y; y++)
 		{
-			map_info(y, x, &a, &c, &ta, &tc);
+			grid_data g;
+
+			map_info(y, x, &g);
+			grid_data_as_text(&g, &a, &c, &ta, &tc);
 
 			/* Ignore non-graphics */
 			if ((a & 0x80) && (c & 0x80))
@@ -2465,7 +2429,7 @@ static void windows_map_aux(void)
 static void windows_map(void)
 {
 	term_data *td = &data[0];
-	event_type ch;
+	ui_event_data ch;
 
 	/* Only in graphics mode since the fonts can't be scaled */
 	if (!use_graphics) return;
@@ -2968,7 +2932,7 @@ static void check_for_save_file(LPSTR cmd_line)
 
 	/* Next arg */
 	p = strchr(s, ' ');
-
+	
 	/* Tokenize */
 	if (p) *p = '\0';
 
@@ -2978,16 +2942,8 @@ static void check_for_save_file(LPSTR cmd_line)
 	/* Validate the file */
 	validate_file(savefile);
 
-	/* Game in progress */
-	game_in_progress = TRUE;
-
-	Term_fresh();
-
-	/* Play game */
-	play_game(FALSE);
-
-	/* Quit */
-	quit(NULL);
+	/* Set the command now so that we skip the "Open File" prompt. */
+	cmd.command = CMD_LOADFILE;
 }
 
 
@@ -3028,7 +2984,7 @@ static char screensaver_inkey_hack(int flush_first)
  */
 static void start_screensaver(void)
 {
-	bool file_exists;
+	bool file_exist;
 
 #ifdef ALLOW_BORG
 	int i, j;
@@ -3041,10 +2997,10 @@ static void start_screensaver(void)
 	process_player_name(TRUE);
 
 	/* Does the savefile already exist? */
-	file_exists = check_file(savefile);
+	file_exist = file_exists(savefile);
 
 	/* Don't try to load a non-existant savefile */
-	if (!file_exists) savefile[0] = '\0';
+	if (!file_exist) savefile[0] = '\0';
 
 	/* Game in progress */
 	game_in_progress = TRUE;
@@ -3127,7 +3083,7 @@ static void start_screensaver(void)
 #endif /* ALLOW_BORG */
 
 	/* Play game */
-	play_game((bool)!file_exists);
+	play_game((bool)!file_exist);
 }
 
 #endif /* USE_SAVER */
@@ -3142,7 +3098,7 @@ static void display_help(cptr filename)
 
 	path_build(tmp, sizeof(tmp), ANGBAND_DIR_XTRA_HELP, filename);
 
-	if (check_file(tmp))
+	if (file_exists(tmp))
 	{
 		ShellExecute(data[0].w, "open", tmp, NULL, NULL, SW_SHOWNORMAL);
 	}
@@ -3181,10 +3137,8 @@ static void process_menus(WORD wCmd)
 			}
 			else
 			{
-				game_in_progress = TRUE;
-				Term_flush();
-				play_game(TRUE);
-				quit(NULL);
+				/* We'll return NEWGAME to the game. */
+				cmd.command = CMD_NEWGAME;
 			}
 			break;
 		}
@@ -3216,10 +3170,9 @@ static void process_menus(WORD wCmd)
 				{
 					/* Load 'savefile' */
 					validate_file(savefile);
-					game_in_progress = TRUE;
-					Term_flush();
-					play_game(FALSE);
-					quit(NULL);
+
+					/* We'll return NEWGAME to the game. */
+					cmd.command = CMD_LOADFILE;
 				}
 			}
 			break;
@@ -4179,8 +4132,7 @@ static LRESULT FAR PASCAL AngbandListProc(HWND hWnd, UINT uMsg,
 				InvalidateRect(td->w, NULL, TRUE);
 
 				/* HACK - Redraw all windows */
-				p_ptr->window = 0xFFFFFFFF;
-				window_stuff();
+				if (character_dungeon) do_cmd_redraw();
 			}
 
 			td->size_hack = FALSE;
@@ -4580,6 +4532,28 @@ static void hook_quit(cptr str)
 }
 
 
+static game_command get_init_cmd()
+{
+	MSG msg;
+
+	/* Prompt the user */
+	prt("[Choose 'New' or 'Open' from the 'File' menu]", 23, 17);
+	Term_fresh();
+
+	/* Process messages forever */
+	while (cmd.command == CMD_NULL && GetMessage(&msg, NULL, 0, 0))
+	{
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
+	}
+
+	/* Bit of a hack, we'll do this when we leave the INIT context in future. */
+	game_in_progress = TRUE;
+
+	return cmd;
+}
+
+
 
 /*** Initialize ***/
 
@@ -4732,7 +4706,6 @@ int FAR PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrevInst,
 
 	WNDCLASS wc;
 	HDC hdc;
-	MSG msg;
 
 	/* Unused parameter */
 	(void)nCmdShow;
@@ -4866,12 +4839,6 @@ int FAR PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrevInst,
 	/* Set the system suffix */
 	ANGBAND_SYS = "win";
 
-	/* Initialize */
-	init_angband();
-
-	/* We are now initialized */
-	initialized = TRUE;
-
 #ifdef USE_SAVER
 	if (screensaver)
 	{
@@ -4893,16 +4860,16 @@ int FAR PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrevInst,
 	/* Did the user double click on a save file? */
 	check_for_save_file(lpCmdLine);
 
-	/* Prompt the user */
-	prt("[Choose 'New' or 'Open' from the 'File' menu]", 23, 17);
-	Term_fresh();
+	/* Set command hook */
+	get_game_command = get_init_cmd;
 
-	/* Process messages forever */
-	while (GetMessage(&msg, NULL, 0, 0))
-	{
-		TranslateMessage(&msg);
-		DispatchMessage(&msg);
-	}
+	/* Set up the display handlers and things. */
+	init_display();
+
+	initialized = TRUE;
+
+	/* Play the game */
+	play_game();
 
 	/* Paranoia */
 	quit(NULL);

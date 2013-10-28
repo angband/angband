@@ -18,14 +18,14 @@
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
-/* Define to 1 if you have the `mkstemp' function. */
-#undef HAVE_MKSTEMP
-
 /* Define to 1 if you have the `setegid' function. */
 #undef HAVE_SETEGID
 
 /* Define to 1 if you have the `setresgid' function. */
 #undef HAVE_SETRESGID
+
+/* Define to 1 if you have the `stat' function. */
+#undef HAVE_STAT
 
 /* Define to 1 if stdbool.h conforms to C99. */
 #undef HAVE_STDBOOL_H
@@ -92,6 +92,9 @@
 
 /* Define to 1 if NCurses is found. */
 #undef USE_NCURSES
+
+/* Define to use private user paths. */
+#undef USE_PRIVATE_PATHS
 
 /* Define to 1 if using the SDL interface and SDL is found. */
 #undef USE_SDL

@@ -3,24 +3,9 @@ terms of either the GNU General Public License as published by the Free Software
 Foundation, version 2, or the "Angband licence", shown below, with some 
 exceptions:
 
- * At the time of release, code written by the following individuals is only
-   available under the Angband licence; the brackets after their name indicate
-   the code which is not clean as a result:
-
-   - Prfnoff (character death menu, customizable player races, player history,
-              and shop owners)
-   - Chris Ang (various 2.5.x bits of code which I believe the game is
-                still derivative of)
-
-   - Ron Anderson (Mac port)
-   - Ross E Becker (Windows port)
-   - Kieron Dunbar (X11 copy and paste support)
-   - Torbjorn Lindgren (XAW port)
-   - Denis Eropkin (X11+XAW support code)
-
-   Any information on the contact details for these people, whether online or
-   otherwise, would be much appreciated.  Note that as a result of these
-   remaining restrictions, the game itself is not quite GPL-clean.
+ * At the time of release, code written by Ross E Becker is only available under
+   the Angband licence, whose code is entirely in main-win.c and as such, the 
+   Windows port is not GPL-clean.
 
  * The SDL runtime libraries (if provided with your copy of the game) are under
    the following licence:
@@ -38,12 +23,14 @@ exceptions:
  * Adam Bolt's (16x16) graphics may be redistributed and used for any purpose, 
    with or without modification.
 
- * David Gervais' (32x32) graphics may be redistributed and used under the
-   Creative Commons Attribution 3.0 licence.
+ * David Gervais' (32x32) graphics may be redistributed, modified, and used
+   only under the terms of the Creative Commons Attribution 3.0 licence:
+   http://creativecommons.org/licenses/by/3.0/
 
  * the sounds are freeware, whatever that means.
 
- * the font files are under the licences noted in lib/xtra/font/copying.txt.
+ * the font files are under the licences noted in lib/xtra/font/copying.txt,
+   all of which are OSI-compliant.
 
 
 It is considered good practice to retain this statement for derivatives, rather

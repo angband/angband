@@ -25,17 +25,26 @@
 #include "z-virt.h"
 #include "z-rand.h"
 #include "z-term.h"
+#include "z-quark.h"
+#include "z-msg.h"
 
 /*
  * Include the high-level includes.
  */
 #include "config.h"
 #include "defines.h"
+#include "option.h"
 #include "types.h"
+#include "object/types.h"
+#include "object/object.h"
+#include "monster/types.h"
+#include "player/types.h"
+#include "player/player.h"
+#include "store.h"
+
 #include "ui.h"
 #include "z-type.h"
 #include "externs.h"
-
 
 
 /***** Some older copyright messages follow below *****/

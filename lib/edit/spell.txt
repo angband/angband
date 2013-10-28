@@ -37,7 +37,7 @@
 
 # Version stamp (required)
 
-V:3.0.10
+V:3.0.11
 
 
 # Mage spells 0 through 63
@@ -77,10 +77,6 @@ D:Cures 2d8 points of damage and heals 15 points worth of cuts.
 N:6:Detect Treasure
 I:90:0:4
 D:Detects all treasure in the immediate area.
-
-N:7:Detect Objects
-I:90:0:6
-D:Detects all objects in the immediate area.
 
 N:8:Identify
 I:90:2:5

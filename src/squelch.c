@@ -18,7 +18,8 @@
  */
 #include "angband.h"
 #include "cmds.h"
-
+#include "ui-menu.h"
+#include "object/tvalsval.h"
 
 /*
  * The squelch code has a long history.  Originally it started out as a simple
@@ -108,10 +109,10 @@ size_t squelch_size = TYPE_MAX;
 enum
 {
 	SQUELCH_NONE,
-	SQUELCH_CURSED,
+	SQUELCH_BAD,
 	SQUELCH_AVERAGE,
-	SQUELCH_GOOD_STRONG,
-	SQUELCH_GOOD_WEAK,
+	SQUELCH_GOOD,
+	SQUELCH_EXCELLENT,
 	SQUELCH_ALL,
 
 	SQUELCH_MAX
@@ -122,12 +123,12 @@ enum
  */
 static const char *quality_names[SQUELCH_MAX] =
 {
-	"none",							/* SQUELCH_NONE */
-	"cursed",						/* SQUELCH_CURSED */
-	"average",						/* SQUELCH_AVERAGE */
-	"good (strong pseudo-ID)",		/* SQUELCH_GOOD_STRONG */
-	"good (weak pseudo-ID)",		/* SQUELCH_GOOD_WEAK */
-	"everything except artifacts",	/* SQUELCH_ALL */
+	"none",                        /* SQUELCH_NONE */
+	"bad",                         /* SQUELCH_BAD */
+	"average",                     /* SQUELCH_AVERAGE */
+	"good",                        /* SQUELCH_GOOD */
+	"excellent",                   /* SQUELCH_EXCELLENT */
+	"everything except artifacts", /* SQUELCH_ALL */
 };
 
 
@@ -154,7 +155,7 @@ static tval_desc sval_dependent[] =
 	{ TV_SPIKE,			"Spikes" },
 	{ TV_LITE,			"Lights" },
 	{ TV_FLASK,			"Flasks of oil" },
-	{ TV_DRAG_ARMOR,	"Dragon mail armor" },
+	{ TV_DRAG_ARMOR,	"Dragon Mail Armor" },
 };
 
 
@@ -208,7 +209,7 @@ int apply_autoinscription(object_type *o_ptr)
 		return 0;
 
 	/* Get an object description */
-	object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
+	object_desc(o_name, sizeof(o_name), o_ptr, TRUE, ODESC_FULL);
 
 	if (note[0] != 0)
 		o_ptr->note = quark_add(note);
@@ -341,7 +342,7 @@ bool squelch_item_ok(const object_type *o_ptr)
 	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 	bool fullid = object_known_p(o_ptr);
 	bool sensed = (o_ptr->ident & IDENT_SENSE) || fullid;
-	byte feel   = fullid ? value_check_aux1(o_ptr) : o_ptr->pseudo;
+	byte feel   = fullid ? object_pseudo_heavy(o_ptr) : o_ptr->pseudo;
 
 
 	/* Don't squelch artifacts */
@@ -388,53 +389,61 @@ bool squelch_item_ok(const object_type *o_ptr)
 	/* Get result based on the feeling and the squelch_level */
 	switch (squelch_level[num])
 	{
-		case SQUELCH_CURSED:
+		case SQUELCH_BAD:
 		{
-			if ((feel == INSCRIP_BROKEN) || (feel == INSCRIP_TERRIBLE) ||
+			if ((feel == INSCRIP_TERRIBLE) ||
 			    (feel == INSCRIP_WORTHLESS) || (feel == INSCRIP_CURSED))
 			{
 				return TRUE;
 			}
+
+			if ((feel != INSCRIP_AVERAGE) && fullid &&
+				 (o_ptr->to_a <= 0 && o_ptr->to_h <= 0 && o_ptr->to_d <= 0))
+				return TRUE;
 
 			break;
 		}
 
 		case SQUELCH_AVERAGE:
 		{
-			if ((feel == INSCRIP_BROKEN) || (feel == INSCRIP_TERRIBLE) ||
+			if ((feel == INSCRIP_TERRIBLE) ||
 			    (feel == INSCRIP_WORTHLESS) || (feel == INSCRIP_CURSED) ||
 			    (feel == INSCRIP_AVERAGE))
 			{
 				return TRUE;
 			}
 
-			break;
-		}
-
-		case SQUELCH_GOOD_WEAK:
-		{
-			if ((feel == INSCRIP_BROKEN) || (feel == INSCRIP_TERRIBLE) ||
-			    (feel == INSCRIP_WORTHLESS) || (feel == INSCRIP_CURSED) ||
-			    (feel == INSCRIP_AVERAGE) || (feel == INSCRIP_GOOD))
-			{
+			if ((feel != INSCRIP_AVERAGE) && fullid &&
+				 (o_ptr->to_a <= 0 && o_ptr->to_h <= 0 && o_ptr->to_d <= 0))
 				return TRUE;
-			}
 
 			break;
 		}
 
-		case SQUELCH_GOOD_STRONG:
+		case SQUELCH_GOOD:
 		{
-			if ((feel == INSCRIP_BROKEN) || (feel == INSCRIP_TERRIBLE) ||
+			if ((feel == INSCRIP_TERRIBLE) ||
 			    (feel == INSCRIP_WORTHLESS) || (feel == INSCRIP_CURSED) ||
-			    (feel == INSCRIP_AVERAGE) ||
-			    ((feel == INSCRIP_GOOD) &&
-			     ((fullid) || (cp_ptr->flags & CF_PSEUDO_ID_HEAVY))))
+			    (feel == INSCRIP_AVERAGE) || (feel == INSCRIP_MAGICAL))
 			{
 				return TRUE;
 			}
 
+			if (fullid && !o_ptr->name2 && !o_ptr->name1 &&
+				 (o_ptr->to_a >= 0 && o_ptr->to_h >= 0 && o_ptr->to_d >= 0))
+				return TRUE;
+
 			break;
+		}
+
+		case SQUELCH_EXCELLENT:
+		{
+			if ((feel == INSCRIP_TERRIBLE) ||
+			    (feel == INSCRIP_WORTHLESS) || (feel == INSCRIP_CURSED) ||
+			    (feel == INSCRIP_AVERAGE) || (feel == INSCRIP_EXCELLENT))
+			{
+				return TRUE;
+			}
 		}
 
 		case SQUELCH_ALL:
@@ -449,7 +458,7 @@ bool squelch_item_ok(const object_type *o_ptr)
 }
 
 
-/* 
+/*
  * Returns TRUE if an item should be hidden due to the player's
  * current settings.
  */
@@ -474,7 +483,7 @@ void squelch_items(void)
 
 	/* Set the hook and scan the floor */
 	item_tester_hook = squelch_item_ok;
-	(void)scan_floor(floor_list, &floor_num, p_ptr->py, p_ptr->px, 0x01);
+	floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), p_ptr->py, p_ptr->px, 0x01);
 
 	if (floor_num)
 	{
@@ -602,9 +611,9 @@ static bool quality_subaction(char cmd, void *db, int oid)
 static bool quality_action(char cmd, void *db, int oid)
 {
 	menu_type menu;
-	menu_iter menu_f = { 0, 0, 0, quality_subdisplay, quality_subaction };
+	menu_iter menu_f = { NULL, NULL, quality_subdisplay, quality_subaction };
 	region area = { 24, 5, 26, SQUELCH_MAX };
-	event_type evt;
+	ui_event_data evt;
 	int cursor;
 
 	/* Display at the right point */
@@ -619,9 +628,9 @@ static bool quality_action(char cmd, void *db, int oid)
 	menu.cmd_keys = "\n\r";
 	menu.count = SQUELCH_MAX;
 	if (oid == TYPE_JEWELRY)
-		menu.count = area.page_rows = SQUELCH_CURSED + 1;
+		menu.count = area.page_rows = SQUELCH_BAD + 1;
 
-	menu_init2(&menu, find_menu_skin(MN_SCROLL), &menu_f, &area);
+	menu_init(&menu, MN_SKIN_SCROLL, &menu_f, &area);
 	window_make(area.col - 2, area.row - 1, area.col + area.width + 2, area.row + area.page_rows);
 
 	evt = menu_select(&menu, &cursor, 0);
@@ -641,9 +650,9 @@ static bool quality_action(char cmd, void *db, int oid)
 static void quality_menu(void *unused, const char *also_unused)
 {
 	menu_type menu;
-	menu_iter menu_f = { 0, 0, 0, quality_display, quality_action };
+	menu_iter menu_f = { NULL, NULL, quality_display, quality_action };
 	region area = { 1, 5, -1, -1 };
-	event_type evt = EVENT_EMPTY;
+	ui_event_data evt = EVENT_EMPTY;
 	int cursor = 0;
 
 	/* Save screen */
@@ -660,7 +669,7 @@ static void quality_menu(void *unused, const char *also_unused)
 	WIPE(&menu, menu);
 	menu.cmd_keys = " \n\r";
 	menu.count = TYPE_MAX;
-	menu_init2(&menu, find_menu_skin(MN_SCROLL), &menu_f, &area);
+	menu_init(&menu, MN_SKIN_SCROLL, &menu_f, &area);
 
 	/* Select an entry */
 	while (evt.key != ESCAPE)
@@ -722,9 +731,9 @@ static bool sval_action(char cmd, void *db, int oid)
 static bool sval_menu(int tval, const char *desc)
 {
 	menu_type menu;
-	menu_iter menu_f = { 0, 0, 0, sval_display, sval_action };
+	menu_iter menu_f = { NULL, NULL, sval_display, sval_action };
 	region area = { 1, 5, -1, -1 };
-	event_type evt = { EVT_NONE, 0, 0, 0, 0 };
+	ui_event_data evt = { EVT_NONE, 0, 0, 0, 0 };
 	int cursor = 0;
 
 	int num = 0;
@@ -734,7 +743,7 @@ static bool sval_menu(int tval, const char *desc)
 
 
 	/* Create the array */
-	C_MAKE(choice, z_info->k_max, u16b);
+	choice = C_ZNEW(z_info->k_max, u16b);
 
 	/* Iterate over all possible object kinds, finding ones which can be squelched */
 	for (i = 1; i < z_info->k_max; i++)
@@ -788,7 +797,7 @@ static bool sval_menu(int tval, const char *desc)
 	menu.cmd_keys = " \n\r";
 	menu.count = num;
 	menu.menu_data = choice;
-	menu_init2(&menu, find_menu_skin(MN_SCROLL), &menu_f, &area);
+	menu_init(&menu, MN_SKIN_SCROLL, &menu_f, &area);
 
 	/* Select an entry */
 	while (evt.key != ESCAPE)
@@ -829,7 +838,7 @@ static bool seen_tval(int tval)
 struct
 {
 	char tag;
-	char *name;
+	const char *name;
 	void (*action)(void *unused, const char *also_unused);
 } extra_item_options[] =
 {
@@ -893,7 +902,7 @@ static void display_options_item(menu_type *menu, int oid, bool cursor, int row,
 		byte attr = curs_attrs[CURS_KNOWN][(int)cursor];
 
 		line = line - N_ELEMENTS(sval_dependent) - 1;
-    
+
 		if (line < N_ELEMENTS(extra_item_options))
 			c_prt(attr, extra_item_options[line].name, row, col);
 	}
@@ -902,7 +911,6 @@ static void display_options_item(menu_type *menu, int oid, bool cursor, int row,
 
 static const menu_iter options_item_iter =
 {
-	0,
 	tag_options_item,
 	valid_options_item,
 	display_options_item,
@@ -916,7 +924,7 @@ static const menu_iter options_item_iter =
 void do_cmd_options_item(void *unused, cptr title)
 {
 	int cursor = 0;
-	event_type c = EVENT_EMPTY;
+	ui_event_data c = EVENT_EMPTY;
 	const char cmd_keys[] = { ARROW_LEFT, ARROW_RIGHT, '\0' };
 
 	menu_type menu;
@@ -925,9 +933,7 @@ void do_cmd_options_item(void *unused, cptr title)
 	menu.title = title;
         menu.cmd_keys = cmd_keys;
 	menu.count = N_ELEMENTS(sval_dependent) + N_ELEMENTS(extra_item_options) + 1;
-	menu_init2(&menu, find_menu_skin(MN_SCROLL), &options_item_iter, &SCREEN_REGION);
-
-	menu_layout(&menu, &SCREEN_REGION);
+	menu_init(&menu, MN_SKIN_SCROLL, &options_item_iter, &SCREEN_REGION);
 
 	/* Save and clear screen */
 	screen_save();

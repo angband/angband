@@ -128,18 +128,8 @@ static int full_h;
 /* Want fullscreen? */
 static bool fullscreen = FALSE;
 
-/*
- * Directory names
- */
-static cptr ANGBAND_DIR_XTRA_FONT;
-static cptr ANGBAND_DIR_XTRA_GRAF;
-
 /* XXXXXXXXX */
-static cptr ANGBAND_DIR_USER_SDL;
-
-/* Later...
-static cptr ANGBAND_DIR_XTRA_SOUND;
-*/
+static char *ANGBAND_DIR_USER_SDL;
 
 /*
  * Used as 'system' font
@@ -147,7 +137,7 @@ static cptr ANGBAND_DIR_XTRA_SOUND;
 static cptr DEFAULT_FONT_FILE = "6x10.fon";
 
 #define MAX_FONTS 20
-cptr FontList[MAX_FONTS];
+char *FontList[MAX_FONTS];
 static int num_fonts = 0;
 
 
@@ -197,7 +187,7 @@ struct term_window
 	int keys;				/* Size of keypress storage */
 	
 	sdl_Font font;			/* Font info */
-	cptr req_font;			/* Requested font */
+	char *req_font;			/* Requested font */
 	int rows;				/* Dimension in tiles */
 	int cols;
 	
@@ -507,9 +497,7 @@ static errr sdl_CheckFont(cptr fontname, int *width, int *height)
 static void sdl_FontFree(sdl_Font *font)
 {
 	/* The only memory reserved is the data */
-	if (font->data) FREE(font->data);
-	
-	font->data = NULL;
+	FREE(font->data);
 }
 
 
@@ -524,9 +512,6 @@ static errr sdl_FontCreate(sdl_Font *font, cptr fontname, SDL_Surface *surface)
 	
 	TTF_Font *ttf_font;
 	
-	/* Free any old data */
-	if (font->data) sdl_FontFree(font);
-	
 	/* Our temporary glyph will be rendered in white */
 	SDL_Color white = { 255, 255, 255, 0 };
 	
@@ -535,6 +520,9 @@ static errr sdl_FontCreate(sdl_Font *font, cptr fontname, SDL_Surface *surface)
 	/* The first pixel data is stored immediately after the character indexes */
 	/* But we need an extra space to store the total pixel count */
 	int num_pixels = NUM_GLYPHS + 1;
+	
+	/* Free any old data */
+	if (font->data) sdl_FontFree(font);
 	
 	/* Build the path */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_XTRA_FONT, fontname);
@@ -554,7 +542,7 @@ static errr sdl_FontCreate(sdl_Font *font, cptr fontname, SDL_Surface *surface)
 	font->bpp = surface->format->BytesPerPixel;
 	
 	/* Make a very large temporary holding bin for pixel offset data  XXX */
-	C_MAKE(temp_array, NUM_GLYPHS * 1000, int);
+	temp_array = C_ZNEW(NUM_GLYPHS * 1000, int);
 	
 	/* Render and encode all the characters */
 	for (i = 0; i < NUM_GLYPHS; i++)
@@ -603,7 +591,7 @@ static errr sdl_FontCreate(sdl_Font *font, cptr fontname, SDL_Surface *surface)
 	temp_array[NUM_GLYPHS] = num_pixels;
 	
 	/* Make a pixel access array for this font */
-	C_MAKE(font->data, num_pixels, int);
+	font->data = C_ZNEW(num_pixels, int);
 	
 	/* Save the data gathered in our temporary array */
 	for (i = 0; i < num_pixels; i++) font->data[i] = temp_array[i];
@@ -722,8 +710,10 @@ static void sdl_ButtonDraw(sdl_Button *button)
 	
 	if (strlen(button->caption))
 	{
-		int max = button->pos.w / font->width;
-		int n = strlen(button->caption) > max ? max : strlen(button->caption);
+		size_t len = strlen(button->caption);
+
+		unsigned max = button->pos.w / font->width;
+		int n = MIN(len, max);
 		int l = n * font->width / 2;
 		int x = button->pos.x + ((button->pos.w) / 2) - l;
 		
@@ -787,9 +777,8 @@ static void sdl_ButtonVisible(sdl_Button *button, bool visible)
 static void sdl_ButtonBankInit(sdl_ButtonBank *bank, sdl_Window *window)
 {
 	bank->window = window;
-	
-	C_MAKE(bank->buttons, MAX_BUTTONS, sdl_Button);
-	C_MAKE(bank->used, MAX_BUTTONS, bool);
+	bank->buttons = C_ZNEW(MAX_BUTTONS, sdl_Button);
+	bank->used = C_ZNEW(MAX_BUTTONS, bool);
 	bank->need_update = TRUE;
 }
 
@@ -1117,12 +1106,10 @@ static void hook_quit(cptr str)
 	SDL_Quit();
 	
 	for (i = 0; i < MAX_FONTS; i++)
-	{
-		if (FontList[i]) string_free(FontList[i]);
-	}
+		string_free(FontList[i]);
 }
 
-static void BringToTop()
+static void BringToTop(void)
 {
 	int i, idx;
 	
@@ -1148,11 +1135,8 @@ static void BringToTop()
  */
 static void validate_file(cptr s)
 {
-	int fd = fd_open(s, O_WRONLY);
-	
-	if (fd >= 0) fd_close(fd);
-	
-	if (fd < 0) quit_fmt("Cannot find required file:\n%s", s);
+	if (!file_exists(s))
+		quit_fmt("Cannot find required file:\n%s", s);
 }
 
 /*
@@ -1256,7 +1240,7 @@ static void sdl_BlitAll(void)
 	sdl_Window *window = &StatusBar;
 	int i;
 	Uint32 colour = SDL_MapRGB(AppWin->format, 160, 160, 60);
-	//Uint32 ccolour = SDL_MapRGB(AppWin->format, 160, 40, 40);
+	/* int32 ccolour = SDL_MapRGB(AppWin->format, 160, 40, 40); */
 	SDL_FillRect(AppWin, NULL, back_colour);
 	
 	for (i = 0; i < ANGBAND_TERM_MAX; i++)
@@ -1275,7 +1259,7 @@ static void sdl_BlitAll(void)
 			SizingSpot.h = 10;
 			SizingSpot.x = win->left + win->width - 10;
 			SizingSpot.y = win->top + win->height - 10;
-			//SDL_FillRect(AppWin, &SizingSpot, ccolour);
+			/* SDL_FillRect(AppWin, &SizingSpot, ccolour); */
 			
 			if (Sizing)
 			{
@@ -1300,7 +1284,7 @@ static void sdl_BlitAll(void)
 	
 }
 
-static void RemovePopUp()
+static void RemovePopUp(void)
 {
 	PopUp.visible = FALSE;
 	popped = FALSE;
@@ -1344,7 +1328,7 @@ static void TermFocus(int idx)
 	
 	SelectedTerm = idx;
 	
-	BringToTop(idx);
+	BringToTop();
 	
 	SetStatusButtons();
 	
@@ -1387,14 +1371,16 @@ static void SelectTerm(sdl_Button *sender)
 	
 static void TermActivate(sdl_Button *sender)
 {
-	int i, maxl = 0;
+	int i, maxl = 0; 
+	int width, height = ANGBAND_TERM_MAX * (StatusBar.font.height + 1);
+
 	for (i = 0; i < ANGBAND_TERM_MAX; i++)
 	{
 		int l = strlen(angband_term_name[i]); 
 		if (l > maxl) maxl = l;
 	}
-	int width = maxl * StatusBar.font.width + 20;
-	int height = ANGBAND_TERM_MAX * (StatusBar.font.height + 1);
+	
+	width = maxl * StatusBar.font.width + 20;
 	
 	sdl_WindowInit(&PopUp, width, height, AppWin, StatusBar.font.name);
 	PopUp.left = sender->pos.x;
@@ -1474,14 +1460,16 @@ static void SelectFont(sdl_Button *sender)
 
 static void FontActivate(sdl_Button *sender)
 {
-	int i, maxl = 0;
+	int i, maxl = 0; 
+	int width, height = num_fonts * (StatusBar.font.height + 1);
+
 	for (i = 0; i < num_fonts; i++)
 	{
 		int l = strlen(FontList[i]); 
 		if (l > maxl) maxl = l;
 	}
-	int width = maxl * StatusBar.font.width + 20;
-	int height = num_fonts * (StatusBar.font.height + 1);
+	
+	width = maxl * StatusBar.font.width + 20;
 	
 	sdl_WindowInit(&PopUp, width, height, AppWin, StatusBar.font.name);
 	PopUp.left = sender->pos.x;
@@ -1897,7 +1885,7 @@ static void ResizeWin(term_window* win, int w, int h)
 static errr load_prefs(void)
 {
 	char buf[1024];
-	FILE *fff;
+	ang_file *fff;
 	term_window *win;
 	int i;
 	
@@ -1935,19 +1923,19 @@ static errr load_prefs(void)
 	}
 	
 	/* Build the path */
-	path_build(buf, sizeof(buf), ANGBAND_DIR_USER , "sdlinit.txt");
+	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "sdlinit.txt");
 	
 	/* XXXXX */
 	ANGBAND_DIR_USER_SDL = string_make(buf);
 	
 	/* Open the file */
-	fff = my_fopen(buf, "r");
+	fff = file_open(buf, MODE_READ, -1);
 	
 	/* Check it */
 	if (!fff) return (1);
 	
 	/* Process the file */
-	while (0 == my_fgets(fff, buf, sizeof(buf)))
+	while (file_getl(fff, buf, sizeof(buf)))
 	{
 		char *s;
 		if (!buf[0]) continue;
@@ -2016,43 +2004,44 @@ static errr load_prefs(void)
 	if (screen_w < 640) screen_w = 640;
 	if (screen_h < 480) screen_h = 480;
 	
-	my_fclose(fff);
+	file_close(fff);
 	
 	return (0);
 }
 
-static errr save_prefs()
+static errr save_prefs(void)
 {
-	FILE *fff;
+	ang_file *fff;
 	int i;
-	
+
 	/* Open the file */
-	fff = my_fopen(ANGBAND_DIR_USER_SDL, "w");
-	
+	fff = file_open(ANGBAND_DIR_USER_SDL, MODE_WRITE, FTYPE_TEXT);
+
 	/* Check it */
 	if (!fff) return (1);
+
+	file_putf(fff, "Resolution = %dx%d\n", screen_w, screen_h);
+	file_putf(fff, "Fullscreen = %d\n", fullscreen);
+	file_putf(fff, "Graphics = %d\n", use_graphics);
+	file_putf(fff, "Bigtile = %d\n\n", use_bigtile);
 	
-	fprintf(fff, "Resolution = %dx%d\n", screen_w, screen_h);
-	fprintf(fff, "Fullscreen = %d\n", fullscreen);
-	fprintf(fff, "Graphics = %d\n", use_graphics);
-	fprintf(fff, "Bigtile = %d\n", use_bigtile);
 	for (i = 0; i < ANGBAND_TERM_MAX; i++)
 	{
 		term_window *win = &windows[i];
 		
-		fprintf(fff, "\nWindow = %d\n", i);
-		fprintf(fff, "Visible = %d\n", (int)win->visible);
-		fprintf(fff, "Left = %d\n", win->left); 
-		fprintf(fff, "Top = %d\n", win->top);
-		fprintf(fff, "Width = %d\n", win->width);
-		fprintf(fff, "Height = %d\n", win->height);
+		file_putf(fff, "Window = %d\n", i);
+		file_putf(fff, "Visible = %d\n", (int)win->visible);
+		file_putf(fff, "Left = %d\n", win->left);
+		file_putf(fff, "Top = %d\n", win->top);
+		file_putf(fff, "Width = %d\n", win->width);
+		file_putf(fff, "Height = %d\n", win->height);
 		
-		fprintf(fff, "Keys = %d\n", win->keys);
+		file_putf(fff, "Keys = %d\n", win->keys);
 		
-		fprintf(fff, "Font = %s\n", win->req_font);
+		file_putf(fff, "Font = %s\n\n", win->req_font);
 	}	
 	
-	my_fclose(fff);
+	file_close(fff);
 	
 	/* Done */
 	return (0);
@@ -2276,7 +2265,7 @@ static void sdl_HandleMouseEvent(SDL_Event *event)
 					/* Let's get moving */
 					Moving = TRUE;
 					
-					//BringToTop(idx);
+					/* BringToTop(idx); */
 					
 					/* Remember where we started */
 					Movingx = mouse.x - win->left;
@@ -2330,11 +2319,12 @@ static void sdl_HandleMouseEvent(SDL_Event *event)
 				/* See if it's inside a term_window */
 				else if (idx != -1)
 				{
+					int x, y;
 					win = &windows[idx];
 					
 					/* Calculate the 'cell' coords */
-					int x = (mouse.x - win->left - win->border) / win->tile_wid;
-					int y = (mouse.y - win->top - win->title_height) / win->tile_hgt;
+					x = (mouse.x - win->left - win->border) / win->tile_wid;
+					y = (mouse.y - win->top - win->title_height) / win->tile_hgt;
 					
 					/* Bounds check */
 					if ((x >= 0) && (y >= 0) && (x < win->cols) && (y < win->rows))
@@ -2424,7 +2414,7 @@ static void sdl_keypress(SDL_keysym keysym)
 	/* Handle print screen */
 	if (key_sym == SDLK_PRINT)
 	{
-		//sdl_print_screen();
+		/* sdl_print_screen();*/
 		return;
 	}
 	
@@ -2500,8 +2490,28 @@ static errr sdl_HandleEvent(SDL_Event *event)
 		}
 		case SDL_MOUSEBUTTONDOWN:
 		case SDL_MOUSEBUTTONUP:
+		{
+			/* Handle mouse stuff */
+			sdl_HandleMouseEvent(event);
+			break;
+		}
+
 		case SDL_MOUSEMOTION:
 		{
+                        int i;  
+                        SDL_Event events[10];
+
+			/*
+                         * If there are a bundle of mouse movements pending,
+                         * we'll just take every tenth one - this makes a
+                         * simple approach to dragging practical, for instance.
+			 */  
+                        i = SDL_PeepEvents(events, 10, SDL_GETEVENT, SDL_EVENTMASK(SDL_MOUSEMOTION));
+                        if (i > 0) 
+                        {
+                                *event = events[i - 1];
+                        }
+
 			/* Handle mouse stuff */
 			sdl_HandleMouseEvent(event);
 			break;
@@ -2821,7 +2831,7 @@ static errr Term_wipe_sdl(int col, int row, int n)
 	
 	SDL_Rect rc;
 	
-	//if (use_bigtile) n*=2;
+	/*if (use_bigtile) n*=2;*/
 	/* Build the area to black out */
 	rc.x = col * win->tile_wid;
 	rc.y = row * win->tile_hgt;
@@ -3113,8 +3123,9 @@ static void init_morewindows(void)
 {
 	char buf[128];
 	sdl_Button *button;
-	popped = FALSE;
 	int x;
+
+	popped = FALSE;
 	
 	/* Make sure */
 	sdl_WindowFree(&PopUp);
@@ -3296,17 +3307,14 @@ static void init_gfx(void)
 	/* Check for existence of required files */
 	for (i = 0; i < GfxModes; i++)
 	{
-		int fd;
 		char path[1024];
 		
 		/* Check the graphic file */
 		if (GfxDesc[i].gfxfile)
 		{
 			path_build(path, sizeof(path), ANGBAND_DIR_XTRA_GRAF, GfxDesc[i].gfxfile);
-			fd = fd_open(path, O_WRONLY);
-			
-			if (fd >= 0) fd_close(fd);
-			else
+
+			if (!file_exists(path))
 			{
 				plog_fmt("Can't find file %s - graphics mode '%s' will be disabled.", path, GfxDesc[i].name);
 				GfxDesc[i].avail = FALSE;

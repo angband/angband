@@ -1,25 +1,39 @@
-/* File: variable.c */
-
 /*
+ * File: variable.c
+ * Purpose: Various global variables
+ *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  *
- * This software may be copied and distributed for educational, research,
- * and not for profit purposes provided that this copyright and statement
- * are included in all such copies.  Other copyrights may also apply.
+ * This work is free software; you can redistribute it and/or modify it
+ * under the terms of either:
+ *
+ * a) the GNU General Public License as published by the Free Software
+ *    Foundation, version 2, or
+ *
+ * b) the "Angband licence":
+ *    This software may be copied and distributed for educational, research,
+ *    and not for profit purposes provided that this copyright and statement
+ *    are included in all such copies.  Other copyrights may also apply.
  */
-
 #include "angband.h"
 
 
 /*
  * Hack -- Link a copyright message into the executable
  */
-cptr copyright =
-	"Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Keoneke\n"
+const char *copyright =
+	"Copyright (c) 1987-2007 Angband contributors.\n"
 	"\n"
-	"This software may be copied and distributed for educational, research,\n"
-	"and not for profit purposes provided that this copyright and statement\n"
-	"are included in all such copies.  Other copyrights may also apply.\n";
+	"This work is free software; you can redistribute it and/or modify it\n"
+	"under the terms of either:\n"
+	"\n"
+	"a) the GNU General Public License as published by the Free Software\n"
+	"   Foundation, version 2, or\n"
+	"\n"
+	"b) the Angband licence:\n"
+	"   This software may be copied and distributed for educational, research,\n"
+	"   and not for profit purposes provided that this copyright and statement\n"
+	"   are included in all such copies.  Other copyrights may also apply.\n";
 
 
 /*
@@ -49,9 +63,7 @@ u16b sf_saves;			/* Number of "saves" during this life */
 /*
  * Run-time arguments
  */
-bool arg_fiddle;			/* Command arg -- Request fiddle mode */
 bool arg_wizard;			/* Command arg -- Request wizard mode */
-bool arg_sound;				/* Command arg -- Request special sounds */
 int arg_graphics;			/* Command arg -- Request graphics mode */
 
 /*
@@ -71,8 +83,6 @@ u32b seed_flavor;		/* Hack -- consistent object colors */
 u32b seed_town;			/* Hack -- consistent town layout */
 
 s16b num_repro;			/* Current reproducer count */
-s16b object_level;		/* Current object creation level */
-s16b monster_level;		/* Current monster creation level */
 
 char summon_kin_type;		/* Hack -- See summon_specific() */
 
@@ -90,10 +100,8 @@ bool msg_flag;			/* Player has pending message */
 
 bool inkey_base;		/* See the "inkey()" function */
 bool inkey_xtra;		/* See the "inkey()" function */
-bool inkey_scan;		/* See the "inkey()" function */
+u32b inkey_scan;		/* See the "inkey()" function */
 bool inkey_flag;		/* See the "inkey()" function */
-
-s16b coin_type;			/* Hack -- force coin type */
 
 bool opening_chest;		/* Hack -- prevent chest generation */
 
@@ -130,16 +138,10 @@ bool closing_flag;		/* Dungeon is closing */
 
 
 /*
- * Player info
- */
-int player_uid;
-int player_egid;
-
-
-/*
  * Buffer to hold the current savefile name
  */
 char savefile[1024];
+char panic_savefile[1024];
 
 
 /*
@@ -150,12 +152,12 @@ s16b macro__num;
 /*
  * Array of macro patterns [MACRO_MAX]
  */
-cptr *macro__pat;
+char **macro__pat;
 
 /*
  * Array of macro actions [MACRO_MAX]
  */
-cptr *macro__act;
+char **macro__act;
 
 
 /*
@@ -183,11 +185,11 @@ char angband_term_name[ANGBAND_TERM_MAX][16] =
 
 
 int max_macrotrigger = 0;
-cptr macro_template = NULL;
-cptr macro_modifier_chr;
-cptr macro_modifier_name[MAX_MACRO_MOD];
-cptr macro_trigger_name[MAX_MACRO_TRIGGER];
-cptr macro_trigger_keycode[2][MAX_MACRO_TRIGGER];
+char *macro_template = NULL;
+char *macro_modifier_chr;
+char *macro_modifier_name[MAX_MACRO_MOD];
+char *macro_trigger_name[MAX_MACRO_TRIGGER];
+char *macro_trigger_keycode[2][MAX_MACRO_TRIGGER];
 
 
 /*
@@ -392,10 +394,11 @@ byte *temp_x;
 /*
  * Array[DUNGEON_HGT][256] of cave grid info flags (padded)
  *
- * This array is padded to a width of 256 to allow fast access to elements
+ * These arrays are padded to a width of 256 to allow fast access to elements
  * in the array via "grid" values (see the GRID() macros).
  */
 byte (*cave_info)[256];
+byte (*cave_info2)[256];
 
 /*
  * Array[DUNGEON_HGT][DUNGEON_WID] of cave grid feature codes
@@ -429,8 +432,6 @@ s16b (*cave_o_idx)[DUNGEON_WID];
 s16b (*cave_m_idx)[DUNGEON_WID];
 
 
-#ifdef MONSTER_FLOW
-
 /*
  * Array[DUNGEON_HGT][DUNGEON_WID] of cave grid flow "cost" values
  */
@@ -440,8 +441,6 @@ byte (*cave_cost)[DUNGEON_WID];
  * Array[DUNGEON_HGT][DUNGEON_WID] of cave grid flow "when" stamps
  */
 byte (*cave_when)[DUNGEON_WID];
-
-#endif	/* MONSTER_FLOW */
 
 
 /*
@@ -476,17 +475,6 @@ store_type *store;
  * Array[INVEN_TOTAL] of objects in the player's inventory
  */
 object_type *inventory;
-
-
-/*
- * The size of "alloc_kind_table" (at most z_info->k_max * 4)
- */
-s16b alloc_kind_size;
-
-/*
- * The array[alloc_kind_size] of entries in the "kind allocator table"
- */
-alloc_entry *alloc_kind_table;
 
 
 /*
@@ -535,7 +523,7 @@ char macro_buffer[1024];
 /*
  * Keymaps for each "mode" associated with each keypress.
  */
-cptr keymap_act[KEYMAP_MODES][256];
+char *keymap_act[KEYMAP_MODES][256];
 
 
 
@@ -647,14 +635,6 @@ char *b_name;
 char *b_text;
 
 /*
- * The racial price adjustment arrays
- */
-byte *g_info;
-char *g_name;
-char *g_text;
-
-
-/*
  * The object flavor arrays
  */
 flavor_type *flavor_info;
@@ -680,86 +660,43 @@ s16b spell_list[MAX_REALMS][BOOKS_PER_REALM][SPELLS_PER_BOOK];
  * Hack -- The special Angband "System Suffix"
  * This variable is used to choose an appropriate "pref-xxx" file
  */
-cptr ANGBAND_SYS = "xxx";
+const char *ANGBAND_SYS = "xxx";
 
 /*
  * Hack -- The special Angband "Graphics Suffix"
  * This variable is used to choose an appropriate "graf-xxx" file
  */
-cptr ANGBAND_GRAF = "old";
+const char *ANGBAND_GRAF = "old";
 
 /*
  * Path name: The main "lib" directory
  * This variable is not actually used anywhere in the code
  */
-cptr ANGBAND_DIR;
+char *ANGBAND_DIR;
 
 /*
- * High score files (binary)
- * These files may be portable between platforms
+ * Various lib/ sub-directories.
  */
-cptr ANGBAND_DIR_APEX;
+char *ANGBAND_DIR_APEX;
+char *ANGBAND_DIR_BONE;
+char *ANGBAND_DIR_DATA;
+char *ANGBAND_DIR_EDIT;
+char *ANGBAND_DIR_FILE;
+char *ANGBAND_DIR_HELP;
+char *ANGBAND_DIR_INFO;
+char *ANGBAND_DIR_SAVE;
+char *ANGBAND_DIR_PREF;
+char *ANGBAND_DIR_USER;
+char *ANGBAND_DIR_XTRA;
 
-/*
- * Bone files for player ghosts (ascii)
- * These files are portable between platforms
+/* 
+ * Various xtra/ subdirectories.
  */
-cptr ANGBAND_DIR_BONE;
-
-/*
- * Binary image files for the "*_info" arrays (binary)
- * These files are not portable between platforms
- */
-cptr ANGBAND_DIR_DATA;
-
-/*
- * Textual template files for the "*_info" arrays (ascii)
- * These files are portable between platforms
- */
-cptr ANGBAND_DIR_EDIT;
-
-/*
- * Various extra files (ascii)
- * These files may be portable between platforms
- */
-cptr ANGBAND_DIR_FILE;
-
-/*
- * Help files (normal) for the online help (ascii)
- * These files are portable between platforms
- */
-cptr ANGBAND_DIR_HELP;
-
-/*
- * Help files (spoilers) for the online help (ascii)
- * These files are portable between platforms
- */
-cptr ANGBAND_DIR_INFO;
-
-/*
- * Savefiles for current characters (binary)
- * These files are portable between platforms
- */
-cptr ANGBAND_DIR_SAVE;
-
-/*
- * Default user "preference" files (ascii)
- * These files are rarely portable between platforms
- */
-cptr ANGBAND_DIR_PREF;
-
-/*
- * User defined "preference" files (ascii)
- * These files are rarely portable between platforms
- */
-cptr ANGBAND_DIR_USER;
-
-/*
- * Various extra files (binary)
- * These files are rarely portable between platforms
- */
-cptr ANGBAND_DIR_XTRA;
-
+char *ANGBAND_DIR_XTRA_FONT;
+char *ANGBAND_DIR_XTRA_GRAF;
+char *ANGBAND_DIR_XTRA_SOUND;
+char *ANGBAND_DIR_XTRA_HELP;
+char *ANGBAND_DIR_XTRA_ICON;
 
 /*
  * Total Hack -- allow all items to be listed (even empty ones)
@@ -784,19 +721,6 @@ bool (*item_tester_hook)(const object_type*);
 
 
 /*
- * Current "comp" function for ang_sort()
- */
-bool (*ang_sort_comp)(const void *u, const void *v, int a, int b);
-
-
-/*
- * Current "swap" function for ang_sort()
- */
-void (*ang_sort_swap)(void *u, void *v, int a, int b);
-
-
-
-/*
  * Hack -- function hook to restrict "get_mon_num_prep()" function
  */
 bool (*get_mon_num_hook)(int r_idx);
@@ -809,13 +733,11 @@ bool (*get_mon_num_hook)(int r_idx);
 bool (*get_obj_num_hook)(int k_idx);
 
 
-void (*object_info_out_flags)(const object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3);
-
 
 /*
  * Hack - the destination file for text_out_to_file.
  */
-FILE *text_out_file = NULL;
+ang_file *text_out_file = NULL;
 
 
 /*
@@ -855,3 +777,8 @@ void (*sound_hook)(int sound);
  */
 autoinscription *inscriptions = 0;
 u16b inscriptions_count = 0;
+
+
+/* Delay in centiseconds before moving to allow another keypress */
+/* Zero means normal instant movement. */
+u16b lazymove_delay = 0;

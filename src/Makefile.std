@@ -16,8 +16,7 @@
 # What systems to try.
 #
 # By default, this tries to compile both the X11 and "curses" terminal mode
-# ports in the same executable.  On Linux only, it also builds the lfb 'console' 
-# module.
+# ports in the same executable.
 
 
 # Recent, known-to-work ports
@@ -33,14 +32,11 @@ SYS_x11 = -DUSE_X11 -lX11
 SYS_gcu = -DUSE_GCU -DUSE_NCURSES -lncurses
 #SYS_gcu = -DUSE_GCU -lcurses -ltermcap
 
-# Support Xaw motif (main-xaw.c)
-#SYS_xaw = -DUSE_XAW -lXaw -lXext -lSM -lICE -lXmu -lXt -lX11
-
 # Support the GTK2 graphical tookit (main-gtk.c)
 #SYS_gtk = -rdynamic -export-dynamic -DUSE_GTK $(shell pkg-config libglade-2.0 gtk+-2.0 --libs --cflags)
 
 # Support SDL frontend
-#SYS_sdl = -DUSE_SDL $(shell sdl-config --cflags) $(shell sdl-config --libs) -lSDL_ttf -lSDL_image
+SYS_sdl = -DUSE_SDL $(shell sdl-config --cflags) $(shell sdl-config --libs) -lSDL_ttf -lSDL_image
 
 
 
@@ -52,12 +48,12 @@ SYS_gcu = -DUSE_GCU -DUSE_NCURSES -lncurses
 
 # Basic compiler stuff
 CC = gcc
-CFLAGS = -Wall -O2 -Wno-unused-parameter
-
+WARNINGS = -W -Wall -Wextra -Wno-unused-parameter -Wold-style-definition -Wdeclaration-after-statement -Wmissing-declarations -Wredundant-decls -Wpointer-arith -Wcast-align -Wwrite-strings -Winline -Wformat-security -Winit-self -Wmissing-include-dirs -Wundef -Wmissing-format-attribute -Wnested-externs
+CFLAGS = -O2 $(WARNINGS)
 
 # Add additional search directives here
 # Example: -I/usr/X11R6/include -I/usr/include/ncurses
-INCLUDES =
+INCLUDES = -I.
 # Example: -L/usr/X11R6/lib 
 LIBS =
 
@@ -76,23 +72,14 @@ EXE = angband
 
 
 # Extract CFLAGS and LIBS from the system definitions
-MODULES = $(SYS_x11) $(SYS_gcu) $(SYS_xaw) $(SYS_gtk) $(SYS_sdl) $(SOUND_sdl)
+MODULES = $(SYS_x11) $(SYS_gcu) $(SYS_gtk) $(SYS_sdl) $(SOUND_sdl)
 CFLAGS += $(patsubst -l%,,$(MODULES)) $(INCLUDES)
 LIBS += $(patsubst -D%,,$(patsubst -I%,, $(MODULES)))
 
 
-# Extract system we're running on
-uname = $(shell uname -s)
-
-# Enable linux-specific modules, if requested.
-ifeq ($(uname),Linux)
-  CFLAGS += -DHAVE_MKSTEMP
-endif
-
-
 # Object definitions
-X11OBJS = maid-x11.o main-x11.o main-xaw.o main-gtk.o
-MAINOBJS = main.o main-gcu.o main-sdl.o snd-sdl.o $(X11OBJS)
+GTKOBJS = gtk/main-gtk.o gtk/cairo-utils.o
+MAINOBJS = main.o main-gcu.o main-x11.o main-sdl.o snd-sdl.o $(GTKOBJS)
 OBJS = $(BASEOBJS) $(MAINOBJS)
 
 
@@ -115,18 +102,21 @@ include Makefile.inc
 
 # Build the "Angband" program
 $(EXE): $(OBJS)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $(EXE) $(OBJS) $(LIBS)
+	@printf "%10s %-20s\n" LINK $@
+	@$(CC) $(CFLAGS) $(LDFLAGS) -o $(EXE) $(OBJS) $(LIBS)
 
 # Install the game.
 install: ../$(EXE)
 
+docs: doc/index.html
 
 ../$(EXE): $(EXE)
 	cp $(EXE) ..
 
 # Clean up old junk
 clean:
-	-rm -f *.o $(EXE)
+	-rm -f $(OBJS) $(EXE)
+	-rm -f ../lib/data/*.raw
 
 # make a distribution
 DIRS = lib/apex lib/bone lib/data lib/edit lib/file lib/help lib/info \
@@ -155,6 +145,7 @@ dist:
 #  Verify module arguments
 args:
 	@echo CFLAGS = $(CFLAGS)
+	@echo LDFLAGS = $(LDFLAGS)
 	@echo LIBS = $(LIBS)
 
 
@@ -165,12 +156,15 @@ depend:
 
 # Some file dependencies
 %.o: %.c
-	$(CC) $(CFLAGS) -o $@ -c $<
+	@printf "%10s %-20s\n" CC $<
+	@$(CC) $(CFLAGS) -o $@ -c $<
 
 # X11 dependencies
-$(X11OBJS) : $(INCS) maid-x11.h main.h
+main-x11.o: $(HEADERS) main.h
 
 # Basic dependencies for main-xxx.c, main.c
-$(MAINOBJS) : main.h $(INCS)
+$(MAINOBJS) : main.h $(HEADERS)
 
-
+# fake Dependency
+doc/index.html: $(HEADERS)
+	doxygen doc/doxygen.conf

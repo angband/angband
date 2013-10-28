@@ -1,0 +1,161 @@
+#------------------------------------------------------------------------------
+.SUFFIXES:
+#------------------------------------------------------------------------------
+
+ifeq ($(strip $(DEVKITARM)),)
+$(error "Please set DEVKITARM in your environment. export DEVKITARM=<path to>devkitARM)
+endif
+
+include $(DEVKITARM)/ds_rules
+
+#------------------------------------------------------------------------------
+# TARGET is the name of the output
+# BUILD is the directory where object files & intermediate files will be placed
+# SOURCES is a list of directories containing source code
+# INCLUDES is a list of directories containing extra header files
+#------------------------------------------------------------------------------
+TARGET		:=	angband
+#NRM BUILD		:=	build
+#NRM SOURCES		:=	gfx source data  
+#NRM INCLUDES	:=	include build
+
+#------------------------------------------------------------------------------
+# options for code generation
+#------------------------------------------------------------------------------
+#NRM ARCH	:=	-mthumb -mthumb-interwork
+
+# note: arm9tdmi isn't the correct CPU arch, but anything newer and LD
+# *insists* it has a FPU or VFP, and it won't take no for an answer!
+CFLAGS	:=	-g -Wall -O2\
+ 			-mcpu=arm9tdmi -mtune=arm9tdmi -fomit-frame-pointer\
+			-ffast-math \
+			$(ARCH)
+
+CFLAGS	+=	$(INCLUDE) -DARM9
+#NRM CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions
+
+ASFLAGS	:=	-g $(ARCH)
+#NRM LDFLAGS	=	-specs=ds_arm9.specs -g $(ARCH) -mno-fpu -Wl,-Map,$(notdir $*.map)
+
+LDFLAGS	=	-g $(ARCH) 
+
+#------------------------------------------------------------------------------
+# any extra libraries we wish to link with the project
+#------------------------------------------------------------------------------
+#NRM LIBS	:= -lnds9
+LIBS	:= 
+ 
+ 
+#------------------------------------------------------------------------------
+# list of directories containing libraries, this must be the top level 
+# containing include and lib
+#------------------------------------------------------------------------------
+LIBDIRS	:=	$(LIBNDS)
+ 
+#------------------------------------------------------------------------------
+# no real need to edit anything past this point unless you need to add 
+# additional rules for different file extensions
+#------------------------------------------------------------------------------
+#NRM ifneq ($(BUILD),$(notdir $(CURDIR)))
+#------------------------------------------------------------------------------
+ 
+#NRM export OUTPUT	:=	$(CURDIR)/$(TARGET)
+ 
+#NRM export VPATH	:=	$(foreach dir,$(SOURCES),$(CURDIR)/$(dir))
+export DEPSDIR	:=	$(CURDIR)/.deps
+
+#NRM CFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
+#NRM CPPFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.cpp)))
+#NRM SFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.s)))
+#NRM BINFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.bin)))
+ 
+#------------------------------------------------------------------------------
+# use CXX for linking C++ projects, CC for standard C
+#------------------------------------------------------------------------------
+#NRM ifeq ($(strip $(CPPFILES)),)
+#------------------------------------------------------------------------------
+#NRM 	export LD	:=	$(CC)
+#------------------------------------------------------------------------------
+#NRM else
+#------------------------------------------------------------------------------
+#NRM 	export LD	:=	$(CXX)
+#------------------------------------------------------------------------------
+#NRM endif
+#------------------------------------------------------------------------------
+
+
+# include Makefile.inc
+
+#NRM export OFILES	:=	$(BINFILES:.bin=.o) $(CPPFILES:.cpp=.o)  \
+#NRM 				$(CFILES:.c=.o) $(SFILES:.s=.o)
+ 
+#NRM export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
+#NRM 				$(foreach dir,$(LIBDIRS),-I$(dir)/include) \
+#NRM 				$(foreach dir,$(LIBDIRS),-I$(dir)/include) \
+#NRM 				-I$(CURDIR)/$(BUILD)
+ 
+#NRM export LIBPATHS	:=	$(foreach dir,$(LIBDIRS),-L$(dir)/lib)
+ 
+#NRM .PHONY: $(BUILD) clean
+ 
+#------------------------------------------------------------------------------
+#NRM $(BUILD):
+#NRM 	@[ -d $@ ] || mkdir -p $@
+#NRM 	@make --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
+ 
+#------------------------------------------------------------------------------
+#NRM else
+ 
+DEPENDS	:=	$(BASEOBJS:.o=$(CURDIR)/.d)
+ 
+#------------------------------------------------------------------------------
+# main targets
+#------------------------------------------------------------------------------
+#NRM $(TARGET).nds	: 	$(TARGET).arm9
+#NRM $(TARGET).arm9	:	$(TARGET).elf
+#NRM $(TARGET).elf	:	$(BASEOBJS)
+ 
+#------------------------------------------------------------------------------
+$(TARGET).nds	:	$(TARGET).arm7 $(TARGET).arm9
+	ndstool	-c $(TARGET).nds -7 $(TARGET).arm7 -9 $(TARGET).arm9
+
+#------------------------------------------------------------------------------
+$(TARGET).arm7	: $(TARGET).arm7.elf
+	@$(OBJCOPY) -O binary $< $@
+	@echo built ... $(notdir $@)
+
+$(TARGET).arm9	: $(TARGET).arm9.elf
+	@$(OBJCOPY) -O binary $< $@
+	@echo built ... $(notdir $@)
+#------------------------------------------------------------------------------
+$(TARGET).arm7.elf:
+	@[ -d build ] || mkdir build
+	$(MAKE) -f nds/Makefile.arm7 all
+	
+#------------------------------------------------------------------------------
+
+$(TARGET).arm9.elf:
+	@[ -d build ] || mkdir build
+#	sh -c "unset CC; [ -f src/tile.c ] || make -C util ../src/tile.c"
+	@echo hello
+	$(MAKE) -f nds/Makefile.arm9 all
+
+#-------------------------------------------------------------------------------#NRM %.o	:	%.bin
+#------------------------------------------------------------------------------
+#NRM 	@echo $(notdir $<)
+#NRM 	$(bin2o)
+ 
+ 
+-include $(DEPENDS)
+ 
+#------------------------------------------------------------------------------
+
+#------------------------------------------------------------------------------
+clean:
+	@echo clean ...
+	@rm -fr *.o $(TARGET).* 
+ 
+ 
+#------------------------------------------------------------------------------
+#NRM endif
+#------------------------------------------------------------------------------

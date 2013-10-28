@@ -16,7 +16,9 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
+#include "wizard.h"
 #include "cmds.h"
+#include "ui-menu.h"
 
 
 /*
@@ -37,8 +39,8 @@ typedef void do_cmd_type(void);
 
 /* Forward declare these, because they're really defined later */
 static do_cmd_type do_cmd_wizard, do_cmd_try_debug,
-            do_cmd_cast_or_pray, do_cmd_quit, do_cmd_mouseclick, do_cmd_port,
-            do_cmd_xxx_options, do_cmd_menu, do_cmd_monlist;
+            do_cmd_quit, do_cmd_mouseclick, do_cmd_port,
+			do_cmd_xxx_options, do_cmd_menu, do_cmd_monlist, do_cmd_itemlist;
 
 #ifdef ALLOW_BORG
 static do_cmd_type do_cmd_try_borg;
@@ -60,8 +62,8 @@ static command_type cmd_magic[] =
 {
 	{ "Gain new spells or prayers", 'G', do_cmd_study },
 	{ "Browse a book",              'b', do_cmd_browse },
-	{ "Cast a spell",               'm', do_cmd_cast_or_pray },
-	{ "Pray a prayer",              'p', do_cmd_cast_or_pray }
+	{ "Cast a spell",               'm', do_cmd_cast },
+	{ "Pray a prayer",              'p', do_cmd_pray }
 };
 
 /* General actions */
@@ -117,6 +119,7 @@ static command_type cmd_item_manage[]  =
 static command_type cmd_info[] =
 {
 	{ "Full dungeon map",             'M', do_cmd_view_map },
+	{ "Display visible item list",    ']', do_cmd_itemlist },
 	{ "Display visible monster list", '[', do_cmd_monlist },
 	{ "Locate player on map",         'L', do_cmd_locate },
 	{ "Help",                         '?', do_cmd_help },
@@ -302,19 +305,6 @@ static bool do_cmd_try_borg(void)
 #endif /* ALLOW_BORG */
 
 
-
-/*
- * Helper -- cast or pray, depending on the character.
- */
-static void do_cmd_cast_or_pray(void)
-{
-	if (cp_ptr->spell_book == TV_PRAYER_BOOK)
-		do_cmd_pray();
-	else
-		do_cmd_cast();
-}
-
-
 /*
  * Quit the game.
  */
@@ -400,7 +390,24 @@ static void do_cmd_monlist(void)
 	display_monlist();
 
 	/* Wait */
-	inkey();
+	anykey();
+
+	/* Return */
+	screen_load();
+}
+
+
+/*
+ * Display the main-screen item list.
+ */
+static void do_cmd_itemlist(void)
+{
+	/* Save the screen and display the list */
+	screen_save();
+	display_itemlist();
+
+	/* Wait */
+	anykey();
 
 	/* Return */
 	screen_load();
@@ -430,6 +437,8 @@ static void cmd_sub_entry(menu_type *menu, int oid, bool cursor, int row, int co
 	byte attr = (cursor ? TERM_L_BLUE : TERM_WHITE);
 	const command_type *commands = menu->menu_data;
 
+	(void)width;
+
 	/* Write the description */
 	Term_putstr(col, row, -1, attr, commands[oid].desc);
 
@@ -455,15 +464,14 @@ static void cmd_sub_entry(menu_type *menu, int oid, bool cursor, int row, int co
 /* Handle user input from a command menu */
 static bool cmd_sub_action(char cmd, void *db, int oid)
 {
+	(void)db;
+	(void)oid;
+
 	/* Only handle enter */
 	if (cmd == '\n' || cmd == '\r')
-	{
 		return TRUE;
-	}
 	else
-	{
 		return FALSE;
-	}
 }
 
 /*
@@ -472,10 +480,10 @@ static bool cmd_sub_action(char cmd, void *db, int oid)
 static bool cmd_menu(command_list *list, void *selection_p)
 {
 	menu_type menu;
-	menu_iter commands_menu = { 0, 0, 0, cmd_sub_entry, cmd_sub_action };
+	menu_iter commands_menu = { NULL, NULL, cmd_sub_entry, cmd_sub_action };
 	region area = { 23, 4, 37, 13 };
 
-	event_type evt;
+	ui_event_data evt;
 	int cursor = 0;
 	command_type *selection = selection_p;
 
@@ -484,7 +492,7 @@ static bool cmd_menu(command_list *list, void *selection_p)
 	menu.cmd_keys = "\x8B\x8C\n\r";
 	menu.count = list->len;
 	menu.menu_data = list->list;
-	menu_init2(&menu, find_menu_skin(MN_SCROLL), &commands_menu, &area);
+	menu_init(&menu, MN_SKIN_SCROLL, &commands_menu, &area);
 
 	/* Set up the screen */
 	screen_save();
@@ -528,6 +536,8 @@ static bool cmd_list_action(char cmd, void *db, int oid)
 static void cmd_list_entry(menu_type *menu, int oid, bool cursor, int row, int col, int width)
 {
 	byte attr = (cursor ? TERM_L_BLUE : TERM_WHITE);
+	(void)menu;
+	(void)width;
 	Term_putstr(col, row, -1, attr, cmds_all[oid].name);
 }
 
@@ -537,10 +547,10 @@ static void cmd_list_entry(menu_type *menu, int oid, bool cursor, int row, int c
 static void do_cmd_menu(void)
 {
 	menu_type menu;
-	menu_iter commands_menu = { 0, 0, 0, cmd_list_entry, cmd_list_action };
+	menu_iter commands_menu = { NULL, NULL, cmd_list_entry, cmd_list_action };
 	region area = { 21, 5, 37, 6 };
 
-	event_type evt;
+	ui_event_data evt;
 	int cursor = 0;
 	command_type chosen_command = { NULL, 0, NULL };
 
@@ -549,7 +559,7 @@ static void do_cmd_menu(void)
 	menu.cmd_keys = "\x8B\x8C\n\r";
 	menu.count = N_ELEMENTS(cmds_all) - 1;
 	menu.menu_data = &chosen_command;
-	menu_init2(&menu, find_menu_skin(MN_SCROLL), &commands_menu, &area);
+	menu_init(&menu, MN_SKIN_SCROLL, &commands_menu, &area);
 
 	/* Set up the screen */
 	screen_save();

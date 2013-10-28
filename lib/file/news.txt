@@ -1,13 +1,13 @@
 
-                     _                _                     _
-                    / \   _ __   __ _| |__   __ _ _ __   __| |
-                   / _ \ | '_ \ / _` | '_ \ / _` | '_ \ / _` |
-                  / ___ \| | | | (_| | |_) | (_| | | | | (_| |
-                 /_/   \_\_| |_|\__, |_.__/ \__,_|_| |_|\__,_|
-                                |___/
+{yellow}                     _                _                     _ {/}
+{yellow}                    / \   _ __   __ _| |__   __ _ _ __   __| |{/}
+{yellow}                   / _ \ | '_ \ / _` | '_ \ / _` | '_ \ / _` |{/}
+{yellow}                  / ___ \| | | | (_| | |_) | (_| | | | | (_| |{/}
+{yellow}                 /_/   \_\_| |_|\__, |_.__/ \__,_|_| |_|\__,_|{/}
+{yellow}                                |___/                         {/}  
 
-                                Version 3.0.9b
-                       Bug reports to <bugs@rephial.org>
+                             Version 3.1.0 beta
+                Bug reports to <http://angband.oook.cz/forum/>
 
    For resources and links to places you can talk about the game, please see:
                   http://rephial.org/ -- the home of Angband

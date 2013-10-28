@@ -2062,1364 +2062,482 @@ R:616:0x90:0xcd
 
 # Object attr/char definitions
 
+##### Non-kind (contains the "pile" picture) #####
+
 # <pile>
 # K:0:0x01:0x26
 
-# Blindness
-# K:1:0x00:0x2C
 
-# Paranoia
-# K:2:0x00:0x2C
 
-# Confusion
-# K:3:0x00:0x2C
 
-# Hallucination
-# K:4:0x00:0x2C
+##### Various Stuff #####
 
-# Cure Poison
-# K:5:0x00:0x2C
+K:spike:Iron Spike~:0x87:0x98
+K:light:Wooden Torch~:0x87:0x9A
+K:light:Lantern~:0x87:0x99
+K:flask:Flask~ of oil:0x87:0x97
 
-# Cure Blindness
-# K:6:0x00:0x2C
 
-# Cure Paranoia
-# K:7:0x00:0x2C
 
-# Cure Confusion
-# K:8:0x00:0x2C
 
-# Weakness
-# K:9:0x00:0x2C
+##### Food #####
 
-# Unhealth
-# K:10:0x00:0x2C
+### Normal Food ###
 
-# Restore Constitution
-# K:11:0x00:0x2C
+K:food:Ration~ of Food:0x82:0x84
+K:food:Slime Mold~:0x82:0x85
+K:food:Piece~ of Elvish Waybread:0x82:0x86
 
-# Restoring
-# K:12:0x00:0x2C
 
-# Stupidity
-# K:13:0x00:0x2C
+### The shrooms, an interesting collection ###
+# Graphics are sourced from flavor entries in flvr-dvg.prf
 
-# Naivety
-# K:14:0x00:0x2C
 
-# Poison
-# K:15:0x00:0x2C
 
-# Sickness
-# K:16:0x00:0x2C
 
-# Paralysis
-# K:17:0x00:0x2C
+##### Weapons #####
 
-# Restore Strength
-# K:18:0x00:0x2C
+### Swords ###
 
-# Disease
-# K:19:0x00:0x2C
+K:sword:Dagger~:0x8a:0x83
+K:sword:Main Gauche~:0x8a:0x84
+K:sword:Rapier~:0x8a:0x85
+K:sword:Short Sword~:0x8a:0x88
+K:sword:Cutlass~:0x8a:0x8A
+K:sword:Tulwar~:0x8a:0x89
+K:sword:Scimitar~:0x8a:0x8B
+K:sword:Long Sword~:0x8a:0x8D
+K:sword:Broad Sword~:0x8a:0x8C
+K:sword:Bastard Sword~:0x8a:0x8E
+K:sword:Katana~:0x8a:0x8E
+K:sword:Zweihander~:0x8a:0x8F
+K:sword:Executioner's Sword~:0x8a:0x8F
+K:sword:Blade~ of Chaos:0x8a:0x91
 
-# Cure Serious Wounds
-# K:20:0x00:0x2C
 
-# & Ration~ of Food
-K:21:0x82:0x84
+### Whips ###
 
-# & Hard Biscuit~
-K:22:0x82:0x82
+K:hafted:Whip~:0x8a:0x92
+K:hafted:Ball-and-Chain~:0x8a:0x99
+K:hafted:Morning Star~:0x8a:0x97
+K:hafted:Flail~:0x8a:0x96
+K:hafted:Two-Handed Great Flail~:0x8a:0x9A
 
-# & Strip~ of Beef Jerky
-K:23:0x82:0x83
 
-# & Slime Mold~
-K:24:0x82:0x85
+### Clubs ###
 
-# & Piece~ of Elvish Waybread
-K:25:0x82:0x86
+K:hafted:Mace~:0x8a:0x94
+K:hafted:Lead-Filled Mace~:0x8a:0x98
+K:hafted:Quarterstaff~:0x8a:0x95
+K:hafted:War Hammer~:0x8a:0x93
+K:hafted:Maul~:0x8a:0xB0
+K:hafted:Great Hammer~:0x8a:0xb0
+K:hafted:Mace~ of Disruption:0x8a:0x9B
 
-# & Pint~ of Fine Ale
-K:26:0x82:0x80
 
-# & Pint~ of Fine Wine
-K:27:0x82:0x81
+### Spears ###
 
-# & Broken Dagger~
-K:30:0x8a:0x81
+K:polearm:Spear~:0x8a:0x9C
+K:polearm:Awl-Pike~:0x8a:0x9E
+K:polearm:Trident~:0x8a:0x9D
+K:polearm:Halberd~:0x8a:0xA6
+K:polearm:Pike~:0x8a:0xA2
 
-# & Bastard Sword~
-K:31:0x8a:0x8E
 
-# & Scimitar~
-K:32:0x8a:0x8B
+### Axes ###
 
-# & Tulwar~
-K:33:0x8a:0x89
+K:polearm:Beaked Axe~:0x8a:0xA3
+K:polearm:Broad Axe~:0x8a:0xA4
+K:polearm:Battle Axe~:0x8a:0xA1
+K:polearm:Lochaber Axe~:0x8a:0xA7
+K:polearm:Great Axe~:0x8a:0xA8
 
-# & Broad Sword~
-K:34:0x8a:0x8C
 
-# & Short Sword~
-K:35:0x8a:0x88
+### Other misc polearms ###
 
-# & Blade~ of Chaos
-K:36:0x8a:0x91
+K:polearm:Scythe~:0x8a:0xA9
+K:polearm:Glaive~:0x8a:0xA5
+K:polearm:Lance~:0x8a:0x9F
+K:polearm:Scythe~ of Slicing:0x8a:0xAA
+K:polearm:Lucerne Hammer~:0x8a:0xA0
 
-# & Two-Handed Sword~
-K:37:0x8a:0x8F
 
-# & Main Gauche~
-K:38:0x8a:0x84
 
-# & Cutlass~
-K:39:0x8a:0x8A
 
-# & Executioner's Sword~
-K:40:0x8a:0x8F
+##### Bows, Crossbows, Slings #####
 
-# & Katana~
-K:41:0x8a:0x8E
+K:bow:Sling~:0x8a:0xAF
+K:bow:Short Bow~:0x8a:0xAB
+K:bow:Long Bow~:0x8a:0xAC
+K:bow:Light Crossbow~:0x8a:0xAD
+K:bow:Heavy Crossbow~:0x8a:0xAE
 
-# & Long Sword~
-K:42:0x8a:0x8D
 
-# & Dagger~
-K:43:0x8a:0x83
 
-# & Rapier~
-K:44:0x8a:0x85
 
-# & Sabre~
-K:45:0x8a:0x87
+##### Missiles #####
 
-# & Small Sword~
-K:46:0x8a:0x86
+K:arrow:Arrow~:0x8a:0xB1
+K:arrow:Seeker Arrow~:0x8a:0xB2
+K:arrow:Mithril Arrow~:0x8a:0xD9
+K:bolt:Bolt~:0x8a:0xB3
+K:bolt:Seeker Bolt~:0x8a:0xB4
+K:bolt:Mithril Bolt~:0x8a:0xE3
+K:shot:Rounded Pebble~:0x8a:0xB5
+K:shot:Iron Shot~:0x8a:0xB6
+K:shot:Mithril Shot~:0x8a:0xB6
 
-# & Broken Sword~
-K:47:0x8a:0x82
 
-# & Ball-and-Chain~
-K:48:0x8a:0x99
+##### Digging Tools #####
 
-# & Whip~
-K:49:0x8a:0x92
+K:digger:Shovel~:0x87:0x9E
+K:digger:Pick~:0x87:0x9B
+K:digger:Mattock~:0x87:0x9D
 
-# & Flail~
-K:50:0x8a:0x96
 
-# & Two-Handed Flail~
-K:51:0x8a:0x9A
 
-# & Morning Star~
-K:52:0x8a:0x97
 
-# & Mace~
-K:53:0x8a:0x94
+##### Armor #####
 
-# & Quarterstaff~
-K:54:0x8a:0x95
+K:boots:Pair~ of Leather Sandals:0x80:0x94
+K:boots:Pair~ of Leather Boots:0x80:0x95
+K:boots:Pair~ of Iron Shod Boots:0x80:0x96
+K:boots:Pair~ of Steel Shod Boots:0x80:0x96
+K:boots:Pair~ of Mithril Shod Boots:0x80:0x96
+K:boots:Pair~ of Ethereal Slippers:0x80:0x93
 
-# & War Hammer~
-K:55:0x8a:0x93
 
-# & Lead-Filled Mace~
-K:56:0x8a:0x98
+### Headgear ###
 
-# & Mace~ of Disruption
-K:57:0x8a:0x9B
+K:helm:Hard Leather Cap~:0x80:0xC6
+K:helm:Metal Cap~:0x80:0x8B
+K:helm:Iron Helm~:0x80:0x8C
+K:helm:Steel Helm~:0x80:0x8D
+K:crown:Iron Crown~:0x80:0x8F
+K:crown:Golden Crown~:0x80:0x90
+K:crown:Jewel Encrusted Crown~:0x80:0x91
 
-# & Lucerne Hammer~
-K:58:0x8a:0xA0
 
-# & Beaked Axe~
-K:59:0x8a:0xA3
+### Body armours ###
 
-# & Glaive~
-K:60:0x8a:0xA5
+K:soft armor:Robe~:0x80:0xA2
+K:soft armor:Soft Leather Armour~:0x80:0xA6
+K:soft armor:Studded Leather Armour~:0x80:0xA9
+K:soft armor:Hard Leather Armour~:0x80:0xA8
+K:soft armor:Leather Scale Mail~:0x80:0xAA
+K:hard armor:Metal Scale Mail~:0x80:0xAB
+K:hard armor:Chain Mail~:0x80:0xAD
+K:hard armor:Augmented Chain Mail~:0x80:0xAF
+K:hard armor:Bar Chain Mail~:0x80:0xB0
+K:hard armor:Metal Brigandine Armour~:0x80:0xB1
+K:hard armor:Partial Plate Armour~:0x80:0xB2
+K:hard armor:Metal Lamellar Armour~:0x80:0xB3
+K:hard armor:Full Plate Armour~:0x80:0xB4
+K:hard armor:Ribbed Plate Armour~:0x80:0xB5
+K:hard armor:Mithril Chain Mail~:0x80:0xB7
+K:hard armor:Mithril Plate Mail~:0x80:0xB6
+K:hard armor:Adamantite Plate Mail~:0x80:0xB8
 
-# & Halberd~
-K:61:0x8a:0xA6
 
-# & Awl-Pike~
-K:62:0x8a:0x9E
+### The Cloaks ###
 
-# & Pike~
-K:63:0x8a:0xA2
+K:cloak:Cloak~:0x80:0x81
+K:cloak:Fur Cloak~:0x80:0x82
+K:cloak:Elven Cloak~:0x80:0x83
+K:cloak:Ethereal Cloak~:0x80:0x84
 
-# & Spear~
-K:64:0x8a:0x9C
 
-# & Trident~
-K:65:0x8a:0x9D
+### The Gloves ###
 
-# & Lance~
-K:66:0x8a:0x9F
+K:gloves:Set~ of Leather Gloves:0x80:0x97
+K:gloves:Set~ of Gauntlets:0x80:0x98
+K:gloves:Set~ of Mithril Gauntlets:0x80:0x9A
+K:gloves:Set~ of Caestus:0x80:0x9B
+K:gloves:Set~ of Alchemist's Gloves:0x80:0x99
+#K:gloves:Set~ of Mining Gloves:0x80:0x9A
 
-# & Great Axe~
-K:67:0x8a:0xA8
 
-# & Battle Axe~
-K:68:0x8a:0xA1
+### The shields ###
 
-# & Lochaber Axe~
-K:69:0x8a:0xA7
+#K:shield:Buckler~:0x80:0x9C
+K:shield:Wicker Shield~:0x80:0x9C
+K:shield:Small Metal Shield~:0x80:0x9E
+K:shield:Leather Shield~:0x80:0x9D
+K:shield:Large Metal Shield~:0x80:0x9F
+K:shield:Mithril Shield~:0x80:0xA0
 
-# & Broad Axe~
-K:70:0x8a:0xA4
 
-# & Scythe~
-K:71:0x8a:0xA9
 
-# & Scythe~ of Slicing
-K:72:0x8a:0xAA
 
-# & Short Bow~
-K:73:0x8a:0xAB
+##### Rings #####
+# Graphics are sourced from flavor entries in flvr-dvg.prf
 
-# & Long Bow~
-K:74:0x8a:0xAC
 
-# & Light Crossbow~
-K:75:0x8a:0xAD
 
-# & Heavy Crossbow~
-K:76:0x8a:0xAE
 
-# & Sling~
-K:77:0x8a:0xAF
+##### Amulets #####
+# Graphics are sourced from flavor entries in flvr-dvg.prf
 
-# & Arrow~
-K:78:0x8a:0xB1
 
-# & Seeker Arrow~
-K:79:0x8a:0xB2
 
-# & Bolt~
-K:80:0x8a:0xB3
 
-# & Seeker Bolt~
-K:81:0x8a:0xB4
+##### Scrolls #####
 
-# & Rounded Pebble~
-K:82:0x8a:0xB5
+### Teleportation ###
 
-# & Iron Shot~
-K:83:0x8a:0xB6
+K:scroll:Phase Door:0x87:0xD5
+K:scroll:Teleportation:0x87:0xD6
+K:scroll:Teleport Level:0x87:0xD7
 
-# & Shovel~
-K:84:0x87:0x9E
 
-# & Gnomish Shovel~
-K:85:0x87:0x9F
+### Detection ###
 
-# & Dwarven Shovel~
-K:86:0x87:0xA0
+K:scroll:Magic Mapping:0x87:0xD9
+K:scroll:Treasure Detection:0x87:0xEF
+K:scroll:Trap Detection:0x87:0xE2
+K:scroll:Door/Stair Location:0x87:0xE8
+K:scroll:Detect Invisible:0x87:0xEE
 
-# & Pick~
-K:87:0x87:0x9B
 
-# & Orcish Pick~
-K:88:0x87:0x9C
+### Enchantments ###
 
-# & Dwarven Pick~
-K:89:0x87:0x9D
+K:scroll:Enchant Weapon To-Hit:0x87:0xCF
+K:scroll:Enchant Weapon To-Dam:0x87:0xD0
+K:scroll:Enchant Armour:0x87:0xD2
+K:scroll:*Enchant Weapon*:0x87:0xEB
+K:scroll:*Enchant Armour*:0x87:0xD1
+K:scroll:Remove Curse:0x87:0xF0
+K:scroll:*Remove Curse*:0x87:0xF1
 
-# & Mattock~
-K:90:0x87:0x9D
 
-# & Pair~ of Soft Leather Boots
-K:91:0x80:0x94
+### Summoning ###
 
-# & Pair~ of Hard Leather Boots
-K:92:0x80:0x95
+K:scroll:Summon Monster:0x87:0xD4
+K:scroll:Summon Undead:0x87:0xDE
+K:scroll:Acquirement:0x87:0xF4
+K:scroll:*Acquirement*:0x87:0xF5
 
-# & Pair~ of Metal Shod Boots
-K:93:0x80:0x96
 
-# & Hard Leather Cap~
-K:94:0x80:0xC6
+### Killing scrolls ###
 
-# & Metal Cap~
-K:95:0x80:0x8B
+K:scroll:Dispel Undead:0x87:0xEC
+K:scroll:Banishment:0x87:0xE3
+K:scroll:Mass Banishment:0x87:0xE9
 
-# & Iron Helm~
-K:96:0x80:0x8C
 
-# & Steel Helm~
-K:97:0x80:0x8D
+### Utility ###
 
-# & Iron Crown~
-K:98:0x80:0x8F
+K:scroll:Satisfy Hunger:0x87:0xE6
+K:scroll:Identify:0x87:0xCD
+K:scroll:Light:0x87:0xD3
+K:scroll:Word of Recall:0x87:0xDF
+K:scroll:Recharging:0x87:0xDB
+K:scroll:Trap/Door Destruction:0x87:0xF2
+K:scroll:Deep Descent:0x87:0xF3
 
-# & Golden Crown~
-K:99:0x80:0x90
 
-# & Jewel Encrusted Crown~
-K:100:0x80:0x91
+### "Holy" spells ###
 
-# & Robe~
-K:101:0x80:0xA2
+K:scroll:Blessing:0x87:0xDD
+K:scroll:Holy Chant:0x87:0xDC
+K:scroll:Holy Prayer:0x87:0xE0
+K:scroll:Protection from Evil:0x87:0xED
 
-# & Filthy Rag~
-K:102:0x80:0xA1
 
-# Soft Leather Armour~
-K:103:0x80:0xA6
+### Misc. ###
 
-# Soft Studded Leather~
-K:104:0x80:0xA7
+K:scroll:Monster Confusion:0x87:0xD8
+K:scroll:Rune of Protection:0x87:0xDA
+K:scroll:*Destruction*:0x87:0xF6
 
-# Hard Leather Armour~
-K:105:0x80:0xA8
 
-# Hard Studded Leather~
-K:106:0x80:0xA9
+### Bad scrolls ###
 
-# Leather Scale Mail~
-K:107:0x80:0xAA
+K:scroll:Aggravate Monster:0x87:0xE4
+K:scroll:Curse Weapon:0x87:0xEA
+K:scroll:Curse Armour:0x87:0xE5
+K:scroll:Darkness:0x87:0xE7
+K:scroll:Trap Creation:0x87:0xE1
 
-# Metal Scale Mail~
-K:108:0x80:0xAB
 
-# Chain Mail~
-K:109:0x80:0xAD
 
-# Rusty Chain Mail~
-K:110:0x80:0xAC
 
-# Augmented Chain Mail~
-K:111:0x80:0xAF
+##### Potions #####
+# Graphics are sourced from flavor entries in flvr-dvg.prf
 
-# Bar Chain Mail~
-K:112:0x80:0xB0
 
-# Metal Brigandine Armour~
-K:113:0x80:0xB1
 
-# Partial Plate Armour~
-K:114:0x80:0xB2
 
-# Metal Lamellar Armour~
-K:115:0x80:0xB3
+##### Wands #####
+# Graphics are sourced from flavor entries in flvr-dvg.prf
 
-# Full Plate Armour~
-K:116:0x80:0xB4
 
-# Ribbed Plate Armour~
-K:117:0x80:0xB5
 
-# Adamantite Plate Mail~
-K:118:0x80:0xB8
 
-# Mithril Plate Mail~
-K:119:0x80:0xB6
+##### Staffs #####
+# Graphics are sourced from flavor entries in flvr-dvg.prf
 
-# Mithril Chain Mail~
-K:120:0x80:0xB7
 
-# Double Chain Mail~
-K:121:0x80:0xAE
 
-# & Shield~ of Deflection
-K:122:0x80:0xA0
 
-# & Cloak~
-K:123:0x80:0x81
+##### Rods #####
+# Graphics are sourced from flavor entries in flvr-dvg.prf
 
-# & Shadow Cloak~
-K:124:0x80:0x82
 
-# & Set~ of Leather Gloves
-K:125:0x80:0x97
 
-# & Set~ of Gauntlets
-K:126:0x80:0x9A
 
-# & Set~ of Cesti
-K:127:0x80:0x9B
+##### Basic Books #####
 
-# & Small Leather Shield~
-K:128:0x80:0xDA
+K:magic book:[Magic for Beginners]:0x86:0x80
+K:magic book:[Conjurings and Tricks]:0x86:0x81
+K:magic book:[Incantations and Illusions]:0x86:0x82
+K:magic book:[Sorcery and Evocations]:0x86:0x83
+K:prayer book:[Beginners Handbook]:0x86:0x89
+K:prayer book:[Words of Wisdom]:0x86:0x8A
+K:prayer book:[Chants and Blessings]:0x86:0x8B
+K:prayer book:[Exorcism and Dispelling]:0x86:0x8C
 
-# & Large Leather Shield~
-K:129:0x80:0x9D
 
-# & Small Metal Shield~
-K:130:0x80:0xDD
 
-# & Large Metal Shield~
-K:131:0x80:0xD9
 
-# Strength
-# K:132:0x00:0x3D
+##### Special Books (note resistances) #####
 
-# Dexterity
-# K:133:0x00:0x3D
+K:magic book:[Resistances of Scarabtarices]:0x86:0x84
+K:magic book:[Raal's Tome of Destruction]:0x86:0x85
+K:magic book:[Mordenkainen's Escapes]:0x86:0x86
+K:magic book:[Tenser's Transformations]:0x86:0x87
+K:magic book:[Kelek's Grimoire of Power]:0x86:0x88
+K:prayer book:[Ethereal Openings]:0x86:0x8D
+K:prayer book:[Godly Insights]:0x86:0x8E
+K:prayer book:[Purifications and Healing]:0x86:0x8F
+K:prayer book:[Holy Infusions]:0x86:0x90
+K:prayer book:[Wrath of God]:0x86:0x91
 
-# Constitution
-# K:134:0x00:0x3D
 
-# Intelligence
-# K:135:0x00:0x3D
 
-# Speed
-# K:136:0x00:0x3D
 
-# Searching
-# K:137:0x00:0x3D
+##### Chests #####
 
-# Teleportation
-# K:138:0x00:0x3D
+K:chest:Small wooden chest~:0x87:0x80
+K:chest:Large wooden chest~:0x87:0x81
+K:chest:Small iron chest~:0x87:0x82
+K:chest:Large iron chest~:0x87:0x83
+K:chest:Small steel chest~:0x87:0x84
+K:chest:Large steel chest~:0x87:0x85
+K:chest:Ruined chest~:0x87:0x86
 
-# Slow Digestion
-# K:139:0x00:0x3D
 
-# Resist Fire
-# K:140:0x00:0x3D
 
-# Resist Cold
-# K:141:0x00:0x3D
 
-# Feather Falling
-# K:142:0x00:0x3D
+##### Junk #####
 
-# Resist Poison
-# K:143:0x00:0x3D
+K:bottle:Empty Bottle~:0x87:0x96
+K:junk:Shard~ of Pottery:0x87:0xA2
+K:junk:Broken Stick~:0x87:0xAA
+K:skeleton:Broken Skull~:0x87:0xAB
+K:skeleton:Broken Bone~:0x87:0xAC
+K:skeleton:Canine Skeleton~:0x87:0xB1
+K:skeleton:Rodent Skeleton~:0x87:0xB2
+K:skeleton:Human Skeleton~:0x87:0xAD
+K:skeleton:Dwarf Skeleton~:0x87:0xAF
+K:skeleton:Elf Skeleton~:0x87:0xAE
 
-# Free Action
-# K:144:0x00:0x3D
 
-# Weakness
-# K:145:0x00:0x3D
 
-# Flames
-# K:146:0x00:0x3D
 
-# Acid
-# K:147:0x00:0x3D
+##### Dragon Scale Mail #####
 
-# Ice
-# K:148:0x00:0x3D
+K:dragon armor:Black Dragon Scale Mail~:0x80:0xBB
+K:dragon armor:Blue Dragon Scale Mail~:0x80:0xB9
+K:dragon armor:White Dragon Scale Mail~:0x80:0xBA
+K:dragon armor:Red Dragon Scale Mail~:0x80:0xBC
+K:dragon armor:Green Dragon Scale Mail~:0x80:0xBD
+K:dragon armor:Multi-Hued Dragon Scale Mail~:0x80:0xC4
+K:dragon armor:Pseudo-Dragon Scale Mail~:0x80:0xC0
+K:dragon armor:Law Dragon Scale Mail~:0x80:0xC2
+K:dragon armor:Bronze Dragon Scale Mail~:0x80:0xBE
+K:dragon armor:Gold Dragon Scale Mail~:0x80:0xBF
+K:dragon armor:Chaos Dragon Scale Mail~:0x80:0xC1
+K:dragon armor:Balance Dragon Scale Mail~:0x80:0xC3
+K:dragon armor:Power Dragon Scale Mail~:0x80:0xC5
 
-# Woe
-# K:149:0x00:0x3D
 
-# Stupidity
-# K:150:0x00:0x3D
 
-# Damage
-# K:151:0x00:0x3D
 
-# Accuracy
-# K:152:0x00:0x3D
+##### Gold/gems #####
 
-# Protection
-# K:153:0x00:0x3D
+K:gold:copper:0x87:0x87
+K:gold:silver:0x87:0x88
+K:gold:garnets:0x87:0x8C
+K:gold:gold:0x87:0x89
+K:gold:opals:0x87:0x8D
+K:gold:sapphires:0x87:0x8E
+K:gold:rubies:0x87:0x8F
+K:gold:diamonds:0x87:0x90
+K:gold:emeralds:0x87:0x91
+K:gold:mithril:0x87:0x8A
+K:gold:adamantite:0x87:0x8B
 
-# Aggravate Monster
-# K:154:0x00:0x3D
 
-# See Invisible
-# K:155:0x00:0x3D
 
-# Sustain Strength
-# K:156:0x00:0x3D
 
-# Sustain Intelligence
-# K:157:0x00:0x3D
+##### "Morgoth Artifacts" #####
 
-# Sustain Wisdom
-# K:158:0x00:0x3D
+K:hafted:Mighty Hammer~:0x8a:0xB0
+K:crown:Massive Iron Crown~:0x80:0x92
 
-# Sustain Constitution
-# K:159:0x00:0x3D
 
-# Sustain Dexterity
-# K:160:0x00:0x3D
 
-# Sustain Charisma
-# K:161:0x00:0x3D
 
-# Slaying
-# K:162:0x00:0x3D
+##### "Special Artifacts" #####
+# These artifacts use numeric SVALs to ensure unique matches
 
-# Wisdom
-# K:163:0x00:0x22
+# The Phial of Galadriel
+K:light:4:0x87:0xB3
 
-# Charisma
-# K:164:0x00:0x22
+# The Star of Elendil
+K:light:5:0x87:0xB4
 
-# Searching
-# K:165:0x00:0x22
+# The Arkenstone of Thrain
+K:light:6:0x87:0xB5
 
-# Teleportation
-# K:166:0x00:0x22
+# The Amulet of Carlammas
+K:amulet:50:0x85:0xA6
 
-# Slow Digestion
-# K:167:0x00:0x22
+# The Amulet of Ingwe
+K:amulet:51:0x85:0x9F
 
-# Resist Acid
-# K:168:0x00:0x22
+# The Necklace of the Dwarves
+K:amulet:52:0x85:0xA5
 
-# Adornment
-# K:169:0x00:0x22
+# The Ring of Barahir
+K:ring:50:0x85:0x95
 
-# Sustenance
-# K:170:0x7f:0x80
+# The Ring of Tulkas
+K:ring:51:0x85:0x95
 
-# the Magi
-# K:171:0x00:0x22
+# The Ring of Power 'Narya'
+K:ring:52:0x85:0x96
 
-# DOOM
-# K:172:0x00:0x22
+# The Ring of Power 'Nenya'
+K:ring:53:0x85:0x93
 
-# Scroll of Enchant Weapon To-Hit
-K:173:0x87:0xCF
+# The Ring of Power 'Vilya'
+K:ring:54:0x85:0x94
 
-# Scroll of Enchant Weapon To-Dam
-K:174:0x87:0xD0
+# The Ring of Power 'The One Ring'
+K:ring:55:0x85:0x97
 
-# Scroll of Enchant Armor
-K:175:0x87:0xD2
+# The Palantir of Westernesse
+K:light:7:0x85:0xAA
 
-# Scroll of Identify
-K:176:0x87:0xCD
+# The Elfstone 'Elessar'
+K:amulet:53:0x85:0xA9
 
-# Scroll of *Identify*
-K:177:0x87:0xCE
+# The Jewel 'Evenstar'
+K:amulet:54:0x85:0xA8
 
-# Scroll of Remove Curse
-K:180:0x87:0xF0
 
-# Scroll of Light
-K:181:0x87:0xD3
-
-# Scroll of Summon Monster
-K:184:0x87:0xD4
-
-# Scroll of Phase Door
-K:185:0x87:0xD5
-
-# Scroll of Teleportation
-K:186:0x87:0xD6
-
-# Scroll of Teleport Level
-K:187:0x87:0xD7
-
-# Scroll of Monster Confusion
-K:188:0x87:0xD8
-
-# Scroll of Magic Mapping
-K:189:0x87:0xD9
-
-# Scroll of Rune of Protection
-K:190:0x87:0xDA
-
-# Scroll of *Remove Curse*
-K:191:0x87:0xF1
-
-# Scroll of Treasure Detection
-K:192:0x87:0xEF
-
-# Scroll of Object Detection
-K:193:0x87:0xF3
-
-# Scroll of Trap Detection
-K:194:0x87:0xE2
-
-# Scroll of Door/Stair Location
-K:197:0x87:0xE8
-
-# Scroll of Acquirement
-K:198:0x87:0xF4
-
-# Scroll of *Acquirement*
-K:199:0x87:0xF5
-
-# Scroll of Mass Genocide
-K:200:0x87:0xE9
-
-# Scroll of Detect Invisible
-K:201:0x87:0xEE
-
-# Scroll of Aggravate Monster
-K:202:0x87:0xE4
-
-# Scroll of Trap Creation
-K:203:0x87:0xE1
-
-# Scroll of Trap/Door Destruction
-K:204:0x87:0xF2
-
-# Scroll of Recharging
-K:206:0x87:0xDB
-
-# Scroll of Genocide
-K:207:0x87:0xE3
-
-# Scroll of Darkness
-K:208:0x87:0xE7
-
-# Scroll of Protection from Evil
-K:209:0x87:0xED
-
-# Scroll of Satisfy Hunger
-K:210:0x87:0xE6
-
-# Scroll of Dispel Undead
-K:211:0x87:0xEC
-
-# Scroll of *Enchant Weapon*
-K:212:0x87:0xEB
-
-# Scroll of Curse Weapon
-K:213:0x87:0xEA
-
-# Scroll of *Enchant Armor*
-K:214:0x87:0xD1
-
-# Scroll of Curse Armor
-K:215:0x87:0xE5
-
-# Scroll of Summon Undead
-K:216:0x87:0xDE
-
-# Scroll of Blessing
-K:217:0x87:0xDD
-
-# Scroll of Holy Chant
-K:218:0x87:0xDC
-
-# Scroll of Holy Prayer
-K:219:0x87:0xE0
-
-# Scroll of Word of Recall
-K:220:0x87:0xDF
-
-# Scroll of *Destruction*
-K:221:0x87:0xF6
-
-# Slime Mold Juice
-# K:222:0x00:0x21
-
-# Apple Juice
-# K:223:0x00:0x21
-
-# Water
-# K:224:0x00:0x21
-
-# Strength
-# K:225:0x00:0x21
-
-# Weakness
-# K:226:0x00:0x21
-
-# Restore Strength
-# K:227:0x00:0x21
-
-# Intelligence
-# K:228:0x00:0x21
-
-# Stupidity
-# K:229:0x00:0x21
-
-# Restore Intelligence
-# K:230:0x00:0x21
-
-# Wisdom
-# K:231:0x00:0x21
-
-# Naivety
-# K:232:0x00:0x21
-
-# Restore Wisdom
-# K:233:0x00:0x21
-
-# Charisma
-# K:234:0x00:0x21
-
-# Ugliness
-# K:235:0x00:0x21
-
-# Restore Charisma
-# K:236:0x00:0x21
-
-# Cure Light Wounds
-# K:237:0x00:0x21
-
-# Clumsiness
-# K:238:0x00:0x21
-
-# Sickliness
-# K:239:0x00:0x21
-
-# Cure Serious Wounds
-# K:240:0x00:0x21
-
-# Cure Critical Wounds
-# K:241:0x00:0x21
-
-# Healing
-# K:242:0x00:0x21
-
-# Constitution
-# K:243:0x00:0x21
-
-# Experience
-# K:244:0x00:0x21
-
-# Sleep
-# K:245:0x00:0x21
-
-# Blindness
-# K:246:0x00:0x21
-
-# Confusion
-# K:247:0x00:0x21
-
-# Poison
-# K:248:0x00:0x21
-
-# Speed
-# K:249:0x00:0x21
-
-# Slowness
-# K:250:0x00:0x21
-
-# Dexterity
-# K:251:0x00:0x21
-
-# Restore Dexterity
-# K:252:0x00:0x21
-
-# Restore Constitution
-# K:253:0x00:0x21
-
-# Lose Memories
-# K:254:0x00:0x21
-
-# Salt Water
-# K:255:0x00:0x21
-
-# Enlightenment
-# K:256:0x00:0x21
-
-# Heroism
-# K:257:0x00:0x21
-
-# Berserk Strength
-# K:258:0x00:0x21
-
-# Boldness
-# K:259:0x00:0x21
-
-# Restore Life Levels
-# K:260:0x00:0x21
-
-# Resist Heat
-# K:261:0x00:0x21
-
-# Resist Cold
-# K:262:0x00:0x21
-
-# Detect Invisible
-# K:263:0x00:0x21
-
-# Slow Poison
-# K:264:0x00:0x21
-
-# Neutralize Poison
-# K:265:0x00:0x21
-
-# Restore Mana
-# K:266:0x00:0x21
-
-# Infravision
-# K:267:0x00:0x21
-
-# Light
-# K:269:0x00:0x2D
-
-# Lightning Bolts
-# K:270:0x00:0x2D
-
-# Frost Bolts
-# K:271:0x00:0x2D
-
-# Fire Bolts
-# K:272:0x00:0x2D
-
-# Stone to Mud
-# K:273:0x00:0x2D
-
-# Polymorph
-# K:274:0x00:0x2D
-
-# Heal Monster
-# K:275:0x00:0x2D
-
-# Haste Monster
-# K:276:0x00:0x2D
-
-# Slow Monster
-# K:277:0x00:0x2D
-
-# Confuse Monster
-# K:278:0x00:0x2D
-
-# Sleep Monster
-# K:279:0x00:0x2D
-
-# Drain Life
-# K:280:0x00:0x2D
-
-# Trap/Door Destruction
-# K:281:0x00:0x2D
-
-# Magic Missile
-# K:282:0x00:0x2D
-
-# Clone Monster
-# K:283:0x00:0x2D
-
-# Scare Monster
-# K:284:0x00:0x2D
-
-# Teleport Other
-# K:285:0x00:0x2D
-
-# Disarming
-# K:286:0x00:0x2D
-
-# Lightning Balls
-# K:287:0x00:0x2D
-
-# Cold Balls
-# K:288:0x00:0x2D
-
-# Fire Balls
-# K:289:0x00:0x2D
-
-# Stinking Cloud
-# K:290:0x00:0x2D
-
-# Acid Balls
-# K:291:0x00:0x2D
-
-# Wonder
-# K:292:0x00:0x2D
-
-# Acid Bolts
-# K:294:0x00:0x2D
-
-# Dragon's Flame
-# K:295:0x00:0x2D
-
-# Dragon's Frost
-# K:296:0x00:0x2D
-
-# Dragon's Breath
-# K:297:0x00:0x2D
-
-# Annihilation
-# K:298:0x00:0x2D
-
-# Trap Location
-# K:300:0x00:0x5F
-
-# Treasure Location
-# K:301:0x00:0x5F
-
-# Object Location
-# K:302:0x00:0x5F
-
-# Teleportation
-# K:303:0x00:0x5F
-
-# Earthquakes
-# K:304:0x00:0x5F
-
-# Summoning
-# K:305:0x00:0x5F
-
-# Light
-# K:306:0x00:0x5F
-
-# *Destruction*
-# K:307:0x00:0x5F
-
-# Starlight
-# K:308:0x00:0x5F
-
-# Haste Monsters
-# K:309:0x00:0x5F
-
-# Slow Monsters
-# K:310:0x00:0x5F
-
-# Sleep Monsters
-# K:311:0x00:0x5F
-
-# Cure Light Wounds
-# K:312:0x00:0x5F
-
-# Detect Invisible
-# K:313:0x00:0x5F
-
-# Speed
-# K:314:0x00:0x5F
-
-# Slowness
-# K:315:0x00:0x5F
-
-# Door/Stair Location
-# K:316:0x00:0x5F
-
-# Remove Curse
-# K:317:0x00:0x5F
-
-# Detect Evil
-# K:318:0x00:0x5F
-
-# Curing
-# K:319:0x00:0x5F
-
-# Dispel Evil
-# K:320:0x00:0x5F
-
-# Probing
-# K:321:0x00:0x5F
-
-# Darkness
-# K:322:0x00:0x5F
-
-# Genocide
-# K:323:0x00:0x5F
-
-# Power
-# K:324:0x00:0x5F
-
-# the Magi
-# K:325:0x00:0x5F
-
-# Perception
-# K:326:0x00:0x5F
-
-# Holiness
-# K:327:0x00:0x5F
-
-# Enlightenment
-# K:328:0x00:0x5F
-
-# Healing
-# K:329:0x00:0x5F
-
-# [Magic for Beginners]
-K:330:0x86:0x80
-
-# [Conjurings and Tricks]
-K:331:0x86:0x81
-
-# [Incantations and Illusions]
-K:332:0x86:0x82
-
-# [Sorcery and Evocations]
-K:333:0x86:0x83
-
-# [Beginners Handbook]
-K:334:0x86:0x89
-
-# [Words of Wisdom]
-K:335:0x86:0x8A
-
-# [Chants and Blessings]
-K:336:0x86:0x8B
-
-# [Exorcism and Dispelling]
-K:337:0x86:0x8C
-
-# & Small wooden chest~
-K:338:0x87:0x80
-
-# & Large wooden chest~
-K:339:0x87:0x81
-
-# & Small iron chest~
-K:340:0x87:0x82
-
-# & Large iron chest~
-K:341:0x87:0x83
-
-# & Small steel chest~
-K:342:0x87:0x84
-
-# & Large steel chest~
-K:343:0x87:0x85
-
-# & Ruined chest~
-K:344:0x87:0x86
-
-# & Iron Spike~
-K:345:0x87:0x98
-
-# & Wooden Torch~
-K:346:0x87:0x9A
-
-# & Brass Lantern~
-K:347:0x87:0x99
-
-# & Flask~ of oil
-K:348:0x87:0x97
-
-# & Empty Bottle~
-K:349:0x87:0x96
-
-# Door/Stair Location
-# K:351:0x00:0x2D
-
-# Trap Location
-# K:352:0x00:0x2D
-
-# Probing
-# K:353:0x00:0x2D
-
-# Recall
-# K:354:0x00:0x2D
-
-# Illumination
-# K:355:0x00:0x2D
-
-# Light
-# K:356:0x00:0x2D
-
-# Lightning Bolts
-# K:357:0x00:0x2D
-
-# Frost Bolts
-# K:358:0x00:0x2D
-
-# Fire Bolts
-# K:359:0x00:0x2D
-
-# Polymorph
-# K:360:0x00:0x2D
-
-# Slow Monster
-# K:361:0x00:0x2D
-
-# Sleep Monster
-# K:362:0x00:0x2D
-
-# Drain Life
-# K:363:0x00:0x2D
-
-# Teleport Other
-# K:364:0x00:0x2D
-
-# Disarming
-# K:365:0x00:0x2D
-
-# Lightning Balls
-# K:366:0x00:0x2D
-
-# Cold Balls
-# K:367:0x00:0x2D
-
-# Fire Balls
-# K:368:0x00:0x2D
-
-# Acid Balls
-# K:369:0x00:0x2D
-
-# Acid Bolts
-# K:370:0x00:0x2D
-
-# Enlightenment
-# K:371:0x00:0x2D
-
-# Perception
-# K:372:0x00:0x2D
-
-# Curing
-# K:373:0x00:0x2D
-
-# Healing
-# K:374:0x00:0x2D
-
-# Detection
-# K:375:0x00:0x2D
-
-# Restoration
-# K:376:0x00:0x2D
-
-# Speed
-# K:377:0x00:0x2D
-
-# [Resistances of Scarabtarices]
-K:379:0x86:0x84
-
-# [Raal's Tome of Destruction]
-K:380:0x86:0x85
-
-# [Mordenkainen's Escapes]
-K:381:0x86:0x86
-
-# [Tenser's Transformations]
-K:382:0x86:0x87
-
-# [Kelek's Grimoire of Power]
-K:383:0x86:0x88
-
-# [Ethereal Openings]
-K:384:0x86:0x8D
-
-# [Godly Insights]
-K:385:0x86:0x8E
-
-# [Purifications and Healing]
-K:386:0x86:0x8F
-
-# [Holy Infusions]
-K:387:0x86:0x90
-
-# [Wrath of God]
-K:388:0x86:0x91
-
-# & Shard~ of Pottery
-K:389:0x87:0xA2
-
-# & Broken Stick~
-K:390:0x87:0xAA
-
-# & Broken Skull~
-K:391:0x87:0xAB
-
-# & Broken Bone~
-K:392:0x87:0xAC
-
-# & Canine Skeleton~
-K:393:0x87:0xB1
-
-# & Rodent Skeleton~
-K:394:0x87:0xB2
-
-# & Human Skeleton~
-K:395:0x87:0xAD
-
-# & Dwarf Skeleton~
-K:396:0x87:0xAF
-
-# & Elf Skeleton~
-K:397:0x87:0xAE
-
-# & Gnome Skeleton~
-K:398:0x87:0xB0
-
-# Black Dragon Scale Mail~
-K:400:0x80:0xBB
-
-# Blue Dragon Scale Mail~
-K:401:0x80:0xB9
-
-# White Dragon Scale Mail~
-K:402:0x80:0xBA
-
-# Red Dragon Scale Mail~
-K:403:0x80:0xBC
-
-# Green Dragon Scale Mail~
-K:404:0x80:0xBD
-
-# Multi-Hued Dragon Scale Mail~
-K:405:0x80:0xC4
-
-# Pseudo-Dragon Scale Mail~
-K:406:0x80:0xC0
-
-# Law Dragon Scale Mail~
-K:407:0x80:0xC2
-
-# Bronze Dragon Scale Mail~
-K:408:0x80:0xBE
-
-# Gold Dragon Scale Mail~
-K:409:0x80:0xBF
-
-# Chaos Dragon Scale Mail~
-K:410:0x80:0xC1
-
-# Balance Dragon Scale Mail~
-K:411:0x80:0xC3
-
-# Power Dragon Scale Mail~
-K:412:0x80:0xC5
-
-# Death
-# K:415:0x00:0x21
-
-# Ruination
-# K:416:0x00:0x21
-
-# Detonations
-# K:417:0x00:0x21
-
-# Augmentation
-# K:418:0x00:0x21
-
-# *Healing*
-# K:419:0x00:0x21
-
-# Life
-# K:420:0x00:0x21
-
-# Self Knowledge
-# K:421:0x00:0x21
-
-# *Enlightenment*
-# K:422:0x00:0x21
-
-# ESP
-# K:423:0x7f:0x80
-
-# Resistance
-# K:424:0x7f:0x80
-
-# Regeneration
-# K:425:0x7f:0x80
-
-# Devotion
-# K:426:0x7f:0x80
-
-# Weaponmastery
-# K:427:0x7f:0x80
-
-# Trickery
-# K:428:0x7f:0x80
-
-# Infravision
-# K:429:0x7f:0x80
-
-# Resist Lightning
-# K:430:0x7f:0x80
-
-# Lightning
-# K:431:0x7f:0x80
-
-# & Mithril Shot~
-K:437:0x8a:0xB6
-
-# & Mithril Arrow~
-K:438:0x8a:0xD9
-
-# & Mithril Bolt~
-K:439:0x8a:0xE3
-
-# copper
-K:480:0x87:0x87
-
-# copper
-K:481:0x87:0x87
-
-# copper
-K:482:0x87:0x87
-
-# silver
-K:483:0x87:0x88
-
-# silver
-K:484:0x87:0x88
-
-# silver
-K:485:0x87:0x88
-
-# garnets
-K:486:0x87:0x8C
-
-# garnets
-K:487:0x87:0x8C
-
-# gold
-K:488:0x87:0x89
-
-# gold
-K:489:0x87:0x89
-
-# gold
-K:490:0x87:0x89
-
-# opals
-K:491:0x87:0x8D
-
-# sapphires
-K:492:0x87:0x8E
-
-# rubies
-K:493:0x87:0x8F
-
-# diamonds
-K:494:0x87:0x90
-
-# emeralds
-K:495:0x87:0x91
-
-# mithril
-K:496:0x87:0x8A
-
-# adamantite
-K:497:0x87:0x8B
-
-# & Mighty Hammer~
-K:498:0x8a:0xB0
-
-# & Massive Iron Crown~
-K:499:0x80:0x92
-
-# & Phial~
-K:500:0x87:0xB3
-
-# & Star~
-K:501:0x87:0xB4
-
-# & Arkenstone~
-K:502:0x87:0xB5
-
-# & Amulet~
-K:503:0x85:0xA6
-
-# & Amulet~
-K:504:0x85:0x9F
-
-# & Necklace~
-K:505:0x85:0xA5
-
-# & Ring~
-K:506:0x85:0x95
-
-# & Ring~
-K:507:0x85:0x95
-
-# & Ring~
-K:508:0x85:0x96
-
-# & Ring~
-K:509:0x85:0x93
-
-# & Ring~
-K:510:0x85:0x94
-
-# & Ring~
-K:511:0x85:0x97
-
-# & Palantir~
-K:512:0x85:0xAA
-
-# & Elfstone~
-K:513:0x85:0xA9
-
-# & Jewel~
-K:514:0x85:0xA8
 
 
 #:Group ball

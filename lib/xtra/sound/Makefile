@@ -1,5 +1,5 @@
 include ../../../mk/rules.mk
-include ../../../mk/init.mk
+include ../../../mk/objective.mk
 
 OBJECTIVE_DATA = \
 	sound.cfg:${DATA_PATH}/xtra/sound    \
@@ -24,4 +24,3 @@ OBJECTIVE_DATA = \
 	thump.wav:${DATA_PATH}/xtra/sound    \
 	vomit.wav:${DATA_PATH}/xtra/sound
 
-include ../../../mk/objective.mk

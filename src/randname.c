@@ -1,9 +1,8 @@
 /*
  * File: randname.c
  * Purpose: Random name generation
- * Based on W. Sheldon Simms name generator originally in randart.c
  *
- * Copyright (c) 2007 Antony Sidwell and others
+ * Copyright (c) 2007 Antony Sidwell, Sheldon Simms
  *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:
@@ -281,7 +280,7 @@ static void build_prob(name_probs probs, cptr *learn)
  */
 size_t randname_make(randname_type name_type, size_t min, size_t max, char *word_buf, size_t buflen)
 {
-	size_t lnum;
+	size_t lnum = 0;
 	bool found_word = FALSE;
 
 	static name_probs lprobs;
@@ -338,7 +337,7 @@ size_t randname_make(randname_type name_type, size_t min, size_t max, char *word
 		{
 			/* Pick the next letter based on a simple weighting
 			  of which letters can follow the previous two */
-			int r = rand_int(lprobs[c_prev][c_cur][TOTAL]);
+			int r = randint0(lprobs[c_prev][c_cur][TOTAL]);
 			int c_next = 0;
 
 			while (r >= lprobs[c_prev][c_cur][c_next])

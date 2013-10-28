@@ -1,13 +1,20 @@
-/* File: main.c */
-
 /*
+ * File: main.c
+ * Purpose: Core game initialisation for UNIX (and other) machines
+ *
  * Copyright (c) 1997 Ben Harrison, and others
  *
- * This software may be copied and distributed for educational, research,
- * and not for profit purposes provided that this copyright and statement
- * are included in all such copies.
+ * This work is free software; you can redistribute it and/or modify it
+ * under the terms of either:
+ *
+ * a) the GNU General Public License as published by the Free Software
+ *    Foundation, version 2, or
+ *
+ * b) the "Angband licence":
+ *    This software may be copied and distributed for educational, research,
+ *    and not for profit purposes provided that this copyright and statement
+ *    are included in all such copies.  Other copyrights may also apply.
  */
-
 #include "angband.h"
 
 
@@ -22,7 +29,7 @@
     || defined(USE_SDL)
 
 #include "main.h"
-
+#include "game-cmd.h"
 
 /*
  * List of the available modules in the order they are tried.
@@ -32,10 +39,6 @@ static const struct module modules[] =
 #ifdef USE_GTK
 	{ "gtk", help_gtk, init_gtk },
 #endif /* USE_GTK */
-
-#ifdef USE_XAW
-	{ "xaw", help_xaw, init_xaw },
-#endif /* USE_XAW */
 
 #ifdef USE_X11
 	{ "x11", help_x11, init_x11 },
@@ -126,12 +129,6 @@ static void init_stuff(void)
 
 	cptr tail = NULL;
 
-#ifndef FIXED_PATHS
-
-	/* Get the environment variable */
-	tail = getenv("ANGBAND_PATH");
-
-#endif /* FIXED_PATHS */
 
 	/* Use the angband_path, or a default */
 	my_strcpy(path, tail ? tail : DEFAULT_PATH, sizeof(path));
@@ -159,95 +156,58 @@ static void init_stuff(void)
  */
 static void change_path(cptr info)
 {
-	cptr s;
+	if (!info || !info[0])
+		quit_fmt("Try '-d<path>'.", info);
 
-	/* Find equal sign */
-	s = strchr(info, '=');
+	string_free(ANGBAND_DIR_USER);
+	ANGBAND_DIR_USER = string_make(info);
+}
 
-	/* Verify equal sign */
-	if (!s) quit_fmt("Try '-d<what>=<path>' not '-d%s'", info);
 
-	/* Analyze */
-	switch (tolower((unsigned char)info[0]))
+
+
+#ifdef SET_UID
+
+/*
+ * Find a default user name from the system.
+ */
+static void user_name(char *buf, size_t len, int id)
+{
+	struct passwd *pw = getpwuid(id);
+
+	/* Default to PLAYER */
+	if (!pw)
 	{
-#ifndef FIXED_PATHS
-		case 'a':
-		{
-			string_free(ANGBAND_DIR_APEX);
-			ANGBAND_DIR_APEX = string_make(s+1);
-			break;
-		}
-
-		case 'f':
-		{
-			string_free(ANGBAND_DIR_FILE);
-			ANGBAND_DIR_FILE = string_make(s+1);
-			break;
-		}
-
-		case 'h':
-		{
-			string_free(ANGBAND_DIR_HELP);
-			ANGBAND_DIR_HELP = string_make(s+1);
-			break;
-		}
-
-		case 'i':
-		{
-			string_free(ANGBAND_DIR_INFO);
-			ANGBAND_DIR_INFO = string_make(s+1);
-			break;
-		}
-
-		case 'x':
-		{
-			string_free(ANGBAND_DIR_XTRA);
-			ANGBAND_DIR_XTRA = string_make(s+1);
-			break;
-		}
-
-		case 'b':
-		{
-			string_free(ANGBAND_DIR_BONE);
-			ANGBAND_DIR_BONE = string_make(s+1);
-			break;
-		}
-
-		case 'd':
-		{
-			string_free(ANGBAND_DIR_DATA);
-			ANGBAND_DIR_DATA = string_make(s+1);
-			break;
-		}
-
-		case 'e':
-		{
-			string_free(ANGBAND_DIR_EDIT);
-			ANGBAND_DIR_EDIT = string_make(s+1);
-			break;
-		}
-
-		case 's':
-		{
-			string_free(ANGBAND_DIR_SAVE);
-			ANGBAND_DIR_SAVE = string_make(s+1);
-			break;
-		}
-
-#endif /* FIXED_PATHS */
-
-		case 'u':
-		{
-			string_free(ANGBAND_DIR_USER);
-			ANGBAND_DIR_USER = string_make(s+1);
-			break;
-		}
-
-		default:
-		{
-			quit_fmt("Bad semantics in '-d%s'", info);
-		}
+		my_strcpy(buf, "PLAYER", len);
+		return;
 	}
+
+	/* Capitalise and copy */
+	strnfmt(buf, len, "%^s", pw->pw_name);
+}
+
+#endif /* SET_UID */
+
+static bool new_game;
+
+/*
+ * Pass the appropriate "Initialisation screen" command to the game,
+ * getting user input if needed.
+ */ 
+static game_command get_init_cmd(void)
+{
+	game_command cmd;
+
+	/* Wait for response */
+	pause_line(Term->hgt - 1);
+
+	if (new_game)
+		cmd.command = CMD_NEWGAME;
+	else
+		/* This might be modified to supply the filename in future. */
+		cmd.command = CMD_LOADFILE;
+
+	return cmd;
 }
 
 
@@ -263,9 +223,6 @@ int main(int argc, char *argv[])
 	int i;
 
 	bool done = FALSE;
-	bool new_game = FALSE;
-
-	int show_score = 0;
 
 	const char *mstr = NULL;
 
@@ -336,24 +293,10 @@ int main(int argc, char *argv[])
 				break;
 			}
 
-			case 'F':
-			case 'f':
-			{
-				arg_fiddle = TRUE;
-				break;
-			}
-
 			case 'W':
 			case 'w':
 			{
 				arg_wizard = TRUE;
-				break;
-			}
-
-			case 'V':
-			case 'v':
-			{
-				arg_sound = TRUE;
 				break;
 			}
 
@@ -363,14 +306,6 @@ int main(int argc, char *argv[])
 				/* Default graphics tile */
 				arg_graphics = GRAPHICS_ADAM_BOLT;
 				break;
-			}
-
-			case 'S':
-			case 's':
-			{
-				show_score = atoi(arg);
-				if (show_score <= 0) show_score = 10;
-				continue;
 			}
 
 			case 'u':
@@ -413,13 +348,11 @@ int main(int argc, char *argv[])
 				/* Dump usage information */
 				puts("Usage: angband [options] [-- subopts]");
 				puts("  -n             Start a new character");
+				puts("  -L             Load a new-format save file");
 				puts("  -w             Resurrect dead character (marks savefile)");
-				puts("  -f             Request fiddle (verbose) mode");
-				puts("  -v             Request sound mode");
 				puts("  -g             Request graphics mode");
-				puts("  -s<num>        Show <num> high scores (default: 10)");
 				puts("  -u<who>        Use your <who> savefile");
-				puts("  -d<def>=<path> Instead of lib/<def>, use <path>");
+				puts("  -d<path>       Store pref files and screendumps in <path>");
 				puts("  -m<sys>        Use module <sys>, where <sys> can be:");
 
 				/* Print the name and help for each available module */
@@ -444,13 +377,6 @@ int main(int argc, char *argv[])
 	}
 
 
-	/* Process the player name */
-	process_player_name(TRUE);
-
-
-	/* Install "quit" hook */
-	quit_aux = quit_hook;
-
 	/* Try the modules in the order specified by modules[] */
 	for (i = 0; i < (int)N_ELEMENTS(modules); i++)
 	{
@@ -470,6 +396,12 @@ int main(int argc, char *argv[])
 	if (!done) quit("Unable to prepare any 'display module'!");
 
 
+	/* Process the player name */
+	process_player_name(TRUE);
+
+	/* Install "quit" hook */
+	quit_aux = quit_hook;
+
 #ifdef USE_SOUND
 
 	/* Try the modules in the order specified by sound_modules[] */
@@ -485,17 +417,15 @@ int main(int argc, char *argv[])
 	/* Catch nasty signals */
 	signals_init();
 
-	/* Initialize */
-	init_angband();
+	/* Set up the command hooks */
+	if (get_game_command == NULL)
+		get_game_command = get_init_cmd;
 
-	/* Hack -- If requested, display scores and quit */
-	if (show_score > 0) display_scores(0, show_score);
-
-	/* Wait for response */
-	pause_line(Term->hgt - 1);
+	/* Set up the display handlers and things. */
+	init_display();
 
 	/* Play the game */
-	play_game(new_game);
+	play_game();
 
 	/* Free resources */
 	cleanup_angband();

@@ -5,20 +5,56 @@
 # across a range of different makefiles, to cut down on maintenance.
 #
 
-VERSION = 3.0.9b
+VERSION = 3.1.0beta
+COPYRIGHT = (c) 1995-2009 Angband contributors
 
-HDRS = h-basic.h
-INCS = angband.h config.h defines.h externs.h types.h \
-       z-term.h z-rand.h z-type.h z-util.h z-virt.h z-form.h
+HEADERS = \
+	angband.h \
+	cmds.h \
+	config.h \
+	defines.h \
+	effects.h \
+	externs.h \
+	game-cmd.h \
+	game-event.h \
+	$(GTKHEADERS) \
+	h-basic.h \
+	init.h \
+	main.h \
+	option.h \
+	randname.h \
+	types.h \
+	ui-event.h \
+	ui.h \
+	ui-menu.h \
+	wizard.h \
+	z-file.h \
+	z-form.h \
+	z-msg.h \
+	z-quark.h \
+	z-rand.h \
+	z-term.h \
+	z-type.h \
+	z-util.h \
+	z-virt.h
 
-HEADERS = $(HDRS) $(INCS)
+GTKHEADERS = \
+	gtk/cairo-utils.h \
+	gtk/main-gtk.h \
+	
+ZFILES = z-file.o z-form.o z-msg.o z-quark.o z-rand.o z-term.o z-type.o \
+         z-util.o z-virt.o
+MAINFILES = main.o main-crb.o main-gcu.o $(GTKMAINFILES) \
+            main-ros.o main-sdl.o main-win.o main-x11.o snd-sdl.o
 
-ZFILES = z-file.o z-form.o z-rand.o z-term.o z-type.o z-util.o z-virt.o
-MAINFILES = main.o maid-x11.o main-crb.o main-gcu.o main-gtk.o \
-	main-ros.o main-sdl.o main-win.o main-x11.o main-xaw.o snd-sdl.o
-
+GTKMAINFILES = \
+	gtk/main-gtk.o \
+	gtk/cairo-utils.o 
+	
 ANGFILES = \
+	attack.o \
 	birth.o \
+	button.o \
 	cave.o \
 	cmd0.o \
 	cmd1.o \
@@ -27,22 +63,37 @@ ANGFILES = \
 	cmd4.o \
 	cmd5.o \
 	cmd6.o \
+	cmd-obj.o \
+	death.o \
+	debug.o \
 	dungeon.o \
+	effects.o \
 	files.o \
+	game-cmd.o \
+	game-event.o \
 	generate.o \
+	history.o \
 	init1.o \
 	init2.o \
 	load.o \
-	melee1.o \
-	melee2.o \
-	monster1.o \
-	monster2.o \
-	obj-info.o \
-	object1.o \
-	object2.o \
-	randart.o \
+	monster/melee1.o \
+	monster/melee2.o \
+	monster/monster1.o \
+	monster/monster2.o \
+	object/identify.o \
+	object/obj-desc.o \
+	object/obj-info.o \
+	object/obj-make.o \
+	object/obj-ui.o \
+	object/obj-util.o \
+	object/randart.o \
+	option.o \
 	randname.o \
 	pathfind.o \
+	player/calcs.o \
+	player/timed.o \
+	player/util.o \
+	score.o \
 	signals.o \
 	save.o \
 	spells1.o \
@@ -50,12 +101,17 @@ ANGFILES = \
 	squelch.o \
 	store.o \
 	tables.o \
+	target.o \
+	trap.o \
 	ui.o \
-	use-obj.o  \
+        ui-birth.o \
+	ui-event.o \
+	ui-menu.o \
 	util.o  \
 	variable.o \
-	wizard1.o \
-	wizard2.o \
+	wiz-spoil.o \
+	wiz-stats.o \
+	wizard.o \
 	x-spell.o \
-	xtra1.o \
-	xtra2.o
+	xtra2.o \
+	xtra3.o

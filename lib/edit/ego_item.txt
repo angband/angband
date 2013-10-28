@@ -51,7 +51,7 @@
 
 # Version stamp (required)
 
-V:3.0.10
+V:3.0.11
 
 # 1 (unused)
 
@@ -127,13 +127,13 @@ F:SUST_STR | SUST_DEX | SUST_CON | SUST_INT | SUST_WIS | SUST_CHR |
 F:HOLD_LIFE | RES_ACID | RES_ELEC | RES_FIRE | RES_COLD |
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 
-### Heavy metal armor only, not rusty ###
+### Heavy metal armor only ###
 
 N:12:(Dwarven)
 X:18:0
 W:0:2:0:5000
 C:0:0:15:2
-T:37:3:99
+T:37:0:99
 F:IGNORE_ACID | IGNORE_FIRE |
 F:FREE_ACT |
 F:STR | CON | INFRA | HIDE_TYPE |
@@ -410,13 +410,14 @@ X:22:0
 W:40:12:0:5000
 C:8:3:0:5
 T:31:1:1
+T:31:5:5
 F:DEX | SEARCH | SHOW_MODS | FEATHER | FREE_ACT | HIDE_TYPE
 
 N:53:of Combat
 X:22:0
 W:50:12:0:7000
 C:3:8:0:2
-T:31:2:99
+T:31:2:4
 F:STR | CON | SHOW_MODS | AGGRAVATE | HIDE_TYPE
 
 N:54:of Weakness
@@ -893,9 +894,9 @@ F:SLAY_ANIMAL
 N:113:of Slay Evil
 X:10:0
 W:0:6:0:20
-T:16:0:2
-T:17:0:2
-T:18:0:2
+T:16:0:99
+T:17:0:99
+T:18:0:99
 F:SLAY_EVIL
 
 N:114:of Slay Undead
@@ -959,9 +960,9 @@ F:IGNORE_FIRE | IGNORE_ACID
 N:121:of Venom
 X:10:0
 W:0:6:0:40
-T:16:0:2
-T:17:0:2
-T:18:0:2
+T:16:0:99
+T:17:0:99
+T:18:0:99
 F:BRAND_POIS
 
 N:122:of Flame

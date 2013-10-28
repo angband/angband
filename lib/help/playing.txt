@@ -90,7 +90,7 @@ can always, for example, use "\" + "." + "6", to specify "run east".
  h  (unused)                             H  (unused)
  i  Inventory list                       I  Observe an item
  j  Jam a door                           J  (unused)
- k  Destroy an item                      K  (unused)
+ k  Destroy an item                      K  Mark item kind as squelch
  l  Look around                          L  Locate player on map
  m  Cast a spell                         M  Full dungeon map
  n  (unused)                             N  (unused)
@@ -118,8 +118,8 @@ can always, for example, use "\" + "." + "6", to specify "run east".
  )  Dump screen dump                    ^J  (special - linefeed)
  {  Inscribe an object                  ^K  (unused)
  }  Uninscribe an object                ^L  (unused)
- [  (unused)                            ^M  (special - return)
- ]  (unused)                            ^N  (unused)
+ [  Display visible monster list        ^M  (special - return)
+ ]  Display visible object list         ^N  (unused)
  -  Walk (flip pickup)                  ^O  (unused)
  _  Enter store                         ^P  Show previous messages
  +  Alter grid                          ^Q  (unused)
@@ -172,14 +172,14 @@ can always, for example, use "\" + "." + "6", to specify "run east".
  $  (unused)                            ^D  Destroy item
  %  (unused)                            ^E  Toggle choice window
  ^  (special - control key)             ^F  Repeat level feeling
- &  (unused)                            ^G  (unused)
+ &  (unused)                            ^G  Mark item kind as squelch
  *  Target monster or location          ^H  (alter - west)
  (  Load screen dump                    ^I  (special - tab)
- )  Dump screen dump                    ^J  (alter - south)
+ )  Dump screen dump                    ^J  alter - south)
  {  Inscribe an object                  ^K  (alter - north)
  }  Uninscribe an object                ^L  (alter - east)
- [  (unused)                            ^M  (special - return)
- ]  (unused)                            ^N  (alter - south east)
+ [  Display visible monster list        ^M  (special - return)
+ ]  Display visible object list         ^N  (alter - south east)
  -  Walk (flip pickup)                  ^O  (unused)
  _  Enter store                         ^P  Show previous messages
  +  Alter grid                          ^Q  (unused)
