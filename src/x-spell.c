@@ -205,12 +205,34 @@ typedef struct spell_handler_context_s {
 } spell_handler_context_t;
 
 typedef bool (*spell_handler_f)(spell_handler_context_t *);
+typedef random_value (*spell_value_f)(void);
 
 typedef struct spell_info_s {
 	u16b spell;
 	bool aim;
+	spell_value_f value;
 	spell_handler_f handler;
 } spell_info_t;
+
+
+static void append_random_value_string(char *buffer, size_t size, random_value *rv)
+{
+	size_t offset = 0;
+
+	if (rv->base > 0) {
+		offset += strnfmt(buffer + offset, size - offset, "%d", rv->base);
+
+		if (rv->dice > 0 || rv->sides > 0)
+			offset += strnfmt(buffer + offset, size - offset, "+");
+	}
+
+	if (rv->dice == 1) {
+		offset += strnfmt(buffer + offset, size - offset, "d%d", rv->sides);
+	}
+	else if (rv->dice > 1) {
+		offset += strnfmt(buffer + offset, size - offset, "%dd%d", rv->dice, rv->sides);
+	}
+}
 
 void get_spell_info(int tval, int spell, char *p, size_t len)
 {
@@ -430,6 +452,297 @@ static void spell_wonder(int dir)
    keeping the results quite random.  It also allows
    some potent effects only at high level. */
 	effect_wonder(dir, randint1(100) + p_ptr->lev / 5, beam_chance());
+}
+
+#pragma mark arcane spell value functions
+
+#define RV(b, x, y, m) { \
+	random_value v = {(b), (x), (y), (m)}; \
+	return v; \
+}
+
+static random_value spell_value_arcane_MAGIC_MISSILE(void)
+{
+	RV(0, 3 + ((p_ptr->lev - 1) / 5), 4, 0);
+}
+
+static random_value spell_value_arcane_PHASE_DOOR(void)
+{
+	RV(10, 0, 0, 0);
+}
+
+static random_value spell_value_arcane_LIGHT_AREA(void)
+{
+	RV(0, 2, p_ptr->lev / 2, 0);
+}
+
+static random_value spell_value_arcane_CURE_LIGHT_WOUNDS(void)
+{
+	RV(15, 0, 0, 15);
+}
+
+static random_value spell_value_arcane_STINKING_CLOUD(void)
+{
+	RV(10 + p_ptr->lev / 2, 0, 0, 0);
+}
+
+static random_value spell_value_arcane_LIGHTNING_BOLT(void)
+{
+	RV(0, (3 + ((p_ptr->lev - 5) / 6)), 6, 0);
+}
+
+static random_value spell_value_arcane_FROST_BOLT(void)
+{
+	RV(0, (5 + ((p_ptr->lev - 5) / 4)), 8, 0);
+}
+
+static random_value spell_value_arcane_ACID_BOLT(void)
+{
+	RV(0, (8 + ((p_ptr->lev - 5) / 4)), 8, 0);
+}
+
+static random_value spell_value_arcane_FIRE_BOLT(void)
+{
+	RV(0, (6 + ((p_ptr->lev - 5) / 4)), 8, 0);
+}
+
+static random_value spell_value_arcane_SPEAR_OF_LIGHT(void)
+{
+	RV(0, 6, 8, 0);
+}
+
+static random_value spell_value_arcane_HEROISM(void)
+{
+	RV(25, 1, 25, 0);
+}
+
+static random_value spell_value_arcane_BERSERKER(void)
+{
+	RV(25, 1, 25, 0);
+}
+
+static random_value spell_value_arcane_HASTE_SELF(void)
+{
+	RV(p_ptr->lev, 1, 20, 0);
+}
+
+static random_value spell_value_arcane_TELEPORT_SELF(void)
+{
+	RV(p_ptr->lev * 5, 0, 0, 0);
+}
+
+static random_value spell_value_arcane_SHOCK_WAVE(void)
+{
+	RV(10 + p_ptr->lev, 0, 0, 0);
+}
+
+static random_value spell_value_arcane_EXPLOSION(void)
+{
+	RV(20 + p_ptr->lev * 2, 0, 0, 0);
+}
+
+static random_value spell_value_arcane_CLOUD_KILL(void)
+{
+	RV(40 + (p_ptr->lev / 2), 0, 0, 0);
+}
+
+static random_value spell_value_arcane_REND_SOUL(void)
+{
+	RV(0, 11, p_ptr->lev, 0);
+}
+
+static random_value spell_value_arcane_CHAOS_STRIKE(void)
+{
+	RV(0, 13, p_ptr->lev, 0);
+}
+
+static random_value spell_value_arcane_RESIST_COLD(void)
+{
+	RV(20, 1, 20, 0);
+}
+
+static random_value spell_value_arcane_RESIST_FIRE(void)
+{
+	RV(20, 1, 20, 0);
+}
+
+static random_value spell_value_arcane_RESIST_POISON(void)
+{
+	RV(20, 1, 20, 0);
+}
+
+static random_value spell_value_arcane_RESISTANCE(void)
+{
+	RV(20, 1, 20, 0);
+}
+
+static random_value spell_value_arcane_SHIELD(void)
+{
+	RV(30, 1, 20, 0);
+}
+
+static random_value spell_value_arcane_FROST_BALL(void)
+{
+	RV(30 + p_ptr->lev, 0, 0, 0);
+}
+
+static random_value spell_value_arcane_ACID_BALL(void)
+{
+	RV(40 + p_ptr->lev, 0, 0, 0);
+}
+
+static random_value spell_value_arcane_FIRE_BALL(void)
+{
+	RV(55 + p_ptr->lev, 0, 0, 0);
+}
+
+static random_value spell_value_arcane_ICE_STORM(void)
+{
+	RV(50 + (p_ptr->lev * 2), 0, 0, 0);
+}
+
+static random_value spell_value_arcane_METEOR_SWARM(void)
+{
+	RV(30 + p_ptr->lev / 2, 0, 0, 2 + p_ptr->lev / 20);
+}
+
+static random_value spell_value_arcane_RIFT(void)
+{
+	RV(40, p_ptr->lev, 7, 0);
+}
+
+static random_value spell_value_arcane_MANA_STORM(void)
+{
+	RV(300 + p_ptr->lev * 2, 0, 0, 0);
+}
+
+#pragma mark prayer value functions
+
+static random_value spell_value_prayer_CURE_LIGHT_WOUNDS(void)
+{
+	RV(15, 0, 0, 15);
+}
+
+static random_value spell_value_prayer_BLESS(void)
+{
+	RV(12, 1, 12, 0);
+}
+
+static random_value spell_value_prayer_CALL_LIGHT(void)
+{
+	RV(0, 2, p_ptr->lev / 2, 0);
+}
+
+static random_value spell_value_prayer_PORTAL(void)
+{
+	RV(3 * p_ptr->lev, 0, 0, 0);
+}
+
+static random_value spell_value_prayer_CURE_SERIOUS_WOUNDS(void)
+{
+	RV(25, 0, 0, 20);
+}
+
+static random_value spell_value_prayer_CHANT(void)
+{
+	RV(24, 1, 24, 0);
+}
+
+static random_value spell_value_prayer_RESIST_HEAT_COLD(void)
+{
+	RV(10, 1, 10, 0);
+}
+
+static random_value spell_value_prayer_ORB_OF_DRAINING(void)
+{
+	int base = player_has(PF_ZERO_FAIL) ? (p_ptr->lev / 2) : (p_ptr->lev / 4);
+	base += p_ptr->lev;
+	RV(base, 3, 6, 0);
+}
+
+static random_value spell_value_prayer_CURE_CRITICAL_WOUNDS(void)
+{
+	RV(30, 0, 0, 25);
+}
+
+static random_value spell_value_prayer_SENSE_INVISIBLE(void)
+{
+	RV(24, 1, 24, 0);
+}
+
+static random_value spell_value_prayer_PROTECTION_FROM_EVIL(void)
+{
+	RV(p_ptr->lev * 3, 1, 25, 0);
+}
+
+static random_value spell_value_prayer_CURE_MORTAL_WOUNDS(void)
+{
+	RV(50, 0, 0, 30);
+}
+
+static random_value spell_value_prayer_PRAYER(void)
+{
+	RV(48, 1, 48, 0);
+}
+
+static random_value spell_value_prayer_DISPEL_UNDEAD(void)
+{
+	RV(0, 1, p_ptr->lev * 3, 0);
+}
+
+static random_value spell_value_prayer_HEAL(void)
+{
+	RV(300, 0, 0, 35);
+}
+
+static random_value spell_value_prayer_DISPEL_EVIL(void)
+{
+	RV(0, 1, p_ptr->lev * 3, 0);
+}
+
+static random_value spell_value_prayer_HOLY_WORD(void)
+{
+	RV(1000, 0, 0, 0);
+}
+
+static random_value spell_value_prayer_CURE_SERIOUS_WOUNDS2(void)
+{
+	RV(25, 0, 0, 20);
+}
+
+static random_value spell_value_prayer_CURE_MORTAL_WOUNDS2(void)
+{
+	RV(50, 0, 0, 30);
+}
+
+static random_value spell_value_prayer_HEALING(void)
+{
+	RV(2000, 0, 0, 0);
+}
+
+static random_value spell_value_prayer_DISPEL_UNDEAD2(void)
+{
+	RV(0, 1, p_ptr->lev * 4, 0);
+}
+
+static random_value spell_value_prayer_DISPEL_EVIL2(void)
+{
+	RV(0, 1, p_ptr->lev * 4, 0);
+}
+
+static random_value spell_value_prayer_ANNIHILATION(void)
+{
+	RV(200, 0, 0, 0);
+}
+
+static random_value spell_value_prayer_BLINK(void)
+{
+	RV(10, 0, 0, 0);
+}
+
+static random_value spell_value_prayer_TELEPORT_SELF(void)
+{
+	RV(p_ptr->lev * 8, 0, 0, 0);
 }
 
 #pragma mark arcane spell handlers
@@ -1240,17 +1553,21 @@ static bool spell_handler_prayer_ALTER_REALITY(spell_handler_context_t *context)
 
 static const spell_info_t arcane_spells[] = {
 	#define F(x) spell_handler_arcane_##x
-	#define SPELL(x, a, f) {x, a, f},
+	#define V(x) spell_value_arcane_##x
+	#define SPELL(x, a, v, f) {x, a, v, f},
 	#include "list-spells-arcane.h"
 	#undef SPELL
+	#undef V
 	#undef F
 };
 
 static const spell_info_t prayer_spells[] = {
 	#define F(x) spell_handler_prayer_##x
-	#define SPELL(x, a, f) {x, a, f},
+	#define V(x) spell_value_prayer_##x
+	#define SPELL(x, a, v, f) {x, a, v, f},
 	#include "list-spells-prayer.h"
 	#undef SPELL
+	#undef V
 	#undef F
 };
 
@@ -1354,7 +1671,7 @@ bool spell_needs_aim(int tval, int spell)
 static int spell_lookup_by_name_arcane(const char *name)
 {
 	static const char *spell_names[] = {
-		#define SPELL(x, a, f) #x,
+		#define SPELL(x, a, v, f) #x,
 		#include "list-spells-arcane.h"
 		#undef SPELL
 	};
@@ -1375,7 +1692,7 @@ static int spell_lookup_by_name_arcane(const char *name)
 static int spell_lookup_by_name_prayer(const char *name)
 {
 	static const char *spell_names[] = {
-		#define SPELL(x, a, f) #x,
+		#define SPELL(x, a, v, f) #x,
 		#include "list-spells-prayer.h"
 		#undef SPELL
 	};
