@@ -55,6 +55,7 @@ int rd_artifacts(void);
 int rd_player(void);
 int rd_squelch(void);
 int rd_misc(void);
+int rd_misc_2(void);
 int rd_player_hp(void);
 int rd_player_spells(void);
 int rd_randarts_1(void);

@@ -897,7 +897,7 @@ enum
 #define SCAN_OFF 0
 #define SCAN_MACRO 45
 
-#define MAX_ITEMLIST 256
+#define MAX_ITEMLIST 2560
 
 /**
  * Maximum number of rvals (monster templates) that a pit can specify.

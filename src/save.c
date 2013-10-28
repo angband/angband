@@ -488,6 +488,7 @@ void wr_misc(void)
 
 	/* Write feeling */
 	wr_byte(cave->feeling);
+	wr_u16b(cave->feeling_squares);
 	wr_s32b(cave->created_at);
 
 	/* Current turn */

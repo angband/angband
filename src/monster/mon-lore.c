@@ -1632,14 +1632,14 @@ static void describe_monster_toughness(int r_idx, const monster_lore *l_ptr)
 			((p_ptr->state.to_h +
 			p_ptr->inventory[INVEN_WIELD].to_h) * BTH_PLUS_ADJ));
 
-		/* Avoid division by zero errors */
-		if (chance < 1)
-			chance = 1;
+		/* Avoid division by zero errors, and starting higher on the scale */
+		if (chance < 9)
+			chance = 9;
 
 		chance2 = 90 * (chance - (r_ptr->ac / 2)) / chance + 5;
 		
-		/* There is always a 5 percent chance to hit */
-		if (chance2 < 5) chance2 = 5;
+		/* There is always a 12 percent chance to hit */
+		if (chance2 < 12) chance2 = 12;
 
 		text_out("You have a");
 		if ((chance2 == 8) || ((chance2 / 10) == 8))
@@ -2015,25 +2015,22 @@ void roff_top(int r_idx)
 
 	/* A title (use "The" for non-uniques) */
 	if (!rf_has(r_ptr->flags, RF_UNIQUE))
-	{
 		Term_addstr(-1, TERM_WHITE, "The ");
-	}
-	else if (OPT(purple_uniques))
-	{
-		a1 = TERM_L_VIOLET;
-		a2 = TERM_L_VIOLET;
+	else if (OPT(purple_uniques)) {
+		a1 = TERM_VIOLET;
+		if (!(a2 & 0x80))
+			a2 = TERM_VIOLET;
 	}
 
 	/* Dump the name */
 	Term_addstr(-1, TERM_WHITE, r_ptr->name);
 
-	if ((tile_width == 1) && (tile_height == 1))
-	{
-		/* Append the "standard" attr/char info */
-		Term_addstr(-1, TERM_WHITE, " ('");
-		Term_addch(a1, c1);
-		Term_addstr(-1, TERM_WHITE, "')");
-		
+	/* Append the "standard" attr/char info */
+	Term_addstr(-1, TERM_WHITE, " ('");
+	Term_addch(a1, c1);
+	Term_addstr(-1, TERM_WHITE, "')");
+
+	if (((a2 != a1) || (c2 != c1)) && (tile_width == 1) && (tile_height == 1)) {
 		/* Append the "optional" attr/char info */
 		Term_addstr(-1, TERM_WHITE, "/('");
 		Term_addch(a2, c2);

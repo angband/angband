@@ -24,6 +24,7 @@
 #include "monster/mon-make.h"
 #include "monster/mon-msg.h"
 #include "monster/mon-util.h"
+#include "monster/mon-timed.h"
 #include "monster/monster.h"
 #include "object/slays.h"
 #include "object/tvalsval.h"
@@ -59,17 +60,19 @@ int breakage_chance(const object_type *o_ptr, bool hit_target) {
 bool test_hit(int chance, int ac, int vis) {
 	int k = randint0(100);
 
+	/* There is an automatic 12% chance to hit,
+	 * and 5% chance to miss.
+	 */
+	if (k < 17) return k < 12;
+
 	/* Penalize invisible targets */
 	if (!vis) chance /= 2;
 
-	/* There is an automatic 5% chance to hit and to miss */
-	if (k < 10) return k < 5;
-
-	/* If there is no chance, then miss */
-	if (chance <= 0) return FALSE;
+	/* Starting a bit higher up on the scale */
+	if (chance < 9) chance = 9;
 
 	/* Power competes against armor */
-	return randint0(chance) >= ac / 2;
+	return randint0(chance) >= (ac * 2 / 3);
 }
 
 
@@ -177,7 +180,8 @@ static bool py_attack_real(int y, int x, bool *fear) {
 	}
 
 	/* Disturb the monster */
-	mon_clear_timed(cave->m_idx[y][x], MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE);
+	mon_clear_timed(cave->m_idx[y][x], MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE,
+		FALSE);
 
 	/* See if the player hit */
 	success = test_hit(chance, r_ptr->ac, m_ptr->ml);
@@ -257,7 +261,7 @@ static bool py_attack_real(int y, int x, bool *fear) {
 		msg("Your hands stop glowing.");
 
 		mon_inc_timed(cave->m_idx[y][x], MON_TMD_CONF,
-				(10 + randint0(p_ptr->lev) / 10), MON_TMD_FLG_NOTIFY);
+				(10 + randint0(p_ptr->lev) / 10), MON_TMD_FLG_NOTIFY, FALSE);
 	}
 
 	/* Damage, check for fear and death */

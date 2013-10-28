@@ -24,6 +24,7 @@
 #include "game-cmd.h"
 #include "game-event.h"
 #include "generate.h"
+#include "monster/mon-timed.h"
 #include "monster/mon-util.h"
 #include "monster/monster.h"
 #include "object/tvalsval.h"
@@ -737,7 +738,7 @@ void do_cmd_open(cmd_code code, cmd_arg args[])
 			become_aware(m_idx);
 
 			/* Mimic wakes up */
-			mon_clear_timed(m_idx, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE);
+			mon_clear_timed(m_idx, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, FALSE);
 		} else {
 			/* Message */
 			msg("There is a monster in the way!");
@@ -1806,17 +1807,20 @@ void do_cmd_spike(cmd_code code, cmd_arg args[])
  */
 static bool do_cmd_walk_test(int y, int x)
 {
+
+	int m_idx = cave->m_idx[y][x];
+	
 	/* Allow attack on visible monsters if unafraid */
-	if ((cave->m_idx[y][x] > 0) && (cave_monster(cave, cave->m_idx[y][x])->ml))
+	if ((m_idx > 0) && (cave_monster(cave, m_idx)->ml) && !is_mimicking(m_idx))
 	{
 		/* Handle player fear */
 		if(check_state(p_ptr, OF_AFRAID, p_ptr->state.flags))
 		{
 			/* Extract monster name (or "it") */
 			char m_name[80];
-			monster_type *m_ptr;
+			const monster_type *m_ptr;
 
-			m_ptr = cave_monster(cave, cave->m_idx[y][x]);
+			m_ptr = cave_monster(cave, m_idx);
 			monster_desc(m_name, sizeof(m_name), m_ptr, 0);
 
 			/* Message */

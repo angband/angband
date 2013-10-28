@@ -3090,6 +3090,7 @@ static errr sdl_BuildTileset(term_window *win)
 	int ta, td;
 	int xx, yy;
 	GfxInfo *info = &GfxDesc[use_graphics];
+	if (!use_graphics) return (1);
 	
 	/* Calculate the number of tiles across & down*/
 	ta = GfxSurface->w / info->width;

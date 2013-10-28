@@ -20,6 +20,7 @@
 #include "cave.h"
 #include "game-event.h"
 #include "game-cmd.h"
+#include "monster/mon-util.h"
 #include "object/tvalsval.h"
 #include "squelch.h"
 #include "cmds.h"
@@ -426,13 +427,17 @@ byte get_color(byte a, int attr, int n)
 bool dtrap_edge(int y, int x) 
 { 
 	/* Check if the square is a dtrap in the first place */ 
- 	if (!cave->info2[y][x] & CAVE2_DTRAP) return FALSE; 
+ 	if (!(cave->info2[y][x] & CAVE2_DTRAP)) return FALSE; 
 
  	/* Check for non-dtrap adjacent grids */ 
- 	if (in_bounds_fully(y + 1, x    ) && (!cave->info2[y + 1][x    ] & CAVE2_DTRAP)) return TRUE; 
- 	if (in_bounds_fully(y    , x + 1) && (!cave->info2[y    ][x + 1] & CAVE2_DTRAP)) return TRUE; 
- 	if (in_bounds_fully(y - 1, x    ) && (!cave->info2[y - 1][x    ] & CAVE2_DTRAP)) return TRUE; 
- 	if (in_bounds_fully(y    , x - 1) && (!cave->info2[y    ][x - 1] & CAVE2_DTRAP)) return TRUE; 
+ 	if (in_bounds_fully(y + 1, x    ) &&
+			(!(cave->info2[y + 1][x    ] & CAVE2_DTRAP))) return TRUE; 
+ 	if (in_bounds_fully(y    , x + 1) &&
+			(!(cave->info2[y    ][x + 1] & CAVE2_DTRAP))) return TRUE; 
+ 	if (in_bounds_fully(y - 1, x    ) &&
+			(!(cave->info2[y - 1][x    ] & CAVE2_DTRAP))) return TRUE; 
+ 	if (in_bounds_fully(y    , x - 1) &&
+			(!(cave->info2[y    ][x - 1] & CAVE2_DTRAP))) return TRUE; 
 
 	return FALSE; 
 }
@@ -551,7 +556,7 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 	}
 
 	/* If there's a monster */
-	if (g->m_idx > 0)
+	if (g->m_idx > 0 && !is_mimicking(g->m_idx))
 	{
 		if (g->hallucinate)
 		{
@@ -570,18 +575,8 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 			da = r_ptr->x_attr;
 			dc = r_ptr->x_char;
 
-			/* Turn uniques purple if desired (violet, actually) */
-			if (OPT(purple_uniques) && rf_has(r_ptr->flags, RF_UNIQUE))
-			{
-				/* Use (light) violet attr */
-				a = TERM_L_VIOLET;
-
-				/* Use char */
-				c = dc;
-			}
-
 			/* Special attr/char codes */
-			else if ((da & 0x80) && (dc & 0x80))
+			if ((da & 0x80) && (dc & 0x80))
 			{
 				/* Use attr */
 				a = da;
@@ -590,6 +585,16 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 				c = dc;
 			}
 			
+			/* Turn uniques purple if desired (violet, actually) */
+			else if (OPT(purple_uniques) && rf_has(r_ptr->flags, RF_UNIQUE))
+			{
+				/* Use (light) violet attr */
+				a = TERM_VIOLET;
+
+				/* Use char */
+				c = dc;
+			}
+
 			/* Multi-hued monster */
 			else if (rf_has(r_ptr->flags, RF_ATTR_MULTI) ||
 					 rf_has(r_ptr->flags, RF_ATTR_FLICKER) ||
@@ -653,43 +658,35 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 
 		/* Get the "player" attr */
 		a = r_ptr->x_attr;
-		if ((OPT(hp_changes_color)) && (arg_graphics == GRAPHICS_NONE))
-		{
-			switch(p_ptr->chp * 10 / p_ptr->mhp)
-			{
+		if ((OPT(hp_changes_color)) && !(a & 0x80))	{
+			switch(p_ptr->chp * 10 / p_ptr->mhp) {
 				case 10:
-				case  9: 
-				{
-					a = TERM_WHITE; 
+				case  9: {
+					a = TERM_WHITE;
 					break;
 				}
 				case  8:
-				case  7:
-				{
+				case  7: {
 					a = TERM_YELLOW;
 					break;
 				}
 				case  6:
-				case  5:
-				{
+				case  5: {
 					a = TERM_ORANGE;
 					break;
 				}
 				case  4:
-				case  3:
-				{
+				case  3: {
 					a = TERM_L_RED;
 					break;
 				}
 				case  2:
 				case  1:
-				case  0:
-				{
+				case  0: {
 					a = TERM_RED;
 					break;
 				}
-				default:
-				{
+				default: {
 					a = TERM_WHITE;
 					break;
 				}

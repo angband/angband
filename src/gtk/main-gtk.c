@@ -1068,18 +1068,46 @@ gboolean keypress_event_handler(GtkWidget *widget, GdkEventKey *event, gpointer 
 		case GDK_Insert: ch = KC_INSERT; break;
 
 		/* keypad */
+		case GDK_KP_Insert:
+		case GDK_KP_End:
+		case GDK_KP_Down:
+		case GDK_KP_Page_Down:
+		case GDK_KP_Left:
+		case GDK_KP_Right:
+		case GDK_KP_Home:
+		case GDK_KP_Up:
+		case GDK_KP_Page_Up:
+		case GDK_KP_Decimal:
+		case GDK_KP_Divide:
+		case GDK_KP_Multiply:
+		case GDK_KP_Subtract:
+		case GDK_KP_Add:
+		case GDK_KP_Enter:
+		case GDK_KP_Equal:
+			switch(event->keyval) {
+				case GDK_KP_Insert: ch = '0'; break;
+				case GDK_KP_End: ch = '1'; break;
+				case GDK_KP_Down: ch = '2'; break;
+				case GDK_KP_Page_Down: ch = '3'; break;
+				case GDK_KP_Left: ch = '4'; break;
+				case GDK_KP_Right: ch = '6'; break;
+				case GDK_KP_Home: ch = '7'; break;
+				case GDK_KP_Up: ch = '8'; break;
+				case GDK_KP_Page_Up: ch = '9'; break;
+				case GDK_KP_Decimal: ch = '.'; break;
+				case GDK_KP_Divide: ch = '/'; break;
+				case GDK_KP_Multiply: ch = '*'; break;
+				case GDK_KP_Subtract: ch = '-'; break;
+				case GDK_KP_Add: ch = '+'; break;
+				case GDK_KP_Enter: ch = '\n';break;
+				case GDK_KP_Equal: ch = '='; break;
+			}
+
+		/* intentional fall-though */
 		case GDK_KP_0: case GDK_KP_1: case GDK_KP_2:
 		case GDK_KP_3: case GDK_KP_4: case GDK_KP_5:
 		case GDK_KP_6: case GDK_KP_7: case GDK_KP_8:
 		case GDK_KP_9: kp = TRUE; break;
-
-		case GDK_KP_Decimal: ch = '.'; kp = TRUE; break;
-		case GDK_KP_Divide: ch = '/'; kp = TRUE; break;
-		case GDK_KP_Multiply: ch = '*'; kp = TRUE; break;
-		case GDK_KP_Subtract: ch = '-'; kp = TRUE; break;
-		case GDK_KP_Add: ch = '+'; kp = TRUE; break;
-		case GDK_KP_Enter: ch = '\n'; kp = TRUE; break;
-		case GDK_KP_Equal: ch = '='; kp = TRUE; break;
 
 		case GDK_F1: ch = KC_F1; break;
 		case GDK_F2: ch = KC_F2; break;

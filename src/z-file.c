@@ -237,6 +237,11 @@ size_t path_build(char *buf, size_t len, const char *base, const char *leaf)
 # define HAVE_READ
 #endif
 
+/* if the flag O_BINARY is not defined, it is not needed , but we still
+ * need it defined so it will compile */
+#ifndef O_BINARY
+#define O_BINARY 0
+#endif
 
 /* Private structure to hold file pointers and useful info. */
 struct ang_file
@@ -362,9 +367,23 @@ ang_file *file_open(const char *fname, file_mode mode, file_type ftype)
 	/* Get the system-specific path */
 	path_parse(buf, sizeof(buf), fname);
 
-	switch (mode)
-	{
-		case MODE_WRITE:  f->fh = fopen(buf, "wb"); break;
+	switch (mode) {
+		case MODE_WRITE: {
+			if (ftype == FTYPE_SAVE) {
+				/* open only if the file does not exist */
+				int fd;
+				fd = open(buf,
+					O_CREAT | O_EXCL | O_WRONLY | O_BINARY, S_IRUSR | S_IWUSR);
+				if (fd < 0) {
+					/* there was some error */
+					f->fh = NULL;
+				} else {
+					f->fh = fdopen(fd, "wb");
+				}
+			} else
+				f->fh = fopen(buf, "wb");
+			 break;
+		 }
 		case MODE_READ:   f->fh = fopen(buf, "rb"); break;
 		case MODE_APPEND: f->fh = fopen(buf, "a+"); break;
 		default:          f->fh = fopen(buf, "__");

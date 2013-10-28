@@ -86,7 +86,7 @@ static const struct {
 	{ "artifacts", wr_artifacts, 2 },
 	{ "player", wr_player, 2 },
 	{ "squelch", wr_squelch, 1 },
-	{ "misc", wr_misc, 1 },
+	{ "misc", wr_misc, 2 },
 	{ "player hp", wr_player_hp, 1 },
 	{ "player spells", wr_player_spells, 1 },
 	{ "randarts", wr_randarts, 2 },
@@ -117,6 +117,7 @@ static const struct {
 	{ "player", rd_player, 2 },
 	{ "squelch", rd_squelch, 1 },
 	{ "misc", rd_misc, 1 },
+	{ "misc", rd_misc_2, 2},
 	{ "player hp", rd_player_hp, 1 },
 	{ "player spells", rd_player_spells, 1 },
 	{ "randarts", rd_randarts_1, 1 },
@@ -370,22 +371,28 @@ static bool try_save(ang_file *file)
 bool savefile_save(const char *path)
 {
 	ang_file *file;
-
+	int count = 0;
 	char new_savefile[1024];
 	char old_savefile[1024];
 
 	/* New savefile */
-	strnfmt(new_savefile, sizeof(new_savefile), "%s.new", path);
-	strnfmt(old_savefile, sizeof(old_savefile), "%s.old", path);
-
+	strnfmt(old_savefile, sizeof(old_savefile), "%s%u.old", path,Rand_simple(1000000));
+	while (file_exists(old_savefile) && (count++ < 100)) {
+		strnfmt(old_savefile, sizeof(old_savefile), "%s%u%u.old", path,Rand_simple(1000000),count);
+	}
+	count = 0;
 	/* Make sure that the savefile doesn't already exist */
-	safe_setuid_grab();
+	/*safe_setuid_grab();
 	file_delete(new_savefile);
 	file_delete(old_savefile);
-	safe_setuid_drop();
+	safe_setuid_drop();*/
 
 	/* Open the savefile */
 	safe_setuid_grab();
+	strnfmt(new_savefile, sizeof(new_savefile), "%s%u.new", path,Rand_simple(1000000));
+	while (file_exists(new_savefile) && (count++ < 100)) {
+		strnfmt(new_savefile, sizeof(new_savefile), "%s%u%u.new", path,Rand_simple(1000000),count);
+	}
 	file = file_open(new_savefile, MODE_WRITE, FTYPE_SAVE);
 	safe_setuid_drop();
 
@@ -416,18 +423,22 @@ bool savefile_save(const char *path)
 				file_move(old_savefile, savefile);
 			else
 				file_delete(old_savefile);
-		}
+		} 
 
 		safe_setuid_drop();
 
 		return err ? FALSE : TRUE;
 	}
 
-	/* Delete temp file */
-	safe_setuid_grab();
-	file_delete(new_savefile);
-	safe_setuid_drop();
-
+	/* Delete temp file if the save failed */
+	if (file)
+	{
+		/* file is no longer valid, but it still points to a non zero
+		 * value if the file was created above */
+		safe_setuid_grab();
+		file_delete(new_savefile);
+		safe_setuid_drop();
+	}
 	return FALSE;
 }
 

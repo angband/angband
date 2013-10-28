@@ -21,6 +21,7 @@
 #include "target.h"
 #include "monster/mon-lore.h"
 #include "monster/mon-make.h"
+#include "monster/mon-timed.h"
 #include "monster/mon-util.h"
 #include "object/tvalsval.h"
 
@@ -1437,7 +1438,7 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, const char *note)
 	if (p_ptr->health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
 
 	/* Wake it up */
-	mon_clear_timed(m_idx, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE);
+	mon_clear_timed(m_idx, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, FALSE);
 
 	/* Become aware of its presence */
 	if (m_ptr->unaware)
@@ -1569,16 +1570,15 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, const char *note)
 
 		/* Cure a little fear */
 		if (tmp < m_ptr->m_timed[MON_TMD_FEAR])
-		{
 			/* Reduce fear */
-			mon_dec_timed(m_idx, MON_TMD_FEAR, tmp , MON_TMD_FLG_NOMESSAGE);
-		}
+			mon_dec_timed(m_idx, MON_TMD_FEAR, tmp, MON_TMD_FLG_NOMESSAGE,
+				FALSE);
 
 		/* Cure all the fear */
 		else
 		{
 			/* Cure fear */
-			mon_clear_timed(m_idx, MON_TMD_FEAR, MON_TMD_FLG_NOMESSAGE);
+			mon_clear_timed(m_idx, MON_TMD_FEAR, MON_TMD_FLG_NOMESSAGE, FALSE);
 
 			/* No more fear */
 			(*fear) = FALSE;
@@ -1606,7 +1606,8 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, const char *note)
 			/* Hack -- note fear */
 			(*fear) = TRUE;
 
-			mon_inc_timed(m_idx, MON_TMD_FEAR, timer, MON_TMD_FLG_NOMESSAGE | MON_TMD_FLG_NOFAIL);
+			mon_inc_timed(m_idx, MON_TMD_FEAR, timer,
+					MON_TMD_FLG_NOMESSAGE | MON_TMD_FLG_NOFAIL, FALSE);
 		}
 	}
 
