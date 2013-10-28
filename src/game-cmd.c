@@ -20,6 +20,7 @@
 #include "cmds.h"
 #include "game-cmd.h"
 #include "object/object.h"
+#include "object/tvalsval.h"
 #include "spells.h"
 #include "target.h"
 
@@ -79,6 +80,7 @@ static struct
 	{ CMD_REST, { arg_CHOICE }, do_cmd_rest, FALSE, 0 },
 	{ CMD_PATHFIND, { arg_POINT }, do_cmd_pathfind, FALSE, 0 },
 	{ CMD_PICKUP, { arg_ITEM }, do_cmd_pickup, FALSE, 0 },
+	{ CMD_AUTOPICKUP, { arg_NONE }, do_cmd_autopickup, FALSE, 0 },
 	{ CMD_WIELD, { arg_ITEM, arg_NUMBER }, do_cmd_wield, FALSE, 0 },
 	{ CMD_TAKEOFF, { arg_ITEM }, do_cmd_takeoff, FALSE, 0 },
 	{ CMD_DROP, { arg_ITEM, arg_NUMBER }, do_cmd_drop, FALSE, 0 },
@@ -93,7 +95,7 @@ static struct
 	{ CMD_REFILL, { arg_ITEM }, do_cmd_refill, FALSE, 0 },
 	{ CMD_FIRE, { arg_ITEM, arg_TARGET }, do_cmd_fire, FALSE, 0 },
 	{ CMD_THROW, { arg_ITEM, arg_TARGET }, do_cmd_throw, FALSE, 0 },
-	{ CMD_DESTROY, { arg_ITEM, arg_NUMBER }, do_cmd_destroy, FALSE, 0 },
+	{ CMD_DESTROY, { arg_ITEM }, do_cmd_destroy, FALSE, 0 },
 	{ CMD_ENTER_STORE, { arg_NONE }, do_cmd_store, FALSE, 0 },
 	{ CMD_INSCRIBE, { arg_ITEM, arg_STRING }, do_cmd_inscribe, FALSE, 0 },
 	{ CMD_STUDY_SPELL, { arg_CHOICE }, do_cmd_study_spell, FALSE, 0 },
@@ -101,8 +103,8 @@ static struct
 	{ CMD_CAST, { arg_CHOICE, arg_TARGET }, do_cmd_cast, FALSE, 0 },
 	{ CMD_SELL, { arg_ITEM, arg_NUMBER }, do_cmd_sell, FALSE, 0 },
 	{ CMD_STASH, { arg_ITEM, arg_NUMBER }, do_cmd_stash, FALSE, 0 },
-	{ CMD_BUY, { arg_ITEM, arg_NUMBER }, do_cmd_buy, FALSE, 0 },
-	{ CMD_RETRIEVE, { arg_ITEM, arg_NUMBER }, do_cmd_retrieve, FALSE, 0 },
+	{ CMD_BUY, { arg_CHOICE, arg_NUMBER }, do_cmd_buy, FALSE, 0 },
+	{ CMD_RETRIEVE, { arg_CHOICE, arg_NUMBER }, do_cmd_retrieve, FALSE, 0 },
 	{ CMD_SUICIDE, { arg_NONE }, do_cmd_suicide, FALSE, 0 },
 	{ CMD_SAVE, { arg_NONE }, do_cmd_save_game, FALSE, 0 },
 	{ CMD_QUIT, { arg_NONE }, do_cmd_quit, FALSE, 0 },
@@ -124,9 +126,17 @@ struct item_selector
 /** List of requirements for various commands' objects */
 struct item_selector item_selector[] =
 {
+	{ CMD_INSCRIBE, "Inscribe which item? ",
+	  "You have nothing to inscribe.",
+	  NULL, (USE_EQUIP | USE_INVEN | USE_FLOOR | IS_HARMLESS) },
+
 	{ CMD_UNINSCRIBE, "Un-inscribe which item? ",
 	  "You have nothing to un-inscribe.",
 	  obj_has_inscrip, (USE_EQUIP | USE_INVEN | USE_FLOOR) },
+
+	{ CMD_WIELD, "Wear/wield which item? ",
+	  "You have nothing you can wear or wield.",
+	  obj_can_wear, (USE_INVEN | USE_FLOOR) },
 
 	{ CMD_TAKEOFF, "Take off which item? ",
 	  "You are not wearing anything you can take off.",
@@ -172,8 +182,6 @@ struct item_selector item_selector[] =
 	  "You have nothing to refuel with.",
 	  obj_can_refill, (USE_INVEN | USE_FLOOR) },
 };
-
-
 
 game_command *cmd_get_top(void)
 {
@@ -255,9 +263,7 @@ static int cmd_idx(cmd_code code)
 	for (i = 0; i < N_ELEMENTS(game_cmds); i++)
 	{
 		if (game_cmds[i].cmd == code)
-		{
 			return i;
-		}
 	}
 
 	return -1;
@@ -354,7 +360,7 @@ void cmd_set_arg_number(game_command *cmd, int n, int num)
  */
 errr cmd_insert_repeated(cmd_code c, int nrepeats)
 {
-	game_command cmd = { CMD_NULL, 0, {{0}} };
+	game_command cmd = { 0 };
 
 	if (cmd_idx(c) == -1)
 		return 1;
@@ -390,10 +396,11 @@ void process_command(cmd_context ctx, bool no_request)
 	{
 		int oldrepeats = cmd->nrepeats;
 		int idx = cmd_idx(cmd->command);
+		size_t i;
 
 		if (idx == -1) return;
 
-		for (size_t i = 0; i < N_ELEMENTS(item_selector); i++)
+		for (i = 0; i < N_ELEMENTS(item_selector); i++)
 		{
 			struct item_selector *is = &item_selector[i];
 
@@ -412,10 +419,42 @@ void process_command(cmd_context ctx, bool no_request)
 			}
 		}
 
+		/* XXX avoid dead objects from being re-used on repeat.
+		 * this needs to be expanded into a general safety-check
+		 * on args */
+		if ((game_cmds[idx].arg_type[0] == arg_ITEM) && cmd->arg_present[0]) {
+			object_type *o_ptr = object_from_item_idx(cmd->arg[0].item);
+			if (!o_ptr->kind)
+				return;
+		}
+
 		/* Do some sanity checking on those arguments that might have 
 		   been declared as "unknown", such as directions and targets. */
 		switch (cmd->command)
 		{
+			case CMD_INSCRIBE:
+			{
+				char o_name[80];
+				char tmp[80] = "";
+
+				object_type *o_ptr = object_from_item_idx(cmd->arg[0].item);
+			
+				object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
+				msg("Inscribing %s.", o_name);
+				message_flush();
+			
+				/* Use old inscription */
+				if (o_ptr->note)
+					strnfmt(tmp, sizeof(tmp), "%s", quark_str(o_ptr->note));
+			
+				/* Get a new inscription (possibly empty) */
+				if (!get_string("Inscription: ", tmp, sizeof(tmp)))
+					return;
+
+				cmd_set_arg_string(cmd, 1, tmp);
+				break;
+			}
+
 			case CMD_OPEN:
 			{
 				if (OPT(easy_open) && (!cmd->arg_present[0] ||
@@ -424,7 +463,7 @@ void process_command(cmd_context ctx, bool no_request)
 					int y, x;
 					int n_closed_doors, n_locked_chests;
 			
-					n_closed_doors = count_feats(&y, &x, is_closed, FALSE);
+					n_closed_doors = count_feats(&y, &x, cave_iscloseddoor, FALSE);
 					n_locked_chests = count_chests(&y, &x, FALSE);
 			
 					if (n_closed_doors + n_locked_chests == 1)
@@ -442,7 +481,7 @@ void process_command(cmd_context ctx, bool no_request)
 					int y, x;
 			
 					/* Count open doors */
-					if (count_feats(&y, &x, is_open, FALSE) == 1)
+					if (count_feats(&y, &x, cave_isopendoor, FALSE) == 1)
 						cmd_set_arg_direction(cmd, 0, coords_to_dir(y, x));
 				}
 
@@ -457,7 +496,7 @@ void process_command(cmd_context ctx, bool no_request)
 					int y, x;
 					int n_visible_traps, n_trapped_chests;
 			
-					n_visible_traps = count_feats(&y, &x, is_trap, TRUE);			
+					n_visible_traps = count_feats(&y, &x, cave_isknowntrap, TRUE);
 					n_trapped_chests = count_chests(&y, &x, TRUE);
 
 					if (n_visible_traps + n_trapped_chests == 1)
@@ -520,8 +559,14 @@ void process_command(cmd_context ctx, bool no_request)
 			case CMD_THROW:
 			{
 				bool get_target = FALSE;
+				object_type *o_ptr = object_from_item_idx(cmd->arg[0].choice);
 
-				if (obj_needs_aim(object_from_item_idx(cmd->arg[0].choice)))
+				/* If we couldn't resolve the item, then abort this */
+				if (!o_ptr->kind) break;
+
+				/* Thrown objects always need an aim, others might, depending
+				 * on the object */
+				if (obj_needs_aim(o_ptr) || cmd->command == CMD_THROW)
 				{
 					if (!cmd->arg_present[1])
 						get_target = TRUE;
@@ -536,6 +581,7 @@ void process_command(cmd_context ctx, bool no_request)
 				if (get_target && !get_aim_dir(&cmd->arg[1].direction))
 						return;
 
+				player_confuse_dir(p_ptr, &cmd->arg[1].direction, FALSE);
 				cmd->arg_present[1] = TRUE;
 
 				break;
@@ -546,7 +592,7 @@ void process_command(cmd_context ctx, bool no_request)
 			{
 				bool get_target = FALSE;
 
-				if (spell_needs_aim(cp_ptr->spell_book, cmd->arg[0].choice))
+				if (spell_needs_aim(p_ptr->class->spell_book, cmd->arg[0].choice))
 				{
 					if (!cmd->arg_present[1])
 						get_target = TRUE;
@@ -561,8 +607,43 @@ void process_command(cmd_context ctx, bool no_request)
 				if (get_target && !get_aim_dir(&cmd->arg[1].direction))
 						return;
 
+				player_confuse_dir(p_ptr, &cmd->arg[1].direction, FALSE);
 				cmd->arg_present[1] = TRUE;
 				
+				break;
+			}
+
+			case CMD_WIELD:
+			{
+				object_type *o_ptr = object_from_item_idx(cmd->arg[0].choice);
+				int slot = wield_slot(o_ptr);
+			
+				/* Usually if the slot is taken we'll just replace the item in the slot,
+				 * but in some cases we need to ask the user which slot they actually
+				 * want to replace */
+				if (p_ptr->inventory[slot].kind)
+				{
+					if (o_ptr->tval == TV_RING)
+					{
+						const char *q = "Replace which ring? ";
+						const char *s = "Error in obj_wield, please report";
+						item_tester_hook = obj_is_ring;
+						if (!get_item(&slot, q, s, CMD_WIELD, USE_EQUIP)) return;
+					}
+			
+					if (obj_is_ammo(o_ptr) && !object_similar(&p_ptr->inventory[slot],
+						o_ptr, OSTACK_QUIVER))
+					{
+						const char *q = "Replace which ammunition? ";
+						const char *s = "Error in obj_wield, please report";
+						item_tester_hook = obj_is_ammo;
+						if (!get_item(&slot, q, s, CMD_WIELD, USE_EQUIP)) return;
+					}
+				}
+
+				/* Set relevant slot */
+				cmd_set_arg_number(cmd, 1, slot);
+
 				break;
 			}
 

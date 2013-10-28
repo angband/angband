@@ -16,6 +16,13 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
+#include "buildid.h"
+
+
+/*
+ * Maximum number of high scores in the high score file
+ */
+#define MAX_HISCORES    100
 
 
 /*
@@ -172,7 +179,7 @@ static void highscore_write(const high_score scores[], size_t sz)
 
 	if (file_exists(lok_name))
 	{
-		msg_print("Lock file in place for scorefile; not writing.");
+		msg("Lock file in place for scorefile; not writing.");
 		return;
 	}
 
@@ -183,7 +190,7 @@ static void highscore_write(const high_score scores[], size_t sz)
 
 	if (!lok)
 	{
-		msg_print("Failed to create lock for scorefile; not writing.");
+		msg("Failed to create lock for scorefile; not writing.");
 		return;
 	}
 
@@ -196,7 +203,7 @@ static void highscore_write(const high_score scores[], size_t sz)
 
 	if (!scorefile)
 	{
-		msg_print("Failed to open new scorefile for writing.");
+		msg("Failed to open new scorefile for writing.");
 
 		file_close(lok);
 		file_delete(lok_name);
@@ -211,13 +218,13 @@ static void highscore_write(const high_score scores[], size_t sz)
 	safe_setuid_grab();
 
 	if (file_exists(old_name) && !file_delete(old_name))
-		msg_print("Couldn't delete old scorefile");
+		msg("Couldn't delete old scorefile");
 
 	if (file_exists(cur_name) && !file_move(cur_name, old_name))
-		msg_print("Couldn't move old scores.raw out of the way");
+		msg("Couldn't move old scores.raw out of the way");
 
 	if (!file_move(new_name, cur_name))
-		msg_print("Couldn't rename new scorefile to scores.raw");
+		msg("Couldn't rename new scorefile to scores.raw");
 
 	/* Remove the lock */
 	file_close(lok);
@@ -233,7 +240,7 @@ static void highscore_write(const high_score scores[], size_t sz)
  */
 static void display_scores_aux(const high_score scores[], int from, int to, int highlight)
 {
-	char ch;
+	struct keypress ch;
 
 	int j, k, n, place;
 	int count;
@@ -265,11 +272,10 @@ static void display_scores_aux(const high_score scores[], int from, int to, int 
 		Term_clear();
 
 		/* Title */
-		put_str(format("%s Hall of Fame", VERSION_NAME), 0, 26);
-
-		/* Indicate non-top scores */
 		if (k > 0)
-			put_str(format("(from position %d)", place), 0, 40);
+			put_str(format("%s Hall of Fame (from position %d)", VERSION_NAME, place), 0, 21);
+		else
+			put_str(format("%s Hall of Fame", VERSION_NAME), 0, 30);
 
 
 		/* Dump 5 entries */
@@ -279,16 +285,17 @@ static void display_scores_aux(const high_score scores[], int from, int to, int 
 
 			byte attr;
 
-			int pr, pc, clev, mlev, cdun, mdun;
-			cptr user, gold, when, aged;
+			int clev, mlev, cdun, mdun;
+			const char *user, *gold, *when, *aged;
+			struct player_class *c;
+			struct player_race *r;
 
 
 			/* Hack -- indicate death in yellow */
 			attr = (j == highlight) ? TERM_L_GREEN : TERM_WHITE;
 
-			/* Extract the race/class */
-			pr = atoi(score->p_r);
-			pc = atoi(score->p_c);
+			c = player_id2class(atoi(score->p_c));
+			r = player_id2race(atoi(score->p_r));
 
 			/* Extract the level info */
 			clev = atoi(score->cur_lev);
@@ -306,7 +313,7 @@ static void display_scores_aux(const high_score scores[], int from, int to, int 
 			strnfmt(out_val, sizeof(out_val),
 			        "%3d.%9s  %s the %s %s, Level %d",
 			        place, score->pts, score->who,
-			        p_info[pr].name, c_info[pc].name,
+			        r ? r->name : "<none>", c ? c->name : "<none>",
 			        clev);
 
 			/* Append a "maximum level" */
@@ -349,7 +356,7 @@ static void display_scores_aux(const high_score scores[], int from, int to, int 
 		prt("", 23, 0);
 
 		/* Hack -- notice Escape */
-		if (ch == ESCAPE) break;
+		if (ch.code == ESCAPE) break;
 	}
 
 	return;
@@ -360,7 +367,7 @@ static void build_score(high_score *entry, const char *died_from, time_t *death_
 	WIPE(entry, high_score);
 
 	/* Save the version */
-	strnfmt(entry->what, sizeof(entry->what), "%s", VERSION_STRING);
+	strnfmt(entry->what, sizeof(entry->what), "%s", buildid);
 
 	/* Calculate and save the points */
 	strnfmt(entry->pts, sizeof(entry->pts), "%9lu", (long)total_points());
@@ -383,8 +390,8 @@ static void build_score(high_score *entry, const char *died_from, time_t *death_
 	/* Save the player info XXX XXX XXX */
 	strnfmt(entry->uid, sizeof(entry->uid), "%7u", player_uid);
 	strnfmt(entry->sex, sizeof(entry->sex), "%c", (p_ptr->psex ? 'm' : 'f'));
-	strnfmt(entry->p_r, sizeof(entry->p_r), "%2d", p_ptr->prace);
-	strnfmt(entry->p_c, sizeof(entry->p_c), "%2d", p_ptr->pclass);
+	strnfmt(entry->p_r, sizeof(entry->p_r), "%2d", p_ptr->race->ridx);
+	strnfmt(entry->p_c, sizeof(entry->p_c), "%2d", p_ptr->class->cidx);
 
 	/* Save the level and such */
 	strnfmt(entry->cur_lev, sizeof(entry->cur_lev), "%3d", p_ptr->lev);
@@ -408,11 +415,11 @@ void enter_score(time_t *death_time)
 	int j;
 
 	/* Cheaters are not scored */
-	for (j = OPT_SCORE; j < OPT_MAX; ++j)
+	for (j = OPT_SCORE; j < OPT_SCORE + N_OPTS_CHEAT; ++j)
 	{
 		if (!op_ptr->opt[j]) continue;
 
-		msg_print("Score not registered for cheaters.");
+		msg("Score not registered for cheaters.");
 		message_flush();
 		return;
 	}
@@ -420,7 +427,7 @@ void enter_score(time_t *death_time)
 	/* Wizard-mode pre-empts scoring */
 	if (p_ptr->noscore & (NOSCORE_WIZARD | NOSCORE_DEBUG))
 	{
-		msg_print("Score not registered for wizards.");
+		msg("Score not registered for wizards.");
 		message_flush();
 	}
 
@@ -429,7 +436,7 @@ void enter_score(time_t *death_time)
 	/* Borg-mode pre-empts scoring */
 	else if (p_ptr->noscore & NOSCORE_BORG)
 	{
-		msg_print("Score not registered for borgs.");
+		msg("Score not registered for borgs.");
 		message_flush();
 	}
 
@@ -438,14 +445,14 @@ void enter_score(time_t *death_time)
 	/* Hack -- Interupted */
 	else if (!p_ptr->total_winner && streq(p_ptr->died_from, "Interrupting"))
 	{
-		msg_print("Score not registered due to interruption.");
+		msg("Score not registered due to interruption.");
 		message_flush();
 	}
 
 	/* Hack -- Quitter */
 	else if (!p_ptr->total_winner && streq(p_ptr->died_from, "Quitting"))
 	{
-		msg_print("Score not registered due to quitting.");
+		msg("Score not registered due to quitting.");
 		message_flush();
 	}
 

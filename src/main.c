@@ -55,10 +55,15 @@ static const struct module modules[] =
 #ifdef USE_TEST
 	{ "test", help_test, init_test },
 #endif /* !USE_TEST */
+
+#ifdef USE_STATS
+	{ "stats", help_stats, init_stats },
+#endif /* USE_STATS */
 };
 
-
-#ifdef USE_SOUND
+static int init_sound_dummy(int argc, char *argv[]) {
+	return 0;
+}
 
 /*
  * List of sound modules in the order they should be tried.
@@ -69,18 +74,15 @@ static const struct module sound_modules[] =
 	{ "sdl", "SDL_mixer sound module", init_sound_sdl },
 #endif /* SOUND_SDL */
 
-	{ "dummy", "Dummy module", NULL },
+	{ "none", "No sound", init_sound_dummy },
 };
-
-#endif
-
 
 /*
  * A hook for "quit()".
  *
  * Close down, then fall back into "quit()".
  */
-static void quit_hook(cptr s)
+static void quit_hook(const char *s)
 {
 	int j;
 
@@ -163,7 +165,7 @@ static void init_stuff(void)
  * The "<path>" can be any legal path for the given system, and should
  * not end in any special path separator (i.e. "/tmp" or "~/.ang-info").
  */
-static void change_path(cptr info)
+static void change_path(const char *info)
 {
 	if (!info || !info[0])
 		quit_fmt("Try '-d<path>'.", info);
@@ -202,11 +204,11 @@ static bool new_game;
 /*
  * Pass the appropriate "Initialisation screen" command to the game,
  * getting user input if needed.
- */ 
-static errr get_init_cmd()
+ */
+static errr get_init_cmd(void)
 {
 	/* Wait for response */
-	pause_line(Term->hgt - 1);
+	pause_line(Term);
 
 	if (new_game)
 		cmd_insert(CMD_NEWGAME);
@@ -254,6 +256,7 @@ int main(int argc, char *argv[])
 	bool done = FALSE;
 
 	const char *mstr = NULL;
+	const char *soundstr = NULL;
 
 	bool args = TRUE;
 
@@ -288,7 +291,7 @@ int main(int argc, char *argv[])
 	/* Process the command line arguments */
 	for (i = 1; args && (i < argc); i++)
 	{
-		cptr arg = argv[i];
+		const char *arg = argv[i];
 
 		/* Require proper options */
 		if (*arg++ != '-') goto usage;
@@ -296,77 +299,57 @@ int main(int argc, char *argv[])
 		/* Analyze option */
 		switch (*arg++)
 		{
-			case 'N':
 			case 'n':
-			{
 				new_game = TRUE;
 				break;
-			}
 
-			case 'W':
 			case 'w':
-			{
 				arg_wizard = TRUE;
 				break;
-			}
 
-			case 'R':
 			case 'r':
-			{
 				arg_rebalance = TRUE;
 				break;
-			}
 
-			case 'G':
 			case 'g':
-			{
 				/* Default graphics tile */
 				arg_graphics = GRAPHICS_ADAM_BOLT;
 				break;
-			}
 
 			case 'u':
-			case 'U':
-			{
 				if (!*arg) goto usage;
 
 				/* Get the savefile name */
 				my_strcpy(op_ptr->full_name, arg, sizeof(op_ptr->full_name));
 				continue;
-			}
 
 			case 'm':
-			case 'M':
-			{
 				if (!*arg) goto usage;
 				mstr = arg;
 				continue;
-			}
+
+			case 's':
+				if (!*arg) goto usage;
+				soundstr = arg;
+				continue;
 
 			case 'd':
-			case 'D':
-			{
 				change_path(arg);
 				continue;
-			}
 
 			case 'x':
 				debug_opt(arg);
 				continue;
 
 			case '-':
-			{
 				argv[i] = argv[0];
 				argc = argc - i;
 				argv = argv + i;
 				args = FALSE;
 				break;
-			}
 
 			default:
 			usage:
-			{
-				/* Dump usage information */
 				puts("Usage: angband [options] [-- subopts]");
 				puts("  -n             Start a new character (WARNING: overwrites default savefile without -u)");
 				puts("  -w             Resurrect dead character (marks savefile)");
@@ -375,18 +358,19 @@ int main(int argc, char *argv[])
 				puts("  -x<opt>        Debug options; see -xhelp");
 				puts("  -u<who>        Use your <who> savefile");
 				puts("  -d<path>       Store pref files and screendumps in <path>");
+				puts("  -s<mod>        Use sound module <sys>:");
+				for (i = 0; i < (int)N_ELEMENTS(sound_modules); i++)
+					printf("     %s   %s\n", sound_modules[i].name,
+					       sound_modules[i].help);
 				puts("  -m<sys>        Use module <sys>, where <sys> can be:");
 
 				/* Print the name and help for each available module */
 				for (i = 0; i < (int)N_ELEMENTS(modules); i++)
-				{
 					printf("     %s   %s\n",
 					       modules[i].name, modules[i].help);
-				}
 
 				/* Actually abort the process */
 				quit(NULL);
-			}
 		}
 		if (*arg) goto usage;
 	}
@@ -398,11 +382,15 @@ int main(int argc, char *argv[])
 		argv[1] = NULL;
 	}
 
-	/* Get the file paths */
-	init_stuff();
-
 	/* Install "quit" hook */
 	quit_aux = quit_hook;
+
+	/* If we were told which mode to use, then use it */
+	if (mstr)
+		ANGBAND_SYS = mstr;
+
+	/* Get the file paths */
+	init_stuff();
 
 	/* Try the modules in the order specified by modules[] */
 	for (i = 0; i < (int)N_ELEMENTS(modules); i++)
@@ -414,7 +402,6 @@ int main(int argc, char *argv[])
 			if (0 == modules[i].init(argc, argv))
 			{
 				done = TRUE;
-				/*quit_fmt("ggg %s", ANGBAND_SYS);*/
 				break;
 			}
 		}
@@ -439,17 +426,11 @@ int main(int argc, char *argv[])
 	/* Process the player name */
 	process_player_name(TRUE);
 
-#ifdef USE_SOUND
-
 	/* Try the modules in the order specified by sound_modules[] */
-	for (i = 0; i < (int)N_ELEMENTS(sound_modules) - 1; i++)
-	{
-		if (0 == sound_modules[i].init(argc, argv))
-			break;
-	}
-
-#endif
-
+	for (i = 0; i < (int)N_ELEMENTS(sound_modules); i++)
+		if (!soundstr || streq(soundstr, sound_modules[i].name))
+			if (0 == sound_modules[i].init(argc, argv))
+				break;
 
 	/* Catch nasty signals */
 	signals_init();

@@ -17,19 +17,29 @@
  */
 
 #include "angband.h"
+#include "buildid.h"
 #include "button.h"
 #include "cave.h"
 #include "cmds.h"
-#include "game-cmd.h"
 #include "game-event.h"
+#include "game-cmd.h"
+#include "generate.h"
+#include "history.h"
+#include "keymap.h"
 #include "init.h"
-#include "macro.h"
-#include "monster/constants.h"
+#include "monster/init.h"
+#include "monster/mon-msg.h"
+#include "monster/mon-util.h"
+#include "object/object.h"
+#include "object/slays.h"
 #include "object/tvalsval.h"
 #include "option.h"
 #include "parser.h"
 #include "prefs.h"
+#include "randname.h"
 #include "squelch.h"
+
+static struct history_chart *histories;
 
 /*
  * This file is used to initialize various variables and arrays for the
@@ -46,42 +56,9 @@
  * of text, even though technically, up to 64K should be legal.
  */
 
-struct file_parser {
-	const char *name;
-	struct parser *(*init)(void);
-	errr (*run)(struct parser *p);
-	errr (*finish)(struct parser *p);
-};
-
-static void print_error(struct file_parser *fp, struct parser *p) {
-	struct parser_state s;
-	parser_getstate(p, &s);
-	msg_format("Parse error in %s line %d column %d: %s: %s", fp->name,
-	           s.line, s.col, s.msg, parser_error_str[s.error]);
-	message_flush();
-	quit_fmt("Parse error in %s line %d column %d.", fp->name, s.line, s.col);
-}
-
-errr run_parser(struct file_parser *fp) {
-	struct parser *p = fp->init();
-	errr r;
-	if (!p) {
-		return PARSE_ERROR_GENERIC;
-	}
-	r = fp->run(p);
-	if (r) {
-		print_error(fp, p);
-		return r;
-	}
-	r = fp->finish(p);
-	if (r)
-		print_error(fp, p);
-	return r;
-}
-
 static const char *k_info_flags[] = {
-	#define OF(a, b) #a,
-	#include "list-object-flags.h"
+	#define OF(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s) #a,
+	#include "object/list-object-flags.h"
 	#undef OF
 	NULL
 };
@@ -91,28 +68,6 @@ static const char *effect_list[] = {
 	#include "list-effects.h"
 	#undef EFFECT
 };
-
-static int lookup_flag(const char **flag_table, const char *flag_name) {
-	int i = FLAG_START;
-
-	while (flag_table[i] && !streq(flag_table[i], flag_name))
-		i++;
-
-	/* End of table reached without match */
-	if (!flag_table[i]) i = FLAG_END;
-
-	return i;
-}
-
-static errr grab_flag(bitflag *flags, const size_t size, const char **flag_table, const char *flag_name) {
-	int flag = lookup_flag(flag_table, flag_name);
-
-	if (flag == FLAG_END) return PARSE_ERROR_INVALID_FLAG;
-
-	flag_on(flags, size, flag);
-
-	return 0;
-}
 
 static u32b grab_one_effect(const char *what) {
 	size_t i;
@@ -125,10 +80,17 @@ static u32b grab_one_effect(const char *what) {
 	}
 
 	/* Oops */
-	msg_format("Unknown effect '%s'.", what);
+	msg("Unknown effect '%s'.", what);
 
 	/* Error */
 	return 0;
+}
+
+static struct history_chart *findchart(struct history_chart *hs, unsigned int idx) {
+	for (; hs; hs = hs->next)
+		if (hs->idx == idx)
+			break;
+	return hs;
 }
 
 /*
@@ -184,7 +146,6 @@ void init_file_paths(const char *configpath, const char *libpath, const char *da
 	string_free(ANGBAND_DIR_XTRA_FONT);
 	string_free(ANGBAND_DIR_XTRA_GRAF);
 	string_free(ANGBAND_DIR_XTRA_SOUND);
-	string_free(ANGBAND_DIR_XTRA_HELP);
 	string_free(ANGBAND_DIR_XTRA_ICON);
 
 	/*** Prepare the paths ***/
@@ -201,7 +162,6 @@ void init_file_paths(const char *configpath, const char *libpath, const char *da
 	ANGBAND_DIR_XTRA_FONT = string_make(format("%s" PATH_SEP "font", ANGBAND_DIR_XTRA));
 	ANGBAND_DIR_XTRA_GRAF = string_make(format("%s" PATH_SEP "graf", ANGBAND_DIR_XTRA));
 	ANGBAND_DIR_XTRA_SOUND = string_make(format("%s" PATH_SEP "sound", ANGBAND_DIR_XTRA));
-	ANGBAND_DIR_XTRA_HELP = string_make(format("%s" PATH_SEP "help", ANGBAND_DIR_XTRA));
 	ANGBAND_DIR_XTRA_ICON = string_make(format("%s" PATH_SEP "icon", ANGBAND_DIR_XTRA));
 
 #ifdef PRIVATE_USER_PATH
@@ -222,7 +182,7 @@ void init_file_paths(const char *configpath, const char *libpath, const char *da
 #else /* !PRIVATE_USER_PATH */
 
 	/* Build pathnames */
-    ANGBAND_DIR_USER = string_make(format("%suser", datapath));
+	ANGBAND_DIR_USER = string_make(format("%suser", datapath));
 	ANGBAND_DIR_APEX = string_make(format("%sapex", datapath));
 	ANGBAND_DIR_SAVE = string_make(format("%ssave", datapath));
 
@@ -258,29 +218,7 @@ void create_needed_dirs(void)
 	if (!dir_create(dirpath)) quit_fmt("Cannot create '%s'", dirpath);
 }
 
-errr parse_file(struct parser *p, const char *filename) {
-	char path[1024];
-	char buf[1024];
-	ang_file *fh;
-	errr r = 0;
-
-	path_build(path, sizeof(path), ANGBAND_DIR_EDIT, format("%s.txt", filename));
-	fh = file_open(path, MODE_READ, -1);
-	if (!fh)
-		quit(format("Cannot open '%s.txt'", filename));
-	while (file_getl(fh, buf, sizeof(buf))) {
-		r = parser_parse(p, buf);
-		if (r)
-			break;
-	}
-	file_close(fh);
-	return r;
-}
-
-static enum parser_error ignored(struct parser *p) {
-	return PARSE_ERROR_NONE;
-}
-
+/* Parsing functions for limits.txt */
 static enum parser_error parse_z(struct parser *p) {
 	maxima *z;
 	const char *label;
@@ -303,28 +241,16 @@ static enum parser_error parse_z(struct parser *p) {
 		z->e_max = value;
 	else if (streq(label, "R"))
 		z->r_max = value;
-	else if (streq(label, "V"))
-		z->v_max = value;
 	else if (streq(label, "P"))
-		z->p_max = value;
-	else if (streq(label, "C"))
-		z->c_max = value;
-	else if (streq(label, "H"))
-		z->h_max = value;
-	else if (streq(label, "B"))
-		z->b_max = value;
+		z->mp_max = value;
 	else if (streq(label, "S"))
 		z->s_max = value;
 	else if (streq(label, "O"))
 		z->o_max = value;
 	else if (streq(label, "M"))
 		z->m_max = value;
-	else if (streq(label, "L"))
-		z->flavor_max = value;
-	else if (streq(label, "N"))
-		z->fake_name_size = value;
-	else if (streq(label, "T"))
-		z->fake_text_size = value;
+	else if (streq(label, "I"))
+		z->pit_max = value;
 	else
 		return PARSE_ERROR_UNDEFINED_DIRECTIVE;
 
@@ -351,20 +277,168 @@ static errr finish_parse_z(struct parser *p) {
 	return 0;
 }
 
+static void cleanup_z(void)
+{
+	mem_free(z_info);
+}
+
 static struct file_parser z_parser = {
 	"limits",
 	init_parse_z,
 	run_parse_z,
-	finish_parse_z
+	finish_parse_z,
+	cleanup_z
 };
+
+/* Parsing functions for object_base.txt */
+
+struct kb_parsedata {
+	object_base defaults;
+	object_base *kb;
+};
+
+static enum parser_error parse_kb_d(struct parser *p) {
+	const char *label;
+	int value;
+
+	struct kb_parsedata *d = parser_priv(p);
+	assert(d);
+
+	label = parser_getsym(p, "label");
+	value = parser_getint(p, "value");
+
+	if (streq(label, "B"))
+		d->defaults.break_perc = value;
+	else
+		return PARSE_ERROR_UNDEFINED_DIRECTIVE;
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_kb_n(struct parser *p) {
+	struct object_base *kb;
+
+	struct kb_parsedata *d = parser_priv(p);
+	assert(d);
+
+	kb = mem_alloc(sizeof *kb);
+	memcpy(kb, &d->defaults, sizeof(*kb));
+	kb->next = d->kb;
+	d->kb = kb;
+
+	kb->tval = tval_find_idx(parser_getsym(p, "tval"));
+	if (kb->tval == -1)
+		return PARSE_ERROR_UNRECOGNISED_TVAL;
+
+	kb->name = string_make(parser_getstr(p, "name"));
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_kb_b(struct parser *p) {
+	struct object_base *kb;
+
+	struct kb_parsedata *d = parser_priv(p);
+	assert(d);
+
+	kb = d->kb;
+	assert(kb);
+
+	kb->break_perc = parser_getint(p, "breakage");
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_kb_f(struct parser *p) {
+	struct object_base *kb;
+	char *s, *t;
+
+	struct kb_parsedata *d = parser_priv(p);
+	assert(d);
+
+	kb = d->kb;
+	assert(kb);
+
+	s = string_make(parser_getstr(p, "flags"));
+	t = strtok(s, " |");
+	while (t) {
+		if (grab_flag(kb->flags, OF_SIZE, k_info_flags, t))
+			break;
+		t = strtok(NULL, " |");
+	}
+	mem_free(s);
+
+	return t ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
+}
+
+struct parser *init_parse_kb(void) {
+	struct parser *p = parser_new();
+
+	struct kb_parsedata *d = mem_zalloc(sizeof(*d));
+	parser_setpriv(p, d);
+
+	parser_reg(p, "V sym version", ignored);
+	parser_reg(p, "D sym label int value", parse_kb_d);
+	parser_reg(p, "N sym tval str name", parse_kb_n);
+	parser_reg(p, "B int breakage", parse_kb_b);
+	parser_reg(p, "F str flags", parse_kb_f);
+	return p;
+}
+
+static errr run_parse_kb(struct parser *p) {
+	return parse_file(p, "object_base");
+}
+
+static errr finish_parse_kb(struct parser *p) {
+	struct object_base *kb;
+	struct object_base *next = NULL;
+	struct kb_parsedata *d = parser_priv(p);
+
+	assert(d);
+
+	kb_info = mem_zalloc(TV_MAX * sizeof(*kb_info));
+
+	for (kb = d->kb; kb; kb = next) {
+		if (kb->tval >= TV_MAX)
+			continue;
+		memcpy(&kb_info[kb->tval], kb, sizeof(*kb));
+		next = kb->next;
+		mem_free(kb);
+	}
+
+	mem_free(d);
+	parser_destroy(p);
+	return 0;
+}
+
+static void cleanup_kb(void)
+{
+	int idx;
+	for (idx = 0; idx < TV_MAX; idx++)
+	{
+		string_free(kb_info[idx].name);
+	}
+	mem_free(kb_info);
+}
+
+struct file_parser kb_parser = {
+	"object_base",
+	init_parse_kb,
+	run_parse_kb,
+	finish_parse_kb,
+	cleanup_kb
+};
+
+
+
+/* Parsing functions for object.txt */
 
 static enum parser_error parse_k_n(struct parser *p) {
 	int idx = parser_getint(p, "index");
 	const char *name = parser_getstr(p, "name");
 	struct object_kind *h = parser_priv(p);
 
-	struct object_kind *k = mem_alloc(sizeof *k);
-	memset(k, 0, sizeof(*k));
+	struct object_kind *k = mem_zalloc(sizeof *k);
 	k->next = h;
 	parser_setpriv(p, k);
 	k->kidx = idx;
@@ -399,7 +473,9 @@ static enum parser_error parse_k_i(struct parser *p) {
 
 	k->tval = tval;
 	k->sval = parser_getint(p, "sval");
-	k->pval = parser_getrand(p, "pval");
+
+	k->base = &kb_info[k->tval];
+
 	return PARSE_ERROR_NONE;
 }
 
@@ -473,7 +549,6 @@ static enum parser_error parse_k_f(struct parser *p) {
 	}
 	mem_free(s);
 	return t ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
-
 }
 
 static enum parser_error parse_k_e(struct parser *p) {
@@ -495,13 +570,45 @@ static enum parser_error parse_k_d(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_k_l(struct parser *p) {
+	struct object_kind *k = parser_priv(p);
+	char *s;
+	char *t;
+	assert(k);
+
+	k->pval[k->num_pvals] = parser_getrand(p, "pval");
+
+	if (!parser_hasval(p, "flags")) {
+		k->num_pvals++;
+		return PARSE_ERROR_NONE;
+	}
+
+	s = string_make(parser_getstr(p, "flags"));
+	t = strtok(s, " |");
+
+	while (t) {
+		if (grab_flag(k->flags, OF_SIZE, k_info_flags, t) ||
+			grab_flag(k->pval_flags[k->num_pvals], OF_SIZE, k_info_flags, t))
+			break;
+
+		t = strtok(NULL, " |");
+	}
+
+	k->num_pvals++;
+	if (k->num_pvals > MAX_PVALS)
+		return PARSE_ERROR_TOO_MANY_ENTRIES;
+
+	mem_free(s);
+	return t ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
+}
+
 struct parser *init_parse_k(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 	parser_reg(p, "V sym version", ignored);
 	parser_reg(p, "N int index str name", parse_k_n);
 	parser_reg(p, "G sym char sym color", parse_k_g);
-	parser_reg(p, "I sym tval int sval rand pval", parse_k_i);
+	parser_reg(p, "I sym tval int sval", parse_k_i);
 	parser_reg(p, "W int level int extra int weight int cost", parse_k_w);
 	parser_reg(p, "A int common str minmax", parse_k_a);
 	parser_reg(p, "P int ac rand hd rand to-h rand to-d rand to-a", parse_k_p);
@@ -509,6 +616,7 @@ struct parser *init_parse_k(void) {
 	parser_reg(p, "M int prob rand stack", parse_k_m);
 	parser_reg(p, "F str flags", parse_k_f);
 	parser_reg(p, "E sym name ?rand time", parse_k_e);
+	parser_reg(p, "L rand pval ?str flags", parse_k_l);
 	parser_reg(p, "D str text", parse_k_d);
 	return p;
 }
@@ -518,34 +626,43 @@ static errr run_parse_k(struct parser *p) {
 }
 
 static errr finish_parse_k(struct parser *p) {
-	struct object_kind *k, *n;
+	struct object_kind *k, *next = NULL;
 
 	k_info = mem_zalloc(z_info->k_max * sizeof(*k));
-	for (k = parser_priv(p); k; k = k->next) {
+	for (k = parser_priv(p); k; k = next) {
 		if (k->kidx >= z_info->k_max)
 			continue;
 		memcpy(&k_info[k->kidx], k, sizeof(*k));
-	}
-
-	k = parser_priv(p);
-	while (k) {
-		n = k->next;
+		next = k->next;
 		mem_free(k);
-		k = n;
 	}
 
+	objkinds = parser_priv(p);
 	parser_destroy(p);
 	return 0;
+}
+
+static void cleanup_k(void)
+{
+	int idx;
+	for (idx = 0; idx < z_info->k_max; idx++) {
+		string_free(k_info[idx].name);
+		mem_free(k_info[idx].text);
+	}
+	mem_free(k_info);
 }
 
 struct file_parser k_parser = {
 	"object",
 	init_parse_k,
 	run_parse_k,
-	finish_parse_k
+	finish_parse_k,
+	cleanup_k
 };
 
+/* Parsing functions for artifact.txt */
 static enum parser_error parse_a_n(struct parser *p) {
+	bitflag f[OF_SIZE];
 	int idx = parser_getint(p, "index");
 	const char *name = parser_getstr(p, "name");
 	struct artifact *h = parser_priv(p);
@@ -557,7 +674,8 @@ static enum parser_error parse_a_n(struct parser *p) {
 	a->name = string_make(name);
 
 	/* Ignore all elements */
-	flags_set(a->flags, OF_SIZE, OF_IGNORE_MASK, FLAG_END);
+	create_mask(f, FALSE, OFT_IGNORE, OFT_MAX);
+	of_union(a->flags, f);
 
 	return PARSE_ERROR_NONE;
 }
@@ -578,7 +696,6 @@ static enum parser_error parse_a_i(struct parser *p) {
 		return PARSE_ERROR_UNRECOGNISED_SVAL;
 	a->sval = sval;
 
-	a->pval = parser_getint(p, "pval");
 	return PARSE_ERROR_NONE;
 }
 
@@ -664,6 +781,36 @@ static enum parser_error parse_a_m(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_a_l(struct parser *p) {
+	struct artifact *a = parser_priv(p);
+	char *s; 
+	char *t;
+	assert(a);
+
+	a->pval[a->num_pvals] = parser_getint(p, "pval");
+
+	if (!parser_hasval(p, "flags"))
+		return PARSE_ERROR_MISSING_FIELD;
+
+	s = string_make(parser_getstr(p, "flags"));
+	t = strtok(s, " |");
+
+	while (t) {
+		if (grab_flag(a->flags, OF_SIZE, k_info_flags, t) ||
+			grab_flag(a->pval_flags[a->num_pvals], OF_SIZE, k_info_flags, t))
+			break;
+
+		t = strtok(NULL, " |");
+	}
+
+	a->num_pvals++;
+	if (a->num_pvals > MAX_PVALS)
+		return PARSE_ERROR_TOO_MANY_ENTRIES;
+
+	mem_free(s);
+	return t ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_a_d(struct parser *p) {
 	struct artifact *a = parser_priv(p);
 	assert(a);
@@ -677,13 +824,14 @@ struct parser *init_parse_a(void) {
 	parser_setpriv(p, NULL);
 	parser_reg(p, "V sym version", ignored);
 	parser_reg(p, "N int index str name", parse_a_n);
-	parser_reg(p, "I sym tval sym sval int pval", parse_a_i);
+	parser_reg(p, "I sym tval sym sval", parse_a_i);
 	parser_reg(p, "W int level int rarity int weight int cost", parse_a_w);
 	parser_reg(p, "A int common str minmax", parse_a_a);
 	parser_reg(p, "P int ac rand hd int to-h int to-d int to-a", parse_a_p);
 	parser_reg(p, "F ?str flags", parse_a_f);
 	parser_reg(p, "E sym name rand time", parse_a_e);
 	parser_reg(p, "M str text", parse_a_m);
+	parser_reg(p, "L int pval str flags", parse_a_l);
 	parser_reg(p, "D str text", parse_a_d);
 	return p;
 }
@@ -713,13 +861,26 @@ static errr finish_parse_a(struct parser *p) {
 	return 0;
 }
 
+static void cleanup_a(void)
+{
+	int idx;
+	for (idx = 0; idx < z_info->a_max; idx++) {
+		string_free(a_info[idx].name);
+		mem_free(a_info[idx].effect_msg);
+		mem_free(a_info[idx].text);
+	}
+	mem_free(a_info);
+}
+
 struct file_parser a_parser = {
 	"artifact",
 	init_parse_a,
 	run_parse_a,
-	finish_parse_a
+	finish_parse_a,
+	cleanup_a
 };
 
+/* Parsing functions for names.txt (random name fragments) */
 struct name {
 	struct name *next;
 	char *str;
@@ -789,13 +950,27 @@ static errr finish_parse_names(struct parser *p) {
 	return 0;
 }
 
+static void cleanup_names(void)
+{
+	int i, j;
+	for (i = 0; i < RANDNAME_NUM_TYPES; i++) {
+		for (j = 0; name_sections[i][j]; j++) {
+			string_free((char *)name_sections[i][j]);
+		}
+		mem_free(name_sections[i]);
+	}
+	mem_free(name_sections);
+}
+
 struct file_parser names_parser = {
 	"names",
 	init_parse_names,
 	run_parse_names,
-	finish_parse_names
+	finish_parse_names,
+	cleanup_names
 };
 
+/* Parsing functions for terrain.txt */
 static enum parser_error parse_f_n(struct parser *p) {
 	int idx = parser_getuint(p, "index");
 	const char *name = parser_getstr(p, "name");
@@ -868,7 +1043,7 @@ static const char *f_info_flags[] =
 	NULL
 };
 
-static errr grab_one_flag(u32b *flags, cptr names[], cptr what)
+static errr grab_one_flag(u32b *flags, const char *names[], const char *what)
 {
 	int i;
 
@@ -972,20 +1147,29 @@ static errr finish_parse_f(struct parser *p) {
 	return 0;
 }
 
+static void cleanup_f(void) {
+	int idx;
+	for (idx = 0; idx < z_info->f_max; idx++) {
+		string_free(f_info[idx].name);
+	}
+	mem_free(f_info);
+}
+
 struct file_parser f_parser = {
 	"terrain",
 	init_parse_f,
 	run_parse_f,
-	finish_parse_f
+	finish_parse_f,
+	cleanup_f
 };
 
+/* Parsing functions for ego-item.txt */
 static enum parser_error parse_e_n(struct parser *p) {
 	int idx = parser_getint(p, "index");
 	const char *name = parser_getstr(p, "name");
 	struct ego_item *h = parser_priv(p);
 
-	struct ego_item *e = mem_alloc(sizeof *e);
-	memset(e, 0, sizeof(*e));
+	struct ego_item *e = mem_zalloc(sizeof *e);
 	e->next = h;
 	parser_setpriv(p, e);
 	e->eidx = idx;
@@ -1016,6 +1200,23 @@ static enum parser_error parse_e_x(struct parser *p) {
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	e->rating = rating;
 	e->xtra = xtra;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_e_a(struct parser *p) {
+	struct ego_item *e = parser_priv(p);
+	const char *tmp = parser_getstr(p, "minmax");
+	int amin, amax;
+
+	e->alloc_prob = parser_getint(p, "common");
+	if (sscanf(tmp, "%d to %d", &amin, &amax) != 2)
+		return PARSE_ERROR_GENERIC;
+
+	if (amin > 255 || amax > 255 || amin < 0 || amax < 0)
+		return PARSE_ERROR_OUT_OF_BOUNDS;
+
+	e->alloc_min = amin;
+	e->alloc_max = amax;
 	return PARSE_ERROR_NONE;
 }
 
@@ -1053,7 +1254,6 @@ static enum parser_error parse_e_c(struct parser *p) {
 	struct random th = parser_getrand(p, "th");
 	struct random td = parser_getrand(p, "td");
 	struct random ta = parser_getrand(p, "ta");
-	struct random pval = parser_getrand(p, "pval");
 	struct ego_item *e = parser_priv(p);
 
 	if (!e)
@@ -1062,7 +1262,6 @@ static enum parser_error parse_e_c(struct parser *p) {
 	e->to_h = th;
 	e->to_d = td;
 	e->to_a = ta;
-	e->pval = pval;
 
 	return PARSE_ERROR_NONE;
 }
@@ -1071,7 +1270,6 @@ static enum parser_error parse_e_m(struct parser *p) {
 	int th = parser_getint(p, "th");
 	int td = parser_getint(p, "td");
 	int ta = parser_getint(p, "ta");
-	int pval = parser_getint(p, "pval");
 	struct ego_item *e = parser_priv(p);
 
 	if (!e)
@@ -1080,7 +1278,7 @@ static enum parser_error parse_e_m(struct parser *p) {
 	e->min_to_h = th;
 	e->min_to_d = td;
 	e->min_to_a = ta;
-	e->min_pval = pval;
+
 	return PARSE_ERROR_NONE;
 }
 
@@ -1104,6 +1302,38 @@ static enum parser_error parse_e_f(struct parser *p) {
 	return t ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_e_l(struct parser *p) {
+	struct ego_item *e = parser_priv(p);
+	char *s; 
+	char *t;
+
+	if (!e)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	if (!parser_hasval(p, "flags"))
+		return PARSE_ERROR_MISSING_FIELD;
+
+	e->pval[e->num_pvals] = parser_getrand(p, "pval");
+	e->min_pval[e->num_pvals] = parser_getint(p, "min");
+
+	s = string_make(parser_getstr(p, "flags"));
+	t = strtok(s, " |");
+
+	while (t) {
+		if (grab_flag(e->flags, OF_SIZE, k_info_flags, t) ||
+			grab_flag(e->pval_flags[e->num_pvals], OF_SIZE, k_info_flags, t))
+			break;
+
+		t = strtok(NULL, " |");
+	}
+
+	e->num_pvals++;
+	if (e->num_pvals > MAX_PVALS)
+		return PARSE_ERROR_TOO_MANY_ENTRIES;
+
+	mem_free(s);
+	return t ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_e_d(struct parser *p) {
 	struct ego_item *e = parser_priv(p);
 
@@ -1120,81 +1350,18 @@ struct parser *init_parse_e(void) {
 	parser_reg(p, "N int index str name", parse_e_n);
 	parser_reg(p, "W int level int rarity int pad int cost", parse_e_w);
 	parser_reg(p, "X int rating int xtra", parse_e_x);
+	parser_reg(p, "A int common str minmax", parse_e_a);
 	parser_reg(p, "T sym tval int min-sval int max-sval", parse_e_t);
-	parser_reg(p, "C rand th rand td rand ta rand pval", parse_e_c);
-	parser_reg(p, "M int th int td int ta int pval", parse_e_m);
+	parser_reg(p, "C rand th rand td rand ta", parse_e_c);
+	parser_reg(p, "M int th int td int ta", parse_e_m);
 	parser_reg(p, "F ?str flags", parse_e_f);
+	parser_reg(p, "L rand pval int min str flags", parse_e_l);
 	parser_reg(p, "D str text", parse_e_d);
 	return p;
 }
 
 static errr run_parse_e(struct parser *p) {
 	return parse_file(p, "ego_item");
-}
-
-static errr eval_e_slays(struct ego_item *items)
-{
-	int i;
-	int j;
-	int count = 0;
-	bitflag cacheme[OF_SIZE];
-	bitflag slay_mask[OF_SIZE];
-	bitflag **dupcheck;
-	ego_item_type *e_ptr;
-
-	/* Build the slay mask */
-	flags_init(slay_mask, OF_SIZE, OF_ALL_SLAY_MASK, FLAG_END);
-
-	/* Calculate necessary size of slay_cache */
-	dupcheck = C_ZNEW(z_info->e_max, bitflag *);
-	
-	for (i = 0; i < z_info->e_max; i++)
-	{
-		dupcheck[i] = C_ZNEW(OF_SIZE, bitflag);
-		e_ptr = items + i;
-
-		/* Find the slay flags on this ego */		
-		of_copy(cacheme, e_ptr->flags);
-		of_inter(cacheme, slay_mask);
-
-		/* Only consider non-empty combinations of slay flags */
-		if (!of_is_empty(cacheme))
-		{
-			/* Skip previously scanned combinations */
-			for (j = 0; j < i; j++)
-			{
-				if (of_is_equal(cacheme, dupcheck[j]))
-					continue;
-			}
-
-			/* msg_print("Found a new slay combo on an ego item"); */
-			count++;
-			of_copy(dupcheck[i], cacheme);
-		}
-	}
-
-	/* Allocate slay_cache with an extra empty element for an iteration stop */
-	slay_cache = C_ZNEW((count + 1), flag_cache);
-	count = 0;
-
-	/* Populate the slay_cache */
-	for (i = 0; i < z_info->e_max; i++)
-	{
-		if (!of_is_empty(dupcheck[i]))
-		{
-			of_copy(slay_cache[count].flags, dupcheck[i]);
-			slay_cache[count].value = 0;
-			count++;
-			/*msg_print("Cached a slay combination");*/
-		}
-	}
-
-	for (i = 0; i < z_info->e_max; i++)
-		FREE(dupcheck[i]);
-	FREE(dupcheck);
-
-	/* Success */
-	return 0;
 }
 
 static errr finish_parse_e(struct parser *p) {
@@ -1207,7 +1374,7 @@ static errr finish_parse_e(struct parser *p) {
 		memcpy(&e_info[e->eidx], e, sizeof(*e));
 	}
 
-	eval_e_slays(e_info);
+	create_slay_cache(e_info);
 
 	e = parser_priv(p);
 	while (e) {
@@ -1220,1160 +1387,26 @@ static errr finish_parse_e(struct parser *p) {
 	return 0;
 }
 
+static void cleanup_e(void)
+{
+	int idx;
+	for (idx = 0; idx < z_info->e_max; idx++) {
+		string_free(e_info[idx].name);
+		mem_free(e_info[idx].text);
+	}
+	mem_free(e_info);
+	free_slay_cache();
+}
+
 struct file_parser e_parser = {
 	"ego_item",
 	init_parse_e,
 	run_parse_e,
-	finish_parse_e
+	finish_parse_e,
+	cleanup_e
 };
 
-static enum parser_error parse_r_n(struct parser *p) {
-	struct monster_race *h = parser_priv(p);
-	struct monster_race *r = mem_alloc(sizeof *r);
-	memset(r, 0, sizeof(*r));
-	r->next = h;
-	r->ridx = parser_getuint(p, "index");
-	r->name = string_make(parser_getstr(p, "name"));
-	parser_setpriv(p, r);
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_r_g(struct parser *p) {
-	struct monster_race *r = parser_priv(p);
-	const char *color;
-	int attr;
-
-	if (!r)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-		color = parser_getsym(p, "color");
-	if (strlen(color) > 1)
-		attr = color_text_to_attr(color);
-	else
-		attr = color_char_to_attr(color[0]);
-	if (attr < 0)
-		return PARSE_ERROR_INVALID_COLOR;
-	r->d_attr = attr;
-	r->d_char = parser_getchar(p, "glyph");
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_r_i(struct parser *p) {
-	struct monster_race *r = parser_priv(p);
-
-	if (!r)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	r->speed = parser_getint(p, "speed");
-	r->avg_hp = parser_getint(p, "hp");
-	r->aaf = parser_getint(p, "aaf");
-	r->ac = parser_getint(p, "ac");
-	r->sleep = parser_getint(p, "sleep");
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_r_w(struct parser *p) {
-	struct monster_race *r = parser_priv(p);
-
-	if (!r)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	r->level = parser_getint(p, "level");
-	r->rarity = parser_getint(p, "rarity");
-	r->power = parser_getint(p, "power");
-	r->mexp = parser_getint(p, "mexp");
-	return PARSE_ERROR_NONE;
-}
-
-static const char *r_info_blow_method[] =
-{
-	#define RBM(a, b) #a,
-	#include "list-blow-methods.h"
-	#undef RBM
-	NULL
-};
-
-static int find_blow_method(const char *name) {
-	int i;
-	for (i = 0; r_info_blow_method[i]; i++)
-		if (streq(name, r_info_blow_method[i]))
-			break;
-	return i;
-}
-
-static const char *r_info_blow_effect[] =
-{
-	#define RBE(a, b) #a,
-	#include "list-blow-effects.h"
-	#undef RBE
-	NULL
-};
-
-static int find_blow_effect(const char *name) {
-	int i;
-	for (i = 0; r_info_blow_effect[i]; i++)
-		if (streq(name, r_info_blow_effect[i]))
-			break;
-	return i;
-}
-
-static enum parser_error parse_r_b(struct parser *p) {
-	struct monster_race *r = parser_priv(p);
-	int i;
-	struct random dam;
-
-	if (!r)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	for (i = 0; i < MONSTER_BLOW_MAX; i++)
-		if (!r->blow[i].method)
-			break;
-	if (i == MONSTER_BLOW_MAX)
-		return PARSE_ERROR_TOO_MANY_ENTRIES;
-	r->blow[i].method = find_blow_method(parser_getsym(p, "method"));
-	if (!r_info_blow_method[r->blow[i].method])
-		return PARSE_ERROR_UNRECOGNISED_BLOW;
-	if (parser_hasval(p, "effect")) {
-		r->blow[i].effect = find_blow_effect(parser_getsym(p, "effect"));
-		if (!r_info_blow_effect[r->blow[i].effect])
-			return PARSE_ERROR_INVALID_EFFECT;
-	}
-	if (parser_hasval(p, "damage")) {
-		dam = parser_getrand(p, "damage");
-		r->blow[i].d_dice = dam.dice;
-		r->blow[i].d_side = dam.sides;
-	}
-
-
-	return PARSE_ERROR_NONE;
-}
-
-static const char *r_info_flags[] =
-{
-	#define RF(a, b) #a,
-	#include "list-mon-flags.h"
-	#undef RF
-	NULL
-};
-
-static enum parser_error parse_r_f(struct parser *p) {
-	struct monster_race *r = parser_priv(p);
-	char *flags;
-	char *s;
-
-	if (!r)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	if (!parser_hasval(p, "flags"))
-		return PARSE_ERROR_NONE;
-	flags = string_make(parser_getstr(p, "flags"));
-	s = strtok(flags, " |");
-	while (s) {
-		if (grab_flag(r->flags, RF_SIZE, r_info_flags, s)) {
-			mem_free(flags);
-			return PARSE_ERROR_INVALID_FLAG;
-		}
-		s = strtok(NULL, " |");
-	}
-
-	mem_free(flags);
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_r_d(struct parser *p) {
-	struct monster_race *r = parser_priv(p);
-
-	if (!r)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	r->text = string_append(r->text, parser_getstr(p, "desc"));
-	return PARSE_ERROR_NONE;
-}
-
-static const char *r_info_spell_flags[] =
-{
-	#define RSF(a, b) #a,
-	#include "list-mon-spells.h"
-	#undef RSF
-	NULL
-};
-
-static enum parser_error parse_r_s(struct parser *p) {
-	struct monster_race *r = parser_priv(p);
-	char *flags;
-	char *s;
-	int pct;
-	int ret = PARSE_ERROR_NONE;
-
-	if (!r)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	flags = string_make(parser_getstr(p, "spells"));
-	s = strtok(flags, " |");
-	while (s) {
-		if (1 == sscanf(s, "1_IN_%d", &pct)) {
-			if (pct < 1 || pct > 100) {
-				ret = PARSE_ERROR_INVALID_SPELL_FREQ;
-				break;
-			}
-			r->freq_spell = 100 / pct;
-			r->freq_innate = r->freq_spell;
-		} else {
-			if (grab_flag(r->spell_flags, RSF_SIZE, r_info_spell_flags, s)) {
-				ret = PARSE_ERROR_INVALID_FLAG;
-				break;
-			}
-		}
-		s = strtok(NULL, " |");
-	}
-
-	mem_free(flags);
-	return ret;
-}
-
-struct parser *init_parse_r(void) {
-	struct parser *p = parser_new();
-	parser_setpriv(p, NULL);
-
-	parser_reg(p, "V sym version", ignored);
-	parser_reg(p, "N uint index str name", parse_r_n);
-	parser_reg(p, "G char glyph sym color", parse_r_g);
-	parser_reg(p, "I int speed int hp int aaf int ac int sleep", parse_r_i);
-	parser_reg(p, "W int level int rarity int power int mexp", parse_r_w);
-	parser_reg(p, "B sym method ?sym effect ?rand damage", parse_r_b);
-	parser_reg(p, "F ?str flags", parse_r_f);
-	parser_reg(p, "D str desc", parse_r_d);
-	parser_reg(p, "S str spells", parse_r_s);
-	return p;
-}
-
-static errr run_parse_r(struct parser *p) {
-	return parse_file(p, "monster");
-}
-
-static long eval_blow_effect(int effect, int atk_dam, int rlev)
-{
-	switch (effect)
-	{
-		/*other bad effects - minor*/
-		case RBE_EAT_GOLD:
-		case RBE_EAT_ITEM:
-		case RBE_EAT_FOOD:
-		case RBE_EAT_LIGHT:
-		case RBE_LOSE_CHR:
-		{
-			atk_dam += 5;
-			break;
-		}
-		/*other bad effects - poison / disease */
-		case RBE_POISON:
-		{
-			atk_dam *= 5;
-			atk_dam /= 4;
-			atk_dam += rlev;
-			break;
-		}
-		/*other bad effects - elements / sustains*/
-		case RBE_TERRIFY:
-		case RBE_ELEC:
-		case RBE_COLD:
-		case RBE_FIRE:
-		{
-			atk_dam += 10;
-			break;
-		}
-		/*other bad effects - elements / major*/
-		case RBE_ACID:
-		case RBE_BLIND:
-		case RBE_CONFUSE:
-		case RBE_LOSE_STR:
-		case RBE_LOSE_INT:
-		case RBE_LOSE_WIS:
-		case RBE_LOSE_DEX:
-		case RBE_HALLU:
-		{
-			atk_dam += 20;
-			break;
-		}
-		/*other bad effects - major*/
-		case RBE_UN_BONUS:
-		case RBE_UN_POWER:
-		case RBE_LOSE_CON:
-		{
-			atk_dam += 30;
-			break;
-		}
-		/*other bad effects - major*/
-		case RBE_PARALYZE:
-		case RBE_LOSE_ALL:
-		{
-			atk_dam += 40;
-			break;
-		}
-		/* Experience draining attacks */
-		case RBE_EXP_10:
-		case RBE_EXP_20:
-		{
-			/* change inspired by Eddie because exp is infinite */
-			atk_dam += 5;
-			break;
-		}
-		case RBE_EXP_40:
-		case RBE_EXP_80:
-		{
-			/* as above */
-			atk_dam += 10;
-			break;
-		}
-		/*Earthquakes*/
-		case RBE_SHATTER:
-		{
-			atk_dam += 300;
-			break;
-		}
-		/*nothing special*/
-		default: break;
-	}
-
-	return (atk_dam);
-}
-
-static long eval_max_dam(monster_race *r_ptr)
-{
-	int hp, rlev, i;
-	int melee_dam, atk_dam, spell_dam, breath_dam;
-	int dam = 1;
-
-	/*clear the counters*/
-	melee_dam = breath_dam = atk_dam = spell_dam = 0;
-
-	/* Evaluate average HP for this monster */
-	hp = r_ptr->avg_hp;
-
-	/* Extract the monster level, force 1 for town monsters */
-	rlev = ((r_ptr->level >= 1) ? r_ptr->level : 1);
-
-	/* Assume single resist for the elemental attacks */
-	if (rsf_has(r_ptr->spell_flags, RSF_BR_ACID))
-	{
-		breath_dam = (RES_ACID_ADJ(MIN(BR_ACID_MAX,
-			(hp / BR_ACID_DIVISOR)), MINIMISE));
-		if (spell_dam < breath_dam) spell_dam = breath_dam + 20;
-	}
-	if (rsf_has(r_ptr->spell_flags, RSF_BR_ELEC))
-	{
-		breath_dam = (RES_ELEC_ADJ(MIN(BR_ELEC_MAX, 
-			(hp / BR_ELEC_DIVISOR)), MINIMISE));
-		if (spell_dam < breath_dam) spell_dam = breath_dam + 10;
-	}
-	if (rsf_has(r_ptr->spell_flags, RSF_BR_FIRE))
-	{
-		breath_dam = (RES_FIRE_ADJ(MIN(BR_FIRE_MAX,
-			(hp / BR_FIRE_DIVISOR)), MINIMISE));
-		if (spell_dam < breath_dam) spell_dam = breath_dam + 10;
-	}
-	if (rsf_has(r_ptr->spell_flags, RSF_BR_COLD))
-	{
-		breath_dam = (RES_COLD_ADJ(MIN(BR_COLD_MAX,
-			(hp / BR_COLD_DIVISOR)), MINIMISE));
-		if (spell_dam < breath_dam) spell_dam = breath_dam + 10;
-	}
-	/* Same for poison, but lower damage cap */
-	if (rsf_has(r_ptr->spell_flags, RSF_BR_POIS))
-	{
-		breath_dam = (RES_POIS_ADJ(MIN(BR_POIS_MAX,
-			(hp / BR_POIS_DIVISOR)), MINIMISE));
-		if (spell_dam < breath_dam) spell_dam = (breath_dam * 5 / 4)
-			+ rlev;
-	}
-	/*
-	 * Same formula for the high resist attacks
-	 * (remember, we are assuming maximum resisted damage
-	 * so we *minimise* the resistance)
-	 * See also: melee2.c, spells1.c, constants.h
-	 */
-	if (rsf_has(r_ptr->spell_flags, RSF_BR_NETH))
-	{
-		breath_dam = (RES_NETH_ADJ(MIN(BR_NETH_MAX,
-			(hp / BR_NETH_DIVISOR)), MINIMISE));
-		if (spell_dam < breath_dam) spell_dam = breath_dam + 2000
-			/ (rlev + 1);
-	}
-	if (rsf_has(r_ptr->spell_flags, RSF_BR_CHAO))
-	{
-		breath_dam = (RES_CHAO_ADJ(MIN(BR_CHAO_MAX,
-			(hp / BR_CHAO_DIVISOR)), MINIMISE));
-		if (spell_dam < breath_dam) spell_dam = breath_dam + 2000
-			/ (rlev + 1);
-	}
-	if (rsf_has(r_ptr->spell_flags, RSF_BR_DISE))
-	{
-		breath_dam = (RES_DISE_ADJ(MIN(BR_DISE_MAX,
-			(hp / BR_DISE_DIVISOR)), MINIMISE));
-		if (spell_dam < breath_dam) spell_dam = breath_dam + 50;
-	}
-	if (rsf_has(r_ptr->spell_flags, RSF_BR_SHAR))
-	{
-		breath_dam = (RES_SHAR_ADJ(MIN(BR_SHAR_MAX,
-			(hp / BR_SHAR_DIVISOR)), MINIMISE));
-		if (spell_dam < breath_dam) spell_dam = (breath_dam * 5 / 4)
-			+ 5;
-	}
-	if (rsf_has(r_ptr->spell_flags, RSF_BR_LIGHT))
-	{
-		breath_dam = (RES_LIGHT_ADJ(MIN(BR_LIGHT_MAX,
-			(hp / BR_LIGHT_DIVISOR)), MINIMISE));
-		if (spell_dam < breath_dam) spell_dam = breath_dam + 10;
-	}
-	if (rsf_has(r_ptr->spell_flags, RSF_BR_DARK))
-	{
-		breath_dam = (RES_DARK_ADJ(MIN(BR_DARK_MAX,
-			(hp / BR_DARK_DIVISOR)), MINIMISE));
-		if (spell_dam < breath_dam) spell_dam = breath_dam + 10;
-	}
-	if (rsf_has(r_ptr->spell_flags, RSF_BR_CONF))
-	{
-		breath_dam = (RES_CONF_ADJ(MIN(BR_CONF_MAX,
-			(hp / BR_CONF_DIVISOR)), MINIMISE));
-		if (spell_dam < breath_dam) spell_dam = breath_dam + 20;
-	}
-	if (rsf_has(r_ptr->spell_flags, RSF_BR_SOUN))
-	{
-		breath_dam = (RES_SOUN_ADJ(MIN(BR_SOUN_MAX,
-			(hp / BR_SOUN_DIVISOR)), MINIMISE));
-		if (spell_dam < breath_dam) spell_dam = breath_dam + 20;
-	}
-	if (rsf_has(r_ptr->spell_flags, RSF_BR_NEXU))
-	{
-		breath_dam = (RES_NEXU_ADJ(MIN(BR_NEXU_MAX,
-			(hp / BR_NEXU_DIVISOR)), MINIMISE));
-		if (spell_dam < breath_dam) spell_dam = breath_dam + 20;
-	}
-	if (rsf_has(r_ptr->spell_flags, RSF_BR_TIME))
-	{
-		breath_dam = MIN(BR_TIME_MAX, (hp / BR_TIME_DIVISOR));
-		if (spell_dam < breath_dam) spell_dam = breath_dam + 2000 / (rlev + 1);
-	}
-	if (rsf_has(r_ptr->spell_flags, RSF_BR_INER))
-	{
-		breath_dam = MIN(BR_INER_MAX, (hp / BR_INER_DIVISOR));
-		if (spell_dam < breath_dam) spell_dam = breath_dam + 30;
-	}
-	if (rsf_has(r_ptr->spell_flags, RSF_BR_GRAV))
-	{
-		breath_dam = MIN(BR_GRAV_MAX, (hp / BR_GRAV_DIVISOR));
-		if (spell_dam < breath_dam) spell_dam = breath_dam + 30;
-	}
-	if (rsf_has(r_ptr->spell_flags, RSF_BR_PLAS))
-	{
-		breath_dam = MIN(BR_PLAS_MAX, (hp / BR_PLAS_DIVISOR));
-		if (spell_dam < breath_dam) spell_dam = breath_dam + 30;
-	}
-	if (rsf_has(r_ptr->spell_flags, RSF_BR_WALL))
-	{
-		breath_dam = MIN(BR_FORC_MAX, (hp / BR_FORC_DIVISOR));
-		if (spell_dam < breath_dam) spell_dam = breath_dam + 30;
-	}
-	/* Handle the attack spells, again assuming minimised single resists for max damage */
-	if (rsf_has(r_ptr->spell_flags, RSF_BA_ACID) && spell_dam < (RES_ACID_ADJ(BA_ACID_DMG(rlev, MAXIMISE), MINIMISE) + 20))
-		spell_dam = (RES_ACID_ADJ(BA_ACID_DMG(rlev, MAXIMISE), MINIMISE) + 20);
-	if (rsf_has(r_ptr->spell_flags, RSF_BA_ELEC) && spell_dam < (RES_ELEC_ADJ(BA_ELEC_DMG(rlev, MAXIMISE), MINIMISE) + 10))
-		spell_dam = (RES_ELEC_ADJ(BA_ELEC_DMG(rlev, MAXIMISE), MINIMISE) + 10);
-	if (rsf_has(r_ptr->spell_flags, RSF_BA_FIRE) && spell_dam < (RES_FIRE_ADJ(BA_FIRE_DMG(rlev, MAXIMISE), MINIMISE) + 10))
-		spell_dam = (RES_FIRE_ADJ(BA_FIRE_DMG(rlev, MAXIMISE), MINIMISE) + 10);
-	if (rsf_has(r_ptr->spell_flags, RSF_BA_COLD) && spell_dam < (RES_COLD_ADJ(BA_COLD_DMG(rlev, MAXIMISE), MINIMISE) + 10))
-		spell_dam = (RES_COLD_ADJ(BA_COLD_DMG(rlev, MAXIMISE), MINIMISE) + 10);
-	if (rsf_has(r_ptr->spell_flags, RSF_BA_POIS) && spell_dam < 8)
-		spell_dam = 8;
-	if (rsf_has(r_ptr->spell_flags, RSF_BA_NETH) && spell_dam < (RES_NETH_ADJ(BA_NETH_DMG(rlev, MAXIMISE), MINIMISE) + 2000 / (rlev + 1)))
-		spell_dam = (RES_NETH_ADJ(BA_NETH_DMG(rlev, MAXIMISE), MINIMISE) + 2000 / (rlev + 1));
-	if (rsf_has(r_ptr->spell_flags, RSF_BA_WATE) && spell_dam < (BA_WATE_DMG(rlev, MAXIMISE) + 20))
-		spell_dam = (BA_WATE_DMG(rlev, MAXIMISE) + 20);
-	if (rsf_has(r_ptr->spell_flags, RSF_BA_MANA) && spell_dam < (BA_MANA_DMG(rlev, MAXIMISE) + 100))
-		spell_dam = (BA_MANA_DMG(rlev, MAXIMISE) + 100);
-	if (rsf_has(r_ptr->spell_flags, RSF_BA_DARK) && spell_dam < (RES_DARK_ADJ(BA_DARK_DMG(rlev, MAXIMISE), MINIMISE) + 10))
-		spell_dam = (RES_DARK_ADJ(BA_DARK_DMG(rlev, MAXIMISE), MINIMISE) + 10);
-	/* Small annoyance value */
-	if (rsf_has(r_ptr->spell_flags, RSF_DRAIN_MANA) && spell_dam < 5)
-		spell_dam = 5;
-	/* For all attack forms the player can save against, spell_damage is halved */
-	if (rsf_has(r_ptr->spell_flags, RSF_MIND_BLAST) && spell_dam < (MIND_BLAST_DMG(rlev, MAXIMISE) / 2))
-		spell_dam = (MIND_BLAST_DMG(rlev, MAXIMISE) / 2);
-	if (rsf_has(r_ptr->spell_flags, RSF_BRAIN_SMASH) && spell_dam < (BRAIN_SMASH_DMG(rlev, MAXIMISE) / 2))
-		spell_dam = (BRAIN_SMASH_DMG(rlev, MAXIMISE) / 2);
-	if (rsf_has(r_ptr->spell_flags, RSF_CAUSE_1) && spell_dam < (CAUSE1_DMG(rlev, MAXIMISE) / 2))
-		spell_dam = (CAUSE1_DMG(rlev, MAXIMISE) / 2);
-	if (rsf_has(r_ptr->spell_flags, RSF_CAUSE_2) && spell_dam < (CAUSE2_DMG(rlev, MAXIMISE) / 2))
-		spell_dam = (CAUSE2_DMG(rlev, MAXIMISE) / 2);
-	if (rsf_has(r_ptr->spell_flags, RSF_CAUSE_3) && spell_dam < (CAUSE3_DMG(rlev, MAXIMISE) / 2))
-		spell_dam = (CAUSE3_DMG(rlev, MAXIMISE) / 2);
-	if (rsf_has(r_ptr->spell_flags, RSF_CAUSE_4) && spell_dam < (CAUSE4_DMG(rlev, MAXIMISE) / 2))
-		spell_dam = (CAUSE4_DMG(rlev, MAXIMISE) / 2);
-	if (rsf_has(r_ptr->spell_flags, RSF_BO_ACID) && spell_dam < (RES_ACID_ADJ(BO_ACID_DMG(rlev, MAXIMISE), MINIMISE) + 20))
-		spell_dam = (RES_ACID_ADJ(BO_ACID_DMG(rlev, MAXIMISE), MINIMISE) + 20);
-	if (rsf_has(r_ptr->spell_flags, RSF_BO_ELEC) && spell_dam < (RES_ELEC_ADJ(BO_ELEC_DMG(rlev, MAXIMISE), MINIMISE) + 10))
-		spell_dam = (RES_ELEC_ADJ(BO_ELEC_DMG(rlev, MAXIMISE), MINIMISE) + 10);
-	if (rsf_has(r_ptr->spell_flags, RSF_BO_FIRE) && spell_dam < (RES_FIRE_ADJ(BO_FIRE_DMG(rlev, MAXIMISE), MINIMISE) + 10))
-		spell_dam = (RES_FIRE_ADJ(BO_FIRE_DMG(rlev, MAXIMISE), MINIMISE) + 10);
-	if (rsf_has(r_ptr->spell_flags, RSF_BO_COLD) && spell_dam < (RES_COLD_ADJ(BO_COLD_DMG(rlev, MAXIMISE), MINIMISE) + 10))
-		spell_dam = (RES_COLD_ADJ(BO_COLD_DMG(rlev, MAXIMISE), MINIMISE) + 10);
-	if (rsf_has(r_ptr->spell_flags, RSF_BO_NETH) && spell_dam < (RES_NETH_ADJ(BO_NETH_DMG(rlev, MAXIMISE), MINIMISE) + 2000 / (rlev + 1)))
-		spell_dam = (RES_NETH_ADJ(BO_NETH_DMG(rlev, MAXIMISE), MINIMISE) + 2000 / (rlev + 1));
-	if (rsf_has(r_ptr->spell_flags, RSF_BO_WATE) && spell_dam < (BO_WATE_DMG(rlev, MAXIMISE) + 20))
-		spell_dam = (BO_WATE_DMG(rlev, MAXIMISE) + 20);
-	if (rsf_has(r_ptr->spell_flags, RSF_BO_MANA) && spell_dam < (BO_MANA_DMG(rlev, MAXIMISE)))
-		spell_dam = (BO_MANA_DMG(rlev, MAXIMISE));
-	if (rsf_has(r_ptr->spell_flags, RSF_BO_PLAS) && spell_dam < (BO_PLAS_DMG(rlev, MAXIMISE)))
-		spell_dam = (BO_PLAS_DMG(rlev, MAXIMISE));
-	if (rsf_has(r_ptr->spell_flags, RSF_BO_ICEE) && spell_dam < (RES_COLD_ADJ(BO_ICEE_DMG(rlev, MAXIMISE), MINIMISE)))
-		spell_dam = (RES_COLD_ADJ(BO_ICEE_DMG(rlev, MAXIMISE), MINIMISE));
-	if (rsf_has(r_ptr->spell_flags, RSF_MISSILE) && spell_dam < (MISSILE_DMG(rlev, MAXIMISE)))
-		spell_dam = (MISSILE_DMG(rlev, MAXIMISE));
-	/* Small annoyance value */
-	if (rsf_has(r_ptr->spell_flags, RSF_SCARE) && spell_dam < 5)
-		spell_dam = 5;
-	/* Somewhat higher annoyance values */
-	if (rsf_has(r_ptr->spell_flags, RSF_BLIND) && spell_dam < 10)
-		spell_dam = 8;
-	if (rsf_has(r_ptr->spell_flags, RSF_CONF) && spell_dam < 10)
-		spell_dam = 10;
-	/* A little more dangerous */
-	if (rsf_has(r_ptr->spell_flags, RSF_SLOW) && spell_dam < 15)
-		spell_dam = 15;
-	/* Quite dangerous at an early level */
-	if (rsf_has(r_ptr->spell_flags, RSF_HOLD) && spell_dam < 25)
-		spell_dam = 25;
-	/* Arbitrary values along similar lines from here on */
-	if (rsf_has(r_ptr->spell_flags, RSF_HASTE) && spell_dam < 70)
-		spell_dam = 70;
-	if (rsf_has(r_ptr->spell_flags, RSF_HEAL) && spell_dam < 30)
-		spell_dam = 30;
-	if (rsf_has(r_ptr->spell_flags, RSF_BLINK) && spell_dam < 5)
-		spell_dam = 15;
-	if (rsf_has(r_ptr->spell_flags, RSF_TELE_TO) && spell_dam < 25)
-		spell_dam = 25;
-	if (rsf_has(r_ptr->spell_flags, RSF_TELE_AWAY) && spell_dam < 25)
-		spell_dam = 25;
-	if (rsf_has(r_ptr->spell_flags, RSF_TELE_LEVEL) && spell_dam < 40)
-		spell_dam = 25;
-	if (rsf_has(r_ptr->spell_flags, RSF_DARKNESS) && spell_dam < 5)
-		spell_dam = 6;
-	if (rsf_has(r_ptr->spell_flags, RSF_TRAPS) && spell_dam < 10)
-		spell_dam = 5;
-	if (rsf_has(r_ptr->spell_flags, RSF_FORGET) && spell_dam < 25)
-		spell_dam = 5;
-	/* All summons are assigned arbitrary values */
-	/* Summon kin is more dangerous at deeper levels */
-	if (rsf_has(r_ptr->spell_flags, RSF_S_KIN) && spell_dam < rlev * 2)
-		spell_dam = rlev * 2;
-	/* Dangerous! */
-	if (rsf_has(r_ptr->spell_flags, RSF_S_HI_DEMON) && spell_dam < 250)
-		spell_dam = 250;
-	/* Somewhat dangerous */
-	if (rsf_has(r_ptr->spell_flags, RSF_S_MONSTER) && spell_dam < 40)
-		spell_dam = 40;
-	/* More dangerous */
-	if (rsf_has(r_ptr->spell_flags, RSF_S_MONSTERS) && spell_dam < 80)
-		spell_dam = 80;
-	/* Mostly just annoying */
-	if (rsf_has(r_ptr->spell_flags, RSF_S_ANIMAL) && spell_dam < 30)
-		spell_dam = 30;
-	if (rsf_has(r_ptr->spell_flags, RSF_S_SPIDER) && spell_dam < 20)
-		spell_dam = 20;
-	/* Can be quite dangerous */
-	if (rsf_has(r_ptr->spell_flags, RSF_S_HOUND) && spell_dam < 100)
-		spell_dam = 100;
-	/* Dangerous! */
-	if (rsf_has(r_ptr->spell_flags, RSF_S_HYDRA) && spell_dam < 150)
-		spell_dam = 150;
-	/* Can be quite dangerous */
-	if (rsf_has(r_ptr->spell_flags, RSF_S_ANGEL) && spell_dam < 150)
-		spell_dam = 150;
-	/* All of these more dangerous at higher levels */
-	if (rsf_has(r_ptr->spell_flags, RSF_S_DEMON) && spell_dam < (rlev * 3) / 2)
-		spell_dam = (rlev * 3) / 2;
-	if (rsf_has(r_ptr->spell_flags, RSF_S_UNDEAD) && spell_dam < (rlev * 3) / 2)
-		spell_dam = (rlev * 3) / 2;
-	if (rsf_has(r_ptr->spell_flags, RSF_S_DRAGON) && spell_dam < (rlev * 3) / 2)
-		spell_dam = (rlev * 3) / 2;
-	/* Extremely dangerous */
-	if (rsf_has(r_ptr->spell_flags, RSF_S_HI_UNDEAD) && spell_dam < 400)
-		spell_dam = 400;
-	/* Extremely dangerous */
-	if (rsf_has(r_ptr->spell_flags, RSF_S_HI_DRAGON) && spell_dam < 400)
-		spell_dam = 400;
-	/* Extremely dangerous */
-	if (rsf_has(r_ptr->spell_flags, RSF_S_WRAITH) && spell_dam < 450)
-		spell_dam = 450;
-	/* Most dangerous summon */
-	if (rsf_has(r_ptr->spell_flags, RSF_S_UNIQUE) && spell_dam < 500)
-		spell_dam = 500;
-
-	/* Hack - Apply over 10 rounds */
-	spell_dam *= 10;
-
-	/* Scale for frequency and availability of mana / ammo */
-	if (spell_dam)
-	{
-		int freq = r_ptr->freq_spell;
-
-			/* Hack -- always get 1 shot */
-			if (freq < 10) freq = 10;
-
-			/* Adjust for frequency */
-			spell_dam = spell_dam * freq / 100;
-	}
-
-	/* Check attacks */
-	for (i = 0; i < 4; i++)
-	{
-		/* Extract the attack infomation */
-		int effect = r_ptr->blow[i].effect;
-		int method = r_ptr->blow[i].method;
-		int d_dice = r_ptr->blow[i].d_dice;
-		int d_side = r_ptr->blow[i].d_side;
-
-		/* Hack -- no more attacks */
-		if (!method) continue;
-
-		/* Assume maximum damage*/
-		atk_dam = eval_blow_effect(effect, d_dice * d_side, r_ptr->level);
-
-		switch (method)
-		{
-				/*stun definitely most dangerous*/
-				case RBM_PUNCH:
-				case RBM_KICK:
-				case RBM_BUTT:
-				case RBM_CRUSH:
-				{
-					atk_dam *= 4;
-					atk_dam /= 3;
-					break;
-				}
-				/*cut*/
-				case RBM_CLAW:
-				case RBM_BITE:
-				{
-					atk_dam *= 7;
-					atk_dam /= 5;
-					break;
-				}
-				default: 
-				{
-					break;
-				}
-			}
-
-			/* Normal melee attack */
-			if (!rf_has(r_ptr->flags, RF_NEVER_BLOW))
-			{
-				/* Keep a running total */
-				melee_dam += atk_dam;
-			}
-	}
-
-		/* 
-		 * Apply damage over 10 rounds. We assume that the monster has to make contact first.
-		 * Hack - speed has more impact on melee as has to stay in contact with player.
-		 * Hack - this is except for pass wall and kill wall monsters which can always get to the player.
-		 * Hack - use different values for huge monsters as they strike out to range 2.
-		 */
-		if (flags_test(r_ptr->flags, RF_SIZE, RF_KILL_WALL, RF_PASS_WALL, FLAG_END))
-				melee_dam *= 10;
-		else
-		{
-			melee_dam = melee_dam * 3 + melee_dam * extract_energy[r_ptr->speed + (rsf_has(r_ptr->spell_flags, RSF_HASTE) ? 5 : 0)] / 7;
-		}
-
-		/*
-		 * Scale based on attack accuracy. We make a massive number of assumptions here and just use monster level.
-		 */
-		melee_dam = melee_dam * MIN(45 + rlev * 3, 95) / 100;
-
-		/* Hack -- Monsters that multiply ignore the following reductions */
-		if (!rf_has(r_ptr->flags, RF_MULTIPLY))
-		{
-			/*Reduce damamge potential for monsters that move randomly */
-			if (flags_test(r_ptr->flags, RF_SIZE, RF_RAND_25, RF_RAND_50, FLAG_END))
-			{
-				int reduce = 100;
-
-				if (rf_has(r_ptr->flags, RF_RAND_25)) reduce -= 25;
-				if (rf_has(r_ptr->flags, RF_RAND_50)) reduce -= 50;
-
-				/*even moving randomly one in 8 times will hit the player*/
-				reduce += (100 - reduce) / 8;
-
-				/* adjust the melee damage*/
-				melee_dam = (melee_dam * reduce) / 100;
-			}
-
-			/*monsters who can't move aren't nearly as much of a combat threat*/
-			if (rf_has(r_ptr->flags, RF_NEVER_MOVE))
-			{
-				if (rsf_has(r_ptr->spell_flags, RSF_TELE_TO) ||
-				    rsf_has(r_ptr->spell_flags, RSF_BLINK))
-				{
-					/* Scale for frequency */
-					melee_dam = melee_dam / 5 + 4 * melee_dam * r_ptr->freq_spell / 500;
-
-					/* Incorporate spell failure chance */
-					if (!rf_has(r_ptr->flags, RF_STUPID)) melee_dam = melee_dam / 5 + 4 * melee_dam * MIN(75 + (rlev + 3) / 4, 100) / 500;
-				}
-				else if (rf_has(r_ptr->flags, RF_INVISIBLE)) melee_dam /= 3;
-				else melee_dam /= 5;
-			}
-		}
-
-		/* But keep at a minimum */
-		if (melee_dam < 1) melee_dam = 1;
-
-	/*
-	 * Get the max damage attack
-	 */
-
-	if (dam < spell_dam) dam = spell_dam;
-	if (dam < melee_dam) dam = melee_dam;
-
-	r_ptr->highest_threat = dam;
-
-	/*
-	 * Adjust for speed.  Monster at speed 120 will do double damage,
-	 * monster at speed 100 will do half, etc.  Bonus for monsters who can haste self.
-	 */
-	dam = (dam * extract_energy[r_ptr->speed + (rsf_has(r_ptr->spell_flags, RSF_HASTE) ? 5 : 0)]) / 10;
-
-	/*
-	 * Adjust threat for speed -- multipliers are more threatening.
-	 */
-	if (rf_has(r_ptr->flags, RF_MULTIPLY))
-		r_ptr->highest_threat = (r_ptr->highest_threat * extract_energy[r_ptr->speed + (rsf_has(r_ptr->spell_flags, RSF_HASTE) ? 5 : 0)]) / 5;
-
-	/*
-	 * Adjust threat for friends.
-	 */
-	if (rf_has(r_ptr->flags, RF_FRIENDS))
-		r_ptr->highest_threat *= 2;
-	else if (rf_has(r_ptr->flags, RF_FRIEND))
-		r_ptr->highest_threat = r_ptr->highest_threat * 3 / 2;
-		
-	/*but deep in a minimum*/
-	if (dam < 1) dam  = 1;
-
-	/* We're done */
-	return (dam);
-}
-
-static long eval_hp_adjust(monster_race *r_ptr)
-{
-	long hp;
-	int resists = 1;
-	int hide_bonus = 0;
-
-	/* Get the monster base hitpoints */
-	hp = r_ptr->avg_hp;
-
-	/* Never moves with no ranged attacks - high hit points count for less */
-	if (rf_has(r_ptr->flags, RF_NEVER_MOVE) && !(r_ptr->freq_innate || r_ptr->freq_spell))
-	{
-		hp /= 2;
-		if (hp < 1) hp = 1;
-	}
-
-	/* Just assume healers have more staying power */
-	if (rsf_has(r_ptr->spell_flags, RSF_HEAL)) hp = (hp * 6) / 5;
-
-	/* Miscellaneous improvements */
-	if (rf_has(r_ptr->flags, RF_REGENERATE)) {hp *= 10; hp /= 9;}
-	if (rf_has(r_ptr->flags, RF_PASS_WALL)) {hp *= 3; hp /= 2;}
-
-	/* Calculate hide bonus */
-	if (rf_has(r_ptr->flags, RF_EMPTY_MIND)) hide_bonus += 2;
-	else
-	{
-		if (rf_has(r_ptr->flags, RF_COLD_BLOOD)) hide_bonus += 1;
-		if (rf_has(r_ptr->flags, RF_WEIRD_MIND)) hide_bonus += 1;
-	}
-
-	/* Invisibility */
-	if (rf_has(r_ptr->flags, RF_INVISIBLE))
-	{
-		hp = (hp * (r_ptr->level + hide_bonus + 1)) / MAX(1, r_ptr->level);
-	}
-
-	/* Monsters that can teleport are a hassle, and can easily run away */
-	if (flags_test(r_ptr->spell_flags, RSF_SIZE, RSF_TPORT, RSF_TELE_AWAY,
-	    RSF_TELE_LEVEL, FLAG_END))
-		hp = (hp * 6) / 5;
-
-	/*
- 	 * Monsters that multiply are tougher to kill
-	 */
-	if (rf_has(r_ptr->flags, RF_MULTIPLY)) hp *= 2;
-
-	/* Monsters with resistances are harder to kill.
-	   Therefore effective slays / brands against them are worth more. */
-	if (rf_has(r_ptr->flags, RF_IM_ACID)) resists += 2;
-	if (rf_has(r_ptr->flags, RF_IM_FIRE)) resists += 2;
-	if (rf_has(r_ptr->flags, RF_IM_COLD)) resists += 2;
-	if (rf_has(r_ptr->flags, RF_IM_ELEC)) resists += 2;
-	if (rf_has(r_ptr->flags, RF_IM_POIS)) resists += 2;
-
-	/* Bonus for multiple basic resists and weapon resists */
-	if (resists >= 12) resists *= 6;
-	else if (resists >= 10) resists *= 4;
-	else if (resists >= 8) resists *= 3;
-	else if (resists >= 6) resists *= 2;
-
-	/* If quite resistant, reduce resists by defense holes */
-	if (resists >= 6)
-	{
-		if (rf_has(r_ptr->flags, RF_HURT_ROCK)) resists -= 1;
-		if (!rf_has(r_ptr->flags, RF_NO_SLEEP)) resists -= 3;
-		if (!rf_has(r_ptr->flags, RF_NO_FEAR)) resists -= 2;
-		if (!rf_has(r_ptr->flags, RF_NO_CONF)) resists -= 2;
-		if (!rf_has(r_ptr->flags, RF_NO_STUN)) resists -= 1;
-
-		if (resists < 5) resists = 5;
-	}
-
-	/* If quite resistant, bonus for high resists */
-	if (resists >= 3)
-	{
-		if (rf_has(r_ptr->flags, RF_IM_WATER)) resists += 1;
-		if (rf_has(r_ptr->flags, RF_RES_NETH)) resists += 1;
-		if (rf_has(r_ptr->flags, RF_RES_NEXUS)) resists += 1;
-		if (rf_has(r_ptr->flags, RF_RES_DISE)) resists += 1;
-	}
-
-	/* Scale resists */
-	resists = resists * 25;
-
-	/* Monster resistances */
-	if (resists < (r_ptr->ac + resists) / 3)
-	{
-		hp += (hp * resists) / (150 + r_ptr->level); 	
-	}
-	else
-	{
-		hp += (hp * (r_ptr->ac + resists) / 3) / (150 + r_ptr->level); 			
-	}
-
-	/*boundry control*/
-	if (hp < 1) hp = 1;
-
-	return (hp);
-
-}
-
-errr eval_r_power(struct monster_race *races)
-{
-	int i, j;
-	byte lvl;
-	long hp, av_hp, av_dam;
-	long tot_hp[MAX_DEPTH];
-	long dam;
-	long *power;
-	long tot_dam[MAX_DEPTH];
-	long mon_count[MAX_DEPTH];
-	monster_race *r_ptr = NULL;
-
-	int iteration;
-
-	/* If we came here from the .raw file, the monster power data is already done */
-	/* Hack - use Morgy (#547) as the test case */
-	r_ptr = &races[547];
-	if (r_ptr->power)
-	{
-	     /*	msg_print("Monster power array already filled - returning."); */
-		return 0;
-	}
-
-	/* Allocate space for power */
-	power = C_ZNEW(z_info->r_max, long);
-
-
-for (iteration = 0; iteration < 3; iteration ++)
-{
-
-	/* Reset the sum of all monster power values */
-	tot_mon_power = 0;
-
-	/* Make sure all arrays start at zero */
-	for (i = 0; i < MAX_DEPTH; i++)
-	{
-		tot_hp[i] = 0;
-		tot_dam[i] = 0;
-		mon_count[i] = 0;
-	}
-
-	/*
-	 * Go through r_info and evaluate power ratings & flows.
-	 */
-	for (i = 0; i < z_info->r_max; i++)
-	{
-		/* Point at the "info" */
-		r_ptr = &races[i];
-
-		/*** Evaluate power ratings ***/
-
-		/* Set the current level */
-		lvl = r_ptr->level;
-
-		/* Maximum damage this monster can do in 10 game turns */
-		dam = eval_max_dam(r_ptr);
-
-		/* Adjust hit points based on resistances */
-		hp = eval_hp_adjust(r_ptr);
-
-		/* Hack -- set exp */
-		if (lvl == 0) r_ptr->mexp = 0L;
-		else
-		{
-			/* Compute depths of non-unique monsters */
-			if (!rf_has(r_ptr->flags, RF_UNIQUE))
-			{
-				long mexp = (hp * dam) / 25;
-				long threat = r_ptr->highest_threat;
-
-				/* Compute level algorithmically */
-				for (j = 1; (mexp > j + 4) || (threat > j + 5); mexp -= j * j, threat -= (j + 4), j++);
-
-				/* Set level */
-				lvl = MIN(( j > 250 ? 90 + (j - 250) / 20 : 	/* Level 90 and above */
-						(j > 130 ? 70 + (j - 130) / 6 :	/* Level 70 and above */
-						(j > 40 ? 40 + (j - 40) / 3 :	/* Level 40 and above */
-						j))), 99);
-
-				/* Set level */
-				if (arg_rebalance)
-					r_ptr->level = lvl;
-			}
-
-			if (arg_rebalance)
-			{
-				/* Hack -- for Ungoliant */
-				if (hp > 10000) r_ptr->mexp = (hp / 25) * (dam / lvl);
-				else r_ptr->mexp = (hp * dam) / (lvl * 25);
-
-				/* Round to 2 significant figures */
-				if (r_ptr->mexp > 100)
-				{
-					if (r_ptr->mexp < 1000) { r_ptr->mexp = (r_ptr->mexp + 5) / 10; r_ptr->mexp *= 10; }
-					else if (r_ptr->mexp < 10000) { r_ptr->mexp = (r_ptr->mexp + 50) / 100; r_ptr->mexp *= 100; }
-					else if (r_ptr->mexp < 100000) { r_ptr->mexp = (r_ptr->mexp + 500) / 1000; r_ptr->mexp *= 1000; }
-					else if (r_ptr->mexp < 1000000) { r_ptr->mexp = (r_ptr->mexp + 5000) / 10000; r_ptr->mexp *= 10000; }
-					else if (r_ptr->mexp < 10000000) { r_ptr->mexp = (r_ptr->mexp + 50000) / 100000; r_ptr->mexp *= 100000; }
-				}
-			}
-		}
-
-		/* If we're rebalancing, this is a nop, if not, we restore the orig value */
-		lvl = r_ptr->level;
-		if ((lvl) && (r_ptr->mexp < 1L)) r_ptr->mexp = 1L;
-
-		/*
-		 * Hack - We have to use an adjustment factor to prevent overflow.
-		 */
-		if (lvl >= 90)
-		{
-			hp /= 1000;
-			dam /= 1000;
-		}
-		else if (lvl >= 65)
-		{
-			hp /= 100;
-			dam /= 100;
-		}
-		else if (lvl >= 40)
-		{
-			hp /= 10;
-			dam /= 10;
-		}
-
-		/* Define the power rating */
-		power[i] = hp * dam;
-
-		/* Adjust for group monsters.  Average in-level group size is 5 */
-		if (rf_has(r_ptr->flags, RF_UNIQUE)) ;
-
-		else if (rf_has(r_ptr->flags, RF_FRIEND)) power[i] *= 2;
-
-		else if (rf_has(r_ptr->flags, RF_FRIENDS)) power[i] *= 5;
-
-		/* Adjust for multiplying monsters. This is modified by the speed,
-                 * as fast multipliers are much worse than slow ones. We also adjust for
-		 * ability to bypass walls or doors.
-                 */
-		if (rf_has(r_ptr->flags, RF_MULTIPLY))
-		{
-			if (flags_test(r_ptr->flags, RF_SIZE, RF_KILL_WALL, RF_PASS_WALL, FLAG_END))
-				power[i] = MAX(power[i], power[i] * extract_energy[r_ptr->speed
-					+ (rsf_has(r_ptr->spell_flags, RSF_HASTE) ? 5 : 0)]);
-			else if (flags_test(r_ptr->flags, RF_SIZE, RF_OPEN_DOOR, RF_BASH_DOOR, FLAG_END))
-				power[i] = MAX(power[i], power[i] *  extract_energy[r_ptr->speed
-					+ (rsf_has(r_ptr->spell_flags, RSF_HASTE) ? 5 : 0)] * 3 / 2);
-			else
-				power[i] = MAX(power[i], power[i] * extract_energy[r_ptr->speed
-					+ (rsf_has(r_ptr->spell_flags, RSF_HASTE) ? 5 : 0)] / 2);
-		}
-
-		/*
-		 * Update the running totals - these will be used as divisors later
-		 * Total HP / dam / count for everything up to the current level
-		 */
-		for (j = lvl; j < (lvl == 0 ? lvl + 1: MAX_DEPTH); j++)
-		{
-			int count = 10;
-
-			/*
-			 * Uniques don't count towards monster power on the level.
-			 */
-			if (rf_has(r_ptr->flags, RF_UNIQUE)) continue;
-
-			/*
-			 * Specifically placed monsters don't count towards monster power on the level.
-			 */
-			if (!(r_ptr->rarity)) continue;
-
-			/*
-			 * Hack -- provide adjustment factor to prevent overflow
-			 */
-			if ((j == 90) && (r_ptr->level < 90))
-			{
-				hp /= 10;
-				dam /= 10;
-			}
-
-			if ((j == 65) && (r_ptr->level < 65))
-			{
-				hp /= 10;
-				dam /= 10;
-			}
-
-			if ((j == 40) && (r_ptr->level < 40))
-			{
-				hp /= 10;
-				dam /= 10;
-			}
-
-			/*
-			 * Hack - if it's a group monster or multiplying monster, add several to the count
-			 * so that the averages don't get thrown off
-			 */
-
-			if (rf_has(r_ptr->flags, RF_FRIEND)) count = 20;
-			else if (rf_has(r_ptr->flags, RF_FRIENDS)) count = 50;
-
-			if (rf_has(r_ptr->flags, RF_MULTIPLY))
-			{
-				if (flags_test(r_ptr->flags, RF_SIZE, RF_KILL_WALL, RF_PASS_WALL, FLAG_END))
-					count = MAX(1, extract_energy[r_ptr->speed
-						+ (rsf_has(r_ptr->spell_flags, RSF_HASTE) ? 5 : 0)]) * count;
-				else if (flags_test(r_ptr->flags, RF_SIZE, RF_OPEN_DOOR, RF_BASH_DOOR, FLAG_END))
-					count = MAX(1, extract_energy[r_ptr->speed
-						+ (rsf_has(r_ptr->spell_flags, RSF_HASTE) ? 5 : 0)] * 3 / 2) * count;
-				else
-					count = MAX(1, extract_energy[r_ptr->speed
-						+ (rsf_has(r_ptr->spell_flags, RSF_HASTE) ? 5 : 0)] / 2) * count;
-			}
-
-			/*
-			 * Very rare monsters count less towards total monster power on the level.
-			 */
-			if (r_ptr->rarity > count)
-			{
-				hp = hp * count / r_ptr->rarity;
-				dam = dam * count / r_ptr->rarity;
-
-				count = r_ptr->rarity;
-			}
-
-			tot_hp[j] += hp;
-			tot_dam[j] += dam;
-
-			mon_count[j] += count / r_ptr->rarity;
-		}
-
-	}
-
-	/* Apply divisors now */
-	for (i = 0; i < z_info->r_max; i++)
-	{
-		int new_power;
-
-		/* Point at the "info" */
-		r_ptr = &races[i];
-
-		/* Extract level */
-		lvl = r_ptr->level;
-
-		/* Paranoia */
-		if (tot_hp[lvl] != 0 && tot_dam[lvl] != 0)
-		{
-			/* Divide by average HP and av damage for all in-level monsters */
-			/* Note we have factored in the above 'adjustment factor' */
-			av_hp = tot_hp[lvl] * 10 / mon_count[lvl];
-			av_dam = tot_dam[lvl] * 10 / mon_count[lvl];
-
-			/* XXX Justifiable paranoia - avoid divide by zero errors */
-			if (av_hp > 0) power[i] = power[i] / av_hp;
-			if (av_dam > 0) power[i] = power[i] / av_dam;
-
-			/* Assign monster power */
-			r_ptr->power = (s16b)power[i];
-
-			/* Never less than 1 */
-			if (r_ptr->power < 1) r_ptr->power = 1;
-
-			/* Get power */
-			new_power = r_ptr->power;
-
-			/* Compute rarity algorithmically */
-			for (j = 1; new_power > j; new_power -= j * j, j++);
-
-			/* Set rarity */
-			if (arg_rebalance)
-				r_ptr->rarity = j;
-		}
-	}
-
-}
-
-	/* Free power array */
-	FREE(power);
-
-	/* Success */
-	return(0);
-}
-
-static errr finish_parse_r(struct parser *p) {
-	struct monster_race *r, *n;
-	int i;
-
-	r_info = mem_zalloc(sizeof(*r) * z_info->r_max);
-	for (r = parser_priv(p); r; r = r->next) {
-		if (r->ridx >= z_info->r_max)
-			continue;
-		memcpy(&r_info[r->ridx], r, sizeof(*r));
-	}
-	eval_r_power(r_info);
-	for (i = 0; i < z_info->r_max; i++) {
-		tot_mon_power += r_info[i].power;
-	}
-
-	r = parser_priv(p);
-	while (r) {
-		n = r->next;
-		mem_free(r);
-		r = n;
-	}
-
-	parser_destroy(p);
-	return 0;
-}
-
-struct file_parser r_parser = {
-	"monster",
-	init_parse_r,
-	run_parse_r,
-	finish_parse_r
-};
-
+/* Parsing functions for prace.txt */
 static enum parser_error parse_p_n(struct parser *p) {
 	struct player_race *h = parser_priv(p);
 	struct player_race *r = mem_zalloc(sizeof *r);
@@ -2429,7 +1462,7 @@ static enum parser_error parse_p_i(struct parser *p) {
 	struct player_race *r = parser_priv(p);
 	if (!r)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	r->hist = parser_getint(p, "hist");
+	r->history = findchart(histories, parser_getuint(p, "hist"));
 	r->b_age = parser_getint(p, "b-age");
 	r->m_age = parser_getint(p, "m-age");
 	return PARSE_ERROR_NONE;
@@ -2532,7 +1565,7 @@ struct parser *init_parse_p(void) {
 	parser_reg(p, "S int str int int int wis int dex int con int chr", parse_p_s);
 	parser_reg(p, "R int dis int dev int sav int stl int srh int fos int thm int thb int throw int dig", parse_p_r);
 	parser_reg(p, "X int mhp int exp int infra", parse_p_x);
-	parser_reg(p, "I int hist int b-age int m-age", parse_p_i);
+	parser_reg(p, "I uint hist int b-age int m-age", parse_p_i);
 	parser_reg(p, "H int mbht int mmht int fbht int fmht", parse_p_h);
 	parser_reg(p, "W int mbwt int mmwt int fbwt int fmwt", parse_p_w);
 	parser_reg(p, "F ?str flags", parse_p_f);
@@ -2546,33 +1579,33 @@ static errr run_parse_p(struct parser *p) {
 }
 
 static errr finish_parse_p(struct parser *p) {
-	struct player_race *r, *n;
-
-	p_info = mem_zalloc(sizeof(*r) * z_info->p_max);
-	for (r = parser_priv(p); r; r = r->next) {
-		if (r->ridx >= z_info->p_max)
-			continue;
-		memcpy(&p_info[r->ridx], r, sizeof(*r));
-	}
-
-	r = parser_priv(p);
-	while (r) {
-		n = r->next;
-		mem_free(r);
-		r = n;
-	}
-
+	races = parser_priv(p);
 	parser_destroy(p);
 	return 0;
+}
+
+static void cleanup_p(void)
+{
+	struct player_race *p = races;
+	struct player_race *next;
+
+	while (p) {
+		next = p->next;
+		string_free((char *)p->name);
+		mem_free(p);
+		p = next;
+	}
 }
 
 struct file_parser p_parser = {
 	"p_race",
 	init_parse_p,
 	run_parse_p,
-	finish_parse_p
+	finish_parse_p,
+	cleanup_p
 };
 
+/* Parsing functions for pclass.txt */
 static enum parser_error parse_c_n(struct parser *p) {
 	struct player_class *h = parser_priv(p);
 	struct player_class *c = mem_zalloc(sizeof *c);
@@ -2705,7 +1738,7 @@ static enum parser_error parse_c_t(struct parser *p) {
 
 static enum parser_error parse_c_e(struct parser *p) {
 	struct player_class *c = parser_priv(p);
-	int i;
+	struct start_item *si;
 	int tval, sval;
 
 	if (!c)
@@ -2719,17 +1752,19 @@ static enum parser_error parse_c_e(struct parser *p) {
 	if (sval < 0)
 		return PARSE_ERROR_UNRECOGNISED_SVAL;
 
-	for (i = 0; i <= MAX_START_ITEMS; i++)
-		if (!c->start_items[i].min)
-			break;
-	if (i > MAX_START_ITEMS)
-		return PARSE_ERROR_TOO_MANY_ENTRIES;
-	c->start_items[i].kind = objkind_get(tval, sval);
-	c->start_items[i].min = parser_getuint(p, "min");
-	c->start_items[i].max = parser_getuint(p, "max");
-	/* XXX: MAX_ITEM_STACK? */
-	if (c->start_items[i].min > 99 || c->start_items[i].max > 99)
+	si = mem_zalloc(sizeof *si);
+	si->kind = objkind_get(tval, sval);
+	si->min = parser_getuint(p, "min");
+	si->max = parser_getuint(p, "max");
+
+	if (si->min > 99 || si->max > 99) {
+		mem_free(si->kind);
 		return PARSE_ERROR_INVALID_ITEM_NUMBER;
+	}
+
+	si->next = c->start_items;
+	c->start_items = si;
+
 	return PARSE_ERROR_NONE;
 }
 
@@ -2777,33 +1812,44 @@ static errr run_parse_c(struct parser *p) {
 }
 
 static errr finish_parse_c(struct parser *p) {
-	struct player_class *c, *n;
-
-	c_info = mem_zalloc(sizeof(*c) * z_info->c_max);
-	for (c = parser_priv(p); c; c = c->next) {
-		if (c->cidx >= z_info->c_max)
-			continue;
-		memcpy(&c_info[c->cidx], c, sizeof(*c));
-	}
-
-	c = parser_priv(p);
-	while (c) {
-		n = c->next;
-		mem_free(c);
-		c = n;
-	}
-
+	classes = parser_priv(p);
 	parser_destroy(p);
 	return 0;
+}
+
+static void cleanup_c(void)
+{
+	struct player_class *c = classes;
+	struct player_class *next;
+	struct start_item *item, *item_next;
+	int i;
+
+	while (c) {
+		next = c->next;
+		item = c->start_items;
+		while(item) {
+			item_next = item->next;
+			mem_free(item);
+			item = item_next;
+		}
+		for (i = 0; i < PY_MAX_LEVEL / 5; i++) {
+			string_free((char *)c->title[i]);
+		}
+		mem_free((char *)c->name);
+		mem_free(c);
+		c = next;
+	}
 }
 
 struct file_parser c_parser = {
 	"p_class",
 	init_parse_c,
 	run_parse_c,
-	finish_parse_c
+	finish_parse_c,
+	cleanup_c
 };
 
+/* Parsing functions for vault.txt */
 static enum parser_error parse_v_n(struct parser *p) {
 	struct vault *h = parser_priv(p);
 	struct vault *v = mem_zalloc(sizeof *v);
@@ -2858,53 +1904,60 @@ static errr run_parse_v(struct parser *p) {
 }
 
 static errr finish_parse_v(struct parser *p) {
-	struct vault *v, *n;
-
-	v_info = mem_zalloc(sizeof(*v) * z_info->v_max);
-	for (v = parser_priv(p); v; v = v->next) {
-		if (v->vidx >= z_info->v_max)
-			continue;
-		memcpy(&v_info[v->vidx], v, sizeof(*v));
-	}
-
-	v = parser_priv(p);
-	while (v) {
-		n = v->next;
-		mem_free(v);
-		v = n;
-	}
-
+	vaults = parser_priv(p);
 	parser_destroy(p);
 	return 0;
+}
+
+static void cleanup_v(void)
+{
+	struct vault *v, *next;
+	for (v = vaults; v; v = next) {
+		next = v->next;
+		mem_free(v->name);
+		mem_free(v->text);
+		mem_free(v);
+	}
 }
 
 struct file_parser v_parser = {
 	"vault",
 	init_parse_v,
 	run_parse_v,
-	finish_parse_v
+	finish_parse_v,
+	cleanup_v
 };
 
+/* Parsing functions for p_hist.txt */
 static enum parser_error parse_h_n(struct parser *p) {
-	struct history *oh = parser_priv(p);
-	struct history *h = mem_zalloc(sizeof *h);
+	struct history_chart *oc = parser_priv(p);
+	struct history_chart *c;
+	struct history_entry *e = mem_zalloc(sizeof *e);
+	unsigned int idx = parser_getuint(p, "chart");
+	
+	if (!(c = findchart(oc, idx))) {
+		c = mem_zalloc(sizeof *c);
+		c->next = oc;
+		c->idx = idx;
+		parser_setpriv(p, c);
+	}
 
-	h->chart = parser_getint(p, "chart");
-	h->next = parser_getint(p, "next");
-	h->roll = parser_getint(p, "roll");
-	h->bonus = parser_getint(p, "bonus");
-	h->nextp = oh;
-	h->hidx = oh ? oh->hidx + 1 : 0;
-	parser_setpriv(p, h);
+	e->isucc = parser_getint(p, "next");
+	e->roll = parser_getint(p, "roll");
+	e->bonus = parser_getint(p, "bonus");
+
+	e->next = c->entries;
+	c->entries = e;
 	return PARSE_ERROR_NONE;
 }
 
 static enum parser_error parse_h_d(struct parser *p) {
-	struct history *h = parser_priv(p);
+	struct history_chart *h = parser_priv(p);
 
 	if (!h)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	h->text = string_append(h->text, parser_getstr(p, "text"));
+	assert(h->entries);
+	h->entries->text = string_append(h->entries->text, parser_getstr(p, "text"));
 	return PARSE_ERROR_NONE;
 }
 
@@ -2912,7 +1965,7 @@ struct parser *init_parse_h(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 	parser_reg(p, "V sym version", ignored);
-	parser_reg(p, "N int chart int next int roll int bonus", parse_h_n);
+	parser_reg(p, "N uint chart int next int roll int bonus", parse_h_n);
 	parser_reg(p, "D str text", parse_h_d);
 	return p;
 }
@@ -2922,35 +1975,68 @@ static errr run_parse_h(struct parser *p) {
 }
 
 static errr finish_parse_h(struct parser *p) {
-	struct history *h, *n;
+	struct history_chart *c;
+	struct history_entry *e, *prev, *next;
+	histories = parser_priv(p);
 
-	h_info = mem_zalloc(sizeof(*h) * z_info->h_max);
-	for (h = parser_priv(p); h; h = h->nextp) {
-		if (h->hidx >= z_info->h_max) {
-			printf("warning: skipping bad history %d\n", h->hidx);
-			continue;
+	/* Go fix up the entry successor pointers. We can't compute them at
+	 * load-time since we may not have seen the successor history yet. Also,
+	 * we need to put the entries in the right order; the parser actually
+	 * stores them backwards, which is not desirable.
+	 */
+	for (c = histories; c; c = c->next) {
+		e = c->entries;
+		prev = NULL;
+		while (e) {
+			next = e->next;
+			e->next = prev;
+			prev = e;
+			e = next;
 		}
-		memcpy(&h_info[h->hidx], h, sizeof(*h));
-	}
-
-	h = parser_priv(p);
-	while (h) {
-		n = h->nextp;
-		mem_free(h);
-		h = n;
+		c->entries = prev;
+		for (e = c->entries; e; e = e->next) {
+			if (!e->isucc)
+				continue;
+			e->succ = findchart(histories, e->isucc);
+			if (!e->succ) {
+				return -1;
+			}
+		}
 	}
 
 	parser_destroy(p);
-	return PARSE_ERROR_NONE;
+	return 0;
+}
+
+static void cleanup_h(void)
+{
+	struct history_chart *c, *next_c;
+	struct history_entry *e, *next_e;
+
+	c = histories;
+	while (c) {
+		next_c = c->next;
+		e = c->entries;
+		while (e) {
+			next_e = e->next;
+			mem_free(e->text);
+			mem_free(e);
+			e = next_e;
+		}
+		mem_free(c);
+		c = next_c;
+	}
 }
 
 struct file_parser h_parser = {
 	"p_hist",
 	init_parse_h,
 	run_parse_h,
-	finish_parse_h
+	finish_parse_h,
+	cleanup_h
 };
 
+/* Parsing functions for flavor.txt */
 static enum parser_error parse_flavor_n(struct parser *p) {
 	struct flavor *h = parser_priv(p);
 	struct flavor *f = mem_zalloc(sizeof *f);
@@ -3012,34 +2098,35 @@ static errr run_parse_flavor(struct parser *p) {
 }
 
 static errr finish_parse_flavor(struct parser *p) {
-	struct flavor *f, *n;
-
-	flavor_info = mem_zalloc(z_info->flavor_max * sizeof(*f));
-
-	for (f = parser_priv(p); f; f = f->next) {
-		if (f->fidx >= z_info->flavor_max)
-			continue;
-		memcpy(&flavor_info[f->fidx], f, sizeof(*f));
-	}
-
-	f = parser_priv(p);
-	while (f) {
-		n = f->next;
-		mem_free(f);
-		f = n;
-	}
-
+	flavors = parser_priv(p);
 	parser_destroy(p);
 	return 0;
+}
+
+static void cleanup_flavor(void)
+{
+	struct flavor *f, *next;
+
+	f = flavors;
+	while(f) {
+		next = f->next;
+		/* Hack - scrolls get randomly-generated names */
+		if (f->tval != TV_SCROLL)
+			mem_free(f->text);
+		mem_free(f);
+		f = next;
+	}
 }
 
 struct file_parser flavor_parser = {
 	"flavor",
 	init_parse_flavor,
 	run_parse_flavor,
-	finish_parse_flavor
+	finish_parse_flavor,
+	cleanup_flavor
 };
 
+/* Parsing functions for spell.txt */
 static enum parser_error parse_s_n(struct parser *p) {
 	struct spell *s = mem_zalloc(sizeof *s);
 	s->next = parser_priv(p);
@@ -3090,64 +2177,45 @@ static errr run_parse_s(struct parser *p) {
 }
 
 static errr finish_parse_s(struct parser *p) {
-	struct spell *s, *n;
+	struct spell *s, *n, *ss;
+	struct object_kind *k;
 
 	s_info = mem_zalloc(z_info->s_max * sizeof(*s_info));
-	for (s = parser_priv(p); s; s = s->next) {
+	for (s = parser_priv(p); s; s = n) {
+		n = s->next;
 		if (s->sidx >= z_info->s_max)
 			continue;
-		memcpy(&s_info[s->sidx], s, sizeof(*s));
-	}
-
-	s = parser_priv(p);
-	while (s) {
-		n = s->next;
+		ss = &s_info[s->sidx];
+		memcpy(ss, s, sizeof(*s));
+		k = objkind_get(s->tval, s->sval);
+		if (k) {
+			ss->next = k->spells;
+			k->spells = ss;
+		}
 		mem_free(s);
-		s = n;
 	}
 
 	parser_destroy(p);
 	return 0;
 }
 
+static void cleanup_s(void)
+{
+	int idx;
+	for (idx = 0; idx < z_info->s_max; idx++) {
+		string_free(s_info[idx].name);
+		mem_free(s_info[idx].text);
+	}
+	mem_free(s_info);
+}
+
 static struct file_parser s_parser = {
 	"spell",
 	init_parse_s,
 	run_parse_s,
-	finish_parse_s
+	finish_parse_s,
+	cleanup_s
 };
-
-/*
- * Initialize the "spell_list" array
- */
-static void init_books(void)
-{
-	byte realm, sval, snum;
-	u16b spell;
-
-	/* Since not all slots in all books are used, initialize to -1 first */
-	for (realm = 0; realm < MAX_REALMS; realm++)
-	{
-		for (sval = 0; sval < BOOKS_PER_REALM; sval++)
-		{
-			for (snum = 0; snum < SPELLS_PER_BOOK; snum++)
-			{
-				spell_list[realm][sval][snum] = -1;
-			}
-		}
-	}
-
-	/* Place each spell in its own book */
-	for (spell = 0; spell < z_info->s_max; spell++)
-	{
-		/* Get the spell */
-		spell_type *s_ptr = &s_info[spell];
-
-		/* Put it in the book */
-		spell_list[s_ptr->realm][s_ptr->sval][s_ptr->snum] = spell;
-	}
-}
-
 
 /* Initialise hints */
 static enum parser_error parse_hint(struct parser *p) {
@@ -3177,26 +2245,291 @@ static errr finish_parse_hints(struct parser *p) {
 	return 0;
 }
 
+static void cleanup_hints(void)
+{
+	struct hint *h, *next;
+
+	h = hints;
+	while(h) {
+		next = h->next;
+		string_free(h->hint);
+		mem_free(h);
+		h = next;
+	}
+}
+
 static struct file_parser hints_parser = {
 	"hints",
 	init_parse_hints,
 	run_parse_hints,
 	finish_parse_hints,
+	cleanup_hints
+};
+
+/* Initialise monster pain messages */
+static enum parser_error parse_mp_n(struct parser *p) {
+	struct monster_pain *h = parser_priv(p);
+	struct monster_pain *mp = mem_zalloc(sizeof *mp);
+	mp->next = h;
+	mp->pain_idx = parser_getuint(p, "index");
+	parser_setpriv(p, mp);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_mp_m(struct parser *p) {
+	struct monster_pain *mp = parser_priv(p);
+	int i;
+
+	if (!mp)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	for (i = 0; i < 7; i++)
+		if (!mp->messages[i])
+			break;
+	if (i == 7)
+		return PARSE_ERROR_TOO_MANY_ENTRIES;
+	mp->messages[i] = string_make(parser_getstr(p, "message"));
+	return PARSE_ERROR_NONE;
+}
+
+struct parser *init_parse_mp(void) {
+	struct parser *p = parser_new();
+	parser_setpriv(p, NULL);
+
+	parser_reg(p, "N uint index", parse_mp_n);
+	parser_reg(p, "M str message", parse_mp_m);
+	return p;
+}
+
+static errr run_parse_mp(struct parser *p) {
+	return parse_file(p, "pain");
+}
+
+static errr finish_parse_mp(struct parser *p) {
+	struct monster_pain *mp, *n;
+		
+	pain_messages = mem_zalloc(sizeof(*mp) * z_info->mp_max);
+	for (mp = parser_priv(p); mp; mp = mp->next) {
+		if (mp->pain_idx >= z_info->mp_max)
+			continue;
+		memcpy(&pain_messages[mp->pain_idx], mp, sizeof(*mp));
+	}
+	
+	mp = parser_priv(p);
+	while (mp) {
+		n = mp->next;
+		mem_free(mp);
+		mp = n;
+	}
+	
+	parser_destroy(p);
+	return 0;
+}
+
+static void cleanup_mp(void)
+{
+	int idx, i;
+	for (idx = 0; idx < z_info->mp_max; idx++) {
+		for (i = 0; i < 7; i++) {
+			string_free((char *)pain_messages[idx].messages[i]);
+		}
+	}
+	mem_free(pain_messages);
+}
+
+struct file_parser mp_parser = {
+	"pain messages",
+	init_parse_mp,
+	run_parse_mp,
+	finish_parse_mp,
+	cleanup_mp
 };
 
 
-/*** Initialize others ***/
+/*
+ * Initialize monster pits
+ */
 
-static void autoinscribe_init(void)
-{
-	if (inscriptions)
-		FREE(inscriptions);
- 
-	inscriptions = 0;
-	inscriptions_count = 0;
-
-	inscriptions = C_ZNEW(AUTOINSCRIPTIONS_MAX, autoinscription);
+static enum parser_error parse_pit_n(struct parser *p) {
+	struct pit_profile *h = parser_priv(p);
+	struct pit_profile *pit = mem_zalloc(sizeof *pit);
+	pit->next = h;
+	pit->pit_idx = parser_getuint(p, "index");
+	pit->name = string_make(parser_getstr(p, "name"));	
+	parser_setpriv(p, pit);
+	return PARSE_ERROR_NONE;
 }
+
+static enum parser_error parse_pit_r(struct parser *p) {
+	struct pit_profile *pit = parser_priv(p);
+
+	if (!pit)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	pit->room_type = parser_getuint(p, "type");
+	return PARSE_ERROR_NONE;
+}
+static enum parser_error parse_pit_a(struct parser *p) {
+	struct pit_profile *pit = parser_priv(p);
+
+	if (!pit)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	pit->rarity = parser_getuint(p, "rarity");
+	pit->ave = parser_getuint(p, "level");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_pit_o(struct parser *p) {
+	struct pit_profile *pit = parser_priv(p);
+
+	if (!pit)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	pit->obj_rarity = parser_getuint(p, "obj_rarity");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_pit_t(struct parser *p) {
+	struct pit_profile *pit = parser_priv(p);
+	monster_base *base = lookup_monster_base(parser_getsym(p, "base"));
+
+	if (!pit)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	else if (pit->n_bases == MAX_RVALS)
+		return PARSE_ERROR_TOO_MANY_ENTRIES;
+	else if (!base)
+		return PARSE_ERROR_UNRECOGNISED_TVAL;
+	else {
+		pit->base[pit->n_bases++] = base;
+		return PARSE_ERROR_NONE;		
+	}
+}
+
+static enum parser_error parse_pit_f(struct parser *p) {
+	struct pit_profile *pit = parser_priv(p);
+	char *flags;
+	char *s;
+
+	if (!pit)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	if (!parser_hasval(p, "flags"))
+		return PARSE_ERROR_NONE;
+	flags = string_make(parser_getstr(p, "flags"));
+	s = strtok(flags, " |");
+	while (s) {
+		if (grab_flag(pit->flags, RF_SIZE, r_info_flags, s)) {
+			mem_free(flags);
+			return PARSE_ERROR_INVALID_FLAG;
+		}
+		s = strtok(NULL, " |");
+	}
+	
+	mem_free(flags);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_pit_s(struct parser *p) {
+	struct pit_profile *pit = parser_priv(p);
+	char *flags;
+	char *s;
+
+	if (!pit)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	if (!parser_hasval(p, "spells"))
+		return PARSE_ERROR_NONE;
+	flags = string_make(parser_getstr(p, "spells"));
+	s = strtok(flags, " |");
+	while (s) {
+		if (grab_flag(pit->spell_flags, RSF_SIZE, r_info_spell_flags, s)) {
+			mem_free(flags);
+			return PARSE_ERROR_INVALID_FLAG;
+		}
+		s = strtok(NULL, " |");
+	}
+	
+	mem_free(flags);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_pit_s2(struct parser *p) {
+	struct pit_profile *pit = parser_priv(p);
+	char *flags;
+	char *s;
+
+	if (!pit)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	if (!parser_hasval(p, "spells"))
+		return PARSE_ERROR_NONE;
+	flags = string_make(parser_getstr(p, "spells"));
+	s = strtok(flags, " |");
+	while (s) {
+		if (grab_flag(pit->forbidden_spell_flags, RSF_SIZE, r_info_spell_flags, s)) {
+			mem_free(flags);
+			return PARSE_ERROR_INVALID_FLAG;
+		}
+		s = strtok(NULL, " |");
+	}
+	
+	mem_free(flags);
+	return PARSE_ERROR_NONE;
+}
+struct parser *init_parse_pit(void) {
+	struct parser *p = parser_new();
+	parser_setpriv(p, NULL);
+
+	parser_reg(p, "N uint index str name", parse_pit_n);
+	parser_reg(p, "R uint type", parse_pit_r);
+	parser_reg(p, "A uint rarity uint level", parse_pit_a);
+	parser_reg(p, "O uint obj_rarity", parse_pit_o);
+	parser_reg(p, "T sym base", parse_pit_t);
+	parser_reg(p, "F ?str flags", parse_pit_f);
+	parser_reg(p, "S ?str spells", parse_pit_s);
+	parser_reg(p, "s ?str spells", parse_pit_s2);
+	return p;
+}
+
+static errr run_parse_pit(struct parser *p) {
+	return parse_file(p, "pit");
+}
+ 
+static errr finish_parse_pit(struct parser *p) {
+	struct pit_profile *pit, *n;
+		
+	pit_info = mem_zalloc(sizeof(*pit) * z_info->pit_max);
+	for (pit = parser_priv(p); pit; pit = pit->next) {
+		if (pit->pit_idx >= z_info->pit_max)
+			continue;
+		memcpy(&pit_info[pit->pit_idx], pit, sizeof(*pit));
+	}
+	
+	pit = parser_priv(p);
+	while (pit) {
+		n = pit->next;
+		mem_free(pit);
+		pit = n;
+	}
+	
+	parser_destroy(p);
+	return 0;
+}
+
+static void cleanup_pits(void)
+{
+	int idx;
+	for (idx = 0; idx < z_info->pit_max; idx++) {
+		string_free((char *)pit_info[idx].name);
+	}
+	mem_free(pit_info);
+}
+
+struct file_parser pit_parser = {
+	"pits",
+	init_parse_pit,
+	run_parse_pit,
+	finish_parse_pit,
+	cleanup_pits
+};
+
 
 
 /*
@@ -3209,14 +2542,10 @@ static errr init_other(void)
 
 	/*** Prepare the various "bizarre" arrays ***/
 
-	/* Initialize the "macro" package */
-	(void)macro_init();
-
 	/* Initialize the "quark" package */
 	(void)quarks_init();
 
 	/* Initialize squelch things */
-	autoinscribe_init();
 	squelch_init();
 	textui_knowledge_init();
 
@@ -3226,33 +2555,13 @@ static errr init_other(void)
 	/*** Prepare grid arrays ***/
 
 	/* Array of grids */
-	view_g = C_ZNEW(VIEW_MAX, u16b);
-
-	/* Array of grids */
 	temp_g = C_ZNEW(TEMP_MAX, u16b);
 
-	/* Hack -- use some memory twice */
-	temp_y = ((byte*)(temp_g)) + 0;
-	temp_x = ((byte*)(temp_g)) + TEMP_MAX;
+	cave = cave_new();
 
-
-	/*** Prepare dungeon arrays ***/
-
-	/* Padded into array */
-	cave_info = C_ZNEW(DUNGEON_HGT, byte_256);
-	cave_info2 = C_ZNEW(DUNGEON_HGT, byte_256);
-
-	/* Feature array */
-	cave_feat = C_ZNEW(DUNGEON_HGT, byte_wid);
-
-	/* Entity arrays */
-	cave_o_idx = C_ZNEW(DUNGEON_HGT, s16b_wid);
-	cave_m_idx = C_ZNEW(DUNGEON_HGT, s16b_wid);
-
-	/* Flow arrays */
-	cave_cost = C_ZNEW(DUNGEON_HGT, byte_wid);
-	cave_when = C_ZNEW(DUNGEON_HGT, byte_wid);
-
+	/* Array of stacked monster messages */
+	mon_msg = C_ZNEW(MAX_STORED_MON_MSG, monster_race_message);
+	mon_message_hist = C_ZNEW(MAX_STORED_MON_CODES, monster_message_history);
 
 	/*** Prepare "vinfo" array ***/
 
@@ -3263,11 +2572,7 @@ static errr init_other(void)
 	/*** Prepare entity arrays ***/
 
 	/* Objects */
-	o_list = C_ZNEW(z_info->o_max, object_type);
-
-	/* Monsters */
-	mon_list = C_ZNEW(z_info->m_max, monster_type);
-
+	objects_init();
 
 	/*** Prepare lore array ***/
 
@@ -3501,7 +2806,99 @@ static errr init_alloc(void)
 	return (0);
 }
 
+/*
+ * Initialise just the internal arrays.
+ * This should be callable by the test suite, without relying on input, or
+ * anything to do with a user or savefiles.
+ *
+ * Assumption: Paths are set up correctly before calling this function.
+ */
+void init_arrays(void)
+{
+	/* Initialize size info */
+	event_signal_string(EVENT_INITSTATUS, "Initializing array sizes...");
+	if (run_parser(&z_parser)) quit("Cannot initialize sizes");
 
+	/* Initialize feature info */
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (features)");
+	if (run_parser(&f_parser)) quit("Cannot initialize features");
+
+	/* Initialize object base info */
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (object bases)");
+	if (run_parser(&kb_parser)) quit("Cannot initialize object bases");
+
+	/* Initialize object info */
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (objects)");
+	if (run_parser(&k_parser)) quit("Cannot initialize objects");
+
+	/* Initialize ego-item info */
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (ego-items)");
+	if (run_parser(&e_parser)) quit("Cannot initialize ego-items");
+
+	/* Initialize artifact info */
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (artifacts)");
+	if (run_parser(&a_parser)) quit("Cannot initialize artifacts");
+
+	/* Initialize monster pain messages */
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (pain messages)");
+	if (run_parser(&mp_parser)) quit("Cannot initialize monster pain messages");
+
+	/* Initialize monster-base info */
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (monster bases)");
+	if (run_parser(&rb_parser)) quit("Cannot initialize monster bases");
+	
+	/* Initialize monster info */
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (monsters)");
+	if (run_parser(&r_parser)) quit("Cannot initialize monsters");
+
+	/* Initialize monster pits */
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (monster pits)");
+	if (run_parser(&pit_parser)) quit("Cannot initialize monster pits");
+
+	/* Initialize feature info */
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (vaults)");
+	if (run_parser(&v_parser)) quit("Cannot initialize vaults");
+
+	/* Initialize history info */
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (histories)");
+	if (run_parser(&h_parser)) quit("Cannot initialize histories");
+
+	/* Initialize race info */
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (races)");
+	if (run_parser(&p_parser)) quit("Cannot initialize races");
+
+	/* Initialize class info */
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (classes)");
+	if (run_parser(&c_parser)) quit("Cannot initialize classes");
+
+	/* Initialize flavor info */
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (flavors)");
+	if (run_parser(&flavor_parser)) quit("Cannot initialize flavors");
+
+	/* Initialize spell info */
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (spells)");
+	if (run_parser(&s_parser)) quit("Cannot initialize spells");
+
+	/* Initialize hint text */
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (hints)");
+	if (run_parser(&hints_parser)) quit("Cannot initialize hints");
+
+	/* Initialise store stocking data */
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (store stocks)");
+	store_init();
+
+	/* Initialise random name data */
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (random names)");
+	if (run_parser(&names_parser)) quit("Can't parse names");
+
+	/* Initialize some other arrays */
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (other)");
+	if (init_other()) quit("Cannot initialize other stuff");
+
+	/* Initialize some other arrays */
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (alloc)");
+	if (init_alloc()) quit("Cannot initialize alloc stuff");
+}
 
 /*
  * Hack -- main Angband initialization entry point
@@ -3538,7 +2935,7 @@ static errr init_alloc(void)
  * including everything that was once done by "init_some_arrays".
  *
  * This initialization involves the parsing of special files
- * in the "lib/data" and sometimes the "lib/edit" directories.
+ * in the "lib/edit" directories.
  *
  * Note that the "template" files are initialized first, since they
  * often contain errors.  This means that macros and message recall
@@ -3556,78 +2953,7 @@ bool init_angband(void)
 
 
 	/*** Initialize some arrays ***/
-
-	/* Initialize size info */
-	event_signal_string(EVENT_INITSTATUS, "Initializing array sizes...");
-	if (run_parser(&z_parser)) quit("Cannot initialize sizes");
-
-	/* Initialize feature info */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (features)");
-	if (run_parser(&f_parser)) quit("Cannot initialize features");
-
-	/* Initialize object info */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (objects)");
-	if (run_parser(&k_parser)) quit("Cannot initialize objects");
-
-	/* Initialize ego-item info */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (ego-items)");
-	if (run_parser(&e_parser)) quit("Cannot initialize ego-items");
-
-	/* Initialize monster info */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (monsters)");
-	if (run_parser(&r_parser)) quit("Cannot initialize monsters");
-
-	/* Initialize artifact info */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (artifacts)");
-	if (run_parser(&a_parser)) quit("Cannot initialize artifacts");
-
-	/* Initialize feature info */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (vaults)");
-	if (run_parser(&v_parser)) quit("Cannot initialize vaults");
-
-	/* Initialize history info */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (histories)");
-	if (run_parser(&h_parser)) quit("Cannot initialize histories");
-
-	/* Initialize race info */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (races)");
-	if (run_parser(&p_parser)) quit("Cannot initialize races");
-
-	/* Initialize class info */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (classes)");
-	if (run_parser(&c_parser)) quit("Cannot initialize classes");
-
-	/* Initialize flavor info */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (flavors)");
-	if (run_parser(&flavor_parser)) quit("Cannot initialize flavors");
-
-	/* Initialize spell info */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (spells)");
-	if (run_parser(&s_parser)) quit("Cannot initialize spells");
-
-	/* Initialize hint text */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (hints)");
-	if (run_parser(&hints_parser)) quit("Cannot initialize hints");
-
-	/* Initialize spellbook info */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (spellbooks)");
-	init_books();
-
-	/* Initialise store stocking data */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (store stocks)");
-	store_init();
-
-	/* Initialise random name data */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (random names)");
-	if (run_parser(&names_parser)) quit("Can't parse names");
-
-	/* Initialize some other arrays */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (other)");
-	if (init_other()) quit("Cannot initialize other stuff");
-
-	/* Initialize some other arrays */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (alloc)");
-	if (init_alloc()) quit("Cannot initialize alloc stuff");
+	init_arrays();
 
 	/*** Load default user pref files ***/
 
@@ -3635,13 +2961,22 @@ bool init_angband(void)
 	event_signal_string(EVENT_INITSTATUS, "Loading basic user pref file...");
 
 	/* Process that file */
-	(void)process_pref_file("pref.prf", FALSE);
+	(void)process_pref_file("pref.prf", FALSE, FALSE);
 
 	/* Done */
 	event_signal_string(EVENT_INITSTATUS, "Initialization complete");
 
 	/* Sneakily init command list */
 	cmd_init();
+
+#ifdef ALLOW_BORG /* apw */
+	/* Allow the screensaver to do its work  */
+	if (screensaver)
+	{
+		event_signal(EVENT_LEAVE_INIT);
+		return !file_exists(savefile);
+	}
+#endif /* ALLOW_BORG */
 
 	/* Ask for a "command" until we get one we like. */
 	while (1)
@@ -3666,79 +3001,67 @@ bool init_angband(void)
 	}
 }
 
-
 void cleanup_angband(void)
 {
-	int i;
-
-
 	/* Free the macros */
-	macro_free();
-
-	/* Free the macro triggers */
-	macro_trigger_free();
+	keymap_free();
 
 	/* Free the allocation tables */
 	free_obj_alloc();
 	FREE(alloc_ego_table);
 	FREE(alloc_race_table);
 
-	if (store)
-	{
-		/* Free the store inventories */
-		for (i = 0; i < MAX_STORES; i++)
-		{
-			/* Get the store */
-			store_type *st_ptr = &store[i];
-
-			/* Free the store inventory */
-			FREE(st_ptr->stock);
-			FREE(st_ptr->table);
-		}
-	}
-
+	event_remove_all_handlers();
 
 	/* Free the stores */
-	FREE(store);
+	if (stores) free_stores();
 
 	/* Free the quest list */
 	FREE(q_list);
 
+	button_free();
 	FREE(p_ptr->inventory);
 
 	/* Free the lore, monster, and object lists */
 	FREE(l_list);
-	FREE(mon_list);
-	FREE(o_list);
-
-	/* Flow arrays */
-	FREE(cave_when);
-	FREE(cave_cost);
-
-	/* Free the cave */
-	FREE(cave_o_idx);
-	FREE(cave_m_idx);
-	FREE(cave_feat);
-	FREE(cave_info2);
-	FREE(cave_info);
-
-	/* Free the "update_view()" array */
-	FREE(view_g);
+	objects_destroy();
 
 	/* Free the temp array */
 	FREE(temp_g);
 
+	cave_free(cave);
+
+	/* Free the stacked monster messages */
+	FREE(mon_msg);
+	FREE(mon_message_hist);
+
 	/* Free the messages */
 	messages_free();
+
+	/* Free the history */
+	history_clear();
 
 	/* Free the "quarks" */
 	quarks_free();
 
-	mem_free(k_info);
-	mem_free(a_info);
-	mem_free(e_info);
-	mem_free(r_info);
-	mem_free(c_info);
+	cleanup_parser(&k_parser);
+	cleanup_parser(&kb_parser);
+	cleanup_parser(&a_parser);
+	cleanup_parser(&names_parser);
+	cleanup_parser(&r_parser);
+	cleanup_parser(&rb_parser);
+	cleanup_parser(&f_parser);
+	cleanup_parser(&e_parser);
+	cleanup_parser(&p_parser);
+	cleanup_parser(&c_parser);
+	cleanup_parser(&v_parser);
+	cleanup_parser(&h_parser);
+	cleanup_parser(&flavor_parser);
+	cleanup_parser(&s_parser);
+	cleanup_parser(&hints_parser);
+	cleanup_parser(&mp_parser);
+	cleanup_parser(&pit_parser);
+	cleanup_parser(&z_parser);
 
 	/* Free the format() buffer */
 	vformat_kill();
@@ -3753,4 +3076,9 @@ void cleanup_angband(void)
 	string_free(ANGBAND_DIR_PREF);
 	string_free(ANGBAND_DIR_USER);
 	string_free(ANGBAND_DIR_XTRA);
+
+	string_free(ANGBAND_DIR_XTRA_FONT);
+	string_free(ANGBAND_DIR_XTRA_GRAF);
+	string_free(ANGBAND_DIR_XTRA_SOUND);
+	string_free(ANGBAND_DIR_XTRA_ICON);
 }

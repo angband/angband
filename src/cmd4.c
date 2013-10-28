@@ -19,12 +19,12 @@
  */
 
 #include "angband.h"
+#include "buildid.h"
 #include "cave.h"
 #include "cmds.h"
 #include "externs.h"
 #include "files.h"
 #include "history.h"
-#include "macro.h"
 #include "object/tvalsval.h"
 #include "option.h"
 #include "prefs.h"
@@ -93,7 +93,7 @@ void do_cmd_redraw(void)
 	Term_clear();
 
 	/* Hack -- update */
-	handle_stuff();
+	handle_stuff(p_ptr);
 
 	/* Place the cursor on the player */
 	if (0 != character_dungeon)
@@ -118,11 +118,12 @@ void do_cmd_redraw(void)
  */
 void do_cmd_change_name(void)
 {
-	ui_event_data ke;
-
+	ui_event ke;
 	int mode = 0;
 
-	cptr p;
+	const char *p;
+
+	bool more = TRUE;
 
 	/* Prompt */
 	p = "['c' to change name, 'f' to file, 'h' to change mode, or ESC]";
@@ -131,7 +132,7 @@ void do_cmd_change_name(void)
 	screen_save();
 
 	/* Forever */
-	while (1)
+	while (more)
 	{
 		/* Display the player */
 		display_player(mode);
@@ -142,61 +143,54 @@ void do_cmd_change_name(void)
 		/* Query */
 		ke = inkey_ex();
 
-		/* Exit */
-		if (ke.key == ESCAPE) break;
+		if (ke.type == EVT_KBRD) {
+			switch (ke.key.code) {
+				case ESCAPE: more = FALSE; break;
+				case 'c': {
+					char namebuf[32] = "";
 
-		/* Change name */
-		if (ke.key == 'c' ||
-			(ke.mousey == 2 && ke.mousex < 26))
-		{
-			char namebuf[32] = "";
+					if (get_name(namebuf, sizeof namebuf))
+					{
+						/* Set player name */
+						my_strcpy(op_ptr->full_name, namebuf,
+								  sizeof(op_ptr->full_name));
 
-			if (get_name(namebuf, sizeof namebuf))
-			{
-				/* Set player name */
-				my_strcpy(op_ptr->full_name, namebuf,
-						  sizeof(op_ptr->full_name));
+						/* Don't change savefile name. */
+						process_player_name(FALSE);
+					}
+					break;
+				}
 
-				/* Don't change savefile name. */
-				process_player_name(FALSE);
+				case 'f': {
+					char buf[1024];
+					char fname[80];
+
+					strnfmt(fname, sizeof fname, "%s.txt", op_ptr->base_name);
+
+					if (get_file(fname, buf, sizeof buf))
+					{
+						if (file_character(buf, FALSE) != 0)
+							msg("Character dump failed!");
+						else
+							msg("Character dump successful.");
+					}
+					break;
+				}
+				
+				case 'h':
+				case ARROW_LEFT:
+				case ' ':
+					mode = (mode + 1) % INFO_SCREENS;
+					break;
+
+				case 'l':
+				case ARROW_RIGHT:
+					mode = (mode - 1) % INFO_SCREENS;
+					break;
 			}
-		}
-
-		/* File dump */
-		else if (ke.key == 'f')
-		{
-			char buf[1024];
-			char fname[80];
-
-			strnfmt(fname, sizeof fname, "%s.txt", op_ptr->base_name);
-
-			if (get_file(fname, buf, sizeof buf))
-			{
-				if (file_character(buf, FALSE) != 0)
-					msg_print("Character dump failed!");
-				else
-					msg_print("Character dump successful.");
-			}
-		}
-
-		/* Toggle mode */
-		else if (ke.key == 'h' || ke.key == ARROW_LEFT ||
-				ke.key == ' ' || ke.type == EVT_MOUSE)
-		{
+		} else if (ke.type == EVT_MOUSE) {
+			/* Just flip through the screens */			
 			mode = (mode + 1) % INFO_SCREENS;
-		}
-
-		/* Toggle mode */
-		else if ((ke.key == 'l') || ke.key == ARROW_RIGHT)
-		{
-			mode = (mode - 1) % INFO_SCREENS;
-		}
-
-
-		/* Oops */
-		else
-		{
-			bell(NULL);
 		}
 
 		/* Flush messages */
@@ -235,7 +229,9 @@ void do_cmd_message_one(void)
  */
 void do_cmd_messages(void)
 {
-	ui_event_data ke;
+	ui_event ke;
+
+	bool more = TRUE;
 
 	int i, j, n, q;
 	int wid, hgt;
@@ -260,7 +256,7 @@ void do_cmd_messages(void)
 	screen_save();
 
 	/* Process requests until done */
-	while (1)
+	while (more)
 	{
 		/* Clear screen */
 		Term_clear();
@@ -318,96 +314,69 @@ void do_cmd_messages(void)
 
 
 		/* Scroll forwards or backwards using mouse clicks */
-		if (ke.type == EVT_MOUSE)
-		{
-			/* Go older if legal */
-			if (ke.mousey <= hgt / 2)
-			{
+		if (ke.type == EVT_MOUSE) {
+			if (ke.mouse.y <= hgt / 2) {
+				/* Go older if legal */
 				if (i + 20 < n)
 					i += 20;
-			}
-
-			/* Go newer (if able) */
-			else
-			{
+			} else {
+				/* Go newer */
 				i = (i >= 20) ? (i - 20) : 0;
 			}
+		} else if (ke.type == EVT_KBRD) {
+			switch (ke.key.code) {
+				case ESCAPE: {
+					more = FALSE;
+					break;
+				}
+
+				case '=': {
+					/* Get the string to find */
+					prt("Find: ", hgt - 1, 0);
+					if (!askfor_aux(shower, sizeof shower, NULL)) continue;
+		
+					/* Set to find */
+					ke.key.code = '-';
+					break;
+				}
+
+				case ARROW_LEFT:
+				case '4':
+					q = (q >= wid / 2) ? (q - wid / 2) : 0;
+					break;
+
+				case ARROW_RIGHT:
+				case '6':
+					q = q + wid / 2;
+					break;
+
+				case ARROW_UP:
+				case '8':
+					if (i + 1 < n) i += 1;
+					break;
+
+				case ARROW_DOWN:
+				case '2':
+				case '\r':
+				case '\n':
+					i = (i >= 1) ? (i - 1) : 0;
+					break;
+
+				case KC_PGUP:
+				case 'p':
+				case ' ':
+					if (i + 20 < n) i += 20;
+					break;
+
+				case KC_PGDOWN:
+				case 'n':
+					i = (i >= 20) ? (i - 20) : 0;
+					break;
+			}
 		}
-
-		/* Exit on Escape */
-		else if (ke.key == ESCAPE)
-		{
-			break;
-		}
-
-		/* Find text */
-		else if (ke.key == '=')
-		{
-			/* Get the string to find */
-			prt("Find: ", hgt - 1, 0);
-			if (!askfor_aux(shower, sizeof shower, NULL)) continue;
-
-			/* Set to find */
-			ke.key = '-';
-		}
-
-		/* Horizontal scroll */
-		else if (ke.key == '4' || ke.key == ARROW_LEFT)
-		{
-			/* Scroll left */
-			q = (q >= wid / 2) ? (q - wid / 2) : 0;
-
-			/* Success */
-			continue;
-		}
-
-		/* Horizontal scroll */
-		else if (ke.key == '6'|| ke.key == ARROW_RIGHT)
-		{
-			/* Scroll right */
-			q = q + wid / 2;
-
-			/* Success */
-			continue;
-		}
-
-		/* Recall 1 older message */
-		else if (ke.key == '8' || ke.key == ARROW_UP)
-		{
-			/* Go older if legal */
-			if (i + 1 < n) i += 1;
-		}
-
-		/* Recall 1 newer messages */
-		else if (ke.key == '2' || ke.key == ARROW_DOWN || ke.key == '\r' || ke.key == '\n')
-		{
-			/* Go newer (if able) */
-			i = (i >= 1) ? (i - 1) : 0;
-		}
-
-		/* Recall 20 older messages */
-		else if ((ke.key == 'p') || (ke.key == KTRL('P')) || (ke.key == ' '))
-		{
-			/* Go older if legal */
-			if (i + 20 < n) i += 20;
-		}
-
-		/* Recall 20 newer messages */
-		else if ((ke.key == 'n') || (ke.key == KTRL('N')))
-		{
-			/* Go newer (if able) */
-			i = (i >= 20) ? (i - 20) : 0;
-		}
-
-		/* Error time */
-		else
-		{
-			bell(NULL);
-		}
-
 
 		/* Find the next item */
-		if (ke.key == '-' && shower[0])
+		if (ke.key.code == '-' && shower[0])
 		{
 			s16b z;
 
@@ -437,27 +406,40 @@ void do_cmd_messages(void)
 
 /*** Non-knowledge/option stuff ***/
 
-/*
- * Note something in the message recall
+/**
+ * Record the player's thoughts as a note.
+ *
+ * This both displays the note back to the player and adds it to the game log.
+ * Two fancy note types are supported: notes beginning with "/say" will be
+ * written as 'Frodo says: "____"', and notes beginning with "/me" will
+ * be written as 'Frodo ____'.
  */
-void do_cmd_note(void)
-{
-	char tmp[80];
-
-	/* Default */
+void do_cmd_note(void) {
+	/* Allocate/Initialize strings to get and format user input. */
+	char tmp[200];
+	char note[220];
 	my_strcpy(tmp, "", sizeof(tmp));
+	my_strcpy(note, "", sizeof(note));
 
-	/* Input */
-	if (!get_string("Note: ", tmp, 80)) return;
+	/* Read a line of input from the user */
+	if (!get_string("Note: ", tmp, sizeof(tmp))) return;
 
 	/* Ignore empty notes */
 	if (!tmp[0] || (tmp[0] == ' ')) return;
 
-	/* Add the note to the message recall */
-	msg_format("Note: %s", tmp);
+	/* Format the note correctly, supporting some cute /me commands */
+	if (strncmp(tmp, "/say ", 5) == 0)
+		strnfmt(note, sizeof(note), "-- %s says: \"%s\"", op_ptr->full_name, &tmp[5]);
+	else if (strncmp(tmp, "/me", 3) == 0)
+		strnfmt(note, sizeof(note), "-- %s%s", op_ptr->full_name, &tmp[3]);
+	else
+		strnfmt(note, sizeof(note), "-- Note: %s", tmp);
+
+	/* Display the note (omitting the "-- " prefix) */
+	msg(&note[3]);
 
 	/* Add a history entry */
-	history_add(tmp, HISTORY_USER_INPUT, 0);
+	history_add(note, HISTORY_USER_INPUT, 0);
 }
 
 
@@ -467,8 +449,7 @@ void do_cmd_note(void)
 void do_cmd_version(void)
 {
 	/* Silly message */
-	msg_format("You are playing %s %s.  Type '?' for more info.",
-		       VERSION_NAME, VERSION_STRING);
+	msg("You are playing %s.  Type '?' for more info.", buildver);
 }
 
 
@@ -490,48 +471,104 @@ void do_cmd_pref(void)
 }
 
 
-
 /*
- * Array of feeling strings
+ * Array of feeling strings for object feelings.
+ * Keep strings at 36 or less characters to keep the
+ * combined feeling on one row.
  */
-static const char *feeling_text[] =
+static const char *obj_feeling_text[] =
 {
 	"Looks like any other level.",
-	"You feel there is something special here...",
-	"You have a superb feeling about this level.",
-	"You have an excellent feeling...",
-	"You have a very good feeling...",
-	"You have a good feeling...",
-	"You feel a little lucky.",
-	"You are unsure about this place.",
-	"This place seems reasonably safe.",
-	"This seems a quiet, peaceful place.",
-	"This place looks uninteresting.",
+	"you sense an item of wondrous power!",
+	"there are superb treasures here.",
+	"there are excellent treasures here.",
+	"there are very good treasures here.",
+	"there are good treasures here.",
+	"there may be something worthwhile here.",
+	"there may not be much interesting here.",
+	"there aren't many treasures here.",
+	"there are only scraps of junk here.",
+	"there are naught but cobwebs here."
 };
 
+/*
+ * Array of feeling strings for monster feelings.
+ * Keep strings at 36 or less characters to keep the
+ * combined feeling on one row.
+ */
+static const char *mon_feeling_text[] =
+{
+	/* first string is just a place holder to 
+	 * maintain symmetry with obj_feeling.
+	 */
+	"You are still uncertain about this place",
+	"Omens of death haunt this place",
+	"This place seems murderous",
+	"This place seems terribly dangerous",
+	"You feel anxious about this place",
+	"You feel nervous about this place",
+	"This place does not seem too risky",
+	"This place seems reasonably safe",
+	"This seems a tame, sheltered place",
+	"This seems a quiet, peaceful place"
+};
 
 /*
- * Note that "feeling" is set to zero unless some time has passed.
- * Note that this is done when the level is GENERATED, not entered.
+ * Display the feeling.  Players always get a monster feeling.
+ * Object feelings are delayed until the player has explored some
+ * of the level.
  */
-void do_cmd_feeling(void)
-{
-	/* Don't show feelings for cold-hearted characters */
-	if (OPT(adult_no_feelings)) return;
 
-	/* Verify the feeling */
-	if (feeling >= N_ELEMENTS(feeling_text))
-		feeling = N_ELEMENTS(feeling_text) - 1;
+void display_feeling(bool obj_only)
+{
+	u16b obj_feeling = cave->feeling / 10;
+	u16b mon_feeling = cave->feeling - (10 * obj_feeling);
+	const char *join;
+
+	/* Don't show feelings for cold-hearted characters */
+	if (OPT(birth_no_feelings)) return;
 
 	/* No useful feeling in town */
-	if (!p_ptr->depth)
-	{
-		msg_print("Looks like a typical town.");
+	if (!p_ptr->depth) {
+		msg("Looks like a typical town.");
 		return;
 	}
+	
+	/* Display only the object feeling when it's first discovered. */
+	if (obj_only){
+		msg("You feel that %s", obj_feeling_text[obj_feeling]);
+		return;
+	}
+	
+	/* Players automatically get a monster feeling. */
+	if (cave->feeling_squares < FEELING1){
+		msg("%s.", mon_feeling_text[mon_feeling]);
+		return;
+	}
+	
+	/* Verify the feelings */
+	if (obj_feeling >= N_ELEMENTS(obj_feeling_text))
+		obj_feeling = N_ELEMENTS(obj_feeling_text) - 1;
+
+	if (mon_feeling >= N_ELEMENTS(mon_feeling_text))
+		mon_feeling = N_ELEMENTS(mon_feeling_text) - 1;
+
+	/* Decide the conjunction */
+	if ((mon_feeling <= 5 && obj_feeling > 6) ||
+			(mon_feeling > 5 && obj_feeling <= 6))
+		join = ", yet";
+	else
+		join = ", and";
 
 	/* Display the feeling */
-	msg_print(feeling_text[feeling]);
+	msg("%s%s %s", mon_feeling_text[mon_feeling], join,
+		obj_feeling_text[obj_feeling]);
+}
+
+
+void do_cmd_feeling(void)
+{
+	display_feeling(FALSE);
 }
 
 
@@ -628,7 +665,7 @@ void do_cmd_load_screen(void)
 
 
 	/* Message */
-	msg_print("Screen dump loaded.");
+	msg("Screen dump loaded.");
 	message_flush();
 
 
@@ -714,7 +751,7 @@ static void do_cmd_save_screen_text(void)
 
 
 	/* Message */
-	msg_print("Screen dump saved.");
+	msg("Screen dump saved.");
 	message_flush();
 
 
@@ -754,7 +791,7 @@ static void do_cmd_save_screen_html(int mode)
 	/* Check for failure */
 	if (!fff)
 	{
-		msg_print("Screen dump failed.");
+		msg("Screen dump failed.");
 		message_flush();
 		return;
 	}
@@ -772,11 +809,11 @@ static void do_cmd_save_screen_html(int mode)
 
 	/* Recover current graphics settings */
 	reset_visuals(TRUE);
-	process_pref_file(file_name, TRUE);
+	process_pref_file(file_name, TRUE, FALSE);
 	file_delete(file_name);
 	do_cmd_redraw();
 
-	msg_print("HTML screen dump saved.");
+	msg("HTML screen dump saved.");
 	message_flush();
 }
 
@@ -786,29 +823,14 @@ static void do_cmd_save_screen_html(int mode)
  */
 void do_cmd_save_screen(void)
 {
-	msg_print("Dump type [(t)ext; (h)tml; (f)orum embedded html]:");
+	char ch;
+	ch = get_char("Dump as (T)ext, (H)TML, or (F)orum text? ", "thf", 3, ' ');
 
-	while (TRUE)
+	switch (ch)
 	{
-		char c = inkey();
-
-		switch (c)
-		{
-			case ESCAPE:
-				return;
-
-			case 't':
-				do_cmd_save_screen_text();
-				return;
-
-			case 'h':
-				do_cmd_save_screen_html(0);
-				return;
-
-			case 'f':
-				do_cmd_save_screen_html(1);
-				return;
-		}
+		case 't': do_cmd_save_screen_text(); break;
+		case 'h': do_cmd_save_screen_html(0); break;
+		case 'f': do_cmd_save_screen_html(1); break;
 	}
 }
 

@@ -1,0 +1,110 @@
+# D: lines are default values
+
+# N: tvalname
+# B: breakage chance when thrown
+# F: default flags
+
+D:B:10
+
+N:spike:Spike~
+B:25
+
+N:chest:Chest~
+F:HATES_ACID | HATES_FIRE
+
+N:shot:Shot~
+B:25
+F:SHOW_DICE | SHOW_MODS
+
+N:arrow:Arrow~
+B:35
+F:HATES_ACID | HATES_FIRE
+F:SHOW_DICE | SHOW_MODS
+
+N:bolt:Bolt~
+B:25
+F:HATES_ACID
+F:SHOW_DICE | SHOW_MODS
+
+N:bow:Bow~
+F:HATES_ACID | HATES_FIRE
+F:SHOW_MULT | SHOW_MODS
+
+N:digger:Digger~
+F:SHOW_DICE | SHOW_MODS
+
+N:hafted:Hafted weapon~
+F:HATES_ACID | HATES_FIRE
+F:SHOW_DICE | SHOW_MODS
+
+N:polearm:Polearm~
+F:HATES_ACID | HATES_FIRE
+F:SHOW_DICE | SHOW_MODS
+
+N:sword:Bladed weapon~
+F:HATES_ACID
+F:SHOW_DICE | SHOW_MODS
+
+N:boots:Boot~
+F:HATES_ACID | HATES_FIRE
+
+N:gloves:Glove~
+F:HATES_ACID | HATES_FIRE
+
+N:helm:Helm~
+F:HATES_ACID
+
+N:crown:Crown~
+F:HATES_ACID
+
+N:shield:Shield~
+F:HATES_ACID
+
+N:cloak:Cloak~
+F:HATES_ACID | HATES_FIRE
+
+N:soft armor:Soft Armor~
+F:HATES_ACID | HATES_FIRE
+
+N:hard armor:Hard Armor~
+F:HATES_ACID
+
+N:dragon armor:Dragon Armor~
+
+N:light:Light~
+B:50
+F:HATES_FIRE
+
+N:amulet:Amulet~
+
+N:ring:Ring~
+F:HATES_ELEC
+
+N:staff:Staff~
+F:HATES_ACID | HATES_FIRE
+
+N:wand:Wand~
+F:HATES_ELEC
+
+N:rod:Rod~
+F:HATES_ELEC
+
+N:scroll:Scroll~
+F:HATES_ACID | HATES_FIRE
+
+N:potion:Potion~
+B:100
+F:HATES_COLD
+
+N:flask:Flask~
+B:100
+F:HATES_COLD
+
+N:food:Food
+B:100
+
+N:magic book:Magic Book~
+F:HATES_FIRE
+
+N:prayer book:Prayer Book~
+F:HATES_FIRE

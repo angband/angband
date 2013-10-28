@@ -8,7 +8,14 @@ OBJECTS = $(ANGFILES) $(ZFILES)
 SRCS    = ${OBJECTS:.o=.c} ${MAINFILES:.o=.c}
 SUBDIRS = gtk monster object player
 PROG    = angband
-CFLAGS += -I. -std=c99 -Wdeclaration-after-statement
+VERSION := $(shell ../scripts/version.sh)
+CFLAGS += -DBUILD_ID=${VERSION} -I. -std=c99 -Wdeclaration-after-statement -O0
+
+# gcov intermediate data
+GCOBJS = $(OBJECTS:.o=.gcno) $(OBJECTS:.o=.gcda)
+GCOVS = $(OBJECTS:.o=.c.gcov)
+
+export CFLAGS LDFLAGS
 
 angband: angband.o $(MAINFILES)
 	$(CC) -o angband angband.o $(MAINFILES) $(LDFLAGS) $(LDADD)
@@ -18,15 +25,38 @@ angband.o: $(OBJECTS)
 	$(LD) -r -o $@ $(OBJECTS)
 	@printf "%10s %-20s\n" LINK $@
 
-clean: test-clean
+clean:: test-clean
+	-rm -f angband.o
+	-rm -f angband.exe
+	-rm -f win/angband.res
 
 clean-extra:
-	-rm autoconf.h
+	-rm -f autoconf.h
 
-tests:
+tests: angband.o
 	$(MAKE) -C tests all
 
 test-clean:
 	$(MAKE) -C tests clean
 
-.PHONY : tests
+splint:
+	splint -f .splintrc ${OBJECTS:.o=.c} main.c main-gcu.c
+
+clean-coverage:
+	rm -f tests/ran-already
+	rm -f $(GCOVS) $(GCOBJS)
+
+coverage: CFLAGS+=-fprofile-arcs -ftest-coverage
+coverage: LDFLAGS+=-lgcov
+coverage: clean-coverage clean gen-covs
+
+tests/ran-already : tests
+	touch $@
+
+gen-covs: tests/ran-already $(GCOVS)
+	./gen-coverage $(GCOVS)
+
+%.gcov: %
+	(gcov -o $(dir $^) -p $^ >/dev/null)
+
+.PHONY : tests coverage clean-coverage tests/ran-already

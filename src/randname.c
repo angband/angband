@@ -16,6 +16,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
+#include "randname.h"
 
 /* Markers for the start and end of words. */
 #define S_WORD 26
@@ -30,10 +31,10 @@ typedef unsigned short name_probs[S_WORD+1][S_WORD+1][TOTAL+1];
  * The array of names should have a NULL entry at the end of the list.
  * It relies on the ASCII character set (through use of A2I).
  */
-static void build_prob(name_probs probs, cptr *learn)
+static void build_prob(name_probs probs, const char **learn)
 {
 	int c_prev, c_cur, c_next;
-	cptr ch;
+	const char *ch;
 	int i;
 
 	/* Build raw frequencies */
@@ -86,7 +87,7 @@ size_t randname_make(randname_type name_type, size_t min, size_t max, char *word
 	   Frankly, we could probably regenerate every time. */
 	if (cached_type != name_type)
 	{
-		cptr *wordlist = NULL;
+		const char **wordlist = NULL;
 
 		wordlist = sections[name_type];
 

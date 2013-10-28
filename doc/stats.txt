@@ -1,0 +1,8 @@
+The stats generation code aims to make it easy to analyze object generation,
+monster generation, and other Angband processes suitable for Monte Carlo
+simulation. The supplied perl script (run-stats) repeatedly invokes the 
+angband executable with the stats pseudo-visual module. Each call initializes
+a player, walks her down the dungeon, and, for each dungeon level between one
+and ninety-nine, kills all the monsters on the generated map and dumps 
+information about the monsters and objects therein. The perl script then
+collects this information and outputs statistics about it as desired.

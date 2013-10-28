@@ -18,17 +18,18 @@ cmd_code cmd_lookup(unsigned char key);
 void do_cmd_uninscribe(cmd_code code, cmd_arg args[]);
 void do_cmd_inscribe(cmd_code code, cmd_arg args[]);
 void do_cmd_takeoff(cmd_code code, cmd_arg args[]);
+void wield_item(object_type *o_ptr, int item, int slot);
 void do_cmd_wield(cmd_code code, cmd_arg args[]);
 void do_cmd_drop(cmd_code code, cmd_arg args[]);
+void do_cmd_destroy(cmd_code code, cmd_arg args[]);
 void do_cmd_use(cmd_code code, cmd_arg args[]);
 void do_cmd_refill(cmd_code code, cmd_arg args[]);
 void do_cmd_study_spell(cmd_code code, cmd_arg args[]);
 void do_cmd_cast(cmd_code code, cmd_arg args[]);
 void do_cmd_study_book(cmd_code code, cmd_arg args[]);
 
-void textui_obj_inscribe(object_type *o_ptr, int item);
-void textui_obj_examine(object_type *o_ptr, int item);
-void textui_obj_wield(object_type *o_ptr, int item);
+/* cmd1.c */
+int do_autopickup(void);
 
 /* cmd2.c */
 void do_cmd_go_up(cmd_code code, cmd_arg args[]);
@@ -48,6 +49,7 @@ void do_cmd_run(cmd_code code, cmd_arg args[]);
 void do_cmd_pathfind(cmd_code code, cmd_arg args[]);
 void do_cmd_hold(cmd_code code, cmd_arg args[]);
 void do_cmd_pickup(cmd_code code, cmd_arg args[]);
+void do_cmd_autopickup(cmd_code code, cmd_arg args[]);
 void do_cmd_rest(cmd_code code, cmd_arg args[]);
 void do_cmd_suicide(cmd_code code, cmd_arg args[]);
 void do_cmd_save_game(cmd_code code, cmd_arg args[]);
@@ -59,12 +61,9 @@ void textui_cmd_suicide(void);
 /* cmd3.c */
 void do_cmd_inven(void);
 void do_cmd_equip(void);
-void wield_item(object_type *o_ptr, int item, int slot);
-void wield_combine_ammo(object_type *o_ptr, int item, int slot);
-void do_cmd_destroy(cmd_code code, cmd_arg args[]);
 void textui_cmd_destroy(void);
-void refill_lamp(object_type *j_ptr, object_type *o_ptr, int item);
-void refuel_torch(object_type *j_ptr, object_type *o_ptr, int item);
+void textui_cmd_toggle_ignore(void);
+void textui_obj_examine(void);
 void do_cmd_target(void);
 void do_cmd_target_closest(void);
 void do_cmd_look(void);
@@ -79,9 +78,11 @@ extern void do_cmd_change_name(void);
 extern void do_cmd_message_one(void);
 extern void do_cmd_messages(void);
 extern void do_cmd_options(void);
+extern void do_cmd_options_birth(void);
 extern void do_cmd_pref(void);
 extern void do_cmd_note(void);
 extern void do_cmd_version(void);
+extern void display_feeling(bool obj_only);
 extern void do_cmd_feeling(void);
 extern void do_cmd_load_screen(void);
 extern void do_cmd_save_screen(void);
@@ -91,7 +92,6 @@ void do_cmd_wizard(void);
 void do_cmd_try_debug(void);
 void do_cmd_try_borg(void);
 void do_cmd_quit(cmd_code code, cmd_arg args[]);
-void do_cmd_port(void);
 void do_cmd_xxx_options(void);
 void do_cmd_monlist(void);
 void do_cmd_itemlist(void);
@@ -130,8 +130,8 @@ void textui_obj_study(void);
 void textui_obj_cast(void);
 
 /* ui-knowledge.c */
-extern void big_pad(int col, int row, byte a, byte c);
-extern void textui_browse_object_knowledge(void *obj, const char *name);
+extern int big_pad(int col, int row, byte a, byte c);
+extern void textui_browse_object_knowledge(const char *name, int row);
 extern void textui_knowledge_init(void);
 extern void textui_browse_knowledge(void);
 

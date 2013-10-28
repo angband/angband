@@ -22,8 +22,10 @@
 #include "files.h"
 #include "game-cmd.h"
 #include "game-event.h"
+#include "object/tvalsval.h"
 #include "ui-birth.h"
 #include "ui-menu.h"
+
 
 /*
  * Overview
@@ -90,7 +92,6 @@ static bool quickstart_allowed = FALSE;
 static enum birth_stage get_quickstart_command(void)
 {
 	const char *prompt = "['Y' to use this character, 'N' to start afresh, 'C' to change name]";
-	ui_event_data ke;
 
 	enum birth_stage next = BIRTH_QUICKSTART;
 
@@ -103,28 +104,28 @@ static enum birth_stage get_quickstart_command(void)
 	button_add("[Y]", 'y');
 	button_add("[N]", 'n');
 	button_add("[C]", 'c');
-	redraw_stuff();
+	redraw_stuff(p_ptr);
 	
 	do
 	{
 		/* Get a key */
-		ke = inkey_ex();
+		struct keypress ke = inkey();
 		
-		if (ke.key == 'N' || ke.key == 'n')
+		if (ke.code == 'N' || ke.code == 'n')
 		{
 			cmd_insert(CMD_BIRTH_RESET);
 			next = BIRTH_SEX_CHOICE;
 		}
-		else if (ke.key == KTRL('X'))
+		else if (ke.code == KTRL('X'))
 		{
 			cmd_insert(CMD_QUIT);
 			next = BIRTH_COMPLETE;
 		}
-		else if (ke.key == 'C' || ke.key == 'c')
+		else if (ke.code == 'C' || ke.code == 'c')
 		{
 			next = BIRTH_NAME_CHOICE;
 		}
-		else if (ke.key == 'Y' || ke.key == 'y')
+		else if (ke.code == 'Y' || ke.code == 'y')
 		{
 			cmd_insert(CMD_ACCEPT_CHARACTER);
 			next = BIRTH_COMPLETE;
@@ -133,7 +134,7 @@ static enum birth_stage get_quickstart_command(void)
 	
 	/* Buttons */
 	button_kill_all();
-	redraw_stuff();
+	redraw_stuff(p_ptr);
 
 	/* Clear prompt */
 	clear_from(23);
@@ -152,19 +153,23 @@ static menu_type sex_menu, race_menu, class_menu, roller_menu;
 /* Locations of the menus, etc. on the screen */
 #define HEADER_ROW       1
 #define QUESTION_ROW     7
-#define TABLE_ROW       10
+#define TABLE_ROW       9
 
 #define QUESTION_COL     2
 #define SEX_COL          2
 #define RACE_COL        14
 #define RACE_AUX_COL    29
 #define CLASS_COL       29
-#define CLASS_AUX_COL   50
+#define CLASS_AUX_COL   43
+#define ROLLER_COL 43
 
-static region gender_region = {SEX_COL, TABLE_ROW, 15, -2};
-static region race_region = {RACE_COL, TABLE_ROW, 15, -2};
-static region class_region = {CLASS_COL, TABLE_ROW, 19, -2};
-static region roller_region = {44, TABLE_ROW, 21, -2};
+#define MENU_ROWS TABLE_ROW + 14
+
+/* upper left column and row, width, and lower column */
+static region gender_region = {SEX_COL, TABLE_ROW, 14, MENU_ROWS};
+static region race_region = {RACE_COL, TABLE_ROW, 14, MENU_ROWS};
+static region class_region = {CLASS_COL, TABLE_ROW, 14, MENU_ROWS};
+static region roller_region = {ROLLER_COL, TABLE_ROW, 28, MENU_ROWS};
 
 /* We use different menu "browse functions" to display the help text
    sometimes supplied with the menu items - currently just the list
@@ -199,9 +204,70 @@ static void birthmenu_display(menu_type *menu, int oid, bool cursor,
    only defining the display and handler parts). */
 static const menu_iter birth_iter = { NULL, NULL, birthmenu_display, NULL, NULL };
 
+static void skill_help(s16b skills[], int mhp, int exp, int infra)
+{
+	text_out_e("Hit/Shoot/Throw: %+d/%+d/%+d\n", skills[SKILL_TO_HIT_MELEE], skills[SKILL_TO_HIT_BOW], skills[SKILL_TO_HIT_THROW]);
+	text_out_e("Hit die: %2d   XP mod: %d%%\n", mhp, exp);
+	text_out_e("Disarm: %+3d   Devices: %+3d\n", skills[SKILL_DISARM], skills[SKILL_DEVICE]);
+	text_out_e("Save:   %+3d   Stealth: %+3d\n", skills[SKILL_SAVE], skills[SKILL_STEALTH]);
+	if (infra >= 0)
+		text_out_e("Infravision:  %d ft\n", infra * 10);
+	text_out_e("Digging:      %+d\n", skills[SKILL_DIGGING]);
+	text_out_e("Search:       %+d/%d", skills[SKILL_SEARCH], skills[SKILL_SEARCH_FREQUENCY]);
+	if (infra < 0)
+		text_out_e("\n");
+}
+
+static const char *get_flag_desc(bitflag flag)
+{
+	switch (flag)
+	{
+		case OF_SUST_STR: return "Sustains strength";
+		case OF_SUST_DEX: return "Sustains dexterity";
+		case OF_SUST_CON: return "Sustains constitution";
+		case OF_RES_POIS: return "Resists poison";
+		case OF_RES_LIGHT: return "Resists light damage";
+		case OF_RES_DARK: return "Resists darkness damage";
+		case OF_RES_BLIND: return "Resists blindness";
+		case OF_HOLD_LIFE: return "Sustains experience";
+		case OF_FREE_ACT: return "Resists paralysis";
+		case OF_REGEN: return "Regenerates quickly";
+		case OF_SEE_INVIS: return "Sees invisible creatures";
+
+		default: return "Undocumented flag";
+	}
+}
+
+static const char *get_pflag_desc(bitflag flag)
+{
+	switch (flag)
+	{
+		case PF_EXTRA_SHOT: return "Gains extra shots with bow";
+		case PF_BRAVERY_30: return "Gains immunity to fear";
+		case PF_BLESS_WEAPON: return "Prefers blunt/blessed weapons";
+		case PF_CUMBER_GLOVE: return NULL;
+		case PF_ZERO_FAIL: return "Advanced spellcasting";
+		case PF_BEAM: return NULL;
+		case PF_CHOOSE_SPELLS: return NULL;
+		case PF_PSEUDO_ID_IMPROV: return NULL;
+		case PF_KNOW_MUSHROOM: return "Identifies mushrooms";
+		case PF_KNOW_ZAPPER: return "Identifies magic devices";
+		case PF_SEE_ORE: return "Senses ore/minerals";
+		default: return "Undocumented pflag";
+	}
+}
+
 static void race_help(int i, void *db, const region *l)
 {
 	int j;
+	size_t k;
+	struct player_race *r = player_id2race(i);
+	int len = (A_MAX + 1) / 2;
+
+	int n_flags = 0;
+	int flag_space = 3;
+
+	if (!r) return;
 
 	/* Output to the screen */
 	text_out_hook = text_out_to_screen;
@@ -210,15 +276,43 @@ static void race_help(int i, void *db, const region *l)
 	text_out_indent = RACE_AUX_COL;
 	Term_gotoxy(RACE_AUX_COL, TABLE_ROW);
 
-	for (j = 0; j < A_MAX; j++) 
+	for (j = 0; j < len; j++)
 	{  
-		text_out_e("%s%+d\n", stat_names_reduced[j], p_info[i].r_adj[j]);
+		const char *name1 = stat_names_reduced[j];
+		const char *name2 = stat_names_reduced[j + len];
+
+		int adj1 = r->r_adj[j];
+		int adj2 = r->r_adj[j + len];
+
+		text_out_e("%s%+3d  %s%+3d\n", name1, adj1, name2, adj2);
 	}
 	
-	text_out_e("Hit die: %d\n", p_info[i].r_mhp);
-	text_out_e("Experience: %d%%\n", p_info[i].r_exp);
-	text_out_e("Infravision: %d ft", p_info[i].infra * 10);
-	
+	text_out_e("\n");
+	skill_help(r->r_skills, r->r_mhp, r->r_exp, r->infra);
+	text_out_e("\n");
+
+	for (k = 0; k < OF_MAX; k++)
+	{
+		if (n_flags >= flag_space) break;
+		if (!of_has(r->flags, k)) continue;
+		text_out_e("\n%s", get_flag_desc(k));
+		n_flags++;
+	}
+
+	for (k = 0; k < PF_MAX; k++)
+	{
+		if (n_flags >= flag_space) break;
+		if (!pf_has(r->pflags, k)) continue;
+		text_out_e("\n%s", get_pflag_desc(k));
+		n_flags++;
+	}
+
+	while(n_flags < flag_space)
+	{
+		text_out_e("\n");
+		n_flags++;
+	}
+
 	/* Reset text_out() indentation */
 	text_out_indent = 0;
 }
@@ -226,6 +320,14 @@ static void race_help(int i, void *db, const region *l)
 static void class_help(int i, void *db, const region *l)
 {
 	int j;
+	size_t k;
+	struct player_class *c = player_id2class(i);
+	int len = (A_MAX + 1) / 2;
+
+	int n_flags = 0;
+	int flag_space = 5;
+
+	if (!c) return;
 
 	/* Output to the screen */
 	text_out_hook = text_out_to_screen;
@@ -234,14 +336,44 @@ static void class_help(int i, void *db, const region *l)
 	text_out_indent = CLASS_AUX_COL;
 	Term_gotoxy(CLASS_AUX_COL, TABLE_ROW);
 
-	for (j = 0; j < A_MAX; j++) 
+	for (j = 0; j < len; j++)
 	{  
-		text_out_e("%s%+d\n", stat_names_reduced[j], c_info[i].c_adj[j]); 
+		const char *name1 = stat_names_reduced[j];
+		const char *name2 = stat_names_reduced[j + len];
+
+		int adj1 = c->c_adj[j] + p_ptr->race->r_adj[j];
+		int adj2 = c->c_adj[j + len] + p_ptr->race->r_adj[j + len];
+
+		text_out_e("%s%+3d  %s%+3d\n", name1, adj1, name2, adj2);
 	}
 
-	text_out_e("Hit die: %d\n", c_info[i].c_mhp);   
-	text_out_e("Experience: %d%%", c_info[i].c_exp);
+	text_out_e("\n");
 	
+	skill_help(c->c_skills, c->c_mhp, c->c_exp, -1);
+
+	if (c->spell_book == TV_MAGIC_BOOK) {
+		text_out_e("\nLearns arcane magic");
+	} else if (c->spell_book == TV_PRAYER_BOOK) {
+		text_out_e("\nLearns divine magic");
+	}
+
+	for (k = 0; k < PF_MAX; k++)
+	{
+		const char *s;
+		if (n_flags >= flag_space) break;
+		if (!pf_has(c->pflags, k)) continue;
+		s = get_pflag_desc(k);
+		if (!s) continue;
+		text_out_e("\n%s", s);
+		n_flags++;
+	}
+
+	while(n_flags < flag_space)
+	{
+		text_out_e("\n");
+		n_flags++;
+	}
+
 	/* Reset text_out() indentation */
 	text_out_indent = 0;
 }
@@ -283,9 +415,11 @@ static void init_birth_menu(menu_type *menu, int n_choices, int initial_choice, 
 
 
 
-static void setup_menus()
+static void setup_menus(void)
 {
-	int i;
+	int i, n;
+	struct player_class *c;
+	struct player_race *r;
 
 	const char *roller_choices[MAX_BIRTH_ROLLERS] = { 
 		"Point-based", 
@@ -298,38 +432,36 @@ static void setup_menus()
 	init_birth_menu(&sex_menu, MAX_SEXES, p_ptr->psex, &gender_region, TRUE, NULL);
 	mdata = sex_menu.menu_data;
 	for (i = 0; i < MAX_SEXES; i++)
-	{	
 		mdata->items[i] = sex_info[i].title;
-	}
 	mdata->hint = "Your 'sex' does not have any significant gameplay effects.";
 
+	n = 0;
+	for (r = races; r; r = r->next) n++;
 	/* Race menu more complicated. */
-	init_birth_menu(&race_menu, z_info->p_max, p_ptr->prace, &race_region, TRUE, race_help);
+	init_birth_menu(&race_menu, n, p_ptr->race ? p_ptr->race->ridx : 0,
+	                &race_region, TRUE, race_help);
 	mdata = race_menu.menu_data;
 
-	for (i = 0; i < z_info->p_max; i++)
-	{	
-		mdata->items[i] = p_info[i].name;
-	}
+	for (i = 0, r = races; r; r = r->next, i++)
+		mdata->items[r->ridx] = r->name;
 	mdata->hint = "Your 'race' determines various intrinsic factors and bonuses.";
 
+	n = 0;
+	for (c = classes; c; c = c->next) n++;
 	/* Class menu similar to race. */
-	init_birth_menu(&class_menu, z_info->c_max, p_ptr->pclass, &class_region, TRUE, class_help);
+	init_birth_menu(&class_menu, n, p_ptr->class ? p_ptr->class->cidx : 0,
+	                &class_region, TRUE, class_help);
 	mdata = class_menu.menu_data;
 
-	for (i = 0; i < z_info->c_max; i++)
-	{	
-		mdata->items[i] = c_info[i].name;
-	}
+	for (i = 0, c = classes; c; c = c->next, i++)
+		mdata->items[c->cidx] = c->name;
 	mdata->hint = "Your 'class' determines various intrinsic abilities and bonuses";
 		
 	/* Roller menu straightforward again */
 	init_birth_menu(&roller_menu, MAX_BIRTH_ROLLERS, 0, &roller_region, FALSE, NULL);
 	mdata = roller_menu.menu_data;
 	for (i = 0; i < MAX_BIRTH_ROLLERS; i++)
-	{	
 		mdata->items[i] = roller_choices[i];
-	}
 	mdata->hint = "Your choice of character generation.  Point-based is recommended.";
 }
 
@@ -345,7 +477,7 @@ static void free_birth_menu(menu_type *menu)
 	}
 }
 
-static void free_birth_menus()
+static void free_birth_menus(void)
 {
 	/* We don't need these any more. */
 	free_birth_menu(&sex_menu);
@@ -403,7 +535,7 @@ static void print_menu_instructions(void)
 static enum birth_stage menu_question(enum birth_stage current, menu_type *current_menu, cmd_code choice_command)
 {
 	struct birthmenu_data *menu_data = menu_priv(current_menu);
-	ui_event_data cx;
+	ui_event cx;
 
 	enum birth_stage next = BIRTH_RESET;
 	
@@ -416,7 +548,7 @@ static enum birth_stage menu_question(enum birth_stage current, menu_type *curre
 	while (next == BIRTH_RESET)
 	{
 		/* Display the menu, wait for a selection of some sort to be made. */
-		cx = menu_select(current_menu, EVT_KBRD);
+		cx = menu_select(current_menu, EVT_KBRD, FALSE);
 
 		/* As all the menus are displayed in "hierarchical" style, we allow
 		   use of "back" (left arrow key or equivalent) to step back in 
@@ -463,26 +595,26 @@ static enum birth_stage menu_question(enum birth_stage current, menu_type *curre
 		else if (cx.type == EVT_KBRD)
 		{
 			/* '*' chooses an option at random from those the game's provided. */
-			if (cx.key == '*' && menu_data->allow_random) 
+			if (cx.key.code == '*' && menu_data->allow_random) 
 			{
 				current_menu->cursor = randint0(current_menu->count);
 				cmd_insert(choice_command);
 				cmd_set_arg_choice(cmd_get_top(), 0, current_menu->cursor);
 
-				menu_refresh(current_menu);
+				menu_refresh(current_menu, FALSE);
 				next = current + 1;
 			}
-			else if (cx.key == '=') 
+			else if (cx.key.code == '=') 
 			{
-				do_cmd_options();
+				do_cmd_options_birth();
 				next = current;
 			}
-			else if (cx.key == KTRL('X')) 
+			else if (cx.key.code == KTRL('X')) 
 			{
 				cmd_insert(CMD_QUIT);
 				next = BIRTH_COMPLETE;
 			}
-			else if (cx.key == '?')
+			else if (cx.key.code == '?')
 			{
 				do_cmd_help();
 			}
@@ -502,15 +634,14 @@ static enum birth_stage roller_command(bool first_call)
 	char prompt[80] = "";
 	size_t promptlen = 0;
 
-	ui_event_data ke;
-	char ch;
+	struct keypress ch;
 
 	enum birth_stage next = BIRTH_ROLLER;
 
 	/* Used to keep track of whether we've rolled a character before or not. */
 	static bool prev_roll = FALSE;
 
-   	/* Display the player - a bit cheaty, but never mind. */
+	/* Display the player - a bit cheaty, but never mind. */
 	display_player(0);
 
 	if (first_call)
@@ -522,7 +653,7 @@ static enum birth_stage roller_command(bool first_call)
 	button_add("[r]", 'r');
 	if (prev_roll) button_add("[p]", 'p');
 	clear_from(Term->hgt - 2);
-	redraw_stuff();
+	redraw_stuff(p_ptr);
 
 	/* Prepare a prompt (must squeeze everything in) */
 	strnfcat(prompt, sizeof (prompt), &promptlen, "['r' to reroll");
@@ -534,10 +665,9 @@ static enum birth_stage roller_command(bool first_call)
 	prt(prompt, Term->hgt - 1, Term->wid / 2 - promptlen / 2);
 	
 	/* Prompt and get a command */
-	ke = inkey_ex();
-	ch = ke.key;
+	ch = inkey();
 
-	if (ch == ESCAPE) 
+	if (ch.code == ESCAPE) 
 	{
 		button_kill('r');
 		button_kill('p');
@@ -546,33 +676,33 @@ static enum birth_stage roller_command(bool first_call)
 	}
 
 	/* 'Enter' accepts the roll */
-	if ((ch == '\r') || (ch == '\n')) 
+	if ((ch.code == '\r') || (ch.code == '\n')) 
 	{
 		next = BIRTH_NAME_CHOICE;
 	}
 
 	/* Reroll this character */
-	else if ((ch == ' ') || (ch == 'r'))
+	else if ((ch.code == ' ') || (ch.code == 'r'))
 	{
 		cmd_insert(CMD_ROLL_STATS);
 		prev_roll = TRUE;
 	}
 
 	/* Previous character */
-	else if (prev_roll && (ch == 'p'))
+	else if (prev_roll && (ch.code == 'p'))
 	{
 		cmd_insert(CMD_PREV_STATS);
 	}
 
 	/* Quit */
-	else if (ch == KTRL('X')) 
+	else if (ch.code == KTRL('X')) 
 	{
 		cmd_insert(CMD_QUIT);
 		next = BIRTH_COMPLETE;
 	}
 
 	/* Help XXX */
-	else if (ch == '?')
+	else if (ch.code == '?')
 	{
 		do_cmd_help();
 	}
@@ -588,7 +718,7 @@ static enum birth_stage roller_command(bool first_call)
 	button_kill('\r');
 	button_kill('r');
 	button_kill('p');
-	redraw_stuff();
+	redraw_stuff(p_ptr);
 
 	return next;
 }
@@ -671,7 +801,7 @@ static void point_based_stop(void)
 static enum birth_stage point_based_command(void)
 {
 	static int stat = 0;
-	char ch;
+	struct keypress ch;
 	enum birth_stage next = BIRTH_POINTBASED;
 
 /*	point_based_display();*/
@@ -682,50 +812,50 @@ static enum birth_stage point_based_command(void)
 	/* Get key */
 	ch = inkey();
 	
-	if (ch == KTRL('X')) 
+	if (ch.code == KTRL('X')) 
 	{
 		cmd_insert(CMD_QUIT);
 		next = BIRTH_COMPLETE;
 	}
 	
 	/* Go back a step, or back to the start of this step */
-	else if (ch == ESCAPE) 
+	else if (ch.code == ESCAPE) 
 	{
 		next = BIRTH_BACK;
 	}
 
-	else if (ch == 'r' || ch == 'R') 
+	else if (ch.code == 'r' || ch.code == 'R') 
 	{
 		cmd_insert(CMD_RESET_STATS);
 		cmd_set_arg_choice(cmd_get_top(), 0, FALSE);
 	}
 	
 	/* Done */
-	else if ((ch == '\r') || (ch == '\n')) 
+	else if ((ch.code == '\r') || (ch.code == '\n')) 
 	{
 		next = BIRTH_NAME_CHOICE;
 	}
 	else
 	{
-		ch = target_dir(ch);
-		
+		int dir = target_dir(ch);
+
 		/* Prev stat, looping round to the bottom when going off the top */
-		if (ch == 8)
+		if (dir == 8)
 			stat = (stat + A_MAX - 1) % A_MAX;
 		
 		/* Next stat, looping round to the top when going off the bottom */
-		if (ch == 2)
+		if (dir == 2)
 			stat = (stat + 1) % A_MAX;
 		
 		/* Decrease stat (if possible) */
-		if (ch == 4)
+		if (dir == 4)
 		{
 			cmd_insert(CMD_SELL_STAT);
 			cmd_set_arg_choice(cmd_get_top(), 0, stat);
 		}
 		
 		/* Increase stat (if possible) */
-		if (ch == 6)
+		if (dir == 6)
 		{
 			cmd_insert(CMD_BUY_STAT);
 			cmd_set_arg_choice(cmd_get_top(), 0, stat);
@@ -763,7 +893,7 @@ static enum birth_stage get_name_command(void)
 static enum birth_stage get_confirm_command(void)
 {
 	const char *prompt = "['ESC' to step back, 'S' to start over, or any other key to continue]";
-	ui_event_data ke;
+	struct keypress ke;
 
 	enum birth_stage next;
 
@@ -775,22 +905,22 @@ static enum birth_stage get_confirm_command(void)
 	button_add("[Continue]", 'q');
 	button_add("[ESC]", ESCAPE);
 	button_add("[S]", 'S');
-	redraw_stuff();
+	redraw_stuff(p_ptr);
 	
 	/* Get a key */
-	ke = inkey_ex();
+	ke = inkey();
 	
 	/* Start over */
-	if (ke.key == 'S' || ke.key == 's')
+	if (ke.code == 'S' || ke.code == 's')
 	{
 		next = BIRTH_RESET;
 	}
-	else if (ke.key == KTRL('X'))
+	else if (ke.code == KTRL('X'))
 	{
 		cmd_insert(CMD_QUIT);
 		next = BIRTH_COMPLETE;
 	}
-	else if (ke.key == ESCAPE)
+	else if (ke.code == ESCAPE)
 	{
 		next = BIRTH_BACK;
 	}
@@ -802,7 +932,7 @@ static enum birth_stage get_confirm_command(void)
 	
 	/* Buttons */
 	button_kill_all();
-	redraw_stuff();
+	redraw_stuff(p_ptr);
 
 	/* Clear prompt */
 	clear_from(23);
@@ -871,21 +1001,21 @@ errr get_birth_command(bool wait)
 
 			if (current_stage > BIRTH_SEX_CHOICE)
 			{
-				menu_refresh(&sex_menu);
+				menu_refresh(&sex_menu, FALSE);
 				menu = &race_menu;
 				command = CMD_CHOOSE_RACE;
 			}
 			
 			if (current_stage > BIRTH_RACE_CHOICE)
 			{
-				menu_refresh(&race_menu);
+				menu_refresh(&race_menu, FALSE);
 				menu = &class_menu;
 				command = CMD_CHOOSE_CLASS;
 			}
 
 			if (current_stage > BIRTH_CLASS_CHOICE)
 			{
-				menu_refresh(&class_menu);
+				menu_refresh(&class_menu, FALSE);
 				menu = &roller_menu;
 				command = CMD_NULL;
 			}

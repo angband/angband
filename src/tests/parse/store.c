@@ -4,17 +4,17 @@
 
 #include "store.h"
 
-static int setup(void **state) {
+int setup_tests(void **state) {
 	*state = store_parser_new();
 	return !*state;
 }
 
-static int teardown(void *state) {
+int teardown_tests(void *state) {
 	parser_destroy(state);
 	return 0;
 }
 
-static int test_s0(void *state) {
+int test_s0(void *state) {
 	enum parser_error r = parser_parse(state, "S:2:33");
 	struct store *s;
 
@@ -27,7 +27,7 @@ static int test_s0(void *state) {
 }
 
 /* Causes segfault: lookup_name() requires z_info/k_info */
-static int test_i0(void *state) {
+int test_i0(void *state) {
 	enum parser_error r = parser_parse(state, "I:2:3:5");
 	struct store *s;
 
@@ -39,8 +39,8 @@ static int test_i0(void *state) {
 	ok;
 }
 
-static const char *suite_name = "parse/store";
-static struct test tests[] = {
+const char *suite_name = "parse/store";
+struct test tests[] = {
 	{ "s0", test_s0 },
 /*	{ "i0", test_i0 }, */
 	{ NULL, NULL }

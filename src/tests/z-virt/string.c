@@ -3,10 +3,10 @@
 #include "unit-test.h"
 #include "z-virt.h"
 
-nosetup;
-noteardown;
+NOSETUP
+NOTEARDOWN
 
-static int test_string_make(void *state) {
+int test_string_make(void *state) {
 	char *s1 = string_make("foo");
 	require(s1);
 	require(!strcmp(s1, "foo"));
@@ -14,18 +14,18 @@ static int test_string_make(void *state) {
 	ok;
 }
 
-static int test_string_make_null(void *state) {
+int test_string_make_null(void *state) {
 	char *s1 = string_make(NULL);
 	require(!s1);
 	ok;
 }
 
-static int test_string_free_null(void *state) {
+int test_string_free_null(void *state) {
 	string_free(NULL);
 	ok;
 }
 
-static int test_string_append(void *state) {
+int test_string_append(void *state) {
 	char *s1 = string_make("foo");
 	char *s3 = string_append(s1, "bar");
 
@@ -36,7 +36,7 @@ static int test_string_append(void *state) {
 	ok;
 }
 
-static int test_string_append_null0(void *state) {
+int test_string_append_null0(void *state) {
 	char *r = string_append(NULL, "foo");
 	require(r);
 	require(!strcmp(r, "foo"));
@@ -44,7 +44,7 @@ static int test_string_append_null0(void *state) {
 	ok;
 }
 
-static int test_string_append_null1(void *state) {
+int test_string_append_null1(void *state) {
 	char *s = string_make("bar");
 	char *r = string_append(s, NULL);
 	require(r);
@@ -53,14 +53,14 @@ static int test_string_append_null1(void *state) {
 	ok;
 }
 
-static int test_string_append_null2(void *state) {
+int test_string_append_null2(void *state) {
 	char *r = string_append(NULL, NULL);
 	require(!r);
 	ok;
 }
 
-static const char *suite_name = "z-virt/string";
-static struct test tests[] = {
+const char *suite_name = "z-virt/string";
+struct test tests[] = {
 	{ "make", test_string_make },
 	{ "make-null", test_string_make_null },
 	{ "free-null", test_string_free_null },

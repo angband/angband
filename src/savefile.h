@@ -3,13 +3,24 @@
 
 #define ITEM_VERSION	5
 
-/* load-old.c */
-int rd_savefile_old(void);
+/*** Savefile API ***/
 
+/**
+ * Load the savefile given.  Returns TRUE on succcess, FALSE otherwise.
+ */
+bool savefile_load(const char *path);
+
+/**
+ * Save to the given location.  Returns TRUE on success, FALSE otherwise.
+ */
+bool savefile_save(const char *path);
+
+
+
+/*** Ignore these ***/
 
 /* Utility */
-void note(cptr msg);
-bool older_than(int x, int y, int z);
+void note(const char *msg);
 
 /* Writing bits */
 void wr_byte(byte v);
@@ -17,7 +28,7 @@ void wr_u16b(u16b v);
 void wr_s16b(s16b v);
 void wr_u32b(u32b v);
 void wr_s32b(s32b v);
-void wr_string(cptr str);
+void wr_string(const char *str);
 void pad_bytes(int n);
 
 /* Reading bits */
@@ -32,26 +43,43 @@ void strip_bytes(int n);
 
 
 /* load.c */
-int rd_randomizer(u32b version);
-int rd_options(u32b version);
-int rd_messages(u32b version);
-int rd_monster_memory(u32b version);
-int rd_object_memory(u32b version);
-int rd_quests(u32b version);
-int rd_artifacts(u32b version);
-int rd_player(u32b version);
-int rd_squelch(u32b version);
-int rd_misc(u32b version);
-int rd_player_hp(u32b version);
-int rd_player_spells(u32b version);
-int rd_randarts(u32b version);
-int rd_inventory(u32b version);
-int rd_stores(u32b version);
-int rd_dungeon(u32b version);
-int rd_objects(u32b version);
-int rd_monsters(u32b version);
-int rd_ghost(u32b version);
-int rd_history(u32b version);
+int rd_randomizer(void);
+int rd_options_1(void);
+int rd_options_2(void);
+int rd_messages(void);
+int rd_monster_memory_1(void);
+int rd_monster_memory_2(void);
+int rd_object_memory(void);
+int rd_quests(void);
+int rd_artifacts(void);
+int rd_player(void);
+int rd_squelch(void);
+int rd_misc(void);
+int rd_player_hp(void);
+int rd_player_spells(void);
+int rd_randarts_1(void);
+int rd_randarts_2(void);
+int rd_inventory_1(void);
+int rd_inventory_2(void);
+int rd_inventory_3(void);
+int rd_inventory_4(void);
+int rd_stores_1(void);
+int rd_stores_2(void);
+int rd_stores_3(void);
+int rd_stores_4(void);
+int rd_dungeon(void);
+int rd_objects_1(void);
+int rd_objects_2(void);
+int rd_objects_3(void);
+int rd_objects_4(void);
+int rd_monsters_1(void);
+int rd_monsters_2(void);
+int rd_monsters_3(void);
+int rd_monsters_4(void);
+int rd_monsters_5(void);
+int rd_monsters_6(void);
+int rd_ghost(void);
+int rd_history(void);
 
 /* save.c */
 void wr_randomizer(void);

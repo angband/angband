@@ -156,7 +156,7 @@ to select one.
                draining, and have fair infravision.
 
 ***** <Hobbit>
-          Hobbits
+          Hobbit
                Hobbits, or Halflings, are very good at shooting, throwing, and
                have good saving throws.  They also are very good at search-
                ing, disarming, perception, and stealth; so they make excel-
@@ -519,26 +519,26 @@ points per level, adjusted for constitution) and an XP modifier of
 20+20=40%.
 
  
-                  STR  INT  WIS  DEX  CON  CHR  HD (base)   XP/level  Infra
-      Human        0    0    0    0    0    0      10          +0%    None
-      Half-Elf    -1   +1    0   +1   -1   +1       9         +10%   20 feet
-      Elf         -1   +2   +1   +1   -2   +1       8         +20%   30 feet
-      Hobbit      -2   +2   +1   +3   +2   +1       7         +10%   40 feet
-      Gnome       -1   +2    0   +2   +1   -2       8         +25%   40 feet
-      Dwarf       +2   -3   +2   -2   +2   -3      11         +20%   50 feet
-      Half-Orc    +2   -1    0    0   +1   -4      10         +10%   30 feet
-      Half-Troll  +4   -4   -2   -4   +3   -6      12         +20%   30 feet
-      Dunadan     +1   +2   +2   +2   +3   +2      10         +80%    None
-      High-Elf    +1   +3   -1   +3   +1   +5      10        +100%   40 feet
-      Kobold      -1   -1    0   +2   +2   -2       8         +15%   50 feet
+                  STR  INT  WIS  DEX  CON  CHR  HD (base)  XP/level  Infra
+      Human        0    0    0    0    0    0      10         +0%    None
+      Half-Elf    -1   +1    0   +1   -1   +1       9        +10%   20 feet
+      Elf         -1   +2   +1   +1   -2   +1       8        +20%   30 feet
+      Hobbit      -2   +2   +1   +3   +2   +1       7        +10%   40 feet
+      Gnome       -1   +2    0   +2   +1   -2       8        +25%   40 feet
+      Dwarf       +2   -3   +2   -2   +2   -3      11        +20%   50 feet
+      Half-Orc    +2   -1    0    0   +1   -4      10        +10%   30 feet
+      Half-Troll  +4   -4   -2   -4   +3   -6      12        +20%   30 feet
+      Dunadan     +1   +2   +2   +2   +3   +2      10        +80%    None
+      High-Elf    +1   +3   -1   +3   +1   +5      10       +100%   40 feet
+      Kobold      -1   -1    0   +2   +2   -2       8        +15%   50 feet
 
-                  STR  INT  WIS  DEX  CON  CHR  HD (bonus)  XP/level
-      Warrior     +5   -2   -2   +2   +2   -1       9          +0%
-      Mage        -5   +3    0   +1   -2   +1       0         +30%
-      Priest      -1   -3   +3   -1    0   +2       2         +20%
-      Rogue       +2   +1   -2   +3   +1   -1       6         +25%
-      Ranger      +2   +2    0   +1   +1   +1       4         +30%
-      Paladin     +3   -3   +1    0   +2   +2       6         +35%
+                  STR  INT  WIS  DEX  CON  CHR  HD (bonus) XP/level
+      Warrior     +5   -2   -2   +2   +2   -1       9         +0%
+      Mage        -5   +3    0   +1   -2   +1       0        +30%
+      Priest      -1   -3   +3   -1    0   +2       2        +20%
+      Rogue       +2   +1   -2   +3   +1   -1       6        +25%
+      Ranger      +2   +2    0   +1   +1   +1       4        +30%
+      Paladin     +3   -3   +1    0   +2   +2       6        +35%
 
  
  
@@ -570,7 +570,7 @@ For character classes, there are two figures: the first figure is the
 base level of the skill, while the second figure (in parentheses) is 
 the bonus that the character gains to this skill every ten levels. So, 
 to find out the total skill value of any character's skills, add the 
-"race" value to the "class" value, and then the bonus once for every ten 
+race value to the class value, and then the bonus once for every ten 
 levels that the character has.
 
 Please note, however, that these numbers are only good for comparing 
@@ -619,4 +619,4 @@ character name is used on the high score list.
 
 You can play a dynasty of characters. If you use a roman numeral at the 
 end of your character name (like "Fred I" or "Pimplesnarg XVI"), the 
-game will automatically update the numeral each time you die.
+game will automatically increment the numeral each time you die.

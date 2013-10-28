@@ -22,6 +22,7 @@
 #include "h-basic.h"
 #include "z-form.h"
 #include "z-virt.h"
+#include "defines.h"
 
 /* The basic datatype of bitflags */
 typedef byte bitflag;
@@ -36,7 +37,7 @@ typedef byte bitflag;
 #define FLAG_END          (FLAG_START - 1)
 
 /* The array size necessary to hold "n" flags */
-#define FLAG_SIZE(n)      ((((n) - FLAG_START) + FLAG_WIDTH - 1) / FLAG_WIDTH)
+#define FLAG_SIZE(n)      (((n) + FLAG_WIDTH - 1) / FLAG_WIDTH)
 
 /* The highest flag value plus one in an array of size "n" */
 #define FLAG_MAX(n)       (int)((n) * FLAG_WIDTH + FLAG_START)

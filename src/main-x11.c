@@ -16,7 +16,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
-#include "macro.h"
+#include "buildid.h"
 
 /*
  * This file helps Angband work with UNIX/X11 computers.
@@ -349,7 +349,7 @@ struct infofnt
 {
 	XFontStruct *info;
 
-	cptr name;
+	const char *name;
 
 	s16b wid;
 	s16b twid;
@@ -513,7 +513,7 @@ static u32b create_pixel(Display *dpy, byte red, byte green, byte blue)
 
 	if (!gamma_table_ready)
 	{
-		cptr str = getenv("ANGBAND_X11_GAMMA");
+		const char *str = getenv("ANGBAND_X11_GAMMA");
 		if (str != NULL) gamma_val = atoi(str);
 
 		gamma_table_ready = TRUE;
@@ -543,7 +543,7 @@ static u32b create_pixel(Display *dpy, byte red, byte green, byte blue)
 	if (!(XAllocColor(dpy, cmap, &xcolour)))
 	{
 		quit_fmt("Couldn't allocate bitmap color #%04x%04x%04x\n",
-		         xcolour.red, xcolour.green, xcolour.blue);
+			 xcolour.red, xcolour.green, xcolour.blue);
 	}
 
 	return (xcolour.pixel);
@@ -611,7 +611,7 @@ static const char *get_default_font(int term_num)
  *
  * Return -1 if no Display given, and none can be opened.
  */
-static errr Metadpy_init_2(Display *dpy, cptr name)
+static errr Metadpy_init_2(Display *dpy, const char *name)
 {
 	metadpy *m = Metadpy;
 
@@ -741,7 +741,7 @@ static errr Metadpy_do_beep(void)
 /*
  * Set the name (in the title bar) of Infowin
  */
-static errr Infowin_set_name(cptr name)
+static errr Infowin_set_name(const char *name)
 {
 	Status st;
 	XTextProperty tp;
@@ -759,7 +759,7 @@ static errr Infowin_set_name(cptr name)
 /*
  * Set the icon name of Infowin
  */
-static errr Infowin_set_icon_name(cptr name)
+static errr Infowin_set_icon_name(const char *name)
 {
 	Status st;
 	XTextProperty tp;
@@ -1061,7 +1061,7 @@ static errr Infowin_fill(void)
  * Pairs of values, first is texttual name, second is the string
  * holding the decimal value that the operation corresponds to.
  */
-static cptr opcode_pairs[] =
+static const char *opcode_pairs[] =
 {
 	"cpy", "3",
 	"xor", "6",
@@ -1097,7 +1097,7 @@ static cptr opcode_pairs[] =
  *	0-15: if 'str' is a valid Operation
  *	-1:   if 'str' could not be parsed
  */
-static int Infoclr_Opcode(cptr str)
+static int Infoclr_Opcode(const char *str)
 {
 	register int i;
 
@@ -1132,7 +1132,7 @@ static int Infoclr_Opcode(cptr str)
  * Valid forms for 'name':
  *	'fg', 'bg', 'zg', '<name>' and '#<code>'
  */
-static Pixell Infoclr_Pixell(cptr name)
+static Pixell Infoclr_Pixell(const char *name)
 {
 	XColor scrn;
 
@@ -1407,7 +1407,7 @@ static errr Infofnt_init_real(XFontStruct *info)
  * Inputs:
  *	name: The name of the requested Font
  */
-static errr Infofnt_init_data(cptr name)
+static errr Infofnt_init_data(const char *name)
 {
 	XFontStruct *info;
 
@@ -1456,7 +1456,7 @@ static errr Infofnt_init_data(cptr name)
 /*
  * Standard Text
  */
-static errr Infofnt_text_std(int x, int y, cptr str, int len)
+static errr Infofnt_text_std(int x, int y, const char *str, int len)
 {
 	int i;
 	int w, h;
@@ -1534,7 +1534,7 @@ static errr Infofnt_text_std(int x, int y, cptr str, int len)
 /*
  * Painting where text would be
  */
-static errr Infofnt_text_non(int x, int y, cptr str, int len)
+static errr Infofnt_text_non(int x, int y, const char *str, int len)
 {
 	int w, h;
 
@@ -1626,105 +1626,110 @@ static int term_windows_open;
  */
 static void react_keypress(XKeyEvent *ev)
 {
-	int i, n, mc, ms, mo, mx;
-
-	unsigned int ks1;
+	int n, ch = 0;
 
 	KeySym ks;
 
 	char buf[128];
-	char msg[128];
 
+	/* Extract four "modifier flags" */
+	int mc = (ev->state & ControlMask) ? TRUE : FALSE;
+	int ms = (ev->state & ShiftMask) ? TRUE : FALSE;
+	int mo = (ev->state & Mod1Mask) ? TRUE : FALSE;
+	int mx = (ev->state & Mod2Mask) ? TRUE : FALSE;
+	int kp = FALSE;
+
+	byte mods = (mo ? KC_MOD_ALT : 0) | (mx ? KC_MOD_META : 0);
 
 	/* Check for "normal" keypresses */
 	n = XLookupString(ev, buf, 125, &ks, NULL);
-
-	/* Terminate */
 	buf[n] = '\0';
 
-
-	/* Hack -- Ignore "modifier keys" */
+	/* Ignore modifier keys by themselves */
 	if (IsModifierKey(ks)) return;
 
+	switch (ks) {
+		case XK_BackSpace: ch = KC_BACKSPACE; break;
+		case XK_Tab: ch = KC_TAB; break;
+		case XK_Return: ch = KC_ENTER; break;
+		case XK_Escape: ch = ESCAPE; break;
 
-	/* Hack -- convert into an unsigned int */
-	ks1 = (unsigned int)(ks);
+		case XK_Delete: ch = KC_DELETE; break;
+		case XK_Home: ch = KC_HOME; break;
+		case XK_Left: ch = ARROW_LEFT; break;
+		case XK_Up: ch = ARROW_UP; break;
+		case XK_Right: ch = ARROW_RIGHT; break;
+		case XK_Down: ch = ARROW_DOWN; break;
+		case XK_Page_Up: ch = KC_PGUP; break;
+		case XK_Page_Down: ch = KC_PGDOWN; break;
+		case XK_End: ch = KC_END; break;
+		case XK_Insert: ch = KC_INSERT; break;
+		case XK_Pause: ch = KC_PAUSE; break;
+		case XK_Break: ch = KC_BREAK; break;
 
-	/* Extract four "modifier flags" */
-	mc = (ev->state & ControlMask) ? TRUE : FALSE;
-	ms = (ev->state & ShiftMask) ? TRUE : FALSE;
-	mo = (ev->state & Mod1Mask) ? TRUE : FALSE;
-	mx = (ev->state & Mod2Mask) ? TRUE : FALSE;
+		/* keypad */
+		case XK_KP_0: ch = '0'; kp = TRUE; break;
+		case XK_KP_1: ch = '1'; kp = TRUE; break;
+		case XK_KP_2: ch = '2'; kp = TRUE; break;
+		case XK_KP_3: ch = '3'; kp = TRUE; break;
+		case XK_KP_4: ch = '4'; kp = TRUE; break;
+		case XK_KP_5: ch = '5'; kp = TRUE; break;
+		case XK_KP_6: ch = '6'; kp = TRUE; break;
+		case XK_KP_7: ch = '7'; kp = TRUE; break;
+		case XK_KP_8: ch = '8'; kp = TRUE; break;
+		case XK_KP_9: ch = '9'; kp = TRUE; break;
 
+		case XK_KP_Decimal: ch = '.'; kp = TRUE; break;
+		case XK_KP_Divide: ch = '/'; kp = TRUE; break;
+		case XK_KP_Multiply: ch = '*'; kp = TRUE; break;
+		case XK_KP_Subtract: ch = '-'; kp = TRUE; break;
+		case XK_KP_Add: ch = '+'; kp = TRUE; break;
+		case XK_KP_Enter: ch = '\n'; kp = TRUE; break;
+		case XK_KP_Equal: ch = '='; kp = TRUE; break;
 
-	/* Normal keys with no modifiers */
-	if (n && !mo && !mx && !IsSpecialKey(ks))
-	{
-		/* Enqueue the normal key(s) */
-		for (i = 0; buf[i]; i++) Term_keypress(buf[i]);
+		case XK_KP_Delete: ch = KC_DELETE; kp = TRUE; break;
+		case XK_KP_Home: ch = KC_HOME; kp = TRUE; break;
+		case XK_KP_Left: ch = ARROW_LEFT; kp = TRUE; break;
+		case XK_KP_Up: ch = ARROW_UP; kp = TRUE; break;
+		case XK_KP_Right: ch = ARROW_RIGHT; kp = TRUE; break;
+		case XK_KP_Down: ch = ARROW_DOWN; kp = TRUE; break;
+		case XK_KP_Page_Up: ch = KC_PGUP; kp = TRUE; break;
+		case XK_KP_Page_Down: ch = KC_PGDOWN; kp = TRUE; break;
+		case XK_KP_End: ch = KC_END; kp = TRUE; break;
+		case XK_KP_Insert: ch = KC_INSERT; kp = TRUE; break;
+		case XK_KP_Begin: ch = KC_BEGIN; kp = TRUE; break;
 
-		/* All done */
+		case XK_F1: ch = KC_F1; break;
+		case XK_F2: ch = KC_F2; break;
+		case XK_F3: ch = KC_F3; break;
+		case XK_F4: ch = KC_F4; break;
+		case XK_F5: ch = KC_F5; break;
+		case XK_F6: ch = KC_F6; break;
+		case XK_F7: ch = KC_F7; break;
+		case XK_F8: ch = KC_F8; break;
+		case XK_F9: ch = KC_F9; break;
+		case XK_F10: ch = KC_F10; break;
+		case XK_F11: ch = KC_F11; break;
+		case XK_F12: ch = KC_F12; break;
+		case XK_F13: ch = KC_F13; break;
+		case XK_F14: ch = KC_F14; break;
+		case XK_F15: ch = KC_F15; break;
+	}
+
+	if (kp) mods |= KC_MOD_KEYPAD;
+
+	if (ch) {
+		if (mc) mods |= KC_MOD_CONTROL;
+		if (ms) mods |= KC_MOD_SHIFT;
+		Term_keypress(ch, mods);
 		return;
-	}
+	} else if (n && !IsSpecialKey(ks)) {
+		keycode_t code = buf[0];
 
+		if (mc && MODS_INCLUDE_CONTROL(code)) mods |= KC_MOD_CONTROL;
+		if (ms && MODS_INCLUDE_SHIFT(code)) mods |= KC_MOD_SHIFT;
 
-	/* Handle a few standard keys (bypass modifiers) XXX XXX XXX */
-	switch (ks1)
-	{
-		case XK_Escape:
-		{
-			Term_keypress(ESCAPE);
-			return;
-		}
-
-		case XK_Return:
-		{
-			Term_keypress('\r');
-			return;
-		}
-
-		case XK_Tab:
-		{
-			Term_keypress('\t');
-			return;
-		}
-
-		case XK_Delete:
-		case XK_BackSpace:
-		{
-			Term_keypress('\010');
-			return;
-		}
-	}
-
-
-	/* Hack -- Use the KeySym */
-	if (ks)
-	{
-		strnfmt(msg, sizeof(msg), "%c%s%s%s%s_%lX%c", 31,
-		        mc ? "N" : "", ms ? "S" : "",
-		        mo ? "O" : "", mx ? "M" : "",
-		        (unsigned long)(ks), 13);
-	}
-
-	/* Hack -- Use the Keycode */
-	else
-	{
-		strnfmt(msg, sizeof(msg), "%c%s%s%s%sK_%X%c", 31,
-		        mc ? "N" : "", ms ? "S" : "",
-		        mo ? "O" : "", mx ? "M" : "",
-		        ev->keycode, 13);
-	}
-
-	/* Enqueue the "macro trigger" string */
-	for (i = 0; msg[i]; i++) Term_keypress(msg[i]);
-
-
-	/* Hack -- auto-define macros as needed */
-	if (n && (macro_find_exact(msg) < 0))
-	{
-		/* Create a macro */
-		macro_add(msg, buf);
+		Term_keypress(code, mods);
 	}
 }
 
@@ -1756,7 +1761,7 @@ static errr CheckEvent(bool wait)
 	term_data *td = NULL;
 	infowin *iwin = NULL;
 
-	int i, x, y;
+	int i;
 	int window = 0;
 
 	/* Do not wait unless requested */
@@ -1834,27 +1839,8 @@ static errr CheckEvent(bool wait)
 			break;
 		}
 
-#if 0
-		case MotionNotify:
-		{
-			/* Where is the mouse */
-			int x = xev->xmotion.x;
-			int y = xev->xmotion.y;
-			unsigned int z = xev->xmotion.state;
-
-			/* Convert to co-ordinates Angband understands. */
-			pixel_to_square(&x, &y, x, y);
-			
-			break;
-		}
-#endif
-
 		case KeyPress:
 		{
-			/* Save the mouse location */
-			x = xev->xkey.x;
-			y = xev->xkey.y;
-
 			/* Hack -- use "old" term */
 			Term_activate(&old_td->t);
 
@@ -1990,9 +1976,9 @@ static errr Term_xtra_x11_react(void)
 		for (i = 0; i < MAX_COLORS; i++)
 		{
 			if ((color_table_x11[i][0] != angband_color_table[i][0]) ||
-				(color_table_x11[i][1] != angband_color_table[i][1]) ||
-				(color_table_x11[i][2] != angband_color_table[i][2]) ||
-				(color_table_x11[i][3] != angband_color_table[i][3]))
+			    (color_table_x11[i][1] != angband_color_table[i][1]) ||
+			    (color_table_x11[i][2] != angband_color_table[i][2]) ||
+			    (color_table_x11[i][3] != angband_color_table[i][3]))
 			{
 				Pixell pixel;
 
@@ -2004,9 +1990,9 @@ static errr Term_xtra_x11_react(void)
 
 				/* Create pixel */
 				pixel = create_pixel(Metadpy->dpy,
-									 color_table_x11[i][1],
-									 color_table_x11[i][2],
-									 color_table_x11[i][3]);
+						     color_table_x11[i][1],
+						     color_table_x11[i][2],
+						     color_table_x11[i][3]);
 
 				/* Change the foreground */
 				Infoclr_set(clr[i]);
@@ -2071,9 +2057,9 @@ static errr Term_curs_x11(int x, int y)
 	term_data *td = (term_data*)(Term->data);
 
 	XDrawRectangle(Metadpy->dpy, Infowin->win, xor->gc,
-			 x * td->tile_wid + Infowin->ox,
-			 y * td->tile_hgt + Infowin->oy,
-			 td->tile_wid - 1, td->tile_hgt - 1);
+		       x * td->tile_wid + Infowin->ox,
+		       y * td->tile_hgt + Infowin->oy,
+		       td->tile_wid - 1, td->tile_hgt - 1);
 
 	/* Success */
 	return (0);
@@ -2088,9 +2074,9 @@ static errr Term_bigcurs_x11(int x, int y)
 	term_data *td = (term_data*)(Term->data);
 
 	XDrawRectangle(Metadpy->dpy, Infowin->win, xor->gc,
-			 x * td->tile_wid + Infowin->ox,
-			 y * td->tile_hgt + Infowin->oy,
-			 td->tile_wid2 - 1, td->tile_hgt - 1);
+		       x * td->tile_wid + Infowin->ox,
+		       y * td->tile_hgt + Infowin->oy,
+		       td->tile_wid2 - 1, td->tile_hgt - 1);
 
 	/* Success */
 	return (0);
@@ -2116,7 +2102,7 @@ static errr Term_wipe_x11(int x, int y, int n)
 /*
  * Draw some textual characters.
  */
-static errr Term_text_x11(int x, int y, int n, byte a, cptr s)
+static errr Term_text_x11(int x, int y, int n, byte a, const char *s)
 {
 	/* Draw the text */
 	Infoclr_set(clr[a]);
@@ -2209,9 +2195,9 @@ static errr term_data_init(term_data *td, int i)
 {
 	term *t = &td->t;
 
-	cptr name = angband_term_name[i];
+	const char *name = angband_term_name[i];
 
-	cptr font;
+	const char *font;
 
 	int x = 0;
 	int y = 0;
@@ -2224,7 +2210,7 @@ static errr term_data_init(term_data *td, int i)
 
 	int wid, hgt, num;
 
-	cptr str;
+	const char *str;
 
 	int val;
 
@@ -2561,7 +2547,7 @@ static errr term_data_init(term_data *td, int i)
 
 const char help_x11[] = "Basic X11, subopts -d<display> -n<windows> -x<file>";
 
-static void hook_quit(cptr str)
+static void hook_quit(const char *str)
 {
 	int i;
 
@@ -2620,14 +2606,14 @@ errr init_x11(int argc, char **argv)
 {
 	int i;
 
-	cptr dpy_name = "";
+	const char *dpy_name = "";
 
 	int num_term = -1;
 
 	ang_file *fff;
 
 	char buf[1024];
-	cptr str;
+	const char *str;
 	int val;
 	int line = 0;
 
@@ -2737,9 +2723,9 @@ errr init_x11(int argc, char **argv)
 		{
 			/* Create pixel */
 			pixel = create_pixel(Metadpy->dpy,
-								 color_table_x11[i][1],
-								 color_table_x11[i][2],
-								 color_table_x11[i][3]);
+					     color_table_x11[i][1],
+					     color_table_x11[i][2],
+					     color_table_x11[i][3]);
 		}
 
 		/* Initialize the color */

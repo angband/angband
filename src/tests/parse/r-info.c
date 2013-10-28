@@ -1,21 +1,24 @@
 /* parse/r-info */
 
 #include "unit-test.h"
+#include "unit-test-data.h"
 #include "init.h"
-#include "monster/types.h"
+#include "monster/constants.h"
+#include "monster/monster.h"
 #include "types.h"
+#include "externs.h"
 
-static int setup(void **state) {
+int setup_tests(void **state) {
 	*state = init_parse_r();
 	return !*state;
 }
 
-static int teardown(void *state) {
+int teardown_tests(void *state) {
 	parser_destroy(state);
 	return 0;
 }
 
-static int test_n0(void *state) {
+int test_n0(void *state) {
 	enum parser_error r = parser_parse(state, "N:544:Carcharoth, the Jaws of Thirst");
 	struct monster_race *mr;
 
@@ -27,19 +30,31 @@ static int test_n0(void *state) {
 	ok;
 }
 
-static int test_g0(void *state) {
-	enum parser_error r = parser_parse(state, "G:C:v");
+int test_t0(void *state) {
+	enum parser_error r;
+	struct monster_race *mr;
+
+	rb_info = &test_rb_info;
+	r = parser_parse(state, "T:townsfolk");
+	eq(r, PARSE_ERROR_NONE);
+	mr = parser_priv(state);
+	require(mr);
+	require(streq(mr->base->name, "townsfolk"));
+	ok;
+}
+
+int test_c0(void *state) {
+	enum parser_error r = parser_parse(state, "C:v");
 	struct monster_race *mr;
 
 	eq(r, PARSE_ERROR_NONE);
 	mr = parser_priv(state);
 	require(mr);
 	eq(mr->d_attr, TERM_VIOLET);
-	eq(mr->d_char, 'C');
 	ok;
 }
 
-static int test_i0(void *state) {
+int test_i0(void *state) {
 	enum parser_error r = parser_parse(state, "I:7:500:80:22:3");
 	struct monster_race *mr;
 
@@ -54,7 +69,7 @@ static int test_i0(void *state) {
 	ok;
 }
 
-static int test_w0(void *state) {
+int test_w0(void *state) {
 	enum parser_error r = parser_parse(state, "W:42:11:27:4");
 	struct monster_race *mr;
 
@@ -68,7 +83,7 @@ static int test_w0(void *state) {
 	ok;
 }
 
-static int test_b0(void *state) {
+int test_b0(void *state) {
 	enum parser_error r = parser_parse(state, "B:CLAW:FIRE:9d12");
 	struct monster_race *mr;
 
@@ -82,7 +97,7 @@ static int test_b0(void *state) {
 	ok;
 }
 
-static int test_b1(void *state) {
+int test_b1(void *state) {
 	enum parser_error r = parser_parse(state, "B:BITE:FIRE:6d8");
 	struct monster_race *mr;
 
@@ -96,7 +111,7 @@ static int test_b1(void *state) {
 	ok;
 }
 
-static int test_f0(void *state) {
+int test_f0(void *state) {
 	enum parser_error r = parser_parse(state, "F:UNIQUE | MALE");
 	struct monster_race *mr;
 
@@ -107,7 +122,7 @@ static int test_f0(void *state) {
 	ok;
 }
 
-static int test_d0(void *state) {
+int test_d0(void *state) {
 	enum parser_error r = parser_parse(state, "D:foo bar ");
 	enum parser_error s = parser_parse(state, "D: baz");
 	struct monster_race *mr;
@@ -120,7 +135,7 @@ static int test_d0(void *state) {
 	ok;
 }
 
-static int test_s0(void *state) {
+int test_s0(void *state) {
 	enum parser_error r = parser_parse(state, "S:1_IN_4 | BR_DARK | S_HOUND");
 	struct monster_race *mr;
 
@@ -133,10 +148,11 @@ static int test_s0(void *state) {
 	ok;
 }
 
-static const char *suite_name = "parse/r-info";
-static struct test tests[] = {
+const char *suite_name = "parse/r-info";
+struct test tests[] = {
 	{ "n0", test_n0 },
-	{ "g0", test_g0 },
+	{ "c0", test_c0 },
+	{ "t0", test_t0 },
 	{ "i0", test_i0 },
 	{ "w0", test_w0 },
 	{ "b0", test_b0 },

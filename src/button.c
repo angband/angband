@@ -196,7 +196,7 @@ int button_kill_text(unsigned char keypress)
 
 	/* Redraw */
 	p_ptr->redraw |= (PR_BUTTONS);
-	redraw_stuff();
+	redraw_stuff(p_ptr);
 
 	/* Return the size of the button */
 	return (length);
@@ -242,6 +242,14 @@ void button_init(button_add_f add, button_kill_f kill)
 	button_kill_hook = kill;
 }
 
+/*
+ * Dispose of the button memory
+ */
+void button_free(void)
+{
+	FREE(button_mse);
+	FREE(button_backup);
+}
 
 /**
  * Return the character represented by a button at screen position (x, y),

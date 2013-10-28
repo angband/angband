@@ -2,20 +2,20 @@
 
 #include "unit-test.h"
 
-nosetup;
-noteardown;
+NOSETUP
+NOTEARDOWN
 
-static int test_empty(void *state) {
+int test_empty(void *state) {
 	ok;
 }
 
-static int test_require(void *state) {
+int test_require(void *state) {
 	require(1);
 	ok;
 }
 
-static const char *suite_name = "trivial/trivial";
-static struct test tests[] = {
+const char *suite_name = "trivial/trivial";
+struct test tests[] = {
 	{ "empty", test_empty },
 	{ "require", test_require },
 	{ NULL, NULL },

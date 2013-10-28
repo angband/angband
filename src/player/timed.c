@@ -26,8 +26,8 @@
  * their own, as they are more complex than the ones handled by the generic
  * code.
  */
-static bool set_stun(int v);
-static bool set_cut(int v);
+static bool set_stun(struct player *p, int v);
+static bool set_cut(struct player *p, int v);
 
 
 typedef struct
@@ -38,99 +38,104 @@ typedef struct
   const char *on_decrease;
   u32b flag_redraw, flag_update;
   int msg;
+  int resist;
 } timed_effect;
 
 static timed_effect effects[] =
 {
 	{ "You feel yourself moving faster!", "You feel yourself slow down.",
 			NULL, NULL,
-			0, PU_BONUS, MSG_SPEED },
+			0, PU_BONUS, MSG_SPEED, 0 },
 	{ "You feel yourself moving slower!", "You feel yourself speed up.",
 			NULL, NULL,
-			0, PU_BONUS, MSG_SLOW },
+			0, PU_BONUS, MSG_SLOW, OF_FREE_ACT },
 	{ "You are blind.", "You blink and your eyes clear.",
 			NULL, NULL,
-			PR_MAP, PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS, MSG_BLIND },
+			PR_MAP, PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS, MSG_BLIND,
+			OF_RES_BLIND },
 	{ "You are paralysed!", "You can move again.",
 			NULL, NULL,
-			0, 0, MSG_PARALYZED },
+			0, 0, MSG_PARALYZED, OF_FREE_ACT },
 	{ "You are confused!", "You are no longer confused.",
 			"You are more confused!", "You feel a little less confused.",
-			0, 0, MSG_CONFUSED },
+			0, 0, MSG_CONFUSED, OF_RES_CONFU },
 	{ "You are terrified!", "You feel bolder now.",
 			"You are more scared!", "You feel a little less scared.",
-			0, PU_BONUS, MSG_AFRAID },
+			0, PU_BONUS, MSG_AFRAID, OF_RES_FEAR },
 	{ "You feel drugged!", "You can see clearly again.",
 			"You feel more drugged!", "You feel less drugged.",
-			PR_MAP | PR_MONLIST | PR_ITEMLIST, 0, MSG_DRUGGED },
+			PR_MAP | PR_MONLIST | PR_ITEMLIST, 0, MSG_DRUGGED, OF_RES_CHAOS },
 	{ "You are poisoned!", "You are no longer poisoned.",
 			"You are more poisoned!", "You are less poisoned.",
-			0, 0, MSG_POISONED },
-	{ NULL, NULL, NULL, NULL, 0, 0, 0 },  /* TMD_CUT -- handled seperately */
-	{ NULL, NULL, NULL, NULL, 0, 0, 0 },  /* TMD_STUN -- handled seperately */
+			0, 0, MSG_POISONED, OF_RES_POIS },
+	{ NULL, NULL, NULL, NULL, 0, 0, 0, 0 },  /* TMD_CUT -- handled seperately */
+	{ NULL, NULL, NULL, NULL, 0, 0, 0, OF_RES_STUN },  /* TMD_STUN -- handled seperately */
 	{ "You feel safe from evil!", "You no longer feel safe from evil.",
 			"You feel even safer from evil!", "You feel less safe from evil.",
-			0, 0, MSG_PROT_EVIL },
+			0, 0, MSG_PROT_EVIL, 0 },
 	{ "You feel invulnerable!", "You feel vulnerable once more.",
 			NULL, NULL,
-			0, PU_BONUS, MSG_INVULN },
+			0, PU_BONUS, MSG_INVULN, 0 },
 	{ "You feel like a hero!", "You no longer feel heroic.",
 			"You feel more like a hero!", "You feel less heroic.",
-			0, PU_BONUS, MSG_HERO },
+			0, PU_BONUS, MSG_HERO, 0 },
 	{ "You feel like a killing machine!", "You no longer feel berserk.",
 			"You feel even more berserk!", "You feel less berserk.",
-			0, PU_BONUS, MSG_BERSERK },
+			0, PU_BONUS, MSG_BERSERK, 0 },
 	{ "A mystic shield forms around your body!", "Your mystic shield crumbles away.",
 			"The mystic shield strengthens.", "The mystic shield weakens.",
-			0, PU_BONUS, MSG_SHIELD },
+			0, PU_BONUS, MSG_SHIELD, 0 },
 	{ "You feel righteous!", "The prayer has expired.",
 			"You feel more righteous!", "You feel less righteous.",
-			0, PU_BONUS, MSG_BLESSED },
+			0, PU_BONUS, MSG_BLESSED, 0 },
 	{ "Your eyes feel very sensitive!", "Your eyes no longer feel so sensitive.",
 			"Your eyes feel more sensitive!", "Your eyes feel less sensitive.",
-			0, (PU_BONUS | PU_MONSTERS), MSG_SEE_INVIS },
+			0, (PU_BONUS | PU_MONSTERS), MSG_SEE_INVIS, 0 },
 	{ "Your eyes begin to tingle!", "Your eyes stop tingling.",
 			"Your eyes' tingling intensifies.", "Your eyes tingle less.",
-			0, (PU_BONUS | PU_MONSTERS), MSG_INFRARED },
+			0, (PU_BONUS | PU_MONSTERS), MSG_INFRARED, 0 },
 	{ "You feel resistant to acid!", "You are no longer resistant to acid.",
 			"You feel more resistant to acid!", "You feel less resistant to acid.",
-			PR_STATUS, 0, MSG_RES_ACID },
+			PR_STATUS, 0, MSG_RES_ACID, OF_VULN_ACID },
 	{ "You feel resistant to electricity!", "You are no longer resistant to electricity.",
 			"You feel more resistant to electricity!", "You feel less resistant to electricity.",
-			PR_STATUS, 0, MSG_RES_ELEC },
+			PR_STATUS, 0, MSG_RES_ELEC, OF_VULN_ELEC },
 	{ "You feel resistant to fire!", "You are no longer resistant to fire.",
 			"You feel more resistant to fire!", "You feel less resistant to fire.",
-			PR_STATUS, 0, MSG_RES_FIRE },
+			PR_STATUS, 0, MSG_RES_FIRE, OF_VULN_FIRE },
 	{ "You feel resistant to cold!", "You are no longer resistant to cold.",
 			"You feel more resistant to cold!", "You feel less resistant to cold.",
-			PR_STATUS, 0, MSG_RES_COLD },
+			PR_STATUS, 0, MSG_RES_COLD, OF_VULN_COLD },
 	{ "You feel resistant to poison!", "You are no longer resistant to poison.",
 			"You feel more resistant to poison!", "You feel less resistant to poison.",
-			0, 0, MSG_RES_POIS },
+			0, 0, MSG_RES_POIS, 0 },
 	{ "You feel resistant to confusion!", "You are no longer resistant to confusion.",
 			"You feel more resistant to confusion!", "You feel less resistant to confusion.",
-			PR_STATUS, PU_BONUS, 0 },
+			PR_STATUS, PU_BONUS, 0, 0 },
 	{ "You feel your memories fade.", "Your memories come flooding back.",
 			NULL, NULL,
-			0, 0, MSG_GENERIC },
+			0, 0, MSG_GENERIC, 0 },
 	{ "Your mind expands.", "Your horizons are once more limited.",
 			"Your mind expands further.", NULL,
-			0, PU_BONUS, MSG_GENERIC },
+			0, PU_BONUS, MSG_GENERIC, 0 },
 	{ "Your skin turns to stone.", "A fleshy shade returns to your skin.",
 			NULL, NULL,
-			0, PU_BONUS, MSG_GENERIC },
+			0, PU_BONUS, MSG_GENERIC, 0 },
 	{ "You feel the need to run away, and fast!", "The urge to run dissipates.",
 			NULL, NULL,
-			0, PU_BONUS, MSG_AFRAID },
+			0, PU_BONUS, MSG_AFRAID, 0 },
 	{ "You start sprinting.", "You suddenly stop sprinting.",
 			NULL, NULL,
-			0, PU_BONUS, MSG_SPEED },
+			0, PU_BONUS, MSG_SPEED, 0 },
+	{ "You feel bold.", "You no longer feel bold.",
+			"You feel even bolder!", "You feel less bold.",
+			0, PU_BONUS, MSG_BOLD, 0 },
 };
 
 /*
  * Set a timed event (except timed resists, cutting and stunning).
  */
-bool set_timed(int idx, int v, bool notify)
+bool player_set_timed(struct player *p, int idx, int v, bool notify)
 {
 	timed_effect *effect;
 
@@ -139,18 +144,23 @@ bool set_timed(int idx, int v, bool notify)
 	if ((idx < 0) || (idx > TMD_MAX)) return FALSE;
 
 	/* No change */
-	if (p_ptr->timed[idx] == v) return FALSE;
+	if (p->timed[idx] == v) return FALSE;
 
 	/* Hack -- call other functions */
-	if (idx == TMD_STUN) return set_stun(v);
-	else if (idx == TMD_CUT) return set_cut(v);
+	if (idx == TMD_STUN) return set_stun(p, v);
+	else if (idx == TMD_CUT) return set_cut(p, v);
 
-	/* Don't mention some effects. */
-	if (idx == TMD_OPP_ACID && p_ptr->state.immune_acid) notify = FALSE;
-	else if (idx == TMD_OPP_ELEC && p_ptr->state.immune_elec) notify = FALSE;
-	else if (idx == TMD_OPP_FIRE && p_ptr->state.immune_fire) notify = FALSE;
-	else if (idx == TMD_OPP_COLD && p_ptr->state.immune_cold) notify = FALSE;
-	else if (idx == TMD_OPP_CONF && p_ptr->state.resist_confu) notify = FALSE;
+	/* Don't mention effects which already match the player state. */
+	if (idx == TMD_OPP_ACID && check_state(p_ptr, OF_IM_ACID, p->state.flags))
+		notify = FALSE;
+	else if (idx == TMD_OPP_ELEC && check_state(p_ptr, OF_IM_ELEC, p->state.flags))
+		notify = FALSE;
+	else if (idx == TMD_OPP_FIRE && check_state(p_ptr, OF_IM_FIRE, p->state.flags))
+		notify = FALSE;
+	else if (idx == TMD_OPP_COLD && check_state(p_ptr, OF_IM_COLD, p->state.flags))
+		notify = FALSE;
+	else if (idx == TMD_OPP_CONF && of_has(p->state.flags, OF_RES_CONFU))
+		notify = FALSE;
 
 	/* Find the effect */
 	effect = &effects[idx];
@@ -158,48 +168,47 @@ bool set_timed(int idx, int v, bool notify)
 	/* Turning off, always mention */
 	if (v == 0)
 	{
-		message(MSG_RECOVER, 0, effect->on_end);
+		msgt(MSG_RECOVER, "%s", effect->on_end);
 		notify = TRUE;
 	}
 
 	/* Turning on, always mention */
-	else if (p_ptr->timed[idx] == 0)
+	else if (p->timed[idx] == 0)
 	{
-		message(effect->msg, 0, effect->on_begin);
+		msgt(effect->msg, "%s", effect->on_begin);
 		notify = TRUE;
 	}
 
 	else if (notify)
 	{
 		/* Decrementing */
-		if (p_ptr->timed[idx] > v && effect->on_decrease)
-			message(effect->msg, 0, effect->on_decrease);
+		if (p->timed[idx] > v && effect->on_decrease)
+			msgt(effect->msg, "%s", effect->on_decrease);
 
 		/* Incrementing */
-		else if (v > p_ptr->timed[idx] && effect->on_increase)
-			message(effect->msg, 0, effect->on_increase);
+		else if (v > p->timed[idx] && effect->on_increase)
+			msgt(effect->msg, "%s", effect->on_increase);
 	}
 
 	/* Use the value */
-	p_ptr->timed[idx] = v;
+	p->timed[idx] = v;
 
 	/* Sort out the sprint effect */
 	if (idx == TMD_SPRINT && v == 0)
-		inc_timed(TMD_SLOW, 100, TRUE);
-
+		player_inc_timed(p, TMD_SLOW, 100, TRUE, FALSE);
 
 	/* Nothing to notice */
 	if (!notify) return FALSE;
 
 	/* Disturb */
-	if (OPT(disturb_state)) disturb(0, 0);
+	if (OPT(disturb_state)) disturb(p_ptr, 0, 0);
 
 	/* Update the visuals, as appropriate. */
-	p_ptr->update |= effect->flag_update;
-	p_ptr->redraw |= (PR_STATUS | effect->flag_redraw);
+	p->update |= effect->flag_update;
+	p->redraw |= (PR_STATUS | effect->flag_redraw);
 
 	/* Handle stuff */
-	handle_stuff();
+	handle_stuff(p);
 
 	/* Result */
 	return TRUE;
@@ -207,42 +216,54 @@ bool set_timed(int idx, int v, bool notify)
 
 /**
  * Increase the timed effect `idx` by `v`.  Mention this if `notify` is TRUE.
+ * Check for resistance to the effect if `check` is TRUE.
  */
-bool inc_timed(int idx, int v, bool notify)
+bool player_inc_timed(struct player *p, int idx, int v, bool notify, bool check)
 {
+	timed_effect *effect;
+
+	/* Find the effect */
+	effect = &effects[idx];
+
 	/* Check we have a valid effect */
 	if ((idx < 0) || (idx > TMD_MAX)) return FALSE;
 
+	/* Check that @ can be affected by this effect */
+	if (check) {
+		wieldeds_notice_flag(p, effect->resist);
+		if (check_state(p, effect->resist, p->state.flags)) return FALSE;
+	}
+
 	/* Paralysis should be non-cumulative */
-	if (idx == TMD_PARALYZED && p_ptr->timed[TMD_PARALYZED] > 0)
+	if (idx == TMD_PARALYZED && p->timed[TMD_PARALYZED] > 0)
 		return FALSE;
 
 	/* Set v */
-	v = v + p_ptr->timed[idx];
+	v = v + p->timed[idx];
 
-	return set_timed(idx, v, notify);
+	return player_set_timed(p, idx, v, notify);
 }
 
 /**
  * Decrease the timed effect `idx` by `v`.  Mention this if `notify` is TRUE.
  */
-bool dec_timed(int idx, int v, bool notify)
+bool player_dec_timed(struct player *p, int idx, int v, bool notify)
 {
 	/* Check we have a valid effect */
 	if ((idx < 0) || (idx > TMD_MAX)) return FALSE;
 
 	/* Set v */
-	v = p_ptr->timed[idx] - v;
+	v = p->timed[idx] - v;
 
-	return set_timed(idx, v, notify);
+	return player_set_timed(p, idx, v, notify);
 }
 
 /**
  * Clear the timed effect `idx`.  Mention this if `notify` is TRUE.
  */
-bool clear_timed(int idx, bool notify)
+bool player_clear_timed(struct player *p, int idx, bool notify)
 {
-	return set_timed(idx, 0, notify);
+	return player_set_timed(p, idx, 0, notify);
 }
 
 
@@ -252,7 +273,7 @@ bool clear_timed(int idx, bool notify)
  *
  * Note the special code to only notice "range" changes.
  */
-static bool set_stun(int v)
+static bool set_stun(struct player *p, int v)
 {
 	int old_aux, new_aux;
 
@@ -262,19 +283,19 @@ static bool set_stun(int v)
 	v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
 
 	/* Knocked out */
-	if (p_ptr->timed[TMD_STUN] > 100)
+	if (p->timed[TMD_STUN] > 100)
 	{
 		old_aux = 3;
 	}
 
 	/* Heavy stun */
-	else if (p_ptr->timed[TMD_STUN] > 50)
+	else if (p->timed[TMD_STUN] > 50)
 	{
 		old_aux = 2;
 	}
 
 	/* Stun */
-	else if (p_ptr->timed[TMD_STUN] > 0)
+	else if (p->timed[TMD_STUN] > 0)
 	{
 		old_aux = 1;
 	}
@@ -318,21 +339,21 @@ static bool set_stun(int v)
 			/* Stun */
 			case 1:
 			{
-				message(MSG_STUN, 0, "You have been stunned.");
+				msgt(MSG_STUN, "You have been stunned.");
 				break;
 			}
 
 			/* Heavy stun */
 			case 2:
 			{
-				message(MSG_STUN, 0, "You have been heavily stunned.");
+				msgt(MSG_STUN, "You have been heavily stunned.");
 				break;
 			}
 
 			/* Knocked out */
 			case 3:
 			{
-				message(MSG_STUN, 0, "You have been knocked out.");
+				msgt(MSG_STUN, "You have been knocked out.");
 				break;
 			}
 		}
@@ -350,8 +371,8 @@ static bool set_stun(int v)
 			/* None */
 			case 0:
 			{
-				message(MSG_RECOVER, 0, "You are no longer stunned.");
-				if (OPT(disturb_state)) disturb(0, 0);
+				msgt(MSG_RECOVER, "You are no longer stunned.");
+				if (OPT(disturb_state)) disturb(p_ptr, 0, 0);
 				break;
 			}
 		}
@@ -361,22 +382,22 @@ static bool set_stun(int v)
 	}
 
 	/* Use the value */
-	p_ptr->timed[TMD_STUN] = v;
+	p->timed[TMD_STUN] = v;
 
 	/* No change */
 	if (!notice) return (FALSE);
 
 	/* Disturb */
-	if (OPT(disturb_state)) disturb(0, 0);
+	if (OPT(disturb_state)) disturb(p_ptr, 0, 0);
 
 	/* Recalculate bonuses */
-	p_ptr->update |= (PU_BONUS);
+	p->update |= (PU_BONUS);
 
 	/* Redraw the "stun" */
-	p_ptr->redraw |= (PR_STATUS);
+	p->redraw |= (PR_STATUS);
 
 	/* Handle stuff */
-	handle_stuff();
+	handle_stuff(p_ptr);
 
 	/* Result */
 	return (TRUE);
@@ -388,7 +409,7 @@ static bool set_stun(int v)
  *
  * Note the special code to only notice "range" changes.
  */
-static bool set_cut(int v)
+static bool set_cut(struct player *p, int v)
 {
 	int old_aux, new_aux;
 
@@ -398,43 +419,43 @@ static bool set_cut(int v)
 	v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
 
 	/* Mortal wound */
-	if (p_ptr->timed[TMD_CUT] > 1000)
+	if (p->timed[TMD_CUT] > 1000)
 	{
 		old_aux = 7;
 	}
 
 	/* Deep gash */
-	else if (p_ptr->timed[TMD_CUT] > 200)
+	else if (p->timed[TMD_CUT] > 200)
 	{
 		old_aux = 6;
 	}
 
 	/* Severe cut */
-	else if (p_ptr->timed[TMD_CUT] > 100)
+	else if (p->timed[TMD_CUT] > 100)
 	{
 		old_aux = 5;
 	}
 
 	/* Nasty cut */
-	else if (p_ptr->timed[TMD_CUT] > 50)
+	else if (p->timed[TMD_CUT] > 50)
 	{
 		old_aux = 4;
 	}
 
 	/* Bad cut */
-	else if (p_ptr->timed[TMD_CUT] > 25)
+	else if (p->timed[TMD_CUT] > 25)
 	{
 		old_aux = 3;
 	}
 
 	/* Light cut */
-	else if (p_ptr->timed[TMD_CUT] > 10)
+	else if (p->timed[TMD_CUT] > 10)
 	{
 		old_aux = 2;
 	}
 
 	/* Graze */
-	else if (p_ptr->timed[TMD_CUT] > 0)
+	else if (p->timed[TMD_CUT] > 0)
 	{
 		old_aux = 1;
 	}
@@ -502,49 +523,49 @@ static bool set_cut(int v)
 			/* Graze */
 			case 1:
 			{
-				message(MSG_CUT, 0, "You have been given a graze.");
+				msgt(MSG_CUT, "You have been given a graze.");
 				break;
 			}
 
 			/* Light cut */
 			case 2:
 			{
-				message(MSG_CUT, 0, "You have been given a light cut.");
+				msgt(MSG_CUT, "You have been given a light cut.");
 				break;
 			}
 
 			/* Bad cut */
 			case 3:
 			{
-				message(MSG_CUT, 0, "You have been given a bad cut.");
+				msgt(MSG_CUT, "You have been given a bad cut.");
 				break;
 			}
 
 			/* Nasty cut */
 			case 4:
 			{
-				message(MSG_CUT, 0, "You have been given a nasty cut.");
+				msgt(MSG_CUT, "You have been given a nasty cut.");
 				break;
 			}
 
 			/* Severe cut */
 			case 5:
 			{
-				message(MSG_CUT, 0, "You have been given a severe cut.");
+				msgt(MSG_CUT, "You have been given a severe cut.");
 				break;
 			}
 
 			/* Deep gash */
 			case 6:
 			{
-				message(MSG_CUT, 0, "You have been given a deep gash.");
+				msgt(MSG_CUT, "You have been given a deep gash.");
 				break;
 			}
 
 			/* Mortal wound */
 			case 7:
 			{
-				message(MSG_CUT, 0, "You have been given a mortal wound.");
+				msgt(MSG_CUT, "You have been given a mortal wound.");
 				break;
 			}
 		}
@@ -562,8 +583,8 @@ static bool set_cut(int v)
 			/* None */
 			case 0:
 			{
-				message(MSG_RECOVER, 0, "You are no longer bleeding.");
-				if (OPT(disturb_state)) disturb(0, 0);
+				msgt(MSG_RECOVER, "You are no longer bleeding.");
+				if (OPT(disturb_state)) disturb(p_ptr, 0, 0);
 				break;
 			}
 		}
@@ -573,22 +594,22 @@ static bool set_cut(int v)
 	}
 
 	/* Use the value */
-	p_ptr->timed[TMD_CUT] = v;
+	p->timed[TMD_CUT] = v;
 
 	/* No change */
 	if (!notice) return (FALSE);
 
 	/* Disturb */
-	if (OPT(disturb_state)) disturb(0, 0);
+	if (OPT(disturb_state)) disturb(p_ptr, 0, 0);
 
 	/* Recalculate bonuses */
-	p_ptr->update |= (PU_BONUS);
+	p->update |= (PU_BONUS);
 
 	/* Redraw the "cut" */
-	p_ptr->redraw |= (PR_STATUS);
+	p->redraw |= (PR_STATUS);
 
 	/* Handle stuff */
-	handle_stuff();
+	handle_stuff(p_ptr);
 
 	/* Result */
 	return (TRUE);
@@ -617,7 +638,7 @@ static bool set_cut(int v)
  * game turns, or 500/(100/5) = 25 player turns (if nothing else is
  * affecting the player speed).
  */
-bool set_food(int v)
+bool player_set_food(struct player *p, int v)
 {
 	int old_aux, new_aux;
 
@@ -628,31 +649,31 @@ bool set_food(int v)
 	v = MAX(v, 0);
 
 	/* Fainting / Starving */
-	if (p_ptr->food < PY_FOOD_FAINT)
+	if (p->food < PY_FOOD_FAINT)
 	{
 		old_aux = 0;
 	}
 
 	/* Weak */
-	else if (p_ptr->food < PY_FOOD_WEAK)
+	else if (p->food < PY_FOOD_WEAK)
 	{
 		old_aux = 1;
 	}
 
 	/* Hungry */
-	else if (p_ptr->food < PY_FOOD_ALERT)
+	else if (p->food < PY_FOOD_ALERT)
 	{
 		old_aux = 2;
 	}
 
 	/* Normal */
-	else if (p_ptr->food < PY_FOOD_FULL)
+	else if (p->food < PY_FOOD_FULL)
 	{
 		old_aux = 3;
 	}
 
 	/* Full */
-	else if (p_ptr->food < PY_FOOD_MAX)
+	else if (p->food < PY_FOOD_MAX)
 	{
 		old_aux = 4;
 	}
@@ -708,35 +729,35 @@ bool set_food(int v)
 			/* Weak */
 			case 1:
 			{
-				msg_print("You are still weak.");
+				msg("You are still weak.");
 				break;
 			}
 
 			/* Hungry */
 			case 2:
 			{
-				msg_print("You are still hungry.");
+				msg("You are still hungry.");
 				break;
 			}
 
 			/* Normal */
 			case 3:
 			{
-				msg_print("You are no longer hungry.");
+				msg("You are no longer hungry.");
 				break;
 			}
 
 			/* Full */
 			case 4:
 			{
-				msg_print("You are full!");
+				msg("You are full!");
 				break;
 			}
 
 			/* Bloated */
 			case 5:
 			{
-				msg_print("You have gorged yourself!");
+				msg("You have gorged yourself!");
 				break;
 			}
 		}
@@ -754,35 +775,35 @@ bool set_food(int v)
 			/* Fainting / Starving */
 			case 0:
 			{
-				message_format(MSG_NOTICE, 0, "You are getting faint from hunger!");
+				msgt(MSG_NOTICE, "You are getting faint from hunger!");
 				break;
 			}
 
 			/* Weak */
 			case 1:
 			{
-				message_format(MSG_NOTICE, 0, "You are getting weak from hunger!");
+				msgt(MSG_NOTICE, "You are getting weak from hunger!");
 				break;
 			}
 
 			/* Hungry */
 			case 2:
 			{
-				message_format(MSG_HUNGRY, 0, "You are getting hungry.");
+				msgt(MSG_HUNGRY, "You are getting hungry.");
 				break;
 			}
 
 			/* Normal */
 			case 3:
 			{
-				message_format(MSG_NOTICE, 0, "You are no longer full.");
+				msgt(MSG_NOTICE, "You are no longer full.");
 				break;
 			}
 
 			/* Full */
 			case 4:
 			{
-				message_format(MSG_NOTICE, 0, "You are no longer gorged.");
+				msgt(MSG_NOTICE, "You are no longer gorged.");
 				break;
 			}
 		}
@@ -792,22 +813,22 @@ bool set_food(int v)
 	}
 
 	/* Use the value */
-	p_ptr->food = v;
+	p->food = v;
 
 	/* Nothing to notice */
 	if (!notice) return (FALSE);
 
 	/* Disturb */
-	if (OPT(disturb_state)) disturb(0, 0);
+	if (OPT(disturb_state)) disturb(p_ptr, 0, 0);
 
 	/* Recalculate bonuses */
-	p_ptr->update |= (PU_BONUS);
+	p->update |= (PU_BONUS);
 
 	/* Redraw hunger */
-	p_ptr->redraw |= (PR_STATUS);
+	p->redraw |= (PR_STATUS);
 
 	/* Handle stuff */
-	handle_stuff();
+	handle_stuff(p_ptr);
 
 	/* Result */
 	return (TRUE);

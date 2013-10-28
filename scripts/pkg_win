@@ -49,6 +49,7 @@ touch lib/apex/delete.me lib/bone/delete.me lib/data/delete.me \
       lib/info/delete.me lib/user/delete.me lib/save/delete.me
 
 cp ../*.exe .
+cp ../*.dll .
 
 # Copy the readmes and suchlike, converting to DOS line endings on the way
 cp_unix2dos ../changes.txt ./changes.txt
@@ -66,10 +67,11 @@ cp ../lib/help/*.hlp lib/help
 cp ../lib/pref/*.prf lib/pref
 
 cp ../lib/xtra/font/*.fon lib/xtra/font
-cp_unix2dos ../lib/xtra/font/copying.txt lib/xtra/font/copying.txt
 
-cp ../lib/xtra/graf/*.bmp lib/xtra/graf
-rm lib/xtra/graf/8x13.bmp
+cp ../lib/xtra/graf/8x8.png lib/xtra/graf
+cp ../lib/xtra/graf/8x16.png lib/xtra/graf
+cp ../lib/xtra/graf/16x16.png lib/xtra/graf
+cp ../lib/xtra/graf/32x32.png lib/xtra/graf
 
 cp ../lib/xtra/sound/sound.cfg lib/xtra/sound
 cp ../lib/xtra/sound/*.wav lib/xtra/sound

@@ -45,7 +45,7 @@
 
 #ifdef WINDOWS
 # define my_mkdir(path, perms) mkdir(path)
-#elif HAVE_MKDIR || MACH_O_CARBON
+#elif defined(HAVE_MKDIR) || defined(MACH_O_CARBON)
 # define my_mkdir(path, perms) mkdir(path, perms)
 #else
 # define my_mkdir(path, perms) FALSE
@@ -107,7 +107,7 @@ void safe_setuid_grab(void)
 /*
  * Apply special system-specific processing before dealing with a filename.
  */
-static void path_parse(char *buf, size_t max, cptr file)
+static void path_parse(char *buf, size_t max, const char *file)
 {
 	/* Accept the filename */
 	my_strcpy(buf, file, max);
@@ -150,16 +150,16 @@ static void path_process(char *buf, size_t len, size_t *cur_len, const char *pat
 #else /* MACH_O_CARBON */
 
 		{
-		/* On Macs getlogin() can incorrectly return root, so get the username via system frameworks */
-		CFStringRef cfusername = CSCopyUserName(TRUE);
-		CFIndex cfbufferlength = CFStringGetMaximumSizeForEncoding(CFStringGetLength(cfusername), kCFStringEncodingUTF8) + 1;
-		char *macusername = mem_alloc(cfbufferlength);
-		CFStringGetCString(cfusername, macusername, cfbufferlength, kCFStringEncodingUTF8);
-		CFRelease(cfusername);
+			/* On Macs getlogin() can incorrectly return root, so get the username via system frameworks */
+			CFStringRef cfusername = CSCopyUserName(TRUE);
+			CFIndex cfbufferlength = CFStringGetMaximumSizeForEncoding(CFStringGetLength(cfusername), kCFStringEncodingUTF8) + 1;
+			char *macusername = mem_alloc(cfbufferlength);
+			CFStringGetCString(cfusername, macusername, cfbufferlength, kCFStringEncodingUTF8);
+			CFRelease(cfusername);
 
-		/* Look up the user */
-		pw = getpwnam(macusername);
-		mem_free(macusername);
+			/* Look up the user */
+			pw = getpwnam(macusername);
+			mem_free(macusername);
 		}
 #endif /* !MACH_O_CARBON */
 
@@ -253,7 +253,7 @@ struct ang_file
 /*
  * Delete file 'fname'.
  */
-bool file_delete(const char *fname) 
+bool file_delete(const char *fname)
 {
 	char buf[1024];
 
@@ -264,7 +264,7 @@ bool file_delete(const char *fname)
 }
 
 /*
- * Delete file 'fname' to 'newname'.
+ * Move file 'fname' to 'newname'.
  */
 bool file_move(const char *fname, const char *newname)
 {
@@ -472,48 +472,6 @@ bool file_writec(ang_file *f, byte b)
 /*
  * Read 'n' bytes from file 'f' into array 'buf'.
  */
-
-#ifdef HAVE_READ
-
-#ifndef SET_UID
-# define READ_BUF_SIZE 16384
-#endif
-
-int file_read(ang_file *f, char *buf, size_t n)
-{
-	int fd = fileno(f->fh);
-	int ret;
-	int n_read = 0;
-
-#ifndef SET_UID
-
-	while (n >= READ_BUF_SIZE)
-	{
-		ret = read(fd, buf, READ_BUF_SIZE);
-		n_read += ret;
-
-		if (ret == -1)
-			return -1;
-		else if (ret != READ_BUF_SIZE)
-			return n_read;
-
-		buf += READ_BUF_SIZE;
-		n -= READ_BUF_SIZE;
-	}
-
-#endif /* !SET_UID */
-
-	ret = read(fd, buf, n);
-	n_read += ret;
-
-	if (ret == -1)
-		return -1;
-	else
-		return n_read;
-}
-
-#else
-
 int file_read(ang_file *f, char *buf, size_t n)
 {
 	size_t read = fread(buf, 1, n, f->fh);
@@ -524,50 +482,13 @@ int file_read(ang_file *f, char *buf, size_t n)
 		return read;
 }
 
-#endif
-
-
 /*
  * Append 'n' bytes of array 'buf' to file 'f'.
  */
-
-#ifdef HAVE_WRITE
-
-#ifndef SET_UID
-# define WRITE_BUF_SIZE 16384
-#endif
-
 bool file_write(ang_file *f, const char *buf, size_t n)
 {
-	int fd = fileno(f->fh);
-
-#ifndef SET_UID
-
-	while (n >= WRITE_BUF_SIZE)
-	{
-		if (write(fd, buf, WRITE_BUF_SIZE) != WRITE_BUF_SIZE)
-			return FALSE;
-
-		buf += WRITE_BUF_SIZE;
-		n -= WRITE_BUF_SIZE;
-	}
-
-#endif /* !SET_UID */
-
-	if (write(fd, buf, n) != (int)n)
-		return FALSE;
-
-	return TRUE;
+	return fwrite(buf, 1, n, f->fh) == n;
 }
-
-#else
-
-bool file_write(ang_file *f, const char *buf, size_t n)
-{
-	return (fwrite(buf, 1, n, f->fh) == n);
-}
-
-#endif 
 
 /** Line-based IO **/
 
@@ -669,20 +590,46 @@ bool file_put(ang_file *f, const char *buf)
 }
 
 /*
+ * The comp.lang.c FAQ recommends this pairing for varargs functions.
+ * See <http://c-faq.com/varargs/handoff.html>
+ */
+
+/**
  * Append a formatted line of text to the end of file 'f'.
+ *
+ * file_putf() is the ellipsis version. Most file output will call this
+ * version. It calls file_vputf() to do the real work. It returns TRUE
+ * if the write was successful and FALSE otherwise.
  */
 bool file_putf(ang_file *f, const char *fmt, ...)
 {
-	char buf[1024];
 	va_list vp;
+	bool status;
+
+	if (!f) return FALSE;
 
 	va_start(vp, fmt);
-	(void)vstrnfmt(buf, sizeof(buf), fmt, vp);
+	status = file_vputf(f, fmt, vp);
 	va_end(vp);
 
-	return file_put(f, buf);
+	return status;
 }
 
+/**
+ * Append a formatted line of text to the end of file 'f'.
+ *
+ * file_vputf() is the va_list version. It returns TRUE if the write was
+ * successful and FALSE otherwise.
+ */
+bool file_vputf(ang_file *f, const char *fmt, va_list vp)
+{
+	char buf[1024];
+
+	if (!f) return FALSE;
+
+	(void)vstrnfmt(buf, sizeof(buf), fmt, vp);
+	return file_put(f, buf);
+}
 
 /*
  * Format and translate a string, then print it out to file.

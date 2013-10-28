@@ -63,9 +63,9 @@ int my_stricmp(const char *s1, const char *s2)
 /*
  * Case insensitive comparison between the first n characters of two strings
  */
-int my_strnicmp(cptr a, cptr b, int n)
+int my_strnicmp(const char *a, const char *b, int n)
 {
-	cptr s1, s2;
+	const char *s1, *s2;
 	char z1, z2;
 
 	/* Scan the strings */
@@ -89,33 +89,33 @@ int my_strnicmp(cptr a, cptr b, int n)
  */
 char *my_stristr(const char *string, const char *pattern)
 {
-      const char *pptr, *sptr;
-      char *start;
+	const char *pptr, *sptr;
+	char *start;
 
-      for (start = (char *)string; *start != 0; start++)
-      {
-            /* find start of pattern in string */
-            for ( ; ((*start != 0) &&
-			        (toupper((unsigned char)*start) != toupper((unsigned char)*pattern))); start++)
-                  ;
-            if (*start == 0)
-                  return NULL;
+	for (start = (char *)string; *start != 0; start++)
+	{
+		/* find start of pattern in string */
+		for ( ; ((*start != 0) &&
+			 (toupper((unsigned char)*start) != toupper((unsigned char)*pattern))); start++)
+			;
+		if (*start == 0)
+			return NULL;
 
-            pptr = (const char *)pattern;
-            sptr = (const char *)start;
+		pptr = (const char *)pattern;
+		sptr = (const char *)start;
 
-            while (toupper((unsigned char)*sptr) == toupper((unsigned char)*pptr))
-            {
-                  sptr++;
-                  pptr++;
+		while (toupper((unsigned char)*sptr) == toupper((unsigned char)*pptr))
+		{
+			sptr++;
+			pptr++;
 
-                  /* if end of pattern then pattern was found */
-                  if (*pptr == 0)
-                        return (start);
-            }
-      }
+			/* if end of pattern then pattern was found */
+			if (*pptr == 0)
+				return (start);
+		}
+	}
 
-      return NULL;
+	return NULL;
 }
 
 
@@ -182,7 +182,7 @@ size_t my_strcat(char *buf, const char *src, size_t bufsize)
  * Determine if string "a" is equal to string "b"
  */
 #undef streq
-bool streq(cptr a, cptr b)
+bool streq(const char *a, const char *b)
 {
 	return (!strcmp(a, b));
 }
@@ -191,7 +191,7 @@ bool streq(cptr a, cptr b)
 /*
  * Determine if string "t" is a suffix of string "s"
  */
-bool suffix(cptr s, cptr t)
+bool suffix(const char *s, const char *t)
 {
 	size_t tlen = strlen(t);
 	size_t slen = strlen(s);
@@ -207,7 +207,7 @@ bool suffix(cptr s, cptr t)
 /*
  * Determine if string "t" is a prefix of string "s"
  */
-bool prefix(cptr s, cptr t)
+bool prefix(const char *s, const char *t)
 {
 	/* Scan "t" */
 	while (*t)
@@ -221,17 +221,38 @@ bool prefix(cptr s, cptr t)
 }
 
 
+/*
+ * Determine if string "t" is a prefix of string "s" - case insensitive.
+ */
+bool prefix_i(const char *s, const char *t)
+{
+	/* Scan "t" */
+	while (*t)
+	{
+		if (toupper((unsigned char)*t) != toupper((unsigned char)*s))
+			return (FALSE);
+		else
+		{
+			t++;
+			s++;
+		}
+	}
+
+	/* Matched, we have a prefix */
+	return (TRUE);
+}
+
 
 /*
  * Redefinable "plog" action
  */
-void (*plog_aux)(cptr) = NULL;
+void (*plog_aux)(const char *) = NULL;
 
 /*
  * Print (or log) a "warning" message (ala "perror()")
  * Note the use of the (optional) "plog_aux" hook.
  */
-void plog(cptr str)
+void plog(const char *str)
 {
 	/* Use the "alternative" function if possible */
 	if (plog_aux) (*plog_aux)(str);
@@ -245,14 +266,14 @@ void plog(cptr str)
 /*
  * Redefinable "quit" action
  */
-void (*quit_aux)(cptr) = NULL;
+void (*quit_aux)(const char *) = NULL;
 
 /*
  * Exit (ala "exit()").  If 'str' is NULL, do "exit(EXIT_SUCCESS)".
  * Otherwise, plog() 'str' and exit with an error code of -1.
  * But always use 'quit_aux', if set, before anything else.
  */
-void quit(cptr str)
+void quit(const char *str)
 {
 	/* Attempt to use the aux function */
 	if (quit_aux) (*quit_aux)(str);
@@ -270,31 +291,31 @@ void quit(cptr str)
 /* Arithmetic mean of the first 'size' entries of the array 'nums' */
 int mean(int *nums, int size)
 {
-    	int i, total = 0;
+	int i, total = 0;
 
-    	for(i = 0; i < size; i++) total += nums[i];
+	for(i = 0; i < size; i++) total += nums[i];
 
-    	return total / size;
+	return total / size;
 }
 
 /* Variance of the first 'size' entries of the array 'nums'  */
 int variance(int *nums, int size)
 {
-    	int i, avg, total = 0;
+	int i, avg, total = 0;
 
-    	avg = mean(nums, size);
+	avg = mean(nums, size);
 
-    	for(i = 0; i < size; i++)
+	for(i = 0; i < size; i++)
 	{
-        	int delta = nums[i] - avg;
-        	total += delta * delta;
-    	}
+		int delta = nums[i] - avg;
+		total += delta * delta;
+	}
 
-    	return total / size;
+	return total / size;
 }
 
 void sort(void *base, size_t nmemb, size_t smemb,
-          int (*comp)(const void *, const void *))
+	  int (*comp)(const void *, const void *))
 {
 	qsort(base, nmemb, smemb, comp);
 }

@@ -1,12 +1,15 @@
 #ifndef INCLUDED_STORE_H
 #define INCLUDED_STORE_H
 
-#include "object/types.h"
+#include "object/obj-flag.h"
+#include "object/object.h"
 #include "parser.h"
 
 #define STORE_INVEN_MAX		24    /* Max number of discrete objs in inven */
 #define STORE_TURNS		1000  /* Number of turns between turnovers */
 #define STORE_SHUFFLE		25    /* 1/Chance (per day) of an owner changing */
+#define STORE_MIN_KEEP  6       /* Min slots to "always" keep full (>0) */
+#define STORE_MAX_KEEP  18      /* Max slots to "always" keep full (<STORE_INVEN_MAX) */
 
 /* List of store indices */
 enum
@@ -30,7 +33,7 @@ typedef struct owner {
 	s32b max_cost;
 } owner_type;
 
-typedef struct store {
+struct store {
 	struct store *next;
 	struct owner *owners;
 	struct owner *owner;
@@ -42,13 +45,14 @@ typedef struct store {
 
 	unsigned int table_num;     /* Table -- Number of entries */
 	unsigned int table_size;    /* Table -- Total Size of Array */
-	s16b *table;        /* Table -- Legal item kinds */
-} store_type;
+	object_kind **table;        /* Table -- Legal item kinds */
+};
 
 void store_init(void);
+void free_stores(void);
 void store_reset(void);
-void store_shuffle(int which);
-void store_maint(int which);
+void store_shuffle(struct store *store);
+void store_maint(struct store *store);
 s32b price_item(const object_type *o_ptr, bool store_buying, int qty);
 
 extern struct owner *store_ownerbyidx(struct store *s, unsigned int idx);

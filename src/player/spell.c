@@ -22,21 +22,126 @@
 #include "game-cmd.h"
 #include "spells.h"
 
+/*
+ * Stat Table (INT/WIS) -- Minimum failure rate (percentage)
+ */
+static const byte adj_mag_fail[STAT_RANGE] =
+{
+	99	/* 3 */,
+	99	/* 4 */,
+	99	/* 5 */,
+	99	/* 6 */,
+	99	/* 7 */,
+	50	/* 8 */,
+	30	/* 9 */,
+	20	/* 10 */,
+	15	/* 11 */,
+	12	/* 12 */,
+	11	/* 13 */,
+	10	/* 14 */,
+	9	/* 15 */,
+	8	/* 16 */,
+	7	/* 17 */,
+	6	/* 18/00-18/09 */,
+	6	/* 18/10-18/19 */,
+	5	/* 18/20-18/29 */,
+	5	/* 18/30-18/39 */,
+	5	/* 18/40-18/49 */,
+	4	/* 18/50-18/59 */,
+	4	/* 18/60-18/69 */,
+	4	/* 18/70-18/79 */,
+	4	/* 18/80-18/89 */,
+	3	/* 18/90-18/99 */,
+	3	/* 18/100-18/109 */,
+	2	/* 18/110-18/119 */,
+	2	/* 18/120-18/129 */,
+	2	/* 18/130-18/139 */,
+	2	/* 18/140-18/149 */,
+	1	/* 18/150-18/159 */,
+	1	/* 18/160-18/169 */,
+	1	/* 18/170-18/179 */,
+	1	/* 18/180-18/189 */,
+	1	/* 18/190-18/199 */,
+	0	/* 18/200-18/209 */,
+	0	/* 18/210-18/219 */,
+	0	/* 18/220+ */
+};
+
+/*
+ * Stat Table (INT/WIS) -- failure rate adjustment
+ */
+static const int adj_mag_stat[STAT_RANGE] =
+{
+	-5	/* 3 */,
+	-4	/* 4 */,
+	-3	/* 5 */,
+	-3	/* 6 */,
+	-2	/* 7 */,
+	-1	/* 8 */,
+	 0	/* 9 */,
+	 0	/* 10 */,
+	 0	/* 11 */,
+	 0	/* 12 */,
+	 0	/* 13 */,
+	 1	/* 14 */,
+	 2	/* 15 */,
+	 3	/* 16 */,
+	 4	/* 17 */,
+	 5	/* 18/00-18/09 */,
+	 6	/* 18/10-18/19 */,
+	 7	/* 18/20-18/29 */,
+	 8	/* 18/30-18/39 */,
+	 9	/* 18/40-18/49 */,
+	10	/* 18/50-18/59 */,
+	11	/* 18/60-18/69 */,
+	12	/* 18/70-18/79 */,
+	15	/* 18/80-18/89 */,
+	18	/* 18/90-18/99 */,
+	21	/* 18/100-18/109 */,
+	24	/* 18/110-18/119 */,
+	27	/* 18/120-18/129 */,
+	30	/* 18/130-18/139 */,
+	33	/* 18/140-18/149 */,
+	36	/* 18/150-18/159 */,
+	39	/* 18/160-18/169 */,
+	42	/* 18/170-18/179 */,
+	45	/* 18/180-18/189 */,
+	48	/* 18/190-18/199 */,
+	51	/* 18/200-18/209 */,
+	54	/* 18/210-18/219 */,
+	57	/* 18/220+ */
+};
+
+/**
+ * Compare function for sorting spells into book order
+ */
+static int cmp_spell(const void *s1, const void *s2)
+{
+	int spell1 = *(int*)s1 + (p_ptr->class->spell_book == TV_MAGIC_BOOK ? 0 : PY_MAX_SPELLS);
+	int spell2 = *(int*)s2 + (p_ptr->class->spell_book == TV_MAGIC_BOOK ? 0 : PY_MAX_SPELLS);
+	int pos1 = s_info[spell1].snum;
+	int pos2 = s_info[spell2].snum;
+
+	if (pos1 < pos2)
+		return -1;
+	if (pos1 > pos2)
+		return 1;
+	return 0;
+}
 
 /**
  * Collect spells from a book into the spells[] array.
  */
-int spell_collect_from_book(const object_type *o_ptr, int spells[PY_MAX_SPELLS])
+int spell_collect_from_book(const object_type *o_ptr, int *spells)
 {
-	int i;
+	struct spell *sp;
 	int n_spells = 0;
 
-	for (i = 0; i < SPELLS_PER_BOOK; i++)
-	{
-		int spell = get_spell_index(o_ptr, i);
-		if (spell >= 0)
-			spells[n_spells++] = spell;
+	for (sp = o_ptr->kind->spells; sp; sp = sp->next) {
+		spells[n_spells++] = sp->spell_index;
 	}
+
+	sort(spells, n_spells, sizeof(int), cmp_spell);
 
 	return n_spells;
 }
@@ -48,15 +153,12 @@ int spell_collect_from_book(const object_type *o_ptr, int spells[PY_MAX_SPELLS])
 int spell_book_count_spells(const object_type *o_ptr,
 		bool (*tester)(int spell))
 {
-	int i;
+	struct spell *sp;
 	int n_spells = 0;
 
-	for (i = 0; i < SPELLS_PER_BOOK; i++)
-	{
-		int spell = get_spell_index(o_ptr, i);
-		if (spell >= 0 && tester(spell))
+	for (sp = o_ptr->kind->spells; sp; sp = sp->next)
+		if (tester(sp->spell_index))
 			n_spells++;
-	}
 
 	return n_spells;
 }
@@ -93,7 +195,7 @@ bool spell_okay_to_cast(int spell)
  */
 bool spell_okay_to_study(int spell)
 {
-	const magic_type *s_ptr = &mp_ptr->info[spell];
+	const magic_type *s_ptr = &p_ptr->class->spells.info[spell];
 	return (s_ptr->slevel <= p_ptr->lev) &&
 			!(p_ptr->spell_flags[spell] & PY_SPELL_LEARNED);
 }
@@ -103,7 +205,7 @@ bool spell_okay_to_study(int spell)
  */
 bool spell_okay_to_browse(int spell)
 {
-	const magic_type *s_ptr = &mp_ptr->info[spell];
+	const magic_type *s_ptr = &p_ptr->class->spells.info[spell];
 	return (s_ptr->slevel < 99);
 }
 
@@ -119,10 +221,10 @@ s16b spell_chance(int spell)
 
 
 	/* Paranoia -- must be literate */
-	if (!cp_ptr->spell_book) return (100);
+	if (!p_ptr->class->spell_book) return (100);
 
 	/* Get the spell */
-	s_ptr = &mp_ptr->info[spell];
+	s_ptr = &p_ptr->class->spells.info[spell];
 
 	/* Extract the base spell failure rate */
 	chance = s_ptr->sfail;
@@ -131,7 +233,7 @@ s16b spell_chance(int spell)
 	chance -= 3 * (p_ptr->lev - s_ptr->slevel);
 
 	/* Reduce failure rate by INT/WIS adjustment */
-	chance -= adj_mag_stat[p_ptr->state.stat_ind[cp_ptr->spell_stat]];
+	chance -= adj_mag_stat[p_ptr->state.stat_ind[p_ptr->class->spell_stat]];
 
 	/* Not enough mana to cast */
 	if (s_ptr->smana > p_ptr->csp)
@@ -140,7 +242,7 @@ s16b spell_chance(int spell)
 	}
 
 	/* Extract the minimum failure rate */
-	minfail = adj_mag_fail[p_ptr->state.stat_ind[cp_ptr->spell_stat]];
+	minfail = adj_mag_fail[p_ptr->state.stat_ind[p_ptr->class->spell_stat]];
 
 	/* Non mage/priest characters never get better than 5 percent */
 	if (!player_has(PF_ZERO_FAIL) && minfail < 5)
@@ -157,7 +259,7 @@ s16b spell_chance(int spell)
 	/* Fear makes spells harder (before minfail) */
 	/* Note that spells that remove fear have a much lower fail rate than
 	 * surrounding spells, to make sure this doesn't cause mega fail */
-	if (p_ptr->state.afraid) chance += 20;
+	if (check_state(p_ptr, OF_AFRAID, p_ptr->state.flags)) chance += 20;
 
 	/* Minimal and maximal failure rate */
 	if (chance < minfail) chance = minfail;
@@ -182,14 +284,12 @@ s16b spell_chance(int spell)
 /* Check if the given spell is in the given book. */
 bool spell_in_book(int spell, int book)
 {
-	int i;
+	struct spell *sp;
 	object_type *o_ptr = object_from_item_idx(book);
 
-	for (i = 0; i < SPELLS_PER_BOOK; i++)
-	{
-		if (spell == get_spell_index(o_ptr, i))
+	for (sp = o_ptr->kind->spells; sp; sp = sp->next)
+		if (spell == sp->spell_index)
 			return TRUE;
-	}
 
 	return FALSE;
 }
@@ -201,7 +301,7 @@ bool spell_in_book(int spell, int book)
 void spell_learn(int spell)
 {
 	int i;
-	cptr p = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
+	const char *p = ((p_ptr->class->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
 
 	/* Learn the spell */
 	p_ptr->spell_flags[spell] |= PY_SPELL_LEARNED;
@@ -217,8 +317,8 @@ void spell_learn(int spell)
 	p_ptr->spell_order[i] = spell;
 
 	/* Mention the result */
-	message_format(MSG_STUDY, 0, "You have learned the %s of %s.",
-	           p, get_spell_name(cp_ptr->spell_book, spell));
+	msgt(MSG_STUDY, "You have learned the %s of %s.",
+	           p, get_spell_name(p_ptr->class->spell_book, spell));
 
 	/* One less spell available */
 	p_ptr->new_spells--;
@@ -227,7 +327,7 @@ void spell_learn(int spell)
 	if (p_ptr->new_spells)
 	{
 		/* Message */
-		msg_format("You can learn %d more %s%s.",
+		msg("You can learn %d more %s%s.",
 		           p_ptr->new_spells, p, PLURAL(p_ptr->new_spells));
 	}
 
@@ -242,7 +342,7 @@ bool spell_cast(int spell, int dir)
 	int chance;
 
 	/* Get the spell */
-	const magic_type *s_ptr = &mp_ptr->info[spell];	
+	const magic_type *s_ptr = &p_ptr->class->spells.info[spell];
 
 	/* Spell failure chance */
 	chance = spell_chance(spell);
@@ -250,15 +350,15 @@ bool spell_cast(int spell, int dir)
 	/* Failed spell */
 	if (randint0(100) < chance)
 	{
-		if (OPT(flush_failure)) flush();
-		msg_print("You failed to concentrate hard enough!");
+		flush();
+		msg("You failed to concentrate hard enough!");
 	}
 
 	/* Process spell */
 	else
 	{
 		/* Cast the spell */
-		if (!cast_spell(cp_ptr->spell_book, spell, dir)) return FALSE;
+		if (!cast_spell(p_ptr->class->spell_book, spell, dir)) return FALSE;
 
 		/* A spell was cast */
 		sound(MSG_SPELL);
@@ -271,7 +371,7 @@ bool spell_cast(int spell, int dir)
 			p_ptr->spell_flags[spell] |= PY_SPELL_WORKED;
 
 			/* Gain experience */
-			gain_exp(e * s_ptr->slevel);
+			player_exp_gain(p_ptr, e * s_ptr->slevel);
 
 			/* Redraw object recall */
 			p_ptr->redraw |= (PR_OBJECT);
@@ -295,10 +395,10 @@ bool spell_cast(int spell, int dir)
 		p_ptr->csp_frac = 0;
 
 		/* Message */
-		msg_print("You faint from the effort!");
+		msg("You faint from the effort!");
 
-		/* Hack -- Bypass free action */
-		(void)inc_timed(TMD_PARALYZED, randint1(5 * oops + 1), TRUE);
+		/* Bypass free action */
+		(void)player_inc_timed(p_ptr, TMD_PARALYZED, randint1(5 * oops + 1), TRUE, FALSE);
 
 		/* Damage CON (possibly permanently) */
 		if (randint0(100) < 50)
@@ -306,7 +406,7 @@ bool spell_cast(int spell, int dir)
 			bool perm = (randint0(100) < 25);
 
 			/* Message */
-			msg_print("You have damaged your health!");
+			msg("You have damaged your health!");
 
 			/* Reduce constitution */
 			player_stat_dec(p_ptr, A_CON, perm);

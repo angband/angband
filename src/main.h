@@ -32,6 +32,7 @@ extern errr init_vme(int argc, char **argv);
 extern errr init_vcs(int argc, char **argv);
 extern errr init_sdl(int argc, char **argv);
 extern errr init_test(int argc, char **argv);
+extern errr init_stats(int argc, char **argv);
 
 
 extern const char help_lfb[];
@@ -50,12 +51,13 @@ extern const char help_ibm[];
 extern const char help_dos[];
 extern const char help_sdl[];
 extern const char help_test[];
+extern const char help_stats[];
 
 
 struct module
 {
-	cptr name;
-	cptr help;
+	const char *name;
+	const char *help;
 	errr (*init)(int argc, char **argv);
 };
 

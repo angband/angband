@@ -42,7 +42,6 @@ typedef int (*button_kill_f)(unsigned char);
 typedef struct alloc_entry alloc_entry;
 typedef struct quest quest;
 typedef struct spell spell_type;
-typedef struct autoinscription autoinscription;
 typedef struct history_info history_info;
 typedef struct color_type color_type;
 
@@ -55,21 +54,14 @@ typedef struct color_type color_type;
  */
 typedef struct maxima
 {
-	u32b fake_text_size;  /**< Max size of all descriptions read in from lib/edit */
-	u32b fake_name_size;  /**< Max size of all names read in from lib/edit */
-
 	u16b f_max;       /**< Maximum number of terrain features */
 	u16b k_max;       /**< Maximum number of object base kinds */
 	u16b a_max;       /**< Maximum number of artifact kinds */
 	u16b e_max;       /**< Maximum number of ego-item kinds */
 	u16b r_max;       /**< Maximum number of monster races */
-	u16b v_max;       /**< Maximum number of vault kinds */
-	u16b p_max;       /**< Maximum number of player races */
-	u16b h_max;       /**< Maximum number of chained player history entries */
-	u16b b_max;       /**< Maximum number of shop owners per store kind */
-	u16b c_max;       /**< Maximum number of player classes */
-	u16b flavor_max;  /**< Maximum number of item flavour kinds */
+	u16b mp_max;	  /**< Maximum number of monster pain message sets */
 	u16b s_max;       /**< Maximum number of magic spells */
+	u16b pit_max;	  /**< Maximum number of monster pit types */
 
 	u16b o_max;       /**< Maximum number of objects on a given level */
 	u16b m_max;       /**< Maximum number of monsters on a given level */
@@ -103,8 +95,8 @@ typedef struct feature
 	byte d_attr;   /**< Default feature attribute */
 	char d_char;   /**< Default feature character */
 
-	byte x_attr;   /**< Desired feature attribute (set by user/pref file) */
-	char x_char;   /**< Desired feature character (set by user/pref file) */
+	byte x_attr[3];   /**< Desired feature attribute (set by user/pref file) */
+	char x_char[3];   /**< Desired feature character (set by user/pref file) */
 } feature_type;
 
 
@@ -112,8 +104,7 @@ typedef struct feature
 /*
  * Information about "vault generation"
  */
-typedef struct vault
-{
+typedef struct vault {
 	struct vault *next;
 	unsigned int vidx;
 	char *name;
@@ -197,15 +188,6 @@ typedef struct
 	const char *name;
 } grouper;
 
-
-/* Information for object auto-inscribe */
-struct autoinscription
-{
-	s16b kind_idx;
-	s16b inscription_idx;
-};
-
-
 struct history_info
 {
 	u16b type;			/* Kind of history item */
@@ -216,19 +198,19 @@ struct history_info
 	char event[80];	/* The text of the item */
 };
 
-
 enum grid_light_level
 {
-	LIGHT_TORCH,
-	LIGHT_GLOW,
-	LIGHT_DARK
+	FEAT_LIGHTING_BRIGHT = 0,
+	FEAT_LIGHTING_LIT,
+	FEAT_LIGHTING_DARK,
+	FEAT_LIGHTING_MAX
 };
 
 typedef struct
 {
 	u32b m_idx;		/* Monster index */
 	u32b f_idx;		/* Feature index */
-	u32b first_k_idx;	/* The "Kind" of the first item on the grid */
+	struct object_kind *first_kind;	/* The "kind" of the first item on the grid */
 	bool multiple_objects;	/* Is there more than one item there? */
 
 	enum grid_light_level lighting; /* Light level */

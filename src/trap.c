@@ -19,15 +19,16 @@
 #include "angband.h"
 #include "attack.h"
 #include "cave.h"
-#include "monster/monster.h"
+#include "effects.h"
 #include "spells.h"
+#include "trap.h"
 
 /*
  * Determine if a trap affects the player.
  * Always miss 5% of the time, Always hit 5% of the time.
  * Otherwise, match trap power against player armor.
  */
-static bool trap_check_hit(int power)
+bool trap_check_hit(int power)
 {
 	return test_hit(power, p_ptr->state.ac + p_ptr->state.to_a, TRUE);
 }
@@ -66,7 +67,7 @@ void pick_trap(int y, int x)
 	};
 
 	/* Paranoia */
-	if (cave_feat[y][x] != FEAT_INVIS) return;
+	if (cave->feat[y][x] != FEAT_INVIS) return;
 
 	/* Pick a trap */
 	while (1)
@@ -88,299 +89,30 @@ void pick_trap(int y, int x)
 	}
 
 	/* Activate the trap */
-	cave_set_feat(y, x, feat);
+	cave_set_feat(cave, y, x, feat);
 }
 
-
-
-/*
- * Places a random trap at the given location.
- *
- * The location must be a legal, naked, floor grid.
- *
- * Note that all traps start out as "invisible" and "untyped", and then
- * when they are "discovered" (by detecting them or setting them off),
- * the trap is "instantiated" as a visible, "typed", trap.
- */
-void place_trap(int y, int x)
+/* Places a trap. All traps are untyped until discovered. */
+void place_trap(struct cave *c, int y, int x)
 {
-	/* Paranoia */
-	if (!in_bounds(y, x)) return;
-
-	/* Require empty, clean, floor grid */
-	if (!cave_naked_bold(y, x)) return;
+	assert(cave_in_bounds(c, y, x));
+	assert(cave_isempty(c, y, x));
 
 	/* Place an invisible trap */
-	cave_set_feat(y, x, FEAT_INVIS);
+	cave_set_feat(c, y, x, FEAT_INVIS);
 }
-
-
-
 
 /*
  * Handle player hitting a real trap
  */
 void hit_trap(int y, int x)
 {
-	int i, num, dam;
-
-	cptr name = "a trap";
-
+	bool ident;
+	struct feature *trap = &f_info[cave->feat[y][x]];
 
 	/* Disturb the player */
-	disturb(0, 0);
+	disturb(p_ptr, 0, 0);
 
-	/* Analyze XXX XXX XXX */
-	switch (cave_feat[y][x])
-	{
-		case FEAT_TRAP_HEAD + 0x00:
-		{
-			msg_print("You fall through a trap door!");
-			if (p_ptr->state.ffall)
-			{
-				msg_print("You float gently down to the next level.");
-			}
-			else
-			{
-				dam = damroll(2, 8);
-				take_hit(dam, name);
-			}
-			wieldeds_notice_flag(OF_FEATHER);
-
-			/* New depth */
-			dungeon_change_level(p_ptr->depth + 1);
-			
-			break;
-		}
-
-		case FEAT_TRAP_HEAD + 0x01:
-		{
-			msg_print("You fall into a pit!");
-			if (p_ptr->state.ffall)
-			{
-				msg_print("You float gently to the bottom of the pit.");
-			}
-			else
-			{
-				dam = damroll(2, 6);
-				take_hit(dam, name);
-			}
-			wieldeds_notice_flag(OF_FEATHER);
-			break;
-		}
-
-		case FEAT_TRAP_HEAD + 0x02:
-		{
-			msg_print("You fall into a spiked pit!");
-
-			if (p_ptr->state.ffall)
-			{
-				msg_print("You float gently to the floor of the pit.");
-				msg_print("You carefully avoid touching the spikes.");
-			}
-			else
-			{
-				/* Base damage */
-				dam = damroll(2, 6);
-
-				/* Extra spike damage */
-				if (one_in_(2))
-				{
-					msg_print("You are impaled!");
-
-					dam = dam * 2;
-					(void)inc_timed(TMD_CUT, randint1(dam), TRUE);
-				}
-
-				/* Take the damage */
-				take_hit(dam, name);
-			}
-			wieldeds_notice_flag(OF_FEATHER);
-			break;
-		}
-
-		case FEAT_TRAP_HEAD + 0x03:
-		{
-			msg_print("You fall into a spiked pit!");
-
-			if (p_ptr->state.ffall)
-			{
-				msg_print("You float gently to the floor of the pit.");
-				msg_print("You carefully avoid touching the spikes.");
-			}
-			else
-			{
-				/* Base damage */
-				dam = damroll(2, 6);
-
-				/* Extra spike damage */
-				if (one_in_(2))
-				{
-					msg_print("You are impaled on poisonous spikes!");
-
-					dam = dam * 2;
-					(void)inc_timed(TMD_CUT, randint1(dam), TRUE);
-
-					if (p_ptr->state.resist_pois || p_ptr->timed[TMD_OPP_POIS])
-					{
-						msg_print("The poison does not affect you!");
-					}
-					else
-					{
-						dam = dam * 2;
-						(void)inc_timed(TMD_POISONED, randint1(dam), TRUE);
-					}
-
-					wieldeds_notice_flag(OF_RES_POIS);
-				}
-
-				/* Take the damage */
-				take_hit(dam, name);
-			}
-			wieldeds_notice_flag(OF_FEATHER);
-
-			break;
-		}
-
-		case FEAT_TRAP_HEAD + 0x04:
-		{
-			sound(MSG_SUM_MONSTER);
-			msg_print("You are enveloped in a cloud of smoke!");
-			cave_info[y][x] &= ~(CAVE_MARK);
-			cave_set_feat(y, x, FEAT_FLOOR);
-			num = 2 + randint1(3);
-			for (i = 0; i < num; i++)
-			{
-				(void)summon_specific(y, x, p_ptr->depth, 0, 1);
-			}
-			break;
-		}
-
-		case FEAT_TRAP_HEAD + 0x05:
-		{
-			msg_print("You hit a teleport trap!");
-			teleport_player(100);
-			break;
-		}
-
-		case FEAT_TRAP_HEAD + 0x06:
-		{
-			msg_print("You are enveloped in flames!");
-			dam = damroll(4, 6);
-			fire_dam(dam, "a fire trap");
-			break;
-		}
-
-		case FEAT_TRAP_HEAD + 0x07:
-		{
-			msg_print("You are splashed with acid!");
-			dam = damroll(4, 6);
-			acid_dam(dam, "an acid trap");
-			break;
-		}
-
-		case FEAT_TRAP_HEAD + 0x08:
-		{
-			if (trap_check_hit(125))
-			{
-				msg_print("A small dart hits you!");
-				dam = damroll(1, 4);
-				take_hit(dam, name);
-				(void)inc_timed(TMD_SLOW, randint0(20) + 20, TRUE);
-			}
-			else
-			{
-				msg_print("A small dart barely misses you.");
-			}
-			break;
-		}
-
-		case FEAT_TRAP_HEAD + 0x09:
-		{
-			if (trap_check_hit(125))
-			{
-				msg_print("A small dart hits you!");
-				dam = damroll(1, 4);
-				take_hit(dam, name);
-				(void)do_dec_stat(A_STR, FALSE);
-			}
-			else
-			{
-				msg_print("A small dart barely misses you.");
-			}
-			break;
-		}
-
-		case FEAT_TRAP_HEAD + 0x0A:
-		{
-			if (trap_check_hit(125))
-			{
-				msg_print("A small dart hits you!");
-				dam = damroll(1, 4);
-				take_hit(dam, name);
-				(void)do_dec_stat(A_DEX, FALSE);
-			}
-			else
-			{
-				msg_print("A small dart barely misses you.");
-			}
-			break;
-		}
-
-		case FEAT_TRAP_HEAD + 0x0B:
-		{
-			if (trap_check_hit(125))
-			{
-				msg_print("A small dart hits you!");
-				dam = damroll(1, 4);
-				take_hit(dam, name);
-				(void)do_dec_stat(A_CON, FALSE);
-			}
-			else
-			{
-				msg_print("A small dart barely misses you.");
-			}
-			break;
-		}
-
-		case FEAT_TRAP_HEAD + 0x0C:
-		{
-			msg_print("You are surrounded by a black gas!");
-			if (!p_ptr->state.resist_blind)
-				(void)inc_timed(TMD_BLIND, randint0(50) + 25, TRUE);
-			wieldeds_notice_flag(OF_RES_BLIND);
-
-			break;
-		}
-
-		case FEAT_TRAP_HEAD + 0x0D:
-		{
-			msg_print("You are surrounded by a gas of scintillating colors!");
-			if (!p_ptr->state.resist_confu)
-				(void)inc_timed(TMD_CONFUSED, randint0(20) + 10, TRUE);
-			wieldeds_notice_flag(OF_RES_CONFU);
-
-			break;
-		}
-
-		case FEAT_TRAP_HEAD + 0x0E:
-		{
-			msg_print("You are surrounded by a pungent green gas!");
-			if (!p_ptr->state.resist_pois && !p_ptr->timed[TMD_OPP_POIS])
-				(void)inc_timed(TMD_POISONED, randint0(20) + 10, TRUE);
-			wieldeds_notice_flag(OF_RES_POIS);
-
-			break;
-		}
-
-		case FEAT_TRAP_HEAD + 0x0F:
-		{
-			msg_print("You are surrounded by a strange white mist!");
-			if (!p_ptr->state.free_act)
-				(void)inc_timed(TMD_PARALYZED, randint0(10) + 5, TRUE);
-			wieldeds_notice_flag(OF_FREE_ACT);
-
-			break;
-		}
-	}
+	/* Run the effect */
+	effect_do(trap->effect, &ident, FALSE, 0, 0, 0);
 }

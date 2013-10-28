@@ -41,7 +41,7 @@ quark_t quark_add(const char *str)
 		alloc_quarks *= 2;
 		quarks = mem_realloc(quarks, alloc_quarks * sizeof(char *));
 	}
-	
+
 	q = nr_quarks++;
 	quarks[q] = string_make(str);
 

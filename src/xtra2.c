@@ -18,151 +18,15 @@
 
 #include "angband.h"
 #include "cmds.h"
+#include "keymap.h"
 #include "history.h"
-#include "macro.h"
 #include "object/tvalsval.h"
+#include "pathfind.h"
+#include "spells.h"
 #include "target.h"
 
 /* Private function that is shared by verify_panel() and center_panel() */
 void verify_panel_int(bool centered);
-
-/*
- * Advance experience levels and print experience
- */
-void check_experience(void)
-{
-	/* Hack -- lower limit */
-	if (p_ptr->exp < 0) p_ptr->exp = 0;
-
-	/* Hack -- lower limit */
-	if (p_ptr->max_exp < 0) p_ptr->max_exp = 0;
-
-	/* Hack -- upper limit */
-	if (p_ptr->exp > PY_MAX_EXP) p_ptr->exp = PY_MAX_EXP;
-
-	/* Hack -- upper limit */
-	if (p_ptr->max_exp > PY_MAX_EXP) p_ptr->max_exp = PY_MAX_EXP;
-
-
-	/* Hack -- maintain "max" experience */
-	if (p_ptr->exp > p_ptr->max_exp) p_ptr->max_exp = p_ptr->exp;
-
-	/* Redraw experience */
-	p_ptr->redraw |= (PR_EXP);
-
-	/* Handle stuff */
-	handle_stuff();
-
-
-	/* Lose levels while possible */
-	while ((p_ptr->lev > 1) &&
-	       (p_ptr->exp < (player_exp[p_ptr->lev-2] *
-	                      p_ptr->expfact / 100L)))
-	{
-		/* Lose a level */
-		p_ptr->lev--;
-
-		/* Update some stuff */
-		p_ptr->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
-
-		/* Redraw some stuff */
-		p_ptr->redraw |= (PR_LEV | PR_TITLE | PR_EXP);
-
-		/* Handle stuff */
-		handle_stuff();
-	}
-
-
-	/* Gain levels while possible */
-	while ((p_ptr->lev < PY_MAX_LEVEL) &&
-	       (p_ptr->exp >= (player_exp[p_ptr->lev-1] *
-	                       p_ptr->expfact / 100L)))
-	{
-		char buf[80];
-
-		/* Gain a level */
-		p_ptr->lev++;
-
-		/* Save the highest level */
-		if (p_ptr->lev > p_ptr->max_lev) p_ptr->max_lev = p_ptr->lev;
-
-		/* Log level updates */
-		strnfmt(buf, sizeof(buf), "Reached level %d", p_ptr->lev);
-		history_add(buf, HISTORY_GAIN_LEVEL, 0);
-
-		/* Message */
-		message_format(MSG_LEVEL, p_ptr->lev, "Welcome to level %d.",
-			p_ptr->lev);
-
-		/* Add to social class */
-		p_ptr->sc += randint1(2);
-		if (p_ptr->sc > 150) p_ptr->sc = 150;
-
-		/* Update some stuff */
-		p_ptr->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
-
-		/* Redraw some stuff */
-		p_ptr->redraw |= (PR_LEV | PR_TITLE | PR_EXP);
-
-		/* Handle stuff */
-		handle_stuff();
-	}
-
-	/* Gain max levels while possible */
-	while ((p_ptr->max_lev < PY_MAX_LEVEL) &&
-	       (p_ptr->max_exp >= (player_exp[p_ptr->max_lev-1] *
-	                           p_ptr->expfact / 100L)))
-	{
-		/* Gain max level */
-		p_ptr->max_lev++;
-
-		/* Update some stuff */
-		p_ptr->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
-
-		/* Redraw some stuff */
-		p_ptr->redraw |= (PR_LEV | PR_TITLE | PR_EXP);
-
-		/* Handle stuff */
-		handle_stuff();
-	}
-}
-
-
-/*
- * Gain experience
- */
-void gain_exp(s32b amount)
-{
-	/* Gain some experience */
-	p_ptr->exp += amount;
-
-	/* Slowly recover from experience drainage */
-	if (p_ptr->exp < p_ptr->max_exp)
-	{
-		/* Gain max experience (10%) */
-		p_ptr->max_exp += amount / 10;
-	}
-
-	/* Check Experience */
-	check_experience();
-}
-
-
-/*
- * Lose experience
- */
-void lose_exp(s32b amount)
-{
-	/* Never drop below zero experience */
-	if (amount > p_ptr->exp) amount = p_ptr->exp;
-
-	/* Lose some experience */
-	p_ptr->exp -= amount;
-
-	/* Check Experience */
-	check_experience();
-}
-
 
 /*
  * Modify the current panel to the given coordinates, adjusting only to
@@ -199,7 +63,7 @@ bool modify_panel(term *t, int wy, int wx)
 		p_ptr->redraw |= (PR_MAP);
 
 		/* Redraw for big graphics */
-		if ((tile_width > 1) || (tile_height > 1)) redraw_stuff();
+		if ((tile_width > 1) || (tile_height > 1)) redraw_stuff(p_ptr);
       
 		/* Changed */
 		return (TRUE);
@@ -407,57 +271,36 @@ int motion_dir(int y1, int x1, int y2, int x2)
 /*
  * Extract a direction (or zero) from a character
  */
-int target_dir(char ch)
+int target_dir(struct keypress ch)
 {
 	int d = 0;
 
-	int mode;
-
-	cptr act;
-
-	cptr s;
-
-
 	/* Already a direction? */
-	if (isdigit((unsigned char)ch))
-	{
-		d = D2I(ch);
-	}
-	else if (isarrow(ch))
-	{
-		switch (ch)
-		{
-			case ARROW_DOWN:	d = 2; break;
-			case ARROW_LEFT:	d = 4; break;
-			case ARROW_RIGHT:	d = 6; break;
-			case ARROW_UP:		d = 8; break;
+	if (isdigit((unsigned char)ch.code)) {
+		d = D2I(ch.code);
+	} else if (isarrow(ch.code)) {
+		switch (ch.code) {
+			case ARROW_DOWN:  d = 2; break;
+			case ARROW_LEFT:  d = 4; break;
+			case ARROW_RIGHT: d = 6; break;
+			case ARROW_UP:    d = 8; break;
 		}
-	}
-	else
-	{
-		/* Roguelike */
+	} else {
+		int mode;
+		const struct keypress *act;
+
 		if (OPT(rogue_like_commands))
-		{
 			mode = KEYMAP_MODE_ROGUE;
-		}
-
-		/* Original */
 		else
-		{
 			mode = KEYMAP_MODE_ORIG;
-		}
 
-		/* Extract the action (if any) */
-		act = keymap_act[mode][(byte)(ch)];
-
-		/* Analyze */
-		if (act)
-		{
-			/* Convert to a direction */
-			for (s = act; *s; ++s)
-			{
-				/* Use any digits in keymap */
-				if (isdigit((unsigned char)*s)) d = D2I(*s);
+		/* XXX see if this key has a digit in the keymap we can use */
+		act = keymap_find(mode, ch);
+		if (act) {
+			const struct keypress *cur;
+			for (cur = act; cur->type == EVT_KBRD; cur++) {
+				if (isdigit((unsigned char) cur->code))
+					d = D2I(cur->code);
 			}
 		}
 	}
@@ -484,6 +327,119 @@ int dir_transitions[10][10] =
 	/* 9-> */ { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+/*
+ * Request a "movement" direction (1,2,3,4,6,7,8,9) from the user.
+ *
+ * Return TRUE if a direction was chosen, otherwise return FALSE.
+ *
+ * This function should be used for all "repeatable" commands, such as
+ * run, walk, open, close, bash, disarm, spike, tunnel, etc, as well
+ * as all commands which must reference a grid adjacent to the player,
+ * and which may not reference the grid under the player.
+ *
+ * Directions "5" and "0" are illegal and will not be accepted.
+ *
+ * This function tracks and uses the "global direction", and uses
+ * that as the "desired direction", if it is set.
+ */
+bool get_rep_dir(int *dp)
+{
+	int dir = 0;
+
+	ui_event ke;
+
+	/* Initialize */
+	(*dp) = 0;
+
+	/* Get a direction */
+	while (!dir)
+	{
+		/* Paranoia XXX XXX XXX */
+		message_flush();
+
+		/* Get first keypress - the first test is to avoid displaying the
+		   prompt for direction if there's already a keypress queued up
+		   and waiting - this just avoids a flickering prompt if there is
+		   a "lazy" movement delay. */
+		inkey_scan = SCAN_INSTANT;
+		ke = inkey_ex();
+		inkey_scan = SCAN_OFF;
+
+		if (ke.type == EVT_NONE ||
+				(ke.type == EVT_KBRD && target_dir(ke.key) == 0))
+		{
+			prt("Direction or <click> (Escape to cancel)? ", 0, 0);
+			ke = inkey_ex();
+		}
+
+		/* Check mouse coordinates */
+		if (ke.type == EVT_MOUSE)
+		{
+			/*if (ke.button) */
+			{
+				int y = KEY_GRID_Y(ke);
+				int x = KEY_GRID_X(ke);
+				struct loc from = loc(p_ptr->px, p_ptr->py);
+				struct loc to = loc(x, y);
+
+				dir = pathfind_direction_to(from, to);
+			}
+		}
+
+		/* Get other keypresses until a direction is chosen. */
+		else if (ke.type == EVT_KBRD)
+		{
+			int keypresses_handled = 0;
+
+			while (ke.type == EVT_KBRD && ke.key.code != 0)
+			{
+				int this_dir;
+
+				if (ke.key.code == ESCAPE) 
+				{
+					/* Clear the prompt */
+					prt("", 0, 0);
+
+					return (FALSE);
+				}
+
+				/* XXX Ideally show and move the cursor here to indicate 
+				   the currently "Pending" direction. XXX */
+				this_dir = target_dir(ke.key);
+
+				if (this_dir)
+					dir = dir_transitions[dir][this_dir];
+
+				if (lazymove_delay == 0 || ++keypresses_handled > 1)
+					break;
+
+				inkey_scan = lazymove_delay; 
+				ke = inkey_ex();
+			}
+
+			/* 5 is equivalent to "escape" */
+			if (dir == 5)
+			{
+				/* Clear the prompt */
+				prt("", 0, 0);
+
+				return (FALSE);
+			}
+		}
+
+		/* Oops */
+		if (!dir) bell("Illegal repeatable direction!");
+	}
+
+	/* Clear the prompt */
+	prt("", 0, 0);
+
+	/* Save direction */
+	(*dp) = dir;
+
+	/* Success */
+	return (TRUE);
+}
 
 /*
  * Get an "aiming direction" (1,2,3,4,6,7,8,9 or 5) from the user.
@@ -497,17 +453,15 @@ int dir_transitions[10][10] =
  *
  * Note that "Force Target", if set, will pre-empt user interaction,
  * if there is a usable target already set.
- *
- * Currently this function applies confusion directly.
  */
 bool get_aim_dir(int *dp)
 {
 	/* Global direction */
 	int dir = 0;
 	
-	ui_event_data ke;
+	ui_event ke;
 
-	cptr p;
+	const char *p;
 
 	/* Initialize */
 	(*dp) = 0;
@@ -534,20 +488,20 @@ bool get_aim_dir(int *dp)
 		}
 		else if (ke.type == EVT_KBRD)
 		{
-			if (ke.key == '*')
+			if (ke.key.code == '*')
 			{
 				/* Set new target, use target if legal */
 				if (target_set_interactive(TARGET_KILL, -1, -1))
 					dir = 5;
 			}
-			else if (ke.key == '\'')
+			else if (ke.key.code == '\'')
 			{
 				/* Set to closest target */
 				if (target_set_closest(TARGET_KILL))
 					dir = 5;
 			}
-			else if (ke.key == 't' || ke.key == '5' ||
-					ke.key == '0' || ke.key == '.')
+			else if (ke.key.code == 't' || ke.key.code == '5' ||
+					ke.key.code == '0' || ke.key.code == '.')
 			{
 				if (target_okay())
 					dir = 5;
@@ -557,7 +511,7 @@ bool get_aim_dir(int *dp)
 				/* Possible direction */
 				int keypresses_handled = 0;
 				
-				while (ke.key != 0)
+				while (ke.key.code != 0)
 				{
 					int this_dir;
 					
@@ -591,193 +545,13 @@ bool get_aim_dir(int *dp)
 	/* Save direction */
 	(*dp) = dir;
 
-	/* Check for confusion */
-	if (p_ptr->timed[TMD_CONFUSED])
-	{
-		/* Random direction */
-		dir = ddd[randint0(8)];
-	}
-
-	/* Notice confusion */
-	if ((*dp) != dir)
-	{
-		/* Warn the user */
-		msg_print("You are confused.");
-	}
-
-	/* Save direction */
-	(*dp) = dir;
-
 	/* A "valid" direction was entered */
 	return (TRUE);
 }
 
 
-/*
- * Request a "movement" direction (1,2,3,4,6,7,8,9) from the user.
- *
- * Return TRUE if a direction was chosen, otherwise return FALSE.
- *
- * This function should be used for all "repeatable" commands, such as
- * run, walk, open, close, bash, disarm, spike, tunnel, etc, as well
- * as all commands which must reference a grid adjacent to the player,
- * and which may not reference the grid under the player.
- *
- * Directions "5" and "0" are illegal and will not be accepted.
- *
- * This function tracks and uses the "global direction", and uses
- * that as the "desired direction", if it is set.
- */
-bool get_rep_dir(int *dp)
-{
-	int dir = 0;
-
-	ui_event_data ke;
-
-	/* Initialize */
-	(*dp) = 0;
-
-	/* Get a direction */
-	while (!dir)
-	{
-		/* Paranoia XXX XXX XXX */
-		message_flush();
-
-		/* Get first keypress - the first test is to avoid displaying the
-		   prompt for direction if there's already a keypress queued up
-		   and waiting - this just avoids a flickering prompt if there is
-		   a "lazy" movement delay. */
-		inkey_scan = SCAN_INSTANT;
-		ke = inkey_ex();
-		inkey_scan = SCAN_OFF;
-
-		if (ke.type == EVT_KBRD && target_dir(ke.key) == 0)
-		{
-			prt("Direction or <click> (Escape to cancel)? ", 0, 0);
-			ke = inkey_ex();
-		}
-
-		/* Check mouse coordinates */
-		if (ke.type == EVT_MOUSE)
-		{
-			/*if (ke.button) */
-			{
-				int y = KEY_GRID_Y(ke);
-				int x = KEY_GRID_X(ke);
-
-				/* Calculate approximate angle */
-				int angle = get_angle_to_target(p_ptr->py, p_ptr->px, y, x, 0);
-
-				/* Convert angle to direction */
-				if (angle < 15) dir = 6;
-				else if (angle < 33) dir = 9;
-				else if (angle < 59) dir = 8;
-				else if (angle < 78) dir = 7;
-				else if (angle < 104) dir = 4;
-				else if (angle < 123) dir = 1;
-				else if (angle < 149) dir = 2;
-				else if (angle < 168) dir = 3;
-				else dir = 6;
-			}
-		}
-
-		/* Get other keypresses until a direction is chosen. */
-		else
-		{
-			int keypresses_handled = 0;
-
-			while (ke.key != 0)
-			{
-				int this_dir;
-
-				if (ke.key == ESCAPE) 
-				{
-					/* Clear the prompt */
-					prt("", 0, 0);
-
-					return (FALSE);
-				}
-
-				/* XXX Ideally show and move the cursor here to indicate 
-				   the currently "Pending" direction. XXX */
-				this_dir = target_dir(ke.key);
-
-				if (this_dir)
-				{
-					dir = dir_transitions[dir][this_dir];
-				}
-
-				if (lazymove_delay == 0 || ++keypresses_handled > 1)
-					break;
-
-				inkey_scan = lazymove_delay; 
-				ke = inkey_ex();
-			}
-
-			/* 5 is equivalent to "escape" */
-			if (dir == 5)
-			{
-				/* Clear the prompt */
-				prt("", 0, 0);
-
-				return (FALSE);
-			}
-		}
-
-		/* Oops */
-		if (!dir) bell("Illegal repeatable direction!");
-	}
-
-	/* Clear the prompt */
-	prt("", 0, 0);
-
-	/* Save direction */
-	(*dp) = dir;
-
-	/* Success */
-	return (TRUE);
-}
 
 
-/*
- * Apply confusion, if needed, to a direction
- *
- * Display a message and return TRUE if direction changes.
- */
-bool confuse_dir(int *dp)
-{
-	int dir;
-
-	/* Default */
-	dir = (*dp);
-
-	/* Apply "confusion" */
-	if (p_ptr->timed[TMD_CONFUSED])
-	{
-		/* Apply confusion XXX XXX XXX */
-		if ((dir == 5) || (randint0(100) < 75))
-		{
-			/* Random direction */
-			dir = ddd[randint0(8)];
-		}
-	}
-
-	/* Notice confusion */
-	if ((*dp) != dir)
-	{
-		/* Warn the user */
-		msg_print("You are confused.");
-
-		/* Save direction */
-		(*dp) = dir;
-
-		/* Confused */
-		return (TRUE);
-	}
-
-	/* Not confused */
-	return (FALSE);
-}
 
 
 

@@ -20,6 +20,7 @@
 #include "cmds.h"
 #include "files.h"
 #include "history.h"
+#include "savefile.h"
 #include "ui-menu.h"
 #include "wizard.h"
 
@@ -84,11 +85,11 @@ static void print_tomb(void)
 	if (p_ptr->total_winner)
 		put_str_centred(line++, 8, 8+31, "Magnificent");
 	else
-		put_str_centred(line++, 8, 8+31, "%s", cp_ptr->title[(p_ptr->lev - 1) / 5]);
+		put_str_centred(line++, 8, 8+31, "%s", p_ptr->class->title[(p_ptr->lev - 1) / 5]);
 
 	line++;
 
-	put_str_centred(line++, 8, 8+31, "%s", cp_ptr->name);
+	put_str_centred(line++, 8, 8+31, "%s", p_ptr->class->name);
 	put_str_centred(line++, 8, 8+31, "Level: %d", (int)p_ptr->lev);
 	put_str_centred(line++, 8, 8+31, "Exp: %d", (int)p_ptr->exp);
 	put_str_centred(line++, 8, 8+31, "AU: %d", (int)p_ptr->au);
@@ -106,7 +107,7 @@ static void print_tomb(void)
  */
 static void death_knowledge(void)
 {
-	store_type *st_ptr = &store[STORE_HOME];
+	struct store *st_ptr = &stores[STORE_HOME];
 	object_type *o_ptr;
 
 	int i;
@@ -114,7 +115,7 @@ static void death_knowledge(void)
 	for (i = 0; i < ALL_INVEN_TOTAL; i++)
 	{
 		o_ptr = &p_ptr->inventory[i];
-		if (!o_ptr->k_idx) continue;
+		if (!o_ptr->kind) continue;
 
 		object_flavor_aware(o_ptr);
 		object_notice_everything(o_ptr);
@@ -123,7 +124,7 @@ static void death_knowledge(void)
 	for (i = 0; i < st_ptr->stock_num; i++)
 	{
 		o_ptr = &st_ptr->stock[i];
-		if (!o_ptr->k_idx) continue;
+		if (!o_ptr->kind) continue;
 
 		object_flavor_aware(o_ptr);
 		object_notice_everything(o_ptr);
@@ -133,7 +134,7 @@ static void death_knowledge(void)
 
 	/* Hack -- Recalculate bonuses */
 	p_ptr->update |= (PU_BONUS);
-	handle_stuff();
+	handle_stuff(p_ptr);
 }
 
 
@@ -172,10 +173,10 @@ static void display_winner(void)
 		file_close(fp);
 	}
 
-	put_str_centred(i, 0, wid, "All Hail the Mighty %s!", sp_ptr->winner);
+	put_str_centred(i, 0, wid, "All Hail the Mighty %s!", p_ptr->sex->winner);
 
 	flush();
-	pause_line(Term->hgt - 1);
+	pause_line(Term);
 }
 
 
@@ -200,9 +201,9 @@ static void death_file(const char *title, int row)
 
 		/* Check result */
 		if (err)
-			msg_print("Character dump failed!");
+			msg("Character dump failed!");
 		else
-			msg_print("Character dump successful.");
+			msg("Character dump successful.");
 
 		/* Flush messages */
 		message_flush();
@@ -216,7 +217,7 @@ static void death_info(const char *title, int row)
 {
 	int i, j, k;
 	object_type *o_ptr;
-	store_type *st_ptr = &store[STORE_HOME];
+	struct store *st_ptr = &stores[STORE_HOME];
 
 
 	screen_save();
@@ -327,7 +328,7 @@ static void death_scores(const char *title, int row)
 static void death_examine(const char *title, int row)
 {
 	int item;
-	cptr q, s;
+	const char *q, *s;
 
 	/* Get an item */
 	q = "Examine which item? ";
@@ -367,6 +368,17 @@ static void death_spoilers(const char *title, int row)
 	do_cmd_spoilers();
 }
 
+/* Menu command: toggle birth_keep_randarts option. */
+static void death_randarts(const char *title, int row)
+{
+	if (p_ptr->randarts)
+		option_set(option_name(OPT_birth_keep_randarts),
+			get_check("Keep randarts for next game? "));
+	else
+		msg("You are not playing with randarts!");
+}
+
+
 /*
  * Menu structures for the death menu. Note that Quit must always be the
  * last option, due to a hard-coded check in death_screen
@@ -381,6 +393,7 @@ static menu_action death_actions[] =
 	{ 0, 'x', "Examine items", death_examine   },
 	{ 0, 'h', "History",       death_history   },
 	{ 0, 's', "Spoilers",      death_spoilers  },
+	{ 0, 'r', "Keep randarts", death_randarts  },
 	{ 0, 'q', "Quit",          NULL            },
 };
 
@@ -391,6 +404,7 @@ static menu_action death_actions[] =
  */
 void death_screen(void)
 {
+	bool done = FALSE;
 	const region area = { 51, 2, 0, N_ELEMENTS(death_actions) };
 
 	/* Retire in the town in a good state */
@@ -405,13 +419,6 @@ void death_screen(void)
 		display_winner();
 	}
 
-	/* Save dead player */
-	if (!old_save())
-	{
-		msg_print("death save failed!");
-		message_flush();
-	}
-
 	/* Get time of death */
 	(void)time(&death_time);
 	print_tomb();
@@ -422,8 +429,7 @@ void death_screen(void)
 	flush();
 	message_flush();
 
-
-
+	/* Display and use the death menu */
 	if (!death_menu)
 	{
 		death_menu = menu_new_action(death_actions,
@@ -434,8 +440,23 @@ void death_screen(void)
 
 	menu_layout(death_menu, &area);
 
-	do
+	while (!done)
 	{
-		menu_select(death_menu, 0);
-	} while (!get_check("Do you want to quit? "));
+		ui_event e = menu_select(death_menu, EVT_KBRD, FALSE);
+		if (e.type == EVT_KBRD)
+		{
+			if (e.key.code == KTRL('X')) break;
+		}
+		else if (e.type == EVT_SELECT)
+		{
+			done = get_check("Do you want to quit? ");
+		}
+	}
+
+	/* Save dead player */
+	if (!savefile_save(savefile))
+	{
+		msg("death save failed!");
+		message_flush();
+	}
 }

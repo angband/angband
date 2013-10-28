@@ -3,8 +3,8 @@
 #include "unit-test.h"
 #include "z-virt.h"
 
-nosetup;
-noteardown;
+NOSETUP
+NOTEARDOWN
 
 int test_alloc(void *state) {
 	void *p1 = mem_alloc(16);
@@ -25,8 +25,8 @@ int test_realloc(void *state) {
 	return 0;
 }
 
-static const char *suite_name = "z-virt/mem";
-static struct test tests[] = {
+const char *suite_name = "z-virt/mem";
+struct test tests[] = {
 	{ "alloc", test_alloc },
 	{ "realloc", test_realloc },
 	{ NULL, NULL }

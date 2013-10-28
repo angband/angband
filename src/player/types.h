@@ -1,7 +1,8 @@
 #ifndef INCLUDED_PLAYER_TYPES_H
 #define INCLUDED_PLAYER_TYPES_H
 
-#include "object/types.h"
+#include "object/obj-flag.h"
+#include "object/object.h"
 #include "option.h"
 #include "ui-event.h"
 
@@ -9,8 +10,8 @@ typedef struct
 {
 	s16b speed;		/* Current speed */
 
-	s16b num_blow;		/* Number of blows x100 */
-	s16b num_fire;		/* Number of shots */
+	s16b num_blows;		/* Number of blows x100 */
+	s16b num_shots;		/* Number of shots */
 
 	byte ammo_mult;		/* Ammo multiplier */
 	byte ammo_tval;		/* Ammo variety */
@@ -40,60 +41,9 @@ typedef struct
 
 	bool heavy_wield;	/* Heavy weapon */
 	bool heavy_shoot;	/* Heavy shooter */
-	bool icky_wield;	/* Icky weapon */
+	bool icky_wield;	/* Icky weapon shooter */
 
-	bool sustain_str;	/* Keep strength */
-	bool sustain_int;	/* Keep intelligence */
-	bool sustain_wis;	/* Keep wisdom */
-	bool sustain_dex;	/* Keep dexterity */
-	bool sustain_con;	/* Keep constitution */
-	bool sustain_chr;	/* Keep charisma */
-
-	bool vuln_acid;
-	bool vuln_elec;
-	bool vuln_fire;
-	bool vuln_cold;
-
-	bool immune_acid;	/* Immunity to acid */
-	bool immune_elec;	/* Immunity to lightning */
-	bool immune_fire;	/* Immunity to fire */
-	bool immune_cold;	/* Immunity to cold */
-
-	bool resist_acid;	/* Resist acid */
-	bool resist_elec;	/* Resist lightning */
-	bool resist_fire;	/* Resist fire */
-	bool resist_cold;	/* Resist cold */
-	bool resist_pois;	/* Resist poison */
-
-	bool resist_fear;	/* Resist fear */
-	bool resist_light;	/* Resist light */
-	bool resist_dark;	/* Resist darkness */
-	bool resist_blind;	/* Resist blindness */
-	bool resist_confu;	/* Resist confusion */
-	bool resist_sound;	/* Resist sound */
-	bool resist_shard;	/* Resist shards */
-	bool resist_nexus;	/* Resist nexus */
-	bool resist_nethr;	/* Resist nether */
-	bool resist_chaos;	/* Resist chaos */
-	bool resist_disen;	/* Resist disenchant */
-
-	bool slow_digest;	/* Slower digestion */
-	bool impair_hp;   /* Slow HP regeneration */
-	bool impair_mana; /* Slow mana regeneration */
-	bool ffall;			/* Feather falling */
-	bool regenerate;	/* Regeneration */
-	bool telepathy;		/* Telepathy */
-	bool see_inv;		/* See invisible */
-	bool free_act;		/* Free action */
-	bool hold_life;		/* Hold life */
-	bool afraid; 		/* Afraid */
-
-	bool impact;		/* Earthquake blows */
-	bool aggravate;		/* Aggravate monsters */
-	bool teleport;		/* Random teleporting */
-	bool exp_drain;		/* Experience draining */
-
-	bool bless_blade;	/* Blessed blade */
+	bitflag flags[OF_SIZE];	/* Status flags from race and items */
 } player_state;
 
 
@@ -114,8 +64,6 @@ typedef struct player
 	s16b px;			/* Player location */
 
 	byte psex;			/* Sex index */
-	byte prace;			/* Race index */
-	byte pclass;		/* Class index */
 	byte oops;			/* Unused */
 
 	const struct player_sex *sex;
@@ -163,6 +111,7 @@ typedef struct player
 
 	byte confusing;		/* Glowing hands */
 	byte searching;		/* Currently searching */
+	byte unignoring;	/* Unignoring */
 
 	byte spell_flags[PY_MAX_SPELLS]; /* Spell flags */
 
@@ -171,7 +120,7 @@ typedef struct player
 	s16b player_hp[PY_MAX_LEVEL];	/* HP Array */
 
 	char died_from[80];		/* Cause of death */
-	char history[250];	/* Initial history */
+	char *history;
 
 	u16b total_winner;		/* Total winner */
 	u16b panic_save;		/* Panic save */
@@ -186,10 +135,9 @@ typedef struct player
 	/*** Temporary fields ***/
 
 	bool playing;			/* True if player is playing */
-
 	bool leaving;			/* True if player is leaving */
-
 	bool autosave;          /* True if autosave is pending */
+	bool randarts;			/* True if randarts have been loaded/generated */
 
 	bool create_up_stair;	/* Create up stair on next level */
 	bool create_down_stair;	/* Create down stair on next level */
@@ -211,6 +159,7 @@ typedef struct player
 	s16b resting;			/* Resting counter */
 	s16b running;			/* Running counter */
 	bool running_withpathfind;      /* Are we using the pathfinder ? */
+	bool running_firststep;  /* Is this our first step running? */
 
 	s16b run_cur_dir;		/* Direction we are running */
 	s16b run_old_dir;		/* Direction we came from */
@@ -272,8 +221,8 @@ typedef struct player
  */
 typedef struct player_sex
 {
-	cptr title;			/* Type of sex */
-	cptr winner;		/* Name of winner */
+	const char *title;			/* Type of sex */
+	const char *winner;		/* Name of winner */
 } player_sex;
 
 
@@ -310,19 +259,20 @@ typedef struct player_race
 	byte infra;			/* Infra-vision	range */
 	
 	byte choice;		/* Legal class choices */
-	
-	s16b hist;			/* Starting history index */
+	struct history_chart *history;
 	
 	bitflag flags[OF_SIZE];   /* Racial (object) flags */
 	bitflag pflags[PF_SIZE];  /* Racial (player) flags */
 } player_race;
 
-typedef struct start_item
+struct start_item
 {
 	object_kind *kind;
 	byte min;	/* Minimum starting amount */
 	byte max;	/* Maximum starting amount */
-} start_item;
+
+	struct start_item *next;
+};
 
 
 /*
@@ -381,28 +331,47 @@ typedef struct player_class
 	u32b sense_base;   /* Base pseudo-id value */
 	u16b sense_div;    /* Pseudo-id divisor */
 	
-	start_item start_items[MAX_START_ITEMS]; /**< The starting inventory */
+	struct start_item *start_items; /**< The starting inventory */
 	
 	player_magic spells; /* Magic spells */
 } player_class;
 
-
-/*
- * Player background information
+/* Histories are a graph of charts; each chart contains a set of individual
+ * entries for that chart, and each entry contains a text description and a
+ * successor chart to move history generation to.
+ * For example:
+ * 	chart 1 {
+ * 		entry {
+ * 			desc "You are the illegitimate and unacknowledged child";
+ * 			next 2;
+ * 		};
+ * 		entry {
+ * 			desc "You are the illegitimate but acknowledged child";
+ * 			next 2;
+ * 		};
+ * 		entry {
+ * 			desc "You are one of several children";
+ * 			next 3;
+ * 		};
+ * 	};
+ *
+ * History generation works by walking the graph from the starting chart for
+ * each race, picking a random entry (with weighted probability) each time.
  */
-typedef struct history
-{
-	struct history *nextp;
-	unsigned int hidx;
+struct history_entry {
+	struct history_entry *next;
+	struct history_chart *succ;
+	int isucc;
+	int roll;
+	int bonus;
 	char *text;
-	
-	byte roll;			    /* Frequency of this entry */
-	byte chart;			    /* Chart index */
-	byte next;			    /* Next chart index */
-	byte bonus;			    /* Social Class Bonus + 50 */
-} hist_type;
+};
 
-
+struct history_chart {
+	struct history_chart *next;
+	struct history_entry *entries;
+	unsigned int idx;
+};
 
 /*
  * Some more player information

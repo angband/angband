@@ -16,7 +16,7 @@ include $(DEVKITARM)/ds_rules
 #	IN THIS MODIFIED VERSION, YOU MAY ONLY HAVE ONE SOURCE DIRECTORY!!
 #	OTHERSRC is sources that must be linked against but not compiled here
 #------------------------------------------------------------------------------
-TARGET		:=	angband
+TARGET		:=	$(NAME)
 BUILD		:=	$(CURDIR)
 SOURCES		:=	$(CURDIR)
 #NRM OTHERSRC	:=	$(CURDIR)
@@ -67,55 +67,6 @@ else
 #------------------------------------------------------------------------------
 endif
 #------------------------------------------------------------------------------
-HDRS = h-basic.h h-define.h h-type.h h-system.h h-config.h
-
-INCS = angband.h config.h defines.h externs.h types.h \
-       z-term.h z-rand.h z-type.h z-util.h z-virt.h z-form.h z-file.h
-
-HEADERS = $(HDRS) $(INCS)
-
-ZFILES = z-form.o z-rand.o z-term.o z-type.o z-util.o z-virt.o z-file.o
-
-ANGFILES = \
-	attack.o \
-	birth.o \
-	cave.o \
-	cmd0.o \
-	cmd1.o \
-	cmd2.o \
-	cmd3.o \
-	cmd4.o \
-	cmd5.o \
-	cmd6.o \
-	dungeon.o \
-	files.o \
-	generate.o \
-	init1.o \
-	init2.o \
-	load.o \
-	monmove.o \
-	monattk.o \
-	monster1.o \
-	monster2.o \
-	info.o \
-	object1.o \
-	object2.o \
-	randart.o \
-	randname.o \
-	save.o \
-	spells1.o \
-	spells2.o \
-	squelch.o \
-	store.o \
-	tables.o \
-	ui.o \
-	util.o \
-	variable.o \
-	wizard1.o \
-	wizard2.o \
-	xtra1.o \
-	xtra2.o \
-	main-nds.o \
 
 BASEOBJS := $(ANGFILES)
 ZOBJS := $(ZFILES)
@@ -124,7 +75,7 @@ ZOBJS := $(ZFILES)
 # Note dependencies
 $(BASEOBJS): $(HEADERS)
 $(ZOBJS): $(HDRS)
-BASEOBJS += $(ZOBJS)
+BASEOBJS += $(ZOBJS) main-nds.o
 
 z-form.o: z-form.h z-util.h z-virt.h
 z-rand.o: z-rand.h

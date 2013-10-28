@@ -1,0 +1,2 @@
+TESTPROGS += store/store
+

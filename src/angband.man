@@ -55,20 +55,20 @@ in the vein of
 and 
 .I moria.
 .B Angband 
-3.1.0beta is an official beta release incorporating all the changes
-and improvements added since the last official release (
+3.2.0 is an official stable release incorporating all the changes
+and improvements added since the last official stable release (
 .B Angband 
 3.0.9b).
 .PP
 This version of
 .B Angband
-has been compiled with both 
+has been compiled with 
 .I ncurses
 and the 
-.I X Windowing system.
-and hence can be played on a virtual console as well as under 
+.I X Windowing system, SDL and GTK
+front-ends, and hence can be played on a virtual console as well as under 
 .I X.
-In the latter case, the game pulls up multiple windows.
+In the latter cases, the game can use multiple windows.
 .SH OPTIONS
 .PD 0
 .TP 10
@@ -85,7 +85,7 @@ Request wizard mode (no high score entry)
 Request graphics mode
 .TP
 .BR \-r
-Rebalance monsters (only if lib/data/monster.raw does not exist)
+Rebalance monsters
 .TP
 .BR \-s<num>  
 Show <num> high scores
@@ -103,7 +103,7 @@ bone save data apex xtra edit file
 .SH "GETTING STARTED"
 To start with, you can just say angband \-uTest, and that creates a
 save file with the file name 
-.I /var/games/angband/save/<UID>Test. 
+.I ~/.angband/Angband/save/<UID>.Test.
 The best place to get help is the program itself; help is reached by
 the command
 .B ?

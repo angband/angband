@@ -3,13 +3,15 @@
 RAN=0
 OK=0
 
-cd tests
-for x in */*; do
-	./run-test $x
+for x in tests/*/*; do
+	tests/run-test $x
 	if [ $? -eq 0 ]; then
 		OK=$(expr $OK + 1)
 	fi
 	RAN=$(expr $RAN + 1)
 done
 
+FAIL=$(expr $RAN - $OK)
+
 echo "Total: $OK/$RAN"
+exit $FAIL

@@ -1,4 +1,4 @@
-# File: font-sdl.prf
+# File: font-win.prf
 
 #
 # This file is used by Angband (when it was compiled using "main-sdl.c")
@@ -14,43 +14,18 @@
 
 ### Terrain features ###
 
+# Floors (white : centered dot)
+F:1:all:1:7
 
-# Floors (white / centered dot)
+# Magma (slate : solid block)
+F:50:all:2:127
 
-F:1:1:7
+# Quartz (light slate : solid block)
+F:51:all:9:127
 
-# Invis traps (white / centered dot)
+# Granite walls (white : solid block)
+F:56:all:1:127
 
-F:2:1:7
-
-
-# Magma (slate / solid block)
-
-F:50:2:127
-F:52:2:127
-
-
-# Quartz (light slate / solid block)
-
-F:51:9:127
-F:53:9:127
-
-
-# Secret door (white / solid block)
-
-F:48:1:127
-
-# Granite walls (white / solid block)
-
-F:56:1:127
-F:57:1:127
-F:58:1:127
-F:59:1:127
-
-# Permanent rock (dark red / solid block)
-
-F:60:4:127
-F:61:4:127
-F:62:4:127
-F:63:4:127
+# Permanent rock (dark red : solid block)
+F:60:all:4:127
 

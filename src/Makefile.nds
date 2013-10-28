@@ -8,13 +8,15 @@ endif
 
 include $(DEVKITARM)/ds_rules
 
+include Makefile.src
+
 #------------------------------------------------------------------------------
 # TARGET is the name of the output
 # BUILD is the directory where object files & intermediate files will be placed
 # SOURCES is a list of directories containing source code
 # INCLUDES is a list of directories containing extra header files
 #------------------------------------------------------------------------------
-TARGET		:=	angband
+TARGET		:=	$(NAME)
 #NRM BUILD		:=	build
 #NRM SOURCES		:=	gfx source data  
 #NRM INCLUDES	:=	include build

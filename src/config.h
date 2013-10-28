@@ -89,9 +89,6 @@
 /* Allow changing "visuals" at runtime */
 #define ALLOW_VISUALS
 
-/* Allow changing macros at run-time */
-#define ALLOW_MACROS
-
 
 
 /*** Borg ***/

@@ -26,9 +26,11 @@
  * Used by show_inven(), show_equip(), and show_floor().  Mode flags are
  * documented in object.h
  */
-static void show_obj_list(int num_obj, char labels[50][80], object_type *objects[50], olist_detail_t mode)
+static void show_obj_list(int num_obj, int num_head, char labels[50][80],
+	object_type *objects[50], olist_detail_t mode)
 {
 	int i, row = 0, col = 0;
+	int attr;
 	size_t max_len = 0;
 	int ex_width = 0, ex_offset, ex_offset_ctr;
 
@@ -48,12 +50,23 @@ static void show_obj_list(int num_obj, char labels[50][80], object_type *objects
 		o_ptr = objects[i];
 
 		/* Null objects are used to skip lines, or display only a label */		
-		if (o_ptr == NULL) continue;
+		if (!o_ptr || !o_ptr->kind)
+		{
+			if (i < num_head)
+				strnfmt(o_name[i], sizeof(o_name[i]), "");
+			else
+				strnfmt(o_name[i], sizeof(o_name[i]), "(nothing)");
+		}
+		else
+			object_desc(o_name[i], sizeof(o_name[i]), o_ptr, ODESC_PREFIX | ODESC_FULL);
 
 		/* Max length of label + object name */
-		object_desc(o_name[i], sizeof(o_name[i]), o_ptr, ODESC_PREFIX | ODESC_FULL);
 		max_len = MAX(max_len, strlen(labels[i]) + strlen(o_name[i]));
 	}
+
+	/* Take the quiver message into consideration */
+	if (mode & OLIST_QUIVER && p_ptr->quiver_slots > 0)
+		max_len = MAX(max_len, 24);
 
 	/* Width of extra fields */
 	if (mode & OLIST_WEIGHT) ex_width += 9;
@@ -87,56 +100,63 @@ static void show_obj_list(int num_obj, char labels[50][80], object_type *objects
 		/* Clear the line */
 		prt("", row + i, MAX(col - 2, 0));
 
+		/* If we have no label then we won't display anything */
+		if (!strlen(labels[i])) continue;
+
 		/* Print the label */
 		put_str(labels[i], row + i, col);
 
-		/* Print the object */
-		if (o_ptr != NULL)
+		/* Limit object name */
+		if (strlen(labels[i]) + strlen(o_name[i]) > (size_t)ex_offset)
 		{
-			/* Limit object name */
-			if (strlen(labels[i]) + strlen(o_name[i]) > (size_t)ex_offset)
-			{
-				int truncate = ex_offset - strlen(labels[i]);
-				
-				if (truncate < 0) truncate = 0;
-				if ((size_t)truncate > sizeof(o_name[i]) - 1) truncate = sizeof(o_name[i]) - 1;
-
-				o_name[i][truncate] = '\0';
-			}
-
-			/* Object name */
-			c_put_str(tval_to_attr[o_ptr->tval % N_ELEMENTS(tval_to_attr)], o_name[i],
-			          row + i, col + strlen(labels[i]));
-
-			/* Extra fields */
-			ex_offset_ctr = ex_offset;
+			int truncate = ex_offset - strlen(labels[i]);
 			
-			if (mode & OLIST_PRICE)
-			{
-				int price = price_item(o_ptr, TRUE, o_ptr->number);
-				strnfmt(tmp_val, sizeof(tmp_val), "%6d au", price);
-				put_str(tmp_val, row + i, col + ex_offset_ctr);
-				ex_offset_ctr += 9;
-			}
+			if (truncate < 0) truncate = 0;
+			if ((size_t)truncate > sizeof(o_name[i]) - 1) truncate = sizeof(o_name[i]) - 1;
 
-			if (mode & OLIST_FAIL)
-			{
-				int fail = (9 + get_use_device_chance(o_ptr)) / 10;
-				if (object_effect_is_known(o_ptr))
-					strnfmt(tmp_val, sizeof(tmp_val), "%4d%% fail", fail);
-				else
-					my_strcpy(tmp_val, "    ? fail", sizeof(tmp_val));
-				put_str(tmp_val, row + i, col + ex_offset_ctr);
-				ex_offset_ctr += 10;
-			}
+			o_name[i][truncate] = '\0';
+		}
+		
+		/* Item kind determines the color of the output */
+		if (o_ptr && o_ptr->kind)
+			attr = tval_to_attr[o_ptr->tval % N_ELEMENTS(tval_to_attr)];
+		else
+			attr = TERM_SLATE;
 
-			if (mode & OLIST_WEIGHT)
-			{
-				int weight = o_ptr->weight * o_ptr->number;
-				strnfmt(tmp_val, sizeof(tmp_val), "%4d.%1d lb", weight / 10, weight % 10);
-				put_str(tmp_val, row + i, col + ex_offset_ctr);
-				ex_offset_ctr += 9;
-			}
+		/* Object name */
+		c_put_str(attr, o_name[i], row + i, col + strlen(labels[i]));
+
+		/* If we don't have an object, we can skip the rest of the output */
+		if (!(o_ptr && o_ptr->kind)) continue;
+
+		/* Extra fields */
+		ex_offset_ctr = ex_offset;
+		
+		if (mode & OLIST_PRICE)
+		{
+			int price = price_item(o_ptr, TRUE, o_ptr->number);
+			strnfmt(tmp_val, sizeof(tmp_val), "%6d au", price);
+			put_str(tmp_val, row + i, col + ex_offset_ctr);
+			ex_offset_ctr += 9;
+		}
+
+		if (mode & OLIST_FAIL)
+		{
+			int fail = (9 + get_use_device_chance(o_ptr)) / 10;
+			if (object_effect_is_known(o_ptr))
+				strnfmt(tmp_val, sizeof(tmp_val), "%4d%% fail", fail);
+			else
+				my_strcpy(tmp_val, "    ? fail", sizeof(tmp_val));
+			put_str(tmp_val, row + i, col + ex_offset_ctr);
+			ex_offset_ctr += 10;
+		}
+
+		if (mode & OLIST_WEIGHT)
+		{
+			int weight = o_ptr->weight * o_ptr->number;
+			strnfmt(tmp_val, sizeof(tmp_val), "%4d.%1d lb", weight / 10, weight % 10);
+			put_str(tmp_val, row + i, col + ex_offset_ctr);
+			ex_offset_ctr += 9;
 		}
 	}
 
@@ -148,6 +168,9 @@ static void show_obj_list(int num_obj, char labels[50][80], object_type *objects
 		/* Quiver may take multiple lines */
 		for(j = 0; j < p_ptr->quiver_slots; j++, i++)
 		{
+			const char *fmt = "in Quiver: %d missile%s";
+			char letter = index_to_label(in_term ? i - 1 : i);
+
 			/* Number of missiles in this "slot" */
 			if (j == p_ptr->quiver_slots - 1 && p_ptr->quiver_remainder > 0)
 				count = p_ptr->quiver_remainder;
@@ -158,12 +181,11 @@ static void show_obj_list(int num_obj, char labels[50][80], object_type *objects
 			prt("", row + i, MAX(col - 2, 0));
 
 			/* Print the (disabled) label */
-			strnfmt(tmp_val, sizeof(tmp_val), "%c) ", index_to_label(i));
+			strnfmt(tmp_val, sizeof(tmp_val), "%c) ", letter);
 			c_put_str(TERM_SLATE, tmp_val, row + i, col);
 
 			/* Print the count */
-			strnfmt(tmp_val, sizeof(tmp_val), "in Quiver: %d missile%s", count,
-					count == 1 ? "" : "s");
+			strnfmt(tmp_val, sizeof(tmp_val), fmt, count, count == 1 ? "" : "s");
 			c_put_str(TERM_L_UMBER, tmp_val, row + i, col + 3);
 		}
 	}
@@ -192,16 +214,16 @@ static void show_obj_list(int num_obj, char labels[50][80], object_type *objects
  */
 void show_inven(olist_detail_t mode)
 {
-	int i, last_slot = 0;
+	int i, last_slot = -1;
 	int diff = weight_remaining();
 
 	object_type *o_ptr;
 
-   int num_obj = 0;
-   char labels[50][80];
-   object_type *objects[50];
+	int num_obj = 0;
+	char labels[50][80];
+	object_type *objects[50];
 
-   bool in_term = (mode & OLIST_WINDOW) ? TRUE : FALSE;
+	bool in_term = (mode & OLIST_WINDOW) ? TRUE : FALSE;
 
 	/* Include burden for term windows */
 	if (in_term)
@@ -220,7 +242,7 @@ void show_inven(olist_detail_t mode)
 	for (i = 0; i < INVEN_PACK; i++)
 	{
 		o_ptr = &p_ptr->inventory[i];
-		if (o_ptr->k_idx) last_slot = i;
+		if (o_ptr->kind) last_slot = i;
 	}
 
 	/* Build the object list */
@@ -245,7 +267,11 @@ void show_inven(olist_detail_t mode)
 	}
 
 	/* Display the object list */
-	show_obj_list(num_obj, labels, objects, mode);
+	if (in_term)
+		/* Term window starts with a burden header */
+		show_obj_list(num_obj, 1, labels, objects, mode);
+	else
+		show_obj_list(num_obj, 0, labels, objects, mode);
 }
 
 
@@ -272,7 +298,7 @@ void show_equip(olist_detail_t mode)
 	for (i = INVEN_WIELD; i < ALL_INVEN_TOTAL; i++)
 	{
 		o_ptr = &p_ptr->inventory[i];
-		if (i < INVEN_TOTAL || o_ptr->k_idx) last_slot = i;
+		if (i < INVEN_TOTAL || o_ptr->kind) last_slot = i;
 	}
 
 	/* Build the object list */
@@ -316,18 +342,8 @@ void show_equip(olist_detail_t mode)
 		else continue;
 
 		/* Show full slot labels */
-		if (OPT(show_labels))
-		{
-			strnfmt(tmp_val, sizeof(tmp_val), "%-14s: ", mention_use(i));
-			my_strcat(labels[num_obj], tmp_val, sizeof(labels[num_obj]));
-		}
-
-		/* Otherwise only show short quiver labels */
-		else if (i >= QUIVER_START)
-		{
-			strnfmt(tmp_val, sizeof(tmp_val), "[f%d]: ", i - QUIVER_START);
-			my_strcat(labels[num_obj], tmp_val, sizeof(labels[num_obj]));
-		}
+		strnfmt(tmp_val, sizeof(tmp_val), "%-14s: ", mention_use(i));
+		my_strcat(labels[num_obj], tmp_val, sizeof(labels[num_obj]));
 
 		/* Save the object */
 		objects[num_obj] = o_ptr;
@@ -335,7 +351,7 @@ void show_equip(olist_detail_t mode)
 	}
 
 	/* Display the object list */
-	show_obj_list(num_obj, labels, objects, mode);
+	show_obj_list(num_obj, 0, labels, objects, mode);
 }
 
 
@@ -359,7 +375,7 @@ void show_floor(const int *floor_list, int floor_num, olist_detail_t mode)
 	/* Build the object list */
 	for (i = 0; i < floor_num; i++)
 	{
-		o_ptr = &o_list[floor_list[i]];
+		o_ptr = object_byid(floor_list[i]);
 
 		/* Tester always skips gold. When gold should be displayed,
 		 * only test items that are not gold.
@@ -377,7 +393,7 @@ void show_floor(const int *floor_list, int floor_num, olist_detail_t mode)
 	}
 
 	/* Display the object list */
-	show_obj_list(num_obj, labels, objects, mode);
+	show_obj_list(num_obj, 0, labels, objects, mode);
 }
 
 
@@ -386,7 +402,7 @@ void show_floor(const int *floor_list, int floor_num, olist_detail_t mode)
  *
  * The item can be negative to mean "item on floor".
  */
-bool verify_item(cptr prompt, int item)
+bool verify_item(const char *prompt, int item)
 {
 	char o_name[80];
 
@@ -403,7 +419,7 @@ bool verify_item(cptr prompt, int item)
 	/* Floor */
 	else
 	{
-		o_ptr = &o_list[0 - item];
+		o_ptr = object_byid(0 - item);
 	}
 
 	/* Describe */
@@ -433,7 +449,7 @@ static bool get_item_allow(int item, unsigned char ch, bool is_harmless)
 	if (item >= 0)
 		o_ptr = &p_ptr->inventory[item];
 	else
-		o_ptr = &o_list[0 - item];
+		o_ptr = object_byid(0 - item);
 
 	/* Check for a "prevention" inscription */
 	verify_inscrip[1] = ch;
@@ -468,13 +484,13 @@ static bool get_item_allow(int item, unsigned char ch, bool is_harmless)
 static int get_tag(int *cp, char tag, cmd_code cmd, bool quiver_tags)
 {
 	int i;
-	cptr s;
+	const char *s;
 
 	/* (f)ire is handled differently from all others, due to the quiver */
 	if (quiver_tags)
 	{
 		i = QUIVER_START + tag - '0';
-		if (p_ptr->inventory[i].k_idx)
+		if (p_ptr->inventory[i].kind)
 		{
 			*cp = i;
 			return (TRUE);
@@ -488,7 +504,7 @@ static int get_tag(int *cp, char tag, cmd_code cmd, bool quiver_tags)
 		object_type *o_ptr = &p_ptr->inventory[i];
 
 		/* Skip non-objects */
-		if (!o_ptr->k_idx) continue;
+		if (!o_ptr->kind) continue;
 
 		/* Skip empty inscriptions */
 		if (!o_ptr->note) continue;
@@ -578,13 +594,13 @@ static int get_tag(int *cp, char tag, cmd_code cmd, bool quiver_tags)
  * Note that only "acceptable" floor objects get indexes, so between two
  * commands, the indexes of floor objects may change.  XXX XXX XXX
  */
-bool get_item(int *cp, cptr pmt, cptr str, cmd_code cmd, int mode)
+bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 {
 	int py = p_ptr->py;
 	int px = p_ptr->px;
 	unsigned char cmdkey = cmd_lookup_key(cmd);
 
-	ui_event_data which;
+	struct keypress which;
 
 	int j, k;
 
@@ -600,7 +616,6 @@ bool get_item(int *cp, cptr pmt, cptr str, cmd_code cmd, int mode)
 	bool use_equip = ((mode & USE_EQUIP) ? TRUE : FALSE);
 	bool use_floor = ((mode & USE_FLOOR) ? TRUE : FALSE);
 	bool use_quiver = ((mode & QUIVER_TAGS) ? TRUE : FALSE);
-	bool can_squelch = ((mode & CAN_SQUELCH) ? TRUE : FALSE);
 	bool is_harmless = ((mode & IS_HARMLESS) ? TRUE : FALSE);
 	bool quiver_tags = ((mode & QUIVER_TAGS) ? TRUE : FALSE);
 
@@ -618,7 +633,7 @@ bool get_item(int *cp, cptr pmt, cptr str, cmd_code cmd, int mode)
 	int floor_list[MAX_FLOOR_STACK];
 	int floor_num;
 
-	bool show_list = OPT(show_lists) ? TRUE : FALSE;
+	bool show_list = TRUE;
 
 
 	/* Object list display modes */
@@ -767,7 +782,7 @@ bool get_item(int *cp, cptr pmt, cptr str, cmd_code cmd, int mode)
 		p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
 
 		/* Redraw windows */
-		redraw_stuff();
+		redraw_stuff(p_ptr);
 
 		/* Viewing inventory */
 		if (p_ptr->command_wrk == USE_INVEN)
@@ -808,13 +823,6 @@ bool get_item(int *cp, cptr pmt, cptr str, cmd_code cmd, int mode)
 			{
 				my_strcat(out_val, " - for floor,", sizeof(out_val));
 				button_add("[-]", '-');
-			}
-
-			/* Indicate that squelched items can be selected */
-			if (can_squelch)
-			{
-				my_strcat(out_val, " ! for squelched,", sizeof(out_val));
-				button_add("[!]", '!');
 			}
 		}
 
@@ -899,16 +907,9 @@ bool get_item(int *cp, cptr pmt, cptr str, cmd_code cmd, int mode)
 				my_strcat(out_val, " / for Equip,", sizeof(out_val));
 				button_add("[/]", '/');
 			}
-
-			/* Indicate that squelched items can be selected */
-			if (can_squelch)
-			{
-				my_strcat(out_val, " ! for squelched,", sizeof(out_val));
-				button_add("[!]", '!');
-			}
 		}
 
-		redraw_stuff();
+		redraw_stuff(p_ptr);
 
 		/* Finish the prompt */
 		my_strcat(out_val, " ESC", sizeof(out_val));
@@ -921,44 +922,14 @@ bool get_item(int *cp, cptr pmt, cptr str, cmd_code cmd, int mode)
 
 
 		/* Get a key */
-		which = inkey_ex();
+		which = inkey();
 
 		/* Parse it */
-		switch (which.key)
+		switch (which.code)
 		{
 			case ESCAPE:
 			{
 				done = TRUE;
-				break;
-			}
-
-			case '*':
-			case '?':
-			case ' ':
-			{
-				if (!OPT(show_lists))
-				{
-					/* Hide the list */
-					if (show_list)
-					{
-						/* Flip flag */
-						show_list = FALSE;
-
-						/* Load screen */
-						screen_load();
-					}
-
-					/* Show the list */
-					else
-					{
-						/* Save screen */
-						screen_save();
-
-						/* Flip flag */
-						show_list = TRUE;
-					}
-				}
-
 				break;
 			}
 
@@ -1074,7 +1045,7 @@ bool get_item(int *cp, cptr pmt, cptr str, cmd_code cmd, int mode)
 			case '7': case '8': case '9':
 			{
 				/* Look up the tag */
-				if (!get_tag(&k, which.key, cmd, quiver_tags))
+				if (!get_tag(&k, which.code, cmd, quiver_tags))
 				{
 					bell("Illegal object choice (tag)!");
 					break;
@@ -1172,34 +1143,20 @@ bool get_item(int *cp, cptr pmt, cptr str, cmd_code cmd, int mode)
 				break;
 			}
 
-			case '!':
-			{
-				/* Try squelched items */
-				if (can_squelch)
-				{
-					(*cp) = ALL_SQUELCHED;
-					item = TRUE;
-					done = TRUE;
-					break;
-				}
-
-				/* Just fall through */
-			}
-
 			default:
 			{
 				bool verify;
 
 				/* Note verify */
-				verify = (isupper((unsigned char)which.key) ? TRUE : FALSE);
+				verify = (isupper((unsigned char)which.code) ? TRUE : FALSE);
 
 				/* Lowercase */
-				which.key = tolower((unsigned char)which.key);
+				which.code = tolower((unsigned char)which.code);
 
 				/* Convert letter to inventory index */
 				if (p_ptr->command_wrk == USE_INVEN)
 				{
-					k = label_to_inven(which.key);
+					k = label_to_inven(which.code);
 
 					if (k < 0)
 					{
@@ -1211,7 +1168,7 @@ bool get_item(int *cp, cptr pmt, cptr str, cmd_code cmd, int mode)
 				/* Convert letter to equipment index */
 				else if (p_ptr->command_wrk == USE_EQUIP)
 				{
-					k = label_to_equip(which.key);
+					k = label_to_equip(which.code);
 
 					if (k < 0)
 					{
@@ -1223,7 +1180,7 @@ bool get_item(int *cp, cptr pmt, cptr str, cmd_code cmd, int mode)
 				/* Convert letter to floor index */
 				else
 				{
-					k = (islower((unsigned char)which.key) ? A2I(which.key) : -1);
+					k = (islower((unsigned char)which.code) ? A2I((unsigned char)which.code) : -1);
 
 					if (k < 0 || k >= floor_num)
 					{
@@ -1282,7 +1239,7 @@ bool get_item(int *cp, cptr pmt, cptr str, cmd_code cmd, int mode)
 	button_kill('/');
 	button_kill('-');
 	button_kill('!');
-	redraw_stuff();
+	redraw_stuff(p_ptr);
  
 	/* Forget the item_tester_tval restriction */
 	item_tester_tval = 0;
@@ -1296,14 +1253,14 @@ bool get_item(int *cp, cptr pmt, cptr str, cmd_code cmd, int mode)
 
 	/* Update */
 	p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
-	redraw_stuff();
+	redraw_stuff(p_ptr);
 
 
 	/* Clear the prompt line */
 	prt("", 0, 0);
 
 	/* Warning if needed */
-	if (oops && str) msg_print(str);
+	if (oops && str) msg("%s", str);
 
 	/* Result */
 	return (item);

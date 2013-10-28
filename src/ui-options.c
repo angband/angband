@@ -19,7 +19,7 @@
  */
 #include "angband.h"
 #include "cmds.h"
-#include "macro.h"
+#include "keymap.h"
 #include "squelch.h"
 #include "prefs.h"
 #include "object/tvalsval.h"
@@ -53,9 +53,9 @@ static void dump_pref_file(void (*dump)(ang_file *), const char *title, int row)
 	
 		prt("", 0, 0);
 		if (prefs_save(buf, dump, title))
-			msg_print(format("Dumped %s", strstr(title, " ") + 1));
+			msg("Dumped %s", strstr(title, " ") + 1);
 		else
-			msg_print("Failed");
+			msg("Failed");
 	}
 
 	screen_load();
@@ -92,21 +92,25 @@ static void option_toggle_display(menu_type *m, int oid, bool cursor,
 /**
  * Handle keypresses for an option entry.
  */
-static bool option_toggle_handle(menu_type *m, const ui_event_data *event,
+static bool option_toggle_handle(menu_type *m, const ui_event *event,
 		int oid)
 {
 	bool next = FALSE;
 
 	if (event->type == EVT_SELECT) {
-		option_set(option_name(oid), !op_ptr->opt[oid]);
+		/* Hack -- birth options can not be toggled after birth */
+		/* At birth, m->flags == MN_DBL_TAP. After birth, m->flags == MN_NO_TAGS */
+		if (!(OPT_BIRTH <= oid && oid <= OPT_BIRTH + N_OPTS_BIRTH - 1 && m->flags == MN_NO_TAGS)) {
+			option_set(option_name(oid), !op_ptr->opt[oid]);
+		}
 	} else if (event->type == EVT_KBRD) {
-		if (event->key == 'y' || event->key == 'Y') {
+		if (event->key.code == 'y' || event->key.code == 'Y') {
 			option_set(option_name(oid), TRUE);
 			next = TRUE;
-		} else if (event->key == 'n' || event->key == 'N') {
+		} else if (event->key.code == 'n' || event->key.code == 'N') {
 			option_set(option_name(oid), FALSE);
 			next = TRUE;
-		} else if (event->key == '?') {
+		} else if (event->key.code == '?') {
 			screen_save();
 			show_file(format("option.txt#%s", option_name(oid)), NULL, 0, 0);
 			screen_load();
@@ -150,6 +154,15 @@ static void option_toggle_menu(const char *name, int page)
 	m->selections = "abcdefghijklmopqrsuvwxz";
 	m->flags = MN_DBL_TAP;
 
+	/* We add 10 onto the page amount to indicate we're at birth */
+	if (page == OPT_PAGE_BIRTH) {
+		m->prompt = "You can only modify these options at character birth. '?' for information";
+		m->cmd_keys = "?";
+		m->flags = MN_NO_TAGS;
+	} else if (page == OPT_PAGE_BIRTH + 10) {
+		page -= 10;
+	}
+
 	/* for this particular menu */
 	m->title = name;
 
@@ -168,11 +181,19 @@ static void option_toggle_menu(const char *name, int page)
 	screen_save();
 
 	clear_from(0);
-	menu_select(m, 0);
+	menu_select(m, 0, FALSE);
 
 	screen_load();
 
 	mem_free(m);
+}
+
+/**
+ * Edit birth options.
+ */
+void do_cmd_options_birth(void)
+{
+	option_toggle_menu("Birth options", OPT_PAGE_BIRTH + 10);
 }
 
 
@@ -186,7 +207,7 @@ static void do_cmd_options_win(const char *name, int row)
 	int y = 0;
 	int x = 0;
 
-	ui_event_data ke;
+	ui_event ke;
 
 	u32b new_flags[ANGBAND_TERM_MAX];
 
@@ -213,7 +234,7 @@ static void do_cmd_options_win(const char *name, int row)
 		{
 			byte a = TERM_WHITE;
 
-			cptr s = angband_term_name[j];
+			const char *s = angband_term_name[j];
 
 			/* Use color */
 			if (j == x) a = TERM_L_BLUE;
@@ -227,7 +248,7 @@ static void do_cmd_options_win(const char *name, int row)
 		{
 			byte a = TERM_WHITE;
 
-			cptr str = window_flag_desc[i];
+			const char *str = window_flag_desc[i];
 
 			/* Use color */
 			if (i == y) a = TERM_L_BLUE;
@@ -262,65 +283,56 @@ static void do_cmd_options_win(const char *name, int row)
 		/* Get key */
 		ke = inkey_ex();
 
-		/* Allow escape */
-		if ((ke.key == ESCAPE) || (ke.key == 'q')) break;
-
 		/* Mouse interaction */
 		if (ke.type == EVT_MOUSE)
 		{
-			int choicey = ke.mousey - 5;
-			int choicex = (ke.mousex - 35)/5;
+			int choicey = ke.mouse.y - 5;
+			int choicex = (ke.mouse.x - 35)/5;
 
 			if ((choicey >= 0) && (choicey < PW_MAX_FLAGS)
 				&& (choicex > 0) && (choicex < ANGBAND_TERM_MAX)
-				&& !(ke.mousex % 5))
+				&& !(ke.mouse.x % 5))
 			{
 				y = choicey;
-				x = (ke.mousex - 35)/5;
+				x = (ke.mouse.x - 35)/5;
 			}
 		}
 
-		/* Toggle */
-		else if ((ke.key == '5') || (ke.key == 't') ||
-				(ke.key == '\n') || (ke.key == '\r') ||
-				(ke.type == EVT_MOUSE))
+		/* Allow escape */
+		else if (ke.type == EVT_KBRD)
 		{
-			/* Hack -- ignore the main window */
-			if (x == 0)
+			if (ke.key.code == ESCAPE || ke.key.code == 'q')
+				break;
+
+			/* Toggle */
+			else if (ke.key.code == '5' || ke.key.code == 't' ||
+					ke.key.code == '\n' || ke.key.code == '\r')
 			{
-				bell("Cannot set main window flags!");
+				/* Hack -- ignore the main window */
+				if (x == 0)
+					bell("Cannot set main window flags!");
+
+				/* Toggle flag (off) */
+				else if (new_flags[x] & (1L << y))
+					new_flags[x] &= ~(1L << y);
+
+				/* Toggle flag (on) */
+				else
+					new_flags[x] |= (1L << y);
+
+				/* Continue */
+				continue;
 			}
 
-			/* Toggle flag (off) */
-			else if (new_flags[x] & (1L << y))
+			/* Extract direction */
+			d = target_dir(ke.key);
+
+			/* Move */
+			if (d != 0)
 			{
-				new_flags[x] &= ~(1L << y);
+				x = (x + ddx[d] + 8) % ANGBAND_TERM_MAX;
+				y = (y + ddy[d] + 16) % PW_MAX_FLAGS;
 			}
-
-			/* Toggle flag (on) */
-			else
-			{
-				new_flags[x] |= (1L << y);
-			}
-
-			/* Continue */
-			continue;
-		}
-
-		/* Extract direction */
-		d = target_dir(ke.key);
-
-		/* Move */
-		if (d != 0)
-		{
-			x = (x + ddx[d] + 8) % ANGBAND_TERM_MAX;
-			y = (y + ddy[d] + 16) % PW_MAX_FLAGS;
-		}
-
-		/* Oops */
-		else
-		{
-			bell("Illegal command for window options!");
 		}
 	}
 
@@ -332,68 +344,12 @@ static void do_cmd_options_win(const char *name, int row)
 
 
 
-/*** Interact with macros and keymaps ***/
-
-#ifdef ALLOW_MACROS
+/*** Interact with keymaps ***/
 
 /*
- * Hack -- ask for a "trigger" (see below)
- *
- * Note the complex use of the "inkey()" function from "util.c".
- *
- * Note that both "flush()" calls are extremely important.  This may
- * no longer be true, since "util.c" is much simpler now.  XXX XXX XXX
+ * Current (or recent) keymap action
  */
-static void do_cmd_macro_aux(char *buf)
-{
-	ui_event_data e;
-
-	int n = 0;
-	int curs_x, curs_y;
-
-	char tmp[1024] = "";
-
-	/* Get cursor position */
-	Term_locate(&curs_x, &curs_y);
-
-	/* Flush */
-	flush();
-
-
-	/* Do not process macros */
-	inkey_base = TRUE;
-
-	/* First key */
-	e = inkey_ex();
-
-	/* Read the pattern */
-	while (e.key != 0 && e.type != EVT_MOUSE)
-	{
-		/* Save the key */
-		buf[n++] = e.key;
-		buf[n] = 0;
-
-		/* Get representation of the sequence so far */
-		ascii_to_text(tmp, sizeof(tmp), buf);
-
-		/* Echo it after the prompt */
-		Term_erase(curs_x, curs_y, 80);
-		Term_gotoxy(curs_x, curs_y);
-		Term_addstr(-1, TERM_WHITE, tmp);
-		
-		/* Do not process macros */
-		inkey_base = TRUE;
-
-		/* Do not wait for keys */
-		inkey_scan = SCAN_INSTANT;
-
-		/* Attempt to read a key */
-		e = inkey_ex();
-	}
-
-	/* Convert the trigger */
-	ascii_to_text(tmp, sizeof(tmp), buf);
-}
+static struct keypress keymap_buffer[KEYMAP_ACTION_MAX];
 
 
 /*
@@ -404,20 +360,19 @@ static void do_cmd_macro_aux(char *buf)
  * Note that both "flush()" calls are extremely important.  This may
  * no longer be true, since "util.c" is much simpler now.  XXX XXX XXX
  */
-static char keymap_get_trigger(void)
+static struct keypress keymap_get_trigger(void)
 {
 	char tmp[80];
-	char buf[2];
+	struct keypress buf[2] = { { 0 }, { 0 } };
 
 	/* Flush */
 	flush();
 
 	/* Get a key */
 	buf[0] = inkey();
-	buf[1] = '\0';
 
 	/* Convert to ascii */
-	ascii_to_text(tmp, sizeof(tmp), buf);
+	keypress_to_text(tmp, sizeof(tmp), buf, FALSE);
 
 	/* Hack -- display the trigger */
 	Term_addstr(-1, TERM_WHITE, tmp);
@@ -434,127 +389,29 @@ static char keymap_get_trigger(void)
  * Macro menu action functions
  */
 
-static void macro_pref_load(const char *title, int row)
+static void ui_keymap_pref_load(const char *title, int row)
 {
 	do_cmd_pref_file_hack(16);
 }
 
-static void macro_pref_append(const char *title, int row)
-{
-	(void)dump_pref_file(macro_dump, "Dump macros", 15);
-}
-
-static void macro_query(const char *title, int row)
-{
-	int k;
-	char buf[1024];
-	
-	prt("Command: Query a macro", 16, 0);
-	prt("Trigger: ", 18, 0);
-	
-	/* Get a macro trigger */
-	do_cmd_macro_aux(buf);
-	
-	/* Get the action */
-	k = macro_find_exact(buf);
-	
-	/* Nothing found */
-	if (k < 0)
-	{
-		/* Prompt */
-		prt("", 0, 0);
-		msg_print("Found no macro.");
-	}
-	
-	/* Found one */
-	else
-	{
-		/* Obtain the action */
-		my_strcpy(macro_buffer, macro__act[k], sizeof(macro_buffer));
-	
-		/* Analyze the current action */
-		ascii_to_text(buf, sizeof(buf), macro_buffer);
-	
-		/* Display the current action */
-		prt(buf, 22, 0);
-	
-		/* Prompt */
-		prt("", 0, 0);
-		msg_print("Found a macro.");
-	}
-}
-
-static void macro_create(const char *title, int row)
-{
-	char pat[1024];
-	char tmp[1024];
-
-	prt("Command: Create a macro", 16, 0);
-	prt("Trigger: ", 18, 0);
-	
-	/* Get a macro trigger */
-	do_cmd_macro_aux(pat);
-	
-	/* Clear */
-	clear_from(20);
-	
-	/* Prompt */
-	prt("Action: ", 20, 0);
-	
-	/* Convert to text */
-	ascii_to_text(tmp, sizeof(tmp), macro_buffer);
-	
-	/* Get an encoded action */
-	if (askfor_aux(tmp, sizeof tmp, NULL))
-	{
-		/* Convert to ascii */
-		text_to_ascii(macro_buffer, sizeof(macro_buffer), tmp);
-		
-		/* Link the macro */
-		macro_add(pat, macro_buffer);
-		
-		/* Prompt */
-		prt("", 0, 0);
-		msg_print("Added a macro.");
-	}					
-}
-
-static void macro_remove(const char *title, int row)
-{
-	char pat[1024];
-
-	prt("Command: Remove a macro", 16, 0);
-	prt("Trigger: ", 18, 0);
-	
-	/* Get a macro trigger */
-	do_cmd_macro_aux(pat);
-	
-	/* Link the macro */
-	macro_add(pat, pat);
-	
-	/* Prompt */
-	prt("", 0, 0);
-	msg_print("Removed a macro.");
-}
-
-static void keymap_pref_append(const char *title, int row)
+static void ui_keymap_pref_append(const char *title, int row)
 {
 	(void)dump_pref_file(keymap_dump, "Dump keymaps", 13);
 }
 
-static void keymap_query(const char *title, int row)
+static void ui_keymap_query(const char *title, int row)
 {
 	char tmp[1024];
 	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
-	char c;
-	const char *act;
+	struct keypress c;
+	const struct keypress *act;
 
 	prt(title, 13, 0);
 	prt("Key: ", 14, 0);
 	
 	/* Get a keymap trigger & mapping */
 	c = keymap_get_trigger();
-	act = keymap_act[mode][(byte) c];
+	act = keymap_find(mode, c);
 	
 	/* Nothing found */
 	if (!act)
@@ -567,11 +424,8 @@ static void keymap_query(const char *title, int row)
 	/* Found one */
 	else
 	{
-		/* Obtain the action */
-		my_strcpy(macro_buffer, act, sizeof(macro_buffer));
-	
 		/* Analyze the current action */
-		ascii_to_text(tmp, sizeof(tmp), macro_buffer);
+		keypress_to_text(tmp, sizeof(tmp), act, FALSE);
 	
 		/* Display the current action */
 		prt("Found: ", 15, 0);
@@ -582,9 +436,12 @@ static void keymap_query(const char *title, int row)
 	}
 }
 
-static void keymap_create(const char *title, int row)
+static void ui_keymap_create(const char *title, int row)
 {
-	char c;
+	bool done = FALSE;
+	size_t n = 0;
+
+	struct keypress c;
 	char tmp[1024];
 	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
 
@@ -592,29 +449,75 @@ static void keymap_create(const char *title, int row)
 	prt("Key: ", 14, 0);
 
 	c = keymap_get_trigger();
-
-	prt("Action: ", 15, 0);
+	if (c.code == '$') {
+		c_prt(TERM_L_RED, "The '$' key is reserved.", 16, 2);
+		prt("Press any key to continue.", 18, 0);
+		inkey();
+		return;
+	}
 
 	/* Get an encoded action, with a default response */
-	ascii_to_text(tmp, sizeof(tmp), macro_buffer);
-	if (askfor_aux(tmp, sizeof tmp, NULL))
-	{
-		/* Convert to ascii */
-		text_to_ascii(macro_buffer, sizeof(macro_buffer), tmp);
-	
-		/* Make new keymap */
-		string_free(keymap_act[mode][(byte) c]);
-		keymap_act[mode][(byte) c] = string_make(macro_buffer);
+	while (!done) {
+		struct keypress kp = {EVT_NONE, 0, 0};
 
-		/* Prompt */
+		int color = TERM_WHITE;
+		if (n == 0) color = TERM_YELLOW;
+		if (n == KEYMAP_ACTION_MAX) color = TERM_L_RED;
+
+		keypress_to_text(tmp, sizeof(tmp), keymap_buffer, FALSE);
+		c_prt(color, format("Action: %s", tmp), 15, 0);
+
+		c_prt(TERM_L_BLUE, "  Press '$' when finished.", 17, 0);
+		c_prt(TERM_L_BLUE, "  Use 'CTRL-U' to reset.", 18, 0);
+		c_prt(TERM_L_BLUE, format("(Maximum keymap length is %d keys.)", KEYMAP_ACTION_MAX), 19, 0);
+
+		kp = inkey();
+
+		if (kp.code == '$') {
+			done = TRUE;
+			continue;
+		}
+
+		switch (kp.code) {
+			case KC_DELETE:
+			case KC_BACKSPACE: {
+				if (n > 0) {
+					n -= 1;
+				    keymap_buffer[n].type = 0;
+					keymap_buffer[n].code = 0;
+					keymap_buffer[n].mods = 0;
+				}
+				break;
+			}
+
+			case KTRL('U'): {
+				memset(keymap_buffer, 0, sizeof keymap_buffer);
+				n = 0;
+				break;
+			}
+
+			default: {
+				if (n == KEYMAP_ACTION_MAX) continue;
+
+				if (n == 0) {
+					memset(keymap_buffer, 0, sizeof keymap_buffer);
+				}
+				keymap_buffer[n++] = kp;
+				break;
+			}
+		}
+	}
+
+	if (c.code && get_check("Save this keymap? ")) {
+		keymap_add(mode, c, keymap_buffer, TRUE);
 		prt("Keymap added.  Press any key to continue.", 17, 0);
 		inkey();
 	}
 }
 
-static void keymap_remove(const char *title, int row)
+static void ui_keymap_remove(const char *title, int row)
 {
-	char c;
+	struct keypress c;
 	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
 
 	prt(title, 13, 0);
@@ -622,41 +525,17 @@ static void keymap_remove(const char *title, int row)
 
 	c = keymap_get_trigger();
 
-	if (keymap_act[mode][(byte) c])
-	{
-		/* Free old keymap */
-		string_free(keymap_act[mode][(byte) c]);
-		keymap_act[mode][(byte) c] = NULL;
-
+	if (keymap_remove(mode, c))
 		prt("Removed.", 16, 0);
-	}
 	else
-	{
 		prt("No keymap to remove!", 16, 0);
-	}
 
 	/* Prompt */
 	prt("Press any key to continue.", 17, 0);
 	inkey();
 }
 
-static void macro_enter(const char *title, int row)
-{
-	char tmp[1024];
-
-	prt(title, 16, 0);
-	prt("Action: ", 17, 0);
-
-	/* Get an action, with a default response */
-	ascii_to_text(tmp, sizeof(tmp), macro_buffer);
-	if (askfor_aux(tmp, sizeof tmp, NULL))
-	{
-		/* Save to global macro buffer */
-		text_to_ascii(macro_buffer, sizeof(macro_buffer), tmp);
-	}
-}
-
-static void macro_browse_hook(int oid, void *db, const region *loc)
+static void keymap_browse_hook(int oid, void *db, const region *loc)
 {
 	char tmp[1024];
 
@@ -666,49 +545,42 @@ static void macro_browse_hook(int oid, void *db, const region *loc)
 
 	/* Show current action */
 	prt("Current action (if any) shown below:", 13, 0);
-	ascii_to_text(tmp, sizeof(tmp), macro_buffer);
+	keypress_to_text(tmp, sizeof(tmp), keymap_buffer, FALSE);
 	prt(tmp, 14, 0);
 }
 
-static menu_type *macro_menu;
-static menu_action macro_actions[] =
+static menu_type *keymap_menu;
+static menu_action keymap_actions[] =
 {
-	{ 0, 0, "Load a user pref file",    macro_pref_load },
-	{ 0, 0, "Append macros to a file",  macro_pref_append },
-	{ 0, 0, "Query a macro",            macro_query },
-	{ 0, 0, "Create a macro",           macro_create },
-	{ 0, 0, "Remove a macro",           macro_remove },
-	{ 0, 0, "Append keymaps to a file", keymap_pref_append },
-	{ 0, 0, "Query a keymap",           keymap_query },
-	{ 0, 0, "Create a keymap",          keymap_create },
-	{ 0, 0, "Remove a keymap",          keymap_remove },
-	{ 0, 0, "Enter a new action",       macro_enter },
+	{ 0, 0, "Load a user pref file",    ui_keymap_pref_load },
+	{ 0, 0, "Append keymaps to a file", ui_keymap_pref_append },
+	{ 0, 0, "Query a keymap",           ui_keymap_query },
+	{ 0, 0, "Create a keymap",          ui_keymap_create },
+	{ 0, 0, "Remove a keymap",          ui_keymap_remove },
 };
 
-static void do_cmd_macros(const char *title, int row)
+static void do_cmd_keymaps(const char *title, int row)
 {
 	region loc = {0, 0, 0, 12};
 
 	screen_save();
 	clear_from(0);
 
-	if (!macro_menu)
+	if (!keymap_menu)
 	{
-		macro_menu = menu_new_action(macro_actions,
-				N_ELEMENTS(macro_actions));
+		keymap_menu = menu_new_action(keymap_actions,
+				N_ELEMENTS(keymap_actions));
 	
-		macro_menu->title = title;
-		macro_menu->selections = lower_case;
-		macro_menu->browse_hook = macro_browse_hook;
+		keymap_menu->title = title;
+		keymap_menu->selections = lower_case;
+		keymap_menu->browse_hook = keymap_browse_hook;
 	}
 
-	menu_layout(macro_menu, &loc);
-	menu_select(macro_menu, 0);
+	menu_layout(keymap_menu, &loc);
+	menu_select(keymap_menu, 0, FALSE);
 
 	screen_load();
 }
-
-#endif /* ALLOW_MACROS */
 
 
 
@@ -750,7 +622,7 @@ static void visuals_reset(const char *title, int row)
 
 	/* Message */
 	prt("", 0, 0);
-	msg_print("Visual attr/char tables reset.");
+	msg("Visual attr/char tables reset.");
 	message_flush();
 }
 
@@ -796,7 +668,7 @@ static void do_cmd_visuals(const char *title, int row)
 	}
 
 	menu_layout(visual_menu, &SCREEN_REGION);
-	menu_select(visual_menu, 0);
+	menu_select(visual_menu, 0, FALSE);
 
 	screen_load();
 }
@@ -826,7 +698,6 @@ static void colors_pref_dump(const char *title, int row)
 static void colors_modify(const char *title, int row)
 {
 	int i;
-	int cx;
 
 	static byte a = 0;
 
@@ -836,8 +707,10 @@ static void colors_modify(const char *title, int row)
 	/* Hack -- query until done */
 	while (1)
 	{
-		cptr name;
+		const char *name;
 		char index;
+
+		struct keypress cx;
 
 		/* Clear */
 		clear_from(10);
@@ -880,19 +753,19 @@ static void colors_modify(const char *title, int row)
 		cx = inkey();
 
 		/* All done */
-		if (cx == ESCAPE) break;
+		if (cx.code == ESCAPE) break;
 
 		/* Analyze */
-		if (cx == 'n') a = (byte)(a + 1);
-		if (cx == 'N') a = (byte)(a - 1);
-		if (cx == 'k') angband_color_table[a][0] = (byte)(angband_color_table[a][0] + 1);
-		if (cx == 'K') angband_color_table[a][0] = (byte)(angband_color_table[a][0] - 1);
-		if (cx == 'r') angband_color_table[a][1] = (byte)(angband_color_table[a][1] + 1);
-		if (cx == 'R') angband_color_table[a][1] = (byte)(angband_color_table[a][1] - 1);
-		if (cx == 'g') angband_color_table[a][2] = (byte)(angband_color_table[a][2] + 1);
-		if (cx == 'G') angband_color_table[a][2] = (byte)(angband_color_table[a][2] - 1);
-		if (cx == 'b') angband_color_table[a][3] = (byte)(angband_color_table[a][3] + 1);
-		if (cx == 'B') angband_color_table[a][3] = (byte)(angband_color_table[a][3] - 1);
+		if (cx.code == 'n') a = (byte)(a + 1);
+		if (cx.code == 'N') a = (byte)(a - 1);
+		if (cx.code == 'k') angband_color_table[a][0] = (byte)(angband_color_table[a][0] + 1);
+		if (cx.code == 'K') angband_color_table[a][0] = (byte)(angband_color_table[a][0] - 1);
+		if (cx.code == 'r') angband_color_table[a][1] = (byte)(angband_color_table[a][1] + 1);
+		if (cx.code == 'R') angband_color_table[a][1] = (byte)(angband_color_table[a][1] - 1);
+		if (cx.code == 'g') angband_color_table[a][2] = (byte)(angband_color_table[a][2] + 1);
+		if (cx.code == 'G') angband_color_table[a][2] = (byte)(angband_color_table[a][2] - 1);
+		if (cx.code == 'b') angband_color_table[a][3] = (byte)(angband_color_table[a][3] + 1);
+		if (cx.code == 'B') angband_color_table[a][3] = (byte)(angband_color_table[a][3] - 1);
 
 		/* Hack -- react to changes */
 		Term_xtra(TERM_XTRA_REACT, 0);
@@ -920,7 +793,7 @@ static menu_action color_events [] =
 /*
  * Interact with "colors"
  */
-void do_cmd_colors(const char *title, int row)
+static void do_cmd_colors(const char *title, int row)
 {
 	screen_save();
 	clear_from(0);
@@ -936,7 +809,7 @@ void do_cmd_colors(const char *title, int row)
 	}
 
 	menu_layout(color_menu, &SCREEN_REGION);
-	menu_select(color_menu, 0);
+	menu_select(color_menu, 0, FALSE);
 
 	screen_load();
 }
@@ -946,9 +819,9 @@ void do_cmd_colors(const char *title, int row)
 
 /*** Non-complex menu actions ***/
 
-static bool askfor_aux_numbers(char *buf, size_t buflen, size_t *curs, size_t *len, char keypress, bool firsttime)
+static bool askfor_aux_numbers(char *buf, size_t buflen, size_t *curs, size_t *len, struct keypress keypress, bool firsttime)
 {
-	switch (keypress)
+	switch (keypress.code)
 	{
 		case ESCAPE:
 		case '\n':
@@ -979,9 +852,8 @@ static bool askfor_aux_numbers(char *buf, size_t buflen, size_t *curs, size_t *l
  */
 static void do_cmd_delay(const char *name, int row)
 {
-	bool res;
 	char tmp[4] = "";
-	int msec = op_ptr->delay_factor * op_ptr->delay_factor;
+	int msec = op_ptr->delay_factor;
 
 	strnfmt(tmp, sizeof(tmp), "%i", op_ptr->delay_factor);
 
@@ -990,17 +862,14 @@ static void do_cmd_delay(const char *name, int row)
 	/* Prompt */
 	prt("Command: Base Delay Factor", 20, 0);
 
-	prt(format("Current base delay factor: %d (%d msec)",
+	prt(format("Current base delay factor: %d msec",
 			   op_ptr->delay_factor, msec), 22, 0);
 	prt("New base delay factor (0-255): ", 21, 0);
 
-	/* Ask the user for a string */
-	res = askfor_aux(tmp, sizeof(tmp), askfor_aux_numbers);
-
-	/* Process input */
-	if (res)
-	{
-		op_ptr->delay_factor = (u16b) strtoul(tmp, NULL, 0);
+	/* Ask for a numeric value */
+	if (askfor_aux(tmp, sizeof(tmp), askfor_aux_numbers)) {
+		u16b val = (u16b) strtoul(tmp, NULL, 0);
+		op_ptr->delay_factor = MIN(val, 255);
 	}
 
 	screen_load();
@@ -1106,17 +975,17 @@ static void do_cmd_pref_file_hack(long row)
 	if (askfor_aux(ftmp, sizeof ftmp, NULL))
 	{
 		/* Process the given filename */
-		if (process_pref_file(ftmp, FALSE) == FALSE)
+		if (process_pref_file(ftmp, FALSE, TRUE) == FALSE)
 		{
 			/* Mention failure */
 			prt("", 0, 0);
-			msg_format("Failed to load '%s'!", ftmp);
+			msg("Failed to load '%s'!", ftmp);
 		}
 		else
 		{
 			/* Mention success */
 			prt("", 0, 0);
-			msg_format("Loaded '%s'.", ftmp);
+			msg("Loaded '%s'.", ftmp);
 		}
 	}
 
@@ -1147,50 +1016,6 @@ static void options_load_pref_file(const char *n, int row)
 
 
 /*** Quality-squelch menu ***/
-
-
-typedef struct
-{
-	int enum_val;
-	const char *name;
-} quality_name_struct;
-
-static quality_name_struct quality_choices[TYPE_MAX] =
-{
-	{ TYPE_WEAPON_POINTY,	"Pointy Melee Weapons" },
-	{ TYPE_WEAPON_BLUNT,	"Blunt Melee Weapons" },
-	{ TYPE_SHOOTER,		"Missile weapons" },
-	{ TYPE_MISSILE_SLING,	"Shots and Pebbles" },
-	{ TYPE_MISSILE_BOW,	"Arrows" },
-	{ TYPE_MISSILE_XBOW,	"Bolts" },
-	{ TYPE_ARMOR_ROBE,	"Robes" },
-	{ TYPE_ARMOR_BODY,	"Body Armor" },
-	{ TYPE_ARMOR_CLOAK,	"Cloaks" },
-	{ TYPE_ARMOR_ELVEN_CLOAK,	"Elven Cloaks" },
-	{ TYPE_ARMOR_SHIELD,	"Shields" },
-	{ TYPE_ARMOR_HEAD,	"Headgear" },
-	{ TYPE_ARMOR_HANDS,	"Handgear" },
-	{ TYPE_ARMOR_FEET,	"Footgear" },
-	{ TYPE_DIGGER,		"Diggers" },
-	{ TYPE_RING,		"Rings" },
-	{ TYPE_AMULET,		"Amulets" },
-	{ TYPE_LIGHT, 		"Lights" },
-};
-
-/*
- * The names for the various kinds of quality
- */
-static quality_name_struct quality_values[SQUELCH_MAX] =
-{
-	{ SQUELCH_NONE,		"no squelch" },
-	{ SQUELCH_BAD,		"bad" },
-	{ SQUELCH_AVERAGE,	"average" },
-	{ SQUELCH_GOOD,		"good" },
-	{ SQUELCH_EXCELLENT_NO_HI,	"excellent with no high resists" },
-	{ SQUELCH_EXCELLENT_NO_SPL,	"excellent but not splendid" },
-	{ SQUELCH_ALL,		"everything except artifacts" },
-};
-
 
 /* Structure to describe tval/description pairings. */
 typedef struct
@@ -1225,7 +1050,6 @@ static tval_desc sval_dependent[] =
  */
 typedef struct
 {
-	s16b k_idx;
 	object_kind *kind;
 	bool aware;
 } squelch_choice;
@@ -1238,16 +1062,16 @@ static int cmp_squelch(const void *a, const void *b)
 {
 	char bufa[80];
 	char bufb[80];
-	const squelch_choice *x = (squelch_choice *)a;
-	const squelch_choice *y = (squelch_choice *)b;
+	const squelch_choice *x = a;
+	const squelch_choice *y = b;
 
 	if (!x->aware && y->aware)
 		return 1;
 	if (x->aware && !y->aware)
 		return -1;
 
-	object_kind_name(bufa, sizeof(bufa), x->k_idx, x->aware);
-	object_kind_name(bufb, sizeof(bufb), y->k_idx, y->aware);
+	object_kind_name(bufa, sizeof(bufa), x->kind, x->aware);
+	object_kind_name(bufb, sizeof(bufb), y->kind, y->aware);
 
 	return strcmp(bufa, bufb);
 }
@@ -1284,18 +1108,16 @@ static void quality_subdisplay(menu_type *menu, int oid, bool cursor, int row, i
 /*
  * Handle keypresses.
  */
-static bool quality_action(menu_type *m, const ui_event_data *event, int oid)
+static bool quality_action(menu_type *m, const ui_event *event, int oid)
 {
 	menu_type menu;
 	menu_iter menu_f = { NULL, NULL, quality_subdisplay, NULL, NULL };
 	region area = { 27, 2, 29, SQUELCH_MAX };
-	ui_event_data evt;
-	int cursor;
+	ui_event evt;
 	int count;
 
 	/* Display at the right point */
 	area.row += oid;
-	cursor = squelch_level[oid];
 
 	/* Save */
 	screen_save();
@@ -1317,7 +1139,7 @@ static bool quality_action(menu_type *m, const ui_event_data *event, int oid)
 
 	window_make(area.col - 2, area.row - 1, area.col + area.width + 2, area.row + area.page_rows);
 
-	evt = menu_select(&menu, 0);
+	evt = menu_select(&menu, 0, TRUE);
 
 	/* Set the new value appropriately */
 	if (evt.type == EVT_SELECT)
@@ -1348,7 +1170,7 @@ static void quality_menu(void *unused, const char *also_unused)
 	menu_layout(&menu, &area);
 
 	/* Select an entry */
-	menu_select(&menu, 0);
+	menu_select(&menu, 0, FALSE);
 
 	/* Load screen */
 	screen_load();
@@ -1371,10 +1193,10 @@ static void squelch_sval_menu_display(menu_type *menu, int oid, bool cursor,
 	object_kind *kind = choice[oid].kind;
 	bool aware = choice[oid].aware;
 
-	byte attr = curs_attrs[aware][0 != cursor];
+	byte attr = curs_attrs[(int)aware][0 != cursor];
 
 	/* Acquire the "name" of object "i" */
-	object_kind_name(buf, sizeof(buf), choice[oid].k_idx, aware);
+	object_kind_name(buf, sizeof(buf), kind, aware);
 
 	/* Print it */
 	c_put_str(attr, format("[ ] %s", buf), row, col);
@@ -1387,7 +1209,7 @@ static void squelch_sval_menu_display(menu_type *menu, int oid, bool cursor,
 /*
  * Deal with events on the sval menu
  */
-static bool squelch_sval_menu_action(menu_type *m, const ui_event_data *event,
+static bool squelch_sval_menu_action(menu_type *m, const ui_event *event,
 		int oid)
 {
 	const squelch_choice *choice = menu_priv(m);
@@ -1444,16 +1266,15 @@ static int squelch_collect_kind(int tval, squelch_choice **ch)
 		{
 			/* can unaware squelch anything */
 			choice[num].kind = k_ptr;
-			choice[num].k_idx = i;
 			choice[num++].aware = FALSE;
 		}
 
-		if (k_ptr->everseen || k_ptr->tval == TV_GOLD)
+		if ((k_ptr->everseen && !of_has(k_ptr->flags, OF_INSTA_ART)) || k_ptr->tval == TV_GOLD)
 		{
+			/* Do not display the artifact base kinds in this list */
 			/* aware squelch requires everseen */
 			/* do not require awareness for aware squelch, so people can set at game start */
 			choice[num].kind = k_ptr;
-			choice[num].k_idx = i;
 			choice[num++].aware = TRUE;
 		}
 	}
@@ -1508,7 +1329,7 @@ static bool sval_menu(int tval, const char *desc)
 	menu = menu_new(MN_SKIN_COLUMNS, &squelch_sval_menu);
 	menu_setpriv(menu, n_choices, choices);
 	menu_layout(menu, &area);
-	menu_select(menu, 0);
+	menu_select(menu, 0, FALSE);
 
 	/* Free memory */
 	FREE(choices);
@@ -1546,9 +1367,8 @@ struct
 {
 	char tag;
 	const char *name;
-	void (*action)(void *unused, const char *also_unused);
-} extra_item_options[] =
-{
+	void (*action)(); /* this is a nasty hack */
+} extra_item_options[] = {
 	{ 'Q', "Quality squelching options", quality_menu },
 	{ '{', "Autoinscription setup", textui_browse_object_knowledge },
 };
@@ -1615,7 +1435,7 @@ static void display_options_item(menu_type *menu, int oid, bool cursor, int row,
 	}
 }
 
-bool handle_options_item(menu_type *menu, const ui_event_data *event, int oid)
+static bool handle_options_item(menu_type *menu, const ui_event *event, int oid)
 {
 	if (event->type == EVT_SELECT)
 	{
@@ -1627,7 +1447,7 @@ bool handle_options_item(menu_type *menu, const ui_event_data *event, int oid)
 		{
 			oid = oid - (int)N_ELEMENTS(sval_dependent) - 1;
 			assert((size_t) oid < N_ELEMENTS(extra_item_options));
-			extra_item_options[oid].action(NULL, NULL);
+			extra_item_options[oid].action();
 		}
 
 		return TRUE;
@@ -1662,7 +1482,7 @@ void do_cmd_options_item(const char *title, int row)
 
 	screen_save();
 	clear_from(0);
-	menu_select(&menu, 0);
+	menu_select(&menu, 0, FALSE);
 	screen_load();
 
 	p_ptr->notice |= PN_SQUELCH;
@@ -1677,8 +1497,7 @@ void do_cmd_options_item(const char *title, int row)
 static menu_type *option_menu;
 static menu_action option_actions[] = 
 {
-	{ 0, 'a', "Interface options", option_toggle_menu },
-	{ 0, 'b', "Display options", option_toggle_menu },
+	{ 0, 'a', "Interface and display options", option_toggle_menu },
 	{ 0, 'e', "Warning and disturbance options", option_toggle_menu },
 	{ 0, 'f', "Birth (difficulty) options", option_toggle_menu },
 	{ 0, 'g', "Cheat options", option_toggle_menu },
@@ -1691,11 +1510,7 @@ static menu_action option_actions[] =
 	{ 0, 'l', "Load a user pref file", options_load_pref_file },
 	{ 0, 'o', "Save options", do_dump_options }, 
 	{0, 0, 0, 0}, /* Interact with */	
-
-#ifdef ALLOW_MACROS
-	{ 0, 'm', "Interact with macros (advanced)", do_cmd_macros },
-#endif /* ALLOW_MACROS */
-
+	{ 0, 'm', "Interact with keymaps (advanced)", do_cmd_keymaps },
 	{ 0, 'v', "Interact with visuals (advanced)", do_cmd_visuals },
 
 #ifdef ALLOW_COLORS
@@ -1723,7 +1538,7 @@ void do_cmd_options(void)
 	clear_from(0);
 
 	menu_layout(option_menu, &SCREEN_REGION);
-	menu_select(option_menu, 0);
+	menu_select(option_menu, 0, FALSE);
 
 	screen_load();
 }
@@ -1751,64 +1566,5 @@ bool squelch_tval(int tval)
 			return TRUE;
 	}
 
-	return FALSE;
-}
-
-
-
-/*
- * Inquire whether the player wishes to squelch items similar to an object
- *
- * Returns whether the item is now squelched.
- */
-bool squelch_interactive(const object_type *o_ptr)
-{
-	char out_val[70];
-
-	if (squelch_tval(o_ptr->tval))
-	{
-		char sval_name[50];
-
-		/* Obtain plural form without a quantity */
-		object_desc(sval_name, sizeof sval_name, o_ptr,
-					ODESC_BASE | ODESC_PLURAL);
-		/* XXX Eddie while correct in a sense, to squelch all torches on torch of brightness you get the message "Ignore Wooden Torches of Brightness in future? " */
-		strnfmt(out_val, sizeof out_val, "Ignore %s in future? ",
-				sval_name);
-
-		if (!artifact_p(o_ptr) || !object_flavor_is_aware(o_ptr))
-		{
-			if (get_check(out_val))
-			{
-				object_squelch_flavor_of(o_ptr);
-				msg_format("Ignoring %s from now on.", sval_name);
-				return TRUE;
-			}
-		}
-		/* XXX Eddie need to add generalized squelching, e.g. con rings with pval < 3 */
-		if (!object_is_jewelry(o_ptr) || (squelch_level_of(o_ptr) != SQUELCH_BAD))
-			return FALSE;
-	}
-
-	if (object_was_sensed(o_ptr) || object_was_worn(o_ptr) || object_is_known_not_artifact(o_ptr))
-	{
-		byte value = squelch_level_of(o_ptr);
-		int type = squelch_type_of(o_ptr);
-
-/* XXX Eddie on pseudoed cursed artifact, only showed {cursed}, asked to ignore artifacts */
-		if ((value != SQUELCH_MAX) && ((value == SQUELCH_BAD) || !object_is_jewelry(o_ptr)))
-		{
-
-			strnfmt(out_val, sizeof out_val, "Ignore all %s that are %s in future? ",
-				quality_choices[type].name, quality_values[value].name);
-
-			if (get_check(out_val))
-			{
-				squelch_level[type] = value;
-				return TRUE;
-			}
-		}
-
-	}
 	return FALSE;
 }

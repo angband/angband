@@ -18,9 +18,10 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
-#include "macro.h"
+#include "keymap.h"
 #include "prefs.h"
 #include "squelch.h"
+#include "spells.h"
 
 
 /*** Pref file saving code ***/
@@ -69,7 +70,7 @@ static void remove_old_dump(const char *cur_fname, const char *mark)
 	new_file = file_open(new_fname, MODE_WRITE, FTYPE_TEXT);
 	if (!new_file)
 	{
-		msg_format("Failed to create file %s", new_fname);
+		msg("Failed to create file %s", new_fname);
 		return;
 	}
 
@@ -147,52 +148,6 @@ static void pref_footer(ang_file *fff, const char *mark)
 
 
 /*
- * Save autoinscription data to a pref file.
- */
-/* XXX should be renamed dump_* */
-void autoinsc_dump(ang_file *fff)
-{
-	int i;
-	if (!inscriptions) return;
-
-	file_putf(fff, "# Autoinscription settings\n");
-	file_putf(fff, "# B:item kind:inscription\n\n");
-
-	for (i = 0; i < inscriptions_count; i++)
-	{
-		object_kind *k_ptr = &k_info[inscriptions[i].kind_idx];
-
-		file_putf(fff, "# Autoinscription for %s\n", k_ptr->name);
-		file_putf(fff, "B:%d:%s\n\n", inscriptions[i].kind_idx,
-		        quark_str(inscriptions[i].inscription_idx));
-	}
-
-	file_putf(fff, "\n");
-}
-
-/*
- * Save squelch data to a pref file.
- */
-void squelch_dump(ang_file *fff)
-{
-	int i;
-	file_putf(fff, "# Squelch settings\n");
-
-	for (i = 1; i < z_info->k_max; i++)
-	{
-		int tval = k_info[i].tval;
-		int sval = k_info[i].sval;
-		bool squelch = k_info[i].squelch;
-
-		/* Dump the squelch info */
-		if (tval || sval)
-			file_putf(fff, "Q:%d:%d:%d:%d\n", i, tval, sval, squelch);
-	}
-
-	file_putf(fff, "\n");
-}
-
-/*
  * Write all current options to a user preference file.
  */
 void option_dump(ang_file *fff)
@@ -245,95 +200,9 @@ void option_dump(ang_file *fff)
 		}
 	}
 
-	autoinsc_dump(fff);
-#if 0
-	/* Dumping squelch settings caused problems, see #784 */
-	squelch_dump(fff);
-#endif
+	keymap_dump(fff);
 }
 
-
-
-#ifdef ALLOW_MACROS
-
-/*
- * Append all current macros to the given file
- */
-void macro_dump(ang_file *fff)
-{
-	int i;
-	char buf[1024];
-
-	/* Dump them */
-	for (i = 0; i < macro__num; i++)
-	{
-		/* Start the macro */
-		file_putf(fff, "# Macro '%d'\n", i);
-
-		/* Extract the macro action */
-		ascii_to_text(buf, sizeof(buf), macro__act[i]);
-		file_putf(fff, "A:%s\n", buf);
-
-		/* Extract the macro pattern */
-		ascii_to_text(buf, sizeof(buf), macro__pat[i]);
-		file_putf(fff, "P:%s\n", buf);
-
-		file_putf(fff, "\n");
-	}
-}
-
-
-
-/*
- * Hack -- Append all keymaps to the given file.
- *
- * Hack -- We only append the keymaps for the "active" mode.
- */
-void keymap_dump(ang_file *fff)
-{
-	size_t i;
-	int mode;
-	char buf[1024];
-
-	if (OPT(rogue_like_commands))
-		mode = KEYMAP_MODE_ROGUE;
-	else
-		mode = KEYMAP_MODE_ORIG;
-
-	for (i = 0; i < N_ELEMENTS(keymap_act[mode]); i++)
-	{
-		char key[2] = "?";
-		const char *act;
-
-		/* Loop up the keymap */
-		act = keymap_act[mode][i];
-
-		/* Skip empty keymaps */
-		if (!act) continue;
-
-		/* Encode the action */
-		ascii_to_text(buf, sizeof(buf), act);
-
-		/* Dump the keymap action */
-		file_putf(fff, "A:%s\n", buf);
-
-		/* Convert the key into a string */
-		key[0] = i;
-
-		/* Encode the key */
-		ascii_to_text(buf, sizeof(buf), key);
-
-		/* Dump the keymap pattern */
-		file_putf(fff, "C:%d:%s\n", mode, buf);
-
-		/* Skip a line */
-		file_putf(fff, "\n");
-	}
-
-}
-
-
-#endif 
 
 
 
@@ -352,7 +221,7 @@ void dump_monsters(ang_file *fff)
 		if (!r_ptr->name) continue;
 
 		file_putf(fff, "# Monster: %s\n", r_ptr->name);
-		file_putf(fff, "R:%d:0x%02X:0x%02X\n", i, attr, chr);
+		file_putf(fff, "R:%d:%d:%d\n", i, attr, chr);
 	}
 }
 
@@ -385,8 +254,7 @@ void dump_features(ang_file *fff)
 	for (i = 0; i < z_info->f_max; i++)
 	{
 		feature_type *f_ptr = &f_info[i];
-		byte attr = f_ptr->x_attr;
-		byte chr = f_ptr->x_char;
+		size_t j;
 
 		/* Skip non-entries */
 		if (!f_ptr->name) continue;
@@ -395,23 +263,37 @@ void dump_features(ang_file *fff)
 		if ((f_ptr->mimic != i) && (i != FEAT_INVIS)) continue;
 
 		file_putf(fff, "# Terrain: %s\n", f_ptr->name);
-		file_putf(fff, "F:%d:0x%02X:0x%02X\n", i, attr, chr);
+		for (j = 0; j < FEAT_LIGHTING_MAX; j++)
+		{
+			byte attr = f_ptr->x_attr[j];
+			byte chr = f_ptr->x_char[j];
+
+			const char *light = NULL;
+			if (j == FEAT_LIGHTING_BRIGHT)
+				light = "bright";
+			else if (j == FEAT_LIGHTING_LIT)
+				light = "lit";
+			else if (j == FEAT_LIGHTING_DARK)
+				light = "dark";
+
+			assert(light);
+
+			file_putf(fff, "F:%d:%s:%d:%d\n", i, light, attr, chr);
+		}
 	}
 }
 
 /* Dump flavors */
 void dump_flavors(ang_file *fff)
 {
-	int i;
+	struct flavor *f;
 
-	for (i = 0; i < z_info->flavor_max; i++)
-	{
-		flavor_type *x_ptr = &flavor_info[i];
-		byte attr = x_ptr->x_attr;
-		byte chr = x_ptr->x_char;
+	for (f = flavors; f; f = f->next) {
+		byte attr = f->x_attr;
+		byte chr = f->x_char;
 
-		file_putf(fff, "# Item flavor: %s\n", x_ptr->text);
-		file_putf(fff, "L:%d:0x%02X:0x%02X\n\n", i, attr, chr);
+		file_putf(fff, "# Item flavor: %s\n", f->text);
+		file_putf(fff, "L:%d:%d:%d\n\n", f->fidx, attr, chr);
 	}
 }
 
@@ -436,7 +318,7 @@ void dump_colors(ang_file *fff)
 		if (i < BASIC_COLORS) name = color_table[i].name;
 
 		file_putf(fff, "# Color: %s\n", name);
-		file_putf(fff, "V:%d:0x%02X:0x%02X:0x%02X:0x%02X\n\n", i, kv, rv, gv, bv);
+		file_putf(fff, "V:%d:%d:%d:%d:%d\n\n", i, kv, rv, gv, bv);
 	}
 }
 
@@ -457,7 +339,7 @@ bool prefs_save(const char *path, void (*dump)(ang_file *), const char *title)
 {
 	ang_file *fff;
 
-	/* Remove old macros */
+	/* Remove old keymaps */
 	remove_old_dump(path, title);
 
 	fff = file_open(path, MODE_APPEND, FTYPE_TEXT);
@@ -484,9 +366,6 @@ bool prefs_save(const char *path, void (*dump)(ang_file *), const char *title)
 
 /*** Pref file parser ***/
 
-/* Forward declare */
-static struct parser *init_parse_prefs(void);
-
 
 /**
  * Private data for pref file parsing.
@@ -494,7 +373,10 @@ static struct parser *init_parse_prefs(void);
 struct prefs_data
 {
 	bool bypass;
-	char macro_buffer[1024];
+	struct keypress keymap_buffer[KEYMAP_ACTION_MAX];
+	bool user;
+	bool loaded_window_flag[ANGBAND_TERM_MAX];
+	u32b window_flags[ANGBAND_TERM_MAX];
 };
 
 
@@ -510,7 +392,7 @@ static enum parser_error parse_prefs_load(struct parser *p)
 	if (d->bypass) return PARSE_ERROR_NONE;
 
 	file = parser_getstr(p, "file");
-	(void)process_pref_file(file, TRUE);
+	(void)process_pref_file(file, TRUE, d->user);
 
 	return PARSE_ERROR_NONE;
 }
@@ -678,13 +560,11 @@ static const char *process_pref_file_expr(char **sp, char *fp)
 			else if (streq(b+1, "GRAF"))
 				v = ANGBAND_GRAF;
 			else if (streq(b+1, "RACE"))
-				v = rp_ptr->name;
+				v = p_ptr->race->name;
 			else if (streq(b+1, "CLASS"))
-				v = cp_ptr->name;
+				v = p_ptr->class->name;
 			else if (streq(b+1, "PLAYER"))
 				v = op_ptr->base_name;
-			else if (streq(b+1, "VERSION"))
-				v = VERSION_STRING;
 		}
 
 		/* Constant */
@@ -718,17 +598,17 @@ static enum parser_error parse_prefs_expr(struct parser *p)
 	/* Parse the expr */
 	v = process_pref_file_expr(&expr, &f);
 
-	string_free(str);
-
 	/* Set flag */
 	d->bypass = streq(v, "0");
+
+	string_free(str);
 
 	return PARSE_ERROR_NONE;
 }
 
 static enum parser_error parse_prefs_k(struct parser *p)
 {
-	int tvi, svi, idx;
+	int tvi, svi;
 	object_kind *kind;
 
 	struct prefs_data *d = parser_priv(p);
@@ -743,11 +623,10 @@ static enum parser_error parse_prefs_k(struct parser *p)
 	if (svi < 0)
 		return PARSE_ERROR_UNRECOGNISED_SVAL;
 
-	idx = lookup_kind(tvi, svi);
-	if (idx < 0)
+	kind = lookup_kind(tvi, svi);
+	if (!kind)
 		return PARSE_ERROR_UNRECOGNISED_SVAL;
 
-	kind = &k_info[idx];
 	kind->x_attr = (byte)parser_getint(p, "attr");
 	kind->x_char = (char)parser_getint(p, "char");
 
@@ -779,6 +658,9 @@ static enum parser_error parse_prefs_f(struct parser *p)
 	int idx;
 	feature_type *feature;
 
+	const char *lighting;
+	int light_idx;
+
 	struct prefs_data *d = parser_priv(p);
 	assert(d != NULL);
 	if (d->bypass) return PARSE_ERROR_NONE;
@@ -787,47 +669,112 @@ static enum parser_error parse_prefs_f(struct parser *p)
 	if (idx >= z_info->f_max)
 		return PARSE_ERROR_OUT_OF_BOUNDS;
 
-	feature = &f_info[idx];
-	feature->x_attr = (byte)parser_getint(p, "attr");
-	feature->x_char = (char)parser_getint(p, "char");
+	lighting = parser_getsym(p, "lighting");
+	if (streq(lighting, "bright"))
+		light_idx = FEAT_LIGHTING_BRIGHT;
+	else if (streq(lighting, "lit"))
+		light_idx = FEAT_LIGHTING_LIT;
+	else if (streq(lighting, "dark"))
+		light_idx = FEAT_LIGHTING_DARK;
+	else if (streq(lighting, "all"))
+		light_idx = FEAT_LIGHTING_MAX;
+	else
+		return PARSE_ERROR_GENERIC; /* xxx fixme */
+
+	if (light_idx < FEAT_LIGHTING_MAX)
+	{
+		feature = &f_info[idx];
+		feature->x_attr[light_idx] = (byte)parser_getint(p, "attr");
+		feature->x_char[light_idx] = (char)parser_getint(p, "char");
+	}
+	else
+	{
+		for (light_idx = 0; light_idx < FEAT_LIGHTING_MAX; light_idx++)
+		{
+			feature = &f_info[idx];
+			feature->x_attr[light_idx] = (byte)parser_getint(p, "attr");
+			feature->x_char[light_idx] = (char)parser_getint(p, "char");
+		}
+	}
 
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_prefs_s(struct parser *p)
+static enum parser_error parse_prefs_gf(struct parser *p)
 {
-	size_t idx;
+	bool types[GF_MAX] = { 0 };
+	const char *direction;
+	int motion;
+
+	char *s, *t;
+
+	size_t i;
 
 	struct prefs_data *d = parser_priv(p);
 	assert(d != NULL);
 	if (d->bypass) return PARSE_ERROR_NONE;
 
-	idx = parser_getuint(p, "idx");
-	if (idx >= N_ELEMENTS(misc_to_attr))
-		return PARSE_ERROR_OUT_OF_BOUNDS;
+	/* Parse the type, which is a | seperated list of GF_ constants */
+	s = string_make(parser_getsym(p, "type"));
+	t = strtok(s, "| ");
+	while (t) {
+		if (streq(t, "*")) {
+			memset(types, TRUE, sizeof types);
+		} else {
+			int idx = gf_name_to_idx(t);
+			if (idx == -1)
+				return PARSE_ERROR_INVALID_VALUE;
 
-	misc_to_attr[idx] = (byte)parser_getint(p, "attr");
-	misc_to_char[idx] = (char)parser_getint(p, "char");
+			types[idx] = TRUE;
+		}
+
+		t = strtok(NULL, "| ");
+	}
+
+	string_free(s);
+
+	direction = parser_getsym(p, "direction");
+	if (streq(direction, "static"))
+		motion = BOLT_NO_MOTION;
+	else if (streq(direction, "0"))
+		motion = BOLT_0;
+	else if (streq(direction, "45"))
+		motion = BOLT_45;
+	else if (streq(direction, "90"))
+		motion = BOLT_90;
+	else if (streq(direction, "135"))
+		motion = BOLT_135;
+	else
+		return PARSE_ERROR_INVALID_VALUE;
+
+	for (i = 0; i < GF_MAX; i++) {
+		if (!types[i]) continue;
+
+		gf_to_attr[i][motion] = (byte)parser_getuint(p, "attr");
+		gf_to_char[i][motion] = (char)parser_getuint(p, "char");
+	}
 
 	return PARSE_ERROR_NONE;
 }
 
 static enum parser_error parse_prefs_l(struct parser *p)
 {
-	int idx;
-	flavor_type *flavor;
+	unsigned int idx;
+	struct flavor *flavor;
 
 	struct prefs_data *d = parser_priv(p);
 	assert(d != NULL);
 	if (d->bypass) return PARSE_ERROR_NONE;
 
 	idx = parser_getuint(p, "idx");
-	if (idx >= z_info->flavor_max)
-		return PARSE_ERROR_OUT_OF_BOUNDS;
+	for (flavor = flavors; flavor; flavor = flavor->next)
+		if (flavor->fidx == idx)
+			break;
 
-	flavor = &flavor_info[idx];
-	flavor->x_attr = (byte)parser_getint(p, "attr");
-	flavor->x_char = (char)parser_getint(p, "char");
+	if (flavor) {
+		flavor->x_attr = (byte)parser_getint(p, "attr");
+		flavor->x_char = (char)parser_getint(p, "char");
+	}
 
 	return PARSE_ERROR_NONE;
 }
@@ -859,7 +806,7 @@ static enum parser_error parse_prefs_q(struct parser *p)
 	if (parser_hasval(p, "sval") && parser_hasval(p, "flag"))
 	{
 		object_kind *kind;
-		int tvi, svi, idx;
+		int tvi, svi;
 
 		tvi = tval_find_idx(parser_getsym(p, "n"));
 		if (tvi < 0)
@@ -869,11 +816,10 @@ static enum parser_error parse_prefs_q(struct parser *p)
 		if (svi < 0)
 			return PARSE_ERROR_UNRECOGNISED_SVAL;
 
-		idx = lookup_kind(tvi, svi);
-		if (idx < 0)
+		kind = lookup_kind(tvi, svi);
+		if (!kind)
 			return PARSE_ERROR_UNRECOGNISED_SVAL;
 
-		kind = &k_info[idx];
 		kind->squelch = parser_getint(p, "flag");
 	}
 	else
@@ -913,21 +859,7 @@ static enum parser_error parse_prefs_a(struct parser *p)
 	if (d->bypass) return PARSE_ERROR_NONE;
 
 	act = parser_getstr(p, "act");
-	text_to_ascii(d->macro_buffer, sizeof(d->macro_buffer), act);
-
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_prefs_p(struct parser *p)
-{
-	char tmp[1024];
-
-	struct prefs_data *d = parser_priv(p);
-	assert(d != NULL);
-	if (d->bypass) return PARSE_ERROR_NONE;
-
-	text_to_ascii(tmp, sizeof(tmp), parser_getstr(p, "key"));
-	macro_add(tmp, d->macro_buffer);
+	keypress_from_text(d->keymap_buffer, N_ELEMENTS(d->keymap_buffer), act);
 
 	return PARSE_ERROR_NONE;
 }
@@ -935,135 +867,21 @@ static enum parser_error parse_prefs_p(struct parser *p)
 static enum parser_error parse_prefs_c(struct parser *p)
 {
 	int mode;
-	byte j;
-	char tmp[1024];
+	struct keypress tmp[2];
 
 	struct prefs_data *d = parser_priv(p);
 	assert(d != NULL);
 	if (d->bypass) return PARSE_ERROR_NONE;
 
 	mode = parser_getint(p, "mode");
-	if (mode < 0 || mode >= KEYMAP_MODES)
+	if (mode < 0 || mode >= KEYMAP_MODE_MAX)
 		return PARSE_ERROR_OUT_OF_BOUNDS;
 
-	text_to_ascii(tmp, sizeof(tmp), parser_getstr(p, "key"));
-	if (!tmp[0] || tmp[1])
+	keypress_from_text(tmp, N_ELEMENTS(tmp), parser_getstr(p, "key"));
+	if (tmp[0].type != EVT_KBRD || tmp[1].type != EVT_NONE)
 		return PARSE_ERROR_FIELD_TOO_LONG;
 
-	j = (byte)tmp[0];
-
-	string_free(keymap_act[mode][j]);
-	keymap_act[mode][j] = string_make(d->macro_buffer);
-
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_prefs_t(struct parser *p)
-{
-	struct prefs_data *d = parser_priv(p);
-	assert(d != NULL);
-	if (d->bypass) return PARSE_ERROR_NONE;
-
-	/* set macro trigger names and a template */
-	/* Process "T:<template>:<modifier chr>:<modifier name>:..." */
-	if (parser_hasval(p, "n4"))
-	{
-		const char *template = parser_getsym(p, "n1");
-		const char *chars = parser_getsym(p, "n2");
-		const char *name0 = parser_getsym(p, "n3");
-		const char *namelist = parser_getstr(p, "n4");
-
-		char *modifiers;
-		char *t;
-		const char *names[MAX_MACRO_MOD];
-		int i = 1, j;
-
-		/* Free existing macro triggers and trigger template */
-		macro_trigger_free();
-
-		/* Clear template? */
-		if (template[0] == '\0')
-			return PARSE_ERROR_NONE;
-
-		/* Tokenise last field... */
-		modifiers = string_make(namelist);
-
-		/* first token is name0 */
-		names[0] = name0;
-
-		t = strtok(modifiers, ":");
-		while (t) {
-			names[i++] = t;
-			t = strtok(NULL, ":");
-		}
-
-		/* The number of modifiers must equal the number of names */
-		if (strlen(chars) != (size_t) i)
-		{
-			string_free(modifiers);
-			return (strlen(chars) > (size_t) i) ?
-					PARSE_ERROR_TOO_FEW_ENTRIES : PARSE_ERROR_TOO_MANY_ENTRIES;
-		}
-
-		/* OK, now copy the data across */
-		macro_template = string_make(template);
-		macro_modifier_chr = string_make(chars);
-		for (j = 0; j < i; j++)
-			macro_modifier_name[j] = string_make(names[j]);
-
-		string_free(modifiers);
-	}
-
-	/* Macro trigger */
-	/* Process "T:<trigger>:<keycode>:<shift-keycode>" */
-	else
-	{
-		const char *trigger = parser_getsym(p, "n1");
-		const char *kc = parser_getsym(p, "n2");
-		const char *shift_kc = NULL;
-
-		char *buf;
-		const char *s;
-		char *t;
-
-		if (parser_hasval(p, "n3"))
-			shift_kc = parser_getsym(p, "n3");
-
-		if (max_macrotrigger >= MAX_MACRO_TRIGGER)
-			return PARSE_ERROR_TOO_MANY_ENTRIES;
-
-		/* Buffer for the trigger name */
-		buf = C_ZNEW(strlen(trigger) + 1, char);
-
-		/* Simulate strcpy() and skip the '\' escape character */
-		s = trigger;
-		t = buf;
-
-		while (*s)
-		{
-			if ('\\' == *s) s++;
-			*t++ = *s++;
-		}
-
-		/* Terminate the trigger name */
-		*t = '\0';
-
-		/* Store the trigger name */
-		macro_trigger_name[max_macrotrigger] = string_make(buf);
-
-		/* Free the buffer */
-		FREE(buf);
-
-		/* Normal keycode */
-		macro_trigger_keycode[0][max_macrotrigger] = string_make(kc);
-		if (shift_kc)
-			macro_trigger_keycode[1][max_macrotrigger] = string_make(shift_kc);
-		else
-			macro_trigger_keycode[1][max_macrotrigger] = string_make(kc);
-
-		/* Count triggers */
-		max_macrotrigger++;
-	}
+	keymap_add(mode, tmp[0], d->keymap_buffer, d->user);
 
 	return PARSE_ERROR_NONE;
 }
@@ -1134,10 +952,12 @@ static enum parser_error parse_prefs_w(struct parser *p)
 	{
 		int value = parser_getuint(p, "value");
 		if (value)
-			op_ptr->window_flag[window] |= (1L << flag);
+			d->window_flags[window] |= (1L << flag);
 		else
-			op_ptr->window_flag[window] &= ~(1L << flag);
+			d->window_flags[window] &= ~(1L << flag);
 	}
+
+	d->loaded_window_flag[window] = TRUE;
 
 	return PARSE_ERROR_NONE;
 }
@@ -1166,16 +986,24 @@ static enum parser_error parse_prefs_y(struct parser *p)
 }
 
 
-static struct parser *init_parse_prefs(void)
+static struct parser *init_parse_prefs(bool user)
 {
 	struct parser *p = parser_new();
-	parser_setpriv(p, mem_zalloc(sizeof(struct prefs_data)));
+	struct prefs_data *pd = mem_zalloc(sizeof *pd);
+	int i;
+
+	parser_setpriv(p, pd);
+	pd->user = user;
+	for (i = 0; i < ANGBAND_TERM_MAX; i++) {
+		pd->loaded_window_flag[i] = FALSE;
+	}
+
 	parser_reg(p, "% str file", parse_prefs_load);
 	parser_reg(p, "? str expr", parse_prefs_expr);
 	parser_reg(p, "K sym tval sym sval int attr int char", parse_prefs_k);
 	parser_reg(p, "R uint idx int attr int char", parse_prefs_r);
-	parser_reg(p, "F uint idx int attr int char", parse_prefs_f);
-	parser_reg(p, "S uint idx int attr int char", parse_prefs_s);
+	parser_reg(p, "F uint idx sym lighting int attr int char", parse_prefs_f);
+	parser_reg(p, "GF sym type sym direction uint attr uint char", parse_prefs_gf);
 	parser_reg(p, "L uint idx int attr int char", parse_prefs_l);
 	parser_reg(p, "E sym tval int attr", parse_prefs_e);
 	parser_reg(p, "Q sym idx sym n ?sym sval ?sym flag", parse_prefs_q);
@@ -1183,10 +1011,7 @@ static struct parser *init_parse_prefs(void)
 	parser_reg(p, "B uint idx str text", parse_prefs_b);
 		/* XXX idx should be {tval,sval} pair! */
 	parser_reg(p, "A str act", parse_prefs_a);
-	parser_reg(p, "P str key", parse_prefs_p);
 	parser_reg(p, "C int mode str key", parse_prefs_c);
-	parser_reg(p, "T sym n1 sym n2 ?sym n3 ?str n4", parse_prefs_t);
-		/* XXX should be two separate codes again */
 	parser_reg(p, "M int type sym attr", parse_prefs_m);
 	parser_reg(p, "V uint idx int k int r int g int b", parse_prefs_v);
 	parser_reg(p, "W int window uint flag uint value", parse_prefs_w);
@@ -1196,11 +1021,34 @@ static struct parser *init_parse_prefs(void)
 	return p;
 }
 
+errr finish_parse_prefs(struct parser *p)
+{
+	struct prefs_data *d = parser_priv(p);
+	int i;
+
+	/* Update sub-windows based on the newly read-in prefs.
+	 *
+	 * The op_ptr->window_flag[] array cannot be updated directly during
+	 * parsing since the changes between the existing flags and the new
+	 * are used to set/unset the event handlers that update the windows.
+	 *
+	 * Build a complete set to pass to subwindows_set_flags() by loading
+	 * any that weren't read in by the parser from the existing set.
+	 */
+	for (i = 0; i < ANGBAND_TERM_MAX; i++) {
+		if (!d->loaded_window_flag[i])
+			d->window_flags[i] = op_ptr->window_flag[i];
+	}
+	subwindows_set_flags(d->window_flags, ANGBAND_TERM_MAX);
+
+	return PARSE_ERROR_NONE;
+}
 
 errr process_pref_file_command(const char *s)
 {
-	struct parser *p = init_parse_prefs();
+	struct parser *p = init_parse_prefs(TRUE);
 	errr e = parser_parse(p, s);
+	mem_free(parser_priv(p));
 	parser_destroy(p);
 	return e;
 }
@@ -1209,7 +1057,7 @@ errr process_pref_file_command(const char *s)
 static void print_error(const char *name, struct parser *p) {
 	struct parser_state s;
 	parser_getstate(p, &s);
-	msg_format("Parse error in %s line %d column %d: %s: %s", name,
+	msg("Parse error in %s line %d column %d: %s: %s", name,
 	           s.line, s.col, s.msg, parser_error_str[s.error]);
 	message_flush();
 }
@@ -1219,9 +1067,12 @@ static void print_error(const char *name, struct parser *p) {
  * Process the user pref file with the given name.
  * "quiet" means "don't complain about not finding the file.
  *
+ * 'user' should be TRUE if the pref file loaded is user-specific and not
+ * a game default.
+ *
  * Returns TRUE if everything worked OK, false otherwise
  */
-bool process_pref_file(const char *name, bool quiet)
+bool process_pref_file(const char *name, bool quiet, bool user)
 {
 	char buf[1024];
 
@@ -1240,14 +1091,13 @@ bool process_pref_file(const char *name, bool quiet)
 	if (!f)
 	{
 		if (!quiet)
-			msg_format("Cannot open '%s'.", buf);
+			msg("Cannot open '%s'.", buf);
 	}
 	else
 	{
 		char line[1024];
 
-		p = init_parse_prefs();
-
+		p = init_parse_prefs(user);
 		while (file_getl(f, line, sizeof line))
 		{
 			line_no++;
@@ -1259,8 +1109,10 @@ bool process_pref_file(const char *name, bool quiet)
 				break;
 			}
 		}
+		finish_parse_prefs(p);
 
 		file_close(f);
+		mem_free(parser_priv(p));
 		parser_destroy(p);
 	}
 

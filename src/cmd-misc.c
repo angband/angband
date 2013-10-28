@@ -1,8 +1,26 @@
+/*
+ * File: cmd-misc.c
+ * Purpose: Deal with miscellaneous commands.
+ *
+ * Copyright (c) 2010 Andi Sidwell
+ *
+ * This work is free software; you can redistribute it and/or modify it
+ * under the terms of either:
+ *
+ * a) the GNU General Public License as published by the Free Software
+ *    Foundation, version 2, or
+ *
+ * b) the "Angband licence":
+ *    This software may be copied and distributed for educational, research,
+ *    and not for profit purposes provided that this copyright and statement
+ *    are included in all such copies.  Other copyrights may also apply.
+ */
+
 #include "angband.h"
 #include "cave.h"
 #include "cmds.h"
 #include "game-cmd.h"
-#include "monster/monster.h"
+#include "monster/mon-util.h"
 #include "wizard.h"
 
 
@@ -15,8 +33,8 @@ void do_cmd_wizard(void)
 	if (!(p_ptr->noscore & NOSCORE_WIZARD))
 	{
 		/* Mention effects */
-		msg_print("You are about to enter 'wizard' mode for the very first time!");
-		msg_print("This is a form of cheating, and your game will not be scored!");
+		msg("You are about to enter 'wizard' mode for the very first time!");
+		msg("This is a form of cheating, and your game will not be scored!");
 		message_flush();
 
 		/* Verify request */
@@ -31,12 +49,12 @@ void do_cmd_wizard(void)
 	if (p_ptr->wizard)
 	{
 		p_ptr->wizard = FALSE;
-		msg_print("Wizard mode off.");
+		msg("Wizard mode off.");
 	}
 	else
 	{
 		p_ptr->wizard = TRUE;
-		msg_print("Wizard mode on.");
+		msg("Wizard mode on.");
 	}
 
 	/* Update monsters */
@@ -60,8 +78,8 @@ void do_cmd_try_debug(void)
 	if (!(p_ptr->noscore & NOSCORE_DEBUG))
 	{
 		/* Mention effects */
-		msg_print("You are about to use the dangerous, unsupported, debug commands!");
-		msg_print("Your machine may crash, and your savefile may become corrupted!");
+		msg("You are about to use the dangerous, unsupported, debug commands!");
+		msg("Your machine may crash, and your savefile may become corrupted!");
 		message_flush();
 
 		/* Verify request */
@@ -91,8 +109,8 @@ void do_cmd_try_borg(void)
 	if (!(p_ptr->noscore & NOSCORE_BORG))
 	{
 		/* Mention effects */
-		msg_print("You are about to use the dangerous, unsupported, borg commands!");
-		msg_print("Your machine may crash, and your savefile may become corrupted!");
+		msg("You are about to use the dangerous, unsupported, borg commands!");
+		msg("Your machine may crash, and your savefile may become corrupted!");
 		message_flush();
 
 		/* Verify request */
@@ -120,17 +138,6 @@ void do_cmd_quit(cmd_code code, cmd_arg args[])
 
 	/* Leaving */
 	p_ptr->leaving = TRUE;
-}
-
-
-/*
- * Port-specific options
- *
- * Should be moved to the options screen. XXX
- */
-void do_cmd_port(void)
-{
-	(void)Term_user(0);
 }
 
 

@@ -1,7 +1,6 @@
 /*
- * File: ui-event.c
- * Purpose: Allows the registering of handlers to be told about ui "events",
- *          and the game to signal these events to the UI.
+ * File: game-event.c
+ * Purpose: Allows the registering of handlers to be told about game events.
  *
  * Copyright (c) 2007 Antony Sidwell
  *
@@ -87,6 +86,22 @@ void event_remove_handler(game_event_type type, game_event_handler *fn, void *us
 
 		prev = this;
 		this = this->next;
+	}
+}
+
+void event_remove_all_handlers(void)
+{
+	int type;
+	struct event_handler_entry *handler, *next;
+
+	for (type = 0; type < N_GAME_EVENTS; type++) {
+		handler = event_handlers[type];
+		while (handler) {
+			next = handler->next;
+			mem_free(handler);
+			handler = next;
+		}
+		event_handlers[type] = NULL;
 	}
 }
 

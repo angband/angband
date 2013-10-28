@@ -1,0 +1,37 @@
+\documentclass[a4paper]{article}
+
+%\usepackage{fancyhdr} 
+%\pagestyle{fancy} % with this we ensure that the chapter and section 
+%% headings are in lowercase. 
+%\renewcommand{\chaptermark}[1]{%
+    %\markboth{#1}{}} 
+%\renewcommand{\sectionmark}[1]{%
+    %\markright{\thesection\ #1}} 
+%\fancyhf{} % delete current header and footer 
+%\fancyhead[LE,RO]{\bfseries\thepage} 
+%\fancyhead[LO]{\bfseries\rightmark} 
+%\fancyhead[RE]{\bfseries\leftmark} 
+%\renewcommand{\headrulewidth}{0.5pt} 
+%\renewcommand{\footrulewidth}{0pt}
+%\addtolength{\headheight}{0.5pt} % space for the rule 
+
+\usepackage{makeidx}
+\makeindex
+\usepackage[pdftex,colorlinks,backref,breaklinks=false,linkcolor=blue]{hyperref}
+\begin{document}
+\title{Angband 3.3.0 Manual}
+\maketitle
+\tableofcontents
+\include{general}
+\include{birth}
+\include{playing}
+\include{attack}
+\include{dungeon}
+\include{customize}
+\include{option}
+\include{command}
+\include{debug}
+\include{thanks}
+\include{version}
+\printindex
+\end{document}

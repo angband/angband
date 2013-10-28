@@ -23,7 +23,9 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
-
+#include "buildid.h"
+#include "files.h"
+#include "init.h"
 
 /*
  * Notes:
@@ -185,7 +187,7 @@ static const int use_overwrite_hack = (OVERWRITE_HACK && !CLIP_HACK);
 
 
 /* graphics_modes index of current graphics mode */
-static int graf_mode = 0;
+static UInt32 graf_mode = 0;
 
 /* Tile dimensions of the current graphics mode */
 static int graf_height = 0;
@@ -227,11 +229,11 @@ struct term_data
 	ATSUFontID font_id;
 	float font_size;    /* Scaled ATSU font size. */
 
-	s16b font_wid;
-	s16b font_hgt;
+	u16b font_wid;
+	u16b font_hgt;
 
-	s16b tile_wid;
-	s16b tile_hgt;
+	u16b tile_wid;
+	u16b tile_hgt;
 
 	s16b size_wid;    /* Window size in x. */
 	s16b size_hgt;    /* Window size in y. */
@@ -263,7 +265,7 @@ static WindowRef aboutDialog;
 static bool CheckEvents(int wait);
 static OSStatus RevalidateGraphics(term_data *td, bool reset_tilesize);
 static char *locate_lib(char *buf, size_t size);
-static void graphics_aux(int op);
+static void graphics_aux(UInt32 op);
 static void Term_wipe_mac_aux(int x, int y, int n);
 inline static void term_data_color(int a);
 static void install_handlers(WindowRef w);
@@ -433,7 +435,7 @@ static OSErr spec_to_path(const FSSpec *spec, char *buf, size_t size)
  * Set creator and filetype of a file specified by POSIX-style pathname.
  * Returns 0 on success, -1 in case of errors.
  */
-static void fsetfileinfo(cptr pathname, u32b fcreator, u32b ftype)
+static void fsetfileinfo(const char *pathname, u32b fcreator, u32b ftype)
 {
 	OSErr err;
 	FSSpec spec;
@@ -514,12 +516,13 @@ static void activate(WindowRef w)
 		m = CGAffineTransformMake(1, 0, 0, -1, 0, 0);
 		CGContextSetTextMatrix(focus.ctx, m);
 
-		/* I don't know why this doesn't work. */
-		/* CGContextSetFont(focus.ctx, td->ginfo->fontRef); */
-		/* CGContextSetFontSize(focus.ctx, td->font_size); */
-		/* HACK: use full postscript name. */
-		CGContextSelectFont(focus.ctx, td->ginfo->psname, td->font_size,
-														kCGEncodingMacRoman); 
+		CFStringRef font_name = CFStringCreateWithCString(
+			kCFAllocatorDefault, td->ginfo->psname, 
+			kCFStringEncodingISOLatin1);
+		td->ginfo->fontRef = CGFontCreateWithFontName(font_name);
+		CGContextSetFont(focus.ctx, td->ginfo->fontRef);
+		CGContextSetFontSize(focus.ctx, td->font_size);
+		CFRelease(font_name);
 
 		if(td->ginfo->monospace) {
 			CGContextSetCharacterSpacing(focus.ctx,
@@ -556,10 +559,10 @@ static void hibernate()
 /*
  * Display a warning message
  */
-static void mac_warning(cptr warning)
+static void mac_warning(const char *warning)
 {
 	CFStringRef msg;
-	msg = CFStringCreateWithCString(NULL, warning, kTextEncodingUS_ASCII);
+	msg = CFStringCreateWithCString(NULL, warning, kCFStringEncodingISOLatin1);
 
 	DialogRef dlg = 0;
 	CreateStandardAlert(kAlertCautionAlert, msg, CFSTR(""), NULL, &dlg);
@@ -1137,7 +1140,30 @@ static void ShowTextAt(int x, int y, int color, int n, const char *text )
 	term_data_color(color);
 	/* Monospace; use preset text spacing when tiling is wider than text */
 	if(n == 1 || info->monospace) {
-		CGContextShowTextAtPoint ( focus.ctx, xp, yp, text, n ); 
+		/* See the Accessing Font Metrics section of Apple's Core Text 
+		 * Programming Guide for the sample code that inspired this
+		 * block. */
+		UniChar *characters;
+		CGGlyph *glyphs;
+		CTFontRef font = CTFontCreateWithGraphicsFont(
+			td->ginfo->fontRef, (CGFloat)td->font_size,
+			NULL, NULL);
+		CFStringRef text_str = CFStringCreateWithCString(
+			kCFAllocatorDefault, text, 
+			kCFStringEncodingISOLatin1);
+
+		characters = (UniChar *)mem_alloc(sizeof(UniChar) * n);
+		assert(characters != NULL);
+		glyphs = (CGGlyph *)mem_alloc(sizeof(CGGlyph) * n);
+		assert(glyphs != NULL);
+
+		CFStringGetCharacters(text_str, CFRangeMake(0, n), characters);
+		CFRelease(text_str);
+		CTFontGetGlyphsForCharacters(font, characters, glyphs, n);
+		CGContextShowGlyphsAtPoint(focus.ctx, 
+			(CGFloat)xp, (CGFloat)yp, glyphs, n);
+		mem_free(characters);
+		mem_free(glyphs);
 		if(use_clip_hack)
 			CGContextRestoreGState(focus.ctx);
 		return;
@@ -1515,15 +1541,6 @@ static void Term_nuke_mac(term *t)
 #pragma unused(t)
 }
 
-/*
- * Unused
- */
-static errr Term_user_mac(int c)
-{
-#pragma unused(c)
-	return (0);
-}
-
 
 /*
  * React to changes
@@ -1857,14 +1874,13 @@ static void term_data_link(int i)
 	td->t->nuke_hook = Term_nuke_mac;
 
 	/* Prepare the function hooks */
-	td->t->user_hook = Term_user_mac;
 	td->t->xtra_hook = Term_xtra_mac;
 	td->t->wipe_hook = Term_wipe_mac;
 	td->t->curs_hook = Term_curs_mac;
 	td->t->bigcurs_hook = Term_curs_mac;
 	td->t->text_hook = Term_text_mac;
 	td->t->pict_hook = Term_pict_mac;
-/*	td->t->xchar_hook = Term_xchar_mac; */
+	td->t->xchar_hook = Term_xchar_mac; 
 
 
 	td->t->never_bored = TRUE;
@@ -2003,7 +2019,7 @@ static bool load_preference(const char *key, type_union *vptr, size_t maxlen )
 		CFNumberGetValue( cf_value, kCFNumberIntType, &vptr->u.i);
 	else if(vptr->t == T_STRING) {
 		CFRange range = { 0, 200};
-		(void) CFStringGetBytes (cf_value, range, kCGEncodingMacRoman, 0, 0, (UInt8*)vptr->u.s, maxlen, 0);
+		(void) CFStringGetBytes (cf_value, range, kCFStringEncodingISOLatin1, 0, 0, (UInt8*)vptr->u.s, maxlen, 0);
 	}
 
 	/* Free CF data */
@@ -2028,6 +2044,25 @@ static bool load_pref_short(const char *key, short *vptr)
 	if( ret == TRUE ) *vptr = u.u.i;
 	return ret;
 }
+static void save_pref_ushort(const char *key, unsigned short value)
+{
+	type_union u = i2u((int)value);
+	save_preference(key, u);
+}
+static bool load_pref_ushort(const char *key, unsigned short *vptr)
+{
+	bool ret;
+	type_union u = { T_INT };
+	ret = load_preference(key, &u, 0);
+	if( ret == TRUE ) *vptr = (unsigned short)u.u.i;
+	return ret;
+}
+
+/* XXX Version number for pref file */
+#define VERSION_MAJOR   3
+#define VERSION_MINOR   0
+#define VERSION_PATCH   14
+#define VERSION_EXTRA   0
 
 /*
  * Save preferences to preferences file for current host+current user+
@@ -2043,14 +2078,14 @@ static void cf_save_prefs()
 
 	/* Gfx settings */
 	/* tile width/height */
-	save_pref_short("arg.tile_wid", tile_width);
-	save_pref_short("arg.tile_hgt", tile_height);
+	save_pref_ushort("arg.tile_wid", tile_width);
+	save_pref_ushort("arg.tile_hgt", tile_height);
 
 	/* graphics mode */
-	save_pref_short("graf_mode", graf_mode);
+	save_pref_ushort("graf_mode", graf_mode);
 
 	/* text antialiasing */
-	save_pref_short("arg.use_antialiasing", antialias);
+	save_pref_ushort("arg.use_antialiasing", antialias);
 
 
 	/* Windows */
@@ -2060,8 +2095,8 @@ static void cf_save_prefs()
 
 		save_pref_short(format("term%d.mapped", i), td->mapped);
 
-		save_pref_short(format("term%d.tile_wid", i), td->tile_wid);
-		save_pref_short(format("term%d.tile_hgt", i), td->tile_hgt);
+		save_pref_ushort(format("term%d.tile_wid", i), td->tile_wid);
+		save_pref_ushort(format("term%d.tile_hgt", i), td->tile_hgt);
 
 		save_pref_short(format("term%d.cols", i), td->cols);
 		save_pref_short(format("term%d.rows", i), td->rows);
@@ -2168,19 +2203,19 @@ static void cf_load_prefs()
 	}
 
 	/* Gfx settings */
-	short pref_tmp;
+	unsigned short pref_tmp;
 
-	if (load_pref_short("arg.tile_wid", &pref_tmp))
+	if (load_pref_ushort("arg.tile_wid", &pref_tmp))
 		tile_width = pref_tmp;
 
-	if (load_pref_short("arg.tile_hgt", &pref_tmp))
+	if (load_pref_ushort("arg.tile_hgt", &pref_tmp))
 		tile_height = pref_tmp;
 
 	/* anti-aliasing */
-	if(load_pref_short("arg.use_antialiasing", &pref_tmp))
+	if(load_pref_ushort("arg.use_antialiasing", &pref_tmp))
 		antialias = pref_tmp;
 
-	if(load_pref_short("graf_mode", &pref_tmp))
+	if(load_pref_ushort("graf_mode", &pref_tmp))
 		graf_mode = pref_tmp;
 
 
@@ -2192,8 +2227,8 @@ static void cf_load_prefs()
 		load_pref_short(format("term%d.mapped", i), &td->mapped);
 		CheckMenuItem(MyGetMenuHandle(kWindowMenu), kAngbandTerm+i, td->mapped);
 
-		load_pref_short(format("term%d.tile_wid", i), &td->tile_wid);
-		load_pref_short(format("term%d.tile_hgt", i), &td->tile_hgt);
+		load_pref_ushort(format("term%d.tile_wid", i), &td->tile_wid);
+		load_pref_ushort(format("term%d.tile_hgt", i), &td->tile_hgt);
 
 		load_pref_short(format("term%d.cols", i), &td->cols);
 		load_pref_short(format("term%d.rows", i), &td->rows);
@@ -2333,7 +2368,7 @@ static void init_aboutdialogcontent()
 	OSStatus err;
 	
 	/* Set the application name from the constants set in defines.h */
-	char *applicationName = format("%s %s", VERSION_NAME, VERSION_STRING);
+	char *applicationName = format("%s", buildid);
 	CFStringRef cfstr_applicationName = CFStringCreateWithBytes(NULL, (byte *)applicationName,
 										strlen(applicationName), kCFStringEncodingASCII, false);
 	HIViewFindByID(HIViewGetRoot(aboutDialog), aboutDialogName, &aboutDialogViewRef);
@@ -2540,7 +2575,7 @@ static void init_menubar(void)
 
 	for(int j = kTileWidMenu; j <= kTileHgtMenu; j++) {
 		m = MyGetMenuHandle(j);
-		for(int i = MIN_FONT; i <= 32; i++) {
+		for(UInt32 i = MIN_FONT; i <= 32; i++) {
 			char buf[15];
 			/* Tile size */
 			strnfmt((char*)buf, 15, "%d", i);
@@ -2600,9 +2635,9 @@ static void validate_menus(void)
 
 	struct {
 		int menu;                /* Radio-style Menu ID to validate */
-		int cur;                /* Value in use (Compare to RefCon) */
-		int limit;                /* Constraint value */
-		int (*cmp) (int, int);    /* Filter function */
+		URefCon cur;             /* Value in use (Compare to RefCon) */
+		int limit;               /* Constraint value */
+		int (*cmp) (int, int);   /* Filter function */
 	} funcs [] = {
 		{ kTileWidMenu, td->tile_wid, td->font_wid, funcGTE },
 		{ kTileHgtMenu, td->tile_hgt, td->font_hgt, funcGTE },
@@ -2621,7 +2656,7 @@ static void validate_menus(void)
 		m = MyGetMenuHandle(funcs[i].menu);
 		int n = CountMenuItems(m);
 		for (int j = 1; j <= n; j++) {
-			UInt32 value;
+			URefCon value;
 			GetMenuItemRefCon(m, j, &value);
 			CheckMenuItem(m, j, funcs[i].cur == value);
 			if (funcs[i].cmp(value, funcs[i].limit))
@@ -2689,8 +2724,8 @@ static void redrawRecentItemsMenu()
 
 			CFRelease(cfstr);
 		}
-		AppendMenuItemTextWithCFString(MyGetMenuHandle(kOpenRecentMenu), CFSTR("-"), kMenuItemAttrSeparator, -1, NULL);
-		AppendMenuItemTextWithCFString(MyGetMenuHandle(kOpenRecentMenu), CFSTR("Clear menu"), 0, -1, NULL);
+		AppendMenuItemTextWithCFString(MyGetMenuHandle(kOpenRecentMenu), CFSTR("-"), kMenuItemAttrSeparator, FOUR_CHAR_CODE('Rsep'), NULL);
+		AppendMenuItemTextWithCFString(MyGetMenuHandle(kOpenRecentMenu), CFSTR("Clear menu"), 0, FOUR_CHAR_CODE('Rclr'), NULL);
 	}
 }
 
@@ -2765,12 +2800,12 @@ static OSStatus OpenRecentCommand(EventHandlerCallRef inCallRef,
 							NULL, sizeof(command), NULL, &command);
 	
 	/* If the 'Clear menu' command was selected, flush the recent items array */
-	if (command.commandID == -1) {
+	if (command.commandID == FOUR_CHAR_CODE('Rclr')) {
 		CFArrayRemoveAllValues(recentItemsArrayRef);
 	
 	/* Otherwise locate the correct filepath and open it. */
 	} else {
-		if (cmd.command != CMD_NULL || command.commandID < 0 || command.commandID >= CFArrayGetCount(recentItemsArrayRef))
+		if (cmd.command != CMD_NULL || command.commandID >= (UInt32)CFArrayGetCount(recentItemsArrayRef))
 			return eventNotHandledErr;
 
 		OSErr err;
@@ -2800,17 +2835,19 @@ static OSStatus OpenRecentCommand(EventHandlerCallRef inCallRef,
 static OSStatus AngbandGame(EventHandlerCallRef inCallRef,
 							EventRef inEvent, void *inUserData )
 {
+	UInt32 i;
+
 	/* Only enabled options are Fonts, Open/New/Import and Quit. */
 	DisableAllMenuItems(MyGetMenuHandle(kTileWidMenu));
 	DisableAllMenuItems(MyGetMenuHandle(kTileHgtMenu));
 
 	SetFontInfoForSelection(kFontSelectionATSUIType, 0, 0, 0);
 
-	for(int i = kNew; i <= kImport; i++)
+	for(i = kNew; i <= kImport; i++)
 		EnableMenuItem(MyGetMenuHandle(kFileMenu), i);
 
 	/* Validate graphics, after bootstrapped opening of terminals */
-	for(int i = 0; i < N_ELEMENTS(data); i++) {
+	for(i = 0; i < N_ELEMENTS(data); i++) {
 		if(data[i].mapped)
 			RevalidateGraphics(&data[i], FALSE);
 	}
@@ -2845,7 +2882,7 @@ static OSStatus openGame(int op)
 		DisableMenuItem(MyGetMenuHandle(kFileMenu), i);
 
 	/* Wait for a keypress */
-	pause_line(Term->hgt - 1);
+	pause_line(Term);
 
 	/* Set the game status */
 	if (op == kNew)
@@ -3061,7 +3098,7 @@ static OSStatus ResizeCommand(EventHandlerCallRef inCallRef,
 	return eventNotHandledErr;
 }
 
-static void graphics_aux(int op)
+static void graphics_aux(UInt32 op)
 {
 	graf_mode = op;
 	use_transparency = graphics_modes[op].trans;
@@ -3484,82 +3521,125 @@ static OSStatus MouseCommand (EventHandlerCallRef inCallRef, EventRef inEvent,
 static OSStatus KeyboardCommand ( EventHandlerCallRef inCallRef,
 	EventRef inEvent, void *inUserData )
 {
-
-	EventRecord event;
-	ConvertEventRefToEventRecord(inEvent, &event);
-
 	/* Don't handle keyboard events in open/save dialogs, to prevent a 10.4 keyboard interaction bug */
 	UInt32 windowClass;
 	GetWindowClass(GetUserFocusWindow(), &windowClass);
-	if (windowClass == kMovableModalWindowClass) return eventNotHandledErr;
+	if (windowClass == kMovableModalWindowClass)
+		return eventNotHandledErr;
+
+	UInt32 evt_mods;
+	UInt32 evt_keycode;
+
+	/* Get various aspects of the keycode */
+	GetEventParameter(inEvent, kEventParamKeyModifiers, typeUInt32, NULL,
+			sizeof(UInt32), NULL, &evt_mods);
+	GetEventParameter(inEvent, kEventParamKeyCode, typeUInt32, NULL,
+			sizeof(UInt32), NULL, &evt_keycode);
 
 	/* Extract some modifiers */
-	int mc = (event.modifiers & controlKey) ? TRUE : FALSE;
-	int ms = (event.modifiers & shiftKey) ? TRUE : FALSE;
-	int mo = (event.modifiers & optionKey) ? TRUE : FALSE;
-	int mx = (event.modifiers & cmdKey) ? TRUE : FALSE;
+	bool mc = (evt_mods & controlKey) ? TRUE : FALSE;
+	bool ms = (evt_mods & shiftKey) ? TRUE : FALSE;
+	bool mo = (evt_mods & optionKey) ? TRUE : FALSE;
+	bool mx = (evt_mods & cmdKey) ? TRUE : FALSE;
+	bool kp = FALSE;
+	byte mods = (mo ? KC_MOD_ALT : 0) | (mx ? KC_MOD_META : 0);
 
-	/* Keypress: (only "valid" if ck < 96) */
-	int ch = (event.message & charCodeMask) & 255;
-
-	/* Keycode: see table above */
-	int ck = ((event.message & keyCodeMask) >> 8) & 255;
+	keycode_t ch = 0;
 
 	/* Command + "normal key" -> menu action */
-	if (mx && (ck < 64))
-	{
+	if (mx && evt_keycode < 64)
 		return eventNotHandledErr;
-	}
 
 	/* Hide the mouse pointer */
 	hibernate();
 	ObscureCursor();
 
-	/* Normal key -> simple keypress */
-	if ((ck < 64) || (ck == 93))
-	{
-		/* Enqueue the keypress */
-		Term_keypress(ch);
+	/* see http://www.classicteck.com/rbarticles/mackeyboard.php */
+	switch (evt_keycode) {
+		/* top number keys */
+		case 18: if (!ms || mo) ch = '1'; break;
+		case 19: if (!ms || mo) ch = '2'; break;
+		case 20: if (!ms || mo) ch = '3'; break;
+		case 21: if (!ms || mo) ch = '4'; break;
+		case 23: if (!ms || mo) ch = '5'; break;
+		case 22: if (!ms || mo) ch = '6'; break;
+		case 26: if (!ms || mo) ch = '7'; break;
+		case 28: if (!ms || mo) ch = '8'; break;
+		case 25: if (!ms || mo) ch = '9'; break;
+		case 29: if (!ms || mo) ch = '0'; break;
+
+		/* keypad keys */
+		case 65: ch = '.'; kp = TRUE; break;
+		case 67: ch = '*'; kp = TRUE; break;
+		case 69: ch = '+'; kp = TRUE; break;
+		case 75: ch = '/'; kp = TRUE; break;
+		case 76: ch = '\n'; kp = TRUE; break;
+		case 78: ch = '-'; kp = TRUE; break;
+		case 81: ch = '='; kp = TRUE; break;
+		case 82: ch = '0'; kp = TRUE; break;
+		case 83: ch = '1'; kp = TRUE; break;
+		case 84: ch = '2'; kp = TRUE; break;
+		case 85: ch = '3'; kp = TRUE; break;
+		case 86: ch = '4'; kp = TRUE; break;
+		case 87: ch = '5'; kp = TRUE; break;
+		case 88: ch = '6'; kp = TRUE; break;
+		case 89: ch = '7'; kp = TRUE; break;
+		case 91: ch = '8'; kp = TRUE; break;
+		case 92: ch = '9'; kp = TRUE; break;
+
+		/* main keyboard but deal with here */
+		case 48: ch = KC_TAB; break;
+		case 36: ch = KC_RETURN; break;
+		case 51: ch = KC_BACKSPACE; break;
+
+		/* middle bit */
+		case 114: ch = KC_HELP; break;
+		case 115: ch = KC_HOME; break;
+		case 116: ch = KC_PGUP; break;
+		case 117: ch = KC_DELETE; break;
+		case 119: ch = KC_END; break;
+		case 121: ch = KC_PGDOWN; break;
+
+		case 123: ch = ARROW_LEFT; break;
+		case 124: ch = ARROW_RIGHT; break;
+		case 125: ch = ARROW_DOWN; break;
+		case 126: ch = ARROW_UP; break;
+
+		/* function keys */
+		case 122: ch = KC_F1; break;
+		case 120: ch = KC_F2; break;
+		case 99: ch = KC_F3; break;
+		case 118: ch = KC_F4; break;
+		case 96: ch = KC_F5; break;
+		case 97: ch = KC_F6; break;
+		case 98: ch = KC_F7; break;
+		case 100: ch = KC_F8; break;
+		case 101: ch = KC_F9; break;
+		case 109: ch = KC_F10; break;
+		case 103: ch = KC_F11; break;
+		case 111: ch = KC_F12; break;
+		case 105: ch = KC_F13; break;
+		case 107: ch = KC_F14; break;
+		case 113: ch = KC_F15; break;
 	}
 
-	/* Keypad keys -> trigger plus simple keypress */
-	else if (!mc && !ms && !mo && !mx && (ck < 96))
-	{
-		/* Hack -- "enter" is confused */
-		if (ck == 76) ch = '\n';
+	if (ch) {
+		mods |= (mc ? KC_MOD_CONTROL : 0) | (ms ? KC_MOD_SHIFT : 0) |
+				(kp ? KC_MOD_KEYPAD : 0);
 
-		/* Begin special trigger */
-		Term_keypress(31);
+		Term_keypress(ch, mods);
+	} else if (evt_keycode < 64) {
+		/* Keycodes under 64 = main part of the keyboard, printables (mostly) */
+		char ch;
+		GetEventParameter(inEvent, kEventParamKeyMacCharCodes, typeChar, NULL,
+				sizeof(char), NULL, &ch);
 
-		/* Send the "keypad" modifier */
-		Term_keypress('K');
+		if (mc && MODS_INCLUDE_CONTROL(ch)) mods |= KC_MOD_CONTROL;
+		if (ms && MODS_INCLUDE_SHIFT(ch)) mods |= KC_MOD_SHIFT;
 
-		/* Terminate the trigger */
-		Term_keypress(13);
-
-		/* Send the "ascii" keypress */
-		Term_keypress(ch);
+		Term_keypress(ch, mods);
 	}
 
-	/* Bizarre key -> encoded keypress */
-	else if (ck <= 127)
-	{
-		/* Begin special trigger */
-		Term_keypress(31);
-
-		/* Send some modifier keys */
-		if (mc) Term_keypress('C');
-		if (ms) Term_keypress('S');
-		if (mo) Term_keypress('O');
-		if (mx) Term_keypress('X');
-
-		/* Downshift and encode the keycode */
-		Term_keypress(I2D((ck - 64) / 10));
-		Term_keypress(I2D((ck - 64) % 10));
-
-		/* Terminate the trigger */
-		Term_keypress(13);
-	}
 	return noErr;
 }
 
@@ -3831,7 +3911,7 @@ static bool CheckEvents(int wait)
 /*
  * Hook to tell the user something important
  */
-static void hook_plog(cptr str)
+static void hook_plog(const char *str)
 {
 	/* Warning message */
 	mac_warning(str);
@@ -3841,7 +3921,7 @@ static void hook_plog(cptr str)
 /*
  * Hook to tell the user something, and then quit
  */
-static void hook_quit(cptr str)
+static void hook_quit(const char *str)
 {
 	/* Warning if needed */
 	if (str) mac_warning(str);

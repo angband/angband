@@ -49,21 +49,17 @@ depend: pre-depend ${SRCS}
 	for i in ${SRCS}; do test $$i -nt .deps && regen=1; done; \
 	if test x"$$regen" = x"1"; then \
 		list=""; \
+		echo > .deps; \
 		${DEPEND_STATUS}; \
 		for i in ${SRCS}; do \
 			case $${i##*.} in \
 			c|cc|cxx|m) \
-				list="$$list $$i"; \
+				${CPP} ${CPPFLAGS} -M $$i -o .deptemp; \
+				cat .deptemp >> .deps; \
+				$(RM) .deptemp; \
 				;; \
 			esac; \
 		done; \
-		if test x"$$list" != "x"; then \
-			if ${CPP} ${CPPFLAGS} $$list -M >.deps; then \
-				${DEPEND_OK}; \
-			else \
-				${DEPEND_FAILED}; \
-			fi; \
-		fi; \
 	fi
 
 pre-depend:
@@ -190,7 +186,7 @@ install: ${LIB} ${STATIC_LIB} ${PLUGIN} ${PROG} ${CONFIG} ${LIBDATA} ${VARDATA} 
 			${INSTALL_FAILED}; \
 		fi \
 	done
-	
+
 	for i in ${LIBDATA}; do \
 		${INSTALL_STATUS}; \
 		if ${MKDIR_P} $$(dirname ${DESTDIR}${libdatadir}${PACKAGE}/$$i) && ${INSTALL} -m 644 $$i ${DESTDIR}${libdatadir}${PACKAGE}/$$i; then \
@@ -199,7 +195,7 @@ install: ${LIB} ${STATIC_LIB} ${PLUGIN} ${PROG} ${CONFIG} ${LIBDATA} ${VARDATA} 
 			${INSTALL_FAILED}; \
 		fi \
 	done
-	
+
 	for i in ${CONFIG}; do \
 		${INSTALL_STATUS}; \
 		if ${MKDIR_P} $$(dirname ${DESTDIR}${configdir}${PACKAGE}/$$i) && ${INSTALL} -m 644 $$i ${DESTDIR}${configdir}${PACKAGE}/$$i; then \
@@ -325,13 +321,13 @@ uninstall: uninstall-extra
 
 uninstall-extra:
 
-clean:
+clean::
 	for i in ${SUBDIRS}; do \
 		${DIR_ENTER}; \
 		${MAKE} ${MFLAGS} clean || exit 1; \
 		${DIR_LEAVE}; \
 	done
-	
+
 	for i in ${OBJS} ${CLEAN} ${CLEAN_LIB} .deps; do \
 		if test -f $$i -o -d $$i; then \
 			if rm -fr $$i; then \
@@ -348,7 +344,7 @@ distclean: clean
 		${MAKE} ${MFLAGS} distclean || exit 1; \
 		${DIR_LEAVE}; \
 	done
-	
+
 	for i in ${PROG} ${PROG_NOINST} ${LIB} ${LIB_NOINST} ${STATIC_LIB} ${STATIC_LIB_NOINST} ${PLUGIN} ${PLUGIN_NOINST} ${DISTCLEAN} *~; do \
 		if test -f $$i -o -d $$i; then \
 			if rm -fr $$i; then \

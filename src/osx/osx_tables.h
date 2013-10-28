@@ -82,13 +82,13 @@ static const HIViewID aboutDialogCopyright = { 'DLOG', 4 };
 /* graf_mode variable is index of current mode */
 static const struct {
 	int menuItem;		// Index in Graphics Menu
- 	  cptr file;			// Base name of png file (if any)
-	cptr name;			// Value of ANGBAND_GRAF variable
+ 	  const char *file;			// Base name of png file (if any)
+	const char *name;			// Value of ANGBAND_GRAF variable
 	int size;			// Tile size (in pixels)
 	bool trans;			// Use transparent foreground tiles
 } graphics_modes[] = {
 	{ kGrafNone, NULL, NULL, 0, false },
-	{ kGraf8x8, "8x8", "old",	8,	false },
+	{ kGraf8x8, "8x8", "old",	8,	true },
 	{ kGraf16x16, "16x16",	"new",	16,	true },
 	{ kGraf32x32, "32x32",	"david", 32,	true },
 	{ kGraf8x16, "8x16",	"nomad", 16,	true },
@@ -97,11 +97,11 @@ static const struct {
 
 /* Event handler specification */
 struct CommandDef {
-	int				evtClass; // Eventspec class - char-style constant eg 'quit'
-	int				evtType;  // Eventspec type - enumeration
+	int	evtClass; // Eventspec class - char-style constant eg 'quit'
+	int	evtType;  // Eventspec type - enumeration
 	EventHandlerUPP	handler;
-	UInt32			targetID; // Menu target (0 if no target)
-	void		  * userData; // Event user data (Not used currently)
+	int	targetID; // Menu target (0 if no target)
+	void	*userData; // Event user data (Not used currently)
 }; 
 typedef struct CommandDef CommandDef;
 
@@ -236,7 +236,7 @@ CMDHANDLER(set_nice_graphics_fit);
 CMDHANDLER(set_nice_graphics_square);
 
 static struct {
-	int id;				// command id
+	UInt32 id;				// command id
 	void (*handler)(HICommand *command, void *data);	// handler
 	void *data;				// data
 	bool refresh; 			// Change requires graphics refresh of main window.

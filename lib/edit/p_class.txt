@@ -68,6 +68,8 @@ X:10:7:10:0:0:0:45:45:45:0
 I:9:0:7000:40
 A:6:30:5
 M:0:0:0:0
+E:food:Ration~ of Food:3:7
+E:light:Wooden Torch~:3:7
 E:potion:Berserk Strength:1:1
 E:sword:Short Sword~:1:1
 E:soft armour:Soft Leather Armour~:1:1
@@ -91,6 +93,8 @@ X:7:13:9:0:0:0:15:15:15:0
 I:0:30:170000:5
 A:4:40:2
 M:90:1:1:300
+E:food:Ration~ of Food:3:7
+E:light:Wooden Torch~:3:7
 E:magic book:[Magic for Beginners]:1:1
 E:sword:Dagger~:1:1
 E:scroll:Word of Recall:1:1
@@ -176,6 +180,8 @@ X:7:10:12:0:0:0:20:20:20:0
 I:2:20:15000:40
 A:4:35:3
 M:91:2:1:350
+E:food:Ration~ of Food:3:7
+E:light:Wooden Torch~:3:7
 E:prayer book:[Beginners Handbook]:1:1
 E:hafted:Mace~:1:1
 E:potion:Cure Serious Wounds:2:2
@@ -197,7 +203,6 @@ B:2:1:2:20:4
 B:3:1:2:5:4
 B:4:3:2:25:1
 B:5:3:3:27:2
-B:6:3:3:27:2
 B:7:3:3:28:4
 B:8:5:4:29:3
 B:9:5:4:30:4
@@ -263,6 +268,8 @@ X:15:10:10:0:0:0:40:30:30:0
 I:6:25:10000:40
 A:5:30:4
 M:90:1:5:350
+E:food:Ration~ of Food:3:7
+E:light:Wooden Torch~:3:7
 E:magic book:[Magic for Beginners]:1:1
 E:sword:Short Sword~:1:1
 E:soft armour:Soft Leather Armour~:1:1
@@ -349,6 +356,8 @@ X:8:10:10:0:0:0:30:45:45:0
 I:4:30:20000:40
 A:5:35:4
 M:90:1:3:400
+E:food:Ration~ of Food:3:7
+E:light:Wooden Torch~:3:7
 E:magic book:[Magic for Beginners]:1:1
 E:sword:Dagger~:1:1
 E:bow:Short Bow~:1:1
@@ -436,6 +445,8 @@ X:7:10:11:0:0:0:35:30:30:0
 I:6:35:60000:40
 A:5:30:5
 M:91:2:1:400
+E:food:Ration~ of Food:3:7
+E:light:Wooden Torch~:3:7
 E:prayer book:[Beginners Handbook]:1:1
 E:sword:Broad Sword~:1:1
 E:scroll:Protection from Evil:1:1
@@ -457,7 +468,6 @@ B:2:3:3:35:4
 B:3:5:3:15:4
 B:4:5:4:35:4
 B:5:7:5:40:3
-B:6:7:5:40:3
 B:7:9:7:40:3
 B:8:9:7:40:3
 B:9:9:8:40:3

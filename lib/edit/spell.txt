@@ -204,7 +204,7 @@ D:  Uniques are not affected.
 
 N:32:Teleport Other
 I:90:3:1
-D:Produces a beam that teleports each monster in its path
+D:Produces a bolt that teleports the first monster in its path
 D: up to 100 squares away.
 
 N:33:Teleport Level
@@ -641,7 +641,7 @@ D:Attempts to improve the armour class bonus of a piece of armour.
 
 N:115:Elemental Brand
 I:91:7:5
-D:Brands the currently wielded melee weapon with fire (25%) or cold (75%),
+D:Brands the currently wielded melee weapon with fire (50%) or cold (50%),
 D: and at the same time attempts to improve the to-hit bonus and the
 D: to-dam bonus of the same weapon.
 D:  The prayer has no effect if the weapon is an artifact or ego item,
@@ -657,7 +657,7 @@ D:Teleports you randomly within the current level.
 
 N:118:Teleport Other
 I:91:4:2
-D:Produces a beam that teleports each monster in its path
+D:Produces a bolt that teleports the first monster in its path
 D: up to 100 squares away.
 
 N:119:Teleport Level

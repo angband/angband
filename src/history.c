@@ -106,14 +106,13 @@ size_t history_get_num(void)
 /*
  * Mark artifact number `id` as known.
  */
-static bool history_know_artifact(byte a_idx)
+static bool history_know_artifact(struct artifact *artifact)
 {
 	size_t i = history_ctr;
+	assert(artifact);
 
-	while (i--)
-	{
-		if (history_list[i].a_idx == a_idx)
-		{
+	while (i--) {
+		if (history_list[i].a_idx == artifact->aidx) {
 			history_list[i].type = HISTORY_ARTIFACT_KNOWN;
 			return TRUE;
 		}
@@ -127,21 +126,20 @@ static bool history_know_artifact(byte a_idx)
  * Mark artifact number `id` as lost forever, either due to leaving it on a
  * level, or due to a store purging its inventory after the player sold it.
  */
-bool history_lose_artifact(byte a_idx)
+bool history_lose_artifact(struct artifact *artifact)
 {
 	size_t i = history_ctr;
+	assert(artifact);
 
-	while (i--)
-	{
-		if (history_list[i].a_idx == a_idx)
-		{
+	while (i--) {
+		if (history_list[i].a_idx == artifact->aidx) {
 			history_list[i].type |= HISTORY_ARTIFACT_LOST;
 			return TRUE;
 		}
 	}
 
 	/* If we lost an artifact that didn't previously have a history, then we missed it */
-	history_add_artifact(a_idx, FALSE, FALSE);
+	history_add_artifact(artifact, FALSE, FALSE);
 
 	return FALSE;
 }
@@ -154,7 +152,8 @@ bool history_lose_artifact(byte a_idx)
  *
  * Return TRUE on success.
  */
-bool history_add_full(u16b type, byte a_idx, s16b dlev, s16b clev, s32b turn, const char *text)
+bool history_add_full(u16b type, struct artifact *artifact, s16b dlev,
+		s16b clev, s32b turn, const char *text)
 {
 	/* Allocate the history list if needed */
 	if (!history_list)
@@ -168,7 +167,7 @@ bool history_add_full(u16b type, byte a_idx, s16b dlev, s16b clev, s32b turn, co
 	history_list[history_ctr].type = type;
 	history_list[history_ctr].dlev = dlev;
 	history_list[history_ctr].clev = clev;
-	history_list[history_ctr].a_idx = a_idx;
+	history_list[history_ctr].a_idx = artifact ? artifact->aidx : 0;
 	history_list[history_ctr].turn = turn;
 	my_strcpy(history_list[history_ctr].event,
 	          text, sizeof(history_list[history_ctr].event));
@@ -186,24 +185,26 @@ bool history_add_full(u16b type, byte a_idx, s16b dlev, s16b clev, s32b turn, co
  *
  * Returne TRUE on success.
  */
-bool history_add(const char *event, u16b type, byte a_idx)
+bool history_add(const char *event, u16b type, struct artifact *artifact)
 {
-	return history_add_full(type, a_idx, p_ptr->depth, p_ptr->lev, turn, event);
+	return history_add_full(type, artifact, p_ptr->depth, p_ptr->lev, turn, event);
 }
 
 
 /*
  * Returns TRUE if the artifact denoted by a_idx is KNOWN in the history log.
  */
-bool history_is_artifact_known(byte a_idx)
+bool history_is_artifact_known(struct artifact *artifact)
 {
 	size_t i = history_ctr;
+	assert(artifact);
 
-	while (i--)
-	{
-		if (history_list[i].a_idx == a_idx && (history_list[i].type & HISTORY_ARTIFACT_KNOWN))
+	while (i--) {
+		if (history_list[i].type & HISTORY_ARTIFACT_KNOWN &&
+				history_list[i].a_idx == artifact->aidx)
 			return TRUE;
 	}
+
 	return FALSE;
 }
 
@@ -214,18 +215,18 @@ bool history_is_artifact_known(byte a_idx)
  * proper handling of the case where the player loses an artifact but (in
  * preserve mode) finds it again later.
  */
-static bool history_is_artifact_logged(byte a_idx)
+static bool history_is_artifact_logged(struct artifact *artifact)
 {
 	size_t i = history_ctr;
+	assert(artifact);
 
-	while (i--)
-	{
+	while (i--) {
 		/* Don't count ARTIFACT_LOST entries; then we can handle
 		 * re-finding previously lost artifacts in preserve mode  */
 		if (history_list[i].type & HISTORY_ARTIFACT_LOST)
 			continue;
 
-		if (history_list[i].a_idx == a_idx)
+		if (history_list[i].a_idx == artifact->aidx)
 			return TRUE;
 	}
 
@@ -240,7 +241,7 @@ static bool history_is_artifact_logged(byte a_idx)
  * list or make the history entry visible--history_add_artifact will make that
  * determination depending on what object_is_known returns for the artifact.
  */
-bool history_add_artifact(byte a_idx, bool known, bool found)
+bool history_add_artifact(struct artifact *artifact, bool known, bool found)
 {
 	object_type object_type_body;
 	object_type *o_ptr = &object_type_body;
@@ -249,31 +250,28 @@ bool history_add_artifact(byte a_idx, bool known, bool found)
 	char buf[80];
 	u16b type;
 
+	assert(artifact);
+
 	/* Make fake artifact for description purposes */
 	object_wipe(o_ptr);
-	make_fake_artifact(o_ptr, a_idx);
+	make_fake_artifact(o_ptr, artifact);
 	object_desc(o_name, sizeof(o_name), o_ptr,
 				ODESC_PREFIX | ODESC_BASE | ODESC_SPOIL);
 	strnfmt(buf, sizeof(buf), (found)?"Found %s":"Missed %s", o_name);
 
 	/* Known objects gets different treatment */
-	if (known)
-	{
+	if (known) {
 		/* Try revealing any existing artifact, otherwise log it */
-		if (history_is_artifact_logged(a_idx))
-			history_know_artifact(a_idx);
+		if (history_is_artifact_logged(artifact))
+			history_know_artifact(artifact);
 		else
-			history_add(buf, HISTORY_ARTIFACT_KNOWN, a_idx);
-	}
-	else
-	{
-		if (!history_is_artifact_logged(a_idx))
-		{
-			type = HISTORY_ARTIFACT_UNKNOWN | (found ? 0 : HISTORY_ARTIFACT_LOST);
-			history_add(buf, type, a_idx);
-		}
-		else
-		{
+			history_add(buf, HISTORY_ARTIFACT_KNOWN, artifact);
+	} else {
+		if (!history_is_artifact_logged(artifact)) {
+			type = HISTORY_ARTIFACT_UNKNOWN |
+					(found ? 0 : HISTORY_ARTIFACT_LOST);
+			history_add(buf, type, artifact);
+		} else {
 			return FALSE;
 		}
 	}
@@ -336,8 +334,8 @@ static void print_history_header(void)
 	/* Print the header (character name and title) */
 	strnfmt(buf, sizeof(buf), "%s the %s %s",
 	        op_ptr->full_name,
-	        rp_ptr->name,
-	        cp_ptr->name);
+	        p_ptr->race->name,
+	        p_ptr->class->name);
 
 	c_put_str(TERM_WHITE, buf, 0, 0);
 	c_put_str(TERM_WHITE, "============================================================", 1, 0);
@@ -365,7 +363,7 @@ void history_display(void)
 
 	while (1)
 	{
-		char ch;
+		struct keypress ch;
 
 		Term_clear();
 
@@ -396,7 +394,8 @@ void history_display(void)
 
 		ch = inkey();
 
-		if (ch == 'n')
+		/* XXXmacro we should have a generic "key -> scroll" function */
+		if (ch.code == 'n')
 		{
 			size_t scroll_to = first_item + page_size;
 
@@ -405,7 +404,7 @@ void history_display(void)
 
 			first_item = (scroll_to < max_item ? scroll_to : max_item);
 		}
-		else if (ch == 'p')
+		else if (ch.code == 'p')
 		{
 			int scroll_to = first_item - page_size;
 
@@ -414,7 +413,7 @@ void history_display(void)
 
 			first_item = (scroll_to >= 0 ? scroll_to : 0);
 		}
-		else if (ch == ARROW_DOWN)
+		else if (ch.code == ARROW_DOWN)
 		{
 			size_t scroll_to = first_item + 1;
 
@@ -423,7 +422,7 @@ void history_display(void)
 
 			first_item = (scroll_to < max_item ? scroll_to : max_item);
 		}
-		else if (ch == ARROW_UP)
+		else if (ch.code == ARROW_UP)
 		{
 			int scroll_to = first_item - 1;
 
@@ -432,7 +431,7 @@ void history_display(void)
 
 			first_item = (scroll_to >= 0 ? scroll_to : 0);
 		}
-		else if (ch == ESCAPE)
+		else if (ch.code == ESCAPE)
 			break;
 	}
 

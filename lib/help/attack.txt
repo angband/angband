@@ -191,7 +191,8 @@ damage if the saving throw is passed.
 
 Some melee attacks by monsters may drain a stat, as can some traps: this is 
 prevented by having that stat sustained.  Drained stats are temporary and can
-be restored by potions from the Alchemist or found in the dungeon.
+be restored on gaining a new character level or consuming rare items found
+in the dungeon.
 
 Some monsters may cast spells that teleport the player character.  There is 
 no saving throw, except to those that would actually teleport him 
@@ -276,19 +277,19 @@ or by a monster breath), chaos (breath or melee, which if unresisted
 will cause the player to hallucinate and be confused, and may drain life
 experience), nexus (which may teleport the player to the monster, away from
 the monster, up or down a level, or swap over two of the player's "internal" 
-stats), confusion breath attack, light and darkness (which will blind a non-
-resistant character), sound (which will stun a non-resistant character and 
-may destroy his potions), crystal shards (which will cut a non-resistant 
-character and may destroy his potions), inertia (which will slow a character
-even if he has free action), gravity (which will blink a character, also 
-stunning and slowing), force (which will stun the character), plasma (which 
-will stun, and may destroy items which are vulnerable to either fire or 
-lightning), time (which may drain experience regardless of hold life, or 
-drain stats regardless of sustains), water bolts and balls (which may confuse 
-and stun, and do considerable damage from high-level monsters), ice bolts 
-(which may cut and stun, and damage potions), and mana bolts and balls (the 
-latter usually known as Mana Storms.) Magic missiles are included in the 
-"mana" category, whether cast by the monster or the player.
+stats), light and darkness (which will blind a non-resistant character),
+sound (which will stun a non-resistant character and may destroy his
+potions), crystal shards (which will cut a non-resistant character and may
+destroy his potions), inertia (which will slow a character even if he has
+free action), gravity (which will blink a character, also stunning and
+slowing), force (which will stun the character), plasma (which will stun,
+and may destroy items which are vulnerable to either fire or lightning),
+time (which may drain experience regardless of hold life, or drain stats
+regardless of sustains), water bolts and balls (which may confuse and stun,
+and do considerable damage from high-level monsters), ice bolts (which may
+cut and stun, and damage potions), and mana bolts and balls (the latter
+usually known as Mana Storms.) Magic missiles are included in the "mana"
+category, whether cast by the monster or the player.
 
 Some attacks may stun or cut the player.  These can either be spells or 
 breath attacks (sound, water balls) or from melee.  A stunned character 
@@ -361,6 +362,8 @@ This will give you a small taste of the items that can be found.  However if
 you wish to discover these items on your own, you may not wish to continue.  
 Ego weapons are denoted by the following "names":  
 
+Ego Melee Weapons:
+------------------
 (Defender)
      A magical weapon that actually helps the wielder defend himself, thus
      increasing his/her armor class, and protecting him/her against damage
@@ -395,7 +398,7 @@ Weapon of Westernesse
      creatures and protects from paralyzation and some slowing attacks. 
      These blades were made by the Dunedain.
 
-Weapon of Extra Attacks.
+Weapon of Extra Attacks
      A weapon of extra attacks will allow the wielder to deliver extra
      attacks during each round.
 
@@ -581,77 +584,77 @@ Helms/Crowns of Dullness
  
 Ego Cloaks:
 -----------
-Cloak of Protection.
+Cloak of Protection
      This finely made cloak will come with an unnaturally high enchantment
      and is not affected by elemental based attacks. 
 
-Cloak of Stealth.
+Cloak of Stealth
      This cloak will increase the wearer's stealth, making the wearer less
      likely to wake up sleeping monsters.
 
-Cloak of Aman.
+Cloak of Aman
      These exceptionally rare cloaks provide great stealth, have a very 
      high enchantment, and one random resistance.
 
-Cloak of Enveloping.
+Cloak of Enveloping
      This cloak gets in the way of everything you try to do. You can't seem 
      to hit monsters without having to shove aside several folds of cloth,
      and yet more layers cushion the blow and reduce the damage you do.
 
-Cloak of Irritation.
+Cloak of Irritation
      This cloak not only envelops its wearer but aggravates all who see it.
 
-Cloaks of Vulnerability.
+Cloaks of Vulnerability
      This severely cursed cloak appears to be powerful, but in fact lets 
      through the full force of every attack directed at it.
 
 Ego Gloves:
 -----------
-Gloves of Free Action.
+Gloves of Free Action
      The wearer of these gloves will find himself resistant to paralyzing
      attacks as well as some slowing attacks.  Because of the special 
      nature of these gloves, magic users may wear these gloves without
      incurring a mana penalty.   
 
-Gloves of Slaying.
+Gloves of Slaying
      These gloves will increase the wearer's fighting ability by boosting
      the wearer's to-hit and to-dam values.
 
-Gloves of Agility.
+Gloves of Agility
      These gloves will increase the wearer's dexterity.  Because of the 
      special nature of these gloves, magic users may wear these gloves 
      without incurring a mana penalty.   
 
-Gauntlets of Power.
+Gauntlets of Power
      These spiked gauntlets will boost the wearer's strength as well as the 
      wearer's  to-hit and to-dam numbers.
 
-Gauntlets of Weakness.
+Gauntlets of Weakness
      These gauntlets sap your strength.
 
-Gauntlets of Clumsiness.
+Gauntlets of Clumsiness
      These gauntlets make you fumble.
 
 Ego Boots:
 ----------
-Boots of Slow Descent.
+Boots of Slow Descent
      These boots protect the wearer from the effects of small falls.
 
-Boots of Stealth.
+Boots of Stealth
      These boots increase the wearer's stealth, like a Cloak of Stealth.
 
-Boots of Free Action.
+Boots of Free Action
      The wearer of these boots will find himself resistant to paralyzing
      attacks as well as some slowing attacks.
 
-Boots of Speed.
+Boots of Speed
      The wearer of these boots will become unnaturally fast.
 
-Boots of Slowness.
+Boots of Slowness
      They seem to be stuck to the ground, and you can hardly move at all 
      while wearing these things.
 
-Boots of Annoyance.
+Boots of Annoyance
      These boots will both slow the player and aggravate monsters.
 
 Once again, these are not necessarily the ONLY ego-items in the dungeon, 

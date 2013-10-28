@@ -1,0 +1,7 @@
+-I .
+-weak
++top-use
+-warnposixheaders
+-macrovarprefixexclude
+-predboolothers
+-DUSE_GCU -DUSE_NCURSES

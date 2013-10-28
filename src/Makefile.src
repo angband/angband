@@ -5,8 +5,8 @@
 # across a range of different makefiles, to cut down on maintenance.
 #
 
-VERSION = 3.2.0
-COPYRIGHT = (c) 1995-2010 Angband contributors
+VERSION = 3.3.0
+COPYRIGHT = (c) 1995-2011 Angband contributors
 
 HEADERS = \
 	angband.h \
@@ -18,6 +18,7 @@ HEADERS = \
 	externs.h \
 	game-cmd.h \
 	game-event.h \
+	guid.h \
 	$(GTKHEADERS) \
 	h-basic.h \
 	init.h \
@@ -35,6 +36,7 @@ HEADERS = \
 	z-form.h \
 	z-msg.h \
 	z-quark.h \
+	z-queue.h \
 	z-rand.h \
 	z-term.h \
 	z-type.h \
@@ -45,10 +47,11 @@ GTKHEADERS = \
 	gtk/cairo-utils.h \
 	gtk/main-gtk.h \
 	
-ZFILES = z-bitflag.o z-file.o z-form.o z-msg.o z-quark.o z-rand.o z-term.o z-type.o \
-         z-util.o z-virt.o z-textblock.o
+ZFILES = z-bitflag.o z-file.o z-form.o z-msg.o z-quark.o z-queue.o z-rand.o \
+	z-term.o z-type.o z-util.o z-virt.o z-textblock.o
+
 MAINFILES = main.o main-crb.o main-gcu.o $(GTKMAINFILES) \
-            main-sdl.o main-win.o main-x11.o snd-sdl.o main-test.o
+	main-sdl.o main-win.o main-x11.o snd-sdl.o main-test.o
 
 GTKMAINFILES = \
 	gtk/main-gtk.o \
@@ -74,30 +77,40 @@ ANGFILES = \
 	game-cmd.o \
 	game-event.o \
 	generate.o \
+	guid.o \
 	history.o \
 	init2.o \
+	keymap.o \
 	load.o \
-	load-old.o \
-	macro.o \
+	monster/init.o \
 	monster/melee1.o \
 	monster/melee2.o \
-	monster/monster1.o \
-	monster/monster2.o \
+	monster/mon-lore.o \
+	monster/mon-make.o \
+	monster/mon-msg.o \
+	monster/mon-power.o \
+	monster/mon-spell.o \
+	monster/mon-util.o \
 	object/identify.o \
 	object/obj-desc.o \
+	object/obj-flag.o \
 	object/obj-info.o \
 	object/obj-make.o \
 	object/obj-power.o \
 	object/obj-ui.o \
 	object/obj-util.o \
+	object/pval.o \
 	object/randart.o \
+	object/slays.o \
 	option.o \
 	parser.o \
 	randname.o \
 	pathfind.o \
 	prefs.o \
 	player/calcs.o \
+	player/class.o \
 	player/player.o \
+	player/race.o \
 	player/spell.o \
 	player/timed.o \
 	player/util.o \
@@ -114,6 +127,7 @@ ANGFILES = \
 	trap.o \
 	ui.o \
 	ui-birth.o \
+	ui-event.o \
 	ui-knowledge.o \
 	ui-menu.o \
 	ui-options.o \
@@ -127,3 +141,13 @@ ANGFILES = \
 	x-spell.o \
 	xtra2.o \
 	xtra3.o
+
+STATSFILES = stats/db.o
+
+ifeq ($(USE_STATS),1)
+	ANGFILES += $(STATSFILES)
+	MAINFILES += main-stats.o
+endif
+
+buildid.o: $(ANGFILES)
+ANGFILES += buildid.o

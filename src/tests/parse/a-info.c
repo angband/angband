@@ -6,17 +6,17 @@
 #include "init.h"
 #include "types.h"
 
-static int setup(void **state) {
+int setup_tests(void **state) {
 	*state = init_parse_a();
 	return !*state;
 }
 
-static int teardown(void *state) {
+int teardown_tests(void *state) {
 	parser_destroy(state);
 	return 0;
 }
 
-static int test_n0(void *state) {
+int test_n0(void *state) {
 	enum parser_error r = parser_parse(state, "N:3:of Thrain");
 	struct artifact *a;
 
@@ -28,33 +28,33 @@ static int test_n0(void *state) {
 	ok;
 }
 
-static int test_badtval0(void *state) {
+int test_badtval0(void *state) {
 	enum parser_error r = parser_parse(state, "I:badtval:6:3");
 	eq(r, PARSE_ERROR_UNRECOGNISED_TVAL);
 	ok;
 }
 
-static int test_badtval1(void *state) {
+int test_badtval1(void *state) {
 	enum parser_error r = parser_parse(state, "I:-1:6:3");
 	eq(r, PARSE_ERROR_UNRECOGNISED_TVAL);
 	ok;
 }
 
 /* Causes segfault: lookup_sval() requires z_info/k_info */
-static int test_badsval(void *state) {
+int test_badsval(void *state) {
 	errr r = parser_parse(state, "I:light:badsval:3");
 	eq(r, PARSE_ERROR_UNRECOGNISED_SVAL);
 	ok;
 }
 
-static int test_badsval1(void *state) {
+int test_badsval1(void *state) {
 	enum parser_error r = parser_parse(state, "I:light:-2:3");
 	eq(r, PARSE_ERROR_UNRECOGNISED_SVAL);
 	ok;
 }
 
-static int test_i0(void *state) {
-	enum parser_error r = parser_parse(state, "I:light:6:3");
+int test_i0(void *state) {
+	enum parser_error r = parser_parse(state, "I:light:6");
 	struct artifact *a;
 
 	eq(r, PARSE_ERROR_NONE);
@@ -62,11 +62,10 @@ static int test_i0(void *state) {
 	require(a);
 	eq(a->tval, TV_LIGHT);
 	eq(a->sval, 6);
-	eq(a->pval, 3);
 	ok;
 }
 
-static int test_w0(void *state) {
+int test_w0(void *state) {
 	enum parser_error r = parser_parse(state, "W:3:5:8:200");
 	struct artifact *a;
 
@@ -80,19 +79,19 @@ static int test_w0(void *state) {
 	ok;
 }
 
-static int test_a0(void *state) {
+int test_a0(void *state) {
 	enum parser_error r = parser_parse(state, "A:3:5");
 	eq(r, PARSE_ERROR_GENERIC);
 	ok;
 }
 
-static int test_a1(void *state) {
+int test_a1(void *state) {
 	enum parser_error r = parser_parse(state, "A:3:5 to 300");
 	eq(r, PARSE_ERROR_OUT_OF_BOUNDS);
 	ok;
 }
 
-static int test_a2(void *state) {
+int test_a2(void *state) {
 	enum parser_error r = parser_parse(state, "A:3:5 to 10");
 	struct artifact *a;
 
@@ -105,7 +104,7 @@ static int test_a2(void *state) {
 	ok;
 }
 
-static int test_p0(void *state) {
+int test_p0(void *state) {
 	enum parser_error r = parser_parse(state, "P:3:4d5:8:2:1");
 	struct artifact *a;
 
@@ -121,7 +120,7 @@ static int test_p0(void *state) {
 	ok;
 }
 
-static int test_f0(void *state) {
+int test_f0(void *state) {
 	enum parser_error r = parser_parse(state, "F:SEE_INVIS | HOLD_LIFE");
 	struct artifact *a;
 
@@ -132,7 +131,18 @@ static int test_f0(void *state) {
 	ok;
 }
 
-static int test_e0(void *state) {
+int test_l0(void *state) {
+	enum parser_error r = parser_parse(state, "L:17:STR | CON");
+	struct artifact *a;
+
+	eq(r, PARSE_ERROR_NONE);
+	a = parser_priv(state);
+	eq(a->pval[0], 17);
+	require(a->pval_flags[0]);
+	ok;
+}
+
+int test_e0(void *state) {
 	enum parser_error r = parser_parse(state, "E:DETECT_ALL:20+d30");
 	struct artifact *a;
 
@@ -145,7 +155,7 @@ static int test_e0(void *state) {
 	ok;
 }
 
-static int test_m0(void *state) {
+int test_m0(void *state) {
 	enum parser_error r = parser_parse(state, "M:foo");
 	struct artifact *a;
 
@@ -158,7 +168,7 @@ static int test_m0(void *state) {
 	ok;
 }
 
-static int test_d0(void *state) {
+int test_d0(void *state) {
 	enum parser_error r = parser_parse(state, "D:baz");
 	struct artifact *a;
 
@@ -171,8 +181,8 @@ static int test_d0(void *state) {
 	ok;
 }
 
-static const char *suite_name = "parse/a-info";
-static struct test tests[] = {
+const char *suite_name = "parse/a-info";
+struct test tests[] = {
 	{ "n0", test_n0 },
 	{ "badtval0", test_badtval0 },
 	{ "badtval1", test_badtval1 },
@@ -188,5 +198,6 @@ static struct test tests[] = {
 	{ "e0", test_e0 },
 	{ "m0", test_m0 },
 	{ "d0", test_d0 },
+	{ "l0", test_l0 },
 	{ NULL, NULL }
 };

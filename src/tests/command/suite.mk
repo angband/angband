@@ -1,0 +1,1 @@
+TESTPROGS += command/lookup

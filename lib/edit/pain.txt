@@ -1,0 +1,127 @@
+# File: pain.txt
+
+
+# This file is used to initialize the monster pain messages for Angband.
+
+# === Understanding pain.txt ===
+
+# N: serial number
+# M: message
+# M: message
+# etc.
+
+# 'N' indicates the beginning of an entry. The serial number must
+# increase for each new item.
+
+# 'M' is for the pain message. Each entry must have 7 messages --
+# each one corresponds to a range of health, with higher messages 
+# being displayed when a monster is damaged only a little, and lower
+# messages being displayed when a monster is near death.
+
+N:1
+M:shrug[s] off the attack.
+M:grunt[s] with pain.
+M:cr[ies|y] out in pain.
+M:scream[s] in pain.
+M:scream[s] in agony.
+M:writhe[s] in agony.
+M:cr[ies|y] out feebly.
+
+N:2
+M:barely notice[s].
+M:flinch[es].
+M:squelch[es].
+M:quiver[s] in pain.
+M:writhe[s] about.
+M:writhe[s] in agony.
+M:jerk[s] limply.
+
+N:3
+M:shrug[s] off the attack.
+M:snarl[s] with pain.
+M:yelp[s] in pain.
+M:howl[s] in pain.
+M:howl[s] in agony.
+M:writhe[s] in agony.
+M:yelp[s] feebly.
+
+N:4
+M:ignore[s] the attack.
+M:grunt[s] with pain.
+M:squeal[s] in pain.
+M:shriek[s] in pain.
+M:shriek[s] in agony.
+M:writhe[s] in agony.
+M:cr[ies|y] out feebly.
+
+N:5
+M:barely notice[s].
+M:hiss[es].
+M:rear[s] up in anger.
+M:hiss[es] furiously.
+M:writhe[s] about.
+M:writhe[s] in agony.
+M:jerk[s] limply.
+
+N:6
+M:shrug[s] off the attack.
+M:snarl[s].
+M:growl[s] angrily.
+M:hiss[es] in pain.
+M:mewl[s] in pain.
+M:hiss[es] in agony.
+M:mewl[s] pitifully.
+
+N:7
+M:ignore[s] the attack.
+M:drone[s] angrily.
+M:scuttle[s] about.
+M:twitch[es] in pain.
+M:jerk[s] in pain.
+M:jerk[s] in agony.
+M:jerk[s] feebly.
+
+N:8
+M:shrug[s] off the attack.
+M:flap[s] angrily.
+M:jeer[s] in pain.
+M:squawk[s] with pain.
+M:twitter[s] in agony.
+M:flutter[s] about.
+M:chirp[s] feebly.
+
+N:9
+M:ignore[s] the attack.
+M:jerk[s].
+M:rattle[s].
+M:clatter[s].
+M:shake[s].
+M:stagger[s].
+M:crumple[s].
+
+N:10
+M:ignore[s] the attack.
+M:grunt[s].
+M:jerk[s].
+M:moan[s].
+M:groan[s].
+M:hesitate[s].
+M:stagger[s].
+
+N:11
+M:ignore[s] the attack.
+M:spin[s] fiercely.
+M:swirl[s] about.
+M:twist[s] around.
+M:spin[s] slowly.
+M:swirl[s] weakly.
+M:twist[s] limply.
+
+N:12
+M:laugh[s] off the attack.
+M:sneer[s].
+M:scowl[s].
+M:bellow[s] in rage.
+M:scream[s] in fury.
+M:grunt[s].
+M:wince[s].

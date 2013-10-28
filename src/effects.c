@@ -19,7 +19,9 @@
 #include "angband.h"
 #include "cave.h"
 #include "effects.h"
-#include "monster/monster.h"
+#include "monster/mon-spell.h"
+#include "monster/mon-util.h"
+#include "trap.h"
 #include "spells.h"
 
 /*
@@ -102,7 +104,7 @@ bool effect_wonder(int dir, int die, int beam)
 	if (die > 100)
 	{
 		/* above 100 the effect is always visible */
-		msg_print("You feel a surge of power!");
+		msg("You feel a surge of power!");
 		visible = TRUE;
 	}
 
@@ -162,11 +164,11 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 {
 	int py = p_ptr->py;
 	int px = p_ptr->px;
-	int dam, chance;
+	int dam, chance, dur;
 
 	if (effect < 1 || effect > EF_MAX)
 	{
-		msg_print("Bad effect passed to do_effect().  Please report this bug.");
+		msg("Bad effect passed to do_effect().  Please report this bug.");
 		return FALSE;
 	}
 
@@ -174,171 +176,125 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 	{
 		case EF_POISON:
 		{
-			if (!p_ptr->state.resist_pois)
-			{
-				if (!p_ptr->timed[TMD_OPP_POIS] &&
-					inc_timed(TMD_POISONED, damroll(2, 7)
-					+ 10, TRUE))
-					*ident = TRUE;
-			}
+			player_inc_timed(p_ptr, TMD_POISONED, damroll(2, 7) + 10, TRUE, TRUE);
 			*ident = TRUE;
-			wieldeds_notice_flag(OF_RES_POIS);
-
 			return TRUE;
 		}
 
 		case EF_BLIND:
 		{
-			if (!p_ptr->state.resist_blind)
-			{
-				if (inc_timed(TMD_BLIND, damroll(4, 25) + 75,
-					TRUE))
-					*ident = TRUE;
-			}
+			player_inc_timed(p_ptr, TMD_BLIND, damroll(4, 25) + 75, TRUE, TRUE);
 			*ident = TRUE;
-			wieldeds_notice_flag(OF_RES_BLIND);
-
 			return TRUE;
 		}
 
 		case EF_SCARE:
 		{
-			if (!p_ptr->state.resist_fear)
-			{
-				if (inc_timed(TMD_AFRAID, randint0(10) + 10,
-					TRUE))
-					*ident = TRUE;
-			}
+			player_inc_timed(p_ptr, TMD_AFRAID, randint0(10) + 10, TRUE, TRUE);
 			*ident = TRUE;
-			wieldeds_notice_flag(OF_RES_FEAR);
-
 			return TRUE;
 		}
 
 		case EF_CONFUSE:
 		{
-			if (!p_ptr->state.resist_confu)
-			{
-				if (inc_timed(TMD_CONFUSED, damroll(4, 5) + 10,
-					TRUE))
-					*ident = TRUE;
-			}
+			player_inc_timed(p_ptr, TMD_CONFUSED, damroll(4, 5) + 10, TRUE, TRUE);
 			*ident = TRUE;
-			wieldeds_notice_flag(OF_RES_CONFU);
-
 			return TRUE;
 		}
 
 		case EF_HALLUC:
 		{
-			if (!p_ptr->state.resist_chaos)
-			{
-				if (inc_timed(TMD_IMAGE, randint0(250) + 250,
-					TRUE))
-					*ident = TRUE;
-			}
+			player_inc_timed(p_ptr, TMD_IMAGE, randint0(250) + 250, TRUE, TRUE);
 			*ident = TRUE;
-			wieldeds_notice_flag(OF_RES_CHAOS);
-
 			return TRUE;
 		}
 
 		case EF_PARALYZE:
 		{
-			if (!p_ptr->state.free_act)
-			{
-				if (inc_timed(TMD_PARALYZED, randint0(5) + 5,
-					TRUE))
-					*ident = TRUE;
-			}
+			player_inc_timed(p_ptr, TMD_PARALYZED, randint0(5) + 5, TRUE, TRUE);
 			*ident = TRUE;
-			wieldeds_notice_flag(OF_FREE_ACT);
-
 			return TRUE;
 		}
 
 		case EF_SLOW:
 		{
-			if (inc_timed(TMD_SLOW, randint1(25) + 15, TRUE))
-			*ident = TRUE;
+			if (player_inc_timed(p_ptr, TMD_SLOW, randint1(25) + 15, TRUE, TRUE))
+				*ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_CURE_POISON:
 		{
-			if (clear_timed(TMD_POISONED, TRUE)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_POISONED, TRUE)) *ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_CURE_BLINDNESS:
 		{
-			if (clear_timed(TMD_BLIND, TRUE)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_BLIND, TRUE)) *ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_CURE_PARANOIA:
 		{
-			if (clear_timed(TMD_AFRAID, TRUE)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_AFRAID, TRUE)) *ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_CURE_CONFUSION:
 		{
-			if (clear_timed(TMD_CONFUSED, TRUE)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_CONFUSED, TRUE)) *ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_CURE_MIND:
 		{
-			if (clear_timed(TMD_CONFUSED, TRUE)) *ident = TRUE;
-			if (clear_timed(TMD_AFRAID, TRUE)) *ident = TRUE;
-			if (clear_timed(TMD_IMAGE, TRUE)) *ident = TRUE;
-			if (!p_ptr->state.resist_confu &&
-				inc_timed(TMD_OPP_CONF, damroll(4, 10), TRUE))
+			if (player_clear_timed(p_ptr, TMD_CONFUSED, TRUE)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_AFRAID, TRUE)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_IMAGE, TRUE)) *ident = TRUE;
+			if (!of_has(p_ptr->state.flags, OF_RES_CONFU) &&
+				player_inc_timed(p_ptr, TMD_OPP_CONF, damroll(4, 10), TRUE, TRUE))
 			    	*ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_CURE_BODY:
 		{
-			if (clear_timed(TMD_STUN, TRUE)) *ident = TRUE;
-			if (clear_timed(TMD_CUT, TRUE)) *ident = TRUE;
-			if (clear_timed(TMD_POISONED, TRUE)) *ident = TRUE;
-			if (clear_timed(TMD_BLIND, TRUE)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_STUN, TRUE)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_CUT, TRUE)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_POISONED, TRUE)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_BLIND, TRUE)) *ident = TRUE;
 			return TRUE;
 		}
 
 
 		case EF_CURE_LIGHT:
 		{
-			if (heal_player(15, 15)) *ident = TRUE;
-			if (clear_timed(TMD_BLIND, TRUE)) *ident = TRUE;
-			if (dec_timed(TMD_CUT, 20, TRUE)) *ident = TRUE;
-			if (dec_timed(TMD_CONFUSED, 20, TRUE)) *ident = TRUE;
-
+			if (hp_player(20)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_BLIND, TRUE)) *ident = TRUE;
+			if (player_dec_timed(p_ptr, TMD_CUT, 20, TRUE)) *ident = TRUE;
+			if (player_dec_timed(p_ptr, TMD_CONFUSED, 20, TRUE)) *ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_CURE_SERIOUS:
 		{
-			if (heal_player(20, 25)) *ident = TRUE;
-			if (clear_timed(TMD_CUT, TRUE)) *ident = TRUE;
-			if (clear_timed(TMD_BLIND, TRUE)) *ident = TRUE;
-			if (clear_timed(TMD_CONFUSED, TRUE)) *ident = TRUE;
-
+			if (hp_player(40)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_CUT, TRUE)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_BLIND, TRUE)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_CONFUSED, TRUE)) *ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_CURE_CRITICAL:
 		{
-			if (heal_player(25, 30)) *ident = TRUE;
-			if (clear_timed(TMD_BLIND, TRUE)) *ident = TRUE;
-			if (clear_timed(TMD_CONFUSED, TRUE)) *ident = TRUE;
-			if (clear_timed(TMD_POISONED, TRUE)) *ident = TRUE;
-			if (clear_timed(TMD_STUN, TRUE)) *ident = TRUE;
-			if (clear_timed(TMD_CUT, TRUE)) *ident = TRUE;
-			if (clear_timed(TMD_AMNESIA, TRUE)) *ident = TRUE;
-
+			if (hp_player(60)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_BLIND, TRUE)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_CONFUSED, TRUE)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_POISONED, TRUE)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_STUN, TRUE)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_CUT, TRUE)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_AMNESIA, TRUE)) *ident = TRUE;
 			return TRUE;
 		}
 
@@ -348,56 +304,56 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			if (amt < 300) amt = 300;
 
 			if (hp_player(amt)) *ident = TRUE;
-			if (clear_timed(TMD_BLIND, TRUE)) *ident = TRUE;
-			if (clear_timed(TMD_CONFUSED, TRUE)) *ident = TRUE;
-			if (clear_timed(TMD_POISONED, TRUE)) *ident = TRUE;
-			if (clear_timed(TMD_STUN, TRUE)) *ident = TRUE;
-			if (clear_timed(TMD_CUT, TRUE)) *ident = TRUE;
-			if (clear_timed(TMD_AMNESIA, TRUE)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_BLIND, TRUE)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_CONFUSED, TRUE)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_POISONED, TRUE)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_STUN, TRUE)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_CUT, TRUE)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_AMNESIA, TRUE)) *ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_CURE_FULL2:
 		{
 			if (hp_player(1200)) *ident = TRUE;
-			if (clear_timed(TMD_BLIND, TRUE)) *ident = TRUE;
-			if (clear_timed(TMD_CONFUSED, TRUE)) *ident = TRUE;
-			if (clear_timed(TMD_POISONED, TRUE)) *ident = TRUE;
-			if (clear_timed(TMD_STUN, TRUE)) *ident = TRUE;
-			if (clear_timed(TMD_CUT, TRUE)) *ident = TRUE;
-			if (clear_timed(TMD_AMNESIA, TRUE)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_BLIND, TRUE)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_CONFUSED, TRUE)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_POISONED, TRUE)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_STUN, TRUE)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_CUT, TRUE)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_AMNESIA, TRUE)) *ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_CURE_TEMP:
 		{
-			if (clear_timed(TMD_BLIND, TRUE)) *ident = TRUE;
-			if (clear_timed(TMD_POISONED, TRUE)) *ident = TRUE;
-			if (clear_timed(TMD_CONFUSED, TRUE)) *ident = TRUE;
-			if (clear_timed(TMD_STUN, TRUE)) *ident = TRUE;
-			if (clear_timed(TMD_CUT, TRUE)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_BLIND, TRUE)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_POISONED, TRUE)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_CONFUSED, TRUE)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_STUN, TRUE)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_CUT, TRUE)) *ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_HEAL1:
 		{
 			if (hp_player(500)) *ident = TRUE;
-			if (clear_timed(TMD_CUT, TRUE)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_CUT, TRUE)) *ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_HEAL2:
 		{
 			if (hp_player(1000)) *ident = TRUE;
-			if (clear_timed(TMD_CUT, TRUE)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_CUT, TRUE)) *ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_HEAL3:
 		{
 			if (hp_player(500)) *ident = TRUE;
-			if (clear_timed(TMD_STUN, TRUE)) *ident = TRUE;
-			if (clear_timed(TMD_CUT, TRUE)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_STUN, TRUE)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_CUT, TRUE)) *ident = TRUE;
 			return TRUE;
 		}
 
@@ -405,8 +361,8 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		{
 			if (p_ptr->exp < PY_MAX_EXP)
 			{
-				msg_print("You feel more experienced.");
-				gain_exp(100000L);
+				msg("You feel more experienced.");
+				player_exp_gain(p_ptr, 100000L);
 				*ident = TRUE;
 			}
 			return TRUE;
@@ -414,14 +370,14 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 		case EF_LOSE_EXP:
 		{
-			if (!p_ptr->state.hold_life && (p_ptr->exp > 0))
+			if (!check_state(p_ptr, OF_HOLD_LIFE, p_ptr->state.flags) && (p_ptr->exp > 0))
 			{
-				msg_print("You feel your memories fade.");
-				lose_exp(p_ptr->exp / 4);
+				msg("You feel your memories fade.");
+				player_exp_lose(p_ptr, p_ptr->exp / 4, FALSE);
 				*ident = TRUE;
 			}
 			*ident = TRUE;
-			wieldeds_notice_flag(OF_HOLD_LIFE);
+			wieldeds_notice_flag(p_ptr, OF_HOLD_LIFE);
 			return TRUE;
 		}
 
@@ -437,7 +393,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			{
 				p_ptr->csp = p_ptr->msp;
 				p_ptr->csp_frac = 0;
-				msg_print("Your feel your head clear.");
+				msg("Your feel your head clear.");
 				p_ptr->redraw |= (PR_MANA);
 				*ident = TRUE;
 			}
@@ -564,7 +520,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		{
 			int stat = effect - EF_LOSE_STR;
 
-			take_hit(damroll(5, 5), "stat drain");
+			take_hit(p_ptr, damroll(5, 5), "stat drain");
 			(void)do_dec_stat(stat, FALSE);
 			*ident = TRUE;
 
@@ -573,7 +529,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 		case EF_LOSE_CON2:
 		{
-			take_hit(damroll(10, 10), "poisonous food");
+			take_hit(p_ptr, damroll(10, 10), "poisonous food");
 			(void)do_dec_stat(A_CON, FALSE);
 			*ident = TRUE;
 
@@ -594,15 +550,15 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 		case EF_CURE_NONORLYBIG:
 		{
-			msg_print("You feel life flow through your body!");
+			msg("You feel life flow through your body!");
 			restore_level();
-			(void)clear_timed(TMD_POISONED, TRUE);
-			(void)clear_timed(TMD_BLIND, TRUE);
-			(void)clear_timed(TMD_CONFUSED, TRUE);
-			(void)clear_timed(TMD_IMAGE, TRUE);
-			(void)clear_timed(TMD_STUN, TRUE);
-			(void)clear_timed(TMD_CUT, TRUE);
-			(void)clear_timed(TMD_AMNESIA, TRUE);
+			(void)player_clear_timed(p_ptr, TMD_POISONED, TRUE);
+			(void)player_clear_timed(p_ptr, TMD_BLIND, TRUE);
+			(void)player_clear_timed(p_ptr, TMD_CONFUSED, TRUE);
+			(void)player_clear_timed(p_ptr, TMD_IMAGE, TRUE);
+			(void)player_clear_timed(p_ptr, TMD_STUN, TRUE);
+			(void)player_clear_timed(p_ptr, TMD_CUT, TRUE);
+			(void)player_clear_timed(p_ptr, TMD_AMNESIA, TRUE);
 
 			if (do_res_stat(A_STR)) *ident = TRUE;
 			if (do_res_stat(A_INT)) *ident = TRUE;
@@ -612,7 +568,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			if (do_res_stat(A_CHR)) *ident = TRUE;
 
 			/* Recalculate max. hitpoints */
-			update_stuff();
+			update_stuff(p_ptr);
 
 			hp_player(5000);
 
@@ -646,23 +602,23 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 		case EF_TMD_INFRA:
 		{
-			if (inc_timed(TMD_SINFRA, 100 + damroll(4, 25), TRUE))
+			if (player_inc_timed(p_ptr, TMD_SINFRA, 100 + damroll(4, 25), TRUE, TRUE))
 				*ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_TMD_SINVIS:
 		{
-			if (clear_timed(TMD_BLIND, TRUE)) *ident = TRUE;
-			if (inc_timed(TMD_SINVIS, 12 + damroll(2, 6), TRUE))
+			if (player_clear_timed(p_ptr, TMD_BLIND, TRUE)) *ident = TRUE;
+			if (player_inc_timed(p_ptr, TMD_SINVIS, 12 + damroll(2, 6), TRUE, TRUE))
 				*ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_TMD_ESP:
 		{
-			if (clear_timed(TMD_BLIND, TRUE)) *ident = TRUE;
-			if (inc_timed(TMD_TELEPATHY, 12 + damroll(6, 6), TRUE))
+			if (player_clear_timed(p_ptr, TMD_BLIND, TRUE)) *ident = TRUE;
+			if (player_inc_timed(p_ptr, TMD_TELEPATHY, 12 + damroll(6, 6), TRUE, TRUE))
 				*ident = TRUE;
 			return TRUE;
 		}
@@ -670,7 +626,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 		case EF_ENLIGHTENMENT:
 		{
-			msg_print("An image of your surroundings forms in your mind...");
+			msg("An image of your surroundings forms in your mind...");
 			wiz_light();
 			*ident = TRUE;
 			return TRUE;
@@ -679,7 +635,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 		case EF_ENLIGHTENMENT2:
 		{
-			msg_print("You begin to feel more enlightened...");
+			msg("You begin to feel more enlightened...");
 			message_flush();
 			wiz_light();
 			(void)do_inc_stat(A_INT);
@@ -694,69 +650,71 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 		case EF_HERO:
 		{
+			dur = randint1(25) + 25;
 			if (hp_player(10)) *ident = TRUE;
-			if (clear_timed(TMD_AFRAID, TRUE)) *ident = TRUE;
-			if (inc_timed(TMD_HERO, randint1(25) + 25, TRUE))
-				*ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_AFRAID, TRUE)) *ident = TRUE;
+			if (player_inc_timed(p_ptr, TMD_BOLD, dur, TRUE, TRUE)) *ident = TRUE;
+			if (player_inc_timed(p_ptr, TMD_HERO, dur, TRUE, TRUE)) *ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_SHERO:
 		{
+			dur = randint1(25) + 25;
 			if (hp_player(30)) *ident = TRUE;
-			if (clear_timed(TMD_AFRAID, TRUE)) *ident = TRUE;
-			if (inc_timed(TMD_SHERO, randint1(25) + 25, TRUE))
-				*ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_AFRAID, TRUE)) *ident = TRUE;
+			if (player_inc_timed(p_ptr, TMD_BOLD, dur, TRUE, TRUE)) *ident = TRUE;
+			if (player_inc_timed(p_ptr, TMD_SHERO, dur, TRUE, TRUE)) *ident = TRUE;
 			return TRUE;
 		}
 
 
 		case EF_RESIST_ACID:
 		{
-			if (inc_timed(TMD_OPP_ACID, randint1(10) + 10, TRUE))
+			if (player_inc_timed(p_ptr, TMD_OPP_ACID, randint1(10) + 10, TRUE, TRUE))
 				*ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_RESIST_ELEC:
 		{
-			if (inc_timed(TMD_OPP_ELEC, randint1(10) + 10, TRUE))
+			if (player_inc_timed(p_ptr, TMD_OPP_ELEC, randint1(10) + 10, TRUE, TRUE))
 				*ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_RESIST_FIRE:
 		{
-			if (inc_timed(TMD_OPP_FIRE, randint1(10) + 10, TRUE))
+			if (player_inc_timed(p_ptr, TMD_OPP_FIRE, randint1(10) + 10, TRUE, TRUE))
 				*ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_RESIST_COLD:
 		{
-			if (inc_timed(TMD_OPP_COLD, randint1(10) + 10, TRUE))
+			if (player_inc_timed(p_ptr, TMD_OPP_COLD, randint1(10) + 10, TRUE, TRUE))
 				*ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_RESIST_POIS:
 		{
-			if (inc_timed(TMD_OPP_POIS, randint1(10) + 10, TRUE))
+			if (player_inc_timed(p_ptr, TMD_OPP_POIS, randint1(10) + 10, TRUE, TRUE))
 				*ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_RESIST_ALL:
 		{
-			if (inc_timed(TMD_OPP_ACID, randint1(20) + 20, TRUE))
+			if (player_inc_timed(p_ptr, TMD_OPP_ACID, randint1(20) + 20, TRUE, TRUE))
 				*ident = TRUE;
-			if (inc_timed(TMD_OPP_ELEC, randint1(20) + 20, TRUE))
+			if (player_inc_timed(p_ptr, TMD_OPP_ELEC, randint1(20) + 20, TRUE, TRUE))
 				*ident = TRUE;
-			if (inc_timed(TMD_OPP_FIRE, randint1(20) + 20, TRUE))
+			if (player_inc_timed(p_ptr, TMD_OPP_FIRE, randint1(20) + 20, TRUE, TRUE))
 				*ident = TRUE;
-			if (inc_timed(TMD_OPP_COLD, randint1(20) + 20, TRUE))
+			if (player_inc_timed(p_ptr, TMD_OPP_COLD, randint1(20) + 20, TRUE, TRUE))
 				*ident = TRUE;
-			if (inc_timed(TMD_OPP_POIS, randint1(20) + 20, TRUE))
+			if (player_inc_timed(p_ptr, TMD_OPP_POIS, randint1(20) + 20, TRUE, TRUE))
 				*ident = TRUE;
 			return TRUE;
 		}
@@ -800,37 +758,37 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		case EF_ENCHANT_TOHIT:
 		{
 			*ident = TRUE;
-			if (!enchant_spell(1, 0, 0)) return FALSE;
-			return TRUE;
+			return enchant_spell(1, 0, 0);
 		}
 
 		case EF_ENCHANT_TODAM:
 		{
 			*ident = TRUE;
-			if (!enchant_spell(0, 1, 0)) return FALSE;
-			return TRUE;
+			return enchant_spell(0, 1, 0);
 		}
 
 		case EF_ENCHANT_WEAPON:
 		{
 			*ident = TRUE;
-			if (!enchant_spell(randint1(3), randint1(3), 0))
-				return FALSE;
-			return TRUE;
+			return enchant_spell(randint1(3), randint1(3), 0);
 		}
 
 		case EF_ENCHANT_ARMOR:
 		{
 			*ident = TRUE;
-			if (!enchant_spell(0, 0, 1)) return FALSE;
-			return TRUE;
+			return enchant_spell(0, 0, 1);
 		}
 
 		case EF_ENCHANT_ARMOR2:
 		{
 			*ident = TRUE;
-			if (!enchant_spell(0, 0, randint1(3) + 2)) return FALSE;
-			return TRUE;
+			return enchant_spell(0, 0, randint1(3) + 2);
+		}
+
+		case EF_RESTORE_ITEM:
+		{
+			*ident = TRUE;
+			return restore_item();
 		}
 
 		case EF_IDENTIFY:
@@ -845,9 +803,9 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			if (remove_curse())
 			{
 				if (!p_ptr->timed[TMD_BLIND])
-					msg_print("The air around your body glows blue for a moment...");
+					msg("The air around your body glows blue for a moment...");
 				else
-					msg_print("You feel as if someone is watching over you.");
+					msg("You feel as if someone is watching over you.");
 
 				*ident = TRUE;
 			}
@@ -888,7 +846,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			for (i = 0; i < randint1(3); i++)
 			{
 				if (summon_specific(py, px, p_ptr->depth,
-					SUMMON_UNDEAD, 1))
+					S_UNDEAD, 1))
 					*ident = TRUE;
 			}
 			return TRUE;
@@ -919,7 +877,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		{
 			if (p_ptr->confusing == 0)
 			{
-				msg_print("Your hands begin to glow.");
+				msg("Your hands begin to glow.");
 				p_ptr->confusing = TRUE;
 				*ident = TRUE;
 			}
@@ -957,7 +915,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 		case EF_ANNOY_MON:
 		{
-			msg_print("There is a high pitched humming noise.");
+			msg("There is a high pitched humming noise.");
 			aggravate_monsters(0);
 			*ident = TRUE;
 			return TRUE;
@@ -970,7 +928,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 				return TRUE;
 
 			trap_creation();
-			msg_print("You hear a low-pitched whistling sound.");
+			msg("You hear a low-pitched whistling sound.");
 			*ident = TRUE;
 			return TRUE;
 		}
@@ -997,28 +955,24 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 		case EF_DARKNESS:
 		{
-			if ((!p_ptr->state.resist_blind) && (!p_ptr->state.resist_dark))
-				(void)inc_timed(TMD_BLIND, 3 + randint1(5), TRUE);
-
+			if (!check_state(p_ptr, OF_RES_DARK, p_ptr->state.flags))
+				(void)player_inc_timed(p_ptr, TMD_BLIND, 3 + randint1(5), TRUE, TRUE);
 			unlight_area(10, 3);
-
-			wieldeds_notice_flag(OF_RES_BLIND);
-			wieldeds_notice_flag(OF_RES_DARK);
-
+			wieldeds_notice_flag(p_ptr, OF_RES_DARK);
 			*ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_PROTEVIL:
 		{
-			if (inc_timed(TMD_PROTEVIL, randint1(25) + 3 *
-				p_ptr->lev, TRUE)) *ident = TRUE;
+			if (player_inc_timed(p_ptr, TMD_PROTEVIL, randint1(25) + 3 *
+				p_ptr->lev, TRUE, TRUE)) *ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_SATISFY:
 		{
-			if (set_food(PY_FOOD_MAX - 1)) *ident = TRUE;
+			if (player_set_food(p_ptr, PY_FOOD_MAX - 1)) *ident = TRUE;
 			return TRUE;
 		}
 
@@ -1036,21 +990,21 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 		case EF_BLESSING:
 		{
-			if (inc_timed(TMD_BLESSED, randint1(12) + 6, TRUE))
+			if (player_inc_timed(p_ptr, TMD_BLESSED, randint1(12) + 6, TRUE, TRUE))
 				*ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_BLESSING2:
 		{
-			if (inc_timed(TMD_BLESSED, randint1(24) + 12, TRUE))
+			if (player_inc_timed(p_ptr, TMD_BLESSED, randint1(24) + 12, TRUE, TRUE))
 				*ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_BLESSING3:
 		{
-			if (inc_timed(TMD_BLESSED, randint1(48) + 24, TRUE))
+			if (player_inc_timed(p_ptr, TMD_BLESSED, randint1(48) + 24, TRUE, TRUE))
 				*ident = TRUE;
 			return TRUE;
 		}
@@ -1067,22 +1021,23 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			int i, target_depth = p_ptr->depth;
 			
 			/* Calculate target depth */
-			for (i = 2; i > 0; i--)
-			{
+			for (i = 2; i > 0; i--) {
 				if (is_quest(target_depth)) break;
 				if (target_depth >= MAX_DEPTH - 1) break;
 				
 				target_depth++;
 			}
 
-			if (target_depth > p_ptr->depth)
-			{
-				message(MSG_TPLEVEL, 0, "You sink through the floor...");
+			if (target_depth > p_ptr->depth) {
+				msgt(MSG_TPLEVEL, "You sink through the floor...");
 				dungeon_change_level(target_depth);
 				*ident = TRUE;
+				return TRUE;
+			} else {
+				msgt(MSG_TPLEVEL, "You sense a malevolent presence blocking passage to the levels below.");
+				*ident = TRUE;
+				return FALSE;
 			}
-
-			return TRUE;
 		}
 
 		case EF_LOSHASTE:
@@ -1182,16 +1137,18 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 		case EF_RAGE_BLESS_RESIST:
 		{
+			dur = randint1(50) + 50;
 			*ident = TRUE;
 			(void)hp_player(30);
-			(void)clear_timed(TMD_AFRAID, TRUE);
-			(void)inc_timed(TMD_SHERO, randint1(50) + 50, TRUE);
-			(void)inc_timed(TMD_BLESSED, randint1(50) + 50, TRUE);
-			(void)inc_timed(TMD_OPP_ACID, randint1(50) + 50, TRUE);
-			(void)inc_timed(TMD_OPP_ELEC, randint1(50) + 50, TRUE);
-			(void)inc_timed(TMD_OPP_FIRE, randint1(50) + 50, TRUE);
-			(void)inc_timed(TMD_OPP_COLD, randint1(50) + 50, TRUE);
-			(void)inc_timed(TMD_OPP_POIS, randint1(50) + 50, TRUE);
+			(void)player_clear_timed(p_ptr, TMD_AFRAID, TRUE);
+			(void)player_inc_timed(p_ptr, TMD_BOLD, dur, TRUE, TRUE);
+			(void)player_inc_timed(p_ptr, TMD_SHERO, dur, TRUE, TRUE);
+			(void)player_inc_timed(p_ptr, TMD_BLESSED, randint1(50) + 50, TRUE, TRUE);
+			(void)player_inc_timed(p_ptr, TMD_OPP_ACID, randint1(50) + 50, TRUE, TRUE);
+			(void)player_inc_timed(p_ptr, TMD_OPP_ELEC, randint1(50) + 50, TRUE, TRUE);
+			(void)player_inc_timed(p_ptr, TMD_OPP_FIRE, randint1(50) + 50, TRUE, TRUE);
+			(void)player_inc_timed(p_ptr, TMD_OPP_COLD, randint1(50) + 50, TRUE, TRUE);
+			(void)player_inc_timed(p_ptr, TMD_OPP_POIS, randint1(50) + 50, TRUE, TRUE);
 			return TRUE;
 		}
 
@@ -1250,11 +1207,11 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		{
 			if (!p_ptr->timed[TMD_FAST])
 			{
-				if (set_timed(TMD_FAST, damroll(2, 10) + 20, TRUE)) *ident = TRUE;
+				if (player_set_timed(p_ptr, TMD_FAST, damroll(2, 10) + 20, TRUE)) *ident = TRUE;
 			}
 			else
 			{
-				(void)inc_timed(TMD_FAST, 5, TRUE);
+				(void)player_inc_timed(p_ptr, TMD_FAST, 5, TRUE, TRUE);
 			}
 
 			return TRUE;
@@ -1264,11 +1221,11 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		{
 			if (!p_ptr->timed[TMD_FAST])
 			{
-				if (set_timed(TMD_FAST, randint1(20) + 20, TRUE)) *ident = TRUE;
+				if (player_set_timed(p_ptr, TMD_FAST, randint1(20) + 20, TRUE)) *ident = TRUE;
 			}
 			else
 			{
-				(void)inc_timed(TMD_FAST, 5, TRUE);
+				(void)player_inc_timed(p_ptr, TMD_FAST, 5, TRUE, TRUE);
 			}
 
 			return TRUE;
@@ -1278,11 +1235,11 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		{
 			if (!p_ptr->timed[TMD_FAST])
 			{
-				if (set_timed(TMD_FAST, randint1(75) + 75, TRUE)) *ident = TRUE;
+				if (player_set_timed(p_ptr, TMD_FAST, randint1(75) + 75, TRUE)) *ident = TRUE;
 			}
 			else
 			{
-				(void)inc_timed(TMD_FAST, 5, TRUE);
+				(void)player_inc_timed(p_ptr, TMD_FAST, 5, TRUE, TRUE);
 			}
 
 			return TRUE;
@@ -1461,8 +1418,8 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		case EF_REM_FEAR_POIS:
 		{
 			*ident = TRUE;
-			(void)clear_timed(TMD_AFRAID, TRUE);
-			(void)clear_timed(TMD_POISONED, TRUE);
+			(void)player_clear_timed(p_ptr, TMD_AFRAID, TRUE);
+			(void)player_clear_timed(p_ptr, TMD_POISONED, TRUE);
 			return TRUE;
 		}
 
@@ -1562,7 +1519,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 		case EF_LIGHT_LINE:
 		{
-			msg_print("A line of shimmering blue light appears.");
+			msg("A line of shimmering blue light appears.");
 			light_line(dir);
 			*ident = TRUE;
 			return TRUE;
@@ -1596,7 +1553,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		{
 			int i;
 			if (!p_ptr->timed[TMD_BLIND])
-				msg_print("Light shoots in all directions!");
+				msg("Light shoots in all directions!");
 			for (i = 0; i < 8; i++) light_line(ddd[i]);
 			*ident = TRUE;
 			return TRUE;
@@ -1612,8 +1569,9 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 		case EF_BERSERKER:
 		{
-			if (inc_timed(TMD_SHERO, randint1(50) + 50, TRUE))
-				*ident = TRUE;
+			dur = randint1(50) + 50;
+			if (player_inc_timed(p_ptr, TMD_BOLD, dur, TRUE, TRUE)) *ident = TRUE;
+			if (player_inc_timed(p_ptr, TMD_SHERO, dur, TRUE, TRUE)) *ident = TRUE;
 			return TRUE;
 		}
 
@@ -1636,8 +1594,8 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			};
 			/* pick a random (type, damage) tuple in the table */
 			int which = 2 * randint0(sizeof(breath_types) / (2 * sizeof(int)));
-			if (fire_ball(breath_types[which], dir, breath_types[which + 1], 3))
-				*ident = TRUE;
+			fire_ball(breath_types[which], dir, breath_types[which + 1], 3);
+			*ident = TRUE;
 			return TRUE;
 		}
 
@@ -1649,7 +1607,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 				p_ptr->csp = p_ptr->msp;
 				p_ptr->csp_frac = 0;
 				*ident = TRUE;
-				msg_print("Your feel your head clear.");
+				msg("Your feel your head clear.");
 				p_ptr->redraw |= (PR_MANA);
 			}
 			return TRUE;
@@ -1659,13 +1617,13 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		{
 			dam = 120 * (100 + boost) / 100;
 			if (dispel_evil(dam)) *ident = TRUE;
-			if (inc_timed(TMD_PROTEVIL, randint1(25) + 3 *
-				p_ptr->lev, TRUE)) *ident = TRUE;
-			if (clear_timed(TMD_POISONED, TRUE)) *ident = TRUE;
-			if (clear_timed(TMD_AFRAID, TRUE)) *ident = TRUE;
+			if (player_inc_timed(p_ptr, TMD_PROTEVIL, randint1(25) + 3 *
+				p_ptr->lev, TRUE, TRUE)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_POISONED, TRUE)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_AFRAID, TRUE)) *ident = TRUE;
 			if (hp_player(50)) *ident = TRUE;
-			if (clear_timed(TMD_STUN, TRUE)) *ident = TRUE;
-			if (clear_timed(TMD_CUT, TRUE)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_STUN, TRUE)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_CUT, TRUE)) *ident = TRUE;
 			return TRUE;
 		}
 
@@ -1685,23 +1643,23 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 		case EF_DRINK_GOOD:
 		{
-			msg_print("You feel less thirsty.");
+			msg("You feel less thirsty.");
 			*ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_DRINK_DEATH:
 		{
-			msg_print("A feeling of Death flows through your body.");
-			take_hit(5000, "a potion of Death");
+			msg("A feeling of Death flows through your body.");
+			take_hit(p_ptr, 5000, "a potion of Death");
 			*ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_DRINK_RUIN:
 		{
-			msg_print("Your nerves and muscles feel weak and lifeless!");
-			take_hit(damroll(10, 10), "a potion of Ruination");
+			msg("Your nerves and muscles feel weak and lifeless!");
+			take_hit(p_ptr, damroll(10, 10), "a potion of Ruination");
 			player_stat_dec(p_ptr, A_DEX, TRUE);
 			player_stat_dec(p_ptr, A_WIS, TRUE);
 			player_stat_dec(p_ptr, A_CON, TRUE);
@@ -1714,35 +1672,35 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 		case EF_DRINK_DETONATE:
 		{
-			msg_print("Massive explosions rupture your body!");
-			take_hit(damroll(50, 20), "a potion of Detonation");
-			(void)inc_timed(TMD_STUN, 75, TRUE);
-			(void)inc_timed(TMD_CUT, 5000, TRUE);
+			msg("Massive explosions rupture your body!");
+			take_hit(p_ptr, damroll(50, 20), "a potion of Detonation");
+			(void)player_inc_timed(p_ptr, TMD_STUN, 75, TRUE, TRUE);
+			(void)player_inc_timed(p_ptr, TMD_CUT, 5000, TRUE, TRUE);
 			*ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_DRINK_SALT:
 		{
-			msg_print("The potion makes you vomit!");
-			(void)set_food(PY_FOOD_STARVE - 1);
-			(void)clear_timed(TMD_POISONED, TRUE);
-			(void)inc_timed(TMD_PARALYZED, 4, TRUE);
+			msg("The potion makes you vomit!");
+			player_set_food(p_ptr, PY_FOOD_STARVE - 1);
+			(void)player_clear_timed(p_ptr, TMD_POISONED, TRUE);
+			(void)player_inc_timed(p_ptr, TMD_PARALYZED, 4, TRUE, FALSE);
 			*ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_FOOD_GOOD:
 		{
-			msg_print("That tastes good.");
+			msg("That tastes good.");
 			*ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_FOOD_WAYBREAD:
 		{
-			msg_print("That tastes good.");
-			(void)clear_timed(TMD_POISONED, TRUE);
+			msg("That tastes good.");
+			(void)player_clear_timed(p_ptr, TMD_POISONED, TRUE);
 			(void)hp_player(damroll(4, 8));
 			*ident = TRUE;
 			return TRUE;
@@ -1750,9 +1708,9 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 		case EF_SHROOM_EMERGENCY:
 		{
-			(void)set_timed(TMD_IMAGE, rand_spread(250, 50), TRUE);
-			(void)set_timed(TMD_OPP_FIRE, rand_spread(30, 10), TRUE);
-			(void)set_timed(TMD_OPP_COLD, rand_spread(30, 10), TRUE);
+			(void)player_set_timed(p_ptr, TMD_IMAGE, rand_spread(250, 50), TRUE);
+			(void)player_set_timed(p_ptr, TMD_OPP_FIRE, rand_spread(30, 10), TRUE);
+			(void)player_set_timed(p_ptr, TMD_OPP_COLD, rand_spread(30, 10), TRUE);
 			(void)hp_player(200);
 			*ident = TRUE;
 			return TRUE;
@@ -1760,14 +1718,14 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 		case EF_SHROOM_TERROR:
 		{
-			if (set_timed(TMD_TERROR, rand_spread(100, 20), TRUE))
+			if (player_set_timed(p_ptr, TMD_TERROR, rand_spread(100, 20), TRUE))
 				*ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_SHROOM_STONE:
 		{
-			if (set_timed(TMD_STONESKIN, rand_spread(80, 20), TRUE))
+			if (player_set_timed(p_ptr, TMD_STONESKIN, rand_spread(80, 20), TRUE))
 				*ident = TRUE;
 			return TRUE;
 		}
@@ -1780,7 +1738,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			{
 				p_ptr->csp = p_ptr->msp;
 				p_ptr->csp_frac = 0;
-				msg_print("Your feel your head clear.");
+				msg("Your feel your head clear.");
 				p_ptr->redraw |= (PR_MANA);
 				*ident = TRUE;
 			}
@@ -1793,16 +1751,16 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 		case EF_SHROOM_SPRINTING:
 		{
-			if (inc_timed(TMD_SPRINT, 100, TRUE)) *ident = TRUE;
+			if (player_inc_timed(p_ptr, TMD_SPRINT, 100, TRUE, TRUE)) *ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_SHROOM_PURGING:
 		{
-			(void)set_food(PY_FOOD_FAINT - 1);
+			player_set_food(p_ptr, PY_FOOD_FAINT - 1);
 			if (do_res_stat(A_STR)) *ident = TRUE;
 			if (do_res_stat(A_CON)) *ident = TRUE;
-			if (clear_timed(TMD_POISONED, TRUE)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_POISONED, TRUE)) *ident = TRUE;
 			return TRUE;
 		}
 
@@ -1811,7 +1769,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			dam = 70 * (100 + boost) / 100;
 			*ident = TRUE;
 			fire_ball(GF_ACID, dir, dam, 2);
-			inc_timed(TMD_OPP_ACID, randint1(20) + 20, TRUE);
+			player_inc_timed(p_ptr, TMD_OPP_ACID, randint1(20) + 20, TRUE, TRUE);
 			return TRUE;
 		}
 
@@ -1820,7 +1778,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			dam = 80 * (100 + boost) / 100;
 			*ident = TRUE;
 			fire_ball(GF_FIRE, dir, dam, 2);
-			inc_timed(TMD_OPP_FIRE, randint1(20) + 20, TRUE);
+			player_inc_timed(p_ptr, TMD_OPP_FIRE, randint1(20) + 20, TRUE, TRUE);
 			return TRUE;
 		}
 
@@ -1829,7 +1787,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			dam = 75 * (100 + boost) / 100;
 			*ident = TRUE;
 			fire_ball(GF_COLD, dir, dam, 2);
-			inc_timed(TMD_OPP_COLD, randint1(20) + 20, TRUE);
+			player_inc_timed(p_ptr, TMD_OPP_COLD, randint1(20) + 20, TRUE, TRUE);
 			return TRUE;
 		}
 
@@ -1838,14 +1796,14 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			dam = 85 * (100 + boost) / 100;
 			*ident = TRUE;
 			fire_ball(GF_ELEC, dir, dam, 2);
-			inc_timed(TMD_OPP_ELEC, randint1(20) + 20, TRUE);
+			player_inc_timed(p_ptr, TMD_OPP_ELEC, randint1(20) + 20, TRUE, TRUE);
 			return TRUE;
 		}
 
 		case EF_DRAGON_BLUE:
 		{
 			dam = 100 * (100 + boost) / 100;
-			message_format(MSG_BR_ELEC, 0, "You breathe lightning.");
+			msgt(MSG_BR_ELEC, "You breathe lightning.");
 			fire_ball(GF_ELEC, dir, dam, 2);
 			return TRUE;
 		}
@@ -1853,7 +1811,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		case EF_DRAGON_GREEN:
 		{
 			dam = 150 * (100 + boost) / 100;
-			message_format(MSG_BR_GAS, 0, "You breathe poison gas.");
+			msgt(MSG_BR_GAS, "You breathe poison gas.");
 			fire_ball(GF_POIS, dir, dam, 2);
 			return TRUE;
 		}
@@ -1861,7 +1819,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		case EF_DRAGON_RED:
 		{
 			dam = 200 * (100 + boost) / 100;
-			message_format(MSG_BR_FIRE, 0, "You breathe fire.");
+			msgt(MSG_BR_FIRE, "You breathe fire.");
 			fire_ball(GF_FIRE, dir, dam, 2);
 			return TRUE;
 		}
@@ -1884,7 +1842,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 			int chance = randint0(5);
 			dam = 250 * (100 + boost) / 100;
-			message_format(mh[chance].msg_sound, 0, "You breathe %s.", mh[chance].msg);
+			msgt(mh[chance].msg_sound, "You breathe %s.", mh[chance].msg);
 			fire_ball(mh[chance].typ, dir, dam, 2);
 			return TRUE;
 		}
@@ -1892,15 +1850,15 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		case EF_DRAGON_BRONZE:
 		{
 			dam = 120 * (100 + boost) / 100;
-			message_format(MSG_BR_CONF, 0, "You breathe confusion.");
-			fire_ball(GF_CONFUSION, dir, dam, 2);
+			msgt(MSG_BR_CONF, "You breathe confusion.");
+			fire_ball(GF_CONFU, dir, dam, 2);
 			return TRUE;
 		}
 
 		case EF_DRAGON_GOLD:
 		{
 			dam = 130 * (100 + boost) / 100;
-			message_format(MSG_BR_SOUND, 0, "You breathe sound.");
+			msgt(MSG_BR_SOUND, "You breathe sound.");
 			fire_ball(GF_SOUND, dir, dam, 2);
 			return TRUE;
 		}
@@ -1909,10 +1867,10 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		{
 			dam = 220 * (100 + boost) / 100;
 			chance = randint0(2);
-			message_format((chance == 1 ? MSG_BR_CHAOS : MSG_BR_DISENCHANT), 0,
+			msgt((chance == 1 ? MSG_BR_CHAOS : MSG_BR_DISEN),
 					"You breathe %s.",
 					((chance == 1 ? "chaos" : "disenchantment")));
-			fire_ball((chance == 1 ? GF_CHAOS : GF_DISENCHANT),
+			fire_ball((chance == 1 ? GF_CHAOS : GF_DISEN),
 			          dir, dam, 2);
 			return TRUE;
 		}
@@ -1921,7 +1879,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		{
 			dam = 230 * (100 + boost) / 100;
 			chance = randint0(2);
-			message_format((chance == 1 ? MSG_BR_SOUND : MSG_BR_SHARDS), 0, "You breathe %s.",
+			msgt((chance == 1 ? MSG_BR_SOUND : MSG_BR_SHARDS), "You breathe %s.",
 			           ((chance == 1 ? "sound" : "shards")));
 			fire_ball((chance == 1 ? GF_SOUND : GF_SHARD),
 			          dir, dam, 2);
@@ -1932,12 +1890,12 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		{
 			dam = 250 * (100 + boost) / 100;
 			chance = randint0(4);
-			msg_format("You breathe %s.",
+			msg("You breathe %s.",
 			           ((chance == 1) ? "chaos" :
 			            ((chance == 2) ? "disenchantment" :
 			             ((chance == 3) ? "sound" : "shards"))));
 			fire_ball(((chance == 1) ? GF_CHAOS :
-			           ((chance == 2) ? GF_DISENCHANT :
+			           ((chance == 2) ? GF_DISEN :
 			            ((chance == 3) ? GF_SOUND : GF_SHARD))),
 			          dir, dam, 2);
 			return TRUE;
@@ -1947,7 +1905,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		{
 			dam = 200 * (100 + boost) / 100;
 			chance = randint0(2);
-			message_format((chance == 0 ? MSG_BR_LIGHT : MSG_BR_DARK), 0, "You breathe %s.",
+			msgt((chance == 0 ? MSG_BR_LIGHT : MSG_BR_DARK), "You breathe %s.",
 			        ((chance == 0 ? "light" : "darkness")));
 			fire_ball((chance == 0 ? GF_LIGHT : GF_DARK), dir, dam,
 				2);
@@ -1957,29 +1915,211 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		case EF_DRAGON_POWER:
 		{
 			dam = 300 * (100 + boost) / 100;
-			message_format(MSG_BR_ELEMENTS, 0, "You breathe the elements.");
+			msgt(MSG_BR_ELEMENTS, "You breathe the elements.");
 			fire_ball(GF_MISSILE, dir, dam, 2);
 			return TRUE;
 		}
 
 		case EF_TRAP_DOOR:
+		{
+			msg("You fall through a trap door!");
+			if (check_state(p_ptr, OF_FEATHER, p_ptr->state.flags)) {
+				msg("You float gently down to the next level.");
+			} else {
+				take_hit(p_ptr, damroll(2, 8), "a trap");
+			}
+			wieldeds_notice_flag(p_ptr, OF_FEATHER);
+
+			dungeon_change_level(p_ptr->depth + 1);
+			return TRUE;
+		}
+
 		case EF_TRAP_PIT:
+		{
+			msg("You fall into a pit!");
+			if (check_state(p_ptr, OF_FEATHER, p_ptr->state.flags)) {
+				msg("You float gently to the bottom of the pit.");
+			} else {
+				take_hit(p_ptr, damroll(2, 6), "a trap");
+			}
+			wieldeds_notice_flag(p_ptr, OF_FEATHER);
+			return TRUE;
+		}
+
 		case EF_TRAP_PIT_SPIKES:
+		{
+			msg("You fall into a spiked pit!");
+
+			if (check_state(p_ptr, OF_FEATHER, p_ptr->state.flags)) {
+				msg("You float gently to the floor of the pit.");
+				msg("You carefully avoid touching the spikes.");
+			} else {
+				int dam = damroll(2, 6);
+
+				/* Extra spike damage */
+				if (one_in_(2)) {
+					msg("You are impaled!");
+					dam *= 2;
+					(void)player_inc_timed(p_ptr, TMD_CUT, randint1(dam), TRUE, TRUE);
+				}
+
+				take_hit(p_ptr, dam, "a trap");
+			}
+			wieldeds_notice_flag(p_ptr, OF_FEATHER);
+			return TRUE;
+		}
+
 		case EF_TRAP_PIT_POISON:
+		{
+			msg("You fall into a spiked pit!");
+
+			if (check_state(p_ptr, OF_FEATHER, p_ptr->state.flags)) {
+				msg("You float gently to the floor of the pit.");
+				msg("You carefully avoid touching the spikes.");
+			} else {
+				int dam = damroll(2, 6);
+
+				/* Extra spike damage */
+				if (one_in_(2)) {
+					msg("You are impaled on poisonous spikes!");
+					(void)player_inc_timed(p_ptr, TMD_CUT, randint1(dam * 2), TRUE, TRUE);
+					(void)player_inc_timed(p_ptr, TMD_POISONED, randint1(dam * 4), TRUE, TRUE);
+				}
+
+				take_hit(p_ptr, dam, "a trap");
+			}
+			wieldeds_notice_flag(p_ptr, OF_FEATHER);
+			return TRUE;
+		}
+
 		case EF_TRAP_RUNE_SUMMON:
+		{
+			int i;
+			int num = 2 + randint1(3);
+
+			msgt(MSG_SUM_MONSTER, "You are enveloped in a cloud of smoke!");
+
+			/* Remove trap */
+			cave->info[py][px] &= ~(CAVE_MARK);
+			cave_set_feat(cave, py, px, FEAT_FLOOR);
+
+			for (i = 0; i < num; i++)
+				(void)summon_specific(py, px, p_ptr->depth, 0, 1);
+
+			return TRUE;
+		}
+
 		case EF_TRAP_RUNE_TELEPORT:
+		{
+			msg("You hit a teleport trap!");
+			teleport_player(100);
+			return TRUE;
+		}
+
 		case EF_TRAP_SPOT_FIRE:
+		{
+			int dam;
+
+			msg("You are enveloped in flames!");
+			dam = damroll(4, 6);
+			dam = adjust_dam(p_ptr, GF_FIRE, dam, RANDOMISE,
+					check_for_resist(p_ptr, GF_FIRE, p_ptr->state.flags, TRUE));
+			if (dam) {
+				take_hit(p_ptr, dam, "a fire trap");
+				inven_damage(p_ptr, GF_FIRE, MIN(dam * 5, 300));
+			}
+			return TRUE;
+		}
+
 		case EF_TRAP_SPOT_ACID:
+		{
+			int dam;
+
+			msg("You are splashed with acid!");
+			dam = damroll(4, 6);
+			dam = adjust_dam(p_ptr, GF_ACID, dam, RANDOMISE,
+					check_for_resist(p_ptr, GF_ACID, p_ptr->state.flags, TRUE));
+			if (dam) {
+				take_hit(p_ptr, dam, "an acid trap");
+				inven_damage(p_ptr, GF_ACID, MIN(dam * 5, 300));
+			}
+			return TRUE;
+		}
+
 		case EF_TRAP_DART_SLOW:
+		{
+			if (trap_check_hit(125)) {
+				msg("A small dart hits you!");
+				take_hit(p_ptr, damroll(1, 4), "a trap");
+				(void)player_inc_timed(p_ptr, TMD_SLOW, randint0(20) + 20, TRUE, FALSE);
+			} else {
+				msg("A small dart barely misses you.");
+			}
+			return TRUE;
+		}
+
 		case EF_TRAP_DART_LOSE_STR:
+		{
+			if (trap_check_hit(125)) {
+				msg("A small dart hits you!");
+				take_hit(p_ptr, damroll(1, 4), "a trap");
+				(void)do_dec_stat(A_STR, FALSE);
+			} else {
+				msg("A small dart barely misses you.");
+			}
+			return TRUE;
+		}
+
 		case EF_TRAP_DART_LOSE_DEX:
+		{
+			if (trap_check_hit(125)) {
+				msg("A small dart hits you!");
+				take_hit(p_ptr, damroll(1, 4), "a trap");
+				(void)do_dec_stat(A_DEX, FALSE);
+			} else {
+				msg("A small dart barely misses you.");
+			}
+			return TRUE;
+		}
+
 		case EF_TRAP_DART_LOSE_CON:
+		{
+			if (trap_check_hit(125)) {
+				msg("A small dart hits you!");
+				take_hit(p_ptr, damroll(1, 4), "a trap");
+				(void)do_dec_stat(A_CON, FALSE);
+			} else {
+				msg("A small dart barely misses you.");
+			}
+			return TRUE;
+		}
+
 		case EF_TRAP_GAS_BLIND:
+		{
+			msg("You are surrounded by a black gas!");
+			(void)player_inc_timed(p_ptr, TMD_BLIND, randint0(50) + 25, TRUE, TRUE);
+			return TRUE;
+		}
+
 		case EF_TRAP_GAS_CONFUSE:
+		{
+			msg("You are surrounded by a gas of scintillating colors!");
+			(void)player_inc_timed(p_ptr, TMD_CONFUSED, randint0(20) + 10, TRUE, TRUE);
+			return TRUE;
+		}
+
 		case EF_TRAP_GAS_POISON:
+		{
+			msg("You are surrounded by a pungent green gas!");
+			(void)player_inc_timed(p_ptr, TMD_POISONED, randint0(20) + 10, TRUE, TRUE);
+			return TRUE;
+		}
+
 		case EF_TRAP_GAS_SLEEP:
 		{
-			break;
+			msg("You are surrounded by a strange white mist!");
+			(void)player_inc_timed(p_ptr, TMD_PARALYZED, randint0(10) + 5, TRUE, TRUE);
+			return TRUE;
 		}
 
 
@@ -1989,6 +2129,6 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 	}
 
 	/* Not used */
-	msg_print("Effect not handled.");
+	msg("Effect not handled.");
 	return FALSE;
 }
