@@ -2,8 +2,8 @@
 README for Angband 3.4
 ======================
 
-New Features in Angband 3.4.0
-=============================
+New Features in Angband 3.4.0/3.4.1
+===================================
 
 The new version of Angband has a lot of very interesting changes that we
 hope will bring great enjoyment to new players and veterans who haven't
@@ -34,6 +34,9 @@ names of monsters and items have the appropriate diacritical marks.
 All monsters that were in the Angel class have been replaced with the much
 more thematic "Ainu".  This is more of a cosmetic change than a gameplay
 change, but the three Ainu uniques are now slightly different.
+
+The amount of items in any stack is now limited to 40.  This has the
+largest effect on the quiver, but also affects inventory and shops.
 
 All weak curses are gone.  The only curses are now heavy curses on 
 artifacts, and permanent curses on the very special artifacts.  Remove

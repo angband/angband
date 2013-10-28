@@ -82,7 +82,7 @@ static struct cmd_info cmd_action[] =
 	{ "Rest for a while", { 'R' }, CMD_NULL, textui_cmd_rest },
 	{ "Look around", { 'l', 'x' }, CMD_NULL, do_cmd_look },
 	{ "Target monster or location", { '*' }, CMD_NULL, do_cmd_target },
-	{ "Target closest monster", { '\'', '"' }, CMD_NULL, do_cmd_target_closest },
+	{ "Target closest monster", { '\'' }, CMD_NULL, do_cmd_target_closest },
 	{ "Dig a tunnel", { 'T', KTRL('T') }, CMD_TUNNEL },
 	{ "Go up staircase", {'<' }, CMD_GO_UP },
 	{ "Go down staircase", { '>' }, CMD_GO_DOWN },
@@ -113,7 +113,7 @@ static struct cmd_info cmd_info[] =
 	{ "Cast a spell", { 'm' }, CMD_CAST, textui_obj_cast, player_can_cast_msg },
 	{ "Cast a spell", { 'p' }, CMD_CAST, textui_obj_cast, player_can_cast_msg },
 	{ "Full dungeon map", { 'M' }, CMD_NULL, do_cmd_view_map },
-	{ "Toggle ignoring of items", { 'K', KTRL('G') }, CMD_NULL, textui_cmd_toggle_ignore },
+	{ "Toggle ignoring of items", { 'K', 'O' }, CMD_NULL, textui_cmd_toggle_ignore },
 	{ "Display visible item list", { ']' }, CMD_NULL, do_cmd_itemlist },
 	{ "Display visible monster list", { '[' }, CMD_NULL, do_cmd_monlist },
 	{ "Locate player on map", { 'L', 'W' }, CMD_NULL, do_cmd_locate },
@@ -152,10 +152,10 @@ static struct cmd_info cmd_hidden[] =
 	{ "Walk", { ';' }, CMD_WALK, NULL },
 	{ "Start running", { '.', ',' }, CMD_RUN, NULL },
 	{ "Stand still", { ',', '.' }, CMD_HOLD, NULL },
-	{ "Center map", { KTRL('L') }, CMD_NULL, do_cmd_center_map },
+	{ "Center map", { KTRL('L'), '@' }, CMD_NULL, do_cmd_center_map },
 
 	{ "Toggle wizard mode", { KTRL('W') }, CMD_NULL, do_cmd_wizard },
-	{ "Repeat previous command", { 'n', '\'' }, CMD_REPEAT, NULL },
+	{ "Repeat previous command", { 'n', KTRL('V') }, CMD_REPEAT, NULL },
 	{ "Do autopickup", { KTRL('G') }, CMD_AUTOPICKUP, NULL },
 
 #ifdef ALLOW_DEBUG

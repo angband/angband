@@ -1322,6 +1322,12 @@ static textblock *object_info_out(const object_type *o_ptr, oinfo_detail_t mode)
 
 	textblock *tb = textblock_new();
 
+	/* Unaware objects get simple descriptions */
+	if (!full && (o_ptr->marked == MARK_AWARE)){
+		textblock_append(tb, "\n\nYou do not know what this is.\n");
+		return tb;
+	}
+	
 	/* Grab the object flags */
 	if (full) {
 		object_flags(o_ptr, flags);

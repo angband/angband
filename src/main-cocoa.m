@@ -16,6 +16,7 @@
  */
 
 #include "angband.h"
+#include "button.h"
 #include "cmds.h"
 #include "files.h"
 #include "init.h"
@@ -1596,7 +1597,8 @@ static errr Term_xtra_cocoa(int n, int v)
             
         case TERM_XTRA_FRESH:
         {
-            [angbandContext displayIfNeeded];
+            /* No-op -- see #1669 
+             * [angbandContext displayIfNeeded]; */
             break;
         }
             
@@ -2466,6 +2468,51 @@ static BOOL send_event(NSEvent *event)
             break;
         }
             
+        case NSLeftMouseDown:
+        {
+            /* Queue mouse presses if they occur in the map section
+             * of the main window.
+             */
+
+            AngbandContext *angbandContext =
+                [[[event window] contentView] angbandContext];
+            AngbandContext *mainAngbandContext =
+                angband_term[0]->data;
+
+            if (mainAngbandContext->primaryWindow &&
+                [[event window] windowNumber] ==
+                [mainAngbandContext->primaryWindow windowNumber])
+            {
+                int cols, rows, x, y;
+                Term_get_size(&cols, &rows);
+
+                /* Term_mousepress() expects the origin (0,0) at the upper
+                 * left, while locationInWindow puts the origin at the lower
+                 * left.
+                 */
+                NSPoint p = [event locationInWindow];
+                NSSize tileSize = angbandContext->tileSize;
+                NSSize scaleFactor = [angbandContext scaleFactor];
+                x = p.x/(tileSize.width * scaleFactor.width);
+                y = rows - p.y/(tileSize.height * scaleFactor.height);
+                    
+                /* Sidebar plus border == thirteen characters;
+                 * top row is reserved, and bottom row may have mouse buttons.
+                 * Coordinates run from (0,0) to (cols-1, rows-1).
+                 */
+                if ((x > 13 && x <= cols - 1 &&
+                     y > 0  && y <= rows - 2) ||
+                    (OPT(mouse_buttons) && y == rows - 1 && 
+                     x >= COL_MAP && x < COL_MAP + button_get_length()))
+                {
+                    Term_mousepress(x, y, 1);
+                }
+            }
+            /* Pass click through to permit focus change, resize, etc. */
+            [NSApp sendEvent:event];
+            break;
+        }
+
         case NSApplicationDefined:
         {
             if ([event subtype] == AngbandEventWakeup)
@@ -2839,7 +2886,13 @@ static void initialize_file_paths(void)
     {
         return NSTerminateNow;
     }
-    else {
+    else if (! inkey_flag)
+    {
+        /* For compatibility with other ports, do not quit in this case */
+        return NSTerminateCancel;
+    }
+    else
+    {
         cmd_insert(CMD_QUIT);
         /* Post an escape event so that we can return from our get-key-event function */
         wakeup_event_loop();

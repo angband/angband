@@ -60,7 +60,7 @@ Objects
 =====  =============================  =====  =============================
 '!'    A potion (or flask)            '/'    A pole-arm
 '?'    A scroll (or book)             '|'    An edged weapon
-','    A mushroom (or food)           '\'    A hafted weapon
+','    A mushroom (or food)           '\\'    A hafted weapon
 '-'    A wand or rod                  '}'    A sling, bow, or x-bow
 '_'    A staff                        '{'    A shot, arrow, or bolt
 '='    A ring                         '('    Soft armour

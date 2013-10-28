@@ -1,5 +1,5 @@
 Please choose one of the following online help files:
-    (a) README for Angband 3.4     (340.txt)
+    (a) README for Angband 3.4     (readme.txt)
 
     (b) General information        (general.txt)
     (c) Creating a character       (birth.txt)
@@ -19,7 +19,7 @@ Browser/help commands:
   RET   advance 1 line     =  back up 1 line     &  show (highlight) some text
   +     advance 1/2 page   _  back up 1/2 page   !  toggle case sentitivity
   
-.. menu:: [a] 340.txt
+.. menu:: [a] readme.txt
 
 .. menu:: [b] general.txt
 

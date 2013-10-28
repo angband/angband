@@ -408,7 +408,7 @@ I:23:12
 W:30:0:200:700
 A:20:30 to 100
 P:0:3d6:0:0:0
-D:A sword requring two hands to wield.
+D:A sword designed for two hands.
 
 N:42:& Executioner's Sword~
 G:|:r

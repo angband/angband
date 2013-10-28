@@ -3446,7 +3446,7 @@ static void init_gfx(void)
 				plog_fmt("Can't find file %s - graphics mode '%s' will be disabled.", path, graphics_modes[i].menuname);
 				graphics_modes[i].file[0] = 0;
 			}
-			if (i == use_graphics) {
+			if ((i + 1) == use_graphics) {
 				current_graphics_mode = &(graphics_modes[i]);
 			}
 		}

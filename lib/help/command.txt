@@ -337,7 +337,7 @@ Uninscribe an object ('}')
   This command removes the inscription on an object. This command will have
   no effect on "fake" inscriptions added by the game itself.
   
-Toggle squelch ('K')
+Toggle squelch ('K') or Toggle squelch ('O')
   This command will toggle squelch settings.  If on, all squelched items 
   will be hidden from view.  If off, all items will be shown regardless
   of their squelch setting.  See the customize section for more info.
@@ -345,7 +345,7 @@ Toggle squelch ('K')
 Magical Object Commands
 =======================
 
-Activate an artifact ('A')
+Activate an object ('A')
   You have heard rumors of special weapons and armor deep in the Pits,
   items that can let you breathe fire like a dragon or light rooms with
   just a thought. Should you ever be lucky enough to find such an item,
@@ -661,7 +661,7 @@ fifth will quit the game, after killing your character. Also, 'Ctrl-Z'
 will suspend the game, and return you to the original command shell, until
 you resume the game with the 'fg' command. There is now a compilation
 option to force the game to prevent the "double 'ctrl-z' escape death
-trick". The 'Ctrl-\' and 'Ctrl-D' and 'Ctrl-S' keys should not be
+trick". The 'Ctrl-\\' and 'Ctrl-D' and 'Ctrl-S' keys should not be
 intercepted.
 
 It is often possible to specify "control-keys" without actually pressing
@@ -669,15 +669,15 @@ the control key, by typing a caret ('^') followed by the key. This is
 useful for specifying control-key commands which might be caught by the
 operating system as explained above.
 
-Pressing backslash ('\') before a command will bypass all keymaps, and
+Pressing backslash ('\\') before a command will bypass all keymaps, and
 the next keypress will be interpreted as an "underlying command" key,
 unless it is a caret ('^'), in which case the keypress after that will be
 turned into a control-key and interpreted as a command in the underlying
-angband keyset. For example, the sequence '\' + '.' + '6' will always
+angband keyset. For example, the sequence '\\' + '.' + '6' will always
 mean "run east", even if the '.' key has been mapped to a different
 underlying command.
 
-The '0' and '^' and '\' keys all have special meaning when entered at
+The '0' and '^' and '\\' keys all have special meaning when entered at
 the command prompt, and there is no "useful" way to specify any of them as
 an "underlying command", which is okay, since they would have no effect.
 

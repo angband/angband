@@ -104,9 +104,6 @@ void do_cmd_inven(void)
 	/* Hack -- Start in "inventory" mode */
 	p_ptr->command_wrk = (USE_INVEN);
 
-	/* Hack -- show empty slots */
-	item_tester_full = TRUE;
-
 	/* Loop this menu until an object context menu says differently */
 	while (ret == 3) {
 		/* Save screen */
@@ -126,12 +123,12 @@ void do_cmd_inven(void)
 			/* Load screen */
 			screen_load();
 
-			/* Track the object kind */
-			track_object(item);
-
 			o_ptr = object_from_item_idx(item);
 
 			if (o_ptr && o_ptr->kind) {
+				/* Track the object kind */
+				track_object(item);
+
 				while ((ret = context_menu_object(o_ptr, item)) == 2);
 			}
 		} else {
@@ -141,9 +138,6 @@ void do_cmd_inven(void)
 			ret = -1;
 		}
 	}
-
-	/* Hack -- hide empty slots */
-	item_tester_full = FALSE;
 }
 
 
@@ -173,12 +167,12 @@ void do_cmd_equip(void)
 			/* Load screen */
 			screen_load();
 
-			/* Track the object kind */
-			track_object(item);
-
 			o_ptr = object_from_item_idx(item);
 
 			if (o_ptr && o_ptr->kind) {
+				/* Track the object kind */
+				track_object(item);
+
 				while ((ret = context_menu_object(o_ptr, item)) == 2);
 			}
 		} else {

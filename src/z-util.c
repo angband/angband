@@ -268,6 +268,27 @@ void strskip(char *s, const char c){
 }
 
 /*
+ * rewrite string s in-place removing escape character c
+ * note that pairs of c will leave one instance of c in out
+ */
+void strescape(char *s, const char c){
+	char *in=s;
+	char *out=s;
+	bool escapenext = FALSE;
+	while(*in){
+		if(*in!=c || escapenext){
+			*out=*in;
+			out++;
+			escapenext = FALSE;
+		} else if (*in == c) {
+			escapenext = TRUE;
+		}
+		in++;
+	}
+	*out=0;
+}
+
+/*
  * returns TRUE if string only contains spaces
  */
 bool contains_only_spaces(const char* s){
